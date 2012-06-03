@@ -1,0 +1,933 @@
+// 
+// Copyright (C) 2009 Tero Pulkkinen
+// Released under LGPL License.
+//
+// This file is part of Polygon.
+//
+// Polygon is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Polygon is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU Library General Public License
+// along with Polygon.  If not, see <http://www.gnu.org/licenses/>.
+//
+
+
+
+#include "VectorTools.hh"
+#include <cmath>
+#include <iostream>
+#include <ostream>
+std::ostream &operator<<(std::ostream &o, const Point &p)
+{
+  o << "(" << p.x << "," << p.y << "," << p.z << ")";
+  return o;
+}
+
+std::ostream &operator<<(std::ostream &o, const Vector &v)
+{
+  o << "(" << v.dx << "," << v.dy << "," << v.dz << ")";
+  return o;
+}
+
+std::ostream &operator<<(std::ostream &o, const Matrix &m)
+{
+  o << "[" << m.matrix[0] << "," << m.matrix[1] << "," << m.matrix[2] << "," << m.matrix[3] << "]" << std::endl;
+  o << "[" << m.matrix[4] << "," << m.matrix[5] << "," << m.matrix[6] << "," << m.matrix[7] << "]" << std::endl;
+  o << "[" << m.matrix[8] << "," << m.matrix[9] << "," << m.matrix[10] << "," << m.matrix[11] << "]" << std::endl;
+  o << "[" << m.matrix[12] << "," << m.matrix[13] << "," << m.matrix[14] << "," << m.matrix[15] << "]" << std::endl;
+  return o;
+}
+
+
+float Dist(const Point &a, const Point &b) { return (b-Vector(a)).Dist(); }
+
+
+float Vector::Angle(const Vector &aVec, const Vector &aVec2)
+{
+  return acos(DotProduct(aVec, aVec2)/(aVec.Dist()*aVec2.Dist()));
+}
+
+
+Point SphericalPoint::ToPoint()
+{
+  Point p;
+  p.x = r*sin(alfa)*cos(beta);
+  p.y = r*sin(alfa)*sin(beta);
+  p.z = r*cos(alfa);
+  return p;
+}
+
+void SphericalPoint::FromPoint(Point v)
+{
+  r = sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+  alfa = acos(v.z/r);
+  beta = atan2(v.y,v.x);
+}
+
+
+Point::Point(const Vector &v)
+  : x(v.dx), y(v.dy), z(v.dz), s(v.ds) { }
+
+
+void Point::operator+=(const Vector &v)
+{
+  Vector vv = v;
+  vv.Normalize();
+  Normalize();
+  x += v.dx;
+  y += v.dy;
+  z += v.dz;
+  s = 1.0;
+}
+Point operator+(const Point &p, const Vector &v)
+{
+  Point pp = p;
+  pp += v;
+  return pp;
+}
+
+void Point::operator-=(const Vector &v)
+{
+ x -= v.dx;
+ y -= v.dy;
+ z -= v.dz;
+}
+Point operator-(const Point &p, const Vector &v)
+{
+  Point pp = p;
+  pp -= v;
+  return pp;
+}
+
+
+float Vector::Dist() const
+{
+  float r = dx*dx;
+  r+= dy*dy;
+  r+= dz*dz;
+  float r2 = sqrt(r);
+  return r2;
+}
+float Point::Dist() const
+{
+  return sqrt(x*x+y*y+z*z);
+}
+
+Vector Vector::UnitX()
+{
+  Vector v;
+  v.dx = 1.0;
+  v.dy = 0.0;
+  v.dz = 0.0;
+  return v;
+}
+Vector Vector::UnitY()
+{
+  Vector v;
+  v.dx = 0.0;
+  v.dy = 1.0;
+  v.dz = 0.0;
+  return v;
+}
+Vector Vector::UnitZ()
+{
+  Vector v;
+  v.dx = 0.0;
+  v.dy = 0.0;
+  v.dz = 1.0;
+  return v;
+}
+
+Vector Vector::UnitConvert(const Vector &u_x, const Vector &u_y, const Vector &u_z)
+{
+  // r = u_x*x + u_y*y + u_z*z
+  Vector u_x_x = u_x * dx;
+  Vector u_y_y = u_y * dy;
+  Vector u_z_z = u_z * dz;
+  Vector r = u_x_x + u_y_y + u_z_z;
+  return r;
+}
+
+
+Point operator*(const Point &p, const Matrix &m)
+{
+  Vector v(p);
+  Vector r = v * m;
+  Point pp(r);
+  return pp;
+}
+
+Vector operator*(const Vector &v, const Matrix &m)
+{
+  Vector r;
+  r.dx = v.dx*m.matrix[0] + v.dy*m.matrix[1] + v.dz*m.matrix[2] + v.ds*m.matrix[3];
+  r.dy = v.dx*m.matrix[4] + v.dy*m.matrix[5] + v.dz*m.matrix[6] + v.ds*m.matrix[7];
+  r.dz = v.dx*m.matrix[8] + v.dy*m.matrix[9] + v.dz*m.matrix[10] + v.ds*m.matrix[11];
+  r.ds = v.dx*m.matrix[12] + v.dy*m.matrix[13] + v.dz*m.matrix[14] + v.ds*m.matrix[15];
+  return r;
+}
+
+Matrix operator*(const Matrix &m1, const Matrix &m2)
+{
+  Matrix r;
+  //if (m1.is_identity && m2.is_identity)
+  //  {
+  //    r = Matrix::Identity();
+  //    return r;
+  //  }
+  for(int x=0;x<4;x++)
+    for(int y=0;y<4;y++) {
+      int i = x+y*4;
+      int yy = y*4;
+      r.matrix[i]=0;
+      for(int z=0;z<4;z++)
+	r.matrix[i] += m1.matrix[x+z*4]*m2.matrix[z+yy];
+    }
+  return r;
+}
+
+Matrix Matrix::Identity()
+{
+  Matrix r = { { 1.0, 0.0, 0.0, 0.0,
+	       0.0, 1.0, 0.0, 0.0,
+	       0.0, 0.0, 1.0, 0.0,
+	       0.0, 0.0, 0.0, 1.0 } };
+  r.is_identity = true;
+  return r;
+}
+
+
+Matrix Matrix::XRotation(float rot)
+{
+  float sin_r = sin(rot);
+  float cos_r = cos(rot);
+  Matrix r = { { 1.0, 0.0, 0.0, 0.0,
+	       0.0, cos_r, -sin_r, 0.0,
+	       0.0, sin_r, cos_r, 0.0,
+	       0.0, 0.0, 0.0, 1.0 } };
+  return r;
+}
+
+Matrix Matrix::YRotation(float rot)
+{
+  float sin_r = sin(rot);
+  float cos_r = cos(rot);
+  Matrix r = { {cos_r, 0.0, sin_r, 0.0,
+	       0.0, 1.0, 0.0, 0.0,
+	       -sin_r, 0.0, cos_r, 0.0,
+	       0.0, 0.0, 0.0, 1.0}, false };
+  return r;
+}
+
+Matrix Matrix::ZRotation(float rot)
+{
+  float sin_r = sin(rot);
+  float cos_r = cos(rot);
+  Matrix r = { { cos_r, -sin_r, 0.0, 0.0,
+	       sin_r, cos_r, 0.0, 0.0,
+	       0.0, 0.0, 1.0, 0.0,
+	       0.0, 0.0, 0.0, 1.0} , false };
+  return r;
+}
+Matrix Matrix::Translate(float x, float y, float z)
+{
+  Matrix r = { { 1.0, 0.0, 0.0, x,
+	       0.0, 1.0, 0.0, y,
+	       0.0, 0.0, 1.0, z,
+	       0.0, 0.0, 0.0, 1.0}, false };
+  return r;
+}
+
+Matrix Matrix::Scale(float x, float y, float z)
+{
+  Matrix r = { {x, 0.0, 0.0, 0.0,
+	       0.0, y, 0.0, 0.0,
+	       0.0, 0.0, z, 0.0,
+	       0.0, 0.0, 0.0, 1.0}, false };
+  return r;
+}
+
+Matrix Matrix::ProjectionTrans(float z_min)
+{
+  Matrix r = { {1.0, 0.0, 0.0, 0.0,
+	       0.0, 1.0, 0.0, 0.0,
+	       0.0, 0.0, float(1.0/(1.0+z_min)), float(-z_min/(1.0+z_min)),
+	       0.0, 0.0, -1.0, 0.0}, false };
+  return r;
+}
+
+Matrix Matrix::PerspectiveProjection(float dist)
+{
+  //float F = dist;
+  //float B = 2000.0;
+  Matrix r = { {1.0, 0.0, 0.0, 0.0,
+	       0.0, 1.0, 0.0, 0.0,
+	       0.0, 0.0, 0.0/*(B+F)/(B-F)*/, 0.0/*-2.0*B*F/(B-F)*/,
+	       0.0, 0.0, float(1.0/dist), 1.0}, false };
+  return r;
+}
+
+Matrix Matrix::Perspective(float fovy, float aspect, float near, float far)
+{
+  float f = -1.0/tan(fovy/2.0);
+  Matrix r = { {f/aspect, 0.0, 0.0, 0.0,
+  	0.0, f, 0.0, 0.0,
+  	0.0, 0.0, float((far+near)/(near-far)), float(2.0*far*near/(near-far)),
+  	0.0, 0.0, -1.0, 0.0 }, false };
+
+  //Matrix r = { {f/aspect, 0.0, 0.0, 0.0,
+  //		0.0, f, 0.0, 0.0,
+  //		0.0, 0.0, (far+near)/(near-far), -1.0,
+  //		0.0, 0.0, 2.0*far*near/(near-far), 0.0 }, false };
+  return r;
+}
+
+
+
+Matrix Matrix::SphericalToCartesian(SphericalPoint p)
+{
+  float alfa = p.alfa;
+  float beta = p.beta;
+  float cosalfa = cos(alfa);
+  float sinalfa = sin(alfa);
+  float cosbeta = cos(beta);
+  float sinbeta = sin(beta);
+  float r = p.r;
+  Matrix rr = { {sinalfa*cosbeta, r*cosalfa*cosbeta, -r*sinalfa*sinbeta, 0,
+	       sinalfa*sinbeta, r*cosalfa*sinbeta, r*sinalfa*cosbeta, 0,
+	       cosalfa, -r*sinalfa, 0.0, 0.0,
+	       0.0,0.0,0.0,1.0}, false };
+  return rr;
+}
+
+Matrix Matrix::CartesianToSpherical(Point p)
+{
+  float x = p.x;
+  float y = p.y;
+  float z = p.z;
+  float x_x_y_y = x*x+y*y;
+  float sqrt_x_x_y_y = sqrt(x_x_y_y);
+  float r = sqrt(x_x_y_y+z*z);
+  Matrix rr = { {x/r, y/r, z/r, 0,
+	       x*z/r/sqrt_x_x_y_y, y*z/r/sqrt_x_x_y_y, -(x_x_y_y)/r/sqrt_x_x_y_y, 0
+	       -y/sqrt_x_x_y_y, x/sqrt_x_x_y_y, 0.0, 0.0,
+	       0, 0, 0, 1.0}, false };
+  return rr;
+}
+
+Matrix Matrix::MultiplyMatrix(const Matrix &m, int count)
+{
+  Matrix mm = m;
+  for(int i=0;i<count;i++)
+    {
+      mm = mm * m;
+    }
+  return mm;
+}
+
+Matrix Matrix::RotateAroundAxisPoint(const Point &p,
+				     const Vector &v,
+				     float angle)
+{
+  return Matrix::Translate(-p.x,-p.y,-p.z)*RotateAroundAxis(v,angle)*Matrix::Translate(p.x,p.y,p.z);
+}
+
+Matrix Matrix::RotateAroundAxis(const Vector &v, float angle)
+{
+  float cosa = cos(angle);
+  float sina = sin(angle);
+  Vector vv = v;
+  vv /= vv.Dist();
+  float x = vv.dx;
+  float y = vv.dy;
+  float z = vv.dz;
+  Matrix r = { { float(cosa+(1.0-cosa)*x*x), float((1.0-cosa)*x*y-sina*z), float((1.0-cosa)*x*z+sina*y), 0.0,
+	       float((1.0-cosa)*y*x+sina*z), float(cosa+(1.0-cosa)*y*y), float((1.0-cosa)*y*z-sina*x), 0.0,
+	       float((1.0-cosa)*z*x-sina*y), float((1.0-cosa)*z*y+sina*x), float(cosa+(1.0-cosa)*z*z), 0.0,
+	       0.0, 0.0, 0.0, 1.0 } };
+  return r;
+}
+
+struct Mat2 { float m[4]; };
+
+std::ostream &operator<<(std::ostream &o, const Mat2 &m)
+{
+  o << m.m[0] << " " << m.m[1] << std::endl;
+  o << m.m[2] << " " << m.m[3] << std::endl;
+  return o;
+}
+
+//static float det2(const float *m[])
+//{
+//  return (*m[0])*(*m[3]) - (*m[1])*(*m[2]);
+//}
+static float det2(const Mat2 &m)
+{
+  float f = m.m[0]*m.m[3] - (m.m[1]*m.m[2]); 
+  return f;
+}
+static Mat2 mult(const Mat2 &m, const Mat2 &m2)
+{
+  Mat2 r;
+  r.m[0] = m.m[0]*m2.m[0] + m.m[1]*m2.m[2];
+  r.m[1] = m.m[0]*m2.m[1] + m.m[1]*m2.m[3];
+  r.m[2] = m.m[2]*m2.m[0] + m.m[3]*m2.m[2];
+  r.m[3] = m.m[2]*m2.m[1] + m.m[3]*m2.m[3];
+
+  return r;
+}
+static Mat2 ref(const float *m[])
+{
+  Mat2 r;
+  r.m[0] = *m[0];
+  r.m[1] = *m[1];
+  r.m[2] = *m[2];
+  r.m[3] = *m[3];
+
+  return r;
+}
+static Mat2 minus(const Mat2 &m, const Mat2 &m2)
+{
+  Mat2 r;
+  r.m[0] = m.m[0]-m2.m[0];
+  r.m[1] = m.m[1]-m2.m[1];
+  r.m[2] = m.m[2]-m2.m[2];
+  r.m[3] = m.m[3]-m2.m[3];
+  return r;
+}
+static Mat2 inv(const Mat2 &m)
+{
+  float a = m.m[0];
+  float b = m.m[1];
+  float c = m.m[2];
+  float d = m.m[3];
+  float dd = 1.0/(a*d-b*c);
+  if (a*d-b*c < 0.00001 && a*d-b*c > -0.00001) 
+    dd = 1.0;
+  Mat2 r;
+  r.m[0]= d*dd;
+  r.m[1]= -b*dd;
+  r.m[2]= -c*dd;
+  r.m[3]= a*dd;
+  return r;
+}
+static float det(const Matrix &m)
+{
+  const float *A[] = { &m.matrix[0], &m.matrix[1],
+	       &m.matrix[4], &m.matrix[5] };
+  const float *B[] = { &m.matrix[2], &m.matrix[3],
+	       &m.matrix[6], &m.matrix[7] };
+
+  const float *C[] = { &m.matrix[8], &m.matrix[9],
+	       &m.matrix[12], &m.matrix[13] };
+
+  const float *D[] = { &m.matrix[10], &m.matrix[11],
+	       &m.matrix[14], &m.matrix[15] };
+
+  return det2(ref(A))*det2(minus(ref(D),mult(mult(ref(C),inv(ref(A))), ref(B))));
+
+}
+static float det(const float *m[])
+{
+  int a=0;
+  int b=1;
+  int c=2;
+  int d=3;
+  int e=4;
+  int f=5;
+  int g=6;
+  int h=7;
+  int i=8;
+  return ((*m[a])*(*m[e])*(*m[i]) +
+	  (*m[b])*(*m[f])*(*m[g]) +
+	  (*m[c])*(*m[d])*(*m[h])) 
+    -
+    ((*m[g])*(*m[e])*(*m[c]) +
+     (*m[h])*(*m[f])*(*m[a]) +
+     (*m[i])*(*m[d])*(*m[b])) ;
+}
+
+/*
+static float det(const float *m)
+{
+  int a=0;
+  int b=1;
+  int c=2;
+  int d=3;
+  int e=4;
+  int f=5;
+  int g=6;
+  int h=7;
+  int i=8;
+  return ((m[a])*(m[e])*(m[i]) +
+	  (m[b])*(m[f])*(m[g]) +
+	  (m[c])*(m[d])*(m[h])) 
+    -
+    ((m[g])*(m[e])*(m[c]) +
+     (m[h])*(m[f])*(m[a]) +
+     (m[i])*(m[d])*(m[b])) ;
+}
+*/
+
+Matrix Matrix::Inverse(const Matrix &m)
+{
+  const float *m11[] = { &m.matrix[5], &m.matrix[6], &m.matrix[7],
+		   &m.matrix[9], &m.matrix[10], &m.matrix[11],
+		   &m.matrix[13], &m.matrix[14], &m.matrix[15] };
+  const float *m21[] = { &m.matrix[1], &m.matrix[2], &m.matrix[3],
+		   &m.matrix[9], &m.matrix[10], &m.matrix[11],
+		   &m.matrix[13], &m.matrix[14], &m.matrix[15] };
+  const float *m31[] = { &m.matrix[1], &m.matrix[2], &m.matrix[3],
+		   &m.matrix[5], &m.matrix[6], &m.matrix[7],
+		   &m.matrix[13], &m.matrix[14], &m.matrix[15] };
+  const float *m41[] = { &m.matrix[1], &m.matrix[2], &m.matrix[3],
+		   &m.matrix[5], &m.matrix[6], &m.matrix[7],
+		   &m.matrix[9], &m.matrix[10], &m.matrix[11] };
+
+
+  const float *m12[] = { &m.matrix[4], &m.matrix[6], &m.matrix[7],
+		   &m.matrix[8], &m.matrix[10], &m.matrix[11],
+		   &m.matrix[12], &m.matrix[14], &m.matrix[15] };
+  const float *m22[] = { &m.matrix[0], &m.matrix[2], &m.matrix[3],
+		   &m.matrix[8], &m.matrix[10], &m.matrix[11],
+		   &m.matrix[12], &m.matrix[14], &m.matrix[15] };
+  const float *m32[] = { &m.matrix[0], &m.matrix[2], &m.matrix[3],
+		   &m.matrix[4], &m.matrix[6], &m.matrix[7],
+		   &m.matrix[12], &m.matrix[14], &m.matrix[15] };
+  const float *m42[] = { &m.matrix[0], &m.matrix[2], &m.matrix[3],
+		   &m.matrix[4], &m.matrix[6], &m.matrix[7],
+		   &m.matrix[8], &m.matrix[10], &m.matrix[11] };
+
+
+  const float *m13[] = { &m.matrix[4], &m.matrix[5], &m.matrix[7],
+		   &m.matrix[8], &m.matrix[9], &m.matrix[11],
+		   &m.matrix[12], &m.matrix[13], &m.matrix[15] };
+  const float *m23[] = { &m.matrix[0], &m.matrix[1], &m.matrix[3],
+		   &m.matrix[8], &m.matrix[9], &m.matrix[11],
+		   &m.matrix[12], &m.matrix[13], &m.matrix[15] };
+  const float *m33[] = { &m.matrix[0], &m.matrix[1], &m.matrix[3],
+		   &m.matrix[4], &m.matrix[5], &m.matrix[7],
+		   &m.matrix[12], &m.matrix[13], &m.matrix[15] };
+  const float *m43[] = { &m.matrix[0], &m.matrix[1], &m.matrix[3],
+		   &m.matrix[4], &m.matrix[5], &m.matrix[7],
+		   &m.matrix[8], &m.matrix[9], &m.matrix[11] };
+
+
+  const float *m14[] = { &m.matrix[4], &m.matrix[5], &m.matrix[6],
+		   &m.matrix[8], &m.matrix[9], &m.matrix[10],
+		   &m.matrix[12], &m.matrix[13], &m.matrix[14] };
+  const float *m24[] = { &m.matrix[0], &m.matrix[1], &m.matrix[2],
+		   &m.matrix[8], &m.matrix[9], &m.matrix[10],
+		   &m.matrix[12], &m.matrix[13], &m.matrix[14] };
+  const float *m34[] = { &m.matrix[0], &m.matrix[1], &m.matrix[2],
+		   &m.matrix[4], &m.matrix[5], &m.matrix[6],
+		   &m.matrix[12], &m.matrix[13], &m.matrix[14] };
+  const float *m44[] = { &m.matrix[0], &m.matrix[1], &m.matrix[2],
+		   &m.matrix[4], &m.matrix[5], &m.matrix[6],
+		   &m.matrix[8], &m.matrix[9], &m.matrix[10] };
+
+  float M11 = det(m11);
+  float M12 = det(m12);
+  float M13 = det(m13);
+  float M14 = det(m14);
+
+  float M21 = det(m21);
+  float M22 = det(m22);
+  float M23 = det(m23);
+  float M24 = det(m24);
+
+  float M31 = det(m31);
+  float M32 = det(m32);
+  float M33 = det(m33);
+  float M34 = det(m34);
+
+  float M41 = det(m41);
+  float M42 = det(m42);
+  float M43 = det(m43);
+  float M44 = det(m44);
+
+
+
+  float C11 = pow(-1, 1+1)*M11;
+  float C12 = pow(-1, 1+2)*M12;
+  float C13 = pow(-1, 1+3)*M13;
+  float C14 = pow(-1, 1+4)*M14;
+
+  float C21 = pow(-1, 2+1)*M21;
+  float C22 = pow(-1, 2+2)*M22;
+  float C23 = pow(-1, 2+3)*M23;
+  float C24 = pow(-1, 2+4)*M24;
+
+  float C31 = pow(-1, 3+1)*M31;
+  float C32 = pow(-1.0, 3+2)*M32;
+  float C33 = pow(-1, 3+3)*M33;
+  float C34 = pow(-1, 3+4)*M34;
+
+  float C41 = pow(-1, 4+1)*M41;
+  float C42 = pow(-1, 4+2)*M42;
+  float C43 = pow(-1, 4+3)*M43;
+  float C44 = pow(-1, 4+4)*M44;
+  float A = det(m);
+  if (A < 0.000001 && A > -0.000001)
+    A = 1.0;
+  Matrix inv = { { C11/A, C21/A, C31/A, C41/A,
+		 C12/A, C22/A, C32/A, C42/A,
+		 C13/A, C23/A, C33/A, C43/A,
+		 C14/A, C24/A, C34/A, C44/A } };
+  return inv;
+}
+
+#if 0
+static float TransformFloat_s(const float &f1, const float &f2,
+		     float starttime, float endtime, float time)
+{
+  if (time <= starttime) return f1;
+  if (time >= endtime) return f2;
+  float delta = time - starttime;
+  float scale = endtime-starttime;
+  float mult = delta/scale; // 0.0 .. 1.0
+  return f1*(1.0-mult) + f2*(mult);
+}
+#endif
+Matrix Matrix::Interpolate(const Matrix &m1, const Matrix &m2, float t) // t= [0.0..1.0]
+{
+  Vector v(m1.matrix[3], m1.matrix[7], m1.matrix[11]);
+  Vector v2(m2.matrix[3], m2.matrix[7], m2.matrix[11]);
+ 
+  Quarternion q = Quarternion::MatrixToQuar(m1);
+  Quarternion q2 = Quarternion::MatrixToQuar(m2);
+  
+  Quarternion qm = Quarternion::NLerp(q,q2, t);
+  Vector vm = v*t + v2*(1.0-t);
+  Matrix m = Quarternion::QuarToMatrix(qm);
+  //Matrix m = Matrix::Identity();
+  m.matrix[3]=vm.dx;
+  m.matrix[7]=vm.dy;
+  m.matrix[11]=vm.dz;
+  return m;
+}
+
+AxisAngle Matrix::FindAxisAngle(const Matrix &m)
+{
+  AxisAngle a;
+  float trace = m.matrix[0]+m.matrix[5]+m.matrix[10];
+  a.angle = acos((trace-1.0)/2.0);
+  a.axis = 1.0/2.0/sin(a.angle)*Vector(m.matrix[6]-m.matrix[9],
+				       m.matrix[8]-m.matrix[2],
+				       m.matrix[1]-m.matrix[4]);
+  return a;
+}
+
+float Plane::Dist(Point p) const
+{
+  Vector normal = Vector::CrossProduct(u_x, u_y);
+  Vector vpa = p - u_p;
+  float d = -Vector::DotProduct(normal, vpa);
+  float d2 = Vector::DotProduct(normal, normal);
+  float d3 = d / d2;
+  Point pp = (normal*d3).ApplyPoint(p);
+  Vector v = p - pp;
+  return v.Dist();
+}
+
+float Plane::CoordsX(Point p) const
+{
+  Vector v = p - u_p;
+  float vx = Vector::DotProduct(v, u_x/u_x.Dist());
+  return vx/u_x.Dist();
+}
+
+float Plane::CoordsY(Point p) const
+{
+  Vector v = p - u_p;
+  float vy = Vector::DotProduct(v, u_y/u_y.Dist());
+  return vy/u_y.Dist();
+}
+
+
+Color::Color(int r_, int g_, int b_)
+  : r(r_&0xff), g(g_&0xff), b(b_&0xff), alpha(0xff)
+{
+}
+
+Color::Color(int r_, int g_, int b_, int alpha_)
+  : r(r_&0xff), g(g_&0xff), b(b_&0xff), alpha(alpha_&0xff)
+{
+}
+
+
+Color::Color(Vector v)
+{
+  r = int(v.dx*255.0)&0xff;
+  g = int(v.dy*255.0)&0xff;
+  b = int(v.dz*255.0)&0xff;
+  alpha = 255;
+}
+Color::Color(unsigned int color)
+  : r((color&0xff0000)>>16),
+    g((color&0xff00)>>8),
+    b((color&0xff)>>0),
+        alpha((color&0xff000000)>>24)
+{
+}
+
+Matrix Matrix::Transpose(const Matrix &m)
+{
+  Matrix mm = { { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
+		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
+		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
+		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] } };
+  return mm;
+  
+}
+
+Matrix Quarternion::QuarToMatrix(const Quarternion &q)
+{
+  float ww = q.w*q.w;
+  float xx = q.x*q.x;
+  float yy = q.y*q.y;
+  float zz = q.z*q.z;
+  float i = 1.0/(xx+yy+zz+ww);
+
+  float xy = q.x*q.y;
+  float zw = q.z*q.w;
+  float xz = q.x*q.z;
+  float yw = q.y*q.w;
+  float yz = q.y*q.z;
+  float xw = q.x*q.w;
+
+  Matrix m = { { (xx-yy-zz+ww)*i, float(2.0*(xy+zw)*i), float(2.0*(xz-yw)*i), 0.0,
+		 float(2.0*(xy-zw)*i), (-xx+yy-zz+ww)*i, float(2.0*(yz+xw)*i), 0.0,
+		 float(2.0*(xz+yw)*i), float(2.0*(yz-xw)*i), (-xx-yy+zz+ww)*i, 0.0,
+		 0.0, 0.0, 0.0, 1.0 } };
+  m = Matrix::Transpose(m);
+  return m;
+}
+
+float cs(float x, float m)
+{
+  if (x > 0.0)
+    {
+      if (m > 0.0)
+	{
+	  return x;
+	}
+      else
+	{
+	  return -x;
+	}
+    }
+  else
+    {
+      if (m > 0.0)
+	{
+	  return -x;
+	}
+      else
+	{
+	  return x;
+	}
+    }
+}
+
+Quarternion Quarternion::MatrixToQuar(const Matrix &m)
+{
+  Matrix mm = Matrix::Transpose(m);
+  Quarternion q;
+  q.w = sqrt(std::max(0.0, 1.0 + mm.matrix[0] + mm.matrix[5] + mm.matrix[10])) / 2.0;
+  q.x = sqrt(std::max(0.0, 1.0 + mm.matrix[0] - mm.matrix[5] - mm.matrix[10])) / 2.0;
+  q.y = sqrt(std::max(0.0, 1.0 - mm.matrix[0] + mm.matrix[5] - mm.matrix[10])) / 2.0;
+  q.z = sqrt(std::max(0.0, 1.0 - mm.matrix[0] - mm.matrix[5] + mm.matrix[10])) / 2.0;
+  q.x = cs(q.x, mm.matrix[6] - mm.matrix[9]);
+  q.y = cs(q.y, mm.matrix[2] - mm.matrix[8]);
+  q.z = cs(q.z, mm.matrix[1] - mm.matrix[4]);
+  return q;
+}
+
+Quarternion operator+(const Quarternion &a, const Quarternion &b)
+{
+  Quarternion q;
+  q.x = a.x + b.x;
+  q.y = a.y + b.y;
+  q.z = a.z + b.z;
+  q.w = a.w + b.w;
+  return q;
+}
+Quarternion operator*(const Quarternion &a, float x)
+{
+  Quarternion q;
+  q.x = a.x*x;
+  q.y = a.y*x;
+  q.z = a.z*x;
+  q.w = a.w*x;
+  return q;
+}
+
+Quarternion Quarternion::NLerp(const Quarternion &q,
+			       const Quarternion &q2, 
+			       float t)
+{
+  return q*t+q2*(1.0-t);
+}
+Plane LineProperties::PlaneFromLine(float x, float angle, float dist)
+  {
+    Point p = MiddlePoint(x);
+    Vector u_x = PerpendicularVector(angle, 1.0);
+    Vector normal = p2-p1;
+    normal /= normal.Dist();
+    Vector u_y = Vector::CrossProduct(normal, u_x);
+    Plane pl(p, dist*u_x, dist*u_y);
+    return pl;
+  }
+Point LineProperties::MiddlePoint(float x)
+{
+    Point p = Point(x*Vector(p1)+(1.0-x)*Vector(p2));
+    return p;
+}
+
+Vector LineProperties::PerpendicularVector(float angle, float length)
+{
+    Vector normal = p2-p1;
+    normal /= normal.Dist();
+    float y_2 = sin(angle);
+    float z_2 = cos(angle);
+    if (normal.dx < 0.001 && normal.dx >-0.001) normal.dx += 0.002;
+    float x_2 = - ( normal.dy*y_2+normal.dz*z_2 ) / normal.dx;
+    Vector u_x(x_2, y_2, z_2);
+    return length*u_x;
+}
+static Vector proj(Vector u, Vector v)
+{
+  return Vector::DotProduct(u,v)/Vector::DotProduct(u,u)*u;
+}
+
+Point Coords::FindInternalCoords(Point external_coords)
+{
+  Vector v = external_coords-center;
+  float x = Vector::FindProjectionLength(v, u_x);
+  float y = Vector::FindProjectionLength(v, u_y);
+  float z = Vector::FindProjectionLength(v, u_z);
+  return Point(x,y,z);
+}
+Point Coords::FindExternalCoords(Point internal_coords)
+{
+  return center + internal_coords.x*u_x + internal_coords.y*u_y + internal_coords.z*u_z;
+}
+
+void Coords::OrthoNormalize()
+{
+  Vector *v[3] = { &u_x, &u_y, &u_z };
+  for(int j=0;j<3;j++)
+    {
+      for(int i=0;i<j-1;i++)
+	{
+	  *v[j] = (*v[j]) - proj(*v[i], *v[j]);
+	}
+      *v[j] = (*v[j]) / (*v[j]).Dist();
+    }
+}
+
+void UnitVectors::OrthoNormalize()
+{
+  Vector *v[3] = { &u_x, &u_y, &u_z };
+  for(int j=0;j<3;j++)
+    {
+      for(int i=0;i<j-1;i++)
+	{
+	   *v[j] = (*v[j]) - proj(*v[i], *v[j]);
+	}
+      *v[j] = (*v[j]) / (*v[j]).Dist();
+    }
+}
+void UnitVectors::Scale(float x)
+{
+  u_x *= x;
+  u_y *= x;
+  u_z *= x;
+}
+void Coords::Scale(float x)
+{
+  u_x *= x;
+  u_y *= x;
+  u_z *= x;
+}
+
+PlaneIntersection::PlaneIntersection(const Plane &p1, const Plane &p2)
+  : p1(p1), p2(p2)
+{
+  l = PlanePlaneIntersection(p1,p2);
+}
+Line PlaneIntersection::Intersection() const
+{
+  return l;
+}
+float PlaneIntersection::ProjectP1(Point2d p_in_plane1)
+{
+  Point p = p1.u_p + p_in_plane1.x*p1.u_x+p_in_plane1.y*p1.u_y;
+  float val = Vector::DotProduct(p-l.p, l.dir)/l.dir.Dist();
+  return val;
+}
+float PlaneIntersection::ProjectP2(Point2d p_in_plane2)
+{
+  Point p = p2.u_p + p_in_plane2.x*p2.u_x+p_in_plane2.y*p2.u_y;
+  float val = Vector::DotProduct(p-l.p, l.dir)/l.dir.Dist();
+  return val;
+}
+
+float LineProperties::Dist(Point p)
+{
+  Vector v = (p2-p1);
+  //v.Normalize();
+  v/=v.Dist();
+  return (p1+Vector::DotProduct((p-p1),v)*v-p).Dist();
+}
+
+float Vector2d::Length() const { return sqrt(dx*dx+dy*dy); }
+
+void Plane::RotateAroundNormal(float angle_in_rad)
+{
+  Vector normal = Vector::CrossProduct(u_x, u_y);
+  Matrix m = Matrix::RotateAroundAxis(normal, angle_in_rad);
+  Point p_x = Point(u_x)*m;
+  Point p_y = Point(u_y)*m;
+  u_x = p_x;
+  u_y = p_y;
+}
+Vector Plane::Normal(float length) const
+{
+  Vector v = Vector::CrossProduct(u_x,u_y);
+  v /= v.Dist();
+  v *= length;
+  return v;
+}
+
+Point Projection(Point2d p1, Point2d p2, Point corner, Vector u_x, Vector u_y, Vector u_z)
+{
+  // p1 = u_x, u_y
+  // p2 = u_z, u_y
+  return Point(0.0,0.0,0.0);
+}
+
+Point Plane::Navigate(const Point2d &p) { return u_p + p.x*u_x+p.y*u_y; }
+
+FlexibleCube box(Point p1, float sx, float sy, float sz)
+{
+  FlexibleCube cube;
+  cube.front_plane.line1_p1 = p1;
+  cube.front_plane.line1_p2 = p1+Vector(sx,0,0);
+  cube.front_plane.line2_p1 = p1+Vector(0,sy,0);
+  cube.front_plane.line2_p2 = p1+Vector(sx,sy,0);
+
+  cube.back_plane.line1_p1 = p1+Vector(0,0,sz);
+  cube.back_plane.line1_p2 = p1+Vector(sx,0,sz);
+  cube.back_plane.line2_p1 = p1+Vector(0,sy,sz);
+  cube.back_plane.line2_p2 = p1+Vector(sx,sy,sz);
+  return cube;  
+}
