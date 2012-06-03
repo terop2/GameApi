@@ -1,0 +1,46 @@
+#include <GameApi/GameApi.hh>
+#include <iostream>
+
+void GameApiTest(GameApi::EveryApi &e);
+void GameApiTest2(GameApi::EveryApi &e);
+void GameApiTest3(GameApi::EveryApi &e);
+void Game(GameApi::EveryApi &e);
+void GameApiWorldFunc(GameApi::EveryApi &e);
+
+int main(int argc, char *argv[])
+{
+
+  if (argc>1 && (std::string(argv[1])=="-h" || std::string(argv[1])=="--help"))
+    {
+      std::cout << "./main [-h] [-edit filename] [-test3]" << std::endl;
+      exit(0);
+    }
+  if (argc>1 && std::string(argv[1])=="-world")
+    {
+      GameApi::Env e;
+      GameApi::GamesApi g(e);
+      g.register_game(0, &GameApiWorldFunc);
+      g.modify_map(0,0);
+      g.start_game(0);
+      return 0;
+    }
+  if (argc>1 && std::string(argv[1])=="-test4")
+    {
+      GameApi::Env e;
+      GameApi::GamesApi g(e);
+      g.register_game(0, &Game);
+      g.modify_map(0,0);
+      g.start_game(0);
+      return 0;
+    }
+  if (argc>1 && std::string(argv[1])=="-test3")
+    {
+      GameApi::Env e;
+      GameApi::GamesApi g(e);
+      g.register_game(0, &GameApiTest3);
+      g.modify_map(0,0);
+      g.start_game(0);
+      return 0;
+    }
+
+}

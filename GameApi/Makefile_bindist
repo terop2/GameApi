@@ -1,0 +1,15 @@
+
+ifndef INSTALL_DIR
+INSTALL_DIR=/usr
+endif
+
+all:
+	@echo "Installation directory: INSTALL_DIR = $(INSTALL_DIR)"
+	@echo "please type the following:"
+	@echo "    sudo make install"
+
+install:
+	mkdir -p $(INSTALL_DIR)/lib
+	mkdir -p $(INSTALL_DIR)/include/GameApi
+	install libGameApi.so $(INSTALL_DIR)/lib/
+	install GameApi.hh $(INSTALL_DIR)/include/GameApi/
