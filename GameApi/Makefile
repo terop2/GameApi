@@ -54,7 +54,7 @@ all: libGameApi.so install main
 
 examples: main
 
-main: $(GCHFiles_examples) $(OFiles_examples) Makefile
+main: $(GCHFiles_examples) $(OFiles_examples) Makefile GameApi.hh libGameApi.so
 	g++ -pg -std=c++0x -g $(OFiles_examples) -o main -L. -lGameApi
 
 libGameApi.so: $(GCHFiles) $(OFiles) Makefile
@@ -81,15 +81,15 @@ $(DFiles): objs/%.d: %.cc
 $(OFiles): objs/%.o : %.cc
 	$(CC) -pg -std=c++0x -g -c $(CCFLAGS) $< -o $@
 
-$(OFiles_examples): objs/%.o : %.cc
-	$(CC) -pg -std=c++0x -g -c $(CCFLAGS) $< -o $@
+$(OFiles_examples): objs/%.o : %.cc GameApi.hh Makefile
+	$(CC) -pg -std=c++0x -g -c -I. $(CCFLAGS) $< -o $@
 
 
 $(GCHFiles): objs/%.hh.gch : %.hh
 	$(CC) $(CCFLAGS) -std=c++0x -g -x c++-header $< -o $@
 
-$(GCHFiles_examples): objs/%.hh.gch : %.hh
-	$(CC) $(CCFLAGS) -std=c++0x -g -x c++-header $< -o $@
+$(GCHFiles_examples): objs/%.hh.gch : %.hh GameApi.hh Makefile
+	$(CC) $(CCFLAGS) -std=c++0x -g -I. -x c++-header $< -o $@
 
 clean:
 	@rm -rf objs/*.o objs/*.d objs/*.gch
