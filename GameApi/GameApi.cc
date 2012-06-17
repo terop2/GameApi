@@ -2486,6 +2486,7 @@ GameApi::P GameApi::PolygonApi::or_elem(P p1, P p2)
   OrElem<FaceCollection> *coll = new OrElem<FaceCollection>;
   coll->push_back(pp1);
   coll->push_back(pp2);
+  coll->update_faces_cache();
   return add_polygon(e, coll,1);
 }
 
@@ -2512,7 +2513,8 @@ GameApi::P GameApi::PolygonApi::or_array(P *p1, int size)
     }
   EnvImpl *env = EnvImpl::Environment(&e);
   env->deletes.push_back(std::tr1::shared_ptr<void>(vec));
-  FaceCollection *coll = new OrElem<FaceCollection>(vec->begin(), vec->end());
+  OrElem<FaceCollection> *coll = new OrElem<FaceCollection>(vec->begin(), vec->end());
+  coll->update_faces_cache();
   return add_polygon(e, coll,1);
 }
 

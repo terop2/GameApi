@@ -3187,6 +3187,7 @@ public:
     MatrixElem *matrix = new MatrixElem(*cube, m2);
     or_elem.push_back(matrix);
   }
+  void update_faces_cache() { or_elem.update_faces_cache(); }
   const BoxableFaceCollection *Elem() const { return &or_elem; }
 private:
   OrElem<BoxableFaceCollection> or_elem;
@@ -4377,6 +4378,7 @@ public:
       }
     delete or_elem;
     or_elem = new OrElem<BoxableFaceCollection>(vec.begin(), vec.end());
+    or_elem->update_faces_cache();
   }
   virtual int NumFaces() const { return or_elem->NumFaces(); }
   virtual int NumPoints(int face) const { return or_elem->NumPoints(face); }

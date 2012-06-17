@@ -25,7 +25,9 @@ FaceCollection *DoMarching(Hierarchy *h, Voxel<bool> &vox,
   MarchingCubesVoxel v(vox, hv);
   v.Gen();
   std::vector<FaceCollection*> *vec = hv.vec;
-  FaceCollection *coll = new OrElem<FaceCollection>(vec->begin(), vec->end());
+  OrElem<FaceCollection> *coll = new OrElem<FaceCollection>(vec->begin(), vec->end());
+  coll->update_faces_cache();
+
   FaceCollection *memo = new MemoizeFaces(*coll);
   return memo;
 }
