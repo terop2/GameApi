@@ -1,3 +1,4 @@
+#define GAME_API_DEFS
 
 #include "GameApi.hh"
 #include "Graph.hh"
@@ -18,6 +19,9 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "FreeType.hh"
+#include "GameRunner.hh"
+
+#if 0
 struct SpritePriv
 {
   //ArrayRender rend;
@@ -26,6 +30,7 @@ struct SpritePriv
   std::vector<Sprite**> arrays;
   ~SpritePriv();
 };
+#endif
 
 SpritePriv::~SpritePriv()
 {
@@ -59,13 +64,14 @@ struct GridPriv
   Bitmap<Pos> *positions;
   int last_id;
 };
-
+#if MOVED_TO_GAMERUNNER_HH
 struct PolyPriv
 {
   std::map<int, ArrayRender*> rend;
   std::map<int, StateBitmaps*> states;
   ~PolyPriv();
 };
+#endif
 PolyPriv::~PolyPriv()
 {
   std::map<int,ArrayRender*>::iterator i = rend.begin();
@@ -305,11 +311,13 @@ GameApi::SP GameApi::MainLoopApi::screenspace()
   return add_space(e, sp);
 }
 
+#if MOVED_TO_PARSER_HH
 struct BitmapHandle
 {
   int id;
   virtual ~BitmapHandle() { }
 };
+#endif
 struct BoolBitmap
 {
   Bitmap<bool> *bitmap;
@@ -319,6 +327,7 @@ struct FloatBitmap
   Bitmap<float> *bitmap;
 };
 
+#if MOVED_TO_PARSER_HH
 struct BitmapColorHandle : public BitmapHandle
 {
   Bitmap<Color> *bm;
@@ -358,6 +367,7 @@ struct BitmapTileHandle : public BitmapHandle
   int tile_sx, tile_sy;
   ~BitmapTileHandle() { delete bm; }
 };
+#endif
 
 #if MOVED_TO_PARSER_HH
 struct PolyHandle
@@ -564,6 +574,7 @@ struct EnvImpl
   std::vector<Point> pt;
   std::vector<Vector> vectors;
   std::vector<Color> colors;
+  std::vector<VolumeObject*> volumes;
   std::vector<BitmapHandle*> bm;
   std::vector<BoolBitmap> bool_bm;
   std::vector<FloatBitmap> float_bm;
@@ -600,6 +611,12 @@ void ArrayDelete(T *ptr)
 
 EnvImpl::~EnvImpl()
 {
+  int vv1 = volumes.size();
+  for(int i_v=0;i_v<vv1;i_v++)
+    {
+      delete volumes[i_v];
+    }
+
   int ss1 = bool_bm.size();
   for(int i_1=0;i_1<ss1;i_1++)
     {
@@ -781,6 +798,14 @@ GameApi::PT add_point(GameApi::Env &e, float x, float y)
   return pt;
 }
 
+GameApi::O add_volume(GameApi::Env &e, VolumeObject *o)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->volumes.push_back(o);
+  GameApi::O pt;
+  pt.id = env->volumes.size()-1;
+  return pt;
+}
 GameApi::CO add_color(GameApi::Env &e, int r, int g, int b, int a)
 {
   EnvImpl *env = EnvImpl::Environment(&e);
@@ -831,11 +856,15 @@ EventInfo find_event_info(GameApi::Env &e, GameApi::E ee);
 
 
 GameApi::MV add_line(GameApi::Env &e, GameApi::E start, GameApi::E end, 
-		     GameApi::MV start_mv, GameApi::MV end_mv)
+		     GameApi::MV start_mv, GameApi::MV end_mv, int start_choose, int end_choose)
 {
   EnvImpl *env = EnvImpl::Environment(&e);
   NDim<float,Point> *start_dim = find_dim(e,start_mv);
   NDim<float,Point> *end_dim = find_dim(e, end_mv);
+  std::vector<float> count_start = start_dim->Count();
+  if (count_start.size()>2) { std::cout << "line() dimension error!" << std::endl; }
+  std::vector<float> count_end = end_dim->Count();
+  if (count_end.size()>2) { std::cout << "line() dimension error!" << std::endl; }
   EventInfo ei1 = find_event_info(e, start);
   EventInfo ei2 = find_event_info(e, end);
   float delta = ei2.time - ei1.time;
@@ -849,9 +878,9 @@ GameApi::MV GameApi::EventApi::point(float x, float y, float z)
 {
   return add_mv_point(e, x,y,z);
 }
-GameApi::MV GameApi::EventApi::line(GameApi::E start, GameApi::E end, GameApi::MV start_mv, GameApi::MV end_mv)
+GameApi::MV GameApi::EventApi::line(GameApi::E start, GameApi::E end, GameApi::MV start_mv, GameApi::MV end_mv, int start_choose, int end_choose)
 {
-  return add_line(e, start, end, start_mv, end_mv); 
+  return add_line(e, start, end, start_mv, end_mv, start_choose, end_choose); 
 }
 
 GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
@@ -912,6 +941,65 @@ std::string GameApi::EventApi::Serialize(ST states, int start_state)
   SequencerParser parser;
   return parser.Create(&seq);
 }
+
+#if 0
+ST GameApi::EventApi::UnSerialize(std::string s)
+{
+  SequencerParser parser;
+  bool success = true;
+  Sequencer2 *seq = parser.Parse(s, success);
+  std::vector<E> vec;
+  int c = seq->NumEvents();
+  for(int i=0;i<c;i++)
+    {
+      E event = { 0 };
+      EventInfo info = seq->Event(i);
+      if (info.timer) { 
+	E activation_event = { info.activation_event_id };
+	event = timer(info.activation_event, time);
+      }
+      if (info.key_down) {
+	
+      }
+      if (info.key_up) {
+      }
+      if (info.activate_mouse) {
+      }
+      if (info.deactivate_mouse) {
+      }
+      if (info.state_change) {
+      }
+      vec.push_back(event);
+    }
+  
+  int c2 = seq->NumLinks();
+  std::vector<L> vec;
+  for(int a=0;a<c2;a++)
+    {
+      LinkageInfo linkage = seq->Linkage(a);
+      LinkInfo link = seq->Links(a);
+      E start = vec[linkage.start_event];
+      E end = vec[linkage.end_event];
+      L link = { 0 };
+      if (link.polygon_start || link.polygon_end)
+	{
+	  link = polygon(start, end, polygon_start, polygon_end);
+	}
+      if (link.bitmap_start || link.bitmap_end)
+	{
+	  link = bitmap(start, end, add_bitmap(e,link.bitmap_start), add_bitmap(link.bitmap_end));
+	}
+      vec.push_back(link);
+    }
+  int c3 = seq->NumPositions();
+  for(int b=0;b<c3;b++)
+    {
+      PosInfo pos = seq->Positions(b);
+      // TODO, seems curve is not possible to unserialize using this api
+    }
+
+}
+#endif
 GameApi::EventApi::~EventApi() { }
 
 GameApi::ST GameApi::EventApi::states(int count_states)
@@ -1115,7 +1203,7 @@ Bitmap<Pos> *find_pos_bitmap(BitmapHandle *handle, int bbm_choose=-1)
 }
 
 
-Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handle, int bbm_choose=-1)
+Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handle, int bbm_choose)
 {
   BitmapArrayHandle *ahandle = dynamic_cast<BitmapArrayHandle*>(handle);
   if (ahandle)
@@ -1171,6 +1259,14 @@ Point *find_point(GameApi::Env &e, GameApi::PT p)
     return &ee->pt[p.id];
   return 0;
 }
+VolumeObject *find_volume(GameApi::Env &e, GameApi::O o)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  if (o.id >=0 && o.id < (int)ee->volumes.size())
+    return ee->volumes[o.id];
+  return 0;
+}
+
 Color *find_color(GameApi::Env &e, GameApi::CO p)
 {
   EnvImpl *ee = EnvImpl::Environment(&e);
@@ -1335,15 +1431,15 @@ void GameApi::SpriteApi::preparesprite(BM bm, int bbm_choose)
   if (!sprite) { std::cout << "preparesprite's sprite==NULL?" << std::endl; return; }
   PrepareSprite(*sprite, *spriv.renders[bm.id]);
 }
-void GameApi::SpriteApi::rendersprite(BM bm, float x, float y)
+void GameApi::SpriteApi::rendersprite(BM bm, float x, float y, float mult_x, float mult_y)
 {
-  rendersprite(bm, 0, x, y);
+  rendersprite(bm, 0, x, y, mult_x, mult_y);
 }
 void GameApi::SpriteApi::rendersprite(BM bm, PT pos)
 {
   rendersprite(bm, 0, pos);
 }
-void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, float x, float y)
+void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, float x, float y, float mult_x, float mult_y)
 {
   SpritePriv &spriv = *(SpritePriv*)priv;
   ::Sprite *s = spriv.sprites[bm.id];
@@ -1475,7 +1571,7 @@ GameApi::BM GameApi::BitmapApi::function(unsigned int (*fptr)(int,int, void*), i
   Bitmap<unsigned int> *bm = new BitmapFromFunction<unsigned int>(fptr,sx,sy,data);
   
   EnvImpl *env = EnvImpl::Environment(&e);
-  env->deletes.push_back(std::tr1::shared_ptr<void>(bm));
+  //env->deletes.push_back(std::tr1::shared_ptr<void>(bm));
   
   return add_color_bitmap(e, new BitmapFromUnsignedInt(*bm));
 }
@@ -1906,7 +2002,7 @@ GameApi::BM GameApi::BitmapApi::newcolorbitmap(char *array, int sx, int sy, unsi
 
 
 
-GameApi::BM GameApi::BitmapApi::bitmaparray(GameApi::BM *bitmaparray, int size)
+GameApi::BM GameApi::BitmapApi::anim_array(GameApi::BM *bitmaparray, int size)
 {
   int s = size;
   BitmapArrayHandle *handle = new BitmapArrayHandle;
@@ -2207,7 +2303,7 @@ void GameApi::TextApi::draw_text(std::string text, int x, int y)
 	{
 	  BM b = ((std::vector<BM>*)priv)->operator[](c-start_char);
 	  //std::cout << "draw_text" << b.id << std::endl;
-	  sp.rendersprite(b, xpos, ypos);
+	  sp.rendersprite(b, xpos, ypos, 1.0, 1.0);
 	}
       xpos += sx;
       if (c=='\n') { xpos=x; ypos+=sy; }
@@ -2599,12 +2695,10 @@ void GameApi::PolygonApi::render(P p, int choose, float x, float y, float z)
   state_bm->Render(choose); 
 }
 
-void GameApi::PolygonApi::prepare(P p, int bbm_choose)
+StateBitmaps * PrepareFaceCollPolyHandle(FaceCollPolyHandle *h2, int bbm_choose)
 {
-  PolyPriv *pp = (PolyPriv*)priv;
-    FaceCollPolyHandle *h2 = find_poly(e,p);
-    //FaceCollPolyHandle *h2 = dynamic_cast<FaceCollPolyHandle*>(handle);
-  
+  //FaceCollPolyHandle *h2 = dynamic_cast<FaceCollPolyHandle*>(handle);
+    
   FaceCollection * const *array2 = &h2->coll;
   int size = 1; //h2->size;
   if (!h2->coll && h2->collarray)
@@ -2627,8 +2721,16 @@ void GameApi::PolygonApi::prepare(P p, int bbm_choose)
   FaceArrayMeshTextures *textures = new FaceArrayMeshTextures(array, size, 0);
 
   StateBitmaps *state_bm = new StateBitmaps(mesh, normal, coord, color, textures, *textures);
-  pp->states[p.id] = state_bm;
   state_bm->Prepare();
+  return state_bm;
+}
+
+void GameApi::PolygonApi::prepare(P p, int bbm_choose)
+{
+  PolyPriv *pp = (PolyPriv*)priv;
+  FaceCollPolyHandle *h2 = find_poly(e,p);
+  StateBitmaps *state_bm = PrepareFaceCollPolyHandle(h2, bbm_choose);
+  pp->states[p.id] = state_bm;
 }
 
 void GameApi::PolygonApi::preparepoly(P p, int bbm_choose)
@@ -2994,6 +3096,17 @@ GameApi::L GameApi::EventApi::polygon(GameApi::E start, GameApi::E end, GameApi:
   //PosInfo pos;
   return add_link(e, start, end, link);
 }
+GameApi::L GameApi::EventApi::bitmap(GameApi::E start, GameApi::E end, GameApi::BM start_bitmap, BM end_bitmap)
+{
+  //EnvImpl *env = EnvImpl::Environment(&e);
+  LinkInfo link;
+  link.start_event_id = start.id;
+  link.end_event_id = end.id;
+  link.polygon_start = NULL; //env->poly[poly.id];
+  link.polygon_end = NULL; //env->poly[poly.id];
+  //PosInfo pos;
+  return add_link(e, start, end, link);
+}
 
 enum Classify { EBefore, ECurrent, EFuture };
 float event_time(Sequencer2 &seq, int e1)
@@ -3048,6 +3161,13 @@ Classify classify_event(Sequencer2 &seq, int e1, int e2, float time, int last_do
 
 void GameApi::EventApi::run_game(GameApi::ST st, int start_state)
 {
+  EnvImpl *env = EnvImpl::Environment(&e);
+  StateRange r = env->state_ranges[st.id];
+  
+  AllStatesSequencer seq(env->event_infos, &env->states[r.start_range], r.range_size);
+  GameRunner game(seq, start_state);
+  game.run();
+
 #if 0
   EventInfo ei = find_event_info(e, ee);
   
@@ -3093,6 +3213,78 @@ GameApi::P GameApi::PolygonApi::create_dynamic_geometry(GameApi::P *array, int s
 
   return add_polygon(e, handle);
 }
+GameApi::P GameApi::PolygonApi::tri_vertex_array(float *v_array, int v_size,
+						 float *n_array, int n_size,
+						 unsigned int *c_array, int c_size,
+						 float *tex_array, int tex_size,
+						 float **attrib_array, int a_size1, int a_size2)
+{
+  FaceCollPolyHandle *handle = new FaceCollPolyHandle;
+  handle->coll = new VertexArrayFaceCollection(v_array, v_size,
+					       n_array, n_size,
+					       c_array, c_size,
+					       tex_array, tex_size,
+					       attrib_array, a_size1, a_size2);
+  handle->collowned = true;
+  handle->collarray = NULL;
+  handle->collarrayowned = false;
+  return add_polygon(e, handle);
+}
+
+int GameApi::PolygonApi::get_tri_vertex_array_frames(P p)
+{
+  PolyPriv *pp = (PolyPriv*)priv;
+  StateBitmaps *state_bm = pp->states[p.id];
+  if (!state_bm) { std::cout << "need to call prepare() before get_tri_vertex_array_frames" << std::endl; }
+
+  FaceCollPolyHandle *h2 = find_poly(e,p);
+  if (!h2->collarray) { return 1; }
+  return h2->collarray->Size();
+}
+
+int GameApi::PolygonApi::get_tri_vertex_array_rows(P p)
+{
+  PolyPriv *pp = (PolyPriv*)priv;
+  StateBitmaps *state_bm = pp->states[p.id];
+  if (!state_bm) { std::cout << "need to call prepare() before get_tri_vertex_array_rows" << std::endl; }
+  return state_bm->bitmap->SizeY();
+}
+
+void GameApi::PolygonApi::get_tri_vertex_array(P p, int choose, int row,
+					       int *v_size, float **v_array,
+					       int *n_size, float **n_array,
+					       int *c_size, unsigned int **c_array,
+					       int *tex_size, float **tex_array,
+					       int *attrib_size1, int *attrib_size2, float ***attrib_array)
+{
+
+  PolyPriv *pp = (PolyPriv*)priv;
+  StateBitmaps *state_bm = pp->states[p.id];
+  if (!state_bm) { std::cout << "need to call prepare() before get_tri_vertex_array" << std::endl; }
+  StateRow &r = state_bm->bitmap->DynRow(row);
+  int vertex_pos = 0;
+  int vertex_size = r.rend->used_vertex_count[choose];
+  int v_choose = choose;
+  int n_choose = choose;
+  int c_choose = choose;
+  int t_choose = choose;
+  ArrayRender *rend = state_bm->GetRender(row);
+  Matrix m = state_bm->GetMatrix(choose);
+  int v_offset3 = vertex_pos*3+v_choose*rend->vertex_array_size*3;
+  int n_offset3 = vertex_pos*3+n_choose*rend->vertex_array_size*3;
+  int c_offset =  vertex_pos+c_choose*rend->vertex_array_size;
+  int tex_offset2 = vertex_pos*2+t_choose*rend->vertex_array_size*2;
+  *v_array = rend->vertex_array+v_offset3;
+  *n_array = rend->normal_array+n_offset3;
+  *c_array = (unsigned int*)rend->color_array+c_offset;
+  *tex_array = rend->tex_coord_array+tex_offset2;
+  
+  *v_size = vertex_size*3;
+  *n_size = vertex_size*3;
+  *c_size = vertex_size;
+  *tex_size = vertex_size*2;
+}
+
 GameApi::P GameApi::PolygonApi::polygon(PT *array, int size)
 {
   PolygonElem *coll = new PolygonElem;
@@ -3271,6 +3463,53 @@ GameApi::V GameApi::VectorApi::mul(V v1, float scalar)
   Vector res = scalar * (*vv1);
   return add_vector(e,res.dx,res.dy,res.dz);
 }
+float GameApi::VectorApi::dot(V v1, V v2)
+{
+  Vector *vv1 = find_vector(e,v1);
+  Vector *vv2 = find_vector(e,v2);
+  return Vector::DotProduct(*vv1,*vv2);
+}
+GameApi::V GameApi::VectorApi::cross(V v1, V v2)
+{
+  Vector *vv1 = find_vector(e,v1);
+  Vector *vv2 = find_vector(e,v2);
+  Vector v = Vector::CrossProduct(*vv1,*vv2);
+  return add_vector(e, v.dx, v.dy, v.dz);
+}
+
+float GameApi::VectorApi::projection_length(V v1, V u_x)
+{
+  Vector *vv1 = find_vector(e,v1);
+  Vector *vu_x = find_vector(e,u_x);
+  return Vector::FindProjectionLength(*vv1, *vu_x);
+}
+
+GameApi::V GameApi::VectorApi::projection_1(V u, V u_x)
+{
+  Vector *vv1 = find_vector(e,u);
+  Vector *vu_x = find_vector(e,u_x);
+  std::pair<Vector,Vector> res = Vector::SplitToComponents(*vv1, *vu_x);
+  Vector v = res.first;
+  return add_vector(e, v.dx, v.dy, v.dz);
+}
+
+GameApi::V GameApi::VectorApi::projection_2(V u, V u_x)
+{
+  Vector *vv1 = find_vector(e,u);
+  Vector *vu_x = find_vector(e,u_x);
+  std::pair<Vector,Vector> res = Vector::SplitToComponents(*vv1, *vu_x);
+  Vector v = res.second;
+  return add_vector(e, v.dx, v.dy, v.dz);
+}
+
+GameApi::V GameApi::VectorApi::neg(V v) 
+{
+  Vector *vv1 = find_vector(e,v);
+  Vector vx = -(*vv1);
+  return add_vector(e,vx.dx, vx.dy, vx.dz);
+}
+
+
 GameApi::PT GameApi::PointApi::from_angle(float radius, float angle)
 {
   Point p = Point(0.0,0.0,0.0)+Vector(radius*cos(angle),radius*sin(angle),0.0);
@@ -3298,11 +3537,11 @@ GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color(BM bm, int r, int g, int 
   return add_bool_bitmap(e,new EquivalenceClassColorBitmap(*color_bm, Color(r,g,b)));
 }
 
-GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, bool (*fptr)(int, int, int,int))
+GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, bool (*fptr)(int, int, int,int, void*), void *ptr)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *color_bm = find_color_bitmap(handle);
-  return add_bool_bitmap(e,new EquivalenceClassFromArea<bool(*)(int,int,int,int)>(*color_bm, fptr));
+  return add_bool_bitmap(e,new EquivalenceClassFromArea<bool(*)(int,int,int,int, void*)>(*color_bm, fptr, ptr));
 }
 
 GameApi::BB GameApi::BoolBitmapApi::circle(BB bg, float center_x, float center_y, float radius)
@@ -3404,4 +3643,69 @@ GameApi::BB GameApi::BoolBitmapApi::polygon(BB bg2, PT *points, int size)
   env->deletes.push_back(std::tr1::shared_ptr<void>(sbm));
 
   return add_bool_bitmap(e, sbm2);
+}
+
+GameApi::VolumeApi::VolumeApi(Env &e) : e(e) { }
+GameApi::VolumeApi::~VolumeApi() { }
+
+GameApi::O GameApi::VolumeApi::sphere(PT center, float radius)
+{
+  Point *p = find_point(e, center);
+  return add_volume(e, new SphereVolume(*p, radius));
+}
+GameApi::O GameApi::VolumeApi::cone(PT p1, PT p2, float rad1, float rad2)
+{
+  Point *pp1 = find_point(e, p1);
+  Point *pp2 = find_point(e, p2);
+  return add_volume(e, new ConeVolume(*pp1, *pp2-*pp1, rad1, rad2));
+}
+GameApi::O GameApi::VolumeApi::cube(float start_x, float end_x,
+				    float start_y, float end_y,
+				    float start_z, float end_z)
+{
+  return add_volume(e, new CubeVolume(start_x, end_x,
+				      start_y, end_y,
+				      start_z, end_z));
+}
+
+GameApi::O GameApi::VolumeApi::torus(PT center, PT u_x, PT u_y, float dist1, float dist2)
+{
+  Point *centerp = find_point(e, center);
+  Point *u_xp = find_point(e, u_x);
+  Point *u_yp = find_point(e, u_y);
+  return add_volume(e, new TorusVolume(*u_xp-*centerp, *u_yp-*centerp, dist1, dist2, *centerp));
+}
+
+class AppendHandleValue : public HandleValue<std::pair<Vector, unsigned int> >
+{
+public:
+  AppendHandleValue(GameApi::EveryApi &api, std::vector<GameApi::P> &vec, float sx, float sy, float sz,
+		    GameApi::P (*fptr)(GameApi::EveryApi &, float, float, float, float, float, float, unsigned int, void*), void *data)
+    : api(api), vec(vec), fptr(fptr), data(data), sx(sx), sy(sy), sz(sz) { }
+  void Handle(std::pair<Vector, unsigned int> p)
+  {
+    vec.push_back(fptr(api, p.first.dx,p.first.dx+sx,
+		       p.first.dy,p.first.dy+sy,
+		       p.first.dz,p.first.dz+sz, p.second, data));
+  }
+  GameApi::P get_all() const { return api.polygon_api.or_array(&vec[0], vec.size()); }
+private:
+  std::vector<GameApi::P> &vec;
+  GameApi::P (*fptr)(GameApi::EveryApi &e, float,float,float, float,float,float, unsigned int, void*);
+  GameApi::EveryApi &api;
+  void *data;
+  float sx,sy,sz;
+};
+
+GameApi::P GameApi::VolumeApi::rendercubes(O o, P (*fptr)(EveryApi &api, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, unsigned int color, void* data), void *data, int size, float wholesize)
+{
+  float s = wholesize/size;
+  EveryApi api(e);
+  std::vector<P> vec;
+  AppendHandleValue hv(api, vec, s, s, s,
+		       fptr, data);
+
+  VolumeObject *volume = find_volume(e,o);
+  RenderVoxel(*volume, size, wholesize, hv);
+  return hv.get_all();
 }

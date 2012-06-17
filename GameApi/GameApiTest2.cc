@@ -52,9 +52,9 @@ void GameApiTest2(EveryApi &every)
   MV pn2 = event.point(100.0,100.0,0.0);
   MV pn3 = event.point(0.0,0.0,100.0);
   MV pn4 = event.point(100.0,100.0,100.0);
-  MV line = event.line(root, end, pn, pn2);
-  MV line2 = event.line(root, end, pn3, pn4);
-  MV lineline = event.line(root, end, line, line2);
+  MV line = event.line(root, end, pn, pn2, 0, 0);
+  MV line2 = event.line(root, end, pn3, pn4, 0,0);
+  MV lineline = event.line(root, end, line, line2, 0,0);
   LL polypos = event.link(poly2, lineline);
   ST st = event.states(1);
   ST en = event.enable_obj(st, 0, polypos);

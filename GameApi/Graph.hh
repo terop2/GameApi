@@ -351,18 +351,19 @@ template<class T>
 class EquivalenceClassFromArea : public Bitmap<bool>
 {
 public:
-  EquivalenceClassFromArea(Bitmap<Color> &bm, T fptr) : bm(bm), fptr(fptr) { }
+  EquivalenceClassFromArea(Bitmap<Color> &bm, T fptr, void *ptr) : bm(bm), fptr(fptr), ptr(ptr) { }
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual bool Map(int x, int y) const
   {
     Color c = bm.Map(x,y);
-    return fptr(c.r,c.g,c.b,c.alpha);
+    return fptr(c.r,c.g,c.b,c.alpha, ptr);
   }
   
 private:
   Bitmap<Color> &bm;
   T fptr;
+  void *ptr;
 };
 
 template<class T, class K>
@@ -3790,6 +3791,7 @@ private:
 
 void RenderVoxel(VolumeObject &o, int size, float wholesize, HandleValue<std::pair<Vector, unsigned int> > &hv, VBOState &vbostate);
 
+void RenderVoxel(VolumeObject &orv, int size, float wholesize, HandleValue<std::pair<Vector, unsigned int> > &hv);
 
 class WallsFromMap
 {

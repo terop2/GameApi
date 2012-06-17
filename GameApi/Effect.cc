@@ -4186,8 +4186,7 @@ void RenderBuffers::SetupAttrib(int id, const Buffer<float> &buf, int pos)
 {
   attrib_ids.push_back(id);
   glEnableVertexAttribArray(id);
-  glVertexAttribPointer(id, 1, GL_FLOAT, GL_FALSE, 0, buf.Array()+pos);
-  
+  glVertexAttribPointer(id, 1, GL_FLOAT, GL_FALSE, 0, buf.Array()+pos);  
 }
 
 void RenderBuffers::SetupNormal(const Buffer<float> &buf, int pos)
@@ -4220,10 +4219,12 @@ void RenderBuffers::Render(bool quads, int start_elem, int vertex_size)
       glDrawArrays(GL_TRIANGLES, start_elem, vertex_size);
     }
 }
+#if 0
 void RenderBuffers::RenderOne(int start_elem, int vertex_size)
 {
   glDrawArrays(GL_POLYGON, start_elem, vertex_size);
 }
+#endif
 
 void RenderBuffers::DisableAll()
 {
@@ -4244,7 +4245,8 @@ void RenderBuffers::DisableAll()
     {
     glDisableClientState(GL_VERTEX_ARRAY);
     }
-  for(int i=0;i<attrib_ids.size();i++)
+  int s = attrib_ids.size();
+  for(int i=0;i<s;i++)
     {
       glDisableVertexAttribArray(attrib_ids[i]);
     }

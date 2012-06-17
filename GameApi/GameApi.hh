@@ -62,6 +62,8 @@ namespace GameApi
     virtual R Map(P p) const=0;
   };
 
+  class EveryApi;
+
 class Env
 {
 public:
@@ -111,9 +113,9 @@ public:
   ~SpriteApi();
   void spritepos(BM bm, float x, float y);
   void preparesprite(BM bm, int bbm_choose=-1);
-  void rendersprite(BM bm, float x, float y);
+  void rendersprite(BM bm, float x, float y, float mult_x, float mult_y);
   void rendersprite(BM bm, PT pos);
-  void rendersprite(BM bm, int bm_choose, float x, float y);
+  void rendersprite(BM bm, int bm_choose, float x, float y, float mult_x, float mult_y);
   void rendersprite(BM bm, int bm_choose, PT pos);
   void rendersprite(BM bm, int bm_choose, SP move_space, SP sprite_space, float x, float y);
   void rendersprite(BM bm, int bm_choose, SP move_space, SP sprite_space, PT pos);
@@ -158,10 +160,11 @@ public:
   BM subbitmap(BM orig, int x, int y, int width, int height);
   BM growbitmap(BM small_orig_bitmap, int l, int t, int r, int b);
   BM blitbitmap(BM bg, BM orig, int x, int y);
-  BM bitmaparray(BM *array, int size);
+  BM anim_array(BM *array, int size);
   BM modify_bitmap(BM orig, BM bm, int x, int y);
   BM interpolatebitmap(BM orig1, BM orig2, float x); // x=[0..1]
   BM repeatbitmap(BM orig, int xcount, int ycount);
+  BM samplebitmap(BM orig, float xmult, float ymult, float x, float y);
   //BM bitmapandtypes(BM bm, BM (*fptr)(int)); // bm has ints in it
   SP space(BM bm);
 
@@ -252,7 +255,7 @@ public:
   M mouse_rectangle(MP m, int x, int y, int width, int height);
   M array(M *array, int size);
   MV point(float x, float y, float z);
-  MV line(E start, E end, MV start_mv, MV end_mv);
+  MV line(E start, E end, MV start_mv, MV end_mv, int start_choose, int end_choose);
   LL link(L obj, MV point);
   LL link(L obj, ID pointnum, MV point);
   LL array(LL *array, int size);
@@ -264,6 +267,7 @@ public:
   E state_change(E event, int old_state, int new_state);
   void run_game(ST states, int start_state);
   std::string Serialize(ST states, int start_state);
+  ST UnSerialize(std::string s);
 private:
   void *priv;
   Env &e;
@@ -477,6 +481,7 @@ public:
   O colour(O object, int r, int g, int b, int a);
   O reflect(O object, float val); // val = [0..1]
   O cubetexture(O object, PT origo, PT u_x, PT u_y, PT u_z, BM bm);
+  O spheretexture(O object, PT center, BM texture, float multx, float multy);
 
   O move(O object, PT pos);
   O rotatex(O object, float angle);
@@ -487,6 +492,20 @@ public:
   O min_op(O object1, O object2);
   O max_op(O object1, O object2);
   BM render(O object, int sx, int sy, PT ray_0, PT ray_x, PT ray_y, PT ray_z);
+  typedef P (*fptrtype)(EveryApi &api,
+			float start_x, float end_x, 
+			float start_y, float end_y, 
+			float start_z, float end_z, 
+			unsigned int color, 
+			void *data);
+  P rendercubes(O object,
+		fptrtype fptr,
+		void *data, 
+		int size,
+		float wholesize); // marching cubes algo
+		
+private:
+  Env &e;
 };
 
 class SurfaceApi
@@ -531,6 +550,11 @@ public:
 	   float y1, float y2,
 	   float z);
   P polygon(PT *array, int size); // use render_dynamic with this.
+  P tri_vertex_array(float *v_array, int v_size,
+		     float *n_array, int n_size,
+		     unsigned int *c_array, int c_size,
+		     float *tex_array, int tex_size,
+		     float **attrib_array, int a_size1, int a_size2);
   P cube(float start_x, float end_x, 
 	 float start_y, float end_y,
 	 float start_z, float end_z);
@@ -608,6 +632,16 @@ public:
   void prepare(P p, int bbm_choose=-1);
   void render(P p, int choose, float x, float y, float z);
   
+  // must call prepare for P before these.
+  int get_tri_vertex_array_frames(P p);
+  int get_tri_vertex_array_rows(P p);
+  void get_tri_vertex_array(P p, int choose, int row,
+			    int *v_size, float **v_array,
+			    int *n_size, float **n_array,
+			    int *c_size, unsigned int **c_array,
+			    int *tex_size, float **tex_array,
+			    int *attrib_size1, int *attrib_size2, float ***attrib_array);
+
   // this is for better animations, separates modified and non-modified parts
   P create_static_geometry(P *array, int size);
   P create_dynamic_geometry(P *array, int size);
@@ -617,6 +651,34 @@ public:
 private:
   void *priv;
   Env &e;
+};
+
+#if 0
+class ChangeApi
+{
+public:
+  // T = event range
+  T single_event(E activation_event, float duration);
+  T start_end(E activation_event, E end_event);
+  T repeat(E activation_event, float duration, int number_of_times);
+  T repeat(E activation_event, E end_event, int number_of_times);
+  T repeat_infinite(E activation_event, float duration);
+  T repeat_infinite(E activation_event, E end_event);
+  SC change_variable(V var, int delta,
+  SC stop_execution(DP p); 
+  DP polygon(P p);
+  DP sprite(BM p);
+  DP rotate(float angle, V rotate_axis, T event_range, DP object);
+  DP rotate(float angle, V rotate_axis, T event_range, DP object, V center_point_of_rotation); // implement using matrix translate*rotate*translate
+		     
+  //DP translate(V direction_vector, T event_range, DP object);
+  DP translate(V direction_vector, T event_range, SC state_change_for_range);
+  DP translate(PT destination_point, T event_range, DP object);
+  DP translate(PT point, PT point2, T event_range, DP object);
+  DP translate(PT point, V vector, T event_range, DP object);
+  DP translate(
+  DP or_elem(DP o1, DP o2);
+  DP or_array(DP *o1, int size);
 };
 
 class Object3dApi
@@ -645,6 +707,8 @@ public:
   P side_faces(PP obj);
   P array(P *array, int size);
 };
+#endif
+
 
 class BufferApi
 {
@@ -671,11 +735,12 @@ public:
   BB empty(int sx, int sy);
   BB function(bool (*fptr)(int,int,void*), int sx, int sy, void* data=0);
   BB from_bitmaps_color(BM bm, int r, int g, int b);
-  BB from_bitmaps_color_area(BM bm, bool(*fptr)(int r, int g, int b, int a));
+  BB from_bitmaps_color_area(BM bm, bool(*fptr)(int r, int g, int b, int a, void* ptr), void *ptr);
 
   BB circle(BB bg, float center_x, float center_y, float radius);
-  BB rectangle(BB bg, int x, int y, int width, int height);
-  BB sprite(BB bg, BB sprite, int x, int y);
+  BB rectangle(BB bg, int x, int y, int width, int height); // for static ones
+  BB rectangle(BB bg, float x, float y, float width, float height); // for moving
+  BB sprite(BB bg, BB sprite, float x, float y, float size_multiplier_x, float size_multiplier_y);
   BB polygon(BB bg, PT *points, int size);
   BB text(BB bg, int x, int y, const char *string, int size, 
 	  BB *glyphs, int glyphcount, int(*fptr)(char));
@@ -765,10 +830,10 @@ class VectorApi
 public:
   VectorApi(Env &e);
   V null_vector();
-  V vector(float dx, float dy, float dz);
+  V vector(float delta_x, float delta_y, float delta_z);
   V sum(V v1, V v2);
   V mul(V v1, float scalar);
-  V dot(V v1, V v2);
+  float dot(V v1, V v2);
   V cross(V v1, V v2);
   float projection_length(V u, V u_x);
   V projection_1(V u, V u_x);

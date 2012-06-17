@@ -135,10 +135,10 @@ struct LinkInfo
   int end_event_id;
   FaceCollPolyHandle *polygon_start;
   FaceCollPolyHandle *polygon_end;
-#if 0
   // NOTE: PADDING PROBLEMS WITH BOOLS.
   BitmapHandle *bitmap_start;
   BitmapHandle *bitmap_end;
+#if 0
   FunctionImpl *function1;
   bool scale_func1; // whether it's between [start,end] or [start,start+funclength]
   FunctionImpl *function2;
@@ -242,7 +242,7 @@ struct PosInfo
 };
 struct StateInfo2
 {
-  Array<int, bool> *enable_obj_array; // dimension = numpositions
+  Array<int, bool> *enable_obj_array; // dimension = numpositions, int=LL.id
   MousePlane *plane;
 };
 struct StateRange

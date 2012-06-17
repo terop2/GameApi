@@ -1017,6 +1017,14 @@ struct StateBitmaps
 
   }
   void Render(int framenum);
+  ArrayRender *GetRender(int row) const { 
+    StateRow &r = bitmap->DynRow(row);
+    return r.rend;
+  }
+  Matrix GetMatrix(int framenum) const {
+    StateColumn &col = bitmap->DynColumn(framenum);
+    return col.m;
+  }
   
   MeshStateBitmap *bitmap;
   MeshNormalsStateBitmap *normals;

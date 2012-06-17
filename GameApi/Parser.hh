@@ -11,6 +11,7 @@ struct PolyHandle
   virtual ~PolyHandle() { }
 };
 #endif
+
 struct FaceCollPolyHandle
 {
   FaceCollPolyHandle() : coll(0), collarray(0), collowned(false), collarrayowned(false) { }
@@ -25,6 +26,53 @@ struct FaceCollPolyHandle
   bool padding2;
   ~FaceCollPolyHandle() { if (collowned) delete coll; if (collarrayowned) delete collarray; }
 
+};
+
+struct BitmapHandle
+{
+  int id;
+  virtual ~BitmapHandle() { }
+};
+
+
+struct BitmapColorHandle : public BitmapHandle
+{
+  Bitmap<Color> *bm;
+  ~BitmapColorHandle() { delete bm; }
+};
+struct BitmapIntHandle : public BitmapHandle
+{
+  Bitmap<int> *bm;
+  ~BitmapIntHandle() { delete bm; }
+};
+struct BitmapArrayHandle : public BitmapHandle
+{
+  std::vector<BitmapHandle*> vec;
+  std::vector<int> owned;
+  ~BitmapArrayHandle() 
+  {
+    // NOT deleted here, because bitmaparray() uses find_bitmap() to find the
+    // handles, and thus we don't have ownership of them.
+    if (vec.size() != owned.size())
+      {
+	std::cout << "BitmapArrayHandle destructor: vector sizes do not match" << std::endl;
+      }
+    int s = vec.size();
+    for(int i=0;i<s;i++) 
+      if (owned[i]==1)
+	delete vec[i];
+  }
+};
+struct BitmapPosHandle : public BitmapHandle
+{
+  Bitmap<Pos> *bm;
+  ~BitmapPosHandle() { delete bm; }
+};
+struct BitmapTileHandle : public BitmapHandle
+{
+  Bitmap<Color> *bm;
+  int tile_sx, tile_sy;
+  ~BitmapTileHandle() { delete bm; }
 };
 
 
@@ -200,6 +248,15 @@ private:
   mutable VectorArray<T> *v;
 };
 
+class StringParser : public ParserPair<std::string>
+{
+  std::string Create(std::string t) const { return t; }
+  std::string Parse(std::string s, bool &success) const
+  {
+    success = true;
+    return s;
+  }
+};
 
 template<class T>
 class StringStreamParser : public ParserPair<T>
@@ -226,6 +283,7 @@ class FloatParser : public StringStreamParser<float> { };
 class IntParser : public StringStreamParser<int> { };
 class UnsignedIntParser : public StringStreamParser<unsigned int> { };
 class BoolParser : public StringStreamParser<bool> { };
+
 
 template<class T>
 class StructParser : public ParserPair<T>
@@ -505,7 +563,7 @@ template<class T>
 class BitmapParser : public ParserPair<Bitmap<T>*>
 {
 public:
-  BitmapParser(ParserPair<T> &pair, int level) : level1(level2,level+0), level2(pair, level+1) { }
+  BitmapParser(ParserPair<T> &pair, int level) : level1(level2,level+0), level2(pair, level+1), pair(pair) { }
   virtual std::string Create(Bitmap<T> *t) const
   {
     std::vector<std::vector<T> > vec;
@@ -683,18 +741,95 @@ private:
   
 };
 #endif
+class BitmapHandleParser : public ParserPair<BitmapHandle*>
+{
+public:
+  BitmapHandleParser(int level) : level(level), color_parser(level+3), bm_parser(color_parser, level+2)
+  {
+    color_parser.push_back(r_parser);
+    color_parser.push_back(g_parser);
+    color_parser.push_back(b_parser);
+    color_parser.push_back(alpha_parser);
+  }
+
+  virtual std::string Create(BitmapHandle* t) const
+  {
+    BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(t);
+    if (chandle)
+      {
+	IntParser p;
+	std::string s = p.Create(1); // BitmapColorHandle=1
+	StringParser string_parser;
+	VectorParser<std::string> vec_parser(string_parser, level+1);
+	std::vector<std::string> vec;
+	vec.push_back(s);
+	std::string s2 = bm_parser.Create(chandle->bm);
+	vec.push_back(s2);
+	return vec_parser.Create(vec);
+      }
+    else
+      {
+	std::cout << "ERROR, INVALID BITMAP TYPE IN SERIALIZE" << std::endl;
+	IntParser p;
+	std::string s = p.Create(-1); // BitmapColorHandle=1
+	StringParser string_parser;
+	VectorParser<std::string> vec_parser(string_parser, level+1);
+	std::vector<std::string> vec;
+	vec.push_back(s);
+	std::string s2 = "";
+	vec.push_back(s2);
+	return vec_parser.Create(vec);
+      }
+    return "";
+  }
+  virtual BitmapHandle* Parse(std::string s, bool &success) const
+  {
+    StringParser string_parser;
+    VectorParser<std::string> vec_parser(string_parser, level+1);
+    std::vector<std::string> vec = vec_parser.Parse(s,success);
+    if (!success) return NULL;
+    std::string type_string = vec[0];
+    IntParser p;
+    int value = p.Parse(type_string, success);
+    if (!success) return NULL;
+    switch(value)
+      {
+      case 0: // BitmapColorHandle
+	{
+	std::string bitmap_string = vec[1];
+	Bitmap<Color> *bm = bm_parser.Parse(bitmap_string, success);
+	if (!success) return NULL;
+	BitmapColorHandle *handle = new BitmapColorHandle;
+	handle->bm = bm;
+	return handle;
+	}
+      case -1:
+	return 0;
+      default:
+	std::cout << "UNKNOWN BITMAP TYPE IN UNSERIALIZE" << std::endl;
+	break;
+      }
+    return 0;
+  }
+private: 
+  int level;
+  IntParser r_parser, g_parser, b_parser, alpha_parser;
+  StructParser<Color> color_parser;
+  BitmapParser<Color> bm_parser;
+};
+
 class LinkInfoParser : public ParserPair<LinkInfo>
 {
 public:
-  LinkInfoParser(int level) : poly_start(level+1), poly_end(level+1), link_info_parser(level) 
+  LinkInfoParser(int level) : poly_start(level+1), poly_end(level+1), bitmap_start(level+1), bitmap_end(level+1), link_info_parser(level) 
   {
     link_info_parser.push_back(start_event);
     link_info_parser.push_back(end_event);
     link_info_parser.push_back(poly_start);
     link_info_parser.push_back(poly_end);
+    link_info_parser.push_back(bitmap_start);
+    link_info_parser.push_back(bitmap_end);
 #if 0
-    //link_info_parser.push_back(bitmap_start);
-    //link_info_parser.push_back(bitmap_end);
     link_info_parser.push_back(func1);
     link_info_parser.push_back(func1_scale);
     link_info_parser.push_back(func2);
@@ -729,9 +864,9 @@ private:
   IntParser end_event;
   PolyHandleParser poly_start;
   PolyHandleParser poly_end;
-#if 0
   BitmapHandleParser bitmap_start;
   BitmapHandleParser bitmap_end;
+#if 0
   FunctionParser func1;
   BoolParser func1_scale;
   FunctionParser func2;
