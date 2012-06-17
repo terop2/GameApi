@@ -108,6 +108,7 @@ make_sourcedist:
 	cp *.cc *.hh GameApi/
 	cp Makefile GameApi/
 	cp Makefile_bindist GameApi/
+	cp COPYING.LESSER GameApi/
 	mkdir GameApi/objs
 	tar czvf GameApi.tar.gz GameApi
 	rm -rf GameApi
@@ -118,6 +119,7 @@ make_binarydist:
 	mkdir GameApiBinary
 	cp libGameApi.so GameApiBinary/
 	cp GameApi.hh GameApiBinary/
+	cp COPYING.LESSER GameApiBinary/
 	cp Makefile_bindist GameApiBinary/Makefile
 	tar czvf GameApi-binary.tar.gz GameApiBinary
 	rm -rf GameApiBinary
