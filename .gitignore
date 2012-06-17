@@ -4,3 +4,5 @@ GameApi/objs/*.o
 GameApi/libGameApi.so
 GameApi/main
 GameApi/gmon.out
+GameApi/GameApi.tar.gz
+GameApi/GameApi-binary.tar.gz

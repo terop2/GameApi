@@ -6559,10 +6559,13 @@ public:
   }
   virtual Point2d TexCoord(int face, int point) const
   {
+    return next.TexCoord(face,point);
+    /*
     Point2d p;
     p.x = 0;
     p.y = 0;
     return p;
+    */
   }
 
   virtual Vector PointNormal(int face, int point) const
@@ -9451,6 +9454,7 @@ public:
     int states_before = NumStates(frame);
     int count = states_before;
     FaceCollection *framecoll = array[frame];
+    if (!framecoll->NumTextures()) return states_before;
     int faces = framecoll->NumFaces();
     int currentstate = -1;
     for(int face = 0;face<faces&&face<face2;face++)

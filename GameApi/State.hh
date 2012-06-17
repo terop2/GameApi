@@ -234,10 +234,22 @@ private:
 class FaceInfoCalc
 {
 public:
-  FaceInfoCalc(Mesh &m, int framenum, int statenum) : m(&m), framenum(framenum), statenum(statenum) { }
-  FaceInfoCalc(Mesh &m, MeshNormals &n, int framenum, int statenum) : m(&m), normals(&n), framenum(framenum), statenum(statenum) { }
-  FaceInfoCalc(Mesh &m, MeshTexCoords &c, int framenum, int statenum) : m(&m), coords(&c), framenum(framenum), statenum(statenum) { }
-  FaceInfoCalc(Mesh &m, MeshColors &c, int framenum, int statenum) : m(&m), color(&c), framenum(framenum), statenum(statenum) { }
+  FaceInfoCalc(Mesh &m, int framenum, int statenum) : m(&m), framenum(framenum), statenum(statenum) 
+  {
+    m_currentstate = m.StateNum(framenum, 0);
+  }
+  FaceInfoCalc(Mesh &m, MeshNormals &n, int framenum, int statenum) : m(&m), normals(&n), framenum(framenum), statenum(statenum) { 
+    m_currentstate = m.StateNum(framenum, 0);
+
+  }
+  FaceInfoCalc(Mesh &m, MeshTexCoords &c, int framenum, int statenum) : m(&m), coords(&c), framenum(framenum), statenum(statenum) 
+  {
+    m_currentstate = m.StateNum(framenum, 0); 
+  }
+  FaceInfoCalc(Mesh &m, MeshColors &c, int framenum, int statenum) : m(&m), color(&c), framenum(framenum), statenum(statenum) 
+  {
+    m_currentstate = m.StateNum(framenum, 0); 
+  }
 
   mutable int currentpos;
   mutable int currentsize;
@@ -245,8 +257,9 @@ public:
   {
     //int framenum = 0;
     int facenum = m->NumFaces(framenum);
+    if (m->NumStates()<2) { return facenum; }
     int currentstate = -1;
-    if (facenum) { currentstate = m->StateNum(framenum,0); }
+    if (facenum) { currentstate = m_currentstate; /* m->StateNum(framenum,0);*/ }
     int count = 0;
     int count2 =0;
     int face = 0;
@@ -263,7 +276,7 @@ public:
 		if (count == statenum) break;
 	      }
 	  }
-      } else { if (facenum) currentstate = m->StateNum(framenum,0); }
+      } else { if (facenum) currentstate = m_currentstate; /* m->StateNum(framenum,0);*/ }
     currentpos = face;
     //std::cout << "NumFaces currentpos = " << currentpos << std::endl;
     for(;face<facenum;face++)
@@ -284,6 +297,7 @@ public:
     if (!m) return Point(0.0,0.0,0.0);
     //int framenum = 0;
     int facenum = m->NumFaces(framenum);
+    if (m->NumStates()<2) { return m->FacePoint(framenum, 0, face2, point2); }
     int currentstate = -1;
     if (facenum) { currentstate = m->StateNum(framenum,0); }
     int count = 0;
@@ -331,6 +345,7 @@ public:
     if (!m) return Vector(0.0,0.0,0.0);
     if (!normals) return Vector(0.0,0.0,0.0);
     //int framenum = 0;
+    if (m->NumStates()<2) { return normals->PointNormal(framenum, 0, face2, point2); }
     int facenum = m->NumFaces(framenum);
     int currentstate = -1;
     if (facenum) { currentstate = m->StateNum(framenum,0); }
@@ -381,6 +396,7 @@ public:
     //int framenum = 0;
     int facenum = m->NumFaces(framenum);
     int currentstate = -1;
+    if (m->NumStates()<2) { return coords->TexCoord(framenum, 0, face2, point2); }
     if (facenum) { currentstate = m->StateNum(framenum,0); }
     int count = 0;
      int count2 = 0;
@@ -432,6 +448,7 @@ public:
     if (!m) { unsigned int p = 0; return p; }
     if (!color) { unsigned int p = 0; return p; }
     //int framenum = 0;
+    if (m->NumStates()<2) { return color->VertexColor(framenum, 0, face2, point2); }
     int facenum = m->NumFaces(framenum);
     int currentstate = -1;
     if (facenum) { currentstate = m->StateNum(framenum,0); }
@@ -481,6 +498,7 @@ private:
   MeshTexCoords *coords;
   MeshColors *color;
   int framenum, statenum;
+  int m_currentstate;
 };
 
 class MeshFaceInfo : public FaceInfoImpl
@@ -645,6 +663,7 @@ public:
     int facenum = m.NumFaces(framenum);
     int currentstate = -1;
     int count = 0;
+    std::cout << "CountY: faces=" << facenum << std::endl;
     for(int face = 0; face < facenum; face++)
       {
 	int state = m.StateNum(framenum, face);

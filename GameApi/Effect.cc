@@ -2848,6 +2848,11 @@ std::pair<int,int> ArrayRender::InsertMesh(Mesh &mesh, int frame)
   int i = 0;
   for(int f=0;f<size_faces;f++)
     {
+      if (f%1000 == 0)
+	{
+	  std::cout << "M: " << f << "/" << size_faces << std::endl;
+	}
+
     index_array[used_face_count[frame] + f] = used_vertex_count[frame] + i;
     for(int p=0;p<size_points;p++)
       {
@@ -2876,6 +2881,10 @@ void ArrayRender::UpdateTexCoord(Mesh &mesh, MeshTexCoords &coord, std::pair<int
   int i = index_array[face_count];
   for(int f=0;f<size_faces;f++)
     {
+      if (f%1000 == 0)
+	{
+	  std::cout << "TX: " << f << "/" << size_faces << std::endl;
+	}
     for(int p=0;p<size_points;p++)
       {
 	Point2d texcoord = coord.TexCoord(frame, 0, f,p);
@@ -2939,6 +2948,10 @@ void ArrayRender::UpdateColors(Mesh &mesh, MeshColors &color, std::pair<int,int>
   int i = index_array[face_count];
   for(int f=0;f<size_faces;f++)
     {
+      if (f%1000 == 0)
+	{
+	  std::cout << "C: " << f << "/" << size_faces << std::endl;
+	}
     for(int p=0;p<size_points;p++)
       {
 	unsigned int col = color.VertexColor(frame, 0, f,p);
@@ -3003,6 +3016,10 @@ void ArrayRender::UpdateNormals(Mesh &mesh, MeshNormals &normal, std::pair<int,i
   int i = index_array[face_count];
   for(int f=0;f<size_faces;f++)
     {
+      if (f%1000 == 0)
+	{
+	  std::cout << "N: " << f << "/" << size_faces << std::endl;
+	}
     for(int p=0;p<size_points;p++)
       {
 	Vector norm = normal.PointNormal(frame, 0, f,p);

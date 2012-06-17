@@ -974,7 +974,7 @@ struct EveryApi
 {
   EveryApi(Env &e) 
     : mainloop_api(e), point_api(e), vector_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e),
-      font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e) { }
+      font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -990,6 +990,7 @@ struct EveryApi
   EventApi event_api;
   //CurveApi curve_api;
   FunctionApi function_api;
+  VolumeApi volume_api;
 };
 
 class GamesApi
