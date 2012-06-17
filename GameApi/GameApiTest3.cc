@@ -18,21 +18,22 @@ void GameApiTest3(EveryApi &e)
 
   BB bg = e.bool_bitmap_api.empty(1000/5.0,1000/5.0);
   BB b1 = e.bool_bitmap_api.circle(bg, 500.0/5.0,500.0/5.0,500.0/5.0);
+  BB b2 = e.bool_bitmap_api.circle(b1, 0.0,0.0,100.0);
   BB bb_not = e.bool_bitmap_api.circle(bg, 500.0/5.0,500.0/5.0,400.0/5.0);
-  BB bb = e.bool_bitmap_api.andnot_bitmap(b1,bb_not);
+  BB bb = e.bool_bitmap_api.andnot_bitmap(b2,bb_not);
   PT points[] = { e.point_api.point(500.0/5.0,500.0/5.0,0.0),
 		  e.point_api.point(200.0/5.0,100.0/5.0,0.0),
 		  e.point_api.point(0.0,500.0/5.0,0.0) };
   BB bb2 = e.bool_bitmap_api.polygon(bb, points, 3);
   FB fb = float_api.from_bool_bitmap(bb2, 10/5.0,10/5.0);
-  BM b2 = float_api.to_grayscale(fb);
+  BM bx2 = float_api.to_grayscale(fb);
   //BM b2 = e.bool_bitmap_api.to_bitmap(bb, 255,255,255,255,0,0,0,0);
-  e.sprite_api.preparesprite(b2);
+  e.sprite_api.preparesprite(bx2);
   while(1)
     {
       e.mainloop_api.clear();
-      e.sprite_api.rendersprite(bm2,100.0,100.0);
-      e.sprite_api.rendersprite(b2,200.0,200.0);
+      e.sprite_api.rendersprite(bm2,100.0,100.0,1.0,1.0);
+      e.sprite_api.rendersprite(bx2,200.0,200.0,1.0,1.0);
       e.mainloop_api.swapbuffers();
       MainLoopApi::Event ev = e.mainloop_api.get_event();
       if (ev.ch==27) break;

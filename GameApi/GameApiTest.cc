@@ -184,8 +184,8 @@ void GameApiTest()
       gr.rendergrid(grid, -1, 0,0);
       tx.draw_text("tekstiabczyx", 100,100+time);
       loop.alpha(true);
-      spr.rendersprite(b1, 0+time, 0);
-      spr.rendersprite(b1, 20+time, 20.0);
+      spr.rendersprite(b1, 0+time, 0, 1.0, 1.0);
+      spr.rendersprite(b1, 20+time, 20.0, 1.0, 1.0);
       PT p = sp.pos(s, 100.0,100.0);
       //spr.rendersprite(b1, p);
       loop.alpha(false);

@@ -10125,11 +10125,124 @@ public:
   void SetupTexCoord(const Buffer<float> &buf, int pos);
   void SetupAttrib(int id, const Buffer<float> &buf, int pos);
   void Render(bool quads, int start_elem, int numitems);
-  void RenderOne(int start_elem, int numitems);
+  //void RenderOne(int start_elem, int numitems);
   void DisableAll();
 private:
   bool vertex,normal,color,texcoord;
   std::vector<int> attrib_ids;
+};
+
+// shader time has to reset on state change
+// 1) Empty in vertex array solves problems
+// 2) time has to be continuous
+// 3) shaders describe path of single point to get continuous time
+// 4) vertex arrays describe all _possible_ changes in the path
+//      or jumps in the positions
+
+#if 0
+struct TimedPoint
+{
+  float start_time;
+  float end_time;
+  
+};
+#endif
+
+class FaceCollectionReplacement
+{
+public:
+  virtual Point FacePoint(int face, int point);
+  virtual int SpecialTimesCount() const=0;
+  virtual float SpecialTimes(int special_time)=0; // returns time
+  // TODO: PATH SELECTION
+  virtual int SpecialPathNum() const=0; // which path to choose
+  virtual Point PathData(int special_time, int num) const=0;
+};
+
+
+class VertexArrayFaceCollection : public FaceCollection
+{
+public:
+  VertexArrayFaceCollection(float *v_array, int v_size,
+			    float *n_array, int n_size,
+			    unsigned int *c_array, int c_size,
+			    float *tex_array, int tex_size,
+			    float **attrib_array, int a_size1, int a_size2)
+    : v_array(v_array), v_size(v_size),
+      n_array(n_array), n_size(n_size),
+      c_array(c_array), c_size(c_size),
+      tex_array(tex_array), tex_size(tex_size),
+      attrib_array(attrib_array), attrib_size1(a_size1), attrib_size2(a_size2)
+  {
+  }
+      
+  virtual int NumFaces() const { return v_size/3/3; }
+  virtual int NumPoints(int face) const { return 3; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    float x = v_array[face*3*3+point*3+0];
+    float y = v_array[face*3*3+point*3+1];
+    float z = v_array[face*3*3+point*3+2];
+    return Point(x,y,z);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    float x = n_array[face*3*3+point*3+0];
+    float y = n_array[face*3*3+point*3+1];
+    float z = n_array[face*3*3+point*3+2];    
+    return Vector(x,y,z);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return attrib_array[id][face*3*1+point*1];
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return 0;
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return c_array[face*3+point];
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    float x = tex_array[face*3*2+point*2 +0];
+    float y = tex_array[face*3*2+point*2 +1];
+    Point2d p = { x,y };
+    return p;
+  }
+  virtual int NumTextures() const { return 0; }
+  virtual void GenTexture(int num) { }
+  virtual BufferRef TextureBuf(int num) const { BufferRef ref; return ref; }
+  virtual int FaceTexture(int face) const { return -1; }
+private:
+  float *v_array;
+  int v_size;
+  float *n_array;
+  int n_size;
+  unsigned int *c_array;
+  int c_size;
+  float *tex_array;
+  int tex_size;
+  float **attrib_array;
+  int attrib_size1, attrib_size2;
+};
+
+class FaceCollectionVertexArray
+{
+public:
+  FaceCollectionVertexArray(FaceCollection &coll) : coll(coll) { }
+  void Generate_Vertex(float **vertex, int *size)
+  {
+  }
+  void Generate_Normal(float **normal, int *size);
+  void Generate_Color(unsigned int **color, int *size);
+  void Generate_Tex(float **texture, int *size);
+  void Generate_Attrib(int id, float *array, int *size);
+  void Generate_Attrib_Array(float **attrib_array, int *asize1, int *asize2);
+  
+private:
+  FaceCollection &coll;
 };
 
 #endif

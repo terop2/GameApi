@@ -38,8 +38,8 @@ void Game(EveryApi &e)
   while(1)
     {
       e.mainloop_api.clear();
-      e.sprite_api.rendersprite(red,100.0,100.0);
-      e.sprite_api.rendersprite(green,200.0,200.0);
+      e.sprite_api.rendersprite(red,100.0,100.0,1.0,1.0);
+      e.sprite_api.rendersprite(green,200.0,200.0,1.0,1.0);
       e.mainloop_api.swapbuffers();
       MainLoopApi::Event ev = e.mainloop_api.get_event();
       if (ev.ch==27) break;
