@@ -1217,7 +1217,8 @@ Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handl
 	  Sprite *sk = sprite_from_handle(e, env, h);
 	  arr[i] = sk;
 	}
-      Sprite *ss = new ArraySprite(arr, s);
+      ArraySprite *ss = new ArraySprite(arr, s);
+      ss->update_cache();
       env.sprites[handle->id] = ss;
       env.renders[handle->id] = new ArrayRender;
       return ss;
@@ -1574,6 +1575,13 @@ GameApi::BM GameApi::BitmapApi::function(unsigned int (*fptr)(int,int, void*), i
   //env->deletes.push_back(std::tr1::shared_ptr<void>(bm));
   
   return add_color_bitmap(e, new BitmapFromUnsignedInt(*bm));
+}
+
+GameApi::BM GameApi::BitmapApi::memoize(GameApi::BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<Color> *bitmap = find_color_bitmap(handle);
+  return add_color_bitmap(e, new MemoizeBitmap(*bitmap));
 }
 
 GameApi::BM GameApi::BitmapApi::mandelbrot(bool julia,
@@ -1956,6 +1964,49 @@ int GameApi::BitmapApi::intvalue(GameApi::BM orig, int x, int y)
   return 0;
 }
 
+int GameApi::BitmapApi::size_x(BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  BitmapColorHandle *handle2 = dynamic_cast<BitmapColorHandle*>(handle);
+  BitmapIntHandle *handle3 = dynamic_cast<BitmapIntHandle*>(handle);
+  BitmapArrayHandle *handle4 = dynamic_cast<BitmapArrayHandle*>(handle);
+  BitmapPosHandle *handle5 = dynamic_cast<BitmapPosHandle*>(handle);
+  BitmapTileHandle *handle6 = dynamic_cast<BitmapTileHandle*>(handle);
+  if (handle2)
+    return handle2->bm->SizeX();
+  if (handle3)
+    return handle3->bm->SizeX();
+  if (handle4)
+    return dynamic_cast<BitmapColorHandle*>(handle4->vec[0])->bm->SizeX();
+  if (handle5)
+    return handle5->bm->SizeX();
+  if (handle6)
+    return handle6->bm->SizeX();
+  return 0;
+}
+int GameApi::BitmapApi::size_y(BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+
+  BitmapColorHandle *handle2 = dynamic_cast<BitmapColorHandle*>(handle);
+  BitmapIntHandle *handle3 = dynamic_cast<BitmapIntHandle*>(handle);
+  BitmapArrayHandle *handle4 = dynamic_cast<BitmapArrayHandle*>(handle);
+  BitmapPosHandle *handle5 = dynamic_cast<BitmapPosHandle*>(handle);
+  BitmapTileHandle *handle6 = dynamic_cast<BitmapTileHandle*>(handle);
+  if (handle2)
+    return handle2->bm->SizeY();
+  if (handle3)
+    return handle3->bm->SizeY();
+  if (handle4)
+    return dynamic_cast<BitmapColorHandle*>(handle4->vec[0])->bm->SizeY();
+  if (handle5)
+    return handle5->bm->SizeY();
+  if (handle6)
+    return handle6->bm->SizeY();
+  return 0;
+
+}
+
 unsigned int GameApi::BitmapApi::colorvalue(GameApi::BM orig, int x, int y)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
@@ -1968,7 +2019,7 @@ unsigned int GameApi::BitmapApi::colorvalue(GameApi::BM orig, int x, int y)
 }
 
 
-GameApi::BM GameApi::BitmapApi::interpolatebitmap(GameApi::BM orig1, GameApi::BM orig2, float x)
+GameApi::BM GameApi::BitmapApi::interpolate_bitmap(GameApi::BM orig1, GameApi::BM orig2, float x)
 {
   BitmapHandle *handle1 = find_bitmap(e, orig1);
   BitmapHandle *handle2 = find_bitmap(e, orig2);
@@ -2977,7 +3028,7 @@ GameApi::S GameApi::SurfaceApi::texture(S orig, BM texture)
   impl.surf = surface;
   return add_surface(e, impl);
 }
-GameApi::BM GameApi::BitmapApi::repeatbitmap(BM orig, int xcount, int ycount)
+GameApi::BM GameApi::BitmapApi::repeat_bitmap(BM orig, int xcount, int ycount)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
   BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);

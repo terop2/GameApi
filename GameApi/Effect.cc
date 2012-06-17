@@ -2906,6 +2906,7 @@ void ArrayRender::AllocTexture(int count)
   texture = new int[texcount];
   glGenTextures(texcount, (GLuint*)&texture[0]);
   texture_count = texcount;
+  textures = new BufferRef*[count];
 }
 void ArrayRender::UpdateAllTextures(MeshTextures &tex)
 {
@@ -2925,9 +2926,9 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
   int sizey = ref.height;
   glBindTexture(GL_TEXTURE_2D, texture[num]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sizex, sizey, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 }
 void ArrayRender::EnableTexture(int num)
