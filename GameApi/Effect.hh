@@ -5841,6 +5841,50 @@ public:
     vec.push_back(o3);
     vec.push_back(o4);
   }
+  void update_faces_cache() const
+  {
+    int count = 0;
+    int sum = 0;
+    int f = 0;
+    int k = 0;
+    int faces = NumFaces();
+    for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++,k++)
+      {
+	int oldsum = sum;
+	count = (*i)->NumFaces();
+	sum += count;
+	for(int i=0;i<count;i++)
+	  {
+	    if (f%1000==0) {
+	      std::cout << "faces: " << f << "/" << faces << std::endl;
+	    }
+	    faces_cache.push_back(f-oldsum);
+	    faces_num.push_back(k);
+	    f++;
+	  }
+      }
+#if 0
+    int faces = NumFaces();
+    for(int f=0;f<faces;f++)
+      {
+	if (f%1000==0) {
+	  std::cout << "faces: " << f << "/" << faces << std::endl;
+	}
+	int val = 0;
+	int k=0;
+	int count = 0;
+	for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++,k++)
+	  {
+	    int oldcount = count;
+	    count += (*i)->NumFaces();
+	    if (count > f) { val = f-oldcount; break; }
+	  }
+	faces_cache.push_back(val);
+	faces_num.push_back(k);
+      }
+    
+#endif
+  }
   void push_back(T *ptr)
   {
     vec.push_back(ptr);
@@ -5866,6 +5910,8 @@ public:
   }
   virtual int NumPoints(int face) const 
   { 
+    return vec[faces_num[face]]->NumPoints(faces_cache[face]);
+#if 0
     int count = 0;
     for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
       {
@@ -5874,9 +5920,12 @@ public:
 	if (count > face) return (*i)->NumPoints(face-oldcount);
       }
     return 0;
+#endif
   }
   virtual Point FacePoint(int face, int point) const
   {
+    return vec[faces_num[face]]->FacePoint(faces_cache[face], point);
+#if 0
     int count = 0;
     for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
       {
@@ -5885,10 +5934,13 @@ public:
 	if (count > face) return (*i)->FacePoint(face-oldcount, point);
       }
     return Point(0.0,0.0,0.0);
+#endif
   }
 
   virtual unsigned int Color(int face, int point) const
   {
+    return vec[faces_num[face]]->Color(faces_cache[face],point);
+#if 0
     int count = 0;
     for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
       {
@@ -5899,10 +5951,13 @@ public:
     //std::cout << "OrElem::0" << std::endl;
 
     return 0;
+#endif
   }
 
   virtual Point2d TexCoord(int face, int point) const
   {
+    return vec[faces_num[face]]->TexCoord(faces_cache[face],point);
+#if 0
     int count = 0;
     for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
       {
@@ -5916,12 +5971,15 @@ public:
     p.x = 0;
     p.y = 0;
     return p;
+#endif
   }
 
 
 
   virtual Vector PointNormal(int face, int point) const
   {
+    return vec[faces_num[face]]->PointNormal(faces_cache[face], point);
+#if 0
     int count = 0;
     for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
       {
@@ -5930,9 +5988,12 @@ public:
 	if (count > face) return (*i)->PointNormal(face-oldcount, point);
       }
     return Vector(0.0,0.0,0.0);
+#endif
   }
   float Attrib(int face, int point, int id) const 
   {
+    return vec[faces_num[face]]->Attrib(faces_cache[face], point, id);
+#if 0
     int count = 0;
     for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
       {
@@ -5941,10 +6002,13 @@ public:
 	if (count > face) return (*i)->Attrib(face-oldcount, point, id);
       }
     return 0.0;
-
+#endif
   }
   int AttribI(int face, int point, int id) const 
   {
+    return vec[faces_num[face]]->AttribI(faces_cache[face], point, id);
+
+#if 0
     int count = 0;
     for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
       {
@@ -5953,7 +6017,7 @@ public:
 	if (count > face) return (*i)->AttribI(face-oldcount, point, id);
       }
     return 0.0;
-
+#endif
   }
 
   virtual int NumTextures() const 
@@ -6006,6 +6070,8 @@ public:
 
 private:
   std::vector<T /*BoxableFaceCollection*/ *> vec;
+  mutable std::vector<int> faces_cache;
+  mutable std::vector<int> faces_num;
 };
 
 class QuadElem : public BoxableFaceCollection

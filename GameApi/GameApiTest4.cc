@@ -58,7 +58,7 @@ void Game(EveryApi &e)
   O torus = volume.torus(points.point(0.0,0.0,0.0),
 			 points.point(2.0,0.0,0.0),
 			 points.point(0.0,2.0,0.0), 1.0, 0.4);
-  P cubes = volume.rendercubes(torus, &Cube, 0, 40, 4.0);
+  P cubes = volume.rendercubes(torus, &Cube, 0, 140, 4.0);
   P cubes2 = e.polygon_api.memoize(cubes);
   P cubes3 = e.polygon_api.scale(cubes2, 300.0,300.0,300.0);
   poly.prepare(cubes3);

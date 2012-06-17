@@ -714,7 +714,8 @@ bool CylinderEffect::Frame(float time)
   DiskElem c2(20, 1.0);
   BoxableFaceCollection *array[] = { &c2, &c };
   OrElem<BoxableFaceCollection> cc(array, array+2);
-
+  cc.update_faces_cache();
+  
   //HorizTexCoords tex(c, ((TexturePlugin*)plugins[0])->Texture());
 
   //glEnable(GL_TEXTURE_2D);
@@ -1068,6 +1069,7 @@ bool MoleculeInsideEffect::Frame(float time)
       &split2
     };
   OrElem<FaceCollection> or_elem(arr, arr+3);
+  or_elem.update_faces_cache();
 
   glColor3f(1.0,0.5, 0.3);
   RenderOpenGl(or_elem);
@@ -1212,6 +1214,7 @@ bool TestEffect::Frame(float time)
       // Main sphere
       //
       OrElem<BoxableFaceCollection> *or_elem = new OrElem<BoxableFaceCollection>(array, array+2);
+      or_elem->update_faces_cache();
       //AndNotElem *and_not_elem = new AndNotElem(*m1, *or_elem);
       RemovePolys *rempolys = new RemovePolys(*m1, *or_elem);
       MemoizeFunction<bool> *mem = new MemoizeFunction<bool>(m1->NumFaces(), *rempolys);
@@ -1258,6 +1261,7 @@ bool TestEffect::Frame(float time)
       array2[5]=split13;
       array2[6]=split31;
       OrElem<FaceCollection> *or_elem2 = new OrElem<FaceCollection>(array2, array2+7);
+      or_elem2->update_faces_cache();
       //FlipNormals *flip = new FlipNormals(*or_elem2);
       MemoizeFaces *memo = new MemoizeFaces(*or_elem2);
       obj = memo;
@@ -1612,6 +1616,7 @@ bool PathEffect::Frame(float time)
 
   BoxableFaceCollection *array[] = { &c, &c2, &c3m, &anem, &bem, &bem2 };
   OrElem<BoxableFaceCollection> cc(array, array+6);
+  cc.update_faces_cache();
   MatrixElem m(cc, Matrix::Scale(50.0,50.0,50.0));
   RenderOpenGl(m);
   return false;
