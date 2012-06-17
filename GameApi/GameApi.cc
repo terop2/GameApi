@@ -3699,6 +3699,32 @@ GameApi::O GameApi::VolumeApi::torus(PT center, PT u_x, PT u_y, float dist1, flo
   return add_volume(e, new TorusVolume(*u_xp-*centerp, *u_yp-*centerp, dist1, dist2, *centerp));
 }
 
+GameApi::O GameApi::VolumeApi::min_op(GameApi::O o1, GameApi::O o2)
+{
+  VolumeObject *oo1 = find_volume(e, o1);
+  VolumeObject *oo2 = find_volume(e, o2);
+  return add_volume(e, new AndVolume(*oo1,*oo2));
+
+}
+
+GameApi::O GameApi::VolumeApi::max_op(GameApi::O o1, GameApi::O o2)
+{
+  VolumeObject *oo1 = find_volume(e, o1);
+  VolumeObject *oo2 = find_volume(e, o2);
+  return add_volume(e, new OrVolume(*oo1,*oo2));
+
+}
+
+GameApi::O GameApi::VolumeApi::andnot_op(GameApi::O o1, GameApi::O o2)
+{
+  VolumeObject *oo1 = find_volume(e, o1);
+  VolumeObject *oo2 = find_volume(e, o2);
+  return add_volume(e, new AndNotVolume(*oo1,*oo2));
+
+}
+
+
+
 class AppendHandleValue : public HandleValue<std::pair<Vector, unsigned int> >
 {
 public:

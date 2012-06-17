@@ -491,6 +491,7 @@ public:
 
   O min_op(O object1, O object2);
   O max_op(O object1, O object2);
+  O andnot_op(O object1, O object2);
   BM render(O object, int sx, int sy, PT ray_0, PT ray_x, PT ray_y, PT ray_z);
   typedef P (*fptrtype)(EveryApi &api,
 			float start_x, float end_x, 

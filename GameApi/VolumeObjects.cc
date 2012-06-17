@@ -123,7 +123,7 @@ bool TorusVolume::Inside(Point p) const
 bool TorusVolume::Inside(Point p) const
 {
   p = (-Vector(center)).ApplyPoint(p);
-    float divs = 30.0;
+    float divs = 40.0;
     for(float angle1 = 0.0; angle1 < 2.0*3.14159; angle1+=2.0*3.14159/divs)
       {
 	float x = cos(angle1);
