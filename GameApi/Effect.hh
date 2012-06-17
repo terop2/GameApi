@@ -10180,21 +10180,38 @@ public:
   virtual int NumPoints(int face) const { return 3; }
   virtual Point FacePoint(int face, int point) const
   {
-    float x = v_array[face*3*3+point*3+0];
-    float y = v_array[face*3*3+point*3+1];
-    float z = v_array[face*3*3+point*3+2];
+    float x = 0.0;
+    float y = 0.0;
+    float z = 0.0;
+    if (v_array)
+      {
+	x = v_array[face*3*3+point*3+0];
+	y = v_array[face*3*3+point*3+1];
+	z = v_array[face*3*3+point*3+2];
+      }
     return Point(x,y,z);
   }
   virtual Vector PointNormal(int face, int point) const
   {
-    float x = n_array[face*3*3+point*3+0];
-    float y = n_array[face*3*3+point*3+1];
-    float z = n_array[face*3*3+point*3+2];    
+    float x = 0.0;
+    float y = 0.0;
+    float z = 0.0;
+    if (n_array)
+      {
+	x = n_array[face*3*3+point*3+0];
+	y = n_array[face*3*3+point*3+1];
+	z = n_array[face*3*3+point*3+2];    
+      }
     return Vector(x,y,z);
   }
   virtual float Attrib(int face, int point, int id) const
   {
-    return attrib_array[id][face*3*1+point*1];
+    if (attrib_array)
+      return attrib_array[id][face*3*1+point*1];
+    else
+      {
+	return 0.0;
+      }
   }
   virtual int AttribI(int face, int point, int id) const
   {
@@ -10202,12 +10219,20 @@ public:
   }
   virtual unsigned int Color(int face, int point) const
   {
-    return c_array[face*3+point];
+    if (c_array)
+      return c_array[face*3+point];
+    else
+      return 0xffffffff;
   }
   virtual Point2d TexCoord(int face, int point) const
   {
-    float x = tex_array[face*3*2+point*2 +0];
-    float y = tex_array[face*3*2+point*2 +1];
+    float x = 0.0;
+    float y = 0.0;
+    if (tex_array)
+      {
+	x = tex_array[face*3*2+point*2 +0];
+	y = tex_array[face*3*2+point*2 +1];
+      }
     Point2d p = { x,y };
     return p;
   }

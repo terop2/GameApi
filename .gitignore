@@ -3,3 +3,4 @@ GameApi/objs/*.hh.gch
 GameApi/objs/*.o
 GameApi/libGameApi.so
 GameApi/main
+GameApi/gmon.out
