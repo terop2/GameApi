@@ -5511,6 +5511,29 @@ class ArraySprite : public Sprite
 {
 public:
   ArraySprite(Sprite **array, int count) : array(array), count(count) { }
+  void update_cache()
+  {
+    int count = 0;
+    int sum = 0;
+    int f = 0;
+    int k = 0;
+    int frames = NumFrames();
+    for(int i=0;i<frames;i++,k++)
+      {
+	int oldsum = sum;
+	int c = array[i]->NumFrames();
+	sum += c;
+	for(int s=0;s<c;s++)
+	  {
+	    if (f%10==0) {
+	      std::cout << "ArraySprite: " << f << "/" << frames << std::endl;
+	    }
+	    cache.push_back(f-oldsum);
+	    num.push_back(k);
+	    f++;
+	  }
+      }
+  }
   virtual int NumFrames() const 
   {
     int counter = 0;
@@ -5522,6 +5545,8 @@ public:
   }
   virtual int XSize(int frame) const
   {
+    return array[num[frame]]->XSize(cache[frame]);
+#if 0
     int counter = 0;
     for(int i=0;i<count;i++)
       {
@@ -5530,9 +5555,12 @@ public:
 	if (counter > frame) { return array[i]->XSize(frame-oldcount); }
       }
     return 0;
+#endif
   }
   virtual int YSize(int frame) const
   {
+    return array[num[frame]]->YSize(cache[frame]);
+#if 0
     int counter = 0;
     for(int i=0;i<count;i++)
       {
@@ -5541,9 +5569,12 @@ public:
 	if (counter > frame) { return array[i]->YSize(frame-oldcount); }
       }
     return counter;
+#endif
   }
   virtual Point2d Pos(int frame) const
   {
+    return array[num[frame]]->Pos(cache[frame]);
+#if 0
     int counter = 0;
     for(int i=0;i<count;i++)
       {
@@ -5553,9 +5584,12 @@ public:
       }
     Point2d p = { 0.0, 0.0 };
     return p;
+#endif
   }
   virtual Color Pixel(int frame, int x, int y) const
   {
+    return array[num[frame]]->Pixel(cache[frame],x,y);
+#if 0
     int counter = 0;
     for(int i=0;i<count;i++)
       {
@@ -5564,10 +5598,13 @@ public:
 	if (counter > frame) { return array[i]->Pixel(frame-oldcount, x,y); }
       }
     return Color(0,0,0);
+#endif
   }
 private:
   Sprite **array;
   int count;
+  std::vector<int> cache;
+  std::vector<int> num;
 };
 
 void PrepareSprite(const Sprite &s, ArrayRender &rend);

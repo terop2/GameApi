@@ -162,9 +162,9 @@ public:
   BM blitbitmap(BM bg, BM orig, int x, int y);
   BM anim_array(BM *array, int size);
   BM modify_bitmap(BM orig, BM bm, int x, int y);
-  BM interpolatebitmap(BM orig1, BM orig2, float x); // x=[0..1]
-  BM repeatbitmap(BM orig, int xcount, int ycount);
-  BM samplebitmap(BM orig, float xmult, float ymult, float x, float y);
+  BM interpolate_bitmap(BM orig1, BM orig2, float x); // x=[0..1]
+  BM repeat_bitmap(BM orig, int xcount, int ycount);
+  BM sample_bitmap(BM orig, float xmult, float ymult, float x, float y);
   //BM bitmapandtypes(BM bm, BM (*fptr)(int)); // bm has ints in it
   SP space(BM bm);
 
@@ -179,6 +179,8 @@ public:
   BM memoize(BM orig);
   int intvalue(BM bm, int x, int y);
   unsigned int colorvalue(BM bm, int x, int y);
+  int size_x(BM bm);
+  int size_y(BM bm);
 private:
   void *priv;
   Env &e;

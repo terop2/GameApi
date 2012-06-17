@@ -5858,6 +5858,7 @@ public:
 	    if (f%1000==0) {
 	      std::cout << "faces: " << f << "/" << faces << std::endl;
 	    }
+
 	    faces_cache.push_back(f-oldsum);
 	    faces_num.push_back(k);
 	    f++;
@@ -9718,6 +9719,9 @@ public:
   int *texture;
   int texture_count;
   int previous_frame;
+  BufferRef **textures;
+  int *tex_size_x;
+  int *tex_size_y;
 };
 
 struct PrecalcStore

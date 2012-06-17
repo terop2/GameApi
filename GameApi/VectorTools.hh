@@ -386,11 +386,15 @@ public:
     unsigned int b2 = pixel2 & 0xff0000;
     unsigned int a2 = pixel2 & 0xff000000;
 
+    a >>= 4;
+    a2 >>= 4;
+
     float val1 = 1.0-val;
-    unsigned int r3 = int(r*val + r2*val1) & 0xff;
-    unsigned int g3 = int(g*val + g2*val1) & 0xff00;
-    unsigned int b3 = int(b*val + b2*val1) & 0xff0000;
-    unsigned int a3 = int(a*val + a2*val1) & 0xff000000;
+    unsigned int r3 = ((unsigned int)(r*val + r2*val1)) & 0xff;
+    unsigned int g3 = ((unsigned int)(g*val + g2*val1)) & 0xff00;
+    unsigned int b3 = ((unsigned int)(b*val + b2*val1)) & 0xff0000;
+    unsigned int a3 = ((unsigned int)(a*val + a2*val1)) & 0x0ff00000;
+    a3 <<= 4;
     return r3+g3+b3+a3;
   }
 
