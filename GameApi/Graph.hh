@@ -5517,7 +5517,7 @@ public:
     int sum = 0;
     int f = 0;
     int k = 0;
-    int frames = NumFrames();
+    int frames = count;
     for(int i=0;i<frames;i++,k++)
       {
 	int oldsum = sum;
@@ -5545,7 +5545,9 @@ public:
   }
   virtual int XSize(int frame) const
   {
+#if 1
     return array[num[frame]]->XSize(cache[frame]);
+#endif
 #if 0
     int counter = 0;
     for(int i=0;i<count;i++)
@@ -5559,7 +5561,9 @@ public:
   }
   virtual int YSize(int frame) const
   {
+#if 1
     return array[num[frame]]->YSize(cache[frame]);
+#endif
 #if 0
     int counter = 0;
     for(int i=0;i<count;i++)
@@ -5573,7 +5577,9 @@ public:
   }
   virtual Point2d Pos(int frame) const
   {
+#if 1
     return array[num[frame]]->Pos(cache[frame]);
+#endif
 #if 0
     int counter = 0;
     for(int i=0;i<count;i++)
@@ -5588,7 +5594,10 @@ public:
   }
   virtual Color Pixel(int frame, int x, int y) const
   {
+#if 1
     return array[num[frame]]->Pixel(cache[frame],x,y);
+#endif
+
 #if 0
     int counter = 0;
     for(int i=0;i<count;i++)

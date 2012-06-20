@@ -18,18 +18,28 @@ void GameApiTest3(EveryApi &e)
   int sx = e.bitmap_api.size_x(bm2);
   int sy = e.bitmap_api.size_y(bm2);
   std::cout << std::dec << sx << " " << sy << std::endl;
-  BM bm2a = e.bitmap_api.newbitmap(e.bitmap_api.size_x(bm2), e.bitmap_api.size_y(bm2));
-  BM bmx = e.bitmap_api.memoize(bm2);
-  BM bmxa = e.bitmap_api.memoize(bm2a);
+  BM bm2a = e.bitmap_api.newbitmap(sx, sy);
+  //BM bmx = e.bitmap_api.memoize(bm2);
+  //BM bmxa = e.bitmap_api.memoize(bm2a);
   //BM bm2 = bm.mandelbrot(false,-2.0,1.0,-1.0,1.0,0.0,0.0,50,50,255);
-  std::vector<BM> vec;
-  for(int i=0;i<30;i++)
+  std::vector<P> vec;
+  for(int i=0;i<30*5;i++)
     {
-      BM bm3 = e.bitmap_api.interpolate_bitmap(bmx, bmxa, i/30.0);
-      vec.push_back(bm3);
+      float val = 100.0+i*20.0/5.0;
+      P p = e.polygon_api.sphere(e.point_api.point(0.0,0.0,0.0), val, 10, 10);
+      vec.push_back(p);
     }
-  BM res = e.bitmap_api.anim_array(&vec[0], vec.size());
-  e.sprite_api.preparesprite(res);
+  P p = e.polygon_api.anim_array(&vec[0], vec.size());
+  e.polygon_api.prepare(p);
+
+
+  //for(int i=0;i<30;i++)
+  //  {
+  //    BM bm3 = e.bitmap_api.interpolate_bitmap(bm2, bm2a, float(i)/30.0);
+  //    vec.push_back(bm3);
+  //  }
+  //BM res = e.bitmap_api.anim_array(&vec[0], vec.size());
+  e.sprite_api.preparesprite(bm2);
 
   BB bg = e.bool_bitmap_api.empty(1000/5.0,1000/5.0);
   BB b1 = e.bool_bitmap_api.circle(bg, 500.0/5.0,500.0/5.0,500.0/5.0);
@@ -50,15 +60,13 @@ void GameApiTest3(EveryApi &e)
     {
       if (frame>5) { frame2++; frame=0; }
 
-      int val = frame2;
-      if (frame2>30&&frame2<=60) { val = 60-frame2; }
-      if (frame2>60) frame2=0;
-      if (val>30) { val = 30; }
-      if (val<0) { val = 0; }
-      std::cout << "val=" << val << std::endl;
+      //std::cout << "val=" << val << std::endl;
       e.mainloop_api.clear();
-      e.sprite_api.rendersprite(res,val, 100.0,100.0,1.0,1.0);
+      e.mainloop_api.switch_to_3d(false);
+      e.sprite_api.rendersprite(bm2, 0, 100.0,100.0,1.0,1.0);
       e.sprite_api.rendersprite(bx2,200.0,200.0,1.0,1.0);
+      e.mainloop_api.switch_to_3d(true);
+      e.polygon_api.render(p,frame2 % (30*5), 0.0,0.0,0.0);
       e.mainloop_api.swapbuffers();
       MainLoopApi::Event ev = e.mainloop_api.get_event();
       if (ev.ch==27) break;

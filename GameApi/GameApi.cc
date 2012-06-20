@@ -2031,6 +2031,10 @@ GameApi::BM GameApi::BitmapApi::interpolate_bitmap(GameApi::BM orig1, GameApi::B
     {
       newhandle->bm = new InterpolateBitmap(*h1->bm, *h2->bm, x);
     }
+  else
+    {
+      std::cout << "Only COlorbitmaps work" << std::endl;
+    }
   BM bbm = add_bitmap(e,newhandle);
   return bbm;
 }

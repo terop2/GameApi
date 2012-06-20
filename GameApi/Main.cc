@@ -18,6 +18,8 @@
 // along with Polygon.  If not, see <http://www.gnu.org/licenses/>.
 //
 #define NO_SDL_GLEXT
+//#define GL3_PROTOTYPES 1
+//#include <GL3/gl3.h>
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <SDL/SDL.h>
@@ -376,6 +378,9 @@ SDL_Surface *InitSDL(int scr_x, int scr_y, bool vblank, bool antialias)
       std::cout << "NO SHADERS" << std::endl;
       exit(1);
     }
+
+  //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
   Rect scr;
   scr.tl.x = 0;
