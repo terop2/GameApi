@@ -275,6 +275,7 @@ private:
   Env &e;
 };
 
+
 class CurveApi
 {
 public:
@@ -655,6 +656,36 @@ private:
   void *priv;
   Env &e;
 };
+
+#if 0
+class SpaceApi2
+{
+public:
+  SpaceApi2(Env &e) : e(e) { }
+  P2 point(PT p); // zero dimensions
+  P2 line(P2 p1, P2 p2); // N+1 dimensions, p1 and p2 must have same number of dims
+  
+  PT get_point(P2 p, float *array); // array must have same number of floats than P2 has dimensions
+  P2 get_lower_dim(P2 p, float value, int dim); // dim = [0..dims-1]
+  
+private:
+  Env &e;
+};
+#endif
+
+class SubstitutionApi
+{
+public:
+  SubstitutionApi(EveryApi &e) : e(e) { }
+  P ReplacePolygons(P p, P (*fptr)(int index, PT *array, int size, void *data), void *data);
+  P ReplacePoints(P p, P (*fptr)(int index, PT point, void *data), void *data);
+  //P2 ReplaceLines(P p, C (*fptr)(PT p1, PT p2, void *data), void *data);
+  
+
+private:
+  EveryApi &e;
+};
+
 
 #if 0
 class ChangeApi
