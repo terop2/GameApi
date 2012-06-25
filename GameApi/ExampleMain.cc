@@ -10,11 +10,6 @@ void GameApiWorldFunc(GameApi::EveryApi &e);
 int main(int argc, char *argv[])
 {
 
-  if (argc>1 && (std::string(argv[1])=="-h" || std::string(argv[1])=="--help"))
-    {
-      std::cout << "./main [-h] [-edit filename] [-test3] [-test4] [-world]" << std::endl;
-      exit(0);
-    }
   if (argc>1 && std::string(argv[1])=="-world")
     {
       GameApi::Env e;
@@ -24,7 +19,7 @@ int main(int argc, char *argv[])
       g.start_game(0);
       return 0;
     }
-  if (argc>1 && std::string(argv[1])=="-test4")
+  else if (argc>1 && std::string(argv[1])=="-test4")
     {
       GameApi::Env e;
       GameApi::GamesApi g(e);
@@ -33,7 +28,7 @@ int main(int argc, char *argv[])
       g.start_game(0);
       return 0;
     }
-  if (argc>1 && std::string(argv[1])=="-test3")
+  else if (argc>1 && std::string(argv[1])=="-test3")
     {
       GameApi::Env e;
       GameApi::GamesApi g(e);
@@ -43,4 +38,6 @@ int main(int argc, char *argv[])
       return 0;
     }
 
+  std::cout << "./main [-h] [-edit filename] [-test3] [-test4] [-world]" << std::endl;
+  exit(0);
 }
