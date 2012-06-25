@@ -2610,6 +2610,66 @@ private:
 };
 
 
+//
+// Proper intersection
+//
+
+template<class T, class A, class B, class K>
+class Intersection3 : public Function<T,std::pair<K,K> >
+{
+public:
+  // functions must throw exception if not possible to do it
+  Intersection3(Function<T,A> &ta,
+		Function<T,B> &tb,
+		Function<A,K> &ak,
+		Function<B,K> &bk) : ta(ta), tb(tb), ak(ak), bk(bk) { }
+  // throws if outside of the intersection
+  K Index(T t) const
+  {
+    K k1;
+    K k2;
+    k1 = ak.Index(ta.Index(t));
+    k2 = bk.Index(tb.Index(t));
+    return std::make_pair(k1,k2);
+  }
+  
+private:
+  Function<T,A> &ta;
+  Function<T,B> &tb;
+  Function<A,K> &ak;
+  Function<B,K> &bk;
+};
+
+template<class P, class A, class B, class K>
+class pullback3 : public Intersection3<std::pair<P,K>, std::pair<P,K>, std::pair<P,K>, std::pair<P,K> >
+{
+};
+
+class SphereIntersectionTexture : public Bitmap<bool>
+{
+public:
+  SphereIntersectionTexture(Point center1, float radius1,
+			    Point center2, float radius2,
+			    int sx, int sy) : center1(center1), radius1(radius1),
+					      center2(center2), radius2(radius2)
+					      sx(sx), sy(sy) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual bool Map(int x, int y) const
+  {
+    float xx = float(x)/float(sx);
+    float yy = float(y)/float(sy);
+    SphericalPoint point(center1);
+    point.r = radius1;
+    point.alfa = xx*2.0*3.14159;
+    point.beta = yy*2.0*3.14159;
+    Point pos = point.ToPoint();
+    pos -= center2;
+    float d = Vector(pos).Dist();
+    return d < radius2;
+  }
+
+};
 
 #endif
 

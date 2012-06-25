@@ -544,6 +544,8 @@ public:
   P line(PT p1, PT p2);
   P triangle(PT p1, PT p2, PT p3);
   P quad(PT p1, PT p2, PT p3, PT p4);
+  P sprite(BM bm, PT p1, PT p2, PT p3, PT p4);
+  P sprite(BM bm, PT p, float mul_x, float mul_y);
   P quad_x(float x,
 	   float y1, float y2,
 	   float z1, float z2);

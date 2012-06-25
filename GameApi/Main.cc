@@ -487,7 +487,7 @@ void GameApiTest(GameApi::EveryApi &e);
 void GameApiTest2(GameApi::EveryApi &e);
 void GameApiTest3(GameApi::EveryApi &e);
 void Game(GameApi::EveryApi &e);
-void GameApiWorldFunc(GameApi::EveryApi &e);
+//void GameApiWorldFunc(GameApi::EveryApi &e);
 
 //extern "C" void _start()
 int mainxxx(int argc, char *argv[])
@@ -497,6 +497,7 @@ int mainxxx(int argc, char *argv[])
       std::cout << "./main [-h] [-edit filename] [-test3]" << std::endl;
       exit(0);
     }
+#if 0
   if (argc>1 && std::string(argv[1])=="-world")
     {
       GameApi::Env e;
@@ -524,6 +525,8 @@ int mainxxx(int argc, char *argv[])
       g.start_game(0);
       return 0;
     }
+#endif
+
   if (argc>2 && std::string(argv[1])=="-edit")
     {
       SphereElem elem(Point(0.0,0.0,0.0), 100.0, 10,10);

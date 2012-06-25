@@ -75,9 +75,11 @@ public:
 class SphericalPoint
 {
 public:
+  SphericalPoint(Point center) : center(center) { }
   Point ToPoint();
   void FromPoint(Point v);
 public:
+  Point center;
   float r;
   float alfa;
   float beta;

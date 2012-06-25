@@ -115,7 +115,7 @@ class ToSphericalCoordinates : public CoordTransform
 public:
   Point Transform(Point p) const
   {
-    SphericalPoint sp;
+    SphericalPoint sp(Point(0.0,0.0,0.0));
     sp.FromPoint(p);
     return Point(sp.r, sp.alfa, sp.beta);
     
@@ -127,7 +127,7 @@ class FromSphericalCoordinates : public CoordTransform
 public:
   Point Transform(Point p) const
   {
-    SphericalPoint sp;
+    SphericalPoint sp(Point(0.0,0.0,0.0));
     sp.r = p.x;
     sp.alfa = p.y;
     sp.beta = p.z;
