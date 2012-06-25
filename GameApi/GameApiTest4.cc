@@ -52,14 +52,14 @@ void Game(EveryApi &e)
   //BM red = bm.function(&red_block, 10,10, 0);
   //BM green = bm.function(&green_block, 10,10, 0);
 
-  BM red = bm.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 100,10,128);
-  BM green = bm.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 100,10,128);
+  BM red = bm.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 100,100,128);
+  BM green = bm.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 100,100,128);
 
   O torus = volume.torus(points.point(0.0,0.0,0.0),
 			 points.point(2.0,0.0,0.0),
 			 points.point(0.0,2.0,0.0), 1.0, 0.4);
 
-  O sphere = volume.sphere(points.point(0.0, 2.0, 0.0), 2.0);
+  O sphere = volume.sphere(points.point(0.0, 1.0, 0.0), 1.0);
   O andnot = volume.andnot_op(torus, sphere);
   P cubes = volume.rendercubes(andnot, &Cube, 0, 240, 4.0);
   P cubes2 = e.polygon_api.memoize(cubes);
