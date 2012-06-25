@@ -1,3 +1,5 @@
+#if 0
+
 #define NO_SDL_GLEXT
 #include "KeyFrameEditor.hh"
 #include "VectorTools.hh"
@@ -502,3 +504,4 @@ void ShowDrawingArea_lines(int argc, char **argv, LineCollection *lines)
   area.show();
   Gtk::Main::run(win);
 }
+#endif

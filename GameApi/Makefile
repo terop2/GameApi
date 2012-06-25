@@ -46,7 +46,8 @@ DFiles_examples = $(patsubst %.cc,objs/%.d,$(CFiles_examples) $(CFiles2_examples
 HFiles_examples = $(patsubst %.cc,%.hh,$(CFiles_examples))
 GCHFiles_examples = $(patsubst %.cc,objs/%.hh.gch,$(CFiles_examples))
 
-CCFLAGS = -pg -fPIC -Wall -O3 -I./objs `pkg-config gtkmm-2.4 --cflags`
+CCFLAGS = -pg -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2
+#`pkg-config gtkmm-2.4 --cflags`
 
 default: libGameApi.so main
 
@@ -58,7 +59,8 @@ main: $(GCHFiles_examples) $(OFiles_examples) Makefile GameApi.hh libGameApi.so
 	g++ -pg -std=c++0x -g $(OFiles_examples) -o main -L. -lGameApi
 
 libGameApi.so: $(GCHFiles) $(OFiles) Makefile
-	g++ -shared -std=c++0x -g $(OFiles) -o libGameApi.so -lSDL -lGL -lSDL_image -lGLEW `pkg-config gtkmm-2.4 --libs` -lfreetype
+	g++ -shared -std=c++0x -g $(OFiles) -o libGameApi.so -lSDL -lGL -lSDL_image -lGLEW -lfreetype
+#`pkg-config gtkmm-2.4 --libs` 
 
 subdirs: $(Subdirs)
 

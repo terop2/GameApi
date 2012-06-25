@@ -529,6 +529,7 @@ int mainxxx(int argc, char *argv[])
 
   if (argc>2 && std::string(argv[1])=="-edit")
     {
+#if 0
       SphereElem elem(Point(0.0,0.0,0.0), 100.0, 10,10);
 
       FaceCollectionParser parser(0);
@@ -549,6 +550,7 @@ int mainxxx(int argc, char *argv[])
       */
       ShowDrawingArea_polys(argc,argv,coll);
       exit(0);
+#endif
     }
 
   //FontParseTestCases();

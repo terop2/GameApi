@@ -1,3 +1,5 @@
+
+#if 0
 #define NO_SDL_GLEXT
 #include "Editor.hh"
 #include <gtkmm.h>
@@ -673,3 +675,4 @@ void ExecuteEffect(ExpressionTree<ExpressionNode> *tree, SDL_Surface *surf, Rend
   Execute(*fa, surf);
   delete fa;
 }
+#endif
