@@ -61,11 +61,13 @@ Point SphericalPoint::ToPoint()
   p.x = r*sin(alfa)*cos(beta);
   p.y = r*sin(alfa)*sin(beta);
   p.z = r*cos(alfa);
+  p += center;
   return p;
 }
 
 void SphericalPoint::FromPoint(Point v)
 {
+  v-=center;
   r = sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
   alfa = acos(v.z/r);
   beta = atan2(v.y,v.x);
