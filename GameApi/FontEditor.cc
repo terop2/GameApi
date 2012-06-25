@@ -1,3 +1,5 @@
+#if 0
+
 #define NO_SDL_GLEXT
 #include "FontEditor.hh"
 #include "Font.hh"
@@ -163,3 +165,4 @@ int FindNearestPoint(Point2d p, PointCollection2d &points)
     }
   return index;
 }
+#endif
