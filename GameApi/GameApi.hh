@@ -632,8 +632,7 @@ public:
   P anim_array(P *array, int size);
 
   P splitquads(P orig, int x_count, int y_count);
-  P change_positions(P orig, FunctionCb<PT,PT> *cb);
-  void del_cb_later(FunctionCb<PT,PT> *cb);
+  P change_positions(P orig, PT (*fptr)(PT p, void* data), void *data=0);
 
   P recalculate_normals(P orig);
   P memoize(P orig);

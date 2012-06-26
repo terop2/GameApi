@@ -12,51 +12,34 @@
 #include <cmath>
 using namespace GameApi;
 
-class ChangeFunction : public FunctionCb<PT,PT>
+PT Map(PT p, void *data)
 {
-public:
-  ChangeFunction(BitmapApi *g_bitmap,
-		 FunctionApi *g_function,
-		 SpaceApi *g_space,
-		 AnimApi *g_anim,
-		 MainLoopApi *g_loop,
-		 PolygonApi *g_polygon,
-		 float g_mod)
-    : g_bitmap(g_bitmap),
-      g_function(g_function),
-      g_space(g_space),
-      g_anim(g_anim),
-      g_loop(g_loop),
-      g_polygon(g_polygon),
-      g_mod(g_mod) { }
-  PT Map(PT p) const
-  {
-    float val_x = g_space->pt_x(p);
-    float val_z = g_space->pt_z(p);
+  return p;
+#if 0
+  EveryApi &api = *(EveryApi*)data;
+  SpaceApi *g_space = &api.space_api;
+  MainLoopApi *g_loop = &api.mainloop_api;
+  AnimApi *g_anim = &api.anim_api;
 
-    float val = sqrt((val_x-100.0)*(val_x-100.0)+(val_z-100.0)*(val_z-100.0));
-    val*=2.0*3.14159265/100.0;
-    float val2 = std::sin(val-g_mod);
-    //F f = g_function->sin();
-    //float val2 = g_function->get_value(f, val+g_mod);
-    SP screen = g_loop->screenspace();
-    PT center = g_space->pos(screen, 0.0, 0.0);
-    PT delta = g_space->pos(screen, 0.0, 30.0);
-    
-    IS l = g_anim->line(center, delta, 100);
-    float val3 = (val2+1.0)*48.0;
-    PT pos = g_anim->timed_value_point(l, val3);
-    return g_space->plus(p,pos);
-  }
+  float val_x = g_space->pt_x(p);
+  float val_z = g_space->pt_z(p);
   
-  BitmapApi *g_bitmap;
-  FunctionApi *g_function;
-  SpaceApi *g_space;
-  AnimApi *g_anim;
-  MainLoopApi *g_loop;
-  PolygonApi *g_polygon;
-  float g_mod;
-};
+  float val = sqrt((val_x-100.0)*(val_x-100.0)+(val_z-100.0)*(val_z-100.0));
+  val*=2.0*3.14159265/100.0;
+  float val2 = std::sin(val-g_mod);
+  //F f = g_function->sin();
+  //float val2 = g_function->get_value(f, val+g_mod);
+  SP screen = g_loop->screenspace();
+  PT center = g_space->pos(screen, 0.0, 0.0);
+  PT delta = g_space->pos(screen, 0.0, 30.0);
+  
+  IS l = g_anim->line(center, delta, 100);
+  float val3 = (val2+1.0)*48.0;
+  PT pos = g_anim->timed_value_point(l, val3);
+  return g_space->plus(p,pos);
+#endif
+}
+  
 
 void GameApiTest()
 {
@@ -148,11 +131,11 @@ void GameApiTest()
   for(int i=0;i<20;i++)
     {
       float g_mod = i*2.0*3.14159265/20;
-      FunctionCb<PT,PT> *f = new ChangeFunction(&bm, &func, &sp, &a, &loop, &poly, g_mod);
-      P pm = poly.change_positions(split, f);
+      //FunctionCb<PT,PT> *f = new ChangeFunction(&bm, &func, &sp, &a, &loop, &poly, g_mod);
+      EveryApi every(e);
+      P pm = poly.change_positions(split, &Map, &every);
       P memo = poly.memoize(pm);
       P pm2 = poly.recalculate_normals(memo);
-      poly.del_cb_later(f);
       vec2.push_back(pm2);
     }
   P anim = poly.anim_array(&vec2[0], 20);
