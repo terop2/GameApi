@@ -794,6 +794,9 @@ public:
   BM texture(BM bg, 
 	     BB bools1, int l1, int t1,
 	     BM texturebitmap2, int l2, int t2);
+  int size_x(BB bm);
+  int size_y(BB bm);
+
 private:
   Env &e;
 };
