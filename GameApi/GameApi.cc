@@ -20,6 +20,7 @@
 #include FT_FREETYPE_H
 #include "FreeType.hh"
 #include "GameRunner.hh"
+#include "RayTracing.hh"
 
 #if 0
 struct SpritePriv
@@ -3800,6 +3801,19 @@ private:
   void *data;
   float sx,sy,sz;
 };
+
+void GameApi::VolumeApi::find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level)
+{
+  Point *pp1 = find_point(e,p1);
+  Point *pp2 = find_point(e,p2);
+  VolumeObject *volume = find_volume(e,object);
+  Range<Point> rr(*pp1,*pp2);
+
+  Range<Point> r = FindSurface(rr, *volume, level);
+
+  *res1 = add_point(e, r.start.x,r.start.y,r.start.z);
+  *res2 = add_point(e, r.end.x,r.end.y,r.end.z);
+}
 
 GameApi::P GameApi::VolumeApi::rendercubes(O o, P (*fptr)(EveryApi &api, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, unsigned int color, void* data), void *data, int size, float wholesize)
 {

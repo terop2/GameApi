@@ -1,4 +1,7 @@
 
+#include "VectorTools.hh"
+#include "Effect.hh"
+
 class RaySphereIntersection
 {
 public:
@@ -13,9 +16,10 @@ public:
 
 
 
-IntersectPoint Intersect(Point center, float radius,
+RaySphereIntersection::IntersectPoint RaySphereIntersection::Intersect(Point center, float radius,
 			 Point ray_p1, Point ray_p2)
 {
+#if 0
   Plane pl(center, ray_p1-center, ray_p2-center);
   Point2d center_2d = { pl.CoordsX(center), pl.CoordsY(center) };
   Point2d ray_p1_2d = { pl.CoordsX(ray_p1), pl.CoordsY(ray_p1) };
@@ -44,10 +48,11 @@ IntersectPoint Intersect(Point center, float radius,
   // 1    1 = split not in this section
 
   // END OF 2 UNKNOWN VARIABLES
-  Point pos = pl.Navigate(res);
+  Point pos2 = pl.Navigate(res);
   IntersectionPoint ipoint;
-  ipoint.p = pos;
+  ipoint.p = pos2;
   return ipoint;
+#endif
 }
 
 bool FindRange(bool b1, bool b2)
@@ -64,6 +69,8 @@ std::pair<Range<Point>, Range<Point> > Split(Range<Point> p)
   Point middle = Point(0.5*Vector(p1+Vector(p2)));
   return std::make_pair(Range<Point>(p1,middle), Range<Point>(middle,p2));
 }
+
+Range<Point> FindSurface(Range<Point> range1, Range<Point> range2, VolumeObject &o, int level);
 Range<Point> FindSurface(Range<Point> range, VolumeObject &o, int level)
 {
   if (level==0) return range;
@@ -95,7 +102,7 @@ Range<Point> FindSurface(Range<Point> range1, Range<Point> range2, VolumeObject 
     {
       for(int i=0;i<s;i++)
 	{
-	  Range<Point> p = FindSurface(res[i]);
+	  Range<Point> p = FindSurface(res[i],o,level-1);
 	  if (Vector(p.start-range1.start).Dist()<d)
 	    {
 	      d = Vector(p.start-range1.start).Dist();
