@@ -3660,6 +3660,28 @@ int GameApi::BoolBitmapApi::size_y(BB bm)
   Bitmap<bool> *b = find_bool_bitmap(e,bm)->bitmap;
   return b->SizeY();
 }
+bool GameApi::BoolBitmapApi::boolvalue(BB bm, int x, int y)
+{
+  Bitmap<bool> *b = find_bool_bitmap(e,bm)->bitmap;
+  return b->Map(x,y);
+}
+
+int GameApi::FloatBitmapApi::size_x(FB bm)
+{
+  Bitmap<float> *b = find_float_bitmap(e,bm)->bitmap;
+  return b->SizeX();
+}
+int GameApi::FloatBitmapApi::size_y(FB bm)
+{
+  Bitmap<float> *b = find_float_bitmap(e,bm)->bitmap;
+  return b->SizeY();
+}
+float GameApi::FloatBitmapApi::floatvalue(FB bm, int x, int y)
+{
+  Bitmap<float> *b = find_float_bitmap(e,bm)->bitmap;
+  return b->Map(x,y);
+}
+
 
 GameApi::BB GameApi::BoolBitmapApi::rectangle(BB bg, float x, float y, float width, float height)
 {

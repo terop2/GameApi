@@ -796,7 +796,7 @@ public:
 	     BM texturebitmap2, int l2, int t2);
   int size_x(BB bm);
   int size_y(BB bm);
-
+  bool boolvalue(BB bb, int x, int y);
 private:
   Env &e;
 };
@@ -827,6 +827,9 @@ public: // values are [0.0..1.0]
   BM to_color(FB r, FB g, FB b, FB a);
 
   FB from_bool(BB b, float val_true, float val_false);
+  int size_x(FB bm);
+  int size_y(FB bm);
+  float floatvalue(FB bm, int x, int y);
 private:
   Env &e;
 };
