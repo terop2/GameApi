@@ -612,6 +612,7 @@ public:
   P grid(PT o, PT u_x, PT u_y, int num_x, int num_y);
   P grid(PT o, PT u_x, PT u_y, int num_x, int num_y, P *grid);
 
+
   P translate(P orig, float dx, float dy, float dz);
   P rotatex(P orig, float angle);
   P rotatey(P orig, float angle);
@@ -632,7 +633,12 @@ public:
   P anim_array(P *array, int size);
 
   P splitquads(P orig, int x_count, int y_count);
-  P change_positions(P orig, PT (*fptr)(PT p, void* data), void *data=0);
+  P change_positions(P orig, PT (*fptr)(PT p, int face, int point, void* data), void *data=0);
+  P change_normals(P orig, V (*fptr)(V orig, int face, int point, void *data), void *data=0);
+  //P change_attrib(P orig, float (*fptr)(float orig, int face, int point, void *data), void *data=0);
+  //P change_attribI(P orig, int (*fptr)(int orig, int face, int point, void *data), void *data=0);
+  P change_colors(P orig, unsigned int (*fptr)(unsigned int orig, int face, int point, void *data), void *data=0);
+  P change_texture(P orig, int (*fptr)(int face, void *data), BM *array, int size, void *data);
 
   P recalculate_normals(P orig);
   P memoize(P orig);

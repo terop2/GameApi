@@ -12,7 +12,7 @@
 #include <cmath>
 using namespace GameApi;
 
-PT Map(PT p, void *data)
+PT Map(PT p, int face, int point, void *data)
 {
   return p;
 #if 0

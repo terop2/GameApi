@@ -1590,7 +1590,7 @@ GameApi::BM GameApi::BitmapApi::function(unsigned int (*fptr)(int,int, void*), i
 {
   Bitmap<unsigned int> *bm = new BitmapFromFunction<unsigned int>(fptr,sx,sy,data);
   
-  EnvImpl *env = EnvImpl::Environment(&e);
+  //EnvImpl *env = EnvImpl::Environment(&e);
   //env->deletes.push_back(std::tr1::shared_ptr<void>(bm));
   
   return add_color_bitmap(e, new BitmapFromUnsignedInt(*bm));
@@ -2727,16 +2727,176 @@ void GameApi::PolygonApi::del_cb_later(GameApi::FunctionCb<PT,PT> *cb)
   env->deletes.push_back(std::tr1::shared_ptr<void>(cb));
 }
 #endif
-GameApi::P GameApi::PolygonApi::change_positions(P orig, PT (*fptr)(PT p, void* data), void *data)
+
+class ChangePoints2 : public ForwardFaceCollection
+{
+public:
+  ChangePoints2(FaceCollection &coll, Point (*fptr)(Point, int,int,void*), void *data)
+    : ForwardFaceCollection(coll), fptr(fptr),data(data) { }
+  virtual Point FacePoint(int face, int point) const 
+  {
+    return fptr(ForwardFaceCollection::FacePoint(face,point),
+		face, point, data);
+  }
+private:
+  Point (*fptr)(Point, int,int,void*);
+  void *data;
+};
+struct ChangePositions_data
+{
+  GameApi::Env *env;
+  GameApi::PT (*fptr)(GameApi::PT p, int face, int point, void* data);
+  void *data;
+};
+
+Point ChangePositions_Func(Point p, int face,int point,void* data)
+{
+  ChangePositions_data *dt = (ChangePositions_data*)data;
+  GameApi::PT pt = add_point(*dt->env, p.x, p.y, p.z);
+  GameApi::PT pt2 = dt->fptr(pt, face, point, data);
+  Point *pp = find_point(*dt->env, pt2);
+  if (!pp) return Point(0.0,0.0,0.0);
+  return *pp;
+}
+
+GameApi::P GameApi::PolygonApi::change_positions(P orig, PT (*fptr)(PT p, int face, int point, void* data), void *data)
 {
   FaceCollection *coll = find_facecoll(e, orig);
-  ::Function<Point,Point> *f = new GameApiPointFunction2(e,fptr,data);
-  EnvImpl *env = EnvImpl::Environment(&e);
-  env->deletes.push_back(std::tr1::shared_ptr<void>(f));
+  ChangePositions_data dt;
+  dt.env = &e;
+  dt.fptr = fptr;
+  dt.data = data;
 
-  FaceCollection *coll2 = new ChangePoints(*coll, *f);
+  FaceCollection *coll2 = new ChangePoints2(*coll, &ChangePositions_Func, &dt);
   return add_polygon(e, coll2, 1);
 }
+
+
+
+class ChangeNormal2 : public ForwardFaceCollection
+{
+public:
+  ChangeNormal2(FaceCollection &coll, Vector (*fptr)(Vector, int,int,void*), void *data)
+    : ForwardFaceCollection(coll), fptr(fptr),data(data) { }
+  virtual Vector PointNormal(int face, int point) const 
+  {
+    return fptr(ForwardFaceCollection::PointNormal(face,point),
+		face, point, data);
+  }
+private:
+  Vector (*fptr)(Vector, int,int,void*);
+  void *data;
+};
+struct ChangeNormal_data
+{
+  GameApi::Env *env;
+  GameApi::V (*fptr)(GameApi::V p, int face, int point, void* data);
+  void *data;
+};
+
+Vector ChangeNormals_Func(Vector p, int face,int point,void* data)
+{
+  ChangeNormal_data *dt = (ChangeNormal_data*)data;
+  GameApi::V pt = add_vector(*dt->env, p.dx, p.dy, p.dz);
+  GameApi::V pt2 = dt->fptr(pt, face, point, dt->data);
+  Vector *pp = find_vector(*dt->env, pt2);
+  if (!pp) return Vector(0.0,0.0,0.0);
+  return *pp;
+}
+
+GameApi::P GameApi::PolygonApi::change_normals(P orig, V (*fptr)(V p, int face, int point, void* data), void *data)
+{
+  FaceCollection *coll = find_facecoll(e, orig);
+  ChangeNormal_data dt;
+  dt.env = &e;
+  dt.fptr = fptr;
+  dt.data = data;
+
+  FaceCollection *coll2 = new ChangeNormal2(*coll, &ChangeNormals_Func, &dt);
+  return add_polygon(e, coll2, 1);
+}
+
+
+class ChangeColor2 : public ForwardFaceCollection
+{
+public:
+  ChangeColor2(FaceCollection &coll, unsigned int (*fptr)(unsigned int, int,int,void*), void *data)
+    : ForwardFaceCollection(coll), fptr(fptr),data(data) { }
+  virtual unsigned int Color(int face, int point) const 
+  {
+    return fptr(ForwardFaceCollection::Color(face,point),
+		face, point, data);
+  }
+private:
+  unsigned int (*fptr)(unsigned int, int,int,void*);
+  void *data;
+};
+struct ChangeColor_data
+{
+  GameApi::Env *env;
+  unsigned int (*fptr)(unsigned int p, int face, int point, void* data);
+  void *data;
+};
+
+unsigned int ChangeColor_Func(unsigned int p, int face,int point,void* data)
+{
+  ChangeColor_data *dt = (ChangeColor_data*)data;
+  return dt->fptr(p,face,point,dt->data);
+}
+
+GameApi::P GameApi::PolygonApi::change_colors(P orig, unsigned int (*fptr)(unsigned int p, int face, int point, void* data), void *data)
+{
+  FaceCollection *coll = find_facecoll(e, orig);
+  ChangeColor_data dt;
+  dt.env = &e;
+  dt.fptr = fptr;
+  dt.data = data;
+
+  FaceCollection *coll2 = new ChangeColor2(*coll, &ChangeColor_Func, &dt);
+  return add_polygon(e, coll2, 1);
+}
+
+class ChangeTexture : public ForwardFaceCollection
+{
+public:
+  ChangeTexture(FaceCollection &coll, int (*fptr)(int,void*), ::Bitmap< ::Color> **array, int size, void *data)
+    : ForwardFaceCollection(coll), fptr(fptr),data(data), array(array), size(size) { temp = new BufferFromBitmap*[size]; }
+  void GenTexture(int num) 
+  {
+    delete temp[num];
+    temp[num] = new BufferFromBitmap(*(array[num]));
+    temp[num]->Gen();
+  }
+  virtual BufferRef TextureBuf(int num) const 
+  { 
+    return temp[num]->Buffer();
+  }
+  virtual int FaceTexture(int face) const { return fptr(face, data); }
+private:
+  int (*fptr)(int,void*);
+  void *data;
+  Bitmap< ::Color> **array;
+  int size;
+  mutable BufferFromBitmap **temp;
+};
+
+
+GameApi::P GameApi::PolygonApi::change_texture(P orig, int (*fptr)(int face, void* data), BM *array, int size, void *data)
+{
+  FaceCollection *coll = find_facecoll(e, orig);
+  std::vector<Bitmap<Color>*> *vec = new std::vector<Bitmap<Color>*>;
+  for(int i=0;i<size;i++)
+    {
+      BitmapHandle *handle = find_bitmap(e, array[i]);
+      ::Bitmap<Color> *bitmap = find_color_bitmap(handle);
+      vec->push_back(bitmap);
+    }
+  ChangeTexture *tex = new ChangeTexture(*coll, fptr, &(*vec)[0], size, data);
+  return add_polygon(e, tex, 1);
+}
+
+
+
 
 GameApi::P GameApi::PolygonApi::recalculate_normals(P orig)
 {
@@ -3918,9 +4078,9 @@ public:
   }
   GameApi::P get_all() const { return api.polygon_api.memoize( api.polygon_api.or_array(&vec[0], vec.size()) ); }
 private:
+  GameApi::EveryApi &api;
   std::vector<GameApi::P> &vec;
   GameApi::P (*fptr)(GameApi::EveryApi &e, float,float,float, float,float,float, unsigned int, void*);
-  GameApi::EveryApi &api;
   void *data;
   float sx,sy,sz;
 };
