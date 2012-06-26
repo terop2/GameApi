@@ -3634,6 +3634,44 @@ GameApi::BB GameApi::BoolBitmapApi::circle(BB bg, float center_x, float center_y
   return add_bool_bitmap(e, orbitmap);
 }
 
+struct Rectangle_data
+{
+  float start_x, end_x;
+  float start_y, end_y;
+};
+
+bool Rectangle_func(int x, int y, void* data)
+{
+  Rectangle_data *dt = (Rectangle_data*)data;
+  if (x<start_x) return false;
+  if (x>=end_x) return false;
+  if (y<start_y) return false;
+  if (y>=end_y) return false;
+  return true;
+}
+
+int GameApi::BoolBitmapApi::size_x(BB bm)
+{
+  Bitmap<bool> *b = find_bool_bitmap(e,bm);
+  return b->SizeX();
+}
+int GameApi::BoolBitmapApi::size_y(BB bm)
+{
+  Bitmap<bool> *b = find_bool_bitmap(e,bm);
+  return b->SizeY();
+}
+
+GameApi::BB GameApi::BoolBitmapApi::rectangle(BB bg, float x, float y, float width, float height)
+{
+  Rectangle_data d;
+  d.start_x = x;
+  d.start_y = y;
+  d.end_x = x+width;
+  d.end_y = y+height;
+  return or_bitmap(bg, function(&Rectangle_func, size_x(bg), size_y(bg), &d));
+  
+}
+
 GameApi::BB GameApi::BoolBitmapApi::or_bitmap(BB b1, BB b2)
 {
   Bitmap<bool> *bm1 = find_bool_bitmap(e, b1)->bitmap;
