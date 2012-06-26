@@ -2686,6 +2686,24 @@ GameApi::P GameApi::PolygonApi::splitquads(P orig, int x_count, int y_count)
   next2->Reset();
   return add_polygon(e, next2, 1);
 }
+
+class GameApiPointFunction2 : public Function<Point,Point>
+{
+public:
+  GameApiPointFunction2(GameApi::Env &e, GameApi::PT (*fptr)(GameApi::PT p, void *data), void *data) : e(e), fptr(fptr), data(data) { }
+  Point Index(Point p) const
+  {
+    GameApi::PT pt = add_point(e, p.x, p.y, p.z);
+    GameApi::PT pt2 = fptr(pt, data);
+    Point *pp = find_point(e, pt2);
+    return *pp;
+  }
+  
+private:
+  GameApi::Env &e;
+  GameApi::PT (*fptr)(GameApi::PT p, void *data);
+  void *data;
+};
 class GameApiPointFunction : public Function<Point,Point>
 {
 public:
@@ -2702,15 +2720,17 @@ private:
   GameApi::Env &e;
   GameApi::FunctionCb<GameApi::PT, GameApi::PT> *cb;
 };
+#if 0
 void GameApi::PolygonApi::del_cb_later(GameApi::FunctionCb<PT,PT> *cb)
 {
   EnvImpl *env = EnvImpl::Environment(&e);
   env->deletes.push_back(std::tr1::shared_ptr<void>(cb));
 }
-GameApi::P GameApi::PolygonApi::change_positions(P orig, GameApi::FunctionCb<PT,PT> *cb)
+#endif
+GameApi::P GameApi::PolygonApi::change_positions(P orig, PT (*fptr)(PT p, void* data), void *data)
 {
   FaceCollection *coll = find_facecoll(e, orig);
-  ::Function<Point,Point> *f = new GameApiPointFunction(e,cb);
+  ::Function<Point,Point> *f = new GameApiPointFunction2(e,fptr,data);
   EnvImpl *env = EnvImpl::Environment(&e);
   env->deletes.push_back(std::tr1::shared_ptr<void>(f));
 
