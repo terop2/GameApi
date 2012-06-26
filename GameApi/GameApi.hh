@@ -507,6 +507,7 @@ public:
 		void *data, 
 		int size,
 		float wholesize); // marching cubes algo
+  void find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level);
 		
 private:
   Env &e;
