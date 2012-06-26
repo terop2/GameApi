@@ -3802,6 +3802,12 @@ private:
   float sx,sy,sz;
 };
 
+GameApi::O GameApi::VolumeApi::boolfunction(bool (*fptr)(float x, float y, float z, void *data), void *data)
+{
+  VolumeObject *o = new FunctionVolume(fptr, data);
+  return add_volume(e,o);
+}
+
 void GameApi::VolumeApi::find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level)
 {
   Point *pp1 = find_point(e,p1);
