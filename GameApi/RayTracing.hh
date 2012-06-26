@@ -19,6 +19,8 @@ public:
 RaySphereIntersection::IntersectPoint RaySphereIntersection::Intersect(Point center, float radius,
 			 Point ray_p1, Point ray_p2)
 {
+  RaySphereIntersection::IntersectPoint p;
+  return p;
 #if 0
   Plane pl(center, ray_p1-center, ray_p2-center);
   Point2d center_2d = { pl.CoordsX(center), pl.CoordsY(center) };
