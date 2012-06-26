@@ -3643,21 +3643,21 @@ struct Rectangle_data
 bool Rectangle_func(int x, int y, void* data)
 {
   Rectangle_data *dt = (Rectangle_data*)data;
-  if (x<start_x) return false;
-  if (x>=end_x) return false;
-  if (y<start_y) return false;
-  if (y>=end_y) return false;
+  if (x<dt->start_x) return false;
+  if (x>=dt->end_x) return false;
+  if (y<dt->start_y) return false;
+  if (y>=dt->end_y) return false;
   return true;
 }
 
 int GameApi::BoolBitmapApi::size_x(BB bm)
 {
-  Bitmap<bool> *b = find_bool_bitmap(e,bm);
+  Bitmap<bool> *b = find_bool_bitmap(e,bm)->bitmap;
   return b->SizeX();
 }
 int GameApi::BoolBitmapApi::size_y(BB bm)
 {
-  Bitmap<bool> *b = find_bool_bitmap(e,bm);
+  Bitmap<bool> *b = find_bool_bitmap(e,bm)->bitmap;
   return b->SizeY();
 }
 
