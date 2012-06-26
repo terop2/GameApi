@@ -721,6 +721,13 @@ GameApi::BM add_color_bitmap(GameApi::Env &e, Bitmap<Color> *bm)
 {
   BitmapColorHandle *handle = new BitmapColorHandle;
   handle->bm = bm;
+  GameApi::BitmapApi api(e);
+  return api.memoize(add_bitmap(e,handle));
+}
+GameApi::BM add_color_bitmap2(GameApi::Env &e, Bitmap<Color> *bm)
+{
+  BitmapColorHandle *handle = new BitmapColorHandle;
+  handle->bm = bm;
   return add_bitmap(e,handle);
 }
 
@@ -778,6 +785,17 @@ GameApi::P add_polygon(GameApi::Env &e, FaceCollPolyHandle *handle)
 }
 // takes ownership of FaceCollection*
 GameApi::P add_polygon(GameApi::Env &e, FaceCollection *coll, int size)
+{
+  FaceCollPolyHandle *h = new FaceCollPolyHandle;
+  h->coll = coll;
+  h->collowned = true;
+  h->collarray=0;
+  h->collarrayowned = false;
+  //h->size = size;
+  GameApi::PolygonApi api(e);
+  return api.memoize(add_polygon(e,h));
+}
+GameApi::P add_polygon2(GameApi::Env &e, FaceCollection *coll, int size)
 {
   FaceCollPolyHandle *h = new FaceCollPolyHandle;
   h->coll = coll;
@@ -2711,7 +2729,7 @@ GameApi::P GameApi::PolygonApi::memoize(P orig)
   FaceCollection *coll = find_facecoll(e, orig);
   MemoizeFaces *coll2 = new MemoizeFaces(*coll);
   coll2->Reset();
-  return add_polygon(e, coll2, 1);
+  return add_polygon2(e, coll2, 1);
 }
 GameApi::P GameApi::PolygonApi::memoize_all(P orig)
 {
@@ -2719,7 +2737,7 @@ GameApi::P GameApi::PolygonApi::memoize_all(P orig)
   MemoizeFaces *coll2 = new MemoizeFaces(*coll);
   coll2->Reset();
   coll2->MemoizeAll();
-  return add_polygon(e, coll2, 1);
+  return add_polygon2(e, coll2, 1);
 }
 GameApi::P GameApi::PolygonApi::heightmap(BM bm,
 					  HeightMapType t,
@@ -3831,6 +3849,31 @@ GameApi::O GameApi::VolumeApi::max_op(GameApi::O o1, GameApi::O o2)
 
 }
 
+GameApi::BB GameApi::VolumeApi::plane(GameApi::O o, int sx, int sy,
+				      PT u_p, V u_x, V u_y,
+				      float start_x, float end_x,
+				      float start_y, float end_y,
+				      float start_z, float end_z)
+{
+  VolumeObject *volume = find_volume(e,o);
+  Point *u_p_1 = find_point(e,u_p);
+  Vector *u_x_1 = find_vector(e,u_x);
+  Vector *u_y_1 = find_vector(e,u_y);
+  Plane pl(*u_p_1, *u_x_1, *u_y_1);
+  Range<float> *x = new Range<float>(start_x, end_x);
+  Range<float> *y = new Range<float>(start_y, end_y);
+  Range<float> *z = new Range<float>(start_z, end_z);
+  VolumeVoxel *voxel = new VolumeVoxel(*volume, *x,*y,*z);
+  PlaneBitmap<bool> *plane = new PlaneBitmap<bool>(*voxel, pl, float(sx), float(sy));
+  BitmapFromContinuousBitmap<bool> *bm = new BitmapFromContinuousBitmap<bool>(*plane, sx,sy);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(x));
+  env->deletes.push_back(std::tr1::shared_ptr<void>(y));
+  env->deletes.push_back(std::tr1::shared_ptr<void>(z));
+  env->deletes.push_back(std::tr1::shared_ptr<void>(voxel));
+  env->deletes.push_back(std::tr1::shared_ptr<void>(plane));
+  return add_bool_bitmap(e, bm);
+}
 GameApi::O GameApi::VolumeApi::andnot_op(GameApi::O o1, GameApi::O o2)
 {
   VolumeObject *oo1 = find_volume(e, o1);

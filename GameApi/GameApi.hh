@@ -496,6 +496,13 @@ public:
   O min_op(O object1, O object2);
   O max_op(O object1, O object2);
   O andnot_op(O object1, O object2);
+
+  BB plane(O o, int sx, int sy,
+	   PT u_p, V u_x, V u_y,
+	   float start_x, float end_x,
+	   float start_y, float end_y,
+	   float start_z, float end_z);
+
   BM render(O object, int sx, int sy, PT ray_0, PT ray_x, PT ray_y, PT ray_z);
   typedef P (*fptrtype)(EveryApi &api,
 			float start_x, float end_x, 
@@ -509,7 +516,11 @@ public:
 		int size,
 		float wholesize); // marching cubes algo
   void find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level);
-		
+  // use RayTracingBitmap class in graph.hh
+  // problem1: float values in O. (currently uses bool)
+  // problem2: colors in O.
+  // problem3: conversion from volumeobject to continuousvoxel<float> and continuousvoxel<color> (something like that exists already)
+  // BM raytrace(O volume, int sx, int sy, V v, float z);
 private:
   Env &e;
 };

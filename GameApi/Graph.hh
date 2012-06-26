@@ -1099,6 +1099,7 @@ public:
 template<class T1, class K, class T2 = T1>
 class MapBitmap : public Bitmap<K>
 { // T1 => T2 conversion needs to exists
+  // TODO: x and y are not passed to f().
 public:
   MapBitmap(Bitmap<T1> &bm, Function<T2,K> &f) : bm(bm), f(f) { }
   int SizeX() const { return bm.SizeX(); }
