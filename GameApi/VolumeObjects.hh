@@ -146,6 +146,19 @@ public:
 #endif
 };
 
+class FunctionVolume : public VolumeObject
+{
+public:
+  FunctionVolume(bool (*fptr)(float x, float y, float z, void *data), void *data)
+    : fptr(fptr), data(data)
+  {
+  }
+  virtual bool Inside(Point v) const { return fptr(v.x,v.y,v.z,data); }
+private:
+  bool (*fptr)(float x, float y, float z, void *data); 
+  void *data;
+};
+
 class TimedVolumeObject
 {
 public:
