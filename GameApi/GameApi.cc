@@ -3923,6 +3923,143 @@ GameApi::FB GameApi::FloatBitmapApi::function(float (*fptr)(int,int,void*), int 
   return add_float_bitmap(e, new BitmapFromFunction<float>(fptr,sx,sy,data));
 }
 
+class BitmapFromRed : public Bitmap<float>
+{
+public:
+  BitmapFromRed(Bitmap<Color> &bm) : bm(bm) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual float Map(int x, int y) const
+  {
+    Color c = bm.Map(x,y);
+    int val = c.r;
+    return float(val)/255.0;
+  }
+
+private:
+  Bitmap<Color> &bm;
+};
+
+GameApi::FB GameApi::FloatBitmapApi::from_red(BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e,bm);
+  Bitmap<Color> *bmc = find_color_bitmap(handle);
+  Bitmap<float> *bm2 = new BitmapFromRed(*bmc);
+  return add_float_bitmap(e, bm2);
+}
+
+class BitmapFromGreen : public Bitmap<float>
+{
+public:
+  BitmapFromGreen(Bitmap<Color> &bm) : bm(bm) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual float Map(int x, int y) const
+  {
+    Color c = bm.Map(x,y);
+    int val = c.g;
+    return float(val)/255.0;
+  }
+
+private:
+  Bitmap<Color> &bm;
+};
+
+GameApi::FB GameApi::FloatBitmapApi::from_green(BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<Color> *bmc = find_color_bitmap(handle);
+  Bitmap<float> *bm2 = new BitmapFromGreen(*bmc);
+  return add_float_bitmap(e, bm2);
+}
+
+class BitmapFromBlue : public Bitmap<float>
+{
+public:
+  BitmapFromBlue(Bitmap<Color> &bm) : bm(bm) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual float Map(int x, int y) const
+  {
+    Color c = bm.Map(x,y);
+    int val = c.b;
+    return float(val)/255.0;
+  }
+
+private:
+  Bitmap<Color> &bm;
+};
+
+GameApi::FB GameApi::FloatBitmapApi::from_blue(BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<Color> *bmc = find_color_bitmap(handle);
+  Bitmap<float> *bm2 = new BitmapFromBlue(*bmc);
+  return add_float_bitmap(e, bm2);
+}
+
+class BitmapFromAlpha : public Bitmap<float>
+{
+public:
+  BitmapFromAlpha(Bitmap<Color> &bm) : bm(bm) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual float Map(int x, int y) const
+  {
+    Color c = bm.Map(x,y);
+    int val = c.alpha;
+    return float(val)/255.0;
+  }
+
+private:
+  Bitmap<Color> &bm;
+};
+
+GameApi::FB GameApi::FloatBitmapApi::from_alpha(BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<Color> *bmc = find_color_bitmap(handle);
+  Bitmap<float> *bm2 = new BitmapFromAlpha(*bmc);
+  return add_float_bitmap(e, bm2);
+}
+
+class BitmapFromRGBA : public Bitmap<Color>
+{
+public:
+  BitmapFromRGBA(Bitmap<float> &r, Bitmap<float> &g, Bitmap<float> &b, Bitmap<float> &a) : r(r), g(g), b(b), a(a) { }
+  virtual int SizeX() const { return r.SizeX(); }
+  virtual int SizeY() const { return r.SizeY(); }
+  virtual Color Map(int x, int y) const
+  {
+    float fr = r.Map(x,y);
+    float fg = g.Map(x,y);
+    float fb = b.Map(x,y);
+    float fa = a.Map(x,y);
+    int r = fr*255.0;
+    int g = fg*255.0;
+    int b = fb*255.0;
+    int a = fa*255.0;
+    return Color(r,g,b,a);
+
+  }
+private:
+  Bitmap<float> &r;
+  Bitmap<float> &g;
+  Bitmap<float> &b;
+  Bitmap<float> &a;
+};
+
+GameApi::BM GameApi::FloatBitmapApi::to_color(FB r, FB g, FB b, FB a)
+{
+  Bitmap<float> *rb = find_float_bitmap(e,r)->bitmap;
+  Bitmap<float> *gb = find_float_bitmap(e,g)->bitmap;
+  Bitmap<float> *bb = find_float_bitmap(e,b)->bitmap;
+  Bitmap<float> *ab = find_float_bitmap(e,a)->bitmap;
+  Bitmap<Color> *bm2 = new BitmapFromRGBA(*rb,*gb,*bb,*ab);
+  return add_color_bitmap(e, bm2);
+}
+
+
 GameApi::FB GameApi::FloatBitmapApi::from_bool_bitmap(BB bm, int csx, int csy)
 {
   Bitmap<bool> *bm2 = find_bool_bitmap(e,bm)->bitmap;

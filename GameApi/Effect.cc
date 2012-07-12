@@ -2855,7 +2855,7 @@ std::pair<int,int> ArrayRender::InsertMesh(Mesh &mesh, int frame)
     {
       if (f%1000 == 0)
 	{
-	  std::cout << "M: " << f << "/" << size_faces << std::endl;
+	  //std::cout << "M: " << f << "/" << size_faces << std::endl;
 	}
 
     index_array[used_face_count[frame] + f] = used_vertex_count[frame] + i;
@@ -2888,7 +2888,7 @@ void ArrayRender::UpdateTexCoord(Mesh &mesh, MeshTexCoords &coord, std::pair<int
     {
       if (f%1000 == 0)
 	{
-	  std::cout << "TX: " << f << "/" << size_faces << std::endl;
+	  //std::cout << "TX: " << f << "/" << size_faces << std::endl;
 	}
     for(int p=0;p<size_points;p++)
       {
@@ -2956,7 +2956,7 @@ void ArrayRender::UpdateColors(Mesh &mesh, MeshColors &color, std::pair<int,int>
     {
       if (f%1000 == 0)
 	{
-	  std::cout << "C: " << f << "/" << size_faces << std::endl;
+	  //std::cout << "C: " << f << "/" << size_faces << std::endl;
 	}
     for(int p=0;p<size_points;p++)
       {
@@ -3024,7 +3024,7 @@ void ArrayRender::UpdateNormals(Mesh &mesh, MeshNormals &normal, std::pair<int,i
     {
       if (f%1000 == 0)
 	{
-	  std::cout << "N: " << f << "/" << size_faces << std::endl;
+	  //std::cout << "N: " << f << "/" << size_faces << std::endl;
 	}
     for(int p=0;p<size_points;p++)
       {
