@@ -1,4 +1,6 @@
 
+
+
 void ReadData(int *data, int *dataend, WorldWalls &walls, std::map<int, bool> &states)
 {
   if (!data) return;
