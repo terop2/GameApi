@@ -4056,7 +4056,7 @@ GameApi::BM GameApi::FloatBitmapApi::to_color(FB r, FB g, FB b, FB a)
   Bitmap<float> *bb = find_float_bitmap(e,b)->bitmap;
   Bitmap<float> *ab = find_float_bitmap(e,a)->bitmap;
   Bitmap<Color> *bm2 = new BitmapFromRGBA(*rb,*gb,*bb,*ab);
-  return add_color_bitmap(e, bm2);
+  return add_color_bitmap2(e, bm2);
 }
 
 
