@@ -3892,6 +3892,12 @@ GameApi::BB GameApi::BoolBitmapApi::rectangle(BB bg, float x, float y, float wid
   
 }
 
+GameApi::BB GameApi::BoolBitmapApi::not_bitmap(BB b)
+{
+  Bitmap<bool> *bm = find_bool_bitmap(e, b)->bitmap;
+  return add_bool_bitmap(e, new NotBitmap(*bm));
+}
+
 GameApi::BB GameApi::BoolBitmapApi::or_bitmap(BB b1, BB b2)
 {
   Bitmap<bool> *bm1 = find_bool_bitmap(e, b1)->bitmap;
@@ -3909,7 +3915,7 @@ GameApi::BM GameApi::BoolBitmapApi::to_bitmap(BB bools,
 					      int false_r, int false_g, int false_b, int false_a)
 {
   Bitmap<bool> *bm1 = find_bool_bitmap(e, bools)->bitmap;
-  return add_color_bitmap(e, new ChooseTBitmap<Color>(*bm1, Color(false_r, false_g, false_b, false_a), Color(true_r, true_g, true_b, true_a)));
+  return add_color_bitmap2(e, new ChooseTBitmap<Color>(*bm1, Color(false_r, false_g, false_b, false_a), Color(true_r, true_g, true_b, true_a)));
 }
 
 GameApi::BoolBitmapApi::BoolBitmapApi(GameApi::Env &e) : e(e) { }
@@ -4068,14 +4074,14 @@ GameApi::FB GameApi::FloatBitmapApi::from_bool_bitmap(BB bm, int csx, int csy)
 GameApi::BM GameApi::FloatBitmapApi::to_grayscale(FB fb)
 {
   Bitmap<float> *bm = find_float_bitmap(e,fb)->bitmap;
-  return add_color_bitmap(e, new GrayScaleBitmapFromFloatBitmap(*bm, Color(0,0,0,0), Color(255,255,255,255)));
+  return add_color_bitmap2(e, new GrayScaleBitmapFromFloatBitmap(*bm, Color(0,0,0,0), Color(255,255,255,255)));
 }
 
 GameApi::BM GameApi::FloatBitmapApi::to_grayscale_color(FB fb, int r, int g, int b, int a,
 							int r2, int g2, int b2, int a2)
 {
   Bitmap<float> *bm = find_float_bitmap(e,fb)->bitmap;
-  return add_color_bitmap(e, new GrayScaleBitmapFromFloatBitmap(*bm, Color(r,g,b,a), Color(r2,g2,b2,a2)));
+  return add_color_bitmap2(e, new GrayScaleBitmapFromFloatBitmap(*bm, Color(r,g,b,a), Color(r2,g2,b2,a2)));
 }
 
 struct PointArray

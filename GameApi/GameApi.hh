@@ -799,7 +799,7 @@ public:
   BB text(BB bg, int x, int y, const char *string, int size, 
 	  BB *glyphs, int glyphcount, int(*fptr)(char));
   
-  
+  BB not_bitmap(BB b);
   BB or_bitmap(BB b1, BB b2);
   BB andnot_bitmap(BB b1, BB not_b2);
   BB xor_bitmap(BB b1, BB flip_b2);
