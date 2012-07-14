@@ -280,6 +280,17 @@ private:
   int x_gap;
 };
 
+class NotBitmap : public Bitmap<bool>
+{
+public:
+  NotBitmap(Bitmap<bool> &bm) : bm(bm) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  bool Map(int x, int y) const { return !bm.Map(x,y); }
+private:
+  Bitmap<bool> &bm;
+};
+
 class OrBitmap : public Bitmap<bool>
 {
 public:
