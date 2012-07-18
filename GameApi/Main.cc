@@ -359,6 +359,7 @@ SDL_Surface *InitSDL(int scr_x, int scr_y, bool vblank, bool antialias)
   //screenx = 320;
   //screeny = 200;
   SDL_Init(SDL_INIT_VIDEO);
+  //SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
   screen = SDL_SetVideoMode(screenx,screeny,32,SDL_OPENGL | SDL_DOUBLEBUF/*|SDL_FULLSCREEN*/);
   SDL_ShowCursor(SDL_DISABLE);
   //glutInit(&argc, argv);
@@ -394,13 +395,13 @@ SDL_Surface *InitSDL(int scr_x, int scr_y, bool vblank, bool antialias)
       int (*SwapInterval)(int);
       SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("glXSwapInterval");
       if (!SwapInterval)
+	SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("wglSwapIntervalEXT");
+      if (!SwapInterval)
 	SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("glXSwapIntervalEXT");
       if (!SwapInterval)
 	SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("glXSwapIntervalSGI");
       if (!SwapInterval)
 	SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("wglSwapInterval");
-      if (!SwapInterval)
-	SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("wglSwapIntervalEXT");
       if (!SwapInterval)
 	SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("wglSwapIntervalSGI");
       // actual vsync activation
