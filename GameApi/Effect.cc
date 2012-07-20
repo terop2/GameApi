@@ -3056,6 +3056,10 @@ void ArrayRender::Alloc(int numfaces, int numvertices)
 }
 ArrayRender::~ArrayRender()
 {
+  if (texture_count)
+    {
+      glDeleteTextures(texture_count, (const GLuint*)&texture[0]);
+    }
   delete [] vertex_array;
   delete [] normal_array;
   delete [] color_array;
