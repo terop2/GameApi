@@ -722,7 +722,7 @@ GameApi::BM add_color_bitmap(GameApi::Env &e, Bitmap<Color> *bm)
   BitmapColorHandle *handle = new BitmapColorHandle;
   handle->bm = bm;
   GameApi::BitmapApi api(e);
-  return api.memoize(add_bitmap(e,handle));
+  return add_bitmap(e,handle);
 }
 GameApi::BM add_color_bitmap2(GameApi::Env &e, Bitmap<Color> *bm)
 {
