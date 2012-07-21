@@ -475,6 +475,7 @@ public:
   VolumeApi(Env &e);
   ~VolumeApi();
   O boolfunction(bool (*fptr)(float x, float y, float z, void *data), void *data=0);
+  O link_areas(O o, PT p1, PT p2, float d);
   O sphere(PT center, float radius);
   O cube(float start_x, float end_x, 
 	 float start_y, float end_y,
