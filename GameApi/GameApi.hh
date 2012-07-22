@@ -81,6 +81,7 @@ public:
   ~MainLoopApi();
   void init();
   void init_3d();
+  void transfer_sdl_surface(MainLoopApi &orig);
   void clear();
   void clear_3d();
   void switch_to_3d(bool b);

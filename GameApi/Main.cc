@@ -369,6 +369,7 @@ SDL_Surface *InitSDL(int scr_x, int scr_y, bool vblank, bool antialias)
       std::cout << "Glew init failed!" << std::endl;
       return 0;
     }
+#if 0
   if (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader &&
       GL_EXT_geometry_shader4)
     {
@@ -379,6 +380,7 @@ SDL_Surface *InitSDL(int scr_x, int scr_y, bool vblank, bool antialias)
       std::cout << "NO SHADERS" << std::endl;
       exit(1);
     }
+#endif
 
   //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
