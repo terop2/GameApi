@@ -148,6 +148,13 @@ void GameApi::MainLoopApi::init()
   glMatrixMode( GL_MODELVIEW ); 
   glLoadIdentity();
 }
+void GameApi::MainLoopApi::transfer_sdl_surface(MainLoopApi &orig)
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  MainLoopPriv *p2 = (MainLoopPriv*)orig.priv;
+  p->screen = p2->screen;
+}
+
 
 void GameApi::MainLoopApi::init_3d()
 {
