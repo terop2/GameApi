@@ -823,6 +823,28 @@ private:
   int x,y;
 };
 
+class BlitBitmapClass : public Bitmap<Color>
+{
+public:
+  BlitBitmapClass(Bitmap<Color> &bm, Bitmap<Color> &bm2, int x, int y) : bm(bm), bm2(bm2), x(x), y(y) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual Color Map(int xx, int yy) const
+  {
+    Color c1 = bm.Map(xx,yy);
+    Color c2(0,0,0,0);
+    if (xx>=x && xx<x+bm2.SizeX())
+      if (yy>=y && yy<y+bm2.SizeY())
+	{
+	c2 = bm2.Map(xx-x, yy-y);
+	}
+    return Color::Interpolate(c1,c2,(c2.alpha/255.0));
+  }  
+private:
+  Bitmap<Color> &bm;
+  Bitmap<Color> &bm2;
+  int x,y;
+};
 
 void BlitBitmap(BufferRef ref, int x, int y, Bitmap<Color> &color);
 

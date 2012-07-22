@@ -1979,6 +1979,15 @@ GameApi::BM GameApi::BitmapApi::modify_bitmap(GameApi::BM orig, BM bm, int x, in
   BM bbm = add_bitmap(e,h);
   return bbm;
 }
+GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y)
+{
+  BitmapHandle *handle = find_bitmap(e, bg);
+  BitmapHandle *handle2 = find_bitmap(e, orig);
+  Bitmap<Color> *bm1 = find_color_bitmap(handle);
+  Bitmap<Color> *bm2 = find_color_bitmap(handle2);
+  return add_color_bitmap(e, new BlitBitmapClass(*bm1, *bm2, x,y));
+}
+
 int GameApi::BitmapApi::intvalue(GameApi::BM orig, int x, int y)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
