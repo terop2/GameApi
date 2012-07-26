@@ -80,8 +80,8 @@ class MainLoopApi
 public:
   MainLoopApi(Env &e);
   ~MainLoopApi();
-  void init();
-  void init_3d();
+  void init(int screen_width = 800, int screen_height = 600);
+  void init_3d(int screen_width = 800, int screen_heigth = 600);
   void transfer_sdl_surface(MainLoopApi &orig);
   void clear();
   void clear_3d();

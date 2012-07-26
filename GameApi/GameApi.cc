@@ -125,11 +125,11 @@ GameApi::MainLoopApi::~MainLoopApi()
 {
   delete (MainLoopPriv*)priv;
 }
-void GameApi::MainLoopApi::init()
+void GameApi::MainLoopApi::init(int screen_width, int screen_height)
 {
   MainLoopPriv *p = (MainLoopPriv*)priv;
-  int screenx = 800;
-  int screeny = 600;
+  int screenx = screen_width;
+  int screeny = screen_height;
   p->screen = InitSDL(screenx,screeny,true);
   //glColor4f(1.0,1.0,1.0, 0.5);
   time = SDL_GetTicks();
@@ -156,11 +156,11 @@ void GameApi::MainLoopApi::transfer_sdl_surface(MainLoopApi &orig)
 }
 
 
-void GameApi::MainLoopApi::init_3d()
+void GameApi::MainLoopApi::init_3d(int screen_width, int screen_height)
 {
   MainLoopPriv *p = (MainLoopPriv*)priv;
-  int screenx = 800;
-  int screeny = 600;
+  int screenx = screen_width;
+  int screeny = screen_height;
   p->screen = InitSDL(screenx,screeny,true);
   //glColor4f(1.0,1.0,1.0, 0.5);
   time = SDL_GetTicks();
@@ -1490,7 +1490,7 @@ void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, float x, float y, fl
 {
   SpritePriv &spriv = *(SpritePriv*)priv;
   ::Sprite *s = spriv.sprites[bm.id];
-  if (!s) { std::cout << "rendersprite sprite==NULL" << std::endl; return; }
+  if (!s) { std::cout << "rendersprite sprite==NULL (maybe you need to call prepare() for every object before rendering happens. (do not put it to frame loop or you lose frame rates))" << std::endl; return; }
 
   Point2d pos2 = { x, y };
   float z = 0.0;
@@ -1502,7 +1502,7 @@ void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, PT pos)
 {
   SpritePriv &spriv = *(SpritePriv*)priv;
   ::Sprite *s = spriv.sprites[bm.id];
-  if (!s) { std::cout << "rendersprite sprite==NULL" << std::endl; return; }
+  if (!s) { std::cout << "rendersprite sprite==NULL (maybe you need to call prepare() for every object before rendering happens. (do not put it to frame loop or you lose frame rates))" << std::endl; return; }
 
   Point *p = find_point(e, pos);
   Point2d pos2 = { p->x, p->y };
@@ -1514,7 +1514,7 @@ void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SP move_space, SP sp
 {
   SpritePriv &spriv = *(SpritePriv*)priv;
   ::Sprite *s = spriv.sprites[bm.id];
-  if (!s) { std::cout << "rendersprite sprite==NULL" << std::endl; return; }
+  if (!s) { std::cout << "rendersprite sprite==NULL (maybe you need to call prepare() for every object before rendering happens. (do not put it to frame loop or you lose frame rates))" << std::endl; return; }
   SpaceImpl *move = find_space(e, move_space);
   SpaceImpl *spr = find_space(e, sprite_space);
   
@@ -3004,7 +3004,7 @@ void GameApi::PolygonApi::render(P p, int choose, float x, float y, float z)
 {
   PolyPriv *pp = (PolyPriv*)priv;
   StateBitmaps *state_bm = pp->states[p.id];
-  if (!state_bm) { std::cout << "Need to call prepare() before render() call" << std::endl; }
+  if (!state_bm) { std::cout << "Need to call prepare() before render() call(do not put prepare() to renderloop)" << std::endl; }
   state_bm->Render(choose); 
 }
 
@@ -3122,7 +3122,7 @@ void GameApi::PolygonApi::renderpoly(P p, int choose, float x, float y, float z)
 {
   PolyPriv *pp = (PolyPriv*)priv;
   ArrayRender *r = pp->rend[p.id];
-  if (!r) { std::cout << "To use renderpoly() you should first call preparepoly" << std::endl; return; }
+  if (!r) { std::cout << "To use renderpoly() you should first call preparepoly(do not put it to frame loop)" << std::endl; return; }
   glPushMatrix();
   glTranslatef(x,y,z);
   //std::cout << "renderpoly: " << r->used_vertex_count << std::endl;
