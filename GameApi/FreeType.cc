@@ -38,7 +38,7 @@ void FontGlyphBitmap::load_glyph(long idx)
   FT_UInt glyphindex = FT_Get_Char_Index(priv->face, idx);
   int err1 = FT_Load_Glyph(priv->face, glyphindex, FT_LOAD_RENDER|FT_LOAD_TARGET_NORMAL);
   int err2 = FT_Render_Glyph(priv->face->glyph, FT_RENDER_MODE_NORMAL);
-  std::cout << "load_glyph: " << err1 << " " << err2 << std::endl;
+  //std::cout << "load_glyph: " << err1 << " " << err2 << std::endl;
 }
 
 int FontGlyphBitmap::bitmap_top(long idx) const
@@ -51,14 +51,14 @@ int FontGlyphBitmap::bitmap_top(long idx) const
 int FontGlyphBitmap::SizeX() const
 {
   int val = priv->face->glyph->bitmap.width;
-  std::cout << "SizeX:" << val << std::endl;
+  //std::cout << "SizeX:" << val << std::endl;
   return val;
 }
 
 int FontGlyphBitmap::SizeY() const
 {
   int val = priv->face->glyph->bitmap.rows; 
-  std::cout << "SizeY:" << val << std::endl;
+  //std::cout << "SizeY:" << val << std::endl;
   return val;
 }
 

@@ -1805,6 +1805,22 @@ public:
   virtual float SizeY() const=0;
   virtual C Map(float x, float y) const=0;
 };
+
+class FunctionContinuousBitmap : public ContinuousBitmap<Color>
+{
+public:
+  FunctionContinuousBitmap(unsigned int (*fptr)(float, float, void*), float sx, float sy, void *data) : fptr(fptr), sx(sx), sy(sy), data(data) { }
+  virtual float SizeX() const { return sx; }
+  virtual float SizeY() const { return sy; }
+  virtual Color Map(float x, float y) const
+  {
+    return Color(fptr(x,y, data));
+  }
+public:
+  unsigned int (*fptr)(float, float, void*); 
+  float sx; float sy;
+  void *data;
+};
 typedef ContinuousBitmap<Color> ContinuousColorBitmap;
 
 template<class T>
