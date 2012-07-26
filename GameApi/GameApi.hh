@@ -10,6 +10,7 @@ namespace GameApi
   struct BM { int id; }; // bitmap
   struct BB { int id; }; // bool bitmap
   struct FB { int id; }; // float bitmap
+  struct CBM { int id; }; // continuousbitmap
   struct SP { int id; }; // space
   struct PT { int id; }; // point
   struct V { int id; }; // vector
@@ -848,6 +849,21 @@ public: // values are [0.0..1.0]
   int size_x(FB bm);
   int size_y(FB bm);
   float floatvalue(FB bm, int x, int y);
+private:
+  Env &e;
+};
+
+class ContinuousBitmapApi
+{
+public:
+  ContinuousBitmapApi(Env &e);
+  CBM empty(float x, float y);
+  CBM constant(unsigned int color, float x, float y);
+  CBM function(unsigned int (*fptr)(float,float, void*), float sx, float sy, void *data);
+  BM sample(CBM c_bitmap, int sx, int sy); // SampleBitmap(CB<Color, int sx,int sy)
+  CBM from_bitmap(BM bm, float xsize, float ysize);
+  BM to_bitmap(CBM bm, int sx, int sy);
+
 private:
   Env &e;
 };

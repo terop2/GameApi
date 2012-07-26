@@ -599,6 +599,7 @@ struct EnvImpl
   std::vector<NDim<float,Point>*> dims;
   std::vector<StateInfo2> states;
   std::vector<StateRange> state_ranges; // ST type points to this array
+  std::vector<ContinuousBitmap<Color>*> continuous_bitmaps;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -762,6 +763,14 @@ GameApi::FB add_float_bitmap(GameApi::Env &e, Bitmap<float> *bitmap)
   return bm;
 }
 
+GameApi::CBM add_continuous_bitmap(GameApi::Env &e, ContinuousBitmap<Color> *bitmap)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->continuous_bitmaps.push_back(bitmap);
+  GameApi::CBM bm;
+  bm.id = env->continuous_bitmaps.size()-1;
+  return bm;
+}
 
 GameApi::F add_function(GameApi::Env &e, FunctionImpl &f)
 {
@@ -1130,6 +1139,17 @@ BoolBitmap *find_bool_bitmap(GameApi::Env &e, GameApi::BB b)
     handle = &ee->bool_bm[b.id];
   return handle;
 }
+
+ContinuousBitmap<Color> *find_continuous_bitmap(GameApi::Env &e, GameApi::CBM b)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  ContinuousBitmap<Color> *handle = 0;
+
+  if (b.id >=0 && b.id < (int)ee->continuous_bitmaps.size())
+    handle = ee->continuous_bitmaps[b.id];
+  return handle;
+}
+
 FloatBitmap *find_float_bitmap(GameApi::Env &e, GameApi::FB b)
 {
   EnvImpl *ee = EnvImpl::Environment(&e);
@@ -4274,4 +4294,38 @@ GameApi::P GameApi::VolumeApi::rendercubes(O o, P (*fptr)(EveryApi &api, float s
   VolumeObject *volume = find_volume(e,o);
   RenderVoxel(*volume, size, wholesize, hv);
   return hv.get_all();
+}
+
+GameApi::ContinuousBitmapApi::ContinuousBitmapApi(Env &e) : e(e) { }
+
+GameApi::CBM GameApi::ContinuousBitmapApi::empty(float x, float y)
+{
+  return constant(0x00000000, x, y);
+}
+GameApi::CBM GameApi::ContinuousBitmapApi::constant(unsigned int color, float x, float y)
+{
+  return add_continuous_bitmap(e, new ConstantContinuousBitmap<Color>(x,y,Color(color)));
+}
+GameApi::CBM GameApi::ContinuousBitmapApi::function(unsigned int (*fptr)(float,float, void*), float sx, float sy, void *data)
+{
+  return add_continuous_bitmap(e, new FunctionContinuousBitmap(fptr, sx, sy, data));
+}
+GameApi::BM GameApi::ContinuousBitmapApi::sample(CBM c_bitmap, int sx, int sy) // SampleBitmap(CB<Color, int sx,int sy)
+{
+  ContinuousBitmap<Color> *cbm = find_continuous_bitmap(e, c_bitmap);
+  return add_color_bitmap(e, new SampleBitmap(*cbm, sx, sy));
+}
+
+GameApi::BM GameApi::ContinuousBitmapApi::to_bitmap(CBM bm, int sx, int sy)
+{
+  ContinuousBitmap<Color> *cbm = find_continuous_bitmap(e, bm);  
+  return add_color_bitmap(e, new BitmapFromContinuousBitmap<Color>(*cbm, sx,sy));
+}
+
+GameApi::CBM GameApi::ContinuousBitmapApi::from_bitmap(BM bm, float xsize, float ysize)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<Color> *bm2 = find_color_bitmap(handle);
+
+  return add_continuous_bitmap(e, new ContinuousBitmapFromBitmap<Color>(*bm2, xsize, ysize));
 }
