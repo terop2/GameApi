@@ -6774,8 +6774,8 @@ public:
 	  {
 	    Point pos = coll->FacePoint(f,p);
 	    pos+=Vector(center);
-	    Point2d p = Perspective(pos);
-	    pointcol.push_back(p);
+	    Point2d p2 = Perspective(pos);
+	    pointcol.push_back(p2);
 	  }
 	while(points<4) { pointcol.push_back(pointcol.Index(points-1)); points++; }
 	TriangleContinuousBitmap bm(sx,sy, pointcol.Index(0), pointcol.Index(1), pointcol.Index(2));
