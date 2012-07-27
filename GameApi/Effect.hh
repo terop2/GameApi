@@ -1060,7 +1060,7 @@ public:
     // now VectorArray is empty
     int size2 = arr.Size();
     for(int ii=0;ii<size2;ii++)
-      push_back(arr.Index(ii));
+      this->push_back(arr.Index(ii));
   }
 private:
   Array<int, T> &arr;
