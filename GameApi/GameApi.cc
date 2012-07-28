@@ -21,6 +21,7 @@
 #include "FreeType.hh"
 #include "GameRunner.hh"
 #include "RayTracing.hh"
+#include "VertexArray.hh"
 
 #if 0
 struct SpritePriv
@@ -600,6 +601,8 @@ struct EnvImpl
   std::vector<StateInfo2> states;
   std::vector<StateRange> state_ranges; // ST type points to this array
   std::vector<ContinuousBitmap<Color>*> continuous_bitmaps;
+  std::vector<VertexArraySet*> vertex_array;
+  std::vector<Voxel<Color>*> voxels;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -763,6 +766,16 @@ GameApi::FB add_float_bitmap(GameApi::Env &e, Bitmap<float> *bitmap)
   return bm;
 }
 
+GameApi::VA add_vertex_array(GameApi::Env &e, VertexArraySet *va)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->vertex_array.push_back(va);
+  GameApi::VA bm;
+  bm.id = env->vertex_array.size()-1;
+  return bm;
+}
+
+
 GameApi::CBM add_continuous_bitmap(GameApi::Env &e, ContinuousBitmap<Color> *bitmap)
 {
   EnvImpl *env = EnvImpl::Environment(&e);
@@ -841,6 +854,16 @@ GameApi::O add_volume(GameApi::Env &e, VolumeObject *o)
   pt.id = env->volumes.size()-1;
   return pt;
 }
+
+GameApi::VX add_voxel(GameApi::Env &e, Voxel<Color> *o)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->voxels.push_back(o);
+  GameApi::VX pt;
+  pt.id = env->voxels.size()-1;
+  return pt;
+}
+
 GameApi::CO add_color(GameApi::Env &e, int r, int g, int b, int a)
 {
   EnvImpl *env = EnvImpl::Environment(&e);
@@ -1160,6 +1183,16 @@ FloatBitmap *find_float_bitmap(GameApi::Env &e, GameApi::FB b)
   return handle;
 }
 
+Voxel<Color> *find_voxel(GameApi::Env &e, GameApi::VX b)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  Voxel<Color> *handle = 0;
+
+  if (b.id >=0 && b.id < (int)ee->voxels.size())
+    handle = ee->voxels[b.id];
+  return handle;
+}
+
 
 FaceCollPolyHandle *find_poly(GameApi::Env &e, GameApi::P p)
 {
@@ -1171,6 +1204,17 @@ FaceCollPolyHandle *find_poly(GameApi::Env &e, GameApi::P p)
   //std::cout << "find_poly:" << handle << std::endl;
   return handle;
 }
+VertexArraySet *find_vertex_array(GameApi::Env &e, GameApi::VA p)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  VertexArraySet *handle = 0;
+
+  if (p.id >=0 && p.id < (int)ee->vertex_array.size())
+    handle = ee->vertex_array[p.id];
+  return handle;
+}
+
+
 FaceCollection *find_facecoll(GameApi::Env &e, GameApi::P p)
 {
   FaceCollPolyHandle *hh = find_poly(e,p);
@@ -4328,4 +4372,88 @@ GameApi::CBM GameApi::ContinuousBitmapApi::from_bitmap(BM bm, float xsize, float
   Bitmap<Color> *bm2 = find_color_bitmap(handle);
 
   return add_continuous_bitmap(e, new ContinuousBitmapFromBitmap<Color>(*bm2, xsize, ysize));
+}
+
+class VoxelFunction : public Voxel<Color>
+{
+public:
+  VoxelFunction(unsigned int (*fptr)(int x, int y, int z, void *data), int sx, int sy, int sz, void*data) : fptr(fptr), sx(sx), sy(sy), sz(sz), data(data) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual int SizeZ() const { return sz; }
+  virtual Color Map(int x, int y, int z) const
+  {
+    return Color(fptr(x,y,z,data));
+  }
+
+private:
+  unsigned int (*fptr)(int x, int y, int z, void *data);
+  int sx; 
+  int sy; 
+  int sz; 
+  void *data;
+};
+
+GameApi::VoxelApi::VoxelApi(Env &e) : e(e) { }
+GameApi::VX GameApi::VoxelApi::function(unsigned int (*fptr)(int x, int y, int z, void *data), int sx, int sy, int sz, void *data)
+{
+  return add_voxel(e, new VoxelFunction(fptr, sx, sy,sz, data));
+}
+
+unsigned int GameApi::VoxelApi::get_pixel(VX v, int x, int y, int z)
+{
+  Voxel<Color> *c = find_voxel(e, v);
+  return c->Map(x,y,z).Pixel();
+}
+#if 0
+GameApi::BM GameApi::VoxelApi::sw_rays(O volume, VX colours, int sx, int sy, float vx, float vy, float vz, float z)
+{
+  ContinuousVoxel<Color> *color = find_voxel(e, colours);
+  Vector v(vx,vy,vz);
+  Function<Point2d, Point> *ray_func = new RayTracingFunction(floatvoxel, v, z);
+  Bitmap<Color> *bm = new RayTracingBitmap(ray_func, *color, sx,sy); 
+  return add_color_bitmap(e, bm);
+}
+#endif
+
+class ColorVoxelFaceCollection : public ForwardFaceCollection
+{
+public:
+  ColorVoxelFaceCollection(FaceCollection &coll, Voxel< ::Color> &c, Point p, Vector v_x, Vector v_y, Vector v_z) : ForwardFaceCollection(coll), c(c), pp(p) { cc.center = v_x; cc.u_x = v_x; cc.u_y = v_y; cc.u_z = v_z; }
+  virtual unsigned int Color(int face, int point) const { 
+    Point p = ForwardFaceCollection::FacePoint(face,point);
+    Point p2 = cc.FindInternalCoords(p);
+    return c.Map(p2.x,p2.y,p2.z).Pixel();
+  }
+private:
+  Voxel< ::Color> &c;
+  mutable Coords cc;
+  Point pp;
+};
+
+GameApi::P GameApi::PolygonApi::color_voxel(P orig, VX colours, PT p, V u_x, V u_y, V u_z)
+{
+  Point *pp = find_point(e, p);
+  Vector *uu_x = find_vector(e, u_x);
+  Vector *uu_y = find_vector(e, u_y);
+  Vector *uu_z = find_vector(e, u_z);
+
+  FaceCollection *coll = find_facecoll(e, orig);
+  Voxel<Color> *v = find_voxel(e, colours);
+  return add_polygon(e, new ColorVoxelFaceCollection(*coll, *v, *pp, *uu_x, *uu_y, *uu_z), 1);
+}
+
+GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p)
+{
+  FaceCollection *faces = find_facecoll(e, p);
+  VertexArraySet *s = new VertexArraySet;
+  FaceCollectionVertexArray2 arr(*faces, *s);
+  arr.copy();  
+  return add_vertex_array(e, s);
+}
+void GameApi::PolygonApi::render_vertex_array(VA va)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  RenderVertexArray arr(*s);
+  arr.render(0);
 }

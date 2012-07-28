@@ -55,6 +55,8 @@ namespace GameApi
   struct D { int id; }; // directory
   struct Ht { int id; }; // html
   struct BF { int id; };
+  struct VA { int id; }; // vertex array
+  struct VX { int id; }; // voxel
 
   template<class P, class R>
   class FunctionCb
@@ -595,6 +597,7 @@ public:
   P texture(P orig, BM bm, int bm_choose=-1); // all quads
 
   P color(P orig, unsigned int color);
+  P color_voxel(P orig, VX colours, PT p, V u_x, V u_y, V u_z);
   P texcoord_cube(P orig, 
 		  PT o, PT u_x, PT u_y, PT u_z,  // these are 3d
 		  PT tex_o, PT tex_x, PT tex_y, PT tex_z); // tex_* are 2d
@@ -659,6 +662,9 @@ public:
   void prepare(P p, int bbm_choose=-1);
   void render(P p, int choose, float x, float y, float z);
   
+  VA create_vertex_array(P p);
+  void render_vertex_array(VA va);
+
   // must call prepare for P before these.
   int get_tri_vertex_array_frames(P p);
   int get_tri_vertex_array_rows(P p);
@@ -860,10 +866,23 @@ public:
   CBM empty(float x, float y);
   CBM constant(unsigned int color, float x, float y);
   CBM function(unsigned int (*fptr)(float,float, void*), float sx, float sy, void *data);
-  BM sample(CBM c_bitmap, int sx, int sy); // SampleBitmap(CB<Color, int sx,int sy)
+  BM sample(CBM c_bitmap, int sx, int sy); 
   CBM from_bitmap(BM bm, float xsize, float ysize);
   BM to_bitmap(CBM bm, int sx, int sy);
 
+private:
+  Env &e;
+};
+
+class VoxelApi
+{ // we don't have good ways to render these. RayTraceBitmap is one way,
+  // but it could be useful in other rendering systems to get colours from
+  // 3d space.
+public:
+  VoxelApi(Env &e);
+  VX function(unsigned int (*fptr)(int x, int y, int z, void *data), int sx, int sy, int sz, void *data);
+  unsigned int get_pixel(VX v, int x, int y, int z);
+  BM sw_rays(O volume, VX colours, int sx, int sy, float vx, float vy, float vz, float z);
 private:
   Env &e;
 };
