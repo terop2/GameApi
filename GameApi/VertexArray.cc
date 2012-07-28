@@ -213,13 +213,13 @@ void RenderVertexArray::render(int id)
     glNormalPointer(GL_FLOAT, 0, (GLvoid*)s.tri_normal_polys(id));
     glColorPointer(4, GL_UNSIGNED_BYTE, 0, (GLvoid*)s.tri_color_polys(id));
     glTexCoordPointer(2, GL_FLOAT, 0, (GLvoid*)s.tri_texcoord_polys(id));
-    glDrawArrays(GL_TRIANGLES, 0, s.tri_count(id)/3);
+    glDrawArrays(GL_TRIANGLES, 0, s.tri_count(id));
     // quads
     glVertexPointer(3, GL_FLOAT, 0, (GLvoid*)s.quad_polys(id));
     glNormalPointer(GL_FLOAT, 0, (GLvoid*)s.quad_normal_polys(id));
     glColorPointer(4, GL_UNSIGNED_BYTE, 0, (GLvoid*)s.quad_color_polys(id));
     glTexCoordPointer(2, GL_FLOAT, 0, (GLvoid*)s.quad_texcoord_polys(id));
-    glDrawArrays(GL_QUADS, 0, s.quad_count(id)/4);
+    glDrawArrays(GL_QUADS, 0, s.quad_count(id));
 
     // polygons
     int ss = s.poly_count(id);
