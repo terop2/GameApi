@@ -2983,6 +2983,23 @@ private:
   int x,y,z;
 };
 
+template<class T>
+class VoxelToContinuousVoxel : public ContinuousVoxel<T>
+{
+public:
+  VoxelToContinuousVoxel(Voxel<T> &vx) : vx(vx) { }
+  int SizeX() const { return vx.SizeX(); }
+  int SizeY() const { return vx.SizeY(); }
+  int SizeZ() const { return vx.SizeZ(); }
+  T Map(int xx, int yy, int zz) const
+  {
+    return vx.Map(xx,yy,zz);
+  }
+  
+private:
+  Voxel<T> &vx;
+};
+
 class VolumeVoxel : public ContinuousVoxel<bool>
 {
 public:

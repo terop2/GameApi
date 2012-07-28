@@ -2881,6 +2881,16 @@ public:
   virtual int AttribI(int face, int point, int id) const=0;
   virtual unsigned int Color(int face, int point) const=0;
   virtual Point2d TexCoord(int face, int point) const=0;
+
+  virtual Point EndFacePoint(int face, int point) const { return FacePoint(face, point); }
+  virtual Vector EndPointNormal(int face, int point) const { return PointNormal(face,point); }
+  virtual float EndAttrib(int face, int point, int id) const { return Attrib(face, point, id); }
+  virtual int EndAttribI(int face, int point, int id) const { return AttribI(face,point,id); }
+  virtual unsigned int EndColor(int face, int point) const { return Color(face,point); }
+  virtual Point2d EndTexCoord(int face, int point) const { return TexCoord(face,point); }
+
+  virtual float Duration() const { return 1.0; }
+
   virtual int NumTextures() const { return 0; }
   virtual void GenTexture(int num) { }
   virtual BufferRef TextureBuf(int num) const { BufferRef ref; return ref; }
