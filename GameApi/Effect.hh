@@ -2869,6 +2869,19 @@ private:
 };
 typedef FunctionImpl0<GridIn3d*, PointCollection*, PointCollectionFromGrid> PointCollectionFromGridFunction;
 
+class FaceId
+{
+public:
+  int array[5];
+  int elems_used;
+};
+
+class TextureId
+{
+public:
+  int id;
+};
+
 class FaceCollection
 {
 public:
