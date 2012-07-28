@@ -559,6 +559,18 @@ class PolygonApi
 public:
   PolygonApi(Env &e);
   ~PolygonApi();
+#if 0
+  P function(PT (*fptr)(int face, int point, void *data),
+	     int (*numpoints)(int face, void *data2),
+	     int numfaces, void *data, void *data2);
+  P color_function(P orig, 
+		   unsigned int (*fptr)(int face, int point, void *data),
+		   void *data);
+  P function(PT (*fptr)(FaceId face, int point, void *data),
+	     int (*numpoints)(SurfaceId face, void *data2),
+	     FaceIdDim sizes,
+	     int numfaces, void *data, void *data2);
+#endif
   P empty();
   P line(PT p1, PT p2);
   P triangle(PT p1, PT p2, PT p3);
@@ -694,8 +706,14 @@ private:
 
 class PlaneApi
 { // 2d coordinates in PT
+  // could be array of pointcollections
+  // but colours etc and textures still needed.
+  // so really it's P type with 2d points.
 public:
   PlaneApi(Env &e);
+  PL function(PT (*fptr)(int idx, void *data), int num_points, void *data);
+  PL color_function(PL pl, CO (*fptr)(int idx, PT pos, void *data), void *data);
+  // TODO: how to represent/load fonts to this type.
   PL empty(float sx, float sy);
   PL circle(PT center, float radius, int numpoints); 
   PL rectangle(PT p1, PT p2);
@@ -706,7 +724,17 @@ public:
   PL plane_elem(PL p1, PL p2);
   PL plane_array(PL *array, int size);
   PL move_plane(PL p1, V delta);
-  
+
+  PL and_not(PL p1, PL not_p); // needed in fonts for the holes
+                               // draw to bitmap, do and_not, put to texture
+  // 1) get black bitmap
+  // 2) draw white polygon
+  // 3) draw more black
+  // 4) blit to screen, take only white pixels
+  // PRoblem: How to change from black pixels to alpha pixels?
+
+  // TODO: bezier curves in 2d.
+
   P substitute_quads_with_plane(P orig, PL (*fptr)(int face, void *data), void *data);
   P plane_in_3d(PL plane, PT u_p, V v1, V v2);
   
