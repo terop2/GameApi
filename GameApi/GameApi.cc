@@ -4457,3 +4457,24 @@ void GameApi::PolygonApi::render_vertex_array(VA va)
   RenderVertexArray arr(*s);
   arr.render(0);
 }
+
+class AnimFace : public ForwardFaceCollection
+{
+public:
+  AnimFace(FaceCollection &coll, Vector v) : ForwardFaceCollection(coll), coll(coll), v(v) { }
+  Point EndFacePoint(int face, int point) const 
+  { return ForwardFaceCollection::FacePoint(face, point) + v; 
+  }
+
+private:
+  FaceCollection &coll;
+  Vector v;
+};
+
+GameApi::P GameApi::PolygonApi::anim_target_vector(P p, V v)
+{
+  FaceCollection *i = find_facecoll(e, p);
+  Vector *vv = find_vector(e,v);
+  FaceCollection *coll = new AnimFace(*i, *vv);
+  return add_polygon(e, coll, 1);
+}
