@@ -46,23 +46,23 @@ class Vector;
 class Point
 {
 public:
-  Point() : x(0.0), y(0.0), z(0.0),s(1.0) { }
-  Point(float xx, float yy, float zz) : x(xx), y(yy), z(zz),s(1.0) { }
+  Point() : x(0.0), y(0.0), z(0.0) { }
+  Point(float xx, float yy, float zz) : x(xx), y(yy), z(zz) { }
   Point(const Vector &v);
 public:
-  float x,y,z,s;
+  float x,y,z;
 public:
   float Dist() const;
   friend float Dist(const Point &a, const Point &b);
-  void Normalize() { x/=s; y/=s; z/=s; s=1.0; }
-  static Point Origo() { Point p; p.x = 0; p.y = 0; p.z = 0; p.s=1.0; return p; }
+  //void Normalize() { x/=s; y/=s; z/=s; s=1.0; }
+  static Point Origo() { Point p; p.x = 0; p.y = 0; p.z = 0;  return p; }
   static Point Interpolate(const Point &aVec, const Point &aVec2, float aVal)
   {
     Point v;
     v.x = aVec.x*aVal + aVec2.x*(1.0-aVal);
     v.y = aVec.y*aVal + aVec2.y*(1.0-aVal);
     v.z = aVec.z*aVal + aVec2.z*(1.0-aVal);
-    v.s = aVec.s*aVal + aVec2.s*(1.0-aVal);
+    //v.s = aVec.s*aVal + aVec2.s*(1.0-aVal);
     return v;
   }
   void operator+=(const Vector &v);
@@ -91,12 +91,12 @@ class Vector // a function Point->Point
 {
 public:
   // Zero is identity elment
-  Vector() : dx(0.0), dy(0.0), dz(0.0), ds(1.0) { } 
-  Vector(float ddx, float ddy, float ddz) : dx(ddx), dy(ddy), dz(ddz), ds(1.0) { }
-  Vector(const Vector &aVec) : dx(aVec.dx), dy(aVec.dy), dz(aVec.dz), ds(aVec.ds) { }
-  Vector(const Point &aPoint) : dx(aPoint.x), dy(aPoint.y), dz(aPoint.z), ds(aPoint.s) { }
+  Vector() : dx(0.0), dy(0.0), dz(0.0) { } 
+  Vector(float ddx, float ddy, float ddz) : dx(ddx), dy(ddy), dz(ddz) { }
+  Vector(const Vector &aVec) : dx(aVec.dx), dy(aVec.dy), dz(aVec.dz) { }
+  Vector(const Point &aPoint) : dx(aPoint.x), dy(aPoint.y), dz(aPoint.z) { }
   Point operator()(Point p) const { return ApplyPoint(p); }
-  void Normalize() { dx/=ds; dy/=ds; dz/=ds; ds=1.0; }
+  //void Normalize() { dx/=ds; dy/=ds; dz/=ds; ds=1.0; }
 
   Point ApplyPoint(Point p) const
   {
@@ -229,7 +229,7 @@ public:
   friend std::ostream &operator<<(std::ostream &o, const Vector &p);
 
 public:
-  float dx,dy,dz,ds;
+  float dx,dy,dz;
 };
 
 struct AxisAngle

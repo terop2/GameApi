@@ -75,18 +75,18 @@ void SphericalPoint::FromPoint(Point v)
 
 
 Point::Point(const Vector &v)
-  : x(v.dx), y(v.dy), z(v.dz), s(v.ds) { }
+  : x(v.dx), y(v.dy), z(v.dz) { }
 
 
 void Point::operator+=(const Vector &v)
 {
   Vector vv = v;
-  vv.Normalize();
-  Normalize();
+  //vv.Normalize();
+  //Normalize();
   x += v.dx;
   y += v.dy;
   z += v.dz;
-  s = 1.0;
+  //s = 1.0;
 }
 Point operator+(const Point &p, const Vector &v)
 {
@@ -169,10 +169,15 @@ Point operator*(const Point &p, const Matrix &m)
 Vector operator*(const Vector &v, const Matrix &m)
 {
   Vector r;
-  r.dx = v.dx*m.matrix[0] + v.dy*m.matrix[1] + v.dz*m.matrix[2] + v.ds*m.matrix[3];
-  r.dy = v.dx*m.matrix[4] + v.dy*m.matrix[5] + v.dz*m.matrix[6] + v.ds*m.matrix[7];
-  r.dz = v.dx*m.matrix[8] + v.dy*m.matrix[9] + v.dz*m.matrix[10] + v.ds*m.matrix[11];
-  r.ds = v.dx*m.matrix[12] + v.dy*m.matrix[13] + v.dz*m.matrix[14] + v.ds*m.matrix[15];
+  r.dx = v.dx*m.matrix[0] + v.dy*m.matrix[1] + v.dz*m.matrix[2] + m.matrix[3];
+  r.dy = v.dx*m.matrix[4] + v.dy*m.matrix[5] + v.dz*m.matrix[6] + m.matrix[7];
+  r.dz = v.dx*m.matrix[8] + v.dy*m.matrix[9] + v.dz*m.matrix[10] + m.matrix[11];
+  
+  float val = v.dx*m.matrix[12] + v.dy*m.matrix[13] + v.dz*m.matrix[14] + m.matrix[15];
+  r.dx /= val;
+  r.dy /= val;
+  r.dz /= val;
+  //r.ds = 
   return r;
 }
 
