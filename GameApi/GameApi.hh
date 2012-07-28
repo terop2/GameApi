@@ -57,6 +57,7 @@ namespace GameApi
   struct BF { int id; };
   struct VA { int id; }; // vertex array
   struct VX { int id; }; // voxel
+  struct PL { int id; }; // plane
 
   template<class P, class R>
   class FunctionCb
@@ -636,7 +637,7 @@ public:
   BM light_bm(L lighting, P poly);
   P single_texture(P orig, BM texture);
 
-  P anim_array(P *array, int size);
+  P anim_array(P *array, int size); // OLD
 
   P splitquads(P orig, int x_count, int y_count);
   P change_positions(P orig, PT (*fptr)(PT p, int face, int point, void* data), void *data=0);
@@ -665,6 +666,11 @@ public:
   VA create_vertex_array(P p); // slow
   void render_vertex_array(VA va); // fast
 
+  // these calls require vertex shader.
+  P anim_target_vector(P p, V v);
+  P anim_target_scale(P p, PT center, float scale_x, float scale_y, float scale_z);
+  P anim_target_matrix(P p, M matrix);
+
   // must call prepare for P before these.
   int get_tri_vertex_array_frames(P p);
   int get_tri_vertex_array_rows(P p);
@@ -684,6 +690,23 @@ public:
 private:
   void *priv;
   Env &e;
+};
+
+class PlaneApi
+{ // 2d coordinates in PT
+public:
+  PlaneApi(Env &e);
+  PL empty(float sx, float sy);
+  PL circle(PL bg, PT center, float radius, int numpoints); 
+  PL rectangle(PL bg, PT p1, PT p2);
+  PL rectangle(PL bg, PT p1, PT p2, PT p3, PT p4);
+  PL sprite(PL bg, BM bitmap, PT pos, float size_x, float size_y);
+  PL polygon(PL bg, PT *points, int size);
+  PL color(PL orig, unsigned int new_color);
+  PL plane_elem(PL p1, PL p2);
+  PL plane_array(PL *array, int size);
+  
+  P substitute_quads_with_plane(P orig, PL (*fptr)(int face, void *data), void *data);
 };
 
 #if 0
