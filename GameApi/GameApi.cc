@@ -4478,3 +4478,54 @@ GameApi::P GameApi::PolygonApi::anim_target_vector(P p, V v)
   FaceCollection *coll = new AnimFace(*i, *vv);
   return add_polygon(e, coll, 1);
 }
+
+class AnimFaceScale : public ForwardFaceCollection
+{
+public:
+  AnimFaceScale(FaceCollection &coll, Point p, float scale_x, float scale_y, float scale_z) : ForwardFaceCollection(coll), coll(coll), p(p), scale_x(scale_x), scale_y(scale_y), scale_z(scale_z) { }
+  Point EndFacePoint(int face, int point) const 
+  { 
+    return ForwardFaceCollection::FacePoint(face, point)
+      * Matrix::Translate(-p.x,-p.y,-p.z)
+      * Matrix::Scale(scale_x, scale_y, scale_z)
+      * Matrix::Translate(p.x,p.y,p.z);
+  }
+
+private:
+  FaceCollection &coll;
+  Point p;
+  float scale_x, scale_y, scale_z;
+};
+
+
+GameApi::P GameApi::PolygonApi::anim_target_scale(P p, PT center, float scale_x, float scale_y, float scale_z)
+{
+  FaceCollection *i = find_facecoll(e, p);
+  Point *pp = find_point(e, center);
+  FaceCollection *coll = new AnimFaceScale(*i, *pp, scale_x, scale_y, scale_z);
+  return add_polygon(e, coll, 1);
+}
+#if 0
+class AnimFaceMatrix : public ForwardFaceCollection
+{
+public:
+  AnimFaceMatrix(FaceCollection &coll, Matrix m) : ForwardFaceCollection(coll), coll(coll), m(m) { }
+  Point EndFacePoint(int face, int point) const 
+  { 
+    return ForwardFaceCollection::FacePoint(face, point)
+      * m;
+  }
+
+private:
+  FaceCollection &coll;
+  Matrix m;
+};
+
+GameApi::P GameApi::PolygonApi::anim_target_matrix(P p, M matrix)
+{
+  FaceCollection *i = find_facecoll(e, p);
+  Matrix *mm = find_matrix(e,matrix);
+  FaceCollection *coll = new AnimFaceMatrix(*i, *mm);
+  return add_polygon(e, coll, 1);
+}
+#endif
