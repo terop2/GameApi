@@ -69,6 +69,22 @@ void Game(EveryApi &e)
   sprite.preparesprite(red);
   sprite.preparesprite(green);
 
+  PT arr[5] = { e.point_api.point(0.0,0.0,0.0),
+		e.point_api.point(100.0,0.0,0.0),
+		e.point_api.point(100.0,100.0,0.0),
+		e.point_api.point(0.0,100.0,0.0),
+		e.point_api.point(0.0,100.0,50.0)
+  };
+  P poly2 = e.polygon_api.triangle(e.point_api.point(0.0,0.0,0.0),
+		e.point_api.point(100.0,0.0,0.0),
+		e.point_api.point(100.0,100.0,0.0));
+  P poly3 = e.polygon_api.quad(e.point_api.point(0.0,0.0,200.0),
+			       e.point_api.point(100.0,0.0,200.0),
+			       e.point_api.point(100.0,100.0,200.0),
+			       e.point_api.point(0.0,100.0,200.0));
+  P or_elem = e.polygon_api.or_elem(poly2, poly3);
+  VA va2 = poly.create_vertex_array(or_elem);
+
   while(1)
     {
       float time = e.mainloop_api.get_time();
@@ -81,6 +97,7 @@ void Game(EveryApi &e)
       glRotatef(time/40.0, 0.0,1.0,0.0);
       //e.polygon_api.render(cubes3, 0, 0.0,0.0,0.0);
       e.polygon_api.render_vertex_array(va);
+      e.polygon_api.render_vertex_array(va2);
       glPopMatrix();
       e.mainloop_api.swapbuffers();
       MainLoopApi::Event ev = e.mainloop_api.get_event();

@@ -662,8 +662,8 @@ public:
   void prepare(P p, int bbm_choose=-1);
   void render(P p, int choose, float x, float y, float z);
   
-  VA create_vertex_array(P p);
-  void render_vertex_array(VA va);
+  VA create_vertex_array(P p); // slow
+  void render_vertex_array(VA va); // fast
 
   // must call prepare for P before these.
   int get_tri_vertex_array_frames(P p);
