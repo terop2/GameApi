@@ -358,7 +358,7 @@ SDL_Surface *InitSDL(int scr_x, int scr_y, bool vblank, bool antialias)
 
   //screenx = 320;
   //screeny = 200;
-  SDL_Init(SDL_INIT_VIDEO);
+  SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE);
   //SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
   screen = SDL_SetVideoMode(screenx,screeny,32,SDL_OPENGL | SDL_DOUBLEBUF/*|SDL_FULLSCREEN*/);
   SDL_ShowCursor(SDL_DISABLE);
