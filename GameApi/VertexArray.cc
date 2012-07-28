@@ -213,14 +213,13 @@ void RenderVertexArray::render(int id)
     glNormalPointer(GL_FLOAT, 0, (GLvoid*)s.tri_normal_polys(id));
     glColorPointer(4, GL_UNSIGNED_BYTE, 0, (GLvoid*)s.tri_color_polys(id));
     glTexCoordPointer(2, GL_FLOAT, 0, (GLvoid*)s.tri_texcoord_polys(id));
-    glDrawArrays(GL_TRIANGLES, 0, s.tri_count(id));
-
-    // triangles
+    glDrawArrays(GL_TRIANGLES, 0, s.tri_count(id)/3);
+    // quads
     glVertexPointer(3, GL_FLOAT, 0, (GLvoid*)s.quad_polys(id));
     glNormalPointer(GL_FLOAT, 0, (GLvoid*)s.quad_normal_polys(id));
     glColorPointer(4, GL_UNSIGNED_BYTE, 0, (GLvoid*)s.quad_color_polys(id));
     glTexCoordPointer(2, GL_FLOAT, 0, (GLvoid*)s.quad_texcoord_polys(id));
-    glDrawArrays(GL_QUADS, 0, s.quad_count(id));
+    glDrawArrays(GL_QUADS, 0, s.quad_count(id)/4);
 
     // polygons
     int ss = s.poly_count(id);
@@ -230,8 +229,9 @@ void RenderVertexArray::render(int id)
 	glNormalPointer(GL_FLOAT, 0, (GLvoid*)s.poly_normal_polys(id,i));
 	glColorPointer(4, GL_UNSIGNED_BYTE, 0, (GLvoid*)s.poly_color_polys(id,i));
 	glTexCoordPointer(2, GL_FLOAT, 0, (GLvoid*)s.poly_texcoord_polys(id,i));
-	glDrawArrays(GL_POLYGON, 0, s.poly_count(id));
+	glDrawArrays(GL_POLYGON, 0, s.poly2_count(id,i));
       }
+
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);

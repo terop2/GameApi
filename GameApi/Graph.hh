@@ -5435,8 +5435,8 @@ public:
   float SpaceMap(Point normal) const
   {
     Point p = viewer + Vector(light);
-    p.Normalize();
-    normal.Normalize();
+    //p.Normalize();
+    //normal.Normalize();
     float col = Vector::DotProduct(normal, p);
     for(int i=0;i<count;i++)
       col *= col;

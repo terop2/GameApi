@@ -55,7 +55,7 @@ LinePlaneIntersection LinePlaneIntersectionFunc(Point line_p1, Point line_p2,
   v.dy = line_p1.y - plane_p1.y;
   v.dz = line_p1.z - plane_p1.z;
   Vector tuv = v*mi;
-  tuv.Normalize();
+  //tuv.Normalize();
   LinePlaneIntersection sec;
   //tuv.dx = 0.5; 
   sec.tuv = tuv;
