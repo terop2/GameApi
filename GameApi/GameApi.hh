@@ -716,11 +716,11 @@ public:
   PL color_function(PL pl, CO (*fptr)(int idx, PT pos, void *data), void *data);
   // TODO: how to represent/load fonts to this type.
   PL empty(float sx, float sy);
-  PL circle(PT center, float radius, int numpoints); 
-  PL rectangle(PT p1, PT p2);
-  PL rectangle(PT p1, PT p2, PT p3, PT p4);
-  PL sprite(BM bitmap, PT pos, float size_x, float size_y);
-  PL polygon(PT *points, int size);
+  PL circle(PL bg, PT center, float radius, int numpoints); 
+  PL rectangle(PL bg, PT p1, PT p2);
+  PL rectangle(PL bg, PT p1, PT p2, PT p3, PT p4);
+  PL sprite(PL bg, BM bitmap, PT pos, float size_x, float size_y);
+  PL polygon(PL bg, PT *points, int size);
   PL color(PL orig, unsigned int new_color);
   PL plane_elem(PL p1, PL p2);
   PL plane_array(PL *array, int size);
