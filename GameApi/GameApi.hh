@@ -636,6 +636,7 @@ public:
   P rotatex(P orig, float angle);
   P rotatey(P orig, float angle);
   P rotatez(P orig, float angle);
+  P rotate(P orig, PT pt, V axis, float angle);
   P scale(P orig, float sx, float sy, float sz);
 
   L color_lighting(float dx, float dy, float dz, 

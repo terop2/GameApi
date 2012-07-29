@@ -2745,6 +2745,20 @@ GameApi::P GameApi::PolygonApi::rotatez(P orig, float angle)
   return add_polygon(e, coll,1);
 }
 
+GameApi::P GameApi::PolygonApi::rotate(P orig, PT point, V axis, float angle)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  Point *pp = find_point(e, point);
+  Vector *ax = find_vector(e, axis);
+  FaceCollection *c = find_facecoll(e, orig);
+  BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(convert));  
+  if (!c) { std::cout << "dynamic cast failed" << std::endl; }
+  FaceCollection *coll = new MatrixElem(*convert, Matrix::RotateAroundAxisPoint(*pp, *ax, angle));
+  return add_polygon(e, coll,1);
+}
+
+
 GameApi::P GameApi::PolygonApi::scale(P orig, float sx, float sy, float sz)
 {
   EnvImpl *env = EnvImpl::Environment(&e);  
