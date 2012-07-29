@@ -59,15 +59,16 @@ void Game(EveryApi &e)
 			 points.point(2.0,0.0,0.0),
 			 points.point(0.0,2.0,0.0), 1.0, 0.4);
 
-  O sphere = volume.sphere(points.point(0.0, 1.0, 0.0), 1.0);
-  O andnot = volume.andnot_op(torus, sphere);
-  P cubes = volume.rendercubes(andnot, &Cube, 0, 40, 4.0);
+  //O sphere = volume.sphere(points.point(0.0, 1.0, 0.0), 1.0);
+  //O andnot = volume.andnot_op(torus, sphere);
+  P cubes = volume.rendercubes(torus, &Cube, 0, 40, 4.0);
   P cubes2 = e.polygon_api.memoize(cubes);
   P cubes3 = e.polygon_api.scale(cubes2, 300.0,300.0,300.0);
   //poly.prepare(cubes3);
   VA va = poly.create_vertex_array(cubes3);
   sprite.preparesprite(red);
   sprite.preparesprite(green);
+#if 0
 
   PT arr[5] = { e.point_api.point(0.0,0.0,0.0),
 		e.point_api.point(100.0,0.0,0.0),
@@ -84,7 +85,7 @@ void Game(EveryApi &e)
 			       e.point_api.point(0.0,100.0,200.0));
   P or_elem = e.polygon_api.or_elem(poly2, poly3);
   VA va2 = poly.create_vertex_array(or_elem);
-
+#endif
   while(1)
     {
       float time = e.mainloop_api.get_time();
@@ -97,7 +98,7 @@ void Game(EveryApi &e)
       glRotatef(time/40.0, 0.0,1.0,0.0);
       //e.polygon_api.render(cubes3, 0, 0.0,0.0,0.0);
       e.polygon_api.render_vertex_array(va);
-      e.polygon_api.render_vertex_array(va2);
+      //e.polygon_api.render_vertex_array(va2);
       glPopMatrix();
       e.mainloop_api.swapbuffers();
       MainLoopApi::Event ev = e.mainloop_api.get_event();
