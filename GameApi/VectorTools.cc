@@ -29,6 +29,11 @@ std::ostream &operator<<(std::ostream &o, const Point &p)
   o << "(" << p.x << "," << p.y << "," << p.z << ")";
   return o;
 }
+std::ostream &operator<<(std::ostream &o, const Point2d &p)
+{
+  o << "(" << p.x << "," << p.y << ")";
+  return o;
+}
 
 std::ostream &operator<<(std::ostream &o, const Vector &v)
 {

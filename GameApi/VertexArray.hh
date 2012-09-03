@@ -145,6 +145,7 @@ public:
 	      }
 	    c[j] = coll.Color(i,j);
 	    tex[j] = coll.TexCoord(i,j);
+	    //std::cout << "VA: " << tex[j] << std::endl;
 	  }
 	s.push_poly(0, w, &p[0]);
 	s.push_normal(0, w, &v[0]);

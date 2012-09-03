@@ -186,6 +186,7 @@ void VertexArraySet::push_texcoord(int id, int num, Point2d *points)
     }
   else if (num==4)
     {
+      //std::cout << "Vertex: " << points[0] << " " << points[1] << " " << points[2] << " " << points[3] << std::endl;
       p->quad_texcoord.push_back(points[0]);
       p->quad_texcoord.push_back(points[1]);
       p->quad_texcoord.push_back(points[2]);

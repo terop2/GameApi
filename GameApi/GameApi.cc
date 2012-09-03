@@ -2627,9 +2627,18 @@ GameApi::P GameApi::PolygonApi::line(PT p1, PT p2)
 class TexCoordQuadFaceCollection : public ForwardFaceCollection
 {
 public:
-  TexCoordQuadFaceCollection(FaceCollection &coll, TexCoordQuad q) : ForwardFaceCollection(coll), q(q) { }
+  TexCoordQuadFaceCollection(FaceCollection &coll, TexCoordQuad q_, int sx, int sy) : ForwardFaceCollection(coll), q(q_),sx(sx),sy(sy) 
+  {
+    q.p1.x /= float(sx);
+    q.p1.y /= float(sy);
+    q.p2.x /= float(sx);
+    q.p2.y /= float(sy);
+    //std::cout << "P1: " << q.p1 << " P2: " << q.p2 << std::endl;
+  }
   virtual Point2d TexCoord(int face, int point) const 
   { 
+    //std::cout << "TexCoord" << face << " " << point << std::endl;
+    //std::cout << "P1: " << q.p1 << " P2: " << q.p2 << std::endl;
     if (point==0) {
       return q.p1;
     }
@@ -2655,13 +2664,23 @@ public:
   }
 private:
   TexCoordQuad q;
+  int sx,sy;
 };
 
-GameApi::P GameApi::PolygonApi::sprite_bind(P p, Q bm)
+GameApi::P GameApi::PolygonApi::sprite_bind(P p, TX tx, int id)
 {
+  TextureApi t(e);
+  Q q = t.get_tex_coord(tx, id);
+  return sprite_bind(p, q, tx);
+}
+GameApi::P GameApi::PolygonApi::sprite_bind(P p, Q q, TX tx)
+{
+  TextureI *texture = find_texture(e, tx);
+  int sx = texture->SizeX();
+  int sy = texture->SizeY();
   FaceCollection *pp1 = find_facecoll(e, p);
-  TexCoordQuad q = find_tex_quad(e, bm);
-  return add_polygon2(e, new TexCoordQuadFaceCollection(*pp1, q),1);
+  TexCoordQuad qq = find_tex_quad(e, q);
+  return add_polygon(e, new TexCoordQuadFaceCollection(*pp1, qq, sx,sy),1);
 }
 
 GameApi::P GameApi::PolygonApi::quad(PT p1, PT p2, PT p3, PT p4)
@@ -4826,6 +4845,8 @@ GameApi::TXID GameApi::TextureApi::prepare(TX tx)
 void GameApi::TextureApi::use(TXID tx)
 {
   glEnable(GL_TEXTURE_2D);
+  glClientActiveTexture(GL_TEXTURE0+0);
+  glActiveTexture(GL_TEXTURE0+0);
   glBindTexture(GL_TEXTURE_2D, tx.id);
 }
 void GameApi::TextureApi::unuse(TXID tx)
