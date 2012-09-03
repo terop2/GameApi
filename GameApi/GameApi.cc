@@ -1168,6 +1168,19 @@ TextureI *find_texture(GameApi::Env &e, GameApi::TX t)
     return env->textures[t.id];
   return 0;
 }
+TexCoordQuad find_tex_quad(GameApi::Env &e, GameApi::Q t)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  if (t.id >=0 && t.id < (int)env->tex_quads.size())
+    return env->tex_quads[t.id];
+  TexCoordQuad q;
+  Point2d ex = { 0.0, 0.0 };
+  q.p1 = ex;
+  q.p2 = ex;
+  return q;
+}
+
+
 LinkInfo find_link_info(GameApi::Env &e, GameApi::L l)
 {
   EnvImpl *env = EnvImpl::Environment(&e);
@@ -2611,6 +2624,45 @@ GameApi::P GameApi::PolygonApi::line(PT p1, PT p2)
   return add_polygon(e, coll,1);
 }
 
+class TexCoordQuadFaceCollection : public ForwardFaceCollection
+{
+public:
+  TexCoordQuadFaceCollection(FaceCollection &coll, TexCoordQuad q) : ForwardFaceCollection(coll), q(q) { }
+  virtual Point2d TexCoord(int face, int point) const 
+  { 
+    if (point==0) {
+      return q.p1;
+    }
+    if (point==1) {
+      Point2d p;
+      p.x = q.p2.x;
+      p.y = q.p1.y;
+      return p;
+    }
+    if (point==2) {
+      return q.p2;
+    }
+    if (point==3) {
+      Point2d p;
+      p.x = q.p1.x;
+      p.y = q.p2.y;
+      return p;
+    }
+    Point2d pp;
+    pp.x = 0.0;
+    pp.y = 0.0;
+    return pp;
+  }
+private:
+  TexCoordQuad q;
+};
+
+GameApi::P GameApi::PolygonApi::sprite_bind(P p, Q bm)
+{
+  FaceCollection *pp1 = find_facecoll(e, p);
+  TexCoordQuad q = find_tex_quad(e, bm);
+  return add_polygon2(e, new TexCoordQuadFaceCollection(*pp1, q),1);
+}
 
 GameApi::P GameApi::PolygonApi::quad(PT p1, PT p2, PT p3, PT p4)
 {

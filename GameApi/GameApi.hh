@@ -606,7 +606,7 @@ public:
   P line(PT p1, PT p2);
   P triangle(PT p1, PT p2, PT p3);
   P quad(PT p1, PT p2, PT p3, PT p4);
-  P sprite(PT p1, PT p2, PT p3, PT p4, Q bm);
+  P sprite_bind(P p, Q bm);
   P quad_x(float x,
 	   float y1, float y2,
 	   float z1, float z2);
@@ -1196,7 +1196,7 @@ struct EveryApi
 {
   EveryApi(Env &e) 
     : mainloop_api(e), point_api(e), vector_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e),
-      font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), shader_api(e), state_change_api(e, shader_api) { }
+      font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -1215,6 +1215,7 @@ struct EveryApi
   VolumeApi volume_api;
   ShaderApi shader_api;
   StateChangeApi state_change_api;
+  TextureApi texture_api;
 };
 
 class GamesApi
