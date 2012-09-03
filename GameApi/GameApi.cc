@@ -22,6 +22,13 @@
 #include "GameRunner.hh"
 #include "RayTracing.hh"
 #include "VertexArray.hh"
+#include "StateChange.hh"
+
+struct TexCoordQuad
+{
+  Point2d p1;
+  Point2d p2;
+};
 
 #if 0
 struct SpritePriv
@@ -602,7 +609,16 @@ struct EnvImpl
   std::vector<StateRange> state_ranges; // ST type points to this array
   std::vector<ContinuousBitmap<Color>*> continuous_bitmaps;
   std::vector<VertexArraySet*> vertex_array;
+  std::vector<int> texture_id;
+  std::vector<std::string> shader_float_parameter;
+  std::vector<std::string> shader_int_parameter;
+  
   std::vector<Voxel<Color>*> voxels;
+  std::vector<TROArray*> timeranges; // statechange time ranges
+  std::vector<VArray*> timerange_vertexarrays; // statechange vertex arrays
+  std::vector<ShaderPriv2*> shaders;
+  std::vector<TextureI*> textures;
+  std::vector<TexCoordQuad> tex_quads;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -754,6 +770,26 @@ GameApi::BB add_bool_bitmap(GameApi::Env &e, Bitmap<bool> *bitmap)
   return bm;
 }
 
+GameApi::TX add_texture(GameApi::Env &e, TextureI *i)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->textures.push_back(i);
+  GameApi::TX tx;
+  tx.id = env->textures.size()-1;
+  return tx;
+}
+GameApi::Q add_tex_quad(GameApi::Env &e, Point2d p1, Point2d p2)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  TexCoordQuad q;
+  q.p1 = p1;
+  q.p2 = p2;
+  env->tex_quads.push_back(q);
+  GameApi::Q qq;
+  qq.id = env->tex_quads.size()-1;
+  return qq;
+}
+
 GameApi::FB add_float_bitmap(GameApi::Env &e, Bitmap<float> *bitmap)
 {
   EnvImpl *env = EnvImpl::Environment(&e);
@@ -844,6 +880,38 @@ GameApi::PT add_point(GameApi::Env &e, float x, float y)
   pt.id = env->pt.size()-1;
   //pt.type = 0;
   return pt;
+}
+
+GameApi::TR add_timerange(GameApi::Env &e, int paths)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->timeranges.push_back(new TROArray(paths));
+  GameApi::TR tr;
+  tr.id = env->timeranges.size()-1;
+  return tr;
+}
+GameApi::TR add_timerange(GameApi::Env &e, TROArray *arr)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->timeranges.push_back(arr);
+  GameApi::TR tr;
+  tr.id = env->timeranges.size()-1;
+  return tr;
+}
+
+TROArray *find_timerange(GameApi::Env &e, GameApi::TR tr);
+
+GameApi::VV add_timerange_vertexarray(GameApi::Env &e, GameApi::TR tr)
+{
+  TROArray *arr = find_timerange(e, tr);
+  
+  EnvImpl *env = EnvImpl::Environment(&e);
+  VArray *varr = new VArray(*arr);
+  varr->copy2();
+  env->timerange_vertexarrays.push_back(varr);
+  GameApi::VV vv;
+  vv.id = env->timerange_vertexarrays.size()-1;
+  return vv;
 }
 
 GameApi::O add_volume(GameApi::Env &e, VolumeObject *o)
@@ -1092,6 +1160,13 @@ LinkageInfo find_linkage(GameApi::Env &e, GameApi::L l)
 {
   EnvImpl *env = EnvImpl::Environment(&e);
   return env->event_infos->Linkage(l.id);
+}
+TextureI *find_texture(GameApi::Env &e, GameApi::TX t)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  if (t.id >=0 && t.id < (int)env->textures.size())
+    return env->textures[t.id];
+  return 0;
 }
 LinkInfo find_link_info(GameApi::Env &e, GameApi::L l)
 {
@@ -1350,6 +1425,21 @@ Point *find_point(GameApi::Env &e, GameApi::PT p)
     return &ee->pt[p.id];
   return 0;
 }
+TROArray *find_timerange(GameApi::Env &e, GameApi::TR tr)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  if (tr.id >=0 && tr.id < (int)ee->timeranges.size())
+    return ee->timeranges[tr.id];
+  return 0;
+}
+VArray *find_timerange_vertexarray(GameApi::Env &e, GameApi::VV vv)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  if (vv.id >=0 && vv.id < (int)ee->timerange_vertexarrays.size())
+    return ee->timerange_vertexarrays[vv.id];
+  return 0;
+}
+
 VolumeObject *find_volume(GameApi::Env &e, GameApi::O o)
 {
   EnvImpl *ee = EnvImpl::Environment(&e);
@@ -3242,7 +3332,27 @@ void GameApi::ShaderApi::unuse(GameApi::SH shader)
   ShaderSeq *seq = p->seq;
   seq->unuse(p->ids[shader.id]);
 }
-
+void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float val)
+{
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[shader.id]);
+  prog->set_var(name, val);
+}
+void GameApi::ShaderApi::bindnames(GameApi::SH shader, 
+				   std::string s_vertex,
+				   std::string s_normal,
+				   std::string s_color,
+				   std::string s_texcoord)
+{
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[shader.id]);
+  prog->attr_loc(s_vertex, 10);
+  prog->attr_loc(s_normal, 11);
+  prog->attr_loc(s_color, 12);
+  prog->attr_loc(s_texcoord, 13);
+}
 
 
 GameApi::FunctionApi::FunctionApi(Env &e) : e(e)
@@ -4542,4 +4652,131 @@ GameApi::P GameApi::PolygonApi::anim_target_matrix(P p, M matrix)
   FaceCollection *coll = new AnimFaceMatrix(*i, *mm);
   return add_polygon(e, coll, 1);
 }
+
+GameApi::P GameApi::PolygonApi::sprite(Q bm, PT p1, PT p2, PT p3, PT p4)
+{
+}
+GameApi::P GameApi::PolygonApi::sprite(Q bm, PT p, float mul_x, float mul_y)
+{
+}
 #endif
+
+GameApi::TR GameApi::StateChangeApi::init(int paths)
+{
+  return add_timerange(e, paths);
+}
+class PFloatRenderer : public Renderer<float>
+{
+public:
+  PFloatRenderer(GameApi::P (*fptr)(GameApi::EveryApi &e, float, void *cb), GameApi::Env &e, void *data) : fptr(fptr),e(e),data(data) { }
+  FaceCollection *Index(float t) const
+  {
+    GameApi::EveryApi ee(e);
+    GameApi::P p = fptr(ee, t, data);
+    return find_facecoll(e, p);
+  }
+private:
+  GameApi::P (*fptr)(GameApi::EveryApi &e, float, void*);
+  GameApi::Env &e;
+  void *data;
+};
+
+GameApi::TR GameApi::StateChangeApi::linear(TR tr, int path_num, P (*fptr)(EveryApi &e, float val, void *cb), float start_v, float end_v, float duration, void *cb)
+{
+  TROArray *arr = find_timerange(e, tr);
+  TROArray *arr2 = arr->copy();
+  arr->push_back(path_num, 
+		 new DefaultTimeRange<float>(start_v, end_v, duration),
+		 new PFloatRenderer(fptr,e, cb));
+  return add_timerange(e, arr);
+}
+
+GameApi::VV GameApi::StateChangeApi::prepare(TR sc)
+{
+  return add_timerange_vertexarray(e, sc);
+}
+void GameApi::StateChangeApi::render(VV v, float time, SH shader)
+{
+  ShaderPriv2 *p = (ShaderPriv2*)api.priv;
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[shader.id]);
+  VArray *arr = find_timerange_vertexarray(e, v);
+  arr->render(time, prog);
+}
+
+GameApi::StateChangeApi::StateChangeApi(GameApi::Env &e, GameApi::ShaderApi &api)
+: e(e),api(api) { }
+
+
+GameApi::TextureApi::TextureApi(GameApi::Env &e) : e(e) { count=0; }
+
+GameApi::TX GameApi::TextureApi::tex_plane(int sx, int sy)
+{
+  return add_texture(e, new TexPlane(sx,sy));
+}
+GameApi::TX GameApi::TextureApi::tex_bitmap(GameApi::BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<Color> *bmc = find_color_bitmap(handle);
+  return add_texture(e, new TexBitmap(*bmc));
+}
+int GameApi::TextureApi::unique_id()
+{
+  count++;
+  return count;
+}
+GameApi::TX GameApi::TextureApi::tex_assign(GameApi::TX tex, int id, int x, int y, GameApi::BM bm)
+{
+  TextureI *texture = find_texture(e, tex);
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<Color> *bmc = find_color_bitmap(handle);
+  return add_texture(e, new TexAssign(*texture, id, x, y, *bmc));
+}
+GameApi::TX GameApi::TextureApi::tex_coord(GameApi::TX tex, int id, int x, int y, int width, int height)
+{
+  TextureI *texture = find_texture(e, tex);
+  return add_texture(e, new TextureITexCoord(*texture, id, x,y,width,height));
+}
+GameApi::Q GameApi::TextureApi::get_tex_coord(TX tx, int id)
+{
+  TextureI *tex = find_texture(e,tx);
+  int s = tex->AreaCount();
+  int i=0;
+  for(;i<s;i++)
+    {
+      if (tex->Id(i)==id) { break; }
+    }
+  if (i==s) { Point2d p = { 0.0, 0.0 }; return add_tex_quad(e, p,p); } 
+  Point2d p1 = tex->AreaS(i);
+  Point2d p2 = tex->AreaE(i);
+  return add_tex_quad(e, p1,p2);
+}
+GameApi::TXID GameApi::TextureApi::prepare(TX tx)
+{
+  TextureI *tex = find_texture(e, tx);
+  TextureIBitmap bm(*tex);
+  BufferFromBitmap buf(bm);
+  buf.Gen();
+
+  GLuint id;
+  glGenTextures(1, &id); 
+  glBindTexture(GL_TEXTURE_2D, id);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bm.SizeX(),bm.SizeY(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+  
+  GameApi::TXID id2;
+  id2.id = id;
+  return id2;
+}
+
+void GameApi::TextureApi::use(TXID tx)
+{
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, tx.id);
+}
+void GameApi::TextureApi::unuse(TXID tx)
+{
+  glDisable(GL_TEXTURE_2D);
+}

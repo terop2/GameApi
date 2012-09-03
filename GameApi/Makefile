@@ -26,11 +26,11 @@ CFiles=	Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
 	Editor.cc Web.cc Functions.cc ShaderExpr.cc Font.cc FontEditor.cc \
 	GameApi.cc GameApiTest.cc Games.cc HierarchyObject.cc Physics.cc \
         GameApiTest2.cc State.cc Serialize.cc KeyFrameEditor.cc Parser.cc \
-	FreeType.cc VertexArray.cc
+	FreeType.cc VertexArray.cc StateChange.cc
 
 CFiles2 = Main.cc
 
-CFiles_examples = GameApiTest3.cc GameApiTest4.cc GameApiWorld.cc
+CFiles_examples = GameApiTest3.cc GameApiTest4.cc GameApiWorld.cc GameApiTest5.cc GameApiTest6.cc
 CFiles2_examples = ExampleMain.cc
 Subdirs = 
 #module1
@@ -56,7 +56,7 @@ all: libGameApi.so install main
 examples: main
 
 main: $(GCHFiles_examples) $(OFiles_examples) Makefile GameApi.hh libGameApi.so
-	g++ -g $(OFiles_examples) -std=c++0x -o main -L. -lGameApi
+	g++ -g $(OFiles_examples) -std=c++0x -o main -L. -lGameApi -lGL
 
 libGameApi.so: $(GCHFiles) $(OFiles) Makefile
 	g++ -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL -lGL -lSDL_image -lGLEW -lfreetype 

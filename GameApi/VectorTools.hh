@@ -357,7 +357,7 @@ public:
     a&=0xff000000;
     return r + g + b + a;
   }
-
+  static Color Transparent() { Color c; c.alpha=0; c.r = 0; c.b = 0; c.g = 0; return c; }
   static Color Black() { Color c; c.r=0; c.b=0; c.g = 0; c.alpha=255; return c; }
   static Color White() { Color c; c.r=255; c.b=255; c.g=255; c.alpha=255; return c;}
   static Color CubeCenter() {  Color c; c.r=128; c.b=128; c.g=128; c.alpha=255; return c;}

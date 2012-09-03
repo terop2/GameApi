@@ -6,6 +6,8 @@ void GameApiTest2(GameApi::EveryApi &e);
 void GameApiTest3(GameApi::EveryApi &e);
 void Game(GameApi::EveryApi &e);
 void GameApiWorldFunc(GameApi::EveryApi &e);
+void GameTest5(GameApi::EveryApi &e);
+void GameTest6(GameApi::EveryApi &e);
 
 int main(int argc, char *argv[])
 {
@@ -28,6 +30,25 @@ int main(int argc, char *argv[])
       g.start_game(0);
       return 0;
     }
+  else if (argc>1 && std::string(argv[1])=="-test5")
+    {
+      GameApi::Env e;
+      GameApi::GamesApi g(e);
+      g.register_game(0, &GameTest5);
+      g.modify_map(0,0);
+      g.start_game(0);
+      return 0;
+    }
+  else if (argc>1 && std::string(argv[1])=="-test6")
+    {
+      GameApi::Env e;
+      GameApi::GamesApi g(e);
+      g.register_game(0, &GameTest6);
+      g.modify_map(0,0);
+      g.start_game(0);
+      return 0;
+    }
+
   else if (argc>1 && std::string(argv[1])=="-test3")
     {
       GameApi::Env e;

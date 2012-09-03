@@ -6843,4 +6843,132 @@ private:
   Bitmap<Color> &bg;
 };
 
+//
+// Texture support
+//
+class TextureI
+{
+public:
+  virtual int SizeX() const { return 0; }
+  virtual int SizeY() const { return 0; }
+  virtual Color Map(int x, int y) const { return Color::Transparent(); }
+  virtual int AreaCount() const  { return 0; }
+  virtual int Id(int i) const { return 0; }
+  virtual Point2d AreaS(int i) const { Point2d p; return p; }
+  virtual Point2d AreaE(int i) const { Point2d p; return p; }
+};
+
+class TextureIBitmap : public Bitmap<Color>
+{
+public:
+  TextureIBitmap(TextureI &ti) : ti(ti) { }
+  virtual int SizeX() const { return ti.SizeX(); }
+  virtual int SizeY() const { return ti.SizeY(); }
+  virtual Color Map(int x, int y) const { return ti.Map(x,y); }  
+private:
+  TextureI &ti;
+};
+
+class TexPlane : public TextureI
+{
+public:
+  TexPlane(int sx, int sy) : sx(sx), sy(sy) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const { return Color::Transparent(); }
+private:
+  int sx,sy;
+};
+
+class TexBitmap : public TextureI
+{
+public:
+  TexBitmap(Bitmap<Color> &bm) : bm(bm) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual Color Map(int x, int y) const { return bm.Map(x,y); }
+private:
+  Bitmap<Color> &bm;
+};
+
+class TexAssign : public TextureI
+{
+public:
+  TexAssign(TextureI &next, int id, int x, int y, Bitmap<Color> &bm)
+    : next(next), id(id), x(x), y(y), bm(bm) { }
+  virtual int SizeX() const { return next.SizeX(); }
+  virtual int SizeY() const { return next.SizeY(); }
+  virtual Color Map(int x, int y) const { return next.Map(x,y); }
+  virtual int AreaCount() const  { return next.AreaCount()+1; }
+  virtual int Id(int i) const 
+  {
+    if (i==0) { return id; }
+    return next.Id(i-1);
+  }
+  virtual Point2d AreaS(int i) const 
+  {
+    if (i==0) {
+      Point2d p;
+      p.x = (float)x;
+      p.y = (float)y;
+      return p;
+    }
+    return next.AreaS(i-1);
+  }
+  virtual Point2d AreaE(int i) const { 
+    if (i==0) {
+      Point2d p;
+      p.x = (float)(x+bm.SizeX());
+      p.y = (float)(y+bm.SizeY());
+      return p;
+    }
+    return next.AreaS(i-1);
+  }
+  
+private:
+  TextureI &next;
+  int id;
+  int x,y;
+  Bitmap<Color> &bm;
+};
+
+class TextureITexCoord : public TextureI
+{
+public:
+  TextureITexCoord(TextureI &next, int id, int x, int y, int width, int heigth)
+    : next(next), id(id), x(x), y(y), width(width), height(height) { }
+  virtual int AreaCount() const  { return next.AreaCount()+1; }
+  virtual int Id(int i) const 
+  {
+    if (i==0) { return id; }
+    return next.Id(i-1);
+  }
+  virtual Point2d AreaS(int i) const 
+  {
+    if (i==0) {
+      Point2d p;
+      p.x = (float)x;
+      p.y = (float)y;
+      return p;
+    }
+    return next.AreaS(i-1);
+  }
+  virtual Point2d AreaE(int i) const { 
+    if (i==0) {
+      Point2d p;
+      p.x = (float)(x+width);
+      p.y = (float)(y+height);
+      return p;
+    }
+    return next.AreaS(i-1);
+  }
+private:
+  TextureI &next;
+  int id; 
+  int x; int y; 
+  int width; int height;
+};
+
+
+
 #endif
