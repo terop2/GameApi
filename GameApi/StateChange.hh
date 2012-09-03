@@ -122,11 +122,13 @@ public:
     int s = arr.vec.size();
     for(int i=0;i<s;i++)
       {
+	std::cout << "i:" << i << std::endl;
 	vec.push_back(std::vector<Pair>());
 	int s2 = arr.vec[i]->size();
 	float time = 0.0;
 	for(int j=0;j<s2;j++)
 	  {
+	    std::cout << "j:" << j << std::endl;
 	    FaceCollection *coll = (*(arr.vec[i]))[j]->start();
 	    FaceCollection *coll2 = (*(arr.vec[i]))[j]->end();
 	    float d = (*(arr.vec[i]))[j]->duration();
@@ -147,24 +149,33 @@ public:
   }
   void render(float time, Program *prog)
   {
+    Attrib id1 = prog->find_attr("vertex2",0);
+    //Attrib id2 = prog->find_attr("vertex2",0);
+    //Attrib id3 = prog->find_attr("vertex2",0);
+    //Attrib id4 = prog->find_attr("vertex2",0);
     int s = vec.size();
     for(int i=0;i<s;i++)
       {
-	int s2 = vec[i].size();
+	current_pair[i]=0; // TODO, perf problem
+	//int s2 = vec[i].size();
 	do {
 	  int pos = current_pair[i];
 	  Pair *p = &(vec[i][pos]);
 	  if (time > p->start_time + p->duration)
 	    {
 	      current_pair[i]++;
+	      //if (current_pair[i]>=vec[i].size()) break;
 	      continue;
 	    }
 	  float deltatime = time - p->start_time;
 	  float range = deltatime / p->duration;
 	  prog->set_var("range", range);
 	  RenderVertexArray2 rend(*p->s1, *p->s2);
-	  rend.render(0);	
-	} while(current_pair[i] < vec[i].size());
+	  rend.render(0, id1.loc, 0,0,0);
+	  std::cout << "delta: " << deltatime << "Duration: " << p->duration << " range:" << range << "current_pair:" << current_pair[i] << std::endl;
+	  break;
+
+	} while(current_pair[i] < (int)vec[i].size());
       }
   }
 private:

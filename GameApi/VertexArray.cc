@@ -89,6 +89,10 @@ void VertexArraySet::push_attrib(int id, int attrib_id, int num, float *points)
     }
   else if (num==4)
     {
+      std::cout << "Attrib1: " << points[0] << std::endl;
+      std::cout << "Attrib2: " << points[1] << std::endl;
+      std::cout << "Attrib3: " << points[2] << std::endl;
+      std::cout << "Attrib4: " << points[3] << std::endl;
       p->quad_attribs[attrib_id].push_back(points[0]);
       p->quad_attribs[attrib_id].push_back(points[1]);
       p->quad_attribs[attrib_id].push_back(points[2]);
@@ -239,27 +243,27 @@ void RenderVertexArray::render(int id)
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   }
 
-void RenderVertexArray2::render(int id)
+void RenderVertexArray2::render(int id, int attr1, int attr2, int attr3, int attr4)
 {
     // triangles
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glEnableVertexAttribArray(10);
-    glEnableVertexAttribArray(11);
-    glEnableVertexAttribArray(12);
-    glEnableVertexAttribArray(13);
+    glEnableVertexAttribArray(attr1);
+    glEnableVertexAttribArray(attr2);
+    glEnableVertexAttribArray(attr3);
+    glEnableVertexAttribArray(attr4);
 
     glVertexPointer(3, GL_FLOAT, 0, (GLvoid*)s1.tri_polys(id));
     glNormalPointer(GL_FLOAT, 0, (GLvoid*)s1.tri_normal_polys(id));
     glColorPointer(4, GL_UNSIGNED_BYTE, 0, (GLvoid*)s1.tri_color_polys(id));
     glTexCoordPointer(2, GL_FLOAT, 0, (GLvoid*)s1.tri_texcoord_polys(id));
 
-    glVertexAttribPointer(10, 3, GL_FLOAT,  GL_FALSE, 0, (GLvoid*)s2.tri_polys(id));
-    glVertexAttribPointer(11, 3, GL_FLOAT,  GL_FALSE, 0, (GLvoid*)s2.tri_normal_polys(id));
-    glVertexAttribPointer(12, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0, (GLvoid*)s2.tri_color_polys(id));
-    glVertexAttribPointer(13, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)s2.tri_texcoord_polys(id));
+    glVertexAttribPointer(attr1, 3, GL_FLOAT,  GL_FALSE, 0, (GLvoid*)s2.tri_polys(id));
+    glVertexAttribPointer(attr2, 3, GL_FLOAT,  GL_FALSE, 0, (GLvoid*)s2.tri_normal_polys(id));
+    glVertexAttribPointer(attr3, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0, (GLvoid*)s2.tri_color_polys(id));
+    glVertexAttribPointer(attr4, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)s2.tri_texcoord_polys(id));
 
     glDrawArrays(GL_TRIANGLES, 0, s1.tri_count(id));
     // quads
@@ -268,10 +272,10 @@ void RenderVertexArray2::render(int id)
     glColorPointer(4, GL_UNSIGNED_BYTE, 0, (GLvoid*)s1.quad_color_polys(id));
     glTexCoordPointer(2, GL_FLOAT, 0, (GLvoid*)s1.quad_texcoord_polys(id));
 
-    glVertexAttribPointer(10, 3, GL_FLOAT,  GL_FALSE, 0, (GLvoid*)s2.quad_polys(id));
-    glVertexAttribPointer(11, 3, GL_FLOAT,  GL_FALSE, 0, (GLvoid*)s2.quad_normal_polys(id));
-    glVertexAttribPointer(12, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0, (GLvoid*)s2.quad_color_polys(id));
-    glVertexAttribPointer(13, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)s2.quad_texcoord_polys(id));
+    glVertexAttribPointer(attr1, 3, GL_FLOAT,  GL_FALSE, 0, (GLvoid*)s2.quad_polys(id));
+    glVertexAttribPointer(attr2, 3, GL_FLOAT,  GL_FALSE, 0, (GLvoid*)s2.quad_normal_polys(id));
+    glVertexAttribPointer(attr3, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0, (GLvoid*)s2.quad_color_polys(id));
+    glVertexAttribPointer(attr4, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)s2.quad_texcoord_polys(id));
 
     glDrawArrays(GL_QUADS, 0, s1.quad_count(id));
 
@@ -284,10 +288,10 @@ void RenderVertexArray2::render(int id)
 	glColorPointer(4, GL_UNSIGNED_BYTE, 0, (GLvoid*)s1.poly_color_polys(id,i));
 	glTexCoordPointer(2, GL_FLOAT, 0, (GLvoid*)s1.poly_texcoord_polys(id,i));
 
-	glVertexAttribPointer(10, 3, GL_FLOAT,  GL_FALSE, 0, (GLvoid*)s2.poly_polys(id,i));
-	glVertexAttribPointer(11, 3, GL_FLOAT,  GL_FALSE, 0, (GLvoid*)s2.poly_normal_polys(id,i));
-	glVertexAttribPointer(12, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0, (GLvoid*)s2.poly_color_polys(id,i));
-	glVertexAttribPointer(13, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)s2.poly_texcoord_polys(id,i));
+	glVertexAttribPointer(attr1, 3, GL_FLOAT,  GL_FALSE, 0, (GLvoid*)s2.poly_polys(id,i));
+	glVertexAttribPointer(attr2, 3, GL_FLOAT,  GL_FALSE, 0, (GLvoid*)s2.poly_normal_polys(id,i));
+	glVertexAttribPointer(attr3, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0, (GLvoid*)s2.poly_color_polys(id,i));
+	glVertexAttribPointer(attr4, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)s2.poly_texcoord_polys(id,i));
 
 	glDrawArrays(GL_POLYGON, 0, s1.poly2_count(id,i));
       }
@@ -296,8 +300,8 @@ void RenderVertexArray2::render(int id)
     glDisableClientState(GL_NORMAL_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDisableVertexAttribArray(10);
-    glDisableVertexAttribArray(11);
-    glDisableVertexAttribArray(12);
-    glDisableVertexAttribArray(13);
+    glDisableVertexAttribArray(attr1);
+    glDisableVertexAttribArray(attr2);
+    glDisableVertexAttribArray(attr3);
+    glDisableVertexAttribArray(attr4);
   }
