@@ -8,10 +8,10 @@ P torus_func(EveryApi &e, float val, void *cb)
 {
   std::cout << "torus_func" << val << std::endl;
   float *cb2 = (float*)cb;
-  PT p = e.point_api.point(*cb2,*cb2,0.0);
+  PT p = e.point_api.point(*cb2,*cb2,100.0);
   P p0 = e.polygon_api.sphere(p, val, 20, 20);
-  P p1 = e.polygon_api.scale(p0, 0.05,0.05,0.2);
-  return p1;
+  //P p1 = e.polygon_api.scale(p0, 0.05,0.05,0.2);
+  return p0;
 }
 
 void GameTest5(EveryApi &e)
@@ -19,7 +19,7 @@ void GameTest5(EveryApi &e)
   MainLoopApi &loop = e.mainloop_api;
   ShaderApi &shader = e.shader_api;
   StateChangeApi &change_api = e.state_change_api;
-  loop.init_3d();
+  loop.init();
   loop.alpha(true);
   shader.load("Shader.txt");
   SH sh = shader.get_shader("linear", "red", "");
@@ -44,8 +44,9 @@ void GameTest5(EveryApi &e)
     e.mainloop_api.clear();
     time += 0.1;
     if (time > 200.0) time = 0.0;
-    std::cout << "Time:" << time << std::endl;
+    //std::cout << "Time:" << time << std::endl;
     shader.use(sh);
+    loop.switch_to_3d(true);
     change_api.render(valval, time, sh);
     //e.polygon_api.render_vertex_array(va);
     e.mainloop_api.swapbuffers();

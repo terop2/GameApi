@@ -3,6 +3,13 @@
 
 uniform float range;
 attribute vec4 vertex2;
+attribute vec3 normal2;
+attribute vec4 color2;
+attribute vec2 texcoord2;
+
+varying vec4 target_color;
+varying vec3 target_normal;
+varying vec2 target_texcoord;
 
 void main(void)
 {
@@ -13,10 +20,19 @@ void main(void)
   float z = a.z*(1.0-range)+aa.z*range;
   vec4 b = vec4(x,y,z,1.0);
   gl_Position = gl_ModelViewProjectionMatrix * b;
+
+  target_color = gl_Color * (1.0-range) + color2.rgba * range;
+  target_normal = gl_Normal * (1.0-range) + normal2 * range;
+  target_texcoord = gl_MultiTexCoord0.xy * (1.0-range) + texcoord2 * range;
 }
 
 //F: red
+
+varying vec4 target_color;
+varying vec4 target_normal;
+varying vec2 target_texcoord;
+
 void main(void)
 {
-  gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+  gl_FragColor = target_color;
 }
