@@ -3419,7 +3419,7 @@ void GameApi::ShaderApi::bindnames(GameApi::SH shader,
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
-  prog->attr_loc(s_vertex, 10);
+  //prog->attr_loc(s_vertex, 10);
   //prog->attr_loc(s_normal, 11);
   //prog->attr_loc(s_color, 12);
   //prog->attr_loc(s_texcoord, 13);
@@ -4756,10 +4756,10 @@ GameApi::TR GameApi::StateChangeApi::linear(TR tr, int path_num, P (*fptr)(Every
 {
   TROArray *arr = find_timerange(e, tr);
   TROArray *arr2 = arr->copy();
-  arr->push_back(path_num, 
+  arr2->push_back(path_num, 
 		 new DefaultTimeRange<float>(start_v, end_v, duration),
 		 new PFloatRenderer(fptr,e, cb));
-  return add_timerange(e, arr);
+  return add_timerange(e, arr2);
 }
 
 GameApi::VV GameApi::StateChangeApi::prepare(TR sc)
