@@ -11,9 +11,12 @@ void main(void)
   float x = a.x*(1.0-range)+aa.x*range;
   float y = a.y*(1.0-range)+aa.y*range;
   float z = a.z*(1.0-range)+aa.z*range;
-  vec4 b;
-  b.x = x;
-  b.y = y;
-  b.z = z;
+  vec4 b = vec4(x,y,z,1.0);
   gl_Position = gl_ModelViewProjectionMatrix * b;
+}
+
+//F: red
+void main(void)
+{
+  gl_FragColor = vec4(1.0,0.0,0.0,1.0);
 }

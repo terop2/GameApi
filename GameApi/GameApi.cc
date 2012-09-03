@@ -3420,9 +3420,9 @@ void GameApi::ShaderApi::bindnames(GameApi::SH shader,
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->attr_loc(s_vertex, 10);
-  prog->attr_loc(s_normal, 11);
-  prog->attr_loc(s_color, 12);
-  prog->attr_loc(s_texcoord, 13);
+  //prog->attr_loc(s_normal, 11);
+  //prog->attr_loc(s_color, 12);
+  //prog->attr_loc(s_texcoord, 13);
 }
 
 
