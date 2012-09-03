@@ -534,6 +534,7 @@ struct Point2d
     res.y = x*p.y;
     return res;
   }
+  friend std::ostream &operator<<(std::ostream &o, const Point2d &p);
 };
 struct Vector2d
 {

@@ -606,7 +606,6 @@ public:
   P line(PT p1, PT p2);
   P triangle(PT p1, PT p2, PT p3);
   P quad(PT p1, PT p2, PT p3, PT p4);
-  P sprite_bind(P p, Q bm);
   P quad_x(float x,
 	   float y1, float y2,
 	   float z1, float z2);
@@ -637,6 +636,8 @@ public:
   P fromsurface(S s, float thickness);
   P fromsurface(S s1, S s2, C curve); // surfacebetweensurfaces
   
+  P sprite_bind(P p, TX tx, int id);
+  P sprite_bind(P p, Q bm, TX tx);
   P texture(P orig, BM bm, int bm_choose=-1); // all quads
 
   P color(P orig, unsigned int color);

@@ -6898,7 +6898,21 @@ public:
     : next(next), id(id), x(x), y(y), bm(bm) { }
   virtual int SizeX() const { return next.SizeX(); }
   virtual int SizeY() const { return next.SizeY(); }
-  virtual Color Map(int x, int y) const { return next.Map(x,y); }
+  virtual Color Map(int x, int y) const 
+  {
+    int s = AreaCount();
+    for(int i=0;i<s;i++)
+      {
+	Point2d p1 = AreaS(i);
+	Point2d p2 = AreaE(i);
+	if (x<p1.x) continue;
+	if (y<p1.y) continue;
+	if (x>=p2.x) continue;
+	if (y>=p2.y) continue;
+	return bm.Map(x-p1.x,y-p1.y);
+      }
+    return next.Map(x,y); 
+  }
   virtual int AreaCount() const  { return next.AreaCount()+1; }
   virtual int Id(int i) const 
   {

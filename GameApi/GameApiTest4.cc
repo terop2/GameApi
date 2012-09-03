@@ -65,7 +65,12 @@ void Game(EveryApi &e)
   P cubes2 = e.polygon_api.memoize(cubes);
   P cubes3 = e.polygon_api.scale(cubes2, 300.0,300.0,300.0);
   //poly.prepare(cubes3);
-  VA va = poly.create_vertex_array(cubes3);
+  TX tx = e.texture_api.tex_plane(128,128);
+  int id = e.texture_api.unique_id();
+  TX tx2 = e.texture_api.tex_assign(tx, id, 0,0, red);
+  P cubes3_texture = e.polygon_api.sprite_bind(cubes3, tx2, id);
+  VA va = poly.create_vertex_array(cubes3_texture);
+  TXID tex = e.texture_api.prepare(tx2);
   sprite.preparesprite(red);
   sprite.preparesprite(green);
 #if 0
@@ -97,7 +102,9 @@ void Game(EveryApi &e)
       glPushMatrix();
       glRotatef(time/40.0, 0.0,1.0,0.0);
       //e.polygon_api.render(cubes3, 0, 0.0,0.0,0.0);
+      e.texture_api.use(tex);
       e.polygon_api.render_vertex_array(va);
+      e.texture_api.unuse(tex);
       //e.polygon_api.render_vertex_array(va2);
       glPopMatrix();
       e.mainloop_api.swapbuffers();
