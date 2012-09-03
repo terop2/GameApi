@@ -249,6 +249,10 @@ Attrib Program::find_attr_int(const std::string &attr_name, int id)
   atr.is_int = true;
   return atr;
 }
+void Program::attr_loc(std::string s, int index)
+{
+  glBindAttribLocation(priv->program, index, s.c_str());
+}
 
 void MoveObjectParameters::SetParameters(Program &p) const
 {

@@ -502,4 +502,75 @@ private:
 };
 
 
+//
+// Some interesting classes follow
+//
+// p = m*v
+// F = dp/dt = m*a // does not make sense without time range
+
+
+struct Moment
+{ 
+  float mass;
+  Vector v;
+};
+
+class MomentInTime
+{
+public:
+  virtual Moment mom(float time) const=0;
+};
+
+class Force
+{
+public:
+  Force(MomentInTime &time_evo, float t1, float t2) : time_evo(time_evo), t1(t1), t2(t2) { }
+  float mass() const { return (time_evo.mom(t2).mass - time_evo.mom(t1).mass)/(t2-t1); }
+  Vector accel() const { return (time_evo.mom(t2).v - time_evo.mom(t1).v)/(t2-t1); }
+  Vector force() const { return mass()*accel(); }
+  float time1() const { return t1; }
+  float time2() const { return t2; }
+private:
+  MomentInTime &time_evo;
+  float t1,t2;
+};
+
+class InvForce
+{
+public:
+  InvForce(Force &f, float mass2) : f(f), mass2(mass2) { }
+  float mass() const { return mass2; }
+  Vector accel() const { return force()/mass(); }
+  Vector force() const { return -f.force(); }
+  float time1() const { return f.time1(); }
+  float time2() const { return f.time2(); }
+private:
+  Force &f;
+  float mass2;
+};
+
+#if 0
+class InvMoment
+{
+public:
+  InvMoment(InvForce &f, Vector v) : f(f), v(v) { }
+  Moment moment1() const 
+  {
+    Moment m;
+    m.mass = f.mass;
+    m.v = v;
+    return m;
+  }
+  Moment moment2() const 
+  {
+    Moment vv;
+    vv.mass = f.mass();
+    vv.v = v + f.accel()*(f.time2()-f.time1());
+  }
+private:
+  InvForce &f;
+  Vector v;
+};
+#endif
+
 #endif

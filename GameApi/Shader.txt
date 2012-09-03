@@ -1,0 +1,19 @@
+
+//V: linear
+
+uniform float range;
+attribute vec4 vertex2;
+
+void main(void)
+{
+  vec4 a = gl_Vertex;
+  vec4 aa = vertex2;
+  float x = a.x*(1.0-range)+aa.x*range;
+  float y = a.y*(1.0-range)+aa.y*range;
+  float z = a.z*(1.0-range)+aa.z*range;
+  vec4 b;
+  b.x = x;
+  b.y = y;
+  b.z = z;
+  gl_Position = gl_ModelViewProjectionMatrix * b;
+}

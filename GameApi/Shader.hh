@@ -96,6 +96,7 @@ public: // uniform variable
   
   Attrib find_attr(const std::string &attr_name, int id);
   Attrib find_attr_int(const std::string &attr_name, int id);
+  void attr_loc(std::string s, int index);
 public:
   ProgramPriv *priv;
 };

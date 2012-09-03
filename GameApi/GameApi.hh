@@ -58,6 +58,11 @@ namespace GameApi
   struct VA { int id; }; // vertex array
   struct VX { int id; }; // voxel
   struct PL { int id; }; // plane
+  struct TX { int id; }; // texture
+  struct TXID { int id; }; // texture id
+  struct TR { int id; }; // time range
+  struct VV { int id; }; // time range vertex array
+  struct Q { int id; }; // quad texture coordinates
 
   template<class P, class R>
   class FunctionCb
@@ -131,6 +136,23 @@ private:
   Env &e;
 };
 
+class TextureApi
+{
+public:
+  TextureApi(Env &e);
+  TX tex_plane(int sx, int sy);
+  TX tex_bitmap(BM bm);
+  int unique_id();
+  TX tex_assign(TX tx, int id, int x, int y, BM bm);
+  TX tex_coord(TX tx, int id, int x, int y, int width, int height);
+  Q get_tex_coord(TX tx, int id);
+  TXID prepare(TX tx);
+  void use(TXID tx);
+  void unuse(TXID tx);
+private:
+  Env &e;
+  int count;
+};
 
 class GridApi
 {
@@ -431,7 +453,16 @@ public:
 private:
   Env &e;
 };
-
+#if 0
+class WorldApi2
+{
+public:
+  WorldApi2(Env &e);
+  W initial(PT p, V u_x, V u_y, V u_z);
+  W split(W w, int sx, int sy, int sz);
+  
+};
+#endif
 class WorldChangesApi
 {
 public:
@@ -575,8 +606,7 @@ public:
   P line(PT p1, PT p2);
   P triangle(PT p1, PT p2, PT p3);
   P quad(PT p1, PT p2, PT p3, PT p4);
-  P sprite(BM bm, PT p1, PT p2, PT p3, PT p4);
-  P sprite(BM bm, PT p, float mul_x, float mul_y);
+  P sprite(PT p1, PT p2, PT p3, PT p4, Q bm);
   P quad_x(float x,
 	   float y1, float y2,
 	   float z1, float z2);
@@ -705,6 +735,21 @@ private:
   Env &e;
 };
 
+class ShaderApi;
+
+class StateChangeApi
+{
+public:
+  StateChangeApi(Env &e, ShaderApi &api);
+  TR init(int paths);
+  TR linear(TR s, int path_num, P (*fptr)(EveryApi &e, float val, void *cb), float start_v, float end_v, float duration, void *cb=NULL);
+  VV prepare(TR sc);
+  void render(VV sc, float time, SH shadero);
+private:
+  Env &e;
+  ShaderApi &api;
+};
+
 class PlaneApi
 { // 2d coordinates in PT
   // could be array of pointcollections
@@ -728,6 +773,9 @@ public:
 
   PL and_not(PL p1, PL not_p); // needed in fonts for the holes
                                // draw to bitmap, do and_not, put to texture
+
+  PL render_p(P p);
+
   // 1) get black bitmap
   // 2) draw white polygon
   // 3) draw more black
@@ -1122,11 +1170,33 @@ private:
   Env &e;
 };
 
+class ShaderApi
+{
+public:
+  ShaderApi(Env &e);
+  ~ShaderApi();
+  void load(std::string filename);
+  SH get_shader(std::string v_format, std::string f_format, std::string g_format);
+  void use(SH shader);
+  void unuse(SH shader);
+  void bindnames(GameApi::SH shader, 
+		 std::string s_vertex,
+		 std::string s_normal,
+		 std::string s_color,
+		 std::string s_texcoord);
+  void set_var(GameApi::SH shader, std::string name, float val);
+private:
+  friend class StateChangeApi;
+  void *priv;
+  Env &e;
+};
+
+
 struct EveryApi
 {
   EveryApi(Env &e) 
     : mainloop_api(e), point_api(e), vector_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e),
-      font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e) { }
+      font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), shader_api(e), state_change_api(e, shader_api) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -1143,6 +1213,8 @@ struct EveryApi
   //CurveApi curve_api;
   FunctionApi function_api;
   VolumeApi volume_api;
+  ShaderApi shader_api;
+  StateChangeApi state_change_api;
 };
 
 class GamesApi
@@ -1169,19 +1241,6 @@ public:
   char *receive_msg(int id);
 };
 
-class ShaderApi
-{
-public:
-  ShaderApi(Env &e);
-  ~ShaderApi();
-  void load(std::string filename);
-  SH get_shader(std::string v_format, std::string f_format, std::string g_format);
-  void use(SH shader);
-  void unuse(SH shader);
-private:
-  void *priv;
-  Env &e;
-};
 
 
 class FilesApi

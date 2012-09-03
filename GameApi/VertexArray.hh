@@ -1,4 +1,7 @@
 
+#ifndef VERTEXARRAY_HH
+#define VERTEXARRAY_HH
+
 #include <vector>
 #include <map>
 #include "VectorTools.hh"
@@ -108,6 +111,16 @@ private:
   VertexArraySet &s;
 };
 
+class RenderVertexArray2
+{
+public:
+  RenderVertexArray2(VertexArraySet &s1, VertexArraySet &s2) : s1(s1), s2(s2) { }
+  void render(int id);
+private:
+  VertexArraySet &s1;
+  VertexArraySet &s2;
+};
+
 class FaceCollectionVertexArray2
 {
 public:
@@ -154,3 +167,4 @@ private:
   const FaceCollection &coll;
   VertexArraySet &s;
 };
+#endif
