@@ -134,6 +134,23 @@ typedef Bitmap<Point> PointBitmap;
 typedef Bitmap<Quad> QuadBitmap;
 
 template<class T>
+class BitmapTransformFromFunction : public Bitmap<T>
+{
+public:
+  BitmapTransformFromFunction(Bitmap<T> &bm, T (*fptr)(int,int,T,void*), void *data) : bm(bm), fptr(fptr), data(data) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual T Map(int x, int y) const
+  {
+    return fptr(x,y,bm.Map(x,y), data);
+  }
+private:
+  Bitmap<T> &bm;
+  T (*fptr)(int,int,T,void*); 
+  void *data;
+};
+
+template<class T>
 class BitmapFromFunction : public Bitmap<T>
 {
 public:
@@ -1660,6 +1677,19 @@ private:
   Vector u_y; 
   int sx; 
   int sy;
+};
+class UnsignedIntFromBitmap : public Bitmap<unsigned int>
+{
+public:
+  UnsignedIntFromBitmap(Bitmap<Color> &bm) : bm(bm) { }
+  int SizeX() const { return bm.SizeX(); }
+  int SizeY() const { return bm.SizeY(); }
+  unsigned int Map(int x, int y) const
+  {
+    return bm.Map(x,y).Pixel();
+  }
+private:
+  Bitmap<Color> &bm;
 };
 class BitmapFromUnsignedInt : public Bitmap<Color>
 {

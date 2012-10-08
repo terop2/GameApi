@@ -1760,6 +1760,19 @@ GameApi::BM GameApi::BitmapApi::newbitmap(int sx, int sy)
   return bm;
   
 }
+GameApi::BM GameApi::BitmapApi::transform(BM orig, unsigned int (*fptr)(int,int, unsigned int, void *), void *data)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  BitmapHandle *handle = find_bitmap(e, orig);
+  Bitmap<Color> *c = find_color_bitmap(handle);
+  UnsignedIntFromBitmap *bm1 = new UnsignedIntFromBitmap(*c);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(bm1));
+  BitmapTransformFromFunction<unsigned int> *trans = new BitmapTransformFromFunction<unsigned int>(*bm1, fptr, data);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(trans));
+
+  BitmapFromUnsignedInt *bm2 = new BitmapFromUnsignedInt(*trans);
+  return add_color_bitmap(e, bm2);
+}
 GameApi::BM GameApi::BitmapApi::function(unsigned int (*fptr)(int,int, void*), int sx, int sy, void* data)
 {
   Bitmap<unsigned int> *bm = new BitmapFromFunction<unsigned int>(fptr,sx,sy,data);
@@ -3410,6 +3423,15 @@ void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float val
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->set_var(name, val);
 }
+
+void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, int val)
+{
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[shader.id]);
+  prog->set_var(name, val);
+}
+
 void GameApi::ShaderApi::bindnames(GameApi::SH shader, 
 				   std::string s_vertex,
 				   std::string s_normal,
@@ -4072,6 +4094,15 @@ GameApi::PT GameApi::PointApi::from_angle(PT center, float radius, float angle)
   Point *cen = find_point(e,center);
   Point p = *cen+Vector(radius*cos(angle),radius*sin(angle),0.0);
   return add_point(e,p.x,p.y,p.z);
+}
+
+GameApi::BB GameApi::BoolBitmapApi::transform(BB orig, bool (*fptr)(int,int, bool, void *), void *data)
+{
+  BoolBitmap *c = find_bool_bitmap(e,orig);
+  Bitmap<bool> *bm = c->bitmap;
+  BitmapTransformFromFunction<bool> *trans = new BitmapTransformFromFunction<bool>(*bm, fptr, data);
+
+  return add_bool_bitmap(e, trans);
 }
 
 GameApi::BB GameApi::BoolBitmapApi::empty(int sx, int sy)
@@ -4831,6 +4862,8 @@ GameApi::TXID GameApi::TextureApi::prepare(TX tx)
 
   GLuint id;
   glGenTextures(1, &id); 
+  glClientActiveTexture(GL_TEXTURE0+0);
+  glActiveTexture(GL_TEXTURE0+0);
   glBindTexture(GL_TEXTURE_2D, id);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bm.SizeX(),bm.SizeY(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buf.Buffer().buffer);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      

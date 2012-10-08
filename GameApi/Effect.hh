@@ -7737,9 +7737,18 @@ public:
   }
   virtual Point2d TexCoord(int face, int point) const
   {
+    int face1 = face / numfaces;
+    int face2 = face - face1*numfaces;
+    int numfaces3 = numfaces*2;
+    float deltaangle1 = 1.0/numfaces3;
+    float deltaangle2 = 1.0/numfaces2;
+    float angle1 = face1*deltaangle1;
+    float angle2 = face2*deltaangle2;
+    if (point==2||point==3) angle1+=deltaangle1;
+    if (point==1||point==2) angle2+=deltaangle2;
     Point2d p;
-    p.x = 0;
-    p.y = 0;
+    p.x = angle1;
+    p.y = angle2;
     return p;
   }
   virtual int AttribI(int face, int point, int id) const

@@ -177,6 +177,7 @@ public:
   ~BitmapApi();
   BM newbitmap(int sx, int sy);
   BM function(unsigned int (*fptr)(int,int, void*), int sx, int sy, void *data);
+  BM transform(BM orig, unsigned int (*fptr)(int,int,unsigned int, void*), void *data);
   BM newintbitmap(char *array, int sx, int sy, int (*fptr)(char));
   BM newcolorbitmap(char *array, int sz, int sy, unsigned int (*fptr)(char));
   BM newtilebitmap(int sx, int sy, int tile_sx, int tile_sy);
@@ -901,6 +902,7 @@ public:
   ~BoolBitmapApi();
   BB empty(int sx, int sy);
   BB function(bool (*fptr)(int,int,void*), int sx, int sy, void* data=0);
+  BB transform(BB orig, bool (*fptr)(int,int,bool, void*), void *data=0);
   BB from_bitmaps_color(BM bm, int r, int g, int b);
   BB from_bitmaps_color_area(BM bm, bool(*fptr)(int r, int g, int b, int a, void* ptr), void *ptr);
 
@@ -1186,6 +1188,7 @@ public:
 		 std::string s_color,
 		 std::string s_texcoord);
   void set_var(GameApi::SH shader, std::string name, float val);
+  void set_var(GameApi::SH shader, std::string name, int val);
 private:
   friend class StateChangeApi;
   void *priv;
