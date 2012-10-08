@@ -177,7 +177,7 @@ public:
   ~BitmapApi();
   BM newbitmap(int sx, int sy);
   BM function(unsigned int (*fptr)(int,int, void*), int sx, int sy, void *data);
-  BM transform(BM orig, unsigned int (*fptr)(int,int,unsigned int, void*), void *data);
+  BM transform(BM orig, unsigned int (*fptr)(int,int,unsigned int, void*), void *data=0);
   BM newintbitmap(char *array, int sx, int sy, int (*fptr)(char));
   BM newcolorbitmap(char *array, int sz, int sy, unsigned int (*fptr)(char));
   BM newtilebitmap(int sx, int sy, int tile_sx, int tile_sy);
