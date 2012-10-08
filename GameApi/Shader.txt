@@ -11,6 +11,8 @@ varying vec4 target_color;
 varying vec3 target_normal;
 varying vec2 target_texcoord;
 
+uniform sampler2D tex;
+
 void main(void)
 {
   vec4 a = gl_Vertex;
@@ -23,7 +25,9 @@ void main(void)
 
   target_color = gl_Color * (1.0-range) + color2.rgba * range;
   target_normal = gl_Normal * (1.0-range) + normal2 * range;
-  target_texcoord = gl_MultiTexCoord0.xy * (1.0-range) + texcoord2 * range;
+  vec2 v = gl_TexCoord[0].xy * (1.0-range) + texcoord2 * range;
+  vec2 s = vec2(1.0,0.5);
+  target_texcoord = vec2(v.x*s.x,v.y*s.y);
 }
 
 //F: red
@@ -32,7 +36,9 @@ varying vec4 target_color;
 varying vec4 target_normal;
 varying vec2 target_texcoord;
 
+uniform sampler2D tex;
+
 void main(void)
 {
-  gl_FragColor = target_color;
+  gl_FragColor = texture(tex, target_texcoord);
 }
