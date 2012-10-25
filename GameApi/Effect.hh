@@ -141,6 +141,45 @@ public:
 };
 
 template<class A, class B>
+class RangeFunction : public Function<A,B>
+{
+public:
+  virtual B Index(A a) const
+  {
+    int s = value.size();
+    for(int i=0;i<s;i++)
+      {
+	if (a >= start_range[i] && a < end_range[i])
+	  {
+	    return value[i];
+	  }
+      }
+    return B();
+  }
+  void push_back(A start, A end, B val) {
+    value.push_back(val);
+    start_range.push_back(start);
+    end_range.push_back(end);
+  }
+  static std::pair<A,B> *EqualizerCheck(RangeFunction<A,B> &f1,
+				       RangeFunction<A,B> &f2, int i1, int i2)
+  {
+    B start = f1.value(i1);
+    B end = f1.value(i2);
+    B middle = f2.Index(f1.end_range[i1]);
+    //B middle2 = f2.Index(f1.start_range[i2]);
+    if (start <= middle && middle <= end) return new std::pair<A,B>(f1.end_range[i1], middle);
+    if (end <= middle && middle <= start) return new std::pair<A,B>(f1.end_range[i1], middle);
+    return 0;
+  }
+
+private:
+  std::vector<B> value;
+  std::vector<A> start_range;
+  std::vector<A> end_range;
+};
+
+template<class A, class B>
 class Arrow
 {
 public:

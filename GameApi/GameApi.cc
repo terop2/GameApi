@@ -4539,6 +4539,14 @@ GameApi::O GameApi::VolumeApi::boolfunction(bool (*fptr)(float x, float y, float
   VolumeObject *o = new FunctionVolume(fptr, data);
   return add_volume(e,o);
 }
+GameApi::O GameApi::VolumeApi::subvolume(float (*fptr)(float x, float y, float z, void *data), void *data, float start_range, float end_range)
+{
+  FunctionFloatVolumeObject *ff = new FunctionFloatVolumeObject(fptr, data);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ff));
+  return add_volume(e, new SubVolume(*ff, start_range, end_range));
+}
+
 
 void GameApi::VolumeApi::find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level)
 {
@@ -4886,3 +4894,4 @@ void GameApi::TextureApi::unuse(TXID tx)
 {
   glDisable(GL_TEXTURE_2D);
 }
+
