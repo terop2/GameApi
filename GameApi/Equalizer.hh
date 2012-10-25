@@ -2671,5 +2671,15 @@ public:
 
 };
 
+template<class A>
+class Occupied : public Function<A, bool>
+{
+public:
+  virtual B f(A a) const=0;
+  virtual B g(A a) const=0;
+  bool Index(A x) const { return f(x)==g(x); }
+};
+
+
 #endif
 

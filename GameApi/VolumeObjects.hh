@@ -146,6 +146,39 @@ public:
 #endif
 };
 
+class FloatVolumeObject {
+public:
+  virtual float FloatValue(Point p) const=0;
+};
+
+class FunctionFloatVolumeObject : public FloatVolumeObject {
+public:
+  FunctionFloatVolumeObject(float (*fptr)(float x, float y, float z, void *data), void *data) : fptr(fptr), data(data) { }
+  virtual float FloatValue(Point p) const
+  {
+    return fptr(p.x,p.y,p.z,data);
+  }
+  
+private:
+  float (*fptr)(float x, float y, float z, void *data);
+  void *data;
+};
+
+class SubVolume : public VolumeObject
+{
+public:
+  SubVolume(FloatVolumeObject &obj, float start_range, float end_range) : obj(obj), start_range(start_range), end_range(end_range) { }
+  virtual bool Inside(Point v) const {
+    float val = obj.FloatValue(v);
+    return val>=start_range && val<=end_range;
+  }
+
+private:
+  FloatVolumeObject &obj; 
+  float start_range; 
+  float end_range;
+};
+
 class FunctionVolume : public VolumeObject
 {
 public:
@@ -702,6 +735,7 @@ private:
   float dist2; // torus dist
   Point center;
 };
+
 
 
 class Random

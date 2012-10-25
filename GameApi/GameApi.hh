@@ -512,6 +512,7 @@ public:
   VolumeApi(Env &e);
   ~VolumeApi();
   O boolfunction(bool (*fptr)(float x, float y, float z, void *data), void *data=0);
+  O subvolume(float (*fptr)(float x, float y, float z, void *data), void *data, float start_range, float end_range);
   O link_areas(O o, PT p1, PT p2, float d);
   O sphere(PT center, float radius);
   O cube(float start_x, float end_x, 
