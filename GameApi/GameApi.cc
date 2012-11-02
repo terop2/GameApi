@@ -23,6 +23,7 @@
 #include "RayTracing.hh"
 #include "VertexArray.hh"
 #include "StateChange.hh"
+#include "DistanceObject.hh"
 
 struct TexCoordQuad
 {
@@ -619,6 +620,7 @@ struct EnvImpl
   std::vector<ShaderPriv2*> shaders;
   std::vector<TextureI*> textures;
   std::vector<TexCoordQuad> tex_quads;
+  std::vector<Separate*> separates;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -835,6 +837,14 @@ GameApi::F add_function(GameApi::Env &e, Function<float,float> *f)
   FunctionImpl ff;
   ff.func = f;
   return add_function(e, ff);
+}
+GameApi::SA add_separate(GameApi::Env &e, Separate *sep)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->separates.push_back(sep);
+  GameApi::SA p;
+  p.id = env->separates.size()-1;
+  return p;
 }
 
 // takes ownership of PolyHandle*
@@ -1281,6 +1291,14 @@ Voxel<Color> *find_voxel(GameApi::Env &e, GameApi::VX b)
   return handle;
 }
 
+Separate* find_separate(GameApi::Env &e, GameApi::SA p)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  Separate *sep = 0;
+  if (p.id >=0 && p.id<(int)ee->separates.size())
+    sep = ee->separates[p.id];
+  return sep;
+}
 
 FaceCollPolyHandle *find_poly(GameApi::Env &e, GameApi::P p)
 {
@@ -1633,6 +1651,22 @@ void GameApi::SpriteApi::rendersprite(BM bm, PT pos)
 {
   rendersprite(bm, 0, pos);
 }
+#if 0
+void GameApi::SpriteApi::rendersprite(BM bm, float x, float y, float x1, float y1, float inside_x, float inside_y, float inside_x1, float inside_y1)
+{
+  SpritePriv &spriv = *(SpritePriv*)priv;
+  ::Sprite *s = spriv.sprites[bm.id];
+  if (!s) { std::cout << "rendersprite sprite==NULL (maybe you need to call prepare() for every object before rendering happens. (do not put it to frame loop or you lose frame rates))" << std::endl; return; }
+
+  Point2d pos2 = { x, y };
+  Point2d pos3 = { x1, y1 };
+  Point2d inside_2 = { inside_x, inside_y };
+  Point2d inside_3 ={ inside_x1, inside_y1 }; 
+  float z = 0.0;
+  //std::cout << "rendersprite: " << bm_choose << std::endl;
+  RenderSprite(*s, bm_choose, pos2, pos3, inside_2, inside_3, z, *spriv.renders[bm.id]);
+}
+#endif
 void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, float x, float y, float mult_x, float mult_y)
 {
   SpritePriv &spriv = *(SpritePriv*)priv;
@@ -4895,3 +4929,53 @@ void GameApi::TextureApi::unuse(TXID tx)
   glDisable(GL_TEXTURE_2D);
 }
 
+GameApi::SV GameApi::SpaceVectorApi::from_points(GameApi::PC pc) {
+  // choose polygon via hit test
+  // find value of vector via interpolation
+  // return it.
+  // SV = PT->V
+  // PC = int->PT
+  // algo fills the space with polygons, finds vector.
+}
+GameApi::PT GameApi::SpaceVectorApi::flow_next_point(SV v, PT p, float mult)
+{
+
+}
+
+GameApi::SA GameApi::SeparateApi::empty()
+{
+  return add_separate(e, new SeparateEmpty);
+}
+
+GameApi::SA GameApi::SeparateApi::u_sep(SA orig, float (*sep_x)(float x, float y, float z, void *data), void *data)
+{
+  Separate *sep = find_separate(e, orig);
+  return add_separate(e, new SeparateX(sep, sep_x, data));
+}
+GameApi::SA GameApi::SeparateApi::v_sep(SA orig, float (*sep_y)(float x, float y, float z, void *data), void *data)
+{
+  Separate *sep = find_separate(e, orig);
+  return add_separate(e, new SeparateY(sep, sep_y, data));
+}
+GameApi::SA GameApi::SeparateApi::surf_sep(SA orig, float (*sep_dist)(float x, float y, float z, void *data), void *data)
+{
+  Separate *sep = find_separate(e, orig);
+  return add_separate(e, new SeparateDist(sep, sep_dist, data));
+}
+
+GameApi::P GameApi::SeparateApi::create_quads(GameApi::SA object, float dist, float dist_accuracy,
+			float x_range_start, float x_range_end, float x_step,
+			float y_range_start, float y_range_end, float y_step,
+			float z_range_start, float z_range_end, float z_step,
+			float u_range_start, float u_range_end, float u_step,
+			float v_range_start, float v_range_end, float v_step
+)
+{
+  Separate *sep = find_separate(e, object);
+  return add_polygon(e, new SeparateRender(*sep, dist, dist_accuracy,
+					   x_range_start, x_range_end, x_step,
+					   y_range_start, y_range_end, y_step,
+					   z_range_start, z_range_end, z_step,
+					   u_range_start, u_range_end, u_step,
+					   v_range_start, v_range_end, v_step), 1);
+}

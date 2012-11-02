@@ -12,6 +12,7 @@ namespace GameApi
   struct FB { int id; }; // float bitmap
   struct CBM { int id; }; // continuousbitmap
   struct SP { int id; }; // space
+  struct SA { int id; }; // separate
   struct PT { int id; }; // point
   struct V { int id; }; // vector
   struct M { int id; }; // matrix
@@ -63,6 +64,9 @@ namespace GameApi
   struct TR { int id; }; // time range
   struct VV { int id; }; // time range vertex array
   struct Q { int id; }; // quad texture coordinates
+  struct DO { int id; };
+  struct PC { int id; };
+  struct SV { int id; };
 
   template<class P, class R>
   class FunctionCb
@@ -123,12 +127,14 @@ public:
   ~SpriteApi();
   void spritepos(BM bm, float x, float y);
   void preparesprite(BM bm, int bbm_choose=-1);
+
   void rendersprite(BM bm, float x, float y, float mult_x, float mult_y);
   void rendersprite(BM bm, PT pos);
   void rendersprite(BM bm, int bm_choose, float x, float y, float mult_x, float mult_y);
   void rendersprite(BM bm, int bm_choose, PT pos);
   void rendersprite(BM bm, int bm_choose, SP move_space, SP sprite_space, float x, float y);
   void rendersprite(BM bm, int bm_choose, SP move_space, SP sprite_space, PT pos);
+  void rendersprite(BM bm, float x, float y, float x1, float y1, float inside_x, float inside_y, float inside_x1, float inside_y1);
   SP spritespace(BM bm);
   PT pixelpos(BM bm, int x, int y);
 private:
@@ -186,6 +192,8 @@ public:
   BM loadposbitmap(std::string filename);
   BM findtile(BM tile_bitmap, int x, int y);
   BM subbitmap(BM orig, int x, int y, int width, int height);
+  BM subbitmapimage(BM orig, int r_start_range, int r_end_range, int g_start_range, int g_end_range, int b_start_range, int b_end_range, unsigned int empty_color);
+
   BM growbitmap(BM small_orig_bitmap, int l, int t, int r, int b);
   BM blitbitmap(BM bg, BM orig, int x, int y);
   BM anim_array(BM *array, int size);
@@ -564,6 +572,34 @@ private:
   Env &e;
 };
 
+class SeparateApi
+{
+public:
+  SeparateApi(Env &e) :e(e) { }
+  SA empty();
+  SA u_sep(SA orig, float (*sep_u)(float x, float y, float z, void *data), void *data);
+  SA v_sep(SA orig, float (*sep_v)(float x, float y, float z, void *data), void *data);
+  SA surf_sep(SA orig, float (*sep_dist)(float x, float y, float z, void *data), void *data);
+  P create_quads(SA object, float dist, float dist_accuracy,
+		 float x_range_start, float x_range_end, float x_step,
+		 float y_range_start, float y_range_end, float y_step,
+		 float z_range_start, float z_range_end, float z_step,
+		 float u_range_start, float u_range_end, float u_step,
+		 float v_range_start, float v_range_end, float v_step);
+
+private:
+  Env &e;
+};
+
+class DistanceApi
+{
+public:
+  DO sphere(float x, float y, float z);
+  DO plane(float x, float y, float z,
+	   float dx, float dy, float dz);
+  DO array(DO *array, int size);
+};
+
 class SurfaceApi
 {
 public:
@@ -592,18 +628,16 @@ class PolygonApi
 public:
   PolygonApi(Env &e);
   ~PolygonApi();
-#if 0
-  P function(PT (*fptr)(int face, int point, void *data),
-	     int (*numpoints)(int face, void *data2),
-	     int numfaces, void *data, void *data2);
-  P color_function(P orig, 
-		   unsigned int (*fptr)(int face, int point, void *data),
-		   void *data);
-  P function(PT (*fptr)(FaceId face, int point, void *data),
-	     int (*numpoints)(SurfaceId face, void *data2),
-	     FaceIdDim sizes,
-	     int numfaces, void *data, void *data2);
-#endif
+  P counts(int numfaces);
+  P count_function(P p1, int (*numpoints)(Env &e, int face, void *data), void *data);
+  P point_function(P p1, PT (*fptr)(Env &e, int face, int point, void *data), void *data);
+  P color_function(P p1, unsigned int (*fptr)(Env &e, int face, int point, void *data), void *data);
+  P texcoord_function(P p1, PT (*fptr)(Env &e, int face, int point, void *data), void *data);
+  P normal_function(P p1, V (*fptr)(Env &e, int face, int point, void *data), void *data);
+  P attrib_function(P p1, float (*fptr)(Env &e, int face, int point, int idx, void *data), int idx, void *data);
+  P attribi_function(P p1, int (*fptr)(Env &e, int face, int point, int idx, void *data), int idx, void *data);
+  
+
   P empty();
   P line(PT p1, PT p2);
   P triangle(PT p1, PT p2, PT p3);
@@ -758,6 +792,7 @@ class PlaneApi
   // could be array of pointcollections
   // but colours etc and textures still needed.
   // so really it's P type with 2d points.
+  // int->PT
 public:
   PlaneApi(Env &e);
   PL function(PT (*fptr)(int idx, void *data), int num_points, void *data);
@@ -880,7 +915,7 @@ public:
 
 
 class BufferApi
-{
+{ // P->BF
 public:
   BF vertex(P p);
   BF normal(P p);
@@ -897,7 +932,7 @@ public:
 };
 
 class BoolBitmapApi
-{
+{ // NxN->2
 public:
   BoolBitmapApi(Env &e);
   ~BoolBitmapApi();
@@ -934,7 +969,7 @@ private:
 };
 
 class FloatBitmapApi
-{
+{ // NxN->R
 public: // values are [0.0..1.0]
   FloatBitmapApi(Env &e);
   ~FloatBitmapApi();
@@ -967,7 +1002,7 @@ private:
 };
 
 class ContinuousBitmapApi
-{
+{ // RxR->RGB
 public:
   ContinuousBitmapApi(Env &e);
   CBM empty(float x, float y);
@@ -985,6 +1020,7 @@ class VoxelApi
 { // we don't have good ways to render these. RayTraceBitmap is one way,
   // but it could be useful in other rendering systems to get colours from
   // 3d space.
+  // NxNxN->RGB
 public:
   VoxelApi(Env &e);
   VX function(unsigned int (*fptr)(int x, int y, int z, void *data), int sx, int sy, int sz, void *data);
@@ -996,7 +1032,7 @@ private:
 
 
 class ColorApi
-{
+{ // ()->RGB
 public:
   ColorApi(Env &e);
   CO rgb_color(int r, int g, int b, int a); // r,g,b,a [0..255]
@@ -1006,7 +1042,7 @@ private:
 };
 
 class PointApi
-{
+{ // ()->PT
 public:
   PointApi(Env &e);
   PT origo();
@@ -1028,9 +1064,24 @@ public:
 private:
   Env &e;
 };
+		     
+class PointCollectionApi
+{ // int -> PT
+public:
+  PointCollectionApi(Env &e) : e(e) { }
+  PC empty();
+  PC single(PT point);
+  PC single(float x, float y, float z);
+  PC array(PT *array, int size);
+  P tri_object3d(PC p);
+private:
+  Env &e;
+};
+
 
 class VectorApi
 { // to be implemented via virtual Vector vec() const=0;
+  // ()->V
 public:
   VectorApi(Env &e);
   V null_vector();
@@ -1045,6 +1096,17 @@ public:
   V neg(V v);
   float dist3d(V v);
   float dist2d(V v);
+private:
+  Env &e;
+};
+
+class SpaceVectorApi
+{ // f : PT->V
+public:
+  SpaceVectorApi(Env &e) : e(e) { }
+  SV function(V (*fptr)(Env &e, float x, float y, float z, void* data), void *data); // TODO
+  SV from_points(PC coll); // choose poly(nearest points), linear interpoate, ensure no failures
+  PT flow_next_point(SV v, PT p, float mult);
 private:
   Env &e;
 };
@@ -1201,7 +1263,7 @@ struct EveryApi
 {
   EveryApi(Env &e) 
     : mainloop_api(e), point_api(e), vector_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e),
-      font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e) { }
+      font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -1221,6 +1283,7 @@ struct EveryApi
   ShaderApi shader_api;
   StateChangeApi state_change_api;
   TextureApi texture_api;
+  SeparateApi separate_api;
 };
 
 class GamesApi
