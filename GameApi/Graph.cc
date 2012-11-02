@@ -1087,6 +1087,45 @@ void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender 
   rend.DisableTexture();
 }
 
+#if 0
+void RenderSprite(const Sprite &s, int frame, Point2d pos1, Point2d pos2, Point2d pos1_inside, Point2d pos2_inside, float z, ArrayRender &rend)
+{
+  //std::cout << "SpriteFrame: " << frame << std::endl;
+  rend.EnableTexture(frame);
+  glPushMatrix();
+  Point2d p = s.Pos(frame);
+
+  Matrix me = Matrix::Translate(pos1_inside.x+p.x, pos1_inside.y+p.y, z);
+  float xx = pos2_inside.x-pos1_inside.x;
+  float yy = pos2_inside.y-pos1_inside.y;
+  Matrix mr = Matrix::RotateZ(atan2(yy,xx));
+  float d = sqrt(xx*xx+yy*yy);
+  Matrix ms = Matrix::Scale(1.0/d,1.0/d,1.0/d);
+  Matrix ma = me*mr*ms;
+  Matrix mi = Matrix::Inverse(ma);
+
+  Matrix wm = Matrix::Translate(pos1.x+p.x, pos1.y+p.y, z);
+  float wxx = pos2.x-pos1.x;
+  float wyy = pos2.y-pos1.y;
+  Matrix wmr = Matrix::RotateZ(atan2(wyy,wxx));
+  float wd = sqrt(wxx*wxx+wyy*wyy);
+  Matrix wms = Matrix::Scale(1.0/wd,1.0/wd,1.0/wd);
+  Matrix wma = wm*wmr*wms;
+
+  Matrix m = mi * wma;
+			    
+  float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
+		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
+		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
+		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
+  
+  glMultMatrixf(&mat[0]);
+  rend.Render(frame, -1, -1, frame, 0, rend.used_vertex_count[0]);
+  glPopMatrix();
+  rend.DisableTexture();
+}
+#endif
+
 float Parser::ParseFloat(std::string s_, bool &success)
 {
   std::cout << "ParseFloat: '" << s_ << "'" << std::endl;

@@ -5715,6 +5715,7 @@ private:
 
 void PrepareSprite(const Sprite &s, ArrayRender &rend);
 void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend);
+void RenderSprite(const Sprite &s, int frame, Point2d pos1, Point2d pos2, Point2d pos1_inside, Point2d pos2_inside, float z, ArrayRender &rend);
 
 class SpriteMesh : public Mesh
 {
