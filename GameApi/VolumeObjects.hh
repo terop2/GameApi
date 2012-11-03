@@ -179,6 +179,8 @@ private:
   float end_range;
 };
 
+
+
 class FunctionVolume : public VolumeObject
 {
 public:
@@ -606,6 +608,36 @@ private:
   VolumeObject &kk;
 };
 
+class OrVolumeArray : public VolumeObject
+{
+public:
+  OrVolumeArray(VolumeObject *array, int size) : array(array), size(size) {}
+
+private:
+  VolumeObject *array;
+  int size;
+};
+
+class IntersectionPoint : public VolumeObject
+{
+public:
+  IntersectionPoint(float (*fptr1)(float x, float y, float z, void *data), void *data1, float start_range1, float end_range1,
+		    float (*fptr2)(float x, float y, float z, void *data), void *data2,float start_range2, float end_range2,
+		    float (*fptr3)(float x, float y, float z, void *data), void *data3,float start_range3, float end_range3)
+    : f1(fptr1, data1), f2(fptr2,data2), f3(fptr3,data3),
+      oo1(f1,start_range1, end_range1),
+      oo2(f2,start_range2, end_range2),
+      oo3(f3, start_range3, end_range3),
+      intersect1(oo1,oo2), intersect_12(intersect1, oo3)
+  {
+  }
+  virtual bool Inside(Point v) const { return intersect_12.Inside(v); }
+
+private:
+  FunctionFloatVolumeObject f1,f2,f3;
+  SubVolume oo1,oo2,oo3;
+  AndVolume intersect1, intersect_12;
+};
 
 class ColorSpecVolume  : public VolumeObject
 {

@@ -628,14 +628,6 @@ class PolygonApi
 public:
   PolygonApi(Env &e);
   ~PolygonApi();
-  P counts(int numfaces);
-  P count_function(P p1, int (*numpoints)(Env &e, int face, void *data), void *data);
-  P point_function(P p1, PT (*fptr)(Env &e, int face, int point, void *data), void *data);
-  P color_function(P p1, unsigned int (*fptr)(Env &e, int face, int point, void *data), void *data);
-  P texcoord_function(P p1, PT (*fptr)(Env &e, int face, int point, void *data), void *data);
-  P normal_function(P p1, V (*fptr)(Env &e, int face, int point, void *data), void *data);
-  P attrib_function(P p1, float (*fptr)(Env &e, int face, int point, int idx, void *data), int idx, void *data);
-  P attribi_function(P p1, int (*fptr)(Env &e, int face, int point, int idx, void *data), int idx, void *data);
   
 
   P empty();
@@ -751,6 +743,17 @@ public:
   P anim_target_scale(P p, PT center, float scale_x, float scale_y, float scale_z);
   P anim_target_matrix(P p, M matrix);
 
+
+  P counts(P p1, int numfaces);
+  P count_function(P p1, int (*numpoints)(Env &e, int face, void *data), void *data);
+  P point_function(P p1, PT (*fptr)(Env &e, int face, int point, void *data), void *data);
+  P color_function(P p1, unsigned int (*fptr)(Env &e, int face, int point, void *data), void *data);
+  P texcoord_function(P p1, PT (*fptr)(Env &e, int face, int point, void *data), void *data);
+  P normal_function(P p1, V (*fptr)(Env &e, int face, int point, void *data), void *data);
+  P attrib_function(P p1, float (*fptr)(Env &e, int face, int point, int idx, void *data), int idx, void *data);
+  P attribi_function(P p1, int (*fptr)(Env &e, int face, int point, int idx, void *data), int idx, void *data);
+
+
   // must call prepare for P before these.
   int get_tri_vertex_array_frames(P p);
   int get_tri_vertex_array_rows(P p);
@@ -795,7 +798,7 @@ class PlaneApi
   // int->PT
 public:
   PlaneApi(Env &e);
-  PL function(PT (*fptr)(int idx, void *data), int num_points, void *data);
+  PL function(PT (*fptr)(EveryApi &e, int idx, void *data), int num_points, void *data);
   PL color_function(PL pl, CO (*fptr)(int idx, PT pos, void *data), void *data);
   // TODO: how to represent/load fonts to this type.
   PL empty(float sx, float sy);
@@ -825,6 +828,8 @@ public:
   P substitute_quads_with_plane(P orig, PL (*fptr)(int face, void *data), void *data);
   P plane_in_3d(PL plane, PT u_p, V v1, V v2);
   
+private:
+  Env &e;
 };
 
 #if 0

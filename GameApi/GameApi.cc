@@ -621,6 +621,7 @@ struct EnvImpl
   std::vector<TextureI*> textures;
   std::vector<TexCoordQuad> tex_quads;
   std::vector<Separate*> separates;
+  std::vector<PlanePoints2d*> plane_points;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -844,6 +845,15 @@ GameApi::SA add_separate(GameApi::Env &e, Separate *sep)
   env->separates.push_back(sep);
   GameApi::SA p;
   p.id = env->separates.size()-1;
+  return p;
+}
+
+GameApi::PL add_plane(GameApi::Env &e, PlanePoints2d *sep)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->plane_points.push_back(sep);
+  GameApi::PL p;
+  p.id = env->plane_points.size()-1;
   return p;
 }
 
@@ -1297,6 +1307,15 @@ Separate* find_separate(GameApi::Env &e, GameApi::SA p)
   Separate *sep = 0;
   if (p.id >=0 && p.id<(int)ee->separates.size())
     sep = ee->separates[p.id];
+  return sep;
+}
+
+PlanePoints2d* find_plane(GameApi::Env &e, GameApi::PL p)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  PlanePoints2d *sep = 0;
+  if (p.id >=0 && p.id<(int)ee->plane_points.size())
+    sep = ee->plane_points[p.id];
   return sep;
 }
 
@@ -3410,6 +3429,44 @@ void GameApi::PolygonApi::renderpoly(P p, int choose, float x, float y, float z)
 #endif
   glPopMatrix();
 }
+
+class CountsFaceCollection : public ForwardFaceCollection
+{
+public:
+  CountsFaceCollection(int numfaces, FaceCollection *next) : ForwardFaceCollection(*next), numfaces(numfaces) { }
+  int NumFaces() const { return numfaces; }
+private:
+  int numfaces;
+};
+
+GameApi::P GameApi::PolygonApi::counts(P p1, int numfaces)
+{
+  FaceCollection *poly = find_facecoll(e, p1);
+  return add_polygon(e, new CountsFaceCollection(numfaces, poly),1);  
+}
+GameApi::P GameApi::PolygonApi::count_function(P p1, int (*numpoints)(Env &e, int face, void *data), void *data)
+{
+}
+GameApi::P GameApi::PolygonApi::point_function(P p1, PT (*fptr)(Env &e, int face, int point, void *data), void *data)
+{
+}
+GameApi::P GameApi::PolygonApi::color_function(P p1, unsigned int (*fptr)(Env &e, int face, int point, void *data), void *data)
+{
+}
+GameApi::P GameApi::PolygonApi::texcoord_function(P p1, PT (*fptr)(Env &e, int face, int point, void *data), void *data)
+{
+}
+GameApi::P GameApi::PolygonApi::normal_function(P p1, V (*fptr)(Env &e, int face, int point, void *data), void *data)
+{
+}
+GameApi::P GameApi::PolygonApi::attrib_function(P p1, float (*fptr)(Env &e, int face, int point, int idx, void *data), int idx, void *data)
+{
+}
+GameApi::P GameApi::PolygonApi::attribi_function(P p1, int (*fptr)(Env &e, int face, int point, int idx, void *data), int idx, void *data)
+{
+}
+
+
 void GameApi::ShaderApi::load(std::string filename)
 {
   ShaderPriv2 *p = (ShaderPriv2*)priv;
@@ -4978,4 +5035,32 @@ GameApi::P GameApi::SeparateApi::create_quads(GameApi::SA object, float dist, fl
 					   z_range_start, z_range_end, z_step,
 					   u_range_start, u_range_end, u_step,
 					   v_range_start, v_range_end, v_step), 1);
+}
+
+class PlanePointsFunction : public PlanePoints2d
+{
+public:
+  PlanePointsFunction( GameApi::EveryApi &e, GameApi::PT (*fptr)(GameApi::EveryApi &e, int idx, void *data),
+		       int num_points, void *data) : e(e), fptr(fptr), num_points(num_points), data(data) { }
+  virtual int Size() const { return num_points; }
+  virtual Point2d Map(int i) const {
+    GameApi::PT p = fptr(e, i, data);
+    Point2d pp = { e.point_api.pt_x(p), e.point_api.pt_y(p) };
+    return pp;
+  }
+ 
+private:
+  GameApi::EveryApi &e;
+  GameApi::PT (*fptr)(GameApi::EveryApi &e, int idx, void *data);
+  int num_points; 
+  void *data;
+};
+
+
+GameApi::PlaneApi::PlaneApi(Env &e) : e(e) { }
+
+GameApi::PL GameApi::PlaneApi::function(GameApi::PT (*fptr)(EveryApi &e, int idx, void*data), int num_points, void*data)
+{
+  EveryApi ev(e);
+  return add_plane(e, new PlanePointsFunction( ev, fptr, num_points, data ));
 }

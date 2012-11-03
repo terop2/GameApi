@@ -331,3 +331,7 @@ private:
 // (x,y,z)|- r
 // 
 // (alfa,beta) |- (x,y,z)
+
+
+// Intersection
+
