@@ -7015,5 +7015,15 @@ private:
 };
 
 
+//
+// PLANE
+//
+class PlanePoints2d
+{
+public:
+  virtual int Size() const=0;
+  virtual Point2d Map(int i) const=0;
+};
+
 
 #endif

@@ -48,15 +48,15 @@ void GameTest5(EveryApi &e)
   A val2;
   val2.val = 150.0;
   val2.tx = tx2;
-  TR t = change_api.init(2);
+  TR t = change_api.init(1);
   //float val = 0.0;
   //float val2 = 150.0;
   TR t2 = change_api.linear(t, 0, &torus_func, 100.0, 200.0, 100.0, &val);
-  TR t3 = change_api.linear(t2, 0, &torus_func, 200.0, 100.0, 100.0, &val);
-  TR t4 = change_api.linear(t3, 1, &torus_func, 100.0, 200.0, 100.0, &val2);
-  TR t5 = change_api.linear(t4, 1, &torus_func, 200.0, 100.0, 100.0, &val2);
+  //TR t3 = change_api.linear(t2, 0, &torus_func, 200.0, 100.0, 100.0, &val);
+  //TR t4 = change_api.linear(t3, 1, &torus_func, 100.0, 200.0, 100.0, &val2);
+  //TR t5 = change_api.linear(t4, 1, &torus_func, 200.0, 100.0, 100.0, &val2);
   
-  VV valval = change_api.prepare(t5);
+  VV valval = change_api.prepare(t2);
   float time = 0.0;
 
   //P p = torus_func(e, 100.0, &val2);
