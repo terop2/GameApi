@@ -182,10 +182,10 @@ public:
   BitmapApi(Env &e);
   ~BitmapApi();
   BM newbitmap(int sx, int sy);
-  BM function(unsigned int (*fptr)(int,int, void*), int sx, int sy, void *data);
-  BM transform(BM orig, unsigned int (*fptr)(int,int,unsigned int, void*), void *data=0);
-  BM newintbitmap(char *array, int sx, int sy, int (*fptr)(char));
-  BM newcolorbitmap(char *array, int sz, int sy, unsigned int (*fptr)(char));
+  BM function(unsigned int (*fptr)(EveryApi &e,int,int, void*), int sx, int sy, void *data);
+  BM transform(BM orig, unsigned int (*fptr)(EveryApi &e,int,int,unsigned int, void*), void *data=0);
+  BM newintbitmap(char *array, int sx, int sy, int (*fptr)(EveryApi &ev, char));
+  BM newcolorbitmap(char *array, int sz, int sy, unsigned int (*fptr)(EveryApi &ev, char));
   BM newtilebitmap(int sx, int sy, int tile_sx, int tile_sy);
   BM loadbitmap(std::string filename);
   BM loadtilebitmap(std::string filename, int tile_sx, int tile_sy);
@@ -519,8 +519,8 @@ class VolumeApi
 public:
   VolumeApi(Env &e);
   ~VolumeApi();
-  O boolfunction(bool (*fptr)(float x, float y, float z, void *data), void *data=0);
-  O subvolume(float (*fptr)(float x, float y, float z, void *data), void *data, float start_range, float end_range);
+  O boolfunction(bool (*fptr)(EveryApi &e,float x, float y, float z, void *data), void *data=0);
+  O subvolume(float (*fptr)(EveryApi &e,float x, float y, float z, void *data), void *data, float start_range, float end_range);
   O link_areas(O o, PT p1, PT p2, float d);
   O sphere(PT center, float radius);
   O cube(float start_x, float end_x, 
@@ -712,12 +712,12 @@ public:
   P anim_array(P *array, int size); // OLD
 
   P splitquads(P orig, int x_count, int y_count);
-  P change_positions(P orig, PT (*fptr)(PT p, int face, int point, void* data), void *data=0);
-  P change_normals(P orig, V (*fptr)(V orig, int face, int point, void *data), void *data=0);
+  P change_positions(P orig, PT (*fptr)(EveryApi &e, PT p, int face, int point, void* data), void *data=0);
+  P change_normals(P orig, V (*fptr)(EveryApi &e, V orig, int face, int point, void *data), void *data=0);
   //P change_attrib(P orig, float (*fptr)(float orig, int face, int point, void *data), void *data=0);
   //P change_attribI(P orig, int (*fptr)(int orig, int face, int point, void *data), void *data=0);
-  P change_colors(P orig, unsigned int (*fptr)(unsigned int orig, int face, int point, void *data), void *data=0);
-  P change_texture(P orig, int (*fptr)(int face, void *data), BM *array, int size, void *data);
+  P change_colors(P orig, unsigned int (*fptr)(EveryApi &e, unsigned int orig, int face, int point, void *data), void *data=0);
+  P change_texture(P orig, int (*fptr)(EveryApi &e, int face, void *data), BM *array, int size, void *data);
 
   P recalculate_normals(P orig);
   P memoize(P orig);
@@ -745,13 +745,13 @@ public:
 
 
   P counts(P p1, int numfaces);
-  P count_function(P p1, int (*numpoints)(Env &e, int face, void *data), void *data);
-  P point_function(P p1, PT (*fptr)(Env &e, int face, int point, void *data), void *data);
-  P color_function(P p1, unsigned int (*fptr)(Env &e, int face, int point, void *data), void *data);
-  P texcoord_function(P p1, PT (*fptr)(Env &e, int face, int point, void *data), void *data);
-  P normal_function(P p1, V (*fptr)(Env &e, int face, int point, void *data), void *data);
-  P attrib_function(P p1, float (*fptr)(Env &e, int face, int point, int idx, void *data), int idx, void *data);
-  P attribi_function(P p1, int (*fptr)(Env &e, int face, int point, int idx, void *data), int idx, void *data);
+  P count_function(P p1, int (*numpoints)(EveryApi &e, int face, void *data), void *data);
+  P point_function(P p1, PT (*fptr)(EveryApi &e, int face, int point, void *data), void *data);
+  P color_function(P p1, unsigned int (*fptr)(EveryApi &e, int face, int point, void *data), void *data);
+  P texcoord_function(P p1, PT (*fptr)(EveryApi &e, int face, int point, void *data), void *data);
+  P normal_function(P p1, V (*fptr)(EveryApi &e, int face, int point, void *data), void *data);
+  P attrib_function(P p1, float (*fptr)(EveryApi &e, int face, int point, int idx, void *data), int idx, void *data);
+  P attribi_function(P p1, int (*fptr)(EveryApi &e, int face, int point, int idx, void *data), int idx, void *data);
 
 
   // must call prepare for P before these.
@@ -799,7 +799,7 @@ class PlaneApi
 public:
   PlaneApi(Env &e);
   PL function(PT (*fptr)(EveryApi &e, int idx, void *data), int num_points, void *data);
-  PL color_function(PL pl, CO (*fptr)(int idx, PT pos, void *data), void *data);
+  PL color_function(PL pl, CO (*fptr)(EveryApi &ev, int idx, PT pos, void *data), void *data);
   // TODO: how to represent/load fonts to this type.
   PL empty(float sx, float sy);
   PL circle(PL bg, PT center, float radius, int numpoints); 
@@ -825,7 +825,7 @@ public:
 
   // TODO: bezier curves in 2d.
 
-  P substitute_quads_with_plane(P orig, PL (*fptr)(int face, void *data), void *data);
+  P substitute_quads_with_plane(P orig, PL (*fptr)(EveryApi &ev, int face, void *data), void *data);
   P plane_in_3d(PL plane, PT u_p, V v1, V v2);
   
 private:
@@ -852,8 +852,8 @@ class SubstitutionApi
 {
 public:
   SubstitutionApi(EveryApi &e) : e(e) { }
-  P ReplacePolygons(P p, P (*fptr)(int index, PT *array, int size, void *data), void *data);
-  P ReplacePoints(P p, P (*fptr)(int index, PT point, void *data), void *data);
+  P ReplacePolygons(P p, P (*fptr)(EveryApi &ev, int index, PT *array, int size, void *data), void *data);
+  P ReplacePoints(P p, P (*fptr)(EveryApi &ev, int index, PT point, void *data), void *data);
   //P2 ReplaceLines(P p, C (*fptr)(PT p1, PT p2, void *data), void *data);
   
 
@@ -942,10 +942,10 @@ public:
   BoolBitmapApi(Env &e);
   ~BoolBitmapApi();
   BB empty(int sx, int sy);
-  BB function(bool (*fptr)(int,int,void*), int sx, int sy, void* data=0);
-  BB transform(BB orig, bool (*fptr)(int,int,bool, void*), void *data=0);
+  BB function(bool (*fptr)(EveryApi &ev, int,int,void*), int sx, int sy, void* data=0);
+  BB transform(BB orig, bool (*fptr)(EveryApi &ev, int,int,bool, void*), void *data=0);
   BB from_bitmaps_color(BM bm, int r, int g, int b);
-  BB from_bitmaps_color_area(BM bm, bool(*fptr)(int r, int g, int b, int a, void* ptr), void *ptr);
+  BB from_bitmaps_color_area(BM bm, bool(*fptr)(EveryApi &ev, int r, int g, int b, int a, void* ptr), void *ptr);
 
   BB circle(BB bg, float center_x, float center_y, float radius);
   BB rectangle(BB bg, int x, int y, int width, int height); // for static ones
@@ -953,7 +953,7 @@ public:
   BB sprite(BB bg, BB sprite, float x, float y, float size_multiplier_x, float size_multiplier_y);
   BB polygon(BB bg, PT *points, int size);
   BB text(BB bg, int x, int y, const char *string, int size, 
-	  BB *glyphs, int glyphcount, int(*fptr)(char));
+	  BB *glyphs, int glyphcount, int(*fptr)(EveryApi &ev, char));
   
   BB not_bitmap(BB b);
   BB or_bitmap(BB b1, BB b2);
@@ -979,7 +979,7 @@ public: // values are [0.0..1.0]
   FloatBitmapApi(Env &e);
   ~FloatBitmapApi();
   FB empty(int sx, int sy);
-  FB function(float (*fptr)(int,int, void*), int sx, int sy, void* data=0);
+  FB function(float (*fptr)(EveryApi &ev, int,int, void*), int sx, int sy, void* data=0);
   FB from_bool_bitmap(BB bm, int csx, int csy);
   FB grayscale(BM color_bm);
   FB from_red(BM color_bm);
@@ -1012,7 +1012,7 @@ public:
   ContinuousBitmapApi(Env &e);
   CBM empty(float x, float y);
   CBM constant(unsigned int color, float x, float y);
-  CBM function(unsigned int (*fptr)(float,float, void*), float sx, float sy, void *data);
+  CBM function(unsigned int (*fptr)(EveryApi &ev, float,float, void*), float sx, float sy, void *data);
   BM sample(CBM c_bitmap, int sx, int sy); 
   CBM from_bitmap(BM bm, float xsize, float ysize);
   BM to_bitmap(CBM bm, int sx, int sy);
@@ -1028,7 +1028,7 @@ class VoxelApi
   // NxNxN->RGB
 public:
   VoxelApi(Env &e);
-  VX function(unsigned int (*fptr)(int x, int y, int z, void *data), int sx, int sy, int sz, void *data);
+  VX function(unsigned int (*fptr)(EveryApi &ev, int x, int y, int z, void *data), int sx, int sy, int sz, void *data);
   unsigned int get_pixel(VX v, int x, int y, int z);
   BM sw_rays(O volume, VX colours, int sx, int sy, float vx, float vy, float vz, float z);
 private:
@@ -1109,7 +1109,7 @@ class SpaceVectorApi
 { // f : PT->V
 public:
   SpaceVectorApi(Env &e) : e(e) { }
-  SV function(V (*fptr)(Env &e, float x, float y, float z, void* data), void *data); // TODO
+  SV function(V (*fptr)(EveryApi &e, float x, float y, float z, void* data), void *data); // TODO
   SV from_points(PC coll); // choose poly(nearest points), linear interpoate, ensure no failures
   PT flow_next_point(SV v, PT p, float mult);
 private:
@@ -1263,7 +1263,15 @@ private:
   Env &e;
 };
 
-
+// Note: This interface has large state space. Passing it from
+// function local scope to upper scope would require so huge and
+// complex dynamic data structure that it does not exists, as it would
+// need to fetch all data from all interfaces, create matching data
+// structure, implement the same interface again using the dynamic
+// data structure, and then copy all data. Only handles are available
+// to end users and copying the data is not available. So once you have it
+// in function local scope, passing it to outside of the current function
+// becomes very difficult. Complexity level way too large in the data structure. 
 struct EveryApi
 {
   EveryApi(Env &e) 

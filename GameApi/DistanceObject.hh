@@ -30,7 +30,7 @@ public:
   virtual bool Inside(Point p) const
   {
     int s = size;
-    int num = 0;
+    //int num = 0;
     for(int i=0;i<s;i++)
       {
 	DistanceObject *obj = &array[i];
@@ -41,7 +41,7 @@ public:
   virtual int idx(Point p) const
   {
     int s = size;
-    int num = 0;
+    //int num = 0;
     for(int i=0;i<s;i++)
       {
 	DistanceObject *obj = &array[i];
