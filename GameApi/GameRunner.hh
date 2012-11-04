@@ -109,9 +109,9 @@ private:
 	      int link_id = p.link_id;
 	      LinkInfo linkinfo = seq.Links(link_id);
 	      FaceCollPolyHandle *polygon_start = linkinfo.polygon_start;
-	      FaceCollPolyHandle *polygon_end = linkinfo.polygon_end;
+	      //FaceCollPolyHandle *polygon_end = linkinfo.polygon_end;
 	      BitmapHandle *bitmap_start = linkinfo.bitmap_start;
-	      BitmapHandle *bitmap_end = linkinfo.bitmap_end;
+	      //BitmapHandle *bitmap_end = linkinfo.bitmap_end;
 	      if (polygon_start)
 		     {
 		       StateBitmaps *state_bm = PrepareFaceCollPolyHandle(polygon_start, 0); // TODO bbm_choose
@@ -129,14 +129,14 @@ private:
   }
   bool BetweenEvents(const LinkageInfo &li)
   {
-    int start_event = li.start_event;
-    int end_event = li.end_event;
+    //int start_event = li.start_event;
+    //int end_event = li.end_event;
     return false;
   }
 
   void UpdateActivatedEvents(float time_delta, std::vector<int> key_pressed, std::vector<int> key_released)
   {
-    float newtime = time + time_delta;
+    //float newtime = time + time_delta;
     int s = seq.NumEvents();
     for(int i=0;i<s;i++)
       {
@@ -189,9 +189,9 @@ private:
 		    }
 		   LinkInfo linkinfo = seq.Links(link_id);
 		   FaceCollPolyHandle *polygon_start = linkinfo.polygon_start;
-		   FaceCollPolyHandle *polygon_end = linkinfo.polygon_end;
+		   //FaceCollPolyHandle *polygon_end = linkinfo.polygon_end;
 		   BitmapHandle *bitmap_start = linkinfo.bitmap_start;
-		   BitmapHandle *bitmap_end = linkinfo.bitmap_end;
+		   //BitmapHandle *bitmap_end = linkinfo.bitmap_end;
 		   if (polygon_start)
 		     {
 		       StateBitmaps *state_bm = polys.states[i];

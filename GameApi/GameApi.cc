@@ -1813,25 +1813,65 @@ GameApi::BM GameApi::BitmapApi::newbitmap(int sx, int sy)
   return bm;
   
 }
-GameApi::BM GameApi::BitmapApi::transform(BM orig, unsigned int (*fptr)(int,int, unsigned int, void *), void *data)
+
+template<class T>
+class BitmapTransformFromFunction : public Bitmap<T>
 {
+public:
+  BitmapTransformFromFunction(GameApi::EveryApi &ev, Bitmap<T> &bm, T (*fptr)(GameApi::EveryApi &, int,int,T,void*), void *data) : bm(bm), ev(ev), fptr(fptr), data(data) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual T Map(int x, int y) const
+  {
+    return fptr(ev,x,y,bm.Map(x,y), data);
+  }
+private:
+  GameApi::EveryApi &ev;
+  Bitmap<T> &bm;
+  T (*fptr)(GameApi::EveryApi &ev, int,int,T,void*); 
+  void *data;
+};
+
+template<class T>
+class BitmapFromFunction : public Bitmap<T>
+{
+public:
+  BitmapFromFunction(GameApi::EveryApi &ev, T (*fptr)(GameApi::EveryApi &ev, int,int, void*), int sx, int sy, void *data) : ev(ev), fptr(fptr), sx(sx),sy(sy),data(data) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual T Map(int x, int y) const
+  {
+    return fptr(ev, x,y,data);
+  }
+private:
+  GameApi::EveryApi &ev;
+  T (*fptr)(GameApi::EveryApi &, int,int, void*);
+  int sx,sy;
+  void *data;
+};
+
+
+GameApi::BM GameApi::BitmapApi::transform(BM orig, unsigned int (*fptr)(GameApi::EveryApi &ev, int,int, unsigned int, void *), void *data)
+{
+  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
   EnvImpl *env = EnvImpl::Environment(&e);
   BitmapHandle *handle = find_bitmap(e, orig);
   Bitmap<Color> *c = find_color_bitmap(handle);
   UnsignedIntFromBitmap *bm1 = new UnsignedIntFromBitmap(*c);
   env->deletes.push_back(std::tr1::shared_ptr<void>(bm1));
-  BitmapTransformFromFunction<unsigned int> *trans = new BitmapTransformFromFunction<unsigned int>(*bm1, fptr, data);
+  BitmapTransformFromFunction<unsigned int> *trans = new BitmapTransformFromFunction<unsigned int>(*ev, *bm1, fptr, data);
   env->deletes.push_back(std::tr1::shared_ptr<void>(trans));
 
   BitmapFromUnsignedInt *bm2 = new BitmapFromUnsignedInt(*trans);
   return add_color_bitmap(e, bm2);
 }
-GameApi::BM GameApi::BitmapApi::function(unsigned int (*fptr)(int,int, void*), int sx, int sy, void* data)
+GameApi::BM GameApi::BitmapApi::function(unsigned int (*fptr)(GameApi::EveryApi &ev,int,int, void*), int sx, int sy, void* data)
 {
-  Bitmap<unsigned int> *bm = new BitmapFromFunction<unsigned int>(fptr,sx,sy,data);
+  GameApi::EveryApi *ev = new EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  Bitmap<unsigned int> *bm = new BitmapFromFunction<unsigned int>(*ev, fptr,sx,sy,data);
   
-  //EnvImpl *env = EnvImpl::Environment(&e);
-  //env->deletes.push_back(std::tr1::shared_ptr<void>(bm));
   
   return add_color_bitmap(e, new BitmapFromUnsignedInt(*bm));
 }
@@ -1948,7 +1988,7 @@ GameApi::GamesApi::GamesApi(Env &e) : e(e)
 GameApi::GamesApi::~GamesApi()
 {
 }
-void GameApi::GamesApi::register_game(int game_id, void (*fptr)(EveryApi &e))
+void GameApi::GamesApi::register_game(int game_id, void (*fptr)(GameApi::EveryApi &e))
 {
   gamefunctions[game_id] = fptr;
 }
@@ -1959,10 +1999,10 @@ void GameApi::GamesApi::modify_map(int event, int game_id)
 void GameApi::GamesApi::start_game(int event)
 {
   int id = gamemapping[event];
-  void (*fptr)(EveryApi &) = gamefunctions[id];
+  void (*fptr)(GameApi::EveryApi &) = gamefunctions[id];
   if (fptr)
     {
-      EveryApi ea(e);
+      GameApi::EveryApi ea(e);
       fptr(ea);
     }
 }
@@ -2306,18 +2346,44 @@ GameApi::BM GameApi::BitmapApi::interpolate_bitmap(GameApi::BM orig1, GameApi::B
   BM bbm = add_bitmap(e,newhandle);
   return bbm;
 }
-GameApi::BM GameApi::BitmapApi::newintbitmap(char *array, int sx, int sy, int (*fptr)(char))
+
+template<class T>
+class BitmapFromString : public Bitmap<T>
 {
+public:
+  BitmapFromString(GameApi::EveryApi &ev, char *array, int sx, int sy, T (*fptr)(GameApi::EveryApi &ev, char)) : array(array), sx(sx), sy(sy), ev(ev), fptr(fptr) { }
+  int SizeX() const { return sx; }
+  int SizeY() const { return sy; }
+  T Map(int x, int y) const
+  {
+    return fptr(ev, array[x+y*sx]);
+  }
+private:
+  GameApi::EveryApi &ev;
+  char *array;
+  int sx;
+  int sy;
+  T (*fptr)(GameApi::EveryApi &ev, char);
+};
+
+
+GameApi::BM GameApi::BitmapApi::newintbitmap(char *array, int sx, int sy, int (*fptr)(EveryApi &ev, char ch))
+{
+  EveryApi *ev = new EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
   BitmapIntHandle *handle = new BitmapIntHandle;
-  handle->bm = new BitmapFromString<int>(array, sx, sy, fptr);
+  handle->bm = new BitmapFromString<int>(*ev, array, sx, sy, fptr);
   return add_bitmap(e, handle);
 }
 
-GameApi::BM GameApi::BitmapApi::newcolorbitmap(char *array, int sx, int sy, unsigned int (*fptr)(char))
+GameApi::BM GameApi::BitmapApi::newcolorbitmap(char *array, int sx, int sy, unsigned int (*fptr)(GameApi::EveryApi &ev,char))
 {
-  BitmapColorHandle *handle = new BitmapColorHandle;
-  ::Bitmap<unsigned int> *bm = new BitmapFromString<unsigned int>(array, sx, sy, fptr);
+  EveryApi *ev = new EveryApi(e);
   EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  BitmapColorHandle *handle = new BitmapColorHandle;
+  ::Bitmap<unsigned int> *bm = new BitmapFromString<unsigned int>(*ev, array, sx, sy, fptr);
   env->deletes.push_back(std::tr1::shared_ptr<void>(bm));
   handle->bm = new BitmapFromUnsignedInt(*bm);
   return add_bitmap(e, handle);
@@ -2343,7 +2409,7 @@ GameApi::BM GameApi::BitmapApi::anim_array(GameApi::BM *bitmaparray, int size)
 }
 
 #if 0
-GameApi::BM GameApi::BitmapApi::bitmapandtypes(BM bm, BM (*fptr)(int))
+GameApi::BM GameApi::BitmapApi::bitmapandtypes(BM bm, BM (*fptr)(GameApi::EveryApi &ev,int))
 {
   BitmapHandle *h = find_bitmap(e, bm);
   BitmapIntHandle *hh = dynamic_cast<BitmapIntHandle*>(h);
@@ -3011,18 +3077,19 @@ GameApi::P GameApi::PolygonApi::splitquads(P orig, int x_count, int y_count)
 class GameApiPointFunction2 : public Function<Point,Point>
 {
 public:
-  GameApiPointFunction2(GameApi::Env &e, GameApi::PT (*fptr)(GameApi::PT p, void *data), void *data) : e(e), fptr(fptr), data(data) { }
+  GameApiPointFunction2(GameApi::Env &e, GameApi::PT (*fptr)(GameApi::EveryApi &ev, GameApi::PT p, void *data), void *data) : e(e), fptr(fptr), data(data) { }
   Point Index(Point p) const
   {
+    GameApi::EveryApi ev(e);
     GameApi::PT pt = add_point(e, p.x, p.y, p.z);
-    GameApi::PT pt2 = fptr(pt, data);
+    GameApi::PT pt2 = fptr(ev, pt, data);
     Point *pp = find_point(e, pt2);
     return *pp;
   }
   
 private:
   GameApi::Env &e;
-  GameApi::PT (*fptr)(GameApi::PT p, void *data);
+  GameApi::PT (*fptr)(GameApi::EveryApi &ev, GameApi::PT p, void *data);
   void *data;
 };
 class GameApiPointFunction : public Function<Point,Point>
@@ -3052,43 +3119,46 @@ void GameApi::PolygonApi::del_cb_later(GameApi::FunctionCb<PT,PT> *cb)
 class ChangePoints2 : public ForwardFaceCollection
 {
 public:
-  ChangePoints2(FaceCollection &coll, Point (*fptr)(Point, int,int,void*), void *data)
-    : ForwardFaceCollection(coll), fptr(fptr),data(data) { }
+  ChangePoints2(GameApi::EveryApi &ev, FaceCollection &coll, Point (*fptr)(GameApi::EveryApi &,Point, int,int,void*), void *data)
+    : ForwardFaceCollection(coll), ev(ev), fptr(fptr),data(data) { }
   virtual Point FacePoint(int face, int point) const 
   {
-    return fptr(ForwardFaceCollection::FacePoint(face,point),
+    return fptr(ev, ForwardFaceCollection::FacePoint(face,point),
 		face, point, data);
   }
 private:
-  Point (*fptr)(Point, int,int,void*);
+  GameApi::EveryApi &ev;
+  Point (*fptr)(GameApi::EveryApi &ev, Point, int,int,void*);
   void *data;
 };
 struct ChangePositions_data
 {
   GameApi::Env *env;
-  GameApi::PT (*fptr)(GameApi::PT p, int face, int point, void* data);
+  GameApi::PT (*fptr)(GameApi::EveryApi &ev, GameApi::PT p, int face, int point, void* data);
   void *data;
 };
 
-Point ChangePositions_Func(Point p, int face,int point,void* data)
+Point ChangePositions_Func(GameApi::EveryApi &ev, Point p, int face,int point,void* data)
 {
   ChangePositions_data *dt = (ChangePositions_data*)data;
   GameApi::PT pt = add_point(*dt->env, p.x, p.y, p.z);
-  GameApi::PT pt2 = dt->fptr(pt, face, point, data);
+  GameApi::PT pt2 = dt->fptr(ev, pt, face, point, data);
   Point *pp = find_point(*dt->env, pt2);
   if (!pp) return Point(0.0,0.0,0.0);
   return *pp;
 }
 
-GameApi::P GameApi::PolygonApi::change_positions(P orig, PT (*fptr)(PT p, int face, int point, void* data), void *data)
+GameApi::P GameApi::PolygonApi::change_positions(P orig, PT (*fptr)(GameApi::EveryApi &ev, PT p, int face, int point, void* data), void *data)
 {
   FaceCollection *coll = find_facecoll(e, orig);
   ChangePositions_data dt;
   dt.env = &e;
   dt.fptr = fptr;
   dt.data = data;
-
-  FaceCollection *coll2 = new ChangePoints2(*coll, &ChangePositions_Func, &dt);
+  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  FaceCollection *coll2 = new ChangePoints2(*ev, *coll, &ChangePositions_Func, &dt);
   return add_polygon(e, coll2, 1);
 }
 
@@ -3097,35 +3167,36 @@ GameApi::P GameApi::PolygonApi::change_positions(P orig, PT (*fptr)(PT p, int fa
 class ChangeNormal2 : public ForwardFaceCollection
 {
 public:
-  ChangeNormal2(FaceCollection &coll, Vector (*fptr)(Vector, int,int,void*), void *data)
-    : ForwardFaceCollection(coll), fptr(fptr),data(data) { }
+  ChangeNormal2(GameApi::EveryApi &ev, FaceCollection &coll, Vector (*fptr)(GameApi::EveryApi &ev,Vector, int,int,void*), void *data)
+    : ForwardFaceCollection(coll), ev(ev), fptr(fptr),data(data) { }
   virtual Vector PointNormal(int face, int point) const 
   {
-    return fptr(ForwardFaceCollection::PointNormal(face,point),
+    return fptr(ev, ForwardFaceCollection::PointNormal(face,point),
 		face, point, data);
   }
 private:
-  Vector (*fptr)(Vector, int,int,void*);
+  GameApi::EveryApi &ev;
+  Vector (*fptr)(GameApi::EveryApi &ev,Vector, int,int,void*);
   void *data;
 };
 struct ChangeNormal_data
 {
   GameApi::Env *env;
-  GameApi::V (*fptr)(GameApi::V p, int face, int point, void* data);
+  GameApi::V (*fptr)(GameApi::EveryApi &ev, GameApi::V p, int face, int point, void* data);
   void *data;
 };
 
-Vector ChangeNormals_Func(Vector p, int face,int point,void* data)
+Vector ChangeNormals_Func(GameApi::EveryApi &ev, Vector p, int face,int point,void* data)
 {
   ChangeNormal_data *dt = (ChangeNormal_data*)data;
   GameApi::V pt = add_vector(*dt->env, p.dx, p.dy, p.dz);
-  GameApi::V pt2 = dt->fptr(pt, face, point, dt->data);
+  GameApi::V pt2 = dt->fptr(ev, pt, face, point, dt->data);
   Vector *pp = find_vector(*dt->env, pt2);
   if (!pp) return Vector(0.0,0.0,0.0);
   return *pp;
 }
 
-GameApi::P GameApi::PolygonApi::change_normals(P orig, V (*fptr)(V p, int face, int point, void* data), void *data)
+GameApi::P GameApi::PolygonApi::change_normals(P orig, V (*fptr)(GameApi::EveryApi &ev, V p, int face, int point, void* data), void *data)
 {
   FaceCollection *coll = find_facecoll(e, orig);
   ChangeNormal_data dt;
@@ -3133,7 +3204,11 @@ GameApi::P GameApi::PolygonApi::change_normals(P orig, V (*fptr)(V p, int face, 
   dt.fptr = fptr;
   dt.data = data;
 
-  FaceCollection *coll2 = new ChangeNormal2(*coll, &ChangeNormals_Func, &dt);
+  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+
+  FaceCollection *coll2 = new ChangeNormal2(*ev, *coll, &ChangeNormals_Func, &dt);
   return add_polygon(e, coll2, 1);
 }
 
@@ -3141,31 +3216,32 @@ GameApi::P GameApi::PolygonApi::change_normals(P orig, V (*fptr)(V p, int face, 
 class ChangeColor2 : public ForwardFaceCollection
 {
 public:
-  ChangeColor2(FaceCollection &coll, unsigned int (*fptr)(unsigned int, int,int,void*), void *data)
-    : ForwardFaceCollection(coll), fptr(fptr),data(data) { }
+  ChangeColor2(GameApi::EveryApi &ev, FaceCollection &coll, unsigned int (*fptr)(GameApi::EveryApi &ev, unsigned int, int,int,void*), void *data)
+    : ForwardFaceCollection(coll), ev(ev), fptr(fptr),data(data) { }
   virtual unsigned int Color(int face, int point) const 
   {
-    return fptr(ForwardFaceCollection::Color(face,point),
+    return fptr(ev, ForwardFaceCollection::Color(face,point),
 		face, point, data);
   }
 private:
-  unsigned int (*fptr)(unsigned int, int,int,void*);
+  GameApi::EveryApi &ev;
+  unsigned int (*fptr)(GameApi::EveryApi &ev, unsigned int, int,int,void*);
   void *data;
 };
 struct ChangeColor_data
 {
   GameApi::Env *env;
-  unsigned int (*fptr)(unsigned int p, int face, int point, void* data);
+  unsigned int (*fptr)(GameApi::EveryApi &ev, unsigned int p, int face, int point, void* data);
   void *data;
 };
 
-unsigned int ChangeColor_Func(unsigned int p, int face,int point,void* data)
+unsigned int ChangeColor_Func(GameApi::EveryApi &ev, unsigned int p, int face,int point,void* data)
 {
   ChangeColor_data *dt = (ChangeColor_data*)data;
-  return dt->fptr(p,face,point,dt->data);
+  return dt->fptr(ev, p,face,point,dt->data);
 }
 
-GameApi::P GameApi::PolygonApi::change_colors(P orig, unsigned int (*fptr)(unsigned int p, int face, int point, void* data), void *data)
+GameApi::P GameApi::PolygonApi::change_colors(P orig, unsigned int (*fptr)(GameApi::EveryApi &ev, unsigned int p, int face, int point, void* data), void *data)
 {
   FaceCollection *coll = find_facecoll(e, orig);
   ChangeColor_data dt;
@@ -3173,15 +3249,19 @@ GameApi::P GameApi::PolygonApi::change_colors(P orig, unsigned int (*fptr)(unsig
   dt.fptr = fptr;
   dt.data = data;
 
-  FaceCollection *coll2 = new ChangeColor2(*coll, &ChangeColor_Func, &dt);
+  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+
+  FaceCollection *coll2 = new ChangeColor2(*ev, *coll, &ChangeColor_Func, &dt);
   return add_polygon(e, coll2, 1);
 }
 
 class ChangeTexture : public ForwardFaceCollection
 {
 public:
-  ChangeTexture(FaceCollection &coll, int (*fptr)(int,void*), ::Bitmap< ::Color> **array, int size, void *data)
-    : ForwardFaceCollection(coll), fptr(fptr),data(data), array(array), size(size) { temp = new BufferFromBitmap*[size]; }
+  ChangeTexture(GameApi::EveryApi &ev, FaceCollection &coll, int (*fptr)(GameApi::EveryApi &ev, int,void*), ::Bitmap< ::Color> **array, int size, void *data)
+    : ForwardFaceCollection(coll), ev(ev), fptr(fptr),data(data), array(array), size(size) { temp = new BufferFromBitmap*[size]; }
   void GenTexture(int num) 
   {
     delete temp[num];
@@ -3192,9 +3272,10 @@ public:
   { 
     return temp[num]->Buffer();
   }
-  virtual int FaceTexture(int face) const { return fptr(face, data); }
+  virtual int FaceTexture(int face) const { return fptr(ev, face, data); }
 private:
-  int (*fptr)(int,void*);
+  GameApi::EveryApi &ev;
+  int (*fptr)(GameApi::EveryApi &ev,int,void*);
   void *data;
   Bitmap< ::Color> **array;
   int size;
@@ -3202,7 +3283,7 @@ private:
 };
 
 
-GameApi::P GameApi::PolygonApi::change_texture(P orig, int (*fptr)(int face, void* data), BM *array, int size, void *data)
+GameApi::P GameApi::PolygonApi::change_texture(P orig, int (*fptr)(GameApi::EveryApi &ev,int face, void* data), BM *array, int size, void *data)
 {
   FaceCollection *coll = find_facecoll(e, orig);
   std::vector<Bitmap<Color>*> *vec = new std::vector<Bitmap<Color>*>;
@@ -3212,7 +3293,10 @@ GameApi::P GameApi::PolygonApi::change_texture(P orig, int (*fptr)(int face, voi
       ::Bitmap<Color> *bitmap = find_color_bitmap(handle);
       vec->push_back(bitmap);
     }
-  ChangeTexture *tex = new ChangeTexture(*coll, fptr, &(*vec)[0], size, data);
+  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  ChangeTexture *tex = new ChangeTexture(*ev, *coll, fptr, &(*vec)[0], size, data);
   return add_polygon(e, tex, 1);
 }
 
@@ -3444,26 +3528,40 @@ GameApi::P GameApi::PolygonApi::counts(P p1, int numfaces)
   FaceCollection *poly = find_facecoll(e, p1);
   return add_polygon(e, new CountsFaceCollection(numfaces, poly),1);  
 }
-GameApi::P GameApi::PolygonApi::count_function(P p1, int (*numpoints)(Env &e, int face, void *data), void *data)
+GameApi::P GameApi::PolygonApi::count_function(P p1, int (*numpoints)(GameApi::EveryApi &e, int face, void *data), void *data)
 {
+  GameApi::P p;
+  return p;
 }
-GameApi::P GameApi::PolygonApi::point_function(P p1, PT (*fptr)(Env &e, int face, int point, void *data), void *data)
+GameApi::P GameApi::PolygonApi::point_function(P p1, PT (*fptr)(GameApi::EveryApi &e, int face, int point, void *data), void *data)
 {
+  GameApi::P p;
+  return p;
 }
-GameApi::P GameApi::PolygonApi::color_function(P p1, unsigned int (*fptr)(Env &e, int face, int point, void *data), void *data)
+GameApi::P GameApi::PolygonApi::color_function(P p1, unsigned int (*fptr)(GameApi::EveryApi &e, int face, int point, void *data), void *data)
 {
+  GameApi::P p;
+  return p;
 }
-GameApi::P GameApi::PolygonApi::texcoord_function(P p1, PT (*fptr)(Env &e, int face, int point, void *data), void *data)
+GameApi::P GameApi::PolygonApi::texcoord_function(P p1, PT (*fptr)(GameApi::EveryApi &e, int face, int point, void *data), void *data)
 {
+  GameApi::P p;
+  return p;
 }
-GameApi::P GameApi::PolygonApi::normal_function(P p1, V (*fptr)(Env &e, int face, int point, void *data), void *data)
+GameApi::P GameApi::PolygonApi::normal_function(P p1, V (*fptr)(GameApi::EveryApi &e, int face, int point, void *data), void *data)
 {
+  GameApi::P p;
+  return p;
 }
-GameApi::P GameApi::PolygonApi::attrib_function(P p1, float (*fptr)(Env &e, int face, int point, int idx, void *data), int idx, void *data)
+GameApi::P GameApi::PolygonApi::attrib_function(P p1, float (*fptr)(GameApi::EveryApi &e, int face, int point, int idx, void *data), int idx, void *data)
 {
+  GameApi::P p;
+  return p;
 }
-GameApi::P GameApi::PolygonApi::attribi_function(P p1, int (*fptr)(Env &e, int face, int point, int idx, void *data), int idx, void *data)
+GameApi::P GameApi::PolygonApi::attribi_function(P p1, int (*fptr)(GameApi::EveryApi &e, int face, int point, int idx, void *data), int idx, void *data)
 {
+  GameApi::P p;
+  return p;
 }
 
 
@@ -3529,9 +3627,9 @@ void GameApi::ShaderApi::bindnames(GameApi::SH shader,
 				   std::string s_color,
 				   std::string s_texcoord)
 {
-  ShaderPriv2 *p = (ShaderPriv2*)priv;
-  ShaderSeq *seq = p->seq;
-  Program *prog = seq->prog(p->ids[shader.id]);
+  //ShaderPriv2 *p = (ShaderPriv2*)priv;
+  //ShaderSeq *seq = p->seq;
+  //Program *prog = seq->prog(p->ids[shader.id]);
   //prog->attr_loc(s_vertex, 10);
   //prog->attr_loc(s_normal, 11);
   //prog->attr_loc(s_color, 12);
@@ -4187,11 +4285,15 @@ GameApi::PT GameApi::PointApi::from_angle(PT center, float radius, float angle)
   return add_point(e,p.x,p.y,p.z);
 }
 
-GameApi::BB GameApi::BoolBitmapApi::transform(BB orig, bool (*fptr)(int,int, bool, void *), void *data)
+GameApi::BB GameApi::BoolBitmapApi::transform(BB orig, bool (*fptr)(EveryApi &ev, int,int, bool, void *), void *data)
 {
   BoolBitmap *c = find_bool_bitmap(e,orig);
   Bitmap<bool> *bm = c->bitmap;
-  BitmapTransformFromFunction<bool> *trans = new BitmapTransformFromFunction<bool>(*bm, fptr, data);
+  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+
+  BitmapTransformFromFunction<bool> *trans = new BitmapTransformFromFunction<bool>(*ev, *bm, fptr, data);
 
   return add_bool_bitmap(e, trans);
 }
@@ -4211,11 +4313,35 @@ GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color(BM bm, int r, int g, int 
   return add_bool_bitmap(e,new EquivalenceClassColorBitmap(*color_bm, Color(r,g,b)));
 }
 
-GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, bool (*fptr)(int, int, int,int, void*), void *ptr)
+template<class T>
+class EquivalenceClassFromArea : public Bitmap<bool>
+{
+public:
+  EquivalenceClassFromArea(GameApi::EveryApi &ev, Bitmap<Color> &bm, T fptr, void *ptr) : bm(bm), ev(ev), fptr(fptr), ptr(ptr) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual bool Map(int x, int y) const
+  {
+    Color c = bm.Map(x,y);
+    return fptr(ev, c.r,c.g,c.b,c.alpha, ptr);
+  }
+  
+private:
+  GameApi::EveryApi &ev;
+  Bitmap<Color> &bm;
+  T fptr;
+  void *ptr;
+};
+
+
+GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, bool (*fptr)(GameApi::EveryApi &ev, int, int, int,int, void*), void *ptr)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *color_bm = find_color_bitmap(handle);
-  return add_bool_bitmap(e,new EquivalenceClassFromArea<bool(*)(int,int,int,int, void*)>(*color_bm, fptr, ptr));
+  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  return add_bool_bitmap(e,new EquivalenceClassFromArea<bool(*)(GameApi::EveryApi &ev, int,int,int,int, void*)>(*ev, *color_bm, fptr, ptr));
 }
 
 GameApi::BB GameApi::BoolBitmapApi::circle(BB bg, float center_x, float center_y, float radius)
@@ -4235,7 +4361,7 @@ struct Rectangle_data
   float start_y, end_y;
 };
 
-bool Rectangle_func(int x, int y, void* data)
+bool Rectangle_func(GameApi::EveryApi &ev, int x, int y, void* data)
 {
   Rectangle_data *dt = (Rectangle_data*)data;
   if (x<dt->start_x) return false;
@@ -4321,9 +4447,12 @@ GameApi::BoolBitmapApi::~BoolBitmapApi() { }
 GameApi::FloatBitmapApi::FloatBitmapApi(GameApi::Env &e) : e(e) { }
 GameApi::FloatBitmapApi::~FloatBitmapApi() { }
 
-GameApi::FB GameApi::FloatBitmapApi::function(float (*fptr)(int,int,void*), int sx, int sy, void* data)
+GameApi::FB GameApi::FloatBitmapApi::function(float (*fptr)(EveryApi &ev,int,int,void*), int sx, int sy, void* data)
 {
-  return add_float_bitmap(e, new BitmapFromFunction<float>(fptr,sx,sy,data));
+  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  return add_float_bitmap(e, new BitmapFromFunction<float>(*ev, fptr,sx,sy,data));
 }
 
 class BitmapFromRed : public Bitmap<float>
@@ -4488,9 +4617,13 @@ struct PointArray
   ~PointArray() { delete[] array; }
 };
 
-GameApi::BB GameApi::BoolBitmapApi::function(bool (*fptr)(int,int, void*), int sx, int sy, void* data)
+GameApi::BB GameApi::BoolBitmapApi::function(bool (*fptr)(EveryApi &ev,int,int, void*), int sx, int sy, void* data)
 {
-  return add_bool_bitmap(e, new BitmapFromFunction<bool>(fptr, sx,sy,data));
+  EnvImpl *env = EnvImpl::Environment(&e);
+  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  
+  return add_bool_bitmap(e, new BitmapFromFunction<bool>(*ev, fptr, sx,sy,data));
 }
 GameApi::BB GameApi::BoolBitmapApi::polygon(BB bg2, PT *points, int size)
 {
@@ -4625,16 +4758,74 @@ private:
   float sx,sy,sz;
 };
 
-GameApi::O GameApi::VolumeApi::boolfunction(bool (*fptr)(float x, float y, float z, void *data), void *data)
+class FunctionVolume : public VolumeObject
 {
-  VolumeObject *o = new FunctionVolume(fptr, data);
+public:
+  FunctionVolume(GameApi::EveryApi &ev, bool (*fptr)(GameApi::EveryApi &ev, float x, float y, float z, void *data), void *data)
+    : ev(ev), fptr(fptr), data(data)
+  {
+  }
+  virtual bool Inside(Point v) const { return fptr(ev, v.x,v.y,v.z,data); }
+private:
+  GameApi::EveryApi &ev;
+  bool (*fptr)(GameApi::EveryApi &ev, float x, float y, float z, void *data); 
+  void *data;
+};
+
+
+GameApi::O GameApi::VolumeApi::boolfunction(bool (*fptr)(GameApi::EveryApi &ev, float x, float y, float z, void *data), void *data)
+{
+  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  VolumeObject *o = new FunctionVolume(*ev, fptr, data);
   return add_volume(e,o);
 }
-GameApi::O GameApi::VolumeApi::subvolume(float (*fptr)(float x, float y, float z, void *data), void *data, float start_range, float end_range)
+
+class FunctionFloatVolumeObject : public FloatVolumeObject {
+public:
+  FunctionFloatVolumeObject(GameApi::EveryApi &ev, float (*fptr)(GameApi::EveryApi &ev, float x, float y, float z, void *data), void *data) : ev(ev), fptr(fptr), data(data) { }
+  virtual float FloatValue(Point p) const
+  {
+    return fptr(ev, p.x,p.y,p.z,data);
+  }
+  
+private:
+  GameApi::EveryApi &ev;
+  float (*fptr)(GameApi::EveryApi &ev, float x, float y, float z, void *data);
+  void *data;
+};
+
+class IntersectionPoint : public VolumeObject
 {
-  FunctionFloatVolumeObject *ff = new FunctionFloatVolumeObject(fptr, data);
+public:
+  IntersectionPoint(GameApi::EveryApi &ev, float (*fptr1)(GameApi::EveryApi &ev, float x, float y, float z, void *data), void *data1, float start_range1, float end_range1,
+		    float (*fptr2)(GameApi::EveryApi &ev,float x, float y, float z, void *data), void *data2,float start_range2, float end_range2,
+		    float (*fptr3)(GameApi::EveryApi &ev,float x, float y, float z, void *data), void *data3,float start_range3, float end_range3)
+    : ev(ev), f1(ev, fptr1, data1), f2(ev, fptr2,data2), f3(ev, fptr3,data3),
+      oo1(f1,start_range1, end_range1),
+      oo2(f2,start_range2, end_range2),
+      oo3(f3, start_range3, end_range3),
+      intersect1(oo1,oo2), intersect_12(intersect1, oo3)
+  {
+  }
+  virtual bool Inside(Point v) const { return intersect_12.Inside(v); }
+
+private:
+  GameApi::EveryApi &ev;
+  FunctionFloatVolumeObject f1,f2,f3;
+  SubVolume oo1,oo2,oo3;
+  AndVolume intersect1, intersect_12;
+};
+
+
+GameApi::O GameApi::VolumeApi::subvolume(float (*fptr)(GameApi::EveryApi &ev,float x, float y, float z, void *data), void *data, float start_range, float end_range)
+{
+  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  FunctionFloatVolumeObject *ff = new FunctionFloatVolumeObject(*ev, fptr, data);
   EnvImpl *env = EnvImpl::Environment(&e);
   env->deletes.push_back(std::tr1::shared_ptr<void>(ff));
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
   return add_volume(e, new SubVolume(*ff, start_range, end_range));
 }
 
@@ -4675,9 +4866,32 @@ GameApi::CBM GameApi::ContinuousBitmapApi::constant(unsigned int color, float x,
 {
   return add_continuous_bitmap(e, new ConstantContinuousBitmap<Color>(x,y,Color(color)));
 }
-GameApi::CBM GameApi::ContinuousBitmapApi::function(unsigned int (*fptr)(float,float, void*), float sx, float sy, void *data)
+
+class FunctionContinuousBitmap : public ContinuousBitmap<Color>
 {
-  return add_continuous_bitmap(e, new FunctionContinuousBitmap(fptr, sx, sy, data));
+public:
+  FunctionContinuousBitmap(GameApi::EveryApi &ev, unsigned int (*fptr)(GameApi::EveryApi &ev, float, float, void*), float sx, float sy, void *data) : ev(ev), fptr(fptr), sx(sx), sy(sy), data(data) { }
+  virtual float SizeX() const { return sx; }
+  virtual float SizeY() const { return sy; }
+  virtual Color Map(float x, float y) const
+  {
+    return Color(fptr(ev, x,y, data));
+  }
+public:
+  GameApi::EveryApi &ev;
+  unsigned int (*fptr)(GameApi::EveryApi &ev, float, float, void*); 
+  float sx; float sy;
+  void *data;
+};
+
+
+GameApi::CBM GameApi::ContinuousBitmapApi::function(unsigned int (*fptr)(EveryApi &ev, float,float, void*), float sx, float sy, void *data)
+{
+  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+
+  return add_continuous_bitmap(e, new FunctionContinuousBitmap(*ev, fptr, sx, sy, data));
 }
 GameApi::BM GameApi::ContinuousBitmapApi::sample(CBM c_bitmap, int sx, int sy) // SampleBitmap(CB<Color, int sx,int sy)
 {
@@ -4702,17 +4916,18 @@ GameApi::CBM GameApi::ContinuousBitmapApi::from_bitmap(BM bm, float xsize, float
 class VoxelFunction : public Voxel<Color>
 {
 public:
-  VoxelFunction(unsigned int (*fptr)(int x, int y, int z, void *data), int sx, int sy, int sz, void*data) : fptr(fptr), sx(sx), sy(sy), sz(sz), data(data) { }
+  VoxelFunction(GameApi::EveryApi &ev, unsigned int (*fptr)(GameApi::EveryApi &ev,int x, int y, int z, void *data), int sx, int sy, int sz, void*data) : ev(ev), fptr(fptr), sx(sx), sy(sy), sz(sz), data(data) { }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual int SizeZ() const { return sz; }
   virtual Color Map(int x, int y, int z) const
   {
-    return Color(fptr(x,y,z,data));
+    return Color(fptr(ev, x,y,z,data));
   }
 
 private:
-  unsigned int (*fptr)(int x, int y, int z, void *data);
+  GameApi::EveryApi &ev;
+  unsigned int (*fptr)(GameApi::EveryApi &ev,int x, int y, int z, void *data);
   int sx; 
   int sy; 
   int sz; 
@@ -4720,9 +4935,13 @@ private:
 };
 
 GameApi::VoxelApi::VoxelApi(Env &e) : e(e) { }
-GameApi::VX GameApi::VoxelApi::function(unsigned int (*fptr)(int x, int y, int z, void *data), int sx, int sy, int sz, void *data)
+GameApi::VX GameApi::VoxelApi::function(unsigned int (*fptr)(EveryApi &ev, int x, int y, int z, void *data), int sx, int sy, int sz, void *data)
 {
-  return add_voxel(e, new VoxelFunction(fptr, sx, sy,sz, data));
+  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+
+  return add_voxel(e, new VoxelFunction(*ev, fptr, sx, sy,sz, data));
 }
 
 unsigned int GameApi::VoxelApi::get_pixel(VX v, int x, int y, int z)

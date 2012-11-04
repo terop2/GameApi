@@ -133,39 +133,7 @@ typedef Bitmap<Color> ColorBitmap;
 typedef Bitmap<Point> PointBitmap;
 typedef Bitmap<Quad> QuadBitmap;
 
-template<class T>
-class BitmapTransformFromFunction : public Bitmap<T>
-{
-public:
-  BitmapTransformFromFunction(Bitmap<T> &bm, T (*fptr)(int,int,T,void*), void *data) : bm(bm), fptr(fptr), data(data) { }
-  virtual int SizeX() const { return bm.SizeX(); }
-  virtual int SizeY() const { return bm.SizeY(); }
-  virtual T Map(int x, int y) const
-  {
-    return fptr(x,y,bm.Map(x,y), data);
-  }
-private:
-  Bitmap<T> &bm;
-  T (*fptr)(int,int,T,void*); 
-  void *data;
-};
 
-template<class T>
-class BitmapFromFunction : public Bitmap<T>
-{
-public:
-  BitmapFromFunction(T (*fptr)(int,int, void*), int sx, int sy, void *data) : fptr(fptr), sx(sx),sy(sy),data(data) { }
-  virtual int SizeX() const { return sx; }
-  virtual int SizeY() const { return sy; }
-  virtual T Map(int x, int y) const
-  {
-    return fptr(x,y,data);
-  }
-private:
-  T (*fptr)(int,int, void*);
-  int sx,sy;
-  void *data;
-};
 
 class GrayScaleBitmapFromFloatBitmap : public Bitmap<Color>
 {
@@ -375,24 +343,6 @@ private:
   Color val;
 };
 
-template<class T>
-class EquivalenceClassFromArea : public Bitmap<bool>
-{
-public:
-  EquivalenceClassFromArea(Bitmap<Color> &bm, T fptr, void *ptr) : bm(bm), fptr(fptr), ptr(ptr) { }
-  virtual int SizeX() const { return bm.SizeX(); }
-  virtual int SizeY() const { return bm.SizeY(); }
-  virtual bool Map(int x, int y) const
-  {
-    Color c = bm.Map(x,y);
-    return fptr(c.r,c.g,c.b,c.alpha, ptr);
-  }
-  
-private:
-  Bitmap<Color> &bm;
-  T fptr;
-  void *ptr;
-};
 
 template<class T, class K>
 class CombineBitmaps : public Bitmap<std::pair<T,K> >
@@ -1705,23 +1655,6 @@ private:
   Bitmap<unsigned int> &bm;
 };
 
-template<class T>
-class BitmapFromString : public Bitmap<T>
-{
-public:
-  BitmapFromString(char *array, int sx, int sy, T (*fptr)(char)) : array(array), sx(sx), sy(sy), fptr(fptr) { }
-  int SizeX() const { return sx; }
-  int SizeY() const { return sy; }
-  T Map(int x, int y) const
-  {
-    return fptr(array[x+y*sx]);
-  }
-private:
-  char *array;
-  int sx;
-  int sy;
-  T (*fptr)(char);
-};
 
 template<class T>
 class BitmapFromFile : public Bitmap<T>
@@ -1836,21 +1769,6 @@ public:
   virtual C Map(float x, float y) const=0;
 };
 
-class FunctionContinuousBitmap : public ContinuousBitmap<Color>
-{
-public:
-  FunctionContinuousBitmap(unsigned int (*fptr)(float, float, void*), float sx, float sy, void *data) : fptr(fptr), sx(sx), sy(sy), data(data) { }
-  virtual float SizeX() const { return sx; }
-  virtual float SizeY() const { return sy; }
-  virtual Color Map(float x, float y) const
-  {
-    return Color(fptr(x,y, data));
-  }
-public:
-  unsigned int (*fptr)(float, float, void*); 
-  float sx; float sy;
-  void *data;
-};
 typedef ContinuousBitmap<Color> ContinuousColorBitmap;
 
 template<class T>
