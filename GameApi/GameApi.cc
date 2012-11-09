@@ -3523,6 +3523,140 @@ private:
   int numfaces;
 };
 
+class CountFuncFaceCollection : public ForwardFaceCollection
+{
+public:
+  CountFuncFaceCollection(GameApi::EveryApi &ev, FaceCollection *next, int (*fptr)(GameApi::EveryApi &e, int face, void *data), void *data) : ForwardFaceCollection(*next), ev(ev), fptr(fptr), data(data) { }
+  virtual int NumPoints(int face) const
+  {
+    return fptr(ev, face, data);
+  }
+  
+private:
+  GameApi::EveryApi &ev;
+  int (*fptr)(GameApi::EveryApi &e, int face, void *data); 
+  void *data;
+};
+
+class PointFaceCollection : public ForwardFaceCollection
+{
+public:
+  PointFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *next, GameApi::PT (*fptr)(GameApi::EveryApi &e, int face, int point, void *data), void *data) : ForwardFaceCollection(*next), e(e), ev(ev), fptr(fptr), data(data) { }
+  virtual Point FacePoint(int face, int point) const
+  {
+    GameApi::PT pp = fptr(ev, face, point, data);
+    Point *p = find_point(e, pp);
+    return *p;
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  GameApi::PT (*fptr)(GameApi::EveryApi &e, int face, int point, void *data);
+  void *data;
+};
+
+
+class NormalFaceCollection : public ForwardFaceCollection
+{
+public:
+  NormalFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *next, GameApi::V (*fptr)(GameApi::EveryApi &e, int face, int point, void *data), void *data) : ForwardFaceCollection(*next), e(e), ev(ev), fptr(fptr), data(data) { }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    GameApi::V pp = fptr(ev, face, point, data);
+    Vector *p = find_vector(e, pp);
+    return *p;
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  GameApi::V (*fptr)(GameApi::EveryApi &e, int face, int point, void *data);
+  void *data;
+};
+
+
+class ColorFaceCollection : public ForwardFaceCollection
+{
+public:
+  ColorFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *next, unsigned int (*fptr)(GameApi::EveryApi &e, int face, int point, void *data), void *data) : ForwardFaceCollection(*next), e(e), ev(ev), fptr(fptr), data(data) { }
+  virtual unsigned int Color(int face, int point) const
+  {
+    unsigned int pp = fptr(ev, face, point, data);
+    return pp;
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  unsigned int (*fptr)(GameApi::EveryApi &e, int face, int point, void *data);
+  void *data;
+};
+
+
+class TexFaceCollection : public ForwardFaceCollection
+{
+public:
+  TexFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *next, GameApi::PT (*fptr)(GameApi::EveryApi &e, int face, int point, void *data), void *data) : ForwardFaceCollection(*next), e(e), ev(ev), fptr(fptr), data(data) { }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    GameApi::PT pp = fptr(ev, face, point, data);
+    Point *p = find_point(e, pp);
+    Point2d px = { p->x, p->y };
+    return px;
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  GameApi::PT (*fptr)(GameApi::EveryApi &e, int face, int point, void *data);
+  void *data;
+};
+
+class AttribFaceCollection : public ForwardFaceCollection
+{
+public:
+  AttribFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *next, float (*fptr)(GameApi::EveryApi &e, int face, int point, int id, void *data), void *data, int idx) : ForwardFaceCollection(*next), e(e),ev(ev), fptr(fptr), data(data), idx(idx) { }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    if (idx == id) {
+      float pp = fptr(ev, face, point, id, data);
+      return pp;
+    }
+    return ForwardFaceCollection::Attrib(face,point,id);
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  float (*fptr)(GameApi::EveryApi &e, int face, int point, int id, void *data);
+  void *data;
+  int idx;
+};
+
+class AttribIFaceCollection : public ForwardFaceCollection
+{
+public:
+  AttribIFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *next, int (*fptr)(GameApi::EveryApi &e, int face, int point, int id, void *data), void *data, int idx) : ForwardFaceCollection(*next), e(e), ev(ev), fptr(fptr), data(data), idx(idx) { }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    if (idx == id) {
+      float pp = fptr(ev, face, point, id, data);
+      return pp;
+    }
+    return ForwardFaceCollection::AttribI(face,point,id);
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  int (*fptr)(GameApi::EveryApi &e, int face, int point, int id, void *data);
+  void *data;
+  int idx;
+};
+
+
+
 GameApi::P GameApi::PolygonApi::counts(P p1, int numfaces)
 {
   FaceCollection *poly = find_facecoll(e, p1);
@@ -3530,38 +3664,59 @@ GameApi::P GameApi::PolygonApi::counts(P p1, int numfaces)
 }
 GameApi::P GameApi::PolygonApi::count_function(P p1, int (*numpoints)(GameApi::EveryApi &e, int face, void *data), void *data)
 {
-  GameApi::P p;
-  return p;
+  FaceCollection *poly = find_facecoll(e, p1);
+  EveryApi *ev = new EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  return add_polygon(e, new CountFuncFaceCollection(*ev, poly, numpoints, data),1);  
 }
 GameApi::P GameApi::PolygonApi::point_function(P p1, PT (*fptr)(GameApi::EveryApi &e, int face, int point, void *data), void *data)
 {
-  GameApi::P p;
-  return p;
-}
-GameApi::P GameApi::PolygonApi::color_function(P p1, unsigned int (*fptr)(GameApi::EveryApi &e, int face, int point, void *data), void *data)
-{
-  GameApi::P p;
-  return p;
-}
-GameApi::P GameApi::PolygonApi::texcoord_function(P p1, PT (*fptr)(GameApi::EveryApi &e, int face, int point, void *data), void *data)
-{
-  GameApi::P p;
-  return p;
+  FaceCollection *poly = find_facecoll(e, p1);
+  EveryApi *ev = new EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  return add_polygon(e, new PointFaceCollection(e, *ev, poly, fptr, data),1);  
 }
 GameApi::P GameApi::PolygonApi::normal_function(P p1, V (*fptr)(GameApi::EveryApi &e, int face, int point, void *data), void *data)
 {
-  GameApi::P p;
-  return p;
+  FaceCollection *poly = find_facecoll(e, p1);
+  EveryApi *ev = new EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  return add_polygon(e, new NormalFaceCollection(e, *ev, poly, fptr, data),1);  
+}
+GameApi::P GameApi::PolygonApi::color_function(P p1, unsigned int (*fptr)(GameApi::EveryApi &e, int face, int point, void *data), void *data)
+{
+  FaceCollection *poly = find_facecoll(e, p1);
+  EveryApi *ev = new EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  return add_polygon(e, new ColorFaceCollection(e, *ev, poly,fptr, data),1);  
+}
+GameApi::P GameApi::PolygonApi::texcoord_function(P p1, PT (*fptr)(GameApi::EveryApi &e, int face, int point, void *data), void *data)
+{
+  FaceCollection *poly = find_facecoll(e, p1);
+  EveryApi *ev = new EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  return add_polygon(e, new TexFaceCollection(e, *ev, poly, fptr, data),1);  
 }
 GameApi::P GameApi::PolygonApi::attrib_function(P p1, float (*fptr)(GameApi::EveryApi &e, int face, int point, int idx, void *data), int idx, void *data)
 {
-  GameApi::P p;
-  return p;
+  FaceCollection *poly = find_facecoll(e, p1);
+  EveryApi *ev = new EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  return add_polygon(e, new AttribFaceCollection(e, *ev, poly, fptr, data, idx),1);  
 }
 GameApi::P GameApi::PolygonApi::attribi_function(P p1, int (*fptr)(GameApi::EveryApi &e, int face, int point, int idx, void *data), int idx, void *data)
 {
-  GameApi::P p;
-  return p;
+  FaceCollection *poly = find_facecoll(e, p1);
+  EveryApi *ev = new EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  return add_polygon(e, new AttribIFaceCollection(e, *ev, poly, fptr, data, idx),1);  
 }
 
 

@@ -6,3 +6,8 @@ GameApi/main
 GameApi/gmon.out
 GameApi/GameApi.tar.gz
 GameApi/GameApi-binary.tar.gz
+GameApi/*~
+GameApi/profile.txt
+GameApi/#*#
+GameApi/.#Effect.hh
+GameApi/.#GameApiTest4.cc
