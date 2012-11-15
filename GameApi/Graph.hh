@@ -6944,4 +6944,35 @@ public:
 };
 
 
+//
+// FBO
+//
+
+//
+// FRAMEBUFFER OBJECTS
+//
+class FBO : public Bitmap<Color>
+{
+public:
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    if (x>=0&&x<sx)
+      if (y>=0&&y<sy)
+	return ref.buffer[x+y*ref.ydelta];
+    return Color::Transparent();
+  }
+  FBO(int sx, int sy);
+  ~FBO();
+  void bind();
+  void unbind();
+  void update(); // swapbuffers
+private:
+  unsigned int ids[1];
+  unsigned int rbo[1];
+  BufferRef ref;
+  int sx,sy;
+};
+
 #endif

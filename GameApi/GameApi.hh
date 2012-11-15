@@ -6,7 +6,8 @@
 
 namespace GameApi
 {
-
+  struct FO { int id; };
+  struct WV { int id; }; // waveform
   struct BM { int id; }; // bitmap
   struct BB { int id; }; // bool bitmap
   struct FB { int id; }; // float bitmap
@@ -99,6 +100,7 @@ public:
   void clear_3d();
   void switch_to_3d(bool b);
   void alpha(bool enabled);
+  void cursor_visible(bool enabled);
   void antialias(bool enabled);
   float get_time();
   int get_framenum();
@@ -108,6 +110,7 @@ public:
     int type;
     int ch;
     PT cursor_pos;
+    int button;
   };
   Event get_event();
   void waittof();
@@ -128,7 +131,7 @@ public:
   void spritepos(BM bm, float x, float y);
   void preparesprite(BM bm, int bbm_choose=-1);
 
-  void rendersprite(BM bm, float x, float y, float mult_x, float mult_y);
+  void rendersprite(BM bm, float x, float y, float mult_x=1.0, float mult_y=1.0);
   void rendersprite(BM bm, PT pos);
   void rendersprite(BM bm, int bm_choose, float x, float y, float mult_x, float mult_y);
   void rendersprite(BM bm, int bm_choose, PT pos);
@@ -572,6 +575,22 @@ private:
   Env &e;
 };
 
+class FloatVolumeApi
+{
+public:
+  FloatVolumeApi(Env &e) : e(e) { }
+  FO function(float (*fptr)(EveryApi &ev, float x, float y, float z, void *data), void *data);
+  FO distance();
+  FO move(FO f1, float dx, float dy, float dz);
+  FO minimum(FO f1, FO f2);
+  FO maximum(FO f1, FO f2);
+  //FO plus(FO f1, FO f2);
+  BM raytrace(FO object, int sx, int sy, 
+	      PT ray_0, PT ray_x, PT ray_y, PT ray_z, float surface_value);
+private:
+  Env &e;
+};
+
 class SeparateApi
 {
 public:
@@ -772,6 +791,25 @@ public:
   BM renderpolytobitmap(P p, float x, float y, float z, int sx, int sy);
 private:
   void *priv;
+  Env &e;
+};
+
+class WaveformApi
+{ // [0..length] -> [-1..1]
+public: 
+  WaveformApi(Env &e) : e(e) { }
+  WV empty(float length);
+  WV function(float (*fptr)(EveryApi &ev, float, void*), float length, float min_value, float max_value, void *data=0);
+  WV sinwave(float length, float freq);
+  WV sample(float *array, int length, float samplelength);
+  WV int_sample(int *array, int length, float samplelength, int min_value, int max_value); 
+  WV mix(WV orig, float pos, WV sample);
+  WV volume_ramp(WV orig, float old_y_value, float x_pos1, float x_pos2, float y_pos1, float y_pos2);
+  WV freq_change(WV orig, float old_freq, float new_freq);
+  float length(WV orig);
+  float get_value(WV orig, float val);
+  WV length_change(WV orig, float new_length);
+private:
   Env &e;
 };
 
@@ -1143,6 +1181,8 @@ public:
   M rotate_around_axis(V v, float angle);
   M rotate_around_axis(PT point, V v, float angle);
   PT mult(PT point, M matrix);
+private:
+  Env &e;
 };
 
 class MemoryApi
@@ -1276,7 +1316,7 @@ struct EveryApi
 {
   EveryApi(Env &e) 
     : mainloop_api(e), point_api(e), vector_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e),
-      font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e) { }
+      font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e), float_volume_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -1297,6 +1337,8 @@ struct EveryApi
   StateChangeApi state_change_api;
   TextureApi texture_api;
   SeparateApi separate_api;
+  WaveformApi waveform_api;
+  FloatVolumeApi float_volume_api;
 };
 
 class GamesApi

@@ -151,6 +151,58 @@ public:
   virtual float FloatValue(Point p) const=0;
 };
 
+class MinFloatVolumeObject : public FloatVolumeObject {
+public:
+  MinFloatVolumeObject(FloatVolumeObject *f1, FloatVolumeObject *f2)
+    : f1(f1), f2(f2) { }
+  virtual float FloatValue(Point p) const
+  {
+    return std::min(f1->FloatValue(p), f2->FloatValue(p));
+  }
+private:
+  FloatVolumeObject *f1, *f2;
+};
+
+
+class PlusFloatVolumeObject : public FloatVolumeObject {
+public:
+  PlusFloatVolumeObject(FloatVolumeObject *f1, FloatVolumeObject *f2)
+    : f1(f1), f2(f2) { }
+  virtual float FloatValue(Point p) const
+  {
+    return f1->FloatValue(p)+f2->FloatValue(p);
+  }
+private:
+  FloatVolumeObject *f1, *f2;
+};
+
+
+class MoveFloatVolumeObject : public FloatVolumeObject {
+public:
+  MoveFloatVolumeObject(FloatVolumeObject *next, 
+			float dx, float dy, float dz) : next(next),
+							dx(dx), dy(dy), dz(dz) { }
+  virtual float FloatValue(Point p) const
+  {
+    p-=Vector(dx,dy,dz);
+    return next->FloatValue(p);
+  }
+private:
+  FloatVolumeObject *next;
+  float dx,dy,dz;
+};
+
+class MaxFloatVolumeObject : public FloatVolumeObject {
+public:
+  MaxFloatVolumeObject(FloatVolumeObject *f1, FloatVolumeObject *f2)
+    : f1(f1), f2(f2) { }
+  virtual float FloatValue(Point p) const
+  {
+    return std::max(f1->FloatValue(p), f2->FloatValue(p));
+  }
+private:
+  FloatVolumeObject *f1, *f2;
+};
 
 class SubVolume : public VolumeObject
 {
