@@ -806,7 +806,7 @@ int mainxxx(int argc, char *argv[])
   //}
   {
 #if 1
-    SinWaveform wave;
+    SinWaveform wave(3.14159*2.0, 1.0);
     FitWaveform fit(wave, 100.0, -0.5, 0.5);
     SampleWaveform initial_val_array(fit, 20);
     //FunctionArray<int, float> initial_val_array(2.0*3.14159, func);

@@ -4554,6 +4554,83 @@ public:
   virtual float Max() const = 0;
   virtual float Index(float val) const = 0;
 };
+
+class FreqChangeWaveform : public Waveform
+{
+public:
+  FreqChangeWaveform(Waveform *wv, float old_freq, float new_freq) : wv(wv), old_freq(old_freq), new_freq(new_freq) { }
+  virtual float Length() const { return wv->Length()/old_freq*new_freq; }
+  virtual float Min() const { return wv->Min(); }
+  virtual float Max() const { return wv->Max(); }
+  virtual float Index(float val) const 
+  {
+    return wv->Index(val/old_freq*new_freq);
+  }
+  
+private:
+  Waveform *wv;
+  float old_freq, new_freq;
+};
+class VolumeRampWaveform : public Waveform
+{
+public:
+  VolumeRampWaveform(Waveform *orig, float old_y_value, float x_pos1, float x_pos2, float y_pos1, float y_pos2) : orig(orig), old_y(old_y_value), x_pos1(x_pos1), x_pos2(x_pos2), y_pos1(y_pos1), y_pos2(y_pos2) { }
+  virtual float Length() const { return orig->Length(); }
+  virtual float Min() const { return orig->Min(); }
+  virtual float Max() const { return orig->Max(); }
+  virtual float Index(float val) const
+  {
+    float val2 = orig->Index(val);
+    if (val>=x_pos1 && val<x_pos2)
+      {
+	val2/=old_y;
+	float pos = val-x_pos1;
+	pos/=x_pos2-x_pos1;
+	// pos \in [0..1]
+	pos*=y_pos2-y_pos1;
+	val2*=y_pos1;
+	val2+=pos;
+      }
+    return val2;
+  }
+
+private:
+  Waveform *orig; 
+  float old_y; 
+  float x_pos1; 
+  float x_pos2; 
+  float y_pos1; 
+  float y_pos2;
+};
+
+class MixWaveform : public Waveform
+{
+public:
+  MixWaveform(Waveform *orig, float pos, Waveform *sample) : orig(orig), pos(pos), sample(sample) { }
+  virtual float Length() const
+  {
+    return std::max(orig->Length(), pos+sample->Length());
+  }
+  virtual float Min() const
+  {
+    return std::min(orig->Min(), sample->Min());
+  }
+  virtual float Max() const
+  {
+    return std::max(orig->Max(), sample->Max());
+  }
+  virtual float Index(float val) const
+  {
+    if (val < pos) { return orig->Index(val); }
+    if (val>orig->Length() && val<pos+sample->Length()) { return sample->Index(val-pos); }
+    if (val>=pos && val<pos+sample->Length()) { return orig->Index(val)+sample->Index(val-pos); }
+    return orig->Index(val);
+  }
+private:
+  Waveform *orig; 
+  float pos; 
+  Waveform *sample;
+};
 class ZeroWaveform : public Waveform
 {
 public:
@@ -4722,6 +4799,7 @@ class WaveformArray : public Array<int, Waveform*>
 class WaveformCurve : public Curve<Waveform*>
 {
 };
+
 class WaveformFunction : public Array2<float, float, float>
 {
 public:
@@ -4788,10 +4866,14 @@ typedef FunctionImpl1<Waveform*, Waveform*, int, RepeatWaveform> RepeatWaveformF
 class SinWaveform : public Waveform
 {
 public:
-  float Length() const { return 2.0*3.14159; }
+  SinWaveform(float length, float freq) : length(length), freq(freq) { }
+  float Length() const { return length; }
   float Min() const { return -1.0; }
   float Max() const { return 1.0; }
-  float Index(float val) const { return sinf(val); }
+  float Index(float val) const { return sinf(freq*val); }
+private:
+  float length;
+  float freq;
 };
 typedef FunctionImplT0<Waveform*, SinWaveform> SinWaveformFunction;
 

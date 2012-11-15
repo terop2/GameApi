@@ -1443,4 +1443,39 @@ Path3d ParsePath3d(std::string s, bool &success)
 Path2d ParsePath2d(std::string s, bool &success)
 {
 }
+
+
+
+FBO::FBO(int sx, int sy) :sx(sx), sy(sy) { 
+  glGenFrameBuffers(1, ids); 
+  glGenRenderBuffers(1, rbo);
+  glBindRenderbuffer(GL_RENDERBUFFER, rbo[0]);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA,
+			sx,sy);
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  
+  ref = BufferRef::NewBuffer(sx,sy);
+}
+FBO::~FBO() { 
+  glDeleteRenderBuffers(1,rbo);
+  glDeleteFrameBuffers(1, ids); 
+  FreeBuffer(ref);
+}
+void FBO::bind()
+{
+  glBindFrameBuffer(GL_FRAMEBUFFER, ids[0]);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+			    GL_RENDERBUFFER, rbo);
+}
+void FBO::unbind()
+{
+  glBindFrameBuffer(GL_FRAMEBUFFER, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+			    GL_RENDERBUFFER, 0);
+}
+void FBO::update()
+{
+  glReadPixels(0,0,sx,sy, G_RGBA, GL_UNSIGNED_INT_8_8_8_8, (void*)ref.buffer);
+}
+
 #endif

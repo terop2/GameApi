@@ -2621,7 +2621,7 @@ void SinusEffect::Init()
 
 bool SinusEffect::Frame(float time)
 {
-  SinWaveform s; // float -> float
+  SinWaveform s(3.14159*2.0, 1.0); // float -> float
   SampleWaveform sample(s, 10); // int -> float
   Point2d p;
   p.x=0;
@@ -4282,3 +4282,4 @@ void RenderBuffers::DisableAll()
   color=false;
   texcoord=false;
 }
+

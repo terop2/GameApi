@@ -24,6 +24,7 @@
 #include "VertexArray.hh"
 #include "StateChange.hh"
 #include "DistanceObject.hh"
+#include "MatrixApi.hh"
 
 struct TexCoordQuad
 {
@@ -133,6 +134,10 @@ GameApi::MainLoopApi::MainLoopApi(Env &e) : frame(0.0), time(0.0), e(e)
 GameApi::MainLoopApi::~MainLoopApi()
 {
   delete (MainLoopPriv*)priv;
+}
+void GameApi::MainLoopApi::cursor_visible(bool enabled)
+{
+  SDL_ShowCursor(enabled);
 }
 void GameApi::MainLoopApi::init(int screen_width, int screen_height)
 {
@@ -294,16 +299,6 @@ void GameApi::MainLoopApi::swapbuffers()
   SDL_GL_SwapBuffers();
   //SDL_Flip(surf);
   frame++;
-}
-GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
-{
-  SDL_Event event;
-  Event e;
-  SDL_PollEvent(&event);
-  e.type = event.type;
-  e.ch = event.key.keysym.sym;
-  //std::cout << e.type << " " << e.ch << std::endl;
-  return e;
 }
 GameApi::SP add_space(GameApi::Env &e, SpaceImpl i);
 GameApi::SP GameApi::MainLoopApi::screenspace()
@@ -589,9 +584,12 @@ struct Font
 struct EnvImpl
 {
   std::vector<Point> pt;
+  std::vector<MatrixInterface*> matrix;
+  GameApi::PT cursor_pos_point_id;
   std::vector<Vector> vectors;
   std::vector<Color> colors;
   std::vector<VolumeObject*> volumes;
+  std::vector<FloatVolumeObject*> floatvolumes;
   std::vector<BitmapHandle*> bm;
   std::vector<BoolBitmap> bool_bm;
   std::vector<FloatBitmap> float_bm;
@@ -622,6 +620,7 @@ struct EnvImpl
   std::vector<TexCoordQuad> tex_quads;
   std::vector<Separate*> separates;
   std::vector<PlanePoints2d*> plane_points;
+  std::vector<Waveform*> waveforms;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -630,6 +629,7 @@ struct EnvImpl
   EnvImpl() : event_infos(new EmptySequencer2) 
   {
     FT_Init_FreeType(&lib);
+    cursor_pos_point_id.id = -1;
   }
   ~EnvImpl();
 };
@@ -638,6 +638,39 @@ template<class T>
 void ArrayDelete(T *ptr)
 {
   delete [] ptr;
+}
+GameApi::PT add_point(GameApi::Env &e, float x, float y);
+
+GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
+{
+  SDL_Event event;
+  Event e2;
+  SDL_PollEvent(&event);
+  int x,y;
+  int val = SDL_GetMouseState(&x, &y);
+  e2.type = event.type;
+  e2.ch = event.key.keysym.sym;
+  int id = 0;
+  EnvImpl *env = EnvImpl::Environment(&e);
+  if (env->cursor_pos_point_id.id==-1)
+    {
+      GameApi::PT pt = add_point(e, x,y);
+      id = pt.id;
+    }
+  else
+    {
+      id = env->cursor_pos_point_id.id;
+    }
+  env->pt[id].x = x;
+  env->pt[id].y = y;
+  e2.cursor_pos.id = id;
+  e2.button = -1;
+  if (val & SDL_BUTTON(1)) { e2.button = 0; }
+  if (val & SDL_BUTTON(2)) { e2.button = 1; }
+  if (val & SDL_BUTTON(3)) { e2.button = 2; }
+   
+  //std::cout << e.type << " " << e.ch << std::endl;
+  return e2;
 }
 
 EnvImpl::~EnvImpl()
@@ -653,6 +686,12 @@ EnvImpl::~EnvImpl()
     {
       BoolBitmap &bm = bool_bm[i_1];
       delete bm.bitmap;
+    }
+  int ss1a = waveforms.size();
+  for(int i_1a=0;i_1a<ss1a;i_1a++)
+    {
+      Waveform *bm = waveforms[i_1a];
+      delete bm;
     }
   int ss2 = float_bm.size();
   for(int i_2=0;i_2<ss2;i_2++)
@@ -773,6 +812,17 @@ GameApi::BB add_bool_bitmap(GameApi::Env &e, Bitmap<bool> *bitmap)
   return bm;
 }
 
+GameApi::WV add_waveform(GameApi::Env &e, Waveform *bitmap)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->waveforms.push_back(bitmap);
+  GameApi::WV bm;
+  bm.id = env->waveforms.size()-1;
+  //bm.type = 0;
+  return bm;
+}
+
+
 GameApi::TX add_texture(GameApi::Env &e, TextureI *i)
 {
   EnvImpl *env = EnvImpl::Environment(&e);
@@ -890,6 +940,14 @@ GameApi::P add_polygon2(GameApi::Env &e, FaceCollection *coll, int size)
   //h->size = size;
   return add_polygon(e,h);
 }
+GameApi::M add_matrix(GameApi::Env &e, MatrixInterface *i)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->matrix.push_back(i);
+  GameApi::M m;
+  m.id = env->matrix.size()-1;
+  return m;
+}
 
 GameApi::PT add_point(GameApi::Env &e, float x, float y)
 {
@@ -942,6 +1000,16 @@ GameApi::O add_volume(GameApi::Env &e, VolumeObject *o)
   pt.id = env->volumes.size()-1;
   return pt;
 }
+
+GameApi::FO add_float_volume(GameApi::Env &e, FloatVolumeObject *o)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->floatvolumes.push_back(o);
+  GameApi::FO pt;
+  pt.id = env->floatvolumes.size()-1;
+  return pt;
+}
+
 
 GameApi::VX add_voxel(GameApi::Env &e, Voxel<Color> *o)
 {
@@ -1271,6 +1339,17 @@ BoolBitmap *find_bool_bitmap(GameApi::Env &e, GameApi::BB b)
   return handle;
 }
 
+Waveform *find_waveform(GameApi::Env &e, GameApi::WV b)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  Waveform *handle = 0;
+
+  if (b.id >=0 && b.id < (int)ee->waveforms.size())
+    handle = ee->waveforms[b.id];
+  return handle;
+}
+
+
 ContinuousBitmap<Color> *find_continuous_bitmap(GameApi::Env &e, GameApi::CBM b)
 {
   EnvImpl *ee = EnvImpl::Environment(&e);
@@ -1475,6 +1554,14 @@ Point *find_point(GameApi::Env &e, GameApi::PT p)
     return &ee->pt[p.id];
   return 0;
 }
+MatrixInterface *find_matrix(GameApi::Env &e, GameApi::M p)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  if (p.id >=0 && p.id < (int)ee->matrix.size())
+    return ee->matrix[p.id];
+  return 0;
+}
+
 TROArray *find_timerange(GameApi::Env &e, GameApi::TR tr)
 {
   EnvImpl *ee = EnvImpl::Environment(&e);
@@ -1495,6 +1582,14 @@ VolumeObject *find_volume(GameApi::Env &e, GameApi::O o)
   EnvImpl *ee = EnvImpl::Environment(&e);
   if (o.id >=0 && o.id < (int)ee->volumes.size())
     return ee->volumes[o.id];
+  return 0;
+}
+
+FloatVolumeObject *find_float_volume(GameApi::Env &e, GameApi::FO o)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  if (o.id >=0 && o.id < (int)ee->floatvolumes.size())
+    return ee->floatvolumes[o.id];
   return 0;
 }
 
@@ -1818,7 +1913,7 @@ template<class T>
 class BitmapTransformFromFunction : public Bitmap<T>
 {
 public:
-  BitmapTransformFromFunction(GameApi::EveryApi &ev, Bitmap<T> &bm, T (*fptr)(GameApi::EveryApi &, int,int,T,void*), void *data) : bm(bm), ev(ev), fptr(fptr), data(data) { }
+  BitmapTransformFromFunction(GameApi::EveryApi &ev, Bitmap<T> &bm, T (*fptr)(GameApi::EveryApi &, int,int,T,void*), void *data) : ev(ev), bm(bm),  fptr(fptr), data(data) { }
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual T Map(int x, int y) const
@@ -2351,7 +2446,7 @@ template<class T>
 class BitmapFromString : public Bitmap<T>
 {
 public:
-  BitmapFromString(GameApi::EveryApi &ev, char *array, int sx, int sy, T (*fptr)(GameApi::EveryApi &ev, char)) : array(array), sx(sx), sy(sy), ev(ev), fptr(fptr) { }
+  BitmapFromString(GameApi::EveryApi &ev, char *array, int sx, int sy, T (*fptr)(GameApi::EveryApi &ev, char)) : ev(ev),array(array), sx(sx), sy(sy),  fptr(fptr) { }
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   T Map(int x, int y) const
@@ -4472,7 +4567,7 @@ template<class T>
 class EquivalenceClassFromArea : public Bitmap<bool>
 {
 public:
-  EquivalenceClassFromArea(GameApi::EveryApi &ev, Bitmap<Color> &bm, T fptr, void *ptr) : bm(bm), ev(ev), fptr(fptr), ptr(ptr) { }
+  EquivalenceClassFromArea(GameApi::EveryApi &ev, Bitmap<Color> &bm, T fptr, void *ptr) : ev(ev), bm(bm),  fptr(fptr), ptr(ptr) { }
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual bool Map(int x, int y) const
@@ -5367,10 +5462,13 @@ GameApi::SV GameApi::SpaceVectorApi::from_points(GameApi::PC pc) {
   // SV = PT->V
   // PC = int->PT
   // algo fills the space with polygons, finds vector.
+  GameApi::SV sv;
+  return sv;
 }
 GameApi::PT GameApi::SpaceVectorApi::flow_next_point(SV v, PT p, float mult)
 {
-
+  GameApi::PT pt;
+  return pt;
 }
 
 GameApi::SA GameApi::SeparateApi::empty()
@@ -5435,6 +5533,260 @@ GameApi::PlaneApi::PlaneApi(Env &e) : e(e) { }
 
 GameApi::PL GameApi::PlaneApi::function(GameApi::PT (*fptr)(EveryApi &e, int idx, void*data), int num_points, void*data)
 {
-  EveryApi ev(e);
-  return add_plane(e, new PlanePointsFunction( ev, fptr, num_points, data ));
+  GameApi::EveryApi *ev = new EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  return add_plane(e, new PlanePointsFunction( *ev, fptr, num_points, data ));
+}
+
+GameApi::WV GameApi::WaveformApi::empty(float length)
+{
+  return add_waveform(e, new ZeroWaveform(length, -1.0,1.0));
+}
+GameApi::WV GameApi::WaveformApi::sinwave(float length, float freq)
+{
+  return add_waveform(e, new SinWaveform(length, freq));
+}
+GameApi::WV GameApi::WaveformApi::sample(float *array, int length, float samplelength)
+{
+  return add_waveform(e, new ArrayWaveform2(array, length, samplelength, -1.0, 1.0));
+}
+GameApi::WV GameApi::WaveformApi::int_sample(int *array, int length, float samplelength, int min_value, int max_value)
+{
+  GameApi::WV w;
+  return w;
+}
+GameApi::WV GameApi::WaveformApi::mix(GameApi::WV orig, float pos, GameApi::WV sample)
+{
+  Waveform *m_orig = find_waveform(e, orig);
+  Waveform *m_sample = find_waveform(e, sample);
+  return add_waveform(e, new MixWaveform(m_orig, pos, m_sample));
+}
+GameApi::WV GameApi::WaveformApi::volume_ramp(GameApi::WV orig, float old_y_value, float x_pos1, float x_pos2, float y_pos1, float y_pos2)
+{
+  Waveform *m_orig = find_waveform(e, orig);
+  return add_waveform(e, new VolumeRampWaveform(m_orig, old_y_value, x_pos1, x_pos2, y_pos1, y_pos2));
+}
+GameApi::WV GameApi::WaveformApi::freq_change(GameApi::WV orig, float old_freq, float new_freq)
+{
+  Waveform *m_orig = find_waveform(e, orig);
+  return add_waveform(e, new FreqChangeWaveform(m_orig, old_freq, new_freq));
+}
+
+float GameApi::WaveformApi::get_value(WV orig, float val)
+{
+  Waveform *m_orig = find_waveform(e, orig);
+  return m_orig->Index(val);
+}
+float GameApi::WaveformApi::length(GameApi::WV orig)
+{
+  Waveform *m_orig = find_waveform(e, orig);
+  return m_orig->Length();
+}
+
+class LengthChangeWaveform : public Waveform
+{
+public:
+  LengthChangeWaveform(Waveform *wv, float new_length) : wv(wv), new_length(new_length) { }
+  virtual float Length() const { 
+    return new_length; 
+  }
+  virtual float Min() const { return wv->Min(); }
+  virtual float Max() const { return wv->Max(); }
+  virtual float Index(float val) const 
+  {
+    if (val>=0.0 && val<new_length && val<wv->Length()) { return wv->Index(val); }
+    return 0.0;
+  }
+private:  
+  Waveform *wv;
+  float new_length;
+};
+
+GameApi::WV GameApi::WaveformApi::length_change(WV orig, float new_length)
+{
+  Waveform *m_orig = find_waveform(e, orig);
+  return add_waveform(e, new LengthChangeWaveform(m_orig, new_length));
+}
+
+
+class FunctionWaveform : public Waveform
+{
+public:
+  FunctionWaveform(GameApi::EveryApi &ev, float (*fptr)(GameApi::EveryApi &ev, float, void*), float length, float min_value, float max_value, void *data) : ev(ev), fptr(fptr), length(length), min_value(min_value), max_value(max_value), data(data) { }
+  virtual float Length() const { return length; }
+  virtual float Min() const { return min_value; }
+  virtual float Max() const { return max_value; }
+  virtual float Index(float val) const 
+  {
+    return fptr(ev, val, data);
+  }
+
+private:
+  GameApi::EveryApi &ev;
+  float (*fptr)(GameApi::EveryApi &ev, float, void*); 
+  float length;
+  float min_value; 
+  float max_value; 
+  void *data;
+};
+
+GameApi::WV GameApi::WaveformApi::function(float (*fptr)(EveryApi &ev, float, void*), float length, float min_value, float max_value, void *data)
+{
+  GameApi::EveryApi *ev = new EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  return add_waveform(e, new FunctionWaveform(*ev, fptr, length, min_value, max_value, data));
+}
+
+GameApi::FO GameApi::FloatVolumeApi::function(float (*fptr)(EveryApi &ev, float x, float y, float z, void *data), void *data)
+{
+  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  FunctionFloatVolumeObject *ff = new FunctionFloatVolumeObject(*ev, fptr, data);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  return add_float_volume(e, ff);
+}
+
+class FloatVolumeObjectFunction : public Function<Point, float>
+{
+public:
+  FloatVolumeObjectFunction(FloatVolumeObject *obj, float value) : obj(obj), value(value) { }
+  float Index(Point p) const
+  {
+    float val = obj->FloatValue(p);
+    val -= value;
+    //std::cout << "Index: " << p << ":" << val << std::endl;
+    return val;
+  }
+private:
+  FloatVolumeObject *obj;
+  float value;
+};
+
+class RayTrace3 : public Bitmap<Color>
+{
+public:
+  RayTrace3(FloatVolumeObject *obj,
+	    int sx, int sy,
+	    Point pos,
+	    Vector u_x,
+	    Vector u_y,
+	    Vector u_z,
+	    float surface_value) : obj(obj), sx(sx), sy(sy), pos(pos), u_x(u_x), u_y(u_y), u_z(u_z), surf_val(surface_value) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    Point pos_0 = pos + float(x)/float(sx)*u_x + float(y)/float(sy)*u_y;
+    Vector vec_0 = u_z;
+    //std::cout << pos_0 << " " << vec_0 << ":" << std::endl;
+    Ray r(pos_0, vec_0); // float->Point
+    FloatVolumeObjectFunction func(obj, surf_val); // Point -> float
+    SolvableCompose<Point> compose(r, func);
+    bool success = false;
+    float val = SolveWithFailure(compose, 0.0, 200.0, success);
+    //std::cout << x << " " << y << ":" << val << std::endl;
+    return Color(int(val*255.0),int(val*255.0), int(val*255.0), int(val*255.0));    
+  }
+public:
+  FloatVolumeObject *obj;
+  int sx;
+  int sy;
+  Point pos;
+  Vector u_x;
+  Vector u_y;
+  Vector u_z;
+  float surf_val;
+};
+
+float distance2(GameApi::EveryApi &ev, float x, float y, float z, void *data)
+{
+  return sqrt(x*x+y*y+z*z);
+}
+
+GameApi::FO GameApi::FloatVolumeApi::distance()
+{
+  return function(distance2, NULL);
+}
+
+GameApi::FO GameApi::FloatVolumeApi::minimum(FO f1, FO f2)
+{
+  FloatVolumeObject *obj = find_float_volume(e, f1);
+  FloatVolumeObject *obj2 = find_float_volume(e, f2);
+  return add_float_volume(e, new MinFloatVolumeObject(obj, obj2));
+}
+GameApi::FO GameApi::FloatVolumeApi::maximum(FO f1, FO f2)
+{
+  FloatVolumeObject *obj = find_float_volume(e, f1);
+  FloatVolumeObject *obj2 = find_float_volume(e, f2);
+  return add_float_volume(e, new MaxFloatVolumeObject(obj, obj2));
+}
+#if 0
+GameApi::FO GameApi::FloatVolumeApi::plus(FO f1, FO f2)
+{
+  FloatVolumeObject *obj = find_float_volume(e, f1);
+  FloatVolumeObject *obj2 = find_float_volume(e, f2);
+  return add_float_volume(e, new PlusFloatVolumeObject(obj, obj2));
+}
+#endif
+GameApi::FO GameApi::FloatVolumeApi::move(FO f1, float dx, float dy, float dz)
+{
+  FloatVolumeObject *next = find_float_volume(e, f1);
+  return add_float_volume(e, new MoveFloatVolumeObject(next, dx,dy,dz));
+}
+
+GameApi::BM GameApi::FloatVolumeApi::raytrace(GameApi::FO object, 
+					      int sx, int sy,
+					      PT ray_0, PT ray_x, PT ray_y, PT ray_z, float surface_value)
+{
+  FloatVolumeObject *obj = find_float_volume(e, object);
+  Point *pos = find_point(e, ray_0);
+  Point *pos_x = find_point(e, ray_x);
+  Point *pos_y = find_point(e, ray_y);
+  Point *pos_z = find_point(e, ray_z);
+  Vector u_x = *pos_x-*pos;
+  Vector u_y = *pos_y-*pos;
+  Vector u_z = *pos_z-*pos;
+  return add_color_bitmap(e, new RayTrace3(obj, sx,sy, *pos, u_x, u_y, u_z, surface_value));
+}
+
+GameApi::MatrixApi::MatrixApi(Env &e) : e(e) { }
+
+GameApi::M GameApi::MatrixApi::identity()
+{
+  return add_matrix(e, new SimpleMatrix(Matrix::Identity()));
+}
+GameApi::M GameApi::MatrixApi::xrot(float rot)
+{
+  return add_matrix(e, new SimpleMatrix(Matrix::XRotation(rot)));
+}
+GameApi::M GameApi::MatrixApi::yrot(float rot)
+{
+  return add_matrix(e, new SimpleMatrix(Matrix::YRotation(rot)));
+}
+GameApi::M GameApi::MatrixApi::zrot(float rot)
+{
+  return add_matrix(e, new SimpleMatrix(Matrix::ZRotation(rot)));
+}
+GameApi::M GameApi::MatrixApi::trans(float x, float y, float z)
+{
+  return add_matrix(e, new SimpleMatrix(Matrix::Translate(x,y,z)));
+}
+GameApi::M GameApi::MatrixApi::scale(float sx, float sy, float sz)
+{
+  return add_matrix(e, new SimpleMatrix(Matrix::Scale(sx,sy,sz)));
+}
+GameApi::M GameApi::MatrixApi::inverse(M mat)
+{
+  MatrixInterface *mat2 = find_matrix(e, mat);
+  return add_matrix(e, new SimpleMatrix(Matrix::Inverse(mat2->get_matrix())));
+}
+GameApi::M GameApi::MatrixApi::mult(M m1, M m2)
+{
+  MatrixInterface *mat2a = find_matrix(e, m1);
+  MatrixInterface *mat2b = find_matrix(e, m2);
+  Matrix ma = mat2a->get_matrix();
+  Matrix mb = mat2b->get_matrix();
+  return add_matrix(e, new SimpleMatrix(ma * mb));
 }
