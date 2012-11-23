@@ -133,7 +133,29 @@ typedef Bitmap<Color> ColorBitmap;
 typedef Bitmap<Point> PointBitmap;
 typedef Bitmap<Quad> QuadBitmap;
 
-
+class BoolBitmapFromFloatBitmap2 : public Bitmap<bool>
+{
+public:
+  BoolBitmapFromFloatBitmap2(Bitmap<float> &bm2, 
+			     float range_start, 
+			     float range_end) 
+  : 
+    bm(bm2), 
+    range_start(range_start), 
+    range_end(range_end) 
+  { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual bool Map(int x, int y) const
+  {
+    float val = bm.Map(x,y);
+    return range_start<=val && val <= range_end; 
+  }
+  
+private:
+  Bitmap<float> &bm;
+  float range_start, range_end;
+};
 
 class GrayScaleBitmapFromFloatBitmap : public Bitmap<Color>
 {
@@ -803,15 +825,77 @@ public:
     if (xx>=x && xx<x+bm2.SizeX())
       if (yy>=y && yy<y+bm2.SizeY())
 	{
+	  //std::cout << "Test" << x <<" " << y << ":" << xx << " " << yy << std::endl;
 	c2 = bm2.Map(xx-x, yy-y);
 	}
-    return Color::Interpolate(c1,c2,(c2.alpha/255.0));
-  }  
+    Color res = Color::Interpolate(c1,c2,c2.alpha/255.0);
+    //std::cout << res.r << res.b << res.g << res.alpha << std::endl;
+    return res;
+  } 
 private:
   Bitmap<Color> &bm;
   Bitmap<Color> &bm2;
   int x,y;
 };
+
+class BlitBitmapClassMasked : public Bitmap<Color>
+{
+public:
+  BlitBitmapClassMasked(Bitmap<Color> &bm, Bitmap<Color> &bm2, int x, int y, Bitmap<float> &mask) : bm(bm), bm2(bm2), x(x), y(y), mask(mask) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual Color Map(int xx, int yy) const
+  {
+    Color c1 = bm.Map(xx,yy);
+    Color c2(0,0,0,0);
+    float val = 0.0;
+    if (xx>=x && xx<x+bm2.SizeX())
+      if (yy>=y && yy<y+bm2.SizeY())
+	{
+	c2 = bm2.Map(xx-x, yy-y);
+	val = mask.Map(xx-x,yy-y);
+	}
+    return Color::Interpolate(c1,c2,val);
+  }  
+private:
+  Bitmap<Color> &bm;
+  Bitmap<Color> &bm2;
+  int x,y;
+  Bitmap<float> &mask;
+};
+
+class BlitBitmapClassMasked2 : public Bitmap<Color>
+{
+public:
+  BlitBitmapClassMasked2(Bitmap<Color> &bm, Bitmap<Color> &bm2, int x, int y, Bitmap<bool> &mask) : bm(bm), bm2(bm2), x(x), y(y), mask(mask) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual Color Map(int xx, int yy) const
+  {
+    Color c1 = bm.Map(xx,yy);
+    Color c2(0,0,0,0);
+    bool val = false;
+    if (xx>=x && xx<x+bm2.SizeX())
+      if (yy>=y && yy<y+bm2.SizeY())
+	{
+	c2 = bm2.Map(xx-x, yy-y);
+	val = mask.Map(xx-x,yy-y);
+	}
+    if (!val) {
+      return c1;
+    }
+    else
+      {
+	return c2;
+      }
+  }  
+private:
+  Bitmap<Color> &bm;
+  Bitmap<Color> &bm2;
+  int x,y;
+  Bitmap<bool> &mask;
+};
+
 
 void BlitBitmap(BufferRef ref, int x, int y, Bitmap<Color> &color);
 
@@ -5633,6 +5717,7 @@ private:
 
 void PrepareSprite(const Sprite &s, ArrayRender &rend);
 void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend);
+void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend, float mult_x, float mult_y);
 void RenderSprite(const Sprite &s, int frame, Point2d pos1, Point2d pos2, Point2d pos1_inside, Point2d pos2_inside, float z, ArrayRender &rend);
 
 class SpriteMesh : public Mesh
@@ -5795,7 +5880,7 @@ public:
   {
     int val = bm.Map(x,y);
     float f = float(val-value1)/(value2-value1);
-    return Color::Interpolate(c1,c2, f);
+    return Color::Interpolate(c1,c2, 1.0-f);
   }
 
 private:

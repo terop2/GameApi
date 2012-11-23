@@ -115,7 +115,8 @@ class RenderVertexArray2
 {
 public:
   RenderVertexArray2(VertexArraySet &s1, VertexArraySet &s2) : s1(s1), s2(s2) { }
-  void render(int id, int a1, int a2, int a3, int a4);
+  void render(int id, int a1, int a2, int a3, int a4,
+	      int aa1, int aa2, int aa3, int aa4);
 private:
   VertexArraySet &s1;
   VertexArraySet &s2;

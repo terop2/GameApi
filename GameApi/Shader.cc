@@ -175,6 +175,7 @@ void Program::unuse()
 }
 void Program::set_var(const std::string &name, float val)
 {
+  //std::cout << "set_var float:" << name << ":" << val << std::endl;
   GLint loc = glGetUniformLocation(priv->program, name.c_str());
   glUniform1f(loc, val);
 }

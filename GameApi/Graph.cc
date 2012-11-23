@@ -1087,6 +1087,27 @@ void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender 
   rend.DisableTexture();
 }
 
+void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend, float mult_x, float mult_y)
+{
+  //std::cout << "SpriteFrame: " << frame << std::endl;
+  rend.EnableTexture(frame);
+  glPushMatrix();
+  Point2d p = s.Pos(frame);
+
+  Matrix m = Matrix::Translate(pos.x+p.x, pos.y+p.y, z);
+  float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
+		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
+		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
+		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
+  
+  glMultMatrixf(&mat[0]);
+  glScalef(mult_x, mult_y, 1.0);
+  rend.Render(frame, -1, -1, frame, 0, rend.used_vertex_count[0]);
+  glPopMatrix();
+  rend.DisableTexture();
+}
+
+
 #if 0
 void RenderSprite(const Sprite &s, int frame, Point2d pos1, Point2d pos2, Point2d pos1_inside, Point2d pos2_inside, float z, ArrayRender &rend)
 {
