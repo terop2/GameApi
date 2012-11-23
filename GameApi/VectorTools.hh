@@ -392,10 +392,10 @@ public:
     a2 >>= 4;
 
     float val1 = 1.0-val;
-    unsigned int r3 = ((unsigned int)(r*val + r2*val1)) & 0xff;
-    unsigned int g3 = ((unsigned int)(g*val + g2*val1)) & 0xff00;
-    unsigned int b3 = ((unsigned int)(b*val + b2*val1)) & 0xff0000;
-    unsigned int a3 = ((unsigned int)(a*val + a2*val1)) & 0x0ff00000;
+    unsigned int r3 = ((unsigned int)(r*val1 + r2*val)) & 0xff;
+    unsigned int g3 = ((unsigned int)(g*val1 + g2*val)) & 0xff00;
+    unsigned int b3 = ((unsigned int)(b*val1 + b2*val)) & 0xff0000;
+    unsigned int a3 = ((unsigned int)(a*val1 + a2*val)) & 0x0ff00000;
     a3 <<= 4;
     return r3+g3+b3+a3;
   }
@@ -403,10 +403,10 @@ public:
   static Color Interpolate(const Color &aVec, const Color &aVec2, float aVal)
   {
     Color v;
-    v.r = int(float(aVec.r)*aVal + float(aVec2.r)*(1.0-aVal));
-    v.g = int(float(aVec.g)*aVal + float(aVec2.g)*(1.0-aVal));
-    v.b = int(float(aVec.b)*aVal + float(aVec2.b)*(1.0-aVal));
-    v.alpha = int(float(aVec.alpha)*aVal + float(aVec2.alpha)*(1.0-aVal));
+    v.r = int(float(aVec.r)*(1.0-aVal) + float(aVec2.r)*aVal);
+    v.g = int(float(aVec.g)*(1.0-aVal) + float(aVec2.g)*aVal);
+    v.b = int(float(aVec.b)*(1.0-aVal) + float(aVec2.b)*aVal);
+    v.alpha = int(float(aVec.alpha)*(1.0-aVal) + float(aVec2.alpha)*aVal);
     return v;
   }
 

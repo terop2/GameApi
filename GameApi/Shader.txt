@@ -2,10 +2,42 @@
 //V: linear
 
 uniform float range;
-attribute vec4 vertex2;
+attribute vec3 vertex1;
+attribute vec3 normal1;
+attribute vec4 color1;
+attribute vec2 texcoord1;
+
+attribute vec3 vertex2;
 attribute vec3 normal2;
 attribute vec4 color2;
 attribute vec2 texcoord2;
+
+varying vec4 target_color;
+varying vec3 target_normal;
+varying vec2 target_texcoord;
+
+
+void main(void)
+{
+  vec3 af = vertex1;
+  vec3 aa = vertex2;
+  //float x = af.x*(1.0-range)+aa.x*range;
+  //float y = af.y*(1.0-range)+aa.y*range;
+  //float z = af.z*(1.0-range)+aa.z*range;
+  vec3 bb = mix(af,aa,range); // vec4(x,y,z,1.0);
+  vec4 bb2 = vec4(bb.x,bb.y,bb.z,1.0);
+  gl_Position = gl_ModelViewProjectionMatrix * bb2;
+
+  vec4 col1 = vec4(float(color1.r)/255.0, float(color1.g)/255.0, float(color1.b)/255.0, float(color1.a)/255.0);
+  vec4 col2 = vec4(float(color2.r)/255.0, float(color2.g)/255.0, float(color2.b)/255.0, float(color2.a)/255.0);
+
+  target_color = vec4(col2.x*range+col1.x*(1.0-range), col2.y*range+col1.y*(1.0-range), col2.z*range+col1.z*(1.0-range), 1.0);
+  target_normal = vec3(normal2.x*range+normal1.x*(1.0-range), normal2.y*range+normal1.y*(1.0-range), col2.z*range+col1.z*(1.0-range));;
+
+  target_texcoord = vec2(100.0*texcoord1.x*(1.0-range)+texcoord2.x*range,100.0*texcoord1.y*(1.0-range)+texcoord2.y*range);
+}
+
+//F: red
 
 varying vec4 target_color;
 varying vec3 target_normal;
@@ -15,30 +47,5 @@ uniform sampler2D tex;
 
 void main(void)
 {
-  vec4 a = gl_Vertex;
-  vec4 aa = vertex2;
-  float x = a.x*(1.0-range)+aa.x*range;
-  float y = a.y*(1.0-range)+aa.y*range;
-  float z = a.z*(1.0-range)+aa.z*range;
-  vec4 b = vec4(x,y,z,1.0);
-  gl_Position = gl_ModelViewProjectionMatrix * b;
-
-  target_color = gl_Color * (1.0-range) + color2.rgba * range;
-  target_normal = gl_Normal * (1.0-range) + normal2 * range;
-  vec2 v = gl_TexCoord[0].xy * (1.0-range) + texcoord2 * range;
-  vec2 s = vec2(1.0,0.5);
-  target_texcoord = vec2(v.x*s.x,v.y*s.y);
-}
-
-//F: red
-
-varying vec4 target_color;
-varying vec4 target_normal;
-varying vec2 target_texcoord;
-
-uniform sampler2D tex;
-
-void main(void)
-{
-  gl_FragColor = texture(tex, target_texcoord);
+  gl_FragColor = mix(target_color, texture(tex, target_texcoord), 0.5);
 }

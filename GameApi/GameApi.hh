@@ -6,9 +6,11 @@
 
 namespace GameApi
 {
+  struct OM { int id; };
   struct FO { int id; };
   struct WV { int id; }; // waveform
   struct BM { int id; }; // bitmap
+  struct VBM { int id; }; // vector bitmap
   struct BB { int id; }; // bool bitmap
   struct FB { int id; }; // float bitmap
   struct CBM { int id; }; // continuousbitmap
@@ -58,6 +60,7 @@ namespace GameApi
   struct Ht { int id; }; // html
   struct BF { int id; };
   struct VA { int id; }; // vertex array
+  struct VAA { int id; }; // vertex array array
   struct VX { int id; }; // voxel
   struct PL { int id; }; // plane
   struct TX { int id; }; // texture
@@ -199,6 +202,8 @@ public:
 
   BM growbitmap(BM small_orig_bitmap, int l, int t, int r, int b);
   BM blitbitmap(BM bg, BM orig, int x, int y);
+  BM blitbitmap(BM bg, BM orig, int x, int y, FB mask);
+  BM blitbitmap(BM bg, BM orig, int x, int y, BB mask);
   BM anim_array(BM *array, int size);
   BM modify_bitmap(BM orig, BM bm, int x, int y);
   BM interpolate_bitmap(BM orig1, BM orig2, float x); // x=[0..1]
@@ -822,6 +827,9 @@ public:
   TR init(int paths);
   TR linear(TR s, int path_num, P (*fptr)(EveryApi &e, float val, void *cb), float start_v, float end_v, float duration, void *cb=NULL);
   VV prepare(TR sc);
+  VV prepareloop(float *array, int arraysize,
+		P (*fptr)(EveryApi &e, float val, void*cb), void *cb,
+		float step_duration);
   void render(VV sc, float time, SH shadero);
 private:
   Env &e;
@@ -982,9 +990,13 @@ public:
   BB empty(int sx, int sy);
   BB function(bool (*fptr)(EveryApi &ev, int,int,void*), int sx, int sy, void* data=0);
   BB transform(BB orig, bool (*fptr)(EveryApi &ev, int,int,bool, void*), void *data=0);
+  BB from_float_bitmap(FB float_bm, float range_start, float range_end);
   BB from_bitmaps_color(BM bm, int r, int g, int b);
   BB from_bitmaps_color_area(BM bm, bool(*fptr)(EveryApi &ev, int r, int g, int b, int a, void* ptr), void *ptr);
-
+  BB from_bitmaps_color_area(BM bm, int r_start, int r_end, 
+			            int g_start, int g_end, 
+			            int b_start, int b_end, 
+			            int a_start, int a_end);
   BB circle(BB bg, float center_x, float center_y, float radius);
   BB rectangle(BB bg, int x, int y, int width, int height); // for static ones
   BB rectangle(BB bg, float x, float y, float width, float height); // for moving
@@ -1044,6 +1056,18 @@ private:
   Env &e;
 };
 
+class VectorBitmapApi
+{
+public: 
+  VectorBitmapApi(Env &e) : e(e) { }
+  VBM spheredelta(float radius1, float radius2, float x, float y, float z,
+		  float sx, float sy);
+  VBM plane(PT pos, V u_x, V u_y, V u_z);
+  P span_object(VBM vectors, FB floats); // dimensions must be the same
+private:
+  Env &e;
+};
+
 class ContinuousBitmapApi
 { // RxR->RGB
 public:
@@ -1078,6 +1102,7 @@ class ColorApi
 { // ()->RGB
 public:
   ColorApi(Env &e);
+  CO u_color(unsigned int color); // argb
   CO rgb_color(int r, int g, int b, int a); // r,g,b,a [0..255]
   CO rgbf_color(float r, float g, float b, float a);
 private:
@@ -1161,7 +1186,7 @@ public:
   BB isocurve(FB bm1, float start_range, float end_range);
   
 };
-
+		     
 class MatrixApi
 { // to be implemented with virtual Matrix get_matrix() const=0;
 public:
@@ -1181,6 +1206,20 @@ public:
   M rotate_around_axis(V v, float angle);
   M rotate_around_axis(PT point, V v, float angle);
   PT mult(PT point, M matrix);
+private:
+  Env &e;
+};
+		     
+class ObjectMoveApi
+{
+public:
+  ObjectMoveApi(Env &e) : e(e) { }
+  OM empty(int numobjects);
+  OM add_object(OM orig, int index, P obj);
+  OM clear_object(OM orig, int index);
+  OM change_pos(OM orig, int index, M mat);
+  VAA prepare_all(OM orig);
+  void render_all(VAA orig);
 private:
   Env &e;
 };
@@ -1315,12 +1354,13 @@ private:
 struct EveryApi
 {
   EveryApi(Env &e) 
-    : mainloop_api(e), point_api(e), vector_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e),
-      font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e), float_volume_api(e) { }
+    : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e),
+      font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e), float_volume_api(e), color_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
   VectorApi vector_api;
+  MatrixApi matrix_api;
   SpriteApi sprite_api;
   GridApi grid_api;
   BitmapApi bitmap_api;
@@ -1339,6 +1379,7 @@ struct EveryApi
   SeparateApi separate_api;
   WaveformApi waveform_api;
   FloatVolumeApi float_volume_api;
+  ColorApi color_api;
 };
 
 class GamesApi

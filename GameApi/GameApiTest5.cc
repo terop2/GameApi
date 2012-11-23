@@ -1,6 +1,11 @@
 
 #include "GameApi.hh"
 #include <iostream>
+#define NO_SDL_GLEXT
+#include <GL/glew.h>
+#include <GL/gl.h>
+#include <SDL/SDL.h>
+#include <SDL/SDL_opengl.h>
 
 
 using namespace GameApi;
@@ -16,11 +21,23 @@ P torus_func(EveryApi &e, float val, void *cb)
   std::cout << "torus_func" << val << std::endl;
   A *cb2 = (A*)cb;
   PT p = e.point_api.point(cb2->val,cb2->val,100.0);
-  P p0 = e.polygon_api.sphere(p, val, 20, 20);
-  //P p1 = e.polygon_api.sprite_bind(p0, e.texture_api.get_tex_coord(cb2->tx, 0), cb2->tx);
+  //P p0 = e.polygon_api.sphere(p, val, 30, 30);
+  P p0 = e.polygon_api.quad_z(val, val+100.0,
+			      val, val+100.0,
+			      100.0);
+  P p00;
+  if (val>105.0)
+    {
+      p00 = e.polygon_api.color(p0, 0xffff0000);
+    }
+  else
+    {
+      p00 = e.polygon_api.color(p0, 0xffff00ff);
+    }
+  P p1 = e.polygon_api.sprite_bind(p00, e.texture_api.get_tex_coord(cb2->tx, 0), cb2->tx);
   //P p1 = e.polygon_api.scale(p0, 0.05,0.05,0.2);
-  V v = e.vector_api.vector(0.0,-1.0,0.0);
-  P p1 = e.polygon_api.rotate(p0, p, v, 180.0);
+  //V v = e.vector_api.vector(0.0,-1.0,0.0);
+  //P p1 = e.polygon_api.rotate(p00, p, v, 180.0);
   return p1;
 }
 
@@ -29,11 +46,11 @@ void GameTest5(EveryApi &e)
   MainLoopApi &loop = e.mainloop_api;
   ShaderApi &shader = e.shader_api;
   StateChangeApi &change_api = e.state_change_api;
-  loop.init();
-  loop.alpha(true);
+  loop.init_3d();
+  //loop.alpha(true);
   shader.load("Shader.txt");
   SH sh = shader.get_shader("linear", "red", "");
-  shader.bindnames(sh, "vertex2", "","","");
+  shader.bindnames(sh, "vertex2", "normal2","color2","texcoord2");
 
   BM red = e.bitmap_api.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 100,100,128);
   TX tx = e.texture_api.tex_plane(128,128);
@@ -48,15 +65,18 @@ void GameTest5(EveryApi &e)
   A val2;
   val2.val = 150.0;
   val2.tx = tx2;
-  TR t = change_api.init(1);
+  TR t = change_api.init(2);
   //float val = 0.0;
   //float val2 = 150.0;
   TR t2 = change_api.linear(t, 0, &torus_func, 100.0, 200.0, 100.0, &val);
-  //TR t3 = change_api.linear(t2, 0, &torus_func, 200.0, 100.0, 100.0, &val);
-  //TR t4 = change_api.linear(t3, 1, &torus_func, 100.0, 200.0, 100.0, &val2);
-  //TR t5 = change_api.linear(t4, 1, &torus_func, 200.0, 100.0, 100.0, &val2);
+  TR t3 = change_api.linear(t2, 0, &torus_func, 200.0, 100.0, 100.0, &val);
+  TR t4 = change_api.linear(t3, 1, &torus_func, 100.0, 200.0, 100.0, &val2);
+  TR t5 = change_api.linear(t4, 1, &torus_func, 200.0, 100.0, 100.0, &val2);
   
-  VV valval = change_api.prepare(t2);
+  P p = torus_func(e, 50.0, &val);
+  VA vertex = e.polygon_api.create_vertex_array(p);
+
+  VV valval = change_api.prepare(t5);
   float time = 0.0;
 
   //P p = torus_func(e, 100.0, &val2);
@@ -64,18 +84,22 @@ void GameTest5(EveryApi &e)
   
 
   while(1) {
-    e.mainloop_api.clear();
+    e.mainloop_api.clear_3d();
     time += 0.1;
     if (time > 200.0) time = 0.0;
     //std::cout << "Time:" << time << std::endl;
+    glPushMatrix();
+    glScalef(0.5,0.5,0.5);
     shader.use(sh);
-    loop.switch_to_3d(true);
+    //loop.switch_to_3d(true);
     e.shader_api.set_var(sh, "tex", 0);
 
     e.texture_api.use(tex);
     change_api.render(valval, time, sh);
     e.texture_api.unuse(tex);
-    //e.polygon_api.render_vertex_array(va);
+    shader.unuse(sh);
+    //e.polygon_api.render_vertex_array(vertex);
+    glPopMatrix();
     e.mainloop_api.swapbuffers();
     MainLoopApi::Event ev = e.mainloop_api.get_event();
     if (ev.ch==27) break;

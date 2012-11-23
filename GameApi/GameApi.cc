@@ -25,6 +25,8 @@
 #include "StateChange.hh"
 #include "DistanceObject.hh"
 #include "MatrixApi.hh"
+#include "Web.hh"
+#include <iostream>
 
 struct TexCoordQuad
 {
@@ -581,6 +583,17 @@ struct Font
   FontGlyphBitmap *bm;
 };
 
+struct ObjectWithPos
+{
+  GameApi::P obj;
+  GameApi::M m;
+};
+struct VertexArrayWithPos
+{
+  GameApi::VA va;
+  GameApi::M m;
+};
+
 struct EnvImpl
 {
   std::vector<Point> pt;
@@ -621,6 +634,8 @@ struct EnvImpl
   std::vector<Separate*> separates;
   std::vector<PlanePoints2d*> plane_points;
   std::vector<Waveform*> waveforms;
+  std::vector<Array<int, ObjectWithPos> * > object_move;
+  std::vector<std::vector<VertexArrayWithPos> *> object_move_vertex_array;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -917,6 +932,23 @@ GameApi::P add_polygon(GameApi::Env &e, FaceCollPolyHandle *handle)
   //bm.type = 0;
   handle->id = p.id;
   return p;
+}
+GameApi::OM add_move(GameApi::Env &e, Array<int, ObjectWithPos> *arr)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->object_move.push_back(arr);
+  GameApi::OM om;
+  om.id = env->object_move.size()-1;
+  return om;
+}
+
+GameApi::VAA add_move_array(GameApi::Env &e, std::vector<VertexArrayWithPos> *vec)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->object_move_vertex_array.push_back(vec);
+  GameApi::VAA om;
+  om.id = env->object_move_vertex_array.size()-1;
+  return om;
 }
 // takes ownership of FaceCollection*
 GameApi::P add_polygon(GameApi::Env &e, FaceCollection *coll, int size)
@@ -1398,6 +1430,24 @@ PlanePoints2d* find_plane(GameApi::Env &e, GameApi::PL p)
   return sep;
 }
 
+Array<int,ObjectWithPos> *find_move(GameApi::Env &e, GameApi::OM p)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  Array<int,ObjectWithPos> *handle = NULL;
+  if (p.id >=0 && p.id < (int)ee->object_move.size())
+    handle = ee->object_move[p.id];
+  return handle;
+}
+
+std::vector<VertexArrayWithPos> *find_move_array(GameApi::Env &e, GameApi::VAA p)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  std::vector<VertexArrayWithPos> *handle = NULL;
+  if (p.id >=0 && p.id < (int)ee->object_move_vertex_array.size())
+    handle = ee->object_move_vertex_array[p.id];
+  return handle;
+}
+
 FaceCollPolyHandle *find_poly(GameApi::Env &e, GameApi::P p)
 {
   EnvImpl *ee = EnvImpl::Environment(&e);
@@ -1785,13 +1835,16 @@ void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, float x, float y, fl
 {
   SpritePriv &spriv = *(SpritePriv*)priv;
   ::Sprite *s = spriv.sprites[bm.id];
-  if (!s) { std::cout << "rendersprite sprite==NULL (maybe you need to call prepare() for every object before rendering happens. (do not put it to frame loop or you lose frame rates))" << std::endl; return; }
+  if (!s) { std::cout << "rendersprite sprite==NULL (maybe you need to call preparesprite() for every object before rendering happens. (do not put it to frame loop or you lose frame rates))" << std::endl; return; }
 
   Point2d pos2 = { x, y };
   float z = 0.0;
+  //glPushMatrix();
+  //glScalef(mult_x, mult_y, 1.0);
   //std::cout << "rendersprite: " << bm_choose << std::endl;
-  RenderSprite(*s, bm_choose, pos2, z, *spriv.renders[bm.id]);
+  RenderSprite(*s, bm_choose, pos2, z, *spriv.renders[bm.id], mult_x, mult_y);
 
+  //glPopMatrix();
 }
 void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, PT pos)
 {
@@ -2015,6 +2068,17 @@ GameApi::BM GameApi::BitmapApi::newtilebitmap(int sx, int sy, int tile_sx, int t
 }
 
 BufferRef LoadImage(std::string filename);
+
+void GameApi::BitmapApi::savebitmap(BM bm, std::string filename)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<Color> *bm2 = find_color_bitmap(handle);
+  PpmFile file(filename, *bm2);
+  std::string pngcontents = file.Contents();
+  std::ofstream filehandle(filename, std::ios_base::out);
+  filehandle << pngcontents;
+  filehandle.close();
+}
 
 GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
 {
@@ -2354,6 +2418,28 @@ GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y)
   Bitmap<Color> *bm1 = find_color_bitmap(handle);
   Bitmap<Color> *bm2 = find_color_bitmap(handle2);
   return add_color_bitmap(e, new BlitBitmapClass(*bm1, *bm2, x,y));
+}
+
+GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y, FB mask)
+{
+  BitmapHandle *handle = find_bitmap(e, bg);
+  BitmapHandle *handle2 = find_bitmap(e, orig);
+  FloatBitmap *handle3 = find_float_bitmap(e, mask);
+  Bitmap<Color> *bm1 = find_color_bitmap(handle);
+  Bitmap<Color> *bm2 = find_color_bitmap(handle2);
+  Bitmap<float> *bm3 = handle3->bitmap;
+  return add_color_bitmap(e, new BlitBitmapClassMasked(*bm1, *bm2, x,y, *bm3));
+}
+
+GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y, BB mask)
+{
+  BitmapHandle *handle = find_bitmap(e, bg);
+  BitmapHandle *handle2 = find_bitmap(e, orig);
+  BoolBitmap *handle3 = find_bool_bitmap(e, mask);
+  Bitmap<Color> *bm1 = find_color_bitmap(handle);
+  Bitmap<Color> *bm2 = find_color_bitmap(handle2);
+  Bitmap<bool> *bm3 = handle3->bitmap;
+  return add_color_bitmap(e, new BlitBitmapClassMasked2(*bm1, *bm2, x,y, *bm3));
 }
 
 int GameApi::BitmapApi::intvalue(GameApi::BM orig, int x, int y)
@@ -3857,6 +3943,7 @@ void GameApi::ShaderApi::unuse(GameApi::SH shader)
 }
 void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float val)
 {
+  //std::cout << "Set var float" << std::endl;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
@@ -3865,6 +3952,7 @@ void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float val
 
 void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, int val)
 {
+  //std::cout << "Set var int" << std::endl;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
@@ -4447,6 +4535,14 @@ GameApi::ColorApi::ColorApi(Env &e) : e(e) { }
 GameApi::VectorApi::VectorApi(Env &e) : e(e) { }
 GameApi::PointApi::PointApi(Env &e) : e(e) { }
 
+GameApi::CO GameApi::ColorApi::u_color(unsigned int color)
+{
+  return add_color(e, 
+		   (color&0xff0000) >> 16,
+		   (color &0xff00) >> 8,
+		   color &0xff,
+		   (color&0xff000000)>>24);
+}
 GameApi::CO GameApi::ColorApi::rgb_color(int r, int g, int b, int a)
 {
   return add_color(e, r,g,b,a);
@@ -4583,6 +4679,12 @@ private:
   void *ptr;
 };
 
+GameApi::BB GameApi::BoolBitmapApi::from_float_bitmap(FB float_bm, float range_start, float range_end)
+{
+  FloatBitmap *fb = find_float_bitmap(e, float_bm);
+  Bitmap<float> *bm = fb->bitmap;
+  return add_bool_bitmap(e, new BoolBitmapFromFloatBitmap2(*bm, range_start, range_end));
+}
 
 GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, bool (*fptr)(GameApi::EveryApi &ev, int, int, int,int, void*), void *ptr)
 {
@@ -4592,6 +4694,31 @@ GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, bool (*fptr)(
   EnvImpl *env = EnvImpl::Environment(&e);
   env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
   return add_bool_bitmap(e,new EquivalenceClassFromArea<bool(*)(GameApi::EveryApi &ev, int,int,int,int, void*)>(*ev, *color_bm, fptr, ptr));
+}
+
+struct RangeData
+{
+  int r_start, r_end;
+  int g_start, g_end;
+  int b_start, b_end;
+  int a_start, a_end;
+};
+
+bool range_select_color_area(GameApi::EveryApi &ev, int r, int g, int b,int a, void* dt)
+{
+  RangeData *data = (RangeData*)dt;
+  if (r<data->r_start || r>data->r_end) { return false; }
+  if (g<data->g_start || g>data->g_end) { return false; }
+  if (b<data->b_start || b>data->b_end) { return false; }
+  if (a<data->a_start || a>data->a_end) { return false; }
+  return true;
+}
+GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, int r_start, int r_end, int g_start, int g_end, int b_start, int b_end, int a_start, int a_end)
+{
+  RangeData data = { r_start, r_end, g_start, g_end, b_start, b_end, a_start, a_end };
+  RangeData *dt2 = new RangeData;
+  *dt2 = data;
+  return from_bitmaps_color_area(bm, range_select_color_area, (void*)dt2);
 }
 
 GameApi::BB GameApi::BoolBitmapApi::circle(BB bg, float center_x, float center_y, float radius)
@@ -5351,6 +5478,21 @@ private:
   void *data;
 };
 
+GameApi::VV GameApi::StateChangeApi::prepareloop(float *array, int arraysize,
+						P (*fptr)(EveryApi &e, float val, void *cb), void *cb, float step_duration)
+{
+  if (arraysize<2) { std::cout << "Error: arraysize<2" << std::endl; GameApi::VV v; return v; }
+  TR t = init(1);
+  for(int i=0;i<arraysize-1;i++)
+    {
+      float val1 = array[i];
+      float val2 = array[i+1];
+      t = linear(t, 0, fptr, val1, val2, step_duration, cb);
+    }
+  VV v = prepare(t);
+  return v;
+}
+
 GameApi::TR GameApi::StateChangeApi::linear(TR tr, int path_num, P (*fptr)(EveryApi &e, float val, void *cb), float start_v, float end_v, float duration, void *cb)
 {
   TROArray *arr = find_timerange(e, tr);
@@ -5789,4 +5931,147 @@ GameApi::M GameApi::MatrixApi::mult(M m1, M m2)
   Matrix ma = mat2a->get_matrix();
   Matrix mb = mat2b->get_matrix();
   return add_matrix(e, new SimpleMatrix(ma * mb));
+}
+GameApi::PT GameApi::MatrixApi::mult(PT point, M matrix)
+{
+  MatrixInterface *mat2a = find_matrix(e, matrix);
+  Matrix ma = mat2a->get_matrix();
+  Point *pt = find_point(e, point);
+  
+  Point p2 = (*pt) * ma;
+  return add_point(e, p2.x,p2.y,p2.z);
+}
+
+class EmptyMove : public Array<int, ObjectWithPos>
+{
+public:
+  EmptyMove(int s) : s(s) { }
+  ObjectWithPos Index(int i) const
+  {
+    ObjectWithPos p;
+    GameApi::P pp;
+    GameApi::M m;
+    pp.id = 0;
+    m.id = 0;
+    p.obj = pp;
+    p.m = m;
+    return p;
+  }
+  int Size() const { return s; }
+private:
+  int s;
+};
+
+class AddObjectMove : public Array<int,ObjectWithPos>
+{
+public:
+  AddObjectMove(Array<int,ObjectWithPos> &arr, int index, GameApi::P coll) : arr(arr), index(index), coll(coll) { }
+  int Size() const { return arr.Size(); }
+  ObjectWithPos Index(int i) const
+  {
+    if (i==index) { 
+      ObjectWithPos p;
+      p.obj = coll;
+      p.m = arr.Index(i).m;
+      return p;
+    }
+    return arr.Index(i);
+  }  
+private:
+  Array<int,ObjectWithPos> &arr;
+  int index;
+  GameApi::P coll;
+};
+class PosMove : public Array<int,ObjectWithPos>
+{
+public:
+  PosMove(Array<int,ObjectWithPos> &arr, int index, GameApi::M m) : arr(arr), index(index), m(m) { }
+  int Size() const { return arr.Size(); }
+  ObjectWithPos Index(int i) const
+  {
+    if (i==index) { 
+      ObjectWithPos p;
+      p.obj = arr.Index(i).obj;
+      p.m = m;
+      return p;
+    }
+    return arr.Index(i);
+  }
+private:
+  Array<int, ObjectWithPos> &arr;
+  int index;
+  GameApi::M m;
+};
+
+#if 0
+class VertexMove : public Array<int, ObjectWithPos>
+{
+public:
+  int Size() const { return arr.Size(); }
+  ObjectWithPos Index(int i) const
+  {
+  }
+};
+#endif
+
+//  std::vector<Array<ObjectWithPos> *> object_move;
+GameApi::OM GameApi::ObjectMoveApi::empty(int numobjects)
+{
+  return add_move(e, new EmptyMove(numobjects));
+}
+GameApi::OM GameApi::ObjectMoveApi::add_object(OM orig, int index, P obj)
+{
+  Array<int, ObjectWithPos> *arr = find_move(e, orig);
+  return add_move(e, new AddObjectMove(*arr, index, obj));
+}
+GameApi::OM GameApi::ObjectMoveApi::clear_object(OM orig, int index)
+{
+  P p;
+  p.id = 0;
+  Array<int, ObjectWithPos> *arr = find_move(e, orig);
+  return add_move(e, new AddObjectMove(*arr, index, p));
+}
+GameApi::OM GameApi::ObjectMoveApi::change_pos(OM orig, int index, M mat)
+{
+  Array<int, ObjectWithPos> *arr = find_move(e, orig);
+  return add_move(e, new PosMove(*arr, index, mat));
+}
+GameApi::VAA GameApi::ObjectMoveApi::prepare_all(OM orig)
+{
+  PolygonApi poly(e);
+  Array<int, ObjectWithPos> *arr = find_move(e, orig);
+  int s = arr->Size();
+  std::vector<VertexArrayWithPos> *vec = new std::vector<VertexArrayWithPos>;
+  for(int i=0;i<s;i++)
+    {
+      ObjectWithPos p = arr->Index(i);
+      GameApi::VA va = poly.create_vertex_array(p.obj);
+      VertexArrayWithPos pos;
+      pos.va = va;
+      pos.m = p.m;
+      vec->push_back(pos);
+    }
+  return add_move_array(e, vec);
+}
+void GameApi::ObjectMoveApi::render_all(GameApi::VAA va)
+{
+  PolygonApi poly(e);
+  std::vector<VertexArrayWithPos> *vec = find_move_array(e, va);
+  int s = vec->size();
+  for(int i=0;i<s;i++)
+    {
+      VertexArrayWithPos p = (*vec)[i];
+      MatrixInterface *m = find_matrix(e, p.m);
+      Matrix mm = m->get_matrix();
+      glPushMatrix();
+      float mat[16] = { mm.matrix[0], mm.matrix[4], mm.matrix[8], mm.matrix[12],
+			mm.matrix[1], mm.matrix[5], mm.matrix[9], mm.matrix[13],
+			mm.matrix[2], mm.matrix[6], mm.matrix[10], mm.matrix[14],
+			mm.matrix[3], mm.matrix[7], mm.matrix[11], mm.matrix[15] };
+      
+      glMultMatrixf(&mat[0]);
+
+      poly.render_vertex_array(p.va);
+      glPopMatrix();
+    }
 }

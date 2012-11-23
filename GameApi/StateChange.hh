@@ -93,7 +93,8 @@ private:
 class TROArray
 { // this is 2d data structure
 public:
-  TROArray(int paths) { vec.resize(paths); 
+  TROArray(int paths) { 
+    vec.resize(paths); 
     for(int i=0;i<paths;i++) vec[i] = NULL;
   }
   TROArray(const TROArray &arr) : vec(arr.vec)
@@ -103,6 +104,7 @@ public:
   void push_back(int path, TimeRange<T> *tr, Renderer<T> *rend)
   {
     if (!vec[path]) { vec[path] = new std::vector<TimeRangeObjects*>; }
+    // if we get error in this line, then check change_api.init(x)'s number x.
     vec[path]->push_back(new TRO<T>(tr,rend));
   }
   TROArray *copy()
@@ -122,13 +124,13 @@ public:
     int s = arr.vec.size();
     for(int i=0;i<s;i++)
       {
-	//std::cout << "i:" << i << std::endl;
+	std::cout << "i:" << i << std::endl;
 	vec.push_back(new std::vector<Pair>());
 	int s2 = arr.vec[i]->size();
 	float time = 0.0;
 	for(int j=0;j<s2;j++)
 	  {
-	    //std::cout << "j:" << j << std::endl;
+	    std::cout << "j:" << j << " " << time << std::endl;
 	    FaceCollection *coll = (*(arr.vec[i]))[j]->start();
 	    FaceCollection *coll2 = (*(arr.vec[i]))[j]->end();
 	    float d = (*(arr.vec[i]))[j]->duration();
@@ -149,10 +151,15 @@ public:
   }
   void render(float time, Program *prog)
   {
-    Attrib id1 = prog->find_attr("vertex2",0);
-    Attrib id2 = prog->find_attr("normal2",0);
-    Attrib id3 = prog->find_attr("color2",0);
-    Attrib id4 = prog->find_attr("texcoord2",0);
+    Attrib id1a = prog->find_attr("vertex1",0);
+    Attrib id2a = prog->find_attr("normal1",0);
+    Attrib id3a = prog->find_attr("color1",0);
+    Attrib id4a = prog->find_attr("texcoord1",0);
+
+    Attrib id1b = prog->find_attr("vertex2",0);
+    Attrib id2b = prog->find_attr("normal2",0);
+    Attrib id3b = prog->find_attr("color2",0);
+    Attrib id4b = prog->find_attr("texcoord2",0);
     int s = vec.size();
     for(int i=0;i<s;i++)
       {
@@ -161,8 +168,8 @@ public:
 	do {
 	  int pos = current_pair[i];
 	  Pair *p = &(vec[i]->at(pos));
-	  //std::cout << time << " " << p->start_time << " " << p->duration << std::endl;
-	  if (time > p->start_time + p->duration)
+	  //std::cout << i << " " << pos << ":" << time << " " << p->start_time << " " << p->duration << std::endl;
+	  if (time < p->start_time || time > p->start_time + p->duration)
 	    {
 	      current_pair[i]++;
 	      //if (current_pair[i]>=vec[i].size()) break;
@@ -170,9 +177,10 @@ public:
 	    }
 	  float deltatime = time - p->start_time;
 	  float range = deltatime / p->duration;
-	  prog->set_var("range", range);
+	  prog->set_var(std::string("range"), range);
 	  RenderVertexArray2 rend(*p->s1, *p->s2);
-	  rend.render(0, id1.loc, id2.loc, id3.loc, id4.loc);
+	  rend.render(0, id1b.loc, id2b.loc, id3b.loc, id4b.loc,
+		      id1a.loc, id2a.loc, id3a.loc, id4a.loc);
 	  //std::cout << "delta: " << deltatime << "Duration: " << p->duration << " range:" << range << "current_pair:" << current_pair[i] << std::endl;
 	  break;
 
