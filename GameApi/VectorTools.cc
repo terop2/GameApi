@@ -683,10 +683,10 @@ Color::Color(Vector v)
   alpha = 255;
 }
 Color::Color(unsigned int color)
-  : r((color&0xff0000)>>16),
-    g((color&0xff00)>>8),
-    b((color&0xff)>>0),
-        alpha((color&0xff000000)>>24)
+  : r((color&0xff0000u)>>16),
+    g((color&0xff00u)>>8),
+    b((color&0xffu)>>0),
+        alpha((color&0xff000000u)>>24)
 {
 }
 

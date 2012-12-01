@@ -2,6 +2,8 @@
 //V: linear
 
 uniform float range;
+uniform vec3 center1, center2;
+uniform float radius;
 attribute vec3 vertex1;
 attribute vec3 normal1;
 attribute vec4 color1;
@@ -15,7 +17,45 @@ attribute vec2 texcoord2;
 varying vec4 target_color;
 varying vec3 target_normal;
 varying vec2 target_texcoord;
+varying vec2 target_texnormal;
 
+uniform sampler2D tex;
+uniform sampler2D normaltex;
+
+float dist(vec3 center, vec3 point)
+{
+   point -= center;
+   return sqrt(point.x*point.x+point.y*point.y+point.z*point.z);
+}
+
+vec3 Pos(float val, vec3 vertex, vec3 normal) {
+  return vertex+val*normal;
+}
+
+float Solve(vec3 center, float radius, vec3 vertex, vec3 normal)
+{
+  float t = 0.0;
+  for(;t<500.0;)
+  {
+    float Ht = -(dist(center, Pos(t, vertex, normal))-radius);
+    if (Ht < 0.1) return t;
+    t += Ht / 20.0;
+  }
+  return 0.0;
+}
+
+vec2 Angles(vec3 point, vec3 cent)
+{
+  point -= cent;
+  float r = sqrt(point.x*point.x + point.y*point.y + point.z*point.z);
+  float alfa = acos(point.z/r);
+  float beta = atan(point.y, point.z);
+  alfa /= 3.14159;
+  beta /= 2.0*3.14159;
+  alfa += 3.14159/2.0;
+  beta += 3.14159/2.0;
+  return vec2(alfa,beta);
+}
 
 void main(void)
 {
@@ -34,7 +74,9 @@ void main(void)
   target_color = vec4(col2.x*range+col1.x*(1.0-range), col2.y*range+col1.y*(1.0-range), col2.z*range+col1.z*(1.0-range), 1.0);
   target_normal = vec3(normal2.x*range+normal1.x*(1.0-range), normal2.y*range+normal1.y*(1.0-range), col2.z*range+col1.z*(1.0-range));;
 
-  target_texcoord = vec2(100.0*texcoord1.x*(1.0-range)+texcoord2.x*range,100.0*texcoord1.y*(1.0-range)+texcoord2.y*range);
+  target_texcoord = vec2(texcoord1.x*(1.0-range)+texcoord2.x*range,texcoord1.y*(1.0-range)+texcoord2.y*range);
+  vec3 center = mix(center1, center2, range);
+  target_texnormal = Angles(Pos(Solve(center, radius, bb, target_normal.xyz), bb, target_normal.xyz), center);
 }
 
 //F: red
@@ -42,10 +84,13 @@ void main(void)
 varying vec4 target_color;
 varying vec3 target_normal;
 varying vec2 target_texcoord;
+varying vec2 target_texnormal;
 
 uniform sampler2D tex;
-
+uniform sampler2D normaltex;
 void main(void)
 {
-  gl_FragColor = mix(target_color, texture(tex, target_texcoord), 0.5);
+  vec4 ntex = texture(normaltex, target_texnormal);
+  float nval = ntex.x;
+  gl_FragColor = mix(mix(target_color, texture(tex, target_texcoord), 0.2), vec4(1.0,1.0,1.0,1.0), nval);
 }

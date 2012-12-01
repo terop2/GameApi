@@ -1205,20 +1205,23 @@ void PreCalcExecute(Render &rend, FrameAnim &f, float duration, int numframes)
     }
 }
 
-BufferRef LoadImage(std::string filename)
+BufferRef LoadImage(std::string filename, bool &success)
 {
   SDL_Surface *surf = IMG_Load(filename.c_str());
   if (!surf) 
     {
+      success = false;
       std::cout << "Cannot load " << filename << std::endl;
       char *err = IMG_GetError();
       std::cout << "Error: " << err << std::endl;
-      exit(0);
+      BufferRef r;
+      return r;
     }
   SDL_Surface *surf2 = SDL_DisplayFormatAlpha(surf);
   BufferRef ref = CopyFromSDLSurface(surf2);
   SDL_FreeSurface(surf);  
   SDL_FreeSurface(surf2);  
+  success = true;
   return ref;
 }
 BufferRef CopyFromSDLSurface(SDL_Surface *surf)

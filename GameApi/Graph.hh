@@ -6473,7 +6473,7 @@ T Parser::ParseStruct2(std::string s_, bool &success)
   std::cout << "Type: " << typeid(T).name() << std::endl;
   if (cp != currentptr+sizeof(T))
     {
-      std::cout << std::hex << (void*)cp << " " << std::dec << sizeof(T) << std::hex << " " << (void*)currentptr << std::dec << std::endl;
+      //std::cout << std::hex << (void*)cp << " " << std::dec << sizeof(T) << std::hex << " " << (void*)currentptr << std::dec << std::endl;
       std::cout << "Struct Alignment problem" << std::endl;
     }
   DumpMem(currentptr, sizeof(T));

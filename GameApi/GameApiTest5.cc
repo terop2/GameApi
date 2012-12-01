@@ -6,7 +6,9 @@
 #include <GL/gl.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_opengl.h>
-
+#include <vector>
+#include <sstream>
+#include <iomanip>
 
 using namespace GameApi;
 
@@ -14,6 +16,7 @@ using namespace GameApi;
   struct A {
     float val;
     TX tx;
+    int id;
   };
 
 P torus_func(EveryApi &e, float val, void *cb)
@@ -21,10 +24,10 @@ P torus_func(EveryApi &e, float val, void *cb)
   std::cout << "torus_func" << val << std::endl;
   A *cb2 = (A*)cb;
   PT p = e.point_api.point(cb2->val,cb2->val,100.0);
-  //P p0 = e.polygon_api.sphere(p, val, 30, 30);
-  P p0 = e.polygon_api.quad_z(val, val+100.0,
-			      val, val+100.0,
-			      100.0);
+  P p0 = e.polygon_api.sphere(p, val, 30, 30);
+  //P p0 = e.polygon_api.quad_z(val+cb2->val, cb2->val+val+100.0,
+  // 			      val, val+100.0,
+  // 			      100.0);
   P p00;
   if (val>105.0)
     {
@@ -34,11 +37,18 @@ P torus_func(EveryApi &e, float val, void *cb)
     {
       p00 = e.polygon_api.color(p0, 0xffff00ff);
     }
-  P p1 = e.polygon_api.sprite_bind(p00, e.texture_api.get_tex_coord(cb2->tx, 0), cb2->tx);
+  P p1 = e.polygon_api.sprite_bind(p00, e.texture_api.get_tex_coord(cb2->tx, cb2->id), cb2->tx);
   //P p1 = e.polygon_api.scale(p0, 0.05,0.05,0.2);
   //V v = e.vector_api.vector(0.0,-1.0,0.0);
   //P p1 = e.polygon_api.rotate(p00, p, v, 180.0);
   return p1;
+}
+
+float OpenglCenterFunc(int path, std::string name)
+{
+  if (name=="center_x") return 150.0;
+  if (name=="center_y") return 150.0;
+  if (name=="center_z") return 100.0;
 }
 
 void GameTest5(EveryApi &e)
@@ -59,12 +69,20 @@ void GameTest5(EveryApi &e)
   TXID tex = e.texture_api.prepare(tx2);
 
 
+  BM normalmap = e.bitmap_api.loadbitmap("./textures/texture.png");
+  TX tx3 = e.texture_api.tex_plane(128,128);
+  int id3 = e.texture_api.unique_id();
+  TX tx3a = e.texture_api.tex_assign(tx3, id3, 0,0, normalmap);
+  TXID tex3 = e.texture_api.prepare(tx3a);
+
   A val;
   val.val = 0.0;
   val.tx = tx2;
+  val.id = id;
   A val2;
   val2.val = 150.0;
   val2.tx = tx2;
+  val2.id = id;
   TR t = change_api.init(2);
   //float val = 0.0;
   //float val2 = 150.0;
@@ -82,27 +100,48 @@ void GameTest5(EveryApi &e)
   //P p = torus_func(e, 100.0, &val2);
   //VA va = e.polygon_api.create_vertex_array(p);
   
-
+  bool take_screenshot = false;
+  std::vector<BM> vec;
+  int count = 0;
+  int count2 = 0;
   while(1) {
     e.mainloop_api.clear_3d();
     time += 0.1;
-    if (time > 200.0) time = 0.0;
+    count2++;
+    if (count2>10) count2=0;
+    if (time > 200.0) { count++; time = 0.0; }
     //std::cout << "Time:" << time << std::endl;
     glPushMatrix();
     glScalef(0.5,0.5,0.5);
     shader.use(sh);
     //loop.switch_to_3d(true);
     e.shader_api.set_var(sh, "tex", 0);
-
+    e.shader_api.set_var(sh, "normaltex", 1);
+    e.shader_api.set_var(sh, "center", 0.0,0.0,0.0);
+    e.shader_api.set_var(sh, "radius", (float)100.0);
     e.texture_api.use(tex);
-    change_api.render(valval, time, sh);
+    e.texture_api.use(tex3,1);
+    change_api.render(valval, time, sh, &OpenglCenterFunc);
     e.texture_api.unuse(tex);
+    e.texture_api.unuse(tex3);
     shader.unuse(sh);
     //e.polygon_api.render_vertex_array(vertex);
     glPopMatrix();
+    if (count==0 && count2==0 && take_screenshot)
+      vec.push_back(e.mainloop_api.screenshot());
     e.mainloop_api.swapbuffers();
     MainLoopApi::Event ev = e.mainloop_api.get_event();
     if (ev.ch==27) break;
   }
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      std::cout << "Saving: BM" << i << ".xpm"<< std::endl;
+      std::stringstream s;
+      s << "pics/BM";
+      s << std::setw(4) << std::setfill('0') << i;
+      s << ".xpm";
+      e.bitmap_api.savebitmap(e.bitmap_api.subbitmap(vec[i], 300,200, 400,400), s.str());
+    }
   shader.unuse(sh);
 }

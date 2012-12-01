@@ -108,6 +108,7 @@ public:
   float get_time();
   int get_framenum();
   void swapbuffers();
+  BM screenshot();
   struct Event
   {
     int type;
@@ -159,7 +160,7 @@ public:
   TX tex_coord(TX tx, int id, int x, int y, int width, int height);
   Q get_tex_coord(TX tx, int id);
   TXID prepare(TX tx);
-  void use(TXID tx);
+  void use(TXID tx, int i=0);
   void unuse(TXID tx);
 private:
   Env &e;
@@ -221,6 +222,7 @@ public:
 		int sx, int sy,
 		int count);
   BM memoize(BM orig);
+  BM memoize_all(BM orig);
   int intvalue(BM bm, int x, int y);
   unsigned int colorvalue(BM bm, int x, int y);
   int size_x(BM bm);
@@ -831,10 +833,30 @@ public:
 		P (*fptr)(EveryApi &e, float val, void*cb), void *cb,
 		float step_duration);
   void render(VV sc, float time, SH shadero);
+  void render(VV sc, float time, SH shadero, float (*fptr)(int path, std::string name));
 private:
   Env &e;
   ShaderApi &api;
 };
+
+#if 0
+class Skeletal2dApi
+{
+public:
+  Skeletal2dApi(Env &e) : e(e) { }
+  SPT empty(char id, PT pos);
+  int move_id();
+  SPT dir(char id, SPT prev, V vec);
+  SPT dir(char id, SPT prev, V vec, float start_range, float end_range, int move_id);
+  SPT rot(char id, SPT prev, float radius, float angle);
+  SPT rot(char id, SPT prev, float radius, float angle_range_start, float angle_range_end, int move_id);
+  SPT change_move(SPT prev, int move_id, float value);
+  SPTARR collect(SPT *array, int size);
+  PT point(SPTARR arr, std::string path);
+private:
+  Env &e;
+};
+#endif
 
 class PlaneApi
 { // 2d coordinates in PT
@@ -1335,6 +1357,7 @@ public:
 		 std::string s_color,
 		 std::string s_texcoord);
   void set_var(GameApi::SH shader, std::string name, float val);
+  void set_var(GameApi::SH shader, std::string name, float x, float y, float z);
   void set_var(GameApi::SH shader, std::string name, int val);
 private:
   friend class StateChangeApi;

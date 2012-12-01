@@ -28,6 +28,9 @@
 #include "Web.hh"
 #include <iostream>
 
+
+GameApi::BM add_color_bitmap2(GameApi::Env &e, Bitmap<Color> *bm);
+
 struct TexCoordQuad
 {
   Point2d p1;
@@ -293,6 +296,18 @@ float GameApi::MainLoopApi::get_time()
 int GameApi::MainLoopApi::get_framenum()
 {
   return frame;
+}
+GameApi::BM GameApi::MainLoopApi::screenshot()
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  SDL_Surface *surf = p->screen;
+  int w = surf->w;
+  int h = surf->h;
+
+  BufferRef ref = BufferRef::NewBuffer(w,h);
+  glReadPixels(0,0,w,h, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
+  Bitmap<Color> *bm = new BitmapFromBuffer(ref);
+  return add_color_bitmap2(e, bm);
 }
 void GameApi::MainLoopApi::swapbuffers()
 {
@@ -2031,6 +2046,16 @@ GameApi::BM GameApi::BitmapApi::memoize(GameApi::BM bm)
   return add_color_bitmap(e, new MemoizeBitmap(*bitmap));
 }
 
+GameApi::BM GameApi::BitmapApi::memoize_all(GameApi::BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<Color> *bitmap = find_color_bitmap(handle);
+  MemoizeBitmap *membitmap = new MemoizeBitmap(*bitmap);
+  membitmap->MemoizeAll();
+  return add_color_bitmap(e, membitmap);
+}
+
+
 GameApi::BM GameApi::BitmapApi::mandelbrot(bool julia,
 		float start_x, float end_x,
 		float start_y, float end_y,
@@ -2067,7 +2092,7 @@ GameApi::BM GameApi::BitmapApi::newtilebitmap(int sx, int sy, int tile_sx, int t
   
 }
 
-BufferRef LoadImage(std::string filename);
+BufferRef LoadImage(std::string filename, bool &success);
 
 void GameApi::BitmapApi::savebitmap(BM bm, std::string filename)
 {
@@ -2084,7 +2109,9 @@ GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
 {
 
   //ChessBoardBitmap *bmp = new ChessBoardBitmap(Color(255,0.0,0.0), Color(255,255,255), 8, 8, 30, 30);
-  BufferRef img = LoadImage(filename);
+  bool b = false;
+  BufferRef img = LoadImage(filename, b);
+  if (b==false) { GameApi::BM bm; bm.id = -1; return bm; }
   EnvImpl *env = EnvImpl::Environment(&e);
   env->deletes.push_back(std::tr1::shared_ptr<void>(img.buffer, &ArrayDelete<unsigned int>));
 
@@ -2098,7 +2125,8 @@ GameApi::BM GameApi::BitmapApi::loadtilebitmap(std::string filename, int sx, int
 {
 
   //ChessBoardBitmap *bmp = new ChessBoardBitmap(Color(255,0.0,0.0), Color(255,255,255), 8, 8, 30, 30);
-  BufferRef img = LoadImage(filename);
+  bool b = false;
+  BufferRef img = LoadImage(filename, b);
   EnvImpl *env = EnvImpl::Environment(&e);
   env->deletes.push_back(std::tr1::shared_ptr<void>(img.buffer, &ArrayDelete<unsigned int>));
   BitmapFromBuffer *buf = new BitmapFromBuffer(img);  
@@ -3950,6 +3978,16 @@ void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float val
   prog->set_var(name, val);
 }
 
+void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float x, float y, float z)
+{
+  //std::cout << "Set var float" << std::endl;
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[shader.id]);
+  Point px(x, y, z);
+  prog->set_var(name, px);
+}
+
 void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, int val)
 {
   //std::cout << "Set var int" << std::endl;
@@ -5515,6 +5553,14 @@ void GameApi::StateChangeApi::render(VV v, float time, SH shader)
   VArray *arr = find_timerange_vertexarray(e, v);
   arr->render(time, prog);
 }
+void GameApi::StateChangeApi::render(VV v, float time, SH shader, float (*fptr)(int path, std::string name))
+{
+  ShaderPriv2 *p = (ShaderPriv2*)api.priv;
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[shader.id]);
+  VArray *arr = find_timerange_vertexarray(e, v);
+  arr->render(time, prog, fptr);
+}
 
 GameApi::StateChangeApi::StateChangeApi(GameApi::Env &e, GameApi::ShaderApi &api)
 : e(e),api(api) { }
@@ -5585,11 +5631,11 @@ GameApi::TXID GameApi::TextureApi::prepare(TX tx)
   return id2;
 }
 
-void GameApi::TextureApi::use(TXID tx)
+void GameApi::TextureApi::use(TXID tx, int i)
 {
   glEnable(GL_TEXTURE_2D);
-  glClientActiveTexture(GL_TEXTURE0+0);
-  glActiveTexture(GL_TEXTURE0+0);
+  glClientActiveTexture(GL_TEXTURE0+i);
+  glActiveTexture(GL_TEXTURE0+i);
   glBindTexture(GL_TEXTURE_2D, tx.id);
 }
 void GameApi::TextureApi::unuse(TXID tx)
