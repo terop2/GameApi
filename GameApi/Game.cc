@@ -110,7 +110,8 @@ bool GameEffect::Frame(float time)
 
 void TunnelWall::Init()
 {
-  BufferRef buf1 = LoadImage(filename);
+  bool b;
+  BufferRef buf1 = LoadImage(filename, b);
   BitmapFromBuffer buf2(buf1);
   ContinuousBitmapFromBitmap<Color> buf3(buf2, 1.0, 1.0);
   BitmapFromContinuousBitmap<Color> buf4(buf3, 512, 512);

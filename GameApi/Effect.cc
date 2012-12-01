@@ -781,7 +781,8 @@ bool CubeEffect::Frame(float time)
 MoleculeEffect::MoleculeEffect(Render *r)
   : FrameAnimPlugins(r)
 {
-  BufferRef buf1 = LoadImage("./textures/texture_carpet2.jpeg");
+  bool b;
+  BufferRef buf1 = LoadImage("./textures/texture_carpet2.jpeg", b);
   BitmapFromBuffer buf2(buf1);
   ContinuousBitmapFromBitmap<Color> buf3(buf2, 1.0, 1.0);
   BitmapFromContinuousBitmap<Color> buf4(buf3, 512, 512);
@@ -1307,7 +1308,8 @@ bool TestEffect::Frame(float time)
 
     
 #endif
-    BufferRef buf1 = LoadImage("./textures/texture_carpet3.jpeg");
+    bool b;
+    BufferRef buf1 = LoadImage("./textures/texture_carpet3.jpeg", b);
     BitmapFromBuffer buf2(buf1);
     ContinuousBitmapFromBitmap<Color> buf3(buf2, 1.0, 1.0);
     BitmapFromContinuousBitmap<Color> buf4(buf3, 512, 512);
@@ -1344,7 +1346,8 @@ bool HeightMapEffect::Frame(float time)
 BlobEffect::BlobEffect(Render *r)
   : FrameAnimPlugins(r)
 {
-  BufferRef buf1 = LoadImage("./textures/texture_carpet1.jpeg");
+  bool b;
+  BufferRef buf1 = LoadImage("./textures/texture_carpet1.jpeg", b);
   BitmapFromBuffer buf2(buf1);
   ContinuousBitmapFromBitmap<Color> buf3(buf2, 1.0, 1.0);
   BitmapFromContinuousBitmap<Color> buf4(buf3, 512, 512);

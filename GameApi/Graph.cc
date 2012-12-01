@@ -58,7 +58,8 @@ void RenderVoxel(VolumeObject &orv, int size, float wholesize, HandleValue<std::
 VoxelEffect::VoxelEffect(Render *r)
   : FrameAnimPlugins(r)
 {
-  BufferRef buf1 = LoadImage("./textures/texture_carpet2.jpeg");
+  bool b;
+  BufferRef buf1 = LoadImage("./textures/texture_carpet2.jpeg", b);
   BitmapFromBuffer buf2(buf1);
   ContinuousBitmapFromBitmap<Color> buf3(buf2, 1.0, 1.0);
   BitmapFromContinuousBitmap<Color> buf4(buf3, 512, 512);
@@ -214,7 +215,8 @@ void FaceCollectionHandleValueDynamic::DrawVBO(VBOState &vbostate, VBOUpdate u)
 MapEffect::MapEffect(Render *r) : FrameAnimPlugins(r), mapfunc("./maps/map1.txt", mapfunc1, 5,6),
 			 colorfunc("./maps/map1.txt", colorfunc1, 5,6) 
 { 
-  BufferRef buf1 = LoadImage("./textures/texture_carpet2.jpeg");
+  bool b;
+  BufferRef buf1 = LoadImage("./textures/texture_carpet2.jpeg", b);
   BitmapFromBuffer buf2(buf1);
   ContinuousBitmapFromBitmap<Color> buf3(buf2, 1.0, 1.0);
   BitmapFromContinuousBitmap<Color> buf4(buf3, 512, 512);
@@ -340,7 +342,8 @@ RenderToTextureEffect::RenderToTextureEffect(Render *r)
     col(trans, Color(255,255,255,255)),
     disp(col)
 {
-  BufferRef buf1 = LoadImage("./textures/texture_carpet2.jpeg");
+  bool b;
+  BufferRef buf1 = LoadImage("./textures/texture_carpet2.jpeg", b);
   BitmapFromBuffer buf2(buf1);
   ContinuousBitmapFromBitmap<Color> buf3(buf2, 1.0, 1.0);
   BitmapFromContinuousBitmap<Color> buf4(buf3, 512, 512);

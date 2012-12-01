@@ -2681,5 +2681,125 @@ public:
 };
 
 
+template<class T, class C>
+class PullbackMinus : public Function<T,C>
+{
+public:
+  PullbackMinus(Function<T,C> &c1, Function<T,C> &c2) : c1(c1),c2(c2)
+  {
+  }
+  C Index(T t) const { return c1.Index(t)-c2.Index(t); }
+private:
+  Function<T,C> &c1;
+  Function<T,C> &c2;
+};
+
+
+/* THIS IS WORKING PULLBACK with T=float, C=float! */
+template<class T, class A, class B, class C>
+class Pullback
+{
+public:
+  Pullback(Function<A,C> &f1, Function<B,C> &f2,
+	   Function<T,A> &p1, Function<T,B> &p2) : f1(f1), f2(f2),p1(p1),p2(p2), compose1(p1,f1), compose2(p2,f2), minus(compose1, compose2) { }
+  T Solve(T t_0, T t_1, bool &success) const
+  {
+    success = false;
+    T val = SolveWithFailure(minus, t_0, t_1, success);
+    if (success) return val;
+    return T();
+  }
+
+private:
+  Function<A,C> &f1;
+  Function<B,C> &f2;
+  Function<T,A> &p1;
+  Function<T,B> &p2;
+  FunctionCompose<T,A,C> compose1;
+  FunctionCompose<T,B,C> compose2;
+  PullbackMinus minus;
+};
+
+class DistanceFunction : public Function<Point,float>
+{
+public:
+  DistanceFunction(Point center) : center(center) { }
+  float Index(Point p) const { p-=center; return sqrt(p.x*p.x+p.y*p.y+p.z*p.z); }
+private:
+  Point center;
+};
+class ConstantFunction : public Function<void, float>
+{
+public:
+  ConstantFunction(float val) : val(val) { }
+  float Index(void) const { return val; }
+};
+class PointIdentity : public Function<float,Point>
+{
+public:
+  PointIdentity(Point p1, Vector v) : p1(p1), v(v) { }
+  Point Index(float p) const { return p1+v*p; }
+private:
+  Point p1;
+  Vector v;
+};
+class PointExclam : public Function<Point, void>
+{
+public:
+  void Index(Point p) const { }
+};
+class SpherePullback : public Pullback<float, Point, void, float>
+{
+public:
+  SpherePullback(Point ray_p1, Vector ray_v, Point center, float val) : Pullback<float,Point,void,float>(dist, cx, id, exc), dist(center), id(ray_p1,ray_v), cx(val) { }
+  float Solve(float p1, float p2, bool &success) const
+  {
+    return Pullback<float,Point,void,float>::Solve(p1,p2,success);
+  }
+private:
+  DistanceFunction dist;
+  ConstantFunction cx;
+  PointIdentity id;
+  PointExclam exc;
+};
+
+class BlobPullback : public Pullback<float, Point, Point, float>
+{
+public:
+  
+private:
+  DistanceFunction dist1, dist2;
+  PointIdentity ray1, ray2;
+};
+
+
+//
+// Volumes and surfaces
+//
+template<class T>
+class VolumeToSurface : public Function<Point2d, float>
+{
+public:
+  VolumeToSurface(Function<Point2d, Point> &surface,
+		  Function<Point, T> &object) : surface(surface), object(object)
+  {
+  }
+  float Index(Point2d p) const
+  {
+    return object.Index(surface.Index(p));
+  }
+private:
+  Function<Point2d, Point> &surface;
+  Function<Point,T> &object;
+};
+
+class XYPlane : public Function<Point2d, Point>
+{
+public:
+  XYPlane(float z) : z(z) { }
+  Point Index(Point2d p) const { return Point(p.x,p.y,z); }
+private:
+  float z;
+};
 #endif
 

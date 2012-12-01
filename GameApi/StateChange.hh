@@ -114,6 +114,7 @@ public:
 public:
   std::vector<std::vector<TimeRangeObjects*> *> vec;
 };
+float EmptyOpenglFunc(int path, std::string name);
 
 class VArray
 {
@@ -130,7 +131,7 @@ public:
 	float time = 0.0;
 	for(int j=0;j<s2;j++)
 	  {
-	    std::cout << "j:" << j << " " << time << std::endl;
+	    //std::cout << "j:" << j << " " << time << std::endl;
 	    FaceCollection *coll = (*(arr.vec[i]))[j]->start();
 	    FaceCollection *coll2 = (*(arr.vec[i]))[j]->end();
 	    float d = (*(arr.vec[i]))[j]->duration();
@@ -149,7 +150,12 @@ public:
 	current_pair.push_back(0);
       }
   }
+ 
   void render(float time, Program *prog)
+  {
+    render(time, prog, &EmptyOpenglFunc);
+  }
+  void render(float time, Program *prog, float (*fptr)(int path, std::string name))
   {
     Attrib id1a = prog->find_attr("vertex1",0);
     Attrib id2a = prog->find_attr("normal1",0);
@@ -178,6 +184,7 @@ public:
 	  float deltatime = time - p->start_time;
 	  float range = deltatime / p->duration;
 	  prog->set_var(std::string("range"), range);
+	  prog->set_var(std::string("center"), Point(fptr(i, std::string("center_x")), fptr(i, std::string("center_y")), fptr(i, std::string("center_z"))));
 	  RenderVertexArray2 rend(*p->s1, *p->s2);
 	  rend.render(0, id1b.loc, id2b.loc, id3b.loc, id4b.loc,
 		      id1a.loc, id2a.loc, id3a.loc, id4a.loc);
@@ -195,7 +202,19 @@ private:
     float start_time;
     float duration;
   };
+#if 0
+  struct Assign
+  {
+    std::string name;
+    float value;
+  };
+  struct AssignArray
+  {
+    std::vector<Assign> vec;
+  };
+#endif
   std::vector<std::vector<Pair> *> vec;
   std::vector<int> current_pair;
+
   TROArray &arr;
 };
