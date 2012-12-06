@@ -163,6 +163,7 @@ class ScaleFontCharacter : public FontCharacter
 {
 public:
   ScaleFontCharacter(const FontCharacter &orig, float scalex, float scaley) : orig(orig), scalex(scalex), scaley(scaley) { }
+  virtual ~ScaleFontCharacter() { }
   virtual int NumLoops() const { return orig.NumLoops(); }
   virtual int NumPoints(int loop) const { return orig.NumPoints(loop); }
   virtual Point2d LoopPoint(int loop, int point) const

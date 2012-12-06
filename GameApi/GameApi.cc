@@ -424,6 +424,7 @@ public:
   virtual int Index(int path, float f) const=0;
   virtual float Duration() const=0;
   virtual int NumPaths() const=0;
+  virtual ~AnimInt() { }
 };
 class SingleAnimInt : public AnimInt
 {
@@ -459,6 +460,7 @@ public:
   virtual Point Index(int path, float f) const=0;
   virtual float Duration() const=0;
   virtual int NumPaths() const=0;
+  virtual ~AnimPoint3d() { }
 };
 
 class SingleAnimPoint : public AnimPoint3d
@@ -495,6 +497,7 @@ public:
   virtual float Index(int path, float f) const=0;
   virtual float Duration() const=0;
   virtual int NumPaths() const=0;
+  virtual ~AnimFloat() { }
 };
 
 
@@ -698,8 +701,16 @@ GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   if (val & SDL_BUTTON(1)) { e2.button = 0; }
   if (val & SDL_BUTTON(2)) { e2.button = 1; }
   if (val & SDL_BUTTON(3)) { e2.button = 2; }
-   
+  SDL_Joystick *joy1 = SDL_JoystickOpen(0);
+  unsigned int but1 = SDL_JoystickGetButton(joy1, 0);  
+  unsigned int but2 = SDL_JoystickGetButton(joy1, 1);
+  unsigned int but3 = SDL_JoystickGetButton(joy1, 2);
+  unsigned int but4 = SDL_JoystickGetButton(joy1, 3);
   //std::cout << e.type << " " << e.ch << std::endl;
+  e2.joy1_button0 = but1==1;
+  e2.joy1_button1 = but2==1;
+  e2.joy1_button2 = but3==1;
+  e2.joy1_button3 = but4==1;
   return e2;
 }
 
@@ -4408,7 +4419,7 @@ void GameApi::PolygonApi::get_tri_vertex_array(P p, int choose, int row,
   int c_choose = choose;
   int t_choose = choose;
   ArrayRender *rend = state_bm->GetRender(row);
-  Matrix m = state_bm->GetMatrix(choose);
+  //Matrix m = state_bm->GetMatrix(choose);
   int v_offset3 = vertex_pos*3+v_choose*rend->vertex_array_size*3;
   int n_offset3 = vertex_pos*3+n_choose*rend->vertex_array_size*3;
   int c_offset =  vertex_pos+c_choose*rend->vertex_array_size;
@@ -5313,6 +5324,12 @@ GameApi::BM GameApi::ContinuousBitmapApi::sample(CBM c_bitmap, int sx, int sy) /
   ContinuousBitmap<Color> *cbm = find_continuous_bitmap(e, c_bitmap);
   return add_color_bitmap(e, new SampleBitmap(*cbm, sx, sy));
 }
+GameApi::CBM GameApi::ContinuousBitmapApi::rotate(CBM c_bitmap, float center_x, float center_y, float angle)
+{
+  ContinuousBitmap<Color> *cbm = find_continuous_bitmap(e, c_bitmap);
+  return add_continuous_bitmap(e, new RotateContinuousBitmap<Color>(cbm, center_x, center_y, angle));
+  
+}
 
 GameApi::BM GameApi::ContinuousBitmapApi::to_bitmap(CBM bm, int sx, int sy)
 {
@@ -5519,7 +5536,7 @@ private:
 GameApi::VV GameApi::StateChangeApi::prepareloop(float *array, int arraysize,
 						P (*fptr)(EveryApi &e, float val, void *cb), void *cb, float step_duration)
 {
-  if (arraysize<2) { std::cout << "Error: arraysize<2" << std::endl; GameApi::VV v; return v; }
+  if (arraysize<2) { std::cout << "Error: arraysize<2" << std::endl; GameApi::VV v; v.id = 0; return v; }
   TR t = init(1);
   for(int i=0;i<arraysize-1;i++)
     {

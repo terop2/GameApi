@@ -84,21 +84,21 @@ void CreateHtml()
   c3.b = 0;
   //ConstantBitmap<Color> cb(c,5,5);
   //ConstantBitmap<Color> cb2(c2,5,5);
-  Point2d center;
-  center.x = 10;
-  center.y = 10;
+  //Point2d center;
+  //center.x = 10;
+  //center.y = 10;
   //BitmapCircle bc(center, 10.0,21,21);
   ColorChooseFunction cf(c,c2);
 
-  Point2d p1,p2,p3,p4;
-  p1.x = 3;
-  p1.y = 5;
+  Point2d /*p1, */ p2,p3; //,p4;
+  //p1.x = 3;
+  //p1.y = 5;
   p2.x = 5;
   p2.y = 20;
   p3.x = 20;
   p3.y = 0;
-  p4.x = 15;
-  p4.y = 20;
+  //p4.x = 15;
+  //p4.y = 20;
   //TriangleContinuousBitmap tri(21,21,p1,p2,p3);
   /*
   QuadPointCollection2d tr(p1,p2,p3,p4);

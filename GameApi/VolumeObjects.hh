@@ -538,6 +538,7 @@ public:
     if (b1 && !b2) return false;
     if (!b1 && b2) return true;
     if (!b1 && !b2) return true;
+    return false;
   }
   Color ColorValue(Point v) const
   { 
@@ -560,6 +561,7 @@ public:
     if (b1 && !b2) return false;
     if (!b1 && b2) return false;
     if (!b1 && !b2) return true;
+    return false;
   }
   Color ColorValue(Point v) const
   { 

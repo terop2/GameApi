@@ -128,6 +128,7 @@ public:
   virtual int SizeX() const=0;
   virtual int SizeY() const=0;
   virtual C Map(int x, int y) const=0;
+  virtual ~Bitmap() { }
 };
 typedef Bitmap<Color> ColorBitmap;
 typedef Bitmap<Point> PointBitmap;
@@ -435,6 +436,7 @@ public:
   virtual std::vector<I> Count() const=0;
   virtual B Map(I *array, int size) const=0;
   virtual NDim<I,B> *Interpolate(const NDim<I,B> &b1, const NDim<I,B> &b2, I val) const=0;
+  virtual ~NDim() { }
 };
 
 
@@ -1853,6 +1855,32 @@ public:
   virtual C Map(float x, float y) const=0;
 };
 
+template<class C>
+class RotateContinuousBitmap : public ContinuousBitmap<C>
+{
+public:
+  RotateContinuousBitmap(ContinuousBitmap<C> *orig, float center_x, float center_y, float angle) : orig(orig), center_x(center_x), center_y(center_y), angle(angle) { }
+  virtual float SizeX() const { return orig->SizeX(); }
+  virtual float SizeY() const { return orig->SizeY(); }
+  virtual C Map(float x, float y) const
+  {
+    x-=center_x;
+    y-=center_y;
+    float xx = cos(angle)*x + sin(angle)*y;
+    float yy = -sin(angle)*x + cos(angle)*y;
+    xx+=center_x;
+    yy+=center_y;
+    if (xx >= 0.0 && xx<orig->SizeX())
+      if (yy >=0.0 && yy<orig->SizeY())
+	return orig->Map(xx,yy);
+    return C();
+  }
+private:
+  ContinuousBitmap<C> *orig;
+  float center_x, center_y;
+  float angle;
+};
+
 typedef ContinuousBitmap<Color> ContinuousColorBitmap;
 
 template<class T>
@@ -2489,6 +2517,7 @@ public:
   virtual int SizeY() const=0;
   virtual int SizeZ() const=0;
   virtual C Map(int x, int y, int z) const=0;
+  virtual ~Voxel() { }
 };
 typedef Voxel<Quad> QuadVoxel;
 
@@ -2753,6 +2782,7 @@ public:
   virtual float SizeY() const=0;
   virtual float SizeZ() const=0;
   virtual C Map(float x, float y, float z) const=0;
+  virtual ~ContinuousVoxel() { }
 };
 
 class RayTracingFunction0 : public Function<float, Point>
@@ -5591,6 +5621,7 @@ public:
   virtual int YSize(int frame) const=0;
   virtual Point2d Pos(int frame) const=0;
   virtual Color Pixel(int frame, int x, int y) const=0;
+  virtual ~Sprite() { }
 };
 class BitmapSprite : public Sprite
 {
@@ -6852,6 +6883,8 @@ public:
 		      color_val_b.Map(x,y), color_val_a.Map(x,y),
 		      tex_val_tx.Map(x,y), tex_val_ty.Map(x,y));	
       }
+    Color c;
+    return c;
   }
   virtual Color TexMap(int face, float r, float g, float b, float a, float tx, float ty) const
   {

@@ -71,6 +71,9 @@ namespace GameApi
   struct DO { int id; };
   struct PC { int id; };
   struct SV { int id; };
+  //template<class T>
+  //struct E { int id; };
+
 
   template<class P, class R>
   class FunctionCb
@@ -90,7 +93,22 @@ public:
   void *envimpl;
   friend struct EnvImpl;
 };
-
+#if 0
+class ExecutionApi
+{
+public:
+  template<class T>
+  E<T> empty(T t);
+  template<class T, class K>
+  E<K> execute1(E<T> e, K (*fptr)(T));
+  template<class T, class K>
+  E<K> execute2(E<T> e, K (*fptr)(T, void*), void *data=NULL);
+  template<class T, class K>
+  std::vector<E<K>> loop(E<T> e, K (*fptr)(T, int idx), int count);
+  template<class T>
+  std::vector<E<T>> loop2d(E<T> e, T (*fptr_x)(T), T (*fptr_y)(T), int count_x, int count_y);
+};
+#endif
 class MainLoopApi
 {
 public:
@@ -115,6 +133,10 @@ public:
     int ch;
     PT cursor_pos;
     int button;
+    bool joy1_button0;
+    bool joy1_button1;
+    bool joy1_button2;
+    bool joy1_button3;
   };
   Event get_event();
   void waittof();
@@ -1100,6 +1122,8 @@ public:
   BM sample(CBM c_bitmap, int sx, int sy); 
   CBM from_bitmap(BM bm, float xsize, float ysize);
   BM to_bitmap(CBM bm, int sx, int sy);
+
+  CBM rotate(CBM bm, float center_x, float center_y, float angle);
 
 private:
   Env &e;

@@ -1522,6 +1522,7 @@ public:
 	if (len > length) return pos;
 	pos+=delta;
       }
+    return 0.0;
   }
 private:
   CurveIn3d &curve;
@@ -2702,6 +2703,8 @@ public:
 	Point2d corner = { end_x, y };
 	return corner;
       }
+    Point2d p = { 0.0,0.0};
+    return p;
   }
   
 private:
@@ -4647,6 +4650,7 @@ class WaveformPart
 {
 public:
   virtual float Delta(float x) const=0;
+  virtual ~WaveformPart() { }
 };
 class ConstantWaveformPart : public WaveformPart
 {
@@ -9634,6 +9638,7 @@ public:
 
   virtual int NumStates() const=0;
   virtual int StateNum(int framenum, int face) const=0;
+  virtual ~Mesh() { }
 };
 
 class FaceArrayMesh : public Mesh
@@ -9718,6 +9723,7 @@ class MeshNormals
 public:
   virtual int NumFrames() const { return 0; }
   virtual Vector PointNormal(int framenum, int statenum, int face, int point) const { return Vector(0.0,0.0,0.0); }
+  virtual ~MeshNormals() { }
 };
 
 class FaceArrayMeshNormals : public MeshNormals
@@ -9737,6 +9743,8 @@ class MeshTexCoords
 public:
   virtual int NumFrames() const { return 0; }
   virtual Point2d TexCoord(int framenum, int statenum, int face, int point) const { Point2d p = { 0.0, 0.0 }; return p;  }
+  virtual ~MeshTexCoords() { }
+
 };
 
 class FaceArrayMeshTexCoords : public MeshTexCoords
@@ -9758,6 +9766,7 @@ class MeshColors
 public:
   virtual int NumFrames() const { return 0; }
   virtual unsigned int VertexColor(int framenum, int statenum, int face, int point) const { return 0; }
+  virtual ~MeshColors() { }
 };
 
 class FaceArrayMeshColors : public MeshColors
@@ -9778,6 +9787,7 @@ public:
   virtual int NumTextures() const { return 0; }
   virtual void GenTexture(int num) { }
   virtual BufferRef TextureBuf(int num) const { BufferRef ref; return ref; }
+  virtual ~MeshTextures() { }
 };
 
 class FaceArrayMeshTextures : public MeshTextures, public Function<int,int>
@@ -9811,6 +9821,7 @@ class MeshShaderParameters
 public:
   virtual int NumFrames() const { return 0; }
   virtual unsigned int VertexColor(int framenum, int statenum, int face, int point, int id) const { return 0; }
+  virtual ~MeshShaderParameters() { }
 };
 
 

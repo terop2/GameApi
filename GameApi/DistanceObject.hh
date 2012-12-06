@@ -81,7 +81,8 @@ public:
 	  }
          oldnum = num;
       }
-
+    Color c;
+    return c;
   }
   
 private:

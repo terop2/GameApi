@@ -700,7 +700,7 @@ public:
     p.set_var("center2z", center2.z);
     p.set_var("radius", r);
   }
-
+  virtual ~BlobParameters() { }
 private:
   Point center, center2;
   float r;

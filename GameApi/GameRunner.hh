@@ -140,7 +140,7 @@ private:
     int s = seq.NumEvents();
     for(int i=0;i<s;i++)
       {
-	EventInfo ei = seq.Event(i);
+	//EventInfo ei = seq.Event(i);
 	
       }
   }

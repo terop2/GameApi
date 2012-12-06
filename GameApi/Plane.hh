@@ -328,6 +328,8 @@ public:
       case 0: return tl;
       case 1: return br;
       };
+    Point2d p;
+    return p;
   }
   bool Inside(Point2d p) const
   {
