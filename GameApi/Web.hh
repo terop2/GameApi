@@ -84,6 +84,7 @@ class HtmlPart
 {
 public:
   virtual std::string Part() const=0;
+  virtual ~HtmlPart() { }
 };
 
 class CharacterPart : public HtmlPart

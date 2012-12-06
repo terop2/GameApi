@@ -33,6 +33,7 @@ void DecodahedronEffect::PreFrame(float fr)
 }
 bool DecodahedronEffect::Frame(float time)
 {
+#if 0
   //StarCurve star(100.0, 200.0, 5);
   Dodecahedron d(200.0);
   PointCollection *coll = &d;
@@ -44,5 +45,6 @@ bool DecodahedronEffect::Frame(float time)
   SphereElem s(10,10);
   MatrixElem me(s, Matrix::Scale(10.0,10.0,10.0)*Matrix::Translate(pp2.x,pp2.y,pp2.z));
   RenderOpenGl(me);
+#endif
   return false;
 }

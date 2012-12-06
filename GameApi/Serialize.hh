@@ -268,6 +268,7 @@ public:
   // states
   virtual int NumStates() const=0;
   virtual StateInfo2 States(int i) const=0;
+  virtual ~Sequencer2() { }
 };
 
 class EmptySequencer2 : public Sequencer2

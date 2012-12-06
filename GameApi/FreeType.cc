@@ -36,15 +36,15 @@ FontGlyphBitmap::~FontGlyphBitmap()
 void FontGlyphBitmap::load_glyph(long idx)
 {
   FT_UInt glyphindex = FT_Get_Char_Index(priv->face, idx);
-  int err1 = FT_Load_Glyph(priv->face, glyphindex, FT_LOAD_RENDER|FT_LOAD_TARGET_NORMAL);
-  int err2 = FT_Render_Glyph(priv->face->glyph, FT_RENDER_MODE_NORMAL);
+  /*int err1 =*/ FT_Load_Glyph(priv->face, glyphindex, FT_LOAD_RENDER|FT_LOAD_TARGET_NORMAL);
+  /*int err2 =*/ FT_Render_Glyph(priv->face->glyph, FT_RENDER_MODE_NORMAL);
   //std::cout << "load_glyph: " << err1 << " " << err2 << std::endl;
 }
 
 int FontGlyphBitmap::bitmap_top(long idx) const
 {
   FT_UInt glyphindex = FT_Get_Char_Index(priv->face, idx);
-  int err1 = FT_Load_Glyph(priv->face, glyphindex, FT_LOAD_RENDER|FT_LOAD_TARGET_NORMAL);
+  /*int err1 =*/ FT_Load_Glyph(priv->face, glyphindex, FT_LOAD_RENDER|FT_LOAD_TARGET_NORMAL);
   return priv->face->glyph->bitmap_top;
 }
 

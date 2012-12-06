@@ -2124,6 +2124,7 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 	    state.impl->index[obj] = new int[(rangeendi-rangestarti)*3];
 	    b = true;
 	    }
+	  (void)b;
 	  faces.UpdateIndexList(rangestarti, rangeendi, state.impl->index[obj]);
 #ifdef VBOS
 

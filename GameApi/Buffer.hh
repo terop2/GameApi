@@ -61,6 +61,7 @@ class BufferRefReq
 public:
   virtual void Gen() const=0;
   virtual BufferRef Buffer() const=0;
+  virtual ~BufferRefReq() { }
 };
 
 

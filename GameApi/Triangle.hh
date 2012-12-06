@@ -37,6 +37,7 @@ class ModifyValue
 {
 public:
   virtual void Modify(T &t) const=0;
+  virtual ~ModifyValue() { }
 };
 
 class MoveTri : public ModifyValue<Tri>
@@ -518,7 +519,7 @@ private:
   Plane pl;
   Point p;
 };
-
+#if 0
 #define retp(x,y,z) if(A++==a) return Point(x*scale,y*scale,z*scale);
 #define forq(i) for(i=-1;i<=1;i+=2)
 class Dodecahedron : public PointCollection
@@ -564,6 +565,7 @@ public:
   }
 };
 
+#endif
 
 class TriangulateEffect : public FrameAnim
 {
