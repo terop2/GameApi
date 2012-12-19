@@ -166,6 +166,7 @@ void GameApi::MainLoopApi::init(int screen_width, int screen_height)
   */
   glMatrixMode( GL_MODELVIEW ); 
   glLoadIdentity();
+  alpha(false);
 }
 void GameApi::MainLoopApi::transfer_sdl_surface(MainLoopApi &orig)
 {
@@ -654,6 +655,7 @@ struct EnvImpl
   std::vector<Waveform*> waveforms;
   std::vector<Array<int, ObjectWithPos> * > object_move;
   std::vector<std::vector<VertexArrayWithPos> *> object_move_vertex_array;
+  std::vector<Bitmap<float>*> layout_data;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -702,15 +704,28 @@ GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   if (val & SDL_BUTTON(2)) { e2.button = 1; }
   if (val & SDL_BUTTON(3)) { e2.button = 2; }
   SDL_Joystick *joy1 = SDL_JoystickOpen(0);
+  SDL_JoystickEventState(SDL_ENABLE);
   unsigned int but1 = SDL_JoystickGetButton(joy1, 0);  
   unsigned int but2 = SDL_JoystickGetButton(joy1, 1);
   unsigned int but3 = SDL_JoystickGetButton(joy1, 2);
   unsigned int but4 = SDL_JoystickGetButton(joy1, 3);
   //std::cout << e.type << " " << e.ch << std::endl;
-  e2.joy1_button0 = but1==1;
-  e2.joy1_button1 = but2==1;
-  e2.joy1_button2 = but3==1;
-  e2.joy1_button3 = but4==1;
+  e2.joy0_button0 = but1==1;
+  e2.joy0_button1 = but2==1;
+  e2.joy0_button2 = but3==1;
+  e2.joy0_button3 = but4==1;
+
+  SDL_Joystick *joy2 = SDL_JoystickOpen(1);
+  unsigned int a_but1 = SDL_JoystickGetButton(joy2, 0);  
+  unsigned int a_but2 = SDL_JoystickGetButton(joy2, 1);
+  unsigned int a_but3 = SDL_JoystickGetButton(joy2, 2);
+  unsigned int a_but4 = SDL_JoystickGetButton(joy2, 3);
+  //std::cout << a_but1 << " " << a_but2 << " " << a_but3 << " " << a_but4 << std::endl;
+  e2.joy1_button0 = a_but1==1;
+  e2.joy1_button1 = a_but2==1;
+  e2.joy1_button2 = a_but3==1;
+  e2.joy1_button3 = a_but4==1;
+
   return e2;
 }
 
@@ -1823,6 +1838,18 @@ void GameApi::SpriteApi::spritepos(BM bm, float x, float y)
   i->x = x;
   i->y = y;
 }
+
+GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  SpritePriv &spriv = *(SpritePriv*)priv;
+  ::Sprite *sprite = sprite_from_handle(e,spriv, handle, -1);
+  if (!sprite) { std::cout << "preparesprite's sprite==NULL?" << std::endl; GameApi::VA va; va.id = 0; return va; }
+  VertexArraySet *s = new VertexArraySet;
+  PrepareSpriteToVA(*sprite, *s);
+  return add_vertex_array(e, s);
+}
+
 void GameApi::SpriteApi::preparesprite(BM bm, int bbm_choose)
 {
   BitmapHandle *handle = find_bitmap(e, bm);

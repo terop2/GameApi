@@ -134,6 +134,7 @@ typedef Bitmap<Color> ColorBitmap;
 typedef Bitmap<Point> PointBitmap;
 typedef Bitmap<Quad> QuadBitmap;
 
+
 class BoolBitmapFromFloatBitmap2 : public Bitmap<bool>
 {
 public:
@@ -1853,8 +1854,27 @@ public:
   virtual float SizeX() const=0;
   virtual float SizeY() const=0;
   virtual C Map(float x, float y) const=0;
+  virtual ~ContinuousBitmap() { }
 };
 
+#if 0
+class PolygonBitmap : public ContinuousBitmap<float>
+{ // this is for piecewise definition of shapes
+public:
+  PolygonBitmap(int sx, int sy, Point2d p1, Point2d p2, Vector2d v1, Vector2d v2, float val_0, float val_1) : sx(sx),sy(sy), p1(p1), p2(p2), v1(v1), v2(v2), val_0(val_0), val_1(val_1) { }
+  virtual float SizeX() const { return sx; }
+  virtual float SizeY() const { return sy; }
+  virtual float Map(float x, float y) const
+  {
+    
+  }
+private:
+  Point2d p1,p2;
+  Vector2d v1,v2;
+  float val_0, val_1;
+};
+
+#endif
 template<class C>
 class RotateContinuousBitmap : public ContinuousBitmap<C>
 {
@@ -5746,7 +5766,11 @@ private:
   std::vector<int> num;
 };
 
+
+class VertexArraySet;
 void PrepareSprite(const Sprite &s, ArrayRender &rend);
+void PrepareSpriteToVA(const Sprite &s, VertexArraySet &vas);
+
 void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend);
 void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend, float mult_x, float mult_y);
 void RenderSprite(const Sprite &s, int frame, Point2d pos1, Point2d pos2, Point2d pos1_inside, Point2d pos2_inside, float z, ArrayRender &rend);

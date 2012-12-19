@@ -140,6 +140,37 @@ public:
   virtual B Index(A a) const=0;
 };
 
+#if 0
+template<class A, class B>
+class DynFunction
+{
+  virtual ~DynFunction() { }
+  virtual void set(float x, float y)=0;
+};
+
+template<class T>
+class DynamicFunction : public Function<float,float>, public DynFunction<float,float>
+{
+public:
+  float Index(float a) const
+  {
+    std::map<float,float>::iterator i = std::lower_bound(mymap.begin(), mymap.end(), a);
+    if (i==mymap.end()) return 0.0;
+    std::map<float,float>::iterator i2 = i+1;
+    if (i2==mymap.end()) return (*i).second;
+    a-=(*i).first;
+    a/=(*i2).first - (*i).first;
+    float val1 = (*i).second;
+    float val2 = (*i2).second;
+    return val1*(1.0-a) + val2*a;
+  }
+  void set(float x, float y) { mymap[x] = y; }
+private:
+  std::map<float, float> mymap;
+};
+
+#endif
+
 template<class A, class B>
 class RangeFunction : public Function<A,B>
 {
@@ -9978,7 +10009,8 @@ private:
 class MeshFaceCollection : public FaceCollection
 {
 public:
-  MeshFaceCollection(Mesh &mesh, int framenum) : mesh(mesh), framenum(framenum) { }
+  MeshFaceCollection(Mesh &mesh, int framenum) : mesh(mesh), texcoord(0), framenum(framenum) { }
+  MeshFaceCollection(Mesh &mesh, MeshTexCoords &coord, int framenum) : mesh(mesh), texcoord(&coord), framenum(framenum) { }
   virtual int NumFaces() const { return mesh.NumFaces(framenum); }
   virtual int NumPoints(int face) const { return mesh.NumPoints(); }
   virtual Point FacePoint(int face, int point) const
@@ -10001,14 +10033,19 @@ public:
   }
   virtual Point2d TexCoord(int face, int point) const
   {
-    Point2d p;
-    p.x = 0;
-    p.y = 0;
-    return p;
+    if (!texcoord) {
+      Point2d p;
+      p.x = 0;
+      p.y = 0;
+      return p;
+    } else {
+      return texcoord->TexCoord(framenum, 0, face, point);
+    }
   }
 
 private:
   Mesh &mesh;
+  MeshTexCoords *texcoord;
   int framenum;
 };
 

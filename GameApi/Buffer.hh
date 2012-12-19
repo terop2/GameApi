@@ -34,6 +34,8 @@ struct BufferRef
   static BufferRef NewBuffer(int width, int height);
   static void FreeBuffer(BufferRef ref);
   static void CopyBuffer(BufferRef source, BufferRef target, int x, int y, int rx, int ry, int rex, int rey);
+
+  unsigned int *operator[](int y) { return buffer+y*ydelta; }
 };
 struct BufferRefF
 {
@@ -45,6 +47,7 @@ struct BufferRefF
 ;
   static BufferRefF NewBuffer(int width, int height);
 
+  float *operator[](int y) { return buffer+y*ydelta; }
 };
 
 struct BufferRefMask
@@ -54,6 +57,7 @@ struct BufferRefMask
   unsigned int height;
   unsigned int ydelta;
   static BufferRefMask NewBuffer(int width, int height);
+  unsigned char *operator[](int y) { return buffer+y*ydelta; }
 };
 
 class BufferRefReq

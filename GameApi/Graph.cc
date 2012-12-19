@@ -29,6 +29,7 @@
 #include "Shader.hh"
 #include "Effect2.hh"
 #include "Font.hh"
+#include "VertexArray.hh"
 
 void RenderVoxel(VolumeObject &orv, int size, float wholesize, HandleValue<std::pair<Vector, unsigned int> > &hv)
 {
@@ -1069,6 +1070,19 @@ void PrepareSprite(const Sprite &s, ArrayRender &rend)
       rend.UpdateTexCoord(trimesh, tricoords, p, i2);
     }
   
+}
+
+void PrepareSpriteToVA(const Sprite &s, VertexArraySet &vas)
+{
+  SpriteMesh spmesh(s);
+  SpriteTexCoords texcoords(s);
+  
+  MeshToTriangles trimesh(spmesh);
+  MeshTexCoordsToTriangles tricoords(texcoords, true);
+  
+  MeshFaceCollection coll(trimesh, tricoords ,0);
+  FaceCollectionVertexArray2 va(coll, vas);
+  va.copy();
 }
 
 void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend)
