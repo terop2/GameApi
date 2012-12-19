@@ -199,6 +199,7 @@ void GameApi::MainLoopApi::init_3d(int screen_width, int screen_height)
   */
   glMatrixMode( GL_MODELVIEW ); 
   glLoadIdentity();
+  alpha(false);
 }
 
 void GameApi::MainLoopApi::switch_to_3d(bool b)
