@@ -2717,7 +2717,7 @@ private:
   Function<T,B> &p2;
   FunctionCompose<T,A,C> compose1;
   FunctionCompose<T,B,C> compose2;
-  PullbackMinus minus;
+  PullbackMinus<T,C> minus;
 };
 
 class DistanceFunction : public Function<Point,float>
@@ -2801,5 +2801,40 @@ public:
 private:
   float z;
 };
+
+//
+// Complex distance
+//
+
+struct RadiusPoints
+{
+  Point p1,p2;
+  float r;
+};
+
+struct RadiusPointCalc
+{
+  Vector pos(Point p) const
+  {
+    Vector v1 = p-p1;
+    Vector v2 = p-p2;
+    Plane pl(p, v1,v2);
+    Point2d p2d = { pl.CoordsX(p), pl.CoordsY(p) };
+    Point2d p2d2 = { pl.CoordsX(p1), pl.CoordsY(p1) };
+    Point2d p2d3 = { pl.CoordsX(p2), pl.CoordsY(p2) };
+    
+    Vector2d v2 = p2d2-p2d;
+    Vector2d v3 = p2d3-p2d;
+    Vector2d v = v2+v3;
+    
+    LineLineIntersection intersect(p2d2, p2d3, p2d, p2d+v);
+    Point2d intersectpoint = intersect.IntersectionPoint();
+    Point px = pl.Navigate(intersectpoint);
+    
+    
+  }
+};
+
+
 #endif
 

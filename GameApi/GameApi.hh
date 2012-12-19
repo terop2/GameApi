@@ -6,6 +6,7 @@
 
 namespace GameApi
 {
+  struct DR { int id; };
   struct OM { int id; };
   struct FO { int id; };
   struct WV { int id; }; // waveform
@@ -45,6 +46,7 @@ namespace GameApi
   struct T { int id; }; // time
   struct E { int id; }; // event
   struct L { int id; }; // link
+  struct LAY { int id; }; // layout
   struct MP { int id; }; // mouse plane
   struct MV { int id; }; // movement
   struct LL { int id; }; // linkage
@@ -133,6 +135,11 @@ public:
     int ch;
     PT cursor_pos;
     int button;
+    bool joy0_button0;
+    bool joy0_button1;
+    bool joy0_button2;
+    bool joy0_button3;
+
     bool joy1_button0;
     bool joy1_button1;
     bool joy1_button2;
@@ -156,6 +163,8 @@ public:
   ~SpriteApi();
   void spritepos(BM bm, float x, float y);
   void preparesprite(BM bm, int bbm_choose=-1);
+
+  VA create_vertex_array(BM bm);
 
   void rendersprite(BM bm, float x, float y, float mult_x=1.0, float mult_y=1.0);
   void rendersprite(BM bm, PT pos);
@@ -1386,6 +1395,21 @@ public:
 private:
   friend class StateChangeApi;
   void *priv;
+  Env &e;
+};
+
+class LayoutApi
+{
+public:
+  LayoutApi(Env &e) : e(e) { }
+  LAY root_bitmap(BM bm);
+  LAY root_screen();
+  LAY child_size(LAY parent, float l, float t, float sx, float sy);
+  LAY child_margin(LAY parent, float l, float t, float r, float b);
+  LAY child_grid(LAY parent, int sx, int sy, float border_x, float border_y, int curr_x, int curr_y);
+  DR bitmap(LAY parent, BM bm);
+  VA draw(DR *array, int size);
+private:
   Env &e;
 };
 
