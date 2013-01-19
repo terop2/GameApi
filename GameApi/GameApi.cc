@@ -4841,6 +4841,11 @@ bool GameApi::BoolBitmapApi::boolvalue(BB bm, int x, int y)
   return b->Map(x,y);
 }
 
+GameApi::BB GameApi::BoolBitmapApi::part_circle(int sx, int sy, float x, float y, float start_angle, float end_angle, float start_rad, float end_rad)
+{
+  return add_bool_bitmap(e, new PartCircleBoolBitmap(sx,sy, x,y,start_angle,end_angle, start_rad, end_rad));
+}
+
 int GameApi::FloatBitmapApi::size_x(FB bm)
 {
   Bitmap<float> *b = find_float_bitmap(e,bm)->bitmap;
@@ -5943,6 +5948,41 @@ GameApi::FO GameApi::FloatVolumeApi::distance()
   return function(distance2, NULL);
 }
 
+struct TorusData {
+  Point center;
+  Vector u_x;
+  Vector u_y;
+  float radius;
+};
+
+float torus_distance(GameApi::EveryApi &ev, float x, float y, float z, void *data)
+{
+  TorusData *dt = (TorusData*)data;
+  Point p = { x,y,z };
+  Plane pl(dt->center, dt->u_x, dt->u_y);
+  float xx = pl.CoordsX(p);
+  float yy = pl.CoordsY(p);
+  float r = sqrt(xx*xx+yy*yy);
+  xx/=r;
+  yy/=r;
+  xx*=dt->radius;
+  yy*=dt->radius;
+  Point2d p2d = { xx,yy };
+  Point pp = pl.Navigate(p2d);
+  Vector v = pp-p;
+  return v.Dist();
+}
+
+GameApi::FO GameApi::FloatVolumeApi::torusdistance(PT center, V u_x, V u_y, float radius)
+{
+  TorusData *dt = new TorusData;
+  dt->center = *find_point(e,center);
+  dt->u_x = *find_vector(e,u_x);
+  dt->u_y = *find_vector(e,u_y);
+  dt->radius = radius;
+  return function(torus_distance, (void*)dt);
+  
+}
 GameApi::FO GameApi::FloatVolumeApi::minimum(FO f1, FO f2)
 {
   FloatVolumeObject *obj = find_float_volume(e, f1);

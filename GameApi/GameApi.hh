@@ -619,6 +619,7 @@ public:
   FloatVolumeApi(Env &e) : e(e) { }
   FO function(float (*fptr)(EveryApi &ev, float x, float y, float z, void *data), void *data);
   FO distance();
+  FO torusdistance(PT center, V u_x, V u_y, float radius);
   FO move(FO f1, float dx, float dy, float dz);
   FO minimum(FO f1, FO f2);
   FO maximum(FO f1, FO f2);
@@ -1057,6 +1058,8 @@ public:
   BB polygon(BB bg, PT *points, int size);
   BB text(BB bg, int x, int y, const char *string, int size, 
 	  BB *glyphs, int glyphcount, int(*fptr)(EveryApi &ev, char));
+
+  BB part_circle(int sx, int sy, float x, float y, float start_angle, float end_angle, float start_rad, float end_rad);
   
   BB not_bitmap(BB b);
   BB or_bitmap(BB b1, BB b2);

@@ -134,6 +134,29 @@ typedef Bitmap<Color> ColorBitmap;
 typedef Bitmap<Point> PointBitmap;
 typedef Bitmap<Quad> QuadBitmap;
 
+class PartCircleBoolBitmap : public Bitmap<bool>
+{
+public:
+  PartCircleBoolBitmap(int sx, int sy, float x, float y, float start_angle, float end_angle, float start_rad, float end_rad) : sx(sx), sy(sy), x(x), y(y), sa(start_angle), ea(end_angle), sr(start_rad), er(end_rad) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  
+  bool Map(int ax, int ay) const
+  {
+    ax-=x;
+    ay-=y;
+    float r = sqrtf(float(ax)*float(ax)+float(ay)*float(ay));
+    float angle = atan2f(float(ay),float(ax));
+    if (angle<sa || angle>ea) return false;
+    if (r<sr || r>er) return false;
+    return true;
+  }
+private:
+  int sx,sy;
+  float x,y;
+  float sa,ea;
+  float sr,er;
+};
 
 class BoolBitmapFromFloatBitmap2 : public Bitmap<bool>
 {
