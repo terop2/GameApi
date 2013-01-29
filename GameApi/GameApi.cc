@@ -4143,6 +4143,19 @@ GameApi::BM GameApi::BitmapApi::repeat_bitmap(BM orig, int xcount, int ycount)
   return add_bitmap(e,chandle2);
 }
 
+GameApi::BM GameApi::FloatBitmapApi::subfloatbitmap(FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color)
+{
+  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  GameApi::BB b = to_bool(fb, range_start, range_end);
+  Color c(true_color);
+  Color c2(false_color);
+  GameApi::BM bm = ev->bool_bitmap_api.to_bitmap(b, c.r, c.g, c.b, c.alpha,
+						 c2.r, c2.g, c2.b, c2.alpha);
+  return bm;
+}
+
 struct CurrentState
 {
 public:
@@ -5049,7 +5062,11 @@ GameApi::BM GameApi::FloatBitmapApi::to_color(FB r, FB g, FB b, FB a)
   Bitmap<Color> *bm2 = new BitmapFromRGBA(*rb,*gb,*bb,*ab);
   return add_color_bitmap2(e, bm2);
 }
-
+GameApi::BB GameApi::FloatBitmapApi::to_bool(FB fb, float true_range_start, float true_range_end)
+{
+  Bitmap<float> *f = find_float_bitmap(e,fb)->bitmap;
+  return add_bool_bitmap(e, new FloatRangeBitmap(*f, true_range_start, true_range_end));
+}
 
 GameApi::FB GameApi::FloatBitmapApi::from_bool_bitmap(BB bm, int csx, int csy)
 {
