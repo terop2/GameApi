@@ -134,6 +134,23 @@ typedef Bitmap<Color> ColorBitmap;
 typedef Bitmap<Point> PointBitmap;
 typedef Bitmap<Quad> QuadBitmap;
 
+class FloatRangeBitmap : public Bitmap<bool>
+{
+public:
+  FloatRangeBitmap(Bitmap<float> &fb, float rs, float re) : fb(fb), rs(rs), re(re) { }
+  virtual int SizeX() const { return fb.SizeX(); }
+  virtual int SizeY() const { return fb.SizeY(); }
+  virtual bool Map(int x, int y) const
+  {
+    float val = fb.Map(x,y);
+    return val >= rs && val <= re;
+  }
+private:
+  Bitmap<float> &fb;
+  float rs;
+  float re;
+};
+
 class PartCircleBoolBitmap : public Bitmap<bool>
 {
 public:

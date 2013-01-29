@@ -1103,8 +1103,10 @@ public: // values are [0.0..1.0]
 			int r, int g, int b, int a,
 			int r2, int g2, int b2, int a2);
   BM to_color(FB r, FB g, FB b, FB a);
+  BM subfloatbitmap(FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color);
 
   FB from_bool(BB b, float val_true, float val_false);
+  BB to_bool(FB f, float true_range_start, float true_range_end);
   int size_x(FB bm);
   int size_y(FB bm);
   float floatvalue(FB bm, int x, int y);
