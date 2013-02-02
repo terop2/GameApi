@@ -4721,6 +4721,12 @@ GameApi::PT GameApi::PointApi::from_angle(PT center, float radius, float angle)
   return add_point(e,p.x,p.y,p.z);
 }
 
+GameApi::O GameApi::BoolBitmapApi::to_volume(BB b, float dist)
+{
+  BoolBitmap *c = find_bool_bitmap(e,b);
+  Bitmap<bool> *bm = c->bitmap;
+  return add_volume(e, new BitmapVolume(bm, dist));
+}
 GameApi::BB GameApi::BoolBitmapApi::transform(BB orig, bool (*fptr)(EveryApi &ev, int,int, bool, void *), void *data)
 {
   BoolBitmap *c = find_bool_bitmap(e,orig);
@@ -5431,6 +5437,110 @@ unsigned int GameApi::VoxelApi::get_pixel(VX v, int x, int y, int z)
   Voxel<Color> *c = find_voxel(e, v);
   return c->Map(x,y,z).Pixel();
 }
+
+typedef Voxel<Color> VoxelColor;
+
+class VoxelBoxes : public BoxableFaceCollection
+{
+public:
+  VoxelBoxes(VoxelColor *c, float ssx, float ssy, float ssz) : c(c),  cube(Point(0.0,0.0,0.0),
+													  Point(size_x(),0.0,0.0),
+													  Point(0.0,size_y(),0.0),
+													  Point(size_x(),size_y(),0.0),
+													  Point(0.0,0.0,size_z()),
+													  Point(size_x(),0.0,size_z()),
+													  Point(0.0,size_y(), size_z()),
+									   Point(size_x(),size_y(),size_z())), ssx(ssx), ssy(ssy), ssz(ssz)
+  {
+    browse();
+  }
+  void browse()
+  {
+    int sx = c->SizeX();
+    int sy = c->SizeY();
+    int sz = c->SizeZ();
+    for(int xx=0;xx<sx;xx++)
+      for(int yy=0;yy<sy;yy++)
+	for(int zz=0;zz<sz;zz++)
+	  {
+	    if (Enabled(xx,yy,zz))
+	      {
+		vec.push_back(Point(xx*ssx/sx, yy*ssy/sy, zz*ssz/sz));
+	      }
+	  }
+  }
+  virtual int NumFaces() const
+  {
+    return vec.size()*cube.NumFaces();
+  }
+  virtual int NumPoints(int face) const
+  {
+    return cube.NumPoints(face%cube.NumFaces());
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int v = face_to_vec(face);
+    Point p = cube.FacePoint(face_to_face(face), point);
+    p+=vec[v];
+    return p;
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return cube.PointNormal(face_to_face(face), point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return cube.Attrib(face_to_face(face), point, id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return cube.AttribI(face_to_face(face), point, id);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return cube.Color(face_to_face(face), point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return cube.TexCoord(face_to_face(face), point);
+  }
+
+  int face_to_face(int face) const
+  {
+    return face % cube.NumFaces();
+  }
+  int face_to_vec(int face) const
+  {
+    return face/cube.NumFaces();
+  }
+
+
+  float size_x() const { 
+    int sx = c->SizeX();
+    return ssx/sx; }
+  float size_y() const { 
+    int sy = c->SizeY();
+    return ssy/sy; }
+  float size_z() const { 
+    int sz = c->SizeZ();
+    return ssz/sz; }
+
+  bool Enabled(int x, int y, int z) const {
+    return c->Map(x,y,z).Pixel()!=0x00000000;
+  }
+private:
+  VoxelColor *c;
+  CubeElem cube;
+  std::vector<Point> vec;
+  float ssx,ssy,ssz;
+};
+
+GameApi::P GameApi::VoxelApi::render_boxes(VX v, float sx, float sy, float sz)
+{
+  Voxel<Color> *vv = find_voxel(e, v);  
+  return add_polygon2(e, new VoxelBoxes(vv, sx, sy, sz), 1);
+}
+
 #if 0
 GameApi::BM GameApi::VoxelApi::sw_rays(O volume, VX colours, int sx, int sy, float vx, float vy, float vz, float z)
 {

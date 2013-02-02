@@ -1044,6 +1044,7 @@ public:
   BB empty(int sx, int sy);
   BB function(bool (*fptr)(EveryApi &ev, int,int,void*), int sx, int sy, void* data=0);
   BB transform(BB orig, bool (*fptr)(EveryApi &ev, int,int,bool, void*), void *data=0);
+  O to_volume(BB b, float dist);
   BB from_float_bitmap(FB float_bm, float range_start, float range_end);
   BB from_bitmaps_color(BM bm, int r, int g, int b);
   BB from_bitmaps_color_area(BM bm, bool(*fptr)(EveryApi &ev, int r, int g, int b, int a, void* ptr), void *ptr);
@@ -1153,6 +1154,7 @@ public:
   VX function(unsigned int (*fptr)(EveryApi &ev, int x, int y, int z, void *data), int sx, int sy, int sz, void *data);
   unsigned int get_pixel(VX v, int x, int y, int z);
   BM sw_rays(O volume, VX colours, int sx, int sy, float vx, float vy, float vz, float z);
+  P render_boxes(VX v, float sx, float sy, float sz);
 private:
   Env &e;
 };

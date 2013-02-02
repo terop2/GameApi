@@ -146,6 +146,8 @@ public:
 #endif
 };
 
+class BitmapVolume; // see Graph.hh
+
 class FloatVolumeObject {
 public:
   virtual float FloatValue(Point p) const=0;
