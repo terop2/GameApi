@@ -148,6 +148,9 @@ public:
     val /= end_y-start_y;
     val *= float(sy);
     float start_range = 0.0;
+    start_range -= start_y;
+    start_range /= end_y-start_y;
+    start_range *= float(sy);
     float end_range = val;
     if (start_range > end_range) { std::swap(start_range, end_range); }
     if (y >= start_range && y <= end_range)
