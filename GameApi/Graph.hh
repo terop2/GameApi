@@ -7157,4 +7157,21 @@ private:
   int sx,sy;
 };
 
+class BitmapVolume : public VolumeObject
+{
+public:
+  BitmapVolume(Bitmap<bool> *b, float dist) : b(b), dist(dist) { }
+  virtual bool Inside(Point v) const {
+    if (b->Map(v.x,v.y))
+      {
+	return true;
+      }
+    if (v.z>0.0 && v.z<dist) { return true; }
+    return false;
+  }
+private:
+  Bitmap<bool> *b;
+  float dist;
+};
+
 #endif
