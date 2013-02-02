@@ -73,24 +73,6 @@ void Game(EveryApi &e)
   TXID tex = e.texture_api.prepare(tx2);
   sprite.preparesprite(red);
   sprite.preparesprite(green);
-#if 0
-
-  PT arr[5] = { e.point_api.point(0.0,0.0,0.0),
-		e.point_api.point(100.0,0.0,0.0),
-		e.point_api.point(100.0,100.0,0.0),
-		e.point_api.point(0.0,100.0,0.0),
-		e.point_api.point(0.0,100.0,50.0)
-  };
-  P poly2 = e.polygon_api.triangle(e.point_api.point(0.0,0.0,0.0),
-		e.point_api.point(100.0,0.0,0.0),
-		e.point_api.point(100.0,100.0,0.0));
-  P poly3 = e.polygon_api.quad(e.point_api.point(0.0,0.0,200.0),
-			       e.point_api.point(100.0,0.0,200.0),
-			       e.point_api.point(100.0,100.0,200.0),
-			       e.point_api.point(0.0,100.0,200.0));
-  P or_elem = e.polygon_api.or_elem(poly2, poly3);
-  VA va2 = poly.create_vertex_array(or_elem);
-#endif
   while(1)
     {
       float time = e.mainloop_api.get_time();

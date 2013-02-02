@@ -252,6 +252,7 @@ public:
 		float xx, float yy, // [0,0]
 		int sx, int sy,
 		int count);
+  BM waveform(float (*fptr)(float, void *data), float start_x, float end_x, float start_y, float end_y, int sx, int sy, unsigned int true_color, unsigned int false_color, void *data=NULL);
   BM memoize(BM orig);
   BM memoize_all(BM orig);
   int intvalue(BM bm, int x, int y);
