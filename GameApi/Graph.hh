@@ -134,6 +134,37 @@ typedef Bitmap<Color> ColorBitmap;
 typedef Bitmap<Point> PointBitmap;
 typedef Bitmap<Quad> QuadBitmap;
 
+class WaveformBitmap : public Bitmap<Color>
+{
+public:
+  WaveformBitmap(float (*fptr)(float, void *), float start_x, float end_x, float start_y, float end_y, int sx, int sy, Color true_color, Color false_color, void *data) : fptr(fptr), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), sx(sx), sy(sy), true_color(true_color), false_color(false_color), data(data) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    float pos = float(x)/float(sx)*(end_x-start_x)+start_x;
+    float val = fptr(pos, data);
+    val -= start_y;
+    val /= end_y-start_y;
+    val *= float(sy);
+    float start_range = 0.0;
+    float end_range = val;
+    if (start_range > end_range) { std::swap(start_range, end_range); }
+    if (y >= start_range && y <= end_range)
+      {
+	return true_color;
+      }
+    return false_color;
+  }
+
+private:
+  float (*fptr)(float, void*);
+  float start_x, end_x, start_y, end_y;
+  int sx,sy;
+  Color true_color, false_color;
+  void *data;
+};
+
 class FloatRangeBitmap : public Bitmap<bool>
 {
 public:

@@ -2094,6 +2094,10 @@ GameApi::BM GameApi::BitmapApi::memoize_all(GameApi::BM bm)
   return add_color_bitmap(e, membitmap);
 }
 
+GameApi::BM GameApi::BitmapApi::waveform(float (*fptr)(float, void *data), float start_x, float end_x, float start_y, float end_y, int sx, int sy, unsigned int true_color, unsigned int false_color, void *data)
+{
+  return add_color_bitmap(e, new WaveformBitmap(fptr, start_x, end_x, start_y, end_y, sx, sy, Color(true_color), Color(false_color), data));
+}
 
 GameApi::BM GameApi::BitmapApi::mandelbrot(bool julia,
 		float start_x, float end_x,
