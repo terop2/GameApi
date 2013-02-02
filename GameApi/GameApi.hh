@@ -1422,15 +1422,6 @@ private:
   Env &e;
 };
 
-// Note: This interface has large state space. Passing it from
-// function local scope to upper scope would require so huge and
-// complex dynamic data structure that it does not exists, as it would
-// need to fetch all data from all interfaces, create matching data
-// structure, implement the same interface again using the dynamic
-// data structure, and then copy all data. Only handles are available
-// to end users and copying the data is not available. So once you have it
-// in function local scope, passing it to outside of the current function
-// becomes very difficult. Complexity level way too large in the data structure. 
 struct EveryApi
 {
   EveryApi(Env &e) 
