@@ -45,14 +45,18 @@ void Game(EveryApi &e)
   PolygonApi &poly = e.polygon_api;
   SpriteApi &sprite = e.sprite_api;
   VolumeApi &volume = e.volume_api;
+  WaveformApi &wv = e.waveform_api;
 
   loop.init();
   loop.alpha(true);
 
   //BM red = bm.function(&red_block, 10,10, 0);
   //BM green = bm.function(&green_block, 10,10, 0);
+  
+  WV sinw = wv.sinwave(2.0*3.14159, 1.0);
+  BM red = wv.waveform_bitmap(sinw, 100,100, 0xffffffff, 0xff000000);
 
-  BM red = bm.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 100,100,128);
+  //BM red = bm.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 100,100,128);
   BM green = bm.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 100,100,128);
 
   O torus = volume.torus(points.point(0.0,0.0,0.0),
