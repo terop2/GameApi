@@ -56,12 +56,6 @@ SpritePriv::~SpritePriv()
       Sprite** ptr = arrays[i];
       delete [] ptr;
     }
-  std::map<int, ArrayRender*>::iterator it = renders.begin();
-  for(;it!=renders.end();it++)
-    {
-      ArrayRender *rend = (*it).second;
-      delete rend;
-    }
   std::map<int, Sprite*>::iterator it2 = sprites.begin();
   for(;it2!=sprites.end();it2++)
     {
@@ -614,6 +608,7 @@ struct VertexArrayWithPos
   GameApi::M m;
 };
 
+
 struct EnvImpl
 {
   std::vector<Point> pt;
@@ -657,6 +652,7 @@ struct EnvImpl
   std::vector<Array<int, ObjectWithPos> * > object_move;
   std::vector<std::vector<VertexArrayWithPos> *> object_move_vertex_array;
   std::vector<Bitmap<float>*> layout_data;
+  std::map<int, ArrayRender*> renders; // BM.id -> arrayrender
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -669,6 +665,11 @@ struct EnvImpl
   }
   ~EnvImpl();
 };
+ArrayRender *FindRender(GameApi::Env &e, int bm_i)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  return env->renders[bm_i];
+}
 
 template<class T>
 void ArrayDelete(T *ptr)
@@ -732,6 +733,13 @@ GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 
 EnvImpl::~EnvImpl()
 {
+  std::map<int, ArrayRender*>::iterator it = renders.begin();
+  for(;it!=renders.end();it++)
+    {
+      ArrayRender *rend = (*it).second;
+      delete rend;
+    }
+
   int vv1 = volumes.size();
   for(int i_v=0;i_v<vv1;i_v++)
     {
@@ -1606,7 +1614,8 @@ Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handl
       ArraySprite *ss = new ArraySprite(arr, s);
       ss->update_cache();
       env.sprites[handle->id] = ss;
-      env.renders[handle->id] = new ArrayRender;
+      EnvImpl *env2 = EnvImpl::Environment(&e);
+      env2->renders[handle->id] = new ArrayRender;
       return ss;
     }
   BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
@@ -1627,7 +1636,8 @@ Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handl
 	}
       Sprite *ss = new BitmapSprite(*chandle->bm, p);
       env.sprites[handle->id] = ss;
-      env.renders[handle->id] = new ArrayRender;
+      EnvImpl *env2 = EnvImpl::Environment(&e);
+      env2->renders[handle->id] = new ArrayRender;
       return ss;
     }
   std::cout << "Unknown bitmap type in sprite_from_handle" << std::endl;
@@ -1840,14 +1850,48 @@ void GameApi::SpriteApi::spritepos(BM bm, float x, float y)
   i->y = y;
 }
 
+void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  //SpritePriv &spriv = *(SpritePriv*)priv;
+  EnvImpl *env = EnvImpl::Environment(&e);
+
+  if (s->texture_id!=-1 && s->texture_id<6000)
+    {
+      TextureEnable(*env->renders[s->texture_id], 0, true);
+      RenderVertexArray arr(*s);
+      arr.render(0);
+      TextureEnable(*env->renders[s->texture_id], 0, false);
+    }
+  else if(s->texture_id!=-1)
+    {
+      glEnable(GL_TEXTURE_2D);
+      glClientActiveTexture(GL_TEXTURE0+0);
+      glActiveTexture(GL_TEXTURE0+0);
+      glBindTexture(GL_TEXTURE_2D, s->texture_id-6000);
+
+      RenderVertexArray arr(*s);
+      arr.render(0);
+
+      glDisable(GL_TEXTURE_2D);
+    }
+  else
+    {
+      std::cout << "SpriteApi::render_sprite_vertex_array, texture not found!" << std::endl;
+    }
+}
 GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   SpritePriv &spriv = *(SpritePriv*)priv;
+  EnvImpl *env = EnvImpl::Environment(&e);
+
   ::Sprite *sprite = sprite_from_handle(e,spriv, handle, -1);
   if (!sprite) { std::cout << "preparesprite's sprite==NULL?" << std::endl; GameApi::VA va; va.id = 0; return va; }
   VertexArraySet *s = new VertexArraySet;
   PrepareSpriteToVA(*sprite, *s);
+  TexturePrepare(*sprite, *env->renders[bm.id]);
+  s->texture_id = bm.id;
   return add_vertex_array(e, s);
 }
 
@@ -1859,7 +1903,8 @@ void GameApi::SpriteApi::preparesprite(BM bm, int bbm_choose)
   SpritePriv &spriv = *(SpritePriv*)priv;
   ::Sprite *sprite = sprite_from_handle(e,spriv, handle, bbm_choose);
   if (!sprite) { std::cout << "preparesprite's sprite==NULL?" << std::endl; return; }
-  PrepareSprite(*sprite, *spriv.renders[bm.id]);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  PrepareSprite(*sprite, *env->renders[bm.id]);
 }
 void GameApi::SpriteApi::rendersprite(BM bm, float x, float y, float mult_x, float mult_y)
 {
@@ -1874,6 +1919,7 @@ void GameApi::SpriteApi::rendersprite(BM bm, float x, float y, float x1, float y
 {
   SpritePriv &spriv = *(SpritePriv*)priv;
   ::Sprite *s = spriv.sprites[bm.id];
+  EnvImpl *env = EnvImpl::Environment(&e);
   if (!s) { std::cout << "rendersprite sprite==NULL (maybe you need to call prepare() for every object before rendering happens. (do not put it to frame loop or you lose frame rates))" << std::endl; return; }
 
   Point2d pos2 = { x, y };
@@ -1882,7 +1928,7 @@ void GameApi::SpriteApi::rendersprite(BM bm, float x, float y, float x1, float y
   Point2d inside_3 ={ inside_x1, inside_y1 }; 
   float z = 0.0;
   //std::cout << "rendersprite: " << bm_choose << std::endl;
-  RenderSprite(*s, bm_choose, pos2, pos3, inside_2, inside_3, z, *spriv.renders[bm.id]);
+  RenderSprite(*s, bm_choose, pos2, pos3, inside_2, inside_3, z, *env->renders[bm.id]);
 }
 #endif
 void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, float x, float y, float mult_x, float mult_y)
@@ -1896,7 +1942,8 @@ void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, float x, float y, fl
   //glPushMatrix();
   //glScalef(mult_x, mult_y, 1.0);
   //std::cout << "rendersprite: " << bm_choose << std::endl;
-  RenderSprite(*s, bm_choose, pos2, z, *spriv.renders[bm.id], mult_x, mult_y);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  RenderSprite(*s, bm_choose, pos2, z, *env->renders[bm.id], mult_x, mult_y);
 
   //glPopMatrix();
 }
@@ -1909,7 +1956,8 @@ void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, PT pos)
   Point *p = find_point(e, pos);
   Point2d pos2 = { p->x, p->y };
   float z = 0.0; //p->z;
-  RenderSprite(*s, bm_choose, pos2, z, *spriv.renders[bm.id]);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  RenderSprite(*s, bm_choose, pos2, z, *env->renders[bm.id]);
 }
 
 void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SP move_space, SP sprite_space, float x, float y)
@@ -1932,7 +1980,8 @@ void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SP move_space, SP sp
 
   Point2d pos = { pp.x, pp.y };
   float z = 0.0;
-  RenderSprite(*s, bm_choose, pos, z, *spriv.renders[bm.id]);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  RenderSprite(*s, bm_choose, pos, z, *env->renders[bm.id]);
 }
 void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SP move_space, SP sprite_space, PT pos)
 {
@@ -5595,8 +5644,31 @@ GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p)
 void GameApi::PolygonApi::render_vertex_array(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
-  RenderVertexArray arr(*s);
-  arr.render(0);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  if (s->texture_id!=-1 && s->texture_id<6000)
+    {
+      TextureEnable(*env->renders[s->texture_id], 0, true);
+      RenderVertexArray arr(*s);
+      arr.render(0);
+      TextureEnable(*env->renders[s->texture_id], 0, false);
+    }
+  else if (s->texture_id!=-1)
+    {
+      glEnable(GL_TEXTURE_2D);
+      glClientActiveTexture(GL_TEXTURE0+0);
+      glActiveTexture(GL_TEXTURE0+0);
+      glBindTexture(GL_TEXTURE_2D, s->texture_id-6000);
+
+      RenderVertexArray arr(*s);
+      arr.render(0);
+
+      glDisable(GL_TEXTURE_2D);
+    }
+  else
+    {
+      RenderVertexArray arr(*s);
+      arr.render(0);
+    }
 }
 
 class AnimFace : public ForwardFaceCollection
@@ -5759,6 +5831,13 @@ GameApi::TX GameApi::TextureApi::tex_bitmap(GameApi::BM bm)
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *bmc = find_color_bitmap(handle);
   return add_texture(e, new TexBitmap(*bmc));
+}
+GameApi::VA GameApi::TextureApi::bind(GameApi::VA va, GameApi::TXID tx)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  VertexArraySet *ns = new VertexArraySet(*s);
+  ns->texture_id = 6000+tx.id;
+  return add_vertex_array(e, ns);
 }
 int GameApi::TextureApi::unique_id()
 {

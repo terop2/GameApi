@@ -165,6 +165,7 @@ public:
   void preparesprite(BM bm, int bbm_choose=-1);
 
   VA create_vertex_array(BM bm);
+  void render_sprite_vertex_array(VA va);
 
   void rendersprite(BM bm, float x, float y, float mult_x=1.0, float mult_y=1.0);
   void rendersprite(BM bm, PT pos);
@@ -193,6 +194,7 @@ public:
   TXID prepare(TX tx);
   void use(TXID tx, int i=0);
   void unuse(TXID tx);
+  VA bind(VA va, TXID tx);
 private:
   Env &e;
   int count;

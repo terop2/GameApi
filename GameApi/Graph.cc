@@ -1046,7 +1046,25 @@ private:
   mutable int currentnum;
 };
 
-
+void TexturePrepare(const Sprite &s, ArrayRender &rend)
+{
+  int frames = s.NumFrames();
+  if (!frames) { std::cout << "TexturePrepare !frames" << std::endl; return; }
+  rend.AllocTexture(frames);
+  rend.Alloc(2,6, frames,1,1,frames);
+  SpriteTexture ss(s);
+  for(int i=0;i<frames;i++)
+    {
+      rend.UpdateTexture(ss, i);
+    }  
+}
+void TextureEnable(ArrayRender &rend, int frame, bool enable)
+{
+  if (enable)
+    rend.EnableTexture(frame);
+  else
+    rend.DisableTexture();
+}
 void PrepareSprite(const Sprite &s, ArrayRender &rend)
 {
   int frames = s.NumFrames();

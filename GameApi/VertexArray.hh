@@ -10,6 +10,8 @@
 class VertexArraySet
 {
 public:
+  int texture_id;
+  VertexArraySet() : texture_id(-1) { }
   // id is the vertex array num to be used 0 = beginning, 1 = end
   // num is the number of points (all calls should share same num)
   void push_poly(int id, int num, Point *points);
