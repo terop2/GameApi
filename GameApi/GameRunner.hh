@@ -2,6 +2,8 @@
 #include "Serialize.hh"
 #include "Graph.hh"
 
+ArrayRender *FindRender(GameApi::Env &e, int bm_id);
+
 class SpritePriv;
 
 Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handle, int bbm_choose=-1);
@@ -17,7 +19,7 @@ struct PolyPriv
 struct SpritePriv
 {
   //ArrayRender rend;
-  std::map<int, ArrayRender*> renders;
+  //MOVED To env: std::map<int, ArrayRender*> renders;
   std::map<int, Sprite*> sprites;
   std::vector<Sprite**> arrays;
   ~SpritePriv();
@@ -121,7 +123,7 @@ private:
 		{
 		  ::Sprite *sprite = sprite_from_handle(e, sprites, bitmap_start, -1);
 		  if (!sprite) { std::cout << "preparesprite in running the game\n" << std::endl; return; }
-		  PrepareSprite(*sprite, *sprites.renders[i]);
+		  PrepareSprite(*sprite, *FindRender(e,i));
 		}
 	    }
 	  
@@ -202,7 +204,7 @@ private:
 		       ::Sprite *sprite = sprites.sprites[i];
 		       Point2d p = { pos.x, pos.y };
 		       float z = 0.0;
-		       RenderSprite(*sprite, 0, p, z, *sprites.renders[i]);
+		       RenderSprite(*sprite, 0, p, z, *FindRender(e,i));
 		     }
 		}
 	    }
