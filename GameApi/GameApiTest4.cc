@@ -77,6 +77,18 @@ void Game(EveryApi &e)
   TXID tex = e.texture_api.prepare(tx2);
   sprite.preparesprite(red);
   sprite.preparesprite(green);
+
+  // 3d text
+  Ft font = e.font_api.newfont("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 50, 50);
+  BM letter = e.font_api.glyph(font, 'a');
+  BB letter2 = e.bool_bitmap_api.from_bitmaps_color_area(letter, 1,255,1,255,1,255,1,255);
+  O o = e.bool_bitmap_api.to_volume(letter2, 20.0);
+  //BM bxm = e.volume_api.render(o, 100,100, e.point_api.point(0.0,0.0,0.0),
+  //			      e.point_api.point(50.0, 0.0,0.0),
+  //			      e.point_api.point(0.0,50.0,0.0),
+  //			      e.point_api.point(0.0,0.0,50.0));
+  //e.sprite_api.preparesprite(bxm);
+
   while(1)
     {
       float time = e.mainloop_api.get_time();
@@ -92,6 +104,8 @@ void Game(EveryApi &e)
       e.polygon_api.render_vertex_array(va);
       e.texture_api.unuse(tex);
       //e.polygon_api.render_vertex_array(va2);
+      //e.polygon_api.render_vertex_array(vba);
+      //e.sprite_api.rendersprite(bxm,100.0,100.0);
       glPopMatrix();
       e.mainloop_api.swapbuffers();
       MainLoopApi::Event ev = e.mainloop_api.get_event();

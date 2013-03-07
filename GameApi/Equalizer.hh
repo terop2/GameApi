@@ -1,5 +1,6 @@
 
 #include "Graph.hh"
+#include "VectorTools.hh"
 
 Point2d SolveWithFailure(const Function<Point2d, float> &func, Point2d tl, Point2d br, bool &error);
 Point SolveWithFailure(const Function<Point, float> &func, Point tl, Point br, bool &error);
@@ -2696,6 +2697,7 @@ private:
 
 
 /* THIS IS WORKING PULLBACK with T=float, C=float! */
+/* todo: CHECK If negative values work in SolveWithFailure() */
 template<class T, class A, class B, class C>
 class Pullback
 {
@@ -2834,6 +2836,19 @@ struct RadiusPointCalc
     
   }
 };
+
+
+class IntersectableCurve2d
+{
+public:
+  virtual Point2d Curve(float val) const=0;
+  virtual float Dist(Point2d p) const=0;
+};
+void Intersection(IntersectableCurve &c1, IntersectableCurve &c2)
+{
+  // STEP1 compose c1.Curve and c2.Dist.
+  // STEP2 use float->float in root finding.
+}
 
 
 #endif

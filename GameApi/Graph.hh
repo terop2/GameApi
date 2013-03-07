@@ -25,43 +25,15 @@
 #include "Effect.hh"
 #include "VolumeObjects.hh"
 #include "Shader.hh"
+#include "GraphI.hh"
 #include <set>
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <vector>
 
-struct Quad
-{
-  Point p1,p2,p3,p4;
-};
-struct Tex
-{
-  Point2d t1,t2,t3,t4;
-};
-struct QuadNormal
-{
-  Vector n1,n2,n3,n4;
-};
-struct QuadColor
-{
-  Color c1,c2,c3,c4;
-};
 Quad QuadInterpolation(const Quad &q1, const Quad &q2, float val);
 
-struct Size
-{
-  int sx,sy;
-};
-struct Pos
-{
-  int x,y;
-};
-struct TRect
-{
-  float x,y;
-  float width, height;
-};
 
 class QuadInterpolationFunction : public Function<std::pair<Quad,Quad>, Quad>
 { // val = [0..1]
@@ -121,18 +93,6 @@ class Region : public Array<int,Rect>
 typedef ArrayConvert<Region, int, Rect> RegionConvert;
 
 
-template<class C>
-class Bitmap
-{
-public:
-  virtual int SizeX() const=0;
-  virtual int SizeY() const=0;
-  virtual C Map(int x, int y) const=0;
-  virtual ~Bitmap() { }
-};
-typedef Bitmap<Color> ColorBitmap;
-typedef Bitmap<Point> PointBitmap;
-typedef Bitmap<Quad> QuadBitmap;
 
 class WaveformBitmap : public Bitmap<Color>
 {
@@ -504,15 +464,6 @@ private:
 };
 
 
-template<class I, class B>
-class NDim
-{
-public:
-  virtual std::vector<I> Count() const=0;
-  virtual B Map(I *array, int size) const=0;
-  virtual NDim<I,B> *Interpolate(const NDim<I,B> &b1, const NDim<I,B> &b2, I val) const=0;
-  virtual ~NDim() { }
-};
 
 
 class PointNDim : public NDim<float, Point>
@@ -1921,15 +1872,6 @@ private:
   mutable BufferRef buf;
 };
 
-template<class C>
-class ContinuousBitmap 
-{
-public:
-  virtual float SizeX() const=0;
-  virtual float SizeY() const=0;
-  virtual C Map(float x, float y) const=0;
-  virtual ~ContinuousBitmap() { }
-};
 
 #if 0
 class PolygonBitmap : public ContinuousBitmap<float>
@@ -2029,14 +1971,6 @@ private:
 };
 
 
-template<class Z, class C>
-class ContinuousBitmap2
-{
-public:
-  virtual Z SizeX() const=0;
-  virtual Z SizeY() const=0;
-  virtual C Map(Z x,Z y) const=0;
-};
 
 template<class T>
 class Function2Bitmap : public ContinuousBitmap<T>
@@ -2603,16 +2537,6 @@ private:
   int ysize;
 };
 
-template<class C>
-class Voxel
-{
-public:
-  virtual int SizeX() const=0;
-  virtual int SizeY() const=0;
-  virtual int SizeZ() const=0;
-  virtual C Map(int x, int y, int z) const=0;
-  virtual ~Voxel() { }
-};
 typedef Voxel<Quad> QuadVoxel;
 
 template<class C>
@@ -2868,16 +2792,6 @@ private:
 Cube3 CubeVoxelArea(Voxel<Cube3> &cubes, PointI p1, PointI p2);
 
 
-template<class C>
-class ContinuousVoxel
-{
-public:
-  virtual float SizeX() const=0;
-  virtual float SizeY() const=0;
-  virtual float SizeZ() const=0;
-  virtual C Map(float x, float y, float z) const=0;
-  virtual ~ContinuousVoxel() { }
-};
 
 class RayTracingFunction0 : public Function<float, Point>
 {
@@ -3345,12 +3259,6 @@ private:
   ColorBitmap &bitmap;
 };
 
-template<class T>
-class HandleValue
-{
-public:
-  virtual void Handle(T t)=0;
-};
 class TriangleHandleValue : public HandleValue<Triangle>, public BoxableFaceCollection
 {
 public:
@@ -4293,22 +4201,8 @@ private:
   Array<int,int> &index;
 };
 
-class Graph
-{
-public:
-  virtual int NumVertexes() const=0;
-  virtual int NumEdges() const=0;
-  virtual std::pair<int, int> EdgeVertex(int edge) const=0;
-};
 
 
-template<class V, class E>
-class GraphData
-{
-public:
-  virtual V Vertex(int v) const =0;
-  virtual E Edge(int e, int v1, int v2) const=0;
-};
 
 
 struct VertexData3d
@@ -5707,16 +5601,6 @@ private:
   ScrollableView scr;
 };
 
-class Sprite
-{
-public:
-  virtual int NumFrames() const=0;
-  virtual int XSize(int frame) const=0;
-  virtual int YSize(int frame) const=0;
-  virtual Point2d Pos(int frame) const=0;
-  virtual Color Pixel(int frame, int x, int y) const=0;
-  virtual ~Sprite() { }
-};
 class BitmapSprite : public Sprite
 {
 public:
@@ -7208,6 +7092,154 @@ public:
 private:
   Bitmap<bool> *b;
   float dist;
+};
+
+class Layout
+{
+public:
+  virtual int count() const=0;
+  virtual TRect get(int i) const=0;
+};
+
+class SplitXYLayout : public Layout
+{
+public:
+  SplitXYLayout(Layout &l, int id, int num_x, int num_y) : l(l), id(id), num_x(num_x), num_y(num_y) { }
+  virtual int count() const { return num_x*num_y; }
+  virtual TRect get(int i) const
+  {
+    int xx = i/num_y;
+    int yy = i-xx*num_y;
+    TRect r = l.get(id);
+    r.width /= num_x;
+    r.height /= num_y;
+    r.x += r.width*xx;
+    r.y += r.height*yy;
+    return r;
+  }
+private:
+  Layout &l;
+  int id;
+  int num_x, num_y;
+};
+
+class CenterLayout : public Layout
+{
+public:
+  CenterLayout(Layout &l, int id, int cx, int cy) : l(l), id(id), cx(cx), cy(cy) { }
+  virtual int count() const { return 1; }
+  virtual TRect get(int i) const
+  {
+    TRect r = l.get(id);
+    int ccx = r.x+r.width/2;
+    int ccy = r.y+r.height/2;
+    r.x = ccx-cx;
+    r.y = ccy-cy;
+    r.width = cx;
+    r.height = cy;
+    return r;
+  }
+  
+private:
+  Layout &l;
+  int id;
+  int cx,cy;
+};
+
+class ArrayLayout : public Layout
+{
+public:
+  ArrayLayout(Layout **layout, int *id, int size) : layout(layout), id(id), size(size) { }
+  virtual int count() const { return size; }
+  virtual TRect get(int i) const
+  {
+    TRect r = layout[i]->get(id[i]);
+    return r;
+  }
+private:
+  Layout **layout;
+  int *id;
+  int size;
+};
+
+class MarginLayout : public Layout
+{
+public:
+  MarginLayout(Layout &l, int id, int lx, int rx, int ty, int by) : l(l), id(id), lx(lx), rx(rx), ty(ty), by(by) { }
+  virtual int count() const { return 1; }
+  virtual TRect get(int i) const
+  {
+    TRect r = l.get(id);
+    r.x+=lx;
+    r.y+=ty;
+    r.width-=rx+lx;
+    r.height-=by+ty;
+    return r;
+  }
+private:
+  Layout &l;
+  int id;
+  int lx;
+  int rx;
+  int ty;
+  int by;
+};
+
+class SplitLayoutY : public Layout
+{
+public:
+  SplitLayoutY(Layout &l, int id, int num) : l(l), id(id), num(num) { }
+  virtual int count() const { return num; }
+  virtual TRect get(int i) const
+  {
+    TRect p = l.get(id);
+    float k = p.height/num;
+    p.y+=k*i;
+    p.height = k;
+    return p;
+  }
+private:
+  Layout &l;
+  int id;
+  int num;
+};
+
+class SplitLayoutX : public Layout
+{
+public:
+  SplitLayoutX(Layout &l, int id, int num) : l(l), id(id), num(num) { }
+  virtual int count() const { return num; }
+  virtual TRect get(int i) const
+  {
+    TRect p = l.get(id);
+    float k = p.width/num;
+    p.x+=k*i;
+    p.width = k;
+    return p;
+  }
+private:
+  Layout &l;
+  int id;
+  int num;
+};
+
+
+class RootLayout : public Layout
+{
+public:
+  RootLayout(int sx, int sy) : sx(sx),sy(sy) { }
+  virtual int count() const { return 1; }
+  virtual TRect get(int i) const
+  {
+    TRect r;
+    r.x = 0;
+    r.y = 0;
+    r.width = sx;
+    r.height= sy;
+    return r;
+  }
+private:
+  int sx,sy;
 };
 
 #endif

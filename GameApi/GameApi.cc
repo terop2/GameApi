@@ -653,6 +653,7 @@ struct EnvImpl
   std::vector<std::vector<VertexArrayWithPos> *> object_move_vertex_array;
   std::vector<Bitmap<float>*> layout_data;
   std::map<int, ArrayRender*> renders; // BM.id -> arrayrender
+  std::vector<Layout*> layouts;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -875,6 +876,15 @@ GameApi::BB add_bool_bitmap(GameApi::Env &e, Bitmap<bool> *bitmap)
   bm.id = env->bool_bm.size()-1;
   //bm.type = 0;
   return bm;
+}
+
+GameApi::LAY add_layout(GameApi::Env &e, Layout *l)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->layouts.push_back(l);
+  GameApi::LAY ll;
+  ll.id = env->layouts.size()-1;
+  return ll;
 }
 
 GameApi::WV add_waveform(GameApi::Env &e, Waveform *bitmap)
@@ -1418,6 +1428,15 @@ BoolBitmap *find_bool_bitmap(GameApi::Env &e, GameApi::BB b)
 
   if (b.id >=0 && b.id < (int)ee->bool_bm.size())
     handle = &ee->bool_bm[b.id];
+  return handle;
+}
+
+Layout *find_layout(GameApi::Env &e, GameApi::LAY l)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  Layout *handle = 0;
+  if (l.id>=0 && l.id < (int)ee->layouts.size())
+    handle = ee->layouts[l.id];
   return handle;
 }
 
@@ -6416,4 +6435,70 @@ void GameApi::ObjectMoveApi::render_all(GameApi::VAA va)
       poly.render_vertex_array(p.va);
       glPopMatrix();
     }
+}
+
+GameApi::LAY GameApi::LayoutApi::root(int sx, int sy)
+{
+  return add_layout(e, new RootLayout(sx,sy));
+}
+GameApi::LAY GameApi::LayoutApi::split_y(LAY l, int id, int num)
+{
+  Layout *ll = find_layout(e, l);
+  return add_layout(e, new SplitLayoutY(*ll, id, num));
+}
+GameApi::LAY GameApi::LayoutApi::split_x(LAY l, int id, int num)
+{
+  Layout *ll = find_layout(e, l);
+  return add_layout(e, new SplitLayoutX(*ll, id, num));
+}
+GameApi::LAY GameApi::LayoutApi::split_xy(LAY l, int id, int num_x, int num_y)
+{
+  Layout *ll = find_layout(e, l);
+  return add_layout(e, new SplitXYLayout(*ll, id, num_x, num_y));
+}
+GameApi::LAY GameApi::LayoutApi::margin(LAY l, int id, int lx, int rx, int ty, int by)
+{
+  Layout *ll = find_layout(e, l);
+  return add_layout(e, new MarginLayout(*ll, id, lx,rx,ty,by));  
+}
+GameApi::LAY GameApi::LayoutApi::center(LAY l, int id, int cx, int cy)
+{
+  Layout *ll = find_layout(e, l);
+  return add_layout(e, new CenterLayout(*ll, id, cx, cy));
+}
+GameApi::LAY GameApi::LayoutApi::array(LAY *array, int *id, int size)
+{
+  std::vector<Layout*> *vec = new std::vector<Layout*>;
+  for(int i=0;i<size;i++)
+    {
+      vec->push_back(find_layout(e,array[i]));
+    }
+  return add_layout(e, new ArrayLayout(&(*vec)[0], id, size));
+}
+
+int GameApi::LayoutApi::count(LAY l)
+{
+  Layout *ll = find_layout(e, l);
+  return ll->count();
+}
+int GameApi::LayoutApi::pos_x(LAY l, int id)
+{
+  Layout *ll = find_layout(e, l);
+  return ll->get(id).x;
+}
+int GameApi::LayoutApi::pos_y(LAY l, int id)
+{
+  Layout *ll = find_layout(e, l);
+  return ll->get(id).y;
+}
+
+int GameApi::LayoutApi::size_x(LAY l, int id)
+{
+  Layout *ll = find_layout(e, l);
+  return ll->get(id).width;
+}
+int GameApi::LayoutApi::size_y(LAY l, int id)
+{
+  Layout *ll = find_layout(e, l);
+  return ll->get(id).height;
 }

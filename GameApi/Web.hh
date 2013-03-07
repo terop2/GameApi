@@ -1,8 +1,9 @@
 
 #include "Effect.hh"
-#include "Graph.hh"
+#include "GraphI.hh"
 #include <sstream>
 #include <string>
+#include <fstream>
 
 class Directory
 {
@@ -388,14 +389,7 @@ class PngBitmapFunction : public Function<Pos, HtmlImage*>
 {
 public:
   PngBitmapFunction(std::string file_basename, Bitmap<Color> &bm, int sx, int sy) : filename(file_basename), bm(bm),sx(sx), sy(sy), img(0), constant(0) { }
-  HtmlImage *Index(Pos c) const
-  {
-    delete constant;
-    constant = new ConstantBitmap<Color>(bm.Map(c.x,c.y), sx,sy);
-    delete img;
-    img = new HtmlImage(filename+"_"+Num(c.x)+"_"+Num(c.y)+".png", *constant, sx, sy);
-    return img;
-  }
+  HtmlImage *Index(Pos c) const;
   std::string Num(int i) const { std::stringstream s; s << i; return s.str(); }
 private:
   std::string filename;

@@ -2,7 +2,87 @@
 #ifndef FONT_HH
 #define FONT_HH
 
-#include "Graph.hh"
+#include "Effect.hh"
+#include "GraphI.hh"
+#include <vector>
+
+using namespace std;
+struct Path3d
+{
+  std::vector<Point> vec;
+};
+struct Path2d
+{
+  std::vector<Point2d> vec;
+};
+
+class Visitor;
+
+struct Loop
+{
+  int inverse;
+  VectorArray<Point2d> *points;
+  void visit(Visitor &v);
+  void init() { inverse=false; points=new VectorArray<Point2d>; }
+};
+
+class Visitor
+{
+public:
+  virtual void visit(bool &b)=0;
+  virtual void visit(int &a)=0; // 0
+  virtual void visit(float &b)=0; // 1
+  virtual void visit(Point2d &p)=0; // 2
+  virtual void visit(Point &p)=0; //3
+  virtual void visit(VectorArray<Loop> *array)=0; // 4
+  virtual void visit(VectorArray<Point2d> *array)=0; // 5
+};
+
+
+
+class Parser {
+public:
+  Parser() : currentptr(0), size(0) { }
+  int ParseInt(std::string s, bool &success);
+  int ParseEnum(std::string *strings, int size, std::string s, bool &success);
+  bool ParseBool(std::string s, bool &success);
+  float ParseFloat(std::string s, bool &success);
+  Point2d ParsePoint2d(std::string s, bool &success);
+  Point ParsePoint(std::string s, bool &success);
+  template<class T>
+  VectorArray<T> *ParseArray(std::string s, bool &success);
+  template<class T>
+  T ParseStruct(std::string s, bool &success);
+
+  Loop ParseLoop(std::string s, bool &success)
+  {
+    Loop l = ParseStruct<Loop>(s,success);
+    return l;
+  }
+  Path3d ParsePath3d(std::string s, bool &success);
+  Path2d ParsePath2d(std::string s, bool &success);
+public: // these parse without {}'s.
+  template<class T>
+  T ParseStruct2(std::string s, bool &success);
+  template<class T>
+  VectorArray<T> *ParseArray2(std::string s, bool &success);
+private:
+  template<class T>
+  T *Alloc()
+  {
+    //delete[] currentptr;
+    T *obj = new T;
+    currentptr = (char*)obj;
+    //currentptr = new char[sizeof(T)];
+    //new(currentptr)T;
+    size = sizeof(T);
+    return obj;
+  }
+private:
+  char *currentptr;
+  int size;
+};
+
 
 class FontCharacter
 {

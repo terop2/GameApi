@@ -1,6 +1,9 @@
 
 #include "Buffer.hh"
 #include "Graph.hh"
+#include "Effect.hh"
+
+
 
 class State
 {
