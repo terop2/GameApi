@@ -131,3 +131,11 @@ void CreateHtml()
   FileInDir f1(dir, htmlfile);
   CreateFiles(f1);
 }
+HtmlImage *PngBitmapFunction::Index(Pos c) const
+  {
+    delete constant;
+    constant = new ConstantBitmap<Color>(bm.Map(c.x,c.y), sx,sy);
+    delete img;
+    img = new HtmlImage(filename+"_"+Num(c.x)+"_"+Num(c.y)+".png", *constant, sx, sy);
+    return img;
+  }

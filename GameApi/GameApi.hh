@@ -1413,13 +1413,27 @@ class LayoutApi
 {
 public:
   LayoutApi(Env &e) : e(e) { }
-  LAY root_bitmap(BM bm);
-  LAY root_screen();
-  LAY child_size(LAY parent, float l, float t, float sx, float sy);
-  LAY child_margin(LAY parent, float l, float t, float r, float b);
-  LAY child_grid(LAY parent, int sx, int sy, float border_x, float border_y, int curr_x, int curr_y);
-  DR bitmap(LAY parent, BM bm);
-  VA draw(DR *array, int size);
+  LAY root(int sx, int sy); // id = {0}
+  LAY split_y(LAY l, int id, int num); // id = {0..num-1}
+  LAY split_x(LAY l, int id, int num); // id = {0..num-1}
+  LAY split_xy(LAY l, int id, int num_x, int num_y); // id={0..(num_x*num_y-1)}
+  LAY margin(LAY l, int id, int lx, int rx, int ty, int by); // id={ 0 }
+  LAY size(LAY l, int id, int lx, int size_x, int ty, int size_y); // id = { 0 }
+  LAY center(LAY l, int id, int content_size_x, int content_size_y); // id={0}
+  LAY array(LAY *array, int *id, int size); // id = { 0..size }
+
+  int count(LAY l);
+  int pos_x(LAY l, int id);
+  int pos_y(LAY l, int id);
+  int size_x(LAY l, int id);
+  int size_y(LAY l, int id);
+
+  BM draw_rect(BM orig, LAY l, int id, unsigned int color);
+  BM draw_icon(BM orig, LAY l, int id, BM bm);
+  BM draw_text(BM orig, LAY l, int id, std::string s, Ft font, unsigned int color);
+  BM draw_icon_array(BM orig, LAY l, BM *array);
+  BM draw_text_array(BM orig, LAY l, std::string *array, Ft font, unsigned int color);
+
 private:
   Env &e;
 };

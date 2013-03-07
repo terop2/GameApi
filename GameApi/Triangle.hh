@@ -2,7 +2,7 @@
 #include "VectorTools.hh"
 #include "Effect.hh"
 #include "Plane.hh"
-#include "Graph.hh"
+#include "GraphI.hh"
 #include "Widgets.hh"
 
 struct TriIndex
