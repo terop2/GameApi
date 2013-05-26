@@ -611,6 +611,7 @@ public:
   // problem2: colors in O.
   // problem3: conversion from volumeobject to continuousvoxel<float> and continuousvoxel<color> (something like that exists already)
   // BM raytrace(O volume, int sx, int sy, V v, float z);
+  BM montecarlo(O object, PT p_top, PT p_x, PT p_y, PT p_z, int sx, int sy);
 private:
   Env &e;
 };
@@ -757,6 +758,9 @@ public:
   P rotatez(P orig, float angle);
   P rotate(P orig, PT pt, V axis, float angle);
   P scale(P orig, float sx, float sy, float sz);
+
+  P move(P orig, PT obj_0, V obj_x, V obj_y, V obj_z,
+	 PT world_0, V world_x, V world_y, V world_z);
 
   L color_lighting(float dx, float dy, float dz, 
 		   int r, int g, int b, int a);
@@ -1422,21 +1426,51 @@ public:
   LAY center(LAY l, int id, int content_size_x, int content_size_y); // id={0}
   LAY array(LAY *array, int *id, int size); // id = { 0..size }
 
+  int root_sx(LAY l);
+  int root_sy(LAY l);
+
   int count(LAY l);
   int pos_x(LAY l, int id);
   int pos_y(LAY l, int id);
   int size_x(LAY l, int id);
   int size_y(LAY l, int id);
 
-  BM draw_rect(BM orig, LAY l, int id, unsigned int color);
-  BM draw_icon(BM orig, LAY l, int id, BM bm);
-  BM draw_text(BM orig, LAY l, int id, std::string s, Ft font, unsigned int color);
-  BM draw_icon_array(BM orig, LAY l, BM *array);
-  BM draw_text_array(BM orig, LAY l, std::string *array, Ft font, unsigned int color);
-
 private:
   Env &e;
 };
+
+class DrawApi
+{
+public:
+  DrawApi(Env &e) : e(e) { }
+  DR label(LAY l, int id, std::string str, Ft font);
+  DR icon(LAY l, int id, BM bm);
+  DR rect(LAY l, int id, unsigned int color);
+  DR scroll(DR dr, int delta_x, int delta_y);
+  DR scroll_area(DR dr, LAY l, int id);
+  DR cliprect(DR cmds, LAY l, int id);
+
+  DR array(DR *array, int size);
+  DR alternatives_array(std::string id, DR *array, int size);
+  DR choose_alternative(DR dr, std::string id, int val);
+
+  DR deep_copy(DR d);
+  bool is_specific_alternative(DR d, std::string id);
+  int array_count(DR d);
+  int alternative_array_count(DR d);
+  DR array_index(DR d, int index);
+  DR alternative_array_index(DR d, int index);
+  bool is_array(DR d);
+  bool is_alternative_array(DR d);
+  bool is_primitive(DR d);
+
+  BM render_to_bm(DR dr);
+  std::string render_to_html_canvas(DR dr);
+  std::string generate_java_code(DR dr);
+private:
+  Env &e;
+};
+
 
 struct EveryApi
 {
