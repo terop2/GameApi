@@ -7242,4 +7242,163 @@ private:
   int sx,sy;
 };
 
+
+class Draw
+{
+public:
+  virtual int type() const=0;
+  virtual Point2d topleft() const=0;
+  virtual Point2d bottomright() const=0;
+  virtual int propcount() const=0;
+  virtual std::string propname(int i) const=0;
+  virtual std::string proptype(int i) const=0;
+  virtual void* probvalue(int i) const=0;
+
+  virtual int ArrayCount() const=0;
+  virtual Draw* ArrayIndex(int i) const=0;
+  
+  virtual int AlArrayCount() const=0;
+  virtual Draw* AlArrayIndex(int i) const=0;
+};
+#if 0
+
+class DrawScroll : public Draw
+{
+public:
+  DrawScroll(Draw &next, int delta_x, int delta_y) : next(next), delta_x(delta_xx), delta_y(delta_y) { }
+  virtual int type() const { return next.type(); }
+  virtual Point2d topleft() const { return next.topleft(); }
+  virtual Point2d bottomright() const { return next.bottomright(); }
+  virtual int propcount() const { return next.propcount(); }
+  virtual std::string propname(int i) const { return next.propname(i); }
+  virtual std::string proptype(int i) const { return next.proptype(i); }
+  virtual void* propvalue(int i) const { return next.propvalue(i); }
+
+  virtual int ArrayCount() const { return next.ArrayCount(); }
+  virtual Draw* ArrayIndex(int i) const
+  {
+    return next.ArrayIndex(i);
+  }
+  
+  virtual int AlArrayCount() const { return next.AlArrayCount(); }
+  virtual Draw* AlArrayIndex(int i) const
+  {
+    reutrn next.AlArrayIndex(i);
+  }
+private:
+  Draw &next;
+  int delta_x, delta_y;
+};
+class DrawEmpty : public Draw
+{
+public:
+  DrawEmpty(int type, Point2d tl, Point2d br) : type(type), tl(tl), br(br) { }
+  virtual int type() const { return type; }
+  virtual Point2d topleft() const { return tl; }
+  virtual Point2d bottomright() const { return br; }
+  virtual int propcount() const { return 0; }
+  virtual std::string propname(int i) const { return ""; }
+  virtual std::string proptype(int i) const { return ""; }
+  virtual void* probvalue(int i) const { return 0; }
+
+  virtual int ArrayCount() const { return 0; }
+  virtual Draw* ArrayIndex(int i) const { return 0; }
+  
+  virtual int AlArrayCount() const { return 0; }
+  virtual Draw* AlArrayIndex(int i) const { return 0; }
+private:
+  int type;
+  Point2d tl,br;
+};
+
+template<class T>
+class DrawPropTrait { };
+template<>
+class DrawPropTrait<float> { static const std::string s = "float"; };
+template<>
+class DrawPropTrait<int> { static const std::string s = "int"; };
+
+template<class T>
+class DrawProp : public Draw
+{
+public:
+  DrawProp(Draw &next, std::string name, T t) : next(next), name(name), type(DrawPropTrait<T>::s), t(t) { }
+  virtual int type() const { return next.type(); }
+  virtual Point2d topleft() const { return next.topleft(); }
+  virtual Point2d bottomright() const { return next.bottomright(); }
+
+  virtual int propcount() const { return next.propcount()+1; }
+  virtual std::string propname(int i) const
+  {
+    if (i==0) return name; else return next.propname(i-1);
+  }
+  virtual std::string proptype(int i) const
+  {
+    if (i==0) return type; else return next.proptype(i-1);
+  }
+  virtual void* probvalue(int i) const
+  {
+    if (i==0) return &t; else return next.propvalue(i-1);
+  }
+  virtual int ArrayCount() const { return next.ArrayCount(); }
+  virtual Draw* ArrayIndex(int i) const { return next.ArrayIndex(i); }
+  
+  virtual int AlArrayCount() const { return next.AlArrayCount(); }
+  virtual Draw* AlArrayIndex(int i) const { return next.AlArrayIndex(i); }
+
+private:
+  Draw &next;
+  std::string name;
+  std::string type;
+  T t;
+};
+
+class DrawArray : public Draw
+{
+public:
+  DrawArray(Draw &next, Draw *array, int size) : next(next) { }
+  virtual int type() const { return next.type(); }
+  virtual Point2d topleft() const { return next.topleft(); }
+  virtual Point2d bottomright() const { return next.bottomright(); }
+  virtual int propcount() const { return next.propcount(); }
+  virtual std::string propname(int i) const { return next.propname(i); }
+  virtual std::string proptype(int i) const { return next.proptype(i); }
+  virtual void* probvalue(int i) const { return next.propvalue(i); }
+
+  virtual int ArrayCount() const { return size; }
+  virtual Draw* ArrayIndex(int i) const { return &array[i]; }
+  
+  virtual int AlArrayCount() const { return next.AlArrayCount(); }
+  virtual Draw* AlArrayIndex(int i) const { return next.AlArrayIndex(i); }
+private:
+  Draw &next;
+  Draw *array;
+  int size;
+};
+
+class DrawAlArray : public Draw
+{
+public:
+  DrawAlArray(Draw &next, Draw *array, int size) : next(next) { }
+  virtual int type() const { return next.type(); }
+  virtual Point2d topleft() const { return next.topleft(); }
+  virtual Point2d bottomright() const { return next.bottomright(); }
+  virtual int propcount() const { return next.propcount(); }
+  virtual std::string propname(int i) const { return next.propname(i); }
+  virtual std::string proptype(int i) const { return next.proptype(i); }
+  virtual void* probvalue(int i) const { return next.propvalue(i); }
+
+  virtual int ArrayCount() const { return next.ArrayCount(); }
+  virtual Draw* ArrayIndex(int i) const { return next.ArrayIndex(i); }
+  
+  virtual int AlArrayCount() const { return size; }
+  virtual Draw* AlArrayIndex(int i) const { return &array[i]; }
+private:
+  Draw &next;
+  Draw *array;
+  int size;
+};
+#endif
+
+
 #endif

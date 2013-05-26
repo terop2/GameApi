@@ -2850,6 +2850,38 @@ void Intersection(IntersectableCurve &c1, IntersectableCurve &c2)
   // STEP2 use float->float in root finding.
 }
 
+class ConstantMinus : public Function<float,float>
+{
+public:
+  ConstantMinus(Function<float,float> &f, float c) : f(f), c(c) { }
+  float Index(float x) const
+  {
+    return f.Index(x)-c;
+  }
+private:
+  Function<float,float> &f;
+  float c;
+};
+
+
+class Pullback_c 
+{
+public:
+  Pullback_c(Function<float,float> &f1, Function<float,float> &f2, float b) : f(f), g(g), b(b), cons1(f,b), cons2(g,b) { }
+  std::pair<float,float> solve(float s1, float s2) const
+  {
+    float val = Solve(cons1, s1, s2);
+    float val2 = Solve(cons2, s1, s2);
+    return std::make_pair(val, val2);
+  }
+private:
+  Function<float,float> &f;
+  Function<float,float> &g;
+  float b;
+  ConstantMinus cons1;
+  ConstantMinus cons2;
+};
+
 
 #endif
 

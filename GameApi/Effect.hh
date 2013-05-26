@@ -3020,6 +3020,31 @@ public:
 private:
   FaceCollection &coll;
 };
+
+class CoordChangeFaceColl : public ForwardFaceCollection
+{
+public:
+  CoordChangeFaceColl(FaceCollection *coll, bool invert, Coords coordchange)
+    : ForwardFaceCollection(*coll),
+      invert(invert),
+      coordchange(coordchange) {}
+  virtual Point FacePoint(int face, int point) const 
+  { 
+    Point p = ForwardFaceCollection::FacePoint(face,point);
+    if (!invert) {
+      p = coordchange.FindInternalCoords(p);
+    }
+    else {
+      p = coordchange.FindExternalCoords(p);
+    }
+    return p;
+  }
+  
+private:
+  bool invert;
+  Coords coordchange;
+};
+
 class RecalculateNormals : public ForwardFaceCollection
 {
 public:

@@ -3384,6 +3384,37 @@ GameApi::P GameApi::PolygonApi::scale(P orig, float sx, float sy, float sz)
   return add_polygon(e, coll,1);
 }
 
+GameApi::P GameApi::PolygonApi::move(P orig, PT obj_0, V obj_x, V obj_y, V obj_z,
+				     PT world_0, V world_x, V world_y, V world_z)
+{
+  FaceCollection *coll = find_facecoll(e, orig);
+  Point *obj0 = find_point(e, obj_0);
+  Vector *objx = find_vector(e, obj_x);
+  Vector *objy = find_vector(e, obj_y);
+  Vector *objz = find_vector(e, obj_z);
+
+  Point *world0 = find_point(e, world_0);
+  Vector *worldx = find_vector(e, world_x);
+  Vector *worldy = find_vector(e, world_y);
+  Vector *worldz = find_vector(e, world_z);
+  
+  Coords obj;
+  obj.center = *obj0;
+  obj.u_x = *objx;
+  obj.u_y = *objy;
+  obj.u_z = *objz;
+  Coords world;
+  world.center = *world0;
+  world.u_x = *worldx;
+  world.u_y = *worldy;
+  world.u_z = *worldz;
+  FaceCollection *coll2 = new CoordChangeFaceColl(coll, false, obj);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(coll2));  
+  FaceCollection *coll3 = new CoordChangeFaceColl(coll2, true, world);
+  return add_polygon(e, coll3, 1);
+}
+
 GameApi::P GameApi::PolygonApi::splitquads(P orig, int x_count, int y_count)
 {
   FaceCollection *coll = find_facecoll(e, orig);
@@ -6502,3 +6533,51 @@ int GameApi::LayoutApi::size_y(LAY l, int id)
   Layout *ll = find_layout(e, l);
   return ll->get(id).height;
 }
+
+#if 0
+GameApi::DR GameApi::DrawApi::label(LAY l, int id, std::string str, Ft font)
+{
+  Layout *ll = find_layout(e, l);
+  TRect r = ll->get(id);
+  Point2d tl = { r.x, r.y };
+  Point2d br = { r.x+r.width, r.y+r.height };
+  Draw *dr = new DrawEmpty(0, tl, br);
+  Draw *dr1 = new DrawProp(*dr, "label", str);
+  Draw *dr2 = new DrawProp(*dr1, "font", font.id);
+  return add_draw(e, dr2);
+}
+
+GameApi::DR GameApi::DrawApi::icon(LAY l, int id, BM bm)
+{
+  Layout *ll = find_layout(e, l);
+  TRect r = ll->get(id);
+  Point2d tl = { r.x, r.y };
+  Point2d br = { r.x+r.width, r.y+r.height };
+  Draw *dr = new DrawEmpty(1, tl, br);
+  Draw *dr1 = new DrawProp(*dr, "bitmap", bm.id);
+  return add_draw(e, dr1);
+}
+
+GameApi::DR GameApi::DrawApi::rect(LAY l, int id, unsigned int color)
+{
+  Layout *ll = find_layout(e, l);
+  TRect r = ll->get(id);
+  Point2d tl = { r.x, r.y };
+  Point2d br = { r.x+r.width, r.y+r.height };
+  Draw *dr = new DrawEmpty(2, tl, br);
+  Draw *dr1 = new DrawProp(*dr, "rect", color);
+  return add_draw(e, dr1);
+}
+GameApi::DR GameApi::DrawApi::scroll(DR dr, int delta_x, int delta_y)
+{
+  Draw *ddr = find_draw(e, dr);
+  Point2d p = { 0.0, 0.0 };
+  Draw *drx = new DrawEmpty(3, p,p); 
+  Draw *dr1 = new DrawProp(*dr, "delta_x", delta_x);
+  Draw *dr2 = new DrawProp(*dr1, "delta_y", delta_y);
+  Draw *dr3 = new DrawProp(*dr2, "draw", ddr);
+  return add_draw(e, dr3);
+}
+GameApi::DR GameApi::DrawApi::scroll_area(DR dr, LAY l, int id);
+GameApi::DR GameApi::DrawApi::cliprect(DR cmds, LAY l, int id);
+#endif

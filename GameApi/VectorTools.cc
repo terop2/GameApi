@@ -820,7 +820,7 @@ static Vector proj(Vector u, Vector v)
   return Vector::DotProduct(u,v)/Vector::DotProduct(u,u)*u;
 }
 
-Point Coords::FindInternalCoords(Point external_coords)
+Point Coords::FindInternalCoords(Point external_coords) const
 {
   Vector v = external_coords-center;
   float x = Vector::FindProjectionLength(v, u_x);
@@ -828,7 +828,7 @@ Point Coords::FindInternalCoords(Point external_coords)
   float z = Vector::FindProjectionLength(v, u_z);
   return Point(x,y,z);
 }
-Point Coords::FindExternalCoords(Point internal_coords)
+Point Coords::FindExternalCoords(Point internal_coords) const
 {
   return center + internal_coords.x*u_x + internal_coords.y*u_y + internal_coords.z*u_z;
 }

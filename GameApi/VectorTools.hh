@@ -455,8 +455,8 @@ struct Coords
   void OrthoNormalize();
   void Scale(float x);
   void Reposition(Point p) { center = p; }
-  Point FindInternalCoords(Point external_coords);
-  Point FindExternalCoords(Point internal_coords);
+  Point FindInternalCoords(Point external_coords) const;
+  Point FindExternalCoords(Point internal_coords) const;
   Point center;
   Vector u_x, u_y, u_z;
 };
