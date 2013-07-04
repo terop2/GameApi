@@ -164,7 +164,8 @@ public:
     T* ptr = new(buffer+allocated_bytes)T;
     ptrs[obj] = ptr;
     widths[obj] = sizeof(T);
-    infos[obj] = new std::type_info(typeid(T));
+    // infos[obj] = new std::type_info;
+    //TODO *(infos[obj]) = typeid(T);
     allocated_bytes+=sizeof(T);
   }
 private:

@@ -1,6 +1,6 @@
 
 #include "GameApi.hh"
-#include <math.h>
+#include <cmath>
 
 using namespace GameApi;
 

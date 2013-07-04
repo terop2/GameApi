@@ -1377,7 +1377,7 @@ public:
 class CirclePart : public ShaderFunction
 {
 public:
-  void Set(Point center, float r) { c=center; r=r; }
+  void Set(Point center, float r_) { c=center; r=r_; }
   void Link(std::string s2d, std::string r, std::string c1) { c2d=s2d; rr = r; cc = c1; }
   void SetParameters(Program &p) const
   {

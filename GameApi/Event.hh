@@ -87,7 +87,7 @@ class TimeLineSequence : public TimeLine
 {
 public:
   TimeLineSequence(Array<int, TimeLine*> &arr) : arr(arr) { }
-  float Size()
+  float Size() const
   {
     int size = arr.Size();
     float length=0.0;
@@ -614,7 +614,7 @@ private:
     }
     LinearMovement &mv;
   };
-  friend class LM;
+  friend struct LM;
 private:
   Array<int, PointCollection*> &arr;
   FloatArray &time;

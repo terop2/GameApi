@@ -277,7 +277,7 @@ public:
   bool is_identity;
 };
 
-class Point2d;
+struct Point2d;
 
 class Plane
 {
