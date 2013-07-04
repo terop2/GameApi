@@ -1182,7 +1182,7 @@ void RenderSprite(const Sprite &s, int frame, Point2d pos1, Point2d pos2, Point2
 }
 #endif
 
-float Parser::ParseFloat(std::string s_, bool &success)
+float Parser2::ParseFloat(std::string s_, bool &success)
 {
   std::cout << "ParseFloat: '" << s_ << "'" << std::endl;
 
@@ -1194,7 +1194,7 @@ float Parser::ParseFloat(std::string s_, bool &success)
   else { std::cout << "ParseFloat fail" << std::endl; success = false; }
   return val;
 }
-int Parser::ParseInt(std::string s_, bool &success)
+int Parser2::ParseInt(std::string s_, bool &success)
 {
   std::cout << "ParseInt: '" << s_ << "'" << std::endl;
 
@@ -1207,7 +1207,7 @@ int Parser::ParseInt(std::string s_, bool &success)
   return val;
 }
 
-bool Parser::ParseBool(std::string s_, bool &success)
+bool Parser2::ParseBool(std::string s_, bool &success)
 {
   std::cout << "ParseBool: '" << s_ << "'" << std::endl;
 
@@ -1223,7 +1223,7 @@ bool Parser::ParseBool(std::string s_, bool &success)
 
 
 
-Point2d Parser::ParsePoint2d(std::string s_, bool &success)
+Point2d Parser2::ParsePoint2d(std::string s_, bool &success)
 {
   std::cout << "ParsePoint2d: '" << s_ << "'" << std::endl;
 
@@ -1241,7 +1241,7 @@ Point2d Parser::ParsePoint2d(std::string s_, bool &success)
   return p;
 }
 
-int Parser::ParseEnum(std::string *strings, int size,
+int Parser2::ParseEnum(std::string *strings, int size,
 		      std::string s, bool &success)
 {
   for(int i=0;i<size;i++)
@@ -1252,7 +1252,7 @@ int Parser::ParseEnum(std::string *strings, int size,
   return -1;
 }
 
-Point Parser::ParsePoint(std::string s_, bool &success)
+Point Parser2::ParsePoint(std::string s_, bool &success)
 {
   std::cout << "ParsePoint: '" << s_ << "'" << std::endl;
 
@@ -1329,15 +1329,15 @@ void Loop::visit(Visitor &v)
     v.visit(points);
 }
 
-TypeTraits<int>::fptrtype TypeTraits<int>::fptr = &Parser::ParseInt;
-TypeTraits<bool>::fptrtype TypeTraits<bool>::fptr = &Parser::ParseBool;
+TypeTraits<int>::fptrtype TypeTraits<int>::fptr = &Parser2::ParseInt;
+TypeTraits<bool>::fptrtype TypeTraits<bool>::fptr = &Parser2::ParseBool;
 
-TypeTraits<float>::fptrtype TypeTraits<float>::fptr = &Parser::ParseFloat;
+TypeTraits<float>::fptrtype TypeTraits<float>::fptr = &Parser2::ParseFloat;
 
-TypeTraits<Point2d>::fptrtype TypeTraits<Point2d>::fptr = &Parser::ParsePoint2d;
-TypeTraits<Loop>::fptrtype TypeTraits<Loop>::fptr = &Parser::ParseLoop;
+TypeTraits<Point2d>::fptrtype TypeTraits<Point2d>::fptr = &Parser2::ParsePoint2d;
+TypeTraits<Loop>::fptrtype TypeTraits<Loop>::fptr = &Parser2::ParseLoop;
 
-void Write(Parser *p, char *c, int size, int type, std::string s, bool &success)
+void Write(Parser2 *p, char *c, int size, int type, std::string s, bool &success)
 {
   std::cout << "Write: '" << s << "'" << type << std::endl;
 

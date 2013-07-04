@@ -1011,8 +1011,8 @@ class QuadBitmapFromSphere : public Bitmap<Quad>
 public:
   QuadBitmapFromSphere(Point center, float radius, int sx, int sy) 
     : sx(sx), sy(sy), sphere(sx,sy), mat(sphere, Matrix::Scale(radius,radius,radius)*Matrix::Translate(center.x,center.y,center.z)) { }
-  int SizeX() { return sx; }
-  int SizeY() { return sy; }
+  int SizeX() const { return sx; }
+  int SizeY() const { return sy; }
   Quad Map(int x, int y) const
   {
     int face = x + y*sx;
@@ -1991,11 +1991,11 @@ class BorderBitmap2 : public ContinuousBitmap<bool>
 { // requires == operation
 public:
   BorderBitmap2(float width, ContinuousBitmap<T> &c) : width(width), c(c) { }
-  virtual int SizeX() const
+  virtual float SizeX() const
   {
     return c.SizeX();
   }
-  virtual int SizeY() const
+  virtual float SizeY() const
   {
     return c.SizeY();
   }
@@ -2424,7 +2424,7 @@ public:
   }
   float SizeX() const { return sx; }
   float SizeY() const { return sy; }
-  Color Map(float x, float y)
+  Color Map(float x, float y) const
   {
     if (!tri.Map(x,y)) { Color c(0,0,0,0); return c; }
     float ttx = tx.Map(x,y);
@@ -3113,7 +3113,10 @@ public:
   }
   T Map(float r, float alfa, float beta) const
   {
-    SphericalPoint spec = { r, alfa, beta };
+    SphericalPoint spec(Point(0.0,0.0,0.0));
+    spec.r = r;
+    spec.alfa = alfa;
+    spec.beta = beta;
     Point pp = spec.ToPoint();
     pp += p;
     return sp.Map(pp.x,pp.y,pp.z);
@@ -3551,7 +3554,7 @@ private:
 class FaceCollectionHandleValueDynamic : public HandleValue<std::pair<Matrix, unsigned int > >
 {
 public:
-  FaceCollectionHandleValueDynamic() : fc(fc) { }
+  FaceCollectionHandleValueDynamic() { }
   void DrawVBO(VBOState &vbostate, VBOUpdate u);
   void Handle(std::pair<Matrix, unsigned int> mm)
   {
@@ -3565,7 +3568,7 @@ public:
     vec.push_back(n);
   }
 private:
-  BoxableFaceCollection &fc;
+  //BoxableFaceCollection &fc;
   struct Node
   {
     float mat[16];
@@ -4556,7 +4559,7 @@ class ZoomArray : public Array<int, ZoomingStep<C>*>
 class ChoosePointByMouseCursor
 {
 public:
-  ChoosePointByMouseCursor(PointCollection &coll) : pp(pp), coll(coll) { }
+  ChoosePointByMouseCursor(PointCollection &coll) : coll(coll) { }
   int Choose(Point2d pp) const
   {
     int m = 100000.0;
@@ -5570,8 +5573,8 @@ class SphereDist : public Bitmap<float>
 { // distance from bitmap to sphere surface
 public:
   SphereDist(Point center, float r, int sx, int sy, Point2d tl, Point2d br) : center(center), r(r), sx(sx), sy(sy), tl(tl), br(br) { }
-  int SizeX() { return sx; }
-  int SizeY() { return sy; }
+  int SizeX() const { return sx; }
+  int SizeY() const { return sy; }
   float Map(int x, int y) const
   {
     float xx = float(x)/sx;
@@ -6261,9 +6264,9 @@ public:
   { Point2d *ptr = (Point2d*)currentptr; p = *ptr; currentptr+=sizeof(Point2d); }
   virtual void visit(Point &p)
   { Point *ptr = (Point*)currentptr; p = *ptr; currentptr+=sizeof(Point); }
-  virtual void visit(Array<int,int> &array) { }
+  //virtual void visit(Array<int,int> &array) { }
   //{ int *ptr = (int*)currentptr; a = *ptr; currentptr+=sizeof(int); }
-  virtual void visit(Array<int,float> &array) { }
+  //virtual void visit(Array<int,float> &array) { }
   //{ int *ptr = (int*)currentptr; a = *ptr; currentptr+=sizeof(int); }
 private:
   char *currentptr;
@@ -6280,9 +6283,9 @@ struct Path2d
 };
 
 
-class Parser {
+class Parser2 {
 public:
-  Parser() : currentptr(0), size(0) { }
+  Parser2() : currentptr(0), size(0) { }
   int ParseInt(std::string s, bool &success);
   int ParseEnum(std::string *strings, int size, std::string s, bool &success);
   bool ParseBool(std::string s, bool &success);
@@ -6331,7 +6334,7 @@ template<>
 class TypeTraits<int>
 {
 public:
-  typedef int (Parser::*fptrtype)(std::string, bool &);
+  typedef int (Parser2::*fptrtype)(std::string, bool &);
   static fptrtype fptr;
 };
 
@@ -6340,7 +6343,7 @@ template<>
 class TypeTraits<bool>
 {
 public:
-  typedef bool (Parser::*fptrtype)(std::string, bool &);
+  typedef bool (Parser2::*fptrtype)(std::string, bool &);
   static fptrtype fptr;
 };
 
@@ -6351,29 +6354,29 @@ template<>
 class TypeTraits<float>
 {
 public:
-  typedef float (Parser::*fptrtype)(std::string, bool &);
+  typedef float (Parser2::*fptrtype)(std::string, bool &);
   static fptrtype fptr;
-  //float (Parser::*fptr)(std::string, bool &) = &Parser::ParseFloat;
+  //float (Parser2::*fptr)(std::string, bool &) = &Parser2::ParseFloat;
 };
 
 template<>
 class TypeTraits<Point2d>
 {
 public:
-  typedef Point2d (Parser::*fptrtype)(std::string, bool &);
+  typedef Point2d (Parser2::*fptrtype)(std::string, bool &);
   static fptrtype fptr;
 
-  //Point2d (Parser::*fptr)(std::string, bool &) = &Parser::ParsePoint2d;
+  //Point2d (Parser2::*fptr)(std::string, bool &) = &Parser2::ParsePoint2d;
 };
 
 template<>
 class TypeTraits<Loop>
 {
 public:
-  typedef Loop (Parser::*fptrtype)(std::string, bool &);
+  typedef Loop (Parser2::*fptrtype)(std::string, bool &);
   static fptrtype fptr;
 
-  //Point2d (Parser::*fptr)(std::string, bool &) = &Parser::ParsePoint2d;
+  //Point2d (Parser2::*fptr)(std::string, bool &) = &Parser2::ParsePoint2d;
 };
 
 
@@ -6382,7 +6385,7 @@ template<>
 class TypeTraits<Point>
 {
 public:
-  Point (Parser::*fptr)(std::string, bool &) = &Parser::ParsePoint;
+  Point (Parser2::*fptr)(std::string, bool &) = &Parser2::ParsePoint;
 };
 template<>
 class TypeTraits<Array<int,int> >
@@ -6404,14 +6407,14 @@ template<class T>
 class ParseInterfaceImpl : public ParseInterface
 {
 public:
-  ParseInterfaceImpl(T (Parser::*fptr)(std::string, bool &)) : fptr(fptr) { }
+  ParseInterfaceImpl(T (Parser2::*fptr)(std::string, bool &)) : fptr(fptr) { }
   void *Parse(std::string s, bool &success)
   {
     t = fptr(s, success);
     return &t;
   }
 private:
-  T (Parser::*fptr)(std::string, bool &);
+  T (Parser2::*fptr)(std::string, bool &);
   void *res;
   T t;
 };
@@ -6434,7 +6437,7 @@ struct TestStruct
   }
 };
 
-void Write(Parser *p, char *c, int size, int type, std::string s, bool &success)
+void Write(Parser2 *p, char *c, int size, int type, std::string s, bool &success)
 ;
 std::string WhiteSpace(std::string s);
 
@@ -6443,7 +6446,7 @@ int Find(std::string s, char c);
 void DumpMem(const char *c, int size);
 
 template<class T>
-T Parser::ParseStruct2(std::string s_, bool &success)
+T Parser2::ParseStruct2(std::string s_, bool &success)
 {
   std::cout << "ParseStruct2: '" << s_ << "'" << std::endl;
 
@@ -6496,7 +6499,7 @@ T Parser::ParseStruct2(std::string s_, bool &success)
 }
 
 template<class T>
-T Parser::ParseStruct(std::string s_, bool &success)
+T Parser2::ParseStruct(std::string s_, bool &success)
 {
   std::cout << "ParseStruct: '" << s_ << "'" << std::endl;
 
@@ -6517,7 +6520,7 @@ T Parser::ParseStruct(std::string s_, bool &success)
     }
 }
 template<class T>
-VectorArray<T> *Parser::ParseArray(std::string s_, bool &success)
+VectorArray<T> *Parser2::ParseArray(std::string s_, bool &success)
 {
   std::cout << "ParseArray: '" << s_ << "'" << std::endl;
   std::string s = WhiteSpace(s_);
@@ -6538,12 +6541,12 @@ VectorArray<T> *Parser::ParseArray(std::string s_, bool &success)
 }
 
 template<class T>
-VectorArray<T> *Parser::ParseArray2(std::string s_, bool &success)
+VectorArray<T> *Parser2::ParseArray2(std::string s_, bool &success)
 {
   std::cout << "ParseArray2: '" << s_ << "'" << std::endl;
   std::string s = WhiteSpace(s_);
 
-  T (Parser::*fptr)(std::string, bool &) = TypeTraits<T>::fptr;
+  T (Parser2::*fptr)(std::string, bool &) = TypeTraits<T>::fptr;
   int pos = Find(s,',');
   if (pos == -1)
     {
@@ -7000,7 +7003,7 @@ private:
 class TextureITexCoord : public TextureI
 {
 public:
-  TextureITexCoord(TextureI &next, int id, int x, int y, int width, int heigth)
+  TextureITexCoord(TextureI &next, int id, int x, int y, int width, int height)
     : next(next), id(id), x(x), y(y), width(width), height(height) { }
   virtual int AreaCount() const  { return next.AreaCount()+1; }
   virtual int Id(int i) const 

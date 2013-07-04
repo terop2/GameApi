@@ -7,26 +7,26 @@
 #include <vector>
 
 using namespace std;
-struct Path3d
+struct Path3d2
 {
   std::vector<Point> vec;
 };
-struct Path2d
+struct Path2d2
 {
   std::vector<Point2d> vec;
 };
 
-class Visitor;
+class Visitor2;
 
-struct Loop
+struct Loop2
 {
   int inverse;
   VectorArray<Point2d> *points;
-  void visit(Visitor &v);
+  void visit(Visitor2 &v);
   void init() { inverse=false; points=new VectorArray<Point2d>; }
 };
 
-class Visitor
+class Visitor2
 {
 public:
   virtual void visit(bool &b)=0;
@@ -34,7 +34,7 @@ public:
   virtual void visit(float &b)=0; // 1
   virtual void visit(Point2d &p)=0; // 2
   virtual void visit(Point &p)=0; //3
-  virtual void visit(VectorArray<Loop> *array)=0; // 4
+  virtual void visit(VectorArray<Loop2> *array)=0; // 4
   virtual void visit(VectorArray<Point2d> *array)=0; // 5
 };
 
@@ -54,13 +54,13 @@ public:
   template<class T>
   T ParseStruct(std::string s, bool &success);
 
-  Loop ParseLoop(std::string s, bool &success)
+  Loop2 ParseLoop(std::string s, bool &success)
   {
-    Loop l = ParseStruct<Loop>(s,success);
+    Loop2 l = ParseStruct<Loop2>(s,success);
     return l;
   }
-  Path3d ParsePath3d(std::string s, bool &success);
-  Path2d ParsePath2d(std::string s, bool &success);
+  Path3d2 ParsePath3d(std::string s, bool &success);
+  Path2d2 ParsePath2d(std::string s, bool &success);
 public: // these parse without {}'s.
   template<class T>
   T ParseStruct2(std::string s, bool &success);
@@ -337,16 +337,6 @@ struct FontCharacterImpl : public FontCharacter
   virtual Point2d PosTL() const { return fd.tl; } // from 0,0
   virtual Point2d PosBR() const { return fd.br; } // from 0,0
 private:
-  void Parse(std::string s, bool &success)
-  {
-    std::cout << "Font Parse data: '" << s << "'" << std::endl;
-    fd = p.ParseStruct<FontData>(s,success);
-    std::cout << "Advance: " << fd.advance << std::endl;
-    std::cout << "tl: " << fd.tl.x << " " << fd.tl.y << std::endl;
-    std::cout << "br: " << fd.br.x << " " << fd.br.y << std::endl;
-    std::cout << "vec:" << fd.vec << std::endl;
-  }
-private:
   Parser p;
   bool success;
   struct FontData
@@ -354,16 +344,16 @@ private:
     float advance;
     Point2d tl;
     Point2d br;
-    VectorArray<Loop> *vec;
+    VectorArray<Loop2> *vec;
     void init() 
     { 
       advance=1.0; 
       Point2d p = { 0.0,0.0 };
       tl = p;
       br = p;
-      vec=new VectorArray<Loop>; 
+      vec=new VectorArray<Loop2>; 
     }
-    void visit(Visitor &v)
+    void visit(Visitor2 &v)
     {
       v.visit(advance);
       v.visit(tl);
@@ -372,6 +362,17 @@ private:
     }
   };
   FontData fd;
+private:
+  void Parse(std::string s, bool &success)
+  {
+    std::cout << "Font Parse data: '" << s << "'" << std::endl;
+    //fd = p.ParseStruct<FontData>(s,success);
+    std::cout << "Advance: " << fd.advance << std::endl;
+    std::cout << "tl: " << fd.tl.x << " " << fd.tl.y << std::endl;
+    std::cout << "br: " << fd.br.x << " " << fd.br.y << std::endl;
+    std::cout << "vec:" << fd.vec << std::endl;
+  }
+
 };
 
 

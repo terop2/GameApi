@@ -56,10 +56,10 @@ all: libGameApi.so install main
 examples: main
 
 main: $(GCHFiles_examples) $(OFiles_examples) Makefile GameApi.hh libGameApi.so
-	g++ -g $(OFiles_examples) -std=c++0x -o main -L. -lGameApi -lGL
+	clang -g $(OFiles_examples) -std=c++0x -o main -L. -lGameApi -lGL -lm -lstdc++
 
 libGameApi.so: $(GCHFiles) $(OFiles) Makefile
-	g++ -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL -lGL -lSDL_image -lGLEW -lfreetype 
+	clang -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL -lGL -lSDL_image -lGLEW -lfreetype 
 #`pkg-config gtkmm-2.4 --libs` 
 
 subdirs: $(Subdirs)
@@ -74,7 +74,7 @@ ctags: TAGS
 TAGS: $(CFiles)
 	etags -o TAGS -l c++ $(CFiles)
 
-CC = g++
+CC = clang
 
 $(DFiles): objs/%.d: %.cc
 	@gcc -M $(CCFLAGS) $< \

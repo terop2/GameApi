@@ -702,7 +702,7 @@ template<class N, class A>
 class Mul : public Function<std::pair<N,A>, A>, private Function<A, Function<int, A>*>
 {
 public:
-  Mul(Function<std::pair<A,A>, A> &plus, A zero) : exp(plus), ptr(ptr), zero(zero), expi(this), ptr(0) { }
+  Mul(Function<std::pair<A,A>, A> &plus, A zero) : exp(plus), zero(zero), expi(this), ptr(0) { }
   A Index(std::pair<N,A> &p) const
   {
     return expi.Index(p);
@@ -4864,7 +4864,7 @@ class WaveformFunction : public Array2<float, float, float>
 {
 public:
   WaveformFunction(WaveformCurve &curve) : curve(curve) { }
-  float Index(float x, float y)
+  float Index(float x, float y) const
   {
     Waveform *wave = curve.Index(x);
     float val = wave->Index(y);
@@ -5229,7 +5229,7 @@ public:
   EqualPaths(PathCollection &p1, PathCollection &p2) : p1(p1), p2(p2) 
   {
   }
-  float PathLength() { return p1.PathLength(); }
+  float PathLength() const { return p1.PathLength(); }
   int NumPaths(float posinpath) const { return p1.NumPaths(posinpath) + p2.NumPaths(posinpath); }
   Matrix Index(float posinpath, int path) const
   {
@@ -5263,7 +5263,7 @@ public:
       }
     return count;
   }
-  Matrix Index(float posinpath, int path)
+  Matrix Index(float posinpath, int path) const
   {
     return coll.Index(posinpath, Mapping(posinpath, path));
   }
@@ -5319,7 +5319,7 @@ public:
   class TimeProjection : public BoxCollection
   {
   public:
-    TimeProjection(PathCollection &path) : time(time), path(path) { }
+    TimeProjection(PathCollection &path) : time(0.0), path(path) { }
     void SetTime(float time_) { time = time_; }
     int Size() const { return path.NumPaths(time); }
     Matrix Index(int box) const { return path.Index(time, box); }
@@ -6626,7 +6626,7 @@ public:
   InterpolationPathCollection(float pathlength, BoxCollection &dom, BoxCollection &cod, Function<int,int> &mapping) : pathlength(pathlength), dom(dom), cod(cod), mapping(mapping) { }
   int NumPaths(float /*time*/) const { return dom.NumBoxes(); }
   float PathLength() const { return pathlength; }
-  Matrix Index(float posinpath, int path) 
+  Matrix Index(float posinpath, int path) const 
   {
     Matrix domm = dom.BoxIndex(path);
     Matrix codm = dom.BoxIndex(mapping.Index(path));
