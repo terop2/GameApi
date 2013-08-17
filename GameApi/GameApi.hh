@@ -255,6 +255,12 @@ public:
 		float xx, float yy, // [0,0]
 		int sx, int sy,
 		int count);
+  BM mandelbrot2(bool julia,
+		float start_x, float end_x, // [-2..1]
+		float start_y, float end_y, // [-1,1]
+		float xx, float yy, // [0,0]
+		int sx, int sy,
+		int count);
   BM memoize(BM orig);
   BM memoize_all(BM orig);
   int intvalue(BM bm, int x, int y);

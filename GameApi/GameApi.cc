@@ -2220,6 +2220,30 @@ GameApi::BM GameApi::BitmapApi::mandelbrot(bool julia,
   return bm;  
 }
 
+GameApi::BM GameApi::BitmapApi::mandelbrot2(bool julia,
+		float start_x, float end_x,
+		float start_y, float end_y,
+		float xx, float yy,
+		int sx, int sy,
+		int count)
+{
+  ::Bitmap<int> *b = new Mandelbrot(julia, start_x, end_x,
+				      start_y, end_y,
+				      sx,sy,
+				      count,
+				      xx,yy);
+  ::Bitmap<Color> *b2 = new MapBitmapToColor(0, count, Color(255,255,255), Color(0,128,255), *b);
+  EnvImpl *env = EnvImpl::Environment(&e);
+
+  env->deletes.push_back(std::tr1::shared_ptr<void>(b));
+  //env->deletes.push_back(std::tr1::shared_ptr<void>(b2));
+  //::Bitmap<Color> *m = new MemoizeBitmap(*b2);
+  BitmapColorHandle *handle = new BitmapColorHandle;
+  handle->bm = b2;
+  BM bm = add_bitmap(e, handle);
+  return bm;  
+}
+
 GameApi::BM GameApi::BitmapApi::newtilebitmap(int sx, int sy, int tile_sx, int tile_sy)
 {
   ::Bitmap<Color> *b = new ConstantBitmap<Color>(Color(0,0,0), sx,sy);
