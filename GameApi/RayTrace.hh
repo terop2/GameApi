@@ -1,5 +1,6 @@
 
 #include "VectorTools.hh"
+#include "Graph.hh"
 
 class RayTrace
 {
@@ -16,6 +17,32 @@ public:
   virtual Point2d PointTexCoord(Point p) const=0;
   virtual float RaySplitPercentage(Point p) const=0;
 };
+
+class SurfaceProperty : public Bitmap<Color>
+{
+public:
+  SurfaceProperty(PointProperty &p, Point p1, Vector dx, Vector dy, int sx, int sy)
+  {
+    dx/=sx;
+    dy/=sy;
+  }
+  int SizeX() const { return sx; }
+  int SizeY() const { return sy; }
+  Color Index(int x, int y) const
+  {
+    Point p = p1+float(x)*dx+float(y)*dy;
+    unsigned int color = p.PointColor(p);
+    return Color(color);
+  }
+private:
+  PointProperty &p;
+  Point p1;
+  Vector dx;
+  Vector dy;
+  int sx; 
+  int sy;
+};
+
 
 class RaySpace
 {

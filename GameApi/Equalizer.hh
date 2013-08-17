@@ -247,6 +247,57 @@ public:
   virtual bool Comp(T t1, T t2) const=0;
 };
 
+template<class A, class U=A>
+class SubImage : public Function<U,A>, public PowerSet<A>
+{
+public:
+  SubImage(Function<A,bool> &obj, bool choose) : obj(obj), choose(choose) { }
+  bool Index(A t) const
+  {
+    return obj.Index(t)==choose;
+  }
+  A Index(U t) const
+  {
+    return t;
+  }
+private:
+  Function<A,bool> &obj;
+  bool choose;
+};
+
+template<class X, class Y, class U=X, class V=Y>
+class InverseImageK : public Function<Function<V,Y>*, Function<U,X>*>, private Function<U,X>
+{
+public:
+  InverseImageK(Function<X,Y> &f) : f(f) { }
+  Function<U,X> *Index(Function<V,Y>* vy) const
+  {
+    return *this;
+  }
+  X Index(U u) const
+  {
+    return u;
+  }
+private:
+  Function<X,Y> &f;
+};
+
+template<class X, class Y, class U=X, class V=Y>
+class InverseImageA : public Function<X,bool>
+{
+public:
+  InverseImageA(Function<X,Y> &f, Function<Y,bool> &a) : f(f),a(a) { }
+  bool Index(X x) const {
+    return a.Index(f.Index(x));
+  }
+  X Index(U u) const {
+    return u;
+  }
+private:
+  Function<X,Y> &f;
+  Function<Y,bool> &a;
+};
+
 template<class A, class B>
 class InverseImage : public Function<PowerSet<B>*,PowerSet<A>*>, private PowerSet<A>
 {
@@ -266,6 +317,8 @@ private:
   Function<A,B> &f;
   mutable PowerSet<B> *bb;
 };
+
+
 
 template<class Omega, class A, class B>
 class InverseImageF : public Function<Function<B,Omega>*, Function<A,Omega>*>, private Function<A,Omega>
@@ -2882,6 +2935,63 @@ private:
   ConstantMinus cons2;
 };
 
+template<class A, class B>
+class Pullback_int_d : public Function<std::pair<A,B>, bool>
+{
+public:
+  Pullback_d(Function<A,int> &f, Function<B,int> &g) : f(f), g(g) { }
+  bool Index(std::pair<A,B> &p) const
+  {
+    int c = f.Index(p.first);
+    int c2 = g.Index(p.second);
+    return c==c2;
+  }
+private:
+  Function<A,C> &f;
+  Function<B,C> &g;
+};
+
+template<class A, class B, class C>
+class Pullback_d : public Function<std::pair<A,B>, bool>
+{
+public:
+  Pullback_d(Function<A,C> &f, Function<B,C> &g) : f(f), g(g) { }
+  bool Index(std::pair<A,B> &p) const
+  {
+    C c = f.Index(p.first);
+    C c2 = g.Index(p.second);
+    return c<c2;
+  }
+private:
+  Function<A,C> &f;
+  Function<B,C> &g;
+};
+
+template<class X, class Y>
+class Exists : public Function<Function<std::pair<X,Y>,bool>*,Function<X,bool> >, private Function<X,bool>
+{
+public:
+  Exists(std::vector<Y> &vec) : vec(vec) { }
+  Function<X,bool> *Index(Function<std::pair<X,Y>, bool> &f)
+  {
+    ff = &f;
+    return const_cast<Exists*>(this);
+  }
+  bool Index(X x) const
+  {
+    int s = vec.size();
+    bool bb = false;
+    for(int i=0;i<s;i++)
+      {
+	bool b = ff->Index(std::make_pair(x, vec[i]));
+	bb |= b;
+      }
+    return bb;
+  }
+private:
+  Function<std::pair<X,Y>, bool> *ff;
+  std::vector<Y> &vec;
+}; 
 
 #endif
 
