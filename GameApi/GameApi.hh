@@ -73,6 +73,7 @@ namespace GameApi
   struct DO { int id; };
   struct PC { int id; };
   struct SV { int id; };
+  struct FOA { int id; };
   //template<class T>
   //struct E { int id; };
 
@@ -629,6 +630,10 @@ public:
   //FO plus(FO f1, FO f2);
   BM raytrace(FO object, int sx, int sy, 
 	      PT ray_0, PT ray_x, PT ray_y, PT ray_z, float surface_value);
+  FOA prepare(FO object, int numpoints, 
+	      float start_x, float start_y, float start_z, 
+	      float end_x, float end_y, float end_z);
+  void render(FOA array);
 private:
   Env &e;
 };

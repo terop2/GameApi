@@ -608,6 +608,12 @@ struct VertexArrayWithPos
   GameApi::M m;
 };
 
+struct PointArray2
+{
+  float *array; // 3*numpoints items
+  int numpoints;
+};
+
 
 struct EnvImpl
 {
@@ -654,6 +660,7 @@ struct EnvImpl
   std::vector<Bitmap<float>*> layout_data;
   std::map<int, ArrayRender*> renders; // BM.id -> arrayrender
   std::vector<Layout*> layouts;
+  std::vector<PointArray2*> pointarray;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -678,6 +685,8 @@ void ArrayDelete(T *ptr)
   delete [] ptr;
 }
 GameApi::PT add_point(GameApi::Env &e, float x, float y);
+
+
 
 GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 {
@@ -1041,6 +1050,15 @@ GameApi::M add_matrix(GameApi::Env &e, MatrixInterface *i)
   return m;
 }
 
+GameApi::FOA add_point_array(GameApi::Env &e, PointArray2 *array)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->pointarray.push_back(array);
+  GameApi::FOA pt;
+  pt.id = env->pointarray.size()-1;
+  return pt;
+}
+
 GameApi::PT add_point(GameApi::Env &e, float x, float y)
 {
   EnvImpl *env = EnvImpl::Environment(&e);
@@ -1051,6 +1069,8 @@ GameApi::PT add_point(GameApi::Env &e, float x, float y)
   //pt.type = 0;
   return pt;
 }
+
+
 
 GameApi::TR add_timerange(GameApi::Env &e, int paths)
 {
@@ -1665,6 +1685,14 @@ Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handl
     {
       return 0;
     }
+  return 0;
+}
+
+PointArray2 *find_point_array(GameApi::Env &e, GameApi::FOA p)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  if (p.id >=0 && p.id < (int)ee->pointarray.size())
+    return ee->pointarray[p.id];
   return 0;
 }
 
@@ -6136,6 +6164,45 @@ GameApi::WV GameApi::WaveformApi::function(float (*fptr)(EveryApi &ev, float, vo
   EnvImpl *env = EnvImpl::Environment(&e);
   env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
   return add_waveform(e, new FunctionWaveform(*ev, fptr, length, min_value, max_value, data));
+}
+
+GameApi::FOA GameApi::FloatVolumeApi::prepare(GameApi::FO object,
+					      int numpoints,
+					      float start_x, float start_y, float start_z,
+					      float end_x, float end_y, float end_z)
+{
+  FloatVolumeObject *fo = find_float_volume(e, object);
+  float *array = new float[numpoints*3];
+  int index = 0;
+  for(int i=0;i<numpoints;i++)
+    {
+      Random r;
+      float xp = double(r.next())/r.maximum()*(end_x-start_x)+start_x;
+      float yp = double(r.next())/r.maximum()*(end_y-start_y)+start_y;
+      float zp = double(r.next())/r.maximum()*(end_z-start_z)+start_z;
+      float val = double(r.next())/r.maximum();
+      if (fo->FloatValue(Point(xp,yp,zp))>val)
+	{
+	  array[index+0] = xp;
+	  array[index+1] = yp;
+	  array[index+2] = zp;
+	  index+=3;
+	}
+    }
+  index/=3;
+  PointArray2 *arr = new PointArray2;
+  arr->array = array;
+  arr->numpoints = index;
+  return add_point_array(e, arr);
+}
+
+void GameApi::FloatVolumeApi::render(FOA array)
+{
+  PointArray2 *arr = find_point_array(e, array);
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glVertexPointer(3, GL_FLOAT, 0, arr->array);
+  glDrawArrays(GL_POINTS, 0, arr->numpoints);
+  glDisableClientState(GL_VERTEX_ARRAY);
 }
 
 GameApi::FO GameApi::FloatVolumeApi::function(float (*fptr)(EveryApi &ev, float x, float y, float z, void *data), void *data)
