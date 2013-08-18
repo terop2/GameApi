@@ -29,7 +29,9 @@ void GameTest6(EveryApi &e)
   BM bm_julia = e.bitmap_api.mandelbrot2(true, -1.0, 1.0, -1.0, 1.0, 0.25,0.15, 150, 150, 256);
 
   FO obj = api.function(&SphereObj, &bm_mand);
-  FOA array = api.prepare(obj, 800000, -150.0,-150.0,-150.0, 150.0,150.0,150.0);
+  //FO obj2 = api.move(obj, 100.0,0.0,0.0);
+  //FO obj3 = api.maximum(obj,obj2);
+  FOA array = api.prepare(obj, 800000, -150.0,-150.0,-150.0, 350.0,350.0,350.0);
   float time;
   while(1)
     {
