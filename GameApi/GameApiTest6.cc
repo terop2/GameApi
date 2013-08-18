@@ -32,6 +32,18 @@ void GameTest6(EveryApi &e)
   //FO obj2 = api.move(obj, 100.0,0.0,0.0);
   //FO obj3 = api.maximum(obj,obj2);
   FOA array = api.prepare(obj, 800000, -150.0,-150.0,-150.0, 350.0,350.0,350.0);
+
+  
+  std::string filename = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
+  Ft font = e.font_api.newfont(filename.c_str(), 50,50);
+  BM fontbm = e.font_api.glyph(font, 'G');
+  FB fb = e.float_bitmap_api.from_red(fontbm);
+  FO obj2 = api.from_float_bitmap(fb, -150.0, 150.0,
+				  -150.0, 150.0,
+				  -50.0, 50.0);
+  
+  FOA array2 = api.prepare(obj2, 800000, -150.0,-150.0,-150.0, 150.0,150.0,150.0);
+
   float time;
   while(1)
     {
@@ -41,7 +53,9 @@ void GameTest6(EveryApi &e)
       glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
       glPushMatrix();
       glRotatef(time, 0.0,1.0,0.0);
-      api.render(array);
+      glScalef(1.0,-1.0,1.0);
+      //api.render(array);
+      api.render(array2);
       glPopMatrix();
       glDisable(GL_BLEND);
       e.mainloop_api.swapbuffers();
