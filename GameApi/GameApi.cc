@@ -6238,6 +6238,27 @@ GameApi::FO GameApi::FloatVolumeApi::function(float (*fptr)(EveryApi &ev, float 
   return add_float_volume(e, ff);
 }
 
+class FloatVolumeFromVolume : public FloatVolumeObject
+{
+public:
+  FloatVolumeFromVolume(VolumeObject &obj, float false_val, float true_val) : obj(obj),false_val(false_val), true_val(true_val) { }
+  float FloatValue(Point p) const
+  {
+    if (obj.Inside(p)) { return true_val; }
+    return false_val;
+  }
+private:
+  VolumeObject &obj;
+  float false_val, true_val;
+};
+
+GameApi::FO GameApi::FloatVolumeApi::from_volume(GameApi::O obj, float false_val, float true_val)
+{
+  VolumeObject *obj_ = find_volume(e, obj);
+  FloatVolumeObject *obj2 = new FloatVolumeFromVolume(*obj_, false_val, true_val);
+  return add_float_volume(e, obj2);
+}
+
 class FloatVolumeObjectFunction : public Function<Point, float>
 {
 public:

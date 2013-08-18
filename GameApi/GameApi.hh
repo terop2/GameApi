@@ -628,6 +628,7 @@ class FloatVolumeApi
 public:
   FloatVolumeApi(Env &e) : e(e) { }
   FO function(float (*fptr)(EveryApi &ev, float x, float y, float z, void *data), void *data);
+  FO from_volume(O o, float false_val, float true_val);
   FO distance();
   FO torusdistance(PT center, V u_x, V u_y, float radius);
   FO move(FO f1, float dx, float dy, float dz);
