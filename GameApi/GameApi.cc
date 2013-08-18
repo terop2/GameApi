@@ -6258,6 +6258,46 @@ GameApi::FO GameApi::FloatVolumeApi::from_volume(GameApi::O obj, float false_val
   FloatVolumeObject *obj2 = new FloatVolumeFromVolume(*obj_, false_val, true_val);
   return add_float_volume(e, obj2);
 }
+class FloatVolumeFromBitmap : public FloatVolumeObject
+{
+public:
+  FloatVolumeFromBitmap(FloatBitmap *bm, float start_x, float end_x,
+			float start_y, float end_y,
+			float start_z, float end_z) : bm(bm),
+						      start_x(start_x),
+						      end_x(end_x),
+						      start_y(start_y),
+						      end_y(end_y),
+						      start_z(start_z),
+						      end_z(end_z) { }
+  float FloatValue(Point p) const
+  {
+    if (p.x<start_x) return 0.0;
+    if (p.x>end_x) return 0.0;
+    if (p.y<start_y) return 0.0;
+    if (p.y>end_y) return 0.0;
+    if (p.z<start_z) return 0.0;
+    if (p.z>end_z) return 0.0;
+    float x = p.x-start_x;
+    x/=end_x-start_x;
+    x*=bm->bitmap->SizeX();
+    float y = p.y-start_y;
+    y/=end_y-start_y;
+    y*=bm->bitmap->SizeY();
+    return bm->bitmap->Map((int)x,(int)y);
+  }
+private:
+  FloatBitmap *bm;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+};
+GameApi::FO GameApi::FloatVolumeApi::from_float_bitmap(GameApi::FB bm, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+{
+  FloatBitmap *bm2 = find_float_bitmap(e, bm);
+  FloatVolumeObject *obj = new FloatVolumeFromBitmap(bm2, start_x, end_x, start_y, end_y, start_z, end_z);
+  return add_float_volume(e,obj);
+}
 
 class FloatVolumeObjectFunction : public Function<Point, float>
 {
