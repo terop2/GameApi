@@ -86,7 +86,7 @@ namespace GameApi
     virtual R Map(P p) const=0;
   };
 
-  class EveryApi;
+  struct EveryApi;
 
 class Env
 {
@@ -1441,7 +1441,7 @@ public:
 private:
   friend class StateChangeApi;
   void *priv;
-  Env &e;
+  //Env &e;
 };
 
 class LayoutApi
@@ -1545,7 +1545,7 @@ public:
   void start_game(int event);
 private:
   Env &e;
-  void *priv;
+  //void *priv;
 };
 
 class SocketApi

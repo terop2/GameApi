@@ -125,7 +125,7 @@ private:
   float start_x, end_x, start_y, end_y;
   int sx,sy;
   Color true_color, false_color;
-  void *data;
+  //void *data;
 };
 
 class FloatRangeBitmap : public Bitmap<bool>
@@ -3755,7 +3755,7 @@ private:
   GenerateArray<std::pair<Vector, unsigned int> > hv1a;
   GenerateArray<std::pair<Vector, unsigned int> > hv2a;
 
-  int texture;
+  //int texture;
   GlobalTexturePiece globpiece;
   TexturePiece texturepiece;
   PieceShader shader;
@@ -4574,7 +4574,7 @@ public:
     return index;
   }
 private:
-  Point2d pp;
+  //Point2d pp;
   PointCollection &coll;
 };
 template<class T>
@@ -5371,8 +5371,8 @@ private:
 class MeshTexturesImpl : public MeshTextures
 {
 public:
-  MeshTexturesImpl(Bitmap<Color> &bm) : bm(bm), bm2(bm), next(empty), ref(0) { }
-  MeshTexturesImpl(Bitmap<Color> &bm, MeshTextures &tex) : bm(bm), bm2(bm), next(tex), ref(0) { }
+  MeshTexturesImpl(Bitmap<Color> &bm) : /*bm(bm),*/ bm2(bm), next(empty), ref(0) { }
+  MeshTexturesImpl(Bitmap<Color> &bm, MeshTextures &tex) : /*bm(bm),*/ bm2(bm), next(tex), ref(0) { }
   ~MeshTexturesImpl() { delete ref; }
   virtual int NumTextures() const { return 1+next.NumTextures(); }
   virtual void GenTexture(int num) 
@@ -5387,7 +5387,7 @@ public:
   virtual BufferRef TextureBuf(int num) const { return ref->Buffer(); }
 
 private:
-  Bitmap<Color> &bm;
+  //Bitmap<Color> &bm;
   SizeBitmapTo2 bm2;
   MeshTextures &next;
   MeshTextures empty;
@@ -5572,7 +5572,7 @@ public:
 class SphereDist : public Bitmap<float>
 { // distance from bitmap to sphere surface
 public:
-  SphereDist(Point center, float r, int sx, int sy, Point2d tl, Point2d br) : center(center), r(r), sx(sx), sy(sy), tl(tl), br(br) { }
+  SphereDist(Point center, float r, int sx, int sy, Point2d tl, Point2d br) : center(center), /*r(r),*/ sx(sx), sy(sy), tl(tl), br(br) { }
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   float Map(int x, int y) const
@@ -5587,7 +5587,7 @@ public:
  }
 private:
   Point center;
-  float r;
+  //float r;
   int sx, sy;
   Point2d tl,br;
 };
@@ -5939,7 +5939,7 @@ private:
   Point center;
   Vector u_x, u_y, v;
   int sx,sy;
-  int maxval;
+  //int maxval;
 };
 
 #if 0
@@ -6101,7 +6101,7 @@ public:
 	     Point p,
 	     Vector u_x,
 	     Vector u_y, // u_y is the function's value
-	     Vector u_z) : bm(bm), min_val(min_val), max_val(max_val),
+	     Vector u_z) : bm(bm), /*min_val(min_val), max_val(max_val),*/
 			   p(p), u_x(u_x), u_y(u_y), u_z(u_z), cached_face(-1) 
   {
     float start_x = 0.0;
@@ -6179,7 +6179,7 @@ public:
 private:
   Bitmap<float> &bm;
   mutable CubeElem *elem;
-  float min_val, max_val;
+  //float min_val, max_val;
   Point p;
   Vector u_x, u_y, u_z;
   mutable int cached_face;
@@ -6255,7 +6255,7 @@ private:
 class WriteVisitor : public Visitor
 {
 public:
-  WriteVisitor(char *currentptr, int size) : currentptr(currentptr), size(size) { }
+  WriteVisitor(char *currentptr, int size) : currentptr(currentptr) /*, size(size) */{ }
   virtual void visit(int &a) 
   { int *ptr = (int*)currentptr; a = *ptr; currentptr+=sizeof(int); }
   virtual void visit(float &b)
@@ -6270,7 +6270,7 @@ public:
   //{ int *ptr = (int*)currentptr; a = *ptr; currentptr+=sizeof(int); }
 private:
   char *currentptr;
-  int size;
+  //int size;
 };
 
 struct Path3d
@@ -6622,7 +6622,7 @@ public:
     return val;
   }
 private:
-  float start, end, min,max;
+  //float start, end, min,max;
   std::vector<IWaveform*> vec;
   float (*fptr)(float,float);
 };

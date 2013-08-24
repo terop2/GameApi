@@ -18,7 +18,7 @@ void GameApiTest3(EveryApi &e)
   int sx = e.bitmap_api.size_x(bm2);
   int sy = e.bitmap_api.size_y(bm2);
   std::cout << std::dec << sx << " " << sy << std::endl;
-  BM bm2a = e.bitmap_api.newbitmap(sx, sy);
+  //BM bm2a = e.bitmap_api.newbitmap(sx, sy);
   //BM bmx = e.bitmap_api.memoize(bm2);
   //BM bmxa = e.bitmap_api.memoize(bm2a);
   //BM bm2 = bm.mandelbrot(false,-2.0,1.0,-1.0,1.0,0.0,0.0,50,50,255);

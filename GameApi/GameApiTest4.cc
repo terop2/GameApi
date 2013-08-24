@@ -38,10 +38,10 @@ void Game(EveryApi &e)
 {
   MainLoopApi &loop = e.mainloop_api;
   PointApi &points = e.point_api;
-  VectorApi &vec = e.vector_api;
+  //VectorApi &vec = e.vector_api;
   BitmapApi &bm = e.bitmap_api;
-  BoolBitmapApi &bool_bm = e.bool_bitmap_api;
-  FloatBitmapApi &float_bm = e.float_bitmap_api;
+  //BoolBitmapApi &bool_bm = e.bool_bitmap_api;
+  //FloatBitmapApi &float_bm = e.float_bitmap_api;
   PolygonApi &poly = e.polygon_api;
   SpriteApi &sprite = e.sprite_api;
   VolumeApi &volume = e.volume_api;
@@ -79,10 +79,10 @@ void Game(EveryApi &e)
   sprite.preparesprite(green);
 
   // 3d text
-  Ft font = e.font_api.newfont("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 50, 50);
-  BM letter = e.font_api.glyph(font, 'a');
-  BB letter2 = e.bool_bitmap_api.from_bitmaps_color_area(letter, 1,255,1,255,1,255,1,255);
-  O o = e.bool_bitmap_api.to_volume(letter2, 20.0);
+  //Ft font = e.font_api.newfont("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 50, 50);
+  //BM letter = e.font_api.glyph(font, 'a');
+  //BB letter2 = e.bool_bitmap_api.from_bitmaps_color_area(letter, 1,255,1,255,1,255,1,255);
+  //O o = e.bool_bitmap_api.to_volume(letter2, 20.0);
   //BM bxm = e.volume_api.render(o, 100,100, e.point_api.point(0.0,0.0,0.0),
   //			      e.point_api.point(50.0, 0.0,0.0),
   //			      e.point_api.point(0.0,50.0,0.0),

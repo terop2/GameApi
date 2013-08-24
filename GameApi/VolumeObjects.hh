@@ -640,6 +640,7 @@ private:
   VolumeObject &kk;
 };
 
+#if 0
 class OrVolumeArray : public VolumeObject
 {
 public:
@@ -649,7 +650,7 @@ private:
   VolumeObject *array;
   int size;
 };
-
+#endif
 
 class ColorSpecVolume  : public VolumeObject
 {
@@ -785,11 +786,11 @@ private:
 class Random
 {
 public:
-  Random() : seed1(555), seed2(999) { }
+  Random() /*: seed1(555), seed2(999)*/ { }
   unsigned int next() { return rand(); /*seed1 += seed2; seed2 = seed1; return seed1 >> 16;*/ }
   unsigned int maximum() { return RAND_MAX; /*return 0xffff;*/ }
 private:
-  unsigned int seed1, seed2;
+  //unsigned int seed1, seed2;
 };
 
 class RandomPointsInBox : public PointCollection

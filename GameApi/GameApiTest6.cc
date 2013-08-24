@@ -25,13 +25,13 @@ void GameTest6(EveryApi &e)
   FloatVolumeApi &api = e.float_volume_api;
   loop.init_3d();
   
-  BM bm_mand = e.bitmap_api.mandelbrot2(false, -2.0, 1.0, -1.0, 1.0, 0.0,0.0, 150, 150, 256);
-  BM bm_julia = e.bitmap_api.mandelbrot2(true, -1.0, 1.0, -1.0, 1.0, 0.25,0.15, 150, 150, 256);
+  //BM bm_mand = e.bitmap_api.mandelbrot2(false, -2.0, 1.0, -1.0, 1.0, 0.0,0.0, 150, 150, 256);
+  //BM bm_julia = e.bitmap_api.mandelbrot2(true, -1.0, 1.0, -1.0, 1.0, 0.25,0.15, 150, 150, 256);
 
-  FO obj = api.function(&SphereObj, &bm_mand);
+  //FO obj = api.function(&SphereObj, &bm_mand);
   //FO obj2 = api.move(obj, 100.0,0.0,0.0);
   //FO obj3 = api.maximum(obj,obj2);
-  FOA array = api.prepare(obj, 800000, -150.0,-150.0,-150.0, 350.0,350.0,350.0);
+  //FOA array = api.prepare(obj, 800000, -150.0,-150.0,-150.0, 350.0,350.0,350.0);
 
   
   std::string filename = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
@@ -44,7 +44,7 @@ void GameTest6(EveryApi &e)
   
   FOA array2 = api.prepare(obj2, 80000, -150.0,-150.0,-150.0, 150.0,150.0,150.0);
 
-  float time;
+  float time = 0.0;
   while(1)
     {
       e.mainloop_api.clear_3d();

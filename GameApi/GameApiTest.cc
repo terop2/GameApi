@@ -64,24 +64,24 @@ void GameApiTest()
   tx.load_font("./maps/font.png", 32,32, 20,2,'a','z');
   BM b1 = bm.loadbitmap("./maps/circle.png");
   spr.preparesprite(b1);
-  BM mand2 = bm.newbitmap(600,300);
-  BM mand1 = bm.mandelbrot(false, 
-			  -2.0, 1.0, // x
-			  -1.0, 1.0, // y
-			  0.0,0.0,   // pos
-			  600,300,   // sx,sy
-			  128); // iterations
+  //BM mand2 = bm.newbitmap(600,300);
+  //BM mand1 = bm.mandelbrot(false, 
+  //			  -2.0, 1.0, // x
+  //			  -1.0, 1.0, // y
+  //			  0.0,0.0,   // pos
+  //			  600,300,   // sx,sy
+  //			  128); // iterations
 
   //V v = vbo.alloc(1);
   //vbo.sprite(v, 0, mand1, 0.0,0.0);
   //vbo.prepare(v);
   
   SP screen = loop.screenspace();
-  PT center_b = sp.pos(screen, 0.0, 0.0, 0.0);
-  PT center_a = sp.pos(screen, -100.0, -100.0,-100.0);
-  PT center_x = sp.pos(screen, 100.0, -100.0,-100.0);
-  PT center_y = sp.pos(screen, -100.0, 100.0,-100.0);
-  PT center_z = sp.pos(screen, -100.0, -100.0,100.0);
+  //PT center_b = sp.pos(screen, 0.0, 0.0, 0.0);
+  //PT center_a = sp.pos(screen, -100.0, -100.0,-100.0);
+  //PT center_x = sp.pos(screen, 100.0, -100.0,-100.0);
+  //PT center_y = sp.pos(screen, -100.0, 100.0,-100.0);
+  //PT center_z = sp.pos(screen, -100.0, -100.0,100.0);
   //S ss = surf.sphere(center_b, 50.0);
   //S ss = surf.bitmapsphere(center_b, 50.0, 80.0, mand1);
   //BM mand3 = bm.repeatbitmap(mand1, 100,100);
@@ -99,7 +99,7 @@ void GameApiTest()
   BM tile = bm.loadtilebitmap("./maps/circle.png", 30,30);
   gr.preparegrid(tile);
   BM grid = bm.loadposbitmap("./maps/circle.png");
-  SP s = loop.screenspace();
+  //SP s = loop.screenspace();
   P ppp = poly.cube(-100.0, 100.0,
 		  -200.0, -250.0,
 		  -100.0, 100.0);
@@ -130,7 +130,7 @@ void GameApiTest()
 
   for(int i=0;i<20;i++)
     {
-      float g_mod = i*2.0*3.14159265/20;
+      //float g_mod = i*2.0*3.14159265/20;
       //FunctionCb<PT,PT> *f = new ChangeFunction(&bm, &func, &sp, &a, &loop, &poly, g_mod);
       EveryApi every(e);
       P pm = poly.change_positions(split, &Map, &every);
@@ -143,18 +143,18 @@ void GameApiTest()
   P sphere = poly.sphere(center, 100.0, 40,40);
   IS path = a.line(center, corner, 100.0);
 
-  IS alpha = a.line(0, 50, 100.0);
-  IS alpha2 = a.line(50,0, 100.0);
-  IS arr[] = { alpha, alpha2 };
-  IS alpha3 = a.seq_line(arr, 2);
-  IS alpha4 = a.repeat_infinite(alpha3);
+  //IS alpha = a.line(0, 50, 100.0);
+  //IS alpha2 = a.line(50,0, 100.0);
+  //IS arr[] = { alpha, alpha2 };
+  //IS alpha3 = a.seq_line(arr, 2);
+  //IS alpha4 = a.repeat_infinite(alpha3);
 
   poly.preparepoly(sphere);
   poly.preparepoly(ppp2);
   poly.preparepoly(anim);
   int val = 0;
-  shader.load("Shader2.txt");
-  SH shader1 = shader.get_shader("passdata", "red", "geomquads");
+  //shader.load("Shader2.txt");
+  //SH shader1 = shader.get_shader("passdata", "red", "geomquads");
   
   
 
@@ -169,7 +169,7 @@ void GameApiTest()
       loop.alpha(true);
       spr.rendersprite(b1, 0+time, 0, 1.0, 1.0);
       spr.rendersprite(b1, 20+time, 20.0, 1.0, 1.0);
-      PT p = sp.pos(s, 100.0,100.0);
+      //PT p = sp.pos(s, 100.0,100.0);
       //spr.rendersprite(b1, p);
       loop.alpha(false);
       loop.switch_to_3d(true);

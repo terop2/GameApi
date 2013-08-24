@@ -48,11 +48,11 @@ void GameTest7(EveryApi &e)
 {
   MainLoopApi &loop = e.mainloop_api;
   VolumeApi &vapi = e.volume_api;
-  FloatVolumeApi &api = e.float_volume_api;
+  //FloatVolumeApi &api = e.float_volume_api;
   loop.init_3d();
   
-  BM bm_mand = e.bitmap_api.mandelbrot2(false, -2.0, 1.0, -1.0, 1.0, 0.0,0.0, 150, 150, 256);
-  BM bm_julia = e.bitmap_api.mandelbrot2(true, -1.0, 1.0, -1.0, 1.0, 0.25,0.15, 150, 150, 256);
+  //BM bm_mand = e.bitmap_api.mandelbrot2(false, -2.0, 1.0, -1.0, 1.0, 0.0,0.0, 150, 150, 256);
+  //BM bm_julia = e.bitmap_api.mandelbrot2(true, -1.0, 1.0, -1.0, 1.0, 0.25,0.15, 150, 150, 256);
 
   O obj2 = vapi.subvolume(&SphereObj2, 0, 0.99, 1.5);
   P poly = vapi.rendercubes(obj2, &Cube2, 0, 250, 4.0);
@@ -60,10 +60,10 @@ void GameTest7(EveryApi &e)
   //P poly2 = poly;
   e.polygon_api.prepare(poly2);
 
-  FO obj = api.function(&SphereObj2, &bm_mand);
+  //FO obj = api.function(&SphereObj2, &bm_mand);
   
-  FOA array = api.prepare(obj, 800000, -150.0,-150.0,-150.0, 150.0,150.0,150.0);
-  float time;
+  //FOA array = api.prepare(obj, 800000, -150.0,-150.0,-150.0, 150.0,150.0,150.0);
+  float time=0.0;
   while(1)
     {
       e.mainloop_api.clear_3d();

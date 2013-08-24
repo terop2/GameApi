@@ -303,7 +303,7 @@ private:
 class ConnectMatrixPaths : public TimedMatrixPaths
 {
 public:
-  ConnectMatrixPaths(TimedMatrixPaths &c1, TimedMatrixPaths &c2, float length) : c1(c1), c2(c2), b1(c1, c1.Length()), b2(c2, 0.0), inter(b1,b2, length), seq(arr) 
+  ConnectMatrixPaths(TimedMatrixPaths &c1, TimedMatrixPaths &c2, float length) : /*c1(c1), c2(c2),*/ b1(c1, c1.Length()), b2(c2, 0.0), inter(b1,b2, length), seq(arr) 
   {
     arr.push_back(&c1);
     arr.push_back(&inter);
@@ -314,7 +314,7 @@ public:
   Matrix Index(float time, int p) const { return seq.Index(time,p); }
 
 private:
-  TimedMatrixPaths &c1, &c2;
+  //TimedMatrixPaths &c1, &c2;
   BoxCollectionFromPaths b1,b2;
   InterpolateMatrixes inter;
   VectorArray<TimedMatrixPaths*> arr;
@@ -416,7 +416,7 @@ class SplineCurve : public CurveIn3d
 { // arr should be increasing float numbers.
   // and there needs to be same amount of points as floats.
 public:
-  SplineCurve(PointCollection &coll, FloatArray &arr) : coll(coll), arr(arr), x(coll, arr, 0), y(coll,arr,1), z(coll,arr,2), sx(x), sy(y), sz(z) { }
+  SplineCurve(PointCollection &coll, FloatArray &arr) : /*coll(coll),*/ arr(arr), x(coll, arr, 0), y(coll,arr,1), z(coll,arr,2), sx(x), sy(y), sz(z) { }
   float Size() const { return arr.Index(arr.Size()-1) - arr.Index(0); }
   Point Index(float t) const
   {
@@ -428,7 +428,7 @@ public:
     return p;
   }
 private:
-  PointCollection &coll;
+  //PointCollection &coll;
   FloatArray &arr;
   ChooseXYZ x;
   ChooseXYZ y;
@@ -585,7 +585,7 @@ class LinearMovement : public TimedPointCloud
 { // All PointCollections to have same number of elements.
   // arr and FloatArray should have same number of elements.
 public:
-  LinearMovement(Array<int, PointCollection*> &arr, FloatArray &time) : arr(arr), time(time), lm(*this), points(0), dist(time), interpol(0), parallel(lm) { }
+  LinearMovement(Array<int, PointCollection*> &arr, FloatArray &time) : arr(arr), /*time(time),*/ lm(*this), points(0), dist(time), interpol(0), parallel(lm) { }
 public:
   float Length() const { return parallel.Length(); }
   int Size() const { return parallel.Size(); }
@@ -617,7 +617,7 @@ private:
   friend struct LM;
 private:
   Array<int, PointCollection*> &arr;
-  FloatArray &time;
+  //FloatArray &time;
   LM lm;
   SelectPoints *points;          // (Array<int,PointCollection*>, int) => PointCollection 
   Dist2 dist;                     // FloatArray => InterpolationDistance

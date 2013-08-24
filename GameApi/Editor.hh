@@ -273,8 +273,8 @@ template<class T1, class T2, class T3, class R>
 class CreationFunction3 : public CreationFunction
 {
 public:
-  CreationFunction3(R (*fptr)(const T1&,const T2&,const T3&), std::string name) : fptr(fptr), name(name) { }
-  CreationFunction3(R (*fptr)(const T1&,const T2&,T3&), std::string name) : fptr2(fptr2), name(name) { }
+  CreationFunction3(R (*fptr)(const T1&,const T2&,const T3&), std::string name) : fptr(fptr), fptr2(0), name(name) { }
+  CreationFunction3(R (*fptr2)(const T1&,const T2&,T3&), std::string name) : fptr(0), fptr2(fptr2), name(name) { }
 
   virtual bool Appendable() const { return false; }
   virtual void Append(void*) { }

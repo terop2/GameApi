@@ -880,7 +880,7 @@ void MoleculeEffect::PreFrame(float time)
   CubeElem stars_cube;
   Matrix m[] = { Matrix::Scale(600,600,600) };
   MatrixCollection stars_coll(m,m+1);
-  MatrixElem stars_cubem(stars_cubem, Matrix::Identity());
+  MatrixElem stars_cubem(stars_cube, Matrix::Identity());
   BoxCombine stars_bc(stars_coll, stars_cubem);
   SimpleTexCoords tex(stars_cube, ((TexturePlugin*)plugins[0])->Texture());
   //SphericalTexCoords tex(stars_cube, ((TexturePlugin*)plugins[0])->Texture(), Point(0.0,0.0, 0.0));

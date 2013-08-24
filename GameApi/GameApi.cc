@@ -2072,7 +2072,7 @@ GameApi::AnimApi::~AnimApi()
 {
   delete (AnimPriv*)priv;
 }
-GameApi::ShaderApi::ShaderApi(Env &e) : e(e)
+GameApi::ShaderApi::ShaderApi(Env &e) /*: e(e)*/
 {
   priv = (void*)new ShaderPriv2;
 }
@@ -3132,7 +3132,7 @@ GameApi::P GameApi::PolygonApi::line(PT p1, PT p2)
 class TexCoordQuadFaceCollection : public ForwardFaceCollection
 {
 public:
-  TexCoordQuadFaceCollection(FaceCollection &coll, TexCoordQuad q_, int sx, int sy) : ForwardFaceCollection(coll), q(q_),sx(sx),sy(sy) 
+  TexCoordQuadFaceCollection(FaceCollection &coll, TexCoordQuad q_, int sx, int sy) : ForwardFaceCollection(coll), q(q_) //,sx(sx),sy(sy) 
   {
     q.p1.x /= float(sx);
     q.p1.y /= float(sy);
@@ -3169,7 +3169,7 @@ public:
   }
 private:
   TexCoordQuad q;
-  int sx,sy;
+  //int sx,sy;
 };
 
 GameApi::P GameApi::PolygonApi::sprite_bind(P p, TX tx, int id)
@@ -3665,7 +3665,7 @@ class ChangeTexture : public ForwardFaceCollection
 {
 public:
   ChangeTexture(GameApi::EveryApi &ev, FaceCollection &coll, int (*fptr)(GameApi::EveryApi &ev, int,void*), ::Bitmap< ::Color> **array, int size, void *data)
-    : ForwardFaceCollection(coll), ev(ev), fptr(fptr),data(data), array(array), size(size) { temp = new BufferFromBitmap*[size]; }
+    : ForwardFaceCollection(coll), ev(ev), fptr(fptr),data(data), array(array) /*, size(size)*/ { temp = new BufferFromBitmap*[size]; }
   void GenTexture(int num) 
   {
     delete temp[num];
@@ -3682,7 +3682,7 @@ private:
   int (*fptr)(GameApi::EveryApi &ev,int,void*);
   void *data;
   Bitmap< ::Color> **array;
-  int size;
+  //int size;
   mutable BufferFromBitmap **temp;
 };
 
@@ -3983,7 +3983,7 @@ private:
 class ColorFaceCollection : public ForwardFaceCollection
 {
 public:
-  ColorFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *next, unsigned int (*fptr)(GameApi::EveryApi &e, int face, int point, void *data), void *data) : ForwardFaceCollection(*next), e(e), ev(ev), fptr(fptr), data(data) { }
+  ColorFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *next, unsigned int (*fptr)(GameApi::EveryApi &e, int face, int point, void *data), void *data) : ForwardFaceCollection(*next), /*e(e),*/ ev(ev), fptr(fptr), data(data) { }
   virtual unsigned int Color(int face, int point) const
   {
     unsigned int pp = fptr(ev, face, point, data);
@@ -3991,7 +3991,7 @@ public:
   }
 
 private:
-  GameApi::Env &e;
+  //GameApi::Env &e;
   GameApi::EveryApi &ev;
   unsigned int (*fptr)(GameApi::EveryApi &e, int face, int point, void *data);
   void *data;
@@ -4020,7 +4020,7 @@ private:
 class AttribFaceCollection : public ForwardFaceCollection
 {
 public:
-  AttribFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *next, float (*fptr)(GameApi::EveryApi &e, int face, int point, int id, void *data), void *data, int idx) : ForwardFaceCollection(*next), e(e),ev(ev), fptr(fptr), data(data), idx(idx) { }
+  AttribFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *next, float (*fptr)(GameApi::EveryApi &e, int face, int point, int id, void *data), void *data, int idx) : ForwardFaceCollection(*next), /*e(e),*/ev(ev), fptr(fptr), data(data), idx(idx) { }
   virtual float Attrib(int face, int point, int id) const
   {
     if (idx == id) {
@@ -4031,7 +4031,7 @@ public:
   }
 
 private:
-  GameApi::Env &e;
+  //GameApi::Env &e;
   GameApi::EveryApi &ev;
   float (*fptr)(GameApi::EveryApi &e, int face, int point, int id, void *data);
   void *data;
@@ -4041,7 +4041,7 @@ private:
 class AttribIFaceCollection : public ForwardFaceCollection
 {
 public:
-  AttribIFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *next, int (*fptr)(GameApi::EveryApi &e, int face, int point, int id, void *data), void *data, int idx) : ForwardFaceCollection(*next), e(e), ev(ev), fptr(fptr), data(data), idx(idx) { }
+  AttribIFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *next, int (*fptr)(GameApi::EveryApi &e, int face, int point, int id, void *data), void *data, int idx) : ForwardFaceCollection(*next), /*e(e),*/ ev(ev), fptr(fptr), data(data), idx(idx) { }
   virtual int AttribI(int face, int point, int id) const
   {
     if (idx == id) {
@@ -4052,7 +4052,7 @@ public:
   }
 
 private:
-  GameApi::Env &e;
+  //GameApi::Env &e;
   GameApi::EveryApi &ev;
   int (*fptr)(GameApi::EveryApi &e, int face, int point, int id, void *data);
   void *data;
@@ -5440,7 +5440,7 @@ public:
   IntersectionPoint(GameApi::EveryApi &ev, float (*fptr1)(GameApi::EveryApi &ev, float x, float y, float z, void *data), void *data1, float start_range1, float end_range1,
 		    float (*fptr2)(GameApi::EveryApi &ev,float x, float y, float z, void *data), void *data2,float start_range2, float end_range2,
 		    float (*fptr3)(GameApi::EveryApi &ev,float x, float y, float z, void *data), void *data3,float start_range3, float end_range3)
-    : ev(ev), f1(ev, fptr1, data1), f2(ev, fptr2,data2), f3(ev, fptr3,data3),
+    : /*ev(ev),*/ f1(ev, fptr1, data1), f2(ev, fptr2,data2), f3(ev, fptr3,data3),
       oo1(f1,start_range1, end_range1),
       oo2(f2,start_range2, end_range2),
       oo3(f3, start_range3, end_range3),
@@ -5450,7 +5450,7 @@ public:
   virtual bool Inside(Point v) const { return intersect_12.Inside(v); }
 
 private:
-  GameApi::EveryApi &ev;
+  //GameApi::EveryApi &ev;
   FunctionFloatVolumeObject f1,f2,f3;
   SubVolume oo1,oo2,oo3;
   AndVolume intersect1, intersect_12;
@@ -5776,13 +5776,13 @@ void GameApi::PolygonApi::render_vertex_array(VA va)
 class AnimFace : public ForwardFaceCollection
 {
 public:
-  AnimFace(FaceCollection &coll, Vector v) : ForwardFaceCollection(coll), coll(coll), v(v) { }
+  AnimFace(FaceCollection &coll, Vector v) : ForwardFaceCollection(coll), /*coll(coll),*/ v(v) { }
   Point EndFacePoint(int face, int point) const 
   { return ForwardFaceCollection::FacePoint(face, point) + v; 
   }
 
 private:
-  FaceCollection &coll;
+  //FaceCollection &coll;
   Vector v;
 };
 
@@ -5797,7 +5797,7 @@ GameApi::P GameApi::PolygonApi::anim_target_vector(P p, V v)
 class AnimFaceScale : public ForwardFaceCollection
 {
 public:
-  AnimFaceScale(FaceCollection &coll, Point p, float scale_x, float scale_y, float scale_z) : ForwardFaceCollection(coll), coll(coll), p(p), scale_x(scale_x), scale_y(scale_y), scale_z(scale_z) { }
+  AnimFaceScale(FaceCollection &coll, Point p, float scale_x, float scale_y, float scale_z) : ForwardFaceCollection(coll), /*coll(coll),*/ p(p), scale_x(scale_x), scale_y(scale_y), scale_z(scale_z) { }
   Point EndFacePoint(int face, int point) const 
   { 
     return ForwardFaceCollection::FacePoint(face, point)
@@ -5807,7 +5807,7 @@ public:
   }
 
 private:
-  FaceCollection &coll;
+  //FaceCollection &coll;
   Point p;
   float scale_x, scale_y, scale_z;
 };

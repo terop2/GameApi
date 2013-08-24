@@ -144,10 +144,10 @@ class QuadVolumeSpace : public VolumeSpace
 public:
   QuadVolumeSpace(VolumeSpace &next, Point p1, Point p2, Point p3, Point p4,
 		  Vector dir) 
-  : next(next), p1(p1), p2(p2), p3(p3), p4(p4), dir(dir) { }
+    : /*next(next),*/ p1(p1), p2(p2), p3(p3), p4(p4), dir(dir) { }
   
 private:
-  VolumeSpace &next;
+  //VolumeSpace &next;
   Point p1,p2,p3,p4;
   Vector dir;
   

@@ -98,7 +98,7 @@ public:
   void Init();
   bool Frame(float time);
 private:
-  int tex_index;
+  //int tex_index;
 };
 
 class FunctionPointerFrameAnim : public FrameAnimPlugins
