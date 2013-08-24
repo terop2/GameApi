@@ -6064,7 +6064,9 @@ class PlanePointsFunction : public PlanePoints2d
 {
 public:
   PlanePointsFunction( GameApi::EveryApi &e, GameApi::PT (*fptr)(GameApi::EveryApi &e, int idx, void *data),
-		       int num_points, void *data) : e(e), fptr(fptr), num_points(num_points), data(data) { }
+		       int num_points, void *data, float sx, float sy) : e(e), fptr(fptr), num_points(num_points), data(data),sx(sx),sy(sy) { }
+  virtual float SizeX() const { return sx; }
+  virtual float SizeY() const { return sy; }
   virtual int Size() const { return num_points; }
   virtual Point2d Map(int i) const {
     GameApi::PT p = fptr(e, i, data);
@@ -6077,17 +6079,18 @@ private:
   GameApi::PT (*fptr)(GameApi::EveryApi &e, int idx, void *data);
   int num_points; 
   void *data;
+  float sx,sy;
 };
 
 
 GameApi::PlaneApi::PlaneApi(Env &e) : e(e) { }
 
-GameApi::PL GameApi::PlaneApi::function(GameApi::PT (*fptr)(EveryApi &e, int idx, void*data), int num_points, void*data)
+GameApi::PL GameApi::PlaneApi::function(GameApi::PT (*fptr)(EveryApi &e, int idx, void*data), int num_points, float sx, float sy, void*data)
 {
   GameApi::EveryApi *ev = new EveryApi(e);
   EnvImpl *env = EnvImpl::Environment(&e);
   env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
-  return add_plane(e, new PlanePointsFunction( *ev, fptr, num_points, data ));
+  return add_plane(e, new PlanePointsFunction( *ev, fptr, num_points, data, sx,sy ));
 }
 
 GameApi::WV GameApi::WaveformApi::empty(float length)
@@ -6198,7 +6201,7 @@ GameApi::FOA GameApi::FloatVolumeApi::prepare(GameApi::FO object,
   FloatVolumeObject *fo = find_float_volume(e, object);
   float *array = new float[numpoints*3];
   int index = 0;
-  for(int i=0;i<numpoints;i++)
+  for(;index/3<numpoints;)
     {
       Random r;
       float xp = double(r.next())/r.maximum()*(end_x-start_x)+start_x;

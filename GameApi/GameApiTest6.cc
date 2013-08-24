@@ -42,7 +42,7 @@ void GameTest6(EveryApi &e)
 				  -150.0, 150.0,
 				  -50.0, 50.0);
   
-  FOA array2 = api.prepare(obj2, 800000, -150.0,-150.0,-150.0, 150.0,150.0,150.0);
+  FOA array2 = api.prepare(obj2, 80000, -150.0,-150.0,-150.0, 150.0,150.0,150.0);
 
   float time;
   while(1)

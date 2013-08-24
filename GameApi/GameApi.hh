@@ -937,7 +937,7 @@ class PlaneApi
   // int->PT
 public:
   PlaneApi(Env &e);
-  PL function(PT (*fptr)(EveryApi &e, int idx, void *data), int num_points, void *data);
+  PL function(PT (*fptr)(EveryApi &e, int idx, void *data), int num_points, float sx, float sy, void *data);
   PL color_function(PL pl, CO (*fptr)(EveryApi &ev, int idx, PT pos, void *data), void *data);
   // TODO: how to represent/load fonts to this type.
   PL empty(float sx, float sy);
