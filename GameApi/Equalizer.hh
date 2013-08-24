@@ -161,7 +161,7 @@ class IntegrationFunction : public Function<float, float>
   //  IntegrationFunction i(...); 
   //  float r = i.Index(x);
 public:
-  IntegrationFunction(const Function<float,float> &f, float delta, float startx, float /*endx*/, float C) : f(f), delta(delta), startx(startx), endx(endx), C(C) { }
+  IntegrationFunction(const Function<float,float> &f, float delta, float startx, float endx, float C) : f(f), delta(delta), startx(startx), /*endx(endx),*/ C(C) { }
   float Index(float x) const
   {
     float val = C;
@@ -190,7 +190,7 @@ public:
   }
 private:
   const Function<float,float> &f;
-  float delta, startx, endx, C;
+  float delta, startx, /*endx,*/ C;
 };
 
 template<class T, class U, class K>
@@ -934,7 +934,7 @@ struct Float
     FloatFunction(Function<Float,float> &f) : f(f) { }
     float Index(float x) const
     {
-      Float a(a);
+      Float a(x);
       return f.Index(a);
     }
   private:
@@ -1462,7 +1462,7 @@ private:
 class LineIn2dScanLine : public Function<float, bool> // x -> bool
 {
 public:
-  LineIn2dScanLine(Point2d p1, Point2d p2, float y) : p1(p1), p2(p2), line(p1,p2), image(line),y(y) { }
+  LineIn2dScanLine(Point2d p1, Point2d p2, float y) : /*p1(p1), p2(p2),*/ line(p1,p2), image(line),y(y) { }
   bool Index(float x) const
   {
     Step st(y,false /*(p1.y<p2.y&&p1.x<p2.x) || (p2.y<p1.y&&p2.x<p1.x)*/);
@@ -1470,7 +1470,7 @@ public:
     return x_mem->Index(x);
   }
 private:
-  Point2d p1,p2;
+  //Point2d p1,p2;
   //ConstantFloatFunction c;
   LineIn2d2 line;
   //IdentityFunction<float> id;
@@ -1928,6 +1928,7 @@ private:
   TimedFloatSpace &orig;
 };
 
+#if 0
 class DowngradeTimedFloatSpace : public FloatSpace
 {
 public:
@@ -1947,7 +1948,7 @@ private:
   float value;
   TimedFloatSpace &orig;
 };
-
+#endif
 class MinFloatSpace : public FloatSpace
 {
 public:

@@ -652,6 +652,7 @@ private:
 // defined in Graph.cc
 Line PlanePlaneIntersection(const Plane &p1, const Plane &p2);
 
+#if 0
 class LineCircleIntersection
 {
 public:
@@ -660,12 +661,12 @@ public:
     : center(center), radius(radius), line1(line1), line2(line2) { }
 
 private:
-  Point2d center;
+  //Point2d center;
   float radius;
   Point2d line1;
   Point2d line2;
 };
-
+#endif
 class FlexiblePlane
 {
 public:

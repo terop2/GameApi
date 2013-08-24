@@ -241,7 +241,7 @@ private:
 class ShaderPair
 {
 public:
-  ShaderPair(ShaderString &shader) : shader(shader), vs(shader), fs(shader), vertex(vs, true, false), fragment(fs,false, false)
+  ShaderPair(ShaderString &shader) : /*shader(shader),*/ vs(shader), fs(shader), vertex(vs, true, false), fragment(fs,false, false)
   {
     prog.push_back(vertex);
     prog.push_back(fragment);
@@ -259,7 +259,7 @@ public:
   void unuse() { prog.unuse(); }
   int get_loc(std::string name) { return prog.get_loc(name); }
 private:
-  ShaderString &shader;
+  //ShaderString &shader;
   Program prog;
   VertexShader vs;
   FragmentShader fs;
@@ -1056,9 +1056,9 @@ public:
     vnx_x = p.find_attr("nx_x", nx_x);
     vnx_y = p.find_attr("nx_y", nx_y);
     vnx_z = p.find_attr("nx_z", nx_z);
-    vny_x = p.find_attr("ny_x", nx_x);
-    vny_y = p.find_attr("ny_y", nx_y);
-    vny_z = p.find_attr("ny_z", nx_z);
+    vny_x = p.find_attr("ny_x", ny_x);
+    vny_y = p.find_attr("ny_y", ny_y);
+    vny_z = p.find_attr("ny_z", ny_z);
   }
   void Attr(std::vector<Attrib> &vector)
   {

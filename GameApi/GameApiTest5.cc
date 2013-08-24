@@ -49,6 +49,7 @@ float OpenglCenterFunc(int path, std::string name)
   if (name=="center_x") return 150.0;
   if (name=="center_y") return 150.0;
   if (name=="center_z") return 100.0;
+  return 0.0;
 }
 
 void GameTest5(EveryApi &e)
@@ -91,8 +92,8 @@ void GameTest5(EveryApi &e)
   TR t4 = change_api.linear(t3, 1, &torus_func, 100.0, 200.0, 100.0, &val2);
   TR t5 = change_api.linear(t4, 1, &torus_func, 200.0, 100.0, 100.0, &val2);
   
-  P p = torus_func(e, 50.0, &val);
-  VA vertex = e.polygon_api.create_vertex_array(p);
+  //P p = torus_func(e, 50.0, &val);
+  //VA vertex = e.polygon_api.create_vertex_array(p);
 
   VV valval = change_api.prepare(t5);
   float time = 0.0;

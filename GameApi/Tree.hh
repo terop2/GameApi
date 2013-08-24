@@ -274,7 +274,7 @@ private:
 class ArrayObjectTreeDynamic : public ObjectTree
 {
 public:
-  ArrayObjectTreeDynamic(TreeNodeCollection &coll) : coll(coll), matrix(coll), faces(coll), singleton(0) { }
+  ArrayObjectTreeDynamic(TreeNodeCollection &coll) : /*coll(coll),*/ matrix(coll), faces(coll), singleton(0) { }
   int NumberOfLevels() const { return 2; }
   const TreeNodeCollection *TreeChilds(const Array<int, int> &path) const
   {
@@ -296,7 +296,7 @@ public:
   }
   ~ArrayObjectTreeDynamic() { delete singleton; }
 private:
-  TreeNodeCollection &coll;
+  //TreeNodeCollection &coll;
   EmptyTreeNodeCollection empty;
   MatrixTreeNodeCollection matrix;
   FacesTreeNodeCollection faces;
@@ -496,7 +496,7 @@ private:
 class CompressFaceCollectionArrays : public Array<int, FaceCollectionTri*>
 {
 public:
-  CompressFaceCollectionArrays(ObjectRanges &ranges, Array<int, TreeNodeInternal> &arr) : ranges(ranges), arr(arr), range_arr(0), apply_matrix(0), select(0), chooser(0), iter(0), oa(0)
+  CompressFaceCollectionArrays(ObjectRanges &ranges, Array<int, TreeNodeInternal> &arr) : ranges(ranges), arr(arr), range_arr(0), apply_matrix(0), select(0), chooser(0), /*iter(0),*/ oa(0)
  { }
   int Size() const
   {
@@ -537,7 +537,7 @@ private:
   mutable SelectFaceCollection *select;
   mutable QuadTriChooser *chooser;
   //CompressObjectTri *comp;
-  mutable IteratorArray<int, FaceCollectionTri*> *iter;
+  //mutable IteratorArray<int, FaceCollectionTri*> *iter;
   mutable ObjectArray2 *oa;
 };
 class VBOArrays : public Element<const FaceCollectionVBO*>

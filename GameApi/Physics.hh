@@ -118,7 +118,7 @@ class PointMovement : public CurveIn3d
 {
 public:
   PointMovement(PPoint &p, float time_step, float delta) 
-    : p(p), xf(p), yf(p), zf(p), time_step(time_step), delta(delta)
+    : p(p), xf(p), yf(p), zf(p), /*time_step(time_step),*/ delta(delta)
   { }
   Point Index(float time) const
   {
@@ -147,7 +147,7 @@ private:
   YForces yf;
   ZForces zf;
 
-  float time_step;
+  //float time_step;
   float delta;
 };
 

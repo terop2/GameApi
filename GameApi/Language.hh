@@ -76,6 +76,7 @@ private:
 class Language
 {
 public:
+  virtual ~Language() { }
   virtual std::string Alphabet() const=0;
   virtual bool Match(const StringRef &s) const=0;
 
@@ -623,8 +624,8 @@ class CharStateMachine : public StateMachine<int, char>
 public:
   CharStateMachine(char c) : c(c) { }
   int NumStates() const { return 2; }
-  int Initial() { return 0; }
-  bool Valid(int state, char e) 
+  int Initial() const { return 0; }
+  bool Valid(int state, char e) const 
   {
     if (e==c && state == 0)
       return true;

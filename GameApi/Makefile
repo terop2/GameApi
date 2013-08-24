@@ -56,10 +56,12 @@ all: libGameApi.so install main
 examples: main
 
 main: $(GCHFiles_examples) $(OFiles_examples) Makefile GameApi.hh libGameApi.so
-	clang -g $(OFiles_examples) -std=c++0x -o main -L. -lGameApi -lGL -lm -lstdc++
+	@echo clang main
+	@clang -g $(OFiles_examples) -std=c++0x -o main -L. -lGameApi -lGL -lm -lstdc++
 
 libGameApi.so: $(GCHFiles) $(OFiles) Makefile
-	clang -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL -lGL -lSDL_image -lGLEW -lfreetype 
+	@echo clang libGameApi.so
+	@clang -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL -lGL -lSDL_image -lGLEW -lfreetype 
 #`pkg-config gtkmm-2.4 --libs` 
 
 subdirs: $(Subdirs)
@@ -81,17 +83,21 @@ $(DFiles): objs/%.d: %.cc
 	|sed 's,\($*\)\.o[ :]*,objs/\1.o $@ : ,g' > $@
 
 $(OFiles): objs/%.o : %.cc
-	$(CC) -std=c++0x -g -c $(CCFLAGS) $< -o $@
+	@echo clang $< -o $@
+	@$(CC) -std=c++0x -g -c $(CCFLAGS) $< -o $@
 
 $(OFiles_examples): objs/%.o : %.cc GameApi.hh Makefile
-	$(CC) -std=c++0x -g -c -I. $(CCFLAGS) $< -o $@ 
+	@echo clang $< -o $@
+	@$(CC) -std=c++0x -g -c -I. $(CCFLAGS) $< -o $@ 
 
 
 $(GCHFiles): objs/%.hh.gch : %.hh
-	$(CC) $(CCFLAGS) -std=c++0x -g -x c++-header $< -o $@ 
+	@echo clang $< -o $@
+	@$(CC) $(CCFLAGS) -std=c++0x -g -x c++-header $< -o $@ 
 
 $(GCHFiles_examples): objs/%.hh.gch : %.hh GameApi.hh Makefile
-	$(CC) $(CCFLAGS) -std=c++0x -g -I. -x c++-header $< -o $@ 
+	@echo clang $< -o $@
+	@$(CC) $(CCFLAGS) -std=c++0x -g -I. -x c++-header $< -o $@ 
 
 clean:
 	@rm -rf objs/*.o objs/*.d objs/*.gch

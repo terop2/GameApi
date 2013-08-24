@@ -2,7 +2,7 @@
 #include "Effect.hh"
 #include "Graph.hh"
 
-class Position2d;
+struct Position2d;
 
 class GameEffect : public FrameAnimPlugins
 {
@@ -280,7 +280,7 @@ public:
   PlaneCircleBorder(Point2d pos, float sx, float sy, float radius, float border_width, float border_pos) : pos(pos), sx(sx), sy(sy), radius(radius), border_width(border_width), border_pos(border_pos) { } 
   float SizeX() const { return sx; }
   float SizeY() const { return sy; }
-  bool Map(int x, int y) const
+  bool Map(float x, float y) const
   {
     float distx = x-pos.x;
     float disty = y-pos.y;
@@ -358,7 +358,7 @@ public:
   }
 
 private:
-  BufferRef ref;
+  //BufferRef ref;
 };
 
 // tero, you can fix control operator. The unsafeperformio is no longer

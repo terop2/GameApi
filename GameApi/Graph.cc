@@ -844,7 +844,7 @@ class HexagonMeshTexCoords : public MeshTexCoords
 public:
   HexagonMeshTexCoords(int sx, int sy, int len, Point2d firstpos) : sx(sx), sy(sy), mesh(len), steps(len, Point(firstpos.x, firstpos.y, 0.0), sx,sy) { }
   int NumFrames() const { return sx*sy; }
-  Point2d TexCoord(int framenum, int face, int point) const
+  Point2d TexCoord(int framenum, int statenum, int face, int point) const
   {
     int frame_y = framenum / sx;
     int frame_x = framenum - frame_y*sx;

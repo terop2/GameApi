@@ -58,6 +58,7 @@ void GameApiTest2(EveryApi &every)
   LL polypos = event.link(poly2, lineline);
   ST st = event.states(1);
   ST en = event.enable_obj(st, 0, polypos);
+  en = en;
   //std::string s = event.Serialize(en, 0);
   //std::cout << s << std::endl;
   //event.run_game(en, 0);

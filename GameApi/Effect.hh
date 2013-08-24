@@ -1722,7 +1722,7 @@ private:
 class CircleMatrixCurve2 : public MatrixCurve
 {
 public:
-  CircleMatrixCurve2(float x, float time) : x(x), time(time), m(Matrix::Translate(x,0.0,0.0)) { }
+  CircleMatrixCurve2(float x, float time) : time(time), m(Matrix::Translate(x,0.0,0.0)) { }
   virtual Matrix Index(float pos) const
   {
     float y = 1.0+0.2*sin(pos*3.0+time); // [0.8..1.2]
@@ -1731,7 +1731,7 @@ public:
   }
   virtual float Size() const { return 3.14159*2.0; }  
 private:
-  float x;
+  //float x;
   float time;
   Matrix m;
 };
@@ -2588,7 +2588,7 @@ private:
 class FindNearestPoint : public PointCollection
 {
 public:
-  FindNearestPoint(PointCollection &coll) : coll(coll) 
+  FindNearestPoint(PointCollection &coll) /*coll(coll)*/ 
   {
     size = coll.Size();
     array = new Point[size];
@@ -2623,7 +2623,7 @@ public:
 private:
   Point *array;
   int size;
-  PointCollection &coll;
+  //PointCollection &coll;
 };
 
 class PointCollection2d : public Array<int, Point2d>
@@ -2765,7 +2765,7 @@ public:
   PolyFromTwoCurves2d(Function<float,float> &curve1,
 		      Function<float,float> &curve2,
 		      float start_x, float end_x, int x_numpoints)
-    : curve1(curve1), curve2(curve2), start_x(start_x), end_x(end_x), x_numpoints(x_numpoints) { }
+    : /*curve1(curve1), curve2(curve2), start_x(start_x), end_x(end_x),*/ x_numpoints(x_numpoints) { }
 
   int Size() const
   {
@@ -2777,10 +2777,10 @@ public:
     return p;
   }
 private:
-  Function<float,float> &curve1;
-  Function<float,float> &curve2;
-  float start_x;
-  float end_x;
+  //Function<float,float> &curve1;
+  //Function<float,float> &curve2;
+  //float start_x;
+  //float end_x;
   int x_numpoints;
 };
 
@@ -3097,7 +3097,7 @@ public:
 class SubSelect : public AnimSet
 {
 public:
-  SubSelect(AnimSet &s, int start, int size) : s(s), start(start), size(size) { }
+  SubSelect(AnimSet &s, int start, int size) : s(s), start(start) /*, size(size)*/ { }
   void Set(int index, bool b)
   {
     s.Set(index+start, b);
@@ -3105,7 +3105,7 @@ public:
 private:
   AnimSet &s;
   int start;
-  int size;
+  //int size;
 };
 
 class AnimSelect : public AnimSelectI, public AnimSet
@@ -6623,7 +6623,7 @@ public:
 class InterpolationPathCollection : public PathCollection
 {
 public:
-  InterpolationPathCollection(float pathlength, BoxCollection &dom, BoxCollection &cod, Function<int,int> &mapping) : pathlength(pathlength), dom(dom), cod(cod), mapping(mapping) { }
+  InterpolationPathCollection(float pathlength, BoxCollection &dom, BoxCollection &cod, Function<int,int> &mapping) : pathlength(pathlength), dom(dom)/*, cod(cod)*/, mapping(mapping) { }
   int NumPaths(float /*time*/) const { return dom.NumBoxes(); }
   float PathLength() const { return pathlength; }
   Matrix Index(float posinpath, int path) const 
@@ -6636,7 +6636,7 @@ public:
 private:
   float pathlength;
   BoxCollection &dom;
-  BoxCollection &cod;
+  //BoxCollection &cod;
   Function<int,int> &mapping;
 };
 
@@ -7166,7 +7166,7 @@ public:
 private:
   BoxableFaceCollection &obj;
   BoxableFaceCollection &obj2;
-  Matrix invbox;
+  //Matrix invbox;
 };
 
 class IsChangingFace : public Function<int, bool>
@@ -8895,7 +8895,7 @@ public:
   void PreFrame(float time);
   bool Frame(float time);
 private:
-  unsigned int texture;
+  //unsigned int texture;
   GlobalTexturePiece globpiece;
   TexturePiece texturepiece;
   PhongPiece phongpiece;
@@ -8947,7 +8947,7 @@ public:
   float ZRot() const { return 1.0*sin(40.0*3.14159*2.0/360.0); }
   bool Frame(float time);
 private:
-  unsigned int texture;
+  //unsigned int texture;
 };
 
 class PathEffect : public FrameAnim
@@ -9170,13 +9170,13 @@ class DrawVBOCmd : public Command
 {
 public:
   DrawVBOCmd(FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpdate u)
-    : faces(faces), obj(obj), state(state), u(u) { }
+    : /*faces(faces),*/ obj(obj), state(state), u(u) { }
   virtual void cmd()
   {
     DrawVBO(obj, state, u);
   }
 private:
-  FaceCollectionVBO &faces;
+  //FaceCollectionVBO &faces;
   int obj;
   VBOState &state;
   VBOUpdate u;
@@ -9849,7 +9849,7 @@ public:
 class FaceArrayMeshTextures : public MeshTextures, public Function<int,int>
 {
 public:
-  FaceArrayMeshTextures(FaceCollection **array, int size, int frame) : array(array), size(size), frame(frame) { }
+  FaceArrayMeshTextures(FaceCollection **array, int size, int frame) : array(array), /*size(size),*/ frame(frame) { }
   virtual int NumTextures() const { return array[frame]->NumTextures(); }
   virtual void GenTexture(int num) 
   {
@@ -9868,7 +9868,7 @@ public:
   }
 private:
   FaceCollection **array;
-  int size;
+  //int size;
   int frame;
 };
 
@@ -10469,10 +10469,10 @@ public:
 			    float *tex_array, int tex_size,
 			    float **attrib_array, int a_size1, int a_size2)
     : v_array(v_array), v_size(v_size),
-      n_array(n_array), n_size(n_size),
-      c_array(c_array), c_size(c_size),
-      tex_array(tex_array), tex_size(tex_size),
-      attrib_array(attrib_array), attrib_size1(a_size1), attrib_size2(a_size2)
+      n_array(n_array), /*n_size(n_size),*/
+      c_array(c_array), /*c_size(c_size),*/
+      tex_array(tex_array), /*tex_size(tex_size),*/
+      attrib_array(attrib_array) /*, attrib_size1(a_size1), attrib_size2(a_size2)*/
   {
   }
       
@@ -10544,13 +10544,13 @@ private:
   float *v_array;
   int v_size;
   float *n_array;
-  int n_size;
+  //int n_size;
   unsigned int *c_array;
-  int c_size;
+  //int c_size;
   float *tex_array;
-  int tex_size;
+  //int tex_size;
   float **attrib_array;
-  int attrib_size1, attrib_size2;
+  //int attrib_size1, attrib_size2;
 };
 
 class FaceCollectionVertexArray

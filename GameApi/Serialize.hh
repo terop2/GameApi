@@ -4,8 +4,8 @@
 
 #include "Graph.hh"
 
-class FaceCollPolyHandle;
-class BitmapHandle;
+struct FaceCollPolyHandle;
+struct BitmapHandle;
 
 struct EventInfo
 {

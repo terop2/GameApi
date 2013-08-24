@@ -93,14 +93,14 @@ private:
 class DistanceObjectFunction : public Function<float,float>
 {
 public:
-  DistanceObjectFunction(const DistanceObject &o, float val, Ray &r) : o(o), val(val),r(r) { }
+  DistanceObjectFunction(const DistanceObject &o, float val, Ray &r) : o(o), /*val(val),*/r(r) { }
   float Index(float val) const
   {
     return o.Distance(0,r.Index(val));
   }
 private:
   const DistanceObject &o;
-  float val;
+  //float val;
   Ray &r;
 };
 
@@ -228,10 +228,10 @@ public:
 		 float z_range_start, float z_range_end, float z_step,
 		 float u_range_start, float u_range_end, float u_step,
 		 float v_range_start, float v_range_end, float v_step
-		 ) : s(s), dist(dist), dist_accuracy(dist_accuracy/2.0),
+		 ) : /*s(s),*/ /*dist(dist), dist_accuracy(dist_accuracy/2.0),*/
 		     x_range_start(x_range_start), x_range_end(x_range_end), x_step(x_step),
-		     y_range_start(y_range_start), y_range_end(y_range_end), y_step(y_step),
-		     z_range_start(z_range_start), z_range_end(z_range_end), z_step(z_step)
+		     y_range_start(y_range_start), y_range_end(y_range_end), y_step(y_step)//,
+		     //z_range_start(z_range_start), z_range_end(z_range_end), z_step(z_step)
   {
     for(float x=x_range_start;x<x_range_end;x+=x_step)
       {
@@ -318,14 +318,14 @@ public:
     return k;
   }
 private:
-  Separate &s;
-  float dist;
-  float dist_accuracy;
+  //Separate &s;
+  //float dist;
+  //float dist_accuracy;
   float x_range_start; float x_range_end; float x_step;
   float y_range_start; float y_range_end; float y_step;
-  float z_range_start; float z_range_end; float z_step;
-  float u_range_start; float u_range_end; float u_step;
-  float v_range_start; float v_range_end; float v_step;
+  //float z_range_start; float z_range_end; float z_step;
+  //float u_range_start; float u_range_end; float u_step;
+  //float v_range_start; float v_range_end; float v_step;
   mutable std::map<Key, Point> points;
 };
 

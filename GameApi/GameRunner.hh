@@ -4,7 +4,7 @@
 
 ArrayRender *FindRender(GameApi::Env &e, int bm_id);
 
-class SpritePriv;
+struct SpritePriv;
 
 Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handle, int bbm_choose=-1);
 
@@ -53,7 +53,7 @@ StateBitmaps * PrepareFaceCollPolyHandle(FaceCollPolyHandle *handle, int bbm_cho
 class GameRunner
 {
 public:
-  GameRunner(Sequencer2 &seq, int state_state) : seq(seq), start_state(start_state) { }
+  GameRunner(Sequencer2 &seq, int start_state) : seq(seq), start_state(start_state) { }
   void run()
   {
     Alloc();
@@ -216,7 +216,7 @@ private:
   int start_state;
 
   std::map<int, EventInfo> activated_events;
-  float time;
+  //float time;
 
   int current_state;
   std::vector< std::vector<ArrayRender*>* > state_rends;
