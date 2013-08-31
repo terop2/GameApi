@@ -2969,7 +2969,7 @@ private:
 };
 
 template<class X, class Y>
-class Exists : public Function<Function<std::pair<X,Y>,bool>*,Function<X,bool> >, private Function<X,bool>
+class Exists : public Function<Function<std::pair<X,Y>,bool>*,Function<X,bool>* >, private Function<X,bool>
 {
 public:
   Exists(std::vector<Y> &vec) : vec(vec) { }

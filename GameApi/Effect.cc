@@ -3070,6 +3070,9 @@ ArrayRender::~ArrayRender()
   delete [] tex_coord_array;
   delete [] index_array;
   delete [] texture;
+  delete [] used_vertex_count;
+  delete [] used_face_count;
+  
 }
 void ArrayRender::Alloc(int numfaces, int numvertices, int vertexframes, int normalframes, int colorframes, int texcoordframes)
 {

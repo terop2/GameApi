@@ -684,6 +684,7 @@ public:
 	}
     
   }
+  ~MemoizeBitmap() { BufferRef::FreeBuffer(buf); }
   void MemoizeAll()
   {
     int sx=SizeX();
@@ -7050,6 +7051,25 @@ public:
   virtual Point2d Map(int i) const=0;
 };
 
+#if 0
+class FloodFillBorder : public PlanePoints2d
+{
+public:
+  FloodFillBorder(Bitmap<bool> &bm, int x, int y) :bm(bm), x(x),y(y) { }
+  void run() {
+  }
+  virtual float SizeX() const { return bm.SizeX(); }
+  virtual float SizeY() const { return bm.SizeY(); }
+  virtual int Size() const { return vec.size(); }
+  virtual Point2d Map(int i) const { return vec[i]; }
+
+private:
+  Bitmap<bool> &bm;
+  int x,y;
+  std::vector<Point2d> vec;
+};
+
+#endif
 
 //
 // FBO

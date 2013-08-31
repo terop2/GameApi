@@ -755,6 +755,16 @@ EnvImpl::~EnvImpl()
     {
       delete volumes[i_v];
     }
+  int vv2 = floatvolumes.size();
+  for(int i_vv2=0;i_vv2<vv2;i_vv2++)
+    {
+      delete floatvolumes[i_vv2];
+    }
+  int vv3 = pointarray.size();
+  for(int i_vv3=0;i_vv3<vv3;i_vv3++)
+    {
+      delete [] pointarray[i_vv3]->array;
+    }
 
   int ss1 = bool_bm.size();
   for(int i_1=0;i_1<ss1;i_1++)
@@ -5324,6 +5334,12 @@ GameApi::O GameApi::VolumeApi::torus(PT center, PT u_x, PT u_y, float dist1, flo
   return add_volume(e, new TorusVolume(*u_xp-*centerp, *u_yp-*centerp, dist1, dist2, *centerp));
 }
 
+GameApi::O GameApi::VolumeApi::not_op(GameApi::O o1)
+{
+  VolumeObject *oo1 = find_volume(e,o1);
+  return add_volume(e, new NotVolume(*oo1));
+}
+
 GameApi::O GameApi::VolumeApi::min_op(GameApi::O o1, GameApi::O o2)
 {
   VolumeObject *oo1 = find_volume(e, o1);
@@ -6092,7 +6108,16 @@ GameApi::PL GameApi::PlaneApi::function(GameApi::PT (*fptr)(EveryApi &e, int idx
   env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
   return add_plane(e, new PlanePointsFunction( *ev, fptr, num_points, data, sx,sy ));
 }
-
+#if 0
+GameApi::PL GameApi::PlaneApi::floodfill_border(GameApi::BB bitmap, int x, int y)
+{
+  BoolBitmap *bbm = find_bool_bitmap(e, bitmap);
+  Bitmap<bool> *bbm2 = bbm->bitmap;
+  PlanePoints2d *points = new FloodFillBorder(*bbm, x, y);
+  points->run();
+  return add_plane(e, points);
+}
+#endif
 GameApi::WV GameApi::WaveformApi::empty(float length)
 {
   return add_waveform(e, new ZeroWaveform(length, -1.0,1.0));

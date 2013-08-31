@@ -36,7 +36,7 @@ void GameTest6(EveryApi &e)
   
   std::string filename = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
   Ft font = e.font_api.newfont(filename.c_str(), 50,50);
-  BM fontbm = e.font_api.glyph(font, 'G');
+  BM fontbm = e.font_api.glyph(font, 'B');
   FB fb = e.float_bitmap_api.from_red(fontbm);
   FO obj2 = api.from_float_bitmap(fb, -150.0, 150.0,
 				  -150.0, 150.0,

@@ -12,6 +12,15 @@ class VertexArraySet
 public:
   int texture_id;
   VertexArraySet() : texture_id(-1) { }
+  ~VertexArraySet()
+  {
+    std::map<int,Polys*>::iterator it = m_set.begin();
+    for(;it!=m_set.end();it++)
+      {
+	Polys *ptr = (*it).second;
+	delete ptr;
+      }
+  }
   // id is the vertex array num to be used 0 = beginning, 1 = end
   // num is the number of points (all calls should share same num)
   void push_poly(int id, int num, Point *points);
