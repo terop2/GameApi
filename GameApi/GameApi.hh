@@ -591,6 +591,7 @@ public:
   O rotatez(O object, float angle);
   O scale(O object, float sx, float sy, float sz);
 
+  O not_op(O object1);
   O min_op(O object1, O object2);
   O max_op(O object1, O object2);
   O andnot_op(O object1, O object2);
@@ -939,6 +940,7 @@ public:
   PlaneApi(Env &e);
   PL function(PT (*fptr)(EveryApi &e, int idx, void *data), int num_points, float sx, float sy, void *data);
   PL color_function(PL pl, CO (*fptr)(EveryApi &ev, int idx, PT pos, void *data), void *data);
+  PL floodfill_border(BB bitmap, int x, int y);
   // TODO: how to represent/load fonts to this type.
   PL empty(float sx, float sy);
   PL circle(PL bg, PT center, float radius, int numpoints); 
