@@ -34,15 +34,21 @@ void GameTest6(EveryApi &e)
   //FOA array = api.prepare(obj, 800000, -150.0,-150.0,-150.0, 350.0,350.0,350.0);
 
   
-  std::string filename = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
-  Ft font = e.font_api.newfont(filename.c_str(), 50,50);
-  BM fontbm = e.font_api.glyph(font, 'B');
-  FB fb = e.float_bitmap_api.from_red(fontbm);
-  FO obj2 = api.from_float_bitmap(fb, -150.0, 150.0,
-				  -150.0, 150.0,
-				  -50.0, 50.0);
+  //std::string filename = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
+  //Ft font = e.font_api.newfont(filename.c_str(), 50,50);
+  //BM fontbm = e.font_api.glyph(font, u'#');
+  //FB fb = e.float_bitmap_api.from_red(fontbm);
+  //FO obj2 = api.from_float_bitmap(fb, -150.0, 150.0,
+  //				  -150.0, 150.0,
+  //				  -50.0, 50.0);
   
-  FOA array2 = api.prepare(obj2, 80000, -150.0,-150.0,-150.0, 150.0,150.0,150.0);
+  O o = e.volume_api.mandelbulb(8.0, 0.0,0.0,0.0,
+		     0.0,0.0,0.0,
+		     2.0,
+		     60);
+  O o2 = e.volume_api.scale(o, 150.0,150.0,150.0);
+  FO obj2 = e.float_volume_api.from_volume(o2, 0.0, 1.0);
+  FOA array2 = api.prepare(obj2, 200000, -150.0,-150.0,-150.0, 150.0,150.0,150.0);
 
   float time = 0.0;
   while(1)
