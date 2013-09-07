@@ -5388,7 +5388,19 @@ GameApi::O GameApi::VolumeApi::andnot_op(GameApi::O o1, GameApi::O o2)
   return add_volume(e, new AndNotVolume(*oo1,*oo2));
 
 }
+GameApi::O GameApi::VolumeApi::scale(GameApi::O obj, float x, float y, float z)
+{
+  VolumeObject *o1 = find_volume(e, obj);
+  return add_volume(e, new ScaleVolume(o1,x,y,z)); 
+}
 
+GameApi::O GameApi::VolumeApi::mandelbulb(float n, float p_x, float p_y, float p_z,
+					  float c_x, float c_y, float c_z,
+					  float radius,
+					  int iterations)
+{
+  return add_volume(e, new MandelBulb(n, Point(p_x,p_y,p_z), Point(c_x,c_y,c_z), radius, iterations));
+}
 
 
 class AppendHandleValue : public HandleValue<std::pair<Vector, unsigned int> >

@@ -306,7 +306,7 @@ private:
 class SphereVolume : public VolumeObject
 {
 public:
-  SphereVolume(const Point &origo, float radius);
+  SphereVolume(Point origo, float radius);
   bool Inside(Point v) const ;
   float Line(Point v, Point v2) const;
   Vector Normal(Point v) const;
@@ -331,7 +331,7 @@ public:
 private:
   float radius;
   float radius_x_radius;
-  const Point &origo;
+  Point origo;
 #if 0
   O o;
 #endif
@@ -706,36 +706,35 @@ private:
   T *next;
 };
 
-template<class T>
 class ScaleVolume : public VolumeObject
 {
 public:
-  ScaleVolume(T &next_, float scale_) : next(next_), scale(scale_) { }
+  ScaleVolume(VolumeObject *next_, float scale_x, float scale_y, float scale_z) : next(next_), scale_x(scale_x), scale_y(scale_y), scale_z(scale_z) { }
   bool Inside(Point p) const
   {
-    p.x /= scale;
-    p.y /= scale;
-    p.z /= scale;
-    return next.Inside(p);
+    p.x /= scale_x;
+    p.y /= scale_y;
+    p.z /= scale_z;
+    return next->Inside(p);
   }
   float Value(Point p) const
   {
-    p.x /= scale;
-    p.y /= scale;
-    p.z /= scale;
-    return next.Value(p);
+    p.x /= scale_x;
+    p.y /= scale_y;
+    p.z /= scale_z;
+    return next->Value(p);
   }
   Color ColorValue(Point p) const
   {
-    p.x /= scale;
-    p.y /= scale;
-    p.z /= scale;
-    return next.ColorValue(p);    
+    p.x /= scale_x;
+    p.y /= scale_y;
+    p.z /= scale_z;
+    return next->ColorValue(p);    
   }
 
 private:
-  T &next;
-  float scale;
+  VolumeObject *next;
+  float scale_x, scale_y, scale_z;
 };
 
 

@@ -596,6 +596,11 @@ public:
   O max_op(O object1, O object2);
   O andnot_op(O object1, O object2);
 
+  O mandelbulb(float n, float p_x, float p_y, float p_z,
+	       float c_x, float c_y, float c_z,
+	       float radius,
+	       int iterations);
+
   BB plane(O o, int sx, int sy,
 	   PT u_p, V u_x, V u_y,
 	   float start_x, float end_x,

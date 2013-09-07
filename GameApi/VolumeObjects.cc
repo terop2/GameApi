@@ -29,7 +29,7 @@
 #include "Graph.hh"
 #include "Triangle.hh"
 
-SphereVolume::SphereVolume(const Point &origo_, float radius_)
+SphereVolume::SphereVolume(Point origo_, float radius_)
   : radius(radius_), radius_x_radius(radius_*radius_), origo(origo_)
 {
 }
@@ -200,11 +200,11 @@ bool VolumeEffect::Frame(float time)
 
 bool MandelBulb::Inside(Point C) const
 {
-  Point p(0.0,0.0,0.0);
+  Point a_p = p;
   for(int i=0;i<iterations;i++)
     {
-      p = Step(p, C, n);
-      if (!sp.Inside(p))
+      a_p = Step(a_p, C, n);
+      if (!sp.Inside(a_p))
 	{
 	  return false;
 	}
@@ -232,9 +232,9 @@ Point MandelBulb::Step(Point p, Point C, float n)
 void FractalEffect::Init()
 {
   MandelBulb vol(8.0,  // n
-		 Point(0.0,0.0,0.0), // p
+		 Point(1.0,0.0,0.0), // p
 		 Point(0.0,0.0,0.0), // center
-		 5.0, // radius
+		 2.0, // radius
 		 6); // iterations
   VolumeVoxel vox(vol,
 		  Range<float>(-1.0,1.0),
