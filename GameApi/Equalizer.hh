@@ -2968,6 +2968,37 @@ private:
   Function<B,C> &g;
 };
 
+template<class T, class A, class B, class C>
+class Pullback_full : public Function<T,std::pair<A,B> >, public Function<std::pair<A,B>, bool>
+{
+public:
+  Pullback_full(Function<T,A> &ta,
+		Function<T,B> &tb,
+		Function<A,C> &ac,
+		Function<B,C> &bc)
+    : ta(ta),
+      tb(tb),
+      ac(ac),
+      bc(bc) { }
+
+  std::pair<A,B> Index(T t) const
+  {
+    A a = ta.Index(t);
+    B b = tb.Index(t);
+    return std::make_pair(a,b);
+  }
+  bool Index(std::pair<A,B> p) const
+  {
+    return ac.Index(p.first)==bc.Index(p.second);
+  }
+private:
+  Function<T,A> &ta;
+  Function<T,B> &tb;
+  Function<A,C> &ac;
+  Function<B,C> &bc;
+};
+
+
 template<class X, class Y>
 class Exists : public Function<Function<std::pair<X,Y>,bool>*,Function<X,bool>* >, private Function<X,bool>
 {
