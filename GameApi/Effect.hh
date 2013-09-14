@@ -9889,8 +9889,8 @@ class Bitmap;
 class ArrayRender
 {
 public:
-  ArrayRender() : vertex_array(0), normal_array(0), color_array(0),
-		  tex_coord_array(0), index_array(0), texture(0), texture_count(0) { }
+  ArrayRender() : vertex_array(0), used_vertex_count(0), used_face_count(0), normal_array(0), color_array(0),
+		  tex_coord_array(0), index_array(0), texture(0), texture_count(0), textures(0), tex_size_x(0), tex_size_y(0) { }
   ~ArrayRender();
   int NumFaces(FaceCollection &coll);
   int NumVertices(FaceCollection &coll);
