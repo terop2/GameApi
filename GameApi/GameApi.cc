@@ -661,6 +661,8 @@ struct EnvImpl
   std::map<int, ArrayRender*> renders; // BM.id -> arrayrender
   std::vector<Layout*> layouts;
   std::vector<PointArray2*> pointarray;
+  std::vector<PointCollection*> pointcollarray;
+  std::vector<LineCollection*> linearray;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -764,6 +766,17 @@ EnvImpl::~EnvImpl()
   for(int i_vv3=0;i_vv3<vv3;i_vv3++)
     {
       delete [] pointarray[i_vv3]->array;
+      delete pointarray[i_vv3];
+    }
+  int vv4 = linearray.size();
+  for(int i_vv4=0;i_vv4<vv4;i_vv4++)
+    {
+      delete linearray[i_vv4];
+    }
+  int vv5 = pointcollarray.size();
+  for(int i_vv5=0;i_vv5<vv5;i_vv5++)
+    {
+      delete pointcollarray[i_vv5];
     }
 
   int ss1 = bool_bm.size();
@@ -1060,12 +1073,37 @@ GameApi::M add_matrix(GameApi::Env &e, MatrixInterface *i)
   return m;
 }
 
+GameApi::LI add_line_array(GameApi::Env &e, LineCollection *array)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->linearray.push_back(array);
+  GameApi::LI pt;
+  pt.id = env->linearray.size()-1;
+  return pt;
+}
+
 GameApi::FOA add_point_array(GameApi::Env &e, PointArray2 *array)
 {
   EnvImpl *env = EnvImpl::Environment(&e);
   env->pointarray.push_back(array);
   GameApi::FOA pt;
   pt.id = env->pointarray.size()-1;
+  return pt;
+}
+GameApi::LLA add_lines_array(GameApi::Env &e, PointArray2 *array)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->pointarray.push_back(array);
+  GameApi::LLA pt;
+  pt.id = env->pointarray.size()-1;
+  return pt;
+}
+GameApi::PC add_pointcoll_array(GameApi::Env &e, PointCollection *array)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->pointcollarray.push_back(array);
+  GameApi::PC pt;
+  pt.id = env->pointcollarray.size()-1;
   return pt;
 }
 
@@ -1697,6 +1735,13 @@ Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handl
     }
   return 0;
 }
+LineCollection *find_line_array(GameApi::Env &e, GameApi::LI li)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  if (li.id >=0 && li.id < (int)ee->linearray.size())
+    return ee->linearray[li.id];
+  return 0;
+}
 
 PointArray2 *find_point_array(GameApi::Env &e, GameApi::FOA p)
 {
@@ -1705,6 +1750,24 @@ PointArray2 *find_point_array(GameApi::Env &e, GameApi::FOA p)
     return ee->pointarray[p.id];
   return 0;
 }
+
+PointArray2 *find_lines_array(GameApi::Env &e, GameApi::LLA p)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  if (p.id >=0 && p.id < (int)ee->pointarray.size())
+    return ee->pointarray[p.id];
+  return 0;
+}
+
+
+PointCollection *find_pointcoll_array(GameApi::Env &e, GameApi::PC p)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  if (p.id >=0 && p.id < (int)ee->pointcollarray.size())
+    return ee->pointcollarray[p.id];
+  return 0;
+}
+
 
 Point *find_point(GameApi::Env &e, GameApi::PT p)
 {
@@ -6773,3 +6836,79 @@ GameApi::DR GameApi::DrawApi::scroll(DR dr, int delta_x, int delta_y)
 GameApi::DR GameApi::DrawApi::scroll_area(DR dr, LAY l, int id);
 GameApi::DR GameApi::DrawApi::cliprect(DR cmds, LAY l, int id);
 #endif
+
+class LineCollectionFunction : public LineCollection
+{
+public:
+  LineCollectionFunction(GameApi::Env &e, GameApi::PT (*fptr)(GameApi::EveryApi &ev, int linenum, bool id, void *data), int numlines, void *data) : ev(e), fptr(fptr), numlines(numlines), data(data) { }
+  virtual int NumLines() const { return numlines; }
+  virtual Point LinePoint(int line, int point) const
+  {
+    bool b = point==0 ? 0 : 1;
+    GameApi::PT pt = fptr(ev, line, b, data);
+    float x = ev.point_api.pt_x(pt);
+    float y = ev.point_api.pt_y(pt);
+    float z = ev.point_api.pt_z(pt);
+    return Point(x,y,z);
+  }
+
+private:
+  //GameApi::Env &e;
+  mutable GameApi::EveryApi ev;
+  GameApi::PT (*fptr)(GameApi::EveryApi &ev, int linenum, bool id, void *data);
+  int numlines; 
+  void *data;
+};
+
+GameApi::LI GameApi::LinesApi::function(GameApi::PT (*fptr)(GameApi::EveryApi &ev, int linenum, bool id, void *data), int numlines, void *data)
+{
+  //EnvImpl *env = EnvImpl::Environment(&e);
+
+  return add_line_array(e, new LineCollectionFunction(e, fptr, numlines, data));
+}
+GameApi::LI GameApi::LinesApi::from_points(GameApi::PC points, bool loops)
+{
+  PointCollection *point_coll = find_pointcoll_array(e,points);
+  return add_line_array(e, new ContinuousLines(point_coll, loops));
+}
+GameApi::LI GameApi::LinesApi::from_polygon(GameApi::P poly)
+{
+  FaceCollection *poly2 = find_facecoll(e, poly);
+  return add_line_array(e, new OutlineFaces(*poly2));
+}
+void GameApi::LinesApi::render(LLA l)
+{
+  PointArray2 *array = find_lines_array(e,l);
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glVertexPointer(3, GL_FLOAT, 0, array->array);
+  glDrawArrays(GL_LINES, 0, array->numpoints);
+  glDisableClientState(GL_VERTEX_ARRAY);
+}
+GameApi::LLA GameApi::LinesApi::prepare(LI l)
+{
+  LineCollection *coll = find_line_array(e, l);
+  int count = coll->NumLines();
+  float *array = 0;
+  if (count > 0) {
+    array = new float[count*6];
+    for(int i=0;i<count;i++)
+      {
+	Point p = coll->LinePoint(i,0);
+	Point p2 = coll->LinePoint(i,1);
+	array[i*6+0] = p.x;
+	array[i*6+1] = p.y;
+	array[i*6+2] = p.z;
+	array[i*6+3] = p2.x;
+	array[i*6+4] = p2.y;
+	array[i*6+5] = p2.z;
+	//std::cout << i << ":" << "(" << p.x << "," << p.y << "," << p.z << ")-(" << p2.x<< "," << p2.y << "," << p2.z << ")" << std::endl;
+      }
+  }
+  PointArray2 *arr = new PointArray2;
+  arr->array = array;
+  arr->numpoints = count*2;
+  return add_lines_array(e, arr);
+}
+
+
+

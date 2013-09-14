@@ -4263,7 +4263,7 @@ public:
     int num = c.NumFaces();
     int count = 0;
     for(int i=0;i<num;i++)
-      count += c.NumPoints(i)+1;
+      count += c.NumPoints(i);
     return count;
   }
   Point LinePoint(int line, int point) const
@@ -4273,7 +4273,7 @@ public:
     int i=0;
     for(;i<num;i++)
       {
-      count += c.NumPoints(i)+1;
+      count += c.NumPoints(i);
       if (count >= line) break;
       }
     int p = count - line + point;

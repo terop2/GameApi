@@ -30,7 +30,7 @@ CFiles=	Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
 
 CFiles2 = Main.cc
 
-CFiles_examples = GameApiTest3.cc GameApiTest4.cc GameApiWorld.cc GameApiTest5.cc GameApiTest6.cc GameApiTest7.cc
+CFiles_examples = GameApiTest3.cc GameApiTest4.cc GameApiWorld.cc GameApiTest5.cc GameApiTest6.cc GameApiTest7.cc GameApiTest8.cc
 CFiles2_examples = ExampleMain.cc
 Subdirs = 
 #module1
