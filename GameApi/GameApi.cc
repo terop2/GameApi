@@ -6876,6 +6876,77 @@ GameApi::LI GameApi::LinesApi::from_polygon(GameApi::P poly)
   FaceCollection *poly2 = find_facecoll(e, poly);
   return add_line_array(e, new OutlineFaces(*poly2));
 }
+class BorderFromBoolBitmap : public LineCollection
+{
+public:
+  BorderFromBoolBitmap(Bitmap<bool> &bm, float start_x, float end_x, float start_y, float end_y, float z) : bm(bm),start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), z(z) { Store(); }
+  virtual int NumLines() const { return p1.size(); }
+  virtual Point LinePoint(int line, int point) const
+  {
+    if (point==0) { return p1[line]; }
+    return p2[line];
+  }
+
+  void Store() {
+    int sx = bm.SizeX();
+    int sy = bm.SizeY();
+    for(int x=0;x<sx-1;x++)
+      {
+	for(int y=0;y<sy-1;y++)
+	  {
+	    bool b00 = bm.Map(x,y);
+	    bool b01 = bm.Map(x+1,y);
+	    bool b10 = bm.Map(x,y+1);
+	    bool b11 = bm.Map(x+1,y+1);
+
+	    float xx0 = start_x + (end_x-start_x)*x/sx;
+	    float xx1 = start_x + (end_x-start_x)*(x+1)/sx;
+	    float xx2 = start_x + (end_x-start_x)*(x+2)/sx;
+
+	    float yy0 = start_y + (end_y-start_y)*y/sy;
+	    float yy1 = start_y + (end_y-start_y)*(y+1)/sy;
+	    float yy2 = start_y + (end_y-start_y)*(y+2)/sy;
+
+	    if ((b00 || b01) && !(b00 && b01)) // TOPLEFT-TOPRIGHT
+	      {
+		p1.push_back(Point(xx1,yy0,z));
+		p2.push_back(Point(xx1,yy1,z));
+	      }
+	    if ((b00 || b10) && !(b00 && b10)) // topleft-bottomleft
+	      {
+		p1.push_back(Point(xx0,yy1,z));
+		p2.push_back(Point(xx1,yy1,z));
+	      }
+	    if ((b10||b11) && !(b10 && b11)) // bottomleft - bottomright
+	      {
+		p1.push_back(Point(xx1,yy1,z));
+		p2.push_back(Point(xx1,yy2,z));
+	      }
+	    if ((b01 || b11) && !(b01 && b11)) // topright - bottomright
+	      {
+		p1.push_back(Point(xx1,yy1,z));
+		p2.push_back(Point(xx2,yy1,z));
+	      }
+		    
+	  }
+      }
+  }
+
+private:
+  Bitmap<bool> &bm;
+  float start_x, end_x;
+  float start_y, end_y;
+  float z;
+  std::vector<Point> p1;
+  std::vector<Point> p2;
+};
+
+GameApi::LI GameApi::LinesApi::border_from_bool_bitmap(GameApi::BB b, float start_x, float end_x, float start_y, float end_y, float z)
+{
+  BoolBitmap *bb2 = find_bool_bitmap(e, b);
+  Bitmap<bool> *bb = bb2->bitmap;
+  return add_line_array(e, new BorderFromBoolBitmap(*bb, start_x, end_x, start_y, end_y, z));
+}
 void GameApi::LinesApi::render(LLA l)
 {
   PointArray2 *array = find_lines_array(e,l);

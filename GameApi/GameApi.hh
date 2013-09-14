@@ -1265,6 +1265,8 @@ public:
 	      int numlines, void *data);
   LI from_points(PC points, bool loops);
   LI from_polygon(P poly);
+  LI border_from_bool_bitmap(BB b, float start_x, float end_x,
+			     float start_y, float end_y, float z);
   LLA prepare(LI l);
   void render(LLA array);
 private:
