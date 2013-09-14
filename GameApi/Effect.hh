@@ -4257,7 +4257,22 @@ typedef FunctionImpl1<PointCollection*, LineCollection*, bool, ContinuousLines> 
 class OutlineFaces : public LineCollection
 {
 public:
-  OutlineFaces(FaceCollection &c) : c(c) { }
+  OutlineFaces(FaceCollection &c) : c(c) 
+  {
+    int faces = c.NumFaces();
+    int cc = 0;
+    for(int i=0;i<faces;i++)
+      {
+	int num = c.NumPoints(i);
+	int oldc = cc;
+	for(int j=0;j<num;j++)
+	  {
+	    counts.push_back(i);
+	    counts2.push_back(oldc);
+	    cc++;
+	  }
+      }
+  }
   int NumLines() const
   {
     int num = c.NumFaces();
@@ -4268,14 +4283,16 @@ public:
   }
   Point LinePoint(int line, int point) const
   {
-    int num = c.NumFaces();
+    //int num = c.NumFaces();
     int count = 0;
     int i=0;
-    for(;i<num;i++)
-      {
-      count += c.NumPoints(i);
-      if (count >= line) break;
-      }
+    //for(;i<num;i++)
+    //  {
+    //  count += c.NumPoints(i);
+    //  if (count >= line) break;
+    //  }
+    i = counts[line];
+    count = counts2[line] + c.NumPoints(i);
     int p = count - line + point;
     int pp = p % c.NumPoints(i);
     return c.FacePoint(i, pp);
@@ -4283,7 +4300,8 @@ public:
   }
 private:
   FaceCollection &c;
-
+  std::vector<int> counts;
+  std::vector<int> counts2;
 };
 typedef FunctionImpl0<FaceCollection*, LineCollection*, OutlineFaces> OutlineFacesFunction;
 
