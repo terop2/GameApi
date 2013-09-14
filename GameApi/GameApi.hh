@@ -75,6 +75,8 @@ namespace GameApi
   struct SV { int id; };
   struct FOA { int id; };
   struct COV { int id; };
+  struct LI { int id; };
+  struct LLA { int id; };
   //template<class T>
   //struct E { int id; };
 
@@ -1242,18 +1244,33 @@ private:
 };
 		     
 class PointCollectionApi
-{ // int -> PT
+  { // int -> PT
 public:
   PointCollectionApi(Env &e) : e(e) { }
   PC empty();
   PC single(PT point);
   PC single(float x, float y, float z);
   PC array(PT *array, int size);
+  PC bezier(PT *array, PT *control_array, int size, int iteration_count);
   P tri_object3d(PC p);
 private:
   Env &e;
 };
-
+		     
+class LinesApi
+{
+public:
+  LinesApi(Env &e) : e(e) { }
+  LI function(PT (*fptr)(EveryApi &ev, int linenum, bool id, void *data),
+	      int numlines, void *data);
+  LI from_points(PC points, bool loops);
+  LI from_polygon(P poly);
+  LLA prepare(LI l);
+  void render(LLA array);
+private:
+  Env &e;
+};
+		     
 
 class VectorApi
 { // to be implemented via virtual Vector vec() const=0;
@@ -1514,7 +1531,7 @@ struct EveryApi
 {
   EveryApi(Env &e) 
     : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e),
-      font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e) { }
+      font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -1540,6 +1557,7 @@ struct EveryApi
   SeparateApi separate_api;
   WaveformApi waveform_api;
   ColorApi color_api;
+  LinesApi lines_api;
 };
 
 class GamesApi
