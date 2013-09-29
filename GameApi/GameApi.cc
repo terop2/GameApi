@@ -6955,6 +6955,34 @@ void GameApi::LinesApi::render(LLA l)
   glDrawArrays(GL_LINES, 0, array->numpoints);
   glDisableClientState(GL_VERTEX_ARRAY);
 }
+
+#if 0
+class BezierArray : public PointCollection
+{
+public:
+  BezierArray() { }
+  void RunRecurse(Point p1, Point p1c, Point p2, Point p2c, int count) 
+  {
+    if (count==0) 
+      {
+	vec.push_back(p1);
+	vec2.push_back(p2);
+	return;
+      }    
+    
+  }
+private:
+  std::vector<Point> vec;
+  std::vector<Point> vec2;
+};
+
+
+
+GameApi::PC GameApi::PointCollectionApi::bezier(PT *array, PT *control_array, int size, int iteration_count)
+{
+}
+#endif
+
 GameApi::LLA GameApi::LinesApi::prepare(LI l)
 {
   LineCollection *coll = find_line_array(e, l);

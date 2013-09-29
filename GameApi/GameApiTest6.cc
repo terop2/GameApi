@@ -34,23 +34,36 @@ void GameTest6(EveryApi &e)
   //FOA array = api.prepare(obj, 800000, -150.0,-150.0,-150.0, 350.0,350.0,350.0);
 
   
-  //std::string filename = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
-  //Ft font = e.font_api.newfont(filename.c_str(), 50,50);
-  //BM fontbm = e.font_api.glyph(font, u'#');
-  //FB fb = e.float_bitmap_api.from_red(fontbm);
-  //FO obj2 = api.from_float_bitmap(fb, -150.0, 150.0,
-  //				  -150.0, 150.0,
-  //				  -50.0, 50.0);
+  std::string filename = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
+  Ft font = e.font_api.newfont(filename.c_str(), 1500,1500);
+  BM fontbm = e.font_api.glyph(font, u'#');
+  FB fb = e.float_bitmap_api.from_red(fontbm);
+  FO obj2 = api.from_float_bitmap(fb, -150.0, 150.0,
+  				  -150.0, 150.0,
+  				  -50.0, 50.0);
   
-  O o = e.volume_api.mandelbulb(8.0, 0.0,0.0,0.0,
-		     0.0,0.0,0.0,
-		     2.0,
-		     60);
-  O o2 = e.volume_api.scale(o, 150.0,150.0,150.0);
-  FO obj2 = e.float_volume_api.from_volume(o2, 0.0, 1.0);
+
+  BB bb = e.bool_bitmap_api.from_float_bitmap(fb, 0.5, 1.1);
+  LI li = e.lines_api.border_from_bool_bitmap(bb, -150.0, 150.0,
+					      -150.0, 150.0,
+					      -50.0);
+  LI li2 = e.lines_api.border_from_bool_bitmap(bb, -150.0, 150.0,
+					      -150.0, 150.0,
+					      50.0);
+
+  LLA lia = e.lines_api.prepare(li);
+  LLA lia2 = e.lines_api.prepare(li2);
+
+  //O o = e.volume_api.mandelbulb(8.0, 0.0,0.0,0.0,
+  //		     0.0,0.0,0.0,
+  //		     2.0,
+  //		     60);
+  //O o2 = e.volume_api.scale(o, 150.0,150.0,150.0);
+  //FO obj2 = e.float_volume_api.from_volume(o2, 0.0, 1.0);
   FOA array2 = api.prepare(obj2, 200000, -150.0,-150.0,-150.0, 150.0,150.0,150.0);
 
   float time = 0.0;
+  glLineWidth(5);
   while(1)
     {
       e.mainloop_api.clear_3d();
@@ -62,6 +75,9 @@ void GameTest6(EveryApi &e)
       glScalef(1.0,-1.0,1.0);
       //api.render(array);
       api.render(array2);
+      glColor4f(1.0,1.0,1.0,1.0);
+      e.lines_api.render(lia);
+      e.lines_api.render(lia2);
       glPopMatrix();
       glDisable(GL_BLEND);
       e.mainloop_api.swapbuffers();
