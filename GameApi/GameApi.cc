@@ -301,7 +301,7 @@ GameApi::BM GameApi::MainLoopApi::screenshot()
   int h = surf->h;
 
   BufferRef ref = BufferRef::NewBuffer(w,h);
-  glReadPixels(0,0,w,h, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
+  glReadPixels(0,0,w,h, GL_BGRA, GL_UNSIGNED_BYTE, ref.buffer);
   Bitmap<Color> *bm = new BitmapFromBuffer(ref);
   return add_color_bitmap2(e, bm);
 }
@@ -4360,6 +4360,50 @@ GameApi::S GameApi::SurfaceApi::texture(S orig, BM texture)
   SurfaceImpl impl;
   impl.surf = surface;
   return add_surface(e, impl);
+}
+
+class FlipBitmap : public Bitmap<Color>
+{
+public:
+  FlipBitmap(Bitmap<Color> &bm, bool x, bool y) : bm(bm), flip_x(x), flip_y(y) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual Color Map(int x, int y) const
+  {
+    int xx = x;
+    int yy = y;
+    if (flip_x) {
+      xx = SizeX()-x-1;
+    }
+    if (flip_y) {
+      yy = SizeY()-y-1;
+    }
+    return bm.Map(xx,yy);
+  }
+
+private:
+  Bitmap<Color> &bm;
+  bool flip_x, flip_y;
+};
+
+GameApi::BM GameApi::BitmapApi::flip_x(BM orig)
+{
+  BitmapHandle *handle = find_bitmap(e, orig);
+  BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
+  Bitmap<Color> *rep = new FlipBitmap(*chandle->bm, true, false);
+  BitmapColorHandle *chandle2 = new BitmapColorHandle;
+  chandle2->bm = rep;
+  return add_bitmap(e,chandle2);
+}
+GameApi::BM GameApi::BitmapApi::flip_y(BM orig)
+{
+  BitmapHandle *handle = find_bitmap(e, orig);
+  BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
+  Bitmap<Color> *rep = new FlipBitmap(*chandle->bm, false, true);
+
+  BitmapColorHandle *chandle2 = new BitmapColorHandle;
+  chandle2->bm = rep;
+  return add_bitmap(e,chandle2);
 }
 GameApi::BM GameApi::BitmapApi::repeat_bitmap(BM orig, int xcount, int ycount)
 {

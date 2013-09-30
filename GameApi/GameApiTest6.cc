@@ -35,9 +35,10 @@ void GameTest6(EveryApi &e)
 
   
   std::string filename = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
-  Ft font = e.font_api.newfont(filename.c_str(), 1500,1500);
-  BM fontbm = e.font_api.glyph(font, u'#');
-  FB fb = e.float_bitmap_api.from_red(fontbm);
+  Ft font = e.font_api.newfont(filename.c_str(), 500,500);
+  BM fontbm = e.font_api.glyph(font, u'&');
+  BM fontbm2 = e.bitmap_api.growbitmap(fontbm, 1, 1, 1, 1);
+  FB fb = e.float_bitmap_api.from_red(fontbm2);
   FO obj2 = api.from_float_bitmap(fb, -150.0, 150.0,
   				  -150.0, 150.0,
   				  -50.0, 50.0);
@@ -50,9 +51,17 @@ void GameTest6(EveryApi &e)
   LI li2 = e.lines_api.border_from_bool_bitmap(bb, -150.0, 150.0,
 					      -150.0, 150.0,
 					      50.0);
+  LI li3 = e.lines_api.border_from_bool_bitmap(bb, -150.0, 150.0,
+					      -150.0, 150.0,
+					      -20.0);
+  LI li4 = e.lines_api.border_from_bool_bitmap(bb, -150.0, 150.0,
+					      -150.0, 150.0,
+					      20.0);
 
   LLA lia = e.lines_api.prepare(li);
   LLA lia2 = e.lines_api.prepare(li2);
+  LLA lia3 = e.lines_api.prepare(li3);
+  LLA lia4 = e.lines_api.prepare(li4);
 
   //O o = e.volume_api.mandelbulb(8.0, 0.0,0.0,0.0,
   //		     0.0,0.0,0.0,
@@ -64,6 +73,7 @@ void GameTest6(EveryApi &e)
 
   float time = 0.0;
   glLineWidth(5);
+  //int frame = 0;
   while(1)
     {
       e.mainloop_api.clear_3d();
@@ -78,9 +88,25 @@ void GameTest6(EveryApi &e)
       glColor4f(1.0,1.0,1.0,1.0);
       e.lines_api.render(lia);
       e.lines_api.render(lia2);
+      e.lines_api.render(lia3);
+      e.lines_api.render(lia4);
       glPopMatrix();
       glDisable(GL_BLEND);
       e.mainloop_api.swapbuffers();
+#if 0
+      BM scr = e.mainloop_api.screenshot();
+      BM scr2 = e.bitmap_api.flip_y(scr);
+      std::string filename = "scr.bmp";
+      frame++;
+      std::string lead = "000";
+      lead[0] = frame /100;
+      lead[1] = (frame-lead[0]*100)/10;
+      lead[2] = (frame-lead[0]*100-lead[1]*10);
+      lead[0]+='0';
+      lead[1]+='0';
+      lead[2]+='0';
+      e.bitmap_api.savebitmap(scr2, lead+filename);
+#endif
       MainLoopApi::Event ev = e.mainloop_api.get_event();
       if (ev.ch==27) break;
       time+=0.1;
