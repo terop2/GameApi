@@ -284,6 +284,7 @@ public:
   ~FontApi();
   Ft newfont(const char *filename, int sx, int sy);
   BM glyph(Ft font, long idx);
+  LI glyph_outline(Ft font, long idx, float sx, float sy);
   BM font_string(Ft font, const char *str, int x_gap);
   FB glyph_fb(Ft font, long idx);
   BB glyph_bb(Ft font, long idx);

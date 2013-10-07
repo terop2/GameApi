@@ -4236,6 +4236,19 @@ public:
 };
 
 
+class ForwardLineCollection : public LineCollection
+{
+public:
+  ForwardLineCollection(LineCollection *coll) : coll(coll) { }
+  virtual int NumLines() const { return coll->NumLines(); }
+  virtual Point LinePoint(int line, int point) const
+  {
+    return coll->LinePoint(line,point);
+  }
+private:
+  LineCollection *coll;
+};
+
 class ContinuousLines : public LineCollection
 {
 public:
