@@ -4805,6 +4805,15 @@ GameApi::Ft GameApi::FontApi::newfont(const char *filename, int sx, int sy)
   font.id = env->fonts.size()-1;
   return font;
 }
+GameApi::LI GameApi::FontApi::glyph_outline(GameApi::Ft font, long idx, float sx, float sy)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->fonts[font.id].bm->load_glyph_outline(idx, sx, sy);
+  LineCollection *coll = env->fonts[font.id].bm;
+  LineCollection *coll2 = new ForwardLineCollection(coll);
+  return add_line_array(e, coll2);
+}
+
 GameApi::BM GameApi::FontApi::glyph(GameApi::Ft font, long idx)
 {
   EnvImpl *env = EnvImpl::Environment(&e);

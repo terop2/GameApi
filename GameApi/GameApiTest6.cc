@@ -36,7 +36,8 @@ void GameTest6(EveryApi &e)
   
   std::string filename = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
   Ft font = e.font_api.newfont(filename.c_str(), 500,500);
-  BM fontbm = e.font_api.glyph(font, u'&');
+  BM fontbm = e.font_api.glyph(font, u'Q');
+  LI fontli = e.font_api.glyph_outline(font, u'@', 300.0,-300.0);
   BM fontbm2 = e.bitmap_api.growbitmap(fontbm, 1, 1, 1, 1);
   FB fb = e.float_bitmap_api.from_red(fontbm2);
   FO obj2 = api.from_float_bitmap(fb, -150.0, 150.0,
@@ -63,6 +64,8 @@ void GameTest6(EveryApi &e)
   LLA lia3 = e.lines_api.prepare(li3);
   LLA lia4 = e.lines_api.prepare(li4);
 
+
+  LLA fontlia = e.lines_api.prepare(fontli);
   //O o = e.volume_api.mandelbulb(8.0, 0.0,0.0,0.0,
   //		     0.0,0.0,0.0,
   //		     2.0,
@@ -84,12 +87,15 @@ void GameTest6(EveryApi &e)
       glRotatef(time, 0.0,1.0,0.0);
       glScalef(1.0,-1.0,1.0);
       //api.render(array);
+
       api.render(array2);
       glColor4f(1.0,1.0,1.0,1.0);
       e.lines_api.render(lia);
       e.lines_api.render(lia2);
       e.lines_api.render(lia3);
       e.lines_api.render(lia4);
+
+      //e.lines_api.render(fontlia);
       glPopMatrix();
       glDisable(GL_BLEND);
       e.mainloop_api.swapbuffers();
