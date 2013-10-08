@@ -88,14 +88,14 @@ void GameTest6(EveryApi &e)
       glScalef(1.0,-1.0,1.0);
       //api.render(array);
 
-      api.render(array2);
+      //api.render(array2);
       glColor4f(1.0,1.0,1.0,1.0);
-      e.lines_api.render(lia);
-      e.lines_api.render(lia2);
-      e.lines_api.render(lia3);
-      e.lines_api.render(lia4);
+      //e.lines_api.render(lia);
+      //e.lines_api.render(lia2);
+      //e.lines_api.render(lia3);
+      //e.lines_api.render(lia4);
 
-      //e.lines_api.render(fontlia);
+      e.lines_api.render(fontlia);
       glPopMatrix();
       glDisable(GL_BLEND);
       e.mainloop_api.swapbuffers();

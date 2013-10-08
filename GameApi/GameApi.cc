@@ -663,6 +663,7 @@ struct EnvImpl
   std::vector<PointArray2*> pointarray;
   std::vector<PointCollection*> pointcollarray;
   std::vector<LineCollection*> linearray;
+  std::vector<ColorVolumeObject*> colorvolume;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -1161,12 +1162,22 @@ GameApi::O add_volume(GameApi::Env &e, VolumeObject *o)
   return pt;
 }
 
+
 GameApi::FO add_float_volume(GameApi::Env &e, FloatVolumeObject *o)
 {
   EnvImpl *env = EnvImpl::Environment(&e);
   env->floatvolumes.push_back(o);
   GameApi::FO pt;
   pt.id = env->floatvolumes.size()-1;
+  return pt;
+}
+
+GameApi::COV add_color_volume(GameApi::Env &e, ColorVolumeObject *o)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->colorvolume.push_back(o);
+  GameApi::COV pt;
+  pt.id = env->colorvolume.size()-1;
   return pt;
 }
 
@@ -1807,6 +1818,8 @@ VolumeObject *find_volume(GameApi::Env &e, GameApi::O o)
   return 0;
 }
 
+
+
 FloatVolumeObject *find_float_volume(GameApi::Env &e, GameApi::FO o)
 {
   EnvImpl *ee = EnvImpl::Environment(&e);
@@ -1814,6 +1827,15 @@ FloatVolumeObject *find_float_volume(GameApi::Env &e, GameApi::FO o)
     return ee->floatvolumes[o.id];
   return 0;
 }
+
+ColorVolumeObject *find_color_volume(GameApi::Env &e, GameApi::COV o)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  if (o.id >=0 && o.id < (int)ee->colorvolume.size())
+    return ee->colorvolume[o.id];
+  return 0;
+}
+
 
 Color *find_color(GameApi::Env &e, GameApi::CO p)
 {
@@ -5578,6 +5600,21 @@ private:
   void *data;
 };
 
+class FunctionColorVolumeObject : public ColorVolumeObject {
+public:
+  FunctionColorVolumeObject(GameApi::EveryApi &ev, unsigned int (*fptr)(GameApi::EveryApi &ev, float x, float y, float z, void *data), void *data) : ev(ev), fptr(fptr), data(data) { }
+  virtual unsigned int ColorValue(Point p) const
+  {
+    return fptr(ev, p.x,p.y,p.z,data);
+  }
+  
+private:
+  GameApi::EveryApi &ev;
+  unsigned int (*fptr)(GameApi::EveryApi &ev, float x, float y, float z, void *data);
+  void *data;
+};
+
+
 class IntersectionPoint : public VolumeObject
 {
 public:
@@ -6392,6 +6429,101 @@ GameApi::FO GameApi::FloatVolumeApi::function(float (*fptr)(EveryApi &ev, float 
   EnvImpl *env = EnvImpl::Environment(&e);
   env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
   return add_float_volume(e, ff);
+}
+GameApi::COV GameApi::ColorVolumeApi::function(unsigned int (*fptr)(EveryApi &ev, float x, float y, float z, void *data), void *data)
+{
+  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  FunctionColorVolumeObject *ff = new FunctionColorVolumeObject(*ev, fptr, data);
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->deletes.push_back(std::tr1::shared_ptr<void>(ev));
+  return add_color_volume(e, ff);
+  
+}
+
+class ColorVolumeFromFloatVolume : public ColorVolumeObject
+{
+public:
+  ColorVolumeFromFloatVolume(FloatVolumeObject *obj, unsigned int col0, unsigned int col1) : obj(obj), col0(col0), col1(col1) { }
+  virtual unsigned int ColorValue(Point p) const
+  {
+    float val = obj->FloatValue(p);
+    return Color::Interpolate(col0, col1, val);
+  }
+
+private:
+  FloatVolumeObject *obj;
+  unsigned int col0;
+  unsigned int col1;
+};
+
+GameApi::COV GameApi::ColorVolumeApi::from_float_volume(FO obj, unsigned int col0, unsigned int col1)
+{
+  FloatVolumeObject *obj2 = find_float_volume(e, obj);
+  return add_color_volume(e, new ColorVolumeFromFloatVolume(obj2, col0, col1));
+}
+
+class ColorVolumeFromVolumeObject : public ColorVolumeObject
+{
+public:
+  ColorVolumeFromVolumeObject(VolumeObject *obj, unsigned int col_true, unsigned int col_false) : obj(obj), col_true(col_true), col_false(col_false) { }
+  virtual unsigned int ColorValue(Point p) const
+  {
+    bool b = obj->Inside(p);
+    if (b) return col_true;
+    return col_false;
+  }
+private:
+  VolumeObject *obj;
+  unsigned int col_true;
+  unsigned int col_false;
+};
+
+class TextureBitmapFromColorVolume : public Bitmap<Color>
+{
+public:
+  TextureBitmapFromColorVolume(FaceCollection *coll, 
+			       ColorVolumeObject *colors,
+			       int face,
+			       int sx, int sy)
+    : colors(colors),  sx(sx), sy(sy) 
+  {
+    p00 = coll->FacePoint(face, 0);
+    p01 = coll->FacePoint(face, 1);
+    p11 = coll->FacePoint(face, 2);
+    p10 = coll->FacePoint(face, 3);
+  }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    float vx = float(x)/float(sx);
+    float vy = float(y)/float(sy);
+    Point pt = Point(Vector(p00)*vx+Vector(p01)*(1.0-vx));
+    Point pb = Point(Vector(p10)*vx+Vector(p11)*(1.0-vx));
+    Point pm = Point(Vector(pt)*vy+Vector(pb)*(1.0-vy));
+    unsigned int colour = colors->ColorValue(pm);
+    return Color(colour);
+  }
+
+private:
+  ColorVolumeObject *colors;
+  int sx;
+  int sy;
+  Point p00, p01, p10, p11;
+};
+
+GameApi::BM GameApi::ColorVolumeApi::texture_bm(GameApi::P obj, GameApi::COV colors, int face, int sx, int sy)
+{
+  FaceCollection *coll = find_facecoll(e, obj);
+  ColorVolumeObject *colors2 = find_color_volume(e, colors);
+  Bitmap<Color> *bm = new TextureBitmapFromColorVolume(coll, colors2, face, sx, sy);
+  return add_color_bitmap2(e, bm);
+}
+
+GameApi::COV GameApi::ColorVolumeApi::from_volume(O obj, unsigned int col_true, unsigned int col_false)
+{
+  VolumeObject *obj2 = find_volume(e, obj);
+  return add_color_volume(e, new ColorVolumeFromVolumeObject(obj2, col_true, col_false));
 }
 
 class FloatVolumeFromVolume : public FloatVolumeObject

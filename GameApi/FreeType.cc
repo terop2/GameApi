@@ -67,6 +67,32 @@ int LineToFunc(const FT_Vector *to, void *user)
   bm->control2.push_back(p2);
   return 0;
 }
+#if 0
+class ConicPointCollection : public PointCollection
+{
+public:
+  ConicPointCollection(FontGlyphBitmap *bm, int index, int type) : bm(bm), index(index), type(type) { }
+  int Size() const {
+    int count = 0;
+    for(int i=index;i<bm->points.size();i+=2)
+      {
+	if (bm->types(i)!=type) return count; 
+	count++;
+      }
+    return count; 
+  }
+  Point Index(int i) const 
+  {
+    int idx = i*2;
+    Point2d p = points[idx];
+    return Point(p.x,p.y,0.0);
+  }
+private:
+  FontGlyphBitmap *bm;
+  int index;
+  int type;
+};
+#endif
 int ConicToFunc(const FT_Vector *control, const FT_Vector *to, void *user)
 {
   std::cout << "ConicToFunc" << std::endl;
