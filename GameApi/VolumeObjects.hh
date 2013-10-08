@@ -154,6 +154,12 @@ public:
   virtual ~FloatVolumeObject() { }
 };
 
+class ColorVolumeObject {
+public:
+  virtual unsigned int ColorValue(Point p) const=0;
+  virtual ~ColorVolumeObject() { }
+};
+
 class MinFloatVolumeObject : public FloatVolumeObject {
 public:
   MinFloatVolumeObject(FloatVolumeObject *f1, FloatVolumeObject *f2)
