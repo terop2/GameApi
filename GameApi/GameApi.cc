@@ -5336,6 +5336,30 @@ GameApi::FB GameApi::FloatBitmapApi::from_alpha(BM bm)
   Bitmap<float> *bm2 = new BitmapFromAlpha(*bmc);
   return add_float_bitmap(e, bm2);
 }
+class FromBoolBitmap : public Bitmap<float>
+{
+public:
+  FromBoolBitmap(Bitmap<bool> &bm, float val_true, float val_false) : bm(bm), val_true(val_true), val_false(val_false) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual float Map(int x, int y) const
+  {
+    bool b = bm.Map(x,y);
+    if (b) return val_true;
+    return val_false;
+  }
+
+private:
+  Bitmap<bool> &bm;
+  float val_true;
+  float val_false;
+};
+
+GameApi::FB GameApi::FloatBitmapApi::from_bool(GameApi::BB b, float val_true, float val_false)
+{
+  Bitmap<bool> *bm = find_bool_bitmap(e, b)->bitmap;
+  return add_float_bitmap(e, new FromBoolBitmap(*bm, val_true, val_false));
+}
 
 class BitmapFromRGBA : public Bitmap<Color>
 {
@@ -5383,6 +5407,7 @@ GameApi::FB GameApi::FloatBitmapApi::from_bool_bitmap(BB bm, int csx, int csy)
   Bitmap<bool> *bm2 = find_bool_bitmap(e,bm)->bitmap;
   return add_float_bitmap(e, new FloatBitmapFromBoolBitmap(*bm2, csx, csy));
 }
+
 GameApi::BM GameApi::FloatBitmapApi::to_grayscale(FB fb)
 {
   Bitmap<float> *bm = find_float_bitmap(e,fb)->bitmap;
