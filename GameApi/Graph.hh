@@ -7006,6 +7006,10 @@ class TextureITexCoord : public TextureI
 public:
   TextureITexCoord(TextureI &next, int id, int x, int y, int width, int height)
     : next(next), id(id), x(x), y(y), width(width), height(height) { }
+  virtual int SizeX() const { return next.SizeX(); }
+  virtual int SizeY() const { return next.SizeY(); }
+  virtual Color Map(int x, int y) const { return next.Map(x,y); }
+
   virtual int AreaCount() const  { return next.AreaCount()+1; }
   virtual int Id(int i) const 
   {
