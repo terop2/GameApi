@@ -2370,7 +2370,15 @@ GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
   //ChessBoardBitmap *bmp = new ChessBoardBitmap(Color(255,0.0,0.0), Color(255,255,255), 8, 8, 30, 30);
   bool b = false;
   BufferRef img = LoadImage(filename, b);
-  if (b==false) { GameApi::BM bm; bm.id = -1; return bm; }
+  if (b==false) {
+    img = BufferRef::NewBuffer(10,10);
+    for(int x=0;x<10;x++)
+      for(int y=0;y<10;y++)
+	{
+	  img.buffer[x+y*img.ydelta] = ((x+y)&1)==1 ? 0xffffffff : 0xff000000;
+	}
+    std::cout << "ERROR: File not found: " << filename << std::endl;
+  }
   EnvImpl *env = EnvImpl::Environment(&e);
   env->deletes.push_back(std::tr1::shared_ptr<void>(img.buffer, &ArrayDelete<unsigned int>));
 
