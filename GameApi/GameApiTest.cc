@@ -57,9 +57,17 @@ void GameApiTest()
   FunctionApi func(e);
   SurfaceApi surf(e);
   //VBO vbo(e);
+  loop.init_window();
 
-  loop.init();
+  shader.load("Shader.txt");
+  SH sh = shader.get_shader("texture", "texture", "");
+  shader.use(sh);
+  shader.set_default_projection(sh, "in_P");
+
+  loop.init(sh);
   loop.antialias(true);
+
+
 
   tx.load_font("./maps/font.png", 32,32, 20,2,'a','z');
   BM b1 = bm.loadbitmap("./maps/circle.png");
@@ -165,14 +173,14 @@ void GameApiTest()
       loop.clear();
       loop.alpha(false);
       gr.rendergrid(grid, -1, 0,0);
-      tx.draw_text("tekstiabczyx", 100,100+time);
+      tx.draw_text("tekstiabczyx", 100,100+time, sh);
       loop.alpha(true);
-      spr.rendersprite(b1, 0+time, 0, 1.0, 1.0);
-      spr.rendersprite(b1, 20+time, 20.0, 1.0, 1.0);
+      spr.rendersprite(b1, sh, 0+time, 0, 1.0, 1.0);
+      spr.rendersprite(b1, sh, 20+time, 20.0, 1.0, 1.0);
       //PT p = sp.pos(s, 100.0,100.0);
       //spr.rendersprite(b1, p);
       loop.alpha(false);
-      loop.switch_to_3d(true);
+      loop.switch_to_3d(true, sh);
       glPushMatrix();
       glRotatef(loop.get_time()/30.0, 0.0,1.0,0.0);
       //shader.use(shader1);
@@ -187,7 +195,7 @@ void GameApiTest()
       glPopMatrix();
       //vbo.render(v);
       poly.renderpoly(sphere, a.timed_value_point(path, loop.get_time()/30.0));
-      loop.switch_to_3d(false);
+      loop.switch_to_3d(false, sh);
       loop.alpha(true);
       //spr.rendersprite(res, 300.0, 300.0);
       loop.alpha(false);

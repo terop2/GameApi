@@ -61,7 +61,7 @@ main: $(GCHFiles_examples) $(OFiles_examples) Makefile GameApi.hh libGameApi.so
 
 libGameApi.so: $(GCHFiles) $(OFiles) Makefile
 	@echo clang libGameApi.so
-	@clang -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL -lGL -lSDL_image -lGLEW -lfreetype 
+	@clang -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lGLEW -lfreetype 
 #`pkg-config gtkmm-2.4 --libs` 
 
 subdirs: $(Subdirs)

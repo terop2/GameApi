@@ -30,6 +30,8 @@ public:
   void push_color(int id, int num, unsigned int *colors);
   void push_texcoord(int id, int num, Point2d *points);
 
+  void split_color(std::vector<float> &vec, unsigned int color);
+
   // way to get data out
   int tri_count(int id) const { return m_set[id]->tri_polys.size(); }
   const Point *tri_polys(int id) const { return &m_set[id]->tri_polys[0]; }
@@ -67,12 +69,12 @@ public:
 
 
   int tri_color_count(int id) const { return m_set[id]->tri_color.size(); }
-  const unsigned int *tri_color_polys(int id) const { return &m_set[id]->tri_color[0]; }
+  const float *tri_color_polys(int id) const { return &m_set[id]->tri_color[0]; }
   int quad_color_count(int id) const { return m_set[id]->quad_color.size(); }
-  const unsigned int *quad_color_polys(int id) const { return &m_set[id]->quad_color[0]; }
+  const float *quad_color_polys(int id) const { return &m_set[id]->quad_color[0]; }
   int poly_color_count(int id) const { return m_set[id]->poly_color.size(); }
   int poly2_color_count(int id, int i) const { return m_set[id]->poly_color[i].size(); }
-  const unsigned int *poly_color_polys(int id, int i) const { return &m_set[id]->poly_color[i][0]; }
+  const float *poly_color_polys(int id, int i) const { return &m_set[id]->poly_color[i][0]; }
 
 
   int tri_texcoord_count(int id) const { return m_set[id]->tri_texcoord.size(); }
@@ -102,9 +104,9 @@ private:
     mutable std::map<int,std::vector<int> > quad_attribsi;
     mutable std::map<int,std::vector<std::vector<int> > > poly_attribsi;
 
-    std::vector<unsigned int> tri_color;
-    std::vector<unsigned int> quad_color;
-    std::vector<std::vector<unsigned int> > poly_color;
+    std::vector<float> tri_color;
+    std::vector<float> quad_color;
+    std::vector<std::vector<float> > poly_color;
 
     std::vector<Point2d> tri_texcoord;
     std::vector<Point2d> quad_texcoord;
@@ -117,15 +119,19 @@ class RenderVertexArray
 {
 public:
   RenderVertexArray(VertexArraySet &s) : s(s) { }
+  void prepare(int id);
   void render(int id);
 private:
   VertexArraySet &s;
+  unsigned int buffers[4];
+  unsigned int buffers2[4];
 };
 
 class RenderVertexArray2
 {
 public:
   RenderVertexArray2(VertexArraySet &s1, VertexArraySet &s2) : s1(s1), s2(s2) { }
+  void prepare(int id);
   void render(int id, int a1, int a2, int a3, int a4,
 	      int aa1, int aa2, int aa3, int aa4);
 private:

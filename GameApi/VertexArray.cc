@@ -27,6 +27,8 @@ void VertexArraySet::push_poly(int id, int num, Point *points)
       p->quad_polys.push_back(points[0]);
       p->quad_polys.push_back(points[1]);
       p->quad_polys.push_back(points[2]);
+      p->quad_polys.push_back(points[0]);
+      p->quad_polys.push_back(points[2]);
       p->quad_polys.push_back(points[3]);
     }
   else
@@ -59,6 +61,8 @@ void VertexArraySet::push_normal(int id, int num, Vector *points)
     {
       p->quad_normals.push_back(points[0]);
       p->quad_normals.push_back(points[1]);
+      p->quad_normals.push_back(points[2]);
+      p->quad_normals.push_back(points[0]);
       p->quad_normals.push_back(points[2]);
       p->quad_normals.push_back(points[3]);
     }
@@ -96,6 +100,8 @@ void VertexArraySet::push_attrib(int id, int attrib_id, int num, float *points)
       p->quad_attribs[attrib_id].push_back(points[0]);
       p->quad_attribs[attrib_id].push_back(points[1]);
       p->quad_attribs[attrib_id].push_back(points[2]);
+      p->quad_attribs[attrib_id].push_back(points[0]);
+      p->quad_attribs[attrib_id].push_back(points[2]);
       p->quad_attribs[attrib_id].push_back(points[3]);
     }
   else
@@ -128,6 +134,8 @@ void VertexArraySet::push_attribi(int id, int attrib_id, int num, int *points)
       p->quad_attribsi[attrib_id].push_back(points[0]);
       p->quad_attribsi[attrib_id].push_back(points[1]);
       p->quad_attribsi[attrib_id].push_back(points[2]);
+      p->quad_attribsi[attrib_id].push_back(points[0]);
+      p->quad_attribsi[attrib_id].push_back(points[2]);
       p->quad_attribsi[attrib_id].push_back(points[3]);
     }
   else
@@ -140,6 +148,28 @@ void VertexArraySet::push_attribi(int id, int attrib_id, int num, int *points)
 	}
     }
 }
+void VertexArraySet::split_color(std::vector<float> &target, unsigned int color)
+{
+  unsigned int alpha = color & 0xff000000;
+  unsigned int red = color & 0xff0000;
+  unsigned int green = color & 0xff00;
+  unsigned int blue = color & 0xff;
+
+  alpha >>= 24;
+  red >>= 16;
+  green >>= 8;
+  
+  float falpha = float(alpha)/256.0;
+  float fred = float(red)/256.0;
+  float fgreen = float(green)/256.0;
+  float fblue = float(blue)/256.0;
+
+  //target.push_back(falpha);
+  target.push_back(fblue);
+  target.push_back(fgreen);
+  target.push_back(fred);
+  //std::cout << "Color value" << fred << " " << fgreen << " " << fblue << std::endl;
+}
 
 void VertexArraySet::push_color(int id, int num, unsigned int *points)
 {
@@ -151,24 +181,26 @@ void VertexArraySet::push_color(int id, int num, unsigned int *points)
     }
   if (num == 3)
     {
-      p->tri_color.push_back(points[0]);
-      p->tri_color.push_back(points[1]);
-      p->tri_color.push_back(points[2]);
+      split_color(p->tri_color, points[0]);
+      split_color(p->tri_color, points[1]);
+      split_color(p->tri_color, points[2]);
     }
   else if (num==4)
     {
-      p->quad_color.push_back(points[0]);
-      p->quad_color.push_back(points[1]);
-      p->quad_color.push_back(points[2]);
-      p->quad_color.push_back(points[3]);
+      split_color(p->quad_color, points[0]);
+      split_color(p->quad_color, points[1]);
+      split_color(p->quad_color, points[2]);
+      split_color(p->quad_color, points[0]);
+      split_color(p->quad_color, points[2]);
+      split_color(p->quad_color, points[3]);
     }
   else
     {
-      p->poly_color.push_back(std::vector<unsigned int>());
+      p->poly_color.push_back(std::vector<float>());
       int s = p->poly_color.size()-1;
       for(int i=0;i<num;i++)
 	{
-	  p->poly_color[s].push_back(points[i]);
+          split_color(p->poly_color[s], points[i]);
 	}
     }
 }
@@ -194,6 +226,8 @@ void VertexArraySet::push_texcoord(int id, int num, Point2d *points)
       p->quad_texcoord.push_back(points[0]);
       p->quad_texcoord.push_back(points[1]);
       p->quad_texcoord.push_back(points[2]);
+      p->quad_texcoord.push_back(points[0]);
+      p->quad_texcoord.push_back(points[2]);
       p->quad_texcoord.push_back(points[3]);
     }
   else
@@ -206,8 +240,81 @@ void VertexArraySet::push_texcoord(int id, int num, Point2d *points)
 	}
     }
 }
+void RenderVertexArray::prepare(int id)
+{
+  glGenBuffers(1,&buffers[0]);
+  glGenBuffers(1,&buffers[1]);
+  glGenBuffers(1,&buffers[2]);
+  glGenBuffers(1,&buffers[3]);
+  glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+  glBufferData(GL_ARRAY_BUFFER, s.tri_count(id)*sizeof(float)*3, s.tri_polys(id), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
+  glBufferData(GL_ARRAY_BUFFER, s.tri_count(id)*sizeof(float)*3, s.tri_normal_polys(id), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
+  glBufferData(GL_ARRAY_BUFFER, s.tri_count(id)*sizeof(float)*3, s.tri_color_polys(id), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, buffers[3]);
+  glBufferData(GL_ARRAY_BUFFER, s.tri_count(id)*sizeof(float)*2, s.tri_texcoord_polys(id), GL_STATIC_DRAW);
+
+
+  glGenBuffers(1,&buffers2[0]);
+  glGenBuffers(1,&buffers2[1]);
+  glGenBuffers(1,&buffers2[2]);
+  glGenBuffers(1,&buffers2[3]);
+  glBindBuffer(GL_ARRAY_BUFFER, buffers2[0]);
+  glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(float)*3, s.quad_polys(id), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, buffers2[1]);
+  glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(float)*3, s.quad_normal_polys(id), GL_STATIC_DRAW);
+
+  glBindBuffer(GL_ARRAY_BUFFER, buffers2[2]);
+  glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(float)*3, s.quad_color_polys(id), GL_STATIC_DRAW);
+
+  glBindBuffer(GL_ARRAY_BUFFER, buffers2[3]);
+  glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(float)*2, s.quad_texcoord_polys(id), GL_STATIC_DRAW);
+
+  
+}
 void RenderVertexArray::render(int id)
 {
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+
+
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[3]);
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glDrawArrays(GL_TRIANGLES, 0, s.tri_count(id));
+
+
+
+
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[0]);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[1]);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[2]);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[3]);
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glDrawArrays(GL_TRIANGLES, 0, s.quad_count(id));
+
+
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
+    glDisableVertexAttribArray(3);
+
+
+    
+
+
+#if 0
     // triangles
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
@@ -241,6 +348,7 @@ void RenderVertexArray::render(int id)
     glDisableClientState(GL_NORMAL_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+#endif
   }
 
 void RenderVertexArray2::render(int id, int attr1, int attr2, int attr3, int attr4,

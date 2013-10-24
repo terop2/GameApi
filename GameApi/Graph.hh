@@ -5735,9 +5735,9 @@ void TextureEnable(ArrayRender &rend, int frame, bool enable);
 void PrepareSprite(const Sprite &s, ArrayRender &rend);
 void PrepareSpriteToVA(const Sprite &s, VertexArraySet &vas);
 
-void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend);
-void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend, float mult_x, float mult_y);
-void RenderSprite(const Sprite &s, int frame, Point2d pos1, Point2d pos2, Point2d pos1_inside, Point2d pos2_inside, float z, ArrayRender &rend);
+void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend, Program *prog);
+void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend, float mult_x, float mult_y, Program *prog);
+void RenderSprite(const Sprite &s, int frame, Point2d pos1, Point2d pos2, Point2d pos1_inside, Point2d pos2_inside, float z, ArrayRender &rend, Program *prog);
 
 class SpriteMesh : public Mesh
 {

@@ -47,8 +47,15 @@ void Game(EveryApi &e)
   VolumeApi &volume = e.volume_api;
   WaveformApi &wv = e.waveform_api;
 
-  loop.init();
+  loop.init_window();
+  e.shader_api.load("Shader.txt");
+  SH sh = e.shader_api.get_shader("texture", "texture", "");
+  e.shader_api.use(sh);
+  e.shader_api.set_default_projection(sh, "in_P");
+
+  loop.init(sh);
   loop.alpha(true);
+
 
   //BM red = bm.function(&red_block, 10,10, 0);
   //BM green = bm.function(&green_block, 10,10, 0);
@@ -92,20 +99,29 @@ void Game(EveryApi &e)
   while(1)
     {
       float time = e.mainloop_api.get_time();
+
       e.mainloop_api.clear();
-      e.mainloop_api.switch_to_3d(false);
-      e.sprite_api.rendersprite(red,100.0,100.0,1.0,1.0);
-      e.sprite_api.rendersprite(green,200.0,200.0,1.0,1.0);
-      e.mainloop_api.switch_to_3d(true);
+      e.mainloop_api.switch_to_3d(false, sh);
+      e.sprite_api.rendersprite(red,sh,0.0,0.0,1.0,1.0);
+      e.sprite_api.rendersprite(green,sh,100.0,100.0,1.0,1.0);
+      e.sprite_api.rendersprite(red,sh,200.0,200.0,1.0,1.0);
+      e.sprite_api.rendersprite(green,sh,300.0,300.0,1.0,1.0);
+      e.sprite_api.rendersprite(red,sh,400.0,400.0,1.0,1.0);
+      e.sprite_api.rendersprite(green,sh,500.0,500.0,1.0,1.0);
+      e.sprite_api.rendersprite(red,sh,600.0,600.0,1.0,1.0);
+      e.sprite_api.rendersprite(green,sh,700.0,700.0,1.0,1.0);
+      e.sprite_api.rendersprite(green,sh, 799.0,599.0,1.0,1.0);
+      e.mainloop_api.switch_to_3d(true,sh);
       glPushMatrix();
       glRotatef(time/40.0, 0.0,1.0,0.0);
       //e.polygon_api.render(cubes3, 0, 0.0,0.0,0.0);
       e.texture_api.use(tex);
+      e.shader_api.set_y_rotation(sh, "in_MV", time/500.0);
       e.polygon_api.render_vertex_array(va);
       e.texture_api.unuse(tex);
       //e.polygon_api.render_vertex_array(va2);
       //e.polygon_api.render_vertex_array(vba);
-      //e.sprite_api.rendersprite(bxm,100.0,100.0);
+      //e.sprite_api.rendersprite(bxm,sh,100.0,100.0);
       glPopMatrix();
       e.mainloop_api.swapbuffers();
       MainLoopApi::Event ev = e.mainloop_api.get_event();
