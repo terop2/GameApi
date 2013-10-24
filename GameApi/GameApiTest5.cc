@@ -57,10 +57,15 @@ void GameTest5(EveryApi &e)
   MainLoopApi &loop = e.mainloop_api;
   ShaderApi &shader = e.shader_api;
   StateChangeApi &change_api = e.state_change_api;
-  loop.init_3d();
-  //loop.alpha(true);
+
+  loop.init_window();
   shader.load("Shader.txt");
   SH sh = shader.get_shader("linear", "red", "");
+
+  loop.init_3d(sh);
+
+
+  //loop.alpha(true);
   shader.bindnames(sh, "vertex2", "normal2","color2","texcoord2");
 
   BM red = e.bitmap_api.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 100,100,128);

@@ -3097,8 +3097,156 @@ void ArrayRender::Alloc(int numfaces, int numvertices, int vertexframes, int nor
   m_texcoord_frames = texcoordframes;
 }
 
+void ArrayRender::Prepare()
+{
+  if (quads)
+    {
+      q_num_vertices = vertex_array_size*6/4;
+    }
+  else
+    {
+      q_num_vertices = vertex_array_size;
+    }
+  q_vertex_array = new float[q_num_vertices*3];
+  q_normal_array = new float[q_num_vertices*3];
+  q_color_array = new unsigned char[q_num_vertices*4];
+  q_tex_coord_array = new float[q_num_vertices*2];
+
+  if (quads) {
+    int count = 0;
+    for(int i=0;i<vertex_array_size/(4*3);i++)
+      {
+	q_vertex_array[count+0*3+0] = vertex_array[i*4*3+0*3+0];
+	q_vertex_array[count+0*3+1] = vertex_array[i*4*3+0*3+1];
+	q_vertex_array[count+0*3+2] = vertex_array[i*4*3+0*3+2];
+	q_vertex_array[count+1*3+0] = vertex_array[i*4*3+1*3+0];
+	q_vertex_array[count+1*3+1] = vertex_array[i*4*3+1*3+1];
+	q_vertex_array[count+1*3+2] = vertex_array[i*4*3+1*3+2];
+	q_vertex_array[count+2*3+0] = vertex_array[i*4*3+2*3+0];
+	q_vertex_array[count+2*3+1] = vertex_array[i*4*3+2*3+1];
+	q_vertex_array[count+2*3+2] = vertex_array[i*4*3+2*3+2];
+	q_vertex_array[count+3*3+0] = vertex_array[i*4*3+0*3+0];
+	q_vertex_array[count+3*3+1] = vertex_array[i*4*3+0*3+1];
+	q_vertex_array[count+3*3+2] = vertex_array[i*4*3+0*3+2];
+	q_vertex_array[count+4*3+0] = vertex_array[i*4*3+2*3+0];
+	q_vertex_array[count+4*3+1] = vertex_array[i*4*3+2*3+1];
+	q_vertex_array[count+4*3+2] = vertex_array[i*4*3+2*3+2];
+	q_vertex_array[count+5*3+0] = vertex_array[i*4*3+3*3+0];
+	q_vertex_array[count+5*3+1] = vertex_array[i*4*3+3*3+1];
+	q_vertex_array[count+5*3+2] = vertex_array[i*4*3+3*3+2];
+	
+	q_normal_array[count+0*3+0] = normal_array[i*4*3+0*3+0];
+	q_normal_array[count+0*3+1] = normal_array[i*4*3+0*3+1];
+	q_normal_array[count+0*3+2] = normal_array[i*4*3+0*3+2];
+	q_normal_array[count+1*3+0] = normal_array[i*4*3+1*3+0];
+	q_normal_array[count+1*3+1] = normal_array[i*4*3+1*3+1];
+	q_normal_array[count+1*3+2] = normal_array[i*4*3+1*3+2];
+	q_normal_array[count+2*3+0] = normal_array[i*4*3+2*3+0];
+	q_normal_array[count+2*3+1] = normal_array[i*4*3+2*3+1];
+	q_normal_array[count+2*3+2] = normal_array[i*4*3+2*3+2];
+	q_normal_array[count+3*3+0] = normal_array[i*4*3+0*3+0];
+	q_normal_array[count+3*3+1] = normal_array[i*4*3+0*3+1];
+	q_normal_array[count+3*3+2] = normal_array[i*4*3+0*3+2];
+	q_normal_array[count+4*3+0] = normal_array[i*4*3+2*3+0];
+	q_normal_array[count+4*3+1] = normal_array[i*4*3+2*3+1];
+	q_normal_array[count+4*3+2] = normal_array[i*4*3+2*3+2];
+	q_normal_array[count+5*3+0] = normal_array[i*4*3+3*3+0];
+	q_normal_array[count+5*3+1] = normal_array[i*4*3+3*3+1];
+	q_normal_array[count+5*3+2] = normal_array[i*4*3+3*3+2];
+	
+	
+	q_color_array[count+0*3+0] = color_array[i*4*3+0*3+0];
+	q_color_array[count+0*3+1] = color_array[i*4*3+0*3+1];
+	q_color_array[count+0*3+2] = color_array[i*4*3+0*3+2];
+	q_color_array[count+1*3+0] = color_array[i*4*3+1*3+0];
+	q_color_array[count+1*3+1] = color_array[i*4*3+1*3+1];
+	q_color_array[count+1*3+2] = color_array[i*4*3+1*3+2];
+	q_color_array[count+2*3+0] = color_array[i*4*3+2*3+0];
+	q_color_array[count+2*3+1] = color_array[i*4*3+2*3+1];
+	q_color_array[count+2*3+2] = color_array[i*4*3+2*3+2];
+	q_color_array[count+3*3+0] = color_array[i*4*3+0*3+0];
+	q_color_array[count+3*3+1] = color_array[i*4*3+0*3+1];
+	q_color_array[count+3*3+2] = color_array[i*4*3+0*3+2];
+	q_color_array[count+4*3+0] = color_array[i*4*3+2*3+0];
+	q_color_array[count+4*3+1] = color_array[i*4*3+2*3+1];
+	q_color_array[count+4*3+2] = color_array[i*4*3+2*3+2];
+	q_color_array[count+5*3+0] = color_array[i*4*3+3*3+0];
+	q_color_array[count+5*3+1] = color_array[i*4*3+3*3+1];
+	q_color_array[count+5*3+2] = color_array[i*4*3+3*3+2];
+	
+
+	q_tex_coord_array[count+0*3+0] = tex_coord_array[i*4*3+0*3+0];
+	q_tex_coord_array[count+0*3+1] = tex_coord_array[i*4*3+0*3+1];
+	q_tex_coord_array[count+0*3+2] = tex_coord_array[i*4*3+0*3+2];
+	q_tex_coord_array[count+1*3+0] = tex_coord_array[i*4*3+1*3+0];
+	q_tex_coord_array[count+1*3+1] = tex_coord_array[i*4*3+1*3+1];
+	q_tex_coord_array[count+1*3+2] = tex_coord_array[i*4*3+1*3+2];
+	q_tex_coord_array[count+2*3+0] = tex_coord_array[i*4*3+2*3+0];
+	q_tex_coord_array[count+2*3+1] = tex_coord_array[i*4*3+2*3+1];
+	q_tex_coord_array[count+2*3+2] = tex_coord_array[i*4*3+2*3+2];
+	q_tex_coord_array[count+3*3+0] = tex_coord_array[i*4*3+0*3+0];
+	q_tex_coord_array[count+3*3+1] = tex_coord_array[i*4*3+0*3+1];
+	q_tex_coord_array[count+3*3+2] = tex_coord_array[i*4*3+0*3+2];
+	q_tex_coord_array[count+4*3+0] = tex_coord_array[i*4*3+2*3+0];
+	q_tex_coord_array[count+4*3+1] = tex_coord_array[i*4*3+2*3+1];
+	q_tex_coord_array[count+4*3+2] = tex_coord_array[i*4*3+2*3+2];
+	q_tex_coord_array[count+5*3+0] = tex_coord_array[i*4*3+3*3+0];
+	q_tex_coord_array[count+5*3+1] = tex_coord_array[i*4*3+3*3+1];
+	q_tex_coord_array[count+5*3+2] = tex_coord_array[i*4*3+3*3+2];
+	
+	count += 6*3;
+      }
+  } else
+    {
+    int count = 0;
+    for(int i=0;i<vertex_array_size;i++) {
+      q_vertex_array[i*3+0] = vertex_array[i*3+0];
+      q_vertex_array[i*3+1] = vertex_array[i*3+1];
+      q_vertex_array[i*3+2] = vertex_array[i*3+2];
+      q_normal_array[i*3+0] = normal_array[i*3+0];
+      q_normal_array[i*3+1] = normal_array[i*3+1];
+      q_normal_array[i*3+2] = normal_array[i*3+2];
+      q_color_array[i*4+0] = normal_array[i*4+0];
+      q_color_array[i*4+1] = normal_array[i*4+1];
+      q_color_array[i*4+2] = normal_array[i*4+2];
+      q_color_array[i*4+3] = normal_array[i*4+3];
+      q_tex_coord_array[i*2+0] = tex_coord_array[i*2+0];
+      q_tex_coord_array[i*2+1] = tex_coord_array[i*2+1];
+    }
+    }
+
+  glGenBuffers(4, &buffer[0]);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+  glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_vertex_array, GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
+  glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_normal_array, GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
+  glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(unsigned char)*4, q_color_array, GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[3]);
+  glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*2, q_tex_coord_array, GL_STATIC_DRAW);
+  
+}
 void ArrayRender::Render(int vertexframe, int normalframe, int colorframe, int texcoordframe, int vertex_pos, int vertex_size)
 {
+  glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(1);
+  glEnableVertexAttribArray(2);
+  glEnableVertexAttribArray(3);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+  glVertexAttribPointer(0,3, GL_FLOAT, GL_FALSE, 0,0);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
+  glVertexAttribPointer(1,3, GL_FLOAT, GL_FALSE, 0,0);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
+  glVertexAttribPointer(2,4, GL_UNSIGNED_BYTE, GL_FALSE, 0,0);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[3]);
+  glVertexAttribPointer(3,2, GL_FLOAT, GL_FALSE, 0,0);
+  glDrawArrays(GL_TRIANGLES, 0, vertex_size*6/4);
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(1);
+  glDisableVertexAttribArray(2);
+  glDisableVertexAttribArray(3);
+
+#if 0
   // enabling
   glEnableClientState(GL_VERTEX_ARRAY);
   glVertexPointer(3, GL_FLOAT, 0, vertex_array+vertex_pos*3+vertexframe*vertex_array_size*3);
@@ -3143,11 +3291,31 @@ void ArrayRender::Render(int vertexframe, int normalframe, int colorframe, int t
       glDisableClientState(GL_NORMAL_ARRAY);
     }
   glDisableClientState(GL_VERTEX_ARRAY);
+#endif
 }
 
 
 void ArrayRender::Render(bool normal, bool color, bool texcoord, int vertex_pos, int vertex_size)
 {
+  glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(1);
+  glEnableVertexAttribArray(2);
+  glEnableVertexAttribArray(3);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+  glVertexAttribPointer(0,3, GL_FLOAT, GL_FALSE, 0,0);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
+  glVertexAttribPointer(1,3, GL_FLOAT, GL_FALSE, 0,0);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
+  glVertexAttribPointer(2,4, GL_UNSIGNED_BYTE, GL_FALSE, 0,0);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[3]);
+  glVertexAttribPointer(3,2, GL_FLOAT, GL_FALSE, 0,0);
+  glDrawArrays(GL_TRIANGLES, 0, q_num_vertices);
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(1);
+  glDisableVertexAttribArray(2);
+  glDisableVertexAttribArray(3);
+
+#if 0
   // enabling
   glEnableClientState(GL_VERTEX_ARRAY);
   glVertexPointer(3, GL_FLOAT, 0, vertex_array+vertex_pos*3);
@@ -3192,6 +3360,7 @@ void ArrayRender::Render(bool normal, bool color, bool texcoord, int vertex_pos,
       glDisableClientState(GL_NORMAL_ARRAY);
     }
   glDisableClientState(GL_VERTEX_ARRAY);
+#endif
 }
 void HeightMapEffect(FaceStore &s, float time, float repeat_length);
 
@@ -3460,7 +3629,7 @@ void SDLArrayRender::Show()
       glTranslatef(0.0, -100.0, 0.0);
       ExecuteFaceStore(rend, s, i%dyn.NumFrames());
       glLoadIdentity();
-      SDL_GL_SwapBuffers();
+      //SDL_GL_SwapBuffers();
     SDL_PollEvent(&event);
     if (event.type==SDL_QUIT || (event.type==SDL_KEYDOWN && event.key.keysym.sym==27)) { SDL_Quit(); exit(0); }
     }

@@ -301,6 +301,18 @@ Matrix Matrix::Perspective(float fovy, float aspect, float near, float far)
   return r;
 }
 
+Matrix Matrix::Ortho(float left, float right, float bottom, float top, float near, float far)
+{
+  float t_x = (right+left)/(right-left);
+  float t_y = (top+bottom)/(top-bottom);
+  float t_z = (far+near)/(far-near);
+  //std::cout << "Ortho:" << t_x << " " << t_y << " " << t_z << std::endl;
+  Matrix m = { { 2.0f/(right-left), 0.0f, 0.0f, -t_x,
+		 0.0f, 2.0f/(top-bottom), 0.0f, -t_y,
+		 0.0f, 0.0f, -2.0f/(far-near),-t_z,
+		 0.0f, 0.0f, 0.0f, 1.0f }, false };
+  return m;
+}
 
 
 Matrix Matrix::SphericalToCartesian(SphericalPoint p)

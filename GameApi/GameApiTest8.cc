@@ -1,8 +1,8 @@
 #define NO_SDL_GLEXT
 #include <GL/glew.h>
 #include <GL/gl.h>
-#include <SDL/SDL.h>
-#include <SDL/SDL_opengl.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
 #include <iostream>
 
 #include "GameApi.hh"
@@ -12,8 +12,15 @@ using namespace GameApi;
 
 void GameTest8(EveryApi &e)
 {
-  e.mainloop_api.init_3d();
+  e.mainloop_api.init_window();
+  e.shader_api.load("Shader.txt");
+  SH sh = e.shader_api.get_shader("empty", "empty", "");
   
+  e.shader_api.use(sh);
+  e.mainloop_api.init_3d(sh );
+  e.shader_api.bind_attrib(sh, 0, "in_Position");
+  e.shader_api.use(sh);
+  e.shader_api.set_default_projection(sh, "in_P");
 
   P cube = //e.polygon_api.quad_z(-100.0,100.0, -100.0,100.0, 0.0);
     e.polygon_api.cube(-100.0,100.0, -100.0,100.0, -100.0,100.0);
@@ -21,7 +28,7 @@ void GameTest8(EveryApi &e)
   LI lines = e.lines_api.from_polygon(cube);
   LLA array = e.lines_api.prepare(lines);
   float time = 0.0;
-  glLineWidth(0.02);
+  //glLineWidth(0.02);
 
   BB bg = e.bool_bitmap_api.empty(150,150);
   BB b = e.bool_bitmap_api.circle(bg, 50.0,50.0, 50.0);
@@ -35,6 +42,7 @@ void GameTest8(EveryApi &e)
       e.mainloop_api.clear_3d();
       glPushMatrix();
       glRotatef(time, 0.0,1.0,0.0);
+      e.shader_api.set_y_rotation(sh, "in_MV", time/50.0);
       e.lines_api.render(array);
       e.lines_api.render(array2);
       glPopMatrix();

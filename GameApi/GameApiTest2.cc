@@ -13,8 +13,15 @@ void GameApiTest2(EveryApi &every)
   //VBO vbo(e);
   PolygonApi poly(e);
   EventApi event(e);
+  EveryApi ev(e);
 
-  loop.init();
+  loop.init_window();
+  ev.shader_api.load("Shader.txt");
+  SH sh = ev.shader_api.get_shader("texture", "texture", "");
+  ev.shader_api.use(sh);
+  ev.shader_api.set_default_projection(sh, "in_P");
+
+  loop.init(sh);
 
   BM mand = bm.mandelbrot(false, -2.0, 1.0, -1.0, 1.0,
 			  0.0, 0.0,

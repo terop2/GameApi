@@ -1,3 +1,4 @@
+#define SDL2_USED
 #define GAME_API_DEFS
 
 #include "GameApi.hh"
@@ -9,8 +10,13 @@
 #define NO_SDL_GLEXT
 #include <GL/glew.h>
 #include <GL/gl.h>
+#ifdef SDL2_USED
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
+#else
 #include <SDL/SDL.h>
 #include <SDL/SDL_opengl.h>
+#endif
 
 #include <tr1/memory>
 #include <cmath>
@@ -36,6 +42,7 @@ struct TexCoordQuad
   Point2d p1;
   Point2d p2;
 };
+Program *find_shader_program(GameApi::Env &e, GameApi::SH sh);
 
 #if 0
 struct SpritePriv
@@ -138,28 +145,31 @@ void GameApi::MainLoopApi::cursor_visible(bool enabled)
 {
   SDL_ShowCursor(enabled);
 }
-void GameApi::MainLoopApi::init(int screen_width, int screen_height)
+void GameApi::MainLoopApi::init_window(int screen_width, int screen_height)
 {
   MainLoopPriv *p = (MainLoopPriv*)priv;
   int screenx = screen_width;
   int screeny = screen_height;
+#ifdef SDL2_USED
+  p->screen = InitSDL2(screenx,screeny,true);
+#else
   p->screen = InitSDL(screenx,screeny,true);
-  //glColor4f(1.0,1.0,1.0, 0.5);
+#endif
   time = SDL_GetTicks();
   glDisable(GL_DEPTH_TEST);
-  glMatrixMode( GL_PROJECTION ); 
-  glLoadIdentity(); 
-  glOrtho(0, screenx, screeny,0,0,1);
-  /*
-  Matrix m = Matrix::Perspective(80.0, (double)screenx/screeny, 99.1, 60000.0);
-  float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
-		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
-		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
-		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
-  glMultMatrixf(&mat[0]);
-  */
-  glMatrixMode( GL_MODELVIEW ); 
-  glLoadIdentity();
+}
+void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_height)
+{
+  int screenx = screen_width;
+  int screeny = screen_height;
+  //glColor4f(1.0,1.0,1.0, 0.5);
+  Program *prog = find_shader_program(e, sh);
+  prog->use();
+  Matrix m = Matrix::Ortho(0,screenx, screeny, 0,0,1);
+  prog->set_var("in_P", m);
+  Matrix m2 = Matrix::Identity();
+  prog->set_var("in_MV", m2);
+  prog->set_var("in_T", m2);
   alpha(false);
 }
 void GameApi::MainLoopApi::transfer_sdl_surface(MainLoopApi &orig)
@@ -170,14 +180,22 @@ void GameApi::MainLoopApi::transfer_sdl_surface(MainLoopApi &orig)
 }
 
 
-void GameApi::MainLoopApi::init_3d(int screen_width, int screen_height)
+void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_height)
 {
+  int screenx = screen_width;
+  int screeny = screen_height;
+#if 0
   MainLoopPriv *p = (MainLoopPriv*)priv;
   int screenx = screen_width;
   int screeny = screen_height;
+#ifdef SDL2_USED
+  p->screen = InitSDL2(screenx,screeny,true);
+#else
   p->screen = InitSDL(screenx,screeny,true);
+#endif
   //glColor4f(1.0,1.0,1.0, 0.5);
   time = SDL_GetTicks();
+#endif
   glDisable(GL_LIGHTING);
   //glDisable(GL_DEPTH_TEST);
   //glMatrixMode( GL_PROJECTION ); 
@@ -191,42 +209,58 @@ void GameApi::MainLoopApi::init_3d(int screen_width, int screen_height)
 		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
   glMultMatrixf(&mat[0]);
   */
-  glMatrixMode( GL_MODELVIEW ); 
-  glLoadIdentity();
+  Program *prog = find_shader_program(e, sh);
+  prog->use();
+  Matrix m = Matrix::Perspective(80.0, (double)screenx/screeny, 10.1, 60000.0);
+  prog->set_var("in_P", m);
+  Matrix m2 = Matrix::Identity();
+  prog->set_var("in_MV", m2);
+  Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
+  prog->set_var("in_T", m3);
   alpha(false);
 }
 
-void GameApi::MainLoopApi::switch_to_3d(bool b)
+void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh)
 {
   int screenx = 800;
   int screeny = 600;
   if (b)
     {
+      Program *prog = find_shader_program(e, sh);
       glDisable(GL_LIGHTING);
       glEnable(GL_DEPTH_TEST);
-      glMatrixMode( GL_PROJECTION ); 
-      glLoadIdentity(); 
       Matrix m = Matrix::Perspective(80.0, (double)screenx/screeny, 10.1, 60000.0);
-      float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
-			m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
-			m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
-			m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
-      glMultMatrixf(&mat[0]);
+      Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
+      prog->set_var("in_P", m);
+      prog->set_var("in_T", m3);
+      //glMultMatrixf(&mat[0]);
       
       glMatrixMode( GL_MODELVIEW ); 
-      glTranslatef(0.0, 0.0, -500.0);
+      //Matrix m2 = Matrix::Translate(0.0, 0.0, -500.0);
+      Matrix m2 = Matrix::Identity();
+      prog->set_var("in_MV", m2);
 
     }
   else
     {
+      Program *prog = find_shader_program(e, sh);
+      Matrix m = Matrix::Ortho(0, screenx, screeny, 0,0,1);
+      //m = m*Matrix::Translate(-1.0/2, -1.0/2, 0.0);
+      //m = m * Matrix::Scale(1.0, -1.0, 0.0);
+      //m = m*Matrix::Translate(-1, -1, 0.0);
+      prog->set_var("in_P", m);
       glDisable(GL_LIGHTING);
       glDisable(GL_DEPTH_TEST);
-      glMatrixMode( GL_PROJECTION ); 
-      glLoadIdentity(); 
-      glOrtho(0, screenx, screeny,0,0,1);
-      glMatrixMode( GL_MODELVIEW ); 
-      glLoadIdentity();
-      glTranslatef(0.375, 0.375, 0.0);
+      //glMatrixMode( GL_PROJECTION ); 
+      //glLoadIdentity(); 
+      //glOrtho(0, screenx, screeny,0,0,1);
+      //glMatrixMode( GL_MODELVIEW ); 
+      //glLoadIdentity();
+      //glTranslatef(0.375, 0.375, 0.0);
+      Matrix m2 = Matrix::Translate(0.375, 0.375, 0.0);
+      prog->set_var("in_MV", m2);
+      Matrix m3 = Matrix::Identity();
+      prog->set_var("in_T", m3);
     }
 }
 
@@ -305,11 +339,16 @@ GameApi::BM GameApi::MainLoopApi::screenshot()
   Bitmap<Color> *bm = new BitmapFromBuffer(ref);
   return add_color_bitmap2(e, bm);
 }
+extern SDL_Window *sdl_window;
 void GameApi::MainLoopApi::swapbuffers()
 {
   //MainLoopPriv *p = (MainLoopPriv*)priv;
   glLoadIdentity();
+#ifdef SDL2_USED
+  SDL_GL_SwapWindow(sdl_window);
+#else
   SDL_GL_SwapBuffers();
+#endif
   //SDL_Flip(surf);
   frame++;
 }
@@ -612,6 +651,7 @@ struct PointArray2
 {
   float *array; // 3*numpoints items
   int numpoints;
+  GLuint buffer;
 };
 
 
@@ -642,6 +682,7 @@ struct EnvImpl
   std::vector<StateRange> state_ranges; // ST type points to this array
   std::vector<ContinuousBitmap<Color>*> continuous_bitmaps;
   std::vector<VertexArraySet*> vertex_array;
+  std::vector<RenderVertexArray*> vertex_array_render;
   std::vector<int> texture_id;
   std::vector<std::string> shader_float_parameter;
   std::vector<std::string> shader_int_parameter;
@@ -664,6 +705,7 @@ struct EnvImpl
   std::vector<PointCollection*> pointcollarray;
   std::vector<LineCollection*> linearray;
   std::vector<ColorVolumeObject*> colorvolume;
+  std::map<int, ShaderPriv2*> shader_privs;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -963,10 +1005,11 @@ GameApi::FB add_float_bitmap(GameApi::Env &e, Bitmap<float> *bitmap)
   return bm;
 }
 
-GameApi::VA add_vertex_array(GameApi::Env &e, VertexArraySet *va)
+GameApi::VA add_vertex_array(GameApi::Env &e, VertexArraySet *va, RenderVertexArray *arr)
 {
   EnvImpl *env = EnvImpl::Environment(&e);
   env->vertex_array.push_back(va);
+  env->vertex_array_render.push_back(arr);
   GameApi::VA bm;
   bm.id = env->vertex_array.size()-1;
   return bm;
@@ -1500,6 +1543,22 @@ BitmapHandle *find_bitmap(GameApi::Env &e, GameApi::BM b)
   return handle;
 }
 
+ShaderPriv2 *find_shaderpriv(GameApi::Env &e, GameApi::SH sh)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  ShaderPriv2 *p = ee->shader_privs[sh.id];
+  return p;
+}
+Program *find_shader_program(GameApi::Env &e, GameApi::SH sh)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  
+  ShaderPriv2 *p = ee->shader_privs[sh.id];
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[sh.id]);
+  return prog;
+}
+
 BoolBitmap *find_bool_bitmap(GameApi::Env &e, GameApi::BB b)
 {
   EnvImpl *ee = EnvImpl::Environment(&e);
@@ -1604,6 +1663,15 @@ FaceCollPolyHandle *find_poly(GameApi::Env &e, GameApi::P p)
   if (p.id >=0 && p.id < (int)ee->poly.size())
     handle = ee->poly[p.id];
   //std::cout << "find_poly:" << handle << std::endl;
+  return handle;
+}
+RenderVertexArray *find_vertex_array_render(GameApi::Env &e, GameApi::VA p)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  RenderVertexArray *handle = 0;
+
+  if (p.id >=0 && p.id < (int)ee->vertex_array_render.size())
+    handle = ee->vertex_array_render[p.id];
   return handle;
 }
 VertexArraySet *find_vertex_array(GameApi::Env &e, GameApi::VA p)
@@ -1995,14 +2063,16 @@ void GameApi::SpriteApi::spritepos(BM bm, float x, float y)
 void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
+  RenderVertexArray *rend = find_vertex_array_render(e, va);
   //SpritePriv &spriv = *(SpritePriv*)priv;
   EnvImpl *env = EnvImpl::Environment(&e);
 
   if (s->texture_id!=-1 && s->texture_id<6000)
     {
       TextureEnable(*env->renders[s->texture_id], 0, true);
-      RenderVertexArray arr(*s);
-      arr.render(0);
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(0);
       TextureEnable(*env->renders[s->texture_id], 0, false);
     }
   else if(s->texture_id!=-1)
@@ -2012,8 +2082,9 @@ void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
       glActiveTexture(GL_TEXTURE0+0);
       glBindTexture(GL_TEXTURE_2D, s->texture_id-6000);
 
-      RenderVertexArray arr(*s);
-      arr.render(0);
+      rend->render(0);
+      //      RenderVertexArray arr(*s);
+      //arr.render(0);
 
       glDisable(GL_TEXTURE_2D);
     }
@@ -2034,7 +2105,9 @@ GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
   PrepareSpriteToVA(*sprite, *s);
   TexturePrepare(*sprite, *env->renders[bm.id]);
   s->texture_id = bm.id;
-  return add_vertex_array(e, s);
+  RenderVertexArray *arr = new RenderVertexArray(*s);
+  arr->prepare(0);
+  return add_vertex_array(e, s, arr);
 }
 
 void GameApi::SpriteApi::preparesprite(BM bm, int bbm_choose)
@@ -2048,16 +2121,16 @@ void GameApi::SpriteApi::preparesprite(BM bm, int bbm_choose)
   EnvImpl *env = EnvImpl::Environment(&e);
   PrepareSprite(*sprite, *env->renders[bm.id]);
 }
-void GameApi::SpriteApi::rendersprite(BM bm, float x, float y, float mult_x, float mult_y)
+void GameApi::SpriteApi::rendersprite(BM bm, SH sh, float x, float y, float mult_x, float mult_y)
 {
-  rendersprite(bm, 0, x, y, mult_x, mult_y);
+  rendersprite(bm, 0, sh, x, y, mult_x, mult_y);
 }
-void GameApi::SpriteApi::rendersprite(BM bm, PT pos)
+void GameApi::SpriteApi::rendersprite(BM bm, SH sh, PT pos)
 {
-  rendersprite(bm, 0, pos);
+  rendersprite(bm, 0, sh, pos);
 }
 #if 0
-void GameApi::SpriteApi::rendersprite(BM bm, float x, float y, float x1, float y1, float inside_x, float inside_y, float inside_x1, float inside_y1)
+void GameApi::SpriteApi::rendersprite(BM bm, SH sh, float x, float y, float x1, float y1, float inside_x, float inside_y, float inside_x1, float inside_y1)
 {
   SpritePriv &spriv = *(SpritePriv*)priv;
   ::Sprite *s = spriv.sprites[bm.id];
@@ -2070,10 +2143,11 @@ void GameApi::SpriteApi::rendersprite(BM bm, float x, float y, float x1, float y
   Point2d inside_3 ={ inside_x1, inside_y1 }; 
   float z = 0.0;
   //std::cout << "rendersprite: " << bm_choose << std::endl;
-  RenderSprite(*s, bm_choose, pos2, pos3, inside_2, inside_3, z, *env->renders[bm.id]);
+  Program *prog = find_shader_program(e, sh);
+  RenderSprite(*s, bm_choose, pos2, pos3, inside_2, inside_3, z, *env->renders[bm.id], prog);
 }
 #endif
-void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, float x, float y, float mult_x, float mult_y)
+void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SH sh, float x, float y, float mult_x, float mult_y)
 {
   SpritePriv &spriv = *(SpritePriv*)priv;
   ::Sprite *s = spriv.sprites[bm.id];
@@ -2085,11 +2159,12 @@ void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, float x, float y, fl
   //glScalef(mult_x, mult_y, 1.0);
   //std::cout << "rendersprite: " << bm_choose << std::endl;
   EnvImpl *env = EnvImpl::Environment(&e);
-  RenderSprite(*s, bm_choose, pos2, z, *env->renders[bm.id], mult_x, mult_y);
+  Program *prog = find_shader_program(e, sh);
+  RenderSprite(*s, bm_choose, pos2, z, *env->renders[bm.id], mult_x, mult_y, prog);
 
   //glPopMatrix();
 }
-void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, PT pos)
+void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SH sh, PT pos)
 {
   SpritePriv &spriv = *(SpritePriv*)priv;
   ::Sprite *s = spriv.sprites[bm.id];
@@ -2099,10 +2174,11 @@ void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, PT pos)
   Point2d pos2 = { p->x, p->y };
   float z = 0.0; //p->z;
   EnvImpl *env = EnvImpl::Environment(&e);
-  RenderSprite(*s, bm_choose, pos2, z, *env->renders[bm.id]);
+  Program *prog = find_shader_program(e, sh);
+  RenderSprite(*s, bm_choose, pos2, z, *env->renders[bm.id], prog);
 }
 
-void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SP move_space, SP sprite_space, float x, float y)
+void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, float x, float y)
 {
   SpritePriv &spriv = *(SpritePriv*)priv;
   ::Sprite *s = spriv.sprites[bm.id];
@@ -2123,9 +2199,10 @@ void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SP move_space, SP sp
   Point2d pos = { pp.x, pp.y };
   float z = 0.0;
   EnvImpl *env = EnvImpl::Environment(&e);
-  RenderSprite(*s, bm_choose, pos, z, *env->renders[bm.id]);
+  Program *prog = find_shader_program(e, sh);
+  RenderSprite(*s, bm_choose, pos, z, *env->renders[bm.id], prog);
 }
-void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SP move_space, SP sprite_space, PT pos)
+void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, PT pos)
 {
 }
 GameApi::SP GameApi::SpriteApi::spritespace(BM bm)
@@ -2167,7 +2244,7 @@ GameApi::AnimApi::~AnimApi()
 {
   delete (AnimPriv*)priv;
 }
-GameApi::ShaderApi::ShaderApi(Env &e) /*: e(e)*/
+GameApi::ShaderApi::ShaderApi(Env &e) : e(e)
 {
   priv = (void*)new ShaderPriv2;
 }
@@ -3156,7 +3233,7 @@ void GameApi::TextApi::load_font(std::string filename, int sx, int sy, int x, in
 	}
     }
 }
-void GameApi::TextApi::draw_text(std::string text, int x, int y)
+void GameApi::TextApi::draw_text(std::string text, int x, int y, SH sh)
 {
   int xpos = x;
   int ypos = y;
@@ -3168,7 +3245,7 @@ void GameApi::TextApi::draw_text(std::string text, int x, int y)
 	{
 	  BM b = ((std::vector<BM>*)priv)->operator[](c-start_char);
 	  //std::cout << "draw_text" << b.id << std::endl;
-	  sp.rendersprite(b, xpos, ypos, 1.0, 1.0);
+	  sp.rendersprite(b, sh, xpos, ypos, 1.0, 1.0);
 	}
       xpos += sx;
       if (c=='\n') { xpos=x; ypos+=sy; }
@@ -4233,6 +4310,26 @@ void GameApi::ShaderApi::load(std::string filename)
   p->file = new ShaderFile(filename);
   ShaderSeq *seq = new ShaderSeq(*p->file);
   p->seq = seq;
+  p->count = 0;
+}
+void GameApi::ShaderApi::set_default_projection(SH shader, std::string name)
+{
+  std::cout << "SetDefaultProjection:" << std::endl;
+  Matrix m = Matrix::Perspective(80.0, (double)800/600, 10.1, 60000.0);
+  if (shader.id==-1) return;
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[shader.id]);
+  prog->set_var(name, m);  
+}
+void GameApi::ShaderApi::set_y_rotation(SH shader, std::string name, float angle)
+{
+  Matrix m = Matrix::YRotation(angle); //*Matrix::Translate(0.0,0.0,-300.0);
+  if (shader.id==-1) return;
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[shader.id]);
+  prog->set_var(name, m);  
 }
 GameApi::SH GameApi::ShaderApi::get_shader(std::string v_format,
 					std::string f_format,
@@ -4249,6 +4346,8 @@ GameApi::SH GameApi::ShaderApi::get_shader(std::string v_format,
 
   p->ids[p->count] = p->seq->GetShader(v_format, f_format, g_format);
   p->count++;
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->shader_privs[p->count-1] = p;
   GameApi::SH sh;
   sh.id = p->count-1;
   return sh;
@@ -4266,6 +4365,15 @@ void GameApi::ShaderApi::unuse(GameApi::SH shader)
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   seq->unuse(p->ids[shader.id]);
+}
+void GameApi::ShaderApi::bind_attrib(GameApi::SH shader, int num, std::string name)
+{
+  std::cout << "SHADER: " << shader.id << std::endl;
+  if (shader.id==-1) return;
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[shader.id]);
+  prog->bind_attrib(num, name);
 }
 void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float val)
 {
@@ -5955,17 +6063,21 @@ GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p)
   VertexArraySet *s = new VertexArraySet;
   FaceCollectionVertexArray2 arr(*faces, *s);
   arr.copy();  
-  return add_vertex_array(e, s);
+  RenderVertexArray *arr2 = new RenderVertexArray(*s);
+  arr2->prepare(0);
+  return add_vertex_array(e, s, arr2);
 }
 void GameApi::PolygonApi::render_vertex_array(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
+  RenderVertexArray *rend = find_vertex_array_render(e, va);
   EnvImpl *env = EnvImpl::Environment(&e);
   if (s->texture_id!=-1 && s->texture_id<6000)
     {
       TextureEnable(*env->renders[s->texture_id], 0, true);
-      RenderVertexArray arr(*s);
-      arr.render(0);
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(0);
       TextureEnable(*env->renders[s->texture_id], 0, false);
     }
   else if (s->texture_id!=-1)
@@ -5975,15 +6087,17 @@ void GameApi::PolygonApi::render_vertex_array(VA va)
       glActiveTexture(GL_TEXTURE0+0);
       glBindTexture(GL_TEXTURE_2D, s->texture_id-6000);
 
-      RenderVertexArray arr(*s);
-      arr.render(0);
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(0);
 
       glDisable(GL_TEXTURE_2D);
     }
   else
     {
-      RenderVertexArray arr(*s);
-      arr.render(0);
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(0);
     }
 }
 
@@ -6153,7 +6267,9 @@ GameApi::VA GameApi::TextureApi::bind(GameApi::VA va, GameApi::TXID tx)
   VertexArraySet *s = find_vertex_array(e, va);
   VertexArraySet *ns = new VertexArraySet(*s);
   ns->texture_id = 6000+tx.id;
-  return add_vertex_array(e, ns);
+  RenderVertexArray *arr = new RenderVertexArray(*ns);
+  arr->prepare(0);
+  return add_vertex_array(e, ns, arr);
 }
 int GameApi::TextureApi::unique_id()
 {
@@ -6443,16 +6559,21 @@ GameApi::FOA GameApi::FloatVolumeApi::prepare(GameApi::FO object,
   PointArray2 *arr = new PointArray2;
   arr->array = array;
   arr->numpoints = index;
+  glGenBuffers(1, &arr->buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
+  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
+
   return add_point_array(e, arr);
 }
 
 void GameApi::FloatVolumeApi::render(FOA array)
 {
   PointArray2 *arr = find_point_array(e, array);
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glVertexPointer(3, GL_FLOAT, 0, arr->array);
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glDrawArrays(GL_POINTS, 0, arr->numpoints);
-  glDisableClientState(GL_VERTEX_ARRAY);
+  glDisableVertexAttribArray(0);
 }
 
 GameApi::FO GameApi::FloatVolumeApi::function(float (*fptr)(EveryApi &ev, float x, float y, float z, void *data), void *data)
@@ -7168,10 +7289,12 @@ GameApi::LI GameApi::LinesApi::border_from_bool_bitmap(GameApi::BB b, float star
 void GameApi::LinesApi::render(LLA l)
 {
   PointArray2 *array = find_lines_array(e,l);
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glVertexPointer(3, GL_FLOAT, 0, array->array);
+  //glEnableClientState(GL_VERTEX_ARRAY);
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, array->buffer);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glDrawArrays(GL_LINES, 0, array->numpoints);
-  glDisableClientState(GL_VERTEX_ARRAY);
+  glDisableVertexAttribArray(0);
 }
 
 #if 0
@@ -7224,6 +7347,10 @@ GameApi::LLA GameApi::LinesApi::prepare(LI l)
   PointArray2 *arr = new PointArray2;
   arr->array = array;
   arr->numpoints = count*2;
+  glGenBuffers(1, &arr->buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
+  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
+  
   return add_lines_array(e, arr);
 }
 

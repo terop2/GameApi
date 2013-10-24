@@ -94,6 +94,7 @@ public: // uniform variable
   void set_var(const std::string &name, int *array, int count);
   void set_var(const std::string &name, int val);
   
+  void bind_attrib(int num, std::string name);
   Attrib find_attr(const std::string &attr_name, int id);
   Attrib find_attr_int(const std::string &attr_name, int id);
   void attr_loc(std::string s, int index);

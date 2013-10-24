@@ -120,12 +120,13 @@ class MainLoopApi
 public:
   MainLoopApi(Env &e);
   ~MainLoopApi();
-  void init(int screen_width = 800, int screen_height = 600);
-  void init_3d(int screen_width = 800, int screen_heigth = 600);
+  void init_window(int screen_width = 800, int screen_height=600);
+  void init(SH sh,int screen_width = 800, int screen_height = 600);
+  void init_3d(SH sh, int screen_width = 800, int screen_heigth = 600);
   void transfer_sdl_surface(MainLoopApi &orig);
   void clear();
   void clear_3d();
-  void switch_to_3d(bool b);
+  void switch_to_3d(bool b, SH sh);
   void alpha(bool enabled);
   void cursor_visible(bool enabled);
   void antialias(bool enabled);
@@ -171,13 +172,13 @@ public:
   VA create_vertex_array(BM bm);
   void render_sprite_vertex_array(VA va);
 
-  void rendersprite(BM bm, float x, float y, float mult_x=1.0, float mult_y=1.0);
-  void rendersprite(BM bm, PT pos);
-  void rendersprite(BM bm, int bm_choose, float x, float y, float mult_x, float mult_y);
-  void rendersprite(BM bm, int bm_choose, PT pos);
-  void rendersprite(BM bm, int bm_choose, SP move_space, SP sprite_space, float x, float y);
-  void rendersprite(BM bm, int bm_choose, SP move_space, SP sprite_space, PT pos);
-  void rendersprite(BM bm, float x, float y, float x1, float y1, float inside_x, float inside_y, float inside_x1, float inside_y1);
+  void rendersprite(BM bm, SH sh, float x, float y, float mult_x=1.0, float mult_y=1.0);
+  void rendersprite(BM bm, SH sh, PT pos);
+  void rendersprite(BM bm, int bm_choose, SH sh, float x, float y, float mult_x, float mult_y);
+  void rendersprite(BM bm, int bm_choose, SH sh, PT pos);
+  void rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, float x, float y);
+  void rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, PT pos);
+  void rendersprite(BM bm, SH sh, float x, float y, float x1, float y1, float inside_x, float inside_y, float inside_x1, float inside_y1);
   SP spritespace(BM bm);
   PT pixelpos(BM bm, int x, int y);
 private:
@@ -561,7 +562,7 @@ public:
   TextApi(BitmapApi &bm, SpriteApi &sp) : bm(bm), sp(sp), priv(0) { }
   ~TextApi();
   void load_font(std::string filename, int sx, int sy, int x, int y, char start_char, char end_char);
-  void draw_text(std::string text, int x, int y);
+  void draw_text(std::string text, int x, int y, SH sh);
 private:
   BitmapApi &bm;
   SpriteApi &sp;
@@ -1464,13 +1465,16 @@ public:
 		 std::string s_normal,
 		 std::string s_color,
 		 std::string s_texcoord);
+  void set_default_projection(GameApi::SH shader, std::string name);
+  void set_y_rotation(SH shader, std::string name, float angle);
+  void bind_attrib(GameApi::SH shader, int num, std::string name);
   void set_var(GameApi::SH shader, std::string name, float val);
   void set_var(GameApi::SH shader, std::string name, float x, float y, float z);
   void set_var(GameApi::SH shader, std::string name, int val);
 private:
   friend class StateChangeApi;
   void *priv;
-  //Env &e;
+  Env &e;
 };
 
 class LayoutApi

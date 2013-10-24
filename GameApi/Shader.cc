@@ -23,7 +23,7 @@
 #define NO_SDL_GLEXT
 #include "Shader.hh"
 #include <GL/glew.h>
-#include <SDL/SDL_opengl.h>
+#include <SDL2/SDL_opengl.h>
 #include "VectorTools.hh"
 #include <vector>
 #include <algorithm>
@@ -117,6 +117,13 @@ void Program::push_back(const Shader &shader)
   glAttachObjectARB(priv->program, shader.priv->handle);
   priv->shaders.push_back(&shader);
   shader.priv->programs.push_back(this);
+}
+void Program::bind_attrib(int num, std::string name)
+{
+  int val2 = glGetError();
+  glBindAttribLocation(priv->program, num, name.c_str());
+  int val = glGetError();
+  std::cout << "BindAttribLocation: " << val << std::endl;
 }
 void Program::detach(const Shader &shader)
 {
@@ -233,6 +240,20 @@ void Program::set_var(const std::string &name, int val)
 {
   GLint loc = glGetUniformLocation(priv->program, name.c_str());
   glUniform1i(loc, val);  
+}
+void Program::set_var(const std::string &name, Matrix m)
+{
+  GLint loc = glGetUniformLocation(priv->program, name.c_str());
+  //std::cout << "glUniformLocation: " << loc << ":" << glGetError() << std::endl;
+  float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
+		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
+		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
+		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
+
+  glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&mat[0]);
+  //int val = glGetError();
+  //std::cout << "UniformMatrix: " << std::hex << val << std::endl;
+
 }
 Attrib Program::find_attr(const std::string &attr_name, int id)
 {

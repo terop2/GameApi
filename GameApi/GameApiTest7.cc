@@ -49,7 +49,11 @@ void GameTest7(EveryApi &e)
   MainLoopApi &loop = e.mainloop_api;
   VolumeApi &vapi = e.volume_api;
   //FloatVolumeApi &api = e.float_volume_api;
-  loop.init_3d();
+
+  loop.init_window();
+  e.shader_api.load("Shader.txt");
+  SH sh = e.shader_api.get_shader("texture", "texture", "");
+  loop.init_3d(sh);
   
   //BM bm_mand = e.bitmap_api.mandelbrot2(false, -2.0, 1.0, -1.0, 1.0, 0.0,0.0, 150, 150, 256);
   //BM bm_julia = e.bitmap_api.mandelbrot2(true, -1.0, 1.0, -1.0, 1.0, 0.25,0.15, 150, 150, 256);

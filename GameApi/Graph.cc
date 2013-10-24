@@ -906,6 +906,7 @@ void PrepareGrid(Bitmap<Color> &bm, int cellsx, int cellsy, ArrayRender &rend)
   MeshNormals normal;
   MeshColors color;
   rend.InsertAll(r_mesh, normal, r_texcoord, color);
+  rend.Prepare();
 }
 void RenderGrid(Bitmap<Pos> &bm, float x, float y, int sx, int sy, ArrayRender &rend, int start_x, int start_y, int size_x, int size_y)
 {
@@ -1057,6 +1058,8 @@ void TexturePrepare(const Sprite &s, ArrayRender &rend)
     {
       rend.UpdateTexture(ss, i);
     }  
+  rend.Prepare();
+
 }
 void TextureEnable(ArrayRender &rend, int frame, bool enable)
 {
@@ -1087,7 +1090,8 @@ void PrepareSprite(const Sprite &s, ArrayRender &rend)
       std::pair<int,int> p = rend.InsertMesh(trimesh, i2);
       rend.UpdateTexCoord(trimesh, tricoords, p, i2);
     }
-  
+   rend.Prepare();
+ 
 }
 
 void PrepareSpriteToVA(const Sprite &s, VertexArraySet &vas)
@@ -1103,26 +1107,27 @@ void PrepareSpriteToVA(const Sprite &s, VertexArraySet &vas)
   va.copy();
 }
 
-void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend)
+void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend, Program *prog)
 {
   //std::cout << "SpriteFrame: " << frame << std::endl;
   rend.EnableTexture(frame);
-  glPushMatrix();
+  //glPushMatrix();
   Point2d p = s.Pos(frame);
 
   Matrix m = Matrix::Translate(pos.x+p.x, pos.y+p.y, z);
-  float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
-		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
-		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
-		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
-  
-  glMultMatrixf(&mat[0]);
+  //float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
+  //		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
+  //		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
+  //		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
+  //
+  prog->set_var("in_MV", m);
+  //glMultMatrixf(&mat[0]);
   rend.Render(frame, -1, -1, frame, 0, rend.used_vertex_count[0]);
-  glPopMatrix();
+  //glPopMatrix();
   rend.DisableTexture();
 }
 
-void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend, float mult_x, float mult_y)
+void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend, float mult_x, float mult_y, Program *prog)
 {
   //std::cout << "SpriteFrame: " << frame << std::endl;
   rend.EnableTexture(frame);
@@ -1130,15 +1135,17 @@ void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender 
   Point2d p = s.Pos(frame);
 
   Matrix m = Matrix::Translate(pos.x+p.x, pos.y+p.y, z);
-  float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
-		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
-		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
-		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
-  
-  glMultMatrixf(&mat[0]);
-  glScalef(mult_x, mult_y, 1.0);
+  //float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
+  //		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
+  //		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
+  //		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
+  //
+  //glMultMatrixf(&mat[0]);
+  //glScalef(mult_x, mult_y, 1.0);
+  m = m * Matrix::Scale(mult_x, mult_y, 1.0);
+  prog->set_var("in_MV", m);
   rend.Render(frame, -1, -1, frame, 0, rend.used_vertex_count[0]);
-  glPopMatrix();
+  //glPopMatrix();
   rend.DisableTexture();
 }
 

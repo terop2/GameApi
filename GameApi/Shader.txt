@@ -1,4 +1,78 @@
 
+//V: empty
+#version 150 core
+uniform mat4 in_P;
+uniform mat4 in_MV;
+uniform mat4 in_T;
+in vec3 in_Position;
+void main(void)
+{
+  vec4 v = in_P * in_T * in_MV * vec4(in_Position,1.0);
+  gl_Position = v;
+}
+
+//F: empty
+#version 150 core
+precision highp float;
+out vec4 out_Color;
+void main(void)
+{
+   out_Color = vec4(1.0,1.0,1.0,1.0);
+}
+
+//V: colour
+#version 150 core
+layout(location=0) in vec3 in_Position;
+layout(location=1) in vec3 in_Normal;
+layout(location=2) in vec3 in_Color;
+layout(location=3) in vec2 in_TexCoord;
+out vec3 ex_Color;
+uniform mat4 in_P;
+uniform mat4 in_MV;
+uniform mat4 in_T;
+void main(void)
+{
+   gl_Position = in_P * in_T * in_MV * vec4(in_Position,1.0);
+   ex_Color = in_Color;
+}
+//F: colour
+#version 150 core
+//precision highp float;
+in vec3 ex_Color;
+out vec4 out_Color;
+void main(void)
+{
+   out_Color = vec4(ex_Color,1.0);
+}
+
+//V: texture
+#version 150 core
+layout(location=0) in vec3 in_Position;
+layout(location=1) in vec3 in_Normal;
+layout(location=2) in vec3 in_Color;
+layout(location=3) in vec2 in_TexCoord;
+out vec2 ex_TexCoord;
+uniform mat4 in_P;
+uniform mat4 in_MV;
+uniform mat4 in_T;
+void main(void)
+{
+   gl_Position = in_P * in_T * in_MV *  vec4(in_Position,1.0);
+   ex_TexCoord = in_TexCoord;
+}
+//F: texture
+#version 150 core
+//precision highp float;
+uniform sampler2D texture;
+in vec2 ex_TexCoord;
+out vec4 out_Color;
+void main(void)
+{
+   out_Color = texture2D(texture, ex_TexCoord);
+}
+
+
+
 //V: linear
 
 uniform float range;

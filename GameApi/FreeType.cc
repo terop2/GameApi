@@ -28,7 +28,7 @@ FontGlyphBitmap::FontGlyphBitmap(void *priv_, std::string filename, int sx, int 
   //sizerequest.horiResolution = 0;
   //sizerequest.vertResolution = 0;
   //int err2 = FT_Request_Size( priv->face, &sizerequest );
-  std::cout << "FontGlyphBitmap:" << std::hex << err << " " << err3 << std::endl;
+  //std::cout << "FontGlyphBitmap:" << std::hex << err << " " << err3 << std::endl;
 }
 FontGlyphBitmap::~FontGlyphBitmap()
 {
@@ -44,7 +44,7 @@ void FontGlyphBitmap::load_glyph(long idx)
 
 int MoveToFunc(const FT_Vector *to, void *user)
 {
-  std::cout << "MoveToFunc" << std::endl;
+  //std::cout << "MoveToFunc" << std::endl;
   FontGlyphBitmap *bm = (FontGlyphBitmap*)user;
   Point2d p = { float(to->x)/65536.0f*bm->m_sx, float(to->y)/65536.0f*bm->m_sy };
   bm->move_point = p;
@@ -52,7 +52,7 @@ int MoveToFunc(const FT_Vector *to, void *user)
 }
 int LineToFunc(const FT_Vector *to, void *user)
 {
-  std::cout << "LineToFunc" << std::endl;
+  //std::cout << "LineToFunc" << std::endl;
   FontGlyphBitmap *bm = (FontGlyphBitmap*)user;
   Point2d p = { float(to->x)/65536.0f*bm->m_sx, float(to->y)/65536.0f*bm->m_sy };
   bm->types.push_back(0);
@@ -95,7 +95,7 @@ private:
 #endif
 int ConicToFunc(const FT_Vector *control, const FT_Vector *to, void *user)
 {
-  std::cout << "ConicToFunc" << std::endl;
+  //std::cout << "ConicToFunc" << std::endl;
 
   FontGlyphBitmap *bm = (FontGlyphBitmap*)user;
   Point2d p = { float(to->x)/65536.0f*bm->m_sx, float(to->y)/65536.0f*bm->m_sy };
@@ -115,7 +115,7 @@ int CubicToFunc(const FT_Vector *control1, const FT_Vector *control2,
 		const FT_Vector *to,
 		void *user)
 {
-  std::cout << "CubicToFunc" << std::endl;
+  //std::cout << "CubicToFunc" << std::endl;
   FontGlyphBitmap *bm = (FontGlyphBitmap*)user;
   Point2d p = { float(to->x)/65536.0f*bm->m_sx, float(to->y)/65536.0f*bm->m_sy };
   bm->types.push_back(2);
@@ -132,13 +132,13 @@ int CubicToFunc(const FT_Vector *control1, const FT_Vector *control2,
 
 int FontGlyphBitmap::NumLines() const
 {
-  std::cout << "NumLines" << points.size() << std::endl;
+  //std::cout << "NumLines" << points.size() << std::endl;
   return points.size()/2;
 }
 Point FontGlyphBitmap::LinePoint(int line, int point) const
 {
   Point p = Point(points[line*2+point].x, points[line*2+point].y, 0.0); 
-  std::cout << line << " " << point << ":" << p.x << " " << p.y << std::endl;
+  //std::cout << line << " " << point << ":" << p.x << " " << p.y << std::endl;
   return p;
 }
 

@@ -9,8 +9,16 @@ void GameApiTest3(EveryApi &e)
   MainLoopApi &loop = e.mainloop_api;
   FloatBitmapApi &float_api = e.float_bitmap_api;
 
-  loop.init();
+  loop.init_window();
+  e.shader_api.load("Shader.txt");
+  SH sh = e.shader_api.get_shader("texture", "texture", "");
+  e.shader_api.use(sh);
+  e.shader_api.set_default_projection(sh, "in_P");
+
+  loop.init(sh);
   loop.alpha(false);
+
+
 
   Ft fnt = e.font_api.newfont("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 150,150);
   //BM bm2 = font.glyph(fnt, 'Q');
@@ -62,10 +70,10 @@ void GameApiTest3(EveryApi &e)
 
       //std::cout << "val=" << val << std::endl;
       e.mainloop_api.clear();
-      e.mainloop_api.switch_to_3d(false);
-      e.sprite_api.rendersprite(bm2, 0, 100.0,100.0,1.0,1.0);
-      e.sprite_api.rendersprite(bx2,200.0,200.0,1.0,1.0);
-      e.mainloop_api.switch_to_3d(true);
+      e.mainloop_api.switch_to_3d(false, sh);
+      e.sprite_api.rendersprite(bm2, 0,sh, 100.0,100.0,1.0,1.0);
+      e.sprite_api.rendersprite(bx2, sh, 200.0,200.0,1.0,1.0);
+      e.mainloop_api.switch_to_3d(true, sh);
       e.polygon_api.render(p,frame2 % (30*5), 0.0,0.0,0.0);
       e.mainloop_api.swapbuffers();
       MainLoopApi::Event ev = e.mainloop_api.get_event();

@@ -28,7 +28,7 @@
 #include <cmath>
 #include <iostream>
 #include "Pieces.hh"
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 #include "Buffer.hh"
 #include "Intersect.hh"
 #include "Shader.hh"
@@ -6082,7 +6082,7 @@ public:
     int sum = 0;
     int f = 0;
     int k = 0;
-    int faces = NumFaces();
+    //int faces = NumFaces();
     for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++,k++)
       {
 	int oldsum = sum;
@@ -6091,7 +6091,7 @@ public:
 	for(int i=0;i<count;i++)
 	  {
 	    if (f%1000==0) {
-	      std::cout << "faces: " << f << "/" << faces << std::endl;
+	      //std::cout << "faces: " << f << "/" << faces << std::endl;
 	    }
 
 	    faces_cache.push_back(f-oldsum);
@@ -6104,7 +6104,7 @@ public:
     for(int f=0;f<faces;f++)
       {
 	if (f%1000==0) {
-	  std::cout << "faces: " << f << "/" << faces << std::endl;
+	  //std::cout << "faces: " << f << "/" << faces << std::endl;
 	}
 	int val = 0;
 	int k=0;
@@ -9593,6 +9593,7 @@ void InitFrameAnim(FrameAnim &f, SDL_Surface *screen);
 void DisplayFrame(FrameAnim &f, SDL_Surface *screen, float time);
 void CleanupFrameAnim(FrameAnim &f, SDL_Surface *surf);
 SDL_Surface *InitSDL(int scr_x, int scr_y, bool vsync, bool antialias=false);
+SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vsync, bool antialias=false);
 
 
 class CubeAnim : public Anim
@@ -9939,6 +9940,7 @@ public:
   void UpdateTexture(MeshTextures &texture, int num);
   void EnableTexture(int num);
   void DisableTexture();
+  void Prepare();
   void Render(bool normal, bool color, bool texcoord) { Render(normal, color, texcoord, 0, used_vertex_count[0]); }
   void Render(bool normal, bool color, bool texcoord, int vertex_pos, int vertex_size);
   void Render(int vertexframe, int normalframe, int colorframe, int texcoordframe, int vertex_pos, int vertex_size);
@@ -9973,6 +9975,12 @@ public:
   BufferRef **textures;
   int *tex_size_x;
   int *tex_size_y;
+  unsigned int buffer[4];
+  int q_num_vertices;
+  float *q_vertex_array; // 3 * float per vertex
+  float *q_normal_array; // 3 * float per vertex
+  unsigned char *q_color_array; // 4 * unsigned char per vertex
+  float *q_tex_coord_array; // 2 * float per vertex
 };
 
 struct PrecalcStore

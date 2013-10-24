@@ -65,7 +65,7 @@ public:
 	RenderState(current_state);
 
 	glLoadIdentity();
-	SDL_GL_SwapBuffers();
+	//SDL_GL_SwapBuffers();
 
 	SDL_Event event;
 	SDL_PollEvent(&event);
@@ -204,7 +204,8 @@ private:
 		       ::Sprite *sprite = sprites.sprites[i];
 		       Point2d p = { pos.x, pos.y };
 		       float z = 0.0;
-		       RenderSprite(*sprite, 0, p, z, *FindRender(e,i));
+		       Program *prog = 0;
+		       RenderSprite(*sprite, 0, p, z, *FindRender(e,i), prog);
 		     }
 		}
 	    }
