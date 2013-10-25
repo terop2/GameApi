@@ -48,7 +48,12 @@ private:
 
 void GameApiWorldFunc(EveryApi &e)
 {
-  e.mainloop_api.init();
+  e.shader_api.load("Shader.txt");
+  SH sh = e.shader_api.get_shader("texture", "texture", "");
+  e.shader_api.use(sh);
+  e.shader_api.set_default_projection(sh, "in_P");
+
+  e.mainloop_api.init(sh);
   e.mainloop_api.antialias(true);
 
 

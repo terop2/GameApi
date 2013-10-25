@@ -52,7 +52,7 @@ void GameTest6(EveryApi &e)
   BM fontbm2 = e.bitmap_api.growbitmap(fontbm, 1, 1, 1, 1);
   FB fb = e.float_bitmap_api.from_blue(fontbm2);
   BB fb2 = e.bool_bitmap_api.from_float_bitmap(fb, 0.0, 0.9);
-  FB fb3 = e.float_bitmap_api.from_bool(fb2, 0.0, 1.0);
+  FB fb3 = e.float_bitmap_api.from_bool(fb2, 1.0, 0.0);
   FO obj2 = api.from_float_bitmap(fb3, -150.0, 150.0,
   				  -150.0, 150.0,
   				  -50.0, 50.0);
