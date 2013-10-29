@@ -1142,7 +1142,7 @@ void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender 
   //
   //glMultMatrixf(&mat[0]);
   //glScalef(mult_x, mult_y, 1.0);
-  m = m * Matrix::Scale(mult_x, mult_y, 1.0);
+  m = Matrix::Scale(mult_x, mult_y, 1.0) * m;
   prog->set_var("in_MV", m);
   rend.Render(frame, -1, -1, frame, 0, rend.used_vertex_count[0]);
   //glPopMatrix();

@@ -4403,6 +4403,17 @@ void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, int val)
   prog->set_var(name, val);
 }
 
+void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, M matrix)
+{
+  MatrixInterface *mat = find_matrix(e, matrix);
+
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[shader.id]);
+  prog->set_var(name, mat->get_matrix());
+  
+}
+
 void GameApi::ShaderApi::bindnames(GameApi::SH shader, 
 				   std::string s_vertex,
 				   std::string s_normal,

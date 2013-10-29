@@ -74,7 +74,7 @@ void main(void)
 
 
 //V: linear
-
+#version 150 core
 uniform float range;
 uniform vec3 center1, center2;
 uniform float radius;
@@ -154,6 +154,7 @@ void main(void)
 }
 
 //F: red
+#version 150 core
 
 varying vec4 target_color;
 varying vec3 target_normal;
