@@ -1471,6 +1471,7 @@ public:
   void set_var(GameApi::SH shader, std::string name, float val);
   void set_var(GameApi::SH shader, std::string name, float x, float y, float z);
   void set_var(GameApi::SH shader, std::string name, int val);
+  void set_var(GameApi::SH shader, std::string name, M matrix);
 private:
   friend class StateChangeApi;
   void *priv;
@@ -1539,7 +1540,7 @@ private:
 struct EveryApi
 {
   EveryApi(Env &e) 
-    : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e),
+  : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
       font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e) { }
 
   MainLoopApi mainloop_api;
@@ -1552,6 +1553,7 @@ struct EveryApi
   PolygonApi polygon_api;
   BoolBitmapApi bool_bitmap_api;
   FloatBitmapApi float_bitmap_api;
+  ContinuousBitmapApi cont_bitmap_api;
   FontApi font_api;
   AnimApi anim_api;
   EventApi event_api;

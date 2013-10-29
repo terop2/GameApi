@@ -119,13 +119,13 @@ void GameTest6(EveryApi &e)
       glColor4f(1.0,0.5,0.3,0.2);
       //glEnable(GL_BLEND);
       //glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-      glPushMatrix();
-      glRotatef(time, 0.0,1.0,0.0);
-      glScalef(1.0,-1.0,1.0);
+      //glPushMatrix();
+      //glRotatef(time, 0.0,1.0,0.0);
+      //glScalef(1.0,-1.0,1.0);
       //api.render(array);
 
       //api.render(array2);
-      glColor4f(1.0,1.0,1.0,1.0);
+      //glColor4f(1.0,1.0,1.0,1.0);
       //e.lines_api.render(lia);
       //e.lines_api.render(lia2);
       //e.lines_api.render(lia3);
@@ -133,14 +133,17 @@ void GameTest6(EveryApi &e)
       //e.lines_api.render(lia5);
 
       //e.lines_api.render(fontlia);
-
+      M mat = e.matrix_api.yrot(sin(time/50.0)*3.14159/4.0);
+      M mat2 = e.matrix_api.scale(2.0,-2.0,2.0);
+      M mat3 = e.matrix_api.mult(mat, mat2);
+      e.shader_api.set_var(sh, "in_MV", mat3);
       e.texture_api.use(txid);
       e.shader_api.use(sh);
       e.polygon_api.render_vertex_array(va);
       e.texture_api.unuse(txid);
 
-      glPopMatrix();
-      glDisable(GL_BLEND);
+      //glPopMatrix();
+      //glDisable(GL_BLEND);
       e.mainloop_api.swapbuffers();
 #if 0
       BM scr = e.mainloop_api.screenshot();
