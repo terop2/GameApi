@@ -15,6 +15,8 @@ void GameTest8(EveryApi &e)
   e.mainloop_api.init_window();
   e.shader_api.load("Shader.txt");
   SH sh = e.shader_api.get_shader("empty", "empty", "");
+
+  e.shader_api.link(sh);
   
   e.shader_api.use(sh);
   e.mainloop_api.init_3d(sh );

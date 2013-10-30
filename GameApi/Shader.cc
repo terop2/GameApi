@@ -98,8 +98,11 @@ struct ProgramPriv
 
 Program::Program()
 {
+  //std::cout << "VENDOR=" << glGetString(GL_VENDOR) << std::endl;
+  //std::cout << "RENDERER=" << glGetString(GL_RENDERER) << std::endl;
+  //std::cout << "VERSION=" << glGetString(GL_VERSION) << std::endl;
   priv = new ProgramPriv;
-  priv->program = glCreateProgramObjectARB();  
+  priv->program = glCreateProgram(); //ObjectARB();  
 }
 Program::~Program()
 {
@@ -108,13 +111,13 @@ Program::~Program()
     {
       detach(*(*i));
     }
-  glDeleteObjectARB(priv->program);
+  glDeleteProgram(priv->program);
   delete priv;
 }
 void Program::push_back(const Shader &shader)
 {
   std::cout << "AttachShader: " << shader.priv->handle << std::endl;
-  glAttachObjectARB(priv->program, shader.priv->handle);
+  glAttachShader/*ObjectARB*/(priv->program, shader.priv->handle);
   priv->shaders.push_back(&shader);
   shader.priv->programs.push_back(this);
 }
@@ -128,7 +131,7 @@ void Program::bind_attrib(int num, std::string name)
 void Program::detach(const Shader &shader)
 {
   std::cout << "detach " << shader.priv->shader->Name() << std::endl;
-  glDetachObjectARB(priv->program, shader.priv->handle); 
+  glDetachShader /*ObjectARB*/(priv->program, shader.priv->handle); 
   priv->shaders.erase(std::remove(priv->shaders.begin(), priv->shaders.end(),&shader), priv->shaders.end());
   shader.priv->programs.erase(std::remove(shader.priv->programs.begin(), shader.priv->programs.end(), this), shader.priv->programs.end());
 }
@@ -165,7 +168,7 @@ void Program::GeomOutputVertices(int i)
 
 void Program::link()
 {
-  glLinkProgramARB(priv->program);
+  glLinkProgram(priv->program);
   int len=0;
   char log[255];
   glGetInfoLogARB(priv->program, 255, &len, log);
@@ -174,11 +177,11 @@ void Program::link()
 }
 void Program::use()
 {
-  glUseProgramObjectARB(priv->program);
+  glUseProgram(priv->program);
 }
 void Program::unuse()
 {
-  glUseProgramObjectARB(0);
+  glUseProgram(0);
 }
 void Program::set_var(const std::string &name, float val)
 {
@@ -317,17 +320,17 @@ ShaderFile::ShaderFile(std::string filename)
 	{
 	  if (geom)
 	    {
-	      std::cout << "G: " << block << std::endl;
+	      //std::cout << "G: " << block << std::endl;
 	      g_shaders[id]=block;
 	    }
 	  else if (vertex)
 	    {
-	      std::cout << "V: " << block << std::endl;
+	      //std::cout << "V: " << block << std::endl;
 	      v_shaders[id]=block;
 	    }
 	  else
 	    {
-	      std::cout << "F: " << block << std::endl;
+	      //std::cout << "F: " << block << std::endl;
 	      f_shaders[id]=block;
 	    }
 	  block="";
@@ -337,7 +340,7 @@ ShaderFile::ShaderFile(std::string filename)
       else if (line.substr(0,4)=="//G:") { id = line.substr(5); geom=true; }
       else 
 	{
-	  std::cout << "Line: " << line << std::endl;
+	  //std::cout << "Line: " << line << std::endl;
 	  block += line;
 	  block += "\n";
 	}
@@ -416,12 +419,15 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       i = ii;
     }
 
-  p->link();
-  p->GeomTypes(5,2); 
-  p->GeomOutputVertices(100000);
+  //p->link();
+  //p->GeomTypes(5,2); 
+  //p->GeomOutputVertices(100000);
   return id;
 }
-
+void ShaderSeq::link(int i)
+{
+  progs[i]->link();
+}
 void ShaderSeq::use(int i)
 {
   progs[i]->use();

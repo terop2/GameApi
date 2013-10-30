@@ -61,6 +61,11 @@ void GameTest5(EveryApi &e)
   loop.init_window();
   shader.load("Shader.txt");
   SH sh = shader.get_shader("linear", "red", "");
+  //e.shader_api.bind_attrib(sh, 0, "in_Position");
+  //e.shader_api.bind_attrib(sh, 1, "in_Normal");
+  //e.shader_api.bind_attrib(sh, 2, "in_Color");
+  //e.shader_api.bind_attrib(sh, 3, "in_TexCoord");
+  e.shader_api.link(sh);
 
   loop.init_3d(sh);
 

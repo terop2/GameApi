@@ -1458,6 +1458,7 @@ public:
   ~ShaderApi();
   void load(std::string filename);
   SH get_shader(std::string v_format, std::string f_format, std::string g_format);
+  void link(SH shader);
   void use(SH shader);
   void unuse(SH shader);
   void bindnames(GameApi::SH shader, 
