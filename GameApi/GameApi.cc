@@ -4331,6 +4331,12 @@ void GameApi::ShaderApi::set_y_rotation(SH shader, std::string name, float angle
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->set_var(name, m);  
 }
+void GameApi::ShaderApi::link(GameApi::SH shader)
+{
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  ShaderSeq *seq = p->seq;
+  seq->link(shader.id);
+}
 GameApi::SH GameApi::ShaderApi::get_shader(std::string v_format,
 					std::string f_format,
 					std::string g_format)

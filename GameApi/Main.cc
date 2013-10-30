@@ -366,24 +366,27 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+  //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+  //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
   sdl_window = SDL_CreateWindow("Program", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scr_x, scr_y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
  
   SDL_GLContext context;
   context = SDL_GL_CreateContext(sdl_window);
-  if (!context) { std::cout << "Could not create Opengl3.2 context" << std::endl; }
+  if (!context) { 
+    std::cout << "Could not create Opengl3.2 context" << std::endl; 
+  }
 
 
   GLenum err = glewInit();
   if (GLEW_OK != err)
     {
       std::cout << "Glew init failed!" << std::endl;
-      return 0;
+      std::cout << "ERROR:" << err << std::endl;
+      //return 0;
     }
 
   

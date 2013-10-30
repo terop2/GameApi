@@ -50,6 +50,11 @@ void Game(EveryApi &e)
   loop.init_window();
   e.shader_api.load("Shader.txt");
   SH sh = e.shader_api.get_shader("texture", "texture", "");
+  e.shader_api.bind_attrib(sh, 0, "in_Position");
+  e.shader_api.bind_attrib(sh, 1, "in_Normal");
+  e.shader_api.bind_attrib(sh, 2, "in_Color");
+  e.shader_api.bind_attrib(sh, 3, "in_TexCoord");
+  e.shader_api.link(sh);
   e.shader_api.use(sh);
   e.shader_api.set_default_projection(sh, "in_P");
 
