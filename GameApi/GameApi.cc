@@ -329,10 +329,10 @@ int GameApi::MainLoopApi::get_framenum()
 }
 GameApi::BM GameApi::MainLoopApi::screenshot()
 {
-  MainLoopPriv *p = (MainLoopPriv*)priv;
-  SDL_Surface *surf = p->screen;
-  int w = surf->w;
-  int h = surf->h;
+  //MainLoopPriv *p = (MainLoopPriv*)priv;
+  //SDL_Surface *surf = p->screen;
+  int w = 800; //surf->w;
+  int h = 600; //surf->h;
 
   BufferRef ref = BufferRef::NewBuffer(w,h);
   glReadPixels(0,0,w,h, GL_BGRA, GL_UNSIGNED_BYTE, ref.buffer);

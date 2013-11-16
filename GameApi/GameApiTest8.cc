@@ -45,12 +45,16 @@ void GameTest8(EveryApi &e)
       glPushMatrix();
       glRotatef(time, 0.0,1.0,0.0);
       e.shader_api.set_y_rotation(sh, "in_MV", time/50.0);
+      M m = e.matrix_api.yrot(time/50.0);
+      M m2 = e.matrix_api.scale(2.0,2.0,2.0);
+      M m3 = e.matrix_api.mult(m,m2);
+      e.shader_api.set_var(sh, "in_MV", m3);
       e.lines_api.render(array);
       e.lines_api.render(array2);
       glPopMatrix();
       e.mainloop_api.swapbuffers();
       MainLoopApi::Event ev = e.mainloop_api.get_event();
       if (ev.ch==27) break;
-      time += 0.1;
+      time += 1.0;
     }
 }

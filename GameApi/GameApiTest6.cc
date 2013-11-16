@@ -8,9 +8,14 @@
 #include "GameApi.hh"
 #include <cmath>
 
+unsigned int color_value(GameApi::EveryApi &e, int, int, void*)
+{
+  return 0xffffffff;
+}
+
 using namespace GameApi;
 
-float SphereObj(EveryApi &ev, float x, float y, float z, void *data)
+float SphereObj(GameApi::EveryApi &ev, float x, float y, float z, void *data)
 {
   float val = x*x+y*y+z*z;
   if (val <= 150.0*150.0 && val >= 140.0*140.0) { return 1.0; }
@@ -26,7 +31,7 @@ void GameTest6(EveryApi &e)
 
   loop.init_window();
 
-  e.shader_api.load("Shader.txt");
+  e.shader_api.load("../Shader.txt");
   SH sh = e.shader_api.get_shader("texture", "texture", "");
   e.shader_api.bind_attrib(sh, 0, "in_Position");
   e.shader_api.bind_attrib(sh, 1, "in_Normal");
@@ -53,7 +58,7 @@ void GameTest6(EveryApi &e)
   std::string filename = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
   Ft font = e.font_api.newfont(filename.c_str(), 500,500);
   BM fontbm = e.font_api.glyph(font, u'R');
-  BM logobm = e.bitmap_api.loadbitmap("./pics/Logo uusi.jpg");
+  BM logobm = e.bitmap_api.loadbitmap("../pics/Logo uusi.jpg");
   LI fontli = e.font_api.glyph_outline(font, u'@', 300.0,-300.0);
   BM fontbm2 = e.bitmap_api.growbitmap(fontbm, 1, 1, 1, 1);
   FB fb = e.float_bitmap_api.from_blue(fontbm2);
@@ -112,14 +117,17 @@ void GameTest6(EveryApi &e)
   TXID txid = e.texture_api.prepare(tx2);
   
   VA va = e.polygon_api.create_vertex_array(texpoly);
-  
 
+
+  BM bmX = e.bitmap_api.function(&color_value, 800, 600, 0);
+  e.sprite_api.preparesprite(bmX);
   float time = 0.0;
   glLineWidth(1);
   int frame = 0;
   while(1)
     {
       e.mainloop_api.clear_3d();
+      e.sprite_api.rendersprite(bmX, sh, -800.0, -600.0, 2.0, 2.0);
       //e.mainloop_api.switch_to_3d(true,sh);
       e.shader_api.set_y_rotation(sh, "in_MV", time/50.0);
       glColor4f(1.0,0.5,0.3,0.2);
@@ -167,6 +175,6 @@ void GameTest6(EveryApi &e)
 #endif
       MainLoopApi::Event ev = e.mainloop_api.get_event();
       if (ev.ch==27) break;
-      time+=0.04;
+      time+=4.0;
     }
 }
