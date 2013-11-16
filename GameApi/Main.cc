@@ -360,6 +360,7 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
 
   SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK);
 
+
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
@@ -389,6 +390,9 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
       //return 0;
     }
 
+  std::cout << "Vendor: " << glGetString(GL_VENDOR)<< std::endl;
+  std::cout << "Renderer:" << glGetString(GL_RENDERER)<< std::endl;
+  std::cout << "Version:" << glGetString(GL_VERSION) << std::endl;
   
   //glEnable(GL_DEBUG_OUTPUT_SYNCRONOUS);
   //glDebugMessageCallback(func, 0);
