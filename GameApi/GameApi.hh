@@ -99,22 +99,6 @@ public:
   void *envimpl;
   friend struct EnvImpl;
 };
-#if 0
-class ExecutionApi
-{
-public:
-  template<class T>
-  E<T> empty(T t);
-  template<class T, class K>
-  E<K> execute1(E<T> e, K (*fptr)(T));
-  template<class T, class K>
-  E<K> execute2(E<T> e, K (*fptr)(T, void*), void *data=NULL);
-  template<class T, class K>
-  std::vector<E<K>> loop(E<T> e, K (*fptr)(T, int idx), int count);
-  template<class T>
-  std::vector<E<T>> loop2d(E<T> e, T (*fptr_x)(T), T (*fptr_y)(T), int count_x, int count_y);
-};
-#endif
 class MainLoopApi
 {
 public:
@@ -425,43 +409,6 @@ private:
   void *priv;
 };
 
-class PhysicsApi
-{
-public:
-  PPT point(PT pos, PT speed_from_origo, float time, float mass);
-  PPT add_force(PPT orig, VF force);
-  PPT move(PPT old_pos, C curve, float delta_time);
-
-  VF constant_vectorfield(PT dir_from_origo);
-  VF plane_vectorfield(PT pos, PT u_x, PT u_y, PT dir_from_origo_up, PT dir_from_origo_down);
-  VF limit_to_area(VF inside, VF outside, O volume);
-  VF array(VF *array, int size);
-
-  VF move(VF object, PT pos);
-  VF rotatex(VF object, float angle);
-  VF rotatey(VF object, float angle);
-  VF rotatez(VF object, float angle);
-  VF scale(VF object, float sx, float sy, float sz);
-
-  PSP plane(PT p, PT u_x, PT u_y);
-  PSP sphere(PT center, float r);
-  PSP cube(float start_x, float end_x,
-	   float start_y, float end_y,
-	   float start_z, float end_z);
-  PSP min_array(PSP *array, int size);
-  PSP max_array(PSP *array, int size);
-
-  PSP move(PSP object, PT pos);
-  PSP rotatex(PSP object, float angle);
-  PSP rotatey(PSP object, float angle);
-  PSP rotatez(PSP object, float angle);
-  PSP scale(PSP object, float sx, float sy, float sz);
-
-  C movement(PPT point, float time_step, float delta);
-  float collision_time(C curve, PSP phys_space);
-  PT collision_point(C curve, PSP phys_space);
-};
-
 class SpaceApi
 {
 public:
@@ -483,62 +430,6 @@ public:
   float pt_y(PT p);
   float pt_z(PT p);
   PT plus(PT p1, PT p2);
-private:
-  Env &e;
-};
-
-#ifdef USE_ANIM_INSTEAD
-class MovementApi
-{
-public:
-  MovementApi(Env &e);
-  ~MovementApi();
-  //PT pos(float x, float y); // x = (0..1), y = (0..1)
-  //PT mix(PT p1, PT p2, float val);
-  float dist(PT p1, PT p2);
-  LN empty(float time);
-  LN line(PT p1, PT p2, float time);
-  LN seq_line(LN *array, int arraysize);
-  LN par_line(LN *array, int arraysize);
-  PT timeline(LN l, int choose_par, float time);
-private:
-  Env &e;
-};
-#endif
-class WorldApi
-{
-public:
-  WorldApi(Env &e);
-  RM bitmap(BM bm, PT tl, PT tr, PT bl, PT br);
-  RM horiz(RM r1, RM r2, bool top_or_bottom);
-  RM vert(RM r1, RM r2, bool left_or_right);
-  RM horiz_array(RM *array, int size);
-  RM vert_array(RM *array, int size);
-  RM fourdir(RM center, RM r1, RM r2, RM r3, RM r4);
-  BM result(RM r);
-private:
-  Env &e;
-};
-#if 0
-class WorldApi2
-{
-public:
-  WorldApi2(Env &e);
-  W initial(PT p, V u_x, V u_y, V u_z);
-  W split(W w, int sx, int sy, int sz);
-  
-};
-#endif
-class WorldChangesApi
-{
-public:
-  WorldChangesApi(Env &e);
-  BM change(BM orig, int x, int y, int val);
-  BM change_all(BM orig, int old_val, int new_val);
-  BM change_area(BM orig, int x, int y, int width, int height, int old_val, int new_val);
-  BM change_area_value(BM orig, int x, int y, int width, int height, int val);
-  BM blit(BM orig, int x, int y, BM bm);
-
 private:
   Env &e;
 };
@@ -693,15 +584,6 @@ public:
 
 private:
   Env &e;
-};
-
-class DistanceApi
-{
-public:
-  DO sphere(float x, float y, float z);
-  DO plane(float x, float y, float z,
-	   float dx, float dy, float dz);
-  DO array(DO *array, int size);
 };
 
 class SurfaceApi
@@ -922,24 +804,6 @@ private:
   ShaderApi &api;
 };
 
-#if 0
-class Skeletal2dApi
-{
-public:
-  Skeletal2dApi(Env &e) : e(e) { }
-  SPT empty(char id, PT pos);
-  int move_id();
-  SPT dir(char id, SPT prev, V vec);
-  SPT dir(char id, SPT prev, V vec, float start_range, float end_range, int move_id);
-  SPT rot(char id, SPT prev, float radius, float angle);
-  SPT rot(char id, SPT prev, float radius, float angle_range_start, float angle_range_end, int move_id);
-  SPT change_move(SPT prev, int move_id, float value);
-  SPTARR collect(SPT *array, int size);
-  PT point(SPTARR arr, std::string path);
-private:
-  Env &e;
-};
-#endif
 
 class PlaneApi
 { // 2d coordinates in PT
@@ -982,110 +846,6 @@ public:
   
 private:
   Env &e;
-};
-
-#if 0
-class SpaceApi2
-{
-public:
-  SpaceApi2(Env &e) : e(e) { }
-  P2 point(PT p); // zero dimensions
-  P2 line(P2 p1, P2 p2); // N+1 dimensions, p1 and p2 must have same number of dims
-  
-  PT get_point(P2 p, float *array); // array must have same number of floats than P2 has dimensions
-  P2 get_lower_dim(P2 p, float value, int dim); // dim = [0..dims-1]
-  
-private:
-  Env &e;
-};
-#endif
-
-class SubstitutionApi
-{
-public:
-  SubstitutionApi(EveryApi &e) : e(e) { }
-  P ReplacePolygons(P p, P (*fptr)(EveryApi &ev, int index, PT *array, int size, void *data), void *data);
-  P ReplacePoints(P p, P (*fptr)(EveryApi &ev, int index, PT point, void *data), void *data);
-  //P2 ReplaceLines(P p, C (*fptr)(PT p1, PT p2, void *data), void *data);
-  
-
-private:
-  EveryApi &e;
-};
-
-
-#if 0
-class ChangeApi
-{
-public:
-  // T = event range
-  T single_event(E activation_event, float duration);
-  T start_end(E activation_event, E end_event);
-  T repeat(E activation_event, float duration, int number_of_times);
-  T repeat(E activation_event, E end_event, int number_of_times);
-  T repeat_infinite(E activation_event, float duration);
-  T repeat_infinite(E activation_event, E end_event);
-  SC change_variable(V var, int delta,
-  SC stop_execution(DP p); 
-  DP polygon(P p);
-  DP sprite(BM p);
-  DP rotate(float angle, V rotate_axis, T event_range, DP object);
-  DP rotate(float angle, V rotate_axis, T event_range, DP object, V center_point_of_rotation); // implement using matrix translate*rotate*translate
-		     
-  //DP translate(V direction_vector, T event_range, DP object);
-  DP translate(V direction_vector, T event_range, SC state_change_for_range);
-  DP translate(PT destination_point, T event_range, DP object);
-  DP translate(PT point, PT point2, T event_range, DP object);
-  DP translate(PT point, V vector, T event_range, DP object);
-  DP translate(
-  DP or_elem(DP o1, DP o2);
-  DP or_array(DP *o1, int size);
-};
-
-class Object3dApi
-{
-public:
-  OO rect(float start_x, float start_y, float end_x, float end_y);
-  OO circle(PT center, PT u_x, PT u_y, float radius, int numpoints);
-  OO tri(PT p1, PT p2, PT p3);
-
-  OO range(OO o, bool choose, int start_point, int end_point);
-  OO concat(OO o1, OO o2);
-
-  P face(OO o);
-
-  PP line(OO o, float dx, float dy, float dz);
-  PP scale(OO o, PT center, float sx, float sy, float sz);
-  PP cylindar_rotate(OO o, PT center_1, PT center2, float angle);
-  PP sphere_rotate(OO o, PT center, float angle1, float angle2);
-  
-
-  OO curve(PP p);
-  
-  PP array(PP *array, int size);
-  
-
-  P side_faces(PP obj);
-  P array(P *array, int size);
-};
-#endif
-
-
-class BufferApi
-{ // P->BF
-public:
-  BF vertex(P p);
-  BF normal(P p);
-  BF color(P p);
-  BF texcoord(P p);
-  BF attrib(P p, int id);
-
-  BF compose(BF b1, BF b2);
-  BF compose_array(BF *array, int size);
-  BF anim(BF b1, BF b2, float val);
-  BF anim_array(BF *array, float *val, int size, float time);
-  
-  void render(BF *vertex, BF *normal=0, BF *color=0, BF *texcoord=0, BF *attrib_array=0, int attrib_size=0);
 };
 
 class BoolBitmapApi
@@ -1309,15 +1069,6 @@ public:
 private:
   Env &e;
 };
-
-class EquationApi
-{
-public:
-  BB equal(FB bm1, FB bm2, float accuracy);
-  BB isocurve(FB bm1, float start_range, float end_range);
-  
-};
-		     
 class MatrixApi
 { // to be implemented with virtual Matrix get_matrix() const=0;
 public:
@@ -1340,7 +1091,6 @@ public:
 private:
   Env &e;
 };
-		     
 class ObjectMoveApi
 {
 public:
@@ -1353,43 +1103,6 @@ public:
   void render_all(VAA orig);
 private:
   Env &e;
-};
-
-class MemoryApi
-{
-public:
-  ME mem(int num_of_bits);
-  ME range(ME mem, int start_bit, int end_bit);
-  ME array(ME item, int count);
-  ME array_item(ME array, int index);
-  ME create_struct(ME *array, int count);
-  ME struct_item(ME struct1, int index);
-  ME change_bit(ME mem, int bit_number, bool new_value);
-  void register_type(int size, int type);
-  TY one();
-  TY type(ME mem, int type);
-  TY combine(int *value, int size);
-  F func(TY ret_val, TY param, int param_value, int ret_val_value);
-  F comb_func(F f1, F f2);
-  F composition(F f1, F f2);
-  F split_proj1(F f, TY center);
-  F split_proj2(F f, TY center);
-  F constant(F f); // split_proj2(f, one())
-  F universe(F f); // split_proj1(f, one());
-};
-
-class PowerSetApi
-{
-public:
-  PS power(TY type);
-  PS power_elem(TY type, int value);
-  PS power_pair(TY type, int left_value, int right_value);
-  PS inverse_image(PS pw, F func);
-  PS equalizer(PS pw, F func);
-  PS pullback(PS pw, F func);
-  PS subset(PS pw, F func);
-  PS power_intersection(PS pw, PS pw2);
-  bool elem(PS p, int value);
 };
 
 class VBOApi
@@ -1413,23 +1126,6 @@ private:
   Env &e;
 };
 
-#if 0
-class MatrixApi
-{
-public:
-  MA model_scaling(float sx, float sy, float sz);
-  MA model_rotation(float angle, PT vec);
-  MA obj_pos_in_world(PT pos);
-  MA camera_pos(PT pos);
-  MA camera_rotation(float y_angle, float x_angle=0.0, float z_angle=0.0);
-
-  MA matrix_array(MA *array, int size);
-  void push(MA matrix);
-  void pop();
-private:
-  Env &e;
-};
-#endif
 
 
 class PathApi
@@ -1584,53 +1280,6 @@ private:
   Env &e;
   //void *priv;
 };
-
-class SocketApi
-{
-public:
-  SocketApi();
-  ~SocketApi();
-  int open_connection(); // TODO
-  void close_connection(int id);
-  void send_msg(int id, char *msg);
-  char *receive_msg(int id);
-};
-
-
-
-class FilesApi
-{
-public:
-  D dir_files(Fi *array, int size);
-  D dir_dirs(D *array, int size);
-  D directory_name(D d, char *dirname);
-  D combine(D d1, D d2);
-  void root(D d); // this call creates all objects
-
-  Fi file_contents(Str contents);
-};
-
-class StringApi
-{
-public:
-  Str empty();
-  Str combine(Str *array, int size);
-  Str character(char c);
-  Str string(char *string);
-  void split(Str **output, int *count, Str orig, char separator);
-};
-
-class HtmlApi
-{
-public:
-  Ht text(Str txt);
-  Ht link(Str url, Ht text);
-  Ht image(Str filename, int width, int height);
-  Ht table(int sx, int sy, Ht *array);
-
-  Str to_string(Ht h);
-};
-
 
 }; // GameApi namespace
 
