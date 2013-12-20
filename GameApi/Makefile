@@ -46,7 +46,7 @@ DFiles_examples = $(patsubst %.cc,objs/%.d,$(CFiles_examples) $(CFiles2_examples
 HFiles_examples = $(patsubst %.cc,%.hh,$(CFiles_examples))
 GCHFiles_examples = $(patsubst %.cc,objs/%.hh.gch,$(CFiles_examples))
 
-CCFLAGS = -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2
+CCFLAGS = -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2 -I/usr/lib/llvm-3.2/lib/clang/3.2/include
 #`pkg-config gtkmm-2.4 --cflags`
 
 default: libGameApi.so main
@@ -56,12 +56,12 @@ all: libGameApi.so install main
 examples: main
 
 main: $(GCHFiles_examples) $(OFiles_examples) Makefile GameApi.hh libGameApi.so
-	@echo g++ main
-	@g++ -g $(OFiles_examples) -std=c++0x -o main -L. -lGameApi -lGL -lm -lstdc++
+	@echo clang main
+	@clang -g $(OFiles_examples) -std=c++0x -o main -L. -lGameApi -lGL -lm -lstdc++
 
 libGameApi.so: $(GCHFiles) $(OFiles) Makefile
-	@echo g++ libGameApi.so
-	@g++ -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lGLEW -lfreetype 
+	@echo clang libGameApi.so
+	@clang -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lGLEW -lfreetype -lstdc++ 
 #`pkg-config gtkmm-2.4 --libs` 
 
 subdirs: $(Subdirs)
@@ -76,27 +76,27 @@ ctags: TAGS
 TAGS: $(CFiles)
 	etags -o TAGS -l c++ $(CFiles)
 
-CC = g++
+CC = clang
 
 $(DFiles): objs/%.d: %.cc
 	@gcc -M $(CCFLAGS) $< \
 	|sed 's,\($*\)\.o[ :]*,objs/\1.o $@ : ,g' > $@
 
 $(OFiles): objs/%.o : %.cc
-	@echo g++ $< -o $@
+	@echo clang $< -o $@
 	@$(CC) -std=c++0x -g -c $(CCFLAGS) $< -o $@
 
 $(OFiles_examples): objs/%.o : %.cc GameApi.hh Makefile
-	@echo g++ $< -o $@
+	@echo clang $< -o $@
 	@$(CC) -std=c++0x -g -c -I. $(CCFLAGS) $< -o $@ 
 
 
 $(GCHFiles): objs/%.hh.gch : %.hh
-	@echo g++ $< -o $@
+	@echo clang $< -o $@
 	@$(CC) $(CCFLAGS) -std=c++0x -g -x c++-header $< -o $@ 
 
 $(GCHFiles_examples): objs/%.hh.gch : %.hh GameApi.hh Makefile
-	@echo g++ $< -o $@
+	@echo clang $< -o $@
 	@$(CC) $(CCFLAGS) -std=c++0x -g -I. -x c++-header $< -o $@ 
 
 clean:
