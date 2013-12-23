@@ -706,6 +706,7 @@ struct EnvImpl
   std::vector<LineCollection*> linearray;
   std::vector<ColorVolumeObject*> colorvolume;
   std::map<int, ShaderPriv2*> shader_privs;
+  std::vector<DistanceRenderable*> distvolume;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -897,6 +898,14 @@ GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
+GameApi::FD add_distance(GameApi::Env &e, DistanceRenderable *dist)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->distvolume.push_back(dist);
+  GameApi::FD fd;
+  fd.id = env->distvolume.size()-1;
+  return fd;
+}
 GameApi::SP add_space(GameApi::Env &e, SpaceImpl i)
 {
   EnvImpl *env = EnvImpl::Environment(&e);
@@ -1462,6 +1471,13 @@ LinkageInfo find_linkage(GameApi::Env &e, GameApi::L l)
 {
   EnvImpl *env = EnvImpl::Environment(&e);
   return env->event_infos->Linkage(l.id);
+}
+DistanceRenderable *find_distance(GameApi::Env &e, GameApi::FD fd)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  if (fd.id >=0 && fd.id < (int)env->distvolume.size())
+    return env->distvolume[fd.id];
+  return 0;
 }
 TextureI *find_texture(GameApi::Env &e, GameApi::TX t)
 {
@@ -7312,6 +7328,74 @@ void GameApi::LinesApi::render(LLA l)
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glDrawArrays(GL_LINES, 0, array->numpoints);
   glDisableVertexAttribArray(0);
+}
+
+
+class SphereDistanceRenderable : public DistanceRenderable
+{
+public:
+  SphereDistanceRenderable(Point center, float radius) : center(center), radius(radius) { }
+  float distance(Point p) const {
+    p-=center;
+    float dist = sqrt(p.x*p.x+p.y*p.y+p.z*p.z);
+    dist -= radius;
+    return fabs(dist);
+  }
+  std::string shader() const { return ""; }
+  int varnum() const { return 0; }
+private:
+  Point center;
+  float radius;
+};
+
+GameApi::FD GameApi::DistanceFloatVolumeApi::sphere(PT center, float radius)
+{
+  Point *cent = find_point(e, center);
+  return add_distance(e, new SphereDistanceRenderable(*cent, radius));
+}
+
+class RenderDistance : public Bitmap<Color>
+{
+public:
+  RenderDistance(Point pos, Vector u_x, Vector u_y, Vector u_z, DistanceRenderable &dist, ColorVolumeObject &colors, int sx, int sy) 
+    : pos(pos), u_x(u_x), u_y(u_y), m_u_z(u_z), dist(dist), colors(colors), sx(sx), sy(sy) { 
+    m_u_z/=m_u_z.Dist();
+  }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    Point p = pos + u_x*x/sx+u_y*y/sy;
+    int count = 0;
+    while(1) {
+      float d = dist.distance(p);
+      if (d<1.0) break;
+      if (count >30) return Color(0x00000000);
+      p+=m_u_z*d;
+      count ++;
+    }
+    unsigned int col = colors.ColorValue(p);
+    return Color(col);
+  }
+private:
+  Point pos;
+  Vector u_x,u_y, m_u_z;
+  DistanceRenderable &dist;
+  ColorVolumeObject &colors;
+  int sx,sy;
+
+};
+
+GameApi::BM GameApi::DistanceFloatVolumeApi::render(FD obj, COV colors, PT pos, V u_x, V u_y, V u_z, int sx, int sy)
+{
+  DistanceRenderable *dist = find_distance(e, obj);
+  ColorVolumeObject *colorsI = find_color_volume(e, colors);
+  Point *posI = find_point(e, pos);
+  Vector *u_xI = find_vector(e, u_x);
+  Vector *u_yI = find_vector(e, u_y);
+  Vector *u_zI = find_vector(e, u_z);
+  Bitmap<Color> *bm = new RenderDistance(*posI, *u_xI, *u_yI, *u_zI, *dist, *colorsI, sx,sy);
+  return add_color_bitmap2(e, bm);
 }
 
 #if 0
