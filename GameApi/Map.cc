@@ -26,7 +26,7 @@
 #include <fstream>
 #define NO_SDL_GLEXT
 #include <GL/glew.h>
-#include <SDL/SDL_opengl.h>
+#include <SDL2/SDL_opengl.h>
 #include "Pieces.hh"
 #include "Effect.hh"
 

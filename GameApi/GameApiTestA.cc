@@ -46,8 +46,10 @@ void GameTestA(EveryApi &e)
   V u_y = e.vector_api.vector(0.0, 480.0, 0.0);
   V u_z = e.vector_api.vector(0.0,0.0, 200.0);
   FD fd = e.dist_api.sphere(center, 100.0);
+  FD fd2 = e.dist_api.line(pos,center, 30.0);
+  FD fd12 = e.dist_api.min(fd, fd2);
   COV cov = e.color_volume_api.function(f, 0);
-  BM bm = e.dist_api.render(fd, cov, pos, u_x, u_y, u_z, 640, 480);
+  BM bm = e.dist_api.render(fd12, cov, pos, u_x, u_y, u_z, 640, 480);
 
   e.sprite_api.preparesprite(bm);
   while(1) 

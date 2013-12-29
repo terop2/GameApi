@@ -24,7 +24,7 @@
 #include "Effect.hh"
 #include "Effect2.hh"
 #include <GL/glew.h>
-#include <SDL/SDL_opengl.h>
+#include <SDL2/SDL_opengl.h>
 #include "VectorTools.hh"
 #include <GL/glut.h>
 #include "Bitmap.hh"

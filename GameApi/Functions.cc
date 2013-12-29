@@ -1,5 +1,5 @@
 #define NO_SDL_GLEXT
-#include <SDL/SDL_opengl.h>
+#include <SDL2/SDL_opengl.h>
 
 #include "Functions.hh"
 #include "Effect.hh"

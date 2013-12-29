@@ -24,7 +24,7 @@
 #include "Effect.hh"
 #define NO_SDL_GLEXT
 #include <GL/glew.h>
-#include <SDL/SDL_opengl.h>
+#include <SDL2/SDL_opengl.h>
 
 Point IntersectionPoint(LinePlaneIntersection &c, Point line_p1, Point line_p2)
 {

@@ -581,8 +581,9 @@ public:
   FD cube(float start_x, float end_x,
 	  float start_y, float end_y,
 	  float start_z, float end_z);
+  FD line(PT start, PT end, float dist);
 
-  FD min(FD a1, FD a3);
+  FD min(FD a1, FD a2);
   BM render(FD obj, COV color, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
   std::string shader_func(std::string name, FD obj);
 private:
