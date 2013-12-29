@@ -1,8 +1,8 @@
 #define NO_SDL_GLEXT
 #include <GL/glew.h>
 #include <GL/gl.h>
-#include <SDL/SDL.h>
-#include <SDL/SDL_opengl.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
 #include <iostream>
 
 #include "GameApi.hh"

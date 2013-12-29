@@ -7348,10 +7348,58 @@ private:
   float radius;
 };
 
+class LineDistance : public DistanceRenderable
+{
+public:
+  LineDistance(Point start, Point end, float dist) : start(start), end(end), dist(dist) { }
+
+  float distance(Point p) const {
+    Vector n = end-start;
+    n/=n.Dist();
+    Vector vv = (start-p)-(Vector::DotProduct((start-p),n)*n);
+    float v = vv.Dist();
+    return v-dist;
+  }
+  std::string shader() const { return ""; }
+  int varnum() const { return 0; }
+private:
+  Point start, end;
+  float dist;
+};
+
 GameApi::FD GameApi::DistanceFloatVolumeApi::sphere(PT center, float radius)
 {
   Point *cent = find_point(e, center);
   return add_distance(e, new SphereDistanceRenderable(*cent, radius));
+}
+GameApi::FD GameApi::DistanceFloatVolumeApi::line(PT start, PT end, float dist)
+{
+  Point *st = find_point(e, start);
+  Point *en = find_point(e, end);
+  return add_distance(e, new LineDistance(*st, *en, dist));
+}
+class MinDistance2 : public DistanceRenderable
+{
+public:
+  MinDistance2(DistanceRenderable &r1, DistanceRenderable &r2) : r1(r1), r2(r2) { }
+  float distance(Point p) const 
+  { 
+    float d1 = r1.distance(p);
+    float d2 = r2.distance(p);
+    return std::min(d1,d2);
+  }
+  std::string shader() const { return ""; }
+  int varnum() const { return 0; }
+private:
+  DistanceRenderable &r1;
+  DistanceRenderable &r2;
+};
+
+GameApi::FD GameApi::DistanceFloatVolumeApi::min(FD fd1, FD fd2)
+{
+  DistanceRenderable *ff1 = find_distance(e, fd1);
+  DistanceRenderable *ff2 = find_distance(e, fd2);
+  return add_distance(e, new MinDistance2(*ff1, *ff2));
 }
 
 class RenderDistance : public Bitmap<Color>
