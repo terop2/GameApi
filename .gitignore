@@ -1,8 +1,13 @@
 GameApi/objs/*.d
+GameApi/objs/*.d2
 GameApi/objs/*.hh.gch
+GameAPi/objs/*.hh.gch2
 GameApi/objs/*.o
+GameApi/objs/*.obj
 GameApi/libGameApi.so
+GameApi/libGameApi.exe
 GameApi/main
+GameApi/main.exe
 GameApi/gmon.out
 GameApi/GameApi.tar.gz
 GameApi/GameApi-binary.tar.gz
