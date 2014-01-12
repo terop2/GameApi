@@ -26,7 +26,7 @@
 #include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
 #include "VectorTools.hh"
-#include <GL/glut.h>
+//#include <GL/glut.h>
 #include "Bitmap.hh"
 
 #include "Shader.hh"
@@ -778,6 +778,7 @@ bool CubeEffect::Frame(float time)
   //FIX RenderOpenGl(cm, ce);
   return false;
 }
+#undef LoadImage
 MoleculeEffect::MoleculeEffect(Render *r)
   : FrameAnimPlugins(r)
 {
@@ -3654,6 +3655,7 @@ void TextureGeneration(FaceCollection &coll, FrameAnimPlugins &plugins)
     }
 }
 
+#if 0
 struct VBOObjects::Priv
 {
   GLuint vboId;
@@ -4155,6 +4157,7 @@ void VBOObjects::DisableTexture()
 {
   glDisable(GL_TEXTURE_2D);
 }
+#endif
 
 void FaceCollectionBuffer::CalculateSizes()
 {

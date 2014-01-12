@@ -4099,7 +4099,7 @@ public:
     float a1 = pow(d1,n2);
     float a2 = pow(d2,n3);
     float r2 = a1 + a2;
-    float r = pow(r2, -1.0/n1);
+    float r = pow(double(r2), double(-1.0/n1));
     //std::cout << d1 << " " << d2 << " " << a1 << " " << a2 << " " << r2 << " " << r << std::endl;
     return r;
   }

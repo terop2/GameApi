@@ -326,6 +326,16 @@ public:
     return res;
   }
   unsigned int Pixel() { return (alpha<<24) + (b << 16) + (g << 8) + r; }
+  friend Color operator*(Color c, float val)
+  {
+    c*=val;
+    return c;
+  }
+  friend Color operator*(float val, Color c)
+  {
+    c*=val;
+    return c;
+  }
   static unsigned short PixelConvert(unsigned int pixel)
   {
     //unsigned int r = pixel &0xff;

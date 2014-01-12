@@ -34,6 +34,7 @@
 #include "Web.hh"
 #include <iostream>
 
+#undef LoadImage
 
 GameApi::BM add_color_bitmap2(GameApi::Env &e, Bitmap<Color> *bm);
 
@@ -675,7 +676,7 @@ struct EnvImpl
   std::vector<std::tr1::shared_ptr<void> > deletes;
   std::vector<FunctionImpl> func;
   std::vector<SurfaceImpl> surfaces;
-  std::vector<VBOObjects*> vbos;
+  //std::vector<VBOObjects*> vbos;
   std::vector<IDImpl> ids;
   std::vector<NDim<float,Point>*> dims;
   std::vector<StateInfo2> states;
@@ -707,6 +708,7 @@ struct EnvImpl
   std::vector<ColorVolumeObject*> colorvolume;
   std::map<int, ShaderPriv2*> shader_privs;
   std::vector<DistanceRenderable*> distvolume;
+  std::vector<VectorVolumeObject*> vectorvolume;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -1230,6 +1232,16 @@ GameApi::COV add_color_volume(GameApi::Env &e, ColorVolumeObject *o)
   env->colorvolume.push_back(o);
   GameApi::COV pt;
   pt.id = env->colorvolume.size()-1;
+  return pt;
+}
+
+
+GameApi::VO add_vector_volume(GameApi::Env &e, VectorVolumeObject *o)
+{
+  EnvImpl *env = EnvImpl::Environment(&e);
+  env->vectorvolume.push_back(o);
+  GameApi::VO pt;
+  pt.id = env->vectorvolume.size()-1;
   return pt;
 }
 
@@ -1920,6 +1932,14 @@ ColorVolumeObject *find_color_volume(GameApi::Env &e, GameApi::COV o)
   return 0;
 }
 
+VectorVolumeObject *find_vector_volume(GameApi::Env &e, GameApi::VO o)
+{
+  EnvImpl *ee = EnvImpl::Environment(&e);
+  if (o.id >=0 && o.id < (int)ee->vectorvolume.size())
+    return ee->vectorvolume[o.id];
+  return 0;
+}
+
 
 Color *find_color(GameApi::Env &e, GameApi::CO p)
 {
@@ -2452,7 +2472,7 @@ void GameApi::BitmapApi::savebitmap(BM bm, std::string filename)
   Bitmap<Color> *bm2 = find_color_bitmap(handle);
   PpmFile file(filename, *bm2);
   std::string pngcontents = file.Contents();
-  std::ofstream filehandle(filename, std::ios_base::out);
+  std::ofstream filehandle(filename.c_str(), std::ios_base::out);
   filehandle << pngcontents;
   filehandle.close();
 }
@@ -4625,6 +4645,7 @@ GameApi::VBOApi::~VBOApi()
 
 GameApi::Vb GameApi::VBOApi::alloc(int obj_count)
 {
+#if 0
   EnvImpl *env = EnvImpl::Environment(&e);
   VBOObjects *objs = new VBOObjects;
   objs->SetObjectCount(obj_count);
@@ -4632,10 +4653,12 @@ GameApi::Vb GameApi::VBOApi::alloc(int obj_count)
   Vb v;
   v.id = env->vbos.size()-1;
   return v;
+#endif
 }
 
 void GameApi::VBOApi::sprite(Vb v, int obj_num, BM bm, float x, float y)
 {
+#if 0
   EnvImpl *env = EnvImpl::Environment(&e);
   VBOObjects *objs = env->vbos[v.id];
 
@@ -4651,6 +4674,7 @@ void GameApi::VBOApi::sprite(Vb v, int obj_num, BM bm, float x, float y)
   MeshTexCoordsToTriangles tricoords(texcoords, true);
   objs->MeshToOrig(obj_num, trimesh);
   objs->MeshTexCoordsToOrig(obj_num, trimesh, tricoords);
+#endif
 }
 void GameApi::VBOApi::polygon(Vb v, int obj_num, P p, float x, float y, float z)
 {
@@ -4663,17 +4687,19 @@ void GameApi::VBOApi::prepare(Vb v)
 {
   //VBOImpl *impl = (VBOImpl*)priv;
   //CurrentState *state = &impl->objects[obj_num];
-
+#if 0
   EnvImpl *env = EnvImpl::Environment(&e);
   VBOObjects *objs = env->vbos[v.id];
   objs->OrigToAdjusted(true, true, true);
   objs->AllocWholeBuffer(true, true, true);
   objs->CopyPartsToWholeBuffer(0, -1, -1, 0);
   objs->BlitWholeBufferToGPU();
+#endif
 }
 
 void GameApi::VBOApi::swapframe(Vb v, int obj_num, int type, int frame)
 {
+#if 0
   VBOImpl *impl = (VBOImpl*)priv;
   CurrentState *state = &impl->objects[obj_num];
   if (type == 0)
@@ -4687,6 +4713,7 @@ void GameApi::VBOApi::swapframe(Vb v, int obj_num, int type, int frame)
   EnvImpl *env = EnvImpl::Environment(&e);
   VBOObjects *objs = env->vbos[v.id];
   objs->CopyPartToGPU(obj_num, state->vertex, state->normal, state->color, state->texcoord);
+#endif
 }
 
 void GameApi::VBOApi::move(Vb v, int obj_num, float x, float y, float z)
@@ -4695,9 +4722,11 @@ void GameApi::VBOApi::move(Vb v, int obj_num, float x, float y, float z)
 
 void GameApi::VBOApi::render(Vb v)
 {
+#if 0
   EnvImpl *env = EnvImpl::Environment(&e);
   VBOObjects *objs = env->vbos[v.id];
   objs->BlitGPUToScreen();
+#endif
 }
 
 struct EventPriv
@@ -6713,6 +6742,154 @@ GameApi::COV GameApi::ColorVolumeApi::from_volume(O obj, unsigned int col_true, 
   return add_color_volume(e, new ColorVolumeFromVolumeObject(obj2, col_true, col_false));
 }
 
+class NormalVectorVolume : public VectorVolumeObject
+{
+public:
+  NormalVectorVolume(DistanceRenderable *r) : r(r) { }
+  Vector VectorValue(Point p) const
+  {
+    float b = r->distance(p);
+    float ax = r->distance(p+Vector(0.01,0.0,0.0)) -b;
+    float ay = r->distance(p+Vector(0.0,0.01,0.0)) -b;
+    float az = r->distance(p+Vector(0.0,0.0,0.01)) -b;
+    return Vector(ax,ay,az);
+  }
+  
+private:
+  DistanceRenderable *r;
+};
+
+class DirectColor : public ColorVolumeObject
+{
+public:
+  DirectColor(VectorVolumeObject *normal) : normal(normal) { }
+  unsigned int ColorValue(Point p) const
+  {
+    Vector v = normal->VectorValue(p);
+    v/= v.Dist();
+    float r = v.dx;
+    float g = v.dy;
+    float b = v.dz;
+    unsigned int rr = int(r *128.0)+0x80;
+    unsigned int gg = int(g *128.0)+0x80;
+    unsigned int bb = int(b *128.0)+0x80;
+    return (rr<<16) + (gg<<8) + bb + 0xff000000;
+  }
+
+private:
+  VectorVolumeObject *normal;
+};
+
+class Phong : public ColorVolumeObject
+{
+public:
+  Phong(VectorVolumeObject *normal, Point lightpos, Color i_s, Color i_d, Color i_a, float k_s, float k_d, float k_a, float alfa) : normal(normal), L_p(lightpos), i_s(i_s), i_d(i_d), i_a(i_a), k_s(k_s), k_d(k_d), k_a(k_a), alfa(alfa) { }
+  unsigned int ColorValue(Point p) const
+  {
+    Vector v = normal->VectorValue(p);
+    v/= v.Dist();
+    Vector L_m = L_p - p;
+    L_m /= L_m.Dist();
+    Vector r_m = 2.0*(Vector::DotProduct(L_m, v))*v-L_m;
+
+    Color Amb = k_a*i_a;
+    float DiffA = k_d*Vector::DotProduct(L_m,v);
+    if (DiffA < 0.0) DiffA=0.0;
+    if (DiffA > 1.0) DiffA=1.0;
+    Color Diff = DiffA*i_d;
+    float SpecA = k_s*std::pow((Vector::DotProduct(r_m,Vector(0.0,0.0,-1.0))),alfa); 
+    if (SpecA < 0.0) SpecA=0.0;
+    if (SpecA > 1.0) SpecA=1.0;
+    Color Spec = SpecA*i_s;
+
+    return (Amb+Diff+Spec).Pixel();
+  }
+
+private:
+  VectorVolumeObject *normal;
+  Point L_p; // light position
+  Color i_s;
+  Color i_d;
+  Color i_a;
+  float k_s;
+  float k_d;
+  float k_a;
+  float alfa;
+};
+
+class Shadow : public FloatVolumeObject
+{
+public:
+  Shadow(DistanceRenderable* rend, Vector rd, float mint, float maxt, float k) : rend(rend), rd(rd), mint(mint), maxt(maxt), k(k) { }
+  float FloatValue(Point ro) const
+  {
+    float res = 1.0;
+    for(float t = mint; t<maxt; )
+      {
+	float h = rend->distance(ro+rd*t);
+	if (h < 0.001)
+	  return 0.0;
+	res = std::min(res, k*h/t);
+	t += h;
+      }
+    return res;
+  }
+private:
+  DistanceRenderable *rend;
+  Vector rd;
+  float mint, maxt;
+  float k;
+};
+
+GameApi::FO GameApi::FloatVolumeApi::shadow(FD fd, V light_dir, float mint, float maxt, float k)
+{
+  DistanceRenderable *dist = find_distance(e, fd);
+  Vector *vv = find_vector(e, light_dir);
+  return add_float_volume(e, new Shadow(dist, *vv, mint, maxt, k));
+}
+
+class MixColorVolume : public ColorVolumeObject
+{
+public:
+  MixColorVolume(ColorVolumeObject *o1, ColorVolumeObject *o2, float val) : o1(o1), o2(o2),val(val) { }
+  
+  unsigned int ColorValue(Point p) const
+  {
+    unsigned int c1 = o1->ColorValue(p);
+    unsigned int c2 = o2->ColorValue(p);
+    return Color::Interpolate(c1,c2,val);
+  }
+private:
+  ColorVolumeObject *o1, *o2;
+  float val;
+};
+GameApi::COV GameApi::ColorVolumeApi::mix(COV c1, COV c2, float val)
+{
+  ColorVolumeObject *cc1 = find_color_volume(e, c1);
+  ColorVolumeObject *cc2 = find_color_volume(e, c2);
+  return add_color_volume(e, new MixColorVolume(cc1,cc2,val));
+}
+
+GameApi::COV GameApi::ColorVolumeApi::phong(VO fd, PT light_pos, CO i_s, CO i_d, CO i_a, float k_s, float k_d, float k_a, float alfa)
+{
+  Point *light_pos2 = find_point(e, light_pos);
+  Color *i_s2 = find_color(e, i_s);
+  Color *i_d2 = find_color(e, i_d);
+  Color *i_a2 = find_color(e, i_a);
+  VectorVolumeObject *dist = find_vector_volume(e, fd);
+  return add_color_volume(e, new Phong(dist, *light_pos2, *i_s2, *i_d2, *i_a2, k_s,k_d,k_a,alfa));
+}
+GameApi::COV GameApi::ColorVolumeApi::directcolor(VO fd)
+{
+  VectorVolumeObject *dist = find_vector_volume(e, fd);
+  return add_color_volume(e, new DirectColor(dist));
+}
+GameApi::VO GameApi::VectorVolumeApi::normal(FD fd)
+{
+  DistanceRenderable *dist = find_distance(e, fd);
+  return add_vector_volume(e, new NormalVectorVolume(dist));
+}
+
 class FloatVolumeFromVolume : public FloatVolumeObject
 {
 public:
@@ -6846,7 +7023,7 @@ struct TorusData {
 float torus_distance(GameApi::EveryApi &ev, float x, float y, float z, void *data)
 {
   TorusData *dt = (TorusData*)data;
-  Point p = { x,y,z };
+  Point p( x,y,z );
   Plane pl(dt->center, dt->u_x, dt->u_y);
   float xx = pl.CoordsX(p);
   float yy = pl.CoordsY(p);
@@ -7339,7 +7516,7 @@ public:
     p-=center;
     float dist = sqrt(p.x*p.x+p.y*p.y+p.z*p.z);
     dist -= radius;
-    return fabs(dist);
+    return dist;
   }
   std::string shader() const { return ""; }
   int varnum() const { return 0; }
@@ -7395,11 +7572,35 @@ private:
   DistanceRenderable &r2;
 };
 
+class AndNotDistance : public DistanceRenderable
+{
+public:
+  AndNotDistance(DistanceRenderable &r1, DistanceRenderable &r2) : r1(r1), r2(r2) { }
+  float distance(Point p) const 
+  { 
+    float d1 = r1.distance(p);
+    float d2 = r2.distance(p);
+    return std::max(d1,-d2);
+  }
+  std::string shader() const { return ""; }
+  int varnum() const { return 0; }
+private:
+  DistanceRenderable &r1;
+  DistanceRenderable &r2;
+};
+
 GameApi::FD GameApi::DistanceFloatVolumeApi::min(FD fd1, FD fd2)
 {
   DistanceRenderable *ff1 = find_distance(e, fd1);
   DistanceRenderable *ff2 = find_distance(e, fd2);
   return add_distance(e, new MinDistance2(*ff1, *ff2));
+}
+
+GameApi::FD GameApi::DistanceFloatVolumeApi::and_not(FD fd1, FD fd2)
+{
+  DistanceRenderable *ff1 = find_distance(e, fd1);
+  DistanceRenderable *ff2 = find_distance(e, fd2);
+  return add_distance(e, new AndNotDistance(*ff1, *ff2));
 }
 
 class RenderDistance : public Bitmap<Color>

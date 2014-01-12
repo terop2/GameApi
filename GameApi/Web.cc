@@ -39,12 +39,15 @@ void SaveFrameAnimToFile(FrameAnim &f, SDL_Surface *screen, std::string filename
 
 void CreateFiles(Directory &d)
 { 
+#if 0
   mkdir((std::string("./")+d.DirectoryName()).c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
   CreateFiles(d,"./"+d.DirectoryName()+"/");
+#endif
 }
 
 void CreateFiles(Directory &d, std::string path)
 {
+#if 0
   int dirs = d.NumDirs();
   for(int i=0;i<dirs;i++)
     {
@@ -61,6 +64,7 @@ void CreateFiles(Directory &d, std::string path)
       f << contents;
       f.close();
     }
+#endif
 }
 
 
