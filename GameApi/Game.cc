@@ -4,7 +4,7 @@
 #include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
 
-
+#undef LoadImage
 void GameEffect::Init()
 {
   FrameAnimPlugins::Init();

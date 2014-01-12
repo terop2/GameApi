@@ -24,7 +24,7 @@
 #define NO_SDL_GLEXT
 #include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
-#include <GL/glut.h>
+//#include <GL/glut.h>
 
 bool RectFrameAnim::Frame(float time)
   {

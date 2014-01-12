@@ -7551,6 +7551,7 @@ private:
   mutable std::map<int, int> facetexture;
 };
 
+#if 0
 class PreCalcThread : public FaceCollection, public Effect
 {
 public:
@@ -7663,7 +7664,7 @@ private:
   float time;
 };
 
-
+#endif
 
 class RemovePolys : public Function<int, bool>
 {
@@ -10283,7 +10284,7 @@ private:
 //
 // VBO usage, try 2
 //
-
+#if 0
 struct VertexElem
 {
   float x,y,z;
@@ -10359,7 +10360,6 @@ struct DataTypes
     return std::make_pair((char*)0,0);
   }
 };
-
 struct VBOObjects
 {
   VBOObjects();
@@ -10405,6 +10405,7 @@ private:
 
   int *texture;
 };
+#endif
 
 
 template<class T>

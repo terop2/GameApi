@@ -41,15 +41,33 @@ void GameTestA(EveryApi &e)
   e.mainloop_api.init(sh );
   
   PT center = e.point_api.point(0.0,0.0,0.0);
+  PT center2 = e.point_api.point(100.0,-30.0,-50.0);
+  PT center3 = e.point_api.point(100.0,100.0,0.0);
+  PT center4 = e.point_api.point(200.0,0.0,70.0);
   PT pos = e.point_api.point(-100.0,-100.0, -300.0);
   V u_x = e.vector_api.vector(640.0, 0.0, 0.0);
   V u_y = e.vector_api.vector(0.0, 480.0, 0.0);
   V u_z = e.vector_api.vector(0.0,0.0, 200.0);
+  V u_sh = e.vector_api.vector(-10.0,0.0,-10.0);
   FD fd = e.dist_api.sphere(center, 100.0);
-  FD fd2 = e.dist_api.line(pos,center, 30.0);
-  FD fd12 = e.dist_api.min(fd, fd2);
-  COV cov = e.color_volume_api.function(f, 0);
-  BM bm = e.dist_api.render(fd12, cov, pos, u_x, u_y, u_z, 640, 480);
+  FD fda = e.dist_api.sphere(center2, 100.0);
+  FD fdb = e.dist_api.sphere(center3, 100.0);
+  FD fdc = e.dist_api.sphere(center4, 100.0);
+  //FD fd2 = e.dist_api.line(pos,center, 30.0);
+  FD fd12a = e.dist_api.min(fd, fdb);
+  FD fd12 = e.dist_api.and_not(fd12a, fda);
+  FD fd123 = e.dist_api.min(fd12, fdc);
+  //COV cov = e.color_volume_api.function(f, 0);
+  FO fo = e.float_volume_api.shadow(fd123, u_sh, 0.02, 200.0, 128);
+  COV cov = e.color_volume_api.from_float_volume(fo, 0xff333333, 0xffffffff);
+  VO vo = e.vector_volume_api.normal(fd123);
+  PT light = e.point_api.point(-10.0,0.0,-200.0);
+  CO i_s = e.color_api.u_color(0xffffffff);
+  CO i_d = e.color_api.u_color(0xff6688ff);
+  CO i_a = e.color_api.u_color(0xff000088);
+  COV cov2 = e.color_volume_api.phong(vo, light, i_s, i_d, i_a, 0.4, 0.4, 0.2, 15.0);
+  COV cov3 = e.color_volume_api.mix(cov, cov2, 0.95);
+  BM bm = e.dist_api.render(fd123, cov3, pos, u_x, u_y, u_z, 640, 480);
 
   e.sprite_api.preparesprite(bm);
   while(1) 

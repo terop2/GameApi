@@ -57,9 +57,9 @@ void GameTest6(EveryApi &e)
   
   std::string filename = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
   Ft font = e.font_api.newfont(filename.c_str(), 500,500);
-  BM fontbm = e.font_api.glyph(font, u'R');
+  BM fontbm = e.font_api.glyph(font, 'R');
   BM logobm = e.bitmap_api.loadbitmap("../pics/Logo uusi.jpg");
-  LI fontli = e.font_api.glyph_outline(font, u'@', 300.0,-300.0);
+  LI fontli = e.font_api.glyph_outline(font, '@', 300.0,-300.0);
   BM fontbm2 = e.bitmap_api.growbitmap(fontbm, 1, 1, 1, 1);
   FB fb = e.float_bitmap_api.from_blue(fontbm2);
   BB fb2 = e.bool_bitmap_api.from_float_bitmap(fb, 0.0, 0.9);

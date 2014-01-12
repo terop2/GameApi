@@ -36,22 +36,42 @@ Subdirs =
 #module1
 
 OFiles = $(patsubst %.cc,objs/%.o,$(CFiles) $(CFiles2))
+O2Files = $(patsubst %.cc,objs/%.obj,$(CFiles) $(CFiles2))
 DFiles = $(patsubst %.cc,objs/%.d,$(CFiles) $(CFiles2)) 
+D2Files = $(patsubst %.cc,objs/%.d2,$(CFiles) $(CFiles2)) 
 HFiles = $(patsubst %.cc,%.hh,$(CFiles))
 GCHFiles = $(patsubst %.cc,objs/%.hh.gch,$(CFiles))
+GCH2Files = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles))
 Subdirsx = $(patsubst %,%build,$(Subdirs))
 
 OFiles_examples = $(patsubst %.cc,objs/%.o,$(CFiles_examples) $(CFiles2_examples))
+O2Files_examples = $(patsubst %.cc,objs/%.obj,$(CFiles_examples) $(CFiles2_examples))
 DFiles_examples = $(patsubst %.cc,objs/%.d,$(CFiles_examples) $(CFiles2_examples)) 
+D2Files_examples = $(patsubst %.cc,objs/%.d2,$(CFiles_examples) $(CFiles2_examples)) 
 HFiles_examples = $(patsubst %.cc,%.hh,$(CFiles_examples))
 GCHFiles_examples = $(patsubst %.cc,objs/%.hh.gch,$(CFiles_examples))
+GCH2Files_examples = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles_examples))
+
+LIBWIN = /home/terop/cvs/sdl2_win/SDL2-2.0.1/i686-w64-mingw32/bin
+LIB2WIN = /home/terop/cvs/sdl2_win/
+LIB3WIN = /home/terop/cvs/sdl2_win/glew-1.10.0/bin/Release/Win32
+LIB4WIN = /home/terop/cvs/sdl2_win/lib
+LIB5WIN = /home/terop/cvs/sdl2_win/SDL2_image-2.0.0/i686-w64-mingw32/lib
+LIB6WIN = /home/terop/cvs/sdl2_win/glew-1.10.0/lib/
+INCWIN = /home/terop/cvs/sdl2_win/SDL2-2.0.1/i686-w64-mingw32/include
+INC2WIN = /home/terop/cvs/sdl2_win/glew-1.10.0/include
+INC3WIN = /home/terop/cvs/sdl2_win/SDL2_image-2.0.0/i686-w64-mingw32/include
+INC4WIN = /home/terop/cvs/sdl2_win/SDL2-2.0.1/i686-w64-mingw32/include/SDL2
+INC5WIN = /home/terop/cvs/sdl2_win/include
 
 CCFLAGS = -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2
+CC2FLAGS = -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC
 #`pkg-config gtkmm-2.4 --cflags`
 
-default: libGameApi.so main
 
-all: libGameApi.so install main
+default: libGameApi.so main libGameApi.dll main.exe
+
+all: libGameApi.so libGameApi.dll install main
 
 examples: main
 
@@ -59,10 +79,19 @@ main: $(GCHFiles_examples) $(OFiles_examples) Makefile GameApi.hh libGameApi.so
 	@echo g++ main
 	@g++ -g $(OFiles_examples) -std=c++0x -o main -L. -lGameApi -lGL -lm -lstdc++
 
+main.exe: $(GCHFiles_examples) $(O2Files_examples) Makefile GameApi.hh libGameApi.dll
+	@echo mingw main.exe
+	@$(CCWIN) -g $(O2Files_examples) -o main.exe -L. -lGameApi -lopengl32 -lm -lstdc++
+
+
 libGameApi.so: $(GCHFiles) $(OFiles) Makefile
 	@echo g++ libGameApi.so
 	@g++ -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lGLEW -lfreetype -lstdc++ 
 #`pkg-config gtkmm-2.4 --libs` 
+
+libGameApi.dll: $(GCH2Files) $(O2Files) Makefile glew.o
+	@echo mingw libGameApi.dll
+	@i586-mingw32msvc-g++ -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 
 
 subdirs: $(Subdirs)
 
@@ -77,30 +106,51 @@ TAGS: $(CFiles)
 	etags -o TAGS -l c++ $(CFiles)
 
 CC = g++
+CCWIN = i586-mingw32msvc-g++
 
 $(DFiles): objs/%.d: %.cc
 	@gcc -M $(CCFLAGS) $< \
 	|sed 's,\($*\)\.o[ :]*,objs/\1.o $@ : ,g' > $@
 
+$(D2Files): objs/%.d2: %.cc
+	@$(CCWIN) -M $(CC2FLAGS) $< \
+	|sed 's,\($*\)\.obj[ :]*,objs/\1.obj $@ : ,g' > $@
+
 $(OFiles): objs/%.o : %.cc
 	@echo g++ $< -o $@
 	@$(CC) -std=c++0x -g -c $(CCFLAGS) $< -o $@
 
-$(OFiles_examples): objs/%.o : %.cc GameApi.hh Makefile
+$(O2Files): objs/%.obj : %.cc
+	@echo mingw $< -o $@
+	@$(CCWIN) -g -c $(CC2FLAGS) $< -o $@
+
+glew:
+	$(CCWIN) -g -c $(CC2FLAGS) /home/terop/cvs/sdl2_win/glew-1.10.0/src/glew.c -o glew.o
+
+
+$(OFiles_examples): objs/%.o : %.cc GameApi.hh
 	@echo g++ $< -o $@
 	@$(CC) -std=c++0x -g -c -I. $(CCFLAGS) $< -o $@ 
+
+$(O2Files_examples): objs/%.obj : %.cc GameApi.hh
+	@echo mingw $< -o $@
+	@$(CCWIN) -g -c -I. $(CC2FLAGS) $< -o $@ 
 
 
 $(GCHFiles): objs/%.hh.gch : %.hh
 	@echo g++ $< -o $@
 	@$(CC) $(CCFLAGS) -std=c++0x -g -x c++-header $< -o $@ 
 
-$(GCHFiles_examples): objs/%.hh.gch : %.hh GameApi.hh Makefile
+$(GCH2Files): objs/%.hh.gch2 : %.hh
+	@echo mingw $< -o $@
+	@$(CCWIN) $(CC2FLAGS) -g -x c++-header $< -o $@ 
+
+$(GCHFiles_examples): objs/%.hh.gch : %.hh GameApi.hh
 	@echo g++ $< -o $@
 	@$(CC) $(CCFLAGS) -std=c++0x -g -I. -x c++-header $< -o $@ 
 
 clean:
-	@rm -rf objs/*.o objs/*.d objs/*.gch
+	@rm -rf objs/*.o objs/*.obj objs/*.d objs/*.d2 objs/*.gch objs/*.gch2
 	@rm main
 	@echo Clean.
 
@@ -145,4 +195,6 @@ make_push:
 	git push ~/cvs/demo-git-push/demo3d.git master
 
 -include $(DFiles)
-
+-include $(D2Files)
+-include $(DFiles_examples)
+-include $(D2Files_examples)

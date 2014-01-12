@@ -66,8 +66,9 @@ LinePlaneIntersection LinePlaneIntersectionFunc(Point line_p1, Point line_p2,
 
 bool InsideLine(LinePlaneIntersection &c)
 {
-  if (isnan(c.tuv.dx)) return false;
-  return c.tuv.dx>=0.0 && c.tuv.dx<=1.0;
+  //if (isnan(c.tuv.dx)) return false;
+  //return c.tuv.dx>=0.0 && c.tuv.dx<=1.0;
+  return false;
 }
 
 void SplitPolygon(std::vector<Point> &result_points, std::vector<Vector> &result_normals, FaceCollection &c1, int face1,

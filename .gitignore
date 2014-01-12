@@ -1,7 +1,7 @@
 GameApi/objs/*.d
 GameApi/objs/*.d2
 GameApi/objs/*.hh.gch
-GameAPi/objs/*.hh.gch2
+GameApi/objs/*.hh.gch2
 GameApi/objs/*.o
 GameApi/objs/*.obj
 GameApi/libGameApi.so
@@ -16,3 +16,6 @@ GameApi/profile.txt
 GameApi/#*#
 GameApi/.#Effect.hh
 GameApi/.#GameApiTest4.cc
+GameApi/foo.err
+GameApi/glew.o
+GameApi/libGameApi.dll

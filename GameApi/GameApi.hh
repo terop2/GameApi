@@ -78,6 +78,7 @@ namespace GameApi
   struct LI { int id; };
   struct LLA { int id; };
   struct FD { int id; };
+  struct VO { int id; };
   //template<class T>
   //struct E { int id; };
 
@@ -528,6 +529,7 @@ private:
   Env &e;
 };
 
+
 class FloatVolumeApi
 {
 public:
@@ -543,6 +545,9 @@ public:
   FO move(FO f1, float dx, float dy, float dz);
   FO minimum(FO f1, FO f2);
   FO maximum(FO f1, FO f2);
+
+  FO shadow(FD fd, V light_dir, float mint, float maxt, float k);
+
   //FO plus(FO f1, FO f2);
   BM raytrace(FO object, int sx, int sy, 
 	      PT ray_0, PT ray_x, PT ray_y, PT ray_z, float surface_value);
@@ -565,9 +570,21 @@ public:
 
   COV mix(COV p1, COV p2, float value); // value=[0..1]
   COV or_cov(COV p1, COV p2);
+  COV phong(VO normal, PT light_pos, CO i_s, CO i_d, CO i_a, float k_s, float k_d, float k_a, float alfa);
+  COV directcolor(VO normal);
   P texture(P obj, COV colors);
   BM texture_bm(P obj, COV colors, int face, int sx, int sy);
   // TODO
+private:
+  Env &e;
+};
+
+class VectorVolumeApi
+{
+public:
+  VectorVolumeApi(Env &e) : e(e) { }
+  VO function(V (*fptr)(EveryApi &ev, float x, float y, float z, void *data), void *data);
+  VO normal(FD fd);
 private:
   Env &e;
 };
@@ -584,8 +601,9 @@ public:
   FD line(PT start, PT end, float dist);
 
   FD min(FD a1, FD a2);
+  FD and_not(FD a1, FD a2);
   BM render(FD obj, COV color, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
-  std::string shader_func(std::string name, FD obj);
+  std::string shader_func(std::string name, FD obj, COV color);
 private:
   Env &e;
 };
@@ -1262,7 +1280,7 @@ struct EveryApi
 {
   EveryApi(Env &e) 
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -1284,6 +1302,7 @@ struct EveryApi
   FloatVolumeApi float_volume_api;
   ColorVolumeApi color_volume_api;
   DistanceFloatVolumeApi dist_api;
+  VectorVolumeApi vector_volume_api;
   ShaderApi shader_api;
   StateChangeApi state_change_api;
   TextureApi texture_api;

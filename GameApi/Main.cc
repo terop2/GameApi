@@ -21,6 +21,7 @@
 #define NO_SDL_GLEXT
 //#define GL3_PROTOTYPES 1
 //#include <GL3/gl3.h>
+//#define GLEW_STATIC
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <SDL2/SDL.h>
@@ -36,7 +37,7 @@
 #include "Effect.hh"
 #include "Midplay.hh"
 #include <fstream>
-#include <GL/glut.h>
+//#include <GL/glut.h>
 //extern "C" void __gxx_personality_v0() { }
 #include "Language.hh"
 #include "VolumeObjects.hh"
@@ -57,6 +58,9 @@
 #include "GameApi.hh"
 #include "KeyFrameEditor.hh"
 #include "Parser.hh"
+
+#pragma comment (lib, "glew32s.lib") 
+
 BufferRef CopyFromSDLSurface(SDL_Surface *surf);
 
 SDL_Window *sdl_window;
@@ -1089,8 +1093,8 @@ void Execute2(FrameAnim &f, EventSurface &surf)
   SDL_Event event;
   SDL_Event prev;
 
-  int x=0;
-  int tick;
+  //int x=0;
+  //int tick;
  
   Timer fps;
   Timer update;
@@ -1106,11 +1110,11 @@ void Execute2(FrameAnim &f, EventSurface &surf)
   SDL_ShowCursor(true);
   do
   {
-    tick = SDL_GetTicks();
+    //tick = SDL_GetTicks();
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-  x=int(fps.get_ticks()/30.0);
+    //x=int(fps.get_ticks()/30.0);
   //SawWaveform w;
   //FitWaveform fit(w, 150.0, 0.0, 150.0);
   //RepeatWaveform rep(fit, 50);
@@ -1138,11 +1142,11 @@ void Execute2(FrameAnim &f, EventSurface &surf)
   
   }
     SDL_PollEvent(&event);
-    if (event.type==prev.type && event.key.keysym.sym == prev.key.keysym.sym &&
-	event.button.button == prev.button.button)
-      {
-	continue;
-      }
+    //if (event.type==prev.type && event.key.keysym.sym == prev.key.keysym.sym &&
+    //event.button.button == prev.button.button)
+    //{
+    //continue;
+	//}
     prev = event;
 
     if (event.type==SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT && state == 0)
@@ -1205,7 +1209,7 @@ void Execute(FrameAnim &f, SDL_Surface *screen)
 {
   SDL_Event event;
   int x=0;
-  int tick;
+  //int tick;
  
   Timer fps;
   Timer update;
@@ -1219,7 +1223,7 @@ void Execute(FrameAnim &f, SDL_Surface *screen)
   bool exita = false;
   do
   {
-    tick = SDL_GetTicks();
+    //tick = SDL_GetTicks();
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -1318,6 +1322,7 @@ void PreCalcExecute(Render &rend, FrameAnim &f, float duration, int numframes)
     }
 }
 
+#undef LoadImage
 BufferRef LoadImage(std::string filename, bool &success)
 {
   SDL_Surface *surf = IMG_Load(filename.c_str());

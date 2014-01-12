@@ -55,7 +55,7 @@ void RenderVoxel(VolumeObject &orv, int size, float wholesize, HandleValue<std::
   MarchingCubesVoxel gen(samp, cubehv);
   gen.Gen();
 }
-
+#undef LoadImage
 VoxelEffect::VoxelEffect(Render *r)
   : FrameAnimPlugins(r)
 {
