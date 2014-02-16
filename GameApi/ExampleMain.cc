@@ -99,5 +99,4 @@ int main(int argc, char *argv[])
     }
 
   std::cout << "./main [-h] [-edit filename] [-test3] [-test4] [-world]" << std::endl;
-  exit(0);
 }
