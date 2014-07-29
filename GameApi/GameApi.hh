@@ -4,6 +4,7 @@
 
 #include <string>
 
+
 namespace GameApi
 {
   struct DR { int id; };

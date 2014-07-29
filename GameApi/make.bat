@@ -1,1 +1,1 @@
-c:\mingw\bin\mingw32-make.exe -f Makefile.win32
+c:\mingw\bin\mingw32-make.exe -f Makefile.win32 %1
