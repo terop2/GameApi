@@ -291,6 +291,7 @@ public:
   }
   Plane(const Plane &p) : u_p(p.u_p), u_x(p.u_x), u_y(p.u_y) { }
   Plane() : u_p(0.0,0.0,0.0), u_x(0.0,0.0,0.0), u_y(0.0,0.0,0.0) { }
+  void Normalize() { u_x/=u_x.Dist(); u_y/=u_y.Dist(); }
 
   float Dist(Point p) const;
   float CoordsX(Point p) const;
