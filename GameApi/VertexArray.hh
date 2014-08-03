@@ -146,6 +146,7 @@ public:
   void copy(std::vector<int> attribs = std::vector<int>(), std::vector<int> attribsi = std::vector<int>())
   {
     int ss = coll.NumFaces();
+    std::cout << "NumFaces: " << ss << std::endl;
     for(int i=0;i<ss;i++)
       {
 	int w = coll.NumPoints(i);
