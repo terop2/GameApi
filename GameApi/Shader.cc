@@ -34,7 +34,7 @@
 
 struct ShaderPriv
 {
-  GLhandleARB handle;
+  GLuint handle;
   std::vector<Program*> programs;
   ShaderSpec *shader;
 };
@@ -44,7 +44,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
 {
   int count = shader.Count();
   bool b = vertex;
-  GLhandleARB handle = glCreateShader(geom?GL_GEOMETRY_SHADER_ARB:(b?GL_VERTEX_SHADER_ARB:GL_FRAGMENT_SHADER_ARB));
+  GLuint handle = glCreateShader(geom?GL_GEOMETRY_SHADER:(b?GL_VERTEX_SHADER:GL_FRAGMENT_SHADER));
   std::vector<std::string> vec;
   const char **strings = new const char *[count];
   int *lengths = new int[count];
@@ -54,23 +54,23 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
      strings[i] = vec[i].c_str();
      lengths[i] = vec[i].size();
     }
-  glShaderSourceARB(handle, count, strings, lengths);
-  glCompileShaderARB(handle);
+  glShaderSource(handle, count, strings, lengths);
+  glCompileShader(handle);
   int i=0;
-  glGetObjectParameterivARB(handle, GL_OBJECT_COMPILE_STATUS_ARB, &i );
+  glGetShaderiv(handle, GL_COMPILE_STATUS, &i );
   if (i == 1) { std::cout << shader.Name() << " OK" << std::endl; 
     int len=0;
   char log[255];
-  glGetInfoLogARB(handle, 255, &len, log);
+  glGetShaderInfoLog(handle, 255, &len, log);
   log[len]=0;
   std::cout << log << std::endl;
 
-}
+  }
   else
     {
       int len=0;
       char buf[255];
-      glGetInfoLogARB(handle, 255, &len, buf);
+      glGetShaderInfoLog(handle, 255, &len, buf);
       std::cout << shader.Name() << " ERROR: " << buf << std::endl;
     }
   delete [] strings;
@@ -85,14 +85,14 @@ Shader::~Shader()
     {
       (*i)->detach(*this);
     }
-  glDeleteObjectARB(priv->handle);
+  glDeleteShader(priv->handle);
   delete priv;
 }
 
 
 struct ProgramPriv
 {
-  GLhandleARB program;
+  GLuint program;
   std::vector<const Shader*> shaders;
 };
 
@@ -169,11 +169,11 @@ void Program::GeomOutputVertices(int i)
 void Program::link()
 {
   glLinkProgram(priv->program);
-  int len=0;
-  char log[255];
-  glGetInfoLogARB(priv->program, 255, &len, log);
-  log[len]=0;
-  std::cout << log << std::endl;
+  //int len=0;
+  //char log[255];
+  //glGetInfoLogARB(priv->program, 255, &len, log);
+  //log[len]=0;
+  //std::cout << log << std::endl;
 }
 void Program::use()
 {

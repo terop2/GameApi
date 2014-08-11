@@ -13,6 +13,7 @@ struct GlyphPriv
 };
 
 FontGlyphBitmap::FontGlyphBitmap(void *priv_, std::string filename, int sx, int sy)
+  : m_sx(0.0), m_sy(0.0)
 {
   priv = new GlyphPriv;
   priv->lib = (FT_Library*)priv_;
