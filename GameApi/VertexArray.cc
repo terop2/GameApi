@@ -242,6 +242,8 @@ void VertexArraySet::push_texcoord(int id, int num, Point2d *points)
 }
 void RenderVertexArray::prepare(int id)
 {
+  glGenVertexArrays(2,vao);
+  glBindVertexArray(vao[0]);
   glGenBuffers(1,&buffers[0]);
   glGenBuffers(1,&buffers[1]);
   glGenBuffers(1,&buffers[2]);
@@ -271,10 +273,9 @@ void RenderVertexArray::prepare(int id)
   glBindBuffer(GL_ARRAY_BUFFER, buffers2[3]);
   glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(float)*2, s.quad_texcoord_polys(id), GL_STATIC_DRAW);
 
-  
-}
-void RenderVertexArray::render(int id)
-{
+
+
+    glBindVertexArray(vao[0]);
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
@@ -289,10 +290,13 @@ void RenderVertexArray::render(int id)
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glBindBuffer(GL_ARRAY_BUFFER, buffers[3]);
     glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glDrawArrays(GL_TRIANGLES, 0, s.tri_count(id));
 
 
-
+    glBindVertexArray(vao[1]);
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
 
     glBindBuffer(GL_ARRAY_BUFFER, buffers2[0]);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -302,13 +306,25 @@ void RenderVertexArray::render(int id)
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glBindBuffer(GL_ARRAY_BUFFER, buffers2[3]);
     glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+  
+}
+void RenderVertexArray::render(int id)
+{
+  glBindVertexArray(vao[0]);
+    glDrawArrays(GL_TRIANGLES, 0, s.tri_count(id));
+
+
+  glBindVertexArray(vao[1]);
+
+
     glDrawArrays(GL_TRIANGLES, 0, s.quad_count(id));
 
 
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(2);
-    glDisableVertexAttribArray(3);
+    //glDisableVertexAttribArray(0);
+    //glDisableVertexAttribArray(1);
+    //glDisableVertexAttribArray(2);
+    //glDisableVertexAttribArray(3);
 
 
     

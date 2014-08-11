@@ -374,7 +374,7 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
   SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4);
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
@@ -387,7 +387,7 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
     std::cout << "Could not create Opengl3.2 context" << std::endl; 
   }
 
-
+  glewExperimental=true;
   GLenum err = glewInit();
   if (GLEW_OK != err)
     {

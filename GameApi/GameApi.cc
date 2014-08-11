@@ -653,6 +653,7 @@ struct PointArray2
   float *array; // 3*numpoints items
   int numpoints;
   GLuint buffer;
+  GLuint vao[1];
 };
 
 
@@ -7500,11 +7501,9 @@ void GameApi::LinesApi::render(LLA l)
 {
   PointArray2 *array = find_lines_array(e,l);
   //glEnableClientState(GL_VERTEX_ARRAY);
-  glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, array->buffer);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glBindVertexArray(array->vao[0]);
   glDrawArrays(GL_LINES, 0, array->numpoints);
-  glDisableVertexAttribArray(0);
+  //glDisableVertexAttribArray(0);
 }
 
 
@@ -7697,9 +7696,16 @@ GameApi::LLA GameApi::LinesApi::prepare(LI l)
   PointArray2 *arr = new PointArray2;
   arr->array = array;
   arr->numpoints = count*2;
+  glGenVertexArrays(1, arr->vao);
+  glBindVertexArray(arr->vao[0]);
   glGenBuffers(1, &arr->buffer);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
+
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
   
   return add_lines_array(e, arr);
 }

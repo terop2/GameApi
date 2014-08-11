@@ -3216,6 +3216,8 @@ void ArrayRender::Prepare()
     }
     }
 
+  glGenVertexArrays(1,vao);
+  glBindVertexArray(vao[0]);
   glGenBuffers(4, &buffer[0]);
   glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
   glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_vertex_array, GL_STATIC_DRAW);
@@ -3225,10 +3227,7 @@ void ArrayRender::Prepare()
   glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(unsigned char)*4, q_color_array, GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, buffer[3]);
   glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*2, q_tex_coord_array, GL_STATIC_DRAW);
-  
-}
-void ArrayRender::Render(int vertexframe, int normalframe, int colorframe, int texcoordframe, int vertex_pos, int vertex_size)
-{
+
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
@@ -3241,11 +3240,17 @@ void ArrayRender::Render(int vertexframe, int normalframe, int colorframe, int t
   glVertexAttribPointer(2,4, GL_UNSIGNED_BYTE, GL_FALSE, 0,0);
   glBindBuffer(GL_ARRAY_BUFFER, buffer[3]);
   glVertexAttribPointer(3,2, GL_FLOAT, GL_FALSE, 0,0);
+
+  
+}
+void ArrayRender::Render(int vertexframe, int normalframe, int colorframe, int texcoordframe, int vertex_pos, int vertex_size)
+{
+  glBindVertexArray(vao[0]);
   glDrawArrays(GL_TRIANGLES, 0, vertex_size*6/4);
-  glDisableVertexAttribArray(0);
-  glDisableVertexAttribArray(1);
-  glDisableVertexAttribArray(2);
-  glDisableVertexAttribArray(3);
+  //glDisableVertexAttribArray(0);
+  //glDisableVertexAttribArray(1);
+  //glDisableVertexAttribArray(2);
+  //glDisableVertexAttribArray(3);
 
 #if 0
   // enabling

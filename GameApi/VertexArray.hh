@@ -124,6 +124,7 @@ public:
 private:
   VertexArraySet &s;
   unsigned int buffers[4];
+  unsigned int vao[2];
   unsigned int buffers2[4];
 };
 
