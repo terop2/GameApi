@@ -9982,6 +9982,7 @@ public:
   float *q_normal_array; // 3 * float per vertex
   unsigned char *q_color_array; // 4 * unsigned char per vertex
   float *q_tex_coord_array; // 2 * float per vertex
+  unsigned int vao[4];
 };
 
 struct PrecalcStore
