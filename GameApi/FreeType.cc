@@ -3,8 +3,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <string>
-#include <freetype/ftoutln.h>
-
+//#include <freetype/ftoutln.h>
+#include FT_OUTLINE_H
 struct GlyphPriv
 {
   FT_Library *lib;
