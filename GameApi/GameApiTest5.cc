@@ -19,7 +19,7 @@ using namespace GameApi;
     int id;
   };
 
-P torus_func(EveryApi &e, float val, void *cb)
+P torus_func(float val, void *cb, EveryApi &e)
 {
   std::cout << "torus_func" << val << std::endl;
   A *cb2 = (A*)cb;
@@ -97,10 +97,10 @@ void GameTest5(EveryApi &e)
   TR t = change_api.init(2);
   //float val = 0.0;
   //float val2 = 150.0;
-  TR t2 = change_api.linear(t, 0, &torus_func, 100.0, 200.0, 100.0, &val);
-  TR t3 = change_api.linear(t2, 0, &torus_func, 200.0, 100.0, 100.0, &val);
-  TR t4 = change_api.linear(t3, 1, &torus_func, 100.0, 200.0, 100.0, &val2);
-  TR t5 = change_api.linear(t4, 1, &torus_func, 200.0, 100.0, 100.0, &val2);
+  TR t2 = change_api.linear(t, 0, std::bind(torus_func, _1, (void*)&val,std::ref(e)), 100.0, 200.0, 100.0);
+  TR t3 = change_api.linear(t2, 0, std::bind(torus_func,_1, (void*)&val,std::ref(e)), 200.0, 100.0, 100.0);
+  TR t4 = change_api.linear(t3, 1, std::bind(torus_func,_1, (void*)&val2,std::ref(e)), 100.0, 200.0, 100.0);
+  TR t5 = change_api.linear(t4, 1, std::bind(torus_func,_1, (void*)&val2,std::ref(e)), 200.0, 100.0, 100.0);
   
   //P p = torus_func(e, 50.0, &val);
   //VA vertex = e.polygon_api.create_vertex_array(p);

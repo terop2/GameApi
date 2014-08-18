@@ -12,7 +12,7 @@
 #include <cmath>
 using namespace GameApi;
 
-PT Map(EveryApi &ev, PT p, int face, int point, void *data)
+PT Map(PT p, int face, int point, void *data)
 {
   return p;
 #if 0
@@ -141,7 +141,7 @@ void GameApiTest()
       //float g_mod = i*2.0*3.14159265/20;
       //FunctionCb<PT,PT> *f = new ChangeFunction(&bm, &func, &sp, &a, &loop, &poly, g_mod);
       EveryApi every(e);
-      P pm = poly.change_positions(split, &Map, &every);
+      P pm = poly.change_positions(split, std::bind(Map, _1,_2,_3, (void*)&every));
       P memo = poly.memoize(pm);
       P pm2 = poly.recalculate_normals(memo);
       vec2.push_back(pm2);

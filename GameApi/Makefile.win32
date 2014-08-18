@@ -65,8 +65,8 @@ INC4WIN = d:\cvs\SDL2-2.0.1/i686-w64-mingw32/include/SDL2
 INC5WIN = d:\cvs\freetype\include
 INC6WIN = d:\cvs\freetype\include\freetype2
 
-CCFLAGS = -Wall -O3 -I./objs -I/usr/include/freetype2
-CC2FLAGS = -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -DGLEW_STATIC
+CCFLAGS = -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2
+CC2FLAGS = -std=c++11 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -DGLEW_STATIC
 #`pkg-config gtkmm-2.4 --cflags`
 
 
@@ -107,7 +107,7 @@ TAGS: $(CFiles)
 	etags -o TAGS -l c++ $(CFiles)
 
 CC = g++
-CCWIN = c:\\mingw\\bin\\mingw32-g++
+CCWIN = mingw32-g++
 
 $(DFiles): objs/%.d: %.cc
 	@gcc -M $(CCFLAGS) $(CC2FLAGS) $< \

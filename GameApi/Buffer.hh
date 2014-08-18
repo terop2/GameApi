@@ -21,7 +21,7 @@
 
 #ifndef BUFFER_HH
 #define BUFFER_HH
-
+#include <algorithm>
 
 struct BufferRef
 {
@@ -75,7 +75,7 @@ struct Buffer
   Buffer(int count) { buffer = new T[count]; }
   Buffer(const Buffer<T> &buf) : buffer(new T[buf.count]), count(buf.count)
   {
-    memcpy(buffer, buf.buffer, count*sizeof(T));  
+    std::copy(buffer, buffer+count, buf.buffer);  
   }
   void set(int index, T val)
   {
@@ -86,7 +86,8 @@ struct Buffer
   { 
     buffer = new T[buf.count];
     count = buf.count;
-    memcpy(buffer, buf.buffer, buf.count*sizeof(T));  
+    std::copy(buffer, buffer+buf.count, buf.buffer);
+    //memcpy(buffer, buf.buffer, buf.count*sizeof(T));  
   }
   ~Buffer() { delete [] buffer; }
   T *Array() const { return buffer; }

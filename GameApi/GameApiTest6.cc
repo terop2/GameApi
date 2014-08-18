@@ -8,7 +8,7 @@
 #include "GameApi.hh"
 #include <cmath>
 
-unsigned int color_value(GameApi::EveryApi &e, int, int, void*)
+unsigned int color_value(int, int, void*)
 {
   return 0xffffffff;
 }
@@ -118,8 +118,9 @@ void GameTest6(EveryApi &e)
   
   VA va = e.polygon_api.create_vertex_array(texpoly);
 
-
-  BM bmX = e.bitmap_api.function(&color_value, 800, 600, 0);
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  BM bmX = e.bitmap_api.function(std::bind(color_value,_1,_2,(void*)0), 800, 600);
   e.sprite_api.preparesprite(bmX);
   float time = 0.0;
   glLineWidth(1);

@@ -343,6 +343,7 @@ public:
   virtual std::string FileName() const { return filename; }
   virtual std::string Contents() const 
   { 
+#if 0
     std::ofstream f(tmpfilename.c_str());
     PpmFile p(tmpfilename, contents);
     f << p.Contents();
@@ -364,6 +365,8 @@ public:
       }
     fclose(ff);
     return s; 
+#endif
+    return "";
   }
 
 private:

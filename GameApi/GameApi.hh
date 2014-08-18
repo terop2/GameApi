@@ -3,7 +3,17 @@
 #define GAMEAPI_HH
 
 #include <string>
+#include <functional>
 
+using std::placeholders::_1;
+using std::placeholders::_2;
+using std::placeholders::_3;
+using std::placeholders::_4;
+using std::placeholders::_5;
+using std::placeholders::_6;
+using std::placeholders::_7;
+using std::placeholders::_8;
+using std::placeholders::_9;
 
 namespace GameApi
 {
@@ -214,10 +224,10 @@ public:
   BitmapApi(Env &e);
   ~BitmapApi();
   BM newbitmap(int sx, int sy);
-  BM function(unsigned int (*fptr)(EveryApi &e,int,int, void*), int sx, int sy, void *data);
-  BM transform(BM orig, unsigned int (*fptr)(EveryApi &e,int,int,unsigned int, void*), void *data=0);
-  BM newintbitmap(char *array, int sx, int sy, int (*fptr)(EveryApi &ev, char));
-  BM newcolorbitmap(char *array, int sz, int sy, unsigned int (*fptr)(EveryApi &ev, char));
+  BM function(std::function<unsigned(int,int)> f, int sx, int sy);
+  BM transform(BM orig, std::function<unsigned int(int,int,unsigned int)> f);
+  BM newintbitmap(char *array, int sx, int sy, std::function<int (char)> f);
+  BM newcolorbitmap(char *array, int sz, int sy, std::function<unsigned int (char)> f);
   BM newtilebitmap(int sx, int sy, int tile_sx, int tile_sy);
   BM loadbitmap(std::string filename);
   BM loadtilebitmap(std::string filename, int tile_sx, int tile_sy);
@@ -470,8 +480,8 @@ class VolumeApi
 public:
   VolumeApi(Env &e);
   ~VolumeApi();
-  O boolfunction(bool (*fptr)(EveryApi &e,float x, float y, float z, void *data), void *data=0);
-  O subvolume(float (*fptr)(EveryApi &e,float x, float y, float z, void *data), void *data, float start_range, float end_range);
+  O boolfunction(std::function<bool (float x, float y, float z)> f);
+  O subvolume(std::function<float (float x, float y, float z)> f, float start_range, float end_range);
   O link_areas(O o, PT p1, PT p2, float d);
   O sphere(PT center, float radius);
   O cube(float start_x, float end_x, 
@@ -508,15 +518,12 @@ public:
 	   float start_z, float end_z);
 
   BM render(O object, int sx, int sy, PT ray_0, PT ray_x, PT ray_y, PT ray_z);
-  typedef P (*fptrtype)(EveryApi &api,
-			float start_x, float end_x, 
+  typedef std::function<P (float start_x, float end_x, 
 			float start_y, float end_y, 
 			float start_z, float end_z, 
-			unsigned int color, 
-			void *data);
+			unsigned int color)> fptrtype;
   P rendercubes(O object,
 		fptrtype fptr,
-		void *data, 
 		int size,
 		float wholesize); // marching cubes algo
   void find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level);
@@ -535,7 +542,7 @@ class FloatVolumeApi
 {
 public:
   FloatVolumeApi(Env &e) : e(e) { }
-  FO function(float (*fptr)(EveryApi &ev, float x, float y, float z, void *data), void *data);
+  FO function(std::function<float (float x, float y, float z)> f);
   FO from_volume(O o, float false_val, float true_val);
   FO from_float_bitmap(FB bm, 
 		       float start_x, float end_x, 
@@ -565,7 +572,7 @@ class ColorVolumeApi
 {
 public:
   ColorVolumeApi(Env &e) : e(e) { }
-  COV function(unsigned int (*fptr)(EveryApi &ev, float x, float y, float z, void *data), void *data);
+  COV function(std::function<unsigned int (float x, float y, float z)> f);
   COV from_float_volume(FO obj, unsigned int col0, unsigned int col1);
   COV from_volume(O obj, unsigned int col_true, unsigned int col_false);
 
@@ -584,7 +591,7 @@ class VectorVolumeApi
 {
 public:
   VectorVolumeApi(Env &e) : e(e) { }
-  VO function(V (*fptr)(EveryApi &ev, float x, float y, float z, void *data), void *data);
+  VO function(std::function<V(float x, float y, float z)> f);
   VO normal(FD fd);
 private:
   Env &e;
@@ -594,7 +601,7 @@ class DistanceFloatVolumeApi
 {
 public:
   DistanceFloatVolumeApi(Env &e) : e(e) { }
-  FD function(float (*fptr)(EveryApi &ev, float x, float y, float z, void *data), void *data);
+  FD function(std::function<float (float x, float y, float z)> f);
   FD sphere(PT center, float radius);
   FD cube(float start_x, float end_x,
 	  float start_y, float end_y,
@@ -744,8 +751,8 @@ public:
   P anim_array(P *array, int size); // OLD
 
   P splitquads(P orig, int x_count, int y_count);
-  P change_positions(P orig, PT (*fptr)(EveryApi &e, PT p, int face, int point, void* data), void *data=0);
-  P change_normals(P orig, V (*fptr)(EveryApi &e, V orig, int face, int point, void *data), void *data=0);
+  P change_positions(P orig, std::function<PT (PT p, int face, int point)> f);
+  P change_normals(P orig, std::function<V (V orig, int face, int point)> f);
   //P change_attrib(P orig, float (*fptr)(float orig, int face, int point, void *data), void *data=0);
   //P change_attribI(P orig, int (*fptr)(int orig, int face, int point, void *data), void *data=0);
   P change_colors(P orig, unsigned int (*fptr)(EveryApi &e, unsigned int orig, int face, int point, void *data), void *data=0);
@@ -812,7 +819,7 @@ class WaveformApi
 public: 
   WaveformApi(Env &e) : e(e) { }
   WV empty(float length);
-  WV function(float (*fptr)(EveryApi &ev, float, void*), float length, float min_value, float max_value, void *data=0);
+  WV function(std::function<float (float)> f, float length, float min_value, float max_value);
   WV sinwave(float length, float freq);
   WV sample(float *array, int length, float samplelength);
   WV int_sample(int *array, int length, float samplelength, int min_value, int max_value); 
@@ -835,11 +842,11 @@ class StateChangeApi
 public:
   StateChangeApi(Env &e, ShaderApi &api);
   TR init(int paths);
-  TR linear(TR s, int path_num, P (*fptr)(EveryApi &e, float val, void *cb), float start_v, float end_v, float duration, void *cb=NULL);
+  TR linear(TR s, int path_num, std::function<P (float val)> f, float start_v, float end_v, float duration);
   VV prepare(TR sc);
   VV prepareloop(float *array, int arraysize,
-		P (*fptr)(EveryApi &e, float val, void*cb), void *cb,
-		float step_duration);
+		 std::function<P (float val)> f,
+		 float step_duration);
   void render(VV sc, float time, SH shadero);
   void render(VV sc, float time, SH shadero, float (*fptr)(int path, std::string name));
 private:
@@ -897,12 +904,12 @@ public:
   BoolBitmapApi(Env &e);
   ~BoolBitmapApi();
   BB empty(int sx, int sy);
-  BB function(bool (*fptr)(EveryApi &ev, int,int,void*), int sx, int sy, void* data=0);
-  BB transform(BB orig, bool (*fptr)(EveryApi &ev, int,int,bool, void*), void *data=0);
+  BB function(std::function<bool(int,int)> f, int sx, int sy);
+  BB transform(BB orig, std::function<bool (int,int,bool)> f);
   O to_volume(BB b, float dist);
   BB from_float_bitmap(FB float_bm, float range_start, float range_end);
   BB from_bitmaps_color(BM bm, int r, int g, int b);
-  BB from_bitmaps_color_area(BM bm, bool(*fptr)(EveryApi &ev, int r, int g, int b, int a, void* ptr), void *ptr);
+  BB from_bitmaps_color_area(BM bm, std::function<bool(int r, int g, int b, int a)> f);
   BB from_bitmaps_color_area(BM bm, int r_start, int r_end, 
 			            int g_start, int g_end, 
 			            int b_start, int b_end, 
@@ -941,7 +948,7 @@ public: // values are [0.0..1.0]
   FloatBitmapApi(Env &e);
   ~FloatBitmapApi();
   FB empty(int sx, int sy);
-  FB function(float (*fptr)(EveryApi &ev, int,int, void*), int sx, int sy, void* data=0);
+  FB function(std::function<float (int,int)> f, int sx, int sy);
   FB from_bool_bitmap(BB bm, int csx, int csy);
   FB grayscale(BM color_bm);
   FB from_red(BM color_bm);
@@ -988,7 +995,7 @@ public:
   ContinuousBitmapApi(Env &e);
   CBM empty(float x, float y);
   CBM constant(unsigned int color, float x, float y);
-  CBM function(unsigned int (*fptr)(EveryApi &ev, float,float, void*), float sx, float sy, void *data);
+  CBM function(std::function<unsigned int (float,float)> f, float sx, float sy);
   BM sample(CBM c_bitmap, int sx, int sy); 
   CBM from_bitmap(BM bm, float xsize, float ysize);
   BM to_bitmap(CBM bm, int sx, int sy);
@@ -1106,7 +1113,7 @@ class SpaceVectorApi
 { // f : PT->V
 public:
   SpaceVectorApi(Env &e) : e(e) { }
-  SV function(V (*fptr)(EveryApi &e, float x, float y, float z, void* data), void *data); // TODO
+  SV function(std::function<V (float x, float y, float z)> f); // TODO
   SV from_points(PC coll); // choose poly(nearest points), linear interpoate, ensure no failures
   PT flow_next_point(SV v, PT p, float mult);
 private:

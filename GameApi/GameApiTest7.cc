@@ -10,7 +10,7 @@
 
 using namespace GameApi;
 
-float SphereObj2(EveryApi &ev, float x, float y, float z, void *data)
+float SphereObj2(float x, float y, float z, void *data, EveryApi &ev)
 {
   x*=150.0;
   y*=150.0;
@@ -31,12 +31,12 @@ float SphereObj2(EveryApi &ev, float x, float y, float z, void *data)
   return fval;
 }
 
-P Cube2(EveryApi &api,
-	      float start_x, float end_x, 
-	      float start_y, float end_y, 
-	      float start_z, float end_z, 
-	      unsigned int color, 
-	      void *data)
+P Cube2(float start_x, float end_x, 
+	float start_y, float end_y, 
+	float start_z, float end_z, 
+	unsigned int color, 
+	void *data,
+	EveryApi &api)
 {
   P p = api.polygon_api.cube(start_x, end_x, start_y, end_y, start_z, end_z);
   //P p2 = api.polygon_api.color(p, color);
@@ -64,8 +64,8 @@ void GameTest7(EveryApi &e)
   //BM bm_mand = e.bitmap_api.mandelbrot2(false, -2.0, 1.0, -1.0, 1.0, 0.0,0.0, 150, 150, 256);
   //BM bm_julia = e.bitmap_api.mandelbrot2(true, -1.0, 1.0, -1.0, 1.0, 0.25,0.15, 150, 150, 256);
 
-  O obj2 = vapi.subvolume(&SphereObj2, 0, 0.99, 1.5);
-  P poly = vapi.rendercubes(obj2, &Cube2, 0, 250, 4.0);
+  O obj2 = vapi.subvolume(std::bind(SphereObj2, _1,_2,_3,(void*)0,std::ref(e)), 0.99, 1.5);
+  P poly = vapi.rendercubes(obj2, std::bind(Cube2,_1,_2,_3,_4,_5,_6,_7,(void*)0,std::ref(e)), 250, 4.0);
   P poly2 = e.polygon_api.color_faces(poly, 0xffffffff, 0xffff0000, 0xff00ff00, 0xff0000ff);
   //P poly2 = poly;
   e.polygon_api.prepare(poly2);
