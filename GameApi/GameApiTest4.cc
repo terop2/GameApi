@@ -18,12 +18,12 @@ unsigned int green_block(int x, int y, void *data)
   return 0x00ff00;
 }
 
-P Cube(EveryApi &api,
+P Cube(
        float start_x, float end_x, 
        float start_y, float end_y, 
        float start_z, float end_z, 
        unsigned int color, 
-       void *data)
+       EveryApi &api)
 {
   P p = api.polygon_api.cube(start_x, end_x,
 			      start_y, end_y,
@@ -77,7 +77,7 @@ void Game(EveryApi &e)
 
   O sphere = volume.sphere(points.point(0.0, 1.0, 0.0), 1.0);
   O andnot = volume.andnot_op(torus, sphere);
-  P cubes = volume.rendercubes(andnot, &Cube, 0, 40, 4.0);
+  P cubes = volume.rendercubes(andnot, std::bind(Cube, _1,_2,_3,_4,_5,_6,_7,std::ref(e)), 40, 4.0);
   P cubes2 = e.polygon_api.memoize(cubes);
   P cubes3 = e.polygon_api.scale(cubes2, 300.0,300.0,300.0);
   //poly.prepare(cubes3);
