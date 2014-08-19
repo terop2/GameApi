@@ -5,6 +5,9 @@
 #include <string>
 #include <functional>
 
+
+namespace GameApi
+{
 using std::placeholders::_1;
 using std::placeholders::_2;
 using std::placeholders::_3;
@@ -15,8 +18,7 @@ using std::placeholders::_7;
 using std::placeholders::_8;
 using std::placeholders::_9;
 
-namespace GameApi
-{
+
   struct DR { int id; };
   struct OM { int id; };
   struct FO { int id; };
@@ -755,8 +757,8 @@ public:
   P change_normals(P orig, std::function<V (V orig, int face, int point)> f);
   //P change_attrib(P orig, float (*fptr)(float orig, int face, int point, void *data), void *data=0);
   //P change_attribI(P orig, int (*fptr)(int orig, int face, int point, void *data), void *data=0);
-  P change_colors(P orig, unsigned int (*fptr)(EveryApi &e, unsigned int orig, int face, int point, void *data), void *data=0);
-  P change_texture(P orig, int (*fptr)(EveryApi &e, int face, void *data), BM *array, int size, void *data);
+  P change_colors(P orig, std::function<unsigned int (unsigned int orig, int face, int point)> f);
+  P change_texture(P orig, std::function<int (int face)> f, BM *array, int size);
 
   P recalculate_normals(P orig);
   P memoize(P orig);
@@ -784,13 +786,13 @@ public:
 
 
   P counts(P p1, int numfaces);
-  P count_function(P p1, int (*numpoints)(EveryApi &e, int face, void *data), void *data);
-  P point_function(P p1, PT (*fptr)(EveryApi &e, int face, int point, void *data), void *data);
-  P color_function(P p1, unsigned int (*fptr)(EveryApi &e, int face, int point, void *data), void *data);
-  P texcoord_function(P p1, PT (*fptr)(EveryApi &e, int face, int point, void *data), void *data);
-  P normal_function(P p1, V (*fptr)(EveryApi &e, int face, int point, void *data), void *data);
-  P attrib_function(P p1, float (*fptr)(EveryApi &e, int face, int point, int idx, void *data), int idx, void *data);
-  P attribi_function(P p1, int (*fptr)(EveryApi &e, int face, int point, int idx, void *data), int idx, void *data);
+  P count_function(P p1, std::function<int (int face)> f);
+  P point_function(P p1, std::function<PT (int face, int point)> f);
+  P color_function(P p1, std::function<unsigned int (int face, int point)> f);
+  P texcoord_function(P p1, std::function<PT (int face, int point)> f);
+  P normal_function(P p1, std::function<V (int face, int point)> f);
+  P attrib_function(P p1, std::function<float (int face, int point, int idx)> f, int idx);
+  P attribi_function(P p1, std::function<int (int face, int point, int idx)> f, int idx);
 
 
   // must call prepare for P before these.
