@@ -7375,12 +7375,12 @@ GameApi::DR GameApi::DrawApi::cliprect(DR cmds, LAY l, int id);
 class LineCollectionFunction : public LineCollection
 {
 public:
-  LineCollectionFunction(GameApi::Env &e, GameApi::PT (*fptr)(GameApi::EveryApi &ev, int linenum, bool id, void *data), int numlines, void *data) : ev(e), fptr(fptr), numlines(numlines), data(data) { }
+  LineCollectionFunction(GameApi::Env &e, std::function<GameApi::PT (int linenum, bool id)> f, int numlines) :  ev(e), f(f), numlines(numlines) { }
   virtual int NumLines() const { return numlines; }
   virtual Point LinePoint(int line, int point) const
   {
     bool b = point==0 ? 0 : 1;
-    GameApi::PT pt = fptr(ev, line, b, data);
+    GameApi::PT pt = f(line, b);
     float x = ev.point_api.pt_x(pt);
     float y = ev.point_api.pt_y(pt);
     float z = ev.point_api.pt_z(pt);
@@ -7390,16 +7390,15 @@ public:
 private:
   //GameApi::Env &e;
   mutable GameApi::EveryApi ev;
-  GameApi::PT (*fptr)(GameApi::EveryApi &ev, int linenum, bool id, void *data);
+  std::function<GameApi::PT (int linenum, bool id)> f;
   int numlines; 
-  void *data;
 };
 
-GameApi::LI GameApi::LinesApi::function(GameApi::PT (*fptr)(GameApi::EveryApi &ev, int linenum, bool id, void *data), int numlines, void *data)
+GameApi::LI GameApi::LinesApi::function(std::function<GameApi::PT (int linenum, bool id)> f, int numlines)
 {
   //EnvImpl *env = EnvImpl::Environment(&e);
 
-  return add_line_array(e, new LineCollectionFunction(e, fptr, numlines, data));
+  return add_line_array(e, new LineCollectionFunction(e, f, numlines));
 }
 GameApi::LI GameApi::LinesApi::from_points(GameApi::PC points, bool loops)
 {

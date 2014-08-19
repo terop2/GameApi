@@ -1077,8 +1077,8 @@ class LinesApi
 {
 public:
   LinesApi(Env &e) : e(e) { }
-  LI function(PT (*fptr)(EveryApi &ev, int linenum, bool id, void *data),
-	      int numlines, void *data);
+  LI function(std::function<PT (int linenum, bool id)> f,
+	      int numlines);
   LI from_points(PC points, bool loops);
   LI from_polygon(P poly);
   LI border_from_bool_bitmap(BB b, float start_x, float end_x,
