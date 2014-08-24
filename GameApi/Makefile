@@ -64,8 +64,8 @@ INC3WIN = /home/terop/cvs/sdl2_win/SDL2_image-2.0.0/i686-w64-mingw32/include
 INC4WIN = /home/terop/cvs/sdl2_win/SDL2-2.0.1/i686-w64-mingw32/include/SDL2
 INC5WIN = /home/terop/cvs/sdl2_win/include
 
-CCFLAGS = -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2
-CC2FLAGS = -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC
+CCFLAGS = -std=c++11 -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2
+CC2FLAGS = -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC
 #`pkg-config gtkmm-2.4 --cflags`
 
 
