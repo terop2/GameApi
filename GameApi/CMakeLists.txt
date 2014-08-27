@@ -6,7 +6,6 @@ include_directories(d:\\cvs\\sdl2_vc\\SDL2-2.0.3\\include
 		    d:\\cvs\\freetype\\include
 		    d:\\cvs\\freetype\\include\\freetype2
 		    )
-
 add_library(GameApi Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc 
 	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc 
@@ -18,4 +17,4 @@ add_library(GameApi Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc
 
 include_directories(d:\\cvs\\gameapi-code\\GameApi)
 add_executable(main GameApiTest3.cc GameApiTest4.cc GameApiWorld.cc GameApiTest5.cc GameApiTest6.cc GameApiTest7.cc GameApiTest8.cc GameApiTest9.cc GameApiTestA.cc ExampleMain.cc)
-target_link_libraries(main d:\\cvs\\gameapi-code\\GameApi\\Debug\\GameApi.lib d:\\cvs\\freetype\\lib\\freetype.lib d:\\cvs\\glew-1.10.0\\lib\\Release\\Win32\\glew32s.lib d:\\cvs\\glew-1.10.0\\lib\\Release\\Win32\\glew32.lib d:\\cvs\\sdl2_vc\\SDL2-2.0.3\\lib\\x86\\SDL2.lib d:\\cvs\\sdl2_vc\\SDL2_image-2.0.0\\lib\\x86\\SDL2_image.lib opengl32.lib)
+target_link_libraries(main d:\\cvs\\freetype\\lib\\freetype.lib d:\\cvs\\glew-1.10.0\\lib\\Release\\Win32\\glew32s.lib d:\\cvs\\glew-1.10.0\\lib\\Release\\Win32\\glew32.lib d:\\cvs\\sdl2_vc\\SDL2-2.0.3\\lib\\x86\\SDL2.lib d:\\cvs\\sdl2_vc\\SDL2_image-2.0.0\\lib\\x86\\SDL2_image.lib opengl32.lib)
