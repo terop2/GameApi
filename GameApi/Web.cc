@@ -5,7 +5,7 @@
 #include "Effect.hh"
 #include "Equalizer.hh"
 #include <GL/glew.h>
-#include <SDL2/SDL_opengl.h>
+#include <SDL_opengl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 

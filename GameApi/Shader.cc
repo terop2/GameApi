@@ -23,7 +23,7 @@
 #define NO_SDL_GLEXT
 #include "Shader.hh"
 #include <GL/glew.h>
-#include <SDL2/SDL_opengl.h>
+#include <SDL_opengl.h>
 #include "VectorTools.hh"
 #include <vector>
 #include <algorithm>

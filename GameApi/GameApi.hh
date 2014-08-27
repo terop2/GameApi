@@ -104,12 +104,13 @@ using std::placeholders::_9;
   };
 
   struct EveryApi;
-
+#define IMPORT 
+#define EXPORT
 class Env
 {
 public:
-  Env();
-  ~Env();
+  IMPORT Env();
+  IMPORT ~Env();
 public:
   void *envimpl;
   friend struct EnvImpl;
@@ -117,22 +118,22 @@ public:
 class MainLoopApi
 {
 public:
-  MainLoopApi(Env &e);
-  ~MainLoopApi();
-  void init_window(int screen_width = 800, int screen_height=600);
-  void init(SH sh,int screen_width = 800, int screen_height = 600);
-  void init_3d(SH sh, int screen_width = 800, int screen_heigth = 600);
-  void transfer_sdl_surface(MainLoopApi &orig);
-  void clear();
-  void clear_3d();
-  void switch_to_3d(bool b, SH sh);
-  void alpha(bool enabled);
-  void cursor_visible(bool enabled);
-  void antialias(bool enabled);
-  float get_time();
-  int get_framenum();
-  void swapbuffers();
-  BM screenshot();
+	IMPORT MainLoopApi(Env &e);
+	IMPORT ~MainLoopApi();
+  IMPORT void init_window(int screen_width = 800, int screen_height=600);
+  IMPORT void init(SH sh, int screen_width = 800, int screen_height = 600);
+  IMPORT void init_3d(SH sh, int screen_width = 800, int screen_heigth = 600);
+  IMPORT void transfer_sdl_surface(MainLoopApi &orig);
+  IMPORT void clear();
+  IMPORT void clear_3d();
+  IMPORT void switch_to_3d(bool b, SH sh);
+  IMPORT void alpha(bool enabled);
+  IMPORT void cursor_visible(bool enabled);
+  IMPORT void antialias(bool enabled);
+  IMPORT float get_time();
+  IMPORT int get_framenum();
+  IMPORT void swapbuffers();
+  IMPORT BM screenshot();
   struct Event
   {
     int type;
@@ -163,23 +164,23 @@ private:
 class SpriteApi
 {
 public:
-  SpriteApi(Env &e);
-  ~SpriteApi();
-  void spritepos(BM bm, float x, float y);
-  void preparesprite(BM bm, int bbm_choose=-1);
+	IMPORT SpriteApi(Env &e);
+	IMPORT ~SpriteApi();
+	IMPORT void spritepos(BM bm, float x, float y);
+	IMPORT void preparesprite(BM bm, int bbm_choose = -1);
 
-  VA create_vertex_array(BM bm);
-  void render_sprite_vertex_array(VA va);
+	IMPORT VA create_vertex_array(BM bm);
+	IMPORT void render_sprite_vertex_array(VA va);
 
-  void rendersprite(BM bm, SH sh, float x, float y, float mult_x=1.0, float mult_y=1.0);
-  void rendersprite(BM bm, SH sh, PT pos);
-  void rendersprite(BM bm, int bm_choose, SH sh, float x, float y, float mult_x, float mult_y);
-  void rendersprite(BM bm, int bm_choose, SH sh, PT pos);
-  void rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, float x, float y);
-  void rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, PT pos);
-  void rendersprite(BM bm, SH sh, float x, float y, float x1, float y1, float inside_x, float inside_y, float inside_x1, float inside_y1);
-  SP spritespace(BM bm);
-  PT pixelpos(BM bm, int x, int y);
+	IMPORT void rendersprite(BM bm, SH sh, float x, float y, float mult_x = 1.0, float mult_y = 1.0);
+	IMPORT void rendersprite(BM bm, SH sh, PT pos);
+	IMPORT void rendersprite(BM bm, int bm_choose, SH sh, float x, float y, float mult_x, float mult_y);
+	IMPORT void rendersprite(BM bm, int bm_choose, SH sh, PT pos);
+	IMPORT void rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, float x, float y);
+	IMPORT void rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, PT pos);
+	IMPORT void rendersprite(BM bm, SH sh, float x, float y, float x1, float y1, float inside_x, float inside_y, float inside_x1, float inside_y1);
+	IMPORT SP spritespace(BM bm);
+	IMPORT PT pixelpos(BM bm, int x, int y);
 private:
   void *priv;
   Env &e;
@@ -188,17 +189,17 @@ private:
 class TextureApi
 {
 public:
-  TextureApi(Env &e);
-  TX tex_plane(int sx, int sy);
-  TX tex_bitmap(BM bm);
-  int unique_id();
-  TX tex_assign(TX tx, int id, int x, int y, BM bm);
-  TX tex_coord(TX tx, int id, int x, int y, int width, int height);
-  Q get_tex_coord(TX tx, int id);
-  TXID prepare(TX tx);
-  void use(TXID tx, int i=0);
-  void unuse(TXID tx);
-  VA bind(VA va, TXID tx);
+	IMPORT TextureApi(Env &e);
+	IMPORT TX tex_plane(int sx, int sy);
+	IMPORT TX tex_bitmap(BM bm);
+	IMPORT int unique_id();
+	IMPORT TX tex_assign(TX tx, int id, int x, int y, BM bm);
+	IMPORT TX tex_coord(TX tx, int id, int x, int y, int width, int height);
+	IMPORT Q get_tex_coord(TX tx, int id);
+	IMPORT TXID prepare(TX tx);
+	IMPORT void use(TXID tx, int i = 0);
+	IMPORT void unuse(TXID tx);
+	IMPORT VA bind(VA va, TXID tx);
 private:
   Env &e;
   int count;
@@ -207,13 +208,13 @@ private:
 class GridApi
 {
 public:
-  GridApi(Env &e);
-  ~GridApi();
-  SP gridtilespace(BM tilebm, int sx, int sy, int x, int y);
-  SP wholegridspace(int sx, int sy, BM grid);
+	IMPORT GridApi(Env &e);
+	IMPORT ~GridApi();
+	IMPORT SP gridtilespace(BM tilebm, int sx, int sy, int x, int y);
+	IMPORT SP wholegridspace(int sx, int sy, BM grid);
 
-  void preparegrid(BM tile_bitmap, int tile_choose=-1);
-  void rendergrid(BM grid, int grid_choose, float top_x, float top_y);
+	IMPORT void preparegrid(BM tile_bitmap, int tile_choose = -1);
+	IMPORT void rendergrid(BM grid, int grid_choose, float top_x, float top_y);
 
 private:
   void *priv;
@@ -223,55 +224,55 @@ private:
 class BitmapApi
 {
 public:
-  BitmapApi(Env &e);
-  ~BitmapApi();
-  BM newbitmap(int sx, int sy);
-  BM function(std::function<unsigned(int,int)> f, int sx, int sy);
-  BM transform(BM orig, std::function<unsigned int(int,int,unsigned int)> f);
-  BM newintbitmap(char *array, int sx, int sy, std::function<int (char)> f);
-  BM newcolorbitmap(char *array, int sz, int sy, std::function<unsigned int (char)> f);
-  BM newtilebitmap(int sx, int sy, int tile_sx, int tile_sy);
-  BM loadbitmap(std::string filename);
-  BM loadtilebitmap(std::string filename, int tile_sx, int tile_sy);
-  BM loadposbitmap(std::string filename);
-  BM findtile(BM tile_bitmap, int x, int y);
-  BM subbitmap(BM orig, int x, int y, int width, int height);
-  BM subbitmapimage(BM orig, int r_start_range, int r_end_range, int g_start_range, int g_end_range, int b_start_range, int b_end_range, unsigned int empty_color);
+	IMPORT BitmapApi(Env &e);
+	IMPORT ~BitmapApi();
+	IMPORT BM newbitmap(int sx, int sy);
+	IMPORT BM function(std::function<unsigned(int, int)> f, int sx, int sy);
+	IMPORT BM transform(BM orig, std::function<unsigned int(int, int, unsigned int)> f);
+	IMPORT BM newintbitmap(char *array, int sx, int sy, std::function<int(char)> f);
+	IMPORT BM newcolorbitmap(char *array, int sz, int sy, std::function<unsigned int(char)> f);
+	IMPORT BM newtilebitmap(int sx, int sy, int tile_sx, int tile_sy);
+	IMPORT BM loadbitmap(std::string filename);
+	IMPORT BM loadtilebitmap(std::string filename, int tile_sx, int tile_sy);
+	IMPORT BM loadposbitmap(std::string filename);
+	IMPORT BM findtile(BM tile_bitmap, int x, int y);
+	IMPORT BM subbitmap(BM orig, int x, int y, int width, int height);
+	IMPORT BM subbitmapimage(BM orig, int r_start_range, int r_end_range, int g_start_range, int g_end_range, int b_start_range, int b_end_range, unsigned int empty_color);
 
-  BM growbitmap(BM small_orig_bitmap, int l, int t, int r, int b);
-  BM blitbitmap(BM bg, BM orig, int x, int y);
-  BM blitbitmap(BM bg, BM orig, int x, int y, FB mask);
-  BM blitbitmap(BM bg, BM orig, int x, int y, BB mask);
-  BM anim_array(BM *array, int size);
-  BM modify_bitmap(BM orig, BM bm, int x, int y);
-  BM interpolate_bitmap(BM orig1, BM orig2, float x); // x=[0..1]
-  BM repeat_bitmap(BM orig, int xcount, int ycount);
-  BM sample_bitmap(BM orig, float xmult, float ymult, float x, float y);
-  BM flip_x(BM orig);
-  BM flip_y(BM orig);
+	IMPORT BM growbitmap(BM small_orig_bitmap, int l, int t, int r, int b);
+	IMPORT BM blitbitmap(BM bg, BM orig, int x, int y);
+	IMPORT BM blitbitmap(BM bg, BM orig, int x, int y, FB mask);
+	IMPORT BM blitbitmap(BM bg, BM orig, int x, int y, BB mask);
+	IMPORT BM anim_array(BM *array, int size);
+	IMPORT BM modify_bitmap(BM orig, BM bm, int x, int y);
+	IMPORT BM interpolate_bitmap(BM orig1, BM orig2, float x); // x=[0..1]
+	IMPORT BM repeat_bitmap(BM orig, int xcount, int ycount);
+	IMPORT BM sample_bitmap(BM orig, float xmult, float ymult, float x, float y);
+	IMPORT BM flip_x(BM orig);
+	IMPORT BM flip_y(BM orig);
   //BM bitmapandtypes(BM bm, BM (*fptr)(int)); // bm has ints in it
-  SP space(BM bm);
+	IMPORT SP space(BM bm);
 
-  BM addsubrects(BM orig); // use subbitmap with orig bitmap.
-  void savebitmap(BM orig, std::string filename);
-  BM mandelbrot(bool julia,
+	IMPORT BM addsubrects(BM orig); // use subbitmap with orig bitmap.
+	IMPORT void savebitmap(BM orig, std::string filename);
+	IMPORT BM mandelbrot(bool julia,
 		float start_x, float end_x, // [-2..1]
 		float start_y, float end_y, // [-1,1]
 		float xx, float yy, // [0,0]
 		int sx, int sy,
 		int count);
-  BM mandelbrot2(bool julia,
+	IMPORT BM mandelbrot2(bool julia,
 		float start_x, float end_x, // [-2..1]
 		float start_y, float end_y, // [-1,1]
 		float xx, float yy, // [0,0]
 		int sx, int sy,
 		int count);
-  BM memoize(BM orig);
-  BM memoize_all(BM orig);
-  int intvalue(BM bm, int x, int y);
-  unsigned int colorvalue(BM bm, int x, int y);
-  int size_x(BM bm);
-  int size_y(BM bm);
+	IMPORT BM memoize(BM orig);
+	IMPORT BM memoize_all(BM orig);
+	IMPORT int intvalue(BM bm, int x, int y);
+	IMPORT unsigned int colorvalue(BM bm, int x, int y);
+	IMPORT int size_x(BM bm);
+	IMPORT int size_y(BM bm);
 private:
   void *priv;
   Env &e;
@@ -280,14 +281,14 @@ private:
 class FontApi
 {
 public:
-  FontApi(Env &e);
-  ~FontApi();
-  Ft newfont(const char *filename, int sx, int sy);
-  BM glyph(Ft font, long idx);
-  LI glyph_outline(Ft font, long idx, float sx, float sy);
-  BM font_string(Ft font, const char *str, int x_gap);
-  FB glyph_fb(Ft font, long idx);
-  BB glyph_bb(Ft font, long idx);
+	IMPORT FontApi(Env &e);
+	IMPORT ~FontApi();
+	IMPORT Ft newfont(const char *filename, int sx, int sy);
+	IMPORT BM glyph(Ft font, long idx);
+	IMPORT LI glyph_outline(Ft font, long idx, float sx, float sy);
+	IMPORT BM font_string(Ft font, const char *str, int x_gap);
+	IMPORT FB glyph_fb(Ft font, long idx);
+	IMPORT BB glyph_bb(Ft font, long idx);
 private:
   void *priv;
   Env &e;
@@ -465,10 +466,10 @@ public:
 class TextApi
 {
 public:
-  TextApi(BitmapApi &bm, SpriteApi &sp) : bm(bm), sp(sp), priv(0) { }
-  ~TextApi();
-  void load_font(std::string filename, int sx, int sy, int x, int y, char start_char, char end_char);
-  void draw_text(std::string text, int x, int y, SH sh);
+	IMPORT TextApi(BitmapApi &bm, SpriteApi &sp) : bm(bm), sp(sp), priv(0) { }
+	IMPORT ~TextApi();
+	IMPORT void load_font(std::string filename, int sx, int sy, int x, int y, char start_char, char end_char);
+	IMPORT void draw_text(std::string text, int x, int y, SH sh);
 private:
   BitmapApi &bm;
   SpriteApi &sp;
@@ -480,61 +481,61 @@ private:
 class VolumeApi
 {
 public:
-  VolumeApi(Env &e);
-  ~VolumeApi();
-  O boolfunction(std::function<bool (float x, float y, float z)> f);
-  O subvolume(std::function<float (float x, float y, float z)> f, float start_range, float end_range);
-  O link_areas(O o, PT p1, PT p2, float d);
-  O sphere(PT center, float radius);
-  O cube(float start_x, float end_x, 
+	IMPORT VolumeApi(Env &e);
+	IMPORT ~VolumeApi();
+	IMPORT O boolfunction(std::function<bool(float x, float y, float z)> f);
+	IMPORT O subvolume(std::function<float(float x, float y, float z)> f, float start_range, float end_range);
+	IMPORT O link_areas(O o, PT p1, PT p2, float d);
+	IMPORT O sphere(PT center, float radius);
+	IMPORT O cube(float start_x, float end_x,
 	 float start_y, float end_y,
 	 float start_z, float end_z);
-  O cone(PT p1, PT p2, float rad1, float rad2);
-  O torus(PT center, PT u_x, PT u_y, float dist1, float dist2);
+	IMPORT O cone(PT p1, PT p2, float rad1, float rad2);
+	IMPORT O torus(PT center, PT u_x, PT u_y, float dist1, float dist2);
 
-  O colour(O object, int r, int g, int b, int a);
-  O reflect(O object, float val); // val = [0..1]
-  O cubetexture(O object, PT origo, PT u_x, PT u_y, PT u_z, BM bm);
-  O spheretexture(O object, PT center, BM texture, float multx, float multy);
+	IMPORT O colour(O object, int r, int g, int b, int a);
+	IMPORT O reflect(O object, float val); // val = [0..1]
+	IMPORT O cubetexture(O object, PT origo, PT u_x, PT u_y, PT u_z, BM bm);
+	IMPORT O spheretexture(O object, PT center, BM texture, float multx, float multy);
 
-  O move(O object, PT pos);
-  O rotatex(O object, float angle);
-  O rotatey(O object, float angle);
-  O rotatez(O object, float angle);
-  O scale(O object, float sx, float sy, float sz);
+	IMPORT O move(O object, PT pos);
+	IMPORT O rotatex(O object, float angle);
+	IMPORT O rotatey(O object, float angle);
+	IMPORT O rotatez(O object, float angle);
+	IMPORT O scale(O object, float sx, float sy, float sz);
 
-  O not_op(O object1);
-  O min_op(O object1, O object2);
-  O max_op(O object1, O object2);
-  O andnot_op(O object1, O object2);
+	IMPORT O not_op(O object1);
+	IMPORT O min_op(O object1, O object2);
+	IMPORT O max_op(O object1, O object2);
+	IMPORT O andnot_op(O object1, O object2);
 
-  O mandelbulb(float n, float p_x, float p_y, float p_z,
+	IMPORT O mandelbulb(float n, float p_x, float p_y, float p_z,
 	       float c_x, float c_y, float c_z,
 	       float radius,
 	       int iterations);
 
-  BB plane(O o, int sx, int sy,
+	IMPORT BB plane(O o, int sx, int sy,
 	   PT u_p, V u_x, V u_y,
 	   float start_x, float end_x,
 	   float start_y, float end_y,
 	   float start_z, float end_z);
 
-  BM render(O object, int sx, int sy, PT ray_0, PT ray_x, PT ray_y, PT ray_z);
+	IMPORT BM render(O object, int sx, int sy, PT ray_0, PT ray_x, PT ray_y, PT ray_z);
   typedef std::function<P (float start_x, float end_x, 
 			float start_y, float end_y, 
 			float start_z, float end_z, 
 			unsigned int color)> fptrtype;
-  P rendercubes(O object,
+  IMPORT P rendercubes(O object,
 		fptrtype fptr,
 		int size,
 		float wholesize); // marching cubes algo
-  void find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level);
+  IMPORT void find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level);
   // use RayTracingBitmap class in graph.hh
   // problem1: float values in O. (currently uses bool)
   // problem2: colors in O.
   // problem3: conversion from volumeobject to continuousvoxel<float> and continuousvoxel<color> (something like that exists already)
   // BM raytrace(O volume, int sx, int sy, V v, float z);
-  BM montecarlo(O object, PT p_top, PT p_x, PT p_y, PT p_z, int sx, int sy);
+  IMPORT BM montecarlo(O object, PT p_top, PT p_x, PT p_y, PT p_z, int sx, int sy);
 private:
   Env &e;
 };
@@ -543,28 +544,28 @@ private:
 class FloatVolumeApi
 {
 public:
-  FloatVolumeApi(Env &e) : e(e) { }
-  FO function(std::function<float (float x, float y, float z)> f);
-  FO from_volume(O o, float false_val, float true_val);
-  FO from_float_bitmap(FB bm, 
+	IMPORT FloatVolumeApi(Env &e) : e(e) { }
+	IMPORT FO function(std::function<float(float x, float y, float z)> f);
+	IMPORT FO from_volume(O o, float false_val, float true_val);
+	IMPORT FO from_float_bitmap(FB bm,
 		       float start_x, float end_x, 
 		       float start_y, float end_y, 
 		       float start_z, float end_z);
-  FO distance();
-  FO torusdistance(PT center, V u_x, V u_y, float radius);
-  FO move(FO f1, float dx, float dy, float dz);
-  FO minimum(FO f1, FO f2);
-  FO maximum(FO f1, FO f2);
+	IMPORT FO distance();
+	IMPORT FO torusdistance(PT center, V u_x, V u_y, float radius);
+	IMPORT FO move(FO f1, float dx, float dy, float dz);
+	IMPORT FO minimum(FO f1, FO f2);
+	IMPORT FO maximum(FO f1, FO f2);
 
-  FO shadow(FD fd, V light_dir, float mint, float maxt, float k);
+	IMPORT FO shadow(FD fd, V light_dir, float mint, float maxt, float k);
 
   //FO plus(FO f1, FO f2);
-  BM raytrace(FO object, int sx, int sy, 
+	IMPORT BM raytrace(FO object, int sx, int sy,
 	      PT ray_0, PT ray_x, PT ray_y, PT ray_z, float surface_value);
-  FOA prepare(FO object, int numpoints, 
+	IMPORT FOA prepare(FO object, int numpoints,
 	      float start_x, float start_y, float start_z, 
 	      float end_x, float end_y, float end_z);
-  void render(FOA array);
+	IMPORT void render(FOA array);
 private:
   Env &e;
 };
@@ -573,17 +574,17 @@ private:
 class ColorVolumeApi
 {
 public:
-  ColorVolumeApi(Env &e) : e(e) { }
-  COV function(std::function<unsigned int (float x, float y, float z)> f);
-  COV from_float_volume(FO obj, unsigned int col0, unsigned int col1);
-  COV from_volume(O obj, unsigned int col_true, unsigned int col_false);
+	IMPORT ColorVolumeApi(Env &e) : e(e) { }
+	IMPORT COV function(std::function<unsigned int(float x, float y, float z)> f);
+	IMPORT COV from_float_volume(FO obj, unsigned int col0, unsigned int col1);
+	IMPORT COV from_volume(O obj, unsigned int col_true, unsigned int col_false);
 
-  COV mix(COV p1, COV p2, float value); // value=[0..1]
-  COV or_cov(COV p1, COV p2);
-  COV phong(VO normal, PT light_pos, CO i_s, CO i_d, CO i_a, float k_s, float k_d, float k_a, float alfa);
-  COV directcolor(VO normal);
-  P texture(P obj, COV colors);
-  BM texture_bm(P obj, COV colors, int face, int sx, int sy);
+	IMPORT COV mix(COV p1, COV p2, float value); // value=[0..1]
+	IMPORT COV or_cov(COV p1, COV p2);
+	IMPORT COV phong(VO normal, PT light_pos, CO i_s, CO i_d, CO i_a, float k_s, float k_d, float k_a, float alfa);
+	IMPORT COV directcolor(VO normal);
+	IMPORT P texture(P obj, COV colors);
+	IMPORT BM texture_bm(P obj, COV colors, int face, int sx, int sy);
   // TODO
 private:
   Env &e;
@@ -592,9 +593,9 @@ private:
 class VectorVolumeApi
 {
 public:
-  VectorVolumeApi(Env &e) : e(e) { }
-  VO function(std::function<V(float x, float y, float z)> f);
-  VO normal(FD fd);
+	IMPORT VectorVolumeApi(Env &e) : e(e) { }
+	IMPORT VO function(std::function<V(float x, float y, float z)> f);
+	IMPORT VO normal(FD fd);
 private:
   Env &e;
 };
@@ -602,18 +603,18 @@ private:
 class DistanceFloatVolumeApi
 {
 public:
-  DistanceFloatVolumeApi(Env &e) : e(e) { }
-  FD function(std::function<float (float x, float y, float z)> f);
-  FD sphere(PT center, float radius);
-  FD cube(float start_x, float end_x,
+	IMPORT DistanceFloatVolumeApi(Env &e) : e(e) { }
+	IMPORT FD function(std::function<float(float x, float y, float z)> f);
+	IMPORT FD sphere(PT center, float radius);
+	IMPORT FD cube(float start_x, float end_x,
 	  float start_y, float end_y,
 	  float start_z, float end_z);
-  FD line(PT start, PT end, float dist);
+	IMPORT FD line(PT start, PT end, float dist);
 
-  FD min(FD a1, FD a2);
-  FD and_not(FD a1, FD a2);
-  BM render(FD obj, COV color, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
-  std::string shader_func(std::string name, FD obj, COV color);
+	IMPORT FD min(FD a1, FD a2);
+	IMPORT FD and_not(FD a1, FD a2);
+	IMPORT BM render(FD obj, COV color, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
+	IMPORT std::string shader_func(std::string name, FD obj, COV color);
 private:
   Env &e;
 };
@@ -664,141 +665,141 @@ private:
 class PolygonApi
 {
 public:
-  PolygonApi(Env &e);
-  ~PolygonApi();
+	IMPORT PolygonApi(Env &e);
+	IMPORT ~PolygonApi();
   
 
-  P empty();
-  P line(PT p1, PT p2);
-  P triangle(PT p1, PT p2, PT p3);
-  P quad(PT p1, PT p2, PT p3, PT p4);
-  P quad_x(float x,
+	IMPORT P empty();
+	IMPORT P line(PT p1, PT p2);
+	IMPORT P triangle(PT p1, PT p2, PT p3);
+	IMPORT P quad(PT p1, PT p2, PT p3, PT p4);
+	IMPORT P quad_x(float x,
 	   float y1, float y2,
 	   float z1, float z2);
-  P quad_y(float x1, float x2,
+	IMPORT P quad_y(float x1, float x2,
 	   float y,
 	   float z1, float z2);
-  P quad_z(float x1, float x2,
+	IMPORT P quad_z(float x1, float x2,
 	   float y1, float y2,
 	   float z);
-  P polygon(PT *array, int size); // use render_dynamic with this.
-  P tri_vertex_array(float *v_array, int v_size,
+	IMPORT P polygon(PT *array, int size); // use render_dynamic with this.
+	IMPORT P tri_vertex_array(float *v_array, int v_size,
 		     float *n_array, int n_size,
 		     unsigned int *c_array, int c_size,
 		     float *tex_array, int tex_size,
 		     float **attrib_array, int a_size1, int a_size2);
-  P cube(float start_x, float end_x, 
+	IMPORT P cube(float start_x, float end_x,
 	 float start_y, float end_y,
 	 float start_z, float end_z);
-  P cube(PT *p); // 8 points needed
-  P sphere(PT center, float radius, int numfaces1, int numfaces2);
-  P cone(int numfaces, PT p1, PT p2, float rad1, float rad2);
-  P ring(float sx, float sy, float x, int steps); // use RingEffect::Init() to implement
+	IMPORT P cube(PT *p); // 8 points needed
+	IMPORT P sphere(PT center, float radius, int numfaces1, int numfaces2);
+	IMPORT P cone(int numfaces, PT p1, PT p2, float rad1, float rad2);
+	IMPORT P ring(float sx, float sy, float x, int steps); // use RingEffect::Init() to implement
   enum HeightMapType { EQuad, ETriangle };
-  P heightmap(BM bm, HeightMapType t,
+  IMPORT P heightmap(BM bm, HeightMapType t,
 	      float min_x, float max_x, 
 	      float min_y, float max_y,
 	      float min_z, float max_z);
-  P fromsurface(S s, float thickness);
-  P fromsurface(S s1, S s2, C curve); // surfacebetweensurfaces
+  IMPORT P fromsurface(S s, float thickness);
+  IMPORT P fromsurface(S s1, S s2, C curve); // surfacebetweensurfaces
   
-  P sprite_bind(P p, TX tx, int id);
-  P sprite_bind(P p, Q bm, TX tx);
-  P texture(P orig, BM bm, int bm_choose=-1); // all quads
+  IMPORT P sprite_bind(P p, TX tx, int id);
+  IMPORT P sprite_bind(P p, Q bm, TX tx);
+  IMPORT P texture(P orig, BM bm, int bm_choose = -1); // all quads
 
-  P color(P orig, unsigned int color);
-  P color_voxel(P orig, VX colours, PT p, V u_x, V u_y, V u_z);
-  P texcoord_cube(P orig, 
+  IMPORT P color(P orig, unsigned int color);
+  IMPORT P color_voxel(P orig, VX colours, PT p, V u_x, V u_y, V u_z);
+  IMPORT P texcoord_cube(P orig,
 		  PT o, PT u_x, PT u_y, PT u_z,  // these are 3d
 		  PT tex_o, PT tex_x, PT tex_y, PT tex_z); // tex_* are 2d
-  P color_cube(P orig,
+  IMPORT P color_cube(P orig,
 	       PT o, PT u_x, PT u_y, PT u_z,
 	       unsigned int color_o, unsigned int color_x, unsigned int color_y, unsigned int color_z);
-  P color_faces(P orig,
+  IMPORT P color_faces(P orig,
 		unsigned int color_1, unsigned int color_2,
 		unsigned int color_3, unsigned int color_4);
 
-  P texcoord_poly(P orig, int facenum, PT *array, int size);
-  P color_poly(P orig, int facenum, unsigned int *array, int size);
+  IMPORT P texcoord_poly(P orig, int facenum, PT *array, int size);
+  IMPORT P color_poly(P orig, int facenum, unsigned int *array, int size);
 
-  P or_elem(P p1, P p2);
-  P or_array(P *array, int size); 
+  IMPORT P or_elem(P p1, P p2);
+  IMPORT P or_array(P *array, int size);
   //P and_not_elem(P p1, P p_not);
 
-  P grid(PT o, PT u_x, PT u_y, int num_x, int num_y);
-  P grid(PT o, PT u_x, PT u_y, int num_x, int num_y, P *grid);
+  IMPORT P grid(PT o, PT u_x, PT u_y, int num_x, int num_y);
+  IMPORT P grid(PT o, PT u_x, PT u_y, int num_x, int num_y, P *grid);
 
 
-  P translate(P orig, float dx, float dy, float dz);
-  P rotatex(P orig, float angle);
-  P rotatey(P orig, float angle);
-  P rotatez(P orig, float angle);
-  P rotate(P orig, PT pt, V axis, float angle);
-  P scale(P orig, float sx, float sy, float sz);
+  IMPORT P translate(P orig, float dx, float dy, float dz);
+  IMPORT P rotatex(P orig, float angle);
+  IMPORT P rotatey(P orig, float angle);
+  IMPORT P rotatez(P orig, float angle);
+  IMPORT P rotate(P orig, PT pt, V axis, float angle);
+  IMPORT P scale(P orig, float sx, float sy, float sz);
 
-  P move(P orig, PT obj_0, V obj_x, V obj_y, V obj_z,
+  IMPORT P move(P orig, PT obj_0, V obj_x, V obj_y, V obj_z,
 	 PT world_0, V world_x, V world_y, V world_z);
 
-  L color_lighting(float dx, float dy, float dz, 
+  IMPORT L color_lighting(float dx, float dy, float dz,
 		   int r, int g, int b, int a);
-  L radial_lighting(float dx, float dy, float dz,
+  IMPORT L radial_lighting(float dx, float dy, float dz,
 		    int r, int g, int b, int a,
 		    int r2, int g2, int b2, int a2,
 		    float dist);
-  L array_lighting(L *array, int size);
-  P lighting(P orig, L lighting);
-  BM light_bm(L lighting, P poly);
-  P single_texture(P orig, BM texture);
+  IMPORT L array_lighting(L *array, int size);
+  IMPORT P lighting(P orig, L lighting);
+  IMPORT BM light_bm(L lighting, P poly);
+  IMPORT P single_texture(P orig, BM texture);
 
-  P anim_array(P *array, int size); // OLD
+  IMPORT P anim_array(P *array, int size); // OLD
 
-  P splitquads(P orig, int x_count, int y_count);
-  P change_positions(P orig, std::function<PT (PT p, int face, int point)> f);
-  P change_normals(P orig, std::function<V (V orig, int face, int point)> f);
+  IMPORT P splitquads(P orig, int x_count, int y_count);
+  IMPORT P change_positions(P orig, std::function<PT(PT p, int face, int point)> f);
+  IMPORT P change_normals(P orig, std::function<V(V orig, int face, int point)> f);
   //P change_attrib(P orig, float (*fptr)(float orig, int face, int point, void *data), void *data=0);
   //P change_attribI(P orig, int (*fptr)(int orig, int face, int point, void *data), void *data=0);
-  P change_colors(P orig, std::function<unsigned int (unsigned int orig, int face, int point)> f);
-  P change_texture(P orig, std::function<int (int face)> f, BM *array, int size);
+  IMPORT P change_colors(P orig, std::function<unsigned int(unsigned int orig, int face, int point)> f);
+  IMPORT P change_texture(P orig, std::function<int(int face)> f, BM *array, int size);
 
-  P recalculate_normals(P orig);
-  P memoize(P orig);
-  P memoize_all(P orig);
+  IMPORT P recalculate_normals(P orig);
+  IMPORT P memoize(P orig);
+  IMPORT P memoize_all(P orig);
 
-  ID find_point_id(P p, int facenum, int pointnum); // save id's to ENV.
-  ID find_normal_id(P p, int facenum, int pointnum);
-  ID find_color_id(P p, int facenum, int pointnum);
-  ID find_texcoord_id(P p, int facenum, int pointnum);
-  ID id_array(ID *array, int size);
-  void preparepoly(P p, int bbm_choose=-1);
-  void renderpoly(P p, float x, float y, float z);
-  void renderpoly(P p, PT pos);
-  void renderpoly(P p, int choose, float x, float y, float z);
-  void prepare(P p, int bbm_choose=-1);
-  void render(P p, int choose, float x, float y, float z);
+  IMPORT ID find_point_id(P p, int facenum, int pointnum); // save id's to ENV.
+  IMPORT ID find_normal_id(P p, int facenum, int pointnum);
+  IMPORT ID find_color_id(P p, int facenum, int pointnum);
+  IMPORT ID find_texcoord_id(P p, int facenum, int pointnum);
+  IMPORT ID id_array(ID *array, int size);
+  IMPORT void preparepoly(P p, int bbm_choose = -1);
+  IMPORT void renderpoly(P p, float x, float y, float z);
+  IMPORT void renderpoly(P p, PT pos);
+  IMPORT void renderpoly(P p, int choose, float x, float y, float z);
+  IMPORT void prepare(P p, int bbm_choose = -1);
+  IMPORT void render(P p, int choose, float x, float y, float z);
   
-  VA create_vertex_array(P p); // slow
-  void render_vertex_array(VA va); // fast
+  IMPORT VA create_vertex_array(P p); // slow
+  IMPORT void render_vertex_array(VA va); // fast
 
   // these calls require vertex shader.
-  P anim_target_vector(P p, V v);
-  P anim_target_scale(P p, PT center, float scale_x, float scale_y, float scale_z);
-  P anim_target_matrix(P p, M matrix);
+  IMPORT P anim_target_vector(P p, V v);
+  IMPORT P anim_target_scale(P p, PT center, float scale_x, float scale_y, float scale_z);
+  IMPORT P anim_target_matrix(P p, M matrix);
 
 
-  P counts(P p1, int numfaces);
-  P count_function(P p1, std::function<int (int face)> f);
-  P point_function(P p1, std::function<PT (int face, int point)> f);
-  P color_function(P p1, std::function<unsigned int (int face, int point)> f);
-  P texcoord_function(P p1, std::function<PT (int face, int point)> f);
-  P normal_function(P p1, std::function<V (int face, int point)> f);
-  P attrib_function(P p1, std::function<float (int face, int point, int idx)> f, int idx);
-  P attribi_function(P p1, std::function<int (int face, int point, int idx)> f, int idx);
+  IMPORT P counts(P p1, int numfaces);
+  IMPORT P count_function(P p1, std::function<int(int face)> f);
+  IMPORT P point_function(P p1, std::function<PT(int face, int point)> f);
+  IMPORT P color_function(P p1, std::function<unsigned int(int face, int point)> f);
+  IMPORT P texcoord_function(P p1, std::function<PT(int face, int point)> f);
+  IMPORT P normal_function(P p1, std::function<V(int face, int point)> f);
+  IMPORT P attrib_function(P p1, std::function<float(int face, int point, int idx)> f, int idx);
+  IMPORT P attribi_function(P p1, std::function<int(int face, int point, int idx)> f, int idx);
 
 
   // must call prepare for P before these.
-  int get_tri_vertex_array_frames(P p);
-  int get_tri_vertex_array_rows(P p);
-  void get_tri_vertex_array(P p, int choose, int row,
+  IMPORT int get_tri_vertex_array_frames(P p);
+  IMPORT int get_tri_vertex_array_rows(P p);
+  IMPORT void get_tri_vertex_array(P p, int choose, int row,
 			    int *v_size, float **v_array,
 			    int *n_size, float **n_array,
 			    int *c_size, unsigned int **c_array,
@@ -806,11 +807,11 @@ public:
 			    int *attrib_size1, int *attrib_size2, float ***attrib_array);
 
   // this is for better animations, separates modified and non-modified parts
-  P create_static_geometry(P *array, int size);
-  P create_dynamic_geometry(P *array, int size);
-  void render_dynamic(P p, int array_elem, bool textures); // use memoize_all for p before calling this.
+  IMPORT P create_static_geometry(P *array, int size);
+  IMPORT P create_dynamic_geometry(P *array, int size);
+  IMPORT void render_dynamic(P p, int array_elem, bool textures); // use memoize_all for p before calling this.
 
-  BM renderpolytobitmap(P p, float x, float y, float z, int sx, int sy);
+  IMPORT BM renderpolytobitmap(P p, float x, float y, float z, int sx, int sy);
 private:
   void *priv;
   Env &e;
@@ -819,19 +820,19 @@ private:
 class WaveformApi
 { // [0..length] -> [-1..1]
 public: 
-  WaveformApi(Env &e) : e(e) { }
-  WV empty(float length);
-  WV function(std::function<float (float)> f, float length, float min_value, float max_value);
-  WV sinwave(float length, float freq);
-  WV sample(float *array, int length, float samplelength);
-  WV int_sample(int *array, int length, float samplelength, int min_value, int max_value); 
-  WV mix(WV orig, float pos, WV sample);
-  WV volume_ramp(WV orig, float old_y_value, float x_pos1, float x_pos2, float y_pos1, float y_pos2);
-  WV freq_change(WV orig, float old_freq, float new_freq);
-  float length(WV orig);
-  float get_value(WV orig, float val);
-  WV length_change(WV orig, float new_length);
-  BM waveform_bitmap(WV wave, int sx, int sy, unsigned int true_color, unsigned int false_color);
+	IMPORT WaveformApi(Env &e) : e(e) { }
+	IMPORT WV empty(float length);
+	IMPORT WV function(std::function<float(float)> f, float length, float min_value, float max_value);
+	IMPORT WV sinwave(float length, float freq);
+	IMPORT WV sample(float *array, int length, float samplelength);
+	IMPORT WV int_sample(int *array, int length, float samplelength, int min_value, int max_value);
+	IMPORT WV mix(WV orig, float pos, WV sample);
+	IMPORT WV volume_ramp(WV orig, float old_y_value, float x_pos1, float x_pos2, float y_pos1, float y_pos2);
+	IMPORT WV freq_change(WV orig, float old_freq, float new_freq);
+	IMPORT float length(WV orig);
+	IMPORT float get_value(WV orig, float val);
+	IMPORT WV length_change(WV orig, float new_length);
+	IMPORT BM waveform_bitmap(WV wave, int sx, int sy, unsigned int true_color, unsigned int false_color);
 
 private:
   Env &e;
@@ -842,15 +843,15 @@ class ShaderApi;
 class StateChangeApi
 {
 public:
-  StateChangeApi(Env &e, ShaderApi &api);
-  TR init(int paths);
-  TR linear(TR s, int path_num, std::function<P (float val)> f, float start_v, float end_v, float duration);
-  VV prepare(TR sc);
-  VV prepareloop(float *array, int arraysize,
+	IMPORT StateChangeApi(Env &e, ShaderApi &api);
+	IMPORT TR init(int paths);
+	IMPORT TR linear(TR s, int path_num, std::function<P(float val)> f, float start_v, float end_v, float duration);
+	IMPORT VV prepare(TR sc);
+	IMPORT VV prepareloop(float *array, int arraysize,
 		 std::function<P (float val)> f,
 		 float step_duration);
-  void render(VV sc, float time, SH shadero);
-  void render(VV sc, float time, SH shadero, float (*fptr)(int path, std::string name));
+	IMPORT void render(VV sc, float time, SH shadero);
+	IMPORT void render(VV sc, float time, SH shadero, float(*fptr)(int path, std::string name));
 private:
   Env &e;
   ShaderApi &api;
@@ -903,43 +904,43 @@ private:
 class BoolBitmapApi
 { // NxN->2
 public:
-  BoolBitmapApi(Env &e);
-  ~BoolBitmapApi();
-  BB empty(int sx, int sy);
-  BB function(std::function<bool(int,int)> f, int sx, int sy);
-  BB transform(BB orig, std::function<bool (int,int,bool)> f);
-  O to_volume(BB b, float dist);
-  BB from_float_bitmap(FB float_bm, float range_start, float range_end);
-  BB from_bitmaps_color(BM bm, int r, int g, int b);
-  BB from_bitmaps_color_area(BM bm, std::function<bool(int r, int g, int b, int a)> f);
-  BB from_bitmaps_color_area(BM bm, int r_start, int r_end, 
+	IMPORT BoolBitmapApi(Env &e);
+	IMPORT ~BoolBitmapApi();
+	IMPORT BB empty(int sx, int sy);
+	IMPORT BB function(std::function<bool(int, int)> f, int sx, int sy);
+	IMPORT BB transform(BB orig, std::function<bool(int, int, bool)> f);
+	IMPORT O to_volume(BB b, float dist);
+	IMPORT BB from_float_bitmap(FB float_bm, float range_start, float range_end);
+	IMPORT BB from_bitmaps_color(BM bm, int r, int g, int b);
+	IMPORT BB from_bitmaps_color_area(BM bm, std::function<bool(int r, int g, int b, int a)> f);
+	IMPORT BB from_bitmaps_color_area(BM bm, int r_start, int r_end,
 			            int g_start, int g_end, 
 			            int b_start, int b_end, 
 			            int a_start, int a_end);
-  BB circle(BB bg, float center_x, float center_y, float radius);
-  BB rectangle(BB bg, int x, int y, int width, int height); // for static ones
-  BB rectangle(BB bg, float x, float y, float width, float height); // for moving
-  BB sprite(BB bg, BB sprite, float x, float y, float size_multiplier_x, float size_multiplier_y);
-  BB polygon(BB bg, PT *points, int size);
-  BB text(BB bg, int x, int y, const char *string, int size, 
+	IMPORT BB circle(BB bg, float center_x, float center_y, float radius);
+	IMPORT BB rectangle(BB bg, int x, int y, int width, int height); // for static ones
+	IMPORT BB rectangle(BB bg, float x, float y, float width, float height); // for moving
+	IMPORT BB sprite(BB bg, BB sprite, float x, float y, float size_multiplier_x, float size_multiplier_y);
+	IMPORT BB polygon(BB bg, PT *points, int size);
+	IMPORT BB text(BB bg, int x, int y, const char *string, int size,
 	  BB *glyphs, int glyphcount, int(*fptr)(EveryApi &ev, char));
 
-  BB part_circle(int sx, int sy, float x, float y, float start_angle, float end_angle, float start_rad, float end_rad);
+	IMPORT BB part_circle(int sx, int sy, float x, float y, float start_angle, float end_angle, float start_rad, float end_rad);
   
-  BB not_bitmap(BB b);
-  BB or_bitmap(BB b1, BB b2);
-  BB andnot_bitmap(BB b1, BB not_b2);
-  BB xor_bitmap(BB b1, BB flip_b2);
+	IMPORT BB not_bitmap(BB b);
+	IMPORT BB or_bitmap(BB b1, BB b2);
+	IMPORT BB andnot_bitmap(BB b1, BB not_b2);
+	IMPORT BB xor_bitmap(BB b1, BB flip_b2);
   
-  BM to_bitmap(BB bools, 
+	IMPORT BM to_bitmap(BB bools,
 	       int true_r, int true_g, int true_b, int true_a,
 	       int false_r, int false_g, int false_b, int false_a);
-  BM texture(BM bg, 
+	IMPORT BM texture(BM bg,
 	     BB bools1, int l1, int t1,
 	     BM texturebitmap2, int l2, int t2);
-  int size_x(BB bm);
-  int size_y(BB bm);
-  bool boolvalue(BB bb, int x, int y);
+	IMPORT int size_x(BB bm);
+	IMPORT int size_y(BB bm);
+	IMPORT bool boolvalue(BB bb, int x, int y);
 private:
   Env &e;
 };
@@ -947,34 +948,34 @@ private:
 class FloatBitmapApi
 { // NxN->R
 public: // values are [0.0..1.0]
-  FloatBitmapApi(Env &e);
-  ~FloatBitmapApi();
-  FB empty(int sx, int sy);
-  FB function(std::function<float (int,int)> f, int sx, int sy);
-  FB from_bool_bitmap(BB bm, int csx, int csy);
-  FB grayscale(BM color_bm);
-  FB from_red(BM color_bm);
-  FB from_green(BM color_bm);
-  FB from_blue(BM color_bm);
-  FB from_alpha(BM color_bm);
+	IMPORT FloatBitmapApi(Env &e);
+	IMPORT ~FloatBitmapApi();
+	IMPORT FB empty(int sx, int sy);
+	IMPORT FB function(std::function<float(int, int)> f, int sx, int sy);
+	IMPORT FB from_bool_bitmap(BB bm, int csx, int csy);
+	IMPORT FB grayscale(BM color_bm);
+	IMPORT FB from_red(BM color_bm);
+	IMPORT FB from_green(BM color_bm);
+	IMPORT FB from_blue(BM color_bm);
+	IMPORT FB from_alpha(BM color_bm);
 
-  FB min_fb(FB fb1, FB fb2);
-  FB max_fb(FB fb1, FB fb2);
+	IMPORT FB min_fb(FB fb1, FB fb2);
+	IMPORT FB max_fb(FB fb1, FB fb2);
 
-  FB mix_fb(FB fb1, FB fb2, float val);
+	IMPORT FB mix_fb(FB fb1, FB fb2, float val);
   
-  BM to_grayscale(FB fb);
-  BM to_grayscale_color(FB fb, 
+	IMPORT BM to_grayscale(FB fb);
+	IMPORT BM to_grayscale_color(FB fb,
 			int r, int g, int b, int a,
 			int r2, int g2, int b2, int a2);
-  BM to_color(FB r, FB g, FB b, FB a);
-  BM subfloatbitmap(FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color);
+	IMPORT BM to_color(FB r, FB g, FB b, FB a);
+	IMPORT BM subfloatbitmap(FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color);
 
-  FB from_bool(BB b, float val_true, float val_false);
-  BB to_bool(FB f, float true_range_start, float true_range_end);
-  int size_x(FB bm);
-  int size_y(FB bm);
-  float floatvalue(FB bm, int x, int y);
+	IMPORT FB from_bool(BB b, float val_true, float val_false);
+	IMPORT BB to_bool(FB f, float true_range_start, float true_range_end);
+	IMPORT int size_x(FB bm);
+	IMPORT int size_y(FB bm);
+	IMPORT float floatvalue(FB bm, int x, int y);
 private:
   Env &e;
 };
@@ -994,15 +995,15 @@ private:
 class ContinuousBitmapApi
 { // RxR->RGB
 public:
-  ContinuousBitmapApi(Env &e);
-  CBM empty(float x, float y);
-  CBM constant(unsigned int color, float x, float y);
-  CBM function(std::function<unsigned int (float,float)> f, float sx, float sy);
-  BM sample(CBM c_bitmap, int sx, int sy); 
-  CBM from_bitmap(BM bm, float xsize, float ysize);
-  BM to_bitmap(CBM bm, int sx, int sy);
+	IMPORT ContinuousBitmapApi(Env &e);
+	IMPORT CBM empty(float x, float y);
+	IMPORT CBM constant(unsigned int color, float x, float y);
+	IMPORT CBM function(std::function<unsigned int(float, float)> f, float sx, float sy);
+	IMPORT BM sample(CBM c_bitmap, int sx, int sy);
+	IMPORT CBM from_bitmap(BM bm, float xsize, float ysize);
+	IMPORT BM to_bitmap(CBM bm, int sx, int sy);
 
-  CBM rotate(CBM bm, float center_x, float center_y, float angle);
+	IMPORT CBM rotate(CBM bm, float center_x, float center_y, float angle);
 
 private:
   Env &e;
@@ -1027,10 +1028,10 @@ private:
 class ColorApi
 { // ()->RGB
 public:
-  ColorApi(Env &e);
-  CO u_color(unsigned int color); // argb
-  CO rgb_color(int r, int g, int b, int a); // r,g,b,a [0..255]
-  CO rgbf_color(float r, float g, float b, float a);
+	IMPORT ColorApi(Env &e);
+	IMPORT CO u_color(unsigned int color); // argb
+	IMPORT CO rgb_color(int r, int g, int b, int a); // r,g,b,a [0..255]
+	IMPORT CO rgbf_color(float r, float g, float b, float a);
 private:
   Env &e;
 };
@@ -1038,23 +1039,23 @@ private:
 class PointApi
 { // ()->PT
 public:
-  PointApi(Env &e);
-  PT origo();
-  PT point(float x, float y, float z=0.0);
-  PT move(PT p1, float dx, float dy, float dz=0.0);
-  PT move(PT p1, V vec);
+	IMPORT PointApi(Env &e);
+	IMPORT PT origo();
+	IMPORT PT point(float x, float y, float z = 0.0);
+	IMPORT PT move(PT p1, float dx, float dy, float dz = 0.0);
+	IMPORT PT move(PT p1, V vec);
 
-  PT mix(PT p1, PT p2, float val); // val=[0.0..1.0]
+	IMPORT PT mix(PT p1, PT p2, float val); // val=[0.0..1.0]
 
-  PT from_angle(float radius, float angle);
-  PT from_angle(PT center, float radius, float angle);
+	IMPORT PT from_angle(float radius, float angle);
+	IMPORT PT from_angle(PT center, float radius, float angle);
 
-  float pt_x(PT p);
-  float pt_y(PT p);
-  float pt_z(PT p);
-  float dist3d(PT p, PT p2);
-  float dist2d(PT p, PT p2);
-  V minus(PT p1, PT p2);
+	IMPORT float pt_x(PT p);
+	IMPORT float pt_y(PT p);
+	IMPORT float pt_z(PT p);
+	IMPORT float dist3d(PT p, PT p2);
+	IMPORT float dist2d(PT p, PT p2);
+	IMPORT V minus(PT p1, PT p2);
 private:
   Env &e;
 };
@@ -1062,13 +1063,13 @@ private:
 class PointCollectionApi
   { // int -> PT
 public:
-  PointCollectionApi(Env &e) : e(e) { }
-  PC empty();
-  PC single(PT point);
-  PC single(float x, float y, float z);
-  PC array(PT *array, int size);
-  PC bezier(PT *array, PT *control_array, int size, int iteration_count);
-  P tri_object3d(PC p);
+	IMPORT PointCollectionApi(Env &e) : e(e) { }
+	IMPORT PC empty();
+	IMPORT PC single(PT point);
+	IMPORT PC single(float x, float y, float z);
+	IMPORT PC array(PT *array, int size);
+	IMPORT PC bezier(PT *array, PT *control_array, int size, int iteration_count);
+	IMPORT P tri_object3d(PC p);
 private:
   Env &e;
 };
@@ -1076,15 +1077,15 @@ private:
 class LinesApi
 {
 public:
-  LinesApi(Env &e) : e(e) { }
-  LI function(std::function<PT (int linenum, bool id)> f,
+	IMPORT LinesApi(Env &e) : e(e) { }
+	IMPORT LI function(std::function<PT(int linenum, bool id)> f,
 	      int numlines);
-  LI from_points(PC points, bool loops);
-  LI from_polygon(P poly);
-  LI border_from_bool_bitmap(BB b, float start_x, float end_x,
+	IMPORT LI from_points(PC points, bool loops);
+	IMPORT LI from_polygon(P poly);
+	IMPORT LI border_from_bool_bitmap(BB b, float start_x, float end_x,
 			     float start_y, float end_y, float z);
-  LLA prepare(LI l);
-  void render(LLA array);
+	IMPORT LLA prepare(LI l);
+	IMPORT void render(LLA array);
 private:
   Env &e;
 };
@@ -1094,19 +1095,19 @@ class VectorApi
 { // to be implemented via virtual Vector vec() const=0;
   // ()->V
 public:
-  VectorApi(Env &e);
-  V null_vector();
-  V vector(float delta_x, float delta_y, float delta_z);
-  V sum(V v1, V v2);
-  V mul(V v1, float scalar);
-  float dot(V v1, V v2);
-  V cross(V v1, V v2);
-  float projection_length(V u, V u_x);
-  V projection_1(V u, V u_x);
-  V projection_2(V u, V u_x);
-  V neg(V v);
-  float dist3d(V v);
-  float dist2d(V v);
+	IMPORT VectorApi(Env &e);
+	IMPORT V null_vector();
+	IMPORT V vector(float delta_x, float delta_y, float delta_z);
+	IMPORT V sum(V v1, V v2);
+	IMPORT V mul(V v1, float scalar);
+	IMPORT float dot(V v1, V v2);
+	IMPORT V cross(V v1, V v2);
+	IMPORT float projection_length(V u, V u_x);
+	IMPORT V projection_1(V u, V u_x);
+	IMPORT V projection_2(V u, V u_x);
+	IMPORT V neg(V v);
+	IMPORT float dist3d(V v);
+	IMPORT float dist2d(V v);
 private:
   Env &e;
 };
@@ -1124,22 +1125,22 @@ private:
 class MatrixApi
 { // to be implemented with virtual Matrix get_matrix() const=0;
 public:
-  MatrixApi(Env &e);
-  M identity();
-  M xrot(float rot);
-  M yrot(float rot);
-  M zrot(float rot);
-  M trans(float x, float y, float z);
-  M trans(V vec);
-  M scale(float sx, float sy, float sz);
-  M projection(float z_min);
-  M perspective_projection(float dist);
-  M perspective(float fovy, float aspect, float near, float far);
-  M inverse(M m1);
-  M mult(M m1, M m2);
-  M rotate_around_axis(V v, float angle);
-  M rotate_around_axis(PT point, V v, float angle);
-  PT mult(PT point, M matrix);
+	IMPORT MatrixApi(Env &e);
+	IMPORT M identity();
+	IMPORT M xrot(float rot);
+	IMPORT M yrot(float rot);
+	IMPORT M zrot(float rot);
+	IMPORT M trans(float x, float y, float z);
+	IMPORT M trans(V vec);
+	IMPORT M scale(float sx, float sy, float sz);
+	IMPORT M projection(float z_min);
+	IMPORT M perspective_projection(float dist);
+	IMPORT M perspective(float fovy, float aspect, float near, float far);
+	IMPORT M inverse(M m1);
+	IMPORT M mult(M m1, M m2);
+	IMPORT M rotate_around_axis(V v, float angle);
+	IMPORT M rotate_around_axis(PT point, V v, float angle);
+	IMPORT PT mult(PT point, M matrix);
 private:
   Env &e;
 };
@@ -1202,25 +1203,25 @@ private:
 class ShaderApi
 {
 public:
-  ShaderApi(Env &e);
-  ~ShaderApi();
-  void load(std::string filename);
-  SH get_shader(std::string v_format, std::string f_format, std::string g_format);
-  void link(SH shader);
-  void use(SH shader);
-  void unuse(SH shader);
-  void bindnames(GameApi::SH shader, 
+	IMPORT ShaderApi(Env &e);
+	IMPORT ~ShaderApi();
+	IMPORT void load(std::string filename);
+	IMPORT SH get_shader(std::string v_format, std::string f_format, std::string g_format);
+	IMPORT void link(SH shader);
+	IMPORT void use(SH shader);
+	IMPORT void unuse(SH shader);
+	IMPORT void bindnames(GameApi::SH shader,
 		 std::string s_vertex,
 		 std::string s_normal,
 		 std::string s_color,
 		 std::string s_texcoord);
-  void set_default_projection(GameApi::SH shader, std::string name);
-  void set_y_rotation(SH shader, std::string name, float angle);
-  void bind_attrib(GameApi::SH shader, int num, std::string name);
-  void set_var(GameApi::SH shader, std::string name, float val);
-  void set_var(GameApi::SH shader, std::string name, float x, float y, float z);
-  void set_var(GameApi::SH shader, std::string name, int val);
-  void set_var(GameApi::SH shader, std::string name, M matrix);
+	IMPORT void set_default_projection(GameApi::SH shader, std::string name);
+	IMPORT void set_y_rotation(SH shader, std::string name, float angle);
+	IMPORT void bind_attrib(GameApi::SH shader, int num, std::string name);
+	IMPORT void set_var(GameApi::SH shader, std::string name, float val);
+	IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z);
+	IMPORT void set_var(GameApi::SH shader, std::string name, int val);
+	IMPORT void set_var(GameApi::SH shader, std::string name, M matrix);
 private:
   friend class StateChangeApi;
   void *priv;
@@ -1288,7 +1289,7 @@ private:
 
 struct EveryApi
 {
-  EveryApi(Env &e) 
+	IMPORT EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
     font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e) { }
 

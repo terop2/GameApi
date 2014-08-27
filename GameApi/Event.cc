@@ -21,7 +21,7 @@
 #include "Event.hh"
 #define NO_SDL_GLEXT
 #include <GL/glew.h>
-#include <SDL2/SDL_opengl.h>
+#include <SDL_opengl.h>
 
 void DrawVBO(TimedMatrixPaths &paths, float time, VBOState &vbostate, VBOUpdate u)
 {

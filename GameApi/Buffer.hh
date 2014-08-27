@@ -22,7 +22,6 @@
 #ifndef BUFFER_HH
 #define BUFFER_HH
 #include <algorithm>
-
 struct BufferRef
 {
   unsigned int *buffer;

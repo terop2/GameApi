@@ -1,6 +1,7 @@
 #include "GameApi.hh"
+#pragma comment(lib, "d:\\cvs\\gameapi-code\\GameApi\\GameApi\\Debug\\GameApi\\GameApi.lib")
 #include <iostream>
-
+#include <Windows.h>
 void GameApiTest(GameApi::EveryApi &e);
 void GameApiTest2(GameApi::EveryApi &e);
 void GameApiTest3(GameApi::EveryApi &e);
@@ -12,6 +13,7 @@ void GameTest7(GameApi::EveryApi &e);
 void GameTest8(GameApi::EveryApi &e);
 void GameTest9(GameApi::EveryApi &e);
 void GameTestA(GameApi::EveryApi &e);
+
 int main(int argc, char *argv[])
 {
 
@@ -24,7 +26,7 @@ int main(int argc, char *argv[])
       g.start_game(0);
       return 0;
     }
-  else if (argc>1 && std::string(argv[1])=="-test4")
+  else if ((argc>1 && std::string(argv[1])=="-test4"))
     {
       GameApi::Env e;
       GameApi::GamesApi g(e);

@@ -22,10 +22,9 @@
 //#include "BigObjects.hh"
 #include <set>
 #include <queue>
-#include <tr1/unordered_set>
+#include <unordered_set>
 #include "Buffer.hh"
 #include <cstdlib>
-
 
 #if 0
 class Random

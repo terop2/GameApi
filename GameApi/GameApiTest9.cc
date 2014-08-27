@@ -1,5 +1,6 @@
 
 #include "GameApi.hh"
+#pragma comment(lib, "d:\\cvs\\gameapi-code\\GameApi\\GameApi\\Debug\\GameApi\\GameApi.lib")
 #include <iostream>
 
 using namespace GameApi;

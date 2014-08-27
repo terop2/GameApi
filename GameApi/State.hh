@@ -149,7 +149,7 @@ public:
   virtual int NumPoints() const { return 0; }
   virtual Point FacePoint(int face, int point) const { return Point(0.0,0.0,0.0); }
   virtual Vector PointNormal(int face, int point) const { return Vector(0.0,0.0,0.0); }
-  virtual Point2d TexCoord(int face, int point) const { Point2d p; return p; }
+  virtual Point2d TexCoord(int face, int point) const { Point2d p; p.x = 0.0;  return p; }
   virtual unsigned int VertexColor(int face, int point) const
   {
     return 0;

@@ -6,7 +6,7 @@
 #include "Effect.hh"
 #include "Effect2.hh"
 #include <GL/glew.h>
-#include <SDL2/SDL_opengl.h>
+#include <SDL_opengl.h>
 
 void VertexArraySet::push_poly(int id, int num, Point *points)
 {

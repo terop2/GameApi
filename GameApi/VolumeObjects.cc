@@ -18,13 +18,13 @@
 // along with Polygon.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-
+#define _SCL_SECURE_NO_WARNINGS
 #include "VolumeObjects.hh"
 #include <cmath>
 #include <iostream>
 #define NO_SDL_GLEXT
 #include <GL/glew.h>
-#include <SDL2/SDL_opengl.h>
+#include <SDL_opengl.h>
 #include "Shader.hh"
 #include "Graph.hh"
 #include "Triangle.hh"
@@ -154,6 +154,7 @@ VolumeEffect::~VolumeEffect()
 }
 void VolumeEffect::Init()
 {
+#if 0
   glEnable(GL_ALPHA_TEST);
   Triangle tri(Point(0.0,0.0,0.0),
 	       Point(5.0,0.0,0.0),
@@ -177,6 +178,7 @@ void VolumeEffect::Init()
   discard_attr.Attr(attribs);
   
   UpdateVBO(vbo, vbostate, UpdateVertexNormalIndex, attribs);
+#endif
 }
 
 bool VolumeEffect::Frame(float time)

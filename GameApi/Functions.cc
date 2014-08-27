@@ -1,5 +1,6 @@
 #define NO_SDL_GLEXT
-#include <SDL2/SDL_opengl.h>
+#define _SCL_SECURE_NO_WARNINGS
+#include <SDL_opengl.h>
 
 #include "Functions.hh"
 #include "Effect.hh"
@@ -251,9 +252,9 @@ bool FuncEffect::Frame(float time)
   plane_dup(p,p2);
   //tunnel_end(p2, store);
   chessboard(p2, store);
-  glEnable(GL_TEXTURE_2D);
+  //glEnable(GL_TEXTURE_2D);
   GetRender()->RenderFacesTexture(store);
-  glDisable(GL_TEXTURE_2D);
+  //glDisable(GL_TEXTURE_2D);
   return false;
 }
 int chessboard_bitmap(FrameAnimPlugins *fa)
@@ -298,9 +299,9 @@ bool FunctionPointerFrameAnim::Frame(float time)
 {
   FaceCollectionStore store;
   fptr(store);
-  glEnable(GL_TEXTURE_2D);
+  //glEnable(GL_TEXTURE_2D);
   GetRender()->RenderFacesTexture(store);
-  glDisable(GL_TEXTURE_2D);
+  //glDisable(GL_TEXTURE_2D);
   return false;
 }
 

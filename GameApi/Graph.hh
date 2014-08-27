@@ -6909,8 +6909,8 @@ public:
   virtual Color Map(int x, int y) const { return Color::Transparent(); }
   virtual int AreaCount() const  { return 0; }
   virtual int Id(int i) const { return 0; }
-  virtual Point2d AreaS(int i) const { Point2d p; return p; }
-  virtual Point2d AreaE(int i) const { Point2d p; return p; }
+  virtual Point2d AreaS(int i) const { Point2d p; p.x = 0.0;  return p; }
+  virtual Point2d AreaE(int i) const { Point2d p; p.x = 0.0; return p; }
 };
 
 class TextureIBitmap : public Bitmap<Color>
