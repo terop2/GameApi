@@ -24,6 +24,7 @@
 #include <cmath>
 #include <iostream>
 #include <ostream>
+#include <algorithm>
 std::ostream &operator<<(std::ostream &o, const Point &p)
 {
   o << "(" << p.x << "," << p.y << "," << p.z << ")";
@@ -760,7 +761,8 @@ float cs(float x, float m)
 	}
     }
 }
-
+#undef min
+#undef max
 Quarternion Quarternion::MatrixToQuar(const Matrix &m)
 {
   Matrix mm = Matrix::Transpose(m);

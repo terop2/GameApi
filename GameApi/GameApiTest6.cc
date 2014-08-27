@@ -1,11 +1,12 @@
 #define NO_SDL_GLEXT
 #include <GL/glew.h>
 #include <GL/gl.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
+#include <SDL.h>
+#include <SDL_opengl.h>
 #include <iostream>
 
 #include "GameApi.hh"
+#pragma comment(lib, "d:\\cvs\\gameapi-code\\GameApi\\GameApi\\Debug\\GameApi\\GameApi.lib")
 #include <cmath>
 
 unsigned int color_value(int, int, void*)

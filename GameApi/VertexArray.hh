@@ -34,56 +34,56 @@ public:
 
   // way to get data out
   int tri_count(int id) const { return m_set[id]->tri_polys.size(); }
-  const Point *tri_polys(int id) const { return &m_set[id]->tri_polys[0]; }
+  const Point *tri_polys(int id) const { return tri_count(id) ? &m_set[id]->tri_polys[0] : NULL; }
   int quad_count(int id) const { return m_set[id]->quad_polys.size(); }
-  const Point *quad_polys(int id) const { return &m_set[id]->quad_polys[0]; }
+  const Point *quad_polys(int id) const { return quad_count(id) ? &m_set[id]->quad_polys[0] : NULL; }
   int poly_count(int id) const { return m_set[id]->poly_polys.size(); }
   int poly2_count(int id, int i) const { return m_set[id]->poly_polys[i].size(); }
-  const Point *poly_polys(int id, int i) const { return &m_set[id]->poly_polys[i][0]; }
+  const Point *poly_polys(int id, int i) const { return poly2_count(id,i)? &m_set[id]->poly_polys[i][0] : NULL; }
 
   int tri_normal_count(int id) const { return m_set[id]->tri_normals.size(); }
-  const Vector *tri_normal_polys(int id) const { return &m_set[id]->tri_normals[0]; }
+  const Vector *tri_normal_polys(int id) const { return tri_normal_count(id) ? &m_set[id]->tri_normals[0] : NULL; }
   int quad_normal_count(int id) const { return m_set[id]->quad_normals.size(); }
-  const Vector *quad_normal_polys(int id) const { return &m_set[id]->quad_normals[0]; }
+  const Vector *quad_normal_polys(int id) const { return quad_normal_count(id) ? &m_set[id]->quad_normals[0] : NULL; }
   int poly_normal_count(int id) const { return m_set[id]->poly_normals.size(); }
   int poly2_normal_count(int id, int i) const { return m_set[id]->poly_normals[i].size(); }
-  const Vector *poly_normal_polys(int id, int i) const { return &m_set[id]->poly_normals[i][0]; }
+  const Vector *poly_normal_polys(int id, int i) const { return poly2_normal_count(id,i) ? &m_set[id]->poly_normals[i][0] : NULL; }
 
 
 
   int tri_attrib_count(int id, int attrib_id) const { return m_set[id]->tri_attribs[attrib_id].size(); }
-  const float *tri_attrib_polys(int id, int attrib_id) const { return &m_set[id]->tri_attribs[attrib_id][0]; }
+  const float *tri_attrib_polys(int id, int attrib_id) const { return tri_attrib_count(id,attrib_id) ? &m_set[id]->tri_attribs[attrib_id][0] : NULL; }
   int quad_attrib_count(int id, int attrib_id) const { return m_set[id]->quad_attribs[attrib_id].size(); }
-  const float *quad_attrib_polys(int id, int attrib_id) const { return &m_set[id]->quad_attribs[attrib_id][0]; }
+  const float *quad_attrib_polys(int id, int attrib_id) const { return quad_attrib_count(id, attrib_id) ? &m_set[id]->quad_attribs[attrib_id][0] : NULL; }
   int poly_attrib_count(int id, int attrib_id) const { return m_set[id]->poly_attribs[attrib_id].size(); }
   int poly2_attrib_count(int id, int attrib_id, int i) const { return m_set[id]->poly_attribs[attrib_id][i].size(); }
-  const float *poly_attrib_polys(int id, int attrib_id, int i) const { return &m_set[id]->poly_attribs[attrib_id][i][0]; }
+  const float *poly_attrib_polys(int id, int attrib_id, int i) const { return poly2_attrib_count(id, attrib_id, i) ? &m_set[id]->poly_attribs[attrib_id][i][0] : NULL; }
 
   int tri_attribi_count(int id, int attrib_id) const { return m_set[id]->tri_attribsi[attrib_id].size(); }
-  const int *tri_attribi_polys(int id, int attrib_id) const { return &m_set[id]->tri_attribsi[attrib_id][0]; }
+  const int *tri_attribi_polys(int id, int attrib_id) const { return tri_attribi_count(id,attrib_id) ? &m_set[id]->tri_attribsi[attrib_id][0] : NULL; }
   int quad_attribi_count(int id, int attrib_id) const { return m_set[id]->quad_attribsi[attrib_id].size(); }
-  const int *quad_attribi_polys(int id, int attrib_id) const { return &m_set[id]->quad_attribsi[attrib_id][0]; }
+  const int *quad_attribi_polys(int id, int attrib_id) const { return quad_attribi_count(id,attrib_id) ? &m_set[id]->quad_attribsi[attrib_id][0] : NULL; }
   int poly_attribi_count(int id, int attrib_id) const { return m_set[id]->poly_attribsi[attrib_id].size(); }
   int poly2_attribi_count(int id, int attrib_id, int i) const { return m_set[id]->poly_attribsi[attrib_id][i].size(); }
-  const int *poly_attribi_polys(int id, int attrib_id, int i) const { return &m_set[id]->poly_attribsi[attrib_id][i][0]; }
+  const int *poly_attribi_polys(int id, int attrib_id, int i) const { return poly2_attribi_count(id, attrib_id, i) ? &m_set[id]->poly_attribsi[attrib_id][i][0] : NULL; }
 
 
   int tri_color_count(int id) const { return m_set[id]->tri_color.size(); }
-  const float *tri_color_polys(int id) const { return &m_set[id]->tri_color[0]; }
+  const float *tri_color_polys(int id) const { return tri_color_count(id) ? &m_set[id]->tri_color[0] : NULL; }
   int quad_color_count(int id) const { return m_set[id]->quad_color.size(); }
-  const float *quad_color_polys(int id) const { return &m_set[id]->quad_color[0]; }
+  const float *quad_color_polys(int id) const { return quad_color_count(id) ? &m_set[id]->quad_color[0] : NULL; }
   int poly_color_count(int id) const { return m_set[id]->poly_color.size(); }
   int poly2_color_count(int id, int i) const { return m_set[id]->poly_color[i].size(); }
-  const float *poly_color_polys(int id, int i) const { return &m_set[id]->poly_color[i][0]; }
+  const float *poly_color_polys(int id, int i) const { return poly2_color_count(id,i) ? &m_set[id]->poly_color[i][0] : NULL; }
 
 
   int tri_texcoord_count(int id) const { return m_set[id]->tri_texcoord.size(); }
-  const Point2d *tri_texcoord_polys(int id) const { return &m_set[id]->tri_texcoord[0]; }
+  const Point2d *tri_texcoord_polys(int id) const { return tri_texcoord_count(id) ? &m_set[id]->tri_texcoord[0] : NULL; }
   int quad_texcoord_count(int id) const { return m_set[id]->quad_texcoord.size(); }
-  const Point2d *quad_texcoord_polys(int id) const { return &m_set[id]->quad_texcoord[0]; }
+  const Point2d *quad_texcoord_polys(int id) const { return quad_texcoord_count(id) ? &m_set[id]->quad_texcoord[0] : NULL; }
   int poly_texcoord_count(int id) const { return m_set[id]->poly_texcoord.size(); }
   int poly2_texcoord_count(int id, int i) const { return m_set[id]->poly_texcoord[i].size(); }
-  const Point2d *poly_texcoord_polys(int id, int i) const { return &m_set[id]->poly_texcoord[i][0]; }
+  const Point2d *poly_texcoord_polys(int id, int i) const { return poly2_texcoord_count(id,i) ? &m_set[id]->poly_texcoord[i][0] : NULL; }
   
   
 private:

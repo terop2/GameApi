@@ -144,7 +144,7 @@ class EmptyTreeNodeCollection : public TreeNodeCollection
 {
 public:
   int Size() const { return 0; }
-  TreeNode Index(int a) const { TreeNode n; return n; }
+  TreeNode Index(int a) const { TreeNode n; n.faces = 0;  return n; }
   void Modify(float time) { }
 };
 

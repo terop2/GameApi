@@ -21,20 +21,19 @@
 
 #ifndef EFFECT_HH
 #define EFFECT_HH
-
 #include "VectorTools.hh"
 #include <vector>
 #include <map>
 #include <cmath>
 #include <iostream>
 #include "Pieces.hh"
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "Buffer.hh"
 #include "Intersect.hh"
 #include "Shader.hh"
 #include <iterator>
 #include <cassert>
-#include <tr1/memory>
+#include <memory>
 
 enum AttribId
   {
@@ -1166,7 +1165,8 @@ public:
 private:
   const Array<T,K> &arr;
 };
-
+#undef min
+#undef max
 template<class I, class T>
 class ArrayDiagonal : public Array<I,T>
 {
@@ -1663,7 +1663,7 @@ private:
   CurveIn3d &curve;
 };
 typedef FunctionImpl0<CurveIn3d*, MatrixCurve*, TranslateToMatrixCurve> TranslateToMatrixCurveFunction;
-
+#undef min
 class MultiplyMatrixCurve : public MatrixCurve
 {
 public:
@@ -2745,7 +2745,7 @@ private:
   float end_x;
   int x_numpoints;
 };
-
+#undef max
 class MaxCurve : public Function<float,float>
 {
 public:
@@ -2979,7 +2979,7 @@ public:
 
   virtual int NumTextures() const { return 0; }
   virtual void GenTexture(int num) { }
-  virtual BufferRef TextureBuf(int num) const { BufferRef ref; return ref; }
+  virtual BufferRef TextureBuf(int num) const { BufferRef ref; ref.buffer = 0;  return ref; }
   virtual int FaceTexture(int face) const { return -1; }
   //virtual void Pullback() const=0; // should call P functions only
   //void P(FaceCollection &single);
@@ -6453,7 +6453,7 @@ public:
   }
   virtual int NumTextures() const { return 0; }
   virtual void GenTexture(int num) { }
-  virtual BufferRef TextureBuf(int num) const { BufferRef ref; return ref; }
+  virtual BufferRef TextureBuf(int num) const { BufferRef ref; ref.buffer = 0; return ref; }
   virtual int FaceTexture(int face) const { return -1; }
 
 private:
@@ -9875,7 +9875,7 @@ class MeshTextures
 public:
   virtual int NumTextures() const { return 0; }
   virtual void GenTexture(int num) { }
-  virtual BufferRef TextureBuf(int num) const { BufferRef ref; return ref; }
+  virtual BufferRef TextureBuf(int num) const { BufferRef ref; ref.buffer = 0;  return ref; }
   virtual ~MeshTextures() { }
 };
 
@@ -10579,7 +10579,9 @@ public:
   }
   virtual int NumTextures() const { return 0; }
   virtual void GenTexture(int num) { }
-  virtual BufferRef TextureBuf(int num) const { BufferRef ref; return ref; }
+  virtual BufferRef TextureBuf(int num) const {
+	  BufferRef ref; ref.buffer = 0; return ref;
+  }
   virtual int FaceTexture(int face) const { return -1; }
 private:
   float *v_array;
