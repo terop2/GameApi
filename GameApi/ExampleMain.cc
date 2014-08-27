@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
       g.start_game(0);
       return 0;
     }
-  else if ((argc>1 && std::string(argv[1])=="-test4"))
+  else if (1||(argc>1 && std::string(argv[1])=="-test4"))
     {
       GameApi::Env e;
       GameApi::GamesApi g(e);
