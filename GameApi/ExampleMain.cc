@@ -1,7 +1,9 @@
 #include "GameApi.hh"
 #pragma comment(lib, "d:\\cvs\\gameapi-code\\GameApi\\GameApi\\Debug\\GameApi\\GameApi.lib")
 #include <iostream>
+#ifdef WIN32
 #include <Windows.h>
+#endif
 void GameApiTest(GameApi::EveryApi &e);
 void GameApiTest2(GameApi::EveryApi &e);
 void GameApiTest3(GameApi::EveryApi &e);
