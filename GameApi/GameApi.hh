@@ -79,6 +79,7 @@ using std::placeholders::_9;
   struct VAA { int id; }; // vertex array array
   struct VX { int id; }; // voxel
   struct PL { int id; }; // plane
+  struct PLA { int id; }; // planearray
   struct TX { int id; }; // texture
   struct TXID { int id; }; // texture id
   struct TR { int id; }; // time range
@@ -645,7 +646,7 @@ class SurfaceApi
 public:
   SurfaceApi(Env &e);
   ~SurfaceApi();
-  S plane(PT pos, PT u_x, PT u_y);
+  S plane(PT pos, V u_x, V u_y);
   S sphere(PT center, float radius);
   S torus(PT center, float dist1, float dist2, PT pos, PT u_x, PT u_y);
   S interpolate(S s1, S s2, float val); // val = [0..1]
@@ -898,6 +899,9 @@ public:
   P substitute_quads_with_plane(P orig, PL (*fptr)(EveryApi &ev, int face, void *data), void *data);
   P plane_in_3d(PL plane, PT u_p, V v1, V v2);
   
+  PLA prepare(PL pl);
+  void render(PLA pl);
+
 private:
   Env &e;
 };
@@ -996,16 +1000,16 @@ private:
 class ContinuousBitmapApi
 { // RxR->RGB
 public:
-	IMPORT ContinuousBitmapApi(Env &e);
-	IMPORT CBM empty(float x, float y);
-	IMPORT CBM constant(unsigned int color, float x, float y);
-	IMPORT CBM function(std::function<unsigned int(float, float)> f, float sx, float sy);
-	IMPORT BM sample(CBM c_bitmap, int sx, int sy);
-	IMPORT CBM from_bitmap(BM bm, float xsize, float ysize);
-	IMPORT BM to_bitmap(CBM bm, int sx, int sy);
+  IMPORT ContinuousBitmapApi(Env &e);
+  IMPORT CBM empty(float x, float y);
+  IMPORT CBM constant(unsigned int color, float x, float y);
+  IMPORT CBM function(std::function<unsigned int(float, float)> f, float sx, float sy);
+  IMPORT BM sample(CBM c_bitmap, int sx, int sy);
+  IMPORT CBM from_bitmap(BM bm, float xsize, float ysize);
+  IMPORT BM to_bitmap(CBM bm, int sx, int sy);
 
-	IMPORT CBM rotate(CBM bm, float center_x, float center_y, float angle);
-
+  IMPORT CBM rotate(CBM bm, float center_x, float center_y, float angle);
+  IMPORT CBM surfacecolor(S s, COV cov);
 private:
   Env &e;
 };

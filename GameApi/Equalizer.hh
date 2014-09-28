@@ -319,7 +319,6 @@ private:
 };
 
 
-
 template<class Omega, class A, class B>
 class InverseImageF : public Function<Function<B,Omega>*, Function<A,Omega>*>, private Function<A,Omega>
 {

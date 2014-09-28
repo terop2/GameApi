@@ -7053,6 +7053,7 @@ public:
   virtual float SizeY() const=0;
   virtual int Size() const=0;
   virtual Point2d Map(int i) const=0;
+  virtual bool IsMoveIndex(int i) const { if (i==0) return true; else return false; }
 };
 
 #if 0

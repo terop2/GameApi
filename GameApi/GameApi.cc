@@ -657,6 +657,12 @@ struct PointArray2
   GLuint vao[1];
 };
 
+struct PlaneData
+{
+  std::vector<float> array;
+  std::vector<unsigned char> cmd_array;
+};
+
 
 struct EnvImpl
 {
@@ -698,6 +704,7 @@ struct EnvImpl
   std::vector<TexCoordQuad> tex_quads;
   std::vector<Separate*> separates;
   std::vector<PlanePoints2d*> plane_points;
+  std::vector<PlaneData> plane_array;
   std::vector<Waveform*> waveforms;
   std::vector<Array<int, ObjectWithPos> * > object_move;
   std::vector<std::vector<VertexArrayWithPos> *> object_move_vertex_array;
@@ -1658,6 +1665,14 @@ Separate* find_separate(GameApi::Env &e, GameApi::SA p)
   return sep;
 }
 
+PlaneData *find_plane_array(GameApi::Env &e, GameApi::PLA p)
+{
+  EnvImpl *ee = ::EnvImpl::Environment(&e);
+  PlaneData *data = 0;
+  if (p.id>=0 && p.id<(int)ee->plane_array.size())
+    data = &ee->plane_array[p.id];
+  return data;
+}
 PlanePoints2d* find_plane(GameApi::Env &e, GameApi::PL p)
 {
   EnvImpl *ee = ::EnvImpl::Environment(&e);
@@ -4521,6 +4536,17 @@ GameApi::BM GameApi::SurfaceApi::render(S surf, int sx, int sy,
   handle->bm = bm2;
   return add_bitmap(e, handle);
 }
+GameApi::S GameApi::SurfaceApi::plane(PT pos, V u_x, V u_y)
+{
+  Point *p = find_point(e,pos);
+  Vector *u_x1 = find_vector(e,u_x);
+  Vector *u_y1 = find_vector(e,u_y);
+  Plane pl(*p, *u_x1, *u_y1);
+  SurfaceImpl i;
+  i.surf = new PlaneSurfaceIn3d(pl);
+  return add_surface(e,i);
+}
+
 GameApi::S GameApi::SurfaceApi::sphere(PT center, float radius)
 {
   Point *p = find_point(e, center);
@@ -5923,6 +5949,30 @@ GameApi::BM GameApi::ContinuousBitmapApi::to_bitmap(CBM bm, int sx, int sy)
   return add_color_bitmap(e, new BitmapFromContinuousBitmap<Color>(*cbm, sx,sy));
 }
 
+class ComposeSurfaceColor : public ContinuousBitmap<Color>
+{
+public:
+  ComposeSurfaceColor(SurfaceImpl *impl, ColorVolumeObject *obj) : impl(impl), obj(obj) { }
+  virtual float SizeX() const { return impl->surf->XSize(); }
+  virtual float SizeY() const { return impl->surf->YSize(); }
+  virtual Color Map(float x, float y) const
+  {
+    Point p = impl->surf->Index(x,y);
+    unsigned int c = obj->ColorValue(p);
+    return Color(c);
+  }
+
+private:
+  SurfaceImpl *impl;
+  ColorVolumeObject *obj;
+};
+
+GameApi::CBM GameApi::ContinuousBitmapApi::surfacecolor(S s, COV cov)
+{
+  SurfaceImpl *impl = find_surface(e, s);
+  ColorVolumeObject *obj = find_color_volume(e, cov);
+  return add_continuous_bitmap(e, new ComposeSurfaceColor(impl, obj));
+}
 GameApi::CBM GameApi::ContinuousBitmapApi::from_bitmap(BM bm, float xsize, float ysize)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
@@ -5930,6 +5980,8 @@ GameApi::CBM GameApi::ContinuousBitmapApi::from_bitmap(BM bm, float xsize, float
 
   return add_continuous_bitmap(e, new ContinuousBitmapFromBitmap<Color>(*bm2, xsize, ysize));
 }
+
+
 
 class VoxelFunction : public Voxel<Color>
 {
@@ -6473,6 +6525,47 @@ GameApi::PL GameApi::PlaneApi::function(GameApi::PT (*fptr)(EveryApi &e, int idx
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_plane(e, new PlanePointsFunction( *ev, fptr, num_points, data, sx,sy ));
+}
+GameApi::PLA GameApi::PlaneApi::prepare(GameApi::PL pl)
+{
+  PlanePoints2d *ptr = find_plane(e, pl);
+  int s = ptr->Size();
+  PlaneData data;
+  for(int i=0;i<s;i++)
+    {
+      Point2d p = ptr->Map(i);
+      bool b = ptr->IsMoveIndex(i);
+      data.array.push_back(p.x);
+      data.array.push_back(p.y);
+      if (b) 
+	{
+	  if (i!=0)
+	    data.cmd_array.push_back(GL_CLOSE_PATH_NV);
+	  data.cmd_array.push_back(GL_MOVE_TO_NV);
+	}
+      else
+	{
+	  data.cmd_array.push_back(GL_LINE_TO_NV);
+	}
+    }
+  data.cmd_array.push_back(GL_CLOSE_PATH_NV);
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->plane_array.push_back(data);
+  PLA pla;
+  pla.id = env->plane_array.size()-1;
+  return pla;
+}
+void GameApi::PlaneApi::render(GameApi::PLA pla)
+{
+  PlaneData *dt = find_plane_array(e,pla);
+  glPathCommandsNV(pla.id, dt->cmd_array.size(), &dt->cmd_array[0], dt->array.size(), GL_FLOAT, &dt->array[0]);
+  glStencilFillPathNV(pla.id, GL_COUNT_UP_NV, 0x1F);
+  glEnable(GL_STENCIL_TEST);
+  glStencilFunc(GL_NOTEQUAL, 0, 0x1F);
+  glStencilOp(GL_KEEP, GL_KEEP, GL_ZERO);
+  glColor3f(1,1,0);
+  glCoverFillPathNV(pla.id, GL_BOUNDING_BOX_NV);
+  glDisable(GL_STENCIL_TEST);
 }
 #if 0
 GameApi::PL GameApi::PlaneApi::floodfill_border(GameApi::BB bitmap, int x, int y)
