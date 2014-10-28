@@ -5,6 +5,7 @@
 
 #include <string>
 #include <functional>
+#include <vector>
 
 
 namespace GameApi
@@ -580,6 +581,7 @@ public:
 	IMPORT COV function(std::function<unsigned int(float x, float y, float z)> f);
 	IMPORT COV from_float_volume(FO obj, unsigned int col0, unsigned int col1);
 	IMPORT COV from_volume(O obj, unsigned int col_true, unsigned int col_false);
+  IMPORT COV from_continuous_bitmap(CBM bm);
 
 	IMPORT COV mix(COV p1, COV p2, float value); // value=[0..1]
 	IMPORT COV or_cov(COV p1, COV p2);
@@ -1069,6 +1071,7 @@ class PointCollectionApi
   { // int -> PT
 public:
 	IMPORT PointCollectionApi(Env &e) : e(e) { }
+    IMPORT PC function(std::function<PT (int)> f, int count);
 	IMPORT PC empty();
 	IMPORT PC single(PT point);
 	IMPORT PC single(float x, float y, float z);
@@ -1291,12 +1294,12 @@ private:
   Env &e;
 };
 
-
+  
 struct EveryApi
 {
 	IMPORT EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -1326,7 +1329,7 @@ struct EveryApi
   WaveformApi waveform_api;
   ColorApi color_api;
   LinesApi lines_api;
-  
+  PlaneApi plane_api;
 };
 
 class GamesApi
@@ -1341,6 +1344,285 @@ private:
   Env &e;
   //void *priv;
 };
+
+
+  //
+  // Object-Oriented API
+  //
+
+
+  class RenderObject
+  {
+  public:
+    virtual ~RenderObject() { }
+    virtual void prepare()=0;
+    virtual void render()=0;
+  };
+  class MoveScaleObject2d
+  {
+  public:
+    virtual ~MoveScaleObject2d() { }
+    virtual void set_pos(float pos_x, float pos_y)=0;
+    virtual void set_scale(float mult_x, float mult_y)=0;
+  };
+  class MoveScaleObject3d
+  {
+  public:
+    virtual ~MoveScaleObject3d() { }
+    virtual void set_pos(float pos_x, float pos_y, float pos_z)=0;
+    virtual void set_scale(float mult_x, float mult_y, float mult_z)=0;
+  };
+  
+  class SpriteObj : public RenderObject, public MoveScaleObject2d
+  {
+  public:
+    SpriteObj(SpriteApi &sp, BM bm_, SH sh) : sp(sp), sh(sh) 
+    {
+      bm.push_back(bm_);
+      pos_x = 0.0; pos_y = 0.0;
+      mult_x = 1.0; mult_y = 1.0;
+      anim_id = 0;
+    }
+    SpriteObj(EveryApi &ev, BM bm_, SH sh) : sp(ev.sprite_api), sh(sh) 
+    { 
+      bm.push_back(bm_);
+      pos_x = 0.0; pos_y = 0.0;
+      mult_x = 1.0; mult_y = 1.0;
+      anim_id = 0;
+    }
+    SpriteObj(EveryApi &ev, std::vector<BM> anim, SH sh) : sp(ev.sprite_api), bm(anim), sh(sh) 
+    {
+      pos_x = 0.0; pos_y = 0.0;
+      mult_x = 1.0; mult_y = 1.0;
+      anim_id = 0;
+    }
+    void prepare() 
+    {
+      for(int i=0;i<(int)bm.size();i++)
+	sp.preparesprite(bm[i]); 
+    }
+    void render() 
+    { 
+      sp.rendersprite(bm[anim_id], sh, pos_x, pos_y, mult_x, mult_y); 
+    }
+    void set_pos(float p_x, float p_y) { pos_x=p_x; pos_y=p_y; }
+    void set_scale(float m_x, float m_y) { mult_x = m_x; mult_y=m_y; }
+    void set_anim_frame(int id) 
+    {
+      if (id>=0 && id<(int)bm.size())
+	anim_id = id; 
+    }
+  private:
+    float pos_x, pos_y;
+    float mult_x, mult_y;
+    SpriteApi &sp;
+    std::vector<BM> bm;
+    int anim_id;
+    SH sh;
+  };
+  class PolygonObj : public RenderObject, public MoveScaleObject3d
+  {
+  public:
+    PolygonObj(EveryApi &ev, P p, SH sh) : api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), sh(sh) 
+    {
+      m_p.push_back(p);
+      id.resize(1);
+      m_va2.resize(1);
+      current_pos = mat.identity();
+      current_scale = mat.identity();
+      setup_m();
+      //id.id = 0;
+      //va.id = 0;
+      anim_id = 0;
+    }
+
+    PolygonObj(EveryApi &ev, std::vector<P> anim_p, SH sh) : api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), sh(sh) 
+    {
+      m_p = anim_p;
+      id.resize(anim_p.size());
+      m_va2.resize(anim_p.size());
+      current_pos = mat.identity();
+      current_scale = mat.identity();
+      setup_m();
+      //id.id = 0;
+      //va.id = 0;
+      anim_id = 0;
+    }
+
+    PolygonObj(PolygonApi &api, ShaderApi &shapi, MatrixApi &mat, TextureApi &tex,P p, SH sh) : api(api), shapi(shapi), mat(mat), tex(tex), sh(sh) 
+    {
+      m_p.push_back(p);
+      id.resize(1);
+      m_va2.resize(1);
+      current_pos = mat.identity();
+      current_scale = mat.identity();
+      setup_m();
+      //id.id=0;
+      //va.id =0;
+      anim_id = 0;
+    }
+    void prepare() 
+    { 
+      m_va2.clear();
+      for(int i=0;i<(int)m_p.size();i++)
+	{
+	  VA va = api.create_vertex_array(m_p[i]);
+	  VA va2;
+	  if (id[i].id!=0) {
+	    va2 = tex.bind(va, id[i]);
+	  } else {
+	    va2 = va;
+	  }
+	  m_va2.push_back(va2);
+	}
+    }
+    void render() {
+      shapi.use(sh);
+      shapi.set_var(sh, "in_MV", m); 
+      api.render_vertex_array(m_va2[anim_id]); 
+    }
+    void set_pos(float pos_x, float pos_y, float pos_z)
+    {
+      current_pos = mat.trans(pos_x, pos_y, pos_z);
+      setup_m();
+    }
+    void set_scale(float mult_x, float mult_y, float mult_z)
+    {
+      current_scale = mat.scale(mult_x, mult_y, mult_z);
+      setup_m();
+    }
+    void bind_texture(int anim_id, TXID id_)
+    {
+      id[anim_id] = id_;
+    }
+    void set_anim_frame(int id)
+    {
+      if (id>=0&&id<(int)m_va2.size())
+	anim_id = id;
+    }
+  private:
+    void setup_m() {
+      m = mat.mult(current_scale, current_pos);
+    }
+  private:
+    PolygonApi &api;
+    ShaderApi &shapi;
+    MatrixApi &mat;
+    TextureApi &tex;
+    M current_pos;
+    M current_scale;
+    M m;
+    std::vector<P> m_p;
+    SH sh;
+    //VA va;
+    std::vector<VA> m_va2;
+    std::vector<TXID> id;
+    int anim_id;
+  };
+  class PointsObj : public RenderObject, public MoveScaleObject3d
+  {
+  public:
+    PointsObj(EveryApi &ev, FO fo, SH sh) : floatvolume(ev.float_volume_api), mat(ev.matrix_api), shapi(ev.shader_api), fo(fo), sh(sh) 
+    {
+      numpoints = 5000;
+      start_x = -1.0;
+      start_y = -1.0;
+      start_z = -1.0;
+      end_x = 1.0;
+      end_y = 1.0;
+      end_z = 1.0;
+      current_pos = mat.identity();
+      current_scale = mat.identity();
+      setup_m(); 
+    }
+    void set_numpoints(int count) { numpoints = count; }
+    void set_bounds(float s_x, float s_y, float s_z,
+		    float e_x, float e_y, float e_z)
+    {
+      start_x = s_x;
+      start_y = s_y;
+      start_z = s_z;
+      end_x = e_x;
+      end_y = e_y;
+      end_z = e_z;
+    }
+    void prepare() { array = floatvolume.prepare(fo, numpoints, start_x, start_y, start_z, end_x, end_y, end_z); 
+    }
+    void render() {
+      shapi.set_var(sh, "in_MV", m);
+      floatvolume.render(array);
+    }
+    void set_pos(float pos_x, float pos_y, float pos_z)
+    {
+      current_pos = mat.trans(pos_x, pos_y, pos_z);
+      setup_m();
+    }
+    void set_scale(float mult_x, float mult_y, float mult_z)
+    {
+      current_scale = mat.scale(mult_x, mult_y, mult_z);
+      setup_m();
+    }
+  private:
+    void setup_m() {
+      m = mat.mult(current_scale, current_pos);
+    }
+
+  private:
+    FloatVolumeApi &floatvolume;
+    MatrixApi &mat;
+    ShaderApi &shapi;
+    FO fo;
+    FOA array;
+    SH sh;
+    M current_pos;
+    M current_scale;
+    M m;
+    int numpoints;
+    float start_x, start_y, start_z;
+    float end_x, end_y, end_z;
+  };
+  class LinesObj : public RenderObject, public MoveScaleObject3d
+  {
+  public:
+    LinesObj(EveryApi &ev, LI li, SH sh) : lines(ev.lines_api), mat(ev.matrix_api), shapi(ev.shader_api), li(li), sh(sh) 
+    {
+      current_pos = mat.identity();
+      current_scale = mat.identity();
+      setup_m();
+    }
+    LinesObj(LinesApi &lines, MatrixApi &mat, ShaderApi &shapi, LI li, SH sh) : lines(lines), mat(mat), shapi(shapi), li(li), sh(sh) { }
+    void prepare() { li2 = lines.prepare(li); }
+    void render() {
+      shapi.set_var(sh, "in_MV", m);
+      lines.render(li2); 
+    }
+    void set_pos(float pos_x, float pos_y, float pos_z)
+    {
+      current_pos = mat.trans(pos_x, pos_y, pos_z);
+      setup_m();
+    }
+    void set_scale(float mult_x, float mult_y, float mult_z)
+    {
+      current_scale = mat.scale(mult_x, mult_y, mult_z);
+      setup_m();
+    }
+  private:
+    void setup_m() {
+      m = mat.mult(current_scale, current_pos);
+    }
+  private:
+    LinesApi &lines;
+    MatrixApi &mat;
+    ShaderApi &shapi;
+    LI li;
+    SH sh;
+    LLA li2;
+    M current_pos;
+    M current_scale;
+    M m;
+  };
+
+
 
 }; // GameApi namespace
 

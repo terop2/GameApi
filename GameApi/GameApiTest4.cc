@@ -33,6 +33,16 @@ P Cube(
   return p2;
 }
 
+PT point_func(EveryApi &e, int idx, void *data)
+{
+  switch(idx) {
+  case 0: return e.point_api.point(0.0,50.0,0.0);
+  case 1: return e.point_api.point(100.0,0.0,0.0);
+  case 2: return e.point_api.point(100.0,100.0,0.0);
+  case 3: return e.point_api.point(50.0,100.0,0.0);
+  case 4: return e.point_api.point(20.0,50.0,0.0);
+  }
+}
 
 void Game(EveryApi &e)
 {
@@ -46,6 +56,7 @@ void Game(EveryApi &e)
   SpriteApi &sprite = e.sprite_api;
   VolumeApi &volume = e.volume_api;
   WaveformApi &wv = e.waveform_api;
+  PlaneApi &plane = e.plane_api;
 
   loop.init_window();
   e.shader_api.load("Shader.txt");
@@ -100,14 +111,17 @@ void Game(EveryApi &e)
   //			      e.point_api.point(0.0,50.0,0.0),
   //			      e.point_api.point(0.0,0.0,50.0));
   //e.sprite_api.preparesprite(bxm);
+  
+  PL f = plane.function(&point_func, 5, 150.0,150.0, 0);
+  PLA pla = plane.prepare(f);
 
   while(1)
     {
       float time = e.mainloop_api.get_time();
 
       e.mainloop_api.clear();
-      e.mainloop_api.switch_to_3d(false, sh);
-      e.sprite_api.rendersprite(red,sh,0.0,0.0,1.0,1.0);
+     e.mainloop_api.switch_to_3d(false, sh);
+     e.sprite_api.rendersprite(red,sh,0.0,0.0,1.0,1.0);
       e.sprite_api.rendersprite(green,sh,100.0,100.0,1.0,1.0);
       e.sprite_api.rendersprite(red,sh,200.0,200.0,1.0,1.0);
       e.sprite_api.rendersprite(green,sh,300.0,300.0,1.0,1.0);
@@ -116,13 +130,16 @@ void Game(EveryApi &e)
       e.sprite_api.rendersprite(red,sh,600.0,600.0,1.0,1.0);
       e.sprite_api.rendersprite(green,sh,700.0,700.0,1.0,1.0);
       e.sprite_api.rendersprite(green,sh, 799.0,599.0,1.0,1.0);
+      //e.texture_api.use(tex);
+      //e.texture_api.unuse(tex);
       e.mainloop_api.switch_to_3d(true,sh);
-      glPushMatrix();
+       glPushMatrix();
       glRotatef(time/40.0, 0.0,1.0,0.0);
       //e.polygon_api.render(cubes3, 0, 0.0,0.0,0.0);
       e.texture_api.use(tex);
       e.shader_api.set_y_rotation(sh, "in_MV", time/500.0);
       e.polygon_api.render_vertex_array(va);
+      e.plane_api.render(pla);
       e.texture_api.unuse(tex);
       //e.polygon_api.render_vertex_array(va2);
       //e.polygon_api.render_vertex_array(vba);

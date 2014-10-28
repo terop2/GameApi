@@ -40,6 +40,9 @@ void GameTest8(EveryApi &e)
   LI l = e.lines_api.border_from_bool_bitmap(b3, -100.0, 100.0, -100.0, 100.0, 0.0);
   LLA array2 = e.lines_api.prepare(l);
 
+  LinesObj lines2(e, l, sh);
+  lines2.prepare();
+
   while(1)
     {
       e.mainloop_api.clear_3d();
@@ -53,6 +56,7 @@ void GameTest8(EveryApi &e)
       e.lines_api.render(array);
       e.lines_api.render(array2);
       glPopMatrix();
+      lines2.render();
       e.mainloop_api.swapbuffers();
       MainLoopApi::Event ev = e.mainloop_api.get_event();
       if (ev.ch==27) break;
