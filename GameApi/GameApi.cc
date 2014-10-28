@@ -173,6 +173,10 @@ void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_height)
   prog->set_var("in_MV", m2);
   prog->set_var("in_T", m2);
   alpha(false);
+
+  glMatrixLoadIdentityEXT(GL_PROJECTION);
+  glMatrixLoadIdentityEXT(GL_MODELVIEW);
+  glMatrixOrthoEXT(GL_MODELVIEW, 0, 800, 0, 600, -1, 1);
 }
 void GameApi::MainLoopApi::transfer_sdl_surface(MainLoopApi &orig)
 {
@@ -220,6 +224,11 @@ void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_height)
   Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
   prog->set_var("in_T", m3);
   alpha(false);
+
+  glMatrixLoadIdentityEXT(GL_PROJECTION);
+  glMatrixLoadIdentityEXT(GL_MODELVIEW);
+  glMatrixOrthoEXT(GL_MODELVIEW, 0, 800, 0, 600, -1, 1);
+
 }
 
 void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh)
@@ -241,6 +250,9 @@ void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh)
       //Matrix m2 = Matrix::Translate(0.0, 0.0, -500.0);
       Matrix m2 = Matrix::Identity();
       prog->set_var("in_MV", m2);
+      //glMatrixLoadIdentityEXT(GL_PROJECTION);
+      //glMatrixLoadIdentityEXT(GL_MODELVIEW);
+      //glMatrixOrthoEXT(GL_MODELVIEW, 0, screenx, screeny, 0, 0, 1);
 
     }
   else
@@ -269,7 +281,10 @@ void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh)
 void GameApi::MainLoopApi::clear()
 {
   //glClearColor(255,255,255,255);
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+  glClearStencil(0);
+  glClearColor(0,0,0,0);
+  glStencilMask(~0);
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
   glLoadIdentity();
   glTranslatef(0.375, 0.375, 0.0);
   //glTranslatef(0.0, 0.0, -260.0);
@@ -281,7 +296,10 @@ void GameApi::MainLoopApi::clear()
 void GameApi::MainLoopApi::clear_3d()
 {
   //glClearColor(255,255,255,255);
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+  glClearStencil(0);
+  glClearColor(0,0,0,0);
+  glStencilMask(~0);
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
   glLoadIdentity();
   glTranslatef(0.375, 0.375, 0.0);
   glTranslatef(0.0, 0.0, -260.0);
@@ -6760,6 +6778,25 @@ GameApi::COV GameApi::ColorVolumeApi::from_float_volume(FO obj, unsigned int col
   return add_color_volume(e, new ColorVolumeFromFloatVolume(obj2, col0, col1));
 }
 
+class ColorVolumeFromContinuousBitmap : public ColorVolumeObject
+{
+public:
+  ColorVolumeFromContinuousBitmap(ContinuousBitmap<Color> *bm) : bm(bm) { }
+  unsigned int ColorValue(Point p) const
+  {
+    Color c = bm->Map(p.x,p.y);
+    return c.Pixel();
+  }
+private:
+  ContinuousBitmap<Color> *bm;
+};
+
+GameApi::COV GameApi::ColorVolumeApi::from_continuous_bitmap(CBM bm)
+{
+  ContinuousBitmap<Color> *bbm = find_continuous_bitmap(e, bm);
+  return add_color_volume(e, new ColorVolumeFromContinuousBitmap(bbm));
+}
+
 class ColorVolumeFromVolumeObject : public ColorVolumeObject
 {
 public:
@@ -7755,6 +7792,27 @@ GameApi::PC GameApi::PointCollectionApi::bezier(PT *array, PT *control_array, in
 {
 }
 #endif
+
+class PointCollectionFunction : public PointCollection
+{
+public:
+  PointCollectionFunction(GameApi::Env &e, std::function<GameApi::PT (int)> f, int count) : env(e), f(f), count(count) { }
+  int Size() const { return count; }
+  Point Index(int i) const {
+    GameApi::PT p = f(i);
+    Point pp = *(find_point(env, p));
+    return pp;
+  }
+private:
+  GameApi::Env &env;
+  std::function<GameApi::PT (int)> f;
+  int count;
+};
+
+GameApi::PC GameApi::PointCollectionApi::function(std::function<GameApi::PT (int)> f, int count)
+{
+  return add_pointcoll_array(e, new PointCollectionFunction(e, f, count));
+}
 
 GameApi::LLA GameApi::LinesApi::prepare(LI l)
 {

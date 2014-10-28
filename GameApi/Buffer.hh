@@ -46,7 +46,7 @@ struct BufferRefF
 ;
   static BufferRefF NewBuffer(int width, int height);
 
-  float *operator[](int y) { return buffer+y*ydelta; }
+  float *operator[](int y) const { return buffer+y*ydelta; }
 };
 
 struct BufferRefMask
@@ -56,7 +56,7 @@ struct BufferRefMask
   unsigned int height;
   unsigned int ydelta;
   static BufferRefMask NewBuffer(int width, int height);
-  unsigned char *operator[](int y) { return buffer+y*ydelta; }
+  unsigned char *operator[](int y) const { return buffer+y*ydelta; }
 };
 
 class BufferRefReq

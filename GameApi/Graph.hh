@@ -128,6 +128,54 @@ private:
   //void *data;
 };
 
+class Object3dRender : public Bitmap<bool>
+{
+public:
+  Object3dRender(VolumeObject &o, int sx, int sy, Point p, float min_z, float max_z) : o(o), sx(sx), sy(sy), p(p), min_z(min_z), max_z(max_z) 
+  { 
+    done = BufferRefMask::NewBuffer(sx,sy);
+    render(p,p.z);
+  }
+  int SizeX() const { return sx; }
+  int SizeY() const { return sy; }
+  bool Map(int x, int y) const 
+  {
+    return done.operator[](y)[x] == 1;
+  }
+  Point2d projection(Point p) const {
+    Point2d pp;
+    pp.x = p.x;
+    pp.y = p.y;
+    return pp;
+  }
+  void render(Point p, float startz) {
+    Point2d pp = projection(p);
+    if (pp.y<0.0) return;
+    if (pp.x<0.0) return;
+    if (pp.x>=sx) return;
+    if (pp.y>=sy) return;
+    if (done.operator[]((int)pp.y)[(int)pp.x]==1) return;
+    if (o.Inside(p)) {
+      done.operator[]((int)pp.y)[(int)pp.x] = 1;
+      render(p+Vector(1.0,0.0,0.0), startz);
+      render(p+Vector(0.0,1.0,0.0), startz);
+      render(p+Vector(-1.0,0.0,0.0), startz);
+      render(p+Vector(0.0,-1.0,0.0), startz);
+      return;
+    }
+    if (p.z>=startz && p.z < max_z)
+      render(p+Vector(0.0,0.0,1.0), startz);
+    if (p.z<=startz && p.z > min_z)
+      render(p+Vector(0.0,0.0,-1.0), startz);
+  }
+private:
+  BufferRefMask done;
+  VolumeObject &o;
+  int sx,sy;
+  float min_z, max_z;
+  Point p;
+};
+
 class FloatRangeBitmap : public Bitmap<bool>
 {
 public:
@@ -7438,6 +7486,7 @@ public:
   virtual std::string shader() const=0;
   virtual int varnum() const=0;
 };
+
 
 
 #endif
