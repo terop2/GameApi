@@ -1,4 +1,5 @@
-
+#ifndef STATE_HH
+#define STATE_HH
 #include "Buffer.hh"
 #include "Graph.hh"
 #include "Effect.hh"
@@ -1221,3 +1222,4 @@ class FrameLinkageArray
 public:
   std::vector<FrameLinkage*> vec; // indexed by framenum
 };
+#endif

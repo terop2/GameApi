@@ -1373,6 +1373,102 @@ private:
     virtual void set_scale(float mult_x, float mult_y, float mult_z)=0;
   };
   
+  class ArrayObj3d : public RenderObject, public MoveScaleObject3d
+  {
+  public:
+    ArrayObj3d() { }
+    void push_back(RenderObject *obj, MoveScaleObject3d *obj2)
+    {
+      render_vec.push_back(obj);
+      move_scale_vec.push_back(obj2);
+      pos_x.push_back(0.0);
+      pos_y.push_back(0.0);
+      pos_z.push_back(0.0);
+      scale_x.push_back(1.0);
+      scale_y.push_back(1.0);
+      scale_z.push_back(1.0);
+    }
+    void prepare() {
+      int s = render_vec.size();
+      for(int i=0;i<s;i++) {
+	render_vec[i]->prepare();
+      }
+    }
+    void render() {
+      int s = render_vec.size();
+      for(int i=0;i<s;i++) {
+	render_vec[i]->render();
+      }
+    }
+    int size() const { return render_vec.size(); }
+
+    void set_child_pos(int i, float cpos_x, float cpos_y, float cpos_z)
+    {
+      pos_x[i] = cpos_x;
+      pos_y[i] = cpos_y;
+      pos_z[i] = cpos_z;
+      setup_one(i);
+    }
+    void set_child_scale(int i, float mult_x, float mult_y, float mult_z)
+    {
+      scale_x[i] = mult_x;
+      scale_y[i] = mult_y;
+      scale_z[i] = mult_z;
+      setup_one(i);
+    }
+
+    void set_pos(float pos_x, float pos_y, float pos_z)
+    {
+      p_x = pos_x;
+      p_y = pos_y;
+      p_z = pos_z;
+      setup();
+    }
+    void set_scale(float mult_x, float mult_y, float mult_z)
+    {
+      s_x = mult_x;
+      s_y = mult_y;
+      s_z = mult_z;
+      setup();
+    }
+  private:
+    void setup_one(int i)
+    {
+      float ap_x = pos_x[i];
+      float ap_y = pos_y[i];
+      float ap_z = pos_z[i];
+      float as_x = scale_x[i];
+      float as_y = scale_y[i];
+      float as_z = scale_z[i];
+      ap_x += p_x;
+      ap_y += p_y;
+      ap_z += p_z;
+      as_x*=s_x;
+      as_y*=s_y;
+      as_z*=s_z;
+      move_scale_vec[i]->set_pos(ap_x,ap_y,ap_z);
+      move_scale_vec[i]->set_scale(as_x,as_y,as_z);
+    }
+    void setup() 
+    {
+      int s = pos_x.size();
+      for(int i=0;i<s;i++)
+	{
+	  setup_one(i);
+	}
+    }
+  private:
+    std::vector<RenderObject *> render_vec;
+    std::vector<MoveScaleObject3d *> move_scale_vec;
+    std::vector<float> pos_x;
+    std::vector<float> pos_y;
+    std::vector<float> pos_z;
+    std::vector<float> scale_x;
+    std::vector<float> scale_y;
+    std::vector<float> scale_z;
+    float p_x, p_y, p_z;
+    float s_x, s_y, s_z;
+  };
   class SpriteObj : public RenderObject, public MoveScaleObject2d
   {
   public:

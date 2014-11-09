@@ -1,3 +1,4 @@
+
 #define SDL2_USED
 #define GAME_API_DEFS
 #define _SCL_SECURE_NO_WARNINGS
@@ -4788,6 +4789,7 @@ GameApi::E GameApi::EventApi::timer(GameApi::E activation_event, float time)
 
 GameApi::L GameApi::EventApi::polygon(GameApi::E start, GameApi::E end, GameApi::P poly)
 {
+#if 0
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   LinkInfo link;
   link.start_event_id = start.id;
@@ -4796,10 +4798,15 @@ GameApi::L GameApi::EventApi::polygon(GameApi::E start, GameApi::E end, GameApi:
   link.polygon_end = env->poly[poly.id];
   //PosInfo pos;
   return add_link(e, start, end, link);
+#endif
+  GameApi::L l;
+  l.id = 0;
+  return l;
 }
 GameApi::L GameApi::EventApi::bitmap(GameApi::E start, GameApi::E end, GameApi::BM start_bitmap, BM end_bitmap)
 {
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
+#if 0
   LinkInfo link;
   link.start_event_id = start.id;
   link.end_event_id = end.id;
@@ -4807,6 +4814,10 @@ GameApi::L GameApi::EventApi::bitmap(GameApi::E start, GameApi::E end, GameApi::
   link.polygon_end = NULL; //env->poly[poly.id];
   //PosInfo pos;
   return add_link(e, start, end, link);
+#endif
+  GameApi::L l;
+  l.id = 0;
+  return l;
 }
 
 enum Classify { EBefore, ECurrent, EFuture };

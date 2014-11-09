@@ -172,8 +172,8 @@ private:
   BufferRefMask done;
   VolumeObject &o;
   int sx,sy;
-  float min_z, max_z;
   Point p;
+  float min_z, max_z;
 };
 
 class FloatRangeBitmap : public Bitmap<bool>

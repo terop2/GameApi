@@ -3024,5 +3024,41 @@ private:
   std::vector<Y> &vec;
 }; 
 
+template<class I, class A, class B>
+class Arrow
+{
+public:
+  virtual std::pair<A,B> FindMap(I i) const=0;
+};
+
+template<class I, class I1, class I2, class T, class A, class B, class V>
+class InverseImageOnArrows : public Arrow<I,T,A>
+{
+public:
+  InverseImage(Arrow<I1,V,B> &part, Arrow<I2,A,B> &f) : part(part), f(f) { }
+  virtual std::pair<T,A> FindMap(I i) const
+  {
+    I1 i1 = i.first;
+    I2 i2 = i.second;
+    std::pair<V,B> p1 = part.FindMap(i1);
+    std::pair<A,B> p2 = f.FindMap(i2);
+    if (p1.second == p2.second)
+      {
+	A a = p2.first;
+	T t = a;
+	return std::make_pair(t,a);
+      }
+    else
+      {
+	return std::make_pair(T(),A());
+      }
+  }
+
+private:
+  Arrow<I1,V,B> &part;
+  Arrow<I2,A,B> &f;
+};
+
+
 #endif
 

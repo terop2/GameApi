@@ -1,6 +1,8 @@
 
 #include "Serialize.hh"
 #include "Graph.hh"
+#include "GameApi.hh"
+#include "State.hh"
 
 ArrayRender *FindRender(GameApi::Env &e, int bm_id);
 
@@ -53,28 +55,9 @@ StateBitmaps * PrepareFaceCollPolyHandle(FaceCollPolyHandle *handle, int bbm_cho
 class GameRunner
 {
 public:
-  GameRunner(Sequencer2 &seq, int start_state) : seq(seq), start_state(start_state) { }
-  void run()
-  {
-    Alloc();
-    current_state = start_state;
-    float time = 0.0;
-    while(1)
-      {
-	current_state = MoveToNextState(current_state, time);
-	RenderState(current_state);
-
-	glLoadIdentity();
-	//SDL_GL_SwapBuffers();
-
-	SDL_Event event;
-	SDL_PollEvent(&event);
-
-	time+=30.0;
-      }
-
-  }
-private:
+  GameRunner(Sequencer2 &seq, int start_state) : seq(seq), start_state(start_state), current_time(0.0) { }
+  void run();
+private: 
   int MoveToNextState(int state, float time)
   {
     return state;
@@ -131,8 +114,12 @@ private:
   }
   bool BetweenEvents(const LinkageInfo &li)
   {
-    //int start_event = li.start_event;
-    //int end_event = li.end_event;
+    int start_event = li.start_event;
+    int end_event = li.end_event;
+    EventInfo e = seq.Event(start_event);
+    EventInfo e2 = seq.Event(end_event);
+    if (e.time < current_time && current_time < e2.time) 
+      return true;
     return false;
   }
 
@@ -146,9 +133,16 @@ private:
 	
       }
   }
-  float EventInterpolatePos(LinkageInfo i)
+  float EventInterpolatePos(LinkageInfo li)
   {
-    return 0.0;
+    int start_event = li.start_event;
+    int end_event = li.end_event;
+    EventInfo e = seq.Event(start_event);
+    EventInfo e2 = seq.Event(end_event);
+    float time = current_time - e.time;
+    float pos = time / (e2.time - e.time); // 0.0 .. 1.0
+    return pos;
+
   }
 
   void RenderState(int state)
@@ -219,6 +213,7 @@ private:
   std::map<int, EventInfo> activated_events;
   //float time;
 
+  float current_time;
   int current_state;
   std::vector< std::vector<ArrayRender*>* > state_rends;
   SpritePriv sprites;
