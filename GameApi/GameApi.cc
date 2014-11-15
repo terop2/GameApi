@@ -676,6 +676,15 @@ struct PointArray2
   GLuint vao[1];
 };
 
+struct PointArray3
+{
+  float *array;
+  unsigned int *color;
+  int numpoints;
+  GLuint buffer[2];
+  GLuint vao[1];
+};
+
 struct PlaneData
 {
   std::vector<float> array;
@@ -731,12 +740,14 @@ struct EnvImpl
   std::map<int, ArrayRender*> renders; // BM.id -> arrayrender
   std::vector<Layout*> layouts;
   std::vector<PointArray2*> pointarray;
+  std::vector<PointArray3*> pointarray3;
   std::vector<PointCollection*> pointcollarray;
   std::vector<LineCollection*> linearray;
   std::vector<ColorVolumeObject*> colorvolume;
   std::map<int, ShaderPriv2*> shader_privs;
   std::vector<DistanceRenderable*> distvolume;
   std::vector<VectorVolumeObject*> vectorvolume;
+  std::vector<PointsApiPoints*> pointsapi_points;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   FT_Library lib;
@@ -761,6 +772,7 @@ void ArrayDelete(T *ptr)
   delete [] ptr;
 }
 GameApi::PT add_point(GameApi::Env &e, float x, float y);
+GameApi::PT add_point(GameApi::Env &e, float x, float y, float z);
 
 
 
@@ -841,6 +853,13 @@ EnvImpl::~EnvImpl()
     {
       delete [] pointarray[i_vv3]->array;
       delete pointarray[i_vv3];
+    }
+  int vv3a = pointarray3.size();
+  for(int i_vv3a=0;i_vv3a<vv3a;i_vv3a++)
+    { 
+      delete [] pointarray3[i_vv3a]->array;
+      delete [] pointarray3[i_vv3a]->color;
+      delete pointarray3[i_vv3a];
     }
   int vv4 = linearray.size();
   for(int i_vv4=0;i_vv4<vv4;i_vv4++)
@@ -1164,7 +1183,22 @@ GameApi::LI add_line_array(GameApi::Env &e, LineCollection *array)
   pt.id = env->linearray.size()-1;
   return pt;
 }
-
+GameApi::PTS add_points_api_points(GameApi::Env &e, PointsApiPoints *pts)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->pointsapi_points.push_back(pts);
+  GameApi::PTS ptsa;
+  ptsa.id = env->pointsapi_points.size()-1;
+  return ptsa;
+}
+GameApi::PTA add_point_array3(GameApi::Env &e, PointArray3 *array)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->pointarray3.push_back(array);
+  GameApi::PTA pt;
+  pt.id = env->pointarray3.size()-1;
+  return pt;
+}
 GameApi::FOA add_point_array(GameApi::Env &e, PointArray2 *array)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1878,6 +1912,13 @@ Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handl
     }
   return 0;
 }
+PointsApiPoints *find_pointsapi_points(GameApi::Env &e, GameApi::PTS ps)
+{
+  EnvImpl *ee = ::EnvImpl::Environment(&e);
+  if (ps.id >=0 && ps.id < (int)ee->pointsapi_points.size())
+    return ee->pointsapi_points[ps.id];
+  return 0;
+}
 LineCollection *find_line_array(GameApi::Env &e, GameApi::LI li)
 {
   EnvImpl *ee = ::EnvImpl::Environment(&e);
@@ -1885,7 +1926,13 @@ LineCollection *find_line_array(GameApi::Env &e, GameApi::LI li)
     return ee->linearray[li.id];
   return 0;
 }
-
+PointArray3 *find_point_array3(GameApi::Env &e, GameApi::PTA pa)
+{
+  EnvImpl *ee = ::EnvImpl::Environment(&e);
+  if (pa.id >=0 && pa.id < (int)ee->pointarray3.size())
+    return ee->pointarray3[pa.id];
+  return 0;
+}
 PointArray2 *find_point_array(GameApi::Env &e, GameApi::FOA p)
 {
   EnvImpl *ee = ::EnvImpl::Environment(&e);
@@ -6704,7 +6751,126 @@ GameApi::WV GameApi::WaveformApi::function(std::function<float (float)> f, float
   //env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_waveform(e, new FunctionWaveform(f, length, min_value, max_value));
 }
+class OrPoints : public PointsApiPoints
+{
+public:
+  OrPoints(PointsApiPoints *pts1, PointsApiPoints *pts2): pts1(pts1), pts2(pts2) { }
+  virtual int NumPoints() const { return pts1->NumPoints()+pts2->NumPoints(); }
+  virtual Point Pos(int i) const
+  {
+    if (i<pts1->NumPoints())
+      {
+	return pts1->Pos(i);
+      }
+    return pts2->Pos(i-pts1->NumPoints());
+  }
+  virtual unsigned int Color(int i) const
+  {
+    if (i<pts1->NumPoints())
+      {
+	return pts1->Color(i);
+      }
+    return pts2->Color(i-pts1->NumPoints());
+  }
 
+private:
+  PointsApiPoints *pts1;
+  PointsApiPoints *pts2;
+};
+GameApi::PTS GameApi::PointsApi::or_points(GameApi::PTS p1, GameApi::PTS p2)
+{
+  PointsApiPoints *pts1 = find_pointsapi_points(e, p1);
+  PointsApiPoints *pts2 = find_pointsapi_points(e, p2);
+  return add_points_api_points(e,new OrPoints(pts1, pts2));
+  
+}
+
+GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
+{
+  PointsApiPoints *pts = find_pointsapi_points(e, p);
+  int numpoints = pts->NumPoints();
+  float *array = new float[numpoints*3];
+  unsigned int *color = new unsigned int[numpoints];
+
+  for(int i=0;i<numpoints;i++)
+    {
+      Point p = pts->Pos(i);
+      unsigned int c = pts->Color(i);
+      array[i*3+0] = p.x;
+      array[i*3+1] = p.y;
+      array[i*3+2] = p.z;
+      color[i] = c;
+    }
+  PointArray3 *arr = new PointArray3;
+  arr->array = array;
+  arr->color = color;
+  arr->numpoints = numpoints;
+  glGenBuffers(2, &arr->buffer[0]);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[0]);
+  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[1]);
+  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color, GL_STATIC_DRAW);
+  
+  return add_point_array3(e,arr);
+}
+class PTSFromFloatVolume : public PointsApiPoints
+{
+public:
+  PTSFromFloatVolume(FloatVolumeObject *fo, int numpoints, float start_x, float start_y, float start_z, float end_x, float end_y, float end_z) 
+    : fo(fo), array(0), numpoints(numpoints), 
+      start_x(start_x), start_y(start_y), start_z(start_z), 
+      end_x(end_x), end_y(end_y), end_z(end_z) 
+  { prepare(); }
+  ~PTSFromFloatVolume() { delete [] array; }
+  virtual int NumPoints() const { return numpoints; }
+  virtual Point Pos(int i) const
+  {
+    return Point(array[i*3+0],
+		 array[i*3+1],
+		 array[i*3+2]);
+  }
+  virtual unsigned int Color(int i) const
+  {
+    return 0xffffffff;
+  }
+  void prepare()
+  {
+    array = new float[numpoints*3];
+    int index = 0;
+    for(;index/3<numpoints;)
+      {
+	while(1) {
+	  Random r;
+	  float xp = double(r.next())/r.maximum()*(end_x-start_x)+start_x;
+	  float yp = double(r.next())/r.maximum()*(end_y-start_y)+start_y;
+	  float zp = double(r.next())/r.maximum()*(end_z-start_z)+start_z;
+	  float val = double(r.next())/r.maximum();
+	  if (fo->FloatValue(Point(xp,yp,zp))>val)
+	    {
+	      array[index+0] = xp;
+	      array[index+1] = yp;
+	      array[index+2] = zp;
+	      index+=3;
+	      break;
+	    }
+	}
+      }
+  }
+private:
+  FloatVolumeObject *fo;
+  float *array;
+  int numpoints;
+  float start_x, start_y, start_z;
+  float end_x, end_y, end_z;
+};
+GameApi::PTS GameApi::PointsApi::from_float_volume(GameApi::FO object,
+						   int numpoints,
+						   float start_x, float start_y, float start_z,
+						   float end_x, float end_y, float end_z)
+{
+  FloatVolumeObject *fo = find_float_volume(e, object);
+  return add_points_api_points(e, new PTSFromFloatVolume(fo, numpoints, start_x, start_y, start_z, end_x, end_y, end_z));
+}
 GameApi::FOA GameApi::FloatVolumeApi::prepare(GameApi::FO object,
 					      int numpoints,
 					      float start_x, float start_y, float start_z,
@@ -6715,6 +6881,7 @@ GameApi::FOA GameApi::FloatVolumeApi::prepare(GameApi::FO object,
   int index = 0;
   for(;index/3<numpoints;)
     {
+      while(1) {
       Random r;
       float xp = double(r.next())/r.maximum()*(end_x-start_x)+start_x;
       float yp = double(r.next())/r.maximum()*(end_y-start_y)+start_y;
@@ -6726,7 +6893,9 @@ GameApi::FOA GameApi::FloatVolumeApi::prepare(GameApi::FO object,
 	  array[index+1] = yp;
 	  array[index+2] = zp;
 	  index+=3;
+	  break;
 	}
+      }
     }
   index/=3;
   PointArray2 *arr = new PointArray2;
@@ -6738,7 +6907,20 @@ GameApi::FOA GameApi::FloatVolumeApi::prepare(GameApi::FO object,
 
   return add_point_array(e, arr);
 }
-
+void GameApi::PointsApi::render(GameApi::PTA array)
+{
+  PointArray3 *arr = find_point_array3(e, array);
+  glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(2);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[0]);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0,0);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[1]);
+  glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, 0);
+  glDrawArrays(GL_POINTS, 0, arr->numpoints);
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(2);
+  
+}
 void GameApi::FloatVolumeApi::render(FOA array)
 {
   PointArray2 *arr = find_point_array(e, array);
@@ -7519,6 +7701,49 @@ GameApi::DR GameApi::DrawApi::scroll_area(DR dr, LAY l, int id);
 GameApi::DR GameApi::DrawApi::cliprect(DR cmds, LAY l, int id);
 #endif
 
+class PointApiPointFunction : public PointsApiPoints
+{
+public:
+  PointApiPointFunction(GameApi::Env &e, std::function<GameApi::PT(int pointnum)> f, int numpoints) : e(e), f(f), numpoints(numpoints) { }
+  virtual int NumPoints() const
+  {
+    return numpoints;
+  }
+  virtual Point Pos(int i) const
+  {
+    GameApi::PT pt = f(i);
+    Point *pts = find_point(e, pt);
+    return *pts;
+  }
+  virtual unsigned int Color(int i) const
+  {
+    return 0xffffffff;
+  }
+private:
+  GameApi::Env &e;
+  std::function<GameApi::PT(int pointnum)> f;
+  int numpoints;
+};
+
+class PointsApiColorFunction : public PointsApiPoints
+{
+public:
+  PointsApiColorFunction(GameApi::Env &e, PointsApiPoints *orig, std::function<unsigned int(int pointnum, GameApi::PT pos)> f) : e(e), orig(orig), f(f) { }
+  virtual int NumPoints() const { return orig->NumPoints(); }
+  virtual Point Pos(int i) const { return orig->Pos(i); }
+  virtual unsigned int Color(int i) const
+  {
+    Point p = Pos(i);
+    GameApi::PT pt = add_point(e, p.x, p.y, p.z);
+    unsigned int color = f(i, pt);
+    return color;
+  }
+private:
+  GameApi::Env &e;
+  PointsApiPoints *orig;
+  std::function<unsigned int(int pointnum, GameApi::PT pos)> f;
+};
+
 class LineCollectionFunction : public LineCollection
 {
 public:
@@ -7540,6 +7765,16 @@ private:
   std::function<GameApi::PT (int linenum, bool id)> f;
   int numlines; 
 };
+
+GameApi::PTS GameApi::PointsApi::function(std::function<GameApi::PT(int pointnum)> f, int numpoints)
+{
+  return add_points_api_points(e, new PointApiPointFunction(e, f, numpoints));
+}
+GameApi::PTS GameApi::PointsApi::color_function(PTS orig, std::function<unsigned int(int pointnum, PT pos)> f)
+{
+  PointsApiPoints *pts = find_pointsapi_points(e, orig);
+  return add_points_api_points(e, new PointsApiColorFunction(e, pts, f));
+}
 
 GameApi::LI GameApi::LinesApi::function(std::function<GameApi::PT (int linenum, bool id)> f, int numlines)
 {

@@ -95,6 +95,8 @@ using std::placeholders::_9;
   struct LLA { int id; };
   struct FD { int id; };
   struct VO { int id; };
+  struct PTS { int id; };
+  struct PTA { int id; };
   //template<class T>
   //struct E { int id; };
 
@@ -1081,6 +1083,21 @@ public:
 private:
   Env &e;
 };
+class PointsApi
+{
+public:
+  PointsApi(Env &e) : e(e) { }
+  PTS function(std::function<PT(int pointnum)> f, int numpoints);
+  PTS color_function(PTS orig, std::function<unsigned int(int pointnum, PT pos)> f);
+  PTS from_float_volume(FO float_volume, int numpoints, 
+			float start_x, float start_y, float start_z,
+			float end_x, float end_y, float end_z);
+  PTS or_points(PTS p1, PTS p2);
+  PTA prepare(PTS p);
+  void render(PTA array);
+private:
+  Env &e;
+};
 		     
 class LinesApi
 {
@@ -1299,7 +1316,7 @@ struct EveryApi
 {
 	IMPORT EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -1330,6 +1347,7 @@ struct EveryApi
   ColorApi color_api;
   LinesApi lines_api;
   PlaneApi plane_api;
+  PointsApi points_api;
 };
 
 class GamesApi
@@ -1618,7 +1636,7 @@ private:
   class PointsObj : public RenderObject, public MoveScaleObject3d
   {
   public:
-    PointsObj(EveryApi &ev, FO fo, SH sh) : floatvolume(ev.float_volume_api), mat(ev.matrix_api), shapi(ev.shader_api), fo(fo), sh(sh) 
+    PointsObj(EveryApi &ev, PTS fo, SH sh) : points_api(ev.points_api), mat(ev.matrix_api), shapi(ev.shader_api), fo(fo), sh(sh) 
     {
       numpoints = 5000;
       start_x = -1.0;
@@ -1642,11 +1660,14 @@ private:
       end_y = e_y;
       end_z = e_z;
     }
-    void prepare() { array = floatvolume.prepare(fo, numpoints, start_x, start_y, start_z, end_x, end_y, end_z); 
+    void prepare() {
+      array = points_api.prepare(fo);
+      //array = floatvolume.prepare(fo, numpoints, start_x, start_y, start_z, end_x, end_y, end_z); 
     }
     void render() {
       shapi.set_var(sh, "in_MV", m);
-      floatvolume.render(array);
+      points_api.render(array);
+      //floatvolume.render(array);
     }
     void set_pos(float pos_x, float pos_y, float pos_z)
     {
@@ -1664,11 +1685,12 @@ private:
     }
 
   private:
-    FloatVolumeApi &floatvolume;
+    PointsApi &points_api;
     MatrixApi &mat;
     ShaderApi &shapi;
-    FO fo;
-    FOA array;
+    PTS fo;
+    PTS fo2;
+    PTA array;
     SH sh;
     M current_pos;
     M current_scale;
