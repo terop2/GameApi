@@ -1,4 +1,4 @@
-
+ 
 #define SDL2_USED
 #define GAME_API_DEFS
 #define _SCL_SECURE_NO_WARNINGS
@@ -6751,6 +6751,36 @@ GameApi::WV GameApi::WaveformApi::function(std::function<float (float)> f, float
   //env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_waveform(e, new FunctionWaveform(f, length, min_value, max_value));
 }
+
+class HeightMapPoints : public PointsApiPoints
+{
+public:
+  HeightMapPoints(Bitmap<::Color> &color, Bitmap<float> &height, Point pos, Vector u_x, Vector u_y, Vector u_z, int sx, int sy) : color(color), height(height), pos(pos), u_x(u_x), u_y(u_y), u_z(u_z), sx(sx), sy(sy) { }
+  virtual int NumPoints() const { return sx*sy; }
+  virtual Point Pos(int i) const
+  {
+    int yy = i / sx;
+    int xx = i - (yy*sx);
+    float h = height.Map(xx*height.SizeX()/sx,yy*height.SizeY()/sy);
+    Point p = pos + u_x*xx/sx + u_y*yy/sy + h*u_z;
+    return p;
+  }
+  virtual unsigned int Color(int i) const
+  {
+    int yy = i / sx;
+    int xx = i - (yy*sx);
+    ::Color c = color.Map(xx*color.SizeX()/sx,yy*color.SizeY()/sy);
+    return c.Pixel();
+  }
+private:
+  Bitmap<::Color> &color;
+  Bitmap<float> &height;
+  Point pos;
+  Vector u_x;
+  Vector u_y;
+  Vector u_z;
+  int sx,sy;
+};
 class OrPoints : public PointsApiPoints
 {
 public:
@@ -6777,6 +6807,18 @@ private:
   PointsApiPoints *pts1;
   PointsApiPoints *pts2;
 };
+GameApi::PTS GameApi::PointsApi::heightmap(BM colour, FB height, PT pos, V u_x, V u_y, V u_z, int sx, int sy)
+{
+  BitmapHandle *h = find_bitmap(e, colour);
+  Bitmap<Color> *colour_bm = find_color_bitmap(h);
+  FloatBitmap *fbm = find_float_bitmap(e, height);
+  Bitmap<float> *height_bm = fbm->bitmap;
+  Point *pt = find_point(e, pos);
+  Vector *uu_x = find_vector(e, u_x);
+  Vector *uu_y = find_vector(e, u_y);
+  Vector *uu_z = find_vector(e, u_z);
+  return add_points_api_points(e, new HeightMapPoints(*colour_bm, *height_bm, *pt, *uu_x, *uu_y, *uu_z, sx, sy));
+}
 GameApi::PTS GameApi::PointsApi::or_points(GameApi::PTS p1, GameApi::PTS p2)
 {
   PointsApiPoints *pts1 = find_pointsapi_points(e, p1);

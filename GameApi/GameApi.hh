@@ -1093,6 +1093,7 @@ public:
 			float start_x, float start_y, float start_z,
 			float end_x, float end_y, float end_z);
   PTS or_points(PTS p1, PTS p2);
+  PTS heightmap(BM colour, FB floatbitmap, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
   PTA prepare(PTS p);
   void render(PTA array);
 private:
