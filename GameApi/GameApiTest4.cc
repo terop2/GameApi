@@ -101,6 +101,12 @@ void Game(EveryApi &e)
   sprite.preparesprite(red);
   sprite.preparesprite(green);
 
+
+  SpriteObj spr(e, green, sh);
+  spr.prepare();
+  SpriteObj spr2(e, green, sh);
+  spr2.prepare();
+
   // 3d text
   //Ft font = e.font_api.newfont("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 50, 50);
   //BM letter = e.font_api.glyph(font, 'a');
@@ -109,18 +115,22 @@ void Game(EveryApi &e)
   //BM bxm = e.volume_api.render(o, 100,100, e.point_api.point(0.0,0.0,0.0),
   //			      e.point_api.point(50.0, 0.0,0.0),
   //			      e.point_api.point(0.0,50.0,0.0),
-  //			      e.point_api.point(0.0,0.0,50.0));
+  //	1		      e.point_api.point(0.0,0.0,50.0));
   //e.sprite_api.preparesprite(bxm);
   
   PL f = plane.function(&point_func, 5, 150.0,150.0, 0);
   PLA pla = plane.prepare(f);
 
+  float frame = 0.0;
+
   while(1)
     {
+      frame += 0.1;
       float time = e.mainloop_api.get_time();
 
       e.mainloop_api.clear();
      e.mainloop_api.switch_to_3d(false, sh);
+     //     e.shader_api.set_var(sh, "in_MV", e.matrix_api.identity());
      e.sprite_api.rendersprite(red,sh,0.0,0.0,1.0,1.0);
       e.sprite_api.rendersprite(green,sh,100.0,100.0,1.0,1.0);
       e.sprite_api.rendersprite(red,sh,200.0,200.0,1.0,1.0);
@@ -130,6 +140,13 @@ void Game(EveryApi &e)
       e.sprite_api.rendersprite(red,sh,600.0,600.0,1.0,1.0);
       e.sprite_api.rendersprite(green,sh,700.0,700.0,1.0,1.0);
       e.sprite_api.rendersprite(green,sh, 799.0,599.0,1.0,1.0);
+      spr.set_pos(250.0+frame*4, 250.0);
+      spr.set_scale(2.0,2.0);
+      spr.render();
+      spr2.set_pos(250.0, 250.0-frame*4.0);
+      spr2.set_scale(2.0,2.0);
+      spr2.render();
+
       //e.texture_api.use(tex);
       //e.texture_api.unuse(tex);
       e.mainloop_api.switch_to_3d(true,sh);

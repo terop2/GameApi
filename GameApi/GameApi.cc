@@ -738,6 +738,7 @@ struct EnvImpl
   std::vector<std::vector<VertexArrayWithPos> *> object_move_vertex_array;
   std::vector<Bitmap<float>*> layout_data;
   std::map<int, ArrayRender*> renders; // BM.id -> arrayrender
+  std::map<int, ArrayRender*> renders2; // BM.id -> arrayrender
   std::vector<Layout*> layouts;
   std::vector<PointArray2*> pointarray;
   std::vector<PointArray3*> pointarray3;
@@ -764,6 +765,11 @@ ArrayRender *FindRender(GameApi::Env &e, int bm_i)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->renders[bm_i];
+}
+ArrayRender *FindRender2(GameApi::Env &e, int bm_i)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->renders2[bm_i];
 }
 
 template<class T>
@@ -835,6 +841,12 @@ EnvImpl::~EnvImpl()
   for(;it!=renders.end();it++)
     {
       ArrayRender *rend = (*it).second;
+      delete rend;
+    }
+  std::map<int, ArrayRender*>::iterator it2 = renders2.begin();
+  for(;it2!=renders2.end();it2++)
+    {
+      ArrayRender *rend = (*it2).second;
       delete rend;
     }
 
@@ -1861,6 +1873,60 @@ Bitmap<Pos> *find_pos_bitmap(BitmapHandle *handle, int bbm_choose=-1)
 }
 
 
+Sprite *sprite_from_handle2(GameApi::Env &e, SpritePriv &env, BitmapHandle *handle, int bbm_choose)
+{
+  BitmapArrayHandle *ahandle = dynamic_cast<BitmapArrayHandle*>(handle);
+  if (ahandle)
+    {
+      int s = ahandle->vec.size();
+      Sprite **arr = new Sprite*[s];
+      env.arrays.push_back(arr);
+      for(int i=0;i<s;i++)
+	{
+	  BitmapHandle *h = ahandle->vec[i];
+	  Sprite *sk = sprite_from_handle(e, env, h);
+	  arr[i] = sk;
+	}
+      ArraySprite *ss = new ArraySprite(arr, s);
+      ss->update_cache();
+      env.sprites2[handle->id] = ss;
+      EnvImpl *env2 = ::EnvImpl::Environment(&e);
+      env2->renders2[handle->id] = new ArrayRender;
+      //env2->renders2[handle->id] = new ArrayRender;
+      return ss;
+    }
+  BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
+  if (chandle)
+    {
+      GameApi::BM bm = { handle->id };
+      SpritePosImpl *pos = find_sprite_pos(e, bm);
+      Point2d p;
+      if (!pos)
+	{
+	  p.x = 0.0;
+	  p.y = 0.0;
+	}
+      else
+	{
+	  p.x = pos->x;
+	  p.y = pos->y;
+	}
+      Sprite *ss = new BitmapSprite(*chandle->bm, p);
+      env.sprites2[handle->id] = ss;
+      EnvImpl *env2 = ::EnvImpl::Environment(&e);
+      env2->renders2[handle->id] = new ArrayRender;
+      //env2->renders2[handle->id] = new ArrayRender;
+      return ss;
+    }
+  std::cout << "Unknown bitmap type in sprite_from_handle" << std::endl;
+  BitmapIntHandle *ihandle = dynamic_cast<BitmapIntHandle*>(handle);
+  if (ihandle)
+    {
+      return 0;
+    }
+  return 0;
+}
+
 Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handle, int bbm_choose)
 {
   BitmapArrayHandle *ahandle = dynamic_cast<BitmapArrayHandle*>(handle);
@@ -1880,6 +1946,7 @@ Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handl
       env.sprites[handle->id] = ss;
       EnvImpl *env2 = ::EnvImpl::Environment(&e);
       env2->renders[handle->id] = new ArrayRender;
+      //env2->renders2[handle->id] = new ArrayRender;
       return ss;
     }
   BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
@@ -1902,6 +1969,7 @@ Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handl
       env.sprites[handle->id] = ss;
       EnvImpl *env2 = ::EnvImpl::Environment(&e);
       env2->renders[handle->id] = new ArrayRender;
+      //env2->renders2[handle->id] = new ArrayRender;
       return ss;
     }
   std::cout << "Unknown bitmap type in sprite_from_handle" << std::endl;
@@ -1912,6 +1980,7 @@ Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handl
     }
   return 0;
 }
+
 PointsApiPoints *find_pointsapi_points(GameApi::Env &e, GameApi::PTS ps)
 {
   EnvImpl *ee = ::EnvImpl::Environment(&e);
@@ -2188,11 +2257,11 @@ void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
 
   if (s->texture_id!=-1 && s->texture_id<6000)
     {
-      TextureEnable(*env->renders[s->texture_id], 0, true);
+      TextureEnable(*env->renders2[s->texture_id], 0, true);
       //RenderVertexArray arr(*s);
       //arr.render(0);
       rend->render(0);
-      TextureEnable(*env->renders[s->texture_id], 0, false);
+      TextureEnable(*env->renders2[s->texture_id], 0, false);
     }
   else if(s->texture_id!=-1)
     {
@@ -2218,11 +2287,11 @@ GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
   SpritePriv &spriv = *(SpritePriv*)priv;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
 
-  ::Sprite *sprite = sprite_from_handle(e,spriv, handle, -1);
+  ::Sprite *sprite = sprite_from_handle2(e,spriv, handle, -1);
   if (!sprite) { std::cout << "preparesprite's sprite==NULL?" << std::endl; GameApi::VA va; va.id = 0; return va; }
   VertexArraySet *s = new VertexArraySet;
   PrepareSpriteToVA(*sprite, *s);
-  TexturePrepare(*sprite, *env->renders[bm.id]);
+  TexturePrepare(*sprite, *env->renders2[bm.id]);
   s->texture_id = bm.id;
   RenderVertexArray *arr = new RenderVertexArray(*s);
   arr->prepare(0);

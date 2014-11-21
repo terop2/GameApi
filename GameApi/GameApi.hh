@@ -1395,7 +1395,7 @@ private:
   class ArrayObj3d : public RenderObject, public MoveScaleObject3d
   {
   public:
-    ArrayObj3d() { }
+    ArrayObj3d() : p_x(0.0), p_y(0.0), p_z(0.0), s_x(1.0), s_y(1.0), s_z(1.0) { }
     void push_back(RenderObject *obj, MoveScaleObject3d *obj2)
     {
       render_vec.push_back(obj);
@@ -1491,21 +1491,14 @@ private:
   class SpriteObj : public RenderObject, public MoveScaleObject2d
   {
   public:
-    SpriteObj(SpriteApi &sp, BM bm_, SH sh) : sp(sp), sh(sh) 
-    {
-      bm.push_back(bm_);
-      pos_x = 0.0; pos_y = 0.0;
-      mult_x = 1.0; mult_y = 1.0;
-      anim_id = 0;
-    }
-    SpriteObj(EveryApi &ev, BM bm_, SH sh) : sp(ev.sprite_api), sh(sh) 
+    SpriteObj(EveryApi &ev, BM bm_, SH sh) : sp(ev.sprite_api), matrix_api(ev.matrix_api), shader_api(ev.shader_api), sh(sh) 
     { 
       bm.push_back(bm_);
       pos_x = 0.0; pos_y = 0.0;
       mult_x = 1.0; mult_y = 1.0;
       anim_id = 0;
     }
-    SpriteObj(EveryApi &ev, std::vector<BM> anim, SH sh) : sp(ev.sprite_api), bm(anim), sh(sh) 
+    SpriteObj(EveryApi &ev, std::vector<BM> anim, SH sh) : sp(ev.sprite_api), matrix_api(ev.matrix_api), shader_api(ev.shader_api), bm(anim), sh(sh) 
     {
       pos_x = 0.0; pos_y = 0.0;
       mult_x = 1.0; mult_y = 1.0;
@@ -1513,12 +1506,15 @@ private:
     }
     void prepare() 
     {
+      va.clear();
       for(int i=0;i<(int)bm.size();i++)
-	sp.preparesprite(bm[i]); 
+	va.push_back(sp.create_vertex_array(bm[i])); 
     }
     void render() 
     { 
-      sp.rendersprite(bm[anim_id], sh, pos_x, pos_y, mult_x, mult_y); 
+      shader_api.set_var(sh, "in_MV", matrix_api.mult(matrix_api.scale(mult_x, mult_y, 1.0), matrix_api.trans(pos_x, pos_y, 0.0)));
+      sp.render_sprite_vertex_array(va[anim_id]);
+      //sp.rendersprite(bm[anim_id], sh, pos_x, pos_y, mult_x, mult_y); 
     }
     void set_pos(float p_x, float p_y) { pos_x=p_x; pos_y=p_y; }
     void set_scale(float m_x, float m_y) { mult_x = m_x; mult_y=m_y; }
@@ -1531,7 +1527,10 @@ private:
     float pos_x, pos_y;
     float mult_x, mult_y;
     SpriteApi &sp;
+    MatrixApi &matrix_api;
+    ShaderApi &shader_api;
     std::vector<BM> bm;
+    std::vector<VA> va;
     int anim_id;
     SH sh;
   };
