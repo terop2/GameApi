@@ -917,6 +917,7 @@ private:
   Point p;
   SphereVolume sp;
   int iterations;
+  int current_iteration_count;
 };
 
 class VolumeEffect : public FrameAnim

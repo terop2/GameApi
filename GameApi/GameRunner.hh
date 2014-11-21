@@ -23,6 +23,7 @@ struct SpritePriv
   //ArrayRender rend;
   //MOVED To env: std::map<int, ArrayRender*> renders;
   std::map<int, Sprite*> sprites;
+  std::map<int, Sprite*> sprites2;
   std::vector<Sprite**> arrays;
   ~SpritePriv();
 };

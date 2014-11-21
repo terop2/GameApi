@@ -208,6 +208,7 @@ bool MandelBulb::Inside(Point C) const
       a_p = Step(a_p, C, n);
       if (!sp.Inside(a_p))
 	{
+	  //current_iteration_count = i;
 	  return false;
 	}
     }
