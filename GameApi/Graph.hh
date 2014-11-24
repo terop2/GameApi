@@ -7496,5 +7496,38 @@ public:
   virtual unsigned int Color(int i) const=0;
 };
 
+class SpacePoints : public PointsApiPoints
+{
+public:
+  SpacePoints(VolumeObject &v, Point p, Vector u_x, Vector u_y, Vector u_z,
+	      int sx, int sy, int sz) : v(v), p(p), u_x(u_x), u_y(u_y), u_z(u_z), sx(sx), sy(sy), sz(sz) { Create(); }
+  void Create() {
+    for(int i=0;i<sx;i++)
+      {
+	Point pp = p + u_x*i/sx;
+      for(int j=0;j<sy;j++)
+	{
+	  Vector pp2 = u_y*j/sy;
+	for(int k=0;k<sz;k++)
+	  {
+	    Vector pp3 = u_z*k/sz;
+	    Point p = pp + pp2 + pp3;
+	    bool b = v.Inside(p);
+	    if (b) { vec.push_back(p); }
+	  }
+	}
+      }
+  }
+  virtual int NumPoints() const { return vec.size(); }
+  virtual Point Pos(int i) const { return vec[i]; }
+  virtual unsigned int Color(int i) const { return 0xffffffff; }
+private:
+  VolumeObject &v;
+  Point p;
+  Vector u_x, u_y, u_z;
+  int sx, sy, sz;
+  std::vector<Point> vec;
+};
+
 
 #endif

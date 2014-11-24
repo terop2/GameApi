@@ -2464,9 +2464,9 @@ public:
   }
 };
 
-GameApi::BM GameApi::BitmapApi::newbitmap(int sx, int sy)
+GameApi::BM GameApi::BitmapApi::newbitmap(int sx, int sy, unsigned int color)
 {
-  ::Bitmap<Color> *b = new ConstantBitmap<Color>(Color(0,0,0,0), sx,sy);
+  ::Bitmap<Color> *b = new ConstantBitmap<Color>(Color(color), sx,sy);
   BitmapColorHandle *handle = new BitmapColorHandle;
   handle->bm = b;
   BM bm = add_bitmap(e, handle);
@@ -5544,6 +5544,38 @@ GameApi::BB GameApi::BoolBitmapApi::rectangle(BB bg, float x, float y, float wid
   
 }
 
+class BoolBitmapSprite : public Bitmap<bool>
+{
+public:
+  BoolBitmapSprite(Bitmap<bool> &bg, Bitmap<bool> &sprite, float x, float y, float mult_x, float mult_y) : bg(bg), sprite(sprite), x(x), y(y), mult_x(mult_x), mult_y(mult_y) { }
+  int SizeX() const {return bg.SizeX(); }
+  int SizeY() const {return bg.SizeY(); }
+  bool Map(int mx, int my) const {
+    float xx = mx - x;
+    float yy = my - y;
+    xx /= mult_x;
+    yy /= mult_y; 
+    if (xx >= 0.0 && xx < sprite.SizeX())
+      if (yy >= 0.0 && yy < sprite.SizeY())
+	{
+	  bool b = sprite.Map(xx,yy);
+	  if (!b) { return bg.Map(mx,my); }
+	  return true;
+	}
+    return bg.Map(mx,my);
+  }
+private:
+  Bitmap<bool> &bg;
+  Bitmap<bool> &sprite;
+  float x,y,mult_x, mult_y;
+};
+
+GameApi::BB GameApi::BoolBitmapApi::sprite(BB bg, BB sprite, float x, float y, float mult_x, float mult_y)
+{
+  Bitmap<bool> *bg_1 = find_bool_bitmap(e,bg)->bitmap;
+  Bitmap<bool> *sprite_1 = find_bool_bitmap(e,sprite)->bitmap;
+  return add_bool_bitmap(e, new BoolBitmapSprite(*bg_1, *sprite_1, x, y, mult_x, mult_y));
+}
 GameApi::BB GameApi::BoolBitmapApi::not_bitmap(BB b)
 {
   Bitmap<bool> *bm = find_bool_bitmap(e, b)->bitmap;
@@ -6888,6 +6920,16 @@ GameApi::PTS GameApi::PointsApi::heightmap(BM colour, FB height, PT pos, V u_x, 
   Vector *uu_z = find_vector(e, u_z);
   return add_points_api_points(e, new HeightMapPoints(*colour_bm, *height_bm, *pt, *uu_x, *uu_y, *uu_z, sx, sy));
 }
+GameApi::PTS GameApi::PointsApi::from_volume(GameApi::O o, GameApi::PT pos,
+					     GameApi::V u_x, GameApi::V u_y, GameApi::V u_z, int sx, int sy, int sz)
+{
+  VolumeObject *obj = find_volume(e, o);
+  Point *pt = find_point(e, pos);
+  Vector *uu_x = find_vector(e, u_x);
+  Vector *uu_y = find_vector(e, u_y);
+  Vector *uu_z = find_vector(e, u_z);
+  return add_points_api_points(e, new SpacePoints(*obj, *pt, *uu_x, *uu_y, *uu_z, sx, sy, sz));
+}
 GameApi::PTS GameApi::PointsApi::or_points(GameApi::PTS p1, GameApi::PTS p2)
 {
   PointsApiPoints *pts1 = find_pointsapi_points(e, p1);
@@ -6895,7 +6937,46 @@ GameApi::PTS GameApi::PointsApi::or_points(GameApi::PTS p1, GameApi::PTS p2)
   return add_points_api_points(e,new OrPoints(pts1, pts2));
   
 }
+class ShadowPoints : public PointsApiPoints
+{
+public:
+  ShadowPoints(PointsApiPoints *pts, Point pos, Vector u_x, Vector u_y, Vector light_vec) : pts(pts), pos(pos), u_x(u_x), u_y(u_y), light_vec(light_vec) { }
+  virtual int NumPoints() const
+  {
+    return pts->NumPoints();
+  }
+  virtual Point Pos(int i) const
+  {
+    Point p = pts->Pos(i);
+    Vector v = light_vec;
+    LinePlaneIntersection sect = LinePlaneIntersectionFunc(p, p+v,
+							   pos, pos+u_x, pos+u_y);
+    return p+v*sect.tuv.dx;
+  }
+  virtual unsigned int Color(int i) const
+  {
+    return pts->Color(i);
+  }
 
+private:
+  PointsApiPoints *pts;
+  Point pos;
+  Vector u_x;
+  Vector u_y;
+  Vector light_vec;
+};
+GameApi::PTS GameApi::PointsApi::shadow_points(GameApi::PTS obj,
+					       PT pos,
+					       V u_x, V u_y,
+					       V light_vec)
+{
+  PointsApiPoints *pts = find_pointsapi_points(e, obj);
+  Point *pt = find_point(e, pos);
+  Vector *uu_x = find_vector(e, u_x);
+  Vector *uu_y = find_vector(e, u_y);
+  Vector *light = find_vector(e, light_vec);
+  return add_points_api_points(e, new ShadowPoints(pts, *pt, *uu_x, *uu_y, *light));
+}
 GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
 {
   PointsApiPoints *pts = find_pointsapi_points(e, p);
