@@ -231,7 +231,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
-	IMPORT BM newbitmap(int sx, int sy);
+        IMPORT BM newbitmap(int sx, int sy, unsigned int color = 0xff000000);
 	IMPORT BM function(std::function<unsigned(int, int)> f, int sx, int sy);
 	IMPORT BM transform(BM orig, std::function<unsigned int(int, int, unsigned int)> f);
 	IMPORT BM newintbitmap(char *array, int sx, int sy, std::function<int(char)> f);
@@ -1094,6 +1094,8 @@ public:
 			float end_x, float end_y, float end_z);
   PTS or_points(PTS p1, PTS p2);
   PTS heightmap(BM colour, FB floatbitmap, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
+  PTS from_volume(O o, PT pos, V u_x, V u_y, V u_z, int sx, int sy, int sz);
+  PTS shadow_points(PTS obj, PT pos, V u_x, V u_y, V light_vec);
   PTA prepare(PTS p);
   void render(PTA array);
 private:
