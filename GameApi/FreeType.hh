@@ -6,6 +6,30 @@
 #include <vector>
 // gives out 0..255
 struct GlyphPriv;
+class FontLineCollectionWrapper : public PlanePoints2d
+{
+public:
+  FontLineCollectionWrapper(LineCollection *coll, float sx, float sy) : coll(coll), m_sx(sx), m_sy(sy) { }
+  virtual float SizeX() const { return m_sx; }
+  virtual float SizeY() const { return m_sy; }
+  virtual int Size() const { return coll->NumLines()+1; }
+  virtual Point2d Map(int i) const {
+    Point p = coll->LinePoint(i,0);
+    if (i==Size()-1) p=coll->LinePoint(Size()-2,1);
+    Point2d pp = { p.x, p.y };
+    return pp;
+  }
+  virtual bool IsMoveIndex(int i) const 
+  { 
+    if (i==0) return true;
+    return false;
+  }
+
+private:
+  LineCollection *coll;
+  float m_sx, m_sy;
+};
+
 class FontGlyphBitmap : public Bitmap<int>, public LineCollection
 {
 public:
@@ -20,6 +44,8 @@ public:
   virtual int NumLines() const;
   virtual Point LinePoint(int line, int point) const;
 
+  //virtual float SizeX() const { return m_sx; }
+  //virtual float SizeY() const { return m_sy; }
 
   ~FontGlyphBitmap();
 private:

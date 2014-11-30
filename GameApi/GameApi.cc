@@ -2463,7 +2463,35 @@ public:
     return p2;
   }
 };
+class AlphaColorBitmap : public Bitmap<Color>
+{
+public:
+  AlphaColorBitmap(Bitmap<Color> &bm, unsigned int key) : bm(bm), key(key) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual Color Map(int x, int y) const
+  {
+    Color c = bm.Map(x,y);
+    unsigned int cc = c.Pixel();
+    if (cc == key) cc = 0x00000000;
+    return Color(cc);
+  }
 
+private:
+  Bitmap<Color> &bm;
+  unsigned int key;
+};
+
+GameApi::BM GameApi::BitmapApi::alpha_color(BM orig, unsigned int color_key)
+{
+  BitmapHandle *handle = find_bitmap(e, orig);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  ::Bitmap<Color> *b = new AlphaColorBitmap(*b2, color_key);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm = add_bitmap(e, handle2);
+  return bm;
+}
 GameApi::BM GameApi::BitmapApi::newbitmap(int sx, int sy, unsigned int color)
 {
   ::Bitmap<Color> *b = new ConstantBitmap<Color>(Color(color), sx,sy);
@@ -3481,6 +3509,11 @@ GameApi::P GameApi::PolygonApi::empty()
   return add_polygon(e,new EmptyBoxableFaceCollection, 1);
 }
 
+GameApi::P GameApi::PolygonApi::load_model(std::string filename)
+{
+  return add_polygon(e, new LoadObjModelFaceCollection(filename), 1);
+} 
+   
 GameApi::P GameApi::PolygonApi::line(PT p1, PT p2)
 {
   Point *pp1 = find_point(e, p1);
@@ -5177,7 +5210,14 @@ GameApi::LI GameApi::FontApi::glyph_outline(GameApi::Ft font, long idx, float sx
   LineCollection *coll2 = new ForwardLineCollection(coll);
   return add_line_array(e, coll2);
 }
-
+GameApi::PL GameApi::FontApi::glyph_plane(GameApi::Ft font, long idx, float sx, float sy)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->fonts[font.id].bm->load_glyph_outline(idx,sx,sy);
+  LineCollection *coll = env->fonts[font.id].bm;
+  PlanePoints2d *plane = new FontLineCollectionWrapper(coll, sx, sy);
+  return add_plane(e, plane);
+}
 GameApi::BM GameApi::FontApi::glyph(GameApi::Ft font, long idx)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -6703,6 +6743,99 @@ GameApi::PL GameApi::PlaneApi::function(GameApi::PT (*fptr)(EveryApi &e, int idx
   env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_plane(e, new PlanePointsFunction( *ev, fptr, num_points, data, sx,sy ));
 }
+class PolygonPlane : public PlanePoints2d
+{
+public:
+  PolygonPlane(FaceCollection *coll, Matrix m, float sx, float sy) : coll(coll), m(m),sx(sx),sy(sy) { }
+  virtual float SizeX() const { return sx; }
+  virtual float SizeY() const { return sy; }
+  virtual int Size() const
+  {
+    int faces = coll->NumFaces();
+    int count = 0;
+    for(int i=0;i<faces;i++)
+      {
+	count += coll->NumPoints(i);
+      }
+    return count;
+  }
+  virtual Point2d Map(int i) const
+  {
+    int faces = coll->NumFaces();
+    int count = 0;
+    int ii = 0;
+    for(;ii<faces;ii++)
+      {
+	if (i>=count && i<count+coll->NumPoints(ii))
+	  {
+	    break;
+	  }
+	count += coll->NumPoints(ii);
+      }
+    Point p = coll->FacePoint(ii, i-count);
+    Point p2 = p * m;
+    Point2d p3 = { p2.x, p2.y };
+    return p3;
+  }
+  virtual bool IsMoveIndex(int i) const 
+  { 
+    if (i==0) return true;
+    int ii=0;
+    int count = 0;
+    int faces = coll->NumFaces();
+    for(;ii<faces;ii++)
+      {
+	if (i>=count && i<count+coll->NumPoints(ii))
+	  {
+	    break;
+	  }
+	count += coll->NumPoints(ii);
+      }
+    return i==count+coll->NumPoints(ii)-1;
+  }
+private:
+  FaceCollection *coll;
+  Matrix m;
+  float sx,sy;
+};
+
+GameApi::PL GameApi::PlaneApi::render_p(GameApi::P poly, GameApi::M proj_matrix, float sx, float sy)
+{
+  FaceCollection *coll = find_facecoll(e, poly);
+  MatrixInterface *mat = find_matrix(e, proj_matrix);
+  return add_plane(e, new PolygonPlane(coll, mat->get_matrix(), sx,sy));
+}
+
+class ColorContinuousBitmap : public ContinuousBitmap<Color>
+{
+public:
+  ColorContinuousBitmap(ContinuousBitmap<bool> &bm, unsigned int color_0, unsigned int color_1) : bm(bm), color_0(color_0), color_1(color_1) { }
+  float SizeX() const { return bm.SizeX(); }
+  float SizeY() const { return bm.SizeY(); }
+  Color Map(float x, float y) const
+  {
+    bool b = bm.Map(x,y);
+    if (b) return color_1;
+    return color_0;
+  }
+
+private:
+  ContinuousBitmap<bool> &bm;
+  unsigned int color_0;
+  unsigned int color_1;
+};
+   
+GameApi::CBM GameApi::PlaneApi::render(GameApi::PL pl, int num, unsigned int color_0, unsigned int color_1)
+{
+  PlanePoints2d *ptr = find_plane(e, pl);
+  PolygonLines *lines = new PolygonLines(*ptr, num);
+  ContinuousBitmap<bool> *fill = new PolygonFill(ptr->SizeX(),ptr->SizeY(), *lines);
+  ContinuousBitmap<Color> *fill2 = new ColorContinuousBitmap(*fill, color_0, color_1);
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->deletes.push_back(std::shared_ptr<void>(lines));
+  env->deletes.push_back(std::shared_ptr<void>(fill));
+  return add_continuous_bitmap(e, fill2);
+}
 GameApi::PLA GameApi::PlaneApi::prepare(GameApi::PL pl)
 {
   PlanePoints2d *ptr = find_plane(e, pl);
@@ -7634,6 +7767,11 @@ GameApi::M GameApi::MatrixApi::mult(M m1, M m2)
   Matrix ma = mat2a->get_matrix();
   Matrix mb = mat2b->get_matrix();
   return add_matrix(e, new SimpleMatrix(ma * mb));
+}
+GameApi::M GameApi::MatrixApi::perspective(float fovy, float aspect, float near0, float far0)
+{
+  Matrix m = Matrix::Perspective(fovy, aspect, near0, far0);
+  return add_matrix(e, new SimpleMatrix(m));
 }
 GameApi::PT GameApi::MatrixApi::mult(PT point, M matrix)
 {

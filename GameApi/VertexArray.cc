@@ -164,7 +164,7 @@ void VertexArraySet::split_color(std::vector<float> &target, unsigned int color)
   float fgreen = float(green)/256.0;
   float fblue = float(blue)/256.0;
 
-  //target.push_back(falpha);
+  target.push_back(falpha);
   target.push_back(fblue);
   target.push_back(fgreen);
   target.push_back(fred);
@@ -253,7 +253,7 @@ void RenderVertexArray::prepare(int id)
   glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
   glBufferData(GL_ARRAY_BUFFER, s.tri_count(id)*sizeof(float)*3, s.tri_normal_polys(id), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
-  glBufferData(GL_ARRAY_BUFFER, s.tri_count(id)*sizeof(float)*3, s.tri_color_polys(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, s.tri_count(id)*sizeof(float)*4, s.tri_color_polys(id), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, buffers[3]);
   glBufferData(GL_ARRAY_BUFFER, s.tri_count(id)*sizeof(float)*2, s.tri_texcoord_polys(id), GL_STATIC_DRAW);
 
@@ -268,7 +268,7 @@ void RenderVertexArray::prepare(int id)
   glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(float)*3, s.quad_normal_polys(id), GL_STATIC_DRAW);
 
   glBindBuffer(GL_ARRAY_BUFFER, buffers2[2]);
-  glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(float)*3, s.quad_color_polys(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(float)*4, s.quad_color_polys(id), GL_STATIC_DRAW);
 
   glBindBuffer(GL_ARRAY_BUFFER, buffers2[3]);
   glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(float)*2, s.quad_texcoord_polys(id), GL_STATIC_DRAW);
@@ -287,7 +287,7 @@ void RenderVertexArray::prepare(int id)
     glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, 0);
     glBindBuffer(GL_ARRAY_BUFFER, buffers[3]);
     glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
@@ -303,7 +303,7 @@ void RenderVertexArray::prepare(int id)
     glBindBuffer(GL_ARRAY_BUFFER, buffers2[1]);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glBindBuffer(GL_ARRAY_BUFFER, buffers2[2]);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, 0);
     glBindBuffer(GL_ARRAY_BUFFER, buffers2[3]);
     glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
