@@ -40,7 +40,7 @@ PT point_func(EveryApi &e, int idx, void *data)
   case 1: return e.point_api.point(100.0,0.0,0.0);
   case 2: return e.point_api.point(100.0,100.0,0.0);
   case 3: return e.point_api.point(50.0,100.0,0.0);
-  case 4: return e.point_api.point(20.0,50.0,0.0);
+  case 4: return e.point_api.point(0.0,50.0,0.0);
   }
 }
 
@@ -119,7 +119,20 @@ void Game(EveryApi &e)
   //e.sprite_api.preparesprite(bxm);
   
   PL f = plane.function(&point_func, 5, 150.0,150.0, 0);
-  PLA pla = plane.prepare(f);
+  P p = e.polygon_api.quad_z(0.0, 10.0, 
+			     0.0, 10.0,
+			     0.0);
+  M mat = e.matrix_api.identity();
+  PL f2 = plane.render_p(p, mat, 450.0, 450.0);
+  Ft font = e.font_api.newfont("FreeSans.ttf", 450,450);
+  PL f3 = e.font_api.glyph_plane(font, 'y', 450.0, 450.0);
+  //PLA pla = plane.prepare(f);
+  CBM cbm = plane.render(f3, 0, 0x00000000, 0xffffffff);
+  BM bm_f = e.cont_bitmap_api.sample(cbm, 150,150);
+  BM bm_f2 = e.bitmap_api.flip_y(bm_f);
+  SpriteObj spr_f(e, bm_f2, sh);
+  spr_f.prepare();
+  spr_f.set_pos(200.0,200.0);
 
   float frame = 0.0;
 
@@ -147,6 +160,8 @@ void Game(EveryApi &e)
       spr2.set_scale(2.0,2.0);
       spr2.render();
 
+      spr_f.render();
+
       //e.texture_api.use(tex);
       //e.texture_api.unuse(tex);
       e.mainloop_api.switch_to_3d(true,sh);
@@ -156,7 +171,7 @@ void Game(EveryApi &e)
       e.texture_api.use(tex);
       e.shader_api.set_y_rotation(sh, "in_MV", time/500.0);
       e.polygon_api.render_vertex_array(va);
-      e.plane_api.render(pla);
+      //e.plane_api.render(pla);
       e.texture_api.unuse(tex);
       //e.polygon_api.render_vertex_array(va2);
       //e.polygon_api.render_vertex_array(vba);

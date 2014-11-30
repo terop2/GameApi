@@ -34,6 +34,7 @@
 #include <iterator>
 #include <cassert>
 #include <memory>
+#include <fstream>
 
 enum AttribId
   {
@@ -10611,6 +10612,104 @@ public:
   
 private:
   FaceCollection &coll;
+};
+
+class LoadObjModelFaceCollection : public BoxableFaceCollection
+{
+public:
+  LoadObjModelFaceCollection(std::string filename) : filename(filename) 
+  {
+    Load();
+  }
+  void Load() {
+    std::ifstream file(filename.c_str());
+    std::string line;
+    while(std::getline(file, line))
+      {
+	std::string word;
+	std::stringstream ss(line);
+	ss>>word;
+	if (word == "v")
+	  {
+	    float x,y,z;
+	    ss >> x >> y >> z;
+	    //std::cout << "Vertex:" << vertex_data.size() << " " << x << " " << y << " " << z << std::endl;
+	    Point p(x,y,z);
+	    vertex_data.push_back(p);
+	  }
+	if (word == "vt")
+	  {	
+	    //std::cout << "Texture:" << texcoord_data.size() << std::endl;
+	    float tx,ty,tz;
+	    ss >> tx >> ty >> tz;
+	    Point2d p = { tx, ty };
+	    texcoord_data.push_back(p);
+	  }
+	if (word == "vn")
+	  {
+	    //std::cout << "Normal:" << normal_data.size() << std::endl;
+
+	    float nx, ny, nz;
+	    ss >> nx >> ny >> nz;
+	    Vector v(nx,ny,nz);
+	    normal_data.push_back(v);
+	  }
+	if (word == "f")
+	  {
+	    float v_index, t_index, n_index;
+	    int count = 0;
+	    char c;
+	    //std::cout << "Face:" << face_counts.size() << std::endl;
+	    while(ss>>v_index>> c >>t_index>> c >>n_index)
+	      {
+		vertex_index.push_back(v_index-1);
+		texture_index.push_back(t_index-1);
+		normal_index.push_back(n_index-1);
+		//std::cout << "Index: " << v_index << " " << t_index << " " << n_index << std::endl;
+		count++;
+	      }
+	    face_counts.push_back(count);
+	  }
+      }
+  }
+  virtual int NumFaces() const { return face_counts.size(); }
+  virtual int NumPoints(int face) const { return face_counts[face]; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    Point p = vertex_data[vertex_index[Count(face,point)]]; 
+    //std::cout << "FacePoint:" << p.x << " " << p.y << " " << p.z << std::endl;
+    return p;
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return normal_data[normal_index[Count(face,point)]];
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const { return 0xffffffff; }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return texcoord_data[texture_index[Count(face,point)]];
+  }
+
+  int Count(int face, int point) const {
+    int s = face_counts.size();
+    int c = 0;
+    for(int i=0;i<s&&i<face;i++)
+      {
+	c+=face_counts[i];
+      }
+    return c+point;
+  }
+private:
+  std::string filename;
+  std::vector<Point> vertex_data;
+  std::vector<Point2d> texcoord_data;
+  std::vector<Vector> normal_data;
+  std::vector<int> vertex_index;
+  std::vector<int> texture_index;
+  std::vector<int> normal_index;
+  std::vector<int> face_counts;
 };
 
 #endif

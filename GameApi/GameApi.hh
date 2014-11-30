@@ -255,6 +255,7 @@ public:
 	IMPORT BM sample_bitmap(BM orig, float xmult, float ymult, float x, float y);
 	IMPORT BM flip_x(BM orig);
 	IMPORT BM flip_y(BM orig);
+        IMPORT BM alpha_color(BM orig, unsigned int color_key);
   //BM bitmapandtypes(BM bm, BM (*fptr)(int)); // bm has ints in it
 	IMPORT SP space(BM bm);
 
@@ -291,6 +292,7 @@ public:
 	IMPORT Ft newfont(const char *filename, int sx, int sy);
 	IMPORT BM glyph(Ft font, long idx);
 	IMPORT LI glyph_outline(Ft font, long idx, float sx, float sy);
+        IMPORT PL glyph_plane(Ft font, long idx, float sx, float sy);
 	IMPORT BM font_string(Ft font, const char *str, int x_gap);
 	IMPORT FB glyph_fb(Ft font, long idx);
 	IMPORT BB glyph_bb(Ft font, long idx);
@@ -674,8 +676,9 @@ public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
   
-
+  
 	IMPORT P empty();
+        IMPORT P load_model(std::string filename);
 	IMPORT P line(PT p1, PT p2);
 	IMPORT P triangle(PT p1, PT p2, PT p3);
 	IMPORT P quad(PT p1, PT p2, PT p3, PT p4);
@@ -890,7 +893,7 @@ public:
   PL and_not(PL p1, PL not_p); // needed in fonts for the holes
                                // draw to bitmap, do and_not, put to texture
 
-  PL render_p(P p);
+  PL render_p(P p, M proj_matrix, float sx, float sy);
 
   // 1) get black bitmap
   // 2) draw white polygon
@@ -903,6 +906,8 @@ public:
   P substitute_quads_with_plane(P orig, PL (*fptr)(EveryApi &ev, int face, void *data), void *data);
   P plane_in_3d(PL plane, PT u_p, V v1, V v2);
   
+  CBM render(PL pl, int num, unsigned int color_0, unsigned int color_1);
+
   PLA prepare(PL pl);
   void render(PLA pl);
 

@@ -1478,6 +1478,50 @@ private:
   float y;
 };
 
+class PolygonLines : public Line2dCollection
+{
+public:
+  PolygonLines(PlanePoints2d &points, int num) : points(points),num(num) { }
+  int Size() const 
+  { 
+    int i2 = 0;
+    int count=0;
+    for(;i2<points.Size();i2++)
+      {
+	if (count == num) break;
+	if (i2!=0 && points.IsMoveIndex(i2))
+	  count++;
+      }
+    int i3 = 0;
+    for(;i2<points.Size();i2++,i3++)
+      {
+	if (i2!=0 && points.IsMoveIndex(i2)) { break; }
+      }
+    return i3;
+  }
+  Line2d Index(int i) const
+  {
+    int i2 = 0;
+    int count = 0;
+    for(;i2<points.Size();i2++)
+      {
+	if (count == num) break;
+	if (i2!=0 && points.IsMoveIndex(i2))
+	  count++;
+      }
+    int pos = i2+i;
+    Point2d p1 = points.Map(pos);
+    Point2d p2 = points.Map(pos+1);
+    Line2d l;
+    l.p1 = p1;
+    l.p2 = p2;
+    return l;
+  }
+private:
+  PlanePoints2d &points;
+  int num;
+};
+
 class PolygonFill : public ContinuousBitmap<bool>
 {
 public:
