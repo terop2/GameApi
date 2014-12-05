@@ -78,7 +78,7 @@ examples: main
 
 main: $(GCHFiles_examples) $(OFiles_examples) Makefile GameApi.hh libGameApi.so
 	@echo g++ main
-	@g++ -g $(OFiles_examples) -std=c++0x -o main -L. -lGameApi -lGL -lm -lstdc++
+	@g++ -g $(OFiles_examples) -std=c++11 -o main -L. -lGameApi -lGL -lm -lstdc++
 
 main.exe: $(GCHFiles_examples) $(O2Files_examples) Makefile GameApi.hh libGameApi.dll
 	@echo mingw main.exe
@@ -87,12 +87,12 @@ main.exe: $(GCHFiles_examples) $(O2Files_examples) Makefile GameApi.hh libGameAp
 
 libGameApi.so: $(GCHFiles) $(OFiles) Makefile
 	@echo g++ libGameApi.so
-	@g++ -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lGLEW -lfreetype -lstdc++ 
+	@g++ -shared -pg -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lGLEW -lfreetype -lstdc++ 
 #`pkg-config gtkmm-2.4 --libs` 
 
 libGameApi.dll: $(GCH2Files) $(O2Files) Makefile.win32 glew.o
 	@echo mingw libGameApi.dll
-	@mingw32-g++ -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 
+	@mingw32-g++ -pg -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 
 
 subdirs: $(Subdirs)
 
@@ -119,7 +119,7 @@ $(D2Files): objs/%.d2: %.cc
 
 $(OFiles): objs/%.o : %.cc
 	@echo g++ $< -o $@
-	@$(CC) -std=c++0x -g -c $(CCFLAGS) $< -o $@
+	@$(CC) -std=c++11 -g -c $(CCFLAGS) $< -o $@
 
 $(O2Files): objs/%.obj : %.cc
 	@echo mingw $<
@@ -134,11 +134,11 @@ $(OFiles_examples): objs/%.o : %.cc GameApi.hh
 
 $(O2Files_examples): objs/%.obj : %.cc GameApi.hh
 	@echo mingw $<
-	@$(CCWIN) -g -c -I. $(CC2FLAGS) $< -o $@ 
+	@$(CCWIN) -std=c++0x -g -c -I. $(CC2FLAGS) $< -o $@ 
 
 
 $(GCHFiles): objs/%.hh.gch : %.hh
-	@$(CC) $(CCFLAGS) -std=c++0x -g -x c++-header $< -o $@ 
+	@$(CC) $(CCFLAGS) -std=c++11 -g -x c++-header $< -o $@ 
 
 $(GCH2Files): objs/%.hh.gch2 : %.hh
 	@echo mingw $<

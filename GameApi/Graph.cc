@@ -1541,4 +1541,5 @@ void FBO::update()
   glReadPixels(0,0,sx,sy, G_RGBA, GL_UNSIGNED_INT_8_8_8_8, (void*)ref.buffer);
 }
 
+
 #endif
