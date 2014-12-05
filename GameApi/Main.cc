@@ -370,7 +370,7 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
   SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1);
   SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4);
 

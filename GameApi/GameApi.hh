@@ -678,7 +678,7 @@ public:
   
   
 	IMPORT P empty();
-        IMPORT P load_model(std::string filename);
+        IMPORT P load_model(std::string filename, int obj_num);
 	IMPORT P line(PT p1, PT p2);
 	IMPORT P triangle(PT p1, PT p2, PT p3);
 	IMPORT P quad(PT p1, PT p2, PT p3, PT p4);

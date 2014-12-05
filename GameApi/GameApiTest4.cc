@@ -7,6 +7,45 @@
 #include <SDL_opengl.h>
 
 
+class PathRendering
+{
+public:
+  void init();
+  void draw();
+  void drawShape();
+};
+ 
+void PathRendering::init()
+{
+  glMatrixLoadIdentityEXT(GL_PROJECTION);
+  glMatrixOrthoEXT(GL_PROJECTION, 0, 500, 0, 400, -1, 1);
+  glMatrixLoadIdentityEXT(GL_MODELVIEW);
+
+  glClearStencil(0);
+  glClearColor(0.1,0.3,0.6,0.0);
+  glStencilMask(~0);
+  
+  glEnable(GL_STENCIL_TEST);
+  glStencilFunc(GL_NOTEQUAL, 0, 0x1F);
+  glStencilOp(GL_KEEP, GL_KEEP, GL_ZERO);
+} 
+void PathRendering::draw()
+{
+  glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  drawShape();
+}
+void PathRendering::drawShape()
+{
+  //GLuint pathObj = 42;
+  const char *pathString = "M100,180 L40,10 L190,120 L10,120 L160,10 z";
+  GLuint pathObj = glGenPathsNV(1);
+  glPathStringNV(pathObj, GL_PATH_FORMAT_SVG_NV, strlen(pathString), pathString);
+  glStencilFillPathNV(pathObj, GL_COUNT_UP_NV, 0x1F);
+  glColor3f(1.0,1.0,1.0);
+  glCoverStrokePathNV(pathObj, GL_CONVEX_HULL_NV);
+}
+
+
 using namespace GameApi;
 
 unsigned int red_block(int x, int y, void *data)
@@ -70,7 +109,7 @@ void Game(EveryApi &e)
   e.shader_api.set_default_projection(sh, "in_P");
 
   loop.init(sh);
-  loop.alpha(true);
+  loop.alpha(false);
 
 
   //BM red = bm.function(&red_block, 10,10, 0);
@@ -88,15 +127,15 @@ void Game(EveryApi &e)
 
   O sphere = volume.sphere(points.point(0.0, 1.0, 0.0), 1.0);
   O andnot = volume.andnot_op(torus, sphere);
-  P cubes = volume.rendercubes(andnot, std::bind(Cube, _1,_2,_3,_4,_5,_6,_7,std::ref(e)), 40, 4.0);
-  P cubes2 = e.polygon_api.memoize(cubes);
-  P cubes3 = e.polygon_api.scale(cubes2, 300.0,300.0,300.0);
+  P cubes = volume.rendercubes(andnot, std::bind(&Cube, _1,_2,_3,_4,_5,_6,_7,std::ref(e)), 40, 4.0);
+  //P cubes2 = e.polygon_api.memoize(cubes);
+  //P cubes3 = e.polygon_api.scale(cubes2, 300.0,300.0,300.0);
   //poly.prepare(cubes3);
   TX tx = e.texture_api.tex_plane(128,128);
   int id = e.texture_api.unique_id();
   TX tx2 = e.texture_api.tex_assign(tx, id, 0,0, red);
-  P cubes3_texture = e.polygon_api.sprite_bind(cubes3, tx2, id);
-  VA va = poly.create_vertex_array(cubes3_texture);
+  //P cubes3_texture = e.polygon_api.sprite_bind(cubes3, tx2, id);
+  //VA va = poly.create_vertex_array(cubes3_texture);
   TXID tex = e.texture_api.prepare(tx2);
   sprite.preparesprite(red);
   sprite.preparesprite(green);
@@ -125,8 +164,8 @@ void Game(EveryApi &e)
   M mat = e.matrix_api.identity();
   PL f2 = plane.render_p(p, mat, 450.0, 450.0);
   Ft font = e.font_api.newfont("FreeSans.ttf", 450,450);
-  PL f3 = e.font_api.glyph_plane(font, 'y', 450.0, 450.0);
-  //PLA pla = plane.prepare(f);
+  PL f3 = e.font_api.glyph_plane(font, 'R', 450.0, 450.0);
+  PLA pla = plane.prepare(f3);
   CBM cbm = plane.render(f3, 0, 0x00000000, 0xffffffff);
   BM bm_f = e.cont_bitmap_api.sample(cbm, 150,150);
   BM bm_f2 = e.bitmap_api.flip_y(bm_f);
@@ -136,12 +175,28 @@ void Game(EveryApi &e)
 
   float frame = 0.0;
 
+  //PathRendering r;
+  //r.init();
+
+#if 0
+  while(1) {  
+    //glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    glClear( GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+    //e.mainloop_api.clear();
+    //r.draw();
+     e.mainloop_api.swapbuffers();
+    MainLoopApi::Event ev = e.mainloop_api.get_event();
+    if (ev.ch==27) break;
+   }
+#endif
   while(1)
     {
       frame += 0.1;
       float time = e.mainloop_api.get_time();
-
+      //glClearStencil(0);
+      //glStencilMask(~0);
       e.mainloop_api.clear();
+      plane.render(pla);
      e.mainloop_api.switch_to_3d(false, sh);
      //     e.shader_api.set_var(sh, "in_MV", e.matrix_api.identity());
      e.sprite_api.rendersprite(red,sh,0.0,0.0,1.0,1.0);
@@ -164,19 +219,21 @@ void Game(EveryApi &e)
 
       //e.texture_api.use(tex);
       //e.texture_api.unuse(tex);
-      e.mainloop_api.switch_to_3d(true,sh);
-       glPushMatrix();
-      glRotatef(time/40.0, 0.0,1.0,0.0);
+      //    e.mainloop_api.switch_to_3d(true,sh);
+      // glPushMatrix();
+      //glRotatef(time/40.0, 0.0,1.0,0.0);
       //e.polygon_api.render(cubes3, 0, 0.0,0.0,0.0);
+#if 0
       e.texture_api.use(tex);
       e.shader_api.set_y_rotation(sh, "in_MV", time/500.0);
-      e.polygon_api.render_vertex_array(va);
+      //e.polygon_api.render_vertex_array(va);
       //e.plane_api.render(pla);
       e.texture_api.unuse(tex);
       //e.polygon_api.render_vertex_array(va2);
       //e.polygon_api.render_vertex_array(vba);
       //e.sprite_api.rendersprite(bxm,sh,100.0,100.0);
       glPopMatrix();
+#endif
       e.mainloop_api.swapbuffers();
       MainLoopApi::Event ev = e.mainloop_api.get_event();
       if (ev.ch==27) break;

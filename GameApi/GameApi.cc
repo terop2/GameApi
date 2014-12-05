@@ -1,16 +1,16 @@
- 
+  
 #define SDL2_USED
 #define GAME_API_DEFS
 #define _SCL_SECURE_NO_WARNINGS
 
-#include "GameApi.hh"
+#include "GameApi.hh" 
 #include "Graph.hh"
 #include "Physics.hh"
-#include "State.hh"
+#include "State.hh" 
 #include "Serialize.hh"
-
-#define NO_SDL_GLEXT
-#include <GL/glew.h>
+ 
+#define NO_SDL_GLEXT 
+#include <GL/glew.h> 
 #include <GL/gl.h>
 #ifdef SDL2_USED
 #include <SDL.h>
@@ -177,7 +177,7 @@ void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_height)
 
   glMatrixLoadIdentityEXT(GL_PROJECTION);
   glMatrixLoadIdentityEXT(GL_MODELVIEW);
-  glMatrixOrthoEXT(GL_MODELVIEW, 0, 800, 0, 600, -1, 1);
+  glMatrixOrthoEXT(GL_MODELVIEW, 0, 800, 600, 0, -1, 1);
 }
 void GameApi::MainLoopApi::transfer_sdl_surface(MainLoopApi &orig)
 {
@@ -286,8 +286,8 @@ void GameApi::MainLoopApi::clear()
   glClearColor(0,0,0,0);
   glStencilMask(~0);
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-  glLoadIdentity();
-  glTranslatef(0.375, 0.375, 0.0);
+  //glLoadIdentity();
+  //glTranslatef(0.375, 0.375, 0.0);
   //glTranslatef(0.0, 0.0, -260.0);
   //float speed = 1.0;
   //glRotatef(speed*time, 0.0,1.0,0.0);
@@ -364,7 +364,7 @@ extern SDL_Window *sdl_window;
 void GameApi::MainLoopApi::swapbuffers()
 {
   //MainLoopPriv *p = (MainLoopPriv*)priv;
-  glLoadIdentity();
+  //glLoadIdentity();
 #ifdef SDL2_USED
   SDL_GL_SwapWindow(sdl_window);
 #else
@@ -3509,9 +3509,9 @@ GameApi::P GameApi::PolygonApi::empty()
   return add_polygon(e,new EmptyBoxableFaceCollection, 1);
 }
 
-GameApi::P GameApi::PolygonApi::load_model(std::string filename)
+GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
 {
-  return add_polygon(e, new LoadObjModelFaceCollection(filename), 1);
+  return add_polygon2(e, new LoadObjModelFaceCollection(filename, num), 1);
 } 
    
 GameApi::P GameApi::PolygonApi::line(PT p1, PT p2)
@@ -3701,7 +3701,7 @@ GameApi::P GameApi::PolygonApi::or_elem(P p1, P p2)
   coll->push_back(pp1);
   coll->push_back(pp2);
   coll->update_faces_cache();
-  return add_polygon(e, coll,1);
+  return add_polygon2(e, coll,1);
 }
 
 
@@ -3758,7 +3758,7 @@ GameApi::P GameApi::PolygonApi::color_faces(P next,
   env->deletes.push_back(std::shared_ptr<void>(convert));  
   if (!c) { std::cout << "dynamic cast failed" << std::endl; }
   FaceCollection *coll = new ColorFaceElem(*convert, color_1,color_2,color_3,color_4);
-  return add_polygon(e, coll,1);
+  return add_polygon2(e, coll,1);
 }
 
 GameApi::P GameApi::PolygonApi::translate(P orig, float dx, float dy, float dz)
@@ -6863,18 +6863,24 @@ GameApi::PLA GameApi::PlaneApi::prepare(GameApi::PL pl)
   env->plane_array.push_back(data);
   PLA pla;
   pla.id = env->plane_array.size()-1;
+
+  glPathCommandsNV(pla.id, data.cmd_array.size(), &data.cmd_array[0], data.array.size(), GL_FLOAT, &data.array[0]);
+
   return pla;
 }
 void GameApi::PlaneApi::render(GameApi::PLA pla)
 {
   PlaneData *dt = find_plane_array(e,pla);
-  glPathCommandsNV(pla.id, dt->cmd_array.size(), &dt->cmd_array[0], dt->array.size(), GL_FLOAT, &dt->array[0]);
-  glStencilFillPathNV(pla.id, GL_COUNT_UP_NV, 0x1F);
+  //GLuint pathObj = glGenPathsNV(1);
+
+  //glStencilFillPathNV(pla.id, GL_COUNT_UP_NV, 0x1F);
   glEnable(GL_STENCIL_TEST);
-  glStencilFunc(GL_NOTEQUAL, 0, 0x1F);
+  glStencilFunc(GL_NOTEQUAL, 0x0, 0x1);
   glStencilOp(GL_KEEP, GL_KEEP, GL_ZERO);
-  glColor3f(1,1,0);
-  glCoverFillPathNV(pla.id, GL_BOUNDING_BOX_NV);
+  glColor3f(1,1,1);
+  glStencilFillPathNV(pla.id, GL_COUNT_UP_NV, 0x1F);
+  glColor3f(1.0,1.0,1.0);
+  glCoverStrokePathNV(pla.id, GL_CONVEX_HULL_NV);
   glDisable(GL_STENCIL_TEST);
 }
 #if 0
