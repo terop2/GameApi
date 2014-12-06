@@ -177,7 +177,7 @@ void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_height)
 
   glMatrixLoadIdentityEXT(GL_PROJECTION);
   glMatrixLoadIdentityEXT(GL_MODELVIEW);
-  glMatrixOrthoEXT(GL_MODELVIEW, 0, 800, 600, 0, -1, 1);
+  glMatrixOrthoEXT(GL_PROJECTION, 0, 800, 600, 0, -1, 1);
 }
 void GameApi::MainLoopApi::transfer_sdl_surface(MainLoopApi &orig)
 {
@@ -6918,10 +6918,14 @@ std::cout << "Type ERROR!" << std::endl;
 
   return pla;
 }
-void GameApi::PlaneApi::render(GameApi::PLA pla)
+void GameApi::PlaneApi::render(GameApi::PLA pla, float x, float y, float mult_x, float mult_y)
 {
   PlaneData *dt = find_plane_array(e,pla);
   //GLuint pathObj = glGenPathsNV(1);
+  //glMatrixPushExt(GL_MODELVIEW);
+  glPushMatrix();
+  glMatrixScalefEXT(GL_MODELVIEW, mult_x, mult_y, 1.0);
+  glMatrixTranslatefEXT(GL_MODELVIEW, x, y, 0);
 
   //glStencilFillPathNV(pla.id, GL_COUNT_UP_NV, 0x1F);
   glEnable(GL_STENCIL_TEST);
@@ -6932,6 +6936,7 @@ void GameApi::PlaneApi::render(GameApi::PLA pla)
   glColor3f(1.0,1.0,1.0);
   glCoverStrokePathNV(pla.id, GL_CONVEX_HULL_NV);
   glDisable(GL_STENCIL_TEST);
+  glPopMatrix();
 }
 #if 0
 GameApi::PL GameApi::PlaneApi::floodfill_border(GameApi::BB bitmap, int x, int y)

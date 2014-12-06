@@ -910,7 +910,7 @@ public:
   CBM render(PL pl, int num, unsigned int color_0, unsigned int color_1);
 
   PLA prepare(PL pl);
-  void render(PLA pl);
+  void render(PLA pl, float x, float y, float mult_x, float mult_y);
 
 private:
   Env &e;

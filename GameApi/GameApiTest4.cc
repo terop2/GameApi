@@ -234,7 +234,7 @@ void Game(EveryApi &e)
       //glPopMatrix();
 #endif
       glColor3f(1.0,1.0,1.0);
-      plane.render(pla);
+      plane.render(pla, frame,frame,1.0,1.0);
       e.mainloop_api.swapbuffers();
       MainLoopApi::Event ev = e.mainloop_api.get_event(); 
       if (ev.ch==27) break;
