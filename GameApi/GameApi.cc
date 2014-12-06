@@ -5215,7 +5215,8 @@ GameApi::PL GameApi::FontApi::glyph_plane(GameApi::Ft font, long idx, float sx, 
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->fonts[font.id].bm->load_glyph_outline(idx,sx,sy);
   LineCollection *coll = env->fonts[font.id].bm;
-  PlanePoints2d *plane = new FontLineCollectionWrapper(coll, sx, sy);
+  FontGlyphBitmap *bm = (FontGlyphBitmap*)coll;
+  PlanePoints2d *plane = new FontLineCollectionWrapper(coll, bm->Types(), sx, sy);
   return add_plane(e, plane);
 }
 GameApi::BM GameApi::FontApi::glyph(GameApi::Ft font, long idx)
@@ -6724,6 +6725,7 @@ public:
     Point2d pp = { e.point_api.pt_x(p), e.point_api.pt_y(p) };
     return pp;
   }
+  virtual Point2d Map2(int i) const { Point2d pp = {0.0, 0.0 }; return pp; }
  
 private:
   GameApi::EveryApi &e;
@@ -6759,6 +6761,7 @@ public:
       }
     return count;
   }
+  virtual Point2d Map2(int i) const { Point2d pp = { 0.0, 0.0 }; return pp; }
   virtual Point2d Map(int i) const
   {
     int faces = coll->NumFaces();
@@ -6777,9 +6780,9 @@ public:
     Point2d p3 = { p2.x, p2.y };
     return p3;
   }
-  virtual bool IsMoveIndex(int i) const 
+  virtual PlanePointsType Type(int i) const 
   { 
-    if (i==0) return true;
+    if (i==0) return EMove;
     int ii=0;
     int count = 0;
     int faces = coll->NumFaces();
@@ -6791,7 +6794,7 @@ public:
 	  }
 	count += coll->NumPoints(ii);
       }
-    return i==count+coll->NumPoints(ii)-1;
+    return i==count+coll->NumPoints(ii)-1 ? ELineTo : EMove;
   }
 private:
   FaceCollection *coll;
@@ -6840,23 +6843,38 @@ GameApi::PLA GameApi::PlaneApi::prepare(GameApi::PL pl)
 {
   PlanePoints2d *ptr = find_plane(e, pl);
   int s = ptr->Size();
+  std::cout << "PlaneApi::prepare" << s << std::endl;
   PlaneData data;
   for(int i=0;i<s;i++)
     {
       Point2d p = ptr->Map(i);
-      bool b = ptr->IsMoveIndex(i);
+      std::cout << "PlaneApi::prepare" << p.x << " " << p.y << std::endl;
+      PlanePoints2d::PlanePointsType b = ptr->Type(i);
       data.array.push_back(p.x);
       data.array.push_back(p.y);
-      if (b) 
+      if (b==PlanePoints2d::EMove) 
 	{
 	  if (i!=0)
 	    data.cmd_array.push_back(GL_CLOSE_PATH_NV);
 	  data.cmd_array.push_back(GL_MOVE_TO_NV);
 	}
-      else
+      else if (b==PlanePoints2d::ELineTo)
 	{
 	  data.cmd_array.push_back(GL_LINE_TO_NV);
-	}
+	} else if (b==PlanePoints2d::ECubic)
+	{
+	  data.cmd_array.push_back(GL_CUBIC_CURVE_TO_NV);
+	  Point2d p = ptr->Map(i+1);
+	  data.array.push_back(p.x);
+	  data.array.push_back(p.y);
+	  Point2d p2 = ptr->Map(i+2);
+	  data.array.push_back(p2.x);
+	  data.array.push_back(p2.y);
+	  i+=2;
+	} else { 
+	data.cmd_array.push_back(GL_MOVE_TO_NV);
+std::cout << "Type ERROR!" << std::endl; 
+      }
     }
   data.cmd_array.push_back(GL_CLOSE_PATH_NV);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);

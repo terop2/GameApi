@@ -1489,13 +1489,13 @@ public:
     for(;i2<points.Size();i2++)
       {
 	if (count == num) break;
-	if (i2!=0 && points.IsMoveIndex(i2))
+	if (i2!=0 && points.Type(i2)==PlanePoints2d::PlanePointsType::EMove)
 	  count++;
       }
     int i3 = 0;
     for(;i2<points.Size();i2++,i3++)
       {
-	if (i2!=0 && points.IsMoveIndex(i2)) { break; }
+	if (i2!=0 && points.Type(i2)==PlanePoints2d::PlanePointsType::EMove) { break; }
       }
     return i3;
   }
@@ -1506,7 +1506,7 @@ public:
     for(;i2<points.Size();i2++)
       {
 	if (count == num) break;
-	if (i2!=0 && points.IsMoveIndex(i2))
+	if (i2!=0 && points.Type(i2)==PlanePoints2d::PlanePointsType::EMove)
 	  count++;
       }
     int pos = i2+i;
