@@ -6839,6 +6839,38 @@ GameApi::CBM GameApi::PlaneApi::render(GameApi::PL pl, int num, unsigned int col
   env->deletes.push_back(std::shared_ptr<void>(fill));
   return add_continuous_bitmap(e, fill2);
 }
+class FlipYPlane : public PlanePoints2d
+{
+public:
+  FlipYPlane(PlanePoints2d *ptr) : ptr(ptr) { }
+  virtual float SizeX() const { return ptr->SizeX(); }
+  virtual float SizeY() const { return ptr->SizeY(); }
+  virtual int Size() const { return ptr->Size(); }
+  virtual Point2d Map(int i) const
+  {
+    Point2d p = ptr->Map(i);
+    Point2d pp = Convert(p);
+    return pp;
+  }
+  Point2d Convert(Point2d p) const
+  {
+    Point2d pp = { p.x, SizeY()-p.y };
+    return pp;
+  }
+  virtual PlanePointsType Type(int i) const { 
+    return ptr->Type(i);
+  }
+
+
+private:
+  PlanePoints2d *ptr;
+};
+
+GameApi::PL GameApi::PlaneApi::flip_y(GameApi::PL pl)
+{
+  PlanePoints2d *ptr = find_plane(e, pl);
+  return add_plane(e, new FlipYPlane(ptr));
+}
 GameApi::PLA GameApi::PlaneApi::prepare(GameApi::PL pl)
 {
   PlanePoints2d *ptr = find_plane(e, pl);
