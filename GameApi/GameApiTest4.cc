@@ -128,14 +128,14 @@ void Game(EveryApi &e)
   O sphere = volume.sphere(points.point(0.0, 1.0, 0.0), 1.0);
   O andnot = volume.andnot_op(torus, sphere);
   P cubes = volume.rendercubes(andnot, std::bind(&Cube, _1,_2,_3,_4,_5,_6,_7,std::ref(e)), 40, 4.0);
-  //P cubes2 = e.polygon_api.memoize(cubes);
-  //P cubes3 = e.polygon_api.scale(cubes2, 300.0,300.0,300.0);
-  //poly.prepare(cubes3);
+  P cubes2 = e.polygon_api.memoize(cubes);
+  P cubes3 = e.polygon_api.scale(cubes2, 300.0,300.0,300.0);
+  poly.prepare(cubes3);
   TX tx = e.texture_api.tex_plane(128,128);
   int id = e.texture_api.unique_id();
   TX tx2 = e.texture_api.tex_assign(tx, id, 0,0, red);
-  //P cubes3_texture = e.polygon_api.sprite_bind(cubes3, tx2, id);
-  //VA va = poly.create_vertex_array(cubes3_texture);
+  P cubes3_texture = e.polygon_api.sprite_bind(cubes3, tx2, id);
+  VA va = poly.create_vertex_array(cubes3_texture);
   TXID tex = e.texture_api.prepare(tx2);
   sprite.preparesprite(red);
   sprite.preparesprite(green);
@@ -164,8 +164,9 @@ void Game(EveryApi &e)
   M mat = e.matrix_api.identity();
   PL f2 = plane.render_p(p, mat, 450.0, 450.0);
   Ft font = e.font_api.newfont("FreeSans.ttf", 450,450);
-  PL f3 = e.font_api.glyph_plane(font, '&', 450.0, 450.0);
-  PLA pla = plane.prepare(f3 );
+  PL f3 = e.font_api.glyph_plane(font, 'y', 450.0, 450.0);
+  PL f4 = e.plane_api.flip_y(f3);
+  PLA pla = plane.prepare(f4 );
   //CBM cbm = plane.render(f3, 0, 0x00000000, 0xffffffff);
   //BM bm_f = e.cont_bitmap_api.sample(cbm, 150,150);
   //BM bm_f2 = e.bitmap_api.flip_y(bm_f);
@@ -198,7 +199,6 @@ void Game(EveryApi &e)
       e.mainloop_api.clear();
      e.mainloop_api.switch_to_3d(false, sh);
      //     e.shader_api.set_var(sh, "in_MV", e.matrix_api.identity());
-#if 0
      e.sprite_api.rendersprite(red,sh,0.0,0.0,1.0,1.0);
       e.sprite_api.rendersprite(green,sh,100.0,100.0,1.0,1.0);
       e.sprite_api.rendersprite(red,sh,200.0,200.0,1.0,1.0);
@@ -214,26 +214,26 @@ void Game(EveryApi &e)
       spr2.set_pos(250.0, 250.0-frame*4.0);
       spr2.set_scale(2.0,2.0);
       spr2.render();
-#endif
       //spr_f.render();
 
       //e.texture_api.use(tex);
       //e.texture_api.unuse(tex);
-      //    e.mainloop_api.switch_to_3d(true,sh);
+          e.mainloop_api.switch_to_3d(true,sh);
       // glPushMatrix();
       //glRotatef(time/40.0, 0.0,1.0,0.0);
       //e.polygon_api.render(cubes3, 0, 0.0,0.0,0.0);
-#if 0
-      e.texture_api.use(tex);
+#if 1
+	  //e.texture_api.use(tex);
       e.shader_api.set_y_rotation(sh, "in_MV", time/500.0);
-      //e.polygon_api.render_vertex_array(va);
+      e.polygon_api.render_vertex_array(va);
       //e.plane_api.render(pla);
-      e.texture_api.unuse(tex);
+      //e.texture_api.unuse(tex);
       //e.polygon_api.render_vertex_array(va2);
       //e.polygon_api.render_vertex_array(vba);
       //e.sprite_api.rendersprite(bxm,sh,100.0,100.0);
-      glPopMatrix();
+      //glPopMatrix();
 #endif
+      glColor3f(1.0,1.0,1.0);
       plane.render(pla);
       e.mainloop_api.swapbuffers();
       MainLoopApi::Event ev = e.mainloop_api.get_event(); 
