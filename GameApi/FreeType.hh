@@ -9,7 +9,7 @@ struct GlyphPriv;
 class FontLineCollectionWrapper : public PlanePoints2d
 {
 public:
-  FontLineCollectionWrapper(LineCollection *coll, float sx, float sy) : coll(coll), m_sx(sx), m_sy(sy) { }
+  FontLineCollectionWrapper(LineCollection *coll, std::vector<int> &types, float sx, float sy) : coll(coll), m_sx(sx), m_sy(sy), types(types) { }
   virtual float SizeX() const { return m_sx; }
   virtual float SizeY() const { return m_sy; }
   virtual int Size() const { return coll->NumLines()+1; }
@@ -17,17 +17,23 @@ public:
     Point p = coll->LinePoint(i,0);
     if (i==Size()-1) p=coll->LinePoint(Size()-2,1);
     Point2d pp = { p.x, p.y };
+    std::cout << "Point:" << i << ":" << pp.x << " " << pp.y << std::endl;
     return pp;
   }
-  virtual bool IsMoveIndex(int i) const 
+  virtual PlanePointsType Type(int i) const 
   { 
-    if (i==0) return true;
-    return false;
+    std::cout << "Type: " << i << ":" << types[i] << std::endl;
+    if (types[i]==0) return PlanePoints2d::EMove;
+    if (types[i]==1) return PlanePoints2d::ELineTo;
+    if (types[i]==2) return PlanePoints2d::ECubic;
+    //if (i==0) return EMove;
+    //return ELineTo;
   }
 
 private:
   LineCollection *coll;
   float m_sx, m_sy;
+  std::vector<int> types;
 };
 
 class FontGlyphBitmap : public Bitmap<int>, public LineCollection
@@ -43,6 +49,8 @@ public:
 
   virtual int NumLines() const;
   virtual Point LinePoint(int line, int point) const;
+
+  std::vector<int> &Types() const {return const_cast<std::vector<int>&>(types); }
 
   //virtual float SizeX() const { return m_sx; }
   //virtual float SizeY() const { return m_sy; }

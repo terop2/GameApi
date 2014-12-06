@@ -48,6 +48,8 @@ int MoveToFunc(const FT_Vector *to, void *user)
   //std::cout << "MoveToFunc" << std::endl;
   FontGlyphBitmap *bm = (FontGlyphBitmap*)user;
   Point2d p = { float(to->x)/65536.0f*bm->m_sx, float(to->y)/65536.0f*bm->m_sy };
+  bm->types.push_back(0);
+  bm->points.push_back(p);
   bm->move_point = p;
   return 0;
 }
@@ -56,9 +58,9 @@ int LineToFunc(const FT_Vector *to, void *user)
   //std::cout << "LineToFunc" << std::endl;
   FontGlyphBitmap *bm = (FontGlyphBitmap*)user;
   Point2d p = { float(to->x)/65536.0f*bm->m_sx, float(to->y)/65536.0f*bm->m_sy };
-  bm->types.push_back(0);
-  bm->types.push_back(0);
-  bm->points.push_back(bm->move_point);
+  //bm->types.push_back(0);
+  bm->types.push_back(1);
+  //bm->points.push_back(bm->move_point);
   bm->points.push_back(p);
   bm->move_point = p;
   Point2d p2 = { 0.0, 0.0 };
@@ -100,15 +102,21 @@ int ConicToFunc(const FT_Vector *control, const FT_Vector *to, void *user)
 
   FontGlyphBitmap *bm = (FontGlyphBitmap*)user;
   Point2d p = { float(to->x)/65536.0f*bm->m_sx, float(to->y)/65536.0f*bm->m_sy };
-  bm->types.push_back(1);
-  bm->types.push_back(1);
-  bm->points.push_back(bm->move_point);
+  Point2d p1 = { float(control->x)/65536.0f*bm->m_sx, float(control->y)/65536.0f*bm->m_sy };
+  bm->types.push_back(2);
+  bm->types.push_back(2);
+  bm->types.push_back(2);
+  //bm->types.push_back(1);
+  //bm->types.push_back(1);
+  //bm->points.push_back(bm->move_point);
+  bm->points.push_back(p1);
+  bm->points.push_back(p1);
   bm->points.push_back(p);
   bm->move_point = p;
-  Point2d p1 = { float(control->x)/65536.0f*bm->m_sx, float(control->y)/65536.0f*bm->m_sy };
-  bm->control1.push_back(p1);
-  Point2d p2 = { 0.0, 0.0 };
-  bm->control2.push_back(p2);
+  //bm->control1.push_back(p1);
+  //Point2d p2 = { 0.0, 0.0 };
+  //bm->control2.push_back(p2);
+  //bm->points.push_back(p2);
   return 0;
 }
 
@@ -119,26 +127,28 @@ int CubicToFunc(const FT_Vector *control1, const FT_Vector *control2,
   //std::cout << "CubicToFunc" << std::endl;
   FontGlyphBitmap *bm = (FontGlyphBitmap*)user;
   Point2d p = { float(to->x)/65536.0f*bm->m_sx, float(to->y)/65536.0f*bm->m_sy };
+  //bm->types.push_back(0);
   bm->types.push_back(2);
   bm->types.push_back(2);
-  bm->points.push_back(bm->move_point);
-  bm->points.push_back(p);
-  bm->move_point = p;
+  bm->types.push_back(2);
+  //bm->points.push_back(bm->move_point);
   Point2d p1 = { float(control1->x)/65536.0f*bm->m_sx, float(control1->y)/65536.0f*bm->m_sy };
-  bm->control1.push_back(p1);
+  bm->points.push_back(p1);
   Point2d p2 = { float(control2->x)/65536.0f*bm->m_sx, float(control2->y)/65536.0f*bm->m_sy };
-  bm->control2.push_back(p2);
+   bm->points.push_back(p2);
+ bm->points.push_back(p);
+  bm->move_point = p;
   return 0;
 }
 
 int FontGlyphBitmap::NumLines() const
 {
   //std::cout << "NumLines" << points.size() << std::endl;
-  return points.size()/2;
+  return points.size()-1;
 }
 Point FontGlyphBitmap::LinePoint(int line, int point) const
 {
-  Point p = Point(points[line*2+point].x, points[line*2+point].y, 0.0); 
+  Point p = Point(points[line+point].x, points[line+point].y, 0.0); 
   //std::cout << line << " " << point << ":" << p.x << " " << p.y << std::endl;
   return p;
 }

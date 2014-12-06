@@ -164,14 +164,14 @@ void Game(EveryApi &e)
   M mat = e.matrix_api.identity();
   PL f2 = plane.render_p(p, mat, 450.0, 450.0);
   Ft font = e.font_api.newfont("FreeSans.ttf", 450,450);
-  PL f3 = e.font_api.glyph_plane(font, 'R', 450.0, 450.0);
-  PLA pla = plane.prepare(f3);
-  CBM cbm = plane.render(f3, 0, 0x00000000, 0xffffffff);
-  BM bm_f = e.cont_bitmap_api.sample(cbm, 150,150);
-  BM bm_f2 = e.bitmap_api.flip_y(bm_f);
-  SpriteObj spr_f(e, bm_f2, sh);
-  spr_f.prepare();
-  spr_f.set_pos(200.0,200.0);
+  PL f3 = e.font_api.glyph_plane(font, '&', 450.0, 450.0);
+  PLA pla = plane.prepare(f3 );
+  //CBM cbm = plane.render(f3, 0, 0x00000000, 0xffffffff);
+  //BM bm_f = e.cont_bitmap_api.sample(cbm, 150,150);
+  //BM bm_f2 = e.bitmap_api.flip_y(bm_f);
+  //SpriteObj spr_f(e, bm_f2, sh);
+  //spr_f.prepare();
+  //spr_f.set_pos(200.0,200.0);
 
   float frame = 0.0;
 
@@ -196,9 +196,9 @@ void Game(EveryApi &e)
       //glClearStencil(0);
       //glStencilMask(~0);
       e.mainloop_api.clear();
-      plane.render(pla);
      e.mainloop_api.switch_to_3d(false, sh);
      //     e.shader_api.set_var(sh, "in_MV", e.matrix_api.identity());
+#if 0
      e.sprite_api.rendersprite(red,sh,0.0,0.0,1.0,1.0);
       e.sprite_api.rendersprite(green,sh,100.0,100.0,1.0,1.0);
       e.sprite_api.rendersprite(red,sh,200.0,200.0,1.0,1.0);
@@ -214,8 +214,8 @@ void Game(EveryApi &e)
       spr2.set_pos(250.0, 250.0-frame*4.0);
       spr2.set_scale(2.0,2.0);
       spr2.render();
-
-      spr_f.render();
+#endif
+      //spr_f.render();
 
       //e.texture_api.use(tex);
       //e.texture_api.unuse(tex);
@@ -234,9 +234,10 @@ void Game(EveryApi &e)
       //e.sprite_api.rendersprite(bxm,sh,100.0,100.0);
       glPopMatrix();
 #endif
+      plane.render(pla);
       e.mainloop_api.swapbuffers();
-      MainLoopApi::Event ev = e.mainloop_api.get_event();
+      MainLoopApi::Event ev = e.mainloop_api.get_event(); 
       if (ev.ch==27) break;
     }
-
+ 
 }
