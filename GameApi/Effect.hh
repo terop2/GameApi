@@ -3022,6 +3022,24 @@ private:
   FaceCollection &coll;
 };
 
+class ShadowFaceCollection : public ForwardFaceCollection
+{
+public:
+  ShadowFaceCollection(FaceCollection &coll, Point pos, Vector u_x, Vector u_y, Vector light_vec) : ForwardFaceCollection(coll), pos(pos), u_x(u_x), u_y(u_y), light_vec(light_vec) { }
+  virtual Point FacePoint(int face, int point) const { 
+    Point p = ForwardFaceCollection::FacePoint(face,point);
+    Vector v = light_vec;
+    LinePlaneIntersection sect = LinePlaneIntersectionFunc(p, p+v, pos, pos+u_x, pos+u_y);
+    return p+v*sect.tuv.dx;
+
+  }
+
+private:
+  Point pos;
+  Vector u_x, u_y;
+  Vector light_vec;
+};
+
 class CoordChangeFaceColl : public ForwardFaceCollection
 {
 public:

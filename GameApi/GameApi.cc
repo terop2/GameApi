@@ -3693,6 +3693,16 @@ GameApi::P GameApi::PolygonApi::ring(float sx, float sy, float x, int steps)
   return add_polygon(e, ring,1);
 }
 
+GameApi::P GameApi::PolygonApi::shadow(P p, PT pos, V u_x, V u_y, V light_vec)
+{
+  FaceCollection *pp = find_facecoll(e, p);
+  Point *pos_1 = find_point(e, pos);
+  Vector *uu_x = find_vector(e, u_x);
+  Vector *uu_y = find_vector(e, u_y);
+  Vector *light = find_vector(e, light_vec);
+  return add_polygon(e, new ShadowFaceCollection(*pp, *pos_1, *uu_x, *uu_y, *light), 1);
+}
+
 GameApi::P GameApi::PolygonApi::or_elem(P p1, P p2)
 {
   FaceCollection *pp1 = find_facecoll(e, p1);
