@@ -6866,21 +6866,54 @@ private:
   PlanePoints2d *ptr;
 };
 
+class MovePlane : public PlanePoints2d
+{
+public:
+  MovePlane(PlanePoints2d *ptr, float dx, float dy) : ptr(ptr), dx(dx), dy(dy) { }
+  virtual float SizeX() const { return ptr->SizeX(); }
+  virtual float SizeY() const { return ptr->SizeY(); }
+  virtual int Size() const { return ptr->Size(); }
+  virtual Point2d Map(int i) const
+  {
+    Point2d p = ptr->Map(i);
+    Point2d pp = Convert(p);
+    return pp;
+  }
+  Point2d Convert(Point2d p) const
+  {
+    Point2d pp = { p.x+dx, p.y+dy };
+    return pp;
+  }
+  virtual PlanePointsType Type(int i) const { 
+    return ptr->Type(i);
+  }
+
+
+private:
+  PlanePoints2d *ptr;
+  float dx, dy;
+};
+
 GameApi::PL GameApi::PlaneApi::flip_y(GameApi::PL pl)
 {
   PlanePoints2d *ptr = find_plane(e, pl);
   return add_plane(e, new FlipYPlane(ptr));
 }
+GameApi::PL GameApi::PlaneApi::move(GameApi::PL pl, float dx, float dy)
+{
+  PlanePoints2d *ptr = find_plane(e, pl);
+  return add_plane(e, new MovePlane(ptr, dx, dy));
+}
 GameApi::PLA GameApi::PlaneApi::prepare(GameApi::PL pl)
 {
   PlanePoints2d *ptr = find_plane(e, pl);
   int s = ptr->Size();
-  std::cout << "PlaneApi::prepare" << s << std::endl;
+  //std::cout << "PlaneApi::prepare" << s << std::endl;
   PlaneData data;
   for(int i=0;i<s;i++)
     {
       Point2d p = ptr->Map(i);
-      std::cout << "PlaneApi::prepare" << p.x << " " << p.y << std::endl;
+      // std::cout << "PlaneApi::prepare" << p.x << " " << p.y << std::endl;
       PlanePoints2d::PlanePointsType b = ptr->Type(i);
       data.array.push_back(p.x);
       data.array.push_back(p.y);
@@ -6920,7 +6953,7 @@ std::cout << "Type ERROR!" << std::endl;
 }
 void GameApi::PlaneApi::render(GameApi::PLA pla, float x, float y, float mult_x, float mult_y)
 {
-  PlaneData *dt = find_plane_array(e,pla);
+  //PlaneData *dt = find_plane_array(e,pla);
   //GLuint pathObj = glGenPathsNV(1);
   //glMatrixPushExt(GL_MODELVIEW);
   glPushMatrix();
