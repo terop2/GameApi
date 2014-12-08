@@ -758,6 +758,9 @@ public:
   IMPORT L array_lighting(L *array, int size);
   IMPORT P lighting(P orig, L lighting);
   IMPORT BM light_bm(L lighting, P poly);
+
+  IMPORT P shadow(P orig, PT pos, V u_x, V u_y, V light_vec);
+
   IMPORT P single_texture(P orig, BM texture);
 
   IMPORT P anim_array(P *array, int size); // OLD
