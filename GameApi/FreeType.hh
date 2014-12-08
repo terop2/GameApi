@@ -17,15 +17,16 @@ public:
     Point p = coll->LinePoint(i,0);
     if (i==Size()-1) p=coll->LinePoint(Size()-2,1);
     Point2d pp = { p.x, p.y };
-    std::cout << "Point:" << i << ":" << pp.x << " " << pp.y << std::endl;
+    //std::cout << "Point:" << i << ":" << pp.x << " " << pp.y << std::endl;
     return pp;
   }
   virtual PlanePointsType Type(int i) const 
   { 
-    std::cout << "Type: " << i << ":" << types[i] << std::endl;
+    //std::cout << "Type: " << i << ":" << types[i] << std::endl;
     if (types[i]==0) return PlanePoints2d::EMove;
     if (types[i]==1) return PlanePoints2d::ELineTo;
     if (types[i]==2) return PlanePoints2d::ECubic;
+    return PlanePoints2d::EMove;
     //if (i==0) return EMove;
     //return ELineTo;
   }

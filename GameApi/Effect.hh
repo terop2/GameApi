@@ -10625,6 +10625,10 @@ public:
     std::ifstream file(filename.c_str());
     std::string line;
     int obj_count = 0;
+    int vertex_count = 0;
+    int face_count=0;
+    int normal_count =0;
+    int tex_count = 0;
     while(std::getline(file, line))
       {
 	std::string word;
@@ -10637,7 +10641,9 @@ public:
 	  }
 	if (word == "v" && obj_count==obj_num)
 	  {
-	    std::cout << "v" << std::flush;
+	    vertex_count++;
+	    if (vertex_count % 1000==0) 
+	      std::cout << "v" << std::flush;
 	    float x,y,z;
 	    ss >> x >> y >> z;
 	    //std::cout << "Vertex:" << vertex_data.size() << " " << x << " " << y << " " << z << std::endl;
@@ -10646,7 +10652,9 @@ public:
 	  }
 	if (word == "vt" && obj_count==obj_num)
 	  {	
-	    std::cout << "t" << std::flush;
+	    tex_count++;
+	    if (tex_count %1000 == 0)
+	      std::cout << "t" << std::flush;
 	    //std::cout << "Texture:" << texcoord_data.size() << std::endl;
 	    float tx,ty,tz;
 	    ss >> tx >> ty >> tz;
@@ -10655,7 +10663,9 @@ public:
 	  }
 	if (word == "vn" && obj_count==obj_num)
 	  {
-	    std::cout << "n" << std::flush;
+	    normal_count++;
+	    if (normal_count %1000 == 0)
+	      std::cout << "n" << std::flush;
 
 	    //std::cout << "Normal:" << normal_data.size() << std::endl;
 
@@ -10666,7 +10676,9 @@ public:
 	  }
 	if (word == "f" && obj_count==obj_num)
 	  {
-	    std::cout << "f" << std::flush;
+	    face_count++;
+	    if (face_count % 1000 == 0)
+	      std::cout << "f" << std::flush;
 
 	    float v_index, t_index, n_index;
 	    int count = 0;
@@ -10678,7 +10690,7 @@ public:
 	    if (t_bool && n_bool) {
 	      while(ss>>v_index>> c >>t_index>> c >>n_index)
 		{
-	    std::cout << "1" << std::flush;
+		  //std::cout << "1" << std::flush;
 	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
 	    if (t_index<0) t_index = texcoord_data.size()+t_index+1;
 	    if (n_index<0) n_index = normal_data.size()+n_index+1;
@@ -10693,7 +10705,7 @@ public:
 	      {
 		while(ss>>v_index>> c >>t_index)
 		  {
-	    std::cout << "2" << std::flush;
+		    //std::cout << "2" << std::flush;
 	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
 	    if (t_index<0) t_index = texcoord_data.size()+t_index+1;
 	    //if (n_index<0) n_index = -n_index;
@@ -10710,7 +10722,7 @@ public:
 
 		while(ss>>v_index>> c>> c >>n_index)
 		  {
-	    std::cout << "3" << std::flush;
+		    //std::cout << "3" << std::flush;
 	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
 	    //if (t_index<0) t_index = -t_index;
 	    if (n_index<0) n_index = normal_data.size()+n_index+1;
@@ -10725,7 +10737,7 @@ public:
 	    if (!t_bool && !n_bool) {
 	      while(ss>>v_index)
 		{
-	    std::cout << "4" << std::flush;
+		  //std::cout << "4" << std::flush;
 	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
 	    //if (t_index<0) t_index = -t_index;
 	    //if (n_index<0) n_index = -n_index;
@@ -10809,6 +10821,7 @@ public:
 
   int Count(int face, int point) const {
     int s = face_counts.size();
+    if (s>0) { return face_counts[0]*face+point; }
     int c = 0;
     for(int i=0;i<s&&i<face;i++)
       {

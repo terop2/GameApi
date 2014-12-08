@@ -878,6 +878,7 @@ public:
   PL function(PT (*fptr)(EveryApi &e, int idx, void *data), int num_points, float sx, float sy, void *data);
   PL color_function(PL pl, CO (*fptr)(EveryApi &ev, int idx, PT pos, void *data), void *data);
   PL flip_y(PL pl);
+  PL move(PL pl, float dx, float dy);
   PL floodfill_border(BB bitmap, int x, int y);
   // TODO: how to represent/load fonts to this type.
   PL empty(float sx, float sy);

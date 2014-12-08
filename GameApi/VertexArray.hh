@@ -150,6 +150,7 @@ public:
     std::cout << "NumFaces: " << ss << std::endl;
     for(int i=0;i<ss;i++)
       {
+	if (i%10000==0) { std::cout << "Face: " << i << std::endl; }
 	int w = coll.NumPoints(i);
 	for(int j=0;j<w;j++)
 	  {
