@@ -165,9 +165,9 @@ void VertexArraySet::split_color(std::vector<float> &target, unsigned int color)
   float fblue = float(blue)/256.0;
 
   target.push_back(falpha);
-  target.push_back(fblue);
-  target.push_back(fgreen);
   target.push_back(fred);
+  target.push_back(fgreen);
+  target.push_back(fblue);
   //std::cout << "Color value" << fred << " " << fgreen << " " << fblue << std::endl;
 }
 

@@ -4619,6 +4619,16 @@ void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float x, 
   prog->set_var(name, px);
 }
 
+void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float x, float y, float z, float k)
+{
+  //std::cout << "Set var float" << std::endl;
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[shader.id]);
+  prog->set_var(name, x,y,z,k);
+}
+
+
 void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, int val)
 {
   //std::cout << "Set var int" << std::endl;
@@ -5708,7 +5718,42 @@ public:
 private:
   Bitmap<Color> &bm;
 };
-
+class SpaceFillFloatBitmap : public Bitmap<float>
+{
+public:
+  SpaceFillFloatBitmap(Point *pt, float *values, int size, int sx, int sy) : pt(pt), values(values), size(size), sx(sx), sy(sy) { }
+  ~SpaceFillFloatBitmap() { delete [] pt; }
+  int SizeX() const { return sx; }
+  int SizeY() const { return sy; }
+  float Map(int x, int y) const
+  {
+    float dist = 50000.0*50000.0;
+    int pos = 0;
+    for(int i=0;i<size;i++)
+      {
+	float dx = x-pt[i].x;
+	float dy = y-pt[i].y;
+	if (dx*dx+dy*dy<dist)
+	  {
+	    dist = dx*dx+dy*dy;
+	    pos = i;
+	  }
+      }
+    return values[pos];
+  }
+private:
+  Point *pt;
+  float *values;
+  int size;
+  int sx,sy;
+};
+GameApi::FB GameApi::FloatBitmapApi::space_fill(PT *array, float *array2, int size, int sx, int sy)
+{
+  Point *array3 = new Point[size];
+  for(int i=0;i<size;i++)
+    array3[i] = *find_point(e, array[i]);
+  return add_float_bitmap(e, new SpaceFillFloatBitmap(array3, array2, size, sx,sy));
+}
 GameApi::FB GameApi::FloatBitmapApi::from_green(BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
@@ -6914,6 +6959,81 @@ GameApi::PL GameApi::PlaneApi::move(GameApi::PL pl, float dx, float dy)
   PlanePoints2d *ptr = find_plane(e, pl);
   return add_plane(e, new MovePlane(ptr, dx, dy));
 }
+class OrPlane : public PlanePoints2d
+{
+public:
+  OrPlane(PlanePoints2d *ptr, PlanePoints2d *ptr2) : p1(ptr), p2(ptr2) { }
+  virtual float SizeX() const { return std::max(p1->SizeX(), p2->SizeX()); }
+  virtual float SizeY() const { return std::max(p1->SizeY(), p2->SizeY()); }
+  virtual int Size() const {return p1->Size()+p2->Size(); }
+  virtual Point2d Map(int i) const
+  {
+    if (i<p1->Size()) { return p1->Map(i); }
+    return p2->Map(i-p1->Size());
+  }
+  virtual PlanePointsType Type(int i) const { 
+    if (i<p1->Size()) { return p1->Type(i); }
+    return p2->Type(i-p1->Size());
+  }
+private:
+  PlanePoints2d *p1, *p2;
+};
+GameApi::PL GameApi::PlaneApi::or_plane(GameApi::PL p1, GameApi::PL p2)
+{
+  PlanePoints2d *ptr = find_plane(e, p1);
+  PlanePoints2d *ptr2 = find_plane(e, p2);
+  return add_plane(e, new OrPlane(ptr, ptr2));
+}
+class CirclePlane : public PlanePoints2d
+{
+public:
+  CirclePlane(Point center, float radius, int numpoints) : center(center), radius(radius), numpoints(numpoints) { }
+  virtual float SizeX() const { return center.x + radius; }
+  virtual float SizeY() const { return center.y + radius; }
+  virtual int Size() const {return numpoints; }
+  virtual Point2d Map(int i) const
+  {
+    Point2d p = { (float)(radius*cos(i*2.0*3.14159/numpoints)),
+		  (float)(radius*sin(i*2.0*3.14159/numpoints)) };
+    return p;
+  }
+private:
+  Point center;
+  float radius;
+  int numpoints;
+};
+GameApi::PL GameApi::PlaneApi::circle(GameApi::PT center, float radius, int numpoints)
+{
+  Point *c = find_point(e, center);
+  return add_plane(e, new CirclePlane(*c, radius, numpoints));
+}
+
+class StarPlane : public PlanePoints2d
+{
+public:
+  StarPlane(Point center, float radius_1, float radius_2, int numpoints) : center(center), radius_1(radius_1), radius_2(radius_2), numpoints(numpoints*2) { }
+  virtual float SizeX() const { return center.x + std::max(radius_1, radius_2); }
+  virtual float SizeY() const { return center.y + std::max(radius_1, radius_2); }
+  virtual int Size() const {return numpoints; }
+  virtual Point2d Map(int i) const
+  {
+    float radius = i % 2 == 0 ? radius_1 : radius_2;
+    Point2d p = { (float)(radius*cos(i*2.0*3.14159/numpoints)),
+		  (float)(radius*sin(i*2.0*3.14159/numpoints)) };
+    return p;
+  }
+private:
+  Point center;
+  float radius_1, radius_2;
+  int numpoints;
+};
+GameApi::PL GameApi::PlaneApi::star(GameApi::PT center, float radius_1, float radius_2, int numpoints)
+{
+  Point *c = find_point(e, center);
+  return add_plane(e, new StarPlane(*c, radius_1, radius_2, numpoints));
+}
+
+
 GameApi::PLA GameApi::PlaneApi::prepare(GameApi::PL pl)
 {
   PlanePoints2d *ptr = find_plane(e, pl);

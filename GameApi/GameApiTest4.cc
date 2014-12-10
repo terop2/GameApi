@@ -100,15 +100,22 @@ void Game(EveryApi &e)
   loop.init_window();
   e.shader_api.load("Shader.txt");
   SH sh = e.shader_api.get_shader("texture", "texture", "");
+  SH sh2 = e.shader_api.get_shader("empty", "empty", "");
   e.shader_api.bind_attrib(sh, 0, "in_Position");
   e.shader_api.bind_attrib(sh, 1, "in_Normal");
   e.shader_api.bind_attrib(sh, 2, "in_Color");
   e.shader_api.bind_attrib(sh, 3, "in_TexCoord");
   e.shader_api.link(sh);
+  e.shader_api.bind_attrib(sh2, 0, "in_Position");
+  e.shader_api.bind_attrib(sh2, 1, "in_Normal");
+  e.shader_api.bind_attrib(sh2, 2, "in_Color");
+  e.shader_api.bind_attrib(sh2, 3, "in_TexCoord");
+  e.shader_api.link(sh2);
   e.shader_api.use(sh);
   e.shader_api.set_default_projection(sh, "in_P");
 
   loop.init(sh);
+  loop.init(sh2);
   loop.alpha(false);
 
 
@@ -173,6 +180,11 @@ void Game(EveryApi &e)
   //SpriteObj spr_f(e, bm_f2, sh);
   //spr_f.prepare();
   //spr_f.set_pos(200.0,200.0);
+  PT pt = e.point_api.point(100.0, 100.0, 0.0);
+  PL circle = e.plane_api.star(pt, 100.0, 90.0, 20);
+  PLA circle_pla = e.plane_api.prepare(circle);
+  
+
 
   float frame = 0.0;
 
@@ -235,6 +247,10 @@ void Game(EveryApi &e)
 #endif
       glColor3f(1.0,1.0,1.0);
       plane.render(pla, frame,frame,1.0,1.0);
+      e.shader_api.use(sh2);
+      e.shader_api.set_var(sh2, "in_Color", 1.0,1.0,1.0,1.0);
+      plane.render(circle_pla, 300.0, 100.0, 1.0, 1.0);
+      e.shader_api.use(sh);
       e.mainloop_api.swapbuffers();
       MainLoopApi::Event ev = e.mainloop_api.get_event(); 
       if (ev.ch==27) break;

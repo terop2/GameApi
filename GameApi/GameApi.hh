@@ -882,6 +882,11 @@ public:
   PL color_function(PL pl, CO (*fptr)(EveryApi &ev, int idx, PT pos, void *data), void *data);
   PL flip_y(PL pl);
   PL move(PL pl, float dx, float dy);
+  PL or_plane(PL p1, PL p2);
+
+  PL circle(PT center, float radius, int numpoints);
+  PL star(PT center, float radius_1, float radius_2, int numpoints);
+
   PL floodfill_border(BB bitmap, int x, int y);
   // TODO: how to represent/load fonts to this type.
   PL empty(float sx, float sy);
@@ -982,7 +987,8 @@ public: // values are [0.0..1.0]
 	IMPORT FB max_fb(FB fb1, FB fb2);
 
 	IMPORT FB mix_fb(FB fb1, FB fb2, float val);
-  
+        IMPORT FB space_fill(PT *array, float *array2, int size, int sx, int sy);
+
 	IMPORT BM to_grayscale(FB fb);
 	IMPORT BM to_grayscale_color(FB fb,
 			int r, int g, int b, int a,
@@ -1258,6 +1264,7 @@ public:
 	IMPORT void bind_attrib(GameApi::SH shader, int num, std::string name);
 	IMPORT void set_var(GameApi::SH shader, std::string name, float val);
 	IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z);
+        IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z, float k);
 	IMPORT void set_var(GameApi::SH shader, std::string name, int val);
 	IMPORT void set_var(GameApi::SH shader, std::string name, M matrix);
 private:
