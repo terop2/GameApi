@@ -2673,7 +2673,8 @@ GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
   BitmapColorHandle *handle = new BitmapColorHandle;
   handle->bm = buf;
   BM bm = add_bitmap(e, handle);
-  return bm;
+  BM bm2 = flip_y(bm);
+  return bm2;
 }
 GameApi::BM GameApi::BitmapApi::loadtilebitmap(std::string filename, int sx, int sy)
 {
