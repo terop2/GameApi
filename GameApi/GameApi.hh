@@ -139,6 +139,7 @@ public:
   IMPORT int get_framenum();
   IMPORT void swapbuffers();
   IMPORT BM screenshot();
+  IMPORT void fpscounter();
   struct Event
   {
     int type;
@@ -273,6 +274,7 @@ public:
 		float xx, float yy, // [0,0]
 		int sx, int sy,
 		int count);
+  IMPORT BM chessboard(int tile_sx, int tile_sy, int count_x, int count_y, unsigned int c1, unsigned int c2);
 	IMPORT BM memoize(BM orig);
 	IMPORT BM memoize_all(BM orig);
 	IMPORT int intvalue(BM bm, int x, int y);
@@ -721,6 +723,8 @@ public:
   IMPORT P texcoord_cube(P orig,
 		  PT o, PT u_x, PT u_y, PT u_z,  // these are 3d
 		  PT tex_o, PT tex_x, PT tex_y, PT tex_z); // tex_* are 2d
+  IMPORT P texcoord_spherical(P orig);
+  IMPORT P texcoord_cylindar(P orig, float start_y, float end_y);
   IMPORT P color_cube(P orig,
 	       PT o, PT u_x, PT u_y, PT u_z,
 	       unsigned int color_o, unsigned int color_x, unsigned int color_y, unsigned int color_z);

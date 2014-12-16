@@ -240,6 +240,7 @@ void VertexArraySet::push_texcoord(int id, int num, Point2d *points)
 	}
     }
 }
+#define ATTRIB_OFFSET(X) ((const GLvoid *)(sizeof(GLfloat) * (X)))
 void RenderVertexArray::prepare(int id)
 {
   glGenVertexArrays(2,vao);
@@ -307,7 +308,7 @@ void RenderVertexArray::prepare(int id)
     glBindBuffer(GL_ARRAY_BUFFER, buffers2[3]);
     glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-  
+    glBindVertexArray(0);
 }
 void RenderVertexArray::render(int id)
 {
@@ -320,6 +321,7 @@ void RenderVertexArray::render(int id)
 
     glDrawArrays(GL_TRIANGLES, 0, s.quad_count(id));
 
+    glBindVertexArray(0);
 
     //glDisableVertexAttribArray(0);
     //glDisableVertexAttribArray(1);

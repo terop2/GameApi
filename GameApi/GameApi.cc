@@ -109,6 +109,9 @@ struct SurfPriv
 struct MainLoopPriv
 {
   SDL_Surface *screen;
+  unsigned int time;
+  int count;
+  int frame;
 };
 
 struct ShaderPriv2
@@ -185,7 +188,23 @@ void GameApi::MainLoopApi::transfer_sdl_surface(MainLoopApi &orig)
   MainLoopPriv *p2 = (MainLoopPriv*)orig.priv;
   p->screen = p2->screen;
 }
-
+void GameApi::MainLoopApi::fpscounter()
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  unsigned int time = SDL_GetTicks();
+  unsigned int delta_time = time - p->time;
+  //p->time = time;
+  if (p->count==0) { p->time = time; p->frame=0; }
+  p->frame++;
+  p->count++;
+  if (delta_time<1) delta_time=1;
+  float fps = p->frame/(delta_time/1000.0f);
+  if (p->count<0) { p->count = 0; }
+  if (p->count>100) {
+    std::cout << "FPS: " << fps << std::endl;
+    p->count = 0;
+  }
+}
 
 void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_height)
 {
@@ -370,6 +389,8 @@ void GameApi::MainLoopApi::swapbuffers()
 #else
   SDL_GL_SwapBuffers();
 #endif
+
+
   //SDL_Flip(surf);
   frame++;
 }
@@ -2577,7 +2598,35 @@ GameApi::BM GameApi::WaveformApi::waveform_bitmap(WV wave, int sx, int sy, unsig
   Waveform *m_wave = find_waveform(e, wave);
   return add_color_bitmap(e, new WaveformBitmap(*m_wave, 0.0, m_wave->Length(), m_wave->Min(), m_wave->Max(), sx, sy, Color(true_color), Color(false_color)));
 }
-
+class ChessBoardBitmap2 : public Bitmap<Color>
+{
+public:
+  ChessBoardBitmap2(int tile_sx, int tile_sy, int count_x, int count_y, Color c1, Color c2) : tile_sx(tile_sx), tile_sy(tile_sy), count_x(count_x), count_y(count_y), c1(c1), c2(c2) { }
+  int SizeX() const { return tile_sx*count_x; }
+  int SizeY() const { return tile_sy*count_y; }
+  Color Map(int x, int y) const
+  {
+    bool bb = false;
+    int xx = x / count_x;
+    int yy = y / count_y;
+    if (xx & 1) { bb = !bb; }
+    if (yy & 1) { bb = !bb; }
+    if (bb) { return c1; }
+    return c2;
+  }
+private:
+  int tile_sx, tile_sy;
+  int count_x, count_y;
+  Color c1,c2;
+};
+GameApi::BM GameApi::BitmapApi::chessboard(int tile_sx, int tile_sy, int count_x, int count_y, unsigned int c1, unsigned int c2)
+{
+  Bitmap<Color> *m = new ChessBoardBitmap2(tile_sx, tile_sy, count_x, count_y, Color(c1), Color(c2));
+  BitmapColorHandle *handle = new BitmapColorHandle;
+  handle->bm = m;
+  BM bm = add_bitmap(e, handle);
+  return bm;
+}
 GameApi::BM GameApi::BitmapApi::mandelbrot(bool julia,
 		float start_x, float end_x,
 		float start_y, float end_y,
@@ -2673,8 +2722,7 @@ GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
   BitmapColorHandle *handle = new BitmapColorHandle;
   handle->bm = buf;
   BM bm = add_bitmap(e, handle);
-  BM bm2 = flip_y(bm);
-  return bm2;
+  return bm;
 }
 GameApi::BM GameApi::BitmapApi::loadtilebitmap(std::string filename, int sx, int sy)
 {
@@ -3567,6 +3615,58 @@ private:
   //int sx,sy;
 };
 
+class TexCoordSpherical : public ForwardFaceCollection
+{
+public:
+  TexCoordSpherical(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+    virtual Point2d TexCoord(int face, int point) const { 
+      Point p = ForwardFaceCollection::FacePoint(face,point);
+      float r = sqrt(p.x*p.x+p.y*p.y+p.z*p.z);
+      float alfa = acos(p.z/r);
+      float beta = atan2(p.y,p.x);
+      alfa/=2.0*3.14159;
+      beta/=2.0*3.14159;
+      Point2d pp;
+      pp.x = alfa;
+      pp.y = beta;
+      return pp;
+    }
+private:
+  FaceCollection *coll;
+};
+
+class TexCoordCylindar : public ForwardFaceCollection
+{
+public:
+  TexCoordCylindar(FaceCollection *coll, float start_y, float end_y) : ForwardFaceCollection(*coll), coll(coll), start_y(start_y), end_y(end_y) { }
+    virtual Point2d TexCoord(int face, int point) const { 
+      Point p = ForwardFaceCollection::FacePoint(face,point);
+      //float r = sqrt(p.x*p.x+p.z*p.z);
+      float alfa = atan2(p.z, p.x);
+      alfa /= 2.0*3.14159;
+      float z = p.y - start_y;
+      z/=(end_y-start_y);
+      Point2d pp;
+      pp.x = alfa;
+      pp.y = z;
+      return pp;
+    }
+private:
+  FaceCollection *coll;
+  float start_y, end_y;
+};
+
+GameApi::P GameApi::PolygonApi::texcoord_spherical(P orig)
+{
+  FaceCollection *face = find_facecoll(e, orig);
+  
+  return add_polygon(e, new TexCoordSpherical(face),1);
+}
+GameApi::P GameApi::PolygonApi::texcoord_cylindar(P orig, float start_y, float end_y)
+{
+  FaceCollection *face = find_facecoll(e, orig);
+  return add_polygon(e, new TexCoordCylindar(face,start_y, end_y),1);
+}
 GameApi::P GameApi::PolygonApi::sprite_bind(P p, TX tx, int id)
 {
   TextureApi t(e);

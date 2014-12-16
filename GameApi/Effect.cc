@@ -188,13 +188,16 @@ Point SphereElem::FacePoint(int face, int point) const
   int numfaces3 = numfaces*2;
   Vector p = Vector(0.0, 0.0, radius);
   float deltaangle1 = 2.0*  3.14159/numfaces3;
-  float deltaangle2 = /*2.0**/  3.14159/numfaces2;
+  float deltaangle2 = 2.0*  3.14159/numfaces2;
   float angle1 = face1*deltaangle1;
   float angle2 = face2*deltaangle2;
   if (point==2||point==3) angle1+=deltaangle1;
   if (point==1||point==2) angle2+=deltaangle2;
-  Matrix m = Matrix::XRotation(angle1)*Matrix::YRotation(angle2);
-  Vector pp = p*m;
+  //Matrix m = Matrix::XRotation(angle1)*Matrix::YRotation(angle2);
+  Vector pp;
+  pp.dx = radius*sin(angle1)*cos(angle2);
+  pp.dy = radius*sin(angle1)*sin(angle2);
+  pp.dz = radius*cos(angle1);
   return center+pp;
   
 }
