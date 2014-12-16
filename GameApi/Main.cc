@@ -401,6 +401,30 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
   std::cout << "Renderer:" << glGetString(GL_RENDERER)<< std::endl;
   std::cout << "Version:" << glGetString(GL_VERSION) << std::endl;
   
+
+  vblank = true;
+  if (vblank)
+    {
+      int (*SwapInterval)(int);
+      SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("glXSwapInterval");
+      if (!SwapInterval)
+	SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("wglSwapIntervalEXT");
+      if (!SwapInterval)
+	SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("glXSwapIntervalEXT");
+      if (!SwapInterval)
+	SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("glXSwapIntervalSGI");
+      if (!SwapInterval)
+	SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("wglSwapInterval");
+      if (!SwapInterval)
+	SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("wglSwapIntervalSGI");
+      // actual vsync activation
+      if (SwapInterval)
+	SwapInterval(0);
+      else
+	std::cout << "Cannot get VBLANK" << std::endl;
+      //SDL_GL_SetSwapInterval(int interval);
+    }
+
   //glEnable(GL_DEBUG_OUTPUT_SYNCRONOUS);
   //glDebugMessageCallback(func, 0);
   //gluint unusedids = 0;

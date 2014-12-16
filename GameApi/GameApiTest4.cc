@@ -251,6 +251,7 @@ void Game(EveryApi &e)
       e.shader_api.set_var(sh2, "in_Color", 1.0,1.0,1.0,1.0);
       plane.render(circle_pla, 300.0, 100.0, 1.0, 1.0);
       e.shader_api.use(sh);
+      e.mainloop_api.fpscounter();
       e.mainloop_api.swapbuffers();
       MainLoopApi::Event ev = e.mainloop_api.get_event(); 
       if (ev.ch==27) break;
