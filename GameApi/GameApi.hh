@@ -750,6 +750,12 @@ public:
   IMPORT P rotate(P orig, PT pt, V axis, float angle);
   IMPORT P scale(P orig, float sx, float sy, float sz);
 
+  IMPORT P unit_cube(P orig, PT pos, V u_x, V u_y, V u_z);
+  IMPORT P unit_to_cube(P orig, PT pos, V u_x, V u_y, V u_z);
+  IMPORT P unit_to_flex(P orig, 
+			PT bTL, PT bTR, PT bBL, PT bBR,
+			PT fTL, PT fTR, PT fBL, PT fBR);
+
   IMPORT P move(P orig, PT obj_0, V obj_x, V obj_y, V obj_z,
 	 PT world_0, V world_x, V world_y, V world_z);
 
@@ -1116,6 +1122,13 @@ public:
   PTS heightmap(BM colour, FB floatbitmap, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
   PTS from_volume(O o, PT pos, V u_x, V u_y, V u_z, int sx, int sy, int sz);
   PTS shadow_points(PTS obj, PT pos, V u_x, V u_y, V light_vec);
+
+  IMPORT PTS unit_cube(PTS orig, PT pos, V u_x, V u_y, V u_z);
+  IMPORT PTS unit_to_cube(PTS orig, PT pos, V u_x, V u_y, V u_z);
+  IMPORT PTS unit_to_flex(PTS orig, 
+			PT bTL, PT bTR, PT bBL, PT bBR,
+			PT fTL, PT fTR, PT fBL, PT fBR);
+
   PTA prepare(PTS p);
   void render(PTA array);
 private:
@@ -1132,6 +1145,12 @@ public:
 	IMPORT LI from_polygon(P poly);
 	IMPORT LI border_from_bool_bitmap(BB b, float start_x, float end_x,
 			     float start_y, float end_y, float z);
+  IMPORT LI unit_cube(LI orig, PT pos, V u_x, V u_y, V u_z);
+  IMPORT LI unit_to_cube(LI orig, PT pos, V u_x, V u_y, V u_z);
+  IMPORT LI unit_to_flex(LI orig, 
+			PT bTL, PT bTR, PT bBL, PT bBR,
+			PT fTL, PT fTR, PT fBL, PT fBR);
+
 	IMPORT LLA prepare(LI l);
 	IMPORT void render(LLA array);
 private:

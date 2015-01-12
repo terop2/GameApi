@@ -139,6 +139,7 @@ struct SpritePosImpl
   float x,y;
 };
 
+
 GameApi::MainLoopApi::MainLoopApi(Env &e) : frame(0.0), time(0.0), e(e)  
 {
   priv = (void*)new MainLoopPriv;
@@ -3552,6 +3553,94 @@ GameApi::P GameApi::PolygonApi::triangle(PT p1, PT p2, PT p3)
   FaceCollection *coll = new TriElem(*pp1, *pp2, *pp3);
   return add_polygon(e, coll,1);
 }
+class UnitFaceColl : public ForwardFaceCollection
+{
+public:
+  UnitFaceColl(FaceCollection *coll, Point pos, Vector u_x, Vector u_y, Vector u_z) : ForwardFaceCollection(*coll) { }
+  Point FacePoint(int face, int point) const
+  {
+    Point p = ForwardFaceCollection::FacePoint(face,point);
+    Point p1 = UnitCube(p, pos, u_x, u_y, u_z);
+    return p1;
+  }
+private:
+  Point pos;
+  Point u_x;
+  Point u_y;
+  Point u_z;
+};
+GameApi::P GameApi::PolygonApi::unit_cube(P orig, PT pos, V u_x, V u_y, V u_z)
+{
+  FaceCollection *coll = find_facecoll(e, orig);
+  Point *pos_1 = find_point(e, pos);
+  Vector *u_x_1 = find_vector(e, u_x);
+  Vector *u_y_1 = find_vector(e, u_y);
+  Vector *u_z_1 = find_vector(e, u_z);
+  return add_polygon(e, new UnitFaceColl(coll, *pos_1, *u_x_1, *u_y_1, *u_z_1), 1);
+}
+class UnitToFaceColl : public ForwardFaceCollection
+{
+public:
+  UnitToFaceColl(FaceCollection *coll, Point pos, Vector u_x, Vector u_y, Vector u_z) : ForwardFaceCollection(*coll) { }
+  Point FacePoint(int face, int point) const
+  {
+    Point p = ForwardFaceCollection::FacePoint(face,point);
+    Point p1 = UnitToCube(p, pos, u_x, u_y, u_z);
+    return p1;
+  }
+private:
+  Point pos;
+  Point u_x;
+  Point u_y;
+  Point u_z;
+};
+
+GameApi::P GameApi::PolygonApi::unit_to_cube(P orig, PT pos, V u_x, V u_y, V u_z)
+{
+  FaceCollection *coll = find_facecoll(e, orig);
+  Point *pos_1 = find_point(e, pos);
+  Vector *u_x_1 = find_vector(e, u_x);
+  Vector *u_y_1 = find_vector(e, u_y);
+  Vector *u_z_1 = find_vector(e, u_z);
+  return add_polygon(e, new UnitToFaceColl(coll, *pos_1, *u_x_1, *u_y_1, *u_z_1),1);
+}
+
+class UnitToFlexClass : public ForwardFaceCollection
+{
+public:
+  UnitToFlexClass(FaceCollection *coll, Point bTL, Point bTR, Point bBL, Point bBR,
+	     Point fTL, Point fTR, Point fBL, Point fBR) 
+    : ForwardFaceCollection(*coll), bTL(bTL), bTR(bTR), bBL(bBL), bBR(bBR),
+      fTL(fTL), fTR(fTR), fBL(fBL), fBR(fBR)
+  { }
+  Point FacePoint(int face, int point) const
+  {
+    Point p = ForwardFaceCollection::FacePoint(face, point);
+    Point pp = UnitToFlex(p, bTL, bTR, bBL, bBR, fTL, fTR, fBL, fBR);
+    return pp;
+  }
+private:
+  Point bTL, bTR, bBL, bBR, fTL, fTR, fBL, fBR;
+};
+
+GameApi::P GameApi::PolygonApi::unit_to_flex(P orig, 
+					     PT bTL, PT bTR, PT bBL, PT bBR,
+					     PT fTL, PT fTR, PT fBL, PT fBR)
+{
+  FaceCollection *coll = find_facecoll(e, orig);
+  Point *bTL1 = find_point(e, bTL);
+  Point *bTR1 = find_point(e, bTR);
+  Point *bBL1 = find_point(e, bBL);
+  Point *bBR1 = find_point(e, bBR);
+
+  Point *fTL1 = find_point(e, fTL);
+  Point *fTR1 = find_point(e, fTR);
+  Point *fBL1 = find_point(e, fBL);
+  Point *fBR1 = find_point(e, fBR);
+  return add_polygon(e, new UnitToFlexClass(coll, *bTL1, *bTR1, *bBL1, *bBR1,
+				       *fTL1, *fTR1, *fBL1, *fBR1),1);
+}
+
 
 GameApi::P GameApi::PolygonApi::empty()
 {
