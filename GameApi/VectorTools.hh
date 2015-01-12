@@ -475,6 +475,14 @@ struct Coords
   Point center;
   Vector u_x, u_y, u_z;
 };
+Point UnitCube(Point p, Point pos, Vector u_x, Vector u_y, Vector u_z);
+Point UnitToCube(Point p, Point pos, Vector u_x, Vector u_y, Vector u_z);
+Point UnitToFlex(Point p, 
+		 Point bTL, Point bTR, Point bBL, Point bBR,
+		 Point fTL, Point fTR, Point fBL, Point fBR);
+
+
+
 struct Line
 {
   Point p;

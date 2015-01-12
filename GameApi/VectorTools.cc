@@ -885,6 +885,41 @@ void Coords::Scale(float x)
   u_z *= x;
 }
 
+Point UnitCube(Point p, Point pos, Vector u_x, Vector u_y, Vector u_z)
+{
+  Coords c;
+  c.center = pos;
+  c.u_x = u_x;
+  c.u_y = u_y;
+  c.u_z = u_z;
+  return c.FindInternalCoords(p);
+}
+Point UnitToCube(Point p, Point pos, Vector u_x, Vector u_y, Vector u_z)
+{
+  Coords c;
+  c.center = pos;
+  c.u_x = u_x;
+  c.u_y = u_y;
+  c.u_z = u_z;
+  return c.FindExternalCoords(p);  
+}
+Point UnitToFlex(Point p, 
+		 Point bTL, Point bTR, Point bBL, Point bBR,
+		 Point fTL, Point fTR, Point fBL, Point fBR)
+{
+  Point px1 = Vector(bTL)*p.x+Vector(bTR)*(1.0-p.x);
+  Point px2 = Vector(bBL)*p.x+Vector(bBR)*(1.0-p.x);
+  Point px3 = Vector(fTL)*p.x+Vector(fTR)*(1.0-p.x);
+  Point px4 = Vector(fBL)*p.x+Vector(fBR)*(1.0-p.x);
+
+  Point py1 = Vector(px1)*p.y + Vector(px2)*(1.0-p.y);
+  Point py2 = Vector(px3)*p.y + Vector(px4)*(1.0-p.y);
+
+  Point pz = Vector(py1)*p.z + Vector(py2)*(1.0-p.z);
+  return pz;
+}
+
+
 PlaneIntersection::PlaneIntersection(const Plane &p1, const Plane &p2)
   : p1(p1), p2(p2)
 {
