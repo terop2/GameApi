@@ -2514,6 +2514,40 @@ GameApi::BM GameApi::BitmapApi::alpha_color(BM orig, unsigned int color_key)
   BM bm = add_bitmap(e, handle2);
   return bm;
 }
+class GradientBitmap2 : public Bitmap<Color>
+{
+public:
+  GradientBitmap2(Point2d pos_1, Point2d pos_2, unsigned int color_1, unsigned int color_2, int sx, int sy) : pos_1(pos_1), pos_2(pos_2), color_1(color_1), color_2(color_2), sx(sx), sy(sy) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    Vector u = Point(x, y, 0.0)-Point(pos_1.x, pos_1.y, 0.0);
+    Vector u_x = Point(pos_2.x, pos_2.y, 0.0)-Point(pos_1.x, pos_1.y, 0.0);
+    float val = Vector::DotProduct(u, u_x);
+    val /= u_x.Dist();
+    val /= u_x.Dist();
+    // now [0.0 .. 1.0]
+    if (val<0.0) val=0.0;
+    if (val>1.0) val=1.0;
+    return Color(Color::Interpolate(color_1, color_2, val));
+  }
+
+private:
+  Point2d pos_1;
+  Point2d pos_2;
+  unsigned int color_1;
+  unsigned int color_2;
+  int sx,sy;
+};
+GameApi::BM GameApi::BitmapApi::gradient(PT pos_1, PT pos_2, unsigned int color_1, unsigned int color_2, int sx, int sy)
+{
+  Point *pos_1a = find_point(e, pos_1);
+  Point *pos_2a = find_point(e, pos_2);
+  Point2d pos_1b = { pos_1a->x, pos_1a->y };
+  Point2d pos_2b = { pos_2a->x, pos_2a->y };
+  return add_color_bitmap2(e, new GradientBitmap2(pos_1b, pos_2b, color_1, color_2, sx,sy));
+}
 GameApi::BM GameApi::BitmapApi::newbitmap(int sx, int sy, unsigned int color)
 {
   ::Bitmap<Color> *b = new ConstantBitmap<Color>(Color(color), sx,sy);
@@ -5623,6 +5657,33 @@ GameApi::O GameApi::BoolBitmapApi::to_volume(BB b, float dist)
   BoolBitmap *c = find_bool_bitmap(e,b);
   Bitmap<bool> *bm = c->bitmap;
   return add_volume(e, new BitmapVolume(bm, dist));
+}
+class ChooseBitmap3 : public Bitmap<Color>
+{
+public:
+  ChooseBitmap3(Bitmap<bool> &bools, Bitmap<Color> &true_bitmap, Bitmap<Color> &false_bitmap) : bools(bools), true_bitmap(true_bitmap), false_bitmap(false_bitmap) { }
+  virtual int SizeX() const { return std::min(std::min(bools.SizeX(), true_bitmap.SizeX()), false_bitmap.SizeX()); }
+  virtual int SizeY() const { return std::min(std::min(bools.SizeY(), true_bitmap.SizeY()), false_bitmap.SizeY()); }
+  virtual Color Map(int x, int y) const
+  {
+    bool b = bools.Map(x,y);
+    if (b) { return true_bitmap.Map(x,y); }
+    return false_bitmap.Map(x,y);
+  }
+private:
+  Bitmap<bool> &bools;
+  Bitmap<Color> &true_bitmap;
+  Bitmap<Color> &false_bitmap;
+};
+GameApi::BM GameApi::BoolBitmapApi::choose_bitmap(BB bools, BM true_bitmap, BM false_bitmap)
+{
+  Bitmap<bool> *bools2 = find_bool_bitmap(e, bools)->bitmap;
+  BitmapHandle *handle = find_bitmap(e, true_bitmap);
+  Bitmap<Color> *true2 = find_color_bitmap(handle);
+  BitmapHandle *handle2 = find_bitmap(e, false_bitmap);
+  Bitmap<Color> *false2 = find_color_bitmap(handle2);
+  Bitmap<Color> *bm = new ChooseBitmap3(*bools2, *true2, *false2);
+  return add_color_bitmap2(e, bm);
 }
 GameApi::BB GameApi::BoolBitmapApi::transform(BB orig, std::function<bool (int,int, bool)> f)
 {
