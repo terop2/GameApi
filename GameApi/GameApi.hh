@@ -257,6 +257,7 @@ public:
 	IMPORT BM flip_x(BM orig);
 	IMPORT BM flip_y(BM orig);
         IMPORT BM alpha_color(BM orig, unsigned int color_key);
+  IMPORT BM gradient(PT pos_1, PT pos_2, unsigned int color_1, unsigned int color_2, int sx, int sy);
   //BM bitmapandtypes(BM bm, BM (*fptr)(int)); // bm has ints in it
 	IMPORT SP space(BM bm);
 
@@ -965,7 +966,8 @@ public:
 	IMPORT BB or_bitmap(BB b1, BB b2);
 	IMPORT BB andnot_bitmap(BB b1, BB not_b2);
 	IMPORT BB xor_bitmap(BB b1, BB flip_b2);
-  
+        IMPORT BM choose_bitmap(BB bools, BM true_bitmap, BM false_bitmap);
+
 	IMPORT BM to_bitmap(BB bools,
 	       int true_r, int true_g, int true_b, int true_a,
 	       int false_r, int false_g, int false_b, int false_a);

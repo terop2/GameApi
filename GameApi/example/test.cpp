@@ -26,19 +26,11 @@ int main() {
   // prepare a circle for drawing
 
   std::vector<VA> vec;
-  BM bm = ev.bitmap_api.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 800, 600, 256);
-  BM bm2 = ev.bitmap_api.memoize(bm);
-  for (int i=0;i<256;i++)
-    {
-      BB bb = ev.bool_bitmap_api.from_bitmaps_color_area(bm2, 256-i, 255,
-						   256-i, 255,
-						   256-i, 255,
-						   256-i, 255);
-      BM bm3 = ev.bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
-      //ev.sprite_api.preparesprite(bm3);
-      VA va = ev.sprite_api.create_vertex_array(bm3);
-      vec.push_back(va);
-    }
+  //BM bm = ev.bitmap_api.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 800, 600, 256);
+  PT pos_1 = ev.point_api.point(200.0, 200.0, 0.0);
+  PT pos_2 = ev.point_api.point(200.0, 0.0, 0.0);
+  BM bm = ev.bitmap_api.gradient(pos_1, pos_2, 0xffffffff, 0xff000000, 256,256);
+  VA va = ev.sprite_api.create_vertex_array(bm);
   ev.mainloop_api.alpha(true);
   int frame = 0;
   while(1) {
@@ -48,7 +40,7 @@ int main() {
 
     // render sprite
     //ev.sprite_api.rendersprite(vec[frame%256], sh, 0.0, 0.0);
-    ev.sprite_api.render_sprite_vertex_array(vec[frame%256]);
+    ev.sprite_api.render_sprite_vertex_array(va);
 
     ev.mainloop_api.swapbuffers();
 
