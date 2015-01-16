@@ -116,6 +116,7 @@ void Game(EveryApi &e)
 
   loop.init(sh);
   loop.init(sh2);
+  loop.nvidia_init();
   loop.alpha(false);
 
 

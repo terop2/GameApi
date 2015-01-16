@@ -128,6 +128,7 @@ public:
   IMPORT void init_window(int screen_width = 800, int screen_height=600);
   IMPORT void init(SH sh, int screen_width = 800, int screen_height = 600);
   IMPORT void init_3d(SH sh, int screen_width = 800, int screen_heigth = 600);
+  IMPORT void nvidia_init();
   IMPORT void transfer_sdl_surface(MainLoopApi &orig);
   IMPORT void clear();
   IMPORT void clear_3d();

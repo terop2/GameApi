@@ -248,11 +248,13 @@ void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_height)
   prog->set_var("in_T", m3);
   alpha(false);
 
-#if 0
+}
+void GameApi::MainLoopApi::nvidia_init()
+{
   glMatrixLoadIdentityEXT(GL_PROJECTION);
   glMatrixLoadIdentityEXT(GL_MODELVIEW);
-  glMatrixOrthoEXT(GL_MODELVIEW, 0, 800, 0, 600, -1, 1);
-#endif
+  glMatrixOrthoEXT(GL_PROJECTION, 0, 800, 600, 0, -1, 1);
+
 }
 
 void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh)
