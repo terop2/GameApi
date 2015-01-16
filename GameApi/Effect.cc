@@ -4471,7 +4471,7 @@ void RenderBuffers::DisableAll()
   texcoord=false;
 }
 
-void Point ShadowFaceCollection::FacePoint(int face, int point) const
+Point ShadowFaceCollection::FacePoint(int face, int point) const
 {
     Point p = ForwardFaceCollection::FacePoint(face,point);
     Vector v = light_vec;
