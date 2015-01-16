@@ -1007,6 +1007,7 @@ public: // values are [0.0..1.0]
 			int r, int g, int b, int a,
 			int r2, int g2, int b2, int a2);
 	IMPORT BM to_color(FB r, FB g, FB b, FB a);
+  IMPORT BM choose_bitmap(FB fb, BM bm1, BM bm2);
 	IMPORT BM subfloatbitmap(FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color);
 
 	IMPORT FB from_bool(BB b, float val_true, float val_false);
