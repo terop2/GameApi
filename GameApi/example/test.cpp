@@ -30,7 +30,16 @@ int main() {
   PT pos_1 = ev.point_api.point(200.0, 200.0, 0.0);
   PT pos_2 = ev.point_api.point(200.0, 0.0, 0.0);
   BM bm = ev.bitmap_api.gradient(pos_1, pos_2, 0xffffffff, 0xff000000, 256,256);
-  VA va = ev.sprite_api.create_vertex_array(bm);
+  BM bm2 = ev.bitmap_api.gradient(pos_1, pos_2, 0xffff8844, 0xff444444, 256,256);
+  Ft font = ev.font_api.newfont("FreeSans.ttf", 150,150);
+  BM mask0 = ev.font_api.glyph(font, 'g');
+  BM mask1 = ev.bitmap_api.growbitmap(mask0, 5,5, 50, 50);
+  FB mask3 = ev.float_bitmap_api.from_red(mask1);
+  BM bm3 = ev.float_bitmap_api.choose_bitmap(mask3, bm, bm2);
+  //VA va = ev.sprite_api.create_vertex_array(bm3);
+  SpriteObj spr(ev, bm3, sh);
+  spr.prepare();
+  spr.set_scale(1.0,1.0);
   ev.mainloop_api.alpha(true);
   int frame = 0;
   while(1) {
@@ -40,8 +49,8 @@ int main() {
 
     // render sprite
     //ev.sprite_api.rendersprite(vec[frame%256], sh, 0.0, 0.0);
-    ev.sprite_api.render_sprite_vertex_array(va);
-
+    //ev.sprite_api.render_sprite_vertex_array(va);
+    spr.render();
     ev.mainloop_api.swapbuffers();
 
     // handle esc event

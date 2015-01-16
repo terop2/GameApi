@@ -5680,6 +5680,34 @@ private:
   Bitmap<Color> &true_bitmap;
   Bitmap<Color> &false_bitmap;
 };
+
+class ChooseBitmap4 : public Bitmap<Color>
+{
+public:
+  ChooseBitmap4(Bitmap<float> &floats, Bitmap<Color> &bitmap_0, Bitmap<Color> &bitmap_1) : floats(floats), bitmap_0(bitmap_0), bitmap_1(bitmap_1) { }
+  virtual int SizeX() const { return std::min(std::min(floats.SizeX(), bitmap_0.SizeX()), bitmap_1.SizeX()); }
+  virtual int SizeY() const { return std::min(std::min(floats.SizeY(), bitmap_0.SizeY()), bitmap_1.SizeY()); }
+  virtual Color Map(int x, int y) const
+  {
+    float b = floats.Map(x,y);
+    return Color::Interpolate(bitmap_0.Map(x,y), bitmap_1.Map(x,y), b);
+  }
+private:
+  Bitmap<float> &floats;
+  Bitmap<Color> &bitmap_0;
+  Bitmap<Color> &bitmap_1;
+};
+
+GameApi::BM GameApi::FloatBitmapApi::choose_bitmap(FB fb, BM bitmap_0, BM bitmap_1)
+{
+  Bitmap<float> *bools2 = find_float_bitmap(e, fb)->bitmap;
+  BitmapHandle *handle = find_bitmap(e, bitmap_0);
+  Bitmap<Color> *true2 = find_color_bitmap(handle);
+  BitmapHandle *handle2 = find_bitmap(e, bitmap_1);
+  Bitmap<Color> *false2 = find_color_bitmap(handle2);
+  Bitmap<Color> *bm = new ChooseBitmap4(*bools2, *true2, *false2);
+  return add_color_bitmap2(e, bm);
+}
 GameApi::BM GameApi::BoolBitmapApi::choose_bitmap(BB bools, BM true_bitmap, BM false_bitmap)
 {
   Bitmap<bool> *bools2 = find_bool_bitmap(e, bools)->bitmap;
