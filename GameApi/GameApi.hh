@@ -808,7 +808,8 @@ public:
   IMPORT P anim_target_vector(P p, V v);
   IMPORT P anim_target_scale(P p, PT center, float scale_x, float scale_y, float scale_z);
   IMPORT P anim_target_matrix(P p, M matrix);
-
+  IMPORT P anim_endpoints(P p1, P p2);
+  IMPORT P anim_interpolate(P p, float val);
 
   IMPORT P counts(P p1, int numfaces);
   IMPORT P count_function(P p1, std::function<int(int face)> f);
