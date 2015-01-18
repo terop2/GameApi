@@ -6798,6 +6798,80 @@ GameApi::P GameApi::PolygonApi::anim_target_vector(P p, V v)
   FaceCollection *coll = new AnimFace(*i, *vv);
   return add_polygon(e, coll, 1);
 }
+class AnimColl : public ForwardFaceCollection
+{
+public:
+  AnimColl(FaceCollection *i1, FaceCollection *i2) : ForwardFaceCollection(*i1), i1(i1), i2(i2) { }
+  virtual Point EndFacePoint(int face, int point) const { return i2->FacePoint(face, point); }
+  virtual Vector EndPointNormal(int face, int point) const { return i2->PointNormal(face,point); }
+  virtual float EndAttrib(int face, int point, int id) const { return i2->Attrib(face, point, id); }
+  virtual int EndAttribI(int face, int point, int id) const { return i2->AttribI(face,point,id); }
+  virtual unsigned int EndColor(int face, int point) const { return i2->Color(face,point); }
+  virtual Point2d EndTexCoord(int face, int point) const { return i2->TexCoord(face,point); }
+private:
+  FaceCollection *i1;
+  FaceCollection *i2;
+};
+GameApi::P GameApi::PolygonApi::anim_endpoints(P p1, P p2)
+{
+  FaceCollection *i1 = find_facecoll(e,p1);
+  FaceCollection *i2 = find_facecoll(e,p2);
+  FaceCollection *coll = new AnimColl(i1, i2);
+  return add_polygon(e, coll, 1);
+}
+class AnimInterpolate : public FaceCollection
+{
+public:
+  AnimInterpolate(FaceCollection *coll, float val) : coll(coll), val(val) { }
+  virtual int NumFaces() const { return coll->NumFaces(); }
+  virtual int NumPoints(int face) const { return coll->NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const
+  {
+    Point p1 = coll->FacePoint(face, point);
+    Point p2 = coll->EndFacePoint(face, point);
+    return Point::Interpolate(p1, p2, val);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Vector v1 = coll->PointNormal(face,point);
+    Vector v2 = coll->EndPointNormal(face, point);
+    return Vector(Point::Interpolate(Point(v1),Point(v2), val));
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    float val1 = coll->Attrib(face,point,id);
+    float val2 = coll->EndAttrib(face,point,id);
+    return val1*val+val2*(1.0-val);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    int val1 = coll->AttribI(face,point,id);
+    int val2 = coll->EndAttribI(face,point,id);
+    return val1*val+val2*(1.0-val);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    unsigned int c1 = coll->Color(face,point);
+    unsigned int c2 = coll->EndColor(face,point);
+    return Color::Interpolate(c1,c2, val);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    Point2d p1 = coll->TexCoord(face,point);
+    Point2d p2 = coll->EndTexCoord(face,point);
+    Point2d pos = { float(p1.x*val+p2.x*(1.0-val)), float(p1.y*val+p2.y*(1.0-val)) };
+    return pos;
+  }
+private:
+  FaceCollection *coll;
+  float val;
+};
+GameApi::P GameApi::PolygonApi::anim_interpolate(P p, float val)
+{
+  FaceCollection *i = find_facecoll(e,p);
+  FaceCollection *coll = new AnimInterpolate(i, val);
+  return add_polygon(e, coll, 1);
+}
 
 class AnimFaceScale : public ForwardFaceCollection
 {
