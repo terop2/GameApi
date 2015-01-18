@@ -4785,6 +4785,22 @@ void GameApi::ShaderApi::link(GameApi::SH shader)
   ShaderSeq *seq = p->seq;
   seq->link(shader.id);
 }
+GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
+						  std::string f_format,
+						  std::string g_format)
+{
+  SH sh = get_shader(v_format, f_format, g_format);
+  bind_attrib(sh, 0, "in_Position");
+  bind_attrib(sh, 1, "in_Normal");
+  bind_attrib(sh, 2, "in_Color");
+  bind_attrib(sh, 3, "in_TexCoord");
+  link(sh);
+  use(sh);
+  set_default_projection(sh, "in_P");
+  return sh;
+}
+
+
 GameApi::SH GameApi::ShaderApi::get_shader(std::string v_format,
 					std::string f_format,
 					std::string g_format)
