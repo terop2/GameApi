@@ -1278,6 +1278,7 @@ public:
 	IMPORT ~ShaderApi();
 	IMPORT void load(std::string filename);
 	IMPORT SH get_shader(std::string v_format, std::string f_format, std::string g_format);
+        IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format);
 	IMPORT void link(SH shader);
 	IMPORT void use(SH shader);
 	IMPORT void unuse(SH shader);

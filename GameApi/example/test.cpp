@@ -11,14 +11,7 @@ int main() {
 
   // shader initialization
   ev.shader_api.load("Shader.txt");
-  SH sh = ev.shader_api.get_shader("texture", "texture", "");
-  ev.shader_api.bind_attrib(sh, 0, "in_Position");
-  ev.shader_api.bind_attrib(sh, 1, "in_Normal");
-  ev.shader_api.bind_attrib(sh, 2, "in_Color");
-  ev.shader_api.bind_attrib(sh, 3, "in_TexCoord");
-  ev.shader_api.link(sh);
-  ev.shader_api.use(sh);
-  ev.shader_api.set_default_projection(sh, "in_P");
+  SH sh = ev.shader_api.get_normal_shader("texture", "texture", "");
 
   // rest of the initializations
   ev.mainloop_api.init(sh);
@@ -26,7 +19,6 @@ int main() {
   // prepare a circle for drawing
 
   std::vector<VA> vec;
-  //BM bm = ev.bitmap_api.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 800, 600, 256);
   PT pos_1 = ev.point_api.point(200.0, 200.0, 0.0);
   PT pos_2 = ev.point_api.point(200.0, 0.0, 0.0);
   BM bm = ev.bitmap_api.gradient(pos_1, pos_2, 0xffffffff, 0xff000000, 256,256);
@@ -43,14 +35,10 @@ int main() {
   ev.mainloop_api.alpha(true);
   int frame = 0;
   while(1) {
-    //frame++;
-    // clear frame buffer
     ev.mainloop_api.clear();
 
-    // render sprite
-    //ev.sprite_api.rendersprite(vec[frame%256], sh, 0.0, 0.0);
-    //ev.sprite_api.render_sprite_vertex_array(va);
     spr.render();
+
     ev.mainloop_api.swapbuffers();
 
     // handle esc event
@@ -58,7 +46,4 @@ int main() {
     if (e.ch==' ') frame++;
     if (e.ch==27) break;
   }
-
-
-
 }
