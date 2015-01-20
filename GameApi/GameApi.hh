@@ -804,11 +804,10 @@ public:
   IMPORT VA create_vertex_array(P p); // slow
   IMPORT void render_vertex_array(VA va); // fast
 
-  // these calls require vertex shader.
   IMPORT P anim_target_vector(P p, V v);
   IMPORT P anim_target_scale(P p, PT center, float scale_x, float scale_y, float scale_z);
   IMPORT P anim_target_matrix(P p, M matrix);
-  IMPORT P anim_endpoints(P p1, P p2);
+  IMPORT P anim_endpoints(P p1, P p2); // must have similar 3d objects/same number of faces.
   IMPORT P anim_interpolate(P p, float val);
 
   IMPORT P counts(P p1, int numfaces);
@@ -1592,6 +1591,7 @@ private:
       m_va2.resize(1);
       current_pos = mat.identity();
       current_scale = mat.identity();
+      current_rot = mat.identity();
       setup_m();
       //id.id = 0;
       //va.id = 0;
@@ -1605,6 +1605,7 @@ private:
       m_va2.resize(anim_p.size());
       current_pos = mat.identity();
       current_scale = mat.identity();
+      current_rot = mat.identity();
       setup_m();
       //id.id = 0;
       //va.id = 0;
@@ -1618,6 +1619,7 @@ private:
       m_va2.resize(1);
       current_pos = mat.identity();
       current_scale = mat.identity();
+      current_rot = mat.identity();
       setup_m();
       //id.id=0;
       //va.id =0;
@@ -1653,6 +1655,11 @@ private:
       current_scale = mat.scale(mult_x, mult_y, mult_z);
       setup_m();
     }
+    void set_rotation_y(float angle)
+    {
+      current_rot = mat.yrot(angle);
+      setup_m();
+    }
     void bind_texture(int anim_id, TXID id_)
     {
       id[anim_id] = id_;
@@ -1664,7 +1671,7 @@ private:
     }
   private:
     void setup_m() {
-      m = mat.mult(current_scale, current_pos);
+      m = mat.mult(mat.mult(current_rot,current_scale), current_pos);
     }
   private:
     PolygonApi &api;
@@ -1673,6 +1680,7 @@ private:
     TextureApi &tex;
     M current_pos;
     M current_scale;
+    M current_rot;
     M m;
     std::vector<P> m_p;
     SH sh;
