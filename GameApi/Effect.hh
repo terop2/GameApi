@@ -10691,7 +10691,7 @@ public:
 	    if (face_count % 1000 == 0)
 	      std::cout << "f" << std::flush;
 
-	    float v_index, t_index, n_index;
+	    int v_index, t_index, n_index;
 	    int count = 0;
 	    char c;
 	    bool t_bool = texcoord_data.size()!=0;
@@ -10705,9 +10705,9 @@ public:
 	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
 	    if (t_index<0) t_index = texcoord_data.size()+t_index+1;
 	    if (n_index<0) n_index = normal_data.size()+n_index+1;
-		  vertex_index.push_back(v_index-1);
-		  texture_index.push_back(t_index-1);
-		  normal_index.push_back(n_index-1);
+	    vertex_index.push_back(v_index -1);
+	    texture_index.push_back(t_index-1);
+	    normal_index.push_back(n_index-1);
 		  //std::cout << "Index: " << v_index << " " << t_index << " " << n_index << std::endl;
 		  count++;
 		}
@@ -10721,8 +10721,8 @@ public:
 	    if (t_index<0) t_index = texcoord_data.size()+t_index+1;
 	    //if (n_index<0) n_index = -n_index;
 
-		    vertex_index.push_back(v_index-1);
-		    texture_index.push_back(t_index-1);
+	    vertex_index.push_back(v_index-1);
+	    texture_index.push_back(t_index-1);
 		    normal_index.push_back(0);
 		    //std::cout << "Index: " << v_index << " " << t_index << " " << n_index << std::endl;
 		    count++;
@@ -10738,7 +10738,7 @@ public:
 	    //if (t_index<0) t_index = -t_index;
 	    if (n_index<0) n_index = normal_data.size()+n_index+1;
 
-		    vertex_index.push_back(v_index-1);
+	    vertex_index.push_back(v_index-1);
 		    texture_index.push_back(0);
 		    normal_index.push_back(n_index-1);
 		    //std::cout << "Index: " << v_index << " " << t_index << " " << n_index << std::endl;
@@ -10753,7 +10753,7 @@ public:
 	    //if (t_index<0) t_index = -t_index;
 	    //if (n_index<0) n_index = -n_index;
 
-		  vertex_index.push_back(v_index-1);
+	    vertex_index.push_back(v_index-1);
 		  texture_index.push_back(0);
 		  normal_index.push_back(0);
 		  //std::cout << "Index: " << v_index << " " << t_index << " " << n_index << std::endl;
@@ -10832,13 +10832,16 @@ public:
 
   int Count(int face, int point) const {
     int s = face_counts.size();
-    if (s>0) { return face_counts[0]*face+point; }
+    if (counts.size()>0) { return counts[face]+point; }
+    //if (s>0) { return face_counts[0]*face+point; }
     int c = 0;
-    for(int i=0;i<s&&i<face;i++)
+    counts.push_back(c);
+    for(int i=0;i<s;i++)
       {
 	c+=face_counts[i];
+	counts.push_back(c);
       }
-    return c+point;
+    return counts[face]+point;
   }
 private:
   std::string filename;
@@ -10850,6 +10853,7 @@ private:
   std::vector<int> normal_index;
   std::vector<int> face_counts;
   int obj_num;
+  mutable std::vector<int> counts;
 };
 
 #endif
