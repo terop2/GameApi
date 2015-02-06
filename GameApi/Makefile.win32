@@ -87,12 +87,12 @@ main.exe: $(GCHFiles_examples) $(O2Files_examples) Makefile GameApi.hh libGameAp
 
 libGameApi.so: $(GCHFiles) $(OFiles) Makefile
 	@echo g++ libGameApi.so
-	@g++ -shared -pg -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lGLEW -lfreetype -lstdc++ 
+	@g++ -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lGLEW -lfreetype -lstdc++ 
 #`pkg-config gtkmm-2.4 --libs` 
 
 libGameApi.dll: $(GCH2Files) $(O2Files) Makefile.win32 glew.o
 	@echo mingw libGameApi.dll
-	@mingw32-g++ -pg -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 
+	@mingw32-g++ -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 
 
 subdirs: $(Subdirs)
 
