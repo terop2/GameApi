@@ -116,6 +116,9 @@ class Env
 public:
   IMPORT Env();
   IMPORT ~Env();
+private:
+  Env(const Env &);
+  void operator=(const Env &);
 public:
   void *envimpl;
   friend struct EnvImpl;
@@ -161,6 +164,8 @@ public:
   void waittof();
   SP screenspace();
 private:
+  MainLoopApi(const MainLoopApi&);
+  void operator=(const MainLoopApi&);
   float frame;
   float time;
   Env &e;
@@ -189,6 +194,8 @@ public:
 	IMPORT SP spritespace(BM bm);
 	IMPORT PT pixelpos(BM bm, int x, int y);
 private:
+  SpriteApi(const SpriteApi&);
+  void operator=(const SpriteApi&);
   void *priv;
   Env &e;
 };
@@ -208,6 +215,8 @@ public:
 	IMPORT void unuse(TXID tx);
 	IMPORT VA bind(VA va, TXID tx);
 private:
+  TextureApi(const TextureApi&);
+  void operator=(const TextureApi&);
   Env &e;
   int count;
 };
@@ -224,6 +233,8 @@ public:
 	IMPORT void rendergrid(BM grid, int grid_choose, float top_x, float top_y);
 
 private:
+  GridApi(const GridApi&);
+  void operator=(const GridApi&);
   void *priv;
   Env &e;
 };
@@ -284,6 +295,8 @@ public:
 	IMPORT int size_x(BM bm);
 	IMPORT int size_y(BM bm);
 private:
+  BitmapApi(const BitmapApi&);
+  void operator=(const BitmapApi&);
   void *priv;
   Env &e;
 };
@@ -301,6 +314,8 @@ public:
 	IMPORT FB glyph_fb(Ft font, long idx);
 	IMPORT BB glyph_bb(Ft font, long idx);
 private:
+  FontApi(const FontApi&);
+  void operator=(const FontApi&);
   void *priv;
   Env &e;
 };
@@ -335,6 +350,9 @@ public:
   PT timeline_point(IS l, int choose_par, float time);
   P timeline_obj(IS i, int choose_par, float time);
 private:
+  AnimApi(const AnimApi&);
+  void operator=(const AnimApi&);
+
   void *priv;
   Env &e;
 };
@@ -375,6 +393,8 @@ public:
   std::string Serialize(ST states, int start_state);
   ST UnSerialize(std::string s);
 private:
+  EventApi(const EventApi&);
+  void operator=(const EventApi&);
   void *priv;
   Env &e;
 };
@@ -432,6 +452,9 @@ public:
   F integrate(F f);
   //float pullback(F a_f, F b_f, F p_a, F p_b, F f_p, float t_0, float t_1);
 private:
+  FunctionApi(const FunctionApi&);
+  void operator=(const FunctionApi&);
+
   Env &e;
   void *priv;
 };
@@ -458,6 +481,8 @@ public:
   float pt_z(PT p);
   PT plus(PT p1, PT p2);
 private:
+  SpaceApi(const SpaceApi&);
+  void operator=(const SpaceApi&);
   Env &e;
 };
 
@@ -482,6 +507,8 @@ public:
 	IMPORT void load_font(std::string filename, int sx, int sy, int x, int y, char start_char, char end_char);
 	IMPORT void draw_text(std::string text, int x, int y, SH sh);
 private:
+  TextApi(const TextApi&);
+  void operator=(const TextApi&);
   BitmapApi &bm;
   SpriteApi &sp;
   void *priv;
@@ -548,6 +575,9 @@ public:
   // BM raytrace(O volume, int sx, int sy, V v, float z);
   IMPORT BM montecarlo(O object, PT p_top, PT p_x, PT p_y, PT p_z, int sx, int sy);
 private:
+  VolumeApi(const VolumeApi&);
+  void operator=(const VolumeApi&);
+
   Env &e;
 };
 
@@ -578,6 +608,8 @@ public:
 	      float end_x, float end_y, float end_z);
 	IMPORT void render(FOA array);
 private:
+  FloatVolumeApi(const FloatVolumeApi&);
+  void operator=(const FloatVolumeApi&);
   Env &e;
 };
 
@@ -599,6 +631,8 @@ public:
 	IMPORT BM texture_bm(P obj, COV colors, int face, int sx, int sy);
   // TODO
 private:
+  ColorVolumeApi(const ColorVolumeApi&);
+  void operator=(const ColorVolumeApi&);
   Env &e;
 };
 
@@ -609,6 +643,9 @@ public:
 	IMPORT VO function(std::function<V(float x, float y, float z)> f);
 	IMPORT VO normal(FD fd);
 private:
+  VectorVolumeApi(const VectorVolumeApi&);
+  void operator=(const VectorVolumeApi&);
+
   Env &e;
 };
 
@@ -628,6 +665,9 @@ public:
 	IMPORT BM render(FD obj, COV color, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
 	IMPORT std::string shader_func(std::string name, FD obj, COV color);
 private:
+  DistanceFloatVolumeApi(const DistanceFloatVolumeApi&);
+  void operator=(const DistanceFloatVolumeApi&);
+
   Env &e;
 };
 
@@ -837,6 +877,9 @@ public:
 
   IMPORT BM renderpolytobitmap(P p, float x, float y, float z, int sx, int sy);
 private:
+  PolygonApi(const PolygonApi&);
+  void operator=(const PolygonApi&);
+
   void *priv;
   Env &e;
 };
@@ -859,6 +902,8 @@ public:
 	IMPORT BM waveform_bitmap(WV wave, int sx, int sy, unsigned int true_color, unsigned int false_color);
 
 private:
+  WaveformApi(const WaveformApi&);
+  void operator=(const WaveformApi&);
   Env &e;
 };
 
@@ -877,6 +922,8 @@ public:
 	IMPORT void render(VV sc, float time, SH shadero);
 	IMPORT void render(VV sc, float time, SH shadero, float(*fptr)(int path, std::string name));
 private:
+  StateChangeApi(const StateChangeApi&);
+  void operator=(const StateChangeApi&);
   Env &e;
   ShaderApi &api;
 };
@@ -934,6 +981,8 @@ public:
   void render(PLA pl, float x, float y, float mult_x, float mult_y);
 
 private:
+  PlaneApi(const PlaneApi&);
+  void operator=(const PlaneApi&);
   Env &e;
 };
 
@@ -979,6 +1028,9 @@ public:
 	IMPORT int size_y(BB bm);
 	IMPORT bool boolvalue(BB bb, int x, int y);
 private:
+  BoolBitmapApi(const BoolBitmapApi&);
+  void operator=(const BoolBitmapApi&);
+
   Env &e;
 };
 
@@ -1016,6 +1068,8 @@ public: // values are [0.0..1.0]
 	IMPORT int size_y(FB bm);
 	IMPORT float floatvalue(FB bm, int x, int y);
 private:
+  FloatBitmapApi(const FloatBitmapApi&);
+  void operator=(const FloatBitmapApi&);
   Env &e;
 };
 
@@ -1045,6 +1099,9 @@ public:
   IMPORT CBM rotate(CBM bm, float center_x, float center_y, float angle);
   IMPORT CBM surfacecolor(S s, COV cov);
 private:
+  ContinuousBitmapApi(const ContinuousBitmapApi&);
+  void operator=(const ContinuousBitmapApi&);
+
   Env &e;
 };
 
@@ -1072,6 +1129,8 @@ public:
 	IMPORT CO rgb_color(int r, int g, int b, int a); // r,g,b,a [0..255]
 	IMPORT CO rgbf_color(float r, float g, float b, float a);
 private:
+  ColorApi(const ColorApi&);
+  void operator=(const ColorApi&);
   Env &e;
 };
 
@@ -1096,6 +1155,8 @@ public:
 	IMPORT float dist2d(PT p, PT p2);
 	IMPORT V minus(PT p1, PT p2);
 private:
+  PointApi(const PointApi&);
+  void operator=(const PointApi&);
   Env &e;
 };
 		     
@@ -1111,6 +1172,8 @@ public:
 	IMPORT PC bezier(PT *array, PT *control_array, int size, int iteration_count);
 	IMPORT P tri_object3d(PC p);
 private:
+  PointCollectionApi(const PointCollectionApi&);
+  void operator=(const PointCollectionApi&);
   Env &e;
 };
 class PointsApi
@@ -1136,6 +1199,9 @@ public:
   PTA prepare(PTS p);
   void render(PTA array);
 private:
+  PointsApi(const PointsApi&);
+  void operator=(const PointsApi&);
+
   Env &e;
 };
 		     
@@ -1158,6 +1224,8 @@ public:
 	IMPORT LLA prepare(LI l);
 	IMPORT void render(LLA array);
 private:
+  LinesApi(const LinesApi&);
+  void operator=(const LinesApi&);
   Env &e;
 };
 		     
@@ -1179,8 +1247,10 @@ public:
 	IMPORT V neg(V v);
 	IMPORT float dist3d(V v);
 	IMPORT float dist2d(V v);
-private:
-  Env &e;
+private: 
+  VectorApi(const VectorApi&);
+  void operator=(const VectorApi&);
+ Env &e;
 };
 
 class SpaceVectorApi
@@ -1191,6 +1261,8 @@ public:
   SV from_points(PC coll); // choose poly(nearest points), linear interpoate, ensure no failures
   PT flow_next_point(SV v, PT p, float mult);
 private:
+  SpaceVectorApi(const SpaceVectorApi&);
+  void operator=(const SpaceVectorApi&);
   Env &e;
 };
 class MatrixApi
@@ -1213,6 +1285,8 @@ public:
 	IMPORT M rotate_around_axis(PT point, V v, float angle);
 	IMPORT PT mult(PT point, M matrix);
 private:
+  MatrixApi(const MatrixApi&);
+  void operator=(const MatrixApi&);
   Env &e;
 };
 class ObjectMoveApi
@@ -1226,6 +1300,9 @@ public:
   VAA prepare_all(OM orig);
   void render_all(VAA orig);
 private:
+  ObjectMoveApi(const ObjectMoveApi&);
+  void operator=(const ObjectMoveApi&);
+
   Env &e;
 };
 
@@ -1246,6 +1323,9 @@ public:
   void move(Vb v, int obj_num, float x, float y, float z);
   void render(Vb v);
 private:
+  VBOApi(const VBOApi&);
+  void operator=(const VBOApi&);
+
   void *priv;
   Env &e;
 };
@@ -1296,6 +1376,9 @@ public:
 	IMPORT void set_var(GameApi::SH shader, std::string name, int val);
 	IMPORT void set_var(GameApi::SH shader, std::string name, M matrix);
 private:
+  ShaderApi(const ShaderApi&);
+  void operator=(const ShaderApi&);
+
   friend class StateChangeApi;
   void *priv;
   Env &e;
@@ -1396,6 +1479,10 @@ struct EveryApi
   LinesApi lines_api;
   PlaneApi plane_api;
   PointsApi points_api;
+private:
+  EveryApi(const EveryApi&);
+  void operator=(const EveryApi&);
+
 };
 
 class GamesApi
@@ -1437,12 +1524,16 @@ private:
     virtual ~MoveScaleObject3d() { }
     virtual void set_pos(float pos_x, float pos_y, float pos_z)=0;
     virtual void set_scale(float mult_x, float mult_y, float mult_z)=0;
+    virtual void set_rotation_matrix(M m)=0;
   };
   
   class ArrayObj3d : public RenderObject, public MoveScaleObject3d
   {
   public:
-    ArrayObj3d() : p_x(0.0), p_y(0.0), p_z(0.0), s_x(1.0), s_y(1.0), s_z(1.0) { }
+    ArrayObj3d(EveryApi &ev) : ev(ev), p_x(0.0), p_y(0.0), p_z(0.0), s_x(1.0), s_y(1.0), s_z(1.0) 
+    {
+      current_rot_matrix = ev.matrix_api.identity();
+    }
     void push_back(RenderObject *obj, MoveScaleObject3d *obj2)
     {
       render_vec.push_back(obj);
@@ -1453,6 +1544,7 @@ private:
       scale_x.push_back(1.0);
       scale_y.push_back(1.0);
       scale_z.push_back(1.0);
+      rot_matrix.push_back(ev.matrix_api.identity());
     }
     void prepare() {
       int s = render_vec.size();
@@ -1482,7 +1574,11 @@ private:
       scale_z[i] = mult_z;
       setup_one(i);
     }
-
+    void set_child_rot_matrix(int i, M m)
+    {
+      rot_matrix[i] = m;
+      setup_one(i);
+    }
     void set_pos(float pos_x, float pos_y, float pos_z)
     {
       p_x = pos_x;
@@ -1497,6 +1593,11 @@ private:
       s_z = mult_z;
       setup();
     }
+    void set_rotation_matrix(M m)
+    {
+      current_rot_matrix = m;
+      setup();
+    }
   private:
     void setup_one(int i)
     {
@@ -1506,14 +1607,17 @@ private:
       float as_x = scale_x[i];
       float as_y = scale_y[i];
       float as_z = scale_z[i];
+      M m = rot_matrix[i];
       ap_x += p_x;
       ap_y += p_y;
       ap_z += p_z;
       as_x*=s_x;
       as_y*=s_y;
       as_z*=s_z;
+      m = ev.matrix_api.mult(current_rot_matrix, m);
       move_scale_vec[i]->set_pos(ap_x,ap_y,ap_z);
       move_scale_vec[i]->set_scale(as_x,as_y,as_z);
+      move_scale_vec[i]->set_rotation_matrix(m);
     }
     void setup() 
     {
@@ -1524,6 +1628,7 @@ private:
 	}
     }
   private:
+    EveryApi &ev;
     std::vector<RenderObject *> render_vec;
     std::vector<MoveScaleObject3d *> move_scale_vec;
     std::vector<float> pos_x;
@@ -1532,8 +1637,10 @@ private:
     std::vector<float> scale_x;
     std::vector<float> scale_y;
     std::vector<float> scale_z;
+    std::vector<M> rot_matrix;
     float p_x, p_y, p_z;
     float s_x, s_y, s_z;
+    M current_rot_matrix;
   };
   class SpriteObj : public RenderObject, public MoveScaleObject2d
   {
@@ -1660,6 +1767,11 @@ private:
       current_rot = mat.yrot(angle);
       setup_m();
     }
+    void set_rotation_matrix(M m)
+    {
+      current_rot = m;
+      setup_m();
+    }
     void bind_texture(int anim_id, TXID id_)
     {
       id[anim_id] = id_;
@@ -1703,6 +1815,7 @@ private:
       end_z = 1.0;
       current_pos = mat.identity();
       current_scale = mat.identity();
+      current_rot = mat.identity();
       setup_m(); 
     }
     void set_numpoints(int count) { numpoints = count; }
@@ -1735,9 +1848,14 @@ private:
       current_scale = mat.scale(mult_x, mult_y, mult_z);
       setup_m();
     }
+    void set_rotation_matrix(M m)
+    {
+      current_rot = m;
+      setup_m();
+    }
   private:
     void setup_m() {
-      m = mat.mult(current_scale, current_pos);
+      m = mat.mult(current_rot, mat.mult(current_scale, current_pos));
     }
 
   private:
@@ -1750,6 +1868,7 @@ private:
     SH sh;
     M current_pos;
     M current_scale;
+    M current_rot;
     M m;
     int numpoints;
     float start_x, start_y, start_z;
@@ -1762,6 +1881,7 @@ private:
     {
       current_pos = mat.identity();
       current_scale = mat.identity();
+      current_rot = mat.identity();
       setup_m();
     }
     LinesObj(LinesApi &lines, MatrixApi &mat, ShaderApi &shapi, LI li, SH sh) : lines(lines), mat(mat), shapi(shapi), li(li), sh(sh) { }
@@ -1780,9 +1900,14 @@ private:
       current_scale = mat.scale(mult_x, mult_y, mult_z);
       setup_m();
     }
+    void set_rotation_matrix(M m) 
+    {
+      current_rot = m;
+      setup_m();
+    }
   private:
     void setup_m() {
-      m = mat.mult(current_scale, current_pos);
+      m = mat.mult(current_rot, mat.mult(current_scale, current_pos));
     }
   private:
     LinesApi &lines;
@@ -1793,6 +1918,7 @@ private:
     LLA li2;
     M current_pos;
     M current_scale;
+    M current_rot;
     M m;
   };
 

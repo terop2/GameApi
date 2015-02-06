@@ -1,4 +1,4 @@
-  
+   
 #define SDL2_USED  
 #define GAME_API_DEFS
 #define _SCL_SECURE_NO_WARNINGS
@@ -247,7 +247,7 @@ void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_height)
   Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
   prog->set_var("in_T", m3);
   alpha(false);
-
+  glEnable(GL_DEPTH_TEST);
 }
 void GameApi::MainLoopApi::nvidia_init()
 {
