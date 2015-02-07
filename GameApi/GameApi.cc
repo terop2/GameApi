@@ -1,4 +1,4 @@
-     
+      
 #define SDL2_USED  
 #define GAME_API_DEFS
 #define _SCL_SECURE_NO_WARNINGS
