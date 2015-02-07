@@ -156,26 +156,32 @@ public:
 	  {
 	    p[j] = coll.FacePoint(i,j);
 	    v[j] = coll.PointNormal(i,j);
+
 	    for (int k=0;k<(int)attribs.size();k++)
 	      {
 		a[k][j] = coll.Attrib(i,j,attribs[k]);
 	      }
+
 	    for (int k=0;k<(int)attribs.size();k++)
 	      {
 		ai[k][j] = coll.AttribI(i,j,attribs[k]);
 	      }
+
 	    c[j] = coll.Color(i,j);
 	    tex[j] = coll.TexCoord(i,j);
 	    //std::cout << "VA: " << tex[j] << std::endl;
 	  }
 	s.push_poly(0, w, &p[0]);
 	s.push_normal(0, w, &v[0]);
+
 	for (int k=0;k<(int)attribs.size();k++)
 	  s.push_attrib(0, k, w, &a[k][0]);
 	for (int k=0;k<(int)attribsi.size();k++)
 	  s.push_attribi(0, k, w, &ai[k][0]);
+
 	s.push_color(0, w, &c[0]);
 	s.push_texcoord(0, w, &tex[0]);
+
       }
   }
 private:

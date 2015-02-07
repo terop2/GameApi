@@ -1003,7 +1003,7 @@ bool GridEffect2::Frame(float time)
   glPopMatrix();
   return false;
 }
-
+ 
 class SpriteTexture : public MeshTextures
 {
 public:

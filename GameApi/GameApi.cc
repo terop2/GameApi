@@ -1,4 +1,4 @@
-   
+     
 #define SDL2_USED  
 #define GAME_API_DEFS
 #define _SCL_SECURE_NO_WARNINGS
@@ -35,6 +35,7 @@
 #include "MatrixApi.hh"
 #include "Web.hh"
 #include <iostream>
+#include <pthread.h>
 
 #undef LoadImage
 
@@ -190,6 +191,10 @@ void GameApi::MainLoopApi::transfer_sdl_surface(MainLoopApi &orig)
   MainLoopPriv *p = (MainLoopPriv*)priv;
   MainLoopPriv *p2 = (MainLoopPriv*)orig.priv;
   p->screen = p2->screen;
+}
+void GameApi::MainLoopApi::delay(int ms)
+{
+  SDL_Delay(ms);
 }
 void GameApi::MainLoopApi::fpscounter()
 {
@@ -2320,9 +2325,9 @@ GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
   PrepareSpriteToVA(*sprite, *s);
   TexturePrepare(*sprite, *env->renders2[bm.id]);
   s->texture_id = bm.id;
-  RenderVertexArray *arr = new RenderVertexArray(*s);
+  RenderVertexArray *arr = new RenderVertexArray(*s); 
   arr->prepare(0);
-  return add_vertex_array(e, s, arr);
+  return add_vertex_array(e, s, arr); 
 }
 
 void GameApi::SpriteApi::preparesprite(BM bm, int bbm_choose)
@@ -9025,5 +9030,17 @@ GameApi::LLA GameApi::LinesApi::prepare(LI l)
   return add_lines_array(e, arr);
 }
 
+void *Thread_Call(void *data)
+{
+  GameApi::RenderObject *o = (GameApi::RenderObject*)data;
+  o->prepare();
+  pthread_exit(NULL);
+  return 0;
+}
+pthread_t thread;
 
+void GameApi::prepare(GameApi::RenderObject &o)
+{
+  pthread_create(&thread, NULL, Thread_Call, (void*)&o);
+}
 

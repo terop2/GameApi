@@ -3119,6 +3119,7 @@ void ArrayRender::Prepare()
 
   if (quads) {
     int count = 0;
+    std::cout << "Vertex Array Size2: " << vertex_array_size << std::endl;
     for(int i=0;i<vertex_array_size/(4*3);i++)
       {
 	q_vertex_array[count+0*3+0] = vertex_array[i*4*3+0*3+0];
@@ -3204,6 +3205,7 @@ void ArrayRender::Prepare()
   } else
     {
     int count = 0;
+    std::cout << "Vertex Array Size: " << vertex_array_size << std::endl;
     for(int i=0;i<vertex_array_size;i++) {
       q_vertex_array[i*3+0] = vertex_array[i*3+0];
       q_vertex_array[i*3+1] = vertex_array[i*3+1];
