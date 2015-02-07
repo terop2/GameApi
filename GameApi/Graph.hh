@@ -336,7 +336,7 @@ public:
 	if (pixels>x) break;
 	oldpixels = pixels;
       }
-    if (i==sz) { return T(); }
+    if (i==sz) { return def; }
     int delta = -vec2[i];
     if (y<delta) return def;
     if (y>=delta+vec[i]->SizeY()) return def;

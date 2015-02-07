@@ -11,7 +11,6 @@ int main()
   Env e;
   EveryApi ev(e);
 
-#if 0
   ev.mainloop_api.init_window();
 
   ev.shader_api.load("Shader.txt");
@@ -24,15 +23,12 @@ int main()
   ev.mainloop_api.init(sh2);
 
   ev.mainloop_api.alpha(true);
-#endif
   // prepare a circle for drawing
   //BM bm = ev.bitmap_api.newbitmap(728,90);
-#if 1
   Ft font1 = ev.font_api.newfont("FreeSans.ttf", 30,30);
   Ft font3 = ev.font_api.newfont("FreeSans.ttf", 10,10);
   BM text = ev.font_api.font_string(font1, "GameApi   Library", 2);
   BM text2 = ev.font_api.font_string(font3, "For  beginners  writing  their  first  game",2);
-#endif
   //BM text = ev.bitmap_api.newbitmap(30,30);
   //BM text2 = ev.bitmap_api.newbitmap(30,30);
   PT pos_1 = ev.point_api.point(0.0,0.0,0.0);
@@ -46,9 +42,8 @@ int main()
   BM comb2 = ev.bitmap_api.blitbitmap(comb1, grad2, 30, 50, tx2);
   BM comb3 = ev.bitmap_api.memoize(comb2);
 
-  ev.bitmap_api.savebitmap(comb3, "test.png");
+  //ev.bitmap_api.savebitmap(comb3, "test.png");
 
-#if 0
   SpriteObj spr(ev, comb3, sh2);
   spr.prepare();
 
@@ -66,5 +61,4 @@ int main()
     MainLoopApi::Event e = ev.mainloop_api.get_event();
     if (e.ch==27) break;
   }
-#endif
 }
