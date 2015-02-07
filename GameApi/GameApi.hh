@@ -144,6 +144,7 @@ public:
   IMPORT void swapbuffers();
   IMPORT BM screenshot();
   IMPORT void fpscounter();
+  IMPORT void delay(int ms);
   struct Event
   {
     int type;
@@ -1511,6 +1512,7 @@ private:
     virtual void prepare()=0;
     virtual void render()=0;
   };
+  void prepare(RenderObject &o);
   class MoveScaleObject2d
   {
   public:
@@ -1651,23 +1653,29 @@ private:
       pos_x = 0.0; pos_y = 0.0;
       mult_x = 1.0; mult_y = 1.0;
       anim_id = 0;
+      prepared=false;
     }
     SpriteObj(EveryApi &ev, std::vector<BM> anim, SH sh) : sp(ev.sprite_api), matrix_api(ev.matrix_api), shader_api(ev.shader_api), bm(anim), sh(sh) 
     {
       pos_x = 0.0; pos_y = 0.0;
       mult_x = 1.0; mult_y = 1.0;
       anim_id = 0;
+      prepared=false;
     }
     void prepare() 
     {
       va.clear();
       for(int i=0;i<(int)bm.size();i++)
 	va.push_back(sp.create_vertex_array(bm[i])); 
+      prepared=true;
     }
     void render() 
     { 
-      shader_api.set_var(sh, "in_MV", matrix_api.mult(matrix_api.scale(mult_x, mult_y, 1.0), matrix_api.trans(pos_x, pos_y, 0.0)));
-      sp.render_sprite_vertex_array(va[anim_id]);
+      if (prepared)
+	{
+	  shader_api.set_var(sh, "in_MV", matrix_api.mult(matrix_api.scale(mult_x, mult_y, 1.0), matrix_api.trans(pos_x, pos_y, 0.0)));
+	  sp.render_sprite_vertex_array(va[anim_id]);
+	}
       //sp.rendersprite(bm[anim_id], sh, pos_x, pos_y, mult_x, mult_y); 
     }
     void set_pos(float p_x, float p_y) { pos_x=p_x; pos_y=p_y; }
@@ -1687,6 +1695,7 @@ private:
     std::vector<VA> va;
     int anim_id;
     SH sh;
+    bool prepared;
   };
   class PolygonObj : public RenderObject, public MoveScaleObject3d
   {

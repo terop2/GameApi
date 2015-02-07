@@ -58,15 +58,17 @@ LIB3WIN = d:\cvs\glew-1.10.0\bin\Release\Win32
 LIB4WIN = e:\cvs
 LIB5WIN = d:\cvs\SDL2_image-2.0.0\i686-w64-mingw32\lib
 LIB6WIN = d:\cvs\glew-1.10.0\lib
+LIB7WIN = d:\cvs\pthread\pre-built.2\lib\x86
 INC1WIN = d:\cvs\SDL2-2.0.1\i686-w64-mingw32\include\sdl2
 INC2WIN = d:\cvs\glew-1.10.0/include
 INC3WIN = d:\cvs\SDL2_image-2.0.0/i686-w64-mingw32/include\sdl2
 INC4WIN = d:\cvs\SDL2-2.0.1/i686-w64-mingw32/include/SDL2
 INC5WIN = d:\cvs\freetype\include
 INC6WIN = d:\cvs\freetype\include\freetype2
+INC7WIN = d:\cvs\pthread\pre-built.2\include
 
-CCFLAGS = -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2
-CC2FLAGS = -std=c++11 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -DGLEW_STATIC
+CCFLAGS = -pg -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2
+CC2FLAGS = -pg -std=c++11 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -DGLEW_STATIC
 #`pkg-config gtkmm-2.4 --cflags`
 
 
@@ -82,7 +84,7 @@ main: $(GCHFiles_examples) $(OFiles_examples) Makefile GameApi.hh libGameApi.so
 
 main.exe: $(GCHFiles_examples) $(O2Files_examples) Makefile GameApi.hh libGameApi.dll
 	@echo mingw main.exe
-	@$(CCWIN) -g $(O2Files_examples) -o main.exe -L. -lGameApi -lopengl32 -lm -lstdc++
+	@$(CCWIN) -pg -g $(O2Files_examples) -o main.exe -L. -lGameApi -lopengl32 -lm -lstdc++
 
 
 libGameApi.so: $(GCHFiles) $(OFiles) Makefile
@@ -92,7 +94,7 @@ libGameApi.so: $(GCHFiles) $(OFiles) Makefile
 
 libGameApi.dll: $(GCH2Files) $(O2Files) Makefile.win32 glew.o
 	@echo mingw libGameApi.dll
-	@mingw32-g++ -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 
+	@mingw32-g++ -pg -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadGC2
 
 subdirs: $(Subdirs)
 
@@ -123,7 +125,7 @@ $(OFiles): objs/%.o : %.cc
 
 $(O2Files): objs/%.obj : %.cc
 	@echo mingw $<
-	@$(CCWIN) -g -c $(CC2FLAGS) $< -o $@
+	@$(CCWIN) -pg -g -c $(CC2FLAGS) $< -o $@
 
 glew.o:
 	$(CCWIN) -g -c $(CC2FLAGS) d:\cvs\glew-1.10.0\src\glew.c -o glew.o
