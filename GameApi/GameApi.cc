@@ -3595,7 +3595,7 @@ GameApi::P GameApi::PolygonApi::world_from_voxel(std::function<P (unsigned int c
   int sy = vox->SizeY();
   int sz = vox->SizeZ();
   std::vector<P> vec_x;
-  for(int x=0;x<sx<x++)
+  for(int x=0;x<sx;x++)
     {
       std::vector<P> vec_y;
       for(int y=0;y<sy;y++)
@@ -3606,15 +3606,15 @@ GameApi::P GameApi::PolygonApi::world_from_voxel(std::function<P (unsigned int c
 	      Color c = vox->Map(x,y,z);
 	      unsigned int i = c.Pixel();
 	      P p = f(i);
-	      P p2 = translate(0.0,0.0,z*dz);
+	      P p2 = translate(p, 0.0,0.0,z*dz);
 	      vec_z.push_back(p2);
 	    }
 	  P p = or_array(&vec_z[0], sz);
-	  P p2 = translate(0.0,y*dy,0.0);
+	  P p2 = translate(p, 0.0,y*dy,0.0);
 	  vec_y.push_back(p2);
 	}
       P p = or_array(&vec_y[0], sy);
-      P p2 = translate(x*dx,0.0,0.0);
+      P p2 = translate(p, x*dx,0.0,0.0);
       vec_x.push_back(p2);
     }
   P p = or_array(&vec_x[0],sx);
