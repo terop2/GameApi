@@ -876,6 +876,9 @@ public:
   IMPORT P create_dynamic_geometry(P *array, int size);
   IMPORT void render_dynamic(P p, int array_elem, bool textures); // use memoize_all for p before calling this.
 
+  IMPORT P world_from_bitmap(std::function<P (int c)> f, BM int_bm, float dx, float dy);
+  IMPORT P world_from_voxel(std::function<P (unsigned int c)> f, VX voxel, float dx, float dy, float dz);
+
   IMPORT BM renderpolytobitmap(P p, float x, float y, float z, int sx, int sy);
 private:
   PolygonApi(const PolygonApi&);
@@ -976,7 +979,8 @@ public:
   P substitute_quads_with_plane(P orig, PL (*fptr)(EveryApi &ev, int face, void *data), void *data);
   P plane_in_3d(PL plane, PT u_p, V v1, V v2);
   
-  CBM render(PL pl, int num, unsigned int color_0, unsigned int color_1);
+  CBM render_continuous(PL pl, int num, unsigned int color_0, unsigned int color_1);
+  BB render_bool(PL pl, int num, int sx, int sy);
 
   PLA prepare(PL pl);
   void render(PLA pl, float x, float y, float mult_x, float mult_y);

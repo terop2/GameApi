@@ -3588,6 +3588,62 @@ GameApi::S GameApi::SurfaceApi::bitmapsphere(PT center, float radius0, float rad
   i.surf = sphere;
   return add_surface(e, i);
 }
+GameApi::P GameApi::PolygonApi::world_from_voxel(std::function<P (unsigned int c)> f, VX voxel, float dx, float dy, float dz)
+{
+  Voxel<Color> *vox = find_voxel(e, voxel);
+  int sx = vox->SizeX();
+  int sy = vox->SizeY();
+  int sz = vox->SizeZ();
+  std::vector<P> vec_x;
+  for(int x=0;x<sx<x++)
+    {
+      std::vector<P> vec_y;
+      for(int y=0;y<sy;y++)
+	{
+	  std::vector<P> vec_z;
+	  for(int z=0;z<sz;z++)
+	    {
+	      Color c = vox->Map(x,y,z);
+	      unsigned int i = c.Pixel();
+	      P p = f(i);
+	      P p2 = translate(0.0,0.0,z*dz);
+	      vec_z.push_back(p2);
+	    }
+	  P p = or_array(&vec_z[0], sz);
+	  P p2 = translate(0.0,y*dy,0.0);
+	  vec_y.push_back(p2);
+	}
+      P p = or_array(&vec_y[0], sy);
+      P p2 = translate(x*dx,0.0,0.0);
+      vec_x.push_back(p2);
+    }
+  P p = or_array(&vec_x[0],sx);
+  return p;
+}
+GameApi::P GameApi::PolygonApi::world_from_bitmap(std::function<P (int c)> f, BM int_bm, float dx, float dz)
+{
+  BitmapIntHandle *handle = dynamic_cast<BitmapIntHandle*>(find_bitmap(e, int_bm));
+  if (!handle) { GameApi::P p1 = { 0 }; return p1; }
+  Bitmap<int> *bm = handle->bm;
+  std::vector<P> vec;
+  int sx = bm->SizeX();
+  int sy = bm->SizeY();
+  for(int y=0;y<sy;y++)
+    {
+      std::vector<P> vec2;
+      for(int x=0;x<sx;x++)
+	{
+	  P p = f(bm->Map(x,y));
+	  P p2 = translate(p, dx*x, 0.0, 0.0);
+	  vec2.push_back(p2);
+	}
+      P p = or_array(&vec2[0], sx);
+      P p2 = translate(p, 0.0, 0.0, dz*y);
+      vec.push_back(p2);
+    }
+  P p = or_array(&vec[0], sy);
+  return p;
+}
 
 GameApi::P GameApi::PolygonApi::triangle(PT p1, PT p2, PT p3)
 {
@@ -7261,8 +7317,19 @@ private:
   unsigned int color_0;
   unsigned int color_1;
 };
+GameApi::BB GameApi::PlaneApi::render_bool(GameApi::PL pl, int num, int sx, int sy)
+{
+  PlanePoints2d *ptr = find_plane(e, pl);
+  PolygonLines *lines = new PolygonLines(*ptr, num);
+  ContinuousBitmap<bool> *fill = new PolygonFill(ptr->SizeX(),ptr->SizeY(), *lines);
+  Bitmap<bool> *bm = new BitmapFromContinuousBitmap<bool>(*fill, sx, sy);
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->deletes.push_back(std::shared_ptr<void>(lines));
+  env->deletes.push_back(std::shared_ptr<void>(fill));
+  return add_bool_bitmap(e, bm);
+}
    
-GameApi::CBM GameApi::PlaneApi::render(GameApi::PL pl, int num, unsigned int color_0, unsigned int color_1)
+GameApi::CBM GameApi::PlaneApi::render_continuous(GameApi::PL pl, int num, unsigned int color_0, unsigned int color_1)
 {
   PlanePoints2d *ptr = find_plane(e, pl);
   PolygonLines *lines = new PolygonLines(*ptr, num);
