@@ -1198,7 +1198,7 @@ GameApi::P add_polygon(GameApi::Env &e, FaceCollection *coll, int size)
   h->collarrayowned = false;
   //h->size = size;
   GameApi::PolygonApi api(e);
-  return api.memoize(add_polygon(e,h));
+  return /*api.memoize(*/add_polygon(e,h)/*)*/;
 }
 GameApi::P add_polygon2(GameApi::Env &e, FaceCollection *coll, int size)
 {
@@ -3595,12 +3595,15 @@ GameApi::P GameApi::PolygonApi::world_from_voxel(std::function<P (unsigned int c
   int sy = vox->SizeY();
   int sz = vox->SizeZ();
   std::vector<P> vec_x;
+  vec_x.reserve(sx);
   for(int x=0;x<sx;x++)
     {
       std::vector<P> vec_y;
+      vec_y.reserve(sy);
       for(int y=0;y<sy;y++)
 	{
 	  std::vector<P> vec_z;
+	  vec_z.reserve(sz);
 	  for(int z=0;z<sz;z++)
 	    {
 	      Color c = vox->Map(x,y,z);
@@ -3932,7 +3935,7 @@ GameApi::P GameApi::PolygonApi::cube(float start_x, float end_x,
   
   FaceCollection *coll = new CubeElem(p111,p112,p121,p122,
 				      p211,p212,p221,p222);
-  return add_polygon(e, coll,1);  
+  return add_polygon2(e, coll,1);  
 }
 
 GameApi::P GameApi::PolygonApi::cube(PT *p)
@@ -4069,7 +4072,7 @@ GameApi::P GameApi::PolygonApi::translate(P orig, float dx, float dy, float dz)
   env->deletes.push_back(std::shared_ptr<void>(convert));  
   if (!c) { std::cout << "dynamic cast failed" << std::endl; }
   FaceCollection *coll = new MatrixElem(*convert, Matrix::Translate(dx,dy,dz));
-  return add_polygon(e, coll,1);
+  return add_polygon2(e, coll,1);
 }
 
 GameApi::P GameApi::PolygonApi::rotatex(P orig, float angle)

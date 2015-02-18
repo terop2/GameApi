@@ -8,6 +8,15 @@
 #include <GL/glew.h>
 #include <SDL_opengl.h>
 
+void VertexArraySet::check_m_set(int id)
+{
+  Polys *p = m_set[id];
+  if (!p)
+    {
+      m_set[id] = new Polys;
+      p = m_set[id];
+    }  
+}
 void VertexArraySet::push_poly(int id, int num, Point *points)
 {
   Polys *p = m_set[id];
@@ -243,6 +252,7 @@ void VertexArraySet::push_texcoord(int id, int num, Point2d *points)
 #define ATTRIB_OFFSET(X) ((const GLvoid *)(sizeof(GLfloat) * (X)))
 void RenderVertexArray::prepare(int id)
 {
+  s.check_m_set(id);
   glGenVertexArrays(2,vao);
   glBindVertexArray(vao[0]);
   glGenBuffers(1,&buffers[0]);
