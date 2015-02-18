@@ -85,6 +85,7 @@ public:
   int poly2_texcoord_count(int id, int i) const { return m_set[id]->poly_texcoord[i].size(); }
   const Point2d *poly_texcoord_polys(int id, int i) const { return poly2_texcoord_count(id,i) ? &m_set[id]->poly_texcoord[i][0] : NULL; }
   
+  void check_m_set(int id);
   
 private:
   struct Polys {

@@ -1452,7 +1452,7 @@ struct EveryApi
 {
 	IMPORT EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -1484,6 +1484,7 @@ struct EveryApi
   LinesApi lines_api;
   PlaneApi plane_api;
   PointsApi points_api;
+  VoxelApi voxel_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);
