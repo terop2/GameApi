@@ -756,7 +756,7 @@ struct EnvImpl
   std::vector<std::string> shader_float_parameter;
   std::vector<std::string> shader_int_parameter;
   
-  std::vector<Voxel<Color>*> voxels;
+  std::vector<Voxel<unsigned int>*> voxels;
   std::vector<TROArray*> timeranges; // statechange time ranges
   std::vector<VArray*> timerange_vertexarrays; // statechange vertex arrays
   std::vector<ShaderPriv2*> shaders;
@@ -1352,7 +1352,7 @@ GameApi::VO add_vector_volume(GameApi::Env &e, VectorVolumeObject *o)
 }
 
 
-GameApi::VX add_voxel(GameApi::Env &e, Voxel<Color> *o)
+GameApi::VX add_voxel(GameApi::Env &e, Voxel<unsigned int> *o)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->voxels.push_back(o);
@@ -1743,10 +1743,10 @@ FloatBitmap *find_float_bitmap(GameApi::Env &e, GameApi::FB b)
   return handle;
 }
 
-Voxel<Color> *find_voxel(GameApi::Env &e, GameApi::VX b)
+Voxel<unsigned int> *find_voxel(GameApi::Env &e, GameApi::VX b)
 {
   EnvImpl *ee = ::EnvImpl::Environment(&e);
-  Voxel<Color> *handle = 0;
+  Voxel<unsigned int> *handle = 0;
 
   if (b.id >=0 && b.id < (int)ee->voxels.size())
     handle = ee->voxels[b.id];
@@ -3590,7 +3590,7 @@ GameApi::S GameApi::SurfaceApi::bitmapsphere(PT center, float radius0, float rad
 }
 GameApi::P GameApi::PolygonApi::world_from_voxel(std::function<P (unsigned int c)> f, VX voxel, float dx, float dy, float dz)
 {
-  Voxel<Color> *vox = find_voxel(e, voxel);
+  Voxel<unsigned int> *vox = find_voxel(e, voxel);
   int sx = vox->SizeX();
   int sy = vox->SizeY();
   int sz = vox->SizeZ();
@@ -3606,8 +3606,8 @@ GameApi::P GameApi::PolygonApi::world_from_voxel(std::function<P (unsigned int c
 	  vec_z.reserve(sz);
 	  for(int z=0;z<sz;z++)
 	    {
-	      Color c = vox->Map(x,y,z);
-	      unsigned int i = c.Pixel();
+	      unsigned int c = vox->Map(x,y,z);
+	      unsigned int i = c;
 	      P p = f(i);
 	      P p2 = translate(p, 0.0,0.0,z*dz);
 	      vec_z.push_back(p2);
@@ -6620,16 +6620,16 @@ GameApi::CBM GameApi::ContinuousBitmapApi::from_bitmap(BM bm, float xsize, float
 
 
 
-class VoxelFunction : public Voxel<Color>
+class VoxelFunction : public Voxel<unsigned int>
 {
 public:
   VoxelFunction(GameApi::EveryApi &ev, unsigned int (*fptr)(GameApi::EveryApi &ev,int x, int y, int z, void *data), int sx, int sy, int sz, void*data) : ev(ev), fptr(fptr), sx(sx), sy(sy), sz(sz), data(data) { }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual int SizeZ() const { return sz; }
-  virtual Color Map(int x, int y, int z) const
+  virtual unsigned int Map(int x, int y, int z) const
   {
-    return Color(fptr(ev, x,y,z,data));
+    return fptr(ev, x,y,z,data);
   }
 
 private:
@@ -6653,11 +6653,11 @@ GameApi::VX GameApi::VoxelApi::function(unsigned int (*fptr)(EveryApi &ev, int x
 
 unsigned int GameApi::VoxelApi::get_pixel(VX v, int x, int y, int z)
 {
-  Voxel<Color> *c = find_voxel(e, v);
-  return c->Map(x,y,z).Pixel();
+  Voxel<unsigned int> *c = find_voxel(e, v);
+  return c->Map(x,y,z);
 }
 
-typedef Voxel<Color> VoxelColor;
+typedef Voxel<unsigned int> VoxelColor;
 
 class VoxelBoxes : public BoxableFaceCollection
 {
@@ -6745,7 +6745,7 @@ public:
     return ssz/sz; }
 
   bool Enabled(int x, int y, int z) const {
-    return c->Map(x,y,z).Pixel()!=0x00000000;
+    return c->Map(x,y,z)!=0x00000000;
   }
 private:
   VoxelColor *c;
@@ -6756,7 +6756,7 @@ private:
 
 GameApi::P GameApi::VoxelApi::render_boxes(VX v, float sx, float sy, float sz)
 {
-  Voxel<Color> *vv = find_voxel(e, v);  
+  Voxel<unsigned int> *vv = find_voxel(e, v);  
   return add_polygon2(e, new VoxelBoxes(vv, sx, sy, sz), 1);
 }
 
@@ -6774,14 +6774,14 @@ GameApi::BM GameApi::VoxelApi::sw_rays(O volume, VX colours, int sx, int sy, flo
 class ColorVoxelFaceCollection : public ForwardFaceCollection
 {
 public:
-  ColorVoxelFaceCollection(FaceCollection &coll, Voxel< ::Color> &c, Point p, Vector v_x, Vector v_y, Vector v_z) : ForwardFaceCollection(coll), c(c), pp(p) { cc.center = v_x; cc.u_x = v_x; cc.u_y = v_y; cc.u_z = v_z; }
+  ColorVoxelFaceCollection(FaceCollection &coll, Voxel<unsigned int> &c, Point p, Vector v_x, Vector v_y, Vector v_z) : ForwardFaceCollection(coll), c(c), pp(p) { cc.center = v_x; cc.u_x = v_x; cc.u_y = v_y; cc.u_z = v_z; }
   virtual unsigned int Color(int face, int point) const { 
     Point p = ForwardFaceCollection::FacePoint(face,point);
     Point p2 = cc.FindInternalCoords(p);
-    return c.Map(p2.x,p2.y,p2.z).Pixel();
+    return c.Map(p2.x,p2.y,p2.z);
   }
 private:
-  Voxel< ::Color> &c;
+  Voxel<unsigned int> &c;
   mutable Coords cc;
   Point pp;
 };
@@ -6794,7 +6794,7 @@ GameApi::P GameApi::PolygonApi::color_voxel(P orig, VX colours, PT p, V u_x, V u
   Vector *uu_z = find_vector(e, u_z);
 
   FaceCollection *coll = find_facecoll(e, orig);
-  Voxel<Color> *v = find_voxel(e, colours);
+  Voxel<unsigned int> *v = find_voxel(e, colours);
   return add_polygon(e, new ColorVoxelFaceCollection(*coll, *v, *pp, *uu_x, *uu_y, *uu_z), 1);
 }
 
