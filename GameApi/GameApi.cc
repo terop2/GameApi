@@ -703,8 +703,10 @@ struct VertexArrayWithPos
 struct PointArray2
 {
   float *array; // 3*numpoints items
+  unsigned int *color_array;
   int numpoints;
   GLuint buffer;
+  GLuint buffer2;
   GLuint vao[1];
 };
 
@@ -3755,6 +3757,7 @@ GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
   return add_polygon2(e, new LoadObjModelFaceCollection(filename, num), 1);
 } 
    
+#if 0
 GameApi::P GameApi::PolygonApi::line(PT p1, PT p2)
 {
   Point *pp1 = find_point(e, p1);
@@ -3763,7 +3766,7 @@ GameApi::P GameApi::PolygonApi::line(PT p1, PT p2)
   FaceCollection *coll = new TriElem(*pp1, *pp2, (*pp3)+Vector(1.0,1.0,1.0));
   return add_polygon(e, coll,1);
 }
-
+#endif
 class TexCoordQuadFaceCollection : public ForwardFaceCollection
 {
 public:
@@ -4849,6 +4852,14 @@ void GameApi::ShaderApi::link(GameApi::SH shader)
   ShaderSeq *seq = p->seq;
   seq->link(shader.id);
 }
+GameApi::SH GameApi::ShaderApi::texture_shader()
+{
+  return get_normal_shader("texture", "texture", "");
+}
+GameApi::SH GameApi::ShaderApi::colour_shader()
+{
+  return get_normal_shader("colour", "colour", "");
+}
 GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
 						  std::string f_format,
 						  std::string g_format)
@@ -5539,13 +5550,13 @@ GameApi::LI GameApi::FontApi::glyph_outline(GameApi::Ft font, long idx, float sx
   LineCollection *coll2 = new ForwardLineCollection(coll);
   return add_line_array(e, coll2);
 }
-GameApi::PL GameApi::FontApi::glyph_plane(GameApi::Ft font, long idx, float sx, float sy)
+GameApi::PL GameApi::FontApi::glyph_plane(GameApi::Ft font, long idx, float sx, float sy, float dx, float dy)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->fonts[font.id].bm->load_glyph_outline(idx,sx,sy);
   LineCollection *coll = env->fonts[font.id].bm;
   FontGlyphBitmap *bm = (FontGlyphBitmap*)coll;
-  PlanePoints2d *plane = new FontLineCollectionWrapper(coll, bm->Types(), sx, sy);
+  PlanePoints2d *plane = new FontLineCollectionWrapper(coll, bm->Types(), sx, sy, dx,dy);
   return add_plane(e, plane);
 }
 GameApi::BM GameApi::FontApi::glyph(GameApi::Ft font, long idx)
@@ -5778,6 +5789,53 @@ private:
   Bitmap<Color> &bitmap_1;
 };
 
+class PerlinNoise : public Bitmap<float>
+{
+public:
+  PerlinNoise(Bitmap<float> &grad_1, Bitmap<float> &grad_2) : grad_1(grad_1), grad_2(grad_2) { }
+  int SizeX() const { return grad_1.SizeX(); }
+  int SizeY() const { return grad_1.SizeY(); }
+  float Map(int x, int y) const
+  {
+    float xx = float(x)/SizeX();
+    float yy = float(y)/SizeY();
+
+    int x0 = (xx>0.0 ? (int)xx : (int)xx-1);
+    int x1 = x0+1;
+    int y0 = (yy>0.0 ? (int)yy : (int)yy -1);
+    int y1 = y0+1;
+    float sx = x-(double)x0;
+    float sy = y-(double)y0;
+    float n0,n1,ix0,ix1, value;
+    n0 = dotGridGradient(x0,y0,xx,yy);
+    n1 = dotGridGradient(x1,y0,xx,yy);
+    ix0 = lerp(n0,n1,sx);
+    n0 = dotGridGradient(x0,y1,xx,yy);
+    n1 = dotGridGradient(x1,y1,xx,yy);
+    ix1 = lerp(n0,n1,sx);
+    value = lerp(ix0, ix1, sy);
+    return value;
+  }
+  float dotGridGradient(int ix, int iy, float x, float y) const {
+    float dx = x - (double)ix;
+    float dy = y - (double)iy;
+    return dx*grad_1.Map(ix,iy) + dy*grad_2.Map(ix,iy);
+  }
+
+  float lerp(float a_0, float a_1, float w) const
+  {
+    return (1.0-w)*a_0+w*a_1;
+  }
+private:
+  Bitmap<float> & grad_1;
+  Bitmap<float> & grad_2;
+};
+GameApi::FB GameApi::FloatBitmapApi::perlin_noise(FB grad_1, FB grad_2)
+{
+  Bitmap<float> *g_1 = find_float_bitmap(e, grad_1)->bitmap;
+  Bitmap<float> *g_2 = find_float_bitmap(e, grad_2)->bitmap;
+  return add_float_bitmap(e, new PerlinNoise(*g_1, *g_2));
+}
 GameApi::BM GameApi::FloatBitmapApi::choose_bitmap(FB fb, BM bitmap_0, BM bitmap_1)
 {
   Bitmap<float> *bools2 = find_float_bitmap(e, fb)->bitmap;
@@ -7294,7 +7352,158 @@ private:
   Matrix m;
   float sx,sy;
 };
+class SplineCurve : public CurveIn2d
+{
+public:
+  SplineCurve(Point2d p1, Point2d p2, Point2d p3) : p0(p1), p1(p2), p2(p3) { }
+  Point2d Index(float pos) const 
+  {
+    Point2d p;
+    p.x = pos+p0.x;
+    p.y = doit(pos+p0.x);
+    return p;
+  }
+  float Size() const 
+  {
+    return (p1.x-p0.x) + (p2.x-p1.x);
+  }
+  
+  float doit(float t) const {
+    float a11 = 2.0/(p1.x-p0.x);
+    float a12 = 1.0/(p1.x-p0.x);
+    float a21 = 1.0/(p1.x-p0.x);
+    float a22 = 2.0*(1.0/(p1.x-p0.x)+1.0/(p2.x-p1.x));
+    float a23 = 1.0/(p2.x-p1.x);
+    float a32 = 1.0/(p2.x-p1.x);
+    float a33 = 2.0/(p2.x-p1.x);
+    //std::cout << a11 << " " << a12 << " " << a21 << " " << a22 << " " << a23 << " " << a32 << " " << a33 << std::endl;
+    float b_1 = 3.0*(p1.y-p0.y)/(p1.x-p0.x)/(p1.x-p0.x);
+    float b_2 = 3.0*((p1.y-p0.y)/(p1.x-p0.x)/(p1.x-p0.x) + (p2.y-p1.y)/(p2.x-p1.x)/(p2.x-p1.x));
+    float b_3 = 3.0*(p2.y-p1.y)/(p2.x-p1.x)/(p2.x-p1.x);
+    //std::cout << b_1 << ":" << b_2 << ":" << b_3 << std::endl;
 
+    Matrix m = { { a11, a12, 0.0, 0.0,
+		   a21, a22, a23, 0.0,
+		   0.0, a32, a33, 0.0,
+		   0.0, 0.0, 0.0, 1.0 } };
+    Matrix mi = Matrix::Inverse(m);
+    Vector v( b_1, b_2, b_3 );
+    Vector vv = v * mi;
+
+    //std::cout << vv.dx << "?" << vv.dy << "?" << vv.dz << std::endl;
+    
+    float a1 = vv.dx * (p1.x-p0.x)-(p1.y-p0.y);
+    float b1 = -vv.dy * (p1.x-p0.x)+(p1.y-p0.y);
+    float a2 = vv.dy * (p2.x-p1.x)-(p2.y-p1.y);
+    float b2 = -vv.dz * (p2.x-p1.x)+(p2.y-p1.y);
+
+    //std::cout << a1 << "I" << b1 << "I" << a2 << "I" << b2 << std::endl;
+
+    if (t<p1.x) {
+      float tt = (t-p0.x)/(p1.x-p0.x);
+      float q_1 = (1.0-tt)*p0.y + tt*p1.y + tt*(1.0-tt)*(a1*(1.0-tt)+b1*tt);
+      return q_1;
+    } else {
+      float tt = (t-p1.x)/(p2.x-p1.x);
+      float q_2 = (1.0-tt)*p1.y + tt*p2.y + tt*(1.0-tt)*(a2*(1.0-tt)+b2*tt);
+      return q_2;
+    }
+
+  }
+
+private:
+  Point2d p0,p1,p2;
+};
+
+class RemoveSplines : public PlanePoints2d
+{
+public:
+  RemoveSplines(PlanePoints2d *plane, float xdelta) : plane(plane), xdelta(xdelta) 
+  {
+    loop();
+  }
+  float SizeX() const { return plane->SizeX(); }
+  float SizeY() const { return plane->SizeY(); }
+  int Size() const { return vec.size(); }
+  Point2d Map(int i) const { return vec[i]; }
+  PlanePointsType Type(int i) const { return types[i]; }
+  void loop() {
+    int s = plane->Size();
+    for(int i=0;i<s;i++)
+      {
+	PlanePointsType t = plane->Type(i);
+	Point2d p = plane->Map(i);
+	switch(t) {
+	case EMove:
+	  vec.push_back(p);
+	  types.push_back(t);
+	  break;
+	case ELineTo:
+	  vec.push_back(p);
+	  types.push_back(t);
+	  break;
+	case ECubic:
+	  Point2d p1 = p;
+	  Point2d p2 = plane->Map(i+1);
+	  Point2d p3 = plane->Map(i+2);
+
+	  bool b = p3.x < p1.x || p2.x < p1.x;
+
+	  if (p2.x<p1.x) std::swap(p1,p2);
+	  if (p3.x<p2.x) std::swap(p2,p3);
+	  if (p2.x<p1.x) std::swap(p1,p2);
+
+
+	  if (p2.x-p1.x < 0.001) { p2.x += 0.001; }
+	  if (p3.x-p2.x < 0.002) { p3.x += 0.002; }
+
+	  //std::cout << "P1: " << p1.x << " " << p1.y << std::endl;
+	  //std::cout << "P2: " << p2.x << " " << p2.y << std::endl;
+	  //std::cout << "P3: " << p3.x << " " << p3.y << std::endl;
+
+	  SplineCurve c(p1,p2,p3);
+	  bool first = true;
+	  if (b) {
+	    for(float x = c.Size();x>xdelta;x-=xdelta)
+		{
+		  Point2d p = c.Index(x);
+		  //std::cout << "Spline:" << p.x << " " << p.y << std::endl;
+		  vec.push_back(p);
+		  types.push_back(first ? ELineTo : ELineTo);
+		  first = false;
+		}
+	      vec.push_back(p1);
+	      types.push_back(ELineTo);
+	  }
+	  else
+	    {
+	      for(float x = 0.0;x<c.Size()-xdelta;x+=xdelta)
+		{
+		  Point2d p = c.Index(x);
+		  //std::cout << "Spline:" << p.x << " " << p.y << std::endl;
+		  vec.push_back(p);
+		  types.push_back(first ? ELineTo : ELineTo);
+		  first = false;
+		}
+	      vec.push_back(p3);
+	      types.push_back(ELineTo);
+	    }
+	  i+=2;
+	  break;
+	};
+      }
+  }
+private:
+  PlanePoints2d *plane;
+  std::vector<Point2d> vec;
+  std::vector<PlanePointsType> types;
+  float xdelta;
+};
+GameApi::PL GameApi::PlaneApi::remove_splines(GameApi::PL pl, float xdelta)
+{
+  PlanePoints2d *plane= find_plane(e, pl);
+  return add_plane(e, new RemoveSplines(plane, xdelta));
+}
 GameApi::PL GameApi::PlaneApi::render_p(GameApi::P poly, GameApi::M proj_matrix, float sx, float sy)
 {
   FaceCollection *coll = find_facecoll(e, poly);
@@ -7439,11 +7648,13 @@ public:
   CirclePlane(Point center, float radius, int numpoints) : center(center), radius(radius), numpoints(numpoints) { }
   virtual float SizeX() const { return center.x + radius; }
   virtual float SizeY() const { return center.y + radius; }
-  virtual int Size() const {return numpoints; }
+  virtual int Size() const {return numpoints+1; }
   virtual Point2d Map(int i) const
   {
-    Point2d p = { (float)(radius*cos(i*2.0*3.14159/numpoints)),
-		  (float)(radius*sin(i*2.0*3.14159/numpoints)) };
+    Point2d p = { (float)(radius*cos(i*2.0*3.1415926/numpoints)),
+		  (float)(radius*sin(i*2.0*3.1415926/numpoints)) };
+    p.x += center.x;
+    p.y += center.y;
     return p;
   }
 private:
@@ -7463,12 +7674,14 @@ public:
   StarPlane(Point center, float radius_1, float radius_2, int numpoints) : center(center), radius_1(radius_1), radius_2(radius_2), numpoints(numpoints*2) { }
   virtual float SizeX() const { return center.x + std::max(radius_1, radius_2); }
   virtual float SizeY() const { return center.y + std::max(radius_1, radius_2); }
-  virtual int Size() const {return numpoints; }
+  virtual int Size() const {return numpoints+1; }
   virtual Point2d Map(int i) const
   {
     float radius = i % 2 == 0 ? radius_1 : radius_2;
     Point2d p = { (float)(radius*cos(i*2.0*3.14159/numpoints)),
 		  (float)(radius*sin(i*2.0*3.14159/numpoints)) };
+    p.x+=center.x;
+    p.y+=center.y;
     return p;
   }
 private:
@@ -7782,6 +7995,24 @@ GameApi::PTS GameApi::PointsApi::shadow_points(GameApi::PTS obj,
   Vector *uu_y = find_vector(e, u_y);
   Vector *light = find_vector(e, light_vec);
   return add_points_api_points(e, new ShadowPoints(pts, *pt, *uu_x, *uu_y, *light));
+}
+float *GameApi::PointsApi::point_access(GameApi::PTA pta, int pointnum)
+{
+  PointArray3 *arr = find_point_array3(e, pta);
+  return &arr->array[pointnum*3];
+}
+unsigned int *GameApi::PointsApi::color_access(GameApi::PTA pta, int pointnum)
+{
+  PointArray3 *arr = find_point_array3(e, pta);
+  return &arr->color[pointnum];
+}
+void GameApi::PointsApi::update(GameApi::PTA pta)
+{
+  PointArray3 *arr = find_point_array3(e, pta);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[0]);
+  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[1]);
+  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color, GL_STATIC_DRAW);
 }
 GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
 {
@@ -8778,12 +9009,97 @@ GameApi::PTS GameApi::PointsApi::color_function(PTS orig, std::function<unsigned
   PointsApiPoints *pts = find_pointsapi_points(e, orig);
   return add_points_api_points(e, new PointsApiColorFunction(e, pts, f));
 }
-
+class ColorLineCollection : public LineCollection
+{
+public:
+  ColorLineCollection(LineCollection *coll, unsigned int color1, unsigned int color2) : coll(coll), color1(color1), color2(color2) { }
+  virtual int NumLines() const { return coll->NumLines(); }
+  virtual Point LinePoint(int line, int point) const { return coll->LinePoint(line,point); }
+  virtual unsigned int LineColor(int line, int point) const { if (point==0) return color1; else return color2; }
+private:
+  LineCollection *coll;
+  unsigned int color1;
+  unsigned int color2;
+};
+GameApi::LI GameApi::LinesApi::change_color(GameApi::LI li, unsigned int color)
+{
+  LineCollection *lines = find_line_array(e, li);
+  return add_line_array(e, new ColorLineCollection(lines, color, color));
+}
+GameApi::LI GameApi::LinesApi::change_color(GameApi::LI li, unsigned int color1, unsigned int color2)
+{
+  LineCollection *lines = find_line_array(e, li);
+  return add_line_array(e, new ColorLineCollection(lines, color1, color2));
+}
 GameApi::LI GameApi::LinesApi::function(std::function<GameApi::PT (int linenum, bool id)> f, int numlines)
 {
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
 
   return add_line_array(e, new LineCollectionFunction(e, f, numlines));
+}
+class LinesFromPlane : public LineCollection
+{
+public:
+  LinesFromPlane(PlanePoints2d *plane) : plane(plane) { }
+  virtual int NumLines() const {
+    int s = plane->Size();
+    int line=0;
+    for(int i=0;i<s;i++)
+      {
+	PlanePoints2d::PlanePointsType t = plane->Type(i);
+	switch(t) {
+	case PlanePoints2d::EMove:
+	  break;
+	case PlanePoints2d::ELineTo:
+	  line++;
+	  break;
+	case PlanePoints2d::ECubic:
+	  std::cout << "Use remove_splines() first before doing from_plane()" << std::endl;
+	  break;
+	};
+      }
+    return line;
+  }
+  virtual Point LinePoint(int line_num, int point) const 
+  {
+    int s = plane->Size();
+    int line=0;
+    Point2d pos = { 0.0, 0.0 };
+    for(int i=0;i<s;i++)
+      {
+	PlanePoints2d::PlanePointsType t = plane->Type(i);
+	switch(t) {
+	case PlanePoints2d::EMove:
+	  pos = plane->Map(i);
+	  break;
+	case PlanePoints2d::ELineTo:
+	  if (line_num == line && point==0) {
+	    Point p(pos.x, pos.y, 0.0);
+	    return p;
+	  }
+	  if (line_num == line && point==1) {
+	    Point2d pp = plane->Map(i);
+	    Point p(pp.x, pp.y, 0.0);
+	    return p;
+	  }
+	  pos = plane->Map(i);
+	  line++;
+	  break;
+	case PlanePoints2d::ECubic:
+	  std::cout << "Use remove_splines() first before doing from_plane()" << std::endl;
+	  break;
+	};
+      }
+    Point p(pos.x, pos.y, 0.0);
+    return p;
+  }
+private:
+  PlanePoints2d *plane;
+};
+GameApi::LI GameApi::LinesApi::from_plane(GameApi::PL plane)
+{
+  PlanePoints2d *plane2 = find_plane(e,plane);
+  return add_line_array(e, new LinesFromPlane(plane2));
 }
 GameApi::LI GameApi::LinesApi::from_points(GameApi::PC points, bool loops)
 {
@@ -8874,7 +9190,6 @@ void GameApi::LinesApi::render(LLA l)
   glDrawArrays(GL_LINES, 0, array->numpoints);
   //glDisableVertexAttribArray(0);
 }
-
 
 class SphereDistanceRenderable : public DistanceRenderable
 {
@@ -9062,41 +9377,98 @@ GameApi::PC GameApi::PointCollectionApi::function(std::function<GameApi::PT (int
 {
   return add_pointcoll_array(e, new PointCollectionFunction(e, f, count));
 }
+#if 0
+void GameApi::LinesApi::render(float *array, int size)
+{
+  size/=6;
+  GLuint vao = 0;
+  GLuint buffer = 0;
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
+  glGenBuffers(1, &buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer);
+  glBufferData(GL_ARRAY_BUFFER, size*2*sizeof(float)*3, array, GL_STATIC_DRAW);
 
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+
+  glBindVertexArray(vao);
+  glDrawArrays(GL_LINES, 0, size);
+
+  glDeleteVertexArrays( 1, &vao );
+  glDeleteBuffers( 1, &buffer);
+}
+#endif
+unsigned int *GameApi::LinesApi::color_access(LLA lines, int line, bool b)
+{
+  PointArray2 *ee = find_lines_array(e, lines);
+  int pos = b ? 1 : 0;
+  return &ee->color_array[line*2+pos];
+}
+float *GameApi::LinesApi::line_access(LLA lines, int line, bool b)
+{
+  PointArray2 *ee = find_lines_array(e, lines);
+  int pos = b ? 1 : 0;
+  return &ee->array[line*2*3+pos*3];
+}
+void GameApi::LinesApi::update(LLA lines)
+{
+  PointArray2 *arr = find_lines_array(e, lines);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
+  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
+  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, GL_STATIC_DRAW);
+}
 GameApi::LLA GameApi::LinesApi::prepare(LI l)
 {
   LineCollection *coll = find_line_array(e, l);
   int count = coll->NumLines();
   float *array = 0;
+  unsigned int *color_array = 0;
   if (count > 0) {
     array = new float[count*6];
+    color_array = new unsigned int[count*2];
     for(int i=0;i<count;i++)
       {
 	Point p = coll->LinePoint(i,0);
 	Point p2 = coll->LinePoint(i,1);
+	unsigned int color1 = coll->LineColor(i,0);
+	unsigned int color2 = coll->LineColor(i,1);
+	//std::cout << std::hex << color1 << ";" << std::hex << color2 << std::endl;
 	array[i*6+0] = p.x;
 	array[i*6+1] = p.y;
 	array[i*6+2] = p.z;
 	array[i*6+3] = p2.x;
 	array[i*6+4] = p2.y;
 	array[i*6+5] = p2.z;
+	color_array[i*2+0] = color1;
+	color_array[i*2+1] = color2;
 	//std::cout << i << ":" << "(" << p.x << "," << p.y << "," << p.z << ")-(" << p2.x<< "," << p2.y << "," << p2.z << ")" << std::endl;
       }
   }
   PointArray2 *arr = new PointArray2;
   arr->array = array;
+  arr->color_array = color_array;
   arr->numpoints = count*2;
   glGenVertexArrays(1, arr->vao);
   glBindVertexArray(arr->vao[0]);
   glGenBuffers(1, &arr->buffer);
+  glGenBuffers(1, &arr->buffer2);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
+  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, GL_STATIC_DRAW);
 
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
+  glEnableVertexAttribArray(2);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
+  glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0,0);
   
+
   return add_lines_array(e, arr);
 }
 

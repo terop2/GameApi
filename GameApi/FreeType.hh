@@ -9,7 +9,7 @@ struct GlyphPriv;
 class FontLineCollectionWrapper : public PlanePoints2d
 {
 public:
-  FontLineCollectionWrapper(LineCollection *coll, std::vector<int> &types, float sx, float sy) : coll(coll), m_sx(sx), m_sy(sy), types(types) { }
+  FontLineCollectionWrapper(LineCollection *coll, std::vector<int> &types, float sx, float sy, float dx, float dy) : coll(coll), m_sx(sx), m_sy(sy), types(types), m_dx(dx), m_dy(dy) { }
   virtual float SizeX() const { return m_sx; }
   virtual float SizeY() const { return m_sy; }
   virtual int Size() const { return coll->NumLines()+1; }
@@ -18,6 +18,8 @@ public:
     if (i==Size()-1) p=coll->LinePoint(Size()-2,1);
     Point2d pp = { p.x, p.y };
     //std::cout << "Point:" << i << ":" << pp.x << " " << pp.y << std::endl;
+    pp.x+=m_dx;
+    pp.y+=m_dy;
     return pp;
   }
   virtual PlanePointsType Type(int i) const 
@@ -34,6 +36,7 @@ public:
 private:
   LineCollection *coll;
   float m_sx, m_sy;
+  float m_dx, m_dy;
   std::vector<int> types;
 };
 

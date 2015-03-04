@@ -310,7 +310,7 @@ public:
 	IMPORT Ft newfont(const char *filename, int sx, int sy);
 	IMPORT BM glyph(Ft font, long idx);
 	IMPORT LI glyph_outline(Ft font, long idx, float sx, float sy);
-        IMPORT PL glyph_plane(Ft font, long idx, float sx, float sy);
+  IMPORT PL glyph_plane(Ft font, long idx, float sx, float sy, float dx, float dy);
 	IMPORT BM font_string(Ft font, const char *str, int x_gap);
 	IMPORT FB glyph_fb(Ft font, long idx);
 	IMPORT BB glyph_bb(Ft font, long idx);
@@ -724,7 +724,7 @@ public:
   
 	IMPORT P empty();
         IMPORT P load_model(std::string filename, int obj_num);
-	IMPORT P line(PT p1, PT p2);
+  //IMPORT P line(PT p1, PT p2);
 	IMPORT P triangle(PT p1, PT p2, PT p3);
 	IMPORT P quad(PT p1, PT p2, PT p3, PT p4);
 	IMPORT P quad_x(float x,
@@ -968,6 +968,8 @@ public:
 
   PL render_p(P p, M proj_matrix, float sx, float sy);
 
+  PL remove_splines(PL pl, float xdelta);
+
   // 1) get black bitmap
   // 2) draw white polygon
   // 3) draw more black
@@ -1065,6 +1067,7 @@ public: // values are [0.0..1.0]
 			int r2, int g2, int b2, int a2);
 	IMPORT BM to_color(FB r, FB g, FB b, FB a);
   IMPORT BM choose_bitmap(FB fb, BM bm1, BM bm2);
+  IMPORT FB perlin_noise(FB grad_1, FB grad_2);
 	IMPORT BM subfloatbitmap(FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color);
 
 	IMPORT FB from_bool(BB b, float val_true, float val_false);
@@ -1202,6 +1205,9 @@ public:
 			PT fTL, PT fTR, PT fBL, PT fBR);
 
   PTA prepare(PTS p);
+  float *point_access(PTA pta, int pointnum);
+  unsigned int *color_access(PTA pta, int pointnum);
+  void update(PTA array);
   void render(PTA array);
 private:
   PointsApi(const PointsApi&);
@@ -1216,7 +1222,10 @@ public:
 	IMPORT LinesApi(Env &e) : e(e) { }
 	IMPORT LI function(std::function<PT(int linenum, bool id)> f,
 	      int numlines);
+  IMPORT LI change_color(LI li, unsigned int color);
+  IMPORT LI change_color(LI li, unsigned int color_1, unsigned int color_2);
 	IMPORT LI from_points(PC points, bool loops);
+        IMPORT LI from_plane(PL plane);
 	IMPORT LI from_polygon(P poly);
 	IMPORT LI border_from_bool_bitmap(BB b, float start_x, float end_x,
 			     float start_y, float end_y, float z);
@@ -1227,6 +1236,9 @@ public:
 			PT fTL, PT fTR, PT fBL, PT fBR);
 
 	IMPORT LLA prepare(LI l);
+        IMPORT float *line_access(LLA lines, int line, bool b);
+  IMPORT unsigned int *color_access(LLA lines, int line, bool b);
+  IMPORT void update(LLA lines);
 	IMPORT void render(LLA array);
 private:
   LinesApi(const LinesApi&);
@@ -1364,6 +1376,8 @@ public:
 	IMPORT void load(std::string filename);
 	IMPORT SH get_shader(std::string v_format, std::string f_format, std::string g_format);
         IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format);
+        IMPORT SH texture_shader();
+        IMPORT SH colour_shader();
 	IMPORT void link(SH shader);
 	IMPORT void use(SH shader);
 	IMPORT void unuse(SH shader);
