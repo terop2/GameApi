@@ -172,9 +172,13 @@ void Game(EveryApi &e)
   M mat = e.matrix_api.identity();
   PL f2 = plane.render_p(p, mat, 450.0, 450.0);
   Ft font = e.font_api.newfont("FreeSans.ttf", 450,450);
-  PL f3 = e.font_api.glyph_plane(font, 'y', 450.0, 450.0);
+  PL f3 = e.font_api.glyph_plane(font, 'S', 450.0, 450.0, 30.0,30.0);
   PL f4 = e.plane_api.flip_y(f3);
-  PLA pla = plane.prepare(f4 );
+  PL f5 = e.plane_api.remove_splines(f4, 5.0);
+  
+  LI lines = e.lines_api.from_plane(f5);
+  LLA linesa = e.lines_api.prepare(lines);
+  PLA pla = plane.prepare(f5 );
   //CBM cbm = plane.render(f3, 0, 0x00000000, 0xffffffff);
   //BM bm_f = e.cont_bitmap_api.sample(cbm, 150,150);
   //BM bm_f2 = e.bitmap_api.flip_y(bm_f);
@@ -229,6 +233,7 @@ void Game(EveryApi &e)
       spr2.render();
       //spr_f.render();
 
+      e.lines_api.render(linesa);
       //e.texture_api.use(tex);
       //e.texture_api.unuse(tex);
           e.mainloop_api.switch_to_3d(true,sh);

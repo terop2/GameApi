@@ -4245,6 +4245,7 @@ public:
   virtual ~LineCollection() { }
   virtual int NumLines() const =0;
   virtual Point LinePoint(int line, int point) const = 0;
+  virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; }
 };
 
 

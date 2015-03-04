@@ -1497,7 +1497,7 @@ public:
       {
 	if (i2!=0 && points.Type(i2)==PlanePoints2d::PlanePointsType::EMove) { break; }
       }
-    return i3;
+    return i3-1;
   }
   Line2d Index(int i) const
   {

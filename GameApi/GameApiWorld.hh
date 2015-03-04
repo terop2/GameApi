@@ -39,7 +39,7 @@ public:
   
   void push_line(PT p1, PT p2)
   {
-    polys.push_back(e.polygon_api.line(p1,p2));
+    // polys.push_back(e.polygon_api.line(p1,p2));
   }
 private:
   EveryApi &e;
