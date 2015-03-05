@@ -1,6 +1,6 @@
 // 
 // Copyright (C) 2009 Tero Pulkkinen
-// Released under LGPL License.
+// Released under LGPL License. 
 //
 // This file is part of Polygon.
 //

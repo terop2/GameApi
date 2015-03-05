@@ -172,9 +172,9 @@ void Game(EveryApi &e)
   M mat = e.matrix_api.identity();
   PL f2 = plane.render_p(p, mat, 450.0, 450.0);
   Ft font = e.font_api.newfont("FreeSans.ttf", 450,450);
-  PL f3 = e.font_api.glyph_plane(font, 'S', 450.0, 450.0, 30.0,30.0);
+  PL f3 = e.font_api.glyph_plane(font, 'g', 450.0, 450.0, 30.0,30.0);
   PL f4 = e.plane_api.flip_y(f3);
-  PL f5 = e.plane_api.remove_splines(f4, 5.0);
+  PL f5 = e.plane_api.remove_splines(f4, 0.01);
   
   LI lines = e.lines_api.from_plane(f5);
   LLA linesa = e.lines_api.prepare(lines);
@@ -233,7 +233,6 @@ void Game(EveryApi &e)
       spr2.render();
       //spr_f.render();
 
-      e.lines_api.render(linesa);
       //e.texture_api.use(tex);
       //e.texture_api.unuse(tex);
           e.mainloop_api.switch_to_3d(true,sh);
@@ -252,13 +251,16 @@ void Game(EveryApi &e)
       //glPopMatrix();
 #endif
       glColor3f(1.0,1.0,1.0);
-      plane.render(pla, frame,frame,1.0,1.0);
+      plane.render(pla, 200.0,150.0,1.0,1.0);
+      e.shader_api.use(sh);
+      e.shader_api.set_var(sh,"in_MV", e.matrix_api.trans(-350.0,0.0,0.0));
+      e.lines_api.render(linesa);
       e.shader_api.use(sh2);
       e.shader_api.set_var(sh2, "in_Color", 1.0,1.0,1.0,1.0);
       plane.render(circle_pla, 300.0, 100.0, 1.0, 1.0);
       e.shader_api.use(sh);
-      e.mainloop_api.fpscounter();
-      e.mainloop_api.swapbuffers();
+      e.mainloop_api.fpscounter(); 
+     e.mainloop_api.swapbuffers();
       MainLoopApi::Event ev = e.mainloop_api.get_event(); 
       if (ev.ch==27) break;
     }
