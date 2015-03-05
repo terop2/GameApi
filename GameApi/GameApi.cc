@@ -34,8 +34,10 @@
 #include "DistanceObject.hh"
 #include "MatrixApi.hh"
 #include "Web.hh"
+#include "Effect2.hh"
 #include <iostream>
 #include <pthread.h>
+
 
 #undef LoadImage
 
@@ -7352,6 +7354,23 @@ private:
   Matrix m;
   float sx,sy;
 };
+class BezierCurvePoints : public PointCollection
+{
+public:
+  BezierCurvePoints(Point p1, Point p2, Point p3) : p1(p1), p2(p2), p3(p3) { }
+  Point Index(int i) const
+  {
+    switch(i) {
+    case 0: return p1;
+    case 1: return p2;
+    case 2: return p3;
+    };
+    return p1;
+  }
+  int Size() const { return 3; }
+private:
+  Point p1,p2,p3;
+};
 class SplineCurve : public CurveIn2d
 {
 public:
@@ -7376,11 +7395,11 @@ public:
     float a23 = 1.0/(p2.x-p1.x);
     float a32 = 1.0/(p2.x-p1.x);
     float a33 = 2.0/(p2.x-p1.x);
-    //std::cout << a11 << " " << a12 << " " << a21 << " " << a22 << " " << a23 << " " << a32 << " " << a33 << std::endl;
+    std::cout << a11 << " " << a12 << " " << a21 << " " << a22 << " " << a23 << " " << a32 << " " << a33 << std::endl;
     float b_1 = 3.0*(p1.y-p0.y)/(p1.x-p0.x)/(p1.x-p0.x);
     float b_2 = 3.0*((p1.y-p0.y)/(p1.x-p0.x)/(p1.x-p0.x) + (p2.y-p1.y)/(p2.x-p1.x)/(p2.x-p1.x));
     float b_3 = 3.0*(p2.y-p1.y)/(p2.x-p1.x)/(p2.x-p1.x);
-    //std::cout << b_1 << ":" << b_2 << ":" << b_3 << std::endl;
+    std::cout << b_1 << ":" << b_2 << ":" << b_3 << std::endl;
 
     Matrix m = { { a11, a12, 0.0, 0.0,
 		   a21, a22, a23, 0.0,
@@ -7390,14 +7409,14 @@ public:
     Vector v( b_1, b_2, b_3 );
     Vector vv = v * mi;
 
-    //std::cout << vv.dx << "?" << vv.dy << "?" << vv.dz << std::endl;
+    std::cout << vv.dx << "?" << vv.dy << "?" << vv.dz << std::endl;
     
     float a1 = vv.dx * (p1.x-p0.x)-(p1.y-p0.y);
     float b1 = -vv.dy * (p1.x-p0.x)+(p1.y-p0.y);
     float a2 = vv.dy * (p2.x-p1.x)-(p2.y-p1.y);
     float b2 = -vv.dz * (p2.x-p1.x)+(p2.y-p1.y);
 
-    //std::cout << a1 << "I" << b1 << "I" << a2 << "I" << b2 << std::endl;
+    std::cout << a1 << "I" << b1 << "I" << a2 << "I" << b2 << std::endl;
 
     if (t<p1.x) {
       float tt = (t-p0.x)/(p1.x-p0.x);
@@ -7446,8 +7465,15 @@ public:
 	  Point2d p1 = p;
 	  Point2d p2 = plane->Map(i+1);
 	  Point2d p3 = plane->Map(i+2);
-
-	  bool b = p3.x < p1.x || p2.x < p1.x;
+#if 0
+	      vec.push_back(p1);
+	      types.push_back(ELineTo);
+	      vec.push_back(p2);
+	      types.push_back(ELineTo);
+	      vec.push_back(p3);
+	      types.push_back(ELineTo);
+#endif
+	  bool b = p3.x < p1.x;
 
 	  if (p2.x<p1.x) std::swap(p1,p2);
 	  if (p3.x<p2.x) std::swap(p2,p3);
@@ -7461,32 +7487,44 @@ public:
 	  //std::cout << "P2: " << p2.x << " " << p2.y << std::endl;
 	  //std::cout << "P3: " << p3.x << " " << p3.y << std::endl;
 
-	  SplineCurve c(p1,p2,p3);
+	  Point pp1(p1.x,p1.y,0.0);
+	  Point pp2(p2.x,p2.y,0.0);
+	  Point pp3(p3.x,p3.y,0.0);
+	  BezierCurvePoints ps(pp1,pp2,pp3);
+	   BezierCurve c(ps);
+	  //SplineCurve c(p1,p2,p3);
 	  bool first = true;
 	  if (b) {
+	    //vec.push_back(p3);
+	    // types.push_back(ELineTo);
+ 
 	    for(float x = c.Size();x>xdelta;x-=xdelta)
-		{
-		  Point2d p = c.Index(x);
-		  //std::cout << "Spline:" << p.x << " " << p.y << std::endl;
-		  vec.push_back(p);
+ 		{
+		  Point p = c.Index(x);
+		  Point2d pp = { p.x,p.y };
+		  // std::cout << "Spline:" << x << ":" << p.x << " " << p.y << std::endl;
+		  vec.push_back(pp);
 		  types.push_back(first ? ELineTo : ELineTo);
 		  first = false;
 		}
-	      vec.push_back(p1);
-	      types.push_back(ELineTo);
+	    //vec.push_back(p1);
+	    //  types.push_back(ELineTo);
 	  }
 	  else
 	    {
+	      //vec.push_back(p1);
+	      //types.push_back(ELineTo);
 	      for(float x = 0.0;x<c.Size()-xdelta;x+=xdelta)
 		{
-		  Point2d p = c.Index(x);
-		  //std::cout << "Spline:" << p.x << " " << p.y << std::endl;
-		  vec.push_back(p);
+		  Point p = c.Index(x);
+		  //std::cout << "Spline:" << x << ":" << p.x << " " << p.y << std::endl;
+		  Point2d pp = { p.x,p.y };
+		  vec.push_back(pp);
 		  types.push_back(first ? ELineTo : ELineTo);
 		  first = false;
 		}
-	      vec.push_back(p3);
-	      types.push_back(ELineTo);
+	      //vec.push_back(p3);
+	      //types.push_back(ELineTo);
 	    }
 	  i+=2;
 	  break;
@@ -8010,9 +8048,9 @@ void GameApi::PointsApi::update(GameApi::PTA pta)
 {
   PointArray3 *arr = find_point_array3(e, pta);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[0]);
-  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, arr->numpoints*sizeof(float)*3, arr->array);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[1]);
-  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color, GL_STATIC_DRAW);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, arr->numpoints*sizeof(unsigned int), arr->color);
 }
 GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
 {

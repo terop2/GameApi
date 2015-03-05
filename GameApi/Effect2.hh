@@ -28,17 +28,19 @@ public:
 
   Point Index(float pos) const
   {
+    //std::cout << "Bezier: " << pos << std::endl;
     int count = p.NumPoints();
     Vector val(0.0,0.0,0.0);
     for(int i=0;i<count;i++)
-      {
-	val += bin(pos,i,count)*Vector(p.Points(i));
+      { 
+	val += bin(pos,i,count-1)*Vector(p.Points(i));
+	//std::cout << "val: " << p.Points(i) << ":" << bin(pos,i,count-1) << ":" << val << std::endl;
       }
     return Point(val);
   }
   float bin(float pos, int i, int n) const
-  {
-    return float(ni(n,i)) * pow(pos, i)*pow(1.0-pos, n-i);
+  { 
+    return float(ni(n,i)) * pow(double(pos), double(i))*pow(double(1.0-pos), double(n-i));
   }
   int ni(int n, int i) const
   {
