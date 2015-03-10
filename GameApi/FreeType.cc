@@ -128,9 +128,9 @@ int CubicToFunc(const FT_Vector *control1, const FT_Vector *control2,
   FontGlyphBitmap *bm = (FontGlyphBitmap*)user;
   Point2d p = { float(to->x)/65536.0f*bm->m_sx, float(to->y)/65536.0f*bm->m_sy };
   //bm->types.push_back(0);
-  bm->types.push_back(2);
-  bm->types.push_back(2);
-  bm->types.push_back(2);
+  bm->types.push_back(3);
+  bm->types.push_back(3);
+  bm->types.push_back(3);
   //bm->points.push_back(bm->move_point);
   Point2d p1 = { float(control1->x)/65536.0f*bm->m_sx, float(control1->y)/65536.0f*bm->m_sy };
   bm->points.push_back(p1);

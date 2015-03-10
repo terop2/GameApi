@@ -198,6 +198,16 @@ void GameApi::MainLoopApi::delay(int ms)
 {
   SDL_Delay(ms);
 }
+unsigned int GameApi::MainLoopApi::rand_max()
+{
+  Random r;
+  return r.maximum();
+}
+unsigned int GameApi::MainLoopApi::random()
+{
+  Random r;
+  return r.next();
+}
 void GameApi::MainLoopApi::fpscounter()
 {
   MainLoopPriv *p = (MainLoopPriv*)priv;
@@ -6868,6 +6878,80 @@ GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p)
   arr2->prepare(0);
   return add_vertex_array(e, s, arr2);
 }
+int GameApi::PolygonApi::access_point_count(VA va, bool triangle)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  if (triangle)
+    {
+      return s->tri_count(0);
+    }
+  else
+    {
+      return s->quad_count(0);
+    }
+}
+float *GameApi::PolygonApi::access_points(VA va, bool triangle, int face, int point)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  if (triangle)
+    {
+      const Point *p = s->tri_polys(0);
+      return &((float*)p)[face*3*3+point*3];
+    }
+  else
+    {
+      const Point *p = s->quad_polys(0);
+      return &((float*)p)[face*4*3+point*3];
+    }
+  return 0;
+}
+float *GameApi::PolygonApi::access_color(VA va, bool triangle, int face, int point)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  if (triangle) {
+    const float *ptr = s->tri_color_polys(0);
+    return &((float*)ptr)[face*3*4+point*4];
+  }
+  else
+    {
+    const float *ptr = s->quad_color_polys(0);
+    return &((float*)ptr)[face*4*4+point*4];      
+    }
+}
+float *GameApi::PolygonApi::access_normals(VA va, bool triangle, int face, int point)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  if (triangle)
+    {
+      const Vector *ptr = s->tri_normal_polys(0);
+      return &((float*)ptr)[face*3*3+point*3];
+    }
+  else
+    {
+      const Vector *ptr = s->quad_normal_polys(0);
+      return &((float*)ptr)[face*4*3+point*3];
+    }
+}
+float *GameApi::PolygonApi::access_texcoord(VA va, bool triangle, int face, int point)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  if (triangle)
+    {
+      const Point2d *ptr = s->tri_texcoord_polys(0);
+      return &((float*)ptr)[face*3*2+point*2];
+    }
+  else
+    {
+      const Point2d *ptr = s->quad_texcoord_polys(0);
+      return &((float*)ptr)[face*4*2+point*2];
+    }
+}
+void GameApi::PolygonApi::update(VA va)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  RenderVertexArray *s2 = find_vertex_array_render(e, va);
+  s2->update(0);
+}
 void GameApi::PolygonApi::render_vertex_array(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
@@ -7357,19 +7441,20 @@ private:
 class BezierCurvePoints : public PointCollection
 {
 public:
-  BezierCurvePoints(Point p1, Point p2, Point p3) : p1(p1), p2(p2), p3(p3) { }
+  BezierCurvePoints(Point p1, Point p2, Point p3, Point p4) : p1(p1), p2(p2), p3(p3),p4(p4) { }
   Point Index(int i) const
   {
     switch(i) {
     case 0: return p1;
     case 1: return p2;
     case 2: return p3;
+    case 3: return p4;
     };
     return p1;
   }
-  int Size() const { return 3; }
+  int Size() const { return 4; }
 private:
-  Point p1,p2,p3;
+  Point p1,p2,p3,p4;
 };
 class SplineCurve : public CurveIn2d
 {
@@ -7462,70 +7547,39 @@ public:
 	  types.push_back(t);
 	  break;
 	case ECubic:
-	  Point2d p1 = p;
-	  Point2d p2 = plane->Map(i+1);
-	  Point2d p3 = plane->Map(i+2);
-#if 0
-	      vec.push_back(p1);
-	      types.push_back(ELineTo);
-	      vec.push_back(p2);
-	      types.push_back(ELineTo);
-	      vec.push_back(p3);
-	      types.push_back(ELineTo);
-#endif
-	  bool b = p3.x < p1.x;
+	case EConic:
+	  {
+	    Point2d p1 = p;
+	    Point2d p2 = plane->Map(i+1);
+	    Point2d p3 = plane->Map(i+2);
+	    
+	    if (plane->Type(i+3)!=ECubic&&plane->Type(i+3)!=EConic) { i+=2; break; }
+	    Point2d c1= plane->Map(i+3);
+	    Point2d c2= plane->Map(i+5);
 
-	  if (p2.x<p1.x) std::swap(p1,p2);
-	  if (p3.x<p2.x) std::swap(p2,p3);
-	  if (p2.x<p1.x) std::swap(p1,p2);
+	    if (t==ECubic) { std::swap(p3,p1); }
 
+	    std::cout << "Bezier:" << p1 << " " << p3 << " " << c1 << " " << c2 << std::endl;
 
-	  if (p2.x-p1.x < 0.001) { p2.x += 0.001; }
-	  if (p3.x-p2.x < 0.002) { p3.x += 0.002; }
-
-	  //std::cout << "P1: " << p1.x << " " << p1.y << std::endl;
-	  //std::cout << "P2: " << p2.x << " " << p2.y << std::endl;
-	  //std::cout << "P3: " << p3.x << " " << p3.y << std::endl;
-
-	  Point pp1(p1.x,p1.y,0.0);
-	  Point pp2(p2.x,p2.y,0.0);
-	  Point pp3(p3.x,p3.y,0.0);
-	  BezierCurvePoints ps(pp1,pp2,pp3);
-	   BezierCurve c(ps);
-	  //SplineCurve c(p1,p2,p3);
-	  bool first = true;
-	  if (b) {
-	    //vec.push_back(p3);
-	    // types.push_back(ELineTo);
- 
-	    for(float x = c.Size();x>xdelta;x-=xdelta)
- 		{
-		  Point p = c.Index(x);
-		  Point2d pp = { p.x,p.y };
-		  // std::cout << "Spline:" << x << ":" << p.x << " " << p.y << std::endl;
-		  vec.push_back(pp);
-		  types.push_back(first ? ELineTo : ELineTo);
-		  first = false;
-		}
-	    //vec.push_back(p1);
-	    //  types.push_back(ELineTo);
+	    Point pp1(p1.x,p1.y,0.0);
+	    Point pp2(p3.x,p3.y,0.0);
+	    Point pp3(c1.x,c1.y,0.0);
+	    Point pp4(c2.x,c2.y,0.0);
+	    BezierCurvePoints ps(pp1,pp2,pp3,pp4);
+	    BezierCurve c(ps);
+	    for(float x = 0.0;x<c.Size()-xdelta;x+=xdelta)
+	      {
+		Point p = c.Index(x);
+		Point2d pp = { p.x,p.y };
+		std::cout << x << " " << p << std::endl;
+		vec.push_back(pp);
+		types.push_back(ELineTo);
+	      }
+	    Point p = c.Index(c.Size());
+	    Point2d pp = { p.x,p.y };
+	    vec.push_back(pp);
+	    types.push_back(ELineTo);
 	  }
-	  else
-	    {
-	      //vec.push_back(p1);
-	      //types.push_back(ELineTo);
-	      for(float x = 0.0;x<c.Size()-xdelta;x+=xdelta)
-		{
-		  Point p = c.Index(x);
-		  //std::cout << "Spline:" << x << ":" << p.x << " " << p.y << std::endl;
-		  Point2d pp = { p.x,p.y };
-		  vec.push_back(pp);
-		  types.push_back(first ? ELineTo : ELineTo);
-		  first = false;
-		}
-	      //vec.push_back(p3);
-	      //types.push_back(ELineTo);
-	    }
 	  i+=2;
 	  break;
 	};
@@ -7756,7 +7810,7 @@ GameApi::PLA GameApi::PlaneApi::prepare(GameApi::PL pl)
       else if (b==PlanePoints2d::ELineTo)
 	{
 	  data.cmd_array.push_back(GL_LINE_TO_NV);
-	} else if (b==PlanePoints2d::ECubic)
+	} else if (b==PlanePoints2d::ECubic||b==PlanePoints2d::EConic)
 	{
 	  data.cmd_array.push_back(GL_CUBIC_CURVE_TO_NV);
 	  Point2d p = ptr->Map(i+1);
@@ -9444,6 +9498,11 @@ unsigned int *GameApi::LinesApi::color_access(LLA lines, int line, bool b)
   PointArray2 *ee = find_lines_array(e, lines);
   int pos = b ? 1 : 0;
   return &ee->color_array[line*2+pos];
+}
+int GameApi::LinesApi::line_count(LLA lines)
+{
+  PointArray2 *ee = find_lines_array(e, lines);
+  return ee->numpoints;
 }
 float *GameApi::LinesApi::line_access(LLA lines, int line, bool b)
 {

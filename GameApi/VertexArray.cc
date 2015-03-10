@@ -250,6 +250,30 @@ void VertexArraySet::push_texcoord(int id, int num, Point2d *points)
     }
 }
 #define ATTRIB_OFFSET(X) ((const GLvoid *)(sizeof(GLfloat) * (X)))
+void RenderVertexArray::update(int id)
+{
+  glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, s.tri_count(id)*sizeof(float)*3, s.tri_polys(id));
+  glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, s.tri_count(id)*sizeof(float)*3, s.tri_normal_polys(id));
+  glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, s.tri_count(id)*sizeof(float)*4, s.tri_color_polys(id));
+  glBindBuffer(GL_ARRAY_BUFFER, buffers[3]);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, s.tri_count(id)*sizeof(float)*2, s.tri_texcoord_polys(id));
+
+  glBindBuffer(GL_ARRAY_BUFFER, buffers2[0]);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, s.quad_count(id)*sizeof(float)*3, s.quad_polys(id));
+  glBindBuffer(GL_ARRAY_BUFFER, buffers2[1]);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, s.quad_count(id)*sizeof(float)*3, s.quad_normal_polys(id));
+
+  glBindBuffer(GL_ARRAY_BUFFER, buffers2[2]);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, s.quad_count(id)*sizeof(float)*4, s.quad_color_polys(id));
+
+  glBindBuffer(GL_ARRAY_BUFFER, buffers2[3]);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, s.quad_count(id)*sizeof(float)*2, s.quad_texcoord_polys(id));
+
+
+}
 void RenderVertexArray::prepare(int id)
 {
   s.check_m_set(id);

@@ -7103,7 +7103,7 @@ public:
   virtual int Size() const=0;
   virtual Point2d Map(int i) const=0;
   //virtual Point2d Map2(int i) const=0;
-  enum PlanePointsType { EMove, ELineTo, ECubic };
+  enum PlanePointsType { EMove, ELineTo, ECubic,EConic };
   virtual PlanePointsType Type(int i) const { if (i==0) return EMove; else return ELineTo; }
 };
 
