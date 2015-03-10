@@ -27,7 +27,8 @@ public:
     //std::cout << "Type: " << i << ":" << types[i] << std::endl;
     if (types[i]==0) return PlanePoints2d::EMove;
     if (types[i]==1) return PlanePoints2d::ELineTo;
-    if (types[i]==2) return PlanePoints2d::ECubic;
+    if (types[i]==2) return PlanePoints2d::EConic;
+    if (types[i]==3) return PlanePoints2d::ECubic;
     return PlanePoints2d::EMove;
     //if (i==0) return EMove;
     //return ELineTo;

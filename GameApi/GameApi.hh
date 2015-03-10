@@ -145,6 +145,8 @@ public:
   IMPORT BM screenshot();
   IMPORT void fpscounter();
   IMPORT void delay(int ms);
+  IMPORT unsigned int random();
+  IMPORT unsigned int rand_max();
   struct Event
   {
     int type;
@@ -844,6 +846,12 @@ public:
   
   IMPORT VA create_vertex_array(P p); // slow
   IMPORT void render_vertex_array(VA va); // fast
+  IMPORT int access_point_count(VA va, bool triangle);
+  IMPORT float *access_points(VA va, bool triangle, int face, int point);
+  IMPORT float *access_color(VA va, bool triangle, int face, int point);
+  IMPORT float *access_normals(VA va, bool triangle, int face, int point);
+  IMPORT float *access_texcoord(VA va, bool triangle, int face, int point);
+  IMPORT void update(VA va);
 
   IMPORT P anim_target_vector(P p, V v);
   IMPORT P anim_target_scale(P p, PT center, float scale_x, float scale_y, float scale_z);
@@ -1236,6 +1244,7 @@ public:
 			PT fTL, PT fTR, PT fBL, PT fBR);
 
 	IMPORT LLA prepare(LI l);
+  IMPORT int line_count(LLA l);
         IMPORT float *line_access(LLA lines, int line, bool b);
   IMPORT unsigned int *color_access(LLA lines, int line, bool b);
   IMPORT void update(LLA lines);

@@ -172,13 +172,14 @@ void Game(EveryApi &e)
   M mat = e.matrix_api.identity();
   PL f2 = plane.render_p(p, mat, 450.0, 450.0);
   Ft font = e.font_api.newfont("FreeSans.ttf", 450,450);
-  PL f3 = e.font_api.glyph_plane(font, 'g', 450.0, 450.0, 30.0,30.0);
+  PL f3 = e.font_api.glyph_plane(font, '5', 450.0, 450.0, 30.0,30.0);
   PL f4 = e.plane_api.flip_y(f3);
-  PL f5 = e.plane_api.remove_splines(f4, 0.01);
+  PL f5 = e.plane_api.remove_splines(f4, 0.1);
   
   LI lines = e.lines_api.from_plane(f5);
   LLA linesa = e.lines_api.prepare(lines);
   PLA pla = plane.prepare(f5 );
+  PLA pla2 = plane.prepare(f4);
   //CBM cbm = plane.render(f3, 0, 0x00000000, 0xffffffff);
   //BM bm_f = e.cont_bitmap_api.sample(cbm, 150,150);
   //BM bm_f2 = e.bitmap_api.flip_y(bm_f);
@@ -252,6 +253,7 @@ void Game(EveryApi &e)
 #endif
       glColor3f(1.0,1.0,1.0);
       plane.render(pla, 200.0,150.0,1.0,1.0);
+      plane.render(pla2, 400.0,150.0,1.0,1.0);
       e.shader_api.use(sh);
       e.shader_api.set_var(sh,"in_MV", e.matrix_api.trans(-350.0,0.0,0.0));
       e.lines_api.render(linesa);

@@ -121,6 +121,7 @@ class RenderVertexArray
 public:
   RenderVertexArray(VertexArraySet &s) : s(s) { }
   void prepare(int id);
+  void update(int id);
   void render(int id);
 private:
   VertexArraySet &s;
