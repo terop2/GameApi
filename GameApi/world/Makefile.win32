@@ -1,0 +1,3 @@
+
+all:
+	mingw32-g++ -pg -g -std=c++11 test.cpp -L.. -I.. -lGameApi
