@@ -1736,6 +1736,7 @@ private:
       current_pos = mat.identity();
       current_scale = mat.identity();
       current_rot = mat.identity();
+      current_rot2 = mat.identity();
       setup_m();
       //id.id = 0;
       //va.id = 0;
@@ -1750,6 +1751,7 @@ private:
       current_pos = mat.identity();
       current_scale = mat.identity();
       current_rot = mat.identity();
+      current_rot2 = mat.identity();
       setup_m();
       //id.id = 0;
       //va.id = 0;
@@ -1764,6 +1766,7 @@ private:
       current_pos = mat.identity();
       current_scale = mat.identity();
       current_rot = mat.identity();
+      current_rot2 = mat.identity();
       setup_m();
       //id.id=0;
       //va.id =0;
@@ -1809,6 +1812,11 @@ private:
       current_rot = m;
       setup_m();
     }
+    void set_rotation_matrix2(M m)
+    {
+      current_rot2 = m;
+      setup_m();
+    }
     void bind_texture(int anim_id, TXID id_)
     {
       id[anim_id] = id_;
@@ -1820,7 +1828,7 @@ private:
     }
   private:
     void setup_m() {
-      m = mat.mult(mat.mult(current_rot,current_scale), current_pos);
+      m = mat.mult(mat.mult(mat.mult(current_rot,current_scale), current_pos), current_rot2);
     }
   private:
     PolygonApi &api;
@@ -1830,6 +1838,7 @@ private:
     M current_pos;
     M current_scale;
     M current_rot;
+    M current_rot2;
     M m;
     std::vector<P> m_p;
     SH sh;
