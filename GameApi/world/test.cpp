@@ -2,11 +2,12 @@
 #include <iostream>
 #include <cstdlib>
 #include <math.h>
+#include <functional>
 using namespace GameApi;
 
 char world[] = \
   "+---------+"
-  "|....%....|"
+  "|....%...T|"
   "|..+---+..|"
   "|.Q|...|..|"
   "|..+.*.+..|"
@@ -25,6 +26,7 @@ unsigned int func(char c) {
   case '#': return 7;
   case 'Q': return 8;
   case 'W': return 9;
+  case 'T': return 10;
   };
 }
 
@@ -69,19 +71,96 @@ P line_func(int i, float sx, float sy, float sz, float ex, float ey, float ez, u
   PT pt2 = ev.point_api.point(ex,ey,ez);
   PT pt3 = ev.point_api.point(sx+1.0,sy+1.0,sz+1.0);
   P pl = ev.polygon_api.triangle(pt1, pt2, pt3);
-  P pp2 = ev.polygon_api.or_elem(pp, pl);
+  P pp1 = ev.polygon_api.color_faces(pl, 0xccccccff, 0xff8844ff, 0x2288ffff, 0xff8844ff);
+  P pp2 = ev.polygon_api.or_elem(pp, pp1);
   return pp2;
 }
+
+P poly_func(int face, float p1_x, float p1_y, float p1_z,
+	    float p2_x, float p2_y, float p2_z,
+	    float p3_x, float p3_y, float p3_z,
+	    float p4_x, float p4_y, float p4_z, EveryApi &ev)
+{
+  float m_x = (p1_x+p2_x+p3_x+p4_x)/4;
+  float m_y = (p1_y+p2_y+p3_y+p4_y)/4;
+  float m_z = (p1_z+p2_z+p3_z+p4_z)/4;
+
+  float dx = p2_x-p1_x;
+  float dy = p2_y-p1_y;
+  float dz = p2_z-p1_z;
+  
+  float ddx = p3_x-p1_x;
+  float ddy = p3_y-p1_y;
+  float ddz = p3_z-p1_z;
+  
+  float cross_x = dy*ddz-dz*ddy;
+  float cross_y = dx*ddz-dz*ddx;
+  float cross_z = dx*ddy-dy*ddx;
+
+  float dist_dx = sqrt(dx*dx+dy*dy+dz*dz);
+  float dist_ddx = sqrt(ddx*ddx+ddy*ddy+ddz*ddz);
+  cross_x/=dist_dx;
+  cross_x/=dist_ddx;
+  cross_y/=dist_dx;
+  cross_y/=dist_ddx;
+  cross_z/=dist_dx;
+  cross_z/=dist_ddx;
+  
+  cross_x*=20.0;
+  cross_y*=20.0;
+  cross_z*=20.0;
+
+  cross_x+=m_x;
+  cross_y+=m_y;
+  cross_z+=m_z;
+
+  PT pt1 = ev.point_api.point(p1_x,p1_y,p1_z);
+  PT pt2 = ev.point_api.point(p2_x,p2_y,p2_z);
+  PT pt3 = ev.point_api.point(p3_x,p3_y,p3_z);
+  PT pt4 = ev.point_api.point(p4_x,p4_y,p4_z);
+
+  PT mid = ev.point_api.point(cross_x,cross_y,cross_z);
+
+  P p1 = ev.polygon_api.triangle(pt1,pt2,mid);
+  P p2 = ev.polygon_api.triangle(pt2,pt3,mid);
+  P p3 = ev.polygon_api.triangle(pt4,pt4,mid);
+  P p4 = ev.polygon_api.triangle(pt4,pt1,mid);
+
+  std::vector<P> vec;
+  vec.push_back(p1);
+  vec.push_back(p2);
+  vec.push_back(p3);
+  vec.push_back(p4);
+  
+  return ev.polygon_api.or_array(&vec[0], vec.size());
+
+}
+
+using std::placeholders::_10;
+using std::placeholders::_11;
+using std::placeholders::_12;
+using std::placeholders::_13;
 
 P pieces(unsigned int i, EveryApi &ev)
 {
  switch(i) {
- case 9:
+ case 10:
    {
-     //P p = ev.polygon_api.cube(0.0, 100.0, 0.0, 100.0, 0.0, 100.0);
      PT pt = ev.point_api.point(40.0, 40.0, 40.0);
      P p = ev.polygon_api.sphere(pt, 40.0, 20,20);
-     LI li = ev.lines_api.from_polygon(p);
+     P p2 = ev.polygon_api.from_polygon(p, std::bind(&poly_func, _1,  _2,_3,_4,
+						     _5,_6,_7,
+						     _8,_9,_10,
+						     _11,_12,_13, std::ref(ev)));
+     P p3 = ev.polygon_api.color_faces(p2, 0x888888ff, 0x444444ff, 0x222222ff, 0x666666ff);
+     return p3;
+   }
+ case 9:
+   {
+     //P p = ev.polygon_api.cube(0.0, 100.0, 0.0, 100.0, 0.0, 100.0); 
+     PT pt = ev.point_api.point(40.0, 40.0, 40.0);
+     P p = ev.polygon_api.sphere(pt, 40.0, 20,20);
+    LI li = ev.lines_api.from_polygon(p);
      P p2 = ev.polygon_api.from_lines(li, std::bind(&line_func, _1,_2,_3,_4,_5,_6,_7, _8,_9, std::ref(ev)));
      return p2;
    }

@@ -889,6 +889,12 @@ public:
 
   IMPORT P from_points(PTS p, std::function<P (int i, float x,float y,float z, unsigned int color)> f);
   IMPORT P from_lines(LI li, std::function<P (int i, float sx, float sy, float sz, float ex, float ey, float ez, unsigned int scolor, unsigned int ecolor)> f);
+  IMPORT P from_polygon(P p, std::function<P (int face, 
+					      float p1_x, float p1_y, float p1_z,
+					      float p2_x, float p2_y, float p2_z,
+					      float p3_x, float p3_y, float p3_z,
+					      float p4_x, float p4_y, float p4_z)> f);
+
 
   IMPORT BM renderpolytobitmap(P p, float x, float y, float z, int sx, int sy);
 private:
