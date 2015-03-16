@@ -8,7 +8,7 @@ char world[] = \
   "+---------+"
   "|....%....|"
   "|..+---+..|"
-  "|..|...|..|"
+  "|.Q|...|..|"
   "|..+.*.+..|"
   "|&.......#|"
   "+--.....--+";
@@ -23,6 +23,7 @@ unsigned int func(char c) {
   case '%': return 5;
   case '&': return 6;
   case '#': return 7;
+  case 'Q': return 8;
   };
 }
 
@@ -35,9 +36,60 @@ P points_func(int i, float x, float y, float z, unsigned int color, EveryApi &ev
   return ev.polygon_api.cube(x,x+1.0,y,y+1.0,z,z+1.0);
 }
 
+P points_func2(int i, float x, float y, float z, unsigned int color, EveryApi &ev)
+{
+  if (color==0) return ev.polygon_api.empty();
+  P p = ev.polygon_api.cube(x,x+1.0,y,y+1.0,z,z+1.0);
+  return ev.polygon_api.color_faces(p, color, color, color, color);
+}
+float float_bitmap(int x, int y)
+{
+  x-=40;
+  y-=40;
+  float xx = x;
+  float yy = y;
+  float k = xx*xx+yy*yy;
+  float k2 = sqrt(k);
+  k2/=40;
+  k2 = 1.0-k2;
+  return k2;
+}
+
 P pieces(unsigned int i, EveryApi &ev)
 {
  switch(i) {
+ case 8:
+   {
+     BB bg = ev.bool_bitmap_api.empty(80,80);
+     BB circle1 = ev.bool_bitmap_api.circle(bg, 40.0, 40.0, 40.0);
+     BB circle2 = ev.bool_bitmap_api.circle(bg, 40.0, 40.0, 30.0);
+     BB circle3 = ev.bool_bitmap_api.circle(bg, 40.0, 40.0, 20.0);
+     BB circle4 = ev.bool_bitmap_api.circle(bg, 40.0, 40.0, 10.0);
+     BM circle_bm1 = ev.bool_bitmap_api.to_bitmap(circle1, 255,255,255,255, 0,0,0,0);
+     BM circle_bm2 = ev.bool_bitmap_api.to_bitmap(circle2, 255,200,200,200, 0,0,0,0);
+     BM circle_bm3 = ev.bool_bitmap_api.to_bitmap(circle3, 255,155,155,155, 0,0,0,0);
+     BM circle_bm4 = ev.bool_bitmap_api.to_bitmap(circle4, 255,100,100,100, 0,0,0,0);
+     BM c1 = ev.bitmap_api.blitbitmap(circle_bm1, circle_bm2, 0,0);
+     BM c2 = ev.bitmap_api.blitbitmap(c1, circle_bm3, 0,0);
+     BM c3 = ev.bitmap_api.blitbitmap(c2, circle_bm4, 0,0);
+
+     //FB circle_fb = ev.float_bitmap_api.from_bool(circle, 1.0, 0.0);
+     FB circle_fb = ev.float_bitmap_api.function(&float_bitmap, 80,80);
+     PT pos = ev.point_api.point(0.0,0.0,0.0);
+     V u_x = ev.vector_api.vector(80.0,0.0,0.0);
+     V u_y = ev.vector_api.vector(0.0,80.0,0.0);
+     V u_z = ev.vector_api.vector(0.0,0.0,36.0);
+     PTS heightmap = ev.points_api.heightmap(c3, circle_fb, pos, u_x, u_y, u_z, 100,100);
+     
+     P p2 = ev.polygon_api.from_points(heightmap,std::bind(points_func2, _1, _2, _3, _4, _5, std::ref(ev)));
+
+    P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
+    P p2a = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
+    P pc = ev.polygon_api.or_elem(p1a,p2a);
+    P pk = ev.polygon_api.color_faces(pc, 0x888888ff, 0x444444ff, 0x222222ff, 0xaaaaaaff);
+    P ppa = ev.polygon_api.or_elem(p2,pk);
+    return ppa;
+   }
  case 7:
    {
      PT pt = ev.point_api.point(50.0,40.0,50.0);
