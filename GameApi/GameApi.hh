@@ -887,6 +887,8 @@ public:
   IMPORT P world_from_bitmap(std::function<P (int c)> f, BM int_bm, float dx, float dy);
   IMPORT P world_from_voxel(std::function<P (unsigned int c)> f, VX voxel, float dx, float dy, float dz);
 
+  IMPORT P from_points(PTS p, std::function<P (int i, float x,float y,float z, unsigned int color)> f);
+
   IMPORT BM renderpolytobitmap(P p, float x, float y, float z, int sx, int sy);
 private:
   PolygonApi(const PolygonApi&);
