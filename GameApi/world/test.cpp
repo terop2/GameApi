@@ -10,7 +10,7 @@ char world[] = \
   "|..+---+..|"
   "|..|...|..|"
   "|..+.*.+..|"
-  "|&........|"
+  "|&.......#|"
   "+--.....--+";
 
 unsigned int func(char c) {
@@ -22,12 +22,33 @@ unsigned int func(char c) {
   case '*': return 4;
   case '%': return 5;
   case '&': return 6;
+  case '#': return 7;
   };
 }
 
-P func2(unsigned int i, EveryApi &ev)
+P points_func(int i, float x, float y, float z, unsigned int color, EveryApi &ev)
+{
+  return ev.polygon_api.cube(x,x+1.0,y,y+1.0,z,z+1.0);
+}
+
+P pieces(unsigned int i, EveryApi &ev)
 {
  switch(i) {
+ case 7:
+   {
+     PT pt = ev.point_api.point(50.0,40.0,50.0);
+     O o = ev.volume_api.sphere(pt, 40.0);
+     FO fo = ev.float_volume_api.from_volume(o, 0.0, 1.0);
+     PTS pts = ev.points_api.from_float_volume(fo, 1000, 0.0, 0.0, 0.0, 100.0, 100.0, 100.0);
+     P p2 = ev.polygon_api.from_points(pts, std::bind(points_func, _1, _2, _3, _4, _5, std::ref(ev)));
+    
+    P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
+    P p2a = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
+    P pc = ev.polygon_api.or_elem(p1a,p2a);
+    P pk = ev.polygon_api.color_faces(pc, 0x888888ff, 0x444444ff, 0x222222ff, 0xaaaaaaff);
+    P ppa = ev.polygon_api.or_elem(p2,pk);
+    return ppa;
+   }
 
  case 6:
    {
@@ -73,7 +94,7 @@ P func2(unsigned int i, EveryApi &ev)
     P p = ev.polygon_api.cube(50.0, 58.0, 0.0, 80.0, 0.0, 100.0);
     P pa = ev.polygon_api.cube(0.0, 100.0, 0.0, 80.0, 50.0, 58.0);
     P pp = ev.polygon_api.or_elem(p,pa);
-    P p2 = ev.polygon_api.color_faces(pp, 0xffff8844, rand(), rand(), rand());
+    P p2 = ev.polygon_api.color_faces(pp, 0xff8844ff, 0x884422ff, 0xff8844ff, 0x884422ff);
 
     P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
     P p2a = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
@@ -86,7 +107,7 @@ P func2(unsigned int i, EveryApi &ev)
  case 2:
    {
     P p = ev.polygon_api.cube(50.0, 58.0, 0.0, 80.0, 0.0, 100.0);
-    P p2 = ev.polygon_api.color_faces(p, 0xffff8844, rand(), rand(), rand());
+    P p2 = ev.polygon_api.color_faces(p, 0xff8844ff, 0x884422ff, 0xff8844ff, 0x884422ff);
 
 
     P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
@@ -101,7 +122,7 @@ P func2(unsigned int i, EveryApi &ev)
   case 1:
     {
     P p = ev.polygon_api.cube(0.0, 100.0, 0.0, 80.0, 50.0, 58.0);
-    P p2 = ev.polygon_api.color_faces(p, 0xffff8844, rand(), rand(), rand());
+    P p2 = ev.polygon_api.color_faces(p, 0xff8844ff, 0x884422ff, 0xff8844ff, 0x884422ff);
 
     P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
     P p2a = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
@@ -144,7 +165,7 @@ int main() {
   ev.mainloop_api.init_3d(sh);
 
   BM bm = ev.bitmap_api.newintbitmap(world, 11, 7, func);
-  P p = ev.polygon_api.world_from_bitmap(std::bind(&func2, _1, std::ref(ev)), bm   , 100.0, 100.0);
+  P p = ev.polygon_api.world_from_bitmap(std::bind(&pieces, _1, std::ref(ev)), bm   , 100.0, 100.0);
   PolygonObj poly(ev, p, sh);
   poly.set_scale(3.0,3.0,3.0);
   poly.prepare();
