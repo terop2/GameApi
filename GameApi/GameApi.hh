@@ -888,6 +888,7 @@ public:
   IMPORT P world_from_voxel(std::function<P (unsigned int c)> f, VX voxel, float dx, float dy, float dz);
 
   IMPORT P from_points(PTS p, std::function<P (int i, float x,float y,float z, unsigned int color)> f);
+  IMPORT P from_lines(LI li, std::function<P (int i, float sx, float sy, float sz, float ex, float ey, float ez, unsigned int scolor, unsigned int ecolor)> f);
 
   IMPORT BM renderpolytobitmap(P p, float x, float y, float z, int sx, int sy);
 private:
