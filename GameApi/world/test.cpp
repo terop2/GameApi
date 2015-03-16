@@ -55,6 +55,15 @@ float float_bitmap(int x, int y)
   return k2;
 }
 
+P pieces2(unsigned int i, EveryApi &ev)
+{
+    P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
+    P p2a = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
+    P pc = ev.polygon_api.or_elem(p1a,p2a);
+    P pk = ev.polygon_api.color_faces(pc, 0x888888ff, 0x444444ff, 0x222222ff, 0xaaaaaaff);
+     return pk;
+}
+
 P pieces(unsigned int i, EveryApi &ev)
 {
  switch(i) {
@@ -83,12 +92,7 @@ P pieces(unsigned int i, EveryApi &ev)
      
      P p2 = ev.polygon_api.from_points(heightmap,std::bind(points_func2, _1, _2, _3, _4, _5, std::ref(ev)));
 
-    P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
-    P p2a = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
-    P pc = ev.polygon_api.or_elem(p1a,p2a);
-    P pk = ev.polygon_api.color_faces(pc, 0x888888ff, 0x444444ff, 0x222222ff, 0xaaaaaaff);
-    P ppa = ev.polygon_api.or_elem(p2,pk);
-    return ppa;
+    return p2;
    }
  case 7:
    {
@@ -98,12 +102,7 @@ P pieces(unsigned int i, EveryApi &ev)
      PTS pts = ev.points_api.from_float_volume(fo, 1000, 0.0, 0.0, 0.0, 100.0, 100.0, 100.0);
      P p2 = ev.polygon_api.from_points(pts, std::bind(points_func, _1, _2, _3, _4, _5, std::ref(ev)));
     
-    P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
-    P p2a = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
-    P pc = ev.polygon_api.or_elem(p1a,p2a);
-    P pk = ev.polygon_api.color_faces(pc, 0x888888ff, 0x444444ff, 0x222222ff, 0xaaaaaaff);
-    P ppa = ev.polygon_api.or_elem(p2,pk);
-    return ppa;
+    return p2;
    }
 
  case 6:
@@ -112,38 +111,14 @@ P pieces(unsigned int i, EveryApi &ev)
      P p11 = ev.polygon_api.rotatex(p1, 45.0*3.14159*2.0/360.0);
      P p2 = ev.polygon_api.translate(p11,0.0,40.0,0.0);
 
-    P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
-    P p2a = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
-    P pc = ev.polygon_api.or_elem(p1a,p2a);
-    P pk = ev.polygon_api.color_faces(pc, 0x888888ff, 0x444444ff, 0x222222ff, 0xaaaaaaff);
-    P ppa = ev.polygon_api.or_elem(p2,pk);
-    return ppa;
-
-   }
- case 5:
-   {
-     PT pt1 = ev.point_api.point(50.0,0.0, 50.0);
-     PT pt2 = ev.point_api.point(50.0,80.0,50.0);
-     P p2 = ev.polygon_api.cone(80, pt1, pt2, 30.0, 50.0);
-
-    P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
-    P p2a = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
-    P pc = ev.polygon_api.or_elem(p1a,p2a);
-    P pk = ev.polygon_api.color_faces(pc, 0x888888ff, 0x444444ff, 0x222222ff, 0xaaaaaaff);
-    P ppa = ev.polygon_api.or_elem(p2,pk);
-    return ppa;
+    return p2;
  }
  case 4:
    {
      PT pt = ev.point_api.point(50.0,40.0,50.0);
      P p2 = ev.polygon_api.sphere(pt, 40.0, 40,40);
 
-    P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
-    P p2a = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
-    P pc = ev.polygon_api.or_elem(p1a,p2a);
-    P pk = ev.polygon_api.color_faces(pc, 0x888888ff, 0x444444ff, 0x222222ff, 0xaaaaaaff);
-    P ppa = ev.polygon_api.or_elem(p2,pk);
-    return ppa;
+    return p2;
    }
  case 3:
    {
@@ -152,13 +127,8 @@ P pieces(unsigned int i, EveryApi &ev)
     P pp = ev.polygon_api.or_elem(p,pa);
     P p2 = ev.polygon_api.color_faces(pp, 0xff8844ff, 0x884422ff, 0xff8844ff, 0x884422ff);
 
-    P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
-    P p2a = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
-    P pc = ev.polygon_api.or_elem(p1a,p2a);
-    P pk = ev.polygon_api.color_faces(pc, 0x888888ff, 0x444444ff, 0x222222ff, 0xaaaaaaff);
-    P ppa = ev.polygon_api.or_elem(p2,pk);
 
-    return ppa;
+    return p2;
    }
  case 2:
    {
@@ -166,13 +136,8 @@ P pieces(unsigned int i, EveryApi &ev)
     P p2 = ev.polygon_api.color_faces(p, 0xff8844ff, 0x884422ff, 0xff8844ff, 0x884422ff);
 
 
-    P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
-    P p2a = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
-    P pc = ev.polygon_api.or_elem(p1a,p2a);
-    P pk = ev.polygon_api.color_faces(pc, 0x888888ff, 0x444444ff, 0x222222ff, 0xaaaaaaff);
-    P ppa = ev.polygon_api.or_elem(p2,pk);
 
-    return ppa;
+    return p2;
    }
    
   case 1:
@@ -180,20 +145,15 @@ P pieces(unsigned int i, EveryApi &ev)
     P p = ev.polygon_api.cube(0.0, 100.0, 0.0, 80.0, 50.0, 58.0);
     P p2 = ev.polygon_api.color_faces(p, 0xff8844ff, 0x884422ff, 0xff8844ff, 0x884422ff);
 
-    P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
-    P p2a = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
-    P pc = ev.polygon_api.or_elem(p1a,p2a);
-    P pk = ev.polygon_api.color_faces(pc, 0x888888ff, 0x444444ff, 0x222222ff, 0xaaaaaaff);
-    P ppa = ev.polygon_api.or_elem(p2,pk);
 
-    return ppa;
+    return p2;
     }
   case 0:
     P p1 = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
     P p2 = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
     P pc = ev.polygon_api.or_elem(p1,p2);
     P pk = ev.polygon_api.color_faces(pc, 0x888888ff, 0x444444ff, 0x222222ff, 0xaaaaaaff);
-    return pk; 
+    //return pk; 
   };
   return ev.polygon_api.empty();
 }
@@ -222,16 +182,32 @@ int main() {
 
   BM bm = ev.bitmap_api.newintbitmap(world, 11, 7, func);
   P p = ev.polygon_api.world_from_bitmap(std::bind(&pieces, _1, std::ref(ev)), bm   , 100.0, 100.0);
-  PolygonObj poly(ev, p, sh);
+  P p2 = ev.polygon_api.world_from_bitmap(std::bind(&pieces2, _1, std::ref(ev)), bm, 100.0, 100.0);
+  P p3 = ev.polygon_api.or_elem(p,p2);
+  PolygonObj poly(ev, p3, sh);
   poly.set_scale(3.0,3.0,3.0);
   poly.prepare();
 
+
+  PT plane_pos = ev.point_api.point(0.0,0.0,0.0);
+  V plane_x = ev.vector_api.vector(1.0, 0.0, 0.0);
+  V plane_y = ev.vector_api.vector(0.0,0.0,1.0);
+  V light_vec = ev.vector_api.vector(20.0,40.0,20.0);
+  P shadow = ev.polygon_api.shadow(p, plane_pos, plane_x, plane_y, light_vec);
+  P shadow_color = ev.polygon_api.color_faces(shadow, 0x333333ff, 0x333333ff, 0x333333ff, 0x333333ff);
+  
+  PolygonObj shadow_obj(ev,shadow_color, sh);
+  shadow_obj.set_scale(3.0,3.0,3.0);
+  shadow_obj.prepare();
 
   PT pt = ev.point_api.point(0.0,0.0,0.0);
   P pp = ev.polygon_api.sphere(pt, 20.0, 40,40);
   PolygonObj sphere(ev, pp, sh);
   sphere.set_scale(3.0,3.0,3.0);
   sphere.prepare();
+
+
+  ev.mainloop_api.alpha(true);
 
   float pos_x = 0.0;
   float pos_y = 0.0;
@@ -250,7 +226,9 @@ int main() {
     poly.set_rotation_matrix2(mm);
     poly.set_pos(pos_x, -80.0, pos_y);
     poly.render();
-    
+    shadow_obj.set_rotation_matrix2(mm);
+    shadow_obj.set_pos(pos_x, -75.0, pos_y);
+    shadow_obj.render();
     //sphere.set_pos(0.0,0.0,400.0);
     //sphere.render();
 
