@@ -3602,6 +3602,27 @@ GameApi::S GameApi::SurfaceApi::bitmapsphere(PT center, float radius0, float rad
   i.surf = sphere;
   return add_surface(e, i);
 }
+GameApi::P GameApi::PolygonApi::from_polygon(P p, std::function<P (int face, float p1_x, float p1_y, float p1_z, float p2_x, float p2_y, float p2_z, float p3_x, float p3_y, float p3_z, float p4_x, float p4_y, float p4_z)> f)
+{
+  FaceCollPolyHandle *handle = find_poly(e, p);
+  FaceCollection *coll = handle->coll;
+  int s = coll->NumFaces();
+  std::vector<P> vec;
+  for(int i=0;i<s;i++)
+    {
+      Point p1 = coll->FacePoint(i, 0);
+      Point p2 = coll->FacePoint(i, 1);
+      Point p3 = coll->FacePoint(i, 2);
+      Point p4 = coll->NumPoints(i)>3 ? coll->FacePoint(i, 3) : coll->FacePoint(i,2);
+      P p = f(i, p1.x,p1.y,p1.z,
+	      p2.x,p2.y,p2.z,
+	      p3.x,p3.y,p3.z,
+	      p4.x,p4.y,p4.z);
+      vec.push_back(p);
+    }
+  P pp = or_array(&vec[0], s);
+  return pp;
+}
 GameApi::P GameApi::PolygonApi::from_lines(LI li, std::function<P (int i, float sx, float sy, float sz, float ex, float ey, float ez, unsigned int scolor, unsigned int ecolor)> f)
 {
   LineCollection *coll = find_line_array(e, li);
