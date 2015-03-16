@@ -28,6 +28,10 @@ unsigned int func(char c) {
 
 P points_func(int i, float x, float y, float z, unsigned int color, EveryApi &ev)
 {
+#if 0
+  PT pt = ev.point_api.point(x,y,z);
+  return ev.polygon_api.sphere(pt, 1.0, 10,10);
+#endif
   return ev.polygon_api.cube(x,x+1.0,y,y+1.0,z,z+1.0);
 }
 
