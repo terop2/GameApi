@@ -10,7 +10,7 @@ char world[] = \
   "|..+---+..|"
   "|.Q|...|..|"
   "|..+.*.+..|"
-  "|&.......#|"
+  "|&..W....#|"
   "+--.....--+";
 
 unsigned int func(char c) {
@@ -24,15 +24,12 @@ unsigned int func(char c) {
   case '&': return 6;
   case '#': return 7;
   case 'Q': return 8;
+  case 'W': return 9;
   };
 }
 
 P points_func(int i, float x, float y, float z, unsigned int color, EveryApi &ev)
 {
-#if 0
-  PT pt = ev.point_api.point(x,y,z);
-  return ev.polygon_api.sphere(pt, 1.0, 10,10);
-#endif
   return ev.polygon_api.cube(x,x+1.0,y,y+1.0,z,z+1.0);
 }
 
@@ -63,10 +60,31 @@ P pieces2(unsigned int i, EveryApi &ev)
     P pk = ev.polygon_api.color_faces(pc, 0x888888ff, 0x444444ff, 0x222222ff, 0xaaaaaaff);
      return pk;
 }
+P line_func(int i, float sx, float sy, float sz, float ex, float ey, float ez, unsigned int scolor, unsigned int ecolor, EveryApi &ev)
+{
+  P p = ev.polygon_api.cube(sx,sx+1.0,sy,sy+1.0,sz,sz+1.0);
+  P p2 = ev.polygon_api.cube(ex,ex+1.0,ey,ey+1.0,ez,ez+1.0);
+  P pp = ev.polygon_api.or_elem(p,p2);
+  PT pt1 = ev.point_api.point(sx,sy,sz);
+  PT pt2 = ev.point_api.point(ex,ey,ez);
+  PT pt3 = ev.point_api.point(sx+1.0,sy+1.0,sz+1.0);
+  P pl = ev.polygon_api.triangle(pt1, pt2, pt3);
+  P pp2 = ev.polygon_api.or_elem(pp, pl);
+  return pp2;
+}
 
 P pieces(unsigned int i, EveryApi &ev)
 {
  switch(i) {
+ case 9:
+   {
+     //P p = ev.polygon_api.cube(0.0, 100.0, 0.0, 100.0, 0.0, 100.0);
+     PT pt = ev.point_api.point(40.0, 40.0, 40.0);
+     P p = ev.polygon_api.sphere(pt, 40.0, 20,20);
+     LI li = ev.lines_api.from_polygon(p);
+     P p2 = ev.polygon_api.from_lines(li, std::bind(&line_func, _1,_2,_3,_4,_5,_6,_7, _8,_9, std::ref(ev)));
+     return p2;
+   }
  case 8:
    {
      BB bg = ev.bool_bitmap_api.empty(80,80);
@@ -200,11 +218,6 @@ int main() {
   shadow_obj.set_scale(3.0,3.0,3.0);
   shadow_obj.prepare();
 
-  PT pt = ev.point_api.point(0.0,0.0,0.0);
-  P pp = ev.polygon_api.sphere(pt, 20.0, 40,40);
-  PolygonObj sphere(ev, pp, sh);
-  sphere.set_scale(3.0,3.0,3.0);
-  sphere.prepare();
 
 
   ev.mainloop_api.alpha(true);

@@ -3602,6 +3602,23 @@ GameApi::S GameApi::SurfaceApi::bitmapsphere(PT center, float radius0, float rad
   i.surf = sphere;
   return add_surface(e, i);
 }
+GameApi::P GameApi::PolygonApi::from_lines(LI li, std::function<P (int i, float sx, float sy, float sz, float ex, float ey, float ez, unsigned int scolor, unsigned int ecolor)> f)
+{
+  LineCollection *coll = find_line_array(e, li);
+  int count = coll->NumLines();
+  std::vector<P> vec;
+  for(int i=0;i<count;i++)
+    {
+      Point p1 = coll->LinePoint(i, 0);
+      Point p2 = coll->LinePoint(i, 1);
+      unsigned int c1 = coll->LineColor(i, 0);
+      unsigned int c2 = coll->LineColor(i, 1);
+      P item = f(i,p1.x,p1.y,p1.z, p2.x,p2.y,p2.z,c1,c2);
+      vec.push_back(item);
+    }
+  P pp = or_array(&vec[0], count);
+  return pp;
+}
 GameApi::P GameApi::PolygonApi::from_points(PTS pts, std::function<P (int i, float x, float y, float z, unsigned int color)> f)
 {
   PointsApiPoints *p = find_pointsapi_points(e, pts);
