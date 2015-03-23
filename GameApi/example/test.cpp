@@ -3,6 +3,13 @@
 #include <iostream>
 using namespace GameApi;
 
+bool sections_f(float angle)
+{
+  float a = angle/(360.0/21);
+  int aa = a;
+  return aa & 0x1;
+}
+
 int main() {
   Env e;
   EveryApi ev(e);
@@ -39,6 +46,16 @@ int main() {
   spr.set_scale(1.0,1.0);
   ev.mainloop_api.alpha(true);
 
+
+  BB bb = ev.bool_bitmap_api.sections(100,100, 50.0,50.0, sections_f);
+  BM bb_bm1 = ev.bool_bitmap_api.to_bitmap(bb, 255,255,255,255,
+					   0,0,0,0);
+
+  SpriteObj spr2(ev, bb_bm1, sh);
+  spr2.set_pos(100.0,100.0);
+  spr2.prepare();
+  
+
   int frame = 0;
   float z = 0.0;
   float r = 0.0;
@@ -47,6 +64,7 @@ int main() {
   while(1) {
     ev.mainloop_api.clear();
     spr.render();
+    spr2.render();
     ev.mainloop_api.swapbuffers();
     ev.mainloop_api.fpscounter();
     // handle esc event
