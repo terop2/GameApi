@@ -2572,6 +2572,45 @@ GameApi::BM GameApi::BitmapApi::gradient(PT pos_1, PT pos_2, unsigned int color_
   Point2d pos_2b = { pos_2a->x, pos_2a->y };
   return add_color_bitmap2(e, new GradientBitmap2(pos_1b, pos_2b, color_1, color_2, sx,sy));
 }
+
+class RadialGradient : public Bitmap<Color>
+{
+public:
+  RadialGradient(int sx, int sy, Point2d pos, float r1, float r2, unsigned int color_1, unsigned int color_2) : sx(sx),sy(sy), pos(pos), r1(r1), r2(r2), color_1(color_1), color_2(color_2) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    float xx = x;
+    float yy = y;
+    xx-=pos.x;
+    yy-=pos.y;
+    float dist = sqrt(xx*xx+yy*yy);
+    dist -= r1;
+    dist /= (r2-r1);
+    // now [0..1]
+    if (dist<0.0) dist = 0.0;
+    if (dist>1.0) dist = 1.0;
+    return Color(Color::Interpolate(color_1, color_2, dist));
+  }
+private:
+  int sx,sy;
+  Point2d pos;
+  float r1,r2;
+  unsigned int color_1, color_2;
+};
+
+GameApi::BM GameApi::BitmapApi::radial_gradient(int sx, int sy, PT pos, float r1, float r2, unsigned int color_1, unsigned int color_2)
+{
+  Point *pos_p1 = find_point(e, pos);
+  Point2d pos_p = { pos_p1->x, pos_p1->y };
+   ::Bitmap<Color> *b = new RadialGradient(sx,sy,pos_p, r1,r2, color_1, color_2);
+  BitmapColorHandle *handle = new BitmapColorHandle;
+  handle->bm = b;
+  BM bm = add_bitmap(e, handle);
+  return bm;
+}
+
 GameApi::BM GameApi::BitmapApi::newbitmap(int sx, int sy, unsigned int color)
 {
   ::Bitmap<Color> *b = new ConstantBitmap<Color>(Color(color), sx,sy);

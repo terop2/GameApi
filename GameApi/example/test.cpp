@@ -54,7 +54,13 @@ int main() {
   SpriteObj spr2(ev, bb_bm1, sh);
   spr2.set_pos(100.0,100.0);
   spr2.prepare();
-  
+
+  PT pos = ev.point_api.point(150.0,150.0,0.0);
+  BM radial = ev.bitmap_api.radial_gradient(300,300, pos, 0.0,150.0, 0xffffffff, 0x00000000);
+  SpriteObj spr3(ev, radial, sh);
+  spr3.set_pos(150.0,150.0);
+  spr3.prepare();
+
 
   int frame = 0;
   float z = 0.0;
@@ -65,6 +71,7 @@ int main() {
     ev.mainloop_api.clear();
     spr.render();
     spr2.render();
+    spr3.render();
     ev.mainloop_api.swapbuffers();
     ev.mainloop_api.fpscounter();
     // handle esc event
