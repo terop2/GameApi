@@ -192,6 +192,30 @@ private:
   float rs;
   float re;
 };
+class SectionsBoolBitmap : public Bitmap<bool>
+{
+public:
+  SectionsBoolBitmap(int sx, int sy, float x, float y, std::function<bool (float angle)> f) : sx(sx), sy(sy), x(x), y(y), f(f) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  
+  bool Map(int ax, int ay) const
+  {
+    float xx = ax;
+    float yy = ay;
+    xx-=x;
+    yy-=y;
+    float angle_in_rad = atan2(yy,xx);
+    float angle_in_deg = angle_in_rad*360.0/2.0/3.14159;
+    bool b = f(angle_in_deg);
+    return b;
+  }
+
+private:
+  int sx,sy;
+  float x,y;
+  std::function<bool (float)> f;
+};
 
 class PartCircleBoolBitmap : public Bitmap<bool>
 {

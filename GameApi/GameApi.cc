@@ -6056,6 +6056,11 @@ bool GameApi::BoolBitmapApi::boolvalue(BB bm, int x, int y)
   return b->Map(x,y);
 }
 
+
+GameApi::BB GameApi::BoolBitmapApi::sections(int sx, int sy, float x, float y, std::function<bool (float angle)> f)
+{
+  return add_bool_bitmap(e, new SectionsBoolBitmap(sx,sy,x,y,f));
+}
 GameApi::BB GameApi::BoolBitmapApi::part_circle(int sx, int sy, float x, float y, float start_angle, float end_angle, float start_rad, float end_rad)
 {
   return add_bool_bitmap(e, new PartCircleBoolBitmap(sx,sy, x,y,start_angle,end_angle, start_rad, end_rad));

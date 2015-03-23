@@ -1035,7 +1035,8 @@ public:
 	  BB *glyphs, int glyphcount, int(*fptr)(EveryApi &ev, char));
 
 	IMPORT BB part_circle(int sx, int sy, float x, float y, float start_angle, float end_angle, float start_rad, float end_rad);
-  
+        IMPORT BB sections(int sx, int sy, float x, float y, std::function<bool (float angle)> f);
+
 	IMPORT BB not_bitmap(BB b);
 	IMPORT BB or_bitmap(BB b1, BB b2);
 	IMPORT BB andnot_bitmap(BB b1, BB not_b2);
