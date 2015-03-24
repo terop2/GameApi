@@ -2589,8 +2589,8 @@ public:
     dist -= r1;
     dist /= (r2-r1);
     // now [0..1]
-    if (dist<0.0) dist = 0.0;
-    if (dist>1.0) dist = 1.0;
+    if (dist<0.0) return 0;
+    if (dist>1.0) return 0;
     return Color(Color::Interpolate(color_1, color_2, dist));
   }
 private:
@@ -6093,8 +6093,12 @@ bool GameApi::BoolBitmapApi::boolvalue(BB bm, int x, int y)
 {
   Bitmap<bool> *b = find_bool_bitmap(e,bm)->bitmap;
   return b->Map(x,y);
+}   
+  
+GameApi::BM GameApi::BitmapApi::conical_gradient(int sx, int sy, float x, float y, float angle1, float angle2, unsigned int color_1, unsigned int color_2)
+{
+  return add_color_bitmap2(e, new ConicalGradientBitmap(sx,sy,x,y, angle1,angle2,color_1,color_2));
 }
-
 
 GameApi::BB GameApi::BoolBitmapApi::sections(int sx, int sy, float x, float y, std::function<bool (float angle)> f)
 {

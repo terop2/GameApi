@@ -55,9 +55,12 @@ int main() {
   spr2.set_pos(100.0,100.0);
   spr2.prepare();
 
-  PT pos = ev.point_api.point(150.0,150.0,0.0);
-  BM radial = ev.bitmap_api.radial_gradient(300,300, pos, 0.0,150.0, 0xffffffff, 0x00000000);
-  SpriteObj spr3(ev, radial, sh);
+  BM radial1 = ev.bitmap_api.conical_gradient(300,300, 150.0,150.0, 0.0,90.0, 0xffff0000, 0xff0088ff);
+  BM radial2 = ev.bitmap_api.conical_gradient(300,300, 150.0,150.0, -180.0,0.0, 0xff00ffff, 0xffff0000);
+  BM radial3 = ev.bitmap_api.conical_gradient(300,300, 150.0,150.0, 90.0,181.0, 0xff0088ff, 0xff00ffff);
+  BM comb = ev.bitmap_api.blitbitmap(radial1, radial2, 0, 0);
+  BM comb2 = ev.bitmap_api.blitbitmap(comb, radial3, 0, 0);
+  SpriteObj spr3(ev, comb2, sh);
   spr3.set_pos(150.0,150.0);
   spr3.prepare();
 

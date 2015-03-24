@@ -217,6 +217,41 @@ private:
   std::function<bool (float)> f;
 };
 
+
+class ConicalGradientBitmap : public Bitmap<Color>
+{
+public:
+  ConicalGradientBitmap(int sx, int sy, float x, float y, float angle1, float angle2, unsigned int color_1, unsigned int color_2) : sx(sx), sy(sy), x(x), y(y), angle1(angle1), angle2(angle2), color_1(color_1), color_2(color_2) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  
+  Color Map(int ax, int ay) const
+  {
+    float xx = ax;
+    float yy = ay;
+    xx-=x;
+    yy-=y;
+    float angle_in_rad = atan2(yy,xx);
+    float angle_in_deg = angle_in_rad*360.0/2.0/3.14159;
+    angle_in_deg -= angle1;
+    angle_in_deg /= (angle2-angle1);
+
+    //std::cout << "angle_in_deg: " << angle_in_deg << std::endl;
+    // now [0..1]
+    if (angle_in_deg < 0.0) return 0;
+    if (angle_in_deg > 1.0) return 0;
+    
+    return Color(Color::Interpolate(color_1, color_2, angle_in_deg));
+  }
+
+private:
+  int sx,sy;
+  float x,y;
+  float angle1,angle2;
+  unsigned int color_1, color_2;
+};
+
+
 class PartCircleBoolBitmap : public Bitmap<bool>
 {
 public:
