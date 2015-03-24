@@ -2552,8 +2552,8 @@ public:
     val /= u_x.Dist();
     val /= u_x.Dist();
     // now [0.0 .. 1.0]
-    if (val<0.0) val=0.0;
-    if (val>1.0) val=1.0;
+    if (val<0.0) return 0;
+    if (val>1.0) return 0;
     return Color(Color::Interpolate(color_1, color_2, val));
   }
 
