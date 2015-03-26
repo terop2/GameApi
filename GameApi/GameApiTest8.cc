@@ -57,9 +57,9 @@ void GameTest8(EveryApi &e)
       M m2 = e.matrix_api.scale(2.0,2.0,2.0);
       M m3 = e.matrix_api.mult(m,m2);
       e.shader_api.set_var(sh, "in_MV", m3);
-      float *arr = e.lines_api.line_access(array, 0, false);
-      arr[0]+=0.2;
-      e.lines_api.update(array);
+      //float *arr = e.lines_api.line_access(array, 0, false);
+      //arr[0]+=0.2;
+      //e.lines_api.update(array);
       e.lines_api.render(array);
       e.lines_api.render(array2);
       glPopMatrix();

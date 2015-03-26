@@ -603,6 +603,8 @@ public:
 	IMPORT FO minimum(FO f1, FO f2);
 	IMPORT FO maximum(FO f1, FO f2);
 
+        IMPORT O subvolume(FO f, float start_range, float end_range);
+
 	IMPORT FO shadow(FD fd, V light_dir, float mint, float maxt, float k);
 
   //FO plus(FO f1, FO f2);
@@ -848,12 +850,12 @@ public:
   
   IMPORT VA create_vertex_array(P p); // slow
   IMPORT void render_vertex_array(VA va); // fast
-  IMPORT int access_point_count(VA va, bool triangle);
-  IMPORT float *access_points(VA va, bool triangle, int face, int point);
-  IMPORT float *access_color(VA va, bool triangle, int face, int point);
-  IMPORT float *access_normals(VA va, bool triangle, int face, int point);
-  IMPORT float *access_texcoord(VA va, bool triangle, int face, int point);
-  IMPORT void update(VA va);
+  //IMPORT int access_point_count(VA va, bool triangle);
+  //IMPORT float *access_points(VA va, bool triangle, int face, int point);
+  //IMPORT float *access_color(VA va, bool triangle, int face, int point);
+  //IMPORT float *access_normals(VA va, bool triangle, int face, int point);
+  //IMPORT float *access_texcoord(VA va, bool triangle, int face, int point);
+  //IMPORT void update(VA va);
 
   IMPORT P anim_target_vector(P p, V v);
   IMPORT P anim_target_scale(P p, PT center, float scale_x, float scale_y, float scale_z);
@@ -1225,9 +1227,9 @@ public:
 			PT fTL, PT fTR, PT fBL, PT fBR);
 
   PTA prepare(PTS p);
-  float *point_access(PTA pta, int pointnum);
-  unsigned int *color_access(PTA pta, int pointnum);
-  void update(PTA array);
+  //float *point_access(PTA pta, int pointnum);
+  //unsigned int *color_access(PTA pta, int pointnum);
+  //void update(PTA array);
   void render(PTA array);
 private:
   PointsApi(const PointsApi&);
@@ -1256,10 +1258,11 @@ public:
 			PT fTL, PT fTR, PT fBL, PT fBR);
 
 	IMPORT LLA prepare(LI l);
-  IMPORT int line_count(LLA l);
-        IMPORT float *line_access(LLA lines, int line, bool b);
-  IMPORT unsigned int *color_access(LLA lines, int line, bool b);
-  IMPORT void update(LLA lines);
+
+  //IMPORT int line_count(LLA l);
+  //      IMPORT float *line_access(LLA lines, int line, bool b);
+  //IMPORT unsigned int *color_access(LLA lines, int line, bool b);
+  //IMPORT void update(LLA lines);
 	IMPORT void render(LLA array);
 private:
   LinesApi(const LinesApi&);

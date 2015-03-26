@@ -6979,6 +6979,7 @@ GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p)
   arr2->prepare(0);
   return add_vertex_array(e, s, arr2);
 }
+#if 0
 int GameApi::PolygonApi::access_point_count(VA va, bool triangle)
 {
   VertexArraySet *s = find_vertex_array(e, va);
@@ -7053,6 +7054,7 @@ void GameApi::PolygonApi::update(VA va)
   RenderVertexArray *s2 = find_vertex_array_render(e, va);
   s2->update(0);
 }
+#endif
 void GameApi::PolygonApi::render_vertex_array(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
@@ -8189,6 +8191,7 @@ GameApi::PTS GameApi::PointsApi::shadow_points(GameApi::PTS obj,
   Vector *light = find_vector(e, light_vec);
   return add_points_api_points(e, new ShadowPoints(pts, *pt, *uu_x, *uu_y, *light));
 }
+#if 0
 float *GameApi::PointsApi::point_access(GameApi::PTA pta, int pointnum)
 {
   PointArray3 *arr = find_point_array3(e, pta);
@@ -8207,6 +8210,7 @@ void GameApi::PointsApi::update(GameApi::PTA pta)
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[1]);
   glBufferSubData(GL_ARRAY_BUFFER, 0, arr->numpoints*sizeof(unsigned int), arr->color);
 }
+#endif
 GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
 {
   PointsApiPoints *pts = find_pointsapi_points(e, p);
@@ -8353,6 +8357,25 @@ void GameApi::FloatVolumeApi::render(FOA array)
   glDisableVertexAttribArray(0);
 }
 
+class SubVolumeObject : public VolumeObject
+{
+public:
+  SubVolumeObject(FloatVolumeObject &ff, float start, float end) : ff(ff), start(start), end(end) { }
+  bool Inside(Point p) const
+  {
+    float v = ff.FloatValue(p);
+    return v>=start&&v<=end;
+  }
+private:
+  FloatVolumeObject &ff;
+  float start, end;
+};
+
+GameApi::O GameApi::FloatVolumeApi::subvolume(FO f, float start_range, float end_range)
+{
+  FloatVolumeObject *ff = find_float_volume(e, f);
+  return add_volume(e, new SubVolumeObject(*ff, start_range, end_range));
+}
 GameApi::FO GameApi::FloatVolumeApi::function(std::function<float (float x, float y, float z)> f)
 {
   //GameApi::EveryApi *ev = new GameApi::EveryApi(e);
@@ -9594,6 +9617,8 @@ void GameApi::LinesApi::render(float *array, int size)
   glDeleteBuffers( 1, &buffer);
 }
 #endif
+
+#if 0
 unsigned int *GameApi::LinesApi::color_access(LLA lines, int line, bool b)
 {
   PointArray2 *ee = find_lines_array(e, lines);
@@ -9619,6 +9644,7 @@ void GameApi::LinesApi::update(LLA lines)
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, GL_STATIC_DRAW);
 }
+#endif
 GameApi::LLA GameApi::LinesApi::prepare(LI l)
 {
   LineCollection *coll = find_line_array(e, l);
