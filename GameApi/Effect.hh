@@ -3033,6 +3033,19 @@ private:
   Vector light_vec;
 };
 
+
+class ReflectFaceCollection : public ForwardFaceCollection
+{
+public:
+  ReflectFaceCollection(FaceCollection &coll, Point pos, Vector u_x, Vector u_y, Vector ref_vec) : ForwardFaceCollection(coll), pos(pos), u_x(u_x), u_y(u_y), ref_vec(ref_vec) { }
+  virtual Point FacePoint(int face, int point) const;
+private:
+  Point pos;
+  Vector u_x, u_y;
+  Vector ref_vec;
+};
+
+
 class CoordChangeFaceColl : public ForwardFaceCollection
 {
 public:

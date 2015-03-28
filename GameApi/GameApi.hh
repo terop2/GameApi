@@ -137,6 +137,7 @@ public:
   IMPORT void clear_3d();
   IMPORT void switch_to_3d(bool b, SH sh);
   IMPORT void alpha(bool enabled);
+  IMPORT void depth_test(bool enabled);
   IMPORT void cursor_visible(bool enabled);
   IMPORT void antialias(bool enabled);
   IMPORT float get_time();
@@ -819,6 +820,7 @@ public:
   IMPORT BM light_bm(L lighting, P poly);
 
   IMPORT P shadow(P orig, PT pos, V u_x, V u_y, V light_vec);
+  IMPORT P reflection(P orig, PT pos, V u_x, V u_y, V ref_vec); // note, requires transparent object, which are not yet implemented.
 
   IMPORT P single_texture(P orig, BM texture);
 

@@ -3,16 +3,18 @@
 #include <cstdlib>
 #include <math.h>
 #include <functional>
+
+
 using namespace GameApi;
 
 char world[] = \
-  "+---------+"
-  "|....%...T|"
-  "|..+---+..|"
-  "|.Q|...|..|"
-  "|..+.*.+..|"
-  "|&..W....#|"
-  "+--.....--+";
+  "+---------+---------+"
+  "|....%...T|.P.......|"
+  "|..+---+..|.........|"
+  "|.Q|...|............|"
+  "|..+.*.+..|.........|"
+  "|&..W....#|.....H...|"
+  "+--.....--+---------+";
 
 unsigned int func(char c) {
   switch(c) {
@@ -27,6 +29,8 @@ unsigned int func(char c) {
   case 'Q': return 8;
   case 'W': return 9;
   case 'T': return 10;
+  case 'P': return 11;
+  case 'H': return 12;
   };
 }
 
@@ -61,6 +65,7 @@ P pieces2(unsigned int i, EveryApi &ev)
     P p2a = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
     P pc = ev.polygon_api.or_elem(p1a,p2a);
     P pk = ev.polygon_api.color_faces(pc, 0x888888ff, 0x444444ff, 0x222222ff, 0xaaaaaaff);
+    //return ev.polygon_api.empty();
      return pk;
 }
 
@@ -218,9 +223,75 @@ P cube(float x1, float x2,
   return p2;
 }
 
-P pieces(unsigned int i, EveryApi &ev)
+struct Models
+{
+  P teapot;
+};
+
+P pieces(unsigned int i, EveryApi &ev, Models &m)
 {
   switch(i) {
+  case 12:
+    {
+      P p = m.teapot;
+      P p2 = ev.polygon_api.scale(p, 20.0,20.0,20.0);
+      P p2a = ev.polygon_api.from_polygon(p2, std::bind(&poly_func, _1,  _2,_3,_4,
+						      _5,_6,_7,
+						      _8,_9,_10,
+						      _11,_12,_13, std::ref(ev)));
+
+      P p3 = ev.polygon_api.color_faces(p2a, 0x000000ff, 0x222222ff, 0x111111ff, 0x333333ff);
+      
+      return p3;
+    }
+  case 11:
+    {
+      std::vector<P> vec;
+      for(int x=0;x<4;x++)
+	{
+	  for(int y=0;y<4;y++)
+	    {
+	      float pos_x = 100.0*x/4;
+	      float pos_y = 100.0*y/4;
+	      vec.push_back(ev.polygon_api.cube(pos_x,pos_x+20.0,
+						0.0, 20.0,
+						pos_y,pos_y+20.0
+						));
+	    }
+	}
+      for(int x=0;x<3;x++)
+	{
+	  for(int y=0;y<3;y++)
+	    {
+	      float pos_x = 100.0*x/4+100.0/8;
+	      float pos_y = 100.0*y/4+100.0/8;
+	      vec.push_back(ev.polygon_api.cube(pos_x,pos_x+20.0,
+						20.0, 40.0,
+						pos_y,pos_y+20.0
+						));
+	    }
+	}
+      for(int x=0;x<2;x++)
+	{
+	  for(int y=0;y<2;y++)
+	    {
+	      float pos_x = 100.0*x/4+100.0/4;
+	      float pos_y = 100.0*y/4+100.0/4;
+	      vec.push_back(ev.polygon_api.cube(pos_x,pos_x+20.0,
+						40.0, 60.0,
+						pos_y,pos_y+20.0
+						));
+	    }
+	}
+      float pos_x = 100.0/2-10.0;
+      float pos_y = 100.0/2-10.0;
+      vec.push_back(ev.polygon_api.cube(pos_x,pos_x+20.0,
+					60.0, 80.0,
+					pos_y, pos_y+20.0));
+      P p = ev.polygon_api.or_array(&vec[0], 4*4+3*3+2*2+1);
+      P p2 = ev.polygon_api.color_faces(p, 0x000000ff, 0x222222ff, 0x111111ff, 0x333333ff);
+      return p2;
+    }
   case 10:
     {
       PT pt = ev.point_api.point(40.0, 40.0, 40.0);
@@ -319,6 +390,22 @@ P pieces(unsigned int i, EveryApi &ev)
   return ev.polygon_api.empty();
 }
 
+unsigned int color_change_func(unsigned int orig, int face, int point)
+{
+  unsigned int color = orig;
+  unsigned int color_r = color & 0xff000000;
+  unsigned int color_g = color & 0x00ff0000;
+  unsigned int color_b = color & 0x0000ff00;
+  unsigned int color_a = color & 0x000000ff;
+  
+  color_r /= 2;
+  color_g /= 2;
+  color_b /= 2;
+  unsigned int color2 = color_r | color_g | color_b |color_a;
+  unsigned int color3 = color2 & 0x7f7f7f7f;
+  return color3;
+}
+
 int main() {
   srand(1);
   Env e;
@@ -341,8 +428,11 @@ int main() {
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);
 
-  BM bm = ev.bitmap_api.newintbitmap(world, 11, 7, func);
-  P p = ev.polygon_api.world_from_bitmap(std::bind(&pieces, _1, std::ref(ev)), bm   , 100.0, 100.0);
+  Models m;
+  m.teapot = ev.polygon_api.load_model("./teapot.obj", 0);
+
+  BM bm = ev.bitmap_api.newintbitmap(world, 21, 7, func);
+  P p = ev.polygon_api.world_from_bitmap(std::bind(&pieces, _1, std::ref(ev), std::ref(m)), bm   , 100.0, 100.0);
   P p2 = ev.polygon_api.world_from_bitmap(std::bind(&pieces2, _1, std::ref(ev)), bm, 100.0, 100.0);
   P p3 = ev.polygon_api.or_elem(p,p2);
   PolygonObj poly(ev, p3, sh);
@@ -354,8 +444,16 @@ int main() {
   V plane_x = ev.vector_api.vector(1.0, 0.0, 0.0);
   V plane_y = ev.vector_api.vector(0.0,0.0,1.0);
   V light_vec = ev.vector_api.vector(20.0,40.0,20.0);
+  V reflect_vec = ev.vector_api.vector(0.0, 40.0, 0.0);
   P shadow = ev.polygon_api.shadow(p, plane_pos, plane_x, plane_y, light_vec);
   P shadow_color = ev.polygon_api.color_faces(shadow, 0x333333ff, 0x333333ff, 0x333333ff, 0x333333ff);
+  
+  //P reflect = ev.polygon_api.reflection(p, plane_pos, plane_x, plane_y, reflect_vec);
+  //P reflect_color = ev.polygon_api.color_faces(reflect, 0x333333ff, 0x333333ff, 0x333333ff, 0x333333ff);
+  //P reflect_color = ev.polygon_api.change_colors(reflect, color_change_func);
+
+  //P or_shref = ev.polygon_api.or_elem(shadow_color, reflect_color);
+
   
   PolygonObj shadow_obj(ev,shadow_color, sh);
   shadow_obj.set_scale(3.0,3.0,3.0);
@@ -364,7 +462,6 @@ int main() {
 
 
   ev.mainloop_api.alpha(true);
-
   float pos_x = 0.0;
   float pos_y = 0.0;
   float rot_y = 0.0;
@@ -382,9 +479,11 @@ int main() {
     poly.set_rotation_matrix2(mm);
     poly.set_pos(pos_x, -80.0, pos_y);
     poly.render();
+    //ev.mainloop_api.depth_test(false);
     shadow_obj.set_rotation_matrix2(mm);
     shadow_obj.set_pos(pos_x, -75.0, pos_y);
     shadow_obj.render();
+    //ev.mainloop_api.depth_test(true);
     //sphere.set_pos(0.0,0.0,400.0);
     //sphere.render();
 

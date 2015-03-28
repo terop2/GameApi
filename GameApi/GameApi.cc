@@ -352,7 +352,17 @@ void GameApi::MainLoopApi::clear_3d()
 
 }
 
-
+void GameApi::MainLoopApi::depth_test(bool enabled)
+{
+  if (enabled)
+    {
+      glEnable(GL_DEPTH_TEST);
+    }
+  else
+    {
+      glDisable(GL_DEPTH_TEST);
+    }
+}
 void GameApi::MainLoopApi::alpha(bool enable)
 {
   if (enable)
@@ -4103,6 +4113,17 @@ GameApi::P GameApi::PolygonApi::shadow(P p, PT pos, V u_x, V u_y, V light_vec)
   return add_polygon(e, new ShadowFaceCollection(*pp, *pos_1, *uu_x, *uu_y, *light), 1);
 }
 
+GameApi::P GameApi::PolygonApi::reflection(P p, PT pos, V u_x, V u_y, V ref_vec)
+{
+  FaceCollection *pp = find_facecoll(e, p);
+  Point *pos_1 = find_point(e, pos);
+  Vector *uu_x = find_vector(e, u_x);
+  Vector *uu_y = find_vector(e, u_y);
+  Vector *ref = find_vector(e, ref_vec);
+  return add_polygon(e, new ReflectFaceCollection(*pp, *pos_1, *uu_x, *uu_y, *ref), 1);
+}
+
+
 GameApi::P GameApi::PolygonApi::or_elem(P p1, P p2)
 {
   FaceCollection *pp1 = find_facecoll(e, p1);
@@ -4451,16 +4472,16 @@ unsigned int ChangeColor_Func(unsigned int p, int face,int point,void* data)
 GameApi::P GameApi::PolygonApi::change_colors(P orig, std::function<unsigned int (unsigned int p, int face, int point)> f)
 {
   FaceCollection *coll = find_facecoll(e, orig);
-  ChangeColor_data dt;
-  dt.env = &e;
-  dt.f = f;
+  ChangeColor_data *dt = new ChangeColor_data;
+  dt->env = &e;
+  dt->f = f;
   //dt.data = data;
 
   //GameApi::EveryApi *ev = new GameApi::EveryApi(e);
-  //::EnvImpl *env = ::EnvImpl::Environment(&e);
-  //env->deletes.push_back(std::shared_ptr<void>(ev));
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->deletes.push_back(std::shared_ptr<void>(dt));
 
-  FaceCollection *coll2 = new ChangeColor2(*coll, std::bind(ChangeColor_Func, _1,_2,_3,(void*)&dt));
+  FaceCollection *coll2 = new ChangeColor2(*coll, std::bind(ChangeColor_Func, _1,_2,_3,(void*)dt));
   return add_polygon(e, coll2, 1);
 }
 
