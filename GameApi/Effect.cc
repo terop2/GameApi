@@ -4480,3 +4480,15 @@ Point ShadowFaceCollection::FacePoint(int face, int point) const
     LinePlaneIntersection sect = LinePlaneIntersectionFunc(p, p+v, pos, pos+u_x, pos+u_y);
     return p+v*sect.tuv.dx;
 }
+
+Point ReflectFaceCollection::FacePoint(int face, int point) const
+{
+    Point p = ForwardFaceCollection::FacePoint(face,point);
+    Vector v = ref_vec;
+    LinePlaneIntersection sect = LinePlaneIntersectionFunc(p, p+v, pos, pos+u_x, pos+u_y);
+    Point pp = p+v*sect.tuv.dx;
+    Vector v2 = pp-p;
+    Point pp2 = pp + v2;
+    return pp2;
+}
+
