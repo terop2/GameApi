@@ -138,6 +138,7 @@ public:
   IMPORT void switch_to_3d(bool b, SH sh);
   IMPORT void alpha(bool enabled);
   IMPORT void depth_test(bool enabled);
+  IMPORT void transparency(bool enabled);
   IMPORT void cursor_visible(bool enabled);
   IMPORT void antialias(bool enabled);
   IMPORT float get_time();

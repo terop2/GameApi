@@ -352,6 +352,19 @@ void GameApi::MainLoopApi::clear_3d()
 
 }
 
+void GameApi::MainLoopApi::transparency(bool enabled)
+{
+  if (enabled)
+    {
+      //glBlendFunc(GL_ZERO, GL_SRC_COLOR); 
+     glDepthMask(GL_FALSE);
+    }
+  else
+    {
+      //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+     glDepthMask(GL_TRUE);
+    }
+}
 void GameApi::MainLoopApi::depth_test(bool enabled)
 {
   if (enabled)
