@@ -8571,6 +8571,79 @@ private:
 };
 #endif
 
+class TorusElem : public BoxableFaceCollection
+{
+public:
+  TorusElem(int numfaces1, int numfaces2, Point center, Vector u_x, Vector u_y, float radius1,
+	    Vector uu_x, Vector uu_y, float radius2)
+    : numfaces1(numfaces1), numfaces2(numfaces2), center(center), u_x(u_x), u_y(u_y), radius1(radius1),
+      uu_x(uu_x), uu_y(uu_y), radius2(radius2) { }
+
+  virtual int NumFaces() const { return numfaces1*numfaces2; }
+  virtual int NumPoints(int face) const { return 4; }
+  virtual Point FacePoint(int face, int point) const 
+  { 
+    int face1 = face / numfaces1;
+    int face2 = face - (face1*numfaces1);
+
+    if (point==1 || point==2) face1++;
+    if (point==2 || point==3) face2++;
+
+    float f1 = float(face1)/numfaces2;
+    float f2 = float(face2)/numfaces1;
+    // now [0..1]
+    f1*=3.14159*2.0;
+    f2*=3.14159*2.0;
+    Point pos = Pos(f1,f2);
+    return pos;
+  }
+
+  virtual Vector PointNormal(int face, int point) const 
+  { 
+    Point p1 = FacePoint(face, 0);
+    Point p2 = FacePoint(face, 1);
+    Point p3 = FacePoint(face, 2);
+    return -Vector::CrossProduct(p2-p1,p3-p1);
+  }
+  virtual unsigned int Color(int face, int point) const { return 0xffffffff; }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    int face1 = face / numfaces1;
+    int face2 = face - (face1*numfaces1);
+
+    if (point==1 || point==2) face1++;
+    if (point==2 || point==3) face2++;
+
+    float f1 = float(face1)/numfaces2;
+    float f2 = float(face2)/numfaces1;
+    Point2d p = { f1,f2 };
+    return p;
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+
+  
+  Point Pos(float angle1, float angle2) const
+  {
+    Point pos1 = center + radius1*u_x*cos(angle1) + radius1*u_y*sin(angle1);
+    Vector normal = Vector::CrossProduct(u_x, u_y);
+    normal /= normal.Dist();
+    Matrix m = Matrix::RotateAroundAxis(normal, angle1);
+    Vector vv_x = uu_x*m;
+    Vector vv_y = uu_y*m;
+    Point pos2 = pos1 + radius2*vv_x*cos(angle2) + radius2*vv_y*sin(angle2);
+    return pos2;
+  }
+private:
+  int numfaces1, numfaces2;
+  Point center;
+  Vector u_x, u_y;
+  float radius1;
+  Vector uu_x;
+  Vector uu_y;
+  float radius2;
+};
+
 class RingElem : public BoxableFaceCollection
 {
 public:

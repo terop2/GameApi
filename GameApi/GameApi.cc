@@ -4089,7 +4089,16 @@ GameApi::P GameApi::PolygonApi::sphere(PT center, float radius, int numfaces1, i
     FaceCollection *coll = new SphereElem(*p, radius, numfaces1, numfaces2);
     return add_polygon(e, coll,1);
 }
-
+GameApi::P GameApi::PolygonApi::torus(int numfaces1, int numfaces2, PT center, V u_x, V u_y, float radius1, V uu_x, V uu_y, float radius2)
+{
+  Point *cent = find_point(e, center);
+  Vector *u_x1 = find_vector(e, u_x);
+  Vector *u_y1 = find_vector(e, u_y);
+  Vector *uu_x1 = find_vector(e, uu_x);
+  Vector *uu_y1 = find_vector(e, uu_y);
+  FaceCollection *coll = new TorusElem(numfaces1, numfaces2, *cent, *u_x1, *u_y1, radius1, *uu_x1, *uu_y1, radius2);
+  return add_polygon(e, coll, 1); 
+}
 GameApi::P GameApi::PolygonApi::cone(int numfaces, PT p1, PT p2, float rad1, float rad2)
 {
     Point *pp1 = find_point(e,p1);

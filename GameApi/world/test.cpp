@@ -9,11 +9,11 @@ using namespace GameApi;
 
 char world[] = \
   "+---------+---------+"
-  "|....%...T|.P.......|"
-  "|..+---+..|.........|"
+  "|....%...T|.P...Y...|"
+  "|..+---+..|........S|"
   "|.Q|...|............|"
-  "|..+.*.+..|.........|"
-  "|&..W....#|.....H...|"
+  "|..+.*.+..|........G|"
+  "|&..W....#|K....H...|"
   "+--.....--+---------+";
 
 unsigned int func(char c) {
@@ -31,6 +31,10 @@ unsigned int func(char c) {
   case 'T': return 10;
   case 'P': return 11;
   case 'H': return 12;
+  case 'S': return 13;
+  case 'K': return 14;
+  case 'G': return 15;
+  case 'Y': return 16;
   };
 }
 
@@ -238,6 +242,50 @@ struct Models
 P pieces(unsigned int i, EveryApi &ev, Models &m)
 {
   switch(i) {
+  case 16:
+    {
+      PT center = ev.point_api.point(50.0, 40.0, 50.0);
+      V u_x = ev.vector_api.vector(1.0, 0.0, 0.0);
+      V u_y = ev.vector_api.vector(0.0, 1.0, 0.0);
+      V uu_x = ev.vector_api.vector(1.0, 0.0, 0.0);
+      V uu_y = ev.vector_api.vector(0.0, 0.0, 1.0);
+      P p = ev.polygon_api.torus(30,20, center, u_x, u_y, 30.0, uu_x, uu_y, 10.0);
+      LI lines = ev.lines_api.from_polygon(p);
+      
+     P p2 = ev.polygon_api.from_lines(lines, std::bind(&line_func, _1,_2,_3,_4,_5,_6,_7, _8,_9, std::ref(ev)));
+ 
+     return p2;
+
+    }
+  case 15:
+    {
+      PT center = ev.point_api.point(50.0, 40.0, 50.0);
+      V u_x = ev.vector_api.vector(1.0, 0.0, 0.0);
+      V u_y = ev.vector_api.vector(0.0, 1.0, 0.0);
+      V uu_x = ev.vector_api.vector(1.0, 0.0, 0.0);
+      V uu_y = ev.vector_api.vector(0.0, 0.0, 1.0);
+      P p = ev.polygon_api.torus(40,40, center, u_x, u_y, 30.0, uu_x, uu_y, 10.0);
+      P p2 = ev.polygon_api.color_faces(p, 0x000000ff, 0x222222ff, 0x111111ff, 0x333333ff);
+      return p2;
+      
+    }
+  case 14:
+    {
+      BM bm = ev.bitmap_api.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 100, 100, 256);
+      P p = ev.polygon_api.heightmap(bm, PolygonApi::EQuad, 0.0, 100.0,
+				     20.0, 0.0, 
+				     0.0, 100.0);
+      P p2 = ev.polygon_api.color_faces(p, 0x000000ff, 0x222222ff, 0x111111ff, 0x333333ff);
+      return p2;
+    }
+  case 13:
+    {
+      PT p1 = ev.point_api.point(50.0, 0.0, 50.0);
+      PT p2 = ev.point_api.point(50.0, 80.0, 50.0);
+      P p = ev.polygon_api.cone(50, p1, p2, 50.0, 30.0);
+      P p3 = ev.polygon_api.color_faces(p, 0xffffffff, 0xaaaaaaff, 0xccccccff, 0x888888ff);
+      return p3;
+    }
   case 12:
     {
       P p = m.teapot;
@@ -248,7 +296,7 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
 						      _8,_9,_10,
 						      _11,_12,_13, std::ref(ev)));
 #endif
-      P p3 = ev.polygon_api.color_faces(p2, 0x000000ff, 0x222222ff, 0x111111ff, 0x333333ff);
+      P p3 = ev.polygon_api.color_faces(p2, 0xffffffff, 0xaaaaaaff, 0xccccccff, 0x888888ff);
       
       return p3;
     }
