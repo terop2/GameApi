@@ -763,6 +763,7 @@ public:
 	      float min_x, float max_x, 
 	      float min_y, float max_y,
 	      float min_z, float max_z);
+  IMPORT P heightmap(FB fb, std::function<P (float)> f, float dx, float dz);
   IMPORT P fromsurface(S s, float thickness);
   IMPORT P fromsurface(S s1, S s2, C curve); // surfacebetweensurfaces
   

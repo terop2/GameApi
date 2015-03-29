@@ -234,6 +234,24 @@ P cube(float x1, float x2,
   return p2;
 }
 
+P heightmap_cube(float val, EveryApi &ev)
+{
+  float s = 10.0;
+  P p1 = ev.polygon_api.cube(0.0,0.5,
+			     0.0, val*s,
+			     0.0, 0.5);
+  P p1a = ev.polygon_api.color_faces(p1, 0x000000ff, 0x222222ff, 0x111111ff, 0x333333ff);
+
+  P p2 = ev.polygon_api.cube(0.0, 0.5,
+			     val*s, s*val+0.2,
+			     0.0, 0.5);
+  int val2 = val*255.0;
+  int color = val2 + (val2<<8) + (val2<<16) + (val2<<24);
+  P p2a = ev.polygon_api.color_faces(p2, color, color, color, color);
+  
+  return ev.polygon_api.or_elem(p1a,p2a);
+}
+
 struct Models
 {
   P teapot;
@@ -271,12 +289,15 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
     }
   case 14:
     {
-      BM bm = ev.bitmap_api.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 100, 100, 256);
-      P p = ev.polygon_api.heightmap(bm, PolygonApi::EQuad, 0.0, 100.0,
-				     20.0, 0.0, 
-				     0.0, 100.0);
-      P p2 = ev.polygon_api.color_faces(p, 0x000000ff, 0x222222ff, 0x111111ff, 0x333333ff);
-      return p2;
+      BM bm = ev.bitmap_api.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 200, 200, 256);
+      FB fb = ev.float_bitmap_api.from_green(bm);
+      //P p = ev.polygon_api.heightmap(bm, PolygonApi::EQuad, 0.0, 100.0,
+      //				     20.0, 0.0, 
+      //				     0.0, 100.0);
+      P p = ev.polygon_api.heightmap(fb, std::bind(&heightmap_cube, _1, std::ref(ev)), 0.5,0.5);
+      //P p2 = ev.polygon_api.color_faces(p, 0x112233ff, 0x224466ff, 0x336699ff, 0x4488aaff);
+      // P pp = ev.polygon_api.rotatex(p,90.0*3.14159*2.0/360.0);
+      return p;
     }
   case 13:
     {
