@@ -74,7 +74,7 @@ P pieces2(unsigned int i, EveryApi &ev)
 P pieces3(unsigned int i, EveryApi &ev)
 {
     P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
-    P pk = ev.polygon_api.color_faces(p1a, 0x888888af, 0x444444af, 0x222222af, 0xaaaaaaaf);
+    P pk = ev.polygon_api.color_faces(p1a, 0x8888884f, 0x4444444f, 0x2222224f, 0xaaaaaa4f);
     //return ev.polygon_api.empty();
      return pk;
 }
@@ -283,7 +283,8 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       V uu_x = ev.vector_api.vector(1.0, 0.0, 0.0);
       V uu_y = ev.vector_api.vector(0.0, 0.0, 1.0);
       P p = ev.polygon_api.torus(40,40, center, u_x, u_y, 30.0, uu_x, uu_y, 10.0);
-      P p2 = ev.polygon_api.color_faces(p, 0x000000ff, 0x222222ff, 0x111111ff, 0x333333ff);
+      //P p2 = ev.polygon_api.color_faces(p, 0x000000ff, 0x222222ff, 0x111111ff, 0x333333ff);
+      P p2 = ev.polygon_api.color_from_normals(p);
       return p2;
       
     }
@@ -475,11 +476,11 @@ unsigned int color_change_func(unsigned int orig, int face, int point)
   unsigned int color_b = color & 0x0000ff00;
   unsigned int color_a = color & 0x000000ff;
   
-  color_r /= 2;
-  color_g /= 2;
-  color_b /= 2;
+  color_r /= 4;
+  color_g /= 4;
+  color_b /= 4;
   unsigned int color2 = color_r | color_g | color_b |color_a;
-  unsigned int color3 = color2 & 0x7f7f7f7f;
+  unsigned int color3 = color2 & 0x3f3f3fff;
   return color3;
 }
 
@@ -563,11 +564,6 @@ int main() {
     poly.set_rotation_matrix2(mm);
     poly.set_pos(pos_x, -80.0, pos_y);
     poly.render();
-    ev.mainloop_api.transparency(true);
-    poly2.set_rotation_matrix2(mm);
-    poly2.set_pos(pos_x, -80.0, pos_y);
-    poly2.render();
-    ev.mainloop_api.transparency(false);
 
     //shadow_obj.set_rotation_matrix2(mm);
     //shadow_obj.set_pos(pos_x, -75.0, pos_y);
@@ -576,6 +572,13 @@ int main() {
     reflect_obj.set_rotation_matrix2(mm);
     reflect_obj.set_pos(pos_x, -75.0, pos_y);
     reflect_obj.render();
+
+
+    ev.mainloop_api.transparency(true);
+    poly2.set_rotation_matrix2(mm);
+    poly2.set_pos(pos_x, -80.0, pos_y);
+    poly2.render();
+    ev.mainloop_api.transparency(false);
 
     //ev.mainloop_api.depth_test(true);
     //sphere.set_pos(0.0,0.0,400.0);

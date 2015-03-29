@@ -9,7 +9,7 @@ struct GlyphPriv;
 class FontLineCollectionWrapper : public PlanePoints2d
 {
 public:
-  FontLineCollectionWrapper(LineCollection *coll, std::vector<int> &types, float sx, float sy, float dx, float dy) : coll(coll), m_sx(sx), m_sy(sy), types(types), m_dx(dx), m_dy(dy) { }
+  FontLineCollectionWrapper(LineCollection *coll, std::vector<int> &types, float sx, float sy, float dx, float dy) : coll(coll), m_sx(sx), m_sy(sy), m_dx(dx), m_dy(dy), types(types)  { }
   virtual float SizeX() const { return m_sx; }
   virtual float SizeY() const { return m_sy; }
   virtual int Size() const { return coll->NumLines()+1; }
