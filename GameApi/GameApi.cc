@@ -4574,6 +4574,30 @@ GameApi::P GameApi::PolygonApi::memoize_all(P orig)
   coll2->MemoizeAll();
   return add_polygon2(e, coll2, 1);
 }
+GameApi::P GameApi::PolygonApi::heightmap(FB bm,
+					  std::function<P (float)> f, float dx, float dz)
+{
+  FloatBitmap *fb = find_float_bitmap(e, bm);
+  int sx = fb->bitmap->SizeX();
+  int sy = fb->bitmap->SizeY();
+  std::vector<P> vec;
+  for(int y=0;y<sy;y++)
+    {
+      std::vector<P> vec2;
+      for(int x=0;x<sx;x++)
+	{
+	  float val = fb->bitmap->Map(x,y);
+	  P p = f(val);
+	  P p2 = translate(p, dx*x, 0.0, 0.0);
+	  vec2.push_back(p2);
+	}
+      P p = or_array(&vec2[0], sx);
+      P p2 = translate(p, 0.0, 0.0, dz*y);
+      vec.push_back(p2);
+    }
+  P p = or_array(&vec[0], sy);
+  return p;
+}
 GameApi::P GameApi::PolygonApi::heightmap(BM bm,
 					  HeightMapType t,
 				       float min_x, float max_x,
