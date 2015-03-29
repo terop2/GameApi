@@ -61,13 +61,20 @@ float float_bitmap(int x, int y)
 
 P pieces2(unsigned int i, EveryApi &ev)
 {
-    P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
     P p2a = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
-    P pc = ev.polygon_api.or_elem(p1a,p2a);
-    P pk = ev.polygon_api.color_faces(pc, 0x888888af, 0x444444af, 0x222222af, 0xaaaaaaaf);
+    P pk = ev.polygon_api.color_faces(p2a, 0xaa8888af, 0xaa4444af, 0xaa2222af, 0xaaaaaaaf);
     //return ev.polygon_api.empty();
      return pk;
 }
+
+P pieces3(unsigned int i, EveryApi &ev)
+{
+    P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
+    P pk = ev.polygon_api.color_faces(p1a, 0x888888af, 0x444444af, 0x222222af, 0xaaaaaaaf);
+    //return ev.polygon_api.empty();
+     return pk;
+}
+
 
 P line_func(int i, float sx, float sy, float sz, float ex, float ey, float ez, unsigned int scolor, unsigned int ecolor, EveryApi &ev)
 {
@@ -235,12 +242,13 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
     {
       P p = m.teapot;
       P p2 = ev.polygon_api.scale(p, 20.0,20.0,20.0);
+#if 0
       P p2a = ev.polygon_api.from_polygon(p2, std::bind(&poly_func, _1,  _2,_3,_4,
 						      _5,_6,_7,
 						      _8,_9,_10,
 						      _11,_12,_13, std::ref(ev)));
-
-      P p3 = ev.polygon_api.color_faces(p2a, 0x000000ff, 0x222222ff, 0x111111ff, 0x333333ff);
+#endif
+      P p3 = ev.polygon_api.color_faces(p2, 0x000000ff, 0x222222ff, 0x111111ff, 0x333333ff);
       
       return p3;
     }
@@ -434,12 +442,14 @@ int main() {
   BM bm = ev.bitmap_api.newintbitmap(world, 21, 7, func);
   P p = ev.polygon_api.world_from_bitmap(std::bind(&pieces, _1, std::ref(ev), std::ref(m)), bm   , 100.0, 100.0);
   P p2 = ev.polygon_api.world_from_bitmap(std::bind(&pieces2, _1, std::ref(ev)), bm, 100.0, 100.0);
-  //P p3 = ev.polygon_api.or_elem(p,p2);
-  PolygonObj poly(ev, p, sh);
+  P p3 = ev.polygon_api.world_from_bitmap(std::bind(&pieces3, _1, std::ref(ev)), bm, 100.0, 100.0);
+  P p3a = ev.polygon_api.or_elem(p,p3);
+  P p2a = ev.polygon_api.or_elem(p,p2);
+  PolygonObj poly(ev, p2a, sh);
   poly.set_scale(3.0,3.0,3.0);
   poly.prepare();
 
-  PolygonObj poly2(ev,p2, sh);
+  PolygonObj poly2(ev,p3, sh);
   poly2.set_scale(3.0,3.0,3.0);
   poly2.prepare();
 
@@ -452,7 +462,7 @@ int main() {
   P shadow = ev.polygon_api.shadow(p, plane_pos, plane_x, plane_y, light_vec);
   P shadow_color = ev.polygon_api.color_faces(shadow, 0x333333ff, 0x333333ff, 0x333333ff, 0x333333ff);
   
-  P reflect = ev.polygon_api.reflection(p, plane_pos, plane_x, plane_y, reflect_vec);
+  P reflect = ev.polygon_api.reflection(p2a, plane_pos, plane_x, plane_y, reflect_vec);
   P reflect_color = ev.polygon_api.change_colors(reflect, color_change_func);
 
 
@@ -489,10 +499,10 @@ int main() {
     poly2.set_pos(pos_x, -80.0, pos_y);
     poly2.render();
     ev.mainloop_api.transparency(false);
-    //ev.mainloop_api.depth_test(false);
-    shadow_obj.set_rotation_matrix2(mm);
-    shadow_obj.set_pos(pos_x, -75.0, pos_y);
-    shadow_obj.render();
+
+    //shadow_obj.set_rotation_matrix2(mm);
+    //shadow_obj.set_pos(pos_x, -75.0, pos_y);
+    //shadow_obj.render();
 
     reflect_obj.set_rotation_matrix2(mm);
     reflect_obj.set_pos(pos_x, -75.0, pos_y);
@@ -516,7 +526,4 @@ int main() {
     speed_x = speed*cos(rot_y+3.14159/2.0);
     speed_y = speed*sin(rot_y+3.14159/2.0);
   }
-
-
-
 }
