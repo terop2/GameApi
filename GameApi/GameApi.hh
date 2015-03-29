@@ -756,6 +756,7 @@ public:
 	IMPORT P cube(PT *p); // 8 points needed
 	IMPORT P sphere(PT center, float radius, int numfaces1, int numfaces2);
 	IMPORT P cone(int numfaces, PT p1, PT p2, float rad1, float rad2);
+  IMPORT P torus(int numfaces1, int numfaces2, PT center, V u_x, V u_y, float radius1, V uu_x, V uu_y, float radius2);
 	IMPORT P ring(float sx, float sy, float x, int steps); // use RingEffect::Init() to implement
   enum HeightMapType { EQuad, ETriangle };
   IMPORT P heightmap(BM bm, HeightMapType t,
