@@ -4199,6 +4199,31 @@ GameApi::P GameApi::PolygonApi::color(P next, unsigned int color)
   return add_polygon(e, coll,1);
 }
 
+class ColorFromNormals : public ForwardFaceCollection
+{
+public:
+  ColorFromNormals(FaceCollection *coll) : ForwardFaceCollection(*coll) { }
+  virtual unsigned int Color(int face, int point) const
+  {
+    Vector v = ForwardFaceCollection::PointNormal(face,point);
+    v/=v.Dist();
+    int r = v.dx*128.0+127.0;
+    int g = v.dy*128.0+127.0;
+    int b = v.dz*128.0+127.0;
+    r<<=24;
+    g<<=16;
+    b<<=8;
+    return r+g+b+0xff;
+  }
+  
+};
+
+GameApi::P GameApi::PolygonApi::color_from_normals(P orig)
+{
+  FaceCollection *c = find_facecoll(e, orig);
+  FaceCollection *c2 = new ColorFromNormals(c);
+  return add_polygon2(e, c2, 1);
+}
 GameApi::P GameApi::PolygonApi::color_faces(P next, 
 					 unsigned int color_1, 
 					 unsigned int color_2,
@@ -7720,7 +7745,7 @@ public:
 	case EConic:
 	  {
 	    Point2d p1 = p;
-	    Point2d p2 = plane->Map(i+1);
+	    //Point2d p2 = plane->Map(i+1);
 	    Point2d p3 = plane->Map(i+2);
 	    
 	    if (plane->Type(i+3)!=ECubic&&plane->Type(i+3)!=EConic) { i+=2; break; }
@@ -9336,6 +9361,7 @@ public:
 	case PlanePoints2d::ELineTo:
 	  line++;
 	  break;
+	case PlanePoints2d::EConic:
 	case PlanePoints2d::ECubic:
 	  std::cout << "Use remove_splines() first before doing from_plane()" << std::endl;
 	  break;
@@ -9368,6 +9394,7 @@ public:
 	  pos = plane->Map(i);
 	  line++;
 	  break;
+	case PlanePoints2d::EConic:
 	case PlanePoints2d::ECubic:
 	  std::cout << "Use remove_splines() first before doing from_plane()" << std::endl;
 	  break;

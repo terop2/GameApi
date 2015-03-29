@@ -784,6 +784,7 @@ public:
   IMPORT P color_faces(P orig,
 		unsigned int color_1, unsigned int color_2,
 		unsigned int color_3, unsigned int color_4);
+  IMPORT P color_from_normals(P orig);
 
   IMPORT P texcoord_poly(P orig, int facenum, PT *array, int size);
   IMPORT P color_poly(P orig, int facenum, unsigned int *array, int size);
