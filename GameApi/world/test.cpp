@@ -438,8 +438,8 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
     {
       PT pt = ev.point_api.point(50.0,40.0,50.0);
       P p2 = ev.polygon_api.sphere(pt, 40.0, 40,40);
-      
-      return p2;
+      P p3 = ev.polygon_api.color_from_normals(p2);
+      return p3;
     }
   case 3:
     {
