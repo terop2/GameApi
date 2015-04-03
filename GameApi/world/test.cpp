@@ -10,8 +10,8 @@ using namespace GameApi;
 char world[] = \
   "+---------+---------+"
   "|....%...T|.P...Y...|"
-  "|..+---+..|........S|"
-  "|.Q|...|............|"
+  "|..+---+..|...L....S|"
+  "|.Q|...|........I...|"
   "|..+.*.+..|........G|"
   "|&..W....#|K....H...|"
   "+--.....--+---------+";
@@ -35,6 +35,8 @@ unsigned int func(char c) {
   case 'K': return 14;
   case 'G': return 15;
   case 'Y': return 16;
+  case 'L': return 17;
+  case 'I': return 18;
   };
 }
 
@@ -255,11 +257,31 @@ P heightmap_cube(float val, EveryApi &ev)
 struct Models
 {
   P teapot;
+  P lucy;
+  P sponza;
 };
 
 P pieces(unsigned int i, EveryApi &ev, Models &m)
 {
   switch(i) {
+  case 18:
+    {
+#if 0
+      P p = m.sponza;
+      P p2 = ev.polygon_api.scale(p, 5.0,5.0,5.0);
+      P p2a = ev.polygon_api.translate(p2, 0.0, 15.0, 0.0);
+      P p3 = ev.polygon_api.recalculate_normals(p2a);
+      P p4 = ev.polygon_api.color_from_normals(p3);
+      return p4;
+#endif
+    }
+  case 17:
+    {
+      P p = m.lucy;
+      P p2 = ev.polygon_api.scale(p, 5.0,5.0,5.0);
+      P p3 = ev.polygon_api.color_from_normals(p2);
+      return p3;
+    }
   case 16:
     {
       PT center = ev.point_api.point(50.0, 40.0, 50.0);
@@ -318,9 +340,11 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
 						      _8,_9,_10,
 						      _11,_12,_13, std::ref(ev)));
 #endif
-      P p3 = ev.polygon_api.color_faces(p2, 0xffffffff, 0xaaaaaaff, 0xccccccff, 0x888888ff);
+      //P p3 = ev.polygon_api.color_faces(p2, 0xffffffff, 0xaaaaaaff, 0xccccccff, 0x888888ff);
       
-      return p3;
+      P p3 = ev.polygon_api.recalculate_normals(p2);
+      P p4 = ev.polygon_api.color_from_normals(p3);
+      return p4;
     }
   case 11:
     {
@@ -508,6 +532,15 @@ int main() {
 
   Models m;
   m.teapot = ev.polygon_api.load_model("./teapot.obj", 0);
+  m.lucy = ev.polygon_api.load_model("./lucy.obj", 1);
+  P pk = ev.polygon_api.empty();
+#if 0
+  for(int i=0;i<60;i++)
+    {
+      pk = ev.polygon_api.or_elem(pk, ev.polygon_api.load_model("./sponzasimple.obj", i));
+    }
+  m.sponza = pk;
+#endif
 
   BM bm = ev.bitmap_api.newintbitmap(world, 21, 7, func);
   P p = ev.polygon_api.world_from_bitmap(std::bind(&pieces, _1, std::ref(ev), std::ref(m)), bm   , 100.0, 100.0);
