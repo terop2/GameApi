@@ -10724,9 +10724,11 @@ public:
     std::string line;
     int obj_count = 0;
     int vertex_count = 0;
+    int vertex_count2 = 0;
     int face_count=0;
     int normal_count =0;
     int tex_count = 0;
+    int obj_base = 0;
     while(std::getline(file, line))
       {
 	std::string word;
@@ -10736,6 +10738,7 @@ public:
 	  {
 	    std::cout << "o" << std::flush;
 	    obj_count++;
+	    obj_base = vertex_count2;
 	  }
 	if (word == "v" && obj_count==obj_num)
 	  {
@@ -10747,7 +10750,7 @@ public:
 	    //std::cout << "Vertex:" << vertex_data.size() << " " << x << " " << y << " " << z << std::endl;
 	    Point p(x,y,z);
 	    vertex_data.push_back(p);
-	  }
+	  } else if (word =="v") { vertex_count2++; }
 	if (word == "vt" && obj_count==obj_num)
 	  {	
 	    tex_count++;
@@ -10792,6 +10795,9 @@ public:
 	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
 	    if (t_index<0) t_index = texcoord_data.size()+t_index+1;
 	    if (n_index<0) n_index = normal_data.size()+n_index+1;
+	    v_index -= obj_base;
+	    t_index -= obj_base;
+	    n_index -= obj_base;
 	    vertex_index.push_back(v_index -1);
 	    texture_index.push_back(t_index-1);
 	    normal_index.push_back(n_index-1);
@@ -10807,7 +10813,8 @@ public:
 	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
 	    if (t_index<0) t_index = texcoord_data.size()+t_index+1;
 	    //if (n_index<0) n_index = -n_index;
-
+	    v_index -= obj_base;
+	    t_index -= obj_base;
 	    vertex_index.push_back(v_index-1);
 	    texture_index.push_back(t_index-1);
 		    normal_index.push_back(0);
@@ -10824,6 +10831,8 @@ public:
 	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
 	    //if (t_index<0) t_index = -t_index;
 	    if (n_index<0) n_index = normal_data.size()+n_index+1;
+	    v_index -= obj_base;
+	    n_index -= obj_base;
 
 	    vertex_index.push_back(v_index-1);
 		    texture_index.push_back(0);
@@ -10837,6 +10846,9 @@ public:
 		{
 		  //std::cout << "4" << std::flush;
 	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
+
+	    v_index -= obj_base;
+
 	    //if (t_index<0) t_index = -t_index;
 	    //if (n_index<0) n_index = -n_index;
 
