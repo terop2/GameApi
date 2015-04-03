@@ -2,6 +2,46 @@
 
 using namespace GameApi;
 
+char chars[] =
+  "THLKQLHT"
+  "PPPPPPPP"
+  "........"
+  "........"
+  "........"
+  "........"
+  "PPPPPPPP"
+  "THLKQLHT";
+int charsmap(char c)
+{
+  switch(c)
+    {
+    case 'T': return 0;
+    case 'H': return 1;
+    case 'L': return 2; 
+    case 'K': return 3; 
+    case 'Q': return 4;
+    case 'P': return 5;
+    }
+}
+
+P chars_blocks(int c, EveryApi &ev)
+{
+#if 0
+  switch(c)
+    {
+    case 5: // pawn
+      {
+	PT p1 = ev.point_api.point(15.0, -60.0, 15.0);
+	PT p2 = ev.point_api.point(15.0, -40.0, 15.0);
+	P p = ev.polygon_api.cone(30, p1,p2,15.0,12.0);
+	return p;
+      }
+    };
+#endif
+  return ev.polygon_api.empty();
+}
+
+
 char board[] = 
   "XOXOXOXO"
   "OXOXOXOX"
@@ -56,7 +96,14 @@ int main() {
   P board2 = ev.polygon_api.scale(board, 2.8,2.8,2.8);
   P board3 = ev.polygon_api.translate(board2, -340.0, 30.0, -400.0);
 
-  PolygonObj poly(ev, board3, sh);
+  BM bm2 = ev.bitmap_api.newintbitmap(chars, 8,8, charsmap);
+  P chars = ev.polygon_api.world_from_bitmap(std::bind(&chars_blocks, _1, std::ref(ev)), bm2, 30.0, 30.0);
+  P chars2 = ev.polygon_api.scale(chars, 2.8,2.8,2.8);
+  P chars3 = ev.polygon_api.translate(chars2, -340.0, 30.0, -400.0);
+
+  P or_b = ev.polygon_api.or_elem(board3, chars3);
+
+  PolygonObj poly(ev, or_b, sh);
   poly.prepare();
  
   while(1) {
