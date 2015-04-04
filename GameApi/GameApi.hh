@@ -6,7 +6,7 @@
 #include <string>
 #include <functional>
 #include <vector>
-
+#include <map>
 
 namespace GameApi
 {
@@ -1868,6 +1868,138 @@ private:
     std::vector<TXID> id;
     int anim_id;
   };
+
+  class WorldObj : public RenderObject, public MoveScaleObject3d
+  {
+  public:
+    WorldObj(EveryApi &ev, std::function<P(int)> f, int numvalues, BM bm, SH sh) : bmapi(ev.bitmap_api), api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), numvalues(numvalues), bm(bm), f(f), sh(sh) 
+    {
+      int sx = bmapi.size_x(bm);
+      int sy = bmapi.size_y(bm);
+      bitmap = new int[sx*sy];
+      for(int y=0;y<sy;y++)
+	{
+	  for(int x=0;x<sx;x++)
+	    {
+	      int val = bmapi.intvalue(bm, x,y);
+	      bitmap[x+y*sx] = val;
+	    }
+	}
+
+      id.resize(1);
+      current_pos = mat.identity();
+      current_scale = mat.identity();
+      current_rot = mat.identity();
+      current_rot2 = mat.identity();
+      setup_m();
+      //id.id = 0;
+      //va.id = 0;
+      anim_id = 0;
+    }
+    void set_block(int x, int y, int c) { 
+      int sx=bmapi.size_x(bm);
+      bitmap[x+y*sx] = c;
+    }
+    int read_block(int x, int y) const {
+      int sx=bmapi.size_x(bm);
+      return bitmap[x+y*sx];
+    }
+    void prepare() 
+    { 
+      m_va2.clear();
+      for(int i=0;i<numvalues;i++)
+	{
+	  P p = f(i);
+	  VA va = api.create_vertex_array(p);
+	  VA va2;
+	  if (id[i].id!=0) {
+	    va2 = tex.bind(va, id[i]);
+	  } else {
+	    va2 = va;
+	  }
+	  m_va2[i] = va2;
+	}
+    }
+    void set_range(int x, int y, int sx, int sy)
+    {
+      m_x = x;
+      m_y = y;
+      m_sx = sx;
+      m_sy = sy;
+    }
+    void render() {
+      shapi.use(sh);
+      shapi.set_var(sh, "in_MV", m);
+      int sx = bmapi.size_x(bm);
+      for(int y=m_y;y<m_y+m_sy;y++) {
+	for(int x=m_x;x<m_x+m_sx;x++) {
+	  api.render_vertex_array(m_va2[bitmap[x+y*sx]]);
+	}
+      }
+    }
+    void set_pos(float pos_x, float pos_y, float pos_z)
+    {
+      current_pos = mat.trans(pos_x, pos_y, pos_z);
+      setup_m();
+    }
+    void set_scale(float mult_x, float mult_y, float mult_z)
+    {
+      current_scale = mat.scale(mult_x, mult_y, mult_z);
+      setup_m();
+    }
+    void set_rotation_y(float angle)
+    {
+      current_rot = mat.yrot(angle);
+      setup_m();
+    }
+    void set_rotation_matrix(M m)
+    {
+      current_rot = m;
+      setup_m();
+    }
+    void set_rotation_matrix2(M m)
+    {
+      current_rot2 = m;
+      setup_m();
+    }
+    void bind_texture(int anim_id, TXID id_)
+    {
+      id[anim_id] = id_;
+    }
+    void set_anim_frame(int id)
+    {
+      if (id>=0&&id<(int)m_va2.size())
+	anim_id = id;
+    }
+  private:
+    void setup_m() {
+      m = mat.mult(mat.mult(mat.mult(current_rot,current_scale), current_pos), current_rot2);
+    }
+  private:
+    BitmapApi &bmapi;
+    PolygonApi &api;
+    ShaderApi &shapi;
+    MatrixApi &mat;
+    TextureApi &tex;
+    M current_pos;
+    M current_scale;
+    M current_rot;
+    M current_rot2;
+    M m;
+    //std::vector<P> m_p;
+    int numvalues;
+    BM bm;
+    std::function<P(int)> f;
+    int *bitmap;
+    SH sh;
+    int m_x, m_y, m_sx, m_sy;
+    //VA va;
+    //std::vector<VA> m_va2;
+    std::map<int, VA> m_va2;
+    std::vector<TXID> id;
+    int anim_id;
+  };
+
   class PointsObj : public RenderObject, public MoveScaleObject3d
   {
   public:
