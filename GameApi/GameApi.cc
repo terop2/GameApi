@@ -2573,11 +2573,11 @@ public:
     Vector u_x = Point(pos_2.x, pos_2.y, 0.0)-Point(pos_1.x, pos_1.y, 0.0);
     float val = Vector::DotProduct(u, u_x);
     val /= u_x.Dist();
-    val /= u_x.Dist();
+    val /= u_x.Dist(); 
     // now [0.0 .. 1.0]
     if (val<0.0) return 0;
     if (val>1.0) return 0;
-    return Color(Color::Interpolate(color_1, color_2, val));
+    return Color(Color::CubicInterpolate(color_1, color_2, val));
   }
 
 private:
@@ -2614,7 +2614,7 @@ public:
     // now [0..1]
     if (dist<0.0) return 0;
     if (dist>1.0) return 0;
-    return Color(Color::Interpolate(color_1, color_2, dist));
+    return Color(Color::CubicInterpolate(color_1, color_2, dist));
   }
 private:
   int sx,sy;
@@ -4217,7 +4217,26 @@ public:
   }
   
 };
-
+class ColorRangeFaceCollection : public ForwardFaceCollection
+{
+public: 
+  ColorRangeFaceCollection(FaceCollection *coll, unsigned int upper_range, unsigned int lower_range) : ForwardFaceCollection(*coll), coll(coll), upper_range(upper_range), lower_range(lower_range) { }
+  virtual unsigned int Color(int face, int point) const
+  {
+    unsigned int col = ForwardFaceCollection::Color(face,point);
+    unsigned int col2 = Color::RangeChange(col, upper_range, lower_range);
+    return col2;
+  }
+private:
+  FaceCollection *coll;
+  unsigned int upper_range, lower_range;
+};
+GameApi::P GameApi::PolygonApi::color_range(P orig, unsigned int upper_range, unsigned int lower_range)
+{
+  FaceCollection *c = find_facecoll(e, orig);
+  FaceCollection *c2 = new ColorRangeFaceCollection(c,upper_range,lower_range);
+  return add_polygon2(e, c2, 1);
+}
 GameApi::P GameApi::PolygonApi::color_from_normals(P orig)
 {
   FaceCollection *c = find_facecoll(e, orig);
@@ -7256,7 +7275,7 @@ public:
   {
     unsigned int c1 = coll->Color(face,point);
     unsigned int c2 = coll->EndColor(face,point);
-    return Color::Interpolate(c1,c2, val);
+    return Color::CubicInterpolate(c1,c2, val);
   }
   virtual Point2d TexCoord(int face, int point) const
   {
@@ -8493,7 +8512,7 @@ public:
   virtual unsigned int ColorValue(Point p) const
   {
     float val = obj->FloatValue(p);
-    return Color::Interpolate(col0, col1, val);
+    return Color::CubicInterpolate(col0, col1, val);
   }
 
 private:
@@ -8706,7 +8725,7 @@ public:
   {
     unsigned int c1 = o1->ColorValue(p);
     unsigned int c2 = o2->ColorValue(p);
-    return Color::Interpolate(c1,c2,val);
+    return Color::CubicInterpolate(c1,c2,val);
   }
 private:
   ColorVolumeObject *o1, *o2;
