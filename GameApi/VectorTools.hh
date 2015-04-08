@@ -391,6 +391,108 @@ public:
     unsigned int a = ((0xff)<<24) &0xff000000; 
     return r+g+b+a;
   }
+  static unsigned int RangeChange(unsigned int color,
+				  unsigned int range_upper,
+				  unsigned int range_lower)
+  {
+    unsigned int r = color & 0xff;
+    unsigned int g = color & 0xff00;
+    unsigned int b = color & 0xff0000;
+    unsigned int a = color & 0xff000000;
+
+    unsigned int ru = range_upper & 0xff;
+    unsigned int gu = range_upper & 0xff00;
+    unsigned int bu = range_upper & 0xff0000;
+    unsigned int au = range_upper & 0xff000000;
+
+    unsigned int rl = range_lower & 0xff;
+    unsigned int gl = range_lower & 0xff00;
+    unsigned int bl = range_lower & 0xff0000;
+    unsigned int al = range_lower & 0xff000000;
+
+    float rf = float(r)/255.0;
+    float gf = float(g>>8)/255.0;
+    float bf = float(b>>16)/255.0;
+    float af = float(a>>24)/255.0;
+
+    unsigned int rc = rl + (unsigned int)(rf*(ru-rl));
+    unsigned int gc = gl + (unsigned int)(gf*(gu-gl));
+    unsigned int bc = bl + (unsigned int)(bf*(bu-bl));
+    unsigned int ac = al + (unsigned int)(af*(au-al));
+    rc = rc & 0xff;
+    gc = gc & 0xff00;
+    bc = bc & 0xff0000;
+    ac = ac & 0xff000000;
+    return rc+gc+bc+ac;
+
+  }
+  static unsigned int CubicInterpolate(unsigned int pixel1, unsigned int pixel2, float val)
+  {
+    unsigned int r = pixel1 & 0xff;
+    unsigned int g = pixel1 & 0xff00;
+    unsigned int b = pixel1 & 0xff0000;
+    unsigned int a = pixel1 & 0xff000000;
+    unsigned int r2 = pixel2 & 0xff;
+    unsigned int g2 = pixel2 & 0xff00;
+    unsigned int b2 = pixel2 & 0xff0000;
+    unsigned int a2 = pixel2 & 0xff000000;
+
+    float rf = r;
+    float gf = g>>8;
+    float bf = b>>16;
+    float af = a>>24;
+
+    float rf2 = r2;
+    float gf2 = g2>>8;
+    float bf2 = b2>>16;
+    float af2 = a2>>24;
+    
+    rf /= 255.0;
+    gf /= 255.0;
+    bf /= 255.0;
+    af /= 255.0;
+
+    rf2 /= 255.0;
+    gf2 /= 255.0;
+    bf2 /= 255.0;
+    af2 /= 255.0;
+
+    rf = rf*rf;
+    gf = gf*gf;
+    bf = bf*bf;
+    af = af*af;
+
+    rf2 = rf2*rf2;
+    gf2 = gf2*gf2;
+    bf2 = bf2*bf2;
+    af2 = af2*af2;
+    
+    float val1 = 1.0-val;
+    float r3 = val1*rf + val*rf2;
+    float g3 = val1*gf + val*gf2;
+    float b3 = val1*bf + val*bf2;
+    float a3 = val1*af + val*af2;
+    
+    r3 = sqrt(r3);
+    g3 = sqrt(g3);
+    b3 = sqrt(b3);
+    a3 = sqrt(a3);
+
+    r3 *= 255.0;
+    g3 *= 255.0;
+    b3 *= 255.0;
+    a3 *= 255.0;
+    
+    unsigned int r4 = r3;
+    unsigned int g4 = g3;
+    unsigned int b4 = b3;
+    unsigned int a4 = a3;
+
+    g4 <<= 8;
+    b4 <<= 16;
+    a4 <<= 24;
+    return r4+g4+b4+a4;
+  }
   static unsigned int Interpolate(unsigned int pixel1, unsigned int pixel2, float val)
   {
 

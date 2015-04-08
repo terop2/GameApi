@@ -785,6 +785,7 @@ public:
 		unsigned int color_1, unsigned int color_2,
 		unsigned int color_3, unsigned int color_4);
   IMPORT P color_from_normals(P orig);
+  IMPORT P color_range(P orig, unsigned int upper_range, unsigned int lower_range);
 
   IMPORT P texcoord_poly(P orig, int facenum, PT *array, int size);
   IMPORT P color_poly(P orig, int facenum, unsigned int *array, int size);
@@ -1872,7 +1873,7 @@ private:
   class WorldObj : public RenderObject, public MoveScaleObject3d
   {
   public:
-    WorldObj(EveryApi &ev, std::function<P(int)> f, int numvalues, BM bm, SH sh) : bmapi(ev.bitmap_api), api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), numvalues(numvalues), bm(bm), f(f), sh(sh) 
+    WorldObj(EveryApi &ev, std::function<P(int)> f, int numvalues, BM bm, int dx, int dy, SH sh) : bmapi(ev.bitmap_api), api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), numvalues(numvalues), bm(bm), f(f), dx(dx), dy(dy), sh(sh) 
     {
       int sx = bmapi.size_x(bm);
       int sy = bmapi.size_y(bm);
@@ -1886,7 +1887,13 @@ private:
 	    }
 	}
 
-      id.resize(1);
+      m_x = 0;
+      m_y = 0;
+      m_sx = sx;
+      m_sy = sy;
+
+
+      id.resize(numvalues);
       current_pos = mat.identity();
       current_scale = mat.identity();
       current_rot = mat.identity();
@@ -1896,6 +1903,7 @@ private:
       //va.id = 0;
       anim_id = 0;
     }
+    ~WorldObj() { delete [] bitmap; }
     void set_block(int x, int y, int c) { 
       int sx=bmapi.size_x(bm);
       bitmap[x+y*sx] = c;
@@ -1929,10 +1937,13 @@ private:
     }
     void render() {
       shapi.use(sh);
-      shapi.set_var(sh, "in_MV", m);
       int sx = bmapi.size_x(bm);
       for(int y=m_y;y<m_y+m_sy;y++) {
 	for(int x=m_x;x<m_x+m_sx;x++) {
+	  M t = mat.trans(dx*x,0.0,dy*y);
+	  M t2 = mat.mult(t,m);
+	  shapi.set_var(sh, "in_MV", t2);
+
 	  api.render_vertex_array(m_va2[bitmap[x+y*sx]]);
 	}
       }
@@ -1962,9 +1973,9 @@ private:
       current_rot2 = m;
       setup_m();
     }
-    void bind_texture(int anim_id, TXID id_)
+    void bind_texture(int num_id, TXID id_)
     {
-      id[anim_id] = id_;
+      id[num_id] = id_;
     }
     void set_anim_frame(int id)
     {
@@ -1990,6 +2001,7 @@ private:
     int numvalues;
     BM bm;
     std::function<P(int)> f;
+    int dx,dy;
     int *bitmap;
     SH sh;
     int m_x, m_y, m_sx, m_sy;

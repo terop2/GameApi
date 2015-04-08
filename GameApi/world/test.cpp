@@ -280,7 +280,8 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       P p = m.lucy;
       P p2 = ev.polygon_api.scale(p, 5.0,5.0,5.0);
       P p3 = ev.polygon_api.color_from_normals(p2);
-      return p3;
+      P p4 = ev.polygon_api.color_range(p3, 0xffffffff, 0x888888ff);
+      return p4;
     }
   case 16:
     {
