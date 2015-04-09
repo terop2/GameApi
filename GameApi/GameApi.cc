@@ -4210,10 +4210,9 @@ public:
     int r = v.dx*128.0+127.0;
     int g = v.dy*128.0+127.0;
     int b = v.dz*128.0+127.0;
-    r<<=24;
-    g<<=16;
-    b<<=8;
-    return r+g+b+0xff;
+    r<<=16;
+    g<<=8;
+    return 0xff000000+r+g+b;
   }
   
 };

@@ -68,7 +68,7 @@ float float_bitmap(int x, int y)
 P pieces2(unsigned int i, EveryApi &ev)
 {
     P p2a = ev.polygon_api.cube(0.0, 100.0, 80.0, 81.0, 0.0, 100.0);
-    P pk = ev.polygon_api.color_faces(p2a, 0xaa8888af, 0xaa4444af, 0xaa2222af, 0xaaaaaaaf);
+    P pk = ev.polygon_api.color_faces(p2a, 0xafaa8888, 0xafaa4444, 0xafaa2222, 0xafaaaaaa);
     //return ev.polygon_api.empty();
      return pk;
 }
@@ -76,7 +76,7 @@ P pieces2(unsigned int i, EveryApi &ev)
 P pieces3(unsigned int i, EveryApi &ev)
 {
     P p1a = ev.polygon_api.cube(0.0, 100.0, 0.0, 1.0, 0.0, 100.0);
-    P pk = ev.polygon_api.color_faces(p1a, 0x8888884f, 0x4444444f, 0x2222224f, 0xaaaaaa4f);
+    P pk = ev.polygon_api.color_faces(p1a, 0x4f888888, 0x4f444444, 0x4f222222, 0x4faaaaaa);
     //return ev.polygon_api.empty();
      return pk;
 }
@@ -91,7 +91,7 @@ P line_func(int i, float sx, float sy, float sz, float ex, float ey, float ez, u
   PT pt2 = ev.point_api.point(ex,ey,ez);
   PT pt3 = ev.point_api.point(sx+1.0,sy+1.0,sz+1.0);
   P pl = ev.polygon_api.triangle(pt1, pt2, pt3);
-  P pp1 = ev.polygon_api.color_faces(pl, 0xccccccff, 0xff8844ff, 0x2288ffff, 0xff8844ff);
+  P pp1 = ev.polygon_api.color_faces(pl, 0xffcccccc, 0xffff8844, 0xff2288ff, 0xffff8844);
   P pp2 = ev.polygon_api.or_elem(pp, pp1);
   return pp2;
 }
@@ -242,7 +242,7 @@ P heightmap_cube(float val, EveryApi &ev)
   P p1 = ev.polygon_api.cube(0.0,0.5,
 			     0.0, val*s,
 			     0.0, 0.5);
-  P p1a = ev.polygon_api.color_faces(p1, 0x000000ff, 0x222222ff, 0x111111ff, 0x333333ff);
+  P p1a = ev.polygon_api.color_faces(p1, 0xff000000, 0xff222222, 0xff111111, 0xff333333);
 
   P p2 = ev.polygon_api.cube(0.0, 0.5,
 			     val*s, s*val+0.2,
@@ -280,7 +280,7 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       P p = m.lucy;
       P p2 = ev.polygon_api.scale(p, 5.0,5.0,5.0);
       P p3 = ev.polygon_api.color_from_normals(p2);
-      P p4 = ev.polygon_api.color_range(p3, 0xffffffff, 0x888888ff);
+      P p4 = ev.polygon_api.color_range(p3, 0xffffffff, 0xff888888);
       return p4;
     }
   case 16:
@@ -328,7 +328,7 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       PT p1 = ev.point_api.point(50.0, 0.0, 50.0);
       PT p2 = ev.point_api.point(50.0, 80.0, 50.0);
       P p = ev.polygon_api.cone(50, p1, p2, 50.0, 30.0);
-      P p3 = ev.polygon_api.color_faces(p, 0xffffffff, 0xaaaaaaff, 0xccccccff, 0x888888ff);
+      P p3 = ev.polygon_api.color_faces(p, 0xffffffff, 0xffaaaaaa, 0xffcccccc, 0xff888888);
       return p3;
     }
   case 12:
@@ -392,7 +392,7 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
 					60.0, 80.0,
 					pos_y, pos_y+20.0));
       P p = ev.polygon_api.or_array(&vec[0], 4*4+3*3+2*2+1);
-      P p2 = ev.polygon_api.color_faces(p, 0x000000ff, 0x222222ff, 0x111111ff, 0x333333ff);
+      P p2 = ev.polygon_api.color_faces(p, 0xff000000, 0xff222222, 0xff111111, 0xff333333);
       return p2;
     }
   case 10:
@@ -403,7 +403,7 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
 						      _5,_6,_7,
 						      _8,_9,_10,
 						      _11,_12,_13, std::ref(ev)));
-      P p3 = ev.polygon_api.color_faces(p2, 0x888888ff, 0x444444ff, 0x222222ff, 0x666666ff);
+      P p3 = ev.polygon_api.color_faces(p2, 0xff888888, 0xff444444, 0xff222222, 0xff666666);
      return p3;
     }
   case 9:
@@ -456,7 +456,7 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
      P p1 = ev.polygon_api.cube(30.0,70.0,30.0,70.0,30.0,70.0);
      P p11 = ev.polygon_api.rotatex(p1, 45.0*3.14159*2.0/360.0);
      P p2 = ev.polygon_api.translate(p11,0.0,40.0,0.0);
-     P p3 = ev.polygon_api.color_faces(p2, 0x888888ff, 0x444444ff, 0x222222ff, 0xaaaaaaff);
+     P p3 = ev.polygon_api.color_faces(p2, 0xff888888, 0xff444444, 0xff222222, 0xffaaaaaa);
      return p3;
    }
   case 4:
@@ -471,20 +471,20 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       P p = cube(50.0, 58.0, 0.0, 80.0, 0.0, 100.0, ev);
       P pa = cube(0.0, 100.0, 0.0, 80.0, 50.0, 58.0, ev);
       P pp = ev.polygon_api.or_elem(p,pa);
-      P p2 = ev.polygon_api.color_faces(pp, 0xff8844ff, 0x884422ff, 0xff8844ff, 0x884422ff); 
+      P p2 = ev.polygon_api.color_faces(pp, 0xffff8844, 0xff884422, 0xffff8844, 0xff884422); 
       return p2;
     }
   case 2:
     {
       P p = cube(50.0, 58.0, 0.0, 80.0, 0.0, 100.0, ev);
-      P p2 = ev.polygon_api.color_faces(p, 0xff8844ff, 0x884422ff, 0xff8844ff, 0x884422ff);
+      P p2 = ev.polygon_api.color_faces(p, 0xffff8844, 0xff884422, 0xffff8844, 0xff884422);
       return p2;
     }
     
   case 1:
     {
       P p = cube(0.0, 100.0, 0.0, 80.0, 50.0, 58.0, ev);
-      P p2 = ev.polygon_api.color_faces(p, 0xff8844ff, 0x884422ff, 0xff8844ff, 0x884422ff);
+      P p2 = ev.polygon_api.color_faces(p, 0xffff8844, 0xff884422, 0xffff8844, 0xff884422);
       return p2;
     }
   case 0:
@@ -496,16 +496,16 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
 unsigned int color_change_func(unsigned int orig, int face, int point)
 {
   unsigned int color = orig;
-  unsigned int color_r = color & 0xff000000;
-  unsigned int color_g = color & 0x00ff0000;
-  unsigned int color_b = color & 0x0000ff00;
-  unsigned int color_a = color & 0x000000ff;
+  unsigned int color_a = color & 0xff000000;
+  unsigned int color_r = color & 0x00ff0000;
+  unsigned int color_g = color & 0x0000ff00;
+  unsigned int color_b = color & 0x000000ff;
   
   color_r /= 4;
   color_g /= 4;
   color_b /= 4;
   unsigned int color2 = color_r | color_g | color_b |color_a;
-  unsigned int color3 = color2 & 0x3f3f3fff;
+  unsigned int color3 = color2 & 0xff3f3f3f;
   return color3;
 }
 
@@ -564,7 +564,7 @@ int main() {
   V light_vec = ev.vector_api.vector(20.0,40.0,20.0);
   V reflect_vec = ev.vector_api.vector(0.0, 40.0, 0.0);
   P shadow = ev.polygon_api.shadow(p, plane_pos, plane_x, plane_y, light_vec);
-  P shadow_color = ev.polygon_api.color_faces(shadow, 0x333333ff, 0x333333ff, 0x333333ff, 0x333333ff);
+  P shadow_color = ev.polygon_api.color_faces(shadow, 0xff333333, 0xff333333, 0xff333333, 0xff333333);
   
   P reflect = ev.polygon_api.reflection(p2a, plane_pos, plane_x, plane_y, reflect_vec);
   P reflect_color = ev.polygon_api.change_colors(reflect, color_change_func);
