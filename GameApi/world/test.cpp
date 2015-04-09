@@ -422,9 +422,9 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       BB circle3 = ev.bool_bitmap_api.circle(bg, 40.0, 40.0, 20.0);
       BB circle4 = ev.bool_bitmap_api.circle(bg, 40.0, 40.0, 10.0);
       BM circle_bm1 = ev.bool_bitmap_api.to_bitmap(circle1, 255,255,255,255, 0,0,0,0);
-      BM circle_bm2 = ev.bool_bitmap_api.to_bitmap(circle2, 255,200,200,200, 0,0,0,0);
-      BM circle_bm3 = ev.bool_bitmap_api.to_bitmap(circle3, 255,155,155,155, 0,0,0,0);
-      BM circle_bm4 = ev.bool_bitmap_api.to_bitmap(circle4, 255,100,100,100, 0,0,0,0);
+      BM circle_bm2 = ev.bool_bitmap_api.to_bitmap(circle2, 200,200,200,255, 0,0,0,0);
+      BM circle_bm3 = ev.bool_bitmap_api.to_bitmap(circle3, 155,155,155,255, 0,0,0,0);
+      BM circle_bm4 = ev.bool_bitmap_api.to_bitmap(circle4, 100,100,100,255, 0,0,0,0);
       BM c1 = ev.bitmap_api.blitbitmap(circle_bm1, circle_bm2, 0,0);
       BM c2 = ev.bitmap_api.blitbitmap(c1, circle_bm3, 0,0);
       BM c3 = ev.bitmap_api.blitbitmap(c2, circle_bm4, 0,0);
