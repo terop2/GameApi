@@ -4207,9 +4207,9 @@ public:
   {
     Vector v = ForwardFaceCollection::PointNormal(face,point);
     v/=v.Dist();
-    int r = v.dx*128.0+127.0;
-    int g = v.dy*128.0+127.0;
-    int b = v.dz*128.0+127.0;
+    int r = v.dx*127.0+127.0;
+    int g = v.dy*127.0+127.0;
+    int b = v.dz*127.0+127.0;
     r<<=16;
     g<<=8;
     return 0xff000000+r+g+b;

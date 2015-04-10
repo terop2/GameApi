@@ -307,7 +307,12 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       V uu_y = ev.vector_api.vector(0.0, 0.0, 1.0);
       P p = ev.polygon_api.torus(40,40, center, u_x, u_y, 30.0, uu_x, uu_y, 10.0);
       //P p2 = ev.polygon_api.color_faces(p, 0x000000ff, 0x222222ff, 0x111111ff, 0x333333ff);
-      P p2 = ev.polygon_api.color_from_normals(p);
+      P pp = ev.polygon_api.from_polygon(p, std::bind(&poly_func, _1, 
+						      _2,_3,_4,
+						      _5,_6,_7,
+						      _8,_9,_10,
+						      _11,_12,_13, std::ref(ev)));
+      P p2 = ev.polygon_api.color_from_normals(pp);
       return p2;
       
     }
