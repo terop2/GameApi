@@ -13,7 +13,7 @@ char world[] =
 
 P pieces(int c, EveryApi &ev)
 {
-  std::cout << c << std::endl;
+  //std::cout << c << std::endl;
   switch(c)
     {
     case 0:
@@ -34,10 +34,16 @@ P pieces(int c, EveryApi &ev)
 	PT center = ev.point_api.point(50.0, 50.0, 20.0);
 	P p = ev.polygon_api.sphere(center, 20.0, 30,30);
 	PT pt1 = ev.point_api.point(50.0, 50.0, 20.0);
-	PT pt2 = ev.point_api.point(50.0, 50.0, 100.0);
+	PT pt2 = ev.point_api.point(50.0, 50.0, 50.0);
+	PT pt3 = ev.point_api.point(50.0, 50.0, 60.0);
+	PT pt4 = ev.point_api.point(50.0, 50.0, 100.0);
 	P p2 = ev.polygon_api.cone(30, pt1, pt2, 20.0, 20.0);
 	P p3 = ev.polygon_api.or_elem(p,p2);
-	P p4 = ev.polygon_api.color_from_normals(p3);
+	P p3_a = ev.polygon_api.cone(30, pt2, pt3, 30.0, 20.0);
+	P p3_b = ev.polygon_api.cone(30, pt3, pt4, 40.0, 30.0);
+	P p3_comb = ev.polygon_api.or_elem(p3_a, p3_b);
+	P p3_comb2 = ev.polygon_api.or_elem(p3_comb, p3);
+	P p4 = ev.polygon_api.color_from_normals(p3_comb2);
 	return p4;
       }
     };
