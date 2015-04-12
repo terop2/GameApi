@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <math.h>
 #include <functional>
-
+#include <sstream>
 
 using namespace GameApi;
 
@@ -592,7 +592,10 @@ int main() {
   float speed = 100.0;
   float rot_speed = 8.0*3.14159*2.0/360.0;
   float speed_x, speed_y;
+  int frame = 0;
+  std::vector<BM> screenshot_images;
   while(1) {
+    frame++;
     // clear frame buffer
     ev.mainloop_api.clear_3d();
     //poly.set_rotation_matrix(ev.matrix_api.xrot(frame));
@@ -623,6 +626,12 @@ int main() {
     //sphere.set_pos(0.0,0.0,400.0);
     //sphere.render();
 
+
+    BM bm = ev.mainloop_api.screenshot();
+    screenshot_images.push_back(bm);
+#if 0
+    BM bm = ev.mainloop_api.screenshot();
+#endif
     ev.mainloop_api.fpscounter();
     // swapbuffers
     ev.mainloop_api.swapbuffers();
@@ -634,6 +643,19 @@ int main() {
     if (e.ch=='z') { pos_y-=speed_y; pos_x-=speed_x; }
     if (e.ch==',') { rot_y -= rot_speed; }
     if (e.ch=='.') { rot_y += rot_speed; }
+    if (e.ch=='s') { 
+      for(int i=0;i<screenshot_images.size();i++)
+	{
+	  std::stringstream ss; 
+	  ss << "SCR";
+	  ss.width(3);
+	  ss.fill('0');
+	  ss << i;
+	  ss << ".png";
+	  std::string s = ss.str();
+	  ev.bitmap_api.savebitmap(screenshot_images[i], s);
+	}
+    }
     speed_x = speed*cos(rot_y+3.14159/2.0);
     speed_y = speed*sin(rot_y+3.14159/2.0);
   }
