@@ -402,7 +402,7 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
   std::cout << "Version:" << glGetString(GL_VERSION) << std::endl;
   
 
-  vblank = true;
+  //vblank = true;
   if (vblank)
     {
       int (*SwapInterval)(int);
