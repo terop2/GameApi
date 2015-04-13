@@ -89,8 +89,8 @@ int main() {
     // handle esc event
     MainLoopApi::Event e = ev.mainloop_api.get_event();
     if (e.ch==27) break;
-    if (e.ch==',') angle+=speed;
-    if (e.ch=='.') angle-=speed;
+    if (e.ch=='.') angle+=speed;
+    if (e.ch==',') angle-=speed;
   }
 
 
