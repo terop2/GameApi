@@ -42,16 +42,17 @@ char world[] =
   ".........."
   ".........."
   ".........."
-  ".........."
-  ".........."
-  ".........."
-  ".........."
+  "..****...."
+  "...*......"
+  "..*****..."
+  "....*....."
   "..........";
 
 int mapping(char c)
 {
   switch(c) {
   case '.': return 0;
+  case '*': return 1;
   };
 }
 
@@ -60,9 +61,17 @@ P func(int c, EveryApi &ev)
   switch(c)
     {
     case 0: 
+      {
       P p = ev.polygon_api.cube(0.0, 40.0, 0.0, 40.0, 0.0, 40.0);
       P p2 = ev.polygon_api.color_faces(p, 0xffffffff, 0xff888888, 0xffffffff, 0xff888888);
       return p2;
+      }
+    case 1:
+      {
+      P p = ev.polygon_api.cube(0.0, 40.0, 0.0, 1.0, 0.0, 40.0);
+      P p2 = ev.polygon_api.color_faces(p, 0xffffffff, 0xff888888, 0xffffffff, 0xff888888);
+      return p2;
+      }
     };
   return ev.polygon_api.empty();
 }
