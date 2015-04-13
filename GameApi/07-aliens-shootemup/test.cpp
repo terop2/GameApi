@@ -98,16 +98,29 @@ int main() {
   poly.set_rotation_matrix2(m);
   poly.prepare();
 
+  P player = ev.polygon_api.cube(0.0, 100.0, 40.0, 60.0, 90.0, 100.0);
+  P player_2 = ev.polygon_api.cube(40.0, 60.0, 0.0, 100.0, 90.0, 100.0);
+  P pp = ev.polygon_api.or_elem(player, player_2);
+  PolygonObj player_obj(ev, pp, sh);
+  player_obj.set_pos(0.0, 0.0, 300.0);
+  player_obj.prepare();
+
+
   float pos_x = -202.0;
   float pos_y = 336.0;
   float pos_z = -1460.0;
   float speed = 2.0;
+  float player_x = 0.0;
+  float player_y = 0.0;
   while(1) {
     pos_z+=speed/8.0;
     // clear frame buffer
     ev.mainloop_api.clear_3d();
     poly.set_pos(pos_x, pos_y, pos_z);
     poly.render();
+    player_obj.set_pos(player_x, player_y, 300.0);
+    player_obj.set_scale(0.5,0.5,1.0);
+    player_obj.render();
 
     ev.mainloop_api.fpscounter();
     // swapbuffers
@@ -116,12 +129,12 @@ int main() {
     // handle esc event
     MainLoopApi::Event e = ev.mainloop_api.get_event();
     if (e.ch==27) break;
-    if (e.ch=='a'&&e.type==0x300) pos_y-=speed;
-    if (e.ch=='z'&&e.type==0x300) pos_y+=speed;
-    if (e.ch=='.'&&e.type==0x300) pos_x+=speed;
-    if (e.ch==','&&e.type==0x300) pos_x-=speed;
-    if (e.ch=='g'&&e.type==0x300) pos_z+=speed;
-    if (e.ch=='b'&&e.type==0x300) pos_z-=speed;
+    if (e.ch=='a'&&e.type==0x300) player_y+=speed;
+    if (e.ch=='z'&&e.type==0x300) player_y-=speed;
+    if (e.ch=='.'&&e.type==0x300) player_x+=speed;
+    if (e.ch==','&&e.type==0x300) player_x-=speed;
+    //if (e.ch=='g'&&e.type==0x300) pos_z+=speed;
+    //if (e.ch=='b'&&e.type==0x300) pos_z-=speed;
     if (e.ch=='p')
       {
 	std::cout << pos_x << "," << pos_y << "," << pos_z << std::endl;
