@@ -153,9 +153,9 @@ P chars_blocks(int c, EveryApi &ev)
 	PT p6 = ev.point_api.point(15.0, -25.0, 15.0);
 	P pa = ev.polygon_api.cone(30, p1,p2,5.0,6.0);
 	P pb = ev.polygon_api.cone(30, p2,p3,2.0,5.0);
-	P pc = ev.polygon_api.cone(30, p3,p4,2.0,2.0);
-	P pd = ev.polygon_api.cone(30, p4,p5,3.0,2.0);
-	P pe = ev.polygon_api.cone(30, p5,p6,0.0,3.0);
+	P pc = ev.polygon_api.cone(30, p3,p4,3.0,2.0);
+	P pd = ev.polygon_api.cone(30, p4,p5,4.0,3.0);
+	P pe = ev.polygon_api.cone(30, p5,p6,0.0,4.0);
 
 	P p = ev.polygon_api.or_elem(pa,pb);
 	P pp = ev.polygon_api.or_elem(pc,pd);
@@ -179,12 +179,13 @@ P chars_blocks(int c, EveryApi &ev)
 	P pc = ev.polygon_api.cone(30, p3,p4,2.0,2.0);
 	P pd = ev.polygon_api.cone(30, p4,p5,6.0,2.0);
 	P pe = ev.polygon_api.cone(30, p5,p6,6.0,6.0);
+	P pf = ev.polygon_api.cone(30, p6,p6,6.0,0.0);
 
 	P p = ev.polygon_api.or_elem(pa,pb);
 	P pp = ev.polygon_api.or_elem(pc,pd);
 	P ppp = ev.polygon_api.or_elem(pp, pe);
 	p = ev.polygon_api.or_elem(p,ppp);
-
+	p = ev.polygon_api.or_elem(p,pf);
 	color_change(c,p,ev);
 
 	return p;

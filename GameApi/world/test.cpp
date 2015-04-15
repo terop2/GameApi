@@ -626,9 +626,10 @@ int main() {
     //sphere.set_pos(0.0,0.0,400.0);
     //sphere.render();
 
-
+#if 0
     BM bm = ev.mainloop_api.screenshot();
     screenshot_images.push_back(bm);
+#endif
 #if 0
     BM bm = ev.mainloop_api.screenshot();
 #endif

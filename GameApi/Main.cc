@@ -405,18 +405,18 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
   //vblank = true;
   if (vblank)
     {
-      int (*SwapInterval)(int);
-      SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("glXSwapInterval");
+      int (APIENTRY *SwapInterval)(int);
+      SwapInterval = (int(APIENTRY *)(int))SDL_GL_GetProcAddress("glXSwapInterval");
       if (!SwapInterval)
-	SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("wglSwapIntervalEXT");
+	SwapInterval = (int(APIENTRY *)(int))SDL_GL_GetProcAddress("wglSwapIntervalEXT");
       if (!SwapInterval)
-	SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("glXSwapIntervalEXT");
+	SwapInterval = (int(APIENTRY *)(int))SDL_GL_GetProcAddress("glXSwapIntervalEXT");
       if (!SwapInterval)
-	SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("glXSwapIntervalSGI");
+	SwapInterval = (int(APIENTRY *)(int))SDL_GL_GetProcAddress("glXSwapIntervalSGI");
       if (!SwapInterval)
-	SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("wglSwapInterval");
+	SwapInterval = (int(APIENTRY *)(int))SDL_GL_GetProcAddress("wglSwapInterval");
       if (!SwapInterval)
-	SwapInterval = (int(*)(int))SDL_GL_GetProcAddress("wglSwapIntervalSGI");
+	SwapInterval = (int(APIENTRY *)(int))SDL_GL_GetProcAddress("wglSwapIntervalSGI");
       // actual vsync activation
       if (SwapInterval)
 	SwapInterval(0);
