@@ -20,6 +20,8 @@ using std::placeholders::_7;
 using std::placeholders::_8;
 using std::placeholders::_9;
 
+#undef rad1
+#undef rad2
 
   struct DR { int id; };
   struct OM { int id; };
@@ -785,6 +787,7 @@ public:
 		unsigned int color_1, unsigned int color_2,
 		unsigned int color_3, unsigned int color_4);
   IMPORT P color_from_normals(P orig);
+  IMPORT P color_grayscale(P orig);
   IMPORT P color_range(P orig, unsigned int upper_range, unsigned int lower_range);
 
   IMPORT P texcoord_poly(P orig, int facenum, PT *array, int size);

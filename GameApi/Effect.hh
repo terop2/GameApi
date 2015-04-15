@@ -8028,7 +8028,8 @@ private:
   //mutable bool inverted;
 };
 typedef FunctionImplT2<BoxableFaceCollection*, int, int, SphereElem> SphereElemFunction;
-
+#undef rad1
+#undef rad2
 class ConeElem : public BoxableFaceCollection
 {
 public:

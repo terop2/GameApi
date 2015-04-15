@@ -59,6 +59,7 @@ void RenderVoxel(VolumeObject &orv, int size, float wholesize, HandleValue<std::
 VoxelEffect::VoxelEffect(Render *r)
   : FrameAnimPlugins(r)
 {
+#if 0
   bool b;
   BufferRef buf1 = LoadImage("./textures/texture_carpet2.jpeg", b);
   BitmapFromBuffer buf2(buf1);
@@ -68,7 +69,7 @@ VoxelEffect::VoxelEffect(Render *r)
   buf5.Gen();
   BufferRef buf = buf5.Buffer();
   plugins.push_back(new TexturePlugin(buf));
-
+#endif
 }
 void VoxelEffect::Init()
 {
@@ -216,6 +217,7 @@ void FaceCollectionHandleValueDynamic::DrawVBO(VBOState &vbostate, VBOUpdate u)
 MapEffect::MapEffect(Render *r) : FrameAnimPlugins(r), mapfunc("./maps/map1.txt", mapfunc1, 5,6),
 			 colorfunc("./maps/map1.txt", colorfunc1, 5,6) 
 { 
+#if 0
   bool b;
   BufferRef buf1 = LoadImage("./textures/texture_carpet2.jpeg", b);
   BitmapFromBuffer buf2(buf1);
@@ -231,7 +233,7 @@ MapEffect::MapEffect(Render *r) : FrameAnimPlugins(r), mapfunc("./maps/map1.txt"
   //shader.push_back(&phongpiece);
   //shader.push_back(&normalpiece);
   shader.config();
-
+#endif
 }
 MapEffect::~MapEffect()
 {
@@ -343,6 +345,7 @@ RenderToTextureEffect::RenderToTextureEffect(Render *r)
     col(trans, Color(255,255,255,255)),
     disp(col)
 {
+#if 0
   bool b;
   BufferRef buf1 = LoadImage("./textures/texture_carpet2.jpeg", b);
   BitmapFromBuffer buf2(buf1);
@@ -354,6 +357,7 @@ RenderToTextureEffect::RenderToTextureEffect(Render *r)
 
   plugins.push_back(new TexturePlugin(buf));
   tex.SetTexture(((TexturePlugin*)plugins[0])->Texture());
+#endif
 }
 void RenderToTextureEffect::Init()
 {
