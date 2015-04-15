@@ -110,6 +110,7 @@ bool GameEffect::Frame(float time)
 
 void TunnelWall::Init()
 {
+#if 0
   bool b;
   BufferRef buf1 = LoadImage(filename, b);
   BitmapFromBuffer buf2(buf1);
@@ -137,6 +138,7 @@ void TunnelWall::Init()
   convert = new FaceCollectionArrayConvert(*vec);
   compress=new CompressObject(*convert);
   boxable = new BoxableFaceCollectionConvert(*compress);
+#endif
 }
 void UpdateVBOTypeToPoly(const TypeToPoly &tp, VBOState &vbostate, VBOUpdate update)
 {

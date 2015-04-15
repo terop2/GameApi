@@ -287,12 +287,17 @@ Matrix Matrix::PerspectiveProjection(float dist)
   return r;
 }
 
+#undef far
+#undef near
+
 Matrix Matrix::Perspective(float fovy, float aspect, float near, float far)
 {
   float f = -1.0/tan(fovy/2.0);
+  float ff = (far+near)/(near-far);
+  float fff = 2.0*far*near/(near-far);
   Matrix r = { {f/aspect, 0.0, 0.0, 0.0,
   	0.0, f, 0.0, 0.0,
-  	0.0, 0.0, float((far+near)/(near-far)), float(2.0*far*near/(near-far)),
+  	0.0, 0.0, ff, fff,
   	0.0, 0.0, -1.0, 0.0 }, false };
 
   //Matrix r = { {f/aspect, 0.0, 0.0, 0.0,

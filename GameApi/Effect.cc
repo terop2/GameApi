@@ -786,6 +786,7 @@ bool CubeEffect::Frame(float time)
 MoleculeEffect::MoleculeEffect(Render *r)
   : FrameAnimPlugins(r)
 {
+#if 0
   bool b;
   BufferRef buf1 = LoadImage("./textures/texture_carpet2.jpeg", b);
   BitmapFromBuffer buf2(buf1);
@@ -794,7 +795,7 @@ MoleculeEffect::MoleculeEffect(Render *r)
   BufferFromBitmap buf5(buf4);
   buf5.Gen();
   BufferRef buf = buf5.Buffer();
-  
+  #endif
 #if 0
   BufferRef buf = BufferRef::NewBuffer(512,512);
 
@@ -823,7 +824,7 @@ MoleculeEffect::MoleculeEffect(Render *r)
     }
 #endif
   
-
+#if 0
   plugins.push_back(new TexturePlugin(buf));
 
   //shader.push_back(&globpiece);
@@ -831,6 +832,7 @@ MoleculeEffect::MoleculeEffect(Render *r)
   shader.push_back(&phongpiece);
   shader.push_back(&normalpiece);
   shader.config();
+#endif
 }
 void MoleculeEffect::Init()
 {
@@ -1313,6 +1315,7 @@ bool TestEffect::Frame(float time)
 
     
 #endif
+#if 0
     bool b;
     BufferRef buf1 = LoadImage("./textures/texture_carpet3.jpeg", b);
     BitmapFromBuffer buf2(buf1);
@@ -1323,6 +1326,7 @@ bool TestEffect::Frame(float time)
     BufferRef buf = buf5.Buffer();
 
     plugins.push_back(new TexturePlugin(buf));
+#endif
   }
 bool HeightMapEffect::Frame(float time)
 {
@@ -1351,6 +1355,7 @@ bool HeightMapEffect::Frame(float time)
 BlobEffect::BlobEffect(Render *r)
   : FrameAnimPlugins(r)
 {
+#if 0
   bool b;
   BufferRef buf1 = LoadImage("./textures/texture_carpet1.jpeg", b);
   BitmapFromBuffer buf2(buf1);
@@ -1367,6 +1372,7 @@ BlobEffect::BlobEffect(Render *r)
   shader.push_back(&phongpiece);
   shader.push_back(&normalpiece);
   shader.config();
+#endif
 }
 BlobEffect::~BlobEffect()
 {

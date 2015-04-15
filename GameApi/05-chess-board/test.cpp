@@ -32,11 +32,115 @@ int charsmap(char c)
     }
 }
 
+void color_change(int c, P &p, EveryApi &ev)
+{
+	p = ev.polygon_api.color_from_normals(p);
+	if (c>5)
+	  {
+	    p = ev.polygon_api.color_grayscale(p);
+	    p = ev.polygon_api.color_range(p, 0xffaa6666, 0xff002200);
+	  }
+	else
+	  {
+	    p = ev.polygon_api.color_grayscale(p);
+	    p = ev.polygon_api.color_range(p, 0xffffff88, 0xffaa8822);
+	  }
+}
+
 P chars_blocks(int c, EveryApi &ev)
 {
 #if 1
   switch(c)
     {
+    case 1: // horse
+    case 7:
+      {
+
+	PT p1 = ev.point_api.point(15.0, -60.0, 15.0);
+	PT p2 = ev.point_api.point(15.0, -57.0, 15.0);
+	PT p3 = ev.point_api.point(15.0, -53.0, 15.0);
+	PT p4 = ev.point_api.point(15.0, -40.0, 15.0);
+	PT p5 = ev.point_api.point(15.0, -32.0, 15.0);
+	PT p6 = ev.point_api.point(15.0, -25.0, 15.0);
+	P pa = ev.polygon_api.cone(30, p1,p2,5.0,6.0);
+	P pb = ev.polygon_api.cone(30, p2,p3,2.0,5.0);
+	P pc = ev.polygon_api.cone(30, p3,p4,2.0,2.0);
+	P pd = ev.polygon_api.cone(30, p4,p5,3.0,2.0);
+	P pe = ev.polygon_api.cone(30, p5,p6,0.0,3.0);
+
+	P cube = ev.polygon_api.cube(-2.0, 8.0,
+				     -2.0, 2.0,
+				     -2.0, 2.0);
+	P cube_rot = ev.polygon_api.rotatez(cube, 45.0*3.14159*2.0/360.0);
+	P cube_trans = ev.polygon_api.translate(cube_rot, 10.0, -40.0, 15.0);
+
+	P p = ev.polygon_api.or_elem(pa,pb);
+	P pp = ev.polygon_api.or_elem(pc,pd);
+	P ppp = ev.polygon_api.or_elem(pp, pe);
+	p = ev.polygon_api.or_elem(p,ppp);
+	p = ev.polygon_api.or_elem(p,cube_trans);
+
+	color_change(c,p,ev);
+	return p;
+
+      }
+    case 10: // queen
+    case 4:
+      {
+	PT p1 = ev.point_api.point(15.0, -60.0, 15.0);
+	PT p2 = ev.point_api.point(15.0, -57.0, 15.0);
+	PT p3 = ev.point_api.point(15.0, -53.0, 15.0);
+	PT p4 = ev.point_api.point(15.0, -40.0, 15.0);
+	PT p5 = ev.point_api.point(15.0, -32.0, 15.0);
+	PT p6 = ev.point_api.point(15.0, -25.0, 15.0);
+	P pa = ev.polygon_api.cone(30, p1,p2,8.0,9.0);
+	P pb = ev.polygon_api.cone(30, p2,p3,4.0,8.0);
+	P pc = ev.polygon_api.cone(30, p3,p4,4.0,4.0);
+	P pd = ev.polygon_api.cone(30, p4,p5,6.0,4.0);
+	P pe = ev.polygon_api.cone(30, p5,p6,0.0,6.0);
+
+	
+	P p = ev.polygon_api.or_elem(pa,pb);
+	P pp = ev.polygon_api.or_elem(pc,pd);
+	P ppp = ev.polygon_api.or_elem(pp, pe);
+	p = ev.polygon_api.or_elem(p,ppp);
+	color_change(c,p, ev);
+	return p;
+
+      }
+    case 9: // king
+    case 3:
+      {
+
+	PT p1 = ev.point_api.point(15.0, -60.0, 15.0);
+	PT p2 = ev.point_api.point(15.0, -57.0, 15.0);
+	PT p3 = ev.point_api.point(15.0, -53.0, 15.0);
+	PT p4 = ev.point_api.point(15.0, -40.0, 15.0);
+	PT p5 = ev.point_api.point(15.0, -32.0, 15.0);
+	PT p6 = ev.point_api.point(15.0, -25.0, 15.0);
+	P pa = ev.polygon_api.cone(30, p1,p2,8.0,9.0);
+	P pb = ev.polygon_api.cone(30, p2,p3,4.0,8.0);
+	P pc = ev.polygon_api.cone(30, p3,p4,4.0,4.0);
+	P pd = ev.polygon_api.cone(30, p4,p5,6.0,4.0);
+	P pe = ev.polygon_api.cone(30, p5,p6,0.0,6.0);
+
+	P c1 = ev.polygon_api.cube(13.0, 17.0,
+				   -25.0, -18.0,
+				   13.0, 17.0);
+	P c2 = ev.polygon_api.cube(10.0, 20.0,
+				   -20.0, -22.0,
+				   13.0, 17.0);
+	P cc = ev.polygon_api.or_elem(c1,c2);
+	
+	P p = ev.polygon_api.or_elem(pa,pb);
+	P pp = ev.polygon_api.or_elem(pc,pd);
+	P ppp = ev.polygon_api.or_elem(pp, pe);
+	p = ev.polygon_api.or_elem(p,ppp);
+	p = ev.polygon_api.or_elem(p, cc);
+	color_change(c,p, ev);
+	return p;
+
+      }
     case 8: // lähetti
     case 2:
       {
@@ -58,16 +162,7 @@ P chars_blocks(int c, EveryApi &ev)
 	P ppp = ev.polygon_api.or_elem(pp, pe);
 	p = ev.polygon_api.or_elem(p,ppp);
 
-	p = ev.polygon_api.recalculate_normals(p);
-	p = ev.polygon_api.color_from_normals(p);
-	if (c>5)
-	  {
-	    p = ev.polygon_api.color_range(p, 0xff888888, 0xff444444);
-	  }
-	else
-	  {
-	    p = ev.polygon_api.color_range(p, 0xffffffff, 0xffeeeeee);
-	  }
+	color_change(c,p,ev);
 	return p;
       }
     case 6:
@@ -90,16 +185,7 @@ P chars_blocks(int c, EveryApi &ev)
 	P ppp = ev.polygon_api.or_elem(pp, pe);
 	p = ev.polygon_api.or_elem(p,ppp);
 
-	p = ev.polygon_api.recalculate_normals(p);
-	p = ev.polygon_api.color_from_normals(p);
-	if (c>5)
-	  {
-	    p = ev.polygon_api.color_range(p, 0xff888888, 0xff444444);
-	  }
-	else
-	  {
-	    p = ev.polygon_api.color_range(p, 0xffffffff, 0xffeeeeee);
-	  }
+	color_change(c,p,ev);
 
 	return p;
 
@@ -118,23 +204,14 @@ P chars_blocks(int c, EveryApi &ev)
 	P pd = ev.polygon_api.cone(30, p4,p5,3.0,2.0);
 	
 	PT p7 = ev.point_api.point(15.0, -42.0, 15.0);
-	P p_sphere = ev.polygon_api.sphere(p7, 6.0, 30, 30);
+	P p_sphere = ev.polygon_api.sphere(p7, 6.0, 5, 5);
 
 	P p = ev.polygon_api.or_elem(pa,pb);
 	P pp = ev.polygon_api.or_elem(pc,pd);
 	p = ev.polygon_api.or_elem(p,pp);
 	p = ev.polygon_api.or_elem(p,p_sphere);
 
-	p = ev.polygon_api.recalculate_normals(p);
-	p = ev.polygon_api.color_from_normals(p);
-	if (c>5)
-	  {
-	    p = ev.polygon_api.color_range(p, 0xff888888, 0xff444444);
-	  }
-	else
-	  {
-	    p = ev.polygon_api.color_range(p, 0xffffffff, 0xffeeeeee);
-	  }
+	color_change(c,p,ev);
 
 
 	return p;

@@ -708,7 +708,7 @@ private:
   IDInterface &id1, &id2;
 };
 
-
+#undef interface
 struct IDImpl
 {
   int id_num;
@@ -4198,7 +4198,24 @@ GameApi::P GameApi::PolygonApi::color(P next, unsigned int color)
   FaceCollection *coll = new ColorElem(*convert, color);
   return add_polygon(e, coll,1);
 }
-
+class ColorGrayScale : public ForwardFaceCollection
+{
+public:
+  ColorGrayScale(FaceCollection *coll) : ForwardFaceCollection(*coll) { }
+  virtual unsigned int Color(int face, int point) const
+  {
+    unsigned int col = ForwardFaceCollection::Color(face,point);
+    unsigned int a = col&0xff000000;
+    unsigned int r = col&0xff0000;
+    unsigned int g = col&0xff00;
+    unsigned int b = col&0xff;
+    r>>=16;
+    g>>=8;
+    unsigned int c = (r+g+b)/3;
+    unsigned int cc = (c<<16)+(c<<8)+c;
+    return a+cc;
+  }
+};
 class ColorFromNormals : public ForwardFaceCollection
 {
 public:
@@ -4236,11 +4253,99 @@ GameApi::P GameApi::PolygonApi::color_range(P orig, unsigned int upper_range, un
   FaceCollection *c2 = new ColorRangeFaceCollection(c,upper_range,lower_range);
   return add_polygon2(e, c2, 1);
 }
+GameApi::P GameApi::PolygonApi::color_grayscale(P orig)
+{
+  FaceCollection *c = find_facecoll(e, orig);
+  FaceCollection *c2 = new ColorGrayScale(c);
+  return add_polygon2(e, c2, 1);
+}
 GameApi::P GameApi::PolygonApi::color_from_normals(P orig)
 {
   FaceCollection *c = find_facecoll(e, orig);
   FaceCollection *c2 = new ColorFromNormals(c);
   return add_polygon2(e, c2, 1);
+}
+class ColorCubeElem : public ForwardFaceCollection
+{
+public:
+  ColorCubeElem(FaceCollection *next, Point p_0, Point p_x, Point p_y, Point p_z,
+		unsigned int c_0, unsigned int c_x, unsigned int c_y, unsigned int c_z) : ForwardFaceCollection(*next), p_0(p_0), p_x(p_x), p_y(p_y), p_z(p_z), c_0(c_0), c_x(c_x), c_y(c_y), c_z(c_z) { }
+  virtual unsigned int Color(int face, int point) const 
+  {
+    Point pos = ForwardFaceCollection::FacePoint(face,point);
+    Coords c;
+    c.center = p_0;
+    c.u_x = p_x-p_0;
+    c.u_y = p_y-p_0;
+    c.u_z = p_z-p_0;
+    Point pos2 = c.FindInternalCoords(pos);
+    pos2.x /= c.u_x.Dist();
+    pos2.y /= c.u_y.Dist();
+    pos2.z /= c.u_z.Dist();
+
+    // now [0..1]
+    unsigned int cc_x_a = pos2.x*((c_x-c_0)&0xff000000);
+    unsigned int cc_x_r = pos2.x*((c_x-c_0)&0xff0000);
+    unsigned int cc_x_g = pos2.x*((c_x-c_0)&0xff00);
+    unsigned int cc_x_b = pos2.x*((c_x-c_0)&0xff);
+    unsigned int cc_y_a = pos2.y*((c_y-c_0)&0xff000000);
+    unsigned int cc_y_r = pos2.y*((c_y-c_0)&0xff0000);
+    unsigned int cc_y_g = pos2.y*((c_y-c_0)&0xff00);
+    unsigned int cc_y_b = pos2.y*((c_y-c_0)&0xff);
+    unsigned int cc_z_a = pos2.z*((c_z-c_0)&0xff000000);
+    unsigned int cc_z_r = pos2.z*((c_z-c_0)&0xff0000);
+    unsigned int cc_z_g = pos2.z*((c_z-c_0)&0xff00);
+    unsigned int cc_z_b = pos2.z*((c_z-c_0)&0xff);
+    
+    cc_x_a &= 0xff000000;
+    cc_y_a &= 0xff000000;
+    cc_z_a &= 0xff000000;
+
+    cc_x_r &= 0xff0000;
+    cc_y_r &= 0xff0000;
+    cc_z_r &= 0xff0000;
+
+    cc_x_g &= 0xff00;
+    cc_y_g &= 0xff00;
+    cc_z_g &= 0xff00;
+
+    cc_x_b &= 0xff;
+    cc_y_b &= 0xff;
+    cc_z_b &= 0xff;
+
+    unsigned int cc_x = cc_x_a+cc_x_r+cc_x_g+cc_x_b;
+    unsigned int cc_y = cc_y_a+cc_y_r+cc_y_g+cc_y_b;
+    unsigned int cc_z = cc_z_a+cc_z_r+cc_z_g+cc_z_b;
+
+    return c_0+cc_x+cc_y+cc_z;
+  }
+
+private:
+  Point p_0, p_x, p_y, p_z;
+  unsigned int c_0, c_x, c_y, c_z;
+};
+GameApi::P GameApi::PolygonApi::color_cube(P next,
+					   PT p_0,
+					   PT p_x,
+					   PT p_y,
+					   PT p_z,
+					   unsigned int c_0,
+					   unsigned int c_x,
+					   unsigned int c_y,
+					   unsigned int c_z)
+{
+  Point *pp_0 = find_point(e,p_0);
+  Point *pp_x = find_point(e,p_x);
+  Point *pp_y = find_point(e,p_y);
+  Point *pp_z = find_point(e,p_z);
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  FaceCollection *c = find_facecoll(e, next);
+  BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
+  env->deletes.push_back(std::shared_ptr<void>(convert));  
+  if (!c) { std::cout << "dynamic cast failed" << std::endl; }
+  FaceCollection *coll = new ColorCubeElem(convert, *pp_0, *pp_x, *pp_y, *pp_z, c_0, c_x, c_y, c_z);
+  return add_polygon2(e, coll,1);
+
 }
 GameApi::P GameApi::PolygonApi::color_faces(P next, 
 					 unsigned int color_1, 
