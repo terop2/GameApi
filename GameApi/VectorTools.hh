@@ -661,6 +661,12 @@ struct Point2d
   }
   friend std::ostream &operator<<(std::ostream &o, const Point2d &p);
 };
+bool IsWithInBoundingBox(Point2d p, Point2d top_left, Point2d bottom_right);
+bool LineLineIntersection_Parallel(Point2d l1_p1, Point2d l1_p2,
+			     Point2d l2_p1, Point2d l2_p2);
+Point2d LineLineIntersection(Point2d l1_p1, Point2d l1_p2,
+			     Point2d l2_p1, Point2d l2_p2);
+
 struct Vector2d
 {
   float dx,dy;

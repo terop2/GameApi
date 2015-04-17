@@ -6944,7 +6944,11 @@ public:
   std::function<unsigned int (float, float)> f; 
   float sx; float sy;
 };
-
+unsigned int GameApi::ContinuousBitmapApi::get_pixel(CBM bitmap, float x, float y)
+{
+  ContinuousBitmap<Color> *cbm = find_continuous_bitmap(e, bitmap);
+  return cbm->Map(x,y).Pixel();
+}
 
 GameApi::CBM GameApi::ContinuousBitmapApi::function(std::function<unsigned int (float,float)> f, float sx, float sy)
 {
@@ -7913,6 +7917,366 @@ GameApi::PL GameApi::PlaneApi::remove_splines(GameApi::PL pl, float xdelta)
 {
   PlanePoints2d *plane= find_plane(e, pl);
   return add_plane(e, new RemoveSplines(plane, xdelta));
+}
+
+
+int triangulate_find_pos(GameApi::EveryApi &ev, GameApi::PL pl, PlanePoints2d *orig, int obj)
+{
+  //std::cout << "Triangulate_find_pos start: " << std::endl;
+  int current_obj = 0;
+  int i = 0;
+  int s = orig->Size();
+  for(;i<s;i++)
+    {
+      //std::cout << "loop i" << i << std::endl;
+      if (orig->Type(i+1)!= PlanePoints2d::ELineTo)
+	{
+	  current_obj++;
+	  continue;
+	}
+      if (current_obj != obj) { continue; }
+      
+
+      Point2d p = orig->Map(i);
+      Point2d p2;
+      if (i+2>=s)
+	{
+	  p2 = orig->Map(i+2-s);
+	}
+      else
+	{
+	  p2 = orig->Map(i+2);
+	}
+      bool outside = false;
+      GameApi::CBM cbm = ev.plane_api.render_continuous(pl, obj, 0x00000000, 0xffffffff);
+      for(float f = 0.1;f<0.9;f+=0.1)
+	{
+	  Point2d middle = { float(p.x*f+p2.x*(1.0-f)), float(p.y*f+p2.y*(1.0-f)) };
+	  
+	  unsigned int color = ev.cont_bitmap_api.get_pixel(cbm, middle.x,middle.y);
+	  if (color==0x00000000) { outside=true; }
+	}
+      if (outside==true) continue;
+      bool reject = false;
+      int ss = orig->Size();
+      for(int j=0;j<ss;j++)
+	{
+	  //std::cout << "loop j" << j << std::endl;
+	  Point2d o = orig->Map(j);
+	  
+	  Point2d o2;
+	  if (j+1>=ss)
+	    {
+	      o2 = orig->Map(j+1-ss);
+	    }
+	  else
+	    {
+	      o2 = orig->Map(j+1);
+	    }
+	  bool parallel = LineLineIntersection_Parallel(p,p2,o,o2);
+	  if (parallel) continue;
+	  Point2d intersect = LineLineIntersection(p,p2,o,o2);
+	  bool bound = IsWithInBoundingBox(intersect, p,p2);
+	  bool bound2 = IsWithInBoundingBox(intersect, o,o2);
+	  bool comb = bound && bound2;
+	  reject = comb;
+	  if (reject) break;
+	}
+      if (reject) continue;
+      break;
+    }
+  //std::cout << "Triangulate pos=" << i+1 << std::endl;
+  if (i+1>=s) return i+1-s;
+  return i+1;
+}
+
+
+class Triangulate1 : public PlanePoints2d
+{
+public:
+  Triangulate1(GameApi::EveryApi &ev, GameApi::PL pl, PlanePoints2d *orig, int obj) : orig(orig) 
+  {
+    if (orig->Size()<=3) pos=1;
+    else
+      pos = triangulate_find_pos(ev, pl, orig, obj);
+  }
+  float SizeX() const { return orig->SizeX(); }
+  float SizeY() const 
+  {
+    return orig->SizeY(); 
+  }
+  int Size() const { 
+    if (orig->Size()<3) return 0;
+    return 3; 
+  }
+  Point2d Map(int i) const
+  {
+    if (i==0) 
+      {
+	if (pos-1<0) { return orig->Map(orig->Size()+pos-1); }
+	return orig->Map(pos-1); 
+      }
+    if (i==1) { return orig->Map(pos); }
+    if (i==2) {
+      if (pos+1>=orig->Size()) return orig->Map(pos+1-orig->Size());
+      return orig->Map(pos+1); 
+    }
+    Point2d p;
+    p.x = 0.0;
+    p.y = 0.0;
+    return p;
+  }
+private:
+  PlanePoints2d *orig;
+  int pos;
+};
+class Triangulate2 : public PlanePoints2d
+{
+public:
+  Triangulate2(GameApi::EveryApi &ev, GameApi::PL pl, PlanePoints2d *orig, int obj) : orig(orig) 
+  {
+    if (orig->Size()<=3) pos = 1;
+    else
+      pos = triangulate_find_pos(ev, pl, orig,obj);
+  }
+  float SizeX() const { return orig->SizeX(); }
+  float SizeY() const { return orig->SizeY(); }
+  int Size() const {
+    int s = orig->Size();
+    if (s<=3) return 0;
+    return s-1; 
+  }
+  Point2d Map(int i) const
+  {
+    if (i<pos) { return orig->Map(i); }
+    if (i+1>=orig->Size()) { return orig->Map(i+1-orig->Size()); }
+    return orig->Map(i+1);
+  }
+
+private:
+  PlanePoints2d *orig;
+  int pos;
+};
+class PlanePolygon : public FaceCollection
+{
+public:
+  PlanePolygon(PlanePoints2d *plane, Point pos, Vector u_x, Vector u_y) : plane(plane), pos(pos), u_x(u_x), u_y(u_y) { }
+  virtual int NumFaces() const
+  {
+    int s = plane->Size();
+    int face =0;
+    for(int i=0;i<s;i++)
+      {
+	PlanePoints2d::PlanePointsType t = plane->Type(i);
+	if (t==PlanePoints2d::EMove) face++;
+      }
+    return face;
+  }
+  virtual int NumPoints(int face) const
+  {
+    int s = plane->Size();
+    int face2 =0;
+    int points = 0;
+    int pos = 0;
+    int i = 1;
+    for(;i<s;i++)
+      {
+	PlanePoints2d::PlanePointsType t = plane->Type(i);
+	if (t==PlanePoints2d::EMove) face2++;
+	if (face2==face+1)
+	  {
+	    break;
+	  }
+	if (t==PlanePoints2d::EMove) pos=i;
+      }
+    points = i - pos; 
+    return points;
+  }
+  int PointIndex(int face, int point) const
+  {
+    if (face==0) { return point; }
+    int s = plane->Size();
+    int face2 =0;
+    int points = 0;
+    int i = 1;
+    for(;i<s;i++)
+      {
+	PlanePoints2d::PlanePointsType t = plane->Type(i);
+	if (t==PlanePoints2d::EMove) face2++;
+	if (face2==face)
+	  {
+	    break;
+	  }
+      }
+    return i+point;
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int index = PointIndex(face,point);
+    Point2d p = plane->Map(index);
+    return pos + p.x*u_x + p.y*u_y;
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Point p1 = FacePoint(face, 0);
+    Point p2 = FacePoint(face, 1);
+    Point p3 = FacePoint(face, 2);
+    return -Vector::CrossProduct(p2-p1,p3-p1);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const { return 0xffffffff; }
+  virtual Point2d TexCoord(int face, int point) const { 
+    Point2d p;
+    p.x = 0.0;
+    p.y = 0.0;
+    return p;
+  }
+private:
+  PlanePoints2d *plane;
+  Point pos;
+  Vector u_x;
+  Vector u_y;
+};
+GameApi::P GameApi::PlaneApi::to_polygon_face(PL pl, PT pos, V u_x, V u_y)
+{
+  PlanePoints2d *plane = find_plane(e,pl);
+  Point *pos_1 = find_point(e, pos);
+  Vector *uu_x = find_vector(e, u_x);
+  Vector *uu_y = find_vector(e, u_y);
+  return add_polygon(e, new PlanePolygon(plane, *pos_1, *uu_x, *uu_y),1);
+}
+class PlanePolygonLines : public FaceCollection
+{
+public:
+  PlanePolygonLines(PlanePoints2d *plane, Point pos, Vector u_x, Vector u_y, Vector u_z, float z_mult) : plane(plane), pos(pos), u_x(u_x), u_y(u_y), u_z(u_z), z_mult(z_mult) { }
+  virtual int NumFaces() const
+  {
+    int s = plane->Size();
+    int count = 0;
+    for(int i=0;i<s;i++)
+      {
+	PlanePoints2d::PlanePointsType t = plane->Type(i);
+	if (t==PlanePoints2d::ELineTo) count++;
+      }
+    return count;
+  }
+  virtual int NumPoints(int face) const
+  {
+    return 4;
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int s = plane->Size();
+    int count = 0;
+    int i = 1;
+    for(;i<s;i++)
+      {
+	PlanePoints2d::PlanePointsType t = plane->Type(i);
+	if (t==PlanePoints2d::ELineTo) count++;
+	if (count==face) break;
+      }
+    Point2d p0 = plane->Map(i-1);
+    Point2d p1 = plane->Map(i);
+    Point pp0 = pos+p0.x*u_x+p0.y*u_y;
+    Point pp1 = pos+p1.x*u_x+p1.y*u_y;
+    Point pp2 = pos+p0.x*u_x+p0.y*u_y+z_mult*u_z;
+    Point pp3 = pos+p1.x*u_x+p1.y*u_y+z_mult*u_z;
+    switch(point) {
+    case 0: return pp0;
+    case 1: return pp1;
+    case 2: return pp2;
+    case 3: return pp3;
+    }
+    Point p;
+    return p;
+  }
+
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Point p1 = FacePoint(face, 0);
+    Point p2 = FacePoint(face, 1);
+    Point p3 = FacePoint(face, 2);
+    return -Vector::CrossProduct(p2-p1,p3-p1);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const { return 0xffffffff; }
+  virtual Point2d TexCoord(int face, int point) const { 
+    Point2d p;
+    p.x = 0.0;
+    p.y = 0.0;
+    return p;
+  }
+
+private:
+  PlanePoints2d *plane;
+  Point pos;
+  Vector u_x, u_y, u_z;
+  float z_mult;
+};
+GameApi::P GameApi::PlaneApi::to_polygon(EveryApi &ev, PL pl, PT pos, V u_x, V u_y, V u_z, float z_mult)
+{
+  Vector *uu_z = find_vector(e, u_z);
+  P face = to_polygon_face(pl, pos, u_x, u_y);
+  P face2 = ev.polygon_api.translate(face, uu_z->dx*z_mult, uu_z->dy*z_mult, uu_z->dz*z_mult);
+  P lines = to_polygon_lines(pl, pos, u_x, u_y, u_z, z_mult);
+  P array[] = { face, face2, lines };
+  return ev.polygon_api.or_array(&array[0], 3);
+}
+GameApi::P GameApi::PlaneApi::to_polygon_lines(PL pl, PT pos, V u_x, V u_y, V u_z, float z_multiplier)
+{
+  PlanePoints2d *plane = find_plane(e,pl);
+  Point *pos_1 = find_point(e, pos);
+  Vector *uu_x = find_vector(e, u_x);
+  Vector *uu_y = find_vector(e, u_y);
+  Vector *uu_z = find_vector(e, u_z);
+  return add_polygon( e, new PlanePolygonLines(plane, *pos_1, *uu_x, *uu_y, *uu_z, z_multiplier), 1);
+}
+std::pair<GameApi::PL, GameApi::PL> GameApi::PlaneApi::triangulate(EveryApi &ev, PL pl, int obj)
+{
+  PlanePoints2d *plane = find_plane(e,pl);
+  PlanePoints2d *plane2 = new Triangulate1(ev, pl, plane,obj);
+  PlanePoints2d *plane3 = new Triangulate2(ev, pl, plane,obj);
+  PL pl1 = add_plane(e, plane2);
+  PL pl2 = add_plane(e, plane3);
+  return std::make_pair(pl1,pl2);
+}
+class EmptyPlane : public PlanePoints2d
+{
+public:
+  EmptyPlane(float sx, float sy) : sx(sx), sy(sy) { }
+  float SizeX() const { return sx; }
+  float SizeY() const { return sy; }
+  int Size() const { return 0; }
+  Point2d Map(int i) const
+  {
+    Point2d p;
+    p.x = 0.0;
+    p.y = 0.0;
+    return p;
+  }
+private:
+  float sx,sy;
+};
+GameApi::PL GameApi::PlaneApi::empty_plane( float sx, float sy )
+{
+  return add_plane(e, new EmptyPlane(sx,sy));
+}
+GameApi::PL GameApi::PlaneApi::triangulate_all(GameApi::EveryApi &ev, PL pl, int point_count, int max_obj)
+{
+  PlanePoints2d *plane = find_plane(e,pl);
+  PL res = empty_plane(plane->SizeX(), plane->SizeY());
+  for(int obj=0;obj<max_obj;obj++)
+    {
+      for(int i=0;i<point_count;i++)
+	{
+	  std::pair<PL,PL> p = triangulate(ev,pl, obj);
+	  res = or_plane(res,p.first);
+	  pl = p.second;
+	}
+    }
+  return res;
 }
 GameApi::PL GameApi::PlaneApi::render_p(GameApi::P poly, GameApi::M proj_matrix, float sx, float sy)
 {

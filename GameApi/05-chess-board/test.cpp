@@ -47,6 +47,27 @@ void color_change(int c, P &p, EveryApi &ev)
 	  }
 }
 
+
+PT horse_head_func(EveryApi &ev, int idx, void *data)
+{
+  switch(idx)
+    {
+    case 0: return ev.point_api.point(8+0.0,0.0,0.0);
+    case 1: return ev.point_api.point(8+15.0,0.0,0.0);
+    case 2: return ev.point_api.point(8+16.0,16.0,0.0);
+    case 3: return ev.point_api.point(8+7.0,30.0,0.0);
+    case 4: return ev.point_api.point(8+7.0,35.0,0.0);
+    case 5: return ev.point_api.point(8+14.0,30.0,0.0);
+    case 6: return ev.point_api.point(8+16.0,35.0,0.0);
+    case 7: return ev.point_api.point(8+3.0,45.0,0.0);
+    case 8: return ev.point_api.point(8+(-7.0),38.0,0.0);
+    case 9: return ev.point_api.point(8+(-7.0),30.0,0.0);
+    case 10: return ev.point_api.point(8+0.0,15.0,0.0);
+    };
+  return ev.point_api.point(8+0.0,0.0,0.0);
+}
+
+
 P chars_blocks(int c, EveryApi &ev)
 {
 #if 1
@@ -55,7 +76,18 @@ P chars_blocks(int c, EveryApi &ev)
     case 1: // horse
     case 7:
       {
+	PL horse_head = ev.plane_api.function(horse_head_func, 11, 300.0, 300.0, 0);
+	PL horse_head_tri = ev.plane_api.triangulate_all(ev, horse_head, 20, 1);
+	PT pos = ev.point_api.point(0.0, 0.0, 0.0);
+	V u_x = ev.vector_api.vector(1.0, 0.0,0.0);
+	V u_y = ev.vector_api.vector(0.0, 1.0, 0.0);
+	V u_z = ev.vector_api.vector(0.0, 0.0, 1.0);
+	P horse_head_obj = ev.plane_api.to_polygon(ev, horse_head_tri, pos, u_x, u_y, u_z, 3.0);
+	P horse_head_obj_scale = ev.polygon_api.scale(horse_head_obj, 0.75,0.75,0.75);
+	P horse_head_obj_rot = ev.polygon_api.rotatey(horse_head_obj_scale,180.0*2.0*3.14159/360.0);
+	P horse_head_obj_trans = ev.polygon_api.translate(horse_head_obj_rot, 27.0, -60.0, 17.0);
 
+#if 0
 	PT p1 = ev.point_api.point(15.0, -60.0, 15.0);
 	PT p2 = ev.point_api.point(15.0, -57.0, 15.0);
 	PT p3 = ev.point_api.point(15.0, -53.0, 15.0);
@@ -79,7 +111,16 @@ P chars_blocks(int c, EveryApi &ev)
 	P ppp = ev.polygon_api.or_elem(pp, pe);
 	p = ev.polygon_api.or_elem(p,ppp);
 	p = ev.polygon_api.or_elem(p,cube_trans);
+#endif
 
+	PT p1 = ev.point_api.point(15.0, -60.0, 15.0);
+	PT p2 = ev.point_api.point(15.0, -57.0, 15.0);
+	PT p3 = ev.point_api.point(15.0, -53.0, 15.0);
+	P pa = ev.polygon_api.cone(30, p1,p2,8.0,9.0);
+	P pb = ev.polygon_api.cone(30, p2,p3,2.0,8.0);
+
+	P pp = ev.polygon_api.or_elem(pa,pb);
+	P p = ev.polygon_api.or_elem(pp, horse_head_obj_trans);
 	color_change(c,p,ev);
 	return p;
 

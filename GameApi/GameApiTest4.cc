@@ -82,6 +82,24 @@ PT point_func(EveryApi &e, int idx, void *data)
   case 4: return e.point_api.point(0.0,50.0,0.0);
   }
 }
+PT horse_head_func(EveryApi &ev, int idx, void *data)
+{
+  switch(idx)
+    {
+    case 0: return ev.point_api.point(8+0.0,0.0,0.0);
+    case 1: return ev.point_api.point(8+15.0,0.0,0.0);
+    case 2: return ev.point_api.point(8+16.0,16.0,0.0);
+    case 3: return ev.point_api.point(8+7.0,30.0,0.0);
+    case 4: return ev.point_api.point(8+7.0,35.0,0.0);
+    case 5: return ev.point_api.point(8+14.0,30.0,0.0);
+    case 6: return ev.point_api.point(8+16.0,35.0,0.0);
+    case 7: return ev.point_api.point(8+3.0,45.0,0.0);
+    case 8: return ev.point_api.point(8+(-7.0),38.0,0.0);
+    case 9: return ev.point_api.point(8+(-7.0),30.0,0.0);
+    case 10: return ev.point_api.point(8+0.0,15.0,0.0);
+    };
+  return ev.point_api.point(8+0.0,0.0,0.0);
+}
 
 void Game(EveryApi &e)
 {
@@ -101,6 +119,7 @@ void Game(EveryApi &e)
   e.shader_api.load("Shader.txt");
   SH sh = e.shader_api.get_shader("texture", "texture", "");
   SH sh2 = e.shader_api.get_shader("empty", "empty", "");
+  SH sh3 = e.shader_api.colour_shader();
   e.shader_api.bind_attrib(sh, 0, "in_Position");
   e.shader_api.bind_attrib(sh, 1, "in_Normal");
   e.shader_api.bind_attrib(sh, 2, "in_Color");
@@ -187,8 +206,32 @@ void Game(EveryApi &e)
   //spr_f.prepare();
   //spr_f.set_pos(200.0,200.0);
   PT pt = e.point_api.point(100.0, 100.0, 0.0);
-  PL circle = e.plane_api.star(pt, 100.0, 90.0, 20);
-  PLA circle_pla = e.plane_api.prepare(circle);
+  //PL circle = e.plane_api.star(pt, 100.0, 60.0, 8);
+  PL circle = e.plane_api.function(horse_head_func, 11, 300.0, 300.0, 0);
+
+  PL circle2 = e.plane_api.triangulate_all(e, circle, 40, 1);
+
+  PT pos = e.point_api.point(-70.0, -20.0, 0.0);
+  V u_x = e.vector_api.vector(1.0,0.0,0.0);
+  V u_y = e.vector_api.vector(0.0,1.0,0.0);
+  P circle_3 = e.plane_api.to_polygon_face(circle2, pos, u_x, u_y);
+
+  P circle_3_2 = e.polygon_api.color_faces(circle_3, 0xffffffff, 0xff888888, 0xff444444, 0xffff0000);
+  P circle_3_3 = e.polygon_api.scale(circle_3_2,8.0,8.0,8.0);
+
+  BB bb = e.plane_api.render_bool(circle, 0, 300,300);
+  BM bm2 = e.bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
+
+
+  SpriteObj spr_obj(e, bm2, sh);
+  spr_obj.set_pos(0.0,100.0);
+  spr_obj.prepare();
+
+  PolygonObj star_obj(e, circle_3_3, sh3);
+  star_obj.prepare();
+
+  PLA circle_pla = e.plane_api.prepare(circle2);
+
   
 
 
@@ -232,6 +275,9 @@ void Game(EveryApi &e)
       spr2.set_pos(250.0, 250.0-frame*4.0);
       spr2.set_scale(2.0,2.0);
       spr2.render();
+
+      star_obj.render();
+      spr_obj.render();
       //spr_f.render();
 
       //e.texture_api.use(tex);

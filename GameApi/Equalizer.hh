@@ -1486,14 +1486,16 @@ public:
   { 
     int i2 = 0;
     int count=0;
-    for(;i2<points.Size();i2++)
+    int s = points.Size();
+    for(;i2<s;i2++)
       {
 	if (count == num) break;
 	if (i2!=0 && points.Type(i2)==PlanePoints2d::PlanePointsType::EMove)
 	  count++;
       }
     int i3 = 0;
-    for(;i2<points.Size();i2++,i3++)
+    int s2 = points.Size();
+    for(;i2<s2;i2++,i3++)
       {
 	if (i2!=0 && points.Type(i2)==PlanePoints2d::PlanePointsType::EMove) { break; }
       }
@@ -1503,7 +1505,8 @@ public:
   {
     int i2 = 0;
     int count = 0;
-    for(;i2<points.Size();i2++)
+    int s = points.Size();
+    for(;i2<s;i2++)
       {
 	if (count == num) break;
 	if (i2!=0 && points.Type(i2)==PlanePoints2d::PlanePointsType::EMove)

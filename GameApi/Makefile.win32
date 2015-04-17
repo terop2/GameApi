@@ -67,8 +67,8 @@ INC5WIN = d:\cvs\freetype\include
 INC6WIN = d:\cvs\freetype\include\freetype2
 INC7WIN = d:\cvs\pthread\pre-built.2\include
 
-CCFLAGS = -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2
-CC2FLAGS = -std=c++11 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -DGLEW_STATIC
+CCFLAGS = -g -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2
+CC2FLAGS = -g -std=c++11 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -DGLEW_STATIC
 #`pkg-config gtkmm-2.4 --cflags`
 
 
