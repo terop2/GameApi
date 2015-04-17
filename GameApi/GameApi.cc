@@ -7925,7 +7925,7 @@ int triangulate_find_pos(GameApi::EveryApi &ev, GameApi::PL pl, PlanePoints2d *o
   //std::cout << "Triangulate_find_pos start: " << std::endl;
   int current_obj = 0;
   int i = 0;
-  int s = orig->Size();
+  int s = orig->Size()-1;
   for(;i<s;i++)
     {
       //std::cout << "loop i" << i << std::endl;
@@ -7994,7 +7994,7 @@ int triangulate_find_pos(GameApi::EveryApi &ev, GameApi::PL pl, PlanePoints2d *o
 class Triangulate1 : public PlanePoints2d
 {
 public:
-  Triangulate1(GameApi::EveryApi &ev, GameApi::PL pl, PlanePoints2d *orig, int obj) : orig(orig) 
+  Triangulate1(GameApi::EveryApi &ev, GameApi::PL pl, PlanePoints2d *orig, int obj) : orig(orig), pl(pl), ev(ev), obj(obj) 
   {
     if (orig->Size()<=3) pos=1;
     else
@@ -8029,6 +8029,9 @@ public:
 private:
   PlanePoints2d *orig;
   int pos;
+  GameApi::PL pl;
+  GameApi::EveryApi &ev;
+  int obj;
 };
 class Triangulate2 : public PlanePoints2d
 {
