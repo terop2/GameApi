@@ -997,3 +997,52 @@ FlexibleCube box(Point p1, float sx, float sy, float sz)
   cube.back_plane.line2_p2 = p1+Vector(sx,sy,sz);
   return cube;  
 }
+
+float det_2(float x1, float x2, float x3, float x4)
+{
+  return x1*x4 - x2*x3;
+}
+
+bool LineLineIntersection_Parallel(Point2d l1_p1, Point2d l1_p2,
+				   Point2d l2_p1, Point2d l2_p2)
+{
+  float x1 = l1_p1.x;
+  float y1 = l1_p1.y;
+  float x2 = l1_p2.x;
+  float y2 = l1_p2.y;
+  float x3 = l2_p1.x;
+  float y3 = l2_p1.y;
+  float x4 = l2_p2.x;
+  float y4 = l2_p2.y;
+  
+  float val = (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4); 
+  return val>-0.001 && val<0.001;
+}
+Point2d LineLineIntersection(Point2d l1_p1, Point2d l1_p2,
+			     Point2d l2_p1, Point2d l2_p2)
+{
+  float x1 = l1_p1.x;
+  float y1 = l1_p1.y;
+  float x2 = l1_p2.x;
+  float y2 = l1_p2.y;
+  float x3 = l2_p1.x;
+  float y3 = l2_p1.y;
+  float x4 = l2_p2.x;
+  float y4 = l2_p2.y;
+
+  float P_x = ((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
+  float P_y = ((x1*y2-y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4)) / ((x1-x2)*(y3-y4) - (y1-y2)*(x3-x4));
+
+  Point2d p = {P_x,P_y};
+  return p;
+
+}
+bool IsWithInBoundingBox(Point2d p, Point2d top_left, Point2d bottom_right)
+{
+  if (p.x>=top_left.x && p.y>=top_left.y &&
+      p.x<=bottom_right.x && p.y<=bottom_right.y)
+    {
+      return true;
+    }
+  return false;
+}

@@ -797,6 +797,7 @@ public:
   IMPORT P or_array(P *array, int size);
   //P and_not_elem(P p1, P p_not);
 
+
   IMPORT P grid(PT o, PT u_x, PT u_y, int num_x, int num_y);
   IMPORT P grid(PT o, PT u_x, PT u_y, int num_x, int num_y, P *grid);
 
@@ -974,6 +975,7 @@ public:
   PlaneApi(Env &e);
   PL function(PT (*fptr)(EveryApi &e, int idx, void *data), int num_points, float sx, float sy, void *data);
   PL color_function(PL pl, CO (*fptr)(EveryApi &ev, int idx, PT pos, void *data), void *data);
+  PL empty_plane(float sx, float sy);
   PL flip_y(PL pl);
   PL move(PL pl, float dx, float dy);
   PL or_plane(PL p1, PL p2);
@@ -1000,6 +1002,14 @@ public:
   PL render_p(P p, M proj_matrix, float sx, float sy);
 
   PL remove_splines(PL pl, float xdelta);
+
+  std::pair<PL,PL> triangulate(EveryApi &ev, PL pl, int obj);
+  PL triangulate_all(EveryApi &ev, PL pl, int point_count, int max_obj);
+  PL remove_empty_faces(PL pl);
+
+  P to_polygon_face(PL triangulated_pl, PT pos, V u_x, V u_y);
+  P to_polygon_lines(PL pl, PT pos, V u_x, V u_y, V u_z, float z_mult);
+  P to_polygon(EveryApi &ev, PL pl, PT pos, V u_x, V u_y, V u_z, float z_mult);
 
   // 1) get black bitmap
   // 2) draw white polygon
@@ -1138,6 +1148,7 @@ public:
 
   IMPORT CBM rotate(CBM bm, float center_x, float center_y, float angle);
   IMPORT CBM surfacecolor(S s, COV cov);
+  IMPORT unsigned int get_pixel(CBM bitmap, float x, float y);
 private:
   ContinuousBitmapApi(const ContinuousBitmapApi&);
   void operator=(const ContinuousBitmapApi&);
