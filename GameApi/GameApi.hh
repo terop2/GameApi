@@ -273,6 +273,7 @@ public:
 	IMPORT BM interpolate_bitmap(BM orig1, BM orig2, float x); // x=[0..1]
 	IMPORT BM repeat_bitmap(BM orig, int xcount, int ycount);
 	IMPORT BM sample_bitmap(BM orig, float xmult, float ymult, float x, float y);
+        IMPORT BM world_from_bitmap(std::function<BM(int)> f, BM int_bm, int dx, int dy);
 	IMPORT BM flip_x(BM orig);
 	IMPORT BM flip_y(BM orig);
         IMPORT BM alpha_color(BM orig, unsigned int color_key);
@@ -1761,6 +1762,66 @@ private:
     SH sh;
     bool prepared;
   };
+  class SpriteWorldObj : public RenderObject, public MoveScaleObject2d
+  {
+  public:
+    SpriteWorldObj(EveryApi &ev, std::function<BM(int)> f, int numvalues, BM int_bm, int dx, int dy, SH sh) : bmapi(ev.bitmap_api), sp(ev.sprite_api), matrix_api(ev.matrix_api), shader_api(ev.shader_api), sh(sh), f(f), numvalues(numvalues), int_bm(int_bm), dx(dx), dy(dy) 
+    {
+      m_t = 0;
+      m_l = 0;
+      m_width = bmapi.size_x(int_bm);
+      m_height = bmapi.size_y(int_bm);
+    }
+    void set_range(int l, int t, int width, int height)
+    {
+      m_l = l;
+      m_t = t;
+      m_width = width;
+      m_height = height;
+    }
+    void prepare() 
+    {
+      va.clear();
+      for(int i=0;i<(int)numvalues;i++)
+	va.push_back(sp.create_vertex_array(f(i))); 
+      prepared=true;
+    }
+    void render() 
+    { 
+      if (prepared)
+	{
+	  M m = matrix_api.mult(matrix_api.scale(mult_x, mult_y, 1.0), matrix_api.trans(pos_x, pos_y, 0.0));
+	  for(int y=m_t;y<m_height;y++)
+	    for(int x=m_l;x<m_width;x++)
+	      {
+		M m2 = matrix_api.mult(matrix_api.trans(x*dx, y*dy, 0.0),m);
+		shader_api.set_var(sh, "in_MV", m2);
+		int index = bmapi.intvalue(int_bm, x,y);
+		sp.render_sprite_vertex_array(va[index]);
+	      }
+	}
+      //sp.rendersprite(bm[anim_id], sh, pos_x, pos_y, mult_x, mult_y); 
+    }
+    void set_pos(float p_x, float p_y) { pos_x=p_x; pos_y=p_y; }
+    void set_scale(float m_x, float m_y) { mult_x = m_x; mult_y=m_y; }
+  private:
+    BitmapApi &bmapi;
+    SpriteApi &sp;
+    MatrixApi &matrix_api;
+    ShaderApi &shader_api;
+    SH sh;
+    std::function<BM(int)> f;
+    std::vector<VA> va;
+    int numvalues;
+    BM int_bm;
+    float dx,dy;
+    int m_t, m_l, m_width, m_height;
+    bool prepared;
+    float mult_x,mult_y;
+    float pos_x, pos_y;
+  };
+
+
   class PolygonObj : public RenderObject, public MoveScaleObject3d
   {
   public:
@@ -1887,7 +1948,7 @@ private:
   class WorldObj : public RenderObject, public MoveScaleObject3d
   {
   public:
-    WorldObj(EveryApi &ev, std::function<P(int)> f, int numvalues, BM bm, int dx, int dy, SH sh) : bmapi(ev.bitmap_api), api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), numvalues(numvalues), bm(bm), f(f), dx(dx), dy(dy), sh(sh) 
+    WorldObj(EveryApi &ev, std::function<P(int)> f, int numvalues, BM bm, float dx, float dy, SH sh) : bmapi(ev.bitmap_api), api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), numvalues(numvalues), bm(bm), f(f), dx(dx), dy(dy), sh(sh) 
     {
       int sx = bmapi.size_x(bm);
       int sy = bmapi.size_y(bm);
@@ -2015,7 +2076,7 @@ private:
     int numvalues;
     BM bm;
     std::function<P(int)> f;
-    int dx,dy;
+    float dx,dy;
     int *bitmap;
     SH sh;
     int m_x, m_y, m_sx, m_sy;
