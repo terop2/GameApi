@@ -5449,7 +5449,22 @@ GameApi::BM GameApi::BitmapApi::repeat_bitmap(BM orig, int xcount, int ycount)
   chandle2->bm = rep;
   return add_bitmap(e,chandle2);
 }
-
+GameApi::BM GameApi::BitmapApi::world_from_bitmap(std::function<BM(int)> f, BM int_bm, int dx, int dy)
+{
+  int sx = size_x(int_bm);
+  int sy = size_y(int_bm);
+  BM current = newbitmap(sx*dx,sy*dy);
+  for(int y=0;y<sy;y++)
+    {
+      for(int x=0;x<sx;x++)
+	{
+	  int index = intvalue(int_bm, x,y);
+	  BM bm = f(index);
+	  current = blitbitmap(current, bm, x*dx, y*dy);
+	}
+    }
+  return current;
+}
 GameApi::BM GameApi::FloatBitmapApi::subfloatbitmap(FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color)
 {
   GameApi::EveryApi *ev = new GameApi::EveryApi(e);
