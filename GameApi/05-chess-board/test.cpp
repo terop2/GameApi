@@ -1,4 +1,5 @@
 #include "GameApi.hh"
+#include <iostream>
 
 using namespace GameApi;
 
@@ -28,7 +29,7 @@ int charsmap(char c)
     case 'k': return 9; 
     case 'q': return 10;
     case 'p': return 11;
-
+    case '.': return 12;
     }
 }
 
@@ -295,6 +296,9 @@ P board_blocks(int c, EveryApi &ev)
     break;
   case 1:
     color_block = ev.polygon_api.color_faces(block, 0x000000ff, 0x222222ff, 0x444444ff, 0x111111ff);
+    break;
+  case 2:
+    color_block = ev.polygon_api.color_faces(block, 0x00ff0000, 0x22ff22ff, 0x44ff44ff, 0x11ff11ff);
   };
   return color_block;
 }
@@ -321,28 +325,37 @@ int main() {
   ev.shader_api.set_var(sh, "in_T", m2);
 
   BM bm = ev.bitmap_api.newintbitmap(board, 8,8, boardmap);
-  P board = ev.polygon_api.world_from_bitmap(std::bind(&board_blocks, _1, std::ref(ev)), bm, 30.0, 30.0);
-  P board2 = ev.polygon_api.scale(board, 2.8,2.8,2.8);
-  P board3 = ev.polygon_api.translate(board2, -340.0, 30.0, -400.0);
+  WorldObj board_obj(ev, std::bind(&board_blocks, _1, std::ref(ev)), 3, bm, 30.0, 30.0, sh);
+  board_obj.set_scale(2.8,2.8,2.8);
+  board_obj.set_pos(-340.0, 30.0, -400.0);
+  board_obj.prepare();
 
   BM bm2 = ev.bitmap_api.newintbitmap(chars, 8,8, charsmap);
-  P chars = ev.polygon_api.world_from_bitmap(std::bind(&chars_blocks, _1, std::ref(ev)), bm2, 30.0, 30.0);
-  P chars2 = ev.polygon_api.scale(chars, 2.8,2.8,2.8);
-  P chars3 = ev.polygon_api.translate(chars2, -340.0, 30.0, -400.0);
+  WorldObj pieces_obj(ev, std::bind(&chars_blocks, _1, std::ref(ev)), 13, bm2, 30.0, 30.0, sh);
+  pieces_obj.set_scale(2.8,2.8,2.8);
+  pieces_obj.set_pos(-340.0, 30.0, -400.0);
+  M mm1 = ev.matrix_api.xrot(90.0*3.14159/360.0);
+  M mm2 = ev.matrix_api.scale(2.0,2.0,2.0);
+  M mm3 = ev.matrix_api.trans(0.0, 100.0, -300.0);
+  pieces_obj.set_rotation_matrix2(ev.matrix_api.mult(ev.matrix_api.mult(mm1,mm2),mm3));
+  pieces_obj.prepare();
+  board_obj.set_rotation_matrix2(ev.matrix_api.mult(ev.matrix_api.mult(mm1,mm2),mm3));
 
-  P or_b = ev.polygon_api.or_elem(board3, chars3);
-
-  P or_b_rotated = ev.polygon_api.rotatex(or_b, 90.0*3.14159/360.0);
-  P or_b_rotated_and_scaled = ev.polygon_api.scale(or_b_rotated,2.0,2.0,2.0);
-  P or_b_rotated_and_scaled_and_translated = ev.polygon_api.translate(or_b_rotated_and_scaled, 0.0, 100.0, -300.0);
-  PolygonObj poly(ev, or_b_rotated_and_scaled_and_translated, sh);
-  poly.prepare();
- 
+  int cursor_under = 0;
+  int cursor_x = 0;
+  int cursor_y = 0;
   while(1) {
     // clear frame buffer
     ev.mainloop_api.clear_3d();
 
-    poly.render();
+    cursor_under = board_obj.read_block(cursor_x, cursor_y);
+    board_obj.set_block(cursor_x, cursor_y,2);
+
+    //poly.render();
+    pieces_obj.render();
+    board_obj.render();
+
+    board_obj.set_block(cursor_x, cursor_y, cursor_under);
 
     ev.mainloop_api.fpscounter();
     // swapbuffers
@@ -350,7 +363,31 @@ int main() {
 
     // handle esc event
     MainLoopApi::Event e = ev.mainloop_api.get_event();
-    if (e.ch==27) break;
+    // if (e.type==0x300)
+    //  std::cout << std::hex << e.ch << std::endl;
+    if (e.ch==27&&e.type==0x300) break;
+    if ((e.ch&0xff)==0x52&&e.type==0x300) // right
+      { 
+	cursor_y--; 
+	if (cursor_y<0) 
+	  cursor_y=0; 
+      }
+    if ((e.ch&0xff)==0x4f&&e.type==0x300) // up
+      { 
+	cursor_x--; 
+	if (cursor_x<0) cursor_x=0; 
+      }
+    if ((e.ch&0xff)==0x51&&e.type==0x300) // down
+      { 
+	cursor_y++; 
+	if (cursor_y>7) 
+	  cursor_y=7; 
+      }
+    if ((e.ch&0xff)==0x50&&e.type==0x300) // left
+      { 
+	cursor_x++; 
+	if (cursor_x>7) cursor_x=7; 
+      }
   }
 
 

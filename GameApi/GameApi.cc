@@ -6358,15 +6358,18 @@ float GameApi::FloatBitmapApi::floatvalue(FB bm, int x, int y)
 
 GameApi::BB GameApi::BoolBitmapApi::rectangle(BB bg, float x, float y, float width, float height)
 {
-  Rectangle_data d;
-  d.start_x = x;
-  d.start_y = y;
-  d.end_x = x+width;
-  d.end_y = y+height;
+  Rectangle_data *d = new Rectangle_data;
+  d->start_x = x;
+  d->start_y = y;
+  d->end_x = x+width;
+  d->end_y = y+height;
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->deletes.push_back(std::shared_ptr<void>(d));
+
   using std::placeholders::_1;
   using std::placeholders::_2;
   using std::placeholders::_3;
-  return or_bitmap(bg, function(std::bind(Rectangle_func,_1, _2,(void*)&d), size_x(bg), size_y(bg)));
+  return or_bitmap(bg, function(std::bind(Rectangle_func,_1, _2,(void*)d), size_x(bg), size_y(bg)));
   
 }
 
