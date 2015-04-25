@@ -1718,6 +1718,7 @@ private:
       pos_x = 0.0; pos_y = 0.0;
       mult_x = 1.0; mult_y = 1.0;
       anim_id = 0;
+      m = matrix_api.identity();
       prepared=false;
     }
     SpriteObj(EveryApi &ev, std::vector<BM> anim, SH sh) : sp(ev.sprite_api), matrix_api(ev.matrix_api), shader_api(ev.shader_api), bm(anim), sh(sh) 
@@ -1725,6 +1726,7 @@ private:
       pos_x = 0.0; pos_y = 0.0;
       mult_x = 1.0; mult_y = 1.0;
       anim_id = 0;
+      m = matrix_api.identity();
       prepared=false;
     }
     void prepare() 
@@ -1738,13 +1740,14 @@ private:
     { 
       if (prepared)
 	{
-	  shader_api.set_var(sh, "in_MV", matrix_api.mult(matrix_api.scale(mult_x, mult_y, 1.0), matrix_api.trans(pos_x, pos_y, 0.0)));
+	  shader_api.set_var(sh, "in_MV", matrix_api.mult(m,matrix_api.mult(matrix_api.scale(mult_x, mult_y, 1.0), matrix_api.trans(pos_x, pos_y, 0.0))));
 	  sp.render_sprite_vertex_array(va[anim_id]);
 	}
       //sp.rendersprite(bm[anim_id], sh, pos_x, pos_y, mult_x, mult_y); 
     }
     void set_pos(float p_x, float p_y) { pos_x=p_x; pos_y=p_y; }
     void set_scale(float m_x, float m_y) { mult_x = m_x; mult_y=m_y; }
+    void set_matrix(M m1) { m = m1; }
     void set_anim_frame(int id) 
     {
       if (id>=0 && id<(int)bm.size())
@@ -1758,6 +1761,7 @@ private:
     ShaderApi &shader_api;
     std::vector<BM> bm;
     std::vector<VA> va;
+    M m;
     int anim_id;
     SH sh;
     bool prepared;
