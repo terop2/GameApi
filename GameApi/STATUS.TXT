@@ -7,7 +7,7 @@ P.. 04-racing-cars
 R.. 05-chess-board
 ... 06-zombie-horror
 P.. 07-aliens-shootemup
-... 08-oldies-platformer
+P.. 08-oldies-platformer
 ... 09-logic-puzzle
 
 ... 10-spaceage-pingpong
