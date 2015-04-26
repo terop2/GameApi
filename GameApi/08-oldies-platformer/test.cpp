@@ -3,11 +3,11 @@
 using namespace GameApi;
 
 char world1[] =
-  "-............."
+  "......--......"
+  ".....--......."
+  "--------------"
   ".............."
-  "..----------.."
-  ".............."
-  "..----------.."
+  "--------------"
   ".............-";
 int blocks_map(char c)
 {
@@ -23,7 +23,8 @@ P blocks(int c, EveryApi &ev)
   case 1: 
     {
     P p = ev.polygon_api.cube(0.0,10.0,0.0,10.0, 0.0, 10.0);
-    return p;
+    P p2 = ev.polygon_api.color_from_normals(p);
+    return p2;
     }
   };
   return ev.polygon_api.empty();

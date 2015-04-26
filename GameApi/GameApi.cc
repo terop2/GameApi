@@ -161,9 +161,9 @@ void GameApi::MainLoopApi::init_window(int screen_width, int screen_height)
   int screenx = screen_width;
   int screeny = screen_height;
 #ifdef SDL2_USED
-  p->screen = InitSDL2(screenx,screeny,true);
+  p->screen = InitSDL2(screenx,screeny,false);
 #else
-  p->screen = InitSDL(screenx,screeny,true);
+  p->screen = InitSDL(screenx,screeny,false);
 #endif
   time = SDL_GetTicks();
   glDisable(GL_DEPTH_TEST);
