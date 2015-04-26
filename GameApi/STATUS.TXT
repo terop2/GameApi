@@ -8,9 +8,9 @@ R.. 05-chess-board
 ... 06-zombie-horror
 P.. 07-aliens-shootemup
 P.. 08-oldies-platformer
-... 09-logic-puzzle
+P.. 09-logic-puzzle
 
-... 10-spaceage-pingpong
+P.. 10-spaceage-pingpong
 ... 11-blocks
 ... 12-golden-maze
 ... 13-city-building
