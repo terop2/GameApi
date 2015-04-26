@@ -70,11 +70,18 @@ int main() {
   world.set_scale(2.8,2.8,2.8);
   world.set_pos(-580.0, 0.0, -500.0);
 
+  P p = ev.polygon_api.cube(0.0,200.0, 0.0, 10.0, 0.0, 10.0);
+  PolygonObj club(ev, p, sh);
+  club.prepare();
+
+  float club_x = 0.0;
   while(1) {
     // clear frame buffer
     ev.mainloop_api.clear_3d();
 
     world.render();
+    club.set_pos(club_x*1.2-600.0, -480.0, 0.0);
+    club.render();
 
     ev.mainloop_api.fpscounter();
     // swapbuffers
@@ -82,7 +89,9 @@ int main() {
 
     // handle esc event
     MainLoopApi::Event e = ev.mainloop_api.get_event();
-    if (e.ch==27) break;
+    if (e.ch==27&&e.type==0x300) break;
+    PT pos = e.cursor_pos;
+    club_x = ev.point_api.pt_x(pos);
   }
 
 
