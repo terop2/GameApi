@@ -7,7 +7,7 @@ char chars[] =
   "thlkqlht"
   "pppppppp"
   "........"
-  "........"
+  "...q...."
   "........"
   "........"
   "PPPPPPPP"
@@ -32,6 +32,285 @@ int charsmap(char c)
     case '.': return 12;
     }
 }
+struct Pos { int x; int y; };
+bool piece_color_is_white(int c)
+{
+  switch(c)
+    {
+    case 0: return true;
+    case 1: return true;
+    case 2: return true; 
+    case 3: return true; 
+    case 4: return true;
+    case 5: return true;
+
+    case 6: return false;
+    case 7: return false;
+    case 8: return false; 
+    case 9: return false; 
+    case 10: return false;
+    case 11: return false;
+    case 12: return false;
+    };
+}
+bool is_inside_board(Pos p)
+{
+  if (p.x<0||p.x>7) return false;
+  if (p.y<0||p.y>7) return false;
+  return true;
+}
+bool piece_action(std::vector<Pos> &pos, int piece2, int piece_color, int opponent_color, Pos p1)
+{
+  if (piece2==12)
+    {
+      pos.push_back(p1);
+    }
+  else
+    if (piece_color_is_white(piece2)==piece_color)
+      {
+	return true;
+      }
+    else
+      if (piece_color_is_white(piece2)==opponent_color)
+	{
+	  pos.push_back(p1);
+	  return true;
+	}
+  return false;
+}
+std::vector<Pos> possible_moves(WorldObj &o, int x, int y)
+{
+  int piece = o.read_block(x,y);
+  bool piece_color = piece_color_is_white(piece);
+  bool opponent_color = !piece_color;
+  std::vector<Pos> pos;
+  switch(piece)
+    {
+    case 0: // T
+    case 6:
+      {
+      for(int xx=1;xx<8;xx++)
+	{
+	  Pos p1 = { x+xx, y };
+	  if (is_inside_board(p1))
+	    {
+	      int piece2 = o.read_block(p1.x,p1.y);
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p1)) { break; }
+	    }
+	}
+      for(int xx=1;xx<8;xx++)
+	{
+	  Pos p2 = { x-xx, y };
+	  if (is_inside_board(p2))
+	    {
+	      int piece2 = o.read_block(p2.x,p2.y);
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p2)) { break; }
+
+	    }
+	}
+      for(int xx=1;xx<8;xx++)
+	{
+	  Pos p3 = { x, y-xx };
+	  if (is_inside_board(p3))
+	    {
+	      int piece2 = o.read_block(p3.x,p3.y);
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p3)) { break; }
+	    }
+	}
+      for(int xx=1;xx<8;xx++)
+	{
+	  Pos p4 = { x, y+xx };
+	  if (is_inside_board(p4))
+	    {
+	      int piece2 = o.read_block(p4.x,p4.y);
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p4)) { break; }
+	    }
+	}
+      }
+      break;
+    
+    case 1: // H
+    case 7:
+
+    case 2: // L
+    case 8:
+      for(int xx=1;xx<8;xx++)
+	{
+	  Pos p1 = { x+xx, y+xx };
+	  if (is_inside_board(p1))
+	    {
+	      int piece2 = o.read_block(p1.x,p1.y);
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p1)) { break; }
+	    }
+	}
+      for(int xx=1;xx<8;xx++)
+	{
+	  Pos p2 = { x-xx, y-xx };
+	  if (is_inside_board(p2))
+	    {
+	      int piece2 = o.read_block(p2.x,p2.y);
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p2)) { break; }
+
+	    }
+	}
+      for(int xx=1;xx<8;xx++)
+	{
+	  Pos p3 = { x+xx, y-xx };
+	  if (is_inside_board(p3))
+	    {
+	      int piece2 = o.read_block(p3.x,p3.y);
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p3)) { break; }
+	    }
+	}
+      for(int xx=1;xx<8;xx++)
+	{
+	  Pos p4 = { x-xx, y+xx };
+	  if (is_inside_board(p4))
+	    {
+	      int piece2 = o.read_block(p4.x,p4.y);
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p4)) { break; }
+	    }
+	}
+      break;
+
+    case 3: // K
+    case 9:
+
+    case 4: // Q
+    case 10:
+
+      {
+      for(int xx=1;xx<8;xx++)
+	{
+	  Pos p1 = { x+xx, y };
+	  if (is_inside_board(p1))
+	    {
+	      int piece2 = o.read_block(p1.x,p1.y);
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p1)) { break; }
+	    }
+	}
+      for(int xx=1;xx<8;xx++)
+	{
+	  Pos p2 = { x-xx, y };
+	  if (is_inside_board(p2))
+	    {
+	      int piece2 = o.read_block(p2.x,p2.y);
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p2)) { break; }
+
+	    }
+	}
+      for(int xx=1;xx<8;xx++)
+	{
+	  Pos p3 = { x, y-xx };
+	  if (is_inside_board(p3))
+	    {
+	      int piece2 = o.read_block(p3.x,p3.y);
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p3)) { break; }
+	    }
+	}
+      for(int xx=1;xx<8;xx++)
+	{
+	  Pos p4 = { x, y+xx };
+	  if (is_inside_board(p4))
+	    {
+	      int piece2 = o.read_block(p4.x,p4.y);
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p4)) { break; }
+	    }
+	}
+      }
+
+      for(int xx=1;xx<8;xx++)
+	{
+	  Pos p1 = { x+xx, y+xx };
+	  if (is_inside_board(p1))
+	    {
+	      int piece2 = o.read_block(p1.x,p1.y);
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p1)) { break; }
+	    }
+	}
+      for(int xx=1;xx<8;xx++)
+	{
+	  Pos p2 = { x-xx, y-xx };
+	  if (is_inside_board(p2))
+	    {
+	      int piece2 = o.read_block(p2.x,p2.y);
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p2)) { break; }
+
+	    }
+	}
+      for(int xx=1;xx<8;xx++)
+	{
+	  Pos p3 = { x+xx, y-xx };
+	  if (is_inside_board(p3))
+	    {
+	      int piece2 = o.read_block(p3.x,p3.y);
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p3)) { break; }
+	    }
+	}
+      for(int xx=1;xx<8;xx++)
+	{
+	  Pos p4 = { x-xx, y+xx };
+	  if (is_inside_board(p4))
+	    {
+	      int piece2 = o.read_block(p4.x,p4.y);
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p4)) { break; }
+	    }
+	}
+    
+  break;
+    
+    case 5: // P
+    case 11:
+      {
+	//std::cout << "PIECE_COLOR: " << piece_color << ":" << y << std::endl;
+	if (piece_color==true && y==6)
+	  {
+	    Pos p1 = { x, y-2 };
+	    if (is_inside_board(p1)) { pos.push_back(p1); }
+	  }
+	else if (piece_color==false && y==1)
+	  {
+	    Pos p1 = { x, y+2 };
+	    if (is_inside_board(p1)) { pos.push_back(p1); }
+	  }
+
+	int delta = 0;
+	if (piece_color==true) { delta = -1; } else {delta = 1; }
+	Pos p1 = { x,y+delta };
+	if (is_inside_board(p1))
+	  {
+	    int piece2 = o.read_block(p1.x,p1.y);
+	    if (piece2 == 12)
+	      {
+		pos.push_back(p1);
+	      }
+	  }
+	Pos p2 = { x-1,y+delta };
+	if (is_inside_board(p2))
+	  {
+	    int piece2 = o.read_block(p2.x,p2.y);
+	    if (piece2!=12 && opponent_color == piece_color_is_white(piece2))
+	      {
+		pos.push_back(p2);
+	      }
+	  }
+	Pos p3 = { x+1,y+delta };
+	if (is_inside_board(p3))
+	  {
+	    int piece2 = o.read_block(p3.x,p3.y);
+	    if (piece2!=12 && opponent_color == piece_color_is_white(piece2))
+	      {
+		pos.push_back(p3);
+	      }
+	  }
+      }
+
+
+    case 12: break;
+    };
+  return pos;
+}
+// TODO: Pawn in last row, changes to queen
 
 void color_change(int c, P &p, EveryApi &ev)
 {
@@ -299,8 +578,33 @@ P board_blocks(int c, EveryApi &ev)
     break;
   case 2:
     color_block = ev.polygon_api.color_faces(block, 0x00ff0000, 0x22ff22ff, 0x44ff44ff, 0x11ff11ff);
+    break;
+  case 3:
+    color_block = ev.polygon_api.color_faces(block, 0xffffff00, 0x88888800, 0xffffff00, 0x88888800);
+    break;
   };
   return color_block;
+}
+
+void store_board(WorldObj &o, int *array)
+{
+  for(int x=0;x<8;x++)
+    {
+      for(int y=0;y<8;y++)
+	{
+	  array[x+y*8] = o.read_block(x,y);
+	}
+    }
+}
+void restore_board(int *array, WorldObj &o)
+{
+  for(int x=0;x<8;x++)
+    {
+      for(int y=0;y<8;y++)
+	{
+	  o.set_block(x,y, array[x+y*8]);
+	}
+    }
 }
 
 int main() {
@@ -325,7 +629,7 @@ int main() {
   ev.shader_api.set_var(sh, "in_T", m2);
 
   BM bm = ev.bitmap_api.newintbitmap(board, 8,8, boardmap);
-  WorldObj board_obj(ev, std::bind(&board_blocks, _1, std::ref(ev)), 3, bm, 30.0, 30.0, sh);
+  WorldObj board_obj(ev, std::bind(&board_blocks, _1, std::ref(ev)), 4, bm, 30.0, 30.0, sh);
   board_obj.set_scale(2.8,2.8,2.8);
   board_obj.set_pos(-340.0, 30.0, -400.0);
   board_obj.prepare();
@@ -344,6 +648,9 @@ int main() {
   int cursor_under = 0;
   int cursor_x = 0;
   int cursor_y = 0;
+  int *store = new int[8*8];
+  int chosen_x = -1;
+  int chosen_y = -1;
   while(1) {
     // clear frame buffer
     ev.mainloop_api.clear_3d();
@@ -366,6 +673,37 @@ int main() {
     // if (e.type==0x300)
     //  std::cout << std::hex << e.ch << std::endl;
     if (e.ch==27&&e.type==0x300) break;
+    if (e.ch==13&&e.type==0x300)
+      {
+	int val = board_obj.read_block(cursor_x, cursor_y);
+	if (val==3)
+	  {
+	    int block = pieces_obj.read_block(chosen_x, chosen_y);
+	    pieces_obj.set_block(chosen_x, chosen_y, 12);
+	    pieces_obj.set_block(cursor_x, cursor_y, block);
+	    restore_board(store, board_obj);
+	    chosen_x = -1;
+	    chosen_y = -1;
+	  }
+	else
+	  {
+	    if (chosen_x!=-1 ||chosen_y!=-1)
+	      {
+		restore_board(store, board_obj);
+	      }
+	    chosen_x = cursor_x;
+	    chosen_y = cursor_y;
+	    std::vector<Pos> vec = possible_moves(pieces_obj, cursor_x, cursor_y);
+	    int s = vec.size();
+	    store_board(board_obj, store);
+	    for(int i=0;i<s;i++)
+	      {
+		Pos p = vec[i];
+		board_obj.set_block(p.x,p.y,3);
+	      }
+	  }
+      }
+
     if ((e.ch&0xff)==0x52&&e.type==0x300) // right
       { 
 	cursor_y--; 
