@@ -131,7 +131,59 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y)
     
     case 1: // H
     case 7:
+      {
+	Pos p1 = { x+1,y+2 };
+	if (is_inside_board(p1))
+	  {
+	    int piece2 = o.read_block(p1.x,p1.y);
+	    piece_action(pos, piece2, piece_color, opponent_color,p1);
+	  }
+	Pos p2 = { x-1,y+2 };
+	if (is_inside_board(p2))
+	  {
+	    int piece2 = o.read_block(p2.x,p2.y);
+	    piece_action(pos, piece2, piece_color, opponent_color,p2);
+	  }
+	Pos p3 = { x+1,y-2 };
+	if (is_inside_board(p3))
+	  {
+	    int piece2 = o.read_block(p3.x,p3.y);
+	    piece_action(pos, piece2, piece_color, opponent_color,p3);
+	  }
 
+	Pos p4 = { x-1,y-2 };
+	if (is_inside_board(p4))
+	  {
+	    int piece2 = o.read_block(p4.x,p4.y);
+	    piece_action(pos, piece2, piece_color, opponent_color,p4);
+	  }
+
+	Pos p1a = { x+2,y+1 };
+	if (is_inside_board(p1a))
+	  {
+	    int piece2 = o.read_block(p1a.x,p1a.y);
+	    piece_action(pos, piece2, piece_color, opponent_color,p1a);
+	  }
+	Pos p2a = { x-2,y+1 };
+	if (is_inside_board(p2a))
+	  {
+	    int piece2 = o.read_block(p2a.x,p2a.y);
+	    piece_action(pos, piece2, piece_color, opponent_color,p2a);
+	  }
+	Pos p3a = { x+2,y-1 };
+	if (is_inside_board(p3a))
+	  {
+	    int piece2 = o.read_block(p3a.x,p3a.y);
+	    piece_action(pos, piece2, piece_color, opponent_color,p3a);
+	  }
+	Pos p4a = { x-2,y-1 };
+	if (is_inside_board(p4a))
+	  {
+	    int piece2 = o.read_block(p4a.x,p4a.y);
+	    piece_action(pos, piece2, piece_color, opponent_color,p4a);
+	  }
+      }
+      break;
     case 2: // L
     case 8:
       for(int xx=1;xx<8;xx++)
@@ -175,6 +227,65 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y)
 
     case 3: // K
     case 9:
+      {
+	int xx = 1;
+	Pos p1 = { x+xx, y };
+	if (is_inside_board(p1))
+	  {
+	    int piece2 = o.read_block(p1.x,p1.y);
+	    piece_action(pos, piece2, piece_color, opponent_color,p1);
+	  }
+	Pos p2 = { x-xx, y };
+	if (is_inside_board(p2))
+	  {
+	    int piece2 = o.read_block(p2.x,p2.y);
+	    piece_action(pos, piece2, piece_color, opponent_color,p2);
+	    
+	  }
+	Pos p3 = { x, y-xx };
+	if (is_inside_board(p3))
+	  {
+	    int piece2 = o.read_block(p3.x,p3.y);
+	    piece_action(pos, piece2, piece_color, opponent_color,p3);
+	  }
+	Pos p4 = { x, y+xx };
+	if (is_inside_board(p4))
+	  {
+	    int piece2 = o.read_block(p4.x,p4.y);
+	    piece_action(pos, piece2, piece_color, opponent_color,p4);
+	  }
+      }
+      {
+	int xx = 1;
+	Pos p1 = { x+xx, y+xx };
+	if (is_inside_board(p1))
+	  {
+	    int piece2 = o.read_block(p1.x,p1.y);
+	    piece_action(pos, piece2, piece_color, opponent_color,p1);
+	  }
+	Pos p2 = { x-xx, y-xx };
+	if (is_inside_board(p2))
+	  {
+	    int piece2 = o.read_block(p2.x,p2.y);
+	    piece_action(pos, piece2, piece_color, opponent_color,p2);
+	    
+	  }
+	
+	Pos p3 = { x+xx, y-xx };
+	if (is_inside_board(p3))
+	  {
+	    int piece2 = o.read_block(p3.x,p3.y);
+	    piece_action(pos, piece2, piece_color, opponent_color,p3);
+	  }
+	Pos p4 = { x-xx, y+xx };
+	if (is_inside_board(p4))
+	  {
+	    int piece2 = o.read_block(p4.x,p4.y);
+	    piece_action(pos, piece2, piece_color, opponent_color,p4);
+	  }
+      }
+  break;
+
 
     case 4: // Q
     case 10:
