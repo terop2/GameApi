@@ -35,7 +35,8 @@ P pieces(int c, EveryApi &ev)
     case 0: // 'O'
       {
 	P p = ev.polygon_api.cube(0.0, 10.0, 0.0, 10.0, 0.0, 30.0);
-	return p;
+	P p2 = ev.polygon_api.color_faces(p, 0xff88aaff, 0xffaaeeff, 0xff4488ff, 0xff2244ff);
+	return p2;
       }
     case 1: // '.'
       return ev.polygon_api.empty();
@@ -43,7 +44,12 @@ P pieces(int c, EveryApi &ev)
       return ev.polygon_api.empty();
     case 3: // 'B'
       {
-	P p = ev.polygon_api.cube(0.0, 10.0, 0.0, 10.0, 0.0, 30.0);
+	P px = ev.polygon_api.cube(1.0, 9.0, 3.0, 7.0, 3.0, 27.0);
+	P py = ev.polygon_api.cube(3.0, 7.0, 1.0, 9.0, 3.0, 27.0);
+	P pz = ev.polygon_api.cube(3.0, 7.0, 3.0, 7.0, 1.0, 29.0);
+	P pp = ev.polygon_api.or_elem(px,py);
+	P p = ev.polygon_api.or_elem(pp,pz);
+	
 	P p2 = ev.polygon_api.color_faces(p, 0xffffffff, 0xff888888, 0xff444444, 0xff222222);
 	return p2;
       }
@@ -64,7 +70,7 @@ int main() {
   ev.mainloop_api.init_3d(sh);
 
   BM bm = ev.bitmap_api.newintbitmap(world, 42, 13, pieces_map);
-  WorldObj world(ev, std::bind(&pieces, _1, std::ref(ev)), 3, bm, 10.0, 30.0, sh);
+  WorldObj world(ev, std::bind(&pieces, _1, std::ref(ev)), 4, bm, 10.0, 30.0, sh);
   world.prepare();
   world.set_rotation_matrix2(ev.matrix_api.xrot(90.0*3.14159*2.0/360.0));
   world.set_scale(2.8,2.8,2.8);
