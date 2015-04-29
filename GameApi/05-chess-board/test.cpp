@@ -7,7 +7,7 @@ char chars[] =
   "thlkqlht"
   "pppppppp"
   "........"
-  "...q...."
+  "........"
   "........"
   "........"
   "PPPPPPPP"
@@ -376,13 +376,31 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y)
 	//std::cout << "PIECE_COLOR: " << piece_color << ":" << y << std::endl;
 	if (piece_color==true && y==6)
 	  {
-	    Pos p1 = { x, y-2 };
-	    if (is_inside_board(p1)) { pos.push_back(p1); }
+	    Pos p0 = { x, y-1 };
+	    int piece2 = o.read_block(p0.x,p0.y);
+	    if (piece2==12)
+	      {
+		Pos p1 = { x, y-2 };
+		int piece3 = o.read_block(p1.x,p1.y);
+		if (piece3==12)
+		  {
+		    if (is_inside_board(p1)) { pos.push_back(p1); }
+		  }
+	      }
 	  }
 	else if (piece_color==false && y==1)
 	  {
-	    Pos p1 = { x, y+2 };
-	    if (is_inside_board(p1)) { pos.push_back(p1); }
+	    Pos p0 = { x, y+1 };
+	    int piece2 = o.read_block(p0.x,p0.y);
+	    if (piece2==12)
+	      {
+		Pos p1 = { x, y+2 };
+		int piece3 = o.read_block(p1.x,p1.y);
+		if (piece3==12)
+		  {
+		    if (is_inside_board(p1)) { pos.push_back(p1); }
+		  }
+	      }
 	  }
 
 	int delta = 0;
