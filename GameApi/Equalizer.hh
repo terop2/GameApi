@@ -1285,7 +1285,7 @@ private:
 class Step : public PowerSet<float>
 {
 public:
-  Step(float x, bool flip) : x(x) { }
+  Step(float x, bool flip) : x(x), flip(flip) { }
   bool Index(float xx) const
   {
     if (flip)

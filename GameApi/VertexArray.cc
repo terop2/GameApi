@@ -17,6 +17,17 @@ void VertexArraySet::check_m_set(int id)
       p = m_set[id];
     }  
 }
+void VertexArraySet::set_reserve(int id, int tri_count, int quad_count)
+{
+  Polys *p = m_set[id];
+  if (!p)
+    {
+      m_set[id] = new Polys;
+      p = m_set[id];
+    }
+  p->tri_polys.reserve(tri_count);
+  p->quad_polys.reserve(quad_count);
+}
 void VertexArraySet::push_poly(int id, int num, Point *points)
 {
   Polys *p = m_set[id];

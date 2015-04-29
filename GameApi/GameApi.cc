@@ -50,6 +50,11 @@ struct TexCoordQuad
 };
 Program *find_shader_program(GameApi::Env &e, GameApi::SH sh);
 
+
+struct EventPriv
+{
+};
+
 #if 0
 struct SpritePriv
 {
@@ -146,6 +151,10 @@ struct SpritePosImpl
 GameApi::MainLoopApi::MainLoopApi(Env &e) : frame(0.0), time(0.0), e(e)  
 {
   priv = (void*)new MainLoopPriv;
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  p->frame = 0;
+  p->time = 0;
+  p->count = 0;
 }
 GameApi::MainLoopApi::~MainLoopApi()
 {
@@ -906,6 +915,39 @@ GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 
 EnvImpl::~EnvImpl()
 {
+  int sk5 = pointsapi_points.size();
+  for(int ii5=0;ii5<sk5;ii5++)
+    {
+      PointsApiPoints *p = pointsapi_points[ii5];
+      delete p;
+    }
+  int sk4 = plane_points.size();
+  for(int ii4=0;ii4<sk4;ii4++)
+    {
+      PlanePoints2d *p = plane_points[ii4];
+      delete p;
+    }
+  int sk3 = continuous_bitmaps.size();
+  for(int ii3=0;ii3<sk3;ii3++)
+    {
+      ContinuousBitmap<Color> *p = continuous_bitmaps[ii3];
+      delete p;
+    }
+
+  int sk1 = vertex_array.size();
+  for(int ii1=0;ii1<sk1;ii1++)
+    {
+      VertexArraySet *s = vertex_array[ii1];
+      delete s;
+    }
+  int sk2 = vertex_array_render.size();
+  for(int ii2=0;ii2<sk2;ii2++)
+    {
+      RenderVertexArray *s = vertex_array_render[ii2];
+      delete s;
+    }
+
+
   std::map<int, ArrayRender*>::iterator it = renders.begin();
   for(;it!=renders.end();it++)
     {
@@ -1014,6 +1056,13 @@ EnvImpl::~EnvImpl()
       delete s.surf;
     }  
   delete event_infos;
+
+  int s6 = matrix.size();
+  for(int i6=0;i6<s6;i6++)
+    {
+      MatrixInterface *i = matrix[i6];
+      delete i;
+    }
 }
 
 EXPORT GameApi::Env::Env()
@@ -1592,7 +1641,10 @@ ST GameApi::EventApi::UnSerialize(std::string s)
 
 }
 #endif
-GameApi::EventApi::~EventApi() { }
+GameApi::EventApi::~EventApi() 
+{
+  delete (EventPriv*)priv;
+}
 
 GameApi::ST GameApi::EventApi::states(int count_states)
 {
@@ -2506,9 +2558,15 @@ GameApi::AnimApi::~AnimApi()
 GameApi::ShaderApi::ShaderApi(Env &e) : e(e)
 {
   priv = (void*)new ShaderPriv2;
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  p->file = 0;
+  p->seq = 0;
 }
 GameApi::ShaderApi::~ShaderApi()
 {
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  delete p->file;
+  delete p->seq;
   delete (ShaderPriv2*)priv;
 }
 
@@ -5590,9 +5648,6 @@ void GameApi::VBOApi::render(Vb v)
 #endif
 }
 
-struct EventPriv
-{
-};
 
 GameApi::EventApi::EventApi(Env &e) : e(e) 
 {
@@ -5864,6 +5919,7 @@ GameApi::FontApi::FontApi(Env &e) : e(e)
 }
 GameApi::FontApi::~FontApi()
 {
+  delete (FontPriv*)priv;
 }
 
 GameApi::Ft GameApi::FontApi::newfont(const char *filename, int sx, int sy)
@@ -7211,6 +7267,7 @@ GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p)
   FaceCollection *faces = find_facecoll(e, p);
   VertexArraySet *s = new VertexArraySet;
   FaceCollectionVertexArray2 arr(*faces, *s);
+  arr.reserve(0);
   arr.copy();  
   RenderVertexArray *arr2 = new RenderVertexArray(*s);
   arr2->prepare(0);
