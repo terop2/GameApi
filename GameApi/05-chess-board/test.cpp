@@ -770,9 +770,10 @@ int main() {
     board_obj.set_block(cursor_x, cursor_y,2);
 
     //poly.render();
+#if 1
     pieces_obj.render();
     board_obj.render();
-
+#endif
     board_obj.set_block(cursor_x, cursor_y, cursor_under);
 
     ev.mainloop_api.fpscounter();
