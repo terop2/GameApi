@@ -7157,6 +7157,7 @@ private:
 class PlanePoints2d
 {
 public:
+  virtual ~PlanePoints2d() { }
   virtual float SizeX() const=0;
   virtual float SizeY() const=0;
   virtual int Size() const=0;
@@ -7556,6 +7557,7 @@ public:
   virtual int NumPoints() const=0;
   virtual Point Pos(int i) const=0;
   virtual unsigned int Color(int i) const=0;
+  virtual ~PointsApiPoints() {}
 };
 
 class SpacePoints : public PointsApiPoints

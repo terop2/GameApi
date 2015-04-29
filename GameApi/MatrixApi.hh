@@ -3,6 +3,7 @@ class MatrixInterface
 {
 public:
   virtual Matrix get_matrix() const=0;
+  virtual ~MatrixInterface() {}
 };
 
 class SimpleMatrix : public MatrixInterface

@@ -21,6 +21,7 @@ public:
 	delete ptr;
       }
   }
+  void set_reserve(int id, int tri_count, int quad_count);
   // id is the vertex array num to be used 0 = beginning, 1 = end
   // num is the number of points (all calls should share same num)
   void push_poly(int id, int num, Point *points);
@@ -146,6 +147,25 @@ class FaceCollectionVertexArray2
 {
 public:
   FaceCollectionVertexArray2(const FaceCollection &coll, VertexArraySet &s) : coll(coll), s(s) { }
+  void reserve(int id)
+  {
+    int ss = coll.NumFaces();
+    int tri_count=4;
+    int quad_count=4;
+    for(int i=0;i<ss;i++)
+      {
+	int w = coll.NumPoints(i);
+	if (w==3)
+	  {
+	    tri_count+=3;
+	  }
+	else if (w==4)
+	  {
+	    quad_count+=6;
+	  }
+      }
+    s.set_reserve(id, tri_count, quad_count);
+  }
   void copy(std::vector<int> attribs = std::vector<int>(), std::vector<int> attribsi = std::vector<int>())
   {
     int ss = coll.NumFaces();

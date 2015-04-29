@@ -94,9 +94,9 @@ int main()
 
   //BM bm_t = ev.bitmap_api.newbitmap(284,198, 0xff888888);
   PT p_1 = ev.point_api.point(100.0,0.0,0.0);
-  PT p_2 = ev.point_api.point(100.0,198.0,0.0);
-  BM bm_t = ev.bitmap_api.gradient(p_1,p_2, 0xff888888, 0xffffffff, 284,198);
-  BM grad2_t = ev.bitmap_api.gradient(pos_1, pos_2, 0xff444444, 0xff222222, 284,198);
+  PT p_2 = ev.point_api.point(100.0,255.0,0.0);
+  BM bm_t = ev.bitmap_api.gradient(p_1,p_2, 0xff888888, 0xffffffff, 255,255);
+  BM grad2_t = ev.bitmap_api.gradient(pos_1, pos_2, 0xff444444, 0xff222222, 255,255);
 
   BM text_t1 = ev.font_api.font_string(font1, "100", 2);
   BM text_t2 = ev.font_api.font_string(font1, "MiniGame", 2);
@@ -105,16 +105,16 @@ int main()
   FB tx1_t2 = ev.float_bitmap_api.from_red(text_t2);
   FB tx1_t3 = ev.float_bitmap_api.from_red(text_t3);
   BM comb1_t0 = ev.bitmap_api.blitbitmap(bm_t, cbm, 150,0,or_2);
-  BM comb1_t1 = ev.bitmap_api.blitbitmap(comb1_t0, grad2_t, 40,15+30, tx1_t1);
-  BM comb1_t2 = ev.bitmap_api.blitbitmap(comb1_t1, grad2_t, 40,60+30, tx1_t2);
-  BM comb1_t3 = ev.bitmap_api.blitbitmap(comb1_t2, grad2_t, 40,120-15+30, tx1_t3);
+  BM comb1_t1 = ev.bitmap_api.blitbitmap(comb1_t0, grad2_t, 40,15+30+20, tx1_t1);
+  BM comb1_t2 = ev.bitmap_api.blitbitmap(comb1_t1, grad2_t, 40,60+30+20, tx1_t2);
+  BM comb1_t3 = ev.bitmap_api.blitbitmap(comb1_t2, grad2_t, 40,120-15+30+20, tx1_t3);
   BM bm_t2 = ev.bitmap_api.gradient(p_1,p_2,0xff888888, 0xffffffff, 100,100);
   BM tx2_t = ev.bitmap_api.blitbitmap(bm_t2, grad2_t, 20,15+30, tx1_t1);
   
   ev.bitmap_api.savebitmap(comb1_t3, "AllGames.png");
   ev.bitmap_api.savebitmap(tx2_t, "AllGames2.png");
 
-  SpriteObj spr_t(ev, tx2_t, sh2);
+  SpriteObj spr_t(ev, comb1_t3, sh2);
   spr_t.set_pos(500,150);
   spr_t.prepare();
   
