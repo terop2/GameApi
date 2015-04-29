@@ -80,7 +80,14 @@ SpritePriv::~SpritePriv()
       Sprite *sp = (*it2).second;
       delete sp;
     }
-
+  {
+  std::map<int, Sprite*>::iterator it2 = sprites2.begin();
+  for(;it2!=sprites2.end();it2++)
+    {
+      Sprite *sp = (*it2).second;
+      delete sp;
+    }
+  }
 }
 
 struct GridPriv
@@ -107,6 +114,12 @@ PolyPriv::~PolyPriv()
     {
       ArrayRender *rend = (*i).second;
       delete rend;
+    }
+  std::map<int,StateBitmaps*>::iterator i2 = states.begin();
+  for(;i2!=states.end();i2++)
+    {
+      StateBitmaps *st = (*i2).second;
+      delete st;
     }
 }
 
@@ -915,6 +928,12 @@ GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 
 EnvImpl::~EnvImpl()
 {
+  int sk6 = textures.size();
+  for(int ii6=0;ii6<sk6;ii6++)
+    {
+      TextureI *ptr = textures[ii6];
+      delete ptr;
+    }
   int sk5 = pointsapi_points.size();
   for(int ii5=0;ii5<sk5;ii5++)
     {
@@ -975,6 +994,7 @@ EnvImpl::~EnvImpl()
   for(int i_vv3=0;i_vv3<vv3;i_vv3++)
     {
       delete [] pointarray[i_vv3]->array;
+      delete [] pointarray[i_vv3]->color_array;
       delete pointarray[i_vv3];
     }
   int vv3a = pointarray3.size();

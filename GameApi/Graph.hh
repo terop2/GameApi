@@ -7019,6 +7019,7 @@ public:
   virtual int Id(int i) const { return 0; }
   virtual Point2d AreaS(int i) const { Point2d p; p.x = 0.0;  return p; }
   virtual Point2d AreaE(int i) const { Point2d p; p.x = 0.0; return p; }
+  virtual ~TextureI() { }
 };
 
 class TextureIBitmap : public Bitmap<Color>

@@ -74,6 +74,7 @@ public:
     cy_array = new CY[sy];
     c_array = new C[sx*sy];
   }
+  ~DynColumnBitmap() { delete [] cx_array; delete [] cy_array; delete [] c_array; }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual C Map(int x, int y) const 
@@ -123,6 +124,7 @@ struct Texture
 
 struct StateRow
 {
+  StateRow() : statenum(0), numframes(0), texture(0), rend(0) { }
   int statenum;
   int numframes;
   Texture *texture;
@@ -914,7 +916,7 @@ struct StateBitmaps
     if (coords) { texcoord = new MeshTexCoordStateBitmap(*m, *coords); }
     if (c) { colors = new MeshColorsStateBitmap(*m, *c); }
   }
-  ~StateBitmaps() { delete bitmap; delete normals; delete colors; delete texcoord; }
+  ~StateBitmaps() { delete bitmap; delete normals; delete colors; delete texcoord; delete tex; }
   void SetMatrix(int framenum, Matrix m)
   {
     StateColumn &column = bitmap->DynColumn(framenum);

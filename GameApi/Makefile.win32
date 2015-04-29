@@ -94,7 +94,7 @@ libGameApi.so: $(GCHFiles) $(OFiles) Makefile
 
 libGameApi.dll: $(GCH2Files) $(O2Files) Makefile.win32 glew.o
 	@echo mingw libGameApi.dll
-	@i686-w64-mingw32-g++ -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadGC2
+	@g++ -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadGC2
 
 subdirs: $(Subdirs)
 
@@ -109,7 +109,7 @@ TAGS: $(CFiles)
 	etags -o TAGS -l c++ $(CFiles)
 
 CC = g++
-CCWIN = i686-w64-mingw32-g++
+CCWIN = g++
 #mingw32-g++
 
 $(DFiles): objs/%.d: %.cc

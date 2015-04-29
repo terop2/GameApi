@@ -110,6 +110,7 @@ Program::~Program()
   for(std::vector<const Shader*>::iterator i = vec.begin();i!=vec.end();i++)
     {
       detach(*(*i));
+      delete (*i);
     }
   glDeleteProgram(priv->program);
   delete priv;
