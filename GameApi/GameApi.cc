@@ -773,7 +773,7 @@ struct PlaneData
 struct EnvImpl
 {
   std::vector<Point> pt;
-  std::vector<MatrixInterface*> matrix;
+  //std::vector<MatrixInterface*> matrix;
   GameApi::PT cursor_pos_point_id;
   std::vector<Vector> vectors;
   std::vector<Color> colors;
@@ -1057,12 +1057,14 @@ EnvImpl::~EnvImpl()
     }  
   delete event_infos;
 
+#if 0
   int s6 = matrix.size();
   for(int i6=0;i6<s6;i6++)
     {
       MatrixInterface *i = matrix[i6];
       delete i;
     }
+#endif
 }
 
 EXPORT GameApi::Env::Env()
@@ -2163,22 +2165,11 @@ Point *find_point(GameApi::Env &e, GameApi::PT p)
     return &ee->pt[p.id];
   return 0;
 }
-class MM : public MatrixInterface
+Matrix find_matrix(GameApi::Env &e, GameApi::M m)
 {
-public:
-  MM(GameApi::M m) : m(m) {}
-  Matrix get_matrix() const
-  {
-    Matrix mm;
-    std::copy(&m.mat[0], &m.mat[0]+16, &mm.matrix[0]);
-    return mm;
-  }
-private:
-  GameApi::M m;
-};
-MatrixInterface *find_matrix(GameApi::Env &e, GameApi::M p)
-{
-  return new MM(p);
+  Matrix mm;
+  std::copy(&m.mat[0], &m.mat[0]+16, &mm.matrix[0]);
+  return mm;
 #if 0
   EnvImpl *ee = ::EnvImpl::Environment(&e);
   if (p.id >=0 && p.id < (int)ee->matrix.size())
@@ -5360,13 +5351,12 @@ void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, int val)
 
 void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, M matrix)
 {
-  MatrixInterface *mat = find_matrix(e, matrix);
+  Matrix mat = find_matrix(e, matrix);
 
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
-  prog->set_var(name, mat->get_matrix());
-  delete mat;
+  prog->set_var(name, mat);
 }
 
 void GameApi::ShaderApi::bindnames(GameApi::SH shader, 
@@ -8383,9 +8373,7 @@ GameApi::PL GameApi::PlaneApi::triangulate_all(GameApi::EveryApi &ev, PL pl, int
 GameApi::PL GameApi::PlaneApi::render_p(GameApi::P poly, GameApi::M proj_matrix, float sx, float sy)
 {
   FaceCollection *coll = find_facecoll(e, poly);
-  MatrixInterface *mat = find_matrix(e, proj_matrix);
-  Matrix m = mat->get_matrix();
-  delete mat;
+  Matrix m = find_matrix(e, proj_matrix);
   return add_plane(e, new PolygonPlane(coll, m, sx,sy));
 }
 
@@ -9560,19 +9548,13 @@ GameApi::M GameApi::MatrixApi::scale(float sx, float sy, float sz)
 }
 GameApi::M GameApi::MatrixApi::inverse(M mat)
 {
-  MatrixInterface *mat2 = find_matrix(e, mat);
-  Matrix m = mat2->get_matrix();
-  delete mat2;
+  Matrix m = find_matrix(e, mat);
   return add_matrix(e, new SimpleMatrix(Matrix::Inverse(m)));
 }
 GameApi::M GameApi::MatrixApi::mult(M m1, M m2)
 {
-  MatrixInterface *mat2a = find_matrix(e, m1);
-  MatrixInterface *mat2b = find_matrix(e, m2);
-  Matrix ma = mat2a->get_matrix();
-  Matrix mb = mat2b->get_matrix();
-  delete mat2a;
-  delete mat2b;
+  Matrix ma = find_matrix(e, m1);
+  Matrix mb = find_matrix(e, m2);
   return add_matrix(e, new SimpleMatrix(ma * mb));
 }
 GameApi::M GameApi::MatrixApi::perspective(float fovy, float aspect, float near0, float far0)
@@ -9582,9 +9564,7 @@ GameApi::M GameApi::MatrixApi::perspective(float fovy, float aspect, float near0
 }
 GameApi::PT GameApi::MatrixApi::mult(PT point, M matrix)
 {
-  MatrixInterface *mat2a = find_matrix(e, matrix);
-  Matrix ma = mat2a->get_matrix();
-  delete mat2a;
+  Matrix ma = find_matrix(e, matrix);
   Point *pt = find_point(e, point);
   
   Point p2 = (*pt) * ma;
@@ -9713,9 +9693,7 @@ void GameApi::ObjectMoveApi::render_all(GameApi::VAA va)
   for(int i=0;i<s;i++)
     {
       VertexArrayWithPos p = (*vec)[i];
-      MatrixInterface *m = find_matrix(e, p.m);
-      Matrix mm = m->get_matrix();
-      delete m;
+      Matrix mm = find_matrix(e, p.m);
       glPushMatrix();
       float mat[16] = { mm.matrix[0], mm.matrix[4], mm.matrix[8], mm.matrix[12],
 			mm.matrix[1], mm.matrix[5], mm.matrix[9], mm.matrix[13],
