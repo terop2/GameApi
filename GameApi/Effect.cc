@@ -3068,6 +3068,13 @@ void ArrayRender::Alloc(int numfaces, int numvertices)
   tex_coord_array = new float[2*numvertices];
 
   index_array = new int[numfaces];
+
+
+  q_vertex_array=0;
+  q_normal_array=0;
+  q_color_array=0;
+  q_tex_coord_array=0;
+
 }
 ArrayRender::~ArrayRender()
 {
@@ -3075,6 +3082,11 @@ ArrayRender::~ArrayRender()
     {
       glDeleteTextures(texture_count, (const GLuint*)&texture[0]);
     }
+  delete [] q_vertex_array;
+  delete [] q_normal_array;
+  delete [] q_color_array;
+  delete [] q_tex_coord_array;
+  delete [] textures;
   delete [] vertex_array;
   delete [] normal_array;
   delete [] color_array;
@@ -3219,10 +3231,10 @@ void ArrayRender::Prepare()
       q_normal_array[i*3+0] = normal_array[i*3+0];
       q_normal_array[i*3+1] = normal_array[i*3+1];
       q_normal_array[i*3+2] = normal_array[i*3+2];
-      q_color_array[i*4+0] = normal_array[i*4+0];
-      q_color_array[i*4+1] = normal_array[i*4+1];
-      q_color_array[i*4+2] = normal_array[i*4+2];
-      q_color_array[i*4+3] = normal_array[i*4+3];
+      q_color_array[i*4+0] = color_array[i*4+0];
+      q_color_array[i*4+1] = color_array[i*4+1];
+      q_color_array[i*4+2] = color_array[i*4+2];
+      q_color_array[i*4+3] = color_array[i*4+3];
       q_tex_coord_array[i*2+0] = tex_coord_array[i*2+0];
       q_tex_coord_array[i*2+1] = tex_coord_array[i*2+1];
     }

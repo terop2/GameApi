@@ -318,6 +318,7 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
     }
   case 14:
     {
+      //return ev.polygon_api.empty();
       BM bm = ev.bitmap_api.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 200, 200, 256);
       FB fb = ev.float_bitmap_api.from_green(bm);
       //P p = ev.polygon_api.heightmap(bm, PolygonApi::EQuad, 0.0, 100.0,
