@@ -36,7 +36,7 @@ using std::placeholders::_9;
   struct SA { int id; }; // separate
   struct PT { int id; }; // point
   struct V { int id; }; // vector
-  struct M { int id; }; // matrix
+  struct M { float mat[16]; }; // matrix
   struct LN { int id; }; // timeline
   struct RM { int id; }; // room
   struct IS { int id; }; // timed int sequence
