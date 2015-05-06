@@ -359,6 +359,208 @@ ShaderFile::ShaderFile(std::string filename)
       f_shaders[id]=block;
     }
 }
+
+ShaderFile::ShaderFile()
+{
+#ifdef EMSCRIPTEN
+  std::string s =
+"//V: empty\n"
+"#version 100\n"
+"uniform mat4 in_P;\n"
+"uniform mat4 in_MV;\n"
+"uniform mat4 in_T;\n"
+"in vec3 in_Position;\n"
+"void main(void)\n"
+"{\n"
+"  vec4 v = in_P * in_T * in_MV * vec4(in_Position,1.0);\n"
+"  gl_Position = v;\n"
+"}\n"
+"\n"
+"//F: empty\n"
+"#version 100\n"
+"precision highp float;\n"
+"out vec4 out_Color;\n"
+"void main(void)\n"
+"{\n"
+"   out_Color = vec4(1.0,1.0,1.0,1.0);\n"
+"}\n"
+"\n"
+"//V: colour\n"
+"#version 100\n"
+"/*layout(location=0)*/ attribute vec3 in_Position;\n"
+"/*layout(location=1)*/ attribute vec3 in_Normal;\n"
+"/*layout(location=2)*/ attribute vec3 in_Color;\n"
+"/*layout(location=3)*/ attribute vec2 in_TexCoord;\n"
+"varying vec3 ex_Color;\n"
+"uniform mat4 in_P;\n"
+"uniform mat4 in_MV;\n"
+"uniform mat4 in_T;\n"
+"void main(void)\n"
+"{\n"
+"   gl_Position = in_P * in_T * in_MV * vec4(in_Position,1.0);\n"
+"   ex_Color = in_Color;\n"
+"}\n"
+"//F: colour\n"
+"#version 100\n"
+"precision highp float;\n"
+"varying vec3 ex_Color;\n"
+"void main(void)\n"
+"{\n"
+"   gl_FragColor = vec4(ex_Color,1.0);\n"
+"}\n"
+"\n"
+"//V: texture\n"
+"#version 100\n"
+"/*layout(location=0)*/ in vec3 in_Position;\n"
+"/*layout(location=1)*/ in vec3 in_Normal;\n"
+"/*layout(location=2)*/ in vec3 in_Color;\n"
+"/*layout(location=3)*/ in vec2 in_TexCoord;\n"
+"out vec2 ex_TexCoord;\n"
+"uniform mat4 in_P;\n"
+"uniform mat4 in_MV;\n"
+"uniform mat4 in_T;\n"
+"void main(void)\n"
+"{\n"
+"   gl_Position = in_P * in_T * in_MV *  vec4(in_Position,1.0);\n"
+"   ex_TexCoord = in_TexCoord;\n"
+"}\n"
+"//F: texture\n"
+"#version 100\n"
+"//precision highp float;\n"
+"uniform sampler2D texture;\n"
+"in vec2 ex_TexCoord;\n"
+"out vec4 out_Color;\n"
+"void main(void)\n"
+"{\n"
+"   out_Color = texture2D(texture, ex_TexCoord);\n"
+  "}\n";
+#else
+  std::string s =
+"//V: empty\n"
+"#version 330\n"
+"uniform mat4 in_P;\n"
+"uniform mat4 in_MV;\n"
+"uniform mat4 in_T;\n"
+"in vec3 in_Position;\n"
+"void main(void)\n"
+"{\n"
+"  vec4 v = in_P * in_T * in_MV * vec4(in_Position,1.0);\n"
+"  gl_Position = v;\n"
+"}\n"
+"\n"
+"//F: empty\n"
+"#version 330\n"
+"precision highp float;\n"
+"out vec4 out_Color;\n"
+"void main(void)\n"
+"{\n"
+"   out_Color = vec4(1.0,1.0,1.0,1.0);\n"
+"}\n"
+"\n"
+"//V: colour\n"
+"#version 330\n"
+"/*layout(location=0)*/ in vec3 in_Position;\n"
+"/*layout(location=1)*/ in vec3 in_Normal;\n"
+"/*layout(location=2)*/ in vec3 in_Color;\n"
+"/*layout(location=3)*/ in vec2 in_TexCoord;\n"
+"out vec3 ex_Color;\n"
+"uniform mat4 in_P;\n"
+"uniform mat4 in_MV;\n"
+"uniform mat4 in_T;\n"
+"void main(void)\n"
+"{\n"
+"   gl_Position = in_P * in_T * in_MV * vec4(in_Position,1.0);\n"
+"   ex_Color = in_Color;\n"
+"}\n"
+"//F: colour\n"
+"#version 330\n"
+"//precision highp float;\n"
+"in vec3 ex_Color;\n"
+"out vec4 out_Color;\n"
+"void main(void)\n"
+"{\n"
+"   out_Color = vec4(ex_Color,1.0);\n"
+"}\n"
+"\n"
+"//V: texture\n"
+"#version 330\n"
+"/*layout(location=0)*/ in vec3 in_Position;\n"
+"/*layout(location=1)*/ in vec3 in_Normal;\n"
+"/*layout(location=2)*/ in vec3 in_Color;\n"
+"/*layout(location=3)*/ in vec2 in_TexCoord;\n"
+"out vec2 ex_TexCoord;\n"
+"uniform mat4 in_P;\n"
+"uniform mat4 in_MV;\n"
+"uniform mat4 in_T;\n"
+"void main(void)\n"
+"{\n"
+"   gl_Position = in_P * in_T * in_MV *  vec4(in_Position,1.0);\n"
+"   ex_TexCoord = in_TexCoord;\n"
+"}\n"
+"//F: texture\n"
+"#version 330\n"
+"//precision highp float;\n"
+"uniform sampler2D texture;\n"
+"in vec2 ex_TexCoord;\n"
+"out vec4 out_Color;\n"
+"void main(void)\n"
+"{\n"
+"   out_Color = texture2D(texture, ex_TexCoord);\n"
+  "}\n";
+#endif
+
+  std::stringstream file;
+  file << s;
+  std::string line;
+  std::string id = "Unknown";
+  bool vertex = false;
+  bool geom = false;
+  std::string block;
+  while(std::getline(file, line))
+    {
+      if (line.substr(0,4)=="//V:" || line.substr(0,4)=="//F:"|| line.substr(0,4)=="//G:")
+	{
+	  if (geom)
+	    {
+	      //std::cout << "G: " << block << std::endl;
+	      g_shaders[id]=block;
+	    }
+	  else if (vertex)
+	    {
+	      std::cout << "V: " << block << std::endl;
+	      v_shaders[id]=block;
+	    }
+	  else
+	    {
+	      std::cout << "F: " << block << std::endl;
+	      f_shaders[id]=block;
+	    }
+	  block="";
+	}
+      if (line.substr(0,4)=="//V:") { id = line.substr(5); vertex=true; geom=false; }
+      else if (line.substr(0,4)=="//F:") { id = line.substr(5); vertex=false; geom=false; }
+      else if (line.substr(0,4)=="//G:") { id = line.substr(5); geom=true; }
+      else 
+	{
+	  //std::cout << "Line: " << line << std::endl;
+	  block += line;
+	  block += "\n";
+	}
+    }
+  if (geom)
+    {
+      g_shaders[id]=block;
+    }
+  else if (vertex)
+    {
+      v_shaders[id]=block;
+    }
+  else
+    {
+      f_shaders[id]=block;
+    }
+}
+
 std::string ShaderFile::VertexShader(std::string name)
 {
   return v_shaders[name];
@@ -383,6 +585,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       std::cout << "VName: " << name << std::endl;
       std::string shader = file.VertexShader(name);
+      std::cout << "::" << shader << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(shader);
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -398,6 +601,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
+      std::cout << "::" << shader << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(shader);
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);
@@ -412,6 +616,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       std::cout << "GName: " << name << std::endl;
       std::string shader = file.GeometryShader(name);
+      std::cout << "::" << shader << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(shader);
       Shader *sha2 = new Shader(*spec, false, true);
       p->push_back(*sha2);

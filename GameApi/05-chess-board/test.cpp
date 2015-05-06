@@ -1,4 +1,8 @@
 #include "GameApi.hh"
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
+
 #include <iostream>
 
 using namespace GameApi;
@@ -736,15 +740,106 @@ void restore_board(int *array, WorldObj &o)
     }
 }
 
-int main() {
-  Env e;
-  EveryApi ev(e);
+struct Env {
+  EveryApi *ev;
+  WorldObj *board_obj;
+  WorldObj *pieces_obj;
+  int cursor_under = 0;
+  int cursor_x = 0;
+  int cursor_y = 0;
+  int *store = new int[8*8];
+  int chosen_x = -1;
+  int chosen_y = -1;
 
+} env;
+void iter()
+{
+    // clear frame buffer
+    env.ev->mainloop_api.clear_3d();
+
+    env.cursor_under = env.board_obj->read_block(env.cursor_x, env.cursor_y);
+    env.board_obj->set_block(env.cursor_x, env.cursor_y,2);
+
+    //poly.render();
+#if 1
+    env.pieces_obj->render();
+    env.board_obj->render();
+#endif
+    env.board_obj->set_block(env.cursor_x, env.cursor_y, env.cursor_under);
+
+    //ev.mainloop_api.fpscounter();
+    // swapbuffers
+    env.ev->mainloop_api.swapbuffers();
+
+    // handle esc event
+    MainLoopApi::Event e = env.ev->mainloop_api.get_event();
+     if (e.type==0x300)
+      std::cout << std::hex << e.ch << std::endl;
+    if (e.ch==27&&e.type==0x300) return;
+    if ((e.ch==13||e.ch==0x28)&&e.type==0x300)
+      {
+	int val = env.board_obj->read_block(env.cursor_x, env.cursor_y);
+	if (val==3)
+	  {
+	    int block = env.pieces_obj->read_block(env.chosen_x, env.chosen_y);
+	    env.pieces_obj->set_block(env.chosen_x, env.chosen_y, 12);
+	    env.pieces_obj->set_block(env.cursor_x, env.cursor_y, block);
+	    restore_board(env.store, *env.board_obj);
+	    env.chosen_x = -1;
+	    env.chosen_y = -1;
+	  }
+	else
+	  {
+	    if (env.chosen_x!=-1 ||env.chosen_y!=-1)
+	      {
+		restore_board(env.store, *env.board_obj);
+	      }
+	    env.chosen_x = env.cursor_x;
+	    env.chosen_y = env.cursor_y;
+	    std::vector<Pos> vec = possible_moves(*env.pieces_obj, env.cursor_x, env.cursor_y);
+	    int s = vec.size();
+	    store_board(*env.board_obj, env.store);
+	    for(int i=0;i<s;i++)
+	      {
+		Pos p = vec[i];
+		env.board_obj->set_block(p.x,p.y,3);
+	      }
+	  }
+      }
+
+    if ((e.ch&0xff)==0x52&&e.type==0x300) // right
+      { 
+	env.cursor_y--; 
+	if (env.cursor_y<0) 
+	  env.cursor_y=0; 
+      }
+    if ((e.ch&0xff)==0x4f&&e.type==0x300) // up
+      { 
+	env.cursor_x--; 
+	if (env.cursor_x<0) env.cursor_x=0; 
+      }
+    if ((e.ch&0xff)==0x51&&e.type==0x300) // down
+      { 
+	env.cursor_y++; 
+	if (env.cursor_y>7) 
+	  env.cursor_y=7; 
+      }
+    if ((e.ch&0xff)==0x50&&e.type==0x300) // left
+      { 
+	env.cursor_x++; 
+	if (env.cursor_x>7) env.cursor_x=7; 
+      }
+}
+
+int main() {
+  GameApi::Env *e = new GameApi::Env;
+  EveryApi *ev1 = new EveryApi(*e);
+  EveryApi &ev = *ev1;
   // initialize window
   ev.mainloop_api.init_window();
 
   // shader initialization
-  ev.shader_api.load("Shader.txt");
+  ev.shader_api.load_default();
   SH sh = ev.shader_api.colour_shader();
 
   // rest of the initializations
@@ -758,106 +853,38 @@ int main() {
   ev.shader_api.set_var(sh, "in_T", m2);
 
   BM bm = ev.bitmap_api.newintbitmap(board, 8,8, boardmap);
-  WorldObj board_obj(ev, std::bind(&board_blocks, _1, std::ref(ev)), 4, bm, 30.0, 30.0, sh);
-  board_obj.set_scale(2.8,2.8,2.8);
-  board_obj.set_pos(-340.0, 30.0, -400.0);
-  board_obj.prepare();
+  WorldObj *board_obj = new WorldObj(ev, std::bind(&board_blocks, _1, std::ref(ev)), 4, bm, 30.0, 30.0, sh);
+  board_obj->set_scale(2.8,2.8,2.8);
+  board_obj->set_pos(-340.0, 30.0, -400.0);
+  board_obj->prepare();
 
   BM bm2 = ev.bitmap_api.newintbitmap(chars, 8,8, charsmap);
-  WorldObj pieces_obj(ev, std::bind(&chars_blocks, _1, std::ref(ev)), 13, bm2, 30.0, 30.0, sh);
-  pieces_obj.set_scale(2.8,2.8,2.8);
-  pieces_obj.set_pos(-340.0, 30.0, -400.0);
+  WorldObj *pieces_obj = new WorldObj(ev, std::bind(&chars_blocks, _1, std::ref(ev)), 13, bm2, 30.0, 30.0, sh);
+  pieces_obj->set_scale(2.8,2.8,2.8);
+  pieces_obj->set_pos(-340.0, 30.0, -400.0);
   M mm1 = ev.matrix_api.xrot(90.0*3.14159/360.0);
   M mm2 = ev.matrix_api.scale(2.0,2.0,2.0);
   M mm3 = ev.matrix_api.trans(0.0, 100.0, -300.0);
-  pieces_obj.set_rotation_matrix2(ev.matrix_api.mult(ev.matrix_api.mult(mm1,mm2),mm3));
-  pieces_obj.prepare();
-  board_obj.set_rotation_matrix2(ev.matrix_api.mult(ev.matrix_api.mult(mm1,mm2),mm3));
-
-  int cursor_under = 0;
-  int cursor_x = 0;
-  int cursor_y = 0;
-  int *store = new int[8*8];
-  int chosen_x = -1;
-  int chosen_y = -1;
+  pieces_obj->set_rotation_matrix2(ev.matrix_api.mult(ev.matrix_api.mult(mm1,mm2),mm3));
+  pieces_obj->prepare();
+  board_obj->set_rotation_matrix2(ev.matrix_api.mult(ev.matrix_api.mult(mm1,mm2),mm3));
+  env.store = new int[8*8];
+  env.cursor_under = 0;
+  env.cursor_x = 0;
+  env.cursor_y = 0;
+  env.chosen_x = -1;
+  env.chosen_y = -1;
+  env.ev = ev1;
+  env.board_obj = board_obj;
+  env.pieces_obj = pieces_obj;
+#ifndef EMSCRIPTEN
   while(1) {
-    // clear frame buffer
-    ev.mainloop_api.clear_3d();
-
-    cursor_under = board_obj.read_block(cursor_x, cursor_y);
-    board_obj.set_block(cursor_x, cursor_y,2);
-
-    //poly.render();
-#if 1
-    pieces_obj.render();
-    board_obj.render();
-#endif
-    board_obj.set_block(cursor_x, cursor_y, cursor_under);
-
-    ev.mainloop_api.fpscounter();
-    // swapbuffers
-    ev.mainloop_api.swapbuffers();
-
-    // handle esc event
-    MainLoopApi::Event e = ev.mainloop_api.get_event();
-    // if (e.type==0x300)
-    //  std::cout << std::hex << e.ch << std::endl;
-    if (e.ch==27&&e.type==0x300) break;
-    if (e.ch==13&&e.type==0x300)
-      {
-	int val = board_obj.read_block(cursor_x, cursor_y);
-	if (val==3)
-	  {
-	    int block = pieces_obj.read_block(chosen_x, chosen_y);
-	    pieces_obj.set_block(chosen_x, chosen_y, 12);
-	    pieces_obj.set_block(cursor_x, cursor_y, block);
-	    restore_board(store, board_obj);
-	    chosen_x = -1;
-	    chosen_y = -1;
-	  }
-	else
-	  {
-	    if (chosen_x!=-1 ||chosen_y!=-1)
-	      {
-		restore_board(store, board_obj);
-	      }
-	    chosen_x = cursor_x;
-	    chosen_y = cursor_y;
-	    std::vector<Pos> vec = possible_moves(pieces_obj, cursor_x, cursor_y);
-	    int s = vec.size();
-	    store_board(board_obj, store);
-	    for(int i=0;i<s;i++)
-	      {
-		Pos p = vec[i];
-		board_obj.set_block(p.x,p.y,3);
-	      }
-	  }
-      }
-
-    if ((e.ch&0xff)==0x52&&e.type==0x300) // right
-      { 
-	cursor_y--; 
-	if (cursor_y<0) 
-	  cursor_y=0; 
-      }
-    if ((e.ch&0xff)==0x4f&&e.type==0x300) // up
-      { 
-	cursor_x--; 
-	if (cursor_x<0) cursor_x=0; 
-      }
-    if ((e.ch&0xff)==0x51&&e.type==0x300) // down
-      { 
-	cursor_y++; 
-	if (cursor_y>7) 
-	  cursor_y=7; 
-      }
-    if ((e.ch&0xff)==0x50&&e.type==0x300) // left
-      { 
-	cursor_x++; 
-	if (cursor_x>7) cursor_x=7; 
-      }
+    iter();
+    ev.mainloop_api.delay(10);
   }
-
+#else
+  emscripten_set_main_loop(iter, 60,1);
+#endif
 
 
 }

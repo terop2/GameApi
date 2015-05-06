@@ -41,7 +41,10 @@ void GameEffect::Init()
 void GameEffect::PreFrame(float time)
 {
   FrameAnimPlugins::PreFrame(time);
+#ifndef EMSCRIPTEN
+
   glTranslatef(0.0, 0.0, -400.0);
+#endif
 }
 bool GameEffect::Frame(float time)
 {

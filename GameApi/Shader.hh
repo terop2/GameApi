@@ -1444,6 +1444,7 @@ private:
 class ShaderFile
 {
 public:
+  ShaderFile();
   ShaderFile(std::string filename);
   std::string VertexShader(std::string name);
   std::string FragmentShader(std::string name);

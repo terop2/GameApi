@@ -1419,6 +1419,7 @@ class ShaderApi
 public:
 	IMPORT ShaderApi(Env &e);
 	IMPORT ~ShaderApi();
+         IMPORT void load_default();
 	IMPORT void load(std::string filename);
 	IMPORT SH get_shader(std::string v_format, std::string f_format, std::string g_format);
         IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format);
