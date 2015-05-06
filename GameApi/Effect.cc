@@ -428,7 +428,9 @@ Camera::Camera(MatrixCurve &curve, float time)
 			m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 			m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
 
+#ifndef EMSCRIPTEN
   glMultMatrixf(&mat[0]);
+#endif
 }
 Camera::~Camera()
 {
@@ -615,7 +617,9 @@ void RenderOpenGlObjects(const BoxCollectionWithObject &coll, VBOState &vbostate
 			m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
 			m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 			m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
+#ifndef EMSCRIPTEN
       glMultMatrixf(&mat[0]);
+#endif
       DrawVBO(object, vbostate, u);
       glPopMatrix();
     }
@@ -635,7 +639,9 @@ void RenderOpenGlObjects(const ObjectDataArray &arr, VBOState &vbostate, VBOUpda
 			m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
 			m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 			m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
+#ifndef EMSCRIPTEN
       glMultMatrixf(&mat[0]);
+#endif
       DrawVBO(object, vbostate, u);
       glPopMatrix();
     }
@@ -2439,7 +2445,9 @@ void DrawVBO(int obj, VBOState &state, VBOUpdate u, const std::vector<Attrib> &a
 void MatrixVBOCmd::cmd()
 {
   glPushMatrix();
+#ifndef EMSCRIPTEN
   glMultMatrixf(&m.matrix[0]);
+#endif
   c.cmd();    
   glPopMatrix();
 }
@@ -2745,7 +2753,9 @@ ScopeMatrix::ScopeMatrix(Matrix m)
 		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
   glPushMatrix();
   //glIdentityMatrix();
+#ifndef EMSCRIPTEN
   glMultMatrixf(&mat[0]);
+#endif
 }
 ScopeMatrix::~ScopeMatrix()
 {
@@ -3654,11 +3664,17 @@ void SDLArrayRender::Show()
   for(int i=0;;i++)
     {
       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+#ifndef EMSCRIPTEN
       glTranslatef(0.0, 0.0, -500.0);
+#endif
       glRotatef(2.0*3.14159/360.0*i, 0.0,1.0,0.0);
+#ifndef EMSCRIPTEN
       glTranslatef(0.0, -100.0, 0.0);
+#endif
       ExecuteFaceStore(rend, s, i%dyn.NumFrames());
+#ifndef EMSCRIPTEN
       glLoadIdentity();
+#endif
       //SDL_GL_SwapBuffers();
     SDL_PollEvent(&event);
     if (event.type==SDL_QUIT || (event.type==SDL_KEYDOWN && event.key.keysym.sym==27)) { SDL_Quit(); exit(0); }

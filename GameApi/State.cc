@@ -18,7 +18,9 @@ void StateBitmaps::Render(int framenum)
 		      m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
 #endif
     glPushMatrix();
+#ifndef EMSCRIPTEN
     glTranslatef(0.0,0.0,0.0);
+#endif
     //glMultMatrixf(&mat[0]);
     //bool b = tex->NumTextures() != 0;
     for(int y=0;y<sy;y++)

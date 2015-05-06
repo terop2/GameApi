@@ -1,0 +1,3 @@
+
+all:
+	em++ -std=c++11 -g -O2 test.cpp ..\libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -L.. -L..\objs -I.. -o test.html
