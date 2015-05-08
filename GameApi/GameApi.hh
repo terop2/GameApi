@@ -7,7 +7,7 @@
 #include <functional>
 #include <vector>
 #include <map>
-
+#include <iostream>
 namespace GameApi
 {
 using std::placeholders::_1;
@@ -1271,6 +1271,8 @@ public:
 	IMPORT LI from_points(PC points, bool loops);
         IMPORT LI from_plane(PL plane);
 	IMPORT LI from_polygon(P poly);
+        IMPORT LI from_polygon2(P poly1, P poly2);
+        IMPORT P line_anim(P poly, LI lines_from_polygon2, float val);
 	IMPORT LI border_from_bool_bitmap(BB b, float start_x, float end_x,
 			     float start_y, float end_y, float z);
   IMPORT LI unit_cube(LI orig, PT pos, V u_x, V u_y, V u_z);
@@ -1842,6 +1844,7 @@ private:
       //id.id = 0;
       //va.id = 0;
       anim_id = 0;
+      anim_time = 0.0;
     }
 
     PolygonObj(EveryApi &ev, std::vector<P> anim_p, SH sh) : api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), sh(sh) 
@@ -1857,6 +1860,7 @@ private:
       //id.id = 0;
       //va.id = 0;
       anim_id = 0;
+      anim_time = 0.0;
     }
 
     PolygonObj(PolygonApi &api, ShaderApi &shapi, MatrixApi &mat, TextureApi &tex,P p, SH sh) : api(api), shapi(shapi), mat(mat), tex(tex), sh(sh) 
@@ -1872,6 +1876,7 @@ private:
       //id.id=0;
       //va.id =0;
       anim_id = 0;
+      anim_time = 0.0;
     }
     void prepare() 
     { 
@@ -1891,7 +1896,9 @@ private:
     void render() {
       shapi.use(sh);
       shapi.set_var(sh, "in_MV", m); 
+      shapi.set_var(sh, "in_POS", anim_time);
       api.render_vertex_array(m_va2[anim_id]); 
+      shapi.set_var(sh, "in_POS", 0.0f);
     }
     void set_pos(float pos_x, float pos_y, float pos_z)
     {
@@ -1927,6 +1934,10 @@ private:
       if (id>=0&&id<(int)m_va2.size())
 	anim_id = id;
     }
+    void set_anim_time(float time)
+    {
+      anim_time = time;
+    }
   private:
     void setup_m() {
       m = mat.mult(mat.mult(mat.mult(current_rot,current_scale), current_pos), current_rot2);
@@ -1947,6 +1958,7 @@ private:
     std::vector<VA> m_va2;
     std::vector<TXID> id;
     int anim_id;
+    float anim_time;
   };
 
   class WorldObj : public RenderObject, public MoveScaleObject3d
@@ -1957,12 +1969,14 @@ private:
       int sx = bmapi.size_x(bm);
       int sy = bmapi.size_y(bm);
       bitmap = new int[sx*sy];
+      anim_time = new float[sx*sy];
       for(int y=0;y<sy;y++)
 	{
 	  for(int x=0;x<sx;x++)
 	    {
 	      int val = bmapi.intvalue(bm, x,y);
 	      bitmap[x+y*sx] = val;
+	      anim_time[x+y*sx] = 0.0f;
 	    }
 	}
 
@@ -1990,6 +2004,11 @@ private:
     int read_block(int x, int y) const {
       int sx=bmapi.size_x(bm);
       return bitmap[x+y*sx];
+    }
+    void set_anim_time(int x, int y, float time)
+    {
+      int sx = bmapi.size_x(bm);
+      anim_time[x+y*sx] = time;
     }
     void prepare() 
     { 
@@ -2022,8 +2041,10 @@ private:
 	  M t = mat.trans(dx*x,0.0,dy*y);
 	  M t2 = mat.mult(t,m);
 	  shapi.set_var(sh, "in_MV", t2);
-
+	  shapi.set_var(sh, "in_POS", anim_time[x+y*sx]);
+	  //std::cout << x << " " << y << " " << anim_time[x+y*sx] << std::endl;
 	  api.render_vertex_array(m_va2[bitmap[x+y*sx]]);
+	  shapi.set_var(sh, "in_POS", 0.0f);
 	}
       }
     }
@@ -2082,6 +2103,7 @@ private:
     std::function<P(int)> f;
     float dx,dy;
     int *bitmap;
+    float *anim_time;
     SH sh;
     int m_x, m_y, m_sx, m_sy;
     //VA va;

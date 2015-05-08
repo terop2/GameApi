@@ -3009,6 +3009,8 @@ public:
   virtual int NumFaces() const { return coll.NumFaces(); }
   virtual int NumPoints(int face) const { return coll.NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return coll.FacePoint(face,point); }
+  virtual Point EndFacePoint(int face, int point) const { return coll.EndFacePoint(face, point); }
+
   virtual Vector PointNormal(int face, int point) const { return coll.PointNormal(face,point); }
   virtual float Attrib(int face, int point, int id) const { return coll.Attrib(face,point,id); }
   virtual int AttribI(int face, int point, int id) const { return coll.AttribI(face,point,id); }
@@ -4293,6 +4295,47 @@ private:
 };
 typedef FunctionImpl1<PointCollection*, LineCollection*, bool, ContinuousLines> ContinuousLinesFunction;
 
+class AnimLines : public LineCollection
+{
+public:
+  AnimLines(FaceCollection *p1, FaceCollection *p2) : p1(p1), p2(p2) { }
+  int NumLines() const 
+  {
+    int s = p1->NumFaces();
+    int count = 0;
+    for(int i=0;i<s;i++)
+      {
+	count+=p1->NumPoints(i);
+      }
+    return count;
+  }
+  Point LinePoint(int line, int point) const
+  {
+    int s = p1->NumFaces();
+    int count = 0;
+    int oldcount = 0;
+    int i = 0;
+    for(;i<s;i++)
+      {
+	oldcount = count;
+	count+=p1->NumPoints(i);
+	if (count>=line)
+	  {
+	    break;
+	  }
+      }
+    switch(point)
+      {
+      case 0: return p1->FacePoint(i, line-oldcount);
+      case 1: return p2->FacePoint(i, line-oldcount);
+      };
+    Point p;
+    return p;
+  }
+private:
+  FaceCollection *p1;
+  FaceCollection *p2;
+};
 class OutlineFaces : public LineCollection
 {
 public:
@@ -5575,6 +5618,7 @@ public:
   virtual int NumFaces() const { return coll.NumFaces(); }
   virtual int NumPoints(int face) const { return coll.NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return coll.FacePoint(face, point); }
+  virtual Point EndFacePoint(int face, int point) const { return coll.EndFacePoint(face, point); }
   virtual Vector PointNormal(int face, int point) const { return coll.PointNormal(face,point); }
   virtual float Attrib(int face, int point, int id) const { 
     if (id==AttrFrame)
@@ -5609,6 +5653,7 @@ public:
   virtual int NumFaces() const { return coll.NumFaces(); }
   virtual int NumPoints(int face) const { return coll.NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return coll.FacePoint(face, point); }
+  virtual Point EndFacePoint(int face, int point) const { return coll.EndFacePoint(face, point); }
   virtual Vector PointNormal(int face, int point) const { return coll.PointNormal(face,point); }
   virtual float Attrib(int face, int point, int id) const { return coll.Attrib(face, point, id); }
   virtual int AttribI(int face, int point, int id) const { return coll.AttribI(face, point, id); }
@@ -5849,6 +5894,10 @@ public:
     //std::cout << face << " " << point << " " << p.x <<" " << p.y << " " << pp << std::endl;
     return pp;
   }
+  virtual Point EndFacePoint(int face, int point) const
+  {
+    return FacePoint(face,point);
+  }
   virtual unsigned int Color(int face, int point) const
   {
     Point2d p = Sample(face, point);
@@ -6036,6 +6085,16 @@ public:
     return sample.FacePoint(face1, point);
   }
 
+  virtual Point EndFacePoint(int face, int point) const
+  {
+    int face1 = face / faces.NumFaces();
+    int face2 = face - face1*faces.NumFaces();
+    const SurfaceIn3d *s = surf.Index(face2);
+    SampleSurfaceIn3d sample(*s, 0, x, y);
+    return sample.EndFacePoint(face1, point);
+  }
+
+
   virtual unsigned int Color(int face, int point) const
   {
     int face1 = face / faces.NumFaces();
@@ -6125,27 +6184,6 @@ public:
 	    f++;
 	  }
       }
-#if 0
-    int faces = NumFaces();
-    for(int f=0;f<faces;f++)
-      {
-	if (f%1000==0) {
-	  //std::cout << "faces: " << f << "/" << faces << std::endl;
-	}
-	int val = 0;
-	int k=0;
-	int count = 0;
-	for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++,k++)
-	  {
-	    int oldcount = count;
-	    count += (*i)->NumFaces();
-	    if (count > f) { val = f-oldcount; break; }
-	  }
-	faces_cache.push_back(val);
-	faces_num.push_back(k);
-      }
-    
-#endif
   }
   void push_back(T *ptr)
   {
@@ -6160,8 +6198,6 @@ public:
   }
   void SetBox(Matrix b) 
   {
-    //for(typename std::vector<T*>::iterator i=vec.begin();i!=vec.end();i++)
-    //  (*i)->SetBox(b);
   }
   virtual int NumFaces() const 
   { 
@@ -6173,67 +6209,24 @@ public:
   virtual int NumPoints(int face) const 
   { 
     return vec[faces_num[face]]->NumPoints(faces_cache[face]);
-#if 0
-    int count = 0;
-    for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
-      {
-	int oldcount = count;
-	count += (*i)->NumFaces();
-	if (count > face) return (*i)->NumPoints(face-oldcount);
-      }
-    return 0;
-#endif
   }
   virtual Point FacePoint(int face, int point) const
   {
     return vec[faces_num[face]]->FacePoint(faces_cache[face], point);
-#if 0
-    int count = 0;
-    for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
-      {
-	int oldcount = count;
-	count += (*i)->NumFaces();
-	if (count > face) return (*i)->FacePoint(face-oldcount, point);
-      }
-    return Point(0.0,0.0,0.0);
-#endif
+  }
+  virtual Point EndFacePoint(int face, int point) const
+  {
+    return vec[faces_num[face]]->EndFacePoint(faces_cache[face], point);
   }
 
   virtual unsigned int Color(int face, int point) const
   {
     return vec[faces_num[face]]->Color(faces_cache[face],point);
-#if 0
-    int count = 0;
-    for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
-      {
-	int oldcount = count;
-	count += (*i)->NumFaces();
-	if (count > face) return (*i)->Color(face-oldcount, point);
-      }
-    //std::cout << "OrElem::0" << std::endl;
-
-    return 0;
-#endif
   }
 
   virtual Point2d TexCoord(int face, int point) const
   {
     return vec[faces_num[face]]->TexCoord(faces_cache[face],point);
-#if 0
-    int count = 0;
-    for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
-      {
-	int oldcount = count;
-	count += (*i)->NumFaces();
-	if (count > face) return (*i)->TexCoord(face-oldcount, point);
-      }
-    //std::cout << "OrElem::0" << std::endl;
-
-    Point2d p;
-    p.x = 0;
-    p.y = 0;
-    return p;
-#endif
   }
 
 
@@ -6241,45 +6234,15 @@ public:
   virtual Vector PointNormal(int face, int point) const
   {
     return vec[faces_num[face]]->PointNormal(faces_cache[face], point);
-#if 0
-    int count = 0;
-    for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
-      {
-	int oldcount = count;
-	count += (*i)->NumFaces();
-	if (count > face) return (*i)->PointNormal(face-oldcount, point);
-      }
-    return Vector(0.0,0.0,0.0);
-#endif
   }
   float Attrib(int face, int point, int id) const 
   {
     return vec[faces_num[face]]->Attrib(faces_cache[face], point, id);
-#if 0
-    int count = 0;
-    for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
-      {
-	int oldcount = count;
-	count += (*i)->NumFaces();
-	if (count > face) return (*i)->Attrib(face-oldcount, point, id);
-      }
-    return 0.0;
-#endif
   }
   int AttribI(int face, int point, int id) const 
   {
     return vec[faces_num[face]]->AttribI(faces_cache[face], point, id);
 
-#if 0
-    int count = 0;
-    for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
-      {
-	int oldcount = count;
-	count += (*i)->NumFaces();
-	if (count > face) return (*i)->AttribI(face-oldcount, point, id);
-      }
-    return 0.0;
-#endif
   }
 
   virtual int NumTextures() const 
@@ -7033,6 +6996,14 @@ public:
     return vv;
   
   }
+  virtual Point EndFacePoint(int face, int point) const
+  {
+    Point p = next->EndFacePoint(face,point);
+    Vector v = p;
+    Vector vv = v*m*box;
+    return vv;
+  
+  }
   virtual unsigned int Color(int face, int point) const
   {
     return next->Color(face, point);
@@ -7271,6 +7242,10 @@ public:
   {
     return obj.FacePoint(Mapping(face), point);
   }
+  Point EndFacePoint(int face, int point) const
+  {
+    return obj.EndFacePoint(Mapping(face), point);
+  }
   unsigned int Color(int face, int point) const
   {
     return obj.Color(Mapping(face), point);
@@ -7494,6 +7469,20 @@ public:
       }
     return i->second;
   }
+  Point EndFacePoint(int face, int point) const
+  {
+    FP fp;
+    fp.face = face;
+    fp.point = point;
+    std::map<FP,Point>::iterator i = endfacepoint.find(fp);
+    if (i==endfacepoint.end())
+      {
+	Point p;
+	p=(endfacepoint[fp]=c.EndFacePoint(face, point));
+	return p;
+      }
+    return i->second;
+  }
   unsigned int Color(int face, int point) const
   {
     FP fp;
@@ -7572,6 +7561,7 @@ private:
   mutable int numfaces;
   mutable std::vector<int> numpoints;
   mutable std::map<FP, Point> facepoint;
+  mutable std::map<FP, Point> endfacepoint;
   mutable std::map<FP, unsigned int> color;
   mutable std::map<FP, Vector> normal;  
   mutable std::map<int, int> facetexture;
@@ -7710,6 +7700,7 @@ public:
   virtual int NumFaces() const { return memo.NumFaces(); }
   virtual int NumPoints(int face) const { return memo.NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return memo.FacePoint(face,point); }
+  virtual Point EndFacePoint(int face, int point) const { return memo.EndFacePoint(face,point); }
   virtual unsigned int Color(int face, int point) const { return memo.Color(face, point); }
   virtual Point2d TexCoord(int face, int point) const { return memo.TexCoord(face, point); }
   virtual Vector PointNormal(int face, int point) const { return memo.PointNormal(face, point); }
@@ -10023,7 +10014,7 @@ class ArrayRender
 {
 public:
   ArrayRender() : vertex_array(0), used_vertex_count(0), used_face_count(0), normal_array(0), color_array(0),
-		  tex_coord_array(0), index_array(0), texture(0), texture_count(0), textures(0), tex_size_x(0), tex_size_y(0), q_vertex_array(0), q_normal_array(0), q_color_array(0), q_tex_coord_array(0), quads(false) 
+		  tex_coord_array(0), quads(false), index_array(0), texture(0), texture_count(0), textures(0), tex_size_x(0), tex_size_y(0), q_vertex_array(0), q_normal_array(0), q_color_array(0), q_tex_coord_array(0) 
   { 
   }
   ~ArrayRender();
@@ -10078,7 +10069,7 @@ public:
   BufferRef **textures;
   int *tex_size_x;
   int *tex_size_y;
-  unsigned int buffer[4];
+  unsigned int buffer[5];
   int q_num_vertices;
   float *q_vertex_array; // 3 * float per vertex
   float *q_normal_array; // 3 * float per vertex

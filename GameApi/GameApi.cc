@@ -202,6 +202,7 @@ void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_height)
   Matrix m2 = Matrix::Identity();
   prog->set_var("in_MV", m2);
   prog->set_var("in_T", m2);
+  prog->set_var("in_POS", 0.0f);
   alpha(false);
 
 #if 0
@@ -285,6 +286,7 @@ void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_height)
   prog->set_var("in_MV", m2);
   Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
   prog->set_var("in_T", m3);
+  prog->set_var("in_POS", 0.0f);
   alpha(false);
   glEnable(GL_DEPTH_TEST);
 }
@@ -4248,7 +4250,7 @@ GameApi::P GameApi::PolygonApi::or_elem(P p1, P p2)
   coll->update_faces_cache();
   return add_polygon2(e, coll,1);
 }
-
+ 
 
 GameApi::P GameApi::PolygonApi::texture(P orig, BM bm, int choose)
 {
@@ -4464,7 +4466,7 @@ GameApi::P GameApi::PolygonApi::translate(P orig, float dx, float dy, float dz)
   FaceCollection *coll = new MatrixElem(*convert, Matrix::Translate(dx,dy,dz));
   return add_polygon2(e, coll,1);
 }
-
+ 
 GameApi::P GameApi::PolygonApi::rotatex(P orig, float angle)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -5280,6 +5282,7 @@ GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
   bind_attrib(sh, 1, "in_Normal");
   bind_attrib(sh, 2, "in_Color");
   bind_attrib(sh, 3, "in_TexCoord");
+  bind_attrib(sh, 4, "in_Position2");
   link(sh);
   use(sh);
   set_default_projection(sh, "in_P");
@@ -8209,7 +8212,6 @@ public:
     if (face==0) { return point; }
     int s = plane->Size();
     int face2 =0;
-    int points = 0;
     int i = 1;
     for(;i<s;i++)
       {
@@ -10014,6 +10016,39 @@ GameApi::LI GameApi::LinesApi::from_points(GameApi::PC points, bool loops)
   PointCollection *point_coll = find_pointcoll_array(e,points);
   return add_line_array(e, new ContinuousLines(point_coll, loops));
 }
+GameApi::LI GameApi::LinesApi::from_polygon2(GameApi::P poly1, GameApi::P poly2)
+{
+  FaceCollection *p1 = find_facecoll(e, poly1);
+  FaceCollection *p2 = find_facecoll(e, poly2);
+  return add_line_array(e, new AnimLines(p1, p2));
+}
+class LineAnim : public ForwardFaceCollection
+{
+public:
+  LineAnim(FaceCollection &p, LineCollection &c, float val) : ForwardFaceCollection(p), p(p), c(c), val(val) { }
+  Point FacePoint(int face, int point) const
+  {
+    int count = 0;
+    for(int i=0;i<face;i++) 
+      {
+	count+=p.NumPoints(i);
+      }
+    count+=point;
+    Point p1 = c.LinePoint(count, 0);
+    Point p2 = c.LinePoint(count, 1);
+    return Point((1.0-val)*Vector(p1)+val*Vector(p2));
+  }
+private:
+  FaceCollection &p;
+  LineCollection &c;
+  float val;
+};
+GameApi::P GameApi::LinesApi::line_anim(GameApi::P poly, GameApi::LI lines, float val)
+{
+  FaceCollection *p = find_facecoll(e, poly);
+  LineCollection *c = find_line_array(e, lines);
+  return add_polygon(e, new LineAnim(*p, *c, val),1);
+}
 GameApi::LI GameApi::LinesApi::from_polygon(GameApi::P poly)
 {
   FaceCollection *poly2 = find_facecoll(e, poly);
@@ -10380,6 +10415,8 @@ GameApi::LLA GameApi::LinesApi::prepare(LI l)
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
+  glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(2);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
   glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0,0);
