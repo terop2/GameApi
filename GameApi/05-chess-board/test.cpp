@@ -581,12 +581,16 @@ P chars_blocks(int c, EveryApi &ev)
 				   -20.0, -22.0,
 				   13.0, 17.0);
 	P cc = ev.polygon_api.or_elem(c1,c2);
+	//P cc1 = ev.polygon_api.rotatey(cc01, 90.0*3.14159*2.0/360.0);
+	P cc1 = ev.polygon_api.translate(cc, 0.0, 5.0, 0.0);
+	P cc2 = ev.polygon_api.anim_endpoints(cc,cc1);
 	
+
 	P p = ev.polygon_api.or_elem(pa,pb);
 	P pp = ev.polygon_api.or_elem(pc,pd);
 	P ppp = ev.polygon_api.or_elem(pp, pe);
 	p = ev.polygon_api.or_elem(p,ppp);
-	p = ev.polygon_api.or_elem(p, cc);
+	p = ev.polygon_api.or_elem(p, cc2);
 	color_change(c,p, ev);
 	return p;
 
@@ -780,7 +784,12 @@ int main() {
   int *store = new int[8*8];
   int chosen_x = -1;
   int chosen_y = -1;
+  float fr=0.0;
+  float frspeed=0.01;
   while(1) {
+    fr+=frspeed;
+    if (fr>1.0) { fr=0.99; frspeed = -frspeed; }
+    if (fr<0.0) { fr=0.01; frspeed = -frspeed; }
     // clear frame buffer
     ev.mainloop_api.clear_3d();
 
@@ -788,11 +797,21 @@ int main() {
     board_obj.set_block(cursor_x, cursor_y,2);
 
     //poly.render();
+
+    for(int x=0;x<8;x++)
+      for(int y=0;y<8;y++)
+	{
+	  pieces_obj.set_anim_time(x,y, fr);
+	}
+
 #if 1
     pieces_obj.render();
     board_obj.render();
 #endif
     board_obj.set_block(cursor_x, cursor_y, cursor_under);
+
+    
+
 
     ev.mainloop_api.fpscounter();
     // swapbuffers

@@ -124,11 +124,13 @@ void Game(EveryApi &e)
   e.shader_api.bind_attrib(sh, 1, "in_Normal");
   e.shader_api.bind_attrib(sh, 2, "in_Color");
   e.shader_api.bind_attrib(sh, 3, "in_TexCoord");
+  e.shader_api.bind_attrib(sh, 4, "in_Position2");
   e.shader_api.link(sh);
   e.shader_api.bind_attrib(sh2, 0, "in_Position");
   e.shader_api.bind_attrib(sh2, 1, "in_Normal");
   e.shader_api.bind_attrib(sh2, 2, "in_Color");
   e.shader_api.bind_attrib(sh2, 3, "in_TexCoord");
+  e.shader_api.bind_attrib(sh2, 4, "in_Position2");
   e.shader_api.link(sh2);
   e.shader_api.use(sh);
   e.shader_api.set_default_projection(sh, "in_P");
@@ -157,11 +159,13 @@ void Game(EveryApi &e)
   P cubes = volume.rendercubes(andnot, std::bind(&Cube, _1,_2,_3,_4,_5,_6,_7,std::ref(e)), 40, 4.0);
   P cubes2 = e.polygon_api.memoize(cubes);
   P cubes3 = e.polygon_api.scale(cubes2, 300.0,300.0,300.0);
-  poly.prepare(cubes3);
+  P cubes4 = e.polygon_api.scale(cubes3, 2.0,2.0,2.0);
+  P anim = e.polygon_api.anim_endpoints(cubes3, cubes4);
+  //poly.prepare(anim);
   TX tx = e.texture_api.tex_plane(128,128);
   int id = e.texture_api.unique_id();
   TX tx2 = e.texture_api.tex_assign(tx, id, 0,0, red);
-  P cubes3_texture = e.polygon_api.sprite_bind(cubes3, tx2, id);
+  P cubes3_texture = e.polygon_api.sprite_bind(anim, tx2, id);
   VA va = poly.create_vertex_array(cubes3_texture);
   TXID tex = e.texture_api.prepare(tx2);
   sprite.preparesprite(red);
@@ -251,8 +255,12 @@ void Game(EveryApi &e)
     if (ev.ch==27) break;
    }
 #endif
+  float ff = 0.0f;
   while(1)
     {
+      ff+=0.01;
+      if (ff>1.0) {ff=0.0; }
+      e.shader_api.set_var(sh, "in_POS", 0.0f);
       frame += 0.1;
       float time = e.mainloop_api.get_time();
       //glClearStencil(0);
@@ -289,7 +297,9 @@ void Game(EveryApi &e)
 #if 1
 	  //e.texture_api.use(tex);
       e.shader_api.set_y_rotation(sh, "in_MV", time/500.0);
+      e.shader_api.set_var(sh, "in_POS", ff);
       e.polygon_api.render_vertex_array(va);
+      e.shader_api.set_var(sh, "in_POS", 0.0f);
       //e.plane_api.render(pla);
       //e.texture_api.unuse(tex);
       //e.polygon_api.render_vertex_array(va2);

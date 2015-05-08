@@ -23,6 +23,7 @@ void main(void)
 //V: colour
 #version 330
 /*layout(location=0)*/ in vec3 in_Position;
+/*layout(location=4)*/ in vec3 in_Position2;
 /*layout(location=1)*/ in vec3 in_Normal;
 /*layout(location=2)*/ in vec4 in_Color;
 /*layout(location=3)*/ in vec2 in_TexCoord;
@@ -30,9 +31,11 @@ out vec4 ex_Color;
 uniform mat4 in_P;
 uniform mat4 in_MV;
 uniform mat4 in_T;
+uniform float in_POS;
 void main(void)
 {
-   gl_Position = in_P * in_T * in_MV * vec4(in_Position,1.0);
+   vec3 p = mix(in_Position, in_Position2, in_POS);
+   gl_Position = in_P * in_T * in_MV * vec4(p,1.0);
    ex_Color = in_Color;
 }
 //F: colour
@@ -48,6 +51,7 @@ void main(void)
 //V: texture
 #version 330
 /*layout(location=0)*/ in vec3 in_Position;
+/*layout(location=4)*/ in vec3 in_Position2;
 /*layout(location=1)*/ in vec3 in_Normal;
 /*layout(location=2)*/ in vec3 in_Color;
 /*layout(location=3)*/ in vec2 in_TexCoord;
@@ -55,9 +59,11 @@ out vec2 ex_TexCoord;
 uniform mat4 in_P;
 uniform mat4 in_MV;
 uniform mat4 in_T;
+uniform float in_POS;
 void main(void)
 {
-   gl_Position = in_P * in_T * in_MV *  vec4(in_Position,1.0);
+   vec3 p = mix(in_Position, in_Position2, in_POS);
+   gl_Position = in_P * in_T * in_MV *  vec4(p,1.0);
    ex_TexCoord = in_TexCoord;
 }
 //F: texture

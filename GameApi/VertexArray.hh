@@ -25,6 +25,7 @@ public:
   // id is the vertex array num to be used 0 = beginning, 1 = end
   // num is the number of points (all calls should share same num)
   void push_poly(int id, int num, Point *points);
+  void push_poly2(int id, int num, Point *points);
   void push_normal(int id, int num, Vector *vectors);
   void push_attrib(int id, int attrib_id, int num, float *attribs);
   void push_attribi(int id, int attrib_id, int num, int *attribi);
@@ -35,9 +36,13 @@ public:
 
   // way to get data out
   int tri_count(int id) const { return m_set[id]->tri_polys.size(); }
+  int tri_count2(int id) const { return m_set[id]->tri_polys2.size(); }
   const Point *tri_polys(int id) const { return tri_count(id) ? &m_set[id]->tri_polys[0] : NULL; }
+  const Point *tri_polys2(int id) const { return tri_count2(id) ? &m_set[id]->tri_polys2[0] : NULL; }
   int quad_count(int id) const { return m_set[id]->quad_polys.size(); }
+  int quad_count2(int id) const { return m_set[id]->quad_polys2.size(); }
   const Point *quad_polys(int id) const { return quad_count(id) ? &m_set[id]->quad_polys[0] : NULL; }
+  const Point *quad_polys2(int id) const { return quad_count2(id) ? &m_set[id]->quad_polys2[0] : NULL; }
   int poly_count(int id) const { return m_set[id]->poly_polys.size(); }
   int poly2_count(int id, int i) const { return m_set[id]->poly_polys[i].size(); }
   const Point *poly_polys(int id, int i) const { return poly2_count(id,i)? &m_set[id]->poly_polys[i][0] : NULL; }
@@ -92,7 +97,10 @@ private:
   struct Polys {
     std::vector<Point> tri_polys;
     std::vector<Point> quad_polys;
+    std::vector<Point> tri_polys2;
+    std::vector<Point> quad_polys2;
     std::vector<std::vector<Point> > poly_polys;
+    std::vector<std::vector<Point> > poly_polys2;
     
     std::vector<Vector> tri_normals;
     std::vector<Vector> quad_normals;
@@ -126,9 +134,9 @@ public:
   void render(int id);
 private:
   VertexArraySet &s;
-  unsigned int buffers[4];
+  unsigned int buffers[5];
   unsigned int vao[2];
-  unsigned int buffers2[4];
+  unsigned int buffers2[5];
 };
 
 class RenderVertexArray2
@@ -177,6 +185,7 @@ public:
 	for(int j=0;j<w;j++)
 	  {
 	    p[j] = coll.FacePoint(i,j);
+	    p2[j] = coll.EndFacePoint(i,j);
 	    v[j] = coll.PointNormal(i,j);
 
 	    for (int k=0;k<(int)attribs.size();k++)
@@ -194,6 +203,7 @@ public:
 	    //std::cout << "VA: " << tex[j] << std::endl;
 	  }
 	s.push_poly(0, w, &p[0]);
+	s.push_poly2(0, w, &p2[0]);
 	s.push_normal(0, w, &v[0]);
 
 	for (int k=0;k<(int)attribs.size();k++)
@@ -208,6 +218,7 @@ public:
   }
 private:
   Point p[200];
+  Point p2[200];
   Vector v[200];
   float a[30][200];
   int ai[30][200];
