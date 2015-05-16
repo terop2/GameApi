@@ -53,12 +53,14 @@ void VertexArraySet::push_poly(int id, int num, Point *points)
     }
   else
     {
+#if 0
       p->poly_polys.push_back(std::vector<Point>());
       int s = p->poly_polys.size()-1;
       for(int i=0;i<num;i++)
 	{
 	  p->poly_polys[s].push_back(points[i]);
 	}
+#endif
     }
 }
 
@@ -87,12 +89,14 @@ void VertexArraySet::push_poly2(int id, int num, Point *points)
     }
   else
     {
+#if 0
       p->poly_polys2.push_back(std::vector<Point>());
       int s = p->poly_polys2.size()-1;
       for(int i=0;i<num;i++)
 	{
 	  p->poly_polys2[s].push_back(points[i]);
 	}
+#endif
     }
 }
 
@@ -123,17 +127,20 @@ void VertexArraySet::push_normal(int id, int num, Vector *points)
     }
   else
     {
+#if 0
       p->poly_normals.push_back(std::vector<Vector>());
       int s = p->poly_normals.size()-1;
       for(int i=0;i<num;i++)
 	{
 	  p->poly_normals[s].push_back(points[i]);
 	}
+#endif
     }
 }
 
 void VertexArraySet::push_attrib(int id, int attrib_id, int num, float *points)
 {
+#if 0
   Polys *p = m_set[id];
   if (!p)
     {
@@ -168,10 +175,12 @@ void VertexArraySet::push_attrib(int id, int attrib_id, int num, float *points)
 	  p->poly_attribs[attrib_id][s].push_back(points[i]);
 	}
     }
+#endif
 }
 
 void VertexArraySet::push_attribi(int id, int attrib_id, int num, int *points)
 {
+#if 0
   Polys *p = m_set[id];
   if (!p)
     {
@@ -202,6 +211,7 @@ void VertexArraySet::push_attribi(int id, int attrib_id, int num, int *points)
 	  p->poly_attribsi[attrib_id][s].push_back(points[i]);
 	}
     }
+#endif
 }
 void VertexArraySet::split_color(std::vector<float> &target, unsigned int color)
 {
@@ -251,12 +261,14 @@ void VertexArraySet::push_color(int id, int num, unsigned int *points)
     }
   else
     {
+#if 0
       p->poly_color.push_back(std::vector<float>());
       int s = p->poly_color.size()-1;
       for(int i=0;i<num;i++)
 	{
           split_color(p->poly_color[s], points[i]);
 	}
+#endif
     }
 }
 
@@ -287,12 +299,14 @@ void VertexArraySet::push_texcoord(int id, int num, Point2d *points)
     }
   else
     {
+#if 0
       p->poly_texcoord.push_back(std::vector<Point2d>());
       int s = p->poly_texcoord.size()-1;
       for(int i=0;i<num;i++)
 	{
 	  p->poly_texcoord[s].push_back(points[i]);
 	}
+#endif
     }
 }
 #define ATTRIB_OFFSET(X) ((const GLvoid *)(sizeof(GLfloat) * (X)))
@@ -409,6 +423,21 @@ void RenderVertexArray::prepare(int id)
 
     glBindVertexArray(0);
 }
+void RenderVertexArray::del()
+{
+  glDeleteVertexArrays(2, &vao[0]);
+  glDeleteBuffers(1,&buffers[0]);
+  glDeleteBuffers(1,&buffers[1]);
+  glDeleteBuffers(1,&buffers[2]);
+  glDeleteBuffers(1,&buffers[3]);
+  glDeleteBuffers(1,&buffers[4]);
+
+  glDeleteBuffers(1,&buffers2[0]);
+  glDeleteBuffers(1,&buffers2[1]);
+  glDeleteBuffers(1,&buffers2[2]);
+  glDeleteBuffers(1,&buffers2[3]);
+  glDeleteBuffers(1,&buffers2[4]);
+}
 void RenderVertexArray::render(int id)
 {
   glBindVertexArray(vao[0]);
@@ -450,6 +479,7 @@ void RenderVertexArray::render(int id)
     glTexCoordPointer(2, GL_FLOAT, 0, (GLvoid*)s.quad_texcoord_polys(id));
     glDrawArrays(GL_QUADS, 0, s.quad_count(id));
 
+#if 0
     // polygons
     int ss = s.poly_count(id);
     for(int i=0;i<ss;i++)
@@ -460,6 +490,7 @@ void RenderVertexArray::render(int id)
 	glTexCoordPointer(2, GL_FLOAT, 0, (GLvoid*)s.poly_texcoord_polys(id,i));
 	glDrawArrays(GL_POLYGON, 0, s.poly2_count(id,i));
       }
+#endif
 
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
@@ -521,6 +552,7 @@ void RenderVertexArray2::render(int id, int attr1, int attr2, int attr3, int att
     glDrawArrays(GL_QUADS, 0, s1.quad_count(id));
 
     // polygons
+#if 0
     int ss = s1.poly_count(id);
     for(int i=0;i<ss;i++)
       {
@@ -541,6 +573,7 @@ void RenderVertexArray2::render(int id, int attr1, int attr2, int attr3, int att
 
 	glDrawArrays(GL_POLYGON, 0, s1.poly2_count(id,i));
       }
+#endif
 
     //glDisableClientState(GL_VERTEX_ARRAY);
     //glDisableClientState(GL_NORMAL_ARRAY);

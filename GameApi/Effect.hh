@@ -10706,6 +10706,42 @@ private:
   FaceCollection &coll;
 };
 
+class SaveObjModelFaceCollection
+{
+public:
+  SaveObjModelFaceCollection(FaceCollection *coll) : coll(coll) {}
+  void save(std::string filename)
+  {
+    std::ofstream file(filename);
+    int s = coll->NumFaces();
+    for(int i=0;i<s;i++)
+      {
+	int ss = coll->NumPoints(i);
+	for(int j=0;j<ss;j++)
+	  {
+	    Point p = coll->FacePoint(i,j);
+	    file << "v " << p.x << " " << p.y << " " << p.z << std::endl;
+	  }
+      }
+    int counter =1;
+    for(int i=0;i<s;i++)
+      {
+	file << "f ";
+	int ss = coll->NumPoints(i);
+	for(int j=0;j<ss;j++)
+	  {
+	    file << counter;
+	    if (j!=ss-1) file << " ";
+	    counter++;
+	  }
+	file << std::endl;
+      }
+  }
+
+private:
+  FaceCollection *coll;
+};
+
 class LoadObjModelFaceCollection : public BoxableFaceCollection
 {
 public:
