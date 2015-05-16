@@ -586,6 +586,12 @@ int main() {
   reflect_obj.prepare();
 
 
+  //P gp = ev.polygon_api.or_elem(p3, reflect_color);
+  //P gp2 = ev.polygon_api.or_elem(gp, p2a);
+
+  //ev.polygon_api.save_model(gp2, "world.obj");
+
+
   ev.mainloop_api.alpha(true);
   float pos_x = 0.0;
   float pos_y = 0.0;

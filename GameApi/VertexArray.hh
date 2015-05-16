@@ -12,6 +12,14 @@ class VertexArraySet
 public:
   int texture_id;
   VertexArraySet() : texture_id(-1) { }
+  VertexArraySet(const VertexArraySet &s)
+  {
+    std::map<int, Polys*>::iterator it = s.m_set.begin();
+    for(;it!=s.m_set.end();it++)
+      {
+	m_set[(*it).first] = new Polys(*(*it).second);
+      }
+  }
   ~VertexArraySet()
   {
     std::map<int,Polys*>::iterator it = m_set.begin();
@@ -43,20 +51,23 @@ public:
   int quad_count2(int id) const { return m_set[id]->quad_polys2.size(); }
   const Point *quad_polys(int id) const { return quad_count(id) ? &m_set[id]->quad_polys[0] : NULL; }
   const Point *quad_polys2(int id) const { return quad_count2(id) ? &m_set[id]->quad_polys2[0] : NULL; }
+#if 0
   int poly_count(int id) const { return m_set[id]->poly_polys.size(); }
   int poly2_count(int id, int i) const { return m_set[id]->poly_polys[i].size(); }
   const Point *poly_polys(int id, int i) const { return poly2_count(id,i)? &m_set[id]->poly_polys[i][0] : NULL; }
+#endif
 
   int tri_normal_count(int id) const { return m_set[id]->tri_normals.size(); }
   const Vector *tri_normal_polys(int id) const { return tri_normal_count(id) ? &m_set[id]->tri_normals[0] : NULL; }
   int quad_normal_count(int id) const { return m_set[id]->quad_normals.size(); }
   const Vector *quad_normal_polys(int id) const { return quad_normal_count(id) ? &m_set[id]->quad_normals[0] : NULL; }
+#if 0
   int poly_normal_count(int id) const { return m_set[id]->poly_normals.size(); }
   int poly2_normal_count(int id, int i) const { return m_set[id]->poly_normals[i].size(); }
   const Vector *poly_normal_polys(int id, int i) const { return poly2_normal_count(id,i) ? &m_set[id]->poly_normals[i][0] : NULL; }
+#endif
 
-
-
+#if 0
   int tri_attrib_count(int id, int attrib_id) const { return m_set[id]->tri_attribs[attrib_id].size(); }
   const float *tri_attrib_polys(int id, int attrib_id) const { return tri_attrib_count(id,attrib_id) ? &m_set[id]->tri_attribs[attrib_id][0] : NULL; }
   int quad_attrib_count(int id, int attrib_id) const { return m_set[id]->quad_attribs[attrib_id].size(); }
@@ -73,24 +84,28 @@ public:
   int poly2_attribi_count(int id, int attrib_id, int i) const { return m_set[id]->poly_attribsi[attrib_id][i].size(); }
   const int *poly_attribi_polys(int id, int attrib_id, int i) const { return poly2_attribi_count(id, attrib_id, i) ? &m_set[id]->poly_attribsi[attrib_id][i][0] : NULL; }
 
+#endif
 
   int tri_color_count(int id) const { return m_set[id]->tri_color.size(); }
   const float *tri_color_polys(int id) const { return tri_color_count(id) ? &m_set[id]->tri_color[0] : NULL; }
   int quad_color_count(int id) const { return m_set[id]->quad_color.size(); }
   const float *quad_color_polys(int id) const { return quad_color_count(id) ? &m_set[id]->quad_color[0] : NULL; }
+#if 0
   int poly_color_count(int id) const { return m_set[id]->poly_color.size(); }
   int poly2_color_count(int id, int i) const { return m_set[id]->poly_color[i].size(); }
   const float *poly_color_polys(int id, int i) const { return poly2_color_count(id,i) ? &m_set[id]->poly_color[i][0] : NULL; }
-
+#endif
 
   int tri_texcoord_count(int id) const { return m_set[id]->tri_texcoord.size(); }
   const Point2d *tri_texcoord_polys(int id) const { return tri_texcoord_count(id) ? &m_set[id]->tri_texcoord[0] : NULL; }
   int quad_texcoord_count(int id) const { return m_set[id]->quad_texcoord.size(); }
   const Point2d *quad_texcoord_polys(int id) const { return quad_texcoord_count(id) ? &m_set[id]->quad_texcoord[0] : NULL; }
+#if 0
   int poly_texcoord_count(int id) const { return m_set[id]->poly_texcoord.size(); }
   int poly2_texcoord_count(int id, int i) const { return m_set[id]->poly_texcoord[i].size(); }
   const Point2d *poly_texcoord_polys(int id, int i) const { return poly2_texcoord_count(id,i) ? &m_set[id]->poly_texcoord[i][0] : NULL; }
-  
+#endif  
+
   void check_m_set(int id);
   
 private:
@@ -99,13 +114,18 @@ private:
     std::vector<Point> quad_polys;
     std::vector<Point> tri_polys2;
     std::vector<Point> quad_polys2;
+#if 0
     std::vector<std::vector<Point> > poly_polys;
     std::vector<std::vector<Point> > poly_polys2;
+#endif
     
     std::vector<Vector> tri_normals;
     std::vector<Vector> quad_normals;
+#if 0
     std::vector<std::vector<Vector> > poly_normals;
-    
+#endif    
+
+#if 0
     mutable std::map<int,std::vector<float> > tri_attribs;
     mutable std::map<int,std::vector<float> > quad_attribs;
     mutable std::map<int,std::vector<std::vector<float> > > poly_attribs;
@@ -113,14 +133,17 @@ private:
     mutable std::map<int,std::vector<int> > tri_attribsi;
     mutable std::map<int,std::vector<int> > quad_attribsi;
     mutable std::map<int,std::vector<std::vector<int> > > poly_attribsi;
-
+#endif
     std::vector<float> tri_color;
     std::vector<float> quad_color;
+#if 0
     std::vector<std::vector<float> > poly_color;
-
+#endif
     std::vector<Point2d> tri_texcoord;
     std::vector<Point2d> quad_texcoord;
+#if 0
     std::vector<std::vector<Point2d> > poly_texcoord;
+#endif
   };
   mutable std::map<int, Polys*> m_set;
 };
@@ -132,6 +155,8 @@ public:
   void prepare(int id);
   void update(int id);
   void render(int id);
+  void del();
+  ~RenderVertexArray() { del(); }
 private:
   VertexArraySet &s;
   unsigned int buffers[5];
@@ -188,6 +213,7 @@ public:
 	    p2[j] = coll.EndFacePoint(i,j);
 	    v[j] = coll.PointNormal(i,j);
 
+#if 0
 	    for (int k=0;k<(int)attribs.size();k++)
 	      {
 		a[k][j] = coll.Attrib(i,j,attribs[k]);
@@ -197,7 +223,7 @@ public:
 	      {
 		ai[k][j] = coll.AttribI(i,j,attribs[k]);
 	      }
-
+#endif
 	    c[j] = coll.Color(i,j);
 	    tex[j] = coll.TexCoord(i,j);
 	    //std::cout << "VA: " << tex[j] << std::endl;
@@ -206,11 +232,12 @@ public:
 	s.push_poly2(0, w, &p2[0]);
 	s.push_normal(0, w, &v[0]);
 
+#if 0
 	for (int k=0;k<(int)attribs.size();k++)
 	  s.push_attrib(0, k, w, &a[k][0]);
 	for (int k=0;k<(int)attribsi.size();k++)
 	  s.push_attribi(0, k, w, &ai[k][0]);
-
+#endif
 	s.push_color(0, w, &c[0]);
 	s.push_texcoord(0, w, &tex[0]);
 
@@ -220,8 +247,10 @@ private:
   Point p[200];
   Point p2[200];
   Vector v[200];
+#if 0
   float a[30][200];
   int ai[30][200];
+#endif
   unsigned int c[200];
   Point2d tex[200];
 

@@ -735,6 +735,8 @@ public:
   
 	IMPORT P empty();
         IMPORT P load_model(std::string filename, int obj_num);
+        IMPORT void save_model(P poly, std::string filename);
+
   //IMPORT P line(PT p1, PT p2);
 	IMPORT P triangle(PT p1, PT p2, PT p3);
 	IMPORT P quad(PT p1, PT p2, PT p3, PT p4);
@@ -2032,6 +2034,20 @@ private:
       m_y = y;
       m_sx = sx;
       m_sy = sy;
+    }
+    P collect() {
+      std::vector<P> vec2;
+      int sx = bmapi.size_x(bm);
+      for(int y=m_y;y<m_y+m_sy;y++) {
+	std::vector<P> vec1;
+	for(int x=m_x;x<m_x+m_sx;x++) {
+	  P p = f(bitmap[x+y*sx]);
+	  P p2 = api.translate(p, dx*x,0.0,dy*y);
+	  vec1.push_back(p2);
+	}
+	vec2.push_back(api.or_array(&vec1[0], vec1.size()));
+      }
+      return api.or_array(&vec2[0], vec2.size());
     }
     void render() {
       shapi.use(sh);

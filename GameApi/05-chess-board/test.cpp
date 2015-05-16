@@ -653,21 +653,25 @@ P chars_blocks(int c, EveryApi &ev)
 	PT p3 = ev.point_api.point(15.0, -53.0, 15.0);
 	PT p4 = ev.point_api.point(15.0, -50.0, 15.0);
 	PT p5 = ev.point_api.point(15.0, -42.0, 15.0);
+	PT p6 = ev.point_api.point(15.0, -61.0, 15.0);
 	P pa = ev.polygon_api.cone(30, p1,p2,8.0,9.0);
 	P pb = ev.polygon_api.cone(30, p2,p3,2.0,8.0);
 	P pc = ev.polygon_api.cone(30, p3,p4,2.0,2.0);
 	P pd = ev.polygon_api.cone(30, p4,p5,3.0,2.0);
+	P pe = ev.polygon_api.cone(30, p1,p6,0.01,9.0);
 	
 	PT p7 = ev.point_api.point(15.0, -42.0, 15.0);
 	P p_sphere = ev.polygon_api.sphere(p7, 6.0, 5, 5);
 
 	P p = ev.polygon_api.or_elem(pa,pb);
 	P pp = ev.polygon_api.or_elem(pc,pd);
-	p = ev.polygon_api.or_elem(p,pp);
+	P ppp = ev.polygon_api.or_elem(pp,pe);
+	p = ev.polygon_api.or_elem(p,ppp);
 	p = ev.polygon_api.or_elem(p,p_sphere);
 
 	color_change(c,p,ev);
 
+	ev.polygon_api.save_model(p, "pawn.obj");
 
 	return p;
       }
@@ -778,6 +782,11 @@ int main() {
   pieces_obj.prepare();
   board_obj.set_rotation_matrix2(ev.matrix_api.mult(ev.matrix_api.mult(mm1,mm2),mm3));
 
+  P pieces = pieces_obj.collect();
+  P board = board_obj.collect();
+  P pb = ev.polygon_api.or_elem(pieces, board);
+
+
   int cursor_under = 0;
   int cursor_x = 0;
   int cursor_y = 0;
@@ -792,6 +801,8 @@ int main() {
     if (fr<0.0) { fr=0.01; frspeed = -frspeed; }
     // clear frame buffer
     ev.mainloop_api.clear_3d();
+
+   
 
     cursor_under = board_obj.read_block(cursor_x, cursor_y);
     board_obj.set_block(cursor_x, cursor_y,2);

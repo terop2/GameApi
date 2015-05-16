@@ -955,16 +955,17 @@ EnvImpl::~EnvImpl()
       delete p;
     }
 
-  int sk1 = vertex_array.size();
-  for(int ii1=0;ii1<sk1;ii1++)
-    {
-      VertexArraySet *s = vertex_array[ii1];
-      delete s;
-    }
   int sk2 = vertex_array_render.size();
   for(int ii2=0;ii2<sk2;ii2++)
     {
       RenderVertexArray *s = vertex_array_render[ii2];
+      delete s;
+    }
+
+  int sk1 = vertex_array.size();
+  for(int ii1=0;ii1<sk1;ii1++)
+    {
+      VertexArraySet *s = vertex_array[ii1];
       delete s;
     }
 
@@ -3977,6 +3978,12 @@ GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
 {
   return add_polygon2(e, new LoadObjModelFaceCollection(filename, num), 1);
 } 
+void GameApi::PolygonApi::save_model(GameApi::P poly, std::string filename)
+{
+  FaceCollection *face = find_facecoll(e, poly);
+  SaveObjModelFaceCollection save(face);
+  save.save(filename);
+}
    
 #if 0
 GameApi::P GameApi::PolygonApi::line(PT p1, PT p2)
