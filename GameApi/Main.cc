@@ -433,7 +433,9 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
    glEnable(GL_DEPTH_TEST);
   glEnable ( GL_NORMALIZE );
   glDepthMask(GL_TRUE);
+#ifndef EMSCRIPTEN
   glShadeModel(GL_SMOOTH);
+#endif
   glEnable(GL_LIGHTING);
 
   //glEnable(GL_POLYGON_SMOOTH);
@@ -441,8 +443,9 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
   //glMaterialf( GL_FRONT_AND_BACK,
   //	       GL_SHININESS, 0.8);
   // glColorMaterial ( GL_FRONT_AND_BACK, GL_EMISSION ) ;
+#ifndef EMSCRIPTEN
    glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE ) ;
-
+#endif
   glEnable(GL_COLOR_MATERIAL);
   glEnable(GL_LIGHT0);
   glEnable(GL_MULTISAMPLE_ARB);
@@ -451,21 +454,27 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
   //glEnable(GL_LIGHT1);
   //glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, 1.0);
   //glEnable(GL_AUTONORMALS);
+#ifndef EMSCRIPTEN
   glMaterialfv ( GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient );
   glMaterialfv ( GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse );
   glMaterialfv ( GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular );
   glMaterialfv ( GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess );
+#endif
   //glFrontFace(0 ? GL_CCW : GL_CW);
 
+#ifndef EMSCRIPTEN
   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
   glLightfv(GL_LIGHT0, GL_AMBIENT, mat_ambient);
   glLightfv(GL_LIGHT0, GL_DIFFUSE, mat_diffuse);
   glLightfv(GL_LIGHT0, GL_SPECULAR, mat_diffuse);
+#endif
   //glLightfv(GL_LIGHT1, GL_POSITION, light_position2);
   glClearColor( 0, 0, 0, 0 );
   glViewport(0,0,screenx, screeny);
+#ifndef EMSCRIPTEN
   glMatrixMode( GL_PROJECTION ); 
   glLoadIdentity(); 
+#endif
   //glOrtho( -screenx, screenx, screeny, -screeny, -1000, 1000 ); 
   //double r = 0.05;
   //double ks = (double)screenx/screeny;
@@ -481,10 +490,12 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
 		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
 		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
+#ifndef EMSCRIPTEN
   glMultMatrixf(&mat[0]);
 
   glMatrixMode( GL_MODELVIEW ); 
   glLoadIdentity();
+#endif
 #endif
   return 0;
 }
@@ -570,7 +581,9 @@ SDL_Surface *InitSDL(int scr_x, int scr_y, bool vblank, bool antialias)
   glEnable(GL_DEPTH_TEST);
   glEnable ( GL_NORMALIZE );
   glDepthMask(GL_TRUE);
+#ifndef EMSCRIPTEN
   glShadeModel(GL_SMOOTH);
+#endif
   glEnable(GL_LIGHTING);
 
   //glEnable(GL_POLYGON_SMOOTH);
@@ -601,8 +614,10 @@ SDL_Surface *InitSDL(int scr_x, int scr_y, bool vblank, bool antialias)
   //glLightfv(GL_LIGHT1, GL_POSITION, light_position2);
   glClearColor( 0, 0, 0, 0 );
   glViewport(0,0,screenx, screeny);
+#ifndef EMSCRIPTEN
   glMatrixMode( GL_PROJECTION ); 
   glLoadIdentity(); 
+#endif
   //glOrtho( -screenx, screenx, screeny, -screeny, -1000, 1000 ); 
   //double r = 0.05;
   //double ks = (double)screenx/screeny;
@@ -618,10 +633,12 @@ SDL_Surface *InitSDL(int scr_x, int scr_y, bool vblank, bool antialias)
 		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
 		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
+#ifndef EMSCRIPTEN
   glMultMatrixf(&mat[0]);
 
   glMatrixMode( GL_MODELVIEW ); 
   glLoadIdentity();
+#endif
 #endif
 
   return screen;
@@ -1232,6 +1249,7 @@ void Execute2(FrameAnim &f, EventSurface &surf)
 
 void Execute(FrameAnim &f, SDL_Surface *screen)
 {
+#if 0
   SDL_Event event;
   int x=0;
   //int tick;
@@ -1259,10 +1277,15 @@ void Execute(FrameAnim &f, SDL_Surface *screen)
   //x = rep.Index(x)+x;
 
   f.PreFrame(fps.get_ticks()/30.0);
+#ifndef EMSCRIPTEN
   glTranslatef(0.0, 0.0, -500.0);
+#endif
   float speed = f.RotSpeed();
   glRotatef(speed*x, f.XRot(),f.YRot(),f.ZRot());
+#ifndef EMSCRIPTEN
+
   glTranslatef(0.0, -100.0, 0.0);
+#endif
   f.Frame(fps.get_ticks()/30.0);
   exita=lock1;
   f.PostFrame();
@@ -1300,6 +1323,7 @@ void Execute(FrameAnim &f, SDL_Surface *screen)
 
   f.Cleanup();
   lock1=false;
+#endif
 }
 
 void InitFrameAnim(FrameAnim &f, SDL_Surface *screen)
@@ -1319,10 +1343,14 @@ void DisplayFrame(FrameAnim &f, SDL_Surface *screen, float time)
   //x = rep.Index(x)+x;
 
   f.PreFrame(time/30.0);
+#ifndef EMSCRIPTEN
   glTranslatef(0.0, 0.0, -500.0);
+#endif
   float speed = f.RotSpeed();
   glRotatef(speed*time/30.0, f.XRot(),f.YRot(),f.ZRot());
+#ifndef EMSCRIPTEN
   glTranslatef(0.0, -100.0, 0.0);
+#endif
   f.Frame(time/30.0);
   f.PostFrame();
   glLoadIdentity();

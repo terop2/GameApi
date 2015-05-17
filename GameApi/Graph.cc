@@ -206,7 +206,10 @@ void FaceCollectionHandleValueDynamic::DrawVBO(VBOState &vbostate, VBOUpdate u)
       //			m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
       //			m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
       //			m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
+#ifndef EMSCRIPTEN
+
       glMultMatrixf(&n.mat[0]);
+#endif
       unsigned int color = n.color;
       glColor4ub(color, color>>8, color>>16, color>>24);
       ::DrawVBO(vbostate, u);
@@ -309,7 +312,9 @@ bool MapEffect::Frame(float time)
 		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
 		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
+#ifndef EMSCRIPTEN
   glMultMatrixf(&mat[0]);
+#endif
 
   hv.DrawVBO(vbostate, UpdateAll);
   glDisable(GL_TEXTURE_2D);
@@ -924,7 +929,9 @@ void RenderGrid(Bitmap<Pos> &bm, float x, float y, int sx, int sy, ArrayRender &
 		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
   
+#ifndef EMSCRIPTEN
   glMultMatrixf(&mat[0]);
+#endif
 
   for(int y=start_y;y<sizey&&y<start_y+size_y;y++)
     for(int x=start_x;x<sizex&&x<start_x+size_x;x++)
@@ -937,8 +944,9 @@ void RenderGrid(Bitmap<Pos> &bm, float x, float y, int sx, int sy, ArrayRender &
 			m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 			m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
 
+#ifndef EMSCRIPTEN
 	glMultMatrixf(&mat[0]);
-
+#endif
 
 	Pos p = bm.Map(x,y);
 	rend.Render(0, -1, -1, p.x+p.y*sizex, 0, rend.used_vertex_count[0]);
@@ -990,8 +998,9 @@ bool GridEffect2::Frame(float time)
 		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
   
+#ifndef EMSCRIPTEN
   glMultMatrixf(&mat[0]);
-
+#endif
 
   //Pos p = { 1,0 };
   Point2d center = { 25.0,25.0 };
@@ -1186,7 +1195,9 @@ void RenderSprite(const Sprite &s, int frame, Point2d pos1, Point2d pos2, Point2
 		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
   
+#ifndef EMSCRIPTEN
   glMultMatrixf(&mat[0]);
+#endif
   rend.Render(frame, -1, -1, frame, 0, rend.used_vertex_count[0]);
   glPopMatrix();
   rend.DisableTexture();

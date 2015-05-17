@@ -31,7 +31,9 @@ void GameRunner::run()
 	current_state = MoveToNextState(current_state, time);
 	RenderState(current_state);
 
+#ifndef EMSCRIPTEN
 	glLoadIdentity();
+#endif
 	SDL_GL_SwapWindow(sdl_window);
 	//SDL_GL_SwapBuffers();
 

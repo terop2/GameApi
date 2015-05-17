@@ -27,9 +27,12 @@ void DecodahedronEffect::Init()
 }
 void DecodahedronEffect::PreFrame(float fr)
 {
+#ifndef EMSCRIPTEN
+
   glTranslatef(0.0, 0.0, -500.0);
   glTranslatef(0.0, -100.0, 0.0);
 
+#endif
 }
 bool DecodahedronEffect::Frame(float time)
 {

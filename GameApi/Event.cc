@@ -38,7 +38,9 @@ void DrawVBO(TimedMatrixPaths &paths, float time, VBOState &vbostate, VBOUpdate 
 			m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
 			m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 			m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
+#ifndef EMSCRIPTEN
       glMultMatrixf(&mat[0]);
+#endif
       DrawVBO(vbostate, u);
       glPopMatrix();      
     }
