@@ -40,7 +40,10 @@ bool RectFrameAnim::Frame(float time)
 		      m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 		      m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
     
+#ifndef EMSCRIPTEN
+
     glMultMatrixf(&mat[0]);
+#endif
     obj.Frame(time);
     glPopMatrix();
     return false;
@@ -48,7 +51,9 @@ bool RectFrameAnim::Frame(float time)
 bool RotateFrameAnim::Frame(float time)
 {
   glPushMatrix();
+#ifndef EMSCRIPTEN
   glTranslatef(0.0, 0.0, -500.0);
+#endif
   //glRotatef(time, next.XRot(),next.YRot(),next.ZRot());
   //glTranslatef(0.0, -100.0, 0.0);
   next.Frame(time);

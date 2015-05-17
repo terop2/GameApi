@@ -24,8 +24,10 @@
 #include <cmath>
 
 #include "Parser.hh"
+#ifndef EMSCRIPTEN
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#endif
 #include "FreeType.hh"
 #include "GameRunner.hh"
 #include "RayTracing.hh"
@@ -312,8 +314,9 @@ void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh)
       prog->set_var("in_P", m);
       prog->set_var("in_T", m3);
       //glMultMatrixf(&mat[0]);
-      
+#ifndef EMSCRIPTEN      
       glMatrixMode( GL_MODELVIEW ); 
+#endif
       //Matrix m2 = Matrix::Translate(0.0, 0.0, -500.0);
       Matrix m2 = Matrix::Identity();
       prog->set_var("in_MV", m2);
@@ -367,9 +370,11 @@ void GameApi::MainLoopApi::clear_3d()
   glClearColor(0,0,0,0);
   glStencilMask(~0);
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+#ifndef EMSCRIPTEN
   glLoadIdentity();
   glTranslatef(0.375, 0.375, 0.0);
   glTranslatef(0.0, 0.0, -260.0);
+#endif
   //float speed = 1.0;
   //glRotatef(speed*time, 0.0,1.0,0.0);
   //glTranslatef(0.0, -100.0, 0.0);
@@ -407,14 +412,18 @@ void GameApi::MainLoopApi::alpha(bool enable)
       glEnable(GL_BLEND);
       //glBlendFunc(GL_SRC_COLOR /*ONE_MINUS_SRC_COLOR*/, GL_DST_COLOR);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+#ifndef EMSCRIPTEN
       glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+#endif
       //glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_INTERPOLATE); 
     }
   else
     {
       glDisable(GL_BLEND);
       //glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+#ifndef EMSCRIPTEN
       glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+#endif
     }
 }
 void GameApi::MainLoopApi::antialias(bool enable)
@@ -844,12 +853,16 @@ struct EnvImpl
   std::vector<PointsApiPoints*> pointsapi_points;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
+#ifndef EMSCRIPTEN
   FT_Library lib;
+#endif
   std::vector<Font> fonts;
   static ::EnvImpl *Environment(GameApi::Env *e) { return (EnvImpl*)e->envimpl; }
   EnvImpl() : event_infos(new EmptySequencer2) 
   {
+#ifndef EMSCRIPTEN
     FT_Init_FreeType(&lib);
+#endif
     cursor_pos_point_id.id = -1;
   }
   ~EnvImpl();
@@ -1043,7 +1056,9 @@ EnvImpl::~EnvImpl()
       Font f = fonts[i0];
       delete f.bm;
     }
+#ifndef EMSCRIPTEN
   FT_Done_FreeType(lib);
+#endif
   int s1 = bm.size();
   for(int i1=0;i1<s1;i1++)
     {
@@ -2424,7 +2439,9 @@ void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
   else if(s->texture_id!=-1)
     {
       glEnable(GL_TEXTURE_2D);
+#ifndef EMSCRIPTEN
       glClientActiveTexture(GL_TEXTURE0+0);
+#endif
       glActiveTexture(GL_TEXTURE0+0);
       glBindTexture(GL_TEXTURE_2D, s->texture_id-6000);
 
@@ -4647,6 +4664,7 @@ Point ChangePositions_Func(Point p, int face,int point, void* data)
 
 GameApi::P GameApi::PolygonApi::change_positions(P orig, std::function<PT (PT p, int face, int point)> f)
 {
+#ifndef EMSCRIPTEN
   FaceCollection *coll = find_facecoll(e, orig);
   ChangePositions_data dt;
   dt.env = &e;
@@ -4659,6 +4677,7 @@ GameApi::P GameApi::PolygonApi::change_positions(P orig, std::function<PT (PT p,
   using std::placeholders::_3;
   FaceCollection *coll2 = new ChangePoints2(*coll, std::bind(&ChangePositions_Func, _1,_2,_3,(void*)&dt));
   return add_polygon(e, coll2, 1);
+#endif
 }
 
 
@@ -4694,6 +4713,8 @@ Vector ChangeNormals_Func(Vector p, int face,int point,void* data)
 
 GameApi::P GameApi::PolygonApi::change_normals(P orig, std::function<V (V p, int face, int point)> f)
 {
+#ifndef EMSCRIPTEN
+
   FaceCollection *coll = find_facecoll(e, orig);
   ChangeNormal_data dt;
   dt.env = &e;
@@ -4709,6 +4730,7 @@ GameApi::P GameApi::PolygonApi::change_normals(P orig, std::function<V (V p, int
 
   FaceCollection *coll2 = new ChangeNormal2(*coll, std::bind(&ChangeNormals_Func, _1, _2, _3, &dt));
   return add_polygon(e, coll2, 1);
+#endif
 }
 
 
@@ -4742,6 +4764,7 @@ unsigned int ChangeColor_Func(unsigned int p, int face,int point,void* data)
 
 GameApi::P GameApi::PolygonApi::change_colors(P orig, std::function<unsigned int (unsigned int p, int face, int point)> f)
 {
+#ifndef EMSCRIPTEN
   FaceCollection *coll = find_facecoll(e, orig);
   ChangeColor_data *dt = new ChangeColor_data;
   dt->env = &e;
@@ -4754,6 +4777,7 @@ GameApi::P GameApi::PolygonApi::change_colors(P orig, std::function<unsigned int
 
   FaceCollection *coll2 = new ChangeColor2(*coll, std::bind(ChangeColor_Func, _1,_2,_3,(void*)dt));
   return add_polygon(e, coll2, 1);
+#endif
 }
 
 class ChangeTexture : public ForwardFaceCollection
@@ -5016,7 +5040,9 @@ void GameApi::PolygonApi::renderpoly(P p, int choose, float x, float y, float z)
   ArrayRender *r = pp->rend[p.id];
   if (!r) { std::cout << "To use renderpoly() you should first call preparepoly(do not put it to frame loop)" << std::endl; return; }
   glPushMatrix();
+#ifndef EMSCRIPTEN
   glTranslatef(x,y,z);
+#endif
   //std::cout << "renderpoly: " << r->used_vertex_count << std::endl;
 
   //PolyHandle *handle = find_poly(e,p);
@@ -5247,6 +5273,15 @@ void GameApi::ShaderApi::load(std::string filename)
   p->seq = seq;
   p->count = 0;
 }
+void GameApi::ShaderApi::load_default()
+{
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  p->file = new ShaderFile;
+  ShaderSeq *seq = new ShaderSeq(*p->file);
+  p->seq = seq;
+  p->count = 0;
+}
+
 void GameApi::ShaderApi::set_default_projection(SH shader, std::string name)
 {
   std::cout << "SetDefaultProjection:" << std::endl;
@@ -5968,9 +6003,11 @@ GameApi::FontApi::~FontApi()
 GameApi::Ft GameApi::FontApi::newfont(const char *filename, int sx, int sy)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
+#ifndef EMSCRIPTEN
   Font fnt;
   fnt.bm = new FontGlyphBitmap((void*)&env->lib,filename, sx,sy);
   env->fonts.push_back(fnt);
+#endif
   GameApi::Ft font;
   font.id = env->fonts.size()-1;
   return font;
@@ -6371,6 +6408,8 @@ bool range_select_color_area(int r, int g, int b,int a, void* dt)
 }
 GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, int r_start, int r_end, int g_start, int g_end, int b_start, int b_end, int a_start, int a_end)
 {
+#ifndef EMSCRIPTEN
+
   RangeData data = { r_start, r_end, g_start, g_end, b_start, b_end, a_start, a_end };
   RangeData *dt2 = new RangeData;
   *dt2 = data;
@@ -6379,6 +6418,7 @@ GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, int r_start, 
   using std::placeholders::_3;
   using std::placeholders::_4;
   return from_bitmaps_color_area(bm, std::bind(range_select_color_area, _1,_2,_3,_4,(void*)dt2));
+#endif
 }
 
 GameApi::BB GameApi::BoolBitmapApi::circle(BB bg, float center_x, float center_y, float radius)
@@ -6457,6 +6497,8 @@ float GameApi::FloatBitmapApi::floatvalue(FB bm, int x, int y)
 
 GameApi::BB GameApi::BoolBitmapApi::rectangle(BB bg, float x, float y, float width, float height)
 {
+#ifndef EMSCRIPTEN
+
   Rectangle_data *d = new Rectangle_data;
   d->start_x = x;
   d->start_y = y;
@@ -6469,7 +6511,7 @@ GameApi::BB GameApi::BoolBitmapApi::rectangle(BB bg, float x, float y, float wid
   using std::placeholders::_2;
   using std::placeholders::_3;
   return or_bitmap(bg, function(std::bind(Rectangle_func,_1, _2,(void*)d), size_x(bg), size_y(bg)));
-  
+#endif  
 }
 
 class BoolBitmapSprite : public Bitmap<bool>
@@ -7408,7 +7450,9 @@ void GameApi::PolygonApi::render_vertex_array(VA va)
   else if (s->texture_id!=-1)
     {
       glEnable(GL_TEXTURE_2D);
+#ifndef EMSCRIPTEN
       glClientActiveTexture(GL_TEXTURE0+0);
+#endif
       glActiveTexture(GL_TEXTURE0+0);
       glBindTexture(GL_TEXTURE_2D, s->texture_id-6000);
 
@@ -7709,7 +7753,9 @@ GameApi::TXID GameApi::TextureApi::prepare(TX tx)
 
   GLuint id;
   glGenTextures(1, &id); 
+#ifndef EMSCRIPTEN
   glClientActiveTexture(GL_TEXTURE0+0);
+#endif
   glActiveTexture(GL_TEXTURE0+0);
   glBindTexture(GL_TEXTURE_2D, id);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bm.SizeX(),bm.SizeY(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buf.Buffer().buffer);
@@ -7725,7 +7771,9 @@ GameApi::TXID GameApi::TextureApi::prepare(TX tx)
 void GameApi::TextureApi::use(TXID tx, int i)
 {
   glEnable(GL_TEXTURE_2D);
+#ifndef EMSCRIPTEN
   glClientActiveTexture(GL_TEXTURE0+i);
+#endif
   glActiveTexture(GL_TEXTURE0+i);
   glBindTexture(GL_TEXTURE_2D, tx.id);
 }
@@ -8593,6 +8641,8 @@ GameApi::PL GameApi::PlaneApi::star(GameApi::PT center, float radius_1, float ra
 
 GameApi::PLA GameApi::PlaneApi::prepare(GameApi::PL pl)
 {
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+#ifndef EMSCRIPTEN
   PlanePoints2d *ptr = find_plane(e, pl);
   int s = ptr->Size();
   //std::cout << "PlaneApi::prepare" << s << std::endl;
@@ -8629,13 +8679,13 @@ std::cout << "Type ERROR!" << std::endl;
       }
     }
   data.cmd_array.push_back(GL_CLOSE_PATH_NV);
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->plane_array.push_back(data);
+#endif
   PLA pla;
   pla.id = env->plane_array.size()-1;
-
+#ifndef EMSCRIPTEN
   glPathCommandsNV(pla.id, data.cmd_array.size(), &data.cmd_array[0], data.array.size(), GL_FLOAT, &data.array[0]);
-
+#endif
   return pla;
 }
 void GameApi::PlaneApi::render(GameApi::PLA pla, float x, float y, float mult_x, float mult_y)
@@ -8643,6 +8693,7 @@ void GameApi::PlaneApi::render(GameApi::PLA pla, float x, float y, float mult_x,
   //PlaneData *dt = find_plane_array(e,pla);
   //GLuint pathObj = glGenPathsNV(1);
   //glMatrixPushExt(GL_MODELVIEW);
+#ifndef EMSCRIPTEN
   glPushMatrix();
   glMatrixScalefEXT(GL_MODELVIEW, mult_x, mult_y, 1.0);
   glMatrixTranslatefEXT(GL_MODELVIEW, x, y, 0);
@@ -8657,6 +8708,7 @@ void GameApi::PlaneApi::render(GameApi::PLA pla, float x, float y, float mult_x,
   glCoverStrokePathNV(pla.id, GL_CONVEX_HULL_NV);
   glDisable(GL_STENCIL_TEST);
   glPopMatrix();
+#endif
 }
 #if 0
 GameApi::PL GameApi::PlaneApi::floodfill_border(GameApi::BB bitmap, int x, int y)
@@ -9497,6 +9549,8 @@ float torus_distance(float x, float y, float z, void *data)
 
 GameApi::FO GameApi::FloatVolumeApi::torusdistance(PT center, V u_x, V u_y, float radius)
 {
+#ifndef EMSCRIPTEN
+
   TorusData *dt = new TorusData;
   dt->center = *find_point(e,center);
   dt->u_x = *find_vector(e,u_x);
@@ -9506,7 +9560,7 @@ GameApi::FO GameApi::FloatVolumeApi::torusdistance(PT center, V u_x, V u_y, floa
   using std::placeholders::_2;
   using std::placeholders::_3;
   return function(std::bind(torus_distance, _1,_2,_3,(void*)dt));
-  
+#endif  
 }
 GameApi::FO GameApi::FloatVolumeApi::minimum(FO f1, FO f2)
 {
@@ -9723,6 +9777,7 @@ void GameApi::ObjectMoveApi::render_all(GameApi::VAA va)
     {
       VertexArrayWithPos p = (*vec)[i];
       Matrix mm = find_matrix(e, p.m);
+#ifndef EMSCRIPTEN
       glPushMatrix();
       float mat[16] = { mm.matrix[0], mm.matrix[4], mm.matrix[8], mm.matrix[12],
 			mm.matrix[1], mm.matrix[5], mm.matrix[9], mm.matrix[13],
@@ -9733,6 +9788,7 @@ void GameApi::ObjectMoveApi::render_all(GameApi::VAA va)
 
       poly.render_vertex_array(p.va);
       glPopMatrix();
+#endif
     }
 }
 
