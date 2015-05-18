@@ -761,6 +761,8 @@ struct Env {
 
   float fr=0.0;
   float frspeed=0.01;
+  //PolygonObj *cursor;
+  int prevbutton;
 } env;
 void iter()
 {
@@ -789,6 +791,7 @@ void iter()
 #if 1
     env.pieces_obj->render();
     env.board_obj->render();
+    //env.cursor->render();
 #endif
     env.board_obj->set_block(env.cursor_x, env.cursor_y, env.cursor_under);
 
@@ -800,12 +803,70 @@ void iter()
     MainLoopApi::Event e = env.ev->mainloop_api.get_event();
     //if (e.type==0x300)
     // std::cout << std::hex << e.ch << std::endl;
+    
+
+    PT cursor = e.cursor_pos;
+    float xxx, yyy, zzz;
+    float x1 = env.ev->point_api.pt_x(cursor);
+    float y1 = env.ev->point_api.pt_y(cursor);
+    
+    
+
+    //x1/=800.0;
+    //y1/=600.0;
+
+    //env.board_obj->pick_object1(x1,
+    //				y1,
+    //				xxx,yyy,zzz);
+    //xxx/=200.0;
+    //yyy/=200.0;
+    //zzz/=200.0;
+    //env.cursor->set_pos(xxx,yyy, zzz);
+    if (x1>0.01&&y1>0.01 && (e.type==0x400||e.type==0x700))
+      {
+	xxx = x1;
+	yyy = y1;
+	zzz = 0.0f;
+	std::cout << xxx << " " << yyy << " " << zzz << std::endl;
+	float xx = xxx;
+	float yy = yyy;
+	float rx_start = 36.0f;
+	float rx_end = 768.0f;
+	float rx2_start = 189.0f;
+	float rx2_end = 614.0f;
+	float ry_start = 152.0f;
+	float ry_end = 575.0f;
+	
+	yy-=ry_start;
+	yy/=ry_end-ry_start;
+	yy*=8;
+	
+	float rx3_step = (yy/8.0);
+	float rx3_start = rx3_step*(rx_start)+(1.0-rx3_step)*rx2_start;
+	float rx3_end = rx3_step*(rx_end)+(1.0-rx3_step)*rx2_end;
+	
+	yy++;
+	
+	xx-=rx3_start;
+	xx/=rx3_end-rx3_start;
+	xx*=8;
+	xx = 8-xx;
+	std::cout <<"L:" << xx << " " << yy << std::endl;
+    
+	if (xx<0) xx = 0;
+	if (xx>7) xx = 7;
+	if (yy<0) yy = 0;
+	if (yy>7) yy = 7;
+	env.cursor_x = xx;
+	env.cursor_y = yy;
+      }
+    
      if (e.ch==27&&e.type==0x300) { 
 #ifndef EMSCRIPTEN
        exit(0); 
 #endif
      }
-    if ((e.ch==13||e.ch==0x28)&&e.type==0x300)
+     if (((e.ch==13||e.ch==0x28)&&e.type==0x300) || (env.prevbutton == -1 && e.button == 0) || e.type==0x700)
       {
 	int val = env.board_obj->read_block(env.cursor_x, env.cursor_y);
 	if (val==3)
@@ -813,6 +874,12 @@ void iter()
 	    int block = env.pieces_obj->read_block(env.chosen_x, env.chosen_y);
 	    env.pieces_obj->set_block(env.chosen_x, env.chosen_y, 12);
 	    env.pieces_obj->set_block(env.cursor_x, env.cursor_y, block);
+	    restore_board(env.store, *env.board_obj);
+	    env.chosen_x = -1;
+	    env.chosen_y = -1;
+	  }
+	else if (env.chosen_x!=-1)
+	  {
 	    restore_board(env.store, *env.board_obj);
 	    env.chosen_x = -1;
 	    env.chosen_y = -1;
@@ -836,28 +903,29 @@ void iter()
 	  }
       }
 
-    if ((e.ch&0xff)==0x52&&e.type==0x300) // right
+    if (((e.ch&0xff)==0x52||(e.ch&0xff)=='w')&&e.type==0x300) // right
       { 
 	env.cursor_y--; 
 	if (env.cursor_y<0) 
 	  env.cursor_y=0; 
       }
-    if ((e.ch&0xff)==0x4f&&e.type==0x300) // up
+    if (((e.ch&0xff)==0x4f||(e.ch&0xff)=='d')&&e.type==0x300) // up
       { 
 	env.cursor_x--; 
 	if (env.cursor_x<0) env.cursor_x=0; 
       }
-    if ((e.ch&0xff)==0x51&&e.type==0x300) // down
+    if (((e.ch&0xff)==0x51||(e.ch&0xff)=='s')&&e.type==0x300) // down
       { 
 	env.cursor_y++; 
 	if (env.cursor_y>7) 
 	  env.cursor_y=7; 
       }
-    if ((e.ch&0xff)==0x50&&e.type==0x300) // left
+    if (((e.ch&0xff)==0x50||(e.ch&0xff)=='a')&&e.type==0x300) // left
       { 
 	env.cursor_x++; 
 	if (env.cursor_x>7) env.cursor_x=7; 
       }
+    env.prevbutton = e.button;
 }
 
 int main() {
@@ -906,6 +974,11 @@ int main() {
   env.ev = ev1;
   env.board_obj = board_obj;
   env.pieces_obj = pieces_obj;
+  //PT pt = ev.point_api.point(0.0,0.0,0.0);
+  //P p = ev.polygon_api.sphere(pt, 50.0, 20, 20);
+  //PolygonObj *obj = new PolygonObj(ev, p, sh);
+  //obj->prepare();
+  //env.cursor = obj;
 #ifndef EMSCRIPTEN
   while(1) {
     iter();

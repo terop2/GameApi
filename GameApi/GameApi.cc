@@ -897,6 +897,14 @@ GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   int val = SDL_GetMouseState(&x, &y);
   e2.type = event.type;
   e2.ch = event.key.keysym.sym;
+
+  if (event.type==SDL_FINGERMOTION||event.type==SDL_FINGERDOWN||event.type==SDL_FINGERUP)
+    {
+      SDL_TouchFingerEvent *ptr = &event.tfinger;
+      x = (int)ptr->x;
+      y = (int)ptr->y;
+    }
+
   int id = 0;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   if (env->cursor_pos_point_id.id==-1)
@@ -5375,6 +5383,15 @@ void GameApi::ShaderApi::bind_attrib(GameApi::SH shader, int num, std::string na
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->bind_attrib(num, name);
+}
+GameApi::M GameApi::ShaderApi::get_matrix_var(GameApi::SH shader, std::string name)
+{
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[shader.id]);
+  Matrix m = prog->get_matrix_var(name);
+  return add_matrix(e, new SimpleMatrix(m));
+
 }
 void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float val)
 {

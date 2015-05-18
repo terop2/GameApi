@@ -1,1 +1,1 @@
-mingw32-make.exe -f Makefile.emscripten %1
+d:\cvs\gnumake\bin\make.exe -f Makefile.emscripten %1
