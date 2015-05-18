@@ -93,7 +93,7 @@ public: // uniform variable
   void set_var(const std::string &name, float *array, int count);
   void set_var(const std::string &name, int *array, int count);
   void set_var(const std::string &name, int val);
-  
+  Matrix get_matrix_var(const std::string &name);
   void bind_attrib(int num, std::string name);
   Attrib find_attr(const std::string &attr_name, int id);
   Attrib find_attr_int(const std::string &attr_name, int id);

@@ -1445,6 +1445,7 @@ public:
         IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z, float k);
 	IMPORT void set_var(GameApi::SH shader, std::string name, int val);
 	IMPORT void set_var(GameApi::SH shader, std::string name, M matrix);
+        IMPORT M get_matrix_var(GameApi::SH shader, std::string name);
 private:
   ShaderApi(const ShaderApi&);
   void operator=(const ShaderApi&);
@@ -1967,7 +1968,7 @@ private:
   class WorldObj : public RenderObject, public MoveScaleObject3d
   {
   public:
-    WorldObj(EveryApi &ev, std::function<P(int)> f, int numvalues, BM bm, float dx, float dy, SH sh) : bmapi(ev.bitmap_api), api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), numvalues(numvalues), bm(bm), f(f), dx(dx), dy(dy), sh(sh) 
+    WorldObj(EveryApi &ev, std::function<P(int)> f, int numvalues, BM bm, float dx, float dy, SH sh) : bmapi(ev.bitmap_api), api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), pts(ev.point_api), numvalues(numvalues), bm(bm), f(f), dx(dx), dy(dy), sh(sh) 
     {
       int sx = bmapi.size_x(bm);
       int sy = bmapi.size_y(bm);
@@ -2099,6 +2100,26 @@ private:
       if (id>=0&&id<(int)m_va2.size())
 	anim_id = id;
     }
+    void pick_object1(float x, float y, float &xx, float &yy, float &zz)
+    {
+      PT point = pts.point(x,y,0.0f);
+
+      M mp = shapi.get_matrix_var(sh, "in_P");
+      M m3 = mat.inverse(mp);
+      PT point1 = mat.mult(point, m3);
+
+      M mp2 = shapi.get_matrix_var(sh, "in_T");
+      M m4 = mat.inverse(mp2);
+      PT point2 = mat.mult(point1, m4);
+
+      M m2 = mat.inverse(m);
+      PT point3 = mat.mult(point2, m2);
+     
+      xx = pts.pt_x(point3);
+      yy = pts.pt_y(point3);
+      zz = pts.pt_z(point3);
+
+    }
   private:
     void setup_m() {
       m = mat.mult(mat.mult(mat.mult(current_rot,current_scale), current_pos), current_rot2);
@@ -2109,6 +2130,7 @@ private:
     ShaderApi &shapi;
     MatrixApi &mat;
     TextureApi &tex;
+    PointApi &pts;
     M current_pos;
     M current_scale;
     M current_rot;
