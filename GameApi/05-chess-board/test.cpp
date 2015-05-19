@@ -37,6 +37,32 @@ int charsmap(char c)
     }
 }
 struct Pos { int x; int y; };
+
+struct Envi {
+  EveryApi *ev;
+  WorldObj *board_obj;
+  WorldObj *pieces_obj;
+  int cursor_under = 0;
+  int cursor_x = 0;
+  int cursor_y = 0;
+  int *store = new int[8*8];
+  int chosen_x = -1;
+  int chosen_y = -1;
+
+  float fr=0.0;
+  float frspeed=0.01;
+  //PolygonObj *cursor;
+  int prevbutton;
+  bool towering_allowed_white_left;
+  bool towering_allowed_white_right;
+  bool towering_allowed_black_left;
+  bool towering_allowed_black_right;
+} env;
+
+bool check_towering(WorldObj *pieces, bool left, bool white, bool check);
+Pos towering_new_block(bool left, bool white);
+
+
 bool piece_color_is_white(int c)
 {
   switch(c)
@@ -82,7 +108,9 @@ bool piece_action(std::vector<Pos> &pos, int piece2, int piece_color, int oppone
 	}
   return false;
 }
-std::vector<Pos> possible_moves(WorldObj &o, int x, int y)
+
+
+std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 {
   int piece = o.read_block(x,y);
   bool piece_color = piece_color_is_white(piece);
@@ -288,6 +316,28 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y)
 	    piece_action(pos, piece2, piece_color, opponent_color,p4);
 	  }
       }
+      { // Towering
+	bool white = false;
+	if (piece==3) { white=true; }
+	bool b1 = check_towering(&o, false, white, false);
+	bool b2 = check_towering(&o, true, white, false);
+	bool allowed1 = false;
+	bool allowed2 = false;
+	if (white)
+	  {
+	    allowed1 = e.towering_allowed_white_right;
+	    allowed2 = e.towering_allowed_white_left;
+	  }
+	else
+	  {
+	    allowed1 = e.towering_allowed_black_right;
+	    allowed2 = e.towering_allowed_black_left;
+	  }
+	if (allowed1)
+	if (b1) pos.push_back(towering_new_block(false, white));
+	if (allowed2)
+	if (b2) pos.push_back(towering_new_block(true, white));
+      }
   break;
 
 
@@ -444,6 +494,17 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y)
   return pos;
 }
 // TODO: Pawn in last row, changes to queen
+void do_promotion(WorldObj *board)
+{
+  for(int x=0;x<8;x++)
+    {
+      int block = board->read_block(x, 0);
+      if (block==5) board->set_block(x,0,4);
+      int block2 = board->read_block(x,7);
+      if (block2==11) board->set_block(x,7,10);
+    }
+}
+
 
 void color_change(int c, P &p, EveryApi &ev)
 {
@@ -748,22 +809,102 @@ void restore_board(int *array, WorldObj &o)
     }
 }
 
-struct Env {
-  EveryApi *ev;
-  WorldObj *board_obj;
-  WorldObj *pieces_obj;
-  int cursor_under = 0;
-  int cursor_x = 0;
-  int cursor_y = 0;
-  int *store = new int[8*8];
-  int chosen_x = -1;
-  int chosen_y = -1;
+Pos towering_new_block(bool left, bool white)
+{
+  if (left && !white) { Pos p={5,0}; return p; }
+  if (left && white) { Pos p={5,7}; return p; }
+  if (!left && !white) { Pos p={1,0}; return p; }
+  if (!left && white) { Pos p ={1,7}; return p; }
+  Pos p = { 0,0 };
+  return p;
+}
+bool towering_needs_update(WorldObj *pieces, int chosen_x, int chosen_y, int cursor_x, int cursor_y)
+{
+  int piece = pieces->read_block(chosen_x, chosen_y);
+  if (piece ==3 || piece==9)
+    {
+      int delta = chosen_x - cursor_x;
+      if (delta == 2 ||delta == -2)
+	return true;
+    }
+  return false;
+}
+void towering_update(WorldObj *pieces, bool left, bool white)
+{
+  if (!left && !white)
+    {
+      pieces->set_block(0,0,12);
+      pieces->set_block(2,0,6);
+    }
+  if (!left && white)
+    {
+      pieces->set_block(0,7,12);
+      pieces->set_block(2,7,0);
+    }
 
-  float fr=0.0;
-  float frspeed=0.01;
-  //PolygonObj *cursor;
-  int prevbutton;
-} env;
+  if (left && !white)
+    {
+      pieces->set_block(7,0,12);
+      pieces->set_block(4,0,6);
+    }
+  if (left && white)
+    {
+      pieces->set_block(7,7,12);
+      pieces->set_block(4,7,0);
+    }
+}
+bool check_towering(WorldObj *pieces, bool left, bool white, bool check)
+{
+  if (check) return false;
+  if (!left && !white)
+  if (pieces->read_block(1,0)==12) {
+    if (pieces->read_block(2,0)==12)
+      {
+	return true;
+      }
+  }
+  if (!left && white)
+  if (pieces->read_block(1,7)==12) {
+    if (pieces->read_block(2,7)==12)
+      {
+	return true;
+      }
+  }
+  if (left && !white)
+    if (pieces->read_block(6,0)==12) {
+      if (pieces->read_block(5,0)==12) {
+	if (pieces->read_block(4,0)==12) {
+	  return true;
+	}
+      }
+    }
+  if (left && white)
+    if (pieces->read_block(6,7)==12) {
+      if (pieces->read_block(5,7)==12) {
+	if (pieces->read_block(4,7)==12) {
+	  return true;
+	}
+      }
+    }
+  return false;
+}
+bool update_towering_allowed(int x, int y, bool left, bool white)
+{
+  if (!white && left)
+  if (x==0&&y==0) return false; // black tower
+  if (white && left)
+  if (x==0&&y==7) return false; // white tower
+  if (!white && !left)
+  if (x==7&&y==0) return false; // black tower
+  if (white && !left)
+  if (x==7&&y==7) return false; // white tower
+  if (!white)
+  if (x==3&&y==0) return false; // king black
+  if (white)
+  if (x==3&&y==7) return false; // king white
+  return true;
+}
+
 void iter()
 {
   //float fr=0.0;
@@ -871,12 +1012,26 @@ void iter()
 	int val = env.board_obj->read_block(env.cursor_x, env.cursor_y);
 	if (val==3)
 	  {
+	    env.towering_allowed_white_left &= update_towering_allowed(env.chosen_x, env.chosen_y, true, true);
+	    env.towering_allowed_white_right &= update_towering_allowed(env.chosen_x, env.chosen_y, false, true);
+	    env.towering_allowed_black_left &= update_towering_allowed(env.chosen_x, env.chosen_y, true, false);
+	    env.towering_allowed_black_right &= update_towering_allowed(env.chosen_x, env.chosen_y, false, false);
 	    int block = env.pieces_obj->read_block(env.chosen_x, env.chosen_y);
+	    if (towering_needs_update(env.pieces_obj, env.chosen_x, env.chosen_y, env.cursor_x, env.cursor_y))
+	      {
+		bool white= false;
+		if (block==3) white=true;
+		bool left = false;
+		int delta = env.chosen_x - env.cursor_x;
+		if (delta==-2) left=true; 
+		towering_update(env.pieces_obj, left, white);
+	      }
 	    env.pieces_obj->set_block(env.chosen_x, env.chosen_y, 12);
 	    env.pieces_obj->set_block(env.cursor_x, env.cursor_y, block);
 	    restore_board(env.store, *env.board_obj);
 	    env.chosen_x = -1;
 	    env.chosen_y = -1;
+	    do_promotion(env.pieces_obj);
 	  }
 	else if (env.chosen_x!=-1)
 	  {
@@ -892,7 +1047,7 @@ void iter()
 	      }
 	    env.chosen_x = env.cursor_x;
 	    env.chosen_y = env.cursor_y;
-	    std::vector<Pos> vec = possible_moves(*env.pieces_obj, env.cursor_x, env.cursor_y);
+	    std::vector<Pos> vec = possible_moves(*env.pieces_obj, env.cursor_x, env.cursor_y, env);
 	    int s = vec.size();
 	    store_board(*env.board_obj, env.store);
 	    for(int i=0;i<s;i++)
@@ -974,6 +1129,10 @@ int main() {
   env.ev = ev1;
   env.board_obj = board_obj;
   env.pieces_obj = pieces_obj;
+  env.towering_allowed_white_left=true;
+  env.towering_allowed_white_right=true;
+  env.towering_allowed_black_left=true;
+  env.towering_allowed_black_right=true;
   //PT pt = ev.point_api.point(0.0,0.0,0.0);
   //P p = ev.polygon_api.sphere(pt, 50.0, 20, 20);
   //PolygonObj *obj = new PolygonObj(ev, p, sh);
