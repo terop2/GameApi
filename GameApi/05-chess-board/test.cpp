@@ -827,7 +827,7 @@ void iter()
 	xxx = x1;
 	yyy = y1;
 	zzz = 0.0f;
-	std::cout << xxx << " " << yyy << " " << zzz << std::endl;
+	//std::cout << xxx << " " << yyy << " " << zzz << std::endl;
 	float xx = xxx;
 	float yy = yyy;
 	float rx_start = 36.0f;
@@ -851,7 +851,7 @@ void iter()
 	xx/=rx3_end-rx3_start;
 	xx*=8;
 	xx = 8-xx;
-	std::cout <<"L:" << xx << " " << yy << std::endl;
+	//std::cout <<"L:" << xx << " " << yy << std::endl;
     
 	if (xx<0) xx = 0;
 	if (xx>7) xx = 7;
