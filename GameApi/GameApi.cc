@@ -804,6 +804,7 @@ struct EnvImpl
   std::vector<VolumeObject*> volumes;
   std::vector<FloatVolumeObject*> floatvolumes;
   std::vector<BitmapHandle*> bm;
+  std::vector<BitmapArray2<Color> *> bm_array;
   std::vector<BoolBitmap> bool_bm;
   std::vector<FloatBitmap> float_bm;
   std::vector<SpaceImpl> sp;
@@ -1176,7 +1177,14 @@ GameApi::BM add_color_bitmap2(GameApi::Env &e, Bitmap<Color> *bm)
   handle->bm = bm;
   return add_bitmap(e,handle);
 }
-
+GameApi::BMA add_bitmap_array(GameApi::Env &e, BitmapArray2<Color> *arr)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->bm_array.push_back(arr);
+  GameApi::BMA bma;
+  bma.id = env->bm_array.size()-1;
+  return bma;
+}
 GameApi::BB add_bool_bitmap(GameApi::Env &e, Bitmap<bool> *bitmap)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1836,7 +1844,16 @@ Program *find_shader_program(GameApi::Env &e, GameApi::SH sh)
   Program *prog = seq->prog(p->ids[sh.id]);
   return prog;
 }
-
+BitmapArray2<Color> *find_bitmap_array(GameApi::Env &e, GameApi::BMA b)
+{
+  EnvImpl *ee = ::EnvImpl::Environment(&e);
+  BitmapArray2<Color> *h = 0;
+  if (b.id>=0 && b.id<(int)ee->bm_array.size())
+    {
+      h = ee->bm_array[b.id];
+    }
+  return h;
+}
 BoolBitmap *find_bool_bitmap(GameApi::Env &e, GameApi::BB b)
 {
   EnvImpl *ee = ::EnvImpl::Environment(&e);
@@ -2670,6 +2687,70 @@ private:
   Bitmap<Color> &bm;
   unsigned int key;
 };
+
+GameApi::BMA GameApi::BitmapApi::empty_array()
+{
+  return array(NULL, 0);
+}
+class BitmapArrayImpl : public BitmapArray2<Color>
+{
+public:
+  BitmapArrayImpl(GameApi::BitmapApi *bmapi, GameApi::BM *array, int size) : bmapi(bmapi),
+    m_size(size) 
+  {
+    if (size > 0)
+      {
+	m_array = new GameApi::BM[size];
+	for(int i=0;i<size;i++)
+	  {
+	    m_array[i] = array[i];
+	  }
+      }
+    else
+      {
+	m_array = 0;
+      }
+  }
+  virtual int Size() const { return m_size; }
+  virtual int SizeX(int i) const { return bmapi->size_x(m_array[i]); }
+  virtual int SizeY(int i) const { return bmapi->size_y(m_array[i]); }
+  virtual Color Map(int i, int x, int y) const
+  {
+    return bmapi->colorvalue(m_array[i], x, y);
+  }
+
+  ~BitmapArrayImpl() { delete [] m_array; }
+private:
+  GameApi::BitmapApi *bmapi;
+  GameApi::BM *m_array;
+  int m_size;
+};
+GameApi::BMA GameApi::BitmapApi::array(BM *array, int size)
+{
+  return add_bitmap_array(e, new BitmapArrayImpl(this, array, size));
+}
+
+class BitmapArrayElem : public Bitmap<Color>
+{
+public:
+  BitmapArrayElem(BitmapArray2<Color> *arr, int i) : arr(arr), i(i) { }
+  virtual int SizeX() const { return arr->SizeX(i); }
+  virtual int SizeY() const { return arr->SizeY(i); }
+  virtual Color Map(int x, int y) const
+  {
+    return arr->Map(i, x, y);
+  }
+
+private:
+  BitmapArray2<Color> *arr;
+  int i;
+};
+
+GameApi::BM GameApi::BitmapApi::array_elem(BMA array, int i)
+{
+  BitmapArray2<Color> *arr = find_bitmap_array(e, array);
+  return add_color_bitmap2(e, new BitmapArrayElem(arr, i));
+}
 
 GameApi::BM GameApi::BitmapApi::alpha_color(BM orig, unsigned int color_key)
 {

@@ -28,6 +28,7 @@ using std::placeholders::_9;
   struct FO { int id; };
   struct WV { int id; }; // waveform
   struct BM { int id; }; // bitmap
+  struct BMA { int id; }; // bitmap array
   struct VBM { int id; }; // vector bitmap
   struct BB { int id; }; // bool bitmap
   struct FB { int id; }; // float bitmap
@@ -304,6 +305,11 @@ public:
 	IMPORT unsigned int colorvalue(BM bm, int x, int y);
 	IMPORT int size_x(BM bm);
 	IMPORT int size_y(BM bm);
+
+
+  IMPORT BMA empty_array();
+  IMPORT BMA array(BM *array, int size);
+  IMPORT BM array_elem(BMA array, int i);
 private:
   BitmapApi(const BitmapApi&);
   void operator=(const BitmapApi&);

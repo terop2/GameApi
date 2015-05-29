@@ -32,6 +32,17 @@ public:
   virtual C Map(int x, int y) const=0;
   virtual ~Bitmap() { }
 };
+template<class C>
+class BitmapArray2
+{
+public:
+  virtual int Size() const=0;
+  virtual int SizeX(int i) const=0;
+  virtual int SizeY(int i) const=0;
+  virtual C Map(int i, int x, int y) const=0;
+  virtual ~BitmapArray2() { }
+};
+
 
 typedef Bitmap<Color> ColorBitmap;
 typedef Bitmap<Point> PointBitmap;
