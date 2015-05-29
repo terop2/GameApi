@@ -59,8 +59,17 @@ int main() {
   P player_3 = ev.polygon_api.cube(65.0, 60.0, 30.0, 20.0, -40.0, 40.0);
 
   P pp = ev.polygon_api.or_elem(player, player_2);
-  P ppp = ev.polygon_api.or_elem(pp, player_3);
-  PolygonObj player_obj(ev, ppp, sh);
+  //P ppp = ev.polygon_api.or_elem(pp, player_3);
+  P ppp = ev.polygon_api.empty();
+  for(int i=0;i<1;i++)
+    {
+      P ppp2 = ev.polygon_api.load_model("humvee\\humvee.obj",0);
+      ppp = ev.polygon_api.or_elem(ppp,ppp2);
+    }
+  P ppp3 = ev.polygon_api.scale(ppp, 0.3,0.3,0.3);
+  P ppp4 = ev.polygon_api.rotatez(ppp3, 90.0*3.14159*2.0/360.0);
+  P ppp5 = ev.polygon_api.color_from_normals(ppp4);
+  PolygonObj player_obj(ev, ppp5, sh);
 
   player_obj.prepare();
 
@@ -88,9 +97,9 @@ int main() {
 
     // handle esc event
     MainLoopApi::Event e = ev.mainloop_api.get_event();
-    if (e.ch==27) break;
-    if (e.ch=='.') angle+=speed;
-    if (e.ch==',') angle-=speed;
+    if (e.ch==27&&e.type==0x300) break;
+    if (e.ch=='.'&&e.type==0x300) angle+=speed;
+    if (e.ch==','&&e.type==0x300) angle-=speed;
   }
 
 
