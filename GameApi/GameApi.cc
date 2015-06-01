@@ -7163,6 +7163,37 @@ void GameApi::VolumeApi::find_surface(O object, PT p1, PT p2, PT *res1, PT *res2
   *res2 = add_point(e, r.end.x,r.end.y,r.end.z);
 }
 
+GameApi::P GameApi::VolumeApi::rendercubes2(EveryApi &ev, O o, fptrtype f, int sx, int sy, int sz, float world_x, float world_y, float world_z)
+{
+  float step_x = world_x/sx;
+  float step_y = world_y/sy;
+  float step_z = world_z/sz;
+  VolumeObject *volume = find_volume(e,o);
+  std::vector<P> vec3;
+  for(int z=0;z<sz;z++) {
+    std::vector<P> vec2;
+    for(int y=0;y<sy;y++) {
+      std::vector<P> vec1;
+      for(int x=0;x<sx;x++)
+	{
+	  Point p(x*step_x, y*step_y, z*step_z);
+	  bool inside = volume->Inside(p);
+	  if (inside)
+	    {
+	      Color color = volume->ColorValue(p);
+	      P pp = f(x*step_x, x*step_x+step_x,
+		       y*step_y, y*step_y+step_y,
+		       z*step_z, z*step_z+step_z,
+		       color.Pixel());
+	      vec1.push_back(pp);
+	    }
+	}
+      vec2.push_back(ev.polygon_api.or_array(&vec1[0], vec1.size()));
+    }
+    vec3.push_back(ev.polygon_api.or_array(&vec2[0], vec2.size()));
+  }
+  return ev.polygon_api.or_array(&vec3[0], vec3.size());
+}
 GameApi::P GameApi::VolumeApi::rendercubes(O o, fptrtype f, int size, float wholesize)
 {
   float s = wholesize/size;
@@ -7453,7 +7484,8 @@ GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p)
   arr.reserve(0);
   arr.copy();  
   RenderVertexArray *arr2 = new RenderVertexArray(*s);
-  arr2->prepare(0);
+  arr2->prepare(0); 
+  s->free_memory();
   return add_vertex_array(e, s, arr2);
 }
 #if 0
@@ -10581,7 +10613,8 @@ GameApi::LLA GameApi::LinesApi::prepare(LI l)
   glEnableVertexAttribArray(2);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
   glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0,0);
-  
+  //glDisableVertexAttribArray(0);
+  //glDisableVertexAttribArray(2);
 
   return add_lines_array(e, arr);
 }

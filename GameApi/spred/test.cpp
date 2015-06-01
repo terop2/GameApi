@@ -48,10 +48,16 @@ int f(char c)
 {
   return 0;
 }
+int f2(char c)
+{
+  return c;
+}
 
 int main() {
   Env e;
   EveryApi ev(e);
+
+  //std::cout << sizeof(ev) << std::endl;
 
   // initialize window
   ev.mainloop_api.init_window();
@@ -67,12 +73,20 @@ int main() {
   
 
   ev.mainloop_api.alpha(true);
+  char *color_array = new char[20];
+  for(int i=0;i<6;i++) color_array[i]=i;
+  BM bm3 = ev.bitmap_api.newintbitmap(color_array, 1,6, f2);
+  SpriteWorldObj col_obj(ev, std::bind(grid_bms, _1, 20, 20, std::ref(ev)), 6, bm3, 21,21, sh2);
+  col_obj.set_pos(760,50);
+  col_obj.prepare();
+
+
   // prepare a circle for drawing
   char *array = new char[20*20];
   for(int i=0;i<20*20;i++) array[i] = 0;
   BM bm2 = ev.bitmap_api.newintbitmap(array, 20,20, f);
-  BM gr2 = grid_content(ev, 20,20,20,20, bm2);
-  SpriteObj gr2_obj(ev, gr2, sh2);
+  //BM gr2 = grid_content(ev, 20,20,20,20, bm2);
+  SpriteWorldObj gr2_obj(ev, std::bind(grid_bms, _1, 20, 20, std::ref(ev)), 6, bm2, 21,21, sh2);
   gr2_obj.set_pos(20,150);
   gr2_obj.prepare();
 
@@ -81,14 +95,43 @@ int main() {
   gr_obj.set_pos(20,150);
   gr_obj.prepare();
 
+  int cursor_color = 1;
+  int background_color = 0;
   while(1) {
     ev.mainloop_api.clear();
     gr2_obj.render();
     gr_obj.render();
+    col_obj.render();
     ev.mainloop_api.swapbuffers();
     ev.mainloop_api.fpscounter();
     // handle esc event
     MainLoopApi::Event e = ev.mainloop_api.get_event();
-    if (e.ch==27) break;
+    //if (e.type==0x300)
+    PT mouse_pos = e.cursor_pos;
+    int mouse_x = gr2_obj.get_pos_x(ev.point_api.pt_x(mouse_pos));
+    int mouse_y = gr2_obj.get_pos_y(ev.point_api.pt_y(mouse_pos));
+    int picker_x = col_obj.get_pos_x(ev.point_api.pt_x(mouse_pos));
+    int picker_y = col_obj.get_pos_y(ev.point_api.pt_y(mouse_pos));
+    if (0)
+      {
+	std::cout << std::hex << e.type << " " << e.button << std::endl;
+      }
+    if (e.ch==27&&e.type==0x300) break;
+    if (e.button==0)
+      {
+	gr2_obj.set_block(mouse_x, mouse_y, cursor_color);	
+	if (picker_y>0&&picker_y<6)
+	  {
+	    cursor_color = picker_y;
+	  }
+      }
+    if (e.button==2)
+      {
+	gr2_obj.set_block(mouse_x, mouse_y, background_color);
+	if (picker_y>0&&picker_y<6)
+	  {
+	    background_color = picker_y;
+	  }
+      }
   }
 }
