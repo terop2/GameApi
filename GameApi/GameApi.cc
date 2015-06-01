@@ -7710,7 +7710,7 @@ GameApi::P GameApi::PolygonApi::color_voxel(P orig, VX colours, PT p, V u_x, V u
   return add_polygon(e, new ColorVoxelFaceCollection(*coll, *v, *pp, *uu_x, *uu_y, *uu_z), 1);
 }
 
-GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p)
+GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 {
   FaceCollection *faces = find_facecoll(e, p);
   VertexArraySet *s = new VertexArraySet;
@@ -7719,7 +7719,8 @@ GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p)
   arr.copy();  
   RenderVertexArray *arr2 = new RenderVertexArray(*s);
   arr2->prepare(0); 
-  s->free_memory();
+  if (!keep)
+    s->free_memory();
   return add_vertex_array(e, s, arr2);
 }
 #if 0
