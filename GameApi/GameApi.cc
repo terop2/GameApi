@@ -859,6 +859,220 @@ struct EnvImpl
 #endif
   std::vector<Font> fonts;
   static ::EnvImpl *Environment(GameApi::Env *e) { return (EnvImpl*)e->envimpl; }
+  void delete_all_data()
+  {
+  int sk6 = textures.size();
+  for(int ii6=0;ii6<sk6;ii6++)
+    {
+      TextureI *ptr = textures[ii6];
+      delete ptr;
+      textures[ii6]=0;
+    }
+  textures.resize(0);
+  textures.shrink_to_fit();
+  int sk5 = pointsapi_points.size();
+  for(int ii5=0;ii5<sk5;ii5++)
+    {
+      PointsApiPoints *p = pointsapi_points[ii5];
+      delete p;
+      pointsapi_points[ii5] = 0;
+    }
+  pointsapi_points.resize(0);
+  pointsapi_points.shrink_to_fit();
+  int sk4 = plane_points.size();
+  for(int ii4=0;ii4<sk4;ii4++)
+    {
+      PlanePoints2d *p = plane_points[ii4];
+      delete p;
+      plane_points[ii4]=0;
+    }
+  plane_points.resize(0);
+  plane_points.shrink_to_fit();
+  int sk3 = continuous_bitmaps.size();
+  for(int ii3=0;ii3<sk3;ii3++)
+    {
+      ContinuousBitmap<Color> *p = continuous_bitmaps[ii3];
+      delete p;
+      continuous_bitmaps[ii3]=0;
+    }
+  continuous_bitmaps.resize(0);
+  continuous_bitmaps.shrink_to_fit();
+#if 0
+  int sk2 = vertex_array_render.size();
+  for(int ii2=0;ii2<sk2;ii2++)
+    {
+      RenderVertexArray *s = vertex_array_render[ii2];
+      delete s;
+    }
+
+  int sk1 = vertex_array.size();
+  for(int ii1=0;ii1<sk1;ii1++)
+    {
+      VertexArraySet *s = vertex_array[ii1];
+      delete s;
+    }
+
+  std::map<int, ArrayRender*>::iterator it = renders.begin();
+  for(;it!=renders.end();it++)
+    {
+      ArrayRender *rend = (*it).second;
+      delete rend;
+    }
+  std::map<int, ArrayRender*>::iterator it2 = renders2.begin();
+  for(;it2!=renders2.end();it2++)
+    {
+      ArrayRender *rend = (*it2).second;
+      delete rend;
+    }
+#endif
+
+  int vv1 = volumes.size();
+  for(int i_v=0;i_v<vv1;i_v++)
+    {
+      delete volumes[i_v];
+      volumes[i_v] =0;
+    }
+  volumes.resize(0);
+  volumes.shrink_to_fit();
+  int vv2 = floatvolumes.size();
+  for(int i_vv2=0;i_vv2<vv2;i_vv2++)
+    {
+      delete floatvolumes[i_vv2];
+      floatvolumes[i_vv2]=0;
+    }
+  floatvolumes.resize(0);
+  floatvolumes.shrink_to_fit();
+  int vv3 = pointarray.size();
+  for(int i_vv3=0;i_vv3<vv3;i_vv3++)
+    {
+      delete [] pointarray[i_vv3]->array;
+      delete [] pointarray[i_vv3]->color_array;
+      delete pointarray[i_vv3];
+      pointarray[i_vv3]=0;
+    }
+  pointarray.resize(0);
+  pointarray.shrink_to_fit();
+  int vv3a = pointarray3.size();
+  for(int i_vv3a=0;i_vv3a<vv3a;i_vv3a++)
+    { 
+      delete [] pointarray3[i_vv3a]->array;
+      delete [] pointarray3[i_vv3a]->color;
+      delete pointarray3[i_vv3a];
+      pointarray3[i_vv3a]=0;
+    }
+  pointarray3.resize(0);
+  pointarray3.shrink_to_fit();
+  int vv4 = linearray.size();
+  for(int i_vv4=0;i_vv4<vv4;i_vv4++)
+    {
+      delete linearray[i_vv4];
+      linearray[i_vv4]=0;
+    }
+  linearray.resize(0);
+  linearray.shrink_to_fit();
+  int vv5 = pointcollarray.size();
+  for(int i_vv5=0;i_vv5<vv5;i_vv5++)
+    {
+      delete pointcollarray[i_vv5];
+      pointcollarray[i_vv5]=0;
+    }
+  pointcollarray.resize(0);
+  pointcollarray.shrink_to_fit();
+  int ss1 = bool_bm.size();
+  for(int i_1=0;i_1<ss1;i_1++)
+    {
+      BoolBitmap &bm = bool_bm[i_1];
+      delete bm.bitmap;
+      bm.bitmap=0;
+    }
+  bool_bm.resize(0);
+  bool_bm.shrink_to_fit();
+  int ss1a = waveforms.size();
+  for(int i_1a=0;i_1a<ss1a;i_1a++)
+    {
+      Waveform *bm = waveforms[i_1a];
+      delete bm;
+      waveforms[i_1a]=0;
+    }
+  waveforms.resize(0);
+  waveforms.shrink_to_fit();
+  int ss2 = float_bm.size();
+  for(int i_2=0;i_2<ss2;i_2++)
+    {
+      FloatBitmap &bm = float_bm[i_2];
+      delete bm.bitmap;
+      bm.bitmap=0;
+    }
+  float_bm.resize(0);
+  float_bm.shrink_to_fit();
+  int s0 = fonts.size();
+  for(int i0=0;i0<s0;i0++)
+    {
+      Font f = fonts[i0];
+      delete f.bm;
+      fonts[i0].bm=0;
+    }
+  fonts.resize(0);
+  fonts.shrink_to_fit();
+  int s1 = bm.size();
+  for(int i1=0;i1<s1;i1++)
+    {
+      BitmapHandle *handle = bm[i1];
+      //std::cout << "EnvImpl destructor: " << handle << std::endl;
+      delete handle;
+      bm[i1]=0;
+    }
+  bm.resize(0);
+  bm.shrink_to_fit();
+  int s2 = anim.size();
+  for(int i2=0;i2<s2;i2++)
+    {
+      AnimImpl *impl = &anim[i2];
+      delete impl->wave_int;
+      delete impl->wave_point;
+      delete impl->wave_float;
+    }
+  anim.resize(0);
+  anim.shrink_to_fit();
+  int s3 = poly.size();
+  for(int i3=0;i3<s3;i3++)
+    {
+      FaceCollPolyHandle *handle = poly[i3];
+      delete handle;
+      poly[i3]=0;
+    }
+  poly.resize(0);
+  poly.shrink_to_fit();
+  int s4 = func.size();
+  for(int i4=0;i4<s4;i4++)
+    {
+      FunctionImpl f = func[i4];
+      delete f.func;
+      func[i4].func=0;
+    }
+  func.resize(0);
+  func.shrink_to_fit();
+  int s5 = surfaces.size();
+  for(int i5=0;i5<s5;i5++)
+    {
+      SurfaceImpl s = surfaces[i5];
+      delete s.surf;
+      surfaces[i5].surf=0;
+    }  
+  surfaces.resize(0);
+  surfaces.shrink_to_fit();
+  delete event_infos;
+  event_infos = 0;
+
+#if 0
+  int s6 = matrix.size();
+  for(int i6=0;i6<s6;i6++)
+    {
+      MatrixInterface *i = matrix[i6];
+      delete i;
+    }
+#endif
+  }
   EnvImpl() : event_infos(new EmptySequencer2) 
   {
 #ifndef EMSCRIPTEN
@@ -1018,15 +1232,21 @@ EnvImpl::~EnvImpl()
   int vv3 = pointarray.size();
   for(int i_vv3=0;i_vv3<vv3;i_vv3++)
     {
-      delete [] pointarray[i_vv3]->array;
-      delete [] pointarray[i_vv3]->color_array;
+      if (pointarray[i_vv3]!=0)
+	{
+	  delete [] pointarray[i_vv3]->array;
+	  delete [] pointarray[i_vv3]->color_array;
+	}
       delete pointarray[i_vv3];
     }
   int vv3a = pointarray3.size();
   for(int i_vv3a=0;i_vv3a<vv3a;i_vv3a++)
     { 
-      delete [] pointarray3[i_vv3a]->array;
-      delete [] pointarray3[i_vv3a]->color;
+      if (pointarray3[i_vv3a]!=0)
+	{
+	  delete [] pointarray3[i_vv3a]->array;
+	  delete [] pointarray3[i_vv3a]->color;
+	}
       delete pointarray3[i_vv3a];
     }
   int vv4 = linearray.size();
@@ -1117,6 +1337,11 @@ EnvImpl::~EnvImpl()
 EXPORT GameApi::Env::Env()
 {
   envimpl = (void*)new ::EnvImpl;
+}
+EXPORT void GameApi::Env::delete_all_data()
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  env->delete_all_data();
 }
 
 EXPORT GameApi::Env::~Env()

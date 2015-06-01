@@ -118,6 +118,7 @@ class Env
 {
 public:
   IMPORT Env();
+  IMPORT void delete_all_data();
   IMPORT ~Env();
 private:
   Env(const Env &);
@@ -2049,16 +2050,16 @@ private:
     }
     ~WorldObj() { delete [] bitmap; }
     void set_block(int x, int y, int c) { 
-      int sx=bmapi.size_x(bm);
+      int sx=m_sx; //bmapi.size_x(bm);
       bitmap[x+y*sx] = c;
     }
     int read_block(int x, int y) const {
-      int sx=bmapi.size_x(bm);
+      int sx=m_sx; //bmapi.size_x(bm);
       return bitmap[x+y*sx];
     }
     void set_anim_time(int x, int y, float time)
     {
-      int sx = bmapi.size_x(bm);
+      int sx = m_sx; //bmapi.size_x(bm);
       anim_time[x+y*sx] = time;
     }
     void prepare() 
@@ -2086,7 +2087,7 @@ private:
     }
     P collect() {
       std::vector<P> vec2;
-      int sx = bmapi.size_x(bm);
+      int sx = m_sx; //bmapi.size_x(bm);
       for(int y=m_y;y<m_y+m_sy;y++) {
 	std::vector<P> vec1;
 	for(int x=m_x;x<m_x+m_sx;x++) {
@@ -2100,7 +2101,7 @@ private:
     }
     void render() {
       shapi.use(sh);
-      int sx = bmapi.size_x(bm);
+      int sx = m_sx; //bmapi.size_x(bm);
       for(int y=m_y;y<m_y+m_sy;y++) {
 	for(int x=m_x;x<m_x+m_sx;x++) {
 	  M t = mat.trans(dx*x,0.0,dy*y);
