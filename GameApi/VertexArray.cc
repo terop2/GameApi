@@ -324,6 +324,9 @@ void VertexArraySet::free_memory()
       poly->quad_normals.resize(0);
       poly->tri_color.resize(0);
       poly->quad_color.resize(0);
+      poly->tri_texcoord.resize(0);
+      poly->quad_texcoord.resize(0);
+
       poly->tri_polys.shrink_to_fit();
       poly->quad_polys.shrink_to_fit();
       poly->tri_polys2.shrink_to_fit();
@@ -332,6 +335,8 @@ void VertexArraySet::free_memory()
       poly->quad_normals.shrink_to_fit();
       poly->tri_color.shrink_to_fit();
       poly->quad_color.shrink_to_fit();
+      poly->tri_texcoord.shrink_to_fit();
+      poly->quad_texcoord.shrink_to_fit();
     }
 #endif
 }
