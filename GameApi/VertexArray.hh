@@ -107,7 +107,7 @@ public:
 #endif  
 
   void check_m_set(int id);
-  
+  void free_memory();  
 private:
   struct Polys {
     std::vector<Point> tri_polys;
@@ -162,6 +162,8 @@ private:
   unsigned int buffers[5];
   unsigned int vao[2];
   unsigned int buffers2[5];
+  int tri_count;
+  int quad_count;
 };
 
 class RenderVertexArray2

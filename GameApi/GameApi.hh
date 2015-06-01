@@ -583,6 +583,10 @@ public:
 		fptrtype fptr,
 		int size,
 		float wholesize); // marching cubes algo
+  IMPORT P rendercubes2(EveryApi &ev, O object,
+			fptrtype fptr,
+			int sx, int sy, int sz,
+			float world_x, float world_y, float world_z); // normal for loop algo
   IMPORT void find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level);
   // use RayTracingBitmap class in graph.hh
   // problem1: float values in O. (currently uses bool)
@@ -1787,6 +1791,28 @@ private:
       m_l = 0;
       m_width = bmapi.size_x(int_bm);
       m_height = bmapi.size_y(int_bm);
+      mult_x = 1.0;
+      mult_y = 1.0;
+      bitmap = new int[m_width*m_height];
+      for(int y=0;y<m_height;y++)
+	for(int x=0;x<m_width;x++)
+	  {
+	    bitmap[x+y*m_width] = bmapi.intvalue(int_bm, x,y);
+	  }
+    }
+    ~SpriteWorldObj() { delete [] bitmap; }
+    void set_block(int x, int y, int c)
+    {
+      if (x>=0&&x<m_width)
+	if (y>=0&&y<m_height)
+	  bitmap[x+y*m_width] = c;
+    }
+    int read_block(int x, int y)
+    {
+      if (x>=0&&x<m_width)
+	if (y>=0&&y<m_height)
+	  return bitmap[x+y*m_width];
+      return 0;
     }
     void set_range(int l, int t, int width, int height)
     {
@@ -1812,7 +1838,7 @@ private:
 	      {
 		M m2 = matrix_api.mult(matrix_api.trans(x*dx, y*dy, 0.0),m);
 		shader_api.set_var(sh, "in_MV", m2);
-		int index = bmapi.intvalue(int_bm, x,y);
+		int index = bitmap[x+y*m_width]; //bmapi.intvalue(int_bm, x,y);
 		sp.render_sprite_vertex_array(va[index]);
 	      }
 	}
@@ -1820,6 +1846,20 @@ private:
     }
     void set_pos(float p_x, float p_y) { pos_x=p_x; pos_y=p_y; }
     void set_scale(float m_x, float m_y) { mult_x = m_x; mult_y=m_y; }
+    int get_pos_x(float mouse_x) const
+    {
+      mouse_x-=pos_x;
+      mouse_x/=mult_x;
+      mouse_x/=dx;
+      return (int)mouse_x;
+    }
+    int get_pos_y(float mouse_y) const
+    {
+      mouse_y-=pos_y;
+      mouse_y/=mult_y;
+      mouse_y/=dy;
+      return (int)mouse_y;
+    }
   private:
     BitmapApi &bmapi;
     SpriteApi &sp;
@@ -1828,6 +1868,7 @@ private:
     SH sh;
     std::function<BM(int)> f;
     std::vector<VA> va;
+    int *bitmap;
     int numvalues;
     BM int_bm;
     float dx,dy;
