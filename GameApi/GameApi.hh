@@ -118,7 +118,7 @@ class Env
 {
 public:
   IMPORT Env();
-  IMPORT void delete_all_data();
+  IMPORT void free_memory();
   IMPORT ~Env();
 private:
   Env(const Env &);

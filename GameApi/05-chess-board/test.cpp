@@ -1138,7 +1138,7 @@ int main() {
   //PolygonObj *obj = new PolygonObj(ev, p, sh);
   //obj->prepare();
   //env.cursor = obj;
-  e->delete_all_data();
+  e->free_memory();
 #ifndef EMSCRIPTEN
   while(1) {
     iter();

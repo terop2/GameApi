@@ -605,7 +605,7 @@ int main() {
   float speed_x, speed_y;
   int frame = 0;
   std::vector<BM> screenshot_images;
-  e.delete_all_data();
+  e.free_memory();
   while(1) {
     frame++;
     // clear frame buffer

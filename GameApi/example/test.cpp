@@ -70,6 +70,7 @@ int main() {
   float r = 0.0;
   float speed = 30.0;
   float rotspeed = 5.0;
+  e.delete_all_data();
   while(1) {
     ev.mainloop_api.clear();
     spr.render();

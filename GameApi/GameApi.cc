@@ -859,7 +859,7 @@ struct EnvImpl
 #endif
   std::vector<Font> fonts;
   static ::EnvImpl *Environment(GameApi::Env *e) { return (EnvImpl*)e->envimpl; }
-  void delete_all_data()
+  void free_memory()
   {
     deletes.resize(0);
     deletes.shrink_to_fit();
@@ -944,6 +944,7 @@ struct EnvImpl
     }
   floatvolumes.resize(0);
   floatvolumes.shrink_to_fit();
+#if 0
   int vv3 = pointarray.size();
   for(int i_vv3=0;i_vv3<vv3;i_vv3++)
     {
@@ -954,6 +955,8 @@ struct EnvImpl
     }
   pointarray.resize(0);
   pointarray.shrink_to_fit();
+#endif
+#if 0
   int vv3a = pointarray3.size();
   for(int i_vv3a=0;i_vv3a<vv3a;i_vv3a++)
     { 
@@ -964,6 +967,7 @@ struct EnvImpl
     }
   pointarray3.resize(0);
   pointarray3.shrink_to_fit();
+#endif
   int vv4 = linearray.size();
   for(int i_vv4=0;i_vv4<vv4;i_vv4++)
     {
@@ -1340,10 +1344,10 @@ EXPORT GameApi::Env::Env()
 {
   envimpl = (void*)new ::EnvImpl;
 }
-EXPORT void GameApi::Env::delete_all_data()
+EXPORT void GameApi::Env::free_memory()
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
-  env->delete_all_data();
+  env->free_memory();
 }
 
 EXPORT GameApi::Env::~Env()
@@ -2722,6 +2726,7 @@ GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
   s->texture_id = bm.id;
   RenderVertexArray *arr = new RenderVertexArray(*s); 
   arr->prepare(0);
+  s->free_memory();
   return add_vertex_array(e, s, arr); 
 }
 
