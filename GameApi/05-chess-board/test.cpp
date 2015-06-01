@@ -936,7 +936,7 @@ void iter()
 #endif
     env.board_obj->set_block(env.cursor_x, env.cursor_y, env.cursor_under);
 
-    //ev.mainloop_api.fpscounter();
+    env.ev->mainloop_api.fpscounter();
     // swapbuffers
     env.ev->mainloop_api.swapbuffers();
 
