@@ -238,6 +238,7 @@ P cube(float x1, float x2,
 
 P heightmap_cube(float val, EveryApi &ev)
 {
+
   float s = 10.0;
   P p1 = ev.polygon_api.cube(0.0,0.5,
 			     0.0, val*s,
@@ -318,6 +319,7 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
     }
   case 14:
     {
+
       //return ev.polygon_api.empty();
       BM bm = ev.bitmap_api.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 200, 200, 256);
       FB fb = ev.float_bitmap_api.from_green(bm);
@@ -325,8 +327,10 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       //				     20.0, 0.0, 
       //				     0.0, 100.0);
       P p = ev.polygon_api.heightmap(fb, std::bind(&heightmap_cube, _1, std::ref(ev)), 0.5,0.5);
+      //P p = ev.polygon_api.empty();
       //P p2 = ev.polygon_api.color_faces(p, 0x112233ff, 0x224466ff, 0x336699ff, 0x4488aaff);
       // P pp = ev.polygon_api.rotatex(p,90.0*3.14159*2.0/360.0);
+      //P p = ev.polygon_api.empty();
       return p;
     }
   case 13:

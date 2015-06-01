@@ -114,36 +114,14 @@ private:
     std::vector<Point> quad_polys;
     std::vector<Point> tri_polys2;
     std::vector<Point> quad_polys2;
-#if 0
-    std::vector<std::vector<Point> > poly_polys;
-    std::vector<std::vector<Point> > poly_polys2;
-#endif
     
     std::vector<Vector> tri_normals;
     std::vector<Vector> quad_normals;
-#if 0
-    std::vector<std::vector<Vector> > poly_normals;
-#endif    
 
-#if 0
-    mutable std::map<int,std::vector<float> > tri_attribs;
-    mutable std::map<int,std::vector<float> > quad_attribs;
-    mutable std::map<int,std::vector<std::vector<float> > > poly_attribs;
-
-    mutable std::map<int,std::vector<int> > tri_attribsi;
-    mutable std::map<int,std::vector<int> > quad_attribsi;
-    mutable std::map<int,std::vector<std::vector<int> > > poly_attribsi;
-#endif
     std::vector<float> tri_color;
     std::vector<float> quad_color;
-#if 0
-    std::vector<std::vector<float> > poly_color;
-#endif
     std::vector<Point2d> tri_texcoord;
     std::vector<Point2d> quad_texcoord;
-#if 0
-    std::vector<std::vector<Point2d> > poly_texcoord;
-#endif
   };
   mutable std::map<int, Polys*> m_set;
 };

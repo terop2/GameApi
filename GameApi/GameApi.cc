@@ -861,6 +861,8 @@ struct EnvImpl
   static ::EnvImpl *Environment(GameApi::Env *e) { return (EnvImpl*)e->envimpl; }
   void delete_all_data()
   {
+    deletes.resize(0);
+    deletes.shrink_to_fit();
   int sk6 = textures.size();
   for(int ii6=0;ii6<sk6;ii6++)
     {
@@ -1564,7 +1566,7 @@ GameApi::P add_polygon(GameApi::Env &e, FaceCollection *coll, int size)
   h->collarray=0;
   h->collarrayowned = false;
   //h->size = size;
-  GameApi::PolygonApi api(e);
+  //GameApi::PolygonApi api(e);
   return /*api.memoize(*/add_polygon(e,h)/*)*/;
 }
 GameApi::P add_polygon2(GameApi::Env &e, FaceCollection *coll, int size)
