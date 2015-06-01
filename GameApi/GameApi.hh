@@ -873,7 +873,7 @@ public:
   IMPORT void prepare(P p, int bbm_choose = -1);
   IMPORT void render(P p, int choose, float x, float y, float z);
   
-  IMPORT VA create_vertex_array(P p); // slow
+  IMPORT VA create_vertex_array(P p, bool keep=false); // slow
   IMPORT void render_vertex_array(VA va); // fast
   //IMPORT int access_point_count(VA va, bool triangle);
   //IMPORT float *access_points(VA va, bool triangle, int face, int point);
@@ -1935,7 +1935,7 @@ private:
       m_va2.clear();
       for(int i=0;i<(int)m_p.size();i++)
 	{
-	  VA va = api.create_vertex_array(m_p[i]);
+	  VA va = api.create_vertex_array(m_p[i], id[i].id!=0);
 	  VA va2;
 	  if (id[i].id!=0) {
 	    va2 = tex.bind(va, id[i]);
