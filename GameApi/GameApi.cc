@@ -294,10 +294,12 @@ void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_height)
 }
 void GameApi::MainLoopApi::nvidia_init()
 {
+  if (GLEW_NV_path_rendering)
+    {
   glMatrixLoadIdentityEXT(GL_PROJECTION);
   glMatrixLoadIdentityEXT(GL_MODELVIEW);
   glMatrixOrthoEXT(GL_PROJECTION, 0, 800, 600, 0, -1, 1);
-
+    }
 }
 
 void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh)
@@ -9004,11 +9006,12 @@ GameApi::PL GameApi::PlaneApi::star(GameApi::PT center, float radius_1, float ra
 GameApi::PLA GameApi::PlaneApi::prepare(GameApi::PL pl)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
-#ifndef EMSCRIPTEN
+  PlaneData data;
   PlanePoints2d *ptr = find_plane(e, pl);
   int s = ptr->Size();
+  if (GLEW_NV_path_rendering) {
+#ifndef EMSCRIPTEN
   //std::cout << "PlaneApi::prepare" << s << std::endl;
-  PlaneData data;
   for(int i=0;i<s;i++)
     {
       Point2d p = ptr->Map(i);
@@ -9043,11 +9046,15 @@ std::cout << "Type ERROR!" << std::endl;
   data.cmd_array.push_back(GL_CLOSE_PATH_NV);
   env->plane_array.push_back(data);
 #endif
+  }
   PLA pla;
   pla.id = env->plane_array.size()-1;
+  if (GLEW_NV_path_rendering)
+    {
 #ifndef EMSCRIPTEN
   glPathCommandsNV(pla.id, data.cmd_array.size(), &data.cmd_array[0], data.array.size(), GL_FLOAT, &data.array[0]);
 #endif
+    }
   return pla;
 }
 void GameApi::PlaneApi::render(GameApi::PLA pla, float x, float y, float mult_x, float mult_y)
@@ -9055,6 +9062,8 @@ void GameApi::PlaneApi::render(GameApi::PLA pla, float x, float y, float mult_x,
   //PlaneData *dt = find_plane_array(e,pla);
   //GLuint pathObj = glGenPathsNV(1);
   //glMatrixPushExt(GL_MODELVIEW);
+  if (GLEW_NV_path_rendering)
+    {
 #ifndef EMSCRIPTEN
   glPushMatrix();
   glMatrixScalefEXT(GL_MODELVIEW, mult_x, mult_y, 1.0);
@@ -9071,6 +9080,7 @@ void GameApi::PlaneApi::render(GameApi::PLA pla, float x, float y, float mult_x,
   glDisable(GL_STENCIL_TEST);
   glPopMatrix();
 #endif
+    }
 }
 #if 0
 GameApi::PL GameApi::PlaneApi::floodfill_border(GameApi::BB bitmap, int x, int y)
