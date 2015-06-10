@@ -587,7 +587,76 @@ std::string ShaderFile::GeometryShader(std::string name)
 {
   return g_shaders[name];
 }
-int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string g_format)
+std::string replace_c(std::string s, std::vector<std::string> comb, bool is_fragment)
+{
+  std::stringstream ss(s);
+  std::string ww;
+  std::string out;
+  while(std::getline(ss,ww))
+    {
+      if (ww.substr(0,4)=="//C:")
+	{
+	  if (!is_fragment)
+	    { // vertex
+	      out+="vec3 p = mix(in_Position, in_Position2, in_POS);\n";
+	      out+="vec4 pos0 = in_P * in_T * in_MV * vec4(p,1.0);\n";
+	      int s = comb.size();
+	      for(int i=0;i<s;i++)
+		{
+		  std::stringstream ss;
+		  ss << i+1;
+		  std::stringstream ss2;
+		  ss2 << i;
+		  out+="vec4 pos";
+		  out+=ss.str();
+		  out+=" = ";
+		  out+=comb[i];
+		  out+="(pos";
+		  out+=ss2.str();
+		  out+=");\n";
+		}
+	      std::stringstream ss3;
+	      ss3 << s;
+	      out+="gl_Position = pos";
+	      out+=ss3.str();
+	      out+=";\n";
+	    }
+	  else
+	    { // fragment
+	      out+="vec4 rgb0 = vec4(0.0,0.0,0.0,1.0);\n";
+	      int s = comb.size();
+	      for(int i=0;i<s;i++)
+		{
+		  std::stringstream ss;
+		  ss << i+1;
+		  std::stringstream ss2;
+		  ss2 << i;
+		  out+="vec4 rgb";
+		  out+=ss.str();
+		  out+=" = ";
+		  out+=comb[i];
+		  out+="(rgb";
+		  out+=ss2.str();
+		  out+=");\n";
+		}
+	      std::stringstream ss3;
+	      ss3 << s;
+
+	      out+="out_Color = rgb";
+	      out+= ss3.str();
+	      out+=";\n";
+	    }
+
+	}
+      else
+	{
+	  out+=ww;
+	  out+= "\n";
+	}
+    }
+  return out;
+}
+int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec, std::vector<std::string> f_vec)
 {
   int id = progs.size();
   Program *p = new Program;
@@ -599,8 +668,10 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       std::cout << "VName: " << name << std::endl;
       std::string shader = file.VertexShader(name);
-      std::cout << "::" << shader << "::" << std::endl;
-      ShaderSpec *spec = new SingletonShaderSpec(shader);
+      std::string ss = replace_c(shader, v_vec, false);
+      
+      std::cout << "::" << ss << "::" << std::endl;
+      ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
       p->push_back(*sha1);
@@ -615,8 +686,9 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
-      std::cout << "::" << shader << "::" << std::endl;
-      ShaderSpec *spec = new SingletonShaderSpec(shader);
+      std::string ss = replace_c(shader, f_vec, true);
+      std::cout << "::" << ss << "::" << std::endl;
+      ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);
       if (ii!=f_format.end())
@@ -630,7 +702,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       std::cout << "GName: " << name << std::endl;
       std::string shader = file.GeometryShader(name);
-      std::cout << "::" << shader << "::" << std::endl;
+      //std::cout << "::" << shader << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(shader);
       Shader *sha2 = new Shader(*spec, false, true);
       p->push_back(*sha2);
@@ -730,6 +802,7 @@ AnimState::~AnimState()
 
 void UpdateAnim(Anim &anim, AnimState &state, const std::vector<Attrib> &attribs)
 {
+#if 0
   state.priv->s = state.priv->seq.GetShader("choose_object","fragmain","");
   state.priv->seq.use(state.priv->s);
   Program *prog = state.priv->seq.prog(state.priv->s);
@@ -742,6 +815,7 @@ void UpdateAnim(Anim &anim, AnimState &state, const std::vector<Attrib> &attribs
   FrameFaceCollectionArray arr2(arr);
   CompressObject compress(arr2);
   UpdateVBO(compress, state.priv->vbostate, UpdateAll, attrib);
+#endif
 }
 
 void DrawAnim(float start, float end, AnimState &state, const std::vector<Attrib> &attribs)

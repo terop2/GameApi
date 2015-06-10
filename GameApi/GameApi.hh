@@ -540,6 +540,7 @@ public:
 	IMPORT ~VolumeApi();
 	IMPORT O boolfunction(std::function<bool(float x, float y, float z)> f);
 	IMPORT O subvolume(std::function<float(float x, float y, float z)> f, float start_range, float end_range);
+        IMPORT O from_polygon(EveryApi &ev, P p);
 	IMPORT O link_areas(O o, PT p1, PT p2, float d);
 	IMPORT O sphere(PT center, float radius);
 	IMPORT O cube(float start_x, float end_x,
@@ -588,6 +589,11 @@ public:
 			fptrtype fptr,
 			int sx, int sy, int sz,
 			float world_x, float world_y, float world_z); // normal for loop algo
+  IMPORT P rendercubes3(O object,
+			int sx, int sy, int sz,
+			float start_x, float end_x,
+			float start_y, float end_y,
+			float start_z, float end_z);
   IMPORT void find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level);
   // use RayTracingBitmap class in graph.hh
   // problem1: float values in O. (currently uses bool)
@@ -792,6 +798,10 @@ public:
   IMPORT P texcoord_cube(P orig,
 		  PT o, PT u_x, PT u_y, PT u_z,  // these are 3d
 		  PT tex_o, PT tex_x, PT tex_y, PT tex_z); // tex_* are 2d
+  IMPORT P texcoord_manual(P orig, float p1_x, float p1_y,
+			   float p2_x, float p2_y,
+			   float p3_x, float p3_y,
+			   float p4_x, float p4_y);
   IMPORT P texcoord_spherical(P orig);
   IMPORT P texcoord_cylindar(P orig, float start_y, float end_y);
   IMPORT P color_cube(P orig,
@@ -806,6 +816,8 @@ public:
 
   IMPORT P texcoord_poly(P orig, int facenum, PT *array, int size);
   IMPORT P color_poly(P orig, int facenum, unsigned int *array, int size);
+
+  IMPORT P quads_to_triangles(P p);
 
   IMPORT P or_elem(P p1, P p2);
   IMPORT P or_array(P *array, int size);
@@ -1014,7 +1026,6 @@ public:
                                // draw to bitmap, do and_not, put to texture
 
   PL render_p(P p, M proj_matrix, float sx, float sy);
-
   PL remove_splines(PL pl, float xdelta);
 
   std::pair<PL,PL> triangulate(EveryApi &ev, PL pl, int obj);
@@ -1285,9 +1296,12 @@ public:
         IMPORT LI from_plane(PL plane);
 	IMPORT LI from_polygon(P poly);
         IMPORT LI from_polygon2(P poly1, P poly2);
+  IMPORT LI normals_from_polygon(P poly, float length);
         IMPORT P line_anim(P poly, LI lines_from_polygon2, float val);
 	IMPORT LI border_from_bool_bitmap(BB b, float start_x, float end_x,
 			     float start_y, float end_y, float z);
+  IMPORT LI render_slice_2d(P p, PT pos, V u_x, V u_y);
+
   IMPORT LI unit_cube(LI orig, PT pos, V u_x, V u_y, V u_z);
   IMPORT LI unit_to_cube(LI orig, PT pos, V u_x, V u_y, V u_z);
   IMPORT LI unit_to_flex(LI orig, 
@@ -1432,31 +1446,34 @@ private:
 class ShaderApi
 {
 public:
-	IMPORT ShaderApi(Env &e);
-	IMPORT ~ShaderApi();
-         IMPORT void load_default();
-	IMPORT void load(std::string filename);
-	IMPORT SH get_shader(std::string v_format, std::string f_format, std::string g_format);
-        IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format);
-        IMPORT SH texture_shader();
-        IMPORT SH colour_shader();
-	IMPORT void link(SH shader);
-	IMPORT void use(SH shader);
-	IMPORT void unuse(SH shader);
-	IMPORT void bindnames(GameApi::SH shader,
-		 std::string s_vertex,
-		 std::string s_normal,
-		 std::string s_color,
-		 std::string s_texcoord);
-	IMPORT void set_default_projection(GameApi::SH shader, std::string name);
-	IMPORT void set_y_rotation(SH shader, std::string name, float angle);
-	IMPORT void bind_attrib(GameApi::SH shader, int num, std::string name);
-	IMPORT void set_var(GameApi::SH shader, std::string name, float val);
-	IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z);
-        IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z, float k);
-	IMPORT void set_var(GameApi::SH shader, std::string name, int val);
-	IMPORT void set_var(GameApi::SH shader, std::string name, M matrix);
-        IMPORT M get_matrix_var(GameApi::SH shader, std::string name);
+  IMPORT ShaderApi(Env &e);
+  IMPORT ~ShaderApi();
+  IMPORT void load_default();
+  IMPORT void load(std::string filename);
+  IMPORT SH get_shader(std::string v_format, std::string f_format, std::string g_format,
+		       std::string v_comb="", std::string f_comb="");
+  IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,
+				    std::string v_comb="", std::string f_comb="");
+  IMPORT SH texture_shader();
+  IMPORT SH colour_shader();
+  IMPORT SH colour_texture_shader();
+  IMPORT void link(SH shader);
+  IMPORT void use(SH shader);
+  IMPORT void unuse(SH shader);
+  IMPORT void bindnames(GameApi::SH shader,
+			std::string s_vertex,
+			std::string s_normal,
+			std::string s_color,
+			std::string s_texcoord);
+  IMPORT void set_default_projection(GameApi::SH shader, std::string name);
+  IMPORT void set_y_rotation(SH shader, std::string name, float angle);
+  IMPORT void bind_attrib(GameApi::SH shader, int num, std::string name);
+  IMPORT void set_var(GameApi::SH shader, std::string name, float val);
+  IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z);
+  IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z, float k);
+  IMPORT void set_var(GameApi::SH shader, std::string name, int val);
+  IMPORT void set_var(GameApi::SH shader, std::string name, M matrix);
+  IMPORT M get_matrix_var(GameApi::SH shader, std::string name);
 private:
   ShaderApi(const ShaderApi&);
   void operator=(const ShaderApi&);

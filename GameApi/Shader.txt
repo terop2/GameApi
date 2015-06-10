@@ -1,4 +1,82 @@
 
+//V: comb
+#version 330
+uniform mat4 in_P;
+uniform mat4 in_MV;
+uniform mat4 in_T;
+uniform float in_POS;
+in vec3 in_Position;
+in vec3 in_Position2;
+in vec3 in_Normal;
+in vec4 in_Color;
+in vec2 in_TexCoord;
+out vec2 ex_TexCoord;
+out vec4 ex_Color;
+out vec3 ex_Normal;
+vec4 toon(vec4 pos)
+{
+  ex_Normal = in_Normal;
+  return pos;
+}
+vec4 texture(vec4 pos)
+{
+  ex_TexCoord = in_TexCoord;
+  return pos;
+}
+vec4 colour(vec4 pos)
+{
+   ex_Color = in_Color;
+   return pos;
+}
+vec4 empty(vec4 pos)
+{
+   return pos;
+}
+void main(void)
+{
+//C:
+}
+
+//F: comb
+#version 330
+precision highp float;
+in vec4 ex_Color;
+out vec4 out_Color;
+in vec2 ex_TexCoord;
+in vec3 ex_Normal;
+uniform sampler2D tex;
+vec4 toon(vec4 rgb)
+{
+   float intensity;
+   vec4 color;
+   intensity = dot(vec3(-3.0,-3.0,0.0), normalize(ex_Normal));
+   if (intensity >0.95)
+      color = vec4(1.0,1.0,1.0, 1.0);
+   else if (intensity >0.5)
+      color = vec4(0.6,0.6,0.6, 1.0);
+   else if (intensity >0.25)
+      color = vec4(0.4,0.4,0.4, 1.0);
+   else
+      color = vec4(0.2,0.2,0.2, 1.0);
+   return color;
+}
+vec4 texture(vec4 rgb)
+{
+   return mix(rgb, texture2D(tex, ex_TexCoord), 0.5);
+}
+vec4 colour(vec4 rgb)
+{
+  return mix(rgb, ex_Color, 0.5);    
+}
+vec4 empty(vec4 rgb)
+{
+   return rgb;
+}
+void main(void)
+{
+//C:
+}
+
 //V: empty
 #version 330
 uniform mat4 in_P;

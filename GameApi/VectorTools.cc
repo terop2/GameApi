@@ -982,6 +982,52 @@ Point Projection(Point2d p1, Point2d p2, Point corner, Vector u_x, Vector u_y, V
 }
 
 Point Plane::Navigate(const Point2d &p) { return u_p + p.x*u_x+p.y*u_y; }
+float Plane::Dist2(Point p)
+{
+  Vector n = Normal(1.0);
+  p-=Vector(u_p);
+  float dot = Vector::DotProduct(n,Vector(p));
+  return dot;
+  
+}
+bool Plane::LineSegmentIntersection(Point p1, Point p2, Point2d &outP)
+{
+  float d1 = Dist2(p1); // TODO, these dists might not work ok for this algo.
+  float d2 = Dist2(p2);
+  if (d1*d2 > 0) { return false; }
+  float t = d1/(d1-d2);
+  Point p = p1+t*Vector(p2-p1);
+  float coord_x = CoordsX(p);
+  float coord_y = CoordsY(p);
+  outP.x = coord_x;
+  outP.y = coord_y;
+}
+bool Plane::TriangleIntersection(Point p1, Point p2, Point p3, Point2d &res1, Point2d &res2)
+{
+  std::vector<Point2d> vec;
+  Point2d point;
+  if (LineSegmentIntersection(p1,p2,point))
+    {
+      vec.push_back(point);
+    }
+  if (LineSegmentIntersection(p1,p3,point))
+    {
+      vec.push_back(point);
+    }
+  if (LineSegmentIntersection(p2,p3,point))
+    {
+      vec.push_back(point);
+    }
+  if (vec.size()==2)
+    {
+      res1 = vec[0];
+      res2 = vec[1];
+    }
+  else
+    {
+      return false; 
+    }
+}
 
 FlexibleCube box(Point p1, float sx, float sy, float sz)
 {

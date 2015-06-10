@@ -302,6 +302,10 @@ public:
   Vector Normal(float length) const; 
   void RotateAroundNormal(float angle_in_rad);
   Point Navigate(const Point2d &p);
+  Vector PlaneNormal() { return Normal(1.0); }
+  float Dist2(Point p);
+  bool LineSegmentIntersection(Point p1, Point p2, Point2d &outP);
+  bool TriangleIntersection(Point p1, Point p2, Point p3, Point2d &res1, Point2d &res2);
 public:
   Point u_p;
   Vector u_x;

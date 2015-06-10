@@ -10723,6 +10723,15 @@ public:
 	    file << "v " << p.x << " " << p.y << " " << p.z << std::endl;
 	  }
       }
+    for(int i=0;i<s;i++)
+      {
+	int ss = coll->NumPoints(i);
+	for(int j=0;j<ss;j++)
+	  {
+	    Vector p = coll->PointNormal(i,j);
+	    file << "n " << p.dx << " " << p.dy << " " << p.dz << std::endl;
+	  }
+      }
     int counter =1;
     for(int i=0;i<s;i++)
       {
