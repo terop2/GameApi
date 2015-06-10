@@ -747,14 +747,14 @@ P chars_blocks(int c, EveryApi &ev)
 
 
 char board[] = 
-  "XOXOXOXO"
   "OXOXOXOX"
   "XOXOXOXO"
   "OXOXOXOX"
   "XOXOXOXO"
   "OXOXOXOX"
   "XOXOXOXO"
-  "OXOXOXOX";
+  "OXOXOXOX"
+  "XOXOXOXO";
 
 int boardmap(char c)
 {

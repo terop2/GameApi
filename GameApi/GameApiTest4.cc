@@ -121,9 +121,9 @@ void Game(EveryApi &e)
 
   loop.init_window();
   e.shader_api.load("Shader.txt");
-  SH sh = e.shader_api.get_shader("texture", "texture", "");
-  SH sh2 = e.shader_api.get_shader("empty", "empty", "");
-  SH sh3 = e.shader_api.colour_shader();
+  SH sh = e.shader_api.get_shader("comb", "comb", "", "texture", "texture");
+  SH sh2 = e.shader_api.get_shader("comb", "comb", "", "empty", "empty");
+  SH sh3 = e.shader_api.colour_texture_shader();
   e.shader_api.bind_attrib(sh, 0, "in_Position");
   e.shader_api.bind_attrib(sh, 1, "in_Normal");
   e.shader_api.bind_attrib(sh, 2, "in_Color");
@@ -160,11 +160,20 @@ void Game(EveryApi &e)
 
   O sphere = volume.sphere(points.point(0.0, 1.0, 0.0), 1.0);
   O andnot = volume.andnot_op(torus, sphere);
-  P cubes = volume.rendercubes(andnot, std::bind(&Cube, _1,_2,_3,_4,_5,_6,_7,std::ref(e)), 40, 4.0);
-  P cubes2 = e.polygon_api.memoize(cubes);
-  P cubes3 = e.polygon_api.scale(cubes2, 300.0,300.0,300.0);
-  P cubes4 = e.polygon_api.scale(cubes3, 2.0,2.0,2.0);
-  P anim = e.polygon_api.anim_endpoints(cubes3, cubes4);
+  P cubes = volume.rendercubes3(andnot, 14,14,14, -2.0,2.0, -2.0,2.0, -2.0, 2.0 );
+  P cubesY = e.polygon_api.recalculate_normals(cubes);
+  LI normals = e.lines_api.normals_from_polygon(cubesY, 3.0/200.0);
+  
+				//std::bind(&Cube, _1,_2,_3,_4,_5,_6,_7,std::ref(e)), 40, 4.0);
+  P cubesI = e.polygon_api.color_faces(cubes, 0xff888888, 0xff444444, 0xff222222, 0xff111111);
+  P cubes0 = e.polygon_api.scale(cubesI, 200.0, 200.0, 200.0);
+  ///P cubes00 = e.polygon_api.translate(cubes0, -2.0*20.0*30.0,-2.0*20.0*30.0, -2.0*20.0*30.0);
+  P cubes2 = e.polygon_api.memoize(cubes0);
+  P cubes3 = e.polygon_api.scale(cubes2, 0.4,0.4,0.4);
+  P cubes4 = e.polygon_api.scale(cubes2, 2.0,2.0,2.0);
+  P cubes5 = e.polygon_api.quads_to_triangles(cubes2);
+  e.polygon_api.save_model(cubes5, "torus_model.obj");
+  P anim = e.polygon_api.anim_endpoints(cubes5, cubes5);
   //poly.prepare(anim);
   TX tx = e.texture_api.tex_plane(128,128);
   int id = e.texture_api.unique_id();
@@ -180,6 +189,9 @@ void Game(EveryApi &e)
   spr.prepare();
   SpriteObj spr2(e, green, sh);
   spr2.prepare();
+
+  LinesObj normals_obj(e, normals, sh);
+  normals_obj.prepare();
 
   // 3d text
   //Ft font = e.font_api.newfont("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 50, 50);
@@ -304,6 +316,9 @@ void Game(EveryApi &e)
       e.shader_api.set_var(sh, "in_POS", ff);
       e.polygon_api.render_vertex_array(va);
       e.shader_api.set_var(sh, "in_POS", 0.0f);
+      normals_obj.set_rotation_matrix(e.matrix_api.yrot(time/500.0));
+      normals_obj.set_scale(200.0,200.0,200.0);
+      normals_obj.render();
       //e.plane_api.render(pla);
       //e.texture_api.unuse(tex);
       //e.polygon_api.render_vertex_array(va2);

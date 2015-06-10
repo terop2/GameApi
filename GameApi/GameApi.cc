@@ -1,4 +1,4 @@
-      
+       
 #define SDL2_USED  
 #define GAME_API_DEFS
 #define _SCL_SECURE_NO_WARNINGS
@@ -461,6 +461,7 @@ GameApi::BM GameApi::MainLoopApi::screenshot()
   return add_color_bitmap2(e, bm);
 }
 extern SDL_Window *sdl_window;
+
 void GameApi::MainLoopApi::swapbuffers()
 {
   //MainLoopPriv *p = (MainLoopPriv*)priv;
@@ -4418,7 +4419,63 @@ private:
   FaceCollection *coll;
   float start_y, end_y;
 };
+class TexCoordManual : public ForwardFaceCollection
+{
+public:
+  TexCoordManual(FaceCollection *coll,
+		 float p1_x, float p1_y,
+		 float p2_x, float p2_y,
+		 float p3_x, float p3_y,
+		 float p4_x, float p4_y) : ForwardFaceCollection(*coll),
+					   p1_x(p1_x), p1_y(p1_y),
+					   p2_x(p2_x), p2_y(p2_y),
+					   p3_x(p3_x), p3_y(p3_y),
+					   p4_x(p4_x), p4_y(p4_y) { }
 
+  Point2d TexCoord(int face, int point) const
+  {
+    switch(point) {
+    case 0:
+      {
+      Point2d p1 = { p1_x, p1_y };
+      return p1;
+      }
+    case 1:
+      {
+      Point2d p2 = { p2_x, p2_y };
+      return p2;
+      }
+    case 2:
+      {
+      Point2d p3 = { p3_x, p3_y };
+      return p3;
+      }
+    case 3:
+      {
+      Point2d p4 = { p4_x, p4_y };
+      return p4;
+      }
+    };
+    Point2d pp = { 0.0, 0.0 };
+    return pp;
+  }
+private:
+  float p1_x, p1_y;
+  float p2_x, p2_y;
+  float p3_x, p3_y;
+  float p4_x, p4_y;
+					   
+};
+GameApi::P GameApi::PolygonApi::texcoord_manual(P orig,
+						float p1_x, float p1_y,
+						float p2_x, float p2_y,
+						float p3_x, float p3_y,
+						float p4_x, float p4_y)
+{
+  FaceCollection *face = find_facecoll(e, orig);
+  
+  return add_polygon(e, new TexCoordManual(face, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, p4_x, p4_y),1);
+}
 GameApi::P GameApi::PolygonApi::texcoord_spherical(P orig)
 {
   FaceCollection *face = find_facecoll(e, orig);
@@ -4699,6 +4756,100 @@ GameApi::P GameApi::PolygonApi::color_grayscale(P orig)
   FaceCollection *c = find_facecoll(e, orig);
   FaceCollection *c2 = new ColorGrayScale(c);
   return add_polygon2(e, c2, 1);
+}
+class QuadsToTris2 : public FaceCollection
+{
+public:
+  QuadsToTris2(FaceCollection *coll) : coll(coll) { Iterate(); }
+  void Iterate()
+  {
+    int counter = 0;
+    int s = coll->NumFaces();
+    for(int f=0;f<s;f++)
+      {
+	int count = coll->NumPoints(f);
+	if (count==4)
+	  {
+	    counts.push_back(3);
+	    counts2.push_back(counter); counter+=3;
+	    vec.push_back(coll->FacePoint(f,0));
+	    vec.push_back(coll->FacePoint(f,1));
+	    vec.push_back(coll->FacePoint(f,2));
+	    norm.push_back(coll->PointNormal(f,0));
+	    norm.push_back(coll->PointNormal(f,1));
+	    norm.push_back(coll->PointNormal(f,2));
+	    color.push_back(coll->Color(f,0));
+	    color.push_back(coll->Color(f,1));
+	    color.push_back(coll->Color(f,2));
+	    texcoord.push_back(coll->TexCoord(f,0));
+	    texcoord.push_back(coll->TexCoord(f,1));	    
+	    texcoord.push_back(coll->TexCoord(f,2));
+
+	    counts.push_back(3);
+	    counts2.push_back(counter); counter+=3;
+	    vec.push_back(coll->FacePoint(f,0));
+	    vec.push_back(coll->FacePoint(f,2));
+	    vec.push_back(coll->FacePoint(f,3));
+	    norm.push_back(coll->PointNormal(f,0));
+	    norm.push_back(coll->PointNormal(f,2));
+	    norm.push_back(coll->PointNormal(f,3));
+	    color.push_back(coll->Color(f,0));
+	    color.push_back(coll->Color(f,2));
+	    color.push_back(coll->Color(f,3));
+	    texcoord.push_back(coll->TexCoord(f,0));
+	    texcoord.push_back(coll->TexCoord(f,2));
+	    texcoord.push_back(coll->TexCoord(f,3));
+
+	  }
+	else
+	  {
+	    counts.push_back(count);
+	    counts2.push_back(counter); counter+=count;
+	    for(int i=0;i<count;i++)
+	      {
+		vec.push_back(coll->FacePoint(f,i));
+		norm.push_back(coll->PointNormal(f,i));
+		color.push_back(coll->Color(f,i));
+		texcoord.push_back(coll->TexCoord(f,i));
+	      }
+	  }
+      }
+  }
+  virtual int NumFaces() const { return counts.size(); }
+  virtual int NumPoints(int face) const { return counts[face]; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return vec[counts2[face]+point];
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return norm[counts2[face]+point];
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+        return color[counts2[face]+point];
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+       return texcoord[counts2[face]+point]; 
+  }
+
+private:
+  FaceCollection *coll;
+  std::vector<int> counts;
+  std::vector<int> counts2;
+  std::vector<Point> vec;
+  std::vector<Vector> norm;
+  std::vector<unsigned int> color;
+  std::vector<Point2d> texcoord;
+};
+GameApi::P GameApi::PolygonApi::quads_to_triangles(P p)
+{
+  FaceCollection *c = find_facecoll(e, p);
+  FaceCollection *c2 = new QuadsToTris2(c);
+  return add_polygon(e,c2,1);
 }
 GameApi::P GameApi::PolygonApi::color_from_normals(P orig)
 {
@@ -5632,17 +5783,23 @@ void GameApi::ShaderApi::link(GameApi::SH shader)
 }
 GameApi::SH GameApi::ShaderApi::texture_shader()
 {
-  return get_normal_shader("texture", "texture", "");
+  return get_normal_shader("comb", "comb", "", "texture", "texture");
 }
 GameApi::SH GameApi::ShaderApi::colour_shader()
 {
-  return get_normal_shader("colour", "colour", "");
+  return get_normal_shader("comb", "comb", "","colour", "colour");
+}
+GameApi::SH GameApi::ShaderApi::colour_texture_shader()
+{
+  return get_normal_shader("comb", "comb", "","colour:texture", "colour:texture");
 }
 GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
 						  std::string f_format,
-						  std::string g_format)
+						  std::string g_format,
+						  std::string v_comb,
+						  std::string f_comb)
 {
-  SH sh = get_shader(v_format, f_format, g_format);
+  SH sh = get_shader(v_format, f_format, g_format, v_comb, f_comb);
   bind_attrib(sh, 0, "in_Position");
   bind_attrib(sh, 1, "in_Normal");
   bind_attrib(sh, 2, "in_Color");
@@ -5654,10 +5811,34 @@ GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
   return sh;
 }
 
+void combparse(std::string comb, std::vector<std::string> &vec)
+{
+  std::string s;
+  int ss = comb.size();
+  for(int i=0;i<ss;i++)
+    {
+      char c = comb[i];
+      if (c==':')
+	{
+	  vec.push_back(s);
+	  s="";
+	}
+      else
+	{
+	  s+=c;
+	}
+    }
+  if (s!="")
+    {
+      vec.push_back(s);
+    }
+}
 
 GameApi::SH GameApi::ShaderApi::get_shader(std::string v_format,
 					std::string f_format,
-					std::string g_format)
+					   std::string g_format, 
+					   std::string v_comb,
+					   std::string f_comb)
 {
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   if (!p->file)
@@ -5667,8 +5848,11 @@ GameApi::SH GameApi::ShaderApi::get_shader(std::string v_format,
       sh.id = -1;
       return sh;
     }
-
-  p->ids[p->count] = p->seq->GetShader(v_format, f_format, g_format);
+  std::vector<std::string> v_vec;
+  std::vector<std::string> f_vec;
+  combparse(v_comb, v_vec);
+  combparse(f_comb, f_vec);
+  p->ids[p->count] = p->seq->GetShader(v_format, f_format, g_format, v_vec, f_vec);
   p->count++;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->shader_privs[p->count-1] = p;
@@ -7382,7 +7566,20 @@ GameApi::O GameApi::VolumeApi::subvolume(std::function<float (float x, float y, 
   //env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_volume(e, new SubVolume(*ff, start_range, end_range));
 }
-
+class FromPolygonVolumeObject : public VolumeObject
+{
+public:
+  FromPolygonVolumeObject(GameApi::EveryApi &ev, FaceCollection *coll) : ev(ev), coll(coll) { }
+  bool Inside(Point p) const { return false; } // TODO
+private:
+  GameApi::EveryApi &ev;
+  FaceCollection *coll;
+};
+GameApi::O GameApi::VolumeApi::from_polygon(EveryApi &ev, GameApi::P p)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  return add_volume(e, new FromPolygonVolumeObject(ev, coll));
+}
 
 void GameApi::VolumeApi::find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level)
 {
@@ -7395,6 +7592,232 @@ void GameApi::VolumeApi::find_surface(O object, PT p1, PT p2, PT *res1, PT *res2
 
   *res1 = add_point(e, r.start.x,r.start.y,r.start.z);
   *res2 = add_point(e, r.end.x,r.end.y,r.end.z);
+}
+
+class RenderCubes3 : public FaceCollection
+{
+public:
+  RenderCubes3(GameApi::Env &e, GameApi::O o, 
+	       int sx, int sy, int sz, 
+	       float start_x, float end_x,
+	       float start_y, float end_y,
+	       float start_z, float end_z
+	       ) : e(e), o(o), sx(sx), sy(sy), sz(sz), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) { Iterate(); }
+  void Iterate()
+  {
+    float world_x = end_x-start_x;
+    float world_y = end_y-start_y;
+    float world_z = end_z-start_z;
+    float step_x = world_x/sx;
+    float step_y = world_y/sy;
+    float step_z = world_z/sz;
+    float half_step_x = step_x/2.0;
+    float half_step_y = step_y/2.0;
+    float half_step_z = step_z/2.0;
+    VolumeObject *volume = find_volume(e,o);
+    for(float z = start_z;z<start_z+world_z;z+=step_z) {
+      std::cout << z << "/" << start_z+world_z << std::endl;
+      for(float y = start_y;y<start_y+world_y;y+=step_y)
+	for(float x =start_x;x<start_x+world_x;x+=step_x)
+	  {
+	    Point p000(x, y, z);
+	    Point p100(x+step_x, y, z);
+	    Point p010(x, y+step_y, z);
+	    Point p001(x, y, z+step_z);
+	    Point pn00(x-step_x, y, z);
+	    Point p0n0(x, y-step_y, z);
+	    Point p00n(x, y, z-step_z);
+
+	    bool b000 = volume->Inside(p000);
+	    bool b100 = volume->Inside(p100);
+	    bool b010 = volume->Inside(p010);
+	    bool b001 = volume->Inside(p001);
+	    bool bn00 = volume->Inside(pn00);
+	    bool b0n0 = volume->Inside(p0n0);
+	    bool b00n = volume->Inside(p00n);
+	    
+	    if (b000 != b100)
+	      {
+		Point p0(x+half_step_x, y-half_step_y, z-half_step_z);
+		Point p1(x+half_step_x, y+half_step_y, z-half_step_z);
+		Point p2(x+half_step_x, y+half_step_y, z+half_step_z);
+		Point p3(x+half_step_x, y-half_step_y, z+half_step_z);
+		bool flip = false;
+		if (flip)
+		  {
+		    cubes.push_back(p3);
+		    cubes.push_back(p2);
+		    cubes.push_back(p1);
+		    cubes.push_back(p0);
+		  }
+		else
+		  {
+		    cubes.push_back(p0);
+		    cubes.push_back(p1);
+		    cubes.push_back(p2);
+		    cubes.push_back(p3);
+		  }
+	      }
+	    if (b000 != bn00)
+	      {
+		Point p0(x-half_step_x, y-half_step_y, z-half_step_z);
+		Point p1(x-half_step_x, y+half_step_y, z-half_step_z);
+		Point p2(x-half_step_x, y+half_step_y, z+half_step_z);
+		Point p3(x-half_step_x, y-half_step_y, z+half_step_z);
+		bool flip = true;
+		if (flip)
+		  {
+		    cubes.push_back(p3);
+		    cubes.push_back(p2);
+		    cubes.push_back(p1);
+		    cubes.push_back(p0);
+		  }
+		else {
+		  cubes.push_back(p0);
+		  cubes.push_back(p1);
+		  cubes.push_back(p2);
+		  cubes.push_back(p3);
+		}
+	      }
+
+	    if (b000 != b010)
+	      {
+		Point p0(x-half_step_x, y+half_step_y, z-half_step_z);
+		Point p1(x+half_step_x, y+half_step_y, z-half_step_z);
+		Point p2(x+half_step_x, y+half_step_y, z+half_step_z);
+		Point p3(x-half_step_x, y+half_step_y, z+half_step_z);
+		bool flip = false;
+		if (flip)
+		  {
+		    cubes.push_back(p3);
+		    cubes.push_back(p2);
+		    cubes.push_back(p1);
+		    cubes.push_back(p0);
+		  }
+		else
+		  {
+		    cubes.push_back(p0);
+		    cubes.push_back(p1);
+		    cubes.push_back(p2);
+		    cubes.push_back(p3);
+		  }
+	      }
+	    if (b000 != b0n0)
+	      {
+		Point p0(x-half_step_x, y-half_step_y, z-half_step_z);
+		Point p1(x+half_step_x, y-half_step_y, z-half_step_z);
+		Point p2(x+half_step_x, y-half_step_y, z+half_step_z);
+		Point p3(x-half_step_x, y-half_step_y, z+half_step_z);
+		bool flip = true;
+		if (flip)
+		  {
+		    cubes.push_back(p3);
+		    cubes.push_back(p2);
+		    cubes.push_back(p1);
+		    cubes.push_back(p0);
+		  }
+		else
+		  {
+		    cubes.push_back(p0);
+		    cubes.push_back(p1);
+		    cubes.push_back(p2);
+		    cubes.push_back(p3);
+		  }
+	      }
+
+
+	    if (b000 != b001)
+	      {
+		Point p0(x-half_step_x, y-half_step_y, z+half_step_z);
+		Point p1(x+half_step_x, y-half_step_y, z+half_step_z);
+		Point p2(x+half_step_x, y+half_step_y, z+half_step_z);
+		Point p3(x-half_step_x, y+half_step_y, z+half_step_z);
+		bool flip = false;
+		if (flip)
+		  {
+		    cubes.push_back(p3);
+		    cubes.push_back(p2);
+		    cubes.push_back(p1);
+		    cubes.push_back(p0);
+		  }
+		else
+		  {
+		    cubes.push_back(p0);
+		    cubes.push_back(p1);
+		    cubes.push_back(p2);
+		    cubes.push_back(p3);
+		  }
+	      }
+	    if (b000 != b00n)
+	      {
+		Point p0(x-half_step_x, y-half_step_y, z-half_step_z);
+		Point p1(x+half_step_x, y-half_step_y, z-half_step_z);
+		Point p2(x+half_step_x, y+half_step_y, z-half_step_z);
+		Point p3(x-half_step_x, y+half_step_y, z-half_step_z);
+		bool flip = true;
+		if (flip)
+		  {
+		    cubes.push_back(p3);
+		    cubes.push_back(p2);
+		    cubes.push_back(p1);
+		    cubes.push_back(p0);
+		  }
+		else
+		  {
+		    cubes.push_back(p0);
+		    cubes.push_back(p1);
+		    cubes.push_back(p2);
+		    cubes.push_back(p3);
+		  }
+	      }
+	  }
+    }
+  }
+  virtual int NumFaces() const { return cubes.size()/4; }
+  virtual int NumPoints(int face) const { return 4; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return cubes[face*4+point];
+  }
+
+  virtual Vector PointNormal(int face, int point) const 
+  {
+    Point p1 = FacePoint(face, 0);
+    Point p2 = FacePoint(face, 1);
+    Point p3 = FacePoint(face, 2);
+    return -Vector::CrossProduct(p2-p1,p3-p1);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const  { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return 0xffffffff; 
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    Point2d p0 = { 0.0, 0.0 };
+    Point2d p1 = { 1.0, 0.0 };
+    Point2d p2 = { 1.0, 1.0 };
+    Point2d p3 = { 0.0, 1.0 };
+    switch(point)
+      {
+      case 0: return p0;
+      case 1: return p1;
+      case 2: return p2;
+      case 3: return p3;
+      }
+    return p0;
+  }
+  GameApi::Env &e;
+  GameApi::O o;
+  int sx,sy,sz;
+  float start_x, end_x, start_y, end_y, start_z, end_z;
+  std::vector<Point> cubes;
+};
+
+GameApi::P GameApi::VolumeApi::rendercubes3(O o, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+{
+  return add_polygon(e, new RenderCubes3(e, o, sx, sy, sz, start_x,end_x, start_y,end_y, start_z, end_z), 1);
 }
 
 GameApi::P GameApi::VolumeApi::rendercubes2(EveryApi &ev, O o, fptrtype f, int sx, int sy, int sz, float world_x, float world_y, float world_z)
@@ -10458,6 +10881,84 @@ GameApi::LI GameApi::LinesApi::from_polygon2(GameApi::P poly1, GameApi::P poly2)
   FaceCollection *p2 = find_facecoll(e, poly2);
   return add_line_array(e, new AnimLines(p1, p2));
 }
+class SliceLineCollection : public LineCollection
+{
+public:
+  SliceLineCollection(FaceCollection *coll, Point pos, Vector u_x, Vector u_y) : coll(coll), pos(pos), u_x(u_x), u_y(u_y) { }
+  virtual int NumLines() const { return coll->NumFaces(); }
+  virtual Point LinePoint(int line, int point) const 
+  {
+    Point p1 = coll->FacePoint(line, 0);
+    Point p2 = coll->FacePoint(line, 1);
+    Point p3 = coll->FacePoint(line, 2);
+    Plane pl(pos, u_x, u_y);
+    Point2d res1,res2;
+    bool b = pl.TriangleIntersection(p1,p2,p3, res1,res2);
+    if (b)
+      {
+	if (point==0) { return Point(res1.x, res1.y, 0.0); }
+	if (point==1) { return Point(res2.x, res2.y, 0.0); }
+      }
+    else
+      {
+	return Point(0.0,0.0,0.0);
+      }
+    return Point(0.0,0.0,0.0);
+  }
+  virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; }
+private:
+  FaceCollection *coll;
+  Point pos;
+  Vector u_x, u_y;
+};
+class NormalsLineCollection : public LineCollection
+{
+public:
+  NormalsLineCollection(FaceCollection *coll, float length) : coll(coll),length(length) { }
+  virtual int NumLines() const { return coll->NumFaces(); }
+  virtual Point LinePoint(int line, int point) const 
+  {
+    int s = coll->NumPoints(line);
+    Point avg(0.0, 0.0, 0.0);
+    for(int i=0;i<s;i++)
+      {
+	Point p = coll->FacePoint(line, i);
+	avg += Vector(p);
+      }
+    Vector avg2 = avg;
+    avg2/=float(s);
+    if (point==0)
+
+      {
+	return Point(avg2);
+      }
+    if (point==1)
+      {
+	Vector v = coll->PointNormal(line, 0);
+	v/=v.Dist();
+	v*=length;
+	return Point(avg2)+v;
+      }
+  }
+  virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; }  
+private:
+  FaceCollection *coll;
+  float length;
+};
+GameApi::LI GameApi::LinesApi::normals_from_polygon(GameApi::P p, float length)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  return add_line_array(e, new NormalsLineCollection(coll, length));
+}
+GameApi::LI GameApi::LinesApi::render_slice_2d(GameApi::P p, GameApi::PT pos, GameApi::V u_x, GameApi::V u_y)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  Point *pp1 = find_point(e, pos);
+  Vector *v1 = find_vector(e, u_x);
+  Vector *v2 = find_vector(e, u_y);
+  return add_line_array(e, new SliceLineCollection(coll,*pp1, *v1, *v2));
+}
+
 class LineAnim : public ForwardFaceCollection
 {
 public:

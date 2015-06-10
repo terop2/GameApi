@@ -524,12 +524,12 @@ int main() {
   Env e;
   EveryApi ev(e);
 
-  // initialize window
+  // initialize xindow
   ev.mainloop_api.init_window();
 
   // shader initialization
   ev.shader_api.load("Shader.txt");
-  SH sh = ev.shader_api.get_shader("colour", "colour", "");
+  SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour", "colour:light");
   ev.shader_api.bind_attrib(sh, 0, "in_Position");
   ev.shader_api.bind_attrib(sh, 1, "in_Normal");
   ev.shader_api.bind_attrib(sh, 2, "in_Color");
@@ -559,11 +559,24 @@ int main() {
   P p3 = ev.polygon_api.world_from_bitmap(std::bind(&pieces3, _1, std::ref(ev)), bm, 100.0, 100.0);
   P p3a = ev.polygon_api.or_elem(p,p3);
   P p2a = ev.polygon_api.or_elem(p,p2);
-  PolygonObj poly(ev, p2a, sh);
+  P p2a1 = ev.polygon_api.recalculate_normals(p2a);
+  P p2a2 = ev.polygon_api.texcoord_manual(p2a1, 
+					 0.0, 0.0, 
+					 1.0, 0.0,
+					 1.0, 1.0,
+					 0.0, 1.0);
+
+  PolygonObj poly(ev, p2a2, sh);
   poly.set_scale(3.0,3.0,3.0);
   poly.prepare();
 
-  PolygonObj poly2(ev,p3, sh);
+  P p31 = ev.polygon_api.recalculate_normals(p3);
+  P p32 = ev.polygon_api.texcoord_manual(p31, 
+					 0.0, 0.0, 
+					 1.0, 0.0,
+					 1.0, 1.0,
+					 0.0, 1.0);
+  PolygonObj poly2(ev,p32, sh);
   poly2.set_scale(3.0,3.0,3.0);
   poly2.prepare();
 
@@ -608,6 +621,7 @@ int main() {
   e.free_memory();
   while(1) {
     frame++;
+    ev.shader_api.set_var(sh, "in_time",float(frame)*0.01f);
     // clear frame buffer
     ev.mainloop_api.clear_3d();
     //poly.set_rotation_matrix(ev.matrix_api.xrot(frame));
