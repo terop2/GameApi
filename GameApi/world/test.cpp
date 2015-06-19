@@ -529,7 +529,7 @@ int main() {
 
   // shader initialization
   ev.shader_api.load("Shader.txt");
-  SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour", "colour:light");
+  SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour:snoise", "colour:light:bands:snoise");
   ev.shader_api.bind_attrib(sh, 0, "in_Position");
   ev.shader_api.bind_attrib(sh, 1, "in_Normal");
   ev.shader_api.bind_attrib(sh, 2, "in_Color");
