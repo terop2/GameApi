@@ -541,6 +541,7 @@ public:
 	IMPORT O boolfunction(std::function<bool(float x, float y, float z)> f);
 	IMPORT O subvolume(std::function<float(float x, float y, float z)> f, float start_range, float end_range);
         IMPORT O from_polygon(EveryApi &ev, P p);
+        IMPORT O from_bool_bitmap(BB b, float dist);
 	IMPORT O link_areas(O o, PT p1, PT p2, float d);
 	IMPORT O sphere(PT center, float radius);
 	IMPORT O cube(float start_x, float end_x,
@@ -549,7 +550,7 @@ public:
 	IMPORT O cone(PT p1, PT p2, float rad1, float rad2);
 	IMPORT O torus(PT center, PT u_x, PT u_y, float dist1, float dist2);
 
-	IMPORT O colour(O object, int r, int g, int b, int a);
+	IMPORT O colour(O object, unsigned int col);
 	IMPORT O reflect(O object, float val); // val = [0..1]
 	IMPORT O cubetexture(O object, PT origo, PT u_x, PT u_y, PT u_z, BM bm);
 	IMPORT O spheretexture(O object, PT center, BM texture, float multx, float multy);
@@ -818,6 +819,7 @@ public:
   IMPORT P color_poly(P orig, int facenum, unsigned int *array, int size);
 
   IMPORT P quads_to_triangles(P p);
+  IMPORT P flip_polygon_order(P p);
 
   IMPORT P or_elem(P p1, P p2);
   IMPORT P or_array(P *array, int size);

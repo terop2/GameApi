@@ -4845,6 +4845,54 @@ private:
   std::vector<unsigned int> color;
   std::vector<Point2d> texcoord;
 };
+class FlipPolygonOrder : public ForwardFaceCollection
+{
+public:
+  FlipPolygonOrder(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+
+  virtual int NumFaces() const { return coll->NumFaces(); }
+  virtual int NumPoints(int face) const
+  {
+    return coll->NumPoints(face);
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return coll->FacePoint(face,Order(point, NumPoints(face)));
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return coll->PointNormal(face,Order(point, NumPoints(face)));
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return coll->Attrib(face,Order(point, NumPoints(face)),id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return coll->AttribI(face,Order(point, NumPoints(face)),id);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return coll->Color(face,Order(point, NumPoints(face)));
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return coll->TexCoord(face,Order(point, NumPoints(face)));
+  }
+
+  int Order(int a, int count) const
+  {
+    return count-a-1;
+  }
+private:
+  FaceCollection *coll;
+};
+GameApi::P GameApi::PolygonApi::flip_polygon_order(P p)
+{
+  FaceCollection *c = find_facecoll(e, p);
+  FaceCollection *c2 = new FlipPolygonOrder(c);
+  return add_polygon(e,c2,1);
+}
 GameApi::P GameApi::PolygonApi::quads_to_triangles(P p)
 {
   FaceCollection *c = find_facecoll(e, p);
@@ -6733,7 +6781,12 @@ GameApi::PT GameApi::PointApi::from_angle(PT center, float radius, float angle)
   Point p = *cen+Vector(radius*cos(angle),radius*sin(angle),0.0);
   return add_point(e,p.x,p.y,p.z);
 }
-
+GameApi::O GameApi::VolumeApi::from_bool_bitmap(BB b, float dist)
+{
+  BoolBitmap *c = find_bool_bitmap(e,b);
+  Bitmap<bool> *bm = c->bitmap;
+  return add_volume(e, new BitmapVolume(bm, dist));
+}
 GameApi::O GameApi::BoolBitmapApi::to_volume(BB b, float dist)
 {
   BoolBitmap *c = find_bool_bitmap(e,b);
@@ -7396,7 +7449,11 @@ GameApi::O GameApi::VolumeApi::torus(PT center, PT u_x, PT u_y, float dist1, flo
   Point *u_yp = find_point(e, u_y);
   return add_volume(e, new TorusVolume(*u_xp-*centerp, *u_yp-*centerp, dist1, dist2, *centerp));
 }
-
+GameApi::O GameApi::VolumeApi::colour(GameApi::O o1, unsigned int col)
+{
+  VolumeObject *oo1 = find_volume(e,o1);
+  return add_volume(e, new ColorSpecVolume(*oo1, Color(col)));
+}
 GameApi::O GameApi::VolumeApi::not_op(GameApi::O o1)
 {
   VolumeObject *oo1 = find_volume(e,o1);
@@ -7657,6 +7714,10 @@ public:
 		    cubes.push_back(p2);
 		    cubes.push_back(p3);
 		  }
+		unsigned int color=0x0;
+		if (b000) { color = volume->ColorValue(p000).Pixel(); }
+		if (b100) { color = volume->ColorValue(p100).Pixel(); }
+		colours.push_back(color);
 	      }
 	    if (b000 != bn00)
 	      {
@@ -7678,6 +7739,11 @@ public:
 		  cubes.push_back(p2);
 		  cubes.push_back(p3);
 		}
+		unsigned int color=0x0;
+		if (b000) { color = volume->ColorValue(p000).Pixel(); }
+		if (bn00) { color = volume->ColorValue(pn00).Pixel(); }
+		colours.push_back(color);
+
 	      }
 
 	    if (b000 != b010)
@@ -7701,6 +7767,11 @@ public:
 		    cubes.push_back(p2);
 		    cubes.push_back(p3);
 		  }
+		unsigned int color=0x0;
+		if (b000) { color = volume->ColorValue(p000).Pixel(); }
+		if (b010) { color = volume->ColorValue(p010).Pixel(); }
+		colours.push_back(color);
+
 	      }
 	    if (b000 != b0n0)
 	      {
@@ -7723,6 +7794,10 @@ public:
 		    cubes.push_back(p2);
 		    cubes.push_back(p3);
 		  }
+		unsigned int color=0x0;
+		if (b000) { color = volume->ColorValue(p000).Pixel(); }
+		if (b0n0) { color = volume->ColorValue(p0n0).Pixel(); }
+		colours.push_back(color);
 	      }
 
 
@@ -7747,6 +7822,11 @@ public:
 		    cubes.push_back(p2);
 		    cubes.push_back(p3);
 		  }
+		unsigned int color=0x0;
+		if (b000) { color = volume->ColorValue(p000).Pixel(); }
+		if (b001) { color = volume->ColorValue(p001).Pixel(); }
+		colours.push_back(color);
+
 	      }
 	    if (b000 != b00n)
 	      {
@@ -7769,6 +7849,11 @@ public:
 		    cubes.push_back(p2);
 		    cubes.push_back(p3);
 		  }
+		unsigned int color=0x0;
+		if (b000) { color = volume->ColorValue(p000).Pixel(); }
+		if (b00n) { color = volume->ColorValue(p00n).Pixel(); }
+		colours.push_back(color);
+
 	      }
 	  }
     }
@@ -7791,7 +7876,7 @@ public:
   virtual int AttribI(int face, int point, int id) const  { return 0; }
   virtual unsigned int Color(int face, int point) const
   {
-    return 0xffffffff; 
+    return colours[face];
   }
   virtual Point2d TexCoord(int face, int point) const
   {
@@ -7813,6 +7898,7 @@ public:
   int sx,sy,sz;
   float start_x, end_x, start_y, end_y, start_z, end_z;
   std::vector<Point> cubes;
+  std::vector<unsigned int> colours;
 };
 
 GameApi::P GameApi::VolumeApi::rendercubes3(O o, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)

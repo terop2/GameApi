@@ -77,6 +77,23 @@ in vec2 ex_TexCoord;
 in vec3 ex_Normal;
 in vec3 ex_Position;
 uniform sampler2D tex;
+vec4 bands(vec4 rgb)
+{
+   float r = rgb.r;
+   float g = rgb.g;
+   float b = rgb.b;
+   float a = rgb.a;
+   int rr = int(r*256)&0xfff0;
+   int gg = int(g*256)&0xfff0;
+   int bb = int(b*256)&0xfff0;
+   int aa = int(a*256)&0xfff0;
+   float rrr = float(rr)/256.0;
+   float ggg = float(gg)/256.0;
+   float bbb = float(bb)/256.0;
+   float aaa = float(aa)/256.0;
+   vec4 rgb2 = vec4(rrr,ggg,bbb,aaa);
+   return rgb2;
+}
 vec4 dot2(vec4 rgb)
 {
    vec3 pos = vec3(ex_TexCoord,1.0);

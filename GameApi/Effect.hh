@@ -10729,7 +10729,7 @@ public:
 	for(int j=0;j<ss;j++)
 	  {
 	    Vector p = coll->PointNormal(i,j);
-	    file << "n " << p.dx << " " << p.dy << " " << p.dz << std::endl;
+	    file << "vn " << p.dx << " " << p.dy << " " << p.dz << std::endl;
 	  }
       }
     int counter =1;
