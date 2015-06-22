@@ -654,6 +654,13 @@ AxisAngle Matrix::FindAxisAngle(const Matrix &m)
 				       m.matrix[1]-m.matrix[4]);
   return a;
 }
+bool Plane::WhichSideOfPlane(Point p) const
+{
+  Vector normal = Vector::CrossProduct(u_x, u_y);
+  Vector pos = p - u_p;
+  float dot = Vector::DotProduct(normal, pos);
+  return dot<0.0;
+}
 
 float Plane::Dist(Point p) const
 {
@@ -1001,6 +1008,7 @@ bool Plane::LineSegmentIntersection(Point p1, Point p2, Point2d &outP)
   float coord_y = CoordsY(p);
   outP.x = coord_x;
   outP.y = coord_y;
+  return true;
 }
 bool Plane::TriangleIntersection(Point p1, Point p2, Point p3, Point2d &res1, Point2d &res2)
 {
@@ -1027,6 +1035,7 @@ bool Plane::TriangleIntersection(Point p1, Point p2, Point p3, Point2d &res1, Po
     {
       return false; 
     }
+  return true;
 }
 
 FlexibleCube box(Point p1, float sx, float sy, float sz)

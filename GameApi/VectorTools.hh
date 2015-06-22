@@ -299,6 +299,7 @@ public:
   float Dist(Point p) const;
   float CoordsX(Point p) const;
   float CoordsY(Point p) const;
+  bool WhichSideOfPlane(Point p) const;
   Vector Normal(float length) const; 
   void RotateAroundNormal(float angle_in_rad);
   Point Navigate(const Point2d &p);

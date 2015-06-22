@@ -6787,6 +6787,27 @@ GameApi::O GameApi::VolumeApi::from_bool_bitmap(BB b, float dist)
   Bitmap<bool> *bm = c->bitmap;
   return add_volume(e, new BitmapVolume(bm, dist));
 }
+GameApi::O GameApi::VolumeApi::rotatex(O obj, float angle)
+{
+  VolumeObject *obj1 = find_volume(e,obj);
+  return add_volume(e, new MatrixVolumeObject(obj1, Matrix::XRotation(-angle)));
+}
+GameApi::O GameApi::VolumeApi::rotatey(O obj, float angle)
+{
+  VolumeObject *obj1 = find_volume(e,obj);
+  return add_volume(e, new MatrixVolumeObject(obj1, Matrix::YRotation(-angle)));
+}
+GameApi::O GameApi::VolumeApi::rotatez(O obj, float angle)
+{
+  VolumeObject *obj1 = find_volume(e,obj);
+  return add_volume(e, new MatrixVolumeObject(obj1, Matrix::ZRotation(-angle)));
+}
+GameApi::O GameApi::VolumeApi::move(O obj, float dx, float dy, float dz)
+{
+  VolumeObject *obj1 = find_volume(e,obj);
+  return add_volume(e, new MatrixVolumeObject(obj1, Matrix::Translate(-dx,-dy,-dz)));  
+}
+
 GameApi::O GameApi::BoolBitmapApi::to_volume(BB b, float dist)
 {
   BoolBitmap *c = find_bool_bitmap(e,b);
@@ -7437,6 +7458,9 @@ GameApi::O GameApi::VolumeApi::cube(float start_x, float end_x,
 				    float start_y, float end_y,
 				    float start_z, float end_z)
 {
+  if (start_x>end_x) std::swap(start_x, end_x);
+  if (start_y>end_y) std::swap(start_y, end_y);
+  if (start_z>end_z) std::swap(start_z, end_z);
   return add_volume(e, new CubeVolume(start_x, end_x,
 				      start_y, end_y,
 				      start_z, end_z));
@@ -7632,10 +7656,10 @@ private:
   GameApi::EveryApi &ev;
   FaceCollection *coll;
 };
-GameApi::O GameApi::VolumeApi::from_polygon(EveryApi &ev, GameApi::P p)
+GameApi::O GameApi::VolumeApi::from_polygon(GameApi::P p)
 {
   FaceCollection *coll = find_facecoll(e, p);
-  return add_volume(e, new FromPolygonVolumeObject(ev, coll));
+  return add_volume(e, new FaceCollectionVolume(coll));
 }
 
 void GameApi::VolumeApi::find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level)
@@ -11025,6 +11049,7 @@ public:
 	v*=length;
 	return Point(avg2)+v;
       }
+    return Point(0.0,0.0,0.0);
   }
   virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; }  
 private:
