@@ -540,7 +540,7 @@ public:
 	IMPORT ~VolumeApi();
 	IMPORT O boolfunction(std::function<bool(float x, float y, float z)> f);
 	IMPORT O subvolume(std::function<float(float x, float y, float z)> f, float start_range, float end_range);
-        IMPORT O from_polygon(EveryApi &ev, P p);
+  IMPORT O from_polygon(P p); // convex shapes only
         IMPORT O from_bool_bitmap(BB b, float dist);
 	IMPORT O link_areas(O o, PT p1, PT p2, float d);
 	IMPORT O sphere(PT center, float radius);
@@ -555,7 +555,8 @@ public:
 	IMPORT O cubetexture(O object, PT origo, PT u_x, PT u_y, PT u_z, BM bm);
 	IMPORT O spheretexture(O object, PT center, BM texture, float multx, float multy);
 
-	IMPORT O move(O object, PT pos);
+  //IMPORT O move(O object, PT pos);
+        IMPORT O move(O obj, float dx, float dy, float dz);
 	IMPORT O rotatex(O object, float angle);
 	IMPORT O rotatey(O object, float angle);
 	IMPORT O rotatez(O object, float angle);
