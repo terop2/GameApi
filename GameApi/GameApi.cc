@@ -5831,15 +5831,15 @@ void GameApi::ShaderApi::link(GameApi::SH shader)
 }
 GameApi::SH GameApi::ShaderApi::texture_shader()
 {
-  return get_normal_shader("comb", "comb", "", "texture", "texture");
+  return get_normal_shader("comb", "comb", "", "texture:light:light", "texture:light:light");
 }
 GameApi::SH GameApi::ShaderApi::colour_shader()
 {
-  return get_normal_shader("comb", "comb", "","colour", "colour");
+  return get_normal_shader("comb", "comb", "","colour:light:light", "colour:light:light");
 }
 GameApi::SH GameApi::ShaderApi::colour_texture_shader()
 {
-  return get_normal_shader("comb", "comb", "","colour:texture", "colour:texture");
+  return get_normal_shader("comb", "comb", "","colour:texture:light:light", "colour:texture:light:light");
 }
 GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
 						  std::string f_format,
@@ -7656,10 +7656,11 @@ private:
   GameApi::EveryApi &ev;
   FaceCollection *coll;
 };
-GameApi::O GameApi::VolumeApi::from_polygon(GameApi::P p)
+GameApi::O GameApi::VolumeApi::from_polygon(GameApi::P p, float x, float y, float z)
 {
   FaceCollection *coll = find_facecoll(e, p);
-  return add_volume(e, new FaceCollectionVolume(coll));
+  Point px(x,y,z);
+  return add_volume(e, new FaceCollectionVolume(coll,px));
 }
 
 void GameApi::VolumeApi::find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level)

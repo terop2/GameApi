@@ -540,7 +540,7 @@ public:
 	IMPORT ~VolumeApi();
 	IMPORT O boolfunction(std::function<bool(float x, float y, float z)> f);
 	IMPORT O subvolume(std::function<float(float x, float y, float z)> f, float start_range, float end_range);
-  IMPORT O from_polygon(P p); // convex shapes only
+  IMPORT O from_polygon(P p, float x, float y, float z);  // point outside of shape.
         IMPORT O from_bool_bitmap(BB b, float dist);
 	IMPORT O link_areas(O o, PT p1, PT p2, float d);
 	IMPORT O sphere(PT center, float radius);

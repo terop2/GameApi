@@ -620,6 +620,8 @@ public:
   Point MiddlePoint(float x);
   Vector PerpendicularVector(float angle, float length);
   float Dist(Point p);
+  bool TriangleIntersection(Point p1, Point p2, Point p3);
+  bool QuadIntersection(Point p1, Point p2, Point p3, Point p4);
 private:
   Point p1, p2;
 };

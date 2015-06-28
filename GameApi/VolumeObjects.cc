@@ -274,3 +274,31 @@ bool FractalEffect::Frame(float time)
   GetRender()->DrawVBO(vbostate.GetState());
   return false; 
 }
+bool FaceCollectionVolume::Inside(Point p) const
+{
+  int s = coll->NumFaces();
+  bool res = false;
+  LineProperties line(pp,p);
+  for(int i=0;i<s;i++)
+    {
+      int ss = coll->NumPoints(i);
+      if (ss==3)
+	{
+	  Point p1 = coll->FacePoint(i,0);
+	  Point p2 = coll->FacePoint(i,1);
+	  Point p3 = coll->FacePoint(i,2);
+	  bool b = line.TriangleIntersection(p1,p2,p3);
+	  res = res ^ b;
+	}
+      else if (ss==4)
+	{
+	  Point p1 = coll->FacePoint(i,0);
+	  Point p2 = coll->FacePoint(i,1);
+	  Point p3 = coll->FacePoint(i,2);
+	  Point p4 = coll->FacePoint(i,3);
+	  bool b = line.QuadIntersection(p1,p2,p3,p4);
+	  res = res ^ b;
+	}
+    }
+  return res;
+}
