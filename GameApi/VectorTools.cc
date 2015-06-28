@@ -1101,3 +1101,64 @@ bool IsWithInBoundingBox(Point2d p, Point2d top_left, Point2d bottom_right)
     }
   return false;
 }
+bool LineProperties::QuadIntersection(Point a1, Point a2, Point a3, Point a4)
+{
+  return TriangleIntersection(a1,a2,a3) || TriangleIntersection(a1,a3,a4);
+}
+bool LineProperties::TriangleIntersection(Point v1, Point v2, Point v3)
+{
+#if 0
+  Vector O = p1;
+  Vector D = p2-p1;
+  Vector e1 = v2-v1;
+  Vector e2 = v3-v1;
+  Vector P = Vector::CrossProduct(D, e2);
+  float det = Vector::DotProduct(e1, P);
+  if (det > -0.00001 && det < 0.00001) return false;
+  float inv_det = 1.f / det;
+  Vector T = O-v1;
+  float u = Vector::DotProduct(T,P)*inv_det;
+  if (u<0.f || u>1.f) return false;
+  Vector Q = Vector::CrossProduct(T,e1);
+  float v = Vector::DotProduct(D,Q)*inv_det;
+  if (v<0.f || u+v>1.f) return false;
+  float t = Vector::DotProduct(e2,Q)*inv_det;
+  //if (t>0.00001) {
+    //*ipoint = t;
+    return true;
+    //}
+    // return false;			  
+#endif
+    Vector u = v2-v1;
+    Vector v = v3-v1;
+    Vector n = Vector::CrossProduct(u,v);
+    if (n.Dist()<0.001) return false;
+    Vector dir = p2-p1;
+    Vector w0 = p1-v1;
+    float  a = -Vector::DotProduct(n,w0);
+    float  b = Vector::DotProduct(n,dir);
+    if (fabs(b)<0.0001) {
+      if (a==0) return false;
+      else return false;
+    }
+    float r = a/b;
+    if (r<0.0) return false;
+    if (r>1.0) return false;
+    //return true;
+    Vector i = p1 + r*dir;
+    
+    float uu = Vector::DotProduct(u,u);
+    float uv = Vector::DotProduct(u,v);
+    float vv = Vector::DotProduct(v,v);
+    Vector w = i - v1;
+    float wu = Vector::DotProduct(w,u);
+    float wv = Vector::DotProduct(w,v);
+    float D = uv * uv - uu*vv;
+    float s = (uv*wv - vv*wu) / D;
+    if (s<0.0 || s>1.0) return false;
+    //return true;
+    float t = (uv*wu - uu*wv) / D;
+    if (t<0.0 || (s+t)>1.0)
+      return false;
+    return true;
+}

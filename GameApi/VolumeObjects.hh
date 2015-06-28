@@ -148,6 +148,36 @@ public:
 
 class BitmapVolume; // see Graph.hh
 
+class MatrixVolumeObject : public VolumeObject
+{
+public:
+  MatrixVolumeObject(VolumeObject *obj, Matrix m) : obj(obj), m(m) { }
+  virtual bool Inside(Point v) const { 
+    Point p = v*m; 
+    return obj->Inside(p);
+  }
+  virtual float Line(Point v, Point v2) const {
+    Point p1 = v*m;
+    Point p2 = v2*m;
+    return obj->Line(p1,p2);
+  }
+  virtual Color ColorValue(Point v) const {
+    Point p = v*m;
+    return obj->ColorValue(p);
+  }
+  virtual float Value(Point v) const {
+    Point p = v*m;
+    return obj->Value(p);
+  }
+  virtual Vector Normal(Point v) const {
+    Point p=v*m;
+    return obj->Normal(p);
+  }
+private:
+  VolumeObject *obj;
+  Matrix m;
+};
+
 class FloatVolumeObject {
 public:
   virtual float FloatValue(Point p) const=0;
@@ -793,6 +823,15 @@ private:
   Point center;
 };
 
+class FaceCollectionVolume : public VolumeObject
+{
+public:
+  FaceCollectionVolume(FaceCollection *coll, Point p) : coll(coll),pp(p) { }
+  bool Inside(Point p) const;
+private:
+  FaceCollection *coll;
+  Point pp;
+};
 
 
 class Random
