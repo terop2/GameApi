@@ -6787,6 +6787,28 @@ GameApi::O GameApi::VolumeApi::from_bool_bitmap(BB b, float dist)
   Bitmap<bool> *bm = c->bitmap;
   return add_volume(e, new BitmapVolume(bm, dist));
 }
+class SubsetColorVolume : public VolumeObject
+{
+public:
+  SubsetColorVolume(VolumeObject *model, VolumeObject *subset, unsigned int col) : model(model), subset(subset), col(col) { }
+  bool Inside(Point p) const { return model->Inside(p); }
+  Color ColorValue(Point p) const
+  {
+    if (subset->Inside(p)) return Color(col);
+    return model->ColorValue(p);
+  }
+
+private:
+  VolumeObject *model;
+  VolumeObject *subset;
+  unsigned int col;
+};
+GameApi::O GameApi::VolumeApi::subset_color(O model, O color_subset, unsigned int color)
+{
+  VolumeObject *model_1 = find_volume(e, model);
+  VolumeObject *color_subset_1 = find_volume(e, color_subset);
+  return add_volume(e, new SubsetColorVolume(model_1, color_subset_1, color));
+}
 GameApi::O GameApi::VolumeApi::rotatex(O obj, float angle)
 {
   VolumeObject *obj1 = find_volume(e,obj);

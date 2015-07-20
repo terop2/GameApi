@@ -83,7 +83,7 @@ int main() {
   O h1_comb = ev.volume_api.max_op(oooo, h1_color);
   O h2_comb = ev.volume_api.max_op(h1_comb, h2_color);
 
-  P p3 = ev.volume_api.rendercubes3(h2_comb, 300, 300, 300,
+  P p3 = ev.volume_api.rendercubes3(h2_comb, 100, 100, 100,
 				     -10.0, 10.0,
 				     -10.0, 10.0,
 				     -10.0, 10.0);
@@ -91,7 +91,7 @@ int main() {
   P p3aa = ev.polygon_api.translate(p3a, -400.0, 0.0, 0.0);
   P p3b = ev.polygon_api.scale(p3a, 30.0, 30.0, 30.0);
   //P p3b = ev.polygon_api.color_faces(p3aa, 0xffffffff, 0x88888888, 0x44444444, 0x22222222);
-  ev.polygon_api.save_model(p3b, "clock.obj");
+  //ev.polygon_api.save_model(p3b, "clock.obj");
 
   PolygonObj poly(ev, p3b, sh);
   poly.prepare();

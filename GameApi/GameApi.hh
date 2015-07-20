@@ -554,6 +554,8 @@ public:
 	IMPORT O reflect(O object, float val); // val = [0..1]
 	IMPORT O cubetexture(O object, PT origo, PT u_x, PT u_y, PT u_z, BM bm);
 	IMPORT O spheretexture(O object, PT center, BM texture, float multx, float multy);
+  IMPORT O subset_color(O model, O color_subset, unsigned int color);
+
 
   //IMPORT O move(O object, PT pos);
         IMPORT O move(O obj, float dx, float dy, float dz);
