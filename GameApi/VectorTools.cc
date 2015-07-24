@@ -25,6 +25,7 @@
 #include <iostream>
 #include <ostream>
 #include <algorithm>
+#include <vector>
 std::ostream &operator<<(std::ostream &o, const Point &p)
 {
   o << "(" << p.x << "," << p.y << "," << p.z << ")";

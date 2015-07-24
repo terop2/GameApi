@@ -120,7 +120,7 @@ CCWIN = em++
 #mingw32-g++
 
 $(DFiles): objs/%.d: %.cc
-	gcc -M $(CCFLAGS) $(CC2FLAGS) $< \
+	$(CCWIN) -M $(CCFLAGS) $(CC2FLAGS) $< \
 	|sed 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
 
 $(D2Files): objs/%.d2: %.cc

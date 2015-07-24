@@ -936,7 +936,7 @@ void iter()
 #endif
     env.board_obj->set_block(env.cursor_x, env.cursor_y, env.cursor_under);
 
-    env.ev->mainloop_api.fpscounter();
+    //env.ev->mainloop_api.fpscounter();
     // swapbuffers
     env.ev->mainloop_api.swapbuffers();
 
@@ -1092,7 +1092,7 @@ int main() {
 
   // shader initialization
   ev.shader_api.load_default();
-  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:light", "colour:light");
+  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:light:snoise", "colour:light:snoise");
     //ev.shader_api.colour_shader();
 
   // rest of the initializations
