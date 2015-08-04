@@ -163,7 +163,7 @@ struct SpritePosImpl
 };
 
 
-GameApi::MainLoopApi::MainLoopApi(Env &e) : frame(0.0), time(0.0), e(e)  
+EXPORT GameApi::MainLoopApi::MainLoopApi(Env &e) : frame(0.0), time(0.0), e(e)  
 {
   priv = (void*)new MainLoopPriv;
   MainLoopPriv *p = (MainLoopPriv*)priv;
@@ -171,15 +171,15 @@ GameApi::MainLoopApi::MainLoopApi(Env &e) : frame(0.0), time(0.0), e(e)
   p->time = 0;
   p->count = 0;
 }
-GameApi::MainLoopApi::~MainLoopApi()
+EXPORT GameApi::MainLoopApi::~MainLoopApi()
 {
   delete (MainLoopPriv*)priv;
 }
-void GameApi::MainLoopApi::cursor_visible(bool enabled)
+EXPORT void GameApi::MainLoopApi::cursor_visible(bool enabled)
 {
   SDL_ShowCursor(enabled);
 }
-void GameApi::MainLoopApi::init_window(int screen_width, int screen_height)
+EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_height)
 {
   MainLoopPriv *p = (MainLoopPriv*)priv;
   int screenx = screen_width;
@@ -192,7 +192,7 @@ void GameApi::MainLoopApi::init_window(int screen_width, int screen_height)
   time = SDL_GetTicks();
   glDisable(GL_DEPTH_TEST);
 }
-void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_height)
+EXPORT void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_height)
 {
   int screenx = screen_width;
   int screeny = screen_height;
@@ -213,27 +213,27 @@ void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_height)
   glMatrixOrthoEXT(GL_PROJECTION, 0, 800, 600, 0, -1, 1);
 #endif
 }
-void GameApi::MainLoopApi::transfer_sdl_surface(MainLoopApi &orig)
+EXPORT void GameApi::MainLoopApi::transfer_sdl_surface(MainLoopApi &orig)
 {
   MainLoopPriv *p = (MainLoopPriv*)priv;
   MainLoopPriv *p2 = (MainLoopPriv*)orig.priv;
   p->screen = p2->screen;
 }
-void GameApi::MainLoopApi::delay(int ms)
+EXPORT void GameApi::MainLoopApi::delay(int ms)
 {
   SDL_Delay(ms);
 }
-unsigned int GameApi::MainLoopApi::rand_max()
+EXPORT unsigned int GameApi::MainLoopApi::rand_max()
 {
   Random r;
   return r.maximum();
 }
-unsigned int GameApi::MainLoopApi::random()
+EXPORT unsigned int GameApi::MainLoopApi::random()
 {
   Random r;
   return r.next();
 }
-void GameApi::MainLoopApi::fpscounter()
+EXPORT void GameApi::MainLoopApi::fpscounter()
 {
   MainLoopPriv *p = (MainLoopPriv*)priv;
   unsigned int time = SDL_GetTicks();
@@ -251,7 +251,7 @@ void GameApi::MainLoopApi::fpscounter()
   }
 }
 
-void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_height)
+EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_height)
 {
   int screenx = screen_width;
   int screeny = screen_height;
@@ -292,7 +292,7 @@ void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_height)
   alpha(false);
   glEnable(GL_DEPTH_TEST);
 }
-void GameApi::MainLoopApi::nvidia_init()
+EXPORT void GameApi::MainLoopApi::nvidia_init()
 {
   if (GLEW_NV_path_rendering)
     {
@@ -302,7 +302,7 @@ void GameApi::MainLoopApi::nvidia_init()
     }
 }
 
-void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh)
+EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh)
 {
   int screenx = 800;
   int screeny = 600;
@@ -350,7 +350,7 @@ void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh)
     }
 }
 
-void GameApi::MainLoopApi::clear()
+EXPORT void GameApi::MainLoopApi::clear()
 {
   //glClearColor(255,255,255,255);
   glClearStencil(0);
@@ -365,7 +365,7 @@ void GameApi::MainLoopApi::clear()
   //glTranslatef(0.0, -100.0, 0.0);
 
 }
-void GameApi::MainLoopApi::clear_3d()
+EXPORT void GameApi::MainLoopApi::clear_3d()
 {
   //glClearColor(255,255,255,255);
   glClearStencil(0);
@@ -383,7 +383,7 @@ void GameApi::MainLoopApi::clear_3d()
 
 }
 
-void GameApi::MainLoopApi::transparency(bool enabled)
+EXPORT void GameApi::MainLoopApi::transparency(bool enabled)
 {
   if (enabled)
     {
@@ -396,7 +396,7 @@ void GameApi::MainLoopApi::transparency(bool enabled)
      glDepthMask(GL_TRUE);
     }
 }
-void GameApi::MainLoopApi::depth_test(bool enabled)
+EXPORT void GameApi::MainLoopApi::depth_test(bool enabled)
 {
   if (enabled)
     {
@@ -428,7 +428,7 @@ void GameApi::MainLoopApi::alpha(bool enable)
 #endif
     }
 }
-void GameApi::MainLoopApi::antialias(bool enable)
+EXPORT void GameApi::MainLoopApi::antialias(bool enable)
 {
   if (enable)
     {
@@ -440,15 +440,15 @@ void GameApi::MainLoopApi::antialias(bool enable)
     }
 }
 
-float GameApi::MainLoopApi::get_time()
+EXPORT float GameApi::MainLoopApi::get_time()
 {
   return SDL_GetTicks()-time;
 }
-int GameApi::MainLoopApi::get_framenum()
+EXPORT int GameApi::MainLoopApi::get_framenum()
 {
   return frame;
 }
-GameApi::BM GameApi::MainLoopApi::screenshot()
+EXPORT GameApi::BM GameApi::MainLoopApi::screenshot()
 {
   //MainLoopPriv *p = (MainLoopPriv*)priv;
   //SDL_Surface *surf = p->screen;
@@ -462,7 +462,7 @@ GameApi::BM GameApi::MainLoopApi::screenshot()
 }
 extern SDL_Window *sdl_window;
 
-void GameApi::MainLoopApi::swapbuffers()
+EXPORT void GameApi::MainLoopApi::swapbuffers()
 {
   //MainLoopPriv *p = (MainLoopPriv*)priv;
   //glLoadIdentity();
@@ -862,7 +862,7 @@ struct EnvImpl
 #endif
   std::vector<Font> fonts;
   static ::EnvImpl *Environment(GameApi::Env *e) { return (EnvImpl*)e->envimpl; }
-  void free_memory()
+  EXPORT void free_memory()
   {
     deletes.resize(0);
     deletes.shrink_to_fit();
@@ -2656,31 +2656,31 @@ private:
 };
 
 
-GameApi::GridApi::GridApi(GameApi::Env &e) : e(e)
+EXPORT GameApi::GridApi::GridApi(GameApi::Env &e) : e(e)
 {
   priv = (void*) new GridPriv;
 }
-GameApi::GridApi::~GridApi()
+EXPORT GameApi::GridApi::~GridApi()
 {
   delete (GridPriv*)priv;
 }
 
-GameApi::SpriteApi::SpriteApi(GameApi::Env &e) : e(e)
+EXPORT GameApi::SpriteApi::SpriteApi(GameApi::Env &e) : e(e)
 {
   priv = (void*) new SpritePriv;
 }
-GameApi::SpriteApi::~SpriteApi()
+EXPORT GameApi::SpriteApi::~SpriteApi()
 {
   delete (SpritePriv*)priv;
 }
-void GameApi::SpriteApi::spritepos(BM bm, float x, float y)
+EXPORT void GameApi::SpriteApi::spritepos(BM bm, float x, float y)
 {
   SpritePosImpl *i = find_sprite_pos(e,bm);
   i->x = x;
   i->y = y;
 }
 
-void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
+EXPORT void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
@@ -2715,7 +2715,7 @@ void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
       std::cout << "SpriteApi::render_sprite_vertex_array, texture not found!" << std::endl;
     }
 }
-GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
+EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   SpritePriv &spriv = *(SpritePriv*)priv;
@@ -2733,7 +2733,7 @@ GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
   return add_vertex_array(e, s, arr); 
 }
 
-void GameApi::SpriteApi::preparesprite(BM bm, int bbm_choose)
+EXPORT void GameApi::SpriteApi::preparesprite(BM bm, int bbm_choose)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   //Bitmap<Color> *cbm = find_color_bitmap(handle, bbm_choose);
@@ -2828,13 +2828,13 @@ void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SH sh, SP move_space
 void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, PT pos)
 {
 }
-GameApi::SP GameApi::SpriteApi::spritespace(BM bm)
+EXPORT GameApi::SP GameApi::SpriteApi::spritespace(BM bm)
 {
   SP s;
   s.id = 0;
   return s;
 }
-GameApi::PT GameApi::SpriteApi::pixelpos(BM bm, int x, int y)
+EXPORT GameApi::PT GameApi::SpriteApi::pixelpos(BM bm, int x, int y)
 {
   PT pt;
   pt.id = 0;
@@ -2853,11 +2853,11 @@ struct AnimPriv
 {
 };
 
-GameApi::BitmapApi::BitmapApi(Env &e) : e(e) 
+EXPORT GameApi::BitmapApi::BitmapApi(Env &e) : e(e) 
 {
   priv = (void*)new BitmapPriv;
 }
-GameApi::BitmapApi::~BitmapApi()
+EXPORT GameApi::BitmapApi::~BitmapApi()
 {
   delete (BitmapPriv*)priv;
 }
@@ -2869,14 +2869,14 @@ GameApi::AnimApi::~AnimApi()
 {
   delete (AnimPriv*)priv;
 }
-GameApi::ShaderApi::ShaderApi(Env &e) : e(e)
+EXPORT GameApi::ShaderApi::ShaderApi(Env &e) : e(e)
 {
   priv = (void*)new ShaderPriv2;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   p->file = 0;
   p->seq = 0;
 }
-GameApi::ShaderApi::~ShaderApi()
+EXPORT GameApi::ShaderApi::~ShaderApi()
 {
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   delete p->file;
@@ -2923,7 +2923,7 @@ private:
   unsigned int key;
 };
 
-GameApi::BMA GameApi::BitmapApi::empty_array()
+EXPORT GameApi::BMA GameApi::BitmapApi::empty_array()
 {
   return array(NULL, 0);
 }
@@ -2981,13 +2981,13 @@ private:
   int i;
 };
 
-GameApi::BM GameApi::BitmapApi::array_elem(BMA array, int i)
+EXPORT GameApi::BM GameApi::BitmapApi::array_elem(BMA array, int i)
 {
   BitmapArray2<Color> *arr = find_bitmap_array(e, array);
   return add_color_bitmap2(e, new BitmapArrayElem(arr, i));
 }
 
-GameApi::BM GameApi::BitmapApi::alpha_color(BM orig, unsigned int color_key)
+EXPORT GameApi::BM GameApi::BitmapApi::alpha_color(BM orig, unsigned int color_key)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
   ::Bitmap<Color> *b2 = find_color_bitmap(handle);
@@ -3023,7 +3023,7 @@ private:
   unsigned int color_2;
   int sx,sy;
 };
-GameApi::BM GameApi::BitmapApi::gradient(PT pos_1, PT pos_2, unsigned int color_1, unsigned int color_2, int sx, int sy)
+EXPORT GameApi::BM GameApi::BitmapApi::gradient(PT pos_1, PT pos_2, unsigned int color_1, unsigned int color_2, int sx, int sy)
 {
   Point *pos_1a = find_point(e, pos_1);
   Point *pos_2a = find_point(e, pos_2);
@@ -3059,7 +3059,7 @@ private:
   unsigned int color_1, color_2;
 };
 
-GameApi::BM GameApi::BitmapApi::radial_gradient(int sx, int sy, PT pos, float r1, float r2, unsigned int color_1, unsigned int color_2)
+EXPORT GameApi::BM GameApi::BitmapApi::radial_gradient(int sx, int sy, PT pos, float r1, float r2, unsigned int color_1, unsigned int color_2)
 {
   Point *pos_p1 = find_point(e, pos);
   Point2d pos_p = { pos_p1->x, pos_p1->y };
@@ -3070,7 +3070,7 @@ GameApi::BM GameApi::BitmapApi::radial_gradient(int sx, int sy, PT pos, float r1
   return bm;
 }
 
-GameApi::BM GameApi::BitmapApi::newbitmap(int sx, int sy, unsigned int color)
+EXPORT GameApi::BM GameApi::BitmapApi::newbitmap(int sx, int sy, unsigned int color)
 {
   ::Bitmap<Color> *b = new ConstantBitmap<Color>(Color(color), sx,sy);
   BitmapColorHandle *handle = new BitmapColorHandle;
@@ -3113,7 +3113,7 @@ private:
 };
 
 
-GameApi::BM GameApi::BitmapApi::transform(BM orig, std::function<unsigned int (int,int, unsigned int)> f)
+EXPORT GameApi::BM GameApi::BitmapApi::transform(BM orig, std::function<unsigned int (int,int, unsigned int)> f)
 {
   //GameApi::EveryApi *ev = new GameApi::EveryApi(e);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -3127,21 +3127,21 @@ GameApi::BM GameApi::BitmapApi::transform(BM orig, std::function<unsigned int (i
   BitmapFromUnsignedInt *bm2 = new BitmapFromUnsignedInt(*trans);
   return add_color_bitmap(e, bm2);
 }
-GameApi::BM GameApi::BitmapApi::function(std::function<unsigned(int,int)> f, int sx, int sy)
+EXPORT GameApi::BM GameApi::BitmapApi::function(std::function<unsigned(int,int)> f, int sx, int sy)
 {
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
   Bitmap<unsigned int> *bm = new BitmapFromFunction<unsigned int>(f,sx,sy);  
   return add_color_bitmap(e, new BitmapFromUnsignedInt(*bm));
 }
 
-GameApi::BM GameApi::BitmapApi::memoize(GameApi::BM bm)
+EXPORT GameApi::BM GameApi::BitmapApi::memoize(GameApi::BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *bitmap = find_color_bitmap(handle);
   return add_color_bitmap(e, new MemoizeBitmap(*bitmap));
 }
 
-GameApi::BM GameApi::BitmapApi::memoize_all(GameApi::BM bm)
+EXPORT GameApi::BM GameApi::BitmapApi::memoize_all(GameApi::BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *bitmap = find_color_bitmap(handle);
@@ -3150,7 +3150,7 @@ GameApi::BM GameApi::BitmapApi::memoize_all(GameApi::BM bm)
   return add_color_bitmap(e, membitmap);
 }
 
-GameApi::BM GameApi::WaveformApi::waveform_bitmap(WV wave, int sx, int sy, unsigned int true_color, unsigned int false_color)
+EXPORT GameApi::BM GameApi::WaveformApi::waveform_bitmap(WV wave, int sx, int sy, unsigned int true_color, unsigned int false_color)
 {
   Waveform *m_wave = find_waveform(e, wave);
   return add_color_bitmap(e, new WaveformBitmap(*m_wave, 0.0, m_wave->Length(), m_wave->Min(), m_wave->Max(), sx, sy, Color(true_color), Color(false_color)));
@@ -3176,7 +3176,7 @@ private:
   int count_x, count_y;
   Color c1,c2;
 };
-GameApi::BM GameApi::BitmapApi::chessboard(int tile_sx, int tile_sy, int count_x, int count_y, unsigned int c1, unsigned int c2)
+EXPORT GameApi::BM GameApi::BitmapApi::chessboard(int tile_sx, int tile_sy, int count_x, int count_y, unsigned int c1, unsigned int c2)
 {
   Bitmap<Color> *m = new ChessBoardBitmap2(tile_sx, tile_sy, count_x, count_y, Color(c1), Color(c2));
   BitmapColorHandle *handle = new BitmapColorHandle;
@@ -3184,7 +3184,7 @@ GameApi::BM GameApi::BitmapApi::chessboard(int tile_sx, int tile_sy, int count_x
   BM bm = add_bitmap(e, handle);
   return bm;
 }
-GameApi::BM GameApi::BitmapApi::mandelbrot(bool julia,
+EXPORT GameApi::BM GameApi::BitmapApi::mandelbrot(bool julia,
 		float start_x, float end_x,
 		float start_y, float end_y,
 		float xx, float yy,
@@ -3208,7 +3208,7 @@ GameApi::BM GameApi::BitmapApi::mandelbrot(bool julia,
   return bm;  
 }
 
-GameApi::BM GameApi::BitmapApi::mandelbrot2(bool julia,
+EXPORT GameApi::BM GameApi::BitmapApi::mandelbrot2(bool julia,
 		float start_x, float end_x,
 		float start_y, float end_y,
 		float xx, float yy,
@@ -3232,7 +3232,7 @@ GameApi::BM GameApi::BitmapApi::mandelbrot2(bool julia,
   return bm;  
 }
 
-GameApi::BM GameApi::BitmapApi::newtilebitmap(int sx, int sy, int tile_sx, int tile_sy)
+EXPORT GameApi::BM GameApi::BitmapApi::newtilebitmap(int sx, int sy, int tile_sx, int tile_sy)
 {
   ::Bitmap<Color> *b = new ConstantBitmap<Color>(Color(0,0,0), sx,sy);
   BitmapTileHandle *handle = new BitmapTileHandle;
@@ -3246,7 +3246,7 @@ GameApi::BM GameApi::BitmapApi::newtilebitmap(int sx, int sy, int tile_sx, int t
 
 BufferRef LoadImage(std::string filename, bool &success);
 
-void GameApi::BitmapApi::savebitmap(BM bm, std::string filename)
+EXPORT void GameApi::BitmapApi::savebitmap(BM bm, std::string filename)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *bm2 = find_color_bitmap(handle);
@@ -3257,7 +3257,7 @@ void GameApi::BitmapApi::savebitmap(BM bm, std::string filename)
   filehandle.close();
 }
 
-GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
+EXPORT GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
 {
 
   //ChessBoardBitmap *bmp = new ChessBoardBitmap(Color(255,0.0,0.0), Color(255,255,255), 8, 8, 30, 30);
@@ -3281,7 +3281,7 @@ GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
   BM bm = add_bitmap(e, handle);
   return bm;
 }
-GameApi::BM GameApi::BitmapApi::loadtilebitmap(std::string filename, int sx, int sy)
+EXPORT GameApi::BM GameApi::BitmapApi::loadtilebitmap(std::string filename, int sx, int sy)
 {
 
   //ChessBoardBitmap *bmp = new ChessBoardBitmap(Color(255,0.0,0.0), Color(255,255,255), 8, 8, 30, 30);
@@ -3299,7 +3299,7 @@ GameApi::BM GameApi::BitmapApi::loadtilebitmap(std::string filename, int sx, int
 }
 
 
-GameApi::BM GameApi::BitmapApi::loadposbitmap(std::string filename)
+EXPORT GameApi::BM GameApi::BitmapApi::loadposbitmap(std::string filename)
 {
   BitmapCircle *circle = new BitmapCircle(Point2d::NewPoint(30.0,30.0), 30.0, 60,60);
   ColorMap2 *f = new ColorMap2;
@@ -3329,21 +3329,21 @@ GameApi::PT GameApi::MovementApi::pos(float x, float y)
 std::map<int, void (*)(GameApi::EveryApi&) > gamefunctions;
 std::map<int, int> gamemapping;
 
-GameApi::GamesApi::GamesApi(Env &e) : e(e)
+EXPORT GameApi::GamesApi::GamesApi(Env &e) : e(e)
 {
 }
-GameApi::GamesApi::~GamesApi()
+EXPORT GameApi::GamesApi::~GamesApi()
 {
 }
-void GameApi::GamesApi::register_game(int game_id, void (*fptr)(GameApi::EveryApi &e))
+EXPORT void GameApi::GamesApi::register_game(int game_id, void (*fptr)(GameApi::EveryApi &e))
 {
   gamefunctions[game_id] = fptr;
 }
-void GameApi::GamesApi::modify_map(int event, int game_id)
+EXPORT void GameApi::GamesApi::modify_map(int event, int game_id)
 {
   gamemapping[event] = game_id;
 }
-void GameApi::GamesApi::start_game(int event)
+EXPORT void GameApi::GamesApi::start_game(int event)
 {
   int id = gamemapping[event];
   void (*fptr)(GameApi::EveryApi &) = gamefunctions[id];
@@ -3355,7 +3355,7 @@ void GameApi::GamesApi::start_game(int event)
 }
 
 
-void GameApi::GridApi::preparegrid(GameApi::BM tile_bitmap, int tile_choose)
+EXPORT void GameApi::GridApi::preparegrid(GameApi::BM tile_bitmap, int tile_choose)
 {
   GridPriv *p = (GridPriv*)priv;
   p->last_id = tile_bitmap.id;
@@ -3379,7 +3379,7 @@ void GameApi::GridApi::preparegrid(GameApi::BM tile_bitmap, int tile_choose)
   PrepareGrid(*bitmap, sx, sy, *rend);
 }
 
-void GameApi::GridApi::rendergrid(GameApi::BM grid, int grid_choose, float top_x, float top_y)
+EXPORT void GameApi::GridApi::rendergrid(GameApi::BM grid, int grid_choose, float top_x, float top_y)
 {
   GridPriv *p = (GridPriv*)priv;
   int cellsx = p->cellsx[p->last_id];
@@ -3391,7 +3391,7 @@ void GameApi::GridApi::rendergrid(GameApi::BM grid, int grid_choose, float top_x
   RenderGrid(*bitmap, top_x, top_y, cellsx, cellsy, p->rend, 0,0, 10,10);
 }
 
-GameApi::BM GameApi::BitmapApi::findtile(GameApi::BM tile_bitmap, int x, int y)
+EXPORT GameApi::BM GameApi::BitmapApi::findtile(GameApi::BM tile_bitmap, int x, int y)
 {
   BitmapHandle *handle = find_bitmap(e, tile_bitmap);
   BitmapTileHandle *chandle = dynamic_cast<BitmapTileHandle*>(handle);
@@ -3533,7 +3533,7 @@ BitmapHandle *growbitmap_h(BitmapHandle *handle, int l, int t, int r, int b)
   return 0;
 }
 
-GameApi::BM GameApi::BitmapApi::growbitmap(GameApi::BM orig, int l, int t, int r, int b)
+EXPORT GameApi::BM GameApi::BitmapApi::growbitmap(GameApi::BM orig, int l, int t, int r, int b)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
   BitmapHandle *handle2 = growbitmap_h(handle, l,t,r,b);
@@ -3591,7 +3591,7 @@ BitmapHandle *modify_bitmap_h(BitmapHandle *orig, BitmapHandle *bm, int x, int y
   return 0;
 }
 
-GameApi::BM GameApi::BitmapApi::modify_bitmap(GameApi::BM orig, BM bm, int x, int y)
+EXPORT GameApi::BM GameApi::BitmapApi::modify_bitmap(GameApi::BM orig, BM bm, int x, int y)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
   BitmapHandle *handle2 = find_bitmap(e, bm);
@@ -3599,7 +3599,7 @@ GameApi::BM GameApi::BitmapApi::modify_bitmap(GameApi::BM orig, BM bm, int x, in
   BM bbm = add_bitmap(e,h);
   return bbm;
 }
-GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y)
+EXPORT GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y)
 {
   BitmapHandle *handle = find_bitmap(e, bg);
   BitmapHandle *handle2 = find_bitmap(e, orig);
@@ -3608,7 +3608,7 @@ GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y)
   return add_color_bitmap(e, new BlitBitmapClass(*bm1, *bm2, x,y));
 }
 
-GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y, FB mask)
+EXPORT GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y, FB mask)
 {
   BitmapHandle *handle = find_bitmap(e, bg);
   BitmapHandle *handle2 = find_bitmap(e, orig);
@@ -3619,7 +3619,7 @@ GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y, FB mask
   return add_color_bitmap(e, new BlitBitmapClassMasked(*bm1, *bm2, x,y, *bm3));
 }
 
-GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y, BB mask)
+EXPORT GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y, BB mask)
 {
   BitmapHandle *handle = find_bitmap(e, bg);
   BitmapHandle *handle2 = find_bitmap(e, orig);
@@ -3630,7 +3630,7 @@ GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y, BB mask
   return add_color_bitmap(e, new BlitBitmapClassMasked2(*bm1, *bm2, x,y, *bm3));
 }
 
-int GameApi::BitmapApi::intvalue(GameApi::BM orig, int x, int y)
+EXPORT int GameApi::BitmapApi::intvalue(GameApi::BM orig, int x, int y)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
   BitmapIntHandle *handle2 = dynamic_cast<BitmapIntHandle*>(handle);
@@ -3641,7 +3641,7 @@ int GameApi::BitmapApi::intvalue(GameApi::BM orig, int x, int y)
   return 0;
 }
 
-int GameApi::BitmapApi::size_x(BM bm)
+EXPORT int GameApi::BitmapApi::size_x(BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   BitmapColorHandle *handle2 = dynamic_cast<BitmapColorHandle*>(handle);
@@ -3661,7 +3661,7 @@ int GameApi::BitmapApi::size_x(BM bm)
     return handle6->bm->SizeX();
   return 0;
 }
-int GameApi::BitmapApi::size_y(BM bm)
+EXPORT int GameApi::BitmapApi::size_y(BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
 
@@ -3684,7 +3684,7 @@ int GameApi::BitmapApi::size_y(BM bm)
 
 }
 
-unsigned int GameApi::BitmapApi::colorvalue(GameApi::BM orig, int x, int y)
+EXPORT unsigned int GameApi::BitmapApi::colorvalue(GameApi::BM orig, int x, int y)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
   BitmapColorHandle *handle2 = dynamic_cast<BitmapColorHandle*>(handle);
@@ -3696,7 +3696,7 @@ unsigned int GameApi::BitmapApi::colorvalue(GameApi::BM orig, int x, int y)
 }
 
 
-GameApi::BM GameApi::BitmapApi::interpolate_bitmap(GameApi::BM orig1, GameApi::BM orig2, float x)
+EXPORT GameApi::BM GameApi::BitmapApi::interpolate_bitmap(GameApi::BM orig1, GameApi::BM orig2, float x)
 {
   BitmapHandle *handle1 = find_bitmap(e, orig1);
   BitmapHandle *handle2 = find_bitmap(e, orig2);
@@ -3735,7 +3735,7 @@ private:
 };
 
 
-GameApi::BM GameApi::BitmapApi::newintbitmap(char *array, int sx, int sy, std::function<int (char ch)> f )
+EXPORT GameApi::BM GameApi::BitmapApi::newintbitmap(char *array, int sx, int sy, std::function<int (char ch)> f )
 {
   //EveryApi *ev = new EveryApi(e);
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -3745,7 +3745,7 @@ GameApi::BM GameApi::BitmapApi::newintbitmap(char *array, int sx, int sy, std::f
   return add_bitmap(e, handle);
 }
 
-GameApi::BM GameApi::BitmapApi::newcolorbitmap(char *array, int sx, int sy, std::function<unsigned int (char)> f)
+EXPORT GameApi::BM GameApi::BitmapApi::newcolorbitmap(char *array, int sx, int sy, std::function<unsigned int (char)> f)
 {
   //EveryApi *ev = new EveryApi(e);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -3759,7 +3759,7 @@ GameApi::BM GameApi::BitmapApi::newcolorbitmap(char *array, int sx, int sy, std:
 
 
 
-GameApi::BM GameApi::BitmapApi::anim_array(GameApi::BM *bitmaparray, int size)
+EXPORT GameApi::BM GameApi::BitmapApi::anim_array(GameApi::BM *bitmaparray, int size)
 {
   int s = size;
   BitmapArrayHandle *handle = new BitmapArrayHandle;
@@ -3777,7 +3777,7 @@ GameApi::BM GameApi::BitmapApi::anim_array(GameApi::BM *bitmaparray, int size)
 }
 
 #if 0
-GameApi::BM GameApi::BitmapApi::bitmapandtypes(BM bm, BM (*fptr)(GameApi::EveryApi &ev,int))
+EXPORT GameApi::BM GameApi::BitmapApi::bitmapandtypes(BM bm, BM (*fptr)(GameApi::EveryApi &ev,int))
 {
   BitmapHandle *h = find_bitmap(e, bm);
   BitmapIntHandle *hh = dynamic_cast<BitmapIntHandle*>(h);
@@ -4023,12 +4023,12 @@ float GameApi::AnimApi::timed_value_float(IS i, float time)
 }
 
 
-GameApi::TextApi::~TextApi()
+EXPORT GameApi::TextApi::~TextApi()
 {
   delete(std::vector<BM>*)priv;
 }
 
-void GameApi::TextApi::load_font(std::string filename, int sx, int sy, int x, int y, char start_char, char end_char)
+EXPORT void GameApi::TextApi::load_font(std::string filename, int sx, int sy, int x, int y, char start_char, char end_char)
 {
   this->sx = sx;
   this->sy = sy;
@@ -4048,7 +4048,7 @@ void GameApi::TextApi::load_font(std::string filename, int sx, int sy, int x, in
 	}
     }
 }
-void GameApi::TextApi::draw_text(std::string text, int x, int y, SH sh)
+EXPORT void GameApi::TextApi::draw_text(std::string text, int x, int y, SH sh)
 {
   int xpos = x;
   int ypos = y;
@@ -4067,12 +4067,12 @@ void GameApi::TextApi::draw_text(std::string text, int x, int y, SH sh)
     }
 }
 
-GameApi::PolygonApi::PolygonApi(GameApi::Env &e) : e(e)
+EXPORT GameApi::PolygonApi::PolygonApi(GameApi::Env &e) : e(e)
 {
   priv = (void*)new PolyPriv;
 }
 
-GameApi::PolygonApi::~PolygonApi()
+EXPORT GameApi::PolygonApi::~PolygonApi()
 {
   delete(PolyPriv*)priv;
 }
@@ -4121,7 +4121,7 @@ GameApi::P GameApi::PolygonApi::from_polygon(P p, std::function<P (int face, flo
   P pp = or_array(&vec[0], s);
   return pp;
 }
-GameApi::P GameApi::PolygonApi::from_lines(LI li, std::function<P (int i, float sx, float sy, float sz, float ex, float ey, float ez, unsigned int scolor, unsigned int ecolor)> f)
+EXPORT GameApi::P GameApi::PolygonApi::from_lines(LI li, std::function<P (int i, float sx, float sy, float sz, float ex, float ey, float ez, unsigned int scolor, unsigned int ecolor)> f)
 {
   LineCollection *coll = find_line_array(e, li);
   int count = coll->NumLines();
@@ -4138,7 +4138,7 @@ GameApi::P GameApi::PolygonApi::from_lines(LI li, std::function<P (int i, float 
   P pp = or_array(&vec[0], count);
   return pp;
 }
-GameApi::P GameApi::PolygonApi::from_points(PTS pts, std::function<P (int i, float x, float y, float z, unsigned int color)> f)
+EXPORT GameApi::P GameApi::PolygonApi::from_points(PTS pts, std::function<P (int i, float x, float y, float z, unsigned int color)> f)
 {
   PointsApiPoints *p = find_pointsapi_points(e, pts);
   int count = p->NumPoints();
@@ -4153,7 +4153,7 @@ GameApi::P GameApi::PolygonApi::from_points(PTS pts, std::function<P (int i, flo
   P pp = or_array(&vec[0], count);
   return pp;
 }
-GameApi::P GameApi::PolygonApi::world_from_voxel(std::function<P (unsigned int c)> f, VX voxel, float dx, float dy, float dz)
+EXPORT GameApi::P GameApi::PolygonApi::world_from_voxel(std::function<P (unsigned int c)> f, VX voxel, float dx, float dy, float dz)
 {
   Voxel<unsigned int> *vox = find_voxel(e, voxel);
   int sx = vox->SizeX();
@@ -4188,7 +4188,7 @@ GameApi::P GameApi::PolygonApi::world_from_voxel(std::function<P (unsigned int c
   P p = or_array(&vec_x[0],sx);
   return p;
 }
-GameApi::P GameApi::PolygonApi::world_from_bitmap(std::function<P (int c)> f, BM int_bm, float dx, float dz)
+EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(std::function<P (int c)> f, BM int_bm, float dx, float dz)
 {
   BitmapIntHandle *handle = dynamic_cast<BitmapIntHandle*>(find_bitmap(e, int_bm));
   if (!handle) { GameApi::P p1 = { 0 }; return p1; }
@@ -4213,7 +4213,7 @@ GameApi::P GameApi::PolygonApi::world_from_bitmap(std::function<P (int c)> f, BM
   return p;
 }
 
-GameApi::P GameApi::PolygonApi::triangle(PT p1, PT p2, PT p3)
+EXPORT GameApi::P GameApi::PolygonApi::triangle(PT p1, PT p2, PT p3)
 {
   Point *pp1 = find_point(e, p1);
   Point *pp2 = find_point(e, p2);
@@ -4237,7 +4237,7 @@ private:
   Point u_y;
   Point u_z;
 };
-GameApi::P GameApi::PolygonApi::unit_cube(P orig, PT pos, V u_x, V u_y, V u_z)
+EXPORT GameApi::P GameApi::PolygonApi::unit_cube(P orig, PT pos, V u_x, V u_y, V u_z)
 {
   FaceCollection *coll = find_facecoll(e, orig);
   Point *pos_1 = find_point(e, pos);
@@ -4263,7 +4263,7 @@ private:
   Point u_z;
 };
 
-GameApi::P GameApi::PolygonApi::unit_to_cube(P orig, PT pos, V u_x, V u_y, V u_z)
+EXPORT GameApi::P GameApi::PolygonApi::unit_to_cube(P orig, PT pos, V u_x, V u_y, V u_z)
 {
   FaceCollection *coll = find_facecoll(e, orig);
   Point *pos_1 = find_point(e, pos);
@@ -4291,7 +4291,7 @@ private:
   Point bTL, bTR, bBL, bBR, fTL, fTR, fBL, fBR;
 };
 
-GameApi::P GameApi::PolygonApi::unit_to_flex(P orig, 
+EXPORT GameApi::P GameApi::PolygonApi::unit_to_flex(P orig, 
 					     PT bTL, PT bTR, PT bBL, PT bBR,
 					     PT fTL, PT fTR, PT fBL, PT fBR)
 {
@@ -4310,16 +4310,16 @@ GameApi::P GameApi::PolygonApi::unit_to_flex(P orig,
 }
 
 
-GameApi::P GameApi::PolygonApi::empty()
+EXPORT GameApi::P GameApi::PolygonApi::empty()
 {
   return add_polygon(e,new EmptyBoxableFaceCollection, 1);
 }
 
-GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
+EXPORT GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
 {
   return add_polygon2(e, new LoadObjModelFaceCollection(filename, num), 1);
 } 
-void GameApi::PolygonApi::save_model(GameApi::P poly, std::string filename)
+EXPORT void GameApi::PolygonApi::save_model(GameApi::P poly, std::string filename)
 {
   FaceCollection *face = find_facecoll(e, poly);
   SaveObjModelFaceCollection save(face);
@@ -4327,7 +4327,7 @@ void GameApi::PolygonApi::save_model(GameApi::P poly, std::string filename)
 }
    
 #if 0
-GameApi::P GameApi::PolygonApi::line(PT p1, PT p2)
+EXPORT GameApi::P GameApi::PolygonApi::line(PT p1, PT p2)
 {
   Point *pp1 = find_point(e, p1);
   Point *pp2 = find_point(e, p2);
@@ -4382,9 +4382,10 @@ private:
 class TexCoordSpherical : public ForwardFaceCollection
 {
 public:
-  TexCoordSpherical(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  TexCoordSpherical(Point center, FaceCollection *coll) : ForwardFaceCollection(*coll), center(center), coll(coll) { }
     virtual Point2d TexCoord(int face, int point) const { 
       Point p = ForwardFaceCollection::FacePoint(face,point);
+      p-=Vector(center);
       float r = sqrt(p.x*p.x+p.y*p.y+p.z*p.z);
       float alfa = acos(p.z/r);
       float beta = atan2(p.y,p.x);
@@ -4396,6 +4397,7 @@ public:
       return pp;
     }
 private:
+  Point center;
   FaceCollection *coll;
 };
 
@@ -4466,7 +4468,7 @@ private:
   float p4_x, p4_y;
 					   
 };
-GameApi::P GameApi::PolygonApi::texcoord_manual(P orig,
+EXPORT GameApi::P GameApi::PolygonApi::texcoord_manual(P orig,
 						float p1_x, float p1_y,
 						float p2_x, float p2_y,
 						float p3_x, float p3_y,
@@ -4476,13 +4478,14 @@ GameApi::P GameApi::PolygonApi::texcoord_manual(P orig,
   
   return add_polygon(e, new TexCoordManual(face, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, p4_x, p4_y),1);
 }
-GameApi::P GameApi::PolygonApi::texcoord_spherical(P orig)
+EXPORT GameApi::P GameApi::PolygonApi::texcoord_spherical(PT center, P orig)
 {
+  Point *center_1 = find_point(e, center);
   FaceCollection *face = find_facecoll(e, orig);
   
-  return add_polygon(e, new TexCoordSpherical(face),1);
+  return add_polygon(e, new TexCoordSpherical(*center_1, face),1);
 }
-GameApi::P GameApi::PolygonApi::texcoord_cylindar(P orig, float start_y, float end_y)
+EXPORT GameApi::P GameApi::PolygonApi::texcoord_cylindar(P orig, float start_y, float end_y)
 {
   FaceCollection *face = find_facecoll(e, orig);
   return add_polygon(e, new TexCoordCylindar(face,start_y, end_y),1);
@@ -4503,7 +4506,7 @@ GameApi::P GameApi::PolygonApi::sprite_bind(P p, Q q, TX tx)
   return add_polygon(e, new TexCoordQuadFaceCollection(*pp1, qq, sx,sy),1);
 }
 
-GameApi::P GameApi::PolygonApi::quad(PT p1, PT p2, PT p3, PT p4)
+EXPORT GameApi::P GameApi::PolygonApi::quad(PT p1, PT p2, PT p3, PT p4)
 {
   Point *pp1 = find_point(e, p1);
   Point *pp2 = find_point(e, p2);
@@ -4512,7 +4515,7 @@ GameApi::P GameApi::PolygonApi::quad(PT p1, PT p2, PT p3, PT p4)
   FaceCollection *coll = new QuadElem(*pp1, *pp2, *pp3, *pp4);
   return add_polygon(e, coll,1);
 }
-GameApi::P GameApi::PolygonApi::quad_x(float x,
+EXPORT GameApi::P GameApi::PolygonApi::quad_x(float x,
 		  float y1, float y2,
 		  float z1, float z2)
 {
@@ -4523,7 +4526,7 @@ GameApi::P GameApi::PolygonApi::quad_x(float x,
   FaceCollection *coll = new QuadElem(pp1,pp2,pp3,pp4);
   return add_polygon(e,coll,1);
 }
-GameApi::P GameApi::PolygonApi::quad_y(float x1, float x2,
+EXPORT GameApi::P GameApi::PolygonApi::quad_y(float x1, float x2,
 		  float y,
 		  float z1, float z2)
 {
@@ -4534,7 +4537,7 @@ GameApi::P GameApi::PolygonApi::quad_y(float x1, float x2,
   FaceCollection *coll = new QuadElem(pp1,pp2,pp3,pp4);
   return add_polygon(e,coll,1);
 }
-GameApi::P GameApi::PolygonApi::quad_z(float x1, float x2,
+EXPORT GameApi::P GameApi::PolygonApi::quad_z(float x1, float x2,
 		  float y1, float y2,
 		  float z)
 {
@@ -4548,7 +4551,7 @@ GameApi::P GameApi::PolygonApi::quad_z(float x1, float x2,
 
 
 
-GameApi::P GameApi::PolygonApi::cube(float start_x, float end_x,
+EXPORT GameApi::P GameApi::PolygonApi::cube(float start_x, float end_x,
 				  float start_y, float end_y,
 				  float start_z, float end_z)
 {
@@ -4566,7 +4569,7 @@ GameApi::P GameApi::PolygonApi::cube(float start_x, float end_x,
   return add_polygon2(e, coll,1);  
 }
 
-GameApi::P GameApi::PolygonApi::cube(PT *p)
+EXPORT GameApi::P GameApi::PolygonApi::cube(PT *p)
 {
   Point *p111 = find_point(e,p[0]);
   Point *p112 = find_point(e,p[1]);
@@ -4581,13 +4584,13 @@ GameApi::P GameApi::PolygonApi::cube(PT *p)
 				      *p211,*p212,*p221,*p222);
   return add_polygon(e, coll,1);  
 }
-GameApi::P GameApi::PolygonApi::sphere(PT center, float radius, int numfaces1, int numfaces2)
+EXPORT GameApi::P GameApi::PolygonApi::sphere(PT center, float radius, int numfaces1, int numfaces2)
 {
     Point *p = find_point(e,center);
     FaceCollection *coll = new SphereElem(*p, radius, numfaces1, numfaces2);
     return add_polygon(e, coll,1);
 }
-GameApi::P GameApi::PolygonApi::torus(int numfaces1, int numfaces2, PT center, V u_x, V u_y, float radius1, V uu_x, V uu_y, float radius2)
+EXPORT GameApi::P GameApi::PolygonApi::torus(int numfaces1, int numfaces2, PT center, V u_x, V u_y, float radius1, V uu_x, V uu_y, float radius2)
 {
   Point *cent = find_point(e, center);
   Vector *u_x1 = find_vector(e, u_x);
@@ -4597,7 +4600,7 @@ GameApi::P GameApi::PolygonApi::torus(int numfaces1, int numfaces2, PT center, V
   FaceCollection *coll = new TorusElem(numfaces1, numfaces2, *cent, *u_x1, *u_y1, radius1, *uu_x1, *uu_y1, radius2);
   return add_polygon(e, coll, 1); 
 }
-GameApi::P GameApi::PolygonApi::cone(int numfaces, PT p1, PT p2, float rad1, float rad2)
+EXPORT GameApi::P GameApi::PolygonApi::cone(int numfaces, PT p1, PT p2, float rad1, float rad2)
 {
     Point *pp1 = find_point(e,p1);
     Point *pp2 = find_point(e,p2);
@@ -4605,7 +4608,7 @@ GameApi::P GameApi::PolygonApi::cone(int numfaces, PT p1, PT p2, float rad1, flo
     return add_polygon(e, coll,1);
 }
 
-GameApi::P GameApi::PolygonApi::ring(float sx, float sy, float x, int steps)
+EXPORT GameApi::P GameApi::PolygonApi::ring(float sx, float sy, float x, int steps)
 {
   std::pair<Point, Vector> array[] = 
     { 
@@ -4623,7 +4626,7 @@ GameApi::P GameApi::PolygonApi::ring(float sx, float sy, float x, int steps)
   return add_polygon(e, ring,1);
 }
 
-GameApi::P GameApi::PolygonApi::shadow(P p, PT pos, V u_x, V u_y, V light_vec)
+EXPORT GameApi::P GameApi::PolygonApi::shadow(P p, PT pos, V u_x, V u_y, V light_vec)
 {
   FaceCollection *pp = find_facecoll(e, p);
   Point *pos_1 = find_point(e, pos);
@@ -4633,7 +4636,7 @@ GameApi::P GameApi::PolygonApi::shadow(P p, PT pos, V u_x, V u_y, V light_vec)
   return add_polygon(e, new ShadowFaceCollection(*pp, *pos_1, *uu_x, *uu_y, *light), 1);
 }
 
-GameApi::P GameApi::PolygonApi::reflection(P p, PT pos, V u_x, V u_y, V ref_vec)
+EXPORT GameApi::P GameApi::PolygonApi::reflection(P p, PT pos, V u_x, V u_y, V ref_vec)
 {
   FaceCollection *pp = find_facecoll(e, p);
   Point *pos_1 = find_point(e, pos);
@@ -4644,7 +4647,7 @@ GameApi::P GameApi::PolygonApi::reflection(P p, PT pos, V u_x, V u_y, V ref_vec)
 }
 
 
-GameApi::P GameApi::PolygonApi::or_elem(P p1, P p2)
+EXPORT GameApi::P GameApi::PolygonApi::or_elem(P p1, P p2)
 {
   FaceCollection *pp1 = find_facecoll(e, p1);
   FaceCollection *pp2 = find_facecoll(e, p2);
@@ -4656,7 +4659,7 @@ GameApi::P GameApi::PolygonApi::or_elem(P p1, P p2)
 }
  
 
-GameApi::P GameApi::PolygonApi::texture(P orig, BM bm, int choose)
+EXPORT GameApi::P GameApi::PolygonApi::texture(P orig, BM bm, int choose)
 {
   FaceCollection *coll = find_facecoll(e, orig);
   BitmapHandle *handle = find_bitmap(e, bm);
@@ -4686,7 +4689,7 @@ GameApi::P GameApi::PolygonApi::or_array(P *p1, int size)
 
 
 
-GameApi::P GameApi::PolygonApi::color(P next, unsigned int color)
+EXPORT GameApi::P GameApi::PolygonApi::color(P next, unsigned int color)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   FaceCollection *c = find_facecoll(e, next);
@@ -4745,13 +4748,13 @@ private:
   FaceCollection *coll;
   unsigned int upper_range, lower_range;
 };
-GameApi::P GameApi::PolygonApi::color_range(P orig, unsigned int upper_range, unsigned int lower_range)
+EXPORT GameApi::P GameApi::PolygonApi::color_range(P orig, unsigned int upper_range, unsigned int lower_range)
 {
   FaceCollection *c = find_facecoll(e, orig);
   FaceCollection *c2 = new ColorRangeFaceCollection(c,upper_range,lower_range);
   return add_polygon2(e, c2, 1);
 }
-GameApi::P GameApi::PolygonApi::color_grayscale(P orig)
+EXPORT GameApi::P GameApi::PolygonApi::color_grayscale(P orig)
 {
   FaceCollection *c = find_facecoll(e, orig);
   FaceCollection *c2 = new ColorGrayScale(c);
@@ -4887,19 +4890,19 @@ public:
 private:
   FaceCollection *coll;
 };
-GameApi::P GameApi::PolygonApi::flip_polygon_order(P p)
+EXPORT GameApi::P GameApi::PolygonApi::flip_polygon_order(P p)
 {
   FaceCollection *c = find_facecoll(e, p);
   FaceCollection *c2 = new FlipPolygonOrder(c);
   return add_polygon(e,c2,1);
 }
-GameApi::P GameApi::PolygonApi::quads_to_triangles(P p)
+EXPORT GameApi::P GameApi::PolygonApi::quads_to_triangles(P p)
 {
   FaceCollection *c = find_facecoll(e, p);
   FaceCollection *c2 = new QuadsToTris2(c);
   return add_polygon(e,c2,1);
 }
-GameApi::P GameApi::PolygonApi::color_from_normals(P orig)
+EXPORT GameApi::P GameApi::PolygonApi::color_from_normals(P orig)
 {
   FaceCollection *c = find_facecoll(e, orig);
   FaceCollection *c2 = new ColorFromNormals(c);
@@ -4964,7 +4967,7 @@ private:
   Point p_0, p_x, p_y, p_z;
   unsigned int c_0, c_x, c_y, c_z;
 };
-GameApi::P GameApi::PolygonApi::color_cube(P next,
+EXPORT GameApi::P GameApi::PolygonApi::color_cube(P next,
 					   PT p_0,
 					   PT p_x,
 					   PT p_y,
@@ -4987,7 +4990,7 @@ GameApi::P GameApi::PolygonApi::color_cube(P next,
   return add_polygon2(e, coll,1);
 
 }
-GameApi::P GameApi::PolygonApi::color_faces(P next, 
+EXPORT GameApi::P GameApi::PolygonApi::color_faces(P next, 
 					 unsigned int color_1, 
 					 unsigned int color_2,
 					 unsigned int color_3, 
@@ -5013,7 +5016,7 @@ GameApi::P GameApi::PolygonApi::translate(P orig, float dx, float dy, float dz)
   return add_polygon2(e, coll,1);
 }
  
-GameApi::P GameApi::PolygonApi::rotatex(P orig, float angle)
+EXPORT GameApi::P GameApi::PolygonApi::rotatex(P orig, float angle)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   FaceCollection *c = find_facecoll(e, orig);
@@ -5024,7 +5027,7 @@ GameApi::P GameApi::PolygonApi::rotatex(P orig, float angle)
   return add_polygon(e, coll,1);
 }
 
-GameApi::P GameApi::PolygonApi::rotatey(P orig, float angle)
+EXPORT GameApi::P GameApi::PolygonApi::rotatey(P orig, float angle)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   FaceCollection *c = find_facecoll(e, orig);
@@ -5035,7 +5038,7 @@ GameApi::P GameApi::PolygonApi::rotatey(P orig, float angle)
   return add_polygon(e, coll,1);
 }
 
-GameApi::P GameApi::PolygonApi::rotatez(P orig, float angle)
+EXPORT GameApi::P GameApi::PolygonApi::rotatez(P orig, float angle)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   FaceCollection *c = find_facecoll(e, orig);
@@ -5046,7 +5049,7 @@ GameApi::P GameApi::PolygonApi::rotatez(P orig, float angle)
   return add_polygon(e, coll,1);
 }
 
-GameApi::P GameApi::PolygonApi::rotate(P orig, PT point, V axis, float angle)
+EXPORT GameApi::P GameApi::PolygonApi::rotate(P orig, PT point, V axis, float angle)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   Point *pp = find_point(e, point);
@@ -5060,7 +5063,7 @@ GameApi::P GameApi::PolygonApi::rotate(P orig, PT point, V axis, float angle)
 }
 
 
-GameApi::P GameApi::PolygonApi::scale(P orig, float sx, float sy, float sz)
+EXPORT GameApi::P GameApi::PolygonApi::scale(P orig, float sx, float sy, float sz)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);  
   FaceCollection *c = find_facecoll(e, orig);
@@ -5071,7 +5074,7 @@ GameApi::P GameApi::PolygonApi::scale(P orig, float sx, float sy, float sz)
   return add_polygon(e, coll,1);
 }
 
-GameApi::P GameApi::PolygonApi::move(P orig, PT obj_0, V obj_x, V obj_y, V obj_z,
+EXPORT GameApi::P GameApi::PolygonApi::move(P orig, PT obj_0, V obj_x, V obj_y, V obj_z,
 				     PT world_0, V world_x, V world_y, V world_z)
 {
   FaceCollection *coll = find_facecoll(e, orig);
@@ -5102,7 +5105,7 @@ GameApi::P GameApi::PolygonApi::move(P orig, PT obj_0, V obj_x, V obj_y, V obj_z
   return add_polygon(e, coll3, 1);
 }
 
-GameApi::P GameApi::PolygonApi::splitquads(P orig, int x_count, int y_count)
+EXPORT GameApi::P GameApi::PolygonApi::splitquads(P orig, int x_count, int y_count)
 {
   FaceCollection *coll = find_facecoll(e, orig);
   FaceCollection *next = new SplitQuads(*coll, x_count, y_count);
@@ -5184,7 +5187,7 @@ Point ChangePositions_Func(Point p, int face,int point, void* data)
   return *pp;
 }
 
-GameApi::P GameApi::PolygonApi::change_positions(P orig, std::function<PT (PT p, int face, int point)> f)
+EXPORT GameApi::P GameApi::PolygonApi::change_positions(P orig, std::function<PT (PT p, int face, int point)> f)
 {
 #ifndef EMSCRIPTEN
   FaceCollection *coll = find_facecoll(e, orig);
@@ -5233,7 +5236,7 @@ Vector ChangeNormals_Func(Vector p, int face,int point,void* data)
   return *pp;
 }
 
-GameApi::P GameApi::PolygonApi::change_normals(P orig, std::function<V (V p, int face, int point)> f)
+EXPORT GameApi::P GameApi::PolygonApi::change_normals(P orig, std::function<V (V p, int face, int point)> f)
 {
 #ifndef EMSCRIPTEN
 
@@ -5284,7 +5287,7 @@ unsigned int ChangeColor_Func(unsigned int p, int face,int point,void* data)
   return dt->f(p,face,point);
 }
 
-GameApi::P GameApi::PolygonApi::change_colors(P orig, std::function<unsigned int (unsigned int p, int face, int point)> f)
+EXPORT GameApi::P GameApi::PolygonApi::change_colors(P orig, std::function<unsigned int (unsigned int p, int face, int point)> f)
 {
 #ifndef EMSCRIPTEN
   FaceCollection *coll = find_facecoll(e, orig);
@@ -5328,7 +5331,7 @@ private:
 };
 
 
-GameApi::P GameApi::PolygonApi::change_texture(P orig, std::function<int (int face)> f, BM *array, int size)
+EXPORT GameApi::P GameApi::PolygonApi::change_texture(P orig, std::function<int (int face)> f, BM *array, int size)
 {
   FaceCollection *coll = find_facecoll(e, orig);
   std::vector<Bitmap<Color>*> *vec = new std::vector<Bitmap<Color>*>;
@@ -5348,20 +5351,20 @@ GameApi::P GameApi::PolygonApi::change_texture(P orig, std::function<int (int fa
 
 
 
-GameApi::P GameApi::PolygonApi::recalculate_normals(P orig)
+EXPORT GameApi::P GameApi::PolygonApi::recalculate_normals(P orig)
 {
   FaceCollection *coll = find_facecoll(e, orig);
   FaceCollection *coll2 = new RecalculateNormals(*coll);
   return add_polygon(e, coll2, 1);
 }
-GameApi::P GameApi::PolygonApi::memoize(P orig)
+EXPORT GameApi::P GameApi::PolygonApi::memoize(P orig)
 {
   FaceCollection *coll = find_facecoll(e, orig);
   MemoizeFaces *coll2 = new MemoizeFaces(*coll);
   coll2->Reset();
   return add_polygon2(e, coll2, 1);
 }
-GameApi::P GameApi::PolygonApi::memoize_all(P orig)
+EXPORT GameApi::P GameApi::PolygonApi::memoize_all(P orig)
 {
   FaceCollection *coll = find_facecoll(e, orig);
   MemoizeFaces *coll2 = new MemoizeFaces(*coll);
@@ -5369,7 +5372,7 @@ GameApi::P GameApi::PolygonApi::memoize_all(P orig)
   coll2->MemoizeAll();
   return add_polygon2(e, coll2, 1);
 }
-GameApi::P GameApi::PolygonApi::heightmap(FB bm,
+EXPORT GameApi::P GameApi::PolygonApi::heightmap(FB bm,
 					  std::function<P (float)> f, float dx, float dz)
 {
   FloatBitmap *fb = find_float_bitmap(e, bm);
@@ -5393,7 +5396,7 @@ GameApi::P GameApi::PolygonApi::heightmap(FB bm,
   P p = or_array(&vec[0], sy);
   return p;
 }
-GameApi::P GameApi::PolygonApi::heightmap(BM bm,
+EXPORT GameApi::P GameApi::PolygonApi::heightmap(BM bm,
 					  HeightMapType t,
 				       float min_x, float max_x,
 				       float min_y, float max_y,
@@ -5416,7 +5419,7 @@ GameApi::P GameApi::PolygonApi::heightmap(BM bm,
   return add_polygon(e, coll, 1);
 }
 
-GameApi::P GameApi::PolygonApi::anim_array(P *array, int size)
+EXPORT GameApi::P GameApi::PolygonApi::anim_array(P *array, int size)
 {
   int s = size;
   std::vector<FaceCollection*> *vec = new std::vector<FaceCollection*>;
@@ -5438,7 +5441,7 @@ GameApi::P GameApi::PolygonApi::anim_array(P *array, int size)
   return add_polygon(e, handle);
 }
 
-void GameApi::PolygonApi::render(P p, int choose, float x, float y, float z)
+EXPORT void GameApi::PolygonApi::render(P p, int choose, float x, float y, float z)
 {
   PolyPriv *pp = (PolyPriv*)priv;
   StateBitmaps *state_bm = pp->states[p.id];
@@ -5476,7 +5479,7 @@ StateBitmaps * PrepareFaceCollPolyHandle(FaceCollPolyHandle *h2, int bbm_choose)
   return state_bm;
 }
 
-void GameApi::PolygonApi::prepare(P p, int bbm_choose)
+EXPORT void GameApi::PolygonApi::prepare(P p, int bbm_choose)
 {
   PolyPriv *pp = (PolyPriv*)priv;
   FaceCollPolyHandle *h2 = find_poly(e,p);
@@ -5484,7 +5487,7 @@ void GameApi::PolygonApi::prepare(P p, int bbm_choose)
   pp->states[p.id] = state_bm;
 }
 
-void GameApi::PolygonApi::preparepoly(P p, int bbm_choose)
+EXPORT void GameApi::PolygonApi::preparepoly(P p, int bbm_choose)
 {
   PolyPriv *pp = (PolyPriv*)priv;
   ArrayRender *r = new ArrayRender;
@@ -5724,12 +5727,12 @@ private:
 
 
 
-GameApi::P GameApi::PolygonApi::counts(P p1, int numfaces)
+EXPORT GameApi::P GameApi::PolygonApi::counts(P p1, int numfaces)
 {
   FaceCollection *poly = find_facecoll(e, p1);
   return add_polygon(e, new CountsFaceCollection(numfaces, poly),1);  
 }
-GameApi::P GameApi::PolygonApi::count_function(P p1, std::function<int (int face)> f)
+EXPORT GameApi::P GameApi::PolygonApi::count_function(P p1, std::function<int (int face)> f)
 { 
   FaceCollection *poly = find_facecoll(e, p1);
   //EveryApi *ev = new EveryApi(e);
@@ -5737,7 +5740,7 @@ GameApi::P GameApi::PolygonApi::count_function(P p1, std::function<int (int face
   //env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_polygon(e, new CountFuncFaceCollection(poly, f),1);  
 }
-GameApi::P GameApi::PolygonApi::point_function(P p1, std::function<PT (int face, int point)> f)
+EXPORT GameApi::P GameApi::PolygonApi::point_function(P p1, std::function<PT (int face, int point)> f)
 {
   FaceCollection *poly = find_facecoll(e, p1);
   EveryApi *ev = new EveryApi(e);
@@ -5745,7 +5748,7 @@ GameApi::P GameApi::PolygonApi::point_function(P p1, std::function<PT (int face,
   env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_polygon(e, new PointFaceCollection(e, poly, f),1);  
 }
-GameApi::P GameApi::PolygonApi::normal_function(P p1, std::function<V (int face, int point)> f)
+EXPORT GameApi::P GameApi::PolygonApi::normal_function(P p1, std::function<V (int face, int point)> f)
 {
   FaceCollection *poly = find_facecoll(e, p1);
   //EveryApi *ev = new EveryApi(e);
@@ -5753,7 +5756,7 @@ GameApi::P GameApi::PolygonApi::normal_function(P p1, std::function<V (int face,
   //env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_polygon(e, new NormalFaceCollection(e, poly, f),1);  
 }
-GameApi::P GameApi::PolygonApi::color_function(P p1, std::function<unsigned int (int face, int point)> f)
+EXPORT GameApi::P GameApi::PolygonApi::color_function(P p1, std::function<unsigned int (int face, int point)> f)
 {
   FaceCollection *poly = find_facecoll(e, p1);
   //EveryApi *ev = new EveryApi(e);
@@ -5761,7 +5764,7 @@ GameApi::P GameApi::PolygonApi::color_function(P p1, std::function<unsigned int 
   //env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_polygon(e, new ColorFaceCollection(e, poly,f),1);  
 }
-GameApi::P GameApi::PolygonApi::texcoord_function(P p1, std::function<PT (int face, int point)> f)
+EXPORT GameApi::P GameApi::PolygonApi::texcoord_function(P p1, std::function<PT (int face, int point)> f)
 {
   FaceCollection *poly = find_facecoll(e, p1);
   //EveryApi *ev = new EveryApi(e);
@@ -5769,7 +5772,7 @@ GameApi::P GameApi::PolygonApi::texcoord_function(P p1, std::function<PT (int fa
   //env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_polygon(e, new TexFaceCollection(e, poly, f),1);  
 }
-GameApi::P GameApi::PolygonApi::attrib_function(P p1, std::function<float (int face, int point, int idx)> f, int idx)
+EXPORT GameApi::P GameApi::PolygonApi::attrib_function(P p1, std::function<float (int face, int point, int idx)> f, int idx)
 {
   FaceCollection *poly = find_facecoll(e, p1);
   //EveryApi *ev = new EveryApi(e);
@@ -5777,7 +5780,7 @@ GameApi::P GameApi::PolygonApi::attrib_function(P p1, std::function<float (int f
   //env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_polygon(e, new AttribFaceCollection(e, poly, f, idx),1);  
 }
-GameApi::P GameApi::PolygonApi::attribi_function(P p1, std::function<int (int face, int point, int idx)> f, int idx)
+EXPORT GameApi::P GameApi::PolygonApi::attribi_function(P p1, std::function<int (int face, int point, int idx)> f, int idx)
 {
   FaceCollection *poly = find_facecoll(e, p1);
   //EveryApi *ev = new EveryApi(e);
@@ -5787,7 +5790,7 @@ GameApi::P GameApi::PolygonApi::attribi_function(P p1, std::function<int (int fa
 }
 
 
-void GameApi::ShaderApi::load(std::string filename)
+EXPORT void GameApi::ShaderApi::load(std::string filename)
 {
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   p->file = new ShaderFile(filename);
@@ -5795,7 +5798,7 @@ void GameApi::ShaderApi::load(std::string filename)
   p->seq = seq;
   p->count = 0;
 }
-void GameApi::ShaderApi::load_default()
+EXPORT void GameApi::ShaderApi::load_default()
 {
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   p->file = new ShaderFile;
@@ -5804,7 +5807,7 @@ void GameApi::ShaderApi::load_default()
   p->count = 0;
 }
 
-void GameApi::ShaderApi::set_default_projection(SH shader, std::string name)
+EXPORT void GameApi::ShaderApi::set_default_projection(SH shader, std::string name)
 {
   std::cout << "SetDefaultProjection:" << std::endl;
   Matrix m = Matrix::Perspective(80.0, (double)800/600, 10.1, 60000.0);
@@ -5814,7 +5817,7 @@ void GameApi::ShaderApi::set_default_projection(SH shader, std::string name)
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->set_var(name, m);  
 }
-void GameApi::ShaderApi::set_y_rotation(SH shader, std::string name, float angle)
+EXPORT void GameApi::ShaderApi::set_y_rotation(SH shader, std::string name, float angle)
 {
   Matrix m = Matrix::YRotation(angle); //*Matrix::Translate(0.0,0.0,-300.0);
   if (shader.id==-1) return;
@@ -5823,21 +5826,21 @@ void GameApi::ShaderApi::set_y_rotation(SH shader, std::string name, float angle
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->set_var(name, m);  
 }
-void GameApi::ShaderApi::link(GameApi::SH shader)
+EXPORT void GameApi::ShaderApi::link(GameApi::SH shader)
 {
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   seq->link(shader.id);
 }
-GameApi::SH GameApi::ShaderApi::texture_shader()
+EXPORT GameApi::SH GameApi::ShaderApi::texture_shader()
 {
   return get_normal_shader("comb", "comb", "", "texture:light:light", "texture:light:light");
 }
-GameApi::SH GameApi::ShaderApi::colour_shader()
+EXPORT GameApi::SH GameApi::ShaderApi::colour_shader()
 {
   return get_normal_shader("comb", "comb", "","colour:light:light", "colour:light:light");
 }
-GameApi::SH GameApi::ShaderApi::colour_texture_shader()
+EXPORT GameApi::SH GameApi::ShaderApi::colour_texture_shader()
 {
   return get_normal_shader("comb", "comb", "","colour:texture:light:light", "colour:texture:light:light");
 }
@@ -5916,7 +5919,7 @@ void GameApi::ShaderApi::use(GameApi::SH shader)
   seq->use(p->ids[shader.id]);
 }
 
-void GameApi::ShaderApi::unuse(GameApi::SH shader)
+EXPORT void GameApi::ShaderApi::unuse(GameApi::SH shader)
 {
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
@@ -5931,7 +5934,7 @@ void GameApi::ShaderApi::bind_attrib(GameApi::SH shader, int num, std::string na
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->bind_attrib(num, name);
 }
-GameApi::M GameApi::ShaderApi::get_matrix_var(GameApi::SH shader, std::string name)
+EXPORT GameApi::M GameApi::ShaderApi::get_matrix_var(GameApi::SH shader, std::string name)
 {
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
@@ -5940,7 +5943,7 @@ GameApi::M GameApi::ShaderApi::get_matrix_var(GameApi::SH shader, std::string na
   return add_matrix(e, new SimpleMatrix(m));
 
 }
-void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float val)
+EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float val)
 {
   //std::cout << "Set var float" << std::endl;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
@@ -5949,7 +5952,7 @@ void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float val
   prog->set_var(name, val);
 }
 
-void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float x, float y, float z)
+EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float x, float y, float z)
 {
   //std::cout << "Set var float" << std::endl;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
@@ -5959,7 +5962,7 @@ void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float x, 
   prog->set_var(name, px);
 }
 
-void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float x, float y, float z, float k)
+EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float x, float y, float z, float k)
 {
   //std::cout << "Set var float" << std::endl;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
@@ -5969,7 +5972,7 @@ void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float x, 
 }
 
 
-void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, int val)
+EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, int val)
 {
   //std::cout << "Set var int" << std::endl;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
@@ -5978,7 +5981,7 @@ void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, int val)
   prog->set_var(name, val);
 }
 
-void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, M matrix)
+EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, M matrix)
 {
   Matrix mat = find_matrix(e, matrix);
 
@@ -5988,7 +5991,7 @@ void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, M matrix)
   prog->set_var(name, mat);
 }
 
-void GameApi::ShaderApi::bindnames(GameApi::SH shader, 
+EXPORT void GameApi::ShaderApi::bindnames(GameApi::SH shader, 
 				   std::string s_vertex,
 				   std::string s_normal,
 				   std::string s_color,
@@ -6120,7 +6123,7 @@ private:
   bool flip_x, flip_y;
 };
 
-GameApi::BM GameApi::BitmapApi::flip_x(BM orig)
+EXPORT GameApi::BM GameApi::BitmapApi::flip_x(BM orig)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
   BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
@@ -6129,7 +6132,7 @@ GameApi::BM GameApi::BitmapApi::flip_x(BM orig)
   chandle2->bm = rep;
   return add_bitmap(e,chandle2);
 }
-GameApi::BM GameApi::BitmapApi::flip_y(BM orig)
+EXPORT GameApi::BM GameApi::BitmapApi::flip_y(BM orig)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
   BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
@@ -6139,7 +6142,7 @@ GameApi::BM GameApi::BitmapApi::flip_y(BM orig)
   chandle2->bm = rep;
   return add_bitmap(e,chandle2);
 }
-GameApi::BM GameApi::BitmapApi::repeat_bitmap(BM orig, int xcount, int ycount)
+EXPORT GameApi::BM GameApi::BitmapApi::repeat_bitmap(BM orig, int xcount, int ycount)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
   BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
@@ -6149,7 +6152,7 @@ GameApi::BM GameApi::BitmapApi::repeat_bitmap(BM orig, int xcount, int ycount)
   chandle2->bm = rep;
   return add_bitmap(e,chandle2);
 }
-GameApi::BM GameApi::BitmapApi::world_from_bitmap(std::function<BM(int)> f, BM int_bm, int dx, int dy)
+EXPORT GameApi::BM GameApi::BitmapApi::world_from_bitmap(std::function<BM(int)> f, BM int_bm, int dx, int dy)
 {
   int sx = size_x(int_bm);
   int sy = size_y(int_bm);
@@ -6165,7 +6168,7 @@ GameApi::BM GameApi::BitmapApi::world_from_bitmap(std::function<BM(int)> f, BM i
     }
   return current;
 }
-GameApi::BM GameApi::FloatBitmapApi::subfloatbitmap(FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color)
+EXPORT GameApi::BM GameApi::FloatBitmapApi::subfloatbitmap(FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color)
 {
   GameApi::EveryApi *ev = new GameApi::EveryApi(e);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -6410,7 +6413,7 @@ void GameApi::EventApi::run_game(GameApi::ST st, int start_state)
 #endif
 }
 
-GameApi::P GameApi::PolygonApi::create_static_geometry(GameApi::P *array, int size)
+EXPORT GameApi::P GameApi::PolygonApi::create_static_geometry(GameApi::P *array, int size)
 {
   if (size==0) { std::cout << "Empty array in remove_changing" << std::endl; }
   std::vector<FaceCollection*> vec;
@@ -6424,7 +6427,7 @@ GameApi::P GameApi::PolygonApi::create_static_geometry(GameApi::P *array, int si
   FilterFaces *coll2 = new FilterFaces(*(vec[0]), *func);
   return add_polygon(e, coll2, 1);
 }
-GameApi::P GameApi::PolygonApi::create_dynamic_geometry(GameApi::P *array, int size)
+EXPORT GameApi::P GameApi::PolygonApi::create_dynamic_geometry(GameApi::P *array, int size)
 {
   std::vector<FaceCollection*> vec;
   for(int i=0;i<size;i++)
@@ -6445,7 +6448,7 @@ GameApi::P GameApi::PolygonApi::create_dynamic_geometry(GameApi::P *array, int s
 
   return add_polygon(e, handle);
 }
-GameApi::P GameApi::PolygonApi::tri_vertex_array(float *v_array, int v_size,
+EXPORT GameApi::P GameApi::PolygonApi::tri_vertex_array(float *v_array, int v_size,
 						 float *n_array, int n_size,
 						 unsigned int *c_array, int c_size,
 						 float *tex_array, int tex_size,
@@ -6463,7 +6466,7 @@ GameApi::P GameApi::PolygonApi::tri_vertex_array(float *v_array, int v_size,
   return add_polygon(e, handle);
 }
 
-int GameApi::PolygonApi::get_tri_vertex_array_frames(P p)
+EXPORT int GameApi::PolygonApi::get_tri_vertex_array_frames(P p)
 {
   PolyPriv *pp = (PolyPriv*)priv;
   StateBitmaps *state_bm = pp->states[p.id];
@@ -6474,7 +6477,7 @@ int GameApi::PolygonApi::get_tri_vertex_array_frames(P p)
   return h2->collarray->Size();
 }
 
-int GameApi::PolygonApi::get_tri_vertex_array_rows(P p)
+EXPORT int GameApi::PolygonApi::get_tri_vertex_array_rows(P p)
 {
   PolyPriv *pp = (PolyPriv*)priv;
   StateBitmaps *state_bm = pp->states[p.id];
@@ -6482,7 +6485,7 @@ int GameApi::PolygonApi::get_tri_vertex_array_rows(P p)
   return state_bm->bitmap->SizeY();
 }
 
-void GameApi::PolygonApi::get_tri_vertex_array(P p, int choose, int row,
+EXPORT void GameApi::PolygonApi::get_tri_vertex_array(P p, int choose, int row,
 					       int *v_size, float **v_array,
 					       int *n_size, float **n_array,
 					       int *c_size, unsigned int **c_array,
@@ -6517,7 +6520,7 @@ void GameApi::PolygonApi::get_tri_vertex_array(P p, int choose, int row,
   *tex_size = vertex_size*2;
 }
 
-GameApi::P GameApi::PolygonApi::polygon(PT *array, int size)
+EXPORT GameApi::P GameApi::PolygonApi::polygon(PT *array, int size)
 {
   PolygonElem *coll = new PolygonElem;
   int sz = size;
@@ -6537,7 +6540,7 @@ GameApi::P GameApi::PolygonApi::polygon(PT *array, int size)
   
 }
 
-void GameApi::PolygonApi::render_dynamic(GameApi::P p, int array_elem, bool textures)
+EXPORT void GameApi::PolygonApi::render_dynamic(GameApi::P p, int array_elem, bool textures)
 {
   FaceCollPolyHandle *handle = find_poly(e,p);
   FaceCollection *coll = handle->collarray->Index(array_elem);
@@ -6555,16 +6558,16 @@ struct FontPriv
 {
 };
 
-GameApi::FontApi::FontApi(Env &e) : e(e) 
+EXPORT GameApi::FontApi::FontApi(Env &e) : e(e) 
 {
   priv = new FontPriv;
 }
-GameApi::FontApi::~FontApi()
+EXPORT GameApi::FontApi::~FontApi()
 {
   delete (FontPriv*)priv;
 }
 
-GameApi::Ft GameApi::FontApi::newfont(const char *filename, int sx, int sy)
+EXPORT GameApi::Ft GameApi::FontApi::newfont(const char *filename, int sx, int sy)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
 #ifndef EMSCRIPTEN
@@ -6576,7 +6579,7 @@ GameApi::Ft GameApi::FontApi::newfont(const char *filename, int sx, int sy)
   font.id = env->fonts.size()-1;
   return font;
 }
-GameApi::LI GameApi::FontApi::glyph_outline(GameApi::Ft font, long idx, float sx, float sy)
+EXPORT GameApi::LI GameApi::FontApi::glyph_outline(GameApi::Ft font, long idx, float sx, float sy)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->fonts[font.id].bm->load_glyph_outline(idx, sx, sy);
@@ -6584,7 +6587,7 @@ GameApi::LI GameApi::FontApi::glyph_outline(GameApi::Ft font, long idx, float sx
   LineCollection *coll2 = new ForwardLineCollection(coll);
   return add_line_array(e, coll2);
 }
-GameApi::PL GameApi::FontApi::glyph_plane(GameApi::Ft font, long idx, float sx, float sy, float dx, float dy)
+EXPORT GameApi::PL GameApi::FontApi::glyph_plane(GameApi::Ft font, long idx, float sx, float sy, float dx, float dy)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->fonts[font.id].bm->load_glyph_outline(idx,sx,sy);
@@ -6593,7 +6596,7 @@ GameApi::PL GameApi::FontApi::glyph_plane(GameApi::Ft font, long idx, float sx, 
   PlanePoints2d *plane = new FontLineCollectionWrapper(coll, bm->Types(), sx, sy, dx,dy);
   return add_plane(e, plane);
 }
-GameApi::BM GameApi::FontApi::glyph(GameApi::Ft font, long idx)
+EXPORT GameApi::BM GameApi::FontApi::glyph(GameApi::Ft font, long idx)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->fonts[font.id].bm->load_glyph(idx);
@@ -6607,7 +6610,7 @@ GameApi::BM GameApi::FontApi::glyph(GameApi::Ft font, long idx)
  return add_bitmap(e,chandle2);
 }
 
-GameApi::BM GameApi::FontApi::font_string(Ft font, const char *str, int x_gap)
+EXPORT GameApi::BM GameApi::FontApi::font_string(Ft font, const char *str, int x_gap)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   int sz = strlen(str);
@@ -6626,46 +6629,46 @@ GameApi::BM GameApi::FontApi::font_string(Ft font, const char *str, int x_gap)
   return add_bitmap(e,chandle2);
 }
 
-GameApi::PT GameApi::PointApi::origo()
+EXPORT GameApi::PT GameApi::PointApi::origo()
 {
   return add_point(e, 0.0,0.0,0.0);
 }
-GameApi::PT GameApi::PointApi::point(float x, float y, float z)
+EXPORT GameApi::PT GameApi::PointApi::point(float x, float y, float z)
 {
   return add_point(e, x,y,z);
 }
-GameApi::PT GameApi::PointApi::move(PT p1, float dx, float dy, float dz)
+EXPORT GameApi::PT GameApi::PointApi::move(PT p1, float dx, float dy, float dz)
 {
   Point *p = find_point(e,p1);
   return add_point(e, p->x+dx,p->y+dy,p->z+dz);
 }
-GameApi::PT GameApi::PointApi::mix(PT p1, PT p2, float val)
+EXPORT GameApi::PT GameApi::PointApi::mix(PT p1, PT p2, float val)
 {
   Point *pp1 = find_point(e,p1);
   Point *pp2 = find_point(e,p2);
   Point res = *pp1+val*Vector((*pp2)-(*pp1));
   return add_point(e,res.x,res.y,res.z);
 }
-float GameApi::PointApi::pt_x(PT p)
+EXPORT float GameApi::PointApi::pt_x(PT p)
 {
   return find_point(e,p)->x;
 }
-float GameApi::PointApi::pt_y(PT p)
+EXPORT float GameApi::PointApi::pt_y(PT p)
 {
   return find_point(e,p)->y;
 }
-float GameApi::PointApi::pt_z(PT p)
+EXPORT float GameApi::PointApi::pt_z(PT p)
 {
   return find_point(e,p)->z;
 }
-float GameApi::PointApi::dist3d(PT p, PT p2)
+EXPORT float GameApi::PointApi::dist3d(PT p, PT p2)
 {
   Point *pp1 = find_point(e,p);
   Point *pp2 = find_point(e,p2);
   float d = (*pp1-*pp2).Dist();
   return d;
 }
-float GameApi::PointApi::dist2d(PT p, PT p2)
+EXPORT float GameApi::PointApi::dist2d(PT p, PT p2)
 {
   Point *pp1 = find_point(e,p);
   Point *pp2 = find_point(e,p2);
@@ -6675,18 +6678,18 @@ float GameApi::PointApi::dist2d(PT p, PT p2)
   float d = v.Dist();
   return d;
 }
-GameApi::V GameApi::PointApi::minus(PT p1, PT p2)
+EXPORT GameApi::V GameApi::PointApi::minus(PT p1, PT p2)
 {
   Point *pp1 = find_point(e,p1);
   Point *pp2 = find_point(e,p2);
   Vector v = *pp1 - *pp2;
   return add_vector(e,v.dx,v.dy,v.dz);
 }
-GameApi::ColorApi::ColorApi(Env &e) : e(e) { }
-GameApi::VectorApi::VectorApi(Env &e) : e(e) { }
-GameApi::PointApi::PointApi(Env &e) : e(e) { }
+EXPORT GameApi::ColorApi::ColorApi(Env &e) : e(e) { }
+EXPORT GameApi::VectorApi::VectorApi(Env &e) : e(e) { }
+EXPORT GameApi::PointApi::PointApi(Env &e) : e(e) { }
 
-GameApi::CO GameApi::ColorApi::u_color(unsigned int color)
+EXPORT GameApi::CO GameApi::ColorApi::u_color(unsigned int color)
 {
   return add_color(e, 
 		   (color&0xff0000) >> 16,
@@ -6694,42 +6697,42 @@ GameApi::CO GameApi::ColorApi::u_color(unsigned int color)
 		   color &0xff,
 		   (color&0xff000000)>>24);
 }
-GameApi::CO GameApi::ColorApi::rgb_color(int r, int g, int b, int a)
+EXPORT GameApi::CO GameApi::ColorApi::rgb_color(int r, int g, int b, int a)
 {
   return add_color(e, r,g,b,a);
 }
-GameApi::CO GameApi::ColorApi::rgbf_color(float r, float g, float b, float a)
+EXPORT GameApi::CO GameApi::ColorApi::rgbf_color(float r, float g, float b, float a)
 {
   return add_color(e,int(r*255.0),int(g*255.0),int(b*255.0),int(a*255.0));
 }
-GameApi::V GameApi::VectorApi::null_vector()
+EXPORT GameApi::V GameApi::VectorApi::null_vector()
 {
   return add_vector(e,0.0,0.0,0.0);
 }
-GameApi::V GameApi::VectorApi::vector(float dx, float dy, float dz)
+EXPORT GameApi::V GameApi::VectorApi::vector(float dx, float dy, float dz)
 {
   return add_vector(e,dx,dy,dz);
 }
-GameApi::V GameApi::VectorApi::sum(V v1, V v2)
+EXPORT GameApi::V GameApi::VectorApi::sum(V v1, V v2)
 {
   Vector *vv1 = find_vector(e,v1);
   Vector *vv2 = find_vector(e,v2);
   Vector res = *vv1+*vv2;
   return add_vector(e,res.dx,res.dy,res.dz);
 }
-GameApi::V GameApi::VectorApi::mul(V v1, float scalar)
+EXPORT GameApi::V GameApi::VectorApi::mul(V v1, float scalar)
 {
   Vector *vv1 = find_vector(e,v1);
   Vector res = scalar * (*vv1);
   return add_vector(e,res.dx,res.dy,res.dz);
 }
-float GameApi::VectorApi::dot(V v1, V v2)
+EXPORT float GameApi::VectorApi::dot(V v1, V v2)
 {
   Vector *vv1 = find_vector(e,v1);
   Vector *vv2 = find_vector(e,v2);
   return Vector::DotProduct(*vv1,*vv2);
 }
-GameApi::V GameApi::VectorApi::cross(V v1, V v2)
+EXPORT GameApi::V GameApi::VectorApi::cross(V v1, V v2)
 {
   Vector *vv1 = find_vector(e,v1);
   Vector *vv2 = find_vector(e,v2);
@@ -6737,14 +6740,14 @@ GameApi::V GameApi::VectorApi::cross(V v1, V v2)
   return add_vector(e, v.dx, v.dy, v.dz);
 }
 
-float GameApi::VectorApi::projection_length(V v1, V u_x)
+EXPORT float GameApi::VectorApi::projection_length(V v1, V u_x)
 {
   Vector *vv1 = find_vector(e,v1);
   Vector *vu_x = find_vector(e,u_x);
   return Vector::FindProjectionLength(*vv1, *vu_x);
 }
 
-GameApi::V GameApi::VectorApi::projection_1(V u, V u_x)
+EXPORT GameApi::V GameApi::VectorApi::projection_1(V u, V u_x)
 {
   Vector *vv1 = find_vector(e,u);
   Vector *vu_x = find_vector(e,u_x);
@@ -6753,7 +6756,7 @@ GameApi::V GameApi::VectorApi::projection_1(V u, V u_x)
   return add_vector(e, v.dx, v.dy, v.dz);
 }
 
-GameApi::V GameApi::VectorApi::projection_2(V u, V u_x)
+EXPORT GameApi::V GameApi::VectorApi::projection_2(V u, V u_x)
 {
   Vector *vv1 = find_vector(e,u);
   Vector *vu_x = find_vector(e,u_x);
@@ -6762,7 +6765,7 @@ GameApi::V GameApi::VectorApi::projection_2(V u, V u_x)
   return add_vector(e, v.dx, v.dy, v.dz);
 }
 
-GameApi::V GameApi::VectorApi::neg(V v) 
+EXPORT GameApi::V GameApi::VectorApi::neg(V v) 
 {
   Vector *vv1 = find_vector(e,v);
   Vector vx = -(*vv1);
@@ -6770,18 +6773,18 @@ GameApi::V GameApi::VectorApi::neg(V v)
 }
 
 
-GameApi::PT GameApi::PointApi::from_angle(float radius, float angle)
+EXPORT GameApi::PT GameApi::PointApi::from_angle(float radius, float angle)
 {
   Point p = Point(0.0,0.0,0.0)+Vector(radius*cos(angle),radius*sin(angle),0.0);
   return add_point(e,p.x,p.y,p.z);
 }
-GameApi::PT GameApi::PointApi::from_angle(PT center, float radius, float angle)
+EXPORT GameApi::PT GameApi::PointApi::from_angle(PT center, float radius, float angle)
 {
   Point *cen = find_point(e,center);
   Point p = *cen+Vector(radius*cos(angle),radius*sin(angle),0.0);
   return add_point(e,p.x,p.y,p.z);
 }
-GameApi::O GameApi::VolumeApi::from_bool_bitmap(BB b, float dist)
+EXPORT GameApi::O GameApi::VolumeApi::from_bool_bitmap(BB b, float dist)
 {
   BoolBitmap *c = find_bool_bitmap(e,b);
   Bitmap<bool> *bm = c->bitmap;
@@ -6803,34 +6806,34 @@ private:
   VolumeObject *subset;
   unsigned int col;
 };
-GameApi::O GameApi::VolumeApi::subset_color(O model, O color_subset, unsigned int color)
+EXPORT GameApi::O GameApi::VolumeApi::subset_color(O model, O color_subset, unsigned int color)
 {
   VolumeObject *model_1 = find_volume(e, model);
   VolumeObject *color_subset_1 = find_volume(e, color_subset);
   return add_volume(e, new SubsetColorVolume(model_1, color_subset_1, color));
 }
-GameApi::O GameApi::VolumeApi::rotatex(O obj, float angle)
+EXPORT GameApi::O GameApi::VolumeApi::rotatex(O obj, float angle)
 {
   VolumeObject *obj1 = find_volume(e,obj);
   return add_volume(e, new MatrixVolumeObject(obj1, Matrix::XRotation(-angle)));
 }
-GameApi::O GameApi::VolumeApi::rotatey(O obj, float angle)
+EXPORT GameApi::O GameApi::VolumeApi::rotatey(O obj, float angle)
 {
   VolumeObject *obj1 = find_volume(e,obj);
   return add_volume(e, new MatrixVolumeObject(obj1, Matrix::YRotation(-angle)));
 }
-GameApi::O GameApi::VolumeApi::rotatez(O obj, float angle)
+EXPORT GameApi::O GameApi::VolumeApi::rotatez(O obj, float angle)
 {
   VolumeObject *obj1 = find_volume(e,obj);
   return add_volume(e, new MatrixVolumeObject(obj1, Matrix::ZRotation(-angle)));
 }
-GameApi::O GameApi::VolumeApi::move(O obj, float dx, float dy, float dz)
+EXPORT GameApi::O GameApi::VolumeApi::move(O obj, float dx, float dy, float dz)
 {
   VolumeObject *obj1 = find_volume(e,obj);
   return add_volume(e, new MatrixVolumeObject(obj1, Matrix::Translate(-dx,-dy,-dz)));  
 }
 
-GameApi::O GameApi::BoolBitmapApi::to_volume(BB b, float dist)
+EXPORT GameApi::O GameApi::BoolBitmapApi::to_volume(BB b, float dist)
 {
   BoolBitmap *c = find_bool_bitmap(e,b);
   Bitmap<bool> *bm = c->bitmap;
@@ -6912,13 +6915,13 @@ private:
   Bitmap<float> & grad_1;
   Bitmap<float> & grad_2;
 };
-GameApi::FB GameApi::FloatBitmapApi::perlin_noise(FB grad_1, FB grad_2)
+EXPORT GameApi::FB GameApi::FloatBitmapApi::perlin_noise(FB grad_1, FB grad_2)
 {
   Bitmap<float> *g_1 = find_float_bitmap(e, grad_1)->bitmap;
   Bitmap<float> *g_2 = find_float_bitmap(e, grad_2)->bitmap;
   return add_float_bitmap(e, new PerlinNoise(*g_1, *g_2));
 }
-GameApi::BM GameApi::FloatBitmapApi::choose_bitmap(FB fb, BM bitmap_0, BM bitmap_1)
+EXPORT GameApi::BM GameApi::FloatBitmapApi::choose_bitmap(FB fb, BM bitmap_0, BM bitmap_1)
 {
   Bitmap<float> *bools2 = find_float_bitmap(e, fb)->bitmap;
   BitmapHandle *handle = find_bitmap(e, bitmap_0);
@@ -6928,7 +6931,7 @@ GameApi::BM GameApi::FloatBitmapApi::choose_bitmap(FB fb, BM bitmap_0, BM bitmap
   Bitmap<Color> *bm = new ChooseBitmap4(*bools2, *true2, *false2);
   return add_color_bitmap2(e, bm);
 }
-GameApi::BM GameApi::BoolBitmapApi::choose_bitmap(BB bools, BM true_bitmap, BM false_bitmap)
+EXPORT GameApi::BM GameApi::BoolBitmapApi::choose_bitmap(BB bools, BM true_bitmap, BM false_bitmap)
 {
   Bitmap<bool> *bools2 = find_bool_bitmap(e, bools)->bitmap;
   BitmapHandle *handle = find_bitmap(e, true_bitmap);
@@ -6938,7 +6941,7 @@ GameApi::BM GameApi::BoolBitmapApi::choose_bitmap(BB bools, BM true_bitmap, BM f
   Bitmap<Color> *bm = new ChooseBitmap3(*bools2, *true2, *false2);
   return add_color_bitmap2(e, bm);
 }
-GameApi::BB GameApi::BoolBitmapApi::transform(BB orig, std::function<bool (int,int, bool)> f)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::transform(BB orig, std::function<bool (int,int, bool)> f)
 {
   BoolBitmap *c = find_bool_bitmap(e,orig);
   Bitmap<bool> *bm = c->bitmap;
@@ -6951,15 +6954,15 @@ GameApi::BB GameApi::BoolBitmapApi::transform(BB orig, std::function<bool (int,i
   return add_bool_bitmap(e, trans);
 }
 
-GameApi::BB GameApi::BoolBitmapApi::empty(int sx, int sy)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::empty(int sx, int sy)
 {
   return add_bool_bitmap(e, new ConstantBitmap<bool>(false, sx,sy));
 }
-GameApi::FB GameApi::FloatBitmapApi::empty(int sx, int sy)
+EXPORT GameApi::FB GameApi::FloatBitmapApi::empty(int sx, int sy)
 {
   return add_float_bitmap(e, new ConstantBitmap<float>(0.0, sx,sy));
 }
-GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color(BM bm, int r, int g, int b)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color(BM bm, int r, int g, int b)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *color_bm = find_color_bitmap(handle);
@@ -6984,14 +6987,14 @@ private:
   T f;
 };
 
-GameApi::BB GameApi::BoolBitmapApi::from_float_bitmap(FB float_bm, float range_start, float range_end)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::from_float_bitmap(FB float_bm, float range_start, float range_end)
 {
   FloatBitmap *fb = find_float_bitmap(e, float_bm);
   Bitmap<float> *bm = fb->bitmap;
   return add_bool_bitmap(e, new BoolBitmapFromFloatBitmap2(*bm, range_start, range_end));
 }
 
-GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, std::function<bool (int, int, int,int)> f)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, std::function<bool (int, int, int,int)> f)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *color_bm = find_color_bitmap(handle);
@@ -7018,7 +7021,7 @@ bool range_select_color_area(int r, int g, int b,int a, void* dt)
   if (a<data->a_start || a>data->a_end) { return false; }
   return true;
 }
-GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, int r_start, int r_end, int g_start, int g_end, int b_start, int b_end, int a_start, int a_end)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, int r_start, int r_end, int g_start, int g_end, int b_start, int b_end, int a_start, int a_end)
 {
 #ifndef EMSCRIPTEN
 
@@ -7033,7 +7036,7 @@ GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, int r_start, 
 #endif
 }
 
-GameApi::BB GameApi::BoolBitmapApi::circle(BB bg, float center_x, float center_y, float radius)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::circle(BB bg, float center_x, float center_y, float radius)
 {
   Bitmap<bool> *bm = find_bool_bitmap(e, bg)->bitmap;
   Point2d center = { center_x, center_y };
@@ -7060,54 +7063,54 @@ bool Rectangle_func(int x, int y, void* data)
   return true;
 }
 
-int GameApi::BoolBitmapApi::size_x(BB bm)
+EXPORT int GameApi::BoolBitmapApi::size_x(BB bm)
 {
   Bitmap<bool> *b = find_bool_bitmap(e,bm)->bitmap;
   return b->SizeX();
 }
-int GameApi::BoolBitmapApi::size_y(BB bm)
+EXPORT int GameApi::BoolBitmapApi::size_y(BB bm)
 {
   Bitmap<bool> *b = find_bool_bitmap(e,bm)->bitmap;
   return b->SizeY();
 }
-bool GameApi::BoolBitmapApi::boolvalue(BB bm, int x, int y)
+EXPORT bool GameApi::BoolBitmapApi::boolvalue(BB bm, int x, int y)
 {
   Bitmap<bool> *b = find_bool_bitmap(e,bm)->bitmap;
   return b->Map(x,y);
 }   
   
-GameApi::BM GameApi::BitmapApi::conical_gradient(int sx, int sy, float x, float y, float angle1, float angle2, unsigned int color_1, unsigned int color_2)
+EXPORT GameApi::BM GameApi::BitmapApi::conical_gradient(int sx, int sy, float x, float y, float angle1, float angle2, unsigned int color_1, unsigned int color_2)
 {
   return add_color_bitmap2(e, new ConicalGradientBitmap(sx,sy,x,y, angle1,angle2,color_1,color_2));
 }
 
-GameApi::BB GameApi::BoolBitmapApi::sections(int sx, int sy, float x, float y, std::function<bool (float angle)> f)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::sections(int sx, int sy, float x, float y, std::function<bool (float angle)> f)
 {
   return add_bool_bitmap(e, new SectionsBoolBitmap(sx,sy,x,y,f));
 }
-GameApi::BB GameApi::BoolBitmapApi::part_circle(int sx, int sy, float x, float y, float start_angle, float end_angle, float start_rad, float end_rad)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::part_circle(int sx, int sy, float x, float y, float start_angle, float end_angle, float start_rad, float end_rad)
 {
   return add_bool_bitmap(e, new PartCircleBoolBitmap(sx,sy, x,y,start_angle,end_angle, start_rad, end_rad));
 }
 
-int GameApi::FloatBitmapApi::size_x(FB bm)
+EXPORT int GameApi::FloatBitmapApi::size_x(FB bm)
 {
   Bitmap<float> *b = find_float_bitmap(e,bm)->bitmap;
   return b->SizeX();
 }
-int GameApi::FloatBitmapApi::size_y(FB bm)
+EXPORT int GameApi::FloatBitmapApi::size_y(FB bm)
 {
   Bitmap<float> *b = find_float_bitmap(e,bm)->bitmap;
   return b->SizeY();
 }
-float GameApi::FloatBitmapApi::floatvalue(FB bm, int x, int y)
+EXPORT float GameApi::FloatBitmapApi::floatvalue(FB bm, int x, int y)
 {
   Bitmap<float> *b = find_float_bitmap(e,bm)->bitmap;
   return b->Map(x,y);
 }
 
 
-GameApi::BB GameApi::BoolBitmapApi::rectangle(BB bg, float x, float y, float width, float height)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::rectangle(BB bg, float x, float y, float width, float height)
 {
 #ifndef EMSCRIPTEN
 
@@ -7152,13 +7155,13 @@ private:
   float x,y,mult_x, mult_y;
 };
 
-GameApi::BB GameApi::BoolBitmapApi::sprite(BB bg, BB sprite, float x, float y, float mult_x, float mult_y)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::sprite(BB bg, BB sprite, float x, float y, float mult_x, float mult_y)
 {
   Bitmap<bool> *bg_1 = find_bool_bitmap(e,bg)->bitmap;
   Bitmap<bool> *sprite_1 = find_bool_bitmap(e,sprite)->bitmap;
   return add_bool_bitmap(e, new BoolBitmapSprite(*bg_1, *sprite_1, x, y, mult_x, mult_y));
 }
-GameApi::BB GameApi::BoolBitmapApi::not_bitmap(BB b)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::not_bitmap(BB b)
 {
   Bitmap<bool> *bm = find_bool_bitmap(e, b)->bitmap;
   return add_bool_bitmap(e, new NotBitmap(*bm));
@@ -7170,7 +7173,7 @@ GameApi::BB GameApi::BoolBitmapApi::or_bitmap(BB b1, BB b2)
   Bitmap<bool> *bm2 = find_bool_bitmap(e, b2)->bitmap;
   return add_bool_bitmap(e, new OrBitmap(*bm1,*bm2));
 }
-GameApi::BB GameApi::BoolBitmapApi::andnot_bitmap(BB b1, BB b2)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::andnot_bitmap(BB b1, BB b2)
 {
   Bitmap<bool> *bm1 = find_bool_bitmap(e, b1)->bitmap;
   Bitmap<bool> *bm2 = find_bool_bitmap(e, b2)->bitmap;
@@ -7184,13 +7187,13 @@ GameApi::BM GameApi::BoolBitmapApi::to_bitmap(BB bools,
   return add_color_bitmap2(e, new ChooseTBitmap<Color>(*bm1, Color(false_r, false_g, false_b, false_a), Color(true_r, true_g, true_b, true_a)));
 }
 
-GameApi::BoolBitmapApi::BoolBitmapApi(GameApi::Env &e) : e(e) { }
-GameApi::BoolBitmapApi::~BoolBitmapApi() { }
+EXPORT GameApi::BoolBitmapApi::BoolBitmapApi(GameApi::Env &e) : e(e) { }
+EXPORT GameApi::BoolBitmapApi::~BoolBitmapApi() { }
 
-GameApi::FloatBitmapApi::FloatBitmapApi(GameApi::Env &e) : e(e) { }
-GameApi::FloatBitmapApi::~FloatBitmapApi() { }
+EXPORT GameApi::FloatBitmapApi::FloatBitmapApi(GameApi::Env &e) : e(e) { }
+EXPORT GameApi::FloatBitmapApi::~FloatBitmapApi() { }
 
-GameApi::FB GameApi::FloatBitmapApi::function(std::function<float (int,int)> f, int sx, int sy)
+EXPORT GameApi::FB GameApi::FloatBitmapApi::function(std::function<float (int,int)> f, int sx, int sy)
 {
   GameApi::EveryApi *ev = new GameApi::EveryApi(e);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -7215,7 +7218,7 @@ private:
   Bitmap<Color> &bm;
 };
 
-GameApi::FB GameApi::FloatBitmapApi::from_red(BM bm)
+EXPORT GameApi::FB GameApi::FloatBitmapApi::from_red(BM bm)
 {
   BitmapHandle *handle = find_bitmap(e,bm);
   Bitmap<Color> *bmc = find_color_bitmap(handle);
@@ -7268,14 +7271,14 @@ private:
   int size;
   int sx,sy;
 };
-GameApi::FB GameApi::FloatBitmapApi::space_fill(PT *array, float *array2, int size, int sx, int sy)
+EXPORT GameApi::FB GameApi::FloatBitmapApi::space_fill(PT *array, float *array2, int size, int sx, int sy)
 {
   Point *array3 = new Point[size];
   for(int i=0;i<size;i++)
     array3[i] = *find_point(e, array[i]);
   return add_float_bitmap(e, new SpaceFillFloatBitmap(array3, array2, size, sx,sy));
 }
-GameApi::FB GameApi::FloatBitmapApi::from_green(BM bm)
+EXPORT GameApi::FB GameApi::FloatBitmapApi::from_green(BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *bmc = find_color_bitmap(handle);
@@ -7300,7 +7303,7 @@ private:
   Bitmap<Color> &bm;
 };
 
-GameApi::FB GameApi::FloatBitmapApi::from_blue(BM bm)
+EXPORT GameApi::FB GameApi::FloatBitmapApi::from_blue(BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *bmc = find_color_bitmap(handle);
@@ -7325,7 +7328,7 @@ private:
   Bitmap<Color> &bm;
 };
 
-GameApi::FB GameApi::FloatBitmapApi::from_alpha(BM bm)
+EXPORT GameApi::FB GameApi::FloatBitmapApi::from_alpha(BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *bmc = find_color_bitmap(handle);
@@ -7351,7 +7354,7 @@ private:
   float val_false;
 };
 
-GameApi::FB GameApi::FloatBitmapApi::from_bool(GameApi::BB b, float val_true, float val_false)
+EXPORT GameApi::FB GameApi::FloatBitmapApi::from_bool(GameApi::BB b, float val_true, float val_false)
 {
   Bitmap<bool> *bm = find_bool_bitmap(e, b)->bitmap;
   return add_float_bitmap(e, new FromBoolBitmap(*bm, val_true, val_false));
@@ -7383,7 +7386,7 @@ private:
   Bitmap<float> &a;
 };
 
-GameApi::BM GameApi::FloatBitmapApi::to_color(FB r, FB g, FB b, FB a)
+EXPORT GameApi::BM GameApi::FloatBitmapApi::to_color(FB r, FB g, FB b, FB a)
 {
   Bitmap<float> *rb = find_float_bitmap(e,r)->bitmap;
   Bitmap<float> *gb = find_float_bitmap(e,g)->bitmap;
@@ -7398,19 +7401,19 @@ GameApi::BB GameApi::FloatBitmapApi::to_bool(FB fb, float true_range_start, floa
   return add_bool_bitmap(e, new FloatRangeBitmap(*f, true_range_start, true_range_end));
 }
 
-GameApi::FB GameApi::FloatBitmapApi::from_bool_bitmap(BB bm, int csx, int csy)
+EXPORT GameApi::FB GameApi::FloatBitmapApi::from_bool_bitmap(BB bm, int csx, int csy)
 {
   Bitmap<bool> *bm2 = find_bool_bitmap(e,bm)->bitmap;
   return add_float_bitmap(e, new FloatBitmapFromBoolBitmap(*bm2, csx, csy));
 }
 
-GameApi::BM GameApi::FloatBitmapApi::to_grayscale(FB fb)
+EXPORT GameApi::BM GameApi::FloatBitmapApi::to_grayscale(FB fb)
 {
   Bitmap<float> *bm = find_float_bitmap(e,fb)->bitmap;
   return add_color_bitmap2(e, new GrayScaleBitmapFromFloatBitmap(*bm, Color(0,0,0,0), Color(255,255,255,255)));
 }
 
-GameApi::BM GameApi::FloatBitmapApi::to_grayscale_color(FB fb, int r, int g, int b, int a,
+EXPORT GameApi::BM GameApi::FloatBitmapApi::to_grayscale_color(FB fb, int r, int g, int b, int a,
 							int r2, int g2, int b2, int a2)
 {
   Bitmap<float> *bm = find_float_bitmap(e,fb)->bitmap;
@@ -7432,7 +7435,7 @@ GameApi::BB GameApi::BoolBitmapApi::function(std::function<bool (int,int)> f, in
   
   return add_bool_bitmap(e, new BitmapFromFunction<bool>(f, sx,sy));
 }
-GameApi::BB GameApi::BoolBitmapApi::polygon(BB bg2, PT *points, int size)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::polygon(BB bg2, PT *points, int size)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
 
@@ -7462,21 +7465,21 @@ GameApi::BB GameApi::BoolBitmapApi::polygon(BB bg2, PT *points, int size)
   return add_bool_bitmap(e, sbm2);
 }
 
-GameApi::VolumeApi::VolumeApi(Env &e) : e(e) { }
-GameApi::VolumeApi::~VolumeApi() { }
+EXPORT GameApi::VolumeApi::VolumeApi(Env &e) : e(e) { }
+EXPORT GameApi::VolumeApi::~VolumeApi() { }
 
-GameApi::O GameApi::VolumeApi::sphere(PT center, float radius)
+EXPORT GameApi::O GameApi::VolumeApi::sphere(PT center, float radius)
 {
   Point *p = find_point(e, center);
   return add_volume(e, new SphereVolume(*p, radius));
 }
-GameApi::O GameApi::VolumeApi::cone(PT p1, PT p2, float rad1, float rad2)
+EXPORT GameApi::O GameApi::VolumeApi::cone(PT p1, PT p2, float rad1, float rad2)
 {
   Point *pp1 = find_point(e, p1);
   Point *pp2 = find_point(e, p2);
   return add_volume(e, new ConeVolume(*pp1, *pp2-*pp1, rad1, rad2));
 }
-GameApi::O GameApi::VolumeApi::cube(float start_x, float end_x,
+EXPORT GameApi::O GameApi::VolumeApi::cube(float start_x, float end_x,
 				    float start_y, float end_y,
 				    float start_z, float end_z)
 {
@@ -7488,25 +7491,25 @@ GameApi::O GameApi::VolumeApi::cube(float start_x, float end_x,
 				      start_z, end_z));
 }
 
-GameApi::O GameApi::VolumeApi::torus(PT center, PT u_x, PT u_y, float dist1, float dist2)
+EXPORT GameApi::O GameApi::VolumeApi::torus(PT center, PT u_x, PT u_y, float dist1, float dist2)
 {
   Point *centerp = find_point(e, center);
   Point *u_xp = find_point(e, u_x);
   Point *u_yp = find_point(e, u_y);
   return add_volume(e, new TorusVolume(*u_xp-*centerp, *u_yp-*centerp, dist1, dist2, *centerp));
 }
-GameApi::O GameApi::VolumeApi::colour(GameApi::O o1, unsigned int col)
+EXPORT GameApi::O GameApi::VolumeApi::colour(GameApi::O o1, unsigned int col)
 {
   VolumeObject *oo1 = find_volume(e,o1);
   return add_volume(e, new ColorSpecVolume(*oo1, Color(col)));
 }
-GameApi::O GameApi::VolumeApi::not_op(GameApi::O o1)
+EXPORT GameApi::O GameApi::VolumeApi::not_op(GameApi::O o1)
 {
   VolumeObject *oo1 = find_volume(e,o1);
   return add_volume(e, new NotVolume(*oo1));
 }
 
-GameApi::O GameApi::VolumeApi::min_op(GameApi::O o1, GameApi::O o2)
+EXPORT GameApi::O GameApi::VolumeApi::min_op(GameApi::O o1, GameApi::O o2)
 {
   VolumeObject *oo1 = find_volume(e, o1);
   VolumeObject *oo2 = find_volume(e, o2);
@@ -7514,7 +7517,7 @@ GameApi::O GameApi::VolumeApi::min_op(GameApi::O o1, GameApi::O o2)
 
 }
 
-GameApi::O GameApi::VolumeApi::max_op(GameApi::O o1, GameApi::O o2)
+EXPORT GameApi::O GameApi::VolumeApi::max_op(GameApi::O o1, GameApi::O o2)
 {
   VolumeObject *oo1 = find_volume(e, o1);
   VolumeObject *oo2 = find_volume(e, o2);
@@ -7522,7 +7525,7 @@ GameApi::O GameApi::VolumeApi::max_op(GameApi::O o1, GameApi::O o2)
 
 }
 
-GameApi::BB GameApi::VolumeApi::plane(GameApi::O o, int sx, int sy,
+EXPORT GameApi::BB GameApi::VolumeApi::plane(GameApi::O o, int sx, int sy,
 				      PT u_p, V u_x, V u_y,
 				      float start_x, float end_x,
 				      float start_y, float end_y,
@@ -7547,20 +7550,20 @@ GameApi::BB GameApi::VolumeApi::plane(GameApi::O o, int sx, int sy,
   env->deletes.push_back(std::shared_ptr<void>(plane));
   return add_bool_bitmap(e, bm);
 }
-GameApi::O GameApi::VolumeApi::andnot_op(GameApi::O o1, GameApi::O o2)
+EXPORT GameApi::O GameApi::VolumeApi::andnot_op(GameApi::O o1, GameApi::O o2)
 {
   VolumeObject *oo1 = find_volume(e, o1);
   VolumeObject *oo2 = find_volume(e, o2);
   return add_volume(e, new AndNotVolume(*oo1,*oo2));
 
 }
-GameApi::O GameApi::VolumeApi::scale(GameApi::O obj, float x, float y, float z)
+EXPORT GameApi::O GameApi::VolumeApi::scale(GameApi::O obj, float x, float y, float z)
 {
   VolumeObject *o1 = find_volume(e, obj);
   return add_volume(e, new ScaleVolume(o1,x,y,z)); 
 }
 
-GameApi::O GameApi::VolumeApi::mandelbulb(float n, float p_x, float p_y, float p_z,
+EXPORT GameApi::O GameApi::VolumeApi::mandelbulb(float n, float p_x, float p_y, float p_z,
 					  float c_x, float c_y, float c_z,
 					  float radius,
 					  int iterations)
@@ -7603,7 +7606,7 @@ private:
 };
 
 
-GameApi::O GameApi::VolumeApi::boolfunction(std::function<bool (float x, float y, float z)> f)
+EXPORT GameApi::O GameApi::VolumeApi::boolfunction(std::function<bool (float x, float y, float z)> f)
 {
   //GameApi::EveryApi *ev = new GameApi::EveryApi(e);
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -7661,7 +7664,7 @@ private:
 };
 
 
-GameApi::O GameApi::VolumeApi::subvolume(std::function<float (float x, float y, float z)> f, float start_range, float end_range)
+EXPORT GameApi::O GameApi::VolumeApi::subvolume(std::function<float (float x, float y, float z)> f, float start_range, float end_range)
 {
   FunctionFloatVolumeObject *ff = new FunctionFloatVolumeObject(f);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -7678,14 +7681,14 @@ private:
   GameApi::EveryApi &ev;
   FaceCollection *coll;
 };
-GameApi::O GameApi::VolumeApi::from_polygon(GameApi::P p, float x, float y, float z)
+EXPORT GameApi::O GameApi::VolumeApi::from_polygon(GameApi::P p, float x, float y, float z)
 {
   FaceCollection *coll = find_facecoll(e, p);
   Point px(x,y,z);
   return add_volume(e, new FaceCollectionVolume(coll,px));
 }
 
-void GameApi::VolumeApi::find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level)
+EXPORT void GameApi::VolumeApi::find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level)
 {
   Point *pp1 = find_point(e,p1);
   Point *pp2 = find_point(e,p2);
@@ -7948,12 +7951,12 @@ public:
   std::vector<unsigned int> colours;
 };
 
-GameApi::P GameApi::VolumeApi::rendercubes3(O o, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+EXPORT GameApi::P GameApi::VolumeApi::rendercubes3(O o, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
 {
   return add_polygon(e, new RenderCubes3(e, o, sx, sy, sz, start_x,end_x, start_y,end_y, start_z, end_z), 1);
 }
 
-GameApi::P GameApi::VolumeApi::rendercubes2(EveryApi &ev, O o, fptrtype f, int sx, int sy, int sz, float world_x, float world_y, float world_z)
+EXPORT GameApi::P GameApi::VolumeApi::rendercubes2(EveryApi &ev, O o, fptrtype f, int sx, int sy, int sz, float world_x, float world_y, float world_z)
 {
   float step_x = world_x/sx;
   float step_y = world_y/sy;
@@ -7984,7 +7987,7 @@ GameApi::P GameApi::VolumeApi::rendercubes2(EveryApi &ev, O o, fptrtype f, int s
   }
   return ev.polygon_api.or_array(&vec3[0], vec3.size());
 }
-GameApi::P GameApi::VolumeApi::rendercubes(O o, fptrtype f, int size, float wholesize)
+EXPORT GameApi::P GameApi::VolumeApi::rendercubes(O o, fptrtype f, int size, float wholesize)
 {
   float s = wholesize/size;
   EveryApi api(e);
@@ -7997,9 +8000,9 @@ GameApi::P GameApi::VolumeApi::rendercubes(O o, fptrtype f, int size, float whol
   return hv.get_all();
 }
 
-GameApi::ContinuousBitmapApi::ContinuousBitmapApi(Env &e) : e(e) { }
+EXPORT GameApi::ContinuousBitmapApi::ContinuousBitmapApi(Env &e) : e(e) { }
 
-GameApi::CBM GameApi::ContinuousBitmapApi::empty(float x, float y)
+EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::empty(float x, float y)
 {
   return constant(0x00000000, x, y);
 }
@@ -8022,13 +8025,13 @@ public:
   std::function<unsigned int (float, float)> f; 
   float sx; float sy;
 };
-unsigned int GameApi::ContinuousBitmapApi::get_pixel(CBM bitmap, float x, float y)
+EXPORT unsigned int GameApi::ContinuousBitmapApi::get_pixel(CBM bitmap, float x, float y)
 {
   ContinuousBitmap<Color> *cbm = find_continuous_bitmap(e, bitmap);
   return cbm->Map(x,y).Pixel();
 }
 
-GameApi::CBM GameApi::ContinuousBitmapApi::function(std::function<unsigned int (float,float)> f, float sx, float sy)
+EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::function(std::function<unsigned int (float,float)> f, float sx, float sy)
 {
   //GameApi::EveryApi *ev = new GameApi::EveryApi(e);
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -8036,19 +8039,19 @@ GameApi::CBM GameApi::ContinuousBitmapApi::function(std::function<unsigned int (
 
   return add_continuous_bitmap(e, new FunctionContinuousBitmap( f, sx, sy));
 }
-GameApi::BM GameApi::ContinuousBitmapApi::sample(CBM c_bitmap, int sx, int sy) // SampleBitmap(CB<Color, int sx,int sy)
+EXPORT GameApi::BM GameApi::ContinuousBitmapApi::sample(CBM c_bitmap, int sx, int sy) // SampleBitmap(CB<Color, int sx,int sy)
 {
   ContinuousBitmap<Color> *cbm = find_continuous_bitmap(e, c_bitmap);
   return add_color_bitmap(e, new SampleBitmap(*cbm, sx, sy));
 }
-GameApi::CBM GameApi::ContinuousBitmapApi::rotate(CBM c_bitmap, float center_x, float center_y, float angle)
+EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::rotate(CBM c_bitmap, float center_x, float center_y, float angle)
 {
   ContinuousBitmap<Color> *cbm = find_continuous_bitmap(e, c_bitmap);
   return add_continuous_bitmap(e, new RotateContinuousBitmap<Color>(cbm, center_x, center_y, angle));
   
 }
 
-GameApi::BM GameApi::ContinuousBitmapApi::to_bitmap(CBM bm, int sx, int sy)
+EXPORT GameApi::BM GameApi::ContinuousBitmapApi::to_bitmap(CBM bm, int sx, int sy)
 {
   ContinuousBitmap<Color> *cbm = find_continuous_bitmap(e, bm);  
   return add_color_bitmap(e, new BitmapFromContinuousBitmap<Color>(*cbm, sx,sy));
@@ -8072,13 +8075,13 @@ private:
   ColorVolumeObject *obj;
 };
 
-GameApi::CBM GameApi::ContinuousBitmapApi::surfacecolor(S s, COV cov)
+EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::surfacecolor(S s, COV cov)
 {
   SurfaceImpl *impl = find_surface(e, s);
   ColorVolumeObject *obj = find_color_volume(e, cov);
   return add_continuous_bitmap(e, new ComposeSurfaceColor(impl, obj));
 }
-GameApi::CBM GameApi::ContinuousBitmapApi::from_bitmap(BM bm, float xsize, float ysize)
+EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::from_bitmap(BM bm, float xsize, float ysize)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *bm2 = find_color_bitmap(handle);
@@ -8109,8 +8112,8 @@ private:
   void *data;
 };
 
-GameApi::VoxelApi::VoxelApi(Env &e) : e(e) { }
-GameApi::VX GameApi::VoxelApi::function(unsigned int (*fptr)(EveryApi &ev, int x, int y, int z, void *data), int sx, int sy, int sz, void *data)
+EXPORT GameApi::VoxelApi::VoxelApi(Env &e) : e(e) { }
+EXPORT GameApi::VX GameApi::VoxelApi::function(unsigned int (*fptr)(EveryApi &ev, int x, int y, int z, void *data), int sx, int sy, int sz, void *data)
 {
   GameApi::EveryApi *ev = new GameApi::EveryApi(e);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -8119,7 +8122,7 @@ GameApi::VX GameApi::VoxelApi::function(unsigned int (*fptr)(EveryApi &ev, int x
   return add_voxel(e, new VoxelFunction(*ev, fptr, sx, sy,sz, data));
 }
 
-unsigned int GameApi::VoxelApi::get_pixel(VX v, int x, int y, int z)
+EXPORT unsigned int GameApi::VoxelApi::get_pixel(VX v, int x, int y, int z)
 {
   Voxel<unsigned int> *c = find_voxel(e, v);
   return c->Map(x,y,z);
@@ -8222,14 +8225,14 @@ private:
   float ssx,ssy,ssz;
 };
 
-GameApi::P GameApi::VoxelApi::render_boxes(VX v, float sx, float sy, float sz)
+EXPORT GameApi::P GameApi::VoxelApi::render_boxes(VX v, float sx, float sy, float sz)
 {
   Voxel<unsigned int> *vv = find_voxel(e, v);  
   return add_polygon2(e, new VoxelBoxes(vv, sx, sy, sz), 1);
 }
 
 #if 0
-GameApi::BM GameApi::VoxelApi::sw_rays(O volume, VX colours, int sx, int sy, float vx, float vy, float vz, float z)
+EXPORT GameApi::BM GameApi::VoxelApi::sw_rays(O volume, VX colours, int sx, int sy, float vx, float vy, float vz, float z)
 {
   ContinuousVoxel<Color> *color = find_voxel(e, colours);
   Vector v(vx,vy,vz);
@@ -8254,7 +8257,7 @@ private:
   Point pp;
 };
 
-GameApi::P GameApi::PolygonApi::color_voxel(P orig, VX colours, PT p, V u_x, V u_y, V u_z)
+EXPORT GameApi::P GameApi::PolygonApi::color_voxel(P orig, VX colours, PT p, V u_x, V u_y, V u_z)
 {
   Point *pp = find_point(e, p);
   Vector *uu_x = find_vector(e, u_x);
@@ -8266,7 +8269,7 @@ GameApi::P GameApi::PolygonApi::color_voxel(P orig, VX colours, PT p, V u_x, V u
   return add_polygon(e, new ColorVoxelFaceCollection(*coll, *v, *pp, *uu_x, *uu_y, *uu_z), 1);
 }
 
-GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
+EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 {
   FaceCollection *faces = find_facecoll(e, p);
   VertexArraySet *s = new VertexArraySet;
@@ -8280,7 +8283,7 @@ GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
   return add_vertex_array(e, s, arr2);
 }
 #if 0
-int GameApi::PolygonApi::access_point_count(VA va, bool triangle)
+EXPORT int GameApi::PolygonApi::access_point_count(VA va, bool triangle)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   if (triangle)
@@ -8292,7 +8295,7 @@ int GameApi::PolygonApi::access_point_count(VA va, bool triangle)
       return s->quad_count(0);
     }
 }
-float *GameApi::PolygonApi::access_points(VA va, bool triangle, int face, int point)
+EXPORT float *GameApi::PolygonApi::access_points(VA va, bool triangle, int face, int point)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   if (triangle)
@@ -8307,7 +8310,7 @@ float *GameApi::PolygonApi::access_points(VA va, bool triangle, int face, int po
     }
   return 0;
 }
-float *GameApi::PolygonApi::access_color(VA va, bool triangle, int face, int point)
+EXPORT float *GameApi::PolygonApi::access_color(VA va, bool triangle, int face, int point)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   if (triangle) {
@@ -8320,7 +8323,7 @@ float *GameApi::PolygonApi::access_color(VA va, bool triangle, int face, int poi
     return &((float*)ptr)[face*4*4+point*4];      
     }
 }
-float *GameApi::PolygonApi::access_normals(VA va, bool triangle, int face, int point)
+EXPORT float *GameApi::PolygonApi::access_normals(VA va, bool triangle, int face, int point)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   if (triangle)
@@ -8334,7 +8337,7 @@ float *GameApi::PolygonApi::access_normals(VA va, bool triangle, int face, int p
       return &((float*)ptr)[face*4*3+point*3];
     }
 }
-float *GameApi::PolygonApi::access_texcoord(VA va, bool triangle, int face, int point)
+EXPORT float *GameApi::PolygonApi::access_texcoord(VA va, bool triangle, int face, int point)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   if (triangle)
@@ -8348,14 +8351,14 @@ float *GameApi::PolygonApi::access_texcoord(VA va, bool triangle, int face, int 
       return &((float*)ptr)[face*4*2+point*2];
     }
 }
-void GameApi::PolygonApi::update(VA va)
+EXPORT void GameApi::PolygonApi::update(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *s2 = find_vertex_array_render(e, va);
   s2->update(0);
 }
 #endif
-void GameApi::PolygonApi::render_vertex_array(VA va)
+EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
@@ -8404,7 +8407,7 @@ private:
   Vector v;
 };
 
-GameApi::P GameApi::PolygonApi::anim_target_vector(P p, V v)
+EXPORT GameApi::P GameApi::PolygonApi::anim_target_vector(P p, V v)
 {
   FaceCollection *i = find_facecoll(e, p);
   Vector *vv = find_vector(e,v);
@@ -8425,7 +8428,7 @@ private:
   FaceCollection *i1;
   FaceCollection *i2;
 };
-GameApi::P GameApi::PolygonApi::anim_endpoints(P p1, P p2)
+EXPORT GameApi::P GameApi::PolygonApi::anim_endpoints(P p1, P p2)
 {
   FaceCollection *i1 = find_facecoll(e,p1);
   FaceCollection *i2 = find_facecoll(e,p2);
@@ -8479,7 +8482,7 @@ private:
   FaceCollection *coll;
   float val;
 };
-GameApi::P GameApi::PolygonApi::anim_interpolate(P p, float val)
+EXPORT GameApi::P GameApi::PolygonApi::anim_interpolate(P p, float val)
 {
   FaceCollection *i = find_facecoll(e,p);
   FaceCollection *coll = new AnimInterpolate(i, val);
@@ -8505,7 +8508,7 @@ private:
 };
 
 
-GameApi::P GameApi::PolygonApi::anim_target_scale(P p, PT center, float scale_x, float scale_y, float scale_z)
+EXPORT GameApi::P GameApi::PolygonApi::anim_target_scale(P p, PT center, float scale_x, float scale_y, float scale_z)
 {
   FaceCollection *i = find_facecoll(e, p);
   Point *pp = find_point(e, center);
@@ -8528,7 +8531,7 @@ private:
   Matrix m;
 };
 
-GameApi::P GameApi::PolygonApi::anim_target_matrix(P p, M matrix)
+EXPORT GameApi::P GameApi::PolygonApi::anim_target_matrix(P p, M matrix)
 {
   FaceCollection *i = find_facecoll(e, p);
   Matrix *mm = find_matrix(e,matrix);
@@ -8537,15 +8540,15 @@ GameApi::P GameApi::PolygonApi::anim_target_matrix(P p, M matrix)
   return add_polygon(e, coll, 1);
 }
 
-GameApi::P GameApi::PolygonApi::sprite(Q bm, PT p1, PT p2, PT p3, PT p4)
+EXPORT GameApi::P GameApi::PolygonApi::sprite(Q bm, PT p1, PT p2, PT p3, PT p4)
 {
 }
-GameApi::P GameApi::PolygonApi::sprite(Q bm, PT p, float mul_x, float mul_y)
+EXPORT GameApi::P GameApi::PolygonApi::sprite(Q bm, PT p, float mul_x, float mul_y)
 {
 }
 #endif
 
-GameApi::TR GameApi::StateChangeApi::init(int paths)
+EXPORT GameApi::TR GameApi::StateChangeApi::init(int paths)
 {
   return add_timerange(e, paths);
 }
@@ -8563,7 +8566,7 @@ private:
   GameApi::Env &e;
 };
 
-GameApi::VV GameApi::StateChangeApi::prepareloop(float *array, int arraysize,
+EXPORT GameApi::VV GameApi::StateChangeApi::prepareloop(float *array, int arraysize,
 						 std::function<P (float val)> f, float step_duration)
 {
   if (arraysize<2) { std::cout << "Error: arraysize<2" << std::endl; GameApi::VV v; v.id = 0; return v; }
@@ -8592,7 +8595,7 @@ GameApi::VV GameApi::StateChangeApi::prepare(TR sc)
 {
   return add_timerange_vertexarray(e, sc);
 }
-void GameApi::StateChangeApi::render(VV v, float time, SH shader)
+EXPORT void GameApi::StateChangeApi::render(VV v, float time, SH shader)
 {
   ShaderPriv2 *p = (ShaderPriv2*)api.priv;
   ShaderSeq *seq = p->seq;
@@ -8600,7 +8603,7 @@ void GameApi::StateChangeApi::render(VV v, float time, SH shader)
   VArray *arr = find_timerange_vertexarray(e, v);
   arr->render(time, prog);
 }
-void GameApi::StateChangeApi::render(VV v, float time, SH shader, float (*fptr)(int path, std::string name))
+EXPORT void GameApi::StateChangeApi::render(VV v, float time, SH shader, float (*fptr)(int path, std::string name))
 {
   ShaderPriv2 *p = (ShaderPriv2*)api.priv;
   ShaderSeq *seq = p->seq;
@@ -8609,23 +8612,23 @@ void GameApi::StateChangeApi::render(VV v, float time, SH shader, float (*fptr)(
   arr->render(time, prog, fptr);
 }
 
-GameApi::StateChangeApi::StateChangeApi(GameApi::Env &e, GameApi::ShaderApi &api)
+EXPORT GameApi::StateChangeApi::StateChangeApi(GameApi::Env &e, GameApi::ShaderApi &api)
 : e(e),api(api) { }
 
 
-GameApi::TextureApi::TextureApi(GameApi::Env &e) : e(e) { count=0; }
+EXPORT GameApi::TextureApi::TextureApi(GameApi::Env &e) : e(e) { count=0; }
 
-GameApi::TX GameApi::TextureApi::tex_plane(int sx, int sy)
+EXPORT GameApi::TX GameApi::TextureApi::tex_plane(int sx, int sy)
 {
   return add_texture(e, new TexPlane(sx,sy));
 }
-GameApi::TX GameApi::TextureApi::tex_bitmap(GameApi::BM bm)
+EXPORT GameApi::TX GameApi::TextureApi::tex_bitmap(GameApi::BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *bmc = find_color_bitmap(handle);
   return add_texture(e, new TexBitmap(*bmc));
 }
-GameApi::VA GameApi::TextureApi::bind(GameApi::VA va, GameApi::TXID tx)
+EXPORT GameApi::VA GameApi::TextureApi::bind(GameApi::VA va, GameApi::TXID tx)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   VertexArraySet *ns = new VertexArraySet(*s);
@@ -8634,21 +8637,20 @@ GameApi::VA GameApi::TextureApi::bind(GameApi::VA va, GameApi::TXID tx)
   arr->prepare(0);
   return add_vertex_array(e, ns, arr);
 }
-int GameApi::TextureApi::unique_id()
+EXPORT int GameApi::TextureApi::unique_id()
 {
   count++;
   return count;
 }
-GameApi::TX GameApi::TextureApi::tex_assign(GameApi::TX tex, int id, int x, int y, GameApi::BM bm)
+EXPORT GameApi::TX GameApi::TextureApi::tex_assign(GameApi::TX tex, int id, int x, int y, GameApi::BM bm)
 {
   TextureI *texture = find_texture(e, tex);
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *bmc = find_color_bitmap(handle);
   return add_texture(e, new TexAssign(*texture, id, x, y, *bmc));
 }
-GameApi::TX GameApi::TextureApi::tex_coord(GameApi::TX tex, int id, int x, int y, int width, int height)
-{
-  TextureI *texture = find_texture(e, tex);
+EXPORT GameApi::TX GameApi::TextureApi::tex_coord(GameApi::TX tex, int id, int x, int y, int width, int height)
+{ TextureI *texture = find_texture(e, tex);
   return add_texture(e, new TextureITexCoord(*texture, id, x,y,width,height));
 }
 GameApi::Q GameApi::TextureApi::get_tex_coord(TX tx, int id)
@@ -8665,7 +8667,7 @@ GameApi::Q GameApi::TextureApi::get_tex_coord(TX tx, int id)
   Point2d p2 = tex->AreaE(i);
   return add_tex_quad(e, p1,p2);
 }
-GameApi::TXID GameApi::TextureApi::prepare(TX tx)
+EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
 {
   TextureI *tex = find_texture(e, tx);
   TextureIBitmap bm(*tex);
@@ -8689,7 +8691,7 @@ GameApi::TXID GameApi::TextureApi::prepare(TX tx)
   return id2;
 }
 
-void GameApi::TextureApi::use(TXID tx, int i)
+EXPORT void GameApi::TextureApi::use(TXID tx, int i)
 {
   glEnable(GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
@@ -8698,7 +8700,7 @@ void GameApi::TextureApi::use(TXID tx, int i)
   glActiveTexture(GL_TEXTURE0+i);
   glBindTexture(GL_TEXTURE_2D, tx.id);
 }
-void GameApi::TextureApi::unuse(TXID tx)
+EXPORT void GameApi::TextureApi::unuse(TXID tx)
 {
   glDisable(GL_TEXTURE_2D);
 }
@@ -8783,9 +8785,9 @@ private:
 };
 
 
-GameApi::PlaneApi::PlaneApi(Env &e) : e(e) { }
+EXPORT GameApi::PlaneApi::PlaneApi(Env &e) : e(e) { }
 
-GameApi::PL GameApi::PlaneApi::function(GameApi::PT (*fptr)(EveryApi &e, int idx, void*data), int num_points, float sx, float sy, void*data)
+EXPORT GameApi::PL GameApi::PlaneApi::function(GameApi::PT (*fptr)(EveryApi &e, int idx, void*data), int num_points, float sx, float sy, void*data)
 {
   GameApi::EveryApi *ev = new EveryApi(e);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -9001,7 +9003,7 @@ private:
   std::vector<PlanePointsType> types;
   float xdelta;
 };
-GameApi::PL GameApi::PlaneApi::remove_splines(GameApi::PL pl, float xdelta)
+EXPORT GameApi::PL GameApi::PlaneApi::remove_splines(GameApi::PL pl, float xdelta)
 {
   PlanePoints2d *plane= find_plane(e, pl);
   return add_plane(e, new RemoveSplines(plane, xdelta));
@@ -9305,7 +9307,7 @@ private:
   Vector u_x, u_y, u_z;
   float z_mult;
 };
-GameApi::P GameApi::PlaneApi::to_polygon(EveryApi &ev, PL pl, PT pos, V u_x, V u_y, V u_z, float z_mult)
+EXPORT GameApi::P GameApi::PlaneApi::to_polygon(EveryApi &ev, PL pl, PT pos, V u_x, V u_y, V u_z, float z_mult)
 {
   Vector *uu_z = find_vector(e, u_z);
   P face = to_polygon_face(pl, pos, u_x, u_y);
@@ -9323,7 +9325,7 @@ GameApi::P GameApi::PlaneApi::to_polygon_lines(PL pl, PT pos, V u_x, V u_y, V u_
   Vector *uu_z = find_vector(e, u_z);
   return add_polygon( e, new PlanePolygonLines(plane, *pos_1, *uu_x, *uu_y, *uu_z, z_multiplier), 1);
 }
-std::pair<GameApi::PL, GameApi::PL> GameApi::PlaneApi::triangulate(EveryApi &ev, PL pl, int obj)
+EXPORT std::pair<GameApi::PL, GameApi::PL> GameApi::PlaneApi::triangulate(EveryApi &ev, PL pl, int obj)
 {
   PlanePoints2d *plane = find_plane(e,pl);
   PlanePoints2d *plane2 = new Triangulate1(ev, pl, plane,obj);
@@ -9349,11 +9351,11 @@ public:
 private:
   float sx,sy;
 };
-GameApi::PL GameApi::PlaneApi::empty_plane( float sx, float sy )
+EXPORT GameApi::PL GameApi::PlaneApi::empty_plane( float sx, float sy )
 {
   return add_plane(e, new EmptyPlane(sx,sy));
 }
-GameApi::PL GameApi::PlaneApi::triangulate_all(GameApi::EveryApi &ev, PL pl, int point_count, int max_obj)
+EXPORT GameApi::PL GameApi::PlaneApi::triangulate_all(GameApi::EveryApi &ev, PL pl, int point_count, int max_obj)
 {
   PlanePoints2d *plane = find_plane(e,pl);
   PL res = empty_plane(plane->SizeX(), plane->SizeY());
@@ -9368,7 +9370,7 @@ GameApi::PL GameApi::PlaneApi::triangulate_all(GameApi::EveryApi &ev, PL pl, int
     }
   return res;
 }
-GameApi::PL GameApi::PlaneApi::render_p(GameApi::P poly, GameApi::M proj_matrix, float sx, float sy)
+EXPORT GameApi::PL GameApi::PlaneApi::render_p(GameApi::P poly, GameApi::M proj_matrix, float sx, float sy)
 {
   FaceCollection *coll = find_facecoll(e, poly);
   Matrix m = find_matrix(e, proj_matrix);
@@ -9393,7 +9395,7 @@ private:
   unsigned int color_0;
   unsigned int color_1;
 };
-GameApi::BB GameApi::PlaneApi::render_bool(GameApi::PL pl, int num, int sx, int sy)
+EXPORT GameApi::BB GameApi::PlaneApi::render_bool(GameApi::PL pl, int num, int sx, int sy)
 {
   PlanePoints2d *ptr = find_plane(e, pl);
   PolygonLines *lines = new PolygonLines(*ptr, num);
@@ -9471,12 +9473,12 @@ private:
   float dx, dy;
 };
 
-GameApi::PL GameApi::PlaneApi::flip_y(GameApi::PL pl)
+EXPORT GameApi::PL GameApi::PlaneApi::flip_y(GameApi::PL pl)
 {
   PlanePoints2d *ptr = find_plane(e, pl);
   return add_plane(e, new FlipYPlane(ptr));
 }
-GameApi::PL GameApi::PlaneApi::move(GameApi::PL pl, float dx, float dy)
+EXPORT GameApi::PL GameApi::PlaneApi::move(GameApi::PL pl, float dx, float dy)
 {
   PlanePoints2d *ptr = find_plane(e, pl);
   return add_plane(e, new MovePlane(ptr, dx, dy));
@@ -9526,7 +9528,7 @@ private:
   float radius;
   int numpoints;
 };
-GameApi::PL GameApi::PlaneApi::circle(GameApi::PT center, float radius, int numpoints)
+EXPORT GameApi::PL GameApi::PlaneApi::circle(GameApi::PT center, float radius, int numpoints)
 {
   Point *c = find_point(e, center);
   return add_plane(e, new CirclePlane(*c, radius, numpoints));
@@ -9553,14 +9555,14 @@ private:
   float radius_1, radius_2;
   int numpoints;
 };
-GameApi::PL GameApi::PlaneApi::star(GameApi::PT center, float radius_1, float radius_2, int numpoints)
+EXPORT GameApi::PL GameApi::PlaneApi::star(GameApi::PT center, float radius_1, float radius_2, int numpoints)
 {
   Point *c = find_point(e, center);
   return add_plane(e, new StarPlane(*c, radius_1, radius_2, numpoints));
 }
 
 
-GameApi::PLA GameApi::PlaneApi::prepare(GameApi::PL pl)
+EXPORT GameApi::PLA GameApi::PlaneApi::prepare(GameApi::PL pl)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   PlaneData data;
@@ -9614,7 +9616,7 @@ std::cout << "Type ERROR!" << std::endl;
     }
   return pla;
 }
-void GameApi::PlaneApi::render(GameApi::PLA pla, float x, float y, float mult_x, float mult_y)
+EXPORT void GameApi::PlaneApi::render(GameApi::PLA pla, float x, float y, float mult_x, float mult_y)
 {
   //PlaneData *dt = find_plane_array(e,pla);
   //GLuint pathObj = glGenPathsNV(1);
@@ -9640,7 +9642,7 @@ void GameApi::PlaneApi::render(GameApi::PLA pla, float x, float y, float mult_x,
     }
 }
 #if 0
-GameApi::PL GameApi::PlaneApi::floodfill_border(GameApi::BB bitmap, int x, int y)
+EXPORT GameApi::PL GameApi::PlaneApi::floodfill_border(GameApi::BB bitmap, int x, int y)
 {
   BoolBitmap *bbm = find_bool_bitmap(e, bitmap);
   Bitmap<bool> *bbm2 = bbm->bitmap;
@@ -9738,7 +9740,7 @@ private:
   float length;
   float min_value; 
   float max_value; 
-};
+}; 
 
 GameApi::WV GameApi::WaveformApi::function(std::function<float (float)> f, float length, float min_value, float max_value)
 {
@@ -9803,7 +9805,7 @@ private:
   PointsApiPoints *pts1;
   PointsApiPoints *pts2;
 };
-GameApi::PTS GameApi::PointsApi::heightmap(BM colour, FB height, PT pos, V u_x, V u_y, V u_z, int sx, int sy)
+EXPORT GameApi::PTS GameApi::PointsApi::heightmap(BM colour, FB height, PT pos, V u_x, V u_y, V u_z, int sx, int sy)
 {
   BitmapHandle *h = find_bitmap(e, colour);
   Bitmap<Color> *colour_bm = find_color_bitmap(h);
@@ -9815,7 +9817,7 @@ GameApi::PTS GameApi::PointsApi::heightmap(BM colour, FB height, PT pos, V u_x, 
   Vector *uu_z = find_vector(e, u_z);
   return add_points_api_points(e, new HeightMapPoints(*colour_bm, *height_bm, *pt, *uu_x, *uu_y, *uu_z, sx, sy));
 }
-GameApi::PTS GameApi::PointsApi::from_volume(GameApi::O o, GameApi::PT pos,
+EXPORT GameApi::PTS GameApi::PointsApi::from_volume(GameApi::O o, GameApi::PT pos,
 					     GameApi::V u_x, GameApi::V u_y, GameApi::V u_z, int sx, int sy, int sz)
 {
   VolumeObject *obj = find_volume(e, o);
@@ -9825,7 +9827,7 @@ GameApi::PTS GameApi::PointsApi::from_volume(GameApi::O o, GameApi::PT pos,
   Vector *uu_z = find_vector(e, u_z);
   return add_points_api_points(e, new SpacePoints(*obj, *pt, *uu_x, *uu_y, *uu_z, sx, sy, sz));
 }
-GameApi::PTS GameApi::PointsApi::or_points(GameApi::PTS p1, GameApi::PTS p2)
+EXPORT GameApi::PTS GameApi::PointsApi::or_points(GameApi::PTS p1, GameApi::PTS p2)
 {
   PointsApiPoints *pts1 = find_pointsapi_points(e, p1);
   PointsApiPoints *pts2 = find_pointsapi_points(e, p2);
@@ -9860,7 +9862,7 @@ private:
   Vector u_y;
   Vector light_vec;
 };
-GameApi::PTS GameApi::PointsApi::shadow_points(GameApi::PTS obj,
+EXPORT GameApi::PTS GameApi::PointsApi::shadow_points(GameApi::PTS obj,
 					       PT pos,
 					       V u_x, V u_y,
 					       V light_vec)
@@ -9892,7 +9894,7 @@ void GameApi::PointsApi::update(GameApi::PTA pta)
   glBufferSubData(GL_ARRAY_BUFFER, 0, arr->numpoints*sizeof(unsigned int), arr->color);
 }
 #endif
-GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
+EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
 {
   PointsApiPoints *pts = find_pointsapi_points(e, p);
   int numpoints = pts->NumPoints();
@@ -9970,7 +9972,7 @@ private:
   float start_x, start_y, start_z;
   float end_x, end_y, end_z;
 };
-GameApi::PTS GameApi::PointsApi::from_float_volume(GameApi::FO object,
+EXPORT GameApi::PTS GameApi::PointsApi::from_float_volume(GameApi::FO object,
 						   int numpoints,
 						   float start_x, float start_y, float start_z,
 						   float end_x, float end_y, float end_z)
@@ -9978,7 +9980,7 @@ GameApi::PTS GameApi::PointsApi::from_float_volume(GameApi::FO object,
   FloatVolumeObject *fo = find_float_volume(e, object);
   return add_points_api_points(e, new PTSFromFloatVolume(fo, numpoints, start_x, start_y, start_z, end_x, end_y, end_z));
 }
-GameApi::FOA GameApi::FloatVolumeApi::prepare(GameApi::FO object,
+EXPORT GameApi::FOA GameApi::FloatVolumeApi::prepare(GameApi::FO object,
 					      int numpoints,
 					      float start_x, float start_y, float start_z,
 					      float end_x, float end_y, float end_z)
@@ -10014,7 +10016,7 @@ GameApi::FOA GameApi::FloatVolumeApi::prepare(GameApi::FO object,
 
   return add_point_array(e, arr);
 }
-void GameApi::PointsApi::render(GameApi::PTA array)
+EXPORT void GameApi::PointsApi::render(GameApi::PTA array)
 {
   PointArray3 *arr = find_point_array3(e, array);
   glEnableVertexAttribArray(0);
@@ -10028,7 +10030,7 @@ void GameApi::PointsApi::render(GameApi::PTA array)
   glDisableVertexAttribArray(2);
   
 }
-void GameApi::FloatVolumeApi::render(FOA array)
+EXPORT void GameApi::FloatVolumeApi::render(FOA array)
 {
   PointArray2 *arr = find_point_array(e, array);
   glEnableVertexAttribArray(0);
@@ -10052,12 +10054,12 @@ private:
   float start, end;
 };
 
-GameApi::O GameApi::FloatVolumeApi::subvolume(FO f, float start_range, float end_range)
+EXPORT GameApi::O GameApi::FloatVolumeApi::subvolume(FO f, float start_range, float end_range)
 {
   FloatVolumeObject *ff = find_float_volume(e, f);
   return add_volume(e, new SubVolumeObject(*ff, start_range, end_range));
 }
-GameApi::FO GameApi::FloatVolumeApi::function(std::function<float (float x, float y, float z)> f)
+EXPORT GameApi::FO GameApi::FloatVolumeApi::function(std::function<float (float x, float y, float z)> f)
 {
   //GameApi::EveryApi *ev = new GameApi::EveryApi(e);
   FunctionFloatVolumeObject *ff = new FunctionFloatVolumeObject(f);
@@ -10065,7 +10067,7 @@ GameApi::FO GameApi::FloatVolumeApi::function(std::function<float (float x, floa
   //env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_float_volume(e, ff);
 }
-GameApi::COV GameApi::ColorVolumeApi::function(std::function<unsigned int (float x, float y, float z)> f)
+EXPORT GameApi::COV GameApi::ColorVolumeApi::function(std::function<unsigned int (float x, float y, float z)> f)
 {
   //GameApi::EveryApi *ev = new GameApi::EveryApi(e);
   FunctionColorVolumeObject *ff = new FunctionColorVolumeObject(f);
@@ -10091,7 +10093,7 @@ private:
   unsigned int col1;
 };
 
-GameApi::COV GameApi::ColorVolumeApi::from_float_volume(FO obj, unsigned int col0, unsigned int col1)
+EXPORT GameApi::COV GameApi::ColorVolumeApi::from_float_volume(FO obj, unsigned int col0, unsigned int col1)
 {
   FloatVolumeObject *obj2 = find_float_volume(e, obj);
   return add_color_volume(e, new ColorVolumeFromFloatVolume(obj2, col0, col1));
@@ -10110,7 +10112,7 @@ private:
   ContinuousBitmap<Color> *bm;
 };
 
-GameApi::COV GameApi::ColorVolumeApi::from_continuous_bitmap(CBM bm)
+EXPORT GameApi::COV GameApi::ColorVolumeApi::from_continuous_bitmap(CBM bm)
 {
   ContinuousBitmap<Color> *bbm = find_continuous_bitmap(e, bm);
   return add_color_volume(e, new ColorVolumeFromContinuousBitmap(bbm));
@@ -10166,7 +10168,7 @@ private:
   Point p00, p01, p10, p11;
 };
 
-GameApi::BM GameApi::ColorVolumeApi::texture_bm(GameApi::P obj, GameApi::COV colors, int face, int sx, int sy)
+EXPORT GameApi::BM GameApi::ColorVolumeApi::texture_bm(GameApi::P obj, GameApi::COV colors, int face, int sx, int sy)
 {
   FaceCollection *coll = find_facecoll(e, obj);
   ColorVolumeObject *colors2 = find_color_volume(e, colors);
@@ -10174,7 +10176,7 @@ GameApi::BM GameApi::ColorVolumeApi::texture_bm(GameApi::P obj, GameApi::COV col
   return add_color_bitmap2(e, bm);
 }
 
-GameApi::COV GameApi::ColorVolumeApi::from_volume(O obj, unsigned int col_true, unsigned int col_false)
+EXPORT GameApi::COV GameApi::ColorVolumeApi::from_volume(O obj, unsigned int col_true, unsigned int col_false)
 {
   VolumeObject *obj2 = find_volume(e, obj);
   return add_color_volume(e, new ColorVolumeFromVolumeObject(obj2, col_true, col_false));
@@ -10279,7 +10281,7 @@ private:
   float k;
 };
 
-GameApi::FO GameApi::FloatVolumeApi::shadow(FD fd, V light_dir, float mint, float maxt, float k)
+EXPORT GameApi::FO GameApi::FloatVolumeApi::shadow(FD fd, V light_dir, float mint, float maxt, float k)
 {
   DistanceRenderable *dist = find_distance(e, fd);
   Vector *vv = find_vector(e, light_dir);
@@ -10301,14 +10303,14 @@ private:
   ColorVolumeObject *o1, *o2;
   float val;
 };
-GameApi::COV GameApi::ColorVolumeApi::mix(COV c1, COV c2, float val)
+EXPORT GameApi::COV GameApi::ColorVolumeApi::mix(COV c1, COV c2, float val)
 {
   ColorVolumeObject *cc1 = find_color_volume(e, c1);
   ColorVolumeObject *cc2 = find_color_volume(e, c2);
   return add_color_volume(e, new MixColorVolume(cc1,cc2,val));
 }
 
-GameApi::COV GameApi::ColorVolumeApi::phong(VO fd, PT light_pos, CO i_s, CO i_d, CO i_a, float k_s, float k_d, float k_a, float alfa)
+EXPORT GameApi::COV GameApi::ColorVolumeApi::phong(VO fd, PT light_pos, CO i_s, CO i_d, CO i_a, float k_s, float k_d, float k_a, float alfa)
 {
   Point *light_pos2 = find_point(e, light_pos);
   Color *i_s2 = find_color(e, i_s);
@@ -10317,12 +10319,12 @@ GameApi::COV GameApi::ColorVolumeApi::phong(VO fd, PT light_pos, CO i_s, CO i_d,
   VectorVolumeObject *dist = find_vector_volume(e, fd);
   return add_color_volume(e, new Phong(dist, *light_pos2, *i_s2, *i_d2, *i_a2, k_s,k_d,k_a,alfa));
 }
-GameApi::COV GameApi::ColorVolumeApi::directcolor(VO fd)
+EXPORT GameApi::COV GameApi::ColorVolumeApi::directcolor(VO fd)
 {
   VectorVolumeObject *dist = find_vector_volume(e, fd);
   return add_color_volume(e, new DirectColor(dist));
 }
-GameApi::VO GameApi::VectorVolumeApi::normal(FD fd)
+EXPORT GameApi::VO GameApi::VectorVolumeApi::normal(FD fd)
 {
   DistanceRenderable *dist = find_distance(e, fd);
   return add_vector_volume(e, new NormalVectorVolume(dist));
@@ -10342,7 +10344,7 @@ private:
   float false_val, true_val;
 };
 
-GameApi::FO GameApi::FloatVolumeApi::from_volume(GameApi::O obj, float false_val, float true_val)
+EXPORT GameApi::FO GameApi::FloatVolumeApi::from_volume(GameApi::O obj, float false_val, float true_val)
 {
   VolumeObject *obj_ = find_volume(e, obj);
   FloatVolumeObject *obj2 = new FloatVolumeFromVolume(*obj_, false_val, true_val);
@@ -10382,7 +10384,7 @@ private:
   float start_y, end_y;
   float start_z, end_z;
 };
-GameApi::FO GameApi::FloatVolumeApi::from_float_bitmap(GameApi::FB bm, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+EXPORT GameApi::FO GameApi::FloatVolumeApi::from_float_bitmap(GameApi::FB bm, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
 {
   FloatBitmap *bm2 = find_float_bitmap(e, bm);
   FloatVolumeObject *obj = new FloatVolumeFromBitmap(bm2, start_x, end_x, start_y, end_y, start_z, end_z);
@@ -10446,7 +10448,7 @@ float distance2(float x, float y, float z)
   return sqrt(x*x+y*y+z*z);
 }
 
-GameApi::FO GameApi::FloatVolumeApi::distance()
+EXPORT GameApi::FO GameApi::FloatVolumeApi::distance()
 {
   return function(distance2);
 }
@@ -10476,7 +10478,7 @@ float torus_distance(float x, float y, float z, void *data)
   return v.Dist();
 }
 
-GameApi::FO GameApi::FloatVolumeApi::torusdistance(PT center, V u_x, V u_y, float radius)
+EXPORT GameApi::FO GameApi::FloatVolumeApi::torusdistance(PT center, V u_x, V u_y, float radius)
 {
 #ifndef EMSCRIPTEN
 
@@ -10491,13 +10493,13 @@ GameApi::FO GameApi::FloatVolumeApi::torusdistance(PT center, V u_x, V u_y, floa
   return function(std::bind(torus_distance, _1,_2,_3,(void*)dt));
 #endif  
 }
-GameApi::FO GameApi::FloatVolumeApi::minimum(FO f1, FO f2)
+EXPORT GameApi::FO GameApi::FloatVolumeApi::minimum(FO f1, FO f2)
 {
   FloatVolumeObject *obj = find_float_volume(e, f1);
   FloatVolumeObject *obj2 = find_float_volume(e, f2);
   return add_float_volume(e, new MinFloatVolumeObject(obj, obj2));
 }
-GameApi::FO GameApi::FloatVolumeApi::maximum(FO f1, FO f2)
+EXPORT GameApi::FO GameApi::FloatVolumeApi::maximum(FO f1, FO f2)
 {
   FloatVolumeObject *obj = find_float_volume(e, f1);
   FloatVolumeObject *obj2 = find_float_volume(e, f2);
@@ -10511,13 +10513,13 @@ GameApi::FO GameApi::FloatVolumeApi::plus(FO f1, FO f2)
   return add_float_volume(e, new PlusFloatVolumeObject(obj, obj2));
 }
 #endif
-GameApi::FO GameApi::FloatVolumeApi::move(FO f1, float dx, float dy, float dz)
+EXPORT GameApi::FO GameApi::FloatVolumeApi::move(FO f1, float dx, float dy, float dz)
 {
   FloatVolumeObject *next = find_float_volume(e, f1);
   return add_float_volume(e, new MoveFloatVolumeObject(next, dx,dy,dz));
 }
 
-GameApi::BM GameApi::FloatVolumeApi::raytrace(GameApi::FO object, 
+EXPORT GameApi::BM GameApi::FloatVolumeApi::raytrace(GameApi::FO object, 
 					      int sx, int sy,
 					      PT ray_0, PT ray_x, PT ray_y, PT ray_z, float surface_value)
 {
@@ -10532,49 +10534,49 @@ GameApi::BM GameApi::FloatVolumeApi::raytrace(GameApi::FO object,
   return add_color_bitmap(e, new RayTrace3(obj, sx,sy, *pos, u_x, u_y, u_z, surface_value));
 }
 
-GameApi::MatrixApi::MatrixApi(Env &e) : e(e) { }
+EXPORT GameApi::MatrixApi::MatrixApi(Env &e) : e(e) { }
 
-GameApi::M GameApi::MatrixApi::identity()
+EXPORT GameApi::M GameApi::MatrixApi::identity()
 {
   return add_matrix(e, new SimpleMatrix(Matrix::Identity()));
 }
-GameApi::M GameApi::MatrixApi::xrot(float rot)
+EXPORT GameApi::M GameApi::MatrixApi::xrot(float rot)
 {
   return add_matrix(e, new SimpleMatrix(Matrix::XRotation(rot)));
 }
-GameApi::M GameApi::MatrixApi::yrot(float rot)
+EXPORT GameApi::M GameApi::MatrixApi::yrot(float rot)
 {
   return add_matrix(e, new SimpleMatrix(Matrix::YRotation(rot)));
 }
-GameApi::M GameApi::MatrixApi::zrot(float rot)
+EXPORT GameApi::M GameApi::MatrixApi::zrot(float rot)
 {
   return add_matrix(e, new SimpleMatrix(Matrix::ZRotation(rot)));
 }
-GameApi::M GameApi::MatrixApi::trans(float x, float y, float z)
+EXPORT GameApi::M GameApi::MatrixApi::trans(float x, float y, float z)
 {
   return add_matrix(e, new SimpleMatrix(Matrix::Translate(x,y,z)));
 }
-GameApi::M GameApi::MatrixApi::scale(float sx, float sy, float sz)
+EXPORT GameApi::M GameApi::MatrixApi::scale(float sx, float sy, float sz)
 {
   return add_matrix(e, new SimpleMatrix(Matrix::Scale(sx,sy,sz)));
 }
-GameApi::M GameApi::MatrixApi::inverse(M mat)
+EXPORT GameApi::M GameApi::MatrixApi::inverse(M mat)
 {
   Matrix m = find_matrix(e, mat);
   return add_matrix(e, new SimpleMatrix(Matrix::Inverse(m)));
 }
-GameApi::M GameApi::MatrixApi::mult(M m1, M m2)
+EXPORT GameApi::M GameApi::MatrixApi::mult(M m1, M m2)
 {
   Matrix ma = find_matrix(e, m1);
   Matrix mb = find_matrix(e, m2);
   return add_matrix(e, new SimpleMatrix(ma * mb));
 }
-GameApi::M GameApi::MatrixApi::perspective(float fovy, float aspect, float near0, float far0)
+EXPORT GameApi::M GameApi::MatrixApi::perspective(float fovy, float aspect, float near0, float far0)
 {
   Matrix m = Matrix::Perspective(fovy, aspect, near0, far0);
   return add_matrix(e, new SimpleMatrix(m));
 }
-GameApi::PT GameApi::MatrixApi::mult(PT point, M matrix)
+EXPORT GameApi::PT GameApi::MatrixApi::mult(PT point, M matrix)
 {
   Matrix ma = find_matrix(e, matrix);
   Point *pt = find_point(e, point);
@@ -10900,11 +10902,11 @@ private:
   int numlines; 
 };
 
-GameApi::PTS GameApi::PointsApi::function(std::function<GameApi::PT(int pointnum)> f, int numpoints)
+EXPORT GameApi::PTS GameApi::PointsApi::function(std::function<GameApi::PT(int pointnum)> f, int numpoints)
 {
   return add_points_api_points(e, new PointApiPointFunction(e, f, numpoints));
 }
-GameApi::PTS GameApi::PointsApi::color_function(PTS orig, std::function<unsigned int(int pointnum, PT pos)> f)
+EXPORT GameApi::PTS GameApi::PointsApi::color_function(PTS orig, std::function<unsigned int(int pointnum, PT pos)> f)
 {
   PointsApiPoints *pts = find_pointsapi_points(e, orig);
   return add_points_api_points(e, new PointsApiColorFunction(e, pts, f));
@@ -10921,17 +10923,17 @@ private:
   unsigned int color1;
   unsigned int color2;
 };
-GameApi::LI GameApi::LinesApi::change_color(GameApi::LI li, unsigned int color)
+EXPORT GameApi::LI GameApi::LinesApi::change_color(GameApi::LI li, unsigned int color)
 {
   LineCollection *lines = find_line_array(e, li);
   return add_line_array(e, new ColorLineCollection(lines, color, color));
 }
-GameApi::LI GameApi::LinesApi::change_color(GameApi::LI li, unsigned int color1, unsigned int color2)
+EXPORT GameApi::LI GameApi::LinesApi::change_color(GameApi::LI li, unsigned int color1, unsigned int color2)
 {
   LineCollection *lines = find_line_array(e, li);
   return add_line_array(e, new ColorLineCollection(lines, color1, color2));
 }
-GameApi::LI GameApi::LinesApi::function(std::function<GameApi::PT (int linenum, bool id)> f, int numlines)
+EXPORT GameApi::LI GameApi::LinesApi::function(std::function<GameApi::PT (int linenum, bool id)> f, int numlines)
 {
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
 
@@ -10998,17 +11000,17 @@ public:
 private:
   PlanePoints2d *plane;
 };
-GameApi::LI GameApi::LinesApi::from_plane(GameApi::PL plane)
+EXPORT GameApi::LI GameApi::LinesApi::from_plane(GameApi::PL plane)
 {
   PlanePoints2d *plane2 = find_plane(e,plane);
   return add_line_array(e, new LinesFromPlane(plane2));
 }
-GameApi::LI GameApi::LinesApi::from_points(GameApi::PC points, bool loops)
+EXPORT GameApi::LI GameApi::LinesApi::from_points(GameApi::PC points, bool loops)
 {
   PointCollection *point_coll = find_pointcoll_array(e,points);
   return add_line_array(e, new ContinuousLines(point_coll, loops));
 }
-GameApi::LI GameApi::LinesApi::from_polygon2(GameApi::P poly1, GameApi::P poly2)
+EXPORT GameApi::LI GameApi::LinesApi::from_polygon2(GameApi::P poly1, GameApi::P poly2)
 {
   FaceCollection *p1 = find_facecoll(e, poly1);
   FaceCollection *p2 = find_facecoll(e, poly2);
@@ -11079,12 +11081,12 @@ private:
   FaceCollection *coll;
   float length;
 };
-GameApi::LI GameApi::LinesApi::normals_from_polygon(GameApi::P p, float length)
+EXPORT GameApi::LI GameApi::LinesApi::normals_from_polygon(GameApi::P p, float length)
 {
   FaceCollection *coll = find_facecoll(e, p);
   return add_line_array(e, new NormalsLineCollection(coll, length));
 }
-GameApi::LI GameApi::LinesApi::render_slice_2d(GameApi::P p, GameApi::PT pos, GameApi::V u_x, GameApi::V u_y)
+EXPORT GameApi::LI GameApi::LinesApi::render_slice_2d(GameApi::P p, GameApi::PT pos, GameApi::V u_x, GameApi::V u_y)
 {
   FaceCollection *coll = find_facecoll(e, p);
   Point *pp1 = find_point(e, pos);
@@ -11114,13 +11116,13 @@ private:
   LineCollection &c;
   float val;
 };
-GameApi::P GameApi::LinesApi::line_anim(GameApi::P poly, GameApi::LI lines, float val)
+EXPORT GameApi::P GameApi::LinesApi::line_anim(GameApi::P poly, GameApi::LI lines, float val)
 {
   FaceCollection *p = find_facecoll(e, poly);
   LineCollection *c = find_line_array(e, lines);
   return add_polygon(e, new LineAnim(*p, *c, val),1);
 }
-GameApi::LI GameApi::LinesApi::from_polygon(GameApi::P poly)
+EXPORT GameApi::LI GameApi::LinesApi::from_polygon(GameApi::P poly)
 {
   FaceCollection *poly2 = find_facecoll(e, poly);
   return add_line_array(e, new OutlineFaces(*poly2));
@@ -11190,13 +11192,13 @@ private:
   std::vector<Point> p2;
 };
 
-GameApi::LI GameApi::LinesApi::border_from_bool_bitmap(GameApi::BB b, float start_x, float end_x, float start_y, float end_y, float z)
+EXPORT GameApi::LI GameApi::LinesApi::border_from_bool_bitmap(GameApi::BB b, float start_x, float end_x, float start_y, float end_y, float z)
 {
   BoolBitmap *bb2 = find_bool_bitmap(e, b);
   Bitmap<bool> *bb = bb2->bitmap;
   return add_line_array(e, new BorderFromBoolBitmap(*bb, start_x, end_x, start_y, end_y, z));
 }
-void GameApi::LinesApi::render(LLA l)
+EXPORT void GameApi::LinesApi::render(LLA l)
 {
   PointArray2 *array = find_lines_array(e,l);
   //glEnableClientState(GL_VERTEX_ARRAY);
@@ -11241,12 +11243,12 @@ private:
   float dist;
 };
 
-GameApi::FD GameApi::DistanceFloatVolumeApi::sphere(PT center, float radius)
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::sphere(PT center, float radius)
 {
   Point *cent = find_point(e, center);
   return add_distance(e, new SphereDistanceRenderable(*cent, radius));
 }
-GameApi::FD GameApi::DistanceFloatVolumeApi::line(PT start, PT end, float dist)
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::line(PT start, PT end, float dist)
 {
   Point *st = find_point(e, start);
   Point *en = find_point(e, end);
@@ -11286,14 +11288,45 @@ private:
   DistanceRenderable &r2;
 };
 
-GameApi::FD GameApi::DistanceFloatVolumeApi::min(FD fd1, FD fd2)
+class RoundCubeDistance : public DistanceRenderable
+{
+public:
+  RoundCubeDistance(Point start, Point end, float r) : start(start), end(end), r(r) {}
+  float distance(Point p) const
+  {
+    p-=Vector(start);
+    Vector b = end-start;
+    if (p.x<0.0) p.x=-p.x;
+    if (p.y<0.0) p.y=-p.y;
+    if (p.z<0.0) p.z=-p.z;
+    p-=Vector(b);
+    Point bb(std::max(p.x,0.0f), std::max(p.y,0.0f), std::max(p.z,0.0f));
+    float dist = Vector(bb).Dist();
+    dist -= r;
+    return dist;
+  }
+private:
+  Point start, end;
+  float r;
+};
+
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::round_cube(float start_x, float end_x,
+							float start_y, float end_y,
+							float start_z, float end_z, float r)
+{
+  Point start(start_x, start_y, start_z);
+  Point end(end_x, end_y, end_z);
+  return add_distance(e, new RoundCubeDistance(start, end, r));
+}
+
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::min(FD fd1, FD fd2)
 {
   DistanceRenderable *ff1 = find_distance(e, fd1);
   DistanceRenderable *ff2 = find_distance(e, fd2);
   return add_distance(e, new MinDistance2(*ff1, *ff2));
 }
 
-GameApi::FD GameApi::DistanceFloatVolumeApi::and_not(FD fd1, FD fd2)
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::and_not(FD fd1, FD fd2)
 {
   DistanceRenderable *ff1 = find_distance(e, fd1);
   DistanceRenderable *ff2 = find_distance(e, fd2);
@@ -11332,7 +11365,7 @@ private:
 
 };
 
-GameApi::BM GameApi::DistanceFloatVolumeApi::render(FD obj, COV colors, PT pos, V u_x, V u_y, V u_z, int sx, int sy)
+EXPORT GameApi::BM GameApi::DistanceFloatVolumeApi::render(FD obj, COV colors, PT pos, V u_x, V u_y, V u_z, int sx, int sy)
 {
   DistanceRenderable *dist = find_distance(e, obj);
   ColorVolumeObject *colorsI = find_color_volume(e, colors);
@@ -11387,7 +11420,7 @@ private:
   int count;
 };
 
-GameApi::PC GameApi::PointCollectionApi::function(std::function<GameApi::PT (int)> f, int count)
+EXPORT GameApi::PC GameApi::PointCollectionApi::function(std::function<GameApi::PT (int)> f, int count)
 {
   return add_pointcoll_array(e, new PointCollectionFunction(e, f, count));
 }
@@ -11443,7 +11476,7 @@ void GameApi::LinesApi::update(LLA lines)
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, GL_STATIC_DRAW);
 }
 #endif
-GameApi::LLA GameApi::LinesApi::prepare(LI l)
+EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
 {
   LineCollection *coll = find_line_array(e, l);
   int count = coll->NumLines();

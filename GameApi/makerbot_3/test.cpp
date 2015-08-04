@@ -12,10 +12,11 @@ int main() {
 
   // shader initialization
   ev.shader_api.load("Shader.txt");
-  SH sh = ev.shader_api.colour_shader();
-
+  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "texture", "texture");
+  SH sh2 = ev.shader_api.colour_shader();
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);
+  ev.mainloop_api.init_3d(sh2);
 
   PT cone_1 = ev.point_api.point(0.0,-4.7,0.0);
   PT cone_2 = ev.point_api.point(0.0,-7.0,0.0);
@@ -93,7 +94,22 @@ int main() {
   //P p3b = ev.polygon_api.color_faces(p3aa, 0xffffffff, 0x88888888, 0x44444444, 0x22222222);
   //ev.polygon_api.save_model(p3b, "clock.obj");
 
-  PolygonObj poly(ev, p3b, sh);
+  PT center = ev.point_api.point(0.0,0.0,0.0);
+  P p_tex = ev.polygon_api.texcoord_spherical(center, p3b);
+
+  BM bm = ev.bitmap_api.loadbitmap("iron_texture637.jpg");
+  TX tx = ev.texture_api.tex_bitmap(bm);
+  TXID id = ev.texture_api.prepare(tx);
+
+  LI lines = ev.lines_api.from_polygon(p_tex);
+  LI lines_1 = ev.lines_api.change_color(lines, 0xffffffff);
+  LLA lines_2 = ev.lines_api.prepare(lines);
+
+  LinesObj lines_obj(ev, lines_1, sh2);
+  lines_obj.prepare();
+
+  PolygonObj poly(ev, p_tex, sh);
+  poly.bind_texture(0,id);
   poly.prepare();
   float frame=0.0;
   float speed_x=0.0;
@@ -116,7 +132,10 @@ int main() {
 
     poly.set_pos(pos_x, 0.0, pos_y);
     poly.render();
+    lines_obj.set_rotation_matrix2(mm);
 
+    lines_obj.set_pos(pos_x, 0.0, pos_y);
+    lines_obj.render();
     ev.mainloop_api.fpscounter();
     // swapbuffers
     ev.mainloop_api.swapbuffers();
