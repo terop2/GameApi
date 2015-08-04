@@ -112,8 +112,13 @@ using std::placeholders::_9;
   };
 
   struct EveryApi;
+#ifndef __clang__
 #define IMPORT 
 #define EXPORT
+#else
+#define IMPORT __declspec(dllimport)
+#define EXPORT __declspec(dllexport)
+#endif
 class Env
 {
 public:
@@ -140,7 +145,7 @@ public:
   IMPORT void clear();
   IMPORT void clear_3d();
   IMPORT void switch_to_3d(bool b, SH sh);
-  IMPORT void alpha(bool enabled);
+  void alpha(bool enabled);
   IMPORT void depth_test(bool enabled);
   IMPORT void transparency(bool enabled);
   IMPORT void cursor_visible(bool enabled);
@@ -169,7 +174,7 @@ public:
     bool joy1_button2;
     bool joy1_button3;
   };
-  Event get_event();
+  IMPORT Event get_event();
   void waittof();
   SP screenspace();
 private:
@@ -193,13 +198,13 @@ public:
 	IMPORT VA create_vertex_array(BM bm);
 	IMPORT void render_sprite_vertex_array(VA va);
 
-	IMPORT void rendersprite(BM bm, SH sh, float x, float y, float mult_x = 1.0, float mult_y = 1.0);
-	IMPORT void rendersprite(BM bm, SH sh, PT pos);
-	IMPORT void rendersprite(BM bm, int bm_choose, SH sh, float x, float y, float mult_x, float mult_y);
-	IMPORT void rendersprite(BM bm, int bm_choose, SH sh, PT pos);
-	IMPORT void rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, float x, float y);
-	IMPORT void rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, PT pos);
-	IMPORT void rendersprite(BM bm, SH sh, float x, float y, float x1, float y1, float inside_x, float inside_y, float inside_x1, float inside_y1);
+	void rendersprite(BM bm, SH sh, float x, float y, float mult_x = 1.0, float mult_y = 1.0);
+	void rendersprite(BM bm, SH sh, PT pos);
+	void rendersprite(BM bm, int bm_choose, SH sh, float x, float y, float mult_x, float mult_y);
+	void rendersprite(BM bm, int bm_choose, SH sh, PT pos);
+	void rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, float x, float y);
+	void rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, PT pos);
+	void rendersprite(BM bm, SH sh, float x, float y, float x1, float y1, float inside_x, float inside_y, float inside_x1, float inside_y1);
 	IMPORT SP spritespace(BM bm);
 	IMPORT PT pixelpos(BM bm, int x, int y);
 private:
@@ -218,7 +223,7 @@ public:
 	IMPORT int unique_id();
 	IMPORT TX tex_assign(TX tx, int id, int x, int y, BM bm);
 	IMPORT TX tex_coord(TX tx, int id, int x, int y, int width, int height);
-	IMPORT Q get_tex_coord(TX tx, int id);
+	Q get_tex_coord(TX tx, int id);
 	IMPORT TXID prepare(TX tx);
 	IMPORT void use(TXID tx, int i = 0);
 	IMPORT void unuse(TXID tx);
@@ -263,7 +268,7 @@ public:
 	IMPORT BM loadtilebitmap(std::string filename, int tile_sx, int tile_sy);
 	IMPORT BM loadposbitmap(std::string filename);
 	IMPORT BM findtile(BM tile_bitmap, int x, int y);
-	IMPORT BM subbitmap(BM orig, int x, int y, int width, int height);
+	BM subbitmap(BM orig, int x, int y, int width, int height);
 	IMPORT BM subbitmapimage(BM orig, int r_start_range, int r_end_range, int g_start_range, int g_end_range, int b_start_range, int b_end_range, unsigned int empty_color);
 
 	IMPORT BM growbitmap(BM small_orig_bitmap, int l, int t, int r, int b);
@@ -309,7 +314,7 @@ public:
 
 
   IMPORT BMA empty_array();
-  IMPORT BMA array(BM *array, int size);
+  BMA array(BM *array, int size);
   IMPORT BM array_elem(BMA array, int i);
 private:
   BitmapApi(const BitmapApi&);
@@ -691,6 +696,17 @@ public:
 	IMPORT FD cube(float start_x, float end_x,
 	  float start_y, float end_y,
 	  float start_z, float end_z);
+  IMPORT FD round_cube(float start_x, float end_x,
+		       float start_y, float end_y,
+		       float start_z, float end_z,
+		       float r);
+  IMPORT FD torus(float t_x, float t_y);
+  IMPORT FD cone(float c_x, float c_y);
+  IMPORT FD plane(float n_x, float n_y, float n_z, float n_w);
+  IMPORT FD hex_prism(float h_x, float h_y);
+  IMPORT FD tri_prism(float h_x, float h_y);
+  IMPORT FD triangle(PT a, PT b, PT c);
+  IMPORT FD quad(PT a, PT b, PT c, PT d);
 	IMPORT FD line(PT start, PT end, float dist);
 
 	IMPORT FD min(FD a1, FD a2);
@@ -793,8 +809,8 @@ public:
   IMPORT P fromsurface(S s, float thickness);
   IMPORT P fromsurface(S s1, S s2, C curve); // surfacebetweensurfaces
   
-  IMPORT P sprite_bind(P p, TX tx, int id);
-  IMPORT P sprite_bind(P p, Q bm, TX tx);
+  P sprite_bind(P p, TX tx, int id);
+  P sprite_bind(P p, Q bm, TX tx);
   IMPORT P texture(P orig, BM bm, int bm_choose = -1); // all quads
 
   IMPORT P color(P orig, unsigned int color);
@@ -806,7 +822,7 @@ public:
 			   float p2_x, float p2_y,
 			   float p3_x, float p3_y,
 			   float p4_x, float p4_y);
-  IMPORT P texcoord_spherical(P orig);
+  IMPORT P texcoord_spherical(PT center, P orig);
   IMPORT P texcoord_cylindar(P orig, float start_y, float end_y);
   IMPORT P color_cube(P orig,
 	       PT o, PT u_x, PT u_y, PT u_z,
@@ -825,7 +841,7 @@ public:
   IMPORT P flip_polygon_order(P p);
 
   IMPORT P or_elem(P p1, P p2);
-  IMPORT P or_array(P *array, int size);
+  P or_array(P *array, int size);
   //P and_not_elem(P p1, P p_not);
 
 
@@ -833,7 +849,7 @@ public:
   IMPORT P grid(PT o, PT u_x, PT u_y, int num_x, int num_y, P *grid);
 
 
-  IMPORT P translate(P orig, float dx, float dy, float dz);
+  P translate(P orig, float dx, float dy, float dz);
   IMPORT P rotatex(P orig, float angle);
   IMPORT P rotatey(P orig, float angle);
   IMPORT P rotatez(P orig, float angle);
@@ -884,9 +900,9 @@ public:
   IMPORT ID find_texcoord_id(P p, int facenum, int pointnum);
   IMPORT ID id_array(ID *array, int size);
   IMPORT void preparepoly(P p, int bbm_choose = -1);
-  IMPORT void renderpoly(P p, float x, float y, float z);
-  IMPORT void renderpoly(P p, PT pos);
-  IMPORT void renderpoly(P p, int choose, float x, float y, float z);
+  void renderpoly(P p, float x, float y, float z);
+  void renderpoly(P p, PT pos);
+  void renderpoly(P p, int choose, float x, float y, float z);
   IMPORT void prepare(P p, int bbm_choose = -1);
   IMPORT void render(P p, int choose, float x, float y, float z);
   
@@ -981,8 +997,8 @@ class StateChangeApi
 public:
 	IMPORT StateChangeApi(Env &e, ShaderApi &api);
 	IMPORT TR init(int paths);
-	IMPORT TR linear(TR s, int path_num, std::function<P(float val)> f, float start_v, float end_v, float duration);
-	IMPORT VV prepare(TR sc);
+	TR linear(TR s, int path_num, std::function<P(float val)> f, float start_v, float end_v, float duration);
+	VV prepare(TR sc);
 	IMPORT VV prepareloop(float *array, int arraysize,
 		 std::function<P (float val)> f,
 		 float step_duration);
@@ -1003,43 +1019,43 @@ class PlaneApi
   // so really it's P type with 2d points.
   // int->PT
 public:
-  PlaneApi(Env &e);
-  PL function(PT (*fptr)(EveryApi &e, int idx, void *data), int num_points, float sx, float sy, void *data);
-  PL color_function(PL pl, CO (*fptr)(EveryApi &ev, int idx, PT pos, void *data), void *data);
-  PL empty_plane(float sx, float sy);
-  PL flip_y(PL pl);
-  PL move(PL pl, float dx, float dy);
+  IMPORT PlaneApi(Env &e);
+  IMPORT PL function(PT (*fptr)(EveryApi &e, int idx, void *data), int num_points, float sx, float sy, void *data);
+  IMPORT PL color_function(PL pl, CO (*fptr)(EveryApi &ev, int idx, PT pos, void *data), void *data);
+  IMPORT PL empty_plane(float sx, float sy);
+  IMPORT PL flip_y(PL pl);
+  IMPORT PL move(PL pl, float dx, float dy);
   PL or_plane(PL p1, PL p2);
 
-  PL circle(PT center, float radius, int numpoints);
-  PL star(PT center, float radius_1, float radius_2, int numpoints);
+  IMPORT PL circle(PT center, float radius, int numpoints);
+  IMPORT PL star(PT center, float radius_1, float radius_2, int numpoints);
 
-  PL floodfill_border(BB bitmap, int x, int y);
+  IMPORT PL floodfill_border(BB bitmap, int x, int y);
   // TODO: how to represent/load fonts to this type.
-  PL empty(float sx, float sy);
-  PL circle(PL bg, PT center, float radius, int numpoints); 
-  PL rectangle(PL bg, PT p1, PT p2);
-  PL rectangle(PL bg, PT p1, PT p2, PT p3, PT p4);
-  PL sprite(PL bg, BM bitmap, PT pos, float size_x, float size_y);
-  PL polygon(PL bg, PT *points, int size);
-  PL color(PL orig, unsigned int new_color);
-  PL plane_elem(PL p1, PL p2);
-  PL plane_array(PL *array, int size);
-  PL move_plane(PL p1, V delta);
+  IMPORT PL empty(float sx, float sy);
+  IMPORT PL circle(PL bg, PT center, float radius, int numpoints); 
+  IMPORT PL rectangle(PL bg, PT p1, PT p2);
+  IMPORT PL rectangle(PL bg, PT p1, PT p2, PT p3, PT p4);
+  IMPORT PL sprite(PL bg, BM bitmap, PT pos, float size_x, float size_y);
+  IMPORT PL polygon(PL bg, PT *points, int size);
+  IMPORT PL color(PL orig, unsigned int new_color);
+  IMPORT PL plane_elem(PL p1, PL p2);
+  IMPORT PL plane_array(PL *array, int size);
+  IMPORT PL move_plane(PL p1, V delta);
 
-  PL and_not(PL p1, PL not_p); // needed in fonts for the holes
+  IMPORT PL and_not(PL p1, PL not_p); // needed in fonts for the holes
                                // draw to bitmap, do and_not, put to texture
 
-  PL render_p(P p, M proj_matrix, float sx, float sy);
-  PL remove_splines(PL pl, float xdelta);
+  IMPORT PL render_p(P p, M proj_matrix, float sx, float sy);
+  IMPORT PL remove_splines(PL pl, float xdelta);
 
-  std::pair<PL,PL> triangulate(EveryApi &ev, PL pl, int obj);
-  PL triangulate_all(EveryApi &ev, PL pl, int point_count, int max_obj);
-  PL remove_empty_faces(PL pl);
+  IMPORT std::pair<PL,PL> triangulate(EveryApi &ev, PL pl, int obj);
+  IMPORT PL triangulate_all(EveryApi &ev, PL pl, int point_count, int max_obj);
+  IMPORT PL remove_empty_faces(PL pl);
 
-  P to_polygon_face(PL triangulated_pl, PT pos, V u_x, V u_y);
+  IMPORT P to_polygon_face(PL triangulated_pl, PT pos, V u_x, V u_y);
   P to_polygon_lines(PL pl, PT pos, V u_x, V u_y, V u_z, float z_mult);
-  P to_polygon(EveryApi &ev, PL pl, PT pos, V u_x, V u_y, V u_z, float z_mult);
+  IMPORT P to_polygon(EveryApi &ev, PL pl, PT pos, V u_x, V u_y, V u_z, float z_mult);
 
   // 1) get black bitmap
   // 2) draw white polygon
@@ -1049,14 +1065,14 @@ public:
 
   // TODO: bezier curves in 2d.
 
-  P substitute_quads_with_plane(P orig, PL (*fptr)(EveryApi &ev, int face, void *data), void *data);
-  P plane_in_3d(PL plane, PT u_p, V v1, V v2);
+  IMPORT P substitute_quads_with_plane(P orig, PL (*fptr)(EveryApi &ev, int face, void *data), void *data);
+  IMPORT P plane_in_3d(PL plane, PT u_p, V v1, V v2);
   
   CBM render_continuous(PL pl, int num, unsigned int color_0, unsigned int color_1);
-  BB render_bool(PL pl, int num, int sx, int sy);
+  IMPORT BB render_bool(PL pl, int num, int sx, int sy);
 
-  PLA prepare(PL pl);
-  void render(PLA pl, float x, float y, float mult_x, float mult_y);
+  IMPORT PLA prepare(PL pl);
+  IMPORT void render(PLA pl, float x, float y, float mult_x, float mult_y);
 
 private:
   PlaneApi(const PlaneApi&);
@@ -1070,7 +1086,7 @@ public:
 	IMPORT BoolBitmapApi(Env &e);
 	IMPORT ~BoolBitmapApi();
 	IMPORT BB empty(int sx, int sy);
-	IMPORT BB function(std::function<bool(int, int)> f, int sx, int sy);
+	BB function(std::function<bool(int, int)> f, int sx, int sy);
 	IMPORT BB transform(BB orig, std::function<bool(int, int, bool)> f);
 	IMPORT O to_volume(BB b, float dist);
 	IMPORT BB from_float_bitmap(FB float_bm, float range_start, float range_end);
@@ -1092,12 +1108,12 @@ public:
         IMPORT BB sections(int sx, int sy, float x, float y, std::function<bool (float angle)> f);
 
 	IMPORT BB not_bitmap(BB b);
-	IMPORT BB or_bitmap(BB b1, BB b2);
+	BB or_bitmap(BB b1, BB b2);
 	IMPORT BB andnot_bitmap(BB b1, BB not_b2);
 	IMPORT BB xor_bitmap(BB b1, BB flip_b2);
         IMPORT BM choose_bitmap(BB bools, BM true_bitmap, BM false_bitmap);
 
-	IMPORT BM to_bitmap(BB bools,
+	BM to_bitmap(BB bools,
 	       int true_r, int true_g, int true_b, int true_a,
 	       int false_r, int false_g, int false_b, int false_a);
 	IMPORT BM texture(BM bg,
@@ -1143,7 +1159,7 @@ public: // values are [0.0..1.0]
 	IMPORT BM subfloatbitmap(FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color);
 
 	IMPORT FB from_bool(BB b, float val_true, float val_false);
-	IMPORT BB to_bool(FB f, float true_range_start, float true_range_end);
+	BB to_bool(FB f, float true_range_start, float true_range_end);
 	IMPORT int size_x(FB bm);
 	IMPORT int size_y(FB bm);
 	IMPORT float floatvalue(FB bm, int x, int y);
@@ -1170,7 +1186,7 @@ class ContinuousBitmapApi
 public:
   IMPORT ContinuousBitmapApi(Env &e);
   IMPORT CBM empty(float x, float y);
-  IMPORT CBM constant(unsigned int color, float x, float y);
+  CBM constant(unsigned int color, float x, float y);
   IMPORT CBM function(std::function<unsigned int(float, float)> f, float sx, float sy);
   IMPORT BM sample(CBM c_bitmap, int sx, int sy);
   IMPORT CBM from_bitmap(BM bm, float xsize, float ysize);
@@ -1192,11 +1208,11 @@ class VoxelApi
   // 3d space.
   // NxNxN->RGB
 public:
-  VoxelApi(Env &e);
-  VX function(unsigned int (*fptr)(EveryApi &ev, int x, int y, int z, void *data), int sx, int sy, int sz, void *data);
-  unsigned int get_pixel(VX v, int x, int y, int z);
-  BM sw_rays(O volume, VX colours, int sx, int sy, float vx, float vy, float vz, float z);
-  P render_boxes(VX v, float sx, float sy, float sz);
+  IMPORT VoxelApi(Env &e);
+  IMPORT VX function(unsigned int (*fptr)(EveryApi &ev, int x, int y, int z, void *data), int sx, int sy, int sz, void *data);
+  IMPORT unsigned int get_pixel(VX v, int x, int y, int z);
+  IMPORT BM sw_rays(O volume, VX colours, int sx, int sy, float vx, float vy, float vz, float z);
+  IMPORT P render_boxes(VX v, float sx, float sy, float sz);
 private:
   Env &e;
 };
@@ -1261,15 +1277,15 @@ class PointsApi
 {
 public:
   PointsApi(Env &e) : e(e) { }
-  PTS function(std::function<PT(int pointnum)> f, int numpoints);
-  PTS color_function(PTS orig, std::function<unsigned int(int pointnum, PT pos)> f);
-  PTS from_float_volume(FO float_volume, int numpoints, 
+  IMPORT PTS function(std::function<PT(int pointnum)> f, int numpoints);
+  IMPORT PTS color_function(PTS orig, std::function<unsigned int(int pointnum, PT pos)> f);
+  IMPORT PTS from_float_volume(FO float_volume, int numpoints, 
 			float start_x, float start_y, float start_z,
 			float end_x, float end_y, float end_z);
-  PTS or_points(PTS p1, PTS p2);
-  PTS heightmap(BM colour, FB floatbitmap, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
-  PTS from_volume(O o, PT pos, V u_x, V u_y, V u_z, int sx, int sy, int sz);
-  PTS shadow_points(PTS obj, PT pos, V u_x, V u_y, V light_vec);
+  IMPORT PTS or_points(PTS p1, PTS p2);
+  IMPORT PTS heightmap(BM colour, FB floatbitmap, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
+  IMPORT PTS from_volume(O o, PT pos, V u_x, V u_y, V u_z, int sx, int sy, int sz);
+  IMPORT PTS shadow_points(PTS obj, PT pos, V u_x, V u_y, V light_vec);
 
   IMPORT PTS unit_cube(PTS orig, PT pos, V u_x, V u_y, V u_z);
   IMPORT PTS unit_to_cube(PTS orig, PT pos, V u_x, V u_y, V u_z);
@@ -1277,11 +1293,11 @@ public:
 			PT bTL, PT bTR, PT bBL, PT bBR,
 			PT fTL, PT fTR, PT fBL, PT fBR);
 
-  PTA prepare(PTS p);
+  IMPORT PTA prepare(PTS p);
   //float *point_access(PTA pta, int pointnum);
   //unsigned int *color_access(PTA pta, int pointnum);
   //void update(PTA array);
-  void render(PTA array);
+  IMPORT void render(PTA array);
 private:
   PointsApi(const PointsApi&);
   void operator=(const PointsApi&);
@@ -1455,15 +1471,15 @@ public:
   IMPORT ~ShaderApi();
   IMPORT void load_default();
   IMPORT void load(std::string filename);
-  IMPORT SH get_shader(std::string v_format, std::string f_format, std::string g_format,
+  SH get_shader(std::string v_format, std::string f_format, std::string g_format,
 		       std::string v_comb="", std::string f_comb="");
-  IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,
+  SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,
 				    std::string v_comb="", std::string f_comb="");
   IMPORT SH texture_shader();
   IMPORT SH colour_shader();
   IMPORT SH colour_texture_shader();
   IMPORT void link(SH shader);
-  IMPORT void use(SH shader);
+  void use(SH shader);
   IMPORT void unuse(SH shader);
   IMPORT void bindnames(GameApi::SH shader,
 			std::string s_vertex,
@@ -1472,7 +1488,7 @@ public:
 			std::string s_texcoord);
   IMPORT void set_default_projection(GameApi::SH shader, std::string name);
   IMPORT void set_y_rotation(SH shader, std::string name, float angle);
-  IMPORT void bind_attrib(GameApi::SH shader, int num, std::string name);
+  void bind_attrib(GameApi::SH shader, int num, std::string name);
   IMPORT void set_var(GameApi::SH shader, std::string name, float val);
   IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z);
   IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z, float k);
@@ -1549,7 +1565,7 @@ private:
   
 struct EveryApi
 {
-	IMPORT EveryApi(Env &e)
+	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
     font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e) { }
 
@@ -1593,11 +1609,11 @@ private:
 class GamesApi
 {
 public:
-  GamesApi(Env &e);
-  ~GamesApi();
-  void register_game(int game_id, void (*fptr)(EveryApi &e));
-  void modify_map(int event, int game_id);
-  void start_game(int event);
+  IMPORT GamesApi(Env &e);
+  IMPORT ~GamesApi();
+  IMPORT void register_game(int game_id, void (*fptr)(EveryApi &e));
+  IMPORT void modify_map(int event, int game_id);
+  IMPORT void start_game(int event);
 private:
   Env &e;
   //void *priv;
@@ -2303,11 +2319,13 @@ private:
       current_pos = mat.identity();
       current_scale = mat.identity();
       current_rot = mat.identity();
+      current_rot2 = mat.identity();
       setup_m();
     }
-    LinesObj(LinesApi &lines, MatrixApi &mat, ShaderApi &shapi, LI li, SH sh) : lines(lines), mat(mat), shapi(shapi), li(li), sh(sh) { }
+    //LinesObj(LinesApi &lines, MatrixApi &mat, ShaderApi &shapi, LI li, SH sh) : lines(lines), mat(mat), shapi(shapi), li(li), sh(sh) { }
     void prepare() { li2 = lines.prepare(li); }
     void render() {
+      shapi.use(sh);
       shapi.set_var(sh, "in_MV", m);
       lines.render(li2); 
     }
@@ -2326,9 +2344,14 @@ private:
       current_rot = m;
       setup_m();
     }
+    void set_rotation_matrix2(M m)
+    {
+      current_rot2 = m;
+      setup_m();
+    }
   private:
     void setup_m() {
-      m = mat.mult(current_rot, mat.mult(current_scale, current_pos));
+      m = mat.mult(mat.mult(current_rot, mat.mult(current_scale, current_pos)),current_rot2);
     }
   private:
     LinesApi &lines;
@@ -2340,6 +2363,7 @@ private:
     M current_pos;
     M current_scale;
     M current_rot;
+    M current_rot2;
     M m;
   };
 
