@@ -101,6 +101,7 @@ using std::placeholders::_9;
   struct VO { int id; };
   struct PTS { int id; };
   struct PTA { int id; };
+  struct RD { int id; };
   //template<class T>
   //struct E { int id; };
 
@@ -324,6 +325,7 @@ private:
   Env &e;
 };
 
+
 class FloatApi
 {
 public:
@@ -341,10 +343,13 @@ class FloatArrayApi
 public:
   FloatArrayApi(Env &e);
   FA array(float *array, int size);
+  FA f_array(F *array, int size);
   FA duparray(float value, int size);
   FA duparray(FA fa, int count);
   FA subarray(FA fa, int start_index, int length);
+  FA ramp(float start_value, float end_value, int steps);
   F array_index(FA fa, int index);
+  BM span_arrays(FA fa1, FA fa2, CBM f);
 private:
   Env &e;
 };
@@ -1221,6 +1226,9 @@ public:
   IMPORT CBM rotate(CBM bm, float center_x, float center_y, float angle);
   IMPORT CBM surfacecolor(S s, COV cov);
   IMPORT unsigned int get_pixel(CBM bitmap, float x, float y);
+public: // Different rendering functions...
+  CBM distance_render(FD obj, COV colours, float sx,float sy);
+
 private:
   ContinuousBitmapApi(const ContinuousBitmapApi&);
   void operator=(const ContinuousBitmapApi&);
