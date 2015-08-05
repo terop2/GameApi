@@ -107,6 +107,13 @@ public:
   virtual void PostFrame() { }
 };
 
+template<class T>
+class LazyValue
+{
+public:
+  virtual T get() const=0;
+  virtual ~LazyValue() { }
+};
 
 template<class A, class B>
 class Union

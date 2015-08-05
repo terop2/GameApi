@@ -51,7 +51,8 @@ using std::placeholders::_9;
   struct SH { int id; }; // shader
   struct C { int id; }; // curve
   struct CO { int id; }; // color
-  struct F { int id; }; // function
+  struct F { int id; }; // function or float
+  struct FA { int id; }; // float array
   struct Ft { int id; }; // font
   struct VF { int id; }; // vectorfield
   struct PPT { int id; }; // physics point
@@ -320,6 +321,31 @@ private:
   BitmapApi(const BitmapApi&);
   void operator=(const BitmapApi&);
   void *priv;
+  Env &e;
+};
+
+class FloatApi
+{
+public:
+  FloatApi(Env &e);
+  F value(float v);
+  F ref(float *v);
+  F array_index(float *array, int pos);
+  float get_value(F f);
+private:
+  Env &e;
+};
+
+class FloatArrayApi
+{
+public:
+  FloatArrayApi(Env &e);
+  FA array(float *array, int size);
+  FA duparray(float value, int size);
+  FA duparray(FA fa, int count);
+  FA subarray(FA fa, int start_index, int length);
+  F array_index(FA fa, int index);
+private:
   Env &e;
 };
 
