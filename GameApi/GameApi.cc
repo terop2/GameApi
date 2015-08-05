@@ -855,6 +855,8 @@ struct EnvImpl
   std::vector<DistanceRenderable*> distvolume;
   std::vector<VectorVolumeObject*> vectorvolume;
   std::vector<PointsApiPoints*> pointsapi_points;
+  std::vector<LazyValue<float>*> floats;
+  std::vector<Array<int,float>*> float_array;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
 #ifndef EMSCRIPTEN
@@ -1175,6 +1177,17 @@ GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 
 EnvImpl::~EnvImpl()
 {
+  int tt1 = floats.size();
+  for(int iu1=0;iu1<tt1;iu1++)
+    {
+      delete floats[iu1];
+    }
+  int tt2 = float_array.size();
+  for(int iu2=0;iu2<tt2;iu2++)
+    {
+      delete float_array[iu2];
+    }
+
   int sk6 = textures.size();
   for(int ii6=0;ii6<sk6;ii6++)
     {
@@ -1360,6 +1373,22 @@ EXPORT GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
+GameApi::F add_float(GameApi::Env &e, LazyValue<float> *val)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->floats.push_back(val);
+  GameApi::F f;
+  f.id = env->floats.size()-1;
+  return f;
+}
+GameApi::FA add_float_array(GameApi::Env &e, Array<int,float> *arr)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->float_array.push_back(arr);
+  GameApi::FA f;
+  f.id = env->float_array.size()-1;
+  return f;
+}
 GameApi::FD add_distance(GameApi::Env &e, DistanceRenderable *dist)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1981,6 +2010,20 @@ DistanceRenderable *find_distance(GameApi::Env &e, GameApi::FD fd)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   if (fd.id >=0 && fd.id < (int)env->distvolume.size())
     return env->distvolume[fd.id];
+  return 0;
+}
+LazyValue<float> *find_float(GameApi::Env &e, GameApi::F f)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  if (f.id >=0 && f.id < (int)env->floats.size())
+    return env->floats[f.id];
+  return 0;
+}
+Array<int, float> *find_float_array(GameApi::Env &e, GameApi::FA f)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  if (f.id >=0 && f.id < (int)env->float_array.size())
+    return env->float_array[f.id];
   return 0;
 }
 TextureI *find_texture(GameApi::Env &e, GameApi::TX t)
@@ -11420,6 +11463,84 @@ private:
   int count;
 };
 
+GameApi::FloatApi::FloatApi(Env &e) : e(e) { }
+
+class LazySingle : public LazyValue<float>
+{
+public:
+  LazySingle(float v) : v(v) { }
+  float get() const { return v; }
+private:
+  float v;
+};
+class LazyRef : public LazyValue<float>
+{
+public:
+  LazyRef(float* v) : v(v) { }
+  float get() const { return *v; }
+private:
+  float *v;
+};
+class LazyIndex : public LazyValue<float>
+{
+public:
+  LazyIndex(float* v, int pos) : v(v), pos(pos) { }
+  float get() const { return v[pos]; }
+private:
+  float *v;
+  int pos;
+};
+
+GameApi::F GameApi::FloatApi::value(float v)
+{
+  return add_float(e, new LazySingle(v));
+}
+GameApi::F GameApi::FloatApi::ref(float *v)
+{
+  return add_float(e, new LazyRef(v));
+}
+GameApi::F GameApi::FloatApi::array_index(float *array, int pos)
+{
+  return add_float(e, new LazyIndex(array, pos));
+}
+float GameApi::FloatApi::get_value(F f)
+{
+  LazyValue<float> *value = find_float(e, f);
+  return value->get();
+}
+GameApi::FloatArrayApi::FloatArrayApi(Env &e) : e(e) { }
+GameApi::FA GameApi::FloatArrayApi::array(float *array, int size)
+{
+  return add_float_array(e, new NativeArray<float>(array, size));
+}
+GameApi::FA GameApi::FloatArrayApi::duparray(float value, int size)
+{
+  return add_float_array(e, new DuplicateArray<int,float>(value, size));
+}
+GameApi::FA GameApi::FloatArrayApi::duparray(FA fa, int count)
+{
+  Array<int,float> *arr = find_float_array(e, fa);
+  return add_float_array(e, new DupArray<float>(*arr, count));
+}
+GameApi::FA GameApi::FloatArrayApi::subarray(FA fa, int start_index, int length)
+{
+  Array<int,float> *arr = find_float_array(e, fa);
+  return add_float_array(e, new SubArray<int, float>(*arr, start_index, length));
+}
+class LazyIndex2 : public LazyValue<float>
+{
+public:
+  LazyIndex2(Array<int,float> *arr, int index) : arr(arr), index(index) { }
+  float get() const { return arr->Index(index); }
+private:
+  Array<int,float> *arr;
+  int index;
+};
+GameApi::F GameApi::FloatArrayApi::array_index(FA fa, int index)
+{
+  Array<int,float> *arr = find_float_array(e, fa);
+  return add_float(e, new LazyIndex2(arr, index));
+}
 EXPORT GameApi::PC GameApi::PointCollectionApi::function(std::function<GameApi::PT (int)> f, int count)
 {
   return add_pointcoll_array(e, new PointCollectionFunction(e, f, count));
