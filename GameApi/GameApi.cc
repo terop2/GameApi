@@ -8049,6 +8049,37 @@ EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::empty(float x, float y)
 {
   return constant(0x00000000, x, y);
 }
+class DistanceRenderContinuousBitmap : public ContinuousBitmap<Color>
+{
+public:
+  DistanceRenderContinuousBitmap(DistanceRenderable *dist, ColorVolumeObject *colours, float sx, float sy) : dist(dist), colours(colours),sx(sx),sy(sy) { }
+  virtual float SizeX() const { return sx; }
+  virtual float SizeY() const { return sy; }
+  virtual Color Map(float x, float y) const
+  {
+    int count = 0; 
+    Point p(x,y,0.0);
+    while(1) {
+      float d = dist->distance(p);
+      if (d<1.0) break;
+      if (count>30) return Color(0x0000000);
+      p+=Vector(0.0,0.0,d);
+      count++;
+    }
+    unsigned int col = colours->ColorValue(p);
+    return Color(col);
+  }
+private:
+  DistanceRenderable *dist;
+  ColorVolumeObject *colours;
+  float sx,sy;
+};
+GameApi::CBM GameApi::ContinuousBitmapApi::distance_render(FD obj, COV colors, float sx, float sy)
+{
+  DistanceRenderable *dist = find_distance(e, obj);
+  ColorVolumeObject *colorsI = find_color_volume(e, colors);
+  return add_continuous_bitmap(e, new DistanceRenderContinuousBitmap(dist, colorsI, sx,sy));
+}
 GameApi::CBM GameApi::ContinuousBitmapApi::constant(unsigned int color, float x, float y)
 {
   return add_continuous_bitmap(e, new ConstantContinuousBitmap<Color>(x,y,Color(color)));
@@ -11512,6 +11543,71 @@ GameApi::FloatArrayApi::FloatArrayApi(Env &e) : e(e) { }
 GameApi::FA GameApi::FloatArrayApi::array(float *array, int size)
 {
   return add_float_array(e, new NativeArray<float>(array, size));
+}
+template<class T> 
+class RefArray : public Array<int,T>
+{
+public:
+  RefArray(std::vector<LazyValue<T>*> vec) : vec(vec) {}
+  int Size() const { return vec.size(); }
+  T Index(int i) const { return vec[i]->get(); }
+private:
+  std::vector<LazyValue<T>*> vec;
+};
+
+class RampArray : public Array<int,float>
+{
+public:
+  RampArray(float start_value, float end_value, int steps)
+    : start(start_value), end(end_value), steps(steps)
+  {
+  }
+  int Size() const { return steps; }
+  float Index(int i) const {
+    float val = start + i*(end-start)/steps;
+    return val;
+  }
+private:
+  float start;
+  float end;
+  int steps;
+};
+class SpanArrays : public Bitmap<Color>
+{
+public:
+  SpanArrays(Array<int,float> &a1, Array<int,float> &a2, ContinuousBitmap<Color> *f) : a1(a1) ,a2(a2), f(f) { } 
+  int SizeX() const { return a1.Size(); }
+  int SizeY() const { return a2.Size(); }
+  Color Map(int x, int y) const
+  {
+    float val1 = a1.Index(x);
+    float val2 = a2.Index(y);
+    return f->Map(val1, val2);
+  }
+private:
+  Array<int,float> &a1;
+  Array<int,float> &a2;
+  ContinuousBitmap<Color> *f;
+};
+GameApi::BM GameApi::FloatArrayApi::span_arrays(FA fa1, FA fa2, CBM f)
+{
+  Array<int,float> *arr1 = find_float_array(e, fa1);
+  Array<int,float> *arr2 = find_float_array(e, fa2);
+  ContinuousBitmap<Color> *bm = find_continuous_bitmap(e, f);
+  return add_color_bitmap2(e, new SpanArrays(*arr1, *arr2, bm));
+}
+GameApi::FA GameApi::FloatArrayApi::ramp(float start_value, float end_value, int steps)
+{
+  return add_float_array(e, new RampArray(start_value, end_value, steps));
+}
+GameApi::FA GameApi::FloatArrayApi::f_array(F *array, int size)
+{
+  std::vector<LazyValue<float>*> arr;
+  for(int i=0;i<size;i++)
+    {
+      arr.push_back(find_float(e, array[i]));
+    }
+  return add_float_array(e, new RefArray<float>(arr));
 }
 GameApi::FA GameApi::FloatArrayApi::duparray(float value, int size)
 {
