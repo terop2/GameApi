@@ -2020,6 +2020,7 @@ private:
     void render() {
       shapi.use(sh);
       shapi.set_var(sh, "in_MV", m); 
+      //shapi.set_var(sh, "in_T", m2);
       shapi.set_var(sh, "in_POS", anim_time);
       api.render_vertex_array(m_va2[anim_id]); 
       shapi.set_var(sh, "in_POS", 0.0f);
@@ -2065,6 +2066,7 @@ private:
   private:
     void setup_m() {
       m = mat.mult(mat.mult(mat.mult(current_rot,current_scale), current_pos), current_rot2);
+      //m2 = mat.mult(mat.mult(current_rot, current_scale), current_rot2);
     }
   private:
     PolygonApi &api;
@@ -2076,6 +2078,7 @@ private:
     M current_rot;
     M current_rot2;
     M m;
+    M m2;
     std::vector<P> m_p;
     SH sh;
     //VA va;

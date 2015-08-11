@@ -622,6 +622,7 @@ int main() {
   while(1) {
     frame++;
     ev.shader_api.set_var(sh, "in_time",float(frame)*0.01f);
+    ev.shader_api.set_var(sh, "eye_position", pos_x, -80.0, pos_y);
     // clear frame buffer
     ev.mainloop_api.clear_3d();
     //poly.set_rotation_matrix(ev.matrix_api.xrot(frame));
