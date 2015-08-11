@@ -14,6 +14,8 @@ out vec2 ex_TexCoord;
 out vec4 ex_Color;
 out vec3 ex_Normal;
 out vec3 ex_Position;
+out vec3 world_normal;
+out vec3 world_pos;
 vec4 passall(vec4 pos)
 {
   ex_Color = in_Color;
@@ -21,6 +23,12 @@ vec4 passall(vec4 pos)
   ex_Normal = in_Normal;
   ex_Position = in_Position;
   return pos;
+}
+vec4 edge(vec4 pos)
+{
+   world_pos = mat3(in_MV) * in_Position;
+   world_normal = normalize(mat3(in_MV) * in_Normal);
+   return pos;
 }
 vec4 snoise(vec4 pos)
 {
@@ -76,6 +84,9 @@ out vec4 out_Color;
 in vec2 ex_TexCoord;
 in vec3 ex_Normal;
 in vec3 ex_Position;
+in vec3 world_normal;
+in vec3 world_pos;
+uniform vec3 eye_position;
 uniform sampler2D tex;
 vec4 bands(vec4 rgb)
 {
@@ -93,6 +104,13 @@ vec4 bands(vec4 rgb)
    float aaa = float(aa)/256.0;
    vec4 rgb2 = vec4(rrr,ggg,bbb,aaa);
    return rgb2;
+}
+vec4 edge(vec4 rgb)
+{
+   vec3 V = normalize(eye_position-world_pos);
+   
+   float edgedetect = (dot(V,world_normal) >0.3) ? 1 : 0;
+   return vec4(rgb.xyz*edgedetect,1);
 }
 vec4 dot2(vec4 rgb)
 {
