@@ -1,4 +1,4 @@
-       
+        
 #define SDL2_USED  
 #define GAME_API_DEFS
 #define _SCL_SECURE_NO_WARNINGS
@@ -205,7 +205,7 @@ EXPORT void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_heigh
   prog->set_var("in_MV", m2);
   prog->set_var("in_T", m2);
   prog->set_var("in_POS", 0.0f);
-  alpha(false);
+  alpha_1(false);
 
 #if 0
   glMatrixLoadIdentityEXT(GL_PROJECTION);
@@ -289,7 +289,7 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
   prog->set_var("in_T", m3);
   prog->set_var("in_POS", 0.0f);
-  alpha(false);
+  alpha_1(false);
   glEnable(GL_DEPTH_TEST);
 }
 EXPORT void GameApi::MainLoopApi::nvidia_init()
@@ -407,7 +407,11 @@ EXPORT void GameApi::MainLoopApi::depth_test(bool enabled)
       glDisable(GL_DEPTH_TEST);
     }
 }
-void GameApi::MainLoopApi::alpha(bool enable)
+EXPORT void GameApi::MainLoopApi::alpha(bool enable)
+{
+  alpha_1(enable);
+}
+void GameApi::MainLoopApi::alpha_1(bool enable)
 {
   if (enable)
     {
@@ -2787,13 +2791,13 @@ EXPORT void GameApi::SpriteApi::preparesprite(BM bm, int bbm_choose)
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   PrepareSprite(*sprite, *env->renders[bm.id]);
 }
-void GameApi::SpriteApi::rendersprite(BM bm, SH sh, float x, float y, float mult_x, float mult_y)
+EXPORT void GameApi::SpriteApi::rendersprite(BM bm, SH sh, float x, float y, float mult_x, float mult_y)
 {
-  rendersprite(bm, 0, sh, x, y, mult_x, mult_y);
+  rendersprite3_1(bm, 0, sh, x, y, mult_x, mult_y);
 }
-void GameApi::SpriteApi::rendersprite(BM bm, SH sh, PT pos)
+EXPORT void GameApi::SpriteApi::rendersprite2(BM bm, SH sh, PT pos)
 {
-  rendersprite(bm, 0, sh, pos);
+  rendersprite4(bm, 0, sh, pos);
 }
 #if 0
 void GameApi::SpriteApi::rendersprite(BM bm, SH sh, float x, float y, float x1, float y1, float inside_x, float inside_y, float inside_x1, float inside_y1)
@@ -2813,7 +2817,11 @@ void GameApi::SpriteApi::rendersprite(BM bm, SH sh, float x, float y, float x1, 
   RenderSprite(*s, bm_choose, pos2, pos3, inside_2, inside_3, z, *env->renders[bm.id], prog);
 }
 #endif
-void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SH sh, float x, float y, float mult_x, float mult_y)
+EXPORT void GameApi::SpriteApi::rendersprite3(GameApi::BM bm, int bm_choose, GameApi::SH sh, float x, float y, float mult_x, float mult_y)
+{
+  rendersprite3_1(bm,bm_choose,sh,x,y,mult_x, mult_y);
+}
+void GameApi::SpriteApi::rendersprite3_1(GameApi::BM bm, int bm_choose, GameApi::SH sh, float x, float y, float mult_x, float mult_y)
 {
   SpritePriv &spriv = *(SpritePriv*)priv;
   ::Sprite *s = spriv.sprites[bm.id];
@@ -2830,7 +2838,7 @@ void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SH sh, float x, floa
 
   //glPopMatrix();
 }
-void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SH sh, PT pos)
+void GameApi::SpriteApi::rendersprite4(BM bm, int bm_choose, SH sh, PT pos)
 {
   SpritePriv &spriv = *(SpritePriv*)priv;
   ::Sprite *s = spriv.sprites[bm.id];
@@ -2844,7 +2852,7 @@ void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SH sh, PT pos)
   RenderSprite(*s, bm_choose, pos2, z, *env->renders[bm.id], prog);
 }
 
-void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, float x, float y)
+EXPORT void GameApi::SpriteApi::rendersprite5(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, float x, float y)
 {
   SpritePriv &spriv = *(SpritePriv*)priv;
   ::Sprite *s = spriv.sprites[bm.id];
@@ -2868,7 +2876,7 @@ void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SH sh, SP move_space
   Program *prog = find_shader_program(e, sh);
   RenderSprite(*s, bm_choose, pos, z, *env->renders[bm.id], prog);
 }
-void GameApi::SpriteApi::rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, PT pos)
+EXPORT void GameApi::SpriteApi::rendersprite6(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, PT pos)
 {
 }
 EXPORT GameApi::SP GameApi::SpriteApi::spritespace(BM bm)
@@ -5852,6 +5860,10 @@ EXPORT void GameApi::ShaderApi::load_default()
 
 EXPORT void GameApi::ShaderApi::set_default_projection(SH shader, std::string name)
 {
+  set_default_projection_1(shader, name);
+}
+void GameApi::ShaderApi::set_default_projection_1(SH shader, std::string name)
+{
   std::cout << "SetDefaultProjection:" << std::endl;
   Matrix m = Matrix::Perspective(80.0, (double)800/600, 10.1, 60000.0);
   if (shader.id==-1) return;
@@ -5871,37 +5883,49 @@ EXPORT void GameApi::ShaderApi::set_y_rotation(SH shader, std::string name, floa
 }
 EXPORT void GameApi::ShaderApi::link(GameApi::SH shader)
 {
+  link_1(shader);
+}
+void GameApi::ShaderApi::link_1(GameApi::SH shader)
+{
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   seq->link(shader.id);
 }
 EXPORT GameApi::SH GameApi::ShaderApi::texture_shader()
 {
-  return get_normal_shader("comb", "comb", "", "texture:light:light", "texture:light:light");
+  return get_normal_shader_1("comb", "comb", "", "texture:light:light", "texture:light:light");
 }
 EXPORT GameApi::SH GameApi::ShaderApi::colour_shader()
 {
-  return get_normal_shader("comb", "comb", "","colour:light:light", "colour:light:light");
+  return get_normal_shader_1("comb", "comb", "","colour:light:light", "colour:light:light");
 }
 EXPORT GameApi::SH GameApi::ShaderApi::colour_texture_shader()
 {
-  return get_normal_shader("comb", "comb", "","colour:texture:light:light", "colour:texture:light:light");
+  return get_normal_shader_1("comb", "comb", "","colour:texture:light:light", "colour:texture:light:light");
 }
-GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
+EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
 						  std::string f_format,
 						  std::string g_format,
 						  std::string v_comb,
 						  std::string f_comb)
 {
-  SH sh = get_shader(v_format, f_format, g_format, v_comb, f_comb);
-  bind_attrib(sh, 0, "in_Position");
-  bind_attrib(sh, 1, "in_Normal");
-  bind_attrib(sh, 2, "in_Color");
-  bind_attrib(sh, 3, "in_TexCoord");
-  bind_attrib(sh, 4, "in_Position2");
-  link(sh);
-  use(sh);
-  set_default_projection(sh, "in_P");
+  return get_normal_shader_1(v_format, f_format, g_format, v_comb, f_comb);
+}
+GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format,
+						  std::string f_format,
+						  std::string g_format,
+						  std::string v_comb,
+						  std::string f_comb)
+{
+  SH sh = get_shader_1(v_format, f_format, g_format, v_comb, f_comb);
+  bind_attrib_1(sh, 0, "in_Position");
+  bind_attrib_1(sh, 1, "in_Normal");
+  bind_attrib_1(sh, 2, "in_Color");
+  bind_attrib_1(sh, 3, "in_TexCoord");
+  bind_attrib_1(sh, 4, "in_Position2");
+  link_1(sh);
+  use_1(sh);
+  set_default_projection_1(sh, "in_P");
   return sh;
 }
 
@@ -5928,7 +5952,16 @@ void combparse(std::string comb, std::vector<std::string> &vec)
     }
 }
 
-GameApi::SH GameApi::ShaderApi::get_shader(std::string v_format,
+EXPORT GameApi::SH GameApi::ShaderApi::get_shader(std::string v_format,
+					std::string f_format,
+					   std::string g_format, 
+					   std::string v_comb,
+					   std::string f_comb)
+{
+  return get_shader_1(v_format, f_format, g_format, v_comb, f_comb);
+}
+
+GameApi::SH GameApi::ShaderApi::get_shader_1(std::string v_format,
 					std::string f_format,
 					   std::string g_format, 
 					   std::string v_comb,
@@ -5954,7 +5987,11 @@ GameApi::SH GameApi::ShaderApi::get_shader(std::string v_format,
   sh.id = p->count-1;
   return sh;
 }
-void GameApi::ShaderApi::use(GameApi::SH shader)
+EXPORT void GameApi::ShaderApi::use(GameApi::SH shader)
+{
+  use_1(shader);
+}
+void GameApi::ShaderApi::use_1(GameApi::SH shader)
 {
   if (shader.id==-1) return;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
@@ -5968,7 +6005,11 @@ EXPORT void GameApi::ShaderApi::unuse(GameApi::SH shader)
   ShaderSeq *seq = p->seq;
   seq->unuse(p->ids[shader.id]);
 }
-void GameApi::ShaderApi::bind_attrib(GameApi::SH shader, int num, std::string name)
+EXPORT void GameApi::ShaderApi::bind_attrib(GameApi::SH shader, int num, std::string name)
+{
+  return bind_attrib_1(shader,num,name);
+}
+void GameApi::ShaderApi::bind_attrib_1(GameApi::SH shader, int num, std::string name)
 {
   std::cout << "SHADER: " << shader.id << std::endl;
   if (shader.id==-1) return;

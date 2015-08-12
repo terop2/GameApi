@@ -654,6 +654,7 @@ void Game(GameApi::EveryApi &e);
 //extern "C" void _start()
 int mainxxx(int argc, char *argv[])
 {
+#if 0
   if (argc>1 && (std::string(argv[1])=="-h" || std::string(argv[1])=="--help"))
     {
       std::cout << "./main [-h] [-edit filename] [-test3]" << std::endl;
@@ -1124,6 +1125,7 @@ int mainxxx(int argc, char *argv[])
     // "xor %ebx,%ebx\n" \
     //"int $128\n" \
     //);*/
+#endif
 }
 void Execute2(FrameAnim &f)
 {

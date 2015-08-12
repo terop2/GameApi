@@ -43,6 +43,7 @@ PT Map(PT p, int face, int point, void *data)
 
 void GameApiTest()
 {
+#if 0
   Env e;
   MainLoopApi loop(e);
   SpriteApi spr(e);
@@ -204,5 +205,6 @@ void GameApiTest()
       if (e.ch==27) break;
       if (e.type==2 && e.ch==32) { val++; }
     }
+#endif
 }
 

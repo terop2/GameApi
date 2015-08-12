@@ -97,7 +97,7 @@ libGameApi.so: $(GCHFiles) $(OFiles) Makefile
 
 libGameApi.dll: $(GCH2Files) $(O2Files) Makefile.clang glew.o
 	@echo clang++ libGameApi.dll
-	clang++ -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadGC2
+	clang++ -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L. -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadGC2
 
 subdirs: $(Subdirs)
 
