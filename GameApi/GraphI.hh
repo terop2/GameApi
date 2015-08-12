@@ -145,4 +145,16 @@ struct TRect
   float width, height;
 };
 
+class Tracker
+{
+public:
+  virtual int NumChannels() const=0;
+  virtual int NumTimeSlots() const=0;
+  virtual int Type(int channel, int timeslot) const=0;
+  virtual int Duration(int channel, int timeslot) const { return 1; }
+  virtual int NumData(int channel, int timeslot) const { return 0; }
+  virtual unsigned int Data(int channel, int timeslot, int data) const { return 0; }
+};
+
+
 #endif

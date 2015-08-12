@@ -72,7 +72,7 @@ void GameApiTest3(EveryApi &e)
       //std::cout << "val=" << val << std::endl;
       e.mainloop_api.clear();
       e.mainloop_api.switch_to_3d(false, sh);
-      e.sprite_api.rendersprite(bm2, 0,sh, 100.0,100.0,1.0,1.0);
+      e.sprite_api.rendersprite3(bm2, 0,sh, 100.0,100.0,1.0,1.0);
       e.sprite_api.rendersprite(bx2, sh, 200.0,200.0,1.0,1.0);
       e.mainloop_api.switch_to_3d(true, sh);
       e.polygon_api.render(p,frame2 % (30*5), 0.0,0.0,0.0);

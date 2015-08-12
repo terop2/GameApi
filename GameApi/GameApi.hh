@@ -147,7 +147,8 @@ public:
   IMPORT void clear();
   IMPORT void clear_3d();
   IMPORT void switch_to_3d(bool b, SH sh);
-  void alpha(bool enabled);
+  IMPORT void alpha(bool enabled);
+  void alpha_1(bool enabled);
   IMPORT void depth_test(bool enabled);
   IMPORT void transparency(bool enabled);
   IMPORT void cursor_visible(bool enabled);
@@ -200,13 +201,14 @@ public:
 	IMPORT VA create_vertex_array(BM bm);
 	IMPORT void render_sprite_vertex_array(VA va);
 
-	void rendersprite(BM bm, SH sh, float x, float y, float mult_x = 1.0, float mult_y = 1.0);
-	void rendersprite(BM bm, SH sh, PT pos);
-	void rendersprite(BM bm, int bm_choose, SH sh, float x, float y, float mult_x, float mult_y);
-	void rendersprite(BM bm, int bm_choose, SH sh, PT pos);
-	void rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, float x, float y);
-	void rendersprite(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, PT pos);
-	void rendersprite(BM bm, SH sh, float x, float y, float x1, float y1, float inside_x, float inside_y, float inside_x1, float inside_y1);
+	IMPORT void rendersprite(BM bm, SH sh, float x, float y, float mult_x = 1.0, float mult_y = 1.0);
+	IMPORT void rendersprite2(BM bm, SH sh, PT pos);
+	IMPORT void rendersprite3(BM bm, int bm_choose, SH sh, float x, float y, float mult_x, float mult_y);
+	void rendersprite3_1(BM bm, int bm_choose, SH sh, float x, float y, float mult_x, float mult_y);
+	void rendersprite4(BM bm, int bm_choose, SH sh, PT pos);
+	IMPORT void rendersprite5(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, float x, float y);
+	IMPORT void rendersprite6(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, PT pos);
+  //IMPORT void rendersprite(BM bm, SH sh, float x, float y, float x1, float y1, float inside_x, float inside_y, float inside_x1, float inside_y1);
 	IMPORT SP spritespace(BM bm);
 	IMPORT PT pixelpos(BM bm, int x, int y);
 private:
@@ -1505,15 +1507,21 @@ public:
   IMPORT ~ShaderApi();
   IMPORT void load_default();
   IMPORT void load(std::string filename);
-  SH get_shader(std::string v_format, std::string f_format, std::string g_format,
+  IMPORT SH get_shader(std::string v_format, std::string f_format, std::string g_format,
 		       std::string v_comb="", std::string f_comb="");
-  SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,
+  IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,
+				    std::string v_comb="", std::string f_comb="");
+  SH get_shader_1(std::string v_format, std::string f_format, std::string g_format,
+		       std::string v_comb="", std::string f_comb="");
+  SH get_normal_shader_1(std::string v_format, std::string f_format, std::string g_format,
 				    std::string v_comb="", std::string f_comb="");
   IMPORT SH texture_shader();
   IMPORT SH colour_shader();
   IMPORT SH colour_texture_shader();
   IMPORT void link(SH shader);
-  void use(SH shader);
+  IMPORT void use(SH shader);
+  void link_1(SH shader);
+  void use_1(SH shader);
   IMPORT void unuse(SH shader);
   IMPORT void bindnames(GameApi::SH shader,
 			std::string s_vertex,
@@ -1521,8 +1529,10 @@ public:
 			std::string s_color,
 			std::string s_texcoord);
   IMPORT void set_default_projection(GameApi::SH shader, std::string name);
+  void set_default_projection_1(GameApi::SH shader, std::string name);
   IMPORT void set_y_rotation(SH shader, std::string name, float angle);
-  void bind_attrib(GameApi::SH shader, int num, std::string name);
+  IMPORT void bind_attrib(GameApi::SH shader, int num, std::string name);
+  void bind_attrib_1(GameApi::SH shader, int num, std::string name);
   IMPORT void set_var(GameApi::SH shader, std::string name, float val);
   IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z);
   IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z, float k);

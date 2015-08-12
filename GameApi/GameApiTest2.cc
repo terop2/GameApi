@@ -7,6 +7,7 @@ using namespace GameApi;
 
 void GameApiTest2(EveryApi &every)
 {
+#if 0
   Env e;
   MainLoopApi loop(e);
   BitmapApi bm(e);
@@ -92,5 +93,5 @@ void GameApiTest2(EveryApi &every)
       if (e.ch==27) break;
     }
 #endif  
-
+#endif
 }
