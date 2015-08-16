@@ -17,6 +17,7 @@ public:
  
 void PathRendering::init()
 {
+#ifndef __clang__
 #ifndef EMSCRIPTEN
   glMatrixLoadIdentityEXT(GL_PROJECTION);
   glMatrixOrthoEXT(GL_PROJECTION, 0, 500, 0, 400, -1, 1);
@@ -30,6 +31,7 @@ void PathRendering::init()
   glStencilFunc(GL_NOTEQUAL, 0, 0x1F);
   glStencilOp(GL_KEEP, GL_KEEP, GL_ZERO);
 #endif
+#endif
 } 
 void PathRendering::draw()
 {
@@ -38,6 +40,7 @@ void PathRendering::draw()
 }
 void PathRendering::drawShape()
 {
+#ifndef __clang__
 #ifndef EMSCRIPTEN
   //GLuint pathObj = 42;
   const char *pathString = "M100,180 L40,10 L190,120 L10,120 L160,10 z";
@@ -46,6 +49,7 @@ void PathRendering::drawShape()
   glStencilFillPathNV(pathObj, GL_COUNT_UP_NV, 0x1F);
   glColor3f(1.0,1.0,1.0);
   glCoverStrokePathNV(pathObj, GL_CONVEX_HULL_NV);
+#endif
 #endif
 }
 

@@ -48,6 +48,7 @@ private:
 
 void GameApiWorldFunc(EveryApi &e)
 {
+#if 0
   e.shader_api.load("Shader.txt");
   SH sh = e.shader_api.get_shader("texture", "texture", "");
   e.shader_api.use(sh);
@@ -71,4 +72,5 @@ void GameApiWorldFunc(EveryApi &e)
       MainLoopApi::Event ev = e.mainloop_api.get_event();
       if (ev.ch==27) break;
   }
+#endif
 }

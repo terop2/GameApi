@@ -626,6 +626,24 @@ private:
   Point p1, p2;
 };
 
+class RectProperties
+{
+public:
+  RectProperties(Point tl, Point br) : tl(tl), br(br) { }
+  bool IntersectRect(Point tl2, Point br2)
+  {
+    float start_x = std::max(tl.x,tl2.x);
+    float end_x = std::min(br.x, br2.x);
+    if (start_x>end_x) return false;
+    float start_y = std::max(tl.y, tl2.y);
+    float end_y = std::min(br.y, br2.y);
+    if (start_y>end_y) return false;
+    return true;
+  }
+private:
+  Point tl,br;
+};
+
 
 struct Vector2d;
 
