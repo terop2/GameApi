@@ -87,7 +87,7 @@ main: $(GCHFiles_examples) $(OFiles_examples) Makefile GameApi.hh libGameApi.so
 
 main.exe: $(GCHFiles_examples) $(O2Files_examples) Makefile GameApi.hh libGameApi.dll
 	@echo clang++ main.exe
-	@$(CCWIN) -v -g $(O2Files_examples) -o main.exe -L. -lGameApi -lopengl32 -lm -lstdc++
+	@$(CCWIN) -g $(O2Files_examples) -o main.exe -L. -lGameApi -lopengl32 -lm -lstdc++
 
 
 libGameApi.so: $(GCHFiles) $(OFiles) Makefile

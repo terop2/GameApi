@@ -1118,7 +1118,7 @@ GameApi::PT add_point(GameApi::Env &e, float x, float y, float z);
 
 
 
-GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
+EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 {
   SDL_Event event;
   Event e2;
@@ -4541,13 +4541,17 @@ EXPORT GameApi::P GameApi::PolygonApi::texcoord_cylindar(P orig, float start_y, 
   FaceCollection *face = find_facecoll(e, orig);
   return add_polygon(e, new TexCoordCylindar(face,start_y, end_y),1);
 }
-GameApi::P GameApi::PolygonApi::sprite_bind(P p, TX tx, int id)
+EXPORT GameApi::P GameApi::PolygonApi::sprite_bind(P p, TX tx, int id)
 {
   TextureApi t(e);
-  Q q = t.get_tex_coord(tx, id);
-  return sprite_bind(p, q, tx);
+  Q q = t.get_tex_coord_1(tx, id);
+  return sprite_bind_1(p, q, tx);
 }
-GameApi::P GameApi::PolygonApi::sprite_bind(P p, Q q, TX tx)
+EXPORT GameApi::P GameApi::PolygonApi::sprite_bind(P p, Q q, TX tx)
+{
+  return sprite_bind_1(p,q,tx);
+}
+GameApi::P GameApi::PolygonApi::sprite_bind_1(P p, Q q, TX tx)
 {
   TextureI *texture = find_texture(e, tx);
   int sx = texture->SizeX();
@@ -6260,7 +6264,7 @@ EXPORT GameApi::BM GameApi::FloatBitmapApi::subfloatbitmap(FB fb, float range_st
   GameApi::BB b = to_bool(fb, range_start, range_end);
   Color c(true_color);
   Color c2(false_color);
-  GameApi::BM bm = ev->bool_bitmap_api.to_bitmap(b, c.r, c.g, c.b, c.alpha,
+  GameApi::BM bm = ev->bool_bitmap_api.to_bitmap_1(b, c.r, c.g, c.b, c.alpha,
 						 c2.r, c2.g, c2.b, c2.alpha);
   return bm;
 }
@@ -7263,7 +7267,14 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::andnot_bitmap(BB b1, BB b2)
   Bitmap<bool> *bm2 = find_bool_bitmap(e, b2)->bitmap;
   return add_bool_bitmap(e, new AndNotBitmap(*bm1,*bm2));
 }
-GameApi::BM GameApi::BoolBitmapApi::to_bitmap(BB bools,
+EXPORT GameApi::BM GameApi::BoolBitmapApi::to_bitmap(BB bools,
+					      int true_r, int true_g, int true_b, int true_a,
+					      int false_r, int false_g, int false_b, int false_a)
+{
+  return to_bitmap_1(bools, true_r, true_g, true_b, true_a,
+		     false_r, false_g, false_b, false_a);
+}
+GameApi::BM GameApi::BoolBitmapApi::to_bitmap_1(BB bools,
 					      int true_r, int true_g, int true_b, int true_a,
 					      int false_r, int false_g, int false_b, int false_a)
 {
@@ -8690,13 +8701,18 @@ EXPORT GameApi::VV GameApi::StateChangeApi::prepareloop(float *array, int arrays
     {
       float val1 = array[i];
       float val2 = array[i+1];
-      t = linear(t, 0, f, val1, val2, step_duration);
+      t = linear_1(t, 0, f, val1, val2, step_duration);
     }
-  VV v = prepare(t);
+  VV v = prepare_1(t);
   return v;
 }
 
-GameApi::TR GameApi::StateChangeApi::linear(TR tr, int path_num, std::function<P (float val)> f, float start_v, float end_v, float duration)
+EXPORT GameApi::TR GameApi::StateChangeApi::linear(TR tr, int path_num, std::function<P (float val)> f, float start_v, float end_v, float duration)
+{
+  return linear_1(tr,path_num, f, start_v, end_v, duration);
+}
+GameApi::TR GameApi::StateChangeApi::linear_1(TR tr, int path_num, std::function<P (float val)> f, float start_v, float end_v, float duration)
+
 {
   TROArray *arr = find_timerange(e, tr);
   TROArray *arr2 = arr->copy();
@@ -8706,7 +8722,11 @@ GameApi::TR GameApi::StateChangeApi::linear(TR tr, int path_num, std::function<P
   return add_timerange(e, arr2);
 }
 
-GameApi::VV GameApi::StateChangeApi::prepare(TR sc)
+EXPORT GameApi::VV GameApi::StateChangeApi::prepare(TR sc)
+{
+  return prepare_1(sc);
+}
+GameApi::VV GameApi::StateChangeApi::prepare_1(TR sc)
 {
   return add_timerange_vertexarray(e, sc);
 }
@@ -8768,7 +8788,11 @@ EXPORT GameApi::TX GameApi::TextureApi::tex_coord(GameApi::TX tex, int id, int x
 { TextureI *texture = find_texture(e, tex);
   return add_texture(e, new TextureITexCoord(*texture, id, x,y,width,height));
 }
-GameApi::Q GameApi::TextureApi::get_tex_coord(TX tx, int id)
+EXPORT GameApi::Q GameApi::TextureApi::get_tex_coord(TX tx, int id)
+{
+  return get_tex_coord_1(tx,id);
+}
+GameApi::Q GameApi::TextureApi::get_tex_coord_1(TX tx, int id)
 {
   TextureI *tex = find_texture(e,tx);
   int s = tex->AreaCount();
@@ -9345,7 +9369,7 @@ private:
   Vector u_x;
   Vector u_y;
 };
-GameApi::P GameApi::PlaneApi::to_polygon_face(PL pl, PT pos, V u_x, V u_y)
+EXPORT GameApi::P GameApi::PlaneApi::to_polygon_face(PL pl, PT pos, V u_x, V u_y)
 {
   PlanePoints2d *plane = find_plane(e,pl);
   Point *pos_1 = find_point(e, pos);
@@ -9427,11 +9451,15 @@ EXPORT GameApi::P GameApi::PlaneApi::to_polygon(EveryApi &ev, PL pl, PT pos, V u
   Vector *uu_z = find_vector(e, u_z);
   P face = to_polygon_face(pl, pos, u_x, u_y);
   P face2 = ev.polygon_api.translate(face, uu_z->dx*z_mult, uu_z->dy*z_mult, uu_z->dz*z_mult);
-  P lines = to_polygon_lines(pl, pos, u_x, u_y, u_z, z_mult);
+  P lines = to_polygon_lines_1(pl, pos, u_x, u_y, u_z, z_mult);
   P array[] = { face, face2, lines };
   return ev.polygon_api.or_array(&array[0], 3);
 }
-GameApi::P GameApi::PlaneApi::to_polygon_lines(PL pl, PT pos, V u_x, V u_y, V u_z, float z_multiplier)
+EXPORT GameApi::P GameApi::PlaneApi::to_polygon_lines(PL pl, PT pos, V u_x, V u_y, V u_z, float z_multiplier)
+{
+  return to_polygon_lines_1(pl,pos,u_x,u_y,u_z,z_multiplier);
+}
+ GameApi::P GameApi::PlaneApi::to_polygon_lines_1(PL pl, PT pos, V u_x, V u_y, V u_z, float z_multiplier)
 {
   PlanePoints2d *plane = find_plane(e,pl);
   Point *pos_1 = find_point(e, pos);
@@ -9766,47 +9794,47 @@ EXPORT GameApi::PL GameApi::PlaneApi::floodfill_border(GameApi::BB bitmap, int x
   return add_plane(e, points);
 }
 #endif
-GameApi::WV GameApi::WaveformApi::empty(float length)
+EXPORT GameApi::WV GameApi::WaveformApi::empty(float length)
 {
   return add_waveform(e, new ZeroWaveform(length, -1.0,1.0));
 }
-GameApi::WV GameApi::WaveformApi::sinwave(float length, float freq)
+EXPORT GameApi::WV GameApi::WaveformApi::sinwave(float length, float freq)
 {
   return add_waveform(e, new SinWaveform(length, freq));
 }
-GameApi::WV GameApi::WaveformApi::sample(float *array, int length, float samplelength)
+EXPORT GameApi::WV GameApi::WaveformApi::sample(float *array, int length, float samplelength)
 {
   return add_waveform(e, new ArrayWaveform2(array, length, samplelength, -1.0, 1.0));
 }
-GameApi::WV GameApi::WaveformApi::int_sample(int *array, int length, float samplelength, int min_value, int max_value)
+EXPORT GameApi::WV GameApi::WaveformApi::int_sample(int *array, int length, float samplelength, int min_value, int max_value)
 {
   GameApi::WV w;
   w.id = 0;
   return w;
 }
-GameApi::WV GameApi::WaveformApi::mix(GameApi::WV orig, float pos, GameApi::WV sample)
+EXPORT GameApi::WV GameApi::WaveformApi::mix(GameApi::WV orig, float pos, GameApi::WV sample)
 {
   Waveform *m_orig = find_waveform(e, orig);
   Waveform *m_sample = find_waveform(e, sample);
   return add_waveform(e, new MixWaveform(m_orig, pos, m_sample));
 }
-GameApi::WV GameApi::WaveformApi::volume_ramp(GameApi::WV orig, float old_y_value, float x_pos1, float x_pos2, float y_pos1, float y_pos2)
+EXPORT GameApi::WV GameApi::WaveformApi::volume_ramp(GameApi::WV orig, float old_y_value, float x_pos1, float x_pos2, float y_pos1, float y_pos2)
 {
   Waveform *m_orig = find_waveform(e, orig);
   return add_waveform(e, new VolumeRampWaveform(m_orig, old_y_value, x_pos1, x_pos2, y_pos1, y_pos2));
 }
-GameApi::WV GameApi::WaveformApi::freq_change(GameApi::WV orig, float old_freq, float new_freq)
+EXPORT GameApi::WV GameApi::WaveformApi::freq_change(GameApi::WV orig, float old_freq, float new_freq)
 {
   Waveform *m_orig = find_waveform(e, orig);
   return add_waveform(e, new FreqChangeWaveform(m_orig, old_freq, new_freq));
 }
 
-float GameApi::WaveformApi::get_value(WV orig, float val)
+EXPORT float GameApi::WaveformApi::get_value(WV orig, float val)
 {
   Waveform *m_orig = find_waveform(e, orig);
   return m_orig->Index(val);
 }
-float GameApi::WaveformApi::length(GameApi::WV orig)
+EXPORT float GameApi::WaveformApi::length(GameApi::WV orig)
 {
   Waveform *m_orig = find_waveform(e, orig);
   return m_orig->Length();
@@ -9831,7 +9859,7 @@ private:
   float new_length;
 };
 
-GameApi::WV GameApi::WaveformApi::length_change(WV orig, float new_length)
+EXPORT GameApi::WV GameApi::WaveformApi::length_change(WV orig, float new_length)
 {
   Waveform *m_orig = find_waveform(e, orig);
   return add_waveform(e, new LengthChangeWaveform(m_orig, new_length));
@@ -9857,7 +9885,7 @@ private:
   float max_value; 
 }; 
 
-GameApi::WV GameApi::WaveformApi::function(std::function<float (float)> f, float length, float min_value, float max_value)
+EXPORT GameApi::WV GameApi::WaveformApi::function(std::function<float (float)> f, float length, float min_value, float max_value)
 {
   //GameApi::EveryApi *ev = new EveryApi(e);
   //::EnvImpl *env = ::EnvImpl::Environment(&e);

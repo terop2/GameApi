@@ -227,7 +227,8 @@ public:
 	IMPORT int unique_id();
 	IMPORT TX tex_assign(TX tx, int id, int x, int y, BM bm);
 	IMPORT TX tex_coord(TX tx, int id, int x, int y, int width, int height);
-	Q get_tex_coord(TX tx, int id);
+	IMPORT Q get_tex_coord(TX tx, int id);
+	Q get_tex_coord_1(TX tx, int id);
 	IMPORT TXID prepare(TX tx);
 	IMPORT void use(TXID tx, int i = 0);
 	IMPORT void unuse(TXID tx);
@@ -842,8 +843,9 @@ public:
   IMPORT P fromsurface(S s, float thickness);
   IMPORT P fromsurface(S s1, S s2, C curve); // surfacebetweensurfaces
   
-  P sprite_bind(P p, TX tx, int id);
-  P sprite_bind(P p, Q bm, TX tx);
+  IMPORT P sprite_bind(P p, TX tx, int id);
+  IMPORT P sprite_bind(P p, Q bm, TX tx);
+  P sprite_bind_1(P p, Q bm, TX tx);
   IMPORT P texture(P orig, BM bm, int bm_choose = -1); // all quads
 
   IMPORT P color(P orig, unsigned int color);
@@ -1030,8 +1032,10 @@ class StateChangeApi
 public:
 	IMPORT StateChangeApi(Env &e, ShaderApi &api);
 	IMPORT TR init(int paths);
-	TR linear(TR s, int path_num, std::function<P(float val)> f, float start_v, float end_v, float duration);
-	VV prepare(TR sc);
+	IMPORT TR linear(TR s, int path_num, std::function<P(float val)> f, float start_v, float end_v, float duration);
+	TR linear_1(TR s, int path_num, std::function<P(float val)> f, float start_v, float end_v, float duration);
+	IMPORT VV prepare(TR sc);
+	VV prepare_1(TR sc);
 	IMPORT VV prepareloop(float *array, int arraysize,
 		 std::function<P (float val)> f,
 		 float step_duration);
@@ -1087,7 +1091,8 @@ public:
   IMPORT PL remove_empty_faces(PL pl);
 
   IMPORT P to_polygon_face(PL triangulated_pl, PT pos, V u_x, V u_y);
-  P to_polygon_lines(PL pl, PT pos, V u_x, V u_y, V u_z, float z_mult);
+  IMPORT P to_polygon_lines(PL pl, PT pos, V u_x, V u_y, V u_z, float z_mult);
+  P to_polygon_lines_1(PL pl, PT pos, V u_x, V u_y, V u_z, float z_mult);
   IMPORT P to_polygon(EveryApi &ev, PL pl, PT pos, V u_x, V u_y, V u_z, float z_mult);
 
   // 1) get black bitmap
@@ -1146,7 +1151,10 @@ public:
 	IMPORT BB xor_bitmap(BB b1, BB flip_b2);
         IMPORT BM choose_bitmap(BB bools, BM true_bitmap, BM false_bitmap);
 
-	BM to_bitmap(BB bools,
+	IMPORT BM to_bitmap(BB bools,
+	       int true_r, int true_g, int true_b, int true_a,
+	       int false_r, int false_g, int false_b, int false_a);
+	BM to_bitmap_1(BB bools,
 	       int true_r, int true_g, int true_b, int true_a,
 	       int false_r, int false_g, int false_b, int false_a);
 	IMPORT BM texture(BM bg,

@@ -725,7 +725,7 @@ int mainxxx(int argc, char *argv[])
   g.start_game(0);
   return 0;
 #endif
-#if 1
+#if 0
   GameApi::Env e;
   GameApi::GamesApi g(e);
   g.register_game(0, &GameApiTest2);
