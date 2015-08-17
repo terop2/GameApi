@@ -122,6 +122,10 @@ void Program::push_back(const Shader &shader)
   priv->shaders.push_back(&shader);
   shader.priv->programs.push_back(this);
 }
+void Program::bind_frag(int num, std::string name)
+{
+  glBindFragDataLocation( priv->program, num, name.c_str());
+}
 void Program::bind_attrib(int num, std::string name)
 {
   int val2 = glGetError();
@@ -884,7 +888,7 @@ std::string ShaderFile::GeometryShader(std::string name)
 {
   return g_shaders[name];
 }
-std::string replace_c(std::string s, std::vector<std::string> comb, bool is_fragment)
+std::string replace_c(std::string s, std::vector<std::string> comb, bool is_fragment, bool is_fbo)
 {
   std::stringstream ss(s);
   std::string ww;
@@ -940,7 +944,10 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 	      ss3 << s;
 	      
 #ifdef EMSCRIPTEN
-	      out+="gl_FragColor = rgb";
+	      if (is_fbo)
+		out += "gl_FragData[0] = rgb";
+	      else
+		out+="gl_FragColor = rgb";
 #else
 	      out+="out_Color = rgb";
 #endif
@@ -969,7 +976,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       std::cout << "VName: " << name << std::endl;
       std::string shader = file.VertexShader(name);
-      std::string ss = replace_c(shader, v_vec, false);
+      std::string ss = replace_c(shader, v_vec, false, false);
       
       std::cout << "::" << ss << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
@@ -987,7 +994,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
-      std::string ss = replace_c(shader, f_vec, true);
+      std::string ss = replace_c(shader, f_vec, true, false);
       std::cout << "::" << ss << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);

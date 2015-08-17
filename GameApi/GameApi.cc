@@ -145,6 +145,14 @@ struct ShaderPriv2
   int count;
 };
 
+struct FBOPriv
+{
+  GLuint fbo_name;
+  GLuint texture;
+  GLuint depthbuffer;
+  int sx,sy;
+};
+
 struct SpaceImpl
 {
   Point tl, tr, bl, br, z;
@@ -861,6 +869,7 @@ struct EnvImpl
   std::vector<PointsApiPoints*> pointsapi_points;
   std::vector<LazyValue<float>*> floats;
   std::vector<Array<int,float>*> float_array;
+  std::vector<FBOPriv> fbos;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
 #ifndef EMSCRIPTEN
@@ -1376,6 +1385,21 @@ EXPORT GameApi::Env::~Env()
 }
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
+
+GameApi::FBO add_fbo(GameApi::Env &e, GLuint fbo_name, GLuint texture, GLuint depthbuffer, int sx, int sy)
+{
+  FBOPriv p;
+  p.fbo_name = fbo_name;
+  p.texture = texture;
+  p.depthbuffer = depthbuffer;
+  p.sx = sx;
+  p.sy = sy;
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->fbos.push_back(p);
+  GameApi::FBO f;
+  f.id = env->fbos.size()-1;
+  return f;
+}
 
 GameApi::F add_float(GameApi::Env &e, LazyValue<float> *val)
 {
@@ -2003,6 +2027,13 @@ EventInfo find_event_info(GameApi::Env &e, GameApi::E ee)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->event_infos->Event(ee.id);
+}
+FBOPriv *find_fbo(GameApi::Env &e, GameApi::FBO f)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  if (f.id >=0 && f.id < (int)env->fbos.size())
+    return &env->fbos[f.id];
+  return 0;
 }
 LinkageInfo find_linkage(GameApi::Env &e, GameApi::L l)
 {
@@ -6020,6 +6051,14 @@ EXPORT void GameApi::ShaderApi::unuse(GameApi::SH shader)
 EXPORT void GameApi::ShaderApi::bind_attrib(GameApi::SH shader, int num, std::string name)
 {
   return bind_attrib_1(shader,num,name);
+}
+void GameApi::ShaderApi::bind_frag(GameApi::SH shader, int attachment_num, std::string name)
+{
+  if (shader.id==-1) return;
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[shader.id]);
+  prog->bind_frag(attachment_num, name);
 }
 void GameApi::ShaderApi::bind_attrib_1(GameApi::SH shader, int num, std::string name)
 {
@@ -11666,6 +11705,61 @@ private:
   Array<int,float> &a2;
   ContinuousBitmap<Color> *f;
 };
+GameApi::TXID GameApi::FrameBufferApi::tex_id(FBO buffer)
+{
+  FBOPriv *priv = find_fbo(e, buffer);
+  GameApi::TXID id;
+  id.id = priv->texture;
+  return id;
+}
+GameApi::TXID GameApi::FrameBufferApi::depth_id(FBO buffer)
+{
+  FBOPriv *priv = find_fbo(e, buffer);
+  GameApi::TXID id;
+  id.id = priv->depthbuffer;
+  return id;
+}
+GameApi::FBO GameApi::FrameBufferApi::create_fbo(int sx, int sy)
+{
+  GLuint fbo_name;
+  glGenFramebuffers(1, &fbo_name);
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo_name);
+
+  GLuint texture;
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, sx,sy, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+  GLuint depth_texture;
+  glGenRenderbuffers(1, &depth_texture);
+  glBindRenderbuffer(GL_RENDERBUFFER, depth_texture);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, sx, sy);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_texture);
+
+  return add_fbo(e, fbo_name, texture, depth_texture, sx,sy);
+}
+void GameApi::FrameBufferApi::config_fbo(FBO buffer)
+{
+  FBOPriv *priv = find_fbo(e, buffer);
+  
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, priv->texture, 0);
+
+  GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+  glDrawBuffers(1, DrawBuffers);
+}
+void GameApi::FrameBufferApi::bind_fbo(FBO buffer)
+{
+  FBOPriv *priv = find_fbo(e, buffer);
+  glBindFramebuffer(GL_FRAMEBUFFER, priv->fbo_name);
+  glViewport(0,0,priv->sx,priv->sy);
+}
+void GameApi::FrameBufferApi::bind_screen(int sx, int sy)
+{
+  glBindFramebuffer(GL_FRAMEBUFFER,0);
+  glViewport(0,0,sx,sy);
+}
 GameApi::BM GameApi::FloatArrayApi::span_arrays(FA fa1, FA fa2, CBM f)
 {
   Array<int,float> *arr1 = find_float_array(e, fa1);
