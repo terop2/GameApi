@@ -379,32 +379,32 @@ private:
 class AnimApi
 {
 public:
-  AnimApi(Env &e);
-  ~AnimApi();
-  IS single(int val, float duration);
-  IS single(PT point, float duration);
-  IS single(float val, float duration);
-  IS line(int val1, int val2, float duration);
-  IS line(PT p1, PT p2, float duration);
-  IS line(float val1, float val2, float duration);
-  IS line_obj(P p, P p2, float duration);
+  IMPORT AnimApi(Env &e);
+  IMPORT ~AnimApi();
+  IMPORT IS single(int val, float duration);
+  IMPORT IS single(PT point, float duration);
+  IMPORT IS single(float val, float duration);
+  IMPORT IS line(int val1, int val2, float duration);
+  IMPORT IS line(PT p1, PT p2, float duration);
+  IMPORT IS line(float val1, float val2, float duration);
+  IMPORT IS line_obj(P p, P p2, float duration);
 
-  IS repeat(IS i, int count);
-  IS repeat_infinite(IS i);
+  IMPORT IS repeat(IS i, int count);
+  IMPORT IS repeat_infinite(IS i);
 
-  int timed_value(IS i, float time);  
-  PT timed_value_point(IS i, float time);
-  float timed_value_float(IS i, float time);
+  IMPORT int timed_value(IS i, float time);  
+  IMPORT PT timed_value_point(IS i, float time);
+  IMPORT float timed_value_float(IS i, float time);
 
-  int timed_value_repeat_num(IS i, float time);
-  P timeline_obj(IS i, float time);
+  IMPORT int timed_value_repeat_num(IS i, float time);
+  IMPORT P timeline_obj(IS i, float time);
     
-  IS seq_line(IS *array, int size);
-  IS par_line(IS *array, int arraysize);
-  int timeline_int(IS l, int choose_par, float time);
-  float timeline_float(IS i, int choose_par, float time);
-  PT timeline_point(IS l, int choose_par, float time);
-  P timeline_obj(IS i, int choose_par, float time);
+  IMPORT IS seq_line(IS *array, int size);
+  IMPORT IS par_line(IS *array, int arraysize);
+  IMPORT int timeline_int(IS l, int choose_par, float time);
+  IMPORT float timeline_float(IS i, int choose_par, float time);
+  IMPORT PT timeline_point(IS l, int choose_par, float time);
+  IMPORT P timeline_obj(IS i, int choose_par, float time);
 private:
   AnimApi(const AnimApi&);
   void operator=(const AnimApi&);
@@ -416,8 +416,8 @@ private:
 class EventApi
 {
 public:
-  EventApi(Env &e);
-  ~EventApi();
+  IMPORT EventApi(Env &e);
+  IMPORT ~EventApi();
   E root_event();
   E timer(E activation_event, float time);
   E key_down_event(int key, E start_time, E end_time);
@@ -483,8 +483,8 @@ public:
 class FunctionApi
 {
 public:
-  FunctionApi(Env &e);
-  ~FunctionApi();
+  IMPORT FunctionApi(Env &e);
+  IMPORT ~FunctionApi();
   F constant(float y);
   F sin();
   F cos();
@@ -876,7 +876,8 @@ public:
   IMPORT P flip_polygon_order(P p);
 
   IMPORT P or_elem(P p1, P p2);
-  P or_array(P *array, int size);
+  IMPORT P or_array(P *array, int size);
+  P or_array_1(P *array, int size);
   //P and_not_elem(P p1, P p_not);
 
 
@@ -884,7 +885,8 @@ public:
   IMPORT P grid(PT o, PT u_x, PT u_y, int num_x, int num_y, P *grid);
 
 
-  P translate(P orig, float dx, float dy, float dz);
+  IMPORT P translate(P orig, float dx, float dy, float dz);
+  P translate_1(P orig, float dx, float dy, float dz);
   IMPORT P rotatex(P orig, float angle);
   IMPORT P rotatey(P orig, float angle);
   IMPORT P rotatez(P orig, float angle);
