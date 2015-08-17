@@ -1,3 +1,181 @@
+//V: comb
+#version 330
+uniform mat4 in_P;
+uniform mat4 in_MV;
+uniform mat4 in_T;
+uniform float in_POS;
+uniform float in_time;
+in vec3 in_Position;
+in vec3 in_Position2;
+in vec3 in_Normal;
+in vec4 in_Color;
+in vec2 in_TexCoord;
+out vec2 ex_TexCoord;
+out vec4 ex_Color;
+out vec3 ex_Normal;
+out vec3 ex_Position;
+out vec3 world_normal;
+out vec3 world_pos;
+vec4 passall(vec4 pos)
+{
+  ex_Color = in_Color;
+  ex_TexCoord = in_TexCoord;
+  ex_Normal = in_Normal;
+  ex_Position = in_Position;
+  return pos;
+}
+vec4 edge(vec4 pos)
+{
+   world_pos = mat3(in_MV) * in_Position;
+   world_normal = normalize(mat3(in_MV) * in_Normal);
+   return pos;
+}
+vec4 snoise(vec4 pos)
+{
+   ex_Position = in_Position;
+   return pos;
+}
+vec4 light(vec4 pos)
+{
+return pos;
+}
+vec4 ref(vec4 pos)
+{
+  ex_Position = in_Position;
+  ex_Normal = in_Normal;
+  return pos;
+}
+vec4 wave(vec4 pos)
+{
+  vec4 pos2 = pos + vec4(10.0*cos(2.0*in_time*in_Position.x*3.14159*2.0/360.0),
+                         10.0*sin(3.0*in_time*in_Position.y*3.14159*2.0/360.0),
+			 10.0*cos(5.0*in_time*in_Position.z*3.14159*2.0/360.0), 0.0);
+  return pos2;
+}
+vec4 toon(vec4 pos)
+{
+  ex_Normal = in_Normal;
+  return pos;
+}
+vec4 texture(vec4 pos)
+{
+  ex_TexCoord = in_TexCoord;
+  return pos;
+}
+vec4 colour(vec4 pos)
+{
+   ex_Color = in_Color;
+   return pos;
+}
+vec4 empty(vec4 pos)
+{
+   return pos;
+}
+void main(void)
+{
+//C:
+}
+
+//F: comb
+#version 330
+precision highp float;
+in vec4 ex_Color;
+out vec4 out_Color;
+in vec2 ex_TexCoord;
+in vec3 ex_Normal;
+in vec3 ex_Position;
+in vec3 world_normal;
+in vec3 world_pos;
+uniform vec3 eye_position;
+uniform sampler2D tex;
+vec4 bands(vec4 rgb)
+{
+   float r = rgb.r;
+   float g = rgb.g;
+   float b = rgb.b;
+   float a = rgb.a;
+   int rr = int(r*256)&0xfff0;
+   int gg = int(g*256)&0xfff0;
+   int bb = int(b*256)&0xfff0;
+   int aa = int(a*256)&0xfff0;
+   float rrr = float(rr)/256.0;
+   float ggg = float(gg)/256.0;
+   float bbb = float(bb)/256.0;
+   float aaa = float(aa)/256.0;
+   vec4 rgb2 = vec4(rrr,ggg,bbb,aaa);
+   return rgb2;
+}
+vec4 edge(vec4 rgb)
+{
+   vec3 V = normalize(eye_position-world_pos);
+   
+   float edgedetect = (dot(V,world_normal) >0.3) ? 1 : 0;
+   return vec4(rgb.xyz*edgedetect,1);
+}
+vec4 dot2(vec4 rgb)
+{
+   vec3 pos = vec3(ex_TexCoord,1.0);
+   //xpos = normalize(pos);
+   return vec4(pos, 1.0);
+}
+vec4 snoise(vec4 rgb)
+{
+   vec2 coords = ex_Position.xy;
+   float v = fract(sin(dot(coords.xy, vec2(12.9898,78.233))) * 43758.5453);
+   return mix(rgb, vec4(v,v,v,1.0), 0.2);
+}
+
+vec4 ref(vec4 rgb)
+{
+   vec3 pos = ex_Position;
+   vec3 norm = ex_Normal;
+   pos = normalize(pos);
+   norm = normalize(norm);
+   vec4 r = vec4(refract(pos, norm, 0.5),1.0);
+   float val = (r.r + r.g + r.b)/3.0;
+   vec4 rr = vec4(val,val,val,1.0);
+   return mix(rgb, rr, 0.5);
+}
+vec4 light(vec4 rgb)
+{
+  return clamp(1.5*rgb, vec4(0.0,0.0,0.0,0.0), vec4(1.0,1.0,1.0,1.0));
+}
+vec4 wave(vec4 rgb)
+{
+  return rgb;
+}
+vec4 toon(vec4 rgb)
+{
+   float intensity;
+   vec4 color;
+   intensity = dot(vec3(3.0,3.0,-3.0), normalize(ex_Normal));
+   if (intensity >0.95)
+      color = vec4(0.2,0.2,0.2, 1.0);
+   else if (intensity >0.5)
+      color = vec4(0.4,0.4,0.4, 1.0);
+   else if (intensity >0.25)
+      color = vec4(0.6,0.6,0.6, 1.0);
+   else
+      color = vec4(1.0,1.0,1.0, 1.0);
+   return mix(rgb,color,0.5);
+}
+vec4 texture(vec4 rgb)
+{
+   return mix(rgb, texture2D(tex, ex_TexCoord), 0.5);
+}
+vec4 colour(vec4 rgb)
+{
+  return mix(rgb, ex_Color, 0.5);    
+}
+vec4 empty(vec4 rgb)
+{
+   return rgb;
+}
+void main(void)
+{
+//C:
+}
+
 
 //V: empty
 #version 330
