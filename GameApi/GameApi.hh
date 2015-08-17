@@ -102,6 +102,7 @@ using std::placeholders::_9;
   struct PTS { int id; };
   struct PTA { int id; };
   struct RD { int id; };
+  struct FBO { int id; };
   //template<class T>
   //struct E { int id; };
 
@@ -1543,6 +1544,7 @@ public:
   IMPORT void set_y_rotation(SH shader, std::string name, float angle);
   IMPORT void bind_attrib(GameApi::SH shader, int num, std::string name);
   void bind_attrib_1(GameApi::SH shader, int num, std::string name);
+  IMPORT void bind_frag(GameApi::SH shader, int attachment_num, std::string name);
   IMPORT void set_var(GameApi::SH shader, std::string name, float val);
   IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z);
   IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z, float k);
@@ -1555,6 +1557,22 @@ private:
 
   friend class StateChangeApi;
   void *priv;
+  Env &e;
+};
+
+class FrameBufferApi
+{
+public:
+  FrameBufferApi(Env &e) : e(e) { }
+  FBO create_fbo(int sx, int sy);
+  void config_fbo(FBO buffer);
+  void bind_fbo(FBO buffer);
+  void bind_screen(int sx, int sy);
+  TXID tex_id(FBO buffer);
+  TXID depth_id(FBO buffer);
+private:
+  FrameBufferApi(const FrameBufferApi &);
+  void operator=(const FrameBufferApi&);
   Env &e;
 };
 
