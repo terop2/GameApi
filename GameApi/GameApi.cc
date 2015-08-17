@@ -1971,7 +1971,7 @@ ST GameApi::EventApi::UnSerialize(std::string s)
 
 }
 #endif
-GameApi::EventApi::~EventApi() 
+EXPORT GameApi::EventApi::~EventApi() 
 {
   delete (EventPriv*)priv;
 }
@@ -2912,11 +2912,11 @@ EXPORT GameApi::BitmapApi::~BitmapApi()
 {
   delete (BitmapPriv*)priv;
 }
-GameApi::AnimApi::AnimApi(Env &e) : e(e) 
+EXPORT GameApi::AnimApi::AnimApi(Env &e) : e(e) 
 {
   priv = (void*)new AnimPriv;
 }
-GameApi::AnimApi::~AnimApi()
+EXPORT GameApi::AnimApi::~AnimApi()
 {
   delete (AnimPriv*)priv;
 }
@@ -3836,7 +3836,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::bitmapandtypes(BM bm, BM (*fptr)(GameApi:
   
 }
 #endif
-GameApi::IS GameApi::AnimApi::single(int val, float duration)
+EXPORT GameApi::IS GameApi::AnimApi::single(int val, float duration)
 {
   AnimImpl i;
   i.wave_int = new SingleAnimInt(val, duration);
@@ -3846,7 +3846,7 @@ GameApi::IS GameApi::AnimApi::single(int val, float duration)
   return is;
 }
 
-GameApi::IS GameApi::AnimApi::single(PT point, float duration)
+EXPORT GameApi::IS GameApi::AnimApi::single(PT point, float duration)
 {
   Point *p = find_point(e,point);
   Point pp(p->x, p->y, p->z);
@@ -3858,7 +3858,7 @@ GameApi::IS GameApi::AnimApi::single(PT point, float duration)
   IS is = add_anim(e, i);
   return is;  
 }
-GameApi::IS GameApi::AnimApi::single(float val, float duration)
+EXPORT GameApi::IS GameApi::AnimApi::single(float val, float duration)
 {
   AnimImpl i;
   i.wave_int = 0;
@@ -3868,7 +3868,7 @@ GameApi::IS GameApi::AnimApi::single(float val, float duration)
   return is;
 }
 
-GameApi::IS GameApi::AnimApi::line(int val1, int val2, float duration)
+EXPORT GameApi::IS GameApi::AnimApi::line(int val1, int val2, float duration)
 {
   AnimImpl i;
   i.wave_int = new LineAnimInt(val1,val2, duration);
@@ -3878,7 +3878,7 @@ GameApi::IS GameApi::AnimApi::line(int val1, int val2, float duration)
   return is;
 }
 
-GameApi::IS GameApi::AnimApi::line(PT p1, PT p2, float duration)
+EXPORT GameApi::IS GameApi::AnimApi::line(PT p1, PT p2, float duration)
 {
   Point *p = find_point(e,p1);
   Point pp(p->x, p->y, p->z);
@@ -3892,7 +3892,7 @@ GameApi::IS GameApi::AnimApi::line(PT p1, PT p2, float duration)
   IS is = add_anim(e, i);
   return is;  
 }
-GameApi::IS GameApi::AnimApi::line(float val1, float val2, float duration)
+EXPORT GameApi::IS GameApi::AnimApi::line(float val1, float val2, float duration)
 {
   AnimImpl i;
   i.wave_int =0;
@@ -3945,7 +3945,7 @@ public:
 
 
 
-GameApi::IS GameApi::AnimApi::seq_line(IS *array, int size)
+EXPORT GameApi::IS GameApi::AnimApi::seq_line(IS *array, int size)
 {
   AnimImpl i;
   i.wave_int = new AnimArrayInt(e, array, size);
@@ -3954,7 +3954,7 @@ GameApi::IS GameApi::AnimApi::seq_line(IS *array, int size)
   IS is = add_anim(e,i);
   return is;
 } 
-GameApi::IS GameApi::AnimApi::repeat(IS i, int count)
+EXPORT GameApi::IS GameApi::AnimApi::repeat(IS i, int count)
 {
   AnimImpl ii;
   ii.wave_int = new AnimRepeatInt(e, i, count);
@@ -3963,7 +3963,7 @@ GameApi::IS GameApi::AnimApi::repeat(IS i, int count)
   IS is = add_anim(e,ii);
   return is;
 }
-GameApi::IS GameApi::AnimApi::repeat_infinite(IS i)
+EXPORT GameApi::IS GameApi::AnimApi::repeat_infinite(IS i)
 {
   AnimImpl ii;
   ii.wave_int = new AnimRepeatInt(e, i, -1);
@@ -4014,7 +4014,7 @@ float GameApi::SpaceApi::pt_z(PT p)
   return pp->z;
 }
 
-int GameApi::AnimApi::timed_value_repeat_num(IS i, float time)
+EXPORT int GameApi::AnimApi::timed_value_repeat_num(IS i, float time)
 {
   AnimImpl ii = find_anim(e, i);
   AnimInt *wave = ii.wave_int;
@@ -4039,7 +4039,7 @@ int GameApi::AnimApi::timed_value_repeat_num(IS i, float time)
   return 0;
 }
 
-int GameApi::AnimApi::timed_value(IS i, float time)
+EXPORT int GameApi::AnimApi::timed_value(IS i, float time)
 {
   AnimImpl ii = find_anim(e, i);
   AnimInt *wave = ii.wave_int;
@@ -4050,7 +4050,7 @@ int GameApi::AnimApi::timed_value(IS i, float time)
   return wave->Index(0, time);
 }
 
-GameApi::PT GameApi::AnimApi::timed_value_point(IS i, float time)
+EXPORT GameApi::PT GameApi::AnimApi::timed_value_point(IS i, float time)
 {
   AnimImpl ii = find_anim(e, i);
   AnimPoint3d *wave = ii.wave_point;
@@ -4061,7 +4061,7 @@ GameApi::PT GameApi::AnimApi::timed_value_point(IS i, float time)
   Point p = wave->Index(0, time); 
   return add_point(e, p.x, p.y,p.z);
 }
-float GameApi::AnimApi::timed_value_float(IS i, float time)
+EXPORT float GameApi::AnimApi::timed_value_float(IS i, float time)
 {
   AnimImpl ii = find_anim(e, i);
   AnimFloat *wave = ii.wave_float;
@@ -4225,18 +4225,18 @@ EXPORT GameApi::P GameApi::PolygonApi::world_from_voxel(std::function<P (unsigne
 	      unsigned int c = vox->Map(x,y,z);
 	      unsigned int i = c;
 	      P p = f(i);
-	      P p2 = translate(p, 0.0,0.0,z*dz);
+	      P p2 = translate_1(p, 0.0,0.0,z*dz);
 	      vec_z.push_back(p2);
 	    }
-	  P p = or_array(&vec_z[0], sz);
-	  P p2 = translate(p, 0.0,y*dy,0.0);
+	  P p = or_array_1(&vec_z[0], sz);
+	  P p2 = translate_1(p, 0.0,y*dy,0.0);
 	  vec_y.push_back(p2);
 	}
-      P p = or_array(&vec_y[0], sy);
-      P p2 = translate(p, x*dx,0.0,0.0);
+      P p = or_array_1(&vec_y[0], sy);
+      P p2 = translate_1(p, x*dx,0.0,0.0);
       vec_x.push_back(p2);
     }
-  P p = or_array(&vec_x[0],sx);
+  P p = or_array_1(&vec_x[0],sx);
   return p;
 }
 EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(std::function<P (int c)> f, BM int_bm, float dx, float dz)
@@ -4253,14 +4253,14 @@ EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(std::function<P (int c)
       for(int x=0;x<sx;x++)
 	{
 	  P p = f(bm->Map(x,y));
-	  P p2 = translate(p, dx*x, 0.0, 0.0);
+	  P p2 = translate_1(p, dx*x, 0.0, 0.0);
 	  vec2.push_back(p2);
 	}
-      P p = or_array(&vec2[0], sx);
-      P p2 = translate(p, 0.0, 0.0, dz*y);
+      P p = or_array_1(&vec2[0], sx);
+      P p2 = translate_1(p, 0.0, 0.0, dz*y);
       vec.push_back(p2);
     }
-  P p = or_array(&vec[0], sy);
+  P p = or_array_1(&vec[0], sy);
   return p;
 }
 
@@ -4725,7 +4725,11 @@ EXPORT GameApi::P GameApi::PolygonApi::texture(P orig, BM bm, int choose)
   return add_polygon(e, coll2, 1);
 }
 
-GameApi::P GameApi::PolygonApi::or_array(P *p1, int size)
+EXPORT GameApi::P GameApi::PolygonApi::or_array(P *p1, int size)
+{
+  return or_array_1(p1,size);
+}
+GameApi::P GameApi::PolygonApi::or_array_1(P *p1, int size)
 {
   std::vector<FaceCollection*> *vec = new std::vector<FaceCollection*>;
   for(int i=0;i<size;i++)
@@ -5060,7 +5064,11 @@ EXPORT GameApi::P GameApi::PolygonApi::color_faces(P next,
   return add_polygon2(e, coll,1);
 }
 
-GameApi::P GameApi::PolygonApi::translate(P orig, float dx, float dy, float dz)
+EXPORT GameApi::P GameApi::PolygonApi::translate(P orig, float dx, float dy, float dz)
+{
+  return translate_1(orig, dx,dy,dz);
+}
+GameApi::P GameApi::PolygonApi::translate_1(P orig, float dx, float dy, float dz)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   FaceCollection *c = find_facecoll(e, orig);
@@ -5441,14 +5449,14 @@ EXPORT GameApi::P GameApi::PolygonApi::heightmap(FB bm,
 	{
 	  float val = fb->bitmap->Map(x,y);
 	  P p = f(val);
-	  P p2 = translate(p, dx*x, 0.0, 0.0);
+	  P p2 = translate_1(p, dx*x, 0.0, 0.0);
 	  vec2.push_back(p2);
 	}
-      P p = or_array(&vec2[0], sx);
-      P p2 = translate(p, 0.0, 0.0, dz*y);
+      P p = or_array_1(&vec2[0], sx);
+      P p2 = translate_1(p, 0.0, 0.0, dz*y);
       vec.push_back(p2);
     }
-  P p = or_array(&vec[0], sy);
+  P p = or_array_1(&vec[0], sy);
   return p;
 }
 EXPORT GameApi::P GameApi::PolygonApi::heightmap(BM bm,
@@ -6095,11 +6103,11 @@ EXPORT void GameApi::ShaderApi::bindnames(GameApi::SH shader,
 }
 
 
-GameApi::FunctionApi::FunctionApi(Env &e) : e(e)
+EXPORT GameApi::FunctionApi::FunctionApi(Env &e) : e(e)
 {
   priv = (void*)new FunctionPriv;
 }
-GameApi::FunctionApi::~FunctionApi()
+EXPORT GameApi::FunctionApi::~FunctionApi()
 {
   delete (FunctionPriv*)priv;
 }
@@ -6382,7 +6390,7 @@ void GameApi::VBOApi::render(Vb v)
 }
 
 
-GameApi::EventApi::EventApi(Env &e) : e(e) 
+EXPORT GameApi::EventApi::EventApi(Env &e) : e(e) 
 {
   priv = (void*)new EventPriv;
 }
