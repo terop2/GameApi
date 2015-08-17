@@ -426,6 +426,7 @@ public:
   int x,y;   // 0..sx, 0..sy
   int r,g,b; // 0..255
 };
+#if 0
 struct Env
 {
   Pixel center;
@@ -434,7 +435,7 @@ struct Env
 class BlurFunction : public Function<Pixel, Env>
 {
 };
-
+#endif
 
 class ImageBools : public Function<Pixel, bool>
 {

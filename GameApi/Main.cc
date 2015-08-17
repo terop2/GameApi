@@ -655,12 +655,12 @@ void Game(GameApi::EveryApi &e);
 int mainxxx(int argc, char *argv[])
 {
 #if 0
+#if 0
   if (argc>1 && (std::string(argv[1])=="-h" || std::string(argv[1])=="--help"))
     {
       std::cout << "./main [-h] [-edit filename] [-test3]" << std::endl;
       exit(0);
     }
-#if 0
   if (argc>1 && std::string(argv[1])=="-world")
     {
       GameApi::Env e;
@@ -688,11 +688,9 @@ int mainxxx(int argc, char *argv[])
       g.start_game(0);
       return 0;
     }
-#endif
 
   if (argc>2 && std::string(argv[1])=="-edit")
     {
-#if 0
       SphereElem elem(Point(0.0,0.0,0.0), 100.0, 10,10);
 
       FaceCollectionParser parser(0);

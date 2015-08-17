@@ -6488,7 +6488,7 @@ void GameApi::EventApi::run_game(GameApi::ST st, int start_state)
   StateRange r = env->state_ranges[st.id];
   
   AllStatesSequencer seq(env->event_infos, &env->states[r.start_range], r.range_size);
-  GameRunner game(seq, start_state);
+  GameRunner game(e,seq, start_state);
   game.run();
 
 #if 0
