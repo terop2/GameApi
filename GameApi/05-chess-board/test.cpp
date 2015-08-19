@@ -57,6 +57,13 @@ struct Envi {
   bool towering_allowed_white_right;
   bool towering_allowed_black_left;
   bool towering_allowed_black_right;
+#if 0
+  PolygonObj *bg;
+
+  FBO fbo;
+  SH sh2;
+  SH sh;
+#endif
 } env;
 
 bool check_towering(WorldObj *pieces, bool left, bool white, bool check);
@@ -913,6 +920,7 @@ void iter()
     if (env.fr>1.0) { env.fr=0.99; env.frspeed = -env.frspeed; }
     if (env.fr<0.0) { env.fr=0.01; env.frspeed = -env.frspeed; }
 
+    //env.ev->fbo_api.bind_fbo(env.fbo);
     // clear frame buffer
     env.ev->mainloop_api.clear_3d();
 
@@ -936,6 +944,22 @@ void iter()
 #endif
     env.board_obj->set_block(env.cursor_x, env.cursor_y, env.cursor_under);
 
+    //env.ev->fbo_api.bind_screen(800,600);
+    //env.ev->mainloop_api.clear();
+   
+#if 0 
+    M m = env.ev->matrix_api.scale(1.0,-1.0,1.0);
+    M m2 = env.ev->matrix_api.trans(0.0,600.0,0.0);
+    M m3 = env.ev->matrix_api.mult(m,m2);
+
+    M mp = env.ev->matrix_api.identity();
+    //env.ev->shader_api.set_var(env.sh2, "in_P", env.ev->matrix_api.identity());
+    env.ev->shader_api.set_var(env.sh2, "in_T", m3);
+
+    env.ev->shader_api.use(env.sh2);
+    env.bg->render();
+    env.ev->shader_api.use(env.sh);
+#endif
     //env.ev->mainloop_api.fpscounter();
     // swapbuffers
     env.ev->mainloop_api.swapbuffers();
@@ -1093,14 +1117,16 @@ int main() {
   // shader initialization
   ev.shader_api.load_default();
   SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:light:snoise", "colour:light:snoise");
+  //SH sh2 = ev.shader_api.get_normal_shader("comb", "comb", "", "texture", "blur");
     //ev.shader_api.colour_shader();
 
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);
+  //ev.mainloop_api.init(sh2);
 
   M m = ev.matrix_api.perspective(70.0, double(800)/600, 10.1, 60000.0);
   ev.shader_api.set_var(sh, "in_P", m);
-  M m2 = ev.matrix_api.mult(ev.matrix_api.trans(0.0, 0.0, -1000.0),
+  M m2 = ev.matrix_api.mult(ev.matrix_api.trans(0.0, 0.0, -1000.0), // -1000
 			    ev.matrix_api.scale(1.0, -1.0, 1.0));
 
   ev.shader_api.set_var(sh, "in_T", m2);
@@ -1108,7 +1134,7 @@ int main() {
   BM bm = ev.bitmap_api.newintbitmap(board, 8,8, boardmap);
   WorldObj *board_obj = new WorldObj(ev, std::bind(&board_blocks, _1, std::ref(ev)), 4, bm, 30.0, 30.0, sh);
   board_obj->set_scale(2.8,2.8,2.8);
-  board_obj->set_pos(-340.0, 30.0, -400.0);
+  board_obj->set_pos(-340.0, 30.0, -400.0); // -400
   board_obj->prepare();
 
   BM bm2 = ev.bitmap_api.newintbitmap(chars, 8,8, charsmap);
@@ -1134,6 +1160,25 @@ int main() {
   env.towering_allowed_white_right=true;
   env.towering_allowed_black_left=true;
   env.towering_allowed_black_right=true;
+#if 0
+  env.fbo = ev.fbo_api.create_fbo(3800,3600);
+  //env.sh2 = sh2;
+  env.sh = sh;
+  ev.fbo_api.config_fbo(env.fbo);
+  P poly = ev.polygon_api.quad_z(800.0, -800.0,
+				 -600.0, 600.0,
+				 -200.0);
+  P poly2 = ev.polygon_api.texcoord_manual(poly, 
+					   1.0, 1.0,
+					   0.0, 1.0,
+					   0.0, 0.0,
+					   1.0, 0.0
+					   );
+  TXID txid = ev.fbo_api.tex_id(env.fbo);
+  env.bg = new PolygonObj(ev, poly2, sh2);
+  env.bg->bind_texture(0, txid);
+  env.bg->prepare();
+#endif
   //PT pt = ev.point_api.point(0.0,0.0,0.0);
   //P p = ev.polygon_api.sphere(pt, 50.0, 20, 20);
   //PolygonObj *obj = new PolygonObj(ev, p, sh);

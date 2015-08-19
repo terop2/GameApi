@@ -1134,8 +1134,10 @@ void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender 
   //		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
   //
   prog->set_var("in_MV", m);
+  //prog->use();
   //glMultMatrixf(&mat[0]);
   rend.Render(frame, -1, -1, frame, 0, rend.used_vertex_count[0]);
+  //prog->unuse();
   //glPopMatrix();
   rend.DisableTexture();
 }
@@ -1156,8 +1158,10 @@ void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender 
   //glMultMatrixf(&mat[0]);
   //glScalef(mult_x, mult_y, 1.0);
   m = Matrix::Scale(mult_x, mult_y, 1.0) * m;
+  //prog->use();
   prog->set_var("in_MV", m);
   rend.Render(frame, -1, -1, frame, 0, rend.used_vertex_count[0]);
+  //prog->unuse();
   //glPopMatrix();
   rend.DisableTexture();
 }
