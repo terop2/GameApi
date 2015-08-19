@@ -320,7 +320,7 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
   case 14:
     {
 
-      //return ev.polygon_api.empty();
+      return ev.polygon_api.empty();
       BM bm = ev.bitmap_api.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 200, 200, 256);
       FB fb = ev.float_bitmap_api.from_green(bm);
       //P p = ev.polygon_api.heightmap(bm, PolygonApi::EQuad, 0.0, 100.0,
@@ -530,16 +530,28 @@ int main() {
   // shader initialization
   ev.shader_api.load("Shader.txt");
   SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour:snoise", "colour:light:bands:snoise");
+  SH sh2 = ev.shader_api.get_shader("comb", "comb", "", "blur", "blur");
   ev.shader_api.bind_attrib(sh, 0, "in_Position");
   ev.shader_api.bind_attrib(sh, 1, "in_Normal");
   ev.shader_api.bind_attrib(sh, 2, "in_Color");
   ev.shader_api.bind_attrib(sh, 3, "in_TexCoord");
+  ev.shader_api.bind_frag(sh, 0, "out_Color");
   ev.shader_api.link(sh);
   ev.shader_api.use(sh);
   ev.shader_api.set_default_projection(sh, "in_P");
 
+  ev.shader_api.bind_attrib(sh2, 0, "in_Position");
+  ev.shader_api.bind_attrib(sh2, 1, "in_Normal");
+  ev.shader_api.bind_attrib(sh2, 2, "in_Color");
+  ev.shader_api.bind_attrib(sh2, 3, "in_TexCoord");
+  ev.shader_api.link(sh2);
+  ev.shader_api.use(sh2);
+  ev.shader_api.set_default_projection(sh2, "in_P");
+
+
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);
+  ev.mainloop_api.init_3d(sh2);
 
   Models m;
   m.teapot = ev.polygon_api.load_model("./teapot.obj", 0);
@@ -608,7 +620,23 @@ int main() {
 
   //ev.polygon_api.save_model(gp2, "world.obj");
 
+  FBO fbo = ev.fbo_api.create_fbo(800,600);
+  ev.fbo_api.config_fbo(fbo);
 
+  P fbo_poly = ev.polygon_api.quad_z(0.0, 800.0,
+				 0.0, 600.0,
+				 0.0);
+  P fbo_poly2 = ev.polygon_api.texcoord_manual(fbo_poly, 0.0, 0.0,
+					   1.0, 0.0,
+					   1.0, 1.0,
+					   0.0, 1.0);
+  TXID txid = ev.fbo_api.tex_id(fbo);
+
+  PolygonObj fbo_bg(ev, fbo_poly2, sh2);
+  fbo_bg.bind_texture(0,txid);
+  fbo_bg.prepare();
+#if 0
+#endif
   ev.mainloop_api.alpha(true);
   float pos_x = 0.0;
   float pos_y = 0.0;
@@ -617,13 +645,16 @@ int main() {
   float rot_speed = 8.0*3.14159*2.0/360.0;
   float speed_x, speed_y;
   int frame = 0;
+  float mouse_x = 0.0, mouse_y=0.0;
   std::vector<BM> screenshot_images;
   e.free_memory();
   while(1) {
     frame++;
     ev.shader_api.set_var(sh, "in_time",float(frame)*0.01f);
+    ev.shader_api.set_var(sh2, "in_time",float(frame)*0.01f);
     ev.shader_api.set_var(sh, "eye_position", pos_x, -80.0, pos_y);
     // clear frame buffer
+    ev.fbo_api.bind_fbo(fbo);
     ev.mainloop_api.clear_3d();
     //poly.set_rotation_matrix(ev.matrix_api.xrot(frame));
     M m = ev.matrix_api.yrot(rot_y);
@@ -652,6 +683,16 @@ int main() {
     //ev.mainloop_api.depth_test(true);
     //sphere.set_pos(0.0,0.0,400.0);
     //sphere.render();
+#if 1                                
+    ev.fbo_api.bind_screen(800,600);
+
+    ev.mainloop_api.clear_3d();
+
+    ev.shader_api.use(sh2);
+    fbo_bg.set_pos(-800,-600,0.0);
+    fbo_bg.set_scale(2.0,2.0,1.0);
+    fbo_bg.render();
+#endif
 
 #if 0
     BM bm = ev.mainloop_api.screenshot();
@@ -666,7 +707,10 @@ int main() {
 
     // handle esc event
     MainLoopApi::Event e = ev.mainloop_api.get_event();
-    if (e.ch==27) break;
+
+    mouse_x = ev.point_api.pt_x(e.cursor_pos);
+    mouse_y = ev.point_api.pt_y(e.cursor_pos);
+    if (e.ch==27 && e.type==0x300) break;
     if (e.ch=='a') { pos_y+=speed_y; pos_x+=speed_x; }
     if (e.ch=='z') { pos_y-=speed_y; pos_x-=speed_x; }
     if (e.ch==',') { rot_y -= rot_speed; }

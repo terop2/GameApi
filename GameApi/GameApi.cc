@@ -4182,7 +4182,11 @@ GameApi::S GameApi::SurfaceApi::bitmapsphere(PT center, float radius0, float rad
   i.surf = sphere;
   return add_surface(e, i);
 }
-GameApi::P GameApi::PolygonApi::from_polygon(P p, std::function<P (int face, float p1_x, float p1_y, float p1_z, float p2_x, float p2_y, float p2_z, float p3_x, float p3_y, float p3_z, float p4_x, float p4_y, float p4_z)> f)
+EXPORT GameApi::P GameApi::PolygonApi::from_polygon(P p, std::function<P (int face, float p1_x, float p1_y, float p1_z, float p2_x, float p2_y, float p2_z, float p3_x, float p3_y, float p3_z, float p4_x, float p4_y, float p4_z)> f)
+{
+  return from_polygon_1(p,f);
+}
+GameApi::P GameApi::PolygonApi::from_polygon_1(P p, std::function<P (int face, float p1_x, float p1_y, float p1_z, float p2_x, float p2_y, float p2_z, float p3_x, float p3_y, float p3_z, float p4_x, float p4_y, float p4_z)> f)
 {
   FaceCollPolyHandle *handle = find_poly(e, p);
   FaceCollection *coll = handle->coll;
@@ -6052,7 +6056,7 @@ EXPORT void GameApi::ShaderApi::bind_attrib(GameApi::SH shader, int num, std::st
 {
   return bind_attrib_1(shader,num,name);
 }
-void GameApi::ShaderApi::bind_frag(GameApi::SH shader, int attachment_num, std::string name)
+EXPORT void GameApi::ShaderApi::bind_frag(GameApi::SH shader, int attachment_num, std::string name)
 {
   if (shader.id==-1) return;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
@@ -11705,21 +11709,21 @@ private:
   Array<int,float> &a2;
   ContinuousBitmap<Color> *f;
 };
-GameApi::TXID GameApi::FrameBufferApi::tex_id(FBO buffer)
+EXPORT GameApi::TXID GameApi::FrameBufferApi::tex_id(FBO buffer)
 {
   FBOPriv *priv = find_fbo(e, buffer);
   GameApi::TXID id;
   id.id = priv->texture;
   return id;
 }
-GameApi::TXID GameApi::FrameBufferApi::depth_id(FBO buffer)
+EXPORT GameApi::TXID GameApi::FrameBufferApi::depth_id(FBO buffer)
 {
   FBOPriv *priv = find_fbo(e, buffer);
   GameApi::TXID id;
   id.id = priv->depthbuffer;
   return id;
 }
-GameApi::FBO GameApi::FrameBufferApi::create_fbo(int sx, int sy)
+EXPORT GameApi::FBO GameApi::FrameBufferApi::create_fbo(int sx, int sy)
 {
   GLuint fbo_name;
   glGenFramebuffers(1, &fbo_name);
@@ -11738,26 +11742,33 @@ GameApi::FBO GameApi::FrameBufferApi::create_fbo(int sx, int sy)
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, sx, sy);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_texture);
 
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
   return add_fbo(e, fbo_name, texture, depth_texture, sx,sy);
 }
-void GameApi::FrameBufferApi::config_fbo(FBO buffer)
+EXPORT void GameApi::FrameBufferApi::config_fbo(FBO buffer)
 {
   FBOPriv *priv = find_fbo(e, buffer);
   
+  glBindFramebuffer(GL_FRAMEBUFFER, priv->fbo_name);
   glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, priv->texture, 0);
 
   GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
   glDrawBuffers(1, DrawBuffers);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
-void GameApi::FrameBufferApi::bind_fbo(FBO buffer)
+EXPORT void GameApi::FrameBufferApi::bind_fbo(FBO buffer)
 {
   FBOPriv *priv = find_fbo(e, buffer);
   glBindFramebuffer(GL_FRAMEBUFFER, priv->fbo_name);
+  glBindRenderbuffer(GL_RENDERBUFFER, priv->depthbuffer);
   glViewport(0,0,priv->sx,priv->sy);
 }
-void GameApi::FrameBufferApi::bind_screen(int sx, int sy)
+EXPORT void GameApi::FrameBufferApi::bind_screen(int sx, int sy)
 {
   glBindFramebuffer(GL_FRAMEBUFFER,0);
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
   glViewport(0,0,sx,sy);
 }
 GameApi::BM GameApi::FloatArrayApi::span_arrays(FA fa1, FA fa2, CBM f)

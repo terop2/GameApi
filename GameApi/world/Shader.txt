@@ -39,6 +39,11 @@ vec4 light(vec4 pos)
 {
 return pos;
 }
+vec4 blur(vec4 pos)
+{
+  ex_TexCoord = in_TexCoord;
+  return pos;
+}
 vec4 ref(vec4 pos)
 {
   ex_Position = in_Position;
@@ -122,8 +127,27 @@ vec4 snoise(vec4 rgb)
 {
    vec2 coords = ex_Position.xy;
    float v = fract(sin(dot(coords.xy, vec2(12.9898,78.233))) * 43758.5453);
-   return mix(rgb, vec4(v,v,v,1.0), 0.2);
+   return vec4(mix(vec3(rgb), vec3(v,v,v), 0.2),rgb.a);
 }
+vec4 blur(vec4 rgb)
+{
+  vec2 t_mx = ex_TexCoord + vec2(-0.005,0.0);
+  vec2 t_my = ex_TexCoord + vec2(0.0,-0.005);
+  vec2 t_px = ex_TexCoord + vec2(0.005,0.0);
+  vec2 t_py = ex_TexCoord + vec2(0.0,0.005);
+
+   vec4 tex2 = texture2D(tex, ex_TexCoord);
+   vec4 tex_mx = texture2D(tex, t_mx);	
+   vec4 tex_my = texture2D(tex, t_my);	
+   vec4 tex_px = texture2D(tex, t_px);	
+   vec4 tex_py = texture2D(tex, t_py);
+   vec4 t1 = mix(tex_mx, tex_px, 0.5);
+   vec4 t2 = mix(tex_my, tex_py, 0.5);
+   vec4 t12 = mix(t1,t2,0.5);
+   vec4 t12t = mix(t12,tex2,0.5);   	
+   return vec4(mix(vec3(rgb),vec3(t12t),t12t.a),t12t.a);
+}
+
 
 vec4 ref(vec4 rgb)
 {
@@ -161,15 +185,16 @@ vec4 toon(vec4 rgb)
 }
 vec4 texture(vec4 rgb)
 {
-   return mix(rgb, texture2D(tex, ex_TexCoord), 0.5);
+   vec4 tex = texture2D(tex, ex_TexCoord);	
+   return vec4(mix(vec3(rgb),vec3(tex),tex.a),tex.a);
 }
 vec4 colour(vec4 rgb)
 {
-  return mix(rgb, ex_Color, 0.5);    
+  return vec4(mix(vec3(rgb), vec3(ex_Color), ex_Color.a), ex_Color.a);    
 }
 vec4 empty(vec4 rgb)
 {
-   return rgb;
+   return rgb; 
 }
 void main(void)
 {

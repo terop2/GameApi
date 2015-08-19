@@ -994,6 +994,11 @@ public:
 					      float p2_x, float p2_y, float p2_z,
 					      float p3_x, float p3_y, float p3_z,
 					      float p4_x, float p4_y, float p4_z)> f);
+  P from_polygon_1(P p, std::function<P (int face, 
+					      float p1_x, float p1_y, float p1_z,
+					      float p2_x, float p2_y, float p2_z,
+					      float p3_x, float p3_y, float p3_z,
+					      float p4_x, float p4_y, float p4_z)> f);
 
 
   IMPORT BM renderpolytobitmap(P p, float x, float y, float z, int sx, int sy);
@@ -1426,7 +1431,7 @@ private:
   Env &e;
 };
 class MatrixApi
-{ // to be implemented with virtual Matrix get_matrix() const=0;
+{ 
 public:
 	IMPORT MatrixApi(Env &e);
 	IMPORT M identity();
@@ -1563,13 +1568,13 @@ private:
 class FrameBufferApi
 {
 public:
-  FrameBufferApi(Env &e) : e(e) { }
-  FBO create_fbo(int sx, int sy);
-  void config_fbo(FBO buffer);
-  void bind_fbo(FBO buffer);
-  void bind_screen(int sx, int sy);
-  TXID tex_id(FBO buffer);
-  TXID depth_id(FBO buffer);
+  IMPORT FrameBufferApi(Env &e) : e(e) { }
+  IMPORT FBO create_fbo(int sx, int sy);
+  IMPORT void config_fbo(FBO buffer);
+  IMPORT void bind_fbo(FBO buffer);
+  IMPORT void bind_screen(int sx, int sy);
+  IMPORT TXID tex_id(FBO buffer);
+  IMPORT TXID depth_id(FBO buffer);
 private:
   FrameBufferApi(const FrameBufferApi &);
   void operator=(const FrameBufferApi&);
@@ -1639,7 +1644,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -1672,6 +1677,7 @@ struct EveryApi
   PlaneApi plane_api;
   PointsApi points_api;
   VoxelApi voxel_api;
+  FrameBufferApi fbo_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);
