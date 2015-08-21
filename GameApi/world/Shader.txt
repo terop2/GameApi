@@ -16,6 +16,11 @@ out vec3 ex_Normal;
 out vec3 ex_Position;
 out vec3 world_normal;
 out vec3 world_pos;
+vec4 point_light(vec4 pos)
+{
+   ex_Position = in_Position;
+   return pos;
+}
 vec4 passall(vec4 pos)
 {
   ex_Color = in_Color;
@@ -92,7 +97,14 @@ in vec3 ex_Position;
 in vec3 world_normal;
 in vec3 world_pos;
 uniform vec3 eye_position;
+uniform vec3 lightpos;
 uniform sampler2D tex;
+vec4 point_light(vec4 rgb)
+{
+   float dist = length(ex_Position.xyz - lightpos);
+   float val = 100.0/dist;
+   return vec4(val*vec3(rgb),rgb.a);
+}
 vec4 bands(vec4 rgb)
 {
    float r = rgb.r;
