@@ -124,7 +124,9 @@ void Program::push_back(const Shader &shader)
 }
 void Program::bind_frag(int num, std::string name)
 {
+#ifndef EMSCRIPTEN
   glBindFragDataLocation( priv->program, num, name.c_str());
+#endif
 }
 void Program::bind_attrib(int num, std::string name)
 {
@@ -406,6 +408,11 @@ ShaderFile::ShaderFile()
 "  ex_Position = in_Position;\n"
 "  return pos;\n"
 "}\n"
+"vec4 point_light(vec4 pos)"
+"{"
+"   ex_Position = in_Position;"
+"   return pos;"
+"}"
 "vec4 snoise(vec4 pos)\n"
 "{\n"
 "   ex_Position = in_Position;\n"
@@ -447,6 +454,11 @@ ShaderFile::ShaderFile()
 "{\n"
 "   return pos;\n"
 "}\n"
+"vec4 blur(vec4 pos)\n"
+"{\n"
+"  ex_TexCoord = in_TexCoord;\n"
+"  return pos;\n"
+"}\n"
 "void main(void)\n"
 "{\n"
 "//C:\n"
@@ -460,6 +472,7 @@ ShaderFile::ShaderFile()
 "varying vec2 ex_TexCoord;\n"
 "varying vec3 ex_Normal;\n"
 "varying vec3 ex_Position;\n"
+"uniform vec3 lightpos;\n"
 "uniform sampler2D tex;\n"
 "vec4 bands(vec4 rgb)\n"
 "{\n"
@@ -477,6 +490,12 @@ ShaderFile::ShaderFile()
     //"   float aaa = float(aa)/256.0;\n"
     //"   vec4 rgb2 = vec4(rrr,ggg,bbb,aaa);\n"
 "   return rgb;\n"
+"}\n"
+"vec4 point_light(vec4 rgb)\n"
+"{\n"
+"   float dist = length(ex_Position.xyz - lightpos);\n"
+"   float val = 100.0/dist;\n"
+"   return vec4(val*vec3(rgb),rgb.a);\n"
 "}\n"
 "vec4 dot2(vec4 rgb)\n"
 "{\n"
@@ -634,6 +653,11 @@ ShaderFile::ShaderFile()
 "  ex_Position = in_Position;\n"
 "  return pos;\n"
 "}\n"
+"vec4 point_light(vec4 pos)\n"
+"{\n"
+"   ex_Position = in_Position;\n"
+"   return pos;\n"
+"}\n"
 "vec4 snoise(vec4 pos)\n"
 "{\n"
 "   ex_Position = in_Position;\n"
@@ -671,6 +695,11 @@ ShaderFile::ShaderFile()
 "   ex_Color = in_Color;\n"
 "   return pos;\n"
 "}\n"
+"vec4 blur(vec4 pos)"
+"{"
+"  ex_TexCoord = in_TexCoord;"
+"  return pos;"
+"}"
 "vec4 empty(vec4 pos)\n"
 "{\n"
 "   return pos;\n"
@@ -689,6 +718,13 @@ ShaderFile::ShaderFile()
 "in vec3 ex_Normal;\n"
 "in vec3 ex_Position;\n"
 "uniform sampler2D tex;\n"
+"uniform vec3 lightpos;\n"
+"vec4 point_light(vec4 rgb)"
+"{"
+"   float dist = length(ex_Position.xyz - lightpos);"
+"   float val = 100.0/dist;"
+"   return vec4(val*vec3(rgb),rgb.a);"
+"}"
 "vec4 bands(vec4 rgb)\n"
 "{\n"
 "   float r = rgb.r;\n"
@@ -878,12 +914,12 @@ ShaderFile::ShaderFile()
 	    }
 	  else if (vertex)
 	    {
-	      std::cout << "V: " << block << std::endl;
+	      //std::cout << "V: " << block << std::endl;
 	      v_shaders[id]=block;
 	    }
 	  else
 	    {
-	      std::cout << "F: " << block << std::endl;
+	      //std::cout << "F: " << block << std::endl;
 	      f_shaders[id]=block;
 	    }
 	  block="";
@@ -1014,7 +1050,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string shader = file.VertexShader(name);
       std::string ss = replace_c(shader, v_vec, false, false);
       
-      std::cout << "::" << ss << "::" << std::endl;
+      //std::cout << "::" << ss << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -1031,7 +1067,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false);
-      std::cout << "::" << ss << "::" << std::endl;
+      //std::cout << "::" << ss << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

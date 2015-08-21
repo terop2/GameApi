@@ -11752,8 +11752,9 @@ EXPORT void GameApi::FrameBufferApi::config_fbo(FBO buffer)
   FBOPriv *priv = find_fbo(e, buffer);
   
   glBindFramebuffer(GL_FRAMEBUFFER, priv->fbo_name);
+#ifndef EMSCRIPTEN
   glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, priv->texture, 0);
-
+#endif
   GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
   glDrawBuffers(1, DrawBuffers);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);

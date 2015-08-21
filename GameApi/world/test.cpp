@@ -4,6 +4,9 @@
 #include <math.h>
 #include <functional>
 #include <sstream>
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
 
 using namespace GameApi;
 
@@ -157,10 +160,10 @@ P poly_func(int face, float p1_x, float p1_y, float p1_z,
 
 }
 
-using std::placeholders::_10;
-using std::placeholders::_11;
-using std::placeholders::_12;
-using std::placeholders::_13;
+//using std::placeholders::_10;
+//using std::placeholders::_11;
+//using std::placeholders::_12;
+//using std::placeholders::_13;
 
 P cube_parts(int face,
 	     float p1_x, float p1_y, float p1_z,
@@ -228,12 +231,14 @@ P cube(float x1, float x2,
        float z1, float z2, EveryApi &ev)
 {
   P p = ev.polygon_api.cube(x1,x2, y1,y2, z1,z2);
+#if 0
   P p2 = ev.polygon_api.from_polygon(p, std::bind(&cube_parts, _1,
 						  _2,_3,_4,
 						  _5,_6,_7,
 						  _8,_9,_10,
 						  _11,_12,_13, std::ref(ev)));
-  return p2;
+#endif
+  return p;
 }
 
 P heightmap_cube(float val, EveryApi &ev)
@@ -278,14 +283,18 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
     }
   case 17:
     {
+#if 0
       P p = m.lucy;
       P p2 = ev.polygon_api.scale(p, 5.0,5.0,5.0);
       P p3 = ev.polygon_api.color_from_normals(p2);
       P p4 = ev.polygon_api.color_range(p3, 0xffffffff, 0xff888888);
+#endif
+      P p4 = ev.polygon_api.empty();
       return p4;
     }
   case 16:
     {
+#if 0
       PT center = ev.point_api.point(50.0, 40.0, 50.0);
       V u_x = ev.vector_api.vector(1.0, 0.0, 0.0);
       V u_y = ev.vector_api.vector(0.0, 1.0, 0.0);
@@ -295,7 +304,8 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       LI lines = ev.lines_api.from_polygon(p);
       
      P p2 = ev.polygon_api.from_lines(lines, std::bind(&line_func, _1,_2,_3,_4,_5,_6,_7, _8,_9, std::ref(ev)));
- 
+#endif
+     P p2 = ev.polygon_api.empty();
      return p2;
 
     }
@@ -308,12 +318,14 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       V uu_y = ev.vector_api.vector(0.0, 0.0, 1.0);
       P p = ev.polygon_api.torus(40,40, center, u_x, u_y, 30.0, uu_x, uu_y, 10.0);
       //P p2 = ev.polygon_api.color_faces(p, 0x000000ff, 0x222222ff, 0x111111ff, 0x333333ff);
+#if 0
       P pp = ev.polygon_api.from_polygon(p, std::bind(&poly_func, _1, 
 						      _2,_3,_4,
 						      _5,_6,_7,
 						      _8,_9,_10,
 						      _11,_12,_13, std::ref(ev)));
-      P p2 = ev.polygon_api.color_from_normals(pp);
+#endif
+      P p2 = ev.polygon_api.color_from_normals(p);
       return p2;
       
     }
@@ -321,6 +333,7 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
     {
 
       return ev.polygon_api.empty();
+#if 0
       BM bm = ev.bitmap_api.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 200, 200, 256);
       FB fb = ev.float_bitmap_api.from_green(bm);
       //P p = ev.polygon_api.heightmap(bm, PolygonApi::EQuad, 0.0, 100.0,
@@ -331,7 +344,8 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       //P p2 = ev.polygon_api.color_faces(p, 0x112233ff, 0x224466ff, 0x336699ff, 0x4488aaff);
       // P pp = ev.polygon_api.rotatex(p,90.0*3.14159*2.0/360.0);
       //P p = ev.polygon_api.empty();
-      return p;
+#endif
+      //return p;
     }
   case 13:
     {
@@ -343,7 +357,8 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
     }
   case 12:
     {
-      P p = m.teapot;
+      //P p = m.teapot;
+      P p = ev.polygon_api.empty();
       P p2 = ev.polygon_api.scale(p, 20.0,20.0,20.0);
 #if 0
       P p2a = ev.polygon_api.from_polygon(p2, std::bind(&poly_func, _1,  _2,_3,_4,
@@ -409,23 +424,29 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
     {
       PT pt = ev.point_api.point(40.0, 40.0, 40.0);
       P p = ev.polygon_api.sphere(pt, 40.0, 20,20);
+#if 0
       P p2 = ev.polygon_api.from_polygon(p, std::bind(&poly_func, _1,  _2,_3,_4,
 						      _5,_6,_7,
 						      _8,_9,_10,
 						      _11,_12,_13, std::ref(ev)));
-      P p3 = ev.polygon_api.color_faces(p2, 0xff888888, 0xff444444, 0xff222222, 0xff666666);
+#endif
+      P p3 = ev.polygon_api.color_faces(p, 0xff888888, 0xff444444, 0xff222222, 0xff666666);
      return p3;
     }
   case 9:
     {
+#if 0
       PT pt = ev.point_api.point(40.0, 40.0, 40.0);
       P p = ev.polygon_api.sphere(pt, 40.0, 20,20);
       LI li = ev.lines_api.from_polygon(p);
       P p2 = ev.polygon_api.from_lines(li, std::bind(&line_func, _1,_2,_3,_4,_5,_6,_7, _8,_9, std::ref(ev)));
+#endif
+      P p2 = ev.polygon_api.empty();
       return p2;
     }
   case 8:
     {
+#if 0
       BB bg = ev.bool_bitmap_api.empty(80,80);
       BB circle1 = ev.bool_bitmap_api.circle(bg, 40.0, 40.0, 40.0);
       BB circle2 = ev.bool_bitmap_api.circle(bg, 40.0, 40.0, 30.0);
@@ -447,17 +468,20 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       PTS heightmap = ev.points_api.heightmap(c3, circle_fb, pos, u_x, u_y, u_z, 100,100);
       
       P p2 = ev.polygon_api.from_points(heightmap,std::bind(points_func2, _1, _2, _3, _4, _5, std::ref(ev)));
-      
+#endif
+      P p2 = ev.polygon_api.empty();
       return p2;
     }
   case 7:
     {
+#if 0
       PT pt = ev.point_api.point(50.0,40.0,50.0);
       O o = ev.volume_api.sphere(pt, 40.0);
       FO fo = ev.float_volume_api.from_volume(o, 0.0, 1.0);
       PTS pts = ev.points_api.from_float_volume(fo, 1000, 0.0, 0.0, 0.0, 100.0, 100.0, 100.0);
       P p2 = ev.polygon_api.from_points(pts, std::bind(points_func, _1, _2, _3, _4, _5, std::ref(ev)));
-      
+#endif
+      P p2 = ev.polygon_api.empty();
       return p2;
     }
     
@@ -519,18 +543,138 @@ unsigned int color_change_func(unsigned int orig, int face, int point)
   return color3;
 }
 
+struct Envi
+{
+  EveryApi *ev;
+  float pos_x, pos_y;
+  float rot_y;
+  float speed;
+  float rot_speed;
+  float speed_x, speed_y;
+  int frame;
+  float mouse_x, mouse_y;
+  SH sh;
+  SH sh2;
+  PolygonObj *poly;
+  PolygonObj *reflect_obj;
+  PolygonObj *poly2;
+} env;
+
+void iter()
+{
+   env.frame++;
+   env.ev->shader_api.set_var(env.sh, "in_time",float(env.frame)*0.01f);
+#if 0
+    env.ev->shader_api.set_var(sh2, "in_time",float(env.frame)*0.01f);
+#endif
+    env.ev->shader_api.set_var(env.sh, "eye_position", env.pos_x, -80.0, env.pos_y);
+    env.ev->shader_api.use(env.sh);
+    env.ev->shader_api.set_var(env.sh, "lightpos", -env.pos_x/3.0, -0.0, -env.pos_y/2.0);
+    //std::cout << pos_x << " " << pos_y << std::endl;
+    // clear frame buffer
+#if 0
+    ev.fbo_api.bind_fbo(fbo);
+#endif
+    env.ev->mainloop_api.clear_3d();
+    //poly.set_rotation_matrix(ev.matrix_api.xrot(frame));
+    M m = env.ev->matrix_api.yrot(env.rot_y);
+    M m2 = env.ev->matrix_api.trans(0.0,0.0,400.0);
+    M m3 = env.ev->matrix_api.trans(0.0,0.0,-400.0);
+    M mm = env.ev->matrix_api.mult(env.ev->matrix_api.mult(m3,m),m2);
+    env.poly->set_rotation_matrix2(mm);
+    env.poly->set_pos(env.pos_x, -80.0, env.pos_y);
+    env.poly->render();
+
+    //shadow_obj.set_rotation_matrix2(mm);
+    //shadow_obj.set_pos(pos_x, -75.0, pos_y);
+    //shadow_obj.render();
+
+    env.reflect_obj->set_rotation_matrix2(mm);
+    env.reflect_obj->set_pos(env.pos_x, -75.0, env.pos_y);
+    env.reflect_obj->render();
+
+
+    env.ev->mainloop_api.transparency(true);
+    env.poly2->set_rotation_matrix2(mm);
+    env.poly2->set_pos(env.pos_x, -80.0, env.pos_y);
+    env.poly2->render();
+    env.ev->mainloop_api.transparency(false);
+
+    //ev.mainloop_api.depth_test(true);
+    //sphere.set_pos(0.0,0.0,400.0);
+    //sphere.render();
+#if 0                               
+    ev.fbo_api.bind_screen(800,600);
+
+    ev.mainloop_api.clear_3d();
+
+    ev.shader_api.use(sh2);
+    fbo_bg.set_pos(-800,-600,0.0);
+    fbo_bg.set_scale(2.0,2.0,1.0);
+    fbo_bg.render();
+#endif
+
+#if 0
+    BM bm = ev.mainloop_api.screenshot();
+    screenshot_images.push_back(bm);
+#endif
+#if 0
+    BM bm = ev.mainloop_api.screenshot();
+#endif
+    //env.ev->mainloop_api.fpscounter();
+    // swapbuffers
+    env.ev->mainloop_api.swapbuffers();
+
+    // handle esc event
+    MainLoopApi::Event e = env.ev->mainloop_api.get_event();
+    if (e.type==0x300)
+      std::cout << e.ch << std::endl;
+
+    env.mouse_x = env.ev->point_api.pt_x(e.cursor_pos);
+    env.mouse_y = env.ev->point_api.pt_y(e.cursor_pos);
+#ifndef EMSCRIPTEN
+    if (e.ch==27 && e.type==0x300) { exit(0); }
+#endif
+    if (e.ch=='a' || e.ch==4) { env.pos_y+=env.speed_y; env.pos_x+=env.speed_x; }
+    if (e.ch=='z' || e.ch==29) { env.pos_y-=env.speed_y; env.pos_x-=env.speed_x; }
+    if (e.ch==','||e.ch==54) { env.rot_y -= env.rot_speed; }
+    if (e.ch=='.'||e.ch==55) { env.rot_y += env.rot_speed; }
+#if 0
+    if (e.ch=='s') { 
+      for(int i=0;i<screenshot_images.size();i++)
+	{
+	  std::stringstream ss; 
+	  ss << "SCR";
+	  ss.width(3);
+	  ss.fill('0');
+	  ss << i;
+	  ss << ".png";
+	  std::string s = ss.str();
+	  ev.bitmap_api.savebitmap(screenshot_images[i], s);
+	}
+    }
+#endif
+    env.speed_x = env.speed*cos(env.rot_y+3.14159/2.0);
+    env.speed_y = env.speed*sin(env.rot_y+3.14159/2.0);
+}
+
 int main() {
   srand(1);
   Env e;
   EveryApi ev(e);
 
+  env.ev = &ev;
+
   // initialize xindow
   ev.mainloop_api.init_window();
 
   // shader initialization
-  ev.shader_api.load("Shader.txt");
-  SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour:snoise", "colour:light:bands:snoise");
-  SH sh2 = ev.shader_api.get_shader("comb", "comb", "", "blur", "blur");
+  //ev.shader_api.load("Shader.txt");
+  ev.shader_api.load_default();
+  //SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour:snoise:snoise:point_light", "colour:light:bands:snoise:snoise:point_light");
+  SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour", "colour");
+
+  //SH sh2 = ev.shader_api.get_shader("comb", "comb", "", "blur", "blur");
   ev.shader_api.bind_attrib(sh, 0, "in_Position");
   ev.shader_api.bind_attrib(sh, 1, "in_Normal");
   ev.shader_api.bind_attrib(sh, 2, "in_Color");
@@ -540,6 +684,7 @@ int main() {
   ev.shader_api.use(sh);
   ev.shader_api.set_default_projection(sh, "in_P");
 
+#if 0
   ev.shader_api.bind_attrib(sh2, 0, "in_Position");
   ev.shader_api.bind_attrib(sh2, 1, "in_Normal");
   ev.shader_api.bind_attrib(sh2, 2, "in_Color");
@@ -547,16 +692,20 @@ int main() {
   ev.shader_api.link(sh2);
   ev.shader_api.use(sh2);
   ev.shader_api.set_default_projection(sh2, "in_P");
-
+#endif
 
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);
+#if 0
   ev.mainloop_api.init_3d(sh2);
+#endif
 
   Models m;
+#if 0
   m.teapot = ev.polygon_api.load_model("./teapot.obj", 0);
   m.lucy = ev.polygon_api.load_model("./lucy.obj", 1);
   P pk = ev.polygon_api.empty();
+#endif
 #if 0
   for(int i=0;i<60;i++)
     {
@@ -578,19 +727,28 @@ int main() {
 					 1.0, 1.0,
 					 0.0, 1.0);
 
+  std::cout << "1" << std::endl;
   PolygonObj poly(ev, p2a2, sh);
+  std::cout << "2" << std::endl;
   poly.set_scale(3.0,3.0,3.0);
+  std::cout << "3" << std::endl;
   poly.prepare();
+  std::cout << "4" << std::endl;
 
   P p31 = ev.polygon_api.recalculate_normals(p3);
+  std::cout << "5" << std::endl;
   P p32 = ev.polygon_api.texcoord_manual(p31, 
 					 0.0, 0.0, 
 					 1.0, 0.0,
 					 1.0, 1.0,
 					 0.0, 1.0);
+  std::cout << "6" << std::endl;
   PolygonObj poly2(ev,p32, sh);
+  std::cout << "7" << std::endl;
   poly2.set_scale(3.0,3.0,3.0);
+  std::cout << "8" << std::endl;
   poly2.prepare();
+  std::cout << "9" << std::endl;
 
 
   PT plane_pos = ev.point_api.point(0.0,0.0,0.0);
@@ -598,28 +756,36 @@ int main() {
   V plane_y = ev.vector_api.vector(0.0,0.0,1.0);
   V light_vec = ev.vector_api.vector(20.0,40.0,20.0);
   V reflect_vec = ev.vector_api.vector(0.0, 40.0, 0.0);
-  P shadow = ev.polygon_api.shadow(p, plane_pos, plane_x, plane_y, light_vec);
-  P shadow_color = ev.polygon_api.color_faces(shadow, 0xff333333, 0xff333333, 0xff333333, 0xff333333);
-  
-  P reflect = ev.polygon_api.reflection(p2a, plane_pos, plane_x, plane_y, reflect_vec);
-  P reflect_color = ev.polygon_api.change_colors(reflect, color_change_func);
+  //P shadow = ev.polygon_api.shadow(p, plane_pos, plane_x, plane_y, light_vec);
+  //P shadow_color = ev.polygon_api.color_faces(shadow, 0xff333333, 0xff333333, 0xff333333, 0xff333333);
+  //P reflect = ev.polygon_api.reflection(p2a, plane_pos, plane_x, plane_y, reflect_vec);
+  //P reflect_color = ev.polygon_api.change_colors(reflect, color_change_func);
 
 
   
-  PolygonObj shadow_obj(ev,shadow_color, sh);
-  shadow_obj.set_scale(3.0,3.0,3.0);
-  shadow_obj.prepare();
+  std::cout << "10" << std::endl;
+  //PolygonObj shadow_obj(ev,shadow_color, sh);
+  std::cout << "11" << std::endl;
+  //shadow_obj.set_scale(3.0,3.0,3.0);
+  std::cout << "12" << std::endl;
+  //shadow_obj.prepare();
+  std::cout << "13" << std::endl;
 
-  PolygonObj reflect_obj(ev,reflect_color, sh);
+  
+  P ppx = ev.polygon_api.empty();
+  PolygonObj reflect_obj(ev,ppx /*reflect_color*/, sh);
+  std::cout << "14" << std::endl;
   reflect_obj.set_scale(3.0,3.0,3.0);
+  std::cout << "15" << std::endl;
   reflect_obj.prepare();
+  std::cout << "16" << std::endl;
 
 
   //P gp = ev.polygon_api.or_elem(p3, reflect_color);
   //P gp2 = ev.polygon_api.or_elem(gp, p2a);
 
   //ev.polygon_api.save_model(gp2, "world.obj");
-
+#if 0
   FBO fbo = ev.fbo_api.create_fbo(800,600);
   ev.fbo_api.config_fbo(fbo);
 
@@ -635,8 +801,8 @@ int main() {
   PolygonObj fbo_bg(ev, fbo_poly2, sh2);
   fbo_bg.bind_texture(0,txid);
   fbo_bg.prepare();
-#if 0
 #endif
+
   ev.mainloop_api.alpha(true);
   float pos_x = 0.0;
   float pos_y = 0.0;
@@ -647,88 +813,32 @@ int main() {
   int frame = 0;
   float mouse_x = 0.0, mouse_y=0.0;
   std::vector<BM> screenshot_images;
+  std::cout << "17" << std::endl;
   e.free_memory();
+
+  std::cout << "18" << std::endl;
+  env.pos_x = pos_x;
+  env.pos_y = pos_y;
+  env.rot_y = rot_y;
+  env.speed = speed;
+  env.rot_speed = rot_speed;
+  env.speed_x = speed_x;
+  env.speed_y = speed_y;
+  env.frame = frame;
+  env.mouse_x = mouse_x;
+  env.mouse_y = mouse_y;
+  env.sh = sh;
+  env.poly = &poly;
+  env.reflect_obj = &reflect_obj;
+  env.poly2 = &poly2;
+  //env.sh2 = sh2;
+#ifndef EMSCRIPTEN
   while(1) {
-    frame++;
-    ev.shader_api.set_var(sh, "in_time",float(frame)*0.01f);
-    ev.shader_api.set_var(sh2, "in_time",float(frame)*0.01f);
-    ev.shader_api.set_var(sh, "eye_position", pos_x, -80.0, pos_y);
-    // clear frame buffer
-    ev.fbo_api.bind_fbo(fbo);
-    ev.mainloop_api.clear_3d();
-    //poly.set_rotation_matrix(ev.matrix_api.xrot(frame));
-    M m = ev.matrix_api.yrot(rot_y);
-    M m2 = ev.matrix_api.trans(0.0,0.0,400.0);
-    M m3 = ev.matrix_api.trans(0.0,0.0,-400.0);
-    M mm = ev.matrix_api.mult(ev.matrix_api.mult(m3,m),m2);
-    poly.set_rotation_matrix2(mm);
-    poly.set_pos(pos_x, -80.0, pos_y);
-    poly.render();
-
-    //shadow_obj.set_rotation_matrix2(mm);
-    //shadow_obj.set_pos(pos_x, -75.0, pos_y);
-    //shadow_obj.render();
-
-    reflect_obj.set_rotation_matrix2(mm);
-    reflect_obj.set_pos(pos_x, -75.0, pos_y);
-    reflect_obj.render();
-
-
-    ev.mainloop_api.transparency(true);
-    poly2.set_rotation_matrix2(mm);
-    poly2.set_pos(pos_x, -80.0, pos_y);
-    poly2.render();
-    ev.mainloop_api.transparency(false);
-
-    //ev.mainloop_api.depth_test(true);
-    //sphere.set_pos(0.0,0.0,400.0);
-    //sphere.render();
-#if 1                                
-    ev.fbo_api.bind_screen(800,600);
-
-    ev.mainloop_api.clear_3d();
-
-    ev.shader_api.use(sh2);
-    fbo_bg.set_pos(-800,-600,0.0);
-    fbo_bg.set_scale(2.0,2.0,1.0);
-    fbo_bg.render();
-#endif
-
-#if 0
-    BM bm = ev.mainloop_api.screenshot();
-    screenshot_images.push_back(bm);
-#endif
-#if 0
-    BM bm = ev.mainloop_api.screenshot();
-#endif
-    ev.mainloop_api.fpscounter();
-    // swapbuffers
-    ev.mainloop_api.swapbuffers();
-
-    // handle esc event
-    MainLoopApi::Event e = ev.mainloop_api.get_event();
-
-    mouse_x = ev.point_api.pt_x(e.cursor_pos);
-    mouse_y = ev.point_api.pt_y(e.cursor_pos);
-    if (e.ch==27 && e.type==0x300) break;
-    if (e.ch=='a') { pos_y+=speed_y; pos_x+=speed_x; }
-    if (e.ch=='z') { pos_y-=speed_y; pos_x-=speed_x; }
-    if (e.ch==',') { rot_y -= rot_speed; }
-    if (e.ch=='.') { rot_y += rot_speed; }
-    if (e.ch=='s') { 
-      for(int i=0;i<screenshot_images.size();i++)
-	{
-	  std::stringstream ss; 
-	  ss << "SCR";
-	  ss.width(3);
-	  ss.fill('0');
-	  ss << i;
-	  ss << ".png";
-	  std::string s = ss.str();
-	  ev.bitmap_api.savebitmap(screenshot_images[i], s);
-	}
-    }
-    speed_x = speed*cos(rot_y+3.14159/2.0);
-    speed_y = speed*sin(rot_y+3.14159/2.0);
+    iter();
+    ev.mainloop_api.delay(10);
   }
+#else
+  emscripten_set_main_loop(iter, 60,1);
+#endif
+
 }
