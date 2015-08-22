@@ -6261,6 +6261,29 @@ private:
   Bitmap<Color> &bm;
   bool flip_x, flip_y;
 };
+class DupXBitmap : public Bitmap<Color>
+{
+public:
+  DupXBitmap(Bitmap<Color> &orig) : bm(orig) { }
+  virtual int SizeX() const { return bm.SizeX()*2; }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual Color Map(int x, int y) const
+  {
+    x/=2;
+    return bm.Map(x,y);
+  }
+private:
+  Bitmap<Color> &bm;
+};
+EXPORT GameApi::BM GameApi::BitmapApi::dup_x(BM orig)
+{
+  BitmapHandle *handle = find_bitmap(e, orig);
+  BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
+  Bitmap<Color> *rep = new DupXBitmap(*chandle->bm);
+  BitmapColorHandle *chandle2 = new BitmapColorHandle;
+  chandle2->bm = rep;
+  return add_bitmap(e,chandle2);
+}
 
 EXPORT GameApi::BM GameApi::BitmapApi::flip_x(BM orig)
 {
@@ -11280,6 +11303,31 @@ EXPORT GameApi::LI GameApi::LinesApi::normals_from_polygon(GameApi::P p, float l
   FaceCollection *coll = find_facecoll(e, p);
   return add_line_array(e, new NormalsLineCollection(coll, length));
 }
+class MatrixLineCollection : public LineCollection
+{
+public:
+  MatrixLineCollection(Matrix m, LineCollection &coll) : m(m),coll(coll) { }
+  virtual int NumLines() const { return coll.NumLines(); }
+  virtual Point LinePoint(int line, int point) const 
+  {
+    return coll.LinePoint(line,point)*m;
+  }
+  virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; }  
+
+private:
+  Matrix m;
+  LineCollection &coll;
+};
+EXPORT GameApi::LI GameApi::LinesApi::translate(LI lines, float dx, float dy, float dz)
+{
+  LineCollection *c = find_line_array(e, lines);
+  return add_line_array(e, new MatrixLineCollection(Matrix::Translate(dx,dy,dz),*c));
+}
+EXPORT GameApi::LI GameApi::LinesApi::scale(LI lines, float dx, float dy, float dz)
+{
+  LineCollection *c = find_line_array(e, lines);
+  return add_line_array(e, new MatrixLineCollection(Matrix::Scale(dx,dy,dz),*c));
+}
 EXPORT GameApi::LI GameApi::LinesApi::render_slice_2d(GameApi::P p, GameApi::PT pos, GameApi::V u_x, GameApi::V u_y)
 {
   FaceCollection *coll = find_facecoll(e, p);
@@ -11739,7 +11787,7 @@ EXPORT GameApi::FBO GameApi::FrameBufferApi::create_fbo(int sx, int sy)
   GLuint depth_texture;
   glGenRenderbuffers(1, &depth_texture);
   glBindRenderbuffer(GL_RENDERBUFFER, depth_texture);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, sx, sy);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, sx, sy);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_texture);
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -11752,9 +11800,7 @@ EXPORT void GameApi::FrameBufferApi::config_fbo(FBO buffer)
   FBOPriv *priv = find_fbo(e, buffer);
   
   glBindFramebuffer(GL_FRAMEBUFFER, priv->fbo_name);
-#ifndef EMSCRIPTEN
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, priv->texture, 0);
-#endif
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, priv->texture, 0);
   GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
   glDrawBuffers(1, DrawBuffers);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
