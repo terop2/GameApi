@@ -287,6 +287,7 @@ public:
 	IMPORT BM repeat_bitmap(BM orig, int xcount, int ycount);
 	IMPORT BM sample_bitmap(BM orig, float xmult, float ymult, float x, float y);
         IMPORT BM world_from_bitmap(std::function<BM(int)> f, BM int_bm, int dx, int dy);
+        IMPORT BM dup_x(BM orig);
 	IMPORT BM flip_x(BM orig);
 	IMPORT BM flip_y(BM orig);
         IMPORT BM alpha_color(BM orig, unsigned int color_key);
@@ -1374,6 +1375,8 @@ public:
 	IMPORT LI border_from_bool_bitmap(BB b, float start_x, float end_x,
 			     float start_y, float end_y, float z);
   IMPORT LI render_slice_2d(P p, PT pos, V u_x, V u_y);
+  IMPORT LI translate(LI lines, float dx, float dy, float dz);
+  IMPORT LI scale(LI lines, float m_x, float m_y, float m_z);
 
   IMPORT LI unit_cube(LI orig, PT pos, V u_x, V u_y, V u_z);
   IMPORT LI unit_to_cube(LI orig, PT pos, V u_x, V u_y, V u_z);

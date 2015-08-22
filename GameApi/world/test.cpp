@@ -555,63 +555,128 @@ struct Envi
   float mouse_x, mouse_y;
   SH sh;
   SH sh2;
+  SH sh3;
   PolygonObj *poly;
   PolygonObj *reflect_obj;
   PolygonObj *poly2;
+  PolygonObj *mirror;
+  PolygonObj *fbo_bg;
+  PolygonObj *monster;
+  PolygonObj *lines_obj;
+  FBO fbo;
+  FBO mirror_fbo;
+  float jump_start_frame;
+  float jump_duration;
+  float y_delta;
 } env;
 
 void iter()
 {
    env.frame++;
    env.ev->shader_api.set_var(env.sh, "in_time",float(env.frame)*0.01f);
-#if 0
-    env.ev->shader_api.set_var(sh2, "in_time",float(env.frame)*0.01f);
+#if 1
+    env.ev->shader_api.set_var(env.sh2, "in_time",float(env.frame)*0.01f);
+    env.ev->shader_api.set_var(env.sh3, "in_time",float(env.frame)*0.01f);
 #endif
     env.ev->shader_api.set_var(env.sh, "eye_position", env.pos_x, -80.0, env.pos_y);
     env.ev->shader_api.use(env.sh);
     env.ev->shader_api.set_var(env.sh, "lightpos", -env.pos_x/3.0, -0.0, -env.pos_y/2.0);
     //std::cout << pos_x << " " << pos_y << std::endl;
     // clear frame buffer
-#if 0
-    ev.fbo_api.bind_fbo(fbo);
-#endif
+#if 1
+    env.ev->fbo_api.bind_fbo(env.mirror_fbo);
     env.ev->mainloop_api.clear_3d();
-    //poly.set_rotation_matrix(ev.matrix_api.xrot(frame));
+#endif
+    M a_m = env.ev->matrix_api.yrot(env.rot_y+3.14159);
+    M a_m2 = env.ev->matrix_api.trans(0.0,0.0,400.0);
+    M a_m3 = env.ev->matrix_api.trans(0.0,0.0,-400.0);
+    M a_mm = env.ev->matrix_api.mult(env.ev->matrix_api.mult(a_m3,a_m),a_m2);
+    env.poly->set_rotation_matrix2(a_mm);
+    env.poly->set_pos(env.pos_x, -80.0+env.y_delta, env.pos_y);
+    env.poly->render();
+
+    env.reflect_obj->set_rotation_matrix2(a_mm);
+    env.reflect_obj->set_pos(env.pos_x, -75.0+env.y_delta, env.pos_y);
+    env.reflect_obj->render();
+
+
+    env.ev->mainloop_api.transparency(true);
+    env.poly2->set_rotation_matrix2(a_mm);
+    env.poly2->set_pos(env.pos_x, -80.0+env.y_delta, env.pos_y);
+    env.poly2->render();
+    env.ev->mainloop_api.transparency(false);
+
     M m = env.ev->matrix_api.yrot(env.rot_y);
     M m2 = env.ev->matrix_api.trans(0.0,0.0,400.0);
     M m3 = env.ev->matrix_api.trans(0.0,0.0,-400.0);
     M mm = env.ev->matrix_api.mult(env.ev->matrix_api.mult(m3,m),m2);
+
+    env.monster->set_rotation_matrix2(mm);
+    env.monster->set_pos(env.pos_x, -80.0-env.y_delta, env.pos_y-300.0);
+    env.monster->render();
+
+
+    M a_ms = env.ev->matrix_api.yrot(env.frame/30.0);
+    M a_ms2 = env.ev->matrix_api.trans(500.0*3.0,0.0,600.0*3.0);
+    M a_msa = env.ev->matrix_api.mult(a_ms, a_ms2);
+    env.lines_obj->set_rotation_matrix(a_msa);
+    env.lines_obj->set_rotation_matrix2(a_mm);
+    env.lines_obj->set_pos(env.pos_x, -80.0+env.y_delta, env.pos_y);
+    env.lines_obj->render();
+
+
+
+#if 1
+    env.ev->fbo_api.bind_fbo(env.fbo);
+#endif
+    env.ev->mainloop_api.clear_3d();
+
+    M ms = env.ev->matrix_api.yrot(env.frame/30.0);
+    M ms2 = env.ev->matrix_api.trans(500.0*3.0,0.0,600.0*3.0);
+    M msa = env.ev->matrix_api.mult(ms, ms2);
+    env.lines_obj->set_rotation_matrix(msa);
+    env.lines_obj->set_rotation_matrix2(mm);
+    env.lines_obj->set_pos(env.pos_x, -80.0+env.y_delta, env.pos_y);
+    env.lines_obj->render();
+
+
+    //poly.set_rotation_matrix(ev.matrix_api.xrot(frame));
     env.poly->set_rotation_matrix2(mm);
-    env.poly->set_pos(env.pos_x, -80.0, env.pos_y);
+    env.poly->set_pos(env.pos_x, -80.0+env.y_delta, env.pos_y);
     env.poly->render();
+
+
 
     //shadow_obj.set_rotation_matrix2(mm);
     //shadow_obj.set_pos(pos_x, -75.0, pos_y);
     //shadow_obj.render();
 
     env.reflect_obj->set_rotation_matrix2(mm);
-    env.reflect_obj->set_pos(env.pos_x, -75.0, env.pos_y);
+    env.reflect_obj->set_pos(env.pos_x, -75.0+env.y_delta, env.pos_y);
     env.reflect_obj->render();
 
 
     env.ev->mainloop_api.transparency(true);
     env.poly2->set_rotation_matrix2(mm);
-    env.poly2->set_pos(env.pos_x, -80.0, env.pos_y);
+    env.poly2->set_pos(env.pos_x, -80.0+env.y_delta, env.pos_y);
     env.poly2->render();
     env.ev->mainloop_api.transparency(false);
 
+    env.mirror->set_rotation_matrix2(mm);
+    env.mirror->set_pos(env.pos_x, -80.0+env.y_delta, env.pos_y);
+    env.mirror->render();
     //ev.mainloop_api.depth_test(true);
     //sphere.set_pos(0.0,0.0,400.0);
     //sphere.render();
-#if 0                               
-    ev.fbo_api.bind_screen(800,600);
+#if 1                               
+    env.ev->fbo_api.bind_screen(800,600);
 
-    ev.mainloop_api.clear_3d();
+    env.ev->mainloop_api.clear_3d();
 
-    ev.shader_api.use(sh2);
-    fbo_bg.set_pos(-800,-600,0.0);
-    fbo_bg.set_scale(2.0,2.0,1.0);
-    fbo_bg.render();
+    env.ev->shader_api.use(env.sh2);
+    env.fbo_bg->set_pos(-800,-600,0.0);
+    env.fbo_bg->set_scale(2.0,2.0,1.0);
+    env.fbo_bg->render();
 #endif
 
 #if 0
@@ -635,10 +700,23 @@ void iter()
 #ifndef EMSCRIPTEN
     if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif
-    if (e.ch=='a' || e.ch==4) { env.pos_y+=env.speed_y; env.pos_x+=env.speed_x; }
-    if (e.ch=='z' || e.ch==29) { env.pos_y-=env.speed_y; env.pos_x-=env.speed_x; }
-    if (e.ch==','||e.ch==54) { env.rot_y -= env.rot_speed; }
-    if (e.ch=='.'||e.ch==55) { env.rot_y += env.rot_speed; }
+    if ((e.ch=='w' || e.ch==26||e.ch==82)&& e.type==0x300) { env.pos_y+=env.speed_y; env.pos_x+=env.speed_x; }
+    if ((e.ch=='s' || e.ch==22||e.ch==81)&& e.type==0x300) { env.pos_y-=env.speed_y; env.pos_x-=env.speed_x; }
+    if ((e.ch=='a'||e.ch==4||e.ch==80)&& e.type==0x300) { env.rot_y -= env.rot_speed; }
+    if ((e.ch=='d'||e.ch==7||e.ch==79)&& e.type==0x300) { env.rot_y += env.rot_speed; }
+    if ((e.ch==' '||e.ch==44)&&env.frame+env.jump_duration>env.jump_start_frame && e.type==0x300)
+      {
+	//std::cout << "Space" << std::endl;
+	env.jump_start_frame = env.frame;
+      }
+    if (env.frame>=env.jump_start_frame && env.frame<env.jump_start_frame+env.jump_duration)
+      {
+	float delta_time = env.frame - env.jump_start_frame;
+	delta_time /= env.jump_duration;
+	delta_time *= 3.14159;
+	env.y_delta = -60.0*sin(delta_time);
+	//std::cout << "Space2" << env.y_delta << std::endl;
+      }
 #if 0
     if (e.ch=='s') { 
       for(int i=0;i<screenshot_images.size();i++)
@@ -671,10 +749,12 @@ int main() {
   // shader initialization
   //ev.shader_api.load("Shader.txt");
   ev.shader_api.load_default();
-  //SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour:snoise:snoise:point_light", "colour:light:bands:snoise:snoise:point_light");
-  SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour", "colour");
+  SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour:snoise:snoise:point_light:light", "colour:light:light:bands:snoise:snoise:point_light");
+  //SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour", "colour");
 
-  //SH sh2 = ev.shader_api.get_shader("comb", "comb", "", "blur", "blur");
+  SH sh2 = ev.shader_api.get_shader("comb", "comb", "", "blur", "blur");
+  SH sh3 = ev.shader_api.get_shader("comb", "comb", "", "texture:light:snoise", "texture:light:snoise");
+  SH sh4 = ev.shader_api.get_shader("empty", "empty", "");
   ev.shader_api.bind_attrib(sh, 0, "in_Position");
   ev.shader_api.bind_attrib(sh, 1, "in_Normal");
   ev.shader_api.bind_attrib(sh, 2, "in_Color");
@@ -684,7 +764,7 @@ int main() {
   ev.shader_api.use(sh);
   ev.shader_api.set_default_projection(sh, "in_P");
 
-#if 0
+#if 1
   ev.shader_api.bind_attrib(sh2, 0, "in_Position");
   ev.shader_api.bind_attrib(sh2, 1, "in_Normal");
   ev.shader_api.bind_attrib(sh2, 2, "in_Color");
@@ -694,10 +774,31 @@ int main() {
   ev.shader_api.set_default_projection(sh2, "in_P");
 #endif
 
+#if 1
+  ev.shader_api.bind_attrib(sh3, 0, "in_Position");
+  ev.shader_api.bind_attrib(sh3, 1, "in_Normal");
+  ev.shader_api.bind_attrib(sh3, 2, "in_Color");
+  ev.shader_api.bind_attrib(sh3, 3, "in_TexCoord");
+  ev.shader_api.link(sh3);
+  ev.shader_api.use(sh3);
+  ev.shader_api.set_default_projection(sh3, "in_P");
+#endif
+#if 1
+  ev.shader_api.bind_attrib(sh4, 0, "in_Position");
+  ev.shader_api.bind_attrib(sh4, 1, "in_Normal");
+  ev.shader_api.bind_attrib(sh4, 2, "in_Color");
+  ev.shader_api.bind_attrib(sh4, 3, "in_TexCoord");
+  ev.shader_api.link(sh4);
+  ev.shader_api.use(sh4);
+  ev.shader_api.set_default_projection(sh4, "in_P");
+#endif
+
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);
-#if 0
+#if 1
   ev.mainloop_api.init_3d(sh2);
+  ev.mainloop_api.init_3d(sh3);
+  ev.mainloop_api.init_3d(sh4);
 #endif
 
   Models m;
@@ -727,28 +828,19 @@ int main() {
 					 1.0, 1.0,
 					 0.0, 1.0);
 
-  std::cout << "1" << std::endl;
   PolygonObj poly(ev, p2a2, sh);
-  std::cout << "2" << std::endl;
   poly.set_scale(3.0,3.0,3.0);
-  std::cout << "3" << std::endl;
   poly.prepare();
-  std::cout << "4" << std::endl;
 
   P p31 = ev.polygon_api.recalculate_normals(p3);
-  std::cout << "5" << std::endl;
   P p32 = ev.polygon_api.texcoord_manual(p31, 
 					 0.0, 0.0, 
 					 1.0, 0.0,
 					 1.0, 1.0,
 					 0.0, 1.0);
-  std::cout << "6" << std::endl;
   PolygonObj poly2(ev,p32, sh);
-  std::cout << "7" << std::endl;
   poly2.set_scale(3.0,3.0,3.0);
-  std::cout << "8" << std::endl;
   poly2.prepare();
-  std::cout << "9" << std::endl;
 
 
   PT plane_pos = ev.point_api.point(0.0,0.0,0.0);
@@ -763,30 +855,40 @@ int main() {
 
 
   
-  std::cout << "10" << std::endl;
   //PolygonObj shadow_obj(ev,shadow_color, sh);
-  std::cout << "11" << std::endl;
   //shadow_obj.set_scale(3.0,3.0,3.0);
-  std::cout << "12" << std::endl;
   //shadow_obj.prepare();
-  std::cout << "13" << std::endl;
 
   
   P ppx = ev.polygon_api.empty();
   PolygonObj reflect_obj(ev,ppx /*reflect_color*/, sh);
-  std::cout << "14" << std::endl;
   reflect_obj.set_scale(3.0,3.0,3.0);
-  std::cout << "15" << std::endl;
   reflect_obj.prepare();
-  std::cout << "16" << std::endl;
+
+
+  PT cone_p1 = ev.point_api.point(0.0, 0.0, 0.0);
+  PT cone_p2 = ev.point_api.point(300.0, 0.0, 0.0);
+  PT cone_p21 = ev.point_api.point(-300.0, 0.0, 0.0);
+  PT cone_p22 = ev.point_api.point(0.0, 0.0, 300.0);
+  PT cone_p23 = ev.point_api.point(0.0, 0.0, -300.0);
+  P lines_3 = ev.polygon_api.cone(20, cone_p1, cone_p2, 2.0, 2.0);
+  P lines_3a = ev.polygon_api.cone(20, cone_p1, cone_p21, 2.0, 2.0);
+  P lines_3b = ev.polygon_api.cone(20, cone_p1, cone_p22, 2.0, 2.0);
+  P lines_3c = ev.polygon_api.cone(20, cone_p1, cone_p23, 2.0, 2.0);
+  P array[] = { lines_3, lines_3a, lines_3b, lines_3c };
+  P lines_33 = ev.polygon_api.or_array(&array[0], 4);
+  P lines_4 = ev.polygon_api.translate(lines_33,0.0,20.0,0.0);
+  PolygonObj lines_obj(ev, lines_4, sh4);
+  lines_obj.prepare();
+
 
 
   //P gp = ev.polygon_api.or_elem(p3, reflect_color);
   //P gp2 = ev.polygon_api.or_elem(gp, p2a);
 
   //ev.polygon_api.save_model(gp2, "world.obj");
-#if 0
-  FBO fbo = ev.fbo_api.create_fbo(800,600);
+#if 1
+  FBO fbo = ev.fbo_api.create_fbo(512,512);
   ev.fbo_api.config_fbo(fbo);
 
   P fbo_poly = ev.polygon_api.quad_z(0.0, 800.0,
@@ -801,7 +903,44 @@ int main() {
   PolygonObj fbo_bg(ev, fbo_poly2, sh2);
   fbo_bg.bind_texture(0,txid);
   fbo_bg.prepare();
+
+  FBO mirror_fbo = ev.fbo_api.create_fbo(512,512);
+  ev.fbo_api.config_fbo(mirror_fbo);
+  TXID mirror_txid = ev.fbo_api.tex_id(mirror_fbo);
+  
+
 #endif
+
+  P mirror_p = ev.polygon_api.quad_z(0.0, 100.0,
+				     0.0, 80.0,
+				     0.0);
+  P mirror_p_t = ev.polygon_api.translate(mirror_p, 500.0, 0.0, 500.0);
+  P mirror_p_t_t = ev.polygon_api.texcoord_manual(mirror_p_t, 0.0, 0.0,
+						  1.0, 0.0,
+						  1.0, 1.0,
+						  0.0, 1.0);
+  PolygonObj mirror(ev, mirror_p_t_t, sh3);
+  mirror.set_scale(3.0,3.0,3.0);
+  mirror.bind_texture(0, mirror_txid);
+  mirror.prepare();
+
+
+  
+  PT monster_center = ev.point_api.point(50.0, 40.0, 0.0);
+  P monster_sphere = ev.polygon_api.sphere(monster_center, 30.0, 20,20);
+  PT monster_p1 = ev.point_api.point(50.0, 40.0, 0.0);
+  PT monster_p2 = ev.point_api.point(50.0, 0.0, 0.0);
+  P monster_cone = ev.polygon_api.cone(30, monster_p1, monster_p2, 40.0, 30.0);
+
+  P monster_or = ev.polygon_api.or_elem(monster_sphere, monster_cone);
+
+  P monster_p = monster_or; //ev.polygon_api.quad_z(0.0, 100.0, 0.0, 80.0, 0.0);
+  P monster_p_t = ev.polygon_api.translate(monster_p, 500.0, 0.0, 600.0);
+
+  PolygonObj monster(ev, monster_p_t, sh);
+  monster.set_scale(3.0,3.0,3.0);
+  monster.prepare();
+
 
   ev.mainloop_api.alpha(true);
   float pos_x = 0.0;
@@ -813,10 +952,8 @@ int main() {
   int frame = 0;
   float mouse_x = 0.0, mouse_y=0.0;
   std::vector<BM> screenshot_images;
-  std::cout << "17" << std::endl;
   e.free_memory();
 
-  std::cout << "18" << std::endl;
   env.pos_x = pos_x;
   env.pos_y = pos_y;
   env.rot_y = rot_y;
@@ -828,9 +965,20 @@ int main() {
   env.mouse_x = mouse_x;
   env.mouse_y = mouse_y;
   env.sh = sh;
+  env.sh2 = sh2;
+  env.sh3 = sh3;
   env.poly = &poly;
   env.reflect_obj = &reflect_obj;
   env.poly2 = &poly2;
+  env.mirror = &mirror;
+  env.fbo_bg = &fbo_bg;
+  env.fbo = fbo;
+  env.mirror_fbo = mirror_fbo;
+  env.monster = &monster;
+  env.jump_start_frame = -9999.0;
+  env.jump_duration=0.2*100;
+  env.y_delta = 0.0;
+  env.lines_obj = &lines_obj;
   //env.sh2 = sh2;
 #ifndef EMSCRIPTEN
   while(1) {
