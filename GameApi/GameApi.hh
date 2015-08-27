@@ -103,6 +103,8 @@ using std::placeholders::_9;
   struct PTA { int id; };
   struct RD { int id; };
   struct FBO { int id; };
+  struct SM { int id; };
+  struct TRK { int id; };
   //template<class T>
   //struct E { int id; };
 
@@ -986,6 +988,7 @@ public:
   IMPORT void render_dynamic(P p, int array_elem, bool textures); // use memoize_all for p before calling this.
 
   IMPORT P world_from_bitmap(std::function<P (int c)> f, BM int_bm, float dx, float dy);
+  IMPORT P world_from_bitmap2(EveryApi &ev, std::function<P (int c, PT tl, PT tr, PT bl, PT br)> f, BM int_bm, FB float_bm, float dx, float dz, float height);
   IMPORT P world_from_voxel(std::function<P (unsigned int c)> f, VX voxel, float dx, float dy, float dz);
 
   IMPORT P from_points(PTS p, std::function<P (int i, float x,float y,float z, unsigned int color)> f);
@@ -1032,6 +1035,21 @@ private:
   WaveformApi(const WaveformApi&);
   void operator=(const WaveformApi&);
   Env &e;
+};
+class SampleCollectionApi
+{
+public:
+  SM empty();
+  SM add(SM orig, WV wave, int sample_rate, int id);
+  WV find_wave(SM orig, int id);
+  int find_rate(SM orig, int id);
+};
+class TrackerApi
+{
+public:
+  TRK empty(int numchannels, int numslots);
+  TRK audio_slot(TRK orig, int channel, int slot, int duration, int sample);
+  TRK array(TRK *array, int size);
 };
 
 class ShaderApi;

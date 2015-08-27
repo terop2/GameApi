@@ -4274,6 +4274,41 @@ EXPORT GameApi::P GameApi::PolygonApi::world_from_voxel(std::function<P (unsigne
   P p = or_array_1(&vec_x[0],sx);
   return p;
 }
+EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap2(EveryApi &ev, std::function<P (int c, PT tl, PT tr, PT bl, PT br)> f, BM int_bm, FB float_bm, float dx, float dz, float height)
+{
+  BitmapIntHandle *handle = dynamic_cast<BitmapIntHandle*>(find_bitmap(e, int_bm));
+  if (!handle) { GameApi::P p1 = { 0 }; return p1; }
+  Bitmap<int> *bm = handle->bm;
+  Bitmap<float> *fbm = find_float_bitmap(e, float_bm)->bitmap;
+  std::vector<P> vec;
+  int sx = std::min(fbm->SizeX(),bm->SizeX());
+  int sy = std::min(fbm->SizeY(),bm->SizeY());
+  for(int y=0;y<sy-1;y++)
+    {
+      std::vector<P> vec2;
+      for(int x=0;x<sx-1;x++)
+	{
+	  float height_1 = fbm->Map(x,y);
+	  float height_2 = fbm->Map(x+1,y);
+	  float height_3 = fbm->Map(x,y+1);
+	  float height_4 = fbm->Map(x+1,y+1);
+
+	  PT pos_1 = ev.point_api.point(0.0, height_1*height, 0.0);
+	  PT pos_2 = ev.point_api.point(dx, height_2*height, 0.0);
+	  PT pos_3 = ev.point_api.point(0.0, height_3*height, dz);
+	  PT pos_4 = ev.point_api.point(dx, height_4*height, dz);
+
+	  P p = f(bm->Map(x,y), pos_1, pos_2, pos_3, pos_4);
+	  P p2 = translate_1(p, dx*x, 0.0, 0.0);
+	  vec2.push_back(p2);
+	}
+      P p = or_array_1(&vec2[0], sx);
+      P p2 = translate_1(p, 0.0, 0.0, dz*y);
+      vec.push_back(p2);
+    }
+  P p = or_array_1(&vec[0], sy);
+  return p;
+}
 EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(std::function<P (int c)> f, BM int_bm, float dx, float dz)
 {
   BitmapIntHandle *handle = dynamic_cast<BitmapIntHandle*>(find_bitmap(e, int_bm));
