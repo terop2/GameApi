@@ -3816,7 +3816,10 @@ private:
   std::function<T (char)> f;
 };
 
-
+EXPORT GameApi::FB GameApi::FloatBitmapApi::newfloatbitmap(char *array, int sx, int sy, std::function<float(char ch)> f)
+{
+  return add_float_bitmap(e, new BitmapFromString<float>(array, sx,sy,f));
+}
 EXPORT GameApi::BM GameApi::BitmapApi::newintbitmap(char *array, int sx, int sy, std::function<int (char ch)> f )
 {
   //EveryApi *ev = new EveryApi(e);
@@ -4182,11 +4185,14 @@ GameApi::S GameApi::SurfaceApi::bitmapsphere(PT center, float radius0, float rad
   i.surf = sphere;
   return add_surface(e, i);
 }
-EXPORT GameApi::P GameApi::PolygonApi::from_polygon(P p, std::function<P (int face, float p1_x, float p1_y, float p1_z, float p2_x, float p2_y, float p2_z, float p3_x, float p3_y, float p3_z, float p4_x, float p4_y, float p4_z)> f)
+EXPORT GameApi::P GameApi::PolygonApi::from_polygon(P p, std::function<P (int face, 
+									  PT p1, PT p2, PT p3, PT p4)> f)
+
 {
   return from_polygon_1(p,f);
 }
-GameApi::P GameApi::PolygonApi::from_polygon_1(P p, std::function<P (int face, float p1_x, float p1_y, float p1_z, float p2_x, float p2_y, float p2_z, float p3_x, float p3_y, float p3_z, float p4_x, float p4_y, float p4_z)> f)
+GameApi::P GameApi::PolygonApi::from_polygon_1(P p, std::function<P (int face,
+								     PT p1, PT p2, PT p3, PT p4)> f)
 {
   FaceCollPolyHandle *handle = find_poly(e, p);
   FaceCollection *coll = handle->coll;
@@ -4198,10 +4204,11 @@ GameApi::P GameApi::PolygonApi::from_polygon_1(P p, std::function<P (int face, f
       Point p2 = coll->FacePoint(i, 1);
       Point p3 = coll->FacePoint(i, 2);
       Point p4 = coll->NumPoints(i)>3 ? coll->FacePoint(i, 3) : coll->FacePoint(i,2);
-      P p = f(i, p1.x,p1.y,p1.z,
-	      p2.x,p2.y,p2.z,
-	      p3.x,p3.y,p3.z,
-	      p4.x,p4.y,p4.z);
+      PT pp1 = add_point(e, p1.x, p1.y, p1.z);
+      PT pp2 = add_point(e, p2.x, p2.y, p2.z);
+      PT pp3 = add_point(e, p3.x, p3.y, p3.z);
+      PT pp4 = add_point(e, p4.x, p4.y, p4.z);
+      P p = f(i, pp1, pp2, pp3, pp4);
       vec.push_back(p);
     }
   P pp = or_array(&vec[0], s);
@@ -4302,11 +4309,11 @@ EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap2(EveryApi &ev, std::fun
 	  P p2 = translate_1(p, dx*x, 0.0, 0.0);
 	  vec2.push_back(p2);
 	}
-      P p = or_array_1(&vec2[0], sx);
+      P p = or_array_1(&vec2[0], sx-1);
       P p2 = translate_1(p, 0.0, 0.0, dz*y);
       vec.push_back(p2);
     }
-  P p = or_array_1(&vec[0], sy);
+  P p = or_array_1(&vec[0], sy-1);
   return p;
 }
 EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(std::function<P (int c)> f, BM int_bm, float dx, float dz)
@@ -4854,9 +4861,9 @@ public:
   {
     Vector v = ForwardFaceCollection::PointNormal(face,point);
     v/=v.Dist();
-    int r = v.dx*127.0+127.0;
-    int g = v.dy*127.0+127.0;
-    int b = v.dz*127.0+127.0;
+    int r = v.dx*127.5+127.5;
+    int g = v.dy*127.5+127.5;
+    int b = v.dz*127.5+127.5;
     r<<=16;
     g<<=8;
     return 0xff000000+r+g+b;
@@ -11837,7 +11844,7 @@ EXPORT void GameApi::FrameBufferApi::config_fbo(FBO buffer)
   glBindFramebuffer(GL_FRAMEBUFFER, priv->fbo_name);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, priv->texture, 0);
   GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-  glDrawBuffers(1, DrawBuffers);
+  //glDrawBuffers(1, DrawBuffers);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 EXPORT void GameApi::FrameBufferApi::bind_fbo(FBO buffer)
