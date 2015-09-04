@@ -5,6 +5,10 @@
 
 #include <iostream>
 #include <cstdlib>
+
+
+
+
 using namespace GameApi;
 
 char chars[] =
@@ -66,6 +70,7 @@ struct Envi {
 #endif
 } env;
 
+std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e);
 bool check_towering(WorldObj *pieces, bool left, bool white, bool check);
 Pos towering_new_block(bool left, bool white);
 
@@ -116,7 +121,36 @@ bool piece_action(std::vector<Pos> &pos, int piece2, int piece_color, int oppone
   return false;
 }
 
-
+Pos position_attacked(WorldObj &o, int x, int y, bool attacker_is_white, Envi &e)
+{
+  for(int xx=0;xx<8;xx++)
+    for(int yy=0;yy<8;yy++)
+      {
+	Pos res;
+	res.x = xx;
+	res.y = yy;
+	int piece = o.read_block(xx,yy);
+	if (piece==12) continue;
+	bool piece_color = piece_color_is_white(piece);
+	if (piece_color == attacker_is_white)
+	  {
+	    std::vector<Pos> p = possible_moves(o, xx,yy, e);
+	    for(int i=0;i<p.size();i++)
+	      {
+		Pos pp = p[i];
+		if (pp.x==x && pp.y==y) return res;
+	      }
+	  }
+	else
+	  {
+	    continue;
+	  }
+      }
+  Pos res2;
+  res2.x = -1;
+  res2.y = -1;
+  return res2;
+}
 std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 {
   int piece = o.read_block(x,y);
