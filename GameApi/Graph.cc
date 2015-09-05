@@ -1146,7 +1146,7 @@ void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender 
 {
   //std::cout << "SpriteFrame: " << frame << std::endl;
   rend.EnableTexture(frame);
-  glPushMatrix();
+  //glPushMatrix();
   Point2d p = s.Pos(frame);
 
   Matrix m = Matrix::Translate(pos.x+p.x, pos.y+p.y, z);
