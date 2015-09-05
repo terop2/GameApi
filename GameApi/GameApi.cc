@@ -43,6 +43,11 @@
 
 #undef LoadImage
 
+#ifndef EMSCRIPTEN
+#define VAO 1
+#endif
+
+
 GameApi::BM add_color_bitmap2(GameApi::Env &e, Bitmap<Color> *bm);
 
 struct TexCoordQuad
@@ -11486,9 +11491,23 @@ EXPORT void GameApi::LinesApi::render(LLA l)
 {
   PointArray2 *array = find_lines_array(e,l);
   //glEnableClientState(GL_VERTEX_ARRAY);
+#ifdef VAO
   glBindVertexArray(array->vao[0]);
+#else
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
+  glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(2);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
+  glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0,0);
+#endif
   glDrawArrays(GL_LINES, 0, array->numpoints);
-  //glDisableVertexAttribArray(0);
+#ifndef VAO
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(2);
+#endif
 }
 
 class SphereDistanceRenderable : public DistanceRenderable
@@ -11995,15 +12014,17 @@ EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
   arr->array = array;
   arr->color_array = color_array;
   arr->numpoints = count*2;
+#ifdef VAO
   glGenVertexArrays(1, arr->vao);
   glBindVertexArray(arr->vao[0]);
+#endif
   glGenBuffers(1, &arr->buffer);
   glGenBuffers(1, &arr->buffer2);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, GL_STATIC_DRAW);
-
+#ifdef VAO
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -12012,6 +12033,7 @@ EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
   glEnableVertexAttribArray(2);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
   glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0,0);
+#endif
   //glDisableVertexAttribArray(0);
   //glDisableVertexAttribArray(2);
 
