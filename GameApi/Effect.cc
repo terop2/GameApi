@@ -18,7 +18,6 @@
 // along with Polygon.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-
 //#define GL_GLEXT_PROTOTYPES
 #define NO_SDL_GLEXT
 #define _SCL_SECURE_NO_WARNINGS
@@ -33,6 +32,12 @@
 #include "Shader.hh"
 #include "Event.hh"
 #include "Graph.hh"
+
+#ifndef EMSCRIPTEN
+#define VAO 1
+#endif
+
+
 
 std::ostream &operator<<(std::ostream &o, const ObjectData &od)
 {
@@ -3250,8 +3255,10 @@ void ArrayRender::Prepare()
     }
     }
 
+#ifdef VAO
   glGenVertexArrays(1,vao);
   glBindVertexArray(vao[0]);
+#endif
   glGenBuffers(5, &buffer[0]);
   glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
   glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_vertex_array, GL_STATIC_DRAW);
@@ -3264,6 +3271,7 @@ void ArrayRender::Prepare()
   glBindBuffer(GL_ARRAY_BUFFER, buffer[4]);
   glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_vertex_array, GL_STATIC_DRAW);
 
+#ifdef VAO
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
@@ -3279,17 +3287,36 @@ void ArrayRender::Prepare()
   glVertexAttribPointer(3,2, GL_FLOAT, GL_FALSE, 0,0);
   glBindBuffer(GL_ARRAY_BUFFER, buffer[4]);
   glVertexAttribPointer(4,3, GL_FLOAT, GL_FALSE, 0,0);
-
+#endif
   
 }
 void ArrayRender::Render(int vertexframe, int normalframe, int colorframe, int texcoordframe, int vertex_pos, int vertex_size)
 {
+#ifdef VAO
   glBindVertexArray(vao[0]);
+#else
+  glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(1);
+  glEnableVertexAttribArray(2);
+  glEnableVertexAttribArray(3);
+  glEnableVertexAttribArray(4);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+  glVertexAttribPointer(0,3, GL_FLOAT, GL_FALSE, 0,0);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
+  glVertexAttribPointer(1,3, GL_FLOAT, GL_FALSE, 0,0);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
+  glVertexAttribPointer(2,4, GL_UNSIGNED_BYTE, GL_FALSE, 0,0);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[3]);
+  glVertexAttribPointer(3,2, GL_FLOAT, GL_FALSE, 0,0);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer[4]);
+  glVertexAttribPointer(4,3, GL_FLOAT, GL_FALSE, 0,0);
+#endif
   glDrawArrays(GL_TRIANGLES, 0, vertex_size*6/4);
-  //glDisableVertexAttribArray(0);
-  //glDisableVertexAttribArray(1);
-  //glDisableVertexAttribArray(2);
-  //glDisableVertexAttribArray(3);
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(1);
+  glDisableVertexAttribArray(2);
+  glDisableVertexAttribArray(3);
+  glDisableVertexAttribArray(4);
 
 #if 0
   // enabling
