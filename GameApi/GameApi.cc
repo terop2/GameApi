@@ -11495,12 +11495,12 @@ EXPORT void GameApi::LinesApi::render(LLA l)
   glBindVertexArray(array->vao[0]);
 #else
   glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, array->buffer);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, array->buffer);
   glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(2);
-  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
+  glBindBuffer(GL_ARRAY_BUFFER, array->buffer2);
   glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0,0);
 #endif
   glDrawArrays(GL_LINES, 0, array->numpoints);
