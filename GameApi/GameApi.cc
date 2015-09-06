@@ -19,6 +19,7 @@
 #include <SDL/SDL.h> 
 #include <SDL/SDL_opengl.h>
 #endif
+#include <SDL_mixer.h>
 
 #include <memory>
 #include <cmath>
@@ -875,6 +876,9 @@ struct EnvImpl
   std::vector<LazyValue<float>*> floats;
   std::vector<Array<int,float>*> float_array;
   std::vector<FBOPriv> fbos;
+  std::vector<Samples*> samples;
+  std::vector<Tracker*> trackers;
+  std::vector<Wavs> wavs;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
 #ifndef EMSCRIPTEN
@@ -1195,6 +1199,18 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 
 EnvImpl::~EnvImpl()
 {
+  int tt3 = samples.size();
+  for(int iu3=0;iu3<tt3;iu3++)
+    {
+      delete samples[iu3];
+    }
+
+  int tt4 = trackers.size();
+  for(int iu4=0;iu4<tt4;iu4++)
+    {
+      delete trackers[iu4];
+    }
+
   int tt1 = floats.size();
   for(int iu1=0;iu1<tt1;iu1++)
     {
@@ -1390,7 +1406,22 @@ EXPORT GameApi::Env::~Env()
 }
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
-
+GameApi::SM add_sample(GameApi::Env &e, Samples *s)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->samples.push_back(s);
+  GameApi::SM sm;
+  sm.id = env->samples.size()-1;
+  return sm;
+}
+GameApi::TRK add_tracker(GameApi::Env &e, Tracker *trk)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->trackers.push_back(trk);
+  GameApi::TRK sm;
+  sm.id = env->trackers.size()-1;
+  return sm;
+}
 GameApi::FBO add_fbo(GameApi::Env &e, GLuint fbo_name, GLuint texture, GLuint depthbuffer, int sx, int sy)
 {
   FBOPriv p;
@@ -2027,7 +2058,16 @@ GameApi::ST GameApi::EventApi::states(int count_states)
   st.id = env->state_ranges.size()-1;
   return st;
 }
-
+Samples* find_samples(GameApi::Env &e, GameApi::SM sm)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->samples[sm.id];
+}
+Tracker* find_tracker(GameApi::Env &e, GameApi::TRK trk)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->trackers[trk.id];
+}
 EventInfo find_event_info(GameApi::Env &e, GameApi::E ee)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -11862,7 +11902,7 @@ EXPORT void GameApi::FrameBufferApi::config_fbo(FBO buffer)
   
   glBindFramebuffer(GL_FRAMEBUFFER, priv->fbo_name);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, priv->texture, 0);
-  GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+  //GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
   //glDrawBuffers(1, DrawBuffers);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -12054,3 +12094,127 @@ void GameApi::prepare(GameApi::RenderObject &o)
   pthread_create(&thread, NULL, Thread_Call, (void*)&o);
 }
 
+class EmptySamples : public Samples
+{
+public:
+  EmptySamples() { }
+  virtual int NumWaves() const { return 0; }
+  virtual int SampleRate(int wave) const { return 1; }
+  virtual int Id(int wave) const { return 0; }
+  virtual float Length(int wave) const { return 1.0; }
+  virtual float Index(int wave, float val) const { return 0.0; }
+};
+
+EXPORT GameApi::SM GameApi::SampleCollectionApi::empty()
+{
+  return add_sample(e, new EmptySamples);
+}
+class AddSamples : public Samples
+{
+public:
+  AddSamples(Samples *next, Waveform *wave, int sample_rate, int id) 
+    : next(next), waveform(wave), sample_rate(sample_rate), id(id)
+  { }
+  virtual int NumWaves() const { return 1+next->NumWaves(); }
+  virtual int SampleRate(int wave) const 
+  {
+    if (wave<next->NumWaves()) { return next->SampleRate(wave); }
+    return sample_rate;
+  }
+  virtual int Id(int wave) const 
+  {
+    if (wave<next->NumWaves()) { return next->Id(wave); }
+    return id;
+  }
+  virtual float Length(int wave) const { 
+    if (wave<next->NumWaves()) { return next->Length(wave); }
+    return waveform->Length();
+  }
+  virtual float Index(int wave, float val) const {
+    if (wave<next->NumWaves()) { return next->Index(wave,val); }
+    return waveform->Index(val);
+  }
+private:
+  Samples *next;
+  Waveform *waveform;
+  int sample_rate;
+  int id;
+};
+
+EXPORT GameApi::SM GameApi::SampleCollectionApi::add(SM orig, WV wave, int sample_rate, int id)
+{
+  Samples *sample = find_samples(e, orig);
+  Waveform *wv = find_waveform(e, wave);
+  return add_sample(e, new AddSamples(sample, wv, sample_rate, id));
+}
+EXPORT void GameApi::SampleCollectionApi::init_audio()
+{
+  Mix_Init(0);
+  int err = Mix_OpenAudio(22050, AUDIO_U8, 4, 1024);
+  if (err==-1)
+    {
+      std::cout << "Mix_OpenAudio error: " << Mix_GetError() << std::endl;
+    }
+}
+EXPORT void GameApi::SampleCollectionApi::play_sample(int channel, WAV w, int id)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  Wavs *wav = &env->wavs[w.id];
+  int i = 0;
+  for(;i<wav->ids.size();i++)
+    {
+      if (wav->ids[i]==id) { break; }
+    }
+  std::cout << "Play_Sample: " << i << std::endl;
+  int err = 0;
+  if (i!=wav->ids.size())
+    err = Mix_PlayChannel(channel, (Mix_Chunk*)wav->chunks[i], 0);
+  if (err == -1)
+    {
+      std::cout << "Mix_PlayChannel error: " << Mix_GetError() << std::endl;
+    }
+}
+EXPORT GameApi::WAV GameApi::SampleCollectionApi::prepare(SM samples)
+{
+  std::cout << "SampleCollectionApi::prepare" << std::endl;
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  Wavs wav;
+  env->wavs.push_back(wav);
+  int wav_id = env->wavs.size()-1;
+
+  Samples *sample = find_samples(e, samples);
+  int s = sample->NumWaves();
+  for(int i=0;i<s;i++)
+    {
+      float len = sample->Length(i);
+      int rate = sample->SampleRate(i);
+      float step = 100.0 / rate;
+      int ss = int(len/step);
+      //if (ss%1==1) { ss++; }
+      unsigned char *buffer = new unsigned char[ss];
+      int *buffer2 = (int*)buffer;
+      env->wavs[wav_id].data.push_back(buffer);
+      env->wavs[wav_id].size.push_back(11*4+ss*2);
+      env->wavs[wav_id].rate.push_back(rate);
+      for(int ii = 0; ii<ss; ii++)
+	{
+	  buffer[ii] = (unsigned char)(256.0*sample->Index(i,step*ii));
+	}
+      //SDL_RWops *bf = SDL_RWFromMem((void*)buffer, 11*4+ss*2);
+      //Mix_Chunk *sample2 = Mix_LoadWAV_RW(bf, 1);
+      Mix_Chunk *sample2 = Mix_QuickLoad_RAW(buffer, ss);
+      if (!sample2)
+	{
+	  std::cout << "Mix_QuickLoad_Raw error: " << Mix_GetError() << std::endl;
+	}
+      else
+	{
+	  //std::cout << "Mix_QuickLoad_RAW success!" << std::endl;
+	}
+      env->wavs[wav_id].chunks.push_back((void*)sample2);
+      env->wavs[wav_id].ids.push_back(sample->Id(i));
+    }
+  GameApi::WAV w;
+  w.id = wav_id;
+  return w;
+}

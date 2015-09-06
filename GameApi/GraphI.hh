@@ -145,9 +145,30 @@ struct TRect
   float width, height;
 };
 
+class Samples
+{
+public:
+  virtual ~Samples() { }
+  virtual int NumWaves() const=0;
+  virtual int SampleRate(int wave) const=0;
+  virtual int Id(int wave) const=0;
+  virtual float Length(int wave) const=0;
+  virtual float Index(int wave, float val) const=0;
+};
+
+struct Wavs
+{
+  std::vector<unsigned char *> data;
+  std::vector<int> size;
+  std::vector<int> rate;
+  std::vector<void*> chunks;
+  std::vector<int> ids;
+};
+
 class Tracker
 {
 public:
+  virtual ~Tracker() { }
   virtual int NumChannels() const=0;
   virtual int NumTimeSlots() const=0;
   virtual int Type(int channel, int timeslot) const=0;
