@@ -45,7 +45,7 @@ void iter()
       }
 
     int size = env.bullets.size();
-    std::cout << size << std::endl;
+    //std::cout << size << std::endl;
     for(int i=0;i<size;i++)
       {
 	env.ev->shader_api.use(env.sh2);
@@ -112,6 +112,25 @@ int main() {
   ev.mainloop_api.init_3d(sh);
   ev.mainloop_api.init(sh2);
 
+  ev.sample_api.init_audio();
+  WV w1 = ev.waveform_api.sinwave(1000.0, 1.0);
+  SM s1 = ev.sample_api.empty();
+  SM s2 = ev.sample_api.add(s1, w1, 1046, 0);
+  SM s3 = ev.sample_api.add(s2, w1, 1108, 1);
+  SM s4 = ev.sample_api.add(s3, w1, 1174, 2);
+  SM s5 = ev.sample_api.add(s4, w1, 1244, 3);
+  SM s6 = ev.sample_api.add(s5, w1, 1318, 4);
+  SM s7 = ev.sample_api.add(s6, w1, 1396, 5);
+  SM s8 = ev.sample_api.add(s7, w1, 1479, 6);
+  SM s9 = ev.sample_api.add(s8, w1, 1567, 7);
+  SM s10 = ev.sample_api.add(s9, w1, 1661, 8);
+  SM s11 = ev.sample_api.add(s10, w1, 1760, 9);
+  SM s12 = ev.sample_api.add(s11, w1, 1864, 10);
+  SM s13 = ev.sample_api.add(s12, w1, 1975, 11);
+
+
+  WAV ww1 = ev.sample_api.prepare(s13);
+  ev.sample_api.play_sample(0, ww1, 11);
 
 
   BB button_0 = ev.bool_bitmap_api.empty(256,256);

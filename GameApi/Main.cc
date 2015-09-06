@@ -362,7 +362,7 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
 #ifdef SDL2_USED
   int screenx = scr_x, screeny = scr_y;
 
-  SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK);
+  SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK|SDL_INIT_AUDIO);
 
 
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -510,7 +510,7 @@ SDL_Surface *InitSDL(int scr_x, int scr_y, bool vblank, bool antialias)
 
   //screenx = 320;
   //screeny = 200;
-  SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK);
+  SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK|SDL_INIT_AUDIO);
   //SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
   screen = SDL_SetVideoMode(screenx,screeny,32,SDL_OPENGL | SDL_DOUBLEBUF|SDL_RESIZABLE/*|SDL_FULLSCREEN*/);
   SDL_ShowCursor(SDL_DISABLE);
