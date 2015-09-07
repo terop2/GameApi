@@ -26,11 +26,15 @@ struct Envi {
   SH sh;
   SH sh2;
   bool pressed;
+  int framenum;
+  WAV samples;
+  TBUF song;
   std::vector<Bullet> bullets;
 } env;
 
 void iter()
 {
+  env.ev->tracker_api.play_song(*env.ev, env.song, env.samples, env.framenum, 2);
     env.ev->mainloop_api.clear();
 
     //env.poly->render();
@@ -93,6 +97,7 @@ void iter()
       {
 	env.pressed = false;
       }
+    env.framenum++;
     // std::cout << e.button << std::endl;
 }
 
@@ -130,6 +135,24 @@ int main() {
 
 
   WAV ww1 = ev.sample_api.prepare(s13);
+
+  TRK t1 = ev.tracker_api.empty(1,120);
+  TRK t2 = ev.tracker_api.audio_slot(t1, 0, 0, 1, 0);
+  TRK t3 = ev.tracker_api.audio_slot(t2, 0, 10, 1, 1);
+  TRK t4 = ev.tracker_api.audio_slot(t3, 0, 20, 1, 2);
+  TRK t5 = ev.tracker_api.audio_slot(t4, 0, 30, 1, 3);
+  TRK t6 = ev.tracker_api.audio_slot(t5, 0, 40, 1, 4);
+  TRK t7 = ev.tracker_api.audio_slot(t6, 0, 50, 1, 5);
+  TRK t8 = ev.tracker_api.audio_slot(t7, 0, 60, 1, 6);
+  TRK t9 = ev.tracker_api.audio_slot(t8, 0, 70, 1, 7);
+  TRK t10 = ev.tracker_api.audio_slot(t9, 0, 80, 1, 8);
+  TRK t11 = ev.tracker_api.audio_slot(t10, 0, 90, 1, 9);
+  TRK t12 = ev.tracker_api.audio_slot(t11, 0, 100, 1, 10);
+  TRK t13 = ev.tracker_api.audio_slot(t12, 0, 110, 1, 11);
+
+  TBUF song = ev.tracker_api.prepare(t13);
+  
+
   ev.sample_api.play_sample(0, ww1, 11);
 
 
@@ -170,6 +193,9 @@ int main() {
   env.fnt_va = fnt_va;
   env.fnt_va1 = fnt_va1;
   env.bullet_va = bullet_va;
+  env.song = song;
+  env.samples = ww1;
+  env.framenum = 0;
 #ifndef EMSCRIPTEN
   while(1) {
     iter();
