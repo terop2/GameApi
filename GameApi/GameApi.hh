@@ -106,6 +106,7 @@ using std::placeholders::_9;
   struct SM { int id; };
   struct TRK { int id; };
   struct WAV { int id; };
+  struct TBUF { int id; };
   //template<class T>
   //struct E { int id; };
 
@@ -1034,24 +1035,27 @@ private:
 class SampleCollectionApi
 {
 public:
-  SampleCollectionApi(Env &e) : e(e) { }
-  SM empty();
-  SM add(SM orig, WV wave, int sample_rate, int id);
+  IMPORT SampleCollectionApi(Env &e) : e(e) { }
+  IMPORT SM empty();
+  IMPORT SM add(SM orig, WV wave, int sample_rate, int id);
   //WV find_wave(SM orig, int id);
   //int find_rate(SM orig, int id);
-  void init_audio();
-  WAV prepare(SM samples);
-  void play_sample(int channel, WAV w, int id);
+  IMPORT void init_audio();
+  IMPORT WAV prepare(SM samples);
+  IMPORT void play_sample(int channel, WAV w, int id);
+  void play_sample_1(int channel, WAV w, int id);
 private:
   Env &e;
 };
 class TrackerApi
 {
 public:
-  TrackerApi(Env &e) : e(e) { }
-  TRK empty(int numchannels, int numslots);
-  TRK audio_slot(TRK orig, int channel, int slot, int duration, int sample);
-  TRK array(TRK *array, int size);
+  IMPORT TrackerApi(Env &e) : e(e) { }
+  IMPORT TRK empty(int numchannels, int numslots);
+  IMPORT TRK audio_slot(TRK orig, int channel, int slot, int duration, int sample);
+  IMPORT TRK array(TRK *array, int size);
+  IMPORT TBUF prepare(TRK trk);
+  IMPORT void play_song(EveryApi &ev, TBUF buf, WAV samples, int framenum, int speed);
 private:
   Env &e;
 };
@@ -1670,7 +1674,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -1705,6 +1709,7 @@ struct EveryApi
   VoxelApi voxel_api;
   FrameBufferApi fbo_api;
   SampleCollectionApi sample_api;
+  TrackerApi tracker_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);

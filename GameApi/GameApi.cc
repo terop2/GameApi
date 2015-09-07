@@ -814,6 +814,19 @@ struct PlaneData
   std::vector<unsigned char> cmd_array;
 };
 
+struct TBuffer2
+{
+  int type;
+  int duration;
+  int sample;
+};
+
+struct TBuffer
+{
+  int numchannels;
+  int numslots;
+  TBuffer2 *buf; // 2d buffer
+};
 
 struct EnvImpl
 {
@@ -878,6 +891,7 @@ struct EnvImpl
   std::vector<FBOPriv> fbos;
   std::vector<Samples*> samples;
   std::vector<Tracker*> trackers;
+  std::vector<TBuffer> tracker_buf;
   std::vector<Wavs> wavs;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
@@ -12156,7 +12170,10 @@ EXPORT void GameApi::SampleCollectionApi::init_audio()
       std::cout << "Mix_OpenAudio error: " << Mix_GetError() << std::endl;
     }
 }
-EXPORT void GameApi::SampleCollectionApi::play_sample(int channel, WAV w, int id)
+EXPORT void GameApi::SampleCollectionApi::play_sample(int channel, WAV w, int id) {
+  play_sample_1(channel, w, id);
+}
+void GameApi::SampleCollectionApi::play_sample_1(int channel, WAV w, int id)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   Wavs *wav = &env->wavs[w.id];
@@ -12198,7 +12215,7 @@ EXPORT GameApi::TRK GameApi::TrackerApi::empty(int numchannels, int numslots)
 class AudioTracker : public Tracker
 {
 public:
-  AudioTracker(Tracker *next, int channel, int timeslot, int duration, int sample) : channel(channel), timeslot(timeslot) { }
+  AudioTracker(Tracker *next, int channel, int timeslot, int duration, int sample) : next(next), channel(channel), timeslot(timeslot), duration(duration), sample(sample) { }
   virtual int NumChannels() const { return next->NumChannels(); }
   virtual int NumTimeSlots() const { return next->NumTimeSlots(); }
   virtual int Type(int cha, int slot) const 
@@ -12312,6 +12329,32 @@ EXPORT GameApi::TRK GameApi::TrackerApi::array(TRK *array, int size)
   env->deletes.push_back(std::shared_ptr<void>(vec));
   return add_tracker(e, new ArrayTracker(&(*vec)[0], size));
 }
+EXPORT GameApi::TBUF GameApi::TrackerApi::prepare(TRK trk)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  Tracker *tracker = find_tracker(e, trk);
+  int s1 = tracker->NumChannels();
+  int s2 = tracker->NumTimeSlots();
+  TBuffer2 *buf = new TBuffer2[s1*s2];
+  for(int y=0;y<s2;y++)
+    for(int x=0;x<s1;x++)
+      {
+	TBuffer2 &elem = buf[x+y*s1];
+	elem.type = tracker->Type(x,y);
+	elem.duration = tracker->Duration(x,y);
+	elem.sample = tracker->Sample(x,y);
+      }
+
+
+  TBuffer buf0;
+  buf0.numchannels = s1;
+  buf0.numslots = s2;
+  buf0.buf = buf;
+  env->tracker_buf.push_back(buf0);
+  TBUF b;
+  b.id = env->tracker_buf.size()-1;
+  return b;
+}
 EXPORT GameApi::WAV GameApi::SampleCollectionApi::prepare(SM samples)
 {
   std::cout << "SampleCollectionApi::prepare" << std::endl;
@@ -12355,4 +12398,24 @@ EXPORT GameApi::WAV GameApi::SampleCollectionApi::prepare(SM samples)
   GameApi::WAV w;
   w.id = wav_id;
   return w;
+}
+EXPORT void GameApi::TrackerApi::play_song(EveryApi &ev, TBUF buf, WAV samples, int framenum, int speed)
+{
+  int slot = framenum / speed;
+  int delta = framenum - slot*speed;
+  if (delta!=0) return;
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  Wavs &w = env->wavs[samples.id];
+  TBuffer &bf = env->tracker_buf[buf.id];
+  if (slot>=bf.numslots) return;
+
+  int s = bf.numchannels;
+  for(int i=0;i<s;i++)
+    {
+      TBuffer2 &b = bf.buf[i+bf.numchannels*slot];
+      if (b.type==1) {
+	std::cout << "play_sample_1" << " " << i <<" " << b.sample << std::endl;
+	ev.sample_api.play_sample_1(i, samples, b.sample);
+      }
+    }
 }
