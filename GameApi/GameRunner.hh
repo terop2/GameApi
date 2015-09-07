@@ -56,7 +56,7 @@ StateBitmaps * PrepareFaceCollPolyHandle(FaceCollPolyHandle *handle, int bbm_cho
 class GameRunner
 {
 public:
-  GameRunner(GameApi::Env &e, Sequencer2 &seq, int start_state) : e(e), seq(seq), start_state(start_state), current_time(0.0) { }
+  GameRunner(GameApi::Env &e, Sequencer2 &seq, int start_state) :  seq(seq), start_state(start_state), current_time(0.0),e(e) { }
   void run();
 private: 
   int MoveToNextState(int state, float time)

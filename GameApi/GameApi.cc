@@ -12161,18 +12161,156 @@ EXPORT void GameApi::SampleCollectionApi::play_sample(int channel, WAV w, int id
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   Wavs *wav = &env->wavs[w.id];
   int i = 0;
-  for(;i<wav->ids.size();i++)
+  int s = wav->ids.size();
+  for(;i<s;i++)
     {
       if (wav->ids[i]==id) { break; }
     }
   std::cout << "Play_Sample: " << i << std::endl;
   int err = 0;
-  if (i!=wav->ids.size())
+  if (i!=s)
     err = Mix_PlayChannel(channel, (Mix_Chunk*)wav->chunks[i], 0);
   if (err == -1)
     {
       std::cout << "Mix_PlayChannel error: " << Mix_GetError() << std::endl;
     }
+}
+class EmptyTracker : public Tracker
+{
+public:
+  EmptyTracker(int channels, int timeslots) : channels(channels), timeslots(timeslots) { }
+  virtual int NumChannels() const { return channels; }
+  virtual int NumTimeSlots() const { return timeslots; }
+  virtual int Type(int channel, int timeslot) const { return 0; }
+  virtual int Duration(int channel, int timeslot) const { return -1; }
+  virtual int Sample(int channel, int timeslot) const { return -1; }
+  virtual int NumData(int channel, int timeslot) const { return 0; }
+  virtual unsigned int Data(int channel, int timeslot, int data) const { return 0; }
+private:
+  int channels;
+  int timeslots;
+};
+EXPORT GameApi::TRK GameApi::TrackerApi::empty(int numchannels, int numslots)
+{
+  return add_tracker(e, new EmptyTracker(numchannels, numslots));
+}
+
+class AudioTracker : public Tracker
+{
+public:
+  AudioTracker(Tracker *next, int channel, int timeslot, int duration, int sample) : channel(channel), timeslot(timeslot) { }
+  virtual int NumChannels() const { return next->NumChannels(); }
+  virtual int NumTimeSlots() const { return next->NumTimeSlots(); }
+  virtual int Type(int cha, int slot) const 
+  {
+    if (cha==channel && slot == timeslot)
+      return 1; 
+    return next->Type(cha, slot);
+  }
+  virtual int Duration(int cha, int slot) const 
+  { 
+    if (cha==channel && slot==timeslot)
+      {
+	return duration;
+      }
+    return next->Duration(cha,slot); 
+  }
+  virtual int Sample(int cha, int slot) const 
+  {
+    if (cha==channel && slot==timeslot)
+      return sample;
+    return next->Sample(cha,slot);
+  }
+  virtual int NumData(int channel, int timeslot) const { return next->NumData(channel, timeslot); }
+  virtual unsigned int Data(int channel, int timeslot, int data) const { return next->Data(channel,timeslot,data); }; 
+private:
+  Tracker *next;
+  int channel;
+  int timeslot;
+  int duration;
+  int sample;
+};
+
+EXPORT GameApi::TRK GameApi::TrackerApi::audio_slot(TRK orig, int channel, int slot, int duration, int sample)
+{
+  Tracker *next = find_tracker(e, orig);
+  return add_tracker(e, new AudioTracker(next, channel, slot, duration, sample));
+}
+class ArrayTracker : public Tracker
+{
+public:
+  ArrayTracker(Tracker **array, int size) : array(array), size(size) { }
+  virtual int NumChannels() const 
+  {
+    int s = size;
+    int channels = 0;
+    for(int i=0;i<s;i++)
+      {
+	channels = std::max(channels, array[i]->NumChannels());
+      }
+    return channels; 
+  }
+  virtual int NumTimeSlots() const { 
+    int s = size;
+    int timeslots = 0;
+    for(int i=0;i<s;i++)
+      {
+	timeslots += array[i]->NumTimeSlots();
+      }
+    return timeslots; 
+  }
+  virtual int Type(int channel, int timeslot) const { 
+    std::pair<int,int> p = find_array_index(timeslot);
+    return array[p.first]->Type(channel,p.second);
+  }
+  virtual int Duration(int channel, int timeslot) const {
+    std::pair<int,int> p = find_array_index(timeslot);
+    return array[p.first]->Duration(channel,p.second);
+  }
+  virtual int Sample(int channel, int timeslot) const { 
+    std::pair<int,int> p = find_array_index(timeslot);
+    return array[p.first]->Sample(channel,p.second);
+  }
+  virtual int NumData(int channel, int timeslot) const { 
+    std::pair<int,int> p = find_array_index(timeslot);
+    return array[p.first]->NumData(channel,p.second);
+
+  }
+  virtual unsigned int Data(int channel, int timeslot, int data) const { 
+    std::pair<int,int> p = find_array_index(timeslot);
+    return array[p.first]->Data(channel,p.second,data);
+  }; 
+
+  std::pair<int,int> find_array_index(int timeslot) const
+  {
+    int s = size;
+    int pos = 0;
+    for(int i=0;i<s;i++)
+      {
+	int oldpos = pos;
+	pos+=array[i]->NumTimeSlots();
+	if (pos>=timeslot)
+	  {
+	    return std::make_pair(i,timeslot-oldpos);
+	  }
+      }
+    return std::make_pair(0,0);
+  }
+private:
+  Tracker **array;
+  int size;
+};
+
+EXPORT GameApi::TRK GameApi::TrackerApi::array(TRK *array, int size)
+{
+  std::vector<Tracker*> *vec = new std::vector<Tracker*>;
+  for(int i=0;i<size;i++)
+    {
+      vec->push_back(find_tracker(e,array[i]));
+    }
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->deletes.push_back(std::shared_ptr<void>(vec));
+  return add_tracker(e, new ArrayTracker(&(*vec)[0], size));
 }
 EXPORT GameApi::WAV GameApi::SampleCollectionApi::prepare(SM samples)
 {
@@ -12192,7 +12330,7 @@ EXPORT GameApi::WAV GameApi::SampleCollectionApi::prepare(SM samples)
       int ss = int(len/step);
       //if (ss%1==1) { ss++; }
       unsigned char *buffer = new unsigned char[ss];
-      int *buffer2 = (int*)buffer;
+      //int *buffer2 = (int*)buffer;
       env->wavs[wav_id].data.push_back(buffer);
       env->wavs[wav_id].size.push_back(11*4+ss*2);
       env->wavs[wav_id].rate.push_back(rate);
