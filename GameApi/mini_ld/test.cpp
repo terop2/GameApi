@@ -23,6 +23,7 @@ struct Envi {
   VA fnt_va;
   VA fnt_va1;
   VA bullet_va;
+  VA line_va;
   SH sh;
   SH sh2;
   bool pressed;
@@ -34,8 +35,9 @@ struct Envi {
 
 void iter()
 {
-  env.ev->tracker_api.play_song(*env.ev, env.song, env.samples, env.framenum, 2);
+  //env.ev->tracker_api.play_song(*env.ev, env.song, env.samples, env.framenum, 2);
     env.ev->mainloop_api.clear();
+
 
     //env.poly->render();
     
@@ -60,6 +62,13 @@ void iter()
 	env.bullets[i].pos_x += env.bullets[i].speed_x;
 	env.bullets[i].pos_y += env.bullets[i].speed_y;
       }
+
+
+    env.ev->shader_api.use(env.sh2);
+    M m = env.ev->matrix_api.trans(400.0, 400.0, 0.0);
+    env.ev->shader_api.set_var(env.sh2, "in_MV", m);
+    env.ev->sprite_api.render_sprite_vertex_array(env.line_va);
+    env.ev->shader_api.set_var(env.sh2, "in_MV", env.ev->matrix_api.identity());
 
     //env.ev->mainloop_api.fpscounter();
     // swapbuffers
@@ -111,6 +120,7 @@ int main() {
   // shader initialization
   ev.shader_api.load_default();
   SH sh = ev.shader_api.colour_shader();
+  //SH sh2 = ev.shader_api.get_shader("texture", "texture", "");
   SH sh2 = ev.shader_api.texture_shader();
 
   // rest of the initializations
@@ -153,7 +163,12 @@ int main() {
   TBUF song = ev.tracker_api.prepare(t13);
   
 
-  ev.sample_api.play_sample(0, ww1, 11);
+  //ev.sample_api.play_sample(0, ww1, 11);
+
+  BB line_0 = ev.bool_bitmap_api.empty(256,256);
+  BB line_1 = ev.bool_bitmap_api.line(line_0, 30.0, 30.0, 100.0, 60.0,  0.02, 10.1);
+  BB line_2 = ev.bool_bitmap_api.ellipse(line_1, 130.0, 128.0, 60.0,128.0, 80.0);
+  BM line_3 = ev.bool_bitmap_api.to_bitmap(line_2, 255,255,255,255, 0,0,0,0);
 
 
   BB button_0 = ev.bool_bitmap_api.empty(256,256);
@@ -176,10 +191,12 @@ int main() {
   VA fnt_va = ev.sprite_api.create_vertex_array(fnt_bm);
   VA fnt_va1 = ev.sprite_api.create_vertex_array(fnt_bm1);
   VA bullet_va = ev.sprite_api.create_vertex_array(bullet_2);
+  VA line_va = ev.sprite_api.create_vertex_array(line_3);
   //ev.sprite_api.preparesprite(fnt_bm);
 
 
   ev.mainloop_api.alpha(true);
+  ev.mainloop_api.depth_test(false);
 
   P p3 = ev.polygon_api.cube(0.0, 100.0, 0.0, 100.0, 0.0, 100.0);
   PolygonObj poly(ev, p3, sh);
@@ -193,6 +210,7 @@ int main() {
   env.fnt_va = fnt_va;
   env.fnt_va1 = fnt_va1;
   env.bullet_va = bullet_va;
+  env.line_va = line_va;
   env.song = song;
   env.samples = ww1;
   env.framenum = 0;

@@ -10,20 +10,22 @@ using namespace GameApi;
 struct Envi {
   EveryApi *ev;
   PolygonObj *poly;
-} env;
+};
 
-void iter()
+void iter(void *arg)
 {
-    env.ev->mainloop_api.clear_3d();
+  Envi *env = (Envi*)arg;
 
-    env.poly->render();
+    env->ev->mainloop_api.clear_3d();
 
-    env.ev->mainloop_api.fpscounter();
+    env->poly->render();
+
+    env->ev->mainloop_api.fpscounter();
     // swapbuffers
-    env.ev->mainloop_api.swapbuffers();
+    env->ev->mainloop_api.swapbuffers();
 
     // handle esc event
-    MainLoopApi::Event e = env.ev->mainloop_api.get_event();
+    MainLoopApi::Event e = env->ev->mainloop_api.get_event();
 #ifndef EMSCRIPTEN
     if (e.ch==27) { exit(0); }
 #endif
@@ -32,6 +34,8 @@ void iter()
 int main() {
   Env e;
   EveryApi ev(e);
+
+  Envi env;
 
   // initialize window
   ev.mainloop_api.init_window();
@@ -54,11 +58,11 @@ int main() {
 
 #ifndef EMSCRIPTEN
   while(1) {
-    iter();
+    iter(&env);
     ev.mainloop_api.delay(10);
   }
 #else
-  emscripten_set_main_loop(iter, 60,1);
+  emscripten_set_main_loop_arg(iter, (void*)&env, 60,1);
 #endif
 
 

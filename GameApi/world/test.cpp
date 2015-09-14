@@ -14,9 +14,9 @@ char world[] = \
   "+---------+---------+"
   "|....%...T|.P...Y...|"
   "|..+---+..|...L....S|"
-  "|.Q|...|........I...|"
-  "|..+.*.+..|........G|"
-  "|&..W....#|K....H...|"
+  "|.Q|...|...KKK..I...|"
+  "|..+.*.+..|KKK.....G|"
+  "|&..W....#|KKK..H...|"
   "+--.....--+---------+";
 
 unsigned int func(char c) {
@@ -83,7 +83,6 @@ P pieces3(unsigned int i, EveryApi &ev)
     //return ev.polygon_api.empty();
      return pk;
 }
-
 
 P line_func(int i, float sx, float sy, float sz, float ex, float ey, float ez, unsigned int scolor, unsigned int ecolor, EveryApi &ev)
 {
@@ -316,7 +315,7 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
     }
   case 16:
     {
-#if 0
+#if 1
       PT center = ev.point_api.point(50.0, 40.0, 50.0);
       V u_x = ev.vector_api.vector(1.0, 0.0, 0.0);
       V u_y = ev.vector_api.vector(0.0, 1.0, 0.0);
@@ -330,8 +329,15 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
 
 				      //				      std::bind(&line_func, _1,_2,_3,_4,_5,_6,_7, _8,_9, std::ref(ev)));
 #endif
-     P p2 = ev.polygon_api.empty();
-     return p2;
+     //P p2 = ev.polygon_api.empty();
+  P p2a1 = ev.polygon_api.recalculate_normals(p2);
+  P p2a2 = ev.polygon_api.texcoord_manual(p2a1, 
+					 0.0, 0.0, 
+					 1.0, 0.0,
+					 1.0, 1.0,
+					 0.0, 1.0);
+
+     return p2a2;
 
     }
   case 15:
@@ -353,7 +359,14 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
 	//					      _11,_12,_13, std::ref(ev)));
 #endif
       P p2 = ev.polygon_api.color_from_normals(pp);
-      return p2;
+  P p2a1 = ev.polygon_api.recalculate_normals(p2);
+  P p2a2 = ev.polygon_api.texcoord_manual(p2a1, 
+					 0.0, 0.0, 
+					 1.0, 0.0,
+					 1.0, 1.0,
+					 0.0, 1.0);
+
+      return p2a2;
       
     }
   case 14:
@@ -372,7 +385,7 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       // P pp = ev.polygon_api.rotatex(p,90.0*3.14159*2.0/360.0);
       //P p = ev.polygon_api.empty();
 #endif
-      //return p;
+      // return p;
     }
   case 13:
     {
@@ -380,7 +393,14 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       PT p2 = ev.point_api.point(50.0, 80.0, 50.0);
       P p = ev.polygon_api.cone(50, p1, p2, 50.0, 30.0);
       P p3 = ev.polygon_api.color_faces(p, 0xffffffff, 0xffaaaaaa, 0xffcccccc, 0xff888888);
-      return p3;
+  P p2a1 = ev.polygon_api.recalculate_normals(p3);
+  P p2a2 = ev.polygon_api.texcoord_manual(p2a1, 
+					 0.0, 0.0, 
+					 1.0, 0.0,
+					 1.0, 1.0,
+					 0.0, 1.0);
+
+      return p2a2;
     }
   case 12:
     {
@@ -445,7 +465,14 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
 					pos_y, pos_y+20.0));
       P p = ev.polygon_api.or_array(&vec[0], 4*4+3*3+2*2+1);
       P p2 = ev.polygon_api.color_faces(p, 0xff000000, 0xff222222, 0xff111111, 0xff333333);
-      return p2;
+
+  P p2a1 = ev.polygon_api.recalculate_normals(p2);
+  P p2a2 = ev.polygon_api.texcoord_manual(p2a1, 
+					 0.0, 0.0, 
+					 1.0, 0.0,
+					 1.0, 1.0,
+					 0.0, 1.0);
+      return p2a2;
     }
   case 10:
     {
@@ -461,7 +488,14 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       //					      _11,_12,_13, std::ref(ev)));
 #endif
       P p3 = ev.polygon_api.color_faces(p2, 0xff888888, 0xff444444, 0xff222222, 0xff666666);
-     return p3;
+  P p2a1 = ev.polygon_api.recalculate_normals(p3);
+  P p2a2 = ev.polygon_api.texcoord_manual(p2a1, 
+					 0.0, 0.0, 
+					 1.0, 0.0,
+					 1.0, 1.0,
+					 0.0, 1.0);
+
+     return p2a2;
     }
   case 9:
     {
@@ -474,7 +508,14 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       //				       std::bind(&line_func, _1,_2,_3,_4,_5,_6,_7, _8,_9, std::ref(ev)));
 #endif
       //      P p2 = ev.polygon_api.empty();
-      return p2;
+  P p2a1 = ev.polygon_api.recalculate_normals(p2);
+  P p2a2 = ev.polygon_api.texcoord_manual(p2a1, 
+					 0.0, 0.0, 
+					 1.0, 0.0,
+					 1.0, 1.0,
+					 0.0, 1.0);
+
+      return p2a2;
     }
   case 8:
     {
@@ -514,7 +555,14 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       P p2 = ev.polygon_api.from_points(pts, [&ev](int i, float x, float y, float z, unsigned int color) { return points_func(i,x,y,z,color,ev); }); //std::bind(points_func, _1, _2, _3, _4, _5, std::ref(ev)));
 #endif
 					//P p2 = ev.polygon_api.empty();
-      return p2;
+  P p2a1 = ev.polygon_api.recalculate_normals(p2);
+  P p2a2 = ev.polygon_api.texcoord_manual(p2a1, 
+					 0.0, 0.0, 
+					 1.0, 0.0,
+					 1.0, 1.0,
+					 0.0, 1.0);
+
+      return p2a2;
     }
     
  case 6:
@@ -523,14 +571,27 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
      P p11 = ev.polygon_api.rotatex(p1, 45.0*3.14159*2.0/360.0);
      P p2 = ev.polygon_api.translate(p11,0.0,40.0,0.0);
      P p3 = ev.polygon_api.color_faces(p2, 0xff888888, 0xff444444, 0xff222222, 0xffaaaaaa);
-     return p3;
+  P p2a1 = ev.polygon_api.recalculate_normals(p3);
+  P p2a2 = ev.polygon_api.texcoord_manual(p2a1, 
+					 0.0, 0.0, 
+					 1.0, 0.0,
+					 1.0, 1.0,
+					 0.0, 1.0);
+     return p2a2;
    }
   case 4:
     {
       PT pt = ev.point_api.point(50.0,40.0,50.0);
       P p2 = ev.polygon_api.sphere(pt, 40.0, 40,40);
       P p3 = ev.polygon_api.color_from_normals(p2);
-      return p3;
+  P p2a1 = ev.polygon_api.recalculate_normals(p3);
+  P p2a2 = ev.polygon_api.texcoord_manual(p2a1, 
+					 0.0, 0.0, 
+					 1.0, 0.0,
+					 1.0, 1.0,
+					 0.0, 1.0);
+
+      return p2a2;
     }
   case 3:
     {
@@ -538,20 +599,39 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       P pa = cube(0.0, 100.0, 0.0, 80.0, 50.0, 58.0, ev);
       P pp = ev.polygon_api.or_elem(p,pa);
       P p2 = ev.polygon_api.color_faces(pp, 0xffff8844, 0xff884422, 0xffff8844, 0xff884422); 
-      return p2;
+  P p2a1 = ev.polygon_api.recalculate_normals(p2);
+  P p2a2 = ev.polygon_api.texcoord_manual(p2a1, 
+					 0.0, 0.0, 
+					 1.0, 0.0,
+					 1.0, 1.0,
+					 0.0, 1.0);
+      return p2a2;
     }
   case 2:
     {
       P p = cube(50.0, 58.0, 0.0, 80.0, 0.0, 100.0, ev);
       P p2 = ev.polygon_api.color_faces(p, 0xffff8844, 0xff884422, 0xffff8844, 0xff884422);
-      return p2;
+  P p2a1 = ev.polygon_api.recalculate_normals(p2);
+  P p2a2 = ev.polygon_api.texcoord_manual(p2a1, 
+					 0.0, 0.0, 
+					 1.0, 0.0,
+					 1.0, 1.0,
+					 0.0, 1.0);
+      return p2a2;
     }
     
   case 1:
     {
       P p = cube(0.0, 100.0, 0.0, 80.0, 50.0, 58.0, ev);
       P p2 = ev.polygon_api.color_faces(p, 0xffff8844, 0xff884422, 0xffff8844, 0xff884422);
-      return p2;
+  P p2a1 = ev.polygon_api.recalculate_normals(p2);
+  P p2a2 = ev.polygon_api.texcoord_manual(p2a1, 
+					 0.0, 0.0, 
+					 1.0, 0.0,
+					 1.0, 1.0,
+					 0.0, 1.0);
+
+      return p2a2;
     }
   case 0:
     break;
@@ -589,6 +669,7 @@ struct Envi
   SH sh2;
   SH sh3;
   PolygonObj *poly;
+  WorldObj *poly_world;
   PolygonObj *reflect_obj;
   PolygonObj *poly2;
   PolygonObj *mirror;
@@ -623,20 +704,25 @@ void iter()
     M a_m2 = env.ev->matrix_api.trans(0.0,0.0,400.0);
     M a_m3 = env.ev->matrix_api.trans(0.0,0.0,-400.0);
     M a_mm = env.ev->matrix_api.mult(env.ev->matrix_api.mult(a_m3,a_m),a_m2);
+#if 1
     env.poly->set_rotation_matrix2(a_mm);
     env.poly->set_pos(env.pos_x, -80.0+env.y_delta, env.pos_y);
     env.poly->render();
+#endif
+    //env.poly_world->set_rotation_matrix2(a_mm);
+    //env.poly_world->set_pos(env.pos_x, -80.0+env.y_delta, env.pos_y);
+    //env.poly_world->render();
 
     env.reflect_obj->set_rotation_matrix2(a_mm);
     env.reflect_obj->set_pos(env.pos_x, -75.0+env.y_delta, env.pos_y);
     env.reflect_obj->render();
 
 
-    env.ev->mainloop_api.transparency(true);
+    //env.ev->mainloop_api.transparency(true);
     env.poly2->set_rotation_matrix2(a_mm);
     env.poly2->set_pos(env.pos_x, -80.0+env.y_delta, env.pos_y);
     env.poly2->render();
-    env.ev->mainloop_api.transparency(false);
+    //env.ev->mainloop_api.transparency(false);
 
     M m = env.ev->matrix_api.yrot(env.rot_y);
     M m2 = env.ev->matrix_api.trans(0.0,0.0,400.0);
@@ -673,10 +759,14 @@ void iter()
 
 
     //poly.set_rotation_matrix(ev.matrix_api.xrot(frame));
-    env.poly->set_rotation_matrix2(mm);
+#if 1 
+   env.poly->set_rotation_matrix2(mm);
     env.poly->set_pos(env.pos_x, -80.0+env.y_delta, env.pos_y);
     env.poly->render();
-
+#endif
+    env.poly_world->set_rotation_matrix2(mm);
+    env.poly_world->set_pos(env.pos_x, -80.0+env.y_delta, env.pos_y);
+    env.poly_world->render();
 
 
     //shadow_obj.set_rotation_matrix2(mm);
@@ -718,14 +808,14 @@ void iter()
 #if 0
     BM bm = ev.mainloop_api.screenshot();
 #endif
-    //env.ev->mainloop_api.fpscounter();
+    env.ev->mainloop_api.fpscounter();
     // swapbuffers
     env.ev->mainloop_api.swapbuffers();
 
     // handle esc event
     MainLoopApi::Event e = env.ev->mainloop_api.get_event();
     // if (e.type==0x300)
-    //  std::cout << e.ch << std::endl;
+    //std::cout << e.type << " " << e.ch << std::endl;
 
     env.mouse_x = env.ev->point_api.pt_x(e.cursor_pos);
     env.mouse_y = env.ev->point_api.pt_y(e.cursor_pos);
@@ -734,6 +824,8 @@ void iter()
 #endif
     if ((e.ch=='w' || e.ch==26||e.ch==82)&& e.type==0x300) { env.pos_y+=env.speed_y; env.pos_x+=env.speed_x; }
     if ((e.ch=='s' || e.ch==22||e.ch==81)&& e.type==0x300) { env.pos_y-=env.speed_y; env.pos_x-=env.speed_x; }
+
+
     if ((e.ch=='a'||e.ch==4||e.ch==80)&& e.type==0x300) { env.rot_y -= env.rot_speed; }
     if ((e.ch=='d'||e.ch==7||e.ch==79)&& e.type==0x300) { env.rot_y += env.rot_speed; }
     if ((e.ch==' '||e.ch==44)&&env.frame+env.jump_duration>env.jump_start_frame && e.type==0x300)
@@ -781,12 +873,12 @@ int main() {
   // shader initialization
   //ev.shader_api.load("Shader.txt");
   ev.shader_api.load_default();
-  SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour:snoise:snoise:point_light:light", "colour:light:light:bands:snoise:snoise:point_light");
-  //SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour", "colour");
+  //SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour:snoise:snoise:point_light:light", "colour:light:light:bands:snoise:snoise:point_light");
+  SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour:snoise:snoise:point_light:light", "colour:light:light:bands:snoise:snoise",false);
 
-  SH sh2 = ev.shader_api.get_shader("comb", "comb", "", "blur", "blur");
-  SH sh3 = ev.shader_api.get_shader("comb", "comb", "", "texture:light:snoise", "texture:light:snoise");
-  SH sh4 = ev.shader_api.get_shader("empty", "empty", "");
+  SH sh2 = ev.shader_api.get_shader("comb", "comb", "", "blur", "blur",false);
+  SH sh3 = ev.shader_api.get_shader("comb", "comb", "", "texture:light:snoise", "texture:light:snoise",false);
+  SH sh4 = ev.shader_api.get_shader("empty", "empty", "", "", "", false);
   ev.shader_api.bind_attrib(sh, 0, "in_Position");
   ev.shader_api.bind_attrib(sh, 1, "in_Normal");
   ev.shader_api.bind_attrib(sh, 2, "in_Color");
@@ -848,18 +940,21 @@ int main() {
 #endif
 
   BM bm = ev.bitmap_api.newintbitmap(world, 21, 7, func);
-  P p = ev.polygon_api.world_from_bitmap(std::bind(&pieces, _1, std::ref(ev), std::ref(m)), bm   , 100.0, 100.0);
-  P p2 = ev.polygon_api.world_from_bitmap(std::bind(&pieces2, _1, std::ref(ev)), bm, 100.0, 100.0);
-  P p3 = ev.polygon_api.world_from_bitmap(std::bind(&pieces3, _1, std::ref(ev)), bm, 100.0, 100.0);
+  P p = ev.polygon_api.world_from_bitmap(std::bind(&pieces, _1, std::ref(ev), std::ref(m)), bm   , 100.0, 100.0, 19);
+  P p2 = ev.polygon_api.world_from_bitmap(std::bind(&pieces2, _1, std::ref(ev)), bm, 100.0, 100.0, 19);
+  P p3 = ev.polygon_api.world_from_bitmap(std::bind(&pieces3, _1, std::ref(ev)), bm, 100.0, 100.0, 19);
   P p3a = ev.polygon_api.or_elem(p,p3);
   P p2a = ev.polygon_api.or_elem(p,p2);
-  P p2a1 = ev.polygon_api.recalculate_normals(p2a);
+  P p2a1 = ev.polygon_api.recalculate_normals(p2);
   P p2a2 = ev.polygon_api.texcoord_manual(p2a1, 
 					 0.0, 0.0, 
 					 1.0, 0.0,
 					 1.0, 1.0,
 					 0.0, 1.0);
 
+  WorldObj poly_world(ev, std::bind(&pieces, _1, std::ref(ev), std::ref(m)), 19, bm, 100.0,100.0, sh);
+  poly_world.set_scale(3.0,3.0,3.0);
+  poly_world.prepare();
   PolygonObj poly(ev, p2a2, sh);
   poly.set_scale(3.0,3.0,3.0);
   poly.prepare();
@@ -1001,6 +1096,7 @@ int main() {
   env.sh2 = sh2;
   env.sh3 = sh3;
   env.poly = &poly;
+  env.poly_world = &poly_world;
   env.reflect_obj = &reflect_obj;
   env.poly2 = &poly2;
   env.mirror = &mirror;

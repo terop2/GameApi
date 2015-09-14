@@ -708,6 +708,10 @@ struct Vector2d
   }
   float Length() const;
   float Dist() const { return Length(); }
+  static float DotProduct(const Vector2d &v, const Vector2d &v2)
+  {
+    return v.dx*v2.dx+v.dy*v2.dy;
+  }
   static Vector2d FromPoint(const Point2d &p)
   {
     Vector2d pp;
