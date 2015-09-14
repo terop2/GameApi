@@ -989,9 +989,9 @@ public:
   IMPORT P create_dynamic_geometry(P *array, int size);
   IMPORT void render_dynamic(P p, int array_elem, bool textures); // use memoize_all for p before calling this.
 
-  IMPORT P world_from_bitmap(std::function<P (int c)> f, BM int_bm, float dx, float dy);
+  IMPORT P world_from_bitmap(std::function<P (int c)> f, BM int_bm, float dx, float dy, int max_c);
   IMPORT P world_from_bitmap2(EveryApi &ev, std::function<P (int c, PT tl, PT tr, PT bl, PT br)> f, BM int_bm, FB float_bm, float dx, float dz, float height);
-  IMPORT P world_from_voxel(std::function<P (unsigned int c)> f, VX voxel, float dx, float dy, float dz);
+  IMPORT P world_from_voxel(std::function<P (unsigned int c)> f, VX voxel, float dx, float dy, float dz, int max_c);
 
   IMPORT P from_points(PTS p, std::function<P (int i, float x,float y,float z, unsigned int color)> f);
   IMPORT P from_lines(LI li, std::function<P (int i, float sx, float sy, float sz, float ex, float ey, float ez, unsigned int scolor, unsigned int ecolor)> f);
@@ -1156,48 +1156,50 @@ private:
 class BoolBitmapApi
 { // NxN->2
 public:
-	IMPORT BoolBitmapApi(Env &e);
-	IMPORT ~BoolBitmapApi();
-	IMPORT BB empty(int sx, int sy);
-	BB function(std::function<bool(int, int)> f, int sx, int sy);
-	IMPORT BB transform(BB orig, std::function<bool(int, int, bool)> f);
-	IMPORT O to_volume(BB b, float dist);
-	IMPORT BB from_float_bitmap(FB float_bm, float range_start, float range_end);
-	IMPORT BB from_bitmaps_color(BM bm, int r, int g, int b);
-	IMPORT BB from_bitmaps_color_area(BM bm, std::function<bool(int r, int g, int b, int a)> f);
-	IMPORT BB from_bitmaps_color_area(BM bm, int r_start, int r_end,
+  IMPORT BoolBitmapApi(Env &e);
+  IMPORT ~BoolBitmapApi();
+  IMPORT BB empty(int sx, int sy);
+  BB function(std::function<bool(int, int)> f, int sx, int sy);
+  IMPORT BB transform(BB orig, std::function<bool(int, int, bool)> f);
+  IMPORT O to_volume(BB b, float dist);
+  IMPORT BB from_float_bitmap(FB float_bm, float range_start, float range_end);
+  IMPORT BB from_bitmaps_color(BM bm, int r, int g, int b);
+  IMPORT BB from_bitmaps_color_area(BM bm, std::function<bool(int r, int g, int b, int a)> f);
+  IMPORT BB from_bitmaps_color_area(BM bm, int r_start, int r_end,
 			            int g_start, int g_end, 
 			            int b_start, int b_end, 
 			            int a_start, int a_end);
-	IMPORT BB circle(BB bg, float center_x, float center_y, float radius);
-	IMPORT BB rectangle(BB bg, int x, int y, int width, int height); // for static ones
-	IMPORT BB rectangle(BB bg, float x, float y, float width, float height); // for moving
-	IMPORT BB sprite(BB bg, BB sprite, float x, float y, float size_multiplier_x, float size_multiplier_y);
-	IMPORT BB polygon(BB bg, PT *points, int size);
-	IMPORT BB text(BB bg, int x, int y, const char *string, int size,
-	  BB *glyphs, int glyphcount, int(*fptr)(EveryApi &ev, char));
-
-	IMPORT BB part_circle(int sx, int sy, float x, float y, float start_angle, float end_angle, float start_rad, float end_rad);
-        IMPORT BB sections(int sx, int sy, float x, float y, std::function<bool (float angle)> f);
-
-	IMPORT BB not_bitmap(BB b);
-	BB or_bitmap(BB b1, BB b2);
-	IMPORT BB andnot_bitmap(BB b1, BB not_b2);
-	IMPORT BB xor_bitmap(BB b1, BB flip_b2);
-        IMPORT BM choose_bitmap(BB bools, BM true_bitmap, BM false_bitmap);
-
-	IMPORT BM to_bitmap(BB bools,
-	       int true_r, int true_g, int true_b, int true_a,
-	       int false_r, int false_g, int false_b, int false_a);
-	BM to_bitmap_1(BB bools,
-	       int true_r, int true_g, int true_b, int true_a,
-	       int false_r, int false_g, int false_b, int false_a);
-	IMPORT BM texture(BM bg,
-	     BB bools1, int l1, int t1,
-	     BM texturebitmap2, int l2, int t2);
-	IMPORT int size_x(BB bm);
-	IMPORT int size_y(BB bm);
-	IMPORT bool boolvalue(BB bb, int x, int y);
+  IMPORT BB line(BB bg, float p_x, float p_y, float p2_x, float p2_y, float line_width1, float line_width2);
+  IMPORT BB circle(BB bg, float center_x, float center_y, float radius);
+  IMPORT BB ellipse(BB bg, float center_x, float center_y, float center2_x, float center2_y, float sum_of_distances);
+  IMPORT BB rectangle(BB bg, int x, int y, int width, int height); // for static ones
+  IMPORT BB rectangle(BB bg, float x, float y, float width, float height); // for moving
+  IMPORT BB sprite(BB bg, BB sprite, float x, float y, float size_multiplier_x, float size_multiplier_y);
+  IMPORT BB polygon(BB bg, PT *points, int size);
+  IMPORT BB text(BB bg, int x, int y, const char *string, int size,
+		 BB *glyphs, int glyphcount, int(*fptr)(EveryApi &ev, char));
+  
+  IMPORT BB part_circle(int sx, int sy, float x, float y, float start_angle, float end_angle, float start_rad, float end_rad);
+  IMPORT BB sections(int sx, int sy, float x, float y, std::function<bool (float angle)> f);
+  
+  IMPORT BB not_bitmap(BB b);
+  BB or_bitmap(BB b1, BB b2);
+  IMPORT BB andnot_bitmap(BB b1, BB not_b2);
+  IMPORT BB xor_bitmap(BB b1, BB flip_b2);
+  IMPORT BM choose_bitmap(BB bools, BM true_bitmap, BM false_bitmap);
+  
+  IMPORT BM to_bitmap(BB bools,
+		      int true_r, int true_g, int true_b, int true_a,
+		      int false_r, int false_g, int false_b, int false_a);
+  BM to_bitmap_1(BB bools,
+		 int true_r, int true_g, int true_b, int true_a,
+		 int false_r, int false_g, int false_b, int false_a);
+  IMPORT BM texture(BM bg,
+		    BB bools1, int l1, int t1,
+		    BM texturebitmap2, int l2, int t2);
+  IMPORT int size_x(BB bm);
+  IMPORT int size_y(BB bm);
+  IMPORT bool boolvalue(BB bb, int x, int y);
 private:
   BoolBitmapApi(const BoolBitmapApi&);
   void operator=(const BoolBitmapApi&);
@@ -1554,13 +1556,13 @@ public:
   IMPORT void load_default();
   IMPORT void load(std::string filename);
   IMPORT SH get_shader(std::string v_format, std::string f_format, std::string g_format,
-		       std::string v_comb="", std::string f_comb="");
+		       std::string v_comb="", std::string f_comb="", bool trans=true);
   IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,
-				    std::string v_comb="", std::string f_comb="");
+			      std::string v_comb="", std::string f_comb="", bool trans=true);
   SH get_shader_1(std::string v_format, std::string f_format, std::string g_format,
-		       std::string v_comb="", std::string f_comb="");
+		  std::string v_comb="", std::string f_comb="", bool trans=true);
   SH get_normal_shader_1(std::string v_format, std::string f_format, std::string g_format,
-				    std::string v_comb="", std::string f_comb="");
+			 std::string v_comb="", std::string f_comb="", bool trans=true);
   IMPORT SH texture_shader();
   IMPORT SH colour_shader();
   IMPORT SH colour_texture_shader();

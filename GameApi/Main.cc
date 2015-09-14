@@ -65,6 +65,8 @@ BufferRef CopyFromSDLSurface(SDL_Surface *surf);
 
 SDL_Window *sdl_window;
 
+
+
 //void *__dso_handle=NULL;
 class Timer
 {

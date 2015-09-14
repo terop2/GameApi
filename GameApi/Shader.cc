@@ -981,7 +981,7 @@ std::string ShaderFile::GeometryShader(std::string name)
 {
   return g_shaders[name];
 }
-std::string replace_c(std::string s, std::vector<std::string> comb, bool is_fragment, bool is_fbo)
+std::string replace_c(std::string s, std::vector<std::string> comb, bool is_fragment, bool is_fbo, bool is_transparent)
 {
   std::stringstream ss(s);
   std::string ww;
@@ -1017,7 +1017,10 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 	    }
 	  else
 	    { // fragment
-	      out+="vec4 rgb0 = vec4(0.0,0.0,0.0,1.0);\n";
+	      if (is_transparent)
+		out+="vec4 rgb0 = vec4(0.0,0.0,0.0,0.0);\n";
+	      else
+		out+="vec4 rgb0 = vec4(0.0,0.0,0.0,1.0);\n";
 	      int s = comb.size();
 	      for(int i=0;i<s;i++)
 		{
@@ -1057,7 +1060,7 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
     }
   return out;
 }
-int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec, std::vector<std::string> f_vec)
+int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec, std::vector<std::string> f_vec, bool is_trans)
 {
   int id = progs.size();
   Program *p = new Program;
@@ -1069,7 +1072,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       std::cout << "VName: " << name << std::endl;
       std::string shader = file.VertexShader(name);
-      std::string ss = replace_c(shader, v_vec, false, false);
+      std::string ss = replace_c(shader, v_vec, false, false, is_trans);
       
       //std::cout << "::" << ss << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
@@ -1087,7 +1090,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
-      std::string ss = replace_c(shader, f_vec, true, false);
+      std::string ss = replace_c(shader, f_vec, true, false,is_trans);
       //std::cout << "::" << ss << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);

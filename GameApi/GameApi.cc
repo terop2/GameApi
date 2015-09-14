@@ -1693,6 +1693,12 @@ GameApi::P add_polygon2(GameApi::Env &e, FaceCollection *coll, int size)
   //h->size = size;
   return add_polygon(e,h);
 }
+GameApi::M add_matrix2(GameApi::Env &e, Matrix mm)
+{
+  GameApi::M m;
+  std::copy(&mm.matrix[0], &mm.matrix[0]+16, &m.mat[0]);
+  return m;
+}
 GameApi::M add_matrix(GameApi::Env &e, MatrixInterface *i)
 {
   GameApi::M m;
@@ -4305,8 +4311,15 @@ EXPORT GameApi::P GameApi::PolygonApi::from_points(PTS pts, std::function<P (int
   P pp = or_array(&vec[0], count);
   return pp;
 }
-EXPORT GameApi::P GameApi::PolygonApi::world_from_voxel(std::function<P (unsigned int c)> f, VX voxel, float dx, float dy, float dz)
+EXPORT GameApi::P GameApi::PolygonApi::world_from_voxel(std::function<P (unsigned int c)> f, VX voxel, float dx, float dy, float dz, int max_c)
 {
+  std::vector<P> pieces;
+  for(int i=0;i<max_c;i++)
+    {
+      pieces.push_back(f(i));
+    }
+
+
   Voxel<unsigned int> *vox = find_voxel(e, voxel);
   int sx = vox->SizeX();
   int sy = vox->SizeY();
@@ -4325,7 +4338,7 @@ EXPORT GameApi::P GameApi::PolygonApi::world_from_voxel(std::function<P (unsigne
 	    {
 	      unsigned int c = vox->Map(x,y,z);
 	      unsigned int i = c;
-	      P p = f(i);
+	      P p = pieces[i];
 	      P p2 = translate_1(p, 0.0,0.0,z*dz);
 	      vec_z.push_back(p2);
 	    }
@@ -4375,10 +4388,16 @@ EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap2(EveryApi &ev, std::fun
   P p = or_array_1(&vec[0], sy-1);
   return p;
 }
-EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(std::function<P (int c)> f, BM int_bm, float dx, float dz)
+EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(std::function<P (int c)> f, BM int_bm, float dx, float dz, int max_c)
 {
   BitmapIntHandle *handle = dynamic_cast<BitmapIntHandle*>(find_bitmap(e, int_bm));
   if (!handle) { GameApi::P p1 = { 0 }; return p1; }
+  std::vector<P> pieces;
+  for(int i=0;i<max_c;i++)
+    {
+      pieces.push_back(f(i));
+    }
+
   Bitmap<int> *bm = handle->bm;
   std::vector<P> vec;
   int sx = bm->SizeX();
@@ -4388,7 +4407,7 @@ EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(std::function<P (int c)
       std::vector<P> vec2;
       for(int x=0;x<sx;x++)
 	{
-	  P p = f(bm->Map(x,y));
+	  P p = pieces[bm->Map(x,y)];
 	  P p2 = translate_1(p, dx*x, 0.0, 0.0);
 	  vec2.push_back(p2);
 	}
@@ -6043,6 +6062,7 @@ EXPORT GameApi::SH GameApi::ShaderApi::texture_shader()
 {
   return get_normal_shader_1("comb", "comb", "", "texture:light:light", "texture:light:light");
 }
+
 EXPORT GameApi::SH GameApi::ShaderApi::colour_shader()
 {
   return get_normal_shader_1("comb", "comb", "","colour:light:light", "colour:light:light");
@@ -6055,17 +6075,17 @@ EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
 						  std::string f_format,
 						  std::string g_format,
 						  std::string v_comb,
-						  std::string f_comb)
+							 std::string f_comb, bool trans)
 {
-  return get_normal_shader_1(v_format, f_format, g_format, v_comb, f_comb);
+  return get_normal_shader_1(v_format, f_format, g_format, v_comb, f_comb, trans);
 }
 GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format,
 						  std::string f_format,
 						  std::string g_format,
 						  std::string v_comb,
-						  std::string f_comb)
+						    std::string f_comb, bool trans)
 {
-  SH sh = get_shader_1(v_format, f_format, g_format, v_comb, f_comb);
+  SH sh = get_shader_1(v_format, f_format, g_format, v_comb, f_comb,trans);
   bind_attrib_1(sh, 0, "in_Position");
   bind_attrib_1(sh, 1, "in_Normal");
   bind_attrib_1(sh, 2, "in_Color");
@@ -6104,16 +6124,16 @@ EXPORT GameApi::SH GameApi::ShaderApi::get_shader(std::string v_format,
 					std::string f_format,
 					   std::string g_format, 
 					   std::string v_comb,
-					   std::string f_comb)
+						  std::string f_comb, bool trans)
 {
-  return get_shader_1(v_format, f_format, g_format, v_comb, f_comb);
+  return get_shader_1(v_format, f_format, g_format, v_comb, f_comb, trans);
 }
 
 GameApi::SH GameApi::ShaderApi::get_shader_1(std::string v_format,
 					std::string f_format,
 					   std::string g_format, 
 					   std::string v_comb,
-					   std::string f_comb)
+					     std::string f_comb, bool trans)
 {
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   if (!p->file)
@@ -6127,7 +6147,7 @@ GameApi::SH GameApi::ShaderApi::get_shader_1(std::string v_format,
   std::vector<std::string> f_vec;
   combparse(v_comb, v_vec);
   combparse(f_comb, f_vec);
-  p->ids[p->count] = p->seq->GetShader(v_format, f_format, g_format, v_vec, f_vec);
+  p->ids[p->count] = p->seq->GetShader(v_format, f_format, g_format, v_vec, f_vec, trans);
   p->count++;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->shader_privs[p->count-1] = p;
@@ -7298,7 +7318,72 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, int r_
   return from_bitmaps_color_area(bm, std::bind(range_select_color_area, _1,_2,_3,_4,(void*)dt2));
 #endif
 }
+class LineBoolBitmap : public Bitmap<bool>
+{
+public:
+  LineBoolBitmap(Bitmap<bool> &bg, Point2d p1, Point2d p2, float line_width1, float line_width2) : bg(bg), p1(p1), p2(p2), line_width1(line_width1), line_width2(line_width2) { }
+  virtual int SizeX() const { return bg.SizeX(); }
+  virtual int SizeY() const { return bg.SizeY(); }
+  virtual bool Map(int x, int y) const
+  {
+    Point2d pp = {(float)x,(float)y };
+    
+    Vector2d vw = p1-p2;
+    float l2 = vw.Dist();
+    if (l2 == 0.0) { return (pp-p1).Dist() < std::max(line_width1,line_width2); }
+    
+    float t = Vector2d::DotProduct(pp-p1, p2-p1)/l2/l2;
+    if (t<0.0) return (pp-p1).Dist() < line_width1;
+    else if (t>1.0) return (pp-p2).Dist() < line_width2;
+    
+    Point2d proj = p1 + t*(p2-p1);
+    float dist = (pp-proj).Dist();
+    return dist < ((1.0-t)*line_width1 + t*line_width2); 
+  }
+private:
+  Bitmap<bool> &bg;
+  Point2d p1,p2;
+  float line_width1, line_width2;
+};
+class EllipseBoolBitmap : public Bitmap<bool>
+{
+public:
+  EllipseBoolBitmap(Bitmap<bool> &bg, Point2d c1, Point2d c2, float sum) : bg(bg), c1(c1), c2(c2), sum(sum) { }
+  virtual int SizeX() const { return bg.SizeX(); }
+  virtual int SizeY() const { return bg.SizeY(); }
+  virtual bool Map(int x, int y) const
+  {
+    float dx = c1.x-x;
+    float dy = c1.y-y;
+    float dx2 = c2.x-x;
+    float dy2 = c2.y-y;
+    float dist1 = sqrt(dx*dx+dy*dy);
+    float dist2 = sqrt(dx2*dx2+dy2*dy2);
+    float ss = dist1+dist2;
+    bool b = ss < sum;
+    if (!b) { b = bg.Map(x,y); }
+    return b;
+  }
 
+private:
+  Bitmap<bool> &bg;
+  Point2d c1,c2;
+  float sum;
+};
+EXPORT GameApi::BB GameApi::BoolBitmapApi::line(BB bg, float p_x, float p_y, float p2_x, float p2_y, float line_width1, float line_width2)
+{
+  Bitmap<bool> *bm = find_bool_bitmap(e, bg)->bitmap;
+  Point2d p = { p_x, p_y };
+  Point2d p2 = { p2_x, p2_y };
+  return add_bool_bitmap(e, new LineBoolBitmap(*bm, p,p2, line_width1,line_width2));
+}
+EXPORT GameApi::BB GameApi::BoolBitmapApi::ellipse(BB bg, float center_x, float center_y, float center2_x, float center2_y, float sum_of_distances)
+{
+  Bitmap<bool> *bm = find_bool_bitmap(e, bg)->bitmap;
+  Point2d center = { center_x, center_y };
+  Point2d center2 = { center2_x, center2_y };
+  return add_bool_bitmap(e, new EllipseBoolBitmap(*bm, center, center2, sum_of_distances));
+}
 EXPORT GameApi::BB GameApi::BoolBitmapApi::circle(BB bg, float center_x, float center_y, float radius)
 {
   Bitmap<bool> *bm = find_bool_bitmap(e, bg)->bitmap;
@@ -10856,38 +10941,38 @@ EXPORT GameApi::MatrixApi::MatrixApi(Env &e) : e(e) { }
 
 EXPORT GameApi::M GameApi::MatrixApi::identity()
 {
-  return add_matrix(e, new SimpleMatrix(Matrix::Identity()));
+  return add_matrix2(e, Matrix::Identity());
 }
 EXPORT GameApi::M GameApi::MatrixApi::xrot(float rot)
 {
-  return add_matrix(e, new SimpleMatrix(Matrix::XRotation(rot)));
+  return add_matrix2(e, Matrix::XRotation(rot));
 }
 EXPORT GameApi::M GameApi::MatrixApi::yrot(float rot)
 {
-  return add_matrix(e, new SimpleMatrix(Matrix::YRotation(rot)));
+  return add_matrix2(e, Matrix::YRotation(rot));
 }
 EXPORT GameApi::M GameApi::MatrixApi::zrot(float rot)
 {
-  return add_matrix(e, new SimpleMatrix(Matrix::ZRotation(rot)));
+  return add_matrix2(e, Matrix::ZRotation(rot));
 }
 EXPORT GameApi::M GameApi::MatrixApi::trans(float x, float y, float z)
 {
-  return add_matrix(e, new SimpleMatrix(Matrix::Translate(x,y,z)));
+  return add_matrix2(e, Matrix::Translate(x,y,z));
 }
 EXPORT GameApi::M GameApi::MatrixApi::scale(float sx, float sy, float sz)
 {
-  return add_matrix(e, new SimpleMatrix(Matrix::Scale(sx,sy,sz)));
+  return add_matrix2(e, Matrix::Scale(sx,sy,sz));
 }
 EXPORT GameApi::M GameApi::MatrixApi::inverse(M mat)
 {
   Matrix m = find_matrix(e, mat);
-  return add_matrix(e, new SimpleMatrix(Matrix::Inverse(m)));
+  return add_matrix2(e, Matrix::Inverse(m));
 }
 EXPORT GameApi::M GameApi::MatrixApi::mult(M m1, M m2)
 {
   Matrix ma = find_matrix(e, m1);
   Matrix mb = find_matrix(e, m2);
-  return add_matrix(e, new SimpleMatrix(ma * mb));
+  return add_matrix2(e, ma * mb);
 }
 EXPORT GameApi::M GameApi::MatrixApi::perspective(float fovy, float aspect, float near0, float far0)
 {

@@ -3312,11 +3312,13 @@ void ArrayRender::Render(int vertexframe, int normalframe, int colorframe, int t
   glVertexAttribPointer(4,3, GL_FLOAT, GL_FALSE, 0,0);
 #endif
   glDrawArrays(GL_TRIANGLES, 0, vertex_size*6/4);
+#ifndef VAO
   glDisableVertexAttribArray(0);
   glDisableVertexAttribArray(1);
   glDisableVertexAttribArray(2);
   glDisableVertexAttribArray(3);
   glDisableVertexAttribArray(4);
+#endif
 
 #if 0
   // enabling

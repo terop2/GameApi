@@ -164,7 +164,7 @@ void Game(EveryApi &e)
 
   O sphere = volume.sphere(points.point(0.0, 1.0, 0.0), 1.0);
   O andnot = volume.andnot_op(torus, sphere);
-  P cubes = volume.rendercubes3(andnot, 100,100,100, -2.0,2.0, -2.0,2.0, -2.0, 2.0 );
+  P cubes = volume.rendercubes3(andnot, 30,30,30, -2.0,2.0, -2.0,2.0, -2.0, 2.0 );
   P cubesY = e.polygon_api.recalculate_normals(cubes);
   P cubesO = e.polygon_api.flip_polygon_order(cubesY);
   LI normals = e.lines_api.normals_from_polygon(cubesY, 3.0/200.0);
