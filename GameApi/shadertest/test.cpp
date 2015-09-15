@@ -24,10 +24,30 @@ int main() {
   // shader initialization
   ev.shader_api.load("Shader.txt");
   
+  
+  PT centert = ev.point_api.point(50.0,50.0,50.0);
+  O o = ev.volume_api.sphere(centert, 50.0);
+  FO fo = ev.float_volume_api.from_volume(o, 0.0, 1.0);
+  PTS pts = ev.points_api.from_float_volume(fo, 15, -100.0,-100.0,-100.0,
+					    100.0,100.0,100.0);
+
   PT center = ev.point_api.point(0.0,0.0,0.0);
+  SFO sph = ev.sh_api.sphere(center, 10.0);
+  SFO sph_2 = ev.sh_api.from_points(pts, sph);
+
+
   SFO sphere = ev.sh_api.sphere(center, 130.0);
-  PT centerA = ev.point_api.point(0.0,0.0,0.0);
+  PT centerA = ev.point_api.point(100.0,0.0,0.0);
   SFO sphereA = ev.sh_api.sphere(centerA, 90.0);
+  SFO sphereB = ev.sh_api.bind_arg(sphereA, "center", "vec3(0.0+100.0*sin(time/10.0),0.0,0.0)");
+
+  SFO sphereC = ev.sh_api.sphere(centerA, 90.0);
+  SFO sphereD = ev.sh_api.bind_arg(sphereC, "center", "vec3(0.0,0.0,0.0+100.0*sin(time/3.0))");
+
+
+  SFO line_1 = ev.sh_api.line(0.0, 0.0, 0.0,
+			      100.0, 100.0, 0.0,
+			      20.0, 10.0);
 
   //SFO sphere_1 = ev.sh_api.bind_arg(sphere, "radius", "120+10*sin(time/10.0)");
   SFO sphere2 = ev.sh_api.cube(0.0,100.0,
@@ -35,11 +55,16 @@ int main() {
 			      0.0,100.0);
   
   SFO andnot = ev.sh_api.and_not(sphere2, sphere);
-  SFO sphere_1a = ev.sh_api.or_elem(andnot, sphereA);
-  SFO rot_y = ev.sh_api.rot_y(sphere_1a);
+  SFO sphere_1a = ev.sh_api.blend(andnot, sphereB);
+  SFO sphere_2a = ev.sh_api.blend(sphere_1a, sphereD);
+  SFO line_2a = ev.sh_api.or_elem(sphere_2a, line_1);
+  SFO line_2b = ev.sh_api.or_elem(line_2a, sph_2);
+  //SFO move = ev.sh_api.trans(line_2a, 100.0, 0.0,0.0);
+  SFO rot_y = ev.sh_api.rot_y(line_2b);
   SFO rot_y_2 = ev.sh_api.bind_arg(rot_y, "angle", "time/30.0");
   SFO color = ev.sh_api.color_from_normal(rot_y_2);
-  SFO sphere_render = ev.sh_api.render(rot_y_2, color);
+  SFO color_2 = ev.sh_api.grayscale(color);
+  SFO sphere_render = ev.sh_api.render(rot_y_2, color_2);
 
   SH sh = ev.shader_api.get_normal_shader("test", "screen", "", "", "", false, sphere_render);
 

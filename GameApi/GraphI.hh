@@ -178,5 +178,20 @@ public:
   virtual unsigned int Data(int channel, int timeslot, int data) const { return 0; }
 };
 
+class ShaderModule
+{
+public:
+  virtual ~ShaderModule() { }
+  virtual int id() const=0;
+  virtual std::string Function() const=0;
+  virtual std::string FunctionName() const=0;
+  virtual std::string ColorFunctionName() const=0;
+  virtual int NumArgs() const=0;
+  virtual bool FreeVariable(int i) const=0;
+  virtual std::string ArgName(int i) const=0;
+  virtual std::string ArgValue(int i) const=0;
+  virtual std::string ArgType(int i) const=0;
+};
+
 
 #endif

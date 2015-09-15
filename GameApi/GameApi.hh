@@ -662,24 +662,28 @@ class ShaderModuleApi
 {
 public:
   ShaderModuleApi(Env &e) : e(e) { }
-  SFO empty();
   SFO sphere(); // vec3 center, float radius
   SFO sphere(PT center, float radius); // ()
-  SFO cube(); // vec3 tl, vec2 br
+  SFO cube(); // vec3 tl, vec3 br
   SFO cube(float start_x, float end_x,
 	   float start_y, float end_y,
 	   float start_z, float end_z); // ()
+  SFO line(); // vec3 tl, vec3 br, float line_width1, float line_width2
+  SFO line(float start_x, float start_y, float start_z,
+	   float end_x, float end_y, float end_z,
+	   float line_width1, float line_width2);
   SFO rot_y(SFO obj); // float angle
   SFO and_not(SFO obj, SFO not_obj);
   SFO or_elem(SFO obj1, SFO obj2);
+  SFO blend(SFO obj1, SFO obj2);
+  SFO trans(SFO obj);
+  SFO trans(SFO obj, float dx, float dy, float dz);
+  SFO from_points(PTS p, SFO obj);
+  SFO from_lines(LI li, SFO obj);
   SFO bind_arg(SFO obj, std::string name, std::string value);
   SFO color_from_normal(SFO obj);
+  SFO grayscale(SFO obj);
   SFO render(SFO obj, SFO color);
-
-  std::string functions(SFO obj);
-  std::string func_call(SFO obj);
-  int num_args(SFO obj);
-  std::string arg_names(SFO obj, int i);
 private:
   Env &e;
 };
