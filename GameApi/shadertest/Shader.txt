@@ -1,0 +1,305 @@
+//V: test
+#version 330
+uniform mat4 in_P;
+uniform mat4 in_MV;
+uniform mat4 in_T;
+in vec3 in_Normal;
+in vec3 in_Position;
+out vec2 XY;
+
+void main(void)
+{
+  XY = in_Normal.xy;
+  gl_Position = in_P * in_T * in_MV *vec4(in_Position,1.0);
+}
+//F: screen
+#version 330
+out vec4 out_Color;
+in vec2 XY;
+uniform float time;
+//M:
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord)
+{
+	vec2 iResolution = vec2(1.0,1.0);
+        vec2 pos = fragCoord.xy;
+	pos.x*=800.0/600.0;
+        vec3 p0 = vec3(pos-vec2(0.5),-400.0);
+	vec3 p1 = vec3(pos*2.0-vec2(1.0),-399.0);
+//N:
+	fragColor = vec4(rgb,1.0);
+}
+void main(void)
+{
+  vec4 color;
+  mainImage(color, XY);
+  out_Color = color;
+}
+
+//F: test
+#version 330
+out vec4 out_Color;
+in vec2 XY;
+uniform float time;
+float sphere(vec3 center, float radius, float time, vec3 pt)
+{
+  pt-=center;
+  return length(pt)-radius; //+5*sin(time+pt.x*3/10.0+pt.y*5/25.0);
+}
+float box(vec3 pt, vec3 center, float size)
+{
+   pt-=center;
+   return length(max(abs(pt)-size,0.0))-20.0;
+}
+
+vec3 roty(vec3 pt, float time)
+{
+  mat3 m = mat3(vec3(cos(time),0.0,sin(time)),
+                vec3(0.0, 1.0, 0.0),
+                vec3(-sin(time),0.0,cos(time)));
+  return pt*m;   
+}
+float sphere_box(vec3 pt, vec3 center, float radius, float size, float time)
+{
+   float f = sphere(center, radius, time, pt);
+   float f2 = box(pt, center, size);
+   //float f3 = sphere(center, radius-5.0, time, pt);
+   return max(-f,f2);
+}
+float sphere_box_rep(vec3 pt, vec3 center, float radius, float size, float time)
+{
+   pt-=center;
+   vec3 c = vec3(300.0,400.0,400.0);
+   vec3 q = mod(pt,c)-0.5*c;
+   q+=center;
+   float f = sphere_box(q, center, radius, size, time);
+   return f;
+}
+float sphere_box_rep_scale(vec3 pt, vec3 center, float radius, float size, float time)
+{  pt.y+=time*80.0;
+   return sphere_box_rep(pt*2.0-50.0, center, radius,size,time);
+}
+float obj(vec3 pt, float time)
+{
+   vec3 pt2 = roty(pt, time);
+   return sphere_box(pt2, vec3(0.0,0.0,0.0), 150.0, 100.0, time);
+}
+vec3 normal(vec3 pt, float time)
+{
+   float x = obj(pt, time);
+   float y = obj(pt+vec3(0.0,0.0,1.0), time);
+   float z = obj(pt+vec3(0.0,1.0,0.0), time);
+   return vec3(x,y,z);
+}
+vec3 obj_color(vec3 pt, float time)
+{
+   return normal(pt,time);
+}
+vec3 ray(vec3 p1, vec3 p2, float t)
+{
+   return p1 + t*(p2-p1);
+}
+float solve(vec3 p1, vec3 p2, float t_0, float time)
+{
+    float t = t_0;
+    int i = 0;
+    for(;i<250;i++)
+    {
+       float Ht = obj(ray(p1,p2,t),time);
+       if (abs(Ht)<0.5) return t;
+       t+= Ht / 5.0;
+    }
+    return 0.0;
+}
+void mainImage(out vec4 fragColor, in vec2 fragCoord)
+{
+	vec2 iResolution = vec2(1.0,1.0);
+        vec2 pos = fragCoord.xy;
+	//pos.y*=600.0/800.0;
+	pos.x*=800.0/600.0;
+        vec3 p0 = vec3(pos-vec2(0.5),-400.0);
+	vec3 p1 = vec3(pos*2.0-vec2(1.0),-399.0);
+
+	float t = solve(p0,p1, 0.0, time/30.0);
+	vec3 pos2 = ray(p0,p1,t);
+	vec3 col = obj_color(pos2, time/30.0);
+	col = sqrt(col);
+
+	fragColor = vec4( col, 1.0 );
+}
+void main(void)
+{
+  vec4 color;
+  mainImage(color, XY);
+  out_Color = color;
+}
+//V: empty
+#version 330
+uniform mat4 in_P;
+uniform mat4 in_MV;
+uniform mat4 in_T;
+in vec3 in_Position;
+void main(void)
+{
+  vec4 v = in_P * in_T * in_MV * vec4(in_Position,1.0);
+  gl_Position = v;
+}
+
+//F: empty
+#version 330
+precision highp float;
+out vec4 out_Color;
+void main(void)
+{
+   out_Color = vec4(1.0,1.0,1.0,1.0);
+}
+
+//V: colour
+#version 330
+/*layout(location=0)*/ in vec3 in_Position;
+/*layout(location=1)*/ in vec3 in_Normal;
+/*layout(location=2)*/ in vec3 in_Color;
+/*layout(location=3)*/ in vec2 in_TexCoord;
+out vec3 ex_Color;
+uniform mat4 in_P;
+uniform mat4 in_MV;
+uniform mat4 in_T;
+void main(void)
+{
+   gl_Position = in_P * in_T * in_MV * vec4(in_Position,1.0);
+   ex_Color = in_Color;
+}
+//F: colour
+#version 330
+//precision highp float;
+in vec3 ex_Color;
+out vec4 out_Color;
+void main(void)
+{
+   out_Color = vec4(ex_Color,1.0);
+}
+
+//V: texture
+#version 330
+/*layout(location=0)*/ in vec3 in_Position;
+/*layout(location=1)*/ in vec3 in_Normal;
+/*layout(location=2)*/ in vec3 in_Color;
+/*layout(location=3)*/ in vec2 in_TexCoord;
+out vec2 ex_TexCoord;
+uniform mat4 in_P;
+uniform mat4 in_MV;
+uniform mat4 in_T;
+void main(void)
+{
+   gl_Position = in_P * in_T * in_MV *  vec4(in_Position,1.0);
+   ex_TexCoord = in_TexCoord;
+}
+//F: texture
+#version 330
+//precision highp float;
+uniform sampler2D texture;
+in vec2 ex_TexCoord;
+out vec4 out_Color;
+void main(void)
+{
+   out_Color = texture2D(texture, ex_TexCoord);
+}
+
+
+
+//V: linear
+#version 330
+uniform float range;
+uniform vec3 center1, center2;
+uniform float radius;
+attribute vec3 vertex1;
+attribute vec3 normal1;
+attribute vec4 color1;
+attribute vec2 texcoord1;
+
+attribute vec3 vertex2;
+attribute vec3 normal2;
+attribute vec4 color2;
+attribute vec2 texcoord2;
+
+varying vec4 target_color;
+varying vec3 target_normal;
+varying vec2 target_texcoord;
+varying vec2 target_texnormal;
+
+uniform sampler2D tex;
+uniform sampler2D normaltex;
+
+float dist(vec3 center, vec3 point)
+{
+   point -= center;
+   return sqrt(point.x*point.x+point.y*point.y+point.z*point.z);
+}
+
+vec3 Pos(float val, vec3 vertex, vec3 normal) {
+  return vertex+val*normal;
+}
+
+float Solve(vec3 center, float radius, vec3 vertex, vec3 normal)
+{
+  float t = 0.0;
+  for(;t<500.0;)
+  {
+    float Ht = -(dist(center, Pos(t, vertex, normal))-radius);
+    if (Ht < 0.1) return t;
+    t += Ht / 20.0;
+  }
+  return 0.0;
+}
+
+vec2 Angles(vec3 point, vec3 cent)
+{
+  point -= cent;
+  float r = sqrt(point.x*point.x + point.y*point.y + point.z*point.z);
+  float alfa = acos(point.z/r);
+  float beta = atan(point.y, point.z);
+  alfa /= 3.14159;
+  beta /= 2.0*3.14159;
+  alfa += 3.14159/2.0;
+  beta += 3.14159/2.0;
+  return vec2(alfa,beta);
+}
+
+void main(void)
+{
+  vec3 af = vertex1;
+  vec3 aa = vertex2;
+  //float x = af.x*(1.0-range)+aa.x*range;
+  //float y = af.y*(1.0-range)+aa.y*range;
+  //float z = af.z*(1.0-range)+aa.z*range;
+  vec3 bb = mix(af,aa,range); // vec4(x,y,z,1.0);
+  vec4 bb2 = vec4(bb.x,bb.y,bb.z,1.0);
+  gl_Position = gl_ModelViewProjectionMatrix * bb2;
+
+  vec4 col1 = vec4(float(color1.r)/255.0, float(color1.g)/255.0, float(color1.b)/255.0, float(color1.a)/255.0);
+  vec4 col2 = vec4(float(color2.r)/255.0, float(color2.g)/255.0, float(color2.b)/255.0, float(color2.a)/255.0);
+
+  target_color = vec4(col2.x*range+col1.x*(1.0-range), col2.y*range+col1.y*(1.0-range), col2.z*range+col1.z*(1.0-range), 1.0);
+  target_normal = vec3(normal2.x*range+normal1.x*(1.0-range), normal2.y*range+normal1.y*(1.0-range), col2.z*range+col1.z*(1.0-range));;
+
+  target_texcoord = vec2(texcoord1.x*(1.0-range)+texcoord2.x*range,texcoord1.y*(1.0-range)+texcoord2.y*range);
+  vec3 center = mix(center1, center2, range);
+  target_texnormal = Angles(Pos(Solve(center, radius, bb, target_normal.xyz), bb, target_normal.xyz), center);
+}
+
+//F: red
+#version 330
+
+varying vec4 target_color;
+varying vec3 target_normal;
+varying vec2 target_texcoord;
+varying vec2 target_texnormal;
+
+uniform sampler2D tex;
+uniform sampler2D normaltex;
+void main(void)
+{
+  vec4 ntex = texture(normaltex, target_texnormal);
+  float nval = ntex.x;
+  gl_FragColor = mix(mix(target_color, texture(tex, target_texcoord), 0.2), vec4(1.0,1.0,1.0,1.0), nval);
+}

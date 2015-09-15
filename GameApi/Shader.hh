@@ -27,6 +27,7 @@
 #include "VectorTools.hh"
 #include <algorithm>
 #include <map>
+#include "GraphI.hh"
 
 struct Attrib
 {
@@ -1462,7 +1463,7 @@ class ShaderSeq
 {
 public:
   ShaderSeq(ShaderFile &file) : file(file) { }
-  int GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec=std::vector<std::string>(), std::vector<std::string> f_vec=std::vector<std::string>(), bool trans=true);
+  int GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec=std::vector<std::string>(), std::vector<std::string> f_vec=std::vector<std::string>(), bool trans=true, ShaderModule *mod=0);
   void link(int i);
   void use(int i);
   void unuse(int i);
