@@ -107,6 +107,7 @@ using std::placeholders::_9;
   struct TRK { int id; };
   struct WAV { int id; };
   struct TBUF { int id; };
+  struct SFO { int id; };
   //template<class T>
   //struct E { int id; };
 
@@ -657,7 +658,31 @@ private:
   Env &e;
 };
 
+class ShaderModuleApi
+{
+public:
+  ShaderModuleApi(Env &e) : e(e) { }
+  SFO empty();
+  SFO sphere(); // vec3 center, float radius
+  SFO sphere(PT center, float radius); // ()
+  SFO cube(); // vec3 tl, vec2 br
+  SFO cube(float start_x, float end_x,
+	   float start_y, float end_y,
+	   float start_z, float end_z); // ()
+  SFO rot_y(SFO obj); // float angle
+  SFO and_not(SFO obj, SFO not_obj);
+  SFO or_elem(SFO obj1, SFO obj2);
+  SFO bind_arg(SFO obj, std::string name, std::string value);
+  SFO color_from_normal(SFO obj);
+  SFO render(SFO obj, SFO color);
 
+  std::string functions(SFO obj);
+  std::string func_call(SFO obj);
+  int num_args(SFO obj);
+  std::string arg_names(SFO obj, int i);
+private:
+  Env &e;
+};
 class FloatVolumeApi
 {
 public:
@@ -1556,13 +1581,13 @@ public:
   IMPORT void load_default();
   IMPORT void load(std::string filename);
   IMPORT SH get_shader(std::string v_format, std::string f_format, std::string g_format,
-		       std::string v_comb="", std::string f_comb="", bool trans=true);
+		       std::string v_comb="", std::string f_comb="", bool trans=true, SFO module={-1} );
   IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,
-			      std::string v_comb="", std::string f_comb="", bool trans=true);
+			      std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1});
   SH get_shader_1(std::string v_format, std::string f_format, std::string g_format,
-		  std::string v_comb="", std::string f_comb="", bool trans=true);
+		  std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1});
   SH get_normal_shader_1(std::string v_format, std::string f_format, std::string g_format,
-			 std::string v_comb="", std::string f_comb="", bool trans=true);
+			 std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod = { -1 });
   IMPORT SH texture_shader();
   IMPORT SH colour_shader();
   IMPORT SH colour_texture_shader();
@@ -1676,7 +1701,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -1712,6 +1737,7 @@ struct EveryApi
   FrameBufferApi fbo_api;
   SampleCollectionApi sample_api;
   TrackerApi tracker_api;
+  ShaderModuleApi sh_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);
