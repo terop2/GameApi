@@ -672,6 +672,7 @@ public:
   SFO line(float start_x, float start_y, float start_z,
 	   float end_x, float end_y, float end_z,
 	   float line_width1, float line_width2);
+  SFO color(SFO obj, float r, float g, float b);
   SFO rot_y(SFO obj); // float angle
   SFO and_not(SFO obj, SFO not_obj);
   SFO or_elem(SFO obj1, SFO obj2);
@@ -682,6 +683,8 @@ public:
   SFO from_lines(LI li, SFO obj);
   SFO bind_arg(SFO obj, std::string name, std::string value);
   SFO color_from_normal(SFO obj);
+  SFO color_from_obj(SFO obj);
+  SFO mix_color(SFO col1, SFO col2, float t); // kills obj side
   SFO grayscale(SFO obj);
   SFO render(SFO obj, SFO color);
 private:
