@@ -2097,7 +2097,14 @@ std::string ToNum(float val)
 {
   std::stringstream ss;
   ss << val;
-  return ss.str();
+  std::string s = ss.str();
+  bool flag = false;
+  int sss = s.size();
+  for(int i=0;i<sss;i++) { if (s[i]=='.') { flag=true; } }
+  if (flag) 
+    return ss.str();
+  else
+    return ss.str()+".0";
 }
 Samples* find_samples(GameApi::Env &e, GameApi::SM sm)
 {
@@ -12831,9 +12838,13 @@ public:
   virtual int id() const { return 3; }
   virtual std::string Function() const {
     return obj->Function() +
-      "vec3 grayscale"+ uid + "(vec3 pt, float time)\n"
+      "float grayscale" + uid + "(vec3 pt, float time)\n"
       "{\n"
-      "  vec3 col = " + funccall_to_string(obj) + ";\n"
+      "   return " + funccall_to_string(obj) + ";\n"
+      "}\n"
+      "vec3 grayscale_color"+ uid + "(vec3 pt, float time)\n"
+      "{\n"
+      "  vec3 col = " + color_funccall_to_string(obj) + ";\n"
       "  float c = (col.x+col.y+col.z+1.0)/4.0;\n"
       "  return vec3(c,c,c);\n"
       "}\n";
@@ -12876,25 +12887,29 @@ private:
 class ColorFromNormalModule : public ShaderModule
 {
 public:
-  ColorFromNormalModule(ShaderModule *obj) : obj(obj) { }
+  ColorFromNormalModule(ShaderModule *obj) : obj(obj) { uid=unique_id(); }
   virtual int id() const { return 3; }
   virtual std::string Function() const
   {
     return
-      "vec3 normal(vec3 pt, float time)\n"
+      "vec3 normal" + uid + "(vec3 pt, float time)\n"
       "{\n"
       "  float fx = " + funccall_to_string_with_replace(obj, "pt", "pt+vec3(1.0,0.0,0.0)") + " - " + funccall_to_string_with_replace(obj, "pt", "pt-vec3(1.0,0.0,0.0)") + ";\n"
       "  float fy = " + funccall_to_string_with_replace(obj, "pt", "pt+vec3(0.0,1.0,0.0)") + " - " + funccall_to_string_with_replace(obj, "pt", "pt-vec3(0.0,1.0,0.0)") + ";\n"
       "  float fz = " + funccall_to_string_with_replace(obj, "pt", "pt+vec3(0.0,0.0,1.0)") + " - " + funccall_to_string_with_replace(obj, "pt", "pt-vec3(0.0,0.0,1.0)") + ";\n"
       "  return normalize(vec3(-fx,-fy,-fz))/2.0+vec3(0.5,0.5,0.5);\n"
       "}\n"
-      "vec3 obj_color(vec3 pt, float time)\n"
+      "float obj" + uid + "(vec3 pt, float time)\n"
       "{\n"
-      "   return normal(pt,time);\n"
+      "   return " + funccall_to_string(obj) + ";\n"
+      "}\n"
+      "vec3 obj_color" + uid + "(vec3 pt, float time)\n"
+      "{\n"
+      "   return normal" + uid + "(pt,time);\n"
       "}\n";
   }
-  virtual std::string FunctionName() const { return "obj_color"; }
-  virtual std::string ColorFunctionName() const { return "obj_color_color"; }
+  virtual std::string FunctionName() const { return "obj" + uid; }
+  virtual std::string ColorFunctionName() const { return "obj_color"+uid;  }
   virtual int NumArgs() const { return 2; }
   virtual bool FreeVariable(int i) const { return true; }
   virtual std::string ArgName(int i) const { 
@@ -12926,6 +12941,7 @@ public:
 
 private:
   ShaderModule *obj;
+  std::string uid;
 };
 class RenderModule : public ShaderModule
 {
@@ -12942,8 +12958,7 @@ public:
       "float solve(vec3 p1, vec3 p2, float t_0, float t_1, float time)\n"
       "{\n"
       "    float t = t_0;\n"
-      "    int i = 0;\n"
-      "    for(;i<250;i++)\n"
+      "    for(int i=0;i<250;i++)\n"
       "    {\n"
       "       float Ht = " + funccall_to_string_with_replace(obj, "pt", "ray(p1,p2,t)") + ";\n"
       "       if (abs(Ht)<0.5) return t;\n"
@@ -12955,8 +12970,8 @@ public:
       "vec3 render(vec3 p0, vec3 p1)\n"
       "{\n"
       "   float t = solve(p0,p1,0.0, 600.0, time);\n"
-      "   vec3 pos2 = ray(p0,p1, t);\n"
-      "   vec3 rgb = " + color->FunctionName() + "(pos2, time);\n"
+      "   vec3 pt = ray(p0,p1, t);\n"
+      "   vec3 rgb = " + color_funccall_to_string(color) + ";\n"
       "   return rgb;\n"
       "}\n"
       ;
@@ -13337,6 +13352,101 @@ GameApi::SFO GameApi::ShaderModuleApi::trans(SFO obj_m, float dx, float dy, floa
   SFO sfo_1 = bind_arg(sfo, "delta", vec3_to_string(e, dx,dy,dz));
   return sfo_1;
 }
+class ColorChooseModule : public ShaderModule
+{
+public:
+  ColorChooseModule(ShaderModule *mod) : mod(mod) { uid = unique_id(); }
+  virtual int id() const { return 9; }
+  virtual std::string Function() const
+  {
+    return mod->Function() +
+      "float color_choose" + uid +  "(vec3 pt, vec3 color) {\n"
+      "   return " + funccall_to_string(mod) + ";\n"
+      "}\n"
+      "vec3 color_choose_color" + uid + "(vec3 pt, vec3 color) {\n"
+      "   return color;\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return "color_choose" + uid; }
+  virtual std::string ColorFunctionName() const { return "color_choose_color" + uid; }
+  virtual int NumArgs() const { return 2; }
+  virtual bool FreeVariable(int i) const { return true; }
+  virtual std::string ArgName(int i) const
+  {
+    if (i==0) return "pt";
+    return "color";
+  }
+  virtual std::string ArgValue(int i) const
+  {
+    if (i==0) return "pt";
+    return "vec3(1.0,1.0,1.0);";
+  }
+  virtual std::string ArgType(int i) const
+  {
+    return "vec3";
+  }
+private:
+  ShaderModule *mod;
+  std::string uid;
+};
+class MixColorModule : public ShaderModule
+{
+public:
+  MixColorModule(ShaderModule *mod1, ShaderModule *mod2) : mod1(mod1), mod2(mod2) { uid=unique_id(); }
+  virtual int id() const { return 12; }
+  virtual std::string Function() const
+  {
+    return mod1->Function() + mod2->Function() +
+      "float color_mix" + uid +  "(vec3 pt, float t) {\n"
+      "   return 0.0;\n"
+      "}\n"
+      "vec3 color_mix_color" + uid + "(vec3 pt, float t) {\n"
+      "   vec3 col1 = " + color_funccall_to_string(mod1) + ";\n"
+      "   vec3 col2 = " + color_funccall_to_string(mod2) + ";\n"
+      "   return mix(col1, col2, t);\n"
+      "}\n";
+
+  }
+  virtual std::string FunctionName() const { return "color_mix" + uid; }
+  virtual std::string ColorFunctionName() const { return "color_mix_color" + uid; }
+  virtual int NumArgs() const {return 2; }
+  virtual bool FreeVariable(int i) const { return true; }
+  virtual std::string ArgName(int i) const {if (i==0) return "pt"; return "t"; }
+  virtual std::string ArgValue(int i) const { if (i==0) return "pt"; return "0.5"; }
+  virtual std::string ArgType(int i) const { if (i==0) return "vec3"; return "float"; }
+private:
+  ShaderModule *mod1;
+  ShaderModule *mod2;
+  std::string uid;
+};
+
+class ColorFromObjModule : public ShaderModule
+{
+public:
+  ColorFromObjModule(ShaderModule *mod) : mod(mod) { uid=unique_id(); }
+  virtual int id() const { return 9; }
+  virtual std::string Function() const
+  {
+    return 
+      "float from_obj_color" + uid + "(vec3 pt, float time) {\n"
+      "    return " + funccall_to_string(mod) + ";\n"
+      "}\n"
+      "vec3 from_obj_color_color" + uid + "(vec3 pt, float time) {\n"
+      "   return " + color_funccall_to_string(mod) + ";\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return "from_obj_color" + uid; }
+  virtual std::string ColorFunctionName() const { return "from_obj_color_color" + uid; }
+  virtual int NumArgs() const { return 2; }
+  virtual bool FreeVariable(int i) const { return true; }
+  virtual std::string ArgName(int i) const { if (i==0) return "pt"; return "time"; }
+  virtual std::string ArgValue(int i) const { if (i==0) return "pt"; return "time"; }
+  virtual std::string ArgType(int i) const { if (i==0) return "vec3"; return "float"; }
+private:
+  ShaderModule *mod;
+  std::string uid;
+};
+
 class FromPointsModule : public ShaderModule
 {
 public:
@@ -13380,6 +13490,27 @@ private:
   ShaderModule *m;
   std::string uid;
 };
+GameApi::SFO GameApi::ShaderModuleApi::color_from_obj(SFO obj)
+{
+  ShaderModule *obj2_m = find_shader_module(e, obj);
+  SFO s = add_shader_module(e, new ColorFromObjModule(obj2_m));
+  return s;
+}
+GameApi::SFO GameApi::ShaderModuleApi::color(SFO obj, float r, float g, float b)
+{
+  ShaderModule *obj2_m = find_shader_module(e, obj);
+  SFO s = add_shader_module(e, new ColorChooseModule(obj2_m));
+  SFO s2 = bind_arg(s, "color", vec3_to_string(e, r,g,b));
+  return s2;
+}
+GameApi::SFO GameApi::ShaderModuleApi::mix_color(SFO mod1, SFO mod2, float t)
+{
+  ShaderModule *obj1_m = find_shader_module(e, mod1);
+  ShaderModule *obj2_m = find_shader_module(e, mod2);
+  SFO s = add_shader_module(e, new MixColorModule(obj1_m, obj2_m));
+  SFO s2 = bind_arg(s, "t", ToNum(t));
+  return s2;
+}
 GameApi::SFO GameApi::ShaderModuleApi::from_points(PTS p, SFO obj)
 {
   PointsApiPoints *pts = find_pointsapi_points(e, p);

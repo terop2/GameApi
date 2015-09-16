@@ -39,10 +39,12 @@ int main() {
   SFO sphere = ev.sh_api.sphere(center, 130.0);
   PT centerA = ev.point_api.point(100.0,0.0,0.0);
   SFO sphereA = ev.sh_api.sphere(centerA, 90.0);
-  SFO sphereB = ev.sh_api.bind_arg(sphereA, "center", "vec3(0.0+100.0*sin(time/10.0),0.0,0.0)");
+  SFO sphereB = ev.sh_api.bind_arg(sphereA, "center", "vec3(0.0+100.0*sin(time*3.0),0.0,0.0)");
+  SFO sphereB_c = ev.sh_api.color(sphereB, 0.0, 0.0, 1.0);
 
   SFO sphereC = ev.sh_api.sphere(centerA, 90.0);
-  SFO sphereD = ev.sh_api.bind_arg(sphereC, "center", "vec3(0.0,0.0,0.0+100.0*sin(time/3.0))");
+  SFO sphereD = ev.sh_api.bind_arg(sphereC, "center", "vec3(0.0,0.0,0.0+100.0*sin(time/3.0*30.0))");
+  SFO sphereD_c = ev.sh_api.color(sphereD, 0.0,1.0,0.0);
 
 
   SFO line_1 = ev.sh_api.line(0.0, 0.0, 0.0,
@@ -53,18 +55,21 @@ int main() {
   SFO sphere2 = ev.sh_api.cube(0.0,100.0,
 			      0.0,100.0,
 			      0.0,100.0);
-  
-  SFO andnot = ev.sh_api.and_not(sphere2, sphere);
-  SFO sphere_1a = ev.sh_api.blend(andnot, sphereB);
-  SFO sphere_2a = ev.sh_api.blend(sphere_1a, sphereD);
+  SFO sphere2_c = ev.sh_api.color(sphere2, 1.0,0.0,0.0);
+
+  SFO andnot = ev.sh_api.and_not(sphere2_c, sphere);
+  SFO sphere_1a = ev.sh_api.or_elem(andnot, sphereB_c);
+  SFO sphere_2a = ev.sh_api.or_elem(sphere_1a, sphereD_c);
   SFO line_2a = ev.sh_api.or_elem(sphere_2a, line_1);
   SFO line_2b = ev.sh_api.or_elem(line_2a, sph_2);
   //SFO move = ev.sh_api.trans(line_2a, 100.0, 0.0,0.0);
   SFO rot_y = ev.sh_api.rot_y(line_2b);
-  SFO rot_y_2 = ev.sh_api.bind_arg(rot_y, "angle", "time/30.0");
+  SFO rot_y_2 = ev.sh_api.bind_arg(rot_y, "angle", "time");
   SFO color = ev.sh_api.color_from_normal(rot_y_2);
+  SFO color_3 = ev.sh_api.color_from_obj(rot_y_2);
   SFO color_2 = ev.sh_api.grayscale(color);
-  SFO sphere_render = ev.sh_api.render(rot_y_2, color_2);
+  SFO mix_color = ev.sh_api.mix_color(color_2, color_3, 0.4);
+  SFO sphere_render = ev.sh_api.render(rot_y_2, mix_color);
 
   SH sh = ev.shader_api.get_normal_shader("test", "screen", "", "", "", false, sphere_render);
 
@@ -82,7 +87,7 @@ int main() {
   poly.prepare();
   float f = 0.0;
   while(1) {
-    f+=0.2;
+    f+=0.2/30.0;
     ev.shader_api.set_var(sh, "time", f);
     // clear frame buffer
     ev.mainloop_api.clear();
