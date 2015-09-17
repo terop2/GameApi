@@ -679,7 +679,12 @@ public:
   SFO plane(PT center, V u_x, V u_y);
   SFO torus(float radius_1, float radius_2);
   SFO color(SFO obj, float r, float g, float b);
-  SFO rot_y(SFO obj); // float angle
+  SFO rot_x(SFO obj, float angle);
+  SFO rot_y(SFO obj, float angle); // float angle
+  SFO rot_z(SFO obj, float angle);
+  SFO rot_x(SFO obj, float angle, PT center);
+  SFO rot_y(SFO obj, float angle, PT center);
+  SFO rot_z(SFO obj, float angle, PT center);
   SFO and_not(SFO obj, SFO not_obj);
   SFO or_elem(SFO obj1, SFO obj2);
   SFO blend(SFO obj1, SFO obj2);
@@ -692,6 +697,7 @@ public:
   SFO stop_generation(SFO obj);
   SFO mix_color(SFO col1, SFO col2, float t); // kills obj side
   SFO grayscale(SFO obj);
+  SFO ambient_occulsion(SFO obj, float d, float i);
   SFO soft_shadow(SFO scene, V light_dir, float mint, float maxt, float k, float strong);
   SFO render(SFO obj);
 private:

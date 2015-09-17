@@ -13039,7 +13039,7 @@ public:
       "  mat3 m = mat3(vec3(cos(angle),0.0,sin(angle)),\n"
       "          vec3(0.0, 1.0, 0.0),\n"
       "          vec3(-sin(angle),0.0,cos(angle)));\n"
-      "   float v1 = " + funccall_to_string_with_replace(&m, "pt", "m*pt") + ";\n"
+      "   float v1 = " + funccall_to_string_with_replace(&m, "pt", "center+m*(pt-center)") + ";\n"
       "   return v1;\n"
       "}\n"
       "vec3 roty_color" + uid + "(vec3 pt, vec3 center, float angle)\n"
@@ -13047,7 +13047,7 @@ public:
       "  mat3 m = mat3(vec3(cos(angle),0.0,sin(angle)),\n"
       "          vec3(0.0, 1.0, 0.0),\n"
       "          vec3(-sin(angle),0.0,cos(angle)));\n"
-      "   vec3 v1 = " + color_funccall_to_string_with_replace(&m, "pt", "m*pt") + ";\n"
+      "   vec3 v1 = " + color_funccall_to_string_with_replace(&m, "pt", "center+m*(pt-center)") + ";\n"
       "   return v1;\n"
       "}\n";
   }
@@ -13087,6 +13087,139 @@ private:
   ShaderModule &m;
   std::string uid;
 };
+
+class RotXModule : public ShaderModule
+{
+public:
+  RotXModule(ShaderModule &m) : m(m) { 
+    uid = unique_id();
+  }
+  virtual int id() const { return 3; }
+  virtual std::string Function() const
+  {
+    return m.Function() +
+      "float rotx" + uid + "(vec3 pt, vec3 center, float angle)\n"
+      "{\n"
+      "  mat3 m = mat3("
+      "          vec3(1.0, 0.0, 0.0),\n"
+      "          vec3(0.0,cos(angle),sin(angle)),\n"
+      "          vec3(0.0,-sin(angle),cos(angle)));\n"
+      "   float v1 = " + funccall_to_string_with_replace(&m, "pt", "center+m*(pt-center)") + ";\n"
+      "   return v1;\n"
+      "}\n"
+      "vec3 rotx_color" + uid + "(vec3 pt, vec3 center, float angle)\n"
+      "{\n"
+      "  mat3 m = mat3("
+      "          vec3(1.0, 0.0, 0.0),\n"
+      "          vec3(0.0,cos(angle),sin(angle)),\n"
+      "          vec3(0.0,-sin(angle),cos(angle)));\n"
+      "   vec3 v1 = " + color_funccall_to_string_with_replace(&m, "pt", "center+m*(pt-center)") + ";\n"
+      "   return v1;\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return std::string("rotx") + uid; }
+  virtual std::string ColorFunctionName() const { return std::string("rotx_color") + uid; }
+  virtual int NumArgs() const { return 3; }
+  virtual bool FreeVariable(int i) const { return true; }
+  virtual std::string ArgName(int i) const { 
+    switch(i)
+      {
+      case 0: return "pt";
+      case 1: return "center";
+      case 2: return "angle";
+      }
+    return "";
+  }
+  virtual std::string ArgValue(int i) const { 
+    switch(i)
+      {
+      case 0: return "pt"; 
+      case 1: return "vec3(0.0,0.0,0.0)";
+      case 2: return "0.0";
+      };
+    return "";
+  }
+  virtual std::string ArgType(int i) const {
+    switch(i)
+      {
+      case 0: return "vec3";
+      case 1: return "vec3";
+      case 2: return "float";
+      }
+    return "";
+  }
+
+private:
+  ShaderModule &m;
+  std::string uid;
+};
+
+class RotZModule : public ShaderModule
+{
+public:
+  RotZModule(ShaderModule &m) : m(m) { 
+    uid = unique_id();
+  }
+  virtual int id() const { return 3; }
+  virtual std::string Function() const
+  {
+    return m.Function() +
+      "float rotz" + uid + "(vec3 pt, vec3 center, float angle)\n"
+      "{\n"
+      "  mat3 m = mat3("
+      "          vec3(cos(angle),sin(angle),0.0),\n"
+      "          vec3(-sin(angle),cos(angle),0.0),\n"
+      "          vec3(0.0, 0.0, 1.0));\n"
+      "   float v1 = " + funccall_to_string_with_replace(&m, "pt", "center+m*(pt-center)") + ";\n"
+      "   return v1;\n"
+      "}\n"
+      "vec3 rotz_color" + uid + "(vec3 pt, vec3 center, float angle)\n"
+      "{\n"
+      "  mat3 m = mat3("
+      "          vec3(cos(angle),sin(angle),0.0),\n"
+      "          vec3(-sin(angle),cos(angle),0.0),\n"
+      "          vec3(0.0, 0.0, 1.0));\n"
+      "   vec3 v1 = " + color_funccall_to_string_with_replace(&m, "pt", "center+m*(pt-center)") + ";\n"
+      "   return v1;\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return std::string("rotz") + uid; }
+  virtual std::string ColorFunctionName() const { return std::string("rotz_color") + uid; }
+  virtual int NumArgs() const { return 3; }
+  virtual bool FreeVariable(int i) const { return true; }
+  virtual std::string ArgName(int i) const { 
+    switch(i)
+      {
+      case 0: return "pt";
+      case 1: return "center";
+      case 2: return "angle";
+      }
+    return "";
+  }
+  virtual std::string ArgValue(int i) const { 
+    switch(i)
+      {
+      case 0: return "pt"; 
+      case 1: return "vec3(0.0,0.0,0.0)";
+      case 2: return "0.0";
+      };
+    return "";
+  }
+  virtual std::string ArgType(int i) const {
+    switch(i)
+      {
+      case 0: return "vec3";
+      case 1: return "vec3";
+      case 2: return "float";
+      }
+    return "";
+  }
+
+private:
+  ShaderModule &m;
+  std::string uid;
+};
+
 
 class AndNotModule : public ShaderModule
 {
@@ -13221,11 +13354,60 @@ GameApi::SFO GameApi::ShaderModuleApi::blend(SFO o1, SFO o2)
   return add_shader_module(e, new BlendElemModule(*o1_m, *o2_m));
 }
 
-GameApi::SFO GameApi::ShaderModuleApi::rot_y(SFO obj)
+GameApi::SFO GameApi::ShaderModuleApi::rot_y(SFO obj, float angle)
 {
   ShaderModule *o1_m = find_shader_module(e, obj);
-  return add_shader_module(e, new RotYModule(*o1_m));
+  SFO s = add_shader_module(e, new RotYModule(*o1_m));
+  SFO s2 = bind_arg(s, "angle", ToNum(angle));
+  return s2;
 }
+
+GameApi::SFO GameApi::ShaderModuleApi::rot_x(SFO obj, float angle)
+{
+  ShaderModule *o1_m = find_shader_module(e, obj);
+  SFO s = add_shader_module(e, new RotXModule(*o1_m));
+  SFO s2 = bind_arg(s, "angle", ToNum(angle));
+  return s2;
+}
+
+GameApi::SFO GameApi::ShaderModuleApi::rot_z(SFO obj, float angle)
+{
+  ShaderModule *o1_m = find_shader_module(e, obj);
+  SFO s = add_shader_module(e, new RotZModule(*o1_m));
+  SFO s2 = bind_arg(s, "angle", ToNum(angle));
+  return s2;
+}
+
+GameApi::SFO GameApi::ShaderModuleApi::rot_y(SFO obj, float angle, PT center)
+{
+  Point *c = find_point(e, center);
+  ShaderModule *o1_m = find_shader_module(e, obj);
+  SFO s = add_shader_module(e, new RotYModule(*o1_m));
+  SFO s2 = bind_arg(s, "angle", ToNum(angle));
+  SFO s3 = bind_arg(s2, "center", vec3_to_string(e, c->x,c->y,c->z));
+  return s3;
+}
+
+GameApi::SFO GameApi::ShaderModuleApi::rot_x(SFO obj, float angle, PT center)
+{
+  Point *c = find_point(e, center);
+  ShaderModule *o1_m = find_shader_module(e, obj);
+  SFO s = add_shader_module(e, new RotXModule(*o1_m));
+  SFO s2 = bind_arg(s, "angle", ToNum(angle));
+  SFO s3 = bind_arg(s2, "center", vec3_to_string(e, c->x,c->y,c->z));
+  return s3;
+}
+
+GameApi::SFO GameApi::ShaderModuleApi::rot_z(SFO obj, float angle, PT center)
+{
+  Point *c = find_point(e, center);
+  ShaderModule *o1_m = find_shader_module(e, obj);
+  SFO s = add_shader_module(e, new RotZModule(*o1_m));
+  SFO s2 = bind_arg(s, "angle", ToNum(angle));
+  SFO s3 = bind_arg(s2, "center", vec3_to_string(e, c->x,c->y,c->z));
+  return s3;
+}
+
 
 class LineModule : public ShaderModule
 {
@@ -13653,12 +13835,14 @@ public:
       "float softshadow" + uid + "(vec3 pt, vec3 rd, float mint, float maxt, float k)\n"
       "{\n"
       "   float res = 1.0;\n"
-      "   for(float t=mint;t<maxt; )\n"
+      "   float t = mint;\n"
+      "   for(int i=0;i<256;i++)\n"
       "   {\n"
       "      float h = " + funccall_to_string_with_replace(scene, "pt", "pt + rd*t") + ";\n"
       "      if (h<0.001) return 0.0;\n"
       "      res = min(res, k*h/t);\n"
       "      t += h;\n"
+      "      if (t>maxt) break;\n"
       "    }\n"
       "    return res;\n"
       "}\n"
@@ -13760,6 +13944,76 @@ public:
 private:
   std::string uid;
 };
+class AOModule : public ShaderModule
+{
+public:
+  AOModule(ShaderModule *mod) : mod(mod) { uid = unique_id(); }
+  virtual std::string Function() const
+  {
+    return mod->Function() +
+      "float ao"+uid+"(vec3 pt, vec3 n, float d, float i)\n"
+      "{\n"
+      "    float o;\n"
+      "    for(float i=1.;i>0.;i--) {\n"
+      "      o-=(i*d-abs(" + funccall_to_string_with_replace(mod, "pt", "pt+n*i*d") + "))/pow(2.,i);\n"
+      "    }\n"
+      "    return o;\n"
+      "}\n"
+      "vec3 normal" + uid + "(vec3 pt, float time)\n"
+      "{\n"
+      "  float fx = " + funccall_to_string_with_replace(mod, "pt", "pt+vec3(1.0,0.0,0.0)") + " - " + funccall_to_string_with_replace(mod, "pt", "pt-vec3(1.0,0.0,0.0)") + ";\n"
+      "  float fy = " + funccall_to_string_with_replace(mod, "pt", "pt+vec3(0.0,1.0,0.0)") + " - " + funccall_to_string_with_replace(mod, "pt", "pt-vec3(0.0,1.0,0.0)") + ";\n"
+      "  float fz = " + funccall_to_string_with_replace(mod, "pt", "pt+vec3(0.0,0.0,1.0)") + " - " + funccall_to_string_with_replace(mod, "pt", "pt-vec3(0.0,0.0,1.0)") + ";\n"
+      "  return normalize(vec3(-fx,-fy,-fz))/2.0+vec3(0.5,0.5,0.5);\n"
+      "}\n"
+      "float ao_obj" + uid + "(vec3 pt, float d, float i)\n"
+      "{\n"
+      "   return " + funccall_to_string(mod) + ";\n"
+      "}\n"
+      "vec3 ao_color" + uid + "(vec3 pt, float d, float i)\n"
+      "{\n"
+      "   vec3 n = normal" + uid + "(pt,time);\n"
+      "   float ao = ao" + uid + "(pt,n,d,i);\n"
+      "   ao = clamp(ao,0.0,1.0);\n"
+      "   vec3 c = " + color_funccall_to_string(mod) + ";\n"
+      "   vec3 c2 = mix(c,vec3(1.0,1.0,1.0),ao);\n"
+      "   return c2;\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return "ao_obj" + uid; }
+  virtual std::string ColorFunctionName() const { return "ao_color" + uid; }
+  virtual int NumArgs() const { return 3; }
+  virtual std::string ArgName(int i) const
+  {
+    switch(i) {
+    case 0: return "pt";
+    case 1: return "d";
+    case 2: return "i";
+    }
+    return "";
+  }
+  virtual std::string ArgValue(int i) const
+  {
+    switch(i) {
+    case 0: return "pt";
+    case 1: return "10.2";
+    case 2: return "30.0";
+    }
+    return "";
+  }
+private:
+  ShaderModule *mod;
+  std::string uid;
+
+};
+GameApi::SFO GameApi::ShaderModuleApi::ambient_occulsion(SFO obj, float d, float i)
+{
+  ShaderModule *mod = find_shader_module(e,obj);
+  SFO ao = add_shader_module(e, new AOModule(mod));
+  SFO ao_1 = bind_arg(ao, "i", ToNum(i));
+  SFO ao_2 = bind_arg(ao_1, "d", ToNum(d));
+  return ao_2;
+}
 GameApi::SFO GameApi::ShaderModuleApi::rounded_cube(float start_x, float end_x,
 						    float start_y, float end_y,
 						    float start_z, float end_z,
