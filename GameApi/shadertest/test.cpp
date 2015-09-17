@@ -24,52 +24,62 @@ int main() {
   // shader initialization
   ev.shader_api.load("Shader.txt");
   
-  
-  PT centert = ev.point_api.point(50.0,50.0,50.0);
-  O o = ev.volume_api.sphere(centert, 50.0);
-  FO fo = ev.float_volume_api.from_volume(o, 0.0, 1.0);
-  PTS pts = ev.points_api.from_float_volume(fo, 15, -100.0,-100.0,-100.0,
-					    100.0,100.0,100.0);
-
   PT center = ev.point_api.point(0.0,0.0,0.0);
-  SFO sph = ev.sh_api.sphere(center, 10.0);
-  SFO sph_2 = ev.sh_api.from_points(pts, sph);
-
+  
+  SFO skybox = ev.sh_api.sphere(center, 1000.0);
+  SFO skybox_2 = ev.sh_api.sphere(center, 990.0);
+  SFO skybox_3 = ev.sh_api.and_not(skybox, skybox_2);
+  SFO skybox_4 = ev.sh_api.color(skybox_3, 0.7,0.8,1.0);
 
   SFO sphere = ev.sh_api.sphere(center, 130.0);
   PT centerA = ev.point_api.point(100.0,0.0,0.0);
   SFO sphereA = ev.sh_api.sphere(centerA, 90.0);
-  SFO sphereB = ev.sh_api.bind_arg(sphereA, "center", "vec3(0.0+100.0*sin(time*3.0),0.0,0.0)");
+  SFO sphereB = ev.sh_api.bind_arg(sphereA, "center", "vec3(0.0+100.0*sin(time*12.0/5.0),0.0,0.0)");
   SFO sphereB_c = ev.sh_api.color(sphereB, 0.0, 0.0, 1.0);
 
   SFO sphereC = ev.sh_api.sphere(centerA, 90.0);
-  SFO sphereD = ev.sh_api.bind_arg(sphereC, "center", "vec3(0.0,0.0,0.0+100.0*sin(time/3.0*30.0))");
+  SFO sphereD = ev.sh_api.bind_arg(sphereC, "center", "vec3(0.0,0.0,0.0+100.0*sin(time))");
   SFO sphereD_c = ev.sh_api.color(sphereD, 0.0,1.0,0.0);
 
 
-  SFO line_1 = ev.sh_api.line(0.0, 0.0, 0.0,
-			      100.0, 100.0, 0.0,
+  SFO line_1 = ev.sh_api.line(-300.0, 0.0, 0.0,
+			      -300.0, 100.0, 0.0,
 			      20.0, 10.0);
 
-  //SFO sphere_1 = ev.sh_api.bind_arg(sphere, "radius", "120+10*sin(time/10.0)");
-  SFO sphere2 = ev.sh_api.cube(0.0,100.0,
-			      0.0,100.0,
-			      0.0,100.0);
+  SFO sphere2 = ev.sh_api.rounded_cube(0.0,100.0,
+				       0.0,100.0,
+				       0.0,100.0, 20);
   SFO sphere2_c = ev.sh_api.color(sphere2, 1.0,0.0,0.0);
 
   SFO andnot = ev.sh_api.and_not(sphere2_c, sphere);
   SFO sphere_1a = ev.sh_api.or_elem(andnot, sphereB_c);
   SFO sphere_2a = ev.sh_api.or_elem(sphere_1a, sphereD_c);
   SFO line_2a = ev.sh_api.or_elem(sphere_2a, line_1);
-  SFO line_2b = ev.sh_api.or_elem(line_2a, sph_2);
+  //SFO line_2b = ev.sh_api.or_elem(line_2a, sph_2);
   //SFO move = ev.sh_api.trans(line_2a, 100.0, 0.0,0.0);
-  SFO rot_y = ev.sh_api.rot_y(line_2b);
-  SFO rot_y_2 = ev.sh_api.bind_arg(rot_y, "angle", "time");
-  SFO color = ev.sh_api.color_from_normal(rot_y_2);
-  SFO color_3 = ev.sh_api.color_from_obj(rot_y_2);
-  SFO color_2 = ev.sh_api.grayscale(color);
-  SFO mix_color = ev.sh_api.mix_color(color_2, color_3, 0.4);
-  SFO sphere_render = ev.sh_api.render(rot_y_2, mix_color);
+  SFO plane_1 = ev.sh_api.plane(ev.point_api.point(0.0,100.0,0.0),
+				ev.vector_api.vector(4.0,0.0,0.0),
+				ev.vector_api.vector(0.0,0.0,4.0));
+  SFO plane_11 = ev.sh_api.grayscale(plane_1);
+  SFO plane_2 = ev.sh_api.or_elem(plane_11, line_2a);
+  SFO torus_1 = ev.sh_api.torus(100.0, 30.0);
+  SFO torus_2 = ev.sh_api.trans(torus_1, 300.0, 60.0,0.0);
+  SFO torus_3 = ev.sh_api.or_elem(plane_2, torus_2);
+  
+  SFO skybox_or = ev.sh_api.or_elem(torus_3, skybox_4);
+  
+  SFO rot_y = ev.sh_api.rot_y(skybox_or);
+  SFO rot_y_2 = ev.sh_api.bind_arg(rot_y, "angle", "time/1.25");
+  //SFO trans_test = ev.sh_api.trans(rot_y_2);
+  //SFO trans_test_22 = ev.sh_api.bind_arg(trans_test, "delta", "vec3(5.0*sin(time+pt.x/10.0),3.0*sin(time*3.0+pt.y/2.0),2.0*cos(time*3.0+pt.z/5.0))");
+  SFO rot_y_3 = ev.sh_api.stop_generation(rot_y_2);
+
+  SFO color = ev.sh_api.color_from_normal(rot_y_3 );
+  //SFO color_2 = ev.sh_api.grayscale(color);
+  SFO mix_color = ev.sh_api.mix_color(rot_y_2, color, 1.0-0.4);
+  V light_dir = ev.vector_api.vector(-20.0, -40.0, -20.0);
+  SFO soft_shadow = ev.sh_api.soft_shadow(mix_color, light_dir, 0.0, 1.0, 2.0, 8.0);
+  SFO sphere_render = ev.sh_api.render(soft_shadow);
 
   SH sh = ev.shader_api.get_normal_shader("test", "screen", "", "", "", false, sphere_render);
 
@@ -87,7 +97,7 @@ int main() {
   poly.prepare();
   float f = 0.0;
   while(1) {
-    f+=0.2/30.0;
+    f+=0.02;
     ev.shader_api.set_var(sh, "time", f);
     // clear frame buffer
     ev.mainloop_api.clear();

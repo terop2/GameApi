@@ -668,10 +668,16 @@ public:
   SFO cube(float start_x, float end_x,
 	   float start_y, float end_y,
 	   float start_z, float end_z); // ()
+  SFO rounded_cube(float start_x, float end_x,
+		   float start_y, float end_y,
+		   float start_z, float end_z,
+		   float r);
   SFO line(); // vec3 tl, vec3 br, float line_width1, float line_width2
   SFO line(float start_x, float start_y, float start_z,
 	   float end_x, float end_y, float end_z,
 	   float line_width1, float line_width2);
+  SFO plane(PT center, V u_x, V u_y);
+  SFO torus(float radius_1, float radius_2);
   SFO color(SFO obj, float r, float g, float b);
   SFO rot_y(SFO obj); // float angle
   SFO and_not(SFO obj, SFO not_obj);
@@ -683,10 +689,11 @@ public:
   SFO from_lines(LI li, SFO obj);
   SFO bind_arg(SFO obj, std::string name, std::string value);
   SFO color_from_normal(SFO obj);
-  SFO color_from_obj(SFO obj);
+  SFO stop_generation(SFO obj);
   SFO mix_color(SFO col1, SFO col2, float t); // kills obj side
   SFO grayscale(SFO obj);
-  SFO render(SFO obj, SFO color);
+  SFO soft_shadow(SFO scene, V light_dir, float mint, float maxt, float k, float strong);
+  SFO render(SFO obj);
 private:
   Env &e;
 };
