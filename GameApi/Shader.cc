@@ -994,8 +994,7 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 	{
 	  if (is_fragment)
 	    {
-	      std::vector<int> vec;
-	      out+=mod->Function(vec);
+	      out+=mod->Function();
 	    }
 	}
       if (mod && ww.substr(0,4)=="//N:")

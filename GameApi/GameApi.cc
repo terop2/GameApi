@@ -12764,7 +12764,9 @@ class BindArgModule : public ShaderModule
 {
 public:
   BindArgModule(ShaderModule &next, std::string name, std::string value) : next(next), name(name), value(value) {}
+#if 0
   virtual int id() const { return next.id(); }
+#endif
   virtual std::string Function() const
   {
     return next.Function();
@@ -12778,6 +12780,7 @@ public:
     return next.ColorFunctionName();
   }
   virtual int NumArgs() const { return next.NumArgs(); }
+#if 0
   virtual bool FreeVariable(int i) const
   {
     std::string name1 = next.ArgName(i);
@@ -12787,6 +12790,7 @@ public:
       }
     return next.FreeVariable(i);
   }
+#endif
   virtual std::string ArgName(int i) const
   {
     return next.ArgName(i);
@@ -12800,10 +12804,12 @@ public:
       }
     return next.ArgValue(i);
   }
+#if 0
   virtual std::string ArgType(int i) const
   {
     return next.ArgType(i);
   }
+#endif
 private:
   ShaderModule &next;
   std::string name, value;
@@ -12891,7 +12897,7 @@ public:
   virtual int id() const { return 3; }
   virtual std::string Function() const
   {
-    return
+    return obj->Function()+
       "vec3 normal" + uid + "(vec3 pt, float time)\n"
       "{\n"
       "  float fx = " + funccall_to_string_with_replace(obj, "pt", "pt+vec3(1.0,0.0,0.0)") + " - " + funccall_to_string_with_replace(obj, "pt", "pt-vec3(1.0,0.0,0.0)") + ";\n"
@@ -12946,11 +12952,11 @@ private:
 class RenderModule : public ShaderModule
 {
 public:
-  RenderModule(ShaderModule *obj, ShaderModule *color) : obj(obj), color(color) { }
+  RenderModule(ShaderModule *obj) : obj(obj) { }
   virtual int id() const { return 2; }
   virtual std::string Function() const
   {
-    return obj->Function() + color->Function() +
+    return obj->Function() +
       "vec3 ray(vec3 p1, vec3 p2, float t)\n"
       "{\n"
       "   return p1 + t*(p2-p1);\n"
@@ -12958,9 +12964,10 @@ public:
       "float solve(vec3 p1, vec3 p2, float t_0, float t_1, float time)\n"
       "{\n"
       "    float t = t_0;\n"
-      "    for(int i=0;i<250;i++)\n"
+      "    for(int i=0;i<600;i++)\n"
       "    {\n"
-      "       float Ht = " + funccall_to_string_with_replace(obj, "pt", "ray(p1,p2,t)") + ";\n"
+      "       vec3 pt = ray(p1,p2,t);\n"
+      "       float Ht = " + funccall_to_string(obj) + ";\n"
       "       if (abs(Ht)<0.5) return t;\n"
       "       if (t>t_1) return 0.0;\n"
       "       t+= Ht / 5.0;\n"
@@ -12969,9 +12976,9 @@ public:
       "}\n"
       "vec3 render(vec3 p0, vec3 p1)\n"
       "{\n"
-      "   float t = solve(p0,p1,0.0, 600.0, time);\n"
+      "   float t = solve(p0,p1,0.0, 1600.0, time);\n"
       "   vec3 pt = ray(p0,p1, t);\n"
-      "   vec3 rgb = " + color_funccall_to_string(color) + ";\n"
+      "   vec3 rgb = " + color_funccall_to_string(obj) + ";\n"
       "   return rgb;\n"
       "}\n"
       ;
@@ -13001,7 +13008,6 @@ public:
   }
 private:
   ShaderModule *obj;
-  ShaderModule *color;
 };
 GameApi::SFO GameApi::ShaderModuleApi::grayscale(SFO obj)
 {
@@ -13013,11 +13019,10 @@ GameApi::SFO GameApi::ShaderModuleApi::color_from_normal(SFO obj)
   ShaderModule *obj_m = find_shader_module(e, obj);
   return add_shader_module(e, new ColorFromNormalModule(obj_m));
 }
-GameApi::SFO GameApi::ShaderModuleApi::render(SFO obj, SFO color)
+GameApi::SFO GameApi::ShaderModuleApi::render(SFO obj)
 {
   ShaderModule *obj_m = find_shader_module(e, obj);
-  ShaderModule *color_m = find_shader_module(e, color);
-  return add_shader_module(e, new RenderModule(obj_m, color_m));
+  return add_shader_module(e, new RenderModule(obj_m));
 }
 class RotYModule : public ShaderModule
 {
@@ -13312,7 +13317,7 @@ public:
       "   pt-=delta;\n"
       "   return " + funccall_to_string(obj) + ";\n"
       "}\n"
-      "vec3 trans" + uid + "(vec3 pt, vec3 delta)\n"
+      "vec3 trans_color" + uid + "(vec3 pt, vec3 delta)\n"
       "{\n"
       "    pt-=delta;\n"
       "    return " + color_funccall_to_string(obj) + ";\n"
@@ -13398,7 +13403,7 @@ public:
   {
     return mod1->Function() + mod2->Function() +
       "float color_mix" + uid +  "(vec3 pt, float t) {\n"
-      "   return 0.0;\n"
+      "   return " + funccall_to_string(mod1) + ";\n"
       "}\n"
       "vec3 color_mix_color" + uid + "(vec3 pt, float t) {\n"
       "   vec3 col1 = " + color_funccall_to_string(mod1) + ";\n"
@@ -13490,7 +13495,7 @@ private:
   ShaderModule *m;
   std::string uid;
 };
-GameApi::SFO GameApi::ShaderModuleApi::color_from_obj(SFO obj)
+GameApi::SFO GameApi::ShaderModuleApi::stop_generation(SFO obj)
 {
   ShaderModule *obj2_m = find_shader_module(e, obj);
   SFO s = add_shader_module(e, new ColorFromObjModule(obj2_m));
@@ -13516,4 +13521,253 @@ GameApi::SFO GameApi::ShaderModuleApi::from_points(PTS p, SFO obj)
   PointsApiPoints *pts = find_pointsapi_points(e, p);
   ShaderModule *obj2_m = find_shader_module(e, obj);
   return add_shader_module(e, new FromPointsModule(e,pts, obj2_m));
+}
+class PlaneModule : public ShaderModule
+{
+public:
+  PlaneModule() { uid = unique_id(); }
+  virtual int id() const { return 11; }
+  virtual std::string Function() const
+  {
+    return 
+      "float plane" + uid + "(vec3 pt, vec3 center, vec3 u_x, vec3 u_y, float sx, float sy)\n"
+      "{\n"
+      "   pt-=center;\n"
+      "   vec3 normal = normalize(cross(u_x, u_y));\n"
+      "   float val = dot(pt, normal);\n"
+      "   return val;\n"
+      "}\n"
+      "vec3 plane_color" + uid + "(vec3 pt, vec3 center, vec3 u_x, vec3 u_y, float sx, float sy)\n"
+      "{\n"
+      "   float v_x = dot(pt-center, u_x)/length(u_x)/length(u_x);\n"
+      "   float v_y = dot(pt-center, u_y)/length(u_y)/length(u_y);\n"
+      "   v_x/=sx;\n"
+      "   v_y/=sy;\n"
+      "   v_x = abs(fract(v_x));\n"
+      "   v_y = abs(fract(v_y));\n"
+      "   return vec3(v_x,v_y,1.0);\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return "plane" + uid; }
+  virtual std::string ColorFunctionName() const { return "plane_color" + uid; }
+  virtual int NumArgs() const {return 6; }
+  virtual bool FreeVariable(int i) const { return true; }
+  virtual std::string ArgName(int i) const {
+    switch(i) {
+    case 0: return "pt";
+    case 1: return "center";
+    case 2: return "u_x";
+    case 3: return "u_y";
+    case 4: return "sx";
+    case 5: return "sy";
+    }
+    return "";
+  }
+  virtual std::string ArgValue(int i) const
+  {
+    switch(i) {
+    case 0: return "pt";
+    case 1: return "vec3(0.0,40.0,0.0)";
+    case 2: return "vec3(1.0,0.0,0.0)";
+    case 3: return "vec3(0.0,0.0,1.0)";
+    case 4: return "100.0";
+    case 5: return "100.0";
+    }
+    return "";    
+  }
+  virtual std::string ArgType(int i) const
+  {
+    return "vec3";
+  }
+private:
+  std::string uid;
+};
+class TorusModule : public ShaderModule
+{
+public:
+  TorusModule() { uid = unique_id(); }
+  virtual std::string Function() const
+  {
+    return 
+      "float torus" + uid + "(vec3 pt, float radius_1, float radius_2)\n"
+      "{\n"
+      "   return length(vec2(length(pt.xz)-radius_1, pt.y)) - radius_2;\n"
+      "}\n"
+      "vec3 torus_color" + uid + "(vec3 pt, float radius_1, float radius_2)\n"
+      "{\n"
+      "   return vec3(1.0,1.0,1.0);\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return "torus" + uid; }
+  virtual std::string ColorFunctionName() const { return "torus_color" + uid; }
+  virtual int NumArgs() const { return 3; }
+  virtual std::string ArgName(int i) const
+  {
+    switch(i)
+      {
+      case 0: return "pt";
+      case 1: return "radius_1";
+      case 2: return "radius_2";
+      }
+    return "";
+  }
+  virtual std::string ArgValue(int i) const
+  {
+    switch(i) {
+    case 0: return "pt";
+    case 1: return "100.0";
+    case 2: return "20.0";
+    }
+    return "";
+  }
+    
+
+private:
+  std::string uid;
+};
+GameApi::SFO GameApi::ShaderModuleApi::torus(float radius_1, float radius_2)
+{
+  SFO torus = add_shader_module(e, new TorusModule());
+  SFO torus_1 = bind_arg(torus, "radius_1", ToNum(radius_1));
+  SFO torus_2 = bind_arg(torus_1, "radius_2", ToNum(radius_2));
+  return torus_2;
+}
+GameApi::SFO GameApi::ShaderModuleApi::plane(PT center, V u_x, V u_y)
+{
+  Point *center_1 = find_point(e, center);
+  Vector *normal_1 = find_vector(e, u_x);
+  Vector *normal_2 = find_vector(e, u_y);
+  SFO pl = add_shader_module(e, new PlaneModule());
+  SFO pl_1 = bind_arg(pl, "center", vec3_to_string(e, center_1->x, center_1->y, center_1->z));
+  SFO pl_2 = bind_arg(pl_1, "u_x", vec3_to_string(e, normal_1->dx, normal_1->dy, normal_1->dz));
+  SFO pl_3 = bind_arg(pl_2, "u_y", vec3_to_string(e, normal_2->dx, normal_2->dy, normal_2->dz));
+  return pl_3;
+}
+class SoftShadowModule : public ShaderModule
+{
+public:
+  SoftShadowModule(ShaderModule *scene) :scene(scene) { uid=unique_id(); }
+  virtual std::string Function() const
+  {
+    return scene->Function() +
+      "float softshadow" + uid + "(vec3 pt, vec3 rd, float mint, float maxt, float k)\n"
+      "{\n"
+      "   float res = 1.0;\n"
+      "   for(float t=mint;t<maxt; )\n"
+      "   {\n"
+      "      float h = " + funccall_to_string_with_replace(scene, "pt", "pt + rd*t") + ";\n"
+      "      if (h<0.001) return 0.0;\n"
+      "      res = min(res, k*h/t);\n"
+      "      t += h;\n"
+      "    }\n"
+      "    return res;\n"
+      "}\n"
+      "float softshadow_obj" + uid + "(vec3 pt, vec3 rd, float mint, float maxt, float k, float strong) {\n"
+      "   return " + funccall_to_string(scene) + ";\n"
+      "}\n"
+      "vec3 softshadow_color" + uid + "(vec3 pt, vec3 rd, float mint, float maxt, float k, float strong) {\n"
+      "   vec3 color = " + color_funccall_to_string(scene) + ";\n"
+      "   float shadow = softshadow" + uid + "(pt,rd,mint,maxt,k);\n"
+      "   return (shadow/strong+(1.0-1.0/strong))*color;\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return "softshadow_obj" + uid; }
+  virtual std::string ColorFunctionName() const { return "softshadow_color" + uid; }
+  virtual int NumArgs() const { return 6; }
+  virtual std::string ArgName(int i) const
+  {
+    switch(i) {
+    case 0: return "pt";
+    case 1: return "light_dir";
+    case 2: return "mint";
+    case 3: return "maxt";
+    case 4: return "k";
+    case 5: return "strong";
+    }
+    return "";
+  }
+  virtual std::string ArgValue(int i) const
+  {
+    switch(i) {
+    case 0: return "pt";
+    case 1: return "vec3(30.0,60.0,30.0)";
+    case 2: return "0.2";
+    case 3: return "1.0";
+    case 4: return "0.3";
+    case 5: return "4.0";
+    }
+    return "";
+  }
+
+private:
+  ShaderModule *scene;
+  std::string uid;
+};
+GameApi::SFO GameApi::ShaderModuleApi::soft_shadow(SFO scene, V light_dir, float mint, float maxt, float k, float strong)
+{
+  Vector *vec = find_vector(e,light_dir);
+  ShaderModule *mod = find_shader_module(e, scene);
+  SFO shadow = add_shader_module(e, new SoftShadowModule(mod));
+  SFO shadow_1 = bind_arg(shadow, "light_dir", vec3_to_string(e,vec->dx, vec->dy, vec->dz));
+  SFO shadow_2 = bind_arg(shadow_1, "mint", ToNum(mint));
+  SFO shadow_3 = bind_arg(shadow_2, "maxt", ToNum(maxt));
+  SFO shadow_4 = bind_arg(shadow_3, "k", ToNum(k));
+  SFO shadow_5 = bind_arg(shadow_4, "strong", ToNum(strong));
+  return shadow_5;
+}
+class RoundedCube : public ShaderModule
+{
+public:
+  RoundedCube() { uid=unique_id(); }
+  virtual std::string Function() const
+  {
+    return 
+      "float rbox" + uid + "(vec3 pt, vec3 tl, vec3 br, float r)\n"
+      "{\n"
+      "   pt-=tl;\n"
+      "   vec3 s = br-tl;\n"
+      "   return length(max(abs(pt)-s+vec3(r),0.0))-r;\n"
+      "}\n"
+      "vec3 rbox_color" + uid + "(vec3 pt, vec3 tl, vec3 br, float r)\n"
+      "{\n"
+      "   return vec3(1.0,1.0,1.0);\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return "rbox" + uid; }
+  virtual std::string ColorFunctionName() const { return "rbox_color" + uid; }
+  virtual int NumArgs() const { return 4; }
+  virtual std::string ArgName(int i) const
+  {
+    switch(i) {
+    case 0: return "pt";
+    case 1: return "tl";
+    case 2: return "br";
+    case 3: return "r";
+    };
+    return "";
+  }
+
+  virtual std::string ArgValue(int i) const
+  {
+    switch(i) {
+    case 0: return "pt";
+    case 1: return "vec3(0.0,0.0,0.0)";
+    case 2: return "vec3(100.0,100.0,100.0)";
+    case 3: return "20.0";
+    };
+    return "";
+  }
+private:
+  std::string uid;
+};
+GameApi::SFO GameApi::ShaderModuleApi::rounded_cube(float start_x, float end_x,
+						    float start_y, float end_y,
+						    float start_z, float end_z,
+						    float r)
+{
+  SFO r_cube = add_shader_module(e, new RoundedCube());
+  SFO r_cube_1 = bind_arg(r_cube, "tl", vec3_to_string(e,start_x, start_y, start_z));
+  SFO r_cube_2 = bind_arg(r_cube_1, "br", vec3_to_string(e,end_x, end_y, end_z));
+  SFO r_cube_3 = bind_arg(r_cube_2, "r", ToNum(r));
+  return r_cube_3;
 }
