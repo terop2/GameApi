@@ -144,8 +144,8 @@ public:
 	    vec[i]->push_back(p);
 	    FaceCollectionVertexArray2 arr3(*coll, *p.s1);
 	    FaceCollectionVertexArray2 arr2(*coll2, *p.s2);
-	    arr3.copy();
-	    arr2.copy();
+	    arr3.copy(0,coll->NumFaces());
+	    arr2.copy(0,coll2->NumFaces());
 	  }
 	current_pair.push_back(0);
       }

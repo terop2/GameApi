@@ -2,6 +2,7 @@
 #define SDL2_USED  
 #define GAME_API_DEFS
 #define _SCL_SECURE_NO_WARNINGS
+#define THREADS 1
 
 #include "GameApi.hh" 
 #include "Graph.hh"  
@@ -8688,6 +8689,33 @@ EXPORT GameApi::P GameApi::PolygonApi::color_voxel(P orig, VX colours, PT p, V u
 
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 {
+#ifdef THREADS
+  int num_threads = 4;
+  FaceCollection *faces = find_facecoll(e, p);
+  ThreadedPrepare prep(faces);
+  int s = faces->NumFaces();
+  int delta_s = s/num_threads;
+  std::vector<int> vec;
+  for(int i=0;i<num_threads;i++)
+    {
+      int start_range = i*delta_s;
+      int end_range = (i+1)*delta_s;
+      if (i==num_threads-1) {end_range = s; }
+      vec.push_back(prep.push_thread(start_range, end_range));
+    }
+  for(int i=0;i<num_threads;i++)
+    {
+      prep.join(vec[i]);
+    }
+  VertexArraySet *set = prep.collect();
+  RenderVertexArray *arr2 = new RenderVertexArray(*set);
+  arr2->prepare(0);
+  if (!keep)
+    {
+      set->free_memory();
+    }
+  return add_vertex_array(e, set, arr2);
+#else
   FaceCollection *faces = find_facecoll(e, p);
   VertexArraySet *s = new VertexArraySet;
   FaceCollectionVertexArray2 arr(*faces, *s);
@@ -8698,6 +8726,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   if (!keep)
     s->free_memory();
   return add_vertex_array(e, s, arr2);
+#endif
 }
 #if 0
 EXPORT int GameApi::PolygonApi::access_point_count(VA va, bool triangle)

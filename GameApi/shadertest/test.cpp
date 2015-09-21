@@ -27,7 +27,7 @@ void iter(void *data)
 {
   Envi &envi = *(Envi*)data;
   envi.f = envi.ev->mainloop_api.get_time()/1000.0;
-    envi.ev->shader_api.set_var(envi.sh, "time", envi.f);
+  //envi.ev->shader_api.set_var(envi.sh, "time", envi.f);
     // clear frame buffer
     envi.ev->mainloop_api.clear();
 
