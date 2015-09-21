@@ -124,8 +124,13 @@ using std::placeholders::_9;
 #define IMPORT 
 #define EXPORT
 #else
-#define IMPORT __declspec(dllimport)
+#ifdef GAMEAPI_COMPILATION
+#define IMPORT __declspec(dllexport)
 #define EXPORT __declspec(dllexport)
+#else
+#define IMPORT
+#define EXPORT
+#endif
 #endif
 class Env
 {
@@ -661,45 +666,51 @@ private:
 class ShaderModuleApi
 {
 public:
-  ShaderModuleApi(Env &e) : e(e) { }
-  SFO sphere(); // vec3 center, float radius
-  SFO sphere(PT center, float radius); // ()
-  SFO cube(); // vec3 tl, vec3 br
-  SFO cube(float start_x, float end_x,
+  IMPORT ShaderModuleApi(Env &e) : e(e) { }
+  IMPORT SFO function(std::function<std::string (std::string id)> function, std::string function_name, std::vector<std::string> param_names = std::vector<std::string>(), std::vector<std::string> arg_values = std::vector<std::string>());
+  IMPORT SFO color_function(SFO orig, std::function<std::string (std::string)> function, std::string function_name);
+  IMPORT SFO sphere(); // vec3 center, float radius
+  IMPORT SFO sphere(PT center, float radius); // ()
+  IMPORT SFO cube(); // vec3 tl, vec3 br
+  IMPORT SFO cube(float start_x, float end_x,
 	   float start_y, float end_y,
 	   float start_z, float end_z); // ()
-  SFO rounded_cube(float start_x, float end_x,
+  IMPORT SFO rounded_cube(float start_x, float end_x,
 		   float start_y, float end_y,
 		   float start_z, float end_z,
 		   float r);
-  SFO line(); // vec3 tl, vec3 br, float line_width1, float line_width2
-  SFO line(float start_x, float start_y, float start_z,
+  IMPORT SFO line(); // vec3 tl, vec3 br, float line_width1, float line_width2
+  IMPORT SFO line(float start_x, float start_y, float start_z,
 	   float end_x, float end_y, float end_z,
 	   float line_width1, float line_width2);
-  SFO plane(PT center, V u_x, V u_y);
-  SFO torus(float radius_1, float radius_2);
-  SFO color(SFO obj, float r, float g, float b);
-  SFO rot_x(SFO obj, float angle);
-  SFO rot_y(SFO obj, float angle); // float angle
-  SFO rot_z(SFO obj, float angle);
-  SFO rot_x(SFO obj, float angle, PT center);
-  SFO rot_y(SFO obj, float angle, PT center);
-  SFO rot_z(SFO obj, float angle, PT center);
-  SFO and_not(SFO obj, SFO not_obj);
-  SFO or_elem(SFO obj1, SFO obj2);
-  SFO blend(SFO obj1, SFO obj2);
-  SFO trans(SFO obj);
-  SFO trans(SFO obj, float dx, float dy, float dz);
-  SFO from_points(PTS p, SFO obj);
-  SFO from_lines(LI li, SFO obj);
-  SFO bind_arg(SFO obj, std::string name, std::string value);
-  SFO color_from_normal(SFO obj);
-  SFO stop_generation(SFO obj);
-  SFO mix_color(SFO col1, SFO col2, float t); // kills obj side
-  SFO grayscale(SFO obj);
-  SFO ambient_occulsion(SFO obj, float d, float i);
-  SFO soft_shadow(SFO scene, V light_dir, float mint, float maxt, float k, float strong);
-  SFO render(SFO obj);
+  IMPORT SFO plane(PT center, V u_x, V u_y);
+  IMPORT SFO torus(float radius_1, float radius_2);
+  IMPORT SFO color(SFO obj, float r, float g, float b);
+  IMPORT SFO rot_x(SFO obj, float angle);
+  IMPORT SFO rot_y(SFO obj, float angle); // float angle
+  IMPORT SFO rot_z(SFO obj, float angle);
+  IMPORT SFO rot_x(SFO obj, float angle, PT center);
+  IMPORT SFO rot_y(SFO obj, float angle, PT center);
+  IMPORT SFO rot_z(SFO obj, float angle, PT center);
+  IMPORT SFO mod_x(SFO obj, float dx);
+  IMPORT SFO mod_y(SFO obj, float dy);
+  IMPORT SFO mod_z(SFO obj, float dz);
+  IMPORT SFO and_not(SFO obj, SFO not_obj);
+  IMPORT SFO or_elem(SFO obj1, SFO obj2);
+  IMPORT SFO blend(SFO obj1, SFO obj2);
+  IMPORT SFO trans(SFO obj);
+  IMPORT SFO trans(SFO obj, float dx, float dy, float dz);
+  IMPORT SFO from_points(PTS p, SFO obj);
+  IMPORT SFO from_lines(LI li, SFO obj);
+  IMPORT SFO bind_arg(SFO obj, std::string name, std::string value);
+  IMPORT SFO color_from_normal(SFO obj);
+  IMPORT SFO stop_generation(SFO obj);
+  IMPORT SFO mix_color(SFO col1, SFO col2, float t); // kills obj side
+  IMPORT SFO grayscale(SFO obj);
+  IMPORT SFO noise(SFO obj, float strength);
+  IMPORT SFO ambient_occulsion(SFO obj, float d, float i);
+  IMPORT SFO soft_shadow(SFO scene, V light_dir, float mint, float maxt, float k, float strong);
+  IMPORT SFO render(SFO obj);
 private:
   Env &e;
 };
