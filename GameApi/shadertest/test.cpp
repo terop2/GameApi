@@ -1,4 +1,7 @@
 #include "GameApi.hh"
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
 
 using namespace GameApi;
 
@@ -13,7 +16,33 @@ V func(int face, int point, EveryApi &ev)
     };
   return ev.vector_api.vector(0.0,0.0,0.0);
 }
+struct Envi
+{
+  EveryApi *ev;
+  float f;
+  SH sh;
+  PolygonObj *poly;
+};
+void iter(void *data)
+{
+  Envi &envi = *(Envi*)data;
+  envi.f = envi.ev->mainloop_api.get_time()/1000.0;
+    envi.ev->shader_api.set_var(envi.sh, "time", envi.f);
+    // clear frame buffer
+    envi.ev->mainloop_api.clear();
 
+    envi.poly->render();
+
+    envi.ev->mainloop_api.fpscounter();
+    // swapbuffers
+    envi.ev->mainloop_api.swapbuffers();
+
+    // handle esc event
+    MainLoopApi::Event e = envi.ev->mainloop_api.get_event();
+#ifndef EMSCRIPTEN
+    if (e.ch==27 && e.type==0x300) { exit(0); }
+#endif
+}
 int main() {
   Env e;
   EveryApi ev(e);
@@ -22,7 +51,7 @@ int main() {
   ev.mainloop_api.init_window();
 
   // shader initialization
-  ev.shader_api.load("Shader.txt");
+  ev.shader_api.load_default(); 
   
   PT center = ev.point_api.point(0.0,0.0,0.0);
   
@@ -38,22 +67,28 @@ int main() {
   SFO sphereB_c = ev.sh_api.color(sphereB, 1.0, 0.1, 0.6);
 
   SFO sphereC = ev.sh_api.sphere(centerA, 90.0);
+
   SFO sphereD = ev.sh_api.bind_arg(sphereC, "center", "vec3(0.0,0.0,0.0+100.0*sin(time))");
+
   SFO sphereD_c = ev.sh_api.color(sphereD, 0.0,1.0,0.0);
+  //SFO noise_1 = ev.sh_api.noise(sphereD_c, 1.0);
+
+  //SFO tr = ev.sh_api.trans(sphereD_c);
+  //SFO tr2 = ev.sh_api.bind_arg(tr, "delta", "vec3(10.0*sin(pt.x+time/3.0),10.0*cos(pt.y+time/4.0),0.0)");
 
 
-  SFO line_1 = ev.sh_api.line(-300.0, 0.0, 0.0,
+  SFO line_1 = ev.sh_api.line(-300.0, -50.0, 0.0,
 			      -300.0, 100.0, 0.0,
 			      20.0, 10.0);
 
-  SFO sphere2 = ev.sh_api.rounded_cube(0.0,100.0,
-				       0.0,100.0,
-				       0.0,100.0, 20);
+  SFO sphere2 = ev.sh_api.rounded_cube(-100.0,100.0,
+				       -100.0,100.0,
+				       -100.0,100.0, 20);
   SFO sphere2_c = ev.sh_api.color(sphere2, 1.0,0.0,0.0);
 
   SFO andnot = ev.sh_api.and_not(sphere2_c, sphere);
   SFO sphere_1a = ev.sh_api.or_elem(andnot, sphereB_c);
-  SFO sphere_2a = ev.sh_api.or_elem(sphere_1a, sphereD_c);
+  SFO sphere_2a = ev.sh_api.or_elem(sphereD_c, sphere_1a);
   SFO line_2a = ev.sh_api.or_elem(sphere_2a, line_1);
   //SFO line_2b = ev.sh_api.or_elem(line_2a, sph_2);
   //SFO move = ev.sh_api.trans(line_2a, 100.0, 0.0,0.0);
@@ -65,9 +100,13 @@ int main() {
   SFO torus_1 = ev.sh_api.torus(100.0, 30.0);
   SFO torus_2 = ev.sh_api.trans(torus_1, 300.0, 60.0,0.0);
   SFO torus_3 = ev.sh_api.or_elem(plane_2, torus_2);
-  
+
+  //SFO mod_trans = ev.sh_api.trans(torus_3,0.0,0.0,50.0);
+  //SFO mod = ev.sh_api.mod_z(mod_trans, 200.0);
+
   SFO skybox_or = ev.sh_api.or_elem(torus_3, skybox_4);
   
+
   SFO rot_y = ev.sh_api.rot_y(skybox_or, 0.0);
   SFO rot_y_2 = ev.sh_api.bind_arg(rot_y, "angle", "time/1.25");
   //SFO trans_test = ev.sh_api.trans(rot_y_2);
@@ -77,12 +116,13 @@ int main() {
   SFO color = ev.sh_api.color_from_normal(rot_y_3 );
   //SFO color_2 = ev.sh_api.grayscale(color);
   SFO mix_color = ev.sh_api.mix_color(rot_y_2, color, 1.0-0.4);
+
   V light_dir = ev.vector_api.vector(-20.0, -40.0, -20.0);
   SFO soft_shadow = ev.sh_api.soft_shadow(mix_color, light_dir, 0.0, 1.0, 2.0, 8.0);
   SFO ao = ev.sh_api.ambient_occulsion(soft_shadow, 6.2, 50.0);
   SFO sphere_render = ev.sh_api.render(ao);
 
-  SH sh = ev.shader_api.get_normal_shader("test", "screen", "", "", "", false, sphere_render);
+  SH sh = ev.shader_api.get_normal_shader("screen", "screen", "", "", "", false, sphere_render);
 
   // rest of the initializations
   ev.mainloop_api.init(sh);
@@ -97,23 +137,24 @@ int main() {
   PolygonObj poly(ev, p2, sh);
   poly.prepare();
   float f = 0.0;
+
+
+
+  Envi envi;
+  envi.poly = &poly;
+  envi.f = f ;
+  envi.sh = sh;
+  envi.ev = &ev;
+
+
+#ifndef EMSCRIPTEN
   while(1) {
-    f+=0.02;
-    ev.shader_api.set_var(sh, "time", f);
-    // clear frame buffer
-    ev.mainloop_api.clear();
-
-    poly.render();
-
-    ev.mainloop_api.fpscounter();
-    // swapbuffers
-    ev.mainloop_api.swapbuffers();
-
-    // handle esc event
-    MainLoopApi::Event e = ev.mainloop_api.get_event();
-    if (e.ch==27 && e.type==0x300) break;
+    iter(&envi);
+    // ev.mainloop_api.delay(10);
   }
-
+#else
+  emscripten_set_main_loop_arg(iter, (void*)&envi, 30,1);
+#endif
 
 
 }

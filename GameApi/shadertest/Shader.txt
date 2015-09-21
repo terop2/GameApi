@@ -1,4 +1,4 @@
-//V: test
+//V: screen
 #version 330
 uniform mat4 in_P;
 uniform mat4 in_MV;
