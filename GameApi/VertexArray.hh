@@ -6,6 +6,7 @@
 #include <map>
 #include "VectorTools.hh"
 #include "Effect.hh"
+#include <pthread.h>
 
 class VertexArraySet
 {
@@ -108,7 +109,8 @@ public:
 
   void check_m_set(int id);
   void free_memory();  
-private:
+
+public:
   struct Polys {
     std::vector<Point> tri_polys;
     std::vector<Point> quad_polys;
@@ -123,6 +125,9 @@ private:
     std::vector<Point2d> tri_texcoord;
     std::vector<Point2d> quad_texcoord;
   };
+public:
+  static void append_to_polys(VertexArraySet::Polys &target, const VertexArraySet::Polys &source);
+
   mutable std::map<int, Polys*> m_set;
 };
 
@@ -179,13 +184,13 @@ public:
       }
     s.set_reserve(id, tri_count, quad_count);
   }
-  void copy(std::vector<int> attribs = std::vector<int>(), std::vector<int> attribsi = std::vector<int>())
+  void copy(int start_range, int end_range, std::vector<int> attribs = std::vector<int>(), std::vector<int> attribsi = std::vector<int>())
   {
-    int ss = coll.NumFaces();
-    std::cout << "NumFaces: " << ss << std::endl;
-    for(int i=0;i<ss;i++)
+    //int ss = coll.NumFaces();
+    //std::cout << "NumFaces: " << ss << std::endl;
+    for(int i=start_range;i<end_range;i++)
       {
-	if (i%10000==0) { std::cout << "Face: " << i << std::endl; }
+	//if (i%10000==0) { std::cout << "Face: " << i << std::endl; }
 	int w = coll.NumPoints(i);
 	for(int j=0;j<w;j++)
 	  {
@@ -223,6 +228,7 @@ public:
 
       }
   }
+
 private:
   Point p[200];
   Point p2[200];
@@ -237,4 +243,73 @@ private:
   const FaceCollection &coll;
   VertexArraySet &s;
 };
+struct ThreadInfo
+{
+  pthread_t thread_id;
+  VertexArraySet *set;
+  FaceCollectionVertexArray2 *va;
+  int start_range;
+  int end_range;
+};
+void *thread_func(void *data);
+class ThreadedPrepare
+{
+public:
+  ThreadedPrepare(FaceCollection *faces) : faces(faces) { }
+  int push_thread(int start_range, int end_range)
+  {
+    VertexArraySet *s = new VertexArraySet;
+    s->set_reserve(0, end_range-start_range, end_range-start_range);
+    sets.push_back(s);
+    FaceCollectionVertexArray2 *va = new FaceCollectionVertexArray2(*faces, *s);
+    va2.push_back(va);
+    ThreadInfo *info = new ThreadInfo;
+    info->set = s;
+    info->va = va;
+    info->start_range = start_range;
+    info->end_range = end_range;
+    ti.push_back(info);
+
+    pthread_attr_t attr;
+
+    pthread_attr_init(&attr);
+    pthread_attr_setstacksize(&attr, 3000);
+    pthread_create(&info->thread_id, &attr, &thread_func, (void*)info);
+    pthread_attr_destroy(&attr);
+    return sets.size()-1;
+  }
+  void join(int id)
+  {
+    void *res;
+    pthread_join(ti[id]->thread_id, &res);
+  }
+  VertexArraySet *collect()
+  {
+    VertexArraySet *res = new VertexArraySet;
+    res->set_reserve(0, 1,1);
+    int s = sets.size();
+    for(int i=0;i<s;i++)
+      {
+	VertexArraySet * vs = sets[i];
+	VertexArraySet::append_to_polys(*res->m_set[0], *vs->m_set[0]);
+      }
+    return res;
+  }
+  ~ThreadedPrepare()
+  {
+    int s = sets.size();
+    for(int i=0;i<s;i++)
+      {
+	delete sets[i];
+	delete va2[i];
+	delete ti[i];
+      }
+  }
+private:
+  std::vector<VertexArraySet *> sets;
+  std::vector<FaceCollectionVertexArray2 *> va2;
+  std::vector<ThreadInfo *> ti;
+  FaceCollection *faces;
+};
+
 #endif

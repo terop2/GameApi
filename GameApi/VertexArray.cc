@@ -26,7 +26,7 @@ void VertexArraySet::set_reserve(int id, int tri_count, int quad_count)
   if (!p)
     {
       m_set[id] = new Polys;
-      p = m_set[id];
+      p = m_set[id]; 
     }
   p->tri_polys.reserve(tri_count);
   p->quad_polys.reserve(quad_count);
@@ -342,6 +342,61 @@ void VertexArraySet::free_memory()
       poly->quad_texcoord.shrink_to_fit();
     }
 #endif
+}
+
+void VertexArraySet::append_to_polys(Polys &target, const Polys &source)
+{
+  int s1 = source.tri_polys.size();
+  for(int i=0;i<s1;i++)
+    {
+      target.tri_polys.push_back(source.tri_polys[i]);
+    }
+  int s2 = source.quad_polys.size();
+  for(int i=0;i<s2;i++)
+    {
+      target.quad_polys.push_back(source.quad_polys[i]);
+    }
+  int s3 = source.tri_polys2.size();
+  for(int i=0;i<s3;i++)
+    {
+      target.tri_polys2.push_back(source.tri_polys2[i]);
+    }
+  int s4 = source.quad_polys2.size();
+  for(int i=0;i<s4;i++)
+    {
+      target.quad_polys2.push_back(source.quad_polys2[i]);
+    }
+  int s5 = source.tri_normals.size();
+  for(int i=0;i<s5;i++)
+    {
+      target.tri_normals.push_back(source.tri_normals[i]);
+    }
+  int s6 = source.quad_normals.size();
+  for(int i=0;i<s6;i++)
+    {
+      target.quad_normals.push_back(source.quad_normals[i]);
+    }
+  int s7 = source.tri_color.size();
+  for(int i=0;i<s7;i++)
+    {
+      target.tri_color.push_back(source.tri_color[i]);
+    }
+  int s8 = source.quad_color.size();
+  for(int i=0;i<s8;i++)
+    {
+      target.quad_color.push_back(source.quad_color[i]);
+    }
+  int s9 = source.tri_texcoord.size();
+  for(int i=0;i<s9;i++)
+    {
+      target.tri_texcoord.push_back(source.tri_texcoord[i]);
+    }
+  int s10 = source.quad_texcoord.size();
+  for(int i=0;i<s10;i++)
+    {
+      target.quad_texcoord.push_back(source.quad_texcoord[i]);
+    }
+
 }
 
 #define ATTRIB_OFFSET(X) ((const GLvoid *)(sizeof(GLfloat) * (X)))
@@ -698,3 +753,10 @@ void RenderVertexArray2::render(int id, int attr1, int attr2, int attr3, int att
     glDisableVertexAttribArray(aattr3);
     glDisableVertexAttribArray(aattr4);
   }
+
+void *thread_func(void *data)
+{
+  ThreadInfo *ti = (ThreadInfo*)data;
+  ti->va->copy(ti->start_range, ti->end_range);
+  return 0;
+}
