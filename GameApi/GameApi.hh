@@ -710,6 +710,7 @@ public:
   IMPORT SFO noise(SFO obj, float strength);
   IMPORT SFO ambient_occulsion(SFO obj, float d, float i);
   IMPORT SFO soft_shadow(SFO scene, V light_dir, float mint, float maxt, float k, float strong);
+  IMPORT SFO bounding_primitive(SFO prim, SFO inside, SFO outside);
   IMPORT SFO render(SFO obj);
 private:
   Env &e;

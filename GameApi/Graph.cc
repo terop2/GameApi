@@ -1117,7 +1117,7 @@ void PrepareSpriteToVA(const Sprite &s, VertexArraySet &vas)
   
   MeshFaceCollection coll(trimesh, tricoords ,0);
   FaceCollectionVertexArray2 va(coll, vas);
-  va.copy();
+  va.copy(0,coll.NumFaces());
 }
 
 void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend, Program *prog)
