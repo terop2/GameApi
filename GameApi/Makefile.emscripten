@@ -69,8 +69,8 @@ INC7WIN = d:\cvs\pthread\pre-built.2\include
 EMINC1 = f:\emscripten\1.30.0\system\include\SDL
 EMINC2 = f:\emscripten\1.30.0\system\include
 
-CCFLAGS = -g -O2 -std=c++11 -Wall -Wno-warn-absolute-paths
-CC2FLAGS = -g -std=c++11 -Wall -O2 -DGLEW_STATIC -Wno-warn-absolute-paths -I$(EMINC1) -I$(EMINC2)
+CCFLAGS = -O2 -std=c++11 -Wall -Wno-warn-absolute-paths
+CC2FLAGS = -std=c++11 -Wall -O2 -DGLEW_STATIC -Wno-warn-absolute-paths -I$(EMINC1) -I$(EMINC2)
 #`pkg-config gtkmm-2.4 --cflags`
 
 

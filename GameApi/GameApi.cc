@@ -1,9 +1,10 @@
         
 #define SDL2_USED  
-#define GAME_API_DEFS
+#define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
+#ifndef EMSCRIPTEN
 #define THREADS 1
-
+#endif
 #include "GameApi.hh" 
 #include "Graph.hh"  
 #include "Physics.hh"
@@ -200,9 +201,9 @@ EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_heigh
   int screenx = screen_width;
   int screeny = screen_height;
 #ifdef SDL2_USED
-  p->screen = InitSDL2(screenx,screeny,false);
+  p->screen = InitSDL2(screenx,screeny,true);
 #else
-  p->screen = InitSDL(screenx,screeny,false);
+  p->screen = InitSDL(screenx,screeny,true);
 #endif
   time = SDL_GetTicks();
   glDisable(GL_DEPTH_TEST);
@@ -8720,7 +8721,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   VertexArraySet *s = new VertexArraySet;
   FaceCollectionVertexArray2 arr(*faces, *s);
   arr.reserve(0);
-  arr.copy();  
+  arr.copy(0,faces->NumFaces());  
   RenderVertexArray *arr2 = new RenderVertexArray(*s);
   arr2->prepare(0); 
   if (!keep)
@@ -14256,4 +14257,67 @@ EXPORT GameApi::SFO GameApi::ShaderModuleApi::color_function(SFO orig, std::func
   ShaderModule *mod = find_shader_module(e, orig);
   SFO func_1 = add_shader_module(e, new ColorFunctionModule(mod, func, function_name+id));
   return func_1;
+}
+
+class BoundingSphereModule : public ShaderModule
+{
+public:
+  BoundingSphereModule(ShaderModule *prim, ShaderModule *inside, ShaderModule *outside ) : prim(prim), inside(inside), outside(outside)
+  {
+    uid = unique_id();
+  }
+  virtual std::string Function() const
+  {
+    return prim->Function() + inside->Function() + outside->Function() + 
+      "float bounding_prim_" + uid + "(vec3 pt)\n"
+      "{\n"
+      "    float dist = " + funccall_to_string(prim) + ";\n"
+      "    if (dist < 0.0) {\n"
+      "       return " + funccall_to_string(inside) + ";\n"
+      "    } else {\n"
+      "       return " + funccall_to_string(outside) + ";\n"
+      "    }\n"
+      "}\n"
+      "vec3 bounding_prim_color_" + uid + "(vec3 pt)\n"
+      "{\n"
+      "    float dist = " + funccall_to_string(prim) + ";\n"
+      "    if (dist < 0.0) {\n"
+      "       return " + color_funccall_to_string(inside) + ";\n"
+      "    } else {\n"
+      "       return " + color_funccall_to_string(outside) + ";\n"
+      "    }\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return "bounding_prim_" + uid; }
+  virtual std::string ColorFunctionName() const { return "bounding_prim_color_" + uid; }
+  virtual int NumArgs() const { return 1; }
+  virtual std::string ArgName(int i) const
+  {
+    switch(i) {
+    case 0: return "pt";
+    }
+    return "";
+  }
+  virtual std::string ArgValue(int i) const
+  {
+    switch(i) {
+    case 0: return "pt";
+    }
+    return "";
+  }
+
+private:
+  std::string uid;
+  ShaderModule *prim;
+  ShaderModule *inside;
+  ShaderModule *outside;
+};
+
+EXPORT GameApi::SFO GameApi::ShaderModuleApi::bounding_primitive(SFO prim, SFO inside, SFO outside)
+{
+  ShaderModule *prim_1 = find_shader_module(e, prim);
+  ShaderModule *inside_1 = find_shader_module(e, inside);
+  ShaderModule *outside_1 = find_shader_module(e, outside);
+  SFO bound = add_shader_module(e, new BoundingSphereModule(prim_1, inside_1, outside_1));
+  return bound;
 }
