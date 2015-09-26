@@ -372,7 +372,7 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
   case 14:
     {
 
-      return ev.polygon_api.empty();
+            return ev.polygon_api.empty();
 #if 0
       BM bm = ev.bitmap_api.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 200, 200, 256);
       FB fb = ev.float_bitmap_api.from_green(bm);
@@ -385,7 +385,7 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       // P pp = ev.polygon_api.rotatex(p,90.0*3.14159*2.0/360.0);
       //P p = ev.polygon_api.empty();
 #endif
-      // return p;
+      //return p;
     }
   case 13:
     {
@@ -713,9 +713,9 @@ void iter()
     //env.poly_world->set_pos(env.pos_x, -80.0+env.y_delta, env.pos_y);
     //env.poly_world->render();
 
-    env.reflect_obj->set_rotation_matrix2(a_mm);
-    env.reflect_obj->set_pos(env.pos_x, -75.0+env.y_delta, env.pos_y);
-    env.reflect_obj->render();
+    //env.reflect_obj->set_rotation_matrix2(a_mm);
+    //env.reflect_obj->set_pos(env.pos_x, -75.0+env.y_delta, env.pos_y);
+    //env.reflect_obj->render();
 
 
     //env.ev->mainloop_api.transparency(true);
@@ -773,9 +773,9 @@ void iter()
     //shadow_obj.set_pos(pos_x, -75.0, pos_y);
     //shadow_obj.render();
 
-    env.reflect_obj->set_rotation_matrix2(mm);
-    env.reflect_obj->set_pos(env.pos_x, -75.0+env.y_delta, env.pos_y);
-    env.reflect_obj->render();
+    // env.reflect_obj->set_rotation_matrix2(mm);
+    //env.reflect_obj->set_pos(env.pos_x, -75.0+env.y_delta, env.pos_y);
+    //env.reflect_obj->render();
 
 
     env.ev->mainloop_api.transparency(true);
