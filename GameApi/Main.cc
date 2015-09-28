@@ -283,7 +283,7 @@ void *audio(void *arg)
   f1.seekg(0, std::ios_base::beg);
   char *audio_buffer = new char[size1];
   f1.read((char*)audio_buffer, size1);
-  for(int i=0;i<size1&&!exit2;i+=100)
+c  for(int i=0;i<size1&&!exit2;i+=100)
     write(audio_fd,audio_buffer+i,100);
   lock1=true;
   delete [] audio_buffer;
@@ -372,12 +372,12 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
-  SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1);
-  SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4);
+  //SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
+  //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1);
+  //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4);
 
-  //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-  //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+  //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
   //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);

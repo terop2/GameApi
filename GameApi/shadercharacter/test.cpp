@@ -33,7 +33,7 @@ void iter(void *data)
 
     envi.poly->render();
 
-    envi.ev->mainloop_api.fpscounter();
+    //envi.ev->mainloop_api.fpscounter();
     // swapbuffers
     envi.ev->mainloop_api.swapbuffers();
 
@@ -59,7 +59,12 @@ SFO shader_character(EveryApi &ev)
   SFO head_5 = ev.sh_api.sphere(eye_center2, 10.0);
   SFO head_6 = ev.sh_api.or_elem(head_4, head_5);
   SFO head_7 = ev.sh_api.and_not(head_3, head_6);
-  SFO head_8 = ev.sh_api.color(head_7, 1.0, 0.0, 1.0);
+  SFO head_8 = ev.sh_api.color(head_7, 1.0, 0.0, 1.0, 1.0);
+  SFO hat_1 = ev.sh_api.line( 0.0, -50.0, -10.0,
+			      0.0, -80.0, -30.0,
+			      20.0, 2.0);
+  SFO hat_2 = ev.sh_api.or_elem(head_8, hat_1);
+
 
   SFO shoulders_1 = ev.sh_api.rounded_cube(-30.0, 30.0, 0.0, 20.0, -20.0, 20.0, 5.0);
 
@@ -75,17 +80,17 @@ SFO shader_character(EveryApi &ev)
   SFO tip_1 = ev.sh_api.cube(-30.0, -5.0, 90.0, 100.0, -10.0+5.0, 20.0);
   SFO tip_2 = ev.sh_api.cube(5.0,30.0, 90.0, 100.0, -10.0+5.0, 20.0);
   
-  SFO all_1 = ev.sh_api.or_elem(head_8, shoulders_1);
+  SFO all_1 = ev.sh_api.or_elem(hat_2, shoulders_1);
   SFO all_2 = hand_1;
   SFO all_2a = ev.sh_api.or_elem(all_2, hand_tip_1);
   SFO all_2b = ev.sh_api.rot_x(all_2a, 1.5, hand_center);
-  SFO all_2c = ev.sh_api.bind_arg(all_2b, "angle", "1.5*cos(time*3.0)");
-  SFO all_2d = ev.sh_api.color(all_2c, 1.0,0.5,0.0);
+  SFO all_2c = ev.sh_api.bind_arg(all_2b, "angle", "1.5*cos(time*3.0+3.14159)");
+  SFO all_2d = ev.sh_api.color(all_2c, 1.0,0.5,0.0, 1.0);
   SFO all_3 = hand_2;
   SFO all_3a = ev.sh_api.or_elem(all_3, hand_tip_2);
   SFO all_3b = ev.sh_api.rot_x(all_3a, -1.5, hand_center2);
-  SFO all_3c = ev.sh_api.bind_arg(all_3b, "angle", "1.5*cos(time*3.0+3.14159)");
-  SFO all_3d = ev.sh_api.color(all_3c, 1.0,0.5,0.0);
+  SFO all_3c = ev.sh_api.bind_arg(all_3b, "angle", "1.5*cos(time*3.0)");
+  SFO all_3d = ev.sh_api.color(all_3c, 1.0,0.5,0.0, 1.0);
   SFO all_4 = ev.sh_api.or_elem(all_3d, body_1);
   SFO all_4a = ev.sh_api.or_elem(all_4, all_1);
   SFO all_4b = ev.sh_api.or_elem(all_4a, all_2d);
@@ -93,12 +98,12 @@ SFO shader_character(EveryApi &ev)
   SFO all_6 = ev.sh_api.or_elem(all_5, tip_1);
   SFO all_6a = ev.sh_api.trans(all_6, 0.0, 0.0, 10.0);
   SFO all_6b = ev.sh_api.bind_arg(all_6a, "delta", "vec3(0.0,0.0,10.0*cos(time*3.0))");
-  SFO all_6c = ev.sh_api.color(all_6b, 0.0, 1.0, 1.0);
+  SFO all_6c = ev.sh_api.color(all_6b, 0.0, 1.0, 1.0, 1.0);
   SFO all_7 = legs_2;
   SFO all_8 = ev.sh_api.or_elem(all_7, tip_2);
   SFO all_8a = ev.sh_api.trans(all_8, 0.0, 0.0, 10.0);
   SFO all_8b = ev.sh_api.bind_arg(all_8a, "delta", "vec3(0.0,0.0,10.0*cos(time*3.0+3.14159))");
-  SFO all_8c = ev.sh_api.color(all_8b, 0.0, 1.0, 1.0);
+  SFO all_8c = ev.sh_api.color(all_8b, 0.0, 1.0, 1.0, 1.0);
   SFO all_9 = ev.sh_api.or_elem(all_8c, all_4b);
   SFO all_10 = ev.sh_api.or_elem(all_9, all_6c);
   return all_10;
@@ -119,7 +124,7 @@ int main() {
   SFO skybox = ev.sh_api.sphere(center, 1000.0);
   SFO skybox_2 = ev.sh_api.sphere(center, 990.0);
   SFO skybox_3 = ev.sh_api.and_not(skybox, skybox_2);
-  SFO skybox_4 = ev.sh_api.color(skybox_3, 0.7,0.8,1.0);
+  SFO skybox_4 = ev.sh_api.color(skybox_3, 0.7,0.8,1.0, 1.0);
 
 
 
@@ -132,8 +137,8 @@ int main() {
   SFO char_1 = shader_character(ev);
   SFO plane_2a = ev.sh_api.stop_generation(plane_2);
   SFO char_2 = ev.sh_api.or_elem(plane_2, char_1);
-  PT pt_center = ev.point_api.point(0.0,50.0,0.0);
-  SFO bounding_sphere = ev.sh_api.sphere(pt_center, 120.0);
+  PT pt_center = ev.point_api.point(0.0,10.0,0.0);
+  SFO bounding_sphere = ev.sh_api.sphere(pt_center, 100.0);
   SFO char_2a = ev.sh_api.bounding_primitive(bounding_sphere, char_2, plane_2a);
 
   SFO rot_y = ev.sh_api.rot_y(char_2a, 0.0);
