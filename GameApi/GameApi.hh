@@ -679,6 +679,9 @@ public:
 		   float start_y, float end_y,
 		   float start_z, float end_z,
 		   float r);
+  IMPORT SFO texture_box(float start_x, float end_x,
+  			 float start_y, float end_y,
+  			 float start_z, float end_z);
   IMPORT SFO line(); // vec3 tl, vec3 br, float line_width1, float line_width2
   IMPORT SFO line(float start_x, float start_y, float start_z,
 	   float end_x, float end_y, float end_z,

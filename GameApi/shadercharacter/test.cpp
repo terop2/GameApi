@@ -16,22 +16,41 @@ V func(int face, int point, EveryApi &ev)
     };
   return ev.vector_api.vector(0.0,0.0,0.0);
 }
+
+PT func2(int face, int point, EveryApi &ev)
+{
+  switch(point)
+    {
+    case 0: return ev.point_api.point(0.0,1.0,0.0);
+    case 1: return ev.point_api.point(1.0,1.0,0.0);
+    case 2: return ev.point_api.point(1.0,0.0,0.0);
+    case 3: return ev.point_api.point(0.0,0.0,0.0);
+    };
+  return ev.point_api.point(0.0,0.0,0.0);
+}
+
 struct Envi
 {
   EveryApi *ev;
   float f;
   SH sh;
   PolygonObj *poly;
+  FBO fbo;
+  PolygonObj *poly2;
 };
 void iter(void *data)
 {
   Envi &envi = *(Envi*)data;
   envi.f = envi.ev->mainloop_api.get_time()/1000.0;
-    envi.ev->shader_api.set_var(envi.sh, "time", envi.f);
-    // clear frame buffer
-    envi.ev->mainloop_api.clear();
 
+    envi.ev->fbo_api.bind_fbo(envi.fbo);
+    envi.ev->mainloop_api.clear();
+    envi.ev->shader_api.use(envi.sh);
+    envi.ev->shader_api.set_var(envi.sh, "time", envi.f);
     envi.poly->render();
+    envi.ev->fbo_api.bind_screen(800,600);
+    envi.ev->mainloop_api.clear();    
+    envi.poly2->render();
 
     //envi.ev->mainloop_api.fpscounter();
     // swapbuffers
@@ -124,7 +143,7 @@ int main() {
   SFO skybox = ev.sh_api.sphere(center, 1000.0);
   SFO skybox_2 = ev.sh_api.sphere(center, 990.0);
   SFO skybox_3 = ev.sh_api.and_not(skybox, skybox_2);
-  SFO skybox_4 = ev.sh_api.color(skybox_3, 0.7,0.8,1.0, 1.0);
+  SFO skybox_4 = ev.sh_api.color(skybox_3, 0.7,0.8,1.0, 0.0);
 
 
 
@@ -157,25 +176,40 @@ int main() {
   SFO sphere_render = ev.sh_api.render(ao);
 
   SH sh = ev.shader_api.get_normal_shader("screen", "screen", "", "", "", false, sphere_render);
+  SH sh2 = ev.shader_api.texture_shader();
 
   // rest of the initializations
   ev.mainloop_api.init(sh);
+  ev.mainloop_api.init(sh2);
 
+  ev.mainloop_api.alpha(true);
 
   P p = ev.polygon_api.quad_z(0.0, 800.0,
 			      0.0, 600.0,
 			      0.0);
 
   P p2 = ev.polygon_api.normal_function(p, std::bind(func,_1,_2,std::ref(ev)));
+  P p3 = ev.polygon_api.texcoord_function(p2, std::bind(func2,_1,_2,std::ref(ev)));
  
   PolygonObj poly(ev, p2, sh);
   poly.prepare();
   float f = 0.0;
 
+  FBO fbo = ev.fbo_api.create_fbo(800,600);
+  ev.fbo_api.config_fbo(fbo);
+
+  TXID txid = ev.fbo_api.tex_id(fbo);
+
+  PolygonObj poly2(ev, p3, sh2);
+  poly2.bind_texture(0, txid);
+  poly2.prepare();
+
 
 
   Envi envi;
+  envi.fbo = fbo;
   envi.poly = &poly;
+  envi.poly2 = &poly2;
   envi.f = f ;
   envi.sh = sh;
   envi.ev = &ev;

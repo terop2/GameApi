@@ -154,6 +154,10 @@ void Game(EveryApi &e)
   
   WV sinw = wv.sinwave(2.0*3.14159, 1.0);
   BM red = wv.waveform_bitmap(sinw, 100,100, 0xffffffff, 0xff000000);
+  BB red_1 = e.bool_bitmap_api.from_bitmaps_color(red, 255,255,255);
+  FB red_2 = e.float_bitmap_api.distance_field(red_1);
+  //FB red_2 = e.float_bitmap_api.from_bool(red_1, 1.0, 0.0);
+  BM red_3 = e.float_bitmap_api.to_grayscale_color(red_2, 255,255,255,255, 0,0,0,0);
 
   //BM red = bm.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 100,100,128);
   BM green = bm.mandelbrot(false, -2.0, 1.0, -1.0, 1.0, 0.0, 0.0, 100,100,128);
@@ -182,11 +186,11 @@ void Game(EveryApi &e)
   //poly.prepare(anim);
   TX tx = e.texture_api.tex_plane(128,128);
   int id = e.texture_api.unique_id();
-  TX tx2 = e.texture_api.tex_assign(tx, id, 0,0, red);
+  TX tx2 = e.texture_api.tex_assign(tx, id, 0,0, red_3);
   P cubes3_texture = e.polygon_api.sprite_bind(anim, tx2, id);
   VA va = poly.create_vertex_array(cubes3_texture);
   TXID tex = e.texture_api.prepare(tx2);
-  sprite.preparesprite(red);
+  sprite.preparesprite(red_3);
   sprite.preparesprite(green);
 
 
@@ -289,13 +293,13 @@ void Game(EveryApi &e)
       e.mainloop_api.clear();
      e.mainloop_api.switch_to_3d(false, sh);
      //     e.shader_api.set_var(sh, "in_MV", e.matrix_api.identity());
-     e.sprite_api.rendersprite(red,sh,0.0,0.0,1.0,1.0);
+     e.sprite_api.rendersprite(red_3,sh,0.0,0.0,1.0,1.0);
       e.sprite_api.rendersprite(green,sh,100.0,100.0,1.0,1.0);
-      e.sprite_api.rendersprite(red,sh,200.0,200.0,1.0,1.0);
+      e.sprite_api.rendersprite(red_3,sh,200.0,200.0,1.0,1.0);
       e.sprite_api.rendersprite(green,sh,300.0,300.0,1.0,1.0);
-      e.sprite_api.rendersprite(red,sh,400.0,400.0,1.0,1.0);
+      e.sprite_api.rendersprite(red_3,sh,400.0,400.0,1.0,1.0);
       e.sprite_api.rendersprite(green,sh,500.0,500.0,1.0,1.0);
-      e.sprite_api.rendersprite(red,sh,600.0,600.0,1.0,1.0);
+      e.sprite_api.rendersprite(red_3,sh,600.0,600.0,1.0,1.0);
       e.sprite_api.rendersprite(green,sh,700.0,700.0,1.0,1.0);
       e.sprite_api.rendersprite(green,sh, 799.0,599.0,1.0,1.0);
       spr.set_pos(250.0+frame*4, 250.0);

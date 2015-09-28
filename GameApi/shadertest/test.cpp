@@ -101,10 +101,22 @@ int main() {
   SFO torus_2 = ev.sh_api.trans(torus_1, 300.0, 60.0,0.0);
   SFO torus_3 = ev.sh_api.or_elem(plane_2, torus_2);
 
+  SFO tex_cube_1 = ev.sh_api.texture_box(-200.0+0.0,-200.0+500.0,
+  					 90.0, 100.0,
+  					 0.0,100.0);
+  SFO tex_cube_11 = ev.sh_api.color(tex_cube_1, 1.0,0.5,0.2,1.0);
+  //SFO tex_cube_a = ev.sh_api.cube(-10.0-200.0,-200.0+500.0+10.0,
+  //				  85.0, 95.0,
+  //				  -10.0, 110.0);
+  //SFO tex_cube_b = ev.sh_api.and_not(tex_cube_a, tex_cube_1);
+  SFO tex_cube_1a = ev.sh_api.rot_x(tex_cube_11, 90.0*3.14159*2.0/360.0);
+  SFO tex_cube_1b = ev.sh_api.trans(tex_cube_1a, -100.0, 0.0, -100.0);
+  SFO tex_cube_2 = ev.sh_api.or_elem(torus_3, tex_cube_1b);
+
   //SFO mod_trans = ev.sh_api.trans(torus_3,0.0,0.0,50.0);
   //SFO mod = ev.sh_api.mod_z(mod_trans, 200.0);
 
-  SFO skybox_or = ev.sh_api.or_elem(torus_3, skybox_4);
+  SFO skybox_or = ev.sh_api.or_elem(tex_cube_2, skybox_4);
   
 
   SFO rot_y = ev.sh_api.rot_y(skybox_or, 0.0);
@@ -134,7 +146,21 @@ int main() {
 
   P p2 = ev.polygon_api.normal_function(p, std::bind(func,_1,_2,std::ref(ev)));
  
+
+#if 1
+  Ft font = ev.font_api.newfont("FreeSans.ttf", 140,140);
+  BM bitmap = ev.font_api.font_string(font, "Hello World", 20);
+  BB bb = ev.bool_bitmap_api.from_bitmaps_color(bitmap, 255,255,255);
+  FB dist = ev.float_bitmap_api.distance_field(bb);
+  BM dist_bm = ev.float_bitmap_api.to_grayscale_color(dist, 255,255,255,255, 0,0,0,0);
+  //BM dist_bm_y = ev.bitmap_api.flip_y(dist_bm);
+  TX tex = ev.texture_api.tex_bitmap(dist_bm);
+  TXID tex_id = ev.texture_api.prepare(tex);
+#endif
+  
+
   PolygonObj poly(ev, p2, sh);
+  poly.bind_texture(0,tex_id);
   poly.prepare();
   float f = 0.0;
 
