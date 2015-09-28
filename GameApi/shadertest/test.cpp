@@ -27,7 +27,7 @@ void iter(void *data)
 {
   Envi &envi = *(Envi*)data;
   envi.f = envi.ev->mainloop_api.get_time()/1000.0;
-  //envi.ev->shader_api.set_var(envi.sh, "time", envi.f);
+  envi.ev->shader_api.set_var(envi.sh, "time", envi.f);
     // clear frame buffer
     envi.ev->mainloop_api.clear();
 
@@ -58,19 +58,19 @@ int main() {
   SFO skybox = ev.sh_api.sphere(center, 1000.0);
   SFO skybox_2 = ev.sh_api.sphere(center, 990.0);
   SFO skybox_3 = ev.sh_api.and_not(skybox, skybox_2);
-  SFO skybox_4 = ev.sh_api.color(skybox_3, 0.7,0.8,1.0);
+  SFO skybox_4 = ev.sh_api.color(skybox_3, 0.7,0.8,1.0,1.0);
 
   SFO sphere = ev.sh_api.sphere(center, 130.0);
   PT centerA = ev.point_api.point(100.0,0.0,0.0);
   SFO sphereA = ev.sh_api.sphere(centerA, 90.0);
   SFO sphereB = ev.sh_api.bind_arg(sphereA, "center", "vec3(0.0+100.0*sin(time*12.0/5.0),0.0,0.0)");
-  SFO sphereB_c = ev.sh_api.color(sphereB, 1.0, 0.1, 0.6);
+  SFO sphereB_c = ev.sh_api.color(sphereB, 1.0, 0.1, 0.6,1.0);
 
   SFO sphereC = ev.sh_api.sphere(centerA, 90.0);
 
   SFO sphereD = ev.sh_api.bind_arg(sphereC, "center", "vec3(0.0,0.0,0.0+100.0*sin(time))");
 
-  SFO sphereD_c = ev.sh_api.color(sphereD, 0.0,1.0,0.0);
+  SFO sphereD_c = ev.sh_api.color(sphereD, 0.0,1.0,0.0,1.0);
   //SFO noise_1 = ev.sh_api.noise(sphereD_c, 1.0);
 
   //SFO tr = ev.sh_api.trans(sphereD_c);
@@ -84,7 +84,7 @@ int main() {
   SFO sphere2 = ev.sh_api.rounded_cube(-100.0,100.0,
 				       -100.0,100.0,
 				       -100.0,100.0, 20);
-  SFO sphere2_c = ev.sh_api.color(sphere2, 1.0,0.0,0.0);
+  SFO sphere2_c = ev.sh_api.color(sphere2, 1.0,0.0,0.0,1.0);
 
   SFO andnot = ev.sh_api.and_not(sphere2_c, sphere);
   SFO sphere_1a = ev.sh_api.or_elem(andnot, sphereB_c);

@@ -623,7 +623,7 @@ ShaderFile::ShaderFile()
 "        vec3 p0 = vec3(pos-vec2(0.5),-400.0);\n"
 "	vec3 p1 = vec3(pos*2.0-vec2(1.0),-399.0);\n"
 "//N:\n"
-"	fragColor = vec4(rgb,1.0);\n"
+"	fragColor = rgb;\n"
 "}\n"
 "void main(void)\n"
 "{\n"
@@ -914,7 +914,7 @@ ShaderFile::ShaderFile()
 "        vec3 p0 = vec3(pos-vec2(0.5),-400.0);\n"
 "	vec3 p1 = vec3(pos*2.0-vec2(1.0),-399.0);\n"
 "//N:\n"
-"	fragColor = vec4(rgb,1.0);\n"
+"	fragColor = rgb;\n"
 "}\n"
 "void main(void)\n"
 "{\n"
@@ -1077,7 +1077,7 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
       if (mod && ww.substr(0,4)=="//N:")
 	{
 	  if (is_fragment) {
-	    out+="vec3 rgb = ";
+	    out+="vec4 rgb = ";
 	    out+=funccall_to_string(mod);
 	    out+=";\n";
 	  }
@@ -1155,6 +1155,21 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
     }
   return out;
 }
+std::string add_line_numbers(std::string s)
+{
+  std::string res;
+  std::stringstream ss(s);
+  std::string s2;
+  int num = 0;
+  while(std::getline(ss,s2))
+    {
+      std::stringstream t;
+      t << num;
+      res+= t.str() + ": " + s2 + "\n";
+      num++;
+    }
+  return res;
+}
 int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec, std::vector<std::string> f_vec, bool is_trans, ShaderModule *mod)
 {
   int id = progs.size();
@@ -1186,7 +1201,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod);
-      std::cout << "::" << ss << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

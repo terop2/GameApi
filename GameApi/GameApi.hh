@@ -685,7 +685,7 @@ public:
 	   float line_width1, float line_width2);
   IMPORT SFO plane(PT center, V u_x, V u_y);
   IMPORT SFO torus(float radius_1, float radius_2);
-  IMPORT SFO color(SFO obj, float r, float g, float b);
+  IMPORT SFO color(SFO obj, float r, float g, float b, float a);
   IMPORT SFO rot_x(SFO obj, float angle);
   IMPORT SFO rot_y(SFO obj, float angle); // float angle
   IMPORT SFO rot_z(SFO obj, float angle);
@@ -1267,38 +1267,43 @@ private:
 class FloatBitmapApi
 { // NxN->R
 public: // values are [0.0..1.0]
-	IMPORT FloatBitmapApi(Env &e);
-	IMPORT ~FloatBitmapApi();
-	IMPORT FB empty(int sx, int sy);
-	IMPORT FB function(std::function<float(int, int)> f, int sx, int sy);
-        IMPORT FB newfloatbitmap(char *array, int sx, int sy, std::function<float(char)> f);
-	IMPORT FB from_bool_bitmap(BB bm, int csx, int csy);
-	IMPORT FB grayscale(BM color_bm);
-	IMPORT FB from_red(BM color_bm);
-	IMPORT FB from_green(BM color_bm);
-	IMPORT FB from_blue(BM color_bm);
-	IMPORT FB from_alpha(BM color_bm);
+  IMPORT FloatBitmapApi(Env &e);
+  IMPORT ~FloatBitmapApi();
+  IMPORT FB empty(int sx, int sy);
+  IMPORT FB function(std::function<float(int, int)> f, int sx, int sy);
+  IMPORT FB newfloatbitmap(char *array, int sx, int sy, std::function<float(char)> f);
+  IMPORT FB from_bool_bitmap(BB bm, int csx, int csy);
+  IMPORT FB grayscale(BM color_bm);
+  IMPORT FB from_red(BM color_bm);
+  IMPORT FB from_green(BM color_bm);
+  IMPORT FB from_blue(BM color_bm);
+  IMPORT FB from_alpha(BM color_bm);
 
-	IMPORT FB min_fb(FB fb1, FB fb2);
-	IMPORT FB max_fb(FB fb1, FB fb2);
-
-	IMPORT FB mix_fb(FB fb1, FB fb2, float val);
-        IMPORT FB space_fill(PT *array, float *array2, int size, int sx, int sy);
-
-	IMPORT BM to_grayscale(FB fb);
-	IMPORT BM to_grayscale_color(FB fb,
-			int r, int g, int b, int a,
-			int r2, int g2, int b2, int a2);
-	IMPORT BM to_color(FB r, FB g, FB b, FB a);
+  IMPORT FB min_fb(FB fb1, FB fb2);
+  IMPORT FB max_fb(FB fb1, FB fb2);
+  
+  IMPORT FB mix_fb(FB fb1, FB fb2, float val);
+  IMPORT FB space_fill(PT *array, float *array2, int size, int sx, int sy);
+  
+  IMPORT BM to_grayscale(FB fb);
+  IMPORT BM to_grayscale_color(FB fb,
+			       int r, int g, int b, int a,
+			       int r2, int g2, int b2, int a2);
+  IMPORT BM to_color(FB r, FB g, FB b, FB a);
   IMPORT BM choose_bitmap(FB fb, BM bm1, BM bm2);
   IMPORT FB perlin_noise(FB grad_1, FB grad_2);
-	IMPORT BM subfloatbitmap(FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color);
-
-	IMPORT FB from_bool(BB b, float val_true, float val_false);
-	BB to_bool(FB f, float true_range_start, float true_range_end);
-	IMPORT int size_x(FB bm);
-	IMPORT int size_y(FB bm);
-	IMPORT float floatvalue(FB bm, int x, int y);
+  IMPORT BM subfloatbitmap(FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color);
+  
+  IMPORT FB from_bool(BB b, float val_true, float val_false);
+  IMPORT FB distance_field(BB bb);
+  
+  BB to_bool(FB f, float true_range_start, float true_range_end);
+  
+  IMPORT TXID to_texid(FB bm);
+  
+  IMPORT int size_x(FB bm);
+  IMPORT int size_y(FB bm);
+  IMPORT float floatvalue(FB bm, int x, int y);
 private:
   FloatBitmapApi(const FloatBitmapApi&);
   void operator=(const FloatBitmapApi&);

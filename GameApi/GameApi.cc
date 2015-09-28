@@ -201,9 +201,9 @@ EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_heigh
   int screenx = screen_width;
   int screeny = screen_height;
 #ifdef SDL2_USED
-  p->screen = InitSDL2(screenx,screeny,true);
+  p->screen = InitSDL2(screenx,screeny,false);
 #else
-  p->screen = InitSDL(screenx,screeny,true);
+  p->screen = InitSDL(screenx,screeny,false);
 #endif
   time = SDL_GetTicks();
   glDisable(GL_DEPTH_TEST);
@@ -7742,6 +7742,99 @@ private:
   float val_false;
 };
 
+float mymin(float x, float y)
+{
+  return (x<y) ? x : y;
+}
+class DistanceFieldBitmap : public Bitmap<float>
+{
+public:
+  DistanceFieldBitmap(Bitmap<bool> *bm) : bm(bm) 
+  {
+    int sx = bm->SizeX();
+    int sy = bm->SizeY();
+    array_x = new float[sx*sy];
+    array_y = new float[sx*sy];
+    for(int x=0;x<sx;x++)
+      {
+	for(int y=0;y<sy;y++)
+	  {
+	    bool b = bm->Map(x,y);
+	    array_x[x+y*sx] = b ? 0.0 : 1000.0;
+	    array_y[x+y*sx] = b ? 0.0 : 1000.0;
+	  }
+      }
+    step1();
+    step2();
+  }
+  int SizeX() const { return bm->SizeX(); }
+  int SizeY() const { return bm->SizeY(); }
+  float Map(int x, int y) const
+  {
+    int sx = bm->SizeX();
+    return mymin(array_x[x+y*sx],array_y[x+y*sx]);
+  }
+
+  void step2()
+  {
+    int sx = bm->SizeX();
+    int sy = bm->SizeY();
+    for(int y=sy-2;y>=0;y--)
+      {
+	for(int x=0;x<sx-1;x++)
+	  {
+	    array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[x+(y+1)*sx]);
+	    array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[x+(y+1)*sx]+1.0);
+	  }
+	for(int x=1;x<sx-1;x++)
+	  {
+	    array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[(x-1)+(y)*sx]+1.0);
+	    array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x-1)+(y)*sx]);
+
+	  }
+	for(int x=sx-2;x>=0;x--)
+	  {
+	    array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[(x+1)+(y)*sx]+1.0);
+	    array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x+1)+(y)*sx]);
+
+	  }
+      }
+  }
+  void step1()
+  {
+    int sx = bm->SizeX();
+    int sy = bm->SizeY();
+    for(int y=1;y<sy-1;y++) {
+      for(int x=0;x<sx-1;x++)
+	{
+	  array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[x+(y-1)*sx]);
+	  array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[x+(y-1)*sx]+1.0);
+	}
+      for(int x=1;x<sx-1;x++)
+	{
+	  array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[(x-1)+y*sx]+1.0);
+	  array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x-1)+y*sx]);
+	}
+      for(int x=sx-2;x>=0;x--)
+	{
+	  array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[(x+1)+y*sx]+1.0);
+	  array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x+1)+y*sx]);
+	}
+    }
+    
+  }
+  ~DistanceFieldBitmap() { delete [] array_x; delete [] array_y; }
+
+private:
+  Bitmap<bool> *bm;
+  float *array_x;
+  float *array_y;
+};
+EXPORT GameApi::FB GameApi::FloatBitmapApi::distance_field(BB bb)
+{
+  Bitmap<bool> *bm = find_bool_bitmap(e, bb)->bitmap;
+  return add_float_bitmap(e, new DistanceFieldBitmap(bm));
+}
 EXPORT GameApi::FB GameApi::FloatBitmapApi::from_bool(GameApi::BB b, float val_true, float val_false)
 {
   Bitmap<bool> *bm = find_bool_bitmap(e, b)->bitmap;
@@ -9126,6 +9219,39 @@ GameApi::Q GameApi::TextureApi::get_tex_coord_1(TX tx, int id)
   Point2d p1 = tex->AreaS(i);
   Point2d p2 = tex->AreaE(i);
   return add_tex_quad(e, p1,p2);
+}
+EXPORT GameApi::TXID GameApi::FloatBitmapApi::to_texid(FB fb)
+{
+  Bitmap<float> *ffb = find_float_bitmap(e, fb)->bitmap;
+  int sx = ffb->SizeX();
+  int sy = ffb->SizeY();
+  float *array = new float[sx*sy];
+  float *arr = array;
+  for(int y=0;y<sy;y++)
+    for(int x=0;x<sx;x++)
+      {
+	*arr = ffb->Map(x,y);
+	arr++;
+      }
+
+  GLuint id;
+  glGenTextures(1, &id); 
+#ifndef EMSCRIPTEN
+  glClientActiveTexture(GL_TEXTURE0+0);
+#endif
+  glActiveTexture(GL_TEXTURE0+0);
+  glBindTexture(GL_TEXTURE_2D, id);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, sx,sy, 0, GL_RED, GL_FLOAT, array);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+  
+  delete []array;
+
+  GameApi::TXID id2;
+  id2.id = id;
+  return id2;
+
 }
 EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
 {
@@ -12585,6 +12711,16 @@ std::string vec3_to_string(GameApi::Env &e, float x, float y, float z)
   return res;
 }
 
+std::string vec4_to_string(GameApi::Env &e, float x, float y, float z, float a)
+{
+  std::string xx = ToNum(x);
+  std::string yy = ToNum(y);
+  std::string zz = ToNum(z);
+  std::string aa = ToNum(a);
+  std::string res = "vec4(" + xx + ", " + yy + ", " + zz + ", " + aa + ")";
+  return res;
+}
+
 std::string unique_id()
 {
   static int val=0;
@@ -12681,9 +12817,9 @@ public:
       "   pt-=center;\n"
       "   return length(pt)-radius;\n"
       "}\n"
-      "vec3 sphere_color" + uid + "(vec3 center, float radius, vec3 pt)\n"
+      "vec4 sphere_color" + uid + "(vec3 center, float radius, vec3 pt)\n"
       "{\n"
-      "   return vec3(1.0,1.0,1.0);\n"
+      "   return vec4(1.0,1.0,1.0,1.0);\n"
       "}\n";
   }
   virtual std::string FunctionName() const { return "sphere"+uid; }
@@ -12740,9 +12876,9 @@ public:
       "   pt-=s;\n"
       "   return length(max(abs(pt)-s,0.0));\n"
       "}\n"
-      "vec3 cube_color" + uid + "(vec3 tl, vec3 br, vec3 pt)\n"
+      "vec4 cube_color" + uid + "(vec3 tl, vec3 br, vec3 pt)\n"
       "{\n"
-      "   return vec3(1.0,1.0,1.0);\n"
+      "   return vec4(1.0,1.0,1.0,1.0);\n"
       "}\n";
   }
   virtual std::string FunctionName() const { return "cube" + uid; }
@@ -12881,11 +13017,11 @@ public:
       "{\n"
       "   return " + funccall_to_string(obj) + ";\n"
       "}\n"
-      "vec3 grayscale_color"+ uid + "(vec3 pt, float time)\n"
+      "vec4 grayscale_color"+ uid + "(vec3 pt, float time)\n"
       "{\n"
-      "  vec3 col = " + color_funccall_to_string(obj) + ";\n"
+      "  vec4 col = " + color_funccall_to_string(obj) + ";\n"
       "  float c = (col.x+col.y+col.z+1.0)/4.0;\n"
-      "  return vec3(c,c,c);\n"
+      "  return vec4(c,c,c,1.0);\n"
       "}\n";
   }
   virtual std::string FunctionName() const { return "grayscale" + uid; }
@@ -12942,9 +13078,9 @@ public:
       "{\n"
       "   return " + funccall_to_string(obj) + ";\n"
       "}\n"
-      "vec3 obj_color" + uid + "(vec3 pt, float time)\n"
+      "vec4 obj_color" + uid + "(vec3 pt, float time)\n"
       "{\n"
-      "   return normal" + uid + "(pt,time);\n"
+      "   return vec4(normal" + uid + "(pt,time),1.0);\n"
       "}\n";
   }
   virtual std::string FunctionName() const { return "obj" + uid; }
@@ -13007,11 +13143,11 @@ public:
       "    }\n"
       "    return 0.0;\n"
       "}\n"
-      "vec3 render(vec3 p0, vec3 p1)\n"
+      "vec4 render(vec3 p0, vec3 p1)\n"
       "{\n"
       "   float t = solve(p0,p1,0.0, 1600.0, time);\n"
       "   vec3 pt = ray(p0,p1, t);\n"
-      "   vec3 rgb = " + color_funccall_to_string(obj) + ";\n"
+      "   vec4 rgb = " + color_funccall_to_string(obj) + ";\n"
       "   return rgb;\n"
       "}\n"
       ;
@@ -13075,12 +13211,12 @@ public:
       "   float v1 = " + funccall_to_string_with_replace(&m, "pt", "center+m*(pt-center)") + ";\n"
       "   return v1;\n"
       "}\n"
-      "vec3 roty_color" + uid + "(vec3 pt, vec3 center, float angle)\n"
+      "vec4 roty_color" + uid + "(vec3 pt, vec3 center, float angle)\n"
       "{\n"
       "  mat3 m = mat3(vec3(cos(angle),0.0,sin(angle)),\n"
       "          vec3(0.0, 1.0, 0.0),\n"
       "          vec3(-sin(angle),0.0,cos(angle)));\n"
-      "   vec3 v1 = " + color_funccall_to_string_with_replace(&m, "pt", "center+m*(pt-center)") + ";\n"
+      "   vec4 v1 = " + color_funccall_to_string_with_replace(&m, "pt", "center+m*(pt-center)") + ";\n"
       "   return v1;\n"
       "}\n";
   }
@@ -13140,13 +13276,13 @@ public:
       "   float v1 = " + funccall_to_string_with_replace(&m, "pt", "center+m*(pt-center)") + ";\n"
       "   return v1;\n"
       "}\n"
-      "vec3 rotx_color" + uid + "(vec3 pt, vec3 center, float angle)\n"
+      "vec4 rotx_color" + uid + "(vec3 pt, vec3 center, float angle)\n"
       "{\n"
       "  mat3 m = mat3("
       "          vec3(1.0, 0.0, 0.0),\n"
       "          vec3(0.0,cos(angle),sin(angle)),\n"
       "          vec3(0.0,-sin(angle),cos(angle)));\n"
-      "   vec3 v1 = " + color_funccall_to_string_with_replace(&m, "pt", "center+m*(pt-center)") + ";\n"
+      "   vec4 v1 = " + color_funccall_to_string_with_replace(&m, "pt", "center+m*(pt-center)") + ";\n"
       "   return v1;\n"
       "}\n";
   }
@@ -13206,13 +13342,13 @@ public:
       "   float v1 = " + funccall_to_string_with_replace(&m, "pt", "center+m*(pt-center)") + ";\n"
       "   return v1;\n"
       "}\n"
-      "vec3 rotz_color" + uid + "(vec3 pt, vec3 center, float angle)\n"
+      "vec4 rotz_color" + uid + "(vec3 pt, vec3 center, float angle)\n"
       "{\n"
       "  mat3 m = mat3("
       "          vec3(cos(angle),sin(angle),0.0),\n"
       "          vec3(-sin(angle),cos(angle),0.0),\n"
       "          vec3(0.0, 0.0, 1.0));\n"
-      "   vec3 v1 = " + color_funccall_to_string_with_replace(&m, "pt", "center+m*(pt-center)") + ";\n"
+      "   vec4 v1 = " + color_funccall_to_string_with_replace(&m, "pt", "center+m*(pt-center)") + ";\n"
       "   return v1;\n"
       "}\n";
   }
@@ -13271,7 +13407,7 @@ public:
       "   float res = max(v1,-v2);\n"
       "   return res;\n"
       "}\n"
-      "vec3 and_not_color" + uid + "(vec3 pt)\n"
+      "vec4 and_not_color" + uid + "(vec3 pt)\n"
       "{\n"
       "   float v = " + funccall_to_string(&m1) + ";\n"
       "   if (v>-0.8 && v<0.8) return " + color_funccall_to_string(&m1) + ";\n"
@@ -13314,7 +13450,7 @@ public:
       "   float res = min(v1,v2);\n"
       "   return res;\n"
       "}\n"
-      "vec3 or_elem_color" + uid + "(vec3 pt)\n"
+      "vec4 or_elem_color" + uid + "(vec3 pt)\n"
       "{\n"
       "   float val = " + funccall_to_string(&m1) + ";\n"
       "   if (val>-0.8 && val<0.8) return " + color_funccall_to_string(&m1) + ";\n"
@@ -13363,9 +13499,9 @@ public:
       "   float res = smin" + uid + "(v1,v2,k);\n"
       "   return res;\n"
       "}\n"
-      "vec3 blend_color" + uid + "(vec3 pt, float k)\n"
+      "vec4 blend_color" + uid + "(vec3 pt, float k)\n"
       "{\n"
-      "   return vec3(1.0,1.0,1.0);\n"
+      "   return vec4(1.0,1.0,1.0,1.0);\n"
       "}\n";
   }
   virtual std::string FunctionName() const { return std::string("blend") + uid; }
@@ -13457,9 +13593,9 @@ public:
       "   if (h<0.0 || h>1.0) return length(pa-ba*h)+0.8;\n"
       "   return length( pa - ba*h ) - ((1.0-h)*line_width1+h*line_width2);\n"
       "}\n"
-      "vec3 line_color" + uid + "(vec3 pt, vec3 tl, vec3 br, float line_width1, float line_width2)\n"
+      "vec4 line_color" + uid + "(vec3 pt, vec3 tl, vec3 br, float line_width1, float line_width2)\n"
       "{\n"
-      "   return vec3(1.0,1.0,1.0);\n"
+      "   return vec4(1.0,1.0,1.0,1.0);\n"
       "}\n";
   }
   virtual std::string FunctionName() const { return "line" + uid; }
@@ -13533,7 +13669,7 @@ public:
       "   pt-=delta;\n"
       "   return " + funccall_to_string(obj) + ";\n"
       "}\n"
-      "vec3 trans_color" + uid + "(vec3 pt, vec3 delta)\n"
+      "vec4 trans_color" + uid + "(vec3 pt, vec3 delta)\n"
       "{\n"
       "    pt-=delta;\n"
       "    return " + color_funccall_to_string(obj) + ";\n"
@@ -13581,10 +13717,10 @@ public:
   virtual std::string Function() const
   {
     return mod->Function() +
-      "float color_choose" + uid +  "(vec3 pt, vec3 color) {\n"
+      "float color_choose" + uid +  "(vec3 pt, vec4 color) {\n"
       "   return " + funccall_to_string(mod) + ";\n"
       "}\n"
-      "vec3 color_choose_color" + uid + "(vec3 pt, vec3 color) {\n"
+      "vec4 color_choose_color" + uid + "(vec3 pt, vec4 color) {\n"
       "   return color;\n"
       "}\n";
   }
@@ -13600,11 +13736,12 @@ public:
   virtual std::string ArgValue(int i) const
   {
     if (i==0) return "pt";
-    return "vec3(1.0,1.0,1.0);";
+    return "vec3(1.0,1.0,1.0,1.0);";
   }
   virtual std::string ArgType(int i) const
   {
-    return "vec3";
+    if (i==0) return "vec3";
+    return "vec4";
   }
 private:
   ShaderModule *mod;
@@ -13621,9 +13758,9 @@ public:
       "float color_mix" + uid +  "(vec3 pt, float t) {\n"
       "   return " + funccall_to_string(mod1) + ";\n"
       "}\n"
-      "vec3 color_mix_color" + uid + "(vec3 pt, float t) {\n"
-      "   vec3 col1 = " + color_funccall_to_string(mod1) + ";\n"
-      "   vec3 col2 = " + color_funccall_to_string(mod2) + ";\n"
+      "vec4 color_mix_color" + uid + "(vec3 pt, float t) {\n"
+      "   vec4 col1 = " + color_funccall_to_string(mod1) + ";\n"
+      "   vec4 col2 = " + color_funccall_to_string(mod2) + ";\n"
       "   return mix(col1, col2, t);\n"
       "}\n";
 
@@ -13652,7 +13789,7 @@ public:
       "float from_obj_color" + uid + "(vec3 pt, float time) {\n"
       "    return " + funccall_to_string(mod) + ";\n"
       "}\n"
-      "vec3 from_obj_color_color" + uid + "(vec3 pt, float time) {\n"
+      "vec4 from_obj_color_color" + uid + "(vec3 pt, float time) {\n"
       "   return " + color_funccall_to_string(mod) + ";\n"
       "}\n";
   }
@@ -13692,8 +13829,8 @@ public:
       }
     s+="    return val2;\n";
     s+="}\n";
-    s+="vec3 pts_color" + uid + "(vec3 pt) {\n";
-    s+="   return vec3(1.0,1.0,1.0);\n";
+    s+="vec4 pts_color" + uid + "(vec3 pt) {\n";
+    s+="   return vec4(1.0,1.0,1.0,1.0);\n";
     s+="}\n";
     return s;
   }
@@ -13717,11 +13854,11 @@ EXPORT GameApi::SFO GameApi::ShaderModuleApi::stop_generation(SFO obj)
   SFO s = add_shader_module(e, new ColorFromObjModule(obj2_m));
   return s;
 }
-EXPORT GameApi::SFO GameApi::ShaderModuleApi::color(SFO obj, float r, float g, float b)
+EXPORT GameApi::SFO GameApi::ShaderModuleApi::color(SFO obj, float r, float g, float b, float a)
 {
   ShaderModule *obj2_m = find_shader_module(e, obj);
   SFO s = add_shader_module(e, new ColorChooseModule(obj2_m));
-  SFO s2 = bind_arg(s, "color", vec3_to_string(e, r,g,b));
+  SFO s2 = bind_arg(s, "color", vec4_to_string(e, r,g,b,a));
   return s2;
 }
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::mix_color(SFO mod1, SFO mod2, float t)
@@ -13753,7 +13890,7 @@ public:
       "   float val = dot(pt, normal);\n"
       "   return val;\n"
       "}\n"
-      "vec3 plane_color" + uid + "(vec3 pt, vec3 center, vec3 u_x, vec3 u_y, float sx, float sy)\n"
+      "vec4 plane_color" + uid + "(vec3 pt, vec3 center, vec3 u_x, vec3 u_y, float sx, float sy)\n"
       "{\n"
       "   float v_x = dot(pt-center, u_x)/length(u_x)/length(u_x);\n"
       "   float v_y = dot(pt-center, u_y)/length(u_y)/length(u_y);\n"
@@ -13761,7 +13898,7 @@ public:
       "   v_y/=sy;\n"
       "   v_x = abs(fract(v_x));\n"
       "   v_y = abs(fract(v_y));\n"
-      "   return vec3(v_x,v_y,1.0);\n"
+      "   return vec4(v_x,v_y,1.0,1.0);\n"
       "}\n";
   }
   virtual std::string FunctionName() const { return "plane" + uid; }
@@ -13809,9 +13946,9 @@ public:
       "{\n"
       "   return length(vec2(length(pt.xz)-radius_1, pt.y)) - radius_2;\n"
       "}\n"
-      "vec3 torus_color" + uid + "(vec3 pt, float radius_1, float radius_2)\n"
+      "vec4 torus_color" + uid + "(vec3 pt, float radius_1, float radius_2)\n"
       "{\n"
-      "   return vec3(1.0,1.0,1.0);\n"
+      "   return vec4(1.0,1.0,1.0,1.0);\n"
       "}\n";
   }
   virtual std::string FunctionName() const { return "torus" + uid; }
@@ -13883,10 +14020,10 @@ public:
       "float softshadow_obj" + uid + "(vec3 pt, vec3 rd, float mint, float maxt, float k, float strong) {\n"
       "   return " + funccall_to_string(scene) + ";\n"
       "}\n"
-      "vec3 softshadow_color" + uid + "(vec3 pt, vec3 rd, float mint, float maxt, float k, float strong) {\n"
-      "   vec3 color = " + color_funccall_to_string(scene) + ";\n"
+      "vec4 softshadow_color" + uid + "(vec3 pt, vec3 rd, float mint, float maxt, float k, float strong) {\n"
+      "   vec4 color = " + color_funccall_to_string(scene) + ";\n"
       "   float shadow = softshadow" + uid + "(pt,rd,mint,maxt,k);\n"
-      "   return (shadow/strong+(1.0-1.0/strong))*color;\n"
+      "   return vec4((shadow/strong+(1.0-1.0/strong))*color.rgb,color.a);\n"
       "}\n";
   }
   virtual std::string FunctionName() const { return "softshadow_obj" + uid; }
@@ -13948,9 +14085,9 @@ public:
       "   pt-=s;\n"
       "   return length(max(abs(pt)-s+vec3(r),0.0))-r;\n"
       "}\n"
-      "vec3 rbox_color" + uid + "(vec3 pt, vec3 tl, vec3 br, float r)\n"
+      "vec4 rbox_color" + uid + "(vec3 pt, vec3 tl, vec3 br, float r)\n"
       "{\n"
-      "   return vec3(1.0,1.0,1.0);\n"
+      "   return vec4(1.0,1.0,1.0,1.0);\n"
       "}\n";
   }
   virtual std::string FunctionName() const { return "rbox" + uid; }
@@ -13989,7 +14126,7 @@ public:
     return mod->Function() +
       "float ao"+uid+"(vec3 pt, vec3 n, float d, float i)\n"
       "{\n"
-      "    float o;\n"
+      "    float o = 0.0;\n"
       "    for(float i=1.;i>0.;i--) {\n"
       "      o-=(i*d-abs(" + funccall_to_string_with_replace(mod, "pt", "pt+n*i*d") + "))/pow(2.,i);\n"
       "    }\n"
@@ -14006,14 +14143,14 @@ public:
       "{\n"
       "   return " + funccall_to_string(mod) + ";\n"
       "}\n"
-      "vec3 ao_color" + uid + "(vec3 pt, float d, float i)\n"
+      "vec4 ao_color" + uid + "(vec3 pt, float d, float i)\n"
       "{\n"
       "   vec3 n = normal" + uid + "(pt,time);\n"
       "   float ao = ao" + uid + "(pt,n,d,i);\n"
       "   ao = clamp(ao,0.0,1.0);\n"
-      "   vec3 c = " + color_funccall_to_string(mod) + ";\n"
-      "   vec3 c2 = mix(c,vec3(1.0,1.0,1.0),ao);\n"
-      "   return c2;\n"
+      "   vec4 c = " + color_funccall_to_string(mod) + ";\n"
+      "   vec3 c2 = mix(c.rgb,vec3(1.0,1.0,1.0),ao);\n"
+      "   return vec4(c2,c.a);\n"
       "}\n";
   }
   virtual std::string FunctionName() const { return "ao_obj" + uid; }
@@ -14072,11 +14209,11 @@ public:
       "{\n"
       "    return "+funccall_to_string(mod)+";\n"
       "}\n"
-      "vec3 noise_color"+ uid+"(vec3 pt, float str)\n"
+      "vec4 noise_color"+ uid+"(vec3 pt, float str)\n"
       "{\n"
       "   float v = fract(sin(dot(pt.xz, vec2(12.9898,78.233))) * 43758.5453);\n"
       "   vec3 col = " + color_funccall_to_string(mod) + ";\n"
-      "   return mix(col, vec3(v,v,v), str);\n"
+      "   return vec4(mix(col, vec3(v,v,v), str),1.0);\n"
       "}\n";
   }
   virtual std::string FunctionName() const { return "noise" + uid; }
@@ -14106,7 +14243,7 @@ public:
       "{\n"
       "   return " + funccall_to_string_with_replace(mod,"pt","vec3(mod(pt.x,dx),pt.y,pt.z)") + ";\n"
       "}\n"
-      "vec3 mod_x_color" + uid + "(vec3 pt, float dx)\n"
+      "vec4 mod_x_color" + uid + "(vec3 pt, float dx)\n"
       "{\n"
        "   return " + color_funccall_to_string_with_replace(mod,"pt","vec3(mod(pt.x,dx),pt.y,pt.z)") + ";\n" 
       "}\n";
@@ -14137,7 +14274,7 @@ public:
       "{\n"
       "   return " + funccall_to_string_with_replace(mod,"pt","vec3(pt.x, mod(pt.y,dy),pt.z)") + ";\n"
       "}\n"
-      "vec3 mod_y_color" + uid + "(vec3 pt, float dy)\n"
+      "vec4 mod_y_color" + uid + "(vec3 pt, float dy)\n"
       "{\n"
        "   return " + color_funccall_to_string_with_replace(mod,"pt","vec3(pt.x,mod(pt.y,dy),pt.z)") + ";\n" 
       "}\n";
@@ -14168,7 +14305,7 @@ public:
       "{\n"
       "   return " + funccall_to_string_with_replace(mod,"pt","vec3(pt.x, pt.y, mod(pt.z,dz))") + ";\n"
       "}\n"
-      "vec3 mod_z_color" + uid + "(vec3 pt, float dz)\n"
+      "vec4 mod_z_color" + uid + "(vec3 pt, float dz)\n"
       "{\n"
        "   return " + color_funccall_to_string_with_replace(mod,"pt","vec3(pt.x,pt.y, mod(pt.z,dz))") + ";\n" 
       "}\n";
@@ -14278,7 +14415,7 @@ public:
       "       return " + funccall_to_string(outside) + ";\n"
       "    }\n"
       "}\n"
-      "vec3 bounding_prim_color_" + uid + "(vec3 pt)\n"
+      "vec4 bounding_prim_color_" + uid + "(vec3 pt)\n"
       "{\n"
       "    float dist = " + funccall_to_string(prim) + ";\n"
       "    if (dist < 0.0) {\n"
