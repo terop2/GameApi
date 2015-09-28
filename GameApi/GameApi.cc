@@ -7772,7 +7772,7 @@ public:
   float Map(int x, int y) const
   {
     int sx = bm->SizeX();
-    return mymin(array_x[x+y*sx],array_y[x+y*sx]);
+    return mymin(array_x[x+y*sx],array_y[x+y*sx])/std::max(SizeX(),SizeY());
   }
 
   void step2()
@@ -7783,19 +7783,20 @@ public:
       {
 	for(int x=0;x<sx-1;x++)
 	  {
-	    array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[x+(y+1)*sx]);
+	    //array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[x+(y+1)*sx]);
 	    array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[x+(y+1)*sx]+1.0);
 	  }
 	for(int x=1;x<sx-1;x++)
 	  {
 	    array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[(x-1)+(y)*sx]+1.0);
-	    array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x-1)+(y)*sx]);
+	    //array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x-1)+(y)*sx]);
 
 	  }
 	for(int x=sx-2;x>=0;x--)
 	  {
 	    array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[(x+1)+(y)*sx]+1.0);
-	    array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x+1)+(y)*sx]);
+	    //array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x+1)+(y)*sx]);
+	    //std::cout << array_x[x+y*sx] << "#" << array_y[x+y*sx] << std::endl;
 
 	  }
       }
@@ -7807,18 +7808,18 @@ public:
     for(int y=1;y<sy-1;y++) {
       for(int x=0;x<sx-1;x++)
 	{
-	  array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[x+(y-1)*sx]);
+	  //array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[x+(y-1)*sx]);
 	  array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[x+(y-1)*sx]+1.0);
 	}
       for(int x=1;x<sx-1;x++)
 	{
 	  array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[(x-1)+y*sx]+1.0);
-	  array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x-1)+y*sx]);
+	  //array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x-1)+y*sx]);
 	}
       for(int x=sx-2;x>=0;x--)
 	{
 	  array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[(x+1)+y*sx]+1.0);
-	  array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x+1)+y*sx]);
+	  //array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x+1)+y*sx]);
 	}
     }
     
@@ -12167,7 +12168,7 @@ EXPORT GameApi::FBO GameApi::FrameBufferApi::create_fbo(int sx, int sy)
   GLuint texture;
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, sx,sy, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sx,sy, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
@@ -14449,7 +14450,71 @@ private:
   ShaderModule *inside;
   ShaderModule *outside;
 };
+class TextureCube : public ShaderModule
+{
+public:
+  TextureCube() { uid = unique_id(); }
+  virtual std::string Function() const
+  {
+    return 
+      "float texcube" + uid + "(vec3 pt, vec3 tl, vec3 br)\n"
+      "{\n"
+      "   vec3 pt2 = pt;\n"
+      "   pt-=tl;\n"
+      "   vec3 s = br-tl;\n"
+      "   pt.x /=s.x;\n"
+      "   pt.y /=s.y;\n"
+      "   pt.z /=s.z;\n"
+      "   if (pt.x<0.0||pt.x>1.0||pt.y<0.0||pt.y>1.0||pt.z<0.0||pt.z>1.0){\n"
+      "      pt2-=tl;\n"
+      "      s/=2.0;\n"
+      "      pt2-=s;\n"
+      "      return length(max(abs(pt2)-s,0.0))+1.0;\n"
+      "   }\n"
+      "   vec4 pixel = texture(tex, pt.xz);\n"
+      "   float dist = pixel.r;\n"
+      "   dist*=255.0;\n"
+      //"   dist/=600.0;\n"
+      //"   dist*=s.x;\n"
+      "   return dist-1.5;\n"
+      "}\n"
+      "vec4 texcube_color" + uid + "(vec3 pt, vec3 tl, vec3 br)\n"
+      "{\n"
+      "    return vec4(1.0,1.0,1.0,1.0);\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return "texcube" + uid; }
+  virtual std::string ColorFunctionName() const { return "texcube_color" + uid; }
+  virtual int NumArgs() const { return 3; }
+  virtual std::string ArgName(int i) const
+  {
+    switch(i) {
+    case 0: return "pt";
+    case 1: return "tl";
+    case 2: return "br";
+    }
+    return "";
+  }
+  virtual std::string ArgValue(int i) const
+  {
+    switch(i) {
+    case 0: return "pt";
+    case 1: return "vec3(0.0,0.0,0.0)";
+    case 2: return "vec3(100.0,100.0,100.0)";
+    }
+    return "";
+  }
 
+private:
+  std::string uid;
+};
+EXPORT GameApi::SFO GameApi::ShaderModuleApi::texture_box(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+{
+  SFO r_cube = add_shader_module(e, new TextureCube());
+  SFO r_cube_1 = bind_arg(r_cube, "tl", vec3_to_string(e,start_x, start_y, start_z));
+  SFO r_cube_2 = bind_arg(r_cube_1, "br", vec3_to_string(e,end_x, end_y, end_z));
+  return r_cube_2;
+}
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::bounding_primitive(SFO prim, SFO inside, SFO outside)
 {
   ShaderModule *prim_1 = find_shader_module(e, prim);
