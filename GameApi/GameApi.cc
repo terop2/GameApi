@@ -896,6 +896,7 @@ struct EnvImpl
   std::vector<TBuffer> tracker_buf;
   std::vector<Wavs> wavs;
   std::vector<ShaderModule*> shader_module;
+  std::vector<GuiWidget*> widgets;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
 #ifndef EMSCRIPTEN
@@ -1423,7 +1424,14 @@ EXPORT GameApi::Env::~Env()
 }
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
-
+GameApi::W add_widget(GameApi::Env &e, GuiWidget *w)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->widgets.push_back(w);
+  GameApi::W wid;
+  wid.id = env->widgets.size()-1;
+  return wid;
+}
 GameApi::SFO add_shader_module(GameApi::Env &e, ShaderModule *vol)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -2107,6 +2115,11 @@ std::string ToNum(float val)
     return ss.str();
   else
     return ss.str()+".0";
+}
+GuiWidget *find_widget(GameApi::Env &e, GameApi::W w)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->widgets[w.id];
 }
 Samples* find_samples(GameApi::Env &e, GameApi::SM sm)
 {
@@ -14459,14 +14472,11 @@ public:
     return 
       "float texcube" + uid + "(vec3 pt, vec3 tl, vec3 br)\n"
       "{\n"
-      "   vec3 pt2 = pt;\n"
       "   pt-=tl;\n"
+      "   vec3 pt2 = pt;\n"
       "   vec3 s = br-tl;\n"
-      "   pt.x /=s.x;\n"
-      "   pt.y /=s.y;\n"
-      "   pt.z /=s.z;\n"
+      "   pt /=s;\n"
       "   if (pt.x<0.0||pt.x>1.0||pt.y<0.0||pt.y>1.0||pt.z<0.0||pt.z>1.0){\n"
-      "      pt2-=tl;\n"
       "      s/=2.0;\n"
       "      pt2-=s;\n"
       "      return length(max(abs(pt2)-s,0.0))+1.0;\n"
@@ -14476,7 +14486,7 @@ public:
       "   dist*=255.0;\n"
       //"   dist/=600.0;\n"
       //"   dist*=s.x;\n"
-      "   return dist-1.5;\n"
+      "   return dist-0.4;\n"
       "}\n"
       "vec4 texcube_color" + uid + "(vec3 pt, vec3 tl, vec3 br)\n"
       "{\n"
@@ -14522,4 +14532,642 @@ EXPORT GameApi::SFO GameApi::ShaderModuleApi::bounding_primitive(SFO prim, SFO i
   ShaderModule *outside_1 = find_shader_module(e, outside);
   SFO bound = add_shader_module(e, new BoundingSphereModule(prim_1, inside_1, outside_1));
   return bound;
+}
+class GrayscaleDistance : public ShaderModule
+{
+public:
+  GrayscaleDistance(ShaderModule *mod, ShaderModule *mod2) : mod(mod),mod2(mod2) { uid = unique_id(); }
+  virtual std::string Function() const
+  {
+    return mod->Function() + mod2->Function() +
+      "float grayscale_dist" + uid + "(vec3 pt, float length)\n"
+      "{\n"
+      "   return " + funccall_to_string(mod) + ";\n"
+      "}\n"
+      "vec4 grayscale_dist_color" + uid + "(vec3 pt, float length)\n"
+      "{\n"
+      "   float dist = " + funccall_to_string(mod2) + ";\n"
+      "   dist /= length;\n"
+      "   return vec4(dist,dist,dist,1.0);\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return "grayscale_dist" + uid; }
+  virtual std::string ColorFunctionName() const { return "grayscale_dist_color" + uid; }
+  virtual int NumArgs() const { return 2; }
+  virtual std::string ArgName(int i) const
+  {
+    switch(i)
+      {
+      case 0: return "pt";
+      case 1: return "length";
+      }
+    return "";
+  }
+  virtual std::string ArgValue(int i) const
+  {
+    switch(i)
+      {
+      case 0: return "pt";
+      case 1: return "100.0";
+      }
+    return "";
+  }
+
+private:
+  std::string uid;
+  ShaderModule *mod;
+  ShaderModule *mod2;
+};
+EXPORT GameApi::SFO GameApi::ShaderModuleApi::grayscale_from_distance(SFO obj, SFO dist_obj, float length)
+{
+  ShaderModule *mod = find_shader_module(e, obj);
+  ShaderModule *dist = find_shader_module(e, dist_obj);
+  SFO m = add_shader_module(e, new GrayscaleDistance(mod, dist));
+  SFO m2 = bind_arg(m, "length", ToNum(length));
+  return m2;
+}
+
+class TextGuiWidget : public GuiWidgetForward
+{
+public:
+  TextGuiWidget(GameApi::EveryApi &ev, std::string label, GameApi::Ft font, GameApi::SH sh) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), label(label), font(font), sh(sh) { firsttime = true; }
+  void update(Point2d mouse, int button)
+  {
+    if (firsttime)
+      {
+	rendered_bitmap = ev.font_api.font_string(font, label.c_str(), 2);
+	rendered_bitmap_va = ev.sprite_api.create_vertex_array(rendered_bitmap);
+	firsttime = false;
+      }
+    size.dx = ev.bitmap_api.size_x(rendered_bitmap);
+    size.dy = ev.bitmap_api.size_y(rendered_bitmap);
+  }
+  void render()
+  {
+    if (!firsttime)
+      {
+	Point2d p = get_pos();
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x,p.y,0.0));
+	ev.sprite_api.render_sprite_vertex_array(rendered_bitmap_va);
+      }
+  }
+  int render_to_bitmap()
+  {
+    return rendered_bitmap.id;
+  }
+private:
+  bool firsttime;
+  std::string label;
+  GameApi::Ft font;
+  GameApi::SH sh;
+  GameApi::BM rendered_bitmap;
+  GameApi::VA rendered_bitmap_va;
+};
+class IconGuiWidget : public GuiWidgetForward
+{
+public:
+  IconGuiWidget(GameApi::EveryApi &ev, GameApi::BM bm, GameApi::SH sh) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), sh(sh), bm(bm) { firsttime=true;}
+  void update(Point2d mouse, int button)
+  {
+    if (firsttime)
+      {
+	bm_va = ev.sprite_api.create_vertex_array(bm);
+	firsttime = false;
+      }
+    size.dx = ev.bitmap_api.size_x(bm);
+    size.dy = ev.bitmap_api.size_y(bm);
+  }
+  void render()
+  {
+    if (!firsttime)
+      {
+	Point2d p = get_pos();
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x,p.y,0.0));
+	ev.sprite_api.render_sprite_vertex_array(bm_va);
+      }
+  }
+  int render_to_bitmap()
+  {
+    return bm.id;
+  }
+private:
+  bool firsttime;
+  GameApi::SH sh;
+  GameApi::BM bm;
+  GameApi::VA bm_va;
+};
+class MarginGuiWidget : public GuiWidgetForward
+{
+public:
+  MarginGuiWidget(GameApi::EveryApi &ev, GuiWidget *w, int l, int t, int r, int b) : GuiWidgetForward(ev, { w }), l(l), t(t), r(r), b(b) 
+  {
+    Point2d p = { 0.0, 0.0 };
+    update(p, -1);
+    set_pos(p);
+  }
+  void set_size(Vector2d size)
+  {
+    GuiWidgetForward::set_size(size);
+    Vector2d delta = { float(l+r), float(t+b) };
+    vec[0]->set_size(size + (- delta));
+  }
+  void set_pos(Point2d p)
+  {
+    GuiWidgetForward::set_pos(p);
+    Vector2d v = { float(l), float(t) };
+    vec[0]->set_pos(p+v);
+  }
+  void update(Point2d mouse, int button)
+  {
+    GuiWidgetForward::update(mouse,button);
+    Vector2d v = vec[0]->get_size();
+    Vector2d vv = { float(l+r), float(t+b) };
+    Vector2d vvv = v+vv;
+    size = vvv;
+  }
+private:
+  int l,t,r,b;
+};
+class LayerGuiWidget : public GuiWidgetForward
+{
+public:
+  LayerGuiWidget(GameApi::EveryApi &ev, GuiWidget *w1, GuiWidget *w2) : GuiWidgetForward(ev, { w1, w2 }) 
+  { 
+    Point2d p = {0.0, 0.0 };
+    update(p, -1);
+    set_pos(p);
+  }
+  void set_pos(Point2d pos)
+  {
+    GuiWidgetForward::set_pos(pos);
+    vec[0]->set_pos(pos);
+    vec[1]->set_pos(pos);
+  }
+  void set_size(Vector2d size)
+  {
+    GuiWidgetForward::set_size(size);
+    vec[0]->set_size(size);
+    vec[1]->set_size(size);
+  }
+  void update(Point2d mouse_pos, int button)
+  {
+    GuiWidgetForward::update(mouse_pos, button);
+    Vector2d v1 = vec[0]->get_size();
+    Vector2d v2 = vec[1]->get_size();
+    Vector2d mx = { std::max(v1.dx, v2.dx), std::max(v1.dy,v2.dy) };
+    size = mx;
+  }
+  int chosen_item() const
+  {
+    int val = vec[0]->chosen_item();
+    if (val != -1) return val;
+    return vec[1]->chosen_item();
+  }
+};
+class ArrayXWidget : public GuiWidgetForward
+{
+public:
+  ArrayXWidget(GameApi::EveryApi &ev, std::vector<GuiWidget*> vec, int x_gap) : GuiWidgetForward(ev, vec), x_gap(x_gap) 
+  {
+    Point2d pos = { 0.0, 0.0 };
+    update(pos, -1);
+    set_pos(pos);
+  }
+  void set_pos(Point2d pos)
+  {
+    GuiWidgetForward::set_pos(pos);
+    int s = vec.size();
+    float delta = 0;
+    for(int i=0;i<s;i++)
+      {
+	GuiWidget *w = vec[i];
+	Point2d p = { pos.x + delta, pos.y };
+	w->set_pos(p);
+	delta += w->get_size().dx + x_gap;
+      }
+  }
+  void set_size(Vector2d size)
+  {
+    GuiWidgetForward::set_size(size);
+  }
+  void update(Point2d mouse, int button)
+  {
+    GuiWidgetForward::update(mouse,button);
+    int s = vec.size();
+    float sz = 0;
+    float sz_max = 0;
+    for(int i=0;i<s; i++)
+      {
+	sz += vec[i]->get_size().dx + x_gap;
+	sz_max = std::max(sz_max, vec[i]->get_size().dy);
+      }
+    size.dx = sz;
+    size.dy = sz_max;
+  }
+  void render()
+  {
+    GuiWidgetForward::render();
+  }
+private:
+  int x_gap;
+};
+
+class ArrayYWidget : public GuiWidgetForward
+{
+public:
+  ArrayYWidget(GameApi::EveryApi &ev, std::vector<GuiWidget*> vec, int y_gap) : GuiWidgetForward(ev, vec), y_gap(y_gap) 
+  {
+    Point2d pos = { 0.0, 0.0 };
+    update(pos, -1);
+    set_pos(pos);
+  }
+  void set_pos(Point2d pos)
+  {
+    GuiWidgetForward::set_pos(pos);
+    int s = vec.size();
+    float delta = 0;
+    for(int i=0;i<s;i++)
+      {
+	GuiWidget *w = vec[i];
+	Point2d p = { pos.x, pos.y +delta};
+	w->set_pos(p);
+	delta += w->get_size().dy + y_gap;
+      }
+  }
+  void set_size(Vector2d size)
+  {
+    GuiWidgetForward::set_size(size);
+  }
+  void update(Point2d mouse, int button)
+  {
+    GuiWidgetForward::update(mouse,button);
+    int s = vec.size();
+    float sz = 0;
+    float sz_max = 0;
+    for(int i=0;i<s; i++)
+      {
+	sz += vec[i]->get_size().dy + y_gap;
+	sz_max = std::max(sz_max, vec[i]->get_size().dx);
+      }
+    size.dx = sz_max;
+    size.dy = sz;
+  }
+  void render()
+  {
+    GuiWidgetForward::render();
+  }
+private:
+  int y_gap;
+};
+
+class HighlightGuiWidget : public GuiWidgetForward
+{
+public:
+  HighlightGuiWidget(GameApi::EveryApi &ev, GameApi::SH sh, int sx, int sy) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), sh(sh), enabled(false) { 
+    firsttime=true; 
+    size.dx = sx;
+    size.dy = sy;
+  }
+  void update(Point2d mouse, int button)
+  {
+    Point2d p = get_pos();
+    Vector2d s = get_size();
+    if (mouse.x >= p.x && mouse.x < p.x+s.dx && mouse.y>=p.y && mouse.y< p.y+s.dy)
+      {
+	enabled = true;
+      }
+    else
+      {
+	enabled = false;
+      }
+    if (firsttime)
+      {
+	Vector2d v = get_size();
+	GameApi::BB bg = ev.bool_bitmap_api.empty(v.dx, v.dy);
+	GameApi::BB bb_1 = ev.bool_bitmap_api.rectangle(bg, 0.0,0.0, 2.0, (float)v.dy);
+	GameApi::BB bb_2 = ev.bool_bitmap_api.rectangle(bb_1, 0.0,0.0, (float)v.dx, 2.0);
+	GameApi::BB bb_3 = ev.bool_bitmap_api.rectangle(bb_2, v.dx-2.0,0.0, 2.0, v.dy);
+	GameApi::BB bb_4 = ev.bool_bitmap_api.rectangle(bb_3, 0.0, v.dy-2, v.dx, 2.0);
+	bm = ev.bool_bitmap_api.to_bitmap(bb_4, 255,255,255,255, 0,0,0,0);
+	bm_va = ev.sprite_api.create_vertex_array(bm);
+	firsttime = false;
+      }
+  }
+  void render()
+  {
+    if (!firsttime && enabled)
+      {
+	Point2d p = get_pos();
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x, p.y, 0.0));
+	ev.sprite_api.render_sprite_vertex_array(bm_va);
+      }
+  }
+  int render_to_bitmap()
+  {
+    return bm.id;
+  }
+private:
+  GameApi::BM bm;
+  GameApi::VA bm_va;
+  GameApi::SH sh;
+  bool firsttime;
+  bool enabled;
+};
+EXPORT GameApi::W GameApi::GuiApi::text(std::string label, Ft font)
+{
+  return add_widget(e, new TextGuiWidget(ev, label, font, sh));
+}
+EXPORT GameApi::W GameApi::GuiApi::icon(BM bm)
+{
+  return add_widget(e, new IconGuiWidget(ev, bm,sh));
+}
+EXPORT GameApi::W GameApi::GuiApi::highlight(int sx, int sy)
+{
+  return add_widget(e, new HighlightGuiWidget(ev, sh, sx,sy));
+}
+EXPORT GameApi::W GameApi::GuiApi::margin(W w, int l, int t, int r, int b)
+{
+  GuiWidget *ww = find_widget(e, w);
+  return add_widget(e, new MarginGuiWidget(ev, ww, l, t, r, b));
+}
+EXPORT GameApi::W GameApi::GuiApi::layer(W w1, W w2)
+{
+  GuiWidget *ww1 = find_widget(e, w1);
+  GuiWidget *ww2 = find_widget(e, w2);
+  return add_widget(e, new LayerGuiWidget(ev, ww1, ww2));
+}
+EXPORT GameApi::W GameApi::GuiApi::array_x(W *arr, int size, int x_gap)
+{
+  int s = size;
+  std::vector<GuiWidget*> vec;
+  for(int i=0;i<s;i++)
+    {
+      vec.push_back(find_widget(e, arr[i]));
+    }
+  return add_widget(e, new ArrayXWidget(ev, vec, x_gap));
+}
+EXPORT GameApi::W GameApi::GuiApi::array_y(W *arr, int size, int y_gap)
+{
+  int s = size;
+  std::vector<GuiWidget*> vec;
+  for(int i=0;i<s;i++)
+    {
+      vec.push_back(find_widget(e, arr[i]));
+    }
+  return add_widget(e, new ArrayYWidget(ev, vec, y_gap));
+}
+
+GameApi::W GameApi::GuiApi::main_menu(std::vector<std::string> labels, Ft font)
+{
+  int s = labels.size();
+  std::vector<W> vec;
+  for(int i=0;i<s;i++)
+    {
+      std::string s = labels[i];
+      W txt_1 = text(s, font);
+      W txt_2 = margin(txt_1, 5,5,5,5);
+      W txt_3 = highlight(size_x(txt_2), size_y(txt_2));
+      W txt_4 = layer(txt_2, txt_3);
+      vec.push_back(txt_4);
+    }
+  W w = array_x(&vec[0], vec.size(), 20);
+  PT pt1 = ev.point_api.point(0.0,0.0,0.0);
+  PT pt2 = ev.point_api.point(0.0, size_y(w), 0.0);
+  W w3 = gradient(size_x(w), size_y(w), pt1, pt2, 0xffffaa88, 0xffff8844);
+  W w4 = layer(w3,w);
+
+  return w4;
+}
+GameApi::W GameApi::GuiApi::submenu(W menu, int menu_id, std::vector<std::string> labels, Ft font)
+{
+  GuiWidget *w = find_widget(e, menu);
+  int s = w->child(1)->child_count();
+  if (menu_id<0 || menu_id>=s) { std::cout << "ERROR: Wrong menu id" << menu_id << " " << s << std::endl; exit(0); }
+  GuiWidget *ww = w->child(1)->child(menu_id);
+  Point2d pos = ww->get_pos();
+  Vector2d size = ww->get_size();
+
+  int ss = labels.size();
+  std::vector<W> vec;
+  for(int i=0;i<ss;i++) {
+    std::string s = labels[i];
+    W txt_1 = text(s, font);
+    W txt_2 = margin(txt_1, 2,2,2,2);
+    W txt_3 = highlight(size_x(txt_2), size_y(txt_2));
+    W txt_4 = layer(txt_2, txt_3);
+    vec.push_back(txt_4);
+  }
+  W w2 = array_y(&vec[0], vec.size(), 2);
+  set_pos(w2, pos.x+size.dx, pos.y);
+  return w2;
+}
+class ScrollBarY : public GuiWidgetForward
+{
+public:
+  ScrollBarY(GameApi::EveryApi &ev, GameApi::SH sh, int sx, int sy, int area_y) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), sh(sh), sx(sx), sy(sy), area_y(area_y) { firsttime=true; current_pos = 0.5; following = false; }
+  void update(Point2d mouse, int button)
+  {
+    Point2d p = get_pos();
+    float size_y = float(sy)/float(area_y)*float(sy-2-2-2-2);
+    float pos_y = current_pos * (float(sy) - float(sy)/float(area_y)*float(sy-2-2-2-2));
+    if (button==0 && !following && mouse.x>=p.x+2+2 && mouse.x<p.x+sx-2-2 && mouse.y>=p.y+pos_y+2+2 && mouse.y<p.y+pos_y+2+2+size_y)
+      {
+	following = true;
+	start_pos = mouse;
+      }
+    if (button==0 && following)
+      {
+	float delta = mouse.y - start_pos.y;
+	current_pos = current_pos + delta/size_y;
+
+	if (current_pos < 0.0) current_pos = 0.0;
+	if (current_pos > 1.0) current_pos = 1.0;
+
+	start_pos = mouse;
+      }
+    if (button==-1)
+      {
+	following = false;
+      }
+
+    if (firsttime)
+      {
+	GameApi::BB b = ev.bool_bitmap_api.empty(sx,sy);
+	GameApi::BB b1 = ev.bool_bitmap_api.rectangle(b, 0.0, 0.0, float(sx), 2.0);
+	GameApi::BB b2 = ev.bool_bitmap_api.rectangle(b1, 0.0, 0.0, 2.0, float(sy));
+	GameApi::BB b3 = ev.bool_bitmap_api.rectangle(b2, float(sx)-2.0, 0.0, 2.0, float(sy));
+	GameApi::BB b4 = ev.bool_bitmap_api.rectangle(b3, 0.0, float(sy)-2.0, float(sx), 2.0);
+	bg = ev.bool_bitmap_api.to_bitmap(b4, 255,255,255,255, 0,0,0,0);
+
+	bg_va = ev.sprite_api.create_vertex_array(bg);
+	GameApi::BB k = ev.bool_bitmap_api.empty(sx-2-2-2-2, float(sy)/float(area_y)*float(sy-2-2-2-2));
+	GameApi::BB k2 = ev.bool_bitmap_api.rectangle(k, 0.0, 0.0, float(sx-2-2-2-2), float(sy)/float(area_y)*float(sy-2-2-2-2));
+	thumb = ev.bool_bitmap_api.to_bitmap(k2, 255,255,255,255, 0,0,0,0);
+	thumb_va = ev.sprite_api.create_vertex_array(thumb);
+	firsttime = false;
+      }
+  }
+  void render()
+  {
+    if (!firsttime)
+      {
+	Point2d p = get_pos();
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x, p.y, 0.0));
+	ev.sprite_api.render_sprite_vertex_array(bg_va);
+
+	float pos_y = current_pos * (float(sy) - float(sy)/float(area_y)*float(sy));
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+2+2, p.y+pos_y+2+2, 0.0));
+	ev.sprite_api.render_sprite_vertex_array(thumb_va);
+      }
+  }
+private:
+  GameApi::SH sh;
+  GameApi::BM bg;
+  GameApi::VA bg_va;
+  GameApi::BM thumb;
+  GameApi::VA thumb_va;
+  float current_pos;
+  int sx,sy,area_y;
+  bool firsttime;
+  bool following;
+  Point2d start_pos;
+};
+class OrElemGuiWidget : public GuiWidget
+{
+public:
+  OrElemGuiWidget(GuiWidget *w1, GuiWidget *w2) : w1(w1), w2(w2) { }
+  virtual Point2d get_pos() const { if (b) return w1->get_pos(); else return w2->get_pos(); }
+  virtual Vector2d get_size() const { if (b) return w1->get_size(); else return w2->get_size(); }
+  virtual void set_pos(Point2d pos) { if (b) w1->set_pos(pos); else w2->set_pos(pos); } 
+  virtual void set_size(Vector2d size) { if (b) w1->set_size(size); else w2->set_size(size); }
+  virtual void update(Point2d mouse_pos, int button) { if (b) w1->update(mouse_pos, button); else w2->update(mouse_pos, button); }
+  virtual void render() { if (b) w1->render(); else w2->render(); }
+  virtual int render_to_bitmap() { if (b) return w1->render_to_bitmap(); else return w2->render_to_bitmap(); }
+  virtual void select_item(int item) { if (item==0) b=true; if (item==1) b=false; }
+  virtual int chosen_item() const { if (b) return w1->chosen_item(); else return w2->chosen_item(); }
+  virtual float dynamic_param(int id) const { if (b) return w1->dynamic_param(id); else return w2->dynamic_param(id); }
+  virtual void set_dynamic_param(int id, float val) { if (b) w1->set_dynamic_param(id, val); else w2->set_dynamic_param(id, val); }
+  virtual int child_count() const { if (b) { return w1->child_count(); } else { return w2->child_count(); } }
+  virtual GuiWidget *child(int num) const
+  {
+    if (b) { return w1->child(num); }
+    else { return w2->child(num); }
+  }
+
+private:
+  bool b;
+  GuiWidget *w1;
+  GuiWidget *w2;
+};
+GameApi::W GameApi::GuiApi::gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int color_1, unsigned int color_2)
+{
+  BM bm = ev.bitmap_api.gradient(pos_1, pos_2, color_1, color_2, sx, sy);
+  return icon(bm);
+}
+GameApi::W GameApi::GuiApi::or_elem(W w1, W w2)
+{
+  GuiWidget *ww1 = find_widget(e, w1);
+  GuiWidget *ww2 = find_widget(e, w2);
+  return add_widget(e, new OrElemGuiWidget(ww1,ww2));
+}
+GameApi::W GameApi::GuiApi::scrollbar_y(int sx, int sy, int area_y)
+{
+  return add_widget(e, new ScrollBarY(ev,sh, sx,sy,area_y));
+}
+GameApi::W GameApi::GuiApi::menu(W main_menu, int menu_id, std::vector<std::string> labels, Ft font)
+{
+  GuiWidget *w = find_widget(e, main_menu);
+  int s = w->child(1)->child_count();
+  if (menu_id<0 || menu_id>=s) { std::cout << "ERROR: Wrong menu id" << menu_id << " " << s << std::endl; exit(0); }
+  GuiWidget *ww = w->child(1)->child(menu_id);
+  Point2d pos = ww->get_pos();
+  Vector2d size = ww->get_size();
+  
+  int ss = labels.size();
+  std::vector<W> vec;
+  for(int i=0;i<ss;i++) {
+    std::string s = labels[i];
+    W txt_1 = text(s, font);
+    W txt_2 = margin(txt_1, 2,2,2,2);
+    W txt_3 = highlight(size_x(txt_2), size_y(txt_2));
+    W txt_4 = layer(txt_2, txt_3);
+    vec.push_back(txt_4);
+  }
+  W w2 = array_y(&vec[0], vec.size(), 2);
+  PT pt1 = ev.point_api.point(0.0,0.0,0.0);
+  PT pt2 = ev.point_api.point(0.0, size_y(w2), 0.0);
+  W w3 = gradient(size_x(w2), size_y(w2), pt1, pt2, 0xffff8844, 0xff884422);
+  W w4 = layer(w3,w2);
+  set_pos(w4, pos.x, pos.y+size.dy);
+  return w4;
+}
+int GuiWidgetForward::render_to_bitmap()
+{
+  GameApi::BM bg = ev.bitmap_api.newbitmap(size.dx, size.dy);
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      GuiWidget *w = vec[i];
+      int bm_id = w->render_to_bitmap();
+      GameApi::BM bm_id_1;
+      bm_id_1.id = bm_id;
+      Point2d p = w->get_pos();
+      p-=pos;
+      bg = ev.bitmap_api.blitbitmap(bg, bm_id_1, (int)p.x, (int)p.y);
+    }
+  return bg.id;
+}
+ int GameApi::GuiApi::size_x(W w)
+ {
+  GuiWidget *ww = find_widget(e, w);
+  return ww->get_size().dx;
+ }
+ int GameApi::GuiApi::size_y(W w)
+ {
+   GuiWidget *ww = find_widget(e, w);
+   return ww->get_size().dy;
+ }
+void GameApi::GuiApi::set_pos(W w, float px, float py)
+{
+  Point2d p = { px, py };
+  GuiWidget *ww = find_widget(e, w);
+  ww->set_pos(p);
+}
+void GameApi::GuiApi::set_size(W w, float sx, float sy)
+{
+  Vector2d v = { sx, sy };
+  GuiWidget *ww = find_widget(e, w);
+  ww->set_size(v);
+}
+void GameApi::GuiApi::update(W w, PT mouse, int button)
+{
+  GuiWidget *ww = find_widget(e, w);
+  Point *pt = find_point(e, mouse);
+  Point2d pt2 = { pt->x, pt->y };
+  ww->update(pt2, button);
+}
+void GameApi::GuiApi::render(W w)
+{
+  GuiWidget *ww = find_widget(e, w);
+  ww->render();
+}
+int GameApi::GuiApi::chosen_item(W w)
+{
+  GuiWidget *ww = find_widget(e, w);
+  return ww->chosen_item();
+}
+void GameApi::GuiApi::select_item(W w, int item)
+{
+  GuiWidget *ww = find_widget(e, w);
+  ww->select_item(item);
+}
+float GameApi::GuiApi::dynamic_param(W w, int id)
+{
+  GuiWidget *ww = find_widget(e, w);
+  return ww->dynamic_param(id);
+}
+void GameApi::GuiApi::set_dynamic_param(W w, int id, float val)
+{
+  GuiWidget *ww = find_widget(e, w);
+  ww->set_dynamic_param(id, val);
 }
