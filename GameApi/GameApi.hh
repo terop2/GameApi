@@ -211,6 +211,7 @@ public:
 	IMPORT void preparesprite(BM bm, int bbm_choose = -1);
 
 	IMPORT VA create_vertex_array(BM bm);
+        IMPORT void clipping_sprite(VA va, int sx, int sy, float tex_l, float tex_t, float tex_r, float teb_b);
 	IMPORT void render_sprite_vertex_array(VA va);
 
 	IMPORT void rendersprite(BM bm, SH sh, float x, float y, float mult_x = 1.0, float mult_y = 1.0);
@@ -726,6 +727,7 @@ public:
   W text(std::string label, Ft font);
   W icon(BM bitmap);
   W gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int colot_1, unsigned int color_2);
+  W button(int sx, int sy, unsigned int color_1, unsigned int color_2);
   W or_elem(W w1, W w2);
   W highlight(int sx, int sy);
   W margin(W item, int left, int top, int right, int bottom);
@@ -1275,7 +1277,7 @@ public:
   IMPORT BB line(BB bg, float p_x, float p_y, float p2_x, float p2_y, float line_width1, float line_width2);
   IMPORT BB circle(BB bg, float center_x, float center_y, float radius);
   IMPORT BB ellipse(BB bg, float center_x, float center_y, float center2_x, float center2_y, float sum_of_distances);
-  IMPORT BB rectangle(BB bg, int x, int y, int width, int height); // for static ones
+  //IMPORT BB rectangle(BB bg, int x, int y, int width, int height); // for static ones
   IMPORT BB rectangle(BB bg, float x, float y, float width, float height); // for moving
   IMPORT BB sprite(BB bg, BB sprite, float x, float y, float size_multiplier_x, float size_multiplier_y);
   IMPORT BB polygon(BB bg, PT *points, int size);

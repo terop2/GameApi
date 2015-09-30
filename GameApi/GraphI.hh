@@ -210,87 +210,8 @@ public:
   virtual void set_dynamic_param(int id, float val)=0;
   virtual int child_count() const=0;
   virtual GuiWidget *child(int num) const=0;
+  virtual std::vector<GuiWidget*> *child_from_path(std::string path) { return 0; }
 };
 
-class GuiWidgetForward : public GuiWidget
-{
-public:
-  GuiWidgetForward(GameApi::EveryApi &ev, std::vector<GuiWidget*> vec) : ev(ev), vec(vec) { pos=Point2d::NewPoint(0.0, 0.0); size.dx=0.0; size.dy=0.0; current_selected_item=-1; }
-  virtual Point2d get_pos() const { return pos; }
-  virtual Vector2d get_size() const { return size; }
-  virtual void set_pos(Point2d new_pos) {
-    Point2d old_pos = pos;
-    int s = vec.size();
-    for(int i=0;i<s;i++)
-      {
-	GuiWidget *w = vec[i];
-	Point2d child_old_pos = w->get_pos();
-	Point2d child_new_pos = child_old_pos;
-	child_new_pos -= old_pos;
-	child_new_pos += new_pos;
-	w->set_pos(child_new_pos);
-      }
-    pos = new_pos;
-  }
-  virtual void set_size(Vector2d size_p)
-  {
-    size = size_p;
-    // derived widget must override and implement to set child widgets.
-  }
-  virtual void update(Point2d mouse_pos, int button)
-  {
-    int s = vec.size();
-    int selected_item = -1;
-    for(int i=0;i<s;i++)
-      {
-	GuiWidget *w = vec[i];
-	w->update(mouse_pos, button);
-	
-	Point2d p = w->get_pos();
-	Vector2d s = w->get_size();
-	if (mouse_pos.x >= p.x && mouse_pos.x < p.x+s.dx &&
-	    mouse_pos.y >= p.y && mouse_pos.y < p.y+s.dy)
-	  {
-	    selected_item = i;
-	  }
-      }
-    if (button==0) {
-      current_selected_item = selected_item;
-    }
-    if (button==-1) {
-      current_selected_item = -1;
-    }
-  }
-  virtual void render()
-  {
-    int s = vec.size();
-    for(int i=0;i<s;i++)
-      {
-	GuiWidget *w = vec[i];
-	w->render();
-      }
-  }
-  virtual int render_to_bitmap();
-
-  virtual void select_item(int item) {
-    current_selected_item=item; 
-  }
-  virtual int chosen_item() const
-  {
-    return current_selected_item;
-  }
-  virtual float dynamic_param(int id) const { return 0.0; }
-  virtual void set_dynamic_param(int id, float val)
-  {
-  }
-  virtual int child_count() const { return vec.size(); }
-  virtual GuiWidget *child(int num) const { return vec[num]; }
-protected:
-  GameApi::EveryApi &ev;
-  Point2d pos;
-  Vector2d size;
-  int current_selected_item;
-  std::vector<GuiWidget *> vec;
-};
 
 #endif

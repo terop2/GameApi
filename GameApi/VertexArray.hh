@@ -46,7 +46,7 @@ public:
   // way to get data out
   int tri_count(int id) const { return m_set[id]->tri_polys.size(); }
   int tri_count2(int id) const { return m_set[id]->tri_polys2.size(); }
-  const Point *tri_polys(int id) const { return tri_count(id) ? &m_set[id]->tri_polys[0] : NULL; }
+  Point *tri_polys(int id) { return tri_count(id) ? &m_set[id]->tri_polys[0] : NULL; }
   const Point *tri_polys2(int id) const { return tri_count2(id) ? &m_set[id]->tri_polys2[0] : NULL; }
   int quad_count(int id) const { return m_set[id]->quad_polys.size(); }
   int quad_count2(int id) const { return m_set[id]->quad_polys2.size(); }
@@ -98,9 +98,9 @@ public:
 #endif
 
   int tri_texcoord_count(int id) const { return m_set[id]->tri_texcoord.size(); }
-  const Point2d *tri_texcoord_polys(int id) const { return tri_texcoord_count(id) ? &m_set[id]->tri_texcoord[0] : NULL; }
+  Point2d *tri_texcoord_polys(int id) { return tri_texcoord_count(id) ? &m_set[id]->tri_texcoord[0] : NULL; }
   int quad_texcoord_count(int id) const { return m_set[id]->quad_texcoord.size(); }
-  const Point2d *quad_texcoord_polys(int id) const { return quad_texcoord_count(id) ? &m_set[id]->quad_texcoord[0] : NULL; }
+  Point2d *quad_texcoord_polys(int id) { return quad_texcoord_count(id) ? &m_set[id]->quad_texcoord[0] : NULL; }
 #if 0
   int poly_texcoord_count(int id) const { return m_set[id]->poly_texcoord.size(); }
   int poly2_texcoord_count(int id, int i) const { return m_set[id]->poly_texcoord[i].size(); }
