@@ -89,22 +89,29 @@ int main() {
   SFO andnot = ev.sh_api.and_not(sphere2_c, sphere);
   SFO sphere_1a = ev.sh_api.or_elem(andnot, sphereB_c);
   SFO sphere_2a = ev.sh_api.or_elem(sphereD_c, sphere_1a);
-  SFO line_2a = ev.sh_api.or_elem(sphere_2a, line_1);
+
+  PT bounding_center = ev.point_api.point(0.0,0.0,0.0);
+  SFO bounding_sphere = ev.sh_api.sphere(bounding_center, 200.0);
+  SFO bounding_1 = ev.sh_api.bounding_primitive(bounding_sphere, sphere_2a, line_1);
+
+  //SFO line_2a = ev.sh_api.or_elem(sphere_2a, line_1);
   //SFO line_2b = ev.sh_api.or_elem(line_2a, sph_2);
   //SFO move = ev.sh_api.trans(line_2a, 100.0, 0.0,0.0);
   SFO plane_1 = ev.sh_api.plane(ev.point_api.point(0.0,100.0,0.0),
 				ev.vector_api.vector(4.0,0.0,0.0),
 				ev.vector_api.vector(0.0,0.0,4.0));
-  SFO plane_11 = ev.sh_api.grayscale(plane_1);
-  SFO plane_2 = ev.sh_api.or_elem(plane_11, line_2a);
+  SFO plane_0 = ev.sh_api.stop_generation(bounding_1);
+  SFO plane_11 = ev.sh_api.grayscale_from_distance(plane_1, bounding_1, 100.0);
+  SFO plane_2 = ev.sh_api.or_elem(plane_11, plane_0);
   SFO torus_1 = ev.sh_api.torus(100.0, 30.0);
   SFO torus_2 = ev.sh_api.trans(torus_1, 300.0, 60.0,0.0);
   SFO torus_3 = ev.sh_api.or_elem(plane_2, torus_2);
 
-  SFO tex_cube_1 = ev.sh_api.texture_box(-200.0+0.0,-200.0+500.0,
-  					 90.0, 100.0,
-  					 0.0,100.0);
-  SFO tex_cube_11 = ev.sh_api.color(tex_cube_1, 1.0,0.5,0.2,1.0);
+  SFO tex_cube_1 =  //ev.sh_api.cube(-200.0,-200.0+500.0, 90.0, 95.0, 0.0, 100.0);
+    ev.sh_api.texture_box(-200.0+0.0,-200.0+800.0,
+    					 90.0, 95.0,
+    					 0.0,100.0);
+  SFO tex_cube_11 = ev.sh_api.color(tex_cube_1, 0.0,1.0,1.0,1.0);
   //SFO tex_cube_a = ev.sh_api.cube(-10.0-200.0,-200.0+500.0+10.0,
   //				  85.0, 95.0,
   //				  -10.0, 110.0);
@@ -148,8 +155,8 @@ int main() {
  
 
 #if 1
-  Ft font = ev.font_api.newfont("FreeSans.ttf", 140,140);
-  BM bitmap = ev.font_api.font_string(font, "Hello World", 20);
+  Ft font = ev.font_api.newfont("FreeSans.ttf", 240,240);
+  BM bitmap = ev.font_api.font_string(font, "Powerset Functor", 20);
   BB bb = ev.bool_bitmap_api.from_bitmaps_color(bitmap, 255,255,255);
   FB dist = ev.float_bitmap_api.distance_field(bb);
   BM dist_bm = ev.float_bitmap_api.to_grayscale_color(dist, 255,255,255,255, 0,0,0,0);

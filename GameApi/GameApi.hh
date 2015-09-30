@@ -108,6 +108,7 @@ using std::placeholders::_9;
   struct WAV { int id; };
   struct TBUF { int id; };
   struct SFO { int id; };
+  struct W { int id; };
   //template<class T>
   //struct E { int id; };
 
@@ -586,8 +587,7 @@ private:
 
 class VolumeApi
 {
-public:
-	IMPORT VolumeApi(Env &e);
+public:	IMPORT VolumeApi(Env &e);
 	IMPORT ~VolumeApi();
 	IMPORT O boolfunction(std::function<bool(float x, float y, float z)> f);
 	IMPORT O subvolume(std::function<float(float x, float y, float z)> f, float start_range, float end_range);
@@ -654,8 +654,7 @@ public:
   // problem1: float values in O. (currently uses bool)
   // problem2: colors in O.
   // problem3: conversion from volumeobject to continuousvoxel<float> and continuousvoxel<color> (something like that exists already)
-  // BM raytrace(O volume, int sx, int sy, V v, float z);
-  IMPORT BM montecarlo(O object, PT p_top, PT p_x, PT p_y, PT p_z, int sx, int sy);
+  // BM raytrace(O volume, int sx, int sy, V v, float z);  IMPORT BM montecarlo(O object, PT p_top, PT p_x, PT p_y, PT p_z, int sx, int sy);
 private:
   VolumeApi(const VolumeApi&);
   void operator=(const VolumeApi&);
@@ -707,6 +706,7 @@ public:
   IMPORT SFO from_lines(LI li, SFO obj);
   IMPORT SFO bind_arg(SFO obj, std::string name, std::string value);
   IMPORT SFO color_from_normal(SFO obj);
+  IMPORT SFO grayscale_from_distance(SFO obj, SFO dist, float length);
   IMPORT SFO stop_generation(SFO obj);
   IMPORT SFO mix_color(SFO col1, SFO col2, float t); // kills obj side
   IMPORT SFO grayscale(SFO obj);
@@ -718,6 +718,49 @@ public:
 private:
   Env &e;
 };
+
+class GuiApi
+{
+public:
+  GuiApi(Env &e, EveryApi &ev, SH sh) : e(e), ev(ev), sh(sh) { }
+  W text(std::string label, Ft font);
+  W icon(BM bitmap);
+  W gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int colot_1, unsigned int color_2);
+  W or_elem(W w1, W w2);
+  W highlight(int sx, int sy);
+  W margin(W item, int left, int top, int right, int bottom);
+  W layer(W w1, W w2);
+  W array_y(W *arr, int size, int y_gap);
+  W array_x(W *arr, int size, int x_gap);
+  W main_menu(std::vector<std::string> labels, Ft font);
+  W menu(W main_menu, int menu_id, std::vector<std::string> labels, Ft font);
+  W submenu(W manu, int menu_pane_id, std::vector<std::string> labels, Ft font);
+  W scrollbar_y(int sx, int sy, int area_y);
+  W scrollbar_x(int sx, int sy, int area_x);
+  W scroll_area(W orig, int sx, int sy);
+  W list_item(BM icon, std::string label, int sx, int sy);
+  W list(W *array, int size, int sx, int sy);
+  W dialog_item(std::string text, BM icon, int sx, int sy);
+  W dialog_border(W item);
+  W button_with_text(std::string label);
+  W button_with_icon(BM bitmap);
+  W opengl_wrapper(W widget);
+  void set_pos(W w, float px, float py);
+  void set_size(W ow, float sx, float sy);
+  void update(W w, PT mouse_cursor_pos, int button);
+  void render(W w);
+  int chosen_item(W w);
+  void select_item(W w, int item);
+  float dynamic_param(W w, int id);
+  void set_dynamic_param(W w, int id, float val);
+  int size_x(W w);
+  int size_y(W w);
+private:
+  Env &e;
+  EveryApi &ev;
+  SH sh;
+};
+
 class FloatVolumeApi
 {
 public:
