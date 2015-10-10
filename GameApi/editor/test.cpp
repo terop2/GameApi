@@ -13,6 +13,11 @@ using namespace GameApi;
 struct Envi {
   EveryApi *ev;
   GuiApi *gui;
+  std::string target_string;
+  float x,y,z;
+  std::vector<GuiApi::EditTypes> edit_data;
+  W editor;
+  bool editor_visible;
   W txt;
   W txt2;
   W scroll_area;
@@ -20,7 +25,9 @@ struct Envi {
   W array;
   W chosen_item;
   W insert_widget;
+  W dialog_cancel, dialog_ok;
   Ft font;
+  Ft font3;
   bool insert_ongoing;
   bool insert_ongoing2;
   // gameapi;
@@ -54,6 +61,8 @@ void iter(void *arg)
     env->gui->render(env->canvas_area);
     env->gui->render(env->scrollbar_x);
     env->gui->render(env->scrollbar_y);
+    if (env->editor_visible)
+      env->gui->render(env->editor);
     if (env->insert_ongoing)
       {
 	env->gui->render(env->insert_widget);
@@ -64,7 +73,7 @@ void iter(void *arg)
 	env->gui->render(env->menus[env->opened_menu_num]);
       }
     
-    env->ev->mainloop_api.fpscounter();
+    //env->ev->mainloop_api.fpscounter();
     // swapbuffers
     env->ev->mainloop_api.swapbuffers();
 
@@ -90,18 +99,64 @@ void iter(void *arg)
 #ifndef EMSCRIPTEN
     if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif
-    env->gui->update(env->txt, e.cursor_pos, e.button);
-    env->gui->update(env->txt2, e.cursor_pos, e.button);
-    env->gui->update(env->scroll_area, e.cursor_pos, e.button);
+    if (e.type != 0x300)
+      {
+	e.ch=-1;
+      }
+
+    int s = env->gui->num_childs(env->canvas);
+    //std::cout << "Numchilds: " << s << std::endl;
+    for(int i=0;i<s;i++)
+      {
+	W w = env->gui->get_child(env->canvas, i);
+	int chosen = env->gui->chosen_item(w);
+	//std::cout << "c: " << chosen << std::endl;
+	if (chosen == 0)
+	  {
+	    std::cout << "Chosen: " << i << ":" << chosen << std::endl;
+
+
+	    env->edit_data.push_back(GuiApi::EditTypes());
+	    env->edit_data.push_back(GuiApi::EditTypes());
+	    env->edit_data.push_back(GuiApi::EditTypes());
+	    env->edit_data.push_back(GuiApi::EditTypes());
+	    std::vector<GuiApi::EditTypes*> vec4;
+	    vec4.push_back(&env->edit_data[0]);
+	    vec4.push_back(&env->edit_data[1]);
+	    vec4.push_back(&env->edit_data[2]);
+	    vec4.push_back(&env->edit_data[3]);
+	    std::vector<std::string> types;
+	    types.push_back("int");
+	    types.push_back("PT");
+	    types.push_back("float");
+	    types.push_back("int");
+	    std::vector<std::string> labels;
+	    labels.push_back("Test: ");
+	    labels.push_back("Test2: ");
+	    labels.push_back("Test3: ");
+	    labels.push_back("Test4: ");
+	    env->editor = env->gui->edit_dialog(labels,vec4,env->font3, types, env->dialog_cancel, env->dialog_ok);
+	    env->gui->set_pos(env->editor, 200,50);
+
+	    env->editor_visible = true;
+
+	  }
+      }
+
+    env->gui->update(env->txt, e.cursor_pos, e.button, e.ch);
+    if (env->editor_visible)
+      env->gui->update(env->editor, e.cursor_pos, e.button, e.ch);
+    env->gui->update(env->txt2, e.cursor_pos, e.button, e.ch);
+    env->gui->update(env->scroll_area, e.cursor_pos, e.button,e.ch);
     //env->gui->update(env->wave, e.cursor_pos, e.button);
     //env->gui->update(env->gameapi, e.cursor_pos, e.button);
     //env->gui->update(env->test1, e.cursor_pos, e.button);
-    env->gui->update(env->canvas_area, e.cursor_pos, e.button);
-    env->gui->update(env->scrollbar_x, e.cursor_pos, e.button);
-    env->gui->update(env->scrollbar_y, e.cursor_pos, e.button);
+    env->gui->update(env->canvas_area, e.cursor_pos, e.button,e.ch);
+    env->gui->update(env->scrollbar_x, e.cursor_pos, e.button,e.ch);
+    env->gui->update(env->scrollbar_y, e.cursor_pos, e.button,e.ch);
     if (env->insert_ongoing)
       {
-	env->gui->update(env->insert_widget, e.cursor_pos, e.button);
+	env->gui->update(env->insert_widget, e.cursor_pos, e.button,e.ch);
       }
 
     float param_x = env->gui->dynamic_param(env->txt2, 0);
@@ -112,6 +167,19 @@ void iter(void *arg)
     env->gui->set_dynamic_param(env->canvas_area, 1, param_y1);
     env->ev->mod_api.update_lines_from_canvas(env->canvas, env->mod, 0);
     
+    if (env->editor_visible)
+      {
+	int diag_cancel = env->gui->chosen_item(env->dialog_cancel);
+	if (diag_cancel==0)
+	  {
+	    env->editor_visible = false;
+	  }
+	int diag_ok = env->gui->chosen_item(env->dialog_ok);
+	if (diag_ok==0)
+	  {
+	    env->editor_visible = false;
+	  }
+      }
     int sel = env->gui->chosen_item(env->scroll_area);
     if (sel != -1 && e.button==0 && !env->insert_ongoing)
       {
@@ -146,7 +214,7 @@ void iter(void *arg)
       }
     if (env->opened_menu_num != -1)
       {
-	env->gui->update(env->menus[env->opened_menu_num], e.cursor_pos, e.button);
+	env->gui->update(env->menus[env->opened_menu_num], e.cursor_pos, e.button, e.ch);
 	if (e.button == -1) { env->state=1; }
 	if (e.button==0 && env->state==1)
 	  {
@@ -162,7 +230,7 @@ float f(float w)
   return cos(w);
 }
 
-int main() {
+int main(int argc, char *argv[]) {
   Env e;
   EveryApi ev(e);
   
@@ -170,8 +238,17 @@ int main() {
 
   Envi env;
 
-  int screen_x = 1200;
-  int screen_y = 900;
+  int screen_x = 800;
+  int screen_y = 600;
+  if(argc==2)
+    {
+      if (std::string(argv[1])=="--huge")
+	{
+	  screen_x = 1200;
+	  screen_y = 900;
+	}
+    }
+
 
   // initialize window
   ev.mainloop_api.init_window(screen_x,screen_y);
@@ -181,6 +258,7 @@ int main() {
   SH sh = ev.shader_api.texture_shader();
   Ft font = ev.font_api.newfont("FreeSans.ttf", 13,15);
   Ft font2 = ev.font_api.newfont("FreeSans.ttf", 10,13);
+  Ft font3 = ev.font_api.newfont("FreeSans.ttf", 40,40);
 
   // rest of the initializations
   ev.mainloop_api.init(sh, screen_x,screen_y);
@@ -256,9 +334,11 @@ int main() {
   gui.set_pos(canvas_area, 140, 30);
   gui.set_pos(scrollbar_x, 140, screen_y-20);
   gui.set_pos(scrollbar_y, screen_x-20, 30);
-
   
-
+  env.x = 0.0;
+  env.y = 0.0;
+  env.z = 0.0;
+  env.target_string = "abcde";
 
 
   env.gui = &gui;
@@ -266,6 +346,9 @@ int main() {
   env.txt = txt;
   env.txt2 = txt2;
   env.font = font;
+  env.font3 = font3;
+  //env.editor = editor;
+  env.editor_visible = false;
   //env.wave = wave;
   //env.test1 = test1;
   env.array = array;
