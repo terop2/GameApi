@@ -12,6 +12,7 @@ class VertexArraySet
 {
 public:
   int texture_id;
+  int bm_id;
   VertexArraySet() : texture_id(-1) { }
   VertexArraySet(const VertexArraySet &s)
   {
@@ -20,16 +21,11 @@ public:
       {
 	m_set[(*it).first] = new Polys(*(*it).second);
       }
+    bm_id = 0;
   }
-  ~VertexArraySet()
-  {
-    std::map<int,Polys*>::iterator it = m_set.begin();
-    for(;it!=m_set.end();it++)
-      {
-	Polys *ptr = (*it).second;
-	delete ptr;
-      }
-  }
+  void set_bm_id(int id) { bm_id=0; }
+  int get_bm_id() const { return bm_id; }
+  ~VertexArraySet();
   void set_reserve(int id, int tri_count, int quad_count);
   // id is the vertex array num to be used 0 = beginning, 1 = end
   // num is the number of points (all calls should share same num)

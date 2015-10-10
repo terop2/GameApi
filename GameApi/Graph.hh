@@ -6005,9 +6005,11 @@ public:
   int SizeY() const { return bm.SizeY(); }
   Color Map(int x, int y) const
   {
-    int val = bm.Map(x,y);
-    float f = float(val-value1)/(value2-value1);
-    return Color::Interpolate(c1,c2, 1.0-f);
+    float val = (float)bm.Map(x,y);
+    val -= float(value1);
+    val /= float(value2-value1);
+    //float f = float(val-value1)/(value2-value1);
+    return Color::Interpolate(c1,c2, 1.0-val);
   }
 
 private:
@@ -7592,6 +7594,7 @@ private:
   int sx, sy, sz;
   std::vector<Point> vec;
 };
+
 
 
 
