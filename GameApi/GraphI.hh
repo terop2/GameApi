@@ -196,6 +196,8 @@ public:
 class GuiWidget
 {
 public:
+  void set_id(std::string id_m) { id = id_m; }
+  std::string get_id() const { return id; }
   virtual ~GuiWidget() { }
   virtual Point2d get_pos() const=0;
   virtual Vector2d get_size() const=0;
@@ -204,6 +206,8 @@ public:
   virtual void update(Point2d mouse_pos, int button)=0;
   virtual void render()=0;
   virtual int render_to_bitmap()=0; // returns bitmap id
+  virtual bool content_changed() const=0;
+  virtual void clear_content_changed()=0;
   virtual void select_item(int item)=0;
   virtual int chosen_item() const=0;
   virtual float dynamic_param(int id) const=0;
@@ -211,7 +215,46 @@ public:
   virtual int child_count() const=0;
   virtual GuiWidget *child(int num) const=0;
   virtual std::vector<GuiWidget*> *child_from_path(std::string path) { return 0; }
+private:
+  std::string id;
 };
 
+class GameApiItem
+{
+public:
+  virtual int Count() const=0;
+  virtual std::string Name(int i) const=0;
+  virtual int ParamCount(int i) const=0;
+  virtual std::string ParamName(int i, int p) const=0;
+  virtual std::string ParamType(int i, int p) const=0;
+  virtual std::string ParamDefault(int i, int p) const=0;
+  virtual std::string ReturnType(int i) const=0;
+};
+
+struct GameApiParam
+{
+  std::string param_name;
+  std::string value;
+};
+struct GameApiLine
+{
+  int x,y;
+  std::string module_name;
+  std::string uid;
+  std::vector<GameApiParam> params;
+};
+
+struct GameApiFunction
+{
+  std::string function_name;
+  std::vector<std::string> param_names;
+  std::vector<std::string> param_types;
+  std::vector<GameApiLine> lines;
+};
+
+struct GameApiModule
+{
+  std::vector<GameApiFunction> funcs;
+};
 
 #endif

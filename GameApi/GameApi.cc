@@ -42,7 +42,7 @@
 #include "Effect2.hh"
 #include <iostream>
 #include <pthread.h>
-
+#include <fstream>
 
 #undef LoadImage
 
@@ -228,6 +228,8 @@ EXPORT void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_heigh
   glMatrixLoadIdentityEXT(GL_MODELVIEW);
   glMatrixOrthoEXT(GL_PROJECTION, 0, 800, 600, 0, -1, 1);
 #endif
+  //glEnable(GL_MULTISAMPLE );
+
 }
 EXPORT void GameApi::MainLoopApi::transfer_sdl_surface(MainLoopApi &orig)
 {
@@ -307,6 +309,7 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   prog->set_var("in_POS", 0.0f);
   alpha_1(false);
   glEnable(GL_DEPTH_TEST);
+  //glEnable(GL_MULTISAMPLE );
 }
 EXPORT void GameApi::MainLoopApi::nvidia_init()
 {
@@ -484,6 +487,11 @@ extern SDL_Window *sdl_window;
 
 EXPORT void GameApi::MainLoopApi::swapbuffers()
 {
+  GLenum e = glGetError();
+  if (e!=GL_NO_ERROR)
+    {
+      std::cout << "swapbuffers GL error: " << e << std::endl;
+    }
   //MainLoopPriv *p = (MainLoopPriv*)priv;
   //glLoadIdentity();
 #ifdef SDL2_USED
@@ -897,6 +905,7 @@ struct EnvImpl
   std::vector<Wavs> wavs;
   std::vector<ShaderModule*> shader_module;
   std::vector<GuiWidget*> widgets;
+  std::vector<GameApiModule *> gameapi_modules;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
 #ifndef EMSCRIPTEN
@@ -1619,7 +1628,14 @@ GameApi::VA add_vertex_array(GameApi::Env &e, VertexArraySet *va, RenderVertexAr
   bm.id = env->vertex_array.size()-1;
   return bm;
 }
-
+void add_update_vertex_array(GameApi::Env &e, GameApi::VA va_h, VertexArraySet *va, RenderVertexArray *arr)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  delete env->vertex_array[va_h.id];
+  delete env->vertex_array_render[va_h.id];
+  env->vertex_array[va_h.id] = va;
+  env->vertex_array_render[va_h.id] = arr;
+}
 
 GameApi::CBM add_continuous_bitmap(GameApi::Env &e, ContinuousBitmap<Color> *bitmap)
 {
@@ -1766,6 +1782,20 @@ GameApi::FOA add_point_array(GameApi::Env &e, PointArray2 *array)
   GameApi::FOA pt;
   pt.id = env->pointarray.size()-1;
   return pt;
+}
+void add_update_lines_array(GameApi::Env &e, GameApi::LLA la, PointArray2 *array)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  PointArray2 *arr = env->pointarray[la.id];
+  glDeleteBuffers(1, &arr->buffer);
+  glDeleteBuffers(1, &arr->buffer2);
+#ifdef VAO
+  glDeleteVertexArrays( 1, arr->vao );
+#endif
+  delete [] env->pointarray[la.id]->array;
+  delete [] env->pointarray[la.id]->color_array;
+  delete env->pointarray[la.id];
+  env->pointarray[la.id] = array;
 }
 GameApi::LLA add_lines_array(GameApi::Env &e, PointArray2 *array)
 {
@@ -2504,6 +2534,11 @@ Sprite *sprite_from_handle2(GameApi::Env &e, SpritePriv &env, BitmapHandle *hand
       ss->update_cache();
       env.sprites2[handle->id] = ss;
       EnvImpl *env2 = ::EnvImpl::Environment(&e);
+      ArrayRender *rend = env2->renders2[handle->id];
+      if (rend)
+	{
+	  delete rend;
+	}
       env2->renders2[handle->id] = new ArrayRender;
       //env2->renders2[handle->id] = new ArrayRender;
       return ss;
@@ -2527,6 +2562,11 @@ Sprite *sprite_from_handle2(GameApi::Env &e, SpritePriv &env, BitmapHandle *hand
       Sprite *ss = new BitmapSprite(*chandle->bm, p);
       env.sprites2[handle->id] = ss;
       EnvImpl *env2 = ::EnvImpl::Environment(&e);
+      ArrayRender *rend = env2->renders2[handle->id];
+      if (rend)
+	{
+	  delete rend;
+	}
       env2->renders2[handle->id] = new ArrayRender;
       //env2->renders2[handle->id] = new ArrayRender;
       return ss;
@@ -2929,6 +2969,28 @@ EXPORT void GameApi::SpriteApi::clipping_sprite(VA va, int sx, int sy, float tex
   ptr[5] = p3;
   rend->update(0);
 }
+EXPORT void GameApi::SpriteApi::update_vertex_array(VA va, BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  SpritePriv &spriv = *(SpritePriv*)priv;
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  VertexArraySet *ss = find_vertex_array(e,va);
+
+  delete env->renders2[ss->get_bm_id()];
+  env->renders2[ss->get_bm_id()] = 0;
+
+  ::Sprite *sprite = sprite_from_handle2(e,spriv, handle, -1);
+  if (!sprite) { std::cout << "preparesprite's sprite==NULL?" << std::endl; return; }
+  VertexArraySet *s = new VertexArraySet;
+  s->set_bm_id(bm.id);
+  PrepareSpriteToVA(*sprite, *s);
+  TexturePrepare(*sprite, *env->renders2[bm.id]);
+  s->texture_id = bm.id;
+  RenderVertexArray *arr = new RenderVertexArray(*s); 
+  arr->prepare(0);
+  //s->free_memory();
+  add_update_vertex_array(e, va, s, arr);
+}
 EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
@@ -2938,6 +3000,7 @@ EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
   ::Sprite *sprite = sprite_from_handle2(e,spriv, handle, -1);
   if (!sprite) { std::cout << "preparesprite's sprite==NULL?" << std::endl; GameApi::VA va; va.id = 0; return va; }
   VertexArraySet *s = new VertexArraySet;
+  s->set_bm_id(bm.id);
   PrepareSpriteToVA(*sprite, *s);
   TexturePrepare(*sprite, *env->renders2[bm.id]);
   s->texture_id = bm.id;
@@ -3421,7 +3484,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::mandelbrot(bool julia,
   env->deletes.push_back(std::shared_ptr<void>(b2));
   ::Bitmap<Color> *m = new MemoizeBitmap(*b2);
   BitmapColorHandle *handle = new BitmapColorHandle;
-  handle->bm = m;
+  handle->bm = m; 
   BM bm = add_bitmap(e, handle);
   return bm;  
 }
@@ -7750,6 +7813,7 @@ public:
   {
     Color c = bm.Map(x,y);
     int val = c.alpha;
+    //std::cout << "Alpha: " << x << " " << y << " " << val << " " << float(val) / 255.0 << std::endl;
     return float(val)/255.0;
   }
 
@@ -8822,7 +8886,48 @@ EXPORT GameApi::P GameApi::PolygonApi::color_voxel(P orig, VX colours, PT p, V u
   Voxel<unsigned int> *v = find_voxel(e, colours);
   return add_polygon(e, new ColorVoxelFaceCollection(*coll, *v, *pp, *uu_x, *uu_y, *uu_z), 1);
 }
+EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P p, bool keep)
+{
+#ifdef THREADS
+  int num_threads = 4;
+  FaceCollection *faces = find_facecoll(e, p);
+  ThreadedPrepare prep(faces);
+  int s = faces->NumFaces();
+  int delta_s = s/num_threads;
+  std::vector<int> vec;
+  for(int i=0;i<num_threads;i++)
+    {
+      int start_range = i*delta_s;
+      int end_range = (i+1)*delta_s;
+      if (i==num_threads-1) {end_range = s; }
+      vec.push_back(prep.push_thread(start_range, end_range));
+    }
+  for(int i=0;i<num_threads;i++)
+    {
+      prep.join(vec[i]);
+    }
+  VertexArraySet *set = prep.collect();
+  RenderVertexArray *arr2 = new RenderVertexArray(*set);
+  arr2->prepare(0);
+  if (!keep)
+    {
+      set->free_memory();
+    }
+  add_update_vertex_array(e, va, set, arr2);
+#else
+  FaceCollection *faces = find_facecoll(e, p);
+  VertexArraySet *s = new VertexArraySet;
+  FaceCollectionVertexArray2 arr(*faces, *s);
+  arr.reserve(0);
+  arr.copy(0,faces->NumFaces());  
+  RenderVertexArray *arr2 = new RenderVertexArray(*s);
+  arr2->prepare(0); 
+  if (!keep)
+    s->free_memory();
+  add_update_vertex_array(e, va, s, arr2);
+#endif
 
+}
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 {
 #ifdef THREADS
@@ -9286,6 +9391,8 @@ EXPORT GameApi::TXID GameApi::FloatBitmapApi::to_texid(FB fb)
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, sx,sy, 0, GL_RED, GL_FLOAT, array);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
   
   delete []array;
@@ -9312,6 +9419,8 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bm.SizeX(),bm.SizeY(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buf.Buffer().buffer);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
   
   GameApi::TXID id2;
@@ -12212,6 +12321,8 @@ EXPORT GameApi::FBO GameApi::FrameBufferApi::create_fbo(int sx, int sy)
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sx,sy, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
   GLuint depth_texture;
   glGenRenderbuffers(1, &depth_texture);
@@ -12351,6 +12462,63 @@ void GameApi::LinesApi::update(LLA lines)
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, GL_STATIC_DRAW);
 }
 #endif
+EXPORT void GameApi::LinesApi::update(LLA la, LI l)
+{
+  LineCollection *coll = find_line_array(e, l);
+  int count = coll->NumLines();
+  float *array = 0;
+  unsigned int *color_array = 0;
+  if (count > 0) {
+    array = new float[count*6];
+    color_array = new unsigned int[count*2];
+    for(int i=0;i<count;i++)
+      {
+	Point p = coll->LinePoint(i,0);
+	Point p2 = coll->LinePoint(i,1);
+	unsigned int color1 = coll->LineColor(i,0);
+	unsigned int color2 = coll->LineColor(i,1);
+	//std::cout << std::hex << color1 << ";" << std::hex << color2 << std::endl;
+	array[i*6+0] = p.x;
+	array[i*6+1] = p.y;
+	array[i*6+2] = p.z;
+	array[i*6+3] = p2.x;
+	array[i*6+4] = p2.y;
+	array[i*6+5] = p2.z;
+	color_array[i*2+0] = color1;
+	color_array[i*2+1] = color2;
+	//std::cout << i << ":" << "(" << p.x << "," << p.y << "," << p.z << ")-(" << p2.x<< "," << p2.y << "," << p2.z << ")" << std::endl;
+      }
+  }
+  PointArray2 *arr = new PointArray2;
+  arr->array = array;
+  arr->color_array = color_array;
+  arr->numpoints = count*2;
+#ifdef VAO
+  glGenVertexArrays(1, arr->vao);
+  glBindVertexArray(arr->vao[0]);
+#endif
+  glGenBuffers(1, &arr->buffer);
+  glGenBuffers(1, &arr->buffer2);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
+  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
+  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, GL_STATIC_DRAW);
+#ifdef VAO
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
+  glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(2);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
+  glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0,0);
+#endif
+  //glDisableVertexAttribArray(0);
+  //glDisableVertexAttribArray(2);
+
+  return add_update_lines_array(e, la, arr);
+
+}
 EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
 {
   LineCollection *coll = find_line_array(e, l);
@@ -12861,7 +13029,11 @@ public:
       "}\n"
       "vec4 sphere_color" + uid + "(vec3 center, float radius, vec3 pt)\n"
       "{\n"
-      "   return vec4(1.0,1.0,1.0,1.0);\n"
+      "   pt -= center;\n"
+      "   pt = normalize(pt);\n"
+      "   float u = 0.5 + atan(pt.z, pt.x)/2.0/3.14159;\n"
+      "   float v = 0.5 - asin(pt.y)/3.14159;\n"
+      "   return vec4(u,v,0.0,1.0);\n"
       "}\n";
   }
   virtual std::string FunctionName() const { return "sphere"+uid; }
@@ -14491,6 +14663,34 @@ private:
   ShaderModule *inside;
   ShaderModule *outside;
 };
+class TextureModule : public ShaderModule
+{
+public:
+  TextureModule(ShaderModule *mod) : mod(mod) { uid=unique_id(); }
+  virtual std::string Function() const
+  {
+    return mod->Function() +
+      "float tex_pos" + uid + "(vec3 pt)\n"
+      "{\n"
+      "   return " + funccall_to_string(mod) + ";\n"
+      "}\n"
+      "vec4 tex_color" + uid + "(vec3 pt)\n"
+      "{\n"
+      "   vec4 coords = " + color_funccall_to_string(mod) + ";\n"
+      "   vec4 rgb = texture2D(tex, coords.xy);\n"
+      "   return rgb;\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return "tex_pos" + uid; }
+  virtual std::string ColorFunctionName() const { return "tex_color" + uid; }
+  virtual int NumArgs() const { return 1; }
+  virtual std::string ArgName(int i) const { return "pt"; }
+  virtual std::string ArgValue(int i) const { return "pt"; }
+
+private:
+  ShaderModule *mod;
+  std::string uid;
+};
 class TextureCube : public ShaderModule
 {
 public:
@@ -14509,7 +14709,7 @@ public:
       "      pt2-=s;\n"
       "      return length(max(abs(pt2)-s,0.0))+1.0;\n"
       "   }\n"
-      "   vec4 pixel = texture(tex, pt.xz);\n"
+      "   vec4 pixel = texture2D(tex, pt.xz);\n"
       "   float dist = pixel.r;\n"
       "   dist*=255.0;\n"
       //"   dist/=600.0;\n"
@@ -14552,6 +14752,12 @@ EXPORT GameApi::SFO GameApi::ShaderModuleApi::texture_box(float start_x, float e
   SFO r_cube_1 = bind_arg(r_cube, "tl", vec3_to_string(e,start_x, start_y, start_z));
   SFO r_cube_2 = bind_arg(r_cube_1, "br", vec3_to_string(e,end_x, end_y, end_z));
   return r_cube_2;
+}
+EXPORT GameApi::SFO GameApi::ShaderModuleApi::texture(SFO orig)
+{
+  ShaderModule *mod = find_shader_module(e, orig);
+  SFO tex_0 = add_shader_module(e, new TextureModule(mod));
+  return tex_0;
 }
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::bounding_primitive(SFO prim, SFO inside, SFO outside)
 {
@@ -14686,6 +14892,27 @@ public:
   virtual void set_dynamic_param(int id, float val)
   {
   }
+  virtual bool content_changed() const
+  {
+    int s = vec.size();
+    bool changed = false;
+    for(int i=0;i<s;i++)
+      {
+	GuiWidget *w = vec[i];
+	bool b = w->content_changed();
+	changed |= b;
+      }
+    return changed;
+  }
+  virtual void clear_content_changed()
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	GuiWidget *w = vec[i];
+	w->clear_content_changed();
+      }
+  }
   virtual int child_count() const { return vec.size(); }
   virtual GuiWidget *child(int num) const { return vec[num]; }
   virtual std::vector<GuiWidget*> *child_from_path(std::string path)
@@ -14707,6 +14934,7 @@ protected:
   Point2d pos;
   Vector2d size;
   int current_selected_item;
+public:
   std::vector<GuiWidget *> vec;
 };
 
@@ -14714,7 +14942,11 @@ protected:
 class TextGuiWidget : public GuiWidgetForward
 {
 public:
-  TextGuiWidget(GameApi::EveryApi &ev, std::string label, GameApi::Ft font, GameApi::SH sh) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), label(label), font(font), sh(sh) { firsttime = true; }
+  TextGuiWidget(GameApi::EveryApi &ev, std::string label, GameApi::Ft font, GameApi::SH sh) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), label(label), font(font), sh(sh) { firsttime = true; 
+    Point2d p = { 0.0, 0.0 };
+    update(p, -1);
+    set_pos(p);
+  }
   void update(Point2d mouse, int button)
   {
     if (firsttime)
@@ -14750,7 +14982,12 @@ private:
 class IconGuiWidget : public GuiWidgetForward
 {
 public:
-  IconGuiWidget(GameApi::EveryApi &ev, GameApi::BM bm, GameApi::SH sh) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), sh(sh), bm(bm) { firsttime=true;}
+  IconGuiWidget(GameApi::EveryApi &ev, GameApi::BM bm, GameApi::SH sh) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), sh(sh), bm(bm) { firsttime=true;
+    Point2d p = { 0.0, 0.0 };
+    update(p, -1);
+    set_pos(p);
+
+  }
   void update(Point2d mouse, int button)
   {
     if (firsttime)
@@ -14941,19 +15178,36 @@ public:
       }
     size.dx = sz_max;
     size.dy = sz;
+
+    selected_item = -1;
+
+    for(int j=0;j<s;j++) 
+      {
+	GuiWidget *w = vec[j];
+	Point2d pos = w->get_pos();
+	Vector2d size = w->get_size();
+	if (mouse.x>=pos.x && mouse.x<pos.x+size.dx &&
+	    mouse.y>=pos.y && mouse.y<pos.y+size.dy)
+	  {
+	    selected_item = j;
+	  }
+      }
+
   }
+  int chosen_item() const { return selected_item; }
   void render()
   {
     GuiWidgetForward::render();
   }
 private:
   int y_gap;
+  int selected_item;
 };
 
 class HighlightGuiWidget : public GuiWidgetForward
 {
 public:
-  HighlightGuiWidget(GameApi::EveryApi &ev, GameApi::SH sh, int sx, int sy) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), sh(sh), enabled(false) { 
+  HighlightGuiWidget(GameApi::EveryApi &ev, GameApi::SH sh, int sx, int sy) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), sh(sh), enabled(false), oldenabled(false), c_changed(false) { 
     firsttime=true; 
     size.dx = sx;
     size.dy = sy;
@@ -14970,6 +15224,11 @@ public:
       {
 	enabled = false;
       }
+    if (enabled!=oldenabled)
+      {
+	c_changed = true;
+	oldenabled = enabled;
+      }
     if (firsttime)
       {
 	Vector2d v = get_size();
@@ -14980,6 +15239,8 @@ public:
 	GameApi::BB bb_4 = ev.bool_bitmap_api.rectangle(bb_3, 0.0, v.dy-2, v.dx, 2.0);
 	bm = ev.bool_bitmap_api.to_bitmap(bb_4, 255,255,255,255, 0,0,0,0);
 	bm_va = ev.sprite_api.create_vertex_array(bm);
+	empty_bm = ev.bool_bitmap_api.to_bitmap(bg, 255,255,255,255, 0,0,0,0);
+	empty_bm_va = ev.sprite_api.create_vertex_array(empty_bm);
 	firsttime = false;
       }
   }
@@ -14994,15 +15255,181 @@ public:
   }
   int render_to_bitmap()
   {
-    return bm.id;
+    if (enabled)
+      return bm.id;
+    else
+      return empty_bm.id;
   }
+  bool content_changed() const
+  {
+    return c_changed;
+  }
+  void clear_content_changed() { c_changed = false; }
 private:
   GameApi::BM bm;
+  GameApi::BM empty_bm;
   GameApi::VA bm_va;
+  GameApi::VA empty_bm_va;
   GameApi::SH sh;
   bool firsttime;
   bool enabled;
+  bool oldenabled;
+  bool c_changed;
 };
+class CanvasWidget : public GuiWidgetForward
+{
+public:
+  CanvasWidget(GameApi::EveryApi &ev, int sx, int sy) : GuiWidgetForward(ev, std::vector<GuiWidget*>())
+  {
+    size.dx = sx;
+    size.dy = sy;
+  }
+  int count() const { return vec.size(); }
+  GuiWidget *find_widget(int i) const { return vec[i]; }
+  GuiWidget *find_widget(std::string id) const
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	GuiWidget *w = vec[i];
+	std::string w_id = w->get_id();
+	if (id==w_id) return w;
+      }
+    return 0;
+  }
+  int push_back(GuiWidget *widget, int x, int y)
+  {
+    vec.push_back(widget);
+    pos_x.push_back(x);
+    pos_y.push_back(y);
+    Vector2d v = { float(x),float(y) };
+    widget->set_pos(get_pos() + v);
+    return vec.size()-1;
+  }
+  void del(int id)
+  {
+    vec.erase(vec.begin()+id);
+  }
+private:
+  std::vector<int> pos_x;
+  std::vector<int> pos_y;
+};
+EXPORT GameApi::W GameApi::GuiApi::canvas(int sx, int sy)
+{
+  return add_widget(e, new CanvasWidget(ev, sx, sy));
+}
+EXPORT int GameApi::GuiApi::canvas_item(W canvas, W item, int x, int y)
+{
+  GuiWidget *canvas_1 = find_widget(e, canvas);
+  CanvasWidget *canvas_2 = dynamic_cast<CanvasWidget*>(canvas_1);
+  if (!canvas_2) return -1;
+  GuiWidget *item_1 = find_widget(e, item);
+  canvas_2->push_back(item_1, x, y);
+  return canvas_2->count()-1;
+}
+EXPORT void GameApi::GuiApi::del_canvas_item(W canvas, int id)
+{
+  GuiWidget *canvas_1 = find_widget(e, canvas);
+  CanvasWidget *canvas_2 = dynamic_cast<CanvasWidget*>(canvas_1);
+  if (!canvas_2) return;
+  canvas_2->del(id);
+}
+EXPORT GameApi::W GameApi::GuiApi::list_item_title(int sx, std::string label, Ft font)
+{
+  W node_t = text(label, font);
+  W node_t0 = margin(node_t, 5,5,5,5);
+  std::cout << "List Item title height: " << size_y(node_t0) << std::endl;
+  W node_0 = button(sx, size_y(node_t0), 0xffff88ff, 0xff8844ff);
+  W node_1 = layer(node_0, node_t0);
+  return node_1;
+}
+EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, Ft font, std::vector<std::string> subitems, Ft font2)
+{
+  W title = list_item_title(sx, label, font);
+  std::vector<W> vec;
+  vec.push_back(title);
+  int s = subitems.size();
+  for(int i=0;i<s;i++)
+    {
+      std::string label = subitems[i];
+      W txt_0 = text(label, font2);
+      W txt_1 = margin(txt_0, 5, 2, sx-5-size_x(txt_0), 2);
+      W txt_2 = highlight(size_x(txt_1), size_y(txt_1));
+      W txt_3 = layer(txt_1, txt_2);
+      vec.push_back(txt_3);
+    }
+  W array = array_y(&vec[0], vec.size(),2);
+  W array_2 = margin(array, 1,1,1,1);
+  return array_2;
+}
+class MouseMoveWidget : public GuiWidgetForward
+{
+public:
+  MouseMoveWidget(GameApi::EveryApi &ev, GuiWidget *wid, int area_x, int area_y, int area_width, int area_height) : GuiWidgetForward(ev, { wid } ), area_x(area_x), area_y(area_y), area_width(area_width), area_height(area_height) { move_ongoing = false; }
+  void update(Point2d mouse, int button)
+  {
+    GuiWidgetForward::update(mouse,button);
+    if (!move_ongoing && button==0 && mouse.x >= pos.x+area_x && mouse.x < pos.x+area_x+area_width &&
+	mouse.y >= pos.y+area_y && mouse.y < pos.y+area_y+area_height)
+      {
+	move_ongoing = true;
+	old_mouse = mouse;
+	old_pos = pos;
+      }
+    if (move_ongoing) {
+      Vector2d delta = mouse - old_mouse;
+      Point2d p = old_pos + delta;
+      set_pos(p);
+    }
+    if (move_ongoing && button==-1)
+      {
+	move_ongoing = false;
+      }
+  }
+private:
+  int area_x, area_y;
+  int area_width, area_height;
+  bool move_ongoing;
+  Point2d old_pos;
+  Point2d old_mouse;
+};
+EXPORT GameApi::W GameApi::GuiApi::mouse_move(W widget, int area_x, int area_y, int area_width, int area_height)
+{
+  GuiWidget *wid = find_widget(e, widget);
+  return add_widget(e, new MouseMoveWidget(ev, wid, area_x, area_y, area_width, area_height));
+}
+EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, Ft font)
+{
+  W node_0 = button(sx,sy, 0xffff8844, 0xff884422);
+  W node_2 = text(label, font);
+  W node_22 = margin(node_2, 5,5,5,5);
+  W node_1 = button(sx,size_y(node_22), 0xffff88ff, 0xff8844ff);
+  std::vector<W> vec;
+  int s = param_types.size();
+  for(int i=0;i<s;i++)
+    {
+      std::string p = param_types[i];
+      W txt_0 = text(p, font);
+      W txt_1 = margin(txt_0, 5,5,5,5);
+      W txt_2 = button(size_x(txt_1), size_y(txt_1), 0xff888888, 0xff666666);
+      W txt_3 = layer(txt_2, txt_1);
+      vec.push_back(txt_3);
+    }
+  W array = array_y(&vec[0], vec.size(), 5);
+  W array_1 = margin(array, 0, sy-size_y(array), 0, 0);
+  
+  W txt_0 = text(return_type, font);
+  W txt_1 = margin(txt_0, 5,5,5,5);
+  W txt_2 = button(size_x(txt_1), size_y(txt_1), 0xff330033, 0xff880088);
+  W txt_3 = layer(txt_2, txt_1);
+  W txt_4 = margin(txt_3, sx-size_x(txt_3), sy-size_y(txt_3), 0,0);
+
+  W l_0 = layer(node_0, node_1);
+  W l_1 = layer(l_0, node_22);
+  W l_2 = layer(l_1, array_1);
+  W l_3 = layer(l_2, txt_4);
+  return l_3;
+}
 EXPORT GameApi::W GameApi::GuiApi::text(std::string label, Ft font)
 {
   return add_widget(e, new TextGuiWidget(ev, label, font, sh));
@@ -15097,7 +15524,7 @@ GameApi::W GameApi::GuiApi::submenu(W menu, int menu_id, std::vector<std::string
 class ScrollBarY : public GuiWidgetForward
 {
 public:
-  ScrollBarY(GameApi::EveryApi &ev, GameApi::SH sh, int sx, int sy, int area_y) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), sh(sh), sx(sx), sy(sy), area_y(area_y) { firsttime=true; current_pos = 0.5; following = false; }
+  ScrollBarY(GameApi::EveryApi &ev, GameApi::SH sh, int sx, int sy, int area_y) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), sh(sh), sx(sx), sy(sy), area_y(area_y) { firsttime=true; current_pos = 0.0; following = false; }
   void update(Point2d mouse, int button)
   {
     Point2d p = get_pos();
@@ -15170,29 +15597,50 @@ private:
   bool following;
   Point2d start_pos;
 };
-class ScrollAreaWidget : public GuiWidgetForward
+
+class ScrollBarX : public GuiWidgetForward
 {
 public:
-  ScrollAreaWidget(GameApi::EveryApi &ev, GameApi::SH sh, GuiWidget *orig, int sx, int sy) : GuiWidgetForward(ev, { orig }), sh(sh), orig(orig), sx(sx), sy(sy) { firsttime = true; Vector2d v = { float(sx),float(sy)}; size = v; top=0.0; left=0.0; }
-  void set_pos(Point2d pos)
+  ScrollBarX(GameApi::EveryApi &ev, GameApi::SH sh, int sx, int sy, int area_x) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), sh(sh), sx(sx), sy(sy), area_x(area_x) { firsttime=true; current_pos = 0.0; following = false; }
+  void update(Point2d mouse, int button)
   {
-    GuiWidgetForward::set_pos(pos);
-    Point2d pos2 = { 0.0, 0.0 };
-    vec[0]->set_pos(pos2);
-  }
-  void set_size(Vector2d sz)
-  {
-    size = sz;
-    sx=(int)sz.dx;
-    sy=(int)sz.dy;
-  }
-  void update(Point2d mouse_pos, int button)
-  {
+    Point2d p = get_pos();
+    float size_x = float(sx)/float(area_x)*float(sx-2-2-2-2);
+    float pos_x = current_pos * (float(sx) - float(sx)/float(area_x)*float(sx-2-2-2-2));
+    if (button==0 && !following && mouse.y>=p.y+2+2 && mouse.y<p.y+sy-2-2 && mouse.x>=p.x+pos_x+2+2 && mouse.x<p.x+pos_x+2+2+size_x)
+      {
+	following = true;
+	start_pos = mouse;
+      }
+    if (button==0 && following)
+      {
+	float delta = mouse.x - start_pos.x;
+	current_pos = current_pos + delta/float(sx-2-2-2-2);
+
+	if (current_pos < 0.0) current_pos = 0.0;
+	if (current_pos > 1.0) current_pos = 1.0;
+
+	start_pos = mouse;
+      }
+    if (button==-1)
+      {
+	following = false;
+      }
+
     if (firsttime)
       {
-	int val = vec[0]->render_to_bitmap();
-	area_bm.id = val; 
-	area_bm_va = ev.sprite_api.create_vertex_array(area_bm);
+	GameApi::BB b = ev.bool_bitmap_api.empty(sx,sy);
+	GameApi::BB b1 = ev.bool_bitmap_api.rectangle(b, 0.0, 0.0, float(sx), 2.0);
+	GameApi::BB b2 = ev.bool_bitmap_api.rectangle(b1, 0.0, 0.0, 2.0, float(sy));
+	GameApi::BB b3 = ev.bool_bitmap_api.rectangle(b2, float(sx)-2.0, 0.0, 2.0, float(sy));
+	GameApi::BB b4 = ev.bool_bitmap_api.rectangle(b3, 0.0, float(sy)-2.0, float(sx), 2.0);
+	bg = ev.bool_bitmap_api.to_bitmap(b4, 255,255,255,255, 0,0,0,0);
+
+	bg_va = ev.sprite_api.create_vertex_array(bg);
+	GameApi::BB k = ev.bool_bitmap_api.empty(float(sx)/float(area_x)*float(sx-2-2-2-2), sy-2-2-2-2);
+	GameApi::BB k2 = ev.bool_bitmap_api.rectangle(k, 0.0, 0.0, float(sx)/float(area_x)*float(sx-2-2-2-2), float(sy-2-2-2-2));
+	thumb = ev.bool_bitmap_api.to_bitmap(k2, 255,255,255,255, 0,0,0,0);
+	thumb_va = ev.sprite_api.create_vertex_array(thumb);
 	firsttime = false;
       }
   }
@@ -15200,32 +15648,162 @@ public:
   {
     if (!firsttime)
       {
-	int area_x = ev.bitmap_api.size_x(area_bm);
-	int area_y = ev.bitmap_api.size_y(area_bm);
-	float thumb_x = float(sx);
-	float thumb_y = float(sy);
-	float l = left * (area_x-thumb_x)/area_x;
-	float t = top * (area_y-thumb_y)/area_y;
-	ev.sprite_api.clipping_sprite(area_bm_va, sx,sy, l, t, l + float(sx)/float(area_x), t + float(sy)/float(area_y));
+	Point2d p = get_pos();
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x, p.y, 0.0));
+	ev.sprite_api.render_sprite_vertex_array(bg_va);
+
+	float pos_x = current_pos * (float(sx) - float(sx)/float(area_x)*float(sx));
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+pos_x+2+2, p.y+2+2, 0.0));
+	ev.sprite_api.render_sprite_vertex_array(thumb_va);
+      }
+  }
+  float dynamic_param(int id) const
+  {
+    if (id==0) { return current_pos; }
+    return 0.0;
+  }
+private:
+  GameApi::SH sh;
+  GameApi::BM bg;
+  GameApi::VA bg_va;
+  GameApi::BM thumb;
+  GameApi::VA thumb_va;
+  float current_pos;
+  int sx,sy,area_x;
+  bool firsttime;
+  bool following;
+  Point2d start_pos;
+};
+
+float wave_transfer(float val, float start_range, std::function<float(float)> f, float time)
+{
+  val += start_range;
+  float v = f(val+time);
+  return v;
+}
+class WaveformWidget : public GuiWidget
+{
+public:
+  WaveformWidget(GameApi::EveryApi &ev, GameApi::SH sh, std::function<float (float)> f, float start_range, float end_range, float min_value, float max_value, int sx, int sy, unsigned int true_color, unsigned int false_color) : ev(ev), sh(sh), f(f), start_range(start_range), end_range(end_range), min_value(min_value), max_value(max_value), sx(sx), sy(sy), true_color(true_color), false_color(false_color) 
+  { 
+    firsttime = true; 
+    Point2d p = { 0.0, 0.0 };
+    update(p, -1);
+    set_pos(p);
+    time = 0.0;
+  }
+  Point2d get_pos() const { return pos; }
+  Vector2d get_size() const { return size; }
+  void set_pos(Point2d pos_p) { pos = pos_p; }
+  void set_size(Vector2d vec_p) { size = vec_p; }
+  void update(Point2d mouse_pos, int button)
+  {
+    if (firsttime)
+      {
+	GameApi::WV wave = ev.waveform_api.function(std::bind(&wave_transfer, GameApi::_1, start_range, f, std::ref(time)), end_range-start_range, min_value, max_value); 
+	wave_bm = ev.waveform_api.waveform_bitmap(wave, sx, sy, true_color, false_color);
+	wave_bm_va = ev.sprite_api.create_vertex_array(wave_bm);
+	firsttime = false;
+      } else {
+      time+=0.05;
+      ev.sprite_api.update_vertex_array(wave_bm_va, wave_bm);
+    }
+    Vector2d s = { float(sx), float(sy) };
+    size = s;
+  }
+  void render()
+  {
+    if (!firsttime)
+      {
 	Point2d pos = get_pos();
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(pos.x, pos.y, 0.0));
-	ev.sprite_api.render_sprite_vertex_array(area_bm_va);
+	ev.sprite_api.render_sprite_vertex_array(wave_bm_va);
       }
   }
   int render_to_bitmap()
   {
-    int area_x = ev.bitmap_api.size_x(area_bm);
-    int area_y = ev.bitmap_api.size_y(area_bm); 
-    GameApi::BM bm = ev.bitmap_api.subbitmap(area_bm, area_x*left, area_y*top, sx,sy);
-    return bm.id;
+    return wave_bm.id;
   }
-  int chosen_item() { return orig->chosen_item(); }
+  void select_item(int item) { }
+  int chosen_item() const { return -1; }
+  float dynamic_param(int id) const { return 0.0; }
+  void set_dynamic_param(int id, float val) { }
+  int child_count() const { return 0; }
+  GuiWidget *child(int num) const { return 0; }
+  bool content_changed() const { return true; }
+  void clear_content_changed() { }
+private:
+  bool firsttime;
+  GameApi::BM wave_bm;
+  GameApi::VA wave_bm_va;
+  Point2d pos;
+  Vector2d size;
+  GameApi::EveryApi &ev;
+  GameApi::SH sh;
+  std::function<float (float)> f;
+  float start_range, end_range;
+  float min_value, max_value;
+  int sx, sy;
+  unsigned int true_color, false_color;
+  float time;
+};
+class ScrollAreaWidget : public GuiWidgetForward
+{
+public:
+  ScrollAreaWidget(GameApi::EveryApi &ev, GameApi::SH sh, GuiWidget *orig, int sx, int sy) : GuiWidgetForward(ev, { orig }), sh(sh), orig(orig), sx(sx), sy(sy) { firsttime = true; Vector2d v = { float(sx),float(sy)}; size = v; top=0.0; left=0.0; 
+    
+}
+  void set_pos(Point2d pos)
+  {
+    GuiWidgetForward::set_pos(pos);
+    Vector2d sz = vec[0]->get_size();
+    Point2d pos2 = { pos.x-left*(sz.dx-size.dx), pos.y-top*(sz.dy-size.dy) };
+    vec[0]->set_pos(pos2);
+  }
+  void set_size(Vector2d sz)
+  {
+    GuiWidgetForward::set_size(sz);
+    size = sz;
+    sx=(int)sz.dx;
+    sy=(int)sz.dy;
+  }
+  void update(Point2d mouse_pos, int button)
+  {
+    Point2d mouse = mouse_pos;
+    if (mouse.x>=pos.x && mouse.x<pos.x+size.dx &&
+	mouse.y>=pos.y && mouse.y<pos.y+size.dy)
+      {
+	//Vector2d sz = vec[0]->get_size();
+	//mouse.x -= left*(sz.dx-size.dx);
+	//mouse.y -= top*(sz.dy-size.dy);
+	orig->update(mouse, button);
+      }
+    else
+      {
+	Point2d mouse = {-666.0, -666.0 };
+	orig->update(mouse, button);
+      }
+  }
+  void render()
+  {
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(pos.x, 600-pos.y-size.dy, size.dx, size.dy);
+    vec[0]->render();
+    glDisable(GL_SCISSOR_TEST);
+  }
+
+  int chosen_item() const { return orig->chosen_item(); }
   void set_dynamic_param(int id, float val)
   {
     switch(id) {
     case 0: left = val; break;
     case 1: top = val; break;
     }
+    Point2d pos = get_pos();
+    Vector2d sz = vec[0]->get_size();
+    Point2d pos2 = { pos.x-left*(sz.dx-size.dx), pos.y-top*(sz.dy-size.dy) };
+    //std::cout << "dyn: " << left << " " << top << std::endl;
+    vec[0]->set_pos(pos2);
   }
 private:
   bool firsttime;
@@ -15252,6 +15830,8 @@ public:
   virtual float dynamic_param(int id) const { if (b) return w1->dynamic_param(id); else return w2->dynamic_param(id); }
   virtual void set_dynamic_param(int id, float val) { if (b) w1->set_dynamic_param(id, val); else w2->set_dynamic_param(id, val); }
   virtual int child_count() const { if (b) { return w1->child_count(); } else { return w2->child_count(); } }
+  virtual bool content_changed() const { if (b) { return w1->content_changed(); } else { return w2->content_changed(); } }
+  virtual void clear_content_changed() { if (b) { w1->clear_content_changed(); } else { w2->clear_content_changed(); } }
   virtual GuiWidget *child(int num) const
   {
     if (b) { return w1->child(num); }
@@ -15325,10 +15905,23 @@ GameApi::W GameApi::GuiApi::scrollbar_y(int sx, int sy, int area_y)
 {
   return add_widget(e, new ScrollBarY(ev,sh, sx,sy,area_y));
 }
+GameApi::W GameApi::GuiApi::scrollbar_x(int sx, int sy, int area_x)
+{
+  return add_widget(e, new ScrollBarX(ev,sh, sx,sy,area_x));
+}
 GameApi::W GameApi::GuiApi::scroll_area(W orig, int sx, int sy)
 {
   GuiWidget *orig_1 = find_widget(e, orig);
   return add_widget(e, new ScrollAreaWidget(ev, sh, orig_1, sx,sy));
+}
+#if 0
+GameApi::W GameApi::GuiApi::canvas_scroll_area(int sx, int sy, int screen_x, int screen_y)
+{
+}
+#endif
+GameApi::W GameApi::GuiApi::waveform(std::function<float (float)> f, float start_range, float end_range, float min_value, float max_value, int sx, int sy, unsigned int true_color, unsigned int false_color)
+{
+  return add_widget(e, new WaveformWidget(ev, sh, f, start_range, end_range, min_value, max_value, sx, sy, true_color, false_color));
 }
 GameApi::W GameApi::GuiApi::menu(W main_menu, int menu_id, std::vector<std::string> labels, Ft font)
 {
@@ -15361,7 +15954,7 @@ GameApi::W GameApi::GuiApi::menu(W main_menu, int menu_id, std::vector<std::stri
 }
 int GuiWidgetForward::render_to_bitmap()
 {
-  GameApi::BM bg = ev.bitmap_api.newbitmap(size.dx, size.dy);
+  GameApi::BM bg = ev.bitmap_api.newbitmap(size.dx, size.dy, 0x0000000000);
   int s = vec.size();
   for(int i=0;i<s;i++)
     {
@@ -15371,7 +15964,9 @@ int GuiWidgetForward::render_to_bitmap()
       bm_id_1.id = bm_id;
       Point2d p = w->get_pos();
       p-=pos;
-      bg = ev.bitmap_api.blitbitmap(bg, bm_id_1, (int)p.x, (int)p.y);
+      GameApi::FB fb = ev.float_bitmap_api.from_alpha(bm_id_1);
+      GameApi::BB bb3 = ev.bool_bitmap_api.from_float_bitmap(fb, 0.1, 1.2);
+      bg = ev.bitmap_api.blitbitmap(bg, bm_id_1, (int)p.x, (int)p.y, bb3);
     }
   return bg.id;
 }
@@ -15424,8 +16019,471 @@ float GameApi::GuiApi::dynamic_param(W w, int id)
   GuiWidget *ww = find_widget(e, w);
   return ww->dynamic_param(id);
 }
+int GameApi::GuiApi::num_childs(W w)
+{
+  GuiWidget *ww = find_widget(e, w);
+  GuiWidgetForward *ww2 = dynamic_cast<GuiWidgetForward*>(ww);
+  return ww2->vec.size();
+}
+GameApi::W GameApi::GuiApi::get_child(W w, int i)
+{
+  GuiWidget *ww = find_widget(e, w);
+  GuiWidgetForward *ww2 = dynamic_cast<GuiWidgetForward*>(ww);
+  if (ww2) 
+    {
+      GuiWidget *child = ww2->vec[i];
+      
+      EnvImpl *env = ::EnvImpl::Environment(&e);
+      int s = env->widgets.size();
+      for(int i=0;i<s;i++)
+	{
+	  GuiWidget *w = env->widgets[i];
+	  if (child==w) {
+	    GameApi::W wid;
+	    wid.id = i;
+	    return wid;
+	  }
+	}
+    }
+  GameApi::W wid;
+  wid.id = -1;
+  return wid;
+}
 void GameApi::GuiApi::set_dynamic_param(W w, int id, float val)
 {
   GuiWidget *ww = find_widget(e, w);
   ww->set_dynamic_param(id, val);
+}
+std::string GameApi::GuiApi::get_id(W w)
+{
+  GuiWidget *ww = find_widget(e,w);
+  return ww->get_id();
+}
+void GameApi::GuiApi::set_id(W w, std::string id)
+{
+  GuiWidget *ww = find_widget(e, w);
+  ww->set_id(id);
+}
+
+template<class T, class RT, class... P>
+class ApiItem : public GameApiItem
+{
+public:
+  ApiItem(T (GameApi::EveryApi::*api), RT (T::*fptr)(P...),
+	  std::string name, 
+	  std::vector<std::string> param_name,
+	  std::vector<std::string> param_type,
+	  std::vector<std::string> param_default,
+	  std::string ret_type) 
+    : api(api), fptr(fptr), name(name), param_name(param_name),
+      param_type(param_type), param_default(param_default), 
+      return_type(ret_type) { }
+  int Count() const { return 1; }
+  std::string Name(int i) const { return name; }
+  int ParamCount(int i) const { return param_name.size(); }
+  std::string ParamName(int i, int p) const { return param_name[p]; }
+  std::string ParamType(int i, int p) const { return param_type[p]; }
+  std::string ParamDefault(int i, int p) const { return param_default[p]; }
+  std::string ReturnType(int i) const { return return_type; }
+private:
+  T (GameApi::EveryApi::*api);
+  RT (T::*fptr)(P...);
+  std::string name;
+  std::vector<std::string> param_name;
+  std::vector<std::string> param_type;
+  std::vector<std::string> param_default;
+  std::string return_type;
+};
+template<class T, class RT, class... P>
+GameApiItem* ApiItemF(T (GameApi::EveryApi::*api), RT (T::*fptr)(P...),
+		      std::string name,
+		      std::vector<std::string> param_name,
+		      std::vector<std::string> param_type,
+		      std::vector<std::string> param_default,
+		      std::string return_type)
+{
+  return new ApiItem<T,RT,P...>(api, fptr, name, param_name, param_type, param_default, return_type);
+}
+std::vector<GameApiItem*> bitmapapi_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::newbitmap,
+			 "new", 
+			 { "sx", "sy", "color" },
+			 { "int", "int", "unsigned int" },
+			 { "100", "100", "0x00000000" },
+			 "BM"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::loadbitmap,
+			 "load",
+			 { "filename" },
+			 { "std::string" },
+			 { "test.png" },
+			 "BM"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::subbitmap,
+			 "sub",
+			 { "orig", "x", "y", "width", "height" },
+			 { "BM", "int", "int", "int", "int" },
+			 { "",   "0", "0", "100", "100" },
+			 "BM"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::growbitmap,
+			 "grow",
+			 { "orig", "l", "t", "r", "b" },
+			 { "BM", "int", "int", "int", "int" },
+			 { "", "2", "2", "2", "2" },
+			 "BM"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, (GameApi::BM (GameApi::BitmapApi::*)(GameApi::BM,GameApi::BM,int,int))&GameApi::BitmapApi::blitbitmap,
+			 "blit",
+			 { "bg", "orig", "x", "y" },
+			 { "BM", "BM", "int", "int" },
+			 { "", "", "0", "0" },
+			 "BM"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, (GameApi::BM (GameApi::BitmapApi::*)(GameApi::BM,GameApi::BM,int,int,GameApi::FB))&GameApi::BitmapApi::blitbitmap,
+			 "blitFB",
+			 { "bg", "orig", "x", "y", "mask" },
+			 { "BM", "BM", "int", "int", "FB" },
+			 { "", "", "0", "0", "" },
+			 "BM"));
+			 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, (GameApi::BM (GameApi::BitmapApi::*)(GameApi::BM,GameApi::BM,int,int,GameApi::BB))&GameApi::BitmapApi::blitbitmap,
+			 "blitBB",
+			 { "bg", "orig", "x", "y", "mask" },
+			 { "BM", "BM", "int", "int", "BB" },
+			 { "", "", "0", "0", "" },
+			 "BM"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::interpolate_bitmap,
+			 "interpolate",
+			 { "orig1", "orig2", "x" },
+			 { "BM", "BM", "float" },
+			 { "", "", "0.0" },
+			 "BM"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::repeat_bitmap,
+			 "repeat",
+			 { "orig1", "x_count", "y_xount" },
+			 { "BM", "int", "int" },
+			 { "", "1", "1" },
+			 "BM"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::world_from_bitmap,
+			 "world",
+			 { "f", "int_bm", "dx", "dy" },
+			 { "std::function<BM(int>", "BM", "int", "int" },
+			 { "", "", "100", "100" },
+			 "BM"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::flip_x,
+			 "flip_x",
+			 { "orig" },
+			 { "BM" },
+			 { "" },
+			 "BM"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::flip_y,
+			 "flip_y",
+			 { "orig" },
+			 { "BM" },
+			 { "" },
+			 "BM"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::gradient,
+			 "gradient",
+			 { "pos_1", "pos_2", "color_1", "color_2", "sx", "sy" },
+			 { "PT",    "PT",    "unsigned int", "unsigned int", "int", "int" },
+			 { "ev.point_api.point(0.0,0.0,0.0)", "ev.point_api.point(0.0, 100.0, 0.0)", "0xffffffff", "0xff888888", "100", "100" },
+			 "BM"));
+  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::chessboard,
+			 "chessboard",
+			 { "tile_sx", "tile_sy", "count_x", "count_y", "color_1", "color_2" },
+			 { "int", "int", "int", "int", "unsigned int", "unsigned int" },
+			 { "10", "10", "8", "8", "0xffffffff", "0xff888888" },
+			 "BM"));
+ 
+
+  return vec;
+}
+std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = bitmapapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+
+GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector<GameApiItem*> vec, GameApi::Ft font, GameApi::Ft font2)
+{
+  std::vector<std::string> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiItem *item = vec[i];
+      vec2.push_back(item->Name(i));
+    }
+  GameApi::W w = gui.list_item_opened(100, label, font, vec2, font2);
+  return w;
+}
+GameApi::W GameApi::GuiApi::bitmapapi_functions_list_item(Ft font1, Ft font2)
+{
+  return functions_widget(*this, "BitmapApi", bitmapapi_functions(), font1, font2);
+}
+GameApiModule load_gameapi(std::string filename)
+{
+  GameApiModule mod;
+  std::ifstream ss(filename.c_str());
+  std::string func_name;
+  while(ss >> func_name)
+    {
+      GameApiFunction f;
+      f.function_name = func_name;
+      std::string line;
+      std::getline(ss,line); // eat the previous line
+      std::getline(ss,line);
+      std::cout << "LINE1: " << line << std::endl;
+      std::stringstream ss2(line);
+      std::string param_name;
+      while(ss2>>param_name) {
+	f.param_names.push_back(param_name);
+      }
+      std::getline(ss,line);
+      std::cout << "LINE2: " << line << std::endl;
+      std::stringstream ss3(line);
+      std::string param_type;
+      while(ss3>>param_type) {
+	f.param_types.push_back(param_type);
+      }
+      while(ss.peek()=='(')
+	{
+	  GameApiLine g_line;
+	  std::getline(ss,line);
+	  std::cout << "LINE3: " << line << std::endl;
+	  std::stringstream ss4(line);
+	  char c;
+	  int x, y;
+	  ss4 >> c; // '('
+	  ss4 >> x;
+	  ss4 >> c; // ','
+	  ss4 >> y;
+	  ss4 >> c; // ')'
+	  std::string mod_name;
+	  ss4 >> mod_name;
+	  std::string uid;
+	  ss4 >> uid;
+	  g_line.x = x;
+	  g_line.y = y;
+	  g_line.uid = uid;
+	  g_line.module_name = mod_name;
+	  std::string name_value;
+	  while(ss4>>name_value)
+	    {
+	      GameApiParam p;
+	      //int ii = 0;
+	      //std::cout << name_value << std::endl;
+	      int s = name_value.size();
+	      int i = 0;
+	      for(;i<s;i++) { if (name_value[i]==':') break; }
+	      p.param_name = name_value.substr(0, std::max(i,0));
+	      p.value = name_value.substr(i+1, s-i-1);
+	      //std::cout << "Name: " << p.param_name << " Value: " << p.value << std::endl;
+	      g_line.params.push_back(p);
+	    }
+	  f.lines.push_back(g_line);
+	} 
+      mod.funcs.push_back(f);
+    }
+  return mod;
+}
+
+void save_gameapi(const GameApiModule &mod, std::string filename)
+{
+  std::ofstream ss(filename.c_str());
+
+
+  int s = mod.funcs.size();
+  for(int i=0;i<s;i++)
+    {
+      const GameApiFunction &func = mod.funcs[i];
+      ss << func.function_name << std::endl;
+      int s2 = func.param_names.size();
+      for(int j=0;j<s2;j++)
+	{
+	  std::string s = func.param_names[j];
+	  ss << s;
+	  if (j!=s2-1) ss << " ";
+	}
+      ss << std::endl;
+      int s3 = func.param_types.size();
+      for(int jj=0;jj<s3;jj++)
+	{
+	  std::string s = func.param_types[jj];
+	  ss << s;
+	  if (jj!=s3-1) ss << " ";
+	}
+      ss << std::endl;
+      int s4 = func.lines.size();
+      for(int k=0;k<s4;k++)
+	{
+	  const GameApiLine &line = func.lines[k];
+	  ss << '(' << line.x << "," << line.y << ')' << line.module_name << " " << line.uid;
+	  int s = line.params.size();
+	  if (s!=0) ss << " ";
+	  for(int i=0;i<s;i++)
+	    {
+	      const GameApiParam &p = line.params[i];
+	      std::string name = p.param_name;
+	      std::string value = p.value;
+	      ss << name << ":" << value;
+	      if (i!=s-1) ss << " ";
+	    }
+	  ss << std::endl;
+	}
+    }
+}
+void GameApi::WModApi::save(GameApi::WM wm, std::string filename)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[wm.id];
+  save_gameapi(*mod, filename);
+}
+
+GameApi::WM GameApi::WModApi::load(std::string filename)
+{
+  GameApiModule mod = load_gameapi(filename);
+  GameApiModule *mod2 = new GameApiModule(mod);
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+
+  env->gameapi_modules.push_back(mod2);
+  GameApi::WM wm;
+  wm.id = env->gameapi_modules.size()-1;
+  return wm;
+}
+std::vector<std::string> reduce_list_to_types_only(std::vector<std::string> type_names)
+{
+  std::vector<std::string> ret;
+  int s = type_names.size();
+  for(int i=0;i<s;i++)
+    {
+      std::string name = type_names[i];
+      if (name[0]>='A' && name[0]<'Z' && name.size()<4)
+	{
+	  ret.push_back(name);
+	}
+    }
+  return ret;
+}
+void GameApi::WModApi::update_lines_from_canvas(W canvas, WM mod2, int id)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+
+  GuiWidget *wid = find_widget(e, canvas);
+  Point2d canvas_pos = wid->get_pos();
+  CanvasWidget *can = dynamic_cast<CanvasWidget*>(wid);
+  if (!can) return;
+  int s = func->lines.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiLine *line = &func->lines[i]; 
+      GuiWidget *w = can->find_widget(line->uid);
+      Point2d pos = w->get_pos();
+      line->x = int(pos.x-canvas_pos.x);
+      line->y = int(pos.y-canvas_pos.y);
+    }
+}
+GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, Ft font, std::string func_name)
+{
+  std::vector<GameApiItem*> functions = bitmapapi_functions();
+
+  int s = functions.size();
+  int i = 0;
+  for(;i<s;i++)
+    {
+      GameApiItem *item = functions[i];
+      std::string name = item->Name(0);
+      if (func_name == name) break;
+    }
+  GameApiItem *item = functions[i];
+  std::string return_type = item->ReturnType(0);
+  std::vector<std::string> param_types;
+  int sss = item->ParamCount(0);
+  for(int k=0;k<sss;k++)
+    {
+      param_types.push_back(item->ParamType(0,k));
+    }
+  std::vector<std::string> param_types2 = reduce_list_to_types_only(param_types);
+  W node = gui.canvas_item_gameapi_node(100,100, func_name, param_types2, return_type, font);
+  return node;
+}
+void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, Ft font)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+  std::vector<GameApiItem*> functions = bitmapapi_functions();
+  int s = func->lines.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiLine *line = &func->lines[i];
+      int ss = functions.size();
+      int j = 0;
+      for(;j<ss;j++)
+	{
+	  GameApiItem* item = functions[j];
+	  if (item->Name(0) == line->module_name) break;
+	}
+      GameApiItem *item = functions[j];
+      std::vector<std::string> param_types;
+      int sss = item->ParamCount(0);
+      for(int k=0;k<sss;k++)
+	{
+	  param_types.push_back(item->ParamType(0,k));
+	}
+      std::vector<std::string> param_types2 = reduce_list_to_types_only(param_types);
+      std::string return_type = item->ReturnType(0);
+
+      W node = gui.canvas_item_gameapi_node(100,100, line->module_name, param_types2, return_type, font);
+      W node2 = gui.mouse_move(node, 0, 0, gui.size_x(node), 20);
+      gui.set_id(node2, line->uid);
+      gui.canvas_item(canvas, node2, line->x, line->y);
+    }
+}
+
+class InsertWidget : public GuiWidgetForward
+{
+public:
+  InsertWidget(GameApi::EveryApi &ev,GuiWidget *w, std::function<void(int,int)> f) : GuiWidgetForward(ev, { w }), f(f) { activated = true;  state=false; }
+  void activate() { activated = true; }
+  void deactivate() { activated = false; }
+  void update(Point2d mouse_pos, int button)
+  {
+    GuiWidgetForward::update(mouse_pos, button);
+    if (activated)
+      {
+	set_pos(mouse_pos);
+	
+	if (!state && button==-1)
+	  {
+	    state=true;
+	  }
+	if (button==0 && state)
+	  {
+	    f(int(mouse_pos.x), int(mouse_pos.y));
+	    state = false;
+	  }
+      }
+  }
+  void render()
+  {
+    if (activated)
+      {
+	vec[0]->render();
+      }
+  }
+private:
+  bool activated;
+  bool state;
+  std::function<void(int,int)> f;
+};
+
+GameApi::W GameApi::GuiApi::insert_widget(W item, std::function<void(int,int)> f)
+{
+  GuiWidget *w = find_widget(e, item);
+  return add_widget(e, new InsertWidget(ev,w,f));
 }

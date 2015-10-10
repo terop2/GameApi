@@ -683,12 +683,12 @@ ShaderFile::ShaderFile()
 "//F: texture\n"
 "#version 100\n"
 "//precision highp float;\n"
-"uniform sampler2D texture;\n"
+"uniform sampler2D tex;\n"
 "attribute vec2 ex_TexCoord;\n"
     //" vec4 out_Color;\n"
 "void main(void)\n"
 "{\n"
-"   gl_FragColor = texture2D(texture, ex_TexCoord);\n"
+"   gl_FragColor = texture2D(tex, ex_TexCoord);\n"
   "}\n";
 #else
   std::string s =

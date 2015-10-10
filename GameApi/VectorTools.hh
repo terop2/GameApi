@@ -524,6 +524,8 @@ public:
 
   static Color Interpolate(const Color &aVec, const Color &aVec2, float aVal)
   {
+    if (aVal < 0.0) aVal = 0.0;
+    if (aVal > 1.0) aVal = 1.0;
     Color v;
     v.r = int(float(aVec.r)*(1.0-aVal) + float(aVec2.r)*aVal);
     v.g = int(float(aVec.g)*(1.0-aVal) + float(aVec2.g)*aVal);

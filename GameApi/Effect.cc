@@ -319,6 +319,8 @@ void TexturePlugin::Init()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sizex, sizey, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf.buffer);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 }
 TexturePlugin::~TexturePlugin()
@@ -2935,6 +2937,11 @@ void ArrayRender::AllocTexture(int count)
   int texcount = count;
   texture = new int[texcount];
   glGenTextures(texcount, (GLuint*)&texture[0]);
+  GLenum e = glGetError();
+  if (e!=GL_NO_ERROR)
+    {
+      std::cout << "ArrayRender::AllocTexture error!" << e << std::endl;
+    }
   texture_count = texcount;
   textures = new BufferRef*[count];
 }
@@ -2950,14 +2957,27 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
 {
   //std::cout << "UpdateTexture " << num << std::endl;
   glActiveTexture(GL_TEXTURE0+num);
+  GLenum e = glGetError();
+  if (e!=GL_NO_ERROR)
+    {
+      std::cout << "ArrayRender::UpdateTexture1 error!" << e << std::endl;
+    }
   tex.GenTexture(num);
   BufferRef ref = tex.TextureBuf(num);
   int sizex = ref.width;
   int sizey = ref.height;
   glBindTexture(GL_TEXTURE_2D, texture[num]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sizex, sizey, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
+  GLenum e2 = glGetError();
+  if (e2!=GL_NO_ERROR)
+    {
+      std::cout << "ArrayRender::UpdateTexture2 error!" << e2 << std::endl;
+    }
+
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 }
@@ -3152,7 +3172,7 @@ void ArrayRender::Prepare()
 
   if (quads) {
     int count = 0;
-    std::cout << "Vertex Array Size2: " << vertex_array_size << std::endl;
+    //std::cout << "Vertex Array Size2: " << vertex_array_size << std::endl;
     for(int i=0;i<vertex_array_size/(4*3);i++)
       {
 	q_vertex_array[count+0*3+0] = vertex_array[i*4*3+0*3+0];
@@ -3238,7 +3258,7 @@ void ArrayRender::Prepare()
   } else
     {
     int count = 0;
-    std::cout << "Vertex Array Size: " << vertex_array_size << std::endl;
+    //std::cout << "Vertex Array Size: " << vertex_array_size << std::endl;
     for(int i=0;i<vertex_array_size;i++) {
       q_vertex_array[i*3+0] = vertex_array[i*3+0];
       q_vertex_array[i*3+1] = vertex_array[i*3+1];
@@ -4224,6 +4244,8 @@ void VBOObjects::UpdateTexture(MeshTextures &tex, int frame, int pos)
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sizex, sizey, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 }

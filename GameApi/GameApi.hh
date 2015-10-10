@@ -109,8 +109,10 @@ using std::placeholders::_9;
   struct TBUF { int id; };
   struct SFO { int id; };
   struct W { int id; };
+  struct WM { int id; };
   //template<class T>
   //struct E { int id; };
+
 
 
   template<class P, class R>
@@ -211,6 +213,7 @@ public:
 	IMPORT void preparesprite(BM bm, int bbm_choose = -1);
 
 	IMPORT VA create_vertex_array(BM bm);
+        IMPORT void update_vertex_array(VA va, BM bm);
         IMPORT void clipping_sprite(VA va, int sx, int sy, float tex_l, float tex_t, float tex_r, float teb_b);
 	IMPORT void render_sprite_vertex_array(VA va);
 
@@ -679,6 +682,7 @@ public:
 		   float start_y, float end_y,
 		   float start_z, float end_z,
 		   float r);
+  IMPORT SFO texture(SFO obj);
   IMPORT SFO texture_box(float start_x, float end_x,
   			 float start_y, float end_y,
   			 float start_z, float end_z);
@@ -728,6 +732,7 @@ public:
   W icon(BM bitmap);
   W gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int colot_1, unsigned int color_2);
   W button(int sx, int sy, unsigned int color_1, unsigned int color_2);
+  W mouse_move(W widget, int area_x, int area_y, int area_width, int area_height);
   W or_elem(W w1, W w2);
   W highlight(int sx, int sy);
   W margin(W item, int left, int top, int right, int bottom);
@@ -740,6 +745,13 @@ public:
   W scrollbar_y(int sx, int sy, int area_y);
   W scrollbar_x(int sx, int sy, int area_x);
   W scroll_area(W orig, int sx, int sy);
+  W waveform(std::function<float (float)> f, float start_range, float end_range, float min_value, float max_value, int sx, int sy, unsigned int true_color, unsigned int false_color);
+  W canvas(int sx, int sy);
+  int canvas_item(W canvas, W item, int x, int y);
+  void del_canvas_item(W canvas, int id);
+  W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, Ft font);
+  W list_item_title(int sx, std::string label, Ft font);
+  W list_item_opened(int sx, std::string label, Ft font, std::vector<std::string> subitems, Ft font2);
   W list_item(BM icon, std::string label, int sx, int sy);
   W list(W *array, int size, int sx, int sy);
   W dialog_item(std::string text, BM icon, int sx, int sy);
@@ -747,6 +759,12 @@ public:
   W button_with_text(std::string label);
   W button_with_icon(BM bitmap);
   W opengl_wrapper(W widget);
+
+  W bitmapapi_functions_list_item(Ft font1, Ft font2);
+  std::string bitmapapi_functions_item_label(int i);
+  W insert_widget(W item, std::function<void(int,int)> f);
+  void insert_widget_activate(W w, bool b);
+
   void set_pos(W w, float px, float py);
   void set_size(W ow, float sx, float sy);
   void update(W w, PT mouse_cursor_pos, int button);
@@ -755,12 +773,29 @@ public:
   void select_item(W w, int item);
   float dynamic_param(W w, int id);
   void set_dynamic_param(W w, int id, float val);
+  std::string get_id(W w);
+  void set_id(W w, std::string id);
+  int num_childs(W w);
+  W get_child(W w, int i);
   int size_x(W w);
   int size_y(W w);
 private:
   Env &e;
   EveryApi &ev;
   SH sh;
+};
+
+class WModApi
+{
+public:
+  WModApi(Env &e) : e(e) { }
+  WM load(std::string filename);
+  void save(WM mod, std::string ilename);
+  void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, Ft font);
+  void update_lines_from_canvas(W canvas, WM mod, int id);
+  W inserted_widget(GuiApi &gui, WM mod2, int id, Ft font, std::string func_name);
+private:
+  Env &e;
 };
 
 class FloatVolumeApi
@@ -1054,6 +1089,7 @@ public:
   IMPORT void prepare(P p, int bbm_choose = -1);
   IMPORT void render(P p, int choose, float x, float y, float z);
   
+  IMPORT void update_vertex_array(VA va, P p, bool keep=false);
   IMPORT VA create_vertex_array(P p, bool keep=false); // slow
   IMPORT void render_vertex_array(VA va); // fast
   //IMPORT int access_point_count(VA va, bool triangle);
@@ -1523,8 +1559,8 @@ public:
 			PT bTL, PT bTR, PT bBL, PT bBR,
 			PT fTL, PT fTR, PT fBL, PT fBR);
 
-	IMPORT LLA prepare(LI l);
-
+  IMPORT LLA prepare(LI l);
+  IMPORT void update(LLA la, LI l);
   //IMPORT int line_count(LLA l);
   //      IMPORT float *line_access(LLA lines, int line, bool b);
   //IMPORT unsigned int *color_access(LLA lines, int line, bool b);
@@ -1786,7 +1822,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -1823,6 +1859,7 @@ struct EveryApi
   SampleCollectionApi sample_api;
   TrackerApi tracker_api;
   ShaderModuleApi sh_api;
+  WModApi mod_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);

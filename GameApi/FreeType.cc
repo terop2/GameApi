@@ -224,7 +224,8 @@ int FontGlyphBitmap::SizeY() const
 int FontGlyphBitmap::Map(int x, int y) const
 {
 #ifndef EMSCRIPTEN
-
+  if (x<0 || x>=SizeX() || y<0 || y>=SizeY())
+    return 0;
   return (int)priv->face->glyph->bitmap.buffer[x+y*priv->face->glyph->bitmap.pitch];
 #endif
 }

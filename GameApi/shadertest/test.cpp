@@ -2,6 +2,7 @@
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif
+#include <fstream>
 
 using namespace GameApi;
 
@@ -44,6 +45,14 @@ void iter(void *data)
 #endif
 }
 int main() {
+  {
+    std::ifstream ss("test.txt");
+  std::string s;
+  while(ss>>s) {
+    std::cout << s << std::endl;
+  }
+  }
+
   Env e;
   EveryApi ev(e);
 
@@ -186,7 +195,7 @@ int main() {
     // ev.mainloop_api.delay(10);
   }
 #else
-  emscripten_set_main_loop_arg(iter, (void*)&envi, 30,1);
+  emscripten_set_main_loop_arg(iter, (void*)&envi, 0,1);
 #endif
 
 

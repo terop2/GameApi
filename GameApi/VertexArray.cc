@@ -312,6 +312,15 @@ void VertexArraySet::push_texcoord(int id, int num, Point2d *points)
 #endif
     }
 }
+VertexArraySet::~VertexArraySet()
+{
+    std::map<int,Polys*>::iterator it = m_set.begin();
+    for(;it!=m_set.end();it++)
+      {
+	Polys *ptr = (*it).second;
+	delete ptr;
+      }
+}
 void VertexArraySet::free_memory()
 {
 #if 1

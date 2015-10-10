@@ -43,14 +43,14 @@ void iter(void *data)
   Envi &envi = *(Envi*)data;
   envi.f = envi.ev->mainloop_api.get_time()/1000.0;
 
-    envi.ev->fbo_api.bind_fbo(envi.fbo);
+  //envi.ev->fbo_api.bind_fbo(envi.fbo);
     envi.ev->mainloop_api.clear();
     envi.ev->shader_api.use(envi.sh);
     envi.ev->shader_api.set_var(envi.sh, "time", envi.f);
     envi.poly->render();
-    envi.ev->fbo_api.bind_screen(800,600);
-    envi.ev->mainloop_api.clear();    
-    envi.poly2->render();
+    //envi.ev->fbo_api.bind_screen(800,600);
+    //envi.ev->mainloop_api.clear();    
+    //envi.poly2->render();
 
     //envi.ev->mainloop_api.fpscounter();
     // swapbuffers
@@ -195,21 +195,21 @@ int main() {
   poly.prepare();
   float f = 0.0;
 
-  FBO fbo = ev.fbo_api.create_fbo(800,600);
-  ev.fbo_api.config_fbo(fbo);
+  //FBO fbo = ev.fbo_api.create_fbo(800,600);
+  // ev.fbo_api.config_fbo(fbo);
 
-  TXID txid = ev.fbo_api.tex_id(fbo);
+  //TXID txid = ev.fbo_api.tex_id(fbo);
 
-  PolygonObj poly2(ev, p3, sh2);
-  poly2.bind_texture(0, txid);
-  poly2.prepare();
+  //PolygonObj poly2(ev, p3, sh2);
+  //poly2.bind_texture(0, txid);
+  //poly2.prepare();
 
 
 
   Envi envi;
-  envi.fbo = fbo;
+  //envi.fbo = fbo;
   envi.poly = &poly;
-  envi.poly2 = &poly2;
+  // envi.poly2 = &poly2;
   envi.f = f ;
   envi.sh = sh;
   envi.ev = &ev;
@@ -221,7 +221,7 @@ int main() {
     // ev.mainloop_api.delay(10);
   }
 #else
-  emscripten_set_main_loop_arg(iter, (void*)&envi, 60,1);
+  emscripten_set_main_loop_arg(iter, (void*)&envi, 0,1);
 #endif
 
 

@@ -59,6 +59,9 @@
 #include "KeyFrameEditor.hh"
 #include "Parser.hh"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #pragma comment (lib, "glew32s.lib") 
 
 BufferRef CopyFromSDLSurface(SDL_Surface *surf);
@@ -428,6 +431,8 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
       //SDL_GL_SetSwapInterval(int interval);
     }
 
+  //IMG_Init(IMG_INIT_JPG|IMG_INIT_PNG);
+
   //glEnable(GL_DEBUG_OUTPUT_SYNCRONOUS);
   //glDebugMessageCallback(func, 0);
   //gluint unusedids = 0;
@@ -451,7 +456,7 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
 #endif
   glEnable(GL_COLOR_MATERIAL);
   glEnable(GL_LIGHT0);
-  glEnable(GL_MULTISAMPLE_ARB);
+  //glEnable(GL_MULTISAMPLE_ARB);
   
 
   //glEnable(GL_LIGHT1);
@@ -598,7 +603,7 @@ SDL_Surface *InitSDL(int scr_x, int scr_y, bool vblank, bool antialias)
 
   glEnable(GL_COLOR_MATERIAL);
   glEnable(GL_LIGHT0);
-  glEnable(GL_MULTISAMPLE_ARB);
+  //glEnable(GL_MULTISAMPLE_ARB);
   
 
   //glEnable(GL_LIGHT1);
@@ -1381,7 +1386,28 @@ void PreCalcExecute(Render &rend, FrameAnim &f, float duration, int numframes)
 #undef LoadImage
 BufferRef LoadImage(std::string filename, bool &success)
 {
-  SDL_Surface *surf = IMG_Load(filename.c_str());
+  //SDL_Surface *surf = IMG_Load(filename.c_str());
+  std::vector<unsigned char> mem;
+  ifstream ss(filename.c_str(), ios_base::binary|ios_base::in);
+  char c;
+  while(ss.get(c))
+    {
+      mem.push_back((unsigned char)c);
+    }
+  std::cout << "FileSize: " << mem.size() << std::endl;
+  
+  int x,y;
+  int comp;
+  stbi_uc * ptr = stbi_load_from_memory(&mem[0], mem.size(), &x, &y, &comp, 4);
+  std::cout << "ImageSize: " << x << " " << y << " " << comp << std::endl;
+  BufferRef ref;
+  ref.buffer = (unsigned int *)ptr;
+  ref.width = x;
+  ref.height = y;
+  ref.ydelta = x;
+#if 0
+  //SDL_RWops *src = SDL_RWFromMem(&mem[0], mem.size());
+  //SDL_Surface *surf = IMG_Load_RW(src, 0);
   if (!surf) 
     {
       success = false;
@@ -1413,6 +1439,7 @@ BufferRef LoadImage(std::string filename, bool &success)
   SDL_Surface *surf2 = SDL_ConvertSurface(surf, &format, 0);
   BufferRef ref = CopyFromSDLSurface(surf2);
   SDL_FreeSurface(surf);  
+#endif
   //SDL_FreeSurface(surf2);  
   success = true;
   return ref;
