@@ -119,7 +119,7 @@ void iter(void *arg)
       W w = env->gui->get_child(env->array, sel);
       int sel2 = env->gui->chosen_item(w);
       std::cout << "Chosen: " << sel2 << std::endl;
-      if (sel2>=0)
+      if (sel2>0)
 	{
 	  std::string name = env->gui->bitmapapi_functions_item_label(sel2-1);
 	  std::cout << "Chosen label: " << name << std::endl;
@@ -170,8 +170,11 @@ int main() {
 
   Envi env;
 
+  int screen_x = 1200;
+  int screen_y = 900;
+
   // initialize window
-  ev.mainloop_api.init_window();
+  ev.mainloop_api.init_window(screen_x,screen_y);
 
   // shader initialization
   ev.shader_api.load_default();
@@ -180,7 +183,7 @@ int main() {
   Ft font2 = ev.font_api.newfont("FreeSans.ttf", 10,13);
 
   // rest of the initializations
-  ev.mainloop_api.init(sh);
+  ev.mainloop_api.init(sh, screen_x,screen_y);
   ev.mainloop_api.alpha(true);
   
   GuiApi gui(e, ev, sh);
@@ -221,9 +224,9 @@ int main() {
       items.push_back(gui.bitmapapi_functions_list_item(font, font2));
     }
   W array = gui.array_y(&items[0], items.size(), 15);
-  W scroll_area = gui.scroll_area(array, gui.size_x(array), 600-30);
+  W scroll_area = gui.scroll_area(array, gui.size_x(array), screen_y-30, screen_y);
 
-  W txt2 = gui.scrollbar_y(20, 600-30, gui.size_y(array));
+  W txt2 = gui.scrollbar_y(20, screen_y-30, gui.size_y(array));
   gui.set_pos(txt2, gui.size_x(scroll_area), 30);
 
   gui.set_pos(scroll_area, 0.0, 30.0);
@@ -238,7 +241,7 @@ int main() {
   //gui.set_pos(gameapi_2, 200.0, 200.0);
 
   int sx=1638, sy = 1638;
-  int screen_x = 800-140, screen_y = 600-30;
+  int screen2_x = screen_x-140, screen2_y = screen_y-30;
 
   W canvas = gui.canvas(16384,16384);
   //gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), 100,100);
@@ -247,12 +250,12 @@ int main() {
   //  gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), i*30, i*30);
   ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, font);
 
-  W canvas_area = gui.scroll_area(canvas, screen_x-20, screen_y-20);
-  W scrollbar_y = gui.scrollbar_y(20, screen_y-20, sy);
-  W scrollbar_x = gui.scrollbar_x(screen_x-20, 20, sx); 
+  W canvas_area = gui.scroll_area(canvas, screen2_x-20, screen2_y-20, screen_y);
+  W scrollbar_y = gui.scrollbar_y(20, screen2_y-20, sy);
+  W scrollbar_x = gui.scrollbar_x(screen2_x-20, 20, sx); 
   gui.set_pos(canvas_area, 140, 30);
-  gui.set_pos(scrollbar_x, 140, 600-20);
-  gui.set_pos(scrollbar_y, 800-20, 30);
+  gui.set_pos(scrollbar_x, 140, screen_y-20);
+  gui.set_pos(scrollbar_y, screen_x-20, 30);
 
   
 

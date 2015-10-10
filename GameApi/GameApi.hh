@@ -744,7 +744,7 @@ public:
   W submenu(W manu, int menu_pane_id, std::vector<std::string> labels, Ft font);
   W scrollbar_y(int sx, int sy, int area_y);
   W scrollbar_x(int sx, int sy, int area_x);
-  W scroll_area(W orig, int sx, int sy);
+  W scroll_area(W orig, int sx, int sy, int screen_y);
   W waveform(std::function<float (float)> f, float start_range, float end_range, float min_value, float max_value, int sx, int sy, unsigned int true_color, unsigned int false_color);
   W canvas(int sx, int sy);
   int canvas_item(W canvas, W item, int x, int y);
