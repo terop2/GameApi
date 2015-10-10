@@ -733,9 +733,13 @@ public:
   W gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int colot_1, unsigned int color_2);
   W button(int sx, int sy, unsigned int color_1, unsigned int color_2);
   W mouse_move(W widget, int area_x, int area_y, int area_width, int area_height);
+  W click_area(W widget, int area_x, int area_y, int area_width, int area_height);
   W or_elem(W w1, W w2);
   W highlight(int sx, int sy);
+  W highlight(W wid);
   W margin(W item, int left, int top, int right, int bottom);
+  W right_align(W item, int sx);
+  W center_align(W item, int sx);
   W layer(W w1, W w2);
   W array_y(W *arr, int size, int y_gap);
   W array_x(W *arr, int size, int x_gap);
@@ -759,7 +763,21 @@ public:
   W button_with_text(std::string label);
   W button_with_icon(BM bitmap);
   W opengl_wrapper(W widget);
-
+  W string_editor(std::string allowed_chars, std::string &target, Ft font);
+  W float_editor(float &target, Ft font);
+  W int_editor(int &target, Ft font);
+  W point_editor(float &x, float &y, float &z, Ft font);
+  W color_editor(std::string &col, Ft font);
+  struct EditTypes
+  {
+    std::string s;
+    int i_value;
+    float f_value;
+    float f_x, f_y, f_z;
+    std::string color;
+  };
+  W generic_editor(EditTypes &target, Ft font, std::string type);
+  W edit_dialog(std::vector<std::string> labels, std::vector<EditTypes*> vec, Ft font, std::vector<std::string> types, W &cancel_button, W &ok_button);
   W bitmapapi_functions_list_item(Ft font1, Ft font2);
   std::string bitmapapi_functions_item_label(int i);
   W insert_widget(W item, std::function<void(int,int)> f);
@@ -767,7 +785,7 @@ public:
 
   void set_pos(W w, float px, float py);
   void set_size(W ow, float sx, float sy);
-  void update(W w, PT mouse_cursor_pos, int button);
+  void update(W w, PT mouse_cursor_pos, int button, int ch);
   void render(W w);
   int chosen_item(W w);
   void select_item(W w, int item);
