@@ -15750,7 +15750,7 @@ private:
 class ScrollAreaWidget : public GuiWidgetForward
 {
 public:
-  ScrollAreaWidget(GameApi::EveryApi &ev, GameApi::SH sh, GuiWidget *orig, int sx, int sy) : GuiWidgetForward(ev, { orig }), sh(sh), orig(orig), sx(sx), sy(sy) { firsttime = true; Vector2d v = { float(sx),float(sy)}; size = v; top=0.0; left=0.0; 
+  ScrollAreaWidget(GameApi::EveryApi &ev, GameApi::SH sh, GuiWidget *orig, int sx, int sy, int screen_y) : GuiWidgetForward(ev, { orig }), sh(sh), orig(orig), sx(sx), sy(sy), screen_y(screen_y) { firsttime = true; Vector2d v = { float(sx),float(sy)}; size = v; top=0.0; left=0.0; 
     
 }
   void set_pos(Point2d pos)
@@ -15787,7 +15787,7 @@ public:
   void render()
   {
     glEnable(GL_SCISSOR_TEST);
-    glScissor(pos.x, 600-pos.y-size.dy, size.dx, size.dy);
+    glScissor(pos.x, screen_y-pos.y-size.dy, size.dx, size.dy);
     vec[0]->render();
     glDisable(GL_SCISSOR_TEST);
   }
@@ -15813,6 +15813,7 @@ private:
   GuiWidget *orig;
   int sx,sy;
   float top, left;
+  int screen_y;
 };
 class OrElemGuiWidget : public GuiWidget
 {
@@ -15909,10 +15910,10 @@ GameApi::W GameApi::GuiApi::scrollbar_x(int sx, int sy, int area_x)
 {
   return add_widget(e, new ScrollBarX(ev,sh, sx,sy,area_x));
 }
-GameApi::W GameApi::GuiApi::scroll_area(W orig, int sx, int sy)
+GameApi::W GameApi::GuiApi::scroll_area(W orig, int sx, int sy, int screen_y)
 {
   GuiWidget *orig_1 = find_widget(e, orig);
-  return add_widget(e, new ScrollAreaWidget(ev, sh, orig_1, sx,sy));
+  return add_widget(e, new ScrollAreaWidget(ev, sh, orig_1, sx,sy, screen_y));
 }
 #if 0
 GameApi::W GameApi::GuiApi::canvas_scroll_area(int sx, int sy, int screen_x, int screen_y)
