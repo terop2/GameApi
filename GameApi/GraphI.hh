@@ -203,7 +203,7 @@ public:
   virtual Vector2d get_size() const=0;
   virtual void set_pos(Point2d pos)=0;
   virtual void set_size(Vector2d size)=0;
-  virtual void update(Point2d mouse_pos, int button, int ch)=0;
+  virtual void update(Point2d mouse_pos, int button, int ch, int type)=0;
   virtual void render()=0;
   virtual int render_to_bitmap()=0; // returns bitmap id
   virtual bool content_changed() const=0;

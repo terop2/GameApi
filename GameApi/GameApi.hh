@@ -809,7 +809,7 @@ public:
 
   void set_pos(W w, float px, float py);
   void set_size(W ow, float sx, float sy);
-  void update(W w, PT mouse_cursor_pos, int button, int ch);
+  void update(W w, PT mouse_cursor_pos, int button, int ch, int type);
   void render(W w);
   int chosen_item(W w);
   void select_item(W w, int item);
@@ -819,6 +819,8 @@ public:
   void set_id(W w, std::string id);
   int num_childs(W w);
   W get_child(W w, int i);
+  int pos_x(W w);
+  int pos_y(W w);
   int size_x(W w);
   int size_y(W w);
 private:
@@ -836,11 +838,15 @@ public:
   void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, Ft font);
   void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm);
   void update_lines_from_canvas(W canvas, WM mod, int id);
+  void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid);
   W inserted_widget(GuiApi &gui, WM mod2, int id, Ft font, std::string func_name);
   W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name);
   std::vector<std::string> types_from_function(WM mod, int id, std::string funcname);
   std::vector<std::string> labels_from_function(WM mod, int id, std::string funcname);
   std::vector<std::string*> refs_from_function(WM mod, int id, std::string funcname);
+  std::vector<std::pair<std::string,std::string> > defaults_from_function(std::string module_name);
+  void insert_to_mod(WM mod, int id, std::string modname, std::string uid, int x, int y, std::vector<std::pair<std::string, std::string> > params);
+  
 private:
   Env &e;
 };
