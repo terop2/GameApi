@@ -2937,11 +2937,13 @@ void ArrayRender::AllocTexture(int count)
   int texcount = count;
   texture = new int[texcount];
   glGenTextures(texcount, (GLuint*)&texture[0]);
+#if 0
   GLenum e = glGetError();
   if (e!=GL_NO_ERROR)
     {
       std::cout << "ArrayRender::AllocTexture error!" << e << std::endl;
     }
+#endif
   texture_count = texcount;
   textures = new BufferRef*[count];
 }
@@ -2957,23 +2959,26 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
 {
   //std::cout << "UpdateTexture " << num << std::endl;
   glActiveTexture(GL_TEXTURE0+num);
+#if 0
   GLenum e = glGetError();
   if (e!=GL_NO_ERROR)
     {
       std::cout << "ArrayRender::UpdateTexture1 error!" << e << std::endl;
     }
+#endif
   tex.GenTexture(num);
   BufferRef ref = tex.TextureBuf(num);
   int sizex = ref.width;
   int sizey = ref.height;
   glBindTexture(GL_TEXTURE_2D, texture[num]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sizex, sizey, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
+#if 0
   GLenum e2 = glGetError();
   if (e2!=GL_NO_ERROR)
     {
       std::cout << "ArrayRender::UpdateTexture2 error!" << e2 << std::endl;
     }
-
+#endif
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

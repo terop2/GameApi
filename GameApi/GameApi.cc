@@ -1,4 +1,4 @@
-        
+       
 #define SDL2_USED  
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
@@ -487,11 +487,13 @@ extern SDL_Window *sdl_window;
 
 EXPORT void GameApi::MainLoopApi::swapbuffers()
 {
+#if 0
   GLenum e = glGetError();
   if (e!=GL_NO_ERROR)
     {
       std::cout << "swapbuffers GL error: " << e << std::endl;
     }
+#endif
   //MainLoopPriv *p = (MainLoopPriv*)priv;
   //glLoadIdentity();
 #ifdef SDL2_USED
@@ -838,6 +840,19 @@ struct TBuffer
   TBuffer2 *buf; // 2d buffer
 };
 
+struct FontAtlasGlyphInfo
+{
+  int sx, sy;
+  int x,y;
+  int top;
+};
+struct FontAtlasInfo
+{
+  std::map<int, FontAtlasGlyphInfo> char_map;
+  int atlas_sx;
+  int atlas_sy;
+};
+
 struct EnvImpl
 {
   std::vector<Point> pt;
@@ -906,6 +921,7 @@ struct EnvImpl
   std::vector<ShaderModule*> shader_module;
   std::vector<GuiWidget*> widgets;
   std::vector<GameApiModule *> gameapi_modules;
+  std::vector<FontAtlasInfo*> font_atlas;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
 #ifndef EMSCRIPTEN
@@ -1433,8 +1449,22 @@ EXPORT GameApi::Env::~Env()
 }
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
+GameApi::FtA add_font_atlas(GameApi::Env &e, FontAtlasInfo *info)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->font_atlas.push_back(info);
+  GameApi::FtA ft;
+  ft.id = env->font_atlas.size()-1;
+  return ft;
+}
 GameApi::W add_widget(GameApi::Env &e, GuiWidget *w)
 {
+  if (!w)
+    {
+      std::cout << "add_widget failed" << std::endl;
+      assert(0);
+    }
+
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->widgets.push_back(w);
   GameApi::W wid;
@@ -2128,6 +2158,11 @@ GameApi::ST GameApi::EventApi::states(int count_states)
   st.id = env->state_ranges.size()-1;
   return st;
 }
+FontAtlasInfo *find_font_atlas(GameApi::Env &e, GameApi::FtA ft)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->font_atlas[ft.id];
+}
 ShaderModule *find_shader_module(GameApi::Env &e, GameApi::SFO sfo)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -2149,7 +2184,12 @@ std::string ToNum(float val)
 GuiWidget *find_widget(GameApi::Env &e, GameApi::W w)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->widgets[w.id];
+  int s = env->widgets.size();
+  if (w.id>=0 && w.id<s)
+    return env->widgets[w.id];
+  std::cout << "find_widget failed!" << std::endl;
+  assert(0);
+  return 0;
 }
 Samples* find_samples(GameApi::Env &e, GameApi::SM sm)
 {
@@ -3286,6 +3326,7 @@ public:
   virtual int SizeY() const { return sy; }
   virtual Color Map(int x, int y) const
   {
+    //std::cout << "gradient" << std::endl;
     Vector u = Point(x, y, 0.0)-Point(pos_1.x, pos_1.y, 0.0);
     Vector u_x = Point(pos_2.x, pos_2.y, 0.0)-Point(pos_1.x, pos_1.y, 0.0);
     float val = Vector::DotProduct(u, u_x);
@@ -3527,11 +3568,11 @@ EXPORT GameApi::BM GameApi::BitmapApi::newtilebitmap(int sx, int sy, int tile_sx
 
 BufferRef LoadImage(std::string filename, bool &success);
 
-EXPORT void GameApi::BitmapApi::savebitmap(BM bm, std::string filename)
-{
+EXPORT void GameApi::BitmapApi::savebitmap(BM bm, std::string filename, bool alpha)
+{  
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *bm2 = find_color_bitmap(handle);
-  PpmFile file(filename, *bm2);
+  PpmFile file(filename, *bm2, alpha);
   std::string pngcontents = file.Contents();
   std::ofstream filehandle(filename.c_str(), std::ios_base::out);
   filehandle << pngcontents;
@@ -3540,7 +3581,20 @@ EXPORT void GameApi::BitmapApi::savebitmap(BM bm, std::string filename)
 
 EXPORT GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
 {
+  // PPM FILE READING
+  PpmFileReader *file = new PpmFileReader(filename);
+  if (file->status()==true)
+    {
+      BitmapColorHandle *handle = new BitmapColorHandle;
+      handle->bm = file;
+      BM bm = add_bitmap(e, handle);
+      return bm;
+    }
+  delete file;
 
+
+
+  // OTHER FILES
   //ChessBoardBitmap *bmp = new ChessBoardBitmap(Color(255,0.0,0.0), Color(255,255,255), 8, 8, 30, 30);
   bool b = false;
   BufferRef img = LoadImage(filename, b);
@@ -3925,6 +3979,13 @@ EXPORT int GameApi::BitmapApi::intvalue(GameApi::BM orig, int x, int y)
 EXPORT int GameApi::BitmapApi::size_x(BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
+#ifdef EMSCRIPTEN
+  BitmapColorHandle *handle2 = static_cast<BitmapColorHandle*>(handle);
+  if (handle2)
+    return handle2->bm->SizeX();
+  return 0;
+#else
+
   BitmapColorHandle *handle2 = dynamic_cast<BitmapColorHandle*>(handle);
   BitmapIntHandle *handle3 = dynamic_cast<BitmapIntHandle*>(handle);
   BitmapArrayHandle *handle4 = dynamic_cast<BitmapArrayHandle*>(handle);
@@ -3941,10 +4002,19 @@ EXPORT int GameApi::BitmapApi::size_x(BM bm)
   if (handle6)
     return handle6->bm->SizeX();
   return 0;
+#endif
 }
 EXPORT int GameApi::BitmapApi::size_y(BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
+#ifdef EMSCRIPTEN
+  BitmapColorHandle *handle2 = static_cast<BitmapColorHandle*>(handle);
+  if (handle2)
+    return handle2->bm->SizeY();
+  return 0;
+#else
+
+
 
   BitmapColorHandle *handle2 = dynamic_cast<BitmapColorHandle*>(handle);
   BitmapIntHandle *handle3 = dynamic_cast<BitmapIntHandle*>(handle);
@@ -3962,7 +4032,7 @@ EXPORT int GameApi::BitmapApi::size_y(BM bm)
   if (handle6)
     return handle6->bm->SizeY();
   return 0;
-
+#endif
 }
 
 EXPORT unsigned int GameApi::BitmapApi::colorvalue(GameApi::BM orig, int x, int y)
@@ -7027,7 +7097,131 @@ EXPORT GameApi::BM GameApi::FontApi::glyph(GameApi::Ft font, long idx)
   env->deletes.push_back(std::shared_ptr<void>(cbm)); 
   BitmapColorHandle *chandle2 = new BitmapColorHandle;
   chandle2->bm = mbm;
- return add_bitmap(e,chandle2);
+  BM bm2 = add_bitmap(e,chandle2); 
+  //FB bm2_a = ev.float_bitmap_api.from_red(bm2);
+  //BM bm2_b = ev.float_bitmap_api.to_grayscale_color(bm2_a, 255,255,255,255, 0,0,0,0);
+  return bm2;
+}
+EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info(EveryApi &ev, Ft font, std::string chars, float sx, float sy, int y_delta)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  int s = chars.size();
+  int counter = 0;
+  int y = 0;
+  int x = 0;
+  FontAtlasInfo *info = new FontAtlasInfo;
+  int atlas_sx=0;
+  int atlas_sy=0;
+  for(int i=0;i<s;i++)
+    {
+      char ch = chars[i];
+      BM bm = glyph(font, ch);
+      int top = env->fonts[font.id].bm->bitmap_top(ch);
+      int xx = x;
+      int yy = y*y_delta;
+      int sx = ev.bitmap_api.size_x(bm);
+      int sy = ev.bitmap_api.size_y(bm);
+      FontAtlasGlyphInfo info2;
+      info2.sx = sx;
+      info2.sy = sy;
+      info2.x = xx;
+      info2.y = yy;
+      info2.top = top;
+
+      info->char_map[ch] = info2;
+      
+      x+=ev.bitmap_api.size_x(bm);      
+      if (atlas_sx < x) { atlas_sx = x; }
+      if (atlas_sy < y*y_delta + top + ev.bitmap_api.size_y(bm)) { atlas_sy = y*y_delta + top + ev.bitmap_api.size_y(bm); }
+
+      if (counter==10) { y++; counter=-1; x=0; }
+      counter++;
+    }
+  info->atlas_sx = atlas_sx;
+  info->atlas_sy = atlas_sy;
+  return add_font_atlas(e, info);
+}
+
+EXPORT GameApi::BM GameApi::FontApi::font_atlas(EveryApi &ev, Ft font, FtA atlas, float sx, float sy)
+{
+  FontAtlasInfo *info = find_font_atlas(e, atlas);
+  BM bg = ev.bitmap_api.newbitmap(info->atlas_sx, info->atlas_sy, 0x00000000);
+  std::map<int, FontAtlasGlyphInfo>::iterator i = info->char_map.begin();
+  for(;i!=info->char_map.end();i++)
+    {
+      std::pair<int,FontAtlasGlyphInfo> p = *i;
+      int ch = p.first;
+      BM bm = glyph(font, ch);
+      bg = ev.bitmap_api.blitbitmap(bg, bm, p.second.x, p.second.y+p.second.top);
+    }
+  return bg;
+}
+
+EXPORT GameApi::BM GameApi::FontApi::font_string_from_atlas(EveryApi &ev, FtA atlas, BM atlas_bm, const char *str, int x_gap)
+{
+  FontAtlasInfo *info = find_font_atlas(e, atlas);
+  //::EnvImpl *env = ::EnvImpl::Environment(&e);
+  int sz = strlen(str);
+  FontCharacterString<Color> *array = new FontCharacterString<Color>(Color(0.0,0.0,0.0,0.0), x_gap);
+  for(int i=0;i<sz;i++)
+    {
+      char ch = str[i];
+      FontAtlasGlyphInfo ii = info->char_map[ch];
+      BM bm = ev.bitmap_api.subbitmap(atlas_bm, ii.x, ii.y+ii.top, ii.sx,ii.sy);
+	//glyph(font, ch);
+      int top = ii.top; //env->fonts[font.id].bm->bitmap_top(ch);
+      BitmapHandle *handle = find_bitmap(e,bm);
+      Bitmap<Color> *col = find_color_bitmap(handle);
+      array->push_back(col, top);
+    }
+  BitmapColorHandle *chandle2 = new BitmapColorHandle;
+  chandle2->bm = array;
+  return add_bitmap(e,chandle2);
+}
+EXPORT GameApi::FtA GameApi::FontApi::load_atlas(std::string filename)
+{
+  FontAtlasInfo *info = new FontAtlasInfo;
+  std::ifstream ss(filename.c_str());
+  //char c;
+  ss >> info->atlas_sx >> info->atlas_sy;
+  int num;
+  while(ss >> num)
+    {
+      int sx;
+      int sy;
+      int x;
+      int y;
+      int top;
+      ss >> sx;
+      ss >> sy;
+      ss >> x;
+      ss >> y;
+      ss >> top;
+      FontAtlasGlyphInfo i;
+      i.sx = sx;
+      i.sy = sy;
+      i.x = x;
+      i.y = y;
+      i.top = top;
+      info->char_map[num] = i;
+    }
+  return add_font_atlas(e, info);
+}
+EXPORT void GameApi::FontApi::save_atlas(FtA atlas, std::string filename)
+{
+  FontAtlasInfo *info = find_font_atlas(e, atlas);
+  std::ofstream ss(filename.c_str());
+  ss << info->atlas_sx << " " << info->atlas_sy << std::endl;
+  std::map<int, FontAtlasGlyphInfo>::iterator i = info->char_map.begin();
+  for(;i!=info->char_map.end();i++)
+    {
+      std::pair<int,FontAtlasGlyphInfo> p = *i;
+      ss << p.first << std::endl;
+      ss << p.second.sx << " " << p.second.sy << std::endl;
+      ss << p.second.x << " " << p.second.y << std::endl;
+      ss << p.second.top << std::endl;
+    }
+  ss.close();
 }
 
 EXPORT GameApi::BM GameApi::FontApi::font_string(Ft font, const char *str, int x_gap)
@@ -7443,7 +7637,6 @@ bool range_select_color_area(int r, int g, int b,int a, void* dt)
 }
 EXPORT GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, int r_start, int r_end, int g_start, int g_end, int b_start, int b_end, int a_start, int a_end)
 {
-#ifndef EMSCRIPTEN
 
   RangeData data = { r_start, r_end, g_start, g_end, b_start, b_end, a_start, a_end };
   RangeData *dt2 = new RangeData;
@@ -7452,8 +7645,7 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color_area(BM bm, int r_
   using std::placeholders::_2;
   using std::placeholders::_3;
   using std::placeholders::_4;
-  return from_bitmaps_color_area(bm, std::bind(range_select_color_area, _1,_2,_3,_4,(void*)dt2));
-#endif
+  return from_bitmaps_color_area(bm, [dt2](int a,int b,int c,int d) { return range_select_color_area(a,b,c,d,(void*)dt2); } );  //, _1,_2,_3,_4,(void*)dt2));
 }
 class LineBoolBitmap : public Bitmap<bool>
 {
@@ -7597,7 +7789,6 @@ EXPORT float GameApi::FloatBitmapApi::floatvalue(FB bm, int x, int y)
 
 EXPORT GameApi::BB GameApi::BoolBitmapApi::rectangle(BB bg, float x, float y, float width, float height)
 {
-#ifndef EMSCRIPTEN
 
   Rectangle_data *d = new Rectangle_data;
   d->start_x = x;
@@ -7611,7 +7802,6 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::rectangle(BB bg, float x, float y, fl
   using std::placeholders::_2;
   using std::placeholders::_3;
   return or_bitmap(bg, function(std::bind(Rectangle_func,_1, _2,(void*)d), size_x(bg), size_y(bg)));
-#endif  
 }
 
 class BoolBitmapSprite : public Bitmap<bool>
@@ -14824,7 +15014,15 @@ EXPORT GameApi::SFO GameApi::ShaderModuleApi::grayscale_from_distance(SFO obj, S
 class GuiWidgetForward : public GuiWidget
 {
 public:
-  GuiWidgetForward(GameApi::EveryApi &ev, std::vector<GuiWidget*> vec) : ev(ev), vec(vec) { pos=Point2d::NewPoint(0.0, 0.0); size.dx=0.0; size.dy=0.0; current_selected_item=-1; }
+  GuiWidgetForward(GameApi::EveryApi &ev, std::vector<GuiWidget*> vec) : ev(ev), vec(vec) { pos=Point2d::NewPoint(0.0, 0.0); size.dx=0.0; size.dy=0.0; current_selected_item=-1; firsttime = 10;
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	GuiWidget *w = vec[i];
+	assert(w);
+      }
+
+  }
   virtual Point2d get_pos() const { return pos; }
   virtual Vector2d get_size() const { return size; }
   virtual void set_pos(Point2d new_pos) {
@@ -14853,16 +15051,24 @@ public:
     for(int i=0;i<s;i++)
       {
 	GuiWidget *w = vec[i];
-	w->update(mouse_pos, button,ch);
+	if (firsttime>0) 
+	  w->update(mouse_pos, button,ch);
 	
 	Point2d p = w->get_pos();
 	Vector2d s = w->get_size();
+	if (mouse_pos.x >= p.x-80 && mouse_pos.x < p.x+s.dx+80 &&
+	    mouse_pos.y >= p.y-80 && mouse_pos.y < p.y+s.dy+80)
+	  {
+	    w->update(mouse_pos, button,ch);
+	  }
 	if (mouse_pos.x >= p.x && mouse_pos.x < p.x+s.dx &&
 	    mouse_pos.y >= p.y && mouse_pos.y < p.y+s.dy)
 	  {
 	    selected_item = i;
 	  }
       }
+    if (firsttime>0)
+      firsttime--;
     if (button==0) {
       current_selected_item = selected_item;
     }
@@ -14934,6 +15140,7 @@ protected:
   Point2d pos;
   Vector2d size;
   int current_selected_item;
+  int firsttime;
 public:
   std::vector<GuiWidget *> vec;
 };
@@ -14943,9 +15150,10 @@ class TextGuiWidget : public GuiWidgetForward
 {
 public:
   TextGuiWidget(GameApi::EveryApi &ev, std::string label, GameApi::Ft font, GameApi::SH sh) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), label(label), font(font), sh(sh) { firsttime = true; 
-    Point2d p = { 0.0, 0.0 };
+    Point2d p = { -666.0, -666.0 };
     update(p, -1,-1);
-    set_pos(p);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
   }
   void update(Point2d mouse, int button, int ch)
   {
@@ -14979,14 +15187,60 @@ private:
   GameApi::BM rendered_bitmap;
   GameApi::VA rendered_bitmap_va;
 };
+
+class TextGuiWidgetAtlas : public GuiWidgetForward
+{
+public:
+  TextGuiWidgetAtlas(GameApi::EveryApi &ev, std::string label, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::SH sh, int x_gap) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), label(label), atlas(atlas), atlas_bm(atlas_bm), sh(sh), x_gap(x_gap) { firsttime = true; 
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1,-1);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
+  }
+  void update(Point2d mouse, int button, int ch)
+  {
+    if (firsttime)
+      {
+	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, label.c_str(), x_gap);
+	rendered_bitmap_va = ev.sprite_api.create_vertex_array(rendered_bitmap);
+	firsttime = false;
+      }
+    size.dx = ev.bitmap_api.size_x(rendered_bitmap);
+    size.dy = ev.bitmap_api.size_y(rendered_bitmap);
+  }
+  void render()
+  {
+    if (!firsttime)
+      {
+	Point2d p = get_pos();
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x,p.y,0.0));
+	ev.sprite_api.render_sprite_vertex_array(rendered_bitmap_va);
+      }
+  }
+  int render_to_bitmap()
+  {
+    return rendered_bitmap.id;
+  }
+private:
+  bool firsttime;
+  std::string label;
+  GameApi::FtA atlas;
+  GameApi::BM atlas_bm;
+  GameApi::SH sh;
+  GameApi::BM rendered_bitmap;
+  GameApi::VA rendered_bitmap_va;
+  int x_gap;
+};
+
 template<class T>
 class EditorGuiWidget : public GuiWidgetForward
 {
 public:
-  EditorGuiWidget(GameApi::EveryApi &ev, std::string allowed_chars, T &target, GameApi::Ft font, GameApi::SH sh) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), allowed_chars(allowed_chars), target(target), font(font), sh(sh) { firsttime = true; active=false; 
-    Point2d p = { 0.0, 0.0 };
+  EditorGuiWidget(GameApi::EveryApi &ev, std::string allowed_chars, T &target_m, GameApi::Ft font, GameApi::SH sh) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), allowed_chars(allowed_chars), target(target_m), font(font), sh(sh) { firsttime = true; active=false; 
+    Point2d p = { -666.0, -666.0 };
     update(p, -1,-1);
-    set_pos(p);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
   }
   void update(Point2d mouse, int button, int ch)
   {
@@ -15029,8 +15283,12 @@ public:
       }
 
     // note, spaces are not allowed.
-    std::stringstream ss2(label);
-    ss2 >> target;
+    if (active) {
+      //std::cout << "EDITOR UPDATES: " << label << std::endl;
+      std::stringstream ss2(label);
+      ss2 >> target;
+      //std::cout << "EDITOR UPDATES2: " << target << std::endl;
+    }
 
     if (firsttime || changed)
       {
@@ -15066,14 +15324,110 @@ private:
   bool active;
 };
 
+template<class T>
+class EditorGuiWidgetAtlas : public GuiWidgetForward
+{
+public:
+  EditorGuiWidgetAtlas(GameApi::EveryApi &ev, std::string allowed_chars, T &target_m, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::SH sh, int x_gap) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), allowed_chars(allowed_chars), target(target_m), atlas(atlas), atlas_bm(atlas_bm), sh(sh), x_gap(x_gap) { firsttime = true; active=false; 
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1,-1);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
+  }
+  void update(Point2d mouse, int button, int ch)
+  {
+    Point2d pos = get_pos();
+    Vector2d sz = get_size();
+    if (button == 0 && mouse.x>=pos.x && mouse.x < pos.x+sz.dx
+	&& mouse.y>=pos.y && mouse.y<pos.y+sz.dy)
+      {
+	active = true;
+      }
+    else if (button==0)
+      {
+	active = false;
+      }
+
+    if (firsttime)
+      {
+	std::stringstream ss;
+	ss << target;
+	label = ss.str();
+      }
+
+    bool changed = false;
+    if (active)
+      {
+	int s = allowed_chars.size();
+	for(int i=0;i<s;i++)
+	  {
+	    if (allowed_chars[i]==ch)
+	      {
+		label.push_back(ch);
+		changed = true;
+	      }
+	  }
+	if (ch==8 && label.size()>0)
+	  {
+	    label.erase(label.begin()+(label.size()-1));
+	    changed = true;
+	  }
+      }
+
+    // note, spaces are not allowed.
+    if (active) {
+      //std::cout << "EDITOR UPDATES: " << label << std::endl;
+      std::stringstream ss2(label);
+      ss2 >> target;
+      //std::cout << "EDITOR UPDATES2: " << target << std::endl;
+    }
+
+    if (firsttime || changed)
+      {
+	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, label.c_str(), x_gap);
+	rendered_bitmap_va = ev.sprite_api.create_vertex_array(rendered_bitmap);
+	firsttime = false;
+      }
+    size.dx = ev.bitmap_api.size_x(rendered_bitmap);
+    size.dy = ev.bitmap_api.size_y(rendered_bitmap);
+  }
+  void render()
+  {
+    if (!firsttime)
+      {
+	Point2d p = get_pos();
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x,p.y,0.0));
+	ev.sprite_api.render_sprite_vertex_array(rendered_bitmap_va);
+      }
+  }
+  int render_to_bitmap()
+  {
+    return rendered_bitmap.id;
+  }
+private:
+  bool firsttime;
+  std::string allowed_chars;
+  T &target; 
+  std::string label;
+  GameApi::FtA atlas;
+  GameApi::BM atlas_bm;
+  GameApi::SH sh;
+  GameApi::BM rendered_bitmap;
+  GameApi::VA rendered_bitmap_va;
+  bool active;
+  int x_gap;
+};
+
+
 
 class IconGuiWidget : public GuiWidgetForward
 {
 public:
   IconGuiWidget(GameApi::EveryApi &ev, GameApi::BM bm, GameApi::SH sh) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), sh(sh), bm(bm) { firsttime=true;
-    Point2d p = { 0.0, 0.0 };
+    Point2d p = { -666.0, -666.0 };
     update(p, -1,-1);
-    set_pos(p);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
 
   }
   void update(Point2d mouse, int button, int ch)
@@ -15110,9 +15464,10 @@ class MarginGuiWidget : public GuiWidgetForward
 public:
   MarginGuiWidget(GameApi::EveryApi &ev, GuiWidget *w, int l, int t, int r, int b) : GuiWidgetForward(ev, { w }), l(l), t(t), r(r), b(b) 
   {
-    Point2d p = { 0.0, 0.0 };
+    Point2d p = { -666.0, -666.0 };
     update(p, -1, -1);
-    set_pos(p);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
   }
   void set_size(Vector2d size)
   {
@@ -15148,9 +15503,10 @@ class LayerGuiWidget : public GuiWidgetForward
 public:
   LayerGuiWidget(GameApi::EveryApi &ev, GuiWidget *w1, GuiWidget *w2) : GuiWidgetForward(ev, { w1, w2 }) 
   { 
-    Point2d p = {0.0, 0.0 };
+    Point2d p = { -666.0, -666.0 };
     update(p, -1,-1);
-    set_pos(p);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
   }
   void set_pos(Point2d pos)
   {
@@ -15184,9 +15540,10 @@ class ArrayXWidget : public GuiWidgetForward
 public:
   ArrayXWidget(GameApi::EveryApi &ev, std::vector<GuiWidget*> vec, int x_gap) : GuiWidgetForward(ev, vec), x_gap(x_gap) 
   {
-    Point2d pos = { 0.0, 0.0 };
+    Point2d pos = { -666.0, -666.0 };
     update(pos, -1,-1);
-    set_pos(pos);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
   }
   void set_pos(Point2d pos)
   {
@@ -15233,9 +15590,10 @@ class ArrayYWidget : public GuiWidgetForward
 public:
   ArrayYWidget(GameApi::EveryApi &ev, std::vector<GuiWidget*> vec, int y_gap) : GuiWidgetForward(ev, vec), y_gap(y_gap) 
   {
-    Point2d pos = { 0.0, 0.0 };
+    Point2d pos = { -666.0, -666.0 };
     update(pos, -1,-1);
-    set_pos(pos);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
   }
   void set_pos(Point2d pos)
   {
@@ -15300,6 +15658,8 @@ public:
     firsttime=true; 
     size.dx = sx;
     size.dy = sy;
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1,-1);
   }
   void update(Point2d mouse, int button,int ch)
   {
@@ -15307,6 +15667,8 @@ public:
     Vector2d s = get_size();
     if (mouse.x >= p.x && mouse.x < p.x+s.dx && mouse.y>=p.y && mouse.y< p.y+s.dy)
       {
+	//std::cout << "Enabled: " << mouse.x << " " << mouse.y << std::endl;
+	//std::cout << p.x << " " << p.y << " " << s.dx << " " << s.dy << std::endl;
 	enabled = true;
       }
     else
@@ -15373,6 +15735,8 @@ public:
   Highlight2GuiWidget(GameApi::EveryApi &ev, GuiWidget *wid, GameApi::SH sh) : GuiWidgetForward(ev, {wid} ), sh(sh), enabled(false), oldenabled(false), c_changed(false) { 
     firsttime=true; 
     changed=false;
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1, -1);
   }
   void update(Point2d mouse, int button,int ch)
   {
@@ -15519,6 +15883,16 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_title(int sx, std::string label, Ft
   W node_1 = layer(node_0, node_t0);
   return node_1;
 }
+EXPORT GameApi::W GameApi::GuiApi::list_item_title(int sx, std::string label, FtA atlas, BM atlas_bm)
+{
+  W node_t = text(label, atlas, atlas_bm);
+  W node_t0 = margin(node_t, 5,5,5,5);
+  std::cout << "List Item title height: " << size_y(node_t0) << std::endl;
+  W node_0 = button(sx, size_y(node_t0), 0xffff88ff, 0xff8844ff);
+  W node_1 = layer(node_0, node_t0);
+  return node_1;
+}
+
 EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, Ft font, std::vector<std::string> subitems, Ft font2)
 {
   W title = list_item_title(sx, label, font);
@@ -15538,11 +15912,32 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, F
   W array_2 = margin(array, 1,1,1,1);
   return array_2;
 }
+EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, FtA atlas2, BM atlas_bm2)
+{
+  W title = list_item_title(sx, label, atlas, atlas_bm);
+  std::vector<W> vec;
+  vec.push_back(title);
+  int s = subitems.size();
+  for(int i=0;i<s;i++)
+    {
+      std::string label = subitems[i];
+      W txt_0 = text(label, atlas2, atlas_bm2);
+      W txt_1 = margin(txt_0, 5, 2, sx-5-size_x(txt_0), 2);
+      W txt_2 = highlight(size_x(txt_1), size_y(txt_1));
+      W txt_3 = layer(txt_1, txt_2);
+      vec.push_back(txt_3);
+    }
+  W array = array_y(&vec[0], vec.size(),2);
+  W array_2 = margin(array, 1,1,1,1);
+  return array_2;
+}
+
+
 class MouseMoveWidget : public GuiWidgetForward
 {
 public:
   MouseMoveWidget(GameApi::EveryApi &ev, GuiWidget *wid, int area_x, int area_y, int area_width, int area_height) : GuiWidgetForward(ev, { wid } ), area_x(area_x), area_y(area_y), area_width(area_width), area_height(area_height) { move_ongoing = false; 
-    Point2d p = { 0.0, 0.0 };
+    Point2d p = { -666.0, -666.0 };
     update(p, -1, -1);
   }
   void update(Point2d mouse, int button, int ch)
@@ -15579,7 +15974,7 @@ class ClickAreaWidget : public GuiWidgetForward
 {
 public:
   ClickAreaWidget(GameApi::EveryApi &ev, GuiWidget *wid, int area_x, int area_y, int area_width, int area_height) : GuiWidgetForward(ev, { wid } ), area_x(area_x), area_y(area_y), area_width(area_width), area_height(area_height) { done=false;
-    Point2d p = { 0.0, 0.0 };
+    Point2d p = { -666.0, -666.0 };
     update(p, -1, -1);
   }
   void update(Point2d mouse, int button, int ch)
@@ -15621,6 +16016,7 @@ EXPORT GameApi::W GameApi::GuiApi::mouse_move(W widget, int area_x, int area_y, 
 }
 EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, Ft font)
 {
+  std::cout << "item1" << std::endl;
   W node_0 = button(sx,sy, 0xffff8844, 0xff884422);
   W node_2 = text(label, font);
   W node_22 = margin(node_2, 5,5,5,5);
@@ -15652,10 +16048,50 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
   W l_3 = layer(l_2, txt_4);
   return l_3;
 }
+
+EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, FtA atlas, BM atlas_bm)
+{
+  W node_0 = button(sx,sy, 0xffff8844, 0xff884422);
+  W node_2 = text(label, atlas,atlas_bm);
+  W node_22 = margin(node_2, 5,5,5,5);
+  W node_1 = button(sx,size_y(node_22), 0xffff88ff, 0xff8844ff);
+  W node_12 = highlight(node_1);
+  std::vector<W> vec;
+  int s = param_types.size();
+  for(int i=0;i<s;i++)
+    {
+      std::string p = param_types[i];
+      W txt_0 = text(p, atlas, atlas_bm);
+      W txt_1 = margin(txt_0, 5,5,5,5);
+      W txt_2 = button(size_x(txt_1), size_y(txt_1), 0xff888888, 0xff666666);
+      W txt_3 = layer(txt_2, txt_1);
+      vec.push_back(txt_3);
+    }
+  W array = array_y(&vec[0], vec.size(), 5);
+  W array_1 = margin(array, 0, sy-size_y(array), 0, 0);
+  
+  W txt_0 = text(return_type, atlas,atlas_bm);
+  W txt_1 = margin(txt_0, 5,5,5,5);
+  W txt_2 = button(size_x(txt_1), size_y(txt_1), 0xff330033, 0xff880088);
+  W txt_3 = layer(txt_2, txt_1);
+  W txt_4 = margin(txt_3, sx-size_x(txt_3), sy-size_y(txt_3), 0,0);
+
+  W l_0 = layer(node_0, node_12);
+  W l_1 = layer(l_0, node_22);
+  W l_2 = layer(l_1, array_1);
+  W l_3 = layer(l_2, txt_4);
+  return l_3;
+}
+
 EXPORT GameApi::W GameApi::GuiApi::text(std::string label, Ft font)
 {
   return add_widget(e, new TextGuiWidget(ev, label, font, sh));
 }
+EXPORT GameApi::W GameApi::GuiApi::text(std::string label, FtA atlas, BM atlas_bm, int x_gap)
+{
+  return add_widget(e, new TextGuiWidgetAtlas(ev, label, atlas, atlas_bm, sh, x_gap));
+}
+
 EXPORT GameApi::W GameApi::GuiApi::icon(BM bm)
 {
   return add_widget(e, new IconGuiWidget(ev, bm,sh));
@@ -15666,6 +16102,13 @@ EXPORT GameApi::W GameApi::GuiApi::string_editor(std::string allowed_chars, std:
   W e2 = highlight(e1);
   return e2;
 }
+EXPORT GameApi::W GameApi::GuiApi::string_editor(std::string allowed_chars, std::string &target, FtA atlas, BM atlas_bm, int x_gap)
+{
+  W e1 = add_widget(e, new EditorGuiWidgetAtlas<std::string>(ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap));
+  W e2 = highlight(e1);
+  return e2;
+}
+
 EXPORT GameApi::W GameApi::GuiApi::float_editor(float &target, Ft font)
 {
   std::string allowed_chars = "0123456789.";
@@ -15673,6 +16116,14 @@ EXPORT GameApi::W GameApi::GuiApi::float_editor(float &target, Ft font)
   W w2 = highlight(w);
   return w2;
 }
+EXPORT GameApi::W GameApi::GuiApi::float_editor(float &target, FtA atlas, BM atlas_bm, int x_gap)
+{
+  std::string allowed_chars = "0123456789.";
+  W w = add_widget(e, new EditorGuiWidgetAtlas<float>(ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap));
+  W w2 = highlight(w);
+  return w2;
+}
+
 EXPORT GameApi::W GameApi::GuiApi::int_editor(int &target, Ft font)
 {
   std::string allowed_chars = "0123456789";
@@ -15680,20 +16131,42 @@ EXPORT GameApi::W GameApi::GuiApi::int_editor(int &target, Ft font)
   W w2 = highlight(w);
   return w2;
 }
+EXPORT GameApi::W GameApi::GuiApi::int_editor(int &target, FtA atlas, BM atlas_bm, int x_gap)
+{
+  std::string allowed_chars = "0123456789";
+  W w = add_widget(e, new EditorGuiWidgetAtlas<int>(ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap));
+  W w2 = highlight(w);
+  return w2;
+}
+
+
 EXPORT GameApi::W GameApi::GuiApi::color_editor(std::string &col, Ft font)
 {
   std::string allowed_chars = "0123456789abcdef";
   W edit = string_editor(allowed_chars, col, font);
   W edit2 = highlight(edit);
-  return edit2;
+  return edit2; 
 }
-EXPORT GameApi::W GameApi::GuiApi::edit_dialog(std::vector<std::string> labels, std::vector<EditTypes*> vec, Ft font, std::vector<std::string> types, W &cancel_but, W &ok_but)
+EXPORT GameApi::W GameApi::GuiApi::color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap)
 {
+  std::string allowed_chars = "0123456789abcdef";
+  W edit = string_editor(allowed_chars, col, atlas, atlas_bm, x_gap);
+  W edit2 = highlight(edit);
+  return edit2; 
+}
+
+
+EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &labels, const std::vector<GameApi::GuiApi::EditTypes*> &vec, Ft font, const std::vector<std::string> &types, W &cancel_but, W &ok_but)
+{
+  assert(vec.size()==labels.size());
+  assert(labels.size()==types.size());
   std::vector<W> vec2;
   int s = vec.size();
+  //std::cout << "edit_dialog: " << s << std::endl;
   for(int i=0;i<s;i++)
     {
       EditTypes *target = vec[i];
+      //std::cout << "edit_dialog" << i << " " << target << " " << target->i_value << std::endl;
       std::string type = types[i];
       std::string label = labels[i];
       W edit = generic_editor(*target, font, type);
@@ -15731,6 +16204,56 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(std::vector<std::string> labels, 
   W combine_move = mouse_move(combine_arr, 0,0,size_x(combine_arr), size_y(combine_arr));
   return combine_move;
 }
+
+EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &labels, const std::vector<GameApi::GuiApi::EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_but, W &ok_but)
+{
+  assert(vec.size()==labels.size());
+  assert(labels.size()==types.size());
+  std::vector<W> vec2;
+  int s = vec.size();
+  //std::cout << "edit_dialog: " << s << std::endl;
+  for(int i=0;i<s;i++)
+    {
+      EditTypes *target = vec[i];
+      //std::cout << "edit_dialog" << i << " " << target << " " << target->i_value << std::endl;
+      std::string type = types[i];
+      std::string label = labels[i];
+      W edit = generic_editor(*target, atlas, atlas_bm, type, 8);
+      W lab = text(label, atlas,atlas_bm, 8);
+      W lab_2 = right_align(lab, 150);
+      W array2[] = { lab_2, edit };
+      W array3 = array_x(&array2[0], 2, 35);
+      vec2.push_back(array3);
+    }
+  W array = array_y(&vec2[0], vec2.size(), 35);
+  W array_1 = margin(array, 10,10,10,10);
+  W array_2 = button(500, size_y(array_1), 0xff224488, 0xff112244);
+  W array_3 = layer(array_2, array_1);
+
+  W cancel_button = button(250,50, 0xff884422, 0xff442211);
+  W cancel_button_1 = text("Cancel", atlas,atlas_bm, 8);
+  W cancel_button_11 = center_align(cancel_button_1, 250);
+  W cancel_button_2 = layer(cancel_button, cancel_button_11);
+  W cancel_button_3 = highlight(size_x(cancel_button_2), size_y(cancel_button_2));
+  W cancel_button_4 = layer(cancel_button_2, cancel_button_3);
+  W cancel_area = click_area(cancel_button_4, 0,0,250,50);
+  cancel_but = cancel_area;
+  W ok_button = button(250,50, 0xff884422, 0xff442211);
+  W ok_button_1 = text("Ok", atlas,atlas_bm, 8);
+  W ok_button_11 = center_align(ok_button_1, 250);
+  W ok_button_2 = layer(ok_button, ok_button_11);
+  W ok_button_3 = highlight(size_x(ok_button_2), size_y(ok_button_2));
+  W ok_button_4 = layer(ok_button_2, ok_button_3);
+  W ok_area = click_area(ok_button_4, 0,0,250,50);
+  ok_but = ok_area;
+  W button_array[] = { cancel_area, ok_area };
+  W button_arr = array_x(&button_array[0], 2, 0);
+  W combine_array[] = { array_3, button_arr };
+  W combine_arr = array_y(&combine_array[0], 2, 0);
+  W combine_move = mouse_move(combine_arr, 0,0,size_x(combine_arr), size_y(combine_arr));
+  return combine_move;
+}
+
 class RightAlignWidget : public GuiWidgetForward
 {
 public:
@@ -15782,10 +16305,98 @@ EXPORT GameApi::W GameApi::GuiApi::center_align(W item, int sx)
   GuiWidget *wid = find_widget(e, item);
   return add_widget(e, new CenterAlignWidget(ev, wid, sx));
 }
-EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, Ft font, std::string type)
+EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string type, const std::string &source)
 {
+
+  //std::cout << "Source: " << source << std::endl;
+
+  //std::cout << "string_to_generic" << type << std::endl;
   if (type=="int")
     {
+      std::stringstream ss(source);
+      if (ss >> target.i_value) {
+	//std::cout << "Dest: " << target.i_value << std::endl;
+      } else { std::cout << "StringStream failed" << std::endl; }
+
+    } else
+  if (type=="unsigned int")
+    {
+      target.color = source;
+    } else
+  if (type=="std::string")
+    {
+      target.s = source;
+    } else
+  if (type=="float")
+    {
+      std::stringstream ss(source);
+      ss >> target.f_value;
+    } else
+  if (type=="PT")
+    {
+      std::stringstream ss(source);
+      char c;
+      ss >> c;
+      ss >> target.f_x;
+      ss >> c;
+      ss >> target.f_y;
+      ss >> c;
+      ss >> target.f_z;
+      ss >> c;
+    } else
+    {
+      std::cout << "Unknown type at string_to_generic" << std::endl;
+    }
+}
+EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::string type, std::string &target)
+{
+  //std::cout << "generic_to_string" << type << std::endl;
+  if (type=="int")
+    {
+      int val = source.i_value;
+      //std::cout << "Source2: " << val << std::endl;
+      std::stringstream ss;
+      ss << val;
+      target = ss.str();
+      //std::cout << "Dest2: " << target << std::endl;
+    } else
+  if (type=="unsigned int")
+    {
+      std::string s = source.color;
+      target = s;
+    } else
+  if (type=="std::string")
+    {
+      std::string s = source.s;
+      target = s;
+    } else
+  if (type=="float")
+    {
+      float f = source.f_value;
+      std::stringstream ss;
+      ss << f;
+      target = ss.str();
+    } else
+  if (type=="PT")
+    {
+      float x = source.f_x;
+      float y = source.f_y;
+      float z = source.f_z;
+      std::stringstream ss;
+      ss << "(" << x << "," << y << "," << z << ")";
+      target = ss.str();
+    } else
+    {
+      target = "";
+      std::cout << "Unknown type at generic_to_string: " << type << std::endl;
+    }
+}
+EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, Ft font, std::string type)
+{
+  //std::cout << "Generic editor: " << type << std::endl;
+  if (type=="int")
+    {
+      //std::cout << "Generic editor << " << target.i_value << std::endl;
       W edit = int_editor(target.i_value, font);
       return edit;
     }
@@ -15810,7 +16421,46 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, Ft font, st
       W edit = point_editor(target.f_x, target.f_y, target.f_z, font);
       return edit;
     }
+  std::cout << "TYPE ERROR: " << type << std::endl;
+  W dummy = button(30,30, 0xffffffff, 0xff888888);
+  return dummy;
 }
+
+EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap)
+{
+  //std::cout << "Generic editor: " << type << std::endl;
+  if (type=="int")
+    {
+      //std::cout << "Generic editor << " << target.i_value << std::endl;
+      W edit = int_editor(target.i_value, atlas, atlas_bm, x_gap);
+      return edit;
+    }
+  if (type=="unsigned int")
+    {
+      W edit = color_editor(target.color, atlas, atlas_bm, x_gap);
+      return edit;
+    }
+  if (type=="std::string")
+    {
+      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      W edit = string_editor(allowed, target.s, atlas, atlas_bm, x_gap);
+      return edit;
+    }
+  if (type=="float")
+    {
+      W edit = float_editor(target.f_value, atlas, atlas_bm, x_gap);
+      return edit;
+    }
+  if (type=="PT")
+    {
+      W edit = point_editor(target.f_x, target.f_y, target.f_z, atlas, atlas_bm, x_gap);
+      return edit;
+    }
+  std::cout << "TYPE ERROR: " << type << std::endl;
+  W dummy = button(30,30, 0xffffffff, 0xff888888);
+  return dummy;
+}
+
 EXPORT GameApi::W GameApi::GuiApi::point_editor(float &x, float &y, float &z, Ft font)
 {
   W l0 = text("(",font);
@@ -15824,8 +16474,25 @@ EXPORT GameApi::W GameApi::GuiApi::point_editor(float &x, float &y, float &z, Ft
   W z_edit_2 = highlight(z_edit);
   W l3 = text(")",font);
   W array[] = { l0, x_edit_2, l1, y_edit_2, l2, z_edit_2, l3 };
-  return array_x(array, 7, 2);
+  return array_x(&array[0], 7, 2);
 }
+
+EXPORT GameApi::W GameApi::GuiApi::point_editor(float &x, float &y, float &z, FtA atlas, BM atlas_bm, int x_gap)
+{
+  W l0 = text("(",atlas, atlas_bm);
+  W x_edit = float_editor(x, atlas, atlas_bm, x_gap);
+  W x_edit_2 = highlight(x_edit);
+  W l1 = text(";",atlas, atlas_bm);
+  W y_edit = float_editor(y, atlas, atlas_bm, x_gap);
+  W y_edit_2 = highlight(y_edit);
+  W l2 = text(";",atlas,atlas_bm);
+  W z_edit = float_editor(z, atlas,atlas_bm, x_gap);
+  W z_edit_2 = highlight(z_edit);
+  W l3 = text(")",atlas,atlas_bm);
+  W array[] = { l0, x_edit_2, l1, y_edit_2, l2, z_edit_2, l3 };
+  return array_x(&array[0], 7, 2);
+}
+
 EXPORT GameApi::W GameApi::GuiApi::highlight(int sx, int sy)
 {
   return add_widget(e, new HighlightGuiWidget(ev, sh, sx,sy));
@@ -15891,6 +16558,31 @@ GameApi::W GameApi::GuiApi::main_menu(std::vector<std::string> labels, Ft font)
 
   return w5;
 }
+GameApi::W GameApi::GuiApi::main_menu(std::vector<std::string> labels, FtA atlas, BM atlas_bm)
+{
+  int s = labels.size();
+  std::vector<W> vec;
+  for(int i=0;i<s;i++)
+    {
+      std::string s = labels[i];
+      W txt_1 = text(s, atlas, atlas_bm);
+      W txt_2 = margin(txt_1, 5,5,5,5);
+      W txt_3 = highlight(size_x(txt_2), size_y(txt_2));
+      W txt_4 = layer(txt_2, txt_3);
+      vec.push_back(txt_4);
+    }
+  W w = array_x(&vec[0], vec.size(), 20);
+  //PT pt1 = ev.point_api.point(0.0,0.0,0.0);
+  //PT pt2 = ev.point_api.point(0.0, size_y(w), 0.0);
+  //W w3 = gradient(size_x(w), size_y(w), pt1, pt2, 0xffffaa88, 0xffff8844);
+  W w3 = button(size_x(w), size_y(w), 0xffff8844, 0xff884422);
+
+  W w4 = layer(w3,w);
+  W w5 = margin(w4, 2,2,2,2);
+
+  return w5;
+}
+
 GameApi::W GameApi::GuiApi::submenu(W menu, int menu_id, std::vector<std::string> labels, Ft font)
 {
   GuiWidget *w = find_widget(e, menu);
@@ -16080,9 +16772,10 @@ public:
   WaveformWidget(GameApi::EveryApi &ev, GameApi::SH sh, std::function<float (float)> f, float start_range, float end_range, float min_value, float max_value, int sx, int sy, unsigned int true_color, unsigned int false_color) : ev(ev), sh(sh), f(f), start_range(start_range), end_range(end_range), min_value(min_value), max_value(max_value), sx(sx), sy(sy), true_color(true_color), false_color(false_color) 
   { 
     firsttime = true; 
-    Point2d p = { 0.0, 0.0 };
+    Point2d p = { -666.0, -666.0 };
     update(p, -1,-1);
-    set_pos(p);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
     time = 0.0;
   }
   Point2d get_pos() const { return pos; }
@@ -16163,8 +16856,8 @@ public:
   void update(Point2d mouse_pos, int button, int ch)
   {
     Point2d mouse = mouse_pos;
-    if (mouse.x>=pos.x && mouse.x<pos.x+size.dx &&
-	mouse.y>=pos.y && mouse.y<pos.y+size.dy)
+    if (mouse.x>=pos.x-80 && mouse.x<pos.x+size.dx+80 &&
+	mouse.y>=pos.y-80 && mouse.y<pos.y+size.dy+80)
       {
 	//Vector2d sz = vec[0]->get_size();
 	//mouse.x -= left*(sz.dx-size.dx);
@@ -16346,6 +17039,36 @@ GameApi::W GameApi::GuiApi::menu(W main_menu, int menu_id, std::vector<std::stri
   set_pos(w4, pos.x, pos.y+size.dy);
   return w4;
 }
+GameApi::W GameApi::GuiApi::menu(W main_menu, int menu_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm)
+{
+  GuiWidget *w = find_widget(e, main_menu);
+  int s = w->child(0)->child(1)->child_count();
+  if (menu_id<0 || menu_id>=s) { std::cout << "ERROR: Wrong menu id" << menu_id << " " << s << std::endl; exit(0); }
+  GuiWidget *ww = w->child(0)->child(1)->child(menu_id);
+  Point2d pos = ww->get_pos();
+  Vector2d size = ww->get_size();
+  
+  int ss = labels.size();
+  std::vector<W> vec;
+  for(int i=0;i<ss;i++) {
+    std::string s = labels[i];
+    W txt_1 = text(s, atlas, atlas_bm);
+    W txt_2 = margin(txt_1, 2,2,2,2);
+    W txt_3 = highlight(size_x(txt_2), size_y(txt_2));
+    W txt_4 = layer(txt_2, txt_3);
+    vec.push_back(txt_4);
+  }
+  W w2 = array_y(&vec[0], vec.size(), 2);
+  W w22 = margin(w2, 4,4,4,4);
+  //PT pt1 = ev.point_api.point(0.0,0.0,0.0);
+  //PT pt2 = ev.point_api.point(0.0, size_y(w2), 0.0);
+  W w3 = button(size_x(w22), size_y(w22), 0xffff8844, 0xff884422);
+    //gradient(size_x(w2), size_y(w2), pt1, pt2, 0xffff8844, 0xff884422);
+  W w4 = layer(w3,w22);
+  set_pos(w4, pos.x, pos.y+size.dy);
+  return w4;
+}
+
 int GuiWidgetForward::render_to_bitmap()
 {
   GameApi::BM bg = ev.bitmap_api.newbitmap(size.dx, size.dy, 0x0000000000);
@@ -16395,6 +17118,7 @@ void GameApi::GuiApi::update(W w, PT mouse, int button,int ch)
 }
 void GameApi::GuiApi::render(W w)
 {
+  //std::cout << "GuiApi::render" << w.id << std::endl;
   GuiWidget *ww = find_widget(e, w);
   ww->render();
 }
@@ -16410,19 +17134,28 @@ void GameApi::GuiApi::select_item(W w, int item)
 }
 float GameApi::GuiApi::dynamic_param(W w, int id)
 {
+  //std::cout << "GuiApi::dynamic_param" << w.id << std::endl;
   GuiWidget *ww = find_widget(e, w);
   return ww->dynamic_param(id);
 }
 int GameApi::GuiApi::num_childs(W w)
 {
   GuiWidget *ww = find_widget(e, w);
+#ifdef EMSCRIPTEN
+  GuiWidgetForward *ww2 = static_cast<GuiWidgetForward*>(ww);
+#else
   GuiWidgetForward *ww2 = dynamic_cast<GuiWidgetForward*>(ww);
+#endif
   return ww2->vec.size();
 }
 GameApi::W GameApi::GuiApi::get_child(W w, int i)
 {
   GuiWidget *ww = find_widget(e, w);
+#ifdef EMSCRIPTEN
+  GuiWidgetForward *ww2 = static_cast<GuiWidgetForward*>(ww);
+#else
   GuiWidgetForward *ww2 = dynamic_cast<GuiWidgetForward*>(ww);
+#endif
   if (ww2) 
     {
       GuiWidget *child = ww2->vec[i];
@@ -16519,12 +17252,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BM", "int", "int", "int", "int" },
 			 { "",   "0", "0", "100", "100" },
 			 "BM"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::growbitmap,
-			 "grow",
-			 { "orig", "l", "t", "r", "b" },
-			 { "BM", "int", "int", "int", "int" },
-			 { "", "2", "2", "2", "2" },
-			 "BM"));
+  //vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::growbitmap,
+  //			 "grow",
+  //			 { "orig", "l", "t", "r", "b" },
+  //			 { "BM", "int", "int", "int", "int" },
+  //			 { "", "2", "2", "2", "2" },
+  //			 "BM"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, (GameApi::BM (GameApi::BitmapApi::*)(GameApi::BM,GameApi::BM,int,int))&GameApi::BitmapApi::blitbitmap,
 			 "blit",
 			 { "bg", "orig", "x", "y" },
@@ -16613,10 +17346,28 @@ GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector
   GameApi::W w = gui.list_item_opened(100, label, font, vec2, font2);
   return w;
 }
+GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector<GameApiItem*> vec, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::FtA atlas2, GameApi::BM atlas_bm2)
+{
+  std::vector<std::string> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiItem *item = vec[i];
+      vec2.push_back(item->Name(i));
+    }
+  GameApi::W w = gui.list_item_opened(100, label, atlas, atlas_bm, vec2, atlas2, atlas_bm2);
+  return w;
+}
+
 GameApi::W GameApi::GuiApi::bitmapapi_functions_list_item(Ft font1, Ft font2)
 {
   return functions_widget(*this, "BitmapApi", bitmapapi_functions(), font1, font2);
 }
+GameApi::W GameApi::GuiApi::bitmapapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+{
+  return functions_widget(*this, "BitmapApi", bitmapapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+}
+
 GameApiModule load_gameapi(std::string filename)
 {
   GameApiModule mod;
@@ -16769,7 +17520,11 @@ void GameApi::WModApi::update_lines_from_canvas(W canvas, WM mod2, int id)
 
   GuiWidget *wid = find_widget(e, canvas);
   Point2d canvas_pos = wid->get_pos();
+#ifdef EMSCRIPTEN
+  CanvasWidget *can = static_cast<CanvasWidget*>(wid);
+#else
   CanvasWidget *can = dynamic_cast<CanvasWidget*>(wid);
+#endif
   if (!can) return;
   int s = func->lines.size();
   for(int i=0;i<s;i++)
@@ -16804,6 +17559,229 @@ GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, Ft fo
   std::vector<std::string> param_types2 = reduce_list_to_types_only(param_types);
   W node = gui.canvas_item_gameapi_node(100,100, func_name, param_types2, return_type, font);
   return node;
+}
+
+GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name)
+{
+  std::vector<GameApiItem*> functions = bitmapapi_functions();
+
+  int s = functions.size();
+  int i = 0;
+  for(;i<s;i++)
+    {
+      GameApiItem *item = functions[i];
+      std::string name = item->Name(0);
+      if (func_name == name) break;
+    }
+  GameApiItem *item = functions[i];
+  std::string return_type = item->ReturnType(0);
+  std::vector<std::string> param_types;
+  int sss = item->ParamCount(0);
+  for(int k=0;k<sss;k++)
+    {
+      param_types.push_back(item->ParamType(0,k));
+    }
+  std::vector<std::string> param_types2 = reduce_list_to_types_only(param_types);
+  W node = gui.canvas_item_gameapi_node(100,100, func_name, param_types2, return_type, atlas, atlas_bm);
+  return node;
+}
+
+std::vector<std::string> remove_unnecessary_labels(std::vector<std::string> types, std::vector<std::string> labels)
+{
+  std::vector<std::string> res;
+  int s = types.size();
+  for(int i=0;i<s;i++)
+    {
+      std::string type = types[i];
+      std::string label = labels[i];
+      if (type[0]>='A' && type[0]<='Z' && type.size()<4)
+	{
+	}
+      else
+	{
+	  res.push_back(label);
+	}
+    }
+  return res;
+
+}
+std::vector<std::string> filter_unnecessary_types(std::vector<std::string> vec)
+{
+  std::vector<std::string> res;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      std::string type = vec[i];
+      if (type[0]>='A' && type[0]<='Z' && type.size()<4)
+	{
+	}
+      else
+	{
+	  res.push_back(type);
+	}
+    }
+  return res;
+}
+std::vector<std::string*> remove_unnecessary_refs(std::vector<std::string*> refs, std::vector<std::string> param_types)
+{
+  std::vector<std::string*> res;
+  int s = param_types.size();
+  for(int i=0;i<s;i++)
+    {
+      std::string type = param_types[i];
+      if (type[0]>='A' && type[0]<='Z' && type.size()<4)
+	{
+	}
+      else
+	{
+	  res.push_back(refs[i]);
+	}
+    }
+  return res;  
+}
+std::vector<std::string*> GameApi::WModApi::refs_from_function(WM mod2, int id, std::string funcname)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+
+  std::vector<std::string> param_types;
+  std::vector<std::string*> refs;
+  
+  std::string module_name = "";
+  int sk = func->lines.size();
+  for(int k=0;k<sk;k++)
+    {
+      GameApiLine *line = &func->lines[k];
+      if (funcname == line->uid)
+	{
+	  module_name = line->module_name;
+
+
+	  std::vector<GameApiItem*> functions = bitmapapi_functions();
+	  std::vector<std::string> types;
+	  int s = functions.size();
+	  int i = 0;
+	  for(;i<s;i++)
+	    {
+	      GameApiItem* item = functions[i];
+	      std::string name = item->Name(0);
+	      if (name==module_name)
+		{
+		  break;
+		}
+	    }
+	  GameApiItem *item = functions[i];
+	  int s2 = item->ParamCount(0);
+	  int s3 = line->params.size();
+	  assert(s2==s3);
+	  for(int i=0;i<s3;i++)
+	    {
+	      GameApiParam *param = &line->params[i];
+	      std::string *value = &param->value;
+	      std::string paramtype = item->ParamType(0, i);
+	      //std::string value = item->ParamDefault(0, i);
+	      param_types.push_back(paramtype);
+	      refs.push_back(value);
+	    }
+	  std::vector<std::string*> refs2 = remove_unnecessary_refs(refs, param_types);
+	  return refs2;
+
+	}
+    }
+  return std::vector<std::string*>();
+
+}
+std::vector<std::string> GameApi::WModApi::types_from_function(WM mod2, int id, std::string funcname)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+  
+  std::string module_name = "";
+  int sk = func->lines.size();
+  for(int k=0;k<sk;k++)
+    {
+      GameApiLine *line = &func->lines[k];
+      if (funcname == line->uid)
+	{
+	  module_name = line->module_name;
+	}
+    }
+  if (module_name=="")
+    {
+      return std::vector<std::string>();
+    }
+
+
+  std::vector<GameApiItem*> functions = bitmapapi_functions();
+  std::vector<std::string> types;
+  int s = functions.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiItem* item = functions[i];
+      std::string name = item->Name(0);
+      if (name==module_name)
+	{
+	  int ss = item->ParamCount(0);
+	  for(int j=0;j<ss;j++)
+	    {
+	      std::string type = item->ParamType(0, j);
+	      types.push_back(type);
+	    }
+	  break;
+
+	}
+    }
+  std::vector<std::string> types2 = filter_unnecessary_types(types);
+  return types2;
+}
+std::vector<std::string> GameApi::WModApi::labels_from_function(WM mod2, int id, std::string funcname)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+
+
+  std::string module_name = "";
+  int sk = func->lines.size();
+  for(int k=0;k<sk;k++)
+    {
+      GameApiLine *line = &func->lines[k];
+      if (funcname == line->uid)
+	{
+	  module_name = line->module_name;
+	}
+    }
+  if (module_name=="")
+    {
+      return std::vector<std::string>();
+    }
+
+  std::vector<GameApiItem*> functions = bitmapapi_functions();
+  int s = functions.size();
+  std::vector<std::string> types;
+  std::vector<std::string> labels;
+  for(int i=0;i<s;i++)
+    {
+      GameApiItem* item = functions[i];
+      std::string name = item->Name(0);
+      if (name==module_name)
+	{
+	  int ss = item->ParamCount(0);
+	  for(int j=0;j<ss;j++)
+	    {
+	      std::string type = item->ParamType(0, j);
+	      types.push_back(type);
+
+	      std::string label = item->ParamName(0,j);
+	      labels.push_back(label + ": ");
+	    }
+	  break;
+	}
+    }
+  std::vector<std::string> labels2 = remove_unnecessary_labels(types, labels);
+  return labels2;
 }
 void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, Ft font)
 {
@@ -16842,6 +17820,45 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
       gui.canvas_item(canvas, node3, line->x, line->y);
     }
 }
+
+void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+  std::vector<GameApiItem*> functions = bitmapapi_functions();
+  int s = func->lines.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiLine *line = &func->lines[i];
+      int ss = functions.size();
+      int j = 0;
+      for(;j<ss;j++)
+	{
+	  GameApiItem* item = functions[j];
+	  if (item->Name(0) == line->module_name) break;
+	}
+      GameApiItem *item = functions[j];
+      std::vector<std::string> param_types;
+      int sss = item->ParamCount(0);
+      for(int k=0;k<sss;k++)
+	{
+	  param_types.push_back(item->ParamType(0,k));
+	}
+      std::vector<std::string> param_types2 = reduce_list_to_types_only(param_types);
+      std::string return_type = item->ReturnType(0);
+
+      W node = gui.canvas_item_gameapi_node(100,100, line->module_name, param_types2, return_type, atlas, atlas_bm);
+      W node2 = gui.click_area(node, 40, 40, gui.size_x(node)-80, gui.size_y(node)-80);
+      W node22 = gui.highlight(gui.size_x(node2)-80, gui.size_y(node2)-80);
+      W node221 = gui.margin(node22, 40,40, 40,40);
+      W node222 = gui.layer(node2, node221);
+      W node3 = gui.mouse_move(node222, 0, 0, gui.size_x(node222), 20);
+      gui.set_id(node3, line->uid);
+      gui.canvas_item(canvas, node3, line->x, line->y);
+    }
+}
+
 
 class InsertWidget : public GuiWidgetForward
 {

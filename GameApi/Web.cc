@@ -20,7 +20,7 @@ void SaveFrameAnim(FrameAnim &f, SDL_Surface *screen, std::string &output, float
       BufferRef ref = BufferRef::NewBuffer(1024,768);
       glReadPixels(0,0,1024,768,GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, ref.buffer);
       BitmapFromBuffer bm(ref);
-      PpmFile file("a.txt", bm);
+      PpmFile file("a.txt", bm, false);
       output += file.Contents();
     }
 }

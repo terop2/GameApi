@@ -259,16 +259,64 @@ private:
   HtmlPart &contents;
 };
 
+class PpmFileReader : public Bitmap<Color>
+{
+public:
+  PpmFileReader(std::string filename) : filename(filename) { flag = Read(); }
+  bool status() { return flag; }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    if (x>=0 && x<sx && y>=0 && y<sy)
+      return Color(ref.buffer[x+y*ref.ydelta]);
+    return Color(0xff000000);
+  }
+
+  bool Read()
+  {
+    std::ifstream str(filename.c_str());
+    int ch = str.get();
+    if (ch!='P') return false;
+    int ch2 = str.get();
+    if (ch2!='3' && ch2!='A') return false;
+    str >> sx;
+    str >> sy;
+    str >> depth;
+    ref = BufferRef::NewBuffer(sx,sy);
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++)
+	{
+	  int r,g,b;
+	  int a = 255;
+	  str>> r >> g >> b;
+	  if (ch2=='A') str>>a;
+	  unsigned int c = Color(r,g,b,a).Pixel();
+	  ref.buffer[x+y*ref.ydelta] = c;
+	}
+    return true;
+  }
+  
+private:
+  bool flag;
+  std::string filename;
+  int sx,sy,depth;
+  BufferRef ref;
+};
 
 class PpmFile : public File
 {
 public:
-  PpmFile(std::string filename, Bitmap<Color> &contents) : filename(filename), contents(contents) { }
+  PpmFile(std::string filename, Bitmap<Color> &contents, bool alpha) : filename(filename), contents(contents), alpha(alpha) { std::cout << "Alpha: " << alpha << std::endl; }
   virtual std::string FileName() const { return filename; }
   virtual std::string Contents() const 
-  {
+  { 
+    std::cout << "Alpha2: " << alpha << std::endl;
     std::string res;
-    res += "P3\n";
+    if (alpha)
+      res += "PA\n";
+    else
+      res += "P3\n";
     res += Num(contents.SizeX());
     res += " ";
     res += Num(contents.SizeY());
@@ -280,6 +328,7 @@ public:
 	{
 	  Color c = contents.Map(x,y);
 	  res += std::string(" ") + Num(c.r) + " " + Num(c.g) + " " + Num(c.b) + " "; 
+	  if (alpha) { res+= Num(c.alpha) + " "; }
 	}
       res += "\n";
       }
@@ -291,6 +340,7 @@ public:
 private:
   std::string filename;
   Bitmap<Color> &contents;
+  bool alpha;
 };
 
 class PgmFile : public File
