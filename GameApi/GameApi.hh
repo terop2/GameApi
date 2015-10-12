@@ -110,6 +110,7 @@ using std::placeholders::_9;
   struct SFO { int id; };
   struct W { int id; };
   struct WM { int id; };
+  struct FtA { int id; };
   //template<class T>
   //struct E { int id; };
 
@@ -279,7 +280,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
-        IMPORT BM newbitmap(int sx, int sy, unsigned int color = 0xff000000);
+        IMPORT BM newbitmap(int sx, int sy, unsigned int color = 0x00000000);
 	IMPORT BM function(std::function<unsigned(int, int)> f, int sx, int sy);
 	IMPORT BM transform(BM orig, std::function<unsigned int(int, int, unsigned int)> f);
 	IMPORT BM newintbitmap(char *array, int sx, int sy, std::function<int(char)> f);
@@ -310,31 +311,31 @@ public:
   IMPORT BM radial_gradient(int sx, int sy, PT pos, float r1, float r2, unsigned int color_1, unsigned int color_2);
   IMPORT BM conical_gradient(int sx, int sy, float x, float y, float angle1, float angle2, unsigned int color_1, unsigned int color_2);
   //BM bitmapandtypes(BM bm, BM (*fptr)(int)); // bm has ints in it
-	IMPORT SP space(BM bm);
-
-	IMPORT BM addsubrects(BM orig); // use subbitmap with orig bitmap.
-	IMPORT void savebitmap(BM orig, std::string filename);
-	IMPORT BM mandelbrot(bool julia,
-		float start_x, float end_x, // [-2..1]
-		float start_y, float end_y, // [-1,1]
-		float xx, float yy, // [0,0]
-		int sx, int sy,
-		int count);
-	IMPORT BM mandelbrot2(bool julia,
-		float start_x, float end_x, // [-2..1]
-		float start_y, float end_y, // [-1,1]
-		float xx, float yy, // [0,0]
-		int sx, int sy,
-		int count);
+  IMPORT SP space(BM bm);
+  
+  IMPORT BM addsubrects(BM orig); // use subbitmap with orig bitmap.
+  IMPORT void savebitmap(BM orig, std::string filename, bool alpha=false);
+  IMPORT BM mandelbrot(bool julia,
+		       float start_x, float end_x, // [-2..1]
+		       float start_y, float end_y, // [-1,1]
+		       float xx, float yy, // [0,0]
+		       int sx, int sy,
+		       int count);
+  IMPORT BM mandelbrot2(bool julia,
+			float start_x, float end_x, // [-2..1]
+			float start_y, float end_y, // [-1,1]
+			float xx, float yy, // [0,0]
+			int sx, int sy,
+			int count);
   IMPORT BM chessboard(int tile_sx, int tile_sy, int count_x, int count_y, unsigned int c1, unsigned int c2);
-	IMPORT BM memoize(BM orig);
-	IMPORT BM memoize_all(BM orig);
-	IMPORT int intvalue(BM bm, int x, int y);
-	IMPORT unsigned int colorvalue(BM bm, int x, int y);
-	IMPORT int size_x(BM bm);
-	IMPORT int size_y(BM bm);
-
-
+  IMPORT BM memoize(BM orig);
+  IMPORT BM memoize_all(BM orig);
+  IMPORT int intvalue(BM bm, int x, int y);
+  IMPORT unsigned int colorvalue(BM bm, int x, int y);
+  IMPORT int size_x(BM bm);
+  IMPORT int size_y(BM bm);
+  
+  
   IMPORT BMA empty_array();
   BMA array(BM *array, int size);
   IMPORT BM array_elem(BMA array, int i);
@@ -377,15 +378,21 @@ private:
 class FontApi
 {
 public:
-	IMPORT FontApi(Env &e);
-	IMPORT ~FontApi();
-	IMPORT Ft newfont(const char *filename, int sx, int sy);
-	IMPORT BM glyph(Ft font, long idx);
-	IMPORT LI glyph_outline(Ft font, long idx, float sx, float sy);
+  IMPORT FontApi(Env &e);
+  IMPORT ~FontApi();
+  IMPORT Ft newfont(const char *filename, int sx, int sy);
+  IMPORT BM glyph(Ft font, long idx);
+  IMPORT LI glyph_outline(Ft font, long idx, float sx, float sy);
   IMPORT PL glyph_plane(Ft font, long idx, float sx, float sy, float dx, float dy);
-	IMPORT BM font_string(Ft font, const char *str, int x_gap);
-	IMPORT FB glyph_fb(Ft font, long idx);
-	IMPORT BB glyph_bb(Ft font, long idx);
+  IMPORT BM font_string(Ft font, const char *str, int x_gap);
+  IMPORT FB glyph_fb(Ft font, long idx);
+  IMPORT BB glyph_bb(Ft font, long idx);
+  
+  IMPORT FtA font_atlas_info(EveryApi &ev,Ft font, std::string chars, float sx, float sy, int y_delta);
+  IMPORT BM font_atlas(EveryApi &ev, Ft font, FtA atlas, float sx, float sy);
+  IMPORT BM font_string_from_atlas(EveryApi &ev, FtA atlas, BM atlas_bm, const char *str, int x_gap);
+  IMPORT void save_atlas(FtA atlas, std::string filename);
+  IMPORT FtA  load_atlas(std::string filename);
 private:
   FontApi(const FontApi&);
   void operator=(const FontApi&);
@@ -729,6 +736,7 @@ class GuiApi
 public:
   GuiApi(Env &e, EveryApi &ev, SH sh) : e(e), ev(ev), sh(sh) { }
   W text(std::string label, Ft font);
+  W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=2);
   W icon(BM bitmap);
   W gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int colot_1, unsigned int color_2);
   W button(int sx, int sy, unsigned int color_1, unsigned int color_2);
@@ -744,8 +752,11 @@ public:
   W array_y(W *arr, int size, int y_gap);
   W array_x(W *arr, int size, int x_gap);
   W main_menu(std::vector<std::string> labels, Ft font);
+  W main_menu(std::vector<std::string> labels, FtA atlas, BM atlas_bm);
   W menu(W main_menu, int menu_id, std::vector<std::string> labels, Ft font);
+  W menu(W main_menu, int menu_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm);
   W submenu(W manu, int menu_pane_id, std::vector<std::string> labels, Ft font);
+  W submenu(W menu, int menu_pane_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm);
   W scrollbar_y(int sx, int sy, int area_y);
   W scrollbar_x(int sx, int sy, int area_x);
   W scroll_area(W orig, int sx, int sy, int screen_y);
@@ -754,8 +765,11 @@ public:
   int canvas_item(W canvas, W item, int x, int y);
   void del_canvas_item(W canvas, int id);
   W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, Ft font);
+  W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, FtA atlas, BM atlas_bm);
   W list_item_title(int sx, std::string label, Ft font);
+  W list_item_title(int sx, std::string label, FtA atlas, BM atlas_bm);
   W list_item_opened(int sx, std::string label, Ft font, std::vector<std::string> subitems, Ft font2);
+  W list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, FtA atlas2, BM atlas_bm2);
   W list_item(BM icon, std::string label, int sx, int sy);
   W list(W *array, int size, int sx, int sy);
   W dialog_item(std::string text, BM icon, int sx, int sy);
@@ -768,17 +782,27 @@ public:
   W int_editor(int &target, Ft font);
   W point_editor(float &x, float &y, float &z, Ft font);
   W color_editor(std::string &col, Ft font);
+  W string_editor(std::string allowed_chars, std::string &target, FtA atlas, BM atlas_bm, int x_gap);
+  W float_editor(float &target, FtA atlas, BM atlas_bm, int x_gap);
+  W int_editor(int &target, FtA atlas, BM atlas_bm, int x_gap);
+  W point_editor(float &x, float &y, float &z, FtA atlas, BM atlas_bm, int x_gap);
+  W color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap);
   struct EditTypes
   {
-    std::string s;
     int i_value;
     float f_value;
     float f_x, f_y, f_z;
     std::string color;
+    std::string s;
   };
   W generic_editor(EditTypes &target, Ft font, std::string type);
-  W edit_dialog(std::vector<std::string> labels, std::vector<EditTypes*> vec, Ft font, std::vector<std::string> types, W &cancel_button, W &ok_button);
+  W generic_editor(EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap);
+  void generic_to_string(const EditTypes &source, std::string type, std::string &target);
+  void string_to_generic(EditTypes &target, std::string type, const std::string &source);
+  IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, Ft font, const std::vector<std::string> &types, W &cancel_button, W &ok_button);
+  IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_button, W &ok_button);
   W bitmapapi_functions_list_item(Ft font1, Ft font2);
+  W bitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
   std::string bitmapapi_functions_item_label(int i);
   W insert_widget(W item, std::function<void(int,int)> f);
   void insert_widget_activate(W w, bool b);
@@ -810,8 +834,13 @@ public:
   WM load(std::string filename);
   void save(WM mod, std::string ilename);
   void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, Ft font);
+  void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm);
   void update_lines_from_canvas(W canvas, WM mod, int id);
   W inserted_widget(GuiApi &gui, WM mod2, int id, Ft font, std::string func_name);
+  W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name);
+  std::vector<std::string> types_from_function(WM mod, int id, std::string funcname);
+  std::vector<std::string> labels_from_function(WM mod, int id, std::string funcname);
+  std::vector<std::string*> refs_from_function(WM mod, int id, std::string funcname);
 private:
   Env &e;
 };

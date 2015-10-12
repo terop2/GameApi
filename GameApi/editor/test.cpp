@@ -4,7 +4,7 @@
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif
-
+#include <cassert>
 
 using namespace GameApi;
 
@@ -26,8 +26,15 @@ struct Envi {
   W chosen_item;
   W insert_widget;
   W dialog_cancel, dialog_ok;
+  int dialog_i1;
+  std::string dialog_uid;
+  std::vector<GuiApi::EditTypes*> vec4;
   Ft font;
   Ft font3;
+  FtA atlas;
+  FtA atlas3;
+  BM atlas_bm;
+  BM atlas_bm3;
   bool insert_ongoing;
   bool insert_ongoing2;
   // gameapi;
@@ -104,43 +111,57 @@ void iter(void *arg)
 	e.ch=-1;
       }
 
+    if (!env->editor_visible)
+      {
     int s = env->gui->num_childs(env->canvas);
-    //std::cout << "Numchilds: " << s << std::endl;
     for(int i=0;i<s;i++)
       {
+	//std::cout << "Child " << i << std::endl;
 	W w = env->gui->get_child(env->canvas, i);
 	int chosen = env->gui->chosen_item(w);
-	//std::cout << "c: " << chosen << std::endl;
-	if (chosen == 0)
+	if (!env->editor_visible && chosen == 0)
 	  {
-	    std::cout << "Chosen: " << i << ":" << chosen << std::endl;
-
-
-	    env->edit_data.push_back(GuiApi::EditTypes());
-	    env->edit_data.push_back(GuiApi::EditTypes());
-	    env->edit_data.push_back(GuiApi::EditTypes());
-	    env->edit_data.push_back(GuiApi::EditTypes());
-	    std::vector<GuiApi::EditTypes*> vec4;
-	    vec4.push_back(&env->edit_data[0]);
-	    vec4.push_back(&env->edit_data[1]);
-	    vec4.push_back(&env->edit_data[2]);
-	    vec4.push_back(&env->edit_data[3]);
+	    env->dialog_i1 = i;
+	    std::string uid = env->gui->get_id(w);
+	    env->dialog_uid = uid;
+	    ///std::vector<GuiApi::EditTypes*> vec4;
+	    env->vec4.clear();
+	    env->edit_data.clear();
 	    std::vector<std::string> types;
-	    types.push_back("int");
-	    types.push_back("PT");
-	    types.push_back("float");
-	    types.push_back("int");
+	    types = env->ev->mod_api.types_from_function(env->mod, 0, uid);
+	    int s = types.size();
+	    for(int w=0;w<s;w++)
+	      {
+		env->edit_data.push_back(GuiApi::EditTypes());
+	      }
+	    for(int ww = 0;ww<s;ww++)
+	      {
+		env->vec4.push_back(&env->edit_data[ww]);
+	      }
+
 	    std::vector<std::string> labels;
-	    labels.push_back("Test: ");
-	    labels.push_back("Test2: ");
-	    labels.push_back("Test3: ");
-	    labels.push_back("Test4: ");
-	    env->editor = env->gui->edit_dialog(labels,vec4,env->font3, types, env->dialog_cancel, env->dialog_ok);
+	    labels = env->ev->mod_api.labels_from_function(env->mod, 0, uid);
+	    std::vector<std::string*> refs;
+	    refs = env->ev->mod_api.refs_from_function(env->mod, 0, uid);
+
+	    assert(refs.size()==labels.size());
+	    assert(types.size()==labels.size());
+	    for(int e=0;e<s;e++)
+	      {
+		std::string *ref = refs[e];
+		env->gui->string_to_generic(*env->vec4[e], types[e], *ref); 
+	      }
+
+	    //for(int kk = 0; kk < s; kk++)
+	    //     std::cout << env->vec4[kk] << " " << env->vec4[kk]->i_value << std::endl;
+
+	    env->editor = env->gui->edit_dialog(labels,env->vec4,env->atlas3, env->atlas_bm3, types, env->dialog_cancel, env->dialog_ok);
 	    env->gui->set_pos(env->editor, 200,50);
 
 	    env->editor_visible = true;
 
 	  }
+      }
       }
 
     env->gui->update(env->txt, e.cursor_pos, e.button, e.ch);
@@ -178,6 +199,21 @@ void iter(void *arg)
 	if (diag_ok==0)
 	  {
 	    env->editor_visible = false;
+
+	    int i = env->dialog_i1;
+	    std::string uid = env->dialog_uid;
+	    std::vector<std::string*> refs;
+	    refs = env->ev->mod_api.refs_from_function(env->mod, 0, uid);
+	    std::vector<std::string> types;
+	    types = env->ev->mod_api.types_from_function(env->mod, 0, uid);
+
+	    int s = refs.size();
+	    for(int i=0;i<s;i++)
+	      {
+		std::string *ref = refs[i];
+		//std::cout << i << " " << (*env->vec4[i]).i_value << std::endl;
+		env->gui->generic_to_string(*env->vec4[i], types[i], *ref);
+	      }
 	  }
       }
     int sel = env->gui->chosen_item(env->scroll_area);
@@ -191,7 +227,7 @@ void iter(void *arg)
 	{
 	  std::string name = env->gui->bitmapapi_functions_item_label(sel2-1);
 	  std::cout << "Chosen label: " << name << std::endl;
-	  env->chosen_item = env->ev->mod_api.inserted_widget(*env->gui, env->mod, 0, env->font, name);
+	  env->chosen_item = env->ev->mod_api.inserted_widget(*env->gui, env->mod, 0, env->atlas, env->atlas_bm, name);
 	  env->insert_widget = env->gui->insert_widget(env->chosen_item, std::bind(&callback_func, _1, _2, env));
 	  env->insert_ongoing = true;
 	}
@@ -231,9 +267,11 @@ float f(float w)
 }
 
 int main(int argc, char *argv[]) {
-  Env e;
-  EveryApi ev(e);
+  Env *e2 = new Env;
+  Env &e = *e2;
+  EveryApi ev(*e2);
   
+
   WM mod = ev.mod_api.load("mod.txt");
 
   Envi env;
@@ -260,6 +298,54 @@ int main(int argc, char *argv[]) {
   Ft font2 = ev.font_api.newfont("FreeSans.ttf", 10,13);
   Ft font3 = ev.font_api.newfont("FreeSans.ttf", 40,40);
 
+
+  if (argc==2)
+    {
+      if (std::string(argv[1])=="--generate-font-atlas")
+	{
+	  std::cout << "Generating font atlas. " << std::endl;
+	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:";
+	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 13,15, 25);
+	  FtA atlas2 = ev.font_api.font_atlas_info(ev, font2, chars, 14,14, 25);
+	  FtA atlas3 = ev.font_api.font_atlas_info(ev, font3, chars, 40,40, 65);
+	  BM atlas_bm = ev.font_api.font_atlas(ev, font, atlas, 13,15);
+	  BM atlas_bm2 = ev.font_api.font_atlas(ev,font2, atlas2, 14,14);
+	  BM atlas_bm3 = ev.font_api.font_atlas(ev,font3, atlas3, 40,40);
+	  std::cout << "Saving 0" << std::endl;
+	  ev.font_api.save_atlas(atlas, "atlas0.txt");
+	  std::cout << "Saving 1" << std::endl;
+	  ev.font_api.save_atlas(atlas2, "atlas1.txt");
+	  std::cout << "Saving 2" << std::endl;
+	  ev.font_api.save_atlas(atlas3, "atlas2.txt");
+	  std::cout << "Saving 0a" << std::endl;
+	  ev.bitmap_api.savebitmap(atlas_bm, "atlas_bm0.ppm", true);
+	  std::cout << "Saving 1a" << std::endl;
+	  ev.bitmap_api.savebitmap(atlas_bm2, "atlas_bm1.ppm", true);
+	  std::cout << "Saving 1b" << std::endl;
+
+	  ev.bitmap_api.savebitmap(atlas_bm3, "atlas_bm2.ppm", true);
+	  std::cout << "Done." << std::endl;
+	  exit(0);
+	}
+    }
+
+
+  FtA atlas = ev.font_api.load_atlas("atlas0.txt");
+  FtA atlas2 = ev.font_api.load_atlas("atlas1.txt");
+  FtA atlas3 = ev.font_api.load_atlas("atlas2.txt");
+  BM atlas_bm = ev.bitmap_api.loadbitmap("atlas_bm0.ppm");
+  BM atlas_bm2 = ev.bitmap_api.loadbitmap("atlas_bm1.ppm");
+  BM atlas_bm3 = ev.bitmap_api.loadbitmap("atlas_bm2.ppm");
+
+#if 0
+  FB atlas_bm_b = ev.float_bitmap_api.from_red(atlas_bm_a);
+  FB atlas_bm2_b = ev.float_bitmap_api.from_red(atlas_bm2_a);
+  FB atlas_bm3_b = ev.float_bitmap_api.from_red(atlas_bm3_a);
+
+  BM atlas_bm = ev.float_bitmap_api.to_grayscale_color(atlas_bm_b, 255,255,255,255, 0,0,0,0);
+  BM atlas_bm2 = ev.float_bitmap_api.to_grayscale_color(atlas_bm2_b,255,255,255,255, 0,0,0,0);
+  BM atlas_bm3 = ev.float_bitmap_api.to_grayscale_color(atlas_bm3_b, 255,255,255,255, 0,0,0,0);
+#endif
   // rest of the initializations
   ev.mainloop_api.init(sh, screen_x,screen_y);
   ev.mainloop_api.alpha(true);
@@ -277,7 +363,7 @@ int main(int argc, char *argv[]) {
   vec.push_back("Edit");
   vec.push_back("File");
   vec.push_back("Open");
-  W txt = gui.main_menu(vec, font);
+  W txt = gui.main_menu(vec, atlas, atlas_bm);
   std::vector<std::string> vec2;
   vec2.push_back("test1");
   vec2.push_back("test2");
@@ -285,7 +371,7 @@ int main(int argc, char *argv[]) {
   std::vector<W> menus;
   for(int i=0;i<vec.size();i++)
     {
-      W txt_2 = gui.menu(txt,i, vec2, font);
+      W txt_2 = gui.menu(txt,i, vec2, atlas, atlas_bm);
       menus.push_back(txt_2);
     }
 			 
@@ -293,13 +379,13 @@ int main(int argc, char *argv[]) {
   //std::vector<std::string> vec3;
   //vec3.push_back("newbitmap");
   //vec3.push_back("newbitmap");
-  //W test1 = gui.list_item_opened(100,"BitmapApi", font, vec3, font);
+  //W test1 = gui.list_item_opened(100,"Bi tmapApi", font, vec3, font);
   //gui.set_pos(test1, 400,400);
 
   std::vector<W> items;
   for(int i=0;i<2;i++)
     {
-      items.push_back(gui.bitmapapi_functions_list_item(font, font2));
+      items.push_back(gui.bitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
     }
   W array = gui.array_y(&items[0], items.size(), 15);
   W scroll_area = gui.scroll_area(array, gui.size_x(array), screen_y-30, screen_y);
@@ -326,7 +412,7 @@ int main(int argc, char *argv[]) {
   //gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), 150,100);
   //for(int i=0;i<200;i++)
   //  gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), i*30, i*30);
-  ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, font);
+  ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm);
 
   W canvas_area = gui.scroll_area(canvas, screen2_x-20, screen2_y-20, screen_y);
   W scrollbar_y = gui.scrollbar_y(20, screen2_y-20, sy);
@@ -347,6 +433,10 @@ int main(int argc, char *argv[]) {
   env.txt2 = txt2;
   env.font = font;
   env.font3 = font3;
+  env.atlas = atlas;
+  env.atlas3 = atlas3;
+  env.atlas_bm = atlas_bm;
+  env.atlas_bm3 = atlas_bm3;
   //env.editor = editor;
   env.editor_visible = false;
   //env.wave = wave;
@@ -362,12 +452,14 @@ int main(int argc, char *argv[]) {
   env.scroll_area = scroll_area;
   env.menus = menus;
   env.opened_menu_num = -1;
+
+
 #ifndef EMSCRIPTEN
   while(1) {
     iter(&env);
   }
 #else
-  emscripten_set_main_loop_arg(iter, (void*)&env, 60,1);
+  emscripten_set_main_loop_arg(iter, (void*)&env, 30,1);
 #endif
 
 

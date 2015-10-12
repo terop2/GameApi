@@ -399,7 +399,7 @@ public:
     int delta = -vec2[i];
     if (y<delta) return def;
     if (y>=delta+vec[i]->SizeY()) return def;
-    
+    if (x-oldpixels>=vec[i]->SizeX()) return def;
     return vec[i]->Map(x-oldpixels,y-delta);
   }
   int PositiveDelta() const

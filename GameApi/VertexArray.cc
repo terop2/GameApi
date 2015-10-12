@@ -423,7 +423,6 @@ void RenderVertexArray::update(int id)
   glBufferSubData(GL_ARRAY_BUFFER, 0, s.tri_count(id)*sizeof(float)*3, s.tri_polys2(id));
 
 
-
   glBindBuffer(GL_ARRAY_BUFFER, buffers2[0]);
   glBufferSubData(GL_ARRAY_BUFFER, 0, s.quad_count(id)*sizeof(float)*3, s.quad_polys(id));
   glBindBuffer(GL_ARRAY_BUFFER, buffers2[1]);
@@ -436,7 +435,6 @@ void RenderVertexArray::update(int id)
   glBufferSubData(GL_ARRAY_BUFFER, 0, s.quad_count(id)*sizeof(float)*2, s.quad_texcoord_polys(id));
   glBindBuffer(GL_ARRAY_BUFFER, buffers2[4]);
   glBufferSubData(GL_ARRAY_BUFFER, 0, s.quad_count(id)*sizeof(float)*3, s.quad_polys2(id));
-
 
 }
 
@@ -486,7 +484,6 @@ void RenderVertexArray::prepare(int id)
   glBindBuffer(GL_ARRAY_BUFFER, buffers2[4]);
   glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(float)*3, s.quad_polys2(id), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 
 #ifdef VAO
     glBindVertexArray(vao[0]);
