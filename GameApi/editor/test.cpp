@@ -5,7 +5,7 @@
 #include <emscripten.h>
 #endif
 #include <cassert>
-
+#include <ctime>
 using namespace GameApi;
 
 
@@ -37,6 +37,8 @@ struct Envi {
   BM atlas_bm3;
   bool insert_ongoing;
   bool insert_ongoing2;
+  std::string insert_func_name;
+  std::string insert_mod_name;
   // gameapi;
   //W test1;
   WM mod;
@@ -45,11 +47,35 @@ struct Envi {
   int opened_menu_num;
   bool state;
   bool ctrl;
+  int unique_id_counter;
 };
 
 void callback_func(int x, int y, Envi *envi)
 {
   std::cout << "Insert!" << std::endl;
+
+  int uid_num = envi->unique_id_counter;
+  envi->unique_id_counter++;
+  std::stringstream ss;
+  ss << "uid" << uid_num;
+  std::string uid = ss.str();
+
+  envi->ev->mod_api.insert_inserted_to_canvas(*envi->gui, envi->canvas, envi->chosen_item, uid);
+
+
+  std::vector<std::pair<std::string,std::string> > vec = envi->ev->mod_api.defaults_from_function(envi->insert_mod_name);
+  envi->ev->mod_api.insert_to_mod(envi->mod, 0, envi->insert_mod_name, uid, envi->gui->pos_x(envi->chosen_item), envi->gui->pos_y(envi->chosen_item), vec);
+}
+
+template<class T>
+std::ostream &operator<<(std::ostream &o, const std::vector<T> &vec)
+{
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      o << vec[i] << ",";
+    }
+  return o;
 }
 
 void iter(void *arg)
@@ -123,6 +149,7 @@ void iter(void *arg)
 	  {
 	    env->dialog_i1 = i;
 	    std::string uid = env->gui->get_id(w);
+	    std::cout << "Chosen uid: " << uid << std::endl;
 	    env->dialog_uid = uid;
 	    ///std::vector<GuiApi::EditTypes*> vec4;
 	    env->vec4.clear();
@@ -144,6 +171,7 @@ void iter(void *arg)
 	    std::vector<std::string*> refs;
 	    refs = env->ev->mod_api.refs_from_function(env->mod, 0, uid);
 
+	    std::cout << labels << " " << refs << std::endl;
 	    assert(refs.size()==labels.size());
 	    assert(types.size()==labels.size());
 	    for(int e=0;e<s;e++)
@@ -164,20 +192,20 @@ void iter(void *arg)
       }
       }
 
-    env->gui->update(env->txt, e.cursor_pos, e.button, e.ch);
+    env->gui->update(env->txt, e.cursor_pos, e.button, e.ch, e.type);
     if (env->editor_visible)
-      env->gui->update(env->editor, e.cursor_pos, e.button, e.ch);
-    env->gui->update(env->txt2, e.cursor_pos, e.button, e.ch);
-    env->gui->update(env->scroll_area, e.cursor_pos, e.button,e.ch);
+      env->gui->update(env->editor, e.cursor_pos, e.button, e.ch, e.type);
+    env->gui->update(env->txt2, e.cursor_pos, e.button, e.ch, e.type);
+    env->gui->update(env->scroll_area, e.cursor_pos, e.button,e.ch, e.type);
     //env->gui->update(env->wave, e.cursor_pos, e.button);
     //env->gui->update(env->gameapi, e.cursor_pos, e.button);
     //env->gui->update(env->test1, e.cursor_pos, e.button);
-    env->gui->update(env->canvas_area, e.cursor_pos, e.button,e.ch);
-    env->gui->update(env->scrollbar_x, e.cursor_pos, e.button,e.ch);
-    env->gui->update(env->scrollbar_y, e.cursor_pos, e.button,e.ch);
+    env->gui->update(env->canvas_area, e.cursor_pos, e.button,e.ch, e.type);
+    env->gui->update(env->scrollbar_x, e.cursor_pos, e.button,e.ch, e.type);
+    env->gui->update(env->scrollbar_y, e.cursor_pos, e.button,e.ch, e.type);
     if (env->insert_ongoing)
       {
-	env->gui->update(env->insert_widget, e.cursor_pos, e.button,e.ch);
+	env->gui->update(env->insert_widget, e.cursor_pos, e.button,e.ch, e.type);
       }
 
     float param_x = env->gui->dynamic_param(env->txt2, 0);
@@ -227,6 +255,7 @@ void iter(void *arg)
 	{
 	  std::string name = env->gui->bitmapapi_functions_item_label(sel2-1);
 	  std::cout << "Chosen label: " << name << std::endl;
+	  env->insert_mod_name = name;
 	  env->chosen_item = env->ev->mod_api.inserted_widget(*env->gui, env->mod, 0, env->atlas, env->atlas_bm, name);
 	  env->insert_widget = env->gui->insert_widget(env->chosen_item, std::bind(&callback_func, _1, _2, env));
 	  env->insert_ongoing = true;
@@ -250,7 +279,7 @@ void iter(void *arg)
       }
     if (env->opened_menu_num != -1)
       {
-	env->gui->update(env->menus[env->opened_menu_num], e.cursor_pos, e.button, e.ch);
+	env->gui->update(env->menus[env->opened_menu_num], e.cursor_pos, e.button, e.ch, e.type);
 	if (e.button == -1) { env->state=1; }
 	if (e.button==0 && env->state==1)
 	  {
@@ -267,6 +296,7 @@ float f(float w)
 }
 
 int main(int argc, char *argv[]) {
+  srand(time(NULL));
   Env *e2 = new Env;
   Env &e = *e2;
   EveryApi ev(*e2);
@@ -437,6 +467,7 @@ int main(int argc, char *argv[]) {
   env.atlas3 = atlas3;
   env.atlas_bm = atlas_bm;
   env.atlas_bm3 = atlas_bm3;
+  env.unique_id_counter = ev.mainloop_api.random();
   //env.editor = editor;
   env.editor_visible = false;
   //env.wave = wave;
