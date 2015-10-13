@@ -17343,6 +17343,180 @@ GameApiItem* ApiItemF(T (GameApi::EveryApi::*api), RT (T::*fptr)(P...),
 {
   return new ApiItem<T,RT,P...>(api, fptr, name, param_name, param_type, param_default, return_type);
 }
+std::vector<GameApiItem*> polygonapi_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::empty,
+			 "empty",
+			 { },
+			 { },
+			 { },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::load_model,
+			 "load_model",
+			 { "filename", "obj_num" },
+			 { "std::string", "int" },
+			 { "", "0" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::triangle,
+			 "triangle",
+			 { "p1", "p2", "p3" },
+			 { "PT", "PT", "PT" },
+			 { "", "", "" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::quad,
+			 "quad",
+			 { "p1", "p2", "p3", "p4" },
+			 { "PT", "PT", "PT", "PT" },
+			 { "", "", "", "" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::quad_x,
+			 "quad_x",
+			 { "x", "y1", "y2", "z1", "z2" },
+			 { "float", "float", "float", "float", "float" },
+			 { "0.0", "0.0", "100.0", "0.0", "100.0" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::quad_y,
+			 "quad_y",
+			 { "x1", "x2", "y", "z1", "z2" },
+			 { "float", "float", "float", "float", "float" },
+			 { "0.0", "100.0", "0.0", "0.0", "100.0" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::quad_z,
+			 "quad_z",
+			 { "x1", "x2", "y1", "y2", "z" },
+			 { "float", "float", "float", "float", "float" },
+			 { "0.0", "100.0", "0.0", "100.0", "0.0" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, (GameApi::P (GameApi::PolygonApi::*)(float,float,float,float,float,float))&GameApi::PolygonApi::cube,
+			 "cube",
+			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			 { "float", "float", "float", "float", "float", "float" },
+			 { "0.0", "100.0", "0.0", "100.0", "0.0", "100.0" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sphere,
+			 "sphere",
+			 { "center", "radius", "numfaces1", "numfaces2" },
+			 { "PT", "float", "int", "int" },
+			 { "(0.0,0.0,0.0)",  "100.0", "30", "30" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::cone,
+			 "cone",
+			 { "numfaces", "p1", "p2", "radius1", "radius2" },
+			 { "int", "PT", "PT", "float", "float" },
+			 { "30", "(0.0,0.0,0.0)", "(0.0,100.0,0.0)", "30.0", "10.0" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::torus,
+			 "torus",
+			 { "numfaces1", "numfaces2", "center", "u_x", "u_y", "radius1", "uu_x", "uu_y", "radius2" },
+			 { "int", "int", "PT", "V", "V", "float", "V", "V", "float" },
+			 { "20", "20", "", "", "", "30.0", "", "", "10.0" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color,
+			 "color",
+			 { "orig", "color" },
+			 { "P", "unsigned int" },
+			 { "", "0xffffffff" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_faces,
+			 "color_faces",
+			 { "orig", "color_1", "color_2", "color_3", "color_4" },
+			 { "P", "unsigned int", "unsigned int", "unsigned int", "unsigned int" },
+			 { "", "0xffffffff", "0xffffffff", "0xff888888", "0xff888888" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_from_normals,
+			 "color_from_normals",
+			 { "orig" },
+			 { "P" },
+			 { "" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_grayscale,
+			 "color_grayscale",
+			 { "orig" },
+			 { "P" },
+			 { "" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::or_elem,
+			 "or_elem",
+			 { "p1", "p2" },
+			 { "P", "P" },
+			 { "", "" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::translate,
+			 "translate",
+			 { "orig", "dx", "dy", "dz" },
+			 { "P", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rotatex,
+			 "rotatex",
+			 { "orig", "angle" },
+			 { "P", "float" },
+			 { "", "0.0" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rotatey,
+			 "rotatey",
+			 { "orig", "angle" },
+			 { "P", "float" },
+			 { "", "0.0" },
+			 "P"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rotatez,
+			 "rotatez",
+			 { "orig", "angle" },
+			 { "P", "float" },
+			 { "", "0.0" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::scale,
+			 "scale",
+			 { "orig", "sx", "sy", "sz" },
+			 { "P", "float", "float", "float" },
+			 { "", "1.0", "1.0", "1.0" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::shadow,
+			 "shadow",
+			 { "orig", "pos", "u_x", "u_y", "light_vec" },
+			 { "P", "PT", "V", "V", "V" },
+			 { "", "(0.0,0.0,0.0)", "(1.0,0.0,0.0)", "(0.0,0.0,1.0)", "(1.0,1.0,1.0)" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::reflection,
+			 "reflection",
+			 { "orig", "pos", "u_x", "u_y", "light_vec" },
+			 { "P", "PT", "V", "V", "V" },
+			 { "", "(0.0,0.0,0.0)", "(1.0,0.0,0.0)", "(0.0,0.0,1.0)", "(0.0, 1.0,0.0)" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::memoize,
+			 "memoize",
+			 { "orig" },
+			 { "P" },
+			 { "" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::world_from_bitmap,
+			 "world_from_bitmap",
+			 { "f", "int_bm", "dx", "dy", "max_c" },
+			 { "std::function<P(int c)>", "BM", "float", "float", "int" },
+			 { "", "", "100.0", "100.0", "1" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::from_points,
+			 "from_points",
+			 { "p", "f" },
+			 { "PTS", "std::functoin<P (int,float,float,float,unsigned int)>" },
+			 { "", "" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::from_lines,
+			 "from_lines",
+			 { "li", "f" },
+			 { "LI", "std::function<P (int,float,float,float,float,float,float,float,unsigned int,unsigned int)>" },
+			 { "", "" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::from_polygon,
+			 "from_polygon",
+			 { "p", "f" },
+			 { "P", "std::function<P (int,PT,PT,PT,PT)>" },
+			 { "", "" },
+			 "P"));
+  return vec;
+}
 std::vector<GameApiItem*> bitmapapi_functions()
 {
   std::vector<GameApiItem*> vec;
