@@ -297,7 +297,16 @@ void iter(void *arg)
       //std::cout << "Chosen: " << sel2 << std::endl;
       if (sel2>0)
 	{
-	  std::string name = env->gui->bitmapapi_functions_item_label(sel2-1);
+	  std::string name;
+	  switch(sel)
+	    {
+	    case 0:
+	      name = env->gui->bitmapapi_functions_item_label(sel2-1);
+	      break;
+	    case 1:
+	      name = env->gui->polygonapi_functions_item_label(sel2-1);
+	      break;
+	    };
 	  //std::cout << "Chosen label: " << name << std::endl;
 	  env->insert_mod_name = name;
 	  W ww = { 0 };
@@ -477,9 +486,10 @@ int main(int argc, char *argv[]) {
   //gui.set_pos(test1, 400,400);
 
   std::vector<W> items;
-  for(int i=0;i<2;i++)
+  for(int i=0;i<1;i++)
     {
       items.push_back(gui.bitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
+      items.push_back(gui.polygonapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
     }
   W array = gui.array_y(&items[0], items.size(), 15);
   W scroll_area = gui.scroll_area(array, gui.size_x(array), screen_y-30, screen_y);
