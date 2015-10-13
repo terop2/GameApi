@@ -17343,6 +17343,16 @@ GameApiItem* ApiItemF(T (GameApi::EveryApi::*api), RT (T::*fptr)(P...),
 {
   return new ApiItem<T,RT,P...>(api, fptr, name, param_name, param_type, param_default, return_type);
 }
+std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::vector<GameApiItem*> vec2)
+{
+  int s = vec2.size();
+  for(int i=0;i<s;i++)
+    {
+      vec1.push_back(vec2[i]);
+    }
+  return vec1;
+}
+
 std::vector<GameApiItem*> polygonapi_functions()
 {
   std::vector<GameApiItem*> vec;
@@ -17619,6 +17629,15 @@ std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)
   std::string name = item->Name(0);
   return name;
 }
+std::string GameApi::GuiApi::polygonapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = polygonapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+
+
 
 GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector<GameApiItem*> vec, GameApi::Ft font, GameApi::Ft font2)
 {
@@ -17653,6 +17672,12 @@ GameApi::W GameApi::GuiApi::bitmapapi_functions_list_item(FtA atlas1, BM atlas_b
 {
   return functions_widget(*this, "BitmapApi", bitmapapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
 }
+
+GameApi::W GameApi::GuiApi::polygonapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+{
+  return functions_widget(*this, "PolygonApi", polygonapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+}
+
 
 GameApiModule load_gameapi(std::string filename)
 {
@@ -17824,7 +17849,9 @@ void GameApi::WModApi::update_lines_from_canvas(W canvas, WM mod2, int id)
 }
 GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, Ft font, std::string func_name)
 {
-  std::vector<GameApiItem*> functions = bitmapapi_functions();
+  std::vector<GameApiItem*> functions1 = bitmapapi_functions(); 
+  std::vector<GameApiItem*> functions2 = polygonapi_functions(); 
+  std::vector<GameApiItem*> functions = append_vectors(functions1, functions2);
 
   int s = functions.size();
   int i = 0;
@@ -17849,7 +17876,9 @@ GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, Ft fo
 
 GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid)
 {
-  std::vector<GameApiItem*> functions = bitmapapi_functions();
+  std::vector<GameApiItem*> functions1 = bitmapapi_functions(); 
+  std::vector<GameApiItem*> functions2 = polygonapi_functions(); 
+  std::vector<GameApiItem*> functions = append_vectors(functions1, functions2);
 
   int s = functions.size();
   int i = 0;
@@ -17945,7 +17974,11 @@ std::vector<std::string*> GameApi::WModApi::refs_from_function(WM mod2, int id, 
 	  module_name = line->module_name;
 
 
-	  std::vector<GameApiItem*> functions = bitmapapi_functions();
+	  std::vector<GameApiItem*> functions1 = bitmapapi_functions(); 
+	  std::vector<GameApiItem*> functions2 = polygonapi_functions(); 
+	  std::vector<GameApiItem*> functions = append_vectors(functions1, functions2);
+
+	  //std::vector<GameApiItem*> functions = bitmapapi_functions();
 	  std::vector<std::string> types;
 	  int s = functions.size();
 	  int i = 0;
@@ -18004,7 +18037,11 @@ std::vector<std::string> GameApi::WModApi::types_from_function(WM mod2, int id, 
     }
 
 
-  std::vector<GameApiItem*> functions = bitmapapi_functions();
+  std::vector<GameApiItem*> functions1 = bitmapapi_functions();
+  std::vector<GameApiItem*> functions2 = polygonapi_functions();
+  std::vector<GameApiItem*> functions = append_vectors(functions1, functions2);
+
+  //std::vector<GameApiItem*> functions = bitmapapi_functions();
   std::vector<std::string> types;
   int s = functions.size();
   for(int i=0;i<s;i++)
@@ -18050,7 +18087,13 @@ void GameApi::WModApi::insert_to_mod(WM mod2, int id, std::string modname, std::
 std::vector<std::pair<std::string,std::string> > GameApi::WModApi::defaults_from_function(std::string module_name)
 {
   std::vector<std::pair<std::string,std::string> > res;
-  std::vector<GameApiItem*> functions = bitmapapi_functions();
+
+  std::vector<GameApiItem*> functions1 = bitmapapi_functions(); 
+  std::vector<GameApiItem*> functions2 = polygonapi_functions(); 
+  std::vector<GameApiItem*> functions = append_vectors(functions1, functions2);
+
+
+  //std::vector<GameApiItem*> functions = bitmapapi_functions();
   int s = functions.size();
   for(int i=0;i<s;i++)
     {
@@ -18094,7 +18137,11 @@ std::vector<std::string> GameApi::WModApi::labels_from_function(WM mod2, int id,
       return std::vector<std::string>();
     }
 
-  std::vector<GameApiItem*> functions = bitmapapi_functions();
+  std::vector<GameApiItem*> functions1 = bitmapapi_functions(); 
+  std::vector<GameApiItem*> functions2 = polygonapi_functions(); 
+  std::vector<GameApiItem*> functions = append_vectors(functions1, functions2);
+
+  //std::vector<GameApiItem*> functions = bitmapapi_functions();
   int s = functions.size();
   std::vector<std::string> types;
   std::vector<std::string> labels;
@@ -18143,7 +18190,9 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
   GameApiFunction *func = &mod->funcs[id];
-  std::vector<GameApiItem*> functions = bitmapapi_functions();
+  std::vector<GameApiItem*> functions1 = bitmapapi_functions();
+  std::vector<GameApiItem*> functions2 = polygonapi_functions();
+  std::vector<GameApiItem*> functions = append_vectors(functions1, functions2);
   int s = func->lines.size();
   for(int i=0;i<s;i++)
     {
@@ -18181,7 +18230,9 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
   GameApiFunction *func = &mod->funcs[id];
-  std::vector<GameApiItem*> functions = bitmapapi_functions();
+  std::vector<GameApiItem*> functions1 = bitmapapi_functions();
+  std::vector<GameApiItem*> functions2 = polygonapi_functions();
+  std::vector<GameApiItem*> functions = append_vectors(functions1, functions2);
   int s = func->lines.size();
   std::vector<W> connect_clicks;
   for(int j=0;j<s;j++)

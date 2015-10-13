@@ -806,7 +806,9 @@ public:
   IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_button, W &ok_button);
   W bitmapapi_functions_list_item(Ft font1, Ft font2);
   W bitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
+  W polygonapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
   std::string bitmapapi_functions_item_label(int i);
+  std::string polygonapi_functions_item_label(int i);
   W insert_widget(W item, std::function<void(int,int)> f);
   void insert_widget_activate(W w, bool b);
 
