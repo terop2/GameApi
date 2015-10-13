@@ -15069,7 +15069,7 @@ public:
       }
     if (firsttime>0)
       firsttime--;
-    if (button==0) {
+    if (button==0 && type==1025) {
       current_selected_item = selected_item;
     }
     if (button==-1) {
@@ -15247,7 +15247,7 @@ public:
     bool changed = false;
     Point2d pos = get_pos();
     Vector2d sz = get_size();
-    if (button == 0 && mouse.x>=pos.x && mouse.x < pos.x+sz.dx
+    if (button == 0 && type==1025 && mouse.x>=pos.x && mouse.x < pos.x+sz.dx
 	&& mouse.y>=pos.y && mouse.y<pos.y+sz.dy)
       {
 	active = true;
@@ -15341,12 +15341,12 @@ public:
     bool changed = false;
     Point2d pos = get_pos();
     Vector2d sz = get_size();
-    if (button == 0 && mouse.x>=pos.x && mouse.x < pos.x+sz.dx
+    if (button == 0 && type==1025 && mouse.x>=pos.x && mouse.x < pos.x+sz.dx
 	&& mouse.y>=pos.y && mouse.y<pos.y+sz.dy)
       {
 	active = true;
       }
-    else if (button==0)
+    else if (button==0 && type==1025)
       {
 	active = false;
       }
@@ -15987,7 +15987,8 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_title(int sx, std::string label, Ft
   std::cout << "List Item title height: " << size_y(node_t0) << std::endl;
   W node_0 = button(sx, size_y(node_t0), 0xffff88ff, 0xff8844ff);
   W node_1 = layer(node_0, node_t0);
-  return node_1;
+  W node_2 = highlight(node_1);
+  return node_2;
 }
 
 EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, Ft font, std::vector<std::string> subitems, Ft font2)
@@ -16040,7 +16041,7 @@ public:
   void update(Point2d mouse, int button, int ch, int type)
   {
     GuiWidgetForward::update(mouse,button,ch, type);
-    if (!move_ongoing && button==0 && mouse.x >= pos.x+area_x && mouse.x < pos.x+area_x+area_width &&
+    if (!move_ongoing && button==0 && type==1025 && mouse.x >= pos.x+area_x && mouse.x < pos.x+area_x+area_width &&
 	mouse.y >= pos.y+area_y && mouse.y < pos.y+area_y+area_height)
       {
 	move_ongoing = true;
@@ -16083,7 +16084,7 @@ public:
 
     //std::cout << "Update!" << std::endl;
     //std::cout << button << " " << mouse << " " << pos << " " << area_x << " " << area_y << " " << area_width << " " << area_height << std::endl;
-    if (!done && button==0 && mouse.x >= pos.x+area_x && mouse.x < pos.x+area_x+area_width &&
+    if (!done && button==0 && type==1025 && mouse.x >= pos.x+area_x && mouse.x < pos.x+area_x+area_width &&
 	mouse.y >= pos.y+area_y && mouse.y < pos.y+area_y+area_height)
       {
 	//std::cout << "Selected: true" << std::endl;
@@ -16717,7 +16718,7 @@ public:
     Point2d p = get_pos();
     float size_y = float(sy)/float(area_y)*float(sy-2-2-2-2);
     float pos_y = current_pos * (float(sy) - float(sy)/float(area_y)*float(sy-2-2-2-2));
-    if (button==0 && !following && mouse.x>=p.x+2+2 && mouse.x<p.x+sx-2-2 && mouse.y>=p.y+pos_y+2+2 && mouse.y<p.y+pos_y+2+2+size_y)
+    if (button==0 && type == 1025 && !following && mouse.x>=p.x+2+2 && mouse.x<p.x+sx-2-2 && mouse.y>=p.y+pos_y+2+2 && mouse.y<p.y+pos_y+2+2+size_y)
       {
 	following = true;
 	start_pos = mouse;
@@ -16794,7 +16795,7 @@ public:
     Point2d p = get_pos();
     float size_x = float(sx)/float(area_x)*float(sx-2-2-2-2);
     float pos_x = current_pos * (float(sx) - float(sx)/float(area_x)*float(sx-2-2-2-2));
-    if (button==0 && !following && mouse.y>=p.y+2+2 && mouse.y<p.y+sy-2-2 && mouse.x>=p.x+pos_x+2+2 && mouse.x<p.x+pos_x+2+2+size_x)
+    if (button==0 && type==1025 && !following && mouse.y>=p.y+2+2 && mouse.y<p.y+sy-2-2 && mouse.x>=p.x+pos_x+2+2 && mouse.x<p.x+pos_x+2+2+size_x)
       {
 	following = true;
 	start_pos = mouse;
@@ -17006,7 +17007,7 @@ private:
 class OrElemGuiWidget : public GuiWidget
 {
 public:
-  OrElemGuiWidget(GuiWidget *w1, GuiWidget *w2) : w1(w1), w2(w2) { }
+  OrElemGuiWidget(GuiWidget *w1, GuiWidget *w2) : b(false), w1(w1), w2(w2) { }
   virtual Point2d get_pos() const { if (b) return w1->get_pos(); else return w2->get_pos(); }
   virtual Vector2d get_size() const { if (b) return w1->get_size(); else return w2->get_size(); }
   virtual void set_pos(Point2d pos) { if (b) w1->set_pos(pos); else w2->set_pos(pos); } 
@@ -17527,6 +17528,353 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 "P"));
   return vec;
 }
+std::vector<GameApiItem*> shadermoduleapi_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, (GameApi::SFO (GameApi::ShaderModuleApi::*)(GameApi::PT,float))&GameApi::ShaderModuleApi::sphere,
+			 "sh_sphere",
+			 { "center", "radius" },
+			 { "PT", "float" },
+			 { "(0.0,0.0,0.0)", "100.0" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, (GameApi::SFO (GameApi::ShaderModuleApi::*)(float,float, float, float, float,float))&GameApi::ShaderModuleApi::cube,
+			 "sh_cube",
+			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			 { "float", "float", "float", "float", "float", "float" },
+			 { "0.0", "100.0", "0.0", "100.0", "0.0", "100.0" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::rounded_cube,
+			 "sh_rcube",
+			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "r" },
+			 { "float", "float", "float", "float", "float", "float","float" },
+			 { "0.0", "100.0", "0.0", "100.0", "0.0", "100.0", "20.0" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::texture,
+			 "sh_texture",
+			 { "obj" },
+			 { "SFO" },
+			 { "" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::texture_box,
+			 "texture_box",
+			 { "start_x", "end_x", "start_y", "end_y", "start_x", "end_x" },
+			 { "float", "float", "float", "float", "float", "float" },
+			 { "0.0", "100.0", "0.0", "100.0", "0.0", "100.0" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, (GameApi::SFO (GameApi::ShaderModuleApi::*)(float,float,float,float,float,float, float,float))&GameApi::ShaderModuleApi::line,
+			 "sh_line",
+			 { "start_x", "start_y", "start_z", "end_x", "end_y", "end_z", "width1", "width2" },
+			 { "float", "float", "float", "float", "float", "float", "float", "float" },
+			 { "0.0", "0.0", "0.0", "100.0", "100.0", "0.0", "15.0", "15.0" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::plane,
+			 "sh_plane",
+			 { "center", "u_x", "u_y" },
+			 { "PT", "V", "V" },
+			 { "", "", "" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::torus,
+			 "sh_torus",
+			 { "radius_1", "radius_2" },
+			 { "float", "float" },
+			 { "30.0", "10.0" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::color,
+			 "sh_color",
+			 { "obj", "r", "g", "b", "a" },
+			 { "SFO", "float", "float", "float", "float" },
+			 { "", "1.0", "1.0", "1.0", "1.0" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, (GameApi::SFO (GameApi::ShaderModuleApi::*)(GameApi::SFO,float))&GameApi::ShaderModuleApi::rot_x,
+			 "rot_x",
+			 { "obj", "angle" },
+			 { "SFO", "float" },
+			 { "", "0.0" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, (GameApi::SFO (GameApi::ShaderModuleApi::*)(GameApi::SFO, float))&GameApi::ShaderModuleApi::rot_y,
+			 "rot_y",
+			 { "obj", "angle" },
+			 { "SFO", "float" },
+			 { "", "0.0" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, (GameApi::SFO (GameApi::ShaderModuleApi::*)(GameApi::SFO, float))&GameApi::ShaderModuleApi::rot_z,
+			 "rot_z",
+			 { "obj", "angle" },
+			 { "SFO", "float" },
+			 { "", "0.0" },
+			 "SFO"));
+  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::and_not,
+			 "and_not",
+			 { "obj", "not_obj" },
+			 { "SFO", "SFO" },
+			 { "", "" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::or_elem,
+			 "sh_or_elem",
+			 { "obj1", "obj2" },
+			 { "SFO", "SFO" },
+			 { "", "" },
+			 "SFO"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, (GameApi::SFO (GameApi::ShaderModuleApi::*)(GameApi::SFO,float,float,float))&GameApi::ShaderModuleApi::trans,
+			 "sh_trans",
+			 { "obj", "dx", "dy", "dz" },
+			 { "SFO", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::bind_arg,
+			 "bind_arg",
+			 { "obj", "name", "value" },
+			 { "SFO", "std::string", "std::string" },
+			 { "", "", "" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::color_from_normal,
+			 "color_from_normal",
+			 { "obj" },
+			 { "SFO" },
+			 { "" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::stop_generation,
+			 "stop_generation",
+			 { "obj" },
+			 { "SFO" },
+			 { "" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::mix_color,
+			 "mix_color",
+			 { "col1", "col2", "t" },
+			 { "SFO", "SFO", "float" },
+			 { "", "", "0.5" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::grayscale,
+			 "sh_grayscale",
+			 { "obj" },
+			 { "SFO" },
+			 { "" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::noise,
+			 "sh_noise",
+			 { "obj", "strength" },
+			 { "SFO", "float" },
+			 { "", "1.0" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::ambient_occulsion,
+			 "ambient_occulsion",
+			 { "obj", "d", "i" },
+			 { "SFO", "float", "float" },
+			 { "", "1.0", "1.0" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::soft_shadow,
+			 "soft_shadow",
+			 { "scene", "light_dir", "mint", "maxt", "k", "strong" },
+			 { "SFO", "V", "float", "float", "float", "float" },
+			 { "", "", "1.0", "5.0", "1.0", "3.0" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::bounding_primitive,
+			 "bounding_prim",
+			 { "prim", "inside", "outside" },
+			 { "SFO", "SFO", "SFO" },
+			 { "", "", "" },
+			 "SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::render,
+			 "render",
+			 { "obj" },
+			 { "SFO" },
+			 { "" },
+			 "SFO"));
+  return vec;
+
+}
+std::vector<GameApiItem*> linesapi_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, (GameApi::LI (GameApi::LinesApi::*)(GameApi::LI, unsigned int))&GameApi::LinesApi::change_color,
+			 "change_color",
+			 { "li", "color" },
+			 { "LI", "unsigned int" },
+			 { "", "0xffffffff" },
+			 "LI"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, (GameApi::LI (GameApi::LinesApi::*)(GameApi::LI, unsigned int, unsigned int))&GameApi::LinesApi::change_color,
+			 "change_color2",
+			 { "li", "color_1", "color_2" },
+			 { "LI", "unsigned int", "unsigned int" },
+			 { "", "0xffffffff", "0xff888888" },
+			 "LI"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::from_polygon,
+			 "li_from_polygon",
+			 { "poly" },
+			 { "P" },
+			 { "" },
+			 "LI"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::border_from_bool_bitmap,
+			 "border_from_bool_bitmap",
+			 { "b", "start_x", "end_x", "start_y", "end_y", "z" },
+			 { "BB", "float", "float", "float", "float", "float" },
+			 { "",   "0.0", "100.0", "0.0", "100.0", "0.0" },
+			 "LI"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::translate,
+			 "li_translate",
+			 { "lines", "dx", "dy", "dz" },
+			 { "LI", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0" },
+			 "LI"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::scale,
+			 "li_scale",
+			 { "lines", "m_x", "m_y", "m_z" },
+			 { "LI", "float", "float", "float" },
+			 { "", "1.0", "1.0", "1.0" },
+			 "LI"));
+  return vec;
+}
+std::vector<GameApiItem*> floatbitmapapi_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::empty,
+			 "emptyfloat",
+			 { "sx", "sy" },
+			 { "int", "int" },
+			 { "100", "100" },
+			 "FB"));
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::grayscale,
+			 "grayscale",
+			 { "color_bm" },
+			 { "BM" },
+			 { "" },
+			 "FB"));
+#endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::from_red,
+			 "from_red",
+			 { "color_bm" },
+			 { "BM" },
+			 { "" },
+			 "FB"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::from_green,
+			 "from_green",
+			 { "color_bm" },
+			 { "BM" },
+			 { "" },
+			 "FB"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::from_blue,
+			 "from_blue",
+			 { "color_bm" },
+			 { "BM" },
+			 { "" },
+			 "FB"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::from_alpha,
+			 "from_alpha",
+			 { "color_bm" },
+			 { "Bm" },
+			 { "" },
+			 "FB"));
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::min_fb,
+			 "min_fb",
+			 { "fb1", "fb2" },
+			 { "FB", "FB" },
+			 { "", "" },
+			 "FB"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::max_fb,
+			 "max_fb",
+			 { "fb1", "fb2" },
+			 { "FB", "FB" },
+			 { "", "" },
+			 "FB"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::mix_fb,
+			 "mix_fb",
+			 { "fb1", "fb2", "val" },
+			 { "FB", "FB", "float" },
+			 { "", "", "0.5" },
+			 "FB"));
+#endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::to_grayscale_color,
+			 "to_grayscale_color",
+			 { "fb", "r", "g", "b", "a", "r2", "g2", "b2" "a2" },
+			 { "FB", "int", "int", "int", "int", "int", "int", "int", "int" },
+			 { "", "255", "255", "255", "255", "0", "0", "0", "0" },
+			 "BM"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::choose_bitmap,
+			 "choose_bitmap",
+			 { "fb", "bm1", "bm2" },
+			 { "FB", "BM", "BM" },
+			 { "", "", "" },
+			 "BM"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::from_bool,
+			 "from_bool",
+			 { "b", "val_true", "val_false" },
+			 { "BB", "float", "float" },
+			 { "", "1.0", "0.0" },
+			 "FB"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::distance_field,
+			 "distance_field",
+			 { "bb" },
+			 { "BB" },
+			 { "" },
+			 "FB"));
+
+  return vec;
+}
+std::vector<GameApiItem*> boolbitmapapi_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::empty,
+			 "emptybool",
+			 { "sx", "sy" },
+			 { "int", "int" },
+			 { "100", "100" },
+			 "BB"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::from_float_bitmap,
+			 "from_float_bitmap",
+			 { "float_bm", "range_start", "range_end" },
+			 { "FB", "float", "float" },
+			 { "", "0.5", "1.0" },
+			 "BB"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::line,
+			 "line",
+			 { "bg", "p_x", "p_y", "p2_x", "p2_y", "line_width1", "line_width2" },
+			 { "BB", "float", "float", "float", "float", "float", "float" },
+			 { "", "0.0", "0.0", "100.0", "100.0", "3.0", "3.0" },
+			 "BB"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::circle,
+			 "circle",
+			 { "bg", "center_x", "center_y", "radius" },
+			 { "BB", "float", "float", "float" },
+			 { "", "50.0", "50.0", "50.0" },
+			 "BB"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::rectangle,
+			 "rectangle",
+			 { "bg", "x", "y", "width", "height" },
+			 { "BB", "float", "float", "float", "float" },
+			 { "", "0.0", "0.0", "30.0", "30.0" },
+			 "BB"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::not_bitmap,
+			 "not_bitmap",
+			 { "b" },
+			 { "BB" },
+			 { "" },
+			 "BB"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::andnot_bitmap,
+			 "andnot_bitmap",
+			 { "b1", "not_b2" },
+			 { "BB", "BB" },
+			 { "", "" },
+			 "BB"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::choose_bitmap,
+			 "choose_bitmap",
+			 { "bools", "true_bm", "false_bm" },
+			 { "BB", "BB", "BB" },
+			 { "", "", "" },
+			 "BB"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::to_bitmap,
+			 "to_bitmap",
+			 { "bools", "true_r", "true_g", "true_b", "true_a", "false_r", "false_g", "false_b", "false_a" },
+			 { "BB", "int", "int", "int", "int", "int", "int", "int", "int" },
+			 { "", "255", "255", "255", "255", "0", "0", "0", "0" },
+			 "BM"));
+  return vec;
+}
+
 std::vector<GameApiItem*> bitmapapi_functions()
 {
   std::vector<GameApiItem*> vec;
@@ -17622,6 +17970,22 @@ std::vector<GameApiItem*> bitmapapi_functions()
 
   return vec;
 }
+std::vector<GameApiItem*> all_functions()
+{
+  std::vector<GameApiItem*> v1 = bitmapapi_functions();
+  std::vector<GameApiItem*> v2 = polygonapi_functions();
+  std::vector<GameApiItem*> v3 = boolbitmapapi_functions();
+  std::vector<GameApiItem*> v4 = floatbitmapapi_functions();
+  std::vector<GameApiItem*> v5 = shadermoduleapi_functions();
+  std::vector<GameApiItem*> v6 = linesapi_functions();
+
+  std::vector<GameApiItem*> a1 = append_vectors(v1,v2);
+  std::vector<GameApiItem*> a2 = append_vectors(v3,v4);
+  std::vector<GameApiItem*> a3 = append_vectors(a1,a2);
+  std::vector<GameApiItem*> a4 = append_vectors(a3, v5);
+  std::vector<GameApiItem*> a5 = append_vectors(a4, v6);
+  return a5;
+}
 std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)
 {
   std::vector<GameApiItem*> funcs = bitmapapi_functions();
@@ -17629,9 +17993,38 @@ std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)
   std::string name = item->Name(0);
   return name;
 }
+std::string GameApi::GuiApi::shadermoduleapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = shadermoduleapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+std::string GameApi::GuiApi::linesapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = linesapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+
 std::string GameApi::GuiApi::polygonapi_functions_item_label(int i)
 {
   std::vector<GameApiItem*> funcs = polygonapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+std::string GameApi::GuiApi::boolbitmapapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = boolbitmapapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+std::string GameApi::GuiApi::floatbitmapapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = floatbitmapapi_functions();
   GameApiItem *item = funcs[i];
   std::string name = item->Name(0);
   return name;
@@ -17648,7 +18041,7 @@ GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector
       GameApiItem *item = vec[i];
       vec2.push_back(item->Name(i));
     }
-  GameApi::W w = gui.list_item_opened(100, label, font, vec2, font2);
+  GameApi::W w = gui.list_item_opened(120, label, font, vec2, font2);
   return w;
 }
 GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector<GameApiItem*> vec, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::FtA atlas2, GameApi::BM atlas_bm2)
@@ -17660,8 +18053,10 @@ GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector
       GameApiItem *item = vec[i];
       vec2.push_back(item->Name(i));
     }
-  GameApi::W w = gui.list_item_opened(100, label, atlas, atlas_bm, vec2, atlas2, atlas_bm2);
-  return w;
+  GameApi::W w = gui.list_item_opened(120, label, atlas, atlas_bm, vec2, atlas2, atlas_bm2);
+  GameApi::W w2 = gui.list_item_title(120, label, atlas, atlas_bm);
+  GameApi::W or_elem = gui.or_elem(w,w2);
+  return or_elem;
 }
 
 GameApi::W GameApi::GuiApi::bitmapapi_functions_list_item(Ft font1, Ft font2)
@@ -17671,6 +18066,23 @@ GameApi::W GameApi::GuiApi::bitmapapi_functions_list_item(Ft font1, Ft font2)
 GameApi::W GameApi::GuiApi::bitmapapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
 {
   return functions_widget(*this, "BitmapApi", bitmapapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+}
+GameApi::W GameApi::GuiApi::shadermoduleapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+{
+  return functions_widget(*this, "ShaderApi", shadermoduleapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+}
+GameApi::W GameApi::GuiApi::linesapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+{
+  return functions_widget(*this, "LinesApi", linesapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+}
+
+GameApi::W GameApi::GuiApi::boolbitmapapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+{
+  return functions_widget(*this, "BoolBitmap", boolbitmapapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+}
+GameApi::W GameApi::GuiApi::floatbitmapapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+{
+  return functions_widget(*this, "FloatBitmap", floatbitmapapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
 }
 
 GameApi::W GameApi::GuiApi::polygonapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
@@ -17849,9 +18261,7 @@ void GameApi::WModApi::update_lines_from_canvas(W canvas, WM mod2, int id)
 }
 GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, Ft font, std::string func_name)
 {
-  std::vector<GameApiItem*> functions1 = bitmapapi_functions(); 
-  std::vector<GameApiItem*> functions2 = polygonapi_functions(); 
-  std::vector<GameApiItem*> functions = append_vectors(functions1, functions2);
+  std::vector<GameApiItem*> functions = all_functions();
 
   int s = functions.size();
   int i = 0;
@@ -17876,9 +18286,7 @@ GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, Ft fo
 
 GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid)
 {
-  std::vector<GameApiItem*> functions1 = bitmapapi_functions(); 
-  std::vector<GameApiItem*> functions2 = polygonapi_functions(); 
-  std::vector<GameApiItem*> functions = append_vectors(functions1, functions2);
+  std::vector<GameApiItem*> functions = all_functions();
 
   int s = functions.size();
   int i = 0;
@@ -17974,9 +18382,7 @@ std::vector<std::string*> GameApi::WModApi::refs_from_function(WM mod2, int id, 
 	  module_name = line->module_name;
 
 
-	  std::vector<GameApiItem*> functions1 = bitmapapi_functions(); 
-	  std::vector<GameApiItem*> functions2 = polygonapi_functions(); 
-	  std::vector<GameApiItem*> functions = append_vectors(functions1, functions2);
+	  std::vector<GameApiItem*> functions = all_functions();
 
 	  //std::vector<GameApiItem*> functions = bitmapapi_functions();
 	  std::vector<std::string> types;
@@ -18037,9 +18443,7 @@ std::vector<std::string> GameApi::WModApi::types_from_function(WM mod2, int id, 
     }
 
 
-  std::vector<GameApiItem*> functions1 = bitmapapi_functions();
-  std::vector<GameApiItem*> functions2 = polygonapi_functions();
-  std::vector<GameApiItem*> functions = append_vectors(functions1, functions2);
+  std::vector<GameApiItem*> functions = all_functions();
 
   //std::vector<GameApiItem*> functions = bitmapapi_functions();
   std::vector<std::string> types;
@@ -18088,9 +18492,7 @@ std::vector<std::pair<std::string,std::string> > GameApi::WModApi::defaults_from
 {
   std::vector<std::pair<std::string,std::string> > res;
 
-  std::vector<GameApiItem*> functions1 = bitmapapi_functions(); 
-  std::vector<GameApiItem*> functions2 = polygonapi_functions(); 
-  std::vector<GameApiItem*> functions = append_vectors(functions1, functions2);
+  std::vector<GameApiItem*> functions = all_functions();
 
 
   //std::vector<GameApiItem*> functions = bitmapapi_functions();
@@ -18137,9 +18539,7 @@ std::vector<std::string> GameApi::WModApi::labels_from_function(WM mod2, int id,
       return std::vector<std::string>();
     }
 
-  std::vector<GameApiItem*> functions1 = bitmapapi_functions(); 
-  std::vector<GameApiItem*> functions2 = polygonapi_functions(); 
-  std::vector<GameApiItem*> functions = append_vectors(functions1, functions2);
+  std::vector<GameApiItem*> functions = all_functions();
 
   //std::vector<GameApiItem*> functions = bitmapapi_functions();
   int s = functions.size();
@@ -18190,9 +18590,7 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
   GameApiFunction *func = &mod->funcs[id];
-  std::vector<GameApiItem*> functions1 = bitmapapi_functions();
-  std::vector<GameApiItem*> functions2 = polygonapi_functions();
-  std::vector<GameApiItem*> functions = append_vectors(functions1, functions2);
+  std::vector<GameApiItem*> functions = all_functions();
   int s = func->lines.size();
   for(int i=0;i<s;i++)
     {
@@ -18230,9 +18628,7 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
   GameApiFunction *func = &mod->funcs[id];
-  std::vector<GameApiItem*> functions1 = bitmapapi_functions();
-  std::vector<GameApiItem*> functions2 = polygonapi_functions();
-  std::vector<GameApiItem*> functions = append_vectors(functions1, functions2);
+  std::vector<GameApiItem*> functions = all_functions();
   int s = func->lines.size();
   std::vector<W> connect_clicks;
   for(int j=0;j<s;j++)
@@ -18291,7 +18687,7 @@ public:
 	  {
 	    state=true;
 	  }
-	if (button==0 && state)
+	if (button==0 && type==1025 && state)
 	  {
 	    f(int(mouse_pos.x), int(mouse_pos.y));
 	    state = false;

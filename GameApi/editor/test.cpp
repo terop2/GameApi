@@ -43,6 +43,8 @@ struct Envi {
 
   bool connect_ongoing;
   bool connect_ongoing2;
+  bool flip_ongoing;
+  std::map<int, bool> flip_status;
   std::string insert_func_name;
   std::string insert_mod_name;
   // gameapi;
@@ -127,6 +129,8 @@ void iter(void *arg)
 
     // handle esc event
     MainLoopApi::Event e = env->ev->mainloop_api.get_event();
+
+    //std::cout << e.type << std::endl;
     //std::cout << e.button << std::endl;
     if (e.ch==1073742048 && e.type == 0x300)
       {
@@ -288,13 +292,25 @@ void iter(void *arg)
 	      }
 	  }
       }
+    if (e.button==-1) { env->flip_ongoing = false; }
+
     int sel = env->gui->chosen_item(env->scroll_area);
-    if (sel != -1 && e.button==0 && !env->insert_ongoing)
+    if (sel != -1 && e.button==0 && e.type==1025 && !env->insert_ongoing)
       {
 	//std::cout << "Scroll_area: " << sel << std::endl;
       W w = env->gui->get_child(env->array, sel);
       int sel2 = env->gui->chosen_item(w);
       //std::cout << "Chosen: " << sel2 << std::endl;
+      if (sel2 == 0 && !env->flip_ongoing)
+	{
+	  std::cout << "Flip!" << std::endl;
+	  bool b = env->flip_status[sel];
+	  b = !b;
+	  env->flip_status[sel] = b;
+
+	  env->gui->select_item(w, b?0:1);
+	  env->flip_ongoing = true;
+	}
       if (sel2>0)
 	{
 	  std::string name;
@@ -305,6 +321,18 @@ void iter(void *arg)
 	      break;
 	    case 1:
 	      name = env->gui->polygonapi_functions_item_label(sel2-1);
+	      break;
+	    case 2: 
+	      name = env->gui->boolbitmapapi_functions_item_label(sel2-1);
+	      break;
+	    case 3: 
+	      name = env->gui->floatbitmapapi_functions_item_label(sel2-1);
+	      break;
+	    case 4:
+	      name = env->gui->shadermoduleapi_functions_item_label(sel2-1);
+	      break;
+	    case 5:
+	      name = env->gui->linesapi_functions_item_label(sel2-1);
 	      break;
 	    };
 	  //std::cout << "Chosen label: " << name << std::endl;
@@ -325,7 +353,7 @@ void iter(void *arg)
       {
 	env->insert_ongoing2 = true;
       }
-    if (env->insert_ongoing2 && e.button==0)
+    if (env->insert_ongoing2 && e.button==0 && e.type==1025)
       {
 	env->insert_ongoing = false;
 	env->insert_ongoing2 = false;
@@ -334,7 +362,7 @@ void iter(void *arg)
       {
 	env->connect_ongoing2 = true;
       }
-    if (env->connect_ongoing2 && e.button==0)
+    if (env->connect_ongoing2 && e.button==0 && e.type==1025)
       {
 	env->connect_ongoing = false;
 	env->connect_ongoing2 = false;
@@ -351,7 +379,7 @@ void iter(void *arg)
       {
 	env->gui->update(env->menus[env->opened_menu_num], e.cursor_pos, e.button, e.ch, e.type);
 	if (e.button == -1) { env->state=1; }
-	if (e.button==0 && env->state==1)
+	if (e.button==0 && e.type==1025 && env->state==1)
 	  {
 	    selected_item2 = env->gui->chosen_item(env->menus[env->opened_menu_num]);
 	    env->opened_menu_num = -1;
@@ -405,7 +433,7 @@ int main(int argc, char *argv[]) {
       if (std::string(argv[1])=="--generate-font-atlas")
 	{
 	  std::cout << "Generating font atlas. " << std::endl;
-	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:";
+	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_";
 	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 13,15, 25);
 	  FtA atlas2 = ev.font_api.font_atlas_info(ev, font2, chars, 14,14, 25);
 	  FtA atlas3 = ev.font_api.font_atlas_info(ev, font3, chars, 30,30, 65);
@@ -490,8 +518,12 @@ int main(int argc, char *argv[]) {
     {
       items.push_back(gui.bitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
       items.push_back(gui.polygonapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
+      items.push_back(gui.boolbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
+      items.push_back(gui.floatbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
+      items.push_back(gui.shadermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
+      items.push_back(gui.linesapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
     }
-  W array = gui.array_y(&items[0], items.size(), 15);
+  W array = gui.array_y(&items[0], items.size(), 5);
   W scroll_area = gui.scroll_area(array, gui.size_x(array), screen_y-30, screen_y);
 
   W txt2 = gui.scrollbar_y(20, screen_y-30, gui.size_y(array));
