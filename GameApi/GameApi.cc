@@ -2188,7 +2188,7 @@ GuiWidget *find_widget(GameApi::Env &e, GameApi::W w)
   if (w.id>=0 && w.id<s)
     return env->widgets[w.id];
   std::cout << "find_widget failed!" << std::endl;
-  assert(0);
+  //assert(0);
   return 0;
 }
 Samples* find_samples(GameApi::Env &e, GameApi::SM sm)
@@ -15856,9 +15856,104 @@ private:
   std::vector<int> pos_x;
   std::vector<int> pos_y;
 };
+class LineWidget : public GuiWidgetForward
+{
+public:
+  LineWidget(GameApi::EveryApi &ev, GameApi::SH sh, GuiWidget *t1, int delta_x, int delta_y,
+	     GuiWidget *t2, int delta2_x, int delta2_y)
+    : GuiWidgetForward(ev, { } ), sh(sh), t1(t1), delta_x(delta_x), delta_y(delta_y),
+      t2(t2), delta2_x(delta2_x), delta2_y(delta2_y) { firsttime = true; }
+  GameApi::PT line_func(int linenum, bool id, GameApi::EveryApi &ev)
+  {
+    switch(id) {
+    case false: 
+      {
+	Point2d pos = t1->get_pos();
+	pos.x += delta_x;
+	pos.y += delta_y;
+	return ev.point_api.point(pos.x, pos.y, 0.0);
+      }
+    case true:
+      {
+	Point2d pos = t2->get_pos();
+	pos.x += delta2_x;
+	pos.y += delta2_y;
+	return ev.point_api.point(pos.x, pos.y, 0.0);
+      }
+    };
+    return ev.point_api.point(0.0,0.0,0.0);
+  }
+  void update(Point2d mouse_pos, int button, int ch, int type)
+  {
+    using std::placeholders::_1;
+    using std::placeholders::_2;
+    if (firsttime)
+      {
+	line = ev.lines_api.function(std::bind(&LineWidget::line_func, this, _1, _2, std::ref(ev)), 1);
+	line = ev.lines_api.change_color(line, 0xffffffff);
+	line_p = ev.lines_api.prepare(line);
+	firsttime = false;
+      }
+    else
+      {
+	ev.lines_api.update(line_p, line);
+      }
+  }
+  void render()
+  {
+    if (!firsttime)
+      {
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.identity());
+	ev.lines_api.render(line_p);
+      }
+  }
+private:
+  GameApi::SH sh;
+  bool firsttime;
+  GuiWidget *t1;
+  int delta_x, delta_y;
+  GuiWidget *t2;
+  int delta2_x, delta2_y;
+  GameApi::LI line;
+  GameApi::LLA line_p;
+};
+EXPORT GameApi::W GameApi::GuiApi::line(W target1, int delta_x, int delta_y,
+					W target2, int delta2_x, int delta2_y, SH sh)
+{
+  GuiWidget *t1 = find_widget(e, target1);
+  GuiWidget *t2 = find_widget(e, target2);
+  return add_widget(e, new LineWidget(ev, sh, t1, delta_x, delta_y,
+				      t2, delta2_x, delta2_y));
+}
 EXPORT GameApi::W GameApi::GuiApi::canvas(int sx, int sy)
 {
   return add_widget(e, new CanvasWidget(ev, sx, sy));
+}
+EXPORT GameApi::W GameApi::GuiApi::find_canvas_item(W canvas, std::string id)
+{
+  GuiWidget *w = find_widget(e, canvas);
+#ifndef EMSCRIPTEN
+  CanvasWidget *ww = dynamic_cast<CanvasWidget*>(w);
+#else
+  CanvasWidget *ww = static_cast<CanvasWidget*>(w);
+#endif
+  GuiWidget *item = ww->find_widget(id);
+  if (!item)
+    {
+      std::cout << "ERROR: find_canvas_item failed to find widget from canvas!" << std::endl;
+    }
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  int s = env->widgets.size();
+  for(int i=0;i<s;i++)
+    {
+      GuiWidget *w = env->widgets[i];
+      if (w==item) { GameApi::W w; w.id = i; return w; }
+    }
+  std::cout << "ERROR: find_canvas_item failed to find widget!" << std::endl;
+  GameApi::W wx;
+  wx.id = 0;
+  return wx;
+
 }
 EXPORT int GameApi::GuiApi::canvas_item(W canvas, W item, int x, int y)
 {
@@ -16040,9 +16135,10 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
   
   W txt_0 = text(return_type, font);
   W txt_1 = margin(txt_0, 5,5,5,5);
+  W txt_11 = highlight(txt_1);
   W txt_2 = button(size_x(txt_1), size_y(txt_1), 0xff330033, 0xff880088);
-  W txt_3 = layer(txt_2, txt_1);
-  W txt_4 = margin(txt_3, sx-size_x(txt_3), sy-size_y(txt_3), 0,0);
+  W txt_3 = layer(txt_2, txt_11);
+  W txt_4 = margin(txt_3, sx-size_x(txt_3), (sy-size_y(txt_3))/2, 0,(sy-size_y(txt_3))/2);
 
   W l_0 = layer(node_0, node_12);
   W l_1 = layer(l_0, node_22);
@@ -16051,7 +16147,7 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
   return l_3;
 }
 
-EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, FtA atlas, BM atlas_bm)
+EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid)
 {
   W node_0 = button(sx,sy, 0xffff8844, 0xff884422);
   W node_2 = text(label, atlas,atlas_bm);
@@ -16074,9 +16170,13 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
   
   W txt_0 = text(return_type, atlas,atlas_bm);
   W txt_1 = margin(txt_0, 5,5,5,5);
+  W txt_11 = highlight(txt_1);
+  W txt_111 = click_area(txt_11, 0.0, 0.0, size_x(txt_11), size_y(txt_11));
+  set_id(txt_111, uid);
+  connect_click = txt_111;
   W txt_2 = button(size_x(txt_1), size_y(txt_1), 0xff330033, 0xff880088);
-  W txt_3 = layer(txt_2, txt_1);
-  W txt_4 = margin(txt_3, sx-size_x(txt_3), sy-size_y(txt_3), 0,0);
+  W txt_3 = layer(txt_2, txt_111);
+  W txt_4 = margin(txt_3, sx-size_x(txt_3), (sy-size_y(txt_3))/2, 0,(sy-size_y(txt_3))/2);
 
   W l_0 = layer(node_0, node_12);
   W l_1 = layer(l_0, node_22);
@@ -17573,7 +17673,7 @@ GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, Ft fo
   return node;
 }
 
-GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name)
+GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid)
 {
   std::vector<GameApiItem*> functions = bitmapapi_functions();
 
@@ -17594,7 +17694,7 @@ GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, FtA a
       param_types.push_back(item->ParamType(0,k));
     }
   std::vector<std::string> param_types2 = reduce_list_to_types_only(param_types);
-  W node = gui.canvas_item_gameapi_node(100,100, func_name, param_types2, return_type, atlas, atlas_bm);
+  W node = gui.canvas_item_gameapi_node(100,100, func_name, param_types2, return_type, atlas, atlas_bm, connect_click, uid);
   return node;
 }
 
@@ -17653,7 +17753,7 @@ std::vector<std::string*> remove_unnecessary_refs(std::vector<std::string*> refs
 }
 std::vector<std::string*> GameApi::WModApi::refs_from_function(WM mod2, int id, std::string funcname)
 {
-  std::cout << "refs_from_function: " << funcname << std::endl;
+  //std::cout << "refs_from_function: " << funcname << std::endl;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
   GameApiFunction *func = &mod->funcs[id];
@@ -17689,8 +17789,8 @@ std::vector<std::string*> GameApi::WModApi::refs_from_function(WM mod2, int id, 
 	  int s2 = item->ParamCount(0);
 	  int s3 = line->params.size();
 	  assert(s2==s3);
-	  std::cout << "Refs count" << s3 << std::endl;
-	  std::cout << "Chosen line:" << line->module_name << std::endl;
+	  //std::cout << "Refs count" << s3 << std::endl;
+	  //std::cout << "Chosen line:" << line->module_name << std::endl;
 	  for(int i=0;i<s3;i++)
 	    {
 	      GameApiParam *param = &line->params[i];
@@ -17902,13 +18002,20 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
     }
 }
 
-void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm)
+void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
   GameApiFunction *func = &mod->funcs[id];
   std::vector<GameApiItem*> functions = bitmapapi_functions();
   int s = func->lines.size();
+  std::vector<W> connect_clicks;
+  for(int j=0;j<s;j++)
+    {
+      W w = { 0 };
+      connect_clicks.push_back(w);
+    }
+
   for(int i=0;i<s;i++)
     {
       GameApiLine *line = &func->lines[i];
@@ -17929,7 +18036,7 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
       std::vector<std::string> param_types2 = reduce_list_to_types_only(param_types);
       std::string return_type = item->ReturnType(0);
 
-      W node = gui.canvas_item_gameapi_node(100,100, line->module_name, param_types2, return_type, atlas, atlas_bm);
+      W node = gui.canvas_item_gameapi_node(100,100, line->module_name, param_types2, return_type, atlas, atlas_bm, connect_clicks[i], line->uid);
       W node2 = gui.click_area(node, 40, 40, gui.size_x(node)-80, gui.size_y(node)-80);
       W node22 = gui.highlight(gui.size_x(node2)-80, gui.size_y(node2)-80);
       W node221 = gui.margin(node22, 40,40, 40,40);
@@ -17938,6 +18045,7 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
       gui.set_id(node3, line->uid);
       gui.canvas_item(canvas, node3, line->x, line->y);
     }
+  connect_clicks_p = connect_clicks;
 }
 
 
