@@ -25,7 +25,10 @@ struct Envi {
   W array;
   W chosen_item;
   W insert_widget;
+  W connect_line;
+  W connect_widget;
   W dialog_cancel, dialog_ok;
+  std::vector<W> connect_clicks;
   int dialog_i1;
   std::string dialog_uid;
   std::vector<GuiApi::EditTypes*> vec4;
@@ -37,6 +40,9 @@ struct Envi {
   BM atlas_bm3;
   bool insert_ongoing;
   bool insert_ongoing2;
+
+  bool connect_ongoing;
+  bool connect_ongoing2;
   std::string insert_func_name;
   std::string insert_mod_name;
   // gameapi;
@@ -48,11 +54,15 @@ struct Envi {
   bool state;
   bool ctrl;
   int unique_id_counter;
+  SH sh2;
 };
-
+void connect_target(int x, int y, Envi *envi)
+{
+  std::cout << "Connect target!" << std::endl;
+}
 void callback_func(int x, int y, Envi *envi)
 {
-  std::cout << "Insert!" << std::endl;
+  //std::cout << "Insert!" << std::endl;
 
   int uid_num = envi->unique_id_counter;
   envi->unique_id_counter++;
@@ -99,6 +109,11 @@ void iter(void *arg)
     if (env->insert_ongoing)
       {
 	env->gui->render(env->insert_widget);
+      }
+    if (env->connect_ongoing)
+      {
+	env->gui->render(env->connect_line);
+	env->gui->render(env->connect_widget);
       }
     if (env->opened_menu_num != -1)
       {
@@ -149,7 +164,7 @@ void iter(void *arg)
 	  {
 	    env->dialog_i1 = i;
 	    std::string uid = env->gui->get_id(w);
-	    std::cout << "Chosen uid: " << uid << std::endl;
+	    //std::cout << "Chosen uid: " << uid << std::endl;
 	    env->dialog_uid = uid;
 	    ///std::vector<GuiApi::EditTypes*> vec4;
 	    env->vec4.clear();
@@ -171,7 +186,7 @@ void iter(void *arg)
 	    std::vector<std::string*> refs;
 	    refs = env->ev->mod_api.refs_from_function(env->mod, 0, uid);
 
-	    std::cout << labels << " " << refs << std::endl;
+	    //std::cout << labels << " " << refs << std::endl;
 	    assert(refs.size()==labels.size());
 	    assert(types.size()==labels.size());
 	    for(int e=0;e<s;e++)
@@ -207,6 +222,35 @@ void iter(void *arg)
       {
 	env->gui->update(env->insert_widget, e.cursor_pos, e.button,e.ch, e.type);
       }
+    if (env->connect_ongoing)
+      {
+	env->gui->update(env->connect_widget, e.cursor_pos, e.button, e.ch, e.type);
+	env->gui->update(env->connect_line, e.cursor_pos, e.button, e.ch, e.type);
+      }
+
+    int cs = env->connect_clicks.size();
+    for(int ci = 0;ci<cs;ci++)
+      {
+	W wid = env->connect_clicks[ci];
+	int connected = env->gui->chosen_item(wid);
+	if (connected==0)
+	  {
+	    std::string uid = env->gui->get_id(wid);
+	    W canvas_item = env->gui->find_canvas_item(env->canvas, uid);
+
+	    BM bm = env->ev->bitmap_api.newbitmap(2,2);
+	    W ico_1 = env->gui->icon(bm);
+	    env->connect_widget = env->gui->insert_widget(ico_1, std::bind(&connect_target, _1, _2, env));
+	    
+	    env->connect_line = env->gui->line(canvas_item, 80,50,
+					       env->connect_widget, 0, 0, env->sh2);
+	    
+	    env->connect_ongoing = true;
+	    break;
+	  }
+	
+      }
+
 
     float param_x = env->gui->dynamic_param(env->txt2, 0);
     env->gui->set_dynamic_param(env->scroll_area, 1, param_x);
@@ -247,16 +291,23 @@ void iter(void *arg)
     int sel = env->gui->chosen_item(env->scroll_area);
     if (sel != -1 && e.button==0 && !env->insert_ongoing)
       {
-      std::cout << "Scroll_area: " << sel << std::endl;
+	//std::cout << "Scroll_area: " << sel << std::endl;
       W w = env->gui->get_child(env->array, sel);
       int sel2 = env->gui->chosen_item(w);
-      std::cout << "Chosen: " << sel2 << std::endl;
+      //std::cout << "Chosen: " << sel2 << std::endl;
       if (sel2>0)
 	{
 	  std::string name = env->gui->bitmapapi_functions_item_label(sel2-1);
-	  std::cout << "Chosen label: " << name << std::endl;
+	  //std::cout << "Chosen label: " << name << std::endl;
 	  env->insert_mod_name = name;
-	  env->chosen_item = env->ev->mod_api.inserted_widget(*env->gui, env->mod, 0, env->atlas, env->atlas_bm, name);
+	  W ww = { 0 };
+	  env->connect_clicks.push_back(ww);
+	  int uid_num = env->unique_id_counter;
+	  std::stringstream ss;
+	  ss << "uid" << uid_num;
+	  std::string uid = ss.str();
+
+	  env->chosen_item = env->ev->mod_api.inserted_widget(*env->gui, env->mod, 0, env->atlas, env->atlas_bm, name, env->connect_clicks[env->connect_clicks.size()-1], uid);
 	  env->insert_widget = env->gui->insert_widget(env->chosen_item, std::bind(&callback_func, _1, _2, env));
 	  env->insert_ongoing = true;
 	}
@@ -270,7 +321,17 @@ void iter(void *arg)
 	env->insert_ongoing = false;
 	env->insert_ongoing2 = false;
       }
+    if (env->connect_ongoing && e.button == -1)
+      {
+	env->connect_ongoing2 = true;
+      }
+    if (env->connect_ongoing2 && e.button==0)
+      {
+	env->connect_ongoing = false;
+	env->connect_ongoing2 = false;
+      }
     
+
     int selected_item = env->gui->chosen_item(env->txt);
     int selected_item2 = -1;
     if (selected_item != -1)
@@ -286,7 +347,7 @@ void iter(void *arg)
 	    selected_item2 = env->gui->chosen_item(env->menus[env->opened_menu_num]);
 	    env->opened_menu_num = -1;
 	    env->state = 0;
-	    std::cout << selected_item2 << std::endl;
+	    //std::cout << selected_item2 << std::endl;
 	  }
       }
 }
@@ -324,9 +385,10 @@ int main(int argc, char *argv[]) {
   // shader initialization
   ev.shader_api.load_default();
   SH sh = ev.shader_api.texture_shader();
+  SH sh2 = ev.shader_api.colour_shader();
   Ft font = ev.font_api.newfont("FreeSans.ttf", 13,15);
   Ft font2 = ev.font_api.newfont("FreeSans.ttf", 10,13);
-  Ft font3 = ev.font_api.newfont("FreeSans.ttf", 40,40);
+  Ft font3 = ev.font_api.newfont("FreeSans.ttf", 30,30);
 
 
   if (argc==2)
@@ -337,10 +399,10 @@ int main(int argc, char *argv[]) {
 	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:";
 	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 13,15, 25);
 	  FtA atlas2 = ev.font_api.font_atlas_info(ev, font2, chars, 14,14, 25);
-	  FtA atlas3 = ev.font_api.font_atlas_info(ev, font3, chars, 40,40, 65);
+	  FtA atlas3 = ev.font_api.font_atlas_info(ev, font3, chars, 30,30, 65);
 	  BM atlas_bm = ev.font_api.font_atlas(ev, font, atlas, 13,15);
 	  BM atlas_bm2 = ev.font_api.font_atlas(ev,font2, atlas2, 14,14);
-	  BM atlas_bm3 = ev.font_api.font_atlas(ev,font3, atlas3, 40,40);
+	  BM atlas_bm3 = ev.font_api.font_atlas(ev,font3, atlas3, 30,30);
 	  std::cout << "Saving 0" << std::endl;
 	  ev.font_api.save_atlas(atlas, "atlas0.txt");
 	  std::cout << "Saving 1" << std::endl;
@@ -378,6 +440,8 @@ int main(int argc, char *argv[]) {
 #endif
   // rest of the initializations
   ev.mainloop_api.init(sh, screen_x,screen_y);
+  ev.mainloop_api.init(sh2, screen_x,screen_y);
+  ev.shader_api.use(sh);
   ev.mainloop_api.alpha(true);
   
   GuiApi gui(e, ev, sh);
@@ -442,7 +506,7 @@ int main(int argc, char *argv[]) {
   //gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), 150,100);
   //for(int i=0;i<200;i++)
   //  gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), i*30, i*30);
-  ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm);
+  ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks);
 
   W canvas_area = gui.scroll_area(canvas, screen2_x-20, screen2_y-20, screen_y);
   W scrollbar_y = gui.scrollbar_y(20, screen2_y-20, sy);
@@ -483,7 +547,9 @@ int main(int argc, char *argv[]) {
   env.scroll_area = scroll_area;
   env.menus = menus;
   env.opened_menu_num = -1;
-
+  env.connect_ongoing = false;
+  env.connect_ongoing2 = false;
+  env.sh2 = sh2;
 
 #ifndef EMSCRIPTEN
   while(1) {

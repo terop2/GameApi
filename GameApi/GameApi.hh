@@ -738,6 +738,8 @@ public:
   W text(std::string label, Ft font);
   W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=2);
   W icon(BM bitmap);
+  W line(W target1, int delta_x, int delta_y,
+	 W target2, int delta2_x, int delta2_y, SH sh);
   W gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int colot_1, unsigned int color_2);
   W button(int sx, int sy, unsigned int color_1, unsigned int color_2);
   W mouse_move(W widget, int area_x, int area_y, int area_width, int area_height);
@@ -762,10 +764,11 @@ public:
   W scroll_area(W orig, int sx, int sy, int screen_y);
   W waveform(std::function<float (float)> f, float start_range, float end_range, float min_value, float max_value, int sx, int sy, unsigned int true_color, unsigned int false_color);
   W canvas(int sx, int sy);
+  W find_canvas_item(W canvas, std::string id);
   int canvas_item(W canvas, W item, int x, int y);
   void del_canvas_item(W canvas, int id);
   W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, Ft font);
-  W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, FtA atlas, BM atlas_bm);
+  W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid);
   W list_item_title(int sx, std::string label, Ft font);
   W list_item_title(int sx, std::string label, FtA atlas, BM atlas_bm);
   W list_item_opened(int sx, std::string label, Ft font, std::vector<std::string> subitems, Ft font2);
@@ -836,11 +839,11 @@ public:
   WM load(std::string filename);
   void save(WM mod, std::string ilename);
   void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, Ft font);
-  void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm);
+  void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks);
   void update_lines_from_canvas(W canvas, WM mod, int id);
   void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid);
   W inserted_widget(GuiApi &gui, WM mod2, int id, Ft font, std::string func_name);
-  W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name);
+  W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid);
   std::vector<std::string> types_from_function(WM mod, int id, std::string funcname);
   std::vector<std::string> labels_from_function(WM mod, int id, std::string funcname);
   std::vector<std::string*> refs_from_function(WM mod, int id, std::string funcname);
