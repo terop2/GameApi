@@ -778,6 +778,8 @@ public:
   W list(W *array, int size, int sx, int sy);
   W dialog_item(std::string text, BM icon, int sx, int sy);
   W dialog_border(W item);
+  W bitmap_dialog(BM bm, W &close_button);
+
   W button_with_text(std::string label);
   W button_with_icon(BM bitmap);
   W opengl_wrapper(W widget);
@@ -868,6 +870,8 @@ public:
   void change_param_value(WM mod2, int id, std::string uid, int param_index, std::string newvalue);
   bool typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index);
   void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2);
+
+  int execute(EveryApi &ev, WM mod2, int id, std::string line_uid);
 private:
   Env &e;
 };

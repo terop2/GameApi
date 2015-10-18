@@ -16345,6 +16345,12 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &l
   return combine_move;
 }
 
+EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button)
+{
+  
+
+}
+
 EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &labels, const std::vector<GameApi::GuiApi::EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_but, W &ok_but)
 {
   assert(vec.size()==labels.size());
@@ -17399,6 +17405,167 @@ void GameApi::GuiApi::set_id(W w, std::string id)
   ww->set_id(id);
 }
 
+template<typename T> T from_stream(std::stringstream &is)
+{
+  std::cout << "Type using default: " << typeid(T).name() << std::endl;
+  T t;
+  is >> t;
+  return t;
+}
+template<> GameApi::BM from_stream<GameApi::BM>(std::stringstream &is)
+{
+  GameApi::BM bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::BB from_stream<GameApi::BB>(std::stringstream &is)
+{
+  GameApi::BB bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::FB from_stream<GameApi::FB>(std::stringstream &is)
+{
+  GameApi::FB bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::PT from_stream<GameApi::PT>(std::stringstream &is)
+{
+  GameApi::PT bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::V from_stream<GameApi::V>(std::stringstream &is)
+{
+  GameApi::V bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::FO from_stream<GameApi::FO>(std::stringstream &is)
+{
+  GameApi::FO bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::SFO from_stream<GameApi::SFO>(std::stringstream &is)
+{
+  GameApi::SFO bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::O from_stream<GameApi::O>(std::stringstream &is)
+{
+  GameApi::O bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::P from_stream<GameApi::P>(std::stringstream &is)
+{
+  GameApi::P bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::SH from_stream<GameApi::SH>(std::stringstream &is)
+{
+  GameApi::SH bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::CO from_stream<GameApi::CO>(std::stringstream &is)
+{
+  GameApi::CO bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::Ft from_stream<GameApi::Ft>(std::stringstream &is)
+{
+  GameApi::Ft bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::VA from_stream<GameApi::VA>(std::stringstream &is)
+{
+  GameApi::VA bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::VX from_stream<GameApi::VX>(std::stringstream &is)
+{
+  GameApi::VX bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::PL from_stream<GameApi::PL>(std::stringstream &is)
+{
+  GameApi::PL bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::TX from_stream<GameApi::TX>(std::stringstream &is)
+{
+  GameApi::TX bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::TXID from_stream<GameApi::TXID>(std::stringstream &is)
+{
+  GameApi::TXID bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::LI from_stream<GameApi::LI>(std::stringstream &is)
+{
+  GameApi::LI bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::LLA from_stream<GameApi::LLA>(std::stringstream &is)
+{
+  GameApi::LLA bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::PTS from_stream<GameApi::PTS>(std::stringstream &is)
+{
+  GameApi::PTS bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::FBO from_stream<GameApi::FBO>(std::stringstream &is)
+{
+  GameApi::FBO bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::W from_stream<GameApi::W>(std::stringstream &is)
+{
+  GameApi::W bm;
+  is >> bm.id;
+  return bm;
+}
+
+
+
+template<class T, class RT, class... P>
+int funccall(GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
+	     RT (T::*fptr)(P...), std::vector<std::string> s)
+{
+  std::stringstream ss;
+  int s2 = s.size();
+  for(int i=0;i<s2;i++)
+    {
+      ss << s[i] << " ";
+    }
+  std::stringstream ss2(ss.str());
+  
+  T *ptr = &(ev.*api);
+  RT val = (ptr->*fptr)(from_stream<P>(ss2)...);
+  return val.id;
+}
+
+
+
 template<class T, class RT, class... P>
 class ApiItem : public GameApiItem
 {
@@ -17419,6 +17586,10 @@ public:
   std::string ParamType(int i, int p) const { return param_type[p]; }
   std::string ParamDefault(int i, int p) const { return param_default[p]; }
   std::string ReturnType(int i) const { return return_type; }
+  int Execute(GameApi::EveryApi &ev, std::vector<std::string> params)
+  {
+    return funccall(ev, api, fptr, params); 
+  }
 private:
   T (GameApi::EveryApi::*api);
   RT (T::*fptr)(P...);
@@ -17596,30 +17767,38 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P" },
 			 { "" },
 			 "P"));
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::world_from_bitmap,
 			 "world_from_bitmap",
 			 { "f", "int_bm", "dx", "dy", "max_c" },
 			 { "std::function<P(int c)>", "BM", "float", "float", "int" },
 			 { "", "", "100.0", "100.0", "1" },
 			 "P"));
+#endif
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::from_points,
 			 "from_points",
 			 { "p", "f" },
-			 { "PTS", "std::functoin<P (int,float,float,float,unsigned int)>" },
+			 { "PTS", "std::function<P (int,float,float,float,unsigned int)>" },
 			 { "", "" },
 			 "P"));
+#endif
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::from_lines,
 			 "from_lines",
 			 { "li", "f" },
 			 { "LI", "std::function<P (int,float,float,float,float,float,float,float,unsigned int,unsigned int)>" },
 			 { "", "" },
 			 "P"));
+#endif
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::from_polygon,
 			 "from_polygon",
 			 { "p", "f" },
 			 { "P", "std::function<P (int,PT,PT,PT,PT)>" },
 			 { "", "" },
 			 "P"));
+#endif
   return vec;
 }
 std::vector<GameApiItem*> shadermoduleapi_functions()
@@ -18058,12 +18237,14 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BM", "int", "int" },
 			 { "", "1", "1" },
 			 "BM"));
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::world_from_bitmap,
 			 "world",
 			 { "f", "int_bm", "dx", "dy" },
 			 { "std::function<BM(int>", "BM", "int", "int" },
 			 { "", "", "100", "100" },
 			 "BM"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::flip_x,
 			 "flip_x",
 			 { "orig" },
@@ -18700,6 +18881,58 @@ void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, 
 
 	}
     }
+}
+int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_uid)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+  
+  int s = func->lines.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiLine *line = &func->lines[i];
+      if (line->uid == line_uid)
+	{
+	  // COLLECT PARAMS & RECURSE
+	  int ss = line->params.size();
+	  std::vector<std::string> params;
+	  for(int ii=0;ii<ss;ii++)
+	    {
+	      GameApiParam *param = &line->params[ii];
+	      std::string p = param->value;
+	      if (p.size()==0)
+		{
+		  std::cout << "EXECUTE FAILED at param!" << std::endl;
+		}
+	      if (p.size()>3 && p[0]=='u' && p[1] == 'i' && p[2] =='d')
+		{
+		  int val = execute(ev, mod2, id, p);
+		  std::stringstream sw;
+		  sw << val;
+		  p = sw.str();
+		}
+	      params.push_back(p);
+	    }
+	  // EXECUTE
+	  static std::vector<GameApiItem*> vec = all_functions();
+	  int sd = vec.size();
+	  for(int k=0;k<sd;k++)
+	    {
+	      GameApiItem *item = vec[i];
+	      std::string name = item->Name(0);
+	      if (name == line->module_name)
+		{
+		  int val = item->Execute(ev, params);
+		  return val;
+		}
+	    }
+	  
+
+	}
+    }
+  std::cout << "EXECUTE FAILED! " << std::endl;
+  return -1;
 }
 bool GameApi::WModApi::typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index)
 {

@@ -229,6 +229,7 @@ public:
   virtual std::string ParamType(int i, int p) const=0;
   virtual std::string ParamDefault(int i, int p) const=0;
   virtual std::string ReturnType(int i) const=0;
+  virtual int Execute(GameApi::EveryApi &ev, std::vector<std::string> params)=0;
 };
 
 struct GameApiParam
