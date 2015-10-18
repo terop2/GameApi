@@ -750,6 +750,7 @@ public:
   W margin(W item, int left, int top, int right, int bottom);
   W right_align(W item, int sx);
   W center_align(W item, int sx);
+  W center_y(W item, int sy);
   W layer(W w1, W w2);
   W array_y(W *arr, int size, int y_gap);
   W array_x(W *arr, int size, int x_gap);
@@ -768,7 +769,7 @@ public:
   int canvas_item(W canvas, W item, int x, int y);
   void del_canvas_item(W canvas, int id);
   W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, Ft font);
-  W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid);
+  W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params);
   W list_item_title(int sx, std::string label, Ft font);
   W list_item_title(int sx, std::string label, FtA atlas, BM atlas_bm);
   W list_item_opened(int sx, std::string label, Ft font, std::vector<std::string> subitems, Ft font2);
@@ -811,12 +812,14 @@ public:
   W polygonapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
   W shadermoduleapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
   W linesapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
+  W pointsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
   std::string bitmapapi_functions_item_label(int i);
   std::string boolbitmapapi_functions_item_label(int i);
   std::string floatbitmapapi_functions_item_label(int i);
   std::string polygonapi_functions_item_label(int i);
   std::string shadermoduleapi_functions_item_label(int i);
   std::string linesapi_functions_item_label(int i);
+  std::string pointsapi_functions_item_label(int i);
   W insert_widget(W item, std::function<void(int,int)> f);
   void insert_widget_activate(W w, bool b);
 
@@ -849,17 +852,22 @@ public:
   WM load(std::string filename);
   void save(WM mod, std::string ilename);
   void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, Ft font);
-  void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks);
+  void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params);
   void update_lines_from_canvas(W canvas, WM mod, int id);
   void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid);
   W inserted_widget(GuiApi &gui, WM mod2, int id, Ft font, std::string func_name);
-  W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid);
+  W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid, std::vector<W> &params);
+  std::vector<int> indexes_from_funcname(std::string funcname);
   std::vector<std::string> types_from_function(WM mod, int id, std::string funcname);
   std::vector<std::string> labels_from_function(WM mod, int id, std::string funcname);
   std::vector<std::string*> refs_from_function(WM mod, int id, std::string funcname);
   std::vector<std::pair<std::string,std::string> > defaults_from_function(std::string module_name);
   void insert_to_mod(WM mod, int id, std::string modname, std::string uid, int x, int y, std::vector<std::pair<std::string, std::string> > params);
   
+  std::string get_funcname(WM mod2, int id, std::string uid);
+  void change_param_value(WM mod2, int id, std::string uid, int param_index, std::string newvalue);
+  bool typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index);
+  void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2);
 private:
   Env &e;
 };

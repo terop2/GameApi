@@ -29,6 +29,9 @@ struct Envi {
   W connect_widget;
   W dialog_cancel, dialog_ok;
   std::vector<W> connect_clicks;
+  std::vector<W> connect_targets;
+  std::vector<W> connect_links;
+  std::string connect_start_uid;
   int dialog_i1;
   std::string dialog_uid;
   std::vector<GuiApi::EditTypes*> vec4;
@@ -44,6 +47,7 @@ struct Envi {
   bool connect_ongoing;
   bool connect_ongoing2;
   bool flip_ongoing;
+  bool key_state;
   std::map<int, bool> flip_status;
   std::string insert_func_name;
   std::string insert_mod_name;
@@ -57,10 +61,78 @@ struct Envi {
   bool ctrl;
   int unique_id_counter;
   SH sh2;
+  SH sh;
 };
 void connect_target(int x, int y, Envi *envi)
 {
   std::cout << "Connect target!" << std::endl;
+
+  int s = envi->connect_targets.size();
+  for(int i=0;i<s;i++)
+    {
+      W wid = envi->connect_targets[i];
+      int xx = envi->gui->pos_x(wid);
+      int yy = envi->gui->pos_y(wid);
+      int sx = envi->gui->size_x(wid);
+      int sy = envi->gui->size_y(wid);
+
+      if (x>=xx && x<xx+sx && y>=yy && y<yy+sy)
+	{
+	  std::string uidstring = envi->gui->get_id(wid);
+	  std::cout << "UID: " << uidstring << std::endl;
+
+	  std::stringstream ss(uidstring);
+	  std::string uid;
+	  ss >> uid;
+	  int num;
+	  ss >> num;
+	  
+	  std::string funcname = envi->ev->mod_api.get_funcname(envi->mod, 0, uid);
+	  std::vector<int> vec = envi->ev->mod_api.indexes_from_funcname(funcname);
+	  int real_index = vec[num];
+	  std::cout << "Real index: " << real_index << std::endl;
+
+	  bool b = envi->ev->mod_api.typecheck(envi->mod, 0, envi->connect_start_uid, uid, real_index);
+	  if (b) 
+	    {
+	      envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, envi->connect_start_uid);
+
+	      
+	      int sk = envi->connect_links.size();
+	      for(int i=0;i<sk;i++)
+		{
+		  W wid = envi->connect_links[i];
+		  std::string str = envi->gui->get_id(wid);
+		  std::stringstream ss(str);
+		  std::string uid1;
+		  std::string uid2;
+		  int val;
+		  ss>> uid1 >> uid2 >> val;
+		  if (uid2==uid && val == real_index)
+		    {
+		      envi->connect_links.erase(envi->connect_links.begin()+i);
+		      break;
+		    }
+		}
+
+	      
+	      W start_link = envi->gui->find_canvas_item(envi->canvas, envi->connect_start_uid);
+	      
+	      W link = envi->gui->line( start_link, 100,45,
+					wid, 0,10, envi->sh2);
+	      std::stringstream ss2;
+	      ss2 << envi->connect_start_uid << " " << uid << " " << real_index; 
+	      envi->gui->set_id(link, ss2.str());
+	      envi->connect_links.push_back(link);
+
+	    } else
+	    {
+	      std::cout << "TypeCheck failed!" << std::endl;
+	    }
+	}
+      
+    }
+
 }
 void callback_func(int x, int y, Envi *envi)
 {
@@ -94,7 +166,7 @@ void iter(void *arg)
 {
   Envi *env = (Envi*)arg;
 
-    env->ev->mainloop_api.clear_3d();
+    env->ev->mainloop_api.clear();
     
     env->gui->render(env->txt2);
 
@@ -115,12 +187,20 @@ void iter(void *arg)
     if (env->connect_ongoing)
       {
 	env->gui->render(env->connect_line);
+	env->ev->shader_api.use(env->sh);
 	env->gui->render(env->connect_widget);
       }
     if (env->opened_menu_num != -1)
       {
 	//std::cout << env->opened_menu_num << std::endl;
 	env->gui->render(env->menus[env->opened_menu_num]);
+      }
+    int s5 = env->connect_links.size();
+    for(int i5 = 0;i5<s5;i5++)
+      {
+	W wid = env->connect_links[i5];
+	env->gui->render(wid);
+	env->ev->shader_api.use(env->sh);
       }
     
     //env->ev->mainloop_api.fpscounter();
@@ -130,6 +210,19 @@ void iter(void *arg)
     // handle esc event
     MainLoopApi::Event e = env->ev->mainloop_api.get_event();
 
+    if (e.type==1024 && e.button==-1)
+      {
+	env->key_state = true;
+      }
+    if (e.type==1024 && e.button==0 && env->key_state==true)
+      {
+	// FIX EMSCRIPTEN EVENTS NOT GIVING KEYDOWN EVENTS.
+	e.type=1025;
+	env->key_state = false;
+      }
+
+
+    //std::cout << e.type << " " << e.ch << " " << e.button << std::endl;
     //std::cout << e.type << std::endl;
     //std::cout << e.button << std::endl;
     if (e.ch==1073742048 && e.type == 0x300)
@@ -222,6 +315,15 @@ void iter(void *arg)
     env->gui->update(env->canvas_area, e.cursor_pos, e.button,e.ch, e.type);
     env->gui->update(env->scrollbar_x, e.cursor_pos, e.button,e.ch, e.type);
     env->gui->update(env->scrollbar_y, e.cursor_pos, e.button,e.ch, e.type);
+
+    int s4 = env->connect_links.size();
+    for(int i4 = 0;i4<s4;i4++)
+      {
+	W wid = env->connect_links[i4];
+	env->gui->update(wid, e.cursor_pos, e.button, e.ch, e.type);
+      }
+
+
     if (env->insert_ongoing)
       {
 	env->gui->update(env->insert_widget, e.cursor_pos, e.button,e.ch, e.type);
@@ -249,6 +351,7 @@ void iter(void *arg)
 	    env->connect_line = env->gui->line(canvas_item, 80,50,
 					       env->connect_widget, 0, 0, env->sh2);
 	    
+	    env->connect_start_uid = uid;
 	    env->connect_ongoing = true;
 	    break;
 	  }
@@ -263,6 +366,10 @@ void iter(void *arg)
     float param_y1 = env->gui->dynamic_param(env->scrollbar_y, 0);
     env->gui->set_dynamic_param(env->canvas_area, 1, param_y1);
     env->ev->mod_api.update_lines_from_canvas(env->canvas, env->mod, 0);
+
+    int area_y = env->gui->size_y(env->array);
+    //std::cout << area_y << std::endl;
+    env->gui->set_dynamic_param(env->txt2, 0, area_y);
     
     if (env->editor_visible)
       {
@@ -303,7 +410,7 @@ void iter(void *arg)
       //std::cout << "Chosen: " << sel2 << std::endl;
       if (sel2 == 0 && !env->flip_ongoing)
 	{
-	  std::cout << "Flip!" << std::endl;
+	  //std::cout << "Flip!" << std::endl;
 	  bool b = env->flip_status[sel];
 	  b = !b;
 	  env->flip_status[sel] = b;
@@ -334,6 +441,9 @@ void iter(void *arg)
 	    case 5:
 	      name = env->gui->linesapi_functions_item_label(sel2-1);
 	      break;
+	    case 6:
+	      name = env->gui->pointsapi_functions_item_label(sel2-1);
+	      break;
 	    };
 	  //std::cout << "Chosen label: " << name << std::endl;
 	  env->insert_mod_name = name;
@@ -344,7 +454,7 @@ void iter(void *arg)
 	  ss << "uid" << uid_num;
 	  std::string uid = ss.str();
 
-	  env->chosen_item = env->ev->mod_api.inserted_widget(*env->gui, env->mod, 0, env->atlas, env->atlas_bm, name, env->connect_clicks[env->connect_clicks.size()-1], uid);
+	  env->chosen_item = env->ev->mod_api.inserted_widget(*env->gui, env->mod, 0, env->atlas, env->atlas_bm, name, env->connect_clicks[env->connect_clicks.size()-1], uid, env->connect_targets);
 	  env->insert_widget = env->gui->insert_widget(env->chosen_item, std::bind(&callback_func, _1, _2, env));
 	  env->insert_ongoing = true;
 	}
@@ -522,6 +632,7 @@ int main(int argc, char *argv[]) {
       items.push_back(gui.floatbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
       items.push_back(gui.shadermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
       items.push_back(gui.linesapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
+      items.push_back(gui.pointsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
     }
   W array = gui.array_y(&items[0], items.size(), 5);
   W scroll_area = gui.scroll_area(array, gui.size_x(array), screen_y-30, screen_y);
@@ -548,8 +659,9 @@ int main(int argc, char *argv[]) {
   //gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), 150,100);
   //for(int i=0;i<200;i++)
   //  gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), i*30, i*30);
-  ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks);
+  ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets);
 
+  ev.mod_api.insert_links(ev, gui, mod, 0, env.connect_links, canvas, env.connect_targets, sh2);
   W canvas_area = gui.scroll_area(canvas, screen2_x-20, screen2_y-20, screen_y);
   W scrollbar_y = gui.scrollbar_y(20, screen2_y-20, sy);
   W scrollbar_x = gui.scrollbar_x(screen2_x-20, 20, sx); 
@@ -592,6 +704,7 @@ int main(int argc, char *argv[]) {
   env.connect_ongoing = false;
   env.connect_ongoing2 = false;
   env.sh2 = sh2;
+  env.sh = sh;
 
 #ifndef EMSCRIPTEN
   while(1) {
