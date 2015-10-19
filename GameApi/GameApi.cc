@@ -1183,7 +1183,8 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 {
   SDL_Event event;
   Event e2;
-  SDL_PollEvent(&event);
+  int last = SDL_PollEvent(&event);
+  e2.last = last!=0;
   int x,y;
   int val = SDL_GetMouseState(&x, &y);
   e2.type = event.type;
@@ -15357,7 +15358,11 @@ public:
 	ss << target;
 	label = ss.str();
       }
-
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
     if (active)
       {
 	int s = allowed_chars.size();
@@ -15369,7 +15374,7 @@ public:
 		changed = true;
 	      }
 	  }
-	if (ch==8 && label.size()>0)
+	if ((ch==8 ||ch==42) && label.size()>0)
 	  {
 	    label.erase(label.begin()+(label.size()-1));
 	    changed = true;
@@ -15907,18 +15912,20 @@ public:
     using std::placeholders::_9;
     if (firsttime)
       {
-	line = ev.lines_api.function(std::bind(&LineWidget::line_func, this, _1, _2), 1);
+	line = ev.lines_api.function([this](int a,bool b){ return line_func(a,b); }, 1);
 	line = ev.lines_api.change_color(line, 0xffffffff);
-	line_2 = ev.polygon_api.from_lines(line, std::bind(&LineWidget::line_to_poly, this, _1,_2,_3,_4,_5,_6,_7,_8,_9));
+	line_2 = ev.polygon_api.from_lines(line, [this](int a,float b,float c,float d,float e,float f,float g,unsigned int h,unsigned int i) { return line_to_poly(a,b,c,d,e,f,g,h,i); });
 	line_3 = ev.polygon_api.create_vertex_array(line_2, true);
 	//line_p = ev.lines_api.prepare(line);
 	firsttime = false;
       }
     else
       {
-	line = ev.lines_api.function(std::bind(&LineWidget::line_func, this, _1, _2), 1);
+
+	line = ev.lines_api.function([this](int a,bool b){ return line_func(a,b); }, 1);
 	line = ev.lines_api.change_color(line, 0xffffffff);
-	line_2 = ev.polygon_api.from_lines(line, std::bind(&LineWidget::line_to_poly, this, _1,_2,_3,_4,_5,_6,_7,_8,_9));
+	line_2 = ev.polygon_api.from_lines(line, [this](int a,float b,float c,float d,float e,float f,float g,unsigned int h,unsigned int i) { return line_to_poly(a,b,c,d,e,f,g,h,i); });
+
 
 	ev.polygon_api.update_vertex_array(line_3, line_2, true);
 	//ev.lines_api.update(line_p, line);
@@ -16445,6 +16452,7 @@ public:
   }
   void set_pos(Point2d pos)
   {
+    GuiWidgetForward::set_pos(pos);
     Vector2d size = vec[0]->get_size();
     Point2d p = { pos.x + sx - size.dx, pos.y };
     vec[0]->set_pos(p);
@@ -16469,6 +16477,7 @@ public:
   }
   void set_pos(Point2d pos)
   {
+    GuiWidgetForward::set_pos(pos);
     Vector2d size = vec[0]->get_size();
     Point2d p = { pos.x + (sx - size.dx)/2, pos.y };
     vec[0]->set_pos(p);
@@ -16494,6 +16503,7 @@ public:
   }
   void set_pos(Point2d pos)
   {
+    GuiWidgetForward::set_pos(pos);
     Vector2d size = vec[0]->get_size();
     Point2d p = { pos.x, pos.y + (sy-size.dy)/2};
     vec[0]->set_pos(p);
@@ -17598,10 +17608,18 @@ int funccall(GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
 {
   std::stringstream ss;
   int s2 = s.size();
+#ifndef EMSCRIPTEN
   for(int i=s2-1;i>=0;i--)
     {
       ss << s[i] << " ";
     }
+#else
+  for(int i=0;i<s2;i++)
+    {
+      ss << s[i] << " ";
+    }
+#endif
+
   std::stringstream ss2(ss.str());
   
   T *ptr = &(ev.*api);
@@ -18981,6 +18999,7 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
 	      if (p.size()==0)
 		{
 		  std::cout << "EXECUTE FAILED at param!" << std::endl;
+		  return -1;
 		}
 	      if (p.size()>3 && p[0]=='u' && p[1] == 'i' && p[2] =='d')
 		{

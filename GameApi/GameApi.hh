@@ -191,6 +191,7 @@ public:
     bool joy1_button1;
     bool joy1_button2;
     bool joy1_button3;
+    bool last;
   };
   IMPORT Event get_event();
   void waittof();
