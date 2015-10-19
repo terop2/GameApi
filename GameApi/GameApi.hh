@@ -738,6 +738,7 @@ public:
   GuiApi(Env &e, EveryApi &ev, SH sh) : e(e), ev(ev), sh(sh) { }
   W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=2);
   W icon(BM bitmap);
+  W poly(P p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
   W line(W target1, int delta_x, int delta_y,
 	 W target2, int delta2_x, int delta2_y, SH sh);
   W gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int colot_1, unsigned int color_2);
@@ -773,6 +774,7 @@ public:
   W dialog_item(std::string text, BM icon, int sx, int sy);
   W dialog_border(W item);
   W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm);
+  W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm);
 
   W button_with_text(std::string label);
   W button_with_icon(BM bitmap);

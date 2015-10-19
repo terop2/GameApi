@@ -3,7 +3,7 @@
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
 #ifndef EMSCRIPTEN
-#define THREADS 1
+//#define THREADS 1
 #endif
 #include "GameApi.hh" 
 #include "Graph.hh"  
@@ -1717,6 +1717,8 @@ GameApi::P add_polygon(GameApi::Env &e, FaceCollPolyHandle *handle)
   env->poly.push_back(handle);
   GameApi::P p;
   p.id = env->poly.size()-1;
+
+  //std::cout << "add_polygon returning" << p.id << std::endl;
   //bm.type = 0;
   handle->id = p.id;
   return p;
@@ -2188,7 +2190,7 @@ GuiWidget *find_widget(GameApi::Env &e, GameApi::W w)
   int s = env->widgets.size();
   if (w.id>=0 && w.id<s)
     return env->widgets[w.id];
-  std::cout << "find_widget failed!" << std::endl;
+  std::cout << "find_widget failed!" << w.id << std::endl;
   //assert(0);
   return 0;
 }
@@ -9090,6 +9092,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
     {
       int start_range = i*delta_s;
       int end_range = (i+1)*delta_s;
+      if (end_range>s) end_range = s;
       if (i==num_threads-1) {end_range = s; }
       vec.push_back(prep.push_thread(start_range, end_range));
     }
@@ -9131,7 +9134,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   for(int i=0;i<num_threads;i++)
     {
       int start_range = i*delta_s;
-      int end_range = (i+1)*delta_s;
+      int  end_range = (i+1)*delta_s;
+      if (end_range>s) { end_range = s; }
       if (i==num_threads-1) {end_range = s; }
       vec.push_back(prep.push_thread(start_range, end_range));
     }
@@ -15385,7 +15389,48 @@ private:
 };
 
 
-
+class PolyGuiWidget : public GuiWidgetForward
+{
+public:
+  PolyGuiWidget(GameApi::EveryApi &ev, GameApi::P p, GameApi::SH sh, GameApi::SH old_sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), sh(sh), old_sh(old_sh), p(p), obj(ev, p, sh),sx(sx),sy(sy), screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
+    Point2d p3 = {-666.0, -666.0 };
+    update(p3, -1,-1,-1);
+    Point2d p2 = { 0.0,0.0 };
+    set_pos(p2);
+  }
+  void update(Point2d mouse, int button, int ch, int type)
+  {
+    if (firsttime)
+      {
+      obj.prepare();
+      firsttime = false;
+      }
+    size.dx = sx;
+    size.dy = sy;
+  }  
+  void render()
+  {
+    if (!firsttime)
+      {
+	Point2d pos = get_pos();
+	Vector2d sz = get_size();
+	glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
+	//ev.mainloop_api.switch_to_3d(true, sh);
+	obj.render();
+	//ev.mainloop_api.switch_to_3d(false, sh);
+	glViewport(0,0,screen_x, screen_y);
+	ev.shader_api.use(old_sh);
+      }
+  }
+private:
+  GameApi::SH sh;
+  GameApi::SH old_sh;
+  GameApi::P p;
+  GameApi::PolygonObj obj;
+  bool firsttime;
+  int sx,sy;
+  int screen_x, screen_y;
+};
 class IconGuiWidget : public GuiWidgetForward
 {
 public:
@@ -15881,14 +15926,20 @@ public:
     else
       {
 
-	line = ev.lines_api.function([this](int a,bool b){ return line_func(a,b); }, 1);
-	line = ev.lines_api.change_color(line, 0xffffffff);
-	line_2 = ev.polygon_api.from_lines(line, [this](int a,float b,float c,float d,float e,float f,float g,unsigned int h,unsigned int i) { return line_to_poly(a,b,c,d,e,f,g,h,i); });
-
-
-	ev.polygon_api.update_vertex_array(line_3, line_2, true);
+	if (old_t1_pos.x != t1->get_pos().x ||old_t2_pos.x != t2->get_pos().x
+	    ||old_t1_pos.y != t1->get_pos().y || old_t2_pos.y != t2->get_pos().y)
+	  {
+	    line = ev.lines_api.function([this](int a,bool b){ return line_func(a,b); }, 1);
+	    line = ev.lines_api.change_color(line, 0xffffffff);
+	    line_2 = ev.polygon_api.from_lines(line, [this](int a,float b,float c,float d,float e,float f,float g,unsigned int h,unsigned int i) { return line_to_poly(a,b,c,d,e,f,g,h,i); });
+	    
+	    
+	    ev.polygon_api.update_vertex_array(line_3, line_2, true);
+	  }
 	//ev.lines_api.update(line_p, line);
       }
+    old_t1_pos = t1->get_pos();
+    old_t2_pos = t2->get_pos();
   }
   void render()
   {
@@ -15911,6 +15962,8 @@ private:
   GameApi::P line_2;
   GameApi::VA line_3;
   //GameApi::LLA line_p;
+  Point2d old_t1_pos;
+  Point2d old_t2_pos;
 };
 EXPORT GameApi::W GameApi::GuiApi::line(W target1, int delta_x, int delta_y,
 					W target2, int delta2_x, int delta2_y, SH sh)
@@ -16135,6 +16188,10 @@ EXPORT GameApi::W GameApi::GuiApi::icon(BM bm)
 {
   return add_widget(e, new IconGuiWidget(ev, bm,sh));
 }
+EXPORT GameApi::W GameApi::GuiApi::poly(P p, SH sh2, int sx, int sy, int screen_size_x, int screen_size_y)
+{
+  return add_widget(e, new PolyGuiWidget(ev, p, sh2, sh, sx,sy, screen_size_x, screen_size_y));
+}
 EXPORT GameApi::W GameApi::GuiApi::string_editor(std::string allowed_chars, std::string &target, FtA atlas, BM atlas_bm, int x_gap)
 {
   W e1 = add_widget(e, new EditorGuiWidgetAtlas<std::string>(ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap));
@@ -16167,7 +16224,29 @@ EXPORT GameApi::W GameApi::GuiApi::color_editor(std::string &col, FtA atlas, BM 
   return edit2; 
 }
 
+EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm)
+{
+  W bm_1 = poly(p, sh, 400,400, screen_size_x,screen_size_y);
+  W bm_2 = margin(bm_1, 10,10,10,10);
+  W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
+  W bm_4 = layer(bm_3, bm_2);
+  
+  W but_1 = text("Close", atlas, atlas_bm);
+  W but_2 = center_align(but_1, size_x(bm_4));
+  W but_3 = center_y(but_2, 60.0);
+  W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
+  W but_41 = highlight(but_4);
+  W but_5 = layer(but_41, but_3);
+  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5));
+  close_button = but_6;
 
+
+  W arr[] = { bm_4, but_6 };
+  W arr_2 = array_y(&arr[0], 2, 0);
+
+  W arr_3 = mouse_move(arr_2, 0,0, size_x(arr_2), size_y(arr_2));
+  return arr_3;
+}
 
 EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm)
 {
@@ -17218,6 +17297,7 @@ template<> GameApi::O from_stream<GameApi::O>(std::stringstream &is)
   is >> bm.id;
   return bm;
 }
+
 template<> GameApi::P from_stream<GameApi::P>(std::stringstream &is)
 {
   GameApi::P bm;
@@ -17322,11 +17402,13 @@ int funccall(GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
       ss << s[i] << " ";
     }
 #endif
+  std::cout << "FuncCall: " << ss.str() << std::endl;
 
   std::stringstream ss2(ss.str());
   
   T *ptr = &(ev.*api);
   RT val = (ptr->*fptr)(from_stream<P>(ss2)...);
+  std::cout << "FuncCall returning: " << val.id << std::endl;
   return val.id;
 }
 
@@ -17514,7 +17596,7 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "" },
 			 "P"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::or_elem,
-			 "or_elem",
+			 "p_or_elem",
 			 { "p1", "p2" },
 			 { "P", "P" },
 			 { "", "" },
