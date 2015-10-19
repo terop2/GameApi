@@ -18,6 +18,8 @@ struct Envi {
   std::vector<GuiApi::EditTypes> edit_data;
   W editor;
   bool editor_visible;
+  W display;
+  bool display_visible;
   W txt;
   W txt2;
   W scroll_area;
@@ -28,10 +30,14 @@ struct Envi {
   W connect_line;
   W connect_widget;
   W dialog_cancel, dialog_ok;
+  W display_close;
   std::vector<W> connect_clicks;
   std::vector<W> connect_targets;
   std::vector<W> connect_links;
   std::string connect_start_uid;
+
+  std::vector<W> display_clicks;
+  std::vector<W> edit_clicks;
   int dialog_i1;
   std::string dialog_uid;
   std::vector<GuiApi::EditTypes*> vec4;
@@ -144,7 +150,11 @@ void callback_func(int x, int y, Envi *envi)
   ss << "uid" << uid_num;
   std::string uid = ss.str();
 
-  envi->ev->mod_api.insert_inserted_to_canvas(*envi->gui, envi->canvas, envi->chosen_item, uid);
+  W display_cb;
+  W edit_cb;
+  envi->ev->mod_api.insert_inserted_to_canvas(*envi->gui, envi->canvas, envi->chosen_item, uid, display_cb, edit_cb);
+  envi->display_clicks.push_back(display_cb);
+  envi->edit_clicks.push_back(edit_cb);
 
 
   std::vector<std::pair<std::string,std::string> > vec = envi->ev->mod_api.defaults_from_function(envi->insert_mod_name);
@@ -178,6 +188,10 @@ void iter(void *arg)
     env->gui->render(env->canvas_area);
     env->gui->render(env->scrollbar_x);
     env->gui->render(env->scrollbar_y);
+    if (env->display_visible)
+      {
+	env->gui->render(env->display);
+      }
     if (env->editor_visible)
       env->gui->render(env->editor);
     if (env->insert_ongoing)
@@ -248,14 +262,66 @@ void iter(void *arg)
       {
 	e.ch=-1;
       }
+    if (env->display_visible)
+      {
+	int chosen = env->gui->chosen_item(env->display_close);
+	if (chosen==0)
+	  {
+	    env->display_visible = false;
+	  }
+	
+      }
+    if (!env->display_visible)
+      {
+	int s = env->display_clicks.size();
+	for(int i=0;i<s;i++)
+	  {
+	    W w = env->display_clicks[i];
+	    int chosen = env->gui->chosen_item(w);
+	    if (!env->display_visible && chosen==0)
+	      {
+		std::string uid = env->gui->get_id(w);
+		
+		std::cout << "Execute for uid: " << uid << std::endl;
+
+		// Execute
+		int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid);
+
+		// display dialog
+		std::string type = env->ev->mod_api.return_type(env->mod, 0, uid);
+
+		if (type=="BM")
+		  {
+		    BM bm;
+		    bm.id = id;
+		    env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3);
+		  } 
+		else if (type=="BB")
+		  {
+		    BB bb;
+		    bb.id = id;
+		    BM bm = env->ev->bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
+		    env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas, env->atlas_bm);
+
+		  }
+		else 
+		  {
+		    std::cout << "Type not found" << type << std::endl;
+		  }
+		env->gui->set_pos(env->display, 200.0, 50.0);
+		env->display_visible = true;
+	      }
+	  }
+      }
 
     if (!env->editor_visible)
       {
-    int s = env->gui->num_childs(env->canvas);
+	int s = env->edit_clicks.size(); //env->gui->num_childs(env->canvas);
     for(int i=0;i<s;i++)
       {
 	//std::cout << "Child " << i << std::endl;
-	W w = env->gui->get_child(env->canvas, i);
+	W w = //env->gui->get_child(env->canvas, i);
+	  env->edit_clicks[i];
 	int chosen = env->gui->chosen_item(w);
 	if (!env->editor_visible && chosen == 0)
 	  {
@@ -305,6 +371,10 @@ void iter(void *arg)
       }
 
     env->gui->update(env->txt, e.cursor_pos, e.button, e.ch, e.type);
+    if (env->display_visible)
+      {
+	env->gui->update(env->display, e.cursor_pos, e.button, e.ch, e.type);
+      }
     if (env->editor_visible)
       env->gui->update(env->editor, e.cursor_pos, e.button, e.ch, e.type);
     env->gui->update(env->txt2, e.cursor_pos, e.button, e.ch, e.type);
@@ -659,7 +729,7 @@ int main(int argc, char *argv[]) {
   //gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), 150,100);
   //for(int i=0;i<200;i++)
   //  gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), i*30, i*30);
-  ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets);
+  ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets, env.display_clicks, env.edit_clicks);
 
   ev.mod_api.insert_links(ev, gui, mod, 0, env.connect_links, canvas, env.connect_targets, sh2);
   W canvas_area = gui.scroll_area(canvas, screen2_x-20, screen2_y-20, screen_y);
