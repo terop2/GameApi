@@ -224,10 +224,10 @@ void iter(void *arg)
     // handle esc event
     MainLoopApi::Event e;
     e.last = true;
-    while(e.last)
+    while((e=env->ev->mainloop_api.get_event()).last)
       {
-	e = env->ev->mainloop_api.get_event();
-
+	//std::cout << e.type << " " << e.ch << " " << e.button << std::endl;
+	//if (e.type==1024 && e.button==-1) continue;
 	if (e.type==0x300)
 	  std::cout << e.type << " " << e.ch << std::endl;
 
@@ -308,6 +308,14 @@ void iter(void *arg)
 			BB bb;
 			bb.id = id;
 			BM bm = env->ev->bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3);
+			
+		      }
+		    else if (type=="FB")
+		      {
+			FB fb;
+			fb.id = id;
+			BM bm = env->ev->float_bitmap_api.to_grayscale_color(fb, 255,255,255,255, 0,0,0,0);
 			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3);
 			
 		      }
@@ -521,6 +529,12 @@ void iter(void *arg)
 		  case 6:
 		    name = env->gui->pointsapi_functions_item_label(sel2-1);
 		    break;
+		  case 7:
+		    name = env->gui->pointapi_functions_item_label(sel2-1);
+		    break;
+		  case 8:
+		    name = env->gui->vectorapi_functions_item_label(sel2-1);
+		    break;
 		  };
 		//std::cout << "Chosen label: " << name << std::endl;
 		env->insert_mod_name = name;
@@ -711,6 +725,9 @@ int main(int argc, char *argv[]) {
       items.push_back(gui.shadermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
       items.push_back(gui.linesapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
       items.push_back(gui.pointsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
+      items.push_back(gui.pointapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
+      items.push_back(gui.vectorapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
+
     }
   W array = gui.array_y(&items[0], items.size(), 5);
   W scroll_area = gui.scroll_area(array, gui.size_x(array), screen_y-30, screen_y);
