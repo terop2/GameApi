@@ -68,6 +68,8 @@ struct Envi {
   int unique_id_counter;
   SH sh2;
   SH sh;
+  SH sh3;
+  int screen_size_x, screen_size_y;
 };
 void connect_target(int x, int y, Envi *envi)
 {
@@ -177,6 +179,7 @@ void iter(void *arg)
   Envi *env = (Envi*)arg;
 
     env->ev->mainloop_api.clear();
+    //env->ev->mainloop_api.clear_3d();
     
     env->gui->render(env->txt2);
 
@@ -188,12 +191,6 @@ void iter(void *arg)
     env->gui->render(env->canvas_area);
     env->gui->render(env->scrollbar_x);
     env->gui->render(env->scrollbar_y);
-    if (env->display_visible)
-      {
-	env->gui->render(env->display);
-      }
-    if (env->editor_visible)
-      env->gui->render(env->editor);
     if (env->insert_ongoing)
       {
 	env->gui->render(env->insert_widget);
@@ -216,6 +213,13 @@ void iter(void *arg)
 	env->gui->render(wid);
 	env->ev->shader_api.use(env->sh);
       }
+    if (env->display_visible)
+      {
+	env->gui->render(env->display);
+      }
+    if (env->editor_visible)
+      env->gui->render(env->editor);
+
     
     //env->ev->mainloop_api.fpscounter();
     // swapbuffers
@@ -318,6 +322,13 @@ void iter(void *arg)
 			BM bm = env->ev->float_bitmap_api.to_grayscale_color(fb, 255,255,255,255, 0,0,0,0);
 			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3);
 			
+		      }
+		    else if (type=="P")
+		      {
+			P p;
+			p.id = id;
+			std::cout << "ID: " << p.id << std::endl;
+			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3);
 		      }
 		    else 
 		      {
@@ -625,6 +636,7 @@ int main(int argc, char *argv[]) {
   ev.shader_api.load_default();
   SH sh = ev.shader_api.texture_shader();
   SH sh2 = ev.shader_api.colour_shader();
+  SH sh3 = ev.shader_api.colour_shader();
   Ft font = ev.font_api.newfont("FreeSans.ttf", 13,15);
   Ft font2 = ev.font_api.newfont("FreeSans.ttf", 10,13);
   Ft font3 = ev.font_api.newfont("FreeSans.ttf", 30,30);
@@ -678,8 +690,11 @@ int main(int argc, char *argv[]) {
   BM atlas_bm3 = ev.float_bitmap_api.to_grayscale_color(atlas_bm3_b, 255,255,255,255, 0,0,0,0);
 #endif
   // rest of the initializations
+  ev.mainloop_api.init_3d(sh3, screen_x, screen_y);
   ev.mainloop_api.init(sh, screen_x,screen_y);
   ev.mainloop_api.init(sh2, screen_x,screen_y);
+
+  ev.mainloop_api.switch_to_3d(false, sh3);
   ev.shader_api.use(sh);
   ev.mainloop_api.alpha(true);
   
@@ -783,6 +798,7 @@ int main(int argc, char *argv[]) {
   env.unique_id_counter = ev.mainloop_api.random();
   //env.editor = editor;
   env.editor_visible = false;
+  env.display_visible = false;
   //env.wave = wave;
   //env.test1 = test1;
   env.array = array;
@@ -800,6 +816,9 @@ int main(int argc, char *argv[]) {
   env.connect_ongoing2 = false;
   env.sh2 = sh2;
   env.sh = sh;
+  env.sh3 = sh3;
+  env.screen_size_x = screen_x;
+  env.screen_size_y = screen_y;
 
 #ifndef EMSCRIPTEN
   while(1) {
