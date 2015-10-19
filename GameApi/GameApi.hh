@@ -736,7 +736,6 @@ class GuiApi
 {
 public:
   GuiApi(Env &e, EveryApi &ev, SH sh) : e(e), ev(ev), sh(sh) { }
-  W text(std::string label, Ft font);
   W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=2);
   W icon(BM bitmap);
   W line(W target1, int delta_x, int delta_y,
@@ -755,11 +754,8 @@ public:
   W layer(W w1, W w2);
   W array_y(W *arr, int size, int y_gap);
   W array_x(W *arr, int size, int x_gap);
-  W main_menu(std::vector<std::string> labels, Ft font);
   W main_menu(std::vector<std::string> labels, FtA atlas, BM atlas_bm);
-  W menu(W main_menu, int menu_id, std::vector<std::string> labels, Ft font);
   W menu(W main_menu, int menu_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm);
-  W submenu(W manu, int menu_pane_id, std::vector<std::string> labels, Ft font);
   W submenu(W menu, int menu_pane_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm);
   W scrollbar_y(int sx, int sy, int area_y);
   W scrollbar_x(int sx, int sy, int area_x);
@@ -769,11 +765,8 @@ public:
   W find_canvas_item(W canvas, std::string id);
   int canvas_item(W canvas, W item, int x, int y);
   void del_canvas_item(W canvas, int id);
-  W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, Ft font);
   W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params);
-  W list_item_title(int sx, std::string label, Ft font);
   W list_item_title(int sx, std::string label, FtA atlas, BM atlas_bm);
-  W list_item_opened(int sx, std::string label, Ft font, std::vector<std::string> subitems, Ft font2);
   W list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, FtA atlas2, BM atlas_bm2);
   W list_item(BM icon, std::string label, int sx, int sy);
   W list(W *array, int size, int sx, int sy);
@@ -784,11 +777,6 @@ public:
   W button_with_text(std::string label);
   W button_with_icon(BM bitmap);
   W opengl_wrapper(W widget);
-  W string_editor(std::string allowed_chars, std::string &target, Ft font);
-  W float_editor(float &target, Ft font);
-  W int_editor(int &target, Ft font);
-  W point_editor(float &x, float &y, float &z, Ft font);
-  W color_editor(std::string &col, Ft font);
   W string_editor(std::string allowed_chars, std::string &target, FtA atlas, BM atlas_bm, int x_gap);
   W float_editor(float &target, FtA atlas, BM atlas_bm, int x_gap);
   W int_editor(int &target, FtA atlas, BM atlas_bm, int x_gap);
@@ -802,13 +790,11 @@ public:
     std::string color;
     std::string s;
   };
-  W generic_editor(EditTypes &target, Ft font, std::string type);
   W generic_editor(EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap);
   void generic_to_string(const EditTypes &source, std::string type, std::string &target);
   void string_to_generic(EditTypes &target, std::string type, const std::string &source);
   IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, Ft font, const std::vector<std::string> &types, W &cancel_button, W &ok_button);
   IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_button, W &ok_button);
-  W bitmapapi_functions_list_item(Ft font1, Ft font2);
   W bitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
   W boolbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
   W floatbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
@@ -816,6 +802,9 @@ public:
   W shadermoduleapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
   W linesapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
   W pointsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
+  W pointapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
+  W vectorapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
+
   std::string bitmapapi_functions_item_label(int i);
   std::string boolbitmapapi_functions_item_label(int i);
   std::string floatbitmapapi_functions_item_label(int i);
@@ -823,6 +812,8 @@ public:
   std::string shadermoduleapi_functions_item_label(int i);
   std::string linesapi_functions_item_label(int i);
   std::string pointsapi_functions_item_label(int i);
+  std::string pointapi_functions_item_label(int i);
+  std::string vectorapi_functions_item_label(int i);
   W insert_widget(W item, std::function<void(int,int)> f);
   void insert_widget_activate(W w, bool b);
 
@@ -854,11 +845,9 @@ public:
   WModApi(Env &e) : e(e) { }
   WM load(std::string filename);
   void save(WM mod, std::string ilename);
-  void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, Ft font);
   void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks);
   void update_lines_from_canvas(W canvas, WM mod, int id);
   void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks);
-  W inserted_widget(GuiApi &gui, WM mod2, int id, Ft font, std::string func_name);
   W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid, std::vector<W> &params);
   std::vector<int> indexes_from_funcname(std::string funcname);
   std::vector<std::string> types_from_function(WM mod, int id, std::string funcname);
