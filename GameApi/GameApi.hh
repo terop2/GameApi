@@ -778,7 +778,7 @@ public:
   W list(W *array, int size, int sx, int sy);
   W dialog_item(std::string text, BM icon, int sx, int sy);
   W dialog_border(W item);
-  W bitmap_dialog(BM bm, W &close_button);
+  W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm);
 
   W button_with_text(std::string label);
   W button_with_icon(BM bitmap);
@@ -854,9 +854,9 @@ public:
   WM load(std::string filename);
   void save(WM mod, std::string ilename);
   void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, Ft font);
-  void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params);
+  void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks);
   void update_lines_from_canvas(W canvas, WM mod, int id);
-  void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid);
+  void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks);
   W inserted_widget(GuiApi &gui, WM mod2, int id, Ft font, std::string func_name);
   W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid, std::vector<W> &params);
   std::vector<int> indexes_from_funcname(std::string funcname);
@@ -872,6 +872,7 @@ public:
   void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2);
 
   int execute(EveryApi &ev, WM mod2, int id, std::string line_uid);
+  std::string return_type(WM mod2, int id, std::string line_uid);
 private:
   Env &e;
 };

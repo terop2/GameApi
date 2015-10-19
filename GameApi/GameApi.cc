@@ -16345,10 +16345,43 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &l
   return combine_move;
 }
 
-EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button)
+EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm)
 {
-  
+  float sx = float(ev.bitmap_api.size_x(bm));
+  float sy = float(ev.bitmap_api.size_y(bm));
+  if (sx>sy) {
+    float change = 400.0/sx;
+    sx *= change;
+    sy *= change;
+  } else {
+    float change = 400.0/sy;
+    sx *= change;
+    sy *= change;
+  }
 
+  CBM cbm = ev.cont_bitmap_api.from_bitmap(bm, 1.0,1.0);
+  BM  cbm_2 = ev.cont_bitmap_api.sample(cbm, int(sx),int(sy));
+
+  W bm_1 = icon(cbm_2);
+  W bm_2 = margin(bm_1, 10,10,10,10);
+  W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
+  W bm_4 = layer(bm_3, bm_2);
+  
+  W but_1 = text("Close", atlas, atlas_bm);
+  W but_2 = center_align(but_1, size_x(bm_4));
+  W but_3 = center_y(but_2, 60.0);
+  W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
+  W but_41 = highlight(but_4);
+  W but_5 = layer(but_41, but_3);
+  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5));
+  close_button = but_6;
+
+
+  W arr[] = { bm_4, but_6 };
+  W arr_2 = array_y(&arr[0], 2, 0);
+
+  W arr_3 = mouse_move(arr_2, 0,0, size_x(arr_2), size_y(arr_2));
+  return arr_3;
 }
 
 EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &labels, const std::vector<GameApi::GuiApi::EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_but, W &ok_but)
@@ -16405,7 +16438,11 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &l
 class RightAlignWidget : public GuiWidgetForward
 {
 public:
-  RightAlignWidget(GameApi::EveryApi &ev, GuiWidget *wid, int sx) : GuiWidgetForward(ev, { wid }), sx(sx) {}
+  RightAlignWidget(GameApi::EveryApi &ev, GuiWidget *wid, int sx) : GuiWidgetForward(ev, { wid }), sx(sx) {
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1, -1, -1);
+
+  }
   void set_pos(Point2d pos)
   {
     Vector2d size = vec[0]->get_size();
@@ -16425,7 +16462,11 @@ private:
 class CenterAlignWidget : public GuiWidgetForward
 {
 public:
-  CenterAlignWidget(GameApi::EveryApi &ev, GuiWidget *wid, int sx) : GuiWidgetForward(ev, { wid }), sx(sx) {}
+  CenterAlignWidget(GameApi::EveryApi &ev, GuiWidget *wid, int sx) : GuiWidgetForward(ev, { wid }), sx(sx) {
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1, -1, -1);
+
+  }
   void set_pos(Point2d pos)
   {
     Vector2d size = vec[0]->get_size();
@@ -16446,7 +16487,11 @@ private:
 class CenterYWidget : public GuiWidgetForward
 {
 public:
-  CenterYWidget(GameApi::EveryApi &ev, GuiWidget *wid, int sy) : GuiWidgetForward(ev, { wid }), sy(sy) {}
+  CenterYWidget(GameApi::EveryApi &ev, GuiWidget *wid, int sy) : GuiWidgetForward(ev, { wid }), sy(sy) {
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1, -1, -1);
+
+  }
   void set_pos(Point2d pos)
   {
     Vector2d size = vec[0]->get_size();
@@ -17553,7 +17598,7 @@ int funccall(GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
 {
   std::stringstream ss;
   int s2 = s.size();
-  for(int i=0;i<s2;i++)
+  for(int i=s2-1;i>=0;i--)
     {
       ss << s[i] << " ";
     }
@@ -18882,6 +18927,38 @@ void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, 
 	}
     }
 }
+std::string GameApi::WModApi::return_type(WM mod2, int id, std::string line_uid)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+
+  int s = func->lines.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiLine *line = &func->lines[i];
+      if (line->uid == line_uid)
+	{
+	  std::string module_name = line->module_name;
+	  std::cout << "return type module name: " << module_name << std::endl;
+	  std::vector<GameApiItem*> vec = all_functions();
+	  int sd = vec.size();
+	  for(int k=0;k<sd;k++)
+	    {
+	      GameApiItem *item = vec[k];
+	      std::string name = item->Name(0);
+	      if (name == module_name)
+		{
+		  return item->ReturnType(0);
+		}
+	    }
+
+	}
+    }
+  std::cout << "Return type failed!" << std::endl;
+  return "";
+}
+
 int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_uid)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -18915,11 +18992,11 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
 	      params.push_back(p);
 	    }
 	  // EXECUTE
-	  static std::vector<GameApiItem*> vec = all_functions();
+	  std::vector<GameApiItem*> vec = all_functions();
 	  int sd = vec.size();
 	  for(int k=0;k<sd;k++)
 	    {
-	      GameApiItem *item = vec[i];
+	      GameApiItem *item = vec[k];
 	      std::string name = item->Name(0);
 	      if (name == line->module_name)
 		{
@@ -19108,7 +19185,7 @@ std::vector<std::string> GameApi::WModApi::labels_from_function(WM mod2, int id,
   std::vector<std::string> labels2 = remove_unnecessary_labels(types, labels);
   return labels2;
 }
-void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid)
+void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks)
 {
   int pos_x = gui.pos_x(item);
   int pos_y = gui.pos_y(item);
@@ -19116,11 +19193,23 @@ void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, 
   pos_x -= gui.pos_x(canvas);
   pos_y -= gui.pos_y(canvas);
 
+  W display_2 = gui.highlight(gui.size_x(item)-80, gui.size_y(item)-80);
+  W display_22 = gui.click_area(display_2, 0,0, gui.size_x(display_2), gui.size_y(display_2));
+  gui.set_id(display_22, uid);
+  display_clicks = display_22;
+  W display_3 = gui.margin(display_22, 40, 80, gui.size_x(item)-80, 0);
+
+
   W node2 = gui.click_area(item, 40, 40, gui.size_x(item)-80, gui.size_y(item)-80);
+
+  gui.set_id(node2, uid);
+  edit_clicks = node2;
+
   W node22 = gui.highlight(gui.size_x(node2)-80, gui.size_y(node2)-80);
   W node221 = gui.margin(node22, 40,40, 40,40);
   W node222 = gui.layer(node2, node221);
-  W node3 = gui.mouse_move(node222, 0, 0, gui.size_x(node222), 20);
+  W node2222 = gui.layer(node222, display_3);
+  W node3 = gui.mouse_move(node2222, 0, 0, gui.size_x(node2222), 20);
       
   gui.set_pos(item, 0.0, 0.0);
   gui.set_id(node3, uid);
@@ -19165,7 +19254,7 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
     }
 }
 
-void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p, std::vector<W> &params)
+void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p, std::vector<W> &params, std::vector<W> &display_clicks, std::vector<W> &edit_clicks)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -19200,11 +19289,22 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
       std::string return_type = item->ReturnType(0);
 
       W node = gui.canvas_item_gameapi_node(100,100, line->module_name, param_types2, return_type, atlas, atlas_bm, connect_clicks[i], line->uid, params);
+
+      W display_2 = gui.highlight(gui.size_x(node)-80, gui.size_y(node)-80);
+      W display_22 = gui.click_area(display_2, 0,0, gui.size_x(display_2), gui.size_y(display_2));
+      gui.set_id(display_22, line->uid);
+      display_clicks.push_back(display_22);
+      W display_3 = gui.margin(display_22, 40, 80, gui.size_x(node)-80, 0);
+
+
       W node2 = gui.click_area(node, 40, 40, gui.size_x(node)-80, gui.size_y(node)-80);
+      gui.set_id(node2, line->uid);
+      edit_clicks.push_back(node2);
       W node22 = gui.highlight(gui.size_x(node2)-80, gui.size_y(node2)-80);
       W node221 = gui.margin(node22, 40,40, 40,40);
       W node222 = gui.layer(node2, node221);
-      W node3 = gui.mouse_move(node222, 0, 0, gui.size_x(node222), 20);
+      W node2222 = gui.layer(node222, display_3);
+      W node3 = gui.mouse_move(node2222, 0, 0, gui.size_x(node2222), 20);
       gui.set_id(node3, line->uid);
       gui.canvas_item(canvas, node3, line->x, line->y);
     }
