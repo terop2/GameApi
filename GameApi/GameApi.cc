@@ -15397,9 +15397,21 @@ public:
     update(p3, -1,-1,-1);
     Point2d p2 = { 0.0,0.0 };
     set_pos(p2);
+    rot_y = 0.0;
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
+    if (ch=='a' && type==0x300)
+      {
+	rot_y+=1.0*3.14159*2.0/360.0;
+	obj.set_rotation_y(rot_y);
+      }
+    if (ch=='d' && type==0x300)
+      {
+	rot_y-=1.0*3.14159*2.0/360.0;
+	obj.set_rotation_y(rot_y);
+      }
+
     if (firsttime)
       {
       obj.prepare();
@@ -15416,7 +15428,9 @@ public:
 	Vector2d sz = get_size();
 	glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
 	//ev.mainloop_api.switch_to_3d(true, sh);
+	glEnable(GL_DEPTH_TEST);
 	obj.render();
+	glDisable(GL_DEPTH_TEST);
 	//ev.mainloop_api.switch_to_3d(false, sh);
 	glViewport(0,0,screen_x, screen_y);
 	ev.shader_api.use(old_sh);
@@ -15430,7 +15444,126 @@ private:
   bool firsttime;
   int sx,sy;
   int screen_x, screen_y;
+  float rot_y;
 };
+
+class PTSGuiWidget : public GuiWidgetForward
+{
+public:
+  PTSGuiWidget(GameApi::EveryApi &ev, GameApi::PTS p, GameApi::SH sh, GameApi::SH old_sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), sh(sh), old_sh(old_sh), p(p), obj(ev, p, sh),sx(sx),sy(sy), screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
+    Point2d p3 = {-666.0, -666.0 };
+    update(p3, -1,-1,-1);
+    Point2d p2 = { 0.0,0.0 };
+    set_pos(p2);
+    rot_y = 0.0;
+  }
+  void update(Point2d mouse, int button, int ch, int type)
+  {
+    if (ch=='a' && type==0x300)
+      {
+	rot_y+=1.0*3.14159*2.0/360.0;
+	obj.set_rotation_matrix(ev.matrix_api.yrot(rot_y));
+      }
+    if (ch=='d' && type==0x300)
+      {
+	rot_y-=1.0*3.14159*2.0/360.0;
+	obj.set_rotation_matrix(ev.matrix_api.yrot(rot_y));
+      }
+
+    if (firsttime)
+      {
+      obj.prepare();
+      firsttime = false;
+      }
+    size.dx = sx;
+    size.dy = sy;
+  }  
+  void render()
+  {
+    if (!firsttime)
+      {
+	Point2d pos = get_pos();
+	Vector2d sz = get_size();
+	glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
+	//ev.mainloop_api.switch_to_3d(true, sh);
+	glEnable(GL_DEPTH_TEST);
+	obj.render();
+	glDisable(GL_DEPTH_TEST);
+	//ev.mainloop_api.switch_to_3d(false, sh);
+	glViewport(0,0,screen_x, screen_y);
+	ev.shader_api.use(old_sh);
+      }
+  }
+private:
+  GameApi::SH sh;
+  GameApi::SH old_sh;
+  GameApi::PTS p;
+  GameApi::PointsObj obj;
+  bool firsttime;
+  int sx,sy;
+  int screen_x, screen_y;
+  float rot_y;
+};
+
+
+class LinesGuiWidget : public GuiWidgetForward
+{
+public:
+  LinesGuiWidget(GameApi::EveryApi &ev, GameApi::LI p, GameApi::SH sh, GameApi::SH old_sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), sh(sh), old_sh(old_sh), p(p), obj(ev, p, sh),sx(sx),sy(sy), screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
+    Point2d p3 = {-666.0, -666.0 };
+    update(p3, -1,-1,-1);
+    Point2d p2 = { 0.0,0.0 };
+    set_pos(p2);
+    rot_y = 0.0;
+  }
+  void update(Point2d mouse, int button, int ch, int type)
+  {
+    if (ch=='a' && type==0x300)
+      {
+	rot_y+=1.0*3.14159*2.0/360.0;
+	obj.set_rotation_matrix(ev.matrix_api.yrot(rot_y));
+      }
+    if (ch=='d' && type==0x300)
+      {
+	rot_y-=1.0*3.14159*2.0/360.0;
+	obj.set_rotation_matrix(ev.matrix_api.yrot(rot_y));
+      }
+
+    if (firsttime)
+      {
+      obj.prepare();
+      firsttime = false;
+      }
+    size.dx = sx;
+    size.dy = sy;
+  }  
+  void render()
+  {
+    if (!firsttime)
+      {
+	Point2d pos = get_pos();
+	Vector2d sz = get_size();
+	glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
+	//ev.mainloop_api.switch_to_3d(true, sh);
+	glEnable(GL_DEPTH_TEST);
+	obj.render();
+	glDisable(GL_DEPTH_TEST);
+	//ev.mainloop_api.switch_to_3d(false, sh);
+	glViewport(0,0,screen_x, screen_y);
+	ev.shader_api.use(old_sh);
+      }
+  }
+private:
+  GameApi::SH sh;
+  GameApi::SH old_sh;
+  GameApi::LI p;
+  GameApi::LinesObj obj;
+  bool firsttime;
+  int sx,sy;
+  int screen_x, screen_y;
+  float rot_y;
+};
+
 class IconGuiWidget : public GuiWidgetForward
 {
 public:
@@ -16192,6 +16325,15 @@ EXPORT GameApi::W GameApi::GuiApi::poly(P p, SH sh2, int sx, int sy, int screen_
 {
   return add_widget(e, new PolyGuiWidget(ev, p, sh2, sh, sx,sy, screen_size_x, screen_size_y));
 }
+EXPORT GameApi::W GameApi::GuiApi::lines(LI p, SH sh2, int sx, int sy, int screen_size_x, int screen_size_y)
+{
+  return add_widget(e, new LinesGuiWidget(ev, p, sh2, sh, sx,sy, screen_size_x, screen_size_y));
+}
+EXPORT GameApi::W GameApi::GuiApi::pts(PTS p, SH sh2, int sx, int sy, int screen_size_x, int screen_size_y)
+{
+  return add_widget(e, new PTSGuiWidget(ev, p, sh2, sh, sx,sy, screen_size_x, screen_size_y));
+}
+
 EXPORT GameApi::W GameApi::GuiApi::string_editor(std::string allowed_chars, std::string &target, FtA atlas, BM atlas_bm, int x_gap)
 {
   W e1 = add_widget(e, new EditorGuiWidgetAtlas<std::string>(ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap));
@@ -16201,7 +16343,7 @@ EXPORT GameApi::W GameApi::GuiApi::string_editor(std::string allowed_chars, std:
 
 EXPORT GameApi::W GameApi::GuiApi::float_editor(float &target, FtA atlas, BM atlas_bm, int x_gap)
 {
-  std::string allowed_chars = "0123456789.";
+  std::string allowed_chars = "0123456789.-";
   W w = add_widget(e, new EditorGuiWidgetAtlas<float>(ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap));
   W w2 = highlight(w);
   return w2;
@@ -16209,7 +16351,7 @@ EXPORT GameApi::W GameApi::GuiApi::float_editor(float &target, FtA atlas, BM atl
 
 EXPORT GameApi::W GameApi::GuiApi::int_editor(int &target, FtA atlas, BM atlas_bm, int x_gap)
 {
-  std::string allowed_chars = "0123456789";
+  std::string allowed_chars = "0123456789-";
   W w = add_widget(e, new EditorGuiWidgetAtlas<int>(ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap));
   W w2 = highlight(w);
   return w2;
@@ -16247,6 +16389,56 @@ EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x,
   W arr_3 = mouse_move(arr_2, 0,0, size_x(arr_2), size_y(arr_2));
   return arr_3;
 }
+
+EXPORT GameApi::W GameApi::GuiApi::lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm)
+{
+  W bm_1 = lines(p, sh, 400,400, screen_size_x,screen_size_y);
+  W bm_2 = margin(bm_1, 10,10,10,10);
+  W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
+  W bm_4 = layer(bm_3, bm_2);
+  
+  W but_1 = text("Close", atlas, atlas_bm);
+  W but_2 = center_align(but_1, size_x(bm_4));
+  W but_3 = center_y(but_2, 60.0);
+  W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
+  W but_41 = highlight(but_4);
+  W but_5 = layer(but_41, but_3);
+  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5));
+  close_button = but_6;
+
+
+  W arr[] = { bm_4, but_6 };
+  W arr_2 = array_y(&arr[0], 2, 0);
+
+  W arr_3 = mouse_move(arr_2, 0,0, size_x(arr_2), size_y(arr_2));
+  return arr_3;
+}
+
+EXPORT GameApi::W GameApi::GuiApi::pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm)
+{
+  W bm_1 = pts(p, sh, 400,400, screen_size_x,screen_size_y);
+  W bm_2 = margin(bm_1, 10,10,10,10);
+  W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
+  W bm_4 = layer(bm_3, bm_2);
+  
+  W but_1 = text("Close", atlas, atlas_bm);
+  W but_2 = center_align(but_1, size_x(bm_4));
+  W but_3 = center_y(but_2, 60.0);
+  W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
+  W but_41 = highlight(but_4);
+  W but_5 = layer(but_41, but_3);
+  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5));
+  close_button = but_6;
+
+
+  W arr[] = { bm_4, but_6 };
+  W arr_2 = array_y(&arr[0], 2, 0);
+
+  W arr_3 = mouse_move(arr_2, 0,0, size_x(arr_2), size_y(arr_2));
+  return arr_3;
+}
+
+
 
 EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm)
 {
@@ -17297,6 +17489,18 @@ template<> GameApi::O from_stream<GameApi::O>(std::stringstream &is)
   is >> bm.id;
   return bm;
 }
+template<> GameApi::COV from_stream<GameApi::COV>(std::stringstream &is)
+{
+  GameApi::COV bm;
+  is >> bm.id;
+  return bm;
+}
+template<> GameApi::CBM from_stream<GameApi::CBM>(std::stringstream &is)
+{
+  GameApi::CBM bm;
+  is >> bm.id;
+  return bm;
+}
 
 template<> GameApi::P from_stream<GameApi::P>(std::stringstream &is)
 {
@@ -17466,6 +17670,193 @@ std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::ve
     }
   return vec1;
 }
+std::vector<GameApiItem*> volumeapi_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::from_bool_bitmap,
+			 "o_from_bool_bitmap",
+			 { "b", "dist" },
+			 { "BB", "float" },
+			 { "", "50.0" },
+			 "O"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::sphere,
+			 "o_sphere",
+			 { "center", "radius" },
+			 { "PT", "float" },
+			 { "", "100.0" },
+			 "O"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::cube,
+			 "o_cube",
+			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			 { "float", "float", "float", "float", "float", "float" },
+			 { "0.0", "100.0", "0.0", "100.0", "0.0", "100.0" },
+			 "O"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::cone,
+			 "o_cone",
+			 { "p1", "p2", "rad1", "rad2" },
+			 { "PT", "PT", "float", "float" },
+			 { "", "", "100.0", "90.0" },
+			 "O"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::torus,
+			 "o_torus",
+			 { "center", "u_x", "u_y", "dist1", "dist2" },
+			 { "PT", "PT", "PT", "float", "float" },
+			 { "", "", "", "100.0", "50.0" },
+			 "O"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::colour,
+			 "o_colour",
+			 { "object", "color" },
+			 { "O", "unsigned int" },
+			 { "", "0xffffffff" },
+			 "O"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::subset_color,
+			 "o_subset_color",
+			 { "model", "color_subset", "color" },
+			 { "O", "O", "unsigned int" },
+			 { "", "", "0xffffffff" },
+			 "O"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::move,
+			 "o_move",
+			 { "obj", "dx", "dy", "dz" },
+			 { "O", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0" },
+			 "O"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::rotatex,
+			 "o_rotatex",
+			 { "object", "angle" },
+			 { "O", "float" },
+			 { "", "0.0" },
+			 "O"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::rotatey,
+			 "o_rotatey",
+			 { "object", "angle" },
+			 { "O", "float" },
+			 { "", "0.0" },
+			 "O"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::rotatez,
+			 "o_rotatez",
+			 { "object", "angle" },
+			 { "O", "float" },
+			 { "", "0.0" },
+			 "O"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::scale,
+			 "o_scale",
+			 { "object", "sx", "sy", "sz" },
+			 { "O", "float", "float", "float" },
+			 { "", "1.0", "1.0", "1.0" },
+			 "O"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::not_op,
+			 "o_notop",
+			 { "object" },
+			 { "O" },
+			 { "" },
+			 "O"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::min_op,
+			 "o_minop",
+			 { "object1", "object2" },
+			 { "O", "O" },
+			 { "", "" },
+			 "O"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::max_op,
+			 "o_maxop",
+			 { "object1", "object2" },
+			 { "O", "O" },
+			 { "", "" },
+			 "O"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::andnot_op,
+			 "o_andnot",
+			 { "object1", "not_obj" },
+			 { "O", "O" },
+			 { "", "" },
+			 "O"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::rendercubes3,
+			 "o_render",
+			 { "object", "sx", "sy", "sz", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			 { "O", "int", "int", "int", "float", "float", "float", "float", "float", "float" },
+			 { "", "100", "100", "100", "-100.0", "100.0", "-100.0", "100.0", "-100.0", "100.0" },
+			 "P"));
+
+  return vec;
+}
+std::vector<GameApiItem*> floatvolumeapi_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::from_volume,
+			 "fo_from_volume",
+			 { "o", "false_val", "true_val" },
+			 { "O", "float", "float" },
+			 { "", "0.0", "1.0" },
+			 "FO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::from_float_bitmap,
+			 "fo_from_fbm",
+			 { "bm", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			 { "FB", "float", "float", "float", "float", "float", "float" },
+			 { "", "0.0", "100.0", "0.0", "100.0", "0.0", "100.0" },
+			 "FO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::move,
+			 "fo_move",
+			 { "f1", "dx", "dy", "dz" },
+			 { "FO", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0" },
+			 "FO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::minimum,
+			 "fo_min",
+			 { "f1", "f2" },
+			 { "FO", "FO" },
+			 { "", "" },
+			 "FO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::maximum,
+			 "fo_max",
+			 { "f1", "f2" },
+			 { "FO", "FO" },
+			 { "", "" },
+			 "FO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::subvolume,
+			 "fo_subvolume",
+			 { "f", "start_range", "end_range" },
+			 { "FO", "float", "float" },
+			 { "", "0.5", "1.0" },
+			 "O"));
+  return vec;
+}
+std::vector<GameApiItem*> colorvolumeapi_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::color_volume_api, &GameApi::ColorVolumeApi::from_float_volume,
+			 "cov_from_fo",
+			 { "fo", "color0", "color1" },
+			 { "FO", "unsigned int", "unsigned int" },
+			 { "", "0xff888888", "0xffffffff" },
+			 "COV"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::color_volume_api, &GameApi::ColorVolumeApi::from_volume,
+			 "cov_from_o",
+			 { "obj", "col_true", "col_false" },
+			 { "O", "unsigned int", "unsigned int" },
+			 { "", "0xffffffff", "0xff888888" },
+			 "COV"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::color_volume_api, &GameApi::ColorVolumeApi::from_continuous_bitmap,
+			 "cov_from_cbm",
+			 { "bm" },
+			 { "CBM" },
+			 { "" },
+			 "COV"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::color_volume_api, &GameApi::ColorVolumeApi::mix,
+			 "cov_mix",
+			 { "p1", "p2", "value" },
+			 { "COV", "COV", "float" },
+			 { "", "", "0.5" },
+			 "COV"));
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::color_volume_api, &GameApi::ColorVolumeApi::or_cov,
+			 "cov_or",
+			 { "p1", "p2" },
+			 { "COV", "COV" },
+			 { "", "" },
+			 "COV"));
+#endif
+  return vec;
+}
+
 std::vector<GameApiItem*> vectorapi_functions()
 {
   std::vector<GameApiItem*> vec;
@@ -17515,7 +17906,7 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 "load_model",
 			 { "filename", "obj_num" },
 			 { "std::string", "int" },
-			 { "", "0" },
+			 { "test.obj", "0" },
 			 "P"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::triangle,
 			 "triangle",
@@ -17585,6 +17976,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 "P"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_from_normals,
 			 "color_from_normals",
+			 { "orig" },
+			 { "P" },
+			 { "" },
+			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::recalculate_normals,
+			 "recalc_normals",
 			 { "orig" },
 			 { "P" },
 			 { "" },
@@ -17950,7 +18347,7 @@ std::vector<GameApiItem*> floatbitmapapi_functions()
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::from_alpha,
 			 "from_alpha",
 			 { "color_bm" },
-			 { "Bm" },
+			 { "BM" },
 			 { "" },
 			 "FB"));
 #if 0
@@ -18168,6 +18565,10 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> v7 = pointsapi_functions();
   std::vector<GameApiItem*> v8 = pointapi_functions();
   std::vector<GameApiItem*> v9 = vectorapi_functions();
+  std::vector<GameApiItem*> va = volumeapi_functions();
+  std::vector<GameApiItem*> vb = floatvolumeapi_functions();
+  std::vector<GameApiItem*> vc = colorvolumeapi_functions();
+
 
   std::vector<GameApiItem*> a1 = append_vectors(v1,v2);
   std::vector<GameApiItem*> a2 = append_vectors(v3,v4);
@@ -18177,7 +18578,10 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> a6 = append_vectors(a5, v7);
   std::vector<GameApiItem*> a7 = append_vectors(a6, v8);
   std::vector<GameApiItem*> a8 = append_vectors(a7, v9);
-  return a8;
+  std::vector<GameApiItem*> a9 = append_vectors(a8, va);
+  std::vector<GameApiItem*> aa = append_vectors(a9, vb);
+  std::vector<GameApiItem*> ab = append_vectors(aa, vc);
+  return ab;
 }
 std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)
 {
@@ -18215,6 +18619,30 @@ std::string GameApi::GuiApi::polygonapi_functions_item_label(int i)
   std::string name = item->Name(0);
   return name;
 }
+std::string GameApi::GuiApi::volumeapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = volumeapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+std::string GameApi::GuiApi::floatvolumeapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = floatvolumeapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+
+std::string GameApi::GuiApi::colorvolumeapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = colorvolumeapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+
+
 std::string GameApi::GuiApi::boolbitmapapi_functions_item_label(int i)
 {
   std::vector<GameApiItem*> funcs = boolbitmapapi_functions();
@@ -18267,6 +18695,20 @@ GameApi::W GameApi::GuiApi::bitmapapi_functions_list_item(FtA atlas1, BM atlas_b
 {
   return functions_widget(*this, "BitmapApi", bitmapapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
 }
+GameApi::W GameApi::GuiApi::volumeapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+{
+  return functions_widget(*this, "VolumeApi", volumeapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+}
+GameApi::W GameApi::GuiApi::floatvolumeapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+{
+  return functions_widget(*this, "FVolumeApi", floatvolumeapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+}
+GameApi::W GameApi::GuiApi::colorvolumeapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+{
+  return functions_widget(*this, "CVolumeApi", colorvolumeapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+}
+
+
 GameApi::W GameApi::GuiApi::shadermoduleapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
 {
   return functions_widget(*this, "ShaderApi", shadermoduleapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);

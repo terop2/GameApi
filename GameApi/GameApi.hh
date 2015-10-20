@@ -739,6 +739,8 @@ public:
   W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=2);
   W icon(BM bitmap);
   W poly(P p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
+  W lines(LI p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
+  W pts(PTS p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
   W line(W target1, int delta_x, int delta_y,
 	 W target2, int delta2_x, int delta2_y, SH sh);
   W gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int colot_1, unsigned int color_2);
@@ -775,6 +777,8 @@ public:
   W dialog_border(W item);
   W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm);
   W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm);
+  W lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm);
+  W pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm);
 
   W button_with_text(std::string label);
   W button_with_icon(BM bitmap);
@@ -806,6 +810,9 @@ public:
   W pointsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
   W pointapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
   W vectorapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
+  W volumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
+  W floatvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
+  W colorvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
 
   std::string bitmapapi_functions_item_label(int i);
   std::string boolbitmapapi_functions_item_label(int i);
@@ -816,6 +823,9 @@ public:
   std::string pointsapi_functions_item_label(int i);
   std::string pointapi_functions_item_label(int i);
   std::string vectorapi_functions_item_label(int i);
+  std::string volumeapi_functions_item_label(int i);
+  std::string floatvolumeapi_functions_item_label(int i);
+  std::string colorvolumeapi_functions_item_label(int i);
   W insert_widget(W item, std::function<void(int,int)> f);
   void insert_widget_activate(W w, bool b);
 

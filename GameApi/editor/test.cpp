@@ -330,6 +330,20 @@ void iter(void *arg)
 			std::cout << "ID: " << p.id << std::endl;
 			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3);
 		      }
+		    else if (type=="LI")
+		      {
+			LI p;
+			p.id = id;
+			env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3);
+			
+		      }
+		    else if (type=="PTS")
+		      {
+			PTS p;
+			p.id = id;
+			env->display = env->gui->pts_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3);
+
+		      }
 		    else 
 		      {
 			std::cout << "Type not found" << type << std::endl;
@@ -546,6 +560,18 @@ void iter(void *arg)
 		  case 8:
 		    name = env->gui->vectorapi_functions_item_label(sel2-1);
 		    break;
+
+		  case 9:
+		    name = env->gui->volumeapi_functions_item_label(sel2-1);
+		    break;
+		  case 10:
+		    name = env->gui->floatvolumeapi_functions_item_label(sel2-1);
+		    break;
+		  case 11:
+		    name = env->gui->colorvolumeapi_functions_item_label(sel2-1);
+		    break;
+
+
 		  };
 		//std::cout << "Chosen label: " << name << std::endl;
 		env->insert_mod_name = name;
@@ -742,6 +768,10 @@ int main(int argc, char *argv[]) {
       items.push_back(gui.pointsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
       items.push_back(gui.pointapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
       items.push_back(gui.vectorapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
+
+      items.push_back(gui.volumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
+      items.push_back(gui.floatvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
+      items.push_back(gui.colorvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
 
     }
   W array = gui.array_y(&items[0], items.size(), 5);
