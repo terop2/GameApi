@@ -50,6 +50,7 @@
 #define VAO 1
 #endif
 
+#define SPECIAL_TEX_ID 600000
 
 GameApi::BM add_color_bitmap2(GameApi::Env &e, Bitmap<Color> *bm);
 
@@ -1560,6 +1561,8 @@ GameApi::BM add_bitmap(GameApi::Env &e, BitmapHandle *handle)
   env->bm.push_back(handle);
   GameApi::BM bm;
   bm.id = env->bm.size()-1;
+
+  std::cout << "add_bitmap: " << bm.id << std::endl;
   //bm.type = 0;
   handle->id = bm.id;
   return bm;
@@ -2956,7 +2959,7 @@ EXPORT void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
   //SpritePriv &spriv = *(SpritePriv*)priv;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
 
-  if (s->texture_id!=-1 && s->texture_id<6000)
+  if (s->texture_id!=-1 && s->texture_id<SPECIAL_TEX_ID)
     {
       TextureEnable(*env->renders2[s->texture_id], 0, true);
       //RenderVertexArray arr(*s);
@@ -2971,7 +2974,7 @@ EXPORT void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
       glClientActiveTexture(GL_TEXTURE0+0);
 #endif
       glActiveTexture(GL_TEXTURE0+0);
-      glBindTexture(GL_TEXTURE_2D, s->texture_id-6000);
+      glBindTexture(GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
 
       rend->render(0);
       //      RenderVertexArray arr(*s);
@@ -7060,12 +7063,12 @@ EXPORT GameApi::FontApi::~FontApi()
   delete (FontPriv*)priv;
 }
 
-EXPORT GameApi::Ft GameApi::FontApi::newfont(const char *filename, int sx, int sy)
+EXPORT GameApi::Ft GameApi::FontApi::newfont(std::string filename, int sx, int sy)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
 #ifndef EMSCRIPTEN
   Font fnt;
-  fnt.bm = new FontGlyphBitmap((void*)&env->lib,filename, sx,sy);
+  fnt.bm = new FontGlyphBitmap((void*)&env->lib,filename.c_str(), sx,sy);
   env->fonts.push_back(fnt);
 #endif
   GameApi::Ft font;
@@ -7227,10 +7230,10 @@ EXPORT void GameApi::FontApi::save_atlas(FtA atlas, std::string filename)
   ss.close();
 }
 
-EXPORT GameApi::BM GameApi::FontApi::font_string(Ft font, const char *str, int x_gap)
+EXPORT GameApi::BM GameApi::FontApi::font_string(Ft font, std::string str, int x_gap)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  int sz = strlen(str);
+  int sz = str.size();
   FontCharacterString<Color> *array = new FontCharacterString<Color>(Color(0.0,0.0,0.0,0.0), x_gap);
   for(int i=0;i<sz;i++)
     {
@@ -9245,7 +9248,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
   VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  if (s->texture_id!=-1 && s->texture_id<6000)
+  if (s->texture_id!=-1 && s->texture_id<SPECIAL_TEX_ID)
     {
       TextureEnable(*env->renders[s->texture_id], 0, true);
       //RenderVertexArray arr(*s);
@@ -9260,7 +9263,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       glClientActiveTexture(GL_TEXTURE0+0);
 #endif
       glActiveTexture(GL_TEXTURE0+0);
-      glBindTexture(GL_TEXTURE_2D, s->texture_id-6000);
+      glBindTexture(GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
@@ -9523,7 +9526,7 @@ EXPORT GameApi::VA GameApi::TextureApi::bind(GameApi::VA va, GameApi::TXID tx)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   VertexArraySet *ns = new VertexArraySet(*s);
-  ns->texture_id = 6000+tx.id;
+  ns->texture_id = SPECIAL_TEX_ID+tx.id;
   RenderVertexArray *arr = new RenderVertexArray(*ns);
   arr->prepare(0);
   return add_vertex_array(e, ns, arr);
@@ -15031,18 +15034,22 @@ public:
   virtual Point2d get_pos() const { return pos; }
   virtual Vector2d get_size() const { return size; }
   virtual void set_pos(Point2d new_pos) {
-    Point2d old_pos = pos;
-    int s = vec.size();
-    for(int i=0;i<s;i++)
+    if (new_pos.x != prev_pos.x || new_pos.y != prev_pos.y)
       {
-	GuiWidget *w = vec[i];
-	Point2d child_old_pos = w->get_pos();
-	Point2d child_new_pos = child_old_pos;
-	child_new_pos -= old_pos;
-	child_new_pos += new_pos;
-	w->set_pos(child_new_pos);
+	Point2d old_pos = pos;
+	int s = vec.size();
+	for(int i=0;i<s;i++)
+	  {
+	    GuiWidget *w = vec[i];
+	    Point2d child_old_pos = w->get_pos();
+	    Point2d child_new_pos = child_old_pos;
+	    child_new_pos -= old_pos;
+	    child_new_pos += new_pos;
+	    w->set_pos(child_new_pos);
+	  }
+	pos = new_pos;
+	prev_pos = new_pos;
       }
-    pos = new_pos;
   }
   virtual void set_size(Vector2d size_p)
   {
@@ -15146,6 +15153,7 @@ protected:
   Vector2d size;
   int current_selected_item;
   int firsttime;
+  Point2d prev_pos;
 public:
   std::vector<GuiWidget *> vec;
 };
@@ -15401,6 +15409,12 @@ public:
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+
     if (ch=='a' && type==0x300)
       {
 	rot_y+=1.0*3.14159*2.0/360.0;
@@ -15459,6 +15473,11 @@ public:
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
     if (ch=='a' && type==0x300)
       {
 	rot_y+=1.0*3.14159*2.0/360.0;
@@ -15518,6 +15537,11 @@ public:
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
     if (ch=='a' && type==0x300)
       {
 	rot_y+=1.0*3.14159*2.0/360.0;
@@ -17893,6 +17917,91 @@ std::vector<GameApiItem*> pointapi_functions()
   return vec;
 }
 
+std::vector<GameApiItem*> fontapi_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::newfont,
+			 "newfont",
+			 { "filename", "sx", "sy" },
+			 { "std::string", "int", "int" },
+			 { "FreeSans.ttf", "20", "20" },
+			 "Ft"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::glyph,
+			 "glyph",
+			 { "font", "idx" },
+			 { "Ft", "long" },
+			 { "", "64" },
+			 "BM"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::glyph_outline,
+			 "glyph_outline",
+			 { "font", "idx", "sx", "sy" },
+			 { "Ft", "long", "float", "float" },
+			 { "", "64", "100.0", "100.0" },
+			 "LI"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::glyph_plane,
+			 "glyph_plane",
+			 { "font", "idx", "sx", "sy", "dx", "dy" },
+			 { "Ft", "long", "float", "float", "float", "float" },
+			 { "", "64", "100.0", "100.0", "30.0", "30.0" },
+			 "PL"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_string,
+			 "font_string",
+			 { "font", "str", "x_gap" },
+			 { "Ft", "std::string", "int" },
+			 { "", "Hello", "5" },
+			 "BM"));
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::glyph_fb,
+			 "glyph_fb",
+			 { "font", "idx" },
+			 { "Ft", "long" },
+			 { "", "64" },
+			 "FB"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::glyph_bb,
+			 "glyph_bb",
+			 { "font", "idx" },
+			 { "Ft", "long" },
+			 { "", "64" },
+			 "BB"));
+#endif
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_atlas_info,
+			 "atlas_info",
+			 { "ev", "font", "chars", "sx", "sy", "y_delta" },
+			 { "EveryApi&", "Ft", "std::string", "float", "float", "int" },
+			 { "ev", "", "0123456789", "30", "30", "40" },
+			 "FtA"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_atlas,
+			 "font_atlas",
+			 { "ev", "font", "atlas", "sx", "sy" },
+			 { "EveryApi&", "Ft", "FtA", "float", "float" },
+			 { "ev", "", "", "30", "30" },
+			 "BM"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_string_from_atlas,
+			 "font_string2",
+			 { "ev", "atlas", "atlas_bm", "str", "x_gap" },
+			 { "EveryApi&", "FtA", "BM", "const char*", "int" },
+			 { "ev", "", "", "Hello", "5" },
+			 "BM"));
+#endif
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::save_atlas,
+			 "save_atlas",
+			 { "atlas", "filename" },
+			 { "FtA", "std::string" },
+			 { "", "atlas1.txt" },
+			 "()"));
+#endif
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::load_atlas,
+			 "load_atlas",
+			 { "filename" },
+			 { "std::string" },
+			 { "atlas1.txt" },
+			 "FtA"));
+#endif
+  return vec;
+}
 std::vector<GameApiItem*> polygonapi_functions()
 {
   std::vector<GameApiItem*> vec;
@@ -18568,6 +18677,7 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> va = volumeapi_functions();
   std::vector<GameApiItem*> vb = floatvolumeapi_functions();
   std::vector<GameApiItem*> vc = colorvolumeapi_functions();
+  std::vector<GameApiItem*> vd = fontapi_functions();
 
 
   std::vector<GameApiItem*> a1 = append_vectors(v1,v2);
@@ -18581,7 +18691,8 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> a9 = append_vectors(a8, va);
   std::vector<GameApiItem*> aa = append_vectors(a9, vb);
   std::vector<GameApiItem*> ab = append_vectors(aa, vc);
-  return ab;
+  std::vector<GameApiItem*> ac = append_vectors(ab, vd);
+  return ac;
 }
 std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)
 {
@@ -18590,6 +18701,15 @@ std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)
   std::string name = item->Name(0);
   return name;
 }
+
+std::string GameApi::GuiApi::fontapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = fontapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+
 std::string GameApi::GuiApi::shadermoduleapi_functions_item_label(int i)
 {
   std::vector<GameApiItem*> funcs = shadermoduleapi_functions();
@@ -18695,6 +18815,12 @@ GameApi::W GameApi::GuiApi::bitmapapi_functions_list_item(FtA atlas1, BM atlas_b
 {
   return functions_widget(*this, "BitmapApi", bitmapapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
 }
+
+GameApi::W GameApi::GuiApi::fontapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+{
+  return functions_widget(*this, "FontApi", fontapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+}
+
 GameApi::W GameApi::GuiApi::volumeapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
 {
   return functions_widget(*this, "VolumeApi", volumeapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);

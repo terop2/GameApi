@@ -570,6 +570,9 @@ void iter(void *arg)
 		  case 11:
 		    name = env->gui->colorvolumeapi_functions_item_label(sel2-1);
 		    break;
+		  case 12:
+		    name = env->gui->fontapi_functions_item_label(sel2-1);
+		    break;
 
 
 		  };
@@ -772,6 +775,7 @@ int main(int argc, char *argv[]) {
       items.push_back(gui.volumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
       items.push_back(gui.floatvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
       items.push_back(gui.colorvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
+      items.push_back(gui.fontapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
 
     }
   W array = gui.array_y(&items[0], items.size(), 5);
