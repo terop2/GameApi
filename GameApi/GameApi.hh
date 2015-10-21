@@ -381,11 +381,11 @@ class FontApi
 public:
   IMPORT FontApi(Env &e);
   IMPORT ~FontApi();
-  IMPORT Ft newfont(const char *filename, int sx, int sy);
+  IMPORT Ft newfont(std::string filename, int sx, int sy);
   IMPORT BM glyph(Ft font, long idx);
   IMPORT LI glyph_outline(Ft font, long idx, float sx, float sy);
   IMPORT PL glyph_plane(Ft font, long idx, float sx, float sy, float dx, float dy);
-  IMPORT BM font_string(Ft font, const char *str, int x_gap);
+  IMPORT BM font_string(Ft font, std::string str, int x_gap);
   IMPORT FB glyph_fb(Ft font, long idx);
   IMPORT BB glyph_bb(Ft font, long idx);
   
@@ -813,6 +813,7 @@ public:
   W volumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
   W floatvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
   W colorvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
+  W fontapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
 
   std::string bitmapapi_functions_item_label(int i);
   std::string boolbitmapapi_functions_item_label(int i);
@@ -826,6 +827,7 @@ public:
   std::string volumeapi_functions_item_label(int i);
   std::string floatvolumeapi_functions_item_label(int i);
   std::string colorvolumeapi_functions_item_label(int i);
+  std::string fontapi_functions_item_label(int i);
   W insert_widget(W item, std::function<void(int,int)> f);
   void insert_widget_activate(W w, bool b);
 
