@@ -6,6 +6,11 @@
 #include <utility>
 #include "VectorTools.hh"
 
+namespace GameApi
+{
+  class EveryApi;
+};
+
 struct Quad
 {
   Point p1,p2,p3,p4;

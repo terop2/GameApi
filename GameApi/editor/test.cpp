@@ -131,6 +131,9 @@ void connect_target(int x, int y, Envi *envi)
 		  if (uid2==uid && val == real_index)
 		    {
 		      envi->connect_links.erase(envi->connect_links.begin()+i);
+		      int index = envi->gui->canvas_item_index(envi->canvas, wid);
+		      if (index != -1)
+			envi->gui->del_canvas_item(envi->canvas, index);
 		      break;
 		    }
 		}
@@ -471,6 +474,7 @@ void iter(void *arg)
 	    int connected = env->gui->chosen_item(wid);
 	    if (connected==0)
 	      {
+		std::cout << "Connect_click" << std::endl;
 		std::string uid = env->gui->get_id(wid);
 		W canvas_item = env->gui->find_canvas_item(env->canvas, uid);
 		
@@ -686,9 +690,9 @@ int main(int argc, char *argv[]) {
   SH sh = ev.shader_api.texture_shader();
   SH sh2 = ev.shader_api.colour_shader();
   SH sh3 = ev.shader_api.colour_shader();
-  Ft font = ev.font_api.newfont("..\\nevis.ttf", 13,15); // 13,15
-  Ft font2 = ev.font_api.newfont("..\\nevis.ttf", 10,13); // 10,13
-  Ft font3 = ev.font_api.newfont("..\\nevis.ttf", 30,30); // 30,30
+  Ft font = ev.font_api.newfont("..\\Chunkfive.otf", 10,13); // 13,15
+  Ft font2 = ev.font_api.newfont("..\\Chunkfive.otf", 10,13); // 10,13
+  Ft font3 = ev.font_api.newfont("..\\Chunkfive.otf", 30,30); // 30,30
 
 
   if (argc==2)
@@ -697,10 +701,10 @@ int main(int argc, char *argv[]) {
 	{
 	  std::cout << "Generating font atlas. " << std::endl;
 	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_";
-	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 13,15, 25);
+	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 10,13, 25);
 	  FtA atlas2 = ev.font_api.font_atlas_info(ev, font2, chars, 10,13, 25);
 	  FtA atlas3 = ev.font_api.font_atlas_info(ev, font3, chars, 30,30, 65);
-	  BM atlas_bm = ev.font_api.font_atlas(ev, font, atlas, 13,15);
+	  BM atlas_bm = ev.font_api.font_atlas(ev, font, atlas, 10,13);
 	  BM atlas_bm2 = ev.font_api.font_atlas(ev,font2, atlas2, 10,13);
 	  BM atlas_bm3 = ev.font_api.font_atlas(ev,font3, atlas3, 30,30);
 	  std::cout << "Saving 0" << std::endl;
