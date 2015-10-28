@@ -739,10 +739,11 @@ public:
   W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=2);
   W icon(BM bitmap);
   W poly(P p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
+  W shader_plane(SFO p, int sx, int sy);
   W lines(LI p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
   W pts(PTS p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
   W line(W target1, int delta_x, int delta_y,
-	 W target2, int delta2_x, int delta2_y, SH sh);
+	 W target2, int delta2_x, int delta2_y, SH sh, SH old_sh);
   W gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int colot_1, unsigned int color_2);
   W button(int sx, int sy, unsigned int color_1, unsigned int color_2);
   W mouse_move(W widget, int area_x, int area_y, int area_width, int area_height);
@@ -777,6 +778,7 @@ public:
   W dialog_border(W item);
   W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm);
   W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm);
+  W shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm);
   W lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm);
   W pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm);
 
@@ -873,7 +875,7 @@ public:
   std::string get_funcname(WM mod2, int id, std::string uid);
   void change_param_value(WM mod2, int id, std::string uid, int param_index, std::string newvalue);
   bool typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index);
-  void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2);
+  void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh);
 
   int execute(EveryApi &ev, WM mod2, int id, std::string line_uid);
   std::string return_type(WM mod2, int id, std::string line_uid);
