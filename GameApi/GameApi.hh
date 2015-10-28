@@ -767,6 +767,7 @@ public:
   W waveform(std::function<float (float)> f, float start_range, float end_range, float min_value, float max_value, int sx, int sy, unsigned int true_color, unsigned int false_color);
   W canvas(int sx, int sy);
   W find_canvas_item(W canvas, std::string id);
+  int canvas_item_index(W canvas, W item);
   int canvas_item(W canvas, W item, int x, int y);
   void del_canvas_item(W canvas, int id);
   W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params);

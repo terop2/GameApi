@@ -16102,6 +16102,15 @@ public:
     size.dy = sy;
   }
   int count() const { return vec.size(); }
+  int find_index(GuiWidget *w)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	if (vec[i]==w) { return i; }
+      }
+    return -1;
+  }
   GuiWidget *find_widget(int i) const { return vec[i]; }
   GuiWidget *find_widget(std::string id) const
   {
@@ -16144,8 +16153,10 @@ public:
     Point2d p2 = t2->get_pos();
     p2.x += delta2_x;
     p2.y += delta2_y;
-    Vector2d sz = p2-p;
-    pos = p;
+    Point2d pp = { std::min(p.x,p2.x), std::min(p.y,p2.y) };
+    Point2d pp2 = { std::max(p.x,p2.x), std::max(p.y,p2.y) };
+    Vector2d sz = pp2-pp;
+    pos = pp;
     size = sz;
     Vector2d d = { 0.0, 0.0 };
     delta_vec = d;
@@ -16239,8 +16250,10 @@ public:
     p2.x += delta2_x;
     p2.y += delta2_y;
     p2+=delta_vec;
-    Vector2d sz = p2-p;
-    pos = p;
+    Point2d pp = { std::min(p.x,p2.x), std::min(p.y,p2.y) };
+    Point2d pp2 = { std::max(p.x,p2.x), std::max(p.y,p2.y) };
+    Vector2d sz = pp2-pp;
+    pos = pp;
     size = sz;
     
 
@@ -16325,6 +16338,14 @@ EXPORT void GameApi::GuiApi::del_canvas_item(W canvas, int id)
   CanvasWidget *canvas_2 = dynamic_cast<CanvasWidget*>(canvas_1);
   if (!canvas_2) return;
   canvas_2->del(id);
+}
+EXPORT int GameApi::GuiApi::canvas_item_index(W canvas, W item)
+{
+  GuiWidget *canvas_1 = find_widget(e, canvas);
+  CanvasWidget *canvas_2 = dynamic_cast<CanvasWidget*>(canvas_1);
+  if (!canvas_2) return -1;
+  GuiWidget *item_1 = find_widget(e, item);
+  return canvas_2->find_index(item_1);
 }
 EXPORT GameApi::W GameApi::GuiApi::list_item_title(int sx, std::string label, FtA atlas, BM atlas_bm)
 {
@@ -16464,8 +16485,13 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
       params.push_back(txt_4);
       vec.push_back(txt_4);
     }
+
+  W node_2 = text(label, atlas,atlas_bm);
+  W node_22 = margin(node_2, 5,5,5,5);
+
   W array = array_y(&vec[0], vec.size(), 5);
-  W array_1 = margin(array, 0, sy-size_y(array), 0, 0);
+  int ssy = std::max(sy, size_y(array)+size_y(node_22)+5);
+  W array_1 = margin(array, 0, ssy-size_y(array), 0, 0);
   
   W txt_0 = text(return_type, atlas,atlas_bm);
   W txt_1 = margin(txt_0, 5,5,5,5);
@@ -16478,11 +16504,9 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
   W txt_2 = button(size_x(txt_1), size_y(txt_1), 0xff330033, 0xff880088);
   W txt_3 = layer(txt_2, txt_111);
 
-  W node_2 = text(label, atlas,atlas_bm);
-  W node_22 = margin(node_2, 5,5,5,5);
   int ssx_0 = std::max(sx, max_width+4+20+4+max_width2);
   int ssx = std::max(ssx_0,size_x(node_22));
-  W node_0 = button(ssx,sy, 0xffff8844, 0xff884422);
+  W node_0 = button(ssx,ssy, 0xffff8844, 0xff884422);
   W node_1 = button(ssx,size_y(node_22), 0xffff88ff, 0xff8844ff);
   W node_12 = highlight(node_1);
 
@@ -16700,6 +16724,14 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &l
   std::vector<W> vec2;
   int s = vec.size();
   //std::cout << "edit_dialog: " << s << std::endl;
+  int size_x1 = 0;
+  for(int j=0;j<s;j++)
+    {
+      std::string label = labels[j];
+      W lab = text(label, atlas,atlas_bm, 8);
+      int s = size_x(lab);
+      if (size_x1 < s) size_x1 = s;
+    }
   for(int i=0;i<s;i++)
     {
       EditTypes *target = vec[i];
@@ -16708,15 +16740,16 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &l
       std::string label = labels[i];
       W edit = generic_editor(*target, atlas, atlas_bm, type, 8);
       W lab = text(label, atlas,atlas_bm, 8);
-      W lab_2 = right_align(lab, 150);
+      W lab_2 = right_align(lab, size_x1);
       W array2[] = { lab_2, edit };
-      W array3 = array_x(&array2[0], 2, 35);
+      W array3 = array_x(&array2[0], 2, 5);
       vec2.push_back(array3);
     }
   W array = array_y(&vec2[0], vec2.size(), 35);
   W array_1 = margin(array, 10,10,10,10);
+  W array_1a = center_align(array_1, 500);
   W array_2 = button(500, size_y(array_1), 0xff224488, 0xff112244);
-  W array_3 = layer(array_2, array_1);
+  W array_3 = layer(array_2, array_1a);
 
   W cancel_button = button(250,50, 0xff884422, 0xff442211);
   W cancel_button_1 = text("Cancel", atlas,atlas_bm, 4);
@@ -16940,7 +16973,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, 
     }
   if (type=="std::string")
     {
-      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#";
       W edit = string_editor(allowed, target.s, atlas, atlas_bm, x_gap);
       return edit;
     }
@@ -17648,8 +17681,8 @@ template<> unsigned int from_stream<unsigned int>(std::stringstream &is)
 {
   unsigned int bm;
   char c;
-  is >> c;
-  is >> c;
+  //is >> c;
+  //is >> c;
   is >> std::hex >> bm >> std::dec;
   return bm;
 }
@@ -17921,13 +17954,13 @@ std::vector<GameApiItem*> volumeapi_functions()
 			 "o_colour",
 			 { "object", "color" },
 			 { "O", "unsigned int" },
-			 { "", "0xffffffff" },
+			 { "", "ffffffff" },
 			 "O"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::subset_color,
 			 "o_subset_color",
 			 { "model", "color_subset", "color" },
 			 { "O", "O", "unsigned int" },
-			 { "", "", "0xffffffff" },
+			 { "", "", "ffffffff" },
 			 "O"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::move,
 			 "o_move",
@@ -18040,13 +18073,13 @@ std::vector<GameApiItem*> colorvolumeapi_functions()
 			 "cov_from_fo",
 			 { "fo", "color0", "color1" },
 			 { "FO", "unsigned int", "unsigned int" },
-			 { "", "0xff888888", "0xffffffff" },
+			 { "", "ff888888", "ffffffff" },
 			 "COV"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::color_volume_api, &GameApi::ColorVolumeApi::from_volume,
 			 "cov_from_o",
 			 { "obj", "col_true", "col_false" },
 			 { "O", "unsigned int", "unsigned int" },
-			 { "", "0xffffffff", "0xff888888" },
+			 { "", "ffffffff", "ff888888" },
 			 "COV"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::color_volume_api, &GameApi::ColorVolumeApi::from_continuous_bitmap,
 			 "cov_from_cbm",
@@ -18112,7 +18145,7 @@ std::vector<GameApiItem*> fontapi_functions()
   std::vector<GameApiItem*> vec;
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::newfont,
 			 "newfont",
-			 { "filename", "sx", "sy" },
+			 { "file", "sx", "sy" },
 			 { "std::string", "int", "int" },
 			 { "FreeSans.ttf", "20", "20" },
 			 "Ft"));
@@ -18265,13 +18298,13 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 "color",
 			 { "orig", "color" },
 			 { "P", "unsigned int" },
-			 { "", "0xffffffff" },
+			 { "", "ffffffff" },
 			 "P"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_faces,
 			 "color_faces",
 			 { "orig", "color_1", "color_2", "color_3", "color_4" },
 			 { "P", "unsigned int", "unsigned int", "unsigned int", "unsigned int" },
-			 { "", "0xffffffff", "0xffffffff", "0xff888888", "0xff888888" },
+			 { "", "ffffffff", "ffffffff", "ff888888", "ff888888" },
 			 "P"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_from_normals,
 			 "color_from_normals",
@@ -18545,13 +18578,13 @@ std::vector<GameApiItem*> linesapi_functions()
 			 "change_color",
 			 { "li", "color" },
 			 { "LI", "unsigned int" },
-			 { "", "0xffffffff" },
+			 { "", "ffffffff" },
 			 "LI"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, (GameApi::LI (GameApi::LinesApi::*)(GameApi::LI, unsigned int, unsigned int))&GameApi::LinesApi::change_color,
 			 "change_color2",
 			 { "li", "color_1", "color_2" },
 			 { "LI", "unsigned int", "unsigned int" },
-			 { "", "0xffffffff", "0xff888888" },
+			 { "", "ffffffff", "ff888888" },
 			 "LI"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::from_polygon,
 			 "li_from_polygon",
@@ -18763,7 +18796,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "new", 
 			 { "sx", "sy", "color" },
 			 { "int", "int", "unsigned int" },
-			 { "100", "100", "0x00000000" },
+			 { "100", "100", "00000000" },
 			 "BM"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::loadbitmap,
 			 "load",
@@ -18840,14 +18873,14 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "gradient",
 			 { "pos_1", "pos_2", "color_1", "color_2", "sx", "sy" },
 			 { "PT",    "PT",    "unsigned int", "unsigned int", "int", "int" },
-			 { "ev.point_api.point(0.0,0.0,0.0)", "ev.point_api.point(0.0, 100.0, 0.0)", "0xffffffff", "0xff888888", "100", "100" },
+			 { "ev.point_api.point(0.0,0.0,0.0)", "ev.point_api.point(0.0, 100.0, 0.0)", "ffffffff", "ff888888", "100", "100" },
 			 "BM"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::chessboard,
 			 "chessboard",
 			 { "tile_sx", "tile_sy", "count_x", "count_y", "color_1", "color_2" },
 			 { "int", "int", "int", "int", "unsigned int", "unsigned int" },
-			 { "10", "10", "8", "8", "0xffffffff", "0xff888888" },
+			 { "10", "10", "8", "8", "ffffffff", "ff888888" },
 			 "BM"));
  
 
