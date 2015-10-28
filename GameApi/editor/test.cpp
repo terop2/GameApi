@@ -71,6 +71,18 @@ struct Envi {
   SH sh3;
   int screen_size_x, screen_size_y;
 };
+void add_to_canvas(GuiApi &gui, W canvas, W item)
+{
+  gui.canvas_item(canvas, item, 0, 0);
+}
+void add_to_canvas(GuiApi &gui, W canvas, std::vector<W> items)
+{
+  int s = items.size();
+  for(int i=0;i<s;i++)
+    {
+      add_to_canvas(gui,canvas, items[i]);
+    }
+}
 void connect_target(int x, int y, Envi *envi)
 {
   std::cout << "Connect target!" << std::endl;
@@ -126,12 +138,13 @@ void connect_target(int x, int y, Envi *envi)
 	      
 	      W start_link = envi->gui->find_canvas_item(envi->canvas, envi->connect_start_uid);
 	      
-	      W link = envi->gui->line( start_link, 100,45,
-					wid, 0,10, envi->sh2);
+	      W link = envi->gui->line( start_link, envi->gui->size_x(start_link),45,
+					wid, 0,10, envi->sh2, envi->sh);
 	      std::stringstream ss2;
 	      ss2 << envi->connect_start_uid << " " << uid << " " << real_index; 
 	      envi->gui->set_id(link, ss2.str());
 	      envi->connect_links.push_back(link);
+	      add_to_canvas(*envi->gui, envi->canvas, link);
 
 	    } else
 	    {
@@ -206,13 +219,13 @@ void iter(void *arg)
 	//std::cout << env->opened_menu_num << std::endl;
 	env->gui->render(env->menus[env->opened_menu_num]);
       }
-    int s5 = env->connect_links.size();
-    for(int i5 = 0;i5<s5;i5++)
-      {
-	W wid = env->connect_links[i5];
-	env->gui->render(wid);
-	env->ev->shader_api.use(env->sh);
-      }
+    //int s5 = env->connect_links.size();
+    //for(int i5 = 0;i5<s5;i5++)
+    //  {
+    //	W wid = env->connect_links[i5];
+    //	env->gui->render(wid);
+    //	env->ev->shader_api.use(env->sh);
+    // }
     if (env->display_visible)
       {
 	env->gui->render(env->display);
@@ -344,6 +357,13 @@ void iter(void *arg)
 			env->display = env->gui->pts_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3);
 
 		      }
+		    else if (type=="SFO")
+		      {
+			SFO p;
+			p.id = id;
+			env->display = env->gui->shader_dialog(p, env->display_close, env->atlas3, env->atlas_bm3);
+			
+		      }
 		    else 
 		      {
 			std::cout << "Type not found" << type << std::endl;
@@ -426,12 +446,12 @@ void iter(void *arg)
 	env->gui->update(env->scrollbar_x, e.cursor_pos, e.button,e.ch, e.type);
 	env->gui->update(env->scrollbar_y, e.cursor_pos, e.button,e.ch, e.type);
 	
-	int s4 = env->connect_links.size();
-	for(int i4 = 0;i4<s4;i4++)
-	  {
-	    W wid = env->connect_links[i4];
-	    env->gui->update(wid, e.cursor_pos, e.button, e.ch, e.type);
-	  }
+	//int s4 = env->connect_links.size();
+	//for(int i4 = 0;i4<s4;i4++)
+	//  {
+	//    W wid = env->connect_links[i4];
+	//    env->gui->update(wid, e.cursor_pos, e.button, e.ch, e.type);
+	//  }
 	
 	
 	if (env->insert_ongoing)
@@ -458,8 +478,8 @@ void iter(void *arg)
 		W ico_1 = env->gui->icon(bm);
 		env->connect_widget = env->gui->insert_widget(ico_1, std::bind(&connect_target, _1, _2, env));
 		
-		env->connect_line = env->gui->line(canvas_item, 80,50,
-						   env->connect_widget, 0, 0, env->sh2);
+		env->connect_line = env->gui->line(canvas_item, env->gui->size_x(canvas_item),50,
+						   env->connect_widget, 0, 0, env->sh2, env->sh);
 		
 		env->connect_start_uid = uid;
 		env->connect_ongoing = true;
@@ -666,9 +686,9 @@ int main(int argc, char *argv[]) {
   SH sh = ev.shader_api.texture_shader();
   SH sh2 = ev.shader_api.colour_shader();
   SH sh3 = ev.shader_api.colour_shader();
-  Ft font = ev.font_api.newfont("FreeSans.ttf", 13,15);
-  Ft font2 = ev.font_api.newfont("FreeSans.ttf", 10,13);
-  Ft font3 = ev.font_api.newfont("FreeSans.ttf", 30,30);
+  Ft font = ev.font_api.newfont("..\\nevis.ttf", 13,15); // 13,15
+  Ft font2 = ev.font_api.newfont("..\\nevis.ttf", 10,13); // 10,13
+  Ft font3 = ev.font_api.newfont("..\\nevis.ttf", 30,30); // 30,30
 
 
   if (argc==2)
@@ -678,10 +698,10 @@ int main(int argc, char *argv[]) {
 	  std::cout << "Generating font atlas. " << std::endl;
 	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_";
 	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 13,15, 25);
-	  FtA atlas2 = ev.font_api.font_atlas_info(ev, font2, chars, 14,14, 25);
+	  FtA atlas2 = ev.font_api.font_atlas_info(ev, font2, chars, 10,13, 25);
 	  FtA atlas3 = ev.font_api.font_atlas_info(ev, font3, chars, 30,30, 65);
 	  BM atlas_bm = ev.font_api.font_atlas(ev, font, atlas, 13,15);
-	  BM atlas_bm2 = ev.font_api.font_atlas(ev,font2, atlas2, 14,14);
+	  BM atlas_bm2 = ev.font_api.font_atlas(ev,font2, atlas2, 10,13);
 	  BM atlas_bm3 = ev.font_api.font_atlas(ev,font3, atlas3, 30,30);
 	  std::cout << "Saving 0" << std::endl;
 	  ev.font_api.save_atlas(atlas, "atlas0.txt");
@@ -805,7 +825,8 @@ int main(int argc, char *argv[]) {
   //  gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), i*30, i*30);
   ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets, env.display_clicks, env.edit_clicks);
 
-  ev.mod_api.insert_links(ev, gui, mod, 0, env.connect_links, canvas, env.connect_targets, sh2);
+  ev.mod_api.insert_links(ev, gui, mod, 0, env.connect_links, canvas, env.connect_targets, sh2, sh);
+  add_to_canvas(gui, canvas, env.connect_links);
   W canvas_area = gui.scroll_area(canvas, screen2_x-20, screen2_y-20, screen_y);
   W scrollbar_y = gui.scrollbar_y(20, screen2_y-20, sy);
   W scrollbar_x = gui.scrollbar_x(screen2_x-20, 20, sx); 
