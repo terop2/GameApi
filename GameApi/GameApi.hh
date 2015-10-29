@@ -161,7 +161,7 @@ public:
   IMPORT void transfer_sdl_surface(MainLoopApi &orig);
   IMPORT void clear();
   IMPORT void clear_3d();
-  IMPORT void switch_to_3d(bool b, SH sh);
+  IMPORT void switch_to_3d(bool b, SH sh, int screen_width=800., int screen_height = 600);
   IMPORT void alpha(bool enabled);
   void alpha_1(bool enabled);
   IMPORT void depth_test(bool enabled);
@@ -739,7 +739,7 @@ public:
   W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=2);
   W icon(BM bitmap);
   W poly(P p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
-  W shader_plane(SFO p, int sx, int sy);
+  W shader_plane(SFO p, int sx, int sy, int screen_size_x, int screen_size_y);
   W lines(LI p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
   W pts(PTS p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
   W line(W target1, int delta_x, int delta_y,
@@ -779,7 +779,7 @@ public:
   W dialog_border(W item);
   W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm);
   W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm);
-  W shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm);
+  W shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_size_x, int screen_size_y);
   W lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm);
   W pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm);
 
