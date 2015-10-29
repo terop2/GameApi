@@ -364,7 +364,7 @@ void iter(void *arg)
 		      {
 			SFO p;
 			p.id = id;
-			env->display = env->gui->shader_dialog(p, env->display_close, env->atlas3, env->atlas_bm3);
+			env->display = env->gui->shader_dialog(p, env->display_close, env->atlas3, env->atlas_bm3, env->screen_size_x, env->screen_size_y);
 			
 		      }
 		    else 
@@ -747,7 +747,7 @@ int main(int argc, char *argv[]) {
   ev.mainloop_api.init(sh, screen_x,screen_y);
   ev.mainloop_api.init(sh2, screen_x,screen_y);
 
-  ev.mainloop_api.switch_to_3d(false, sh3);
+  ev.mainloop_api.switch_to_3d(false, sh3, screen_x, screen_y);
   ev.shader_api.use(sh);
   ev.mainloop_api.alpha(true);
   

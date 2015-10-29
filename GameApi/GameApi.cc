@@ -322,10 +322,10 @@ EXPORT void GameApi::MainLoopApi::nvidia_init()
     }
 }
 
-EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh)
+EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int screeny)
 {
-  int screenx = 800;
-  int screeny = 600;
+  //int screenx = 800;
+  //int screeny = 600;
   if (b)
     {
       Program *prog = find_shader_program(e, sh);
@@ -15449,11 +15449,12 @@ public:
 	Point2d pos = get_pos();
 	Vector2d sz = get_size();
 	glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
-	//ev.mainloop_api.switch_to_3d(true, sh);
+	ev.shader_api.use(sh);
+	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
 	glEnable(GL_DEPTH_TEST);
 	obj.render();
 	glDisable(GL_DEPTH_TEST);
-	//ev.mainloop_api.switch_to_3d(false, sh);
+	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
 	glViewport(0,0,screen_x, screen_y);
 	ev.shader_api.use(old_sh);
       }
@@ -15472,7 +15473,7 @@ private:
 class ShaderPlaneGuiWidget : public GuiWidgetForward
 {
 public:
-  ShaderPlaneGuiWidget(GameApi::EveryApi &ev, GameApi::SFO p, GameApi::SH sh, int sx, int sy) : GuiWidgetForward(ev, { }), sh(sh), p(p),sx(sx),sy(sy) { firsttime = true; 
+  ShaderPlaneGuiWidget(GameApi::EveryApi &ev, GameApi::SFO p, GameApi::SH sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), sh(sh), p(p),sx(sx),sy(sy),screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
     Point2d p3 = {-666.0, -666.0 };
     update(p3, -1,-1,-1);
     Point2d p2 = { 0.0,0.0 };
@@ -15529,13 +15530,13 @@ public:
       {
 	GameApi::SFO render = ev.sh_api.render(p);
 	sh2 = ev.shader_api.get_normal_shader("screen", "screen", "", "", "", false, render);
-	ev.mainloop_api.init(sh2);
+	ev.mainloop_api.init(sh2, screen_x, screen_y);
 	ev.mainloop_api.alpha(true);
 	GameApi::P poly_0 = ev.polygon_api.quad_z(0.0, sx,
 					 0.0, sy,
 					 0.0);
-	GameApi::P poly_1 = ev.polygon_api.normal_function(poly_0, std::bind(func, this, _1, _2, std::ref(ev)));
-	GameApi::P poly_2 = ev.polygon_api.texcoord_function(poly_1, std::bind(func2, this, _1, _2, std::ref(ev)));
+	GameApi::P poly_1 = ev.polygon_api.normal_function(poly_0, std::bind(&ShaderPlaneGuiWidget::func, this, _1, _2, std::ref(ev)));
+	GameApi::P poly_2 = ev.polygon_api.texcoord_function(poly_1, std::bind(&ShaderPlaneGuiWidget::func2, this, _1, _2, std::ref(ev)));
 	obj = new GameApi::PolygonObj(ev, poly_2, sh2);
 
 	obj->prepare();
@@ -15566,6 +15567,7 @@ private:
   GameApi::PolygonObj *obj;
   bool firsttime;
   int sx,sy;
+  int screen_x, screen_y;
   float rot_y;
 };
 
@@ -16533,9 +16535,9 @@ EXPORT GameApi::W GameApi::GuiApi::poly(P p, SH sh2, int sx, int sy, int screen_
 {
   return add_widget(e, new PolyGuiWidget(ev, p, sh2, sh, sx,sy, screen_size_x, screen_size_y));
 }
-EXPORT GameApi::W GameApi::GuiApi::shader_plane(SFO p, int sx, int sy)
+EXPORT GameApi::W GameApi::GuiApi::shader_plane(SFO p, int sx, int sy, int screen_x, int screen_y)
 {
-  return add_widget(e, new ShaderPlaneGuiWidget(ev, p, sh, sx,sy));
+  return add_widget(e, new ShaderPlaneGuiWidget(ev, p, sh, sx,sy,screen_x, screen_y));
 }
 
 EXPORT GameApi::W GameApi::GuiApi::lines(LI p, SH sh2, int sx, int sy, int screen_size_x, int screen_size_y)
@@ -16603,9 +16605,9 @@ EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x,
   return arr_3;
 }
 
-EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm)
+EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_x, int screen_y)
 {
-  W bm_1 = shader_plane(p, 400,400*600/800);
+  W bm_1 = shader_plane(p, 400,400*600/800, screen_x, screen_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
   W bm_4 = layer(bm_3, bm_2);
