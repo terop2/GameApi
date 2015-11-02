@@ -748,6 +748,7 @@ public:
   W button(int sx, int sy, unsigned int color_1, unsigned int color_2);
   W mouse_move(W widget, int area_x, int area_y, int area_width, int area_height);
   W click_area(W widget, int area_x, int area_y, int area_width, int area_height);
+  W key_area(W widget, int area_x, int area_y, int area_width, int area_height, int key);
   W or_elem(W w1, W w2);
   W highlight(int sx, int sy);
   W highlight(W wid);
@@ -862,9 +863,9 @@ public:
   WModApi(Env &e) : e(e) { }
   WM load(std::string filename);
   void save(WM mod, std::string ilename);
-  void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks);
+  void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key);
   void update_lines_from_canvas(W canvas, WM mod, int id);
-  void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks);
+  void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks, W &delete_key);
   W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid, std::vector<W> &params);
   std::vector<int> indexes_from_funcname(std::string funcname);
   std::vector<std::string> types_from_function(WM mod, int id, std::string funcname);
