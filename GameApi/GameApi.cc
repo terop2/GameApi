@@ -923,6 +923,7 @@ struct EnvImpl
   std::vector<GuiWidget*> widgets;
   std::vector<GameApiModule *> gameapi_modules;
   std::vector<FontAtlasInfo*> font_atlas;
+  std::vector<MainLoopItem*> main_loop;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
 #ifndef EMSCRIPTEN
@@ -1451,6 +1452,14 @@ EXPORT GameApi::Env::~Env()
 }
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
+GameApi::ML add_main_loop(GameApi::Env &e, MainLoopItem *item)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->main_loop.push_back(item);
+  GameApi::ML ml;
+  ml.id = env->main_loop.size()-1;
+  return ml;
+}
 GameApi::FtA add_font_atlas(GameApi::Env &e, FontAtlasInfo *info)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -2163,6 +2172,11 @@ GameApi::ST GameApi::EventApi::states(int count_states)
   GameApi::ST st;
   st.id = env->state_ranges.size()-1;
   return st;
+}
+MainLoopItem *find_main_loop(GameApi::Env &e, GameApi::ML ml)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->main_loop[ml.id];
 }
 FontAtlasInfo *find_font_atlas(GameApi::Env &e, GameApi::FtA ft)
 {
@@ -2952,6 +2966,23 @@ EXPORT void GameApi::SpriteApi::spritepos(BM bm, float x, float y)
   i->y = y;
 }
 
+class RenderVertexArray4 : public MainLoopItem
+{
+public:
+  RenderVertexArray4(GameApi::SpriteApi &sp, GameApi::VA va) : sp(sp), va(va) { }
+  void execute()
+  {
+    sp.render_sprite_vertex_array(va);
+  }
+private:
+  GameApi::SpriteApi &sp;
+  GameApi::VA va;
+};
+EXPORT GameApi::ML GameApi::SpriteApi::render_sprite_vertex_array_ml(VA va)
+{
+  return add_main_loop(e, new RenderVertexArray4(*this, va));
+}
+
 EXPORT void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
@@ -3014,6 +3045,23 @@ EXPORT void GameApi::SpriteApi::clipping_sprite(VA va, int sx, int sy, float tex
   ptr[4] = p2;
   ptr[5] = p3;
   rend->update(0);
+}
+class UpdateVertexArray4 : public MainLoopItem
+{
+public:
+  UpdateVertexArray4(GameApi::SpriteApi &api, GameApi::VA va, GameApi::BM bm) : api(api), va(va), bm(bm) { }
+  void execute()
+  {
+    api.update_vertex_array(va,bm);
+  }
+private:
+  GameApi::SpriteApi &api;
+  GameApi::VA va;
+  GameApi::BM bm;
+};
+EXPORT GameApi::ML GameApi::SpriteApi::update_vertex_array_ml(VA va, BM bm)
+{
+  return add_main_loop(e, new UpdateVertexArray4(*this, va,bm));
 }
 EXPORT void GameApi::SpriteApi::update_vertex_array(VA va, BM bm)
 {
@@ -9083,6 +9131,24 @@ EXPORT GameApi::P GameApi::PolygonApi::color_voxel(P orig, VX colours, PT p, V u
   Voxel<unsigned int> *v = find_voxel(e, colours);
   return add_polygon(e, new ColorVoxelFaceCollection(*coll, *v, *pp, *uu_x, *uu_y, *uu_z), 1);
 }
+class UpdateVA : public MainLoopItem
+{
+public:
+  UpdateVA(GameApi::PolygonApi &api, GameApi::VA va, GameApi::P p, bool keep) : api(api), va(va), p(p), keep(keep) { }
+  void execute()
+  {
+    api.update_vertex_array(va,p,keep);
+  }
+private:
+  GameApi::PolygonApi &api;
+  GameApi::VA va;
+  GameApi::P p;
+  bool keep;
+};
+EXPORT GameApi::ML GameApi::PolygonApi::update_vertex_array_ml(GameApi::VA va, GameApi::P p, bool keep)
+{
+  return add_main_loop(e, new UpdateVA(*this, va, p, keep));
+}
 EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P p, bool keep)
 {
 #ifdef THREADS
@@ -9126,6 +9192,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
 #endif
 
 }
+
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 {
 #ifdef THREADS
@@ -9244,6 +9311,22 @@ EXPORT void GameApi::PolygonApi::update(VA va)
   s2->update(0);
 }
 #endif
+class RenderVA : public MainLoopItem
+{
+public:
+  RenderVA(GameApi::PolygonApi &api, GameApi::VA va) : api(api), va(va) { }
+  void execute()
+  {
+    api.render_vertex_array(va);
+  }
+private:
+  GameApi::PolygonApi &api;
+  GameApi::VA va;
+};
+EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml(VA va)
+{
+  return add_main_loop(e, new RenderVA(*this, va));
+}
 EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
@@ -15479,6 +15562,7 @@ public:
     Point2d p2 = { 0.0,0.0 };
     set_pos(p2);
     rot_y = 0.0;
+    time = ev.mainloop_api.get_time();
   }
   GameApi::V func(int face, int point, GameApi::EveryApi &ev)
   {
@@ -15549,7 +15633,7 @@ public:
   {
     if (!firsttime)
       {
-	float f = ev.mainloop_api.get_time()/1000.0;
+	float f = (ev.mainloop_api.get_time()-time)/1000.0;
 	ev.shader_api.use(sh2);
 	ev.shader_api.set_var(sh2, "roty", rot_y);
 	ev.shader_api.set_var(sh2, "time", f);
@@ -15569,6 +15653,7 @@ private:
   int sx,sy;
   int screen_x, screen_y;
   float rot_y;
+  float time;
 };
 
 
@@ -16944,6 +17029,10 @@ EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string ty
       std::stringstream ss(source);
       ss >> target.f_value;
     } else
+    if (type=="bool")
+      {
+	target.s = source;
+      } else
   if (type=="PT")
     {
       std::stringstream ss(source);
@@ -16982,6 +17071,11 @@ EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::str
       std::string s = source.s;
       target = s;
     } else
+    if (type=="bool")
+      {
+	std::string s = source.s;
+	target = s;
+      } else
   if (type=="float")
     {
       float f = source.f_value;
@@ -17018,9 +17112,9 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, 
       W edit = color_editor(target.color, atlas, atlas_bm, x_gap);
       return edit;
     }
-  if (type=="std::string")
+  if (type=="std::string" || type=="bool")
     {
-      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#";
+      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*";
       W edit = string_editor(allowed, target.s, atlas, atlas_bm, x_gap);
       return edit;
     }
@@ -17717,6 +17811,7 @@ void GameApi::GuiApi::set_id(W w, std::string id)
   ww->set_id(id);
 }
 
+
 template<typename T> T from_stream(std::stringstream &is)
 {
   std::cout << "Type using default: " << typeid(T).name() << std::endl;
@@ -17885,8 +17980,26 @@ template<> GameApi::W from_stream<GameApi::W>(std::stringstream &is)
 
 template<class T, class RT, class... P>
 int funccall(GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
-	     RT (T::*fptr)(P...), std::vector<std::string> s)
+	     RT (T::*fptr)(P...), std::vector<std::string> s, GameApi::ExecuteEnv &e, std::vector<std::string> param_name)
 {
+  int s3 = s.size();
+  for(int i=0;i<s3;i++)
+    {
+      std::string pn = param_name[i];
+      int s4 = e.names.size();
+      for(int j=0;j<s4;j++)
+	{
+	  std::string n = e.names[j];
+	  std::string v = e.values[j];
+	  if (pn == n)
+	    {
+	      s[i] = v;
+	    }
+	}
+      
+    }
+
+
   std::stringstream ss;
   int s2 = s.size();
 #ifndef EMSCRIPTEN
@@ -17932,9 +18045,9 @@ public:
   std::string ParamType(int i, int p) const { return param_type[p]; }
   std::string ParamDefault(int i, int p) const { return param_default[p]; }
   std::string ReturnType(int i) const { return return_type; }
-  int Execute(GameApi::EveryApi &ev, std::vector<std::string> params)
+  int Execute(GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)
   {
-    return funccall(ev, api, fptr, params); 
+    return funccall(ev, api, fptr, params, e, param_name); 
   }
 private:
   T (GameApi::EveryApi::*api);
@@ -17963,6 +18076,53 @@ std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::ve
       vec1.push_back(vec2[i]);
     }
   return vec1;
+}
+std::vector<GameApiItem*> textureapi_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::tex_plane,
+			 "tex_plane",
+			 { "sx", "sy" },
+			 { "float", "float" },
+			 { "256", "256" },
+			 "TX"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::tex_bitmap,
+			 "tex_bitmap",
+			 { "bm" },
+			 { "BM" },
+			 { "" },
+			 "TX"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::tex_assign,
+			 "tex_assign",
+			 { "tx", "id", "x", "y", "bm" },
+			 { "TX", "int", "int", "int", "BM" },
+			 { "", "0", "0", "0", "" },
+			 "TX"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::tex_coord,
+			 "tex_coord",
+			 { "tx", "id", "x", "y", "width", "height" },
+			 { "TX", "int", "int", "int", "int", "int" },
+			 { "", "0", "0", "0", "100", "100" },
+			 "TX"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::get_tex_coord,
+			 "get_tex_coord",
+			 { "tx", "id" },
+			 { "TX", "int" },
+			 { "", "0" },
+			 "Q"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::prepare,
+			 "tx_prepare",
+			 { "tx" },
+			 { "TX" },
+			 { "" },
+			 "TXID"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::bind,
+			 "tx_bind",
+			 { "va", "txid" },
+			 { "VA", "TXID" },
+			 { "", "" },
+			 "VA"));
+  return vec;
 }
 std::vector<GameApiItem*> volumeapi_functions()
 {
@@ -18458,6 +18618,18 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "", "" },
 			 "P"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::create_vertex_array,
+			 "p_prepare",
+			 { "p", "b" },
+			 { "P", "bool" },
+			 { "", "false" },
+			 "VA"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::render_vertex_array_ml,
+			 "p_render",
+			 { "va" },
+			 { "VA" },
+			 { "" },
+			 "ML"));
   return vec;
 }
 std::vector<GameApiItem*> shadermoduleapi_functions()
@@ -18930,6 +19102,25 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "10", "10", "8", "8", "ffffffff", "ff888888" },
 			 "BM"));
  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::create_vertex_array,
+			 "bm_prepare",
+			 { "bm" },
+			 { "BM" },
+			 { "" },
+			 "VA"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::update_vertex_array_ml,
+			 "bm_update",
+			 { "va", "bm" },
+			 { "VA", "BM" },
+			 { "", "" },
+			 "ML"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::render_sprite_vertex_array_ml,
+			 "bm_render",
+			 { "va" },
+			 { "VA" },
+			 { "" },
+			 "ML"));
+
 
   return vec;
 }
@@ -18948,6 +19139,7 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> vb = floatvolumeapi_functions();
   std::vector<GameApiItem*> vc = colorvolumeapi_functions();
   std::vector<GameApiItem*> vd = fontapi_functions();
+  std::vector<GameApiItem*> ve = textureapi_functions();
 
 
   std::vector<GameApiItem*> a1 = append_vectors(v1,v2);
@@ -18962,11 +19154,20 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> aa = append_vectors(a9, vb);
   std::vector<GameApiItem*> ab = append_vectors(aa, vc);
   std::vector<GameApiItem*> ac = append_vectors(ab, vd);
-  return ac;
+  std::vector<GameApiItem*> ad = append_vectors(ac, ve);
+  return ad;
 }
 std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)
 {
   std::vector<GameApiItem*> funcs = bitmapapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+
+std::string GameApi::GuiApi::textureapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = textureapi_functions();
   GameApiItem *item = funcs[i];
   std::string name = item->Name(0);
   return name;
@@ -19085,6 +19286,12 @@ GameApi::W GameApi::GuiApi::bitmapapi_functions_list_item(FtA atlas1, BM atlas_b
 {
   return functions_widget(*this, "BitmapApi", bitmapapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
 }
+
+GameApi::W GameApi::GuiApi::textureapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+{
+  return functions_widget(*this, "TextureApi", textureapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+}
+
 
 GameApi::W GameApi::GuiApi::fontapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
 {
@@ -19279,7 +19486,7 @@ std::vector<int> reduce_list_to_indexes_only(std::vector<std::string> type_names
     {
       std::string name = type_names[i];
       int index = indexes[i];
-      if (name[0]>='A' && name[0]<'Z' && name.size()<4)
+      if (name[0]>='A' && name[0]<'Z' && name.size()<=4)
 	{
 	  ret.push_back(index);
 	}
@@ -19294,7 +19501,7 @@ std::vector<std::string> reduce_list_to_types_only(std::vector<std::string> type
   for(int i=0;i<s;i++)
     {
       std::string name = type_names[i];
-      if (name[0]>='A' && name[0]<'Z' && name.size()<4)
+      if (name[0]>='A' && name[0]<'Z' && name.size()<=4)
 	{
 	  ret.push_back(name);
 	}
@@ -19384,7 +19591,7 @@ std::vector<std::string> remove_unnecessary_labels(std::vector<std::string> type
     {
       std::string type = types[i];
       std::string label = labels[i];
-      if (type[0]>='A' && type[0]<='Z' && type.size()<4)
+      if (type[0]>='A' && type[0]<='Z' && type.size()<=4)
 	{
 	}
       else
@@ -19402,7 +19609,7 @@ std::vector<std::string> filter_unnecessary_types(std::vector<std::string> vec)
   for(int i=0;i<s;i++)
     {
       std::string type = vec[i];
-      if (type[0]>='A' && type[0]<='Z' && type.size()<4)
+      if (type[0]>='A' && type[0]<='Z' && type.size()<=4)
 	{
 	}
       else
@@ -19419,7 +19626,7 @@ std::vector<std::string*> remove_unnecessary_refs(std::vector<std::string*> refs
   for(int i=0;i<s;i++)
     {
       std::string type = param_types[i];
-      if (type[0]>='A' && type[0]<='Z' && type.size()<4)
+      if (type[0]>='A' && type[0]<='Z' && type.size()<=4)
 	{
 	}
       else
@@ -19639,8 +19846,10 @@ void GameApi::WModApi::delete_by_uid(WM mod2, int id, std::string line_uid)
 	}
     }
 }
-int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_uid)
+int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv)
 {
+  static std::vector<GameApiItem*> vec = all_functions();
+
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
   GameApiFunction *func = &mod->funcs[id];
@@ -19651,6 +19860,21 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
       GameApiLine *line = &func->lines[i];
       if (line->uid == line_uid)
 	{
+	  // CREATE ENVIRONMENT
+	  int sd1 = vec.size();
+	  for(int k=0;k<sd1;k++)
+	    {
+	      GameApiItem *item = vec[k];
+	      std::string name = item->Name(0);
+	      if (name == line->module_name)
+		{
+		  item->BeginEnv(exeenv, line->params);
+		  break;
+		}
+	    }
+
+
+
 	  // COLLECT PARAMS & RECURSE
 	  int ss = line->params.size();
 	  std::vector<std::string> params;
@@ -19665,7 +19889,7 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
 		}
 	      if (p.size()>3 && p[0]=='u' && p[1] == 'i' && p[2] =='d')
 		{
-		  int val = execute(ev, mod2, id, p);
+		  int val = execute(ev, mod2, id, p, exeenv);
 		  std::stringstream sw;
 		  sw << val;
 		  p = sw.str();
@@ -19673,7 +19897,6 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
 	      params.push_back(p);
 	    }
 	  // EXECUTE
-	  static std::vector<GameApiItem*> vec = all_functions();
 	  int sd = vec.size();
 	  for(int k=0;k<sd;k++)
 	    {
@@ -19681,12 +19904,11 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
 	      std::string name = item->Name(0);
 	      if (name == line->module_name)
 		{
-		  int val = item->Execute(ev, params);
+		  int val = item->Execute(ev, params, exeenv);
+		  item->EndEnv(exeenv);
 		  return val;
 		}
 	    }
-	  
-
 	}
     }
   std::cout << "EXECUTE FAILED! " << std::endl;

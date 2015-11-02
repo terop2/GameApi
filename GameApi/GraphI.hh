@@ -223,6 +223,17 @@ public:
 private:
   std::string id;
 };
+namespace GameApi
+{
+  class ExecuteEnv;
+};
+
+struct GameApiParam
+{
+  std::string param_name;
+  std::string value;
+};
+
 
 class GameApiItem
 {
@@ -234,14 +245,11 @@ public:
   virtual std::string ParamType(int i, int p) const=0;
   virtual std::string ParamDefault(int i, int p) const=0;
   virtual std::string ReturnType(int i) const=0;
-  virtual int Execute(GameApi::EveryApi &ev, std::vector<std::string> params)=0;
+  virtual int Execute(GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)=0;
+  virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) { }
+  virtual void EndEnv(GameApi::ExecuteEnv &e) { }
 };
 
-struct GameApiParam
-{
-  std::string param_name;
-  std::string value;
-};
 struct GameApiLine
 {
   int x,y;
@@ -261,6 +269,12 @@ struct GameApiFunction
 struct GameApiModule
 {
   std::vector<GameApiFunction> funcs;
+};
+
+class MainLoopItem
+{
+public:
+  virtual void execute()=0;
 };
 
 #endif

@@ -433,7 +433,8 @@ void iter(void *arg)
 		    std::cout << "Execute for uid: " << uid << std::endl;
 		    
 		    // Execute
-		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid);
+		    GameApi::ExecuteEnv exeenv;
+		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv);
 
 		    // display dialog
 		    std::string type = env->ev->mod_api.return_type(env->mod, 0, uid);
@@ -720,6 +721,9 @@ void iter(void *arg)
 		  case 12:
 		    name = env->gui->fontapi_functions_item_label(sel2-1);
 		    break;
+		  case 13:
+		    name = env->gui->textureapi_functions_item_label(sel2-1);
+		    break;
 
 
 		  };
@@ -823,7 +827,7 @@ int main(int argc, char *argv[]) {
       if (std::string(argv[1])=="--generate-font-atlas")
 	{
 	  std::cout << "Generating font atlas. " << std::endl;
-	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_";
+	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+";
 	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 10,13, 25);
 	  FtA atlas2 = ev.font_api.font_atlas_info(ev, font2, chars, 10,13, 25);
 	  FtA atlas3 = ev.font_api.font_atlas_info(ev, font3, chars, 30,30, 65);
@@ -923,6 +927,7 @@ int main(int argc, char *argv[]) {
       items.push_back(gui.floatvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
       items.push_back(gui.colorvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
       items.push_back(gui.fontapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
+      items.push_back(gui.textureapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
 
     }
   W array = gui.array_y(&items[0], items.size(), 5);
