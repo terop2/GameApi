@@ -881,6 +881,7 @@ public:
 
   int execute(EveryApi &ev, WM mod2, int id, std::string line_uid);
   std::string return_type(WM mod2, int id, std::string line_uid);
+  void delete_by_uid(WM mod2, int id, std::string line_uid);
 private:
   Env &e;
 };

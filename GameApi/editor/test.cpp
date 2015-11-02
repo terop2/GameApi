@@ -310,6 +310,112 @@ void iter(void *arg)
 	      {
 		std::string uid = env->gui->get_id(w);
 		std::cout << "Delete" << i << ":" << uid << std::endl;
+		env->ev->mod_api.delete_by_uid(env->mod, 0, uid);
+
+		int ss1 = env->connect_clicks.size();
+		for(int i=0;i<ss1;i++)
+		  {
+		    W w = env->connect_clicks[i];
+		    std::string id = env->gui->get_id(w);
+		    //std::cout << id << std::endl;
+		    if (id==uid)
+		      {
+			env->connect_clicks.erase(env->connect_clicks.begin()+i);
+			ss1--;
+			i--;
+		      }
+		  }
+		int ss2 = env->connect_targets.size();
+		for(int i=0;i<ss2;i++)
+		  {
+		    W w = env->connect_targets[i];
+		    std::string id = env->gui->get_id(w);
+		    //std::cout << id << std::endl;
+		    std::stringstream ss(id);
+		    std::string id1;
+		    ss >> id1;
+		    if (id1==uid)
+		      {
+			env->connect_targets.erase(env->connect_targets.begin()+i);
+			i--;
+			ss2--;
+		      }
+		  }
+		int ss3 = env->connect_links.size();
+		for(int i=0;i<ss3;i++)
+		  {
+		    W w = env->connect_links[i];
+		    std::string id = env->gui->get_id(w);
+		    //std::cout << id << std::endl;
+		    std::stringstream ss(id);
+		    std::string id1, id2;
+		    ss >> id1 >> id2;
+		    if (id1==uid ||id2==uid)
+		      {
+			env->connect_links.erase(env->connect_links.begin()+i);
+			i--;
+			ss3--;
+		      }
+		  }
+		int ss4 = env->display_clicks.size();
+		for(int i=0;i<ss4;i++)
+		  {
+		    W w = env->display_clicks[i];
+		    std::string id = env->gui->get_id(w);
+		    //std::cout << id << std::endl;
+		    if (id==uid)
+		      {
+			env->display_clicks.erase(env->display_clicks.begin()+i);
+			break;
+		      }
+		  }
+		int ss5 = env->edit_clicks.size();
+		for(int i=0;i<ss5;i++)
+		  {
+		    W w = env->edit_clicks[i];
+		    std::string id = env->gui->get_id(w);
+		    //std::cout << id << std::endl;
+		    if (id==uid)
+		      {
+			env->edit_clicks.erase(env->edit_clicks.begin()+i);
+			break;
+		      }
+
+		  }
+		int ss6 = env->delete_key.size();
+		for(int i=0;i<ss6;i++)
+		  {
+		    W w = env->delete_key[i];
+		    std::string id = env->gui->get_id(w);
+		    //std::cout << id << std::endl;
+		    if (id==uid)
+		      {
+			env->delete_key.erase(env->delete_key.begin()+i);
+			break;
+		      }
+
+		  }
+		W item = env->gui->find_canvas_item(env->canvas, uid);
+		int index = env->gui->canvas_item_index(env->canvas, item);
+		env->gui->del_canvas_item(env->canvas, index);
+		
+		int s = env->gui->num_childs(env->canvas);
+		for(int i=0;i<s;i++)
+		  {
+		    W w = env->gui->get_child(env->canvas, i);
+		    std::string id = env->gui->get_id(w);
+		    //std::cout << id << std::endl;
+		    std::stringstream ss(id);
+		    std::string uid1, uid2;
+		    ss >> uid1 >> uid2;
+		    if (uid1==uid||uid2==uid)
+		      {
+			env->gui->del_canvas_item(env->canvas, i);
+			i--;
+			s--;
+		      }
+		  }
+
 	      }
 	  }
 
@@ -482,6 +588,8 @@ void iter(void *arg)
 	    env->gui->update(env->connect_line, e.cursor_pos, e.button, e.ch, e.type);
 	  }
 	
+	if (e.button==0)
+	  {
 	int cs = env->connect_clicks.size();
 	for(int ci = 0;ci<cs;ci++)
 	  {
@@ -507,7 +615,7 @@ void iter(void *arg)
 	    
 	  }
 
-
+	  }
 	float param_x = env->gui->dynamic_param(env->txt2, 0);
 	env->gui->set_dynamic_param(env->scroll_area, 1, param_x);
 	float param_x1 = env->gui->dynamic_param(env->scrollbar_x, 0);

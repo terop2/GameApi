@@ -16423,6 +16423,7 @@ class ClickAreaWidget : public GuiWidgetForward
 {
 public:
   ClickAreaWidget(GameApi::EveryApi &ev, GuiWidget *wid, int area_x, int area_y, int area_width, int area_height) : GuiWidgetForward(ev, { wid } ), area_x(area_x), area_y(area_y), area_width(area_width), area_height(area_height) { done=false;
+    selected = false;
     Point2d p = { -666.0, -666.0 };
     update(p, -1, -1, -1);
   }
@@ -16458,6 +16459,7 @@ public:
   KeyAreaWidget(GameApi::EveryApi &ev, GuiWidget *wid, int area_x, int area_y, int area_width, int area_height, int key) : GuiWidgetForward(ev, { wid } ), area_x(area_x), area_y(area_y), area_width(area_width), area_height(area_height),key(key) { done=false;
     Point2d p = { -666.0, -666.0 };
     update(p, -1, -1, -1);
+    selected=false;
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
@@ -19621,6 +19623,22 @@ std::string GameApi::WModApi::return_type(WM mod2, int id, std::string line_uid)
   return "";
 }
 
+void GameApi::WModApi::delete_by_uid(WM mod2, int id, std::string line_uid)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+  int s = func->lines.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiLine *line = &func->lines[i];
+      if (line->uid == line_uid)
+	{
+	  func->lines.erase(func->lines.begin()+i);
+	  break;
+	}
+    }
+}
 int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_uid)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
