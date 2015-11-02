@@ -111,10 +111,17 @@ using std::placeholders::_9;
   struct W { int id; };
   struct WM { int id; };
   struct FtA { int id; };
+  struct ML { int id; };
   //template<class T>
   //struct E { int id; };
 
 
+
+struct ExecuteEnv
+{
+  std::vector<std::string> names;
+  std::vector<std::string> values;
+};
 
   template<class P, class R>
   class FunctionCb
@@ -216,8 +223,10 @@ public:
 
 	IMPORT VA create_vertex_array(BM bm);
         IMPORT void update_vertex_array(VA va, BM bm);
+        IMPORT ML update_vertex_array_ml(VA va, BM bm);
         IMPORT void clipping_sprite(VA va, int sx, int sy, float tex_l, float tex_t, float tex_r, float teb_b);
 	IMPORT void render_sprite_vertex_array(VA va);
+        IMPORT ML render_sprite_vertex_array_ml(VA va);
 
 	IMPORT void rendersprite(BM bm, SH sh, float x, float y, float mult_x = 1.0, float mult_y = 1.0);
 	IMPORT void rendersprite2(BM bm, SH sh, PT pos);
@@ -818,6 +827,7 @@ public:
   W floatvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
   W colorvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
   W fontapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
+  W textureapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
 
   std::string bitmapapi_functions_item_label(int i);
   std::string boolbitmapapi_functions_item_label(int i);
@@ -832,6 +842,7 @@ public:
   std::string floatvolumeapi_functions_item_label(int i);
   std::string colorvolumeapi_functions_item_label(int i);
   std::string fontapi_functions_item_label(int i);
+  std::string textureapi_functions_item_label(int i);
   W insert_widget(W item, std::function<void(int,int)> f);
   void insert_widget_activate(W w, bool b);
 
@@ -879,7 +890,7 @@ public:
   bool typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index);
   void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh);
 
-  int execute(EveryApi &ev, WM mod2, int id, std::string line_uid);
+  int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv);
   std::string return_type(WM mod2, int id, std::string line_uid);
   void delete_by_uid(WM mod2, int id, std::string line_uid);
 private:
@@ -1178,8 +1189,10 @@ public:
   IMPORT void render(P p, int choose, float x, float y, float z);
   
   IMPORT void update_vertex_array(VA va, P p, bool keep=false);
+  IMPORT ML update_vertex_array_ml(VA va, P p, bool keep=false);
   IMPORT VA create_vertex_array(P p, bool keep=false); // slow
   IMPORT void render_vertex_array(VA va); // fast
+  IMPORT ML render_vertex_array_ml(VA va);
   //IMPORT int access_point_count(VA va, bool triangle);
   //IMPORT float *access_points(VA va, bool triangle, int face, int point);
   //IMPORT float *access_color(VA va, bool triangle, int face, int point);
