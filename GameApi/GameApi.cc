@@ -19898,7 +19898,11 @@ void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, 
   W node221 = gui.margin(node22b, 0,0, 0,0);
   W node222 = gui.layer(node2, node221);
   W node2222 = gui.layer(node222, display_3);
+#ifdef EMSCRIPTEN
+  W node4 = gui.key_area(node2222, 0, 0, gui.size_x(node2222), 20, 76);
+#else
   W node4 = gui.key_area(node2222, 0, 0, gui.size_x(node2222), 20, 127);
+#endif
   gui.set_id(node4, uid);
   delete_key = node4;
   
@@ -19967,7 +19971,11 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
       W node221 = gui.margin(node22b, 0,0, 0,0);
       W node222 = gui.layer(node2, node221);
       W node2222 = gui.layer(node222, display_3);
+#ifdef EMSCRIPTEN
+      W node4 = gui.key_area(node2222, 0, 0, gui.size_x(node2222), 20, 76);
+#else
       W node4 = gui.key_area(node2222, 0, 0, gui.size_x(node2222), 20, 127);
+#endif
       gui.set_id(node4, line->uid);
       delete_key.push_back(node4);
       W node3 = gui.mouse_move(node4, 0, 0, gui.size_x(node4), 20);
