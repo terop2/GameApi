@@ -38,6 +38,7 @@ struct Envi {
 
   std::vector<W> display_clicks;
   std::vector<W> edit_clicks;
+  std::vector<W> delete_key;
   int dialog_i1;
   std::string dialog_uid;
   std::vector<GuiApi::EditTypes*> vec4;
@@ -170,9 +171,11 @@ void callback_func(int x, int y, Envi *envi)
 
   W display_cb;
   W edit_cb;
-  envi->ev->mod_api.insert_inserted_to_canvas(*envi->gui, envi->canvas, envi->chosen_item, uid, display_cb, edit_cb);
+  W delete_key_cb;
+  envi->ev->mod_api.insert_inserted_to_canvas(*envi->gui, envi->canvas, envi->chosen_item, uid, display_cb, edit_cb, delete_key_cb);
   envi->display_clicks.push_back(display_cb);
   envi->edit_clicks.push_back(edit_cb);
+  envi->delete_key.push_back(delete_key_cb);
 
 
   std::vector<std::pair<std::string,std::string> > vec = envi->ev->mod_api.defaults_from_function(envi->insert_mod_name);
@@ -298,6 +301,18 @@ void iter(void *arg)
 	      }
 	    
 	  }
+	int s = env->delete_key.size();
+	for(int i=0;i<s;i++)
+	  {
+	    W w = env->delete_key[i];
+	    int val = env->gui->chosen_item(w);
+	    if (val==0)
+	      {
+		std::string uid = env->gui->get_id(w);
+		std::cout << "Delete" << i << ":" << uid << std::endl;
+	      }
+	  }
+
 	if (!env->display_visible)
 	  {
 	    int s = env->display_clicks.size();
@@ -827,7 +842,7 @@ int main(int argc, char *argv[]) {
   //gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), 150,100);
   //for(int i=0;i<200;i++)
   //  gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), i*30, i*30);
-  ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets, env.display_clicks, env.edit_clicks);
+  ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets, env.display_clicks, env.edit_clicks, env.delete_key);
 
   ev.mod_api.insert_links(ev, gui, mod, 0, env.connect_links, canvas, env.connect_targets, sh2, sh);
   add_to_canvas(gui, canvas, env.connect_links);

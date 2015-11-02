@@ -15679,11 +15679,12 @@ public:
 	Point2d pos = get_pos();
 	Vector2d sz = get_size();
 	glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
-	//ev.mainloop_api.switch_to_3d(true, sh);
+	ev.shader_api.use(sh);
+	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
 	glEnable(GL_DEPTH_TEST);
 	obj.render();
 	glDisable(GL_DEPTH_TEST);
-	//ev.mainloop_api.switch_to_3d(false, sh);
+	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
 	glViewport(0,0,screen_x, screen_y);
 	ev.shader_api.use(old_sh);
       }
@@ -16450,10 +16451,52 @@ private:
   bool selected;
   bool done;
 };
+
+class KeyAreaWidget : public GuiWidgetForward
+{
+public:
+  KeyAreaWidget(GameApi::EveryApi &ev, GuiWidget *wid, int area_x, int area_y, int area_width, int area_height, int key) : GuiWidgetForward(ev, { wid } ), area_x(area_x), area_y(area_y), area_width(area_width), area_height(area_height),key(key) { done=false;
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1, -1, -1);
+  }
+  void update(Point2d mouse, int button, int ch, int type)
+  {
+    GuiWidgetForward::update(mouse,button,ch, type);
+
+    if (done) {selected=false; }
+    if (ch==-1) {done = false; }
+
+    //std::cout << "Update!" << std::endl;
+    //std::cout << button << " " << mouse << " " << pos << " " << area_x << " " << area_y << " " << area_width << " " << area_height << std::endl;
+    if (!done && ch==key && type==768 && mouse.x >= pos.x+area_x && mouse.x < pos.x+area_x+area_width &&
+	mouse.y >= pos.y+area_y && mouse.y < pos.y+area_y+area_height)
+      {
+	//std::cout << "Selected: true" << std::endl;
+	selected = true;
+	done = true;
+      }
+    size = vec[0]->get_size();
+  }
+  int chosen_item() const { if (selected) return 0; else return -1; }
+private:
+  int area_x, area_y;
+  int area_width, area_height;
+  bool selected;
+  bool done;
+  int key;
+};
+
+
 EXPORT GameApi::W GameApi::GuiApi::click_area(W widget, int area_x, int area_y, int area_width, int area_height)
 {
   GuiWidget *wid = find_widget(e, widget);
   return add_widget(e, new ClickAreaWidget(ev, wid, area_x, area_y, area_width, area_height));
+
+}
+EXPORT GameApi::W GameApi::GuiApi::key_area(W widget, int area_x, int area_y, int area_width, int area_height, int key)
+{
+  GuiWidget *wid = find_widget(e, widget);
+  return add_widget(e, new KeyAreaWidget(ev, wid, area_x, area_y, area_width, area_height, key));
 
 }
 
@@ -19805,7 +19848,7 @@ std::vector<std::string> GameApi::WModApi::labels_from_function(WM mod2, int id,
   std::vector<std::string> labels2 = remove_unnecessary_labels(types, labels);
   return labels2;
 }
-void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks)
+void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks, W &delete_key)
 {
   int pos_x = gui.pos_x(item);
   int pos_y = gui.pos_y(item);
@@ -19837,7 +19880,11 @@ void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, 
   W node221 = gui.margin(node22b, 0,0, 0,0);
   W node222 = gui.layer(node2, node221);
   W node2222 = gui.layer(node222, display_3);
-  W node3 = gui.mouse_move(node2222, 0, 0, gui.size_x(node2222), 20);
+  W node4 = gui.key_area(node2222, 0, 0, gui.size_x(node2222), 20, 127);
+  gui.set_id(node4, uid);
+  delete_key = node4;
+  
+  W node3 = gui.mouse_move(node4, 0, 0, gui.size_x(node4), 20);
       
   gui.set_pos(item, 0.0, 0.0);
   gui.set_id(node3, uid);
@@ -19845,7 +19892,7 @@ void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, 
   
 }
 
-void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p, std::vector<W> &params, std::vector<W> &display_clicks, std::vector<W> &edit_clicks)
+void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p, std::vector<W> &params, std::vector<W> &display_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -19902,7 +19949,10 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
       W node221 = gui.margin(node22b, 0,0, 0,0);
       W node222 = gui.layer(node2, node221);
       W node2222 = gui.layer(node222, display_3);
-      W node3 = gui.mouse_move(node2222, 0, 0, gui.size_x(node2222), 20);
+      W node4 = gui.key_area(node2222, 0, 0, gui.size_x(node2222), 20, 127);
+      gui.set_id(node4, line->uid);
+      delete_key.push_back(node4);
+      W node3 = gui.mouse_move(node4, 0, 0, gui.size_x(node4), 20);
       gui.set_id(node3, line->uid);
       gui.canvas_item(canvas, node3, line->x, line->y);
     }
