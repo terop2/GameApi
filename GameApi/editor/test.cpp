@@ -31,6 +31,8 @@ struct Envi {
   W connect_widget;
   W dialog_cancel, dialog_ok;
   W display_close;
+
+  W list_tooltips;
   std::vector<W> connect_clicks;
   std::vector<W> connect_targets;
   std::vector<W> connect_links;
@@ -210,6 +212,7 @@ void iter(void *arg)
     env->gui->render(env->canvas_area);
     env->gui->render(env->scrollbar_x);
     env->gui->render(env->scrollbar_y);
+    env->gui->render(env->list_tooltips);
     if (env->insert_ongoing)
       {
 	env->gui->render(env->insert_widget);
@@ -570,6 +573,7 @@ void iter(void *arg)
 	env->gui->update(env->canvas_area, e.cursor_pos, e.button,e.ch, e.type);
 	env->gui->update(env->scrollbar_x, e.cursor_pos, e.button,e.ch, e.type);
 	env->gui->update(env->scrollbar_y, e.cursor_pos, e.button,e.ch, e.type);
+	env->gui->update(env->list_tooltips, e.cursor_pos, e.button, e.ch, e.type);
 	
 	//int s4 = env->connect_links.size();
 	//for(int i4 = 0;i4<s4;i4++)
@@ -827,7 +831,7 @@ int main(int argc, char *argv[]) {
       if (std::string(argv[1])=="--generate-font-atlas")
 	{
 	  std::cout << "Generating font atlas. " << std::endl;
-	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+";
+	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><";
 	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 10,13, 25);
 	  FtA atlas2 = ev.font_api.font_atlas_info(ev, font2, chars, 10,13, 25);
 	  FtA atlas3 = ev.font_api.font_atlas_info(ev, font3, chars, 30,30, 65);
@@ -909,25 +913,25 @@ int main(int argc, char *argv[]) {
   //vec3.push_back("newbitmap");
   //W test1 = gui.list_item_opened(100,"Bi tmapApi", font, vec3, font);
   //gui.set_pos(test1, 400,400);
-
+  env.list_tooltips = gui.empty();
   std::vector<W> items;
   for(int i=0;i<1;i++)
     {
-      items.push_back(gui.bitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
-      items.push_back(gui.polygonapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
-      items.push_back(gui.boolbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
-      items.push_back(gui.floatbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
-      items.push_back(gui.shadermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
-      items.push_back(gui.linesapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
-      items.push_back(gui.pointsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
-      items.push_back(gui.pointapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
-      items.push_back(gui.vectorapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
+      items.push_back(gui.bitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.polygonapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.boolbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.floatbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.shadermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.linesapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.pointsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.pointapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.vectorapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
 
-      items.push_back(gui.volumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
-      items.push_back(gui.floatvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
-      items.push_back(gui.colorvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
-      items.push_back(gui.fontapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
-      items.push_back(gui.textureapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2));
+      items.push_back(gui.volumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.floatvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.colorvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.fontapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.textureapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
 
     }
   W array = gui.array_y(&items[0], items.size(), 5);

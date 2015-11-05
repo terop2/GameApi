@@ -1405,6 +1405,25 @@ BufferRef LoadImage(std::string filename, bool &success)
   ref.width = x;
   ref.height = y;
   ref.ydelta = x;
+#if 1
+  if (comp==3)
+  for(int yy=0;yy<y;yy++)
+    for(int xx=0;xx<x;xx++)
+      {
+	unsigned int val = ref.buffer[xx+yy*ref.ydelta];
+	unsigned int a = val &0xff000000;
+	unsigned int r = val &0xff0000;
+	unsigned int g = val &0x00ff00;
+	unsigned int b = val &0x0000ff;
+	r>>=16;
+	g>>=8;
+
+	b<<=16;
+	g<<=8;
+	val = a+r+g+b; 
+	ref.buffer[xx+yy*ref.ydelta] = val;
+      }
+#endif
 #if 0
   //SDL_RWops *src = SDL_RWFromMem(&mem[0], mem.size());
   //SDL_Surface *surf = IMG_Load_RW(src, 0);
