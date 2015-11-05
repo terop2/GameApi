@@ -112,6 +112,7 @@ using std::placeholders::_9;
   struct WM { int id; };
   struct FtA { int id; };
   struct ML { int id; };
+  struct A { int id; };
   //template<class T>
   //struct E { int id; };
 
@@ -745,6 +746,7 @@ class GuiApi
 {
 public:
   GuiApi(Env &e, EveryApi &ev, SH sh) : e(e), ev(ev), sh(sh) { }
+  W empty();
   W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=2);
   W icon(BM bitmap);
   W poly(P p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
@@ -768,6 +770,9 @@ public:
   W layer(W w1, W w2);
   W array_y(W *arr, int size, int y_gap);
   W array_x(W *arr, int size, int x_gap);
+  W timed_visibility(W orig, W timed_widget, W insert, float start_duration, float duration);
+  W tooltip(W orig, W insert, std::string label, FtA atlas, BM atlas_bm, int x_gap=2);
+
   W main_menu(std::vector<std::string> labels, FtA atlas, BM atlas_bm);
   W menu(W main_menu, int menu_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm);
   W submenu(W menu, int menu_pane_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm);
@@ -782,7 +787,7 @@ public:
   void del_canvas_item(W canvas, int id);
   W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params);
   W list_item_title(int sx, std::string label, FtA atlas, BM atlas_bm);
-  W list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, FtA atlas2, BM atlas_bm2);
+  W list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, std::vector<std::string> subitems_tooltip, FtA atlas2, BM atlas_bm2, W insert);
   W list_item(BM icon, std::string label, int sx, int sy);
   W list(W *array, int size, int sx, int sy);
   W dialog_item(std::string text, BM icon, int sx, int sy);
@@ -799,11 +804,13 @@ public:
   W string_editor(std::string allowed_chars, std::string &target, FtA atlas, BM atlas_bm, int x_gap);
   W float_editor(float &target, FtA atlas, BM atlas_bm, int x_gap);
   W int_editor(int &target, FtA atlas, BM atlas_bm, int x_gap);
+  W long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap);
   W point_editor(float &x, float &y, float &z, FtA atlas, BM atlas_bm, int x_gap);
   W color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap);
   struct EditTypes
   {
     int i_value;
+    long l_value;
     float f_value;
     float f_x, f_y, f_z;
     std::string color;
@@ -814,20 +821,20 @@ public:
   void string_to_generic(EditTypes &target, std::string type, const std::string &source);
   IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, Ft font, const std::vector<std::string> &types, W &cancel_button, W &ok_button);
   IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_button, W &ok_button);
-  W bitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
-  W boolbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
-  W floatbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
-  W polygonapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
-  W shadermoduleapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
-  W linesapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
-  W pointsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
-  W pointapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
-  W vectorapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
-  W volumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
-  W floatvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
-  W colorvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
-  W fontapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
-  W textureapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm);
+  W bitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W boolbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W floatbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W polygonapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W shadermoduleapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W linesapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W pointsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W pointapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W vectorapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W volumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W floatvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W colorvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W fontapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W textureapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
 
   std::string bitmapapi_functions_item_label(int i);
   std::string boolbitmapapi_functions_item_label(int i);
@@ -1052,6 +1059,7 @@ public:
 	IMPORT P empty();
         IMPORT P load_model(std::string filename, int obj_num);
         IMPORT void save_model(P poly, std::string filename);
+  IMPORT ML save_model_ml(P poly, std::string filename);
 
   //IMPORT P line(PT p1, PT p2);
 	IMPORT P triangle(PT p1, PT p2, PT p3);
@@ -1662,11 +1670,13 @@ public:
 
   IMPORT LLA prepare(LI l);
   IMPORT void update(LLA la, LI l);
+  IMPORT ML update_ml(LLA la, LI l);
   //IMPORT int line_count(LLA l);
   //      IMPORT float *line_access(LLA lines, int line, bool b);
   //IMPORT unsigned int *color_access(LLA lines, int line, bool b);
   //IMPORT void update(LLA lines);
 	IMPORT void render(LLA array);
+  IMPORT ML render_ml(LLA array);
 private:
   LinesApi(const LinesApi&);
   void operator=(const LinesApi&);

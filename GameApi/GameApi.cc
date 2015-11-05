@@ -924,6 +924,7 @@ struct EnvImpl
   std::vector<GameApiModule *> gameapi_modules;
   std::vector<FontAtlasInfo*> font_atlas;
   std::vector<MainLoopItem*> main_loop;
+  std::vector<std::vector<int>*> arrays;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
 #ifndef EMSCRIPTEN
@@ -1452,6 +1453,14 @@ EXPORT GameApi::Env::~Env()
 }
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
+GameApi::A add_array(GameApi::Env &e, std::vector<int> *arr)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->arrays.push_back(arr);
+  GameApi::A a;
+  a.id = env->arrays.size()-1;
+  return a;
+}
 GameApi::ML add_main_loop(GameApi::Env &e, MainLoopItem *item)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -2172,6 +2181,11 @@ GameApi::ST GameApi::EventApi::states(int count_states)
   GameApi::ST st;
   st.id = env->state_ranges.size()-1;
   return st;
+}
+std::vector<int> *find_array(GameApi::Env &e, GameApi::A arr)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->arrays[arr.id];
 }
 MainLoopItem *find_main_loop(GameApi::Env &e, GameApi::ML ml)
 {
@@ -4784,6 +4798,25 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
 {
   return add_polygon2(e, new LoadObjModelFaceCollection(filename, num), 1);
 } 
+class SaveModel : public MainLoopItem
+{
+public:
+  SaveModel(GameApi::PolygonApi &api, GameApi::P poly, std::string filename) : api(api), poly(poly), filename(filename)
+  {
+  }
+  void execute()
+  {
+    api.save_model(poly, filename);
+  }
+private:
+  GameApi::PolygonApi &api;
+  GameApi::P poly;
+  std::string filename;
+};
+EXPORT GameApi::ML GameApi::PolygonApi::save_model_ml(GameApi::P poly, std::string filename)
+{
+  return add_main_loop(e, new SaveModel(*this, poly, filename));
+}
 EXPORT void GameApi::PolygonApi::save_model(GameApi::P poly, std::string filename)
 {
   FaceCollection *face = find_facecoll(e, poly);
@@ -12246,6 +12279,21 @@ EXPORT GameApi::LI GameApi::LinesApi::border_from_bool_bitmap(GameApi::BB b, flo
   Bitmap<bool> *bb = bb2->bitmap;
   return add_line_array(e, new BorderFromBoolBitmap(*bb, start_x, end_x, start_y, end_y, z));
 }
+class LI_Render : public MainLoopItem
+{
+public:
+  LI_Render(GameApi::LinesApi &api, GameApi::LLA l) : api(api), l(l) { }
+  void execute() {
+    api.render(l);
+  }
+private:
+  GameApi::LinesApi &api;
+  GameApi::LLA l;
+};
+EXPORT GameApi::ML GameApi::LinesApi::render_ml(LLA l)
+{
+  return add_main_loop(e, new LI_Render(*this, l));
+}
 EXPORT void GameApi::LinesApi::render(LLA l)
 {
   PointArray2 *array = find_lines_array(e,l);
@@ -12744,6 +12792,20 @@ void GameApi::LinesApi::update(LLA lines)
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, GL_STATIC_DRAW);
 }
 #endif
+class LI_Update : public MainLoopItem
+{
+public:
+  LI_Update(GameApi::LinesApi &api, GameApi::LLA la, GameApi::LI li) : api(api), la(la), li(li) { }
+  void execute() { api.update(la,li); }
+private:
+  GameApi::LinesApi &api;
+  GameApi::LLA la;
+  GameApi::LI li;
+};
+EXPORT GameApi::ML GameApi::LinesApi::update_ml(LLA la, LI l)
+{
+  return add_main_loop(e, new LI_Update(*this, la, l));
+}
 EXPORT void GameApi::LinesApi::update(LLA la, LI l)
 {
   LineCollection *coll = find_line_array(e, l);
@@ -15248,8 +15310,111 @@ protected:
 public:
   std::vector<GuiWidget *> vec;
 };
+class EmptyWidget : public GuiWidgetForward
+{
+public:
+  EmptyWidget(GameApi::EveryApi &ev) : GuiWidgetForward(ev,{ }) { }
+};
+class TimedWidget2 : public GuiWidgetForward
+{
+public:
+  TimedWidget2(GameApi::EveryApi &ev, GuiWidget *next, float time) : GuiWidgetForward(ev, { next } ), time(time) 
+  {
+    old_time = ev.mainloop_api.get_time();
+  }
+  void update(Point2d mouse_pos, int button, int ch, int type)
+  {
+    GuiWidgetForward::update(mouse_pos, button, ch, type);
+    float current_time = ev.mainloop_api.get_time();
+    float delta = current_time - old_time;
+    if (delta > time && vec.size()>0)
+      {
+	vec.erase(vec.begin());
+      }
+  }  
+private:
+  float old_time;
+  float time;
+};
+class TimedWidget : public GuiWidgetForward
+{
+public:
+  TimedWidget(GameApi::EveryApi &ev, GuiWidget *next, GuiWidget *timed, GuiWidgetForward *insert_wid, float start_duration, float duration) : GuiWidgetForward(ev, {next}), next(next), timed(timed), insert_wid(insert_wid), start_duration(start_duration), duration(duration) 
+  {
+    uid = unique_id();
+    state = 0;
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1,-1, -1);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
+
+  }
+  void update(Point2d mouse_pos, int button, int ch, int type)
+  {
+    GuiWidgetForward::update(mouse_pos, button, ch, type);
+    Point2d pos = vec[0]->get_pos();
+    Vector2d sz = vec[0]->get_size();
+    if (state==0 && mouse_pos.x>pos.x && mouse_pos.x<pos.x+sz.dx &&
+	mouse_pos.y>pos.y && mouse_pos.y<pos.y+sz.dy)
+      {
+	state=1;
+	state1_time = ev.mainloop_api.get_time();
+      }
+    float current_time = ev.mainloop_api.get_time();
+    if (state==1 && current_time-state1_time > start_duration)
+      {
+	state=2;
+	state2_time = ev.mainloop_api.get_time();
+	// this only works with tooltips
+	Point2d p = next->get_pos();
+	Vector2d ps = next->get_size();
+	Point2d pos = { float(p.x+ps.dx-40.0), float(p.y+0.0) };
+	timed->set_pos(pos);
 
 
+	GuiWidget *tm = new TimedWidget2(ev, timed, duration);
+	tm->set_id(uid);
+	insert_wid->vec.push_back(tm);
+	index = insert_wid->vec.size()-1;
+      }
+    if (state==2 && (current_time-state2_time > duration||
+	!(mouse_pos.x>pos.x && mouse_pos.x<pos.x+sz.dx &&
+	  mouse_pos.y>pos.y && mouse_pos.y<pos.y+sz.dy))
+	)
+      {
+	state=3;
+	int s = insert_wid->vec.size();
+	for(int i=0;i<s;i++)
+	  {
+	    GuiWidget* w = insert_wid->vec[i];
+	    std::string id = w->get_id();
+	    if (id==uid)
+	      {
+		insert_wid->vec.erase(insert_wid->vec.begin()+i);
+		break; 
+	      }
+	  }
+      }    
+    if (state==3 && (
+	!(mouse_pos.x>pos.x && mouse_pos.x<pos.x+sz.dx &&
+	  mouse_pos.y>pos.y && mouse_pos.y<pos.y+sz.dy))
+	) {
+      state=0;
+    }
+
+  }
+private:
+  std::string uid;
+  GuiWidget *next;
+  GuiWidget *timed;
+  GuiWidgetForward *insert_wid;
+  float start_duration;
+  float duration;
+  int state;
+  float state1_time;
+  float state2_time;
+  int index;
+};
 
 class TextGuiWidgetAtlas : public GuiWidgetForward
 {
@@ -16373,6 +16538,34 @@ private:
   GameApi::SH sh2;
   Vector2d delta_vec;
 };
+EXPORT GameApi::W GameApi::GuiApi::timed_visibility(W orig, W timed_widget, W insert, float start_duration, float duration)
+{
+  GuiWidget *o = find_widget(e,orig);
+  GuiWidget *t = find_widget(e,timed_widget);
+  GuiWidget *i = find_widget(e, insert);
+#ifdef EMSCRIPTEN
+  GuiWidgetForward *ii = static_cast<GuiWidgetForward*>(i);
+#else
+  GuiWidgetForward *ii = dynamic_cast<GuiWidgetForward*>(i);
+#endif
+  return add_widget(e, new TimedWidget(ev, o, t, ii, start_duration, duration));
+}
+EXPORT GameApi::W GameApi::GuiApi::empty()
+{
+  return add_widget(e, new EmptyWidget(ev));
+}
+EXPORT GameApi::W GameApi::GuiApi::tooltip(W orig, W insert, std::string label, FtA atlas, BM atlas_bm, int x_gap)
+{
+  W w = text(label, atlas, atlas_bm, x_gap);
+  W w1 = margin(w, 5,5,5,5);
+  W w2 = button(size_x(w1),size_y(w1), 0xff888888, 0xff444444);
+  W w3 = layer(w2,w1);
+  float p_x = pos_x(orig) + size_x(orig) + 10.0;
+  float p_y = pos_y(orig) + 10.0;
+  set_pos(w3, p_x, p_y);
+  W w4 = timed_visibility(orig, w3, insert, 0.3, 400.0);
+  return w4;
+}
 EXPORT GameApi::W GameApi::GuiApi::line(W target1, int delta_x, int delta_y,
 					W target2, int delta2_x, int delta2_y, SH sh, SH old_sh)
 {
@@ -16444,9 +16637,9 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_title(int sx, std::string label, Ft
   W node_1 = layer(node_0, node_t0);
   W node_2 = highlight(node_1);
   return node_2;
-}
+ }
 
-EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, FtA atlas2, BM atlas_bm2)
+EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, std::vector<std::string> subitems_tooltip, FtA atlas2, BM atlas_bm2, W insert)
 {
   W title = list_item_title(sx, label, atlas, atlas_bm);
   std::vector<W> vec;
@@ -16455,10 +16648,12 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, F
   for(int i=0;i<s;i++)
     {
       std::string label = subitems[i];
+      std::string toolt = subitems_tooltip[i];
       W txt_0 = text(label, atlas2, atlas_bm2);
       W txt_1 = margin(txt_0, 5, 2, sx-5-size_x(txt_0), 2);
       W txt_2 = highlight(size_x(txt_1), size_y(txt_1));
-      W txt_3 = layer(txt_1, txt_2);
+      W txt_21 = tooltip(txt_2, insert, toolt, atlas2, atlas_bm2);
+      W txt_3 = layer(txt_1, txt_21);
       vec.push_back(txt_3);
     }
   W array = array_y(&vec[0], vec.size(),2);
@@ -16698,6 +16893,14 @@ EXPORT GameApi::W GameApi::GuiApi::int_editor(int &target, FtA atlas, BM atlas_b
 {
   std::string allowed_chars = "0123456789-";
   W w = add_widget(e, new EditorGuiWidgetAtlas<int>(ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap));
+  W w2 = highlight(w);
+  return w2;
+}
+
+EXPORT GameApi::W GameApi::GuiApi::long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap)
+{
+  std::string allowed_chars = "0123456789-";
+  W w = add_widget(e, new EditorGuiWidgetAtlas<long>(ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap));
   W w2 = highlight(w);
   return w2;
 }
@@ -17008,6 +17211,14 @@ EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string ty
   //std::cout << "Source: " << source << std::endl;
 
   //std::cout << "string_to_generic" << type << std::endl;
+  if (type=="long")
+    {
+      std::stringstream ss(source);
+      if (ss >> target.l_value) {
+	//std::cout << "Dest: " << target.i_value << std::endl;
+      } else { std::cout << "StringStream failed" << std::endl; }
+
+    } else
   if (type=="int")
     {
       std::stringstream ss(source);
@@ -17052,6 +17263,15 @@ EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string ty
 EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::string type, std::string &target)
 {
   //std::cout << "generic_to_string" << type << std::endl;
+  if (type=="long")
+    {
+      long val = source.l_value;
+      //std::cout << "Source2: " << val << std::endl;
+      std::stringstream ss;
+      ss << val;
+      target = ss.str();
+
+    } else
   if (type=="int")
     {
       int val = source.i_value;
@@ -17101,6 +17321,11 @@ EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::str
 EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap)
 {
   //std::cout << "Generic editor: " << type << std::endl;
+  if (type=="long")
+    {
+      W edit = long_editor(target.l_value, atlas, atlas_bm, x_gap);
+      return edit;
+    }
   if (type=="int")
     {
       //std::cout << "Generic editor << " << target.i_value << std::endl;
@@ -17822,7 +18047,7 @@ template<typename T> T from_stream(std::stringstream &is)
 template<> unsigned int from_stream<unsigned int>(std::stringstream &is)
 {
   unsigned int bm;
-  char c;
+  //char c;
   //is >> c;
   //is >> c;
   is >> std::hex >> bm >> std::dec;
@@ -18447,6 +18672,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "std::string", "int" },
 			 { "test.obj", "0" },
 			 "P"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::save_model_ml,
+			 "save_model",
+			 { "poly", "filename" },
+			 { "P", "std::string" },
+			 { "", "test.obj" },
+			 "ML"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::triangle,
 			 "triangle",
 			 { "p1", "p2", "p3" },
@@ -18829,6 +19060,24 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "LI", "float", "float", "float" },
 			 { "", "1.0", "1.0", "1.0" },
 			 "LI"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::prepare,
+			 "li_prepare",
+			 { "li" },
+			 { "LI" },
+			 { "" },
+			 "LLA"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::update_ml,
+			 "li_update",
+			 { "lla", "li" },
+			 { "LLA", "LI" },
+			 { "", "" },
+			 "ML"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::render_ml,
+			 "li_render",
+			 { "lla" },
+			 { "LLA" },
+			 { "" },
+			 "ML"));
   return vec;
 }
 std::vector<GameApiItem*> pointsapi_functions()
@@ -19265,16 +19514,33 @@ std::string GameApi::GuiApi::vectorapi_functions_item_label(int i)
 
 
 
-GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector<GameApiItem*> vec, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::FtA atlas2, GameApi::BM atlas_bm2)
+GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector<GameApiItem*> vec, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::FtA atlas2, GameApi::BM atlas_bm2, GameApi::W insert)
 {
   std::vector<std::string> vec2;
+  std::vector<std::string> vec3;
   int s = vec.size();
   for(int i=0;i<s;i++)
     {
       GameApiItem *item = vec[i];
-      vec2.push_back(item->Name(i));
+      vec2.push_back(item->Name(0));
+      int sp = item->ParamCount(0);
+      std::string typestr = "(";
+      for(int j=0;j<sp;j++)
+	{
+	  std::string type = item->ParamType(0, j);
+	  
+	  if (type.size()<=4 && type.size()>0 && type[0]>='A' && type[0]<='Z')
+	    {
+	      if (typestr.size()!=1)
+		typestr+=",";
+	      typestr+=type;
+	    }
+	}
+      typestr+=")->";
+      typestr+=item->ReturnType(0);
+      vec3.push_back(typestr);
     }
-  GameApi::W w = gui.list_item_opened(120, label, atlas, atlas_bm, vec2, atlas2, atlas_bm2);
+  GameApi::W w = gui.list_item_opened(120, label, atlas, atlas_bm, vec2, vec3, atlas2, atlas_bm2, insert);
   GameApi::W w2 = gui.list_item_title(120, label, atlas, atlas_bm);
   GameApi::W or_elem = gui.or_elem(w,w2);
   return or_elem;
@@ -19282,69 +19548,69 @@ GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector
 
 
 
-GameApi::W GameApi::GuiApi::bitmapapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+GameApi::W GameApi::GuiApi::bitmapapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {
-  return functions_widget(*this, "BitmapApi", bitmapapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+  return functions_widget(*this, "BitmapApi", bitmapapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
 
-GameApi::W GameApi::GuiApi::textureapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+GameApi::W GameApi::GuiApi::textureapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {
-  return functions_widget(*this, "TextureApi", textureapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
-}
-
-
-GameApi::W GameApi::GuiApi::fontapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
-{
-  return functions_widget(*this, "FontApi", fontapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
-}
-
-GameApi::W GameApi::GuiApi::volumeapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
-{
-  return functions_widget(*this, "VolumeApi", volumeapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
-}
-GameApi::W GameApi::GuiApi::floatvolumeapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
-{
-  return functions_widget(*this, "FVolumeApi", floatvolumeapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
-}
-GameApi::W GameApi::GuiApi::colorvolumeapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
-{
-  return functions_widget(*this, "CVolumeApi", colorvolumeapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+  return functions_widget(*this, "TextureApi", textureapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
 
 
-GameApi::W GameApi::GuiApi::shadermoduleapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+GameApi::W GameApi::GuiApi::fontapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {
-  return functions_widget(*this, "ShaderApi", shadermoduleapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
-}
-GameApi::W GameApi::GuiApi::linesapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
-{
-  return functions_widget(*this, "LinesApi", linesapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
-}
-GameApi::W GameApi::GuiApi::pointsapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
-{
-  return functions_widget(*this, "PointsApi", pointsapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
-}
-GameApi::W GameApi::GuiApi::pointapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
-{
-  return functions_widget(*this, "PointApi", pointapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
-}
-GameApi::W GameApi::GuiApi::vectorapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
-{
-  return functions_widget(*this, "VectorApi", vectorapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+  return functions_widget(*this, "FontApi", fontapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
 
-GameApi::W GameApi::GuiApi::boolbitmapapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+GameApi::W GameApi::GuiApi::volumeapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {
-  return functions_widget(*this, "BoolBitmap", boolbitmapapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+  return functions_widget(*this, "VolumeApi", volumeapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
-GameApi::W GameApi::GuiApi::floatbitmapapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+GameApi::W GameApi::GuiApi::floatvolumeapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {
-  return functions_widget(*this, "FloatBitmap", floatbitmapapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+  return functions_widget(*this, "FVolumeApi", floatvolumeapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+}
+GameApi::W GameApi::GuiApi::colorvolumeapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
+{
+  return functions_widget(*this, "CVolumeApi", colorvolumeapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
 
-GameApi::W GameApi::GuiApi::polygonapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2)
+
+GameApi::W GameApi::GuiApi::shadermoduleapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {
-  return functions_widget(*this, "PolygonApi", polygonapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2);
+  return functions_widget(*this, "ShaderApi", shadermoduleapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+}
+GameApi::W GameApi::GuiApi::linesapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
+{
+  return functions_widget(*this, "LinesApi", linesapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+}
+GameApi::W GameApi::GuiApi::pointsapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
+{
+  return functions_widget(*this, "PointsApi", pointsapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+}
+GameApi::W GameApi::GuiApi::pointapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
+{
+  return functions_widget(*this, "PointApi", pointapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+}
+GameApi::W GameApi::GuiApi::vectorapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
+{
+  return functions_widget(*this, "VectorApi", vectorapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+}
+
+GameApi::W GameApi::GuiApi::boolbitmapapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
+{
+  return functions_widget(*this, "BoolBitmap", boolbitmapapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+}
+GameApi::W GameApi::GuiApi::floatbitmapapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
+{
+  return functions_widget(*this, "FloatBitmap", floatbitmapapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+}
+
+GameApi::W GameApi::GuiApi::polygonapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
+{
+  return functions_widget(*this, "PolygonApi", polygonapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
 
 

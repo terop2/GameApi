@@ -14,7 +14,7 @@
 using namespace GameApi;
 
 
-  struct A {
+  struct AA {
     float val;
     TX tx;
     int id;
@@ -23,7 +23,7 @@ using namespace GameApi;
 P torus_func(float val, void *cb, EveryApi &e)
 {
   std::cout << "torus_func" << val << std::endl;
-  A *cb2 = (A*)cb;
+  AA *cb2 = (AA*)cb;
   PT p = e.point_api.point(cb2->val,cb2->val,100.0);
   P p0 = e.polygon_api.sphere(p, val, 30, 30);
   //P p0 = e.polygon_api.quad_z(val+cb2->val, cb2->val+val+100.0,
@@ -87,11 +87,11 @@ void GameTest5(EveryApi &e)
   TX tx3a = e.texture_api.tex_assign(tx3, id3, 0,0, normalmap);
   TXID tex3 = e.texture_api.prepare(tx3a);
 
-  A val;
+  AA val;
   val.val = 0.0;
   val.tx = tx2;
   val.id = id;
-  A val2;
+  AA val2;
   val2.val = 150.0;
   val2.tx = tx2;
   val2.id = id;
