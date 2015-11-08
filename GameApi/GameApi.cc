@@ -925,6 +925,7 @@ struct EnvImpl
   std::vector<FontAtlasInfo*> font_atlas;
   std::vector<MainLoopItem*> main_loop;
   std::vector<std::vector<int>*> arrays;
+  std::vector<ExprNode*> exprs;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
 #ifndef EMSCRIPTEN
@@ -1453,6 +1454,14 @@ EXPORT GameApi::Env::~Env()
 }
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
+GameApi::EX add_expr(GameApi::Env &e, ExprNode *n)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->exprs.push_back(n);
+  GameApi::EX a;
+  a.id = env->exprs.size()-1;
+  return a;
+}
 GameApi::A add_array(GameApi::Env &e, std::vector<int> *arr)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -2181,6 +2190,11 @@ GameApi::ST GameApi::EventApi::states(int count_states)
   GameApi::ST st;
   st.id = env->state_ranges.size()-1;
   return st;
+}
+ExprNode *find_expr(GameApi::Env &e, GameApi::EX n)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->exprs[n.id];  
 }
 std::vector<int> *find_array(GameApi::Env &e, GameApi::A arr)
 {
@@ -14770,8 +14784,8 @@ public:
       "vec4 noise_color"+ uid+"(vec3 pt, float str)\n"
       "{\n"
       "   float v = fract(sin(dot(pt.xz, vec2(12.9898,78.233))) * 43758.5453);\n"
-      "   vec3 col = " + color_funccall_to_string(mod) + ";\n"
-      "   return vec4(mix(col, vec3(v,v,v), str),1.0);\n"
+      "   vec4 col = " + color_funccall_to_string(mod) + ";\n"
+      "   return vec4(mix(col.xyz, vec3(v,v,v), str),1.0);\n"
       "}\n";
   }
   virtual std::string FunctionName() const { return "noise" + uid; }
@@ -15339,7 +15353,7 @@ private:
 class TimedWidget : public GuiWidgetForward
 {
 public:
-  TimedWidget(GameApi::EveryApi &ev, GuiWidget *next, GuiWidget *timed, GuiWidgetForward *insert_wid, float start_duration, float duration) : GuiWidgetForward(ev, {next}), next(next), timed(timed), insert_wid(insert_wid), start_duration(start_duration), duration(duration) 
+  TimedWidget(GameApi::EveryApi &ev, GuiWidget *next, GuiWidget *timed, GuiWidgetForward *insert_wid, float start_duration, float duration, float dx) : GuiWidgetForward(ev, {next}), next(next), timed(timed), insert_wid(insert_wid), start_duration(start_duration), duration(duration),dx(dx) 
   {
     uid = unique_id();
     state = 0;
@@ -15368,7 +15382,7 @@ public:
 	// this only works with tooltips
 	Point2d p = next->get_pos();
 	Vector2d ps = next->get_size();
-	Point2d pos = { float(p.x+ps.dx-40.0), float(p.y+0.0) };
+	Point2d pos = { float(p.x+ps.dx-dx), float(p.y+0.0) };
 	timed->set_pos(pos);
 
 
@@ -15414,6 +15428,7 @@ private:
   float state1_time;
   float state2_time;
   int index;
+  float dx;
 };
 
 class TextGuiWidgetAtlas : public GuiWidgetForward
@@ -16538,7 +16553,7 @@ private:
   GameApi::SH sh2;
   Vector2d delta_vec;
 };
-EXPORT GameApi::W GameApi::GuiApi::timed_visibility(W orig, W timed_widget, W insert, float start_duration, float duration)
+EXPORT GameApi::W GameApi::GuiApi::timed_visibility(W orig, W timed_widget, W insert, float start_duration, float duration, float dx)
 {
   GuiWidget *o = find_widget(e,orig);
   GuiWidget *t = find_widget(e,timed_widget);
@@ -16548,13 +16563,13 @@ EXPORT GameApi::W GameApi::GuiApi::timed_visibility(W orig, W timed_widget, W in
 #else
   GuiWidgetForward *ii = dynamic_cast<GuiWidgetForward*>(i);
 #endif
-  return add_widget(e, new TimedWidget(ev, o, t, ii, start_duration, duration));
+  return add_widget(e, new TimedWidget(ev, o, t, ii, start_duration, duration, dx));
 }
 EXPORT GameApi::W GameApi::GuiApi::empty()
 {
   return add_widget(e, new EmptyWidget(ev));
 }
-EXPORT GameApi::W GameApi::GuiApi::tooltip(W orig, W insert, std::string label, FtA atlas, BM atlas_bm, int x_gap)
+EXPORT GameApi::W GameApi::GuiApi::tooltip(W orig, W insert, std::string label, FtA atlas, BM atlas_bm, int x_gap, float dx)
 {
   W w = text(label, atlas, atlas_bm, x_gap);
   W w1 = margin(w, 5,5,5,5);
@@ -16563,7 +16578,7 @@ EXPORT GameApi::W GameApi::GuiApi::tooltip(W orig, W insert, std::string label, 
   float p_x = pos_x(orig) + size_x(orig) + 10.0;
   float p_y = pos_y(orig) + 10.0;
   set_pos(w3, p_x, p_y);
-  W w4 = timed_visibility(orig, w3, insert, 0.3, 400.0);
+  W w4 = timed_visibility(orig, w3, insert, 0.3, 400.0, dx);
   return w4;
 }
 EXPORT GameApi::W GameApi::GuiApi::line(W target1, int delta_x, int delta_y,
@@ -16652,7 +16667,7 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, F
       W txt_0 = text(label, atlas2, atlas_bm2);
       W txt_1 = margin(txt_0, 5, 2, sx-5-size_x(txt_0), 2);
       W txt_2 = highlight(size_x(txt_1), size_y(txt_1));
-      W txt_21 = tooltip(txt_2, insert, toolt, atlas2, atlas_bm2);
+      W txt_21 = tooltip(txt_2, insert, toolt, atlas2, atlas_bm2, 2, 40.0);
       W txt_3 = layer(txt_1, txt_21);
       vec.push_back(txt_3);
     }
@@ -16788,7 +16803,7 @@ EXPORT GameApi::W GameApi::GuiApi::mouse_move(W widget, int area_x, int area_y, 
   return add_widget(e, new MouseMoveWidget(ev, wid, area_x, area_y, area_width, area_height));
 }
 
-EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params)
+EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltip, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params)
 {
   std::vector<W> vec;
   int s = param_types.size();
@@ -16796,12 +16811,14 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
   for(int i=0;i<s;i++)
     {
       std::string p = param_types[i];
+      std::string tt = param_tooltip[i];
       W txt_0 = text(p, atlas, atlas_bm);
       W txt_1 = margin(txt_0, 5,5,5,5);
+      W txt_11 = tooltip(txt_1, txt_1, tt, atlas, atlas_bm, 2, 0.0);
       int width = size_x(txt_1);
       if (max_width<width) max_width = width;
       W txt_2 = button(size_x(txt_1), size_y(txt_1), 0xff888888, 0xff666666);
-      W txt_3 = layer(txt_2, txt_1);
+      W txt_3 = layer(txt_2, txt_11);
       W txt_4 = click_area(txt_3, 0.0,0.0,size_x(txt_3), size_y(txt_3));
       
       std::stringstream ii;
@@ -19760,6 +19777,24 @@ std::vector<int> reduce_list_to_indexes_only(std::vector<std::string> type_names
   return ret;
 
 }
+
+std::vector<std::string> reduce_list_to_string_only(std::vector<std::string> type_names, std::vector<std::string> indexes)
+{
+  std::vector<std::string> ret;
+  int s = type_names.size();
+  for(int i=0;i<s;i++)
+    {
+      std::string name = type_names[i];
+      std::string index = indexes[i];
+      if (name[0]>='A' && name[0]<'Z' && name.size()<=4)
+	{
+	  ret.push_back(index);
+	}
+    }
+  return ret;
+
+}
+
 std::vector<std::string> reduce_list_to_types_only(std::vector<std::string> type_names)
 {
   std::vector<std::string> ret;
@@ -19839,13 +19874,16 @@ GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, FtA a
   GameApiItem *item = functions[i];
   std::string return_type = item->ReturnType(0);
   std::vector<std::string> param_types;
+  std::vector<std::string> param_tooltip;
   int sss = item->ParamCount(0);
   for(int k=0;k<sss;k++)
     {
       param_types.push_back(item->ParamType(0,k));
+      param_tooltip.push_back(item->ParamName(0,k));
     }
   std::vector<std::string> param_types2 = reduce_list_to_types_only(param_types);
-  W node = gui.canvas_item_gameapi_node(100,100, func_name, param_types2, return_type, atlas, atlas_bm, connect_click, uid, params);
+  std::vector<std::string> param_tooltip2 = reduce_list_to_string_only(param_types, param_tooltip);
+  W node = gui.canvas_item_gameapi_node(100,100, func_name, param_types2, param_tooltip2, return_type, atlas, atlas_bm, connect_click, uid, params);
   return node;
 }
 
@@ -20428,15 +20466,18 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
 	}
       GameApiItem *item = functions[j];
       std::vector<std::string> param_types;
+      std::vector<std::string> param_tooltip;
       int sss = item->ParamCount(0);
       for(int k=0;k<sss;k++)
 	{
 	  param_types.push_back(item->ParamType(0,k));
+	  param_tooltip.push_back(item->ParamName(0,k));
 	}
       std::vector<std::string> param_types2 = reduce_list_to_types_only(param_types);
+      std::vector<std::string> param_tooltip2 = reduce_list_to_string_only(param_types, param_tooltip);
       std::string return_type = item->ReturnType(0);
 
-      W node = gui.canvas_item_gameapi_node(100,100, line->module_name, param_types2, return_type, atlas, atlas_bm, connect_clicks[i], line->uid, params);
+      W node = gui.canvas_item_gameapi_node(100,100, line->module_name, param_types2, param_tooltip2, return_type, atlas, atlas_bm, connect_clicks[i], line->uid, params);
 
       W display_2 = gui.highlight(20, 20);
       W display_22 = gui.click_area(display_2, 0,0, gui.size_x(display_2), gui.size_y(display_2));
@@ -20515,4 +20556,230 @@ GameApi::W GameApi::GuiApi::insert_widget(W item, std::function<void(int,int)> f
 {
   GuiWidget *w = find_widget(e, item);
   return add_widget(e, new InsertWidget(ev,w,f));
+}
+class VariableExpr : public ExprNode
+{
+public:
+  VariableExpr(std::string name) : name(name) { }
+  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)
+  {
+    int s = env.size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::FloatExprEnv &e = env[i];
+	if (e.name == name) { return e.value; }
+      }
+    std::cout << "Expr float value not found: " << name << std::endl;
+    return 0.0f;
+  }
+  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)
+  {
+    int s = env.size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::IntExprEnv &e = env[i];
+	if (e.name == name) { return e.value; }
+      }
+    std::cout << "Expr int value not found: " << name << std::endl;
+    return 0;
+  }  
+private:
+  std::string name;
+};
+GameApi::EX GameApi::ExprApi::variable(std::string name)
+{
+  return add_expr(e, new VariableExpr(name));
+}
+
+class PlusExpr : public ExprNode
+{
+public:
+  PlusExpr(ExprNode *n1, ExprNode *n2) : n1(n1), n2(n2) { }
+  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)
+  {
+    return n1->float_execute(env) + n2->float_execute(env);
+  }
+  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)
+  {
+    return n1->int_execute(env) + n2->int_execute(env);
+  }
+private:
+  ExprNode *n1, *n2;
+};
+GameApi::EX GameApi::ExprApi::plus(EX e1, EX e2)
+{
+  ExprNode *n1 = find_expr(e, e1);
+  ExprNode *n2 = find_expr(e, e2);
+  return add_expr(e, new PlusExpr(n1,n2));
+}
+
+
+class MulExpr : public ExprNode
+{
+public:
+  MulExpr(ExprNode *n1, ExprNode *n2) : n1(n1), n2(n2) { }
+  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)
+  {
+    return n1->float_execute(env) * n2->float_execute(env);
+  }
+  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)
+  {
+    return n1->int_execute(env) * n2->int_execute(env);
+  }
+private:
+  ExprNode *n1, *n2;
+};
+GameApi::EX GameApi::ExprApi::mul(EX e1, EX e2)
+{
+  ExprNode *n1 = find_expr(e, e1);
+  ExprNode *n2 = find_expr(e, e2);
+  return add_expr(e, new MulExpr(n1,n2));
+}
+
+
+class MinusExpr : public ExprNode
+{
+public:
+  MinusExpr(ExprNode *n1, ExprNode *n2) : n1(n1), n2(n2) { }
+  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)
+  {
+    return n1->float_execute(env) - n2->float_execute(env);
+  }
+  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)
+  {
+    return n1->int_execute(env) - n2->int_execute(env);
+  }
+private:
+  ExprNode *n1, *n2;
+};
+GameApi::EX GameApi::ExprApi::minus(EX e1, EX e2)
+{
+  ExprNode *n1 = find_expr(e, e1);
+  ExprNode *n2 = find_expr(e, e2);
+  return add_expr(e, new MinusExpr(n1,n2));
+}
+
+
+class DivExpr : public ExprNode
+{
+public:
+  DivExpr(ExprNode *n1, ExprNode *n2) : n1(n1), n2(n2) { }
+  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)
+  {
+    return n1->float_execute(env) / n2->float_execute(env);
+  }
+  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)
+  {
+    return n1->int_execute(env) / n2->int_execute(env);
+  }
+private:
+  ExprNode *n1, *n2;
+};
+GameApi::EX GameApi::ExprApi::div(EX e1, EX e2)
+{
+  ExprNode *n1 = find_expr(e, e1);
+  ExprNode *n2 = find_expr(e, e2);
+  return add_expr(e, new DivExpr(n1,n2));
+}
+
+class SinExpr : public ExprNode
+{
+public:
+  SinExpr(ExprNode *n) : n(n) { }
+  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)
+  {
+    float val = n->float_execute(env);
+    return sin(val);
+  }
+  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)
+  {
+    std::cout << "ERROR! sin with ints" << std::endl;
+    return 0;
+  }
+
+private:
+  ExprNode *n;
+};
+
+class CosExpr : public ExprNode
+{
+public:
+  CosExpr(ExprNode *n) : n(n) { }
+  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)
+  {
+    float val = n->float_execute(env);
+    return cos(val);
+  }
+  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)
+  {
+    std::cout << "ERROR! cos with ints" << std::endl;
+    return 0;
+  }
+
+private:
+  ExprNode *n;
+};
+GameApi::EX GameApi::ExprApi::sin(GameApi::EX ee)
+{
+  ExprNode *n = find_expr(e, ee);
+  return add_expr(e, new SinExpr(n));
+}
+GameApi::EX GameApi::ExprApi::cos(GameApi::EX ee)
+{
+  ExprNode *n = find_expr(e, ee);
+  return add_expr(e, new CosExpr(n));
+}
+
+class ConstantExpr : public ExprNode
+{
+public:
+  ConstantExpr(int ival, float fval) : ival(ival),fval(fval) { }
+  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)
+  {
+    return fval;
+  }
+  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)
+  {
+    return ival;
+  }
+private:
+  int ival;
+  int fval;
+};
+GameApi::EX GameApi::ExprApi::float_constant(float val)
+{
+  return add_expr(e, new ConstantExpr(0, val));
+}
+GameApi::EX GameApi::ExprApi::int_constant(int val)
+{
+  return add_expr(e, new ConstantExpr(val, 0.0f));
+}
+
+float GameApi::ExprApi::expr_eval_float(EX expr, std::vector<FloatExprEnv> env)
+{
+  std::vector<GameApi::FloatExprEnv> vec;
+  int s = env.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApi::FloatExprEnv e;
+      e.name = env[i].name;
+      e.value = env[i].value;
+      vec.push_back(e);
+    }
+  ExprNode *n = find_expr(e, expr);
+  return n->float_execute(vec);
+}
+int GameApi::ExprApi::expr_eval_int(EX expr, std::vector<IntExprEnv> env)
+{
+  std::vector<GameApi::IntExprEnv> vec;
+  int s = env.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApi::IntExprEnv e;
+      e.name = env[i].name;
+      e.value = env[i].value;
+      vec.push_back(e);
+    }
+  ExprNode *n = find_expr(e, expr);
+  return n->int_execute(vec);
 }

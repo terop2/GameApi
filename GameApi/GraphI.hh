@@ -9,6 +9,9 @@
 namespace GameApi
 {
   class EveryApi;
+  struct FloatExprEnv { std::string name; float value; };
+  struct IntExprEnv { std::string name; int value; };
+
 };
 
 struct Quad
@@ -275,6 +278,13 @@ class MainLoopItem
 {
 public:
   virtual void execute()=0;
+};
+
+class ExprNode
+{
+public:
+  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)=0;
+  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)=0;
 };
 
 #endif

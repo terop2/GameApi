@@ -113,6 +113,7 @@ using std::placeholders::_9;
   struct FtA { int id; };
   struct ML { int id; };
   struct A { int id; };
+  struct EX { int id; };
   //template<class T>
   //struct E { int id; };
 
@@ -742,6 +743,31 @@ private:
   Env &e;
 };
 
+class ExprApi
+{
+public:
+  ExprApi(Env &e) : e(e) {}
+  EX variable(std::string name);
+  EX plus(EX e1, EX e2);
+  EX mul(EX e1, EX e2);
+  EX minus(EX e1, EX e2);
+  EX div(EX e1, EX e2);
+  EX sin(EX e1);
+  EX cos(EX e1);
+  EX float_constant(float val);
+  EX int_constant(int val);
+
+  EX expr_float(std::string expr);
+  EX expr_int(std::string expr);
+
+  struct FloatExprEnv { std::string name; float value; };
+  struct IntExprEnv { std::string name; int value; };
+  float expr_eval_float(EX expr, std::vector<FloatExprEnv> env);
+  int expr_eval_int(EX expr, std::vector<IntExprEnv> env);
+private:
+  Env &e;
+};
+
 class GuiApi
 {
 public:
@@ -770,8 +796,8 @@ public:
   W layer(W w1, W w2);
   W array_y(W *arr, int size, int y_gap);
   W array_x(W *arr, int size, int x_gap);
-  W timed_visibility(W orig, W timed_widget, W insert, float start_duration, float duration);
-  W tooltip(W orig, W insert, std::string label, FtA atlas, BM atlas_bm, int x_gap=2);
+  W timed_visibility(W orig, W timed_widget, W insert, float start_duration, float duration, float dx);
+  W tooltip(W orig, W insert, std::string label, FtA atlas, BM atlas_bm, int x_gap=2, float dx=40.0);
 
   W main_menu(std::vector<std::string> labels, FtA atlas, BM atlas_bm);
   W menu(W main_menu, int menu_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm);
@@ -785,7 +811,7 @@ public:
   int canvas_item_index(W canvas, W item);
   int canvas_item(W canvas, W item, int x, int y);
   void del_canvas_item(W canvas, int id);
-  W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params);
+  W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltips, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params);
   W list_item_title(int sx, std::string label, FtA atlas, BM atlas_bm);
   W list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, std::vector<std::string> subitems_tooltip, FtA atlas2, BM atlas_bm2, W insert);
   W list_item(BM icon, std::string label, int sx, int sy);
