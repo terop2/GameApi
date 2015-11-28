@@ -2,6 +2,7 @@
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif
+#include <math.h>
 
 using namespace GameApi;
 
@@ -37,16 +38,35 @@ struct Envi
   PolygonObj *poly;
   FBO fbo;
   PolygonObj *poly2;
+  bool forward=false;
+  bool backward = false;
+  bool left = false;
+  bool right = false;
+  float pos_x=0.0;
+  float pos_z=0.0;
+  float rotangle=0.0;
+  float speed = 15.0;
+  float rotspeed = 15.0*3.14159*2.0/360.0;
+  float time=0.0;
+  float old_time=0.0;
 };
 void iter(void *data)
 {
   Envi &envi = *(Envi*)data;
   envi.f = envi.ev->mainloop_api.get_time()/1000.0;
 
+  envi.time = envi.ev->mainloop_api.get_time()/10.0;
+  //envi.f += 1.0/10.0;
+  //envi.time +=100.0/10.0;
+  envi.speed = envi.time - envi.old_time;
+  envi.old_time = envi.time;
+
   //envi.ev->fbo_api.bind_fbo(envi.fbo);
     envi.ev->mainloop_api.clear();
     envi.ev->shader_api.use(envi.sh);
     envi.ev->shader_api.set_var(envi.sh, "time", envi.f);
+    envi.ev->shader_api.set_var(envi.sh, "rotangle", envi.rotangle);
+    envi.ev->shader_api.set_var(envi.sh, "player_pos", envi.pos_x, 0.0, envi.pos_z);
     envi.poly->render();
     //envi.ev->fbo_api.bind_screen(800,600);
     //envi.ev->mainloop_api.clear();    
@@ -57,12 +77,43 @@ void iter(void *data)
     envi.ev->mainloop_api.swapbuffers();
 
     // handle esc event
-    MainLoopApi::Event e = envi.ev->mainloop_api.get_event();
+    MainLoopApi::Event e;
+    while((e = envi.ev->mainloop_api.get_event()).last==true)
+      { 
 #ifndef EMSCRIPTEN
-    if (e.ch==27 && e.type==0x300) { exit(0); }
+	if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif
+	
+	if ((e.ch=='w'||e.ch==26||e.ch==82) && e.type==0x300) { envi.forward = true; }
+	if ((e.ch=='w'||e.ch==26||e.ch==82) && e.type==0x301) { envi.forward = false; }
+	if ((e.ch=='s'||e.ch==22||e.ch==81) && e.type==0x300) { envi.backward = true; }
+	if ((e.ch=='s'||e.ch==22||e.ch==81) && e.type==0x301) { envi.backward = false; }
+	if ((e.ch=='a'||e.ch==4||e.ch==80) && e.type==0x300) { envi.left = true; }
+	if ((e.ch=='a'||e.ch==4||e.ch==80) && e.type==0x301) { envi.left = false; }
+	if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x300) { envi.right = true; }
+	if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x301) { envi.right = false; }
+      }
+    if (envi.forward)
+      {
+	envi.pos_x += envi.speed*cos(-envi.rotangle+3.14159/2.0);
+	envi.pos_z += envi.speed*sin(-envi.rotangle+3.14159/2.0);
+      }
+    if (envi.backward)
+      {
+	envi.pos_x -= envi.speed*cos(-envi.rotangle+3.14159/2.0);
+	envi.pos_z -= envi.speed*sin(-envi.rotangle+3.14159/2.0);
+      }
+    if (envi.left)
+      {
+	envi.rotangle-=envi.rotspeed;
+      }
+    if (envi.right)
+      {
+	envi.rotangle+=envi.rotspeed;
+      }
+
 }
-SFO shader_character(EveryApi &ev)
+SFO shader_character(EveryApi &ev, SFO outside)
 {
   PT center = ev.point_api.point(0.0,-30.0,0.0);
   PT hand_center = ev.point_api.point(40.0, 10.0, 0.0);
@@ -125,7 +176,30 @@ SFO shader_character(EveryApi &ev)
   SFO all_8c = ev.sh_api.color(all_8b, 0.0, 1.0, 1.0, 1.0);
   SFO all_9 = ev.sh_api.or_elem(all_8c, all_4b);
   SFO all_10 = ev.sh_api.or_elem(all_9, all_6c);
-  return all_10;
+
+  PT pt_center = ev.point_api.point(0.0,10.0,0.0);
+  SFO bounding_sphere = ev.sh_api.sphere(pt_center, 100.0);
+  SFO char_2a = ev.sh_api.bounding_primitive(bounding_sphere, all_10, outside);
+
+  
+  SFO all_11 = ev.sh_api.rot_y(all_10, 3.14159/2.0);
+  SFO all_12 = ev.sh_api.bind_arg(all_11, "angle", "rotangle");
+  SFO all_13 = ev.sh_api.trans(all_12, 0.0,0.0,0.0);
+  SFO all_14 = ev.sh_api.bind_arg(all_13, "delta", "player_pos");
+  return all_14;
+}
+
+SFO background(EveryApi &ev)
+{
+  SFO tex_cube_1 =  
+    ev.sh_api.texture_box(-200.0+0.0,-200.0+800.0,
+			  90.0, 105.0,
+			  -100.0,100.0);
+  SFO tex_cube_11 = ev.sh_api.color(tex_cube_1, 0.0,1.0,1.0,1.0);
+  SFO tex_cube_1a = ev.sh_api.rot_x(tex_cube_11, 90.0*3.14159*2.0/360.0);
+  SFO tex_cube_1b = ev.sh_api.trans(tex_cube_1a, -100.0, 0.0, -100.0);
+
+  return tex_cube_1a;
 }
 
 int main() {
@@ -153,30 +227,25 @@ int main() {
 				ev.vector_api.vector(0.0,0.0,4.0));
   SFO plane_11 = ev.sh_api.grayscale(plane_1);
   SFO plane_2 = ev.sh_api.or_elem(plane_11, skybox_4);
-  SFO char_1 = shader_character(ev);
-  //SFO char_11 = ev.sh_api.rot_y(char_1, 0.0);
-  //SFO char_12 = ev.sh_api.bind_arg(char_11, "angle", "time+time/50.0*pt.y/50.0");
+
   SFO plane_2a = ev.sh_api.stop_generation(plane_2);
+  SFO char_1 = shader_character(ev, plane_2a);
   SFO char_2 = ev.sh_api.or_elem(plane_2, char_1);
-  PT pt_center = ev.point_api.point(0.0,10.0,0.0);
-  SFO bounding_sphere = ev.sh_api.sphere(pt_center, 100.0);
-  SFO char_2a = ev.sh_api.bounding_primitive(bounding_sphere, char_2, plane_2a);
+
+  SFO char_2w = background(ev);
+  SFO char_12 = ev.sh_api.or_elem(char_2, char_2w);
 
 
-
-  SFO rot_y = ev.sh_api.rot_y(char_2a, 0.0);
+  SFO rot_y = ev.sh_api.rot_y(char_12, 0.0);
   SFO rot_y_2 = ev.sh_api.bind_arg(rot_y, "angle", "time/1.25");
 
 
 
 
   SFO rot_y_22 = ev.sh_api.trans(rot_y_2, 0.0, 0.0, 0.0);
-  //SFO trans_test = ev.sh_api.trans(rot_y_2);
-  //SFO trans_test_22 = ev.sh_api.bind_arg(trans_test, "delta", "vec3(5.0*sin(time+pt.x/10.0),3.0*sin(time*3.0+pt.y/2.0),2.0*cos(time*3.0+pt.z/5.0))");
   SFO rot_y_3 = ev.sh_api.stop_generation(rot_y_22);
 
   SFO color = ev.sh_api.color_from_normal(rot_y_3 );
-  //SFO color_2 = ev.sh_api.grayscale(color);
   SFO mix_color = ev.sh_api.mix_color(rot_y_22, color, 1.0-0.4);
 
 
@@ -185,15 +254,6 @@ int main() {
   SFO soft_shadow = ev.sh_api.soft_shadow(mix_color, light_dir, 0.0, 1.0, 2.0, 8.0);
   SFO ao = ev.sh_api.ambient_occulsion(soft_shadow, 6.2, 50.0);
 
-
-  //SFO char_2ab = ev.sh_api.trans(ao, 0.0,200.0, 0.0);
-  //SFO char_2ac = ev.sh_api.scale(char_2ab, 1.0, 2.0, 1.0);
-  //PT pt1 = ev.point_api.point(-200.0, -100.0, -200.0);
-  //PT pt2 = ev.point_api.point(200.0,200.0,200.0);
-  //SFO spherical = ev.sh_api.spherical(char_2ac, pt1, pt2, 100.0, 100.0);
-
-  //SFO spheri_trans = ev.sh_api.trans(spherical, 0.0, 0.0,0.0);
-  //SFO spheri_scale = ev.sh_api.scale(spheri_trans, 0.3, 1.0, 0.3);
 
   SFO sphere_render = ev.sh_api.render(ao);
 
@@ -213,18 +273,24 @@ int main() {
   P p2 = ev.polygon_api.normal_function(p, std::bind(func,_1,_2,std::ref(ev)));
   P p3 = ev.polygon_api.texcoord_function(p2, std::bind(func2,_1,_2,std::ref(ev)));
  
+
+  // Texture loading
+  //Ft font = ev.font_api.newfont("FreeSans.ttf", 240,240);
+  //BM bitmap = ev.font_api.font_string(font, "Powerset Functor", 20);
+  BM bitmap = ev.bitmap_api.loadbitmap("house.png");
+  BB bb = ev.bool_bitmap_api.from_bitmaps_color(bitmap, 255,255,255);
+  BB bb2 = ev.bool_bitmap_api.not_bitmap(bb);
+  FB dist = ev.float_bitmap_api.distance_field(bb2);
+  BM dist_bm = ev.float_bitmap_api.to_grayscale_color(dist, 255,255,255,255, 0,0,0,0);
+
+  TX tex = ev.texture_api.tex_bitmap(dist_bm);
+  TXID tex_id = ev.texture_api.prepare(tex);
+
   PolygonObj poly(ev, p2, sh);
+  poly.bind_texture(0,tex_id);
   poly.prepare();
   float f = 0.0;
 
-  //FBO fbo = ev.fbo_api.create_fbo(800,600);
-  // ev.fbo_api.config_fbo(fbo);
-
-  //TXID txid = ev.fbo_api.tex_id(fbo);
-
-  //PolygonObj poly2(ev, p3, sh2);
-  //poly2.bind_texture(0, txid);
-  //poly2.prepare();
 
 
 
