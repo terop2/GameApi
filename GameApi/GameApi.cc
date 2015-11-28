@@ -484,6 +484,7 @@ EXPORT GameApi::BM GameApi::MainLoopApi::screenshot()
   Bitmap<Color> *bm = new BitmapFromBuffer(ref);
   return add_color_bitmap2(e, bm);
 }
+
 extern SDL_Window *sdl_window;
 
 EXPORT void GameApi::MainLoopApi::swapbuffers()
@@ -1182,7 +1183,24 @@ GameApi::PT add_point(GameApi::Env &e, float x, float y);
 GameApi::PT add_point(GameApi::Env &e, float x, float y, float z);
 
 
-
+EXPORT bool GameApi::MainLoopApi::ch_doubletap_detect(Event &e, int expire_timer_count, int ch, DoubleTapState &state)
+{
+  bool doubletap = false;
+  if (e.type==0x300 && e.ch == ch)
+    { // down press
+      if (state.in_between==true && frame - state.start_frame < expire_timer_count)
+	{
+	  doubletap = true;
+	}
+      state.start_frame = frame;
+      state.in_between = false;
+    }
+  if (e.type==0x301 && e.ch == ch)
+    {
+      state.in_between = true;
+    }
+  return doubletap;
+}
 EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 {
   SDL_Event event;
@@ -10875,6 +10893,42 @@ private:
   PointsApiPoints *pts1;
   PointsApiPoints *pts2;
 };
+class SurfacePoints : public PointsApiPoints
+{
+public:
+  SurfacePoints(std::vector<Point> *points, std::vector<unsigned int> *color) :points(points), color(color) { }
+  virtual int NumPoints() const { return points->size(); }
+  virtual Point Pos(int i) const { return points->operator[](i); }
+  virtual unsigned int Color(int i) const
+  {
+    return color->operator[](i);
+  }
+  ~SurfacePoints() { delete points; delete color; }
+private:
+  std::vector<Point> *points;
+  std::vector<unsigned int> *color;
+};
+EXPORT GameApi::PTS GameApi::PointsApi::surface(std::function<PT (float,float)> surf,
+						std::function<unsigned int (PT,float,float)> color,
+						float start_u, float end_u,
+						float start_v, float end_v,
+						float step_u, float step_v)
+{
+  std::vector<Point> *points = new std::vector<Point>;
+  std::vector<unsigned int> *color2 = new std::vector<unsigned int>;
+  for(float u = start_u;u<end_u;u+=step_u)
+    {
+      for(float v = start_v; v<end_v; v+=step_v)
+	{
+	  PT pos = surf(u,v);
+	  unsigned int col = color(pos, u,v);
+	  Point *pos_1 = find_point(e, pos);
+	  points->push_back(*pos_1);
+	  color2->push_back(col);
+	}
+    }
+  return add_points_api_points(e, new SurfacePoints(points, color2));
+}
 EXPORT GameApi::PTS GameApi::PointsApi::heightmap(BM colour, FB height, PT pos, V u_x, V u_y, V u_z, int sx, int sy)
 {
   BitmapHandle *h = find_bitmap(e, colour);
@@ -11244,6 +11298,33 @@ EXPORT GameApi::BM GameApi::ColorVolumeApi::texture_bm(GameApi::P obj, GameApi::
   ColorVolumeObject *colors2 = find_color_volume(e, colors);
   Bitmap<Color> *bm = new TextureBitmapFromColorVolume(coll, colors2, face, sx, sy);
   return add_color_bitmap2(e, bm);
+}
+class ArrayBM : public Bitmap<Color>
+{
+public:
+  ArrayBM(ColorVolumeObject *col, int sx, int sy, float ssx, float ssy, float z) : col(col) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    float xx = float(x)/sx*ssx;
+    float yy = float(y)/sy*ssy;
+    Point p(xx,yy,z);
+    unsigned int c = col->ColorValue(p);
+    return Color(c);
+  }
+
+private:
+  ColorVolumeObject *col;
+  int sx,sy;
+  float ssx,ssy;
+  float z;
+};
+EXPORT GameApi::BM GameApi::ColorVolumeApi::array_bm(COV colours, int sx, int sy, float ssx, float ssy, float z)
+{
+  ColorVolumeObject *col = find_color_volume(e, colours);
+  Bitmap<Color> *bm = new ArrayBM(col, sx,sy,ssx,ssy,z);
+  return add_color_bitmap2(e,bm);
 }
 
 EXPORT GameApi::COV GameApi::ColorVolumeApi::from_volume(O obj, unsigned int col_true, unsigned int col_false)
@@ -13491,6 +13572,102 @@ private:
   std::string uid;
 };
 
+class SphericalModule : public ShaderModule
+{
+public:
+  SphericalModule(ShaderModule *mod) :mod(mod) { uid=unique_id(); }
+  virtual int id() const { return 1; }
+  virtual std::string Function() const
+  {
+    return mod->Function()+ 
+      "float spherical" + uid + "(vec3 pt, vec3 tl, vec3 br, float rr, float rp)\n"
+      "{ \n"
+      "    float r = pt.y;\n"
+      "    float a = pt.x;\n"
+      "    float d = pt.z;\n"
+      "    r-=tl.y;\n"
+      "    a-=tl.x;\n"
+      "    d-=tl.z;\n"
+      "    vec3 s = br-tl;\n"
+      "    r/=s.y;\n"
+      "    a/=s.x;\n"
+      "    d/=s.z;\n"
+      "    a*=3.14159;\n"
+      "    d*=3.14159*2.0;\n"
+      "    r*=rr;\n"
+      "    r+=rp;\n"
+      "    float x = r*sin(a)*cos(d);\n"
+      "    float y = r*sin(a)*sin(d);\n"
+      "    float z = r*cos(a);\n"
+      "    vec3 pos = vec3(x,y,z);\n"
+      "    float v = " + funccall_to_string_with_replace(mod, "pt", "pos") + ";\n"
+      "    return v;\n"
+      "}\n"
+      "vec4 spherical_color" + uid + "(vec3 pt, vec3 tl, vec3 br, float rr, float rp)\n"
+      "{\n"
+      "    float r = pt.y;\n"
+      "    float a = pt.x;\n"
+      "    float d = pt.z;\n"
+      "    r-=tl.y;\n"
+      "    a-=tl.x;\n"
+      "    d-=tl.z;\n"
+      "    vec3 s = br-tl;\n"
+      "    r/=s.y;\n"
+      "    a/=s.x;\n"
+      "    d/=s.z;\n"
+      "    a*=3.14159;\n"
+      "    d*=3.14159*2.0;\n"
+      "    r*=rr;\n"
+      "    r+=rp;\n"
+      "    float x = r*sin(a)*cos(d);\n"
+      "    float y = r*sin(a)*sin(d);\n"
+      "    float z = r*cos(a);\n"
+      "    vec3 pos = vec3(x,y,z);\n"
+      "    vec4 v = " + color_funccall_to_string_with_replace(mod, "pt", "pos") + ";\n"
+      "    return v;\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return "spherical"+uid; }
+  virtual std::string ColorFunctionName() const { return "spherical_color" +uid; }
+  virtual int NumArgs() const { return 5; }
+  virtual std::string ArgName(int i) const 
+  {
+    switch(i) {
+    case 0: return "pt";
+    case 1: return "tl";
+    case 2: return "br";
+    case 3: return "rr";
+    case 4: return "rp";
+    };
+    return "";
+  }
+  virtual std::string ArgValue(int i) const
+  {
+    switch(i) {
+    case 0: return "pt";
+    case 1: return "vec3(0.0,0.0,0.0)";
+    case 2: return "vec3(100.0,100.0,100.0)";
+    case 3: return "100.0";
+    case 4: return "100.0";
+    };
+    return "";
+  }
+private:
+  ShaderModule *mod;
+  std::string uid;
+};
+EXPORT GameApi::SFO GameApi::ShaderModuleApi::spherical(SFO obj, PT tl, PT br, float rr, float rp)
+{
+  Point *tl1 = find_point(e, tl);
+  Point *br1 = find_point(e, br);
+  ShaderModule *mod = find_shader_module(e, obj);
+  SFO s0 = add_shader_module(e, new SphericalModule(mod));
+  SFO s1 = bind_arg(s0, "tl", vec3_to_string(e, tl1->x, tl1->y, tl1->z));
+  SFO s2 = bind_arg(s1, "br", vec3_to_string(e, br1->x, br1->y, br1->z));
+  SFO s3 = bind_arg(s2, "rr", ToNum(rr));
+  SFO s4 = bind_arg(s3, "rp", ToNum(rp));
+  return s4;
+}
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::cube()
 {
   return add_shader_module(e, new CubeModule);
@@ -14281,6 +14458,61 @@ EXPORT GameApi::SFO GameApi::ShaderModuleApi::trans(SFO obj_m, float dx, float d
   SFO sfo_1 = bind_arg(sfo, "delta", vec3_to_string(e, dx,dy,dz));
   return sfo_1;
 }
+
+class ScaleModule : public ShaderModule
+{
+public:
+  ScaleModule(ShaderModule *obj) : obj(obj) { uid=unique_id(); }
+  virtual int id() const { return 6; }
+  virtual std::string Function() const
+  {
+    return obj->Function() +
+      "float scale" + uid + "(vec3 pt, vec3 delta)\n"
+      "{\n"
+      "   pt*=delta;\n"
+      "   return " + funccall_to_string(obj) + ";\n"
+      "}\n"
+      "vec4 scale_color" + uid + "(vec3 pt, vec3 delta)\n"
+      "{\n"
+      "    pt*=delta;\n"
+      "    return " + color_funccall_to_string(obj) + ";\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return "scale" + uid; }
+  virtual std::string ColorFunctionName() const { return "scale_color" + uid; }
+  virtual int NumArgs() const { return 2; }
+  virtual bool FreeVariable(int i) const { return true; }
+  virtual std::string ArgName(int i) const
+  {
+    if (i==0) return "pt";
+    return "delta";
+  }
+  virtual std::string ArgValue(int i) const
+  {
+    if (i==0) return "pt";
+    return "vec3(0.0,0.0,0.0)";
+  }
+  virtual std::string ArgType(int i) const
+  {
+    return "vec3";
+  }
+
+private:
+  ShaderModule *obj;
+  std::string uid;
+};
+EXPORT GameApi::SFO GameApi::ShaderModuleApi::scale(SFO obj_m)
+{
+  ShaderModule *obj = find_shader_module(e, obj_m);
+  return add_shader_module(e, new ScaleModule(obj));
+}
+EXPORT GameApi::SFO GameApi::ShaderModuleApi::scale(SFO obj_m, float dx, float dy, float dz)
+{
+  SFO sfo = scale(obj_m);
+  SFO sfo_1 = bind_arg(sfo, "delta", vec3_to_string(e, dx,dy,dz));
+  return sfo_1;
+}
+
 class ColorChooseModule : public ShaderModule
 {
 public:
@@ -20748,11 +20980,11 @@ private:
 };
 GameApi::EX GameApi::ExprApi::float_constant(float val)
 {
-  return add_expr(e, new ConstantExpr(0, val));
+  return add_expr(e, new ConstantExpr(int(val), val));
 }
 GameApi::EX GameApi::ExprApi::int_constant(int val)
 {
-  return add_expr(e, new ConstantExpr(val, 0.0f));
+  return add_expr(e, new ConstantExpr(val, float(val)));
 }
 
 float GameApi::ExprApi::expr_eval_float(EX expr, std::vector<FloatExprEnv> env)
@@ -20782,4 +21014,215 @@ int GameApi::ExprApi::expr_eval_int(EX expr, std::vector<IntExprEnv> env)
     }
   ExprNode *n = find_expr(e, expr);
   return n->int_execute(vec);
+}
+GameApi::EX expr_parse(GameApi::ExprApi &api, std::string expr, bool &success);
+
+int find_char(std::string expr, char c)
+{
+  int s = expr.size();
+  for(int i=0;i<s;i++)
+    {
+      if (expr[i]==c) return i;
+    }
+  return -1;
+}
+
+GameApi::EX mul_parse(GameApi::ExprApi &api, std::string expr, bool &success)
+{
+  int val = find_char(expr, '*');
+  if (val==-1) { success=false; GameApi::EX e; e.id = -1; return e; }
+  std::string expr1 = expr.substr(0,val);
+  std::string expr2 = expr.substr(val+1, expr.size()-val-1);
+  GameApi::EX e1 = expr_parse(api, expr1, success);
+  if (!success) { success=false; GameApi::EX e; e.id = -1; return e; }
+  GameApi::EX e2 = expr_parse(api, expr2, success);
+  if (!success) { success=false; GameApi::EX e; e.id = -1; return e; }
+  success = true;
+  return api.mul(e1,e2);
+}
+GameApi::EX div_parse(GameApi::ExprApi &api, std::string expr, bool &success)
+{
+  int val = find_char(expr, '/');
+  if (val==-1) { success=false; GameApi::EX e; e.id = -1; return e; }
+  std::string expr1 = expr.substr(0,val);
+  std::string expr2 = expr.substr(val+1, expr.size()-val-1);
+  GameApi::EX e1 = expr_parse(api, expr1, success);
+  if (!success) { success=false; GameApi::EX e; e.id = -1; return e; }
+  GameApi::EX e2 = expr_parse(api, expr2, success);
+  if (!success) { success=false; GameApi::EX e; e.id = -1; return e; }
+  success = true;
+  return api.div(e1,e2);
+}
+GameApi::EX plus_parse(GameApi::ExprApi &api, std::string expr, bool &success)
+{
+  int val = find_char(expr, '+');
+  if (val==-1) { success=false; GameApi::EX e; e.id = -1; return e; }
+  std::string expr1 = expr.substr(0,val);
+  std::string expr2 = expr.substr(val+1, expr.size()-val-1);
+  GameApi::EX e1 = expr_parse(api, expr1, success);
+  if (!success) { success=false; GameApi::EX e; e.id = -1; return e; }
+  GameApi::EX e2 = expr_parse(api, expr2, success);
+  if (!success) { success=false; GameApi::EX e; e.id = -1; return e; }
+  success = true;
+  return api.plus(e1,e2);
+}
+GameApi::EX minus_parse(GameApi::ExprApi &api, std::string expr, bool &success)
+{
+  int val = find_char(expr, '-');
+  if (val==-1) { success=false; GameApi::EX e; e.id = -1; return e; }
+  std::string expr1 = expr.substr(0,val);
+  std::string expr2 = expr.substr(val+1, expr.size()-val-1);
+  GameApi::EX e1 = expr_parse(api, expr1, success);
+  if (!success) { success=false; GameApi::EX e; e.id = -1; return e; }
+  GameApi::EX e2 = expr_parse(api, expr2, success);
+  if (!success) { success=false; GameApi::EX e; e.id = -1; return e; }
+  success = true;
+  return api.minus(e1,e2);
+}
+GameApi::EX sin_parse(GameApi::ExprApi &api, std::string expr, bool &success)
+{
+  if (expr.size()>4 && expr[0]=='s' && expr[1]=='i' && expr[2]=='n' && expr[3]=='(')
+    {
+      std::string rem = expr.substr(4,expr.size()-4);
+      int pos = find_char(rem,')');
+      if (pos==-1) { success=false; GameApi::EX e; e.id = -1; return e; }
+      std::string expr1 = rem.substr(0, pos);
+      int ss = expr.size()-1;
+      if (pos==ss)
+	{
+	  GameApi::EX e = expr_parse(api, expr1, success);
+	  if (!success) { success=false; GameApi::EX e; e.id = -1; return e; }
+	  success = true;
+	  return api.sin(e);
+	}
+      else
+	{
+	  success=false; GameApi::EX e; e.id = -1; return e;
+	}
+    }
+  success=false; GameApi::EX e; e.id = -1; return e;
+}
+
+GameApi::EX cos_parse(GameApi::ExprApi &api, std::string expr, bool &success)
+{
+  if (expr.size()>4 && expr[0]=='c' && expr[1]=='o' && expr[2]=='s' && expr[3]=='(')
+    {
+      std::string rem = expr.substr(4,expr.size()-4);
+      int pos = find_char(rem,')');
+      if (pos==-1) { success=false; GameApi::EX e; e.id = -1; return e; }
+      std::string expr1 = rem.substr(0, pos);
+      int ss = expr.size()-1;
+      if (pos==ss)
+	{
+	  GameApi::EX e = expr_parse(api, expr1, success);
+	  if (!success) { success=false; GameApi::EX e; e.id = -1; return e; }
+	  success = true;
+	  return api.cos(e);
+	}
+      else
+	{
+	  success=false; GameApi::EX e; e.id = -1; return e;
+	}
+    }
+  success=false; GameApi::EX e; e.id = -1; return e;
+}
+
+GameApi::EX constant_parse_float(GameApi::ExprApi &api, std::string expr, bool &success)
+{
+  int val = find_char(expr, '.');
+  if (val==-1) {
+    success=false; GameApi::EX e; e.id = -1; return e;
+  }
+  int s = expr.size();
+  for(int i=0;i<s;i++)
+    {
+      char c = expr[i];
+      if (c>='0' && c<='9') continue;
+      if (c=='.') continue;
+      success=false; GameApi::EX e; e.id = -1; return e;      
+    }
+  success = true;
+  std::stringstream ss(expr);
+  float val2;
+  ss >> val2;
+  GameApi::EX e = api.float_constant(val2);
+  return e;
+}
+
+
+GameApi::EX constant_parse_int(GameApi::ExprApi &api, std::string expr, bool &success)
+{
+  int s = expr.size();
+  for(int i=0;i<s;i++)
+    {
+      char c = expr[i];
+      if (c>='0' && c<='9') continue;
+      success=false; GameApi::EX e; e.id = -1; return e;      
+    }
+  success = true;
+  std::stringstream ss(expr);
+  int val2;
+  ss >> val2;
+  GameApi::EX e = api.int_constant(val2);
+  return e;
+}
+
+
+GameApi::EX expr_parse_float(GameApi::ExprApi &api, std::string expr, bool &success)
+{
+  GameApi::EX expr3 = plus_parse(api, expr, success);
+  if (success) return expr3;
+  GameApi::EX expr32 = minus_parse(api, expr, success);
+  if (success) return expr32;
+  GameApi::EX expr1 = mul_parse(api, expr, success);
+  if (success) return expr1;
+  GameApi::EX expr2 = div_parse(api, expr, success);
+  if (success) return expr2;
+  GameApi::EX expr4 = sin_parse(api, expr, success);
+  if (success) return expr4;
+  GameApi::EX expr5 = cos_parse(api, expr, success);
+  if (success) return expr5;
+  GameApi::EX expr6 = constant_parse_float(api, expr, success);
+  if (success) return expr6;
+  std::cout << "EXPR PARSE ERROR (float)!" << expr << std::endl;
+  return api.float_constant(0.0);
+}
+
+GameApi::EX expr_parse_int(GameApi::ExprApi &api, std::string expr, bool &success)
+{
+  GameApi::EX expr3 = plus_parse(api, expr, success);
+  if (success) return expr3;
+  GameApi::EX expr33 = minus_parse(api, expr, success);
+  if (success) return expr33;
+  GameApi::EX expr1 = mul_parse(api, expr, success);
+  if (success) return expr1;
+  GameApi::EX expr2 = div_parse(api, expr, success);
+  if (success) return expr2;
+  GameApi::EX expr4 = sin_parse(api, expr, success);
+  if (success) return expr4;
+  GameApi::EX expr5 = cos_parse(api, expr, success);
+  if (success) return expr5;
+  GameApi::EX expr6 = constant_parse_int(api, expr, success);
+  if (success) return expr6;
+  std::cout << "EXPR PARSE ERROR(int)!" << expr << std::endl;
+  return api.int_constant(0);
+}
+
+GameApi::EX expr_parse(GameApi::ExprApi &api, std::string expr, bool &success)
+{
+  GameApi::EX expr3 = expr_parse_float(api, expr, success);
+  if (success) return expr3;
+  GameApi::EX expr4 = expr_parse_int(api,expr, success);
+  if (success) return expr4;
+  success = false;
+  return api.float_constant(0.0);
+}
+
+GameApi::EX GameApi::ExprApi::expr_float(std::string expr, bool &success)
+{
+  return expr_parse(*this, expr, success);
+}
+GameApi::EX GameApi::ExprApi::expr_int(std::string expr, bool &success)
+{
+  return expr_parse(*this, expr, success);
 }

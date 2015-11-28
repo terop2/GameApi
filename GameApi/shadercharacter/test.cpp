@@ -154,25 +154,47 @@ int main() {
   SFO plane_11 = ev.sh_api.grayscale(plane_1);
   SFO plane_2 = ev.sh_api.or_elem(plane_11, skybox_4);
   SFO char_1 = shader_character(ev);
+  //SFO char_11 = ev.sh_api.rot_y(char_1, 0.0);
+  //SFO char_12 = ev.sh_api.bind_arg(char_11, "angle", "time+time/50.0*pt.y/50.0");
   SFO plane_2a = ev.sh_api.stop_generation(plane_2);
   SFO char_2 = ev.sh_api.or_elem(plane_2, char_1);
   PT pt_center = ev.point_api.point(0.0,10.0,0.0);
   SFO bounding_sphere = ev.sh_api.sphere(pt_center, 100.0);
   SFO char_2a = ev.sh_api.bounding_primitive(bounding_sphere, char_2, plane_2a);
 
+
+
   SFO rot_y = ev.sh_api.rot_y(char_2a, 0.0);
   SFO rot_y_2 = ev.sh_api.bind_arg(rot_y, "angle", "time/1.25");
+
+
+
+
+  SFO rot_y_22 = ev.sh_api.trans(rot_y_2, 0.0, 0.0, 0.0);
   //SFO trans_test = ev.sh_api.trans(rot_y_2);
   //SFO trans_test_22 = ev.sh_api.bind_arg(trans_test, "delta", "vec3(5.0*sin(time+pt.x/10.0),3.0*sin(time*3.0+pt.y/2.0),2.0*cos(time*3.0+pt.z/5.0))");
-  SFO rot_y_3 = ev.sh_api.stop_generation(rot_y_2);
+  SFO rot_y_3 = ev.sh_api.stop_generation(rot_y_22);
 
   SFO color = ev.sh_api.color_from_normal(rot_y_3 );
   //SFO color_2 = ev.sh_api.grayscale(color);
-  SFO mix_color = ev.sh_api.mix_color(rot_y_2, color, 1.0-0.4);
+  SFO mix_color = ev.sh_api.mix_color(rot_y_22, color, 1.0-0.4);
+
+
 
   V light_dir = ev.vector_api.vector(-20.0, -40.0, -20.0);
   SFO soft_shadow = ev.sh_api.soft_shadow(mix_color, light_dir, 0.0, 1.0, 2.0, 8.0);
   SFO ao = ev.sh_api.ambient_occulsion(soft_shadow, 6.2, 50.0);
+
+
+  //SFO char_2ab = ev.sh_api.trans(ao, 0.0,200.0, 0.0);
+  //SFO char_2ac = ev.sh_api.scale(char_2ab, 1.0, 2.0, 1.0);
+  //PT pt1 = ev.point_api.point(-200.0, -100.0, -200.0);
+  //PT pt2 = ev.point_api.point(200.0,200.0,200.0);
+  //SFO spherical = ev.sh_api.spherical(char_2ac, pt1, pt2, 100.0, 100.0);
+
+  //SFO spheri_trans = ev.sh_api.trans(spherical, 0.0, 0.0,0.0);
+  //SFO spheri_scale = ev.sh_api.scale(spheri_trans, 0.3, 1.0, 0.3);
+
   SFO sphere_render = ev.sh_api.render(ao);
 
   SH sh = ev.shader_api.get_normal_shader("screen", "screen", "", "", "", false, sphere_render);

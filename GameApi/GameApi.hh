@@ -202,6 +202,8 @@ public:
     bool joy1_button3;
     bool last;
   };
+  struct DoubleTapState { DoubleTapState() : start_frame(0), in_between(false) { } int start_frame; bool in_between; };
+  IMPORT bool ch_doubletap_detect(Event &e, int exprire_timer_count, int ch, DoubleTapState &state);
   IMPORT Event get_event();
   void waittof();
   SP screenspace();
@@ -726,6 +728,8 @@ public:
   IMPORT SFO blend(SFO obj1, SFO obj2);
   IMPORT SFO trans(SFO obj);
   IMPORT SFO trans(SFO obj, float dx, float dy, float dz);
+  IMPORT SFO scale(SFO obj);
+  IMPORT SFO scale(SFO obj, float sx, float sy, float sz);
   IMPORT SFO from_points(PTS p, SFO obj);
   IMPORT SFO from_lines(LI li, SFO obj);
   IMPORT SFO bind_arg(SFO obj, std::string name, std::string value);
@@ -738,6 +742,7 @@ public:
   IMPORT SFO ambient_occulsion(SFO obj, float d, float i);
   IMPORT SFO soft_shadow(SFO scene, V light_dir, float mint, float maxt, float k, float strong);
   IMPORT SFO bounding_primitive(SFO prim, SFO inside, SFO outside);
+  IMPORT SFO spherical(SFO obj, PT tl, PT br, float rr, float rp);
   IMPORT SFO render(SFO obj);
 private:
   Env &e;
@@ -757,8 +762,8 @@ public:
   EX float_constant(float val);
   EX int_constant(int val);
 
-  EX expr_float(std::string expr);
-  EX expr_int(std::string expr);
+  EX expr_float(std::string expr, bool &success);
+  EX expr_int(std::string expr, bool &success);
 
   struct FloatExprEnv { std::string name; float value; };
   struct IntExprEnv { std::string name; int value; };
@@ -967,18 +972,19 @@ private:
 class ColorVolumeApi
 {
 public:
-	IMPORT ColorVolumeApi(Env &e) : e(e) { }
-	IMPORT COV function(std::function<unsigned int(float x, float y, float z)> f);
-	IMPORT COV from_float_volume(FO obj, unsigned int col0, unsigned int col1);
-	IMPORT COV from_volume(O obj, unsigned int col_true, unsigned int col_false);
+  IMPORT ColorVolumeApi(Env &e) : e(e) { }
+  IMPORT COV function(std::function<unsigned int(float x, float y, float z)> f);
+  IMPORT COV from_float_volume(FO obj, unsigned int col0, unsigned int col1);
+  IMPORT COV from_volume(O obj, unsigned int col_true, unsigned int col_false);
   IMPORT COV from_continuous_bitmap(CBM bm);
-
-	IMPORT COV mix(COV p1, COV p2, float value); // value=[0..1]
-	IMPORT COV or_cov(COV p1, COV p2);
-	IMPORT COV phong(VO normal, PT light_pos, CO i_s, CO i_d, CO i_a, float k_s, float k_d, float k_a, float alfa);
-	IMPORT COV directcolor(VO normal);
-	IMPORT P texture(P obj, COV colors);
-	IMPORT BM texture_bm(P obj, COV colors, int face, int sx, int sy);
+  
+  IMPORT COV mix(COV p1, COV p2, float value); // value=[0..1]
+  IMPORT COV or_cov(COV p1, COV p2);
+  IMPORT COV phong(VO normal, PT light_pos, CO i_s, CO i_d, CO i_a, float k_s, float k_d, float k_a, float alfa);
+  IMPORT COV directcolor(VO normal);
+  IMPORT P texture(P obj, COV colors);
+  IMPORT BM texture_bm(P obj, COV colors, int face, int sx, int sy);
+  IMPORT BM array_bm(COV colours, int sx, int sy, float ssx, float ssy, float z);
   // TODO
 private:
   ColorVolumeApi(const ColorVolumeApi&);
@@ -1647,6 +1653,11 @@ public:
 			float end_x, float end_y, float end_z);
   IMPORT PTS or_points(PTS p1, PTS p2);
   IMPORT PTS heightmap(BM colour, FB floatbitmap, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
+  IMPORT PTS surface(std::function<PT (float,float)> surf,
+		     std::function<unsigned int (PT,float,float)> color,
+		     float start_u, float end_u,
+		     float start_v, float end_v,
+		     float step_u, float step_v);
   IMPORT PTS from_volume(O o, PT pos, V u_x, V u_y, V u_z, int sx, int sy, int sz);
   IMPORT PTS shadow_points(PTS obj, PT pos, V u_x, V u_y, V light_vec);
 
