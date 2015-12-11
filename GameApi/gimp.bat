@@ -1,0 +1,1 @@
+"c:\program files\gimp 2\bin\gimp-2.8.exe" %1

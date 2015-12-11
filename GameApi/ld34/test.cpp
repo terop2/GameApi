@@ -30,11 +30,59 @@ PT func2(int face, int point, EveryApi &ev)
   return ev.point_api.point(0.0,0.0,0.0);
 }
 
+BB choose_flash(int id, EveryApi &ev)
+{
+  switch(id)
+    {
+    case 0:
+    case 4:
+      {
+      BB flash = ev.bool_bitmap_api.empty(800,600);
+      for(int i=0;i<10;i++)
+	{
+	  flash = ev.bool_bitmap_api.rectangle(flash, i*80, 0, 40, 600);
+	}
+      return flash;
+      }
+    case 1:
+    case 5:
+      {
+      BB flash = ev.bool_bitmap_api.empty(800,600);
+      for(int i=0;i<10;i++)
+	{
+	  flash = ev.bool_bitmap_api.rectangle(flash, 0, i*60, 800, 30);
+	}
+      return flash;
+      }
+    case 2:
+    case 6:
+      {
+      BM chess = ev.bitmap_api.chessboard(10,10,80,60,0xffffffff, 0);
+      BB chess_1 = ev.bool_bitmap_api.from_bitmaps_color(chess,255,255,255);
+      return chess_1;
+      }
+    case 3:
+    case 7:
+      {
+	BB empty = ev.bool_bitmap_api.empty(800,600);
+	BB flash = ev.bool_bitmap_api.empty(800,600);
+      for(int i=10;i>1;i--)
+	{
+	  flash = ev.bool_bitmap_api.circle(flash, 400,300, i*40);
+	  BB flash2 = ev.bool_bitmap_api.circle(empty, 400,300, i*40-20);
+	  flash = ev.bool_bitmap_api.andnot_bitmap(flash, flash2);
+	}
+      return flash;
+      }
+    };
+}
+
 struct Envi
 {
   EveryApi *ev;
   float f;
   SH sh;
+  SH sh2;
   PolygonObj *poly;
   FBO fbo;
   PolygonObj *poly2;
@@ -42,14 +90,50 @@ struct Envi
   bool backward = false;
   bool left = false;
   bool right = false;
+  bool click = false;
   float pos_x=0.0;
   float pos_z=0.0;
   float rotangle=0.0;
-  float speed = 15.0;
+  float speed = 185.0;
+  float speed2 = 85.0;
   float rotspeed = 15.0*3.14159*2.0/360.0;
   float time=0.0;
   float old_time=0.0;
+  float target_x=0.0;
+  float target_y=0.0;
+  float target_z=0.0;
+  float dir_x = 2.0;
+  float dir_y = 0.0;
+  float dir_z = 1.0;
+  VA score;
+  int score_val;
+  int score_width;
+  std::vector<VA> digits;
+  std::vector<int> digit_width;
+  std::vector<VA> flash_0;
+  std::vector<VA> flash_1;
+  int flash_count=0;
+  bool flash_0_bool;
+  bool flash_1_bool;
+  int flash_0_time;
+  int flash_1_time;
 };
+
+void render_score(int score, int x, Envi &e)
+{
+  int xx = x;
+  for(int i=0;i<6;i++)
+    {
+      int sc = score/(pow(10,5-i));
+      int sc2 = sc % 10;
+      e.ev->shader_api.set_var(e.sh, "in_MV", e.ev->matrix_api.trans(xx,0.0,0.0));
+      e.ev->sprite_api.render_sprite_vertex_array(e.digits[sc2]);
+      e.ev->shader_api.set_var(e.sh, "in_MV", e.ev->matrix_api.trans(0.0,0.0,0.0));
+      xx+=e.digit_width[sc2];
+    }
+
+}
+
 void iter(void *data)
 {
   Envi &envi = *(Envi*)data;
@@ -59,6 +143,7 @@ void iter(void *data)
   //envi.f += 1.0/10.0;
   //envi.time +=100.0/10.0;
   envi.speed = envi.time - envi.old_time;
+  envi.speed2 = envi.speed*2.0;
   envi.old_time = envi.time;
 
   //envi.ev->fbo_api.bind_fbo(envi.fbo);
@@ -67,13 +152,56 @@ void iter(void *data)
     envi.ev->shader_api.set_var(envi.sh, "time", envi.f);
     envi.ev->shader_api.set_var(envi.sh, "rotangle", envi.rotangle);
     envi.ev->shader_api.set_var(envi.sh, "player_pos", envi.pos_x, 0.0, envi.pos_z);
+    envi.ev->shader_api.set_var(envi.sh, "target_pos", envi.target_x, envi.target_y, envi.target_z);
     envi.poly->render();
-    //envi.ev->fbo_api.bind_screen(800,600);
-    //envi.ev->mainloop_api.clear();    
-    //envi.poly2->render();
 
-    //envi.ev->mainloop_api.fpscounter();
-    // swapbuffers
+    envi.ev->shader_api.use(envi.sh2);
+    envi.ev->sprite_api.render_sprite_vertex_array(envi.score);
+    render_score(envi.score_val, envi.score_width, envi);
+    if (envi.flash_0_bool)
+      {
+	//std::cout << "Flash_0" << std::endl;
+	envi.ev->sprite_api.render_sprite_vertex_array(envi.flash_0[envi.flash_count]);
+	envi.flash_0_time--;
+	if (envi.flash_0_time<=0)
+	  {
+	    envi.flash_0_bool = false;
+	  }
+      }
+    if (envi.flash_1_bool)
+      {
+	//std::cout << "Flash_1" << std::endl;
+	envi.ev->sprite_api.render_sprite_vertex_array(envi.flash_1[envi.flash_count]);
+	envi.flash_1_time--;
+	if (envi.flash_1_time<=0)
+	  {
+	    envi.flash_1_bool = false;
+	  }
+      }
+    envi.ev->shader_api.use(envi.sh);
+
+
+    envi.target_x += envi.dir_x*envi.speed;
+    envi.target_z += envi.dir_z*envi.speed;
+
+    if (envi.target_x>400.0) { envi.dir_x = -2.0; }
+    if (envi.target_x<-300.0) { envi.dir_x = 2.0; envi.score_val-=10; 
+	      envi.flash_0_time = 20;
+	      envi.flash_0_bool = true;
+	      //envi.flash_count--; if (envi.flash_count<0) envi.flash_count=0;
+
+    }
+
+    if (envi.target_z>250.0) { envi.dir_z = -1.0; }
+    if (envi.target_z<-250.0) { envi.dir_z = 1.0; }
+
+    if (envi.pos_x <-300.0) { envi.pos_x = -300.0; }
+    if (envi.pos_x >300.0) { envi.pos_x = 300.0; }
+    if (envi.pos_z <-100.0) { envi.pos_z = -100.0; }
+    if (envi.pos_z >300.0) { envi.pos_z = 300.0; }
+    
+
+
     envi.ev->mainloop_api.swapbuffers();
 
     // handle esc event
@@ -83,7 +211,11 @@ void iter(void *data)
 #ifndef EMSCRIPTEN
 	if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif
-	
+	if (e.type==0x300 ||e.type==0x301)
+	  {
+	    //std::cout << e.ch << " " << e.type << std::endl;
+	  }
+
 	if ((e.ch=='w'||e.ch==26||e.ch==82) && e.type==0x300) { envi.forward = true; }
 	if ((e.ch=='w'||e.ch==26||e.ch==82) && e.type==0x301) { envi.forward = false; }
 	if ((e.ch=='s'||e.ch==22||e.ch==81) && e.type==0x300) { envi.backward = true; }
@@ -92,16 +224,34 @@ void iter(void *data)
 	if ((e.ch=='a'||e.ch==4||e.ch==80) && e.type==0x301) { envi.left = false; }
 	if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x300) { envi.right = true; }
 	if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x301) { envi.right = false; }
+	if ((e.ch==32) && e.type==0x300) { envi.click = true; }
+      }
+    if (envi.click)
+      {
+	//std::cout << "Click" << std::endl;
+	//std::cout << "X:" << envi.target_x << " " << -envi.pos_z << std::endl;
+	//std::cout << "Z:" << envi.target_z << " " << envi.pos_x << std::endl;
+	if (fabs(envi.target_x+envi.pos_z)<120.0)
+	  if (fabs(envi.target_z-envi.pos_x)<120.0)
+	    {
+	      envi.dir_x = 2.0;
+	      envi.score_val += 30;
+	      envi.flash_1_time = 20;
+	      envi.flash_1_bool = true;
+	      envi.flash_count++; if (envi.flash_count>5) envi.flash_count=0;
+	      //std::cout << "HIT" << std::endl;
+	    }
+	envi.click = false;
       }
     if (envi.forward)
       {
-	envi.pos_x += envi.speed*cos(-envi.rotangle+3.14159/2.0);
-	envi.pos_z += envi.speed*sin(-envi.rotangle+3.14159/2.0);
+	envi.pos_x += envi.speed2*cos(-envi.rotangle+3.14159/2.0);
+	envi.pos_z += envi.speed2*sin(-envi.rotangle+3.14159/2.0);
       }
     if (envi.backward)
       {
-	envi.pos_x -= envi.speed*cos(-envi.rotangle+3.14159/2.0);
-	envi.pos_z -= envi.speed*sin(-envi.rotangle+3.14159/2.0);
+	envi.pos_x -= envi.speed2*cos(-envi.rotangle+3.14159/2.0);
+	envi.pos_z -= envi.speed2*sin(-envi.rotangle+3.14159/2.0);
       }
     if (envi.left)
       {
@@ -207,7 +357,7 @@ int main() {
   EveryApi ev(e);
 
   // initialize window
-  ev.mainloop_api.init_window();
+  ev.mainloop_api.init_window(1024,768);
 
   // shader initialization
   ev.shader_api.load_default(); 
@@ -237,16 +387,24 @@ int main() {
 
 
   SFO rot_y = ev.sh_api.rot_y(char_12, 0.0);
-  SFO rot_y_2 = ev.sh_api.bind_arg(rot_y, "angle", "time/1.25");
+  SFO rot_y_2 = ev.sh_api.bind_arg(rot_y, "angle", "3.141*1.8/1.25");
 
 
 
 
-  SFO rot_y_22 = ev.sh_api.trans(rot_y_2, 0.0, 0.0, 0.0);
-  SFO rot_y_3 = ev.sh_api.stop_generation(rot_y_22);
+  PT ball_center = ev.point_api.point(0.0,0.0,0.0);
+  SFO ball = ev.sh_api.sphere(ball_center, 15.0);
+  SFO ball_2 = ev.sh_api.trans(ball, 0.0, 0.0, 0.0);
+  SFO ball_3 = ev.sh_api.bind_arg(ball_2, "delta", "target_pos");
+  SFO ball_comb = ev.sh_api.or_elem(rot_y_2, ball_3);
+
+
+  SFO rot_y_22 = ev.sh_api.trans(ball_comb, 0.0, 0.0, 0.0);
+  SFO rot_y_23 = ev.sh_api.bind_arg(rot_y_22, "delta", "-player_pos.zyx/2.0*vec3(-1.0,1.0,1.0)");
+  SFO rot_y_3 = ev.sh_api.stop_generation(rot_y_23);
 
   SFO color = ev.sh_api.color_from_normal(rot_y_3 );
-  SFO mix_color = ev.sh_api.mix_color(rot_y_22, color, 1.0-0.4);
+  SFO mix_color = ev.sh_api.mix_color(rot_y_23, color, 1.0-0.4);
 
 
 
@@ -292,7 +450,35 @@ int main() {
   float f = 0.0;
 
 
+  Ft font = ev.font_api.newfont("FreeSans.ttf", 30,30);
+  BM score = ev.font_api.font_string(font, "Score:", 3);
+  int score_width = ev.bitmap_api.size_x(score);
+  VA score_va = ev.sprite_api.create_vertex_array(score);
+  std::vector<VA> digits;
+  std::vector<int> digit_width;
+  for(int i=0;i<10;i++)
+    {
+      BM bm = ev.font_api.glyph(font, '0'+i);
+      digits.push_back(ev.sprite_api.create_vertex_array(bm));
+      digit_width.push_back(ev.bitmap_api.size_x(bm));
+    }
 
+  std::vector<VA> flash_0_vec;
+  std::vector<VA> flash_1_vec;
+  for(int i=0;i<7;i++)
+    {
+      BB flash = choose_flash(i, ev);
+      BM flash_0 = ev.bool_bitmap_api.to_bitmap(flash, 255,0,0,255,
+						0,0,0,0);
+      BB not_flash = ev.bool_bitmap_api.not_bitmap(flash);
+      BM flash_1 = ev.bool_bitmap_api.to_bitmap(not_flash, 0,255,0,255,
+						0,0,0,0);
+      
+      VA flash_0_va = ev.sprite_api.create_vertex_array(flash_0);
+      VA flash_1_va = ev.sprite_api.create_vertex_array(flash_1);
+      flash_0_vec.push_back(flash_0_va);
+      flash_1_vec.push_back(flash_1_va);
+    }
 
   Envi envi;
   //envi.fbo = fbo;
@@ -300,8 +486,17 @@ int main() {
   // envi.poly2 = &poly2;
   envi.f = f ;
   envi.sh = sh;
+  envi.sh2 = sh2;
   envi.ev = &ev;
-
+  envi.score = score_va;
+  envi.score_width = score_width;
+  envi.score_val = 1000;
+  envi.digits = digits;
+  envi.digit_width = digit_width;
+  envi.flash_0 = flash_0_vec;
+  envi.flash_1 = flash_1_vec;
+  envi.flash_0_bool = false;
+  envi.flash_1_bool = false;
 
 #ifndef EMSCRIPTEN
   while(1) {
