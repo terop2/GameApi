@@ -4,6 +4,12 @@
 #endif
 #include <math.h>
 
+#if 0
+#include <SDL.h>
+#include <SDL_opengl.h>
+#endif
+#include <SDL_mixer.h>
+
 using namespace GameApi;
 
 V func(int face, int point, EveryApi &ev)
@@ -81,6 +87,9 @@ struct Envi
 {
   EveryApi *ev;
   float f;
+  float f_start=0;
+  int f_start_time=0;
+  bool anim_stop = false;
   SH sh;
   SH sh2;
   PolygonObj *poly;
@@ -117,6 +126,10 @@ struct Envi
   bool flash_1_bool;
   int flash_0_time;
   int flash_1_time;
+  bool level_completed=false;
+  int completed_time=0;
+  VA completed;
+  int start_time=0;
 };
 
 void render_score(int score, int x, Envi &e)
@@ -125,6 +138,7 @@ void render_score(int score, int x, Envi &e)
   for(int i=0;i<6;i++)
     {
       int sc = score/(pow(10,5-i));
+      if (sc<0) sc = -sc;
       int sc2 = sc % 10;
       e.ev->shader_api.set_var(e.sh, "in_MV", e.ev->matrix_api.trans(xx,0.0,0.0));
       e.ev->sprite_api.render_sprite_vertex_array(e.digits[sc2]);
@@ -137,9 +151,9 @@ void render_score(int score, int x, Envi &e)
 void iter(void *data)
 {
   Envi &envi = *(Envi*)data;
-  envi.f = envi.ev->mainloop_api.get_time()/1000.0;
+  envi.f = (envi.ev->mainloop_api.get_time()-envi.start_time)/1000.0;
 
-  envi.time = envi.ev->mainloop_api.get_time()/10.0;
+  envi.time = (envi.ev->mainloop_api.get_time()-envi.start_time)/10.0;
   //envi.f += 1.0/10.0;
   //envi.time +=100.0/10.0;
   envi.speed = envi.time - envi.old_time;
@@ -149,7 +163,15 @@ void iter(void *data)
   //envi.ev->fbo_api.bind_fbo(envi.fbo);
     envi.ev->mainloop_api.clear();
     envi.ev->shader_api.use(envi.sh);
-    envi.ev->shader_api.set_var(envi.sh, "time", envi.f);
+    if (envi.anim_stop)
+      {
+	envi.ev->shader_api.set_var(envi.sh, "time", 32.0f);
+      } else
+      {
+	envi.ev->shader_api.set_var(envi.sh, "time", envi.f-envi.f_start);
+      }
+    envi.ev->shader_api.set_var(envi.sh, "time2", envi.pos_x+envi.pos_z);
+    envi.ev->shader_api.set_var(envi.sh, "time3", envi.f);
     envi.ev->shader_api.set_var(envi.sh, "rotangle", envi.rotangle);
     envi.ev->shader_api.set_var(envi.sh, "player_pos", envi.pos_x, 0.0, envi.pos_z);
     envi.ev->shader_api.set_var(envi.sh, "target_pos", envi.target_x, envi.target_y, envi.target_z);
@@ -178,11 +200,21 @@ void iter(void *data)
 	    envi.flash_1_bool = false;
 	  }
       }
+    if (envi.level_completed)
+      {
+	envi.ev->shader_api.set_var(envi.sh2, "in_MV", envi.ev->matrix_api.trans(100.0, 100.0, 0.0));
+	envi.ev->sprite_api.render_sprite_vertex_array(envi.completed);
+	envi.ev->shader_api.set_var(envi.sh2, "in_MV", envi.ev->matrix_api.trans(0.0, 0.0, 0.0));
+	envi.completed_time--;
+	if (envi.completed_time<0) { envi.level_completed = false; envi.start_time += envi.time*10.0; envi.old_time = 0; }
+
+      }
     envi.ev->shader_api.use(envi.sh);
 
 
     envi.target_x += envi.dir_x*envi.speed;
     envi.target_z += envi.dir_z*envi.speed;
+    envi.target_y = -50.0*cos((envi.target_x-100.0)/300.0*2.0*3.14159/4.0);
 
     if (envi.target_x>400.0) { envi.dir_x = -2.0; }
     if (envi.target_x<-300.0) { envi.dir_x = 2.0; envi.score_val-=10; 
@@ -203,6 +235,14 @@ void iter(void *data)
 
 
     envi.ev->mainloop_api.swapbuffers();
+
+    //std::cout << envi.time << std::endl;
+    if (envi.time > 2.0*8000.0 && envi.time < 2.0*8020.0)
+      {
+	envi.level_completed = true;
+	envi.completed_time = 20;
+      }
+
 
     // handle esc event
     MainLoopApi::Event e;
@@ -226,6 +266,7 @@ void iter(void *data)
 	if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x301) { envi.right = false; }
 	if ((e.ch==32) && e.type==0x300) { envi.click = true; }
       }
+    envi.f_start_time--;
     if (envi.click)
       {
 	//std::cout << "Click" << std::endl;
@@ -242,6 +283,13 @@ void iter(void *data)
 	      //std::cout << "HIT" << std::endl;
 	    }
 	envi.click = false;
+	envi.f_start = envi.f;
+	envi.f_start_time = 8;
+	envi.anim_stop=false;
+      }
+    else if (envi.f_start_time<4)
+      {
+	envi.anim_stop = true;
       }
     if (envi.forward)
       {
@@ -317,12 +365,12 @@ SFO shader_character(EveryApi &ev, SFO outside)
   SFO all_5 = legs_1;
   SFO all_6 = ev.sh_api.or_elem(all_5, tip_1);
   SFO all_6a = ev.sh_api.trans(all_6, 0.0, 0.0, 10.0);
-  SFO all_6b = ev.sh_api.bind_arg(all_6a, "delta", "vec3(0.0,0.0,10.0*cos(time*3.0))");
+  SFO all_6b = ev.sh_api.bind_arg(all_6a, "delta", "vec3(0.0,0.0,10.0*cos(time2*3.0))");
   SFO all_6c = ev.sh_api.color(all_6b, 0.0, 1.0, 1.0, 1.0);
   SFO all_7 = legs_2;
   SFO all_8 = ev.sh_api.or_elem(all_7, tip_2);
   SFO all_8a = ev.sh_api.trans(all_8, 0.0, 0.0, 10.0);
-  SFO all_8b = ev.sh_api.bind_arg(all_8a, "delta", "vec3(0.0,0.0,10.0*cos(time*3.0+3.14159))");
+  SFO all_8b = ev.sh_api.bind_arg(all_8a, "delta", "vec3(0.0,0.0,10.0*cos(time2*3.0+3.14159))");
   SFO all_8c = ev.sh_api.color(all_8b, 0.0, 1.0, 1.0, 1.0);
   SFO all_9 = ev.sh_api.or_elem(all_8c, all_4b);
   SFO all_10 = ev.sh_api.or_elem(all_9, all_6c);
@@ -353,11 +401,40 @@ SFO background(EveryApi &ev)
 }
 
 int main() {
+
   Env e;
   EveryApi ev(e);
 
   // initialize window
   ev.mainloop_api.init_window(1024,768);
+
+
+#if 1
+  Mix_Init(MIX_INIT_MP3);
+  std::cout << Mix_GetError() << std::endl;
+  Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
+  std::cout << Mix_GetError() << std::endl;
+  int c = Mix_GetNumMusicDecoders();
+  for(int i=0;i<c;i++)
+    {
+      std::cout << Mix_GetMusicDecoder(i) << std::endl;
+    }
+
+  //Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
+  Mix_Music *mus = Mix_LoadMUS(".\\Deep_Blue_Sea_Blues.mp3");
+  std::cout << Mix_GetError() << std::endl;
+  Mix_PlayMusic(mus, 1);
+  std::cout << Mix_GetError() << std::endl;
+
+#endif
+  //return 0;
+
+
+  FILE *ctt = fopen("CON", "w");
+  freopen( "CON", "w", stdout );
+  freopen( "CON", "w", stderr );
+  printf("HEllo world!\n");
+
 
   // shader initialization
   ev.shader_api.load_default(); 
@@ -399,7 +476,12 @@ int main() {
   SFO ball_comb = ev.sh_api.or_elem(rot_y_2, ball_3);
 
 
-  SFO rot_y_22 = ev.sh_api.trans(ball_comb, 0.0, 0.0, 0.0);
+  PT grow_center = ev.point_api.point(300.0, 0.0, 0.0);
+  SFO grow_ball = ev.sh_api.sphere(grow_center, 15.0);
+  SFO grow_ball2 = ev.sh_api.bind_arg(grow_ball, "radius", "time3*2.0");
+  SFO balls = ev.sh_api.or_elem(ball_comb, grow_ball2);
+
+  SFO rot_y_22 = ev.sh_api.trans(balls, 0.0, 0.0, 0.0);
   SFO rot_y_23 = ev.sh_api.bind_arg(rot_y_22, "delta", "-player_pos.zyx/2.0*vec3(-1.0,1.0,1.0)");
   SFO rot_y_3 = ev.sh_api.stop_generation(rot_y_23);
 
@@ -463,6 +545,9 @@ int main() {
       digit_width.push_back(ev.bitmap_api.size_x(bm));
     }
 
+  BM completed = ev.font_api.font_string(font, "Level Completed!", 3);
+  VA completed_va = ev.sprite_api.create_vertex_array(completed);
+
   std::vector<VA> flash_0_vec;
   std::vector<VA> flash_1_vec;
   for(int i=0;i<7;i++)
@@ -473,6 +558,13 @@ int main() {
       BB not_flash = ev.bool_bitmap_api.not_bitmap(flash);
       BM flash_1 = ev.bool_bitmap_api.to_bitmap(not_flash, 0,255,0,255,
 						0,0,0,0);
+      
+      //CBM flash_0a = ev.cont_bitmap_api.from_bitmap(flash_0, 1.0, 1.0);
+      //BM flash_0b = ev.cont_bitmap_api.sample(flash_0a, 800,600);
+      //CBM flash_1a = ev.cont_bitmap_api.from_bitmap(flash_1, 1.0, 1.0);
+      //BM flash_1b = ev.cont_bitmap_api.sample(flash_1a, 800,600);
+
+
       
       VA flash_0_va = ev.sprite_api.create_vertex_array(flash_0);
       VA flash_1_va = ev.sprite_api.create_vertex_array(flash_1);
@@ -497,6 +589,7 @@ int main() {
   envi.flash_1 = flash_1_vec;
   envi.flash_0_bool = false;
   envi.flash_1_bool = false;
+  envi.completed = completed_va;
 
 #ifndef EMSCRIPTEN
   while(1) {

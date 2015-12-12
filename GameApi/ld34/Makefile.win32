@@ -1,3 +1,8 @@
 
 all:
-	g++ -std=c++11 test.cpp -L.. -I.. -lGameApi
+	g++ -std=c++11 test.cpp -L.. -Ld:\cvs\SDL2-2.0.1\i686-w64-mingw32\bin -Ld:\cvs\SDL2-2.0.1\i686-w64-mingw32\lib -Ld:\cvs\SDL2_mixer-2.0.0\i686-w64-mingw32\lib -Id:\cvs\SDL2-2.0.1\i686-w64-mingw32\include\sdl2 -Id:\cvs\SDL2_mixer-2.0.0\i686-w64-mingw32/include/sdl2  -I.. -lGameApi -lsdl2_mixer -lsdl2
+
+#-lmingw32 -lsdl2main -lSDL2 -mwindows
+# 
+#
+#
