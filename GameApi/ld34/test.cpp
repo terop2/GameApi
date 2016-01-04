@@ -235,6 +235,7 @@ void iter(void *data)
 
 
     envi.ev->mainloop_api.swapbuffers();
+    envi.ev->mainloop_api.finish();
 
     //std::cout << envi.time << std::endl;
     if (envi.time > 2.0*8000.0 && envi.time < 2.0*8020.0)
@@ -409,7 +410,7 @@ int main() {
   ev.mainloop_api.init_window(1024,768);
 
 
-#if 1
+#if 0
   Mix_Init(MIX_INIT_MP3);
   std::cout << Mix_GetError() << std::endl;
   Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
@@ -427,6 +428,7 @@ int main() {
   std::cout << Mix_GetError() << std::endl;
 
 #endif
+  ev.tracker_api.play_mp3(".\\Deep_Blue_Sea_Blues.mp3");
   //return 0;
 
 

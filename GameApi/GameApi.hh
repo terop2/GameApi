@@ -180,6 +180,7 @@ public:
   IMPORT float get_time();
   IMPORT int get_framenum();
   IMPORT void swapbuffers();
+  IMPORT void finish();
   IMPORT BM screenshot();
   IMPORT void fpscounter();
   IMPORT void delay(int ms);
@@ -1338,6 +1339,7 @@ public:
   IMPORT TRK array(TRK *array, int size);
   IMPORT TBUF prepare(TRK trk);
   IMPORT void play_song(EveryApi &ev, TBUF buf, WAV samples, int framenum, int speed);
+  IMPORT void play_mp3(std::string filename);
 private:
   Env &e;
 };
@@ -2104,6 +2106,34 @@ private:
       scale_z[i] = mult_z;
       setup_one(i);
     }
+    M rot_y(float c_x, float c_y, float c_z, float angle)
+    {
+      M m1 = ev.matrix_api.trans(c_x, c_y, c_z);
+      M m2 = ev.matrix_api.yrot(angle);
+      M m3 = ev.matrix_api.trans(-c_x, -c_y, -c_z);
+      M mm = ev.matrix_api.mult(m1,m2);
+      M mmm = ev.matrix_api.mult(mm, m3);
+      return mmm;
+    }
+    M rot_x(float c_x, float c_y, float c_z, float angle)
+    {
+      M m1 = ev.matrix_api.trans(c_x, c_y, c_z);
+      M m2 = ev.matrix_api.xrot(angle);
+      M m3 = ev.matrix_api.trans(-c_x, -c_y, -c_z);
+      M mm = ev.matrix_api.mult(m1,m2);
+      M mmm = ev.matrix_api.mult(mm, m3);
+      return mmm;
+    }
+    M rot_z(float c_x, float c_y, float c_z, float angle)
+    {
+      M m1 = ev.matrix_api.trans(c_x, c_y, c_z);
+      M m2 = ev.matrix_api.zrot(angle);
+      M m3 = ev.matrix_api.trans(-c_x, -c_y, -c_z);
+      M mm = ev.matrix_api.mult(m1,m2);
+      M mmm = ev.matrix_api.mult(mm, m3);
+      return mmm;
+    }
+
     void set_child_rot_matrix(int i, M m)
     {
       rot_matrix[i] = m;

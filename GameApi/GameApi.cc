@@ -487,6 +487,10 @@ EXPORT GameApi::BM GameApi::MainLoopApi::screenshot()
 
 extern SDL_Window *sdl_window;
 
+EXPORT void GameApi::MainLoopApi::finish()
+{
+  glFinish();
+}
 EXPORT void GameApi::MainLoopApi::swapbuffers()
 {
 #if 0
@@ -21225,4 +21229,16 @@ GameApi::EX GameApi::ExprApi::expr_float(std::string expr, bool &success)
 GameApi::EX GameApi::ExprApi::expr_int(std::string expr, bool &success)
 {
   return expr_parse(*this, expr, success);
+}
+void GameApi::TrackerApi::play_mp3(std::string filename)
+{
+  Mix_Init(MIX_INIT_MP3);
+  Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
+  int c = Mix_GetNumMusicDecoders();
+  for(int i=0;i<c;i++)
+    {
+      Mix_GetMusicDecoder(i);
+    }
+  Mix_Music *mus = Mix_LoadMUS(filename.c_str());
+  Mix_PlayMusic(mus, 1);
 }
