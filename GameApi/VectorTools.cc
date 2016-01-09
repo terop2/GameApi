@@ -825,7 +825,16 @@ Plane LineProperties::PlaneFromLine(float x, float angle, float dist)
     Plane pl(p, dist*u_x, dist*u_y);
     return pl;
   }
-Point LineProperties::MiddlePoint(float x)
+float LineProperties::LineCoords(Point p) const
+{
+  Vector B = p2-p1;
+  Vector A = p-p1;
+  Vector unit = B / B.Dist();
+  float proj = Vector::DotProduct(A, unit);
+  float proj2 = proj / B.Dist();
+  return proj2;
+}
+Point LineProperties::MiddlePoint(float x) const
 {
     Point p = Point(x*Vector(p1)+(1.0-x)*Vector(p2));
     return p;

@@ -1116,6 +1116,10 @@ public:
 	 float start_y, float end_y,
 	 float start_z, float end_z);
 	IMPORT P cube(PT *p); // 8 points needed
+  IMPORT P rounded_cube(EveryApi &ev, float start_x, float end_x,
+			float start_y, float end_y,
+			float start_z, float end_z,
+			float round_radius);
 	IMPORT P sphere(PT center, float radius, int numfaces1, int numfaces2);
 	IMPORT P cone(int numfaces, PT p1, PT p2, float rad1, float rad2);
   IMPORT P torus(int numfaces1, int numfaces2, PT center, V u_x, V u_y, float radius1, V uu_x, V uu_y, float radius2);
@@ -1160,6 +1164,8 @@ public:
 
   IMPORT P quads_to_triangles(P p);
   IMPORT P flip_polygon_order(P p);
+
+  IMPORT P skeletal_anim(P p, PT p_0, PT p_1, PT n_0, PT n_1);
 
   IMPORT P or_elem(P p1, P p2);
   IMPORT P or_array(P *array, int size);
@@ -2174,7 +2180,7 @@ private:
       as_x*=s_x;
       as_y*=s_y;
       as_z*=s_z;
-      m = ev.matrix_api.mult(current_rot_matrix, m);
+      m = ev.matrix_api.mult(m, current_rot_matrix);
       move_scale_vec[i]->set_pos(ap_x,ap_y,ap_z);
       move_scale_vec[i]->set_scale(as_x,as_y,as_z);
       move_scale_vec[i]->set_rotation_matrix(m);
