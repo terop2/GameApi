@@ -5088,6 +5088,65 @@ EXPORT GameApi::P GameApi::PolygonApi::quad_z(float x1, float x2,
 }
 
 
+EXPORT GameApi::P GameApi::PolygonApi::rounded_cube(EveryApi &ev, float start_x, float end_x,
+						    float start_y, float end_y,
+						    float start_z, float end_z,
+						    float r)
+{
+  P p110 = cube(start_x+r, end_x-r, start_y+r, end_y-r, start_z, end_z);
+  P p101 = cube(start_x+r, end_x-r, start_y, end_y, start_z+r, end_z-r);
+  P p011 = cube(start_x, end_x, start_y+r, end_y-r, start_z+r, end_z-r);
+
+  PT cen111 = ev.point_api.point(start_x+r, start_y+r, start_z+r);
+  P c111 = sphere(cen111, r, 30,30);
+
+  PT cen211 = ev.point_api.point(end_x-r, start_y+r, start_z+r);
+  P c211 = sphere(cen211, r, 30,30);
+
+  PT cen121 = ev.point_api.point(start_x+r, end_y-r, start_z+r);
+  P c121 = sphere(cen121, r, 30,30);
+
+  PT cen112 = ev.point_api.point(start_x+r, start_y+r, end_z-r);
+  P c112 = sphere(cen112, r, 30,30);
+
+  PT cen122 = ev.point_api.point(start_x+r, end_y-r, end_z-r);
+  P c122 = sphere(cen122, r, 30,30);
+
+  PT cen221 = ev.point_api.point(end_x-r, end_y-r, start_z+r);
+  P c221 = sphere(cen221, r, 30,30);
+
+  PT cen212 = ev.point_api.point(end_x-r, start_y+r, end_z-r);
+  P c212 = sphere(cen212, r, 30,30);
+
+  PT cen222 = ev.point_api.point(end_x-r, end_y-r, end_z-r);
+  P c222 = sphere(cen222, r, 30,30);
+
+
+
+  P L111_211 = cone(30, cen111, cen211, r, r);
+  P L111_121 = cone(30, cen111, cen121, r, r);
+  P L111_112 = cone(30, cen111, cen112, r, r);
+
+  P L222_221 = cone(30, cen222, cen221, r, r);
+  P L222_122 = cone(30, cen222, cen122, r, r);
+  P L222_212 = cone(30, cen222, cen212, r, r);
+
+  P L211_221 = cone(30, cen211, cen221, r,r);
+  P L211_212 = cone(30, cen211, cen212, r,r);
+  P L121_221 = cone(30, cen121, cen221, r,r);
+  P L121_122 = cone(30, cen121, cen122, r,r);
+  P L112_212 = cone(30, cen112, cen212, r,r);
+  P L112_122 = cone(30, cen112, cen122, r,r);
+  
+
+  P array[] = { p110,p101,p011, c111, c211, c121, c112, c122, c221, c212, c222,
+		L111_211, L111_121, L111_112, L222_221, L222_122, L222_212,
+		L211_221, L211_212, L121_221, L121_122, L112_212, L112_122
+  };
+
+  P arr = or_array(array,17+6);
+  return arr;
+}
 
 EXPORT GameApi::P GameApi::PolygonApi::cube(float start_x, float end_x,
 				  float start_y, float end_y,
@@ -5443,6 +5502,37 @@ EXPORT GameApi::P GameApi::PolygonApi::quads_to_triangles(P p)
   FaceCollection *c = find_facecoll(e, p);
   FaceCollection *c2 = new QuadsToTris2(c);
   return add_polygon(e,c2,1);
+}
+class SkeletalAnim : public ForwardFaceCollection
+{
+public:
+  SkeletalAnim(FaceCollection *coll, Point p0, Point p1, Point n0, Point n1)
+    : ForwardFaceCollection(*coll), prop(p0, p1), prop2(n0, n1) { }
+
+  Point FacePoint(int face, int point) const
+  {
+    Point pp = ForwardFaceCollection::FacePoint(face,point);
+    float val = prop.LineCoords(pp);
+    Point pp1 = prop.MiddlePoint(val);
+    Point pp2 = prop2.MiddlePoint(val);
+    Vector v = pp2-pp1;
+    return pp + v;
+  }
+private:
+  FaceCollection *coll;
+  LineProperties prop;
+  LineProperties prop2;
+};
+EXPORT GameApi::P GameApi::PolygonApi::skeletal_anim(P p, PT p_0, PT p_1,
+						     PT n_0, PT n_1)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  Point *pp_0 = find_point(e,p_0);
+  Point *pp_1 = find_point(e,p_1);
+  Point *nn_0 = find_point(e,n_0);
+  Point *nn_1 = find_point(e,n_1);
+  FaceCollection *coll2 = new SkeletalAnim(coll, *pp_0, *pp_1, *nn_0, *nn_1);
+  return add_polygon(e, coll2, 1);
 }
 EXPORT GameApi::P GameApi::PolygonApi::color_from_normals(P orig)
 {

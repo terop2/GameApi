@@ -619,11 +619,12 @@ public:
   }
   // x=[0..1], angle=0..2pi
   Plane PlaneFromLine(float x, float angle, float dist);
-  Point MiddlePoint(float x);
+  Point MiddlePoint(float x) const;
   Vector PerpendicularVector(float angle, float length);
   float Dist(Point p);
   bool TriangleIntersection(Point p1, Point p2, Point p3);
   bool QuadIntersection(Point p1, Point p2, Point p3, Point p4);
+  float LineCoords(Point p) const;
 private:
   Point p1, p2;
 };
