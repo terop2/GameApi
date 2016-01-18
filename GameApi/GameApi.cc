@@ -142,6 +142,8 @@ struct MainLoopPriv
 {
   SDL_Surface *screen;
   unsigned int time;
+  unsigned int frame_time;
+  unsigned int avg_time;
   int count;
   int frame;
 };
@@ -257,15 +259,17 @@ EXPORT void GameApi::MainLoopApi::fpscounter()
   MainLoopPriv *p = (MainLoopPriv*)priv;
   unsigned int time = SDL_GetTicks();
   unsigned int delta_time = time - p->time;
+  unsigned int f_time = time - p->frame_time;
   //p->time = time;
-  if (p->count==0) { p->time = time; p->frame=0; }
+  if (p->count==0) { p->avg_time = 0; p->time = time; p->frame=0; }
+  p->avg_time+=f_time;
   p->frame++;
   p->count++;
   if (delta_time<1) delta_time=1;
   float fps = p->frame/(delta_time/1000.0f);
   if (p->count<0) { p->count = 0; }
   if (p->count>100) {
-    std::cout << "FPS: " << fps << std::endl;
+    std::cout << "FPS: " << fps << " delta_time:" << p->avg_time/100.0 << std::endl;
     p->count = 0;
   }
 }
@@ -508,7 +512,9 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
   SDL_GL_SwapBuffers();
 #endif
 
-
+  unsigned int time = SDL_GetTicks();
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  p->frame_time = time;
   //SDL_Flip(surf);
   frame++;
 }
@@ -5098,28 +5104,28 @@ EXPORT GameApi::P GameApi::PolygonApi::rounded_cube(EveryApi &ev, float start_x,
   P p011 = cube(start_x, end_x, start_y+r, end_y-r, start_z+r, end_z-r);
 
   PT cen111 = ev.point_api.point(start_x+r, start_y+r, start_z+r);
-  P c111 = sphere(cen111, r, 30,30);
+  P c111 = sphere(cen111, r, 60,30);
 
   PT cen211 = ev.point_api.point(end_x-r, start_y+r, start_z+r);
-  P c211 = sphere(cen211, r, 30,30);
+  P c211 = sphere(cen211, r, 60,30);
 
   PT cen121 = ev.point_api.point(start_x+r, end_y-r, start_z+r);
-  P c121 = sphere(cen121, r, 30,30);
+  P c121 = sphere(cen121, r, 60,30);
 
   PT cen112 = ev.point_api.point(start_x+r, start_y+r, end_z-r);
-  P c112 = sphere(cen112, r, 30,30);
+  P c112 = sphere(cen112, r, 60,30);
 
   PT cen122 = ev.point_api.point(start_x+r, end_y-r, end_z-r);
-  P c122 = sphere(cen122, r, 30,30);
+  P c122 = sphere(cen122, r, 60,30);
 
   PT cen221 = ev.point_api.point(end_x-r, end_y-r, start_z+r);
-  P c221 = sphere(cen221, r, 30,30);
+  P c221 = sphere(cen221, r, 60,30);
 
   PT cen212 = ev.point_api.point(end_x-r, start_y+r, end_z-r);
-  P c212 = sphere(cen212, r, 30,30);
+  P c212 = sphere(cen212, r, 60,30);
 
   PT cen222 = ev.point_api.point(end_x-r, end_y-r, end_z-r);
-  P c222 = sphere(cen222, r, 30,30);
+  P c222 = sphere(cen222, r, 60,30);
 
 
 
@@ -5287,9 +5293,59 @@ GameApi::P GameApi::PolygonApi::or_array_1(P *p1, int size)
   return add_polygon(e, coll,1);
 }
 
+class MixColorFaceColl : public ForwardFaceCollection
+{
+public:
+  MixColorFaceColl(FaceCollection *c1, FaceCollection *c2, float val) : ForwardFaceCollection(*c1), c1(c1), c2(c2),val(val) { }
+  unsigned int Color(int face, int point) const
+  {
+    unsigned int col1 = c1->Color(face,point);
+    unsigned int col2 = c2->Color(face,point);
+    return Color::Interpolate(col1, col2, val);
+  }
 
+private:
+  FaceCollection *c1;
+  FaceCollection *c2;
+  float val;
+};
 
-
+EXPORT GameApi::P GameApi::PolygonApi::mix_color(P orig, P orig2, float val)
+{
+  FaceCollection *c1 = find_facecoll(e, orig);
+  FaceCollection *c2 = find_facecoll(e, orig2);
+  return add_polygon(e, new MixColorFaceColl(c1,c2,val), 1);
+}
+class Lambert : public ForwardFaceCollection
+{
+public:
+  Lambert(FaceCollection *coll, unsigned int color, Vector light_dir) : ForwardFaceCollection(*coll), color(color), light_dir(light_dir) 
+  {
+    //light_dir /= light_dir.Dist();
+  }
+  unsigned int Color(int face, int point) const
+  {
+    Vector n = ForwardFaceCollection::PointNormal(face,point);
+    //n /= n.Dist();
+    float dot = Vector::DotProduct(n,light_dir);
+    dot/=n.Dist();
+    dot/=light_dir.Dist();
+    //if (dot<0.0) dot=0.0;
+    //if (dot>1.0) dot=1.0;
+    return Color::Interpolate(color,0xffffffff, dot);
+  }
+private:
+  unsigned int color;
+  Vector light_dir;
+};
+EXPORT GameApi::P GameApi::PolygonApi::color_lambert(P orig, unsigned int color, V light_dir)
+{
+  FaceCollection *c = find_facecoll(e, orig);
+  Vector *light_dir_v = find_vector(e, light_dir);
+  FaceCollection *coll = new Lambert(c, color, *light_dir_v);
+  return add_polygon(e, coll,1);
+  
+}
 EXPORT GameApi::P GameApi::PolygonApi::color(P next, unsigned int color)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -5986,7 +6042,12 @@ EXPORT GameApi::P GameApi::PolygonApi::change_texture(P orig, std::function<int 
 
 
 
-
+//EXPORT GameApi::P GameApi::PolygonApi::smooth_normals(P orig)
+//{
+//  FaceCollection *coll = find_facecoll(e, orig);
+//  FaceCollection *coll2 = new SmoothNormals(*coll);
+//  return add_polygon(e, coll2, 1);
+//}
 EXPORT GameApi::P GameApi::PolygonApi::recalculate_normals(P orig)
 {
   FaceCollection *coll = find_facecoll(e, orig);

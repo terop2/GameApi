@@ -243,7 +243,7 @@ void iter(void *arg)
       env->gui->render(env->editor);
 
     
-    //env->ev->mainloop_api.fpscounter();
+    env->ev->mainloop_api.fpscounter();
     // swapbuffers
     env->ev->mainloop_api.swapbuffers();
 

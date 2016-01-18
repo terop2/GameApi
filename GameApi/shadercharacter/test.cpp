@@ -52,7 +52,7 @@ void iter(void *data)
     //envi.ev->mainloop_api.clear();    
     //envi.poly2->render();
 
-    //envi.ev->mainloop_api.fpscounter();
+    envi.ev->mainloop_api.fpscounter();
     // swapbuffers
     envi.ev->mainloop_api.swapbuffers();
 

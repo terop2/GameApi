@@ -196,8 +196,8 @@ Point SphereElem::FacePoint(int face, int point) const
   float deltaangle2 = 2.0*  3.14159/numfaces2;
   float angle1 = face1*deltaangle1;
   float angle2 = face2*deltaangle2;
-  if (point==2||point==3) angle1+=deltaangle1;
-  if (point==1||point==2) angle2+=deltaangle2;
+  if (point==2||point==1) angle1+=deltaangle1;
+  if (point==3||point==2) angle2+=deltaangle2;
   //Matrix m = Matrix::XRotation(angle1)*Matrix::YRotation(angle2);
   Vector pp;
   pp.dx = radius*sin(angle1)*cos(angle2);
@@ -272,14 +272,14 @@ Point CylinderElem::FacePoint(int face, int point) const
 
 Point CubeElem::FacePoint(int face, int point) const
 {
-  static int face1[] = { 1,4, 5, 0 };
-  static int face2[] = { 0, 5, 6, 7 };
-  static int face3[] = { 7, 6, 3, 2 };
+  static int face1[] = { 1, 0, 5, 4 };
+  static int face2[] = { 0, 7, 6, 5 };
+  static int face3[] = { 7, 2, 3, 6 };
   static int face4[] = { 1, 4, 3, 2 };
   static int face5[] = { 0, 1, 2, 7 };
   static int face6[] = { 5, 6, 3, 4 };
   static int *faces[] = { &face1[0], &face2[0], &face3[0], &face4[0], &face5[0], &face6[0] };
-  int *array = faces[face];
+  int *array = faces[face]; // face
   int p = array[point];
   //float x=0.0,y=0.0,z=0.0;
   switch(p)
