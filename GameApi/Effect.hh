@@ -3088,9 +3088,47 @@ public:
     Point p1 = FacePoint(face, 0);
     Point p2 = FacePoint(face, 1);
     Point p3 = FacePoint(face, 2);
-    return -Vector::CrossProduct(p2-p1,p3-p1);
+    Vector v = -Vector::CrossProduct(p2-p1,p3-p1);
+    return v / v.Dist();
   }
 };
+
+class SmoothNormals : public ForwardFaceCollection
+{
+public:
+  SmoothNormals(FaceCollection &coll) : ForwardFaceCollection(coll) { }
+  Vector PointNormal(int face, int point) const 
+  { 
+    Point p = FacePoint(face,point);
+    int count = NumFaces();
+    int res_i = 0, res_ii = 0;
+    bool result = false;
+    for(int i=0;i<count;i++)
+      {
+	if (i==face) continue;
+	int count2 = NumPoints(i);
+	for(int ii=0;ii<count2;ii++)
+	  {
+	    Point p2 = FacePoint(i,ii);
+	    Vector v = p2-p;
+	    if (v.Dist() < 0.001)
+	      {
+		res_i = i; res_ii = ii;
+		result = true;
+		break;
+	      }
+	    
+	  }
+	if (result) break;
+      }
+    if (!result) { return ForwardFaceCollection::PointNormal(face,point); }
+
+    Vector v0 = ForwardFaceCollection::PointNormal(face,point);
+    Vector v1 = ForwardFaceCollection::PointNormal(res_i, res_ii); 
+    return (v0+v1)/2.0;
+  }
+};
+
 
 class ChangePoints : public ForwardFaceCollection
 {

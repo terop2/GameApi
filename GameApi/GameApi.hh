@@ -1140,6 +1140,8 @@ public:
 
   IMPORT P color(P orig, unsigned int color);
   IMPORT P color_voxel(P orig, VX colours, PT p, V u_x, V u_y, V u_z);
+  IMPORT P mix_color(P orig, P orig2, float val);
+  IMPORT P color_lambert(P orig, unsigned int color, V light_dir);
   IMPORT P texcoord_cube(P orig,
 		  PT o, PT u_x, PT u_y, PT u_z,  // these are 3d
 		  PT tex_o, PT tex_x, PT tex_y, PT tex_z); // tex_* are 2d
@@ -1220,6 +1222,7 @@ public:
   IMPORT P change_texture(P orig, std::function<int(int face)> f, BM *array, int size);
 
   IMPORT P recalculate_normals(P orig);
+  IMPORT P smooth_normals(P orig);
   IMPORT P memoize(P orig);
   IMPORT P memoize_all(P orig);
 
@@ -2063,6 +2066,7 @@ private:
     virtual void set_pos(float pos_x, float pos_y, float pos_z)=0;
     virtual void set_scale(float mult_x, float mult_y, float mult_z)=0;
     virtual void set_rotation_matrix(M m)=0;
+    virtual void set_rotation_matrix2(M m)=0;
   };
   
   class ArrayObj3d : public RenderObject, public MoveScaleObject3d
@@ -2070,8 +2074,9 @@ private:
   public:
     ArrayObj3d(EveryApi &ev) : ev(ev), p_x(0.0), p_y(0.0), p_z(0.0), s_x(1.0), s_y(1.0), s_z(1.0) 
     {
-      current_rot_matrix = ev.matrix_api.identity();
-    }
+      current_rot_matrix = ev.matrix_api.identity(); 
+      current_rot_matrix2 = ev.matrix_api.identity();
+   }
     void push_back(RenderObject *obj, MoveScaleObject3d *obj2)
     {
       render_vec.push_back(obj);
@@ -2164,6 +2169,10 @@ private:
       current_rot_matrix = m;
       setup();
     }
+    void set_rotation_matrix2(M m)
+    {
+      current_rot_matrix2 = m;
+    }
   private:
     void setup_one(int i)
     {
@@ -2184,6 +2193,7 @@ private:
       move_scale_vec[i]->set_pos(ap_x,ap_y,ap_z);
       move_scale_vec[i]->set_scale(as_x,as_y,as_z);
       move_scale_vec[i]->set_rotation_matrix(m);
+      move_scale_vec[i]->set_rotation_matrix2(current_rot_matrix2);
     }
     void setup() 
     {
@@ -2204,9 +2214,11 @@ private:
     std::vector<float> scale_y;
     std::vector<float> scale_z;
     std::vector<M> rot_matrix;
+    std::vector<M> rot_matrix2;
     float p_x, p_y, p_z;
     float s_x, s_y, s_z;
     M current_rot_matrix;
+    M current_rot_matrix2;
   };
   class SpriteObj : public RenderObject, public MoveScaleObject2d
   {
@@ -2737,6 +2749,7 @@ private:
       current_rot = m;
       setup_m();
     }
+    void set_rotation_matrix2(M m) { }
   private:
     void setup_m() {
       m = mat.mult(current_rot, mat.mult(current_scale, current_pos));
