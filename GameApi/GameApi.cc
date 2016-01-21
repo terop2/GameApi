@@ -6069,6 +6069,105 @@ EXPORT GameApi::P GameApi::PolygonApi::memoize_all(P orig)
   coll2->MemoizeAll();
   return add_polygon2(e, coll2, 1);
 }
+EXPORT GameApi::P GameApi::PolygonApi::circular_span(EveryApi &ev, LI li,
+						     float delta_angle,
+						     int num_steps)
+{
+  M m = ev.matrix_api.yrot(delta_angle);
+  return span(li, m, num_steps);
+}
+class Span : public FaceCollection
+{
+public:
+  Span(LineCollection *lines, Matrix m, int num_steps) : lines(lines), m(m), num_steps(num_steps) 
+  {
+    Matrix mm = Matrix::Identity();
+    arr.push_back(mm);
+    for(int i=0;i<num_steps;i++)
+      {
+	mm = mm * m; 
+	arr.push_back(mm);
+      }
+  }
+  virtual int NumFaces() const { return lines->NumLines() * num_steps; }
+  virtual int NumPoints(int face) const { return 4; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int line = face / num_steps;
+    int step = face - line*num_steps;
+    Matrix m1 = arr[step];
+    Point p = lines->LinePoint(line, 0);
+    Point py = lines->LinePoint(line, 1);
+    p = p * m1;
+    py = p * m1;
+    Point px = p*m;
+    Point pxy = py*m;
+    switch(point)
+      {
+      case 0: return p;
+      case 1: return px;
+      case 2: return pxy;
+      case 3: return py;
+      }
+    return p;
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Point p1 = FacePoint(face, 0);
+    Point p2 = FacePoint(face, 1);
+    Point p3 = FacePoint(face, 2);
+    Vector v = -Vector::CrossProduct(p2-p1,p3-p1);
+    return v / v.Dist();
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    int line = face / num_steps;
+    //int step = face - line*num_steps;
+    unsigned int p = lines->LineColor(line, 0);
+    unsigned int py = lines->LineColor(line, 1);
+    switch(point)
+      {
+      case 0: return p;
+      case 1: return p;
+      case 2: return py;
+      case 3: return py;
+      };
+    return p;
+
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    Point2d p00 = { 0.0, 0.0 };
+    Point2d p10 = { 1.0, 0.0 };
+    Point2d p11 = { 1.0, 1.0 };
+    Point2d p01 = { 0.0, 1.0 };
+    switch(point)
+      {
+      case 0: return p00;
+      case 1: return p10;
+      case 2: return p11;
+      case 3: return p01;
+      }
+    return p00;
+  }
+
+private:
+  LineCollection *lines;
+  Matrix m;
+  int num_steps;
+  std::vector<Matrix> arr;
+};
+EXPORT GameApi::P GameApi::PolygonApi::span(LI li,
+					    M matrix,
+					    int num_steps)
+{
+  LineCollection *lines = find_line_array(e, li);
+  Matrix m = find_matrix(e, matrix);
+  FaceCollection *span = new Span(lines, m, num_steps);
+  return add_polygon2(e, span, 1);
+}
 EXPORT GameApi::P GameApi::PolygonApi::heightmap(FB bm,
 					  std::function<P (float)> f, float dx, float dz)
 {
@@ -11173,6 +11272,19 @@ void GameApi::PointsApi::update(GameApi::PTA pta)
   glBufferSubData(GL_ARRAY_BUFFER, 0, arr->numpoints*sizeof(unsigned int), arr->color);
 }
 #endif
+unsigned int swap_color(unsigned int c)
+{
+  unsigned int ca = c & 0xff000000;
+  unsigned int cr = c & 0x00ff0000;
+  unsigned int cg = c & 0x0000ff00;
+  unsigned int cb = c & 0x000000ff;
+  cr>>=16;
+  //cg>>=8;
+  cb<<=16;
+  //cg<<=8;
+  return ca+cr+cg+cb;
+}
+
 EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
 {
   PointsApiPoints *pts = find_pointsapi_points(e, p);
@@ -11187,7 +11299,7 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
       array[i*3+0] = p.x;
       array[i*3+1] = p.y;
       array[i*3+2] = p.z;
-      color[i] = c;
+      color[i] = swap_color(c);
     }
   PointArray3 *arr = new PointArray3;
   arr->array = array;
@@ -12239,6 +12351,25 @@ EXPORT GameApi::LI GameApi::LinesApi::change_color(GameApi::LI li, unsigned int 
   LineCollection *lines = find_line_array(e, li);
   return add_line_array(e, new ColorLineCollection(lines, color1, color2));
 }
+class ColorFunctionLines : public LineCollection
+{
+public:
+  ColorFunctionLines(LineCollection *coll, std::function<unsigned int(int linenum, bool id)> f) : coll(coll), f(f) { }
+  int NumLines() const { return coll->NumLines(); }
+  Point LinePoint(int line, int point) const { return coll->LinePoint(line,point); }
+  unsigned int LineColor(int line, int point) const
+  {
+    return f(line, point==1);
+  }
+private:
+  LineCollection *coll;
+  std::function<unsigned int(int linenum, bool id)> f;
+};
+EXPORT GameApi::LI GameApi::LinesApi::color_function(LI lines, std::function<unsigned int(int linenum, bool id)> f)
+{
+  LineCollection *lines2 = find_line_array(e, lines);
+  return add_line_array(e, new ColorFunctionLines(lines2, f));
+}
 EXPORT GameApi::LI GameApi::LinesApi::function(std::function<GameApi::PT (int linenum, bool id)> f, int numlines)
 {
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -13135,8 +13266,8 @@ EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
 	array[i*6+3] = p2.x;
 	array[i*6+4] = p2.y;
 	array[i*6+5] = p2.z;
-	color_array[i*2+0] = color1;
-	color_array[i*2+1] = color2;
+	color_array[i*2+0] = swap_color(color1);
+	color_array[i*2+1] = swap_color(color2);
 	//std::cout << i << ":" << "(" << p.x << "," << p.y << "," << p.z << ")-(" << p2.x<< "," << p2.y << "," << p2.z << ")" << std::endl;
       }
   }
