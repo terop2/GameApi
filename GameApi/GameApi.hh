@@ -1130,6 +1130,8 @@ public:
 	      float min_y, float max_y,
 	      float min_z, float max_z);
   IMPORT P heightmap(FB fb, std::function<P (float)> f, float dx, float dz);
+  IMPORT P circular_span(EveryApi &ev, LI li, float delta_angle_around_y_axis, int num_steps);
+  IMPORT P span(LI li, M matrix, int num_steps);
   IMPORT P fromsurface(S s, float thickness);
   IMPORT P fromsurface(S s1, S s2, C curve); // surfacebetweensurfaces
   
@@ -1696,6 +1698,7 @@ public:
 	IMPORT LinesApi(Env &e) : e(e) { }
 	IMPORT LI function(std::function<PT(int linenum, bool id)> f,
 	      int numlines);
+  IMPORT LI color_function(LI lines, std::function<unsigned int(int linenum, bool id)> f);
   IMPORT LI change_color(LI li, unsigned int color);
   IMPORT LI change_color(LI li, unsigned int color_1, unsigned int color_2);
 	IMPORT LI from_points(PC points, bool loops);
