@@ -394,6 +394,7 @@ ShaderFile::ShaderFile()
 "uniform mat4 in_T;\n"
 "uniform float in_POS;\n"
 "uniform float in_time;\n"
+"attribute vec3 in_InstPos;\n"
 "attribute vec3 in_Position;\n"
 "attribute vec3 in_Position2;\n"
 "attribute vec3 in_Normal;\n"
@@ -403,6 +404,10 @@ ShaderFile::ShaderFile()
 "varying vec4 ex_Color;\n"
 "varying vec3 ex_Normal;\n"
 "varying vec3 ex_Position;\n"
+"vec4 inst(vec4 pos)\n"
+"{\n"
+"   return pos + vec4(in_InstPos,0.0);\n"
+"}\n"
 "vec4 passall(vec4 pos)\n"
 "{\n"
 "  ex_Color = in_Color;\n"
@@ -705,6 +710,7 @@ ShaderFile::ShaderFile()
 "uniform mat4 in_T;\n"
 "uniform float in_POS;\n"
 "uniform float in_time;\n"
+"in vec3 in_InstPos;\n"
 "in vec3 in_Position;\n"
 "in vec3 in_Position2;\n"
 "in vec3 in_Normal;\n"
@@ -714,6 +720,10 @@ ShaderFile::ShaderFile()
 "out vec4 ex_Color;\n"
 "out vec3 ex_Normal;\n"
 "out vec3 ex_Position;\n"
+"vec4 inst(vec4 pos)\n"
+"{\n"
+"   return pos + vec4(in_InstPos,0.0);\n"
+"}\n"
 "vec4 passall(vec4 pos)\n"
 "{\n"
 "  ex_Color = in_Color;\n"
@@ -1102,7 +1112,7 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 	  if (!is_fragment)
 	    { // vertex
 	      out+="vec3 p = mix(in_Position, in_Position2, in_POS);\n";
-	      out+="vec4 pos0 = in_P * in_T * in_MV * vec4(p,1.0);\n";
+	      out+="vec4 pos0 =  vec4(p,1.0);\n";
 	      int s = comb.size();
 	      for(int i=0;i<s;i++)
 		{
@@ -1120,7 +1130,7 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 		}
 	      std::stringstream ss3;
 	      ss3 << s;
-	      out+="gl_Position = pos";
+	      out+="gl_Position = in_P * in_T * in_MV * pos";
 	      out+=ss3.str();
 	      out+=";\n";
 	    }

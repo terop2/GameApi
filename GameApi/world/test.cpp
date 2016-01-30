@@ -298,8 +298,13 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
       P p2 = ev.polygon_api.scale(p, 5.0,5.0,5.0);
       P p2a = ev.polygon_api.translate(p2, 0.0, 15.0, 0.0);
       P p3 = ev.polygon_api.recalculate_normals(p2a);
-      P p4 = ev.polygon_api.color_from_normals(p3);
-      return p4;
+      V v = ev.vector_api.vector(10,-10,10);
+      P p4 = ev.polygon_api.color_lambert(p3, 0xffff8844, v);
+      //P p4 = ev.polygon_api.color_from_normals(p3);
+      P p5 = ev.polygon_api.color_grayscale(p4);
+      //P p6 = ev.polygon_api.color(p5, 0xffff8844);
+      //P p7 = ev.polygon_api.mix_color(p5,p6, 0.01);
+      return p5;
 #endif
     }
   case 17:
@@ -936,6 +941,7 @@ int main() {
     {
       pk = ev.polygon_api.or_elem(pk, ev.polygon_api.load_model("./sponzasimple.obj", i));
     }
+  
   m.sponza = pk;
 #endif
 

@@ -134,6 +134,7 @@ public:
   void prepare(int id);
   void update(int id);
   void render(int id);
+  void render_instanced(int id, Point *positions, int size);
   void del();
   ~RenderVertexArray() { del(); }
 private:
@@ -143,6 +144,7 @@ private:
   unsigned int buffers2[5];
   int tri_count;
   int quad_count;
+  unsigned int pos_buffer;
 };
 
 class RenderVertexArray2
