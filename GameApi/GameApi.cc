@@ -9150,6 +9150,49 @@ EXPORT GameApi::P GameApi::VolumeApi::rendercubes2(EveryApi &ev, O o, fptrtype f
   }
   return ev.polygon_api.or_array(&vec3[0], vec3.size());
 }
+
+class Instanced_Points : public PointsApiPoints
+{
+public:
+  Instanced_Points(float *arr, int size) : arr(arr), size(size) { }
+  int NumPoints() const { return size/3; }
+  Point Pos(int i) const { return Point(arr[i*3+0], arr[i*3+1], arr[i*3+2]); }
+  unsigned int Color(int i) const { return 0xffffffff; }
+  ~Instanced_Points() { delete [] arr; }
+private:
+  float *arr;
+  int size;
+};
+
+EXPORT GameApi::PTS GameApi::VolumeApi::instanced_positions(O object,
+							    int sx, int sy, int sz,
+							    float start_x, float end_x,
+							    float start_y, float end_y,
+							    float start_z, float end_z)
+{
+  VolumeObject *volume = find_volume(e,object);
+  int ssx = sx;
+  int ssy = sy;
+  int ssz = sz;
+  float *arr = new float[ssx*ssy*ssz*3];
+  float *t_arr = arr;
+  for(int x=0;x<ssx;x++)
+    for(int y=0;y<ssy;y++)
+      for(int z=0;z<ssz;z++)
+	{
+	  Point p(start_x + x*(end_x-start_x)/ssx,
+		  start_y + y*(end_y-start_y)/ssy,
+		  start_z + z*(end_z-start_z)/ssz);
+	  if (volume->Inside(p)) {
+	    *t_arr = sx*x; t_arr++;
+	    *t_arr = sy*y; t_arr++;
+	    *t_arr = sz*z; t_arr++;
+	  }
+	}
+  int size = t_arr-arr;
+  return add_points_api_points(e, new Instanced_Points(arr, size));
+
+}
 EXPORT GameApi::P GameApi::VolumeApi::rendercubes(O o, fptrtype f, int size, float wholesize)
 {
   float s = wholesize/size;
@@ -9321,18 +9364,6 @@ EXPORT unsigned int GameApi::VoxelApi::get_pixel(VX v, int x, int y, int z)
   Voxel<unsigned int> *c = find_voxel(e, v);
   return c->Map(x,y,z);
 }
-class Instanced_Points : public PointsApiPoints
-{
-public:
-  Instanced_Points(float *arr, int size) : arr(arr), size(size) { }
-  int NumPoints() const { return size/3; }
-  Point Pos(int i) const { return Point(arr[i*3+0], arr[i*3+1], arr[i*3+2]); }
-  unsigned int Color(int i) const { return 0xffffffff; }
-  ~Instanced_Points() { delete [] arr; }
-private:
-  float *arr;
-  int size;
-};
 EXPORT GameApi::PTS GameApi::VoxelApi::instanced_positions(VX vx, float sx, float sy, float sz)
 {
   Voxel<unsigned int> *c = find_voxel(e, vx);

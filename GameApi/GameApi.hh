@@ -675,6 +675,11 @@ public:	IMPORT VolumeApi(Env &e);
 			float start_x, float end_x,
 			float start_y, float end_y,
 			float start_z, float end_z);
+  IMPORT PTS instanced_positions(O object,
+				 int sx, int sy, int sz,
+				 float start_x, float end_x,
+				 float start_y, float end_y,
+				 float start_z, float end_z);
   IMPORT void find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level);
   // use RayTracingBitmap class in graph.hh
   // problem1: float values in O. (currently uses bool)
