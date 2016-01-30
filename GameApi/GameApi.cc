@@ -9206,6 +9206,39 @@ EXPORT GameApi::P GameApi::VolumeApi::rendercubes(O o, fptrtype f, int size, flo
   return hv.get_all();
 }
 
+class HV : public HandleValue<std::pair<Vector,unsigned int> >
+{
+public:
+  HV(std::vector<float> &points, std::vector<unsigned int> &colors) : points(points), colors(colors) { }
+  void Handle(std::pair<Vector,unsigned int> p)
+  {
+    points.push_back(p.first.dx);
+    points.push_back(p.first.dy);
+    points.push_back(p.first.dz);
+    colors.push_back(p.second);
+  }
+private:
+  std::vector<float> &points;
+  std::vector<unsigned int> &colors;
+};
+EXPORT GameApi::PTS GameApi::VolumeApi::instanced_positions(O o, int size, float wholesize)
+{
+  //float s = wholesize/size;
+  EveryApi api(e);
+  std::vector<float> vec;
+  std::vector<unsigned int> vec2;
+  HV hv(vec,vec2);
+
+  VolumeObject *volume = find_volume(e,o);
+  RenderVoxel(*volume, size, wholesize, hv);
+
+  float *arr = new float[vec.size()];
+  std::copy(vec.begin(), vec.end(), arr);
+
+  return add_points_api_points(e, new Instanced_Points(arr, vec.size()));
+}
+
+
 EXPORT GameApi::ContinuousBitmapApi::ContinuousBitmapApi(Env &e) : e(e) { }
 
 EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::empty(float x, float y)
@@ -9364,7 +9397,7 @@ EXPORT unsigned int GameApi::VoxelApi::get_pixel(VX v, int x, int y, int z)
   Voxel<unsigned int> *c = find_voxel(e, v);
   return c->Map(x,y,z);
 }
-EXPORT GameApi::PTS GameApi::VoxelApi::instanced_positions(VX vx, float sx, float sy, float sz)
+EXPORT GameApi::PTS GameApi::VoxelApi::instanced_positions(VX vx, float sx, float sy, float sz, unsigned int value)
 {
   Voxel<unsigned int> *c = find_voxel(e, vx);
   int ssx = c->SizeX();
@@ -9376,7 +9409,7 @@ EXPORT GameApi::PTS GameApi::VoxelApi::instanced_positions(VX vx, float sx, floa
     for(int y=0;y<ssy;y++)
       for(int z=0;z<ssz;z++)
 	{
-	  if (c->Map(x,y,z)!=0) {
+	  if (c->Map(x,y,z)==value) {
 	    *t_arr = sx*x; t_arr++;
 	    *t_arr = sy*y; t_arr++;
 	    *t_arr = sz*z; t_arr++;
@@ -11544,6 +11577,25 @@ EXPORT GameApi::FOA GameApi::FloatVolumeApi::prepare(GameApi::FO object,
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
 
   return add_point_array(e, arr);
+}
+EXPORT void GameApi::PointsApi::explode(GameApi::PTA array, float x, float y, float z, float dist)
+{
+  PointArray3 *arr = find_point_array3(e, array);
+  float *arr2 = arr->array;
+  Point p2(x,y,z);
+  for(int i=0;i<arr->numpoints;i++)
+    {
+      Point p(arr2[0], arr2[1], arr2[2]);
+      Vector v = p-p2;
+      float d = v.Dist();
+      v/=d;
+      v*=d+dist;
+      Point pp = p2+v;
+      arr2[0] = pp.x;
+      arr2[1] = pp.y;
+      arr2[2] = pp.z;
+      arr2+=3;
+    }
 }
 EXPORT void GameApi::PointsApi::render(GameApi::PTA array)
 {

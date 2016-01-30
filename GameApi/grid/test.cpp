@@ -9,10 +9,10 @@ using namespace GameApi;
 
 unsigned int f(EveryApi &ev, int x, int y, int z, void* data)
 {
-  x-=15;
-  y-=15;
-  z-=15;
-  bool b = x*x+y*y+z*z < 15*15;
+  x-=50;
+  y-=50;
+  z-=50;
+  bool b = x*x+y*y+z*z < 50*50;
   if (b) { return 1; } else { return 0; }
   return 0;
 }
@@ -22,9 +22,9 @@ P g(unsigned int c, EveryApi &ev)
     {
     case 1:
       {
-      P p = ev.polygon_api.cube(-0.5, 0.5, -0.5, 0.5, -0.5, 0.5);
-      P p2 = ev.polygon_api.scale(p, 10.0, 10.0, 10.0);
-      return p2;
+	P p = ev.polygon_api.cube(-2.5, 2.5, -2.5, 2.5, -2.5, 2.5);
+	// P p2 = ev.polygon_api.scale(p, 20.0, 20.0, 20.0);
+      return p;
 	}
     case 0:
       return ev.polygon_api.empty();
@@ -60,10 +60,11 @@ void iter(void *arg)
     M m3 = env->ev->matrix_api.trans(0.0,0.0,-400.0);
     M mm = env->ev->matrix_api.mult(env->ev->matrix_api.mult(m3,m),m2);
     env->poly->set_rotation_matrix2(mm);
-    env->poly->set_pos(env->pos_x, -20.0, env->pos_y);
+    env->poly->set_pos(env->pos_x, 0.0, env->pos_y);
 
     //float arr[] = { 0.0, 0.0, 0.0, 100.0, 0.0, 0.0 };
 
+    env->ev->points_api.explode(env->pta, 20.0, 0.0, 0.0, 1.0);
     env->poly->render_instanced(env->pta);
 
     env->ev->mainloop_api.fpscounter();
@@ -105,13 +106,11 @@ int main() {
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);
 
-  VX vx = ev.voxel_api.function(&f, 30, 30, 30, 0);
+  //VX vx = ev.voxel_api.function(&f, 60, 60, 60, 0);
   PT center = ev.point_api.point(0.0,0.0,0.0);
-  O o = ev.volume_api.sphere(center, 30);
+  O o = ev.volume_api.sphere(center, 1.0);
 
-  PTS pos = ev.volume_api.instanced_positions(o, 40, 40, 40, -30.0, 30.0,
-					      -30.0, 30.0,
-					      -30.0, 30.0);
+  PTS pos = ev.volume_api.instanced_positions(o, 100, 100.0);
   PTA pta = ev.points_api.prepare(pos);
   P p3 = g(1,ev);
   //P p3 = ev.voxel_api.render_boxes(vx, 1.0, 1.0, 1.0);
