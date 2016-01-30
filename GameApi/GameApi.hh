@@ -1088,7 +1088,7 @@ public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
   
-  
+  IMPORT void print_stat(P p);
 	IMPORT P empty();
         IMPORT P load_model(std::string filename, int obj_num);
         IMPORT void save_model(P poly, std::string filename);
@@ -1244,6 +1244,7 @@ public:
   IMPORT ML update_vertex_array_ml(VA va, P p, bool keep=false);
   IMPORT VA create_vertex_array(P p, bool keep=false); // slow
   IMPORT void render_vertex_array(VA va); // fast
+  IMPORT void render_vertex_array_instanced(VA va, float *arr, int size); // fast
   IMPORT ML render_vertex_array_ml(VA va);
   //IMPORT int access_point_count(VA va, bool triangle);
   //IMPORT float *access_points(VA va, bool triangle, int face, int point);
@@ -1595,6 +1596,7 @@ public:
   IMPORT unsigned int get_pixel(VX v, int x, int y, int z);
   IMPORT BM sw_rays(O volume, VX colours, int sx, int sy, float vx, float vy, float vz, float z);
   IMPORT P render_boxes(VX v, float sx, float sy, float sz);
+  IMPORT float *instanced_positions(VX x, float sx, float sy, float sz, int &size);
 private:
   Env &e;
 };
@@ -1666,6 +1668,7 @@ public:
 			float end_x, float end_y, float end_z);
   IMPORT PTS or_points(PTS p1, PTS p2);
   IMPORT PTS heightmap(BM colour, FB floatbitmap, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
+  IMPORT PTS random_plane(PT pos, V u_x, V u_y, int numpoints);
   IMPORT PTS surface(std::function<PT (float,float)> surf,
 		     std::function<unsigned int (PT,float,float)> color,
 		     float start_u, float end_u,
@@ -1712,6 +1715,9 @@ public:
   IMPORT LI render_slice_2d(P p, PT pos, V u_x, V u_y);
   IMPORT LI translate(LI lines, float dx, float dy, float dz);
   IMPORT LI scale(LI lines, float m_x, float m_y, float m_z);
+  IMPORT LI rotx(LI lines, float angle);
+  IMPORT LI roty(LI lines, float angle);
+  IMPORT LI rotz(LI lines, float angle);
 
   IMPORT LI unit_cube(LI orig, PT pos, V u_x, V u_y, V u_z);
   IMPORT LI unit_to_cube(LI orig, PT pos, V u_x, V u_y, V u_z);
@@ -2448,6 +2454,14 @@ private:
       //shapi.set_var(sh, "in_T", m2);
       shapi.set_var(sh, "in_POS", anim_time);
       api.render_vertex_array(m_va2[anim_id]); 
+      shapi.set_var(sh, "in_POS", 0.0f);
+    }
+    void render_instanced(float *arr, int size) {
+      shapi.use(sh);
+      shapi.set_var(sh, "in_MV", m); 
+      //shapi.set_var(sh, "in_T", m2);
+      shapi.set_var(sh, "in_POS", anim_time);
+      api.render_vertex_array_instanced(m_va2[anim_id], arr, size); 
       shapi.set_var(sh, "in_POS", 0.0f);
     }
     void set_pos(float pos_x, float pos_y, float pos_z)

@@ -553,6 +553,101 @@ void RenderVertexArray::del()
   glDeleteBuffers(1,&buffers2[4]);
 #endif
 }
+void RenderVertexArray::render_instanced(int id, Point *positions, int size)
+{
+#ifdef VAO
+  glBindVertexArray(vao[0]);
+#endif
+
+  // INSTANCED DRAWING
+  glBindBuffer( GL_ARRAY_BUFFER, pos_buffer );
+  glBufferData( GL_ARRAY_BUFFER, sizeof(Point) * size, positions, GL_DYNAMIC_DRAW);
+  glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glVertexAttribDivisor(5, 1);
+  glEnableVertexAttribArray(5);
+  // END INSTANCED
+
+#ifndef VAO
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[0]);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[1]);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[2]);
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[3]);
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[4]);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+#endif
+
+#if 1
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+    glEnableVertexAttribArray(4);
+#endif
+
+
+    glDrawArraysInstanced(GL_TRIANGLES, 0, tri_count, size);
+#if 1
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
+    glDisableVertexAttribArray(3);
+    glDisableVertexAttribArray(4);
+    glDisableVertexAttribArray(5);
+#endif  
+
+#ifdef VAO
+  glBindVertexArray(vao[1]);
+#endif
+
+  // INSTANCED DRAWING
+  glBindBuffer( GL_ARRAY_BUFFER, pos_buffer );
+  glBufferData( GL_ARRAY_BUFFER, sizeof(Point) * size, positions, GL_DYNAMIC_DRAW);
+  glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glVertexAttribDivisor(5, 1);
+  glEnableVertexAttribArray(5);
+  // END INSTANCED
+
+
+#ifndef VAO
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[0]);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[1]);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[2]);
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[3]);
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[4]);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+#endif
+
+#if 1
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+    glEnableVertexAttribArray(4);
+#endif
+    glDrawArraysInstanced(GL_TRIANGLES, 0, quad_count, size);
+#if 1
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
+    glDisableVertexAttribArray(3);
+    glDisableVertexAttribArray(4);
+    glDisableVertexAttribArray(5);
+#endif
+#ifdef VAO
+    glBindVertexArray(0);
+#endif
+
+}
 void RenderVertexArray::render(int id)
 {
 #ifdef VAO

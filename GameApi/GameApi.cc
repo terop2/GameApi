@@ -4571,6 +4571,17 @@ EXPORT GameApi::P GameApi::PolygonApi::from_polygon(P p, std::function<P (int fa
 {
   return from_polygon_1(p,f);
 }
+void GameApi::PolygonApi::print_stat(P p)
+{
+  FaceCollPolyHandle *handle = find_poly(e, p);
+  FaceCollection *coll = handle->coll;
+  int faces = coll->NumFaces();
+  int points = coll->NumPoints(0);
+  std::cout << "Faces: " << faces << std::endl;
+  std::cout << "Points: " << points << std::endl;
+
+}
+
 GameApi::P GameApi::PolygonApi::from_polygon_1(P p, std::function<P (int face,
 								     PT p1, PT p2, PT p3, PT p4)> f)
 {
@@ -6099,7 +6110,7 @@ public:
     Point p = lines->LinePoint(line, 0);
     Point py = lines->LinePoint(line, 1);
     p = p * m1;
-    py = p * m1;
+    py = py * m1;
     Point px = p*m;
     Point pxy = py*m;
     switch(point)
@@ -6669,6 +6680,7 @@ GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format,
   bind_attrib_1(sh, 2, "in_Color");
   bind_attrib_1(sh, 3, "in_TexCoord");
   bind_attrib_1(sh, 4, "in_Position2");
+  bind_attrib_1(sh, 5, "in_InstPos");
   link_1(sh);
   use_1(sh);
   set_default_projection_1(sh, "in_P");
@@ -9309,6 +9321,27 @@ EXPORT unsigned int GameApi::VoxelApi::get_pixel(VX v, int x, int y, int z)
   Voxel<unsigned int> *c = find_voxel(e, v);
   return c->Map(x,y,z);
 }
+EXPORT float *GameApi::VoxelApi::instanced_positions(VX vx, float sx, float sy, float sz, int &size)
+{
+  Voxel<unsigned int> *c = find_voxel(e, vx);
+  int ssx = c->SizeX();
+  int ssy = c->SizeY();
+  int ssz = c->SizeZ();
+  float *arr = new float[ssx*ssy*ssz*3];
+  float *t_arr = arr;
+  for(int x=0;x<ssx;x++)
+    for(int y=0;y<ssy;y++)
+      for(int z=0;z<ssz;z++)
+	{
+	  if (c->Map(x,y,z)!=0) {
+	    *t_arr = sx*x; t_arr++;
+	    *t_arr = sy*y; t_arr++;
+	    *t_arr = sz*z; t_arr++;
+	  }
+	}
+  size = t_arr-arr;
+  return arr;
+}
 
 typedef Voxel<unsigned int> VoxelColor;
 
@@ -9681,6 +9714,45 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       rend->render(0);
     }
 }
+
+EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(VA va, float *arr, int size)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  RenderVertexArray *rend = find_vertex_array_render(e, va);
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  if (s->texture_id!=-1 && s->texture_id<SPECIAL_TEX_ID)
+    {
+      TextureEnable(*env->renders[s->texture_id], 0, true);
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render_instanced(0, (Point*)arr, size/3);
+      TextureEnable(*env->renders[s->texture_id], 0, false);
+    }
+  else if (s->texture_id!=-1)
+    {
+      glEnable(GL_TEXTURE_2D);
+#ifndef EMSCRIPTEN
+      glClientActiveTexture(GL_TEXTURE0+0);
+#endif
+      glActiveTexture(GL_TEXTURE0+0);
+      glBindTexture(GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render_instanced(0, (Point*)arr, size/3);
+      //rend->render(0);
+
+      glDisable(GL_TEXTURE_2D);
+    }
+  else
+    {
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render_instanced(0, (Point*)arr, size/3);
+      //rend->render(0);
+    }
+}
+
 
 class AnimFace : public ForwardFaceCollection
 {
@@ -11183,6 +11255,27 @@ EXPORT GameApi::PTS GameApi::PointsApi::surface(std::function<PT (float,float)> 
     }
   return add_points_api_points(e, new SurfacePoints(points, color2));
 }
+EXPORT GameApi::PTS GameApi::PointsApi::random_plane(PT pos, V u_x, V u_y, int numpoints)
+{
+  Point *pos_1 = find_point(e,pos);
+  Vector *ux_1 = find_vector(e,u_x);
+  Vector *uy_1 = find_vector(e,u_y);
+  std::vector<Point> *points = new std::vector<Point>;
+  std::vector<unsigned int> *color2 = new std::vector<unsigned int>;
+  for(int i=0;i<numpoints;i++)
+    {
+      Random r;
+      float xp = double(r.next())/r.maximum();
+      float yp = double(r.next())/r.maximum();
+      
+      Point p = *pos_1 + xp* (*ux_1) + yp*(*uy_1);
+      points->push_back(p);
+      color2->push_back(0xffffffff);
+    }
+
+
+  return add_points_api_points(e, new SurfacePoints(points, color2));  
+}
 EXPORT GameApi::PTS GameApi::PointsApi::heightmap(BM colour, FB height, PT pos, V u_x, V u_y, V u_z, int sx, int sy)
 {
   BitmapHandle *h = find_bitmap(e, colour);
@@ -12542,6 +12635,21 @@ EXPORT GameApi::LI GameApi::LinesApi::translate(LI lines, float dx, float dy, fl
 {
   LineCollection *c = find_line_array(e, lines);
   return add_line_array(e, new MatrixLineCollection(Matrix::Translate(dx,dy,dz),*c));
+}
+EXPORT GameApi::LI GameApi::LinesApi::rotx(LI lines, float angle)
+{
+  LineCollection *c = find_line_array(e, lines);
+  return add_line_array(e, new MatrixLineCollection(Matrix::XRotation(angle),*c));
+}
+EXPORT GameApi::LI GameApi::LinesApi::roty(LI lines, float angle)
+{
+  LineCollection *c = find_line_array(e, lines);
+  return add_line_array(e, new MatrixLineCollection(Matrix::YRotation(angle),*c));
+}
+EXPORT GameApi::LI GameApi::LinesApi::rotz(LI lines, float angle)
+{
+  LineCollection *c = find_line_array(e, lines);
+  return add_line_array(e, new MatrixLineCollection(Matrix::ZRotation(angle),*c));
 }
 EXPORT GameApi::LI GameApi::LinesApi::scale(LI lines, float dx, float dy, float dz)
 {
