@@ -169,7 +169,7 @@ public:
   IMPORT void nvidia_init();
   IMPORT void transfer_sdl_surface(MainLoopApi &orig);
   IMPORT void clear();
-  IMPORT void clear_3d();
+  IMPORT void clear_3d(unsigned int col = 0xff000000);
   IMPORT void switch_to_3d(bool b, SH sh, int screen_width=800., int screen_height = 600);
   IMPORT void alpha(bool enabled);
   void alpha_1(bool enabled);
@@ -1114,7 +1114,8 @@ public:
 	   float z1, float z2);
 	IMPORT P quad_z(float x1, float x2,
 	   float y1, float y2,
-	   float z);
+ 	   float z);
+        IMPORT P tri_strip(PT *array, int size);
 	IMPORT P polygon(PT *array, int size); // use render_dynamic with this.
 	IMPORT P tri_vertex_array(float *v_array, int v_size,
 		     float *n_array, int n_size,
@@ -1435,6 +1436,8 @@ public:
   P to_polygon_lines_1(PL pl, PT pos, V u_x, V u_y, V u_z, float z_mult);
   IMPORT P to_polygon(EveryApi &ev, PL pl, PT pos, V u_x, V u_y, V u_z, float z_mult);
 
+  IMPORT P to_polygon_strip(EveryApi &ev, PL pl, PT pos, V u_x, V u_y);
+
   // 1) get black bitmap
   // 2) draw white polygon
   // 3) draw more black
@@ -1684,6 +1687,7 @@ public:
 		     float start_v, float end_v,
 		     float step_u, float step_v);
   IMPORT PTS from_volume(O o, PT pos, V u_x, V u_y, V u_z, int sx, int sy, int sz);
+  IMPORT PTS scale(PTS obj, float sx, float sy, float sz);
   IMPORT PTS shadow_points(PTS obj, PT pos, V u_x, V u_y, V light_vec);
 
   IMPORT PTS unit_cube(PTS orig, PT pos, V u_x, V u_y, V u_z);
