@@ -818,7 +818,10 @@ void iter()
     env.ev->mainloop_api.swapbuffers();
 
     // handle esc event
-    MainLoopApi::Event e = env.ev->mainloop_api.get_event();
+    //MainLoopApi::Event e = env.ev->mainloop_api.get_event();
+    MainLoopApi::Event e;
+    while((e = env.ev->mainloop_api.get_event()).last==true)
+      {
     // if (e.type==0x300)
     //std::cout << e.type << " " << e.ch << std::endl;
 
@@ -837,6 +840,7 @@ void iter()
       {
 	//std::cout << "Space" << std::endl;
 	env.jump_start_frame = env.frame;
+      }
       }
     if (env.frame>=env.jump_start_frame && env.frame<env.jump_start_frame+env.jump_duration)
       {
