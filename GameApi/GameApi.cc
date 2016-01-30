@@ -389,11 +389,19 @@ EXPORT void GameApi::MainLoopApi::clear()
   //glTranslatef(0.0, -100.0, 0.0);
 
 }
-EXPORT void GameApi::MainLoopApi::clear_3d()
+EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
 {
   //glClearColor(255,255,255,255);
   glClearStencil(0);
-  glClearColor(0,0,0,0);
+
+  int r = color & 0x00ff0000;
+  int g = color & 0x0000ff00;
+  int b = color & 0x000000ff;
+  int a = color & 0xff000000;
+  a>>=24;
+  r>>=16;
+  g>>=8;
+  glClearColor(r/256.0,g/256.0,b/256.0,a/256.0);
   glStencilMask(~0);
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 #ifndef EMSCRIPTEN
@@ -7396,6 +7404,48 @@ EXPORT void GameApi::PolygonApi::get_tri_vertex_array(P p, int choose, int row,
   *tex_size = vertex_size*2;
 }
 
+class TriStripFaceCollection : public FaceCollection
+{
+public:
+  TriStripFaceCollection(std::vector<Point> vec) : vec(vec) { }
+  virtual int NumFaces() const { return vec.size()-2; }
+  virtual int NumPoints(int face) const { return 3; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return vec[face+point];
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Point p1 = FacePoint(face, 0);
+    Point p2 = FacePoint(face, 1);
+    Point p3 = FacePoint(face, 2);
+    Vector v = -Vector::CrossProduct(p2-p1,p3-p1);
+    return v / v.Dist();
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return 0xffffffff;
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    Point2d p = { 0.0, 0.0 };
+    return p;
+  }
+private:
+  std::vector<Point> vec;
+};
+EXPORT GameApi::P GameApi::PolygonApi::tri_strip(PT *array, int size)
+{
+  std::vector<Point> vec;
+  for(int i=0;i<size;i++)
+    {
+      vec.push_back(*find_point(e, array[i]));
+    }
+  return add_polygon2(e, new TriStripFaceCollection(vec),1);
+  
+}
 EXPORT GameApi::P GameApi::PolygonApi::polygon(PT *array, int size)
 {
   PolygonElem *coll = new PolygonElem;
@@ -9184,9 +9234,9 @@ EXPORT GameApi::PTS GameApi::VolumeApi::instanced_positions(O object,
 		  start_y + y*(end_y-start_y)/ssy,
 		  start_z + z*(end_z-start_z)/ssz);
 	  if (volume->Inside(p)) {
-	    *t_arr = sx*x; t_arr++;
-	    *t_arr = sy*y; t_arr++;
-	    *t_arr = sz*z; t_arr++;
+	    *t_arr = p.x; t_arr++;
+	    *t_arr = p.y; t_arr++;
+	    *t_arr = p.z; t_arr++;
 	  }
 	}
   int size = t_arr-arr;
@@ -10804,6 +10854,37 @@ EXPORT GameApi::P GameApi::PlaneApi::to_polygon(EveryApi &ev, PL pl, PT pos, V u
   P array[] = { face, face2, lines };
   return ev.polygon_api.or_array(&array[0], 3);
 }
+EXPORT GameApi::P GameApi::PlaneApi::to_polygon_strip(EveryApi &ev, PL pl, PT pos, V u_x, V u_y)
+{
+  Point *posa = find_point(e,pos);
+  Vector *uu_x = find_vector(e, u_x);
+  Vector *uu_y = find_vector(e, u_y);
+
+
+  PlanePoints2d *plane = find_plane(e,pl);
+  int sz = plane->Size();
+  std::vector<PT> vec;
+  int pos1 = 1;
+  int pos2 = 0;
+  for(int i=0;i<sz/2;i++)
+    {
+      Point2d p1 = plane->Map(pos2);
+      Point p1a = *posa + p1.x * (*uu_x) + p1.y * (*uu_y);
+      vec.push_back(add_point(e, p1a.x,p1a.y,p1a.z));
+      Point2d p2 = plane->Map(pos1);
+      Point p2a = *posa + p2.x * (*uu_x) + p2.y * (*uu_y);
+      vec.push_back(add_point(e, p2a.x,p2a.y,p2a.z));
+      pos1++; if (pos1>=sz) { pos1 = 0; }
+      pos2--; if (pos2<0) { pos2=sz-1; }
+    }
+  if (sz%2==1)
+    {
+      Point2d p1 = plane->Map(pos1);
+      Point p1a = *posa + p1.x * (*uu_x) + p1.y * (*uu_y);
+      vec.push_back(add_point(e, p1a.x,p1a.y,p1a.z));      
+    }
+  return ev.polygon_api.tri_strip(&vec[0], vec.size());
+}
 EXPORT GameApi::P GameApi::PlaneApi::to_polygon_lines(PL pl, PT pos, V u_x, V u_y, V u_z, float z_multiplier)
 {
   return to_polygon_lines_1(pl,pos,u_x,u_y,u_z,z_multiplier);
@@ -11353,6 +11434,27 @@ EXPORT GameApi::PTS GameApi::PointsApi::random_plane(PT pos, V u_x, V u_y, int n
 
 
   return add_points_api_points(e, new SurfacePoints(points, color2));  
+}
+class MatrixPoints : public PointsApiPoints
+{
+public:
+  MatrixPoints(PointsApiPoints *pts, Matrix m) : pts(pts), m(m) { }
+  int NumPoints() const { return pts->NumPoints(); }
+  Point Pos(int i) const {
+    Point p = pts->Pos(i);
+    return p*m;
+  }
+  unsigned int Color(int i) const { return pts->Color(i); }
+private:
+  PointsApiPoints *pts;
+  Matrix m;
+};
+EXPORT GameApi::PTS GameApi::PointsApi::scale(PTS obj, float sx, float sy, float sz)
+{
+  PointsApiPoints *obj2 = find_pointsapi_points(e, obj);
+
+  return add_points_api_points(e, new MatrixPoints(obj2, Matrix::Scale(sx,sy,sz)));
+
 }
 EXPORT GameApi::PTS GameApi::PointsApi::heightmap(BM colour, FB height, PT pos, V u_x, V u_y, V u_z, int sx, int sy)
 {
