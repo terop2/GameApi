@@ -12,11 +12,12 @@ int main() {
 
   // shader initialization
   ev.shader_api.load_default(); //("Shader.txt");
-  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "inst:colour", "colour");
+  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "inst:colour:light:light", "colour:light:light");
   SH sh2 = ev.shader_api.colour_shader();
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);
   ev.mainloop_api.init_3d(sh2);
+
 
   PT cone_1 = ev.point_api.point(0.0,-4.7,0.0);
   PT cone_2 = ev.point_api.point(0.0,-7.0,0.0);
@@ -88,7 +89,7 @@ int main() {
   // 				     -10.0, 10.0,
   //				     -10.0, 10.0,
   //				     -10.0, 10.0);
-  PTS pts3 = ev.volume_api.instanced_positions(h2_comb, 200, 200, 200,
+  PTS pts3 = ev.volume_api.instanced_positions(h2_comb, 100, 100, 100,
 					       -10.0, 10.0,
 					       -10.0, 10.0,
 					       -10.0, 10.0);
@@ -102,9 +103,9 @@ int main() {
   P p3b = ev.polygon_api.scale(p3a, 30.0, 30.0, 30.0);
   P p3ba = ev.polygon_api.color_from_normals(p3b);
   P p3bb = ev.polygon_api.color_grayscale(p3ba);
-  P p3bc = ev.polygon_api.color_range(p3bb, 0xffffffff, 0xff222222);
-  P p40 = ev.polygon_api.color(p3bc, 0xffff8822);
-  P p41 = ev.polygon_api.mix_color(p3bc, p40, 0.5);
+  //P p3bc = ev.polygon_api.color_range(p3bb, 0xffffffff, 0xff222222);
+  P p40 = ev.polygon_api.color(p3bb, 0xffffccaa);
+  P p41 = ev.polygon_api.mix_color(p3bb, p40, 0.2);
 
     //ev.polygon_api.color_faces(p3b, 0xffffffff, 0x88888888, 0x44444444, 0x22222222);
   //ev.polygon_api.save_model(p3b, "clock.obj");
@@ -138,7 +139,7 @@ int main() {
   while(1) {
     frame+=0.01;
     // clear frame buffer
-    ev.mainloop_api.clear_3d(0xff444444);
+    ev.mainloop_api.clear_3d(0xff0088ff);
     //poly.set_rotation_y(frame);
     M m = ev.matrix_api.yrot(rot_y);
     M m2 = ev.matrix_api.trans(0.0,0.0,400.0);
