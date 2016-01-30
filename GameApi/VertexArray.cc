@@ -450,6 +450,7 @@ void RenderVertexArray::prepare(int id)
   glGenBuffers(1,&buffers[2]);
   glGenBuffers(1,&buffers[3]);
   glGenBuffers(1,&buffers[4]);
+  glGenBuffers(1, &pos_buffer);
   glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
   glBufferData(GL_ARRAY_BUFFER, s.tri_count(id)*sizeof(float)*3, s.tri_polys(id), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);

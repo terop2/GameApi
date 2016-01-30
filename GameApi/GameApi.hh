@@ -666,6 +666,10 @@ public:	IMPORT VolumeApi(Env &e);
 		fptrtype fptr,
 		int size,
 		float wholesize); // marching cubes algo
+  IMPORT PTS instanced_positions(O object,
+				 int size,
+				 float wholesize);
+
   IMPORT P rendercubes2(EveryApi &ev, O object,
 			fptrtype fptr,
 			int sx, int sy, int sz,
@@ -1601,7 +1605,7 @@ public:
   IMPORT unsigned int get_pixel(VX v, int x, int y, int z);
   IMPORT BM sw_rays(O volume, VX colours, int sx, int sy, float vx, float vy, float vz, float z);
   IMPORT P render_boxes(VX v, float sx, float sy, float sz);
-  IMPORT PTS instanced_positions(VX x, float sx, float sy, float sz);
+  IMPORT PTS instanced_positions(VX x, float sx, float sy, float sz, unsigned int value);
 private:
   Env &e;
 };
@@ -1693,6 +1697,7 @@ public:
   //unsigned int *color_access(PTA pta, int pointnum);
   //void update(PTA array);
   IMPORT void render(PTA array);
+  IMPORT void explode(PTA array, float x, float y, float z, float dist);
 private:
   PointsApi(const PointsApi&);
   void operator=(const PointsApi&);
