@@ -9321,7 +9321,19 @@ EXPORT unsigned int GameApi::VoxelApi::get_pixel(VX v, int x, int y, int z)
   Voxel<unsigned int> *c = find_voxel(e, v);
   return c->Map(x,y,z);
 }
-EXPORT float *GameApi::VoxelApi::instanced_positions(VX vx, float sx, float sy, float sz, int &size)
+class Instanced_Points : public PointsApiPoints
+{
+public:
+  Instanced_Points(float *arr, int size) : arr(arr), size(size) { }
+  int NumPoints() const { return size/3; }
+  Point Pos(int i) const { return Point(arr[i*3+0], arr[i*3+1], arr[i*3+2]); }
+  unsigned int Color(int i) const { return 0xffffffff; }
+  ~Instanced_Points() { delete [] arr; }
+private:
+  float *arr;
+  int size;
+};
+EXPORT GameApi::PTS GameApi::VoxelApi::instanced_positions(VX vx, float sx, float sy, float sz)
 {
   Voxel<unsigned int> *c = find_voxel(e, vx);
   int ssx = c->SizeX();
@@ -9339,8 +9351,9 @@ EXPORT float *GameApi::VoxelApi::instanced_positions(VX vx, float sx, float sy, 
 	    *t_arr = sz*z; t_arr++;
 	  }
 	}
-  size = t_arr-arr;
-  return arr;
+  int size = t_arr-arr;
+  return add_points_api_points(e, new Instanced_Points(arr, size));
+  //return arr;
 }
 
 typedef Voxel<unsigned int> VoxelColor;
@@ -9715,17 +9728,18 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
     }
 }
 
-EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(VA va, float *arr, int size)
+EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(VA va, PTA pta)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
+  PointArray3 *arr = find_point_array3(e, pta);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   if (s->texture_id!=-1 && s->texture_id<SPECIAL_TEX_ID)
     {
       TextureEnable(*env->renders[s->texture_id], 0, true);
       //RenderVertexArray arr(*s);
       //arr.render(0);
-      rend->render_instanced(0, (Point*)arr, size/3);
+      rend->render_instanced(0, (Point*)arr->array, arr->numpoints);
       TextureEnable(*env->renders[s->texture_id], 0, false);
     }
   else if (s->texture_id!=-1)
@@ -9739,7 +9753,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(VA va, float *arr
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
-      rend->render_instanced(0, (Point*)arr, size/3);
+      rend->render_instanced(0, (Point*)arr->array, arr->numpoints);
       //rend->render(0);
 
       glDisable(GL_TEXTURE_2D);
@@ -9748,7 +9762,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(VA va, float *arr
     {
       //RenderVertexArray arr(*s);
       //arr.render(0);
-      rend->render_instanced(0, (Point*)arr, size/3);
+      rend->render_instanced(0, (Point*)arr->array, arr->numpoints);
       //rend->render(0);
     }
 }
