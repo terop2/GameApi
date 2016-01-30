@@ -1,0 +1,3 @@
+
+all:
+	g++ -std=c++11 -Wl,--large-address-aware test.cpp -L.. -I.. -lGameApi
