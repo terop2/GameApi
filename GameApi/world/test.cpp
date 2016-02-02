@@ -943,7 +943,7 @@ int main() {
 #if 0
   for(int i=0;i<60;i++)
     {
-      pk = ev.polygon_api.or_elem(pk, ev.polygon_api.load_model("./sponzasimple.obj", i));
+      pk = ev.polygon_api.or_elem(pk, ev.polygon_api.load_model("./sponza.obj", i));
     }
   
   m.sponza = pk;

@@ -89,7 +89,7 @@ int main() {
   // 				     -10.0, 10.0,
   //				     -10.0, 10.0,
   //				     -10.0, 10.0);
-  PTS pts3 = ev.volume_api.instanced_positions(h2_comb, 100, 100, 100,
+  PTS pts3 = ev.volume_api.instanced_positions(h2_comb, 200, 200, 200,
 					       -10.0, 10.0,
 					       -10.0, 10.0,
 					       -10.0, 10.0);
