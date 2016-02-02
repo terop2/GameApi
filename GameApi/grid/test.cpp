@@ -23,8 +23,8 @@ P g(unsigned int c, EveryApi &ev)
     case 1:
       {
 	P p = ev.polygon_api.cube(-2.5, 2.5, -2.5, 2.5, -2.5, 2.5);
-	// P p2 = ev.polygon_api.scale(p, 20.0, 20.0, 20.0);
-      return p;
+	P p2 = ev.polygon_api.scale(p, 20.0, 20.0, 20.0);
+      return p2;
 	}
     case 0:
       return ev.polygon_api.empty();
@@ -45,13 +45,14 @@ struct Envi {
   
   //PTS pos;
   PTA pta;
+  PH phy;
   //float *pos;
   // int pos_size;
 };
 
 void iter(void *arg)
 {
-  Envi *env = (Envi*)arg;
+   Envi *env = (Envi*)arg;
 
     env->ev->mainloop_api.clear_3d();
 
@@ -64,8 +65,9 @@ void iter(void *arg)
 
     //float arr[] = { 0.0, 0.0, 0.0, 100.0, 0.0, 0.0 };
 
-    env->ev->points_api.explode(env->pta, 20.0, 0.0, 0.0, 1.0);
+    //env->ev->points_api.explode(env->pta, 20.0, 0.0, 0.0, 1.0);
     env->poly->render_instanced(env->pta);
+    env->ev->physics_api.step_points(env->phy, env->pta, 1.0);
 
     env->ev->mainloop_api.fpscounter();
     // swapbuffers
@@ -90,7 +92,7 @@ void iter(void *arg)
 }
 
 int main() {
-  Env e;
+   Env e;
   EveryApi ev(e);
 
   Envi env;
@@ -107,11 +109,23 @@ int main() {
   ev.mainloop_api.init_3d(sh);
 
   //VX vx = ev.voxel_api.function(&f, 60, 60, 60, 0);
-  PT center = ev.point_api.point(0.0,0.0,0.0);
-  O o = ev.volume_api.sphere(center, 1.0);
+  //PT center = ev.point_api.point(0.0,0.0,0.0);
+  //O o = ev.volume_api.sphere(center, 1.0);
 
-  PTS pos = ev.volume_api.instanced_positions(o, 100, 100.0);
-  PTA pta = ev.points_api.prepare(pos);
+  //PTS pos = ev.volume_api.instanced_positions(o, 100, 100.0);
+  PH phy0 = ev.physics_api.empty();
+  PT pos = ev.point_api.point(0.0,400.0,0.0);
+  PhysicsApi::PHI phy1 = ev.physics_api.anchor_point(phy0,pos);
+  V dir1 = ev.vector_api.vector(0.0, -1.0, 0.0);
+  PH phy11 = ev.physics_api.ext_force_all(phy1.phy, dir1);
+  O obj1 = ev.volume_api.cube(-100.0, 100.0,
+			      0.0, 100.0,
+			      -100.0, 100.0);
+  V dir = ev.vector_api.vector(0.0, 1.0, 0.0);
+  PH phy2 = ev.physics_api.force_obj(phy11, obj1, dir);
+  
+  PTS pts = ev.physics_api.init_points(phy2);
+  PTA pta = ev.points_api.prepare(pts);
   P p3 = g(1,ev);
   //P p3 = ev.voxel_api.render_boxes(vx, 1.0, 1.0, 1.0);
   //P p3a = ev.polygon_api.scale(p3, 5.0,5.0,5.0);
@@ -126,7 +140,7 @@ int main() {
   env.ev = &ev;
   env.poly = &poly;
   env.pta = pta;
-  e.free_memory();
+  env.phy = phy2;
 #ifndef EMSCRIPTEN
   while(1) {
     iter(&env);

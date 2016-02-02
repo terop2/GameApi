@@ -287,4 +287,36 @@ public:
   virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)=0;
 };
 
+class PhysicsNode
+{
+public:
+  virtual ~PhysicsNode() { }
+  virtual int NumAnchors() const=0;
+  virtual Point AnchorPoint(int i) const=0;
+  virtual int NumForces(int i) const=0;
+  virtual Vector Force(int i, int f) const=0;
+  virtual int NumLinks() const=0;
+  virtual std::pair<int,int> Link(int i) const=0;
+  virtual float LinkDistance(int i) const=0;
+  virtual int NumForceVolumes() const=0;
+  virtual Vector ForceVolume(int v, Point p) const=0;
+};
+
+class ForwardPhysics : public PhysicsNode
+{
+public:
+  ForwardPhysics(PhysicsNode &node) : node(node) {}
+  virtual int NumAnchors() const { return node.NumAnchors(); }
+  virtual Point AnchorPoint(int i) const { return node.AnchorPoint(i); }
+  virtual int NumForces(int i) const { return node.NumForces(i); }
+  virtual Vector Force(int i, int f) const { return node.Force(i,f); }
+  virtual int NumLinks() const { return node.NumLinks(); }
+  virtual std::pair<int,int> Link(int i) const { return node.Link(i); }
+  virtual float LinkDistance(int i) const { return node.LinkDistance(i); }
+  virtual int NumForceVolumes() const { return node.NumForceVolumes(); }
+  virtual Vector ForceVolume(int v, Point p) const { return node.ForceVolume(v,p); }
+
+private:
+  PhysicsNode &node;
+};
 #endif
