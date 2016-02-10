@@ -319,4 +319,28 @@ public:
 private:
   PhysicsNode &node;
 };
+
+class TriStrip
+{
+public:
+  virtual int Size() const=0;
+  virtual Point Pos(int i) const=0;
+  virtual unsigned int Color(int i) const=0;
+  virtual Point2d TexCoord(int i) const=0;
+  virtual Vector Normal(int i) const=0;
+};
+
+class TriStripForward : public TriStrip
+{
+public:
+  TriStripForward(TriStrip &next) : next(next) { }
+  virtual int Size() const { return next.Size(); }
+  virtual Point Pos(int i) const { return next.Pos(i); }
+  virtual unsigned int Color(int i) const { return next.Color(i); }
+  virtual Point2d TexCoord(int i) const { return next.TexCoord(i); }
+  virtual Vector Normal(int i) const { return next.Normal(i); }
+protected:
+  TriStrip &next;
+};
+
 #endif
