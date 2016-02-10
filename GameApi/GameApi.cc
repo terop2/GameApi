@@ -946,6 +946,7 @@ struct EnvImpl
   std::vector<std::vector<int>*> arrays;
   std::vector<ExprNode*> exprs;
   std::vector<PhysicsNode*> phys;
+  std::vector<TriStrip*> tri_strip;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
 #ifndef EMSCRIPTEN
@@ -1499,6 +1500,15 @@ EXPORT GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
+GameApi::TS add_tri_strip(GameApi::Env &e, TriStrip *n)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->tri_strip.push_back(n);
+  GameApi::TS a;
+  a.id = env->tri_strip.size()-1;
+  return a;
+
+}
 GameApi::PH add_physics(GameApi::Env &e, PhysicsNode *n)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -2244,6 +2254,11 @@ GameApi::ST GameApi::EventApi::states(int count_states)
   GameApi::ST st;
   st.id = env->state_ranges.size()-1;
   return st;
+}
+TriStrip *find_tri_strip(GameApi::Env &e, GameApi::TS p)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->tri_strip[p.id];  
 }
 PhysicsNode *find_physics(GameApi::Env &e, GameApi::PH p)
 {
@@ -4573,6 +4588,9 @@ EXPORT GameApi::PolygonApi::~PolygonApi()
 {
   delete(PolyPriv*)priv;
 }
+
+
+
 GameApi::SurfaceApi::SurfaceApi(GameApi::Env &e) : e(e)
 {
   priv = (void*)new SurfPriv;
@@ -4775,6 +4793,179 @@ EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(std::function<P (int c)
     }
   P p = or_array_1(&vec[0], sy);
   return p;
+}
+
+class OrElemTriStrip : public TriStrip
+{
+public:
+  OrElemTriStrip(TriStrip *t1, TriStrip *t2) : t1(t1), t2(t2) { }
+  virtual int Size() const { return 2 + t1->Size() + t2->Size(); }
+  virtual Point Pos(int i) const
+  {
+    int s = t1->Size();
+    if (i<s) { return t1->Pos(i); }
+    if (i==s) { return t1->Pos(i-1); }
+    if (i==s+1) { return t2->Pos(0); }
+    return t2->Pos(i-2-s);
+  }
+  virtual unsigned int Color(int i) const
+  {
+    int s = t1->Size();
+    if (i<s) { return t1->Color(i); }
+    if (i==s) { return t1->Color(i-1); }
+    if (i==s+1) { return t2->Color(0); }
+    return t2->Color(i-2-s);
+  }
+  virtual Point2d TexCoord(int i) const
+  {
+    int s = t1->Size();
+    if (i<s) { return t1->TexCoord(i); }
+    if (i==s) { return t1->TexCoord(i-1); }
+    if (i==s+1) { return t2->TexCoord(0); }
+    return t2->TexCoord(i-2-s);
+  }
+  virtual Vector Normal(int i) const
+  {
+    int s = t1->Size();
+    if (i<s) { return t1->Normal(i); }
+    if (i==s) { return t1->Normal(i-1); }
+    if (i==s+1) { return t2->Normal(0); }
+    return t2->Normal(i-2-s);
+  }
+private:
+  TriStrip *t1;
+  TriStrip *t2;
+};
+
+EXPORT GameApi::TS GameApi::TriStripApi::or_elem(TS t1, TS t2)
+{
+  TriStrip *tt1 = find_tri_strip(e, t1);
+  TriStrip *tt2 = find_tri_strip(e, t2);
+  return add_tri_strip(e, new OrElemTriStrip(tt1,tt2));
+}
+
+class OrArrayTriStrip : public TriStrip
+{
+public:
+  OrArrayTriStrip(std::vector<TriStrip*> vec) : vec(vec) 
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	int ss = vec[i]->Size();
+	for(int j=0;j<ss;j++)
+	  {
+	    pos.push_back(i);
+	    pos2.push_back(j);
+	  }
+	pos.push_back(i);
+	pos.push_back(i+1);
+	pos2.push_back(ss-1);
+	pos2.push_back(0);
+      }
+  }
+  virtual int Size() const
+  {
+    int s = vec.size();
+    int count = 0;
+    for(int i=0;i<s;i++)
+      {
+	count += vec[i]->Size();
+	if (i!=s-1)
+	  {
+	    count += 2;
+	  }
+      }
+    return count;
+  }
+  virtual Point Pos(int i) const
+  {
+    int a1 = Pos1(i);
+    int a2 = Pos2(i);
+    return vec[a1]->Pos(a2);
+  }
+  virtual unsigned int Color(int i) const
+  {
+    int a1 = Pos1(i);
+    int a2 = Pos2(i);
+    return vec[a1]->Color(a2);
+  }
+  virtual Point2d TexCoord(int i) const
+  {
+    int a1 = Pos1(i);
+    int a2 = Pos2(i);
+    return vec[a1]->TexCoord(a2);
+  }
+  virtual Vector Normal(int i) const
+  {
+    int a1 = Pos1(i);
+    int a2 = Pos2(i);
+    return vec[a1]->Normal(a2);
+  }
+  
+  int Pos1(int i) const
+  {
+    return pos[i];
+  }
+  int Pos2(int i) const
+  {
+    return pos2[i];
+  }
+private:
+  std::vector<TriStrip*> vec;
+  std::vector<int> pos;
+  std::vector<int> pos2;
+};
+EXPORT GameApi::TS GameApi::TriStripApi::or_array(TS *array, int size)
+{
+  std::vector<TriStrip*> vec;
+  for(int i=0;i<size;i++)
+    {
+      vec.push_back(find_tri_strip(e, array[i]));
+    }
+  return add_tri_strip(e, new OrArrayTriStrip(vec));
+}
+class TriStripToPoly : public FaceCollection
+{
+public:
+  TriStripToPoly(TriStrip *ts) : ts(ts) { }
+  virtual int NumFaces() const {
+    int s = ts->Size();
+    if (s==0) return 0;
+    if (s==1) return 0;
+    return ts->Size()-2;
+  }
+  virtual int NumPoints(int face) const
+  {
+    return 3;
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return ts->Pos(face+point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return ts->Normal(face+point);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return ts->Color(face+point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return ts->TexCoord(face+point);
+  }
+
+private:
+  TriStrip *ts;
+};
+
+EXPORT GameApi::P GameApi::TriStripApi::to_poly(TS strip)
+{
+  TriStrip *ts = find_tri_strip(e, strip);
+  return add_polygon2(e, new TriStripToPoly(ts), 1);
 }
 
 EXPORT GameApi::P GameApi::PolygonApi::triangle(PT p1, PT p2, PT p3)

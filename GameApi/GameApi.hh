@@ -115,6 +115,7 @@ using std::placeholders::_9;
   struct A { int id; };
   struct EX { int id; };
   struct PH { int id; };
+  struct TS { int id; };
   //template<class T>
   //struct E { int id; };
 
@@ -1114,6 +1115,34 @@ public:
   BM render(S surf, int sx, int sy, PT ray_0, PT ray_x, PT ray_y, PT ray_z);
 private:
   void *priv;
+  Env &e;
+};
+
+class TriStripApi
+{
+public:
+  IMPORT TriStripApi(Env &e) : e(e) { }
+  IMPORT ~TriStripApi() { }
+  IMPORT TS function(std::function<PT (int i)> f, int count);
+  IMPORT TS color_function(TS ts, std::function<unsigned int (int i)> f);
+  IMPORT TS texcoord_function(TS ts, std::function<PT (int i)> texcoord);
+  IMPORT TS normal_function(TS ts, std::function<V (int i)> normal);
+  IMPORT TS rectangle_xy(float start_x, float end_x, float start_y, float end_y, float z, int sx, int sy);
+  IMPORT TS rectangle_xz(float start_x, float end_x, float y, float start_z, float end_z);
+  IMPORT TS circle(float center_x, float center_y, float center_z, float radius, int count);
+  IMPORT TS transform(TS orig, std::function<PT (PT)> trans);
+  
+  IMPORT TS from_convex_plane(PL pl, PT pos, V u_x, V u_y);
+  IMPORT TS span_3d_object(TS orig, float z_dist);
+
+  IMPORT TS or_elem(TS t1, TS t2);
+  IMPORT TS or_array(TS *array, int size);
+
+  IMPORT void save(TS tris, std::string filename);
+  IMPORT TS load(std::string filename);
+  IMPORT P to_poly(TS strip);
+  IMPORT TS from_poly(P poly);
+private:
   Env &e;
 };
 
