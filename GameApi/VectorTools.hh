@@ -73,6 +73,7 @@ public:
   friend Point operator+(const Point &p, const Vector &v);
   friend Point operator-(const Point &p, const Vector &v);
   friend std::ostream &operator<<(std::ostream &o, const Point &p);
+  friend std::istream &operator>>(std::istream &i, Point &p);
 };
 
 class SphericalPoint
@@ -230,7 +231,7 @@ public:
     return v;
   }
   friend std::ostream &operator<<(std::ostream &o, const Vector &p);
-
+  friend std::istream &operator>>(std::istream &i, Vector &p);
 public:
   float dx,dy,dz;
 };
@@ -688,6 +689,7 @@ struct Point2d
     return res;
   }
   friend std::ostream &operator<<(std::ostream &o, const Point2d &p);
+  friend std::istream &operator>>(std::istream &i, Point2d &p);
 };
 bool IsWithInBoundingBox(Point2d p, Point2d top_left, Point2d bottom_right);
 bool LineLineIntersection_Parallel(Point2d l1_p1, Point2d l1_p2,

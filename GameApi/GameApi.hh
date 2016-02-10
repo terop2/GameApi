@@ -1123,6 +1123,7 @@ class TriStripApi
 public:
   IMPORT TriStripApi(Env &e) : e(e) { }
   IMPORT ~TriStripApi() { }
+  IMPORT TS from_array(PT *arr, int size);
   IMPORT TS function(std::function<PT (int i)> f, int count);
   IMPORT TS color_function(TS ts, std::function<unsigned int (int i)> f);
   IMPORT TS texcoord_function(TS ts, std::function<PT (int i)> texcoord);
@@ -1360,6 +1361,8 @@ public:
   P from_polygon_1(P p, std::function<P (int face, 
 					 PT p1, PT p2, PT p3, PT p4)> f);
 
+
+  IMPORT P dist_from_lines(LI li, float d1, float d2, PT center);
 
   IMPORT BM renderpolytobitmap(P p, float x, float y, float z, int sx, int sy);
 private:
@@ -2059,7 +2062,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -2098,6 +2101,7 @@ struct EveryApi
   ShaderModuleApi sh_api;
   WModApi mod_api;
   PhysicsApi physics_api;
+  TriStripApi ts_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);
