@@ -31,17 +31,38 @@ std::ostream &operator<<(std::ostream &o, const Point &p)
   o << "(" << p.x << "," << p.y << "," << p.z << ")";
   return o;
 }
+std::istream &operator>>(std::istream &i, Point &p)
+{
+  char ch;
+  i >> ch >> p.x >> ch >> p.y >> ch >> p.z >> ch;
+  return i;
+}
 std::ostream &operator<<(std::ostream &o, const Point2d &p)
 {
   o << "(" << p.x << "," << p.y << ")";
   return o;
 }
+std::istream &operator>>(std::istream &i, Point2d &p)
+{
+  char ch;
+  i >> ch >> p.x >> ch >> p.y >> ch;
+  return i;
+}
+
 
 std::ostream &operator<<(std::ostream &o, const Vector &v)
 {
   o << "(" << v.dx << "," << v.dy << "," << v.dz << ")";
   return o;
 }
+
+std::istream &operator>>(std::istream &i, Vector &v)
+{
+  char ch;
+  i >> ch >> v.dx >> ch >> v.dy >> ch >> v.dz >> ch;
+  return i;
+}
+
 
 std::ostream &operator<<(std::ostream &o, const Matrix &m)
 {

@@ -1846,7 +1846,7 @@ GameApi::P add_polygon(GameApi::Env &e, FaceCollection *coll, int size)
   //GameApi::PolygonApi api(e);
   return /*api.memoize(*/add_polygon(e,h)/*)*/;
 }
-GameApi::P add_polygon2(GameApi::Env &e, FaceCollection *coll, int size)
+GameApi::P add_polygon2(GameApi::Env &e, FaceCollection *coll, int size=1)
 {
   FaceCollPolyHandle *h = new FaceCollPolyHandle;
   h->coll = coll;
@@ -4836,7 +4836,219 @@ private:
   TriStrip *t1;
   TriStrip *t2;
 };
+class ArrayTriStrip : public TriStrip
+{
+public:
+  ArrayTriStrip(std::vector<Point> vec) : vec(vec) { }
+  virtual int Size() const { return vec.size(); }
+  virtual Point Pos(int i) const { return vec[i]; }
+  virtual unsigned int Color(int i) const
+  {
+    return 0xffffffff;
+  }
+  virtual Point2d TexCoord(int i) const
+  {
+    Point2d p = {0.0, 0.0 };
+    return p;
+  }
+  virtual Vector Normal(int i) const
+  {
+    Vector v(0.0, 0.0, 0.0);
+    return v;
+  }
 
+private:
+  std::vector<Point> vec;
+};
+class FunctionTriStrip : public TriStrip
+{
+public:
+  FunctionTriStrip(GameApi::Env &e, std::function<GameApi::PT (int)> f, int count) : e(e), f(f), count(count) { }
+  virtual int Size() const { return count; }
+  virtual Point Pos(int i) const { return *find_point(e, f(i)); }
+  virtual unsigned int Color(int i) const { return 0xffffffff; }
+  virtual Point2d TexCoord(int i) const
+  {
+    Point2d p = { 0.0, 0.0 };
+    return p;
+  }
+  virtual Vector Normal(int i) const
+  {
+    Vector v;
+    return v;
+  }
+
+private:
+  GameApi::Env &e;
+  std::function<GameApi::PT (int)> f;
+  int count;
+};
+class FromPolyTriStrip : public TriStrip
+{
+public:
+  FromPolyTriStrip(FaceCollection *coll) : coll(coll) 
+  {
+    int f = coll->NumFaces();
+    for(int i=0;i<f;i++)
+      {
+	int c = coll->NumPoints(i);
+	for(int j=0;j<c;j++)
+	  {
+	    Point p = coll->FacePoint(i,j);
+	    Vector n = coll->PointNormal(i,j);
+	    unsigned int col = coll->Color(i,j);
+	    Point2d tex = coll->TexCoord(i,j);
+	    pos.push_back(p);
+	    color.push_back(col);
+	    texcoord.push_back(tex);
+	    normal.push_back(n);
+	  }
+	pos.push_back(pos[pos.size()-1]);
+	color.push_back(color[color.size()-1]);
+	texcoord.push_back(texcoord[texcoord.size()-1]);
+	normal.push_back(normal[normal.size()-1]);
+	if (i!=f-1) {
+	  Point p = coll->FacePoint(i+1,0);
+	  Vector n = coll->PointNormal(i+1,0);
+	  unsigned int col = coll->Color(i+1,0);
+	  Point2d tex = coll->TexCoord(i+1,0);
+	  pos.push_back(p);
+	  color.push_back(col);
+	  texcoord.push_back(tex);
+	  normal.push_back(n);
+	}
+      }
+
+  }
+  virtual int Size() const { return pos.size(); }
+  virtual Point Pos(int i) const { return pos[i]; }
+  virtual unsigned int Color(int i) const { return color[i]; }
+  virtual Point2d TexCoord(int i) const { return texcoord[i]; }
+  virtual Vector Normal(int i) const { return normal[i]; }
+private:
+  FaceCollection *coll;
+  std::vector<Point> pos;
+  std::vector<unsigned int> color;
+  std::vector<Point2d> texcoord;
+  std::vector<Vector> normal;
+};
+EXPORT GameApi::TS GameApi::TriStripApi::from_poly(P poly)
+{
+  FaceCollection *coll = find_facecoll(e, poly);
+  return add_tri_strip(e, new FromPolyTriStrip(coll));
+}
+
+class LoadTriStrip : public TriStrip
+{
+public:
+  LoadTriStrip(std::string filename) {
+    std::ifstream file(filename.c_str());
+    file >> size;
+    for(int i=0;i<size;i++)
+      {
+	Point p;
+	unsigned int c;
+	Point2d tx;
+	Vector n;
+	
+	file >> p >> std::hex >> c >> std::dec >> tx >> n;
+	pos.push_back(p);
+	color.push_back(c);
+	texcoord.push_back(tx);
+	normal.push_back(n);
+      }
+  }
+
+  virtual int Size() const { return size; }
+  virtual Point Pos(int i) const { return pos[i]; }
+  virtual unsigned int Color(int i) const { return color[i]; }
+  virtual Point2d TexCoord(int i) const { return texcoord[i]; }
+  virtual Vector Normal(int i) const { return normal[i]; }
+
+private:
+  int size;
+  std::vector<Point> pos;
+  std::vector<unsigned int> color;
+  std::vector<Point2d> texcoord;
+  std::vector<Vector> normal;
+};
+
+EXPORT GameApi::TS GameApi::TriStripApi::load(std::string filename)
+{
+  return add_tri_strip(e, new LoadTriStrip(filename));
+}
+
+EXPORT GameApi::TS GameApi::TriStripApi::function(std::function<GameApi::PT (int)> f, int count)
+{
+  return add_tri_strip(e, new FunctionTriStrip(e, f, count));
+}
+
+class ColorFunctionTriStrip : public TriStripForward
+{
+public:
+  ColorFunctionTriStrip(TriStrip *ts, std::function<unsigned int (int)> f) : TriStripForward(*ts), ts(ts), f(f) { }
+  virtual unsigned int Color(int i) const
+  {
+    return f(i);
+  }
+private:
+  TriStrip *ts;
+  std::function<unsigned int(int)> f;
+};
+EXPORT GameApi::TS GameApi::TriStripApi::color_function(TS ts, std::function<unsigned int (int i)> f)
+{
+  TriStrip *ts1 = find_tri_strip(e, ts);
+  return add_tri_strip(e, new ColorFunctionTriStrip(ts1, f));
+}
+class TexCoordTriStrip : public TriStripForward
+{
+public:
+  TexCoordTriStrip(GameApi::Env &e, TriStrip *ts, std::function<GameApi::PT (int)> f) : TriStripForward(*ts), e(e), f(f) { }
+  virtual Point2d TexCoord(int i) const
+  {
+    GameApi::PT p = f(i);
+    Point *pt = find_point(e, p);
+    Point2d pp = { pt->x, pt->y };
+    return pp;
+  }
+private:
+  GameApi::Env &e;
+  std::function<GameApi::PT (int)> f;
+};
+EXPORT GameApi::TS GameApi::TriStripApi::texcoord_function(TS ts, std::function<PT (int i)>  f)
+{
+  TriStrip *ts1 = find_tri_strip(e, ts);
+  return add_tri_strip(e, new TexCoordTriStrip(e, ts1, f));
+}
+class NormalTriStrip : public TriStripForward
+{
+public:
+  NormalTriStrip(GameApi::Env &e, TriStrip *ts, std::function<GameApi::V (int i)> f) : TriStripForward(*ts), e(e), f(f) { }
+  virtual Vector Normal(int i) const
+  {
+    GameApi::V v = f(i);
+    Vector *vv = find_vector(e, v);
+    return *vv;
+  }
+private:
+  GameApi::Env &e;
+  TriStrip *ts;
+  std::function<GameApi::V (int i)> f;
+};
+EXPORT GameApi::TS GameApi::TriStripApi::normal_function(TS ts, std::function<V (int i)> f)
+{
+  TriStrip *ts1 = find_tri_strip(e, ts);
+  return add_tri_strip(e, new NormalTriStrip(e, ts1, f));
+}
+EXPORT GameApi::TS GameApi::TriStripApi::from_array(PT *arr, int size)
+{
+  std::vector<Point> vec;
+  for(int i=0;i<size;i++)
+    {
+      vec.push_back(*find_point(e, arr[i]));
+    }
+  return add_tri_strip(e, new ArrayTriStrip(vec));
+}
 EXPORT GameApi::TS GameApi::TriStripApi::or_elem(TS t1, TS t2)
 {
   TriStrip *tt1 = find_tri_strip(e, t1);
@@ -4967,7 +5179,87 @@ EXPORT GameApi::P GameApi::TriStripApi::to_poly(TS strip)
   TriStrip *ts = find_tri_strip(e, strip);
   return add_polygon2(e, new TriStripToPoly(ts), 1);
 }
+EXPORT void GameApi::TriStripApi::save(TS ts, std::string filename)
+{
+  TriStrip *tts = find_tri_strip(e, ts);
+  std::ofstream file(filename);
+  file << tts->Size() << std::endl;
+  int s = tts->Size();
+  for(int i=0;i<s;i++)
+    {
+      file << tts->Pos(i) << " " << std::hex << tts->Color(i) << " " << std::dec << tts->TexCoord(i) << " " << tts->Normal(i) << std::endl;
+    }
+  file.close();
+}
 
+class DistFromLines : public FaceCollection
+{
+public:
+  DistFromLines(LineCollection *coll, float d1, float d2, Point center) : coll(coll), d1(d1), d2(d2), center(center) { }
+  virtual int NumFaces() const { return coll->NumLines(); }
+  virtual int NumPoints(int face) const
+  {
+    return 4;
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    Point p1 = coll->LinePoint(face, 0);
+    Point p2 = coll->LinePoint(face, 1);
+    
+    Vector v1 = p1 - center;
+    Vector v2 = p2 - center;
+    float dist1 = v1.Dist();
+    float dist2 = v2.Dist();
+    v1/=dist1;
+    v2/=dist2;
+    Point pp1a = center + v1*(dist1+d1);
+    Point pp1b = center + v1*(dist1+d2);
+    Point pp2a = center + v2*(dist2+d1);
+    Point pp2b = center + v2*(dist2+d2);
+    if (point==0) return pp1a;
+    if (point==1) return pp2a;
+    if (point==2) return pp2b;
+    if (point==3) return pp1b;
+    return pp1a;
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Point p1 = FacePoint(face, 0);
+    Point p2 = FacePoint(face, 1);
+    Point p3 = FacePoint(face, 2);
+    Vector v = -Vector::CrossProduct(p2-p1,p3-p1);
+    return v / v.Dist();
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return 0;
+  }
+  virtual unsigned int Color(int face, int point) const { return 0xffffffff; }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    Point2d p1 = { 0.0, 0.0 };
+    Point2d p2 = { 1.0, 0.0 };
+    Point2d p3 = { 1.0, 1.0 };
+    Point2d p4 = { 0.0, 1.0 };
+    if (point==0) return p1;
+    if (point==1) return p2;
+    if (point==2) return p3;
+    if (point==3) return p4;
+    return p1;
+  }
+
+private:
+  LineCollection *coll;
+  float d1,d2;
+  Point center;
+};
+EXPORT GameApi::P GameApi::PolygonApi::dist_from_lines(LI li, float d1, float d2, PT center)
+{
+  Point *pt = find_point(e, center);
+  LineCollection *lines = find_line_array(e, li);
+  return add_polygon2(e, new DistFromLines(lines, d1, d2, *pt), 1);
+}
 EXPORT GameApi::P GameApi::PolygonApi::triangle(PT p1, PT p2, PT p3)
 {
   Point *pp1 = find_point(e, p1);
@@ -4993,9 +5285,9 @@ private:
   Point u_z;
 };
 EXPORT GameApi::P GameApi::PolygonApi::unit_cube(P orig, PT pos, V u_x, V u_y, V u_z)
-{
+{ 
   FaceCollection *coll = find_facecoll(e, orig);
-  Point *pos_1 = find_point(e, pos);
+ Point *pos_1 = find_point(e, pos);
   Vector *u_x_1 = find_vector(e, u_x);
   Vector *u_y_1 = find_vector(e, u_y);
   Vector *u_z_1 = find_vector(e, u_z);

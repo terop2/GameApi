@@ -309,14 +309,25 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
     }
   case 17:
     {
-#if 0
+#if 1
       P p = m.lucy;
-      P p2 = ev.polygon_api.scale(p, 5.0,5.0,5.0);
-      P p3 = ev.polygon_api.color_from_normals(p2);
+
+      P p3 = ev.polygon_api.color_from_normals(p);
       P p4 = ev.polygon_api.color_range(p3, 0xffffffff, 0xff888888);
+
+      PT pos = ev.point_api.point(0.0,0.0,0.0);
+      V u_x = ev.vector_api.vector(1.0, 0.0, 0.0);
+      V u_y = ev.vector_api.vector(0.0, 1.0, 0.0);
+      LI lines = ev.lines_api.render_slice_2d(p, pos, u_x, u_y);
+      PT center = ev.point_api.point(0.0,0.0,0.0);
+      P p0 = ev.polygon_api.dist_from_lines(lines, 0.2, 2.0, center);
+      P p0a = ev.polygon_api.color(p0, 0xffffffff);
+      //P p0b = ev.polygon_api.translate(p0a, 0.0, 0.0, -40.0);
+      P p1 = ev.polygon_api.or_elem(p4, p0a);
+      P p2 = ev.polygon_api.scale(p1, 5.0,5.0,5.0);
 #endif
-      P p4 = ev.polygon_api.empty();
-      return p4;
+      //P p4 = ev.polygon_api.empty();
+      return p2;
     }
   case 16:
     {
@@ -935,7 +946,7 @@ int main() {
 #endif
 
   Models m;
-#if 0
+#if 1
   m.teapot = ev.polygon_api.load_model("./teapot.obj", 0);
   m.lucy = ev.polygon_api.load_model("./lucy.obj", 1);
   P pk = ev.polygon_api.empty();
