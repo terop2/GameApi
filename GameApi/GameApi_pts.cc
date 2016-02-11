@@ -402,27 +402,6 @@ private:
   std::function<unsigned int(int pointnum, GameApi::PT pos)> f;
 };
 
-class LineCollectionFunction : public LineCollection
-{
-public:
-  LineCollectionFunction(GameApi::Env &e, std::function<GameApi::PT (int linenum, bool id)> f, int numlines) :  ev(e), f(f), numlines(numlines) { }
-  virtual int NumLines() const { return numlines; }
-  virtual Point LinePoint(int line, int point) const
-  {
-    bool b = point==0 ? 0 : 1;
-    GameApi::PT pt = f(line, b);
-    float x = ev.point_api.pt_x(pt);
-    float y = ev.point_api.pt_y(pt);
-    float z = ev.point_api.pt_z(pt);
-    return Point(x,y,z);
-  }
-
-private:
-  //GameApi::Env &e;
-  mutable GameApi::EveryApi ev;
-  std::function<GameApi::PT (int linenum, bool id)> f;
-  int numlines; 
-};
 
 EXPORT GameApi::PTS GameApi::PointsApi::function(std::function<GameApi::PT(int pointnum)> f, int numpoints)
 {
