@@ -26,7 +26,17 @@ CFiles=	Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
 	Editor.cc Web.cc Functions.cc ShaderExpr.cc Font.cc FontEditor.cc \
 	GameApi.cc GameApiTest.cc Games.cc HierarchyObject.cc Physics.cc \
         GameApiTest2.cc State.cc Serialize.cc KeyFrameEditor.cc Parser.cc \
-	FreeType.cc VertexArray.cc StateChange.cc DistanceObject.cc GameRunner.cc
+	FreeType.cc VertexArray.cc StateChange.cc DistanceObject.cc GameRunner.cc \
+	GameApi_an.cc GameApi_bm.cc GameApi_co.cc GameApi_dr.cc GameApi_ev.cc \
+	GameApi_ex.cc GameApi_fbo.cc GameApi_f.cc GameApi_fn.cc \
+	GameApi_fnt.cc GameApi_gr.cc GameApi_gui.cc GameApi_lay.cc \
+	GameApi_li.cc GameApi_main.cc GameApi_mx.cc GameApi_pc.cc \
+	GameApi_phy.cc GameApi_pla.cc GameApi_pl.cc GameApi_pt.cc \
+	GameApi_pts.cc GameApi_sh.cc GameApi_shm.cc GameApi_sm.cc \
+        GameApi_spa.cc GameApi_sp.cc GameApi_st.cc GameApi_su.cc \
+        GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \
+        GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
+        GameApi_wv.cc
 
 CFiles2 = Main.cc
 
@@ -40,8 +50,8 @@ O2Files = $(patsubst %.cc,objs/%.obj,$(CFiles) $(CFiles2))
 DFiles = $(patsubst %.cc,objs/%.d,$(CFiles) $(CFiles2)) 
 D2Files = $(patsubst %.cc,objs/%.d2,$(CFiles) $(CFiles2)) 
 HFiles = $(patsubst %.cc,%.hh,$(CFiles))
-GCHFiles = $(patsubst %.cc,objs/%.hh.gch,$(CFiles))
-GCH2Files = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles))
+#GCHFiles = $(patsubst %.cc,objs/%.hh.gch,$(CFiles))
+#GCH2Files = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles))
 Subdirsx = $(patsubst %,%build,$(Subdirs))
 
 OFiles_examples = $(patsubst %.cc,objs/%.o,$(CFiles_examples) $(CFiles2_examples))
@@ -49,8 +59,8 @@ O2Files_examples = $(patsubst %.cc,objs/%.obj,$(CFiles_examples) $(CFiles2_examp
 DFiles_examples = $(patsubst %.cc,objs/%.d,$(CFiles_examples) $(CFiles2_examples)) 
 D2Files_examples = $(patsubst %.cc,objs/%.d2,$(CFiles_examples) $(CFiles2_examples)) 
 HFiles_examples = $(patsubst %.cc,%.hh,$(CFiles_examples))
-GCHFiles_examples = $(patsubst %.cc,objs/%.hh.gch,$(CFiles_examples))
-GCH2Files_examples = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles_examples))
+#GCHFiles_examples = $(patsubst %.cc,objs/%.hh.gch,$(CFiles_examples))
+#GCH2Files_examples = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles_examples))
 
 LIBWIN = /home/terop/cvs/sdl2_win/SDL2-2.0.1/i686-w64-mingw32/bin
 LIB2WIN = /home/terop/cvs/sdl2_win/
@@ -75,21 +85,21 @@ all: libGameApi.so libGameApi.dll install main
 
 examples: main
 
-main: $(GCHFiles_examples) $(OFiles_examples) Makefile GameApi.hh libGameApi.so
+main: $(OFiles_examples) Makefile GameApi.hh libGameApi.so
 	@echo g++ main
 	@g++ -g $(OFiles_examples) -std=c++0x -o main -L. -lGameApi -lGL -lm -lstdc++
 
-main.exe: $(GCHFiles_examples) $(O2Files_examples) Makefile GameApi.hh libGameApi.dll
+main.exe: $(O2Files_examples) Makefile GameApi.hh libGameApi.dll
 	@echo mingw main.exe
 	@$(CCWIN) -g $(O2Files_examples) -o main.exe -L. -lGameApi -lopengl32 -lm -lstdc++
 
 
-libGameApi.so: $(GCHFiles) $(OFiles) Makefile
+libGameApi.so: $(OFiles) Makefile
 	@echo g++ libGameApi.so
 	@g++ -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lGLEW -lfreetype -lstdc++ 
 #`pkg-config gtkmm-2.4 --libs` 
 
-libGameApi.dll: $(GCH2Files) $(O2Files) Makefile glew.o
+libGameApi.dll: $(O2Files) Makefile glew.o
 	@echo mingw libGameApi.dll
 	@i586-mingw32msvc-g++ -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 
 
@@ -137,18 +147,18 @@ $(O2Files_examples): objs/%.obj : %.cc GameApi.hh
 	@$(CCWIN) -g -c -I. $(CC2FLAGS) $< -o $@ 
 
 
-$(GCHFiles): objs/%.hh.gch : %.hh
-	@echo g++ $< -o $@
-	@$(CC) $(CCFLAGS) -std=c++0x -g -x c++-header $< -o $@ 
+#$(GCHFiles): objs/%.hh.gch : %.hh
+#	@echo g++ $< -o $@
+#	@$(CC) $(CCFLAGS) -std=c++0x -g -x c++-header $< -o $@ 
+#
+#$(GCH2Files): objs/%.hh.gch2 : %.hh
+#	@echo mingw $< -o $@
+#	@$(CCWIN) $(CC2FLAGS) -g -x c++-header $< -o $@ 
 
-$(GCH2Files): objs/%.hh.gch2 : %.hh
-	@echo mingw $< -o $@
-	@$(CCWIN) $(CC2FLAGS) -g -x c++-header $< -o $@ 
-
-$(GCHFiles_examples): objs/%.hh.gch : %.hh GameApi.hh
-	@echo g++ $< -o $@
-	@$(CC) $(CCFLAGS) -std=c++0x -g -I. -x c++-header $< -o $@ 
-
+#$(GCHFiles_examples): objs/%.hh.gch : %.hh GameApi.hh
+#	@echo g++ $< -o $@
+#	@$(CC) $(CCFLAGS) -std=c++0x -g -I. -x c++-header $< -o $@ 
+#
 clean:
 	@rm -rf objs/*.o objs/*.obj objs/*.d objs/*.d2 objs/*.gch objs/*.gch2
 	@rm main
