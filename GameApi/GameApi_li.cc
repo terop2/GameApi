@@ -1,6 +1,8 @@
 
 #include "GameApi_h.hh"
 
+unsigned int swap_color(unsigned int c);
+
 class ColorLineCollection : public LineCollection
 {
 public:
