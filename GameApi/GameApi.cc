@@ -979,19 +979,6 @@ ShaderModule *find_shader_module(GameApi::Env &e, GameApi::SFO sfo)
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->shader_module[sfo.id];
 }
-std::string ToNum(float val)
-{
-  std::stringstream ss;
-  ss << val;
-  std::string s = ss.str();
-  bool flag = false;
-  int sss = s.size();
-  for(int i=0;i<sss;i++) { if (s[i]=='.') { flag=true; } }
-  if (flag) 
-    return ss.str();
-  else
-    return ss.str()+".0";
-}
 GuiWidget *find_widget(GameApi::Env &e, GameApi::W w)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);

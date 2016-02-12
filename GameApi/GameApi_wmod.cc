@@ -1,5 +1,8 @@
 
 #include "GameApi_h.hh"
+#include "GameApi_gui.hh"
+
+std::vector<GameApiItem*> all_functions();
 
 
 GameApiModule load_gameapi(std::string filename)

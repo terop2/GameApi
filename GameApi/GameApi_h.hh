@@ -1,3 +1,6 @@
+#ifndef GAMEAPI_H_H
+#define GAMEAPI_H_H
+
 #define SDL2_USED  
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
@@ -879,3 +882,5 @@ Vector *find_vector(GameApi::Env &e, GameApi::V p);
 SpaceImpl *find_space(GameApi::Env &e, GameApi::SP s);
 LineImpl *find_line(GameApi::Env &e, GameApi::LN l);
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
+
+#endif
