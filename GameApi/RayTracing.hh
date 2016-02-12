@@ -1,3 +1,5 @@
+#ifndef RAYTRACING_HH
+#define RAYTRACING_HH
 
 #include "VectorTools.hh"
 #include "Effect.hh"
@@ -15,7 +17,7 @@ public:
 };
 
 
-
+#if 0
 RaySphereIntersection::IntersectPoint RaySphereIntersection::Intersect(Point center, float radius,
 			 Point ray_p1, Point ray_p2)
 {
@@ -56,7 +58,8 @@ RaySphereIntersection::IntersectPoint RaySphereIntersection::Intersect(Point cen
   return ipoint;
 #endif
 }
-
+#endif
+#if 0
 bool FindRange(bool b1, bool b2)
 {
   if (b1 && !b2) return true;
@@ -71,8 +74,10 @@ std::pair<Range<Point>, Range<Point> > Split(Range<Point> p)
   Point middle = Point(0.5*Vector(p1+Vector(p2)));
   return std::make_pair(Range<Point>(p1,middle), Range<Point>(middle,p2));
 }
+#endif
 
 Range<Point> FindSurface(Range<Point> range1, Range<Point> range2, VolumeObject &o, int level);
+#if 0
 Range<Point> FindSurface(Range<Point> range, VolumeObject &o, int level)
 {
   if (level==0) return range;
@@ -129,7 +134,7 @@ Range<Point> FindSurface(Range<Point> range1, Range<Point> range2, VolumeObject 
     }
   return result;
 }
-
+#endif
 
 class VolumeSpace
 {
@@ -152,3 +157,4 @@ private:
   Vector dir;
   
 };
+#endif

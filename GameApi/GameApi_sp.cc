@@ -1,4 +1,7 @@
 
+#include "GameApi_h.hh"
+
+
 SpritePriv::~SpritePriv()
 {
   int s = arrays.size();

@@ -1,6 +1,6 @@
 
 #include "GameApi_h.hh"
-
+#include "GameApi_vo.hh"
 
 EXPORT GameApi::O GameApi::VolumeApi::from_bool_bitmap(BB b, float dist)
 {
@@ -276,6 +276,7 @@ EXPORT GameApi::O GameApi::VolumeApi::from_polygon(GameApi::P p, float x, float 
 
 EXPORT void GameApi::VolumeApi::find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level)
 {
+#if 0
   Point *pp1 = find_point(e,p1);
   Point *pp2 = find_point(e,p2);
   VolumeObject *volume = find_volume(e,object);
@@ -285,6 +286,7 @@ EXPORT void GameApi::VolumeApi::find_surface(O object, PT p1, PT p2, PT *res1, P
 
   *res1 = add_point(e, r.start.x,r.start.y,r.start.z);
   *res2 = add_point(e, r.end.x,r.end.y,r.end.z);
+#endif
 }
 
 class RenderCubes3 : public FaceCollection
@@ -574,18 +576,6 @@ EXPORT GameApi::P GameApi::VolumeApi::rendercubes2(EveryApi &ev, O o, fptrtype f
   return ev.polygon_api.or_array(&vec3[0], vec3.size());
 }
 
-class Instanced_Points : public PointsApiPoints
-{
-public:
-  Instanced_Points(float *arr, int size) : arr(arr), size(size) { }
-  int NumPoints() const { return size/3; }
-  Point Pos(int i) const { return Point(arr[i*3+0], arr[i*3+1], arr[i*3+2]); }
-  unsigned int Color(int i) const { return 0xffffffff; }
-  ~Instanced_Points() { delete [] arr; }
-private:
-  float *arr;
-  int size;
-};
 
 EXPORT GameApi::PTS GameApi::VolumeApi::instanced_positions(O object,
 							    int sx, int sy, int sz,

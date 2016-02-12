@@ -1,6 +1,20 @@
 
 #include "GameApi_h.hh"
 
+std::string ToNum(float val)
+{
+  std::stringstream ss;
+  ss << val;
+  std::string s = ss.str();
+  bool flag = false;
+  int sss = s.size();
+  for(int i=0;i<sss;i++) { if (s[i]=='.') { flag=true; } }
+  if (flag) 
+    return ss.str();
+  else
+    return ss.str()+".0";
+}
+
 
 std::string vec3_to_string(GameApi::Env &e, GameApi::PT pos)
 {
