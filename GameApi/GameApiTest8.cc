@@ -14,7 +14,7 @@ using namespace GameApi;
 void GameTest8(EveryApi &e)
 {
   e.mainloop_api.init_window();
-  e.shader_api.load("Shader.txt");
+  e.shader_api.load_default(); //("Shader.txt");
   SH sh = e.shader_api.get_normal_shader("colour", "colour", "");
 
   //e.shader_api.link(sh);
