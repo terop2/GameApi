@@ -412,3 +412,38 @@ EXPORT GameApi::PTS GameApi::PointsApi::color_function(PTS orig, std::function<u
   PointsApiPoints *pts = find_pointsapi_points(e, orig);
   return add_points_api_points(e, new PointsApiColorFunction(e, pts, f));
 }
+
+class SurfacePoints3 : public PointsApiPoints
+{
+public:
+  SurfacePoints3(SurfaceIn3d *surf, int sx, int sy) : surf(surf), sx(sx), sy(sy) { }
+  int NumPoints() const {
+    return sx*sy;
+  }
+  Point Pos(int i) const
+  {
+    int x = i/sy;
+    int y = i - x*sy;
+    float xx = x * surf->XSize() / sx;
+    float yy = y * surf->YSize() / sy;
+    return surf->Index(xx,yy);
+  }
+  unsigned int Color(int i) const
+  {
+    int x = i/sy;
+    int y = i - x*sy;
+    float xx = x * surf->XSize() / sx;
+    float yy = y * surf->YSize() / sy;
+    return surf->Color(xx,yy); 
+  }
+private:
+  SurfaceIn3d *surf;
+  int sx;
+  int sy;
+};
+
+EXPORT GameApi::PTS GameApi::PointsApi::surface(S surf, int sx, int sy)
+{
+  SurfaceImpl *s = find_surface(e, surf);
+  return add_points_api_points(e, new SurfacePoints3(s->surf, sx,sy));
+}
