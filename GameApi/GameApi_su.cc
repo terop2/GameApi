@@ -87,3 +87,4 @@ GameApi::S GameApi::SurfaceApi::texture(S orig, BM texture)
   impl.surf = surface;
   return add_surface(e, impl);
 }
+

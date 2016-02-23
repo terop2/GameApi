@@ -74,12 +74,12 @@ INC3WIN = /home/terop/cvs/sdl2_win/SDL2_image-2.0.0/i686-w64-mingw32/include/SDL
 INC4WIN = /home/terop/cvs/sdl2_win/SDL2-2.0.1/i686-w64-mingw32/include/SDL2
 INC5WIN = /home/terop/cvs/sdl2_win/include
 
-CCFLAGS = -std=c++11 -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2
-CC2FLAGS = -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC
+CCFLAGS = -std=c++11 -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DRASBERRY
+CC2FLAGS = -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DRASBERRY
 #`pkg-config gtkmm-2.4 --cflags`
 
 
-default: libGameApi.so main libGameApi.dll main.exe
+default: libGameApi.so main
 
 all: libGameApi.so libGameApi.dll install main
 
@@ -96,7 +96,7 @@ main.exe: $(O2Files_examples) Makefile GameApi.hh libGameApi.dll
 
 libGameApi.so: $(OFiles) Makefile
 	@echo g++ libGameApi.so
-	@g++ -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lGLEW -lfreetype -lstdc++ 
+	@g++ -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lSDL2_mixer -lGLEW -lfreetype -lstdc++ 
 #`pkg-config gtkmm-2.4 --libs` 
 
 libGameApi.dll: $(O2Files) Makefile glew.o

@@ -409,6 +409,7 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
   
 
   //vblank = true;
+#if 0
   if (vblank)
     {
       int (APIENTRY *SwapInterval)(int);
@@ -430,7 +431,7 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
 	std::cout << "Cannot get VBLANK" << std::endl;
       //SDL_GL_SetSwapInterval(int interval);
     }
-
+#endif
   //IMG_Init(IMG_INIT_JPG|IMG_INIT_PNG);
 
   //glEnable(GL_DEBUG_OUTPUT_SYNCRONOUS);
