@@ -1853,6 +1853,7 @@ class MatrixApi
 public:
 	IMPORT MatrixApi(Env &e);
 	IMPORT M identity();
+        IMPORT M transpose(M m);
 	IMPORT M xrot(float rot);
 	IMPORT M yrot(float rot);
 	IMPORT M zrot(float rot);
@@ -1866,6 +1867,7 @@ public:
 	IMPORT M mult(M m1, M m2);
 	IMPORT M rotate_around_axis(V v, float angle);
 	IMPORT M rotate_around_axis(PT point, V v, float angle);
+        IMPORT M keep_rotation(M m);
 	IMPORT PT mult(PT point, M matrix);
 private:
   MatrixApi(const MatrixApi&);
@@ -2525,6 +2527,7 @@ private:
     void render() {
       shapi.use(sh);
       shapi.set_var(sh, "in_MV", m); 
+      shapi.set_var(sh, "in_N", normal_matrix); 
       //shapi.set_var(sh, "in_T", m2);
       shapi.set_var(sh, "in_POS", anim_time);
       api.render_vertex_array(m_va2[anim_id]); 
@@ -2533,6 +2536,7 @@ private:
     void render_instanced(PTA pta) {
       shapi.use(sh);
       shapi.set_var(sh, "in_MV", m); 
+      shapi.set_var(sh, "in_N", normal_matrix); 
       //shapi.set_var(sh, "in_T", m2);
       shapi.set_var(sh, "in_POS", anim_time);
       api.render_vertex_array_instanced(m_va2[anim_id], pta); 
@@ -2579,6 +2583,7 @@ private:
   private:
     void setup_m() {
       m = mat.mult(mat.mult(mat.mult(current_rot,current_scale), current_pos), current_rot2);
+      normal_matrix = mat.keep_rotation(m);
       //m2 = mat.mult(mat.mult(current_rot, current_scale), current_rot2);
     }
   private:
@@ -2591,6 +2596,7 @@ private:
     M current_rot;
     M current_rot2;
     M m;
+    M normal_matrix;
     M m2;
     std::vector<P> m_p;
     SH sh;

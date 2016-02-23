@@ -250,6 +250,16 @@ Matrix Matrix::XRotation(float rot)
   return r;
 }
 
+Matrix Matrix::KeepRotation(const Matrix &m)
+{
+  Matrix r = { { m.matrix[0], m.matrix[1], m.matrix[2], 0.0,
+	       m.matrix[4], m.matrix[5], m.matrix[6], 0.0,
+	       m.matrix[7], m.matrix[8], m.matrix[9], 0.0,
+	       0.0, 0.0, 0.0, 1.0 } };
+  return r;
+}
+
+
 Matrix Matrix::YRotation(float rot)
 {
   float sin_r = sin(rot);

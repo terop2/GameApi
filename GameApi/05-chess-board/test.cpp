@@ -5,7 +5,7 @@
 
 #include <iostream>
 #include <cstdlib>
-
+#include <cassert>
 
 
 
@@ -94,6 +94,7 @@ bool piece_color_is_white(int c)
     case 11: return false;
     case 12: return false;
     };
+  assert(0);
 }
 bool is_inside_board(Pos p)
 {
