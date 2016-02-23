@@ -547,6 +547,7 @@ public:
 
   F deriv(F f);
   F integrate(F f);
+  std::vector<PT> equalizer(F f1, F f2, float start, float length);
   //float pullback(F a_f, F b_f, F p_a, F p_b, F f_p, float t_0, float t_1);
 private:
   FunctionApi(const FunctionApi&);
@@ -1113,6 +1114,7 @@ public:
   S texture(S orig, BM texture); // see bitmaptexturesurface from graph.hh
 
   BM render(S surf, int sx, int sy, PT ray_0, PT ray_x, PT ray_y, PT ray_z);
+  PTS surface_points(S surf, int sx, int sy);
 private:
   void *priv;
   Env &e;
@@ -1739,6 +1741,7 @@ public:
   IMPORT PTS or_points(PTS p1, PTS p2);
   IMPORT PTS heightmap(BM colour, FB floatbitmap, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
   IMPORT PTS random_plane(PT pos, V u_x, V u_y, int numpoints);
+  IMPORT PTS surface(S surf, int sx, int sy);
   IMPORT PTS surface(std::function<PT (float,float)> surf,
 		     std::function<unsigned int (PT,float,float)> color,
 		     float start_u, float end_u,

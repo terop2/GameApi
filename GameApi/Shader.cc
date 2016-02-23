@@ -383,9 +383,16 @@ ShaderFile::ShaderFile(std::string filename)
     }
 }
 
+#ifdef EMSCRIPTEN
+#define OLD_SHADER 1
+#endif
+#ifdef RASBERRY
+#define OLD_SHADER 1
+#endif
+
 ShaderFile::ShaderFile()
 {
-#ifdef EMSCRIPTEN
+#ifdef OLD_SHADER
   std::string s =
 "//V: comb\n"
 "#version 100\n"
@@ -395,7 +402,7 @@ ShaderFile::ShaderFile()
 "uniform mat4 in_N;\n"
 "uniform float in_POS;\n"
 "uniform float in_time;\n"
-"attribute vec3 in_InstPos;\n"
+"uniform vec3 in_InstPos;\n"
 "attribute vec3 in_Position;\n"
 "attribute vec3 in_Position2;\n"
 "attribute vec3 in_Normal;\n"
@@ -1206,7 +1213,7 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 	      std::stringstream ss3;
 	      ss3 << s;
 	      
-#ifdef EMSCRIPTEN
+#ifdef OLD_SHADER
 	      if (is_fbo)
 		out += "gl_FragData[0] = rgb";
 	      else
