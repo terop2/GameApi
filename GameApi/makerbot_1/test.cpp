@@ -21,7 +21,12 @@ int main() {
 
 
   Ft fnt = ev.font_api.newfont("./FreeSans.ttf", 60,60);
-  BM txt = ev.font_api.font_string(fnt, "Hello World!", 10);
+  BM bg = ev.bitmap_api.newbitmap((340+20),160);
+  BM txt0 = ev.font_api.font_string(fnt, "Dauser's", 10);
+  BM bg_txt = ev.bitmap_api.blitbitmap(bg, txt0, 10, 0);
+  BM txt_2 = ev.font_api.font_string(fnt, "Hanno", 10);
+  BM bg_txt2 = ev.bitmap_api.blitbitmap(bg_txt, txt_2, 50, 80);
+  BM txt = bg_txt2;
   std::cout << ev.bitmap_api.size_x(txt) << " " << ev.bitmap_api.size_y(txt) << std::endl;
   int sx = ev.bitmap_api.size_x(txt);
   int sy = ev.bitmap_api.size_y(txt);
@@ -30,7 +35,7 @@ int main() {
   BM txt2 = ev.bitmap_api.flip_y(txt);
   BB bb = ev.bool_bitmap_api.from_bitmaps_color(txt2, 255,255,255);
   //BB bb2 = ev.bool_bitmap_api.not_bitmap(bb);
-  O ooo = ev.volume_api.from_bool_bitmap(bb, 20.0);
+  O ooo = ev.volume_api.from_bool_bitmap(bb, 10.0);
   O ooo2 = ev.volume_api.colour(ooo, 0xffffffff);
   O oo = ev.volume_api.cube(0.0-9.0, sx+9.0,
 			    0.0-9.0, sy+9.0,
@@ -44,9 +49,9 @@ int main() {
 				     -10.0, sy+10.0,
 				     -30.0, 30.0);
   P p3a = ev.polygon_api.scale(p3,2.0,2.0,2.0);
-  P p3aa = ev.polygon_api.translate(p3a, -400.0, 0.0, 0.0);
+  P p3aa = ev.polygon_api.translate(p3a, -400.0, 10.0, 0.0);
   //P p3b = ev.polygon_api.color_faces(p3aa, 0xffffffff, 0x88888888, 0x44444444, 0x22222222);
-  //ev.polygon_api.save_model(p3b, "test.obj");
+  ev.polygon_api.save_model(p3aa, "test.obj");
 
   PolygonObj poly(ev, p3aa, sh);
   poly.prepare();

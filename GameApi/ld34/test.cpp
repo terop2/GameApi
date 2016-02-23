@@ -410,7 +410,7 @@ int main() {
   ev.mainloop_api.init_window(1024,768);
 
 
-#if 0
+#if 1
   Mix_Init(MIX_INIT_MP3);
   std::cout << Mix_GetError() << std::endl;
   Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);

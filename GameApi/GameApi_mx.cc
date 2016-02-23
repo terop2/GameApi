@@ -7,6 +7,11 @@ EXPORT GameApi::M GameApi::MatrixApi::identity()
 {
   return add_matrix2(e, Matrix::Identity());
 }
+EXPORT GameApi::M GameApi::MatrixApi::transpose(M mat)
+{
+  Matrix m = find_matrix(e, mat);
+  return add_matrix2(e, Matrix::Transpose(m));
+}
 EXPORT GameApi::M GameApi::MatrixApi::xrot(float rot)
 {
   return add_matrix2(e, Matrix::XRotation(rot));
@@ -31,6 +36,12 @@ EXPORT GameApi::M GameApi::MatrixApi::inverse(M mat)
 {
   Matrix m = find_matrix(e, mat);
   return add_matrix2(e, Matrix::Inverse(m));
+}
+EXPORT GameApi::M GameApi::MatrixApi::keep_rotation(M mat)
+{
+  Matrix m = find_matrix(e, mat);
+  Matrix m2 = Matrix::KeepRotation(m);
+  return add_matrix2(e, m2);
 }
 EXPORT GameApi::M GameApi::MatrixApi::mult(M m1, M m2)
 {
