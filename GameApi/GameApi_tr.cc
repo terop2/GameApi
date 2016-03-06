@@ -97,21 +97,35 @@ public:
     for(int i=0;i<f;i++)
       {
 	int c = coll->NumPoints(i);
-	for(int j=0;j<c;j++)
+	for(int j=0;j<c/2;j++)
 	  {
-	    Point p = coll->FacePoint(i,j);
-	    Vector n = coll->PointNormal(i,j);
-	    unsigned int col = coll->Color(i,j);
-	    Point2d tex = coll->TexCoord(i,j);
+	    int jj = j;
+	    Point p = coll->FacePoint(i,jj);
+	    Vector n = coll->PointNormal(i,jj);
+	    unsigned int col = coll->Color(i,jj);
+	    Point2d tex = coll->TexCoord(i,jj);
 	    pos.push_back(p);
 	    color.push_back(col);
 	    texcoord.push_back(tex);
 	    normal.push_back(n);
+
+	    Point pa = coll->FacePoint(i,c-jj-1);
+	    Vector na = coll->PointNormal(i,c-jj-1);
+	    unsigned int cola = coll->Color(i,c-jj-1);
+	    Point2d texa = coll->TexCoord(i,c-jj-1);
+	    pos.push_back(pa);
+	    color.push_back(cola);
+	    texcoord.push_back(texa);
+	    normal.push_back(na);
+
 	  }
-	pos.push_back(pos[pos.size()-1]);
-	color.push_back(color[color.size()-1]);
-	texcoord.push_back(texcoord[texcoord.size()-1]);
-	normal.push_back(normal[normal.size()-1]);
+	if (c!=0)
+	  {
+	    pos.push_back(pos[pos.size()-1]);
+	    color.push_back(color[color.size()-1]);
+	    texcoord.push_back(texcoord[texcoord.size()-1]);
+	    normal.push_back(normal[normal.size()-1]);
+	  }
 	if (i!=f-1) {
 	  Point p = coll->FacePoint(i+1,0);
 	  Vector n = coll->PointNormal(i+1,0);
@@ -350,7 +364,7 @@ public:
     int s = ts->Size();
     if (s==0) return 0;
     if (s==1) return 0;
-    return ts->Size()-2;
+    return s-2;
   }
   virtual int NumPoints(int face) const
   {
@@ -358,20 +372,24 @@ public:
   }
   virtual Point FacePoint(int face, int point) const
   {
+    if (face%2==1) { point=3-point-1; }
     return ts->Pos(face+point);
   }
   virtual Vector PointNormal(int face, int point) const
   {
+    if (face%2==1) { point=3-point-1; }
     return ts->Normal(face+point);
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
   virtual unsigned int Color(int face, int point) const
   {
+    if (face%2==1) { point=3-point-1; }
     return ts->Color(face+point);
   }
   virtual Point2d TexCoord(int face, int point) const
   {
+    if (face%2==1) { point=3-point-1; }
     return ts->TexCoord(face+point);
   }
 

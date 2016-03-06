@@ -2715,6 +2715,100 @@ EXPORT GameApi::P GameApi::PolygonApi::anim_target_scale(P p, PT center, float s
   FaceCollection *coll = new AnimFaceScale(*i, *pp, scale_x, scale_y, scale_z);
   return add_polygon(e, coll, 1);
 }
+class CutFaces : public FaceCollection
+{
+public:
+  CutFaces(FaceCollection *i, VolumeObject *oo, Cutter *cut) : i(i), oo(oo), cut(cut) { cut_them(); compress(); }
+
+  void cut_them()
+  {
+    int f = i->NumFaces();
+    for(int ii=0;ii<f; ii++)
+      {
+	faces.push_back(std::vector<Point>());
+	int p = i->NumPoints(ii);
+	std::vector<Point> &ref = faces[faces.size()-1];
+	for(int jj=0;jj<p;jj++)
+	  {
+	    int jjj1 = jj;
+	    int jjj2 = (jjj1+1);
+	    Point p1 = i->FacePoint(ii, jjj1);
+	    Point p2 = i->FacePoint(ii, jjj2);
+	    bool b1 = oo->Inside(p1);
+	    bool b2 = oo->Inside(p2);
+	    if (b1!=b2)
+	      {
+
+		//std::cout << "CUTTER: " << p1 << " " << p2 << " ";
+		Point c1 = cut->cut(p1,p2);
+		//std::cout << c1 << std::endl;
+		if (!b1)
+		  {
+		    ref.push_back(p1);
+		    ref.push_back(c1);
+		  }
+		if (!b2)
+		  {
+		    ref.push_back(c1);
+		    //ref.push_back(p2);
+		  }
+	      }
+	    else
+	      {
+		if (!b1) {
+		  ref.push_back(p1);
+		  //ref.push_back(p2);
+		}
+	      }
+	  }
+      }
+  }
+  void compress()
+  {
+    int f = faces.size();
+    for(int ii=0;ii<f; ii++)
+      {
+	int p = faces[ii].size();
+	if (p==0 ||p==1 ||p==2) continue;
+	faces2.push_back(faces[ii]);
+      }
+  }
+
+  virtual int NumFaces() const { return faces2.size(); }
+  virtual int NumPoints(int face) const { return faces2[face].size(); }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return faces2[face][point];
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Vector v(0.0, 0.0, 0.0);
+    return v;
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return 0xffffffff;
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    Point2d p;
+    p.x = 0.0;
+    p.y = 0.0;
+    return p;
+  }
+
+
+private:
+  FaceCollection *i;
+  VolumeObject *oo;
+  Cutter *cut;
+  std::vector<std::vector<Point> > faces;
+  std::vector<std::vector<Point> > faces2;
+};
+
+
 #if 0
 class AnimFaceMatrix : public ForwardFaceCollection
 {
@@ -2747,3 +2841,34 @@ EXPORT GameApi::P GameApi::PolygonApi::sprite(Q bm, PT p, float mul_x, float mul
 {
 }
 #endif
+
+
+EXPORT GameApi::P GameApi::PolygonApi::cut_faces(P p, O o, CT cutter)
+{
+  FaceCollection *i = find_facecoll(e, p);
+  VolumeObject *oo = find_volume(e, o);
+  Cutter *cut = find_cutter(e, cutter);
+  FaceCollection *coll = new CutFaces(i, oo, cut);
+  return add_polygon(e, coll, 1);
+}
+
+EXPORT GameApi::P GameApi::PolygonApi::and_not_elem(EveryApi &ev, P p1, P p_not,
+						    O o1, O o_not,
+						    CT cutter1, CT cutter_not)
+{
+  O o1_n = o1; //ev.volume_api.not_op(o1);
+  O onot_n = ev.volume_api.not_op(o_not);
+
+  P p1_cut = cut_faces(p1, onot_n, cutter_not);
+  TS ts_1 = ev.ts_api.from_poly(p1_cut);
+  P p_1 = ev.ts_api.to_poly(ts_1);
+
+  P p_not_cut = cut_faces(p_not, o1_n, cutter1);
+  TS ts_not = ev.ts_api.from_poly(p_not_cut);
+  P p_not_ = ev.ts_api.to_poly(ts_not);
+
+
+  P or_1 = or_elem(p_1, p_not_);
+  return or_1;
+  //return or_1;
+}

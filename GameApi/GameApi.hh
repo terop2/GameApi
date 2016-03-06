@@ -116,6 +116,7 @@ using std::placeholders::_9;
   struct EX { int id; };
   struct PH { int id; };
   struct TS { int id; };
+  struct CT { int id; };
   //template<class T>
   //struct E { int id; };
 
@@ -1149,6 +1150,18 @@ private:
   Env &e;
 };
 
+class CutterApi
+{
+public:
+  IMPORT CutterApi(Env &e) : e(e) { }
+  IMPORT CT function(std::function<PT (PT,PT)> f);
+  IMPORT CT plane_cut(PT pos, V u_x, V u_y);
+  //IMPORT CT sphere_cut(PT center, float radius);
+  IMPORT CT distance_cut(FD dist);
+private:
+  Env &e;
+};
+
 class PolygonApi
 {
 public:
@@ -1199,6 +1212,8 @@ public:
 	      float min_z, float max_z);
   IMPORT P heightmap(FB fb, std::function<P (float)> f, float dx, float dz);
   IMPORT P circular_span(EveryApi &ev, LI li, float delta_angle_around_y_axis, int num_steps);
+  IMPORT P cut_faces(P p, O o, CT cutter);
+
   IMPORT P span(LI li, M matrix, int num_steps);
   IMPORT P fromsurface(S s, float thickness);
   IMPORT P fromsurface(S s1, S s2, C curve); // surfacebetweensurfaces
@@ -1242,6 +1257,9 @@ public:
   IMPORT P or_elem(P p1, P p2);
   IMPORT P or_array(P *array, int size);
   P or_array_1(P *array, int size);
+  IMPORT P and_not_elem(EveryApi &ev, P p1, P p_not, 
+			O o1, O o_not, 
+			CT cutter1, CT cutter_not);
   //P and_not_elem(P p1, P p_not);
 
 
@@ -2067,7 +2085,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -2107,6 +2125,7 @@ struct EveryApi
   WModApi mod_api;
   PhysicsApi physics_api;
   TriStripApi ts_api;
+  CutterApi cutter_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);

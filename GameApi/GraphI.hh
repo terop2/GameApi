@@ -343,4 +343,10 @@ protected:
   TriStrip &next;
 };
 
+class Cutter
+{
+public:
+  virtual Point cut(Point p1, Point p2) const=0;
+};
+
 #endif

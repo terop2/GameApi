@@ -805,6 +805,7 @@ int boardmap(char c)
     case 'X': return 0;
     case 'O': return 1;
     };
+  assert(0);
 }
 
 P board_blocks(int c, EveryApi &ev)
