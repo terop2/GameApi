@@ -480,6 +480,7 @@ struct EnvImpl
   std::vector<ExprNode*> exprs;
   std::vector<PhysicsNode*> phys;
   std::vector<TriStrip*> tri_strip;
+  std::vector<Cutter*> cutters;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
 #ifndef EMSCRIPTEN
@@ -811,7 +812,7 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point);
 
 GameApi::V add_vector(GameApi::Env &e, float dx, float dy, float dz);
 GameApi::IS add_anim(GameApi::Env &e, const AnimImpl &impl);
-
+GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 
 //
 // find() functions
@@ -882,5 +883,6 @@ Vector *find_vector(GameApi::Env &e, GameApi::V p);
 SpaceImpl *find_space(GameApi::Env &e, GameApi::SP s);
 LineImpl *find_line(GameApi::Env &e, GameApi::LN l);
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
+Cutter *find_cutter(GameApi::Env &e, GameApi::CT cut);
 
 #endif

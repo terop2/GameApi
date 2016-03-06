@@ -1096,7 +1096,14 @@ GameApi::V add_vector(GameApi::Env &e, float dx, float dy, float dz)
 }
 
 
-
+GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->cutters.push_back(cut);
+  GameApi::CT c;
+  c.id = env->cutters.size()-1;
+  return c;
+}
 GameApi::IS add_anim(GameApi::Env &e, const AnimImpl &impl)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1511,7 +1518,11 @@ SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm)
     return &ee->spr_pos[bm.id];
   return 0;
 }
-
+Cutter *find_cutter(GameApi::Env &e, GameApi::CT cut)
+{
+  EnvImpl *ee = ::EnvImpl::Environment(&e);
+  return ee->cutters[cut.id];
+}
 
 
 EXPORT GameApi::GridApi::GridApi(GameApi::Env &e) : e(e)
