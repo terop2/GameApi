@@ -10,8 +10,8 @@ using namespace GameApi;
 struct Envi {
   EveryApi *ev;
   PolygonObj *poly;
-  float pos_x=0.0, pos_y=0.0;
-  float rot_y=0.0;
+  float pos_x=-0.124, pos_y=755.0;
+  float rot_y=-5.58;
   float speed = 10.0;
   float rot_speed = 1.0*3.14159*2.0/360.0;
   float speed_x = 1.0;
@@ -50,6 +50,8 @@ void iter(void *arg)
     if ((e.ch=='d'||e.ch==7||e.ch==79)&& e.type==0x300) { env->rot_y += env->rot_speed; }
     env->speed_x = env->speed*cos(env->rot_y+3.14159/2.0);
     env->speed_y = env->speed*sin(env->rot_y+3.14159/2.0);
+
+    //    std::cout << env->pos_y << " " << env->pos_x << " " << env->rot_y << std::endl;
 
 }
 
