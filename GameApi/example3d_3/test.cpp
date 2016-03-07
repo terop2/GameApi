@@ -80,7 +80,7 @@ int main() {
   P p1 = ev.polygon_api.sphere(center1, 50.0, 30*2*2, 15*2*2);
   float cs = 40.0;
   P p2 = ev.polygon_api.cube(-cs,cs, -cs, cs, -cs, cs); //ev.polygon_api.sphere(center2, 40.0, 30*2*2, 15*2*2);
-  P p22 = ev.polygon_api.splitquads(p2, 10, 10);
+  P p22 = ev.polygon_api.splitquads(p2, 8, 8);
   O o1 = ev.volume_api.sphere(center1, 50.0);
   O o2 = ev.volume_api.cube(-cs, cs, -cs, cs, -cs, cs); //ev.volume_api.sphere(center2, 40.0);
   FD fd1 = ev.dist_api.sphere(center1, 50.0);
