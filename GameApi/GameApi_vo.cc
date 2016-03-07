@@ -1261,6 +1261,36 @@ EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::sphere(PT center, float radi
   Point *cent = find_point(e, center);
   return add_distance(e, new SphereDistanceRenderable(*cent, radius));
 }
+class CubeDistanceRenderable : public DistanceRenderable
+{
+public:
+  CubeDistanceRenderable(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) { }
+  float distance(Point p) const {
+    p-=Vector(start_x, start_y, start_z);
+    Vector s = Vector(end_x, end_y, end_z) - Vector(start_x, start_y, start_z);
+    s/=2.0;
+    p-=s;
+    float pp_x = fabs(p.x);
+    float pp_y = fabs(p.y);
+    float pp_z = fabs(p.z);
+    pp_x-=s.dx;
+    pp_y-=s.dy;
+    pp_z-=s.dz;
+    pp_x = std::max(pp_x, 0.0f);
+    pp_y = std::max(pp_y, 0.0f);
+    pp_z = std::max(pp_z, 0.0f);
+    return sqrt(pp_x*pp_x+pp_y*pp_y+pp_z*pp_z);
+  }
+private:
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+};
+
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::cube(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+{
+  return add_distance(e, new CubeDistanceRenderable(start_x, end_x, start_y, end_y, start_z, end_z));
+}
 EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::line(PT start, PT end, float dist)
 {
   Point *st = find_point(e, start);
