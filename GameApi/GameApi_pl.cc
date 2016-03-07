@@ -2750,14 +2750,14 @@ public:
 		if (!b2)
 		  {
 		    ref.push_back(c1);
-		    //ref.push_back(p2);
+		    ref.push_back(p2);
 		  }
 	      }
 	    else
 	      {
 		if (!b1) {
 		  ref.push_back(p1);
-		  //ref.push_back(p2);
+		  ref.push_back(p2);
 		}
 	      }
 	  }
