@@ -1260,6 +1260,9 @@ public:
   IMPORT P and_not_elem(EveryApi &ev, P p1, P p_not, 
 			O o1, O o_not, 
 			CT cutter1, CT cutter_not);
+  IMPORT P intersect(EveryApi &ev, P p1, P p2,
+		     O o1, O o2,
+		     CT cutter1, CT cutter2);
   //P and_not_elem(P p1, P p_not);
 
 

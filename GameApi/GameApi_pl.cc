@@ -2851,6 +2851,25 @@ EXPORT GameApi::P GameApi::PolygonApi::cut_faces(P p, O o, CT cutter)
   FaceCollection *coll = new CutFaces(i, oo, cut);
   return add_polygon(e, coll, 1);
 }
+EXPORT GameApi::P GameApi::PolygonApi::intersect(EveryApi &ev, P p1, P p2,
+						 O o1, O o2,
+						 CT cutter1, CT cutter2)
+{
+  O o1_n = ev.volume_api.not_op(o1);
+  O o2_n = ev.volume_api.not_op(o2);
+
+  P p1_cut = cut_faces(p1, o2_n, cutter2);
+  TS ts_1 = ev.ts_api.from_poly(p1_cut);
+  P p_1 = ev.ts_api.to_poly(ts_1);
+
+  P p2_cut = cut_faces(p2, o1_n, cutter1);
+  TS ts_2 = ev.ts_api.from_poly(p2_cut);
+  P p_2_ = ev.ts_api.to_poly(ts_2);
+
+  P or_1 = or_elem(p_1, p_2_);
+  return or_1;
+
+}
 
 EXPORT GameApi::P GameApi::PolygonApi::and_not_elem(EveryApi &ev, P p1, P p_not,
 						    O o1, O o_not,

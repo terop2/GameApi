@@ -80,14 +80,14 @@ int main() {
   P p1 = ev.polygon_api.sphere(center1, 50.0, 30*2*2, 15*2*2);
   float cs = 40.0;
   P p2 = ev.polygon_api.cube(-cs,cs, -cs, cs, -cs, cs); //ev.polygon_api.sphere(center2, 40.0, 30*2*2, 15*2*2);
-  P p22 = ev.polygon_api.splitquads(p2, 8, 8);
+  P p22 = ev.polygon_api.splitquads(p2, 18, 18);
   O o1 = ev.volume_api.sphere(center1, 50.0);
   O o2 = ev.volume_api.cube(-cs, cs, -cs, cs, -cs, cs); //ev.volume_api.sphere(center2, 40.0);
   FD fd1 = ev.dist_api.sphere(center1, 50.0);
   FD fd2 = ev.dist_api.cube(-cs, cs, -cs, cs, -cs, cs); ////ev.dist_api.sphere(center2, 40.0);
   CT ct1 = ev.cutter_api.distance_cut(fd1);
   CT ct2 = ev.cutter_api.distance_cut(fd2);
-  P p3 = ev.polygon_api.and_not_elem(ev, p1,p22, o1, o2, ct1, ct2);
+  P p3 = ev.polygon_api.intersect(ev, p1,p22, o1, o2, ct1, ct2);
 
   P p31 = ev.polygon_api.recalculate_normals(p3);
   P p32 = ev.polygon_api.color_from_normals(p31);
