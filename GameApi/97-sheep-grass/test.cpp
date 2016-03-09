@@ -15,7 +15,7 @@ int main() {
 
   // shader initialization
   ev.shader_api.load_default();
-  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "inst:flat_shading", "flat_shading");
+  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "inst:colour", "colour");
 
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);
