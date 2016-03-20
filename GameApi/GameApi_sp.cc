@@ -360,7 +360,7 @@ void GameApi::SpriteApi::rendersprite3_1(GameApi::BM bm, int bm_choose, GameApi:
   ::Sprite *s = spriv.sprites[bm.id];
   if (!s) { std::cout << "rendersprite sprite==NULL (maybe you need to call preparesprite() for every object before rendering happens. (do not put it to frame loop or you lose frame rates))" << std::endl; return; }
 
-  Point2d pos2 = { x, y };
+  Point2d pos2 = { x+0.5f, y+0.5f };
   float z = 0.0;
   //glPushMatrix();
   //glScalef(mult_x, mult_y, 1.0);

@@ -134,7 +134,7 @@ public:
     if (!firsttime)
       {
 	Point2d p = get_pos();
-	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x,p.y,0.0));
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5,p.y+0.5,0.0));
 	ev.sprite_api.render_sprite_vertex_array(rendered_bitmap_va);
       }
   }
@@ -226,7 +226,7 @@ public:
     if (!firsttime)
       {
 	Point2d p = get_pos();
-	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x,p.y,0.0));
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5,p.y+0.5,0.0));
 	ev.sprite_api.render_sprite_vertex_array(rendered_bitmap_va);
       }
   }
@@ -323,7 +323,7 @@ public:
     if (!firsttime)
       {
 	Point2d p = get_pos();
-	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x,p.y,0.0));
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5,p.y+0.5,0.0));
 	ev.sprite_api.render_sprite_vertex_array(rendered_bitmap_va);
       }
   }
@@ -668,7 +668,7 @@ public:
     if (!firsttime)
       {
 	Point2d p = get_pos();
-	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x,p.y,0.0));
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5,p.y+0.5,0.0));
 	ev.sprite_api.render_sprite_vertex_array(bm_va);
       }
   }
@@ -923,7 +923,7 @@ public:
     if (!firsttime && enabled)
       {
 	Point2d p = get_pos();
-	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x, p.y, 0.0));
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5, p.y+0.5, 0.0));
 	ev.sprite_api.render_sprite_vertex_array(bm_va);
       }
   }
@@ -1009,7 +1009,7 @@ public:
     if (!firsttime && enabled)
       {
 	Point2d p = get_pos();
-	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x, p.y, 0.0));
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5, p.y+0.5, 0.0));
 	ev.sprite_api.render_sprite_vertex_array(bm_va);
       }
   }
@@ -2146,7 +2146,7 @@ public:
 	ev.sprite_api.render_sprite_vertex_array(bg_va);
 
 	float pos_y = current_pos * (float(sy) - float(sy)/float(area_y)*float(sy));
-	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+2+2, p.y+pos_y+2+2, 0.0));
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+2+2+0.5, p.y+pos_y+2+2+0.5, 0.0));
 	ev.sprite_api.render_sprite_vertex_array(thumb_va);
       }
   }
@@ -2237,7 +2237,7 @@ public:
 	ev.sprite_api.render_sprite_vertex_array(bg_va);
 
 	float pos_x = current_pos * (float(sx) - float(sx)/float(area_x)*float(sx));
-	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+pos_x+2+2, p.y+2+2, 0.0));
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+pos_x+2+2+0.5, p.y+2+2+0.5, 0.0));
 	ev.sprite_api.render_sprite_vertex_array(thumb_va);
       }
   }
@@ -2313,7 +2313,7 @@ public:
     if (!firsttime)
       {
 	Point2d pos = get_pos();
-	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(pos.x, pos.y, 0.0));
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(pos.x+0.5, pos.y+0.5, 0.0));
 	ev.sprite_api.render_sprite_vertex_array(wave_bm_va);
       }
   }

@@ -762,6 +762,30 @@ private:
   Env &e;
 };
 
+class InteractionApi
+{
+public:
+  struct Wasd_data {
+    bool up=false;
+    bool down=false;
+    bool left=false;
+    bool right=false;
+  };
+  static void wasd_movement(MainLoopApi::Event &e,
+			    float &pos_x, float &pos_y, Wasd_data &data,
+			    float speed_x, float speed_y);
+  struct Quake_data {
+    bool forward=false;
+    bool backward=false;
+    bool left=false;
+    bool right=false;
+  };
+  static void quake_movement(MainLoopApi::Event &e,
+			     float &pos_x, float &pos_y, float &rot_y,
+			     Quake_data &data,
+			     float &speed_x, float &speed_y, float speed, float rot_speed);
+};
+
 class PhysicsApi
 {
 public:
@@ -1158,6 +1182,7 @@ public:
   IMPORT CT plane_cut(PT pos, V u_x, V u_y);
   //IMPORT CT sphere_cut(PT center, float radius);
   IMPORT CT distance_cut(FD dist);
+  IMPORT O cutter_volume(CT c, PT point_from_inside, float outside_dist);
 private:
   Env &e;
 };
@@ -2361,7 +2386,7 @@ private:
     { 
       if (prepared)
 	{
-	  shader_api.set_var(sh, "in_MV", matrix_api.mult(m,matrix_api.mult(matrix_api.scale(mult_x, mult_y, 1.0), matrix_api.trans(pos_x, pos_y, 0.0))));
+	  shader_api.set_var(sh, "in_MV", matrix_api.mult(m,matrix_api.mult(matrix_api.scale(mult_x, mult_y, 1.0), matrix_api.trans(pos_x+0.5, pos_y+0.5, 0.0))));
 	  sp.render_sprite_vertex_array(va[anim_id]);
 	}
       //sp.rendersprite(bm[anim_id], sh, pos_x, pos_y, mult_x, mult_y); 
@@ -2441,7 +2466,7 @@ private:
 	  for(int y=m_t;y<m_height;y++)
 	    for(int x=m_l;x<m_width;x++)
 	      {
-		M m2 = matrix_api.mult(matrix_api.trans(x*dx, y*dy, 0.0),m);
+		M m2 = matrix_api.mult(matrix_api.trans(x*dx+0.5, y*dy+0.5, 0.0),m);
 		shader_api.set_var(sh, "in_MV", m2);
 		int index = bitmap[x+y*m_width]; //bmapi.intvalue(int_bm, x,y);
 		sp.render_sprite_vertex_array(va[index]);

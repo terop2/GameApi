@@ -23,7 +23,7 @@ int main() {
   PT pos = ev.point_api.point(0.0, 0.0, 0.0);
   V u_x = ev.vector_api.vector(4000.0, 0.0, 0.0);
   V u_y = ev.vector_api.vector(0.0, 0.0, 4000.0);
-  PTS pts = ev.points_api.random_plane(pos, u_x, u_y, 100000/2);
+  PTS pts = ev.points_api.random_plane(pos, u_x, u_y, 141072);
   PTA instances = ev.points_api.prepare(pts);
 
   TS tris = ev.ts_api.load("..\\objed\\test2.tri");

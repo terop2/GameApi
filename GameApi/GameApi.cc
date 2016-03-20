@@ -10,6 +10,16 @@
 #include "GameApi_h.hh"
 
 
+EnvImpl::EnvImpl() : event_infos(new EmptySequencer2)
+{
+#ifndef EMSCRIPTEN
+    int err = FT_Init_FreeType(&lib);
+    std::cout << "Freetype init error: " << err << std::endl;
+    std::cout << &lib << std::endl;
+#endif 
+    cursor_pos_point_id.id = -1;
+}
+
 GameApi::BM add_color_bitmap2(GameApi::Env &e, Bitmap<Color> *bm);
 
 #if MOVED_TO_PARSER_HH
@@ -230,6 +240,7 @@ EnvImpl::~EnvImpl()
       delete f.bm;
     }
 #ifndef EMSCRIPTEN
+  std::cout << "FREE FREETYPE!" << std::endl;
   FT_Done_FreeType(lib);
 #endif
   int s1 = bm.size();

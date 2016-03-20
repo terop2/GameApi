@@ -37,7 +37,7 @@ CFiles=	Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
         GameApi_spa.cc GameApi_sp.cc GameApi_st.cc GameApi_su.cc \
         GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \
         GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
-        GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc
+        GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc
 
 
 CFiles2 = Main.cc
