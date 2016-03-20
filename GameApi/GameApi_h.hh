@@ -709,13 +709,17 @@ struct EnvImpl
     }
 #endif
   }
+  EnvImpl();
+#if 0
   EnvImpl() : event_infos(new EmptySequencer2) 
   {
 #ifndef EMSCRIPTEN
-    FT_Init_FreeType(&lib);
+    int err = FT_Init_FreeType(&lib);
+    std::cout << "Freetype init error: " << err << std::endl;
 #endif
     cursor_pos_point_id.id = -1;
   }
+#endif
   ~EnvImpl();
 };
 

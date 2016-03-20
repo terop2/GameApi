@@ -16,6 +16,7 @@ struct Envi {
   float rot_speed = 1.0*3.14159*2.0/360.0;
   float speed_x = 1.0;
   float speed_y = 1.0;
+  InteractionApi::Quake_data data;
 };
 
 void iter(void *arg)
@@ -30,7 +31,7 @@ void iter(void *arg)
     M a_mm = env->ev->matrix_api.mult(env->ev->matrix_api.mult(a_m3,a_m),a_m2);
 
     env->poly->set_rotation_matrix2(a_mm);
-    env->poly->set_pos(env->pos_x, 0.0, env->pos_y-400.0);
+    env->poly->set_pos(env->pos_x, 0.0, env->pos_y);
     env->poly->render();
 
     env->ev->mainloop_api.fpscounter();
@@ -42,6 +43,11 @@ void iter(void *arg)
 #ifndef EMSCRIPTEN
     if (e.ch==27) { exit(0); }
 #endif
+
+    InteractionApi::quake_movement(e, env->pos_x, env->pos_y, env->rot_y,
+				   env->data, env->speed_x, env->speed_y,
+				   1.0, 1.0*3.14159*2.0/360.0);
+#if 0
     if ((e.ch=='w' || e.ch==26||e.ch==82)&& e.type==0x300) { env->pos_y+=env->speed_y; env->pos_x+=env->speed_x; }
     if ((e.ch=='s' || e.ch==22||e.ch==81)&& e.type==0x300) { env->pos_y-=env->speed_y; env->pos_x-=env->speed_x; }
 
@@ -50,6 +56,7 @@ void iter(void *arg)
     if ((e.ch=='d'||e.ch==7||e.ch==79)&& e.type==0x300) { env->rot_y += env->rot_speed; }
     env->speed_x = env->speed*cos(env->rot_y+3.14159/2.0);
     env->speed_y = env->speed*sin(env->rot_y+3.14159/2.0);
+#endif
 
     //    std::cout << env->pos_y << " " << env->pos_x << " " << env->rot_y << std::endl;
 
@@ -87,7 +94,7 @@ int main() {
   FD fd2 = ev.dist_api.cube(-cs, cs, -cs, cs, -cs, cs); ////ev.dist_api.sphere(center2, 40.0);
   CT ct1 = ev.cutter_api.distance_cut(fd1);
   CT ct2 = ev.cutter_api.distance_cut(fd2);
-  P p3 = ev.polygon_api.intersect(ev, p1,p22, o1, o2, ct1, ct2);
+  P p3 = ev.polygon_api.and_not_elem(ev, p1,p22, o1, o2, ct1, ct2);
 
   P p31 = ev.polygon_api.recalculate_normals(p3);
   P p32 = ev.polygon_api.color_from_normals(p31);
