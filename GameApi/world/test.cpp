@@ -309,8 +309,8 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
     }
   case 17:
     {
-#if 1
-      P p = m.lucy;
+      P p2 = m.lucy;
+#if 0
 
       P p3 = ev.polygon_api.color_from_normals(p);
       P p4 = ev.polygon_api.color_range(p3, 0xffffffff, 0xff888888);

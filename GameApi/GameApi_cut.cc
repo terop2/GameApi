@@ -69,9 +69,12 @@ public:
       //if (count>30) return Point(0.0,0.0,0.0);
       // p+=v * d;
       pos+=fabs(d/dd);
-      p = (1.0-pos)*Vector(p1)+pos*Vector(p2);
+      //if (pos>=0.0 && pos<=1.0)
+	p = (1.0-pos)*Vector(p1)+pos*Vector(p2);
       //count++;
     }
+    //if (pos<0.0 ||pos>1.0)
+    //  std::cout << p1 << " " << p2 << ":" << p << std::endl;
     return p;
   }
 private:

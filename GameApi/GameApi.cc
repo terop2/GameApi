@@ -1842,5 +1842,54 @@ void GameApi::prepare(GameApi::RenderObject &o)
 
 
 
+GameApi::BO GameApi::BooleanOps::cube(GameApi::EveryApi &ev, 
+					 float start_x, float end_x,
+					 float start_y, float end_y,
+					 float start_z, float end_z)
+{
+  P mesh = ev.polygon_api.cube(start_x, end_x, start_y, end_y, start_z, end_z);
+  P mesh2 = ev.polygon_api.splitquads(mesh, 18, 18);
 
+  O bools = ev.volume_api.cube(start_x, end_x, start_y, end_y, start_z, end_z);
+  FD fd = ev.dist_api.cube(start_x, end_x, start_y, end_y, start_z, end_z);
+  //CT cutter = ev.cutter_api.distance_cut(fd);
+  return create_bo(mesh2, bools, fd);
+}
+GameApi::BO GameApi::BooleanOps::sphere(GameApi::EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2)
+{
+  P mesh = ev.polygon_api.sphere(center, radius, numfaces1, numfaces2);
+  O bools = ev.volume_api.sphere(center, radius);
+  FD fd = ev.dist_api.sphere(center, radius);
+  return create_bo(mesh, bools, fd);
+}
+GameApi::BO GameApi::BooleanOps::or_elem(GameApi::EveryApi &ev, GameApi::BO obj, GameApi::BO obj2)
+{
+  P mesh = ev.polygon_api.or_elem(obj.mesh, obj2.mesh);
+  O bools = ev.volume_api.max_op(obj.bools, obj2.bools);
+  FD fd = ev.dist_api.min(obj.fd, obj2.fd);
+  return create_bo(mesh, bools, fd);
+}
+GameApi::BO GameApi::BooleanOps::and_not(GameApi::EveryApi &ev, GameApi::BO obj, GameApi::BO obj2)
+{
+  CT cutter = ev.cutter_api.distance_cut(obj.fd);
+  CT cutter2 = ev.cutter_api.distance_cut(obj2.fd);
+  P mesh = ev.polygon_api.and_not_elem(ev, obj2.mesh, obj.mesh,
+				       obj2.bools, obj.bools,
+				       cutter2, cutter);
+  //P mesh2 = ev.polygon_api.tri_to_quad(mesh);
+  O bools = ev.volume_api.andnot_op(obj.bools, obj2.bools);
+  FD fd = ev.dist_api.and_not(obj.fd, obj2.fd);
+  return create_bo(mesh, bools, fd);
+}
 
+GameApi::BO GameApi::BooleanOps::intersect(GameApi::EveryApi &ev, GameApi::BO obj, GameApi::BO obj2)
+{
+  CT cutter = ev.cutter_api.distance_cut(obj.fd);
+  CT cutter2 = ev.cutter_api.distance_cut(obj2.fd);
+  P mesh = ev.polygon_api.intersect(ev, obj.mesh, obj2.mesh,
+				       obj.bools, obj2.bools,
+				       cutter, cutter2);
+  O bools = ev.volume_api.min_op(obj.bools, obj2.bools);
+  FD fd = ev.dist_api.max(obj.fd, obj2.fd);
+  return create_bo(mesh, bools, fd);
+}

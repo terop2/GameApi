@@ -2727,11 +2727,12 @@ public:
       {
 	faces.push_back(std::vector<Point>());
 	int p = i->NumPoints(ii);
+	//std::cout << p << std::endl;
 	std::vector<Point> &ref = faces[faces.size()-1];
 	for(int jj=0;jj<p;jj++)
 	  {
 	    int jjj1 = jj;
-	    int jjj2 = (jjj1+1);
+	    int jjj2 = (jjj1+1)%p;
 	    Point p1 = i->FacePoint(ii, jjj1);
 	    Point p2 = i->FacePoint(ii, jjj2);
 	    bool b1 = oo->Inside(p1);
@@ -2870,7 +2871,56 @@ EXPORT GameApi::P GameApi::PolygonApi::intersect(EveryApi &ev, P p1, P p2,
   return or_1;
 
 }
+class TriToQuad : public FaceCollection
+{
+public:
+  TriToQuad(FaceCollection *coll) : coll(coll) { }
+  virtual int NumFaces() const { return coll->NumFaces(); }
+  virtual int NumPoints(int face) const
+  {
+    return 4;
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    if (coll->NumPoints(face)==3)
+      {
+	if (point==3) { return coll->FacePoint(face,2)+Vector(1.0,0.0,0.0); }
+      }
+    return coll->FacePoint(face,point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    if (point==3) point=2;
+    return coll->PointNormal(face,point);
+  }
+  virtual float Attrib(int face, int point, int id) const {
+    if (point==3) point=2;
+    return coll->Attrib(face,point,id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    if (point==3) point=2;
+    return coll->AttribI(face,point,id);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    if (point==3) point=2;
+    return coll->Color(face,point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    if (point==3) point=2;
+    return coll->TexCoord(face,point);
+  }
 
+private:
+  FaceCollection *coll;
+};
+EXPORT GameApi::P GameApi::PolygonApi::tri_to_quad(P p)
+{
+  FaceCollection *poly = find_facecoll(e, p);
+  return add_polygon2(e, new TriToQuad(poly),1);
+}
 EXPORT GameApi::P GameApi::PolygonApi::and_not_elem(EveryApi &ev, P p1, P p_not,
 						    O o1, O o_not,
 						    CT cutter1, CT cutter_not)

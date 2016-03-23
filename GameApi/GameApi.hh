@@ -1091,6 +1091,7 @@ public:
 	IMPORT FD line(PT start, PT end, float dist);
 
 	IMPORT FD min(FD a1, FD a2);
+        IMPORT FD max(FD a1, FD a2);
 	IMPORT FD and_not(FD a1, FD a2);
 	IMPORT BM render(FD obj, COV color, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
 	IMPORT std::string shader_func(std::string name, FD obj, COV color);
@@ -1187,6 +1188,26 @@ private:
   Env &e;
 };
 
+struct BO { P mesh; O bools; FD fd; };
+class BooleanOps
+{
+public:
+  BO create_bo(P mesh, O bools, FD fd) { BO bo; bo.mesh=mesh; bo.bools=bools; bo.fd=fd; return bo; }
+  BO cube(EveryApi &ev, 
+	  float start_x, float end_x,
+	  float start_y, float end_y,
+	  float start_z, float end_z);
+  BO sphere(EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2);
+  //BO cone(int numfaces, PT p1, PT p2, float rad1, float rad2);
+  //BO torus(int numfaces1, int numfaces2, PT center, V u_x, V u_y, float radius1, V uu_x, V uu_y, float radius2);
+  BO or_elem(EveryApi &ev, BO obj, BO obj2);
+  BO and_not(EveryApi &ev, BO obj, BO not_obj);
+  BO intersect(EveryApi &ev, BO obj, BO obj2);
+  P to_polygon(BO obj) { return obj.mesh; }
+  O to_volume(BO obj) { return obj.bools; }
+  FD to_dist(BO obj) { return obj.fd; }
+};
+
 class PolygonApi
 {
 public:
@@ -1238,6 +1259,7 @@ public:
   IMPORT P heightmap(FB fb, std::function<P (float)> f, float dx, float dz);
   IMPORT P circular_span(EveryApi &ev, LI li, float delta_angle_around_y_axis, int num_steps);
   IMPORT P cut_faces(P p, O o, CT cutter);
+  IMPORT P tri_to_quad(P p);
 
   IMPORT P span(LI li, M matrix, int num_steps);
   IMPORT P fromsurface(S s, float thickness);
@@ -2154,6 +2176,7 @@ struct EveryApi
   PhysicsApi physics_api;
   TriStripApi ts_api;
   CutterApi cutter_api;
+  BooleanOps bool_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);
