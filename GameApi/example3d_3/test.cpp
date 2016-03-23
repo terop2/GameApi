@@ -84,17 +84,20 @@ int main() {
 
   PT center1 = ev.point_api.point(0.0,0.0,0.0);
   PT center2 = ev.point_api.point(30.0,0.0,50.0);
-  P p1 = ev.polygon_api.sphere(center1, 50.0, 30*2*2, 15*2*2);
+  //P p1 = ev.polygon_api.sphere(center1, 50.0, 30*2*2, 15*2*2);
   float cs = 40.0;
-  P p2 = ev.polygon_api.cube(-cs,cs, -cs, cs, -cs, cs); //ev.polygon_api.sphere(center2, 40.0, 30*2*2, 15*2*2);
-  P p22 = ev.polygon_api.splitquads(p2, 18, 18);
-  O o1 = ev.volume_api.sphere(center1, 50.0);
-  O o2 = ev.volume_api.cube(-cs, cs, -cs, cs, -cs, cs); //ev.volume_api.sphere(center2, 40.0);
-  FD fd1 = ev.dist_api.sphere(center1, 50.0);
-  FD fd2 = ev.dist_api.cube(-cs, cs, -cs, cs, -cs, cs); ////ev.dist_api.sphere(center2, 40.0);
-  CT ct1 = ev.cutter_api.distance_cut(fd1);
-  CT ct2 = ev.cutter_api.distance_cut(fd2);
-  P p3 = ev.polygon_api.and_not_elem(ev, p1,p22, o1, o2, ct1, ct2);
+
+  BO p1 = ev.bool_api.cube(ev, -cs,cs, -cs,cs, -cs,cs);
+  BO p2 = ev.bool_api.sphere(ev, center1, 50.0, 30*2*2, 15*2*2);
+  BO p3bo = ev.bool_api.and_not(ev, p1, p2);
+  BO p22 = ev.bool_api.sphere(ev, center2, 40.0, 30*2*2, 15*2*2);
+  BO b22bo = ev.bool_api.and_not(ev, p3bo, p22);
+  P p3 = ev.bool_api.to_polygon(b22bo);
+  //O p3o = ev.bool_api.to_volume(b22bo);
+  //P p3 = ev.volume_api.rendercubes3(p3o, 80, 80, 80,
+  // 				    -100.0, 100.0,
+  // 				    -100.0, 100.0,
+  // 				    -100.0, 100.0);
 
   P p31 = ev.polygon_api.recalculate_normals(p3);
   P p32 = ev.polygon_api.color_from_normals(p31);

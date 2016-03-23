@@ -1314,6 +1314,24 @@ private:
   DistanceRenderable &r2;
 };
 
+class MaxDistance2 : public DistanceRenderable
+{
+public:
+  MaxDistance2(DistanceRenderable &r1, DistanceRenderable &r2) : r1(r1), r2(r2) { }
+  float distance(Point p) const 
+  { 
+    float d1 = r1.distance(p);
+    float d2 = r2.distance(p);
+    return std::max(d1,d2);
+  }
+  std::string shader() const { return ""; }
+  int varnum() const { return 0; }
+private:
+  DistanceRenderable &r1;
+  DistanceRenderable &r2;
+};
+
+
 class AndNotDistance : public DistanceRenderable
 {
 public:
@@ -1368,6 +1386,14 @@ EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::min(FD fd1, FD fd2)
   DistanceRenderable *ff2 = find_distance(e, fd2);
   return add_distance(e, new MinDistance2(*ff1, *ff2));
 }
+
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::max(FD fd1, FD fd2)
+{
+  DistanceRenderable *ff1 = find_distance(e, fd1);
+  DistanceRenderable *ff2 = find_distance(e, fd2);
+  return add_distance(e, new MaxDistance2(*ff1, *ff2));
+}
+
 
 EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::and_not(FD fd1, FD fd2)
 {
