@@ -1845,10 +1845,11 @@ void GameApi::prepare(GameApi::RenderObject &o)
 GameApi::BO GameApi::BooleanOps::cube(GameApi::EveryApi &ev, 
 					 float start_x, float end_x,
 					 float start_y, float end_y,
-					 float start_z, float end_z)
+				      float start_z, float end_z,
+				      int split_x, int split_y)
 {
   P mesh = ev.polygon_api.cube(start_x, end_x, start_y, end_y, start_z, end_z);
-  P mesh2 = ev.polygon_api.splitquads(mesh, 18, 18);
+  P mesh2 = ev.polygon_api.splitquads(mesh, split_x, split_y);
 
   O bools = ev.volume_api.cube(start_x, end_x, start_y, end_y, start_z, end_z);
   FD fd = ev.dist_api.cube(start_x, end_x, start_y, end_y, start_z, end_z);

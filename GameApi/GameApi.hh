@@ -1196,7 +1196,8 @@ public:
   BO cube(EveryApi &ev, 
 	  float start_x, float end_x,
 	  float start_y, float end_y,
-	  float start_z, float end_z);
+	  float start_z, float end_z,
+	  int split_x, int split_y);
   BO sphere(EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2);
   //BO cone(int numfaces, PT p1, PT p2, float rad1, float rad2);
   //BO torus(int numfaces1, int numfaces2, PT center, V u_x, V u_y, float radius1, V uu_x, V uu_y, float radius2);

@@ -87,10 +87,10 @@ int main() {
   //P p1 = ev.polygon_api.sphere(center1, 50.0, 30*2*2, 15*2*2);
   float cs = 40.0;
 
-  BO p1 = ev.bool_api.cube(ev, -cs,cs, -cs,cs, -cs,cs);
+  BO p1 = ev.bool_api.cube(ev, -cs,cs, -cs,cs, -cs,cs, 18, 18);
   BO p2 = ev.bool_api.sphere(ev, center1, 50.0, 30*2*2, 15*2*2);
   BO p3bo = ev.bool_api.and_not(ev, p1, p2);
-  BO p22 = ev.bool_api.sphere(ev, center2, 40.0, 30*2*2, 15*2*2);
+  BO p22 = ev.bool_api.sphere(ev, center2, 40.0, 30*2*2*2, 15*2*2*2);
   BO b22bo = ev.bool_api.and_not(ev, p3bo, p22);
   P p3 = ev.bool_api.to_polygon(b22bo);
   //O p3o = ev.bool_api.to_volume(b22bo);
