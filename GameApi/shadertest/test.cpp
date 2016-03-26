@@ -164,7 +164,7 @@ int main() {
  
 
 #if 1
-  Ft font = ev.font_api.newfont("FreeSans.ttf", 240,240);
+  Ft font = ev.font_api.newfont("..\\FreeSans.ttf", 240,240);
   BM bitmap = ev.font_api.font_string(font, "Powerset Functor", 20);
   BB bb = ev.bool_bitmap_api.from_bitmaps_color(bitmap, 255,255,255);
   FB dist = ev.float_bitmap_api.distance_field(bb);
