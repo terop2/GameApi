@@ -534,7 +534,7 @@ int main() {
   float f = 0.0;
 
 
-  Ft font = ev.font_api.newfont("FreeSans.ttf", 30,30);
+  Ft font = ev.font_api.newfont("..\\FreeSans.ttf", 30,30);
   BM score = ev.font_api.font_string(font, "Score:", 3);
   int score_width = ev.bitmap_api.size_x(score);
   VA score_va = ev.sprite_api.create_vertex_array(score);
