@@ -184,16 +184,22 @@ public:
   }
   void copy(int start_range, int end_range, std::vector<int> attribs = std::vector<int>(), std::vector<int> attribsi = std::vector<int>())
   {
+    //std::cout << "Copy: " << start_range << " " << end_range << std::endl;
     //int ss = coll.NumFaces();
     //std::cout << "NumFaces: " << ss << std::endl;
     for(int i=start_range;i<end_range;i++)
       {
-	//if (i%10000==0) { std::cout << "Face: " << i << std::endl; }
+	//std::cout << "F" << i << std::endl;
+	//if ((i-start_range)%1000==0) { std::cout << "Face: " << i << std::endl; }
 	int w = coll.NumPoints(i);
+	//std::cout << i << " " << w << std::endl;
 	for(int j=0;j<w;j++)
 	  {
+	    //std::cout << "FP!"  << i << std::endl;
 	    p[j] = coll.FacePoint(i,j);
+	    //std::cout << "EFP!" << i << std::endl;
 	    p2[j] = coll.EndFacePoint(i,j);
+	    //std::cout << "PN!" << i << std::endl;
 	    v[j] = coll.PointNormal(i,j);
 
 #if 0
@@ -207,12 +213,17 @@ public:
 		ai[k][j] = coll.AttribI(i,j,attribs[k]);
 	      }
 #endif
+	    //std::cout << "COL!" << i << std::endl;
 	    c[j] = coll.Color(i,j);
+	    //std::cout << "Tex!" << i << std::endl;
 	    tex[j] = coll.TexCoord(i,j);
 	    //std::cout << "VA: " << tex[j] << std::endl;
 	  }
+	//std::cout << "push_p!" << i << std::endl;
 	s.push_poly(0, w, &p[0]);
+	//  std::cout << "push_p2!" << i << std::endl;
 	s.push_poly2(0, w, &p2[0]);
+	//  std::cout << "push_n!" << i << std::endl
 	s.push_normal(0, w, &v[0]);
 
 #if 0
@@ -221,10 +232,13 @@ public:
 	for (int k=0;k<(int)attribsi.size();k++)
 	  s.push_attribi(0, k, w, &ai[k][0]);
 #endif
+	//  std::cout << "push_c!" << std::endl;
 	s.push_color(0, w, &c[0]);
+	//  std::cout << "push_texcoord!" << std::endl;
 	s.push_texcoord(0, w, &tex[0]);
 
       }
+    //std::cout << "Copy returns" << std::endl;
   }
 
 private:
@@ -256,6 +270,7 @@ public:
   ThreadedPrepare(FaceCollection *faces) : faces(faces) { }
   int push_thread(int start_range, int end_range)
   {
+    //std::cout << "Thread " << start_range << " " << end_range << std::endl;
     VertexArraySet *s = new VertexArraySet;
     s->set_reserve(0, end_range-start_range, end_range-start_range);
     sets.push_back(s);
@@ -271,18 +286,24 @@ public:
     pthread_attr_t attr;
 
     pthread_attr_init(&attr);
-    pthread_attr_setstacksize(&attr, 3000);
-    pthread_create(&info->thread_id, &attr, &thread_func, (void*)info);
+    pthread_attr_setstacksize(&attr, 3000000);
+    //std::cout << "phread_create" << std::endl;
+    int val = pthread_create(&info->thread_id, &attr, &thread_func, (void*)info);
+    //std::cout << "pthread_create_return: " << val << std::endl;
     pthread_attr_destroy(&attr);
+    //std::cout << "returning: " << sets.size()-1 << std::endl;
     return sets.size()-1;
   }
   void join(int id)
   {
     void *res;
+    //std::cout << "phread_join" << id << std::endl;
     pthread_join(ti[id]->thread_id, &res);
   }
   VertexArraySet *collect()
   {
+    //std::cout << "collect" << std::endl;
+
     VertexArraySet *res = new VertexArraySet;
     res->set_reserve(0, 1,1);
     int s = sets.size();
@@ -295,6 +316,8 @@ public:
   }
   ~ThreadedPrepare()
   {
+    //std::cout << "threaded_prepare dtor" << std::endl;
+
     int s = sets.size();
     for(int i=0;i<s;i++)
       {
