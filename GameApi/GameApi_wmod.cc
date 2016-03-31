@@ -524,6 +524,62 @@ void GameApi::WModApi::delete_by_uid(WM mod2, int id, std::string line_uid)
 	}
     }
 }
+std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid)
+{
+  static std::vector<GameApiItem*> vec = all_functions();
+
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+  
+  int s = func->lines.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiLine *line = &func->lines[i];
+      if (line->uid == line_uid)
+	{
+
+	  // COLLECT PARAMS & RECURSE
+	  int ss = line->params.size();
+	  std::vector<std::string> params;
+	  std::vector<std::string> param_names;
+	  for(int ii=0;ii<ss;ii++)
+	    {
+	      GameApiParam *param = &line->params[ii];
+	      std::string p = "";
+	      std::string pn = param->value;
+	      if (pn.size()==0)
+		{
+		  std::cout << "CODEGEN FAILED at param!" << std::endl;
+		  return std::make_pair("","");
+		}
+	      if (pn.size()>3 && pn[0]=='u' && pn[1] == 'i' && pn[2] =='d')
+		{
+		  std::pair<std::string,std::string> val = codegen(ev, mod2, id, pn);
+		  p = val.second;
+		  pn = val.first;
+		}
+	      params.push_back(p);
+	      param_names.push_back(pn);
+	    }
+	  // EXECUTE
+	  int sd = vec.size();
+	  for(int k=0;k<sd;k++)
+	    {
+	      GameApiItem *item = vec[k];
+	      std::string name = item->Name(0);
+	      if (name == line->module_name)
+		{
+		  std::pair<std::string,std::string> val = item->CodeGen(ev, params, param_names);
+		  return val;
+		}
+	    }
+	}
+    }
+  std::cout << "CODEGEN FAILED! " << std::endl;
+  return std::make_pair("","");
+
+}
 int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv)
 {
   static std::vector<GameApiItem*> vec = all_functions();
