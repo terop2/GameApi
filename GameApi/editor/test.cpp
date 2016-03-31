@@ -31,6 +31,8 @@ struct Envi {
   W connect_widget;
   W dialog_cancel, dialog_ok;
   W display_close;
+  W codegen_button;
+  std::string codegen_uid;
 
   W list_tooltips;
   std::vector<W> connect_clicks;
@@ -302,6 +304,14 @@ void iter(void *arg)
 	      {
 		env->display_visible = false;
 	      }
+	    int chosen2 = env->gui->chosen_item(env->codegen_button);
+	    if (chosen2 == 0)
+	      {
+		/* code generation here */
+		std::cout << "CodeGen" << std::endl;
+		std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, env->codegen_uid);
+		std::cout << p.second << std::endl;
+	      }
 	    
 	  }
 	int s = env->delete_key.size();
@@ -438,6 +448,7 @@ void iter(void *arg)
 		    // Execute
 		    GameApi::ExecuteEnv exeenv;
 		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv);
+		    env->codegen_uid = uid;
 
 		    // display dialog
 		    std::string type = env->ev->mod_api.return_type(env->mod, 0, uid);
@@ -446,14 +457,14 @@ void iter(void *arg)
 		      {
 			BM bm;
 			bm.id = id;
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 		      } 
 		    else if (type=="BB")
 		      {
 			BB bb;
 			bb.id = id;
 			BM bm = env->ev->bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 			
 		      }
 		    else if (type=="FB")
@@ -461,7 +472,7 @@ void iter(void *arg)
 			FB fb;
 			fb.id = id;
 			BM bm = env->ev->float_bitmap_api.to_grayscale_color(fb, 255,255,255,255, 0,0,0,0);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 			
 		      }
 		    else if (type=="P")
@@ -469,27 +480,27 @@ void iter(void *arg)
 			P p;
 			p.id = id;
 			std::cout << "ID: " << p.id << std::endl;
-			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3);
+			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 		      }
 		    else if (type=="LI")
 		      {
 			LI p;
 			p.id = id;
-			env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3);
+			env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 			
 		      }
 		    else if (type=="PTS")
 		      {
 			PTS p;
 			p.id = id;
-			env->display = env->gui->pts_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3);
+			env->display = env->gui->pts_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 
 		      }
 		    else if (type=="SFO")
 		      {
 			SFO p;
 			p.id = id;
-			env->display = env->gui->shader_dialog(p, env->display_close, env->atlas3, env->atlas_bm3, env->screen_size_x, env->screen_size_y);
+			env->display = env->gui->shader_dialog(p, env->display_close, env->atlas3, env->atlas_bm3, env->screen_size_x, env->screen_size_y, env->codegen_button);
 			
 		      }
 		    else 

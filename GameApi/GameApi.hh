@@ -886,11 +886,11 @@ public:
   W list(W *array, int size, int sx, int sy);
   W dialog_item(std::string text, BM icon, int sx, int sy);
   W dialog_border(W item);
-  W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm);
-  W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm);
-  W shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_size_x, int screen_size_y);
-  W lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm);
-  W pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm);
+  W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
+  W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
+  W shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_size_x, int screen_size_y, W &codegen_button);
+  W lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
+  W pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
 
   W button_with_text(std::string label);
   W button_with_icon(BM bitmap);
@@ -992,6 +992,7 @@ public:
   void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh);
 
   int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv);
+  std::pair<std::string, std::string> codegen(EveryApi &ev, WM mod2, int id, std::string line_uid);
   std::string return_type(WM mod2, int id, std::string line_uid);
   void delete_by_uid(WM mod2, int id, std::string line_uid);
 private:
