@@ -108,14 +108,14 @@ int main() {
   P p41 = ev.polygon_api.mix_color(p3bb, p40, 0.2);
 
     //ev.polygon_api.color_faces(p3b, 0xffffffff, 0x88888888, 0x44444444, 0x22222222);
-  //ev.polygon_api.save_model(p3b, "clock.obj");
+  //ev.polygon_api.save_model(p41, "clock.obj");
 
   PT center = ev.point_api.point(0.0,0.0,0.0);
   P p_tex = ev.polygon_api.texcoord_spherical(center, p41);
 
-  BM bm = ev.bitmap_api.loadbitmap("iron_texture637.jpg");
-  TX tx = ev.texture_api.tex_bitmap(bm);
-  TXID id = ev.texture_api.prepare(tx);
+  //BM bm = ev.bitmap_api.loadbitmap("iron_texture637.jpg");
+  //TX tx = ev.texture_api.tex_bitmap(bm);
+  // TXID i1d = ev.texture_api.prepare(tx);
 
   LI lines = ev.lines_api.from_polygon(p3);
   LI lines_1 = ev.lines_api.change_color(lines, 0xffffffff);
@@ -125,7 +125,7 @@ int main() {
   lines_obj.prepare();
 
   PolygonObj poly(ev, p_tex, sh);
-  poly.bind_texture(0,id);
+  //poly.bind_texture(0,id);
   //poly.set_scale(10.0,10.0,10.0);
   poly.prepare();
   float frame=0.0;

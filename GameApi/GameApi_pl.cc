@@ -1,4 +1,4 @@
-
+ 
 #include "GameApi_h.hh"
 
 
@@ -2343,12 +2343,14 @@ EXPORT GameApi::ML GameApi::PolygonApi::update_vertex_array_ml(GameApi::VA va, G
 EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P p, bool keep)
 {
 #ifdef THREADS
-  int num_threads = 4;
+  int num_threads = 1;
   FaceCollection *faces = find_facecoll(e, p);
   ThreadedPrepare prep(faces);
   int s = faces->NumFaces();
-  int delta_s = s/num_threads;
+  if (s<100) { num_threads = 1; }
+  int delta_s = s/num_threads+1;
   std::vector<int> vec;
+  std::cout << "Numthreads: " << num_threads << std::endl;
   for(int i=0;i<num_threads;i++)
     {
       int start_range = i*delta_s;
@@ -2383,21 +2385,25 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
 #endif
 
 }
-
+ 
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
-{
+{ 
 #ifdef THREADS
   int num_threads = 4;
   FaceCollection *faces = find_facecoll(e, p);
-  ThreadedPrepare prep(faces);
-  int s = faces->NumFaces();
-  int delta_s = s/num_threads;
+  //std::cout << "FaceColl: " << faces << " " << faces->NumFaces() << std::endl; 
+  ThreadedPrepare prep(faces);  
+  int s = faces->NumFaces();   
+  //std::cout << "NumFaces: " << s << std::endl;
+  if (s<100) { num_threads=1; }
+  int delta_s = s/num_threads+1;
   std::vector<int> vec;
+  //std::cout << "NumThreads2: " << num_threads << std::endl;
   for(int i=0;i<num_threads;i++)
-    {
-      int start_range = i*delta_s;
+    {  
+      int start_range = i*delta_s; 
       int  end_range = (i+1)*delta_s;
-      if (end_range>s) { end_range = s; }
+      if (end_range>s) { end_range = s; } 
       if (i==num_threads-1) {end_range = s; }
       vec.push_back(prep.push_thread(start_range, end_range));
     }

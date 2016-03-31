@@ -1,4 +1,4 @@
-
+ 
 #include "VertexArray.hh"
 
 //#define GL_GLEXT_PROTOTYPES
@@ -26,10 +26,19 @@ void VertexArraySet::set_reserve(int id, int tri_count, int quad_count)
   if (!p)
     {
       m_set[id] = new Polys;
-      p = m_set[id]; 
+      p = m_set[id];  
     }
-  p->tri_polys.reserve(tri_count);
-  p->quad_polys.reserve(quad_count);
+  //std::cout << "Reserve: " << tri_count << " " << quad_count << std::endl;
+  p->tri_polys.reserve(tri_count*3);  
+  p->quad_polys.reserve(quad_count*6);
+  p->tri_polys2.reserve(tri_count*3);
+  p->quad_polys2.reserve(quad_count*6);  
+  p->tri_normals.reserve(tri_count*3);  
+  p->quad_normals.reserve(quad_count*6); 
+  p->tri_color.reserve(tri_count*3); 
+  p->quad_color.reserve(quad_count*6);
+  p->tri_texcoord.reserve(tri_count*3);
+  p->quad_texcoord.reserve(quad_count*6);
 }
 void VertexArraySet::push_poly(int id, int num, Point *points)
 {
@@ -860,5 +869,6 @@ void *thread_func(void *data)
 {
   ThreadInfo *ti = (ThreadInfo*)data;
   ti->va->copy(ti->start_range, ti->end_range);
-  return 0;
+  return 0; 
 }
+ 
