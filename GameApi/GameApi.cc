@@ -1840,7 +1840,19 @@ void GameApi::prepare(GameApi::RenderObject &o)
   pthread_create(&thread, NULL, Thread_Call, (void*)&o);
 }
 
-
+GameApi::BO GameApi::BooleanOps::create_bo(P mesh, O bools, FD fd)
+{
+  BO_Impl bo;
+  bo.mesh = mesh;
+  bo.bools = bools;
+  bo.fd = fd;
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->boolean_ops.push_back(bo);
+  BO bo2;
+  bo2.id = env->boolean_ops.size()-1;
+  return bo2;
+  
+}
 
 GameApi::BO GameApi::BooleanOps::cube(GameApi::EveryApi &ev, 
 					 float start_x, float end_x,
@@ -1865,32 +1877,62 @@ GameApi::BO GameApi::BooleanOps::sphere(GameApi::EveryApi &ev, PT center, float 
 }
 GameApi::BO GameApi::BooleanOps::or_elem(GameApi::EveryApi &ev, GameApi::BO obj, GameApi::BO obj2)
 {
-  P mesh = ev.polygon_api.or_elem(obj.mesh, obj2.mesh);
-  O bools = ev.volume_api.max_op(obj.bools, obj2.bools);
-  FD fd = ev.dist_api.min(obj.fd, obj2.fd);
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  BO_Impl obj_i = env->boolean_ops[obj.id];
+  BO_Impl obj2_i = env->boolean_ops[obj2.id];
+  P mesh = ev.polygon_api.or_elem(obj_i.mesh, obj2_i.mesh);
+  O bools = ev.volume_api.max_op(obj_i.bools, obj2_i.bools);
+  FD fd = ev.dist_api.min(obj_i.fd, obj2_i.fd);
   return create_bo(mesh, bools, fd);
 }
 GameApi::BO GameApi::BooleanOps::and_not(GameApi::EveryApi &ev, GameApi::BO obj, GameApi::BO obj2)
 {
-  CT cutter = ev.cutter_api.distance_cut(obj.fd);
-  CT cutter2 = ev.cutter_api.distance_cut(obj2.fd);
-  P mesh = ev.polygon_api.and_not_elem(ev, obj2.mesh, obj.mesh,
-				       obj2.bools, obj.bools,
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  BO_Impl obj_i = env->boolean_ops[obj.id];
+  BO_Impl obj2_i = env->boolean_ops[obj2.id];
+
+  CT cutter = ev.cutter_api.distance_cut(obj_i.fd);
+  CT cutter2 = ev.cutter_api.distance_cut(obj2_i.fd);
+  P mesh = ev.polygon_api.and_not_elem(ev, obj2_i.mesh, obj_i.mesh,
+				       obj2_i.bools, obj_i.bools,
 				       cutter2, cutter);
   //P mesh2 = ev.polygon_api.tri_to_quad(mesh);
-  O bools = ev.volume_api.andnot_op(obj.bools, obj2.bools);
-  FD fd = ev.dist_api.and_not(obj.fd, obj2.fd);
+  O bools = ev.volume_api.andnot_op(obj_i.bools, obj2_i.bools);
+  FD fd = ev.dist_api.and_not(obj_i.fd, obj2_i.fd);
   return create_bo(mesh, bools, fd);
 }
 
 GameApi::BO GameApi::BooleanOps::intersect(GameApi::EveryApi &ev, GameApi::BO obj, GameApi::BO obj2)
 {
-  CT cutter = ev.cutter_api.distance_cut(obj.fd);
-  CT cutter2 = ev.cutter_api.distance_cut(obj2.fd);
-  P mesh = ev.polygon_api.intersect(ev, obj.mesh, obj2.mesh,
-				       obj.bools, obj2.bools,
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  BO_Impl obj_i = env->boolean_ops[obj.id];
+  BO_Impl obj2_i = env->boolean_ops[obj2.id];
+
+  CT cutter = ev.cutter_api.distance_cut(obj_i.fd);
+  CT cutter2 = ev.cutter_api.distance_cut(obj2_i.fd);
+  P mesh = ev.polygon_api.intersect(ev, obj_i.mesh, obj2_i.mesh,
+				       obj_i.bools, obj2_i.bools,
 				       cutter, cutter2);
-  O bools = ev.volume_api.min_op(obj.bools, obj2.bools);
-  FD fd = ev.dist_api.max(obj.fd, obj2.fd);
+  O bools = ev.volume_api.min_op(obj_i.bools, obj2_i.bools);
+  FD fd = ev.dist_api.max(obj_i.fd, obj2_i.fd);
   return create_bo(mesh, bools, fd);
+}
+
+GameApi::P GameApi::BooleanOps::to_polygon(BO obj)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  BO_Impl obj_i = env->boolean_ops[obj.id];
+  return obj_i.mesh;
+}
+GameApi::O GameApi::BooleanOps::to_volume(BO obj)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  BO_Impl obj_i = env->boolean_ops[obj.id];
+  return obj_i.bools;
+}
+GameApi::FD GameApi::BooleanOps::to_dist(BO obj)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  BO_Impl obj_i = env->boolean_ops[obj.id];
+  return obj_i.fd;
 }

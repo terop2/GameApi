@@ -191,11 +191,11 @@ Point SphereElem::FacePoint(int face, int point) const
   int face1 = face / numfaces;
   int face2 = face - face1*numfaces;
   int numfaces3 = numfaces*2;
-  Vector p = Vector(0.0, 0.0, radius);
+  Vector p = Vector(0.0, 0.0, radius); 
   float deltaangle1 = 2.0*  3.14159/numfaces3;
-  float deltaangle2 = 2.0*  3.14159/numfaces2;
-  float angle1 = face1*deltaangle1;
-  float angle2 = face2*deltaangle2;
+  float deltaangle2 =   3.14159/numfaces2;
+  float angle1 = face2*deltaangle1;
+  float angle2 = face1*deltaangle2;
   if (point==2||point==1) angle1+=deltaangle1;
   if (point==3||point==2) angle2+=deltaangle2;
   //Matrix m = Matrix::XRotation(angle1)*Matrix::YRotation(angle2);
@@ -3140,6 +3140,10 @@ ArrayRender::~ArrayRender()
 void ArrayRender::Alloc(int numfaces, int numvertices, int vertexframes, int normalframes, int colorframes, int texcoordframes)
 {
   vertex_array = new float[3*numvertices*vertexframes];
+  for(int i=0;i<3*numvertices*vertexframes;i++)
+    {
+      vertex_array[i]=0.0f;
+    }
   vertex_array_size = numvertices;
   used_vertex_count = new int[vertexframes];
   used_face_count = new int[vertexframes];

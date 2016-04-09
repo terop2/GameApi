@@ -408,7 +408,7 @@ public:
   
   IMPORT FtA font_atlas_info(EveryApi &ev,Ft font, std::string chars, float sx, float sy, int y_delta);
   IMPORT BM font_atlas(EveryApi &ev, Ft font, FtA atlas, float sx, float sy);
-  IMPORT BM font_string_from_atlas(EveryApi &ev, FtA atlas, BM atlas_bm, const char *str, int x_gap);
+  IMPORT BM font_string_from_atlas(EveryApi &ev, FtA atlas, BM atlas_bm, std::string str, int x_gap);
   IMPORT void save_atlas(FtA atlas, std::string filename);
   IMPORT FtA  load_atlas(std::string filename);
 private:
@@ -844,6 +844,7 @@ public:
   W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=2);
   W icon(BM bitmap);
   W poly(P p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
+  W va(VA p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
   W shader_plane(SFO p, int sx, int sy, int screen_size_x, int screen_size_y);
   W lines(LI p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
   W pts(PTS p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
@@ -888,6 +889,7 @@ public:
   W dialog_border(W item);
   W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
   W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
+  W va_dialog(VA p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
   W shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_size_x, int screen_size_y, W &codegen_button);
   W lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
   W pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
@@ -929,6 +931,8 @@ public:
   W colorvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   W fontapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   W textureapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W booleanopsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+
 
   std::string bitmapapi_functions_item_label(int i);
   std::string boolbitmapapi_functions_item_label(int i);
@@ -944,6 +948,7 @@ public:
   std::string colorvolumeapi_functions_item_label(int i);
   std::string fontapi_functions_item_label(int i);
   std::string textureapi_functions_item_label(int i);
+  std::string booleanopsapi_functions_item_label(int i);
   W insert_widget(W item, std::function<void(int,int)> f);
   void insert_widget_activate(W w, bool b);
 
@@ -1189,11 +1194,12 @@ private:
   Env &e;
 };
 
-struct BO { P mesh; O bools; FD fd; };
+  struct BO { int id; };
 class BooleanOps
 {
 public:
-  BO create_bo(P mesh, O bools, FD fd) { BO bo; bo.mesh=mesh; bo.bools=bools; bo.fd=fd; return bo; }
+  BooleanOps(Env &e) : e(e) { }
+  BO create_bo(P mesh, O bools, FD fd);
   BO cube(EveryApi &ev, 
 	  float start_x, float end_x,
 	  float start_y, float end_y,
@@ -1205,9 +1211,11 @@ public:
   BO or_elem(EveryApi &ev, BO obj, BO obj2);
   BO and_not(EveryApi &ev, BO obj, BO not_obj);
   BO intersect(EveryApi &ev, BO obj, BO obj2);
-  P to_polygon(BO obj) { return obj.mesh; }
-  O to_volume(BO obj) { return obj.bools; }
-  FD to_dist(BO obj) { return obj.fd; }
+  P to_polygon(BO obj);
+  O to_volume(BO obj);
+  FD to_dist(BO obj);
+private:
+  Env &e;
 };
 
 class PolygonApi
@@ -2137,7 +2145,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;

@@ -2350,7 +2350,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
   if (s<100) { num_threads = 1; }
   int delta_s = s/num_threads+1;
   std::vector<int> vec;
-  std::cout << "Numthreads: " << num_threads << std::endl;
+  //std::cout << "Numthreads: " << num_threads << std::endl;
   for(int i=0;i<num_threads;i++)
     {
       int start_range = i*delta_s;

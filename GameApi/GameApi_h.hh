@@ -404,7 +404,12 @@ struct FontAtlasInfo
 };
 
 
-
+struct BO_Impl
+{
+  GameApi::P mesh;
+  GameApi::O bools;
+  GameApi::FD fd;
+};
 
 struct EnvImpl
 {
@@ -481,6 +486,7 @@ struct EnvImpl
   std::vector<PhysicsNode*> phys;
   std::vector<TriStrip*> tri_strip;
   std::vector<Cutter*> cutters;
+  std::vector<BO_Impl> boolean_ops;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
 #ifndef EMSCRIPTEN

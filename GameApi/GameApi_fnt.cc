@@ -21,7 +21,7 @@ EXPORT GameApi::Ft GameApi::FontApi::newfont(std::string filename, int sx, int s
   Font fnt;
   std::cout << &env->lib << std::endl;
   fnt.bm = new FontGlyphBitmap((void*)&env->lib,filename.c_str(), sx,sy);
-  env->fonts.push_back(fnt);
+  env->fonts.push_back(fnt); 
 #endif
   GameApi::Ft font;
   font.id = env->fonts.size()-1;
@@ -115,11 +115,11 @@ EXPORT GameApi::BM GameApi::FontApi::font_atlas(EveryApi &ev, Ft font, FtA atlas
   return bg;
 }
 
-EXPORT GameApi::BM GameApi::FontApi::font_string_from_atlas(EveryApi &ev, FtA atlas, BM atlas_bm, const char *str, int x_gap)
+EXPORT GameApi::BM GameApi::FontApi::font_string_from_atlas(EveryApi &ev, FtA atlas, BM atlas_bm, std::string str, int x_gap)
 {
   FontAtlasInfo *info = find_font_atlas(e, atlas);
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
-  int sz = strlen(str);
+  int sz = str.length();
   FontCharacterString<Color> *array = new FontCharacterString<Color>(Color(0.0,0.0,0.0,0.0), x_gap);
   for(int i=0;i<sz;i++)
     {
