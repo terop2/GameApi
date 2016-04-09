@@ -35,6 +35,8 @@
 #include <cassert>
 #include <memory>
 #include <fstream>
+#include <pthread.h>
+
 
 enum AttribId
   {
@@ -7442,27 +7444,31 @@ private:
 class MemoizeFaces : public FaceCollection
 {
 public:
-  MemoizeFaces(FaceCollection &c) : c(c), numfaces(-1) { }
-  MemoizeFaces(const MemoizeFaces &c) : c(c.c), numfaces(c.numfaces), numpoints(c.numpoints), facepoint(c.facepoint), color(c.color), normal(c.normal), facetexture(c.facetexture)
+  MemoizeFaces(FaceCollection &c) : c(c), numfaces(-1),mutex(PTHREAD_MUTEX_INITIALIZER) { }
+  MemoizeFaces(const MemoizeFaces &c) : c(c.c), numfaces(c.numfaces), numpoints(c.numpoints), facepoint(c.facepoint), color(c.color), normal(c.normal), facetexture(c.facetexture),mutex(PTHREAD_MUTEX_INITIALIZER)
   {
   }
   void operator=(const MemoizeFaces &c)
   {
+    pthread_mutex_lock(&mutex);
     numfaces=c.numfaces;
     numpoints=c.numpoints;
     facepoint=c.facepoint;
     color = c.color;
     normal=c.normal;
     facetexture = c.facetexture;
+    pthread_mutex_unlock(&mutex);
   }
   void Reset()
   {
     numfaces=-1;
+    pthread_mutex_lock(&mutex);
     numpoints = std::vector<int>(1);
     facepoint = std::map<FP,Point>();
     color = std::map<FP,unsigned int>();
     normal = std::map<FP,Vector>();
     facetexture = std::map<int,int>();
+    pthread_mutex_unlock(&mutex);
   }
   void MemoizeAll()
   {
@@ -7492,12 +7498,16 @@ public:
   }
   int NumPoints(int face) const
   {
+    pthread_mutex_lock(&mutex);
     int i = numpoints[face];
     if (i==0)
       {
 	numpoints[face]=c.NumPoints(face);
-	return numpoints[face];
+	int val = numpoints[face];
+	pthread_mutex_unlock(&mutex);
+	return val;
       }
+    pthread_mutex_unlock(&mutex);
     return i;
   }
   Point FacePoint(int face, int point) const
@@ -7505,43 +7515,54 @@ public:
     FP fp;
     fp.face = face;
     fp.point = point;
+    pthread_mutex_lock(&mutex);
     std::map<FP,Point>::iterator i = facepoint.find(fp);
     if (i==facepoint.end())
       {
 	Point p;
 	p=(facepoint[fp]=c.FacePoint(face, point));
+	pthread_mutex_unlock(&mutex);
 	return p;
       }
-    return i->second;
+    Point ps = i->second;
+    pthread_mutex_unlock(&mutex);
+    return ps;
   }
   Point EndFacePoint(int face, int point) const
   {
     FP fp;
     fp.face = face;
     fp.point = point;
+    pthread_mutex_lock(&mutex);
     std::map<FP,Point>::iterator i = endfacepoint.find(fp);
     if (i==endfacepoint.end())
       {
 	Point p;
 	p=(endfacepoint[fp]=c.EndFacePoint(face, point));
+	pthread_mutex_unlock(&mutex);
 	return p;
       }
-    return i->second;
+    Point ps = i->second;
+    pthread_mutex_unlock(&mutex);
+    return ps;
   }
   unsigned int Color(int face, int point) const
   {
     FP fp;
     fp.face = face;
     fp.point = point;
+    pthread_mutex_lock(&mutex);
     std::map<FP,unsigned int>::iterator i = color.find(fp);
     if (i==color.end())
       {
 	unsigned int p;
 	p=(color[fp]=c.Color(face, point));
+	pthread_mutex_unlock(&mutex);
 	return p;
       }
-    return i->second;
-
+    unsigned int ps = i->second;
+    pthread_mutex_unlock(&mutex);
+    return ps;
   }
   virtual Point2d TexCoord(int face, int point) const
   {
@@ -7553,14 +7574,18 @@ public:
     FP fp;
     fp.face = face;
     fp.point = point;
+    pthread_mutex_lock(&mutex);
     std::map<FP,Vector>::iterator i = normal.find(fp);
     if (i==normal.end())
       {
 	Vector p;
 	p=(normal[fp]=c.FacePoint(face, point));
+	pthread_mutex_unlock(&mutex);
 	return p;
       }
-    return i->second;
+    Vector ps = i->second;
+    pthread_mutex_unlock(&mutex);
+    return ps;
   }
   virtual float Attrib(int face, int point, int id) const
   {
@@ -7576,14 +7601,19 @@ public:
 
   virtual int FaceTexture(int face) const
   {
+    pthread_mutex_lock(&mutex);
+
     std::map<int,int>::iterator i = facetexture.find(face);
     if (i==facetexture.end())
       {
 	int p;
 	p = (facetexture[face]=c.FaceTexture(face));
+	pthread_mutex_unlock(&mutex);
 	return p;
       }
-    return i->second;
+    int ps = i->second;
+    pthread_mutex_unlock(&mutex);
+    return ps;
   }
 
 private:
@@ -7595,9 +7625,11 @@ private:
       { 
 	if (a.face<b.face) return true;
 	else if (b.face < a.face) return false;
-	
-	if (a.point<b.point) return true;
-	else if (b.point<a.point) return false;
+	if (a.face==b.face)
+	  {
+	    if (a.point<b.point) return true;
+	    else if (b.point<a.point) return false;
+	  }
 	return false;
 	
       }
@@ -7610,6 +7642,7 @@ private:
   mutable std::map<FP, unsigned int> color;
   mutable std::map<FP, Vector> normal;  
   mutable std::map<int, int> facetexture;
+  mutable pthread_mutex_t mutex;
 };
 
 #if 0
@@ -8003,7 +8036,7 @@ public:
   SphereElem(int numfaces, int numfaces2) :  numfaces(numfaces), numfaces2(numfaces2), center(Point(0.0,0.0,0.0)), radius(1.0) { }
   SphereElem(Point center, float radius, int numfaces1, int numfaces2) : numfaces(numfaces1), numfaces2(numfaces2), center(center), radius(radius) { }
   virtual void SetBox(Matrix b) { /*box = b; inverted=false; */}
-  virtual int NumFaces() const { return (numfaces*2)*numfaces2; }
+  virtual int NumFaces() const { return (numfaces*2)*numfaces2; } // *2
   virtual int NumPoints(int face) const { return 4; }
   virtual Point FacePoint(int face, int point) const;
   virtual unsigned int Color(int face, int point) const
@@ -8017,8 +8050,8 @@ public:
     int numfaces3 = numfaces*2;
     float deltaangle1 = 1.0/numfaces3;
     float deltaangle2 = 1.0/numfaces2;
-    float angle1 = face1*deltaangle1;
-    float angle2 = face2*deltaangle2;
+    float angle1 = face2*deltaangle1;
+    float angle2 = face1*deltaangle2;
     if (point==2||point==3) angle1+=deltaangle1;
     if (point==1||point==2) angle2+=deltaangle2;
     Point2d p;

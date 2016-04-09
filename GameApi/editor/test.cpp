@@ -453,6 +453,25 @@ void iter(void *arg)
 		    // display dialog
 		    std::string type = env->ev->mod_api.return_type(env->mod, 0, uid);
 		    
+		    if (type=="BO")
+		      {
+			BO p;
+			p.id = id;
+			P p2 = env->ev->bool_api.to_polygon(p);
+			env->display = env->gui->polygon_dialog(p2, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+		      }
+		    else
+		    if (type=="VA")
+		      {
+			VA p;
+			p.id = id;
+			//std::cout << "ID: " << p.id << std::endl;
+			env->display = env->gui->va_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			
+		      } else
+		      if (type=="ML")
+			{
+			} else
 		    if (type=="BM")
 		      {
 			BM bm;
@@ -739,6 +758,9 @@ void iter(void *arg)
 		  case 13:
 		    name = env->gui->textureapi_functions_item_label(sel2-1);
 		    break;
+		  case 14:
+		    name = env->gui->booleanopsapi_functions_item_label(sel2-1);
+		    break;
 
 
 		  };
@@ -943,6 +965,7 @@ int main(int argc, char *argv[]) {
       items.push_back(gui.colorvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.fontapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.textureapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.booleanopsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
 
     }
   W array = gui.array_y(&items[0], items.size(), 5);

@@ -411,6 +411,77 @@ private:
   float rot_y;
 };
 
+class VAGuiWidget : public GuiWidgetForward
+{
+public:
+  VAGuiWidget(GameApi::EveryApi &ev, GameApi::VA p, GameApi::SH sh, GameApi::SH old_sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), sh(sh), old_sh(old_sh), p(p),sx(sx),sy(sy), screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
+    Point2d p3 = {-666.0, -666.0 };
+    update(p3, -1,-1,-1);
+    Point2d p2 = { 0.0,0.0 };
+    set_pos(p2);
+    rot_y = 0.0;
+  }
+  void update(Point2d mouse, int button, int ch, int type)
+  {
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+
+    if (ch=='a' && type==0x300)
+      {
+	rot_y+=1.0*3.14159*2.0/360.0;
+	//obj.set_rotation_y(rot_y);
+	mat = ev.matrix_api.yrot(rot_y);
+      }
+    if (ch=='d' && type==0x300)
+      {
+	rot_y-=1.0*3.14159*2.0/360.0;
+	//obj.set_rotation_y(rot_y);
+	mat = ev.matrix_api.yrot(rot_y);
+      }
+
+    if (firsttime)
+      {
+	//obj.prepare();
+      firsttime = false;
+      }
+    size.dx = sx;
+    size.dy = sy;
+  }  
+  void render()
+  {
+    if (!firsttime)
+      {
+	Point2d pos = get_pos();
+	Vector2d sz = get_size();
+	glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
+	ev.shader_api.use(sh);
+	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
+	glEnable(GL_DEPTH_TEST);
+	//obj.render();
+	ev.shader_api.set_var(sh, "in_MV", mat);
+	ev.polygon_api.render_vertex_array(p);
+	glDisable(GL_DEPTH_TEST);
+	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
+	glViewport(0,0,screen_x, screen_y);
+	ev.shader_api.use(old_sh);
+      }
+  }
+private:
+  GameApi::SH sh;
+  GameApi::SH old_sh;
+  GameApi::VA p;
+  GameApi::M mat;
+  //GameApi::PolygonObj obj;
+  bool firsttime;
+  int sx,sy;
+  int screen_x, screen_y;
+  float rot_y;
+};
+
+
 class ShaderPlaneGuiWidget : public GuiWidgetForward
 {
 public:
@@ -1508,6 +1579,10 @@ EXPORT GameApi::W GameApi::GuiApi::poly(P p, SH sh2, int sx, int sy, int screen_
 {
   return add_widget(e, new PolyGuiWidget(ev, p, sh2, sh, sx,sy, screen_size_x, screen_size_y));
 }
+EXPORT GameApi::W GameApi::GuiApi::va(VA p, SH sh2, int sx, int sy, int screen_size_x, int screen_size_y)
+{
+  return add_widget(e, new VAGuiWidget(ev, p, sh2, sh, sx,sy, screen_size_x, screen_size_y));
+}
 EXPORT GameApi::W GameApi::GuiApi::shader_plane(SFO p, int sx, int sy, int screen_x, int screen_y)
 {
   return add_widget(e, new ShaderPlaneGuiWidget(ev, p, sh, sx,sy,screen_x, screen_y));
@@ -1594,6 +1669,41 @@ EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x,
   W arr_3 = mouse_move(arr_2, 0,0, size_x(arr_2), size_y(arr_2));
   return arr_3;
 }
+
+EXPORT GameApi::W GameApi::GuiApi::va_dialog(VA p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button)
+{
+  W bm_1 = va(p, sh, 400,400, screen_size_x,screen_size_y);
+  W bm_2 = margin(bm_1, 10,10,10,10);
+  W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
+  W bm_4 = layer(bm_3, bm_2);
+  
+  W but_1 = text("Close", atlas, atlas_bm);
+  W but_2 = center_align(but_1, size_x(bm_4));
+  W but_3 = center_y(but_2, 60.0);
+  W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
+  W but_41 = highlight(but_4);
+  W but_5 = layer(but_41, but_3);
+  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5));
+  close_button = but_6;
+
+  W code_1 = text("CodeGen", atlas, atlas_bm);
+  W code_2 = center_align(code_1, size_x(bm_4));
+  W code_3 = center_y(code_2, 60.0);
+  W code_4 = button(size_x(code_3), size_y(code_3), 0xff00ff00, 0xff008800);
+  W code_41 = highlight(code_4);
+  W code_5 = layer(code_41, code_3);
+  W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5));
+  codegen_button = code_6;
+
+
+  W arr[] = { bm_4, code_6, but_6 };
+  W arr_2 = array_y(&arr[0], 3, 0);
+
+  W arr_3 = mouse_move(arr_2, 0,0, size_x(arr_2), size_y(arr_2));
+  return arr_3;
+}
+
+
 
 EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_x, int screen_y, W &codegen_button)
 {
@@ -1903,6 +2013,9 @@ EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string ty
   //std::cout << "Source: " << source << std::endl;
 
   //std::cout << "string_to_generic" << type << std::endl;
+  if (type=="EveryApi&")
+    {
+    } else
   if (type=="long")
     {
       std::stringstream ss(source);
@@ -1955,6 +2068,10 @@ EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string ty
 EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::string type, std::string &target)
 {
   //std::cout << "generic_to_string" << type << std::endl;
+  if (type=="EveryApi&")
+    {
+      target="ev";
+    } else
   if (type=="long")
     {
       long val = source.l_value;
@@ -2013,6 +2130,11 @@ EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::str
 EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap)
 {
   //std::cout << "Generic editor: " << type << std::endl;
+  if (type=="EveryApi&")
+    {
+      W edit = empty();
+      return edit;
+    }
   if (type=="long")
     {
       W edit = long_editor(target.l_value, atlas, atlas_bm, x_gap);
@@ -2729,14 +2851,29 @@ void GameApi::GuiApi::set_id(W w, std::string id)
 }
 
 
-template<typename T> T from_stream(std::stringstream &is)
+template<typename T> T from_stream(std::stringstream &is, GameApi::EveryApi &ev)
 {
   std::cout << "Type using default: " << typeid(T).name() << std::endl;
   T t;
   is >> t;
   return t;
 }
-template<> unsigned int from_stream<unsigned int>(std::stringstream &is)
+template<> GameApi::EveryApi & from_stream<GameApi::EveryApi&>(std::stringstream &is, GameApi::EveryApi &ev)
+{
+  return ev;
+}
+template<> bool from_stream<bool>(std::stringstream &is, GameApi::EveryApi &ev)
+{
+  std::string s;
+
+  is >> s;
+  if (s=="false") return false;
+  if (s=="true") return true;
+  if (s=="1") return true;
+  return false;
+}
+
+template<> unsigned int from_stream<unsigned int>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   unsigned int bm;
   //char c;
@@ -2747,146 +2884,170 @@ template<> unsigned int from_stream<unsigned int>(std::stringstream &is)
 }
 
 
-template<> GameApi::BM from_stream<GameApi::BM>(std::stringstream &is)
+template<> GameApi::BM from_stream<GameApi::BM>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::BM bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::BB from_stream<GameApi::BB>(std::stringstream &is)
+
+template<> GameApi::FtA from_stream<GameApi::FtA>(std::stringstream &is, GameApi::EveryApi &ev)
+{
+  GameApi::FtA bm;
+  is >> bm.id;
+  return bm;
+}
+
+
+template<> GameApi::FD from_stream<GameApi::FD>(std::stringstream &is, GameApi::EveryApi &ev)
+{
+  GameApi::FD bm;
+  is >> bm.id;
+  return bm;
+}
+
+template<> GameApi::BO from_stream<GameApi::BO>(std::stringstream &is, GameApi::EveryApi &ev)
+{
+  GameApi::BO bm;
+  is >> bm.id;
+  return bm;
+}
+
+
+template<> GameApi::BB from_stream<GameApi::BB>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::BB bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::FB from_stream<GameApi::FB>(std::stringstream &is)
+template<> GameApi::FB from_stream<GameApi::FB>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::FB bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::PT from_stream<GameApi::PT>(std::stringstream &is)
+template<> GameApi::PT from_stream<GameApi::PT>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::PT bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::V from_stream<GameApi::V>(std::stringstream &is)
+template<> GameApi::V from_stream<GameApi::V>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::V bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::FO from_stream<GameApi::FO>(std::stringstream &is)
+template<> GameApi::FO from_stream<GameApi::FO>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::FO bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::SFO from_stream<GameApi::SFO>(std::stringstream &is)
+template<> GameApi::SFO from_stream<GameApi::SFO>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::SFO bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::O from_stream<GameApi::O>(std::stringstream &is)
+template<> GameApi::O from_stream<GameApi::O>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::O bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::COV from_stream<GameApi::COV>(std::stringstream &is)
+template<> GameApi::COV from_stream<GameApi::COV>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::COV bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::CBM from_stream<GameApi::CBM>(std::stringstream &is)
+template<> GameApi::CBM from_stream<GameApi::CBM>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::CBM bm;
   is >> bm.id;
   return bm;
 }
 
-template<> GameApi::P from_stream<GameApi::P>(std::stringstream &is)
+template<> GameApi::P from_stream<GameApi::P>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::P bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::SH from_stream<GameApi::SH>(std::stringstream &is)
+template<> GameApi::SH from_stream<GameApi::SH>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::SH bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::CO from_stream<GameApi::CO>(std::stringstream &is)
+template<> GameApi::CO from_stream<GameApi::CO>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::CO bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::Ft from_stream<GameApi::Ft>(std::stringstream &is)
+template<> GameApi::Ft from_stream<GameApi::Ft>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::Ft bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::VA from_stream<GameApi::VA>(std::stringstream &is)
+template<> GameApi::VA from_stream<GameApi::VA>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::VA bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::VX from_stream<GameApi::VX>(std::stringstream &is)
+template<> GameApi::VX from_stream<GameApi::VX>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::VX bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::PL from_stream<GameApi::PL>(std::stringstream &is)
+template<> GameApi::PL from_stream<GameApi::PL>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::PL bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::TX from_stream<GameApi::TX>(std::stringstream &is)
+template<> GameApi::TX from_stream<GameApi::TX>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::TX bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::TXID from_stream<GameApi::TXID>(std::stringstream &is)
+template<> GameApi::TXID from_stream<GameApi::TXID>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::TXID bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::LI from_stream<GameApi::LI>(std::stringstream &is)
+template<> GameApi::LI from_stream<GameApi::LI>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::LI bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::LLA from_stream<GameApi::LLA>(std::stringstream &is)
+template<> GameApi::LLA from_stream<GameApi::LLA>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::LLA bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::PTS from_stream<GameApi::PTS>(std::stringstream &is)
+template<> GameApi::PTS from_stream<GameApi::PTS>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::PTS bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::FBO from_stream<GameApi::FBO>(std::stringstream &is)
+template<> GameApi::FBO from_stream<GameApi::FBO>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::FBO bm;
   is >> bm.id;
   return bm;
 }
-template<> GameApi::W from_stream<GameApi::W>(std::stringstream &is)
+template<> GameApi::W from_stream<GameApi::W>(std::stringstream &is, GameApi::EveryApi &ev)
 {
   GameApi::W bm;
   is >> bm.id;
@@ -2935,7 +3096,7 @@ int funccall(GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
   std::stringstream ss2(ss.str());
   
   T *ptr = &(ev.*api);
-  RT val = (ptr->*fptr)(from_stream<P>(ss2)...);
+  RT val = (ptr->*fptr)(from_stream<P>(ss2,ev)...);
   std::cout << "FuncCall returning: " << val.id << std::endl;
   return val.id;
 }
@@ -3348,7 +3509,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "", "64" },
 			 "BB", "font_api", "glyph_bb"));
 #endif
-#if 0
+#if 1
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_atlas_info,
 			 "atlas_info",
 			 { "ev", "font", "chars", "sx", "sy", "y_delta" },
@@ -3364,7 +3525,7 @@ std::vector<GameApiItem*> fontapi_functions()
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_string_from_atlas,
 			 "font_string2",
 			 { "ev", "atlas", "atlas_bm", "str", "x_gap" },
-			 { "EveryApi&", "FtA", "BM", "const char*", "int" },
+			 { "EveryApi&", "FtA", "BM", "std::string", "int" },
 			 { "ev", "", "", "Hello", "5" },
 			 "BM", "font_api", "font_string_from_atlas"));
 #endif
@@ -3376,7 +3537,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "", "atlas1.txt" },
 			 "()", "font_api", "save_atlas"));
 #endif
-#if 0
+#if 1
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::load_atlas,
 			 "load_atlas",
 			 { "filename" },
@@ -3443,6 +3604,13 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "float", "float", "float", "float", "float", "float" },
 			 { "0.0", "100.0", "0.0", "100.0", "0.0", "100.0" },
 			 "P", "polygon_api", "cube"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rounded_cube,
+			 "rounded_cube",
+			 { "ev", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "r_radius" },
+			 { "EveryApi&", "float", "float", "float", "float", "float", "float", "float" },
+			 { "ev", "0.0", "100.0", "0.0", "100.0", "0.0", "100.0", "20.0" },
+			 "P", "polygon_api", "rounded_cube"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sphere,
 			 "sphere",
 			 { "center", "radius", "numfaces1", "numfaces2" },
@@ -3479,6 +3647,22 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P" },
 			 { "" },
 			 "P", "polygon_api", "color_from_normals"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_range,
+			 "color_range",
+			 { "orig", "upper_range", "lower_range" },
+			 { "P", "unsigned int", "unsigned int" },
+			 { "", "ffffffff", "88888888" },
+			 "P", "polygon_api", "color_range"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_lambert,
+			 "color_lambert",
+			 { "orig", "color", "light_dir" },
+			 { "P", "unsigned int", "V" },
+			 { "", "ffffffff", "" },
+			 "P", "polygon_api", "color_lambert"));
+
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::recalculate_normals,
 			 "recalc_normals",
 			 { "orig" },
@@ -4102,6 +4286,83 @@ std::vector<GameApiItem*> bitmapapi_functions()
 
   return vec;
 }
+
+std::vector<GameApiItem*> booleanopsapi_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_api, &GameApi::BooleanOps::create_bo,
+			 "create_bo", 
+			 { "mesh", "bools", "fd" },
+			 { "P", "O", "FD" },
+			 { "", "", "" },
+			 "BO", "bool_api", "create_bo"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_api, &GameApi::BooleanOps::cube,
+			 "cube_bo", 
+			 { "ev", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "split_x", "split_y" },
+			 { "EveryApi&", "float", "float", "float", "float", "float", "float", "int", "int" },
+			 { "ev", "0.0", "100.0", "0.0", "100.0", "0.0", "100.0", "18", "18" },
+			 "BO", "bool_api", "cube"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_api, &GameApi::BooleanOps::sphere,
+			 "sphere_bo", 
+			 { "ev", "center", "radius", "numfaces1", "numfaces2" },
+			 { "EveryApi&", "PT", "float", "int", "int" },
+			 { "ev", "", "100.0", "30", "30" },
+			 "BO", "bool_api", "sphere"));
+
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_api, &GameApi::BooleanOps::or_elem,
+			 "or_elem_bo", 
+			 { "ev", "obj", "obj2" },
+			 { "EveryApi&", "BO", "BO" },
+			 { "ev", "", "" },
+			 "BO", "bool_api", "or_elem"));
+
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_api, &GameApi::BooleanOps::and_not,
+			 "and_not_bo", 
+			 { "ev", "obj", "not_obj" },
+			 { "EveryApi&", "BO", "BO" },
+			 { "ev", "", "" },
+			 "BO", "bool_api", "and_not"));
+
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_api, &GameApi::BooleanOps::intersect,
+			 "intersect_bo", 
+			 { "ev", "obj", "obj2" },
+			 { "EveryApi&", "BO", "BO" },
+			 { "ev", "", "" },
+			 "BO", "bool_api", "intersect"));
+
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_api, &GameApi::BooleanOps::to_polygon,
+			 "to_poly", 
+			 { "ev", "obj" },
+			 { "EveryApi&", "BO" },
+			 { "ev", "" },
+			 "P", "bool_api", "to_polygon"));
+
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_api, &GameApi::BooleanOps::to_volume,
+			 "to_volume", 
+			 { "ev", "obj" },
+			 { "EveryApi&", "BO" },
+			 { "ev", "" },
+			 "O", "bool_api", "to_volume"));
+
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_api, &GameApi::BooleanOps::to_dist,
+			 "to_dist", 
+			 { "ev", "obj" },
+			 { "EveryApi&", "BO" },
+			 { "ev", "" },
+			 "FD", "bool_api", "to_dist"));
+
+  
+
+  return vec;
+}
 std::vector<GameApiItem*> all_functions()
 {
   std::vector<GameApiItem*> v1 = bitmapapi_functions();
@@ -4118,6 +4379,7 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> vc = colorvolumeapi_functions();
   std::vector<GameApiItem*> vd = fontapi_functions();
   std::vector<GameApiItem*> ve = textureapi_functions();
+  std::vector<GameApiItem*> vf = booleanopsapi_functions();
 
 
   std::vector<GameApiItem*> a1 = append_vectors(v1,v2);
@@ -4133,7 +4395,8 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> ab = append_vectors(aa, vc);
   std::vector<GameApiItem*> ac = append_vectors(ab, vd);
   std::vector<GameApiItem*> ad = append_vectors(ac, ve);
-  return ad;
+  std::vector<GameApiItem*> ae = append_vectors(ad, vf);
+  return ae;
 }
 std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)
 {
@@ -4241,6 +4504,15 @@ std::string GameApi::GuiApi::vectorapi_functions_item_label(int i)
   return name;
 }
 
+std::string GameApi::GuiApi::booleanopsapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = booleanopsapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+
+
 
 
 GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector<GameApiItem*> vec, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::FtA atlas2, GameApi::BM atlas_bm2, GameApi::W insert)
@@ -4286,6 +4558,12 @@ GameApi::W GameApi::GuiApi::textureapi_functions_list_item(FtA atlas1, BM atlas_
 {
   return functions_widget(*this, "TextureApi", textureapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
+
+GameApi::W GameApi::GuiApi::booleanopsapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
+{
+  return functions_widget(*this, "BooleanOps", booleanopsapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+}
+
 
 
 GameApi::W GameApi::GuiApi::fontapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
