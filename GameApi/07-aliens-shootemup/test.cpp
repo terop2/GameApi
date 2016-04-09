@@ -91,7 +91,7 @@ int main() {
   ev.mainloop_api.init_3d(sh);
 
   BM bm = ev.bitmap_api.newintbitmap(world, 10, 40, mapping);
-  P p = ev.polygon_api.world_from_bitmap(std::bind(func, _1, std::ref(ev)), bm, 40.0, 40.0);
+  P p = ev.polygon_api.world_from_bitmap(std::bind(func, _1, std::ref(ev)), bm, 40.0, 40.0, 2);
   PolygonObj poly(ev, p, sh);
   
   M m = ev.matrix_api.xrot(90.0*3.14159*2.0/360.0);

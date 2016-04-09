@@ -45,7 +45,7 @@ int main() {
   ev.mainloop_api.init_3d(sh);
 
   BM bm = ev.bitmap_api.newintbitmap(world, 10, 10, mapping);
-  P p = ev.polygon_api.world_from_bitmap(std::bind(pieces,_1,std::ref(ev)), bm, 300.0, 300.0);
+  P p = ev.polygon_api.world_from_bitmap(std::bind(pieces,_1,std::ref(ev)), bm, 300.0, 300.0, 1);
 
   PolygonObj poly(ev, p, sh);
   poly.prepare();

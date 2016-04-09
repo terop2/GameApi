@@ -38,7 +38,7 @@ P pieces(int c, EveryApi &ev)
   };
   BM bm = ev.bitmap_api.newintbitmap(piece,sx,sy, &blocks_map); 
   P p = ev.polygon_api.world_from_bitmap(std::bind(&blocks, _1, std::ref(ev)),
-					 bm, 10.0, 10.0);
+					 bm, 10.0, 10.0, 2);
   return p;
 }
 char world2[] = 
