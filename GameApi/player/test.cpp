@@ -152,7 +152,7 @@ int main() {
   P p7 = ev.polygon_api.rounded_cube(ev,55.0, 100.0, 150.0, 200.0, 0.0, 100.0, 10.0); // r-leg
   P p7c = colour(ev,p7, 0xffffff88);
   PT center = ev.point_api.point(50.0, -70.0, 50.0);
-  P p8 = ev.polygon_api.sphere(center, 70.0, 60/2, 60/2);
+  P p8 = ev.polygon_api.sphere(center, 70.0, 80/2, 80/2);
   P p8c = colour(ev,p8, 0xffff8888);
 
 
