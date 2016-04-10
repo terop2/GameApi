@@ -447,3 +447,24 @@ EXPORT GameApi::PTS GameApi::PointsApi::surface(S surf, int sx, int sy)
   SurfaceImpl *s = find_surface(e, surf);
   return add_points_api_points(e, new SurfacePoints3(s->surf, sx,sy));
 }
+
+EXPORT int GameApi::PointsApi::NumPoints(PTS p)
+{
+  PointsApiPoints *obj2 = find_pointsapi_points(e, p);
+  return obj2->NumPoints();
+}
+EXPORT float GameApi::PointsApi::pos_x(PTS p, int index)
+{
+  PointsApiPoints *obj2 = find_pointsapi_points(e, p);
+  return obj2->Pos(index).x;
+}
+EXPORT float GameApi::PointsApi::pos_y(PTS p, int index)
+{
+  PointsApiPoints *obj2 = find_pointsapi_points(e, p);
+  return obj2->Pos(index).y;
+}
+EXPORT float GameApi::PointsApi::pos_z(PTS p, int index)
+{
+  PointsApiPoints *obj2 = find_pointsapi_points(e, p);
+  return obj2->Pos(index).z;
+}

@@ -1841,6 +1841,11 @@ public:
   //void update(PTA array);
   IMPORT void render(PTA array);
   IMPORT void explode(PTA array, float x, float y, float z, float dist);
+
+  IMPORT int NumPoints(PTS p);
+  IMPORT float pos_x(PTS p, int index);
+  IMPORT float pos_y(PTS p, int index);
+  IMPORT float pos_z(PTS p, int index);
 private:
   PointsApi(const PointsApi&);
   void operator=(const PointsApi&);

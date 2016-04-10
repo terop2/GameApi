@@ -256,8 +256,8 @@ void iter(void *arg)
       {
 	//std::cout << e.type << " " << e.ch << " " << e.button << std::endl;
 	//if (e.type==1024 && e.button==-1) continue;
-	if (e.type==0x300)
-	  std::cout << e.type << " " << e.ch << std::endl;
+	//if (e.type==0x300)
+	// std::cout << e.type << " " << e.ch << std::endl;
 
 	if (e.type==1024 && e.button==-1)
 	  {

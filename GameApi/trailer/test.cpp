@@ -93,7 +93,7 @@ int main() {
   PointsObj points_2(ev, pts_comb, sh2);
   PointsObj points_3(ev, pts_comb, sh2);
   PointsObj points_4(ev, pts_comb, sh2);
-  ArrayObj3d array;
+  ArrayObj3d array(ev);
   array.push_back(&points_1, &points_1);
   array.push_back(&points_2, &points_2);
   array.push_back(&points_3, &points_3);

@@ -25,11 +25,15 @@ void iter(void *arg)
     env->ev->mainloop_api.swapbuffers();
 
     // handle esc event
-    MainLoopApi::Event e = env->ev->mainloop_api.get_event();
+    MainLoopApi::Event e;
+    while((e = env->ev->mainloop_api.get_event()).last==true)
+      {
 #ifndef EMSCRIPTEN
     if (e.ch==27) { exit(0); }
 #endif
+      }
 }
+
 
 int main() {
   Env e;

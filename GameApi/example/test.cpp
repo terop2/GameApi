@@ -79,7 +79,11 @@ int main() {
     ev.mainloop_api.swapbuffers();
     ev.mainloop_api.fpscounter();
     // handle esc event
-    MainLoopApi::Event e = ev.mainloop_api.get_event();
-    if (e.ch==27) break;
+
+    MainLoopApi::Event e;
+    while((e = ev.mainloop_api.get_event()).last==true)
+      {
+	if (e.ch==27) break;
+      }
   }
 }

@@ -26,7 +26,18 @@ CFiles= Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
 	Editor.cc Web.cc Functions.cc ShaderExpr.cc Font.cc FontEditor.cc \
 	GameApi.cc GameApiTest.cc Games.cc HierarchyObject.cc Physics.cc \
         GameApiTest2.cc State.cc Serialize.cc KeyFrameEditor.cc Parser.cc \
-	FreeType.cc VertexArray.cc StateChange.cc DistanceObject.cc GameRunner.cc
+	FreeType.cc VertexArray.cc StateChange.cc DistanceObject.cc GameRunner.cc \
+	GameApi_an.cc GameApi_bm.cc GameApi_co.cc GameApi_dr.cc GameApi_ev.cc \
+	GameApi_ex.cc GameApi_fbo.cc GameApi_f.cc GameApi_fn.cc \
+	GameApi_fnt.cc GameApi_gr.cc GameApi_gui.cc GameApi_lay.cc \
+	GameApi_li.cc GameApi_main.cc GameApi_mx.cc GameApi_pc.cc \
+	GameApi_phy.cc GameApi_pla.cc GameApi_pl.cc GameApi_pt.cc \
+	GameApi_pts.cc GameApi_sh.cc GameApi_shm.cc GameApi_sm.cc \
+        GameApi_spa.cc GameApi_sp.cc GameApi_st.cc GameApi_su.cc \
+        GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \
+        GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
+        GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc
+
 
 CFiles2 = Main.cc
 

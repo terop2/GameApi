@@ -3635,6 +3635,14 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P", "unsigned int" },
 			 { "", "ffffffff" },
 			 "P", "polygon_api", "color"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::mix_color,
+			 "p_mix_color",
+			 { "orig", "orig2", "val" },
+			 { "P", "P", "float" },
+			 { "", "", "0.5" },
+			 "P", "polygon_api", "mix_color"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_faces,
 			 "color_faces",
 			 { "orig", "color_1", "color_2", "color_3", "color_4" },
