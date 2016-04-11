@@ -288,7 +288,7 @@ public:
     pthread_attr_init(&attr);
     pthread_attr_setstacksize(&attr, 3000000);
     //std::cout << "phread_create" << std::endl;
-    int val = pthread_create(&info->thread_id, &attr, &thread_func, (void*)info);
+    pthread_create(&info->thread_id, &attr, &thread_func, (void*)info);
     //std::cout << "pthread_create_return: " << val << std::endl;
     pthread_attr_destroy(&attr);
     //std::cout << "returning: " << sets.size()-1 << std::endl;

@@ -3629,6 +3629,22 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "int", "int", "PT", "V", "V", "float", "V", "V", "float" },
 			 { "20", "20", "", "", "", "30.0", "", "", "10.0" },
 			 "P", "polygon_api", "torus"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_map,
+			 "color_map",
+			 { "bm", "sx", "sy", "z" },
+			 { "BM", "float", "float", "float" },
+			 { "", "100", "100", "0" },
+			 "P", "polygon_api", "color_map"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, (GameApi::P (GameApi::PolygonApi::*)(GameApi::BM, GameApi::FB,float,float,float))&GameApi::PolygonApi::color_map3,
+			 "color_map3",
+			 { "bm", "fb", "sx", "sy", "z" },
+			 { "BM", "FB", "float", "float", "float" },
+			 { "", "", "100", "100", "0" },
+			 "P", "polygon_api", "color_map3"));
+
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color,
 			 "color",
 			 { "orig", "color" },

@@ -1257,6 +1257,14 @@ public:
 			float start_y, float end_y,
 			float start_z, float end_z,
 			float round_radius);
+  IMPORT P color_map2(BM bm, PT pos, V u_x, V u_y);
+  IMPORT P color_map(BM bm, float sx, float sy, float z);
+  IMPORT P color_map3(BM bm, FB height, PT pos, V u_x, V u_y);
+  IMPORT P color_map3(BM bm, FB height, float sx, float sy, float z);
+  IMPORT P cube_map(float start_x, float end_x,
+		    float stary_y, float end_y,
+		    float start_z, float end_z,
+		    BM bm_front, BM bm_back, BM bm_left, BM bm_right, BM bm_top, BM bm_bottom);
 	IMPORT P sphere(PT center, float radius, int numfaces1, int numfaces2);
 	IMPORT P cone(int numfaces, PT p1, PT p2, float rad1, float rad2);
   IMPORT P torus(int numfaces1, int numfaces2, PT center, V u_x, V u_y, float radius1, V uu_x, V uu_y, float radius2);
