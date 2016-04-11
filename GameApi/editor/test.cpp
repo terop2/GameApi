@@ -75,6 +75,8 @@ struct Envi {
   SH sh;
   SH sh3;
   int screen_size_x, screen_size_y;
+
+  std::string filename;
 };
 void add_to_canvas(GuiApi &gui, W canvas, W item)
 {
@@ -285,7 +287,7 @@ void iter(void *arg)
 	if (env->ctrl && e.ch==115 && e.type==0x300)
 	  { // Save.
 	std::cout << "Saving..." << std::endl;
-	env->ev->mod_api.save(env->mod, "mod.txt");
+	env->ev->mod_api.save(env->mod, env->filename);
 	
 	  }
 	
@@ -830,21 +832,26 @@ int main(int argc, char *argv[]) {
   EveryApi ev(*e2);
   
 
-  WM mod = ev.mod_api.load("mod.txt");
 
   Envi env;
 
   int screen_x = 800;
   int screen_y = 600;
-  if(argc==2)
+  std::string filename = "mod.txt";
+  for(int i=1;i<argc;i++)
     {
-      if (std::string(argv[1])=="--huge")
+      if (std::string(argv[i])=="--huge")
 	{
 	  screen_x = 1200;
 	  screen_y = 900;
 	}
+      if (std::string(argv[i])=="--file")
+	{
+	  filename = std::string(argv[i+1]);
+	}
     }
 
+  WM mod = ev.mod_api.load(filename);
 
   // initialize window
   ev.mainloop_api.init_window(screen_x,screen_y);
@@ -1044,6 +1051,7 @@ int main(int argc, char *argv[]) {
   env.sh3 = sh3;
   env.screen_size_x = screen_x;
   env.screen_size_y = screen_y;
+  env.filename = filename;
 
 #ifndef EMSCRIPTEN
   while(1) {
