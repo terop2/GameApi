@@ -23,7 +23,7 @@ void iter(void *arg)
 {
   Envi *env = (Envi*)arg;
 
-    env->ev->mainloop_api.clear_3d();
+    env->ev->mainloop_api.clear_3d(0xffffffff);
 
     M a_m = env->ev->matrix_api.yrot(env->rot_y+3.14159);
     M a_m2 = env->ev->matrix_api.trans(0.0,0.0,400.0);
