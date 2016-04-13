@@ -476,6 +476,64 @@ EXPORT GameApi::ML GameApi::LinesApi::update_ml(LLA la, LI l)
 {
   return add_main_loop(e, new LI_Update(*this, la, l));
 }
+class LineAnim2 : public PointsApiPoints
+{
+public:
+  LineAnim2(LineCollection *coll, float val) : coll(coll), val(val) { }
+  virtual int NumPoints() const { return coll->NumLines(); }
+  virtual Point Pos(int i) const
+  {
+    Point p1 = coll->LinePoint(i, 0);
+    Point p2 = coll->LinePoint(i, 1);
+    return Point(Vector(p1)*val + Vector(p2)*(1.0-val));
+  }
+  virtual unsigned int Color(int i) const
+  {
+    unsigned int c1 = coll->LineColor(i, 0);
+    unsigned int c2 = coll->LineColor(i, 1);
+    return Color::Interpolate(c1, c2, val);
+  }
+private:
+  LineCollection *coll;
+  float val;
+};
+
+class LineAnim3 : public PointsApiPoints
+{
+public:
+  LineAnim3(LineCollection *coll, std::function<float(int)> f) : coll(coll), f(f) { }
+  virtual int NumPoints() const { return coll->NumLines(); }
+  virtual Point Pos(int i) const
+  {
+    Point p1 = coll->LinePoint(i, 0);
+    Point p2 = coll->LinePoint(i, 1);
+    float val = f(i);
+    return Point(Vector(p1)*val + Vector(p2)*(1.0-val));
+  }
+  virtual unsigned int Color(int i) const
+  {
+    unsigned int c1 = coll->LineColor(i, 0);
+    unsigned int c2 = coll->LineColor(i, 1);
+    float val = f(i);
+    return Color::Interpolate(c1, c2, val);
+  }
+private:
+  LineCollection *coll;
+  std::function<float (int)> f;
+};
+
+EXPORT GameApi::PTS GameApi::LinesApi::pts_line_anim(LI lines, float val)
+{
+  LineCollection *coll = find_line_array(e, lines);
+  return add_points_api_points(e, new LineAnim2(coll, val));
+}
+
+EXPORT GameApi::PTS GameApi::LinesApi::pts_line_anim2(LI lines, std::function<float (int)> f)
+{
+  LineCollection *coll = find_line_array(e, lines);
+  return add_points_api_points(e, new LineAnim3(coll, f));
+}
+
 EXPORT void GameApi::LinesApi::update(LLA la, LI l)
 {
   LineCollection *coll = find_line_array(e, l);
@@ -588,4 +646,28 @@ EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
   //glDisableVertexAttribArray(2);
 
   return add_lines_array(e, arr);
+}
+class FromPoints2 : public LineCollection
+{
+public:
+  FromPoints2(PointsApiPoints *start, PointsApiPoints *end) : start(start), end(end) { }
+  virtual int NumLines() const { return std::min(start->NumPoints(), end->NumPoints()); }
+  virtual Point LinePoint(int line, int point) const 
+  {
+    if (point==0) { return start->Pos(line); }
+    return end->Pos(line);
+  }
+  virtual unsigned int LineColor(int line, int point) const { 
+    if (point==0) { return start->Color(line); }
+    return end->Color(line);
+  }
+private:
+  PointsApiPoints *start;
+  PointsApiPoints *end;
+};
+GameApi::LI GameApi::LinesApi::from_points2(PTS start_points, PTS end_points)
+{
+  PointsApiPoints *pts1 = find_pointsapi_points(e, start_points);
+  PointsApiPoints *pts2 = find_pointsapi_points(e, end_points);
+  return add_line_array(e, new FromPoints2(pts1, pts2));  
 }

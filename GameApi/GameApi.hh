@@ -117,8 +117,10 @@ using std::placeholders::_9;
   struct PH { int id; };
   struct TS { int id; };
   struct CT { int id; };
+  struct CC { int id; };
   //template<class T>
   //struct E { int id; };
+  //struct A { int id; };
 
 
 
@@ -186,6 +188,8 @@ public:
   IMPORT void finish();
   IMPORT BM screenshot();
   IMPORT void fpscounter();
+  IMPORT void profile(std::string label, bool start);
+  IMPORT void print_profile();
   IMPORT void delay(int ms);
   IMPORT unsigned int random();
   IMPORT unsigned int rand_max();
@@ -377,6 +381,15 @@ private:
   Env &e;
 };
 
+class ArrayApi
+{ // handle arrays
+public:
+  ArrayApi(Env &e) : e(e) { }
+  A array(std::vector<int> vec);
+private:
+  Env &e;
+};
+
 class FloatArrayApi
 {
 public:
@@ -520,6 +533,17 @@ public:
   PT pos(C curve, float p);
   
   void sample(PT *outputarray, int size, C input_curve);
+};
+
+class CurvesApi
+{
+public:
+  CurvesApi(Env &e) : e(e) { }
+  CC start(PTS points);
+  CC comb(CC prev, PTS points);
+  PTS extract(CC curves, int block, float val);
+private:
+  Env &e;
 };
 
 class FunctionApi
@@ -1834,6 +1858,7 @@ public:
 		     float start_v, float end_v,
 		     float step_u, float step_v);
   IMPORT PTS from_volume(O o, PT pos, V u_x, V u_y, V u_z, int sx, int sy, int sz);
+  IMPORT PTS move(PTS obj, float dx, float dy, float dz);
   IMPORT PTS scale(PTS obj, float sx, float sy, float sz);
   IMPORT PTS shadow_points(PTS obj, PT pos, V u_x, V u_y, V light_vec);
 
@@ -1871,11 +1896,14 @@ public:
   IMPORT LI change_color(LI li, unsigned int color);
   IMPORT LI change_color(LI li, unsigned int color_1, unsigned int color_2);
 	IMPORT LI from_points(PC points, bool loops);
+        IMPORT LI from_points2(PTS start_points, PTS end_points);
         IMPORT LI from_plane(PL plane);
 	IMPORT LI from_polygon(P poly);
         IMPORT LI from_polygon2(P poly1, P poly2);
   IMPORT LI normals_from_polygon(P poly, float length);
         IMPORT P line_anim(P poly, LI lines_from_polygon2, float val);
+        IMPORT PTS pts_line_anim(LI lines, float val);
+  IMPORT PTS pts_line_anim2(LI lines, std::function<float (int)> f);
 	IMPORT LI border_from_bool_bitmap(BB b, float start_x, float end_x,
 			     float start_y, float end_y, float z);
   IMPORT LI render_slice_2d(P p, PT pos, V u_x, V u_y);

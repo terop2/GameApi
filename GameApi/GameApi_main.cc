@@ -1,6 +1,6 @@
 
 #include "GameApi_h.hh"
-
+#include <chrono>
 
 EXPORT GameApi::MainLoopApi::MainLoopApi(Env &e) : frame(0.0), time(0.0), e(e)  
 {
@@ -73,6 +73,47 @@ EXPORT unsigned int GameApi::MainLoopApi::random()
 {
   Random r;
   return r.next();
+}
+EXPORT void GameApi::MainLoopApi::profile(std::string label, bool start)
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  std::chrono::time_point<std::chrono::high_resolution_clock> time;
+  time = std::chrono::system_clock::now();
+  //unsigned int time = SDL_GetTicks();
+  if (start)
+    {
+      //if (p->profile_start_time[label]!=0)
+      //	{
+      //	  std::cout << "Error in profile nesting:" << label << std::endl;
+      //	}
+      p->profile_start_time[label] = time;
+    }
+  else
+    {
+      //      if (p->profile_start_time[label]==0)
+      //{
+      //  std::cout << "Profile error: Not proper nesting:" << label << std::endl;
+      //	}
+      std::chrono::high_resolution_clock::duration count = time - p->profile_start_time[label];
+      //p->profile_start_time[label] = 0;
+      p->profile_count[label]++;
+      p->profile_sums[label]+=count;
+    }
+}
+EXPORT void GameApi::MainLoopApi::print_profile()
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  auto i1 = p->profile_sums.begin();
+  auto i2 = p->profile_count.begin();
+  while(1)
+    {
+      std::pair<std::string,std::chrono::duration<double> > pp = *i1;
+      std::pair<std::string,int> pp2 = *i2;
+      std::cout << pp.first << ": " << std::chrono::duration_cast<std::chrono::microseconds>(pp.second).count()/double(pp2.second) << std::endl;
+      i1++;
+      i2++;
+      if (i1==p->profile_sums.end()) break;
+    }
 }
 EXPORT void GameApi::MainLoopApi::fpscounter()
 {

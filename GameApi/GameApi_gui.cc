@@ -2850,208 +2850,143 @@ void GameApi::GuiApi::set_id(W w, std::string id)
   ww->set_id(id);
 }
 
-
-template<typename T> T from_stream(std::stringstream &is, GameApi::EveryApi &ev)
+template<class T>
+class FromStreamClass
 {
+public:
+  T from_stream(std::string s, GameApi::EveryApi &ev)
+  {
   std::cout << "Type using default: " << typeid(T).name() << std::endl;
   T t;
+  std::stringstream is(s);
   is >> t;
   return t;
-}
-template<> GameApi::EveryApi & from_stream<GameApi::EveryApi&>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  return ev;
-}
-template<> bool from_stream<bool>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  std::string s;
+  }
+};
 
-  is >> s;
+template<>
+class FromStreamClass<GameApi::EveryApi &>
+{
+public:
+  GameApi::EveryApi &from_stream(std::string s, GameApi::EveryApi &ev)
+  {
+    return ev;
+  }
+};
+
+template<>
+class FromStreamClass<bool>
+{
+public:
+  bool from_stream(std::string s, GameApi::EveryApi &ev)
+  {
   if (s=="false") return false;
   if (s=="true") return true;
   if (s=="1") return true;
   return false;
-}
+  }
+};
 
-template<> unsigned int from_stream<unsigned int>(std::stringstream &is, GameApi::EveryApi &ev)
+template<>
+class FromStreamClass<unsigned int>
 {
+public:
+  unsigned int from_stream(std::string s, GameApi::EveryApi &ev)
+  {
   unsigned int bm;
   //char c;
   //is >> c;
   //is >> c;
+  std::stringstream is(s);
   is >> std::hex >> bm >> std::dec;
   return bm;
-}
+  }
+};
+
+template<class T>
+class FromStreamClass<std::vector<T>>
+{
+public:
+  std::vector<T> from_stream(std::string s, GameApi::EveryApi &ev)
+  {
+    std::vector<T> vec;
+    if (s.size()<2)
+      {
+	std::cout << "from_stream length problem" << std::endl;
+	return vec;
+      }
+    char c = s[0];
+    if (c!='[') { std::cout << "from_stream parse error on std::vector" << std::endl; return vec; }
+
+    FromStreamClass<T> cls;
+    int ss = s.size();
+    std::string next;
+    int prev = 1;
+    for(int i=1;i<ss;i++)
+      {
+	if (s[i]==',' || s[i]==']')
+	  {
+	    std::string substr = s.substr(prev, i-prev-1);
+	    T t = cls.from_stream(substr, ev);
+	    vec.push_back(t);
+	    prev=i+1;
+	    if (s[i]==']') { break; }
+	  }
+      }
+    return vec;
+  } 
+};
 
 
-template<> GameApi::BM from_stream<GameApi::BM>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::BM bm;
-  is >> bm.id;
-  return bm;
-}
+#define MACRO(lab) \
+template<> \
+class FromStreamClass<lab> \
+{ \
+public:\
+  lab from_stream(std::string s, GameApi::EveryApi &ev)\
+  {\
+  lab bm;\
+  std::stringstream is(s);\
+  is >> bm.id;\
+  return bm;\
+  }\
+};
+MACRO(GameApi::BM)
+MACRO(GameApi::FtA)
+MACRO(GameApi::FD)
+MACRO(GameApi::BO)
+MACRO(GameApi::BB)
+MACRO(GameApi::FB)
+MACRO(GameApi::PT)
+MACRO(GameApi::V)
+MACRO(GameApi::FO)
+MACRO(GameApi::SFO)
+MACRO(GameApi::O)
+MACRO(GameApi::COV)
+MACRO(GameApi::CBM)
+MACRO(GameApi::P)
+MACRO(GameApi::SH)
+MACRO(GameApi::CO)
+MACRO(GameApi::Ft)
+MACRO(GameApi::VA)
+MACRO(GameApi::VX)
+MACRO(GameApi::PL)
+MACRO(GameApi::TX)
+MACRO(GameApi::TXID)
+MACRO(GameApi::LI)
+MACRO(GameApi::LLA)
+MACRO(GameApi::PTS)
+MACRO(GameApi::FBO)
+MACRO(GameApi::W)
+#undef MACRO
 
-template<> GameApi::FtA from_stream<GameApi::FtA>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::FtA bm;
-  is >> bm.id;
-  return bm;
-}
 
-
-template<> GameApi::FD from_stream<GameApi::FD>(std::stringstream &is, GameApi::EveryApi &ev)
+template<typename T> T from_stream2(std::stringstream &is, GameApi::EveryApi &ev)
 {
-  GameApi::FD bm;
-  is >> bm.id;
-  return bm;
-}
-
-template<> GameApi::BO from_stream<GameApi::BO>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::BO bm;
-  is >> bm.id;
-  return bm;
-}
-
-
-template<> GameApi::BB from_stream<GameApi::BB>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::BB bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::FB from_stream<GameApi::FB>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::FB bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::PT from_stream<GameApi::PT>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::PT bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::V from_stream<GameApi::V>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::V bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::FO from_stream<GameApi::FO>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::FO bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::SFO from_stream<GameApi::SFO>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::SFO bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::O from_stream<GameApi::O>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::O bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::COV from_stream<GameApi::COV>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::COV bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::CBM from_stream<GameApi::CBM>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::CBM bm;
-  is >> bm.id;
-  return bm;
-}
-
-template<> GameApi::P from_stream<GameApi::P>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::P bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::SH from_stream<GameApi::SH>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::SH bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::CO from_stream<GameApi::CO>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::CO bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::Ft from_stream<GameApi::Ft>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::Ft bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::VA from_stream<GameApi::VA>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::VA bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::VX from_stream<GameApi::VX>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::VX bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::PL from_stream<GameApi::PL>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::PL bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::TX from_stream<GameApi::TX>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::TX bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::TXID from_stream<GameApi::TXID>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::TXID bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::LI from_stream<GameApi::LI>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::LI bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::LLA from_stream<GameApi::LLA>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::LLA bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::PTS from_stream<GameApi::PTS>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::PTS bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::FBO from_stream<GameApi::FBO>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::FBO bm;
-  is >> bm.id;
-  return bm;
-}
-template<> GameApi::W from_stream<GameApi::W>(std::stringstream &is, GameApi::EveryApi &ev)
-{
-  GameApi::W bm;
-  is >> bm.id;
-  return bm;
+  FromStreamClass<T> cls;
+  std::string s;
+  is >> s;
+  return cls.from_stream(s,ev);
 }
 
 
@@ -3096,7 +3031,7 @@ int funccall(GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
   std::stringstream ss2(ss.str());
   
   T *ptr = &(ev.*api);
-  RT val = (ptr->*fptr)(from_stream<P>(ss2,ev)...);
+  RT val = (ptr->*fptr)(from_stream2<P>(ss2,ev)...);
   std::cout << "FuncCall returning: " << val.id << std::endl;
   return val.id;
 }

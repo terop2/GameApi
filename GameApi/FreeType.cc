@@ -29,6 +29,10 @@ FontGlyphBitmap::FontGlyphBitmap(void *priv_, std::string filename, int sx, int 
 	       0,
 	       &priv->face);
   std::cout << "Font err: " << err << std::endl;
+  if (err!=0)
+    {
+      std::cout << "Remember to recompile the code after changing envimpl size" << std::endl;
+    }
   int err3 = FT_Set_Char_Size(priv->face, sx*64,sy*64,100,100);
 #endif
   //FT_Size_RequestRec sizerequest;
