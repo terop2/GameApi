@@ -118,12 +118,21 @@ void connect_target(int x, int y, Envi *envi)
 	  std::vector<int> vec = envi->ev->mod_api.indexes_from_funcname(funcname);
 	  int real_index = vec[num];
 	  std::cout << "Real index: " << real_index << std::endl;
-
-	  bool b = envi->ev->mod_api.typecheck(envi->mod, 0, envi->connect_start_uid, uid, real_index);
+	  bool is_array = false;
+	  bool b = envi->ev->mod_api.typecheck(envi->mod, 0, envi->connect_start_uid, uid, real_index, is_array);
 	  if (b) 
 	    {
-	      envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, envi->connect_start_uid);
-
+	      if (is_array)
+		{
+		  std::string val = envi->ev->mod_api.param_value(envi->mod, 0, uid, real_index);
+		  std::vector<std::string> vec = envi->ev->mod_api.parse_param_array(val);
+		  vec.push_back(envi->connect_start_uid);
+		  std::string val2 = envi->ev->mod_api.generate_param_array(vec);
+		  envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, val2);		  
+		}
+	      else
+		{
+		  envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, envi->connect_start_uid);
 	      
 	      int sk = envi->connect_links.size();
 	      for(int i=0;i<sk;i++)
@@ -145,6 +154,7 @@ void connect_target(int x, int y, Envi *envi)
 		    }
 		}
 
+		}
 	      
 	      W start_link = envi->gui->find_canvas_item(envi->canvas, envi->connect_start_uid);
 	      
