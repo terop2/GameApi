@@ -639,6 +639,7 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
 	      if (p.size()>3 && p[0]=='u' && p[1] == 'i' && p[2] =='d')
 		{
 		  int val = execute(ev, mod2, id, p, exeenv);
+		  if (val==-1) return -1;
 		  std::stringstream sw;
 		  sw << val;
 		  p = sw.str();
