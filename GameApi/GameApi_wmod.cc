@@ -160,9 +160,16 @@ std::vector<std::string> reduce_list_to_string_only(std::vector<std::string> typ
     {
       std::string name = type_names[i];
       std::string index = indexes[i];
-      if (name[0]>='A' && name[0]<'Z' && name.size()<=4)
+      if (name[0]>='A' && name[0]<='Z' && name.size()<=4)
 	{
 	  ret.push_back(index);
+	}
+      if (name[0]=='[' && name[name.size()-1]==']')
+	{ // array
+	  if (name[1]>='A' && name[1]<='Z' && name.size()<=6)
+	    {
+	      ret.push_back(index);
+	    }
 	}
     }
   return ret;
@@ -176,10 +183,18 @@ std::vector<std::string> reduce_list_to_types_only(std::vector<std::string> type
   for(int i=0;i<s;i++)
     {
       std::string name = type_names[i];
-      if (name[0]>='A' && name[0]<'Z' && name.size()<=4)
+      if (name[0]>='A' && name[0]<='Z' && name.size()<=4)
 	{
 	  ret.push_back(name);
 	}
+      if (name[0]=='[' && name[name.size()-1]==']')
+	{ // array
+	  if (name[1]>='A' && name[1]<='Z' && name.size()<=6)
+	    {
+	      ret.push_back(name);
+	    }
+	}
+
     }
   return ret;
 }

@@ -156,6 +156,12 @@ EXPORT GameApi::PTS GameApi::PointsApi::from_volume(GameApi::O o, GameApi::PT po
   Vector *uu_z = find_vector(e, u_z);
   return add_points_api_points(e, new SpacePoints(*obj, *pt, *uu_x, *uu_y, *uu_z, sx, sy, sz));
 }
+EXPORT GameApi::PTS GameApi::PointsApi::move(GameApi::PTS obj, float dx, float dy, float dz)
+{
+  PointsApiPoints *obj2 = find_pointsapi_points(e, obj);
+
+  return add_points_api_points(e, new MatrixPoints(obj2, Matrix::Translate(dx,dy,dz)));
+}
 EXPORT GameApi::PTS GameApi::PointsApi::or_points(GameApi::PTS p1, GameApi::PTS p2)
 {
   PointsApiPoints *pts1 = find_pointsapi_points(e, p1);
@@ -236,10 +242,100 @@ unsigned int swap_color(unsigned int c)
   return ca+cr+cg+cb;
 }
 
+
+struct ThreadInfo_pts
+{
+  pthread_t thread_id;
+  PointArray3 *arr;
+  PointsApiPoints *pts;
+  int start_range;
+  int end_range;
+};
+void *thread_func_pts(void *data);
+
+class ThreadedPrepare_pts
+{
+public:
+  ThreadedPrepare_pts(PointsApiPoints *pts) : pts(pts) { }
+  int push_thread(int start_range, int end_range)
+  {
+    PointArray3 *arr = new PointArray3;
+    arr->array = new float[(end_range-start_range)*3];
+    arr->color = new unsigned int[end_range-start_range];
+    arr->numpoints = end_range-start_range;
+    sets.push_back(arr);
+
+    ThreadInfo_pts *info = new ThreadInfo_pts;
+    info->arr = arr;
+    info->start_range = start_range;
+    info->end_range = end_range;
+    info->pts = pts;
+    ti.push_back(info);
+
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setstacksize(&attr, 3000000);
+
+    pthread_create(&info->thread_id, &attr, &thread_func_pts, (void*)info);
+    
+    pthread_attr_destroy(&attr);
+    return sets.size()-1;
+  }
+  void join(int id)
+  {
+    void *res;
+    pthread_join(ti[id]->thread_id, &res);
+  }
+  PointArray3* collect(int num_items)
+  {
+    PointArray3 *arr = new PointArray3;
+    arr->array = new float[(num_items)*3];
+    arr->color = new unsigned int[num_items];
+    arr->numpoints = num_items;
+    int s = sets.size();
+    float *array = arr->array;
+    unsigned int *color = arr->color;
+    for(int i=0;i<s;i++)
+      {
+	PointArray3 *src = sets[i];
+	int ss = src->numpoints;
+	for(int j=0;j<ss;j++)
+	  {
+	    *array++ = src->array[j*3+0];
+	    *array++ = src->array[j*3+1];
+	    *array++ = src->array[j*3+2];
+	    *color++ = src->color[j];
+	  }
+      }
+    return arr;
+  }
+  ~ThreadedPrepare_pts()
+  {
+    int s = sets.size();
+    for(int i=0;i<s;i++)
+      {
+	delete sets[i]->array;
+	delete sets[i]->color;
+	delete sets[i];
+	delete ti[i];
+      }
+  }
+private:
+  PointsApiPoints *pts;
+  std::vector<PointArray3*> sets;
+  std::vector<ThreadInfo_pts*> ti;
+};
+
+
+
 EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
 {
   PointsApiPoints *pts = find_pointsapi_points(e, p);
   int numpoints = pts->NumPoints();
+#if 1
+  //ndef THREADS
+  //ndef THREADS
+  //ifndef THREADS0
   float *array = new float[numpoints*3];
   unsigned int *color = new unsigned int[numpoints];
 
@@ -256,6 +352,26 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
   arr->array = array;
   arr->color = color;
   arr->numpoints = numpoints;
+#else
+  int num_threads = 4;
+  ThreadedPrepare_pts prep(pts);
+  int s = numpoints;
+  int delta_s = s/num_threads+1;
+  std::vector<int> vec;
+  for(int i=0;i<num_threads;i++)
+    {
+      int start_range = i*delta_s;
+      int end_range = (i+1)*delta_s;
+      if (end_range>s) { end_range = s; }
+      if (i==num_threads-1) { end_range = s; }
+      vec.push_back(prep.push_thread(start_range, end_range));
+    }
+  for(int i=0;i<num_threads;i++)
+    {
+      prep.join(vec[i]);
+    }
+  PointArray3 *arr = prep.collect(s);
+#endif
   glGenBuffers(2, &arr->buffer[0]);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[0]);
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
@@ -467,4 +583,23 @@ EXPORT float GameApi::PointsApi::pos_z(PTS p, int index)
 {
   PointsApiPoints *obj2 = find_pointsapi_points(e, p);
   return obj2->Pos(index).z;
+}
+
+void *thread_func_pts(void *data)
+{
+  ThreadInfo_pts *ti = (ThreadInfo_pts*)data;
+
+  int jj=0;
+  for(int i=ti->start_range;i<ti->end_range;i++)
+    {
+      Point p = ti->pts->Pos(i);
+      unsigned int c = ti->pts->Color(i);
+      ti->arr->array[jj*3+0] = p.x;
+      ti->arr->array[jj*3+1] = p.y;
+      ti->arr->array[jj*3+2] = p.z;
+      ti->arr->color[jj] = swap_color(c);
+      jj++;
+    }
+  //  std::cout << "Thread finished" << jj << " " << ti->arr->numpoints << std::endl;
+  return 0;
 }

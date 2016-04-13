@@ -8,6 +8,7 @@
 #include "Effect.hh"
 #include <pthread.h>
 
+
 class VertexArraySet
 {
 public:
@@ -332,5 +333,6 @@ private:
   std::vector<ThreadInfo *> ti;
   FaceCollection *faces;
 };
+
 
 #endif

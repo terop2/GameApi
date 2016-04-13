@@ -5,7 +5,7 @@
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
 #ifndef EMSCRIPTEN
-#define THREADS 1
+//#define THREADS 1
 #endif
 
 #ifndef EMSCRIPTEN
@@ -36,7 +36,7 @@
 
 #include <memory>
 #include <cmath>
-
+#include <chrono>
 
 #define NO_SDL_GLEXT 
 #include <GL/glew.h> 
@@ -114,6 +114,9 @@ struct MainLoopPriv
   unsigned int avg_time;
   int count;
   int frame;
+  std::map<std::string, std::chrono::high_resolution_clock::duration > profile_sums;
+  std::map<std::string, int> profile_count;
+  std::map<std::string, std::chrono::time_point<std::chrono::high_resolution_clock> > profile_start_time;
 };
 
 struct ShaderPriv2
@@ -487,8 +490,12 @@ struct EnvImpl
   std::vector<TriStrip*> tri_strip;
   std::vector<Cutter*> cutters;
   std::vector<BO_Impl> boolean_ops;
+  std::vector<std::vector<int> > handle_array;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
+  pthread_mutex_t mutex;
+  void lock() { pthread_mutex_lock(&mutex); }
+  void unlock() { pthread_mutex_unlock(&mutex); }
 #ifndef EMSCRIPTEN
   FT_Library lib;
 #endif

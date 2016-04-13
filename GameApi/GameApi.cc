@@ -10,7 +10,7 @@
 #include "GameApi_h.hh"
 
 
-EnvImpl::EnvImpl() : event_infos(new EmptySequencer2)
+EnvImpl::EnvImpl() : event_infos(new EmptySequencer2), mutex(PTHREAD_MUTEX_INITIALIZER)
 {
 #ifndef EMSCRIPTEN
     int err = FT_Init_FreeType(&lib);
@@ -751,9 +751,11 @@ GameApi::PT add_point(GameApi::Env &e, float x, float y)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   Point p = Point(x,y,0.0);
+  env->lock();
   env->pt.push_back(p);
   GameApi::PT pt;
   pt.id = env->pt.size()-1;
+  env->unlock();
   //pt.type = 0;
   return pt;
 }
@@ -1088,10 +1090,12 @@ GameApi::PT add_point(GameApi::Env &e, float x, float y, float z)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   Point p = Point(x,y,z);
+  env->lock();
   env->pt.push_back(p);
   GameApi::PT pt;
   pt.id = env->pt.size()-1;
   //pt.type = 0;
+  env->unlock();
   return pt;
 }
 
@@ -1935,4 +1939,13 @@ GameApi::FD GameApi::BooleanOps::to_dist(BO obj)
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   BO_Impl obj_i = env->boolean_ops[obj.id];
   return obj_i.fd;
+}
+
+GameApi::A GameApi::ArrayApi::array(std::vector<int> vec)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->handle_array.push_back(vec);
+  GameApi::A a;
+  a.id = env->handle_array.size()-1;
+  return a;
 }

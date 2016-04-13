@@ -114,7 +114,7 @@ int main() {
 #ifndef EMSCRIPTEN
   while(1) {
     iter(&env);
-    ev.mainloop_api.delay(10);
+    //ev.mainloop_api.delay(10);
   }
 #else
   emscripten_set_main_loop_arg(iter, (void*)&env, 60,1);
