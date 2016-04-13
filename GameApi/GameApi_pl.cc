@@ -3076,6 +3076,13 @@ EXPORT GameApi::P GameApi::PolygonApi::cube_map(EveryApi &ev, float start_x, flo
 
 }
 #endif
+EXPORT GameApi::P GameApi::PolygonApi::alt(std::vector<P> v, int index)
+{
+  if (v.size()==0) return empty();
+  int s = v.size();
+  if (index<0 ||index>=s) return empty();
+  return v[index];
+}
 
 EXPORT GameApi::P GameApi::PolygonApi::and_not_elem(EveryApi &ev, P p1, P p_not,
 						    O o1, O o_not,

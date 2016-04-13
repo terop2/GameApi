@@ -147,6 +147,14 @@ std::vector<int> reduce_list_to_indexes_only(std::vector<std::string> type_names
 	{
 	  ret.push_back(index);
 	}
+      if (name[0]=='[' && name[name.size()-1]==']')
+	{ // array
+	  if (name[1]>='A' && name[1]<='Z' && name.size()<=6)
+	    {
+	      ret.push_back(index);
+	    }
+	}
+
     }
   return ret;
 
@@ -288,6 +296,10 @@ std::vector<std::string> remove_unnecessary_labels(std::vector<std::string> type
 	{
 	}
       else
+      if (type[0]=='[' && type[type.size()-1]==']' && type[1]>='A' && type[1]<='Z' && type.size()<=6)
+	{
+	}
+      else
 	{
 	  res.push_back(label);
 	}
@@ -306,6 +318,10 @@ std::vector<std::string> filter_unnecessary_types(std::vector<std::string> vec)
 	{
 	}
       else
+      if (type[0]=='[' && type[type.size()-1]==']' && type[1]>='A' && type[1]<='Z' && type.size()<=6)
+	{
+	}
+      else
 	{
 	  res.push_back(type);
 	}
@@ -320,6 +336,10 @@ std::vector<std::string*> remove_unnecessary_refs(std::vector<std::string*> refs
     {
       std::string type = param_types[i];
       if (type[0]>='A' && type[0]<='Z' && type.size()<=4)
+	{
+	}
+      else
+      if (type[0]=='[' && type[type.size()-1]==']' && type[1]>='A' && type[1]<='Z' && type.size()<=6)
 	{
 	}
       else
@@ -449,6 +469,55 @@ void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, 
 	  GameApiParam &param = line.params[ii];
 	  std::string value = param.value;
 	  
+	  if (value.size()>1 && value[0]=='[' && value[value.size()-1]==']')
+	    {
+	      std::vector<std::string> v = parse_param_array(value);
+	      int s= v.size();
+	      for(int i=0;i<s;i++)
+		{
+		  std::string value = v[i];
+	  int sss = func->lines.size();
+	  for(int iii = 0; iii<sss; iii++)
+	    {
+	      GameApiLine &line2 = func->lines[iii];
+	      if (line2.uid == value)
+		{
+		  W w1 = gui.find_canvas_item(canvas, value);
+		  
+		  int ssss = connect_targets.size();
+		  for(int iiii=0;iiii<ssss; iiii++)
+		    {
+		      W wid = connect_targets[iiii];
+		      std::string u = gui.get_id(wid);
+		      std::stringstream ss(u);
+		      std::string target_uid;
+		      int num;
+		      ss >> target_uid >> num;
+		      
+		      std::string funcname = ev.mod_api.get_funcname(mod2, 0, target_uid);
+		      std::vector<int> vec = ev.mod_api.indexes_from_funcname(funcname);
+		      int real_num = vec[num];
+
+		      if (target_uid == line.uid && real_num == ii)
+			{
+			  W w2 = wid;
+			  W line = gui.line( w1, gui.size_x(w1), 45,
+					     w2, 0, 10, sh2, sh);
+			  std::stringstream ss2;
+			  ss2 << value << " " << target_uid << " " << real_num;
+			  gui.set_id(line, ss2.str());
+			  std::cout << "LINK2: " << ss2.str() << std::endl;
+			  links.push_back(line);
+			}
+		      
+		    }
+		}
+
+	    }
+		}
+	    }
+	
+
 	  int sss = func->lines.size();
 	  for(int iii = 0; iii<sss; iii++)
 	    {
@@ -538,6 +607,39 @@ void GameApi::WModApi::delete_by_uid(WM mod2, int id, std::string line_uid)
 	  break;
 	}
     }
+
+
+  int s2 = func->lines.size();
+  for(int i2=0;i2<s2;i2++)
+    {
+      GameApiLine *line = &func->lines[i2];
+      int s3 = line->params.size();
+      for(int i3=0;i3<s3;i3++)
+	{
+	  GameApiParam &param = line->params[i3];
+	  std::string val = param.value;
+	  if (val==line_uid) { param.value=""; }
+	  if (val.size()>1 && val[0]=='[' && val[val.size()-1]==']')
+	    {
+	      std::vector<std::string> v = parse_param_array(val);
+	      int s = v.size();
+	      for(int i=0;i<s;i++)
+		{
+		  if (v[i]==line_uid) {
+		    v.erase(v.begin()+i);
+		    --i;
+		    --s;
+		  }
+		}
+	      std::string val2 = generate_param_array(v);
+	      param.value = val2;
+	    }
+	}
+    }
+
+
+  
+
 }
 std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid)
 {
@@ -574,8 +676,58 @@ std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mo
 		  p = val.second;
 		  pn = val.first;
 		}
-	      params.push_back(p);
-	      param_names.push_back(pn);
+	      if (pn.size()>1 && pn[0]=='[' && pn[pn.size()-1]==']')
+		{
+		  std::string param_type = "";
+		  int sd = vec.size();
+		  for(int k=0;k<sd;k++)
+		    {
+		      GameApiItem *item = vec[k];
+		      std::string name = item->Name(0);
+		      if (name == line->module_name)
+			{
+			  std::string paramtype = item->ParamType(0,ii);
+			  param_type=paramtype;
+			}
+		    }
+		  param_type = param_type.substr(1,param_type.size()-2);
+
+		  
+		  int prev = 1;
+		  std::string ss = "std::vector<" + param_type + ">{";
+		  int sz = pn.size();
+		  for(int i=1;i<sz;i++)
+		    {
+		      if (pn[i]==',' || pn[i]==']')
+			{
+			  std::string substr = pn.substr(prev, i-prev);
+			  //std::cout << "substr: " << substr << std::endl;
+			  if (substr.size()>3 && substr[0]=='u' && substr[1] == 'i' && substr[2] =='d')
+			    {
+			      std::pair<std::string,std::string> val = codegen(ev, mod2, id, substr);
+			      p += val.second;
+			      ss += val.first;
+			    }
+			  else
+			    {
+			      ss+=substr;
+			    }
+			  prev = i+1;
+			  //ss+=substr;
+			  if (i!=sz-1) { ss+=","; }
+			}
+
+		    }
+		  ss+="}";
+		  //std::cout << "Param: " << ss << std::endl;
+		  param_names.push_back(ss);
+		  params.push_back(p);
+		}
+	      else
+		{
+		  params.push_back(p);
+		  param_names.push_back(pn);
+		}
 	    }
 	  // EXECUTE
 	  int sd = vec.size();
@@ -644,7 +796,41 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
 		  sw << val;
 		  p = sw.str();
 		}
-	      params.push_back(p);
+	      if (p.size()>1 && p[0]=='[' && p[p.size()-1]==']')
+		{
+		  int prev = 1;
+		  std::string ss = "[";
+		  int sz = p.size();
+		  for(int i=1;i<sz;i++)
+		    {
+		      if (p[i]==',' || p[i]==']')
+			{
+			  std::string substr = p.substr(prev, i-prev);
+			  std::cout << "substr: " << substr << std::endl;
+			  if (substr.size()>3 && substr[0]=='u' && substr[1] == 'i' && substr[2] =='d')
+			    {
+			      int val = execute(ev, mod2, id, substr, exeenv);
+			      if (val==-1) return -1;
+			      std::stringstream sw;
+			      sw << val;
+			      substr = sw.str();
+			    }
+			  prev = i+1;
+			  ss+=substr;
+			  if (i!=sz-1) { ss+=","; }
+			}
+
+		    }
+		  ss+="]";
+		  std::cout << "Param: " << ss << std::endl;
+		  params.push_back(ss);
+		}
+	      else
+		{
+		  std::cout << "Param: " << p << std::endl;
+
+		  params.push_back(p);
+		}
 	    }
 	  // EXECUTE
 	  int sd = vec.size();
@@ -664,8 +850,9 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
   std::cout << "EXECUTE FAILED! " << std::endl;
   return -1;
 }
-bool GameApi::WModApi::typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index)
+bool GameApi::WModApi::typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, bool &is_array)
 {
+  is_array=false;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
   GameApiFunction *func = &mod->funcs[id];
@@ -699,6 +886,14 @@ bool GameApi::WModApi::typecheck(WM mod2, int id, std::string uid1, std::string 
       if (item->Name(0) == module2)
 	{
 	  type2 = item->ParamType(0, param_index);
+	  if (type2.size()>2) {
+	    if (type2[0]=='[' && type2[type2.size()-1]==']')
+	      {
+		is_array=true;
+		type2 = type2.substr(1,type2.size()-2);
+	      }
+	  }
+
 	}
     }
   std::cout << "TypeCheck: " << type1 << " " << type2 << std::endl;
@@ -722,6 +917,65 @@ void GameApi::WModApi::change_param_value(WM mod2, int id, std::string uid, int 
 	}
     }
 }
+
+std::vector<std::string> GameApi::WModApi::parse_param_array(std::string s)
+{
+  if (s.size()<2) { 
+    return std::vector<std::string>();
+  }
+  if (s[0]!='[') { std::cout << "param_parse_array parse error" << std::endl; 
+  }
+  if (s[s.size()-1]!=']') { std::cout << "param_parse_array parse error2" << std::endl; }
+  int ss = s.size();
+  int prev = 1;
+  std::vector<std::string> vec;
+  for(int i=1;i<ss;i++)
+    {
+      if (s[i]==',' || s[i]==']')
+	{
+	  std::string sub = s.substr(prev, i-prev);
+	  vec.push_back(sub);
+	  prev = i+1;
+	}
+    }
+  return vec;
+}
+
+std::string GameApi::WModApi::generate_param_array(std::vector<std::string> v)
+{
+  if (v.size()==0) return "";
+  std::stringstream ss;
+  ss << "[";
+  int s = v.size();
+  for(int i=0;i<s;i++)
+    {
+      ss << v[i];
+      if (i!=s-1) { ss << ","; }
+    }
+  ss << "]";
+  return ss.str();
+}
+
+std::string GameApi::WModApi::param_value(WM mod2, int id, std::string uid, int param_index)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+  int s = func->lines.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiLine &line = func->lines[i];
+      if (line.uid == uid)
+	{
+	  GameApiParam &param = line.params[param_index];
+	  return param.value;
+	  //param.value = newvalue;
+	  //std::cout << "Param: " << param.param_name << " changed to " << newvalue << std::endl;
+	}
+    }
+  return "";
+}
+
 std::string GameApi::WModApi::get_funcname(WM mod2, int id, std::string uid)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);

@@ -352,6 +352,7 @@ public:
   IMPORT BM chessboard(int tile_sx, int tile_sy, int count_x, int count_y, unsigned int c1, unsigned int c2);
   IMPORT BM memoize(BM orig);
   IMPORT BM memoize_all(BM orig);
+  IMPORT BM alt(std::vector<BM> vec, int index);
   IMPORT int intvalue(BM bm, int x, int y);
   IMPORT unsigned int colorvalue(BM bm, int x, int y);
   IMPORT int size_x(BM bm);
@@ -1017,7 +1018,10 @@ public:
   
   std::string get_funcname(WM mod2, int id, std::string uid);
   void change_param_value(WM mod2, int id, std::string uid, int param_index, std::string newvalue);
-  bool typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index);
+  std::string param_value(WM mod2, int id, std::string uid, int param_index);
+  std::vector<std::string> parse_param_array(std::string s);
+  std::string generate_param_array(std::vector<std::string> v);
+  bool typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, bool &is_array);
   void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh);
 
   int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv);
@@ -1352,6 +1356,7 @@ public:
   IMPORT P intersect(EveryApi &ev, P p1, P p2,
 		     O o1, O o2,
 		     CT cutter1, CT cutter2);
+  IMPORT P alt(std::vector<P> vec, int index);
   //P and_not_elem(P p1, P p_not);
 
 

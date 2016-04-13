@@ -2909,6 +2909,7 @@ class FromStreamClass<std::vector<T>>
 public:
   std::vector<T> from_stream(std::string s, GameApi::EveryApi &ev)
   {
+    std::cout << "Vector" << std::endl;
     std::vector<T> vec;
     if (s.size()<2)
       {
@@ -2926,7 +2927,7 @@ public:
       {
 	if (s[i]==',' || s[i]==']')
 	  {
-	    std::string substr = s.substr(prev, i-prev-1);
+	    std::string substr = s.substr(prev, i-prev);
 	    T t = cls.from_stream(substr, ev);
 	    vec.push_back(t);
 	    prev=i+1;
@@ -3503,6 +3504,13 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P", "std::string" },
 			 { "", "test.obj" },
 			 "ML", "polygon_api", "save_model_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::alt,
+			 "p_alt",
+			 { "vec", "index" },
+			 { "[P]", "int" },
+			 { "", "0" },
+			 "P", "polygon_api", "alt"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::triangle,
 			 "triangle",
 			 { "p1", "p2", "p3" },
@@ -4150,6 +4158,14 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BM", "int", "int", "int", "int" },
 			 { "",   "0", "0", "100", "100" },
 			 "BM", "bitmap_api", "subbitmap"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::alt,
+			 "alt",
+			 { "vec", "index" },
+			 { "[BM]", "int" },
+			 { "",   "0" },
+			 "BM", "bitmap_api", "alt"));
+
   //vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::growbitmap,
   //			 "grow",
   //			 { "orig", "l", "t", "r", "b" },

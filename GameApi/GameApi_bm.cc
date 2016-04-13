@@ -1930,7 +1930,13 @@ EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::from_bitmap(BM bm, float xsize
 
   return add_continuous_bitmap(e, new ContinuousBitmapFromBitmap<Color>(*bm2, xsize, ysize));
 }
-
+EXPORT GameApi::BM GameApi::BitmapApi::alt(std::vector<BM> vec, int index)
+{
+  if (vec.size()==0) { return newbitmap(1,1); }
+  int s = vec.size();
+  if (index<0||index>=s) return newbitmap(1,1);
+  return vec[index];
+}
 
 EXPORT GameApi::TXID GameApi::FloatBitmapApi::to_texid(FB fb)
 {
