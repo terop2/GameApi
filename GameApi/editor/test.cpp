@@ -450,6 +450,10 @@ void iter(void *arg)
 		    // Execute
 		    GameApi::ExecuteEnv exeenv;
 		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv);
+		    if (id==-1) {
+		      std::cout << "Execute failed!" << std::endl;
+		      break;
+		    }
 		    env->codegen_uid = uid;
 
 		    // display dialog
