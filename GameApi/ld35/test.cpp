@@ -11,6 +11,7 @@ struct Envi {
   EveryApi *ev;
   PolygonObj *poly;
   PolygonObj *poly2;
+  PolygonObj *poly3;
   PolygonObj *flo;
   PolygonObj *grass;
   PolygonObj *sky_o;
@@ -32,6 +33,7 @@ struct Envi {
   bool backward=false;
   bool space=false;
   int space_count=0;
+  bool damage = false;
 };
 
 P bee(EveryApi &ev)
@@ -246,22 +248,28 @@ void iter(void *arg)
 	  {
 	    env->space_count = 0;
 	  }
-	env->poly->explode(env->ev->point_api.point(0.0,0.0,0.0), val);
-	env->poly2->explode(env->ev->point_api.point(0.0,0.0,0.0), val);
+	//env->poly->explode(env->ev->point_api.point(0.0,0.0,0.0), val);
+	//env->poly2->explode(env->ev->point_api.point(0.0,0.0,0.0), val);
 
 	env->space_count++;
       }
-    if (!env->space)
+    if (!env->damage)
       {
-	env->poly->set_rotation_matrix(b_a_m);
-	env->poly->set_pos(env->bee_x, -200.0, env->bee_y);
-	env->poly->render();
+	if (!env->space)
+	  {
+	    env->poly->set_rotation_matrix(b_a_m);
+	    env->poly->set_pos(env->bee_x, -200.0, env->bee_y);
+	    env->poly->render();
+	  } else {
+	  env->poly2->set_rotation_matrix(b_a_m);
+	  env->poly2->set_pos(env->bee_x, -200.0, env->bee_y);
+	  env->poly2->render();
+	}
       } else {
-      env->poly2->set_rotation_matrix(b_a_m);
-      env->poly2->set_pos(env->bee_x, -200.0, env->bee_y);
-      env->poly2->render();
-    }
-
+	  env->poly3->set_rotation_matrix(b_a_m);
+	  env->poly3->set_pos(env->bee_x, -200.0, env->bee_y);
+	  env->poly3->render();
+      }
 
     env->flo->set_rotation_matrix2(a_mm);
     env->flo->set_pos(env->pos_x, 0.0, env->pos_y);
@@ -288,6 +296,13 @@ void iter(void *arg)
     if (env->backward) {
 	env->pos_y+=env->speed_y; env->pos_x+=env->speed_x; 
     }
+
+    if (env->pos_x <-20000.0) { env->pos_x = -20000.0; }
+    if (env->pos_y <-20000.0) { env->pos_y = -20000.0; }
+    if (env->pos_x >0.0) { env->pos_x = 0.0; }
+    if (env->pos_y >0.0) { env->pos_y = 0.0; }
+    
+
     // handle esc event
     MainLoopApi::Event e;
     while((e = env->ev->mainloop_api.get_event()).last==true)
@@ -342,10 +357,19 @@ void iter(void *arg)
 	env->space = false;
       }
 
+    if ((e.ch&0xff)=='b' && e.type==0x300)
+      {
+	env->damage = true;
+      }
+    if ((e.ch&0xff)=='b' && e.type==0x301)
+      {
+	env->damage = false;
+      }
+
     //    InteractionApi::quake_movement(e, env->pos_x, env->pos_y, env->rot_y,
     //		   env->data, env->speed_x, env->speed_y,
     //				   100.0, 1.0*3.14159*2.0/360.0);
-#if 1
+#if 0
     if ((e.ch=='w' || e.ch==26||e.ch==82)&& e.type==0x300) { 
     }
     if ((e.ch=='s' || e.ch==22||e.ch==81)&& e.type==0x300) 
@@ -355,14 +379,92 @@ void iter(void *arg)
 
     if ((e.ch=='a'||e.ch==4||e.ch==80)&& e.type==0x300) { env->rot_y -= env->rot_speed; }
     if ((e.ch=='d'||e.ch==7||e.ch==79)&& e.type==0x300) { env->rot_y += env->rot_speed; }
+#endif
     env->speed_x = env->speed*cos(env->bee_roty+3.14159/2.0+1.0);
     env->speed_y = env->speed*sin(env->bee_roty+3.14159/2.0+1.0);
-#endif
       }
 
     //    std::cout << env->pos_y << " " << env->pos_x << " " << env->rot_y << std::endl;
 
 }
+
+P poly_func(int face,
+	    PT pp1, PT pp2, PT pp3, PT pp4,
+	    EveryApi &ev)
+{
+  float p1_x = ev.point_api.pt_x(pp1);
+  float p1_y = ev.point_api.pt_y(pp1);
+  float p1_z = ev.point_api.pt_z(pp1);
+
+  float p2_x = ev.point_api.pt_x(pp2);
+  float p2_y = ev.point_api.pt_y(pp2);
+  float p2_z = ev.point_api.pt_z(pp2);
+
+  float p3_x = ev.point_api.pt_x(pp3);
+  float p3_y = ev.point_api.pt_y(pp3);
+  float p3_z = ev.point_api.pt_z(pp3);
+
+  float p4_x = ev.point_api.pt_x(pp4);
+  float p4_y = ev.point_api.pt_y(pp4);
+  float p4_z = ev.point_api.pt_z(pp4);
+
+
+  float m_x = (p1_x+p2_x+p3_x+p4_x)/4;
+  float m_y = (p1_y+p2_y+p3_y+p4_y)/4;
+  float m_z = (p1_z+p2_z+p3_z+p4_z)/4;
+
+  float dx = p2_x-p1_x;
+  float dy = p2_y-p1_y;
+  float dz = p2_z-p1_z;
+  
+  float ddx = p3_x-p1_x;
+  float ddy = p3_y-p1_y;
+  float ddz = p3_z-p1_z;
+  
+  float cross_x = dy*ddz-dz*ddy;
+  float cross_y = dx*ddz-dz*ddx;
+  float cross_z = dx*ddy-dy*ddx;
+
+  float dist_dx = sqrt(dx*dx+dy*dy+dz*dz);
+  float dist_ddx = sqrt(ddx*ddx+ddy*ddy+ddz*ddz);
+  cross_x/=dist_dx;
+  cross_x/=dist_ddx;
+  cross_y/=dist_dx;
+  cross_y/=dist_ddx;
+  cross_z/=dist_dx;
+  cross_z/=dist_ddx;
+  
+  cross_x*=15.0;
+  cross_y*=15.0;
+  cross_z*=15.0;
+
+  cross_x+=m_x;
+  cross_y+=m_y;
+  cross_z+=m_z;
+
+  PT pt1 = ev.point_api.point(p1_x,p1_y,p1_z);
+  PT pt2 = ev.point_api.point(p2_x,p2_y,p2_z);
+
+  PT pt3 = ev.point_api.point(p3_x,p3_y,p3_z);
+  PT pt4 = ev.point_api.point(p4_x,p4_y,p4_z);
+
+  PT mid = ev.point_api.point(cross_x,cross_y,cross_z);
+
+  P p1 = ev.polygon_api.triangle(pt1,pt2,mid);
+  P p2 = ev.polygon_api.triangle(pt2,pt3,mid);
+  P p3 = ev.polygon_api.triangle(pt3,pt4,mid);
+  P p4 = ev.polygon_api.triangle(pt4,pt1,mid);
+
+  std::vector<P> vec;
+  vec.push_back(p1);
+  vec.push_back(p2);
+  vec.push_back(p3);
+  vec.push_back(p4);
+  
+  return ev.polygon_api.or_array(&vec[0], vec.size());
+
+}
+
 
 int main() {
   Env e;
@@ -383,7 +485,7 @@ int main() {
   ev.mainloop_api.init_3d(sh2);
   ev.mainloop_api.alpha(true);
 
-#if 0
+#if 1
   ev.tracker_api.play_mp3(".\\[Free-scores.com]_rimsky-korsakov-nikolai-flight-the-bumblebee-679.mp3");
 #endif
 
@@ -418,7 +520,14 @@ int main() {
 
 
   P p32_b = ev.polygon_api.color_range(p32_a, 0xffffffff, 0xffff0000);
-  PolygonObj poly2(ev, p32_b, sh);
+  P p32_c = ev.polygon_api.from_polygon(p32_b, [&ev](int i, PT p1, PT p2, PT p3, PT p4) { return poly_func(i, p1,p2,p3,p4,ev); });
+  P p32_d = ev.polygon_api.color_faces(p32_c, 0xff888888, 0xff444444, 0xff222222, 0xff666666);
+
+  P r32_d = ev.polygon_api.color(p32_a, 0xffff0000);
+
+  PolygonObj poly3(ev, r32_d, sh);
+  poly3.prepare(true);
+  PolygonObj poly2(ev, p32_d, sh);
   poly2.prepare(true);
   PolygonObj poly(ev, p32_a, sh);
   poly.prepare(true);
@@ -439,6 +548,7 @@ int main() {
   env.ev = &ev;
   env.poly = &poly;
   env.poly2 = &poly2;
+  env.poly3 = &poly3;
   env.flo = &flo;
   env.instances = instances;
 

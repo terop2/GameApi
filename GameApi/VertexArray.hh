@@ -106,7 +106,7 @@ public:
 
   void check_m_set(int id);
   void free_memory();  
-
+  void explode(int id, Point p, float dist);
 public:
   struct Polys {
     std::vector<Point> tri_polys;

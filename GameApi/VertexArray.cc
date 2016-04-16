@@ -20,6 +20,43 @@ void VertexArraySet::check_m_set(int id)
       p = m_set[id];
     }  
 }
+void VertexArraySet::explode(int id, Point pt, float dist)
+{
+  Polys *p = m_set[id];
+  if (!p)
+    {
+      m_set[id] = new Polys;
+      p = m_set[id];  
+    }
+  std::vector<std::vector<Point>* > vec;
+  vec.push_back(&p->tri_polys);
+  vec.push_back(&p->quad_polys);
+
+  int s = vec.size();
+  for(int k=0;k<s;k++)
+    {
+      std::vector<Point> *v = vec[k];
+      float *arr2 = (float*)&v->operator[](0);
+      Point p2 = pt;
+      int numpoints = v->size();
+      //std::cout << numpoints << std::endl;
+      for(int i=0;i<numpoints;i++)
+	{
+	  Point p(arr2[0], arr2[1], arr2[2]);
+	  //std::cout << p << " ";
+	  Vector v = p-p2;
+	  float d = v.Dist();
+	  v/=d;
+	  v*=d+dist;
+	  Point pp = p2+v;
+	  //std::cout << pp << std::endl;
+	  arr2[0] = pp.x;
+	  arr2[1] = pp.y;
+	  arr2[2] = pp.z;
+	  arr2+=3;
+	}
+    }
+}
 void VertexArraySet::set_reserve(int id, int tri_count, int quad_count)
 {
   Polys *p = m_set[id];
@@ -420,6 +457,11 @@ void VertexArraySet::append_to_polys(Polys &target, const Polys &source)
 #define ATTRIB_OFFSET(X) ((const GLvoid *)(sizeof(GLfloat) * (X)))
 void RenderVertexArray::update(int id)
 {
+#ifdef VAO
+  glBindVertexArray(vao[0]);
+#endif
+
+  //std::cout << "Update" << std::endl;
   glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
   glBufferSubData(GL_ARRAY_BUFFER, 0, s.tri_count(id)*sizeof(float)*3, s.tri_polys(id));
   glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
@@ -431,6 +473,10 @@ void RenderVertexArray::update(int id)
   glBindBuffer(GL_ARRAY_BUFFER, buffers[4]);
   glBufferSubData(GL_ARRAY_BUFFER, 0, s.tri_count(id)*sizeof(float)*3, s.tri_polys2(id));
 
+
+#ifdef VAO
+  glBindVertexArray(vao[1]);
+#endif
 
   glBindBuffer(GL_ARRAY_BUFFER, buffers2[0]);
   glBufferSubData(GL_ARRAY_BUFFER, 0, s.quad_count(id)*sizeof(float)*3, s.quad_polys(id));

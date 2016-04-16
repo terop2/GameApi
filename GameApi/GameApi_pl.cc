@@ -161,6 +161,56 @@ EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap2(EveryApi &ev, std::fun
   P p = or_array_1(&vec[0], sy-1);
   return p;
 }
+int index_from_string(char c, std::string s)
+{
+  int ss = s.size();
+  for(int i=0;i<ss;i++)
+    {
+      if (s[i]==c) { return i; }
+    }
+  return 0;
+}
+
+EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(EveryApi &ev, std::vector<P> pieces, std::string filename, std::string chars, float dx, float dz, int ssx, int ssy)
+{
+  if (pieces.size()==0) return empty();
+  char *array = new char[ssx*ssy];
+  std::ifstream ss(filename.c_str());
+  for(int i=0;i<ssx*ssy;i++)
+    {
+      ss >> array[i];
+    }
+
+  BM int_bm = ev.bitmap_api.newintbitmap(array, ssx,ssy, [&chars](char c) { return index_from_string(c,chars); });
+
+  BitmapIntHandle *handle = dynamic_cast<BitmapIntHandle*>(find_bitmap(e, int_bm));
+  if (!handle) { GameApi::P p1 = { 0 }; return p1; }
+
+  Bitmap<int> *bm = handle->bm;
+  std::vector<P> vec;
+  int sx = bm->SizeX();
+  int sy = bm->SizeY();
+  for(int y=0;y<sy;y++)
+    {
+      std::vector<P> vec2;
+      for(int x=0;x<sx;x++)
+	{
+	  int val = bm->Map(x,y);
+	  int sk = pieces.size();
+	  if (val<0) val=0;
+	  if (val>=sk) val=0;
+	  P p = pieces[val];
+	  P p2 = translate_1(p, dx*x, 0.0, 0.0);
+	  vec2.push_back(p2);
+	}
+      P p = or_array_1(&vec2[0], sx);
+      P p2 = translate_1(p, 0.0, 0.0, dz*y);
+      vec.push_back(p2);
+    }
+  P p = or_array_1(&vec[0], sy);
+  return p;
+
+}
 EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(std::function<P (int c)> f, BM int_bm, float dx, float dz, int max_c)
 {
   BitmapIntHandle *handle = dynamic_cast<BitmapIntHandle*>(find_bitmap(e, int_bm));
@@ -2385,6 +2435,12 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
 #endif
 
 }
+EXPORT void GameApi::PolygonApi::explode(VA va, PT pos, float dist)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  Point *pt = find_point(e, pos);
+  s->explode(0, *pt, dist);
+}
  
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 { 
@@ -2501,13 +2557,13 @@ EXPORT float *GameApi::PolygonApi::access_texcoord(VA va, bool triangle, int fac
       return &((float*)ptr)[face*4*2+point*2];
     }
 }
+#endif
 EXPORT void GameApi::PolygonApi::update(VA va)
 {
-  VertexArraySet *s = find_vertex_array(e, va);
+  //VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *s2 = find_vertex_array_render(e, va);
   s2->update(0);
 }
-#endif
 class RenderVA : public MainLoopItem
 {
 public:
@@ -3083,7 +3139,106 @@ EXPORT GameApi::P GameApi::PolygonApi::alt(std::vector<P> v, int index)
   if (index<0 ||index>=s) return empty();
   return v[index];
 }
+class SubPolyChange : public FaceCollection
+{
+public:
+  SubPolyChange(FaceCollection *coll1, FaceCollection *coll2, VolumeObject *vol)
+    : coll1(coll1), coll2(coll2), vol(vol) 
+  {
+    int s = coll1->NumFaces();
+    for(int i=0;i<s;i++)
+      {
+	if (side(true, i)) { choose.push_back(0); faces.push_back(i); }
+      }
+    int s2 = coll2->NumFaces();
+    for(int i2=0;i2<s2;i2++)
+      {
+	if (side(false, i2)) { choose.push_back(1); faces.push_back(i2); }
+      }
+  }
+  bool side(bool which, int face) const
+  {
+    FaceCollection *coll = 0;
+    if (which)
+      {
+	coll = coll1;
+      }
+    else
+      {
+	coll = coll2;
+      }
+    int s = coll->NumPoints(face);
+    Point p(0.0,0.0,0.0);
+    for(int i=0;i<s;i++)
+      {
+	p+=Vector(coll->FacePoint(face,i));
+      }
+    Vector v = p;
+    v/=float(s);
+    Point pp = v;
+    bool b = vol->Inside(pp);
+    if (which) b = !b;
+    return b;
+  }
 
+  virtual int NumFaces() const { return choose.size(); }
+  virtual int NumPoints(int face) const {
+    int val = choose[face];
+    FaceCollection *coll = 0;
+    if (val==0) coll=coll1;
+    if (val==1) coll=coll2;
+    return coll->NumPoints(faces[face]);
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int val = choose[face];
+    FaceCollection *coll = 0;
+    if (val==0) coll=coll1;
+    if (val==1) coll=coll2;
+    return coll->FacePoint(faces[face], point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    int val = choose[face];
+    FaceCollection *coll = 0;
+    if (val==0) coll=coll1;
+    if (val==1) coll=coll2;
+    return coll->PointNormal(faces[face], point);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    int val = choose[face];
+    FaceCollection *coll = 0;
+    if (val==0) coll=coll1;
+    if (val==1) coll=coll2;
+    return coll->Color(faces[face], point);
+
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    int val = choose[face];
+    FaceCollection *coll = 0;
+    if (val==0) coll=coll1;
+    if (val==1) coll=coll2;
+    return coll->TexCoord(faces[face], point);
+  }
+private:
+  FaceCollection *coll1;
+  FaceCollection *coll2;
+  VolumeObject *vol;
+  std::vector<int> choose;
+  std::vector<int> faces;
+};
+EXPORT GameApi::P GameApi::PolygonApi::subpoly_change(P p, P p2, O choose)
+{
+  FaceCollection *pa = find_facecoll(e, p);
+  FaceCollection *pa2 = find_facecoll(e, p2);
+  VolumeObject *choose_a = find_volume(e, choose);
+
+  return add_polygon2(e, new SubPolyChange(pa, pa2, choose_a),1);
+}
 EXPORT GameApi::P GameApi::PolygonApi::and_not_elem(EveryApi &ev, P p1, P p_not,
 						    O o1, O o_not,
 						    CT cutter1, CT cutter_not)

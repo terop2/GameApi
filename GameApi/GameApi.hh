@@ -325,6 +325,7 @@ public:
 	IMPORT BM repeat_bitmap(BM orig, int xcount, int ycount);
 	IMPORT BM sample_bitmap(BM orig, float xmult, float ymult, float x, float y);
         IMPORT BM world_from_bitmap(std::function<BM(int)> f, BM int_bm, int dx, int dy);
+  IMPORT BM world_from_bitmap2(EveryApi &ev, std::vector<BM> v, std::string filename, std::string chars, int dx, int dy, int sx, int sy);
         IMPORT BM dup_x(BM orig);
 	IMPORT BM flip_x(BM orig);
 	IMPORT BM flip_y(BM orig);
@@ -1307,6 +1308,8 @@ public:
   IMPORT P cut_faces(P p, O o, CT cutter);
   IMPORT P tri_to_quad(P p);
 
+  IMPORT P subpoly_change(P p, P p2, O choose);
+
   IMPORT P span(LI li, M matrix, int num_steps);
   IMPORT P fromsurface(S s, float thickness);
   IMPORT P fromsurface(S s1, S s2, C curve); // surfacebetweensurfaces
@@ -1422,13 +1425,15 @@ public:
   void renderpoly(P p, int choose, float x, float y, float z);
   IMPORT void prepare(P p, int bbm_choose = -1);
   IMPORT void render(P p, int choose, float x, float y, float z);
-  
+  IMPORT void update(VA va);
+
   IMPORT void update_vertex_array(VA va, P p, bool keep=false);
   IMPORT ML update_vertex_array_ml(VA va, P p, bool keep=false);
   IMPORT VA create_vertex_array(P p, bool keep=false); // slow
   IMPORT void render_vertex_array(VA va); // fast
   IMPORT void render_vertex_array_instanced(VA va, PTA pta); // fast
   IMPORT ML render_vertex_array_ml(VA va);
+  IMPORT void explode(VA va, PT pos, float dist);
   //IMPORT int access_point_count(VA va, bool triangle);
   //IMPORT float *access_points(VA va, bool triangle, int face, int point);
   //IMPORT float *access_color(VA va, bool triangle, int face, int point);
@@ -1468,6 +1473,7 @@ public:
   IMPORT void render_dynamic(P p, int array_elem, bool textures); // use memoize_all for p before calling this.
 
   IMPORT P world_from_bitmap(std::function<P (int c)> f, BM int_bm, float dx, float dy, int max_c);
+  IMPORT P world_from_bitmap(EveryApi &ev, std::vector<P> vec, std::string filename, std::string chars, float dx, float dy, int sx, int sy);
   IMPORT P world_from_bitmap2(EveryApi &ev, std::function<P (int c, PT tl, PT tr, PT bl, PT br)> f, BM int_bm, FB float_bm, float dx, float dz, float height);
   IMPORT P world_from_voxel(std::function<P (unsigned int c)> f, VX voxel, float dx, float dy, float dz, int max_c);
 
@@ -2262,7 +2268,7 @@ private:
   {
   public:
     virtual ~RenderObject() { }
-    virtual void prepare()=0;
+    virtual void prepare(bool keep=false)=0;
     virtual void render()=0;
   };
   void prepare(RenderObject &o);
@@ -2303,7 +2309,7 @@ private:
       scale_z.push_back(1.0);
       rot_matrix.push_back(ev.matrix_api.identity());
     }
-    void prepare() {
+    void prepare(bool keep=false) {
       int s = render_vec.size();
       for(int i=0;i<s;i++) {
 	render_vec[i]->prepare();
@@ -2454,7 +2460,7 @@ private:
       m = matrix_api.identity();
       prepared=false;
     }
-    void prepare() 
+    void prepare(bool keep=false) 
     {
       va.clear();
       for(int i=0;i<(int)bm.size();i++)
@@ -2530,7 +2536,7 @@ private:
       m_width = width;
       m_height = height;
     }
-    void prepare() 
+    void prepare(bool keep=false) 
     {
       va.clear();
       for(int i=0;i<(int)numvalues;i++)
@@ -2638,12 +2644,12 @@ private:
       anim_id = 0;
       anim_time = 0.0;
     }
-    void prepare() 
+    void prepare(bool keep=false) 
     { 
       m_va2.clear();
       for(int i=0;i<(int)m_p.size();i++)
 	{
-	  VA va = api.create_vertex_array(m_p[i], id[i].id!=0);
+	  VA va = api.create_vertex_array(m_p[i], id[i].id!=0||keep);
 	  VA va2;
 	  if (id[i].id!=0) {
 	    va2 = tex.bind(va, id[i]);
@@ -2708,6 +2714,11 @@ private:
     void set_anim_time(float time)
     {
       anim_time = time;
+    }
+    void explode(PT pos, float val)
+    {
+      api.explode(m_va2[anim_id], pos, val);
+      api.update(m_va2[anim_id]);
     }
   private:
     void setup_m() {
@@ -2785,7 +2796,7 @@ private:
       int sx = m_sx; //bmapi.size_x(bm);
       anim_time[x+y*sx] = time;
     }
-    void prepare() 
+    void prepare(bool keep=false) 
     { 
       m_va2.clear();
       for(int i=0;i<numvalues;i++)
@@ -2951,7 +2962,7 @@ private:
       end_y = e_y;
       end_z = e_z;
     }
-    void prepare() {
+    void prepare(bool keep=false) {
       array = points_api.prepare(fo);
       //array = floatvolume.prepare(fo, numpoints, start_x, start_y, start_z, end_x, end_y, end_z); 
     }
@@ -3009,7 +3020,7 @@ private:
       setup_m();
     }
     //LinesObj(LinesApi &lines, MatrixApi &mat, ShaderApi &shapi, LI li, SH sh) : lines(lines), mat(mat), shapi(shapi), li(li), sh(sh) { }
-    void prepare() { li2 = lines.prepare(li); }
+    void prepare(bool keep=false) { li2 = lines.prepare(li); }
     void render() {
       shapi.use(sh);
       shapi.set_var(sh, "in_MV", m);
