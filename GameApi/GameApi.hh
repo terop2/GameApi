@@ -1880,7 +1880,7 @@ public:
 			PT fTL, PT fTR, PT fBL, PT fBR);
 
   IMPORT PTA prepare(PTS p);
-  //float *point_access(PTA pta, int pointnum);
+  float *point_access(PTA pta, int pointnum);
   //unsigned int *color_access(PTA pta, int pointnum);
   //void update(PTA array);
   IMPORT void render(PTA array);

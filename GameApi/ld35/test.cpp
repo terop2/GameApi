@@ -15,8 +15,10 @@ struct Envi {
   PolygonObj *flo;
   PolygonObj *grass;
   PolygonObj *sky_o;
+  PolygonObj *enemy_obj;
   PTA instances;
   PTA t_instances;
+  PTA e_instances;
   float pos_x=-0.124, pos_y=755.0;
   float rot_y=-5.58;
   float speed = 60.0;
@@ -215,6 +217,47 @@ P I8=ev.polygon_api.subpoly_change(I3,I6,I7);
  return I8;
 }
 
+P enemy(EveryApi &ev)
+{
+PT I1=ev.point_api.point(0.0,0.0,0.0);
+BO I2=ev.bool_api.sphere(ev,I1,100,30,30);
+BO I3=ev.bool_api.cube(ev,-100,100,0,100,-100,100,18,18);
+BO I4=ev.bool_api.and_not(ev,I2,I3);
+P I5=ev.bool_api.to_polygon(I4);
+P I6=ev.polygon_api.scale(I5,1,-1,1);
+P I7=ev.polygon_api.color_faces(I6,0xffff0000,0xffff0000,0xff880000,0xff880000);
+PT I8=ev.point_api.point(0.0,0.0,0.0);
+BO I9=ev.bool_api.sphere(ev,I8,100,30,30);
+BO I10=ev.bool_api.cube(ev,-100,100,0,100,-100,100,18,18);
+BO I11=ev.bool_api.and_not(ev,I9,I10);
+P I12=ev.bool_api.to_polygon(I11);
+P I13=ev.polygon_api.scale(I12,1,-1,1);
+P I14=ev.polygon_api.color_faces(I13,0xff000000,0xff000000,0xff010101,0xff010101);
+PT I15=ev.point_api.point(-100,40,0);
+O I16=ev.volume_api.sphere(I15,30);
+PT I17=ev.point_api.point(0,40,-100);
+O I18=ev.volume_api.sphere(I17,30);
+O I19=ev.volume_api.max_op(I16,I18);
+PT I20=ev.point_api.point(100,40,0);
+O I21=ev.volume_api.sphere(I20,30);
+O I22=ev.volume_api.max_op(I19,I21);
+PT I23=ev.point_api.point(0,40,100);
+O I24=ev.volume_api.sphere(I23,30);
+O I25=ev.volume_api.max_op(I22,I24);
+P I26=ev.polygon_api.subpoly_change(I7,I14,I25);
+PT I27=ev.point_api.point(0.0,0.0,0.0);
+BO I28=ev.bool_api.sphere(ev,I27,100,30,30);
+BO I29=ev.bool_api.cube(ev,-100,100,0,100,-100,100,18,18);
+BO I30=ev.bool_api.and_not(ev,I28,I29);
+P I31=ev.bool_api.to_polygon(I30);
+P I32=ev.polygon_api.scale(I31,1,-1,1);
+P I33=ev.polygon_api.translate(I32,0,0,-200);
+P I34=ev.polygon_api.color_faces(I33,0xff000000,0xff000000,0xff010101,0xff010101);
+P I35=ev.polygon_api.scale(I34,0.5,0.5,0.5);
+P I36=ev.polygon_api.or_elem(I26,I35);
+ return I36;
+}
+
 
 void iter(void *arg)
 {
@@ -278,6 +321,35 @@ void iter(void *arg)
     env->grass->set_rotation_matrix2(a_mm);
     env->grass->set_pos(env->pos_x, -800.0, env->pos_y);
     env->grass->render_instanced(env->t_instances);
+
+    env->enemy_obj->set_rotation_matrix2(a_mm);
+    env->enemy_obj->set_pos(env->pos_x, -100.0, env->pos_y);
+    env->enemy_obj->render_instanced(env->e_instances);
+
+    env->damage = false;
+    int s = 20;
+    for(int i=0;i<s;i++)
+      {
+	float *pt = env->ev->points_api.point_access(env->e_instances, i);
+	float x = pt[0];
+	//float y = pt[1];
+	float z = pt[2];
+	float dx = x - env->pos_x -env->bee_x;
+	float dz = z - env->pos_y -env->bee_y;
+	dx/=300;
+	dz/=300;
+	//pt[0]+=dx;
+	//pt[2]+=dz;
+
+
+	//std::cout << pt[0] << " " << pt[2] << std::endl;
+	if (fabs(pt[0]+env->bee_x + env->pos_x)-400.0 < 500.0 &&
+	    fabs(pt[2]+env->bee_y + env->pos_y)-400.0 < 500.0)
+	  {
+	    env->damage = true;
+	  }
+
+      }
 
     //std::cout << "BEE:" << env->bee_x << " " << env->bee_y << std::endl;
     //std::cout << "CAM:" << env->pos_x << " " << env->pos_y << std::endl;
@@ -501,6 +573,13 @@ int main() {
   PTS t_pts = ev.points_api.random_plane(t_pos, t_u_x, t_u_y, 10000);
   PTA t_instances = ev.points_api.prepare(t_pts);
 
+  PT e_t_pos = ev.point_api.point(0.0, 0.0, 0.0);
+  V e_t_u_x = ev.vector_api.vector(20000.0, 0.0, 0.0);
+  V e_t_u_y = ev.vector_api.vector(0.0, 0.0, 20000.0);
+  PTS e_t_pts = ev.points_api.random_plane(e_t_pos, e_t_u_x, e_t_u_y, 20);
+  PTA e_instances = ev.points_api.prepare(e_t_pts);
+
+  
 
 
   PT center1 = ev.point_api.point(0.0,0.0,0.0);
@@ -523,7 +602,10 @@ int main() {
   P p32_c = ev.polygon_api.from_polygon(p32_b, [&ev](int i, PT p1, PT p2, PT p3, PT p4) { return poly_func(i, p1,p2,p3,p4,ev); });
   P p32_d = ev.polygon_api.color_faces(p32_c, 0xff888888, 0xff444444, 0xff222222, 0xff666666);
 
-  P r32_d = ev.polygon_api.color(p32_a, 0xffff0000);
+  P r32_d0 = ev.polygon_api.color(p32_a, 0xffff0000);
+  P r32_d1 = ev.polygon_api.recalculate_normals(p32_a);
+  P r32_d2 = ev.polygon_api.color_from_normals(r32_d1);
+  P r32_d = ev.polygon_api.mix_color(r32_d0, r32_d2, 0.5);
 
   PolygonObj poly3(ev, r32_d, sh);
   poly3.prepare(true);
@@ -532,6 +614,9 @@ int main() {
   PolygonObj poly(ev, p32_a, sh);
   poly.prepare(true);
 
+  P en = enemy(ev);
+  PolygonObj enemy_obj(ev, en, sh2);
+  enemy_obj.prepare();
 
   P p31 = flower(ev);
   PolygonObj flo(ev, p31, sh2);
@@ -549,11 +634,13 @@ int main() {
   env.poly = &poly;
   env.poly2 = &poly2;
   env.poly3 = &poly3;
+  env.enemy_obj = &enemy_obj;
   env.flo = &flo;
   env.instances = instances;
 
   env.grass = &grass;
   env.t_instances = t_instances;
+  env.e_instances = e_instances;
   env.sky_o = &sky_o;
 
 #ifndef EMSCRIPTEN
