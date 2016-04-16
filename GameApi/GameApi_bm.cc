@@ -987,6 +987,40 @@ EXPORT GameApi::BM GameApi::BitmapApi::repeat_bitmap(BM orig, int xcount, int yc
   chandle2->bm = rep;
   return add_bitmap(e,chandle2);
 }
+int index_from_string(char c, std::string s);
+EXPORT GameApi::BM GameApi::BitmapApi::world_from_bitmap2(EveryApi &ev, 
+							  std::vector<BM> v,
+							  std::string filename,
+							  std::string chars,
+							  int dx, int dy,
+							  int ssx, int ssy)
+{
+  if (v.size()==0) return newbitmap(1,1);
+  char *array = new char[ssx*ssy];
+  std::ifstream ss(filename.c_str());
+  for(int i=0;i<ssx*ssy;i++)
+    {
+      ss >> array[i];
+    }
+  BM int_bm = ev.bitmap_api.newintbitmap(array, ssx, ssy, [&chars](char c) { return index_from_string(c,chars); });
+  int sx = size_x(int_bm);
+  int sy = size_y(int_bm);
+  BM current = newbitmap(sx*dx,sy*dy);
+  for(int y=0;y<sy;y++)
+    {
+      for(int x=0;x<sx;x++)
+	{
+	  int index = intvalue(int_bm, x,y);
+	  int s = v.size();
+	  if (index>=s) index=0;
+	  if (index<0) index=0;
+	  BM bm = v[index];
+	  current = blitbitmap(current, bm, x*dx, y*dy);
+	}
+    }
+  return current;
+
+}
 EXPORT GameApi::BM GameApi::BitmapApi::world_from_bitmap(std::function<BM(int)> f, BM int_bm, int dx, int dy)
 {
   int sx = size_x(int_bm);

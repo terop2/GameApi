@@ -3691,20 +3691,25 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P", "PT", "V", "V", "V" },
 			 { "", "(0.0,0.0,0.0)", "(1.0,0.0,0.0)", "(0.0,0.0,1.0)", "(0.0, 1.0,0.0)" },
 			 "P", "polygon_api", "reflection"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::subpoly_change,
+			 "subpoly_change",
+			 { "p", "p2", "o" },
+			 { "P", "P", "O" },
+			 { "", "", "" },
+			 "P", "polygon_api", "subpoly_change"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::memoize,
 			 "memoize",
 			 { "orig" },
 			 { "P" },
 			 { "" },
 			 "P", "polygon_api", "memoize"));
-#if 0
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::world_from_bitmap,
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, (GameApi::P (GameApi::PolygonApi::*)(GameApi::EveryApi&,std::vector<GameApi::P>,std::string,std::string,float,float,int,int))&GameApi::PolygonApi::world_from_bitmap,
 			 "world_from_bitmap",
-			 { "f", "int_bm", "dx", "dy", "max_c" },
-			 { "std::function<P(int c)>", "BM", "float", "float", "int" },
-			 { "", "", "100.0", "100.0", "1" },
+			 { "ev", "pieces", "filename", "chars", "dx", "dy", "sx", "sy" },
+			 { "EveryApi&", "[P]", "std::string", "std::string", "float", "float", "int", "int" },
+			 { "ev", "", "map.txt", ".0123456789", "100.0", "100.0", "5", "5" },
 			 "P", "polygon_api", "world_from_bitmap"));
-#endif
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::from_points,
 			 "from_points",
@@ -4238,6 +4243,14 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "int", "int", "int", "int", "unsigned int", "unsigned int" },
 			 { "10", "10", "8", "8", "ffffffff", "ff888888" },
 			 "BM", "bitmap_api", "chessboard"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::world_from_bitmap2,
+			 "bm_world_from_bitmap",
+			 { "ev", "v", "filename", "chars", "dx", "dy", "sx", "sy" },
+			 { "EveryApi&", "[BM]", "std::string", "std::string", "int", "int", "int", "int" },
+			 { "ev", "", "map.txt", ".01234567", "100", "100", "5", "5" },
+			 "BM", "bitmap_api", "world_from_bitmap2"));
+
  
   vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::create_vertex_array,
 			 "bm_prepare",
