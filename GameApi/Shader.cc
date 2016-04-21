@@ -402,7 +402,7 @@ ShaderFile::ShaderFile()
 "uniform mat4 in_N;\n"
 "uniform float in_POS;\n"
 "uniform float in_time;\n"
-"uniform vec3 in_InstPos;\n"
+"attribute vec3 in_InstPos;\n"
 "attribute vec3 in_Position;\n"
 "attribute vec3 in_Position2;\n"
 "attribute vec3 in_Normal;\n"

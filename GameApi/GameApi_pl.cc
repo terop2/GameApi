@@ -2616,8 +2616,54 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
     }
 }
 
-EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(VA va, PTA pta)
+EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi, VA va, PTA pta, SH sh)
 {
+#if 0
+  VertexArraySet *s = find_vertex_array(e, va);
+  RenderVertexArray *rend = find_vertex_array_render(e, va);
+  PointArray3 *arr = find_point_array3(e, pta);
+
+  
+  int ss = arr->numpoints;
+  for(int i=0;i<ss;i++)
+    {
+      float x = arr->array[i*3];
+      float y = arr->array[i*3+1];
+      float z = arr->array[i*3+2];
+      shapi.set_var(sh, "in_InstPos", x,y,z);
+
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  if (s->texture_id!=-1 && s->texture_id<SPECIAL_TEX_ID)
+    {
+      TextureEnable(*env->renders[s->texture_id], 0, true);
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(0);
+      TextureEnable(*env->renders[s->texture_id], 0, false);
+    }
+  else if (s->texture_id!=-1)
+    {
+      glEnable(GL_TEXTURE_2D);
+#ifndef EMSCRIPTEN
+      glClientActiveTexture(GL_TEXTURE0+0);
+#endif
+      glActiveTexture(GL_TEXTURE0+0);
+      glBindTexture(GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(0);
+
+      glDisable(GL_TEXTURE_2D);
+    }
+  else
+    {
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(0);
+    }
+    }
+#else
   VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
   PointArray3 *arr = find_point_array3(e, pta);
@@ -2653,6 +2699,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(VA va, PTA pta)
       rend->render_instanced(0, (Point*)arr->array, arr->numpoints);
       //rend->render(0);
     }
+#endif
 }
 
 

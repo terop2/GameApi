@@ -21,8 +21,13 @@ struct Envi {
   PTA e_instances;
   float pos_x=-0.124, pos_y=755.0;
   float rot_y=-5.58;
+#ifndef EMSCRIPTEN
   float speed = 60.0;
   float rot_speed = 2.0*3.14159*2.0/360.0;
+#else
+  float speed = 60.0*2.0;
+  float rot_speed = 2.0*2.0*3.14159*2.0/360.0;
+#endif
   float speed_x = 1.0;
   float speed_y = 1.0;
   InteractionApi::Quake_data data;
@@ -420,11 +425,11 @@ void iter(void *arg)
       { // backward
 	env->backward = false;
       }
-    if ((e.ch&0xff)==' ' && e.type==0x300)
+    if (((e.ch&0xff)==' '||(e.ch&0xff)==44) && e.type==0x300)
       {
 	env->space = true;
       }
-    if ((e.ch&0xff)==' ' && e.type==0x301)
+    if (((e.ch&0xff)==' '||(e.ch&0xff)==44) && e.type==0x301)
       {
 	env->space = false;
       }
@@ -607,26 +612,41 @@ int main() {
   P r32_d2 = ev.polygon_api.color_from_normals(r32_d1);
   P r32_d = ev.polygon_api.mix_color(r32_d0, r32_d2, 0.5);
 
+  std::cout << "BEE (red): " << std::endl;
+  ev.polygon_api.print_stat(r32_d);
   PolygonObj poly3(ev, r32_d, sh);
   poly3.prepare(true);
+  std::cout << "BEE (metal): " << std::endl;
+  ev.polygon_api.print_stat(p32_d);
   PolygonObj poly2(ev, p32_d, sh);
   poly2.prepare(true);
+  std::cout << "BEE: " << std::endl;
+  ev.polygon_api.print_stat(p32_a);
   PolygonObj poly(ev, p32_a, sh);
   poly.prepare(true);
 
   P en = enemy(ev);
+  std::cout << "Enemy: " << std::endl;
+  ev.polygon_api.print_stat(en);
   PolygonObj enemy_obj(ev, en, sh2);
   enemy_obj.prepare();
 
   P p31 = flower(ev);
+  std::cout << "Flower: " << std::endl;
+  ev.polygon_api.print_stat(p31);
+
   PolygonObj flo(ev, p31, sh2);
   flo.prepare();
 
+  std::cout << "Grass: " << std::endl;
+  ev.polygon_api.print_stat(tri_c2);
   PolygonObj grass(ev, tri_c2, sh2);
   grass.prepare();
 
   P sky_p = sky(ev);
 
+  std::cout << "SKY: " << std::endl;
+  ev.polygon_api.print_stat(sky_p);
   PolygonObj sky_o(ev, sky_p, sh);  
   sky_o.prepare();
 
@@ -649,7 +669,7 @@ int main() {
     //ev.mainloop_api.delay(10);
   }
 #else
-  emscripten_set_main_loop_arg(iter, (void*)&env, 60,1);
+  emscripten_set_main_loop_arg(iter, (void*)&env, 30,1);
 #endif
 
 
