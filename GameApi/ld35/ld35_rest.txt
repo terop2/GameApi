@@ -1,0 +1,69 @@
+test
+
+
+(142,103)sphere_bo uid5111 ev:ev center:uid5112 radius:200 numfaces1:30 numfaces2:30
+(18,103)point uid5112 x:0.0 y:0.0 z:0.0
+(155,222)cube_bo uid5113 ev:ev start_x:-200 end_x:200 start_y:30 end_y:60 start_z:-200 end_z:200 split_x:18 split_y:18
+(297,150)intersect_bo uid5114 ev:ev obj:uid5111 obj2:uid5113
+(478,146)to_poly uid5116 ev:ev obj:uid5114
+(608,147)rotatex uid5117 orig:uid5116 angle:1.57
+(746,144)scale uid5787 orig:uid5117 sx:1 sy:1.7 sz:1
+(1007,61)rotatez uid5788 orig:uid5789 angle:1
+(873,149)translate uid5789 orig:uid5787 dx:0 dy:-300 dz:0
+(1123,196)p_or_elem uid5790 p1:uid5788 p2:uid5789
+(1150,56)rotatez uid5791 orig:uid5788 angle:1
+(1277,145)p_or_elem uid5792 p1:uid5791 p2:uid5790
+(1296,25)rotatez uid5793 orig:uid5791 angle:1
+(1429,214)p_or_elem uid5794 p1:uid5793 p2:uid5792
+(1450,48)rotatez uid5795 orig:uid5793 angle:1
+(1587,206)p_or_elem uid5796 p1:uid5795 p2:uid5794
+(1600,42)rotatez uid5797 orig:uid5795 angle:1
+(1756,109)p_or_elem uid5798 p1:uid5797 p2:uid5796
+(1912,104)color_faces uid5801 orig:uid5798 color_1:ffffffff color_2:ffffffff color_3:ff888888 color_4:ff888888
+(1801,278)color_faces uid5803 orig:uid5117 color_1:ffffff00 color_2:ffffff00 color_3:ff888800 color_4:ff888800
+(2072,187)p_or_elem uid5804 p1:uid5801 p2:uid5805
+(1954,264)translate uid5805 orig:uid5803 dx:0 dy:0 dz:20
+(750,302)color_faces uid9602 orig:uid5117 color_1:ff008800 color_2:ff008800 color_3:ff004400 color_4:ff004400
+(911,352)scale uid9603 orig:uid9602 sx:1 sy:1.8 sz:1
+(1045,375)translate uid9604 orig:uid9603 dx:0 dy:300 dz:0
+(1188,373)rotatez uid9605 orig:uid9604 angle:-1
+(1189,485)rotatez uid9606 orig:uid9604 angle:1
+(1364,429)p_or_elem uid9607 p1:uid9605 p2:uid9606
+(912,689)cone uid9608 numfaces:30 p1:uid9609 p2:uid9610 radius1:60 radius2:60
+(739,637)point uid9609 x:0 y:-800 z:0
+(752,744)point uid9610 x:0 y:800 z:0
+(1052,679)color_faces uid9611 orig:uid9608 color_1:ff008800 color_2:ff008800 color_3:ff004400 color_4:ff004400
+(1504,500)p_or_elem uid9612 p1:uid9607 p2:uid9613
+(1267,639)translate uid9613 orig:uid9611 dx:0 dy:800 dz:0
+(1931,430)translate uid9614 orig:uid9612 dx:0 dy:-1600 dz:0
+(2236,231)p_or_elem uid9615 p1:uid5804 p2:uid9614
+(169,637)sphere uid32562 center:uid32563 radius:1000 numfaces1:30 numfaces2:30
+(21,636)point uid32563 x:0.0 y:0.0 z:0.0
+(314,632)color uid32564 orig:uid32562 color:ff4488ff
+(320,748)color uid32565 orig:uid32562 color:ff884422
+(323,863)o_cube uid32566 start_x:-2000 end_x:2000 start_y:0 end_y:1000 start_z:-2000 end_z:2000
+(479,675)subpoly_change uid32567 p:uid32565 p2:uid32564 o:uid32566
+(152,1350)sphere_bo uid2624 ev:ev center:uid2625 radius:100 numfaces1:30 numfaces2:30
+(30,1347)point uid2625 x:0.0 y:0.0 z:0.0
+(157,1480)cube_bo uid2626 ev:ev start_x:-100 end_x:100 start_y:0 end_y:100 start_z:-100 end_z:100 split_x:18 split_y:18
+(290,1390)and_not_bo uid2627 ev:ev obj:uid2624 not_obj:uid2626
+(449,1370)to_poly uid2628 ev:ev obj:uid2627
+(573,1370)scale uid2629 orig:uid2628 sx:1 sy:-1 sz:1
+(709,1296)color_faces uid2630 orig:uid2629 color_1:ffff0000 color_2:ffff0000 color_3:ff880000 color_4:ff880000
+(636,1499)translate uid2631 orig:uid2629 dx:0 dy:0 dz:-200
+(763,1496)color_faces uid2632 orig:uid2631 color_1:ff000000 color_2:ff000000 color_3:ff010101 color_4:ff010101
+(1004,1356)p_or_elem uid2633 p1:uid2638 p2:uid2634
+(899,1470)scale uid2634 orig:uid2632 sx:0.5 sy:0.5 sz:0.5
+(704,1184)color_faces uid2635 orig:uid2629 color_1:ff000000 color_2:ff000000 color_3:ff010101 color_4:ff010101
+(691,871)o_sphere uid2636 center:uid2637 radius:30
+(541,864)point uid2637 x:-100 y:40 z:0
+(929,1101)subpoly_change uid2638 p:uid2630 p2:uid2635 o:uid2644
+(693,980)o_sphere uid2639 center:uid2641 radius:30
+(693,1079)o_sphere uid2640 center:uid2642 radius:30
+(547,977)point uid2641 x:0 y:40 z:-100
+(546,1091)point uid2642 x:0 y:40 z:100
+(828,903)o_maxop uid2643 object1:uid2636 object2:uid2639
+(967,953)o_maxop uid2644 object1:uid2647 object2:uid2640
+(412,1008)o_sphere uid2645 center:uid2646 radius:30
+(272,1005)point uid2646 x:100 y:40 z:0
+(940,833)o_maxop uid2647 object1:uid2643 object2:uid2645

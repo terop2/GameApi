@@ -1,0 +1,40 @@
+test
+
+
+(149,137)sphere uid21604 center:uid21605 radius:100 numfaces1:60 numfaces2:60
+(12,138)point uid21605 x:0.0 y:0.0 z:0.0
+(274,134)scale uid21606 orig:uid21604 sx:2 sy:2.6 sz:2
+(408,126)color_faces uid21607 orig:uid21606 color_1:ffffff00 color_2:ffffff00 color_3:ff888800 color_4:ff888800
+(403,245)color_faces uid21608 orig:uid21606 color_1:ff000000 color_2:ff000000 color_3:ff010101 color_4:ff010101
+(30,267)o_cube uid21609 start_x:-300 end_x:300 start_y:-200 end_y:-150 start_z:-300 end_z:300
+(31,372)o_cube uid21610 start_x:-300 end_x:300 start_y:-100 end_y:-50 start_z:-300 end_z:300
+(32,481)o_cube uid21611 start_x:-300 end_x:300 start_y:0 end_y:50 start_z:-300 end_z:300
+(41,587)o_cube uid21613 start_x:-300 end_x:300 start_y:100 end_y:150 start_z:-300 end_z:300
+(575,249)subpoly_change uid21617 p:uid21607 p2:uid21608 o:uid21623
+(194,327)o_maxop uid21621 object1:uid21609 object2:uid21610
+(202,474)o_maxop uid21622 object1:uid21611 object2:uid21613
+(376,395)o_maxop uid21623 object1:uid21621 object2:uid21622
+(637,18)sphere uid21624 center:uid21625 radius:150 numfaces1:30 numfaces2:30
+(488,7)point uid21625 x:0 y:220 z:0
+(927,264)p_or_elem uid21626 p1:uid21627 p2:uid21617
+(774,26)color_faces uid21627 orig:uid21624 color_1:ffffff00 color_2:ffffff00 color_3:ff888800 color_4:ff888800
+(1100,10)sphere uid21628 center:uid21630 radius:70 numfaces1:30 numfaces2:30
+(1094,128)sphere uid21629 center:uid21631 radius:70 numfaces1:30 numfaces2:30
+(960,18)point uid21630 x:-80 y:300 z:30
+(947,126)point uid21631 x:80 y:300 z:30
+(1229,68)p_or_elem uid21632 p1:uid21628 p2:uid21629
+(1450,129)p_or_elem uid21633 p1:uid21634 p2:uid21626
+(1354,14)color_faces uid21634 orig:uid21632 color_1:ff000000 color_2:ff000000 color_3:ff010101 color_4:ff010101
+(125,816)sphere_bo uid21635 ev:ev center:uid21636 radius:100.0 numfaces1:30 numfaces2:30
+(11,809)point uid21636 x:0.0 y:0.0 z:0.0
+(126,940)cube_bo uid21637 ev:ev start_x:-100 end_x:100 start_y:-100 end_y:100 start_z:-15 end_z:15 split_x:18 split_y:18
+(263,865)intersect_bo uid21638 ev:ev obj:uid21635 obj2:uid21637
+(442,864)to_poly uid21639 ev:ev obj:uid21638
+(590,862)scale uid21640 orig:uid21639 sx:2 sy:4 sz:2
+(730,858)color uid21641 orig:uid21640 color:22ffffff
+(884,787)translate uid21642 orig:uid21641 dx:200 dy:0 dz:0
+(1342,308)p_or_elem uid21643 p1:uid21642 p2:uid21644
+(899,898)translate uid21644 orig:uid21641 dx:-200 dy:0 dz:0
+(1696,143)p_or_elem uid21645 p1:uid21633 p2:uid21647
+(1477,282)translate uid21646 orig:uid21643 dx:0 dy:-200 dz:250
+(1605,255)scale uid21647 orig:uid21646 sx:0.6 sy:0.6 sz:0.6
