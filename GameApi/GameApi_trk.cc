@@ -189,11 +189,28 @@ void GameApi::TrackerApi::play_mp3(std::string filename)
 {
   Mix_Init(MIX_INIT_MP3);
   Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
+#ifndef EMSCRIPTEN
   int c = Mix_GetNumMusicDecoders();
   for(int i=0;i<c;i++)
     {
       Mix_GetMusicDecoder(i);
     }
+#endif
+  Mix_Music *mus = Mix_LoadMUS(filename.c_str());
+  Mix_PlayMusic(mus, 1);
+}
+
+void GameApi::TrackerApi::play_ogg(std::string filename)
+{
+  Mix_Init(MIX_INIT_OGG);
+  Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
+#ifndef EMSCRIPTEN
+  int c = Mix_GetNumMusicDecoders();
+  for(int i=0;i<c;i++)
+    {
+      Mix_GetMusicDecoder(i);
+    }
+#endif
   Mix_Music *mus = Mix_LoadMUS(filename.c_str());
   Mix_PlayMusic(mus, 1);
 }

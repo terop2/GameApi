@@ -562,8 +562,8 @@ int main() {
   ev.mainloop_api.init_3d(sh2);
   ev.mainloop_api.alpha(true);
 
-#if 0
-  ev.tracker_api.play_mp3(".\\bee.mp3");
+#if 1
+  ev.tracker_api.play_ogg("bee.ogg");
 #endif
 
 
