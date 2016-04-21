@@ -43,7 +43,7 @@ void iter(void *arg)
     while((e = env->ev->mainloop_api.get_event()).last==true)
       {
 #ifndef EMSCRIPTEN
-    if (e.ch==27) { exit(0); }
+	if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif
 
     InteractionApi::quake_movement(e, env->pos_x, env->pos_y, env->rot_y,

@@ -384,7 +384,7 @@ void iter(void *arg)
 	  {
 	  }
 #ifndef EMSCRIPTEN
-    if (e.ch==27) { exit(0); }
+    if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif
     float bee_move_speed = 50.0;
     if ((e.ch&0xff)==0x4f && e.type==0x300)
@@ -557,8 +557,8 @@ int main() {
   ev.mainloop_api.init_3d(sh2);
   ev.mainloop_api.alpha(true);
 
-#if 1
-  ev.tracker_api.play_mp3(".\\[Free-scores.com]_rimsky-korsakov-nikolai-flight-the-bumblebee-679.mp3");
+#if 0
+  ev.tracker_api.play_mp3(".\\bee.mp3");
 #endif
 
 

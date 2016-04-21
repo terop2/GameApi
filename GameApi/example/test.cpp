@@ -83,7 +83,7 @@ int main() {
     MainLoopApi::Event e;
     while((e = ev.mainloop_api.get_event()).last==true)
       {
-	if (e.ch==27) break;
+	if (e.ch==27 && e.type==0x300) break;
       }
   }
 }
