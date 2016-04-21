@@ -1545,6 +1545,7 @@ public:
   IMPORT TBUF prepare(TRK trk);
   IMPORT void play_song(EveryApi &ev, TBUF buf, WAV samples, int framenum, int speed);
   IMPORT void play_mp3(std::string filename);
+  IMPORT void play_ogg(std::string filename);
 private:
   Env &e;
 };
