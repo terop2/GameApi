@@ -618,21 +618,30 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
   // INSTANCED DRAWING
   glBindBuffer( GL_ARRAY_BUFFER, pos_buffer );
   glBufferData( GL_ARRAY_BUFFER, sizeof(Point) * size, positions, GL_DYNAMIC_DRAW);
+
   glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glVertexAttribDivisor(5, 1);
   glEnableVertexAttribArray(5);
+
   // END INSTANCED
 
+  glVertexAttribDivisor(0, 0);
+  glVertexAttribDivisor(1, 0);
+  glVertexAttribDivisor(2, 0);
+  glVertexAttribDivisor(3, 0);
+  glVertexAttribDivisor(4, 0);
+
+
 #ifndef VAO
-    glBindBuffer(GL_ARRAY_BUFFER, buffers2[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, buffers2[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, buffers2[2]);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
     glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, buffers2[3]);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[3]);
     glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, buffers2[4]);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[4]);
     glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 #endif
@@ -645,8 +654,11 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
     glEnableVertexAttribArray(4);
 #endif
 
+    if (tri_count && size) {
+      glDrawArraysInstanced(GL_TRIANGLES, 0, tri_count, size);
+      //std::cout << "InstancingTRI: " << tri_count << " " << size << std::endl;
+    }
 
-    glDrawArraysInstanced(GL_TRIANGLES, 0, tri_count, size);
 #if 1
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
@@ -668,6 +680,12 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
   glEnableVertexAttribArray(5);
   // END INSTANCED
 
+  glVertexAttribDivisor(0, 0);
+  glVertexAttribDivisor(1, 0);
+  glVertexAttribDivisor(2, 0);
+  glVertexAttribDivisor(3, 0);
+  glVertexAttribDivisor(4, 0);
+
 
 #ifndef VAO
     glBindBuffer(GL_ARRAY_BUFFER, buffers2[0]);
@@ -690,7 +708,10 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
     glEnableVertexAttribArray(3);
     glEnableVertexAttribArray(4);
 #endif
-    glDrawArraysInstanced(GL_TRIANGLES, 0, quad_count, size);
+    if (quad_count && size) {
+      glDrawArraysInstanced(GL_TRIANGLES, 0, quad_count, size);
+      //std::cout << "InstancingQUAD: " << quad_count << " " << size << std::endl;
+    }
 #if 1
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
@@ -702,6 +723,7 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
 #ifdef VAO
     glBindVertexArray(0);
 #endif
+
 
 }
 void RenderVertexArray::render(int id)

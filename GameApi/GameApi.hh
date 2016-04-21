@@ -20,6 +20,8 @@ using std::placeholders::_7;
 using std::placeholders::_8;
 using std::placeholders::_9;
 
+  class ShaderApi;
+
 #undef rad1
 #undef rad2
 
@@ -1431,7 +1433,7 @@ public:
   IMPORT ML update_vertex_array_ml(VA va, P p, bool keep=false);
   IMPORT VA create_vertex_array(P p, bool keep=false); // slow
   IMPORT void render_vertex_array(VA va); // fast
-  IMPORT void render_vertex_array_instanced(VA va, PTA pta); // fast
+  IMPORT void render_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh); // fast
   IMPORT ML render_vertex_array_ml(VA va);
   IMPORT void explode(VA va, PT pos, float dist);
   //IMPORT int access_point_count(VA va, bool triangle);
@@ -2674,7 +2676,7 @@ private:
       shapi.set_var(sh, "in_N", normal_matrix); 
       //shapi.set_var(sh, "in_T", m2);
       shapi.set_var(sh, "in_POS", anim_time);
-      api.render_vertex_array_instanced(m_va2[anim_id], pta); 
+      api.render_vertex_array_instanced(shapi, m_va2[anim_id], pta, sh); 
       shapi.set_var(sh, "in_POS", 0.0f);
     }
     void set_pos(float pos_x, float pos_y, float pos_z)

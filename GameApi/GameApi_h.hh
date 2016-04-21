@@ -114,9 +114,11 @@ struct MainLoopPriv
   unsigned int avg_time;
   int count;
   int frame;
+#ifndef EMSCRIPTEN
   std::map<std::string, std::chrono::high_resolution_clock::duration > profile_sums;
   std::map<std::string, int> profile_count;
   std::map<std::string, std::chrono::time_point<std::chrono::high_resolution_clock> > profile_start_time;
+#endif
 };
 
 struct ShaderPriv2

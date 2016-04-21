@@ -76,6 +76,7 @@ EXPORT unsigned int GameApi::MainLoopApi::random()
 }
 EXPORT void GameApi::MainLoopApi::profile(std::string label, bool start)
 {
+#ifndef EMSCRIPTEN
   MainLoopPriv *p = (MainLoopPriv*)priv;
   std::chrono::time_point<std::chrono::high_resolution_clock> time;
   time = std::chrono::system_clock::now();
@@ -99,9 +100,11 @@ EXPORT void GameApi::MainLoopApi::profile(std::string label, bool start)
       p->profile_count[label]++;
       p->profile_sums[label]+=count;
     }
+#endif
 }
 EXPORT void GameApi::MainLoopApi::print_profile()
 {
+#ifndef EMSCRIPTEN
   MainLoopPriv *p = (MainLoopPriv*)priv;
   auto i1 = p->profile_sums.begin();
   auto i2 = p->profile_count.begin();
@@ -114,6 +117,7 @@ EXPORT void GameApi::MainLoopApi::print_profile()
       i2++;
       if (i1==p->profile_sums.end()) break;
     }
+#endif
 }
 EXPORT void GameApi::MainLoopApi::fpscounter()
 {
