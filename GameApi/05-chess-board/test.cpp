@@ -1016,13 +1016,25 @@ void iter()
     //x1/=800.0;
     //y1/=600.0;
 
-    //env.board_obj->pick_object1(x1,
-    //				y1,
-    //				xxx,yyy,zzz);
+#if 0
+    env.board_obj->pick_object2(x1,
+    				y1, 800,600,
+    				xxx,yyy,zzz);
+    std::cout << xxx << " " << yyy << " " << zzz << std::endl;
+    xxx = 8+xxx;
+    yyy = (8+yyy);
     //xxx/=200.0;
     //yyy/=200.0;
     //zzz/=200.0;
+	if (xxx<0) xxx= 0;
+	if (xxx>7) xxx= 7;
+	if (yyy<0) yyy= 0;
+	if (yyy>7) yyy= 7;
+	env.cursor_x = xxx;
+	env.cursor_y = yyy;
     //env.cursor->set_pos(xxx,yyy, zzz);
+#endif
+#if 1
     if (x1>0.01&&y1>0.01 && (e.type==0x400||e.type==0x700))
       {
 	xxx = x1;
@@ -1061,7 +1073,7 @@ void iter()
 	env.cursor_x = xx;
 	env.cursor_y = yy;
       }
-    
+#endif    
      if (e.ch==27&&e.type==0x300) { 
 #ifndef EMSCRIPTEN
        exit(0); 

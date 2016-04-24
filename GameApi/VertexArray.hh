@@ -14,6 +14,8 @@ class VertexArraySet
 public:
   int texture_id;
   int bm_id;
+  bool is_texture() { return texture_id!=-1; }
+  bool is_array_texture() { return texture_id>= 700000; }
   VertexArraySet() : texture_id(-1) { }
   VertexArraySet(const VertexArraySet &s)
   {
@@ -36,7 +38,7 @@ public:
   void push_attrib(int id, int attrib_id, int num, float *attribs);
   void push_attribi(int id, int attrib_id, int num, int *attribi);
   void push_color(int id, int num, unsigned int *colors);
-  void push_texcoord(int id, int num, Point2d *points);
+  void push_texcoord(int id, int num, Point *points);
 
   void split_color(std::vector<float> &vec, unsigned int color);
 
@@ -95,18 +97,19 @@ public:
 #endif
 
   int tri_texcoord_count(int id) const { return m_set[id]->tri_texcoord.size(); }
-  Point2d *tri_texcoord_polys(int id) { return tri_texcoord_count(id) ? &m_set[id]->tri_texcoord[0] : NULL; }
+  Point *tri_texcoord_polys(int id) { return tri_texcoord_count(id) ? &m_set[id]->tri_texcoord[0] : NULL; }
   int quad_texcoord_count(int id) const { return m_set[id]->quad_texcoord.size(); }
-  Point2d *quad_texcoord_polys(int id) { return quad_texcoord_count(id) ? &m_set[id]->quad_texcoord[0] : NULL; }
+  Point *quad_texcoord_polys(int id) { return quad_texcoord_count(id) ? &m_set[id]->quad_texcoord[0] : NULL; }
 #if 0
   int poly_texcoord_count(int id) const { return m_set[id]->poly_texcoord.size(); }
   int poly2_texcoord_count(int id, int i) const { return m_set[id]->poly_texcoord[i].size(); }
-  const Point2d *poly_texcoord_polys(int id, int i) const { return poly2_texcoord_count(id,i) ? &m_set[id]->poly_texcoord[i][0] : NULL; }
+  const Point *poly_texcoord_polys(int id, int i) const { return poly2_texcoord_count(id,i) ? &m_set[id]->poly_texcoord[i][0] : NULL; }
 #endif  
 
   void check_m_set(int id);
   void free_memory();  
   void explode(int id, Point p, float dist);
+  void print_stat(int id);
 public:
   struct Polys {
     std::vector<Point> tri_polys;
@@ -119,8 +122,8 @@ public:
 
     std::vector<float> tri_color;
     std::vector<float> quad_color;
-    std::vector<Point2d> tri_texcoord;
-    std::vector<Point2d> quad_texcoord;
+    std::vector<Point> tri_texcoord;
+    std::vector<Point> quad_texcoord;
   };
 public:
   static void append_to_polys(VertexArraySet::Polys &target, const VertexArraySet::Polys &source);
@@ -217,7 +220,9 @@ public:
 	    //std::cout << "COL!" << i << std::endl;
 	    c[j] = coll.Color(i,j);
 	    //std::cout << "Tex!" << i << std::endl;
-	    tex[j] = coll.TexCoord(i,j);
+	    Point2d p = coll.TexCoord(i,j);
+	    float p2 = coll.TexCoord3(i,j);
+	    tex[j] = Point(p.x,p.y,p2);
 	    //std::cout << "VA: " << tex[j] << std::endl;
 	  }
 	//std::cout << "push_p!" << i << std::endl;
@@ -251,7 +256,7 @@ private:
   int ai[30][200];
 #endif
   unsigned int c[200];
-  Point2d tex[200];
+  Point tex[200];
 
   const FaceCollection &coll;
   VertexArraySet &s;

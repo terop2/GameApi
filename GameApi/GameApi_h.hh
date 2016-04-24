@@ -60,6 +60,7 @@
 #include "Parser.hh"
 
 #define SPECIAL_TEX_ID 600000
+#define SPECIAL_TEX_IDA 700000
 
 std::string unique_id();
 

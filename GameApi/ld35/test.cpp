@@ -663,6 +663,7 @@ int main() {
   env.e_instances = e_instances;
   env.sky_o = &sky_o;
 
+
 #ifndef EMSCRIPTEN
   while(1) {
     iter(&env);

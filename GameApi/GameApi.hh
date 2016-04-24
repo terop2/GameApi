@@ -89,6 +89,7 @@ using std::placeholders::_9;
   struct PLA { int id; }; // planearray
   struct TX { int id; }; // texture
   struct TXID { int id; }; // texture id
+  struct TXA { int id; }; // texture array id
   struct TR { int id; }; // time range
   struct VV { int id; }; // time range vertex array
   struct Q { int id; }; // quad texture coordinates
@@ -274,6 +275,8 @@ public:
 	IMPORT void use(TXID tx, int i = 0);
 	IMPORT void unuse(TXID tx);
 	IMPORT VA bind(VA va, TXID tx);
+	IMPORT VA bind_arr(VA va, TXA tx);
+        IMPORT TXA prepare_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
 private:
   TextureApi(const TextureApi&);
   void operator=(const TextureApi&);
@@ -326,6 +329,7 @@ public:
 	IMPORT BM interpolate_bitmap(BM orig1, BM orig2, float x); // x=[0..1]
 	IMPORT BM repeat_bitmap(BM orig, int xcount, int ycount);
 	IMPORT BM sample_bitmap(BM orig, float xmult, float ymult, float x, float y);
+  IMPORT BM scale_bitmap(EveryApi &ev, BM orig, int sx, int sy);
         IMPORT BM world_from_bitmap(std::function<BM(int)> f, BM int_bm, int dx, int dy);
   IMPORT BM world_from_bitmap2(EveryApi &ev, std::vector<BM> v, std::string filename, std::string chars, int dx, int dy, int sx, int sy);
         IMPORT BM dup_x(BM orig);
@@ -1256,6 +1260,7 @@ public:
 	IMPORT ~PolygonApi();
   
   IMPORT void print_stat(P p);
+  IMPORT void print_stat(VA p);
 	IMPORT P empty();
         IMPORT P load_model(std::string filename, int obj_num);
         IMPORT void save_model(P poly, std::string filename);
@@ -1328,6 +1333,7 @@ public:
   IMPORT P texcoord_cube(P orig,
 		  PT o, PT u_x, PT u_y, PT u_z,  // these are 3d
 		  PT tex_o, PT tex_x, PT tex_y, PT tex_z); // tex_* are 2d
+  IMPORT P texcoord_default(P orig);
   IMPORT P texcoord_manual(P orig, float p1_x, float p1_y,
 			   float p2_x, float p2_y,
 			   float p3_x, float p3_y,
@@ -1345,6 +1351,7 @@ public:
   IMPORT P color_range(P orig, unsigned int upper_range, unsigned int lower_range);
 
   IMPORT P texcoord_poly(P orig, int facenum, PT *array, int size);
+  IMPORT P choose_texture(P orig, int num);
   IMPORT P color_poly(P orig, int facenum, unsigned int *array, int size);
 
   IMPORT P quads_to_triangles(P p);
@@ -1428,6 +1435,8 @@ public:
   IMPORT void prepare(P p, int bbm_choose = -1);
   IMPORT void render(P p, int choose, float x, float y, float z);
   IMPORT void update(VA va);
+  IMPORT bool is_texture(VA va);
+  IMPORT bool is_array_texture(VA va);
 
   IMPORT void update_vertex_array(VA va, P p, bool keep=false);
   IMPORT ML update_vertex_array_ml(VA va, P p, bool keep=false);
@@ -2088,6 +2097,7 @@ public:
   SH get_normal_shader_1(std::string v_format, std::string f_format, std::string g_format,
 			 std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod = { -1 });
   IMPORT SH texture_shader();
+  IMPORT SH texture_array_shader();
   IMPORT SH colour_shader();
   IMPORT SH colour_texture_shader();
   IMPORT void link(SH shader);
@@ -2614,6 +2624,7 @@ private:
       //va.id = 0;
       anim_id = 0;
       anim_time = 0.0;
+      txa_id.id = 0;
     }
 
     PolygonObj(EveryApi &ev, std::vector<P> anim_p, SH sh) : api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), sh(sh) 
@@ -2657,7 +2668,11 @@ private:
 	  if (id[i].id!=0) {
 	    va2 = tex.bind(va, id[i]);
 	  } else {
-	    va2 = va;
+	    if (txa_id.id!=0) {
+	      va2 = tex.bind_arr(va, txa_id);
+	    }
+	    else
+	      va2 = va;
 	  }
 	  m_va2.push_back(va2);
 	}
@@ -2709,6 +2724,10 @@ private:
     {
       id[anim_id] = id_;
     }
+    void bind_texarray(TXA id)
+    {
+      txa_id = id;
+    }
     void set_anim_frame(int id)
     {
       if (id>=0&&id<(int)m_va2.size())
@@ -2746,6 +2765,7 @@ private:
     //VA va;
     std::vector<VA> m_va2;
     std::vector<TXID> id;
+    TXA txa_id;
     int anim_id;
     float anim_time;
   };
@@ -2784,6 +2804,7 @@ private:
       //id.id = 0;
       //va.id = 0;
       anim_id = 0;
+      txa_id.id = 0;
     }
     ~WorldObj() { delete [] bitmap; }
     void set_block(int x, int y, int c) { 
@@ -2810,7 +2831,12 @@ private:
 	  if (id[i].id!=0) {
 	    va2 = tex.bind(va, id[i]);
 	  } else {
-	    va2 = va;
+	    if (txa_id.id!=0)
+	      {
+		va2 = tex.bind_arr(va, txa_id);
+	      }
+	    else
+	      va2 = va;
 	  }
 	  m_va2[i] = va2;
 	}
@@ -2880,6 +2906,10 @@ private:
     {
       id[num_id] = id_;
     }
+    void bind_texarray(TXA id)
+    {
+      txa_id = id;
+    }
     void set_anim_frame(int id)
     {
       if (id>=0&&id<(int)m_va2.size())
@@ -2934,6 +2964,7 @@ private:
     //std::vector<VA> m_va2;
     std::map<int, VA> m_va2;
     std::vector<TXID> id;
+    TXA txa_id;
     int anim_id;
   };
 

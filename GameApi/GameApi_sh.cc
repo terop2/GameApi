@@ -56,6 +56,10 @@ EXPORT GameApi::SH GameApi::ShaderApi::texture_shader()
 {
   return get_normal_shader_1("comb", "comb", "", "texture:light:light", "texture:light:light");
 }
+EXPORT GameApi::SH GameApi::ShaderApi::texture_array_shader()
+{
+  return get_normal_shader_1("comb", "comb", "", "texture_arr:light:light", "texture_arr:light:light");
+}
 
 EXPORT GameApi::SH GameApi::ShaderApi::colour_shader()
 {

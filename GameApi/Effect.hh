@@ -2977,6 +2977,7 @@ public:
   virtual int AttribI(int face, int point, int id) const=0;
   virtual unsigned int Color(int face, int point) const=0;
   virtual Point2d TexCoord(int face, int point) const=0;
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
 
   virtual Point EndFacePoint(int face, int point) const { return FacePoint(face, point); }
   virtual Vector EndPointNormal(int face, int point) const { return PointNormal(face,point); }
@@ -2984,6 +2985,7 @@ public:
   virtual int EndAttribI(int face, int point, int id) const { return AttribI(face,point,id); }
   virtual unsigned int EndColor(int face, int point) const { return Color(face,point); }
   virtual Point2d EndTexCoord(int face, int point) const { return TexCoord(face,point); }
+  virtual float EndTexCoord3(int face, int point) const { return TexCoord3(face,point); }
 
   virtual float Duration() const { return 1.0; }
 
@@ -3025,6 +3027,7 @@ public:
   virtual int AttribI(int face, int point, int id) const { return coll.AttribI(face,point,id); }
   virtual unsigned int Color(int face, int point) const { return coll.Color(face,point); }
   virtual Point2d TexCoord(int face, int point) const { return coll.TexCoord(face,point); }
+  virtual float TexCoord3(int face, int point) const { return coll.TexCoord3(face,point); }
   virtual int NumTextures() const { return coll.NumTextures(); }
   virtual void GenTexture(int num) { coll.GenTexture(num); }
   virtual BufferRef TextureBuf(int num) const { return coll.TextureBuf(num); }
@@ -6275,7 +6278,10 @@ public:
   {
     return vec[faces_num[face]]->TexCoord(faces_cache[face],point);
   }
-
+  virtual float TexCoord3(int face, int point) const
+  {
+    return vec[faces_num[face]]->TexCoord3(faces_cache[face],point);
+  }
 
 
   virtual Vector PointNormal(int face, int point) const
