@@ -235,11 +235,11 @@ EXPORT void GameApi::SpriteApi::clipping_sprite(VA va, int sx, int sy, float tex
   Point pa2 = { float(sx), 0.0, 0.0 };
   Point pa3 = { float(sx), float(sy), 0.0 };
   Point pa4 = { 0.0, float(sy), 0.0 };
-  Point2d p1 = { tex_l, tex_t };
-  Point2d p2 = { tex_r, tex_t };
-  Point2d p3 = { tex_r, tex_b };
-  Point2d p4 = { tex_l, tex_b };
-  Point2d *ptr = s->tri_texcoord_polys(0);
+  Point p1 = { tex_l, tex_t,0.0 };
+  Point p2 = { tex_r, tex_t,0.0 };
+  Point p3 = { tex_r, tex_b,0.0 };
+  Point p4 = { tex_l, tex_b,0.0 };
+  Point *ptr = s->tri_texcoord_polys(0);
   Point *ptr2 = s->tri_polys(0);
   ptr2[0] = pa1;
   ptr2[1] = pa3;

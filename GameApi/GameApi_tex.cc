@@ -21,6 +21,15 @@ EXPORT GameApi::VA GameApi::TextureApi::bind(GameApi::VA va, GameApi::TXID tx)
   arr->prepare(0);
   return add_vertex_array(e, ns, arr);
 }
+EXPORT GameApi::VA GameApi::TextureApi::bind_arr(GameApi::VA va, GameApi::TXA tx)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  VertexArraySet *ns = new VertexArraySet(*s);
+  ns->texture_id = SPECIAL_TEX_IDA+tx.id;
+  RenderVertexArray *arr = new RenderVertexArray(*ns);
+  arr->prepare(0);
+  return add_vertex_array(e, ns, arr);
+}
 EXPORT int GameApi::TextureApi::unique_id()
 {
   count++;
@@ -55,7 +64,49 @@ GameApi::Q GameApi::TextureApi::get_tex_coord_1(TX tx, int id)
   Point2d p2 = tex->AreaE(i);
   return add_tex_quad(e, p1,p2);
 }
+EXPORT GameApi::TXA GameApi::TextureApi::prepare_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy)
+{
+  GLuint id;
+  glGenTextures(1, &id); 
 
+  if (vec.size()==0) { GameApi::TXA i; i.id=id; return i; }
+
+  GLsizei width = sx;
+  GLsizei height = sy;
+  GLsizei layercount = vec.size();
+
+  glBindTexture(GL_TEXTURE_2D_ARRAY, id);
+  glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, width, height, layercount);
+
+  int s = layercount;
+  for(int i=0;i<s;i++)
+    {
+      BM bm = vec[i];
+      BM bm2 = ev.bitmap_api.scale_bitmap(ev, bm, sx,sy);
+
+      BitmapHandle *handle = find_bitmap(e, bm2);
+      ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+      
+      GLsizei twidth = b2->SizeX();
+      GLsizei theight = b2->SizeY();
+      assert(twidth==width);
+      assert(theight==height);
+
+      BufferFromBitmap buf(*b2);
+      buf.Gen();
+
+      glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+    }
+  glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
+  glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+  glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+  GameApi::TXA i; 
+  i.id=id; 
+  return i;
+}
 EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
 {
   TextureI *tex = find_texture(e, tx);

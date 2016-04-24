@@ -420,6 +420,7 @@ public:
     Point2d p2 = { 0.0,0.0 };
     set_pos(p2);
     rot_y = 0.0;
+    mat = ev.matrix_api.identity();
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
@@ -2974,6 +2975,7 @@ MACRO(GameApi::VX)
 MACRO(GameApi::PL)
 MACRO(GameApi::TX)
 MACRO(GameApi::TXID)
+MACRO(GameApi::TXA)
 MACRO(GameApi::LI)
 MACRO(GameApi::LLA)
 MACRO(GameApi::PTS)
@@ -3173,6 +3175,20 @@ std::vector<GameApiItem*> textureapi_functions()
 			 { "VA", "TXID" },
 			 { "", "" },
 			 "VA", "texture_api", "bind"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::prepare_arr,
+			 "tx_prepare_arr",
+			 { "ev", "vec", "sx", "sy" },
+			 { "EveryApi&", "[BM]", "int", "int" },
+			 { "ev", "", "255", "255"  },
+			 "TXA", "texture_api", "prepare_arr"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::bind_arr,
+			 "tx_bind_arr",
+			 { "va", "txa" },
+			 { "VA", "TXA" },
+			 { "", "" },
+			 "VA", "texture_api", "bind_arr"));
+
   return vec;
 }
 std::vector<GameApiItem*> volumeapi_functions()
@@ -3642,6 +3658,14 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P" },
 			 { "" },
 			 "P", "polygon_api", "color_grayscale"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::choose_texture,
+			 "choose_texture",
+			 { "orig", "tex" },
+			 { "P", "int" },
+			 { "", "0" },
+			 "P", "polygon_api", "choose_texture"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::or_elem,
 			 "p_or_elem",
 			 { "p1", "p2" },
@@ -3738,7 +3762,7 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 "p_prepare",
 			 { "p", "b" },
 			 { "P", "bool" },
-			 { "", "false" },
+			 { "", "true" },
 			 "VA", "polygon_api", "create_vertex_array"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::render_vertex_array_ml,
 			 "p_render",
@@ -4326,25 +4350,25 @@ std::vector<GameApiItem*> booleanopsapi_functions()
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::bool_api, &GameApi::BooleanOps::to_polygon,
 			 "to_poly", 
-			 { "ev", "obj" },
-			 { "EveryApi&", "BO" },
-			 { "ev", "" },
+			 { "obj" },
+			 { "BO" },
+			 { "" },
 			 "P", "bool_api", "to_polygon"));
 
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::bool_api, &GameApi::BooleanOps::to_volume,
 			 "to_volume", 
-			 { "ev", "obj" },
-			 { "EveryApi&", "BO" },
-			 { "ev", "" },
+			 { "obj" },
+			 { "BO" },
+			 { "" },
 			 "O", "bool_api", "to_volume"));
 
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::bool_api, &GameApi::BooleanOps::to_dist,
 			 "to_dist", 
-			 { "ev", "obj" },
-			 { "EveryApi&", "BO" },
-			 { "ev", "" },
+			 { "obj" },
+			 { "BO" },
+			 { "" },
 			 "FD", "bool_api", "to_dist"));
 
   

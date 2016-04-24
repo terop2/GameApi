@@ -2558,6 +2558,45 @@ EXPORT float *GameApi::PolygonApi::access_texcoord(VA va, bool triangle, int fac
     }
 }
 #endif
+class ChooseTex : public ForwardFaceCollection
+{
+public:
+  ChooseTex(FaceCollection *coll, int val) : ForwardFaceCollection(*coll),val(val) { }
+  virtual float TexCoord3(int face, int point) const { 
+    return float(val);
+  }
+private:
+  int val;
+};
+class DefaultTex : public ForwardFaceCollection
+{
+public:
+  DefaultTex(FaceCollection *coll) : ForwardFaceCollection(*coll) { }
+  Point2d TexCoord(int face, int point) const
+  {
+    if (point==0) {
+      Point2d p0 = { 0.0, 0.0 }; return p0; }
+    if (point==1) {
+      Point2d p1 = { 1.0, 0.0 }; return p1; }
+    if (point==2) {
+      Point2d p2 = { 1.0, 1.0 }; return p2; }
+    if (point==3) {
+      Point2d p3 = { 0.0, 1.0 }; return p3; }
+    Point2d p4;
+    return p4;
+    
+  }
+};
+EXPORT GameApi::P GameApi::PolygonApi::texcoord_default(P orig)
+{
+  FaceCollection *coll = find_facecoll(e, orig);
+  return add_polygon2(e, new DefaultTex(coll), 1);
+}
+EXPORT GameApi::P GameApi::PolygonApi::choose_texture(P orig, int num)
+{
+  FaceCollection *coll = find_facecoll(e, orig);
+  return add_polygon2(e, new ChooseTex(coll, num), 1);
+}
 EXPORT void GameApi::PolygonApi::update(VA va)
 {
   //VertexArraySet *s = find_vertex_array(e, va);
@@ -2580,6 +2619,21 @@ EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml(VA va)
 {
   return add_main_loop(e, new RenderVA(*this, va));
 }
+EXPORT void GameApi::PolygonApi::print_stat(VA va)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  s->print_stat(0);
+}
+EXPORT bool GameApi::PolygonApi::is_texture(VA va)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  return s->is_texture();
+}
+EXPORT bool GameApi::PolygonApi::is_array_texture(VA va)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  return s->is_array_texture();
+}
 EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
@@ -2593,7 +2647,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       rend->render(0);
       TextureEnable(*env->renders[s->texture_id], 0, false);
     }
-  else if (s->texture_id!=-1)
+  else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
     {
       glEnable(GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
@@ -2607,6 +2661,17 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       rend->render(0);
 
       glDisable(GL_TEXTURE_2D);
+    }
+  else if (s->texture_id!=-1)
+    {
+      glEnable(GL_TEXTURE_2D_ARRAY);
+#ifndef EMSCRIPTEN
+      glClientActiveTexture(GL_TEXTURE0+0);
+#endif
+      glActiveTexture(GL_TEXTURE0+0);
+      glBindTexture(GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
+      rend->render(0);
+      glDisable(GL_TEXTURE_2D_ARRAY);
     }
   else
     {
@@ -2641,7 +2706,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       rend->render(0);
       TextureEnable(*env->renders[s->texture_id], 0, false);
     }
-  else if (s->texture_id!=-1)
+  else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
     {
       glEnable(GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
@@ -2655,6 +2720,17 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       rend->render(0);
 
       glDisable(GL_TEXTURE_2D);
+    }
+  else if (s->texture_id!=-1)
+    {
+      glEnable(GL_TEXTURE_2D_ARRAY);
+#ifndef EMSCRIPTEN
+      glClientActiveTexture(GL_TEXTURE0+0);
+#endif
+      glActiveTexture(GL_TEXTURE0+0);
+      glBindTexture(GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
+      rend->render(0);
+      glDisable(GL_TEXTURE_2D_ARRAY);
     }
   else
     {
@@ -2676,7 +2752,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       rend->render_instanced(0, (Point*)arr->array, arr->numpoints);
       TextureEnable(*env->renders[s->texture_id], 0, false);
     }
-  else if (s->texture_id!=-1)
+  else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
     {
       glEnable(GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
@@ -2691,6 +2767,17 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       //rend->render(0);
 
       glDisable(GL_TEXTURE_2D);
+    }
+  else if (s->texture_id!=-1)
+    {
+      glEnable(GL_TEXTURE_2D_ARRAY);
+#ifndef EMSCRIPTEN
+      glClientActiveTexture(GL_TEXTURE0+0);
+#endif
+      glActiveTexture(GL_TEXTURE0+0);
+      glBindTexture(GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
+      rend->render_instanced(0, (Point*)arr->array, arr->numpoints);
+      glDisable(GL_TEXTURE_2D_ARRAY);
     }
   else
     {

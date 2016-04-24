@@ -74,6 +74,7 @@ struct Envi {
   SH sh2;
   SH sh;
   SH sh3;
+  SH sh_arr;
   int screen_size_x, screen_size_y;
 
   std::string filename;
@@ -481,8 +482,23 @@ void iter(void *arg)
 		      {
 			VA p;
 			p.id = id;
+			env->ev->polygon_api.print_stat(p);
+			SH sh;
+			if (env->ev->polygon_api.is_texture(p))
+			  {
+			    if (env->ev->polygon_api.is_array_texture(p))
+			      {
+				sh = env->sh_arr;
+			      }
+			    else
+			      sh=env->sh;
+			  }
+			else
+			  {
+			    sh=env->sh3;
+			  }
 			//std::cout << "ID: " << p.id << std::endl;
-			env->display = env->gui->va_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			env->display = env->gui->va_dialog(p, sh, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 			
 		      } else
 		      if (type=="ML")
@@ -873,6 +889,7 @@ int main(int argc, char *argv[]) {
   // shader initialization
   ev.shader_api.load_default();
   SH sh = ev.shader_api.texture_shader();
+  SH sh_arr = ev.shader_api.texture_array_shader();
   SH sh2 = ev.shader_api.colour_shader();
   SH sh3 = ev.shader_api.colour_shader();
   Ft font = ev.font_api.newfont("..\\Chunkfive.otf", 10,13); // 13,15 
@@ -929,10 +946,12 @@ int main(int argc, char *argv[]) {
 #endif
   // rest of the initializations
   ev.mainloop_api.init_3d(sh3, screen_x, screen_y);
+  ev.mainloop_api.init_3d(sh_arr, screen_x,screen_y);
   ev.mainloop_api.init(sh, screen_x,screen_y);
   ev.mainloop_api.init(sh2, screen_x,screen_y);
 
   ev.mainloop_api.switch_to_3d(false, sh3, screen_x, screen_y);
+  //ev.mainloop_api.switch_to_3d(false, sh_arr, screen_x, screen_y);
   ev.shader_api.use(sh);
   ev.mainloop_api.alpha(true);
   
@@ -1063,6 +1082,7 @@ int main(int argc, char *argv[]) {
   env.sh2 = sh2;
   env.sh = sh;
   env.sh3 = sh3;
+  env.sh_arr = sh_arr;
   env.screen_size_x = screen_x;
   env.screen_size_y = screen_y;
   env.filename = filename;
