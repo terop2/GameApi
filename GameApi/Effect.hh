@@ -5709,6 +5709,7 @@ public:
   virtual int AttribI(int face, int point, int id) const { return coll.AttribI(face, point, id); }
   virtual unsigned int Color(int face, int point) const { return coll.Color(face,point); }
   virtual Point2d TexCoord(int face, int point) const { return coll.TexCoord(face,point); }
+  virtual float TexCoord3(int face, int point) const { return coll.TexCoord3(face,point); }
   virtual bool Inside(Point p) const { return false; }
   virtual void SetBox(Matrix b) { }
 
@@ -7064,6 +7065,10 @@ public:
   virtual Point2d TexCoord(int face, int point) const
   {
     return next->TexCoord(face,point);
+  }
+  virtual float TexCoord3(int face, int point) const
+  {
+    return next->TexCoord3(face,point);
   }
 
   virtual Vector PointNormal(int face, int point) const

@@ -3665,7 +3665,14 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P", "int" },
 			 { "", "0" },
 			 "P", "polygon_api", "choose_texture"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texcoord_manual,
+			 "texcoord",
+			 { "orig", "p1_x", "p1_y", "p2_x", "p2_y", "p3_x", "p3_y", "p4_x", "p4_y" },
+			 { "P", "float", "float", "float", "float", "float", "float", "float", "float" },
+			 { "", "0.0", "0.0", "1.0", "0.0", "1.0", "1.0", "0.0", "1.0" },
+			 "P", "polygon_api", "texcoord_manual"));
 
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::or_elem,
 			 "p_or_elem",
 			 { "p1", "p2" },

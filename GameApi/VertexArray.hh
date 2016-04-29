@@ -138,6 +138,7 @@ public:
   void prepare(int id);
   void update(int id);
   void render(int id);
+  void prepare_instanced(int id, Point *positions, int size);
   void render_instanced(int id, Point *positions, int size);
   void del();
   ~RenderVertexArray() { del(); }

@@ -2680,7 +2680,13 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       rend->render(0);
     }
 }
-
+EXPORT void GameApi::PolygonApi::prepare_vertex_array_instanced(ShaderApi &shapi, VA va, PTA pta, SH sh)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  RenderVertexArray *rend = find_vertex_array_render(e, va);
+  PointArray3 *arr = find_point_array3(e, pta);
+  rend->prepare_instanced(0, (Point*)arr->array, arr->numpoints);
+}
 EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi, VA va, PTA pta, SH sh)
 {
 #if 0
