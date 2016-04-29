@@ -621,6 +621,24 @@ void RenderVertexArray::del()
   glDeleteBuffers(1,&buffers2[4]);
 #endif
 }
+void RenderVertexArray::prepare_instanced(int id, Point *positions, int size)
+{
+#ifdef VAO
+  glBindVertexArray(vao[0]);
+#endif
+  glBindBuffer( GL_ARRAY_BUFFER, pos_buffer );
+
+  glBufferData( GL_ARRAY_BUFFER, sizeof(Point) * size, positions, GL_DYNAMIC_DRAW);
+
+
+#ifdef VAO
+  glBindVertexArray(vao[1]);
+#endif
+
+  glBindBuffer( GL_ARRAY_BUFFER, pos_buffer );
+  glBufferData( GL_ARRAY_BUFFER, sizeof(Point) * size, positions, GL_DYNAMIC_DRAW);
+
+}
 void RenderVertexArray::render_instanced(int id, Point *positions, int size)
 {
 #ifdef VAO
@@ -629,7 +647,7 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
 
   // INSTANCED DRAWING
   glBindBuffer( GL_ARRAY_BUFFER, pos_buffer );
-  glBufferData( GL_ARRAY_BUFFER, sizeof(Point) * size, positions, GL_DYNAMIC_DRAW);
+  glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
 
   glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glVertexAttribDivisor(5, 1);
@@ -686,7 +704,7 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
 
   // INSTANCED DRAWING
   glBindBuffer( GL_ARRAY_BUFFER, pos_buffer );
-  glBufferData( GL_ARRAY_BUFFER, sizeof(Point) * size, positions, GL_DYNAMIC_DRAW);
+  glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
   glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glVertexAttribDivisor(5, 1);
   glEnableVertexAttribArray(5);

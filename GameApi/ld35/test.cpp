@@ -206,7 +206,6 @@ P I105=ev.polygon_api.or_elem(I99,I104);
 P I106=ev.polygon_api.translate(I105,0,-1600,0);
 P I107=ev.polygon_api.or_elem(I78,I106);
  P I108=ev.polygon_api.scale(I107, 0.8, 1.0, -1.0);
-
  return I108;
 }
 P sky(EveryApi &ev)
@@ -622,6 +621,7 @@ int main() {
   poly2.prepare(true);
   std::cout << "BEE: " << std::endl;
   ev.polygon_api.print_stat(p32_a);
+  //ev.polygon_api.save_model(p32_a, "normal_bee.obj");
   PolygonObj poly(ev, p32_a, sh);
   poly.prepare(true);
 

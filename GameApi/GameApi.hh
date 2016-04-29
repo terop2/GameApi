@@ -1442,6 +1442,7 @@ public:
   IMPORT ML update_vertex_array_ml(VA va, P p, bool keep=false);
   IMPORT VA create_vertex_array(P p, bool keep=false); // slow
   IMPORT void render_vertex_array(VA va); // fast
+  IMPORT void prepare_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh);
   IMPORT void render_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh); // fast
   IMPORT ML render_vertex_array_ml(VA va);
   IMPORT void explode(VA va, PT pos, float dist);
@@ -2625,6 +2626,7 @@ private:
       anim_id = 0;
       anim_time = 0.0;
       txa_id.id = 0;
+      first = true;
     }
 
     PolygonObj(EveryApi &ev, std::vector<P> anim_p, SH sh) : api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), sh(sh) 
@@ -2641,6 +2643,7 @@ private:
       //va.id = 0;
       anim_id = 0;
       anim_time = 0.0;
+      first = true;
     }
 
     PolygonObj(PolygonApi &api, ShaderApi &shapi, MatrixApi &mat, TextureApi &tex,P p, SH sh) : api(api), shapi(shapi), mat(mat), tex(tex), sh(sh) 
@@ -2657,6 +2660,7 @@ private:
       //va.id =0;
       anim_id = 0;
       anim_time = 0.0;
+      first = true;
     }
     void prepare(bool keep=false) 
     { 
@@ -2692,6 +2696,11 @@ private:
       shapi.set_var(sh, "in_N", normal_matrix); 
       //shapi.set_var(sh, "in_T", m2);
       shapi.set_var(sh, "in_POS", anim_time);
+      if (first)
+	{
+	  api.prepare_vertex_array_instanced(shapi, m_va2[anim_id], pta,sh);
+	  first = false;
+	}
       api.render_vertex_array_instanced(shapi, m_va2[anim_id], pta, sh); 
       shapi.set_var(sh, "in_POS", 0.0f);
     }
@@ -2768,6 +2777,7 @@ private:
     TXA txa_id;
     int anim_id;
     float anim_time;
+    bool first;
   };
 
   class WorldObj : public RenderObject, public MoveScaleObject3d
