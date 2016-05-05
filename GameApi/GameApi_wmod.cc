@@ -501,7 +501,7 @@ void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, 
 		      if (target_uid == line.uid && real_num == ii)
 			{
 			  W w2 = wid;
-			  W line = gui.line( w1, gui.size_x(w1), 45,
+			  W line = gui.line( w1, gui.size_x(w1), (gui.size_y(w1)-16)/2+16+5,
 					     w2, 0, 10, sh2, sh);
 			  std::stringstream ss2;
 			  ss2 << value << " " << target_uid << " " << real_num;
@@ -543,7 +543,7 @@ void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, 
 		      if (target_uid == line.uid && real_num == ii)
 			{
 			  W w2 = wid;
-			  W line = gui.line( w1, gui.size_x(w1), 45,
+			  W line = gui.line( w1, gui.size_x(w1), (gui.size_y(w1)-16)/2+16+5,
 					     w2, 0, 10, sh2, sh);
 			  std::stringstream ss2;
 			  ss2 << value << " " << target_uid << " " << real_num;

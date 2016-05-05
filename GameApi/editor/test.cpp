@@ -159,7 +159,7 @@ void connect_target(int x, int y, Envi *envi)
 	      
 	      W start_link = envi->gui->find_canvas_item(envi->canvas, envi->connect_start_uid);
 	      
-	      W link = envi->gui->line( start_link, envi->gui->size_x(start_link),45,
+	      W link = envi->gui->line( start_link, envi->gui->size_x(start_link),(envi->gui->size_y(start_link)-16)/2+16+5,
 					wid, 0,10, envi->sh2, envi->sh);
 	      std::stringstream ss2;
 	      ss2 << envi->connect_start_uid << " " << uid << " " << real_index; 
@@ -672,7 +672,7 @@ void iter(void *arg)
 		W ico_1 = env->gui->icon(bm);
 		env->connect_widget = env->gui->insert_widget(ico_1, std::bind(&connect_target, _1, _2, env));
 		
-		env->connect_line = env->gui->line(canvas_item, env->gui->size_x(canvas_item),50,
+		env->connect_line = env->gui->line(canvas_item, env->gui->size_x(canvas_item),(env->gui->size_y(canvas_item)-16)/2+16+5,
 						   env->connect_widget, 0, 0, env->sh2, env->sh);
 		
 		env->connect_start_uid = uid;
