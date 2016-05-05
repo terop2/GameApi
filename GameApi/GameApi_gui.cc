@@ -1538,7 +1538,9 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
 
   W array = array_y(&vec[0], vec.size(), 5);
   int ssy = std::max(sy, size_y(array)+size_y(node_22)+5);
-  W array_1 = margin(array, 0, ssy-size_y(array), 0, 0);
+  int ssy0 = std::max(sy-size_y(node_22), size_y(array)+5);
+  int ssy2 = ssy0 - size_y(array);
+  W array_1 = margin(array, 0, size_y(node_22) + ssy2/2, 0, ssy2/2-size_y(node_22));
   
   W txt_0 = text(return_type, atlas,atlas_bm);
   W txt_1 = margin(txt_0, 5,5,5,5);
