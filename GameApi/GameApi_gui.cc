@@ -1538,9 +1538,9 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
 
   W array = array_y(&vec[0], vec.size(), 5);
   int ssy = std::max(sy, size_y(array)+size_y(node_22)+5);
-  int ssy0 = std::max(sy-size_y(node_22), size_y(array)+5);
+  int ssy0 = std::max(sy-size_y(node_22), size_y(array));
   int ssy2 = ssy0 - size_y(array);
-  W array_1 = margin(array, 0, size_y(node_22) + ssy2/2, 0, ssy2/2-size_y(node_22));
+  W array_1 = margin(array, 0, size_y(node_22) + ssy2/2+2, 0, ssy2/2-size_y(node_22)-2);
   
   W txt_0 = text(return_type, atlas,atlas_bm);
   W txt_1 = margin(txt_0, 5,5,5,5);
@@ -1559,7 +1559,8 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
   W node_1 = button(ssx,size_y(node_22), 0xffff88ff, 0xff8844ff);
   W node_12 = highlight(node_1);
 
-  W txt_4 = margin(txt_3, ssx-size_x(txt_3), (sy-size_y(txt_3))/2, 0,(sy-size_y(txt_3))/2);
+  int sy0 = std::max(sy, size_y(array)+size_y(node_22)+5);
+  W txt_4 = margin(txt_3, ssx-size_x(txt_3), size_y(node_22)+((sy0-size_y(node_22))-size_y(txt_3))/2, 0,((sy0-size_y(node_22))-size_y(txt_3))/2-size_y(node_22));
 
 
   W l_0 = layer(node_0, node_12);
