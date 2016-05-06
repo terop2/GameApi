@@ -6,10 +6,94 @@
 #endif
 #include <cassert>
 #include <ctime>
+#include <windows.h>
+#include <fstream>
+#include <iostream>
 using namespace GameApi;
 
 
+// Note, this is copied to each dll too.
+class Item
+{
+public:
+  virtual std::string Name() const=0;
+  virtual int ParamCount() const=0;
+  virtual std::string ParamName(int p) const=0;
+  virtual std::string ParamType(int p) const=0;
+  virtual std::string ParamDefault(int p) const=0;
+  virtual std::string ReturnType() const=0;
+  virtual int Execute(std::vector<std::string> params)=0;
+  virtual std::pair<std::string, std::string> CodeGen(std::vector<std::string> params, std::vector<std::string> param_names)=0;
+};
 
+struct GameApiParam
+{
+  std::string param_name;
+  std::string value;
+};
+
+
+class GameApiItem
+{
+public:
+  virtual int Count() const=0;
+  virtual std::string Name(int i) const=0;
+  virtual int ParamCount(int i) const=0;
+  virtual std::string ParamName(int i, int p) const=0;
+  virtual std::string ParamType(int i, int p) const=0;
+  virtual std::string ParamDefault(int i, int p) const=0;
+  virtual std::string ReturnType(int i) const=0;
+  virtual int Execute(GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)=0;
+  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)=0;
+  virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) { }
+  virtual void EndEnv(GameApi::ExecuteEnv &e) { }
+};
+
+extern std::vector<GameApiItem*> global_functions;
+
+
+struct DllData
+{
+public:
+  std::string (*api_name)();
+  std::vector<Item*> (*functions)();
+  int (*num_displays)();
+  void (*display)(int i, int disp);
+};
+void load_library(DllData &data, std::string lib_name)
+{
+  const char *lib = lib_name.c_str();
+  HMODULE mod = LoadLibrary(lib);
+  std::cout << "HMODULE: " << mod << std::endl;
+  FARPROC api = GetProcAddress( mod, "_Z8api_namev" );
+  FARPROC func = GetProcAddress( mod, "_Z9functionsv" );
+  FARPROC num = GetProcAddress( mod, "_Z12num_displaysv" );
+  FARPROC disp = GetProcAddress( mod, "_Z7displayii" );
+  std::cout << "ApiNameFar: " << api << std::endl;
+
+  data.api_name = (std::string (*)()) api;
+  data.functions = (std::vector<Item*> (*)()) func;
+  data.num_displays = (int (*)()) num;
+  data.display = (void (*)(int,int)) disp;
+  std::cout << "ApiName: " << (void*)data.api_name << std::endl;
+  std::cout << "Functions: " << (void*)data.functions << std::endl;
+  std::cout << "NumDisplays: " << (void*)data.num_displays << std::endl;
+  std::cout << "Display: " << (void*)data.display << std::endl;
+}
+std::vector<DllData> load_dlls(std::string filename)
+{
+  std::vector<DllData> vec;
+  std::ifstream ss(filename.c_str());
+  std::string s;
+  while(ss >> s)
+    {
+      std::cout << "Loading library: " << s << std::endl;
+      DllData d;
+      load_library(d, s);
+      vec.push_back(d);
+    }
+  return vec;
+}
 struct Envi {
   EveryApi *ev;
   GuiApi *gui;
@@ -78,6 +162,7 @@ struct Envi {
   int screen_size_x, screen_size_y;
 
   std::string filename;
+  std::vector<DllData> dlls;
 };
 void add_to_canvas(GuiApi &gui, W canvas, W item)
 {
@@ -793,7 +878,15 @@ void iter(void *arg)
 		  case 14:
 		    name = env->gui->booleanopsapi_functions_item_label(sel2-1);
 		    break;
-
+		  default:
+		    {
+		      std::cout << "SEL: " << sel << std::endl;
+		      DllData &d = env->dlls[sel-15];
+		      std::vector<Item*> funcs = (*d.functions)();
+		      Item *item = funcs[sel2-1];
+		      name = item->Name();
+		      break;
+		    }
 
 		  };
 		//std::cout << "Chosen label: " << name << std::endl;
@@ -855,6 +948,45 @@ float f(float w)
   return cos(w);
 }
 
+class ItemConvert : public GameApiItem
+{
+public:
+  ItemConvert(Item *i) : ii(i) { }
+  virtual int Count() const { return 1; }
+  virtual std::string Name(int i) const { return ii->Name(); }
+  virtual int ParamCount(int i) const { return ii->ParamCount(); }
+  virtual std::string ParamName(int i, int p) const
+  {
+    return ii->ParamName(p);
+  }
+  virtual std::string ParamType(int i, int p) const
+  {
+    return ii->ParamType(p);
+  }
+  virtual std::string ParamDefault(int i, int p) const
+  {
+    return ii->ParamDefault(p);
+  }
+  virtual std::string ReturnType(int i) const
+  {
+    return ii->ReturnType();
+  }
+  virtual int Execute(GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)
+  {
+    return ii->Execute(params);
+  }
+  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)
+  {
+    return ii->CodeGen(params, param_names);
+  }
+  virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) { }
+  virtual void EndEnv(GameApi::ExecuteEnv &e) { }
+private:
+  Item *ii;
+};
+
+W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector<GameApiItem*> vec, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::FtA atlas2, GameApi::BM atlas_bm2, GameApi::W insert);
+
 int main(int argc, char *argv[]) {
   srand(time(NULL));
   Env *e2 = new Env;
@@ -863,7 +995,10 @@ int main(int argc, char *argv[]) {
   
 
 
+
   Envi env;
+
+  env.dlls = load_dlls("DllList.txt");
 
   int screen_x = 800;
   int screen_y = 600;
@@ -1006,6 +1141,23 @@ int main(int argc, char *argv[]) {
       items.push_back(gui.fontapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.textureapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.booleanopsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+
+      int s = env.dlls.size();
+      for(int ii=0;ii<s;ii++)
+	{
+	  DllData &d = env.dlls[ii];
+	  std::string apiname = (*d.api_name)();
+	  std::vector<Item*> v = (*d.functions)();
+	  std::vector<GameApiItem*> vec;
+	  int s = v.size();
+	  for(int k=0;k<s;k++)
+	    {
+	      vec.push_back(new ItemConvert(v[k]));
+	      global_functions.push_back(new ItemConvert(v[k]));
+	    }
+	  W w = functions_widget(gui, apiname, vec, atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips);
+	  items.push_back(w);
+	}
 
     }
   W array = gui.array_y(&items[0], items.size(), 5);

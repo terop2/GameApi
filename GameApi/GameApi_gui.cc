@@ -4385,6 +4385,7 @@ std::vector<GameApiItem*> booleanopsapi_functions()
 
   return vec;
 }
+std::vector<GameApiItem*> global_functions;
 std::vector<GameApiItem*> all_functions()
 {
   std::vector<GameApiItem*> v1 = bitmapapi_functions();
@@ -4402,7 +4403,7 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> vd = fontapi_functions();
   std::vector<GameApiItem*> ve = textureapi_functions();
   std::vector<GameApiItem*> vf = booleanopsapi_functions();
-
+  std::vector<GameApiItem*> vg = global_functions;
 
   std::vector<GameApiItem*> a1 = append_vectors(v1,v2);
   std::vector<GameApiItem*> a2 = append_vectors(v3,v4);
@@ -4418,7 +4419,8 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> ac = append_vectors(ab, vd);
   std::vector<GameApiItem*> ad = append_vectors(ac, ve);
   std::vector<GameApiItem*> ae = append_vectors(ad, vf);
-  return ae;
+  std::vector<GameApiItem*> af = append_vectors(ae, vg);
+  return af;
 }
 std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)
 {
