@@ -239,6 +239,57 @@ public:
   }
 };
 
+template<class T>
+class FromStreamClass<std::vector<T>>
+{
+public:
+  std::vector<T> from_stream(std::string s)
+  {
+    std::cout << "Vector" << std::endl;
+    std::vector<T> vec;
+    if (s.size()<2)
+      {
+	std::cout << "from_stream length problem" << std::endl;
+	return vec;
+      }
+    char c = s[0];
+    if (c!='[') { std::cout << "from_stream parse error on std::vector" << std::endl; return vec; }
+
+    FromStreamClass<T> cls;
+    int ss = s.size();
+    std::string next;
+    int prev = 1;
+    for(int i=1;i<ss;i++)
+      {
+	if (s[i]==',' || s[i]==']')
+	  {
+	    std::string substr = s.substr(prev, i-prev);
+	    T t = cls.from_stream(substr);
+	    vec.push_back(t);
+	    prev=i+1;
+	    if (s[i]==']') { break; }
+	  }
+      }
+    return vec;
+  } 
+};
+
+
+
+#define MACRO(lab) \
+template<> \
+class FromStreamClass<lab> \
+{ \
+public:\
+  lab from_stream(std::string s)\
+  {\
+  lab bm;\
+  std::stringstream is(s);\
+  is >> bm.id;\
+  return bm;\
+  }\
+};
+MACRO(W);
 
 template<typename T> T from_stream2(std::stringstream &is)
 {
@@ -381,6 +432,148 @@ std::vector<Item*> functions()
 			 { }, // param default
 			 "W", // return type
 			 "empty"));
+  vec.push_back(ApiItemF(&list_y,
+			 "wb_list_y",
+			 { "vec", "gap_y" },
+			 { "[W]", "int" },
+			 { "", "0" },
+			 "W",
+			 "list_y"));
+  vec.push_back(ApiItemF(&list_x,
+			 "wb_list_x",
+			 { "vec", "gap_x" },
+			 { "[W]", "int" },
+			 { "", "0" },
+			 "W",
+			 "list_x"));
+  vec.push_back(ApiItemF(&grid_y,
+			 "wb_grid_y",
+			 { "vec", "sx", "gap_x", "gap_y" },
+			 { "[W]", "int", "int", "int" },
+			 { "", "3", "0", "0" },
+			 "W",
+			 "grid_y"));
+  vec.push_back(ApiItemF(&layer,
+			 "wb_layer",
+			 { "vec" },
+			 { "[W]" },
+			 { "" },
+			 "W",
+			 "layer"));
+  vec.push_back(ApiItemF(&hide,
+			 "wb_hide",
+			 { "widget" },
+			 { "W" },
+			 { "" },
+			 "W",
+			 "hide"));
+  vec.push_back(ApiItemF(&show_button,
+			 "wb_show_button",
+			 { "content", "hidden" },
+			 { "W", "W" },
+			 { "", "" },
+			 "W",
+			 "show_button"));
+  vec.push_back(ApiItemF(&hide_button,
+			 "wb_hide_button",
+			 { "content", "hidden" },
+			 { "W", "W" },
+			 { "", "" },
+			 "W",
+			 "hide_button"));
+  vec.push_back(ApiItemF(&image,
+			 "wb_image",
+			 { "url", "size_x", "size_y" },
+			 { "std::string", "int", "int" },
+			 { "", "100", "100" },
+			 "W",
+			 "image"));
+  vec.push_back(ApiItemF(&image_placeholder,
+			 "wb_placeholder",
+			 { "size_x", "size_y" },
+			 { "int", "int" },
+			 { "100", "100" },
+			 "W",
+			 "image_placeholder"));
+  vec.push_back(ApiItemF(&gradient,
+			 "wb_gradient",
+			 { "id", "size_x", "size_y" },
+			 { "int", "int", "int" },
+			 { "0", "100", "100" },
+			 "W",
+			 "gradient"));
+  vec.push_back(ApiItemF(&margin,
+			 "wb_margin",
+			 { "item", "left", "top", "right", "bottom" },
+			 { "W", "int", "int", "int", "int" },
+			 { "", "2", "2", "2", "2" },
+			 "W",
+			 "margin"));
+  vec.push_back(ApiItemF(&right_align,
+			 "wb_ralign",
+			 { "item", "sx" },
+			 { "W", "int" },
+			 { "", "100" },
+			 "W",
+			 "right_align"));
+  vec.push_back(ApiItemF(&center_align,
+			 "wb_calign",
+			 { "item", "sx" },
+			 { "W", "int" },
+			 { "", "100" },
+			 "W",
+			 "center_align"));
+  vec.push_back(ApiItemF(&center_y,
+			 "wb_center_y",
+			 { "item", "sy" },
+			 { "W", "int" },
+			 { "", "100" },
+			 "W",
+			 "center_y"));
+  vec.push_back(ApiItemF(&form,
+			 "wb_form",
+			 { "widget", "is_get", "script_url" },
+			 { "W", "bool", "std::string" },
+			 { "", "true", "" },
+			 "W",
+			 "form"));
+  vec.push_back(ApiItemF(&submit_button,
+			 "wb_submit",
+			 { "label", "size_x", "size_y" },
+			 { "std::string", "int", "int" },
+			 { "Submit", "300", "100" },
+			 "W",
+			 "submit_button"));
+  vec.push_back(ApiItemF(&editor,
+			 "wb_editor",
+			 { "name", "value", "placeholder", "size_x", "size_y", "font_size", "font_colour", "align" },
+			 { "std::string", "std::string", "std::string", "int", "int", "int", "unsigned int", "int" },
+			 { "addr", "", "Edit this", "300", "30", "30", "ff000000", "0" },
+			 "W",
+			 "editor"));
+  vec.push_back(ApiItemF(&label,
+			 "wb_label",
+			 { "label", "size_x", "size_y", "font_size", "font_colour", "align" },
+			 { "std::string", "int", "int", "int", "unsigned int", "int" },
+			 { "Short Label", "200", "30", "30", "ff000000", "0" },
+			 "W",
+			 "label"));
+  vec.push_back(ApiItemF(&link,
+			 "wb_link",
+			 { "url", "label", "size_x", "size_y", "font_size", "font_colour", "align" },
+			 { "std::string", "std::string", "int", "int", "int", "unsigned int", "int" },
+			 { "", "Link", "100", "30", "30", "ff000000", "0" },
+			 "W",
+			 "link"));
+  vec.push_back(ApiItemF(&password_editor,
+			 "wb_passwd_editor",
+			 { "name", "value", "placeholder", "size_x", "size_y", "font_size", "font_colour", "align" },
+			 { "std::strin", "std::string", "std::string", "int", "int", "int", "unsigned int", "int" },
+			 { "passwd", "", "Enter Password", "100", "30", "30", "ff000000", "0" },
+			 "W",
+			 "password_editor"));
+  
+  return vec;
 }
 // END OF DLL ENTRY POINTS
 
