@@ -1,0 +1,17 @@
+
+FILES = brown_gradient.ppm rectangle.ppm
+
+GIFFILES = $(patsubst %.ppm,%.png,$(FILES))
+
+all2: all $(GIFFILES)
+
+all:
+	g++ -std=c++11 test.cc -o test -I.. -L.. -lGameApi
+	test.exe
+
+$(GIFFILES): %.png: %.ppm all
+	     convert $< $@
+
+clean:
+	del test.exe
+	del $(GIFFILES)
