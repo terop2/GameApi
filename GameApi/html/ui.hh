@@ -1,4 +1,4 @@
-#include "data.hh"
+//#include "data.hh"
 
 #include <string>
 #include <vector>
@@ -60,5 +60,5 @@ std::string gen_html_page(W w);
 
 
 // app specific stuff
-W client_list_item(Record r);
-W product_list_item(Product p);
+//W client_list_item(Record r);
+//W product_list_item(Product p);
