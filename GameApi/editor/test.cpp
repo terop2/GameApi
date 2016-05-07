@@ -59,6 +59,7 @@ public:
   std::vector<Item*> (*functions)();
   int (*num_displays)();
   void (*display)(int i, int disp);
+  std::string (*type_symbol)();
 };
 void load_library(DllData &data, std::string lib_name)
 {
@@ -69,16 +70,18 @@ void load_library(DllData &data, std::string lib_name)
   FARPROC func = GetProcAddress( mod, "_Z9functionsv" );
   FARPROC num = GetProcAddress( mod, "_Z12num_displaysv" );
   FARPROC disp = GetProcAddress( mod, "_Z7displayii" );
-  std::cout << "ApiNameFar: " << api << std::endl;
+  FARPROC type = GetProcAddress( mod, "_Z11type_symbolv" );
+  //std::cout << "ApiNameFar: " << api << std::endl;
 
   data.api_name = (std::string (*)()) api;
   data.functions = (std::vector<Item*> (*)()) func;
   data.num_displays = (int (*)()) num;
   data.display = (void (*)(int,int)) disp;
-  std::cout << "ApiName: " << (void*)data.api_name << std::endl;
-  std::cout << "Functions: " << (void*)data.functions << std::endl;
-  std::cout << "NumDisplays: " << (void*)data.num_displays << std::endl;
-  std::cout << "Display: " << (void*)data.display << std::endl;
+  data.type_symbol = (std::string (*)()) type;
+  // std::cout << "ApiName: " << (void*)data.api_name << std::endl;
+  //std::cout << "Functions: " << (void*)data.functions << std::endl;
+  //std::cout << "NumDisplays: " << (void*)data.num_displays << std::endl;
+  //std::cout << "Display: " << (void*)data.display << std::endl;
 }
 std::vector<DllData> load_dlls(std::string filename)
 {
@@ -555,6 +558,7 @@ void iter(void *arg)
 		    // display dialog
 		    std::string type = env->ev->mod_api.return_type(env->mod, 0, uid);
 		    
+		    bool display = true;
 		    if (type=="BO")
 		      {
 			BO p;
@@ -641,10 +645,28 @@ void iter(void *arg)
 		      }
 		    else 
 		      {
-			std::cout << "Type not found" << type << std::endl;
+			display = false;
+			int s = env->dlls.size();
+			bool success = false;
+			for(int i=0;i<s;i++)
+			  {
+			    DllData &d = env->dlls[i];
+			    if (type==(*d.type_symbol)())
+			      {
+				(*d.display)(id,0);
+				success = true;
+				break;
+			      }
+			  }
+			if (!success) {
+			  std::cout << "Type not found" << type << std::endl;
+			}
 		      }
-		    env->gui->set_pos(env->display, 200.0, 50.0);
-		    env->display_visible = true;
+		    if (display)
+		      {
+			env->gui->set_pos(env->display, 200.0, 50.0);
+			env->display_visible = true;
+		      }
 		  }
 	      }
 	  }
@@ -1037,7 +1059,7 @@ int main(int argc, char *argv[]) {
       if (std::string(argv[1])=="--generate-font-atlas")
 	{
 	  std::cout << "Generating font atlas. " << std::endl;
-	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><";
+	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><[]";
 	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 10,13, 25);
 	  FtA atlas2 = ev.font_api.font_atlas_info(ev, font2, chars, 10,13, 25);
 	  FtA atlas3 = ev.font_api.font_atlas_info(ev, font3, chars, 30,30, 65);
