@@ -2,6 +2,7 @@
 #include "ui.hh"
 #include <sstream>
 #include <iostream>
+#include <fstream>
 
 const int E = -16384;
 
@@ -418,9 +419,24 @@ Item* ApiItemF(RT (*fptr)(P...),
 
 // DLL ENTRY POINTS
 std::string api_name() { return "WebApi"; }
-int num_displays() { return 0; }
+int num_displays() { return 1; }
+std::string type_symbol()
+{
+  return "W";
+}
 void display(int i, int disp)
 {
+  switch(disp)
+    {
+    case 0:
+      W wid = { i };
+      std::string page = gen_html_page(wid);
+      std::ofstream f("tst.html");
+      f << page;
+      f.close();
+      system("start tst.html");
+      break;
+    }
 }
 std::vector<Item*> functions()
 {
@@ -460,39 +476,33 @@ std::vector<Item*> functions()
 			 { "" },
 			 "W",
 			 "layer"));
-  vec.push_back(ApiItemF(&hide,
-			 "wb_hide",
-			 { "widget" },
-			 { "W" },
-			 { "" },
-			 "W",
-			 "hide"));
-  vec.push_back(ApiItemF(&show_button,
-			 "wb_show_button",
-			 { "content", "hidden" },
-			 { "W", "W" },
-			 { "", "" },
-			 "W",
-			 "show_button"));
-  vec.push_back(ApiItemF(&hide_button,
-			 "wb_hide_button",
-			 { "content", "hidden" },
-			 { "W", "W" },
-			 { "", "" },
-			 "W",
-			 "hide_button"));
   vec.push_back(ApiItemF(&image,
 			 "wb_image",
 			 { "url", "size_x", "size_y" },
 			 { "std::string", "int", "int" },
-			 { "", "100", "100" },
+			 { "http://", "100", "100" },
 			 "W",
 			 "image"));
+  vec.push_back(ApiItemF(&label,
+			 "wb_label",
+			 { "label", "size_x", "size_y", "font_size", "font_colour", "align" },
+			 { "std::string", "int", "int", "int", "unsigned int", "int" },
+			 { "Short Label", "200", "30", "30", "ff000000", "0" },
+			 "W",
+			 "label"));
+  vec.push_back(ApiItemF(&link,
+			 "wb_link",
+			 { "url", "label", "size_x", "size_y", "font_size", "font_colour", "align" },
+			 { "std::string", "std::string", "int", "int", "int", "unsigned int", "int" },
+			 { "", "Link", "100", "30", "30", "ff000000", "0" },
+			 "W",
+			 "link"));
+
   vec.push_back(ApiItemF(&image_placeholder,
 			 "wb_placeholder",
 			 { "size_x", "size_y" },
 			 { "int", "int" },
-			 { "100", "100" },
+			 { "200", "200" },
 			 "W",
 			 "image_placeholder"));
   vec.push_back(ApiItemF(&gradient,
@@ -530,6 +540,27 @@ std::vector<Item*> functions()
 			 { "", "100" },
 			 "W",
 			 "center_y"));
+  vec.push_back(ApiItemF(&hide,
+			 "wb_hide",
+			 { "widget" },
+			 { "W" },
+			 { "" },
+			 "W",
+			 "hide"));
+  vec.push_back(ApiItemF(&show_button,
+			 "wb_show_button",
+			 { "content", "hidden" },
+			 { "W", "W" },
+			 { "", "" },
+			 "W",
+			 "show_button"));
+  vec.push_back(ApiItemF(&hide_button,
+			 "wb_hide_button",
+			 { "content", "hidden" },
+			 { "W", "W" },
+			 { "", "" },
+			 "W",
+			 "hide_button"));
   vec.push_back(ApiItemF(&form,
 			 "wb_form",
 			 { "widget", "is_get", "script_url" },
@@ -551,20 +582,6 @@ std::vector<Item*> functions()
 			 { "addr", "", "Edit this", "300", "30", "30", "ff000000", "0" },
 			 "W",
 			 "editor"));
-  vec.push_back(ApiItemF(&label,
-			 "wb_label",
-			 { "label", "size_x", "size_y", "font_size", "font_colour", "align" },
-			 { "std::string", "int", "int", "int", "unsigned int", "int" },
-			 { "Short Label", "200", "30", "30", "ff000000", "0" },
-			 "W",
-			 "label"));
-  vec.push_back(ApiItemF(&link,
-			 "wb_link",
-			 { "url", "label", "size_x", "size_y", "font_size", "font_colour", "align" },
-			 { "std::string", "std::string", "int", "int", "int", "unsigned int", "int" },
-			 { "", "Link", "100", "30", "30", "ff000000", "0" },
-			 "W",
-			 "link"));
   vec.push_back(ApiItemF(&password_editor,
 			 "wb_passwd_editor",
 			 { "name", "value", "placeholder", "size_x", "size_y", "font_size", "font_colour", "align" },

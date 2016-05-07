@@ -4560,6 +4560,14 @@ GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector
 		typestr+=",";
 	      typestr+=type;
 	    }
+	  if (type.size()>2 && type[0]=='[' && type[type.size()-1]==']')
+	    {
+	      if (type[1]=='[' && type[type.size()-2]==']') type = type.substr(1, type.size()-2);
+
+	      if (typestr.size()!=1)
+		typestr+=",";
+	      typestr+= type;
+	    }
 	}
       typestr+=")->";
       typestr+=item->ReturnType(0);

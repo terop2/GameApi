@@ -27,7 +27,9 @@ int main()
   W lst4 = list_y(std::vector<W>{ edit, edit2 }, 2);
   W frm = form(lst4, true, "foo.php");
   
-  std::string lst2 = gen_html_page(frm);
+  W y_1 = list_y(std::vector<W>{lst3, frm}, 2);
+
+  std::string lst2 = gen_html_page(y_1);
   std::ofstream ss("tst.html");
   ss << lst2 << std::endl;
   ss.close();

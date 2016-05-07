@@ -20,6 +20,7 @@ public:
 
 std::string api_name();
 std::vector<Item*> functions();
+std::string type_symbol();
 int num_displays();
 void display(int i, int disp);
 // END OF DLL ENTRY POINTS
