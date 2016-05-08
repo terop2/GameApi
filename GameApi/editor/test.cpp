@@ -131,6 +131,10 @@ struct Envi {
   std::vector<W> edit_clicks;
   std::vector<W> delete_key;
   std::vector<W> codegen_button_vec;
+  std::vector<W> popup_open;
+  std::vector<W> popup_selections;
+  W popup_dialog;
+  bool popup_visible = false;
   int dialog_i1;
   std::string dialog_uid;
   std::vector<GuiApi::EditTypes*> vec4;
@@ -278,10 +282,14 @@ void callback_func(int x, int y, Envi *envi)
   W display_cb;
   W edit_cb;
   W delete_key_cb;
-  envi->ev->mod_api.insert_inserted_to_canvas(*envi->gui, envi->canvas, envi->chosen_item, uid, display_cb, edit_cb, delete_key_cb);
+  W codegen_button;
+  W popup_open;
+  envi->ev->mod_api.insert_inserted_to_canvas(*envi->gui, envi->canvas, envi->chosen_item, uid, display_cb, edit_cb, delete_key_cb, codegen_button, popup_open);
   envi->display_clicks.push_back(display_cb);
   envi->edit_clicks.push_back(edit_cb);
   envi->delete_key.push_back(delete_key_cb);
+  envi->codegen_button_vec.push_back(codegen_button);
+  envi->popup_open.push_back(popup_open);
 
 
   std::vector<std::pair<std::string,std::string> > vec = envi->ev->mod_api.defaults_from_function(envi->insert_mod_name);
@@ -317,6 +325,10 @@ void iter(void *arg)
     env->gui->render(env->scrollbar_x);
     env->gui->render(env->scrollbar_y);
     env->gui->render(env->list_tooltips);
+    if (env->popup_visible)
+      {
+	env->gui->render(env->popup_dialog);
+      }
     if (env->insert_ongoing)
       {
 	env->gui->render(env->insert_widget);
@@ -350,6 +362,11 @@ void iter(void *arg)
     env->ev->mainloop_api.fpscounter();
     // swapbuffers
     env->ev->mainloop_api.swapbuffers();
+
+	bool properties_button = false;
+	bool codegen_button = false;
+	bool display_button = false;
+	std::string popup_uid;
 
     // handle esc event
     MainLoopApi::Event e;
@@ -520,6 +537,17 @@ void iter(void *arg)
 			break;
 		      }
 		  }
+		int ss8 = env->popup_open.size();
+		for(int i=0;i<ss8;i++)
+		  {
+		    W w = env->popup_open[i];
+		    std::string id = env->gui->get_id(w);
+		    if (id==uid)
+		      {
+			env->popup_open.erase(env->popup_open.begin()+i);
+			break;
+		      }
+		  }
 		W item = env->gui->find_canvas_item(env->canvas, uid);
 		int index = env->gui->canvas_item_index(env->canvas, item);
 		env->gui->del_canvas_item(env->canvas, index);
@@ -545,33 +573,96 @@ void iter(void *arg)
 	  }
 
 	{
-	  int s = env->codegen_button_vec.size();
+	  int s = env->popup_selections.size();
 	  for(int i=0;i<s;i++)
 	    {
-	      W w = env->codegen_button_vec[i];
+	      W w = env->popup_selections[i];
 	      int chosen = env->gui->chosen_item(w);
 	      if (chosen==0)
 		{
-		  std::cout << "CodeGen!" << std::endl;
+		  std::cout << "popup selection!" << std::endl;
+		  env->popup_visible = false;
 		  std::string uid = env->gui->get_id(w);
-		  std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid);
-		std::cout << p.second << std::endl;
+		  popup_uid = uid;
+		  switch(i) {
+		  default:
+		  case 0: properties_button = true; break;
+		  case 1: codegen_button = true; break;
+		  case 2: display_button = true; break;
+		  };
+		  env->popup_selections = std::vector<W>();
+		  break;
+		}
+	    }
+	}
+
+	{
+	  int s = env->popup_open.size();
+	  for(int i=0;i<s;i++)
+	    {
+	      W w = env->popup_open[i];
+	      int chosen = env->gui->chosen_item(w);
+	      if (chosen==0)
+		{
+		  std::cout << "popup open!" << std::endl;
+		  std::string uid = env->gui->get_id(w);
+
+		  PT pos = e.cursor_pos;
+		  float x = env->ev->point_api.pt_x(pos);
+		  float y = env->ev->point_api.pt_y(pos);
+
+		  std::vector<std::string> labels;
+		  labels.push_back("Properties");
+		  labels.push_back("CodeGen");
+		  labels.push_back("Display");
+		  
+		  W w = env->gui->popup_menu(int(x), int(y), labels, env->atlas, env->atlas_bm, env->popup_selections);
+		  env->popup_dialog = w;
+		  env->popup_visible = true;
+		  int s = env->popup_selections.size();
+		  for(int i=0;i<s;i++)
+		    {
+		      W w = env->popup_selections[i];
+		      env->gui->set_id(w, uid);
+		    }
 
 		}
 	    }
 	}
 
-	if (!env->display_visible)
+	if (codegen_button==true)
+	{
+	  std::string uid = popup_uid;
+	  //int s = env->codegen_button_vec.size();
+	  //for(int i=0;i<s;i++)
+	  //  {
+	  //    W w = env->codegen_button_vec[i];
+	  //    std::string uid = env->gui->get_id(w);
+	  //int chosen = env->gui->chosen_item(w);
+	  //  if (chosen==0)
+		{
+		  std::cout << "CodeGen!" << std::endl;
+		  std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid);
+		std::cout << p.second << std::endl;
+
+		}
+	      //}
+	}
+
+	if (!env->display_visible && display_button)
 	  {
-	    int s = env->display_clicks.size();
-	    for(int i=0;i<s;i++)
-	      {
-		W w = env->display_clicks[i];
-		int chosen = env->gui->chosen_item(w);
-		if (!env->display_visible && chosen==0)
-		  {
-		    std::string uid = env->gui->get_id(w);
+	    {
+	      std::string uid = popup_uid;
+	    //int s = env->display_clicks.size();
+	    //for(int i=0;i<s;i++)
+	    //  {
+	    //	W w = env->display_clicks[i];
+	    //	int chosen = env->gui->chosen_item(w);
+	    //	if (!env->display_visible && chosen==0)
+	    //	  {
+	    //	    std::string uid = env->gui->get_id(w);
 		    
+	      {
 		    std::cout << "Execute for uid: " << uid << std::endl;
 		    
 		    // Execute
@@ -701,17 +792,20 @@ void iter(void *arg)
 	
 	if (!env->editor_visible)
 	  {
-	    int s = env->edit_clicks.size(); //env->gui->num_childs(env->canvas);
-	    for(int i=0;i<s;i++)
-	      {
+	    //	    int s = env->edit_clicks.size(); //env->gui->num_childs(env->canvas);
+	    //for(int i=0;i<s;i++)
+	    //{
 		//std::cout << "Child " << i << std::endl;
-		W w = //env->gui->get_child(env->canvas, i);
-		  env->edit_clicks[i];
-		int chosen = env->gui->chosen_item(w);
-		if (!env->editor_visible && chosen == 0)
+	    //	W w = //env->gui->get_child(env->canvas, i);
+	    //	  env->edit_clicks[i];
+	    //	int chosen = env->gui->chosen_item(w);
+	    //	if (!env->editor_visible && chosen == 0)
+	    if (properties_button==true)
+	    {
 		  {
-		    env->dialog_i1 = i;
-		    std::string uid = env->gui->get_id(w);
+		    // env->dialog_i1 = i;
+		    std::string uid = popup_uid;
+		    //std::string uid = env->gui->get_id(w);
 		    //std::cout << "Chosen uid: " << uid << std::endl;
 		    env->dialog_uid = uid;
 		    ///std::vector<GuiApi::EditTypes*> vec4;
@@ -762,6 +856,28 @@ void iter(void *arg)
 	  }
 	if (env->editor_visible)
 	  env->gui->update(env->editor, e.cursor_pos, e.button, e.ch, e.type);
+	if (env->popup_visible)
+	  env->gui->update(env->popup_dialog, e.cursor_pos, e.button, e.ch, e.type);
+	if (e.button == 0 && env->popup_visible) { 
+	  PT pos = e.cursor_pos;
+	  int x = env->ev->point_api.pt_x(pos);
+	  int y = env->ev->point_api.pt_y(pos);
+	  int px = env->gui->pos_x(env->popup_dialog);
+	  int py = env->gui->pos_y(env->popup_dialog);
+	  int sx = env->gui->size_x(env->popup_dialog);
+	  int sy = env->gui->size_y(env->popup_dialog);
+
+	  if (x>=px && y>=py && x<px+sx && y<py+sy)
+	    {
+	      /* do nothing */
+	    }
+	  else
+	    {
+	      env->popup_visible = false; 
+	      env->popup_selections = std::vector<W>();
+	    }
+	}
+
 	env->gui->update(env->txt2, e.cursor_pos, e.button, e.ch, e.type);
 	env->gui->update(env->scroll_area, e.cursor_pos, e.button,e.ch, e.type);
 	//env->gui->update(env->wave, e.cursor_pos, e.button);
@@ -1235,7 +1351,7 @@ int main(int argc, char *argv[]) {
   //gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), 150,100);
   //for(int i=0;i<200;i++)
   //  gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), i*30, i*30);
-  ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets, env.display_clicks, env.edit_clicks, env.delete_key, env.codegen_button_vec);
+  ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets, env.display_clicks, env.edit_clicks, env.delete_key, env.codegen_button_vec, env.popup_open);
 
   ev.mod_api.insert_links(ev, gui, mod, 0, env.connect_links, canvas, env.connect_targets, sh2, sh);
   add_to_canvas(gui, canvas, env.connect_links);
