@@ -1092,7 +1092,7 @@ std::vector<std::string> GameApi::WModApi::labels_from_function(WM mod2, int id,
   std::vector<std::string> labels2 = remove_unnecessary_labels(types, labels);
   return labels2;
 }
-void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks, W &delete_key)
+void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks, W &delete_key, W &codegen_button, W &popup_open)
 {
   int pos_x = gui.pos_x(item);
   int pos_y = gui.pos_y(item);
@@ -1100,8 +1100,25 @@ void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, 
   pos_x -= gui.pos_x(canvas);
   pos_y -= gui.pos_y(canvas);
 
-  W display_2 = gui.highlight(20, 20);
-  W display_22 = gui.click_area(display_2, 0,0, gui.size_x(display_2), gui.size_y(display_2));
+
+  //W codegen_0 = gui.highlight(20,20);
+  //    W codegen_1 = gui.button(20,20, 0xff88ff88, 0xff44ff44);
+  //    W codegen_2 = gui.layer(codegen_1, codegen_0);
+  W codegen_2 = gui.canvas(20,20);
+      W codegen_3 = gui.click_area(codegen_2, 0,0, gui.size_x(codegen_2), gui.size_y(codegen_2),0);
+      gui.set_id(codegen_3, uid);
+      codegen_button = codegen_3;
+      W codegen_4 = gui.center_align(codegen_3, gui.size_x(item));
+      W codegen_5 = gui.center_y(codegen_4, gui.size_y(item)-40);
+      W codegen_6 = gui.margin(codegen_5, 0, 40, 0, 0);
+
+
+      // W display_2 = gui.highlight(20, 20);
+      //   W display2_0 = gui.button(20,20, 0xffff8888, 0xffff4444);
+      // W display2_1 = gui.layer(display2_0, display_2);
+  W display2_1 = gui.canvas(20,20);
+
+      W display_22 = gui.click_area(display2_1, 0,0, gui.size_x(display2_1), gui.size_y(display2_1),0);
   gui.set_id(display_22, uid);
   display_clicks = display_22;
   W display_3a = gui.center_align(display_22, gui.size_x(item));
@@ -1110,13 +1127,17 @@ void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, 
 
 
 
-  W node22 = gui.highlight(20, 20);
+  //  W node22 = gui.highlight(20, 20);
+  //    W node22_0 = gui.button(20,20, 0xff888888, 0xff444444);
+  //      W node22_1 = gui.layer(node22_0, node22);
+  W node22 = gui.canvas(20,20);
+  W node22_1 = gui.canvas(20,20);
 
 
-  W node22a = gui.center_align(node22, gui.size_x(item));
+  W node22a = gui.center_align(node22_1, gui.size_x(item));
   W node22b = gui.center_y(node22a, gui.size_y(item));
 
-  W node2 = gui.click_area(item, (gui.size_x(item)-20)/2, (gui.size_y(item)-20)/2, gui.size_x(node22), gui.size_y(node22));
+  W node2 = gui.click_area(item, (gui.size_x(item)-20)/2, (gui.size_y(item)-20)/2, gui.size_x(node22), gui.size_y(node22),0);
 
   gui.set_id(node2, uid);
   edit_clicks = node2;
@@ -1124,23 +1145,27 @@ void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, 
   W node221 = gui.margin(node22b, 0,0, 0,0);
   W node222 = gui.layer(node2, node221);
   W node2222 = gui.layer(node222, display_3);
+  W node22222 = gui.layer(node2222, codegen_6);
 #ifdef EMSCRIPTEN
-  W node4 = gui.key_area(node2222, 0, 0, gui.size_x(node2222), 20, 76);
+  W node4 = gui.key_area(node22222, 0, 0, gui.size_x(node22222), 20, 76);
 #else
-  W node4 = gui.key_area(node2222, 0, 0, gui.size_x(node2222), 20, 127);
+  W node4 = gui.key_area(node22222, 0, 0, gui.size_x(node22222), 20, 127);
 #endif
   gui.set_id(node4, uid);
   delete_key = node4;
+  W node5 = gui.click_area(node4, 0, 0, gui.size_x(node4), gui.size_y(node4), 2);
+  gui.set_id(node5, uid);
+  popup_open = node5;
   
-  W node3 = gui.mouse_move(node4, 0, 0, gui.size_x(node4), 20);
-      
+  W node3 = gui.mouse_move(node5, 0, 0, gui.size_x(node5), 20);
   gui.set_pos(item, 0.0, 0.0);
   gui.set_id(node3, uid);
+
   gui.canvas_item(canvas, node3, pos_x, pos_y);
   
 }
 
-void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p, std::vector<W> &params, std::vector<W> &display_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button)
+void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p, std::vector<W> &params, std::vector<W> &display_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -1179,10 +1204,11 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
 
       W node = gui.canvas_item_gameapi_node(100,100, line->module_name, param_types2, param_tooltip2, return_type, atlas, atlas_bm, connect_clicks[i], line->uid, params);
 
-      W codegen_0 = gui.highlight(20,20);
-      W codegen_1 = gui.button(20,20, 0xff88ff88, 0xff44ff44);
-      W codegen_2 = gui.layer(codegen_1, codegen_0);
-      W codegen_3 = gui.click_area(codegen_2, 0,0, gui.size_x(codegen_2), gui.size_y(codegen_2));
+      // W codegen_0 = gui.highlight(20,20);
+      // W codegen_1 = gui.button(20,20, 0xff88ff88, 0xff44ff44);
+      //W codegen_2 = gui.layer(codegen_1, codegen_0);
+      W codegen_2 = gui.canvas(20,20);
+      W codegen_3 = gui.click_area(codegen_2, 0,0, gui.size_x(codegen_2), gui.size_y(codegen_2),0);
       gui.set_id(codegen_3, line->uid);
       codegen_button.push_back(codegen_3);
       W codegen_4 = gui.center_align(codegen_3, gui.size_x(node));
@@ -1190,10 +1216,11 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
       W codegen_6 = gui.margin(codegen_5, 0, 40, 0, 0);
 
 
-      W display_2 = gui.highlight(20, 20);
-      W display2_0 = gui.button(20,20, 0xffff8888, 0xffff4444);
-      W display2_1 = gui.layer(display2_0, display_2);
-      W display_22 = gui.click_area(display2_1, 0,0, gui.size_x(display_2), gui.size_y(display_2));
+      //W display_2 = gui.highlight(20, 20);
+      //W display2_0 = gui.button(20,20, 0xffff8888, 0xffff4444);
+      //W display2_1 = gui.layer(display2_0, display_2);
+      W display2_1 = gui.canvas(20,20);
+      W display_22 = gui.click_area(display2_1, 0,0, gui.size_x(display2_1), gui.size_y(display2_1),0);
       gui.set_id(display_22, line->uid);
       display_clicks.push_back(display_22);
       W display_3a = gui.center_align(display_22, gui.size_x(node));
@@ -1201,13 +1228,15 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
       W display_3 = gui.margin(display_3b, 0, 80, 0, 0);
 
 
-      W node22 = gui.highlight(20, 20);
-      W node22_0 = gui.button(20,20, 0xff888888, 0xff444444);
-      W node22_1 = gui.layer(node22_0, node22);
+      //W node22 = gui.highlight(20, 20);
+      //W node22_0 = gui.button(20,20, 0xff888888, 0xff444444);
+      //W node22_1 = gui.layer(node22_0, node22);
+      W node22 = gui.canvas(20,20);
+      W node22_1 = gui.canvas(20,20);
       W node22a = gui.center_align(node22_1, gui.size_x(node));
       W node22b = gui.center_y(node22a, gui.size_y(node));
 
-      W node2 = gui.click_area(node, (gui.size_x(node)-20)/2, (gui.size_y(node)-20)/2, gui.size_x(node22), gui.size_y(node22));
+      W node2 = gui.click_area(node, (gui.size_x(node)-20)/2, (gui.size_y(node)-20)/2, gui.size_x(node22), gui.size_y(node22),0);
       gui.set_id(node2, line->uid);
       edit_clicks.push_back(node2);
 
@@ -1223,7 +1252,10 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
 #endif
       gui.set_id(node4, line->uid);
       delete_key.push_back(node4);
-      W node3 = gui.mouse_move(node4, 0, 0, gui.size_x(node4), 20);
+      W node5 = gui.click_area(node4, 0, 0, gui.size_x(node4), gui.size_y(node4), 2);
+      gui.set_id(node5, line->uid);
+      popup_open.push_back(node5);
+      W node3 = gui.mouse_move(node5, 0, 0, gui.size_x(node5), 20);
       gui.set_id(node3, line->uid);
       gui.canvas_item(canvas, node3, line->x, line->y);
     }

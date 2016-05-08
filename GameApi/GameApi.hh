@@ -886,7 +886,7 @@ public:
   W gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int colot_1, unsigned int color_2);
   W button(int sx, int sy, unsigned int color_1, unsigned int color_2);
   W mouse_move(W widget, int area_x, int area_y, int area_width, int area_height);
-  W click_area(W widget, int area_x, int area_y, int area_width, int area_height);
+  W click_area(W widget, int area_x, int area_y, int area_width, int area_height, int button_id);
   W key_area(W widget, int area_x, int area_y, int area_width, int area_height, int key);
   W or_elem(W w1, W w2);
   W highlight(int sx, int sy);
@@ -904,6 +904,7 @@ public:
   W main_menu(std::vector<std::string> labels, FtA atlas, BM atlas_bm);
   W menu(W main_menu, int menu_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm);
   W submenu(W menu, int menu_pane_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm);
+  W popup_menu(int x, int y, std::vector<std::string> labels, FtA atlas, BM atlas_bm, std::vector<W> &areas);
   W scrollbar_y(int sx, int sy, int area_y);
   W scrollbar_x(int sx, int sy, int area_x);
   W scroll_area(W orig, int sx, int sy, int screen_y);
@@ -1013,9 +1014,9 @@ public:
   WModApi(Env &e) : e(e) { }
   WM load(std::string filename);
   void save(WM mod, std::string ilename);
-  void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button);
+  void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open);
   void update_lines_from_canvas(W canvas, WM mod, int id);
-  void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks, W &delete_key);
+  void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks, W &delete_key, W &codegen_button, W &popup_open);
   W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid, std::vector<W> &params);
   std::vector<int> indexes_from_funcname(std::string funcname);
   std::vector<std::string> types_from_function(WM mod, int id, std::string funcname);

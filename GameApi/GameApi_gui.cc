@@ -1420,10 +1420,11 @@ private:
 class ClickAreaWidget : public GuiWidgetForward
 {
 public:
-  ClickAreaWidget(GameApi::EveryApi &ev, GuiWidget *wid, int area_x, int area_y, int area_width, int area_height) : GuiWidgetForward(ev, { wid } ), area_x(area_x), area_y(area_y), area_width(area_width), area_height(area_height) { done=false;
+  ClickAreaWidget(GameApi::EveryApi &ev, GuiWidget *wid, int area_x, int area_y, int area_width, int area_height, int button_id2) : GuiWidgetForward(ev, { wid } ), area_x(area_x), area_y(area_y), area_width(area_width), area_height(area_height) { done=false;
     selected = false;
     Point2d p = { -666.0, -666.0 };
     update(p, -1, -1, -1);
+    button_id = button_id2;
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
@@ -1434,7 +1435,7 @@ public:
 
     //std::cout << "Update!" << std::endl;
     //std::cout << button << " " << mouse << " " << pos << " " << area_x << " " << area_y << " " << area_width << " " << area_height << std::endl;
-    if (!done && button==0 && type==1025 && mouse.x >= pos.x+area_x && mouse.x < pos.x+area_x+area_width &&
+    if (!done && button==button_id && type==1025 && mouse.x >= pos.x+area_x && mouse.x < pos.x+area_x+area_width &&
 	mouse.y >= pos.y+area_y && mouse.y < pos.y+area_y+area_height)
       {
 	//std::cout << "Selected: true" << std::endl;
@@ -1449,6 +1450,7 @@ private:
   int area_width, area_height;
   bool selected;
   bool done;
+  int button_id;
 };
 
 class KeyAreaWidget : public GuiWidgetForward
@@ -1487,10 +1489,10 @@ private:
 };
 
 
-EXPORT GameApi::W GameApi::GuiApi::click_area(W widget, int area_x, int area_y, int area_width, int area_height)
+EXPORT GameApi::W GameApi::GuiApi::click_area(W widget, int area_x, int area_y, int area_width, int area_height, int button_id)
 {
   GuiWidget *wid = find_widget(e, widget);
-  return add_widget(e, new ClickAreaWidget(ev, wid, area_x, area_y, area_width, area_height));
+  return add_widget(e, new ClickAreaWidget(ev, wid, area_x, area_y, area_width, area_height,button_id));
 
 }
 EXPORT GameApi::W GameApi::GuiApi::key_area(W widget, int area_x, int area_y, int area_width, int area_height, int key)
@@ -1522,7 +1524,7 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
       if (max_width<width) max_width = width;
       W txt_2 = button(size_x(txt_1), size_y(txt_1), 0xff888888, 0xff666666);
       W txt_3 = layer(txt_2, txt_11);
-      W txt_4 = click_area(txt_3, 0.0,0.0,size_x(txt_3), size_y(txt_3));
+      W txt_4 = click_area(txt_3, 0.0,0.0,size_x(txt_3), size_y(txt_3),0);
       
       std::stringstream ii;
       ii << i;
@@ -1547,7 +1549,7 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
 
   int max_width2 = size_x(txt_1);
   W txt_11 = highlight(txt_1);
-  W txt_111 = click_area(txt_11, 0.0, 0.0, size_x(txt_11), size_y(txt_11));
+  W txt_111 = click_area(txt_11, 0.0, 0.0, size_x(txt_11), size_y(txt_11),0);
   set_id(txt_111, uid);
   connect_click = txt_111;
   W txt_2 = button(size_x(txt_1), size_y(txt_1), 0xff330033, 0xff880088);
@@ -1654,7 +1656,7 @@ EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x,
   W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
   W but_41 = highlight(but_4);
   W but_5 = layer(but_41, but_3);
-  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5));
+  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
   close_button = but_6;
 
   W code_1 = text("CodeGen", atlas, atlas_bm);
@@ -1663,7 +1665,7 @@ EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x,
   W code_4 = button(size_x(code_3), size_y(code_3), 0xff00ff00, 0xff008800);
   W code_41 = highlight(code_4);
   W code_5 = layer(code_41, code_3);
-  W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5));
+  W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
   codegen_button = code_6;
 
 
@@ -1687,7 +1689,7 @@ EXPORT GameApi::W GameApi::GuiApi::va_dialog(VA p, SH sh, int screen_size_x, int
   W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
   W but_41 = highlight(but_4);
   W but_5 = layer(but_41, but_3);
-  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5));
+  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
   close_button = but_6;
 
   W code_1 = text("CodeGen", atlas, atlas_bm);
@@ -1696,7 +1698,7 @@ EXPORT GameApi::W GameApi::GuiApi::va_dialog(VA p, SH sh, int screen_size_x, int
   W code_4 = button(size_x(code_3), size_y(code_3), 0xff00ff00, 0xff008800);
   W code_41 = highlight(code_4);
   W code_5 = layer(code_41, code_3);
-  W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5));
+  W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
   codegen_button = code_6;
 
 
@@ -1722,7 +1724,7 @@ EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atl
   W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
   W but_41 = highlight(but_4);
   W but_5 = layer(but_41, but_3);
-  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5));
+  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
   close_button = but_6;
 
   W code_1 = text("CodeGen", atlas, atlas_bm);
@@ -1731,7 +1733,7 @@ EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atl
   W code_4 = button(size_x(code_3), size_y(code_3), 0xff00ff00, 0xff008800);
   W code_41 = highlight(code_4);
   W code_5 = layer(code_41, code_3);
-  W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5));
+  W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
   codegen_button = code_6;
 
 
@@ -1756,7 +1758,7 @@ EXPORT GameApi::W GameApi::GuiApi::lines_dialog(LI p, SH sh, int screen_size_x, 
   W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
   W but_41 = highlight(but_4);
   W but_5 = layer(but_41, but_3);
-  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5));
+  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
   close_button = but_6;
 
   W code_1 = text("CodeGen", atlas, atlas_bm);
@@ -1765,7 +1767,7 @@ EXPORT GameApi::W GameApi::GuiApi::lines_dialog(LI p, SH sh, int screen_size_x, 
   W code_4 = button(size_x(code_3), size_y(code_3), 0xff00ff00, 0xff008800);
   W code_41 = highlight(code_4);
   W code_5 = layer(code_41, code_3);
-  W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5));
+  W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
   codegen_button = code_6;
 
 
@@ -1789,7 +1791,7 @@ EXPORT GameApi::W GameApi::GuiApi::pts_dialog(PTS p, SH sh, int screen_size_x, i
   W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
   W but_41 = highlight(but_4);
   W but_5 = layer(but_41, but_3);
-  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5));
+  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
   close_button = but_6;
 
   W code_1 = text("CodeGen", atlas, atlas_bm);
@@ -1798,7 +1800,7 @@ EXPORT GameApi::W GameApi::GuiApi::pts_dialog(PTS p, SH sh, int screen_size_x, i
   W code_4 = button(size_x(code_3), size_y(code_3), 0xff00ff00, 0xff008800);
   W code_41 = highlight(code_4);
   W code_5 = layer(code_41, code_3);
-  W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5));
+  W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
   codegen_button = code_6;
 
 
@@ -1839,7 +1841,7 @@ EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atl
   W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
   W but_41 = highlight(but_4);
   W but_5 = layer(but_41, but_3);
-  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5));
+  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
   close_button = but_6;
 
   W code_1 = text("CodeGen", atlas, atlas_bm);
@@ -1848,7 +1850,7 @@ EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atl
   W code_4 = button(size_x(code_3), size_y(code_3), 0xff00ff00, 0xff008800);
   W code_41 = highlight(code_4);
   W code_5 = layer(code_41, code_3);
-  W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5));
+  W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
   codegen_button = code_6;
 
   W arr[] = { bm_4, code_6, but_6 };
@@ -1899,7 +1901,7 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &l
   W cancel_button_2 = layer(cancel_button, cancel_button_111);
   W cancel_button_3 = highlight(size_x(cancel_button_2), size_y(cancel_button_2));
   W cancel_button_4 = layer(cancel_button_2, cancel_button_3);
-  W cancel_area = click_area(cancel_button_4, 0,0,250,50);
+  W cancel_area = click_area(cancel_button_4, 0,0,250,50,0);
   cancel_but = cancel_area;
   W ok_button = button(250,50, 0xff884422, 0xff442211);
   W ok_button_1 = text("Ok", atlas,atlas_bm, 4);
@@ -1908,7 +1910,7 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &l
   W ok_button_2 = layer(ok_button, ok_button_111);
   W ok_button_3 = highlight(size_x(ok_button_2), size_y(ok_button_2));
   W ok_button_4 = layer(ok_button_2, ok_button_3);
-  W ok_area = click_area(ok_button_4, 0,0,250,50);
+  W ok_area = click_area(ok_button_4, 0,0,250,50,0);
   ok_but = ok_area;
   W button_array[] = { cancel_area, ok_area };
   W button_arr = array_x(&button_array[0], 2, 0);
@@ -2718,6 +2720,33 @@ GameApi::W GameApi::GuiApi::menu(W main_menu, int menu_id, std::vector<std::stri
     //gradient(size_x(w2), size_y(w2), pt1, pt2, 0xffff8844, 0xff884422);
   W w4 = layer(w3,w22);
   set_pos(w4, pos.x, pos.y+size.dy);
+  return w4;
+}
+
+GameApi::W GameApi::GuiApi::popup_menu(int x, int y, std::vector<std::string> labels, FtA atlas, BM atlas_bm, std::vector<W> &areas)
+{
+  int ss = labels.size();
+  std::vector<W> vec;
+  for(int i=0;i<ss;i++) {
+    std::string s = labels[i];
+    W txt_1 = text(s, atlas, atlas_bm);
+    W txt_2 = margin(txt_1, 2,2,2,2);
+    W txt_3 = highlight(size_x(txt_2), size_y(txt_2));
+    W txt_4 = layer(txt_2, txt_3);
+    W txt_5 = click_area(txt_4, 0.0, 0.0, size_x(txt_4), size_y(txt_4),0);
+    std::stringstream ss;
+    ss << i;
+    std::string id = ss.str();
+    set_id(txt_5, id);
+    vec.push_back(txt_5);
+    areas.push_back(txt_5);
+  }
+
+  W w2 = array_y(&vec[0], vec.size(), 2);
+  W w22 = margin(w2, 4,4,4,4);
+  W w3 = button(size_x(w22), size_y(w22), 0xffff8844, 0xff884422);
+  W w4 = layer(w3,w22);
+  set_pos(w4, x, y);
   return w4;
 }
 
