@@ -367,7 +367,7 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
 #ifdef SDL2_USED
   int screenx = scr_x, screeny = scr_y;
 
-  SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK|SDL_INIT_AUDIO);
+  SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK);
 
 
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -434,79 +434,12 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
       //SDL_GL_SetSwapInterval(int interval);
     }
 #endif
-  //IMG_Init(IMG_INIT_JPG|IMG_INIT_PNG);
-
-  //glEnable(GL_DEBUG_OUTPUT_SYNCRONOUS);
-  //glDebugMessageCallback(func, 0);
-  //gluint unusedids = 0;
-  //glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unusedids, true);
-
    glEnable(GL_DEPTH_TEST);
-  glEnable ( GL_NORMALIZE );
   glDepthMask(GL_TRUE);
-#ifndef EMSCRIPTEN
-  glShadeModel(GL_SMOOTH);
-#endif
-  glEnable(GL_LIGHTING);
 
-  //glEnable(GL_POLYGON_SMOOTH);
-  //glEnable(GL_CULL_FACE);
-  //glMaterialf( GL_FRONT_AND_BACK,
-  //	       GL_SHININESS, 0.8);
-  // glColorMaterial ( GL_FRONT_AND_BACK, GL_EMISSION ) ;
-#ifndef EMSCRIPTEN
-   glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE ) ;
-#endif
-  glEnable(GL_COLOR_MATERIAL);
-  glEnable(GL_LIGHT0);
-  //glEnable(GL_MULTISAMPLE_ARB);
-  
-
-  //glEnable(GL_LIGHT1);
-  //glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, 1.0);
-  //glEnable(GL_AUTONORMALS);
-#ifndef EMSCRIPTEN
-  glMaterialfv ( GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient );
-  glMaterialfv ( GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse );
-  glMaterialfv ( GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular );
-  glMaterialfv ( GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess );
-#endif
-  //glFrontFace(0 ? GL_CCW : GL_CW);
-
-#ifndef EMSCRIPTEN
-  glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-  glLightfv(GL_LIGHT0, GL_AMBIENT, mat_ambient);
-  glLightfv(GL_LIGHT0, GL_DIFFUSE, mat_diffuse);
-  glLightfv(GL_LIGHT0, GL_SPECULAR, mat_diffuse);
-#endif
-  //glLightfv(GL_LIGHT1, GL_POSITION, light_position2);
   glClearColor( 0, 0, 0, 0 );
   glViewport(0,0,screenx, screeny);
-#ifndef EMSCRIPTEN
-  glMatrixMode( GL_PROJECTION ); 
-  glLoadIdentity(); 
-#endif
-  //glOrtho( -screenx, screenx, screeny, -screeny, -1000, 1000 ); 
-  //double r = 0.05;
-  //double ks = (double)screenx/screeny;
-  //glFrustum( -r*ks, r*ks, -r, r, 0.1, 100.0 );
-  //gluLookAt(0.0, 0.0, -100.0, // eye
-  //    0.0, 0.0, 0.0,  // center
-  //	    0.0, -100.0, 0.0);
 
-  // ORIGINAL
-  //gluPerspective(80.0, (double)screenx/screeny, 10.1, 6000.0);
-  Matrix m = Matrix::Perspective(80.0, (double)screenx/screeny, 10.1, 60000.0);
-  float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
-		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
-		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
-		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
-#ifndef EMSCRIPTEN
-  glMultMatrixf(&mat[0]);
-
-  glMatrixMode( GL_MODELVIEW ); 
-  glLoadIdentity();
-#endif
 #endif
   return 0;
 }

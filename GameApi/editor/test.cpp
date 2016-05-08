@@ -130,6 +130,7 @@ struct Envi {
   std::vector<W> display_clicks;
   std::vector<W> edit_clicks;
   std::vector<W> delete_key;
+  std::vector<W> codegen_button_vec;
   int dialog_i1;
   std::string dialog_uid;
   std::vector<GuiApi::EditTypes*> vec4;
@@ -507,7 +508,17 @@ void iter(void *arg)
 			env->delete_key.erase(env->delete_key.begin()+i);
 			break;
 		      }
-
+		  }
+		int ss7 = env->codegen_button_vec.size();
+		for(int i=0;i<ss7;i++)
+		  {
+		    W w = env->codegen_button_vec[i];
+		    std::string id = env->gui->get_id(w);
+		    if (id==uid)
+		      {
+			env->codegen_button_vec.erase(env->codegen_button_vec.begin()+i);
+			break;
+		      }
 		  }
 		W item = env->gui->find_canvas_item(env->canvas, uid);
 		int index = env->gui->canvas_item_index(env->canvas, item);
@@ -532,6 +543,23 @@ void iter(void *arg)
 
 	      }
 	  }
+
+	{
+	  int s = env->codegen_button_vec.size();
+	  for(int i=0;i<s;i++)
+	    {
+	      W w = env->codegen_button_vec[i];
+	      int chosen = env->gui->chosen_item(w);
+	      if (chosen==0)
+		{
+		  std::cout << "CodeGen!" << std::endl;
+		  std::string uid = env->gui->get_id(w);
+		  std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid);
+		std::cout << p.second << std::endl;
+
+		}
+	    }
+	}
 
 	if (!env->display_visible)
 	  {
@@ -1207,7 +1235,7 @@ int main(int argc, char *argv[]) {
   //gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), 150,100);
   //for(int i=0;i<200;i++)
   //  gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), i*30, i*30);
-  ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets, env.display_clicks, env.edit_clicks, env.delete_key);
+  ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets, env.display_clicks, env.edit_clicks, env.delete_key, env.codegen_button_vec);
 
   ev.mod_api.insert_links(ev, gui, mod, 0, env.connect_links, canvas, env.connect_targets, sh2, sh);
   add_to_canvas(gui, canvas, env.connect_links);

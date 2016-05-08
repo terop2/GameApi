@@ -146,3 +146,14 @@ EXPORT void GameApi::TextureApi::unuse(TXID tx)
 {
   glDisable(GL_TEXTURE_2D);
 }
+EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
+{
+  glBindTexture(GL_TEXTURE_2D, tx.id);
+  int width=1, height=1;
+  glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+  glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+  BufferRef ref = BufferRef::NewBuffer(width, height);
+  glGetTexImage( GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
+  Bitmap<Color> *bm = new BitmapFromBuffer(ref);
+  return add_color_bitmap2(e, bm);
+}
