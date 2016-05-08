@@ -277,6 +277,7 @@ public:
 	IMPORT VA bind(VA va, TXID tx);
 	IMPORT VA bind_arr(VA va, TXA tx);
         IMPORT TXA prepare_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
+        IMPORT BM to_bitmap(TXID id);
 private:
   TextureApi(const TextureApi&);
   void operator=(const TextureApi&);
@@ -1012,7 +1013,7 @@ public:
   WModApi(Env &e) : e(e) { }
   WM load(std::string filename);
   void save(WM mod, std::string ilename);
-  void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key);
+  void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button);
   void update_lines_from_canvas(W canvas, WM mod, int id);
   void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks, W &delete_key);
   W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid, std::vector<W> &params);
@@ -1499,7 +1500,7 @@ public:
 
   IMPORT P dist_from_lines(LI li, float d1, float d2, PT center);
 
-  IMPORT BM renderpolytobitmap(P p, float x, float y, float z, int sx, int sy);
+  IMPORT BM renderpolytobitmap(EveryApi &ev, P p, float x, float y, float z, int sx, int sy);
 private:
   PolygonApi(const PolygonApi&);
   void operator=(const PolygonApi&);
