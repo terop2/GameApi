@@ -12,6 +12,45 @@
 using namespace GameApi;
 
 
+std::string hexify(std::string s)
+{
+  std::string res;
+  int ss = s.size();
+  for(int i=0;i<ss;i++)
+    {
+      unsigned char c = s[i];
+      unsigned char c2 = c & 0xf;
+      unsigned char c3 = c & 0xf0;
+      c3>>=4;
+      const char *chrs = "0123456789ABCDEF";
+      res+=chrs[c3];
+      res+=chrs[c2];
+    }
+  return res;
+}
+
+std::string unhexify(std::string s)
+{
+  std::string res;
+  int ss = s.size();
+  for(int i=0;i<ss;i+=2)
+    {
+      int val = -1;
+      int val2 = -1;
+      char c1 = s[i];
+      char c2 = s[i+1];
+      const char *chrs = "0123456789ABCDEF";
+      for(int i1=0;i1<16;i1++)
+	{
+	  if (c1==chrs[i1]) { val=i1; }
+	  if (c2==chrs[i1]) { val2=i1; }
+	}
+      res+=char((val<<4) + val2);
+    }
+  return res;
+}
+
+
 // Note, this is copied to each dll too.
 class Item
 {
@@ -632,6 +671,7 @@ void iter(void *arg)
 
 	if (codegen_button==true)
 	{
+	  codegen_button=false;
 	  std::string uid = popup_uid;
 	  //int s = env->codegen_button_vec.size();
 	  //for(int i=0;i<s;i++)
@@ -651,6 +691,7 @@ void iter(void *arg)
 
 	if (!env->display_visible && display_button)
 	  {
+	    display_button = false;
 	    {
 	      std::string uid = popup_uid;
 	    //int s = env->display_clicks.size();
@@ -802,6 +843,7 @@ void iter(void *arg)
 	    //	if (!env->editor_visible && chosen == 0)
 	    if (properties_button==true)
 	    {
+	      properties_button = false;
 		  {
 		    // env->dialog_i1 = i;
 		    std::string uid = popup_uid;
@@ -834,7 +876,7 @@ void iter(void *arg)
 		    for(int e=0;e<s;e++)
 		      {
 			std::string *ref = refs[e];
-			env->gui->string_to_generic(*env->vec4[e], types[e], *ref); 
+			env->gui->string_to_generic(*env->vec4[e], types[e], unhexify(*ref)); 
 		      }
 		    
 		    //for(int kk = 0; kk < s; kk++)
@@ -970,7 +1012,9 @@ void iter(void *arg)
 		  {
 		    std::string *ref = refs[i];
 		    //std::cout << i << " " << (*env->vec4[i]).i_value << std::endl;
-		    env->gui->generic_to_string(*env->vec4[i], types[i], *ref);
+		    std::string val = unhexify(*ref);
+		    env->gui->generic_to_string(*env->vec4[i], types[i], val);
+		    *ref = hexify(val);
 		  }
 	      }
 	  }

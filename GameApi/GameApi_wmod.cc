@@ -2,6 +2,45 @@
 #include "GameApi_h.hh"
 #include "GameApi_gui.hh"
 
+
+std::string hexify(std::string s)
+{
+  std::string res;
+  int ss = s.size();
+  for(int i=0;i<ss;i++)
+    {
+      unsigned char c = s[i];
+      unsigned char c2 = c & 0xf;
+      unsigned char c3 = c & 0xf0;
+      c3>>=4;
+      const char *chrs = "0123456789ABCDEF";
+      res+=chrs[c3];
+      res+=chrs[c2];
+    }
+  return res;
+}
+std::string unhexify(std::string s)
+{
+  std::string res;
+  int ss = s.size();
+  for(int i=0;i<ss;i+=2)
+    {
+      int val = -1;
+      int val2 = -1;
+      char c1 = s[i];
+      char c2 = s[i+1];
+      const char *chrs = "0123456789ABCDEF";
+      for(int i1=0;i1<16;i1++)
+	{
+	  if (c1==chrs[i1]) { val=i1; }
+	  if (c2==chrs[i1]) { val2=i1; }
+	}
+      res+=char((val<<4) + val2);
+    }
+  return res;
+}
+
+
 std::vector<GameApiItem*> all_functions();
 
 
@@ -61,7 +100,7 @@ GameApiModule load_gameapi(std::string filename)
 	      int i = 0;
 	      for(;i<s;i++) { if (name_value[i]==':') break; }
 	      p.param_name = name_value.substr(0, std::max(i,0));
-	      p.value = name_value.substr(i+1, s-i-1);
+	      p.value = unhexify(name_value.substr(i+1, s-i-1));
 	      //std::cout << "Name: " << p.param_name << " Value: " << p.value << std::endl;
 	      g_line.params.push_back(p);
 	    }
@@ -109,7 +148,7 @@ void save_gameapi(const GameApiModule &mod, std::string filename)
 	    {
 	      const GameApiParam &p = line.params[i];
 	      std::string name = p.param_name;
-	      std::string value = p.value;
+	      std::string value = hexify(p.value);
 	      ss << name << ":" << value;
 	      if (i!=s-1) ss << " ";
 	    }
@@ -467,7 +506,7 @@ void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, 
       for(int ii=0;ii<ss;ii++)
 	{
 	  GameApiParam &param = line.params[ii];
-	  std::string value = param.value;
+	  std::string value = unhexify(param.value);
 	  
 	  if (value.size()>1 && value[0]=='[' && value[value.size()-1]==']')
 	    {
@@ -617,7 +656,7 @@ void GameApi::WModApi::delete_by_uid(WM mod2, int id, std::string line_uid)
       for(int i3=0;i3<s3;i3++)
 	{
 	  GameApiParam &param = line->params[i3];
-	  std::string val = param.value;
+	  std::string val = unhexify(param.value);
 	  if (val==line_uid) { param.value=""; }
 	  if (val.size()>1 && val[0]=='[' && val[val.size()-1]==']')
 	    {
@@ -664,7 +703,7 @@ std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mo
 	    {
 	      GameApiParam *param = &line->params[ii];
 	      std::string p = "";
-	      std::string pn = param->value;
+	      std::string pn = unhexify(param->value);
 	      if (pn.size()==0)
 		{
 		  std::cout << "CODEGEN FAILED at param!" << std::endl;
@@ -782,7 +821,7 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
 	  for(int ii=0;ii<ss;ii++)
 	    {
 	      GameApiParam *param = &line->params[ii];
-	      std::string p = param->value;
+	      std::string p = unhexify(param->value);
 	      if (p.size()==0)
 		{
 		  std::cout << "EXECUTE FAILED at param!" << std::endl;
@@ -912,7 +951,7 @@ void GameApi::WModApi::change_param_value(WM mod2, int id, std::string uid, int 
       if (line.uid == uid)
 	{
 	  GameApiParam &param = line.params[param_index];
-	  param.value = newvalue;
+	  param.value = hexify(newvalue);
 	  std::cout << "Param: " << param.param_name << " changed to " << newvalue << std::endl;
 	}
     }
@@ -968,7 +1007,7 @@ std::string GameApi::WModApi::param_value(WM mod2, int id, std::string uid, int 
       if (line.uid == uid)
 	{
 	  GameApiParam &param = line.params[param_index];
-	  return param.value;
+	  return unhexify(param.value);
 	  //param.value = newvalue;
 	  //std::cout << "Param: " << param.param_name << " changed to " << newvalue << std::endl;
 	}
@@ -1008,7 +1047,7 @@ void GameApi::WModApi::insert_to_mod(WM mod2, int id, std::string modname, std::
   for(int i=0;i<s;i++)
     {
       std::pair<std::string, std::string> p = params[i];
-      GameApiParam pp = { p.first, p.second };
+      GameApiParam pp = { p.first, hexify(p.second) };
       new_line.params.push_back(pp);
     }
   func->lines.push_back(new_line);
