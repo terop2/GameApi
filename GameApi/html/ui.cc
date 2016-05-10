@@ -3,6 +3,47 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <map>
+#include <functional>
+
+std::string hexify(std::string s)
+{
+  std::string res;
+  int ss = s.size();
+  for(int i=0;i<ss;i++)
+    {
+      unsigned char c = s[i];
+      unsigned char c2 = c & 0xf;
+      unsigned char c3 = c & 0xf0;
+      c3>>=4;
+      const char *chrs = "0123456789ABCDEF";
+      res+=chrs[c3];
+      res+=chrs[c2];
+    }
+  return res;
+}
+std::string unhexify(std::string s)
+{
+  std::string res;
+  int ss = s.size();
+  for(int i=0;i<ss;i+=2)
+    {
+      int val = -1;
+      int val2 = -1;
+      char c1 = s[i];
+      char c2 = s[i+1];
+      const char *chrs = "0123456789ABCDEF";
+      for(int i1=0;i1<16;i1++)
+	{
+	  if (c1==chrs[i1]) { val=i1; }
+	  if (c2==chrs[i1]) { val2=i1; }
+	}
+      res+=char((val<<4) + val2);
+    }
+  return res;
+}
+
+
 
 const int E = -16384;
 
@@ -39,6 +80,14 @@ class Widget
 public:
   Widget() { id=unique_id_apiitem(); pos_x=0; pos_y=0; size_x=0; size_y=0; }
   std::string Id() const { return id; }
+  virtual void make_unique(std::string i) {
+    if (ids.find(i)==ids.end())
+      {
+      ids[i]=unique_id_apiitem();
+      }
+    id = ids[i];
+    last_path = i;
+  }
   virtual void SetPos(int pos_x2, int pos_y2) {
     //std::cout << "Widget:SetPos: " << pos_x2 << " " << pos_y2 << std::endl;
     pos_x = pos_x2; pos_y=pos_y2; 
@@ -94,15 +143,35 @@ protected:
   std::string id;
   int pos_x, pos_y;
   int size_x, size_y;
+  std::map<std::string, std::string> ids;
+  std::string last_path;
 };
 
 class WidgetForward : public Widget
 {
 public:
-  WidgetForward(int pref_size_x, int pref_size_y) { 
+  WidgetForward(int pref_size_x, int pref_size_y) {
     p_x = pref_size_x;
     p_y = pref_size_y;
   }
+  virtual void make_unique(std::string i) {
+    Widget::make_unique(i);
+    int s = vec.size();
+    for(int ii=0;ii<s;ii++)
+      {
+	Widget *w = vec[ii];
+	std::string s = i;
+	s+= 'a'+ii;
+	w->make_unique(s);
+      }
+  }
+  void choose_unique(int i)
+  {
+    std::string s = "";
+    s+='a' + i;
+    vec[i]->make_unique(s);
+  }
+
   virtual int preferred_width() { return p_x; }
   virtual int preferred_height() { return p_y; }
 
@@ -140,6 +209,7 @@ public:
     int s = vec.size();
     for(int i=0;i<s;i++)
       {
+	choose_unique(i);
 	Widget *w = vec[i];
 	if (child_x[i]==E) { empty_x[i]=size_x - child_sx[i]-child_r[i]; }
 	if (child_y[i]==E) { empty_y[i]=size_y - child_sy[i]-child_b[i]; }
@@ -168,6 +238,7 @@ public:
     int ss = vec.size();
     for(int i=0;i<ss;i++)
       {
+	choose_unique(i);
 	Widget *w = vec[i];
 	s+=w->Page();
       }
@@ -180,6 +251,7 @@ public:
     int ss = vec.size();
     for(int i=0;i<ss;i++)
       {
+	choose_unique(i);
 	Widget *w = vec[i];
 	s+=w->Script();
       }
@@ -191,6 +263,7 @@ public:
     int ss = vec.size();
     for(int i=0;i<ss;i++)
       {
+	choose_unique(i);
 	Widget *w = vec[i];
 	s+=w->Css();
       }
@@ -234,18 +307,47 @@ public:
   T from_stream(std::string s)
   {
     T t;
-    std::stringstream is(s);
+    std::stringstream is(unhexify(s));
     is >> t;
     return t;
   }
 };
 
+template<>
+class FromStreamClass<std::string>
+{
+public:
+  std::string from_stream(std::string s)
+  {
+    return unhexify(s);
+  }
+};
+
+
+template<>
+class FromStreamClass<unsigned int>
+{
+public:
+  unsigned int from_stream(std::string s)
+  {
+  unsigned int bm;
+  //char c;
+  //is >> c;
+  //is >> c;
+  std::stringstream is(unhexify(s));
+  is >> std::hex >> bm >> std::dec;
+  return bm;
+  }
+};
+
+
 template<class T>
 class FromStreamClass<std::vector<T>>
 {
 public:
-  std::vector<T> from_stream(std::string s)
+  std::vector<T> from_stream(std::string sk)
   {
+    std::string s = unhexify(sk);
     std::cout << "Vector" << std::endl;
     std::vector<T> vec;
     if (s.size()<2)
@@ -285,7 +387,7 @@ public:\
   lab from_stream(std::string s)\
   {\
   lab bm;\
-  std::stringstream is(s);\
+  std::stringstream is(unhexify(s));		\
   is >> bm.id;\
   return bm;\
   }\
@@ -328,12 +430,12 @@ int funccall(RT (fptr)(P...), std::vector<std::string> s, std::vector<std::strin
 #ifndef EMSCRIPTEN
   for(int i=s2-1;i>=0;i--)
     {
-      ss << s[i] << " ";
+      ss << hexify(s[i]) << " ";
     }
 #else
   for(int i=0;i<s2;i++)
     {
-      ss << s[i] << " ";
+      ss << hexify(s[i]) << " ";
     }
 #endif
   std::cout << "FuncCall: " << ss.str() << std::endl;
@@ -494,7 +596,7 @@ std::vector<Item*> functions()
 			 "wb_link",
 			 { "url", "label", "size_x", "size_y", "font_size", "font_colour", "align" },
 			 { "std::string", "std::string", "int", "int", "int", "unsigned int", "int" },
-			 { "", "Link", "100", "30", "30", "ff000000", "0" },
+			 { "http://", "Link", "100", "30", "30", "ff000000", "0" },
 			 "W",
 			 "link"));
 
@@ -547,6 +649,7 @@ std::vector<Item*> functions()
 			 { "" },
 			 "W",
 			 "hide"));
+#if 0
   vec.push_back(ApiItemF(&show_button,
 			 "wb_show_button",
 			 { "content", "hidden" },
@@ -561,11 +664,12 @@ std::vector<Item*> functions()
 			 { "", "" },
 			 "W",
 			 "hide_button"));
+#endif
   vec.push_back(ApiItemF(&form,
 			 "wb_form",
 			 { "widget", "is_get", "script_url" },
 			 { "W", "bool", "std::string" },
-			 { "", "true", "" },
+			 { "", "true", "http://" },
 			 "W",
 			 "form"));
   vec.push_back(ApiItemF(&submit_button,
@@ -579,7 +683,7 @@ std::vector<Item*> functions()
 			 "wb_editor",
 			 { "name", "value", "placeholder", "size_x", "size_y", "font_size", "font_colour", "align" },
 			 { "std::string", "std::string", "std::string", "int", "int", "int", "unsigned int", "int" },
-			 { "addr", "", "Edit this", "300", "30", "30", "ff000000", "0" },
+			 { "addr", "a", "Edit this", "300", "30", "30", "ff000000", "0" },
 			 "W",
 			 "editor"));
   vec.push_back(ApiItemF(&password_editor,
@@ -603,7 +707,7 @@ class LabelWidget : public Widget
 public:
   LabelWidget(std::string str, int size_x, int size_y, int font_size, unsigned int font_colour, int align) : str(str), size_x(size_x), size_y(size_y), font_size(font_size), font_colour(font_colour), align(align) { }
   int preferred_width() { return size_x; }
-  int preferred_height() { return std::max(font_size * num_lines(), size_y); }
+  int preferred_height() { return std::max(size_y * num_lines(), size_y); }
   int num_lines() const {
     int lines = 1;
     int s = str.size();
@@ -641,6 +745,7 @@ public:
   {
     std::string s = cssprop;
     s+="font-size: " + Pixels(font_size) + ";\n";
+    s+="line-height: " + Pixels(size_y) + ";\n";
     s+="color: " + Colour(font_colour) + ";\n";
     switch(align) {
     case 0:
@@ -931,15 +1036,16 @@ W grid_y(std::vector<W> v, int sx, int gap_x, int gap_y)
 class ScriptButton : public WidgetForward
 {
 public:
-  ScriptButton(Widget *w, std::string script, std::string funcname) : WidgetForward(w->preferred_width(), w->preferred_height()), script(script), funcname(funcname), w(w)
+  ScriptButton(Widget *w, std::function<std::string (std::string)> f, std::function<std::string (std::string)> funcname, std::string shared_id) : WidgetForward(w->preferred_width(), w->preferred_height()), f(f), funcname(funcname), w(w), shared_id(shared_id)
   {
     int ww = w->preferred_width();
     int hh = w->preferred_height();
     push_back(w, 0,0, ww, hh, E,E);
+
   } 
   std::string Page()
   {
-    std::string s = std::string("<div id=\"") + id + "\" onClick=\"" + funcname + "()\">\n";
+    std::string s = std::string("<div id=\"") + id + "\" onClick=\"" + funcname(id) + "()\">\n";
     s+=w->Page();
     s+="</div>\n";
     return s;
@@ -947,11 +1053,12 @@ public:
   std::string Script()
   {
     std::string s = WidgetForward::Script();
-    return s+script;
+    return s+f(id);
   }
 private:
-  std::string script;
-  std::string funcname;
+  std::string shared_id;
+  std::function<std::string (std::string)> f;
+  std::function<std::string (std::string)> funcname;
   Widget *w;
 };
 W margin(W widget, int left, int top, int right, int bottom)
@@ -989,6 +1096,7 @@ W hide(W widget)
   w2->SetCssProp("display: none;\n");
   return add_w(w2);
 }
+#if 0
 
 W show_button(W button_content, W hidden_element)
 {
@@ -996,12 +1104,22 @@ W show_button(W button_content, W hidden_element)
   Widget *h = find_w(hidden_element);
   std::string id = unique_id_apiitem();
   std::string h_id = h->Id();
+  std::string shared_id = unique_id_apiitem();
+  auto f = [shared_id](std::string id) {
   std::string script =
     "function myFunc" + id + "() {\n"
-    "   document.getElementById(\"" + h_id + "\").style.display = \"block\";\n"
-    "}\n";
-  
-  return add_w(new ScriptButton(w, script, "myFunc" + id));
+  "   document.getElementById(\"" + shared_id + "\").style.display = \"block\";\n"
+  "}\n";
+  return script;
+  };
+
+  auto f2 = [](std::string id) {
+    std::string funcname = "myFunc" + id;
+    return funcname;
+  };
+  ScriptButton *but = new ScriptButton(w,f,f2,shared_id);
+
+  return add_w(but);
 }
 
 W hide_button(W button_content, W hidden_element)
@@ -1010,13 +1128,21 @@ W hide_button(W button_content, W hidden_element)
   Widget *h = find_w(hidden_element);
   std::string id = unique_id_apiitem();
   std::string h_id = h->Id();
-  std::string script =
+  auto f = [h](std::string id) {
+    std::string script =
     "function myFunc" + id + "() {\n"
-    "   document.getElementById(\"" + h_id + "\").style.display = \"none\";\n"
+    "   document.getElementById(\"" + h->Id() + "\").style.display = \"none\";\n"
     "}\n";
+    return script;
+  };
+  auto f2 = [](std::string id) {
+    std::string funcname = "myFunc" + id;
+    return funcname;
+  };
   
-  return add_w(new ScriptButton(w, script, "myFunc" + id));
+  return add_w(new ScriptButton(w, f, f2));
 }
+#endif
 W image_placeholder(int size_x, int size_y)
 {
   W img = image("http://sivut.koti.soon.fi/~terop/rectangle.png", size_x, size_y);

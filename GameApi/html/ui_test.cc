@@ -4,32 +4,31 @@
 
 int main()
 {
-  W e1 = label("test\ntest\ntest\ntestabcdefghij\ntest\ntest", 100,100, 20, 0x80000000,0);
-  W e2 = link("http://sivut.koti.soon.fi/~terop/test.html", "test\ntest", 100,100, 20, 0xff000000,0);
-  W e31 = e1;
-  W e32 = e2;
-  W e33 = gradient(0,100, 100);
-  W e34 = gradient(0,100, 100);
-  W e35 = gradient(0,100, 100);
-  W e36 = gradient(0,100, 100);
-  std::vector<W> v = { e31,e32,e33,e34,e35,e36 };
-  W lst = grid_y(v, 4, 2,2);
-  W lst_hide = hide(lst);
-  W but = image_placeholder(200,200);
-  W but2 = image_placeholder(50,50);
-  W lst1 = show_button(but, lst_hide);
-  W lst1a = hide_button(but2, lst_hide);
-  W lst3 = list_y(std::vector<W>{lst1,lst1a, lst_hide}, 2);
 
+  W lab1 = label("test\ntest\ntest\ntest", 100, 30, 40, 0xff000000, 1);
+  W lab2 = label("test\ntest\ntest\ntest\ntest\ntest", 100, 30, 40, 0xff000000, 1);
+  W c1a = center_y(lab1, 200);
+  W c1b = center_y(lab1, 200);
+  W c1c = center_y(lab1, 200);
+  W c1d = center_y(lab1, 200);
+  W c2e = center_y(lab2, 250);
+  W d1a = gradient(0, 100,200);
+  W d1b = gradient(0, 100,200);
+  W d1c = gradient(0, 100,200);
+  W d1d = gradient(0, 100,200);
+  W d2e = gradient(0, 100,250);
+  W e1a = layer(std::vector<W>{d1a, c1a});
+  W e1b = layer(std::vector<W>{d1b, c1b});
+  W e1c = layer(std::vector<W>{d1c, c1c});
+  W e1d = layer(std::vector<W>{d1d, c1d});
+  W e2e = layer(std::vector<W>{d2e, c2e});
 
-  W edit = editor("Address", "Text", "Placeholder", 300,40,40, 0x80000000,0);
-  W edit2 = submit_button("Submit", 300,60);
-  W lst4 = list_y(std::vector<W>{ edit, edit2 }, 2);
-  W frm = form(lst4, true, "foo.php");
+  std::vector<W> vec = { e1a, e1b, e1c, e1d, e2e };
+  W gr = grid_y(vec, 2, 2, 2);
   
-  W y_1 = list_y(std::vector<W>{lst3, frm}, 2);
+  
 
-  std::string lst2 = gen_html_page(y_1);
+  std::string lst2 = gen_html_page(gr);
   std::ofstream ss("tst.html");
   ss << lst2 << std::endl;
   ss.close();
