@@ -78,71 +78,72 @@ static std::string unique_id_apiitem()
 class Widget
 {
 public:
-  Widget() { id=unique_id_apiitem(); pos_x=0; pos_y=0; size_x=0; size_y=0; }
-  std::string Id() const { return id; }
-  virtual void make_unique(std::string i) {
-    if (ids.find(i)==ids.end())
+  Widget() { }
+  virtual void make_unique(std::string path) {
+    if (ids.find(path)==ids.end())
       {
-      ids[i]=unique_id_apiitem();
+      ids[path]=unique_id_apiitem();
       }
-    id = ids[i];
-    last_path = i;
   }
-  virtual void SetPos(int pos_x2, int pos_y2) {
+  virtual void SetPos(std::string path, int pos_x2, int pos_y2) {
     //std::cout << "Widget:SetPos: " << pos_x2 << " " << pos_y2 << std::endl;
-    pos_x = pos_x2; pos_y=pos_y2; 
+    pos_x[path] = pos_x2; pos_y[path]=pos_y2; 
   }
-  virtual void SetSize(int size_x2, int size_y2) { 
+  virtual void SetSize(std::string path, int size_x2, int size_y2) { 
     //std::cout << "Widget:SetSize: " << size_x2 << " " << size_y2 << std::endl;
-    size_x = size_x2; size_y = size_y2; 
+    size_x[path] = size_x2; size_y[path] = size_y2; 
   }
-  virtual int preferred_width() { return 0; }
-  virtual int preferred_height() { return 0; }
-  virtual std::string Page()
+  virtual int preferred_width(std::string path) { return 0; }
+  virtual int preferred_height(std::string path) { return 0; }
+  virtual std::string Page(std::string path)
   {
-    std::string s = std::string("<div id=\"") + id + "\">\n";
+    std::cout << "Widget Page:" << path << std::endl;
+
+    std::string s = std::string("<div id=\"") + ids[path] + "\">\n";
     s+="</div>\n";
     return s;
   }
-  void AddScript(std::string s)
+  void AddScript(std::string path, std::string s)
   {
-    script+=s;
+    script[path]+=s;
   }
-  virtual std::string Script()
+  virtual std::string Script(std::string path)
   {
-    return script;
+    return script[path];
   }
-  virtual std::string Css()
+  virtual std::string Css(std::string path)
   {
-    std::string s = std::string("#") + id + "{\n";
+    std::string s = std::string("#") + ids[path] + "{\n";
     std::stringstream ss;
-    ss << size_x;
+    ss << size_x[path];
     s+=std::string("width:") + ss.str() + "px;\n";
     std::stringstream ss2;
-    ss2 << size_y;
+    ss2 << size_y[path];
     s+=std::string("height:") + ss2.str() + "px;\n";
     s+=std::string("position:absolute;\n");
     std::stringstream ss3;
-    ss3 << pos_x;
+    ss3 << pos_x[path];
     std::stringstream ss4;
-    ss4 << pos_y;
+    ss4 << pos_y[path];
     s+=std::string("left:") + ss3.str() + "px;\n";
     s+=std::string("top:") + ss4.str() + "px;\n";
-    s+=CssProp();
+    s+=CssProp(path);
     s+="}\n";
     return s;
   }
-  void SetCssProp(std::string s) { cssprop = s; }
-  virtual std::string CssProp()
+  void SetCssProp(std::string path, std::string s) { cssprop[path] = s; }
+  virtual std::string CssProp(std::string path)
   {
-    return cssprop;
+    return cssprop[path];
   }
 protected:
-  std::string script;
-  std::string cssprop;
+  std::map<std::string, std::string> script;
+  std::map<std::string, std::string> cssprop;
   std::string id;
-  int pos_x, pos_y;
-  int size_x, size_y;
+  std::map<std::string, int> pos_x;
+  std::map<std::string, int> pos_y;
+  std::map<std::string, int> size_x;
+  std::map<std::string, int> size_y;
   std::map<std::string, std::string> ids;
   std::string last_path;
 };
@@ -154,26 +155,25 @@ public:
     p_x = pref_size_x;
     p_y = pref_size_y;
   }
-  virtual void make_unique(std::string i) {
-    Widget::make_unique(i);
+  virtual void make_unique(std::string path) {
+    Widget::make_unique(path);
     int s = vec.size();
     for(int ii=0;ii<s;ii++)
       {
 	Widget *w = vec[ii];
-	std::string s = i;
-	s+= 'a'+ii;
-	w->make_unique(s);
+	std::string next = next_path(path,ii);
+	w->make_unique(next);
       }
   }
-  void choose_unique(int i)
+  std::string next_path(std::string path, int i)
   {
-    std::string s = "";
+    std::string s = path;
+   
     s+='a' + i;
-    vec[i]->make_unique(s);
+    return s;
   }
-
-  virtual int preferred_width() { return p_x; }
-  virtual int preferred_height() { return p_y; }
+  virtual int preferred_width(std::string path) { return p_x; }
+  virtual int preferred_height(std::string path) { return p_y; }
 
   void push_back(Widget *w, int x, int y, int sx, int sy, int r, int b)
   {
@@ -187,36 +187,36 @@ public:
     empty_x.push_back(0);
     empty_y.push_back(0);
   }
-  virtual void SetPos(int pos_x2, int pos_y2)
+  virtual void SetPos(std::string path, int pos_x2, int pos_y2)
   {
-    Widget::SetPos(pos_x2, pos_y2);
+    Widget::SetPos(path, pos_x2, pos_y2);
     int s = vec.size();
     for(int i=0;i<s;i++)
       {
 	Widget *w = vec[i];
 	int x = child_x[i];
 	int y = child_y[i];
-	if (x==E) { x=size_x - child_r[i]-child_sx[i]; }
-	if (y==E) { y=size_y - child_b[i]-child_sy[i]; }
+	if (x==E) { x=size_x[path] - child_r[i]-child_sx[i]; }
+	if (y==E) { y=size_y[path] - child_b[i]-child_sy[i]; }
 	//std::cout << "Child: " << pos_x << " " << pos_y << " " << x << " " << y << std::endl;
-	w->SetPos(x,
+	std::string next = next_path(path, i);
+	w->SetPos(next, x,
 		  y);
       }
   }
-  virtual void SetSize(int size_x2, int size_y2)
+  virtual void SetSize(std::string path, int size_x2, int size_y2)
   {
-    Widget::SetSize(size_x2, size_y2);
+    Widget::SetSize(path, size_x2, size_y2);
     int s = vec.size();
     for(int i=0;i<s;i++)
       {
-	choose_unique(i);
 	Widget *w = vec[i];
-	if (child_x[i]==E) { empty_x[i]=size_x - child_sx[i]-child_r[i]; }
-	if (child_y[i]==E) { empty_y[i]=size_y - child_sy[i]-child_b[i]; }
-	if (child_sx[i]==E) { empty_x[i]=size_x-child_x[i]-child_r[i]; }
-	if (child_sy[i]==E) { empty_y[i]=size_y-child_y[i]-child_b[i]; }
-	if (child_r[i]==E) { empty_x[i]=size_x-child_x[i]-child_sx[i]; }
-	if (child_b[i]==E) { empty_y[i]=size_y-child_y[i]-child_sx[i]; }
+	if (child_x[i]==E) { empty_x[i]=size_x[path] - child_sx[i]-child_r[i]; }
+	if (child_y[i]==E) { empty_y[i]=size_y[path] - child_sy[i]-child_b[i]; }
+	if (child_sx[i]==E) { empty_x[i]=size_x[path]-child_x[i]-child_r[i]; }
+	if (child_sy[i]==E) { empty_y[i]=size_y[path]-child_y[i]-child_b[i]; }
+	if (child_r[i]==E) { empty_x[i]=size_x[path]-child_x[i]-child_sx[i]; }
+	if (child_b[i]==E) { empty_y[i]=size_y[path]-child_y[i]-child_sx[i]; }
 	
 	int x,y,sx,sy;
 	x = child_x[i];
@@ -229,43 +229,45 @@ public:
 	if (sx==E) { sx = empty_x[i]; }
 	if (sy==E) { sy = empty_y[i]; }
 
-	w->SetPos(x, y);
-	w->SetSize(sx,sy);
+	std::string next = next_path(path, i);
+	w->SetPos(next, x, y);
+	w->SetSize(next, sx,sy);
       }
   }
-  virtual std::string Page() { 
-    std::string s = std::string("<div id=\"") + id + "\">\n";
+  virtual std::string Page(std::string path) { 
+    std::cout << "WidgetForward Page:" << path << std::endl;
+    std::string s = std::string("<div id=\"") + ids[path] + "\">\n";
     int ss = vec.size();
     for(int i=0;i<ss;i++)
       {
-	choose_unique(i);
 	Widget *w = vec[i];
-	s+=w->Page();
+	std::string next = next_path(path, i);
+	s+=w->Page(next);
       }
     s+="</div>\n";
     return s;
   }
-  virtual std::string Script()
+  virtual std::string Script(std::string path)
   {
-    std::string s = Widget::Script();
+    std::string s = Widget::Script(path);
     int ss = vec.size();
     for(int i=0;i<ss;i++)
       {
-	choose_unique(i);
 	Widget *w = vec[i];
-	s+=w->Script();
+	std::string next = next_path(path, i);
+	s+=w->Script(next);
       }
     return s;
   }
-  virtual std::string Css()
+  virtual std::string Css(std::string path)
   {
-    std::string s = Widget::Css();
+    std::string s = Widget::Css(path);
     int ss = vec.size();
     for(int i=0;i<ss;i++)
       {
-	choose_unique(i);
 	Widget *w = vec[i];
-	s+=w->Css();
+	std::string next = next_path(path, i);
+	s+=w->Css(next);
       }
     return s;
   }
@@ -367,7 +369,7 @@ public:
 	if (s[i]==',' || s[i]==']')
 	  {
 	    std::string substr = s.substr(prev, i-prev);
-	    T t = cls.from_stream(substr);
+	    T t = cls.from_stream(hexify(substr));
 	    vec.push_back(t);
 	    prev=i+1;
 	    if (s[i]==']') { break; }
@@ -706,8 +708,8 @@ class LabelWidget : public Widget
 {
 public:
   LabelWidget(std::string str, int size_x, int size_y, int font_size, unsigned int font_colour, int align) : str(str), size_x(size_x), size_y(size_y), font_size(font_size), font_colour(font_colour), align(align) { }
-  int preferred_width() { return size_x; }
-  int preferred_height() { return std::max(size_y * num_lines(), size_y); }
+  int preferred_width(std::string path) { return size_x; }
+  int preferred_height(std::string path) { return std::max(size_y * num_lines(), size_y); }
   int num_lines() const {
     int lines = 1;
     int s = str.size();
@@ -717,9 +719,11 @@ public:
       }
     return lines;
   }
-  std::string Page()
+  std::string Page(std::string path)
   {
-    std::string s = std::string("<div id=\"") + id + "\">";
+    std::cout << "Label Page:" << path << std::endl;
+
+    std::string s = std::string("<div id=\"") + ids[path] + "\">";
     int ss = str.size();
     int prev = 0;
     for(int i=0;i<ss;i++)
@@ -737,13 +741,13 @@ public:
     s+="</div>\n";
     return s;
   }
-  virtual std::string Css()
+  virtual std::string Css(std::string path)
   {
-    return Widget::Css();
+    return Widget::Css(path);
   }
-  virtual std::string CssProp()
+  virtual std::string CssProp(std::string path)
   {
-    std::string s = cssprop;
+    std::string s = cssprop[path];
     s+="font-size: " + Pixels(font_size) + ";\n";
     s+="line-height: " + Pixels(size_y) + ";\n";
     s+="color: " + Colour(font_colour) + ";\n";
@@ -773,9 +777,11 @@ class LinkWidget : public LabelWidget
 {
 public:
   LinkWidget(std::string url, std::string str, int size_x, int size_y, int font_size, unsigned int font_colour, int align) : LabelWidget(str, size_x, size_y, font_size, font_colour, align), url(url) { }
-  std::string Page()
+  std::string Page(std::string path)
   {
-    std::string s = std::string("<div id=\"") + id + "\">";
+    std::cout << "Link Page:" << path << std::endl;
+
+    std::string s = std::string("<div id=\"") + ids[path] + "\">";
     s+="<a href=\"" + url + "\">";
 
     int ss = str.size();
@@ -797,10 +803,10 @@ public:
     s+="</div>\n";
     return s;
   }
-  std::string Css()
+  std::string Css(std::string path)
   {
-    std::string s = LabelWidget::Css();
-    s+="div#" + id + " a {\n";
+    std::string s = LabelWidget::Css(path);
+    s+="div#" + ids[path] + " a {\n";
     s+="color: " + Colour(font_colour) + ";\n";
     s+="}\n";
     return s;
@@ -821,8 +827,8 @@ W list_y(std::vector<W> v, int gap_y)
   for(int i=0;i<s;i++)
     {
       Widget *w = find_w(v[i]);
-      p_x = std::max(p_x,w->preferred_width());
-      p_y += w->preferred_height()+gap_y;
+      p_x = std::max(p_x,w->preferred_width(""));
+      p_y += w->preferred_height("")+gap_y;
     }
   p_y-=gap_y;
 
@@ -831,8 +837,8 @@ W list_y(std::vector<W> v, int gap_y)
   for(int i=0;i<s;i++)
     {
       Widget *w = find_w(v[i]);
-      int h = w->preferred_height();
-      int ww = w->preferred_width();
+      int h = w->preferred_height("");
+      int ww = w->preferred_width("");
       wf->push_back(w, 0,t, ww, h, E, E);
       t+=h+gap_y;
     }
@@ -849,8 +855,8 @@ W list_x(std::vector<W> v, int gap_x)
   for(int i=0;i<s;i++)
     {
       Widget *w = find_w(v[i]);
-      p_x += w->preferred_width() + gap_x;
-      p_y = std::max(p_y,w->preferred_height());
+      p_x += w->preferred_width("") + gap_x;
+      p_y = std::max(p_y,w->preferred_height(""));
     }
 
   WidgetForward *wf = new WidgetForward(p_x,p_y);
@@ -858,8 +864,8 @@ W list_x(std::vector<W> v, int gap_x)
   for(int i=0;i<s;i++)
     {
       Widget *w = find_w(v[i]);
-      int ww = w->preferred_width();
-      int hh = w->preferred_height();
+      int ww = w->preferred_width("");
+      int hh = w->preferred_height("");
       wf->push_back(w, x,0, ww, hh, E, E);
       x+=ww+gap_x;
     }
@@ -886,8 +892,8 @@ W layer(std::vector<W> v)
   for(int i=0;i<s;i++)
     {
       Widget *w = find_w(v[i]);
-      p_x = std::max(p_x,w->preferred_width());
-      p_y = std::max(p_y,w->preferred_height());
+      p_x = std::max(p_x,w->preferred_width(""));
+      p_y = std::max(p_y,w->preferred_height(""));
     }
 
   WidgetForward *wf = new WidgetForward(p_x,p_y);
@@ -897,28 +903,29 @@ W layer(std::vector<W> v)
       wf->push_back(w, 0,0, E, E, 0, 0);
       std::stringstream ss;
       ss << i;
-      w->SetCssProp(std::string("z-index: ") + ss.str() + ";\n"); 
+      w->SetCssProp("", std::string("z-index: ") + ss.str() + ";\n"); 
     }
   return add_w(wf);
 }
 std::string gen_html_page(W w)
 {
   Widget *ww = find_w(w);
-  int width = ww->preferred_width();
-  int height = ww->preferred_height();
-  ww->SetPos(0,0);
-  ww->SetSize(width, height);
+  ww->make_unique("");
+  int width = ww->preferred_width("");
+  int height = ww->preferred_height("");
+  ww->SetPos("", 0,0);
+  ww->SetSize("", width, height);
   std::string s = "<!DOCTYPE html>\n";
   s+="<html>\n";
   s+="<head>\n";
   s+="<style>\n";
-  s+=ww->Css();
+  s+=ww->Css("");
   s+="</style>\n";
   s+="</head>\n";
   s+="<body>\n";
-  s+=ww->Page();
+  s+=ww->Page("");
   s+="<script>\n";
-  s+=ww->Script();
+  s+=ww->Script("");
   s+="</script>\n";
   s+="</body>\n";
   s+="</html>\n";
@@ -929,10 +936,12 @@ class ImageWidget : public Widget
 {
 public:
   ImageWidget(std::string url, int size_x, int size_y) : url(url), size_x(size_x), size_y(size_y) { }
-  int preferred_width() { return size_x; }
-  int preferred_height() { return size_y; }
-  std::string Page() {
-    std::string s = std::string("<div id=\"") + id + "\">\n";
+  int preferred_width(std::string path) { return size_x; }
+  int preferred_height(std::string path) { return size_y; }
+  std::string Page(std::string path) {
+    std::cout << "Image Page:" << path << std::endl;
+
+    std::string s = std::string("<div id=\"") + ids[path] + "\">\n";
     std::stringstream sx;
     sx << size_x;
     std::stringstream sy;
@@ -942,9 +951,9 @@ public:
     s+="</div>\n";
     return s;
   }
-  std::string Css()
+  std::string Css(std::string path)
   {
-    return Widget::Css();
+    return Widget::Css(path);
   }
 private:
   std::string url;
@@ -993,8 +1002,8 @@ W grid_y(std::vector<W> v, int sx, int gap_x, int gap_y)
       Widget *w = find_w(v[i]);
       int px = grid_x_pos(i, sx);
       int py = grid_y_pos(i, sx);
-      p_x[px]= std::max(p_x[px], w->preferred_width()+gap_x);
-      p_y[py]= std::max(p_y[py], w->preferred_height()+gap_y);
+      p_x[px]= std::max(p_x[px], w->preferred_width("")+gap_x);
+      p_y[py]= std::max(p_y[py], w->preferred_height("")+gap_y);
     }
   p_x[p_x.size()-1]-=gap_x;
   p_y[p_y.size()-1]-=gap_y;
@@ -1036,24 +1045,27 @@ W grid_y(std::vector<W> v, int sx, int gap_x, int gap_y)
 class ScriptButton : public WidgetForward
 {
 public:
-  ScriptButton(Widget *w, std::function<std::string (std::string)> f, std::function<std::string (std::string)> funcname, std::string shared_id) : WidgetForward(w->preferred_width(), w->preferred_height()), f(f), funcname(funcname), w(w), shared_id(shared_id)
+  ScriptButton(Widget *w, std::function<std::string (std::string)> f, std::function<std::string (std::string)> funcname, std::string shared_id) : WidgetForward(w->preferred_width(""), w->preferred_height("")), f(f), funcname(funcname), w(w), shared_id(shared_id)
   {
-    int ww = w->preferred_width();
-    int hh = w->preferred_height();
+    int ww = w->preferred_width("");
+    int hh = w->preferred_height("");
     push_back(w, 0,0, ww, hh, E,E);
 
   } 
-  std::string Page()
+  std::string Page(std::string path)
   {
-    std::string s = std::string("<div id=\"") + id + "\" onClick=\"" + funcname(id) + "()\">\n";
-    s+=w->Page();
+    std::cout << "Script Page:" << path << std::endl;
+
+    std::string s = std::string("<div id=\"") + ids[path] + "\" onClick=\"" + funcname(ids[path]) + "()\">\n";
+    std::string next = next_path(path, 0);
+    s+=w->Page(next);
     s+="</div>\n";
     return s;
   }
-  std::string Script()
+  std::string Script(std::string path)
   {
-    std::string s = WidgetForward::Script();
-    return s+f(id);
+    std::string s = WidgetForward::Script(path);
+    return s+f(ids[path]);
   }
 private:
   std::string shared_id;
@@ -1064,7 +1076,7 @@ private:
 W margin(W widget, int left, int top, int right, int bottom)
 {
   Widget *w = find_w(widget);
-  WidgetForward *w2 = new WidgetForward(w->preferred_width()+left+right, w->preferred_height()+top+bottom);
+  WidgetForward *w2 = new WidgetForward(w->preferred_width("")+left+right, w->preferred_height("")+top+bottom);
   w2->push_back(w, left,top,E,E, right,bottom);
   return add_w(w2);
 
@@ -1072,28 +1084,28 @@ W margin(W widget, int left, int top, int right, int bottom)
 W right_align(W item, int sx)
 {
   Widget *w = find_w(item);
-  int size = w->preferred_width();
+  int size = w->preferred_width("");
   return margin(item, sx-size,0,0,0);
 }
 W center_align(W item, int sx)
 {
   Widget *w = find_w(item);
-  int size = w->preferred_width();
+  int size = w->preferred_width("");
   return margin(item, (sx-size)/2,0,(sx-size)/2,0);
 }
 W center_y(W item, int sy)
 {
   Widget *w = find_w(item);
-  int size = w->preferred_height();
+  int size = w->preferred_height("");
   return margin(item, 0, (sy-size)/2, 0, (sy-size)/2);
 }
 
 W hide(W widget)
 {
   Widget *w = find_w(widget);
-  WidgetForward *w2 = new WidgetForward(w->preferred_width(), w->preferred_height());
+  WidgetForward *w2 = new WidgetForward(w->preferred_width(""), w->preferred_height(""));
   w2->push_back(w, 0,0,E,E, 0,0);
-  w2->SetCssProp("display: none;\n");
+  w2->SetCssProp("", "display: none;\n");
   return add_w(w2);
 }
 #if 0
@@ -1161,10 +1173,10 @@ W image_placeholder(int size_x, int size_y)
 class ChildSizeWidget : public WidgetForward
 {
 public:
-  ChildSizeWidget(Widget *w) : WidgetForward(w->preferred_width(), w->preferred_height()) 
+  ChildSizeWidget(Widget *w) : WidgetForward(w->preferred_width(""), w->preferred_height("")) 
   {
-    int ww = w->preferred_width();
-    int hh = w->preferred_height();
+    int ww = w->preferred_width("");
+    int hh = w->preferred_height("");
     push_back(w, 0,0,ww,hh,E,E);
   }
 };
@@ -1176,14 +1188,16 @@ W child_size(W w)
 class FormWidget : public WidgetForward
 {
 public:
-  FormWidget(Widget* w, std::string url, bool is_get) : WidgetForward(w->preferred_width(), w->preferred_height()), w(w), url(url), is_get(is_get) 
+  FormWidget(Widget* w, std::string url, bool is_get) : WidgetForward(w->preferred_width(""), w->preferred_height("")), w(w), url(url), is_get(is_get) 
   { 
-    int ww = w->preferred_width();
-    int hh = w->preferred_height();
+    int ww = w->preferred_width("");
+    int hh = w->preferred_height("");
     push_back(w, 0,0, ww, hh, E, E);
   }
-  std::string Page()
+  std::string Page(std::string path)
   {
+    std::cout << "Form Page:" << path << std::endl;
+
     std::string s = std::string("<form action=\"") + url + "\" method=\"";
     if (is_get)
       {
@@ -1194,9 +1208,10 @@ public:
 	s+="post";
       }
     s+="\">\n";
-    s += std::string("<div id=\"") + id + "\">\n";
+    s += std::string("<div id=\"") + ids[path] + "\">\n";
     
-    s+=w->Page();
+    std::string next = next_path(path,0);
+    s+=w->Page(next);
 
     s+="</div>\n";
     s+="</form>\n";
@@ -1216,11 +1231,13 @@ class SubmitWidget : public Widget
 {
 public:
   SubmitWidget(std::string label, int size_x, int size_y) : label(label), size_x(size_x), size_y(size_y) { }
-  int preferred_width() { return size_x; }
-  int preferred_height() { return size_y; }
-  std::string Page() {
+  int preferred_width(std::string path) { return size_x; }
+  int preferred_height(std::string path) { return size_y; }
+  std::string Page(std::string path) {
+    std::cout << "Submit Page:" << path << std::endl;
+
     std::string s = "";
-    s+="<input id=\"" + id + "\" type=\"submit\" value=\"" + label + "\">";
+    s+="<input id=\"" + ids[path] + "\" type=\"submit\" value=\"" + label + "\">";
     return s;
   }
 private:
@@ -1236,16 +1253,18 @@ class EditorWidget : public Widget
 {
 public:
   EditorWidget(std::string name, std::string value, std::string placeholder, int size_x, int size_y, int font_size, unsigned int font_colour, int align) : name(name), value(value), placeholder(placeholder), size_x(size_x), size_y(size_y), font_size(font_size), font_colour(font_colour), align(align) { }
-  int preferred_width() { return size_x; }
-  int preferred_height() { return size_y; }
-  std::string Page() {
+  int preferred_width(std::string path) { return size_x; }
+  int preferred_height(std::string path) { return size_y; }
+  std::string Page(std::string path) {
+    std::cout << "Editor Page:" << path << std::endl;
+
     std::string s = "";
-    s+="<input id=\"" + id + "\" type=\"text\" placeholder=\"" + placeholder + "\" value=\"" + value + "\" name=\"" + name + "\">";
+    s+="<input id=\"" + ids[path] + "\" type=\"text\" placeholder=\"" + placeholder + "\" value=\"" + value + "\" name=\"" + name + "\">";
     return s;
   }
-  virtual std::string CssProp()
+  virtual std::string CssProp(std::string path)
   {
-    std::string s = cssprop;
+    std::string s = cssprop[path];
     s+="font-size: " + Pixels(font_size) + ";\n";
     s+="color: " + Colour(font_colour) + ";\n";
     switch(align) {
@@ -1284,16 +1303,18 @@ class PasswordEditorWidget : public Widget
 {
 public:
   PasswordEditorWidget(std::string name, std::string value, std::string placeholder, int size_x, int size_y, int font_size, unsigned int font_colour, int align) : name(name), value(value), placeholder(placeholder), size_x(size_x), size_y(size_y), font_size(font_size), font_colour(font_colour), align(align) { }
-  int preferred_width() { return size_x; }
-  int preferred_height() { return size_y; }
-  std::string Page() {
+  int preferred_width(std::string path) { return size_x; }
+  int preferred_height(std::string path) { return size_y; }
+  std::string Page(std::string path) {
+    std::cout << "Passwd Page:" << path << std::endl;
+
     std::string s = "";
-    s+="<input id=\"" + id + "\" type=\"password\" placeholder=\"" + placeholder + "\" value=\"" + value + "\" name=\"" + name + "\">";
+    s+="<input id=\"" + ids[path] + "\" type=\"password\" placeholder=\"" + placeholder + "\" value=\"" + value + "\" name=\"" + name + "\">";
     return s;
   }
-  virtual std::string CssProp()
+  virtual std::string CssProp(std::string path)
   {
-    std::string s = cssprop;
+    std::string s = cssprop[path];
     s+="font-size: " + Pixels(font_size) + ";\n";
     s+="color: " + Colour(font_colour) + ";\n";
     switch(align) {
