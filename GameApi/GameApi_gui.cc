@@ -123,11 +123,15 @@ public:
     if (firsttime)
       {
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, label.c_str(), x_gap);
-	rendered_bitmap_va = ev.sprite_api.create_vertex_array(rendered_bitmap);
+	GameApi::CBM sca = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0, 1.0);
+	int sx = ev.bitmap_api.size_x(rendered_bitmap);
+	int sy = ev.bitmap_api.size_y(rendered_bitmap);
+	scaled_bitmap = ev.cont_bitmap_api.sample(sca, sx/2, sy/2);
+	rendered_bitmap_va = ev.sprite_api.create_vertex_array(scaled_bitmap);
 	firsttime = false;
       }
-    size.dx = ev.bitmap_api.size_x(rendered_bitmap);
-    size.dy = ev.bitmap_api.size_y(rendered_bitmap);
+    size.dx = ev.bitmap_api.size_x(scaled_bitmap);
+    size.dy = ev.bitmap_api.size_y(scaled_bitmap);
   }
   void render()
   {
@@ -135,7 +139,9 @@ public:
       {
 	Point2d p = get_pos();
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5,p.y+0.5,0.0));
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 	ev.sprite_api.render_sprite_vertex_array(rendered_bitmap_va);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       }
   }
   int render_to_bitmap()
@@ -149,6 +155,7 @@ private:
   GameApi::BM atlas_bm;
   GameApi::SH sh;
   GameApi::BM rendered_bitmap;
+  GameApi::BM scaled_bitmap;
   GameApi::VA rendered_bitmap_va;
   int x_gap;
 };
@@ -329,11 +336,15 @@ public:
     if (firsttime || changed)
       {
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, label.c_str(), x_gap);
-	rendered_bitmap_va = ev.sprite_api.create_vertex_array(rendered_bitmap);
+	int sx = ev.bitmap_api.size_x(rendered_bitmap);
+	int sy = ev.bitmap_api.size_y(rendered_bitmap);
+	GameApi::CBM cbm = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0,1.0);
+	scaled_bitmap = ev.cont_bitmap_api.sample(cbm, sx/2, sy/2);
+	rendered_bitmap_va = ev.sprite_api.create_vertex_array(scaled_bitmap);
 	firsttime = false;
       }
-    size.dx = ev.bitmap_api.size_x(rendered_bitmap);
-    size.dy = ev.bitmap_api.size_y(rendered_bitmap);
+    size.dx = ev.bitmap_api.size_x(scaled_bitmap);
+    size.dy = ev.bitmap_api.size_y(scaled_bitmap);
   }
   void render()
   {
@@ -341,7 +352,10 @@ public:
       {
 	Point2d p = get_pos();
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5,p.y+0.5,0.0));
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 	ev.sprite_api.render_sprite_vertex_array(rendered_bitmap_va);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
       }
   }
   int render_to_bitmap()
@@ -357,6 +371,7 @@ private:
   GameApi::BM atlas_bm;
   GameApi::SH sh;
   GameApi::BM rendered_bitmap;
+  GameApi::BM scaled_bitmap;
   GameApi::VA rendered_bitmap_va;
   bool active;
   int x_gap;
