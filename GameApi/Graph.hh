@@ -2622,7 +2622,7 @@ public:
     left += 0.5*area_x;
     top += 0.5*area_y;
     Color c_c = c.Map(left,top);
-    Color c_l = c.Map(left-0.25*area_x, top);
+    Color c_l = c.Map(left-0.25*area_x, top); // 0.25
     Color c_r = c.Map(left+0.25*area_x, top);
     Color c_t = c.Map(left, top-0.25*area_y);
     Color c_b = c.Map(left, top+0.25*area_y);

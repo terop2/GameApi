@@ -878,7 +878,7 @@ class GuiApi
 public:
   GuiApi(Env &e, EveryApi &ev, SH sh) : e(e), ev(ev), sh(sh) { }
   W empty();
-  W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=2);
+  W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=3);
   W icon(BM bitmap);
   W poly(P p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
   W va(VA p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);

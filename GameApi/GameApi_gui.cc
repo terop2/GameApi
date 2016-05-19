@@ -139,9 +139,10 @@ public:
       {
 	Point2d p = get_pos();
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5,p.y+0.5,0.0));
-	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+	//glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glBlendFuncSeparate(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	ev.sprite_api.render_sprite_vertex_array(rendered_bitmap_va);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       }
   }
   int render_to_bitmap()
@@ -352,9 +353,9 @@ public:
       {
 	Point2d p = get_pos();
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5,p.y+0.5,0.0));
-	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+	//glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 	ev.sprite_api.render_sprite_vertex_array(rendered_bitmap_va);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
       }
   }
@@ -1944,7 +1945,7 @@ EXPORT GameApi::W GameApi::GuiApi::pts_dialog(PTS p, SH sh, int screen_size_x, i
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
   W bm_4 = layer(bm_3, bm_2);
-  
+   
   W but_1 = text("Close", atlas, atlas_bm);
   W but_2 = center_align(but_1, size_x(bm_4));
   W but_3 = center_y(but_2, 60.0);
