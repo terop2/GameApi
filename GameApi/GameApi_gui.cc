@@ -140,7 +140,7 @@ public:
 	Point2d p = get_pos();
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5,p.y+0.5,0.0));
 	//glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glBlendFuncSeparate(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	ev.sprite_api.render_sprite_vertex_array(rendered_bitmap_va);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       }
@@ -2048,6 +2048,15 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &l
       W array2[] = { lab_2, edit };
       W array3 = array_x(&array2[0], 2, 5);
       vec2.push_back(array3);
+    }
+  if (vec2.size()==0)
+    {
+      W lab0 = text("", atlas, atlas_bm, 8);
+      W lab = text("(No data)", atlas, atlas_bm, 8);
+      W lab_2 = center_align(lab, 500);
+      vec2.push_back(lab0);
+      vec2.push_back(lab_2);
+      vec2.push_back(lab0);
     }
   W array = array_y(&vec2[0], vec2.size(), 35);
   W array_1 = margin(array, 10,10,10,10);
