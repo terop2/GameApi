@@ -881,7 +881,7 @@ void iter(void *arg)
 		    for(int e=0;e<s;e++)
 		      {
 			std::string *ref = refs[e];
-			env->gui->string_to_generic(*env->vec4[e], types[e], unhexify(*ref)); 
+			env->gui->string_to_generic(*env->vec4[e], types[e], *ref); 
 		      }
 		    
 		    //for(int kk = 0; kk < s; kk++)
@@ -1017,9 +1017,9 @@ void iter(void *arg)
 		  {
 		    std::string *ref = refs[i];
 		    //std::cout << i << " " << (*env->vec4[i]).i_value << std::endl;
-		    std::string val = unhexify(*ref);
+		    std::string val = *ref;
 		    env->gui->generic_to_string(*env->vec4[i], types[i], val);
-		    *ref = hexify(val);
+		    *ref = val;
 		  }
 	      }
 	  }

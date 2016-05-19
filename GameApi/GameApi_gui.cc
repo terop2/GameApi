@@ -1458,7 +1458,7 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_title(int sx, std::string label, Ft
   W node_t = text(label, atlas, atlas_bm);
   W node_t0 = margin(node_t, 5,5,5,5);
   std::cout << "List Item title height: " << size_y(node_t0) << std::endl;
-  W node_0 = button(sx, size_y(node_t0), 0xffff88ff, 0xff8844ff);
+  W node_0 = button(sx, size_y(node_t0), 0xff884422, 0xff442211);
   W node_1 = layer(node_0, node_t0);
   W node_2 = highlight(node_1);
   return node_2;
@@ -1665,7 +1665,7 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
   int ssx_0 = std::max(sx, max_width+4+20+4+max_width2);
   int ssx = std::max(ssx_0,size_x(node_22));
   W node_0 = button(ssx,ssy, 0xffff8844, 0xff884422);
-  W node_1 = button(ssx,size_y(node_22), 0xffff88ff, 0xff8844ff);
+  W node_1 = button(ssx,size_y(node_22), 0xff884422, 0xff442211);
   W node_12 = highlight(node_1);
 
   int sy0 = std::max(sy, size_y(array)+size_y(node_22)+5);
@@ -2036,7 +2036,7 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &l
   W array = array_y(&vec2[0], vec2.size(), 35);
   W array_1 = margin(array, 10,10,10,10);
   W array_1a = center_align(array_1, 500);
-  W array_2 = button(500, size_y(array_1), 0xff224488, 0xff112244);
+  W array_2 = button(500, size_y(array_1), 0xff884422, 0xff442211);
   W array_3 = layer(array_2, array_1a);
 
   W cancel_button = button(250,50, 0xff884422, 0xff442211);
@@ -3366,6 +3366,12 @@ std::vector<GameApiItem*> textureapi_functions()
 			 { "VA", "TXA" },
 			 { "", "" },
 			 "VA", "texture_api", "bind_arr"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::to_bitmap,
+			 "tx_to_bitmap",
+			 { "txid" },
+			 { "TXID" },
+			 { "" },
+			 "BM", "texture_api", "to_bitmap"));
 
   return vec;
 }
@@ -3818,9 +3824,9 @@ std::vector<GameApiItem*> polygonapi_functions()
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_range,
 			 "color_range",
-			 { "orig", "upper_range", "lower_range" },
-			 { "P", "unsigned int", "unsigned int" },
-			 { "", "ffffffff", "88888888" },
+			 { "orig", "source_upper", "source_lower", "upper_range", "lower_range" },
+			 { "P", "unsigned int", "unsigned int", "unsigned int", "unsigned int" },
+			 { "", "ffffffff", "00000000","ffffffff", "88888888" },
 			 "P", "polygon_api", "color_range"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_lambert,
@@ -3956,6 +3962,13 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "", "" },
 			 "P", "polygon_api", "from_polygon"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::renderpolytobitmap,
+			 "p_to_bitmap",
+			 { "ev", "p", "sh", "x", "y", "z", "sx", "sy" },
+			 { "EveryApi&", "P", "SH", "float", "float", "float", "int", "int" },
+			 { "ev", "", "", "0.0", "0.0", "0.0", "800", "600" },
+			 "BM", "polygon_api", "renderpolytobitmap"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::create_vertex_array,
 			 "p_prepare",
 			 { "p", "b" },
@@ -3974,6 +3987,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "[ML]" },
 			 { "" },
 			 "ML", "mainloop_api", "array_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::shader_api, &GameApi::ShaderApi::shader_choice,
+			 "shader",
+			 { "ev", "choose" },
+			 { "EveryApi&", "int" },
+			 { "ev", "0" },
+			 "SH", "shader_api", "shader_choice"));
   return vec;
 }
 std::vector<GameApiItem*> shadermoduleapi_functions()
@@ -4498,6 +4517,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "EveryApi&", "VA" },
 			 { "ev", "" },
 			 "ML", "sprite_api", "render_sprite_vertex_array_ml"));
+
 
 
   return vec;

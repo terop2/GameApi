@@ -49,6 +49,7 @@ EXPORT void GameApi::FrameBufferApi::config_fbo(FBO buffer)
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, priv->texture, 0);
   //GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
   //glDrawBuffers(1, DrawBuffers);
+  //glReadBuffer( GL_COLOR_ATTACHMENT0 );
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 EXPORT void GameApi::FrameBufferApi::bind_fbo(FBO buffer)
@@ -63,4 +64,35 @@ EXPORT void GameApi::FrameBufferApi::bind_screen(int sx, int sy)
   glBindFramebuffer(GL_FRAMEBUFFER,0);
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
   glViewport(0,0,sx,sy);
+}
+EXPORT bool GameApi::FrameBufferApi::fbo_status(FBO buffer)
+{
+  FBOPriv *priv = find_fbo(e, buffer);
+  glBindFramebuffer(GL_FRAMEBUFFER, priv->fbo_name);
+  int val = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  std::cout << "CheckFrameBuffer: " << val << "== " << GL_FRAMEBUFFER_COMPLETE << std::endl;
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  return val == GL_FRAMEBUFFER_COMPLETE;
+}
+EXPORT GameApi::BM GameApi::FrameBufferApi::fbo_to_bitmap(EveryApi &ev, FBO buffer)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  int screen_width = ev.mainloop_api.get_screen_width();
+  int screen_height = ev.mainloop_api.get_screen_height();
+  FBOPriv *priv = find_fbo(e, buffer);
+  
+  int width = priv->sx;
+  int height = priv->sy;
+
+  glBindTexture( GL_TEXTURE_2D, priv->texture);
+
+  BufferRef ref = BufferRef::NewBuffer(width, height);
+  glGetTexImage( GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
+
+
+  Bitmap<Color> *bm = new BitmapFromBuffer(ref);
+  //env->deletes.push_back(std::shared_ptr<void>(bm));
+  //Bitmap<Color> *bm2 = new FlipColours(*bm);
+  return add_color_bitmap2(e, bm);
+
 }

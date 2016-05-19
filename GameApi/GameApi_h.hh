@@ -120,6 +120,7 @@ struct MainLoopPriv
   std::map<std::string, int> profile_count;
   std::map<std::string, std::chrono::time_point<std::chrono::high_resolution_clock> > profile_start_time;
 #endif
+  int screen_width, screen_height;
 };
 
 struct ShaderPriv2
@@ -904,5 +905,7 @@ SpaceImpl *find_space(GameApi::Env &e, GameApi::SP s);
 LineImpl *find_line(GameApi::Env &e, GameApi::LN l);
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 Cutter *find_cutter(GameApi::Env &e, GameApi::CT cut);
+
+
 
 #endif

@@ -2968,10 +2968,19 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
 #endif
   tex.GenTexture(num);
   BufferRef ref = tex.TextureBuf(num);
-  int sizex = ref.width;
-  int sizey = ref.height;
+  BitmapFromBuffer buf(ref);
+  FlipColours flip(buf);
+  BufferFromBitmap buf2(flip);
+  buf2.Gen(); 
+  BufferRef ref2 = buf2.Buffer(); 
+  int sizex = ref2.width;
+  int sizey = ref2.height;
   glBindTexture(GL_TEXTURE_2D, texture[num]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sizex, sizey, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
+  //for(int i=0;i<sizex;i++)
+  //  {
+  //    std::cout << std::hex << ref2.buffer[i+5*ref2.ydelta] << std::dec << std::endl;
+  //  }
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sizex, sizey, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref2.buffer);
 #if 0
   GLenum e2 = glGetError();
   if (e2!=GL_NO_ERROR)

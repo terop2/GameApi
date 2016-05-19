@@ -111,7 +111,8 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
 {
   TextureI *tex = find_texture(e, tx);
   TextureIBitmap bm(*tex);
-  BufferFromBitmap buf(bm);
+  FlipColours flip(bm);
+  BufferFromBitmap buf(flip);
   buf.Gen();
 
   GLuint id;
@@ -148,12 +149,18 @@ EXPORT void GameApi::TextureApi::unuse(TXID tx)
 }
 EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
 {
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+
   glBindTexture(GL_TEXTURE_2D, tx.id);
   int width=1, height=1;
   glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
   glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
   BufferRef ref = BufferRef::NewBuffer(width, height);
+  glReadBuffer( GL_COLOR_ATTACHMENT0 );
   glGetTexImage( GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
+  
   Bitmap<Color> *bm = new BitmapFromBuffer(ref);
+  //env->deletes.push_back(std::shared_ptr<void>(bm));
+  //Bitmap<Color> *bm2 = new FlipColours(*bm);
   return add_color_bitmap2(e, bm);
 }

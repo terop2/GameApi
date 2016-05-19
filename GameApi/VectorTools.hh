@@ -336,7 +336,7 @@ public:
     res.alpha = c1.alpha+c2.alpha;
     return res;
   }
-  unsigned int Pixel() { return (alpha<<24) + (b << 16) + (g << 8) + r; }
+  unsigned int Pixel() { return (alpha<<24) + (r << 16) + (g << 8) + b; }
   friend Color operator*(Color c, float val)
   {
     c*=val;
@@ -356,13 +356,13 @@ public:
   }
   static unsigned int PixelCombine(unsigned int pixel1, unsigned int pixel2)
   {
-    unsigned int r = pixel1 & 0xff;
+    unsigned int b = pixel1 & 0xff;
     unsigned int g = pixel1 & 0xff00;
-    unsigned int b = pixel1 & 0xff0000;
+    unsigned int r = pixel1 & 0xff0000;
     unsigned int a = pixel1 & 0xff000000;
-    unsigned int r2 = pixel2 & 0xff;
+    unsigned int b2 = pixel2 & 0xff;
     unsigned int g2 = pixel2 & 0xff00;
-    unsigned int b2 = pixel2 & 0xff0000;
+    unsigned int r2 = pixel2 & 0xff0000;
     unsigned int a2 = pixel2 & 0xff000000;
     r+=r2;
     g+=g2;
@@ -373,9 +373,9 @@ public:
     r/=2;
     g/=2;
     b/=2;
-    r&=0xff;
+    b&=0xff;
     g&=0xff00;
-    b&=0xff0000;
+    r&=0xff0000;
     a&=0xff000000;
     return r + g + b + a;
   }
@@ -392,133 +392,164 @@ public:
     x*=255.0;
     y*=255.0;
     z*=255.0;
-    unsigned int r = int(x) &0xff;
+    unsigned int b = int(z) &0xff;
     unsigned int g = (int(y)<<8) &0xff00;
-    unsigned int b = (int(z)<<16) &0xff0000;
+    unsigned int r = (int(x)<<16) &0xff0000;
     unsigned int a = ((0xff)<<24) &0xff000000; 
     return r+g+b+a;
   }
   static unsigned int RangeChange(unsigned int color,
+				  unsigned int source_upper,
+				  unsigned int source_lower,
 				  unsigned int range_upper,
 				  unsigned int range_lower)
   {
-    unsigned int r = color & 0xff;
+    unsigned int b = color & 0xff;
     unsigned int g = color & 0xff00;
-    unsigned int b = color & 0xff0000;
+    unsigned int r = color & 0xff0000;
     unsigned int a = color & 0xff000000;
 
-    unsigned int ru = range_upper & 0xff;
+
+    unsigned int bsu = source_upper & 0xff;
+    unsigned int gsu = source_upper & 0xff00;
+    unsigned int rsu = source_upper & 0xff0000;
+    unsigned int asu = source_upper & 0xff000000;
+
+    unsigned int bsl = source_lower & 0xff;
+    unsigned int gsl = source_lower & 0xff00;
+    unsigned int rsl = source_lower & 0xff0000;
+    unsigned int asl = source_lower & 0xff000000;
+
+    unsigned int bu = range_upper & 0xff;
     unsigned int gu = range_upper & 0xff00;
-    unsigned int bu = range_upper & 0xff0000;
+    unsigned int ru = range_upper & 0xff0000;
     unsigned int au = range_upper & 0xff000000;
 
-    unsigned int rl = range_lower & 0xff;
+    unsigned int bl = range_lower & 0xff;
     unsigned int gl = range_lower & 0xff00;
-    unsigned int bl = range_lower & 0xff0000;
+    unsigned int rl = range_lower & 0xff0000;
     unsigned int al = range_lower & 0xff000000;
 
-    float rf = float(r)/255.0;
-    float gf = float(g>>8)/255.0;
-    float bf = float(b>>16)/255.0;
-    float af = float(a>>24)/255.0;
+    b-=bsl;
+    g-=gsl;
+    r-=rsl;
+    a-=asl;
 
-    unsigned int rc = rl + (unsigned int)(rf*(ru-rl));
-    unsigned int gc = gl + (unsigned int)(gf*(gu-gl));
+    float bf = float(b);
+    float gf = float(g>>8);
+    float rf = float(r>>16);
+    float af = float(a>>24);
+
+    gsu >>=8;
+    rsu >>=16;
+    asu >>=24;
+
+    gsl >>=8;
+    rsl >>=16;
+    asl >>=24;
+
+    bf /= float(bsu-bsl);
+    gf /= float(gsu-gsl);
+    rf /= float(rsu-rsl);
+    af /= float(asu-asl);
+
     unsigned int bc = bl + (unsigned int)(bf*(bu-bl));
+    unsigned int gc = gl + (unsigned int)(gf*(gu-gl));
+    unsigned int rc = rl + (unsigned int)(rf*(ru-rl));
     unsigned int ac = al + (unsigned int)(af*(au-al));
-    rc = rc & 0xff;
+    bc = bc & 0xff;
     gc = gc & 0xff00;
-    bc = bc & 0xff0000;
+    rc = rc & 0xff0000;
     ac = ac & 0xff000000;
     return rc+gc+bc+ac;
 
   }
   static unsigned int CubicInterpolate(unsigned int pixel1, unsigned int pixel2, float val)
   {
-    unsigned int r = pixel1 & 0xff;
+    unsigned int b = pixel1 & 0xff;
     unsigned int g = pixel1 & 0xff00;
-    unsigned int b = pixel1 & 0xff0000;
+    unsigned int r = pixel1 & 0xff0000;
     unsigned int a = pixel1 & 0xff000000;
-    unsigned int r2 = pixel2 & 0xff;
+    unsigned int b2 = pixel2 & 0xff;
     unsigned int g2 = pixel2 & 0xff00;
-    unsigned int b2 = pixel2 & 0xff0000;
+    unsigned int r2 = pixel2 & 0xff0000;
     unsigned int a2 = pixel2 & 0xff000000;
 
-    float rf = r;
+    float bf = b;
     float gf = g>>8;
-    float bf = b>>16;
+    float rf = r>>16;
     float af = a>>24;
 
-    float rf2 = r2;
+    float bf2 = b2;
     float gf2 = g2>>8;
-    float bf2 = b2>>16;
+    float rf2 = r2>>16;
     float af2 = a2>>24;
     
-    rf /= 255.0;
-    gf /= 255.0;
     bf /= 255.0;
+    gf /= 255.0;
+    rf /= 255.0;
     af /= 255.0;
 
-    rf2 /= 255.0;
-    gf2 /= 255.0;
     bf2 /= 255.0;
+    gf2 /= 255.0;
+    rf2 /= 255.0;
     af2 /= 255.0;
 
-    rf = rf*rf;
-    gf = gf*gf;
     bf = bf*bf;
+    gf = gf*gf;
+    rf = rf*rf;
     af = af*af;
 
-    rf2 = rf2*rf2;
-    gf2 = gf2*gf2;
     bf2 = bf2*bf2;
+    gf2 = gf2*gf2;
+    rf2 = rf2*rf2;
     af2 = af2*af2;
     
     float val1 = 1.0-val;
-    float r3 = val1*rf + val*rf2;
-    float g3 = val1*gf + val*gf2;
     float b3 = val1*bf + val*bf2;
+    float g3 = val1*gf + val*gf2;
+    float r3 = val1*rf + val*rf2;
     float a3 = val1*af + val*af2;
     
-    r3 = sqrt(r3);
-    g3 = sqrt(g3);
     b3 = sqrt(b3);
+    g3 = sqrt(g3);
+    r3 = sqrt(r3);
     a3 = sqrt(a3);
 
-    r3 *= 255.0;
-    g3 *= 255.0;
     b3 *= 255.0;
+    g3 *= 255.0;
+    r3 *= 255.0;
     a3 *= 255.0;
     
-    unsigned int r4 = r3;
-    unsigned int g4 = g3;
     unsigned int b4 = b3;
+    unsigned int g4 = g3;
+    unsigned int r4 = r3;
     unsigned int a4 = a3;
 
     g4 <<= 8;
-    b4 <<= 16;
+    r4 <<= 16;
     a4 <<= 24;
     return r4+g4+b4+a4;
   }
   static unsigned int Interpolate(unsigned int pixel1, unsigned int pixel2, float val)
   {
 
-    unsigned int r = pixel1 & 0xff;
+    unsigned int b = pixel1 & 0xff;
     unsigned int g = pixel1 & 0xff00;
-    unsigned int b = pixel1 & 0xff0000;
+    unsigned int r = pixel1 & 0xff0000;
     unsigned int a = pixel1 & 0xff000000;
-    unsigned int r2 = pixel2 & 0xff;
+    unsigned int b2 = pixel2 & 0xff;
     unsigned int g2 = pixel2 & 0xff00;
-    unsigned int b2 = pixel2 & 0xff0000;
+    unsigned int r2 = pixel2 & 0xff0000;
     unsigned int a2 = pixel2 & 0xff000000;
 
     a >>= 4;
     a2 >>= 4;
 
     float val1 = 1.0-val;
-    unsigned int r3 = ((unsigned int)(r*val1 + r2*val)) & 0xff;
+    unsigned int b3 = ((unsigned int)(b*val1 + b2*val)) & 0xff;
     unsigned int g3 = ((unsigned int)(g*val1 + g2*val)) & 0xff00;
-    unsigned int b3 = ((unsigned int)(b*val1 + b2*val)) & 0xff0000;
+    unsigned int r3 = ((unsigned int)(r*val1 + r2*val)) & 0xff0000;
     unsigned int a3 = ((unsigned int)(a*val1 + a2*val)) & 0x0ff00000;
     a3 <<= 4;
     return r3+g3+b3+a3;
