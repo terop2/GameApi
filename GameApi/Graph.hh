@@ -1982,6 +1982,42 @@ private:
 };
 
 
+class FlipColours : public Bitmap<Color>
+{
+public:
+  FlipColours(Bitmap<Color> &c) : c(c) { }
+  virtual int SizeX() const { return c.SizeX(); }
+  virtual int SizeY() const { return c.SizeY(); }
+  virtual Color Map(int x, int y) const
+  {
+    Color cc = c.Map(x,y);
+    unsigned int val = cc.Pixel();
+
+    // This is gameapi format.
+    unsigned int val_a = val&0xff000000;
+    unsigned int val_r = val&0x00ff0000;
+    unsigned int val_g = val&0x0000ff00;
+    unsigned int val_b = val&0x000000ff;
+    val_a >>= 24;
+    val_r >>= 16;
+    val_g >>= 8;
+    val_b >>= 0;
+
+    // These are opengl RGBA format
+    val_a <<= 24;
+    val_b <<= 16;
+    val_g <<= 8;
+    val_r <<= 0;
+    unsigned int v = val_r+val_g+val_b+val_a;
+    //std::cout << std::hex << v << std::dec << " " << std::endl;
+    return Color(v);
+  }
+
+private:
+  Bitmap<Color> &c;
+};
+
+
 #if 0
 class PolygonBitmap : public ContinuousBitmap<float>
 { // this is for piecewise definition of shapes

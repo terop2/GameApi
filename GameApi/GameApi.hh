@@ -195,6 +195,8 @@ public:
   IMPORT void delay(int ms);
   IMPORT unsigned int random();
   IMPORT unsigned int rand_max();
+  IMPORT int get_screen_width();
+  IMPORT int get_screen_height();
   struct Event
   {
     int type;
@@ -359,6 +361,7 @@ public:
 			int sx, int sy,
 			int count);
   IMPORT BM chessboard(int tile_sx, int tile_sy, int count_x, int count_y, unsigned int c1, unsigned int c2);
+  IMPORT BM color_range(BM orig, unsigned int source_upper, unsigned int source_lower, unsigned int target_upper, unsigned int target_lower);
   IMPORT BM memoize(BM orig);
   IMPORT BM memoize_all(BM orig);
   IMPORT BM alt(std::vector<BM> vec, int index);
@@ -1358,7 +1361,7 @@ public:
   IMPORT P color_from_texcoord(P orig,
 			       unsigned int color_1, unsigned int color_2,
 			       unsigned int color_3, unsigned int color_4);
-  IMPORT P color_range(P orig, unsigned int upper_range, unsigned int lower_range);
+  IMPORT P color_range(P orig, unsigned int source_upper, unsigned int source_lower, unsigned int upper_range, unsigned int lower_range);
 
   IMPORT P texcoord_poly(P orig, int facenum, PT *array, int size);
   IMPORT P choose_texture(P orig, int num);
@@ -1509,7 +1512,7 @@ public:
 
   IMPORT P dist_from_lines(LI li, float d1, float d2, PT center);
 
-  IMPORT BM renderpolytobitmap(EveryApi &ev, P p, float x, float y, float z, int sx, int sy);
+  IMPORT BM renderpolytobitmap(EveryApi &ev, P p, SH sh, float x, float y, float z, int sx, int sy);
 private:
   PolygonApi(const PolygonApi&);
   void operator=(const PolygonApi&);
@@ -2113,6 +2116,7 @@ public:
   IMPORT SH texture_array_shader();
   IMPORT SH colour_shader();
   IMPORT SH colour_texture_shader();
+  IMPORT SH shader_choice(EveryApi &ev, int i);
   IMPORT void link(SH shader);
   IMPORT void use(SH shader);
   void link_1(SH shader);
@@ -2154,6 +2158,8 @@ public:
   IMPORT void bind_screen(int sx, int sy);
   IMPORT TXID tex_id(FBO buffer);
   IMPORT TXID depth_id(FBO buffer);
+  IMPORT bool fbo_status(FBO buffer);
+  IMPORT BM fbo_to_bitmap(EveryApi &ev, FBO buffer);
 private:
   FrameBufferApi(const FrameBufferApi &);
   void operator=(const FrameBufferApi&);

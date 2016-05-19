@@ -28,6 +28,8 @@ EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_heigh
 #else
   p->screen = InitSDL(screenx,screeny,false);
 #endif
+  p->screen_width = screenx;
+  p->screen_height = screeny;
   time = SDL_GetTicks();
   glDisable(GL_DEPTH_TEST);
 }
@@ -351,10 +353,10 @@ EXPORT int GameApi::MainLoopApi::get_framenum()
 }
 EXPORT GameApi::BM GameApi::MainLoopApi::screenshot()
 {
-  //MainLoopPriv *p = (MainLoopPriv*)priv;
+  MainLoopPriv *p = (MainLoopPriv*)priv;
   //SDL_Surface *surf = p->screen;
-  int w = 800; //surf->w;
-  int h = 600; //surf->h;
+  int w = p->screen_width; //surf->w;
+  int h = p->screen_height; //surf->h;
 
   BufferRef ref = BufferRef::NewBuffer(w,h);
   glReadPixels(0,0,w,h, GL_BGRA, GL_UNSIGNED_BYTE, ref.buffer);
@@ -519,6 +521,16 @@ public:
 private:
   std::vector<MainLoopItem*> vec;
 };
+int GameApi::MainLoopApi::get_screen_width()
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  return p->screen_width;
+}
+int GameApi::MainLoopApi::get_screen_height()
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  return p->screen_height;
+}
 
 GameApi::ML GameApi::MainLoopApi::array_ml(std::vector<ML> vec)
 {

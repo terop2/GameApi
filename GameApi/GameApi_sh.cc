@@ -65,6 +65,22 @@ EXPORT GameApi::SH GameApi::ShaderApi::colour_shader()
 {
   return get_normal_shader_1("comb", "comb", "","colour:light:light", "colour:light:light");
 }
+EXPORT GameApi::SH GameApi::ShaderApi::shader_choice(EveryApi &ev, int i)
+{
+  SH sh = colour_shader();
+  switch(i) {
+  case 0: sh = colour_shader();
+  case 1: sh = texture_shader();
+  case 2: sh = texture_array_shader();
+  case 3: sh = colour_texture_shader();
+  };
+  int width = ev.mainloop_api.get_screen_width();
+  int height = ev.mainloop_api.get_screen_height();
+  ev.mainloop_api.init_3d(sh, width, height);
+  ev.mainloop_api.alpha(true);
+
+  return sh;
+}
 EXPORT GameApi::SH GameApi::ShaderApi::colour_texture_shader()
 {
   return get_normal_shader_1("comb", "comb", "","colour:texture:light:light", "colour:texture:light:light");

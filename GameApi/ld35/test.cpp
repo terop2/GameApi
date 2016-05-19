@@ -603,7 +603,7 @@ int main() {
   PTA instances = ev.points_api.prepare(pts);
 
 
-  P p32_b = ev.polygon_api.color_range(p32_a, 0xffffffff, 0xffff0000);
+  P p32_b = ev.polygon_api.color_range(p32_a, 0xffffffff, 0x00000000, 0xffffffff, 0xffff0000);
   P p32_c = ev.polygon_api.from_polygon(p32_b, [&ev](int i, PT p1, PT p2, PT p3, PT p4) { return poly_func(i, p1,p2,p3,p4,ev); });
   P p32_d = ev.polygon_api.color_faces(p32_c, 0xff888888, 0xff444444, 0xff222222, 0xff666666);
 

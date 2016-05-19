@@ -166,6 +166,36 @@ EXPORT GameApi::BM GameApi::BitmapApi::alpha_color(BM orig, unsigned int color_k
   BM bm = add_bitmap(e, handle2);
   return bm;
 }
+class ColorRangeBitmap : public Bitmap<Color>
+{
+public:
+  ColorRangeBitmap(Bitmap<Color> &bm, unsigned int source_upper, unsigned int source_lower, unsigned int target_upper, unsigned int target_lower) : bm(bm), source_upper(source_upper), source_lower(source_lower), target_upper(target_upper), target_lower(target_lower) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual Color Map(int x, int y) const 
+  {
+    Color c = bm.Map(x,y);
+    unsigned int c2 = c.Pixel();
+    unsigned int c3 = Color::RangeChange(c2, source_upper, source_lower, target_upper, target_lower);
+    return Color(c3);
+  }
+
+private:
+  Bitmap<Color> &bm;
+  unsigned int source_upper, source_lower;
+  unsigned int target_upper, target_lower;
+};
+EXPORT GameApi::BM GameApi::BitmapApi::color_range(BM orig, unsigned int source_upper, unsigned int source_lower, unsigned int target_upper, unsigned int target_lower)
+{
+  BitmapHandle *handle = find_bitmap(e, orig);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  ::Bitmap<Color> *b = new ColorRangeBitmap(*b2, source_upper, source_lower, target_upper, target_lower);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm = add_bitmap(e, handle2);
+  return bm;
+
+}
 class GradientBitmap2 : public Bitmap<Color>
 {
 public:

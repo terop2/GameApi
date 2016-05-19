@@ -975,21 +975,22 @@ public:
 class ColorRangeFaceCollection : public ForwardFaceCollection
 {
 public: 
-  ColorRangeFaceCollection(FaceCollection *coll, unsigned int upper_range, unsigned int lower_range) : ForwardFaceCollection(*coll), coll(coll), upper_range(upper_range), lower_range(lower_range) { }
+  ColorRangeFaceCollection(FaceCollection *coll, unsigned int source_upper, unsigned int source_lower, unsigned int upper_range, unsigned int lower_range) : ForwardFaceCollection(*coll), coll(coll), source_upper(source_upper), source_lower(source_lower), upper_range(upper_range), lower_range(lower_range) { }
   virtual unsigned int Color(int face, int point) const
   {
     unsigned int col = ForwardFaceCollection::Color(face,point);
-    unsigned int col2 = Color::RangeChange(col, upper_range, lower_range);
+    unsigned int col2 = Color::RangeChange(col, source_upper, source_lower, upper_range, lower_range);
     return col2;
   }
 private:
   FaceCollection *coll;
+  unsigned int source_upper, source_lower;
   unsigned int upper_range, lower_range;
 };
-EXPORT GameApi::P GameApi::PolygonApi::color_range(P orig, unsigned int upper_range, unsigned int lower_range)
+EXPORT GameApi::P GameApi::PolygonApi::color_range(P orig, unsigned int source_upper, unsigned int source_lower, unsigned int upper_range, unsigned int lower_range)
 {
   FaceCollection *c = find_facecoll(e, orig);
-  FaceCollection *c2 = new ColorRangeFaceCollection(c,upper_range,lower_range);
+  FaceCollection *c2 = new ColorRangeFaceCollection(c,source_upper, source_lower, upper_range,lower_range);
   return add_polygon2(e, c2, 1);
 }
 EXPORT GameApi::P GameApi::PolygonApi::color_grayscale(P orig)
@@ -3488,4 +3489,45 @@ EXPORT GameApi::P GameApi::PolygonApi::and_not_elem(EveryApi &ev, P p1, P p_not,
   P or_1 = or_elem(p_1, p_not_);
   return or_1;
   //return or_1;
+}
+GameApi::BM GameApi::PolygonApi::renderpolytobitmap(EveryApi &ev, P p, SH sh, float x, float y, float z, int sx, int sy)
+{
+  GameApi::PolygonObj obj(ev, p, sh);
+  obj.set_pos(x,y,z);
+  obj.prepare();
+  int screen_width = ev.mainloop_api.get_screen_width();
+  int screen_height = ev.mainloop_api.get_screen_height();
+  //Point2d pos = { 0.0, 0.0 };
+  //Vector2d sz = { float(sx), float(sy) };
+  //glViewport(pos.x, screen_height-pos.y-sz.dy, sz.dx, sz.dy);
+  //ev.shader_api.use(sh);
+  //ev.mainloop_api.switch_to_3d(true, sh, screen_width, screen_height);
+  glEnable(GL_DEPTH_TEST);
+ 
+ FBO fbo = ev.fbo_api.create_fbo(sx,sy);
+  ev.fbo_api.config_fbo(fbo);
+  ev.fbo_api.bind_fbo(fbo);
+
+  glEnable(GL_DEPTH_TEST);
+  glDisable(GL_BLEND);
+  //glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+  //		       GL_ONE, GL_ONE);
+  ev.mainloop_api.clear_3d(0x00000000);
+  obj.render();
+  glEnable(GL_BLEND);
+  while(!ev.fbo_api.fbo_status(fbo));
+  //BM bm = ev.mainloop_api.screenshot();
+  ev.fbo_api.bind_screen(screen_width, screen_height);
+  //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  glDisable(GL_DEPTH_TEST);
+  //ev.mainloop_api.switch_to_3d(false, sh, screen_width, screen_height);
+
+  //return ev.fbo_api.fbo_to_bitmap(ev, fbo);
+  TXID id = ev.fbo_api.tex_id(fbo);
+  //glDisable(GL_DEPTH_TEST);
+  //glViewport(0,0,screen_width, screen_height);
+  BM bm = ev.texture_api.to_bitmap(id);
+  BM bm2 = ev.bitmap_api.color_range(bm, 0x90ffffff, 0x00000000, 0xffffffff, 0x00000000);
+  return bm2; 
 }
