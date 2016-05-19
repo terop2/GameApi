@@ -375,17 +375,21 @@ EXPORT GameApi::LI GameApi::LinesApi::border_from_bool_bitmap(GameApi::BB b, flo
 class LI_Render : public MainLoopItem
 {
 public:
-  LI_Render(GameApi::LinesApi &api, GameApi::LLA l) : api(api), l(l) { }
-  void execute() {
+  LI_Render(GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LLA l) : ev(ev), api(api), l(l) { }
+  void execute(MainLoopEnv &e) {
+    GameApi::SH sh;
+    sh.id = e.sh_color;
+    ev.shader_api.use(sh);
     api.render(l);
   }
 private:
+  GameApi::EveryApi &ev;
   GameApi::LinesApi &api;
   GameApi::LLA l;
 };
-EXPORT GameApi::ML GameApi::LinesApi::render_ml(LLA l)
+EXPORT GameApi::ML GameApi::LinesApi::render_ml(EveryApi &ev, LLA l)
 {
-  return add_main_loop(e, new LI_Render(*this, l));
+  return add_main_loop(e, new LI_Render(ev, *this, l));
 }
 EXPORT void GameApi::LinesApi::render(LLA l)
 {
@@ -466,7 +470,7 @@ class LI_Update : public MainLoopItem
 {
 public:
   LI_Update(GameApi::LinesApi &api, GameApi::LLA la, GameApi::LI li) : api(api), la(la), li(li) { }
-  void execute() { api.update(la,li); }
+  void execute(MainLoopEnv &e) { api.update(la,li); }
 private:
   GameApi::LinesApi &api;
   GameApi::LLA la;

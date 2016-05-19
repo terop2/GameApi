@@ -248,6 +248,20 @@ private:
 };
 
 template<class T>
+class Conv {
+public:
+  static void set(T &target, std::string s) { std::stringstream ss(s); ss >> target; }
+  static void get(const T &target, std::string &s) { std::stringstream ss; ss << target; s=ss.str(); }
+};
+template<>
+class Conv<std::string>
+{
+public:
+  static void set(std::string &target, std::string s) { target = s; }
+  static void get(const std::string &target, std::string &s) { s=target; }
+};
+
+template<class T>
 class EditorGuiWidgetAtlas : public GuiWidgetForward
 {
 public:
@@ -274,15 +288,17 @@ public:
 
     if (firsttime)
       {
-	std::stringstream ss;
-	ss << target;
-	label = ss.str();
+	Conv<T>::get(target, label);
+	//std::stringstream ss;
+	//ss << target;
+	//label = target; //ss.str();
       }
 #ifdef EMSCRIPTEN
     if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
     if (ch==39) ch='0';
     if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
 #endif
+    if (ch==13) { ch='\n'; }
     if (active)
       {
 	int s = allowed_chars.size();
@@ -304,8 +320,9 @@ public:
     // note, spaces are not allowed.
     if (active) {
       //std::cout << "EDITOR UPDATES: " << label << std::endl;
-      std::stringstream ss2(label);
-      ss2 >> target;
+      //std::stringstream ss2(label);
+      //ss2 >> target;
+      Conv<T>::set(target, label);
       //std::cout << "EDITOR UPDATES2: " << target << std::endl;
     }
 
@@ -481,6 +498,96 @@ private:
   int screen_x, screen_y;
   float rot_y;
 };
+
+class MLGuiWidget : public GuiWidgetForward
+{
+public:
+  MLGuiWidget(GameApi::EveryApi &ev, GameApi::ML p, GameApi::SH sh, GameApi::SH sh2, GameApi::SH sh_arr, GameApi::SH old_sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), sh(sh), sh2(sh2), sh_arr(sh_arr), old_sh(old_sh), p(p),sx(sx),sy(sy), screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
+    Point2d p3 = {-666.0, -666.0 };
+    update(p3, -1,-1,-1);
+    Point2d p2 = { 0.0,0.0 };
+    set_pos(p2);
+    rot_y = 0.0;
+    mat = ev.matrix_api.identity();
+  }
+  void update(Point2d mouse, int button, int ch, int type)
+  {
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+
+    if (ch=='a' && type==0x300)
+      {
+	rot_y+=1.0*3.14159*2.0/360.0;
+	//obj.set_rotation_y(rot_y);
+	mat = ev.matrix_api.yrot(rot_y);
+      }
+    if (ch=='d' && type==0x300)
+      {
+	rot_y-=1.0*3.14159*2.0/360.0;
+	//obj.set_rotation_y(rot_y);
+	mat = ev.matrix_api.yrot(rot_y);
+      }
+
+    if (firsttime)
+      {
+	//obj.prepare();
+      firsttime = false;
+      }
+    size.dx = sx;
+    size.dy = sy;
+  }  
+  void render()
+  {
+    if (!firsttime)
+      {
+	Point2d pos = get_pos();
+	Vector2d sz = get_size();
+	glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
+	ev.shader_api.use(sh);
+	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
+	ev.shader_api.use(sh2);
+	ev.mainloop_api.switch_to_3d(true, sh2, screen_x, screen_y);
+	ev.shader_api.use(sh_arr);
+	ev.mainloop_api.switch_to_3d(true, sh_arr, screen_x, screen_y);
+	glEnable(GL_DEPTH_TEST);
+	//obj.render();
+	ev.shader_api.use(sh);
+	ev.shader_api.set_var(sh, "in_MV", mat);
+	ev.shader_api.use(sh2);
+	ev.shader_api.set_var(sh2, "in_MV", mat);
+	ev.shader_api.use(sh_arr);
+	ev.shader_api.set_var(sh_arr, "in_MV", mat);
+	ev.shader_api.use(sh);
+	ev.mainloop_api.execute_ml(p, sh, sh2, sh_arr);
+	//ev.polygon_api.render_vertex_array(p);
+	glDisable(GL_DEPTH_TEST);
+	ev.shader_api.use(sh);
+	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
+	ev.shader_api.use(sh2);
+	ev.mainloop_api.switch_to_3d(false, sh2, screen_x, screen_y);
+	ev.shader_api.use(sh_arr);
+	ev.mainloop_api.switch_to_3d(false, sh_arr, screen_x, screen_y);
+	glViewport(0,0,screen_x, screen_y);
+	ev.shader_api.use(old_sh);
+      }
+  }
+private:
+  GameApi::SH sh;
+  GameApi::SH sh2;
+  GameApi::SH sh_arr;
+  GameApi::SH old_sh;
+  GameApi::ML p;
+  GameApi::M mat;
+  //GameApi::PolygonObj obj;
+  bool firsttime;
+  int sx,sy;
+  int screen_x, screen_y;
+  float rot_y;
+};
+
 
 
 class ShaderPlaneGuiWidget : public GuiWidgetForward
@@ -1589,6 +1696,10 @@ EXPORT GameApi::W GameApi::GuiApi::va(VA p, SH sh2, int sx, int sy, int screen_s
 {
   return add_widget(e, new VAGuiWidget(ev, p, sh2, sh, sx,sy, screen_size_x, screen_size_y));
 }
+EXPORT GameApi::W GameApi::GuiApi::ml(ML p, SH sh2, SH sh3, SH sh_arr, int sx, int sy, int screen_size_x, int screen_size_y)
+{
+  return add_widget(e, new MLGuiWidget(ev, p, sh2, sh3, sh_arr, sh, sx,sy, screen_size_x, screen_size_y));
+}
 EXPORT GameApi::W GameApi::GuiApi::shader_plane(SFO p, int sx, int sy, int screen_x, int screen_y)
 {
   return add_widget(e, new ShaderPlaneGuiWidget(ev, p, sh, sx,sy,screen_x, screen_y));
@@ -1708,6 +1819,40 @@ EXPORT GameApi::W GameApi::GuiApi::va_dialog(VA p, SH sh, int screen_size_x, int
   W arr_3 = mouse_move(arr_2, 0,0, size_x(arr_2), size_y(arr_2));
   return arr_3;
 }
+
+EXPORT GameApi::W GameApi::GuiApi::ml_dialog(ML p, SH sh, SH sh2, SH sh_arr, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button)
+{
+  W bm_1 = ml(p, sh, sh2, sh_arr, 400,400, screen_size_x,screen_size_y);
+  W bm_2 = margin(bm_1, 10,10,10,10);
+  W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
+  W bm_4 = layer(bm_3, bm_2);
+  
+  W but_1 = text("Close", atlas, atlas_bm);
+  W but_2 = center_align(but_1, size_x(bm_4));
+  W but_3 = center_y(but_2, 60.0);
+  W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
+  W but_41 = highlight(but_4);
+  W but_5 = layer(but_41, but_3);
+  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
+  close_button = but_6;
+
+  W code_1 = text("CodeGen", atlas, atlas_bm);
+  W code_2 = center_align(code_1, size_x(bm_4));
+  W code_3 = center_y(code_2, 60.0);
+  W code_4 = button(size_x(code_3), size_y(code_3), 0xff00ff00, 0xff008800);
+  W code_41 = highlight(code_4);
+  W code_5 = layer(code_41, code_3);
+  W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
+  codegen_button = code_6;
+
+
+  W arr[] = { bm_4, code_6, but_6 };
+  W arr_2 = array_y(&arr[0], 3, 0);
+
+  W arr_3 = mouse_move(arr_2, 0,0, size_x(arr_2), size_y(arr_2));
+  return arr_3;
+}
+
 
 
 
@@ -2159,7 +2304,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, 
     }
   if (type=="std::string" || type=="bool")
     {
-      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*";
+      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*\n";
       W edit = string_editor(allowed, target.s, atlas, atlas_bm, x_gap);
       return edit;
     }
@@ -2942,7 +3087,7 @@ class FromStreamClass<std::vector<T>>
 public:
   std::vector<T> from_stream(std::string s, GameApi::EveryApi &ev)
   {
-    std::cout << "Vector" << std::endl;
+    std::cout << "Vector:" << s << std::endl;
     std::vector<T> vec;
     if (s.size()<2)
       {
@@ -3013,6 +3158,7 @@ MACRO(GameApi::LLA)
 MACRO(GameApi::PTS)
 MACRO(GameApi::FBO)
 MACRO(GameApi::W)
+MACRO(GameApi::ML)
 #undef MACRO
 
 
@@ -3663,6 +3809,13 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "" },
 			 "P", "polygon_api", "color_from_normals"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_from_texcoord,
+			 "color_from_texcoord",
+			 { "orig", "color_tl", "color_tr", "color_bl", "color_br" },
+			 { "P", "unsigned int", "unsigned int", "unsigned int", "unsigned int" },
+			 { "", "ffff8844", "ff884422", "ffaa8844", "ffffffff" },
+			 "P", "polygon_api", "color_from_texcoord"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_range,
 			 "color_range",
 			 { "orig", "upper_range", "lower_range" },
@@ -3704,7 +3857,13 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "", "0.0", "0.0", "1.0", "0.0", "1.0", "1.0", "0.0", "1.0" },
 			 "P", "polygon_api", "texcoord_manual"));
 
-  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texcoord_spherical2,
+			 "texcoord_spherical",
+			 { "ev", "center", "r", "orig" },
+			 { "EveryApi&", "PT", "float", "P" },
+			 { "ev", "", "100.0", "" },
+			 "P", "polygon_api", "texcoord_spherical2"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::or_elem,
 			 "p_or_elem",
 			 { "p1", "p2" },
@@ -3805,10 +3964,16 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 "VA", "polygon_api", "create_vertex_array"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::render_vertex_array_ml,
 			 "p_render",
-			 { "va" },
-			 { "VA" },
-			 { "" },
+			 { "ev", "va" },
+			 { "EveryApi&", "VA" },
+			 { "ev", "" },
 			 "ML", "polygon_api", "render_vertex_array_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::array_ml,
+			 "array_ml",
+			 { "arr" },
+			 { "[ML]" },
+			 { "" },
+			 "ML", "mainloop_api", "array_ml"));
   return vec;
 }
 std::vector<GameApiItem*> shadermoduleapi_functions()
@@ -4022,9 +4187,9 @@ std::vector<GameApiItem*> linesapi_functions()
 			 "ML", "lines_api", "update_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::render_ml,
 			 "li_render",
-			 { "lla" },
-			 { "LLA" },
-			 { "" },
+			 { "ev", "lla" },
+			 { "EveryApi&", "LLA" },
+			 { "ev", "" },
 			 "ML", "lines_api", "render_ml"));
   return vec;
 }
@@ -4329,9 +4494,9 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "ML", "sprite_api", "update_vertex_array_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::render_sprite_vertex_array_ml,
 			 "bm_render",
-			 { "va" },
-			 { "VA" },
-			 { "" },
+			 { "ev", "va" },
+			 { "EveryApi&", "VA" },
+			 { "ev", "" },
 			 "ML", "sprite_api", "render_sprite_vertex_array_ml"));
 
 

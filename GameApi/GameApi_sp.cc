@@ -178,18 +178,22 @@ EXPORT void GameApi::SpriteApi::spritepos(BM bm, float x, float y)
 class RenderVertexArray4 : public MainLoopItem
 {
 public:
-  RenderVertexArray4(GameApi::SpriteApi &sp, GameApi::VA va) : sp(sp), va(va) { }
-  void execute()
+  RenderVertexArray4(GameApi::EveryApi &ev, GameApi::SpriteApi &sp, GameApi::VA va) : ev(ev), sp(sp), va(va) { }
+  void execute(MainLoopEnv &e)
   {
+    GameApi::SH sh;
+    sh.id = e.sh_texture;
+    ev.shader_api.use(sh);
     sp.render_sprite_vertex_array(va);
   }
 private:
+  GameApi::EveryApi &ev;
   GameApi::SpriteApi &sp;
   GameApi::VA va;
 };
-EXPORT GameApi::ML GameApi::SpriteApi::render_sprite_vertex_array_ml(VA va)
+EXPORT GameApi::ML GameApi::SpriteApi::render_sprite_vertex_array_ml(EveryApi &ev, VA va)
 {
-  return add_main_loop(e, new RenderVertexArray4(*this, va));
+  return add_main_loop(e, new RenderVertexArray4(ev, *this, va));
 }
 
 EXPORT void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
@@ -259,7 +263,7 @@ class UpdateVertexArray4 : public MainLoopItem
 {
 public:
   UpdateVertexArray4(GameApi::SpriteApi &api, GameApi::VA va, GameApi::BM bm) : api(api), va(va), bm(bm) { }
-  void execute()
+  void execute(MainLoopEnv &e)
   {
     api.update_vertex_array(va,bm);
   }

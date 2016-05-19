@@ -126,7 +126,6 @@ using std::placeholders::_9;
   //struct A { int id; };
 
 
-
 struct ExecuteEnv
 {
   std::vector<std::string> names;
@@ -218,6 +217,8 @@ public:
   IMPORT Event get_event();
   void waittof();
   SP screenspace();
+  void execute_ml(ML ml, SH color, SH texture, SH arr_texture);
+  ML array_ml(std::vector<ML> vec);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);
@@ -241,7 +242,7 @@ public:
         IMPORT ML update_vertex_array_ml(VA va, BM bm);
         IMPORT void clipping_sprite(VA va, int sx, int sy, float tex_l, float tex_t, float tex_r, float teb_b);
 	IMPORT void render_sprite_vertex_array(VA va);
-        IMPORT ML render_sprite_vertex_array_ml(VA va);
+  IMPORT ML render_sprite_vertex_array_ml(EveryApi &ev, VA va);
 
 	IMPORT void rendersprite(BM bm, SH sh, float x, float y, float mult_x = 1.0, float mult_y = 1.0);
 	IMPORT void rendersprite2(BM bm, SH sh, PT pos);
@@ -878,6 +879,7 @@ public:
   W icon(BM bitmap);
   W poly(P p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
   W va(VA p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
+  W ml(ML p, SH sh, SH sh2, SH sh_arr, int sx, int sy, int screen_size_x, int screen_size_y);
   W shader_plane(SFO p, int sx, int sy, int screen_size_x, int screen_size_y);
   W lines(LI p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
   W pts(PTS p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
@@ -924,6 +926,7 @@ public:
   W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
   W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
   W va_dialog(VA p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
+  W ml_dialog(ML p, SH sh, SH sh2, SH sh_arr, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
   W shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_size_x, int screen_size_y, W &codegen_button);
   W lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
   W pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
@@ -1136,6 +1139,7 @@ public:
 	IMPORT FD min(FD a1, FD a2);
         IMPORT FD max(FD a1, FD a2);
 	IMPORT FD and_not(FD a1, FD a2);
+  IMPORT PT ray_shape_intersect(FD shape, PT pos, V vec);
 	IMPORT BM render(FD obj, COV color, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
 	IMPORT std::string shader_func(std::string name, FD obj, COV color);
 private:
@@ -1341,6 +1345,7 @@ public:
 			   float p3_x, float p3_y,
 			   float p4_x, float p4_y);
   IMPORT P texcoord_spherical(PT center, P orig);
+  IMPORT P texcoord_spherical2(EveryApi &ev, PT center, float r, P orig);
   IMPORT P texcoord_cylindar(P orig, float start_y, float end_y);
   IMPORT P color_cube(P orig,
 	       PT o, PT u_x, PT u_y, PT u_z,
@@ -1350,6 +1355,9 @@ public:
 		unsigned int color_3, unsigned int color_4);
   IMPORT P color_from_normals(P orig);
   IMPORT P color_grayscale(P orig);
+  IMPORT P color_from_texcoord(P orig,
+			       unsigned int color_1, unsigned int color_2,
+			       unsigned int color_3, unsigned int color_4);
   IMPORT P color_range(P orig, unsigned int upper_range, unsigned int lower_range);
 
   IMPORT P texcoord_poly(P orig, int facenum, PT *array, int size);
@@ -1446,7 +1454,7 @@ public:
   IMPORT void render_vertex_array(VA va); // fast
   IMPORT void prepare_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh);
   IMPORT void render_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh); // fast
-  IMPORT ML render_vertex_array_ml(VA va);
+  IMPORT ML render_vertex_array_ml(EveryApi &ev, VA va);
   IMPORT void explode(VA va, PT pos, float dist);
   //IMPORT int access_point_count(VA va, bool triangle);
   //IMPORT float *access_points(VA va, bool triangle, int face, int point);
@@ -1836,6 +1844,8 @@ public:
 
 	IMPORT PT from_angle(float radius, float angle);
 	IMPORT PT from_angle(PT center, float radius, float angle);
+        IMPORT PT spherical_coords(PT pos);
+        IMPORT PT cartesian_coords(PT pos);
 
 	IMPORT float pt_x(PT p);
 	IMPORT float pt_y(PT p);
@@ -1953,7 +1963,7 @@ public:
   //IMPORT unsigned int *color_access(LLA lines, int line, bool b);
   //IMPORT void update(LLA lines);
 	IMPORT void render(LLA array);
-  IMPORT ML render_ml(LLA array);
+  IMPORT ML render_ml(EveryApi &ev, LLA array);
 private:
   LinesApi(const LinesApi&);
   void operator=(const LinesApi&);

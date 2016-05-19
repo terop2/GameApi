@@ -422,7 +422,7 @@ public:
   SaveModel(GameApi::PolygonApi &api, GameApi::P poly, std::string filename) : api(api), poly(poly), filename(filename)
   {
   }
-  void execute()
+  void execute(MainLoopEnv &e)
   {
     api.save_model(poly, filename);
   }
@@ -2381,7 +2381,7 @@ class UpdateVA : public MainLoopItem
 {
 public:
   UpdateVA(GameApi::PolygonApi &api, GameApi::VA va, GameApi::P p, bool keep) : api(api), va(va), p(p), keep(keep) { }
-  void execute()
+  void execute(MainLoopEnv &e)
   {
     api.update_vertex_array(va,p,keep);
   }
@@ -2611,18 +2611,33 @@ EXPORT void GameApi::PolygonApi::update(VA va)
 class RenderVA : public MainLoopItem
 {
 public:
-  RenderVA(GameApi::PolygonApi &api, GameApi::VA va) : api(api), va(va) { }
-  void execute()
-  {
+  RenderVA(GameApi::EveryApi &ev, GameApi::PolygonApi &api, GameApi::VA va) : ev(ev), api(api), va(va) { }
+  void execute(MainLoopEnv &e)
+  { 
+    GameApi::SH sh;
+    if (ev.polygon_api.is_texture(va))
+      {
+	sh.id = e.sh_texture;
+	if (ev.polygon_api.is_array_texture(va))
+	  {
+	    sh.id = e.sh_array_texture;
+	  }
+      }
+    else
+      {
+	sh.id = e.sh_color;
+      }
+    ev.shader_api.use(sh);
     api.render_vertex_array(va);
   }
 private:
+  GameApi::EveryApi &ev;
   GameApi::PolygonApi &api;
   GameApi::VA va;
 };
-EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml(VA va)
+EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml(EveryApi &ev, VA va)
 {
-  return add_main_loop(e, new RenderVA(*this, va));
+  return add_main_loop(e, new RenderVA(ev, *this, va));
 }
 EXPORT void GameApi::PolygonApi::print_stat(VA va)
 {
@@ -3383,6 +3398,76 @@ EXPORT GameApi::P GameApi::PolygonApi::subpoly_change(P p, P p2, O choose)
   VolumeObject *choose_a = find_volume(e, choose);
 
   return add_polygon2(e, new SubPolyChange(pa, pa2, choose_a),1);
+}
+class TexCoordSpherical2 : public ForwardFaceCollection
+{
+public:
+  TexCoordSpherical2(GameApi::Env &e, GameApi::EveryApi &ev, Point center, float r, FaceCollection *coll) : ForwardFaceCollection(*coll), e(e), ev(ev), center(center), r(r), coll(coll) 
+  {
+    GameApi::PT center2 = ev.point_api.point(center.x, center.y, center.z);
+    fd = ev.dist_api.sphere(center2, r);
+  }
+  Point2d TexCoord(int face, int point) const
+  {
+    Point p = coll->FacePoint(face, point);
+    Vector n = coll->PointNormal(face,point);
+    GameApi::PT p2 = ev.point_api.point(p.x, p.y, p.z);
+    GameApi::V v2 = ev.vector_api.vector(n.dx, n.dy, n.dz);
+    GameApi::PT ip = ev.dist_api.ray_shape_intersect(fd, p2, v2);
+    GameApi::PT sph = ev.point_api.spherical_coords(ip);
+    float alfa = ev.point_api.pt_x(sph);
+    float beta = ev.point_api.pt_y(sph);
+    Point2d pp;
+    pp.x = alfa/3.14159;
+    pp.y = beta/3.14159/2.0;
+    return pp;
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  Point center;
+  float r;
+  FaceCollection *coll;
+  GameApi::FD fd;
+};
+EXPORT GameApi::P GameApi::PolygonApi::texcoord_spherical2(EveryApi &ev,
+							  PT center,
+							  float r,
+							  P orig)
+{
+  FaceCollection *pa = find_facecoll(e, orig);
+  Point *pt = find_point(e, center);
+  return add_polygon2(e, new TexCoordSpherical2(e, ev, *pt, r, pa), 1);
+
+}
+class ColorFromTexcoord : public ForwardFaceCollection
+{
+public:
+  ColorFromTexcoord(FaceCollection *coll, unsigned int color_tl, unsigned int color_tr,
+		    unsigned int color_bl, unsigned int color_br)
+    : ForwardFaceCollection(*coll), color_tl(color_tl), color_tr(color_tr),
+      color_bl(color_bl), color_br(color_br) 
+  {
+  }
+  unsigned int Color(int face, int point) const
+  {
+    Point2d pos = ForwardFaceCollection::TexCoord(face,point);
+    unsigned int c1 = Color::Interpolate(color_tl, color_tr, pos.x);
+    unsigned int c2 = Color::Interpolate(color_bl, color_br, pos.x);
+    unsigned int c3 = Color::Interpolate(c1,c2, pos.y);
+    //std::cout << "ColorFromTexCoord: " << pos.x << " " << pos.y << ":" << std::hex << c1 << " " << c2 << " " << c3 << std::dec << std::endl;
+    return c3;
+  }
+private:
+  unsigned int color_tl, color_tr;
+  unsigned int color_bl, color_br;
+};
+EXPORT GameApi::P GameApi::PolygonApi::color_from_texcoord(P orig,
+							   unsigned int color_tl, unsigned int color_tr,
+							   unsigned int color_bl, unsigned int color_br)
+{
+  FaceCollection *coll = find_facecoll(e, orig);
+  return add_polygon2(e, new ColorFromTexcoord(coll, color_tl, color_tr, color_bl, color_br), 1);  
 }
 EXPORT GameApi::P GameApi::PolygonApi::and_not_elem(EveryApi &ev, P p1, P p_not,
 						    O o1, O o_not,

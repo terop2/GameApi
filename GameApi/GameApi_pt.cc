@@ -71,3 +71,31 @@ EXPORT GameApi::PT GameApi::PointApi::from_angle(PT center, float radius, float 
   Point p = *cen+Vector(radius*cos(angle),radius*sin(angle),0.0);
   return add_point(e,p.x,p.y,p.z);
 }
+
+EXPORT GameApi::PT GameApi::PointApi::spherical_coords(PT pos)
+{
+  Point *pt = find_point(e, pos);
+  float x = pt->x;
+  float y = pt->y;
+  float z = pt->z;
+  float r = sqrt(x*x+y*y+z*z);
+  float alfa = acos(z/r);
+  float beta = atan(y/x);
+  //std::cout << "Spherical" << x << " " << y << " " << z << ":" << r << " " << alfa << " " << beta << std::endl; 
+  return add_point(e, alfa, beta, r);
+}
+EXPORT GameApi::PT GameApi::PointApi::cartesian_coords(PT pos)
+{
+  Point *pt = find_point(e, pos);
+  float x = pt->x;
+  float y = pt->y;
+  float z = pt->z;
+
+  float alfa = x;
+  float beta = y;
+  float r = z;
+  x = r*sin(alfa)*cos(beta);
+  y = r*sin(alfa)*sin(beta);
+  z = r*cos(alfa);
+  return add_point(e, x,y,z);
+}

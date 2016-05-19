@@ -752,6 +752,11 @@ void iter(void *arg)
 		      } else
 		      if (type=="ML")
 			{
+			  ML ml;
+			  ml.id = id;
+			  
+			  env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+
 			} else
 		    if (type=="BM")
 		      {
