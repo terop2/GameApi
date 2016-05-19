@@ -1433,6 +1433,23 @@ private:
   int sx,sy;
 
 };
+EXPORT GameApi::PT GameApi::DistanceFloatVolumeApi::ray_shape_intersect(FD shape, PT pos, V vec)
+{
+  DistanceRenderable *dist = find_distance(e, shape);
+  Point *pt = find_point(e, pos);
+  Vector *vt = find_vector(e, vec);
+
+  Point p = *pt;
+  int count = 0;
+  while(1) {
+    float d = dist->distance(p);
+    if (d<1.0) break;
+    if (count >30) return add_point(e,0.0,0.0,0.0);
+    p+=(*vt)*d;
+    count ++;
+  }
+  return add_point(e, p.x,p.y,p.z);
+}
 
 EXPORT GameApi::BM GameApi::DistanceFloatVolumeApi::render(FD obj, COV colors, PT pos, V u_x, V u_y, V u_z, int sx, int sy)
 {

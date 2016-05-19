@@ -303,7 +303,7 @@ Widget *find_w(W w)
 
 
 template<class T>
-class FromStreamClass
+class FromStreamClass2
 {
 public:
   T from_stream(std::string s)
@@ -316,7 +316,7 @@ public:
 };
 
 template<>
-class FromStreamClass<std::string>
+class FromStreamClass2<std::string>
 {
 public:
   std::string from_stream(std::string s)
@@ -327,7 +327,7 @@ public:
 
 
 template<>
-class FromStreamClass<unsigned int>
+class FromStreamClass2<unsigned int>
 {
 public:
   unsigned int from_stream(std::string s)
@@ -344,7 +344,7 @@ public:
 
 
 template<class T>
-class FromStreamClass<std::vector<T>>
+class FromStreamClass2<std::vector<T>>
 {
 public:
   std::vector<T> from_stream(std::string sk)
@@ -360,7 +360,7 @@ public:
     char c = s[0];
     if (c!='[') { std::cout << "from_stream parse error on std::vector" << std::endl; return vec; }
 
-    FromStreamClass<T> cls;
+    FromStreamClass2<T> cls;
     int ss = s.size();
     std::string next;
     int prev = 1;
@@ -383,7 +383,7 @@ public:
 
 #define MACRO(lab) \
 template<> \
-class FromStreamClass<lab> \
+class FromStreamClass2<lab> \
 { \
 public:\
   lab from_stream(std::string s)\
@@ -396,9 +396,9 @@ public:\
 };
 MACRO(W);
 
-template<typename T> T from_stream2(std::stringstream &is)
+template<typename T> T from_stream22(std::stringstream &is)
 {
-  FromStreamClass<T> cls;
+  FromStreamClass2<T> cls;
   std::string s;
   is >> s;
   return cls.from_stream(s);
@@ -445,7 +445,7 @@ int funccall(RT (fptr)(P...), std::vector<std::string> s, std::vector<std::strin
   std::stringstream ss2(ss.str());
   
   //T *ptr = &(ev.*api);
-  RT val = (*fptr)(from_stream2<P>(ss2)...);
+  RT val = (*fptr)(from_stream22<P>(ss2)...);
   std::cout << "FuncCall returning: " << val.id << std::endl;
   return val.id;
 }

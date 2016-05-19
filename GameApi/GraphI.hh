@@ -275,10 +275,17 @@ struct GameApiModule
   std::vector<GameApiFunction> funcs;
 };
 
+struct MainLoopEnv
+{
+  int sh_color = 0;
+  int sh_texture = 0;
+  int sh_array_texture = 0;
+};
+
 class MainLoopItem
 {
 public:
-  virtual void execute()=0;
+  virtual void execute(MainLoopEnv &e)=0;
 };
 
 class ExprNode

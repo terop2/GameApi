@@ -494,3 +494,39 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 
   return e2;
 }
+void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH array_texture)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  MainLoopEnv e;
+  e.sh_color = color.id;
+  e.sh_texture = texture.id;
+  e.sh_array_texture = array_texture.id;
+  item->execute(e);
+}
+
+class ArrayMainLoop : public MainLoopItem
+{
+public:
+  ArrayMainLoop(std::vector<MainLoopItem*> vec) : vec(vec) { }
+  void execute(MainLoopEnv &e)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->execute(e);
+      }
+  }
+private:
+  std::vector<MainLoopItem*> vec;
+};
+
+GameApi::ML GameApi::MainLoopApi::array_ml(std::vector<ML> vec)
+{
+  std::vector<MainLoopItem*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_main_loop(e,vec[i]));
+    }
+  return add_main_loop(e, new ArrayMainLoop(vec2));
+}

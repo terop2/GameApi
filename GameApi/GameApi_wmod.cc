@@ -506,7 +506,7 @@ void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, 
       for(int ii=0;ii<ss;ii++)
 	{
 	  GameApiParam &param = line.params[ii];
-	  std::string value = unhexify(param.value);
+	  std::string value = param.value;
 	  
 	  if (value.size()>1 && value[0]=='[' && value[value.size()-1]==']')
 	    {
@@ -656,7 +656,7 @@ void GameApi::WModApi::delete_by_uid(WM mod2, int id, std::string line_uid)
       for(int i3=0;i3<s3;i3++)
 	{
 	  GameApiParam &param = line->params[i3];
-	  std::string val = unhexify(param.value);
+	  std::string val = param.value;
 	  if (val==line_uid) { param.value=""; }
 	  if (val.size()>1 && val[0]=='[' && val[val.size()-1]==']')
 	    {
@@ -703,7 +703,7 @@ std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mo
 	    {
 	      GameApiParam *param = &line->params[ii];
 	      std::string p = "";
-	      std::string pn = unhexify(param->value);
+	      std::string pn = param->value;
 	      if (pn.size()==0)
 		{
 		  std::cout << "CODEGEN FAILED at param!" << std::endl;
@@ -821,7 +821,7 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
 	  for(int ii=0;ii<ss;ii++)
 	    {
 	      GameApiParam *param = &line->params[ii];
-	      std::string p = unhexify(param->value);
+	      std::string p = param->value;
 	      if (p.size()==0)
 		{
 		  std::cout << "EXECUTE FAILED at param!" << std::endl;
@@ -951,7 +951,7 @@ void GameApi::WModApi::change_param_value(WM mod2, int id, std::string uid, int 
       if (line.uid == uid)
 	{
 	  GameApiParam &param = line.params[param_index];
-	  param.value = hexify(newvalue);
+	  param.value = newvalue;
 	  std::cout << "Param: " << param.param_name << " changed to " << newvalue << std::endl;
 	}
     }
@@ -1007,7 +1007,7 @@ std::string GameApi::WModApi::param_value(WM mod2, int id, std::string uid, int 
       if (line.uid == uid)
 	{
 	  GameApiParam &param = line.params[param_index];
-	  return unhexify(param.value);
+	  return param.value;
 	  //param.value = newvalue;
 	  //std::cout << "Param: " << param.param_name << " changed to " << newvalue << std::endl;
 	}
@@ -1047,7 +1047,7 @@ void GameApi::WModApi::insert_to_mod(WM mod2, int id, std::string modname, std::
   for(int i=0;i<s;i++)
     {
       std::pair<std::string, std::string> p = params[i];
-      GameApiParam pp = { p.first, hexify(p.second) };
+      GameApiParam pp = { p.first, p.second };
       new_line.params.push_back(pp);
     }
   func->lines.push_back(new_line);
