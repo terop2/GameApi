@@ -149,7 +149,7 @@ EXPORT void GameApi::TextureApi::unuse(TXID tx)
 }
 EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
 {
-  EnvImpl *env = ::EnvImpl::Environment(&e);
+  //EnvImpl *env = ::EnvImpl::Environment(&e);
 
   glBindTexture(GL_TEXTURE_2D, tx.id);
   int width=1, height=1;

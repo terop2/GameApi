@@ -191,7 +191,7 @@ Point SphereElem::FacePoint(int face, int point) const
   int face1 = face / numfaces;
   int face2 = face - face1*numfaces;
   int numfaces3 = numfaces*2;
-  Vector p = Vector(0.0, 0.0, radius); 
+  //Vector p = Vector(0.0, 0.0, radius); 
   float deltaangle1 = 2.0*  3.14159/numfaces3;
   float deltaangle2 =   3.14159/numfaces2;
   float angle1 = face2*deltaangle1;
@@ -3275,7 +3275,7 @@ void ArrayRender::Prepare()
       }
   } else
     {
-    int count = 0;
+      //int count = 0;
     //std::cout << "Vertex Array Size: " << vertex_array_size << std::endl;
     for(int i=0;i<vertex_array_size;i++) {
       q_vertex_array[i*3+0] = vertex_array[i*3+0];

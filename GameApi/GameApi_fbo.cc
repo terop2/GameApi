@@ -76,9 +76,6 @@ EXPORT bool GameApi::FrameBufferApi::fbo_status(FBO buffer)
 }
 EXPORT GameApi::BM GameApi::FrameBufferApi::fbo_to_bitmap(EveryApi &ev, FBO buffer)
 {
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  int screen_width = ev.mainloop_api.get_screen_width();
-  int screen_height = ev.mainloop_api.get_screen_height();
   FBOPriv *priv = find_fbo(e, buffer);
   
   int width = priv->sx;
@@ -91,8 +88,6 @@ EXPORT GameApi::BM GameApi::FrameBufferApi::fbo_to_bitmap(EveryApi &ev, FBO buff
 
 
   Bitmap<Color> *bm = new BitmapFromBuffer(ref);
-  //env->deletes.push_back(std::shared_ptr<void>(bm));
-  //Bitmap<Color> *bm2 = new FlipColours(*bm);
   return add_color_bitmap2(e, bm);
 
 }
