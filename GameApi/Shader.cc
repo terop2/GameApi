@@ -133,7 +133,7 @@ void Program::bind_frag(int num, std::string name)
 }
 void Program::bind_attrib(int num, std::string name)
 {
-  int val2 = glGetError();
+  //int val2 = glGetError();
   glBindAttribLocation(priv->program, num, name.c_str());
   int val = glGetError();
   std::cout << "BindAttribLocation: " << val << std::endl;

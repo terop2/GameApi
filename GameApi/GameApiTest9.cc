@@ -1,6 +1,6 @@
 
 #include "GameApi.hh"
-#pragma comment(lib, "d:\\cvs\\gameapi-code\\GameApi\\GameApi\\Debug\\GameApi\\GameApi.lib")
+//#pragma comment(lib, "d:\\cvs\\gameapi-code\\GameApi\\GameApi\\Debug\\GameApi\\GameApi.lib")
 #include <iostream>
 
 using namespace GameApi;
@@ -62,7 +62,7 @@ void GameTest9(GameApi::EveryApi &e)
 #endif
 
 
-  BM bm_used = bm2;
+  //  BM bm_used = bm2;
   float time = 0.0;
   
   std::pair<BM,BM> p1 = std::make_pair(bm,bm2);
@@ -70,7 +70,7 @@ void GameTest9(GameApi::EveryApi &e)
   std::pair<BM,BM> p3 = std::make_pair(bm3,bm);
 
   std::pair<BM,BM> array[] = { p1, p2 , p3 };
-  int frame = 0;
+  //int frame = 0;
   while(1)
     {
       e.mainloop_api.clear();

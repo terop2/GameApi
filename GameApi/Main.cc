@@ -62,7 +62,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#pragma comment (lib, "glew32s.lib") 
+
+//#pragma comment (lib, "glew32s.lib") 
 
 BufferRef CopyFromSDLSurface(SDL_Surface *surf);
 
@@ -1068,6 +1069,7 @@ int mainxxx(int argc, char *argv[])
     //"int $128\n" \
     //);*/
 #endif
+  return 0;
 }
 void Execute2(FrameAnim &f)
 {
