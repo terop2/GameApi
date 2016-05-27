@@ -130,7 +130,7 @@ int main() {
   ev.shader_api.load_default();
   //SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour", "colour");
   //SH sh = ev.shader_api.colour_shader();
-  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "passall", "diffuse:ambient:specular");
+  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:passall", "colour:diffuse:ambient:specular");
 
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);

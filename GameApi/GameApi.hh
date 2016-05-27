@@ -2855,6 +2855,7 @@ private:
       int sx = bmapi.size_x(bm);
       int sy = bmapi.size_y(bm);
       bitmap = new int[sx*sy];
+      var_bitmap = new std::vector<Var>[sx*sy];
       anim_time = new float[sx*sy];
       for(int y=0;y<sy;y++)
 	{
@@ -2862,6 +2863,7 @@ private:
 	    {
 	      int val = bmapi.intvalue(bm, x,y);
 	      bitmap[x+y*sx] = val;
+	      var_bitmap[x+y*sx] = std::vector<Var>();
 	      anim_time[x+y*sx] = 0.0f;
 	    }
 	}
@@ -2949,6 +2951,15 @@ private:
 	  shapi.set_var(sh, "in_MV", t2);
 	  shapi.set_var(sh, "in_POS", anim_time[x+y*sx]);
 	  //std::cout << x << " " << y << " " << anim_time[x+y*sx] << std::endl;
+	  std::vector<Var> &v = var_bitmap[x+y*sx];
+	  int s = v.size();
+	  for(int i=0;i<s;i++)
+	    {
+	      Var &vv = v[i];
+	      shapi.set_var(sh, vv.name, vv.r, vv.g, vv.b, vv.a);
+	      //std::cout << i << ":" << vv.name << " " << vv.r << " " << vv.g << " " << vv.b <<" " << vv.a << std::endl;
+	    }
+
 	  api.render_vertex_array(m_va2[bitmap[x+y*sx]]);
 	  shapi.set_var(sh, "in_POS", 0.0f);
 	}
@@ -3016,10 +3027,31 @@ private:
     {
       shapi.set_var(sh, name, r,g,b,a);
     }
+    struct Var
+    {
+      std::string name;
+      float r,g,b,a;
+    };
+    void clear_child_var(int x, int y)
+    {
+      var_bitmap[x+y*m_sx]=std::vector<Var>();
+    }
+    void set_child_var(int x, int y, std::string name, float r, float g, float b, float a)
+    {
+      Var v;
+      v.name = name;
+      v.r = r;
+      v.g = g;
+      v.b = b;
+      v.a = a;
+      var_bitmap[x+y*m_sx].push_back(v);
+    }
+
   private:
     void setup_m() {
       m = mat.mult(mat.mult(mat.mult(current_rot,current_scale), current_pos), current_rot2);
     }
+    
   private:
     BitmapApi &bmapi;
     PolygonApi &api;
@@ -3038,6 +3070,7 @@ private:
     std::function<P(int)> f;
     float dx,dy;
     int *bitmap;
+    std::vector<Var> *var_bitmap;
     float *anim_time;
     SH sh;
     int m_x, m_y, m_sx, m_sy;

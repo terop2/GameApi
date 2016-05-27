@@ -895,6 +895,7 @@ int main() {
   ev.shader_api.load_default();
   //SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour:snoise:snoise:point_light:light", "colour:light:light:bands:snoise:snoise:point_light");
   SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour:snoise:snoise:point_light:light", "colour:light:light:bands:snoise:snoise",false);
+  //SH sh = ev.shader_api.get_shader("comb", "comb", "", "passall", "diffuse:specular:ambient",false);
 
   SH sh2 = ev.shader_api.get_shader("comb", "comb", "", "blur", "blur",false);
   SH sh3 = ev.shader_api.get_shader("comb", "comb", "", "texture:light:snoise", "texture:light:snoise",false);

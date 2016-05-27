@@ -427,6 +427,10 @@ public:
   }
   int PointIndex(int face, int point) const
   {
+    if (point==0) { point=0; }
+    else if (point==1) { point=2; }
+    else if (point==2) { point=1; }
+
     if (face==0) { return point; }
     int s = plane->Size();
     int face2 =0;
