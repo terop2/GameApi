@@ -129,11 +129,13 @@ int main() {
   // shader initialization
   ev.shader_api.load_default();
   //SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour", "colour");
-  SH sh = ev.shader_api.colour_shader();
+  //SH sh = ev.shader_api.colour_shader();
+  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "passall", "diffuse:ambient:specular");
 
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);
-
+  
+  ev.shader_api.set_var(sh, "light_dir", 1.0, 1.0, 1.0);
 
 
   P p3 = ev.polygon_api.rounded_cube(ev, 0.0, 100.0, 0.0, 150.0, 0.0, 100.0 , 10.0); // body
@@ -183,6 +185,37 @@ int main() {
   array.push_back(&poly_left_leg, &poly_left_leg);
   array.push_back(&poly_right_leg, &poly_right_leg);
   array.push_back(&poly_head, &poly_head);
+
+  // body
+  array.set_child_shader_var(0, "level1_color", 1.0, 1.0, 1.0,1.0);
+  array.set_child_shader_var(0, "level2_color", 1.0, 1.0, 1.0,1.0);
+  array.set_child_shader_var(0, "level3_color", 1.0, 1.0, 1.0,1.0);
+
+  // left arm
+  array.set_child_shader_var(1, "level1_color", 1.0, 0.5, 0.5,1.0);
+  array.set_child_shader_var(1, "level2_color", 1.0, 0.5, 0.0,1.0);
+  array.set_child_shader_var(1, "level3_color", 1.0, 1.0, 1.0,1.0);
+  
+  // right arm
+  array.set_child_shader_var(2, "level1_color", 1.0, 0.5, 0.5,1.0);
+  array.set_child_shader_var(2, "level2_color", 1.0, 0.5, 0.0,1.0);
+  array.set_child_shader_var(2, "level3_color", 1.0, 1.0, 1.0,1.0);
+
+  // left leg
+  array.set_child_shader_var(3, "level1_color", 1.0, 0.5, 1.0,1.0);
+  array.set_child_shader_var(3, "level2_color", 1.0, 0.5, 0.0,1.0);
+  array.set_child_shader_var(3, "level3_color", 1.0, 1.0, 1.0,1.0);
+
+  // right leg
+  array.set_child_shader_var(4, "level1_color", 1.0, 0.5, 1.0,1.0);
+  array.set_child_shader_var(4, "level2_color", 1.0, 0.5, 0.0,1.0);
+  array.set_child_shader_var(4, "level3_color", 1.0, 1.0, 1.0,1.0);
+
+  // head
+  array.set_child_shader_var(5, "level1_color", 0.5, 0.5, 1.0,1.0);
+  array.set_child_shader_var(5, "level2_color", 0.5, 0.5, 0.0,1.0);
+  array.set_child_shader_var(5, "level3_color", 1.0, 1.0, 1.0,1.0);
+
   array.prepare();
   array.set_scale(1.0, -1.0, 1.0);
 

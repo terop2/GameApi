@@ -4543,7 +4543,38 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "ev", "" },
 			 "ML", "sprite_api", "render_sprite_vertex_array_ml"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::cont_bitmap_api, &GameApi::ContinuousBitmapApi::empty,
+			 "cbm_empty",
+			 { "sx", "sy" },
+			 { "float", "float" },
+			 { "1.0", "1.0" },
+			 "CBM", "cont_bitmap_api", "empty"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::cont_bitmap_api, &GameApi::ContinuousBitmapApi::from_bitmap,
+			 "cbm_from_bitmap",
+			 { "bm", "xsize", "ysize" },
+			 { "BM", "float", "float" },
+			 { "", "1.0", "1.0" },
+			 "CBM", "cont_bitmap_api", "from_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::cont_bitmap_api, &GameApi::ContinuousBitmapApi::to_bitmap,
+			 "cbm_to_bitmap",
+			 { "cbm", "sx", "sy" },
+			 { "CBM", "int", "int" },
+			 { "", "200", "200" },
+			 "BM", "cont_bitmap_api", "to_bitmap"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::cont_bitmap_api, &GameApi::ContinuousBitmapApi::sample,
+			 "cbm_sample",
+			 { "cbm", "sx", "sy" },
+			 { "CBM", "int", "int" },
+			 { "", "200", "200" },
+			 "BM", "cont_bitmap_api", "sample"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::cont_bitmap_api, &GameApi::ContinuousBitmapApi::rotate,
+			 "cbm_rotate",
+			 { "cbm", "center_x", "center_y", "angle" },
+			 { "CBM", "float", "float", "float" },
+			 { "", "0.5", "0.5", "0.0" },
+			 "CBM", "cont_bitmap_api", "rotate"));
+  
 
   return vec;
 }
