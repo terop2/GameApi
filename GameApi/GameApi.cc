@@ -332,11 +332,21 @@ GameApi::EX add_expr(GameApi::Env &e, ExprNode *n)
   a.id = env->exprs.size()-1;
   return a;
 }
-GameApi::A add_array(GameApi::Env &e, std::vector<int> *arr)
+template<class T>
+GameApi::A<T> add_array(GameApi::Env &e, std::vector<T> *arr)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->arrays.push_back(arr);
-  GameApi::A a;
+  std::vector<int> vec2;
+  int s = arr->size();
+  for(int i=0;i<s;i++)
+    {
+      T t = arr->operator[](i);
+      int val = t.id;
+      vec2.push_back(val);
+    }
+
+  env->arrays.push_back(new std::vector<int>(vec2));
+  GameApi::A<T> a;
   a.id = env->arrays.size()-1;
   return a;
 }
@@ -972,10 +982,20 @@ ExprNode *find_expr(GameApi::Env &e, GameApi::EX n)
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->exprs[n.id];  
 }
-std::vector<int> *find_array(GameApi::Env &e, GameApi::A arr)
+template<class T>
+std::vector<T> find_array(GameApi::Env &e, GameApi::A<T> arr)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->arrays[arr.id];
+  std::vector<T> vec2;
+  std::vector<int> vec = env->arrays[arr.id];
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      T t;
+      t.id = vec[i];
+      vec2.push_back(t);
+    }
+  return vec2;
 }
 MainLoopItem *find_main_loop(GameApi::Env &e, GameApi::ML ml)
 {
@@ -1941,11 +1961,8 @@ GameApi::FD GameApi::BooleanOps::to_dist(BO obj)
   return obj_i.fd;
 }
 
-GameApi::A GameApi::ArrayApi::array(std::vector<int> vec)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->handle_array.push_back(vec);
-  GameApi::A a;
-  a.id = env->handle_array.size()-1;
-  return a;
-}
+// Explicit instantiation of array api
+namespace GameApi {
+class template ArrayApi<GameApi::BM>;
+class template ArrayApi<GameApi::P>;
+};

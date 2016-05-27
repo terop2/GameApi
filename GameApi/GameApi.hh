@@ -115,6 +115,7 @@ using std::placeholders::_9;
   struct WM { int id; };
   struct FtA { int id; };
   struct ML { int id; };
+  template<class T>
   struct A { int id; };
   struct EX { int id; };
   struct PH { int id; };
@@ -256,6 +257,8 @@ public:
   //IMPORT void rendersprite(BM bm, SH sh, float x, float y, float x1, float y1, float inside_x, float inside_y, float inside_x1, float inside_y1);
 	IMPORT SP spritespace(BM bm);
 	IMPORT PT pixelpos(BM bm, int x, int y);
+  IMPORT std::vector<BM> bitmap_anim(std::function<BM (float)> f, std::vector<float> key_frames);
+  IMPORT ML bitmap_anim_ml(EveryApi &ev, std::vector<BM> vec, std::vector<float> key_frames, float repeat_time);
 private:
   SpriteApi(const SpriteApi&);
   void operator=(const SpriteApi&);
@@ -394,11 +397,12 @@ private:
   Env &e;
 };
 
+template<class T>
 class ArrayApi
 { // handle arrays
 public:
   ArrayApi(Env &e) : e(e) { }
-  A array(std::vector<int> vec);
+  A<T> array(std::vector<T> vec);
 private:
   Env &e;
 };
@@ -2302,6 +2306,7 @@ private:
     virtual ~RenderObject() { }
     virtual void prepare(bool keep=false)=0;
     virtual void render()=0;
+    virtual void set_var(std::string name, float r, float g, float b, float a)=0;
   };
   void prepare(RenderObject &o);
   class MoveScaleObject2d
@@ -2350,6 +2355,13 @@ private:
     void render() {
       int s = render_vec.size();
       for(int i=0;i<s;i++) {
+	int ss = child_var.size();
+	for(int j=0;j<ss;j++)
+	  {
+	    ChildVar &v = child_var[j];
+	    if (v.i==i)
+	      render_vec[i]->set_var(v.name, v.r, v.g, v.b,v.a);
+	  }
 	render_vec[i]->render();
       }
     }
@@ -2401,6 +2413,30 @@ private:
     {
       rot_matrix[i] = m;
       setup_one(i);
+    }
+    struct ChildVar
+    {
+      int i;
+      std::string name;
+      float r,g,b,a;
+    };
+
+    void set_var(std::string name, float r, float g, float b, float a)
+    {
+      int s = render_vec.size();
+      for(int i=0;i<s;i++)
+	{
+	  set_child_shader_var(i, name, r,g,b,a);
+	}
+    }
+
+    void set_child_shader_var(int i, std::string name, float r, float g, float b, float a)
+    {
+      ChildVar v;
+      v.i = i;
+      v.name = name;
+      v.r = r; v.g = g; v.b=b; v.a=a;
+      child_var.push_back(v);
     }
     void set_pos(float pos_x, float pos_y, float pos_z)
     {
@@ -2467,6 +2503,7 @@ private:
     std::vector<float> scale_z;
     std::vector<M> rot_matrix;
     std::vector<M> rot_matrix2;
+    std::vector<ChildVar> child_var;
     float p_x, p_y, p_z;
     float s_x, s_y, s_z;
     M current_rot_matrix;
@@ -2515,6 +2552,10 @@ private:
     {
       if (id>=0 && id<(int)bm.size())
 	anim_id = id; 
+    }
+    void set_var(std::string name, float r, float g, float b, float a)
+    {
+      shader_api.set_var(sh, name, r,g,b,a);
     }
   private:
     float pos_x, pos_y;
@@ -2606,6 +2647,10 @@ private:
       mouse_y/=mult_y;
       mouse_y/=dy;
       return (int)mouse_y;
+    }
+    void set_var(std::string name, float r, float g, float b, float a)
+    {
+      shader_api.set_var(sh, name, r,g,b,a);
     }
   private:
     BitmapApi &bmapi;
@@ -2768,6 +2813,10 @@ private:
     {
       api.explode(m_va2[anim_id], pos, val);
       api.update(m_va2[anim_id]);
+    }
+    void set_var(std::string name, float r, float g, float b, float a)
+    {
+      shapi.set_var(sh, name, r,g,b,a);
     }
   private:
     void setup_m() {
@@ -2963,6 +3012,10 @@ private:
       zz = pts.pt_z(point3);
 
     }
+    void set_var(std::string name, float r, float g, float b, float a)
+    {
+      shapi.set_var(sh, name, r,g,b,a);
+    }
   private:
     void setup_m() {
       m = mat.mult(mat.mult(mat.mult(current_rot,current_scale), current_pos), current_rot2);
@@ -3049,6 +3102,10 @@ private:
       setup_m();
     }
     void set_rotation_matrix2(M m) { }
+    void set_var(std::string name, float r, float g, float b, float a)
+    {
+      shapi.set_var(sh, name, r,g,b,a);
+    }
   private:
     void setup_m() {
       m = mat.mult(current_rot, mat.mult(current_scale, current_pos));
@@ -3107,6 +3164,10 @@ private:
     {
       current_rot2 = m;
       setup_m();
+    }
+    void set_var(std::string name, float r, float g, float b, float a)
+    {
+      shapi.set_var(sh, name, r,g,b,a);
     }
   private:
     void setup_m() {

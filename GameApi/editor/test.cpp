@@ -764,6 +764,14 @@ void iter(void *arg)
 			bm.id = id;
 			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 		      } 
+		    else if (type=="CBM")
+		      {
+			CBM cbm;
+			cbm.id = id;
+			BM bm = env->ev->cont_bitmap_api.sample(cbm, 200,200);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+
+		      }
 		    else if (type=="BB")
 		      {
 			BB bb;

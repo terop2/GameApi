@@ -418,6 +418,23 @@ struct BO_Impl
   GameApi::FD fd;
 };
 
+static const int ArrayElements = 2;
+template<class T>
+class ArrayElem
+{
+};
+template<>
+class ArrayElem<GameApi::BM>
+{
+public:
+  static const int i=0;
+};
+template<>
+class ArrayElem<GameApi::P>
+{
+  static const int i=1;
+};
+
 struct EnvImpl
 {
   std::vector<Point> pt;
@@ -495,6 +512,7 @@ struct EnvImpl
   std::vector<Cutter*> cutters;
   std::vector<BO_Impl> boolean_ops;
   std::vector<std::vector<int> > handle_array;
+  std::vector<std::vector<int> > template_array;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -769,7 +787,8 @@ struct FaceCollPolyHandle : public PolyHandle
 GameApi::TS add_tri_strip(GameApi::Env &e, TriStrip *n);
 GameApi::PH add_physics(GameApi::Env &e, PhysicsNode *n);
 GameApi::EX add_expr(GameApi::Env &e, ExprNode *n);
-GameApi::A add_array(GameApi::Env &e, std::vector<int> *arr);
+template<class T>
+GameApi::A<T> add_array(GameApi::Env &e, std::vector<T> *arr);
 GameApi::ML add_main_loop(GameApi::Env &e, MainLoopItem *item);
 GameApi::FtA add_font_atlas(GameApi::Env &e, FontAtlasInfo *info);
 GameApi::W add_widget(GameApi::Env &e, GuiWidget *w);
@@ -841,7 +860,8 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 TriStrip *find_tri_strip(GameApi::Env &e, GameApi::TS p);
 PhysicsNode *find_physics(GameApi::Env &e, GameApi::PH p);
 ExprNode *find_expr(GameApi::Env &e, GameApi::EX n);
-std::vector<int> *find_array(GameApi::Env &e, GameApi::A arr);
+template<class T>
+std::vector<T> *find_array(GameApi::Env &e, GameApi::A<T> arr);
 MainLoopItem *find_main_loop(GameApi::Env &e, GameApi::ML ml);
 FontAtlasInfo *find_font_atlas(GameApi::Env &e, GameApi::FtA ft);
 ShaderModule *find_shader_module(GameApi::Env &e, GameApi::SFO sfo);
@@ -907,5 +927,21 @@ SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 Cutter *find_cutter(GameApi::Env &e, GameApi::CT cut);
 
 
+
+template<class T>
+GameApi::A<T> GameApi::ArrayApi<T>::array(std::vector<T> vec)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  std::vector<int> vec2;
+  int s = vec.size;
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(vec[i].id);
+    }
+  env->handle_array.push_back(vec2);
+  GameApi::A<T> a;
+  a.id = env->handle_array.size()-1;
+  return a;
+}
 
 #endif

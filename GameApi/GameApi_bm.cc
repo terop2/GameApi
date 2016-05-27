@@ -2007,6 +2007,64 @@ EXPORT GameApi::BM GameApi::BitmapApi::alt(std::vector<BM> vec, int index)
   return vec[index];
 }
 
+EXPORT std::vector<GameApi::BM> GameApi::SpriteApi::bitmap_anim(std::function<GameApi::BM (float)> f, std::vector<float> key_frames)
+{
+  int s = key_frames.size();
+  std::vector<GameApi::BM> vec;
+  for(int i=0;i<s;i++)
+    {
+      vec.push_back(f(key_frames[i]));
+    }
+  return vec;
+}
+class BitmapAnimML : public MainLoopItem
+{
+public:
+  BitmapAnimML(GameApi::EveryApi &ev, GameApi::SpriteApi &sp, std::vector<GameApi::BM> vec, std::vector<float> key_frames, float rep_time) : ev(ev), sp(sp), vec(vec), key_frames(key_frames), rep_time(rep_time) 
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec2.push_back(sp.create_vertex_array(vec[i]));
+      }
+  }
+  void execute(MainLoopEnv &e)
+  {
+    GameApi::SH sh;
+    sh.id = e.sh_texture;
+    ev.shader_api.use(sh);
+    float time = ev.mainloop_api.get_time();
+    if(time > rep_time) { time -= int(time/rep_time)*rep_time; }
+    int ss = key_frames.size();
+    int i = 0;
+    for(;i<ss-1;i++)
+      {
+	float start_range = key_frames[i];
+	float end_range = key_frames[i+1];
+	if (time >= start_range && time < end_range)
+	  {
+	    break;
+	  }
+      }
+    sp.render_sprite_vertex_array(vec2[i]);
+  }
+private:
+  GameApi::EveryApi &ev;
+  GameApi::SpriteApi &sp;
+  std::vector<GameApi::BM> vec;
+  std::vector<GameApi::VA> vec2;
+  std::vector<float> key_frames;
+  float rep_time;
+};
+EXPORT GameApi::ML GameApi::SpriteApi::bitmap_anim_ml(EveryApi &ev, std::vector<BM> vec,
+						      std::vector<float> key_frames,
+						      float repeat_time)
+{
+ 
+  return add_main_loop(e, new BitmapAnimML(ev, *this, vec, key_frames, repeat_time));
+}
+
+
 EXPORT GameApi::TXID GameApi::FloatBitmapApi::to_texid(FB fb)
 {
   Bitmap<float> *ffb = find_float_bitmap(e, fb)->bitmap;
