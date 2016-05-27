@@ -10,6 +10,7 @@
 
 
 using namespace GameApi;
+void color_change2(GameApi::WorldObj &obj, int x, int y, int c);
 
 char chars[] =
   "thlkqlht"
@@ -541,25 +542,51 @@ void do_promotion(WorldObj *board)
   for(int x=0;x<8;x++)
     {
       int block = board->read_block(x, 0);
-      if (block==5) board->set_block(x,0,4);
+      if (block==5) { 
+	board->set_block(x,0,4);
+	color_change2(*board, x,0, 4);
+      }
       int block2 = board->read_block(x,7);
-      if (block2==11) board->set_block(x,7,10);
+      if (block2==11) {
+	board->set_block(x,7,10);
+	color_change2(*board, x,7,10);
+      }
     }
 }
 
+void color_change2(WorldObj &obj, int x, int y, int c)
+{
+  obj.clear_child_var(x,y);
+  if (c>5)
+    {
+      obj.set_child_var(x,y, "level1_color", 0.2, 0.2, 0.2, 1.0);
+      obj.set_child_var(x,y, "level2_color", 0.5, 0.2, 0.5, 1.0);
+      obj.set_child_var(x,y, "level3_color", 1.0, 1.0, 1.0, 1.0);
+    }
+  else
+    {
+
+ // white
+      obj.set_child_var(x,y, "level1_color", 0.5, 0.5, 0.2, 1.0);
+      obj.set_child_var(x,y, "level2_color", 0.7, 0.7, 0.5, 1.0);
+      obj.set_child_var(x,y, "level3_color", 1.0, 1.0, 1.0, 1.0);
+
+    }
+}
 
 void color_change(int c, P &p, EveryApi &ev)
 {
+  p = ev.polygon_api.recalculate_normals(p);
 	p = ev.polygon_api.color_from_normals(p);
 	if (c>5)
 	  {
 	    p = ev.polygon_api.color_grayscale(p);
-	    p = ev.polygon_api.color_range(p, 0xffaa6666, 0xff002200);
+	    p = ev.polygon_api.color_range(p, 0xffffffff, 0x00000000, 0xffaa6666, 0xff002200);
 	  }
 	else
 	  {
 	    p = ev.polygon_api.color_grayscale(p);
-	    p = ev.polygon_api.color_range(p, 0xffffff88, 0xffaa8822);
+	    p = ev.polygon_api.color_range(p, 0xffffffff, 0x00000000, 0xffffff88, 0xffaa8822);
 	  }
 }
 
@@ -685,7 +712,7 @@ P chars_blocks(int c, EveryApi &ev)
 				   -25.0, -18.0,
 				   13.0, 17.0);
 	P c2 = ev.polygon_api.cube(10.0, 20.0,
-				   -20.0, -22.0,
+				   -22.0, -20.0,
 				   13.0, 17.0);
 	P cc = ev.polygon_api.or_elem(c1,c2);
 	//P cc1 = ev.polygon_api.rotatey(cc01, 90.0*3.14159*2.0/360.0);
@@ -735,12 +762,13 @@ P chars_blocks(int c, EveryApi &ev)
 	PT p4 = ev.point_api.point(15.0, -50.0, 15.0);
 	PT p5 = ev.point_api.point(15.0, -42.0, 15.0);
 	PT p6 = ev.point_api.point(15.0, -35.0, 15.0);
+	PT p7 = ev.point_api.point(15.0, -34.0, 15.0);
 	P pa = ev.polygon_api.cone(30, p1,p2,8.0,9.0);
 	P pb = ev.polygon_api.cone(30, p2,p3,2.0,8.0);
 	P pc = ev.polygon_api.cone(30, p3,p4,2.0,2.0);
 	P pd = ev.polygon_api.cone(30, p4,p5,6.0,2.0);
 	P pe = ev.polygon_api.cone(30, p5,p6,6.0,6.0);
-	P pf = ev.polygon_api.cone(30, p6,p6,6.0,0.0);
+	P pf = ev.polygon_api.cone(30, p6,p7,0.0,6.0);
 
 	P p = ev.polygon_api.or_elem(pa,pb);
 	P pp = ev.polygon_api.or_elem(pc,pd);
@@ -768,7 +796,7 @@ P chars_blocks(int c, EveryApi &ev)
 	P pe = ev.polygon_api.cone(30, p1,p6,0.01,9.0);
 	
 	PT p7 = ev.point_api.point(15.0, -42.0, 15.0);
-	P p_sphere = ev.polygon_api.sphere(p7, 6.0, 5, 5);
+	P p_sphere = ev.polygon_api.sphere(p7, 6.0, 15, 15);
 
 	P p = ev.polygon_api.or_elem(pa,pb);
 	P pp = ev.polygon_api.or_elem(pc,pd);
@@ -808,6 +836,34 @@ int boardmap(char c)
   assert(0);
 }
 
+void board_color2(WorldObj &obj, int x, int y, int c)
+{
+  switch(c)
+    {
+    case 0:
+      obj.set_child_var(x,y, "level1_color", 0.0, 0.0, 0.4, 1.0);
+      obj.set_child_var(x,y, "level2_color", 0.0, 0.0, 0.4, 1.0);
+      obj.set_child_var(x,y, "level3_color", 0.0, 0.0, 0.4, 1.0);
+      break;
+    case 1:
+      obj.set_child_var(x,y, "level1_color", 1.0,1.0, 0.0, 1.0);
+      obj.set_child_var(x,y, "level2_color", 1.0,1.0, 0.0, 1.0);
+      obj.set_child_var(x,y, "level3_color", 1.0,1.0, 0.0, 1.0);
+      break;
+
+    case 2:
+      obj.set_child_var(x,y, "level1_color", 0.0,1.0,1.0, 1.0);
+      obj.set_child_var(x,y, "level2_color", 0.0,1.0,1.0, 1.0);
+      obj.set_child_var(x,y, "level3_color", 0.0,1.0,1.0, 1.0);
+      break;
+    case 3:
+      obj.set_child_var(x,y, "level1_color", 1.0, 1.0, 1.0, 1.0);
+      obj.set_child_var(x,y, "level2_color", 1.0, 1.0, 1.0, 1.0);
+      obj.set_child_var(x,y, "level3_color", 1.0, 1.0, 1.0, 1.0);
+      break;
+    }
+}
+
 P board_blocks(int c, EveryApi &ev)
 {
   P block = ev.polygon_api.cube(0.0, 30.0,
@@ -841,13 +897,17 @@ void store_board(WorldObj &o, int *array)
 	}
     }
 }
-void restore_board(int *array, WorldObj &o)
+void restore_board(int *array, WorldObj &o, bool is_board)
 {
   for(int x=0;x<8;x++)
     {
       for(int y=0;y<8;y++)
 	{
 	  o.set_block(x,y, array[x+y*8]);
+	  if (is_board)
+	    board_color2(o,x,y,array[x+y*8]);
+	  else
+	  color_change2(o, x,y,array[x+y*8]);
 	}
     }
 }
@@ -877,23 +937,31 @@ void towering_update(WorldObj *pieces, bool left, bool white)
   if (!left && !white)
     {
       pieces->set_block(0,0,12);
+      color_change2(*pieces, 0,0,12);
       pieces->set_block(2,0,6);
+      color_change2(*pieces, 2,0,6);
     }
   if (!left && white)
     {
       pieces->set_block(0,7,12);
+      color_change2(*pieces, 0,7,12);
       pieces->set_block(2,7,0);
+      color_change2(*pieces, 2,7,0);
     }
 
   if (left && !white)
     {
       pieces->set_block(7,0,12);
+      color_change2(*pieces, 7,0,12);
       pieces->set_block(4,0,6);
+      color_change2(*pieces, 4,0,6);
     }
   if (left && white)
     {
       pieces->set_block(7,7,12);
+      color_change2(*pieces, 7,7,12);
       pieces->set_block(4,7,0);
+      color_change2(*pieces, 4,7,0);
     }
 }
 bool check_towering(WorldObj *pieces, bool left, bool white, bool check)
@@ -964,6 +1032,8 @@ void iter()
 
     env.cursor_under = env.board_obj->read_block(env.cursor_x, env.cursor_y);
     env.board_obj->set_block(env.cursor_x, env.cursor_y,2);
+    board_color2(*env.board_obj, env.cursor_x, env.cursor_y, 2);
+    //color_change2(*env.board_obj, env.cursor_x, env.cursor_y,2);
 
     //poly.render();
 
@@ -979,6 +1049,7 @@ void iter()
     //env.cursor->render();
 #endif
     env.board_obj->set_block(env.cursor_x, env.cursor_y, env.cursor_under);
+    board_color2(*env.board_obj, env.cursor_x, env.cursor_y, env.cursor_under);
 
     //env.ev->fbo_api.bind_screen(800,600);
     //env.ev->mainloop_api.clear();
@@ -1100,14 +1171,15 @@ void iter()
 	      }
 	    env.pieces_obj->set_block(env.chosen_x, env.chosen_y, 12);
 	    env.pieces_obj->set_block(env.cursor_x, env.cursor_y, block);
-	    restore_board(env.store, *env.board_obj);
+	    color_change2(*env.pieces_obj, env.cursor_x, env.cursor_y, block);
+	    restore_board(env.store, *env.board_obj,true);
 	    env.chosen_x = -1;
 	    env.chosen_y = -1;
 	    do_promotion(env.pieces_obj);
 	  }
 	else if (env.chosen_x!=-1)
 	  {
-	    restore_board(env.store, *env.board_obj);
+	    restore_board(env.store, *env.board_obj,true);
 	    env.chosen_x = -1;
 	    env.chosen_y = -1;
 	  }
@@ -1115,7 +1187,7 @@ void iter()
 	  {
 	    if (env.chosen_x!=-1 ||env.chosen_y!=-1)
 	      {
-		restore_board(env.store, *env.board_obj);
+		restore_board(env.store, *env.board_obj,true);
 	      }
 	    env.chosen_x = env.cursor_x;
 	    env.chosen_y = env.cursor_y;
@@ -1126,6 +1198,7 @@ void iter()
 	      {
 		Pos p = vec[i];
 		env.board_obj->set_block(p.x,p.y,3);
+		board_color2(*env.board_obj, p.x, p.y, 3);
 	      }
 	  }
       }
@@ -1164,29 +1237,57 @@ int main() {
 
   // shader initialization
   ev.shader_api.load_default();
-  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:light:snoise", "colour:light:snoise");
+  //SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:light:snoise", "colour:light:snoise");
+  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:passall", "colour:ambient:diffuse:specular");
+  SH sh2 = ev.shader_api.get_normal_shader("comb", "comb", "", "colour", "colour");
   //SH sh2 = ev.shader_api.get_normal_shader("comb", "comb", "", "texture", "blur");
     //ev.shader_api.colour_shader();
 
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);
-  //ev.mainloop_api.init(sh2);
+  ev.mainloop_api.init_3d(sh2);
+  ev.shader_api.use(sh);
+  ev.shader_api.set_var(sh, "light_dir", 1.0, 1.0, 1.0);
+
+  ev.shader_api.set_var(sh, "level1_color", 1.0, 1.0, 1.0, 1.0);
+  ev.shader_api.set_var(sh, "level2_color", 1.0, 1.0, 1.0, 1.0);
+  ev.shader_api.set_var(sh, "level3_color", 1.0, 1.0, 1.0, 1.0);
+
 
   M m = ev.matrix_api.perspective(70.0, double(800)/600, 10.1, 60000.0);
   ev.shader_api.set_var(sh, "in_P", m);
+  ev.shader_api.use(sh2);
+  ev.shader_api.set_var(sh2, "in_P", m);
   M m2 = ev.matrix_api.mult(ev.matrix_api.trans(0.0, 0.0, -1000.0), // -1000
 			    ev.matrix_api.scale(1.0, -1.0, 1.0));
 
+  ev.shader_api.use(sh);
   ev.shader_api.set_var(sh, "in_T", m2);
+  ev.shader_api.use(sh2);
+  ev.shader_api.set_var(sh2, "in_T", m2);
 
   BM bm = ev.bitmap_api.newintbitmap(board, 8,8, boardmap);
-  WorldObj *board_obj = new WorldObj(ev, std::bind(&board_blocks, _1, std::ref(ev)), 4, bm, 30.0, 30.0, sh);
+  WorldObj *board_obj = new WorldObj(ev, std::bind(&board_blocks, _1, std::ref(ev)), 4, bm, 30.0, 30.0, sh2);
   board_obj->set_scale(2.8,2.8,2.8);
   board_obj->set_pos(-340.0, 30.0, -400.0); // -400
+  for(int x=0;x<8;x++)
+    for(int y=0;y<8;y++)
+      {
+	board_color2(*board_obj, x,y, board_obj->read_block(x,y));
+      }
+
   board_obj->prepare();
 
   BM bm2 = ev.bitmap_api.newintbitmap(chars, 8,8, charsmap);
   WorldObj *pieces_obj = new WorldObj(ev, std::bind(&chars_blocks, _1, std::ref(ev)), 13, bm2, 30.0, 30.0, sh);
+  int s1 = 8;
+  int s2 = 8;
+  for(int x=0;x<s1;x++)
+    for(int y=0;y<s2;y++)
+      {
+	color_change2(*pieces_obj, x,y, pieces_obj->read_block(x,y));
+      }
+
   pieces_obj->set_scale(2.8,2.8,2.8);
   pieces_obj->set_pos(-340.0, 30.0, -400.0);
   M mm1 = ev.matrix_api.xrot(90.0*3.14159/360.0);
