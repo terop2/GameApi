@@ -415,7 +415,33 @@ GameApi::SP GameApi::MainLoopApi::screenspace()
   sp.origo = origo;
   return add_space(e, sp);
 }
-
+EXPORT void GameApi::MainLoopApi::outline_first()
+{
+  glClearStencil(0);
+  glClear(GL_STENCIL_BUFFER_BIT);
+  glEnable(GL_STENCIL_TEST);
+  glStencilFunc(GL_ALWAYS, 1, -1);
+  glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+  glColor4f(1.0,1.0,1.0,1.0);
+}
+EXPORT void GameApi::MainLoopApi::outline_second()
+{
+  glStencilFunc(GL_NOTEQUAL, 1, -1);
+  glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+  glLineWidth(3);
+  glEnable(GL_LINE_SMOOTH);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+}
+EXPORT void GameApi::MainLoopApi::outline_third()
+{
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  glDisable(GL_STENCIL_TEST);
+  //glDisable(GL_DEPTH_TEST);
+}
+EXPORT void GameApi::MainLoopApi::outline_disable()
+{
+  //glEnable(GL_DEPTH_TEST);
+}
 
 EXPORT bool GameApi::MainLoopApi::ch_doubletap_detect(Event &e, int expire_timer_count, int ch, DoubleTapState &state)
 {

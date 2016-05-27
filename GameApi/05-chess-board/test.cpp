@@ -69,6 +69,7 @@ struct Envi {
   SH sh2;
   SH sh;
 #endif
+  SH sh3;
 } env;
 
 std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e);
@@ -1033,6 +1034,7 @@ void iter()
     env.cursor_under = env.board_obj->read_block(env.cursor_x, env.cursor_y);
     env.board_obj->set_block(env.cursor_x, env.cursor_y,2);
     board_color2(*env.board_obj, env.cursor_x, env.cursor_y, 2);
+    env.pieces_obj->set_outline(env.cursor_x,env.cursor_y,true, env.sh3);
     //color_change2(*env.board_obj, env.cursor_x, env.cursor_y,2);
 
     //poly.render();
@@ -1050,6 +1052,7 @@ void iter()
 #endif
     env.board_obj->set_block(env.cursor_x, env.cursor_y, env.cursor_under);
     board_color2(*env.board_obj, env.cursor_x, env.cursor_y, env.cursor_under);
+    env.pieces_obj->set_outline(env.cursor_x, env.cursor_y, false, env.sh3);
 
     //env.ev->fbo_api.bind_screen(800,600);
     //env.ev->mainloop_api.clear();
@@ -1240,12 +1243,14 @@ int main() {
   //SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:light:snoise", "colour:light:snoise");
   SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:passall", "colour:ambient:diffuse:specular");
   SH sh2 = ev.shader_api.get_normal_shader("comb", "comb", "", "colour", "colour");
+  SH sh3 = ev.shader_api.get_normal_shader("comb", "comb", "", "colour", "white");
   //SH sh2 = ev.shader_api.get_normal_shader("comb", "comb", "", "texture", "blur");
     //ev.shader_api.colour_shader();
 
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);
   ev.mainloop_api.init_3d(sh2);
+  ev.mainloop_api.init_3d(sh3);
   ev.shader_api.use(sh);
   ev.shader_api.set_var(sh, "light_dir", 1.0, 1.0, 1.0);
 
@@ -1258,6 +1263,8 @@ int main() {
   ev.shader_api.set_var(sh, "in_P", m);
   ev.shader_api.use(sh2);
   ev.shader_api.set_var(sh2, "in_P", m);
+  ev.shader_api.use(sh3);
+  ev.shader_api.set_var(sh3, "in_P", m);
   M m2 = ev.matrix_api.mult(ev.matrix_api.trans(0.0, 0.0, -1000.0), // -1000
 			    ev.matrix_api.scale(1.0, -1.0, 1.0));
 
@@ -1265,11 +1272,14 @@ int main() {
   ev.shader_api.set_var(sh, "in_T", m2);
   ev.shader_api.use(sh2);
   ev.shader_api.set_var(sh2, "in_T", m2);
+  ev.shader_api.use(sh3);
+  ev.shader_api.set_var(sh3, "in_T", m2);
+  ev.shader_api.use(sh);
 
   BM bm = ev.bitmap_api.newintbitmap(board, 8,8, boardmap);
   WorldObj *board_obj = new WorldObj(ev, std::bind(&board_blocks, _1, std::ref(ev)), 4, bm, 30.0, 30.0, sh2);
   board_obj->set_scale(2.8,2.8,2.8);
-  board_obj->set_pos(-340.0, 30.0, -400.0); // -400
+  board_obj->set_pos(-340.0, 20.0, -400.0); // -400
   for(int x=0;x<8;x++)
     for(int y=0;y<8;y++)
       {
@@ -1309,6 +1319,7 @@ int main() {
   env.towering_allowed_white_right=true;
   env.towering_allowed_black_left=true;
   env.towering_allowed_black_right=true;
+  env.sh3 = sh3;
 #if 0
   env.fbo = ev.fbo_api.create_fbo(3800,3600);
   //env.sh2 = sh2;

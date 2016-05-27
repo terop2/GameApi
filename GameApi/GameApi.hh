@@ -185,6 +185,10 @@ public:
   IMPORT void transparency(bool enabled);
   IMPORT void cursor_visible(bool enabled);
   IMPORT void antialias(bool enabled);
+  IMPORT void outline_first();
+  IMPORT void outline_second();
+  IMPORT void outline_third();
+  IMPORT void outline_disable();
   IMPORT float get_time();
   IMPORT int get_framenum();
   IMPORT void swapbuffers();
@@ -2850,12 +2854,13 @@ private:
   class WorldObj : public RenderObject, public MoveScaleObject3d
   {
   public:
-    WorldObj(EveryApi &ev, std::function<P(int)> f, int numvalues, BM bm, float dx, float dy, SH sh) : bmapi(ev.bitmap_api), api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), pts(ev.point_api), numvalues(numvalues), bm(bm), f(f), dx(dx), dy(dy), sh(sh) 
+    WorldObj(EveryApi &ev, std::function<P(int)> f, int numvalues, BM bm, float dx, float dy, SH sh) : ev(ev), bmapi(ev.bitmap_api), api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), pts(ev.point_api), numvalues(numvalues), bm(bm), f(f), dx(dx), dy(dy), sh(sh) 
     {
       int sx = bmapi.size_x(bm);
       int sy = bmapi.size_y(bm);
       bitmap = new int[sx*sy];
       var_bitmap = new std::vector<Var>[sx*sy];
+      outline_bitmap = new bool[sx*sy];
       anim_time = new float[sx*sy];
       for(int y=0;y<sy;y++)
 	{
@@ -2864,6 +2869,7 @@ private:
 	      int val = bmapi.intvalue(bm, x,y);
 	      bitmap[x+y*sx] = val;
 	      var_bitmap[x+y*sx] = std::vector<Var>();
+	      outline_bitmap[x+y*sx] = false;
 	      anim_time[x+y*sx] = 0.0f;
 	    }
 	}
@@ -2941,6 +2947,21 @@ private:
       }
       return api.or_array(&vec2[0], vec2.size());
     }
+    void render_outline(SH sh_new)
+    {
+      SH sh2 = sh;
+      ev.mainloop_api.outline_first();
+      render();
+      sh = sh_new;
+      ev.mainloop_api.outline_second();
+      render();
+      ev.mainloop_api.outline_first();
+      render();
+      sh = sh2;
+      ev.mainloop_api.outline_third();
+      //render();
+      ev.mainloop_api.outline_disable();
+    }
     void render() {
       shapi.use(sh);
       int sx = m_sx; //bmapi.size_x(bm);
@@ -2950,6 +2971,13 @@ private:
 	  M t2 = mat.mult(t,m);
 	  shapi.set_var(sh, "in_MV", t2);
 	  shapi.set_var(sh, "in_POS", anim_time[x+y*sx]);
+	  if (outline_bitmap[x+y*m_sx])
+	    {
+	      shapi.use(m_sh3);
+	      shapi.set_var(m_sh3, "in_MV", t2);
+	      shapi.set_var(m_sh3, "in_POS", anim_time[x+y*sx]);
+	      shapi.use(sh);
+	    }
 	  //std::cout << x << " " << y << " " << anim_time[x+y*sx] << std::endl;
 	  std::vector<Var> &v = var_bitmap[x+y*sx];
 	  int s = v.size();
@@ -2958,13 +2986,41 @@ private:
 	      Var &vv = v[i];
 	      shapi.set_var(sh, vv.name, vv.r, vv.g, vv.b, vv.a);
 	      //std::cout << i << ":" << vv.name << " " << vv.r << " " << vv.g << " " << vv.b <<" " << vv.a << std::endl;
+	      if (outline_bitmap[x+y*m_sx])
+		{
+		  shapi.use(m_sh3);
+		  shapi.set_var(m_sh3, vv.name, vv.r, vv.g, vv.b, vv.a);
+		  shapi.use(sh);
+		}
+
 	    }
 
-	  api.render_vertex_array(m_va2[bitmap[x+y*sx]]);
+	  if (outline_bitmap[x+y*m_sx])
+	    render_one_outline(x,y,m_sh3);
+	    else
+	      render_one(x,y);
+	  //api.render_vertex_array(m_va2[bitmap[x+y*sx]]);
 	  shapi.set_var(sh, "in_POS", 0.0f);
 	}
       }
     }
+  private:
+    void render_one(int x, int y)
+    {
+      api.render_vertex_array(m_va2[bitmap[x+y*m_sx]]);
+    }
+    void render_one_outline(int x, int y, SH sh_new)
+    {
+      ev.mainloop_api.outline_first();
+      render_one(x,y);
+      ev.shader_api.use(sh_new);
+      ev.mainloop_api.outline_second();
+      render_one(x,y);
+      ev.shader_api.use(sh);
+      ev.mainloop_api.outline_third();
+      ev.mainloop_api.outline_disable();
+    }
+  public:
     void set_pos(float pos_x, float pos_y, float pos_z)
     {
       current_pos = mat.trans(pos_x, pos_y, pos_z);
@@ -3046,13 +3102,18 @@ private:
       v.a = a;
       var_bitmap[x+y*m_sx].push_back(v);
     }
-
+    void set_outline(int x, int y, bool b, SH sh3)
+    {
+      m_sh3 = sh3;
+      outline_bitmap[x+y*m_sx] = b;
+    }
   private:
     void setup_m() {
       m = mat.mult(mat.mult(mat.mult(current_rot,current_scale), current_pos), current_rot2);
     }
     
   private:
+    EveryApi &ev;
     BitmapApi &bmapi;
     PolygonApi &api;
     ShaderApi &shapi;
@@ -3071,8 +3132,10 @@ private:
     float dx,dy;
     int *bitmap;
     std::vector<Var> *var_bitmap;
+    bool *outline_bitmap;
     float *anim_time;
     SH sh;
+    SH m_sh3;
     int m_x, m_y, m_sx, m_sy;
     //VA va;
     //std::vector<VA> m_va2;
