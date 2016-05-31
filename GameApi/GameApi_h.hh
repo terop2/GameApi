@@ -513,6 +513,7 @@ struct EnvImpl
   std::vector<BO_Impl> boolean_ops;
   std::vector<std::vector<int> > handle_array;
   std::vector<std::vector<int> > template_array;
+  std::vector<Collision*> collision_array;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -783,7 +784,7 @@ struct FaceCollPolyHandle : public PolyHandle
 //
 // add functions
 //
-
+GameApi::CP add_collision(GameApi::Env &e, Collision *c);
 GameApi::TS add_tri_strip(GameApi::Env &e, TriStrip *n);
 GameApi::PH add_physics(GameApi::Env &e, PhysicsNode *n);
 GameApi::EX add_expr(GameApi::Env &e, ExprNode *n);
@@ -857,6 +858,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+Collision *find_collision(GameApi::Env &e, GameApi::CP p);
 TriStrip *find_tri_strip(GameApi::Env &e, GameApi::TS p);
 PhysicsNode *find_physics(GameApi::Env &e, GameApi::PH p);
 ExprNode *find_expr(GameApi::Env &e, GameApi::EX n);

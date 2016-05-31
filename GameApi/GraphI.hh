@@ -357,4 +357,21 @@ public:
   virtual Point cut(Point p1, Point p2) const=0;
 };
 
+class Collision
+{
+public:
+  Collision(int id) : m_id(id), m_x(0.0), m_y(0.0) { }
+  int m_id;
+  float m_x,m_y;
+  virtual bool check_collision(float x, float y) const=0;
+  virtual void set_pos(int id, float x, float y)
+  {
+    if (m_id == id)
+      {
+	m_x = x;
+	m_y = y;
+      }
+  }
+};
+
 #endif
