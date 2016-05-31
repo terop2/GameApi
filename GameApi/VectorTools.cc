@@ -108,7 +108,7 @@ Point::Point(const Vector &v)
 
 void Point::operator+=(const Vector &v)
 {
-  Vector vv = v;
+  //Vector vv = v;
   //vv.Normalize();
   //Normalize();
   x += v.dx;

@@ -306,6 +306,14 @@ EXPORT GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
+GameApi::CP add_collision(GameApi::Env &e, Collision *c)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->collision_array.push_back(c);
+  GameApi::CP a;
+  a.id = env->collision_array.size()-1;
+  return a;
+}
 GameApi::TS add_tri_strip(GameApi::Env &e, TriStrip *n)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -965,7 +973,11 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
 }
-
+Collision *find_collision(GameApi::Env &e, GameApi::CP p)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->collision_array[p.id];  
+}
 TriStrip *find_tri_strip(GameApi::Env &e, GameApi::TS p)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1963,6 +1975,96 @@ GameApi::FD GameApi::BooleanOps::to_dist(BO obj)
 
 // Explicit instantiation of array api
 namespace GameApi {
+#ifndef EMSCRIPTEN
 class template ArrayApi<GameApi::BM>;
 class template ArrayApi<GameApi::P>;
+#endif
 };
+class RectangleCollision : public Collision
+{
+public:
+  RectangleCollision(int id, float x, float y, float sx, float sy) : Collision(id), x(x),y(y),sx(sx),sy(sy) { }
+  bool check_collision(float xx,float yy) const
+  {
+    xx-=m_x;
+    yy-=m_y;
+    if (xx<x) return false;
+    if (yy<y) return false;
+    if (xx>x+sx) return false;
+    if (yy>y+sy) return false;
+    return true;
+  }
+private:
+  float x,y,sx,sy;
+};
+class OrElemCollision : public Collision
+{
+public:
+  OrElemCollision(int id, std::vector<Collision*> vec) : Collision(id), vec(vec) { }
+  bool check_collision(float x, float y) const
+  {
+    x-=m_x;
+    y-=m_y;
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	bool b = vec[i]->check_collision(x,y);
+	if (b) { return true; }
+      }
+    return false;
+  }
+  void set_pos(int id, float x, float y)
+  {
+    if (m_id == id) { m_x = x; m_y = y; }
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	Collision *c = vec[i];
+	c->set_pos(id, x,y);
+      }
+  }
+private:
+  std::vector<Collision*> vec;
+};
+class CircleCollision : public Collision
+{
+public:
+  CircleCollision(int id, float radius) : Collision(id), radius(radius) { }
+  bool check_collision(float x, float y) const
+  {
+    x-=m_x;
+    y-=m_y;
+    float d = x*x+y*y;
+    return d < radius*radius;
+  }
+private:
+  float radius;
+};
+GameApi::CP GameApi::CollisionPlane::rectangle(int id, float x, float y, float sx, float sy)
+{
+  return add_collision(e, new RectangleCollision(id, x,y,sx,sy));
+}
+GameApi::CP GameApi::CollisionPlane::circle(int id, float radius)
+{
+  return add_collision(e, new CircleCollision(id, radius));
+}
+GameApi::CP GameApi::CollisionPlane::or_elem(int id, std::vector<CP> vec)
+{
+  std::vector<Collision*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_collision(e, vec[i]));
+    }
+  return add_collision(e, new OrElemCollision(id, vec2));
+}
+void GameApi::CollisionPlane::set_pos(CP plane, int id, float x, float y)
+{
+  Collision *c = find_collision(e, plane);
+  c->set_pos(id, x,y);
+}
+bool GameApi::CollisionPlane::check_collision(CP plane, float x, float y)
+{
+  Collision *c = find_collision(e, plane);
+  return c->check_collision(x,y);
+}

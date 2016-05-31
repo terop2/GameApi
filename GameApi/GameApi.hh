@@ -25,6 +25,7 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct CP { int id; };
   struct DR { int id; };
   struct OM { int id; };
   struct FO { int id; };
@@ -852,6 +853,19 @@ public:
 
   PTS init_points(PH pos);
   void step_points(PH phy, PTA prev_frame, float timestep);
+private:
+  Env &e;
+};
+
+class CollisionPlane
+{
+public:
+  CollisionPlane(Env &e) : e(e) { }
+  CP circle(int id, float radius);
+  CP rectangle(int id, float x, float y, float sx, float sy);
+  CP or_elem(int id, std::vector<CP> vec);
+  void set_pos(CP plane, int id, float x, float y);
+  bool check_collision(CP plane, float x, float y);
 private:
   Env &e;
 };
@@ -2237,7 +2251,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -2279,6 +2293,7 @@ struct EveryApi
   TriStripApi ts_api;
   CutterApi cutter_api;
   BooleanOps bool_api;
+  CollisionPlane collision_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);

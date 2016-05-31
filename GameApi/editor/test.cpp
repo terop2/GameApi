@@ -1238,6 +1238,14 @@ int main(int argc, char *argv[]) {
 	  filename = std::string(argv[i+1]);
 	}
     }
+  std::ifstream stream(filename.c_str());
+  if (!stream.is_open())
+    {
+      std::ofstream stream2(filename.c_str());
+      stream2 << "\n\ntest" << std::flush;
+      stream2.close();
+    }
+
 
   WM mod = ev.mod_api.load(filename);
 
