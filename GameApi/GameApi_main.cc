@@ -471,6 +471,7 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   int val = SDL_GetMouseState(&x, &y);
   e2.type = event.type;
   e2.ch = event.key.keysym.sym;
+  if (event.type==256) { exit(0); }
 
   if (event.type==SDL_FINGERMOTION||event.type==SDL_FINGERDOWN||event.type==SDL_FINGERUP)
     {

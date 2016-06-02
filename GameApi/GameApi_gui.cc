@@ -4368,7 +4368,7 @@ std::vector<GameApiItem*> boolbitmapapi_functions()
 			 { "float_bm", "range_start", "range_end" },
 			 { "FB", "float", "float" },
 			 { "", "0.5", "1.0" },
-			 "BB", "bool_bitmap_api", "from_from_bitmap"));
+			 "BB", "bool_bitmap_api", "from_float_bitmap"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::line,
 			 "line",
 			 { "bg", "p_x", "p_y", "p2_x", "p2_y", "line_width1", "line_width2" },
