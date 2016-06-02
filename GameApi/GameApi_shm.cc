@@ -572,6 +572,7 @@ public:
       "   float t = solve(p0,p1,0.0, 1600.0, time);\n"
       "   vec3 pt = ray(p0,p1, t);\n"
       "   vec4 rgb = " + color_funccall_to_string(obj) + ";\n"
+      "   if (abs(t)<0.001) { rgb=vec4(0.5,0.5,0.5,1.0); }\n"
       "   return rgb;\n"
       "}\n"
       ;

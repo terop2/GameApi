@@ -412,6 +412,7 @@ void iter(void *arg)
     e.last = true;
     while((e=env->ev->mainloop_api.get_event()).last)
       {
+	if (e.type==256) { exit(0); }
 	//std::cout << e.type << " " << e.ch << " " << e.button << std::endl;
 	//if (e.type==1024 && e.button==-1) continue;
 	//if (e.type==0x300)
@@ -758,6 +759,18 @@ void iter(void *arg)
 			  env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 
 			} else
+			if (type=="O")
+			  {
+			    O o;
+			    o.id = id;
+			    
+			    P p = env->ev->volume_api.rendercubes3(o, 255,255,255,
+								   -300.0, 300.0,
+								   -300.0, 300.0,
+								   -300.0, 300.0);
+			    env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			  }
+		    else
 		    if (type=="BM")
 		      {
 			BM bm;
