@@ -1480,11 +1480,17 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::not_bitmap(BB b)
   return add_bool_bitmap(e, new NotBitmap(*bm));
 }
 
-GameApi::BB GameApi::BoolBitmapApi::or_bitmap(BB b1, BB b2)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::or_bitmap(BB b1, BB b2)
 {
   Bitmap<bool> *bm1 = find_bool_bitmap(e, b1)->bitmap;
   Bitmap<bool> *bm2 = find_bool_bitmap(e, b2)->bitmap;
   return add_bool_bitmap(e, new OrBitmap(*bm1,*bm2));
+}
+EXPORT GameApi::BB GameApi::BoolBitmapApi::xor_bitmap(BB b1, BB b2)
+{
+  Bitmap<bool> *bm1 = find_bool_bitmap(e, b1)->bitmap;
+  Bitmap<bool> *bm2 = find_bool_bitmap(e, b2)->bitmap;
+  return add_bool_bitmap(e, new XorBitmap(*bm1,*bm2));
 }
 EXPORT GameApi::BB GameApi::BoolBitmapApi::andnot_bitmap(BB b1, BB b2)
 {
