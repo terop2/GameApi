@@ -4363,6 +4363,12 @@ std::vector<GameApiItem*> boolbitmapapi_functions()
 			 { "int", "int" },
 			 { "100", "100" },
 			 "BB", "bool_bitmap_api", "empty"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::from_bitmaps_color,
+			 "bb_from_bitmap",
+			 { "bm", "r", "g", "b" },
+			 { "BM", "int", "int", "int" },
+			 { "", "255", "255", "255" },
+			 "BB", "bool_bitmap_api", "from_bitmaps_color"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::from_float_bitmap,
 			 "from_float_bitmap",
 			 { "float_bm", "range_start", "range_end" },
@@ -4387,6 +4393,12 @@ std::vector<GameApiItem*> boolbitmapapi_functions()
 			 { "BB", "float", "float", "float", "float" },
 			 { "", "0.0", "0.0", "30.0", "30.0" },
 			 "BB", "bool_bitmap_api", "rectangle"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::part_circle,
+			 "part_circle",
+			 { "sx", "sy", "x", "y", "start_angle", "end_angle", "start_rad", "end_rad" },
+			 { "int", "int", "float", "float", "float", "float", "float", "float" },
+			 { "100", "100", "50.0", "50.0", "0.0", "1.0", "30.0", "50.0" },
+			 "BB", "bool_bitmap_api", "part_circle"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::not_bitmap,
 			 "not_bitmap",
 			 { "b" },
@@ -4399,12 +4411,30 @@ std::vector<GameApiItem*> boolbitmapapi_functions()
 			 { "BB", "BB" },
 			 { "", "" },
 			 "BB", "bool_bitmap_api", "andnot_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::or_bitmap,
+			 "or_bitmap",
+			 { "b1", "b2" },
+			 { "BB", "BB" },
+			 { "", "" },
+			 "BB", "bool_bitmap_api", "or_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::xor_bitmap,
+			 "xor_bitmap",
+			 { "b1", "flip_b2" },
+			 { "BB", "BB" },
+			 { "", "" },
+			 "BB", "bool_bitmap_api", "xor_bitmap"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::choose_bitmap,
 			 "choose_bitmap",
 			 { "bools", "true_bm", "false_bm" },
 			 { "BB", "BB", "BB" },
 			 { "", "", "" },
 			 "BB", "bool_bitmap_api", "choose_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::sprite,
+			 "bb_sprite",
+			 { "bg", "sprite", "x", "y", "mult_x", "mult_y" },
+			 { "BB", "BB", "float", "float", "float", "float" },
+			 { "", "", "0.0", "0.0", "1.0", "1.0" },
+			 "BB", "bool_bitmap_api", "sprite"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::to_bitmap,
 			 "to_bitmap",
 			 { "bools", "true_r", "true_g", "true_b", "true_a", "false_r", "false_g", "false_b", "false_a" },

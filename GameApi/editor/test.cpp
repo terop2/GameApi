@@ -1071,15 +1071,16 @@ void iter(void *arg)
 		  case 0:
 		    name = env->gui->bitmapapi_functions_item_label(sel2-1);
 		    break;
-		  case 1:
-		    name = env->gui->polygonapi_functions_item_label(sel2-1);
-		    break;
-		  case 2: 
+		  case 1: 
 		    name = env->gui->boolbitmapapi_functions_item_label(sel2-1);
 		    break;
-		  case 3: 
+		  case 2: 
 		    name = env->gui->floatbitmapapi_functions_item_label(sel2-1);
 		    break;
+		  case 3:
+		    name = env->gui->polygonapi_functions_item_label(sel2-1);
+		    break;
+
 		  case 4:
 		    name = env->gui->shadermoduleapi_functions_item_label(sel2-1);
 		    break;
@@ -1372,9 +1373,9 @@ int main(int argc, char *argv[]) {
   for(int i=0;i<1;i++)
     {
       items.push_back(gui.bitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.polygonapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.boolbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.floatbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.polygonapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.shadermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.linesapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.pointsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));

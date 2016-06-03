@@ -1720,7 +1720,7 @@ public:
   IMPORT BB sections(int sx, int sy, float x, float y, std::function<bool (float angle)> f);
   
   IMPORT BB not_bitmap(BB b);
-  BB or_bitmap(BB b1, BB b2);
+  IMPORT BB or_bitmap(BB b1, BB b2);
   IMPORT BB andnot_bitmap(BB b1, BB not_b2);
   IMPORT BB xor_bitmap(BB b1, BB flip_b2);
   IMPORT BM choose_bitmap(BB bools, BM true_bitmap, BM false_bitmap);
