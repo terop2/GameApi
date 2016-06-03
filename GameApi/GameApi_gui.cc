@@ -753,11 +753,14 @@ public:
 	Point2d pos = get_pos();
 	Vector2d sz = get_size();
 	glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
-	//ev.mainloop_api.switch_to_3d(true, sh);
+	ev.shader_api.use(sh);
+	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
 	glEnable(GL_DEPTH_TEST);
+	//glPointSize(5.0);
+	//ev.mainloop_api.clear_3d();
 	obj.render();
 	glDisable(GL_DEPTH_TEST);
-	//ev.mainloop_api.switch_to_3d(false, sh);
+	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
 	glViewport(0,0,screen_x, screen_y);
 	ev.shader_api.use(old_sh);
       }
@@ -4252,6 +4255,18 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "PTS", "PTS" },
 			 { "", "" },
 			 "PTS", "points_api", "or_points"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::move,
+			 "move_pts",
+			 { "obj", "dx", "dy", "dz" },
+			 { "PTS", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0" },
+			 "PTS", "points_api", "move"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::scale,
+			 "scale_pts",
+			 { "obj", "sx", "sy", "sz" },
+			 { "PTS", "float", "float", "float" },
+			 { "", "1.0", "1.0", "1.0" },
+			 "PTS", "points_api", "scale"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::from_volume,
 			 "from_volume",
 			 { "o", "pos", "u_x", "u_y", "u_z", "sx", "sy", "sz" },

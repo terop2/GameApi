@@ -3193,6 +3193,7 @@ private:
       //array = floatvolume.prepare(fo, numpoints, start_x, start_y, start_z, end_x, end_y, end_z); 
     }
     void render() {
+      shapi.use(sh);
       shapi.set_var(sh, "in_MV", m);
       points_api.render(array);
       //floatvolume.render(array);
@@ -3227,7 +3228,7 @@ private:
     MatrixApi &mat;
     ShaderApi &shapi;
     PTS fo;
-    PTS fo2;
+    //PTS fo2;
     PTA array;
     SH sh;
     M current_pos;
