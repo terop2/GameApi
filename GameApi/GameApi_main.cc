@@ -523,14 +523,19 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 
   return e2;
 }
-void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH array_texture)
+void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH array_texture, const Event &ee)
 {
   MainLoopItem *item = find_main_loop(e, ml);
-  MainLoopEnv e;
-  e.sh_color = color.id;
-  e.sh_texture = texture.id;
-  e.sh_array_texture = array_texture.id;
-  item->execute(e);
+  MainLoopEnv ek;
+  ek.sh_color = color.id;
+  ek.sh_texture = texture.id;
+  ek.sh_array_texture = array_texture.id;
+  ek.type = ee.type;
+  ek.ch = ee.ch;
+  ek.cursor_pos = *find_point(e,ee.cursor_pos);
+  ek.button = ee.button;
+  ek.env = Matrix::Identity();
+  item->execute(ek);
 }
 
 class ArrayMainLoop : public MainLoopItem

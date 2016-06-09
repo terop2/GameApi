@@ -528,6 +528,13 @@ public:
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
+    if (type==0x300 || type==0x301)
+      {
+	e.type = type;
+	e.ch = ch;
+	e.button = button;
+	e.cursor_pos = ev.point_api.point(mouse.x,mouse.y,0.0);
+      }
 #ifdef EMSCRIPTEN
     if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
     if (ch==39) ch='0';
@@ -577,7 +584,11 @@ public:
 	ev.shader_api.use(sh_arr);
 	ev.shader_api.set_var(sh_arr, "in_MV", mat);
 	ev.shader_api.use(sh);
-	ev.mainloop_api.execute_ml(p, sh, sh2, sh_arr);
+	ev.mainloop_api.execute_ml(p, sh, sh2, sh_arr,e);
+	e.type = -1;
+	e.ch = -1;
+	e.button = -1;
+
 	//ev.polygon_api.render_vertex_array(p);
 	glDisable(GL_DEPTH_TEST);
 	ev.shader_api.use(sh);
@@ -597,6 +608,7 @@ private:
   GameApi::SH old_sh;
   GameApi::ML p;
   GameApi::M mat;
+  GameApi::MainLoopApi::Event e;
   //GameApi::PolygonObj obj;
   bool firsttime;
   int sx,sy;
@@ -3723,25 +3735,56 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { },
 			 "MN", "move_api", "empty"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::level,
-			 "mn_level",
+			 "mn_custom",
 			 { "mn" },
 			 { "MN" },
 			 { "" },
 			 "MN", "move_api", "level"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::translate,
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::trans2,
 			 "mn_translate",
+			 { "next", "dx", "dy", "dz" },
+			 { "MN", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0" },
+			 "MN", "move_api", "trans2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::scale2,
+			 "mn_scale",
+			 { "next", "sx", "sy", "sz" },
+			 { "MN", "float", "float", "float" },
+			 { "", "1.0", "1.0", "1.0" },
+			 "MN", "move_api", "scale2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::rotatex,
+			 "mn_rotatex",
+			 { "next", "angle" },
+			 { "MN", "float" },
+			 { "", "0.0" },
+			 "MN", "move_api", "rotatex"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::rotatey,
+			 "mn_rotatey",
+			 { "next", "angle" },
+			 { "MN", "float" },
+			 { "", "0.0" },
+			 "MN", "move_api", "rotatey"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::rotatez,
+			 "mn_rotatez",
+			 { "next", "angle" },
+			 { "MN", "float" },
+			 { "", "0.0" },
+			 "MN", "move_api", "rotatez"));
+  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::translate,
+			 "anim_translate",
 			 { "next", "start_time", "end_time", "dx", "dy", "dz" },
 			 { "MN", "float", "float", "float", "float", "float" },
 			 { "", "0.0", "100.0", "0.0", "0.0", "0.0" },
 			 "MN", "move_api", "translate"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::scale,
-			 "mn_scale",
+			 "anim_scale",
 			 { "next", "start_time", "end_time", "sx", "sy", "sz" },
 			 { "MN", "float", "float", "float", "float", "float" },
 			 { "", "0.0", "100.0", "1.0", "1.0", "1.0" },
 			 "MN", "move_api", "scale"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::rotate,
-			 "mn_rotate",
+			 "anim_rotate",
 			 { "next", "start_time", "end_time", "p_x", "p_y", "p_z",
 			     "v_x", "v_y", "v_z", "angle" },
 			 { "MN", "float", "float",
@@ -3754,13 +3797,13 @@ std::vector<GameApiItem*> moveapi_functions()
 			     "3.14159" },
 			 "MN", "move_api", "rotate"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::compress,
-			 "mn_compress",
+			 "anim_compress",
 			 { "next", "start_time", "end_time" },
 			 { "MN", "float", "float" },
 			 { "", "0.0", "100.0" },
 			 "MN", "move_api", "compress"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::change_time,
-			 "mn_time",
+			 "anim_time",
 			 { "next", "delta_time" },
 			 { "MN", "float" },
 			 { "", "0.0" },
@@ -3772,6 +3815,20 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "ev", "", "" },
 			 "ML", "move_api", "move_ml"));
 			 
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_event,
+			 "keyevent_ml",
+			 { "ev", "ml", "mn", "type", "ch", "button", "duration" },
+			 { "EveryApi&", "ML", "MN", "int", "int", "int","float" },
+			 { "ev", "", "", "768", "-1", "-1","10.0" },
+			 "ML", "move_api", "key_event"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::wasd,
+			 "wasd_ml",
+			 { "ev", "ml", "w", "a", "s", "d", "duration" },
+			 { "EveryApi&", "ML", "MN", "MN", "MN", "MN","float" },
+			 { "ev", "",  "", "", "", "", "10.0" },
+			 "ML", "move_api", "wasd"));
+#endif
   return vec;
 }
 std::vector<GameApiItem*> polygonapi_functions()

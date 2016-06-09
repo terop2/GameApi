@@ -2253,6 +2253,45 @@ private:
   Movement *nxt;
   float d_time;
 };
+class MatrixMovement : public Movement
+{
+public:
+  MatrixMovement(Movement *next, Matrix m) : next(next), m(m) { }
+  void set_matrix(Matrix mm) { m = mm; }
+  Matrix get_whole_matrix(float time) const
+  {
+    return next->get_whole_matrix(time)*m;
+  }
+private:
+  Movement *next;
+  Matrix m;
+};
+GameApi::MN GameApi::MovementNode::trans2(MN next, float dx, float dy, float dz)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new MatrixMovement(nxt, Matrix::Translate(dx,dy,dz)));  
+}
+GameApi::MN GameApi::MovementNode::scale2(MN next, float sx, float sy, float sz)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new MatrixMovement(nxt, Matrix::Scale(sx,sy,sz)));  
+}
+GameApi::MN GameApi::MovementNode::rotatex(MN next, float angle)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new MatrixMovement(nxt, Matrix::XRotation(angle)));  
+}
+GameApi::MN GameApi::MovementNode::rotatey(MN next, float angle)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new MatrixMovement(nxt, Matrix::YRotation(angle)));  
+}
+GameApi::MN GameApi::MovementNode::rotatez(MN next, float angle)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new MatrixMovement(nxt, Matrix::ZRotation(angle)));  
+}
+
 GameApi::MN GameApi::MovementNode::change_time(MN next, float d_time)
 {
   Movement *nxt = find_move(e, next);
@@ -2270,35 +2309,117 @@ GameApi::M GameApi::MovementNode::get_matrix(MN n, float time)
   Matrix m = nn->get_whole_matrix(time);
   return add_matrix2(e, m);
 }
+class KeyEventML : public MainLoopItem
+{
+public:
+  KeyEventML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, GameApi::MN mn, int type, int ch, int button, float duration) : e(e), ev(ev), next(next), mn(mn), type(type), ch(ch), button(button), duration(duration) 
+  { 
+    start_time = ev.mainloop_api.get_time();
+    b=false;
+  }
+  void reset_time() {
+    start_time = ev.mainloop_api.get_time();
+  }
+  bool compare(MainLoopEnv &e)
+  {
+    //std::cout << "Compare1: " << type << " " << ch << " " << button << std::endl;
+    //std::cout << "Compare2: " << e.type << " " << e.ch << " " << e.button << std::endl;
+    if (type!=-1 && e.type!=type) return false;
+    if (ch!=-1 && e.ch != ch) return false;
+    if (button!=-1 && e.button != button) return false;
+    //std::cout << "COMPARE true" << std::endl;
+    return true;
+  }
+  void execute(MainLoopEnv &env)
+  {
+    bool b = compare(env);
+    if (b) {
+      start_times.push_back(ev.mainloop_api.get_time());
+    }
+    GameApi::SH s1;
+    s1.id = env.sh_texture;
+    GameApi::SH s2;
+    s2.id = env.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = env.sh_color;
+    
+    int s = start_times.size();
+    GameApi::M res = ev.matrix_api.identity();
+    GameApi::M m2 = add_matrix2(e, env.env);
+    GameApi::M res2 = ev.matrix_api.mult(m2,res);
+    for(int i=0;i<s;i++)
+      {
+	float time = (ev.mainloop_api.get_time()-start_times[i])/100.0;
+	GameApi::M mat = ev.move_api.get_matrix(mn, time);
+	res2 = ev.matrix_api.mult(res2, mat);
+      }
+    for(int i=0;i<s;i++)
+      {
+	float time = (ev.mainloop_api.get_time()-start_times[i])/100.0;
+	if (time>duration)
+	  {
+	    start_times.erase(start_times.begin()+i);
+	    i--; s--;
+	  }
+      }
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", res2);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", res2);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", res2);
+    Matrix old_env = env.env;
+    env.env = env.env * find_matrix(e,res2);
+    next->execute(env);
+    env.env = old_env;
+
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  float start_time;
+  MainLoopItem *next;
+  GameApi::MN mn;
+  int type, ch, button;
+  bool b;
+  std::vector<float> start_times;
+  float duration;
+};
 class MoveML : public MainLoopItem
 {
 public:
-  MoveML(GameApi::EveryApi &ev, MainLoopItem *next, GameApi::MN mn) : ev(ev), next(next), mn(mn) 
+  MoveML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, GameApi::MN mn) : e(e), ev(ev), next(next), mn(mn) 
   { 
     start_time = ev.mainloop_api.get_time();
   }
   void reset_time() {
     start_time = ev.mainloop_api.get_time();
   }
-  void execute(MainLoopEnv &e)
+  void execute(MainLoopEnv &env)
   {
     GameApi::SH s1;
-    s1.id = e.sh_texture;
+    s1.id = env.sh_texture;
     GameApi::SH s2;
-    s2.id = e.sh_array_texture;
+    s2.id = env.sh_array_texture;
     GameApi::SH s3;
-    s3.id = e.sh_color;
+    s3.id = env.sh_color;
     float time = (ev.mainloop_api.get_time()-start_time)/100.0;
     GameApi::M mat = ev.move_api.get_matrix(mn, time);
+    GameApi::M m2 = add_matrix2(e, env.env);
+    GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
     ev.shader_api.use(s1);
-    ev.shader_api.set_var(s1, "in_MV", mat);
+    ev.shader_api.set_var(s1, "in_MV", mat2);
     ev.shader_api.use(s2);
-    ev.shader_api.set_var(s2, "in_MV", mat);
+    ev.shader_api.set_var(s2, "in_MV", mat2);
     ev.shader_api.use(s3);
-    ev.shader_api.set_var(s3, "in_MV", mat);
-    next->execute(e);
+    ev.shader_api.set_var(s3, "in_MV", mat2);
+    Matrix old_env = env.env;
+    env.env = find_matrix(e,mat2) * env.env;
+    next->execute(env);
+    env.env = old_env;
   }
 private:
+  GameApi::Env &e;
   GameApi::EveryApi &ev;
   float start_time;
   MainLoopItem *next;
@@ -2307,5 +2428,22 @@ private:
 GameApi::ML GameApi::MovementNode::move_ml(EveryApi &ev, GameApi::ML ml, GameApi::MN move)
 {
   MainLoopItem *item = find_main_loop(e, ml);
-  return add_main_loop(e, new MoveML(ev,item, move));
+  return add_main_loop(e, new MoveML(e,ev,item, move));
+}
+GameApi::ML GameApi::MovementNode::key_event(EveryApi &ev, GameApi::ML ml, GameApi::MN move, int type, int ch, int button, float duration)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new KeyEventML(e,ev,item, move,type,ch,button, duration));
+}
+
+GameApi::ML GameApi::MovementNode::wasd(EveryApi &ev, GameApi::ML ml,
+					GameApi::MN w, GameApi::MN a,
+					GameApi::MN s, GameApi::MN d,
+					float duration)
+{
+  GameApi::ML m1 = key_event(ev, ml, w, 0x300, 'w',-1, duration);
+  GameApi::ML m2 = key_event(ev, m1, a, 0x300, 'a',-1, duration);
+  GameApi::ML m3 = key_event(ev, m2, s, 0x300, 's',-1, duration);
+  GameApi::ML m4 = key_event(ev, m3, d, 0x300, 'd',-1, duration);
+  return m4;
 }
