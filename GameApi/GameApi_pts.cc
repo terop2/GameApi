@@ -603,3 +603,40 @@ void *thread_func_pts(void *data)
   //  std::cout << "Thread finished" << jj << " " << ti->arr->numpoints << std::endl;
   return 0;
 }
+class ColorPoints : public PointsApiPoints
+{
+public:
+  ColorPoints(PointsApiPoints *next, unsigned int color) : next(next), color(color) { }
+  int NumPoints() const { return next->NumPoints(); }
+  Point Pos(int i) const { return next->Pos(i); }
+  unsigned int Color(int i) const {return color; }
+private:
+  PointsApiPoints *next;
+  unsigned int color;
+};
+GameApi::PTS GameApi::PointsApi::color_points(PTS p, unsigned int color)
+{
+  PointsApiPoints *obj = find_pointsapi_points(e, p);
+  return add_points_api_points(e, new ColorPoints(obj, color));
+}
+class PointsApiRender : public MainLoopItem
+{
+public:
+  PointsApiRender(GameApi::EveryApi &ev, PointArray3 *arr) : ev(ev), arr(arr) { }
+  void execute(MainLoopEnv &e)
+  {
+    GameApi::SH sh;
+    sh.id = e.sh_color;
+    ev.shader_api.use(sh);
+    glBindVertexArray(arr->vao[0]);
+    glDrawArrays(GL_POINTS, 0, arr->numpoints);
+  }
+private:
+  GameApi::EveryApi &ev;
+  PointArray3 *arr;
+};
+GameApi::ML GameApi::PointsApi::render_ml(EveryApi &ev, PTA array)
+{
+  PointArray3 *arr = find_point_array3(e, array);
+  return add_main_loop(e, new PointsApiRender(ev,arr));
+}

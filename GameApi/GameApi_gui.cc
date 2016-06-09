@@ -3187,6 +3187,8 @@ MACRO(GameApi::PTS)
 MACRO(GameApi::FBO)
 MACRO(GameApi::W)
 MACRO(GameApi::ML)
+MACRO(GameApi::PTA)
+MACRO(GameApi::MN)
 #undef MACRO
 
 
@@ -3711,6 +3713,67 @@ std::vector<GameApiItem*> fontapi_functions()
 #endif
   return vec;
 }
+std::vector<GameApiItem*> moveapi_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::empty,
+			 "mn_empty",
+			 { },
+			 { },
+			 { },
+			 "MN", "move_api", "empty"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::level,
+			 "mn_level",
+			 { "mn" },
+			 { "MN" },
+			 { "" },
+			 "MN", "move_api", "level"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::translate,
+			 "mn_translate",
+			 { "next", "start_time", "end_time", "dx", "dy", "dz" },
+			 { "MN", "float", "float", "float", "float", "float" },
+			 { "", "0.0", "100.0", "0.0", "0.0", "0.0" },
+			 "MN", "move_api", "translate"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::scale,
+			 "mn_scale",
+			 { "next", "start_time", "end_time", "sx", "sy", "sz" },
+			 { "MN", "float", "float", "float", "float", "float" },
+			 { "", "0.0", "100.0", "1.0", "1.0", "1.0" },
+			 "MN", "move_api", "scale"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::rotate,
+			 "mn_rotate",
+			 { "next", "start_time", "end_time", "p_x", "p_y", "p_z",
+			     "v_x", "v_y", "v_z", "angle" },
+			 { "MN", "float", "float",
+			     "float", "float","float",
+			     "float", "float","float",
+			     "float" },
+			 { "", "0.0", "100.0",
+			     "0.0", "0.0", "0.0",
+			     "0.0", "1.0", "0.0",
+			     "3.14159" },
+			 "MN", "move_api", "rotate"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::compress,
+			 "mn_compress",
+			 { "next", "start_time", "end_time" },
+			 { "MN", "float", "float" },
+			 { "", "0.0", "100.0" },
+			 "MN", "move_api", "compress"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::change_time,
+			 "mn_time",
+			 { "next", "delta_time" },
+			 { "MN", "float" },
+			 { "", "0.0" },
+			 "MN", "move_api", "change_time"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::move_ml,
+			 "move_ml",
+			 { "ev", "ml", "mn" },
+			 { "EveryApi&", "ML", "MN" },
+			 { "ev", "", "" },
+			 "ML", "move_api", "move_ml"));
+			 
+  return vec;
+}
 std::vector<GameApiItem*> polygonapi_functions()
 {
   std::vector<GameApiItem*> vec;
@@ -4009,6 +4072,7 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "EveryApi&", "VA" },
 			 { "ev", "" },
 			 "ML", "polygon_api", "render_vertex_array_ml"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::array_ml,
 			 "array_ml",
 			 { "arr" },
@@ -4267,6 +4331,12 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "PTS", "float", "float", "float" },
 			 { "", "1.0", "1.0", "1.0" },
 			 "PTS", "points_api", "scale"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::color_points,
+			 "color_pts",
+			 { "p", "color" },
+			 { "PTS", "unsigned int" },
+			 { "", "ffffffff" },
+			 "PTS", "points_api", "color_points"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::from_volume,
 			 "from_volume",
 			 { "o", "pos", "u_x", "u_y", "u_z", "sx", "sy", "sz" },
@@ -4279,6 +4349,18 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "PTS", "PT", "V", "V", "V" },
 			 { "", "(0.0,0.0,0.0)", "(100.0,0.0,0.0)", "(0.0,0.0,100.0)", "(1.0,1.0,0.0)" },
 			 "PTS", "points_api", "shadow_points"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::prepare,
+			 "pts_prepare",
+			 { "p" },
+			 { "PTS" },
+			 { "" },
+			 "PTA", "points_api", "prepare"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::render_ml,
+			 "pts_render",
+			 { "ev", "a" },
+			 { "EveryApi&", "PTA" },
+			 { "ev", "" },
+			 "ML", "points_api", "render_ml"));
   return vec;
 }
 std::vector<GameApiItem*> floatbitmapapi_functions()
@@ -4719,6 +4801,7 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> ve = textureapi_functions();
   std::vector<GameApiItem*> vf = booleanopsapi_functions();
   std::vector<GameApiItem*> vg = global_functions;
+  std::vector<GameApiItem*> vh = moveapi_functions();
 
   std::vector<GameApiItem*> a1 = append_vectors(v1,v2);
   std::vector<GameApiItem*> a2 = append_vectors(v3,v4);
@@ -4735,7 +4818,8 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> ad = append_vectors(ac, ve);
   std::vector<GameApiItem*> ae = append_vectors(ad, vf);
   std::vector<GameApiItem*> af = append_vectors(ae, vg);
-  return af;
+  std::vector<GameApiItem*> ag = append_vectors(af, vh);
+  return ag;
 }
 std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)
 {
@@ -4850,6 +4934,13 @@ std::string GameApi::GuiApi::booleanopsapi_functions_item_label(int i)
   std::string name = item->Name(0);
   return name;
 }
+std::string GameApi::GuiApi::moveapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = moveapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
 
 
 
@@ -4909,6 +5000,11 @@ GameApi::W GameApi::GuiApi::textureapi_functions_list_item(FtA atlas1, BM atlas_
 GameApi::W GameApi::GuiApi::booleanopsapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {
   return functions_widget(*this, "BooleanOps", booleanopsapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+}
+
+GameApi::W GameApi::GuiApi::moveapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
+{
+  return functions_widget(*this, "MoveApi", moveapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
 
 

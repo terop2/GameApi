@@ -306,6 +306,15 @@ EXPORT GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
+GameApi::MN add_move(GameApi::Env &e, Movement *m)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->movement_array.push_back(m);
+  GameApi::MN a;
+  a.id = env->movement_array.size()-1;
+  return a;
+
+}
 GameApi::CP add_collision(GameApi::Env &e, Collision *c)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -972,6 +981,11 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   Array<int,bool> *enable = info.enable_obj_array;
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
+}
+Movement *find_move(GameApi::Env &e, GameApi::MN m)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->movement_array[m.id];  
 }
 Collision *find_collision(GameApi::Env &e, GameApi::CP p)
 {
@@ -2067,4 +2081,231 @@ bool GameApi::CollisionPlane::check_collision(CP plane, float x, float y)
 {
   Collision *c = find_collision(e, plane);
   return c->check_collision(x,y);
+}
+
+class EmptyMovement : public Movement
+{
+public:
+  EmptyMovement() : m_m(Matrix::Identity()) { }
+  void set_matrix(Matrix m) { m_m = m; }
+  Matrix get_whole_matrix(float time) const { return m_m; }
+private:
+  Matrix m_m;
+};
+GameApi::MN GameApi::MovementNode::empty()
+{
+  return add_move(e, new EmptyMovement);
+}
+class LevelMovement : public Movement
+{
+public:
+  LevelMovement(Movement *m) : m(m) { }
+  void set_matrix(Matrix m) { m_m = m; }
+  Matrix get_whole_matrix(float time) const
+  {
+    return m_m * m->get_whole_matrix(time);
+  }
+private:
+  Movement *m;
+  Matrix m_m;
+};
+GameApi::MN GameApi::MovementNode::level(MN next)
+{
+  Movement *move = find_move(e, next);
+  return add_move(e, new LevelMovement(move));
+}
+class TranslateMovement : public Movement
+{
+public:
+  TranslateMovement(Movement *next, float start_time, float end_time,
+		    float dx, float dy, float dz)
+    : next(next), start_time(start_time), end_time(end_time),
+      dx(dx), dy(dy), dz(dz) { }
+  void set_matrix(Matrix m) { }
+  Matrix get_whole_matrix(float time) const
+  {
+    if (time<start_time) { return next->get_whole_matrix(time); }
+    if (time>=end_time) { return Matrix::Translate(dx,dy,dz)*next->get_whole_matrix(time); }
+    float d = time - start_time;
+    d/=(end_time-start_time);
+    return Matrix::Translate(dx*d,dy*d,dz*d)*next->get_whole_matrix(time);
+  }
+private:
+  Movement *next;
+  float start_time, end_time;
+  float dx,dy,dz;
+};
+GameApi::MN GameApi::MovementNode::translate(MN next, 
+					     float start_time, float end_time,
+					     float dx, float dy, float dz)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new TranslateMovement(nxt,start_time, end_time,
+					   dx,dy,dz));
+}
+class ScaleMovement : public Movement
+{
+public:
+  ScaleMovement(Movement *next, float start_time, float end_time,
+		    float sx, float sy, float sz)
+    : next(next), start_time(start_time), end_time(end_time),
+      sx(sx), sy(sy), sz(sz) { }
+  void set_matrix(Matrix m) { }
+  Matrix get_whole_matrix(float time) const
+  {
+    if (time<start_time) { return next->get_whole_matrix(time); }
+    if (time>=end_time) { return Matrix::Scale(sx,sy,sz)*next->get_whole_matrix(time); }
+    float d = time - start_time;
+    d/=(end_time-start_time); // [0..1]
+    float ssx = (1.0-d)*1.0 + d*sx;
+    float ssy = (1.0-d)*1.0 + d*sy;
+    float ssz = (1.0-d)*1.0 + d*sz;
+    return Matrix::Scale(ssx,ssy,ssz)*next->get_whole_matrix(time);
+  }
+private:
+  Movement *next;
+  float start_time, end_time;
+  float sx,sy,sz;
+};
+
+GameApi::MN GameApi::MovementNode::scale(MN next,
+					 float start_time, float end_time,
+					 float sx, float sy, float sz)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new ScaleMovement(nxt, start_time, end_time,
+				       sx,sy,sz));
+}
+class RotateMovement : public Movement
+{
+public:
+public:
+  RotateMovement(Movement *next, float start_time, float end_time,
+		 float p_x, float p_y, float p_z,
+		float v_x, float v_y, float v_z, float angle)
+    : next(next), start_time(start_time), end_time(end_time),
+      p_x(p_x), p_y(p_y), p_z(p_z),
+      v_x(v_x), v_y(v_y), v_z(v_z), angle(angle) { }
+  void set_matrix(Matrix m) { }
+  Matrix get_whole_matrix(float time) const
+  {
+    if (time<start_time) { return next->get_whole_matrix(time); }
+    if (time>=end_time) { return Matrix::RotateAroundAxisPoint(Point(p_x,p_y,p_z),Vector(v_x,v_y,v_z), angle)*next->get_whole_matrix(time); }
+    float d = time - start_time;
+    d/=(end_time-start_time); // [0..1]
+    return Matrix::RotateAroundAxisPoint(Point(p_x,p_y,p_z),Vector(v_x,v_y,v_z), d*angle)*next->get_whole_matrix(time);
+  }
+private:
+  Movement *next;
+  float start_time, end_time;
+  float p_x,p_y,p_z;
+  float v_x,v_y,v_z;
+  float angle;
+};
+GameApi::MN GameApi::MovementNode::rotate(MN next, float start_time, float end_time,
+					  float p_x, float p_y, float p_z,
+					  float v_x, float v_y, float v_z, float angle)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new RotateMovement(nxt, start_time, end_time,
+					p_x,p_y,p_z,v_x, v_y, v_z, angle));
+}
+
+class CompressMovement : public Movement
+{
+public:
+  CompressMovement(Movement *next, float start_time, float end_time) : next(next), start_time(start_time), end_time(end_time) 
+  { 
+    zero = next->get_whole_matrix(start_time);
+    one = next->get_whole_matrix(end_time);
+  }
+  void set_matrix(Matrix m) { }
+  Matrix get_whole_matrix(float time) const
+  {
+    if (time<start_time) { return zero; }
+    if (time>end_time) { return one; }
+    return next->get_whole_matrix(time);
+  }
+private:
+  Movement *next;
+  float start_time, end_time;
+  Matrix zero;
+  Matrix one;
+};
+
+GameApi::MN GameApi::MovementNode::compress(MN next, float start_time, float end_time)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new CompressMovement(nxt, start_time, end_time));  
+}
+class TimeChangeMovement : public Movement
+{
+public:
+  TimeChangeMovement(Movement *nxt, float d_time) : nxt(nxt), d_time(d_time) { }
+  void set_matrix(Matrix m) { }
+  Matrix get_whole_matrix(float time) const
+  {
+    time -= d_time;
+    return nxt->get_whole_matrix(time);
+  }
+  
+private:
+  Movement *nxt;
+  float d_time;
+};
+GameApi::MN GameApi::MovementNode::change_time(MN next, float d_time)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new TimeChangeMovement(nxt, d_time));  
+}
+void GameApi::MovementNode::set_matrix(MN n, M m)
+{
+  Movement *nn = find_move(e, n);
+  Matrix mm = find_matrix(e, m);
+  nn->set_matrix(mm);
+}
+GameApi::M GameApi::MovementNode::get_matrix(MN n, float time)
+{
+  Movement *nn = find_move(e, n);
+  Matrix m = nn->get_whole_matrix(time);
+  return add_matrix2(e, m);
+}
+class MoveML : public MainLoopItem
+{
+public:
+  MoveML(GameApi::EveryApi &ev, MainLoopItem *next, GameApi::MN mn) : ev(ev), next(next), mn(mn) 
+  { 
+    start_time = ev.mainloop_api.get_time();
+  }
+  void reset_time() {
+    start_time = ev.mainloop_api.get_time();
+  }
+  void execute(MainLoopEnv &e)
+  {
+    GameApi::SH s1;
+    s1.id = e.sh_texture;
+    GameApi::SH s2;
+    s2.id = e.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = e.sh_color;
+    float time = (ev.mainloop_api.get_time()-start_time)/100.0;
+    GameApi::M mat = ev.move_api.get_matrix(mn, time);
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", mat);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", mat);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", mat);
+    next->execute(e);
+  }
+private:
+  GameApi::EveryApi &ev;
+  float start_time;
+  MainLoopItem *next;
+  GameApi::MN mn;
+};
+GameApi::ML GameApi::MovementNode::move_ml(EveryApi &ev, GameApi::ML ml, GameApi::MN move)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new MoveML(ev,item, move));
 }
