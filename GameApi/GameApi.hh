@@ -226,7 +226,7 @@ public:
   IMPORT Event get_event();
   void waittof();
   SP screenspace();
-  void execute_ml(ML ml, SH color, SH texture, SH arr_texture);
+  void execute_ml(ML ml, SH color, SH texture, SH arr_texture, const Event &e);
   ML array_ml(std::vector<ML> vec);
 private:
   MainLoopApi(const MainLoopApi&);
@@ -877,6 +877,11 @@ public:
   MovementNode(Env &e) : e(e) {}
   MN empty();
   MN level(MN next);
+  MN trans2(MN next, float dx, float dy, float dz);
+  MN scale2(MN next, float sx, float sy, float sz);
+  MN rotatex(MN next, float angle);
+  MN rotatey(MN next, float angle);
+  MN rotatez(MN next, float angle);
   MN translate(MN next, float start_time, float end_time,
 	       float dx, float dy, float dz);
   MN scale(MN next, float start_time, float end_time,
@@ -889,6 +894,8 @@ public:
   void set_matrix(MN n, M m);
   M get_matrix(MN n, float time);
   ML move_ml(EveryApi &ev, ML ml, MN mn);
+  ML key_event(EveryApi &ev, ML ml, MN mn, int type, int ch, int button, float duration);
+  ML wasd(EveryApi &ev, ML ml, MN w, MN a, MN s, MN d, float duration);
 private:
   Env &e;
 };
