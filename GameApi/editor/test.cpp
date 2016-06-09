@@ -1093,34 +1093,37 @@ void iter(void *arg)
 		    name = env->gui->pointsapi_functions_item_label(sel2-1);
 		    break;
 		  case 7:
-		    name = env->gui->pointapi_functions_item_label(sel2-1);
+		    name = env->gui->moveapi_functions_item_label(sel2-1);
 		    break;
 		  case 8:
+		    name = env->gui->pointapi_functions_item_label(sel2-1);
+		    break;
+		  case 9:
 		    name = env->gui->vectorapi_functions_item_label(sel2-1);
 		    break;
 
-		  case 9:
+		  case 10:
 		    name = env->gui->volumeapi_functions_item_label(sel2-1);
 		    break;
-		  case 10:
+		  case 11:
 		    name = env->gui->floatvolumeapi_functions_item_label(sel2-1);
 		    break;
-		  case 11:
+		  case 12:
 		    name = env->gui->colorvolumeapi_functions_item_label(sel2-1);
 		    break;
-		  case 12:
+		  case 13:
 		    name = env->gui->fontapi_functions_item_label(sel2-1);
 		    break;
-		  case 13:
+		  case 14:
 		    name = env->gui->textureapi_functions_item_label(sel2-1);
 		    break;
-		  case 14:
+		  case 15:
 		    name = env->gui->booleanopsapi_functions_item_label(sel2-1);
 		    break;
 		  default:
 		    {
 		      std::cout << "SEL: " << sel << std::endl;
-		      DllData &d = env->dlls[sel-15];
+		      DllData &d = env->dlls[sel-16];
 		      std::vector<Item*> funcs = (*d.functions)();
 		      Item *item = funcs[sel2-1];
 		      name = item->Name();
@@ -1381,6 +1384,7 @@ int main(int argc, char *argv[]) {
       items.push_back(gui.shadermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.linesapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.pointsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.moveapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.pointapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.vectorapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
 

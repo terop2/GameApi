@@ -25,6 +25,7 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct MN { int id; };
   struct CP { int id; };
   struct DR { int id; };
   struct OM { int id; };
@@ -870,6 +871,28 @@ private:
   Env &e;
 };
 
+class MovementNode
+{
+public:
+  MovementNode(Env &e) : e(e) {}
+  MN empty();
+  MN level(MN next);
+  MN translate(MN next, float start_time, float end_time,
+	       float dx, float dy, float dz);
+  MN scale(MN next, float start_time, float end_time,
+	   float sx, float sy, float sz);
+  MN rotate(MN next, float start_time, float end_time,
+	    float p_x, float p_y, float p_z,
+	    float v_x, float v_y, float v_z, float angle);
+  MN compress(MN next, float start_time, float end_time);
+  MN change_time(MN next, float d_time);
+  void set_matrix(MN n, M m);
+  M get_matrix(MN n, float time);
+  ML move_ml(EveryApi &ev, ML ml, MN mn);
+private:
+  Env &e;
+};
+
 class ExprApi
 {
 public:
@@ -994,6 +1017,7 @@ public:
   W fontapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   W textureapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   W booleanopsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W moveapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
 
 
   std::string bitmapapi_functions_item_label(int i);
@@ -1011,6 +1035,7 @@ public:
   std::string fontapi_functions_item_label(int i);
   std::string textureapi_functions_item_label(int i);
   std::string booleanopsapi_functions_item_label(int i);
+  std::string moveapi_functions_item_label(int i);
   W insert_widget(W item, std::function<void(int,int)> f);
   void insert_widget_activate(W w, bool b);
 
@@ -1909,6 +1934,7 @@ public:
   IMPORT PTS from_float_volume(FO float_volume, int numpoints, 
 			float start_x, float start_y, float start_z,
 			float end_x, float end_y, float end_z);
+  IMPORT PTS color_points(PTS p, unsigned int color);
   IMPORT PTS or_points(PTS p1, PTS p2);
   IMPORT PTS heightmap(BM colour, FB floatbitmap, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
   IMPORT PTS random_plane(PT pos, V u_x, V u_y, int numpoints);
@@ -1934,6 +1960,7 @@ public:
   //unsigned int *color_access(PTA pta, int pointnum);
   //void update(PTA array);
   IMPORT void render(PTA array);
+  IMPORT ML render_ml(EveryApi &ev, PTA array);
   IMPORT void explode(PTA array, float x, float y, float z, float dist);
 
   IMPORT int NumPoints(PTS p);
@@ -2251,7 +2278,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -2294,6 +2321,7 @@ struct EveryApi
   CutterApi cutter_api;
   BooleanOps bool_api;
   CollisionPlane collision_api;
+  MovementNode move_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);

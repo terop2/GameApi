@@ -374,4 +374,11 @@ public:
   }
 };
 
+class Movement
+{
+public:
+  virtual void set_matrix(Matrix m)=0;
+  virtual Matrix get_whole_matrix(float time) const=0;
+};
+
 #endif
