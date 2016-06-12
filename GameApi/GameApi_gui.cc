@@ -3207,6 +3207,7 @@ MACRO(GameApi::W)
 MACRO(GameApi::ML)
 MACRO(GameApi::PTA)
 MACRO(GameApi::MN)
+MACRO(GameApi::VO)
 #undef MACRO
 
 
@@ -3570,6 +3571,117 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "FO", "float", "float" },
 			 { "", "0.5", "1.0" },
 			 "O", "float_volume_api", "subvolume"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vector_volume_api, &GameApi::VectorVolumeApi::normal2,
+			 "fo_normal",
+			 { "fo", "stepsize" },
+			 { "FO", "float" },
+			 { "", "0.1" },
+			 "VO", "vector_volume_api", "normal2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vector_volume_api, &GameApi::VectorVolumeApi::setup_normal,
+			 "setup_normal",
+			 { "orig", "v" },
+			 { "P", "VO" },
+			 { "", "" },
+			 "P", "vector_volume_api", "setup_normal"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::sphere,
+			 "fd_sphere",
+			 { "center", "radius" },
+			 { "PT", "float" },
+			 { "", "100.0" },
+			 "FD", "dist_api", "sphere"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::cube,
+			 "fd_cube",
+			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			 { "float", "float", "float", "float", "float", "float" },
+			 { "-100.0", "100.0", "-100.0", "100.0", "-100.0", "100.0" },
+			 "FD", "dist_api", "cube"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::round_cube,
+			 "fd_round_cube",
+			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "r" },
+			 { "float", "float", "float", "float", "float", "float", "float" },
+			 { "-100.0", "100.0", "-100.0", "100.0", "-100.0", "100.0", "10.0" },
+			 "FD", "dist_api", "round_cube"));
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::torus,
+			 "fd_torus",
+			 { "t_x", "t_y" },
+			 { "float", "float" },
+			 { "100.0", "30.0" },
+			 "FD", "dist_api", "torus"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::cone,
+			 "fd_cone",
+			 { "c_x", "c_y" },
+			 { "float", "float" },
+			 { "100.0", "30.0" },
+			 "FD", "dist_api", "cone"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::plane,
+			 "fd_plane",
+			 { "n_x", "n_y", "n_z", "n_w" },
+			 { "float", "float", "float", "float" },
+			 { "0.0", "1.0", "0.0", "1.0" },
+			 "FD", "dist_api", "plane"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::hex_prism,
+			 "fd_hex_prism",
+			 { "h_x", "h_y" },
+			 { "float", "float" },
+			 { "100.0", "30.0" },
+			 "FD", "dist_api", "hex_prism"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::tri_prism,
+			 "fd_tri_prism",
+			 { "h_x", "h_y" },
+			 { "float", "float" },
+			 { "100.0", "30.0" },
+			 "FD", "dist_api", "tri_prism"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::triangle,
+			 "fd_triangle",
+			 { "a", "b", "c" },
+			 { "PT", "PT", "PT" },
+			 { "", "", ""},
+			 "FD", "dist_api", "triangle"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::quad,
+			 "fd_quad",
+			 { "a", "b", "c", "d" },
+			 { "PT","PT", "PT", "PT" },
+			 { "", "", "", "" },
+			 "FD", "dist_api", "quad"));
+#endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::line,
+			 "fd_line",
+			 { "start", "end", "dist" },
+			 { "PT", "PT", "float" },
+			 { "", "", "10.0" },
+			 "FD", "dist_api", "line"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::min,
+			 "fd_min",
+			 { "a1", "a2" },
+			 { "FD", "FD" },
+			 { "", "" },
+			 "FD", "dist_api", "min"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::max,
+			 "fd_max",
+			 { "a1", "a2" },
+			 { "FD", "FD" },
+			 { "", "" },
+			 "FD", "dist_api", "max"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::and_not,
+			 "fd_and_not",
+			 { "a1", "a2" },
+			 { "FD", "FD" },
+			 { "", "" },
+			 "FD", "dist_api", "and_not"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vector_volume_api, &GameApi::VectorVolumeApi::normal,
+			 "fd_normal",
+			 { "fd" },
+			 { "FD" },
+			 { "" },
+			 "VO", "vector_volume_api", "normal"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::render,
+			 "fd_render",
+			 { "obj", "color", "pos", "u_x", "u_y", "u_z", "sx", "sy" },
+			 { "FD", "COV", "PT", "V", "V", "V", "int", "int" },
+			 { "", "", "", "", "", "", "100", "100" },
+			 "BM", "dist_api", "render"));
+
   return vec;
 }
 std::vector<GameApiItem*> colorvolumeapi_functions()

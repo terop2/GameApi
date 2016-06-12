@@ -867,6 +867,29 @@ EXPORT GameApi::COV GameApi::ColorVolumeApi::from_volume(O obj, unsigned int col
   return add_color_volume(e, new ColorVolumeFromVolumeObject(obj2, col_true, col_false));
 }
 
+class NormalVectorVolume2 : public VectorVolumeObject
+{
+public:
+  NormalVectorVolume2(FloatVolumeObject *obj, float stepsize) : obj(obj), stepsize(stepsize) { }
+  Vector VectorValue(Point p) const
+  {
+    float val = obj->FloatValue(p);
+    float val_x = obj->FloatValue(p+Vector(stepsize,0.0,0.0));
+    float val_y = obj->FloatValue(p+Vector(0.0, stepsize, 0.0));
+    float val_z = obj->FloatValue(p+Vector(0.0, 0.0, stepsize));
+
+    float dx = val_x - val;
+    float dy = val_y - val;
+    float dz = val_z - val;
+    dx/=stepsize;
+    dy/=stepsize;
+    dz/=stepsize;
+    return Vector(dx,dy,dz);
+  }  
+private:
+  FloatVolumeObject *obj;
+  float stepsize;
+};
 class NormalVectorVolume : public VectorVolumeObject
 {
 public:
@@ -1013,6 +1036,11 @@ EXPORT GameApi::VO GameApi::VectorVolumeApi::normal(FD fd)
 {
   DistanceRenderable *dist = find_distance(e, fd);
   return add_vector_volume(e, new NormalVectorVolume(dist));
+}
+EXPORT GameApi::VO GameApi::VectorVolumeApi::normal2(FO fo, float stepsize)
+{
+  FloatVolumeObject *fvo = find_float_volume(e, fo);
+  return add_vector_volume(e, new NormalVectorVolume2(fvo, stepsize));
 }
 
 class FloatVolumeFromVolume : public FloatVolumeObject
@@ -1355,8 +1383,8 @@ public:
   RoundCubeDistance(Point start, Point end, float r) : start(start), end(end), r(r) {}
   float distance(Point p) const
   {
-    p-=Vector(start);
-    Vector b = end-start;
+    p-=Vector(start+end)/2;
+    Vector b = Vector(end-start)/2;
     if (p.x<0.0) p.x=-p.x;
     if (p.y<0.0) p.y=-p.y;
     if (p.z<0.0) p.z=-p.z;
@@ -1461,4 +1489,24 @@ EXPORT GameApi::BM GameApi::DistanceFloatVolumeApi::render(FD obj, COV colors, P
   Vector *u_zI = find_vector(e, u_z);
   Bitmap<Color> *bm = new RenderDistance(*posI, *u_xI, *u_yI, *u_zI, *dist, *colorsI, sx,sy);
   return add_color_bitmap2(e, bm);
+}
+class NormalVectorVolumeFaceColl : public ForwardFaceCollection
+{
+public:
+  NormalVectorVolumeFaceColl(FaceCollection *coll, VectorVolumeObject *s) : ForwardFaceCollection(*coll), s(s) { }
+  virtual Vector PointNormal(int face, int point) const { 
+    Point p = ForwardFaceCollection::FacePoint(face,point);
+    Vector v = s->VectorValue(p);
+    v/=v.Dist();
+    return v;
+  }
+
+private:
+  VectorVolumeObject *s;
+};
+EXPORT GameApi::P GameApi::VectorVolumeApi::setup_normal(P orig, VO v)
+{
+  FaceCollection *coll = find_facecoll(e, orig);
+  VectorVolumeObject *s = find_vector_volume(e, v);
+  return add_polygon2(e, new NormalVectorVolumeFaceColl(coll, s),1);
 }

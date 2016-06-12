@@ -421,26 +421,32 @@ GameApi::SP GameApi::MainLoopApi::screenspace()
 }
 EXPORT void GameApi::MainLoopApi::outline_first()
 {
+#ifndef EMSCRIPTEN
   glClearStencil(0);
   glClear(GL_STENCIL_BUFFER_BIT);
   glEnable(GL_STENCIL_TEST);
   glStencilFunc(GL_ALWAYS, 1, -1);
   glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
   glColor4f(1.0,1.0,1.0,1.0);
+#endif
 }
 EXPORT void GameApi::MainLoopApi::outline_second()
 {
+#ifndef EMSCRIPTEN
   glStencilFunc(GL_NOTEQUAL, 1, -1);
   glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
   glLineWidth(3);
   glEnable(GL_LINE_SMOOTH);
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+#endif
 }
 EXPORT void GameApi::MainLoopApi::outline_third()
 {
+#ifndef EMSCRIPTEN
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glDisable(GL_STENCIL_TEST);
   //glDisable(GL_DEPTH_TEST);
+#endif
 }
 EXPORT void GameApi::MainLoopApi::outline_disable()
 {
@@ -598,7 +604,7 @@ struct LogoEnv
   GameApi::SH texture;
   GameApi::SH arr;
 };
-LogoEnv *logo_env;
+LogoEnv *logo_env = 0;
 bool GameApi::MainLoopApi::logo_iter()
 {
   LogoEnv *env = logo_env;

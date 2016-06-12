@@ -1168,6 +1168,8 @@ public:
 	IMPORT VectorVolumeApi(Env &e) : e(e) { }
 	IMPORT VO function(std::function<V(float x, float y, float z)> f);
 	IMPORT VO normal(FD fd);
+  IMPORT VO normal2(FO fo, float stepsize);
+  IMPORT P setup_normal(P orig, VO v);
 private:
   VectorVolumeApi(const VectorVolumeApi&);
   void operator=(const VectorVolumeApi&);
@@ -3003,6 +3005,7 @@ private:
     }
     void render_outline(SH sh_new)
     {
+#ifndef EMSCRIPTEN
       SH sh2 = sh;
       ev.mainloop_api.outline_first();
       render();
@@ -3015,6 +3018,9 @@ private:
       ev.mainloop_api.outline_third();
       //render();
       ev.mainloop_api.outline_disable();
+#else
+      render();
+#endif
     }
     void render() {
       shapi.use(sh);
@@ -3065,6 +3071,7 @@ private:
     }
     void render_one_outline(int x, int y, SH sh_new)
     {
+#ifndef EMSCRIPTEN
       ev.mainloop_api.outline_first();
       render_one(x,y);
       ev.shader_api.use(sh_new);
@@ -3073,6 +3080,9 @@ private:
       ev.shader_api.use(sh);
       ev.mainloop_api.outline_third();
       ev.mainloop_api.outline_disable();
+#else
+      render_one(x,y);
+#endif
     }
   public:
     void set_pos(float pos_x, float pos_y, float pos_z)

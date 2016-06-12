@@ -210,6 +210,7 @@ struct Envi {
 
   std::string filename;
   std::vector<DllData> dlls;
+  bool logo_shown = true;
 };
 void add_to_canvas(GuiApi &gui, W canvas, W item)
 {
@@ -349,6 +350,17 @@ std::ostream &operator<<(std::ostream &o, const std::vector<T> &vec)
 void iter(void *arg)
 {
   Envi *env = (Envi*)arg;
+
+#if 1
+  if (env->logo_shown)
+    {
+      bool b = env->ev->mainloop_api.logo_iter();
+      if (b) { env->logo_shown = false; }
+      return;
+    }
+#endif
+
+  env->ev->shader_api.use(env->sh);
 
     env->ev->mainloop_api.clear();
     //env->ev->mainloop_api.clear_3d();
@@ -770,6 +782,23 @@ void iter(void *arg)
 								   -300.0, 300.0);
 			    env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 			  }
+			else
+			  if (type=="FD")
+			    {
+			      FD fd;
+			      fd.id = id;
+			      PT pt = env->ev->point_api.point(-300.0, -300.0, -300.0);
+			      V u_x = env->ev->vector_api.vector(600.0, 0.0, 0.0);
+			      V u_y = env->ev->vector_api.vector(0.0, 600.0, 0.0);
+			      V u_z = env->ev->vector_api.vector(0.0, 0.0, 600.0);
+			      O o = env->ev->volume_api.cube(-300.0, 300.0,
+						       -300.0, 300.0,
+						       -300.0, 300.0);
+			      COV cov = env->ev->color_volume_api.from_volume(o, 0xffffffff, 0xff000000);
+			      BM bm = env->ev->dist_api.render(fd, cov, pt, u_x, u_y, u_z, 300, 300);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+
+			    }
 		    else
 		    if (type=="BM")
 		      {
@@ -1340,6 +1369,8 @@ int main(int argc, char *argv[]) {
   ev.mainloop_api.init(sh, screen_x,screen_y);
   ev.mainloop_api.init(sh2, screen_x,screen_y);
 
+
+
   ev.mainloop_api.switch_to_3d(false, sh3, screen_x, screen_y);
   //ev.mainloop_api.switch_to_3d(false, sh_arr, screen_x, screen_y);
   ev.shader_api.use(sh);
@@ -1494,6 +1525,9 @@ int main(int argc, char *argv[]) {
   env.screen_size_x = screen_x;
   env.screen_size_y = screen_y;
   env.filename = filename;
+
+  //ev.mainloop_api.display_logo(ev);
+
 
 #ifndef EMSCRIPTEN
   while(1) {
