@@ -70,6 +70,7 @@ struct Envi {
   SH sh;
 #endif
   SH sh3;
+  int logo_shown = true;
 } env;
 
 std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e);
@@ -1019,6 +1020,13 @@ bool update_towering_allowed(int x, int y, bool left, bool white)
 
 void iter()
 {
+  if (env.logo_shown)
+    {
+      bool b = env.ev->mainloop_api.logo_iter();
+      if (b) { env.logo_shown = false; }
+      return;
+    }
+
   //float fr=0.0;
   //float frspeed=0.01;
     env.fr+=env.frspeed;
@@ -1231,7 +1239,7 @@ void iter()
     env.prevbutton = e.button;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
   GameApi::Env *e = new GameApi::Env;
   EveryApi *ev1 = new EveryApi(*e);
   EveryApi &ev = *ev1;
@@ -1251,6 +1259,14 @@ int main() {
   ev.mainloop_api.init_3d(sh);
   ev.mainloop_api.init_3d(sh2);
   ev.mainloop_api.init_3d(sh3);
+
+  if (argc==2 && std::string(argv[1])=="--generate-logo")
+    {
+      std::cout << "Generating Logo" << std::endl;
+      ev.mainloop_api.save_logo(ev);
+      exit(0);
+    }
+
   ev.shader_api.use(sh);
   ev.shader_api.set_var(sh, "light_dir", 1.0, 1.0, 1.0);
 
@@ -1344,7 +1360,9 @@ int main() {
   //PolygonObj *obj = new PolygonObj(ev, p, sh);
   //obj->prepare();
   //env.cursor = obj;
-  e->free_memory();
+  //e->free_memory();
+  ev.mainloop_api.display_logo(ev);
+
 #ifndef EMSCRIPTEN
   while(1) {
     iter();
