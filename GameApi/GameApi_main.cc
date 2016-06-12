@@ -2,6 +2,10 @@
 #include "GameApi_h.hh"
 #include <chrono>
 
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
+
 EXPORT GameApi::MainLoopApi::MainLoopApi(Env &e) : frame(0.0), time(0.0), e(e)  
 {
   priv = (void*)new MainLoopPriv;
@@ -573,4 +577,97 @@ GameApi::ML GameApi::MainLoopApi::array_ml(std::vector<ML> vec)
       vec2.push_back(find_main_loop(e,vec[i]));
     }
   return add_main_loop(e, new ArrayMainLoop(vec2));
+}
+void GameApi::MainLoopApi::save_logo(EveryApi &ev)
+{
+  BM I1=ev.bitmap_api.newbitmap(500,300,0x00000000);
+  Ft I2=ev.font_api.newfont("FreeSans.ttf",80,80);
+  BM I3=ev.font_api.font_string(I2,"GameApi",5);
+  BM I4=ev.bitmap_api.blitbitmap(I1,I3,0,0);
+  Ft I5=ev.font_api.newfont("FreeSans.ttf",18,18);
+  BM I6=ev.font_api.font_string(I5,"EmscriptenEdition",5);
+  BM I7=ev.bitmap_api.blitbitmap(I4,I6,90,88);
+  ev.bitmap_api.savebitmap(I7, "logo.ppm", true);
+}
+int frame_count=0;
+struct LogoEnv
+{
+  GameApi::EveryApi *ev;
+  GameApi::ML res;
+  GameApi::SH color;
+  GameApi::SH texture;
+  GameApi::SH arr;
+};
+LogoEnv *logo_env;
+bool GameApi::MainLoopApi::logo_iter()
+{
+  LogoEnv *env = logo_env;
+  GameApi::MainLoopApi::Event event = env->ev->mainloop_api.get_event();
+  env->ev->mainloop_api.clear_3d();
+  env->ev->mainloop_api.execute_ml(env->res, env->color, env->texture, env->arr, event);
+  env->ev->mainloop_api.swapbuffers();
+  frame_count++;
+  if (frame_count>300) {
+    return true;
+  }
+  return false;
+}
+void GameApi::MainLoopApi::display_logo(EveryApi &ev)
+{
+#ifdef EMSCRIPTEN
+  BM I7 = ev.bitmap_api.loadbitmap("logo.ppm");
+  BM I7a = ev.bitmap_api.flip_y(I7);
+  //P I8=ev.polygon_api.color_map(I7,500,300,0);
+  //P I9=ev.polygon_api.rotatex(I8,3.14159);
+  //P I10=ev.polygon_api.scale(I9,2,2,2);
+  //P I11=ev.polygon_api.translate(I10,-400,200,0);
+  //VA I12=ev.polygon_api.create_vertex_array(I11,true);
+  //ML I13=ev.polygon_api.render_vertex_array_ml(ev,I12);
+  VA va = ev.sprite_api.create_vertex_array(I7a);
+  ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, va);
+MN I14=ev.move_api.empty();
+ MN I14a=ev.move_api.scale2(I14, 4,4,4);
+ MN I14b=ev.move_api.trans2(I14a,-800,400,0);
+MN I15=ev.move_api.rotatey(I14b,-1.59);
+MN I16=ev.move_api.rotate(I15,0,30,0,0,0,0,1,0,1.59);
+ MN I16a=ev.move_api.trans2(I16, -800,-1400,0);
+ML I17=ev.move_api.move_ml(ev,I13,I16a);
+ ML res = I17;
+#else
+BM I18=ev.bitmap_api.newbitmap(500,300,0x00000000);
+Ft I19=ev.font_api.newfont("FreeSans.ttf",80,80);
+BM I20=ev.font_api.font_string(I19,"GameApi",5);
+BM I21=ev.bitmap_api.blitbitmap(I18,I20,0,0);
+Ft I22=ev.font_api.newfont("FreeSans.ttf",18,18);
+BM I23=ev.font_api.font_string(I22,"Win32Edition",5);
+BM I24=ev.bitmap_api.blitbitmap(I21,I23,160,88);
+P I25=ev.polygon_api.color_map(I24,500,300,0);
+P I26=ev.polygon_api.rotatex(I25,3.14159);
+P I27=ev.polygon_api.scale(I26,2,2,2);
+P I28=ev.polygon_api.translate(I27,-400,200,0);
+VA I29=ev.polygon_api.create_vertex_array(I28,true);
+ML I30=ev.polygon_api.render_vertex_array_ml(ev,I29);
+MN I31=ev.move_api.empty();
+MN I32=ev.move_api.rotatey(I31,-1.59);
+MN I33=ev.move_api.rotate(I32,0,30,0,0,0,0,1,0,1.59);
+ML I34=ev.move_api.move_ml(ev,I30,I33);
+ ML res = I34;
+#endif
+ SH color = ev.shader_api.colour_shader();  
+ SH texture = ev.shader_api.texture_shader();
+#ifdef EMSCRIPTEN
+ SH arr = texture;
+#else
+ SH arr = ev.shader_api.texture_array_shader();
+#endif
+ ev.mainloop_api.init_3d(color);
+ ev.mainloop_api.init_3d(texture);
+ ev.mainloop_api.init_3d(arr);
+ LogoEnv *env = new LogoEnv;
+ env->ev = &ev;
+ env->res = res;
+ env->color = color;
+ env->texture = texture;
+ env->arr = arr;
+ logo_env = env;
 }

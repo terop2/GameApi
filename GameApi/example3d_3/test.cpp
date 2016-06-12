@@ -17,13 +17,20 @@ struct Envi {
   float speed_x = 1.0;
   float speed_y = 1.0;
   InteractionApi::Quake_data data;
+  bool logo_shown = true;
 };
 
 void iter(void *arg)
 {
   Envi *env = (Envi*)arg;
+  if (env->logo_shown)
+    {
+      bool b = env->ev->mainloop_api.logo_iter();
+      if (b) { env->logo_shown = false; }
+      return;
+    }
 
-    env->ev->mainloop_api.clear_3d(0xffffffff);
+    env->ev->mainloop_api.clear_3d(0xff000000);
 
     M a_m = env->ev->matrix_api.yrot(env->rot_y+3.14159);
     M a_m2 = env->ev->matrix_api.trans(0.0,0.0,400.0);
@@ -65,7 +72,7 @@ void iter(void *arg)
 
 }
 
-int main() {
+int main(int argc, char *argv[]) {
   Env e;
   EveryApi ev(e);
 
@@ -81,7 +88,12 @@ int main() {
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);
 
-
+  if (argc==2 && std::string(argv[1])=="--generate-logo")
+    {
+      std::cout << "Generating Logo" << std::endl;
+      ev.mainloop_api.save_logo(ev);
+      exit(0);
+    }
 
   //P p3 = ev.polygon_api.cube(0.0, 100.0, 0.0, 100.0, 0.0, 100.0);
 
@@ -110,6 +122,8 @@ int main() {
 
   env.ev = &ev;
   env.poly = &poly;
+
+  ev.mainloop_api.display_logo(ev);
 
 #ifndef EMSCRIPTEN
   while(1) {

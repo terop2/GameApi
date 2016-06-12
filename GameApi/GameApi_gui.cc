@@ -278,6 +278,7 @@ public:
     update(p, -1,-1, -1);
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
+    shift=false;
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
@@ -293,6 +294,9 @@ public:
       {
 	active = false;
       }
+    std::cout << type << " " << ch << std::endl;
+    if (type==768 && (ch==1073742049||ch==1073742053)) { shift=true; std::cout << "Shift1" << std::endl; }
+    if (type==769 && (ch==1073742049||ch==1073742053)) { shift=false; std::cout << "Shift2" << std::endl; }
 
     if (firsttime)
       {
@@ -307,7 +311,8 @@ public:
     if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
 #endif
     if (ch==13) { ch='\n'; }
-    if (active)
+    if (shift) { ch = std::toupper(ch); }
+    if (active && type==768)
       {
 	int s = allowed_chars.size();
 	for(int i=0;i<s;i++)
@@ -376,6 +381,7 @@ private:
   GameApi::VA rendered_bitmap_va;
   bool active;
   int x_gap;
+  bool shift;
 };
 
 
@@ -3808,6 +3814,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "MN", "float" },
 			 { "", "0.0" },
 			 "MN", "move_api", "change_time"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::time_repeat,
+			 "anim_repeat",
+			 { "next", "start_time", "repeat_duration" },
+			 { "MN", "float", "float" },
+			 { "", "0.0", "100.0" },
+			 "MN", "move_api", "time_repeat"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::move_ml,
 			 "move_ml",
 			 { "ev", "ml", "mn" },

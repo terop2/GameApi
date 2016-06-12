@@ -204,6 +204,9 @@ public:
   IMPORT unsigned int rand_max();
   IMPORT int get_screen_width();
   IMPORT int get_screen_height();
+  IMPORT bool logo_iter();
+  IMPORT void save_logo(EveryApi &ev);
+  IMPORT void display_logo(EveryApi &ev);
   struct Event
   {
     int type;
@@ -891,6 +894,7 @@ public:
 	    float v_x, float v_y, float v_z, float angle);
   MN compress(MN next, float start_time, float end_time);
   MN change_time(MN next, float d_time);
+  MN time_repeat(MN next, float start_time, float repeat_duration);
   void set_matrix(MN n, M m);
   M get_matrix(MN n, float time);
   ML move_ml(EveryApi &ev, ML ml, MN mn);

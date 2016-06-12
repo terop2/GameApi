@@ -2291,6 +2291,29 @@ GameApi::MN GameApi::MovementNode::rotatez(MN next, float angle)
   Movement *nxt = find_move(e, next);
   return add_move(e, new MatrixMovement(nxt, Matrix::ZRotation(angle)));  
 }
+class TimeRepeatMovement : public Movement
+{
+public:
+  TimeRepeatMovement(Movement *m, float start_time, float repeat_duration) : m(m), start_time(start_time), repeat_duration(repeat_duration) { }
+  void set_matrix(Matrix mm) { }
+  Matrix get_whole_matrix(float time) const
+  {
+    if (time < start_time) { return m->get_whole_matrix(time); }
+    float d = time - start_time;
+    float dd = fmod(d,repeat_duration);
+    return m->get_whole_matrix(start_time+dd);
+  }
+private:
+  Movement *m;
+  float start_time;
+  float repeat_duration;
+};
+GameApi::MN GameApi::MovementNode::time_repeat(MN next, float start_time,
+					       float repeat_duration)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new TimeRepeatMovement(nxt, start_time, repeat_duration));
+}
 
 GameApi::MN GameApi::MovementNode::change_time(MN next, float d_time)
 {
@@ -2447,3 +2470,4 @@ GameApi::ML GameApi::MovementNode::wasd(EveryApi &ev, GameApi::ML ml,
   GameApi::ML m4 = key_event(ev, m3, d, 0x300, 'd',-1, duration);
   return m4;
 }
+
