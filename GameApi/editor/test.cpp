@@ -200,7 +200,7 @@ struct Envi {
   std::vector<W> menus;
   int opened_menu_num;
   bool state;
-  bool ctrl;
+  bool ctrl = false;
   int unique_id_counter;
   SH sh2;
   SH sh;
@@ -437,7 +437,7 @@ void iter(void *arg)
 	  {
 	    env->ctrl = true;
 	  }
-	if (e.ch==1073742048 && e.type != 0x300)
+	if (e.ch==1073742048 && e.type == 0x301)
 	  {
 	    env->ctrl = false;
 	  }
@@ -452,7 +452,7 @@ void iter(void *arg)
 #ifndef EMSCRIPTEN
 	if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif
-	if (e.type != 0x300)
+	if (e.type != 0x300 && e.type != 0x301)
 	  {
 	    e.ch=-1;
 	  }
@@ -1235,7 +1235,7 @@ int main(int argc, char *argv[]) {
   Env &e = *e2;
   EveryApi ev(*e2);
   
-
+  
 
 
   Envi env;
@@ -1288,6 +1288,8 @@ int main(int argc, char *argv[]) {
     {
       if (std::string(argv[1])=="--generate-font-atlas")
 	{
+	  std::cout << "Generating logo." << std::endl;
+	  ev.mainloop_api.save_logo(ev);
 	  std::cout << "Generating font atlas. " << std::endl;
 	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><[]";
 	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 10*font_scale,13*font_scale, 25*font_scale);
@@ -1314,6 +1316,7 @@ int main(int argc, char *argv[]) {
 	}
     }
 
+  ev.mainloop_api.display_logo(ev);
 
   FtA atlas = ev.font_api.load_atlas("atlas0.txt");
   FtA atlas2 = ev.font_api.load_atlas("atlas1.txt");

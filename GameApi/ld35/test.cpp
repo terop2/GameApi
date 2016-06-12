@@ -41,6 +41,8 @@ struct Envi {
   bool space=false;
   int space_count=0;
   bool damage = false;
+  bool logo_shown = true;
+  SH sh2;
 };
 
 P bee(EveryApi &ev)
@@ -267,6 +269,13 @@ P I36=ev.polygon_api.or_elem(I26,I35);
 void iter(void *arg)
 {
   Envi *env = (Envi*)arg;
+  if (env->logo_shown)
+    {
+      bool b = env->ev->mainloop_api.logo_iter();
+      if (b) { env->logo_shown = false; }
+      return;
+    }
+  env->ev->shader_api.use(env->sh2);
 
     env->ev->mainloop_api.clear_3d(0xff888888);
 
@@ -543,7 +552,7 @@ P poly_func(int face,
 }
 
 
-int main() {
+int main(int argc, char *argv[]) {
   Env e;
   EveryApi ev(e);
 
@@ -561,6 +570,14 @@ int main() {
   ev.mainloop_api.init_3d(sh);
   ev.mainloop_api.init_3d(sh2);
   ev.mainloop_api.alpha(true);
+
+  if (argc==2 && std::string(argv[1])=="--generate-logo")
+    {
+      std::cout << "Generating Logo" << std::endl;
+      ev.mainloop_api.save_logo(ev);
+      exit(0);
+    }
+
 
 #if 1
   ev.tracker_api.play_ogg("bee.ogg");
@@ -663,7 +680,9 @@ int main() {
   env.t_instances = t_instances;
   env.e_instances = e_instances;
   env.sky_o = &sky_o;
+  env.sh2 = sh2;
 
+  ev.mainloop_api.display_logo(ev);
 
 #ifndef EMSCRIPTEN
   while(1) {
