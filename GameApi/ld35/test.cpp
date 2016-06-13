@@ -682,6 +682,7 @@ int main(int argc, char *argv[]) {
   env.sky_o = &sky_o;
   env.sh2 = sh2;
 
+  ev.mainloop_api.reset_time();
   ev.mainloop_api.display_logo(ev);
 
 #ifndef EMSCRIPTEN

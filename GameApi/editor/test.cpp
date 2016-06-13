@@ -1345,7 +1345,6 @@ int main(int argc, char *argv[]) {
 	}
     }
 
-  ev.mainloop_api.display_logo(ev);
 
   FtA atlas = ev.font_api.load_atlas("atlas0.txt");
   FtA atlas2 = ev.font_api.load_atlas("atlas1.txt");
@@ -1363,18 +1362,14 @@ int main(int argc, char *argv[]) {
   BM atlas_bm2 = ev.float_bitmap_api.to_grayscale_color(atlas_bm2_b,255,255,255,255, 0,0,0,0);
   BM atlas_bm3 = ev.float_bitmap_api.to_grayscale_color(atlas_bm3_b, 255,255,255,255, 0,0,0,0);
 #endif
+
+
   // rest of the initializations
   ev.mainloop_api.init_3d(sh3, screen_x, screen_y);
   ev.mainloop_api.init_3d(sh_arr, screen_x,screen_y);
   ev.mainloop_api.init(sh, screen_x,screen_y);
   ev.mainloop_api.init(sh2, screen_x,screen_y);
 
-
-
-  ev.mainloop_api.switch_to_3d(false, sh3, screen_x, screen_y);
-  //ev.mainloop_api.switch_to_3d(false, sh_arr, screen_x, screen_y);
-  ev.shader_api.use(sh);
-  ev.mainloop_api.alpha(true);
   
   GuiApi gui(e, ev, sh);
   
@@ -1401,6 +1396,8 @@ int main(int argc, char *argv[]) {
       menus.push_back(txt_2);
     }
 			 
+
+
 
   //std::vector<std::string> vec3;
   //vec3.push_back("newbitmap");
@@ -1476,6 +1473,8 @@ int main(int argc, char *argv[]) {
 
   ev.mod_api.insert_links(ev, gui, mod, 0, env.connect_links, canvas, env.connect_targets, sh2, sh);
   add_to_canvas(gui, canvas, env.connect_links);
+
+
   W canvas_area = gui.scroll_area(canvas, screen2_x-20, screen2_y-20, screen_y);
   W scrollbar_y = gui.scrollbar_y(20, screen2_y-20, sy);
   W scrollbar_x = gui.scrollbar_x(screen2_x-20, 20, sx); 
@@ -1526,8 +1525,17 @@ int main(int argc, char *argv[]) {
   env.screen_size_y = screen_y;
   env.filename = filename;
 
-  //ev.mainloop_api.display_logo(ev);
+  ev.mainloop_api.reset_time();
+  ev.mainloop_api.display_logo(ev);
 
+
+  ev.mainloop_api.switch_to_3d(false, sh3, screen_x, screen_y);
+  //ev.mainloop_api.switch_to_3d(false, sh_arr, screen_x, screen_y);
+  ev.shader_api.use(sh);
+  ev.mainloop_api.alpha(true);
+
+
+  //ev.mainloop_api.display_logo(ev);
 
 #ifndef EMSCRIPTEN
   while(1) {

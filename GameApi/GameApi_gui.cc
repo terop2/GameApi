@@ -3675,6 +3675,12 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "FD" },
 			 { "" },
 			 "VO", "vector_volume_api", "normal"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::render2,
+			 "fd_render2",
+			 { "ev", "obj", "sx", "sy" },
+			 { "EveryApi&", "FD", "int", "int" },
+			 { "ev", "", "300", "300" },
+			 "BM", "dist_api", "render2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::render,
 			 "fd_render",
 			 { "obj", "color", "pos", "u_x", "u_y", "u_z", "sx", "sy" },
@@ -3711,6 +3717,12 @@ std::vector<GameApiItem*> colorvolumeapi_functions()
 			 { "COV", "COV", "float" },
 			 { "", "", "0.5" },
 			 "COV", "color_volume_api", "mix"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::color_volume_api, &GameApi::ColorVolumeApi::directcolor,
+			 "cov_color_from_normal",
+			 { "normal" },
+			 { "VO" },
+			 { "" },
+			 "COV", "color_volume_api", "directcolor"));
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::color_volume_api, &GameApi::ColorVolumeApi::or_cov,
 			 "cov_or",

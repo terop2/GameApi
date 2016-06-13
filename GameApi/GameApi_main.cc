@@ -351,6 +351,10 @@ EXPORT float GameApi::MainLoopApi::get_time()
 {
   return SDL_GetTicks()-time;
 }
+EXPORT void GameApi::MainLoopApi::reset_time()
+{
+  time = SDL_GetTicks();
+}
 EXPORT int GameApi::MainLoopApi::get_framenum()
 {
   return frame;

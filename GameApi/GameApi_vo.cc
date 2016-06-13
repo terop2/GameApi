@@ -1478,7 +1478,16 @@ EXPORT GameApi::PT GameApi::DistanceFloatVolumeApi::ray_shape_intersect(FD shape
   }
   return add_point(e, p.x,p.y,p.z);
 }
-
+EXPORT GameApi::BM GameApi::DistanceFloatVolumeApi::render2(EveryApi &ev, FD obj, int sx, int sy)
+{
+  VO vo = ev.vector_volume_api.normal(obj);
+  COV cov = ev.color_volume_api.directcolor(vo);
+  PT pos = ev.point_api.point(-300.0, -300.0, -300.0);
+  V u_x = ev.vector_api.vector(600.0, 0.0, 0.0);
+  V u_y = ev.vector_api.vector(0.0, 600.0, 0.0);
+  V u_z = ev.vector_api.vector(0.0, 0.0, 600.0);
+  return render(obj, cov, pos, u_x, u_y, u_z, sx,sy);
+}
 EXPORT GameApi::BM GameApi::DistanceFloatVolumeApi::render(FD obj, COV colors, PT pos, V u_x, V u_y, V u_z, int sx, int sy)
 {
   DistanceRenderable *dist = find_distance(e, obj);
