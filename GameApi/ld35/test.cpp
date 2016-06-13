@@ -272,7 +272,12 @@ void iter(void *arg)
   if (env->logo_shown)
     {
       bool b = env->ev->mainloop_api.logo_iter();
-      if (b) { env->logo_shown = false; }
+      if (b) { 
+	env->logo_shown = false; 
+#if 1
+  env->ev->tracker_api.play_ogg("bee.ogg");
+#endif
+      }
       return;
     }
   env->ev->shader_api.use(env->sh2);
@@ -569,7 +574,6 @@ int main(int argc, char *argv[]) {
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);
   ev.mainloop_api.init_3d(sh2);
-  ev.mainloop_api.alpha(true);
 
   if (argc==2 && std::string(argv[1])=="--generate-logo")
     {
@@ -579,9 +583,6 @@ int main(int argc, char *argv[]) {
     }
 
 
-#if 1
-  ev.tracker_api.play_ogg("bee.ogg");
-#endif
 
 
   TS tri_strip = ev.ts_api.load("test.tri");
@@ -684,6 +685,7 @@ int main(int argc, char *argv[]) {
 
   ev.mainloop_api.reset_time();
   ev.mainloop_api.display_logo(ev);
+  ev.mainloop_api.alpha(true);
 
 #ifndef EMSCRIPTEN
   while(1) {
