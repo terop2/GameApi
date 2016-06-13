@@ -123,6 +123,7 @@ int main(int argc, char *argv[]) {
   env.ev = &ev;
   env.poly = &poly;
 
+  ev.mainloop_api.reset_time();
   ev.mainloop_api.display_logo(ev);
 
 #ifndef EMSCRIPTEN

@@ -1249,7 +1249,11 @@ int main(int argc, char *argv[]) {
   // shader initialization
   ev.shader_api.load_default();
   //SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:light:snoise", "colour:light:snoise");
+#ifndef EMSCRIPTEN
   SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:passall", "colour:ambient:diffuse:specular");
+#else
+  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:passall", "colour:light");
+#endif
   SH sh2 = ev.shader_api.get_normal_shader("comb", "comb", "", "colour", "colour");
   SH sh3 = ev.shader_api.get_normal_shader("comb", "comb", "", "colour", "white");
   //SH sh2 = ev.shader_api.get_normal_shader("comb", "comb", "", "texture", "blur");
@@ -1361,8 +1365,8 @@ int main(int argc, char *argv[]) {
   //obj->prepare();
   //env.cursor = obj;
   //e->free_memory();
-  ev.mainloop_api.display_logo(ev);
   ev.mainloop_api.reset_time();
+  ev.mainloop_api.display_logo(ev);
 
 #ifndef EMSCRIPTEN
   while(1) {

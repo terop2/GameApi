@@ -210,7 +210,7 @@ struct Envi {
 
   std::string filename;
   std::vector<DllData> dlls;
-  bool logo_shown = true;
+  bool logo_shown = false;
 };
 void add_to_canvas(GuiApi &gui, W canvas, W item)
 {
@@ -351,7 +351,7 @@ void iter(void *arg)
 {
   Envi *env = (Envi*)arg;
 
-#if 1
+#if 0
   if (env->logo_shown)
     {
       bool b = env->ev->mainloop_api.logo_iter();
@@ -1317,8 +1317,8 @@ int main(int argc, char *argv[]) {
     {
       if (std::string(argv[1])=="--generate-font-atlas")
 	{
-	  std::cout << "Generating logo." << std::endl;
-	  ev.mainloop_api.save_logo(ev);
+	  //std::cout << "Generating logo." << std::endl;
+	  //ev.mainloop_api.save_logo(ev);
 	  std::cout << "Generating font atlas. " << std::endl;
 	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><[]";
 	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 10*font_scale,13*font_scale, 25*font_scale);
@@ -1525,8 +1525,8 @@ int main(int argc, char *argv[]) {
   env.screen_size_y = screen_y;
   env.filename = filename;
 
-  ev.mainloop_api.reset_time();
-  ev.mainloop_api.display_logo(ev);
+  //ev.mainloop_api.reset_time();
+  //ev.mainloop_api.display_logo(ev);
 
 
   ev.mainloop_api.switch_to_3d(false, sh3, screen_x, screen_y);
