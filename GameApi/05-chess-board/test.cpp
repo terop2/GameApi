@@ -1362,6 +1362,7 @@ int main(int argc, char *argv[]) {
   //env.cursor = obj;
   //e->free_memory();
   ev.mainloop_api.display_logo(ev);
+  ev.mainloop_api.reset_time();
 
 #ifndef EMSCRIPTEN
   while(1) {
