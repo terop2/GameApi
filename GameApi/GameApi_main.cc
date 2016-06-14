@@ -564,6 +564,7 @@ public:
 	vec[i]->execute(e);
       }
   }
+  int shader_id() { return -1; }
 private:
   std::vector<MainLoopItem*> vec;
 };

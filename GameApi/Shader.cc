@@ -1373,7 +1373,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod);
-      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

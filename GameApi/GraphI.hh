@@ -288,12 +288,15 @@ struct MainLoopEnv
   int button;
 
   Matrix env;
+  std::string vertex_shader = "";
+  std::string fragment_shader = "";
 };
 
 class MainLoopItem
 {
 public:
   virtual void execute(MainLoopEnv &e)=0;
+  virtual int shader_id() { return -1; }
 };
 
 class ExprNode

@@ -294,7 +294,7 @@ public:
       {
 	active = false;
       }
-    std::cout << type << " " << ch << std::endl;
+    //std::cout << type << " " << ch << std::endl;
     if (type==768 && (ch==1073742049||ch==1073742053)) { shift=true; std::cout << "Shift1" << std::endl; }
     if (type==769 && (ch==1073742049||ch==1073742053)) { shift=false; std::cout << "Shift2" << std::endl; }
 
@@ -531,6 +531,10 @@ public:
     set_pos(p2);
     rot_y = 0.0;
     mat = ev.matrix_api.identity();
+    e.cursor_pos = ev.point_api.point(0.0,0.0,0.0);
+    e.type = -1;
+    e.ch = -1;
+    e.button = -1;
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
@@ -4265,6 +4269,30 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "EveryApi&", "VA" },
 			 { "ev", "" },
 			 "ML", "polygon_api", "render_vertex_array_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::shading_shader,
+			 "p_shading",
+			 { "ev", "mainloop", "level1", "level2", "level3" },
+			 { "EveryApi&", "ML", "unsigned int", "unsigned int", "unsigned int" },
+			 { "ev", "", "ff442211", "ffff8844", "ffffffff" },
+			 "ML", "polygon_api", "shading_shader"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::noise_shader,
+			 "p_noise",
+			 { "ev", "mainloop" },
+			 { "EveryApi&", "ML" },
+			 { "ev", "" },
+			 "ML", "polygon_api", "noise_shader"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::light_shader,
+			 "p_light",
+			 { "ev", "mainloop" },
+			 { "EveryApi&", "ML" },
+			 { "ev", "" },
+			 "ML", "polygon_api", "light_shader"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::toon_shader,
+			 "p_toon",
+			 { "ev", "mainloop" },
+			 { "EveryApi&", "ML" },
+			 { "ev", "" },
+			 "ML", "polygon_api", "toon_shader"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::array_ml,
 			 "array_ml",
