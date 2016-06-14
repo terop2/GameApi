@@ -2353,6 +2353,7 @@ public:
     //std::cout << "COMPARE true" << std::endl;
     return true;
   }
+  int shader_id() { return next->shader_id(); }
   void execute(MainLoopEnv &env)
   {
     bool b = compare(env);
@@ -2418,6 +2419,7 @@ public:
   void reset_time() {
     start_time = ev.mainloop_api.get_time();
   }
+  int shader_id() { return next->shader_id(); }
   void execute(MainLoopEnv &env)
   {
     GameApi::SH s1;

@@ -697,10 +697,21 @@ struct Envi
   float jump_start_frame;
   float jump_duration;
   float y_delta;
+  bool logo_shown=true;
 } env;
 
 void iter()
 {
+  if (env.logo_shown)
+    {
+      bool b = env.ev->mainloop_api.logo_iter();
+      if (b) { 
+	env.logo_shown = false; 
+      }
+      return;
+    }
+
+
    env.frame++;
    env.ev->shader_api.set_var(env.sh, "in_time",float(env.frame)*0.01f);
 #if 1
@@ -880,7 +891,7 @@ void iter()
     env.speed_y = env.speed*sin(env.rot_y+3.14159/2.0);
 }
 
-int main() {
+int main(int argc, char *argv[]) {
   srand(1);
   Env e;
   EveryApi ev(e);
@@ -945,6 +956,14 @@ int main() {
   ev.mainloop_api.init_3d(sh3);
   ev.mainloop_api.init_3d(sh4);
 #endif
+
+  if (argc==2 && std::string(argv[1])=="--generate-logo")
+    {
+      std::cout << "Generating Logo" << std::endl;
+      ev.mainloop_api.save_logo(ev);
+      exit(0);
+    }
+
 
   Models m;
 #if 1
@@ -1131,10 +1150,15 @@ int main() {
   env.y_delta = 0.0;
   env.lines_obj = &lines_obj;
   //env.sh2 = sh2;
+
+  ev.mainloop_api.reset_time();
+  ev.mainloop_api.display_logo(ev);
+  ev.mainloop_api.alpha(true);
+
 #ifndef EMSCRIPTEN
   while(1) {
     iter();
-    ev.mainloop_api.delay(10);
+    //ev.mainloop_api.delay(10);
   }
 #else
   emscripten_set_main_loop(iter, 60,1);

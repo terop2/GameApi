@@ -426,6 +426,8 @@ public:
   {
     api.save_model(poly, filename);
   }
+  int shader_id() { return -1; }
+
 private:
   GameApi::PolygonApi &api;
   GameApi::P poly;
@@ -2386,6 +2388,7 @@ public:
   {
     api.update_vertex_array(va,p,keep);
   }
+  int shader_id() { return -1; }
 private:
   GameApi::PolygonApi &api;
   GameApi::VA va;
@@ -2612,9 +2615,14 @@ EXPORT void GameApi::PolygonApi::update(VA va)
 class RenderVA : public MainLoopItem
 {
 public:
-  RenderVA(GameApi::EveryApi &ev, GameApi::PolygonApi &api, GameApi::VA va) : ev(ev), api(api), va(va) { }
+  RenderVA(GameApi::EveryApi &ev, GameApi::PolygonApi &api, GameApi::VA va) : ev(ev), api(api), va(va) 
+  {
+    shader.id = -1;
+  }
+  int shader_id() { return shader.id; }
   void execute(MainLoopEnv &e)
   { 
+
     GameApi::SH sh;
     if (ev.polygon_api.is_texture(va))
       {
@@ -2628,6 +2636,27 @@ public:
       {
 	sh.id = e.sh_color;
       }
+    if (shader.id==-1 && e.vertex_shader!="" && e.fragment_shader!="")
+      {
+	shader = ev.shader_api.get_normal_shader("comb", "comb", "", e.vertex_shader, e.fragment_shader);
+	ev.mainloop_api.init_3d(shader);
+	ev.mainloop_api.alpha(true); 
+
+      }
+
+    if (shader.id!=-1)
+      {
+	ev.shader_api.use(sh);
+	GameApi::M m = ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.use(shader);
+	ev.shader_api.set_var(shader, "in_MV", m);
+	ev.shader_api.set_var(shader, "in_T", m1);
+	ev.shader_api.set_var(shader, "in_N", m2);
+
+	sh = shader;
+      }
     ev.shader_api.use(sh);
     api.render_vertex_array(va);
   }
@@ -2635,7 +2664,173 @@ private:
   GameApi::EveryApi &ev;
   GameApi::PolygonApi &api;
   GameApi::VA va;
+  GameApi::SH shader;
 };
+class NoiseShaderML : public MainLoopItem
+{
+public:
+  NoiseShaderML(GameApi::EveryApi &ev, MainLoopItem *next) : ev(ev), next(next) 
+  {
+    //sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:snoise:light", "colour:snoise:light");
+    //ev.mainloop_api.init_3d(sh);
+    //ev.mainloop_api.alpha(true); 
+  }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    if (ee.vertex_shader=="") { ee.vertex_shader+="colour"; }
+    if (ee.vertex_shader!="") { ee.vertex_shader+=":"; }
+    ee.vertex_shader+="snoise";
+    if (ee.fragment_shader=="") { ee.fragment_shader+="colour"; }
+    if (ee.fragment_shader!="") { ee.fragment_shader+=":"; }
+    ee.fragment_shader+="snoise";
+    next->execute(ee);
+  }
+  int shader_id() { return next->shader_id(); }
+
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  GameApi::SH sh;
+};
+
+class LightShaderML : public MainLoopItem
+{
+public:
+  LightShaderML(GameApi::EveryApi &ev, MainLoopItem *next) : ev(ev), next(next) 
+  {
+    //sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:snoise:light", "colour:snoise:light");
+    //ev.mainloop_api.init_3d(sh);
+    //ev.mainloop_api.alpha(true); 
+  }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    if (ee.vertex_shader=="") { ee.vertex_shader+="colour"; }
+    if (ee.vertex_shader!="") { ee.vertex_shader+=":"; }
+    ee.vertex_shader+="light";
+    if (ee.fragment_shader=="") { ee.fragment_shader+="colour"; }
+    if (ee.fragment_shader!="") { ee.fragment_shader+=":"; }
+    ee.fragment_shader+="light";
+    next->execute(ee);
+  }
+  int shader_id() { return next->shader_id(); }
+
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  GameApi::SH sh;
+};
+
+class ToonShaderML : public MainLoopItem
+{
+public:
+  ToonShaderML(GameApi::EveryApi &ev, MainLoopItem *next) : ev(ev), next(next) 
+  {
+    //sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:snoise:light", "colour:snoise:light");
+    //ev.mainloop_api.init_3d(sh);
+    //ev.mainloop_api.alpha(true); 
+  }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    if (ee.vertex_shader=="") { ee.vertex_shader+="colour"; }
+    if (ee.vertex_shader!="") { ee.vertex_shader+=":"; }
+    ee.vertex_shader+="toon";
+    if (ee.fragment_shader=="") { ee.fragment_shader+="colour"; }
+    if (ee.fragment_shader!="") { ee.fragment_shader+=":"; }
+    ee.fragment_shader+="toon";
+    next->execute(ee);
+  }
+  int shader_id() { return next->shader_id(); }
+
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  GameApi::SH sh;
+};
+
+
+class ShaderParamML : public MainLoopItem
+{
+public:
+  ShaderParamML(GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir,
+		unsigned int level1, unsigned int level2, unsigned int level3) : ev(ev), next(next), light_dir(light_dir), level1(level1), level2(level2), level3(level3) 
+  { 
+    //sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:passall", "colour:ambient:diffuse:specular:light");
+    //ev.mainloop_api.init_3d(sh);
+    //ev.mainloop_api.alpha(true);
+  }
+  int shader_id() { return next->shader_id(); }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+
+    if (ee.vertex_shader=="") { ee.vertex_shader+="colour"; }
+    if (ee.vertex_shader!="") { ee.vertex_shader+=":"; }
+    ee.vertex_shader+="passall";
+    if (ee.fragment_shader=="") { ee.fragment_shader+="colour"; }
+    if (ee.fragment_shader!="") { ee.fragment_shader+=":"; }
+    ee.fragment_shader+="ambient:diffuse:specular";
+
+
+    int sh_id = next->shader_id();
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	GameApi::SH sh;
+	sh.id = sh_id;
+	ev.shader_api.use(sh);
+	ev.shader_api.set_var(sh, "light_dir", light_dir.dx, light_dir.dy, light_dir.dz);
+	ev.shader_api.set_var(sh, "level1_color",
+			      ((level1&0xff0000)>>16)/255.0,
+			      ((level1&0xff00)>>8)/255.0,
+			      ((level1&0xff))/255.0,
+			      ((level1&0xff000000)>>24)/255.0);
+	ev.shader_api.set_var(sh, "level2_color",
+			      ((level2&0xff0000)>>16)/255.0,
+			  ((level2&0xff00)>>8)/255.0,
+			      ((level2&0xff))/255.0,
+			  ((level2&0xff000000)>>24)/255.0);
+	ev.shader_api.set_var(sh, "level3_color",
+			      ((level3&0xff0000)>>16)/255.0,
+			      ((level3&0xff00)>>8)/255.0,
+			      ((level3&0xff))/255.0,
+			      ((level3&0xff000000)>>24)/255.0);
+      }
+    next->execute(ee);
+  }
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  Vector light_dir;
+  unsigned int level1, level2, level3;
+  GameApi::SH sh;
+};
+EXPORT GameApi::ML GameApi::PolygonApi::noise_shader(EveryApi &ev, ML mainloop)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new NoiseShaderML(ev, item));
+}
+EXPORT GameApi::ML GameApi::PolygonApi::light_shader(EveryApi &ev, ML mainloop)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new LightShaderML(ev, item));
+}
+EXPORT GameApi::ML GameApi::PolygonApi::toon_shader(EveryApi &ev, ML mainloop)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new ToonShaderML(ev, item));
+}
+EXPORT GameApi::ML GameApi::PolygonApi::shading_shader(EveryApi &ev, ML mainloop,
+						      unsigned int level1,
+						      unsigned int level2,
+						      unsigned int level3)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  Vector light_dir(1.0,1.0,1.0);
+  return add_main_loop(e, new ShaderParamML(ev, item, light_dir, level1, level2, level3));
+}
 EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml(EveryApi &ev, VA va)
 {
   return add_main_loop(e, new RenderVA(ev, *this, va));

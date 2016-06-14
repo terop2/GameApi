@@ -2034,6 +2034,7 @@ public:
 	vec2.push_back(sp.create_vertex_array(vec[i]));
       }
   }
+  int shader_id() { return -1; }
   void execute(MainLoopEnv &e)
   {
     GameApi::SH sh;

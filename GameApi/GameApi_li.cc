@@ -382,6 +382,8 @@ public:
     ev.shader_api.use(sh);
     api.render(l);
   }
+  int shader_id() { return -1; }
+
 private:
   GameApi::EveryApi &ev;
   GameApi::LinesApi &api;
@@ -471,6 +473,8 @@ class LI_Update : public MainLoopItem
 public:
   LI_Update(GameApi::LinesApi &api, GameApi::LLA la, GameApi::LI li) : api(api), la(la), li(li) { }
   void execute(MainLoopEnv &e) { api.update(la,li); }
+  int shader_id() { return -1; }
+
 private:
   GameApi::LinesApi &api;
   GameApi::LLA la;

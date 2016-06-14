@@ -631,6 +631,7 @@ public:
     glBindVertexArray(arr->vao[0]);
     glDrawArrays(GL_POINTS, 0, arr->numpoints);
   }
+  int shader_id() { return -1; }
 private:
   GameApi::EveryApi &ev;
   PointArray3 *arr;

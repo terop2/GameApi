@@ -186,6 +186,7 @@ public:
     ev.shader_api.use(sh);
     sp.render_sprite_vertex_array(va);
   }
+  int shader_id() { return -1; }
 private:
   GameApi::EveryApi &ev;
   GameApi::SpriteApi &sp;
@@ -267,6 +268,7 @@ public:
   {
     api.update_vertex_array(va,bm);
   }
+  int shader_id() { return -1; }
 private:
   GameApi::SpriteApi &api;
   GameApi::VA va;

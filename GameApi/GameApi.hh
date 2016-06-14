@@ -1520,6 +1520,13 @@ public:
   IMPORT void prepare_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh);
   IMPORT void render_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh); // fast
   IMPORT ML render_vertex_array_ml(EveryApi &ev, VA va);
+  IMPORT ML shading_shader(EveryApi &ev, ML mainloop,
+			  unsigned int level1,
+			  unsigned int level2,
+			  unsigned int level3);
+  IMPORT ML noise_shader(EveryApi &ev, ML mainloop);
+  IMPORT ML light_shader(EveryApi &ev, ML mainloop);
+  IMPORT ML toon_shader(EveryApi &ev, ML mainloop);
   IMPORT void explode(VA va, PT pos, float dist);
   //IMPORT int access_point_count(VA va, bool triangle);
   //IMPORT float *access_points(VA va, bool triangle, int face, int point);

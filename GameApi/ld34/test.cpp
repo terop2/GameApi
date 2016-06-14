@@ -130,6 +130,7 @@ struct Envi
   int completed_time=0;
   VA completed;
   int start_time=0;
+  bool logo_shown=true;
 };
 
 void render_score(int score, int x, Envi &e)
@@ -151,6 +152,20 @@ void render_score(int score, int x, Envi &e)
 void iter(void *data)
 {
   Envi &envi = *(Envi*)data;
+
+  if (envi.logo_shown)
+    {
+      bool b = envi.ev->mainloop_api.logo_iter();
+      if (b) { 
+	envi.logo_shown = false; 
+#if 1
+  envi.ev->tracker_api.play_mp3(".\\Deep_Blue_Sea_Blues.mp3");
+#endif
+      }
+      return;
+    }
+
+
   envi.f = (envi.ev->mainloop_api.get_time()-envi.start_time)/1000.0;
 
   envi.time = (envi.ev->mainloop_api.get_time()-envi.start_time)/10.0;
@@ -401,7 +416,7 @@ SFO background(EveryApi &ev)
   return tex_cube_1a;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 
   Env e;
   EveryApi ev(e);
@@ -409,8 +424,14 @@ int main() {
   // initialize window
   ev.mainloop_api.init_window(1024,768);
 
+  if (argc==2 && std::string(argv[1])=="--generate-logo")
+    {
+      std::cout << "Generating Logo" << std::endl;
+      ev.mainloop_api.save_logo(ev);
+      exit(0);
+    }
 
-#if 1
+#if 0
   Mix_Init(MIX_INIT_MP3);
   std::cout << Mix_GetError() << std::endl;
   Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
@@ -428,7 +449,6 @@ int main() {
   std::cout << Mix_GetError() << std::endl;
 
 #endif
-  ev.tracker_api.play_mp3(".\\Deep_Blue_Sea_Blues.mp3");
   //return 0;
 
 
@@ -505,8 +525,8 @@ int main() {
   // rest of the initializations
   ev.mainloop_api.init(sh);
   ev.mainloop_api.init(sh2);
-
   ev.mainloop_api.alpha(true);
+
 
   P p = ev.polygon_api.quad_z(0.0, 800.0,
 			      0.0, 600.0,
@@ -534,7 +554,7 @@ int main() {
   float f = 0.0;
 
 
-  Ft font = ev.font_api.newfont("..\\FreeSans.ttf", 30,30);
+  Ft font = ev.font_api.newfont("FreeSans.ttf", 30,30);
   BM score = ev.font_api.font_string(font, "Score:", 3);
   int score_width = ev.bitmap_api.size_x(score);
   VA score_va = ev.sprite_api.create_vertex_array(score);
@@ -593,6 +613,14 @@ int main() {
   envi.flash_1_bool = false;
   envi.completed = completed_va;
 
+
+#if 1
+  ev.mainloop_api.reset_time();
+  ev.mainloop_api.display_logo(ev);
+  ev.mainloop_api.alpha(true);
+  ev.shader_api.use(sh2);
+  ev.mainloop_api.switch_to_3d(false, sh, 800,600);
+#endif
 #ifndef EMSCRIPTEN
   while(1) {
     iter(&envi);
