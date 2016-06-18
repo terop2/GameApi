@@ -7584,8 +7584,10 @@ class DistanceRenderable
 {
 public:
   virtual float distance(Point p) const=0;
-  virtual std::string shader() const { return ""; }
-  virtual int varnum() const {return 0; }
+  virtual unsigned int color(Point p) const=0;
+  virtual Vector normal(Point p) const=0;
+  //virtual std::string shader() const { return ""; }
+  //virtual int varnum() const {return 0; }
 };
 
 

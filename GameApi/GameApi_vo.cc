@@ -1258,8 +1258,14 @@ public:
     dist -= radius;
     return dist;
   }
-  std::string shader() const { return ""; }
-  int varnum() const { return 0; }
+  unsigned int color(Point p) const
+  {
+    return 0xffffffff;
+  }
+  Vector normal(Point p) const
+  {
+    return Vector(p)/p.Dist();
+  }
 private:
   Point center;
   float radius;
@@ -1277,8 +1283,11 @@ public:
     float v = vv.Dist();
     return v-dist;
   }
-  std::string shader() const { return ""; }
-  int varnum() const { return 0; }
+  unsigned int color(Point p) const { return 0xffffffff; }
+  Vector normal(Point p) const {
+    Vector v;
+    return v; 
+  }
 private:
   Point start, end;
   float dist;
@@ -1309,6 +1318,8 @@ public:
     pp_z = std::max(pp_z, 0.0f);
     return sqrt(pp_x*pp_x+pp_y*pp_y+pp_z*pp_z);
   }
+  unsigned int color(Point p) const { return 0xffffffff; }
+  Vector normal(Point p) const { Vector v; return v; }
 private:
   float start_x, end_x;
   float start_y, end_y;
@@ -1335,8 +1346,25 @@ public:
     float d2 = r2.distance(p);
     return std::min(d1,d2);
   }
-  std::string shader() const { return ""; }
-  int varnum() const { return 0; }
+  unsigned int color(Point p) const {
+    if (fabs(distance(p) - r1.distance(p)) < 0.001)
+      {
+	unsigned int c1 = r1.color(p);
+	return c1;
+      }
+    unsigned int c2 = r2.color(p);
+    return c2;
+  }
+  Vector normal(Point p) const
+  {
+    if (fabs(distance(p) - r1.distance(p)) < 0.001)
+      {
+	Vector v1 = r1.normal(p);
+	return v1;
+      }
+    Vector v2 = r2.normal(p);
+    return v2;
+  }
 private:
   DistanceRenderable &r1;
   DistanceRenderable &r2;
@@ -1352,8 +1380,26 @@ public:
     float d2 = r2.distance(p);
     return std::max(d1,d2);
   }
-  std::string shader() const { return ""; }
-  int varnum() const { return 0; }
+  unsigned int color(Point p) const {
+    if (fabs(distance(p) - r1.distance(p)) < 0.001)
+      {
+	unsigned int c1 = r1.color(p);
+	return c1;
+      }
+    unsigned int c2 = r2.color(p);
+    return c2;
+  }
+  Vector normal(Point p) const
+  {
+    if (fabs(distance(p) - r1.distance(p)) < 0.001)
+      {
+	Vector v1 = r1.normal(p);
+	return v1;
+      }
+    Vector v2 = r2.normal(p);
+    return v2;
+  }
+
 private:
   DistanceRenderable &r1;
   DistanceRenderable &r2;
@@ -1370,8 +1416,25 @@ public:
     float d2 = r2.distance(p);
     return std::max(d1,-d2);
   }
-  std::string shader() const { return ""; }
-  int varnum() const { return 0; }
+  unsigned int color(Point p) const {
+    if (fabs(fabs(distance(p)) - fabs(r1.distance(p))) < 0.001)
+      {
+	unsigned int c1 = r1.color(p);
+	return c1;
+      }
+    unsigned int c2 = r2.color(p);
+    return c2;
+  }
+  Vector normal(Point p) const
+  {
+    if (fabs(fabs(distance(p)) - fabs(r1.distance(p))) < 0.001)
+      {
+	Vector v1 = r1.normal(p);
+	return v1;
+      }
+    Vector v2 = r2.normal(p);
+    return v2;
+  }
 private:
   DistanceRenderable &r1;
   DistanceRenderable &r2;
@@ -1394,6 +1457,8 @@ public:
     dist -= r;
     return dist;
   }
+  unsigned int color(Point p) const { return 0xffffffff; }
+  Vector normal(Point p) const { Vector v; return v; }
 private:
   Point start, end;
   float r;
@@ -1433,7 +1498,7 @@ EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::and_not(FD fd1, FD fd2)
 class RenderDistance : public Bitmap<Color>
 {
 public:
-  RenderDistance(Point pos, Vector u_x, Vector u_y, Vector u_z, DistanceRenderable &dist, ColorVolumeObject &colors, int sx, int sy) 
+  RenderDistance(Point pos, Vector u_x, Vector u_y, Vector u_z, DistanceRenderable &dist, int sx, int sy) 
     : pos(pos), u_x(u_x), u_y(u_y), m_u_z(u_z), dist(dist), colors(colors), sx(sx), sy(sy) { 
     m_u_z/=m_u_z.Dist();
   }
@@ -1450,7 +1515,7 @@ public:
       p+=m_u_z*d;
       count ++;
     }
-    unsigned int col = colors.ColorValue(p);
+    unsigned int col = dist.color(p);
     return Color(col);
   }
 private:
@@ -1480,23 +1545,20 @@ EXPORT GameApi::PT GameApi::DistanceFloatVolumeApi::ray_shape_intersect(FD shape
 }
 EXPORT GameApi::BM GameApi::DistanceFloatVolumeApi::render2(EveryApi &ev, FD obj, int sx, int sy)
 {
-  VO vo = ev.vector_volume_api.normal(obj);
-  COV cov = ev.color_volume_api.directcolor(vo);
   PT pos = ev.point_api.point(-300.0, -300.0, -300.0);
   V u_x = ev.vector_api.vector(600.0, 0.0, 0.0);
   V u_y = ev.vector_api.vector(0.0, 600.0, 0.0);
   V u_z = ev.vector_api.vector(0.0, 0.0, 600.0);
-  return render(obj, cov, pos, u_x, u_y, u_z, sx,sy);
+  return render(obj, pos, u_x, u_y, u_z, sx,sy);
 }
-EXPORT GameApi::BM GameApi::DistanceFloatVolumeApi::render(FD obj, COV colors, PT pos, V u_x, V u_y, V u_z, int sx, int sy)
+EXPORT GameApi::BM GameApi::DistanceFloatVolumeApi::render(FD obj, PT pos, V u_x, V u_y, V u_z, int sx, int sy)
 {
   DistanceRenderable *dist = find_distance(e, obj);
-  ColorVolumeObject *colorsI = find_color_volume(e, colors);
   Point *posI = find_point(e, pos);
   Vector *u_xI = find_vector(e, u_x);
   Vector *u_yI = find_vector(e, u_y);
   Vector *u_zI = find_vector(e, u_z);
-  Bitmap<Color> *bm = new RenderDistance(*posI, *u_xI, *u_yI, *u_zI, *dist, *colorsI, sx,sy);
+  Bitmap<Color> *bm = new RenderDistance(*posI, *u_xI, *u_yI, *u_zI, *dist, sx,sy);
   return add_color_bitmap2(e, bm);
 }
 class NormalVectorVolumeFaceColl : public ForwardFaceCollection

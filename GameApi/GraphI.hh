@@ -391,5 +391,93 @@ public:
   virtual void set_matrix(Matrix m)=0;
   virtual Matrix get_whole_matrix(float time) const=0;
 };
+#if 0
+class ImplicitFunction2d
+{
+public:
+  virtual float f(float x, float y) const=0;
+  virtual float f2(float x) const=0; // use substitution y::=f(x)
+};
+class CircleImplicitFunction : public ImplicitFunction2d
+{
+public:
+  CircleImplicitFunction(float r) : r(r) { }
+  float f(float x, float y) const { return x*x+y*y-r*r; }
+  float f2_u(float x) const {
+    return sqrt(r*r-x*x);
+  }
+  float f2_l(float x) const {
+    return -sqrt(r*r-x*x);
+  }
+private:
+  float r;
+};
 
+class ImplicitFunction3d
+{
+public:
+  virtual float f(float x, float y, float z) const=0;
+  virtual int f2_count() const=0;
+  virtual std::vector<float> f2_u(float x, float y) const=0; // substitute z=f(x,y)
+  virtual std::vector<float> f2_l(float x, float y) const=0; // substitute z=f(x,y)
+};
+class SphereImplicitFunction : public ImplicitFunction3d
+{
+public:
+  SphereImplicitFunction(float r) : r(r) { }
+  float f(float x, float y, float z) const
+  {
+    return x*x+y*y+z*z - r*r;
+  }
+  virtual int f2_count() const { return 1; }
+  std::vector<float> f2_u(float x, float y) const
+  {
+    return std::vector<float>{sqrt(r*r - x*x - y*y)};
+  }
+  std::vector<float> f2_l(float x, float y) const
+  {
+    return std::vector<float>{-sqrt(r*r - x*x - y*y)};
+  }
+
+private:
+  float r;
+};
+class TranslateImplicitFunction3d : public ImplicitFunction3d
+{
+public:
+  TranslateImplicitFunction3d(ImplicitFunction3d *next, float dx, float dy, float dz) : next(next), dx(dx), dy(dy), dz(dz) { }
+  float f(float x, float y, float z) const
+  {
+    x-=dx;
+    y-=dy;
+    z-=dz;
+    return next->f(x,y,z);
+  }
+  virtual int f2_count() const { return next->f2_count(); }
+  std::vector<float> f2_u(float x, float y) const
+  {
+    x-=dx; y-=dy;
+    std::vector<float> z = next->f2_u(x,y);
+    int s = z.size();
+    for(int i=0;i<s;i++)
+      {
+	z[i]+=dz;
+      }
+    return z;
+  }
+  std::vector<float> f2_l(float x, float y) const
+  {
+    x-=dx; y-=dy;
+    std::vector<float> z = next->f2_l(x,y);
+    int s = z.size();
+    for(int i=0;i<s;i++)
+      {
+      z+=dz;
+      }
+    return z;
+  }
+private:
+  ImplicitFunction3d *next;
+};
+#endif
 #endif

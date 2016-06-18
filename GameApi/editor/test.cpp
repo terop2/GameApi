@@ -791,11 +791,7 @@ void iter(void *arg)
 			      V u_x = env->ev->vector_api.vector(600.0, 0.0, 0.0);
 			      V u_y = env->ev->vector_api.vector(0.0, 600.0, 0.0);
 			      V u_z = env->ev->vector_api.vector(0.0, 0.0, 600.0);
-			      O o = env->ev->volume_api.cube(-300.0, 300.0,
-						       -300.0, 300.0,
-						       -300.0, 300.0);
-			      COV cov = env->ev->color_volume_api.from_volume(o, 0xffffffff, 0xff000000);
-			      BM bm = env->ev->dist_api.render(fd, cov, pt, u_x, u_y, u_z, 300, 300);
+			      BM bm = env->ev->dist_api.render(fd, pt, u_x, u_y, u_z, 300, 300);
 			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 
 			    }
