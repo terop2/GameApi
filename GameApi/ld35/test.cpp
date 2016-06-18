@@ -275,7 +275,7 @@ void iter(void *arg)
       if (b) { 
 	env->logo_shown = false; 
 #if 1
-  env->ev->tracker_api.play_ogg("bee.ogg");
+  env->ev->tracker_api.play_ogg("piano_variations.ogg");
 #endif
       }
       return;
