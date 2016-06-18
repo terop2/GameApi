@@ -49,7 +49,7 @@ EXPORT GameApi::BM GameApi::FontApi::glyph(GameApi::Ft font, long idx)
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->fonts[font.id].bm->load_glyph(idx);
   Bitmap<int> *bm = env->fonts[font.id].bm;
-  Bitmap<Color> *cbm = new MapBitmapToColor(0,255,Color(255,255,255,255), Color(0,0,0,0), *bm);
+  Bitmap<Color> *cbm = new MapBitmapToColor(0,255,Color(255,255,255,255), Color(255,255,255,0), *bm);
   MemoizeBitmap *mbm = new MemoizeBitmap(*cbm);
   mbm->MemoizeAll();
   env->deletes.push_back(std::shared_ptr<void>(cbm)); 

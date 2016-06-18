@@ -1204,7 +1204,7 @@ public:
         IMPORT FD max(FD a1, FD a2);
 	IMPORT FD and_not(FD a1, FD a2);
   IMPORT PT ray_shape_intersect(FD shape, PT pos, V vec);
-	IMPORT BM render(FD obj, COV color, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
+	IMPORT BM render(FD obj,PT pos, V u_x, V u_y, V u_z, int sx, int sy);
   IMPORT BM render2(EveryApi &ev, FD obj, int sx, int sy);
 	IMPORT std::string shader_func(std::string name, FD obj, COV color);
 private:

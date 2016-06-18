@@ -68,7 +68,7 @@ void GameTestA(EveryApi &e)
   CO i_a = e.color_api.u_color(0xff000088);
   COV cov2 = e.color_volume_api.phong(vo, light, i_s, i_d, i_a, 0.4, 0.4, 0.2, 15.0);
   COV cov3 = e.color_volume_api.mix(cov, cov2, 0.95);
-  BM bm = e.dist_api.render(fd123, cov3, pos, u_x, u_y, u_z, 640, 480);
+  BM bm = e.dist_api.render(fd123, pos, u_x, u_y, u_z, 640, 480);
 
   e.sprite_api.preparesprite(bm);
   while(1) 

@@ -3687,9 +3687,9 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 "BM", "dist_api", "render2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::render,
 			 "fd_render",
-			 { "obj", "color", "pos", "u_x", "u_y", "u_z", "sx", "sy" },
-			 { "FD", "COV", "PT", "V", "V", "V", "int", "int" },
-			 { "", "", "", "", "", "", "100", "100" },
+			 { "obj", "pos", "u_x", "u_y", "u_z", "sx", "sy" },
+			 { "FD", "PT", "V", "V", "V", "int", "int" },
+			 { "", "", "", "", "", "100", "100" },
 			 "BM", "dist_api", "render"));
 
   return vec;
