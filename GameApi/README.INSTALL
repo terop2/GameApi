@@ -4,3 +4,5 @@ The library web pages are at:
 Git source repositories are available at:
    git clone git@github.com:terop2/GameApi.git gameapi-code
 
+Copyright information:
+ 1) piano_variations.ogg has samples from "Bright Yamaha Grand Piano" from fluid-soundfont-gm midi samples (under MIT license, see packages.ubuntu.com/trusty/sound/fluid-soundfont-gm) from ubuntu linux distribution.
