@@ -6,7 +6,9 @@
 #endif
 #include <cassert>
 #include <ctime>
+#ifdef WINDOWS
 #include <windows.h>
+#endif
 #include <fstream>
 #include <iostream>
 using namespace GameApi;
@@ -90,7 +92,7 @@ public:
 
 extern std::vector<GameApiItem*> global_functions;
 
-
+#ifdef WINDOWS
 struct DllData
 {
 public:
@@ -136,6 +138,7 @@ std::vector<DllData> load_dlls(std::string filename)
     }
   return vec;
 }
+#endif
 struct Envi {
   EveryApi *ev;
   GuiApi *gui;
@@ -209,7 +212,9 @@ struct Envi {
   int screen_size_x, screen_size_y;
 
   std::string filename;
+#ifdef WINDOWS
   std::vector<DllData> dlls;
+#endif
   bool logo_shown = false;
 };
 void add_to_canvas(GuiApi &gui, W canvas, W item)
@@ -859,6 +864,7 @@ void iter(void *arg)
 		    else 
 		      {
 			display = false;
+#ifdef WINDOWS			
 			int s = env->dlls.size();
 			bool success = false;
 			for(int i=0;i<s;i++)
@@ -874,6 +880,7 @@ void iter(void *arg)
 			if (!success) {
 			  std::cout << "Type not found" << type << std::endl;
 			}
+#endif
 		      }
 		    if (display)
 		      {
@@ -1148,10 +1155,12 @@ void iter(void *arg)
 		  default:
 		    {
 		      std::cout << "SEL: " << sel << std::endl;
+#ifdef WINDOWS		      
 		      DllData &d = env->dlls[sel-16];
 		      std::vector<Item*> funcs = (*d.functions)();
 		      Item *item = funcs[sel2-1];
 		      name = item->Name();
+#endif		      
 		      break;
 		    }
 
@@ -1265,8 +1274,9 @@ int main(int argc, char *argv[]) {
 
   Envi env;
 
+#ifdef WINDOWS
   env.dlls = load_dlls("DllList.txt");
-
+#endif
   int screen_x = 800;
   int screen_y = 600;
   std::string filename = "mod.txt";
@@ -1304,9 +1314,9 @@ int main(int argc, char *argv[]) {
   SH sh_arr = ev.shader_api.texture_array_shader();
   SH sh2 = ev.shader_api.colour_shader();
   SH sh3 = ev.shader_api.colour_shader();
-  Ft font = ev.font_api.newfont("..\\Chunkfive.otf", 10*font_scale,13*font_scale); // 13,15 
-  Ft font2 = ev.font_api.newfont("..\\Chunkfive.otf", 10*font_scale,13*font_scale); // 10,13
-  Ft font3 = ev.font_api.newfont("..\\Chunkfive.otf", 30*font_scale,30*font_scale); // 30,30
+  Ft font = ev.font_api.newfont("../Chunkfive.otf", 10*font_scale,13*font_scale); // 13,15 
+  Ft font2 = ev.font_api.newfont("../Chunkfive.otf", 10*font_scale,13*font_scale); // 10,13
+  Ft font3 = ev.font_api.newfont("../Chunkfive.otf", 30*font_scale,30*font_scale); // 30,30
 
 
   if (argc==2)
@@ -1422,6 +1432,7 @@ int main(int argc, char *argv[]) {
       items.push_back(gui.textureapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.booleanopsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
 
+#ifdef WINDOWS
       int s = env.dlls.size();
       for(int ii=0;ii<s;ii++)
 	{
@@ -1438,7 +1449,7 @@ int main(int argc, char *argv[]) {
 	  W w = functions_widget(gui, apiname, vec, atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips);
 	  items.push_back(w);
 	}
-
+#endif
     }
   W array = gui.array_y(&items[0], items.size(), 5);
   W scroll_area = gui.scroll_area(array, gui.size_x(array), screen_y-30, screen_y);
