@@ -124,6 +124,7 @@ using std::placeholders::_9;
   struct TS { int id; };
   struct CT { int id; };
   struct CC { int id; };
+  struct IM { int id; };
   //template<class T>
   //struct E { int id; };
   //struct A { int id; };
@@ -664,6 +665,20 @@ private:
   void *priv;
   int sx,sy;
   char start_char, end_char;
+};
+
+class ImplicitApi
+{
+public:
+  ImplicitApi(Env &e) : e(e) { }
+  IM sphere(float r);
+  IM blob(float c, float c_x, float c_y, float cc_x, float cc_y);
+  IM translate(IM obj, float dx, float dy, float dz);
+  IM from_distance(FD fd, float pos_x, float pos_y, float pos_z, float u_x, float u_y, float u_z, float sx, float sy);
+  FB render_upper(IM obj, float size_x, float size_y, int sx, int sy, float dx, float dy);
+  FB render_lower(IM obj, float size_x, float size_y, int sx, int sy, float dx, float dy);
+private:
+  Env &e;
 };
 
 class VolumeApi
@@ -1824,6 +1839,8 @@ public: // values are [0.0..1.0]
   IMPORT FB from_bool(BB b, float val_true, float val_false);
   IMPORT FB distance_field(BB bb);
   
+  IMPORT FB add_border(FB fb);
+
   BB to_bool(FB f, float true_range_start, float true_range_end);
   
   IMPORT TXID to_texid(FB bm);
@@ -2002,6 +2019,7 @@ public:
 	IMPORT LinesApi(Env &e) : e(e) { }
 	IMPORT LI function(std::function<PT(int linenum, bool id)> f,
 	      int numlines);
+  IMPORT LI point_array(std::vector<PT> vec);
   IMPORT LI color_function(LI lines, std::function<unsigned int(int linenum, bool id)> f);
   IMPORT LI change_color(LI li, unsigned int color);
   IMPORT LI change_color(LI li, unsigned int color_1, unsigned int color_2);
@@ -2022,6 +2040,7 @@ public:
   IMPORT LI rotx(LI lines, float angle);
   IMPORT LI roty(LI lines, float angle);
   IMPORT LI rotz(LI lines, float angle);
+  IMPORT P line_product(LI lines1, LI lines2);
 
   IMPORT LI unit_cube(LI orig, PT pos, V u_x, V u_y, V u_z);
   IMPORT LI unit_to_cube(LI orig, PT pos, V u_x, V u_y, V u_z);
@@ -2300,7 +2319,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -2344,6 +2363,7 @@ struct EveryApi
   BooleanOps bool_api;
   CollisionPlane collision_api;
   MovementNode move_api;
+  ImplicitApi implicit_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);

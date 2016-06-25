@@ -515,6 +515,7 @@ struct EnvImpl
   std::vector<std::vector<int> > template_array;
   std::vector<Collision*> collision_array;
   std::vector<Movement*> movement_array;
+  std::vector<ImplicitFunction3d*> implicit;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -785,6 +786,7 @@ struct FaceCollPolyHandle : public PolyHandle
 //
 // add functions
 //
+GameApi::IM add_implicit(GameApi::Env &e, ImplicitFunction3d *imp);
 GameApi::MN add_move(GameApi::Env &e, Movement *m);
 GameApi::CP add_collision(GameApi::Env &e, Collision *c);
 GameApi::TS add_tri_strip(GameApi::Env &e, TriStrip *n);
@@ -860,6 +862,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+ImplicitFunction3d *find_implicit(GameApi::Env &e, GameApi::IM m);
 Movement *find_move(GameApi::Env &e, GameApi::MN m);
 Collision *find_collision(GameApi::Env &e, GameApi::CP p);
 TriStrip *find_tri_strip(GameApi::Env &e, GameApi::TS p);

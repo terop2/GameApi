@@ -3393,7 +3393,7 @@ public:
     if (point==1 ||point==2) { xx++; }
     if (point==2 ||point==3) { yy++; }
     Point p = pos + xx*u_x/bm->SizeX() + yy*u_y/bm->SizeY();
-    p+=fb->Map(xx,yy)*u_z;
+    p+=fb->Map(xx*fb->SizeX()/bm->SizeX(),yy*fb->SizeY()/bm->SizeY())*u_z;
     //p.x = xx*sx/bm->SizeX();
     //p.y = yy*sy/bm->SizeY();
     //p.z = z;
