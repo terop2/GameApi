@@ -1770,10 +1770,54 @@ private:
   float *array_x;
   float *array_y;
 };
+class BorderFloatBitmap : public Bitmap<float>
+{
+public:
+  BorderFloatBitmap(Bitmap<float> *bm) : bm(bm) { }
+  int SizeX() const { return bm->SizeX(); }
+  int SizeY() const { return bm->SizeY(); }
+  float Map(int x, int y) const
+  {
+    float f0 = bm->Map(x,y);
+    if (std::isnan(f0))
+    if (x>0 && x<SizeX()-1)
+      if (y>0 && y<SizeY()-1)
+	{
+	  float fx = bm->Map(x+1,y);
+	  float fy = bm->Map(x,y+1);
+	  float fxx = bm->Map(x-1,y);
+	  float fyy = bm->Map(x,y-1);
+
+	  float fx1 = bm->Map(x+1,y+1);
+	  float fy1 = bm->Map(x-1,y+1);
+	  float fxx1 = bm->Map(x-1,y-1);
+	  float fyy1 = bm->Map(x+1,y-1);
+
+	  if (!std::isnan(fx) ||
+	      !std::isnan(fy) ||
+	      !std::isnan(fxx) ||
+	      !std::isnan(fyy) ||
+	      !std::isnan(fx1) ||
+	      !std::isnan(fy1) ||
+	      !std::isnan(fxx1) ||
+	      !std::isnan(fyy1)) {
+	    return 0.0;
+	  }
+	}
+    return f0;
+  }
+private:
+  Bitmap<float> *bm;
+};
 EXPORT GameApi::FB GameApi::FloatBitmapApi::distance_field(BB bb)
 {
   Bitmap<bool> *bm = find_bool_bitmap(e, bb)->bitmap;
   return add_float_bitmap(e, new DistanceFieldBitmap(bm));
+}
+EXPORT GameApi::FB GameApi::FloatBitmapApi::add_border(FB fb)
+{
+  Bitmap<float> *bm = find_float_bitmap(e,fb)->bitmap;
+  return add_float_bitmap(e, new BorderFloatBitmap(bm));
 }
 EXPORT GameApi::FB GameApi::FloatBitmapApi::from_bool(GameApi::BB b, float val_true, float val_false)
 {

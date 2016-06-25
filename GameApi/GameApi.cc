@@ -9,7 +9,6 @@
 
 #include "GameApi_h.hh"
 
-
 EnvImpl::EnvImpl() : event_infos(new EmptySequencer2), mutex(PTHREAD_MUTEX_INITIALIZER)
 {
 #ifndef EMSCRIPTEN
@@ -306,6 +305,14 @@ EXPORT GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
+GameApi::IM add_implicit(GameApi::Env &e, ImplicitFunction3d *m)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->implicit.push_back(m);
+  GameApi::IM im;
+  im.id = env->implicit.size()-1;
+  return im;
+}
 GameApi::MN add_move(GameApi::Env &e, Movement *m)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -981,6 +988,11 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   Array<int,bool> *enable = info.enable_obj_array;
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
+}
+ImplicitFunction3d *find_implicit(GameApi::Env &e, GameApi::IM m)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->implicit[m.id];
 }
 Movement *find_move(GameApi::Env &e, GameApi::MN m)
 {
@@ -2122,6 +2134,7 @@ public:
     : next(next), start_time(start_time), end_time(end_time),
       dx(dx), dy(dy), dz(dz) { }
   void set_matrix(Matrix m) { }
+  void set_pos(float ddx, float ddy, float ddz) { dx=ddx; dy=ddy; dz=ddz; }
   Matrix get_whole_matrix(float time) const
   {
     if (time<start_time) { return next->get_whole_matrix(time); }
@@ -2151,6 +2164,7 @@ public:
     : next(next), start_time(start_time), end_time(end_time),
       sx(sx), sy(sy), sz(sz) { }
   void set_matrix(Matrix m) { }
+  void set_scale(float ssx, float ssy, float ssz) { sx=ssx; sy=ssy; sz=ssz; }
   Matrix get_whole_matrix(float time) const
   {
     if (time<start_time) { return next->get_whole_matrix(time); }

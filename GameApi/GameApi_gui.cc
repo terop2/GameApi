@@ -3212,6 +3212,7 @@ MACRO(GameApi::ML)
 MACRO(GameApi::PTA)
 MACRO(GameApi::MN)
 MACRO(GameApi::VO)
+MACRO(GameApi::IM)
 #undef MACRO
 
 
@@ -3533,6 +3534,42 @@ std::vector<GameApiItem*> volumeapi_functions()
 			 { "O", "int", "int", "int", "float", "float", "float", "float", "float", "float" },
 			 { "", "100", "100", "100", "-100.0", "100.0", "-100.0", "100.0", "-100.0", "100.0" },
 			 "P", "volume_api", "rendercubes3"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::implicit_api, &GameApi::ImplicitApi::sphere,
+			 "im_sphere",
+			 { "r" },
+			 { "float" },
+			 { "100.0" },
+			 "IM", "implicit_api", "sphere"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::implicit_api, &GameApi::ImplicitApi::blob,
+			 "im_blob",
+			 { "c", "c_x", "c_y", "cc_x", "cc_y" },
+			 { "float", "float", "float", "float", "float" },
+			 { "100.0", "0.0", "0.0", "60.0", "0.0" },
+			 "IM", "implicit_api", "blob"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::implicit_api, &GameApi::ImplicitApi::translate,
+			 "im_translate",
+			 { "obj", "dx", "dy", "dz" },
+			 { "IM", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0" },
+			 "IM", "implicit_api", "translate"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::implicit_api, &GameApi::ImplicitApi::from_distance,
+			 "im_from_distance",
+			 { "fd", "pos_x", "pos_y", "pos_z", "u_x", "u_y", "u_z", "sx", "sy" },
+			 { "FD", "float", "float", "float", "float", "float", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0", "300.0", "300.0", "300.0", "256.0", "256.0" },
+			 "IM", "implicit_api", "from_distance"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::implicit_api, &GameApi::ImplicitApi::render_upper,
+			 "im_render_upper",
+			 { "obj", "size_x", "size_y", "sx", "sy", "dx", "dy" },
+			 { "IM", "float", "float", "int", "int","float", "float" },
+			 { "", "300.0", "300.0", "255", "255", "0.5", "0.5" },
+			 "FB", "implicit_api", "render_upper"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::implicit_api, &GameApi::ImplicitApi::render_lower,
+			 "im_render_lower",
+			 { "obj", "size_x", "size_y", "sx", "sy", "dx", "dy" },
+			 { "IM", "float", "float", "int", "int","float","float" },
+			 { "", "300.0", "300.0", "255", "255", "0.5", "0.5" },
+			 "FB", "implicit_api", "render_lower"));
 
   return vec;
 }
@@ -4469,6 +4506,12 @@ std::vector<GameApiItem*> shadermoduleapi_functions()
 std::vector<GameApiItem*> linesapi_functions()
 {
   std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::point_array,
+			 "li_points",
+			 { "arr" },
+			 { "[PT]" },
+			 { "" },
+			 "LI", "lines_api", "point_array"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, (GameApi::LI (GameApi::LinesApi::*)(GameApi::LI, unsigned int))&GameApi::LinesApi::change_color,
 			 "change_color",
 			 { "li", "color" },
@@ -4505,6 +4548,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "LI", "float", "float", "float" },
 			 { "", "1.0", "1.0", "1.0" },
 			 "LI", "lines_api", "scale"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::line_product,
+			 "li_product",
+			 { "li1", "li2" },
+			 { "LI", "LI" },
+			 { "", "" },
+			 "P", "lines_api", "line_product"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::prepare,
 			 "li_prepare",
 			 { "li" },
@@ -4669,6 +4718,12 @@ std::vector<GameApiItem*> floatbitmapapi_functions()
 			 { "BB" },
 			 { "" },
 			 "FB", "float_bitmap_api", "distance_field"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::add_border,
+			 "add_border",
+			 { "fb" },
+			 { "FB" },
+			 { "" },
+			 "FB", "float_bitmap_api", "add_border"));
 
   return vec;
 }

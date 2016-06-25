@@ -679,3 +679,91 @@ GameApi::LI GameApi::LinesApi::from_points2(PTS start_points, PTS end_points)
   PointsApiPoints *pts2 = find_pointsapi_points(e, end_points);
   return add_line_array(e, new FromPoints2(pts1, pts2));  
 }
+class LineProduct : public FaceCollection
+{
+public:
+  LineProduct(LineCollection *coll, LineCollection *coll2) : coll(coll), coll2(coll2) { }
+  virtual int NumFaces() const { return coll->NumLines()*coll2->NumLines(); }
+  virtual int NumPoints(int face) const { return 4; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int l2 = face / coll->NumLines();
+    int l1 = face - l2*coll->NumLines();
+    
+    Point p1 = coll->LinePoint(l1,0);
+    Vector vx = coll->LinePoint(l1,1)-p1;
+    Vector vy = coll2->LinePoint(l2,1) - coll2->LinePoint(l2,0);
+    switch(point)
+      {
+      case 0: return p1;
+      case 1: return p1+vx;
+      case 2: return p1+vx+vy;
+      case 3: return p1+vy;
+      };
+    return p1;
+  }
+  virtual Vector PointNormal(int face, int point) const { Vector v; return v; }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    int l2 = face / coll->NumLines();
+    int l1 = face - l2*coll->NumLines();
+    
+    unsigned int c1 = coll->LineColor(l1,0);
+    unsigned int c2 = coll->LineColor(l1,1);
+    unsigned int c3 = coll2->LineColor(l2,1);
+    unsigned int c4 = coll2->LineColor(l2,0);
+    switch(point)
+      {
+      case 0: return c1;
+      case 1: return c2;
+      case 2: return c3;
+      case 3: return c4;
+      };
+    return c1;
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    Point2d p;
+    return p;
+  }
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
+
+private:
+  LineCollection *coll;
+  LineCollection *coll2;
+};
+GameApi::P GameApi::LinesApi::line_product(LI lines1, LI lines2)
+{
+  LineCollection *l1 = find_line_array(e, lines1);
+  LineCollection *l2 = find_line_array(e, lines2);
+  return add_polygon2(e, new LineProduct(l1,l2),1);
+}
+class PointArrayLineCollection : public LineCollection
+{
+public:
+  PointArrayLineCollection(std::vector<Point> vec) : vec(vec) { }
+  int NumLines() const { return vec.size()-1; }
+  Point LinePoint(int line, int point) const
+  {
+    int i = line + point;
+    return vec[i];
+  }
+  unsigned int LineColor(int line, int point) const
+  {
+    return 0xffffffff;
+  }
+private:
+  std::vector<Point> vec;
+};
+GameApi::LI GameApi::LinesApi::point_array(std::vector<PT> vec)
+{
+  int s = vec.size();
+  std::vector<Point> vec2;
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(*find_point(e, vec[i]));
+    }
+  return add_line_array(e, new PointArrayLineCollection(vec2));
+}
