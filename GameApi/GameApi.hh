@@ -1379,6 +1379,7 @@ public:
 			float start_y, float end_y,
 			float start_z, float end_z,
 			float round_radius);
+  IMPORT P deform(P obj, O bools, float dx, float dy, float dz);
   IMPORT P color_map2(BM bm, PT pos, V u_x, V u_y);
   IMPORT P color_map(BM bm, float sx, float sy, float z);
   IMPORT P color_map3(BM bm, FB height, PT pos, V u_x, V u_y);

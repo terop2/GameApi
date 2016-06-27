@@ -7,6 +7,11 @@
 #include <cstdlib>
 #include <cassert>
 
+struct Move
+{
+  int x,y;
+  int xx,yy;
+};
 
 
 using namespace GameApi;
@@ -73,10 +78,12 @@ struct Envi {
   int logo_shown = true;
 } env;
 
-std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e);
+std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e, bool attack);
 bool check_towering(WorldObj *pieces, bool left, bool white, bool check);
 Pos towering_new_block(bool left, bool white);
-
+Move global_best_move(bool is_white, WorldObj &o, Envi &e);
+void print_move(WorldObj &o, const Move &m);
+std::string piece_name(int c);
 
 bool piece_color_is_white(int c)
 {
@@ -105,7 +112,7 @@ bool is_inside_board(Pos p)
   if (p.y<0||p.y>7) return false;
   return true;
 }
-bool piece_action(std::vector<Pos> &pos, int piece2, int piece_color, int opponent_color, Pos p1)
+bool piece_action(std::vector<Pos> &pos, int piece2, int piece_color, int opponent_color, Pos p1, bool attack)
 {
   if (piece2==12)
     {
@@ -114,6 +121,10 @@ bool piece_action(std::vector<Pos> &pos, int piece2, int piece_color, int oppone
   else
     if (piece_color_is_white(piece2)==piece_color)
       {
+	if (attack)
+	  {
+	    pos.push_back(p1);
+	  }
 	return true;
       }
     else
@@ -138,7 +149,7 @@ Pos position_attacked(WorldObj &o, int x, int y, bool attacker_is_white, Envi &e
 	bool piece_color = piece_color_is_white(piece);
 	if (piece_color == attacker_is_white)
 	  {
-	    std::vector<Pos> p = possible_moves(o, xx,yy, e);
+	    std::vector<Pos> p = possible_moves(o, xx,yy, e,false);
 	    for(int i=0;i<p.size();i++)
 	      {
 		Pos pp = p[i];
@@ -155,7 +166,7 @@ Pos position_attacked(WorldObj &o, int x, int y, bool attacker_is_white, Envi &e
   res2.y = -1;
   return res2;
 }
-std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
+std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e, bool attack)
 {
   int piece = o.read_block(x,y);
   bool piece_color = piece_color_is_white(piece);
@@ -172,7 +183,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	  if (is_inside_board(p1))
 	    {
 	      int piece2 = o.read_block(p1.x,p1.y);
-	      if (piece_action(pos, piece2, piece_color, opponent_color,p1)) { break; }
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p1,attack)) { break; }
 	    }
 	}
       for(int xx=1;xx<8;xx++)
@@ -181,7 +192,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	  if (is_inside_board(p2))
 	    {
 	      int piece2 = o.read_block(p2.x,p2.y);
-	      if (piece_action(pos, piece2, piece_color, opponent_color,p2)) { break; }
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p2,attack)) { break; }
 
 	    }
 	}
@@ -191,7 +202,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	  if (is_inside_board(p3))
 	    {
 	      int piece2 = o.read_block(p3.x,p3.y);
-	      if (piece_action(pos, piece2, piece_color, opponent_color,p3)) { break; }
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p3,attack)) { break; }
 	    }
 	}
       for(int xx=1;xx<8;xx++)
@@ -200,7 +211,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	  if (is_inside_board(p4))
 	    {
 	      int piece2 = o.read_block(p4.x,p4.y);
-	      if (piece_action(pos, piece2, piece_color, opponent_color,p4)) { break; }
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p4,attack)) { break; }
 	    }
 	}
       }
@@ -213,51 +224,51 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	if (is_inside_board(p1))
 	  {
 	    int piece2 = o.read_block(p1.x,p1.y);
-	    piece_action(pos, piece2, piece_color, opponent_color,p1);
+	    piece_action(pos, piece2, piece_color, opponent_color,p1,attack);
 	  }
 	Pos p2 = { x-1,y+2 };
 	if (is_inside_board(p2))
 	  {
 	    int piece2 = o.read_block(p2.x,p2.y);
-	    piece_action(pos, piece2, piece_color, opponent_color,p2);
+	    piece_action(pos, piece2, piece_color, opponent_color,p2,attack);
 	  }
 	Pos p3 = { x+1,y-2 };
 	if (is_inside_board(p3))
 	  {
 	    int piece2 = o.read_block(p3.x,p3.y);
-	    piece_action(pos, piece2, piece_color, opponent_color,p3);
+	    piece_action(pos, piece2, piece_color, opponent_color,p3,attack);
 	  }
 
 	Pos p4 = { x-1,y-2 };
 	if (is_inside_board(p4))
 	  {
 	    int piece2 = o.read_block(p4.x,p4.y);
-	    piece_action(pos, piece2, piece_color, opponent_color,p4);
+	    piece_action(pos, piece2, piece_color, opponent_color,p4,attack);
 	  }
 
 	Pos p1a = { x+2,y+1 };
 	if (is_inside_board(p1a))
 	  {
 	    int piece2 = o.read_block(p1a.x,p1a.y);
-	    piece_action(pos, piece2, piece_color, opponent_color,p1a);
+	    piece_action(pos, piece2, piece_color, opponent_color,p1a,attack);
 	  }
 	Pos p2a = { x-2,y+1 };
 	if (is_inside_board(p2a))
 	  {
 	    int piece2 = o.read_block(p2a.x,p2a.y);
-	    piece_action(pos, piece2, piece_color, opponent_color,p2a);
+	    piece_action(pos, piece2, piece_color, opponent_color,p2a,attack);
 	  }
 	Pos p3a = { x+2,y-1 };
 	if (is_inside_board(p3a))
 	  {
 	    int piece2 = o.read_block(p3a.x,p3a.y);
-	    piece_action(pos, piece2, piece_color, opponent_color,p3a);
+	    piece_action(pos, piece2, piece_color, opponent_color,p3a,attack);
 	  }
 	Pos p4a = { x-2,y-1 };
 	if (is_inside_board(p4a))
 	  {
 	    int piece2 = o.read_block(p4a.x,p4a.y);
-	    piece_action(pos, piece2, piece_color, opponent_color,p4a);
+	    piece_action(pos, piece2, piece_color, opponent_color,p4a,attack);
 	  }
       }
       break;
@@ -269,7 +280,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	  if (is_inside_board(p1))
 	    {
 	      int piece2 = o.read_block(p1.x,p1.y);
-	      if (piece_action(pos, piece2, piece_color, opponent_color,p1)) { break; }
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p1,attack)) { break; }
 	    }
 	}
       for(int xx=1;xx<8;xx++)
@@ -278,7 +289,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	  if (is_inside_board(p2))
 	    {
 	      int piece2 = o.read_block(p2.x,p2.y);
-	      if (piece_action(pos, piece2, piece_color, opponent_color,p2)) { break; }
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p2,attack)) { break; }
 
 	    }
 	}
@@ -288,7 +299,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	  if (is_inside_board(p3))
 	    {
 	      int piece2 = o.read_block(p3.x,p3.y);
-	      if (piece_action(pos, piece2, piece_color, opponent_color,p3)) { break; }
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p3,attack)) { break; }
 	    }
 	}
       for(int xx=1;xx<8;xx++)
@@ -297,7 +308,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	  if (is_inside_board(p4))
 	    {
 	      int piece2 = o.read_block(p4.x,p4.y);
-	      if (piece_action(pos, piece2, piece_color, opponent_color,p4)) { break; }
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p4,attack)) { break; }
 	    }
 	}
       break;
@@ -310,26 +321,26 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	if (is_inside_board(p1))
 	  {
 	    int piece2 = o.read_block(p1.x,p1.y);
-	    piece_action(pos, piece2, piece_color, opponent_color,p1);
+	    piece_action(pos, piece2, piece_color, opponent_color,p1,attack);
 	  }
 	Pos p2 = { x-xx, y };
 	if (is_inside_board(p2))
 	  {
 	    int piece2 = o.read_block(p2.x,p2.y);
-	    piece_action(pos, piece2, piece_color, opponent_color,p2);
+	    piece_action(pos, piece2, piece_color, opponent_color,p2,attack);
 	    
 	  }
 	Pos p3 = { x, y-xx };
 	if (is_inside_board(p3))
 	  {
 	    int piece2 = o.read_block(p3.x,p3.y);
-	    piece_action(pos, piece2, piece_color, opponent_color,p3);
+	    piece_action(pos, piece2, piece_color, opponent_color,p3,attack);
 	  }
 	Pos p4 = { x, y+xx };
 	if (is_inside_board(p4))
 	  {
 	    int piece2 = o.read_block(p4.x,p4.y);
-	    piece_action(pos, piece2, piece_color, opponent_color,p4);
+	    piece_action(pos, piece2, piece_color, opponent_color,p4,attack);
 	  }
       }
       {
@@ -338,13 +349,13 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	if (is_inside_board(p1))
 	  {
 	    int piece2 = o.read_block(p1.x,p1.y);
-	    piece_action(pos, piece2, piece_color, opponent_color,p1);
+	    piece_action(pos, piece2, piece_color, opponent_color,p1,attack);
 	  }
 	Pos p2 = { x-xx, y-xx };
 	if (is_inside_board(p2))
 	  {
 	    int piece2 = o.read_block(p2.x,p2.y);
-	    piece_action(pos, piece2, piece_color, opponent_color,p2);
+	    piece_action(pos, piece2, piece_color, opponent_color,p2,attack);
 	    
 	  }
 	
@@ -352,13 +363,13 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	if (is_inside_board(p3))
 	  {
 	    int piece2 = o.read_block(p3.x,p3.y);
-	    piece_action(pos, piece2, piece_color, opponent_color,p3);
+	    piece_action(pos, piece2, piece_color, opponent_color,p3,attack);
 	  }
 	Pos p4 = { x-xx, y+xx };
 	if (is_inside_board(p4))
 	  {
 	    int piece2 = o.read_block(p4.x,p4.y);
-	    piece_action(pos, piece2, piece_color, opponent_color,p4);
+	    piece_action(pos, piece2, piece_color, opponent_color,p4,attack);
 	  }
       }
       { // Towering
@@ -396,7 +407,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	  if (is_inside_board(p1))
 	    {
 	      int piece2 = o.read_block(p1.x,p1.y);
-	      if (piece_action(pos, piece2, piece_color, opponent_color,p1)) { break; }
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p1,attack)) { break; }
 	    }
 	}
       for(int xx=1;xx<8;xx++)
@@ -405,7 +416,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	  if (is_inside_board(p2))
 	    {
 	      int piece2 = o.read_block(p2.x,p2.y);
-	      if (piece_action(pos, piece2, piece_color, opponent_color,p2)) { break; }
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p2,attack)) { break; }
 
 	    }
 	}
@@ -415,7 +426,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	  if (is_inside_board(p3))
 	    {
 	      int piece2 = o.read_block(p3.x,p3.y);
-	      if (piece_action(pos, piece2, piece_color, opponent_color,p3)) { break; }
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p3,attack)) { break; }
 	    }
 	}
       for(int xx=1;xx<8;xx++)
@@ -424,7 +435,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	  if (is_inside_board(p4))
 	    {
 	      int piece2 = o.read_block(p4.x,p4.y);
-	      if (piece_action(pos, piece2, piece_color, opponent_color,p4)) { break; }
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p4,attack)) { break; }
 	    }
 	}
       }
@@ -435,7 +446,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	  if (is_inside_board(p1))
 	    {
 	      int piece2 = o.read_block(p1.x,p1.y);
-	      if (piece_action(pos, piece2, piece_color, opponent_color,p1)) { break; }
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p1,attack)) { break; }
 	    }
 	}
       for(int xx=1;xx<8;xx++)
@@ -444,7 +455,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	  if (is_inside_board(p2))
 	    {
 	      int piece2 = o.read_block(p2.x,p2.y);
-	      if (piece_action(pos, piece2, piece_color, opponent_color,p2)) { break; }
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p2,attack)) { break; }
 
 	    }
 	}
@@ -454,7 +465,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	  if (is_inside_board(p3))
 	    {
 	      int piece2 = o.read_block(p3.x,p3.y);
-	      if (piece_action(pos, piece2, piece_color, opponent_color,p3)) { break; }
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p3,attack)) { break; }
 	    }
 	}
       for(int xx=1;xx<8;xx++)
@@ -463,7 +474,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	  if (is_inside_board(p4))
 	    {
 	      int piece2 = o.read_block(p4.x,p4.y);
-	      if (piece_action(pos, piece2, piece_color, opponent_color,p4)) { break; }
+	      if (piece_action(pos, piece2, piece_color, opponent_color,p4,attack)) { break; }
 	    }
 	}
     
@@ -517,7 +528,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	if (is_inside_board(p2))
 	  {
 	    int piece2 = o.read_block(p2.x,p2.y);
-	    if (piece2!=12 && opponent_color == piece_color_is_white(piece2))
+	    if (attack || (piece2!=12 && opponent_color == piece_color_is_white(piece2)))
 	      {
 		pos.push_back(p2);
 	      }
@@ -526,7 +537,7 @@ std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e)
 	if (is_inside_board(p3))
 	  {
 	    int piece2 = o.read_block(p3.x,p3.y);
-	    if (piece2!=12 && opponent_color == piece_color_is_white(piece2))
+	    if (attack || (piece2!=12 && opponent_color == piece_color_is_white(piece2)))
 	      {
 		pos.push_back(p3);
 	      }
@@ -1187,6 +1198,15 @@ void iter()
 	    env.chosen_x = -1;
 	    env.chosen_y = -1;
 	    do_promotion(env.pieces_obj);
+
+	    // COMPUTER PLAY
+	    Move m = global_best_move(false, *env.pieces_obj, env);
+	    print_move(*env.pieces_obj, m); 
+	    int piece0 = env.pieces_obj->read_block(m.x,m.y);
+	    env.pieces_obj->set_block(m.xx,m.yy,piece0);
+	    env.pieces_obj->set_block(m.x,m.y,12);
+	    color_change2(*env.pieces_obj, m.xx, m.yy, piece0);
+
 	  }
 	else if (env.chosen_x!=-1)
 	  {
@@ -1202,7 +1222,7 @@ void iter()
 	      }
 	    env.chosen_x = env.cursor_x;
 	    env.chosen_y = env.cursor_y;
-	    std::vector<Pos> vec = possible_moves(*env.pieces_obj, env.cursor_x, env.cursor_y, env);
+	    std::vector<Pos> vec = possible_moves(*env.pieces_obj, env.cursor_x, env.cursor_y, env, false);
 	    int s = vec.size();
 	    store_board(*env.board_obj, env.store);
 	    for(int i=0;i<s;i++)
@@ -1378,4 +1398,358 @@ int main(int argc, char *argv[]) {
 #endif
 
 
+}
+
+//
+// COMPUTER PLAYING CHESS
+//
+struct BlockStatus
+{
+  int whiteattack; // number of white attacks to the block
+  int blackattack; // number of black attacks to the block
+  int current_status; // 0=empty, 1=white occupy, 2=black occupy
+  bool whitekingarea;
+  bool blackkingarea;
+  bool whiteking;
+  bool blackking;
+  BlockStatus() : whiteattack(0), blackattack(0), current_status(0), whitekingarea(false), blackkingarea(false) { }
+};
+struct BlockStatusBoard
+{
+  BlockStatus arr[8][8];
+  BlockStatusBoard() : arr() { }
+};
+void print_block_status(const BlockStatusBoard &b, int val)
+{
+  for(int yy=0;yy<8;yy++) {
+    for(int xx=0;xx<8;xx++)
+      {
+	BlockStatus s = b.arr[xx][yy];
+	switch(val) {
+	case 0: std::cout << s.whiteattack << " "; break;
+	case 1: std::cout << s.blackattack << " "; break;
+	case 2: std::cout << s.current_status << " "; break;
+	case 3: std::cout << s.whitekingarea << " "; break;
+	case 4: default: std::cout << s.blackkingarea << " "; break;
+	};
+      }
+	std::cout << std::endl;
+      }
+}
+void get_block_status(WorldObj &o, Envi &e, BlockStatusBoard &board)
+{
+  for(int yy=0;yy<8;yy++)
+    for(int xx=0;xx<8;xx++)
+      {
+	int piece = o.read_block(xx,yy);
+	if (piece==12)
+	  {
+	    board.arr[xx][yy].current_status = 0;
+	  }
+	else
+	if (piece_color_is_white(piece))
+	  {
+	    board.arr[xx][yy].current_status = 1;
+	    std::vector<Pos> p = possible_moves(o, xx,yy,e,true);
+	    int s = p.size();
+	    for(int i=0;i<s;i++)
+	      {
+		Pos pp = p[i];
+		board.arr[pp.x][pp.y].whiteattack++;
+		if (piece==3) // white king
+		  {
+		    board.arr[pp.x][pp.y].whitekingarea = true;
+		    board.arr[xx][yy].whiteking = true;
+		  }
+	      }
+	  }
+	else
+	  {
+	    board.arr[xx][yy].current_status = 2;
+	    std::vector<Pos> p = possible_moves(o, xx,yy,e,true);
+	    int s = p.size();
+	    for(int i=0;i<s;i++)
+	      {
+		Pos pp = p[i];
+		board.arr[pp.x][pp.y].blackattack++;
+		if (piece==9)
+		  {
+		    board.arr[pp.x][pp.y].blackkingarea=true;
+		    board.arr[xx][yy].blackking = true;
+		  }
+	      }
+
+	  }
+      }
+}
+struct MoveStatus
+{
+  int opp_loses_white_attack; // +1
+  int opp_loses_black_attack; // +1
+  int opp_loses_white_king_area; // +2
+  int opp_loses_black_king_area; // +2
+  int you_lose_white_attack; // -1
+  int you_lose_black_attack; // -1
+  int you_lose_white_king_area; // -2
+  int you_lose_black_king_area; // -2
+  int you_gain_white_attack; // +1
+  int you_gain_black_attack; // +1
+  int you_gain_white_king_area; // +2
+  int you_gain_black_king_area; // +2
+
+  bool you_gain_chess;
+
+  int opponent_loses_pieces;
+  int you_can_lose_piece;
+  int you_can_lose_without_this_move;
+
+  MoveStatus() : opp_loses_white_attack(0),
+		 opp_loses_black_attack(0),
+		 opp_loses_white_king_area(0),
+		 opp_loses_black_king_area(0),
+		 you_lose_white_attack(0),
+		 you_lose_black_attack(0),
+		 you_lose_white_king_area(0),
+		 you_lose_black_king_area(0),
+		 you_gain_white_attack(0),
+		 you_gain_black_attack(0),
+		 you_gain_white_king_area(0),
+		 you_gain_black_king_area(0),
+		 you_gain_chess(false),
+		 opponent_loses_pieces(-1),
+		 you_can_lose_piece(-1),
+		 you_can_lose_without_this_move(-1)
+{ }
+		 
+					 
+};
+int piece_score(int c)
+{
+  switch(c) {
+  case 0: case 6: return 100;
+  case 1: case 7: return 4;
+  case 2: case 8: return 5;
+  case 3: case 9: return 10000;
+  case 4: case 10: return 500;
+  case 5: case 11: return 2;
+  }
+  return 0;
+}
+int move_status_score(const MoveStatus &s, bool is_white)
+{
+  int score = 0;
+  if (s.you_gain_chess) { score+=10; }
+  score+=piece_score(s.opponent_loses_pieces);
+  score-=5*piece_score(s.you_can_lose_piece);
+  score+=piece_score(s.you_can_lose_without_this_move);
+  //int blackmult = is_white ? 0 : 1;
+  //int whitemult = !is_white ? 0 : 1;
+  score += s.opp_loses_white_attack * 1;
+  score += s.opp_loses_black_attack * 1;
+  //score += s.opp_loses_white_king_area;
+  //score += s.opp_loses_black_king_area;
+
+  score -= s.you_lose_white_attack * 1;
+  score -= s.you_lose_black_attack * 1;
+  score -= s.you_lose_white_king_area;
+  score -= s.you_lose_black_king_area;
+
+  score += s.you_gain_white_attack * 1;
+  score += s.you_gain_black_attack * 1;
+  score += s.you_gain_white_king_area *5;
+  score += s.you_gain_black_king_area *5;
+  
+  return score;
+}
+MoveStatus get_move_status(WorldObj &o, Envi &e, int x, int y, int xx, int yy, const BlockStatusBoard &board)
+{
+  MoveStatus status;
+  int piece2 = o.read_block(xx,yy);
+  int piece = o.read_block(x,y);
+  std::vector<Pos> opponent_loses_positions;
+  if (piece2 != 12)
+    {
+      opponent_loses_positions = possible_moves(o, xx,yy,e,true);
+      status.opponent_loses_pieces = piece2;
+    }
+  if (piece_color_is_white(piece))
+    {
+      if (board.arr[x][y].blackattack>0)
+	{
+	  status.you_can_lose_without_this_move = piece;
+	}
+      if (board.arr[xx][yy].blackattack>0)
+	status.you_can_lose_piece = piece;
+    }
+  if (!piece_color_is_white(piece))
+    {
+      if (board.arr[x][y].whiteattack>0)
+	{
+	  status.you_can_lose_without_this_move = piece;
+	}
+      //std::cout << "whiteattack: " << piece_name(piece) << board.arr[x][y].whiteattack << std::endl;
+      if (board.arr[xx][yy].whiteattack>0)
+	status.you_can_lose_piece = piece;
+    }
+  std::vector<Pos> losing_positions = possible_moves(o, x,y,e,true);
+  int replace_piece = o.read_block(xx,yy);
+  int replace_piece2 = o.read_block(x,y);
+  o.set_block(xx,yy,piece);
+  o.set_block(x,y,12);
+  std::vector<Pos> gaining_positions = possible_moves(o,xx,yy,e,true);
+  int s = gaining_positions.size();
+  for(int i=0;i<s;i++)
+    {
+      Pos p = gaining_positions[i];
+      int piece2 = o.read_block(p.x,p.y);
+      if (piece_color_is_white(piece))
+	{
+	  if (piece2==9) status.you_gain_chess = true;
+	}
+      else
+	{
+	  if (piece2==3) status.you_gain_chess = true;
+	}
+    }
+  o.set_block(xx,yy,replace_piece);
+  o.set_block(x,y,replace_piece2);
+  
+  int opp = opponent_loses_positions.size();
+  for(int i=0;i<opp;i++)
+    {
+      Pos p = opponent_loses_positions[i];
+      status.opp_loses_white_attack += board.arr[p.x][p.y].whiteattack;
+      status.opp_loses_black_attack += board.arr[p.x][p.y].blackattack;
+      if (board.arr[p.x][p.y].whitekingarea)
+	status.opp_loses_white_king_area++;
+      if (board.arr[p.x][p.y].blackkingarea)
+	status.opp_loses_black_king_area++;
+    }
+  int lose = losing_positions.size();
+  for(int i=0;i<lose;i++)
+    {
+      Pos p = losing_positions[i];
+      status.you_lose_white_attack += board.arr[p.x][p.y].whiteattack;
+      status.you_lose_black_attack += board.arr[p.x][p.y].blackattack;
+      if (board.arr[p.x][p.y].whitekingarea)
+	status.you_lose_white_king_area++;
+      if (board.arr[p.x][p.y].blackkingarea)
+	status.you_lose_black_king_area++;
+    }
+  int gain = gaining_positions.size();
+  for(int i=0;i<gain;i++)
+    {
+      Pos p = gaining_positions[i];
+      status.you_gain_white_attack += board.arr[p.x][p.y].whiteattack;
+      status.you_gain_black_attack += board.arr[p.x][p.y].blackattack;
+      if (board.arr[p.x][p.y].whitekingarea)
+	status.you_gain_white_king_area++;
+      if (board.arr[p.x][p.y].blackkingarea)
+	status.you_gain_black_king_area++;
+    }
+  return status;
+}
+std::string piece_name(int c)
+{
+  std::string p0="";
+  switch(c) 
+    {
+    case 0: p0 = "White Tower"; break;
+    case 1: p0 = "White Horse"; break;
+    case 2: p0 = "White Lähetti"; break;
+    case 3: p0 = "White King"; break;
+    case 4: p0 = "White Queen"; break;
+    case 5: p0 = "White Pawn"; break;
+    case 6: p0 = "Black Tower"; break;
+    case 7: p0 = "Black Horse"; break;
+    case 8: p0 = "Black Lähetti"; break;
+    case 9: p0 = "Black King"; break;
+    case 10: p0 = "Black Queen"; break;
+    case 11: p0 = "Black Pawn"; break;
+    case 12: p0 = "Empty"; break;
+    };
+  return p0;
+}
+void print_move(WorldObj &o, const Move &m)
+{
+  const char *ptr0 = "ABCDEFGH";
+  const char *ptr1 = "01234567";
+  int piece0 = o.read_block(m.x,m.y);
+  int piece1 = o.read_block(m.xx,m.yy);
+  std::string p0 = piece_name(piece0);
+  std::string p1 = piece_name(piece1);
+  std::cout << "Move: " << p0 << " " << ptr0[m.x] << ptr1[m.y] << " -> " << ptr0[m.xx] << ptr1[m.yy] << " " << p1 << std::endl;
+}
+void print_move_status(const MoveStatus &s)
+{
+  std::cout << s.opponent_loses_pieces << " " << s.you_can_lose_piece << " " << s.you_can_lose_without_this_move << std::endl;
+}
+Move find_best_move(bool is_white, WorldObj &o, Envi &e, const BlockStatusBoard &board)
+{
+  int best_score = -9999;
+  Move m;
+  MoveStatus ms;
+  m.x = -1;
+  m.y = -1;
+  m.xx = -1;
+  m.yy = -1;
+  for(int y=0;y<8;y++)
+    {
+      for(int x=0;x<8;x++)
+	{
+	  int piece = o.read_block(x,y);
+	  if (piece==12) { } 
+	  else if (is_white && piece_color_is_white(piece))
+	      {
+		std::vector<Pos> moves = possible_moves(o, x,y,e,false); 
+		int s = moves.size();
+		for(int i=0;i<s;i++)
+		  {
+		    Pos p = moves[i];
+		    MoveStatus st = get_move_status(o, e, x,y, p.x,p.y, board);
+		    int score = move_status_score(st,is_white);
+		    if (score > best_score)
+		      {
+			ms = st;
+			best_score = score;
+			m.x = x;
+			m.y = y;
+			m.xx = p.x;
+			m.yy = p.y;
+		      }
+		  }
+	      }
+	  else if(!is_white && !piece_color_is_white(piece))
+	    {
+	      std::vector<Pos> moves = possible_moves(o, x,y,e,false); 
+	      int s = moves.size();
+	      for(int i=0;i<s;i++)
+		{
+		    Pos p = moves[i];
+		    MoveStatus st = get_move_status(o, e, x,y, p.x,p.y, board);
+		    int score = move_status_score(st, is_white);
+		    if (score >= best_score)
+		      {
+			ms = st;
+			best_score = score;
+			m.x = x;
+			m.y = y;
+			m.xx = p.x;
+			m.yy = p.y;
+		      }
+		}
+	    }
+	}
+    }
+  std::cout << "Best score: " << best_score << std::endl;
+  print_move_status(ms);
+  return m;
+}
+Move global_best_move(bool is_white, WorldObj &o, Envi &e)
+{
+  BlockStatusBoard b;
+  get_block_status(o,e,b);
+  //print_block_status(b,0);
+  Move m = find_best_move(is_white, o, e, b);
+  return m;
 }

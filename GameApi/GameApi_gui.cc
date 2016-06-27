@@ -4097,7 +4097,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "int", "int", "PT", "V", "V", "float", "V", "V", "float" },
 			 { "20", "20", "", "", "", "30.0", "", "", "10.0" },
 			 "P", "polygon_api", "torus"));
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::deform,
+			 "deform",
+			 { "obj", "bools", "dx", "dy", "dz" },
+			 { "P", "O", "float", "float", "float" },
+			 { "", "", "0.0", "0.0", "0.0" },
+			 "P", "polygon_api", "deform"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_map,
 			 "color_map",
 			 { "bm", "sx", "sy", "z" },
