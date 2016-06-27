@@ -3665,6 +3665,28 @@ EXPORT GameApi::P GameApi::PolygonApi::color_from_texcoord(P orig,
   FaceCollection *coll = find_facecoll(e, orig);
   return add_polygon2(e, new ColorFromTexcoord(coll, color_tl, color_tr, color_bl, color_br), 1);  
 }
+class DeformFaceCollection : public ForwardFaceCollection
+{
+public:
+  DeformFaceCollection(FaceCollection *obj, VolumeObject *bools, Vector v) : ForwardFaceCollection(*obj), obj(obj), bools(bools), v(v) {}
+  Point FacePoint(int face, int point) const
+  {
+    Point p = obj->FacePoint(face,point);
+    bool b = bools->Inside(p);
+    if (b) { p+=v; }
+    return p;
+  }
+private:
+  FaceCollection *obj;
+  VolumeObject *bools;
+  Vector v;
+};
+EXPORT GameApi::P GameApi::PolygonApi::deform(P obj, O bools, float dx, float dy, float dz)
+{
+  FaceCollection *obj_ = find_facecoll(e,obj);
+  VolumeObject *bools_ = find_volume(e,bools);
+  return add_polygon2(e, new DeformFaceCollection(obj_, bools_, Vector(dx,dy,dz)),1);
+}
 EXPORT GameApi::P GameApi::PolygonApi::and_not_elem(EveryApi &ev, P p1, P p_not,
 						    O o1, O o_not,
 						    CT cutter1, CT cutter_not)
