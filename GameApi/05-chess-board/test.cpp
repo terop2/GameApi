@@ -7,10 +7,90 @@
 #include <cstdlib>
 #include <cassert>
 
+struct Pos { int x; int y; };
+
 struct Move
 {
   int x,y;
   int xx,yy;
+};
+
+struct MoveStatus
+{
+  int opp_loses_white_attack; // +1
+  int opp_loses_black_attack; // +1
+  int opp_loses_white_king_area; // +2
+  int opp_loses_black_king_area; // +2
+  int you_lose_white_attack; // -1
+  int you_lose_black_attack; // -1
+  int you_lose_white_king_area; // -2
+  int you_lose_black_king_area; // -2
+  int you_gain_white_attack; // +1
+  int you_gain_black_attack; // +1
+  int you_gain_white_king_area; // +2
+  int you_gain_black_king_area; // +2
+
+  bool you_gain_chess;
+
+  int opponent_loses_pieces;
+  int you_can_lose_piece;
+  int you_can_lose_without_this_move;
+
+  bool targets_king;
+  bool prevents_opp_king_attack;
+
+  bool removes_check_position;
+  bool bad_check_removal;
+
+  MoveStatus() : opp_loses_white_attack(0),
+		 opp_loses_black_attack(0),
+		 opp_loses_white_king_area(0),
+		 opp_loses_black_king_area(0),
+		 you_lose_white_attack(0),
+		 you_lose_black_attack(0),
+		 you_lose_white_king_area(0),
+		 you_lose_black_king_area(0),
+		 you_gain_white_attack(0),
+		 you_gain_black_attack(0),
+		 you_gain_white_king_area(0),
+		 you_gain_black_king_area(0),
+		 you_gain_chess(false),
+		 opponent_loses_pieces(-1),
+		 you_can_lose_piece(-1),
+		 you_can_lose_without_this_move(-1),
+		 targets_king(false),
+    prevents_opp_king_attack(false),
+    removes_check_position(false),
+    bad_check_removal(false)
+{ }
+};
+		 
+struct BlockStatus
+{
+  int whiteattack; // number of white attacks to the block
+  int blackattack; // number of black attacks to the block
+  int current_status; // 0=empty, 1=white occupy, 2=black occupy
+  bool whitekingarea;
+  bool blackkingarea;
+  bool whiteking;
+  bool blackking;
+  BlockStatus() : whiteattack(0), blackattack(0), current_status(0), whitekingarea(false), blackkingarea(false) { }
+};
+struct BlockStatusBoard
+{
+  BlockStatus arr[8][8];
+  BlockStatusBoard() : arr() { }
+};
+
+struct Line
+{
+  int start_piece;
+  Pos start_pos;
+  int end_piece;
+  Pos end_pos;
+  int delta_x;
+  int delta_y;
+  int line_size;
 };
 
 
@@ -46,7 +126,6 @@ int charsmap(char c)
     case '.': return 12;
     }
 }
-struct Pos { int x; int y; };
 
 struct Envi {
   EveryApi *ev;
@@ -84,6 +163,14 @@ Pos towering_new_block(bool left, bool white);
 Move global_best_move(bool is_white, WorldObj &o, Envi &e);
 void print_move(WorldObj &o, const Move &m);
 std::string piece_name(int c);
+void get_block_status(WorldObj &o, Envi &e, BlockStatusBoard &board);
+MoveStatus get_move_status(WorldObj &o, Envi &e, int x, int y, int xx, int yy, const BlockStatusBoard &board);
+int move_status_score(const MoveStatus &s, bool is_white);
+int line_array_score(std::vector<Line> v, bool is_white);
+int line_score(const Line &l, bool is_white);
+std::vector<Line> calculate_lines(WorldObj &o, Envi &e, int x, int y);
+bool check_status(WorldObj &o, Envi &e, bool is_white);
+
 
 bool piece_color_is_white(int c)
 {
@@ -1191,6 +1278,14 @@ void iter()
 		if (delta==-2) left=true; 
 		towering_update(env.pieces_obj, left, white);
 	      }
+	    // EVALUATE PLAYER's MOVE
+	    BlockStatusBoard board;
+	    get_block_status(*env.pieces_obj, env, board);
+	    MoveStatus s = get_move_status(*env.pieces_obj, env, env.chosen_x, env.chosen_y, env.cursor_x, env.cursor_y, board);
+	    int score = move_status_score(s, true);
+	    std::cout << "WHITE MOVE GETS SCORE: " << score << std::endl;
+
+
 	    env.pieces_obj->set_block(env.chosen_x, env.chosen_y, 12);
 	    env.pieces_obj->set_block(env.cursor_x, env.cursor_y, block);
 	    color_change2(*env.pieces_obj, env.cursor_x, env.cursor_y, block);
@@ -1199,6 +1294,7 @@ void iter()
 	    env.chosen_y = -1;
 	    do_promotion(env.pieces_obj);
 
+
 	    // COMPUTER PLAY
 	    Move m = global_best_move(false, *env.pieces_obj, env);
 	    print_move(*env.pieces_obj, m); 
@@ -1206,6 +1302,23 @@ void iter()
 	    env.pieces_obj->set_block(m.xx,m.yy,piece0);
 	    env.pieces_obj->set_block(m.x,m.y,12);
 	    color_change2(*env.pieces_obj, m.xx, m.yy, piece0);
+
+	    env.towering_allowed_white_left &= update_towering_allowed(m.x, m.y, true, true);
+	    env.towering_allowed_white_right &= update_towering_allowed(m.x, m.y, false, true);
+	    env.towering_allowed_black_left &= update_towering_allowed(m.x, m.y, true, false);
+	    env.towering_allowed_black_right &= update_towering_allowed(m.x, m.y, false, false);
+	    if (towering_needs_update(env.pieces_obj, m.x,m.y,m.xx,m.yy))
+	      {
+		bool white= false;
+		if (block==3) white=true;
+		bool left = false;
+		int delta = m.x - m.xx;
+		if (delta==-2) left=true; 
+		towering_update(env.pieces_obj, left, white);
+	      }
+
+	    do_promotion(env.pieces_obj);
+
 
 	  }
 	else if (env.chosen_x!=-1)
@@ -1216,6 +1329,8 @@ void iter()
 	  }
 	else
 	  {
+	    if (piece_color_is_white(env.pieces_obj->read_block(env.cursor_x,env.cursor_y)))
+	      {
 	    if (env.chosen_x!=-1 ||env.chosen_y!=-1)
 	      {
 		restore_board(env.store, *env.board_obj,true);
@@ -1230,6 +1345,7 @@ void iter()
 		Pos p = vec[i];
 		env.board_obj->set_block(p.x,p.y,3);
 		board_color2(*env.board_obj, p.x, p.y, 3);
+	      }
 	      }
 	  }
       }
@@ -1403,22 +1519,6 @@ int main(int argc, char *argv[]) {
 //
 // COMPUTER PLAYING CHESS
 //
-struct BlockStatus
-{
-  int whiteattack; // number of white attacks to the block
-  int blackattack; // number of black attacks to the block
-  int current_status; // 0=empty, 1=white occupy, 2=black occupy
-  bool whitekingarea;
-  bool blackkingarea;
-  bool whiteking;
-  bool blackking;
-  BlockStatus() : whiteattack(0), blackattack(0), current_status(0), whitekingarea(false), blackkingarea(false) { }
-};
-struct BlockStatusBoard
-{
-  BlockStatus arr[8][8];
-  BlockStatusBoard() : arr() { }
-};
 void print_block_status(const BlockStatusBoard &b, int val)
 {
   for(int yy=0;yy<8;yy++) {
@@ -1482,72 +1582,36 @@ void get_block_status(WorldObj &o, Envi &e, BlockStatusBoard &board)
 	  }
       }
 }
-struct MoveStatus
-{
-  int opp_loses_white_attack; // +1
-  int opp_loses_black_attack; // +1
-  int opp_loses_white_king_area; // +2
-  int opp_loses_black_king_area; // +2
-  int you_lose_white_attack; // -1
-  int you_lose_black_attack; // -1
-  int you_lose_white_king_area; // -2
-  int you_lose_black_king_area; // -2
-  int you_gain_white_attack; // +1
-  int you_gain_black_attack; // +1
-  int you_gain_white_king_area; // +2
-  int you_gain_black_king_area; // +2
-
-  bool you_gain_chess;
-
-  int opponent_loses_pieces;
-  int you_can_lose_piece;
-  int you_can_lose_without_this_move;
-
-  MoveStatus() : opp_loses_white_attack(0),
-		 opp_loses_black_attack(0),
-		 opp_loses_white_king_area(0),
-		 opp_loses_black_king_area(0),
-		 you_lose_white_attack(0),
-		 you_lose_black_attack(0),
-		 you_lose_white_king_area(0),
-		 you_lose_black_king_area(0),
-		 you_gain_white_attack(0),
-		 you_gain_black_attack(0),
-		 you_gain_white_king_area(0),
-		 you_gain_black_king_area(0),
-		 you_gain_chess(false),
-		 opponent_loses_pieces(-1),
-		 you_can_lose_piece(-1),
-		 you_can_lose_without_this_move(-1)
-{ }
-		 
 					 
-};
 int piece_score(int c)
 {
   switch(c) {
   case 0: case 6: return 100;
-  case 1: case 7: return 4;
-  case 2: case 8: return 5;
+  case 1: case 7: return 40;
+  case 2: case 8: return 50;
   case 3: case 9: return 10000;
   case 4: case 10: return 500;
-  case 5: case 11: return 2;
+  case 5: case 11: return 5;
   }
   return 0;
 }
 int move_status_score(const MoveStatus &s, bool is_white)
 {
   int score = 0;
+  if (s.bad_check_removal) { score-=10000; }
+  if (s.removes_check_position) { score+=10000; }
+  if (s.targets_king && s.you_can_lose_piece==-1) { score+=20000; }
+  if (s.prevents_opp_king_attack) { score+=80000; }
   if (s.you_gain_chess) { score+=10; }
-  score+=piece_score(s.opponent_loses_pieces);
+  score+=8*piece_score(s.opponent_loses_pieces);
   score-=5*piece_score(s.you_can_lose_piece);
-  score+=piece_score(s.you_can_lose_without_this_move);
+  score+=3*piece_score(s.you_can_lose_without_this_move);
   //int blackmult = is_white ? 0 : 1;
   //int whitemult = !is_white ? 0 : 1;
   score += s.opp_loses_white_attack * 1;
   score += s.opp_loses_black_attack * 1;
-  //score += s.opp_loses_white_king_area;
-  //score += s.opp_loses_black_king_area;
+  score += s.opp_loses_white_king_area;
+  score += s.opp_loses_black_king_area;
 
   score -= s.you_lose_white_attack * 1;
   score -= s.you_lose_black_attack * 1;
@@ -1555,17 +1619,54 @@ int move_status_score(const MoveStatus &s, bool is_white)
   score -= s.you_lose_black_king_area;
 
   score += s.you_gain_white_attack * 1;
-  score += s.you_gain_black_attack * 1;
-  score += s.you_gain_white_king_area *5;
-  score += s.you_gain_black_king_area *5;
+  score += s.you_gain_black_attack * 3;
+  score += s.you_gain_white_king_area *1;
+  score += s.you_gain_black_king_area *1;
   
   return score;
 }
+bool opp_king_attack_prevention(WorldObj &o, Envi &e, int x, int y, int xx, int yy, bool is_white)
+{
+  int piece2 = o.read_block(xx,yy);
+  if (piece_color_is_white(piece2)==is_white)
+    {
+      std::vector<Pos> moves = possible_moves(o, xx,yy, e, true);
+      int s = moves.size();
+      for(int i=0;i<s;i++)
+	{
+	  Pos p = moves[i];
+	  int piece3 = o.read_block(p.x,p.y);
+	  if (piece3==3 || piece3==9)
+	    {
+	      return true;
+	    }
+	}
+    }
+  return false;
+}
+
 MoveStatus get_move_status(WorldObj &o, Envi &e, int x, int y, int xx, int yy, const BlockStatusBoard &board)
 {
   MoveStatus status;
+
   int piece2 = o.read_block(xx,yy);
   int piece = o.read_block(x,y);
+  bool piece_is_white = piece_color_is_white(piece);
+
+  bool check_stat = check_status(o, e, !piece_is_white);
+  int old_piece_x = o.read_block(x,y);
+  int old_piece_xx = o.read_block(xx,yy);
+  o.set_block(xx,yy,piece);
+  o.set_block(x,y,12);
+  bool check_stat2 = check_status(o,e,!piece_is_white);
+  o.set_block(x,y,old_piece_x);
+  o.set_block(xx,yy,old_piece_xx);
+  if (check_stat && !check_stat2) { status.removes_check_position=true; } 
+  if (check_stat && check_stat2) { status.bad_check_removal=true; }
+
+  bool b = opp_king_attack_prevention(o,e,x,y,xx,yy, piece_color_is_white(piece));
+  if (b) { status.prevents_opp_king_attack = true; }
+  if (piece2==3 ||piece2==9) { status.targets_king = true; }
   std::vector<Pos> opponent_loses_positions;
   if (piece2 != 12)
     {
@@ -1682,17 +1783,31 @@ void print_move(WorldObj &o, const Move &m)
 }
 void print_move_status(const MoveStatus &s)
 {
-  std::cout << s.opponent_loses_pieces << " " << s.you_can_lose_piece << " " << s.you_can_lose_without_this_move << std::endl;
+  std::cout << s.opponent_loses_pieces << " " << s.you_can_lose_piece << " " << s.you_can_lose_without_this_move << " " << s.targets_king << " " << s.prevents_opp_king_attack << " " << std::endl;
 }
 Move find_best_move(bool is_white, WorldObj &o, Envi &e, const BlockStatusBoard &board)
 {
+  static bool flip = false;
   int best_score = -9999;
   Move m;
+  Move m2;
+  int best_score_2 = -9999;
   MoveStatus ms;
+  MoveStatus ms2;
   m.x = -1;
   m.y = -1;
   m.xx = -1;
   m.yy = -1;
+  int score0 = -1;
+  int score1 = -1;
+  int score2 = -1;
+  int best_score0 = -1;
+  int best_score1 = -1;
+  int best_score2 = -1;
+  int best_score0_2 = -1;
+  int best_score1_2 = -1;
+  int best_score2_2 = -1;
+
   for(int y=0;y<8;y++)
     {
       for(int x=0;x<8;x++)
@@ -1708,14 +1823,35 @@ Move find_best_move(bool is_white, WorldObj &o, Envi &e, const BlockStatusBoard 
 		    Pos p = moves[i];
 		    MoveStatus st = get_move_status(o, e, x,y, p.x,p.y, board);
 		    int score = move_status_score(st,is_white);
-		    if (score > best_score)
+		    score0 = score;
+		    int piece = o.read_block(x,y);
+		    std::vector<Line> vec = calculate_lines(o,e,x,y);
+		    score += line_array_score(vec, piece_color_is_white(piece))/2;
+		    score1 = line_array_score(vec, piece_color_is_white(piece))/2;
+		    std::vector<Line> vec2 = calculate_lines(o,e,p.x,p.y);
+		    if (o.read_block(p.x,p.y)==12) {
+		      score -= line_array_score(vec2, piece_color_is_white(piece))/2;
+		      score2 = -line_array_score(vec2, piece_color_is_white(piece))/2;
+		    }
+		    if (score > best_score && (st.you_can_lose_piece != 3 && st.you_can_lose_piece != 9))
 		      {
+			ms2 = ms;
+			best_score_2 = best_score;
+			m2 = m;
+			best_score0_2 = best_score0;
+			best_score1_2 = best_score1;
+			best_score2_2 = best_score2;
+			
+
 			ms = st;
 			best_score = score;
 			m.x = x;
 			m.y = y;
 			m.xx = p.x;
 			m.yy = p.y;
+			best_score0 = score0;
+			best_score1 = score1;
+			best_score2 = score2;
 		      }
 		  }
 	      }
@@ -1728,21 +1864,53 @@ Move find_best_move(bool is_white, WorldObj &o, Envi &e, const BlockStatusBoard 
 		    Pos p = moves[i];
 		    MoveStatus st = get_move_status(o, e, x,y, p.x,p.y, board);
 		    int score = move_status_score(st, is_white);
-		    if (score >= best_score)
+		    score0 = score;
+		    int piece = o.read_block(x,y);
+		    std::vector<Line> vec = calculate_lines(o,e,x,y);
+		    score += line_array_score(vec, piece_color_is_white(piece))/2;
+		    score1 = line_array_score(vec, piece_color_is_white(piece))/2;
+		    std::vector<Line> vec2 = calculate_lines(o,e,p.x,p.y);
+		    if (o.read_block(p.x,p.y)==12) {
+		      
+		      score -= line_array_score(vec2, piece_color_is_white(piece))/2;
+		      score2 = -line_array_score(vec2, piece_color_is_white(piece))/2;
+		    }
+		    if (score >= best_score&& (st.you_can_lose_piece != 3 && st.you_can_lose_piece != 9))
 		      {
+			ms2 = ms;
+			best_score_2 = best_score;
+			m2 = m;
+			best_score0_2 = best_score0;
+			best_score1_2 = best_score1;
+			best_score2_2 = best_score2;
+
 			ms = st;
 			best_score = score;
 			m.x = x;
 			m.y = y;
 			m.xx = p.x;
 			m.yy = p.y;
+			best_score0 = score0;
+			best_score1 = score1;
+			best_score2 = score2;
 		      }
 		}
 	    }
 	}
     }
-  std::cout << "Best score: " << best_score << std::endl;
-  print_move_status(ms);
+  flip = !flip;
+  if (flip || best_score>1500 || best_score_2==-9999)
+    {
+      std::cout << "Best score: " << best_score << " (" << best_score0 << ", " << best_score1 << ", " << best_score2 << ")" << std::endl;
+      print_move_status(ms);
+      return m;
+    }
+  else
+    {
+      std::cout << "Best score2: " << best_score_2 << " (" << best_score0_2 << ", " << best_score1_2 << ", " << best_score2_2 << ")" << std::endl;
+      print_move_status(ms2);
+      return m2;
+    }
   return m;
 }
 Move global_best_move(bool is_white, WorldObj &o, Envi &e)
@@ -1752,4 +1920,337 @@ Move global_best_move(bool is_white, WorldObj &o, Envi &e)
   //print_block_status(b,0);
   Move m = find_best_move(is_white, o, e, b);
   return m;
+}
+
+int line_score(const Line &l, bool is_white)
+{
+  int score = 0;
+  bool attack = false;
+  bool conflict = false;
+  bool disable = false;
+  score += l.line_size*10;
+  if (piece_color_is_white(l.start_piece) != piece_color_is_white(l.end_piece))
+    {
+      conflict = true;
+    }
+  if (piece_color_is_white(l.start_piece) == is_white && piece_color_is_white(l.end_piece)==is_white)
+    {
+      disable = true;
+    }
+  if ((l.start_piece==0 || l.start_piece==6 || l.end_piece==0 || l.end_piece==6)) // tower
+    {
+      if (!disable) {
+      if (l.delta_x == 1 && l.delta_y == 0) { score+=50; attack=true; }
+      if (l.delta_x == 0 && l.delta_y == 1) { score+=50; attack=true; }
+      }
+    }
+  if ((l.start_piece==2 || l.start_piece==8 || l.end_piece==2 || l.end_piece==8)) // lähetti
+    {
+      if (!disable) {
+      if (l.delta_x == 1 && l.delta_y == 1) { score+=20; attack=true; }
+      if (l.delta_x == -1 && l.delta_y == -1) { score+=20; attack=true; }
+      if (l.delta_x == 1 && l.delta_y == -1) { score+=20; attack=true; }
+      if (l.delta_x == -1 && l.delta_y == 1) { score+=20; attack=true; }
+      }
+    }
+  if ((l.start_piece==4 || l.start_piece==10 || l.end_piece==4 || l.end_piece==10)) // queen
+    {
+      bool start_is_queen = false;
+      if (l.start_piece == 4 || l.start_piece==10) { start_is_queen=true; }
+      if (!disable) {
+	if (start_is_queen && is_white==piece_color_is_white(l.start_piece))
+	  {
+	    score+=400;
+	  }
+	if (!start_is_queen && is_white==piece_color_is_white(l.end_piece))
+	  {
+	    score+=400;
+	  }
+	if (start_is_queen && is_white!=piece_color_is_white(l.start_piece))
+	  {
+	    score-=400;
+	  }
+	if (!start_is_queen && is_white!=piece_color_is_white(l.end_piece))
+	  {
+	    score-=400;
+	  }
+	
+      attack=true;
+      }
+    }
+  if (conflict && attack && (l.start_piece==3 || l.start_piece==9 || l.end_piece==3 ||l.end_piece==9)) // king
+    {
+      bool start_is_king = false;
+      if (l.start_piece==3 || l.start_piece==9) { start_is_king = true; }
+      if (start_is_king && is_white == piece_color_is_white(l.start_piece))
+	score-=1000;
+      if (!start_is_king && is_white==piece_color_is_white(l.end_piece))
+	score-=1000;
+      if (start_is_king && is_white != piece_color_is_white(l.start_piece))
+	score+=1000;
+      if (!start_is_king && is_white != piece_color_is_white(l.end_piece))
+	score+=1000;
+    }
+  if (attack) {
+    if (is_white != piece_color_is_white(l.start_piece))
+      score-=piece_score(l.start_piece);
+    if (is_white != piece_color_is_white(l.end_piece))
+      score-=piece_score(l.end_piece);
+
+    if (is_white == piece_color_is_white(l.start_piece))
+      score+=piece_score(l.start_piece);
+    if (is_white == piece_color_is_white(l.end_piece))
+      score+=piece_score(l.end_piece);
+    }
+  //if (conflict) score+=100;
+  return score;
+}
+int line_array_score(std::vector<Line> v, bool is_white)
+{
+  int s = v.size();
+  int score = 0;
+  for(int i=0;i<s;i++)
+    {
+      Line l = v[i];
+      score += line_score(l, is_white);
+    }
+  return score;
+}
+std::vector<Line> calculate_lines(WorldObj &o, Envi &e, int x, int y)
+{
+  std::vector<Line> lines;
+  { // LEFT&RIGHT
+  Pos p1,p2;
+  int piece_0 = -1;
+  int piece_1 = -1;
+  Pos pos_0;
+  Pos pos_1;
+  int delta_x,delta_y;
+  int line_size = -1;
+  for(int xx=1;xx<8;xx++)
+    {
+      p1 = Pos{ x+xx, y };
+      if (is_inside_board(p1))
+	{
+	  int piece2 = o.read_block(p1.x, p1.y);
+	  if (piece2 == 12) continue;
+	  piece_0 = piece2;
+	  pos_0 = p1;
+	  delta_x = 1;
+	  delta_y = 0;
+	  line_size=xx;
+	  break;
+	}
+    }
+  for(int xx=1;xx<8;xx++)
+    {
+      p2 = Pos{ x-xx, y };
+      if (is_inside_board(p2))
+	{
+	  int piece2 = o.read_block(p2.x,p2.y);
+	  if (piece2 == 12) continue;
+	  piece_1 = piece2;
+	  pos_1 = p2;
+	  line_size+=xx;
+	  break;
+	}
+    }
+  if (piece_0 != -1 && piece_1 != -1)
+    {
+      Line l;
+      l.start_piece = piece_0;
+      l.start_pos = pos_0;
+      l.end_piece = piece_1;
+      l.end_pos = pos_1;
+      l.delta_x = delta_x;
+      l.delta_y = delta_y;
+      l.line_size = line_size;
+      lines.push_back(l);
+    }
+  
+  }
+
+
+
+  { // UP&DOWN
+  Pos p1,p2;
+  int piece_0 = -1;
+  int piece_1 = -1;
+  Pos pos_0;
+  Pos pos_1;
+  int delta_x,delta_y;
+  int line_size = -1;
+  for(int xx=1;xx<8;xx++)
+    {
+      p1 = Pos{ x, y+xx };
+      if (is_inside_board(p1))
+	{
+	  int piece2 = o.read_block(p1.x, p1.y);
+	  if (piece2 == 12) continue;
+	  piece_0 = piece2;
+	  pos_0 = p1;
+	  delta_x = 0;
+	  delta_y = 1;
+	  line_size = xx;
+	  break;
+	}
+    }
+  for(int xx=1;xx<8;xx++)
+    {
+      p2 = Pos{ x, y+xx };
+      if (is_inside_board(p2))
+	{
+	  int piece2 = o.read_block(p2.x,p2.y);
+	  if (piece2 == 12) continue;
+	  piece_1 = piece2;
+	  pos_1 = p2;
+	  line_size+=xx;
+	  break;
+	}
+    }
+  if (piece_0 != -1 && piece_1 != -1)
+    {
+      Line l;
+      l.start_piece = piece_0;
+      l.start_pos = pos_0;
+      l.end_piece = piece_1;
+      l.end_pos = pos_1;
+      l.delta_x = delta_x;
+      l.delta_y = delta_y;
+      l.line_size = line_size;
+      lines.push_back(l);
+    }
+  
+  }
+
+
+
+  { // TOPLEFT & BOTTOMRIGHT
+  Pos p1,p2;
+  int piece_0 = -1;
+  int piece_1 = -1;
+  Pos pos_0;
+  Pos pos_1;
+  int delta_x,delta_y;
+  int line_size = -1;
+  for(int xx=1;xx<8;xx++)
+    {
+      p1 = Pos{ x+xx, y+xx };
+      if (is_inside_board(p1))
+	{
+	  int piece2 = o.read_block(p1.x, p1.y);
+	  if (piece2 == 12) continue;
+	  piece_0 = piece2;
+	  pos_0 = p1;
+	  delta_x = 1;
+	  delta_y = 1;
+	  line_size = xx;
+	  break;
+	}
+    }
+  for(int xx=1;xx<8;xx++)
+    {
+      p2 = Pos{ x-xx, y-xx };
+      if (is_inside_board(p2))
+	{
+	  int piece2 = o.read_block(p2.x,p2.y);
+	  if (piece2 == 12) continue;
+	  piece_1 = piece2;
+	  pos_1 = p2;
+	  line_size+=xx;
+	  break;
+	}
+    }
+  if (piece_0 != -1 && piece_1 != -1)
+    {
+      Line l;
+      l.start_piece = piece_0;
+      l.start_pos = pos_0;
+      l.end_piece = piece_1;
+      l.end_pos = pos_1;
+      l.delta_x = delta_x;
+      l.delta_y = delta_y;
+      l.line_size = line_size;
+      lines.push_back(l);
+    }
+  
+  }
+
+
+
+  { // TOPRIGHT & BOTTOMLEFT
+  Pos p1,p2;
+  int piece_0 = -1;
+  int piece_1 = -1;
+  Pos pos_0;
+  Pos pos_1;
+  int delta_x,delta_y;
+  int line_size = -1;
+  for(int xx=1;xx<8;xx++)
+    {
+      p1 = Pos{ x-xx, y+xx };
+      if (is_inside_board(p1))
+	{
+	  int piece2 = o.read_block(p1.x, p1.y);
+	  if (piece2 == 12) continue;
+	  piece_0 = piece2;
+	  pos_0 = p1;
+	  delta_x = -1;
+	  delta_y = 1;
+	  line_size = xx;
+	  break;
+	}
+    }
+  for(int xx=1;xx<8;xx++)
+    {
+      p2 = Pos{ x+xx, y-xx };
+      if (is_inside_board(p2))
+	{
+	  int piece2 = o.read_block(p2.x,p2.y);
+	  if (piece2 == 12) continue;
+	  piece_1 = piece2;
+	  pos_1 = p2;
+	  line_size += xx;
+	  break;
+	}
+    }
+  if (piece_0 != -1 && piece_1 != -1)
+    {
+      Line l;
+      l.start_piece = piece_0;
+      l.start_pos = pos_0;
+      l.end_piece = piece_1;
+      l.end_pos = pos_1;
+      l.delta_x = delta_x;
+      l.delta_y = delta_y;
+      l.line_size = line_size;
+      lines.push_back(l);
+    }
+  
+  }
+
+
+  return lines;
+}
+
+bool check_status(WorldObj &o, Envi &e, bool is_white)
+{
+  for(int y=0;y<8;y++)
+    for(int x=0;x<8;x++)
+      {
+	int piece = o.read_block(x,y);
+	if (piece_color_is_white(piece)==is_white)
+	  {
+	    std::vector<Pos> vec = possible_moves(o,x,y,e,false);
+	    int s=vec.size();
+	    for(int i=0;i<s;i++)
+	      {
+		Pos p = vec[i];
+		int piece2 = o.read_block(p.x,p.y);
+		if (piece2==3 || piece2 == 9)
+		  return true;
+	      }
+	  }
+      }
+  return false;
 }
