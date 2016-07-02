@@ -41,6 +41,7 @@ struct MoveStatus
 
   bool removes_check_position;
   bool bad_check_removal;
+  bool adds_check_position;
 
   MoveStatus() : opp_loses_white_attack(0),
 		 opp_loses_black_attack(0),
@@ -61,7 +62,8 @@ struct MoveStatus
 		 targets_king(false),
     prevents_opp_king_attack(false),
     removes_check_position(false),
-    bad_check_removal(false)
+    bad_check_removal(false),
+    adds_check_position(false)
 { }
 };
 		 
@@ -1600,6 +1602,7 @@ int move_status_score(const MoveStatus &s, bool is_white)
   int score = 0;
   if (s.bad_check_removal) { score-=10000; }
   if (s.removes_check_position) { score+=10000; }
+  if (s.adds_check_position) { score-=20000; }
   if (s.targets_king && s.you_can_lose_piece==-1) { score+=20000; }
   if (s.prevents_opp_king_attack) { score+=80000; }
   if (s.you_gain_chess) { score+=10; }
@@ -1663,6 +1666,7 @@ MoveStatus get_move_status(WorldObj &o, Envi &e, int x, int y, int xx, int yy, c
   o.set_block(xx,yy,old_piece_xx);
   if (check_stat && !check_stat2) { status.removes_check_position=true; } 
   if (check_stat && check_stat2) { status.bad_check_removal=true; }
+  if (!check_stat && check_stat2) { status.adds_check_position=true; }
 
   bool b = opp_king_attack_prevention(o,e,x,y,xx,yy, piece_color_is_white(piece));
   if (b) { status.prevents_opp_king_attack = true; }
