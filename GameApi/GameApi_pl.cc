@@ -850,7 +850,12 @@ EXPORT GameApi::P GameApi::PolygonApi::texture(P orig, BM bm, int choose)
   BoxableFaceCollection *coll2 = new TextureElem2(*coll, *req, *coords);
   return add_polygon(e, coll2, 1);
 }
-
+EXPORT GameApi::P GameApi::PolygonApi::or_array2(std::vector<P> vec)
+{
+  if (vec.size()>0)
+    return or_array(&vec[0],vec.size());
+  return empty();
+}
 EXPORT GameApi::P GameApi::PolygonApi::or_array(P *p1, int size)
 {
   return or_array_1(p1,size);

@@ -4206,6 +4206,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P", "P" },
 			 { "", "" },
 			 "P", "polygon_api", "or_elem"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::or_array2,
+			 "p_or_array",
+			 { "vec" },
+			 { "[P]" },
+			 { "" },
+			 "P", "polygon_api", "or_array2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::translate,
 			 "translate",
 			 { "orig", "dx", "dy", "dz" },
