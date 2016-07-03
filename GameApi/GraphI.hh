@@ -290,6 +290,10 @@ struct MainLoopEnv
   Matrix env;
   std::string vertex_shader = "";
   std::string fragment_shader = "";
+
+  Matrix in_MV;
+  Matrix in_T;
+  Matrix in_N;
 };
 
 class MainLoopItem

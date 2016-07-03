@@ -2620,7 +2620,7 @@ EXPORT void GameApi::PolygonApi::update(VA va)
 class RenderVA : public MainLoopItem
 {
 public:
-  RenderVA(GameApi::EveryApi &ev, GameApi::PolygonApi &api, GameApi::VA va) : ev(ev), api(api), va(va) 
+  RenderVA(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::PolygonApi &api, GameApi::VA va) : env(env), ev(ev), api(api), va(va)
   {
     shader.id = -1;
   }
@@ -2652,9 +2652,9 @@ public:
     if (shader.id!=-1)
       {
 	ev.shader_api.use(sh);
-	GameApi::M m = ev.shader_api.get_matrix_var(sh, "in_MV");
-	GameApi::M m1 = ev.shader_api.get_matrix_var(sh, "in_T");
-	GameApi::M m2 = ev.shader_api.get_matrix_var(sh, "in_N");
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
 	ev.shader_api.set_var(shader, "in_T", m1);
@@ -2666,6 +2666,7 @@ public:
     api.render_vertex_array(va);
   }
 private:
+  GameApi::Env &env;
   GameApi::EveryApi &ev;
   GameApi::PolygonApi &api;
   GameApi::VA va;
@@ -2838,7 +2839,7 @@ EXPORT GameApi::ML GameApi::PolygonApi::shading_shader(EveryApi &ev, ML mainloop
 }
 EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml(EveryApi &ev, VA va)
 {
-  return add_main_loop(e, new RenderVA(ev, *this, va));
+  return add_main_loop(e, new RenderVA(e, ev, *this, va));
 }
 EXPORT void GameApi::PolygonApi::print_stat(VA va)
 {

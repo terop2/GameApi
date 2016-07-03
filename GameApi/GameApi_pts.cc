@@ -622,22 +622,52 @@ GameApi::PTS GameApi::PointsApi::color_points(PTS p, unsigned int color)
 class PointsApiRender : public MainLoopItem
 {
 public:
-  PointsApiRender(GameApi::EveryApi &ev, PointArray3 *arr) : ev(ev), arr(arr) { }
+  PointsApiRender(GameApi::Env &env, GameApi::EveryApi &ev, PointArray3 *arr) : env(env), ev(ev), arr(arr) { }
   void execute(MainLoopEnv &e)
   {
     GameApi::SH sh;
     sh.id = e.sh_color;
+
+    ev.shader_api.use(sh);
+    Matrix mat2 = e.in_MV;
+    GameApi::M mat = add_matrix2(env, mat2);
+    ev.shader_api.set_var(sh, "in_MV", mat);
+
+#if 1
+    if (shader.id==-1 && e.vertex_shader!="" && e.fragment_shader!="")
+      {
+	shader = ev.shader_api.get_normal_shader("comb", "comb", "", e.vertex_shader, e.fragment_shader);
+	ev.mainloop_api.init_3d(shader);
+	ev.mainloop_api.alpha(true); 
+      }
+
+    if (shader.id!=-1)
+      {
+	ev.shader_api.use(sh);
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.use(shader);
+	ev.shader_api.set_var(shader, "in_MV", m);
+	ev.shader_api.set_var(shader, "in_T", m1);
+	ev.shader_api.set_var(shader, "in_N", m2);
+
+	sh = shader;
+      }
+#endif
     ev.shader_api.use(sh);
     glBindVertexArray(arr->vao[0]);
     glDrawArrays(GL_POINTS, 0, arr->numpoints);
   }
   int shader_id() { return -1; }
 private:
+  GameApi::Env &env;
   GameApi::EveryApi &ev;
   PointArray3 *arr;
+  GameApi::SH shader;
 };
 GameApi::ML GameApi::PointsApi::render_ml(EveryApi &ev, PTA array)
 {
   PointArray3 *arr = find_point_array3(e, array);
-  return add_main_loop(e, new PointsApiRender(ev,arr));
+  return add_main_loop(e, new PointsApiRender(e, ev,arr));
 }

@@ -231,8 +231,11 @@ public:
   IMPORT Event get_event();
   void waittof();
   SP screenspace();
-  void execute_ml(ML ml, SH color, SH texture, SH arr_texture, const Event &e);
+  void execute_ml(ML ml, SH color, SH texture, SH arr_texture, const Event &e, M in_MV, M in_T, M in_N);
   ML array_ml(std::vector<ML> vec);
+  M in_MV(EveryApi &ev, bool is_3d);
+  M in_T(EveryApi &ev, bool is_3d);
+  M in_N(EveryApi &ev, bool is_3d);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);

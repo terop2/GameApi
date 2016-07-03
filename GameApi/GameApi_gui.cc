@@ -524,7 +524,7 @@ private:
 class MLGuiWidget : public GuiWidgetForward
 {
 public:
-  MLGuiWidget(GameApi::EveryApi &ev, GameApi::ML p, GameApi::SH sh, GameApi::SH sh2, GameApi::SH sh_arr, GameApi::SH old_sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), sh(sh), sh2(sh2), sh_arr(sh_arr), old_sh(old_sh), p(p),sx(sx),sy(sy), screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
+  MLGuiWidget(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::ML p, GameApi::SH sh, GameApi::SH sh2, GameApi::SH sh_arr, GameApi::SH old_sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), env(env), sh(sh), sh2(sh2), sh_arr(sh_arr), old_sh(old_sh), p(p),sx(sx),sy(sy), screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
     Point2d p3 = {-666.0, -666.0 };
     update(p3, -1,-1,-1);
     Point2d p2 = { 0.0,0.0 };
@@ -594,7 +594,10 @@ public:
 	ev.shader_api.use(sh_arr);
 	ev.shader_api.set_var(sh_arr, "in_MV", mat);
 	ev.shader_api.use(sh);
-	ev.mainloop_api.execute_ml(p, sh, sh2, sh_arr,e);
+	GameApi::M in_T = ev.mainloop_api.in_T(ev, true);
+	GameApi::M in_N = ev.mainloop_api.in_N(ev, true);
+	//e.inMV = find_matrix(env, mat);
+	ev.mainloop_api.execute_ml(p, sh, sh2, sh_arr,e, mat, in_T, in_N);
 	e.type = -1;
 	e.ch = -1;
 	e.button = -1;
@@ -612,6 +615,7 @@ public:
       }
   }
 private:
+  GameApi::Env &env;
   GameApi::SH sh;
   GameApi::SH sh2;
   GameApi::SH sh_arr;
@@ -1739,7 +1743,7 @@ EXPORT GameApi::W GameApi::GuiApi::va(VA p, SH sh2, int sx, int sy, int screen_s
 }
 EXPORT GameApi::W GameApi::GuiApi::ml(ML p, SH sh2, SH sh3, SH sh_arr, int sx, int sy, int screen_size_x, int screen_size_y)
 {
-  return add_widget(e, new MLGuiWidget(ev, p, sh2, sh3, sh_arr, sh, sx,sy, screen_size_x, screen_size_y));
+  return add_widget(e, new MLGuiWidget(e, ev, p, sh2, sh3, sh_arr, sh, sx,sy, screen_size_x, screen_size_y));
 }
 EXPORT GameApi::W GameApi::GuiApi::shader_plane(SFO p, int sx, int sy, int screen_x, int screen_y)
 {
