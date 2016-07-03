@@ -2406,6 +2406,7 @@ public:
     ev.shader_api.set_var(s2, "in_MV", res2);
     ev.shader_api.use(s3);
     ev.shader_api.set_var(s3, "in_MV", res2);
+    env.in_MV = find_matrix(e, res2);
     Matrix old_env = env.env;
     env.env = env.env * find_matrix(e,res2);
     next->execute(env);
@@ -2452,8 +2453,10 @@ public:
     ev.shader_api.set_var(s2, "in_MV", mat2);
     ev.shader_api.use(s3);
     ev.shader_api.set_var(s3, "in_MV", mat2);
+    env.in_MV = find_matrix(e, mat2);
+
     Matrix old_env = env.env;
-    env.env = find_matrix(e,mat2) * env.env;
+    env.env = env.env * find_matrix(e,mat2);
     next->execute(env);
     env.env = old_env;
   }

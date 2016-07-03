@@ -537,7 +537,7 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 
   return e2;
 }
-void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH array_texture, const Event &ee)
+void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH array_texture, const Event &ee, M in_MV, M in_T, M in_N)
 {
   MainLoopItem *item = find_main_loop(e, ml);
   MainLoopEnv ek;
@@ -548,7 +548,10 @@ void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH array_text
   ek.ch = ee.ch;
   ek.cursor_pos = *find_point(e,ee.cursor_pos);
   ek.button = ee.button;
-  ek.env = Matrix::Identity();
+  ek.env = find_matrix(e,in_MV);
+  ek.in_MV = find_matrix(e, in_MV);
+  ek.in_T = find_matrix(e, in_T);
+  ek.in_N = find_matrix(e, in_N);
   item->execute(ek);
 }
 
@@ -615,7 +618,10 @@ bool GameApi::MainLoopApi::logo_iter()
   LogoEnv *env = logo_env;
   GameApi::MainLoopApi::Event event = env->ev->mainloop_api.get_event();
   env->ev->mainloop_api.clear_3d();
-  env->ev->mainloop_api.execute_ml(env->res, env->color, env->texture, env->arr, event);
+  M in_MV = env->ev->mainloop_api.in_MV(*env->ev, true);
+  M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
+  M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
+  env->ev->mainloop_api.execute_ml(env->res, env->color, env->texture, env->arr, event,in_MV, in_T, in_N);
   env->ev->mainloop_api.swapbuffers();
   frame_count++;
   if (frame_count>300) {
@@ -681,4 +687,37 @@ ML I34=ev.move_api.move_ml(ev,I30,I33);
  env->texture = texture;
  env->arr = arr;
  logo_env = env;
+}
+GameApi::M GameApi::MainLoopApi::in_N(EveryApi &ev, bool is_3d)
+{
+  if (is_3d)
+    {
+      return ev.matrix_api.identity();      
+    }
+  else
+    {
+      return ev.matrix_api.identity();      
+    }
+}
+GameApi::M GameApi::MainLoopApi::in_T(EveryApi &ev, bool is_3d)
+{
+  if (is_3d)
+    {
+      return ev.matrix_api.trans(0.0,0.0,-500.0);      
+    }
+  else
+    {
+      return ev.matrix_api.identity();      
+    }
+}
+GameApi::M GameApi::MainLoopApi::in_MV(EveryApi &ev, bool is_3d)
+{
+  if (is_3d)
+    {
+      return ev.matrix_api.identity();      
+    }
+  else
+    {
+      return ev.matrix_api.identity();      
+    }
 }
