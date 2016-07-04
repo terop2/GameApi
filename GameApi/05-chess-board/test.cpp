@@ -1192,8 +1192,21 @@ void iter()
     float xxx, yyy, zzz;
     float x1 = env.ev->point_api.pt_x(cursor);
     float y1 = env.ev->point_api.pt_y(cursor);
-    
-    
+
+#if 0
+    M m = env.ev->matrix_api.perspective(70.0, double(800)/600, 10.1, 60000.0);
+    //M m2 = env.ev->mainloop_api.in_T(*env.ev, true);
+    M m2 = env.ev->matrix_api.mult(env.ev->matrix_api.trans(0.0, 0.0, -1000.0), // -1000
+			    env.ev->matrix_api.scale(1.0, -1.0, 1.0));
+
+    M m3 = env.ev->matrix_api.mult(m,m2);
+
+    bool b = env.board_obj->pick_object2(x1,y1, 100.0,
+					     800,600,
+					 m3,
+					 0,0);
+    std::cout << "pick_object2: " << b << std::endl;
+#endif
 
     //x1/=800.0;
     //y1/=600.0;

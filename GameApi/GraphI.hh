@@ -425,4 +425,20 @@ public:
   std::vector<ImplicitFunction3d*> vec;
 };
 
+class TreeLevel
+{
+public:
+  virtual int num_childs() const=0;
+  virtual Matrix get_child(int i, float time) const=0;
+};
+
+class TreeStack
+{
+public:
+  virtual int num_levels() const=0;
+  virtual TreeLevel *get_level(int i) const=0;
+};
+
+//void draw_tree(Tree *spec, std::vector<ML> vec);
+
 #endif

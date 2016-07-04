@@ -84,7 +84,11 @@ void iter(void *arg)
 	env->ev->shader_api.set_var(env->arr_texture_sh, "in_MV", mat);
 	env->ev->shader_api.use(env->color_sh);
 
-	env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->arr_texture_sh, e);
+	M in_MV = env->ev->mainloop_api.in_MV(*env->ev, true);
+	M in_T = env->ev->mainloop_api.in_MV(*env->ev, true);
+	M in_N = env->ev->mainloop_api.in_MV(*env->ev, true);
+
+	env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->arr_texture_sh, e, in_MV, in_T, in_N);
 
 
     env->ev->mainloop_api.fpscounter();

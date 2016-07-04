@@ -25,6 +25,8 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct TL { int id; };
+  //struct T { int id; };
   struct MN { int id; };
   struct CP { int id; };
   struct DR { int id; };
@@ -236,6 +238,7 @@ public:
   M in_MV(EveryApi &ev, bool is_3d);
   M in_T(EveryApi &ev, bool is_3d);
   M in_N(EveryApi &ev, bool is_3d);
+  M in_P(EveryApi &ev, bool is_3d);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);
@@ -853,6 +856,29 @@ public:
 			     float &pos_x, float &pos_y, float &rot_y,
 			     Quake_data &data,
 			     float &speed_x, float &speed_y, float speed, float rot_speed);
+};
+
+
+class PickingApi
+{
+public:
+  PickingApi(Env &e) : e(e) { }
+  BB pick_area(EveryApi &ev, float mouse_x, float mouse_y, float radius, int scr_size_x, int scr_size_y);
+  O pick_volume(M in_P, BB pick);
+  bool picked( O o, float x, float y, float z);
+private:
+  Env &e;
+};
+
+class TreeApi
+{
+public:
+  TreeApi(Env &e) : e(e) { }
+  TL level(std::vector<MN> vec);
+  T tree(std::vector<TL> vec);
+  ML tree_ml(EveryApi &ev, T tree, std::vector<ML> vec);
+private:
+  Env &e;
 };
 
 class PhysicsApi
@@ -2119,6 +2145,7 @@ public:
 	IMPORT M projection(float z_min);
 	IMPORT M perspective_projection(float dist);
 	IMPORT M perspective(float fovy, float aspect, float near, float far);
+        IMPORT M ortho( float left, float right, float bottom, float top, float near, float far);
 	IMPORT M inverse(M m1);
 	IMPORT M mult(M m1, M m2);
 	IMPORT M rotate_around_axis(V v, float angle);
@@ -2324,7 +2351,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -2369,6 +2396,8 @@ struct EveryApi
   CollisionPlane collision_api;
   MovementNode move_api;
   ImplicitApi implicit_api;
+  PickingApi picking_api;
+  TreeApi tree_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);
@@ -3176,6 +3205,16 @@ private:
       yy = pts.pt_y(point3);
       zz = pts.pt_z(point3);
 
+    }
+    bool pick_object2(float mouse_x, float mouse_y, float radius, int scr_x, int scr_y, M in_P, int x, int y)
+    {
+      float pos_x = dx*x + radius/2;
+      float pos_y = 0.0;
+      float pos_z = dy*y + radius/2;
+      BB area = ev.picking_api.pick_area(ev, mouse_x, mouse_y, radius, scr_x, scr_y);
+      O vol = ev.picking_api.pick_volume(in_P, area);
+      bool b = ev.picking_api.picked(vol, pos_x, pos_y, pos_z);
+      return b;
     }
     void set_var(std::string name, float r, float g, float b, float a)
     {
