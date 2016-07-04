@@ -49,6 +49,11 @@ EXPORT GameApi::M GameApi::MatrixApi::mult(M m1, M m2)
   Matrix mb = find_matrix(e, m2);
   return add_matrix2(e, ma * mb);
 }
+EXPORT GameApi::M GameApi::MatrixApi::ortho(float left, float right, float bottom, float top, float near2, float far2)
+{
+  Matrix m = Matrix::Ortho(left, right, bottom, top, near2, far2);
+  return add_matrix(e, new SimpleMatrix(m));
+}
 EXPORT GameApi::M GameApi::MatrixApi::perspective(float fovy, float aspect, float near0, float far0)
 {
   Matrix m = Matrix::Perspective(fovy, aspect, near0, far0);

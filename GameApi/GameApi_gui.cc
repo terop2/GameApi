@@ -3217,6 +3217,8 @@ MACRO(GameApi::PTA)
 MACRO(GameApi::MN)
 MACRO(GameApi::VO)
 MACRO(GameApi::IM)
+MACRO(GameApi::TL)
+MACRO(GameApi::T)
 #undef MACRO
 
 
@@ -3996,6 +3998,24 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "ev", "", "" },
 			 "ML", "move_api", "move_ml"));
 			 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::tree_api, &GameApi::TreeApi::level,
+			 "tree_level",
+			 { "vec" },
+			 { "[MN]" },
+			 { "" },
+			 "TL", "tree_api", "level"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::tree_api, &GameApi::TreeApi::tree,
+			 "tree",
+			 { "vec" },
+			 { "[TL]" },
+			 { "" },
+			 "T", "tree_api", "tree"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::tree_api, &GameApi::TreeApi::tree_ml,
+			 "tree_ml",
+			 { "ev", "tree", "vec" },
+			 { "EveryApi&", "T", "[ML]" },
+			 { "ev", "", "" },
+			 "ML", "tree_api", "tree_ml"));
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_event,
 			 "keyevent_ml",

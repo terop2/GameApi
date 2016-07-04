@@ -304,7 +304,23 @@ EXPORT GameApi::Env::~Env()
 }
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
+GameApi::TL add_tree_level(GameApi::Env &e, TreeLevel *lvl)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->tree_levels.push_back(lvl);
+  GameApi::TL im;
+  im.id = env->tree_levels.size()-1;
+  return im;
+}
+GameApi::T add_tree(GameApi::Env &e, TreeStack *tre)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->trees.push_back(tre);
+  GameApi::T im;
+  im.id = env->trees.size()-1;
+  return im;
 
+}
 GameApi::IM add_implicit(GameApi::Env &e, ImplicitFunction3d *m)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -988,6 +1004,16 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   Array<int,bool> *enable = info.enable_obj_array;
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
+}
+TreeStack *find_tree(GameApi::Env &e, GameApi::T m)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->trees[m.id];
+}
+TreeLevel *find_tree_level(GameApi::Env &e, GameApi::TL m)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->tree_levels[m.id];
 }
 ImplicitFunction3d *find_implicit(GameApi::Env &e, GameApi::IM m)
 {
@@ -2490,3 +2516,176 @@ GameApi::ML GameApi::MovementNode::wasd(EveryApi &ev, GameApi::ML ml,
   return m4;
 }
 
+GameApi::BB GameApi::PickingApi::pick_area(GameApi::EveryApi &ev, float mouse_x, float mouse_y, float radius, int scr_size_x, int scr_size_y)
+{
+  BB empty = ev.bool_bitmap_api.empty(scr_size_x, scr_size_y);
+  BB circle = ev.bool_bitmap_api.circle(empty, mouse_x, mouse_y, radius);
+  return circle;
+}
+class MatrixVolume : public VolumeObject
+{
+public:
+  MatrixVolume(Bitmap<bool> &b, Matrix m) : b(b),m(m) { }
+  bool Inside(Point v) const
+  {
+    std::cout << "P: " << v.x << " " << v.y << " " << v.z << std::endl;
+    Point p2 = v * m;
+    p2.x *=800.0;
+    p2.y *=600.0;
+    p2.x /= p2.z;
+    p2.y /= p2.z;
+    p2.x += 800/2;
+    p2.y += 600/2;
+    std::cout << "pick_pos " << p2.x << " " << p2.y << " " << p2.z << std::endl;
+    if (p2.x>0.0 && p2.y>0.0 && p2.x<b.SizeX() && p2.y<b.SizeY())
+      {
+	bool bb = b.Map(p2.x,p2.y);
+	return bb;
+      }
+    return false;
+  }
+private:
+  Bitmap<bool> &b;
+  Matrix m;
+};
+GameApi::O GameApi::PickingApi::pick_volume(M in_P, BB pick)
+{
+  Bitmap<bool> *bm = find_bool_bitmap(e, pick)->bitmap;
+  Matrix m = find_matrix(e, in_P);
+  for(int i=0;i<16;i++) std::cout << m.matrix[i] << " ";
+  std::cout << std::endl;
+  return add_volume(e, new MatrixVolume(*bm, m));
+}
+bool GameApi::PickingApi::picked(O o, float x, float y, float z)
+{
+  VolumeObject *obj = find_volume(e, o);
+  Point p(x,y,z);
+  bool b = obj->Inside(p);
+  return b;
+}
+
+class TreeLevelImpl : public TreeLevel
+{
+public:
+  TreeLevelImpl(std::vector<Movement*> vec) : vec(vec) { }
+  int num_childs() const { return vec.size(); }
+  Matrix get_child(int i, float time) const
+  {
+    Matrix m = vec[i]->get_whole_matrix(time);
+    return m;
+  }
+private:
+  std::vector<Movement*> vec;
+};
+
+GameApi::TL GameApi::TreeApi::level(std::vector<MN> vec)
+{
+  std::vector<Movement*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_move(e, vec[i]));
+    }
+  return add_tree_level(e, new TreeLevelImpl(vec2));
+}
+class TreeImpl : public TreeStack
+{
+public:
+  TreeImpl(std::vector<TreeLevel*> vec) : vec(vec) { }
+  int num_levels() const
+  {
+    return vec.size();
+  }
+  TreeLevel *get_level(int i) const
+  {
+    return vec[i];
+  }
+private:
+  std::vector<TreeLevel*> vec;
+};
+GameApi::T GameApi::TreeApi::tree(std::vector<TL> vec)
+{
+  std::vector<TreeLevel*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_tree_level(e, vec[i]));
+    }
+  return add_tree(e, new TreeImpl(vec2));
+}
+
+class TreeMainLoop : public MainLoopItem
+{
+public:
+  TreeMainLoop(GameApi::Env &e, GameApi::EveryApi &ev, TreeStack *t, std::vector<MainLoopItem*> vec) : e(e), ev(ev), next(vec), tree2(t) 
+  {
+    start_time = ev.mainloop_api.get_time();
+  }
+  int shader_id() { return -1; }
+  void execute_one(MainLoopEnv &env, Matrix m, int level)
+  {
+	  GameApi::M m2 = add_matrix2(e, m);
+	  GameApi::SH s1;
+	  s1.id = env.sh_texture;
+	  GameApi::SH s2;
+	  s2.id = env.sh_array_texture;
+	  GameApi::SH s3;
+	  s3.id = env.sh_color;
+	  //GameApi::M mat = ev.move_api.get_matrix(mn, time);
+	  //GameApi::M m2 = add_matrix2(e, env.env);
+	  GameApi::M mat2 = m2; //ev.matrix_api.mult(mat,m2);
+	  ev.shader_api.use(s1);
+	  ev.shader_api.set_var(s1, "in_MV", mat2);
+	  ev.shader_api.use(s2);
+	  ev.shader_api.set_var(s2, "in_MV", mat2);
+	  ev.shader_api.use(s3);
+	  ev.shader_api.set_var(s3, "in_MV", mat2);
+	  env.in_MV = find_matrix(e, mat2);
+	  
+	  Matrix old_env = env.env;
+	  env.env = find_matrix(e,mat2);
+	  int ss = next.size();
+	  if (level<ss) {
+	    next[level]->execute(env);
+	  }
+	  env.env = old_env;
+  }
+  void execute_recurse(MainLoopEnv &e, Matrix mm, int current_level)
+  {
+    execute_one(e, mm, current_level);
+    if (current_level >= tree2->num_levels()-1) return;
+    TreeLevel *lvl = tree2->get_level(current_level);
+    int s2 = lvl->num_childs();
+    float time = (ev.mainloop_api.get_time()-start_time)/100.0;
+    for(int j=0;j<s2;j++)
+      {
+	Matrix m = lvl->get_child(j, time);
+	Matrix m2 = m * mm;
+	execute_recurse(e, m2, current_level+1);
+      }    
+  }
+  void execute(MainLoopEnv &e)
+  {
+    execute_recurse(e, e.env, 0);
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  std::vector<MainLoopItem*> next;
+  TreeStack *tree2;
+  float start_time;
+};
+
+GameApi::ML GameApi::TreeApi::tree_ml(EveryApi &ev, T tree, std::vector<ML> vec)
+{
+  TreeStack *tree2 = find_tree(e, tree);
+  std::vector<MainLoopItem*> vec2;
+  int s=vec.size();
+  for(int i=0;i<s;i++)
+    {
+      MainLoopItem* ii = find_main_loop(e, vec[i]);
+      vec2.push_back(ii);
+    }
+
+  return add_main_loop(e, new TreeMainLoop(e,ev,tree2, vec2));
+}

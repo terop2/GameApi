@@ -688,6 +688,20 @@ ML I34=ev.move_api.move_ml(ev,I30,I33);
  env->arr = arr;
  logo_env = env;
 }
+GameApi::M GameApi::MainLoopApi::in_P(EveryApi &ev, bool is_3d)
+{
+  int screenx = get_screen_width();
+  int screeny = get_screen_height();
+  if (is_3d)
+    {
+      return ev.matrix_api.perspective(80.0, (double)screenx/screeny, 10.1, 60000.0);
+    }
+  else
+    {
+      return ev.matrix_api.ortho(0,screenx, screeny,0,0,1);
+    }
+
+}
 GameApi::M GameApi::MainLoopApi::in_N(EveryApi &ev, bool is_3d)
 {
   if (is_3d)
