@@ -1286,6 +1286,18 @@ EXPORT GameApi::P GameApi::PolygonApi::translate(P orig, float dx, float dy, flo
 {
   return translate_1(orig, dx,dy,dz);
 }
+GameApi::P GameApi::PolygonApi::matrix(P orig, M mat)
+{
+  Matrix mat2 = find_matrix(e, mat);
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  FaceCollection *c = find_facecoll(e, orig);
+  BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
+  env->deletes.push_back(std::shared_ptr<void>(convert));  
+  if (!c) { std::cout << "dynamic cast failed" << std::endl; }
+  FaceCollection *coll = new MatrixElem(*convert, mat2);
+  return add_polygon2(e, coll,1);
+
+}
 GameApi::P GameApi::PolygonApi::translate_1(P orig, float dx, float dy, float dz)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);

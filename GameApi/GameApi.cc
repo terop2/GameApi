@@ -2689,3 +2689,34 @@ GameApi::ML GameApi::TreeApi::tree_ml(EveryApi &ev, T tree, std::vector<ML> vec)
 
   return add_main_loop(e, new TreeMainLoop(e,ev,tree2, vec2));
 }
+
+GameApi::P execute_one(GameApi::Env &e, GameApi::EveryApi &ev, const std::vector<GameApi::P> &v, Matrix m, int level)
+{
+  int s = v.size();
+  if (level<s)
+    return ev.polygon_api.matrix(v[level], add_matrix2(e,m));
+  return ev.polygon_api.empty();
+}
+GameApi::P execute_recurse(GameApi::Env &e, GameApi::EveryApi &ev, const std::vector<GameApi::P> &v, Matrix mm, int current_level, TreeStack *tree2, float time)
+{
+  GameApi::P p0 = execute_one(e, ev, v, mm, current_level);
+  if (current_level>=tree2->num_levels()-1) return p0;
+  TreeLevel *lvl = tree2->get_level(current_level);
+  int s2 = lvl->num_childs();
+  std::vector<GameApi::P> vec;
+  vec.push_back(p0);
+  for(int j=0;j<s2;j++)
+    {
+      Matrix m = lvl->get_child(j,time);
+      Matrix m2 = m * mm;
+      GameApi::P p2 = execute_recurse(e, ev, v, m2, current_level+1, tree2, time);
+      vec.push_back(p2);
+    }
+  return ev.polygon_api.or_array2(vec);
+}
+
+GameApi::P GameApi::TreeApi::tree_p(EveryApi &ev, T tree, std::vector<P> vec, float time)
+{
+  TreeStack *tree2 = find_tree(e, tree);
+  return execute_recurse(e, ev, vec, Matrix::Identity(), 0, tree2, time); 
+}

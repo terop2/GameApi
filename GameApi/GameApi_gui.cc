@@ -4016,6 +4016,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "T", "[ML]" },
 			 { "ev", "", "" },
 			 "ML", "tree_api", "tree_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::tree_api, &GameApi::TreeApi::tree_p,
+			 "tree_p",
+			 { "ev", "tree", "vec", "time" },
+			 { "EveryApi&", "T", "[P]", "float" },
+			 { "ev", "", "", "0.0" },
+			 "P", "tree_api", "tree_p"));
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_event,
 			 "keyevent_ml",
