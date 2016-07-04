@@ -877,6 +877,7 @@ public:
   TL level(std::vector<MN> vec);
   T tree(std::vector<TL> vec);
   ML tree_ml(EveryApi &ev, T tree, std::vector<ML> vec);
+  P tree_p(EveryApi &ev, T tree, std::vector<P> vec, float time);
 private:
   Env &e;
 };
@@ -1504,6 +1505,7 @@ public:
   IMPORT P rotatez(P orig, float angle);
   IMPORT P rotate(P orig, PT pt, V axis, float angle);
   IMPORT P scale(P orig, float sx, float sy, float sz);
+  IMPORT P matrix(P orig, M mat);
 
   IMPORT P unit_cube(P orig, PT pos, V u_x, V u_y, V u_z);
   IMPORT P unit_to_cube(P orig, PT pos, V u_x, V u_y, V u_z);
