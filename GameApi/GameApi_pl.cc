@@ -1,6 +1,6 @@
  
 #include "GameApi_h.hh"
-
+ 
 
 EXPORT GameApi::PolygonApi::PolygonApi(GameApi::Env &e) : e(e)
 {
@@ -2587,7 +2587,7 @@ EXPORT float *GameApi::PolygonApi::access_texcoord(VA va, bool triangle, int fac
 class ChooseTex : public ForwardFaceCollection
 {
 public:
-  ChooseTex(FaceCollection *coll, int val) : ForwardFaceCollection(*coll),val(val) { }
+  ChooseTex(FaceCollection *coll, int val) : ForwardFaceCollection(*coll),val(val) { }  
   virtual float TexCoord3(int face, int point) const { 
     return float(val);
   }
@@ -2653,9 +2653,13 @@ public:
       {
 	sh.id = e.sh_color;
       }
-    if (shader.id==-1 && e.vertex_shader!="" && e.fragment_shader!="")
+    if (shader.id==-1 && e.us_vertex_shader!=-1 && e.us_fragment_shader!=-1)
       {
-	shader = ev.shader_api.get_normal_shader("comb", "comb", "", e.vertex_shader, e.fragment_shader);
+	GameApi::US vertex;
+	GameApi::US fragment;
+	vertex.id = e.us_vertex_shader;
+	fragment.id = e.us_fragment_shader;
+	shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment);
 	ev.mainloop_api.init_3d(shader);
 	ev.mainloop_api.alpha(true); 
 
@@ -2692,16 +2696,44 @@ public:
     //sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:snoise:light", "colour:snoise:light");
     //ev.mainloop_api.init_3d(sh);
     //ev.mainloop_api.alpha(true); 
+    firsttime = true;
   }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
+#if 0
     if (ee.vertex_shader=="") { ee.vertex_shader+="colour"; }
     if (ee.vertex_shader!="") { ee.vertex_shader+=":"; }
     ee.vertex_shader+="snoise";
     if (ee.fragment_shader=="") { ee.fragment_shader+="colour"; }
     if (ee.fragment_shader!="") { ee.fragment_shader+=":"; }
     ee.fragment_shader+="snoise";
+#endif
+    if (firsttime) {
+      firsttime = false;
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a1.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    GameApi::US a2 = ev.uber_api.v_snoise(vertex);
+    ee.us_vertex_shader = a2.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(true);
+      GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a1.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    GameApi::US a2f = ev.uber_api.f_snoise(fragment);
+    ee.us_fragment_shader = a2f.id;
+    }
+
     next->execute(ee);
   }
   int shader_id() { return next->shader_id(); }
@@ -2710,6 +2742,7 @@ private:
   GameApi::EveryApi &ev;
   MainLoopItem *next;
   GameApi::SH sh;
+  bool firsttime;
 };
 
 class LightShaderML : public MainLoopItem
@@ -2720,16 +2753,43 @@ public:
     //sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:snoise:light", "colour:snoise:light");
     //ev.mainloop_api.init_3d(sh);
     //ev.mainloop_api.alpha(true); 
+    firsttime = true;
   }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
+#if 0
     if (ee.vertex_shader=="") { ee.vertex_shader+="colour"; }
     if (ee.vertex_shader!="") { ee.vertex_shader+=":"; }
     ee.vertex_shader+="light";
     if (ee.fragment_shader=="") { ee.fragment_shader+="colour"; }
     if (ee.fragment_shader!="") { ee.fragment_shader+=":"; }
     ee.fragment_shader+="light";
+#endif
+    if (firsttime) {
+      firsttime = false; 
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a1.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    GameApi::US a2 = ev.uber_api.v_light(vertex);
+    ee.us_vertex_shader = a2.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(true);
+      GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a1.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    GameApi::US a2f = ev.uber_api.f_light(fragment);
+    ee.us_fragment_shader = a2f.id;
+    }
     next->execute(ee);
   }
   int shader_id() { return next->shader_id(); }
@@ -2738,6 +2798,7 @@ private:
   GameApi::EveryApi &ev;
   MainLoopItem *next;
   GameApi::SH sh;
+  bool firsttime;
 };
 
 class ToonShaderML : public MainLoopItem
@@ -2748,16 +2809,44 @@ public:
     //sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:snoise:light", "colour:snoise:light");
     //ev.mainloop_api.init_3d(sh);
     //ev.mainloop_api.alpha(true); 
+    firsttime = true;
   }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
+#if 0
     if (ee.vertex_shader=="") { ee.vertex_shader+="colour"; }
     if (ee.vertex_shader!="") { ee.vertex_shader+=":"; }
     ee.vertex_shader+="toon";
     if (ee.fragment_shader=="") { ee.fragment_shader+="colour"; }
     if (ee.fragment_shader!="") { ee.fragment_shader+=":"; }
     ee.fragment_shader+="toon";
+#endif
+    if (firsttime)
+      {
+	firsttime = false;
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a1.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    GameApi::US a2 = ev.uber_api.v_toon(vertex);
+    ee.us_vertex_shader = a2.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(true);
+      GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a1.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    GameApi::US a2f = ev.uber_api.f_toon(fragment);
+    ee.us_fragment_shader = a2f.id;
+      }
     next->execute(ee);
   }
   int shader_id() { return next->shader_id(); }
@@ -2766,6 +2855,7 @@ private:
   GameApi::EveryApi &ev;
   MainLoopItem *next;
   GameApi::SH sh;
+  bool firsttime;
 };
 
 
@@ -2778,19 +2868,48 @@ public:
     //sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:passall", "colour:ambient:diffuse:specular:light");
     //ev.mainloop_api.init_3d(sh);
     //ev.mainloop_api.alpha(true);
+    firsttime = true;
   }
   int shader_id() { return next->shader_id(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
-
+#if 0
     if (ee.vertex_shader=="") { ee.vertex_shader+="colour"; }
     if (ee.vertex_shader!="") { ee.vertex_shader+=":"; }
     ee.vertex_shader+="passall";
     if (ee.fragment_shader=="") { ee.fragment_shader+="colour"; }
     if (ee.fragment_shader!="") { ee.fragment_shader+=":"; }
     ee.fragment_shader+="ambient:diffuse:specular";
+#endif
+    if (firsttime)
+      {
+	firsttime = false;
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a1.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    GameApi::US a2 = ev.uber_api.v_passall(vertex);
+    ee.us_vertex_shader = a2.id;
 
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(true);
+      GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a1.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    GameApi::US a2f = ev.uber_api.f_ambient(fragment);
+    GameApi::US a3f = ev.uber_api.f_diffuse(a2f);
+    GameApi::US a4f = ev.uber_api.f_specular(a3f);
+    ee.us_fragment_shader = a4f.id;
+
+      }
 
     int sh_id = next->shader_id();
     //std::cout << "sh_id" << sh_id << std::endl;
@@ -2824,6 +2943,7 @@ private:
   Vector light_dir;
   unsigned int level1, level2, level3;
   GameApi::SH sh;
+  bool firsttime;
 };
 EXPORT GameApi::ML GameApi::PolygonApi::noise_shader(EveryApi &ev, ML mainloop)
 {

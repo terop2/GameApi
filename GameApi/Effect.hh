@@ -8066,8 +8066,8 @@ public:
     if (point==2||point==3) angle1+=deltaangle1;
     if (point==1||point==2) angle2+=deltaangle2;
     Point2d p;
-    p.x = angle1;
-    p.y = angle2;
+    p.x = angle2;
+    p.y = angle1;
     return p;
   }
   virtual int AttribI(int face, int point, int id) const

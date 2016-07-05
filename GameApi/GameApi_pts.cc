@@ -634,9 +634,13 @@ public:
     ev.shader_api.set_var(sh, "in_MV", mat);
 
 #if 1
-    if (shader.id==-1 && e.vertex_shader!="" && e.fragment_shader!="")
+    if (shader.id==-1 && e.us_vertex_shader!=-1 && e.us_fragment_shader!=-1)
       {
-	shader = ev.shader_api.get_normal_shader("comb", "comb", "", e.vertex_shader, e.fragment_shader);
+	GameApi::US vertex;
+	GameApi::US fragment;
+	vertex.id = e.us_vertex_shader;
+	fragment.id = e.us_fragment_shader;
+	shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment);
 	ev.mainloop_api.init_3d(shader);
 	ev.mainloop_api.alpha(true); 
       }

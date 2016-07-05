@@ -288,8 +288,10 @@ struct MainLoopEnv
   int button;
 
   Matrix env;
-  std::string vertex_shader = "";
-  std::string fragment_shader = "";
+  //std::string vertex_shader = "";
+  //std::string fragment_shader = "";
+  int us_vertex_shader = -1;
+  int us_fragment_shader = -1;
 
   Matrix in_MV;
   Matrix in_T;
@@ -440,5 +442,18 @@ public:
 };
 
 //void draw_tree(Tree *spec, std::vector<ML> vec);
+
+class Material
+{
+public:
+  virtual int mat(int p) const=0; 
+};
+
+class ShaderCall
+{
+public:
+  virtual int index(int base) const=0;
+  virtual std::string func_call() const=0;
+};
 
 #endif
