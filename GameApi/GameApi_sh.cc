@@ -93,13 +93,23 @@ EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
 {
   return get_normal_shader_1(v_format, f_format, g_format, v_comb, f_comb, trans,mod);
 }
+EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
+							 std::string f_format,
+							 std::string g_format,
+							 US v_comb,
+							 US f_comb,
+							 bool trans, 
+							 SFO mod)
+{
+  return get_normal_shader_1(v_format, f_format, g_format, "", "", trans,mod, v_comb, f_comb);
+}
 GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format,
 						  std::string f_format,
 						  std::string g_format,
 						  std::string v_comb,
-						    std::string f_comb, bool trans, SFO mod)
+						    std::string f_comb, bool trans, SFO mod, US v_c, US f_c)
 {
-  SH sh = get_shader_1(v_format, f_format, g_format, v_comb, f_comb,trans,mod);
+  SH sh = get_shader_1(v_format, f_format, g_format, v_comb, f_comb,trans,mod,v_c, f_c);
   bind_attrib_1(sh, 0, "in_Position");
   bind_attrib_1(sh, 1, "in_Normal");
   bind_attrib_1(sh, 2, "in_Color");
@@ -148,11 +158,18 @@ GameApi::SH GameApi::ShaderApi::get_shader_1(std::string v_format,
 					std::string f_format,
 					   std::string g_format, 
 					   std::string v_comb,
-					     std::string f_comb, bool trans, SFO module)
+					     std::string f_comb, bool trans, SFO module, US v_c, US f_c)
 {
   ShaderModule *mod = 0;
   if (module.id!=-1)
     mod = find_shader_module(e, module);
+  ShaderCall *vertex_c = 0;
+  if (v_c.id!=-1)
+    vertex_c = find_uber(e, v_c);
+  ShaderCall *fragment_c = 0;
+  if (f_c.id!=-1)
+    fragment_c = find_uber(e, f_c);
+
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   if (!p->file)
     {
@@ -165,7 +182,7 @@ GameApi::SH GameApi::ShaderApi::get_shader_1(std::string v_format,
   std::vector<std::string> f_vec;
   combparse(v_comb, v_vec);
   combparse(f_comb, f_vec);
-  p->ids[p->count] = p->seq->GetShader(v_format, f_format, g_format, v_vec, f_vec, trans, mod);
+  p->ids[p->count] = p->seq->GetShader(v_format, f_format, g_format, v_vec, f_vec, trans, mod,vertex_c,fragment_c);
   p->count++;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->shader_privs[p->count-1] = p;

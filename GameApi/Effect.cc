@@ -193,7 +193,7 @@ Point SphereElem::FacePoint(int face, int point) const
   int numfaces3 = numfaces*2;
   //Vector p = Vector(0.0, 0.0, radius); 
   float deltaangle1 = 2.0*  3.14159/numfaces3;
-  float deltaangle2 =   3.14159/numfaces2;
+  float deltaangle2 =   3.14159/numfaces2; 
   float angle1 = face2*deltaangle1;
   float angle2 = face1*deltaangle2;
   if (point==2||point==1) angle1+=deltaangle1;

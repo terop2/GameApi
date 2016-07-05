@@ -304,6 +304,24 @@ EXPORT GameApi::Env::~Env()
 }
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
+
+GameApi::US add_uber(GameApi::Env &e, ShaderCall *call)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->shadercalls.push_back(call);
+  GameApi::US im;
+  im.id = env->shadercalls.size()-1;
+  return im;
+}
+GameApi::MT add_material(GameApi::Env &e, Material *mat)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->materials.push_back(mat);
+  GameApi::MT im;
+  im.id = env->materials.size()-1;
+  return im;
+
+}
 GameApi::TL add_tree_level(GameApi::Env &e, TreeLevel *lvl)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1004,6 +1022,16 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   Array<int,bool> *enable = info.enable_obj_array;
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
+}
+ShaderCall *find_uber(GameApi::Env &e, GameApi::US m)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->shadercalls[m.id];
+}
+Material *find_material(GameApi::Env &e, GameApi::MT m)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->materials[m.id];
 }
 TreeStack *find_tree(GameApi::Env &e, GameApi::T m)
 {
@@ -2720,3 +2748,446 @@ GameApi::P GameApi::TreeApi::tree_p(EveryApi &ev, T tree, std::vector<P> vec, fl
   TreeStack *tree2 = find_tree(e, tree);
   return execute_recurse(e, ev, vec, Matrix::Identity(), 0, tree2, time); 
 }
+
+class MaterialForward : public Material
+{
+public:
+  GameApi::ML call(GameApi::P p) const
+  {
+    GameApi::ML ml;
+    ml.id = mat(p.id);
+    return ml;
+  }
+  int mat(int p) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::ML ml = mat2(p2);
+    return ml.id;
+  } 
+  virtual GameApi::ML mat2(GameApi::P p) const=0;
+  
+};
+class DefaultMaterial : public MaterialForward
+{
+public:
+  DefaultMaterial(GameApi::EveryApi &ev) : ev(ev) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    return ml;
+  }  
+private:
+  GameApi::EveryApi &ev;
+};
+
+class TextureMaterial : public MaterialForward
+{
+public:
+  TextureMaterial(GameApi::EveryApi &ev, GameApi::BM bm) : ev(ev), bm(bm) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I11,true);
+    GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
+    GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
+    GameApi::TXID I15=ev.texture_api.prepare(I14);
+    GameApi::VA I16=ev.texture_api.bind(I12,I15);
+    GameApi::ML I17=ev.polygon_api.render_vertex_array_ml(ev,I16);
+    return I17;
+  }
+private:
+  GameApi::EveryApi &ev;
+  GameApi::BM bm;
+};
+
+class SnowMaterial : public MaterialForward
+{
+public:
+  SnowMaterial(GameApi::EveryApi &ev, Material *next) : ev(ev), next(next) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
+    GameApi::P p2 = ev.polygon_api.color_grayscale(p1);
+    GameApi::P p3 = ev.polygon_api.mix_color(p1,p2,0.5);
+    GameApi::ML ml;
+    ml.id = next->mat(p3.id);
+    //VA va = ev.polygon_api.create_vertex_array(p3,false);
+    //ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    GameApi::ML sh = ev.polygon_api.shading_shader(ev, ml, 0xffaaaaaa, 0xffeeeeee, 0xffffffff);
+    return sh;
+  }
+private:
+  GameApi::EveryApi &ev;
+  Material *next;
+};
+GameApi::MT GameApi::MaterialsApi::def(EveryApi &ev)
+{
+  return add_material(e, new DefaultMaterial(ev));
+}
+GameApi::MT GameApi::MaterialsApi::texture(EveryApi &ev, BM bm)
+{
+  return add_material(e, new TextureMaterial(ev, bm));
+}
+GameApi::MT GameApi::MaterialsApi::snow(EveryApi &ev, MT nxt)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new SnowMaterial(ev, mat));
+}
+
+#if 0
+GameApi::ML GameApi::MaterialsApi::snow(EveryApi &ev, P p)
+{
+  P p0 = ev.polygon_api.recalculate_normals(p);
+  P p1 = ev.polygon_api.color_from_normals(p0);
+  P p2 = ev.polygon_api.color_grayscale(p1);
+  P p3 = ev.polygon_api.mix_color(p1,p2,0.5);
+  VA va = ev.polygon_api.create_vertex_array(p3,false);
+  ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+  ML sh = ev.polygon_api.shading_shader(ev, ml, 0xffaaaaaa, 0xffeeeeee, 0xffffffff);
+  return sh;
+}
+#endif
+
+class WebMaterial : public MaterialForward
+{
+public:
+  WebMaterial(GameApi::EveryApi &ev, Material *next) : ev(ev),next(next) {}
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::P I2=p;
+    GameApi::LI I3=ev.lines_api.from_polygon(I2);
+    GameApi::LI I4=ev.lines_api.change_color(I3,0xff000000);
+    GameApi::LLA I5=ev.lines_api.prepare(I4);
+    GameApi::ML I6=ev.lines_api.render_ml(ev,I5);
+    GameApi::P I8=p; 
+    //VA I9=ev.polygon_api.create_vertex_array(I8,true);
+    //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
+    GameApi::ML I10;
+    I10.id = next->mat(I8.id);
+    GameApi::ML I11=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{I6,I10});
+    return I11;
+  }
+private:
+  GameApi::EveryApi &ev;
+  Material *next;
+};
+
+GameApi::MT GameApi::MaterialsApi::web(EveryApi &ev, MT nxt)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new WebMaterial(ev,mat));
+}
+
+#if 0
+GameApi::ML GameApi::MaterialsApi::web(EveryApi &ev, P p)
+{
+
+  // TODO: this might require std::function<ML(ev,P)> parameter, but
+  // builder can't do it yet.
+
+  P I2=p;
+LI I3=ev.lines_api.from_polygon(I2);
+LI I4=ev.lines_api.change_color(I3,0xff000000);
+LLA I5=ev.lines_api.prepare(I4);
+ML I6=ev.lines_api.render_ml(ev,I5);
+ P I8=p; 
+VA I9=ev.polygon_api.create_vertex_array(I8,true);
+ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
+ML I11=ev.mainloop_api.array_ml(std::vector<ML>{I6,I10});
+ return I11;
+}
+
+#endif
+
+GameApi::ML GameApi::MaterialsApi::bind(P p, MT mat)
+{
+  Material *mat2 = find_material(e, mat);
+  int val = mat2->mat(p.id);
+  GameApi::ML ml;
+  ml.id = val;
+  return ml;
+}
+
+class V_ShaderCallFunction : public ShaderCall
+{
+public:
+  V_ShaderCallFunction(std::string funcname, ShaderCall *next) : funcname(funcname), next(next) { id=-1; }
+  int index(int base) const {
+    id = next->index(base)+1; 
+    return id;
+  }
+  std::string func_call() const
+  {
+    std::string out;
+    out+=next->func_call();
+    std::stringstream ss;
+    int i = id;
+    ss << i+1;
+    std::stringstream ss2;
+    ss2 << i;
+    out+="vec4 pos";
+    out+=ss.str();
+    out+=" = ";
+    out+=funcname;
+    out+="(pos";
+    out+=ss2.str();
+    out+=");\n";
+    return out;
+  }
+private:
+  std::string funcname;
+  ShaderCall *next;
+  mutable int id;
+};
+
+class F_ShaderCallFunction : public ShaderCall
+{
+public:
+  F_ShaderCallFunction(std::string funcname, ShaderCall *next) : funcname(funcname), next(next) { }
+  int index(int base) const {
+    id = next->index(base)+1;
+    return id;
+  }
+  std::string func_call() const
+  {
+    std::string out;
+    out+=next->func_call();
+    std::stringstream ss;
+    int i = id;
+    ss << i+1;
+    std::stringstream ss2;
+    ss2 << i;
+    out+="vec4 rgb";
+    out+=ss.str();
+    out+=" = ";
+    out+=funcname;
+    out+="(rgb";
+    out+=ss2.str();
+    out+=");\n";
+    return out;
+  }
+private:
+  std::string funcname;
+  ShaderCall *next;
+  mutable int id;
+};
+class EmptyV : public ShaderCall
+{
+public:
+  EmptyV() : id(-1) { }
+  int index(int base) const { id = base; return base; }
+  std::string func_call() const
+  {
+    std::string out;
+    out+="vec3 p = mix(in_Position, in_Position2, in_POS);\n";
+    std::stringstream ss;
+    ss << id+1;
+    out+="vec4 pos" + ss.str() + " = vec4(p,1.0);\n";
+    return out;
+  }
+private:
+  mutable int id;
+};
+
+class EmptyF : public ShaderCall
+{
+public:
+  EmptyF(bool transparent) : transparent(transparent) { id = -1; }
+  int index(int base) const { id = base; return base; }
+  std::string func_call() const
+  {
+    std::string out;
+    std::stringstream ss;
+    ss << id+1;
+    if (transparent)
+      out+="vec4 rgb" + ss.str() + " = vec4(0.0,0.0,0.0,0.0);\n";
+    else
+      out+="vec4 rgb" + ss.str() + " = vec4(0.0,0.0,0.0,1.0);\n";
+    return out;
+  }
+private:
+  mutable int id;
+  bool transparent;
+};
+
+GameApi::US GameApi::UberShaderApi::v_empty()
+{
+  return add_uber(e, new EmptyV());
+}
+GameApi::US GameApi::UberShaderApi::v_color_from_normals(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("color_from_normals", next));
+}
+GameApi::US GameApi::UberShaderApi::v_recalc_normal(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("recalc_normal", next));
+}
+
+GameApi::US GameApi::UberShaderApi::v_inst(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("inst", next));
+}
+
+GameApi::US GameApi::UberShaderApi::v_passall(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("passall", next));
+}
+
+GameApi::US GameApi::UberShaderApi::v_point_light(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("point_light", next));
+}
+
+GameApi::US GameApi::UberShaderApi::v_snoise(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("snoise", next));
+}
+
+GameApi::US GameApi::UberShaderApi::v_light(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("light", next));
+}
+
+GameApi::US GameApi::UberShaderApi::v_ref(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("ref", next));
+}
+
+GameApi::US GameApi::UberShaderApi::v_wave(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("wave", next));
+}
+
+GameApi::US GameApi::UberShaderApi::v_toon(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("toon", next));
+}
+
+GameApi::US GameApi::UberShaderApi::v_texture(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("texture", next));
+}
+
+GameApi::US GameApi::UberShaderApi::v_texture_arr(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("texture_arr", next));
+}
+
+GameApi::US GameApi::UberShaderApi::v_colour(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("colour", next));
+}
+
+GameApi::US GameApi::UberShaderApi::v_blur(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("blur", next));
+}
+
+
+GameApi::US GameApi::UberShaderApi::f_empty(bool transparent)
+{
+  return add_uber(e, new EmptyF(transparent));
+}
+
+GameApi::US GameApi::UberShaderApi::f_diffuse(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("diffuse", next));
+}
+
+GameApi::US GameApi::UberShaderApi::f_ambient(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("ambient", next));
+}
+
+GameApi::US GameApi::UberShaderApi::f_specular(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("specular", next));
+}
+
+GameApi::US GameApi::UberShaderApi::f_color_from_normals(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("color_from_normals", next));
+}
+
+GameApi::US GameApi::UberShaderApi::f_point_light(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("point_light", next));
+}
+
+GameApi::US GameApi::UberShaderApi::f_bands(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("bands", next));
+}
+
+GameApi::US GameApi::UberShaderApi::f_snoise(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("snoise", next));
+}
+
+GameApi::US GameApi::UberShaderApi::f_blur(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("blur", next));
+}
+
+GameApi::US GameApi::UberShaderApi::f_ref(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("ref", next));
+}
+
+GameApi::US GameApi::UberShaderApi::f_light(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("light", next));
+}
+
+GameApi::US GameApi::UberShaderApi::f_toon(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("toon", next));
+}
+
+GameApi::US GameApi::UberShaderApi::f_texture(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("texture", next));
+}
+
+GameApi::US GameApi::UberShaderApi::f_texture_arr(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("texture_arr", next));
+}
+
+GameApi::US GameApi::UberShaderApi::f_colour(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("colour", next));
+}
+

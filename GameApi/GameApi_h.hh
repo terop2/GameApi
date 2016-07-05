@@ -518,6 +518,8 @@ struct EnvImpl
   std::vector<ImplicitFunction3d*> implicit;
   std::vector<TreeLevel*> tree_levels;
   std::vector<TreeStack*> trees;
+  std::vector<Material*> materials;
+  std::vector<ShaderCall*> shadercalls;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -788,6 +790,8 @@ struct FaceCollPolyHandle : public PolyHandle
 //
 // add functions
 //
+GameApi::US add_uber(GameApi::Env &e, ShaderCall *call);
+GameApi::MT add_material(GameApi::Env &e, Material *mat);
 GameApi::TL add_tree_level(GameApi::Env &e, TreeLevel *lvl);
 GameApi::T add_tree(GameApi::Env &e, TreeStack *tre);
 GameApi::IM add_implicit(GameApi::Env &e, ImplicitFunction3d *imp);
@@ -866,6 +870,8 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+ShaderCall *find_uber(GameApi::Env &e, GameApi::US u);
+Material *find_material(GameApi::Env &e, GameApi::MT mat);
 TreeLevel *find_tree_level(GameApi::Env &e, GameApi::TL tl);
 TreeStack *find_tree(GameApi::Env &e, GameApi::T t);
 ImplicitFunction3d *find_implicit(GameApi::Env &e, GameApi::IM m);

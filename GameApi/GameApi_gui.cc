@@ -3219,6 +3219,7 @@ MACRO(GameApi::VO)
 MACRO(GameApi::IM)
 MACRO(GameApi::TL)
 MACRO(GameApi::T)
+MACRO(GameApi::MT)
 #undef MACRO
 
 
@@ -4022,6 +4023,37 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "T", "[P]", "float" },
 			 { "ev", "", "", "0.0" },
 			 "P", "tree_api", "tree_p"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::def,
+			 "m_def",
+			 { "ev" },
+			 { "EveryApi&" },
+			 { "ev" },
+			 "MT", "materials_api", "def"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture,
+			 "m_texture",
+			 { "ev", "bm" },
+			 { "EveryApi&", "BM" },
+			 { "ev", "" },
+			 "MT", "materials_api", "texture"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::snow,
+			 "m_snow",
+			 { "ev", "nxt" },
+			 { "EveryApi&", "MT" },
+			 { "ev", "" },
+			 "MT", "materials_api", "snow"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::web,
+			 "m_web",
+			 { "ev", "nxt" },
+			 { "EveryApi&", "MT" },
+			 { "ev", "" },
+			 "MT", "materials_api", "web"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bind,
+			 "m_bind",
+			 { "p", "mat" },
+			 { "P", "MT" },
+			 { "", "" },
+			 "ML", "materials_api", "bind"));
+  
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_event,
 			 "keyevent_ml",

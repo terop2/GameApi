@@ -1232,7 +1232,7 @@ std::string ShaderFile::GeometryShader(std::string name)
 {
   return g_shaders[name];
 }
-std::string replace_c(std::string s, std::vector<std::string> comb, bool is_fragment, bool is_fbo, bool is_transparent, ShaderModule *mod)
+std::string replace_c(std::string s, std::vector<std::string> comb, bool is_fragment, bool is_fbo, bool is_transparent, ShaderModule *mod, ShaderCall *call)
 {
   std::stringstream ss(s);
   std::string ww;
@@ -1259,6 +1259,22 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 	{
 	  if (!is_fragment)
 	    { // vertex
+	      if (call)
+		{
+		  int num = call->index(0);
+		  std::string s = call->func_call();
+		  out+=s;
+		  std::cout << s << std::endl;
+
+		  std::stringstream ss3;
+		  ss3 << num;
+		  out+="gl_Position = in_P * in_T * in_MV * pos";
+		  out+=ss3.str();
+		  out+=";\n";
+		  
+		}
+	      else
+		{
 	      out+="vec3 p = mix(in_Position, in_Position2, in_POS);\n";
 	      out+="vec4 pos0 =  vec4(p,1.0);\n";
 	      int s = comb.size();
@@ -1281,9 +1297,33 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 	      out+="gl_Position = in_P * in_T * in_MV * pos";
 	      out+=ss3.str();
 	      out+=";\n";
+		}
 	    }
 	  else
 	    { // fragment
+	      if (call) {
+		int num = call->index(0);
+		std::string s = call->func_call();
+		out+=s;
+
+		std::cout << "Fragment: " << s << std::endl;
+		std::stringstream ss3;
+		ss3 << num;
+
+#ifdef OLD_SHADER
+		if (is_fbo)
+		  out += "gl_FragData[0] = rgb";
+		else
+		  out+="gl_FragColor = rgb";
+#else
+		out+="out_Color = rgb";
+#endif
+		out+= ss3.str();
+		out+=";\n";
+		
+	      }
+	      else
+		{
 	      if (is_transparent)
 		out+="vec4 rgb0 = vec4(0.0,0.0,0.0,0.0);\n";
 	      else
@@ -1316,6 +1356,7 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 #endif
 	      out+= ss3.str();
 	      out+=";\n";
+		}
 	    }
 
 	}
@@ -1342,7 +1383,7 @@ std::string add_line_numbers(std::string s)
     }
   return res;
 }
-int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec, std::vector<std::string> f_vec, bool is_trans, ShaderModule *mod)
+int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec, std::vector<std::string> f_vec, bool is_trans, ShaderModule *mod, ShaderCall *vertex_c, ShaderCall *fragment_c)
 {
   int id = progs.size();
   Program *p = new Program;
@@ -1354,7 +1395,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       std::cout << "VName: " << name << std::endl;
       std::string shader = file.VertexShader(name);
-      std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod);
+      std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod, vertex_c);
       
       //std::cout << "::" << ss << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
@@ -1372,7 +1413,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
-      std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod);
+      std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c);
       //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);

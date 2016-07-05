@@ -25,6 +25,8 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct US { int id; };
+  struct MT { int id; };
   struct TL { int id; };
   //struct T { int id; };
   struct MN { int id; };
@@ -878,6 +880,21 @@ public:
   T tree(std::vector<TL> vec);
   ML tree_ml(EveryApi &ev, T tree, std::vector<ML> vec);
   P tree_p(EveryApi &ev, T tree, std::vector<P> vec, float time);
+private:
+  Env &e;
+};
+
+class MaterialsApi
+{
+public:
+  MaterialsApi(Env &e) : e(e) { }
+  MT def(EveryApi &ev);
+  MT texture(EveryApi &ev, BM bm);
+  MT snow(EveryApi &ev, MT nxt);
+  MT web(EveryApi &ev, MT nxt); // TODO: add line width property
+  ML bind(P p, MT mat);
+  //ML snow(EveryApi &ev, P p);
+  //ML web(EveryApi &ev, P p);
 private:
   Env &e;
 };
@@ -2221,6 +2238,46 @@ private:
   Env &e;
 };
 
+class UberShaderApi
+{
+public:
+  UberShaderApi(Env &e) : e(e) {}
+  US v_empty();
+  US v_color_from_normals(US us);
+  US v_recalc_normal(US us);
+  US v_inst(US us);
+  US v_passall(US us);
+  US v_point_light(US us);
+  US v_snoise(US us);
+  US v_light(US us);
+  US v_ref(US us);
+  US v_wave(US us);
+  US v_toon(US us);
+  US v_texture(US us);
+  US v_texture_arr(US us);
+  US v_colour(US us);
+  US v_blur(US us);
+
+  US f_empty(bool transparent);
+  US f_diffuse(US us);
+  US f_ambient(US us);
+  US f_specular(US us);
+  US f_color_from_normals(US us);
+  US f_point_light(US us);
+  US f_bands(US us);
+  US f_snoise(US us);
+  US f_blur(US us);
+  US f_ref(US us);
+  US f_light(US us);
+  US f_toon(US us);
+  US f_texture(US us);
+  US f_texture_arr(US us);
+  US f_colour(US us);
+  US f_mix_color(US us, US us2, float val); // TODO
+private:
+  Env &e;
+};
+
 class ShaderApi
 {
 public:
@@ -2232,10 +2289,12 @@ public:
 		       std::string v_comb="", std::string f_comb="", bool trans=true, SFO module={-1} );
   IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,
 			      std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1});
+  IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,
+			      US v_comb, US f_comb, bool trans=true, SFO mod={-1});
   SH get_shader_1(std::string v_format, std::string f_format, std::string g_format,
-		  std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1});
+		  std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, US v_c={-1}, US f_c={-1});
   SH get_normal_shader_1(std::string v_format, std::string f_format, std::string g_format,
-			 std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod = { -1 });
+			 std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod = { -1 }, US v_c = { -1 }, US f_c = { -1 });
   IMPORT SH texture_shader();
   IMPORT SH texture_array_shader();
   IMPORT SH colour_shader();
@@ -2353,7 +2412,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -2400,6 +2459,8 @@ struct EveryApi
   ImplicitApi implicit_api;
   PickingApi picking_api;
   TreeApi tree_api;
+  MaterialsApi materials_api;
+  UberShaderApi uber_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);
