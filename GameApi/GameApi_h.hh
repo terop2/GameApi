@@ -366,6 +366,7 @@ struct PointArray2
   GLuint buffer;
   GLuint buffer2;
   GLuint vao[1];
+  GLuint pos_buffer;
 };
 
 struct PointArray3

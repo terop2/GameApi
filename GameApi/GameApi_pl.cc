@@ -1770,6 +1770,12 @@ EXPORT GameApi::P GameApi::PolygonApi::span(LI li,
   FaceCollection *span = new Span(lines, m, num_steps);
   return add_polygon2(e, span, 1);
 }
+EXPORT GameApi::P GameApi::PolygonApi::linear_span(EveryApi &ev, LI li,
+						   float dx, float dy, float dz,
+						   int num_steps)
+{
+  return span(li, ev.matrix_api.trans(dx,dy,dz), num_steps);
+}
 EXPORT GameApi::P GameApi::PolygonApi::heightmap(FB bm,
 					  std::function<P (float)> f, float dx, float dz)
 {

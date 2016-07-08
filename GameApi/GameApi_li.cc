@@ -389,9 +389,149 @@ private:
   GameApi::LinesApi &api;
   GameApi::LLA l;
 };
+
+class LI_Render_Inst : public MainLoopItem
+{
+public:
+  LI_Render_Inst(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LLA l, GameApi::PTA pta) : env(env), ev(ev), api(api), l(l),pta(pta) { firsttime=true; }
+  void execute(MainLoopEnv &e) {
+    GameApi::SH sh;
+    sh.id = e.sh_color;
+    GameApi::US u_v,u_f;
+    u_v.id = 0;
+    u_f.id = 0;
+
+    if (firsttime)
+      {
+	if (u_v.id == 0)
+	  u_v = ev.uber_api.v_empty();
+	if (u_f.id == 0)
+	  u_f = ev.uber_api.f_empty(false);
+   
+	u_v = ev.uber_api.v_colour(u_v);
+	u_v = ev.uber_api.v_light(u_v);
+	u_f = ev.uber_api.f_colour(u_f);
+	u_f = ev.uber_api.f_light(u_f);
+      }
+
+    if (firsttime)
+      {
+	GameApi::US vertex;
+	GameApi::US fragment;
+	vertex.id = u_v.id; 
+	fragment.id = u_f.id; 
+	GameApi::US vertex2 = ev.uber_api.v_inst(vertex);
+	//GameApi::US fragment2 = ev.uber_api.f_inst(fragment);
+	shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment);
+	ev.mainloop_api.init_3d(shader);
+	ev.mainloop_api.alpha(true); 
+      }
+    if (shader.id!=-1)
+      {
+	ev.shader_api.use(sh);
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.use(shader);
+	ev.shader_api.set_var(shader, "in_MV", m);
+	ev.shader_api.set_var(shader, "in_T", m1);
+	ev.shader_api.set_var(shader, "in_N", m2);
+	sh = shader;
+      }
+
+    ev.shader_api.use(sh);
+    if (firsttime)
+      {
+	api.prepare_inst(l,pta);
+	firsttime=false;
+      }
+    api.render_inst(l,pta);
+  }
+  int shader_id() { return -1; }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::LinesApi &api;
+  GameApi::LLA l;
+  GameApi::PTA pta;
+  bool firsttime;
+  GameApi::SH shader;
+};
+
 EXPORT GameApi::ML GameApi::LinesApi::render_ml(EveryApi &ev, LLA l)
 {
   return add_main_loop(e, new LI_Render(ev, *this, l));
+}
+EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml(EveryApi &ev, LLA l, PTA pta)
+{
+  return add_main_loop(e, new LI_Render_Inst(e, ev, *this, l, pta));
+}
+EXPORT void GameApi::LinesApi::prepare_inst(LLA l, PTA instances)
+{
+  PointArray2 *array = find_lines_array(e,l);
+  PointArray3 *arr = find_point_array3(e, instances);
+
+  float *positions = arr->array;
+  int size = arr->numpoints;
+
+#ifdef VAO
+  glBindVertexArray(array->vao[0]);
+#endif
+  glBindBuffer( GL_ARRAY_BUFFER, array->pos_buffer );
+
+  glBufferData( GL_ARRAY_BUFFER, sizeof(Point) * size, positions, GL_DYNAMIC_DRAW);
+
+}
+EXPORT void GameApi::LinesApi::render_inst(LLA l, PTA instances)
+{
+  PointArray3 *arr = find_point_array3(e, instances);
+  PointArray2 *array = find_lines_array(e,l);
+  //glEnableClientState(GL_VERTEX_ARRAY);
+
+  float *positions = arr->array;
+  int size = arr->numpoints;
+  // INSTANCED RENDERING
+  glBindBuffer( GL_ARRAY_BUFFER, array->pos_buffer );
+  glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
+
+  glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glVertexAttribDivisor(5, 1);
+  glEnableVertexAttribArray(5);
+  // END OF INSTANCED RENDERING
+#ifdef VAO
+  glBindVertexArray(array->vao[0]);
+#else
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, array->buffer);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glBindBuffer(GL_ARRAY_BUFFER, array->buffer);
+  glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(2);
+  glBindBuffer(GL_ARRAY_BUFFER, array->buffer2);
+  glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0,0);
+#endif
+
+  // INSTANCED DRAWING
+  glBindBuffer( GL_ARRAY_BUFFER, array->pos_buffer );
+  glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
+  glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glVertexAttribDivisor(5, 1);
+  glEnableVertexAttribArray(5);
+  // END INSTANCED
+
+  glVertexAttribDivisor(0, 0);
+  glVertexAttribDivisor(1, 0);
+  glVertexAttribDivisor(2, 0);
+  glVertexAttribDivisor(3, 0);
+  glVertexAttribDivisor(4, 0);
+
+
+  glDrawArraysInstanced(GL_LINES, 0, array->numpoints, size);
+#ifndef VAO
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(2);
+#endif
 }
 EXPORT void GameApi::LinesApi::render(LLA l)
 {
@@ -633,6 +773,9 @@ EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
 #ifdef VAO
   glGenVertexArrays(1, arr->vao);
   glBindVertexArray(arr->vao[0]);
+  // INSTANCED RENDERING
+  glGenBuffers(1, &arr->pos_buffer);
+  // END OF INSTANCED RENDERING
 #endif
   glGenBuffers(1, &arr->buffer);
   glGenBuffers(1, &arr->buffer2);

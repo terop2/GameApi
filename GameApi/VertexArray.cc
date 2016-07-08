@@ -742,7 +742,7 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
       glDrawArraysInstanced(GL_TRIANGLES, 0, quad_count, size);
       //std::cout << "InstancingQUAD: " << quad_count << " " << size << std::endl;
     }
-#if 1
+#if 11
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(2);

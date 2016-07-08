@@ -447,6 +447,7 @@ class Material
 {
 public:
   virtual int mat(int p) const=0; 
+  virtual int mat_inst(int p, int pts) const=0;
 };
 
 class ShaderCall
