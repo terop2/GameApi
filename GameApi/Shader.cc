@@ -1267,7 +1267,7 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 		  std::cout << s << std::endl;
 
 		  std::stringstream ss3;
-		  ss3 << num;
+		  ss3 << num+1;
 		  out+="gl_Position = in_P * in_T * in_MV * pos";
 		  out+=ss3.str();
 		  out+=";\n";
@@ -1308,7 +1308,7 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 
 		std::cout << "Fragment: " << s << std::endl;
 		std::stringstream ss3;
-		ss3 << num;
+		ss3 << num+1;
 
 #ifdef OLD_SHADER
 		if (is_fbo)

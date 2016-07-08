@@ -4053,6 +4053,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "P", "MT" },
 			 { "", "" },
 			 "ML", "materials_api", "bind"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bind_inst,
+			 "m_bind_inst",
+			 { "p", "pts", "mat" },
+			 { "P", "PTS", "MT" },
+			 { "", "", "" },
+			 "ML", "materials_api", "bind_inst"));
   
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_event,
@@ -4165,6 +4171,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P", "O", "float", "float", "float" },
 			 { "", "", "0.0", "0.0", "0.0" },
 			 "P", "polygon_api", "deform"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::linear_span,
+			 "linear_span",
+			 { "ev", "li", "dx", "dy", "dz", "num_steps" },
+			 { "EveryApi&", "LI", "float", "float", "float", "int" },
+			 { "ev", "", "0.0", "0.0", "100.0", "1" },
+			 "P", "polygon_api", "linear_span"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_map,
 			 "color_map",
 			 { "bm", "sx", "sy", "z" },
@@ -4379,6 +4391,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "EveryApi&", "VA" },
 			 { "ev", "" },
 			 "ML", "polygon_api", "render_vertex_array_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::render_instanced_ml,
+			 "p_render_inst",
+			 { "ev", "p", "pts" },
+			 { "EveryApi&", "P", "PTS" },
+			 { "ev", "", "" },
+			 "ML", "materials_api", "render_instanced_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::shading_shader,
 			 "p_shading",
 			 { "ev", "mainloop", "level1", "level2", "level3" },
@@ -4692,6 +4710,12 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "PTS", "PT", "V", "V", "V" },
 			 { "", "(0.0,0.0,0.0)", "(100.0,0.0,0.0)", "(0.0,0.0,100.0)", "(1.0,1.0,0.0)" },
 			 "PTS", "points_api", "shadow_points"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::random_plane,
+			 "random_plane",
+			 { "pos", "u_x", "u_y", "numpoints" },
+			 { "PT", "V", "V", "int" },
+			 { "", "", "", "100" },
+			 "PTS", "points_api", "random_plane"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::prepare,
 			 "pts_prepare",
 			 { "p" },

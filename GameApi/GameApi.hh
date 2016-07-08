@@ -893,6 +893,9 @@ public:
   MT snow(EveryApi &ev, MT nxt);
   MT web(EveryApi &ev, MT nxt); // TODO: add line width property
   ML bind(P p, MT mat);
+  ML bind_inst(P p, PTS pts, MT mat);
+  ML render_instanced_ml(EveryApi &ev, P p, PTS pts);
+  ML render_instanced2_ml(EveryApi &ev, VA va, PTA pta);
   //ML snow(EveryApi &ev, P p);
   //ML web(EveryApi &ev, P p);
 private:
@@ -1446,6 +1449,7 @@ public:
 	      float min_z, float max_z);
   IMPORT P heightmap(FB fb, std::function<P (float)> f, float dx, float dz);
   IMPORT P circular_span(EveryApi &ev, LI li, float delta_angle_around_y_axis, int num_steps);
+  IMPORT P linear_span(EveryApi &ev, LI li, float dx, float dy, float dz, int num_steps);
   IMPORT P cut_faces(P p, O o, CT cutter);
   IMPORT P tri_to_quad(P p);
 
@@ -2106,7 +2110,10 @@ public:
   //IMPORT unsigned int *color_access(LLA lines, int line, bool b);
   //IMPORT void update(LLA lines);
 	IMPORT void render(LLA array);
+  IMPORT void prepare_inst(LLA array, PTA instances);
+  IMPORT void render_inst(LLA array, PTA instances);
   IMPORT ML render_ml(EveryApi &ev, LLA array);
+  IMPORT ML render_inst_ml(EveryApi &ev, LLA array, PTA pta);
 private:
   LinesApi(const LinesApi&);
   void operator=(const LinesApi&);
