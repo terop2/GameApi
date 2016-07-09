@@ -926,7 +926,13 @@ public:
       "}\n"
       "vec4 blend_color" + uid + "(vec3 pt, float k)\n"
       "{\n"
-      "   return vec4(1.0,1.0,1.0,1.0);\n"
+      "   float val = " + funccall_to_string(&m1) + ";\n"
+      "   float val2 = " + funccall_to_string(&m2) + ";\n"
+      "   vec4 v1 = " + color_funccall_to_string(&m1) + ";\n"
+      "   vec4 v2 = " + color_funccall_to_string(&m2) + ";\n"
+      "   if (val<val2) return v1;\n"
+      "   return v2;\n"
+      //"   return vec4(1.0,1.0,1.0,1.0);\n"
       "}\n";
   }
   virtual std::string FunctionName() const { return std::string("blend") + uid; }
@@ -934,18 +940,20 @@ public:
   virtual int NumArgs() const { return 2; }
   virtual bool FreeVariable(int i) const { return true; }
   virtual std::string ArgName(int i) const { if (i==0) return "pt"; return "k"; }
-  virtual std::string ArgValue(int i) const { if (i==0) return "pt"; return "0.1"; }
+  virtual std::string ArgValue(int i) const { if (i==0) return "pt"; return "0.5"; }
   virtual std::string ArgType(int i) const { if (i==0) return "vec3"; return "float"; }
 private:
   ShaderModule &m1;
   ShaderModule &m2;
   std::string uid;
 };
-EXPORT GameApi::SFO GameApi::ShaderModuleApi::blend(SFO o1, SFO o2)
+EXPORT GameApi::SFO GameApi::ShaderModuleApi::blend(SFO o1, SFO o2, float k)
 {
   ShaderModule *o1_m = find_shader_module(e, o1);
   ShaderModule *o2_m = find_shader_module(e, o2);
-  return add_shader_module(e, new BlendElemModule(*o1_m, *o2_m));
+  SFO s =  add_shader_module(e, new BlendElemModule(*o1_m, *o2_m));
+  SFO s2 = bind_arg(s, "k", ToNum(k));
+  return s2;
 }
 
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::rot_y(SFO obj, float angle)
