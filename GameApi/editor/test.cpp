@@ -845,6 +845,14 @@ void iter(void *arg)
 			env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 			
 		      }
+		    else if (type=="C")
+		      {
+			C p0;
+			p0.id = id;
+			LI p = env->ev->curve_api.to_lines(p0, 40);
+			env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			
+		      }
 		    else if (type=="PTS")
 		      {
 			PTS p;

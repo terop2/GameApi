@@ -305,6 +305,14 @@ EXPORT GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
+GameApi::C add_curve(GameApi::Env &e, Curve<Point> *curve)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->curves.push_back(curve);
+  GameApi::C im;
+  im.id = env->curves.size()-1;
+  return im;
+}
 GameApi::US add_uber(GameApi::Env &e, ShaderCall *call)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1022,6 +1030,11 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   Array<int,bool> *enable = info.enable_obj_array;
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
+}
+Curve<Point> *find_curve(GameApi::Env &e, GameApi::C c)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->curves[c.id];
 }
 ShaderCall *find_uber(GameApi::Env &e, GameApi::US m)
 {
@@ -3490,3 +3503,262 @@ GameApi::US GameApi::UberShaderApi::f_colour(US us)
   return add_uber(e, new F_ShaderCallFunction("colour", next));
 }
 
+class LineCurve : public Curve<Point>
+{
+public:
+  LineCurve(Point p1, Point p2) : p1(p1), p2(p2) {}
+  float Size() const {
+    return 1.0;
+  }
+  Point Index(float p) const
+  {
+    return Point((1.0-p)*Vector(p1) + p*Vector(p2));
+  }
+private:
+  Point p1,p2;
+};
+
+class CircleCurveXY : public Curve<Point>
+{
+public:
+  CircleCurveXY(Point center, float r) : center(center), r(r) { }
+  float Size() const { return 2.0*3.14159; }
+  Point Index(float p) const
+  {
+    Point pp;
+    pp.x = r*cos(p);
+    pp.y = r*sin(p);
+    pp.z = 0.0;
+    return pp;
+  }
+private:
+  Point center;
+  float r;
+};
+
+class CircleCurveXZ : public Curve<Point>
+{
+public:
+  CircleCurveXZ(Point center, float r) : center(center), r(r) { }
+  float Size() const { return 2.0*3.14159; }
+  Point Index(float p) const
+  {
+    Point pp;
+    pp.x = r*cos(p);
+    pp.y = 0.0;
+    pp.z = r*sin(p);
+    return pp;
+  }
+private:
+  Point center;
+  float r;
+};
+
+GameApi::C GameApi::CurveApi::line(PT p1, PT p2)
+{
+  Point *pp1 = find_point(e, p1);
+  Point *pp2 = find_point(e, p2);
+  return add_curve(e, new LineCurve(*pp1, *pp2));
+}
+GameApi::C GameApi::CurveApi::circle_xy(PT center, float r)
+{
+  Point *c = find_point(e, center);
+  return add_curve(e, new CircleCurveXY(*c, r));
+}
+GameApi::C GameApi::CurveApi::circle_xz(PT center, float r)
+{
+  Point *c = find_point(e, center);
+  return add_curve(e, new CircleCurveXZ(*c, r));
+}
+GameApi::C GameApi::CurveApi::linear(std::vector<PT> vec)
+{
+  if (vec.size()==0) { GameApi::C c; c.id = -1; return c; }
+  if (vec.size()==1) { GameApi::PT pt = vec[0]; return line(pt,pt); }
+  int s = vec.size();
+  std::vector<C> vec2;
+  for(int i=0;i<s-1;i++)
+    {
+      GameApi::C c = line(vec[i],vec[i+1]);
+      vec2.push_back(c);
+    }
+  return compose(vec2);
+}
+class BezierPoints : public PointCollection
+{
+public:
+  BezierPoints(std::vector<Point> vec) : vec(vec) { }
+  int Size() const { return vec.size(); }
+  Point Index(int i) const { return vec[i]; }
+
+private:
+  std::vector<Point> vec;
+
+};
+GameApi::C GameApi::CurveApi::bezier(std::vector<PT> vec)
+{
+  int s = vec.size();
+  std::vector<Point> vec2;
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(*find_point(e,vec[i]));
+    }
+  BezierPoints *pt = new BezierPoints(vec2);
+  return add_curve(e, new BezierCurve(*pt));
+}
+
+class MatrixCurve3 : public Curve<Point>
+{
+public:
+  MatrixCurve3(Curve<Point> *c, Matrix m) : c(c), m(m) {}
+  float Size() const { return c->Size(); }
+  Point Index(float pos) const
+  {
+    Point p = c->Index(pos);
+    Point p2 = p*m; 
+    return p2;
+  }
+private:
+  Curve<Point> *c;
+  Matrix m;
+};
+GameApi::C GameApi::CurveApi::scale(C curve, float mx, float my, float mz)
+{
+  Curve<Point> *c = find_curve(e, curve);
+  return add_curve(e, new MatrixCurve3(c, Matrix::Scale(mx, my, mz)));
+}
+
+GameApi::C GameApi::CurveApi::trans(C curve, float dx, float dy, float dz)
+{
+  Curve<Point> *c = find_curve(e, curve);
+  return add_curve(e, new MatrixCurve3(c, Matrix::Translate(dx, dy, dz)));
+}
+
+class ComposeCurve2 : public Curve<Point>
+{
+public:
+  ComposeCurve2(std::vector<Curve<Point>*> vec) : vec(vec) { }
+  Point Index(float p) const
+  {
+    float div = fmod(p, Size());
+    int pos = int(p);
+    Curve<Point> *c = vec[pos];
+    div*=c->Size();
+    return c->Index(div);
+  }
+  float Size() const {
+    return float(vec.size());
+  }
+  
+private:
+  std::vector<Curve<Point>*> vec;
+};
+
+GameApi::C GameApi::CurveApi::compose(std::vector<C> vec)
+{
+  int s = vec.size();
+  std::vector<Curve<Point>*> vec2;
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_curve(e,vec[i]));
+    }
+  return add_curve(e, new ComposeCurve2(vec2));
+}
+
+class LengthCurve : public Curve<Point>
+{
+public:
+  LengthCurve(Curve<Point> *c, float new_length) : c(c), new_length(new_length) { }
+  float Size() const {
+    return new_length;
+  }
+  Point Index(float p) const
+  {
+    p/=new_length;
+    p*=c->Size();
+    return c->Index(p);
+  }
+private:
+  Curve<Point> *c;
+  float new_length;
+};
+GameApi::C GameApi::CurveApi::change_length(C curve, float new_length)
+{
+  Curve<Point> *c = find_curve(e, curve);
+  return add_curve(e, new LengthCurve(c, new_length));
+}
+
+class SplitCurve : public Curve<Point>
+{
+public:
+  SplitCurve(Curve<Point> *c, float start, float end) : c(c), start(start), end(end) { }
+  float Size() const { return end-start; }
+  Point Index(float p) const
+  {
+    return c->Index(start+p);
+  }
+private:
+  Curve<Point> *c;
+  float start, end;
+};
+
+GameApi::C GameApi::CurveApi::split(C curve, float start_var, float end_var)
+{
+  Curve<Point> *c = find_curve(e, curve);
+  return add_curve(e, new SplitCurve(c, start_var, end_var));
+}
+
+GameApi::PT GameApi::CurveApi::pos(C curve, float p)
+{
+  Curve<Point> *c = find_curve(e, curve);
+  Point pp = c->Index(p);
+  return add_point(e, pp.x,pp.y,pp.z);
+}
+
+class SampleCurve : public PointsApiPoints
+{
+public:
+  SampleCurve(Curve<Point> *c, int num_points) : c(c), num_points(num_points) { }
+  int NumPoints() const { return num_points; }
+  Point Pos(int i) const
+  {
+    float val = float(i);
+    val/=float(num_points);
+    val*=c->Size();
+    return c->Index(val);
+  }
+  unsigned int Color(int i) const
+  {
+    return 0xffffffff;
+  }
+private:
+  Curve<Point> *c;
+  int num_points;
+  float start,end;
+};
+GameApi::PTS GameApi::CurveApi::sample(C curve, int num_samples)
+{
+  Curve<Point> *c = find_curve(e, curve);
+  return add_points_api_points(e, new SampleCurve(c,num_samples));
+}
+class CurveLineCollection : public LineCollection
+{
+public:
+  CurveLineCollection(Curve<Point> *c, int num_lines) : c(c), num_lines(num_lines) { }
+  int NumLines() const { return num_lines; }
+  Point LinePoint(int line, int point) const
+  {
+    int pos = line+point;
+    float pos2 = float(pos);
+    pos2/=float(num_lines+1);
+    pos2*=c->Size();
+    return c->Index(pos2);
+  }
+private:
+  Curve<Point> *c;
+  int num_lines;
+};
+GameApi::LI GameApi::CurveApi::to_lines(C curve, int num_lines)
+{
+  Curve<Point> *c = find_curve(e, curve);
+  return add_line_array(e, new CurveLineCollection(c, num_lines));
+}

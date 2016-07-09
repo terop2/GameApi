@@ -1804,6 +1804,7 @@ class ComposeCurve : public Base
 public:
   template<class It>
   ComposeCurve(It beg, It end) : vec(beg, end) { }
+  ComposeCurve(std::vector<Base*> vec) : vec(vec) { }
 
   T Index(float pos) const 
   {

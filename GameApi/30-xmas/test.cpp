@@ -19,7 +19,7 @@ struct Envi {
   float speed_x = 1.0;
   float speed_y = 1.0;
   InteractionApi::Quake_data data;
-  bool logo_shown = false;
+  bool logo_shown = true;
   SH color_sh;
   SH texture_sh;
   SH arr_texture_sh;
@@ -43,7 +43,11 @@ void iter(void *arg)
   if (env->logo_shown)
     {
       bool b = env->ev->mainloop_api.logo_iter();
-      if (b) { env->logo_shown = false; }
+      if (b) { env->logo_shown = false; 
+#if 1
+  env->ev->tracker_api.play_ogg("xmassong.ogg");
+#endif
+      }
       return;
     }
 

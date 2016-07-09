@@ -3220,6 +3220,7 @@ MACRO(GameApi::IM)
 MACRO(GameApi::TL)
 MACRO(GameApi::T)
 MACRO(GameApi::MT)
+MACRO(GameApi::C)
 #undef MACRO
 
 
@@ -4663,6 +4664,79 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "EveryApi&", "LLA" },
 			 { "ev", "" },
 			 "ML", "lines_api", "render_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::line,
+			 "c_line",
+			 { "p1", "p2" },
+			 { "PT", "PT" },
+			 { "", "" },
+			 "C", "curve_api", "line"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::circle_xy,
+			 "c_circle_xy",
+			 { "center", "r" },
+			 { "PT", "float" },
+			 { "", "100.0" },
+			 "C", "curve_api", "circle_xy"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::circle_xz,
+			 "c_circle_xz",
+			 { "center", "r" },
+			 { "PT", "float" },
+			 { "", "100.0" },
+			 "C", "curve_api", "circle_xz"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::linear,
+			 "c_linear",
+			 { "vec" },
+			 { "[PT]" },
+			 { "" },
+			 "C", "curve_api", "linear"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::bezier,
+			 "c_bezier",
+			 { "vec" },
+			 { "[PT]" },
+			 { "" },
+			 "C", "curve_api", "bezier"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::scale,
+			 "c_scale",
+			 { "curve", "sx", "sy", "sz" },
+			 { "C", "float", "float", "float" },
+			 { "", "1.0", "1.0", "1.0" },
+			 "C", "curve_api", "scale"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::trans,
+			 "c_trans",
+			 { "curve", "dx", "dy", "dz" },
+			 { "C", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0" },
+			 "C", "curve_api", "trans"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::compose,
+			 "c_compose",
+			 { "vec" },
+			 { "[C]" },
+			 { "" },
+			 "C", "curve_api", "compose"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::change_length,
+			 "c_change_length",
+			 { "curve", "new_legnth" },
+			 { "C", "float" },
+			 { "", "1.0" },
+			 "C", "curve_api", "change_length"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::split,
+			 "c_split",
+			 { "curve", "start", "end" },
+			 { "C", "float", "float" },
+			 { "", "0.0", "1.0" },
+			 "C", "curve_api", "split"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::sample,
+			 "c_sample",
+			 { "curve", "num_samples" },
+			 { "C", "int" },
+			 { "", "10" },
+			 "PTS", "curve_api", "sample"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::to_lines,
+			 "c_render",
+			 { "curve", "num_lines" },
+			 { "C", "int" },
+			 { "", "40" },
+			 "LI", "curve_api", "to_lines"));
+
   return vec;
 }
 std::vector<GameApiItem*> pointsapi_functions()
