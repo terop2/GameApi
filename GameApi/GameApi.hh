@@ -816,7 +816,7 @@ public:
   IMPORT SFO mod_z(SFO obj, float dz);
   IMPORT SFO and_not(SFO obj, SFO not_obj);
   IMPORT SFO or_elem(SFO obj1, SFO obj2);
-  IMPORT SFO blend(SFO obj1, SFO obj2);
+  IMPORT SFO blend(SFO obj1, SFO obj2, float k);
   IMPORT SFO trans(SFO obj);
   IMPORT SFO trans(SFO obj, float dx, float dy, float dz);
   IMPORT SFO scale(SFO obj);
