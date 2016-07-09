@@ -550,25 +550,28 @@ private:
 class CurveApi
 {
 public:
-  CurveApi(Env &e);
-  ~CurveApi();
-
+  CurveApi(Env &e) : e(e) { }
   C line(PT p1, PT p2);
-  C circle(PT center, float r);
-  C linear(PT *array, int size);
-  C bezier(PT *array, int size);
+  C circle_xy(PT center, float r);
+  C circle_xz(PT center, float r);
+  C linear(std::vector<PT> vec);
+  C bezier(std::vector<PT> vec);
   
   C scale(C curve, float mx, float my, float mz);
-  C constantspeed(C curve, float speed);
-  C compose(C *array, int size);
-  C plane(C curve2d, PT pos, PT u_x, PT u_y);
-  C change_length(C curve, float length);
+  C trans(C curve, float dx, float dy, float dz);
+  //C constantspeed(C curve, float speed);
+  C compose(std::vector<C> vec);
+  //C plane(C curve2d, PT pos, PT u_x, PT u_y);
+  C change_length(C curve, float new_length);
   C split(C orig_curve, float start_var, float end_var);
 
 
   PT pos(C curve, float p);
   
-  void sample(PT *outputarray, int size, C input_curve);
+  PTS sample(C input_curve, int num_samples);
+  LI to_lines(C curve, int num_lines);
+private:
+  Env &e;
 };
 
 class CurvesApi
@@ -2419,7 +2422,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -2468,6 +2471,7 @@ struct EveryApi
   TreeApi tree_api;
   MaterialsApi materials_api;
   UberShaderApi uber_api;
+  CurveApi curve_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);
