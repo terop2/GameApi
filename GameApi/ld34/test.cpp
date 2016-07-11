@@ -376,9 +376,9 @@ SFO shader_character(EveryApi &ev, SFO outside)
   SFO all_3b = ev.sh_api.rot_x(all_3a, -1.5, hand_center2);
   SFO all_3c = ev.sh_api.bind_arg(all_3b, "angle", "1.5*cos(time*3.0)");
   SFO all_3d = ev.sh_api.color(all_3c, 1.0,0.5,0.0, 1.0);
-  SFO all_4 = ev.sh_api.or_elem(all_3d, body_1);
-  SFO all_4a = ev.sh_api.or_elem(all_4, all_1);
-  SFO all_4b = ev.sh_api.or_elem(all_4a, all_2d);
+  SFO all_4 = ev.sh_api.blend(all_3d, body_1,k);
+  SFO all_4a = ev.sh_api.blend(all_4, all_1,k);
+  SFO all_4b = ev.sh_api.blend(all_4a, all_2d,k);
   SFO all_5 = legs_1;
   SFO all_6 = ev.sh_api.blend(all_5, tip_1,k);
   SFO all_6a = ev.sh_api.trans(all_6, 0.0, 0.0, 10.0);
