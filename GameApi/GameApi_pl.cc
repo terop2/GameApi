@@ -3523,7 +3523,29 @@ private:
   Point pos;
   Vector u_x, u_y;
 };
+#if 0
+class ColorMapPoly4 : public FaceCollection
+{
+public:
+  ColorMapPoly4(Bitmap<::Color> *bm, Bitmap<float> *fb, Point pos, Vector u_x, Vector u_y) : bm(bm), fb(fb), pos(pos), u_x(u_x), u_y(u_y) { 
+    u_z = Vector::CrossProduct(u_x,u_y); u_z/=u_z.Dist();
+  }
+  virtual int NumFaces() const { return bm->SizeX()*bm->SizeY(); }
+  virtual int NumPoints(int face) const { return 4; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int xx = face/bm->SizeY();
+    int yy = face - xx*bm->SizeY();
+    if (point==1 ||point==2) { xx++; }
+    if (point==2 ||point==3) { yy++; }
 
+    Point p = pos + xx*u_x/bm->SizeX() + yy*u_y/bm->SizeY();
+    p+=fb->Map(xx*fb->SizeX()/bm->SizeX(),yy*fb->SizeY()/bm->SizeY())*u_z;
+
+    return p;
+  }
+};
+#endif
 class ColorMapPoly2 : public FaceCollection
 {
 public:
@@ -3534,10 +3556,25 @@ public:
   {
     int xx = face/bm->SizeY();
     int yy = face - xx*bm->SizeY();
+    int xx1 = xx;
+    int yy1 = yy;
     if (point==1 ||point==2) { xx++; }
     if (point==2 ||point==3) { yy++; }
     Point p = pos + xx*u_x/bm->SizeX() + yy*u_y/bm->SizeY();
-    p+=fb->Map(xx*fb->SizeX()/bm->SizeX(),yy*fb->SizeY()/bm->SizeY())*u_z;
+    float val = fb->Map(xx*fb->SizeX()/bm->SizeX(),yy*fb->SizeY()/bm->SizeY());
+    if (std::isnan(val)) { 
+      float val0 = fb->Map(xx1*fb->SizeX()/bm->SizeX(),yy1*fb->SizeY()/bm->SizeY());
+      float val1 = fb->Map((xx1+1)*fb->SizeX()/bm->SizeX(),yy1*fb->SizeY()/bm->SizeY());
+      float val2 = fb->Map(xx1*fb->SizeX()/bm->SizeX(),(yy1+1)*fb->SizeY()/bm->SizeY());
+      float val3 = fb->Map((xx1+1)*fb->SizeX()/bm->SizeX(),(yy1+1)*fb->SizeY()/bm->SizeY());
+      if (std::isnan(val0) && std::isnan(val1) && std::isnan(val2) && std::isnan(val3))
+	{
+	  val = val0;
+	}
+      else
+	val=0.0; 
+    }
+    p+=val*u_z;
     //p.x = xx*sx/bm->SizeX();
     //p.y = yy*sy/bm->SizeY();
     //p.z = z;

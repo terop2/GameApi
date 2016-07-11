@@ -1437,6 +1437,7 @@ public:
   IMPORT P color_map(BM bm, float sx, float sy, float z);
   IMPORT P color_map3(BM bm, FB height, PT pos, V u_x, V u_y);
   IMPORT P color_map3(BM bm, FB height, float sx, float sy, float z);
+  IMPORT P color_map4(BM bm, FB height, float sx, float sy, float z);
   IMPORT P cube_map(float start_x, float end_x,
 		    float stary_y, float end_y,
 		    float start_z, float end_z,

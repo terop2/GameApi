@@ -4525,6 +4525,12 @@ std::vector<GameApiItem*> shadermoduleapi_functions()
 			 { "SFO", "SFO" },
 			 { "", "" },
 			 "SFO", "sh_api", "or_elem"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::blend,
+			 "sh_blend",
+			 { "obj1", "obj2", "k" },
+			 { "SFO", "SFO", "float" },
+			 { "", "", "15.0" },
+			 "SFO", "sh_api", "blend"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, (GameApi::SFO (GameApi::ShaderModuleApi::*)(GameApi::SFO,float,float,float))&GameApi::ShaderModuleApi::trans,
 			 "sh_trans",
