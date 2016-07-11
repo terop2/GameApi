@@ -411,6 +411,8 @@ public:
   virtual float f(float x, float y, float z) const=0;
   virtual float f_u(float x, float y) const=0; // substitute z=f(x,y)
   virtual float f_l(float x, float y) const=0; // substitute z=f(x,y)
+  virtual unsigned int f_color_u(float x, float y) const { return 0xffffffff;}
+  virtual unsigned int f_color_l(float x, float y) const { return 0xff888888;}
 };
 
 class ImplicitFunction4d
@@ -455,6 +457,13 @@ class ShaderCall
 public:
   virtual int index(int base) const=0;
   virtual std::string func_call() const=0;
+};
+
+class MatrixArray
+{
+public:
+  virtual int Size() const=0;
+  virtual Matrix Index(int i) const=0;
 };
 
 #endif

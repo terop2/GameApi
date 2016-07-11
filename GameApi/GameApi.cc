@@ -305,6 +305,15 @@ EXPORT GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
+GameApi::MS add_matrix_array(GameApi::Env &e, MatrixArray *m)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->matrix_arrays.push_back(m);
+  GameApi::MS im;
+  im.id = env->matrix_arrays.size()-1;
+  return im;
+
+}
 GameApi::C add_curve(GameApi::Env &e, Curve<Point> *curve)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1030,6 +1039,11 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   Array<int,bool> *enable = info.enable_obj_array;
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
+}
+MatrixArray *find_matrix_array(GameApi::Env &e, GameApi::MS m)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->matrix_arrays[m.id];
 }
 Curve<Point> *find_curve(GameApi::Env &e, GameApi::C c)
 {
@@ -3761,4 +3775,76 @@ GameApi::LI GameApi::CurveApi::to_lines(C curve, int num_lines)
 {
   Curve<Point> *c = find_curve(e, curve);
   return add_line_array(e, new CurveLineCollection(c, num_lines));
+}
+class FromPointsMatrices : public MatrixArray
+{
+public:
+  FromPointsMatrices(PointsApiPoints *p) : p(p) { }
+  int Size() const {
+    return p->NumPoints();
+  }
+  Matrix Index(int i) const
+  {
+    Point pp = p->Pos(i);
+    return Matrix::Translate(pp.x, pp.y, pp.z);
+  }
+private:
+  PointsApiPoints *p;
+};
+
+GameApi::MS GameApi::MatricesApi::from_points(PTS pts)
+{
+  PointsApiPoints *points = find_pointsapi_points(e, pts);
+  return add_matrix_array(e, new FromPointsMatrices(points));
+}
+
+class MultArray1 : public MatrixArray
+{
+public:
+  MultArray1(MatrixArray *arr, Matrix m) : arr(arr), m(m) { }
+  int Size() const { return arr->Size(); }
+  Matrix Index(int i) const { return arr->Index(i)*m; }
+private:
+  MatrixArray *arr;
+  Matrix m;
+};
+
+class MultArray2 : public MatrixArray
+{
+public:
+  MultArray2(Matrix m, MatrixArray *arr) : m(m), arr(arr) { }
+  int Size() const { return arr->Size(); }
+  Matrix Index(int i) const { return m*arr->Index(i); }
+private:
+  Matrix m;
+  MatrixArray *arr;
+};
+
+GameApi::MS GameApi::MatricesApi::mult(MS m, M mat)
+{
+  MatrixArray *arr = find_matrix_array(e, m);
+  Matrix mm = find_matrix(e, mat);
+  return add_matrix_array(e, new MultArray1(arr,mm));
+}
+GameApi::MS GameApi::MatricesApi::mult(M mat, MS m)
+{
+  Matrix mm = find_matrix(e,mat);
+  MatrixArray *arr = find_matrix_array(e,m);
+  return add_matrix_array(e, new MultArray2(mm,arr));
+}
+class SubArrayMatrices : public MatrixArray
+{
+public:
+  SubArrayMatrices(MatrixArray *m, int start, int count) : m(m) { }
+  int Size() const { return std::min(count, m->Size()-start); }
+  Matrix Index(int i) const { return m->Index(start+i); }
+private:
+  MatrixArray *m;
+  int start;
+  int count;
+};
+GameApi::MS GameApi::MatricesApi::subarray(MS m, int start, int count)
+{
+  MatrixArray *arr = find_matrix_array(e,m);
+  return add_matrix_array(e, new SubArrayMatrices(arr,start,count));
 }

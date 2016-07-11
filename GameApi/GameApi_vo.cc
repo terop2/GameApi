@@ -1439,6 +1439,41 @@ private:
   DistanceRenderable &r1;
   DistanceRenderable &r2;
 };
+class ColorDistance : public DistanceRenderable
+{
+public:
+  ColorDistance(DistanceRenderable *rend, float r, float g, float b, float a) : rend(rend), r(r), g(g), b(b), a(a) { }
+  float distance(Point p) const { return rend->distance(p); }  
+  unsigned int color(Point p) const { 
+    int rr = int(r*255.0);
+    int gg = int(g*255.0);
+    int bb = int(b*255.0);
+    int aa = int(a*255.0);
+    return (aa<<24) + (rr<<16) + (gg<<8) + bb;
+  }
+  Vector normal(Point p) const { return rend->normal(p); }
+private:
+  DistanceRenderable *rend;
+  float r,g,b,a;
+};
+class TorusDistance : public DistanceRenderable
+{
+public:
+  TorusDistance(float radius_1, float radius_2) : radius_1(radius_1), radius_2(radius_2) { }
+  float distance(Point p) const
+  {
+    float dist1 = sqrt(p.x*p.x+p.z*p.z);
+    dist1 -= radius_1;
+    Point2d pp = { dist1, p.y };
+    float dist2 = sqrt(pp.x*pp.x+pp.y*pp.y);
+    dist2-=radius_2;
+    return dist2;
+  }  
+  unsigned int color(Point p) const { return 0xffffffff; }
+  Vector normal(Point p) const { Vector v; return v; }
+private:
+  float radius_1, radius_2;
+};
 
 class RoundCubeDistance : public DistanceRenderable
 {
@@ -1463,7 +1498,52 @@ private:
   Point start, end;
   float r;
 };
-
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::color(FD fd, float r, float g, float b, float a)
+{
+  DistanceRenderable *dist = find_distance(e, fd);
+  return add_distance(e, new ColorDistance(dist,r,g,b,a));
+}
+class MatrixDistance : public DistanceRenderable
+{
+public:
+  MatrixDistance(DistanceRenderable *rend, Matrix m) : rend(rend), m(m) {}
+  float distance(Point p) const
+  {
+    Point pp = p * m;
+    return rend->distance(pp);
+  }
+  unsigned int color(Point p) const { 
+    Point pp = p * m;
+    return rend->color(pp);
+  }
+  Vector normal(Point p) const {
+    Point pp = p * m;
+    return rend->normal(pp);
+  }
+  
+private:
+  DistanceRenderable *rend;
+  Matrix m;
+};
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::rot_x(FD fd, float angle)
+{
+  DistanceRenderable *rend = find_distance(e, fd);
+  return add_distance(e, new MatrixDistance(rend, Matrix::XRotation(angle)));
+}
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::rot_y(FD fd, float angle)
+{
+  DistanceRenderable *rend = find_distance(e, fd);
+  return add_distance(e, new MatrixDistance(rend, Matrix::YRotation(angle)));
+}
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::rot_z(FD fd, float angle)
+{
+  DistanceRenderable *rend = find_distance(e, fd);
+  return add_distance(e, new MatrixDistance(rend, Matrix::ZRotation(angle)));
+}
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::torus(float r_1, float r_2)
+{
+  return add_distance(e, new TorusDistance(r_1,r_2));
+}
 EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::round_cube(float start_x, float end_x,
 							float start_y, float end_y,
 							float start_z, float end_z, float r)

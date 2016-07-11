@@ -25,6 +25,7 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct MS { int id; };
   struct US { int id; };
   struct MT { int id; };
   struct TL { int id; };
@@ -688,6 +689,9 @@ public:
   IM from_distance(FD fd, float pos_x, float pos_y, float pos_z, float u_x, float u_y, float u_z, float sx, float sy);
   FB render_upper(IM obj, float size_x, float size_y, int sx, int sy, float dx, float dy);
   FB render_lower(IM obj, float size_x, float size_y, int sx, int sy, float dx, float dy);
+
+  BM render_upper_color(IM obj, float size_x, float size_y, int sx, int sy, float dx, float dy);
+  BM render_lower_color(IM obj, float size_x, float size_y, int sx, int sy, float dx, float dy);
 private:
   Env &e;
 };
@@ -1259,7 +1263,7 @@ public:
 		       float start_y, float end_y,
 		       float start_z, float end_z,
 		       float r);
-  IMPORT FD torus(float t_x, float t_y);
+  IMPORT FD torus(float radius_1, float radius_2);
   IMPORT FD cone(float c_x, float c_y);
   IMPORT FD plane(float n_x, float n_y, float n_z, float n_w);
   IMPORT FD hex_prism(float h_x, float h_y);
@@ -1267,6 +1271,10 @@ public:
   IMPORT FD triangle(PT a, PT b, PT c);
   IMPORT FD quad(PT a, PT b, PT c, PT d);
 	IMPORT FD line(PT start, PT end, float dist);
+  IMPORT FD color(FD fd, float r, float g, float b, float a);
+  IMPORT FD rot_x(FD fd, float angle);
+  IMPORT FD rot_y(FD fd, float angle);
+  IMPORT FD rot_z(FD fd, float angle);
 
 	IMPORT FD min(FD a1, FD a2);
         IMPORT FD max(FD a1, FD a2);
@@ -2022,6 +2030,18 @@ private:
   void operator=(const PointCollectionApi&);
   Env &e;
 };
+class MatricesApi
+{
+public:
+  MatricesApi(Env &e) :e(e) { }
+  MS from_points(PTS pts);
+  MS mult(MS m, M mat);
+  MS mult(M mat, MS m);
+  MS subarray(MS m, int start, int count);
+private:
+  Env &e;
+};
+
 class PointsApi
 {
 public:
@@ -2423,7 +2443,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -2473,6 +2493,7 @@ struct EveryApi
   MaterialsApi materials_api;
   UberShaderApi uber_api;
   CurveApi curve_api;
+  MatricesApi matrices_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);
