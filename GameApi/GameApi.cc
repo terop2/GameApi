@@ -305,6 +305,15 @@ EXPORT GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
+GameApi::MC add_matrix_curve(GameApi::Env &e, Curve<Matrix> *m)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->matrix_curves.push_back(m);
+  GameApi::MC im;
+  im.id = env->matrix_curves.size()-1;
+  return im;
+
+}
 GameApi::MS add_matrix_array(GameApi::Env &e, MatrixArray *m)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1039,6 +1048,11 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   Array<int,bool> *enable = info.enable_obj_array;
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
+}
+Curve<Matrix> *find_matrix_curve(GameApi::Env &e, GameApi::MC m)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->matrix_curves[m.id];
 }
 MatrixArray *find_matrix_array(GameApi::Env &e, GameApi::MS m)
 {
@@ -3847,4 +3861,86 @@ GameApi::MS GameApi::MatricesApi::subarray(MS m, int start, int count)
 {
   MatrixArray *arr = find_matrix_array(e,m);
   return add_matrix_array(e, new SubArrayMatrices(arr,start,count));
+}
+
+class FromCurveMatrices : public Curve<Matrix>
+{
+public:
+  FromCurveMatrices(Curve<Point> *c) : c(c) { }
+  float Size() const { return c->Size(); }
+  Matrix Index(float i) const {
+    Point p = c->Index(i);
+    Matrix m = Matrix::Translate(p.x,p.y,p.z);
+    return m;
+  }
+private:
+  Curve<Point> *c;
+};
+GameApi::MC GameApi::MatrixCurveApi::from_curve(C curve)
+{
+  Curve<Point> *c = find_curve(e,curve);
+  return add_matrix_curve(e, new FromCurveMatrices(c));
+}
+class CircleXYMatrix : public Curve<Matrix>
+{
+public:
+  CircleXYMatrix(float radius) : r(radius) { }
+  float Size() const { return 2.0*3.14159; }
+  Matrix Index(float x) const
+  {
+    Matrix m = Matrix::Translate(r,0.0,0.0);
+    Matrix m2 = Matrix::ZRotation(x);
+    return m * m2;
+  }
+private:
+  float r;
+};
+
+class CircleXZMatrix : public Curve<Matrix>
+{
+public:
+  CircleXZMatrix(float radius) : r(radius) { }
+  float Size() const { return 2.0*3.14159; }
+  Matrix Index(float x) const
+  {
+    Matrix m = Matrix::Translate(r,0.0,0.0);
+    Matrix m2 = Matrix::YRotation(x);
+    return m * m2;
+  }
+private:
+  float r;
+};
+GameApi::MC GameApi::MatrixCurveApi::circle_xy(float radius)
+{
+  return add_matrix_curve(e, new CircleXYMatrix(radius));
+}
+GameApi::MC GameApi::MatrixCurveApi::circle_xz(float radius)
+{
+  return add_matrix_curve(e, new CircleXZMatrix(radius));
+}
+class SampleMatrixCurve2 : public MatrixArray
+{
+public:
+  SampleMatrixCurve2(Curve<Matrix> *c, int num_points) : c(c), num_points(num_points) { }
+  int Size() const { return num_points; }
+  Matrix Index(int i) const
+  {
+    float val = float(i);
+    val/=float(num_points);
+    val*=c->Size();
+    return c->Index(val);
+  }
+  unsigned int Color(int i) const
+  {
+    return 0xffffffff;
+  }
+private:
+  Curve<Matrix> *c;
+  int num_points;
+};
+
+GameApi::MS GameApi::MatrixCurveApi::sample(MC m_curve, int num)
+{
+  Curve<Matrix> *c = find_matrix_curve(e, m_curve);
+  return add_matrix_array(e, new SampleMatrixCurve2(c,num));
 }

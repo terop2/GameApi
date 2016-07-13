@@ -1347,17 +1347,21 @@ public:
     return std::min(d1,d2);
   }
   unsigned int color(Point p) const {
-    if (fabs(distance(p) - r1.distance(p)) < 0.001)
+    //if (fabs(distance(p) - r1.distance(p)) < 0.001)
+    float val = r1.distance(p);
+    if (val>-0.8 && val<0.8)
       {
 	unsigned int c1 = r1.color(p);
 	return c1;
-      }
+    }
     unsigned int c2 = r2.color(p);
     return c2;
   }
   Vector normal(Point p) const
   {
-    if (fabs(distance(p) - r1.distance(p)) < 0.001)
+    //if (fabs(distance(p) - r1.distance(p)) < 0.001)
+    float val = r1.distance(p);
+    if (val>-0.8 && val<0.8)
       {
 	Vector v1 = r1.normal(p);
 	return v1;
@@ -1660,4 +1664,37 @@ EXPORT GameApi::P GameApi::VectorVolumeApi::setup_normal(P orig, VO v)
   FaceCollection *coll = find_facecoll(e, orig);
   VectorVolumeObject *s = find_vector_volume(e, v);
   return add_polygon2(e, new NormalVectorVolumeFaceColl(coll, s),1);
+}
+GameApi::FD GameApi::DistanceFloatVolumeApi::trans(FD fd, float dx, float dy, float dz)
+{
+  DistanceRenderable *rend = find_distance(e, fd);
+  return add_distance(e, new MatrixDistance(rend, Matrix::Translate(dx,dy,dz)));
+
+}
+EXPORT GameApi::P GameApi::DistanceFloatVolumeApi::distance_poly(EveryApi &ev, FD fd, float dx, float dy, float dz, int sx, int sy, float ssx, float ssy, int ssxi, int ssyi, float ssx2, float ssy2)
+{
+  GameApi::IM im = ev.implicit_api.from_distance(fd, 0.0, 0.0, 0.0,
+						 dx, dy, dz,
+						 sx,sy);
+  
+  GameApi::FB fb_l = ev.implicit_api.render_lower(im, ssx,ssy,
+						  ssxi, ssyi,
+						  0.5, 0.5);
+  GameApi::FB fb_u = ev.implicit_api.render_upper(im, ssx, ssy,
+						  ssxi, ssyi,
+						  0.5, 0.5);
+
+  GameApi::BM bm_l = ev.implicit_api.render_lower_color(im, ssx, ssy,
+							ssxi, ssyi,
+							0.5, 0.5);
+  GameApi::BM bm_u = ev.implicit_api.render_upper_color(im, ssx, ssy,
+							ssxi, ssyi,
+							0.5, 0.5);
+  
+  
+  GameApi::P p_l = ev.polygon_api.color_map3(bm_l, fb_l, ssx2,ssy2, 0.0);
+  GameApi::P p_l_1 = ev.polygon_api.flip_polygon_order(p_l);
+  GameApi::P p_u = ev.polygon_api.color_map3(bm_u, fb_u, ssx2,ssy2, 0.0);
+  GameApi::P p_lu = ev.polygon_api.or_elem(p_l_1, p_u);
+  return p_lu;
 }

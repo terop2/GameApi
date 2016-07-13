@@ -3221,6 +3221,8 @@ MACRO(GameApi::TL)
 MACRO(GameApi::T)
 MACRO(GameApi::MT)
 MACRO(GameApi::C)
+MACRO(GameApi::MS)
+MACRO(GameApi::MC)
 #undef MACRO
 
 
@@ -3738,6 +3740,12 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "FD", "float", "float", "float", "float" },
 			 { "", "1.0", "1.0", "1.0", "1.0" },
 			 "FD", "dist_api", "color"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::trans,
+			 "fd_trans",
+			 { "fd", "dx", "dy", "dz" },
+			 { "FD", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0" },
+			 "FD", "dist_api", "trans"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::rot_x,
 			 "fd_rot_x",
 			 { "fd", "angle" },
@@ -3769,12 +3777,18 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "ev", "", "300", "300" },
 			 "BM", "dist_api", "render2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::render,
-			 "fd_render",
+			 "fd_render_bm",
 			 { "obj", "pos", "u_x", "u_y", "u_z", "sx", "sy" },
 			 { "FD", "PT", "V", "V", "V", "int", "int" },
 			 { "", "", "", "", "", "100", "100" },
 			 "BM", "dist_api", "render"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::distance_poly,
+			 "fd_render_p",
+			 { "ev", "fd", "dx", "dy", "dz", "sx", "sy", "ssx", "ssy", "ssxi", "ssyi", "ssx2", "ssy2" },
+			 { "EveryApi&", "FD", "float", "float", "float", "int", "int", "float", "float", "int", "int", "float", "float" },
+			 { "ev", "", "400.0", "400.0", "400.0", "256", "256", "400.0", "400.0", "50", "50", "100.0", "100.0" },
+			 "P", "dist_api", "distance_poly"));
   return vec;
 }
 std::vector<GameApiItem*> colorvolumeapi_functions()
@@ -3854,6 +3868,7 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "PT", "PT", "float" },
 			 { "", "", "0.5" },
 			 "PT", "point_api", "mix"));
+
   return vec;
 }
 
@@ -4846,6 +4861,19 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "EveryApi&", "PTA" },
 			 { "ev", "" },
 			 "ML", "points_api", "render_ml"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::from_points,
+			 "ms_from_points",
+			 { "pts" },
+			 { "PTS" },
+			 { "" },
+			 "MS", "matrices_api", "from_points"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::subarray,
+			 "ms_subarray",
+			 { "ms", "start", "count" },
+			 { "MS", "int", "int" },
+			 { "", "0", "0" },
+			 "MS", "matrices_api", "subarray"));
   return vec;
 }
 std::vector<GameApiItem*> floatbitmapapi_functions()

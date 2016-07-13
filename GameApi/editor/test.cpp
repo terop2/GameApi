@@ -835,6 +835,7 @@ void iter(void *arg)
 		      {
 			P p;
 			p.id = id;
+			env->ev->polygon_api.print_stat(p);
 			std::cout << "ID: " << p.id << std::endl;
 			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 		      }
