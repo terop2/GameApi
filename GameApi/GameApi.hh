@@ -25,6 +25,7 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct MC { int id; };
   struct MS { int id; };
   struct US { int id; };
   struct MT { int id; };
@@ -574,6 +575,18 @@ public:
 private:
   Env &e;
 };
+class MatrixCurveApi
+{
+public:
+  MatrixCurveApi(Env &e) : e(e) { }
+  MC from_curve(C curve);
+  MC circle_xy(float radius);
+  MC circle_xz(float radius);
+  MS sample(MC m_curve, int num);
+private:
+  Env &e;
+};
+
 
 class CurvesApi
 {
@@ -1275,10 +1288,17 @@ public:
   IMPORT FD rot_x(FD fd, float angle);
   IMPORT FD rot_y(FD fd, float angle);
   IMPORT FD rot_z(FD fd, float angle);
+  IMPORT FD trans(FD fd, float dx, float dy, float dz);
 
 	IMPORT FD min(FD a1, FD a2);
         IMPORT FD max(FD a1, FD a2);
 	IMPORT FD and_not(FD a1, FD a2);
+  IMPORT P distance_poly(EveryApi &ev, FD fd, 
+			 float dx, float dy, float dz, 
+			 int sx, int sy,
+			 float ssx, float ssy, 
+			 int ssxi, int ssyi, 
+			 float ssx2, float ssy2);
   IMPORT PT ray_shape_intersect(FD shape, PT pos, V vec);
 	IMPORT BM render(FD obj,PT pos, V u_x, V u_y, V u_z, int sx, int sy);
   IMPORT BM render2(EveryApi &ev, FD obj, int sx, int sy);
