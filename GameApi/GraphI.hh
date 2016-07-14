@@ -413,6 +413,10 @@ public:
   virtual float f_l(float x, float y) const=0; // substitute z=f(x,y)
   virtual unsigned int f_color_u(float x, float y) const { return 0xffffffff;}
   virtual unsigned int f_color_l(float x, float y) const { return 0xff888888;}
+  virtual float pos_x() const=0;
+  virtual float pos_y() const=0;
+  virtual float size_x() const=0;
+  virtual float size_y() const=0;
 };
 
 class ImplicitFunction4d

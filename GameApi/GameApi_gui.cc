@@ -3568,6 +3568,19 @@ std::vector<GameApiItem*> volumeapi_functions()
 			 { "FD", "float", "float", "float", "float", "float", "float", "float", "float" },
 			 { "", "0.0", "0.0", "0.0", "300.0", "300.0", "300.0", "256.0", "256.0" },
 			 "IM", "implicit_api", "from_distance"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::implicit_api, &GameApi::ImplicitApi::from_distance_cyl,
+			 "im_distance_cyl",
+			 { "fd", "pos_x", "pos_y", "pos_z", "u_x", "u_y", "u_z", "sx", "sy" },
+			 { "FD", "float", "float", "float", "float", "float", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0", "300.0", "300.0", "300.0", "256.0", "256.0" },
+			 "IM", "implicit_api", "from_distance_cyl"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::implicit_api, &GameApi::ImplicitApi::from_distance_sph,
+			 "im_distance_sph",
+			 { "fd", "pos_x", "pos_y", "pos_z", "u_x", "u_y", "u_z", "sx", "sy" },
+			 { "FD", "float", "float", "float", "float", "float", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0", "300.0", "300.0", "300.0", "256.0", "256.0" },
+			 "IM", "implicit_api", "from_distance_sph"));
+			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::implicit_api, &GameApi::ImplicitApi::render_upper,
 			 "im_render_upper",
 			 { "obj", "size_x", "size_y", "sx", "sy", "dx", "dy" },
@@ -3734,6 +3747,12 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "FD", "FD" },
 			 { "", "" },
 			 "FD", "dist_api", "and_not"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::blend,
+			 "fd_blend",
+			 { "a1", "a2", "k" },
+			 { "FD", "FD", "float" },
+			 { "", "", "15.0" },
+			 "FD", "dist_api", "blend"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::color,
 			 "fd_color",
 			 { "fd", "r", "g", "b", "a" },
@@ -3770,6 +3789,19 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "FD" },
 			 { "" },
 			 "VO", "vector_volume_api", "normal"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::recalculate_normals,
+			 "fd_recalc_normals",
+			 { "fd" },
+			 { "FD" },
+			 { "" },
+			 "FD", "dist_api", "recalculate_normals"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::ambient_occulsion,
+			 "fd_amb_occul",
+			 { "fd", "d", "i" },
+			 { "FD", "float", "float" },
+			 { "", "10.2", "30.0" },
+			 "FD", "dist_api", "ambient_occulsion"));
+			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::render2,
 			 "fd_render2",
 			 { "ev", "obj", "sx", "sy" },
@@ -3789,6 +3821,19 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "EveryApi&", "FD", "float", "float", "float", "int", "int", "float", "float", "int", "int", "float", "float" },
 			 { "ev", "", "400.0", "400.0", "400.0", "256", "256", "400.0", "400.0", "50", "50", "100.0", "100.0" },
 			 "P", "dist_api", "distance_poly"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::distance_poly_cyl,
+			 "fd_render_cyl_p",
+			 { "ev", "fd", "pos_x", "pos_y", "pos_z", "dx", "dy", "dz", "sx", "sy", "ssx", "ssy", "ssxi", "ssyi", "ssx2", "ssy2" },
+			 { "EveryApi&", "FD", "float", "float", "float", "float", "float", "float", "int", "int", "float", "float", "int", "int", "float", "float" },
+			 { "ev", "", "0.0", "-600.0", "0.0", "300.0", "1200.0", "300.0", "50", "50", "40.0", "40.0", "50", "50", "50.0", "50.0" },
+			 "P", "dist_api", "distance_poly_cyl"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::distance_poly_sph,
+			 "fd_render_sph_p",
+			 { "ev", "fd", "dx", "dy", "dz", "sx", "sy", "ssx", "ssy", "ssxi", "ssyi", "ssx2", "ssy2" },
+			 { "EveryApi&", "FD", "float", "float", "float", "int", "int", "float", "float", "int", "int", "float", "float" },
+			 { "ev", "", "400.0", "400.0", "400.0", "256", "256", "40.0", "40.0", "50", "50", "50.0", "50.0" },
+			 "P", "dist_api", "distance_poly_sph"));
+
   return vec;
 }
 std::vector<GameApiItem*> colorvolumeapi_functions()
@@ -4244,6 +4289,19 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "BM", "FB", "float", "float", "float" },
 			 { "", "", "100", "100", "0" },
 			 "P", "polygon_api", "color_map3"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, (GameApi::P (GameApi::PolygonApi::*)(GameApi::BM, GameApi::FB,float,float,float))&GameApi::PolygonApi::color_map3_cyl,
+			 "color_map3_cyl",
+			 { "bm", "fb", "sx", "sy", "z" },
+			 { "BM", "FB", "float", "float", "float" },
+			 { "", "", "100", "100", "0" },
+			 "P", "polygon_api", "color_map3_cyl"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, (GameApi::P (GameApi::PolygonApi::*)(GameApi::BM, GameApi::FB,float,float,float))&GameApi::PolygonApi::color_map3_sph,
+			 "color_map3_sph",
+			 { "bm", "fb", "sx", "sy", "z" },
+			 { "BM", "FB", "float", "float", "float" },
+			 { "", "", "100", "100", "0" },
+			 "P", "polygon_api", "color_map3_sph"));
 
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color,

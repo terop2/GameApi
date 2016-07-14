@@ -1502,6 +1502,69 @@ private:
   Point start, end;
   float r;
 };
+class AmbientOcculsionDistance : public DistanceRenderable
+{
+public:
+  AmbientOcculsionDistance(DistanceRenderable *next, float d, float i) : next(next), d(d), i(i) { }
+  
+  float ao(Point pt, Vector n, float d, float i) const
+  {
+    float o = 0.0;
+    for(float i=1.;i>0.;i--) {
+      float dd = next->distance(pt+n*i*d);
+      o-=(i*d-fabs(dd))/powf(2.0,i);
+    }
+    return o;
+  }
+  float distance(Point p) const { return next->distance(p); }
+  unsigned int color(Point p) const { 
+    Vector n = normal(p);
+    float ao_v = ao(p,n,d,i);
+    if (ao_v<0.0) ao_v = 0.0;
+    if (ao_v>1.0) ao_v = 1.0;
+    unsigned int color = next->color(p);
+    unsigned int white = 0xffffffff;
+    unsigned int c2 = Color::Interpolate(color,white, ao_v);
+    unsigned int c3 = c2 & 0x00ffffff;
+    unsigned int c4 = color & 0xff000000;
+    unsigned int c5 = c3+c4;
+    return c5;
+  }
+  Vector normal(Point p) const { return next->normal(p); }
+  
+private:
+  DistanceRenderable *next;
+  float d,i;
+};
+class RecalcNormalsDistance : public DistanceRenderable
+{
+public:
+  RecalcNormalsDistance(DistanceRenderable *next) : next(next) { }
+  float distance(Point p) const { return next->distance(p); }
+  unsigned int color(Point p) const { return next->color(p); }
+  Vector normal(Point p) const { 
+    float fx = next->distance(p+Vector(1.0,0.0,0.0));
+    float fy = next->distance(p+Vector(0.0,1.0,0.0));
+    float fz = next->distance(p+Vector(0.0,0.0,1.0));
+    Vector v(-fx,-fy,-fz);
+    v/=v.Dist();
+    v/=2.0;
+    v+=Vector(0.5,0.5,0.5);
+    return v;
+  }  
+private:
+  DistanceRenderable *next;
+};
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::recalculate_normals(FD fd)
+{
+  DistanceRenderable *dist = find_distance(e, fd);
+  return add_distance(e, new RecalcNormalsDistance(dist));
+}
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::ambient_occulsion(FD fd, float d, float i)
+{
+  DistanceRenderable *dist = find_distance(e, fd);
+  return add_distance(e, new AmbientOcculsionDistance(dist, d,i));
+}
 EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::color(FD fd, float r, float g, float b, float a)
 {
   DistanceRenderable *dist = find_distance(e, fd);
@@ -1671,6 +1734,63 @@ GameApi::FD GameApi::DistanceFloatVolumeApi::trans(FD fd, float dx, float dy, fl
   return add_distance(e, new MatrixDistance(rend, Matrix::Translate(dx,dy,dz)));
 
 }
+class BlendDistance : public DistanceRenderable
+{
+public:
+  BlendDistance(DistanceRenderable *rend1, DistanceRenderable *rend2, float k) : rend1(rend1), rend2(rend2), k(k) { }
+
+  float smin(float a, float b, float k) const
+  {
+    float h = 0.5 + 0.5*(b-a)/k;
+    if (h<0.0) h=0.0;
+    if (h>1.0) h=1.0;
+    return (1.0-h)*b + h*a - k*h*(1.0-h);
+  }
+  float blend(Point pt, float k) const
+  {
+    float v1 = rend1->distance(pt);
+    float v2 = rend2->distance(pt);
+    float res = smin(v1,v2,k);
+    return res;
+  }
+  unsigned int blend_color(Point pt, float k) const
+  {
+    float val = rend1->distance(pt);
+    float val2 = rend2->distance(pt);
+    unsigned int v1 = rend1->color(pt);
+    unsigned int v2 = rend2->color(pt);
+    if (val<val2) return v1;
+    return v2;
+  }
+  Vector blend_normal(Point pt, float k) const
+  {
+    float val = rend1->distance(pt);
+    float val2 = rend2->distance(pt);
+    Vector v1 = rend1->normal(pt);
+    Vector v2 = rend2->normal(pt);
+    if (val<val2) return v1;
+    return v2;
+  }
+  float distance(Point p) const {
+    return blend(p,k);
+  }
+  unsigned int color(Point p) const { 
+    return blend_color(p, k);
+  }
+  Vector normal(Point p) const {
+    return blend_normal(p,k);
+  }
+private:
+  DistanceRenderable *rend1;
+  DistanceRenderable *rend2;
+  float k;
+};
+GameApi::FD GameApi::DistanceFloatVolumeApi::blend(FD a1, FD a2, float k)
+{
+  DistanceRenderable *rend1 = find_distance(e, a1);
+  DistanceRenderable *rend2 = find_distance(e, a2);
+  return add_distance(e, new BlendDistance(rend1, rend2, k));
+}
 EXPORT GameApi::P GameApi::DistanceFloatVolumeApi::distance_poly(EveryApi &ev, FD fd, float dx, float dy, float dz, int sx, int sy, float ssx, float ssy, int ssxi, int ssyi, float ssx2, float ssy2)
 {
   GameApi::IM im = ev.implicit_api.from_distance(fd, 0.0, 0.0, 0.0,
@@ -1697,4 +1817,63 @@ EXPORT GameApi::P GameApi::DistanceFloatVolumeApi::distance_poly(EveryApi &ev, F
   GameApi::P p_u = ev.polygon_api.color_map3(bm_u, fb_u, ssx2,ssy2, 0.0);
   GameApi::P p_lu = ev.polygon_api.or_elem(p_l_1, p_u);
   return p_lu;
+}
+
+
+EXPORT GameApi::P GameApi::DistanceFloatVolumeApi::distance_poly_cyl(EveryApi &ev, FD fd, float pos_x, float pos_y, float pos_z, float dx, float dy, float dz, int sx, int sy, float ssx, float ssy, int ssxi, int ssyi, float ssx2, float ssy2)
+{
+  GameApi::IM im = ev.implicit_api.from_distance_cyl(fd, pos_x, pos_y, pos_z,
+						 dx, dy, dz,
+						 sx,sy);
+  
+  GameApi::FB fb_l = ev.implicit_api.render_lower(im, ssx,ssy,
+						  ssxi, ssyi,
+						  0.0, 0.0);
+  //GameApi::FB fb_u = ev.implicit_api.render_upper(im, ssx, ssy,
+  //						  ssxi, ssyi,
+  //						  0.5, 0.5);
+
+  GameApi::BM bm_l = ev.implicit_api.render_lower_color(im, ssx, ssy,
+							ssxi, ssyi,
+							0.0, 0.0);
+  //GameApi::BM bm_u = ev.implicit_api.render_upper_color(im, ssx, ssy,
+  //							ssxi, ssyi,
+  //							0.5, 0.5);
+  
+  
+  GameApi::P p_l = ev.polygon_api.color_map3_cyl(bm_l, fb_l, ssx2,ssy2, 0.0);
+  //GameApi::P p_l_1 = ev.polygon_api.flip_polygon_order(p_l);
+  //GameApi::P p_u = ev.polygon_api.color_map3(bm_u, fb_u, ssx2,ssy2, 0.0);
+  //GameApi::P p_lu = ev.polygon_api.or_elem(p_l_1, p_u);
+  GameApi::P p_2 = ev.polygon_api.scale(p_l, 0.02, 30.0, 0.02);
+  GameApi::P p_3 = ev.polygon_api.translate(p_2, 0.0, -700.0,0.0);
+  return p_3;
+}
+
+EXPORT GameApi::P GameApi::DistanceFloatVolumeApi::distance_poly_sph(EveryApi &ev, FD fd, float dx, float dy, float dz, int sx, int sy, float ssx, float ssy, int ssxi, int ssyi, float ssx2, float ssy2)
+{
+  GameApi::IM im = ev.implicit_api.from_distance_sph(fd, 0.0, 0.0, 0.0,
+						 dx, dy, dz,
+						 sx,sy);
+  
+  GameApi::FB fb_l = ev.implicit_api.render_lower(im, ssx,ssy,
+						  ssxi, ssyi,
+						  0.0, 0.0);
+  //GameApi::FB fb_u = ev.implicit_api.render_upper(im, ssx, ssy,
+  //						  ssxi, ssyi,
+  //						  0.5, 0.5);
+
+  GameApi::BM bm_l = ev.implicit_api.render_lower_color(im, ssx, ssy,
+							ssxi, ssyi,
+							0.0, 0.0);
+  //GameApi::BM bm_u = ev.implicit_api.render_upper_color(im, ssx, ssy,
+  //							ssxi, ssyi,
+  //							0.5, 0.5);
+  
+  
+  GameApi::P p_l = ev.polygon_api.color_map3_sph(bm_l, fb_l, ssx2,ssy2, 0.0);
+  //GameApi::P p_l_1 = ev.polygon_api.flip_polygon_order(p_l);
+  //GameApi::P p_u = ev.polygon_api.color_map3(bm_u, fb_u, ssx2,ssy2, 0.0);
+  //GameApi::P p_lu = ev.polygon_api.or_elem(p_l_1, p_u);
+  return p_l;
 }
