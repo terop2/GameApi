@@ -827,7 +827,9 @@ void iter(void *arg)
 		      {
 			FB fb;
 			fb.id = id;
-			BM bm = env->ev->float_bitmap_api.to_grayscale_color(fb, 255,255,255,255, 0,0,0,0);
+			BB bb = env->ev->float_bitmap_api.to_bool_mod(fb,100.0);
+			BM bm = env->ev->bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
+			//BM bm = env->ev->float_bitmap_api.to_grayscale_color(fb, 255,255,255,255, 0,0,0,0);
 			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 			
 		      }

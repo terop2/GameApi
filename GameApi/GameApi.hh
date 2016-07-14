@@ -700,6 +700,8 @@ public:
   IM blob(float c, float c_x, float c_y, float cc_x, float cc_y);
   IM translate(IM obj, float dx, float dy, float dz);
   IM from_distance(FD fd, float pos_x, float pos_y, float pos_z, float u_x, float u_y, float u_z, float sx, float sy);
+  IM from_distance_cyl(FD fd, float pos_x, float pos_y, float pos_z, float u_x, float u_y, float u_z, float sx, float sy);
+  IM from_distance_sph(FD fd, float pos_x, float pos_y, float pos_z, float u_x, float u_y, float u_z, float sx, float sy);
   FB render_upper(IM obj, float size_x, float size_y, int sx, int sy, float dx, float dy);
   FB render_lower(IM obj, float size_x, float size_y, int sx, int sy, float dx, float dy);
 
@@ -1293,7 +1295,23 @@ public:
 	IMPORT FD min(FD a1, FD a2);
         IMPORT FD max(FD a1, FD a2);
 	IMPORT FD and_not(FD a1, FD a2);
+  IMPORT FD blend(FD a1, FD a2, float k);
+  IMPORT FD recalculate_normals(FD fd);
+  IMPORT FD ambient_occulsion(FD fd, float d, float i);
   IMPORT P distance_poly(EveryApi &ev, FD fd, 
+			 float dx, float dy, float dz, 
+			 int sx, int sy,
+			 float ssx, float ssy, 
+			 int ssxi, int ssyi, 
+			 float ssx2, float ssy2);
+  IMPORT P distance_poly_cyl(EveryApi &ev, FD fd,
+			     float pos_x, float pos_y, float pos_z,
+			     float dx, float dy, float dz, 
+			     int sx, int sy,
+			     float ssx, float ssy, 
+			     int ssxi, int ssyi, 
+			     float ssx2, float ssy2);
+  IMPORT P distance_poly_sph(EveryApi &ev, FD fd, 
 			 float dx, float dy, float dz, 
 			 int sx, int sy,
 			 float ssx, float ssy, 
@@ -1465,6 +1483,10 @@ public:
   IMPORT P color_map(BM bm, float sx, float sy, float z);
   IMPORT P color_map3(BM bm, FB height, PT pos, V u_x, V u_y);
   IMPORT P color_map3(BM bm, FB height, float sx, float sy, float z);
+  IMPORT P color_map3_cyl(BM bm, FB height, PT pos, V u_x, V u_y);
+  IMPORT P color_map3_cyl(BM bm, FB height, float sx, float sy, float z);
+  IMPORT P color_map3_sph(BM bm, FB height, PT pos, V u_x, V u_y);
+  IMPORT P color_map3_sph(BM bm, FB height, float sx, float sy, float z);
   IMPORT P color_map4(BM bm, FB height, float sx, float sy, float z);
   IMPORT P cube_map(float start_x, float end_x,
 		    float stary_y, float end_y,
@@ -1929,6 +1951,8 @@ public: // values are [0.0..1.0]
 
   BB to_bool(FB f, float true_range_start, float true_range_end);
   
+  IMPORT BB to_bool_mod(FB f, float mod_value);
+
   IMPORT TXID to_texid(FB bm);
   
   IMPORT int size_x(FB bm);

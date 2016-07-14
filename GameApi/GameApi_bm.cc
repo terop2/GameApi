@@ -1866,6 +1866,28 @@ GameApi::BB GameApi::FloatBitmapApi::to_bool(FB fb, float true_range_start, floa
   return add_bool_bitmap(e, new FloatRangeBitmap(*f, true_range_start, true_range_end));
 }
 
+class FloatModBitmap : public Bitmap<bool>
+{
+public:
+  FloatModBitmap(Bitmap<float> &fb, float mod_value) : fb(fb), mod_value(mod_value) { }
+  int SizeX() const { return fb.SizeX(); }
+  int SizeY() const { return fb.SizeY(); }
+  bool Map(int x, int y) const
+  {
+    float val = fb.Map(x,y);
+    float m_val = std::fmod(val, mod_value);
+    return m_val < mod_value/2.0;
+  }
+private:
+  Bitmap<float> &fb;
+  float mod_value;
+};
+
+GameApi::BB GameApi::FloatBitmapApi::to_bool_mod(FB fb, float mod_value)
+{
+  Bitmap<float> *f = find_float_bitmap(e,fb)->bitmap;
+  return add_bool_bitmap(e, new FloatModBitmap(*f, mod_value));
+}
 EXPORT GameApi::FB GameApi::FloatBitmapApi::from_bool_bitmap(BB bm, int csx, int csy)
 {
   Bitmap<bool> *bm2 = find_bool_bitmap(e,bm)->bitmap;

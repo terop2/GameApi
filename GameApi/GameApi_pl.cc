@@ -3603,7 +3603,146 @@ private:
   Vector u_x, u_y;
   Vector u_z;
 };
+class ColorMapPoly2_cyl : public FaceCollection
+{
+public:
+  ColorMapPoly2_cyl(Bitmap<::Color> *bm, Bitmap<float> *fb, Point pos, Vector u_x, Vector u_y) : bm(bm), fb(fb), pos(pos), u_x(u_x), u_y(u_y) {
+    u_z = Vector::CrossProduct(u_x,u_y); u_z/=u_z.Dist(); 
+  }
+  virtual int NumFaces() const { return bm->SizeX()*bm->SizeY(); }
+  virtual int NumPoints(int face) const { return 4; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int xx = face/bm->SizeY();
+    int yy = face - xx*bm->SizeY();
+    int xx1 = xx;
+    int yy1 = yy;
+    if (point==1 ||point==2) { xx++; }
+    if (point==2 ||point==3) { yy++; }
+    Matrix m = Matrix::YRotation(xx*3.14159*2.0/bm->SizeX());
+    Vector uu_x = u_x*m;
+    Vector uu_y = u_y;
+    Vector uu_z = u_z*m;
+    Point p = pos + yy*uu_y/bm->SizeY();
+    float val = fb->Map(xx*fb->SizeX()/bm->SizeX(), yy*fb->SizeY()/bm->SizeY());
+    if (std::isnan(val))
+      {
+	float val0 = fb->Map(xx1*fb->SizeX()/bm->SizeX(),yy1*fb->SizeY()/bm->SizeY());
+	float val1 = fb->Map((xx1+1)*fb->SizeX()/bm->SizeX(),yy1*fb->SizeY()/bm->SizeY());
+	float val2 = fb->Map(xx1*fb->SizeX()/bm->SizeX(),(yy1+1)*fb->SizeY()/bm->SizeY());
+	float val3 = fb->Map((xx1+1)*fb->SizeX()/bm->SizeX(),(yy1+1)*fb->SizeY()/bm->SizeY());
+	if (std::isnan(val0) && std::isnan(val1) && std::isnan(val2) && std::isnan(val3))
+	  {
+	    val = val0;
+	  }
+	else
+	  val=0.0; 
+      }
+    p+=val*uu_x + val*uu_z;
+    return p;
+  }
 
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Vector v(0.0,0.0,-1.0);
+    return v;
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    int xx = face/bm->SizeY();
+    int yy = face - xx*bm->SizeY();
+    if (point==1 ||point==2) { xx++; }
+    if (point==2 ||point==3) { yy++; }
+    return bm->Map(xx,yy).Pixel();
+  }
+  virtual Point2d TexCoord(int face, int point) const { Point2d p = {0.0, 0.0}; return p; }
+
+private:
+  Bitmap<::Color> *bm;
+  Bitmap<float> *fb;
+  Point pos;
+  Vector u_x, u_y;
+  Vector u_z;
+
+};
+
+
+class ColorMapPoly2_sph : public FaceCollection
+{
+public:
+  ColorMapPoly2_sph(Bitmap<::Color> *bm, Bitmap<float> *fb, Point pos, Vector u_x, Vector u_y) : bm(bm), fb(fb), pos(pos), u_x(u_x), u_y(u_y) {
+    u_z = Vector::CrossProduct(u_x,u_y); u_z/=u_z.Dist(); 
+    u_z *= u_x.Dist();
+  }
+  virtual int NumFaces() const { return bm->SizeX()*bm->SizeY(); }
+  virtual int NumPoints(int face) const { return 4; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int xx = face/bm->SizeY();
+    int yy = face - xx*bm->SizeY();
+    int xx1 = xx;
+    int yy1 = yy;
+    if (point==1 ||point==2) { xx++; }
+    if (point==2 ||point==3) { yy++; }
+
+    float angle1 = 3.14159*xx/bm->SizeX();
+    float angle2 = 2.0*3.14159*yy/bm->SizeY();
+
+    Vector uu;
+    uu.dx = u_x.Dist() * sin(angle1)*cos(angle2);
+    uu.dy = u_y.Dist() * sin(angle1)*sin(angle2);
+    uu.dz = u_z.Dist() * cos(angle1);
+
+    //Matrix m = Matrix::YRotation(xx*3.14159*2.0/bm->SizeX());
+    //Vector uu_x = u_x*m;
+    //Vector uu_y = u_y;
+    //Vector uu_z = u_z*m;
+    Point p = pos;
+    float val = fb->Map(xx*fb->SizeX()/bm->SizeX(), yy*fb->SizeY()/bm->SizeY());
+    if (std::isnan(val))
+      {
+	float val0 = fb->Map(xx1*fb->SizeX()/bm->SizeX(),yy1*fb->SizeY()/bm->SizeY());
+	float val1 = fb->Map((xx1+1)*fb->SizeX()/bm->SizeX(),yy1*fb->SizeY()/bm->SizeY());
+	float val2 = fb->Map(xx1*fb->SizeX()/bm->SizeX(),(yy1+1)*fb->SizeY()/bm->SizeY());
+	float val3 = fb->Map((xx1+1)*fb->SizeX()/bm->SizeX(),(yy1+1)*fb->SizeY()/bm->SizeY());
+	if (std::isnan(val0) && std::isnan(val1) && std::isnan(val2) && std::isnan(val3))
+	  {
+	    val = val0;
+	  }
+	else
+	  val=0.0; 
+      }
+    p+=val*uu;
+    return p;
+  }
+
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Vector v(0.0,0.0,-1.0);
+    return v;
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    int xx = face/bm->SizeY();
+    int yy = face - xx*bm->SizeY();
+    if (point==1 ||point==2) { xx++; }
+    if (point==2 ||point==3) { yy++; }
+    return bm->Map(xx,yy).Pixel();
+  }
+  virtual Point2d TexCoord(int face, int point) const { Point2d p = {0.0, 0.0}; return p; }
+
+private:
+  Bitmap<::Color> *bm;
+  Bitmap<float> *fb;
+  Point pos;
+  Vector u_x, u_y;
+  Vector u_z;
+
+};
  
 EXPORT GameApi::P GameApi::PolygonApi::color_map(BM bm, float sx, float sy, float z)
 {
@@ -3639,6 +3778,30 @@ EXPORT GameApi::P GameApi::PolygonApi::color_map3(BM bm, FB fb1, PT pos, V u_x, 
   return add_polygon2(e, new ColorMapPoly2(bm1, fb, *pos1, *u_x1, *u_y1), 1);
 }
 
+EXPORT GameApi::P GameApi::PolygonApi::color_map3_cyl(BM bm, FB fb1, PT pos, V u_x, V u_y)
+{
+  Point *pos1 = find_point(e, pos);
+  Vector *u_x1 = find_vector(e, u_x);
+  Vector *u_y1 = find_vector(e, u_y);
+
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<::Color> *bm1 = find_color_bitmap(handle);
+  Bitmap<float> *fb = find_float_bitmap(e, fb1)->bitmap;
+  return add_polygon2(e, new ColorMapPoly2_cyl(bm1, fb, *pos1, *u_x1, *u_y1), 1);
+}
+EXPORT GameApi::P GameApi::PolygonApi::color_map3_sph(BM bm, FB fb1, PT pos, V u_x, V u_y)
+{
+  Point *pos1 = find_point(e, pos);
+  Vector *u_x1 = find_vector(e, u_x);
+  Vector *u_y1 = find_vector(e, u_y);
+
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<::Color> *bm1 = find_color_bitmap(handle);
+  Bitmap<float> *fb = find_float_bitmap(e, fb1)->bitmap;
+  return add_polygon2(e, new ColorMapPoly2_sph(bm1, fb, *pos1, *u_x1, *u_y1), 1);
+}
+
+
 EXPORT GameApi::P GameApi::PolygonApi::color_map3(BM bm, FB fb1, float sx, float sy, float z)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
@@ -3650,6 +3813,31 @@ EXPORT GameApi::P GameApi::PolygonApi::color_map3(BM bm, FB fb1, float sx, float
   Vector u_y(0.0, sy, 0.0);
   return add_polygon2(e, new ColorMapPoly2(bm1, fb, pos, u_x, u_y), 1);
 }
+
+EXPORT GameApi::P GameApi::PolygonApi::color_map3_cyl(BM bm, FB fb1, float sx, float sy, float z)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<::Color> *bm1 = find_color_bitmap(handle);
+  Bitmap<float> *fb = find_float_bitmap(e, fb1)->bitmap;
+
+  Point pos(0.0, 0.0, z);
+  Vector u_x(sx, 0.0, 0.0);
+  Vector u_y(0.0, sy, 0.0);
+  return add_polygon2(e, new ColorMapPoly2_cyl(bm1, fb, pos, u_x, u_y), 1);
+}
+
+EXPORT GameApi::P GameApi::PolygonApi::color_map3_sph(BM bm, FB fb1, float sx, float sy, float z)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<::Color> *bm1 = find_color_bitmap(handle);
+  Bitmap<float> *fb = find_float_bitmap(e, fb1)->bitmap;
+
+  Point pos(0.0, 0.0, z);
+  Vector u_x(sx, 0.0, 0.0);
+  Vector u_y(0.0, sy, 0.0);
+  return add_polygon2(e, new ColorMapPoly2_sph(bm1, fb, pos, u_x, u_y), 1);
+}
+
 
 #if 0
 EXPORT GameApi::P GameApi::PolygonApi::cube_map(EveryApi &ev, float start_x, float end_x,
