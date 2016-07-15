@@ -1875,5 +1875,6 @@ EXPORT GameApi::P GameApi::DistanceFloatVolumeApi::distance_poly_sph(EveryApi &e
   //GameApi::P p_l_1 = ev.polygon_api.flip_polygon_order(p_l);
   //GameApi::P p_u = ev.polygon_api.color_map3(bm_u, fb_u, ssx2,ssy2, 0.0);
   //GameApi::P p_lu = ev.polygon_api.or_elem(p_l_1, p_u);
-  return p_l;
+  GameApi::P p_2 = ev.polygon_api.scale(p_l, 0.02, 0.02, 0.02);
+  return p_2;
 }
