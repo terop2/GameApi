@@ -4134,6 +4134,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "BM" },
 			 { "ev", "" },
 			 "MT", "materials_api", "texture"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_arr,
+			 "m_texture_arr",
+			 { "ev", "vec", "sx", "sy" },
+			 { "EveryApi&", "[BM]", "int", "int" },
+			 { "ev", "", "256", "256" },
+			 "MT", "materials_api", "texture_arr"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::snow,
 			 "m_snow",
 			 { "ev", "nxt" },

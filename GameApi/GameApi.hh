@@ -912,6 +912,7 @@ public:
   MaterialsApi(Env &e) : e(e) { }
   MT def(EveryApi &ev);
   MT texture(EveryApi &ev, BM bm);
+  MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
   MT snow(EveryApi &ev, MT nxt);
   MT web(EveryApi &ev, MT nxt); // TODO: add line width property
   ML bind(P p, MT mat);
@@ -1650,6 +1651,8 @@ public:
   IMPORT ML noise_shader(EveryApi &ev, ML mainloop);
   IMPORT ML light_shader(EveryApi &ev, ML mainloop);
   IMPORT ML toon_shader(EveryApi &ev, ML mainloop);
+  IMPORT ML texture_shader(EveryApi &ev, ML mainloop);
+  IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop);
   IMPORT void explode(VA va, PT pos, float dist);
   //IMPORT int access_point_count(VA va, bool triangle);
   //IMPORT float *access_points(VA va, bool triangle, int face, int point);
