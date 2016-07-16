@@ -2846,6 +2846,45 @@ private:
   GameApi::EveryApi &ev;
 };
 
+class TextureArrayMaterial : public MaterialForward
+{
+public:
+  TextureArrayMaterial(GameApi::EveryApi &ev, std::vector<GameApi::BM> vec, int sx, int sy) : ev(ev), vec(vec),sx(sx),sy(sy) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::P I10=p; 
+    GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I11,true);
+    //GameApi::BM I13=bm;
+    GameApi::TXA I14 = ev.texture_api.prepare_arr(ev, vec, sx,sy);
+    GameApi::VA I16 = ev.texture_api.bind_arr(I12, I14);
+    GameApi::ML I17=ev.polygon_api.render_vertex_array_ml(ev,I16);
+    GameApi::ML I18=ev.polygon_api.texture_arr_shader(ev, I17);
+    return I18;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::P I10=p; 
+    GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I11,true);
+    //GameApi::BM I13=bm;
+
+    GameApi::TXA I14 = ev.texture_api.prepare_arr(ev, vec, sx,sy);
+    GameApi::VA I16 = ev.texture_api.bind_arr(I12, I14);
+
+    GameApi::PTA pta = ev.points_api.prepare(pts);
+    GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
+    GameApi::ML I18=ev.polygon_api.texture_arr_shader(ev, I17);
+    return I18;
+  }
+
+
+private:
+  GameApi::EveryApi &ev;
+  std::vector<GameApi::BM> vec;
+  int sx,sy;
+};
+
 class TextureMaterial : public MaterialForward
 {
 public:
@@ -2860,7 +2899,8 @@ public:
     GameApi::TXID I15=ev.texture_api.prepare(I14);
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml(ev,I16);
-    return I17;
+    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17);
+    return I18;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
@@ -2873,7 +2913,8 @@ public:
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
-    return I17;
+    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17);
+    return I18;
   }
 private:
   GameApi::EveryApi &ev;
@@ -2922,6 +2963,10 @@ GameApi::MT GameApi::MaterialsApi::def(EveryApi &ev)
 GameApi::MT GameApi::MaterialsApi::texture(EveryApi &ev, BM bm)
 {
   return add_material(e, new TextureMaterial(ev, bm));
+}
+GameApi::MT GameApi::MaterialsApi::texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy)
+{
+  return add_material(e, new TextureArrayMaterial(ev, vec, sx,sy));
 }
 GameApi::MT GameApi::MaterialsApi::snow(EveryApi &ev, MT nxt)
 {

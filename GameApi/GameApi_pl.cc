@@ -2751,6 +2751,101 @@ private:
   bool firsttime;
 };
 
+class TextureShaderML : public MainLoopItem
+{
+public:
+  TextureShaderML(GameApi::EveryApi &ev, MainLoopItem *next) : ev(ev), next(next) 
+  {
+    firsttime = true;
+  }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    if (firsttime) {
+      firsttime = false;
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      //GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    GameApi::US a2 = ev.uber_api.v_texture(vertex);
+    ee.us_vertex_shader = a2.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(true);
+      //GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    GameApi::US a2f = ev.uber_api.f_texture(fragment);
+    ee.us_fragment_shader = a2f.id;
+    }
+
+    next->execute(ee);
+  }
+  int shader_id() { return next->shader_id(); }
+
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  GameApi::SH sh;
+  bool firsttime;
+};
+
+
+
+class TextureArrShaderML : public MainLoopItem
+{
+public:
+  TextureArrShaderML(GameApi::EveryApi &ev, MainLoopItem *next) : ev(ev), next(next) 
+  {
+    firsttime = true;
+  }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    if (firsttime) {
+      firsttime = false;
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      //GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    GameApi::US a2 = ev.uber_api.v_texture_arr(vertex);
+    ee.us_vertex_shader = a2.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(true);
+      //GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    GameApi::US a2f = ev.uber_api.f_texture_arr(fragment);
+    ee.us_fragment_shader = a2f.id;
+    }
+
+    next->execute(ee);
+  }
+  int shader_id() { return next->shader_id(); }
+
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  GameApi::SH sh;
+  bool firsttime;
+};
+
+
 class LightShaderML : public MainLoopItem
 {
 public:
@@ -2956,6 +3051,17 @@ EXPORT GameApi::ML GameApi::PolygonApi::noise_shader(EveryApi &ev, ML mainloop)
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new NoiseShaderML(ev, item));
 }
+EXPORT GameApi::ML GameApi::PolygonApi::texture_shader(EveryApi &ev, ML mainloop)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new TextureShaderML(ev, item));
+}
+EXPORT GameApi::ML GameApi::PolygonApi::texture_arr_shader(EveryApi &ev, ML mainloop)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new TextureArrShaderML(ev, item));
+}
+
 EXPORT GameApi::ML GameApi::PolygonApi::light_shader(EveryApi &ev, ML mainloop)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
