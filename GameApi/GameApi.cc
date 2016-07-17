@@ -305,6 +305,15 @@ EXPORT GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
+GameApi::AS add_accel_structure(GameApi::Env &e, AccelStructure *s)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->accel_structure.push_back(s);
+  GameApi::AS im;
+  im.id = env->accel_structure.size()-1;
+  return im;
+
+}
 GameApi::MC add_matrix_curve(GameApi::Env &e, Curve<Matrix> *m)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1048,6 +1057,11 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   Array<int,bool> *enable = info.enable_obj_array;
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
+}
+AccelStructure *find_accel_structure(GameApi::Env &e, GameApi::AS a)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->accel_structure[a.id];
 }
 Curve<Matrix> *find_matrix_curve(GameApi::Env &e, GameApi::MC m)
 {
@@ -4007,3 +4021,4 @@ GameApi::MS GameApi::MatrixCurveApi::sample(MC m_curve, int num)
   Curve<Matrix> *c = find_matrix_curve(e, m_curve);
   return add_matrix_array(e, new SampleMatrixCurve2(c,num));
 }
+

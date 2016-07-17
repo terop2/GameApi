@@ -525,6 +525,7 @@ struct EnvImpl
   std::vector<Curve<Point>*> curves;
   std::vector<MatrixArray*> matrix_arrays;
   std::vector<Curve<Matrix>*> matrix_curves;
+  std::vector<AccelStructure*> accel_structure;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -795,6 +796,7 @@ struct FaceCollPolyHandle : public PolyHandle
 //
 // add functions
 //
+GameApi::AS add_accel_structure(GameApi::Env &e, AccelStructure *accel);
 GameApi::MC add_matrix_curve(GameApi::Env &e, Curve<Matrix> *curve);
 GameApi::MS add_matrix_array(GameApi::Env &e, MatrixArray *arr);
 GameApi::C add_curve(GameApi::Env &e, Curve<Point> *curve);
@@ -878,6 +880,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+AccelStructure *find_accel_structure(GameApi::Env &e, GameApi::AS a);
 Curve<Matrix> *find_matrix_curve(GameApi::Env &e, GameApi::MC m);
 MatrixArray *find_matrix_array(GameApi::Env &e, GameApi::MS m);
 Curve<Point> *find_curve(GameApi::Env &e, GameApi::C c);
