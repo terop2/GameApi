@@ -2963,8 +2963,8 @@ private:
 class ShaderParamML : public MainLoopItem
 {
 public:
-  ShaderParamML(GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir,
-		unsigned int level1, unsigned int level2, unsigned int level3) : ev(ev), next(next), light_dir(light_dir), level1(level1), level2(level2), level3(level3) 
+  ShaderParamML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir,
+		unsigned int level1, unsigned int level2, unsigned int level3) : env(env), ev(ev), next(next), light_dir(light_dir), level1(level1), level2(level2), level3(level3) 
   { 
     //sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:passall", "colour:ambient:diffuse:specular:light");
     //ev.mainloop_api.init_3d(sh);
@@ -2994,7 +2994,11 @@ public:
       ee.us_vertex_shader = a1.id;
     }
     vertex.id = ee.us_vertex_shader;
-    GameApi::US a2 = ev.uber_api.v_passall(vertex);
+    GameApi::US a2v = ev.uber_api.v_ambient(vertex);
+    GameApi::US a3v = ev.uber_api.v_diffuse(a2v);
+    GameApi::US a4v = ev.uber_api.v_specular(a3v);
+
+    GameApi::US a2 = ev.uber_api.v_passall(a4v);
     ee.us_vertex_shader = a2.id;
 
     GameApi::US fragment;
@@ -3019,6 +3023,9 @@ public:
 	GameApi::SH sh;
 	sh.id = sh_id;
 	ev.shader_api.use(sh);
+
+
+
 	ev.shader_api.set_var(sh, "light_dir", light_dir.dx, light_dir.dy, light_dir.dz);
 	ev.shader_api.set_var(sh, "level1_color",
 			      ((level1&0xff0000)>>16)/255.0,
@@ -3036,9 +3043,18 @@ public:
 			      ((level3&0xff))/255.0,
 			      ((level3&0xff000000)>>24)/255.0);
       }
+
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+
     next->execute(ee);
   }
 private:
+  GameApi::Env &env;
   GameApi::EveryApi &ev;
   MainLoopItem *next;
   Vector light_dir;
@@ -3079,7 +3095,7 @@ EXPORT GameApi::ML GameApi::PolygonApi::shading_shader(EveryApi &ev, ML mainloop
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
   Vector light_dir(1.0,1.0,1.0);
-  return add_main_loop(e, new ShaderParamML(ev, item, light_dir, level1, level2, level3));
+  return add_main_loop(e, new ShaderParamML(e, ev, item, light_dir, level1, level2, level3));
 }
 EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml(EveryApi &ev, VA va)
 {

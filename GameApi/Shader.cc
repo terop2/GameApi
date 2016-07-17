@@ -58,6 +58,16 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
     }
   glShaderSource(handle, count, strings, lengths);
   glCompileShader(handle);
+  int val = glGetError();
+  if (val!=GL_NO_ERROR) {
+    std::cout << "glCompileShader ERROR: " << val << std::endl;
+    char buf[256];
+    GLsizei length=0;
+    glGetShaderInfoLog(handle, 256, &length, &buf[0]);
+    buf[length]=0;
+    std::cout << "InfoLog: " << buf << std::endl;
+
+  }
   int i=0;
   glGetShaderiv(handle, GL_COMPILE_STATUS, &i );
   if (i == 1) { std::cout << shader.Name() << " OK" << std::endl; 
@@ -122,6 +132,17 @@ void Program::push_back(const Shader &shader)
 {
   std::cout << "AttachShader: " << shader.priv->handle << std::endl;
   glAttachShader/*ObjectARB*/(priv->program, shader.priv->handle);
+  int val = glGetError();
+  if (val!=GL_NO_ERROR)
+    {
+    std::cout << "glAttachShader ERROR: " << val << std::endl;
+    char buf[256];
+    GLsizei length=0;
+    glGetProgramInfoLog(priv->program, 256, &length, &buf[0]);
+    buf[length]=0;
+    std::cout << "InfoLog: " << buf << std::endl;
+    }
+
   priv->shaders.push_back(&shader);
   shader.priv->programs.push_back(this);
 }
@@ -136,7 +157,8 @@ void Program::bind_attrib(int num, std::string name)
   //int val2 = glGetError();
   glBindAttribLocation(priv->program, num, name.c_str());
   int val = glGetError();
-  std::cout << "BindAttribLocation: " << val << std::endl;
+  if (val!=GL_NO_ERROR)
+    std::cout << "BindAttribLocation ERROR: " << val << std::endl;
 }
 void Program::detach(const Shader &shader)
 {
@@ -396,6 +418,7 @@ ShaderFile::ShaderFile()
   std::string s =
 "//V: comb\n"
 "#version 100\n"
+    // NOTE: ADDING MORE uniform or attribute or varying varibles does not work, and gives black screen
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
@@ -413,6 +436,36 @@ ShaderFile::ShaderFile()
     //"flat varying vec4 ex_FlatColor;\n"
 "varying vec3 ex_Normal;\n"
 "varying vec3 ex_Position;\n"
+#if 0
+"varying vec3 ex_Normal2;\n"
+"varying vec3 ex_LightPos2;\n"
+"varying vec3 ex_Normal3;\n"
+"varying vec3 ex_LightPos3;\n"
+"uniform vec3 light_dir;\n"
+"uniform vec3 lightpos;\n"
+#endif
+    // NOTE: ADDING MORE uniform or attribute or varying varibles does not work, and gives black screen
+
+"vec4 ambient(vec4 pos)\n"
+"{\n"
+"    return pos;\n"
+"}\n"
+"vec4 diffuse(vec4 pos)\n"
+"{\n"
+#if 0
+"    ex_Normal2 = normalize(vec3(in_T * in_MV * vec4(in_Normal,0.0)));\n"
+"    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
+#endif
+"    return pos;\n"
+"}\n"
+"vec4 specular(vec4 pos)\n"
+"{\n"
+#if 0
+"    ex_Normal2 = normalize(vec3(in_T * in_MV * vec4(in_Normal,0.0)));\n"
+"    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
+#endif
+"    return pos;\n"
+"}\n"
 "vec4 recalc_normal(vec4 pos)\n"
 "{\n"
     //"   mat4 inN = transpose(inverse(in_MV));\n"
@@ -511,6 +564,7 @@ ShaderFile::ShaderFile()
 "\n"
 "//F: comb\n"
 "#version 100\n"
+    //"#extension GL_EXT_texture_array : enable\n"
 "precision mediump float;\n"
 "varying vec4 ex_Color;\n"
     //"flat varying vec4 ex_FlatColor;\n"
@@ -522,41 +576,70 @@ ShaderFile::ShaderFile()
 "varying vec3 ex_TexCoord;\n"
 "varying vec3 ex_Normal;\n"
 "varying vec3 ex_Position;\n"
+#if 0
+"varying vec3 ex_Normal2;\n"
+"varying vec3 ex_LightPos2;\n"
+"varying vec3 ex_Normal3;\n"
+"varying vec3 ex_LightPos3;\n"
+"uniform vec3 light_dir;\n"
+#endif
 "uniform vec3 lightpos;\n"
     //"uniform vec3 light_dir;\n"
-    //"uniform vec4 level1_color;\n"
-    //"uniform vec4 level2_color;\n"
-    //"uniform vec4 level3_color;\n"
+#if 0
+ "uniform vec4 level1_color;\n"
+ "uniform vec4 level2_color;\n"
+ "uniform vec4 level3_color;\n"
+#endif
 "uniform sampler2D tex;\n"
     //"uniform sampler2DArray texarr;\n"
 "vec4 white(vec4 rgb)\n"
 "{\n"
 "   return vec4(1.0,1.0,1.0,1.0);\n"
 "}\n"
-#if 0
 "vec4 diffuse(vec4 rgb)\n"
 "{\n"
-"    vec3 normal_cam = normalize(vec3(in_T*in_MV*vec4(ex_Normal,0.0)));\n"
-"    vec3 LightDir_cam = vec3(in_T*in_MV * vec4(lightpos,1.0));\n"
-"    vec3 light_dir_cam = normalize( LightDir_cam );\n"
+#if 0
+"    vec3 normal_cam = ex_Normal2;\n"
+"    vec3 light_dir_cam = ex_LightPos2;\n"
 "    float theta = dot( normal_cam, light_dir_cam ) ;\n"
+#endif
+#if 1
+"    vec4 level1_color = vec4(1.0,1.0,1.0,1.0);\n"
+#endif
+#if 1
+"    float theta = 0.5;\n"
+#endif
 "    return rgb + level1_color*theta;\n"
 "}\n"
 "vec4 ambient(vec4 rgb)\n"
 "{\n"
+#if 1
+"    vec4 level2_color = vec4(1.0,1.0,1.0,1.0);\n"
+#endif
 "    return rgb + level2_color*vec4(0.2,0.2,0.2,1.0)*0.8;\n"
 "}\n"
 "vec4 specular(vec4 rgb)\n"
 "{\n"
-"    vec3 normal_cam = normalize(vec3(in_T*in_MV*vec4(ex_Normal,0.0)));\n"
-"    vec3 LightDir_cam = vec3(in_T*in_MV * vec4(lightpos,1.0));\n"
-"    vec3 light_dir_cam = normalize( LightDir_cam );\n"
+#if 0
+"    vec3 normal_cam = ex_Normal2;\n"
+"    vec3 light_dir_cam = ex_LightPos2;\n"
 "    vec3 R = reflect(-light_dir_cam, normal_cam);\n"
 "    vec3 E = vec3(0.0,0.0,0.5);\n"
 "    float alpha = dot(E,R);\n"
-"    return rgb + level3_color * alpha*alpha*alpha*alpha*alpha*0.8;\n"
-"}\n"
 #endif
+#if 0
+"    vec4 level3_color = vec4(1.0,1.0,1.0,1.0);\n"
+#endif
+#if 0
+"float alpha=0.5;\n"
+#endif
+#if 0
+"    return rgb + level3_color * alpha*alpha*alpha*alpha*alpha*0.8;\n"
+#endif
+#if 1
+"    return rgb;\n"
+#endif
+"}\n"
 "vec4 color_from_normals(vec4 rgb)\n"
 "{\n"
 "    return vec4(ex_Normal*0.5,1.0)+vec4(0.5,0.5,0.5,0.0);\n"
@@ -658,10 +741,14 @@ ShaderFile::ShaderFile()
 "{\n"
 "   return mix(rgb, texture2D(tex, ex_TexCoord.xy), 0.5);\n"
 "}\n"
-    //"vec4 texture_arr(vec4 rgb)\n"
-    //"{\n"
-    //"   return mix(rgb, texture2DArray(texarr, ex_TexCoord), 0.5);\n"
-    //"}\n"
+"vec4 texture_arr(vec4 rgb)\n"
+"{\n"
+#ifdef EMSCRIPTEN
+"   return rgb;\n"
+#else
+"   return mix(rgb, texture2DArray(texarr, ex_TexCoord), 0.5);\n"
+#endif
+"}\n"
 "vec4 colour(vec4 rgb)\n"
 "{\n"
 "  return mix(rgb, ex_Color, 0.5);    \n"
@@ -797,7 +884,29 @@ ShaderFile::ShaderFile()
 "out vec4 ex_Color;\n"
 "out vec3 ex_Normal;\n"
 "out vec3 ex_Position;\n"
+"out vec3 ex_Normal2;\n"
+"out vec3 ex_LightPos2;\n"
+"out vec3 ex_Normal3;\n"
+"out vec3 ex_LightPos3;\n"
+"in vec3 light_dir;\n"
+"in vec3 lightpos;\n"
     //"flat out vec4 ex_FlatColor;\n"
+"vec4 ambient(vec4 pos)\n"
+"{\n"
+"    return pos;\n"
+"}\n"
+"vec4 diffuse(vec4 pos)\n"
+"{\n"
+"    ex_Normal2 = normalize(vec3(in_T * in_MV * vec4(in_Normal,0.0)));\n"
+"    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
+"    return pos;\n"
+"}\n"
+"vec4 specular(vec4 pos)\n"
+"{\n"
+"    ex_Normal3 = normalize(vec3(in_T * in_MV * vec4(in_Normal,0.0)));\n"
+"    ex_LightPos3 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
+"    return pos;\n"
+"}\n"
 "vec4 color_from_normals(vec4 rgb)\n"
 "{\n"
 "    return vec4(ex_Normal*0.5,1.0)+vec4(0.5,0.5,0.5,0.0);\n"
@@ -896,6 +1005,10 @@ ShaderFile::ShaderFile()
 "in vec3 ex_TexCoord;\n"
 "in vec3 ex_Normal;\n"
 "in vec3 ex_Position;\n"
+"in vec3 ex_Normal2;\n"
+"in vec3 ex_LightPos2;\n"
+"in vec3 ex_Normal3;\n"
+"in vec3 ex_LightPos3;\n"
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
@@ -903,7 +1016,7 @@ ShaderFile::ShaderFile()
 "uniform sampler2D tex;\n"
 "uniform sampler2DArray texarr;\n"
 "uniform vec3 lightpos;\n"
-"uniform vec3 light_dir;\n"
+    //"uniform vec3 light_dir;\n"
 "uniform vec4 level1_color;\n"
 "uniform vec4 level2_color;\n"
 "uniform vec4 level3_color;\n"
@@ -913,9 +1026,8 @@ ShaderFile::ShaderFile()
 "}\n"
 "vec4 diffuse(vec4 rgb)\n"
 "{\n"
-"    vec3 normal_cam = normalize(vec3(in_T*in_MV*vec4(ex_Normal,0.0)));\n"
-"    vec3 LightDir_cam = vec3(in_T*in_MV * vec4(lightpos,1.0));\n"
-"    vec3 light_dir_cam = normalize( LightDir_cam );\n"
+"    vec3 normal_cam = ex_Normal2;\n"
+"    vec3 light_dir_cam = ex_LightPos2;\n"
 "    float theta = clamp( dot( normal_cam, light_dir_cam ) , 0,1);\n"
 "    return rgb + level1_color*theta;\n"
 "}\n"
@@ -925,9 +1037,8 @@ ShaderFile::ShaderFile()
 "}\n"
 "vec4 specular(vec4 rgb)\n"
 "{\n"
-"    vec3 normal_cam = normalize(vec3(in_T*in_MV*vec4(ex_Normal,0.0)));\n"
-"    vec3 LightDir_cam = vec3(in_T*in_MV * vec4(lightpos,1.0));\n"
-"    vec3 light_dir_cam = normalize( LightDir_cam );\n"
+"    vec3 normal_cam = ex_Normal3;\n"
+"    vec3 light_dir_cam = ex_LightPos3;\n"
 "    vec3 R = reflect(-light_dir_cam, normal_cam);\n"
 "    vec3 E = vec3(0.0,0.0,0.5);\n"
 "    float alpha = clamp( dot(E,R), 0,1);\n"

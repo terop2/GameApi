@@ -3420,6 +3420,24 @@ GameApi::US GameApi::UberShaderApi::v_inst(US us)
   return add_uber(e, new V_ShaderCallFunction("inst", next));
 }
 
+GameApi::US GameApi::UberShaderApi::v_ambient(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("ambient", next));
+}
+
+GameApi::US GameApi::UberShaderApi::v_diffuse(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("diffuse", next));
+}
+
+GameApi::US GameApi::UberShaderApi::v_specular(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("specular", next));
+}
+
 GameApi::US GameApi::UberShaderApi::v_passall(US us)
 {
   ShaderCall *next = find_uber(e, us);

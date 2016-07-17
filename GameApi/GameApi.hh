@@ -925,6 +925,15 @@ private:
   Env &e;
 };
 
+class InputApi
+{
+public:
+  InputApi(Env &e) : e(e) { }
+  
+private:
+  Env &e;
+};
+
 class PhysicsApi
 {
 public:
@@ -2323,6 +2332,9 @@ public:
   US v_empty();
   US v_color_from_normals(US us);
   US v_recalc_normal(US us);
+  US v_diffuse(US us);
+  US v_ambient(US us);
+  US v_specular(US us);
   US v_inst(US us);
   US v_passall(US us);
   US v_point_light(US us);
