@@ -25,6 +25,7 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct AS { int id; };
   struct MC { int id; };
   struct MS { int id; };
   struct US { int id; };

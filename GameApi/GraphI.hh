@@ -470,4 +470,5 @@ public:
   virtual Matrix Index(int i) const=0;
 };
 
+
 #endif
