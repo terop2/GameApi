@@ -380,12 +380,30 @@ EXPORT void GameApi::MainLoopApi::finish()
 }
 EXPORT void GameApi::MainLoopApi::swapbuffers()
 {
-#if 0
-  GLenum e = glGetError();
-  if (e!=GL_NO_ERROR)
-    {
-      std::cout << "swapbuffers GL error: " << e << std::endl;
-    }
+#if 1
+  int e = -1;
+  MainLoopPriv *pp = (MainLoopPriv*)priv;
+  int i = 0;
+  while((e=glGetError()) != 0) {
+    i++;
+    if (e!=0 && e != pp->last_error)
+      {
+	std::string error="";
+	switch(e) {
+	case 0x500: error="GL_INVALID_ENUM"; break;
+	case 0x501: error="GL_INVALID_VALUE"; break;
+	case 0x502: error="GL_INVALID_OPERATION"; break;
+	case 0x503: error="GL_STACK_OVERFLOW"; break;
+	case 0x504: error="GL_STACK_UNDERFLOW"; break;
+	case 0x505: error="GL_OUT_OF_MEMORY"; break;
+	case 0x506: error="GL_INVALID_FRAMEBUFFER_OPERATION"; break;
+	case 0x507: error="GL_CONTEXT_LOST"; break;
+	case 0x8031: error="GL_TABLE_TOO_LARGE"; break;
+      };
+	std::cout << "swapbuffers GL error: "<< i << ":"  << e << " " << error << std::endl;
+  pp->last_error = e;
+      }
+  }
 #endif
   //MainLoopPriv *p = (MainLoopPriv*)priv;
   //glLoadIdentity();

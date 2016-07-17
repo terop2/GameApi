@@ -121,6 +121,7 @@ struct MainLoopPriv
   std::map<std::string, std::chrono::time_point<std::chrono::high_resolution_clock> > profile_start_time;
 #endif
   int screen_width, screen_height;
+  int last_error=0;
 };
 
 struct ShaderPriv2
