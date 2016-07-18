@@ -22,4 +22,4 @@ CC2FLAGS = -g -std=c++11 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WI
 
 all:
 	g++ $(CC2FLAGS) -std=c++11 -c accel.cc -o accel.o
-	g++ -std=c++11 -shared -g accel.o -o libAccel.dll
+	g++ -L.. -std=c++11 -shared -g accel.o -o libAccel.dll -lGameApi

@@ -288,8 +288,15 @@ EnvImpl::~EnvImpl()
 #endif
 }
 
+GameApi::Env *Global_latest_env = 0;
+
+EXPORT GameApi::Env *GameApi::Env::Latest_Env()
+{
+  return Global_latest_env;
+}
 EXPORT GameApi::Env::Env()
 {
+  Global_latest_env = this;
   envimpl = (void*)new ::EnvImpl;
 }
 EXPORT void GameApi::Env::free_memory()

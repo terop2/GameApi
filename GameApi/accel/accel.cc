@@ -50,15 +50,30 @@ std::string unique_id_apiitem()
 
 // GLOBAL VARIABLE
 std::vector<AccelStructure*> envimpl_accel;
+std::vector<PreCalcMainLoop*> envimpl_precalc;
 
-AK add_as(AccelStructure *w)
+PML add_pml(PreCalcMainLoop *p)
+{
+  envimpl_precalc.push_back(p);
+  PML as;
+  as.id = envimpl_precalc.size()-1;
+  return as;
+}
+
+
+AK add_ak(AccelStructure *w)
 {
   envimpl_accel.push_back(w);
   AK as;
   as.id = envimpl_accel.size()-1;
   return as;
 }
-AccelStructure *find_as(AK as)
+PreCalcMainLoop *find_pml(PML pm)
+{
+  PreCalcMainLoop *i = envimpl_precalc[pm.id];
+  return i;
+}
+AccelStructure *find_ak(AK as)
 {
   AccelStructure *i = envimpl_accel[as.id];
   return i;
@@ -157,6 +172,7 @@ public:\
   }\
 };
 MACRO(AK);
+MACRO(PML);
 
 template<typename T> T from_stream22(std::stringstream &is)
 {
@@ -288,29 +304,27 @@ std::string api_name() { return "AccelApi"; }
 int num_displays() { return 1; }
 std::string type_symbol()
 {
-  return "AS";
+  return "PML";
 }
 void display(int i, int disp)
 {
-#if 0
   switch(disp)
     {
     case 0:
-      W wid = { i };
-      std::string page = gen_html_page(wid);
-      std::ofstream f("tst.html");
-      f << page;
-      f.close();
-      system("start tst.html");
+      PreCalcMainLoop *loop = envimpl_precalc[i];
+      loop->Execute();
       break;
     }
-#endif
 }
 
 std::vector<Item*> functions()
 {
 }
 
+GameApi::Env &env()
+{
+  return *GameApi::Env::Latest_Env();
+}
 
 struct AccelNodeSpec
 {
@@ -328,6 +342,11 @@ public:
 					  start_y(start_y), end_y(end_y),
 					  start_z(start_z), end_z(end_z) 
   { 
+    grid = new AccelNode[sx*sy*sz];
+  }
+  void clear()
+  {
+    delete [] grid;
     grid = new AccelNode[sx*sy*sz];
   }
   AccelNode *find_node(const AccelNodeSpec &spec) const
@@ -382,6 +401,9 @@ public:
   virtual AccelNode *find_next(AccelNode *current, Point start, Point target) const
   {
   }
+  virtual std::vector<AccelNode*> find_quad(Point p1, Point p2, Point p3, Point p4) const
+  {
+  }
   virtual std::vector<AccelNode*> find_span(Point p1, Point p2) const
   {
     std::vector<AccelNode*> vec;
@@ -398,7 +420,9 @@ public:
       }
     return vec;
   }
-  virtual std::vector<AccelNode*> find_tri(Point p1, Point p2, Point p3) const=0;
+  virtual std::vector<AccelNode*> find_tri(Point p1, Point p2, Point p3) const
+  {
+  }
   virtual std::vector<AccelNode*> find_cube(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) const
   {
     AccelNode *n0 = find_point(Point(start_x, start_y, start_z));
@@ -445,3 +469,132 @@ private:
   float start_z, end_z;
   AccelNode *grid;
 };
+
+AK empty(int sx, int sy, int sz,
+	 float start_x, float end_x,
+	 float start_y, float end_y,
+	 float start_z, float end_z
+	 )
+{
+  return add_ak(new GridAccel(sx,sy,sz,start_x, end_x, start_y, end_y, start_z, end_z));
+}
+
+struct Accel_P_ref
+{
+  FaceCollection *coll;
+  int face;
+};
+
+class BindPreCalc : public PreCalcMainLoop
+{
+public:
+  BindPreCalc(FaceCollection *coll, AccelStructure *accel) : coll(coll), accel(accel) { }
+  void Execute()
+  {
+  int s = coll->NumFaces();
+  for(int i=0;i<s;i++)
+    {
+      Accel_P_ref *ref = new Accel_P_ref;
+      ref->coll = coll;
+      ref->face = i;
+      int c = coll->NumPoints(i);
+      std::vector<AccelNode*> vec;
+      switch(c) {
+      case 3:
+	{
+	  Point p1 = coll->FacePoint(i,0);
+	  Point p2 = coll->FacePoint(i,1);
+	  Point p3 = coll->FacePoint(i,2);
+	  vec = accel->find_tri(p1,p2,p3);
+	  break;
+	}
+      case 4:
+	{
+	  Point p1 = coll->FacePoint(i,0);
+	  Point p2 = coll->FacePoint(i,1);
+	  Point p3 = coll->FacePoint(i,2);
+	  Point p4 = coll->FacePoint(i,3);
+	  vec = accel->find_quad(p1,p2,p3,p4);
+	  break;
+	}
+      };
+      int s = vec.size();
+      for(int i=0;i<s;i++)
+	{
+	  accel->push_back(vec[i], (void*)ref);
+	}
+    }
+
+  }
+private:
+  FaceCollection *coll;
+  AccelStructure *accel;
+};
+
+class ClearPreCalc : public PreCalcMainLoop
+{
+public:
+  ClearPreCalc(AccelStructure *accel) : accel(accel) { }
+  void Execute()
+  {
+    accel->clear();
+  }
+private:
+  AccelStructure *accel;
+};
+
+PML bind_p(AK orig, GameApi::P p)
+{
+  GameApi::Env &e = env();
+  FaceCollection *coll = find_facecoll(e, p);
+  AccelStructure *accel = find_ak(orig);
+  return add_pml(new BindPreCalc(coll,accel));
+}
+PML clear(AK orig)
+{
+  AccelStructure *accel = find_ak(orig);
+  return add_pml(new ClearPreCalc(accel));
+}
+class OrElemPreCalc : public PreCalcMainLoop
+{
+public:
+  OrElemPreCalc(PreCalcMainLoop *m1, PreCalcMainLoop *m2) : m1(m1), m2(m2) { }
+  void Execute()
+  {
+    m1->Execute();
+    m2->Execute();
+  }
+private:
+  PreCalcMainLoop *m1, *m2;
+};
+PML or_elem(PML p1, PML p2)
+{
+  PreCalcMainLoop *m1 = find_pml(p1);
+  PreCalcMainLoop *m2 = find_pml(p2);
+  return add_pml(new OrElemPreCalc(m1,m2));
+}
+class OrArrayPreCalc : public PreCalcMainLoop
+{
+public:
+  OrArrayPreCalc(std::vector<PreCalcMainLoop*> vec) : vec(vec) {}
+  void Execute()
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->Execute();
+      }
+  }
+private:
+  std::vector<PreCalcMainLoop*> vec;
+};
+PML or_array(std::vector<PML> vec)
+{
+  std::vector<PreCalcMainLoop*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_pml(vec[i]));
+    }
+  return add_pml(new OrArrayPreCalc(vec2));
+}
