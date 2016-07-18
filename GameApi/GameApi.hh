@@ -169,6 +169,7 @@ public:
   IMPORT Env();
   IMPORT void free_memory();
   IMPORT ~Env();
+  IMPORT static Env *Latest_Env();
 private:
   Env(const Env &);
   void operator=(const Env &);
