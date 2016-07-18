@@ -680,7 +680,7 @@ void GameApi::WModApi::delete_by_uid(WM mod2, int id, std::string line_uid)
   
 
 }
-std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid)
+std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level)
 {
   static std::vector<GameApiItem*> vec = all_functions();
 
@@ -699,11 +699,31 @@ std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mo
 	  int ss = line->params.size();
 	  std::vector<std::string> params;
 	  std::vector<std::string> param_names;
+	  level-=ss;
 	  for(int ii=0;ii<ss;ii++)
 	    {
+	      //level--;
 	      GameApiParam *param = &line->params[ii];
 	      std::string p = "";
 	      std::string pn = param->value;
+	      if (level<=0)
+		{ // Stopping recursion
+		  int sd = vec.size();
+		  for(int k=0;k<sd;k++)
+		    {
+		      GameApiItem *item = vec[k];
+		      std::string name = item->Name(0);
+		      if (name == line->module_name)
+			{
+			  if (pn.size()>0 && pn[0]=='[')
+			    pn="[]";
+			  else
+			    pn = "@";
+			  break;
+			}
+		    }
+		}
+
 	      if (pn.size()==0)
 		{
 		  std::cout << "CODEGEN FAILED at param!" << std::endl;
@@ -711,7 +731,7 @@ std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mo
 		}
 	      if (pn.size()>3 && pn[0]=='u' && pn[1] == 'i' && pn[2] =='d')
 		{
-		  std::pair<std::string,std::string> val = codegen(ev, mod2, id, pn);
+		  std::pair<std::string,std::string> val = codegen(ev, mod2, id, pn, level-1);
 		  p = val.second;
 		  pn = val.first;
 		}
@@ -743,7 +763,7 @@ std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mo
 			  //std::cout << "substr: " << substr << std::endl;
 			  if (substr.size()>3 && substr[0]=='u' && substr[1] == 'i' && substr[2] =='d')
 			    {
-			      std::pair<std::string,std::string> val = codegen(ev, mod2, id, substr);
+			      std::pair<std::string,std::string> val = codegen(ev, mod2, id, substr, level-1);
 			      p += val.second;
 			      ss += val.first;
 			    }
@@ -786,7 +806,7 @@ std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mo
   return std::make_pair("","");
 
 }
-int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv)
+int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level)
 {
   static std::vector<GameApiItem*> vec = all_functions();
 
@@ -817,11 +837,29 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
 
 	  // COLLECT PARAMS & RECURSE
 	  int ss = line->params.size();
+	  level-=ss;
 	  std::vector<std::string> params;
 	  for(int ii=0;ii<ss;ii++)
 	    {
 	      GameApiParam *param = &line->params[ii];
 	      std::string p = param->value;
+	      if (level<=0)
+		{ // Stopping recursion
+		  int sd = vec.size();
+		  for(int k=0;k<sd;k++)
+		    {
+		      GameApiItem *item = vec[k];
+		      std::string name = item->Name(0);
+		      if (name == line->module_name)
+			{
+			  if (p.size()>0 && p[0]=='[')
+			    p="[]";
+			  else
+			    p = "@";
+			  break;
+			}
+		    }
+		}
 	      if (p.size()==0)
 		{
 		  std::cout << "EXECUTE FAILED at param!" << std::endl;
@@ -829,7 +867,7 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
 		}
 	      if (p.size()>3 && p[0]=='u' && p[1] == 'i' && p[2] =='d')
 		{
-		  int val = execute(ev, mod2, id, p, exeenv);
+		  int val = execute(ev, mod2, id, p, exeenv, level-1);
 		  if (val==-1) return -1;
 		  std::stringstream sw;
 		  sw << val;
@@ -848,7 +886,7 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
 			  std::cout << "substr: " << substr << std::endl;
 			  if (substr.size()>3 && substr[0]=='u' && substr[1] == 'i' && substr[2] =='d')
 			    {
-			      int val = execute(ev, mod2, id, substr, exeenv);
+			      int val = execute(ev, mod2, id, substr, exeenv, level-1);
 			      if (val==-1) return -1;
 			      std::stringstream sw;
 			      sw << val;

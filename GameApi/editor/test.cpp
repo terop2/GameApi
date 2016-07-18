@@ -485,7 +485,7 @@ void iter(void *arg)
 	      {
 		/* code generation here */
 		std::cout << "CodeGen" << std::endl;
-		std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, env->codegen_uid);
+		std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, env->codegen_uid,100);
 		std::cout << p.second << std::endl;
 	      }
 	    
@@ -700,7 +700,7 @@ void iter(void *arg)
 	  //  if (chosen==0)
 		{
 		  std::cout << "CodeGen!" << std::endl;
-		  std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid);
+		  std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid,100);
 		std::cout << p.second << std::endl;
 
 		}
@@ -726,7 +726,7 @@ void iter(void *arg)
 		    
 		    // Execute
 		    GameApi::ExecuteEnv exeenv;
-		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv);
+		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,100);
 		    if (id==-1) {
 		      std::cout << "Execute failed!" << std::endl;
 		      break;

@@ -66,7 +66,11 @@ public:
   virtual void push_back(AccelNode *n, void *data)=0;
 };
 
-AK empty();
+AK empty(int sx, int sy, int sz,
+	 float start_x, float end_x,
+	 float start_y, float end_y,
+	 float start_z, float end_z
+	 );
 PML bind_p(AK orig, GameApi::P p);
 PML clear(AK orig);
 PML or_elem(PML p1, PML p2);

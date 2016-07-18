@@ -3170,6 +3170,67 @@ public:
   } 
 };
 
+template<class T>
+void set_empty(GameApi::EveryApi &ev, T &t) { t.id=0; }
+
+#define MACRO2(lab, funccall) \
+  void set_empty(GameApi::EveryApi&ev,lab &l) {	\
+    l = funccall;\
+  }
+
+#define MACRO3(lab, funccall) \
+  if (s==#lab) { return #funccall; }
+
+std::string empty_param(std::string s)
+{
+  if (s.size()>1 && s[0]=='[')
+    {
+      return "std::vector<"+s+">()";
+    }
+  if (s=="float") { return "0.0"; }
+  if (s=="int") { return "0"; }
+  if (s=="std::string") { return ""; }
+MACRO3(BM,ev.bitmap_api.newbitmap(10,10,0x00000000))
+MACRO3(FD,ev.dist_api.cube(0.0,0.0,0.0,0.0,0.0,0.0))
+MACRO3(BO,ev.bool_api.cube(ev,0.0,0.0,0.0,0.0,0.0,0.0,1,1))
+MACRO3(BB,ev.bool_bitmap_api.empty(10,10))
+MACRO3(FB,ev.float_bitmap_api.empty(10,10))
+MACRO3(PT,ev.point_api.origo())
+MACRO3(V,ev.vector_api.null_vector())
+MACRO3(FO,ev.float_volume_api.distance())
+MACRO3(SFO,ev.sh_api.cube())
+MACRO3(O,ev.volume_api.cube(0.0,0.0,0.0,0.0,0.0,0.0))
+MACRO3(CBM,ev.cont_bitmap_api.empty(10.0,10.0))
+MACRO3(P,ev.polygon_api.empty())
+MACRO3(SH,ev.shader_api.colour_shader())
+MACRO3(CO,ev.color_api.u_color(0xffffffff))
+MACRO3(LI,ev.lines_api.from_polygon(ev.polygon_api.empty()))
+MACRO3(MN,ev.move_api.empty())
+MACRO3(MT,ev.materials_api.def(ev))
+MACRO3(C,ev.curve_api.linear(std::vector<GameApi::PT>()))
+  return "@";
+}
+
+
+MACRO2(GameApi::BM,ev.bitmap_api.newbitmap(10,10,0x00000000))
+MACRO2(GameApi::FD,ev.dist_api.cube(0.0,0.0,0.0,0.0,0.0,0.0))
+MACRO2(GameApi::BO,ev.bool_api.cube(ev,0.0,0.0,0.0,0.0,0.0,0.0,1,1))
+MACRO2(GameApi::BB,ev.bool_bitmap_api.empty(10,10))
+MACRO2(GameApi::FB,ev.float_bitmap_api.empty(10,10))
+MACRO2(GameApi::PT,ev.point_api.origo())
+MACRO2(GameApi::V,ev.vector_api.null_vector())
+MACRO2(GameApi::FO,ev.float_volume_api.distance())
+MACRO2(GameApi::SFO,ev.sh_api.cube())
+MACRO2(GameApi::O,ev.volume_api.cube(0.0,0.0,0.0,0.0,0.0,0.0))
+MACRO2(GameApi::CBM,ev.cont_bitmap_api.empty(10.0,10.0))
+MACRO2(GameApi::P,ev.polygon_api.empty())
+MACRO2(GameApi::SH,ev.shader_api.colour_shader())
+MACRO2(GameApi::CO,ev.color_api.u_color(0xffffffff))
+MACRO2(GameApi::LI,ev.lines_api.from_polygon(ev.polygon_api.empty()))
+MACRO2(GameApi::MN,ev.move_api.empty())
+MACRO2(GameApi::MT,ev.materials_api.def(ev))
+MACRO2(GameApi::C,ev.curve_api.linear(std::vector<GameApi::PT>()))
+
 
 #define MACRO(lab) \
 template<> \
@@ -3179,6 +3240,10 @@ public:\
   lab from_stream(std::string s, GameApi::EveryApi &ev)\
   {\
   lab bm;\
+  if (s=="@") {\
+        set_empty(ev,bm);\
+      return bm;\
+  }\
   std::stringstream is(s);\
   is >> bm.id;\
   return bm;\
@@ -3336,7 +3401,12 @@ public:
     int sk = param_names.size();
     for(int i=0;i<sk;i++)
       {
-	s+= param_names[i];
+	if (param_names[i]=="@")
+	  {
+	    s+=empty_param(param_type[i]);
+	  }
+	else
+	  s+= param_names[i];
 	if (i!=int(param_names.size())-1) s+=",";
       }
     s+=");\n";

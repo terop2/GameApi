@@ -171,8 +171,23 @@ public:\
   return bm;\
   }\
 };
+#define MACRO_GAMEAPI(lab) \
+template<> \
+class FromStreamClass2<lab> \
+{ \
+public:\
+  lab from_stream(std::string s)\
+  {\
+  lab bm;\
+  std::stringstream is(s);		\
+  is >> bm.id;\
+  return bm;\
+  }\
+};
+
 MACRO(AK);
 MACRO(PML);
+MACRO_GAMEAPI(GameApi::P);
 
 template<typename T> T from_stream22(std::stringstream &is)
 {
@@ -319,6 +334,51 @@ void display(int i, int disp)
 
 std::vector<Item*> functions()
 {
+  std::vector<Item*> vec;
+
+  vec.push_back(ApiItemF(&empty, 
+			 "ak_empty", 
+			 { "sx", "sy", "sz", 
+			     "start_x", "end_x",
+			     "start_y", "end_y",
+			     "start_z", "end_z"
+			     },
+			 { "int", "int", "int",
+			     "float", "float",
+			     "float", "float",
+			     "float", "float"
+			     },
+			 { "100", "100", "100",
+			     "-300.0", "300.0",
+			     "-300.0", "300.0",
+			     "-300.0", "300.0"
+			     },
+			 "AK", "empty"));
+  vec.push_back(ApiItemF(&bind_p,
+			 "ak_bind_p",
+			 { "orig", "p" },
+			 { "AK", "P" },
+			 { "", "" },
+			 "PML", "bind_p"));
+  vec.push_back(ApiItemF(&clear,
+			 "ak_clear",
+			 { "orig" },
+			 { "AK" },
+			 { "" },
+			 "PML", "clear"));
+  vec.push_back(ApiItemF(&or_elem,
+			 "ak_or_elem",
+			 { "p1", "p2" },
+			 { "PML", "PML" },
+			 { "", "" },
+			 "PML", "or_elem"));
+  vec.push_back(ApiItemF(&or_array,
+			 "ak_or_array",
+			 { "vec" },
+			 { "[PML]" },
+			 { "" },
+			 "PML", "or_array"));
+  return vec;
 }
 
 GameApi::Env &env()
