@@ -1197,8 +1197,8 @@ public:
   bool typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, bool &is_array);
   void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh);
 
-  int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv);
-  std::pair<std::string, std::string> codegen(EveryApi &ev, WM mod2, int id, std::string line_uid);
+  int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level);
+  std::pair<std::string, std::string> codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);
   std::string return_type(WM mod2, int id, std::string line_uid);
   void delete_by_uid(WM mod2, int id, std::string line_uid);
 private:
