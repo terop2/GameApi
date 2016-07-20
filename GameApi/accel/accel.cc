@@ -463,6 +463,18 @@ public:
   }
   virtual std::vector<AccelNode*> find_quad(Point p1, Point p2, Point p3, Point p4) const
   {
+    int xxxmin = std::min(std::min(p1.x,p2.x),std::min(p3.x,p4.x));
+    int yyymin = std::min(std::min(p1.y,p2.y),std::min(p3.y,p4.y));
+    int zzzmin = std::min(std::min(p1.z,p2.z),std::min(p3.z,p4.z));
+
+    int xxxmax = std::max(std::max(p1.x,p2.x),std::max(p3.x,p4.x));
+    int yyymax = std::max(std::max(p1.y,p2.y),std::max(p3.y,p4.y));
+    int zzzmax = std::max(std::max(p1.z,p2.z),std::max(p3.z,p4.z));
+
+    return find_cube(xxxmin, xxxmax,
+		     yyymin, yyymax,
+		     zzzmin, zzzmax);
+		     
   }
   virtual std::vector<AccelNode*> find_span(Point p1, Point p2) const
   {
@@ -482,6 +494,17 @@ public:
   }
   virtual std::vector<AccelNode*> find_tri(Point p1, Point p2, Point p3) const
   {
+    int xxxmin = std::min(std::min(p1.x,p2.x),p3.x);
+    int yyymin = std::min(std::min(p1.y,p2.y),p3.y);
+    int zzzmin = std::min(std::min(p1.z,p2.z),p3.z);
+
+    int xxxmax = std::max(std::max(p1.x,p2.x),p3.x);
+    int yyymax = std::max(std::max(p1.y,p2.y),p3.y);
+    int zzzmax = std::max(std::max(p1.z,p2.z),p3.z);
+
+    return find_cube(xxxmin, xxxmax,
+		     yyymin, yyymax,
+		     zzzmin, zzzmax);
   }
   virtual std::vector<AccelNode*> find_cube(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) const
   {

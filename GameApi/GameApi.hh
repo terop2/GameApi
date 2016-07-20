@@ -856,6 +856,7 @@ public:
   IMPORT SFO bounding_primitive(SFO prim, SFO inside, SFO outside);
   IMPORT SFO spherical(SFO obj, PT tl, PT br, float rr, float rp);
   IMPORT SFO render(SFO obj);
+  IMPORT SFO v_render(SFO obj);
 private:
   Env &e;
 };
@@ -917,10 +918,13 @@ public:
   MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
   MT snow(EveryApi &ev, MT nxt);
   MT web(EveryApi &ev, MT nxt); // TODO: add line width property
+  MT dist_field_mesh(EveryApi &ev, SFO sfo);
+
   ML bind(P p, MT mat);
   ML bind_inst(P p, PTS pts, MT mat);
   ML render_instanced_ml(EveryApi &ev, P p, PTS pts);
   ML render_instanced2_ml(EveryApi &ev, VA va, PTA pta);
+
   //ML snow(EveryApi &ev, P p);
   //ML web(EveryApi &ev, P p);
 private:
@@ -1655,6 +1659,7 @@ public:
   IMPORT void prepare_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh);
   IMPORT void render_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh); // fast
   IMPORT ML render_vertex_array_ml(EveryApi &ev, VA va);
+  IMPORT ML dist_field_mesh_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML shading_shader(EveryApi &ev, ML mainloop,
 			  unsigned int level1,
 			  unsigned int level2,
@@ -2349,6 +2354,7 @@ public:
   US v_texture_arr(US us);
   US v_colour(US us);
   US v_blur(US us);
+  US v_dist_field_mesh(US us, SFO sfo);
 
   US f_empty(bool transparent);
   US f_diffuse(US us);

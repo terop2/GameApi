@@ -36,7 +36,7 @@
 #include <memory>
 #include <fstream>
 #include <pthread.h>
-
+#include "EffectI.hh"
 
 enum AttribId
   {
@@ -138,16 +138,6 @@ public:
   } either;
 };
 
-template<class A, class B>
-class Function 
-{
-public:
-  typedef A Domain;
-  typedef B CoDomain;
-
-  virtual ~Function() { }
-  virtual B Index(A a) const=0;
-};
 
 #if 0
 template<class A, class B>
@@ -757,12 +747,6 @@ public:
   }
 };
 
-template<class I, class T>
-class Array : public Function<I,T>
-{
-public:
-  virtual I Size() const=0;
-};
 template<class T>
 void AllocToNativeArray(Array<int,T> &arr, T*** result);
 
@@ -1374,12 +1358,6 @@ private:
   IndexMap sizesmap;
 };
 
-template<class T>
-class Curve : public Array<float, T>
-{
-public:
-  //float Length() const { return static_cast<float>(Size()); }
-};
 
 typedef Curve<std::pair<Point,Vector> > CurveWithNormal;
 
@@ -1411,13 +1389,6 @@ private:
   float target_length;
 };
 
-class CurveIn2d : public Curve<Point2d>
-{
-public:
-  virtual ~CurveIn2d() { }
-  //virtual Point2d Index(float pos) const=0;
-  //virtual float Length() const=0;
-};
 
 class FunctionCurveIn2d : public CurveIn2d
 {
@@ -1448,13 +1419,6 @@ private:
   const Array<float, Point2d> &c2;
 };
 
-class CurveIn3d : public Curve<Point>
-{
-public:
-  virtual ~CurveIn3d() { }
-  //virtual Point Index(float pos) const=0;
-  //virtual float Length() const=0;
-};
 
 class FunctionCurveIn3d : public CurveIn3d
 {
@@ -2966,53 +2930,6 @@ public:
   int id;
 };
 
-class FaceCollection
-{
-public:
-  virtual ~FaceCollection() { }
-  virtual int NumFaces() const = 0;
-  virtual int NumPoints(int face) const=0;
-  virtual Point FacePoint(int face, int point) const=0;
-  virtual Vector PointNormal(int face, int point) const=0;
-  virtual float Attrib(int face, int point, int id) const=0;
-  virtual int AttribI(int face, int point, int id) const=0;
-  virtual unsigned int Color(int face, int point) const=0;
-  virtual Point2d TexCoord(int face, int point) const=0;
-  virtual float TexCoord3(int face, int point) const { return 0.0; }
-
-  virtual Point EndFacePoint(int face, int point) const { return FacePoint(face, point); }
-  virtual Vector EndPointNormal(int face, int point) const { return PointNormal(face,point); }
-  virtual float EndAttrib(int face, int point, int id) const { return Attrib(face, point, id); }
-  virtual int EndAttribI(int face, int point, int id) const { return AttribI(face,point,id); }
-  virtual unsigned int EndColor(int face, int point) const { return Color(face,point); }
-  virtual Point2d EndTexCoord(int face, int point) const { return TexCoord(face,point); }
-  virtual float EndTexCoord3(int face, int point) const { return TexCoord3(face,point); }
-
-  virtual float Duration() const { return 1.0; }
-
-  virtual int NumTextures() const { return 0; }
-  virtual void GenTexture(int num) { }
-  virtual BufferRef TextureBuf(int num) const { BufferRef ref; ref.buffer = 0;  return ref; }
-  virtual int FaceTexture(int face) const { return -1; }
-  //virtual void Pullback() const=0; // should call P functions only
-  //void P(FaceCollection &single);
-  //void P(FaceCollection &coll1, FaceCollection &coll2);
-  //void P(FaceCollection *coll, int size); // needed in or operation
-  //virtual int RangeCount();
-  //virtual Range<int> RangeArray(int count);
-#if 0
-  struct Triplet
-  {
-    P poly_id;
-    int face;
-    int point;
-  };
-  virtual Triplet FaceTriplet(int face, int point) const=0;
-#endif
-#if 0
-  virtual Coords Coordinates() const=0;
-#endif
-};
 
 class ForwardFaceCollection : public FaceCollection
 {
@@ -10822,6 +10739,25 @@ public:
 	    file << "vn " << p.dx << " " << p.dy << " " << p.dz << std::endl;
 	  }
       }
+    for(int i=0;i<s;i++)
+      {
+	int ss = coll->NumPoints(i);
+	for(int j=0;j<ss;j++)
+	  {
+	    Point2d p = coll->TexCoord(i,j);
+	    file << "vt " << p.x << " " << p.y << std::endl;
+	  }
+      }
+    for(int i=0;i<s;i++)
+      {
+	int ss = coll->NumPoints(i);
+	for(int j=0;j<ss;j++)
+	  {
+	    unsigned int p = coll->Color(i,j);
+	    Color c(p);
+	    file << "vc " << c.r << " " << c.g << " " << c.b << " " << c.alpha << std::endl;
+	  }
+      }
     int counter =1;
     for(int i=0;i<s;i++)
       {
@@ -10829,7 +10765,7 @@ public:
 	int ss = coll->NumPoints(i);
 	for(int j=0;j<ss;j++)
 	  {
-	    file << counter;
+	    file << counter << "/" << counter << "/" << counter;
 	    if (j!=ss-1) file << " ";
 	    counter++;
 	  }
@@ -10846,6 +10782,7 @@ class LoadObjModelFaceCollection : public BoxableFaceCollection
 public:
   LoadObjModelFaceCollection(std::string filename, int objcount) : filename(filename), obj_num(objcount) 
   {
+    std::cout << "Loading: " << filename << " " << objcount << std::endl;
     Load();
   }
   void Load() {
@@ -10856,6 +10793,7 @@ public:
     int vertex_count2 = 0;
     int face_count=0;
     int normal_count =0;
+    int color_count = 0;
     int tex_count = 0;
     int obj_base = 0;
     while(std::getline(file, line))
@@ -10865,12 +10803,13 @@ public:
 	ss>>word;
 	if (word == "o")
 	  {
-	    std::cout << "o" << std::flush;
+	    //std::cout << "o" << std::flush;
 	    obj_count++;
 	    obj_base = vertex_count2;
 	  }
 	if (word == "v" && obj_count==obj_num)
 	  {
+	    //std::cout << "v" << std::flush;
 	    vertex_count++;
 	    if (vertex_count % 1000==0) 
 	      std::cout << "v" << std::flush;
@@ -10882,6 +10821,8 @@ public:
 	  } else if (word =="v") { vertex_count2++; }
 	if (word == "vt" && obj_count==obj_num)
 	  {	
+	    //std::cout << "vt" << std::flush;
+
 	    tex_count++;
 	    if (tex_count %1000 == 0)
 	      std::cout << "t" << std::flush;
@@ -10893,6 +10834,7 @@ public:
 	  }
 	if (word == "vn" && obj_count==obj_num)
 	  {
+	    //std::cout << "vn" << std::flush;
 	    normal_count++;
 	    if (normal_count %1000 == 0)
 	      std::cout << "n" << std::flush;
@@ -10904,8 +10846,23 @@ public:
 	    Vector v(nx,ny,nz);
 	    normal_data.push_back(v);
 	  }
+	if (word == "vc" && obj_count==obj_num)
+	  {
+	    //std::cout << "vc" << std::flush;
+	    color_count++;
+	    if (color_count %1000 == 0)
+	      std::cout << "c" << std::flush;
+
+	    //std::cout << "Normal:" << normal_data.size() << std::endl;
+
+	    int nr, ng, nb, na;
+	    ss >> nr >> ng >> nb >> na;
+	    ::Color vc(nr,ng,nb,na);
+	    color_data.push_back(vc.clamp().Pixel());
+	  }
 	if (word == "f" && obj_count==obj_num)
 	  {
+	    //std::cout << "f" << std::flush;
 	    face_count++;
 	    if (face_count % 1000 == 0)
 	      std::cout << "f" << std::flush;
@@ -11011,6 +10968,10 @@ public:
 	vertex_data.push_back(p);
 	vertex_data.push_back(p);
       }
+    if (color_data.size()==0)
+      {
+	color_data.push_back(0xffffffff);
+      }
   }
   virtual int NumFaces() const { return face_counts.size()<=0 ? 1 : face_counts.size(); }
   virtual int NumPoints(int face) const { return face_counts.size()<=0 ? 3 : face_counts[face]; }
@@ -11042,7 +11003,18 @@ public:
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
-  virtual unsigned int Color(int face, int point) const { return 0xffffffff; }
+  virtual unsigned int Color(int face, int point) const { 
+    int c = Count(face,point);
+    if (c>=0 && c<(int)vertex_index.size())
+      {
+	int index = vertex_index[c];
+	if (index>=0 && index<(int)color_data.size())
+	  return color_data[index];
+      }
+    unsigned int p = 0x00000000;
+    //Point p(0.0,0.0,0.0);
+    return p;
+  }
   virtual Point2d TexCoord(int face, int point) const
   {
     int c = Count(face,point);
@@ -11076,6 +11048,7 @@ private:
   std::vector<Point> vertex_data;
   std::vector<Point2d> texcoord_data;
   std::vector<Vector> normal_data;
+  std::vector<unsigned int> color_data;
   std::vector<int> vertex_index;
   std::vector<int> texture_index;
   std::vector<int> normal_index;

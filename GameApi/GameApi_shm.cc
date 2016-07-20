@@ -202,7 +202,9 @@ public:
       "   vec3 s = br-tl;\n"
       "   s/=2.0;\n"
       "   pt-=s;\n"
-      "   return length(max(abs(pt)-s,0.0));\n"
+      "   vec3 d = abs(pt) - s;\n"
+      "   return min(max(d.x,max(d.y,d.z)),0.0) + length(max(d,0.0));\n"
+      //"   return length(max(abs(pt)-s,0.0));\n"
       "}\n"
       "vec4 cube_color" + uid + "(vec3 tl, vec3 br, vec3 pt)\n"
       "{\n"
@@ -603,6 +605,74 @@ public:
 private:
   ShaderModule *obj;
 };
+
+class V_RenderModule : public ShaderModule
+{
+public:
+  V_RenderModule(ShaderModule *obj) : obj(obj) { }
+  virtual int id() const { return 2; }
+  virtual std::string Function() const
+  {
+    return obj->Function() +
+      "vec3 ray(vec3 p1, vec3 p2, float t)\n"
+      "{\n"
+      "   return p1 + t*(p2-p1);\n"
+      "}\n"
+      "float solve(vec3 p1, vec3 p2, float t_0, float t_1)\n"
+      "{\n"
+      "    float t = t_0;\n"
+      "    for(int i=0;i<600;i++)\n"
+      "    {\n"
+      "       vec3 pt = ray(p1,p2,t);\n"
+      "       float Ht = " + funccall_to_string(obj) + ";\n"
+      "       if (abs(Ht)<0.005) return t;\n"
+      "       if (t>t_1) return 1.0;\n"
+      "       t+= abs(Ht) / 500.0;\n"
+      "    }\n"
+      "    return 1.0;\n"
+      "}\n"
+      "vec4 v_render(vec4 p0, vec4 p1)\n"
+      "{\n"
+      "   vec3 p0a = p0.xyz;\n"
+      "   vec3 p1a = p1.xyz;\n"
+      "   float t = solve(p0a,p1a,0.5, 10000.0);\n"
+      //"   if (t<0.01) t=1.0;\n"
+      //"   if (t>1000.0) t=1.0;\n"
+      "   vec3 pt = ray(p0a,p1a, t);\n"
+      "   vec4 rgb = " + color_funccall_to_string(obj) + ";\n"
+      //"   if (abs(t)<0.001) { rgb=vec4(0.5,0.5,0.5,1.0); }\n"
+      "   ex_Color = rgb;\n"
+      "   return vec4(pt,p1.w);\n"
+      //"   return p1;\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return "v_render"; }
+  virtual std::string ColorFunctionName() const { return "v_render_color"; }
+  virtual int NumArgs() const { return 2; }
+  virtual bool FreeVariable(int i) const { return true; }
+  virtual std::string ArgName(int i) const { 
+    switch(i) {
+    case 0: return "p0";
+    case 1: return "p1";
+    }
+    return "";
+  }
+  virtual std::string ArgValue(int i) const
+  {
+    switch(i) {
+    case 0: return "vec4(0.0,0.0,0.0,1.0)";
+    case 1: return "p1";
+    }
+    return "";
+  }
+  virtual std::string ArgType(int i) const
+  {
+    return "vec4";
+  }
+private:
+  ShaderModule *obj;
+};
+
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::grayscale(SFO obj)
 {
   ShaderModule *obj_m = find_shader_module(e, obj);
@@ -617,6 +687,11 @@ EXPORT GameApi::SFO GameApi::ShaderModuleApi::render(SFO obj)
 {
   ShaderModule *obj_m = find_shader_module(e, obj);
   return add_shader_module(e, new RenderModule(obj_m));
+}
+EXPORT GameApi::SFO GameApi::ShaderModuleApi::v_render(SFO obj)
+{
+  ShaderModule *obj_m = find_shader_module(e, obj);
+  return add_shader_module(e, new V_RenderModule(obj_m));
 }
 class RotYModule : public ShaderModule
 {

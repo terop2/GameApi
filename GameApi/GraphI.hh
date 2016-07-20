@@ -287,6 +287,8 @@ struct MainLoopEnv
   Point cursor_pos;
   int button;
 
+  float time = 0.0;
+
   Matrix env;
   //std::string vertex_shader = "";
   //std::string fragment_shader = "";
@@ -296,6 +298,7 @@ struct MainLoopEnv
   Matrix in_MV;
   Matrix in_T;
   Matrix in_N;
+  int sfo_id=-1;
 };
 
 class MainLoopItem

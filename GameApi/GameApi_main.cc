@@ -570,6 +570,7 @@ void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH array_text
   ek.in_MV = find_matrix(e, in_MV);
   ek.in_T = find_matrix(e, in_T);
   ek.in_N = find_matrix(e, in_N);
+  ek.time = get_time()/100.0;
   item->execute(ek);
 }
 
