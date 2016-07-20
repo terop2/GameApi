@@ -19,7 +19,7 @@ struct Envi {
   float speed_x = 1.0;
   float speed_y = 1.0;
   InteractionApi::Quake_data data;
-  bool logo_shown = true;
+  bool logo_shown = false;
   SH color_sh;
   SH texture_sh;
   SH arr_texture_sh;
@@ -800,13 +800,22 @@ ML mainloop(EveryApi &ev, MN &move)
   //P I1=tree(ev); //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
   ML ml1 = train(ev);
   ML ml2 = reki(ev);
+  MN mn0 = ev.move_api.empty();
+  MN mn1 = ev.move_api.scale2(mn0, -1.0,1.0,1.0);
+  MN mn = ev.move_api.trans2(mn1, 1500.0, 0.0, 0.0);
+  ML ml2a = ev.move_api.move_ml(ev, ml2, mn);
+
   P p3 = tree(ev);
   VA I2=ev.polygon_api.create_vertex_array(p3,true);
   ML ml3=ev.polygon_api.render_vertex_array_ml(ev,I2);
   ML ml4 = snowman(ev);
   ML ml5 = gift(ev);
   ML ml6 = santa(ev);
-  ML I3 = ev.mainloop_api.array_ml(std::vector<ML>{ml6});
+  MN mn6_0 = ev.move_api.empty();
+  MN mn6_1 = ev.move_api.scale2(mn6_0, -0.5, 0.5, -0.5);
+  MN mn6_2 = ev.move_api.trans2(mn6_1, 1500.0, 50.0, -150.0);
+  ML ml6a = ev.move_api.move_ml(ev, ml6, mn6_2);
+  ML I3 = ev.mainloop_api.array_ml(std::vector<ML>{ml1, ml2a,ml6a});
   MN I4=ev.move_api.empty();
   MN I5=ev.move_api.trans2(I4,0.0,0.0,0.0);
   move = I5;
@@ -828,11 +837,11 @@ void iter(void *arg)
       return;
     }
 
-    env->ev->mainloop_api.clear_3d(0xffffffff);
+    env->ev->mainloop_api.clear_3d(0xffaaaaaa);
 
     M a_m = env->ev->matrix_api.yrot(env->rot_y+3.14159);
     M a_m2 = env->ev->matrix_api.trans(env->pos_x,0.0,-env->pos_y);
-    M a_m3 = env->ev->matrix_api.trans(0.0,0.0,400.0);
+    M a_m3 = env->ev->matrix_api.trans(0.0,0.0,-200.0);
     M a_mm = env->ev->matrix_api.mult(env->ev->matrix_api.mult(a_m3,a_m),a_m2);
 
     env->ev->move_api.set_matrix(env->move, a_mm);
@@ -935,7 +944,8 @@ int main(int argc, char *argv[]) {
   ML ml = mainloop(ev, env.move);
   MN mn0 = ev.move_api.empty();
   MN mn = ev.move_api.trans2(mn0, 0.0, 0.0, 400.0);
-  ML ml2 = ev.move_api.move_ml(ev, ml, mn);
+  MN mn2 = ev.move_api.scale2(mn, -1.0, 1.0, -1.0);
+  ML ml2 = ev.move_api.move_ml(ev, ml, mn2);
   env.mainloop = ml2;
 
   env.ev = &ev;

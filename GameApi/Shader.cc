@@ -32,7 +32,7 @@
 #include "GraphI.hh"
 
 std::string funccall_to_string(ShaderModule *mod);
-
+std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string value);
 
 struct ShaderPriv
 {
@@ -424,7 +424,7 @@ ShaderFile::ShaderFile()
 "uniform mat4 in_T;\n"
 "uniform mat4 in_N;\n"
 "uniform float in_POS;\n"
-"uniform float in_time;\n"
+"uniform float time;\n"
 "attribute vec3 in_InstPos;\n"
 "attribute vec3 in_Position;\n"
 "attribute vec3 in_Position2;\n"
@@ -445,7 +445,7 @@ ShaderFile::ShaderFile()
 "uniform vec3 lightpos;\n"
 #endif
     // NOTE: ADDING MORE uniform or attribute or varying varibles does not work, and gives black screen
-
+"//M:\n"
 "vec4 ambient(vec4 pos)\n"
 "{\n"
 "    return pos;\n"
@@ -511,9 +511,9 @@ ShaderFile::ShaderFile()
 "}\n"
 "vec4 wave(vec4 pos)\n"
 "{\n"
-"  vec4 pos2 = pos + vec4(10.0*cos(2.0*in_time*in_Position.x*3.14159*2.0/360.0),\n"
-"                         10.0*sin(3.0*in_time*in_Position.y*3.14159*2.0/360.0),\n"
-"			 10.0*cos(5.0*in_time*in_Position.z*3.14159*2.0/360.0), 0.0);\n"
+"  vec4 pos2 = pos + vec4(10.0*cos(2.0*time*in_Position.x*3.14159*2.0/360.0),\n"
+"                         10.0*sin(3.0*time*in_Position.y*3.14159*2.0/360.0),\n"
+"			 10.0*cos(5.0*time*in_Position.z*3.14159*2.0/360.0), 0.0);\n"
 "  return pos2;\n"
 "}\n"
 "vec4 toon(vec4 pos)\n"
@@ -873,7 +873,7 @@ ShaderFile::ShaderFile()
 "uniform mat4 in_T;\n"
 "uniform mat4 in_N;\n"
 "uniform float in_POS;\n"
-"uniform float in_time;\n"
+"uniform float time;\n"
 "in vec3 in_InstPos;\n"
 "in vec3 in_Position;\n"
 "in vec3 in_Position2;\n"
@@ -891,6 +891,7 @@ ShaderFile::ShaderFile()
 "in vec3 light_dir;\n"
 "in vec3 lightpos;\n"
     //"flat out vec4 ex_FlatColor;\n"
+"//M:\n"
 "vec4 ambient(vec4 pos)\n"
 "{\n"
 "    return pos;\n"
@@ -956,9 +957,9 @@ ShaderFile::ShaderFile()
 "}\n"
 "vec4 wave(vec4 pos)\n"
 "{\n"
-"  vec4 pos2 = pos + vec4(10.0*cos(2.0*in_time*in_Position.x*3.14159*2.0/360.0),\n"
-"                         10.0*sin(3.0*in_time*in_Position.y*3.14159*2.0/360.0),\n"
-"			 10.0*cos(5.0*in_time*in_Position.z*3.14159*2.0/360.0), 0.0);\n"
+"  vec4 pos2 = pos + vec4(10.0*cos(2.0*time*in_Position.x*3.14159*2.0/360.0),\n"
+"                         10.0*sin(3.0*time*in_Position.y*3.14159*2.0/360.0),\n"
+"			 10.0*cos(5.0*time*in_Position.z*3.14159*2.0/360.0), 0.0);\n"
 "  return pos2;\n"
 "}\n"
 "vec4 toon(vec4 pos)\n"
@@ -1352,10 +1353,7 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
     {
       if (mod && ww.substr(0,4)=="//M:")
 	{
-	  if (is_fragment)
-	    {
-	      out+=mod->Function();
-	    }
+	  out+=mod->Function();
 	}
       if (mod && ww.substr(0,4)=="//N:")
 	{
@@ -1398,10 +1396,18 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 		  out+="vec4 pos";
 		  out+=ss.str();
 		  out+=" = ";
-		  out+=comb[i];
-		  out+="(pos";
-		  out+=ss2.str();
-		  out+=");\n";
+		  if (comb[i]=="SFO")
+		    {
+		      out+=funccall_to_string_with_replace(mod, "p1", "pos" + ss.str());
+		      out+=";\n";
+		    }
+		  else
+		    {
+		      out+=comb[i];
+		      out+="(pos";
+		      out+=ss2.str();
+		      out+=");\n";
+		    }
 		}
 	      std::stringstream ss3;
 	      ss3 << s;
@@ -1509,6 +1515,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod, vertex_c);
       
       //std::cout << "::" << ss << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -1525,7 +1532,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c);
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

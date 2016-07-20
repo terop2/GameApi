@@ -2665,7 +2665,16 @@ public:
 	GameApi::US fragment;
 	vertex.id = e.us_vertex_shader;
 	fragment.id = e.us_fragment_shader;
-	shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment);
+	if (e.sfo_id==-1)
+	  {
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment);
+	  }
+	else
+	  {
+	    GameApi::SFO sfo;
+	    sfo.id = e.sfo_id;
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment, false, sfo);
+	  }
 	ev.mainloop_api.init_3d(shader);
 	ev.mainloop_api.alpha(true); 
 
@@ -2959,6 +2968,75 @@ private:
   bool firsttime;
 };
 
+class DistFieldMeshShader : public MainLoopItem
+{
+public:
+  DistFieldMeshShader(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, GameApi::SFO sfo) : env(env), ev(ev), next(next), sfo(sfo) 
+  {
+    firsttime = true;
+  }
+  int shader_id() { return next->shader_id(); }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+
+    if (firsttime)
+      {
+	firsttime = false;
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a1.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    GameApi::US a2v = ev.uber_api.v_dist_field_mesh(vertex, sfo);
+    ee.sfo_id = sfo.id;
+    ee.us_vertex_shader = a2v.id;
+
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(true);
+      GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a1.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+      }
+
+    int sh_id = next->shader_id();
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	GameApi::SH sh;
+	sh.id = sh_id;
+	ev.shader_api.use(sh);
+
+
+      }
+    GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+    GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+    GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+    ev.shader_api.set_var(sh, "in_MV", m);
+    ev.shader_api.set_var(sh, "in_T", m1);
+    ev.shader_api.set_var(sh, "in_N", m2);
+    float time = ee.time;
+    ev.shader_api.set_var(sh, "time", time);
+    
+    next->execute(ee);
+
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  GameApi::SH sh;
+  bool firsttime;
+  GameApi::SFO sfo;
+};
 
 class ShaderParamML : public MainLoopItem
 {
@@ -3087,6 +3165,11 @@ EXPORT GameApi::ML GameApi::PolygonApi::toon_shader(EveryApi &ev, ML mainloop)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new ToonShaderML(ev, item));
+}
+ EXPORT GameApi::ML GameApi::PolygonApi::dist_field_mesh_shader(EveryApi &ev, ML mainloop, SFO sfo)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new DistFieldMeshShader(e,ev,item,sfo));
 }
 EXPORT GameApi::ML GameApi::PolygonApi::shading_shader(EveryApi &ev, ML mainloop,
 						      unsigned int level1,

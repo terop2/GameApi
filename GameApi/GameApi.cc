@@ -9,6 +9,11 @@
 
 #include "GameApi_h.hh"
 
+std::string funccall_to_string(ShaderModule *mod);
+std::string color_funccall_to_string(ShaderModule *mod);
+std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
+std::string color_funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
+
 EnvImpl::EnvImpl() : event_infos(new EmptySequencer2), mutex(PTHREAD_MUTEX_INITIALIZER)
 {
 #ifndef EMSCRIPTEN
@@ -3303,7 +3308,6 @@ GameApi::ML GameApi::MaterialsApi::render_instanced2_ml(GameApi::EveryApi &ev, V
   return add_main_loop(e, new RenderInstanced2(e, ev, va,pta));
 }
 
-
 class V_ShaderCallFunction : public ShaderCall
 {
 public:
@@ -3509,6 +3513,45 @@ GameApi::US GameApi::UberShaderApi::v_blur(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("blur", next));
+}
+class V_DistFieldMesh : public ShaderCall
+{
+public:
+  V_DistFieldMesh(ShaderCall *next, ShaderModule *mod) : next(next), mod(mod) { }
+  int index(int base) const {
+    id = next->index(base)+1;
+    return id;
+  }
+  std::string func_call() const
+  {
+    std::string out;
+    out+=next->func_call();
+    std::stringstream ss;
+    int i = id;
+    ss << i+1;
+    std::stringstream ss2;
+    ss2 << i;
+    out+="vec4 pos";
+    out+=ss.str();
+    out+=" = ";
+    out+=funccall_to_string_with_replace(mod, "p1", "pos" + ss2.str());
+    out+=";\n";
+    //out+=funcname;
+    //out+="(pos";
+    //out+=ss2.str();
+    //out+=");\n";
+    return out;
+  }
+private:
+  ShaderCall *next;
+  ShaderModule *mod;
+  mutable int id;
+};
+GameApi::US GameApi::UberShaderApi::v_dist_field_mesh(US us, SFO sfo)
+{
+  ShaderCall *next = find_uber(e,us);
+  ShaderModule *mod = find_shader_module(e, sfo);
+  return add_uber(e, new V_DistFieldMesh(next,mod));
 }
 
 
@@ -4015,3 +4058,31 @@ GameApi::MS GameApi::MatrixCurveApi::sample(MC m_curve, int num)
   return add_matrix_array(e, new SampleMatrixCurve2(c,num));
 }
 
+class DistanceFieldMesh : public MaterialForward
+{
+public:
+  DistanceFieldMesh(GameApi::EveryApi &ev, GameApi::SFO sfo) : ev(ev), sfo(sfo) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    GameApi::ML df = ev.polygon_api.dist_field_mesh_shader(ev, ml,sfo);
+    return df;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::PTA pta = ev.points_api.prepare(pts);
+    GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    GameApi::ML df = ev.polygon_api.dist_field_mesh_shader(ev, ml,sfo);
+    return df;
+  }
+private:
+  GameApi::EveryApi &ev;
+  GameApi::SFO sfo;
+};
+GameApi::MT GameApi::MaterialsApi::dist_field_mesh(EveryApi &ev, SFO sfo)
+{
+  SFO sfo2 = ev.sh_api.v_render(sfo);
+  return add_material(e, new DistanceFieldMesh(ev,sfo2));
+}

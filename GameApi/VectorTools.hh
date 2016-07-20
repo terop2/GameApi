@@ -336,7 +336,22 @@ public:
     res.alpha = c1.alpha+c2.alpha;
     return res;
   }
-  unsigned int Pixel() { return (alpha<<24) + (r << 16) + (g << 8) + b; }
+  Color clamp() const
+  {
+    Color c2 = *this;
+    if (c2.r>255) { c2.r=255; }
+    if (c2.g>255) { c2.g=255; }
+    if (c2.b>255) { c2.b=255; }
+    if (c2.alpha>255) { c2.alpha=255; }
+    if (c2.r<0) { c2.r=0; }
+    if (c2.g<0) { c2.g=0; }
+    if (c2.b<0) { c2.b=0; }
+    if (c2.alpha<0) { c2.alpha=0; }
+    return c2;
+  }
+  unsigned int Pixel() {
+    return (alpha<<24) + (r << 16) + (g << 8) + b; 
+  }
   friend Color operator*(Color c, float val)
   {
     c*=val;

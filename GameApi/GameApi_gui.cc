@@ -4222,6 +4222,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "MT" },
 			 { "ev", "" },
 			 "MT", "materials_api", "web"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dist_field_mesh,
+			 "m_dist_field",
+			 { "ev", "sfo" },
+			 { "EveryApi&", "SFO" },
+			 { "ev", "" },
+			 "MT", "materials_api", "dist_field_mesh"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bind,
 			 "m_bind",
 			 { "p", "mat" },
@@ -4785,6 +4791,12 @@ std::vector<GameApiItem*> shadermoduleapi_functions()
 			 { "SFO" },
 			 { "" },
 			 "SFO", "sh_api", "render"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::v_render,
+			 "v_render",
+			 { "obj" },
+			 { "SFO" },
+			 { "" },
+			 "SFO", "sh_api", "v_render"));
   return vec;
 
 }
