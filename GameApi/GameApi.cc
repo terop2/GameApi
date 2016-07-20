@@ -3155,7 +3155,14 @@ public:
 	fragment.id = u_f.id; 
 	GameApi::US vertex2 = ev.uber_api.v_inst(vertex);
 	//GameApi::US fragment2 = ev.uber_api.f_inst(fragment);
-	shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment);
+	if (e.sfo_id==-1)
+	  shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment);
+	else
+	  {
+	    GameApi::SFO sfo;
+	    sfo.id = e.sfo_id;
+	    shader=ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment, false, sfo);
+	  }
 	ev.mainloop_api.init_3d(shader);
 	ev.mainloop_api.alpha(true); 
 
@@ -3258,7 +3265,14 @@ public:
 	fragment.id = u_f.id; //e.us_fragment_shader;
 	GameApi::US vertex2 = ev.uber_api.v_inst(vertex);
 	//GameApi::US fragment2 = ev.uber_api.f_inst(fragment);
-	shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment);
+	if (e.sfo_id==-1)
+	  shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment);
+	else
+	  {
+	    GameApi::SFO sfo;
+	    sfo.id = e.sfo_id;
+	    shader=ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment, false, sfo);
+	  }
 	ev.mainloop_api.init_3d(shader);
 	ev.mainloop_api.alpha(true); 
 
@@ -4061,28 +4075,34 @@ GameApi::MS GameApi::MatrixCurveApi::sample(MC m_curve, int num)
 class DistanceFieldMesh : public MaterialForward
 {
 public:
-  DistanceFieldMesh(GameApi::EveryApi &ev, GameApi::SFO sfo) : ev(ev), sfo(sfo) { }
+  DistanceFieldMesh(GameApi::EveryApi &ev, GameApi::SFO sfo, Material *next) : ev(ev), sfo(sfo),next(next) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-    GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
-    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    //GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    //GameApi::ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    GameApi::ML ml;
+    ml.id = next->mat(p.id);
     GameApi::ML df = ev.polygon_api.dist_field_mesh_shader(ev, ml,sfo);
     return df;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
-    GameApi::PTA pta = ev.points_api.prepare(pts);
-    GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
-    GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    //GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    //GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    GameApi::ML ml;
+    ml.id = next->mat_inst(p.id, pts.id);
     GameApi::ML df = ev.polygon_api.dist_field_mesh_shader(ev, ml,sfo);
     return df;
   }
 private:
   GameApi::EveryApi &ev;
   GameApi::SFO sfo;
+  Material *next;
 };
-GameApi::MT GameApi::MaterialsApi::dist_field_mesh(EveryApi &ev, SFO sfo)
+GameApi::MT GameApi::MaterialsApi::dist_field_mesh(EveryApi &ev, SFO sfo, MT next)
 {
   SFO sfo2 = ev.sh_api.v_render(sfo);
-  return add_material(e, new DistanceFieldMesh(ev,sfo2));
+  Material *nxt = find_material(e, next);
+  return add_material(e, new DistanceFieldMesh(ev,sfo2,nxt));
 }
