@@ -4224,9 +4224,9 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "MT", "materials_api", "web"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dist_field_mesh,
 			 "m_dist_field",
-			 { "ev", "sfo" },
-			 { "EveryApi&", "SFO" },
-			 { "ev", "" },
+			 { "ev", "sfo", "mt" },
+			 { "EveryApi&", "SFO", "MT" },
+			 { "ev", "","" },
 			 "MT", "materials_api", "dist_field_mesh"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bind,
 			 "m_bind",

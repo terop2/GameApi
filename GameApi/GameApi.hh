@@ -918,7 +918,7 @@ public:
   MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
   MT snow(EveryApi &ev, MT nxt);
   MT web(EveryApi &ev, MT nxt); // TODO: add line width property
-  MT dist_field_mesh(EveryApi &ev, SFO sfo);
+  MT dist_field_mesh(EveryApi &ev, SFO sfo, MT next);
 
   ML bind(P p, MT mat);
   ML bind_inst(P p, PTS pts, MT mat);
