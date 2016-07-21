@@ -414,7 +414,10 @@ EXPORT GameApi::P GameApi::PolygonApi::empty()
 
 EXPORT GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
 {
-  return add_polygon2(e, new LoadObjModelFaceCollection(filename, num), 1);
+  GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(filename, num), 1);
+  GameApi::P cache = file_cache(model, filename,num);
+  GameApi::P resize = resize_to_correct_size(cache);
+  return resize;
 } 
 class SaveModel : public MainLoopItem
 {
@@ -4324,4 +4327,130 @@ GameApi::BM GameApi::PolygonApi::renderpolytobitmap(EveryApi &ev, P p, SH sh, fl
   BM bm = ev.texture_api.to_bitmap(id);
   BM bm2 = ev.bitmap_api.color_range(bm, 0x90ffffff, 0x00000000, 0xffffffff, 0x00000000);
   return bm2; 
+}
+struct CacheItem
+{
+public:
+  std::string filename;
+  GameApi::P obj;  
+  int filesize;
+  int obj_count;
+};
+int filesize(std::string filename)
+{
+  std::ifstream in(filename, std::ifstream::ate|std::ifstream::binary);
+  return in.tellg();
+}
+bool invalidate(CacheItem *item, std::string filename, int obj_count)
+{
+  int size = filesize(filename);
+  return item->filesize != size || item->obj_count != obj_count;
+}
+
+GameApi::P GameApi::PolygonApi::file_cache(P model, std::string filename, int obj_count)
+{
+  static std::map<std::string, CacheItem*> cache_map;
+  CacheItem *item = cache_map[filename];
+  if (item && !invalidate(item,filename,obj_count)) {
+    std::cout << "From Cache" << std::endl;
+    return item->obj;
+  }
+  std::cout << "From File" << std::endl;
+  CacheItem *item2 = new CacheItem;
+  item2->filename = filename;
+  item2->obj = model;
+  item2->filesize = filesize(filename);
+  item2->obj_count = obj_count;
+  cache_map[filename]=item2;
+  return item2->obj;
+}
+class ResizeFaceCollection
+{
+public:
+  ResizeFaceCollection(FaceCollection *coll) : coll(coll)
+  {
+    find_bounding_box();
+    print_bounding_box();
+    calc_center();
+    calc_size();
+    calc_matrix();
+  }
+public:
+  Matrix get_matrix() const { return m_m; }
+
+private:
+  void find_bounding_box()
+  {
+    start_x = std::numeric_limits<float>::max();
+    start_y = std::numeric_limits<float>::max();
+    start_z = std::numeric_limits<float>::max();
+    end_x =  std::numeric_limits<float>::min();
+    end_y =  std::numeric_limits<float>::min();
+    end_z =  std::numeric_limits<float>::min();
+
+    int s = coll->NumFaces();
+    for(int i=0;i<s;i++)
+      {
+	int p = coll->NumPoints(i);
+	for(int j=0;j<p;j++)
+	  {
+	    Point p2 = coll->FacePoint(i,j);
+	    //std::cout << p2 << std::endl;
+	    handlepoint(p2);
+	  }
+      }
+  }
+  void handlepoint(Point p)
+  {
+    if (p.x<start_x) start_x = p.x;
+    if (p.y<start_y) start_y = p.y;
+    if (p.z<start_z) start_z = p.z;
+    if (p.x>end_x) end_x = p.x;
+    if (p.y>end_y) end_y = p.y;
+    if (p.z>end_z) end_z = p.z;    
+  }
+  void print_bounding_box()
+  {
+    std::cout << start_x << " " << end_x << " " << start_y << " " << end_y << " " << start_z << " " << end_z << std::endl;
+  }
+  void calc_center()
+  {
+    center_x = (end_x-start_x)/2.0;
+    center_y = (end_y-start_y)/2.0;
+    center_z = (end_z-start_z)/2.0;
+  }
+  void calc_size()
+  {
+    size_x = end_x-start_x;
+    size_y = end_y-start_y;
+    size_z = end_z-start_z;
+  }
+  void calc_matrix()
+  {
+    Matrix m = Matrix::Translate(-center_x, -center_y, -center_z);
+    
+    float val = std::max(std::max(size_x, size_y), size_z);
+    float val2 = 1.0/val;
+    val2*= 300.0;
+    Matrix m2 = Matrix::Scale(val2, val2, val2);
+    Matrix mm = m * m2;
+    m_m= mm;
+  }
+
+private:
+  FaceCollection *coll;
+  float start_x, start_y, start_z;
+  float end_x, end_y, end_z;
+
+  float center_x, center_y, center_z;
+  float size_x, size_y, size_z;
+  Matrix m_m;
+};
+GameApi::P GameApi::PolygonApi::resize_to_correct_size(P model)
+{
+  FaceCollection *coll = find_facecoll(e, model);
+  ResizeFaceCollection resize(coll);
+  Matrix m = resize.get_matrix();
+  GameApi::M m1 = add_matrix2(e, m);
+  return matrix(model,m1); 
 }

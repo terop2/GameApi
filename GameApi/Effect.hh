@@ -10777,15 +10777,28 @@ private:
   FaceCollection *coll;
 };
 
+int filesize(std::string filename);
+
+
 class LoadObjModelFaceCollection : public BoxableFaceCollection
 {
 public:
   LoadObjModelFaceCollection(std::string filename, int objcount) : filename(filename), obj_num(objcount) 
   {
     std::cout << "Loading: " << filename << " " << objcount << std::endl;
-    Load();
+    first = true;
   }
-  void Load() {
+  void check_invalidate() const { const_cast<LoadObjModelFaceCollection*>(this)->check_invalidate2(); }
+  void check_invalidate2()
+  {
+    static int filesize_store = -1;
+    static int objcount = -1;
+    int val = filesize(filename);
+    if (filesize_store != val) { filesize_store = val; first=true; }
+    if (objcount != obj_num) { objcount = obj_num; first=true; }
+  }
+  void Load() const { const_cast<LoadObjModelFaceCollection*>(this)->Load2(); }
+  void Load2() {
     std::ifstream file(filename.c_str());
     std::string line;
     int obj_count = 0;
@@ -10973,10 +10986,16 @@ public:
 	color_data.push_back(0xffffffff);
       }
   }
-  virtual int NumFaces() const { return face_counts.size()<=0 ? 1 : face_counts.size(); }
-  virtual int NumPoints(int face) const { return face_counts.size()<=0 ? 3 : face_counts[face]; }
+  virtual int NumFaces() const {
+    check_invalidate();
+    if (first) { Load(); first=false; }
+    return face_counts.size()<=0 ? 1 : face_counts.size(); }
+  virtual int NumPoints(int face) const {
+    if (first) { Load(); first=false; } 
+    return face_counts.size()<=0 ? 3 : face_counts[face]; }
   virtual Point FacePoint(int face, int point) const
   {
+    if (first) { Load(); first=false; } 
     int c = Count(face,point);
     if (c>=0 && c<(int)vertex_index.size())
       {
@@ -10989,6 +11008,7 @@ public:
   }
   virtual Vector PointNormal(int face, int point) const
   {
+    if (first) { Load(); first=false; } 
     int c = Count(face,point);
     if (c>=0 && c<(int)normal_index.size())
       {
@@ -11001,9 +11021,14 @@ public:
     Vector v(0.0,0.0,0.0);
     return v;
   }
-  virtual float Attrib(int face, int point, int id) const { return 0.0; }
-  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual float Attrib(int face, int point, int id) const {
+    if (first) { Load(); first=false; } 
+    return 0.0; }
+  virtual int AttribI(int face, int point, int id) const {
+    if (first) { Load(); first=false; }  
+    return 0; }
   virtual unsigned int Color(int face, int point) const { 
+    if (first) { Load(); first=false; } 
     int c = Count(face,point);
     if (c>=0 && c<(int)vertex_index.size())
       {
@@ -11011,12 +11036,13 @@ public:
 	if (index>=0 && index<(int)color_data.size())
 	  return color_data[index];
       }
-    unsigned int p = 0x00000000;
+    unsigned int p = 0xffffffff;
     //Point p(0.0,0.0,0.0);
     return p;
   }
   virtual Point2d TexCoord(int face, int point) const
   {
+    if (first) { Load(); first=false; } 
     int c = Count(face,point);
     if (c>=0 && c<(int)texture_index.size())
       {
@@ -11031,6 +11057,7 @@ public:
   }
 
   int Count(int face, int point) const {
+    if (first) { Load(); first=false; } 
     int s = face_counts.size();
     if (counts.size()>0) { return counts[face]+point; }
     //if (s>0) { return face_counts[0]*face+point; }
@@ -11055,6 +11082,7 @@ private:
   std::vector<int> face_counts;
   int obj_num;
   mutable std::vector<int> counts;
+  mutable bool first;
 };
 
 #endif
