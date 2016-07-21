@@ -422,65 +422,115 @@ ShaderFile::ShaderFile()
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
+"#ifdef IN_N\n"
 "uniform mat4 in_N;\n"
+"#endif\n"
 "uniform float in_POS;\n"
 "uniform float time;\n"
+"#ifdef INST\n"
 "attribute vec3 in_InstPos;\n"
+"#endif\n"
 "attribute vec3 in_Position;\n"
 "attribute vec3 in_Position2;\n"
+"#ifdef IN_NORMAL\n"
 "attribute vec3 in_Normal;\n"
+"#endif\n"
+"#ifdef IN_COLOR\n"
 "attribute vec4 in_Color;\n"
+"#endif\n"
+"#ifdef IN_TEXCOORD\n"
 "attribute vec3 in_TexCoord;\n"
+"#endif\n"
+"#ifdef EX_TEXCOORD\n"
 "varying vec3 ex_TexCoord;\n"
+"#endif\n"
+"#ifdef EX_COLOR\n"
 "varying vec4 ex_Color;\n"
+"#endif\n"
     //"flat varying vec4 ex_FlatColor;\n"
+"#ifdef EX_NORMAL\n"
 "varying vec3 ex_Normal;\n"
+"#endif\n"
+"#ifdef EX_POSITION\n"
 "varying vec3 ex_Position;\n"
-#if 0
+"#endif\n"
+"#ifdef EX_NORMAL2\n"
 "varying vec3 ex_Normal2;\n"
+"#endif\n"
+"#ifdef EX_LIGHTPOS2\n"
 "varying vec3 ex_LightPos2;\n"
+"#endif\n"
+#if 0
 "varying vec3 ex_Normal3;\n"
 "varying vec3 ex_LightPos3;\n"
-"uniform vec3 light_dir;\n"
-"uniform vec3 lightpos;\n"
 #endif
+"#ifdef LIGHTDIR\n"
+"uniform vec3 light_dir;\n"
+"#endif\n"
+"#ifdef LIGHTPOS\n"
+"uniform vec3 lightpos;\n"
+"#endif\n"
     // NOTE: ADDING MORE uniform or attribute or varying varibles does not work, and gives black screen
 "//M:\n"
 "vec4 ambient(vec4 pos)\n"
 "{\n"
 "    return pos;\n"
 "}\n"
+"#ifdef IN_NORMAL\n"
+"#ifdef LIGHTDIR\n"
+"#ifdef EX_NORMAL2\n"
+"#ifdef EX_LIGHTPOS2\n"
 "vec4 diffuse(vec4 pos)\n"
 "{\n"
-#if 0
 "    ex_Normal2 = normalize(vec3(in_T * in_MV * vec4(in_Normal,0.0)));\n"
 "    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
-#endif
 "    return pos;\n"
 "}\n"
+"#endif\n"
+"#endif\n"
+"#ifdef IN_NORMAL\n"
+"#ifdef LIGHTDIR\n"
+"#ifdef EX_NORMAL2\n"
+"#ifdef EX_LIGHTPOS2\n"
 "vec4 specular(vec4 pos)\n"
 "{\n"
-#if 0
 "    ex_Normal2 = normalize(vec3(in_T * in_MV * vec4(in_Normal,0.0)));\n"
 "    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
-#endif
 "    return pos;\n"
 "}\n"
+"#endif\n"
+"#endif\n"
+"#ifdef IN_N\n"
+"#ifdef IN_NORMAL\n"
+"#ifdef EX_NORMAL\n"
 "vec4 recalc_normal(vec4 pos)\n"
 "{\n"
     //"   mat4 inN = transpose(inverse(in_MV));\n"
 "   ex_Normal = normalize((vec4(in_Normal,1.0)*in_N).xyz);\n"
 "   return pos;\n"
 "}\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
 "vec4 flat_shading(vec4 pos)\n"
 "{\n"
     //"   ex_FlatColor = in_Color;\n"
 "   return pos;\n"
 "}\n"
+"#ifdef INST\n"
 "vec4 inst(vec4 pos)\n"
 "{\n"
 "   return pos + vec4(in_InstPos,0.0);\n"
 "}\n"
+"#endif\n"
+"#ifdef EX_COLOR\n"
+"#ifdef IN_COLOR\n"
+"#ifdef EX_TEXCOORD\n"
+"#ifdef IN_TEXCOORD\n"
+"#ifdef EX_NORMAL\n"
+"#ifdef IN_NORMAL\n"
+"#ifdef IN_POSITION\n"
+"#ifdef EX_POSITION\n"
 "vec4 passall(vec4 pos)\n"
 "{\n"
 "  ex_Color = in_Color;\n"
@@ -489,26 +539,39 @@ ShaderFile::ShaderFile()
 "  ex_Position = in_Position;\n"
 "  return pos;\n"
 "}\n"
-"vec4 point_light(vec4 pos)"
-"{"
-"   ex_Position = in_Position;"
-"   return pos;"
-"}"
+"#endif\n"
+"#ifdef EX_POSITION\n"
+"#ifdef IN_POSITION\n"
+"vec4 point_light(vec4 pos)\n"
+"{\n"
+"   ex_Position = in_Position;\n"
+"   return pos;\n"
+"}\n"
+"#endif\n"
+"#ifdef EX_POSITION\n"
+"#ifdef IN_POSITION\n"
 "vec4 snoise(vec4 pos)\n"
 "{\n"
 "   ex_Position = in_Position;\n"
 "   return pos;\n"
 "}\n"
+"#endif\n"
 "vec4 light(vec4 pos)\n"
 "{\n"
 "return pos;\n"
 "}\n"
+"#ifdef EX_POSITION\n"
+"#ifdef IN_POSITION\n"
+"#ifdef EX_NORMAL\n"
+"#ifdef IN_NORMAL\n"
 "vec4 ref(vec4 pos)\n"
 "{\n"
 "  ex_Position = in_Position;\n"
 "  ex_Normal = in_Normal;\n"
 "  return pos;\n"
 "}\n"
+"#endif\n"
+"#ifdef IN_POSITION\n"
 "vec4 wave(vec4 pos)\n"
 "{\n"
 "  vec4 pos2 = pos + vec4(10.0*cos(2.0*time*in_Position.x*3.14159*2.0/360.0),\n"
@@ -516,35 +579,51 @@ ShaderFile::ShaderFile()
 "			 10.0*cos(5.0*time*in_Position.z*3.14159*2.0/360.0), 0.0);\n"
 "  return pos2;\n"
 "}\n"
+"#endif\n"
+"#ifdef EX_NORMAL\n"
+"#ifdef IN_NORMAL\n"
 "vec4 toon(vec4 pos)\n"
 "{\n"
 "  ex_Normal = in_Normal;\n"
 "  return pos;\n"
 "}\n"
+"#endif\n"
+"#ifdef EX_TEXCOORD\n"
+"#ifdef IN_TEXCOORD\n"
 "vec4 texture(vec4 pos)\n"
 "{\n"
 "  ex_TexCoord = in_TexCoord;\n"
 "  return pos;\n"
 "}\n"
+"#endif\n"
+"#ifdef EX_TEXCOORD\n"
+"#ifdef IN_TEXCOORD\n"
 "vec4 texture_arr(vec4 pos)\n"
 "{\n"
 "  ex_TexCoord = in_TexCoord;\n"
 "  return pos;\n"
 "}\n"
+"#endif\n"
+"#ifdef EX_COLOR\n"
+"#ifdef IN_COLOR\n"
 "vec4 colour(vec4 pos)\n"
 "{\n"
 "   ex_Color = in_Color;\n"
 "   return pos;\n"
 "}\n"
+"#endif\n"
 "vec4 empty(vec4 pos)\n"
 "{\n"
 "   return pos;\n"
 "}\n"
+"#ifdef EX_TEXCOORD\n"
+"#ifdef IN_TEXCOORD\n"
 "vec4 blur(vec4 pos)\n"
 "{\n"
 "  ex_TexCoord = in_TexCoord;\n"
 "  return pos;\n"
 "}\n"
+"#endif\n"
 "void main(void)\n"
 "{\n"
 "//C:\n"
@@ -576,20 +655,18 @@ ShaderFile::ShaderFile()
 "varying vec3 ex_TexCoord;\n"
 "varying vec3 ex_Normal;\n"
 "varying vec3 ex_Position;\n"
-#if 0
 "varying vec3 ex_Normal2;\n"
 "varying vec3 ex_LightPos2;\n"
+#if 0
 "varying vec3 ex_Normal3;\n"
 "varying vec3 ex_LightPos3;\n"
 "uniform vec3 light_dir;\n"
 #endif
 "uniform vec3 lightpos;\n"
     //"uniform vec3 light_dir;\n"
-#if 0
  "uniform vec4 level1_color;\n"
  "uniform vec4 level2_color;\n"
  "uniform vec4 level3_color;\n"
-#endif
 "uniform sampler2D tex;\n"
     //"uniform sampler2DArray texarr;\n"
 "vec4 white(vec4 rgb)\n"
@@ -598,29 +675,29 @@ ShaderFile::ShaderFile()
 "}\n"
 "vec4 diffuse(vec4 rgb)\n"
 "{\n"
-#if 0
+#if 1
 "    vec3 normal_cam = ex_Normal2;\n"
 "    vec3 light_dir_cam = ex_LightPos2;\n"
 "    float theta = dot( normal_cam, light_dir_cam ) ;\n"
 #endif
-#if 1
+#if 0
 "    vec4 level1_color = vec4(1.0,1.0,1.0,1.0);\n"
 #endif
-#if 1
+#if 0
 "    float theta = 0.5;\n"
 #endif
 "    return rgb + level1_color*theta;\n"
 "}\n"
 "vec4 ambient(vec4 rgb)\n"
 "{\n"
-#if 1
+#if 0
 "    vec4 level2_color = vec4(1.0,1.0,1.0,1.0);\n"
 #endif
 "    return rgb + level2_color*vec4(0.2,0.2,0.2,1.0)*0.8;\n"
 "}\n"
 "vec4 specular(vec4 rgb)\n"
 "{\n"
-#if 0
+#if 1
 "    vec3 normal_cam = ex_Normal2;\n"
 "    vec3 light_dir_cam = ex_LightPos2;\n"
 "    vec3 R = reflect(-light_dir_cam, normal_cam);\n"
@@ -633,10 +710,10 @@ ShaderFile::ShaderFile()
 #if 0
 "float alpha=0.5;\n"
 #endif
-#if 0
+#if 1
 "    return rgb + level3_color * alpha*alpha*alpha*alpha*alpha*0.8;\n"
 #endif
-#if 1
+#if 0
 "    return rgb;\n"
 #endif
 "}\n"
@@ -1344,13 +1421,47 @@ std::string ShaderFile::GeometryShader(std::string name)
 {
   return g_shaders[name];
 }
-std::string replace_c(std::string s, std::vector<std::string> comb, bool is_fragment, bool is_fbo, bool is_transparent, ShaderModule *mod, ShaderCall *call)
+std::string replace_c(std::string s, std::vector<std::string> comb, bool is_fragment, bool is_fbo, bool is_transparent, ShaderModule *mod, ShaderCall *call, std::string defines)
 {
   std::stringstream ss(s);
   std::string ww;
   std::string out;
+  std::string current_define;
+
   while(std::getline(ss,ww))
     {
+      if (ww.substr(0,7)=="#ifdef ")
+	{
+	  std::stringstream ss(ww.substr(7));
+	  std::string s;
+	  ss >> s;
+
+	  std::string strings= defines;
+	  if (call)
+	    strings += " " + call->define_strings();
+	  std::stringstream ss2(strings);
+	  std::string s2;
+	  bool b = true;
+	  while(ss2>>s2)
+	    {
+	      if (s2==s)
+		{
+		  b = false;
+		  break;
+		}
+	    }
+	  if (b) {
+	    current_define = s;
+	  }
+	  continue;
+	}
+      if (ww.substr(0,6)=="#endif")
+	{
+	  current_define = "";
+	  continue;
+	}
+      if (current_define != "") { continue; }
+
       if (mod && ww.substr(0,4)=="//M:")
 	{
 	  out+=mod->Function();
@@ -1363,7 +1474,7 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 	    out+=";\n";
 	  }
 	}
-
+      
       if (ww.substr(0,4)=="//C:")
 	{
 	  if (!is_fragment)
@@ -1500,7 +1611,7 @@ std::string add_line_numbers(std::string s)
     }
   return res;
 }
-int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec, std::vector<std::string> f_vec, bool is_trans, ShaderModule *mod, ShaderCall *vertex_c, ShaderCall *fragment_c)
+int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec, std::vector<std::string> f_vec, bool is_trans, ShaderModule *mod, ShaderCall *vertex_c, ShaderCall *fragment_c, std::string v_defines, std::string f_defines)
 {
   int id = progs.size();
   Program *p = new Program;
@@ -1512,7 +1623,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       std::cout << "VName: " << name << std::endl;
       std::string shader = file.VertexShader(name);
-      std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod, vertex_c);
+      std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod, vertex_c, v_defines);
       
       //std::cout << "::" << ss << "::" << std::endl;
       std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
@@ -1531,7 +1642,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
-      std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c);
+      std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines);
       std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);
