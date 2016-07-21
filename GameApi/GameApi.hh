@@ -2386,13 +2386,13 @@ public:
   IMPORT SH get_shader(std::string v_format, std::string f_format, std::string g_format,
 		       std::string v_comb="", std::string f_comb="", bool trans=true, SFO module={-1} );
   IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,
-			      std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1});
+			      std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, std::string v_defines="IN_NORMAL IN_COLOR IN_TEXCOORD IN_POSITION EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD EX_POSITION", std::string f_defines="");
   IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,
-			      US v_comb, US f_comb, bool trans=true, SFO mod={-1});
+			      US v_comb, US f_comb, bool trans=true, SFO mod={-1}, std::string v_defines="", std::string f_defines="");
   SH get_shader_1(std::string v_format, std::string f_format, std::string g_format,
-		  std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, US v_c={-1}, US f_c={-1});
+		  std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, US v_c={-1}, US f_c={-1}, std::string v_defines="IN_NORMAL IN_COLOR IN_TEXCOORD IN_POSITION EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD EX_POSITION", std::string f_defines="");
   SH get_normal_shader_1(std::string v_format, std::string f_format, std::string g_format,
-			 std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod = { -1 }, US v_c = { -1 }, US f_c = { -1 });
+			 std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod = { -1 }, US v_c = { -1 }, US f_c = { -1 }, std::string v_defines="IN_NORMAL IN_POSITION IN_COLOR IN_TEXCOORD EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string f_defines="");
   IMPORT SH texture_shader();
   IMPORT SH texture_array_shader();
   IMPORT SH colour_shader();

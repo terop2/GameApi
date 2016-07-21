@@ -3325,7 +3325,7 @@ GameApi::ML GameApi::MaterialsApi::render_instanced2_ml(GameApi::EveryApi &ev, V
 class V_ShaderCallFunction : public ShaderCall
 {
 public:
-  V_ShaderCallFunction(std::string funcname, ShaderCall *next) : funcname(funcname), next(next) { id=-1; }
+  V_ShaderCallFunction(std::string funcname, ShaderCall *next, std::string defines) : funcname(funcname), next(next),defines(defines) { id=-1; }
   int index(int base) const {
     id = next->index(base)+1; 
     return id;
@@ -3348,16 +3348,23 @@ public:
     out+=");\n";
     return out;
   }
+  std::string define_strings() const { 
+    std::string s1 = defines;
+    std::string s2 = next->define_strings();
+    std::string m = (s1=="" ||s2=="") ? "" : " ";
+    return s1 + m + s2; 
+  }
 private:
   std::string funcname;
   ShaderCall *next;
   mutable int id;
+  std::string defines;
 };
 
 class F_ShaderCallFunction : public ShaderCall
 {
 public:
-  F_ShaderCallFunction(std::string funcname, ShaderCall *next) : funcname(funcname), next(next) { }
+  F_ShaderCallFunction(std::string funcname, ShaderCall *next, std::string defines) : funcname(funcname), next(next),defines(defines) { }
   int index(int base) const {
     id = next->index(base)+1;
     return id;
@@ -3380,10 +3387,17 @@ public:
     out+=");\n";
     return out;
   }
+  std::string define_strings() const { 
+    std::string s1 = defines;
+    std::string s2 = next->define_strings();
+    std::string m = (s1=="" ||s2=="") ? "" : " ";
+    return s1 + m + s2; 
+  }
 private:
   std::string funcname;
   ShaderCall *next;
   mutable int id;
+  std::string defines;
 };
 class EmptyV : public ShaderCall
 {
@@ -3399,6 +3413,7 @@ public:
     out+="vec4 pos" + ss.str() + " = vec4(p,1.0);\n";
     return out;
   }
+  std::string define_strings() const { return ""; }
 private:
   mutable int id;
 };
@@ -3419,6 +3434,7 @@ public:
       out+="vec4 rgb" + ss.str() + " = vec4(0.0,0.0,0.0,1.0);\n";
     return out;
   }
+  std::string define_strings() const { return ""; }
 private:
   mutable int id;
   bool transparent;
@@ -3431,102 +3447,102 @@ GameApi::US GameApi::UberShaderApi::v_empty()
 GameApi::US GameApi::UberShaderApi::v_color_from_normals(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("color_from_normals", next));
+  return add_uber(e, new V_ShaderCallFunction("color_from_normals", next,""));
 }
 GameApi::US GameApi::UberShaderApi::v_recalc_normal(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("recalc_normal", next));
+  return add_uber(e, new V_ShaderCallFunction("recalc_normal", next, "EX_NORMAL IN_NORMAL IN_N"));
 }
 
 GameApi::US GameApi::UberShaderApi::v_inst(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("inst", next));
+  return add_uber(e, new V_ShaderCallFunction("inst", next, "INST"));
 }
 
 GameApi::US GameApi::UberShaderApi::v_ambient(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("ambient", next));
+  return add_uber(e, new V_ShaderCallFunction("ambient", next,""));
 }
 
 GameApi::US GameApi::UberShaderApi::v_diffuse(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("diffuse", next));
+  return add_uber(e, new V_ShaderCallFunction("diffuse", next, "EX_NORMAL2 EX_LIGHTPOS2 LIGHTDIR IN_NORMAL"));
 }
 
 GameApi::US GameApi::UberShaderApi::v_specular(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("specular", next));
+  return add_uber(e, new V_ShaderCallFunction("specular", next, "EX_NORMAL2 EX_LIGHTPOS2 LIGHTDIR IN_NORMAL"));
 }
 
 GameApi::US GameApi::UberShaderApi::v_passall(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("passall", next));
+  return add_uber(e, new V_ShaderCallFunction("passall", next,"EX_COLOR EX_TEXCOORD EX_NORMAL EX_POSITION IN_COLOR IN_TEXCOORD IN_NORMLA IN_POSITION"));
 }
 
 GameApi::US GameApi::UberShaderApi::v_point_light(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("point_light", next));
+  return add_uber(e, new V_ShaderCallFunction("point_light", next,"EX_POSITION IN_POSITION"));
 }
 
 GameApi::US GameApi::UberShaderApi::v_snoise(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("snoise", next));
+  return add_uber(e, new V_ShaderCallFunction("snoise", next,"EX_POSITION IN_POSITION"));
 }
 
 GameApi::US GameApi::UberShaderApi::v_light(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("light", next));
+  return add_uber(e, new V_ShaderCallFunction("light", next,""));
 }
 
 GameApi::US GameApi::UberShaderApi::v_ref(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("ref", next));
+  return add_uber(e, new V_ShaderCallFunction("ref", next,"EX_POSITION IN_POSITION EX_NORMAL IN_NORMAL"));
 }
 
 GameApi::US GameApi::UberShaderApi::v_wave(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("wave", next));
+  return add_uber(e, new V_ShaderCallFunction("wave", next, "IN_POSITION"));
 }
 
 GameApi::US GameApi::UberShaderApi::v_toon(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("toon", next));
+  return add_uber(e, new V_ShaderCallFunction("toon", next,"EX_NORMAL IN_NORMAL"));
 }
 
 GameApi::US GameApi::UberShaderApi::v_texture(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("texture", next));
+  return add_uber(e, new V_ShaderCallFunction("texture", next,"EX_TEXCOORD IN_TEXCOORD"));
 }
 
 GameApi::US GameApi::UberShaderApi::v_texture_arr(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("texture_arr", next));
+  return add_uber(e, new V_ShaderCallFunction("texture_arr", next,"EX_TEXCOORD IN_TEXCOORD"));
 }
 
 GameApi::US GameApi::UberShaderApi::v_colour(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("colour", next));
+  return add_uber(e, new V_ShaderCallFunction("colour", next,"EX_COLOR IN_COLOR"));
 }
 
 GameApi::US GameApi::UberShaderApi::v_blur(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("blur", next));
+  return add_uber(e, new V_ShaderCallFunction("blur", next, "EX_TEXCOORD IN_TEXCOORD"));
 }
 class V_DistFieldMesh : public ShaderCall
 {
@@ -3556,6 +3572,7 @@ public:
     //out+=");\n";
     return out;
   }
+  std::string define_strings() const { return ""; } // TODO, MAYBE ASK DEFINE STRINGS FROM SFO
 private:
   ShaderCall *next;
   ShaderModule *mod;
@@ -3577,85 +3594,85 @@ GameApi::US GameApi::UberShaderApi::f_empty(bool transparent)
 GameApi::US GameApi::UberShaderApi::f_diffuse(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("diffuse", next));
+  return add_uber(e, new F_ShaderCallFunction("diffuse", next,""));
 }
 
 GameApi::US GameApi::UberShaderApi::f_ambient(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("ambient", next));
+  return add_uber(e, new F_ShaderCallFunction("ambient", next,""));
 }
 
 GameApi::US GameApi::UberShaderApi::f_specular(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("specular", next));
+  return add_uber(e, new F_ShaderCallFunction("specular", next,""));
 }
 
 GameApi::US GameApi::UberShaderApi::f_color_from_normals(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("color_from_normals", next));
+  return add_uber(e, new F_ShaderCallFunction("color_from_normals", next,""));
 }
 
 GameApi::US GameApi::UberShaderApi::f_point_light(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("point_light", next));
+  return add_uber(e, new F_ShaderCallFunction("point_light", next,""));
 }
 
 GameApi::US GameApi::UberShaderApi::f_bands(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("bands", next));
+  return add_uber(e, new F_ShaderCallFunction("bands", next,""));
 }
 
 GameApi::US GameApi::UberShaderApi::f_snoise(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("snoise", next));
+  return add_uber(e, new F_ShaderCallFunction("snoise", next,""));
 }
 
 GameApi::US GameApi::UberShaderApi::f_blur(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("blur", next));
+  return add_uber(e, new F_ShaderCallFunction("blur", next,""));
 }
 
 GameApi::US GameApi::UberShaderApi::f_ref(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("ref", next));
+  return add_uber(e, new F_ShaderCallFunction("ref", next,""));
 }
 
 GameApi::US GameApi::UberShaderApi::f_light(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("light", next));
+  return add_uber(e, new F_ShaderCallFunction("light", next,""));
 }
 
 GameApi::US GameApi::UberShaderApi::f_toon(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("toon", next));
+  return add_uber(e, new F_ShaderCallFunction("toon", next,""));
 }
 
 GameApi::US GameApi::UberShaderApi::f_texture(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("texture", next));
+  return add_uber(e, new F_ShaderCallFunction("texture", next,""));
 }
 
 GameApi::US GameApi::UberShaderApi::f_texture_arr(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("texture_arr", next));
+  return add_uber(e, new F_ShaderCallFunction("texture_arr", next,""));
 }
 
 GameApi::US GameApi::UberShaderApi::f_colour(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("colour", next));
+  return add_uber(e, new F_ShaderCallFunction("colour", next,""));
 }
 
 class LineCurve : public Curve<Point>

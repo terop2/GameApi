@@ -698,12 +698,18 @@ struct Envi
   float jump_duration;
   float y_delta;
   bool logo_shown=true;
+  int counter = 0;
 } env;
 
 void iter()
 {
   if (env.logo_shown)
     {
+#ifdef EMSCRIPTEN
+      env.counter++;
+      if (env.counter==1) {   env.ev->mainloop_api.reset_time(); }
+#endif
+
       bool b = env.ev->mainloop_api.logo_iter();
       if (b) { 
 	env.logo_shown = false; 
