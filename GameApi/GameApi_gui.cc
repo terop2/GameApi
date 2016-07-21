@@ -1801,7 +1801,7 @@ EXPORT GameApi::W GameApi::GuiApi::color_editor(std::string &col, FtA atlas, BM 
 
 EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button)
 {
-  W bm_1 = poly(p, sh, 400,400, screen_size_x,screen_size_y);
+  W bm_1 = poly(p, sh, 800,600, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
   W bm_4 = layer(bm_3, bm_2);
@@ -1834,7 +1834,7 @@ EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x,
 
 EXPORT GameApi::W GameApi::GuiApi::va_dialog(VA p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button)
 {
-  W bm_1 = va(p, sh, 400,400, screen_size_x,screen_size_y);
+  W bm_1 = va(p, sh, 800,600, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
   W bm_4 = layer(bm_3, bm_2);
@@ -1867,7 +1867,7 @@ EXPORT GameApi::W GameApi::GuiApi::va_dialog(VA p, SH sh, int screen_size_x, int
 
 EXPORT GameApi::W GameApi::GuiApi::ml_dialog(ML p, SH sh, SH sh2, SH sh_arr, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button)
 {
-  W bm_1 = ml(p, sh, sh2, sh_arr, 400,400, screen_size_x,screen_size_y);
+  W bm_1 = ml(p, sh, sh2, sh_arr, 800,600, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
   W bm_4 = layer(bm_3, bm_2);
@@ -1903,7 +1903,7 @@ EXPORT GameApi::W GameApi::GuiApi::ml_dialog(ML p, SH sh, SH sh2, SH sh_arr, int
 
 EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_x, int screen_y, W &codegen_button)
 {
-  W bm_1 = shader_plane(p, 400,400*600/800, screen_x, screen_y);
+  W bm_1 = shader_plane(p, 800,600*600/800, screen_x, screen_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
   W bm_4 = layer(bm_3, bm_2);
@@ -1937,7 +1937,7 @@ EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atl
 
 EXPORT GameApi::W GameApi::GuiApi::lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button)
 {
-  W bm_1 = lines(p, sh, 400,400, screen_size_x,screen_size_y);
+  W bm_1 = lines(p, sh, 800,600, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
   W bm_4 = layer(bm_3, bm_2);
@@ -1970,7 +1970,7 @@ EXPORT GameApi::W GameApi::GuiApi::lines_dialog(LI p, SH sh, int screen_size_x, 
 
 EXPORT GameApi::W GameApi::GuiApi::pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button)
 {
-  W bm_1 = pts(p, sh, 400,400, screen_size_x,screen_size_y);
+  W bm_1 = pts(p, sh, 800,600, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
   W bm_4 = layer(bm_3, bm_2);
@@ -3608,6 +3608,21 @@ std::vector<GameApiItem*> volumeapi_functions()
 			 { "O", "O" },
 			 { "", "" },
 			 "O", "volume_api", "andnot_op"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, (GameApi::PTS (GameApi::VolumeApi::*)(GameApi::O,int,int,int, float,float, float,float, float,float))&GameApi::VolumeApi::instanced_positions,
+			 "o_to_pts",
+			 { "object", "sx", "sy", "sz", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			 { "O", "int", "int", "int", "float", "float", "float", "float", "float", "float" },
+			 { "", "30", "30", "30", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0" },
+			 "PTS", "volume_api", "instanced_positions"));
+#if 0
+  // keeps crashing
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, (GameApi::PTS (GameApi::VolumeApi::*)(GameApi::O,int,float))&GameApi::VolumeApi::instanced_positions,
+			 "o_to_pts2",
+			 { "object", "size", "wholesize" },
+			 { "O", "int", "float" },
+			 { "", "30", "300.0" },
+			 "PTS", "volume_api", "instanced_positions"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::rendercubes3,
 			 "o_render",
 			 { "object", "sx", "sy", "sz", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
