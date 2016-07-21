@@ -1288,8 +1288,8 @@ int main(int argc, char *argv[]) {
 #ifdef WINDOWS
   env.dlls = load_dlls("DllList.txt");
 #endif
-  int screen_x = 800;
-  int screen_y = 600;
+  int screen_x = 1200;
+  int screen_y = 900;
   std::string filename = "mod.txt";
   for(int i=1;i<argc;i++)
     {
@@ -1297,6 +1297,16 @@ int main(int argc, char *argv[]) {
 	{
 	  screen_x = 1200;
 	  screen_y = 900;
+	}
+      if (std::string(argv[i])=="--mega")
+	{
+	  screen_x = 1920;
+	  screen_y = 1080;
+	}
+      if (std::string(argv[i])=="--small")
+	{
+	  screen_x = 800;
+	  screen_y = 600;
 	}
       if (std::string(argv[i])=="--file")
 	{
