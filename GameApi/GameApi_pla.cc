@@ -390,7 +390,7 @@ private:
   PlanePoints2d *orig;
   int pos;
 };
-class PlanePolygon : public FaceCollection
+class PlanePolygon : public SingleForwardFaceCollection
 {
 public:
   PlanePolygon(PlanePoints2d *plane, Point pos, Vector u_x, Vector u_y) : plane(plane), pos(pos), u_x(u_x), u_y(u_y) { }
@@ -482,7 +482,7 @@ EXPORT GameApi::P GameApi::PlaneApi::to_polygon_face(PL pl, PT pos, V u_x, V u_y
   Vector *uu_y = find_vector(e, u_y);
   return add_polygon(e, new PlanePolygon(plane, *pos_1, *uu_x, *uu_y),1);
 }
-class PlanePolygonLines : public FaceCollection
+class PlanePolygonLines : public SingleForwardFaceCollection
 {
 public:
   PlanePolygonLines(PlanePoints2d *plane, Point pos, Vector u_x, Vector u_y, Vector u_z, float z_mult) : plane(plane), pos(pos), u_x(u_x), u_y(u_y), u_z(u_z), z_mult(z_mult) { }

@@ -289,7 +289,7 @@ EXPORT void GameApi::VolumeApi::find_surface(O object, PT p1, PT p2, PT *res1, P
 #endif
 }
 
-class RenderCubes3 : public FaceCollection
+class RenderCubes3 : public SingleForwardFaceCollection
 {
 public:
   RenderCubes3(GameApi::Env &e, GameApi::O o, 

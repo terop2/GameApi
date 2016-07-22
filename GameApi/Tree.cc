@@ -22,6 +22,8 @@
 #include "Tree.hh"
 #include "VolumeObjects.hh"
 
+#if 0
+
 std::ostream &operator<<(std::ostream &o, const TreeNode &tn)
 {
   o << "(" << tn.matrix << ")";
@@ -185,3 +187,4 @@ void RenderTreeCmds::Execute()
   RenderTree(tree, time, treestate);
 }
 
+#endif

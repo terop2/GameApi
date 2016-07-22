@@ -2,6 +2,7 @@
 #include "Effect.hh"
 #include "Graph.hh"
 
+#if 0
 struct Position2d;
 
 class GameEffect : public FrameAnimPlugins
@@ -25,7 +26,7 @@ class TypeArray : public Array<int, Type>
 {
 };
 
-class TypeToPoly : public Function<Type, const BoxableFaceCollection*>
+class TypeToPoly : public Function<Type, BoxableFaceCollection*>
 {
 public:
   virtual int NumTypes() const=0;
@@ -69,7 +70,7 @@ public:
       }
     return count;
   }
-  const BoxableFaceCollection *Index(Type t) const
+  BoxableFaceCollection *Index(Type t) const
   {
     int s = arr.Size();
     for(int i=0;i<s;i++)
@@ -90,12 +91,12 @@ class FaceCollectionPoly : public TypeToPoly
 {
 public:
   FaceCollectionPoly(Type tt, const BoxableFaceCollection *poly) : tt(tt), poly(poly) { }
-  const BoxableFaceCollection* Index(Type t) const { if (t==tt) return poly; else return 0;  }
+  BoxableFaceCollection* Index(Type t) const { if (t==tt) return poly; else return 0;  }
   int NumTypes() const { return 1; }
   Type TypeIndex(int i) const { return tt; }
 private:
   Type tt;
-  const BoxableFaceCollection *poly;
+  BoxableFaceCollection *poly;
 };
 
 class GridPoly : public TypeToPoly
@@ -114,8 +115,8 @@ public:
 	{
 	  Point pp = p + u_x*x+u_y*y;
 	  Type type = bm.Map(x,y);
-	  const BoxableFaceCollection *faces = poly.Index(type);
-	  const BoxableFaceCollection *moveface = new MatrixElem(*faces, Matrix::Scale(scale, scale, scale)*Matrix::Translate(pp.x,pp.y,pp.z));
+	  BoxableFaceCollection *faces = poly.Index(type);
+	  BoxableFaceCollection *moveface = new MatrixElem(*faces, Matrix::Scale(scale, scale, scale)*Matrix::Translate(pp.x,pp.y,pp.z));
 	  vec->push_back(moveface);
 	}
     conv = new FaceCollectionArrayConvert(*vec);
@@ -130,7 +131,7 @@ public:
   {
     return t;
   }
-  const BoxableFaceCollection* Index(Type tt) const
+  BoxableFaceCollection* Index(Type tt) const
   {
     if (tt==t)
       {
@@ -149,7 +150,7 @@ private:
   Point p;
   Vector u_x, u_y;
 
-  VectorArray<const FaceCollection *> *vec;
+  VectorArray<FaceCollection *> *vec;
   FaceCollectionArrayConvert *conv;
   CompressObject *compress;
   BoxableFaceCollectionConvert *boxable;
@@ -171,19 +172,19 @@ public:
   }
   void Init()
   {
-	vec = new VectorArray<const FaceCollection*>;
+	vec = new VectorArray<FaceCollection*>;
 	int s = arr.Size();
 	for(int i=0;i<s;i++)
 	  {
 	    Type type = arr.Index(i);
-	    const FaceCollection *faces = polys.Index(type);
+	    FaceCollection *faces = polys.Index(type);
 	    vec->push_back(faces);
 	  }
 	conv = new FaceCollectionArrayConvert(*vec);
 	compress = new CompressObject(*conv);
 	boxable = new BoxableFaceCollectionConvert(*compress);
   }
-  const BoxableFaceCollection *Index(Type tt) const
+  BoxableFaceCollection *Index(Type tt) const
   {
     if (t == tt)
       {
@@ -198,7 +199,7 @@ private:
   Array<int,Type> &arr;
   TypeToPoly &polys;
 
-  VectorArray<const FaceCollection *> *vec;
+  VectorArray<FaceCollection *> *vec;
   FaceCollectionArrayConvert *conv;
   CompressObject *compress;
   BoxableFaceCollectionConvert *boxable;
@@ -220,7 +221,7 @@ public:
   {
     return t; 
   }
-  const BoxableFaceCollection *Index(Type tt) const
+  BoxableFaceCollection *Index(Type tt) const
   {
     if (t==tt)
       {
@@ -575,5 +576,6 @@ void Pullback(const T &t, const K &k, const bool &b, S &s,
 // e |-> S_2
 // S_1 ~= S_2 (isomorphism)
 
+#endif
 #endif
 

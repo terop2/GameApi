@@ -822,7 +822,7 @@ GameApi::LI GameApi::LinesApi::from_points2(PTS start_points, PTS end_points)
   PointsApiPoints *pts2 = find_pointsapi_points(e, end_points);
   return add_line_array(e, new FromPoints2(pts1, pts2));  
 }
-class LineProduct : public FaceCollection
+class LineProduct : public SingleForwardFaceCollection
 {
 public:
   LineProduct(LineCollection *coll, LineCollection *coll2) : coll(coll), coll2(coll2) { }

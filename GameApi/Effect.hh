@@ -38,6 +38,17 @@
 #include <pthread.h>
 #include "EffectI.hh"
 
+
+class BooleanOps
+{
+public:
+  virtual ~BooleanOps() { }
+  virtual bool Inside(Point p) const { return false; }
+};
+class BoxableFaceCollection : public FaceCollection, public BooleanOps
+{
+};
+
 enum AttribId
   {
     AttrCenterX,
@@ -2931,10 +2942,22 @@ public:
 };
 
 
+class SingleForwardFaceCollection : public FaceCollection
+{
+public:
+  void Prepare() { }
+};
+class SingleForwardBoxableFaceCollection : public BoxableFaceCollection
+{
+public:
+  void Prepare() { }
+};
+
 class ForwardFaceCollection : public FaceCollection
 {
 public:
   ForwardFaceCollection(FaceCollection &coll) : coll(coll) { }
+  virtual void Prepare() { coll.Prepare(); }
   virtual int NumFaces() const { return coll.NumFaces(); }
   virtual int NumPoints(int face) const { return coll.NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return coll.FacePoint(face,point); }
@@ -2953,6 +2976,31 @@ public:
 private:
   FaceCollection &coll;
 };
+
+class ForwardBoxableFaceCollection : public BoxableFaceCollection
+{
+public:
+  ForwardBoxableFaceCollection(FaceCollection &coll) : coll(coll) { }
+  virtual void Prepare() { coll.Prepare(); }
+  virtual int NumFaces() const { return coll.NumFaces(); }
+  virtual int NumPoints(int face) const { return coll.NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const { return coll.FacePoint(face,point); }
+  virtual Point EndFacePoint(int face, int point) const { return coll.EndFacePoint(face, point); }
+
+  virtual Vector PointNormal(int face, int point) const { return coll.PointNormal(face,point); }
+  virtual float Attrib(int face, int point, int id) const { return coll.Attrib(face,point,id); }
+  virtual int AttribI(int face, int point, int id) const { return coll.AttribI(face,point,id); }
+  virtual unsigned int Color(int face, int point) const { return coll.Color(face,point); }
+  virtual Point2d TexCoord(int face, int point) const { return coll.TexCoord(face,point); }
+  virtual float TexCoord3(int face, int point) const { return coll.TexCoord3(face,point); }
+  virtual int NumTextures() const { return coll.NumTextures(); }
+  virtual void GenTexture(int num) { coll.GenTexture(num); }
+  virtual BufferRef TextureBuf(int num) const { return coll.TextureBuf(num); }
+  virtual int FaceTexture(int face) const { return coll.FaceTexture(face); }
+private:
+  FaceCollection &coll;
+};
+
 
 class ShadowFaceCollection : public ForwardFaceCollection
 {
@@ -3245,6 +3293,11 @@ class CompressObject : public FaceCollection
 {
 public:
   CompressObject(FaceCollectionArray &arr) : arr(arr), oldcount(-1) { }
+  void Prepare()
+  {
+    int s = arr.Size();
+    for(int i=0;i<s;i++) const_cast<FaceCollection*>(arr.Index(i))->Prepare();
+  }
   virtual int NumFaces() const
   {
     if (oldcount != -1) return oldcount;
@@ -4205,10 +4258,10 @@ private:
 };
 typedef FunctionImpl0<CurveIn3d*, MatrixCurve*, CurveMovement> CurveMovementFunction;
 
-class FlipNormals : public FaceCollection
+class FlipNormals : public ForwardFaceCollection
 {
 public:
-  FlipNormals(FaceCollection &coll) : coll(coll) { }
+  FlipNormals(FaceCollection &coll) : ForwardFaceCollection(coll), coll(coll) { }
   int NumFaces() const { return coll.NumFaces(); }
   int NumPoints(int face) const { return coll.NumPoints(face); }
   Point FacePoint(int face, int point) const { return coll.FacePoint(face,point); }
@@ -5436,15 +5489,6 @@ public:
 
   virtual void SetBox(Matrix b)=0;
 };
-class BooleanOps
-{
-public:
-  virtual ~BooleanOps() { }
-  virtual bool Inside(Point p) const { return false; }
-};
-class BoxableFaceCollection : public FaceCollection, public BooleanOps
-{
-};
 
 
 class FaceStore
@@ -5478,11 +5522,12 @@ struct FaceIndexStruct
   }
 };
 
-class FaceCollectionStore : public BoxableFaceCollection, public FaceStore
+class FaceCollectionStore : public SingleForwardBoxableFaceCollection, public FaceStore
 {
 public:
   FaceCollectionStore() : facecount(0),texturecount(0), textures(false) { }
   void SetTextures(bool b) { textures = b; }
+  void Prepare() {}
   
   void Add(const FaceCollection &coll)
   {
@@ -5579,7 +5624,7 @@ private:
 };
 
 
-class FrameFaceCollection : public BoxableFaceCollection
+class FrameFaceCollection : public SingleForwardBoxableFaceCollection
 {
 public:
   FrameFaceCollection(BoxableFaceCollection &coll, int frame) : coll(coll), frame(frame) { }
@@ -5614,10 +5659,11 @@ private:
 };
 
 
-class BoxableFaceCollectionConvert : public BoxableFaceCollection
+class BoxableFaceCollectionConvert : public ForwardBoxableFaceCollection
 {
 public:
-  BoxableFaceCollectionConvert(const FaceCollection &coll) : coll(coll) { }
+  BoxableFaceCollectionConvert(FaceCollection &coll) : ForwardBoxableFaceCollection(coll), coll(coll) { }
+  virtual void Prepare() { coll.Prepare(); }
   virtual int NumFaces() const { return coll.NumFaces(); }
   virtual int NumPoints(int face) const { return coll.NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return coll.FacePoint(face, point); }
@@ -5632,9 +5678,10 @@ public:
   virtual void SetBox(Matrix b) { }
 
 private:
-  const FaceCollection &coll;
+  FaceCollection &coll;
 };
 
+#if 0
 class FrameFaceCollectionArray : public FaceCollectionArray
 {
 public:
@@ -5653,11 +5700,12 @@ private:
   mutable FrameFaceCollection *frames;
   mutable BoxableFaceCollectionConvert *convert;
 };
-
-class EmptyBoxableFaceCollection : public BoxableFaceCollection
+#endif
+class EmptyBoxableFaceCollection : public SingleForwardBoxableFaceCollection
 {
 public:
   void SetBox(Matrix b) { }
+  void Prepare() { }
   virtual int NumFaces() const { return 0; }
   virtual int NumPoints(int face) const { return 0; }
   virtual Point FacePoint(int face, int point) const { return Point(0.0,0.0,0.0); }
@@ -5700,11 +5748,12 @@ private:
   BoxableFaceCollection *face;
 };
 
-class BoxedElem : public BoxableFaceCollection
+class BoxedElem : public SingleForwardBoxableFaceCollection
 {
 public:
   BoxedElem(BoxCollection &coll, BoxableFaceCollection &item) : coll(coll), sel(cont), cont(&item) { }
   BoxedElem(BoxCollection &coll, ObjectSelection &sel) : coll(coll), sel(sel), cont(0) { }
+  void Prepare() { }
   void SetBox(Matrix m)
   {
     /*
@@ -5842,10 +5891,11 @@ private:
 };
 typedef FunctionImpl2<SurfaceIn3d*, GridIn3d*, int, int, SampleSurfaceForGrid> SampleSurfaceForGridFunction;
 
-class SampleSurfaceIn3d : public FaceCollection, public TextureCoords
+class SampleSurfaceIn3d : public SingleForwardFaceCollection, public TextureCoords
 {
 public:
   SampleSurfaceIn3d(const SurfaceIn3d &surf, int texture, int x, int y) : surf(surf), texture(texture), x(x), y(y) { }
+  void Prepare() { }
   virtual int Texture(int face) const { return texture; }
   virtual Point2d TexCoord(int face, int point) const
   {
@@ -6035,10 +6085,11 @@ private:
 };
 
 
-class SplitQuads : public FaceCollection
+class SplitQuads : public ForwardFaceCollection
 {
 public:
-  SplitQuads(FaceCollection &faces, int x, int y) : surf(faces), faces(faces), x(x), y(y) { }
+  SplitQuads(FaceCollection &faces, int x, int y) : ForwardFaceCollection(faces), surf(faces), faces(faces), x(x), y(y) { }
+  void Prepare() { faces.Prepare(); }
   virtual int NumFaces() const 
   { 
     SampleSurfaceIn3d sample(*surf.Index(0), 0, x,y);  
@@ -6130,6 +6181,7 @@ public:
     vec.push_back(o3);
     vec.push_back(o4);
   }
+
   void update_faces_cache() const
   {
     int count = 0;
@@ -6167,6 +6219,11 @@ public:
   }
   void SetBox(Matrix b) 
   {
+  }
+  void Prepare() {
+    for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
+      (*i)->Prepare();
+    update_faces_cache();
   }
   virtual int NumFaces() const 
   { 
@@ -6271,7 +6328,7 @@ private:
   mutable std::vector<int> faces_num;
 };
 
-class QuadElem : public BoxableFaceCollection
+class QuadElem : public SingleForwardBoxableFaceCollection
 {
 public:
   QuadElem(Point p1, Point p2, Point p3, Point p4) : p1(p1), p2(p2), p3(p3), p4(p4) { }
@@ -6323,7 +6380,7 @@ private:
   Point p1,p2,p3,p4;
 };
 
-class TriElem : public BoxableFaceCollection
+class TriElem : public SingleForwardBoxableFaceCollection
 {
 public:
   TriElem(Point p1, Point p2, Point p3) : p1(p1), p2(p2), p3(p3) { }
@@ -6386,7 +6443,7 @@ struct CubeCoords
   Point p222;
 };
 
-class PolygonElem : public BoxableFaceCollection
+class PolygonElem : public SingleForwardBoxableFaceCollection
 {
 public:
   PolygonElem() { }
@@ -6421,7 +6478,7 @@ private:
   std::vector<Point> points;
 };
 
-class CubeElem : public BoxableFaceCollection, public CoordSource
+class CubeElem : public SingleForwardBoxableFaceCollection, public CoordSource
 {
 public:
   CubeElem() : p111(Point(-1.0,-1.0,-1.0)),
@@ -6451,6 +6508,7 @@ public:
     c.u_z = Vector(0.0,0.0,1.0);
     return c;
   }
+  void Prepare() { }
   virtual void SetBox(Matrix b) { /*box = b;*/ }
   virtual int NumFaces() const { return 6; }
   virtual int NumPoints(int face) const { return 4; }
@@ -6503,7 +6561,7 @@ private:
 };
 typedef FunctionImplT0<BoxableFaceCollection*, CubeElem> CubeElemFunction;
 
-class CylinderElem : public BoxableFaceCollection, public CoordSource
+class CylinderElem : public SingleForwardBoxableFaceCollection, public CoordSource
 {
 public:
   virtual Coords coord() const
@@ -6517,6 +6575,7 @@ public:
   }
 
   CylinderElem(int numfaces) : numfaces(numfaces) { }
+  void Prepare() { }
   virtual void SetBox(Matrix b) { /*box = b;*/ }
   virtual int NumFaces() const { return numfaces; }
   virtual int NumPoints(int face) const { return 4; }
@@ -6560,10 +6619,11 @@ private:
 typedef FunctionImplT0<BoxableFaceCollection*, CylinderElem> CylinderElemFunction;
 
 
-class DiskElem : public BoxableFaceCollection
+class DiskElem : public SingleForwardBoxableFaceCollection
 {
 public:
   DiskElem(int numfaces, float disk_pos) :  numfaces(numfaces), disk_pos(disk_pos) { }
+  void Prepare() { }
   virtual void SetBox(Matrix b) { /*box = b;*/ }
   virtual int NumFaces() const { return numfaces; }
   virtual int NumPoints(int face) const { return 3; }
@@ -6680,10 +6740,11 @@ private:
   float array[320];
 };
 
-class HeightMap : public BoxableFaceCollection
+class HeightMap : public SingleForwardBoxableFaceCollection
 {
 public:
   HeightMap(int x, int y, Function2<float, float, float> &func) : x(x), y(y), func(func) { }
+  void Prepare() {}
   virtual void SetBox(Matrix b) { /*box = b;*/ }
   virtual int NumFaces() const { return x*y; }
   virtual int NumPoints(int face) const { return 4; }
@@ -6752,10 +6813,11 @@ private:
   //Matrix box;
   Function2<float, float, float> &func;
 };
-class ColorElem : public BoxableFaceCollection
+class ColorElem : public ForwardBoxableFaceCollection
 {
 public:
-  ColorElem(const BoxableFaceCollection &next, unsigned int color) : next(next) , color(color) { }
+  ColorElem(BoxableFaceCollection &next, unsigned int color) : ForwardBoxableFaceCollection(next), next(next) , color(color) { }
+  void Prepare() { const_cast<BoxableFaceCollection&>(next).Prepare(); }
   virtual void SetBox(Matrix b) { /*const_cast<BoxableFaceCollection&>(next).SetBox(b);*/ }
   virtual int NumFaces() const { return next.NumFaces(); }
   virtual int NumPoints(int face) const { return next.NumPoints(face); }
@@ -6789,19 +6851,19 @@ public:
   }
 
 private:
-  const BoxableFaceCollection &next;
+  BoxableFaceCollection &next;
   unsigned int color;
 };
 
-class ColorFaceElem : public BoxableFaceCollection
+class ColorFaceElem : public ForwardBoxableFaceCollection
 {
 public:
-  ColorFaceElem(const BoxableFaceCollection &next, 
+  ColorFaceElem(BoxableFaceCollection &next, 
 		unsigned int color_1,
 		unsigned int color_2,
 		unsigned int color_3,
 		unsigned int color_4
-		) : next(next) , color_1(color_1), color_2(color_2), color_3(color_3), color_4(color_4) { }
+		) : ForwardBoxableFaceCollection(next), next(next) , color_1(color_1), color_2(color_2), color_3(color_3), color_4(color_4) { }
   virtual void SetBox(Matrix b) { /*const_cast<BoxableFaceCollection&>(next).SetBox(b);*/ }
   virtual int NumFaces() const { return next.NumFaces(); }
   virtual int NumPoints(int face) const { return next.NumPoints(face); }
@@ -6845,7 +6907,7 @@ public:
   }
 
 private:
-  const BoxableFaceCollection &next;
+  BoxableFaceCollection &next;
   unsigned int color_1;
   unsigned int color_2;
   unsigned int color_3;
@@ -6853,7 +6915,7 @@ private:
 };
 
 
-class TextureElem : public BoxableFaceCollection
+class TextureElem : public SingleForwardBoxableFaceCollection
 {
 public:
   TextureElem(const BoxableFaceCollection &next, TextureCoords &coords) : next(next) , coords(coords) { }
@@ -6894,10 +6956,10 @@ private:
 
 
 
-class TextureElem2 : public BoxableFaceCollection
+class TextureElem2 : public ForwardBoxableFaceCollection
 {
 public:
-  TextureElem2(const FaceCollection &next, BufferRefReq &ref, TextureCoords &coords) : next(next), ref(ref), coords(coords) { }
+  TextureElem2(FaceCollection &next, BufferRefReq &ref, TextureCoords &coords) : ForwardBoxableFaceCollection(next), next(next), ref(ref), coords(coords) { }
   virtual void SetBox(Matrix b) { /*const_cast<BoxableFaceCollection&>(next).SetBox(b);*/ }
   virtual int NumFaces() const { return next.NumFaces(); }
   virtual int NumPoints(int face) const { return next.NumPoints(face); }
@@ -6953,83 +7015,34 @@ private:
 
 
 
-class MatrixElem : public BoxableFaceCollection, public Boxable
+class MatrixElem : public ForwardFaceCollection
 {
 public:
-  MatrixElem(const BoxableFaceCollection &next, Matrix m) : next(&next), m(m), box(Matrix::Identity()) { inverse=false;  }
-  virtual void SetBox(Matrix b) { box=b; }
+  MatrixElem(FaceCollection &next, Matrix m) : ForwardFaceCollection(next), next(&next), m(m) {  }
+  virtual void Prepare() { next->Prepare(); }
   virtual int NumFaces() const { return next->NumFaces(); }
   virtual int NumPoints(int face) const { return next->NumPoints(face); }
   virtual Point FacePoint(int face, int point) const
   {
     Point p = next->FacePoint(face,point);
-    Vector v = p;
-    Vector vv = v*m*box;
-    return vv;
-  
+    return p*m; 
   }
   virtual Point EndFacePoint(int face, int point) const
   {
     Point p = next->EndFacePoint(face,point);
-    Vector v = p;
-    Vector vv = v*m*box;
-    return vv;
-  
+    return p*m;  
   }
-  virtual unsigned int Color(int face, int point) const
-  {
-    return next->Color(face, point);
-  }
-  virtual Point2d TexCoord(int face, int point) const
-  {
-    return next->TexCoord(face,point);
-  }
-  virtual float TexCoord3(int face, int point) const
-  {
-    return next->TexCoord3(face,point);
-  }
-
-  virtual Vector PointNormal(int face, int point) const
-  {
-    Point p = FacePoint(face,point);
-    Vector v = next->PointNormal(face,point);
-    Point p2 = p+v;
-    p = p * m * box;
-    p2 = p2 * m *box;
-    Vector vv = p2 - p;
-    return vv;
-  }
-  virtual float Attrib(int face, int point, int id) const
-  {
-    return next->Attrib(face, point, id);
-  }
-  virtual int AttribI(int face, int point, int id) const
-  {
-    return next->AttribI(face,point,id);
-  }
-
-  virtual bool Inside(Point p) const {
-    if (!inverse) { inv=Matrix::Inverse(m); inverse=true; }
-    Point pp = p*inv;
-    return next->Inside(pp);
-  }
-public:
-  void SetMatrix(Matrix mm) { m = mm; }
-  void SetNext(const BoxableFaceCollection *next_) { next=next_; }
 private:
-  const BoxableFaceCollection *next;
+  FaceCollection *next;
   Matrix m;
-  Matrix box;
-  mutable Matrix inv;
-  mutable bool inverse;
 };
 typedef FunctionImpl1<BoxableFaceCollection*, BoxableFaceCollection*, Matrix, MatrixElem> MatrixElemFunction;
 
-class Move : public BoxableFaceCollection
+class Move : public ForwardBoxableFaceCollection
 {
 public:
-  Move(BoxableFaceCollection &coll, Vector v) : coll(coll), v(v) { }
-  Move(BoxableFaceCollection &coll, float x, float y, float z) : coll(coll), v(x,y,z) { }
+  Move(BoxableFaceCollection &coll, Vector v) : ForwardBoxableFaceCollection(coll), coll(coll), v(v) { }
+  Move(BoxableFaceCollection &coll, float x, float y, float z) : ForwardBoxableFaceCollection(coll), coll(coll), v(x,y,z) { }
   virtual void SetBox(Matrix b) { /*coll.SetBox(b);*/ }
   virtual int NumFaces() const { return coll.NumFaces(); }
   virtual int NumPoints(int face) const { return coll.NumPoints(face); }
@@ -7195,10 +7208,11 @@ private:
   const std::vector<FaceCollection*> &v;
 };
 
-class FilterFaces : public FaceCollection
+class FilterFaces : public ForwardFaceCollection
 {
 public:
-  FilterFaces(FaceCollection &obj, Function<int, bool> &func) : obj(obj), func(func) { }
+  FilterFaces(FaceCollection &obj, Function<int, bool> &func) : ForwardFaceCollection(obj), obj(obj), func(func) { }
+  void Prepare() { obj.Prepare(); }
   int NumFaces() const
   {
     int c=obj.NumFaces();
@@ -7271,6 +7285,7 @@ class SplitPolygons : public FaceCollection
 public:
   SplitPolygons(FaceCollection &a1, FaceCollection &a2, BooleanOps &ops, bool b) : a1(a1), a2(a2), ops(ops), points1(a1), points2(a2), b(b) { }
 
+  void Prepare() { a1.Prepare(); a2.Prepare(); }
   int NumFaces() const { return faces.size(); }
   int NumPoints(int face) const { return faces[face].poly.size(); }
   Point FacePoint(int face, int point) const { return faces[face].poly[point]; }
@@ -7370,13 +7385,14 @@ private:
 
 
 
-class MemoizeFaces : public FaceCollection
+class MemoizeFaces : public ForwardFaceCollection
 {
 public:
-  MemoizeFaces(FaceCollection &c) : c(c), numfaces(-1),mutex(PTHREAD_MUTEX_INITIALIZER) { }
-  MemoizeFaces(const MemoizeFaces &c) : c(c.c), numfaces(c.numfaces), numpoints(c.numpoints), facepoint(c.facepoint), color(c.color), normal(c.normal), facetexture(c.facetexture),mutex(PTHREAD_MUTEX_INITIALIZER)
-  {
-  }
+  MemoizeFaces(FaceCollection &c) : ForwardFaceCollection(c), c(c), numfaces(-1),mutex(PTHREAD_MUTEX_INITIALIZER) { }
+  //MemoizeFaces(const MemoizeFaces &c) : c(c.c), numfaces(c.numfaces), numpoints(c.numpoints), facepoint(c.facepoint), color(c.color), normal(c.normal), facetexture(c.facetexture),mutex(PTHREAD_MUTEX_INITIALIZER)
+  //{
+  // }
+  void Prepare() { MemoizeAll(); }
   void operator=(const MemoizeFaces &c)
   {
     pthread_mutex_lock(&mutex);
@@ -7704,6 +7720,7 @@ class IntersectFaces : public FaceCollection
 public:
   IntersectFaces(BoxableFaceCollection &obj1, BoxableFaceCollection &obj2) : func(obj1, obj2), isequal(EIntersect), compose(func, isequal), filter(obj1, compose), memo(filter)  { }
 
+  void Prepare() { }
   virtual int NumFaces() const { return memo.NumFaces(); }
   virtual int NumPoints(int face) const { return memo.NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return memo.FacePoint(face,point); }
@@ -7732,6 +7749,7 @@ public:
   AndNotElem(BoxableFaceCollection &o1, BoxableFaceCollection &o2) : o1(o1), o2(o2), rem(o1, o2), mem(o1.NumFaces(), rem), rem2(o2,o1, EDraw), mem2(o2.NumFaces(), rem2), f1(o1, mem), f2(o2, mem2), iface(o1,o2), iface2(o2,o1), split1(iface, iface2, o2, true), split2(iface2, iface, o1, false), or_elem(&f1, &f2, &split1, &split2)
   {
   }
+  void Prepare() { o1.Prepare(); o2.Prepare(); }
   void DoSplitting()
   {
     split1.DoSplitting();
@@ -7766,10 +7784,11 @@ private:
   OrElem<FaceCollection> or_elem;
 };
 
-class RectangleElem : public BoxableFaceCollection
+class RectangleElem : public SingleForwardBoxableFaceCollection
 {
 public:
   RectangleElem(float x, float y) : x(x/2.0), y(y/2.0) { }
+  void Prepare() { }
   int NumFaces() const { return 1; }
   int NumPoints(int face) const { return 4; }
   Point FacePoint(int face, int point) const
@@ -7832,7 +7851,7 @@ private:
   float x,y;
 };
 
-class RenderBox : public BoxableFaceCollection
+class RenderBox : public SingleForwardBoxableFaceCollection
 {
 public:
   RenderBox(int sx, int sy, int sz, float sizex, float sizey, float sizez) : sx(sx), sy(sy), sz(sz), sizex(sizex), sizey(sizey), sizez(sizez) { }
@@ -7959,12 +7978,13 @@ private:
   float sizex, sizey, sizez;
 };
 
-class SphereElem : public BoxableFaceCollection
+class SphereElem : public SingleForwardBoxableFaceCollection
 {
 public:
   SphereElem(int numfaces, int numfaces2) :  numfaces(numfaces), numfaces2(numfaces2), center(Point(0.0,0.0,0.0)), radius(1.0) { }
   SphereElem(Point center, float radius, int numfaces1, int numfaces2) : numfaces(numfaces1), numfaces2(numfaces2), center(center), radius(radius) { }
   virtual void SetBox(Matrix b) { /*box = b; inverted=false; */}
+  void Prepare() {}
   virtual int NumFaces() const { return (numfaces*2)*numfaces2; } // *2
   virtual int NumPoints(int face) const { return 4; }
   virtual Point FacePoint(int face, int point) const;
@@ -8028,12 +8048,13 @@ private:
 typedef FunctionImplT2<BoxableFaceCollection*, int, int, SphereElem> SphereElemFunction;
 #undef rad1
 #undef rad2
-class ConeElem : public BoxableFaceCollection
+class ConeElem : public SingleForwardBoxableFaceCollection
 {
 public:
   ConeElem(int numfaces, Point p1, Point p2, float rad1, float rad2)
     : numfaces(numfaces), p1(p1), p2(p2), rad1(rad1), rad2(rad2), lp(p1,p2), pl1(lp.PlaneFromLine(0.0, 0.0, 1.0)), pl2(lp.PlaneFromLine(1.0,0.0,1.0)) { pl1.Normalize(); pl2.Normalize(); }
   ConeElem(int numfaces, Point p1, Point p2, float rad1, float rad2, Plane pl1, Plane pl2) :  numfaces(numfaces), p1(p1), p2(p2), rad1(rad1), rad2(rad2), lp(p1, p2), pl1(pl1), pl2(pl2) { pl1.Normalize(); pl2.Normalize(); }
+  void Prepare() { }
   virtual void SetBox(Matrix b) { /*box = b;*/ }
   virtual int NumFaces() const { return numfaces; }
   virtual int NumPoints(int face) const { return 4; }
@@ -8361,7 +8382,7 @@ private:
   Matrix b;
 };
 
-class SampleGrid : public FaceCollection, public TextureCoords
+class SampleGrid : public SingleForwardFaceCollection, public TextureCoords
 {
 public:
   SampleGrid(GridIn3d &grid, int texture) : grid(grid), texture(texture) { }
@@ -8372,6 +8393,7 @@ public:
     Point2d pp = grid.Texture(p.first,p.second);
     return pp;
   }
+  void Prepare() { }
   int NumFaces() const { return grid.XSize()*grid.YSize(); }
   int NumPoints(int face) const { return 4; }
   Point FacePoint(int face, int point) const
@@ -8570,7 +8592,7 @@ private:
 };
 #endif
 
-class TorusElem : public BoxableFaceCollection
+class TorusElem : public SingleForwardBoxableFaceCollection
 {
 public:
   TorusElem(int numfaces1, int numfaces2, Point center, Vector u_x, Vector u_y, float radius1,
@@ -8643,13 +8665,14 @@ private:
   float radius2;
 };
 
-class RingElem : public BoxableFaceCollection
+class RingElem : public SingleForwardBoxableFaceCollection
 {
 public:
   RingElem(const PointVectorCollection &points, float x, int steps)
     : mcurve(x), sample(mcurve, steps), grid(points, sample), faces(grid, 0)
   { }
   void SetBox(Matrix m) { }
+  void Prepare() { }
   virtual int NumFaces() const { return faces.NumFaces(); }
   virtual int NumPoints(int face) const { return faces.NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return faces.FacePoint(face,point); }
@@ -8949,10 +8972,11 @@ private:
   float r;
 };
 
-class ModifyObject : public BoxableFaceCollection
+class ModifyObject : public ForwardBoxableFaceCollection
 {
 public:
-  ModifyObject(BoxableFaceCollection &coll, PointMap &pm) : coll(coll), pm(pm) { }
+  ModifyObject(BoxableFaceCollection &coll, PointMap &pm) : ForwardBoxableFaceCollection(coll), coll(coll), pm(pm) { }
+  void Prepare() { coll.Prepare(); }
   void SetBox(Matrix m) { /*coll.SetBox(m);*/ }
   int NumFaces() const { return coll.NumFaces(); }
   int NumPoints(int face) const { return coll.NumPoints(face); }
@@ -9571,7 +9595,7 @@ private:
 class DefaultFrameAnim : public FrameAnim
 {
 public:
-  DefaultFrameAnim(const FaceCollection &faces, float time, Render *r) : FrameAnim(r), faces(faces), time(time) { }
+  DefaultFrameAnim(FaceCollection &faces, float time, Render *r) : FrameAnim(r), faces(faces), time(time) { }
   float Time() const { return time; }
   void Init()
   {
@@ -9588,7 +9612,7 @@ public:
     return false;
   }
 private:
-  const FaceCollection &faces;
+  FaceCollection &faces;
   VBOState vbostate;
   float time;
 };
@@ -9695,6 +9719,7 @@ SDL_Surface *InitSDL(int scr_x, int scr_y, bool vsync, bool antialias=false);
 SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vsync, bool antialias=false);
 
 
+#if 0
 class CubeAnim : public Anim
 {
 public:
@@ -9712,6 +9737,7 @@ public:
 private:
   mutable BoxableFaceCollection *coll, *coll2;
 };
+#endif
 
 class Frames : public AnimSelectI
 {
@@ -10172,11 +10198,12 @@ private:
   //std::vector<Key> vec;
 };
 
-class MeshFaceCollection : public FaceCollection
+class MeshFaceCollection : public SingleForwardFaceCollection
 {
 public:
   MeshFaceCollection(Mesh &mesh, int framenum) : mesh(mesh), texcoord(0), framenum(framenum) { }
   MeshFaceCollection(Mesh &mesh, MeshTexCoords &coord, int framenum) : mesh(mesh), texcoord(&coord), framenum(framenum) { }
+  void Prepare() { }
   virtual int NumFaces() const { return mesh.NumFaces(framenum); }
   virtual int NumPoints(int face) const { return mesh.NumPoints(); }
   virtual Point FacePoint(int face, int point) const
@@ -10601,7 +10628,7 @@ public:
 };
 
 
-class VertexArrayFaceCollection : public FaceCollection
+class VertexArrayFaceCollection : public SingleForwardFaceCollection
 {
 public:
   VertexArrayFaceCollection(float *v_array, int v_size,
@@ -10780,13 +10807,17 @@ private:
 int filesize(std::string filename);
 
 
-class LoadObjModelFaceCollection : public BoxableFaceCollection
+class LoadObjModelFaceCollection : public SingleForwardBoxableFaceCollection
 {
 public:
   LoadObjModelFaceCollection(std::string filename, int objcount) : filename(filename), obj_num(objcount) 
   {
-    std::cout << "Loading: " << filename << " " << objcount << std::endl;
-    first = true;
+  }
+  void Prepare()
+  {
+    std::cout << "Loading: " << filename << " " << obj_num << std::endl;
+    check_invalidate();
+    Load(); 
   }
   void check_invalidate() const { const_cast<LoadObjModelFaceCollection*>(this)->check_invalidate2(); }
   void check_invalidate2()
@@ -10794,8 +10825,8 @@ public:
     static int filesize_store = -1;
     static int objcount = -1;
     int val = filesize(filename);
-    if (filesize_store != val) { filesize_store = val; first=true; }
-    if (objcount != obj_num) { objcount = obj_num; first=true; }
+    if (filesize_store != val) { filesize_store = val; }
+    if (objcount != obj_num) { objcount = obj_num; }
   }
   void Load() const { const_cast<LoadObjModelFaceCollection*>(this)->Load2(); }
   void Load2() {
@@ -10987,15 +11018,11 @@ public:
       }
   }
   virtual int NumFaces() const {
-    check_invalidate();
-    if (first) { Load(); first=false; }
     return face_counts.size()<=0 ? 1 : face_counts.size(); }
   virtual int NumPoints(int face) const {
-    if (first) { Load(); first=false; } 
     return face_counts.size()<=0 ? 3 : face_counts[face]; }
   virtual Point FacePoint(int face, int point) const
   {
-    if (first) { Load(); first=false; } 
     int c = Count(face,point);
     if (c>=0 && c<(int)vertex_index.size())
       {
@@ -11008,7 +11035,6 @@ public:
   }
   virtual Vector PointNormal(int face, int point) const
   {
-    if (first) { Load(); first=false; } 
     int c = Count(face,point);
     if (c>=0 && c<(int)normal_index.size())
       {
@@ -11022,13 +11048,11 @@ public:
     return v;
   }
   virtual float Attrib(int face, int point, int id) const {
-    if (first) { Load(); first=false; } 
-    return 0.0; }
+    return 0.0; 
+  }
   virtual int AttribI(int face, int point, int id) const {
-    if (first) { Load(); first=false; }  
     return 0; }
   virtual unsigned int Color(int face, int point) const { 
-    if (first) { Load(); first=false; } 
     int c = Count(face,point);
     if (c>=0 && c<(int)vertex_index.size())
       {
@@ -11042,7 +11066,6 @@ public:
   }
   virtual Point2d TexCoord(int face, int point) const
   {
-    if (first) { Load(); first=false; } 
     int c = Count(face,point);
     if (c>=0 && c<(int)texture_index.size())
       {
@@ -11057,7 +11080,6 @@ public:
   }
 
   int Count(int face, int point) const {
-    if (first) { Load(); first=false; } 
     int s = face_counts.size();
     if (counts.size()>0) { return counts[face]+point; }
     //if (s>0) { return face_counts[0]*face+point; }
@@ -11082,7 +11104,6 @@ private:
   std::vector<int> face_counts;
   int obj_num;
   mutable std::vector<int> counts;
-  mutable bool first;
 };
 
 #endif
