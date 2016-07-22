@@ -1643,10 +1643,12 @@ private:
   float sx,sy,sz;
 };
 
+#if 0
 class Cube3Cube : public BoxableFaceCollection
 {
 public:
   Cube3Cube(Cube3 c) : mat(cube, Matrix::Identity()) { SetCube(c); }
+  void Prepare() { }
   void SetCube(const Cube3 &c)
   {
     mat.SetMatrix(Matrix::Scale(c.maxx-c.minx, c.maxy-c.miny, c.maxz-c.minz)
@@ -1680,7 +1682,9 @@ private:
   CubeElem cube;
   MatrixElem mat;
 };
+#endif
 
+#if 0
 class BitmapCubeArray : public FaceCollectionArray
 {
 public:
@@ -1698,7 +1702,9 @@ private:
   Bitmap<Cube3> &cubes;
   Cube3Cube c;
 };
+#endif
 
+#if 0
 class CubePlane : public BoxableFaceCollection
 {
 public:
@@ -1736,7 +1742,7 @@ private:
   CompressObject mat;
 };
 
-
+#endif
 class LayeredBitmap : public Bitmap<int>
 {
 public:
@@ -2738,7 +2744,7 @@ private:
   FaceCollection &coll;
   Bitmap<Point> &pos;
 };
-class QuadArrayElem : public BoxableFaceCollection
+class QuadArrayElem : public SingleForwardBoxableFaceCollection
 {
 public:
   QuadArrayElem(Array<int, Quad> &array) : voxel(array) { }
@@ -3452,7 +3458,7 @@ private:
   std::vector<Triangle> vec;
 };
 
-
+#if 0
 class Cube3HandleValue : public HandleValue<Cube3>, public Element<const BoxableFaceCollection*>
 {
 public:
@@ -3471,6 +3477,7 @@ public:
 private:
   OrElem<BoxableFaceCollection> or_elem;
 };
+#endif
 template<class T>
 class EnumerateBitmap
 {
@@ -3764,6 +3771,7 @@ private:
 };
 
 
+#if 0
 class FaceCollectionHandleValue : public HandleValue<std::pair<Matrix, unsigned int > >
 {
 public:
@@ -3799,6 +3807,7 @@ private:
   VectorArray<const FaceCollection*> vec2;
   BoxableFaceCollection &fc;
 };
+#endif
 
 template<class T, class K>
 class HandleValueFunction : public HandleValue<T>
@@ -4393,7 +4402,8 @@ class FacesFromMap : public BoxableFaceCollection
 {
 public:
   FacesFromMap(Bitmap<bool> &mymap, Bitmap<Point> &pos) : mymap(mymap), pos(pos) { Refresh(); }
-
+  
+  void Prepare() { }
   void SetBox(Matrix m) { }
   virtual int NumFaces() const { return vec.size(); }
   virtual int NumPoints(int face) const { return 4; }
@@ -4582,7 +4592,7 @@ class DataRep
 public:
   virtual BoxableFaceCollection *Data(const T &t) const=0;
 };
-
+#if 0
 class SphereDataRep : public DataRep<VertexData3d>
 {
 public:
@@ -4599,7 +4609,7 @@ private:
   mutable MatrixElem *mat;
   int x, y;
 };
-
+#endif
 class ConeDataRep : public DataRep<EdgeData3d>
 {
 public:
@@ -4615,7 +4625,7 @@ private:
 };
 
 template<class V, class E>
-class RenderGraph : public BoxableFaceCollection
+class RenderGraph : public SingleForwardBoxableFaceCollection
 {
 public:
   RenderGraph(Graph &g, 
@@ -5461,6 +5471,7 @@ private:
   VBOState vbostate;
 };
 
+#if 0
 class IntersectAnim : public Anim
 {
 public:
@@ -5475,6 +5486,7 @@ public:
     return anot;
   }
 };
+#endif
 
 class SizeBitmapTo2 : public Bitmap<Color>
 {

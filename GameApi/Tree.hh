@@ -29,6 +29,8 @@
 #include <typeinfo>
 #include <vector>
 
+#if 0
+
 template<class T>
 class Tree
 {
@@ -63,7 +65,7 @@ TreeNode faces_treenode(Matrix m, const BoxableFaceCollection *faces);
 struct TreeNodeInternal
 {
   mutable Matrix matrix;
-  const BoxableFaceCollection *faces;
+  BoxableFaceCollection *faces;
   bool quads;
   ShaderParameters *params;
   Matrix current_level_matrix;
@@ -1179,6 +1181,6 @@ class DynamicTree : public TTree<TFunctionArray, TValue*>
 {
 };
 
-
+#endif
 
 #endif

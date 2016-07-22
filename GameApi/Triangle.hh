@@ -250,7 +250,7 @@ private:
   FaceCollection &coll;
 };
 
-class FaceCollectionFromTriArray : public FaceCollection
+class FaceCollectionFromTriArray : public SingleForwardFaceCollection
 {
 public:
   FaceCollectionFromTriArray(const TriArray &arr) : arr(arr) { } 

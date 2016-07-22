@@ -48,6 +48,7 @@ class FaceCollection
 {
 public:
   virtual ~FaceCollection() { }
+  virtual void Prepare()=0;
   virtual int NumFaces() const = 0;
   virtual int NumPoints(int face) const=0;
   virtual Point FacePoint(int face, int point) const=0;

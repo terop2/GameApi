@@ -467,7 +467,7 @@ public:
     std::vector<std::vector<unsigned int> > color;
     std::vector<std::vector<Point2d> > texcoord;
   };
-  class FaceStructFaceCollection : public FaceCollection
+  class FaceStructFaceCollection : public SingleForwardFaceCollection
   {
   public:
     FaceStructFaceCollection(FaceStruct &st) : st(st) { }

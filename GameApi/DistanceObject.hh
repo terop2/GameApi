@@ -216,7 +216,7 @@ private:
   void *data;
 };
 
-class SeparateRender : public FaceCollection
+class SeparateRender : public SingleForwardFaceCollection
 {
 public:
   struct Key { int kx; int ky; 

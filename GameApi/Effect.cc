@@ -747,6 +747,7 @@ bool CylinderEffect::Frame(float time)
 
 bool SphereEffect::Frame(float time)
 {
+#if 0
   //if (time > 500.0) return true;
   Matrix b;
   Matrix m = Matrix::ZRotation(time/50.0)*Matrix::YRotation(time/30.0)*Matrix::ZRotation(time/10.0);
@@ -769,13 +770,14 @@ bool SphereEffect::Frame(float time)
 
   // FIX RenderOpenGl(ccm, ce);
 
-
+#endif
   return false;
 }
 
 
 bool CubeEffect::Frame(float time)
 {  
+#if 0
   //if (time > 500.0) return true;
   Matrix b;
   Matrix m = Matrix::ZRotation(time/50.0)*Matrix::YRotation(time/30.0)*Matrix::ZRotation(time/10.0);
@@ -793,6 +795,7 @@ bool CubeEffect::Frame(float time)
   BoxCombine be(ab, cm);
   ColorElement ce(colors, colors+25*5, be);
   //FIX RenderOpenGl(cm, ce);
+#endif
   return false;
 }
 #undef LoadImage
@@ -870,6 +873,7 @@ GLfloat light_position3[] = { 1.0, 100.0, 0.0, -200.0 };
 
 void MoleculeEffect::PreFrame(float time)
 {
+#if 0
   //glDisable(GL_LIGHTING);
 
   glEnable(GL_TEXTURE_2D);
@@ -909,9 +913,11 @@ void MoleculeEffect::PreFrame(float time)
   glPopMatrix();
   glDisable(GL_TEXTURE_2D);
   //glEnable(GL_LIGHTING);
+#endif
 }
 bool MoleculeEffect::Frame(float time)
 {
+#if 0
   // if (time > 1000.0) return true;
   //
   // stars
@@ -952,10 +958,12 @@ bool MoleculeEffect::Frame(float time)
   //Fur fur(cc, 2,2, 0.2);
   //RenderOpenGlLines(fur, be);
   //glEnable(GL_LIGHTING);
+#endif
   return false;
 }
 bool TunnelEffect::Frame(float time)
 {
+#if 0
     glColor3f(1.0,1.0,1.0);
 
   LineIn3d line(Point(0.0,0.0,-5800.0), Point(0.0,0.0,5800.0));
@@ -986,6 +994,7 @@ bool TunnelEffect::Frame(float time)
   
 
   }
+#endif
   return false;
 }
 void TunnelEffect2::Init() 
@@ -995,6 +1004,7 @@ void TunnelEffect2::Init()
 
 bool TunnelEffect2::Frame(float time)
 {
+#if 0
   CubeElem e;
   e.SetBox(Matrix::Identity());
   MatrixElem me(e, Matrix::Scale(500.0,500.0,500.0));
@@ -1008,11 +1018,13 @@ bool TunnelEffect2::Frame(float time)
       ContinuousLines lines(sample, true);
       RenderOpenGlLines(lines);
     }
+#endif
   return false;
 }
 
 bool MoleculeInsideEffect::Frame(float time)
 {
+#if 0
   //if (time>2000.0) return true;
   SawWaveform saw;
   FitWaveform fit(saw, 150, 100.0, 850.0);
@@ -1116,6 +1128,7 @@ bool MoleculeInsideEffect::Frame(float time)
   //RenderOpenGl(split2a);
   //RenderOpenGl(iface2);
   //RenderOpenGl(iface4);
+#endif
   return false;
 }
 RoboEffect::RoboEffect(Render *r)
@@ -1131,6 +1144,7 @@ RoboEffect::~RoboEffect()
 }
 bool RoboEffect::Frame(float time)
 {
+#if 0
   //if (time > 1000.0) return true;
   SawWaveform saw;
   FitWaveform fit(saw, 50.0*2.0, 0.0+2.0*3.14159*(180.0-45)/360.0, 2.0*3.14159/4.0+2.0*3.14159*(180.0-45)/360.0);
@@ -1200,6 +1214,7 @@ bool RoboEffect::Frame(float time)
   //pair.set_var("speccolor", spec_color);
   MatrixElem ccm(cc, Matrix::Identity());
   // FIX RenderOpenGl(ccm, b, ccm);
+#endif
   return false;
 }
 bool TitleEffect::Frame(float time)
@@ -1215,6 +1230,7 @@ bool TitleEffect::Frame(float time)
 bool TestEffect::first=true;
 bool TestEffect::Frame(float time)
 {
+#if 0
   //if (time>1000.0) return true;
 
 
@@ -1304,7 +1320,7 @@ bool TestEffect::Frame(float time)
   //a.DoSplittin();
   glColor3f(1.0,1.0,1.0);
   RenderOpenGl(*obj);
-
+#endif
   return false;
 }
 
@@ -1344,6 +1360,7 @@ bool TestEffect::Frame(float time)
 bool HeightMapEffect::Frame(float time)
 {
   //if (time>1000.0) return true;
+#if 0
   glEnable(GL_TEXTURE_2D);
 
   //glColor3f(0.1, 0.3, 1.0);
@@ -1362,7 +1379,7 @@ bool HeightMapEffect::Frame(float time)
   MatrixElem m(s, Matrix::Scale(150.0,150.0,150.0)*Matrix::Translate(0.0,0.0+(300.0-time)*5.0,0.0));
   m.SetBox(Matrix::Identity());
   RenderOpenGl(m);
-
+#endif
   return false;
 }
 BlobEffect::BlobEffect(Render *r)
@@ -1393,7 +1410,7 @@ BlobEffect::~BlobEffect()
 }
 bool BlobEffect::Frame(float time)
 {
-
+#if 0
   shader.use();
   GlobalTextureParameters params3(Point(0,0,0), Vector(200.0,0.0,0.0), Vector(0.0, 200.0, 0.0), Vector(0.0, 0.0, 200.0));
   shader.set_params(params3);
@@ -1434,7 +1451,7 @@ bool BlobEffect::Frame(float time)
 
   RenderOpenGl(mm);
   RenderOpenGl(mm1);
-
+#endif
   return false;
 }
 
@@ -1448,6 +1465,7 @@ VBOEffect::VBOEffect(Render *r)
 }
 void VBOEffect::Init()
 {
+#if 0
   SphereElem s(30,30); // 30*30 quads
   //CubeElem s;
   MatrixElem m(s, Matrix::Scale(40.0,40.0,40.0));
@@ -1457,6 +1475,7 @@ void VBOEffect::Init()
   ObjectArray oa(array, array+1);
   VBO vbo(oa);
   UpdateVBO(vbo, 0, vbostate, UpdateVertexNormalIndex);
+#endif
 }
 VBOEffect::~VBOEffect()
 {
@@ -1464,7 +1483,7 @@ VBOEffect::~VBOEffect()
 }
 bool VBOEffect::Frame(float time)
 {
-
+#if 0
   // spheres
   CircleMatrixCurve2 cmc((1500.0-time*2.0)/*/40.0*/, 0.0);
   //Circle circle;
@@ -1518,10 +1537,12 @@ bool VBOEffect::Frame(float time)
   //   }
   //glDepthMask(true);
   //glDisable(GL_BLEND);
+#endif
   return false;
 }
 bool CircleEffect::Frame(float time)
 {
+#if 0
   Circle c;
   Plane pl(Point(0.0,0.0,0.0), Vector(500.0,0.0,0.0), Vector(0.0,0.0,500.0)); 
   PlaneCurveIn3d pc(c, pl);
@@ -1547,6 +1568,7 @@ bool CircleEffect::Frame(float time)
   ConstantObjectCollection objcoll(pbox2.NumBoxes(), 0);
   CombineBoxesAndObjects pcombine(pbox2, objcoll);
   RenderOpenGlObjects(pcombine, vbostate, UpdateVertexNormalIndex);
+#endif
   return false;
 }
 
@@ -1586,6 +1608,7 @@ void CircleEffect::Init()
 
 bool PathEffect::Frame(float time)
 {
+#if 0
   //
   //
   //
@@ -1646,6 +1669,7 @@ bool PathEffect::Frame(float time)
   cc.update_faces_cache();
   MatrixElem m(cc, Matrix::Scale(50.0,50.0,50.0));
   RenderOpenGl(m);
+#endif
   return false;
 }
 
@@ -2651,6 +2675,7 @@ void SinusEffect::Init()
 
 bool SinusEffect::Frame(float time)
 {
+#if 0
   SinWaveform s(3.14159*2.0, 1.0); // float -> float
   SampleWaveform sample(s, 10); // int -> float
   Point2d p;
@@ -2721,7 +2746,7 @@ bool SinusEffect::Frame(float time)
 
   ContinuousLines cont2(sampl2, false);
   RenderOpenGlLines(cont2);
-
+#endif
   return false;
 }
 
@@ -3559,6 +3584,7 @@ class HeightMapPolygons : public BoxableFaceCollection
 {
 public:
   HeightMapPolygons(Bitmap<Point> &pos) : tr(pos.SizeX(),pos.SizeY()), faces(tr, pos) { }
+  void Prepare() { }
   virtual int NumFaces() const { return faces.NumFaces(); }
   virtual int NumPoints(int face) const { return faces.NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return faces.FacePoint(face,point); }

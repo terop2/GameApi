@@ -20,10 +20,13 @@ EXPORT GameApi::P GameApi::PolygonApi::from_polygon(P p, std::function<P (int fa
 }
 void GameApi::PolygonApi::print_stat(P p)
 {
-  FaceCollPolyHandle *handle = find_poly(e, p);
-  FaceCollection *coll = handle->coll;
+  //FaceCollPolyHandle *handle = find_poly(e, p);
+  //FaceCollection *coll = handle->coll;
+  if (p.id == -1) { std::cout << "INVALID P OBJECT at print_stat" << std::endl; return; }
+  FaceCollection *coll = find_facecoll(e, p);
+  if (!coll) { std::cout << "INVALID FACECOLLECTION at print_stat" << std::endl;  return; }
   int faces = coll->NumFaces();
-  int points = coll->NumPoints(0);
+  int points = faces>0 ? coll->NumPoints(0) : 0;
   std::cout << "Faces: " << faces << std::endl;
   std::cout << "Points: " << points << std::endl;
 
@@ -242,7 +245,7 @@ EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(std::function<P (int c)
   return p;
 }
 
-class DistFromLines : public FaceCollection
+class DistFromLines : public SingleForwardFaceCollection
 {
 public:
   DistFromLines(LineCollection *coll, float d1, float d2, Point center) : coll(coll), d1(d1), d2(d2), center(center) { }
@@ -412,6 +415,20 @@ EXPORT GameApi::P GameApi::PolygonApi::empty()
   return add_polygon(e,new EmptyBoxableFaceCollection, 1);
 }
 
+EXPORT GameApi::P GameApi::PolygonApi::load_model_all(std::string filename, int count)
+{
+  int s=count;
+  std::vector<P> vec;
+  for(int i=0;i<s;i++)
+    {
+      GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(filename, i), 1);
+      GameApi::P cache = file_cache(model, filename,i);
+      vec.push_back(cache);
+    }
+  GameApi::P obj = or_array2(vec);
+  GameApi::P resize = resize_to_correct_size(obj);
+  return resize;
+}
 EXPORT GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
 {
   GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(filename, num), 1);
@@ -1009,10 +1026,10 @@ EXPORT GameApi::P GameApi::PolygonApi::color_grayscale(P orig)
   FaceCollection *c2 = new ColorGrayScale(c);
   return add_polygon2(e, c2, 1);
 }
-class QuadsToTris2 : public FaceCollection
+class QuadsToTris2 : public ForwardFaceCollection
 {
 public:
-  QuadsToTris2(FaceCollection *coll) : coll(coll) { Iterate(); }
+  QuadsToTris2(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { Iterate(); }
   void Iterate()
   {
     int counter = 0;
@@ -1292,7 +1309,7 @@ EXPORT GameApi::P GameApi::PolygonApi::translate(P orig, float dx, float dy, flo
 GameApi::P GameApi::PolygonApi::matrix(P orig, M mat)
 {
   Matrix mat2 = find_matrix(e, mat);
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  ::EnvImpl *env = ::EnvImpl::Environment(&e); 
   FaceCollection *c = find_facecoll(e, orig);
   BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
   env->deletes.push_back(std::shared_ptr<void>(convert));  
@@ -1361,12 +1378,9 @@ EXPORT GameApi::P GameApi::PolygonApi::rotate(P orig, PT point, V axis, float an
 
 EXPORT GameApi::P GameApi::PolygonApi::scale(P orig, float sx, float sy, float sz)
 {
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);  
+  //::EnvImpl *env = ::EnvImpl::Environment(&e);  
   FaceCollection *c = find_facecoll(e, orig);
-  BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
-  env->deletes.push_back(std::shared_ptr<void>(convert));  
-  if (!c) { std::cout << "dynamic cast failed" << std::endl; }
-  FaceCollection *coll = new MatrixElem(*convert, Matrix::Scale(sx,sy,sz));
+  FaceCollection *coll = new MatrixElem(*c, Matrix::Scale(sx,sy,sz));
   return add_polygon(e, coll,1);
 }
 
@@ -1681,7 +1695,7 @@ EXPORT GameApi::P GameApi::PolygonApi::circular_span(EveryApi &ev, LI li,
   M m = ev.matrix_api.yrot(delta_angle);
   return span(li, m, num_steps);
 }
-class Span : public FaceCollection
+class Span : public SingleForwardFaceCollection
 {
 public:
   Span(LineCollection *lines, Matrix m, int num_steps) : lines(lines), m(m), num_steps(num_steps) 
@@ -2303,7 +2317,7 @@ EXPORT void GameApi::PolygonApi::get_tri_vertex_array(P p, int choose, int row,
   *tex_size = vertex_size*2;
 }
 
-class TriStripFaceCollection : public FaceCollection
+class TriStripFaceCollection : public SingleForwardFaceCollection
 {
 public:
   TriStripFaceCollection(std::vector<Point> vec) : vec(vec) { }
@@ -2482,6 +2496,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 #ifdef THREADS
   int num_threads = 4;
   FaceCollection *faces = find_facecoll(e, p);
+  faces->Prepare();
   std::cout << "FaceColl: " << faces << " " << faces->NumFaces() << std::endl; 
   ThreadedPrepare prep(faces);  
   int s = faces->NumFaces();   
@@ -2512,6 +2527,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   return add_vertex_array(e, set, arr2);
 #else
   FaceCollection *faces = find_facecoll(e, p);
+  faces->Prepare();
   VertexArraySet *s = new VertexArraySet;
   FaceCollectionVertexArray2 arr(*faces, *s);
   arr.reserve(0);
@@ -3408,10 +3424,10 @@ EXPORT GameApi::P GameApi::PolygonApi::anim_endpoints(P p1, P p2)
   FaceCollection *coll = new AnimColl(i1, i2);
   return add_polygon(e, coll, 1);
 }
-class AnimInterpolate : public FaceCollection
+class AnimInterpolate : public ForwardFaceCollection
 {
 public:
-  AnimInterpolate(FaceCollection *coll, float val) : coll(coll), val(val) { }
+  AnimInterpolate(FaceCollection *coll, float val) : ForwardFaceCollection(*coll), coll(coll), val(val) { }
   virtual int NumFaces() const { return coll->NumFaces(); }
   virtual int NumPoints(int face) const { return coll->NumPoints(face); }
   virtual Point FacePoint(int face, int point) const
@@ -3488,10 +3504,10 @@ EXPORT GameApi::P GameApi::PolygonApi::anim_target_scale(P p, PT center, float s
   FaceCollection *coll = new AnimFaceScale(*i, *pp, scale_x, scale_y, scale_z);
   return add_polygon(e, coll, 1);
 }
-class CutFaces : public FaceCollection
+class CutFaces : public ForwardFaceCollection
 {
 public:
-  CutFaces(FaceCollection *i, VolumeObject *oo, Cutter *cut) : i(i), oo(oo), cut(cut) { cut_them(); compress(); }
+  CutFaces(FaceCollection *i, VolumeObject *oo, Cutter *cut) : ForwardFaceCollection(*i), i(i), oo(oo), cut(cut) { cut_them(); compress(); }
 
   void cut_them()
   {
@@ -3644,10 +3660,10 @@ EXPORT GameApi::P GameApi::PolygonApi::intersect(EveryApi &ev, P p1, P p2,
   return or_1;
 
 }
-class TriToQuad : public FaceCollection
+class TriToQuad : public ForwardFaceCollection
 {
 public:
-  TriToQuad(FaceCollection *coll) : coll(coll) { }
+  TriToQuad(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
   virtual int NumFaces() const { return coll->NumFaces(); }
   virtual int NumPoints(int face) const
   {
@@ -3695,7 +3711,7 @@ EXPORT GameApi::P GameApi::PolygonApi::tri_to_quad(P p)
   return add_polygon2(e, new TriToQuad(poly),1);
 }
 
-class ColorMapPoly : public FaceCollection
+class ColorMapPoly : public SingleForwardFaceCollection
 {
 public:
   ColorMapPoly(Bitmap<::Color> *bm, Point pos, Vector u_x, Vector u_y) : bm(bm), pos(pos), u_x(u_x), u_y(u_y) { }
@@ -3757,7 +3773,7 @@ public:
   }
 };
 #endif
-class ColorMapPoly2 : public FaceCollection
+class ColorMapPoly2 : public SingleForwardFaceCollection
 {
 public:
   ColorMapPoly2(Bitmap<::Color> *bm, Bitmap<float> *fb, Point pos, Vector u_x, Vector u_y) : bm(bm),fb(fb), pos(pos), u_x(u_x), u_y(u_y) { u_z = Vector::CrossProduct(u_x,u_y); u_z/=u_z.Dist(); }
@@ -3814,7 +3830,7 @@ private:
   Vector u_x, u_y;
   Vector u_z;
 };
-class ColorMapPoly2_cyl : public FaceCollection
+class ColorMapPoly2_cyl : public SingleForwardFaceCollection
 {
 public:
   ColorMapPoly2_cyl(Bitmap<::Color> *bm, Bitmap<float> *fb, Point pos, Vector u_x, Vector u_y) : bm(bm), fb(fb), pos(pos), u_x(u_x), u_y(u_y) {
@@ -3880,7 +3896,7 @@ private:
 };
 
 
-class ColorMapPoly2_sph : public FaceCollection
+class ColorMapPoly2_sph : public SingleForwardFaceCollection
 {
 public:
   ColorMapPoly2_sph(Bitmap<::Color> *bm, Bitmap<float> *fb, Point pos, Vector u_x, Vector u_y) : bm(bm), fb(fb), pos(pos), u_x(u_x), u_y(u_y) {
@@ -4092,6 +4108,7 @@ public:
 	if (side(false, i2)) { choose.push_back(1); faces.push_back(i2); }
       }
   }
+  void Prepare() { coll1->Prepare(); coll2->Prepare(); }
   bool side(bool which, int face) const
   {
     FaceCollection *coll = 0;
@@ -4347,10 +4364,29 @@ bool invalidate(CacheItem *item, std::string filename, int obj_count)
   return item->filesize != size || item->obj_count != obj_count;
 }
 
+class PrepareCut : public ForwardFaceCollection
+{
+public:
+  PrepareCut(FaceCollection *coll) : ForwardFaceCollection(*coll) { }
+  void Prepare() { }
+};
+GameApi::P GameApi::PolygonApi::prepare_cut(P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new PrepareCut(coll), 1);
+}
+
+std::string cache_id(std::string filename, int obj_count)
+{
+  std::stringstream ss;
+  ss << filename << obj_count;
+  return ss.str();
+}
+
 GameApi::P GameApi::PolygonApi::file_cache(P model, std::string filename, int obj_count)
 {
   static std::map<std::string, CacheItem*> cache_map;
-  CacheItem *item = cache_map[filename];
+  CacheItem *item = cache_map[cache_id(filename,obj_count)];
   if (item && !invalidate(item,filename,obj_count)) {
     std::cout << "From Cache" << std::endl;
     return item->obj;
@@ -4358,22 +4394,32 @@ GameApi::P GameApi::PolygonApi::file_cache(P model, std::string filename, int ob
   std::cout << "From File" << std::endl;
   CacheItem *item2 = new CacheItem;
   item2->filename = filename;
-  item2->obj = model;
+  item2->obj = memoize(prepare_cut(model));
   item2->filesize = filesize(filename);
   item2->obj_count = obj_count;
-  cache_map[filename]=item2;
-  return item2->obj;
+  cache_map[cache_id(filename,obj_count)]=item2;
+  return model;
 }
-class ResizeFaceCollection
+class ResizeFaceCollection : public ForwardFaceCollection
 {
 public:
-  ResizeFaceCollection(FaceCollection *coll) : coll(coll)
+  ResizeFaceCollection(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll)
   {
+  }
+  void Prepare()
+  {
+    coll->Prepare();
+
     find_bounding_box();
     print_bounding_box();
     calc_center();
     calc_size();
     calc_matrix();
+  }
+  Point FacePoint(int face, int point) const
+  {
+    Point p = coll->FacePoint(face,point);
+    return p*m_m;
   }
 public:
   Matrix get_matrix() const { return m_m; }
@@ -4449,8 +4495,5 @@ private:
 GameApi::P GameApi::PolygonApi::resize_to_correct_size(P model)
 {
   FaceCollection *coll = find_facecoll(e, model);
-  ResizeFaceCollection resize(coll);
-  Matrix m = resize.get_matrix();
-  GameApi::M m1 = add_matrix2(e, m);
-  return matrix(model,m1); 
+  return add_polygon2(e, new ResizeFaceCollection(coll),1);
 }

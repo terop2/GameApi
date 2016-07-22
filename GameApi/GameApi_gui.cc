@@ -4287,6 +4287,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "std::string", "int" },
 			 { "test.obj", "0" },
 			 "P", "polygon_api", "load_model"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::load_model_all,
+			 "load_model_all",
+			 { "filename", "count" },
+			 { "std::string", "int" },
+			 { "test.obj", "30" },
+			 "P", "polygon_api", "load_model_all"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::save_model_ml,
 			 "save_model",
 			 { "poly", "filename" },

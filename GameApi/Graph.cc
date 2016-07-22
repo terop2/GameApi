@@ -244,6 +244,7 @@ MapEffect::~MapEffect()
 }
 void MapEffect::Init()
 {
+#if 0
   FrameAnimPlugins::Init();
 
   RectangleElem rect(1500.0,1500.0);
@@ -254,6 +255,7 @@ void MapEffect::Init()
   //MemoizeFaces memoize(texture);
   UpdateVBO(texture, vbostate, UpdateAllTexture);
   first = true;
+#endif
 }
 bool MapEffect::Frame(float time)
 {
@@ -471,6 +473,7 @@ bool InterpolateMovementEffect::Frame(float time)
 
 void GraphEffect::Init()
 {
+#if 0
   MapFunction mapfunc;
   BitmapFromFile<bool> bitmap("./maps/map1.txt", mapfunc, 10,11);
   PointGrid pos(3,3, Point(0.0,0.0,0.0), Vector(200.0,0.0,0.0), Vector(0.0,200.0,0.0), 10,11);
@@ -480,7 +483,7 @@ void GraphEffect::Init()
   RenderGraph<VertexData3d, EdgeData3d> render(graph, graph, sphere, cone);
   FaceCollection *faces = &render;
   UpdateVBO(*faces, vbostate);
-
+#endif
   //FacesFromMap mymap(bitmap, pos);
   //UpdateVBO(mymap, vbostate2);
 }
@@ -577,6 +580,7 @@ bool Effect2dEffect::Frame(float time)
 
 void Effect3dEffect::Init()
 {
+#if 0
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_BLEND);
   glDisable(GL_DEPTH_TEST);
@@ -593,6 +597,7 @@ void Effect3dEffect::Init()
   vec.push_back(b);
   vec.push_back(c);
   UpdateVBO(box, vbostate, UpdateAll, vec);
+#endif
 }
 
 bool Effect3dEffect::Frame(float time)

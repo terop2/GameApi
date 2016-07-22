@@ -356,7 +356,7 @@ EXPORT GameApi::TS GameApi::TriStripApi::or_array(TS *array, int size)
     }
   return add_tri_strip(e, new OrArrayTriStrip(vec));
 }
-class TriStripToPoly : public FaceCollection
+class TriStripToPoly : public SingleForwardFaceCollection
 {
 public:
   TriStripToPoly(TriStrip *ts) : ts(ts) { }

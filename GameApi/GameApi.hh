@@ -1464,10 +1464,12 @@ public:
   IMPORT void print_stat(VA p);
 	IMPORT P empty();
         IMPORT P load_model(std::string filename, int obj_num);
+  IMPORT P load_model_all(std::string filename, int count);
   IMPORT P file_cache(P model, std::string filename, int obj_num);
   IMPORT P resize_to_correct_size(P model);
         IMPORT void save_model(P poly, std::string filename);
   IMPORT ML save_model_ml(P poly, std::string filename);
+  IMPORT P prepare_cut(P p);
 
   //IMPORT P line(PT p1, PT p2);
 	IMPORT P triangle(PT p1, PT p2, PT p3);

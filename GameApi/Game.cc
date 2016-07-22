@@ -4,6 +4,8 @@
 #include <GL/glew.h>
 #include <SDL_opengl.h>
 
+#if 0
+
 #undef LoadImage
 void GameEffect::Init()
 {
@@ -160,3 +162,4 @@ void UpdateVBOTypeToPoly(const TypeToPoly &tp, VBOState &vbostate, VBOUpdate upd
   VBO vbo(oa);
   UpdateVBO(vbo, vbostate, update);
 }
+#endif

@@ -63,7 +63,7 @@ EXPORT GameApi::PTS GameApi::VoxelApi::instanced_positions(VX vx, float sx, floa
 
 typedef Voxel<unsigned int> VoxelColor;
 
-class VoxelBoxes : public BoxableFaceCollection
+class VoxelBoxes : public SingleForwardBoxableFaceCollection
 {
 public:
   VoxelBoxes(VoxelColor *c, float ssx, float ssy, float ssz) : c(c),  cube(Point(0.0,0.0,0.0),
