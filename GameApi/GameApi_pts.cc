@@ -1,5 +1,9 @@
 #include "GameApi_h.hh"
 
+#ifndef EMSCRIPTEN
+#define VAO 1
+#endif
+
 
 class HeightMapPoints : public PointsApiPoints
 {
@@ -372,8 +376,10 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
     }
   PointArray3 *arr = prep.collect(s);
 #endif
+#ifdef VAO
   glGenVertexArrays(1, &arr->vao[0]);
   glBindVertexArray(arr->vao[0]);
+#endif
   glGenBuffers(2, &arr->buffer[0]);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[0]);
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
@@ -383,8 +389,9 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
   glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, 0);
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(2);
+#ifdef VAO
   glBindVertexArray(0);
-  
+#endif
   return add_point_array3(e,arr);
 }
 class PTSFromFloatVolume : public PointsApiPoints
@@ -469,7 +476,16 @@ EXPORT void GameApi::PointsApi::explode(GameApi::PTA array, float x, float y, fl
 EXPORT void GameApi::PointsApi::render(GameApi::PTA array)
 {
   PointArray3 *arr = find_point_array3(e, array);
+#ifdef VAO
   glBindVertexArray(arr->vao[0]);
+#endif
+#ifndef VAO
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[0]);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0,0);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[1]);
+  glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, 0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+#endif
   glDrawArrays(GL_POINTS, 0, arr->numpoints);
   
 }
