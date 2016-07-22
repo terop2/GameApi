@@ -19,10 +19,11 @@ struct Envi {
   float speed_x = 1.0;
   float speed_y = 1.0;
   InteractionApi::Quake_data data;
-  bool logo_shown = false;
+  bool logo_shown = true;
   SH color_sh;
   SH texture_sh;
   SH arr_texture_sh;
+  int counter = 0;
 };
 
 ML train(EveryApi &ev)
@@ -532,7 +533,7 @@ MN I282=ev.move_api.rotatey(I281,1.57);
 MN I283=ev.move_api.scale2(I282,-1,1,-1);
 MN I284=ev.move_api.trans2(I283,0,-200,0);
 TL I285=ev.tree_api.level(std::vector<MN>{I231,I235,I239,I244,I249,I255,I260,I265,I271,I277,I284});
-T I286=ev.tree_api.tree(std::vector<TL>{I57,I114,I171,I228,I285});
+ T I286=ev.tree_api.tree(std::vector<TL>{I57,I114,I171 ,I228 /*,I285*/});
 PT I287=ev.point_api.point(0,0,0);
 PT I288=ev.point_api.point(0,300,0);
 P I289=ev.polygon_api.cone(10,I287,I288,50,50);
@@ -572,7 +573,7 @@ P I322=ev.tree_api.tree_p(ev,I286,std::vector<P>{I293,I300,I307,I314,I321},0.0);
  return I322;
 }
 
-ML snowman(EveryApi &ev)
+P snowman(EveryApi &ev)
 {
 PT I1=ev.point_api.point(0,0,0);
 BO I2=ev.bool_api.sphere(ev,I1,100.0,30,30);
@@ -599,10 +600,10 @@ P I22=ev.polygon_api.color_from_normals(I21);
 P I23=ev.polygon_api.color_grayscale(I22);
 P I24=ev.polygon_api.mix_color(I11,I23,0.5);
 P I25=ev.polygon_api.scale(I24,1,0.8,1);
-VA I26=ev.polygon_api.create_vertex_array(I25,true);
-ML I27=ev.polygon_api.render_vertex_array_ml(ev,I26);
-ML I28=ev.polygon_api.shading_shader(ev,I27,0xffaaaaaa,0xffeeeeee,0xffffffff);
- return I28;
+//VA I26=ev.polygon_api.create_vertex_array(I25,true);
+//ML I27=ev.polygon_api.render_vertex_array_ml(ev,I26);
+//ML I28=ev.polygon_api.shading_shader(ev,I27,0xffaaaaaa,0xffeeeeee,0xffffffff);
+ return I25;
 }
 
 ML gift(EveryApi &ev)
@@ -799,28 +800,97 @@ ML mainloop(EveryApi &ev, MN &move)
 {
   //P I1=tree(ev); //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
   ML ml1 = train(ev);
+  MN tmn0 = ev.move_api.empty();
+  MN tmn1 = ev.move_api.scale2(tmn0, -1.0,1.0,1.0);
+  MN tmn2 = ev.move_api.trans2(tmn1, 0.0,0.0,0.0);
+  ML ml1a = ev.move_api.move_ml(ev,ml1,tmn2);
+
   ML ml2 = reki(ev);
   MN mn0 = ev.move_api.empty();
   MN mn1 = ev.move_api.scale2(mn0, -1.0,1.0,1.0);
   MN mn = ev.move_api.trans2(mn1, 1500.0, 0.0, 0.0);
   ML ml2a = ev.move_api.move_ml(ev, ml2, mn);
 
+  // SANTA
   P p3 = tree(ev);
   VA I2=ev.polygon_api.create_vertex_array(p3,true);
   ML ml3=ev.polygon_api.render_vertex_array_ml(ev,I2);
-  ML ml4 = snowman(ev);
+  P ml4 = snowman(ev);
   ML ml5 = gift(ev);
   ML ml6 = santa(ev);
   MN mn6_0 = ev.move_api.empty();
-  MN mn6_1 = ev.move_api.scale2(mn6_0, -0.5, 0.5, -0.5);
+  float mult = 2.0;
+  MN mn6_1 = ev.move_api.scale2(mn6_0, -0.5*mult, 0.5*mult, -0.5*mult);
   MN mn6_2 = ev.move_api.trans2(mn6_1, 1500.0, 50.0, -150.0);
   ML ml6a = ev.move_api.move_ml(ev, ml6, mn6_2);
-  ML I3 = ev.mainloop_api.array_ml(std::vector<ML>{ml1, ml2a,ml6a});
+  ML I3 = ev.mainloop_api.array_ml(std::vector<ML>{ml1a, ml2a,ml6a});
   MN I4=ev.move_api.empty();
   MN I5=ev.move_api.trans2(I4,0.0,0.0,0.0);
-  move = I5;
   ML I6=ev.move_api.move_ml(ev,I3,I5);
-  return I6;
+
+
+  move = I5;
+
+  // TREES
+  //P aI1=ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+  P aI1 = p3;
+  P aI1a = ev.polygon_api.scale(aI1,2.0,2.0,2.0);
+
+  //P aI1=ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+PT aI2=ev.point_api.point(-3000,0,0);
+PT aI3=ev.point_api.point(3000,0,0);
+C aI4=ev.curve_api.line(aI2,aI3);
+PTS aI5=ev.curve_api.sample(aI4,10);
+PT aI6=ev.point_api.point(-3000,0,200);
+PT aI7=ev.point_api.point(3000,0,200);
+C aI8=ev.curve_api.line(aI6,aI7);
+PTS aI9=ev.curve_api.sample(aI8,10);
+PTS aI10=ev.points_api.or_points(aI5,aI9);
+ PTS aI10a = ev.points_api.scale(aI10, 2.0,2.0,2.0);
+ PTS aI10b = ev.points_api.move(aI10a, 12000.0,0.0,0.0);
+
+MT aI11=ev.materials_api.def(ev);
+MT aI12=ev.materials_api.web(ev,aI11);
+MT aI13=ev.materials_api.snow(ev,aI12);
+ML aI14=ev.materials_api.bind_inst(aI1a,aI10b,aI13);
+
+
+  // SNOWMANS
+  //P aI1=ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+ P bI1 = ml4;
+  P bI1a = ev.polygon_api.scale(bI1,2.0,2.0,2.0);
+
+  //P aI1=ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+PT bI2=ev.point_api.point(-3000,0,-300);
+PT bI3=ev.point_api.point(3000,0,-300);
+C bI4=ev.curve_api.line(bI2,bI3);
+PTS bI5=ev.curve_api.sample(bI4,4);
+PT bI6=ev.point_api.point(-3000,0,200);
+PT bI7=ev.point_api.point(3000,0,200);
+C bI8=ev.curve_api.line(bI6,bI7);
+PTS bI9=ev.curve_api.sample(bI8,4);
+PTS bI10=ev.points_api.or_points(bI5,bI9);
+ PTS bI10a = ev.points_api.scale(bI10, 2.0,2.0,2.0);
+ PTS bI10b = ev.points_api.move(bI10a, -9000.0,0.0,0.0);
+
+ MT bI11=ev.materials_api.def(ev);
+ //MT bI12=ev.materials_api.web(ev,bI11);
+ MT bI13=ev.materials_api.snow(ev,bI11);
+ML bI14=ev.materials_api.bind_inst(bI1a,bI10b,bI13);
+ML bI14b=ev.polygon_api.shading_shader(ev,bI14,0xffaaaaaa,0xffeeeeee,0xffffffff);
+
+  
+ ML Icomb = ev.mainloop_api.array_ml(std::vector<ML>{I6,aI14, bI14b});
+
+
+ MN cmn0 = ev.move_api.empty();
+ MN cmn1 = ev.move_api.trans2(cmn0, -4400.0*mult, 0.0, -700.0);
+ MN cmn1a = ev.move_api.trans2(cmn1, 0.0, 0.0, 0.0);
+ MN cmn2 = ev.move_api.translate(cmn1, 0.0, 500.0,  10000.0*mult, 0.0,0.0);
+ MN cmn3 = ev.move_api.scale2(cmn2, 1.0, 1.0, 0.6);
+ ML Icomb2 = ev.move_api.move_ml(ev, Icomb, cmn3);
+
+  return Icomb2;
 }
 
 void iter(void *arg)
@@ -828,8 +898,11 @@ void iter(void *arg)
   Envi *env = (Envi*)arg;
   if (env->logo_shown)
     {
+      env->counter++;
+      if (env->counter==1) { env->ev->mainloop_api.reset_time(); }
       bool b = env->ev->mainloop_api.logo_iter();
       if (b) { env->logo_shown = false; 
+	env->ev->mainloop_api.reset_time();
 #if 1
   env->ev->tracker_api.play_ogg("xmassong.ogg");
 #endif
@@ -907,6 +980,17 @@ int main(int argc, char *argv[]) {
   ev.mainloop_api.init_3d(sh2);
   ev.mainloop_api.init_3d(sh3);
   ev.shader_api.use(sh);
+
+#if 0
+  //M m = ev.matrix_api.perspective(500.0, double(800)/800, 100.1, 2000.0);
+  M m = ev.matrix_api.ortho(0, 1280.0, 900.0, 0,0,1);
+  ev.shader_api.set_var(sh, "in_P", m);
+  ev.shader_api.use(sh2);
+  ev.shader_api.set_var(sh2, "in_P", m);
+  ev.shader_api.use(sh3);
+  ev.shader_api.set_var(sh3, "in_P", m);
+  ev.shader_api.use(sh);
+#endif
 
   if (argc==2 && std::string(argv[1])=="--generate-logo")
     {
