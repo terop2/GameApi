@@ -2563,7 +2563,7 @@ public:
     env.in_MV = find_matrix(e, mat2);
 
     Matrix old_env = env.env;
-    env.env = env.env * find_matrix(e,mat2);
+    env.env = find_matrix(e,mat2) * env.env;
     next->execute(env);
     env.env = old_env;
   }
