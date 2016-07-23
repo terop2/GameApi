@@ -53,10 +53,16 @@ void iter(void *arg)
 	if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif
 
-    InteractionApi::quake_movement(e, env->pos_x, env->pos_y, env->rot_y,
+	InteractionApi::quake_movement_event(*env->ev,e, env->pos_x, env->pos_y, env->rot_y,
 				   env->data, env->speed_x, env->speed_y,
 				   1.0, 1.0*3.14159*2.0/360.0);
       }
+
+	InteractionApi::quake_movement_frame(*env->ev, env->pos_x, env->pos_y, env->rot_y,
+				   env->data, env->speed_x, env->speed_y,
+				   1.0, 1.0*3.14159*2.0/360.0);
+
+
 #if 0
     if ((e.ch=='w' || e.ch==26||e.ch==82)&& e.type==0x300) { env->pos_y+=env->speed_y; env->pos_x+=env->speed_x; }
     if ((e.ch=='s' || e.ch==22||e.ch==81)&& e.type==0x300) { env->pos_y-=env->speed_y; env->pos_x-=env->speed_x; }

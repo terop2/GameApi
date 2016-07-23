@@ -201,6 +201,7 @@ public:
   IMPORT void outline_third();
   IMPORT void outline_disable();
   IMPORT float get_time();
+  IMPORT float get_delta_time();
   IMPORT void reset_time();
   IMPORT int get_framenum();
   IMPORT void swapbuffers();
@@ -879,7 +880,11 @@ public:
     bool left=false;
     bool right=false;
   };
-  static void quake_movement(MainLoopApi::Event &e,
+  static void quake_movement_event(GameApi::EveryApi &ev, MainLoopApi::Event &e,
+			     float &pos_x, float &pos_y, float &rot_y,
+			     Quake_data &data,
+			     float &speed_x, float &speed_y, float speed, float rot_speed);
+  static void quake_movement_frame(GameApi::EveryApi &ev, 
 			     float &pos_x, float &pos_y, float &rot_y,
 			     Quake_data &data,
 			     float &speed_x, float &speed_y, float speed, float rot_speed);

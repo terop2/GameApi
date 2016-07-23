@@ -20,7 +20,7 @@ void GameApi::InteractionApi::wasd_movement(MainLoopApi::Event &e,
   if (data.right) { pos_y+=speed_x; } 
 }
 
-void GameApi::InteractionApi::quake_movement(MainLoopApi::Event &e,
+void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Event &e,
 				    float &pos_x, float &pos_y, float &rot_y, 
 					     Quake_data &data, float &speed_x, float &speed_y, float speed, float rot_speed)
 {
@@ -33,11 +33,14 @@ void GameApi::InteractionApi::quake_movement(MainLoopApi::Event &e,
   if ((e.ch=='a'||e.ch==4||e.ch==80) && e.type==0x301) { data.left = false; }
   if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x300) { data.right = true; }
   if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x301) { data.right = false; }
-  
-  if (data.backward) { pos_y += speed_y; pos_x+=speed_x; }
-  if (data.forward) { pos_y -= speed_y; pos_x-=speed_x; }
-  if (data.left) { rot_y -= rot_speed; }
-  if (data.right) { rot_y += rot_speed; }
+}
+void GameApi::InteractionApi::quake_movement_frame(EveryApi &ev, float &pos_x, float &pos_y, float &rot_y, Quake_data &data, float &speed_x, float &speed_y, float speed, float rot_speed)
+{
+ float delta = ev.mainloop_api.get_delta_time()*7.0;
+  if (data.backward) { pos_y += delta*speed_y; pos_x+=delta*speed_x; }
+  if (data.forward) { pos_y -= delta*speed_y; pos_x-=delta*speed_x; }
+  if (data.left) { rot_y -= delta*rot_speed; }
+  if (data.right) { rot_y += delta*rot_speed; }
 
   speed_x = speed*cos(rot_y+3.14159/2.0);
   speed_y = speed*sin(rot_y+3.14159/2.0);

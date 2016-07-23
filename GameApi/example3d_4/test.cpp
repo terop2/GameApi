@@ -70,10 +70,14 @@ void iter(void *arg)
 	if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif
 
-    InteractionApi::quake_movement(e, env->pos_x, env->pos_y, env->rot_y,
+	InteractionApi::quake_movement_event(*env->ev,e, env->pos_x, env->pos_y, env->rot_y,
 				   env->data, env->speed_x, env->speed_y,
 				   1.0, 1.0*3.14159*2.0/360.0);
       }
+
+    InteractionApi::quake_movement_frame(*env->ev, env->pos_x, env->pos_y, env->rot_y,
+				   env->data, env->speed_x, env->speed_y,
+				   1.0, 1.0*3.14159*2.0/360.0);
 
     M mat = env->ev->matrix_api.identity();
 	env->ev->shader_api.use(env->color_sh);

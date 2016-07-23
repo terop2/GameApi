@@ -351,6 +351,11 @@ EXPORT float GameApi::MainLoopApi::get_time()
 {
   return SDL_GetTicks()-time;
 }
+EXPORT float GameApi::MainLoopApi::get_delta_time()
+{
+  MainLoopPriv *pp = (MainLoopPriv*)priv;
+  return pp->delta_time;
+}
 EXPORT void GameApi::MainLoopApi::reset_time()
 {
   time = SDL_GetTicks();
@@ -416,6 +421,11 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
   unsigned int time = SDL_GetTicks();
   MainLoopPriv *p = (MainLoopPriv*)priv;
   p->frame_time = time;
+  unsigned int delta = time - p->previous_frame_time;
+  p->delta_time = float(delta)/100.0;
+  p->current_time = float(time)/100.0;
+
+  p->previous_frame_time = time;
   //SDL_Flip(surf);
   frame++;
 }
@@ -499,6 +509,9 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   Event e2;
   int last = SDL_PollEvent(&event);
   e2.last = last!=0;
+  //MainLoopPriv *p = (MainLoopPriv*)priv;
+  //e2.current_time = p->current_time;
+  //e2.delta_time = p->delta_time;
   int x,y;
   int val = SDL_GetMouseState(&x, &y);
   e2.type = event.type;
