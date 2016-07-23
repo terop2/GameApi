@@ -699,6 +699,7 @@ struct Envi
   float y_delta;
   bool logo_shown=true;
   int counter = 0;
+  bool forward=false, backward=false,left=false,right=false;
 } env;
 
 void iter()
@@ -858,12 +859,18 @@ void iter()
 #ifndef EMSCRIPTEN
     if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif
-    if ((e.ch=='w' || e.ch==26||e.ch==82)&& e.type==0x300) { env.pos_y+=env.speed_y; env.pos_x+=env.speed_x; }
-    if ((e.ch=='s' || e.ch==22||e.ch==81)&& e.type==0x300) { env.pos_y-=env.speed_y; env.pos_x-=env.speed_x; }
+    
+
+    if ((e.ch=='w' || e.ch==26||e.ch==82)&& e.type==0x300) { env.forward = true; }
+    if ((e.ch=='w' || e.ch==26||e.ch==82)&& e.type==0x301) { env.forward = false; }
+    if ((e.ch=='s' || e.ch==22||e.ch==81)&& e.type==0x300) { env.backward = true; }
+    if ((e.ch=='s' || e.ch==22||e.ch==81)&& e.type==0x301) { env.backward = false; }
 
 
-    if ((e.ch=='a'||e.ch==4||e.ch==80)&& e.type==0x300) { env.rot_y -= env.rot_speed; }
-    if ((e.ch=='d'||e.ch==7||e.ch==79)&& e.type==0x300) { env.rot_y += env.rot_speed; }
+    if ((e.ch=='a'||e.ch==4||e.ch==80)&& e.type==0x300) { env.left=true; }
+    if ((e.ch=='a'||e.ch==4||e.ch==80)&& e.type==0x301) { env.left=false; }
+    if ((e.ch=='d'||e.ch==7||e.ch==79)&& e.type==0x300) { env.right=true; }
+    if ((e.ch=='d'||e.ch==7||e.ch==79)&& e.type==0x301) { env.right=false; }
     if ((e.ch==' '||e.ch==44)&&env.frame+env.jump_duration>env.jump_start_frame && e.type==0x300)
       {
 	//std::cout << "Space" << std::endl;
@@ -893,6 +900,24 @@ void iter()
 	}
     }
 #endif
+    float delta = env.ev->mainloop_api.get_delta_time();
+    if (env.forward)
+      {
+	env.pos_y+=delta*env.speed_y; env.pos_x+=delta*env.speed_x;
+      }
+    if (env.backward)
+      {
+	env.pos_y-=delta*env.speed_y; env.pos_x-=delta*env.speed_x;
+      }
+    if (env.left)
+      {
+	env.rot_y -= delta*env.rot_speed;
+      }
+    if (env.right)
+      {
+	env.rot_y += delta*env.rot_speed;
+      }
+
     env.speed_x = env.speed*cos(env.rot_y+3.14159/2.0);
     env.speed_y = env.speed*sin(env.rot_y+3.14159/2.0);
 }

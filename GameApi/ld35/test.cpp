@@ -21,13 +21,13 @@ struct Envi {
   PTA e_instances;
   float pos_x=-0.124, pos_y=755.0;
   float rot_y=-5.58;
-#ifndef EMSCRIPTEN
+  //  #ifndef EMSCRIPTEN
   float speed = 60.0;
   float rot_speed = 2.0*3.14159*2.0/360.0;
-#else
-  float speed = 60.0*2.0;
-  float rot_speed = 2.0*2.0*3.14159*2.0/360.0;
-#endif
+  //#else
+  //  float speed = 60.0*2.0;
+  //  float rot_speed = 2.0*2.0*3.14159*2.0/360.0;
+  //#endif
   float speed_x = 1.0;
   float speed_y = 1.0;
   InteractionApi::Quake_data data;
@@ -378,14 +378,15 @@ void iter(void *arg)
     env->ev->mainloop_api.swapbuffers();
 
 
-    env->pos_y-=env->speed_y; env->pos_x-=env->speed_x; 
-    if (env->right) { env->bee_roty += env->rot_speed; }
-    if (env->left) { env->bee_roty -= env->rot_speed; }
+    float delta = env->ev->mainloop_api.get_delta_time()*7.0;
+    env->pos_y-=delta*env->speed_y; env->pos_x-=delta*env->speed_x; 
+    if (env->right) { env->bee_roty += delta*env->rot_speed; }
+    if (env->left) { env->bee_roty -= delta*env->rot_speed; }
     if (env->forward) { 
-      env->pos_y-=env->speed_y; env->pos_x-=env->speed_x; 
+      env->pos_y-=delta*env->speed_y; env->pos_x-=delta*env->speed_x; 
     }
     if (env->backward) {
-	env->pos_y+=env->speed_y; env->pos_x+=env->speed_x; 
+	env->pos_y+=delta*env->speed_y; env->pos_x+=delta*env->speed_x; 
     }
 
     if (env->pos_x <-20000.0) { env->pos_x = -20000.0; }
@@ -460,20 +461,10 @@ void iter(void *arg)
     //    InteractionApi::quake_movement(e, env->pos_x, env->pos_y, env->rot_y,
     //		   env->data, env->speed_x, env->speed_y,
     //				   100.0, 1.0*3.14159*2.0/360.0);
-#if 0
-    if ((e.ch=='w' || e.ch==26||e.ch==82)&& e.type==0x300) { 
-    }
-    if ((e.ch=='s' || e.ch==22||e.ch==81)&& e.type==0x300) 
-      { 
+
       }
-
-
-    if ((e.ch=='a'||e.ch==4||e.ch==80)&& e.type==0x300) { env->rot_y -= env->rot_speed; }
-    if ((e.ch=='d'||e.ch==7||e.ch==79)&& e.type==0x300) { env->rot_y += env->rot_speed; }
-#endif
     env->speed_x = env->speed*cos(env->bee_roty+3.14159/2.0+1.0);
     env->speed_y = env->speed*sin(env->bee_roty+3.14159/2.0+1.0);
-      }
 
     //    std::cout << env->pos_y << " " << env->pos_x << " " << env->rot_y << std::endl;
 

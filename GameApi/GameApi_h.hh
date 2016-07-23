@@ -113,6 +113,9 @@ struct MainLoopPriv
   unsigned int time;
   unsigned int frame_time;
   unsigned int avg_time;
+  float current_time;
+  float delta_time;
+  unsigned int previous_frame_time;
   int count;
   int frame;
 #ifndef EMSCRIPTEN
