@@ -29,7 +29,7 @@ public:
   void set_bm_id(int id) { bm_id=0; }
   int get_bm_id() const { return bm_id; }
   ~VertexArraySet();
-  void set_reserve(int id, int tri_count, int quad_count);
+  void set_reserve(int id, int tri_count, int quad_count, int poly_count);
   // id is the vertex array num to be used 0 = beginning, 1 = end
   // num is the number of points (all calls should share same num)
   void push_poly(int id, int num, Point *points);
@@ -51,20 +51,24 @@ public:
   int quad_count2(int id) const { return m_set[id]->quad_polys2.size(); }
   const Point *quad_polys(int id) const { return quad_count(id) ? &m_set[id]->quad_polys[0] : NULL; }
   const Point *quad_polys2(int id) const { return quad_count2(id) ? &m_set[id]->quad_polys2[0] : NULL; }
+  int poly_count_f(int id) const { return m_set[id]->poly_polys.size(); }
+  const Point *poly_polys(int id) const { return poly_count_f(id)? &m_set[id]->poly_polys[0] : NULL; }
+  int poly_count2(int id) const { return m_set[id]->poly_polys2.size(); }
+  const Point *poly_polys2(int id) const { return poly_count2(id)? &m_set[id]->poly_polys2[0] : NULL; }
+
 #if 0
-  int poly_count(int id) const { return m_set[id]->poly_polys.size(); }
   int poly2_count(int id, int i) const { return m_set[id]->poly_polys[i].size(); }
-  const Point *poly_polys(int id, int i) const { return poly2_count(id,i)? &m_set[id]->poly_polys[i][0] : NULL; }
 #endif
 
   int tri_normal_count(int id) const { return m_set[id]->tri_normals.size(); }
   const Vector *tri_normal_polys(int id) const { return tri_normal_count(id) ? &m_set[id]->tri_normals[0] : NULL; }
   int quad_normal_count(int id) const { return m_set[id]->quad_normals.size(); }
   const Vector *quad_normal_polys(int id) const { return quad_normal_count(id) ? &m_set[id]->quad_normals[0] : NULL; }
-#if 0
   int poly_normal_count(int id) const { return m_set[id]->poly_normals.size(); }
+  const Vector *poly_normal_polys(int id) const { return poly_normal_count(id) ? &m_set[id]->poly_normals[0] : NULL; }
+
+#if 0
   int poly2_normal_count(int id, int i) const { return m_set[id]->poly_normals[i].size(); }
-  const Vector *poly_normal_polys(int id, int i) const { return poly2_normal_count(id,i) ? &m_set[id]->poly_normals[i][0] : NULL; }
 #endif
 
 #if 0
@@ -90,20 +94,23 @@ public:
   const float *tri_color_polys(int id) const { return tri_color_count(id) ? &m_set[id]->tri_color[0] : NULL; }
   int quad_color_count(int id) const { return m_set[id]->quad_color.size(); }
   const float *quad_color_polys(int id) const { return quad_color_count(id) ? &m_set[id]->quad_color[0] : NULL; }
-#if 0
   int poly_color_count(int id) const { return m_set[id]->poly_color.size(); }
+  const float *poly_color_polys(int id) const { return poly_color_count(id) ? &m_set[id]->poly_color[0] : NULL; }
+
+#if 0
   int poly2_color_count(int id, int i) const { return m_set[id]->poly_color[i].size(); }
-  const float *poly_color_polys(int id, int i) const { return poly2_color_count(id,i) ? &m_set[id]->poly_color[i][0] : NULL; }
 #endif
 
   int tri_texcoord_count(int id) const { return m_set[id]->tri_texcoord.size(); }
   Point *tri_texcoord_polys(int id) { return tri_texcoord_count(id) ? &m_set[id]->tri_texcoord[0] : NULL; }
   int quad_texcoord_count(int id) const { return m_set[id]->quad_texcoord.size(); }
   Point *quad_texcoord_polys(int id) { return quad_texcoord_count(id) ? &m_set[id]->quad_texcoord[0] : NULL; }
-#if 0
   int poly_texcoord_count(int id) const { return m_set[id]->poly_texcoord.size(); }
+  const Point *poly_texcoord_polys(int id) const { return poly_texcoord_count(id) ? &m_set[id]->poly_texcoord[0] : NULL; }
+
+#if 0
+
   int poly2_texcoord_count(int id, int i) const { return m_set[id]->poly_texcoord[i].size(); }
-  const Point *poly_texcoord_polys(int id, int i) const { return poly2_texcoord_count(id,i) ? &m_set[id]->poly_texcoord[i][0] : NULL; }
 #endif  
 
   void check_m_set(int id);
@@ -114,16 +121,22 @@ public:
   struct Polys {
     std::vector<Point> tri_polys;
     std::vector<Point> quad_polys;
+    std::vector<Point> poly_polys;
     std::vector<Point> tri_polys2;
     std::vector<Point> quad_polys2;
+    std::vector<Point> poly_polys2;
     
     std::vector<Vector> tri_normals;
     std::vector<Vector> quad_normals;
+    std::vector<Vector> poly_normals;
 
     std::vector<float> tri_color;
     std::vector<float> quad_color;
+    std::vector<float> poly_color;
+
     std::vector<Point> tri_texcoord;
     std::vector<Point> quad_texcoord;
+    std::vector<Point> poly_texcoord;
   };
 public:
   static void append_to_polys(VertexArraySet::Polys &target, const VertexArraySet::Polys &source);
@@ -145,10 +158,12 @@ public:
 private:
   VertexArraySet &s;
   unsigned int buffers[5];
-  unsigned int vao[2];
+  unsigned int vao[3];
   unsigned int buffers2[5];
+  unsigned int buffers3[5];
   int tri_count;
   int quad_count;
+  int poly_count;
   unsigned int pos_buffer;
 };
 
@@ -173,6 +188,7 @@ public:
     int ss = coll.NumFaces();
     int tri_count=4;
     int quad_count=4;
+    int poly_count=4;
     for(int i=0;i<ss;i++)
       {
 	int w = coll.NumPoints(i);
@@ -184,8 +200,12 @@ public:
 	  {
 	    quad_count+=6;
 	  }
+	else
+	  {
+	    poly_count+=3;
+	  }
       }
-    s.set_reserve(id, tri_count, quad_count);
+    s.set_reserve(id, tri_count, quad_count, poly_count);
   }
   void copy(int start_range, int end_range, std::vector<int> attribs = std::vector<int>(), std::vector<int> attribsi = std::vector<int>())
   {
@@ -279,7 +299,7 @@ public:
   {
     //std::cout << "Thread " << start_range << " " << end_range << std::endl;
     VertexArraySet *s = new VertexArraySet;
-    s->set_reserve(0, end_range-start_range, end_range-start_range);
+    s->set_reserve(0, end_range-start_range, end_range-start_range, end_range-start_range);
     sets.push_back(s);
     FaceCollectionVertexArray2 *va = new FaceCollectionVertexArray2(*faces, *s);
     va2.push_back(va);
@@ -312,7 +332,7 @@ public:
     //std::cout << "collect" << std::endl;
 
     VertexArraySet *res = new VertexArraySet;
-    res->set_reserve(0, 1,1);
+    res->set_reserve(0, 1,1,1);
     int s = sets.size();
     for(int i=0;i<s;i++)
       {
