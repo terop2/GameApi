@@ -560,7 +560,7 @@ int main(int argc, char *argv[]) {
   // shader initialization
   ev.shader_api.load_default();
   SH sh = ev.shader_api.colour_shader();
-  SH sh2 = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:inst", "colour:light:light", false, {-1}, "INST EX_COLOR IN_COLOR", "");
+  SH sh2 = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:inst", "colour:light:light", false, {-1}, "INST EX_COLOR IN_COLOR", "EX_COLOR");
 
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);

@@ -317,6 +317,15 @@ EXPORT GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
+GameApi::PP add_plane_shape(GameApi::Env &e, PlaneShape *sh)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->plane_shapes.push_back(sh);
+  GameApi::PP im;
+  im.id = env->plane_shapes.size()-1;
+  return im;
+
+}
 GameApi::MC add_matrix_curve(GameApi::Env &e, Curve<Matrix> *m)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1060,6 +1069,12 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   Array<int,bool> *enable = info.enable_obj_array;
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
+}
+PlaneShape *find_plane_shape(GameApi::Env &e, GameApi::PP p)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->plane_shapes[p.id];
+
 }
 Curve<Matrix> *find_matrix_curve(GameApi::Env &e, GameApi::MC m)
 {
@@ -3594,7 +3609,7 @@ GameApi::US GameApi::UberShaderApi::f_empty(bool transparent)
 GameApi::US GameApi::UberShaderApi::f_diffuse(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("diffuse", next,""));
+  return add_uber(e, new F_ShaderCallFunction("diffuse", next,"EX_NORMAL2 EX_LIGHTPOS2"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_ambient(US us)
@@ -3606,19 +3621,19 @@ GameApi::US GameApi::UberShaderApi::f_ambient(US us)
 GameApi::US GameApi::UberShaderApi::f_specular(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("specular", next,""));
+  return add_uber(e, new F_ShaderCallFunction("specular", next,"EX_NORMAL2 EX_LIGHTPOS2"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_color_from_normals(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("color_from_normals", next,""));
+  return add_uber(e, new F_ShaderCallFunction("color_from_normals", next,"EX_NORMAL"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_point_light(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("point_light", next,""));
+  return add_uber(e, new F_ShaderCallFunction("point_light", next,"EX_POSITION LIGHTPOS"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_bands(US us)
@@ -3630,19 +3645,19 @@ GameApi::US GameApi::UberShaderApi::f_bands(US us)
 GameApi::US GameApi::UberShaderApi::f_snoise(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("snoise", next,""));
+  return add_uber(e, new F_ShaderCallFunction("snoise", next,"EX_POSITION"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_blur(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("blur", next,""));
+  return add_uber(e, new F_ShaderCallFunction("blur", next,"EX_TEXCOORD"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_ref(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("ref", next,""));
+  return add_uber(e, new F_ShaderCallFunction("ref", next,"EX_POSITION EX_NORMAL"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_light(US us)
@@ -3654,25 +3669,25 @@ GameApi::US GameApi::UberShaderApi::f_light(US us)
 GameApi::US GameApi::UberShaderApi::f_toon(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("toon", next,""));
+  return add_uber(e, new F_ShaderCallFunction("toon", next,"EX_NORMAL"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_texture(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("texture", next,""));
+  return add_uber(e, new F_ShaderCallFunction("texture", next,"EX_TEXCOORD"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_texture_arr(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("texture_arr", next,""));
+  return add_uber(e, new F_ShaderCallFunction("texture_arr", next,"EX_TEXCOORD"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_colour(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("colour", next,""));
+  return add_uber(e, new F_ShaderCallFunction("colour", next,"EX_COLOR"));
 }
 
 class LineCurve : public Curve<Point>

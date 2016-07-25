@@ -930,3 +930,160 @@ EXPORT GameApi::PL GameApi::PlaneApi::floodfill_border(GameApi::BB bitmap, int x
   return add_plane(e, points);
 }
 #endif
+
+
+//
+//
+//  NEW PLANE API BELOW
+//
+class PlaneShapeFunction : public PlaneShape
+{
+public:
+  PlaneShapeFunction(GameApi::Env &e, std::function<GameApi::PT (int idx)> f, int num_points, float px, float py, float sx, float sy) : e(e), f(f), num_points(num_points), px(px), py(py), sx(sx), sy(sy) { }
+  virtual int NumShapes() const { return 1; }
+  virtual int NumPoints(int shape) const { return num_points; }
+  virtual Point2d FacePoint(int shape, int point) const
+  {
+    GameApi::PT pt = f(point);
+    Point *pt1 = find_point(e, pt);
+    Point2d p = { pt1->x, pt1->y };
+    return p;
+  }
+  virtual unsigned int Color(int shape, int point) const
+  {
+    return 0xffffffff;
+  }
+  virtual Point2d TexCoord(int shape, int point) const
+  {
+    Point2d p = { 0.0, 0.0 };
+    return p;
+  }
+  virtual float PosX() const { return px; }
+  virtual float PosY() const { return py; }
+  virtual float SizeX() const { return sx; }
+  virtual float SizeY() const { return sy; }
+private:
+  GameApi::Env &e;
+  std::function<GameApi::PT (int idx)> f;
+  int num_points;
+  float px,py;
+  float sx,sy;
+};
+GameApi::PP GameApi::NewPlaneApi::function(std::function<PT (int idx)> f, int num_points, float px, float py, float sx, float sy)
+{
+  return add_plane_shape(e, new PlaneShapeFunction(e,f,num_points,px,py,sx,sy));
+}
+
+class ForwardPlaneShape : public PlaneShape
+{
+public:
+  ForwardPlaneShape(PlaneShape *shape) : shape(shape) { }
+  virtual int NumShapes() const { return shape->NumShapes(); }
+  virtual int NumPoints(int sh) const { return shape->NumPoints(sh); }
+  virtual Point2d FacePoint(int sh, int point) const
+  {
+    return shape->FacePoint(sh,point);
+  }
+  virtual unsigned int Color(int sh, int point) const
+  {
+    return shape->Color(sh,point);
+  }
+  virtual Point2d TexCoord(int sh, int point) const
+  {
+    return shape->TexCoord(sh,point);
+  }
+  virtual float PosX() const { return shape->PosX(); }
+  virtual float PosY() const { return shape->PosY(); }
+  virtual float SizeX() const { return shape->SizeX(); }
+  virtual float SizeY() const { return shape->SizeY(); }
+
+private:
+  PlaneShape *shape;
+};
+
+class PolygonPlaneShape : public PlaneShape
+{
+public:
+  PolygonPlaneShape(std::vector<Point2d> vec, float px, float py, float ex, float ey) : vec(vec),px(px), py(py), ex(ex), ey(ey) { }
+  virtual int NumShapes() const { return 1; }
+  virtual int NumPoints(int shape) const { return vec.size(); }
+  virtual Point2d FacePoint(int shape, int point) const
+  {
+    return vec[point];
+  }
+  virtual unsigned int Color(int shape, int point) const
+  {
+    return 0xffffffff;
+  }
+  virtual Point2d TexCoord(int shape, int point) const
+  {
+    Point2d p = { 0.0, 0.0 };
+    return p;
+  }
+  virtual float PosX() const { return px; }
+  virtual float PosY() const { return py; }
+  virtual float SizeX() const { return ex-px; }
+  virtual float SizeY() const { return ey-py; }
+private:
+  std::vector<Point2d> vec;
+  float px,py,ex,ey;
+};
+
+GameApi::PP GameApi::NewPlaneApi::polygon(std::vector<PT> vec)
+{
+  std::vector<Point2d> vec2;
+  float min_x = std::numeric_limits<float>::max();
+  float max_x = std::numeric_limits<float>::min();
+  float min_y = std::numeric_limits<float>::max();
+  float max_y = std::numeric_limits<float>::min();
+  int s=vec.size();
+  for(int i=0;i<s;i++)
+    {
+      Point *pt = find_point(e, vec[i]);
+      Point2d pt2 = { pt->x, pt->y };
+      if (pt2.x < min_x) min_x = pt2.x;
+      if (pt2.y < min_y) min_y = pt2.y;
+      if (pt2.x > max_x) max_x = pt2.x;
+      if (pt2.y > max_y) max_y = pt2.y;
+      vec2.push_back(pt2);
+    }
+  return add_plane_shape(e, new PolygonPlaneShape(vec2, min_x, min_y, max_x, max_y));
+}
+
+class ColorPlaneShape : public ForwardPlaneShape
+{
+public:
+  ColorPlaneShape(PlaneShape *next, unsigned int color) : ForwardPlaneShape(next), color(color) { }
+  virtual unsigned int Color(int shape, int point) const
+  {
+    return color;
+  }
+private:
+  unsigned int color;
+};
+class MovePlaneShape : public ForwardPlaneShape
+{
+public:
+  MovePlaneShape(PlaneShape *next, float dx, float dy) : ForwardPlaneShape(next), dx(dx), dy(dy) { }
+  virtual Point2d FacePoint(int shape, int point) const
+  {
+    Point2d p = ForwardPlaneShape::FacePoint(shape,point);
+    p.x += dx;
+    p.y += dy;
+    return p;    
+  }
+
+private:
+  float dx,dy;
+};
+
+GameApi::PP GameApi::NewPlaneApi::color(PP p, unsigned int color)
+{
+  PlaneShape *next = find_plane_shape(e, p);
+  return add_plane_shape(e, new ColorPlaneShape(next, color));
+}
+GameApi::PP GameApi::NewPlaneApi::trans(PP p, float dx, float dy)
+{
+  PlaneShape *next = find_plane_shape(e,p);
+  return add_plane_shape(e,new MovePlaneShape(next, dx,dy));
+}

@@ -474,5 +474,19 @@ public:
   virtual Matrix Index(int i) const=0;
 };
 
+class PlaneShape
+{
+public:
+  virtual int NumShapes() const=0;
+  virtual int NumPoints(int shape) const=0;
+  virtual Point2d FacePoint(int shape, int point) const=0;
+  virtual unsigned int Color(int shape, int point) const=0;
+  virtual Point2d TexCoord(int shape, int point) const=0;
+  virtual float PosX() const=0;
+  virtual float PosY() const=0;
+  virtual float SizeX() const=0;
+  virtual float SizeY() const=0;
+};
+
 
 #endif

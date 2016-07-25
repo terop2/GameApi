@@ -2359,6 +2359,11 @@ EXPORT GameApi::P GameApi::PolygonApi::tri_strip(PT *array, int size)
   return add_polygon2(e, new TriStripFaceCollection(vec),1);
   
 }
+EXPORT GameApi::P GameApi::PolygonApi::polygon2(std::vector<PT> vec)
+{
+  return polygon(&vec[0], vec.size());
+}
+
 EXPORT GameApi::P GameApi::PolygonApi::polygon(PT *array, int size)
 {
   PolygonElem *coll = new PolygonElem;

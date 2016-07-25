@@ -4336,6 +4336,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "float", "float", "float", "float", "float" },
 			 { "0.0", "100.0", "0.0", "100.0", "0.0" },
 			 "P", "polygon_api", "quad_z"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::polygon2,
+			 "polygon",
+			 { "vec" },
+			 { "[PT]" },
+			 { "" },
+			 "P", "polygon_api", "polygon2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, (GameApi::P (GameApi::PolygonApi::*)(float,float,float,float,float,float))&GameApi::PolygonApi::cube,
 			 "cube",
 			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },

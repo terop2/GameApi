@@ -1489,7 +1489,8 @@ public:
 	   float y1, float y2,
  	   float z);
         IMPORT P tri_strip(PT *array, int size);
-	IMPORT P polygon(PT *array, int size); // use render_dynamic with this.
+        IMPORT P polygon2(std::vector<PT> vec);
+        IMPORT P polygon(PT *array, int size); // use render_dynamic with this.
 	IMPORT P tri_vertex_array(float *v_array, int v_size,
 		     float *n_array, int n_size,
 		     unsigned int *c_array, int c_size,
@@ -1816,6 +1817,24 @@ private:
   ShaderApi &api;
 };
 
+class NewPlaneApi
+{
+public:
+  IMPORT NewPlaneApi(Env &e) : e(e) { }
+  IMPORT PP function(std::function<PT (int idx)> f, int num_points, float px, float py, float sx, float sy);
+  IMPORT PP color_function(PP pl, std::function<unsigned int (int idx)> f);
+  IMPORT PP polygon(std::vector<PT> vec);
+  IMPORT PP color(PP p, unsigned int color);
+  IMPORT PP trans(PP pl, float dx, float dy);
+  IMPORT PP or_elem(PP p1, PP p2);
+  IMPORT PP cicle(PT center, float radius, int numpoints);
+  IMPORT PP star(PT center, float radius_1, float radius_2, int numpoints);
+  
+  IMPORT LI to_lines(PP pl, float z);
+  IMPORT P to_poly(PP pl, float z);
+private:
+  Env &e;
+};
 
 class PlaneApi
 { // 2d coordinates in PT
@@ -2395,13 +2414,13 @@ public:
   IMPORT SH get_shader(std::string v_format, std::string f_format, std::string g_format,
 		       std::string v_comb="", std::string f_comb="", bool trans=true, SFO module={-1} );
   IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,
-			      std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, std::string v_defines="IN_NORMAL IN_COLOR IN_TEXCOORD IN_POSITION EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD EX_POSITION", std::string f_defines="");
+			      std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, std::string v_defines="IN_NORMAL IN_COLOR IN_TEXCOORD IN_POSITION EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD");
   IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,
 			      US v_comb, US f_comb, bool trans=true, SFO mod={-1}, std::string v_defines="", std::string f_defines="");
   SH get_shader_1(std::string v_format, std::string f_format, std::string g_format,
-		  std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, US v_c={-1}, US f_c={-1}, std::string v_defines="IN_NORMAL IN_COLOR IN_TEXCOORD IN_POSITION EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD EX_POSITION", std::string f_defines="");
+		  std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, US v_c={-1}, US f_c={-1}, std::string v_defines="IN_NORMAL IN_COLOR IN_TEXCOORD IN_POSITION EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD EX_POSITION", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD");
   SH get_normal_shader_1(std::string v_format, std::string f_format, std::string g_format,
-			 std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod = { -1 }, US v_c = { -1 }, US f_c = { -1 }, std::string v_defines="IN_NORMAL IN_POSITION IN_COLOR IN_TEXCOORD EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string f_defines="");
+			 std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod = { -1 }, US v_c = { -1 }, US f_c = { -1 }, std::string v_defines="IN_NORMAL IN_POSITION IN_COLOR IN_TEXCOORD EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD");
   IMPORT SH texture_shader();
   IMPORT SH texture_array_shader();
   IMPORT SH colour_shader();
