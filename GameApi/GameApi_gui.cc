@@ -1,6 +1,9 @@
 
 #include "GameApi_h.hh"
 #include "GameApi_gui.hh"
+
+const float keypress_rot_speed = 6.0;
+
 #define ORIGINAL_COLORS 1
 #ifdef ORIGINAL_COLORS
 const unsigned int c_tooltip_button = 0xff888888;
@@ -441,6 +444,7 @@ public:
     Point2d p2 = { 0.0,0.0 };
     set_pos(p2);
     rot_y = 0.0;
+    left=false; right=false;
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
@@ -452,13 +456,19 @@ public:
 
     if (ch=='a' && type==0x300)
       {
-	rot_y+=1.0*3.14159*2.0/360.0;
-	obj.set_rotation_y(rot_y);
+	left = true;
+      }
+    if (ch=='a' && type==0x301)
+      {
+	left = false;
       }
     if (ch=='d' && type==0x300)
       {
-	rot_y-=1.0*3.14159*2.0/360.0;
-	obj.set_rotation_y(rot_y);
+	right=true;
+      }
+    if (ch=='d' && type==0x301)
+      {
+	right=false;
       }
 
     if (firsttime)
@@ -471,6 +481,16 @@ public:
   }  
   void render()
   {
+    if (left)
+      {
+	rot_y+=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
+	obj.set_rotation_y(rot_y);
+      }
+    if (right)
+      {
+	rot_y-=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
+	obj.set_rotation_y(rot_y);
+      }
     if (!firsttime)
       {
 	Point2d pos = get_pos();
@@ -495,6 +515,7 @@ private:
   int sx,sy;
   int screen_x, screen_y;
   float rot_y;
+  bool left,right;
 };
 
 class VAGuiWidget : public GuiWidgetForward
@@ -507,6 +528,7 @@ public:
     set_pos(p2);
     rot_y = 0.0;
     mat = ev.matrix_api.identity();
+    left=false; right=false;
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
@@ -518,15 +540,19 @@ public:
 
     if (ch=='a' && type==0x300)
       {
-	rot_y+=1.0*3.14159*2.0/360.0;
-	//obj.set_rotation_y(rot_y);
-	mat = ev.matrix_api.yrot(rot_y);
+	left = true;
+      }
+    if (ch=='a' && type==0x301)
+      {
+	left = false;
       }
     if (ch=='d' && type==0x300)
       {
-	rot_y-=1.0*3.14159*2.0/360.0;
-	//obj.set_rotation_y(rot_y);
-	mat = ev.matrix_api.yrot(rot_y);
+	right = true;
+      }
+    if (ch=='d' && type==0x301)
+      {
+	right=false;
       }
 
     if (firsttime)
@@ -539,6 +565,18 @@ public:
   }  
   void render()
   {
+    if (left)
+      {
+	rot_y+=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
+	//obj.set_rotation_y(rot_y);
+	mat = ev.matrix_api.yrot(rot_y);
+      }
+    if (right)
+      {
+	rot_y-=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
+	//obj.set_rotation_y(rot_y);
+	mat = ev.matrix_api.yrot(rot_y);
+      }
     if (!firsttime)
       {
 	Point2d pos = get_pos();
@@ -566,6 +604,7 @@ private:
   int sx,sy;
   int screen_x, screen_y;
   float rot_y;
+  bool left,right;
 };
 
 class MLGuiWidget : public GuiWidgetForward
@@ -582,6 +621,7 @@ public:
     e.type = -1;
     e.ch = -1;
     e.button = -1;
+    left=false; right=false;
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
@@ -592,6 +632,11 @@ public:
 	e.button = button;
 	e.cursor_pos = ev.point_api.point(mouse.x,mouse.y,0.0);
       }
+    if (!firsttime)
+      {
+	ev.mainloop_api.event_ml(p, e);
+      }
+
 #ifdef EMSCRIPTEN
     if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
     if (ch==39) ch='0';
@@ -600,15 +645,19 @@ public:
 
     if (ch=='a' && type==0x300)
       {
-	rot_y+=1.0*3.14159*2.0/360.0;
-	//obj.set_rotation_y(rot_y);
-	mat = ev.matrix_api.yrot(rot_y);
+	left=true;
+      }
+    if (ch=='a' && type==0x301)
+      {
+	left=false;
       }
     if (ch=='d' && type==0x300)
       {
-	rot_y-=1.0*3.14159*2.0/360.0;
-	//obj.set_rotation_y(rot_y);
-	mat = ev.matrix_api.yrot(rot_y);
+	right=true;
+      }
+    if (ch=='d' && type==0x301)
+      {
+	right=false;
       }
 
     if (firsttime)
@@ -621,6 +670,18 @@ public:
   }  
   void render()
   {
+    if (left)
+      {
+	rot_y+=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
+	//obj.set_rotation_y(rot_y);
+	mat = ev.matrix_api.yrot(rot_y);
+      }
+    if (right)
+      {
+	rot_y-=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
+	//obj.set_rotation_y(rot_y);
+	mat = ev.matrix_api.yrot(rot_y);
+      }
     if (!firsttime)
       {
 	Point2d pos = get_pos();
@@ -644,7 +705,7 @@ public:
 	GameApi::M in_T = ev.mainloop_api.in_T(ev, true);
 	GameApi::M in_N = ev.mainloop_api.in_N(ev, true);
 	//e.inMV = find_matrix(env, mat);
-	ev.mainloop_api.execute_ml(p, sh, sh2, sh_arr,e, mat, in_T, in_N);
+	ev.mainloop_api.execute_ml(p, sh, sh2, sh_arr,mat, in_T, in_N);
 	e.type = -1;
 	e.ch = -1;
 	e.button = -1;
@@ -675,6 +736,7 @@ private:
   int sx,sy;
   int screen_x, screen_y;
   float rot_y;
+  bool left,right;
 };
 
 
@@ -689,6 +751,8 @@ public:
     set_pos(p2);
     rot_y = 0.0;
     time = ev.mainloop_api.get_time();
+    left=false; right=false;
+
   }
   GameApi::V func(int face, int point, GameApi::EveryApi &ev)
   {
@@ -726,11 +790,19 @@ public:
 
     if (ch=='a' && type==0x300)
       {
-	rot_y+=1.0*3.14159*2.0/360.0;
+	left = true;
+      }
+    if (ch=='a' && type==0x301)
+      {
+	left = false;
       }
     if (ch=='d' && type==0x300)
       {
-	rot_y-=1.0*3.14159*2.0/360.0;
+	right=true;
+      }
+    if (ch=='d' && type==0x301)
+      {
+	right=false;
       }
 
 
@@ -757,6 +829,14 @@ public:
   }  
   void render()
   {
+    if (left)
+      {
+	rot_y+=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
+      }
+    if (right)
+      {
+	rot_y-=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
+      }
     if (!firsttime)
       {
 	float f = (ev.mainloop_api.get_time()-time)/1000.0;
@@ -780,6 +860,7 @@ private:
   int screen_x, screen_y;
   float rot_y;
   float time;
+  float left,right;
 };
 
 
@@ -792,6 +873,7 @@ public:
     Point2d p2 = { 0.0,0.0 };
     set_pos(p2);
     rot_y = 0.0;
+    left=false; right=false;
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
@@ -802,13 +884,19 @@ public:
 #endif
     if (ch=='a' && type==0x300)
       {
-	rot_y+=1.0*3.14159*2.0/360.0;
-	obj.set_rotation_matrix(ev.matrix_api.yrot(rot_y));
+	left=true;
+      }
+    if (ch=='a' && type==0x301)
+      {
+	left=false;
       }
     if (ch=='d' && type==0x300)
       {
-	rot_y-=1.0*3.14159*2.0/360.0;
-	obj.set_rotation_matrix(ev.matrix_api.yrot(rot_y));
+	right=true;
+      }
+    if (ch=='d' && type==0x301)
+      {
+	right=false;
       }
 
     if (firsttime)
@@ -821,6 +909,16 @@ public:
   }  
   void render()
   {
+    if (left)
+      {
+	rot_y+=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
+	obj.set_rotation_matrix(ev.matrix_api.yrot(rot_y));
+      }
+    if (right)
+      {
+	rot_y-=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
+	obj.set_rotation_matrix(ev.matrix_api.yrot(rot_y));
+      }
     if (!firsttime)
       {
 	Point2d pos = get_pos();
@@ -847,6 +945,7 @@ private:
   int sx,sy;
   int screen_x, screen_y;
   float rot_y;
+  bool left,right;
 };
 
 
@@ -869,13 +968,19 @@ public:
 #endif
     if (ch=='a' && type==0x300)
       {
-	rot_y+=1.0*3.14159*2.0/360.0;
-	obj.set_rotation_matrix(ev.matrix_api.yrot(rot_y));
+	left=true;
       }
     if (ch=='d' && type==0x300)
       {
-	rot_y-=1.0*3.14159*2.0/360.0;
-	obj.set_rotation_matrix(ev.matrix_api.yrot(rot_y));
+	right=true;
+      }
+    if (ch=='a' && type==0x301)
+      {
+	left=false;
+      }
+    if (ch=='d' && type==0x301)
+      {
+	right=false;
       }
 
     if (firsttime)
@@ -888,6 +993,16 @@ public:
   }  
   void render()
   {
+    if (left)
+      {
+	rot_y+=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
+	obj.set_rotation_matrix(ev.matrix_api.yrot(rot_y));
+      }
+    if (right)
+      {
+	rot_y-=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
+	obj.set_rotation_matrix(ev.matrix_api.yrot(rot_y));
+      }
     if (!firsttime)
       {
 	Point2d pos = get_pos();
@@ -912,6 +1027,7 @@ private:
   int sx,sy;
   int screen_x, screen_y;
   float rot_y;
+  bool left,right;
 };
 
 class IconGuiWidget : public GuiWidgetForward
@@ -1707,7 +1823,7 @@ EXPORT GameApi::W GameApi::GuiApi::mouse_move(W widget, int area_x, int area_y, 
   return add_widget(e, new MouseMoveWidget(ev, wid, area_x, area_y, area_width, area_height));
 }
 
-EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltip, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params)
+EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltip, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params, std::string symbol, std::string comment)
 {
   std::vector<W> vec;
   int s = param_types.size();
@@ -1735,7 +1851,16 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
     }
 
   W node_2 = text(label, atlas,atlas_bm);
-  W node_22 = margin(node_2, 5,5,5,5);
+  W node_2a = text(symbol, atlas,atlas_bm);
+  //float wd = size_x(node_2) + size_x(node_2a) + 5;
+  //if (max_width<wd) max_width = wd;
+
+  //W insert = text(comment,atlas,atlas_bm);
+  W node_2b = tooltip(node_2a, node_2a, comment, atlas, atlas_bm,2,0.0);
+  W node_2bb = layer(node_2a, node_2b);
+  std::vector<W> arr = { node_2, node_2bb };
+  W node_2c = array_x(&arr[0],arr.size(),5);
+  W node_22 = margin(node_2c, 5,5,5,5);
 
   W array = array_y(&vec[0], vec.size(), 5);
   int ssy = std::max(sy, size_y(array)+size_y(node_22)+5);
@@ -3418,10 +3543,11 @@ public:
 	  std::vector<std::string> param_name,
 	  std::vector<std::string> param_type,
 	  std::vector<std::string> param_default,
-	  std::string ret_type, std::string api_name, std::string func_name) 
+	  std::string ret_type, std::string api_name, std::string func_name,
+	  std::string symbols, std::string comment) 
     : api(api), fptr(fptr), name(name), param_name(param_name),
       param_type(param_type), param_default(param_default), 
-      return_type(ret_type), api_name(api_name), func_name(func_name) { }
+      return_type(ret_type), api_name(api_name), func_name(func_name), symbols(symbols), comment(comment) { }
   int Count() const { return 1; }
   std::string Name(int i) const { return name; }
   int ParamCount(int i) const { return param_name.size(); }
@@ -3429,6 +3555,8 @@ public:
   std::string ParamType(int i, int p) const { return param_type[p]; }
   std::string ParamDefault(int i, int p) const { return param_default[p]; }
   std::string ReturnType(int i) const { return return_type; }
+  std::string Symbols() const { return symbols; }
+  std::string Comment() const { return comment; }
   int Execute(GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)
   {
     return funccall(ev, api, fptr, params, e, param_name); 
@@ -3476,6 +3604,8 @@ private:
   std::string return_type;
   std::string api_name;
   std::string func_name;
+  std::string symbols;
+  std::string comment;
 };
 template<class T, class RT, class... P>
 GameApiItem* ApiItemF(T (GameApi::EveryApi::*api), RT (T::*fptr)(P...),
@@ -3483,9 +3613,9 @@ GameApiItem* ApiItemF(T (GameApi::EveryApi::*api), RT (T::*fptr)(P...),
 		      std::vector<std::string> param_name,
 		      std::vector<std::string> param_type,
 		      std::vector<std::string> param_default,
-		      std::string return_type, std::string api_name, std::string func_name)
+		      std::string return_type, std::string api_name, std::string func_name, std::string symbols="", std::string comment="")
 {
-  return new ApiItem<T,RT,P...>(api, fptr, name, param_name, param_type, param_default, return_type, api_name, func_name);
+  return new ApiItem<T,RT,P...>(api, fptr, name, param_name, param_type, param_default, return_type, api_name, func_name, symbols,comment);
 }
 std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::vector<GameApiItem*> vec2)
 {
@@ -3694,7 +3824,7 @@ std::vector<GameApiItem*> volumeapi_functions()
 			 { "c", "c_x", "c_y", "cc_x", "cc_y" },
 			 { "float", "float", "float", "float", "float" },
 			 { "100.0", "0.0", "0.0", "60.0", "0.0" },
-			 "IM", "implicit_api", "blob"));
+			 "IM", "implicit_api", "blob","[B]", "Broken"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::implicit_api, &GameApi::ImplicitApi::translate,
 			 "im_translate",
 			 { "obj", "dx", "dy", "dz" },
@@ -3939,7 +4069,7 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "fd", "d", "i" },
 			 { "FD", "float", "float" },
 			 { "", "10.2", "30.0" },
-			 "FD", "dist_api", "ambient_occulsion"));
+			 "FD", "dist_api", "ambient_occulsion","[B]", "Broken"));
 			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::render2,
 			 "fd_render2",
@@ -3959,19 +4089,19 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "ev", "fd", "dx", "dy", "dz", "sx", "sy", "ssx", "ssy", "ssxi", "ssyi", "ssx2", "ssy2" },
 			 { "EveryApi&", "FD", "float", "float", "float", "int", "int", "float", "float", "int", "int", "float", "float" },
 			 { "ev", "", "400.0", "400.0", "400.0", "256", "256", "400.0", "400.0", "50", "50", "100.0", "100.0" },
-			 "P", "dist_api", "distance_poly"));
+			 "P", "dist_api", "distance_poly","[B]","Sometimes gives bad results"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::distance_poly_cyl,
 			 "fd_render_cyl_p",
 			 { "ev", "fd", "pos_x", "pos_y", "pos_z", "dx", "dy", "dz", "sx", "sy", "ssx", "ssy", "ssxi", "ssyi", "ssx2", "ssy2" },
 			 { "EveryApi&", "FD", "float", "float", "float", "float", "float", "float", "int", "int", "float", "float", "int", "int", "float", "float" },
 			 { "ev", "", "0.0", "-600.0", "0.0", "300.0", "1200.0", "300.0", "50", "50", "40.0", "40.0", "50", "50", "50.0", "50.0" },
-			 "P", "dist_api", "distance_poly_cyl"));
+			 "P", "dist_api", "distance_poly_cyl","[B]", "Sometimes gives bad result"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::distance_poly_sph,
 			 "fd_render_sph_p",
 			 { "ev", "fd", "dx", "dy", "dz", "sx", "sy", "ssx", "ssy", "ssxi", "ssyi", "ssx2", "ssy2" },
 			 { "EveryApi&", "FD", "float", "float", "float", "int", "int", "float", "float", "int", "int", "float", "float" },
 			 { "ev", "", "400.0", "400.0", "400.0", "256", "256", "40.0", "40.0", "50", "50", "50.0", "50.0" },
-			 "P", "dist_api", "distance_poly_sph"));
+			 "P", "dist_api", "distance_poly_sph", "[B]", "Sometimes gives bad result"));
 
   return vec;
 }
@@ -4296,7 +4426,7 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "ev", "sfo", "mt" },
 			 { "EveryApi&", "SFO", "MT" },
 			 { "ev", "","" },
-			 "MT", "materials_api", "dist_field_mesh"));
+			 "MT", "materials_api", "dist_field_mesh","[B]","Loses animations from SFO"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bind,
 			 "m_bind",
 			 { "p", "mat" },
@@ -4310,6 +4440,13 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "", "", "" },
 			 "ML", "materials_api", "bind_inst"));
   
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bind_inst2,
+			 "m_bind_inst2",
+			 { "p", "pta", "mat" },
+			 { "P", "PTA", "MT" },
+			 { "", "", "" },
+			 "ML", "materials_api", "bind_inst2"));
+
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_event,
 			 "keyevent_ml",
@@ -4451,20 +4588,20 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "bm", "fb", "sx", "sy", "z" },
 			 { "BM", "FB", "float", "float", "float" },
 			 { "", "", "100", "100", "0" },
-			 "P", "polygon_api", "color_map3"));
+			 "P", "polygon_api", "color_map3", "[B]", "Broken"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, (GameApi::P (GameApi::PolygonApi::*)(GameApi::BM, GameApi::FB,float,float,float))&GameApi::PolygonApi::color_map3_cyl,
 			 "color_map3_cyl",
 			 { "bm", "fb", "sx", "sy", "z" },
 			 { "BM", "FB", "float", "float", "float" },
 			 { "", "", "100", "100", "0" },
-			 "P", "polygon_api", "color_map3_cyl"));
+			 "P", "polygon_api", "color_map3_cyl", "[B]", "Broken"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, (GameApi::P (GameApi::PolygonApi::*)(GameApi::BM, GameApi::FB,float,float,float))&GameApi::PolygonApi::color_map3_sph,
 			 "color_map3_sph",
 			 { "bm", "fb", "sx", "sy", "z" },
 			 { "BM", "FB", "float", "float", "float" },
 			 { "", "", "100", "100", "0" },
-			 "P", "polygon_api", "color_map3_sph"));
+			 "P", "polygon_api", "color_map3_sph", "[B]", "Slightly Broken"));
 
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color,
@@ -4566,32 +4703,32 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "orig", "dx", "dy", "dz" },
 			 { "P", "float", "float", "float" },
 			 { "", "0.0", "0.0", "0.0" },
-			 "P", "polygon_api", "translate"));
+			 "P", "polygon_api", "translate","[S]"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rotatex,
 			 "rotatex",
 			 { "orig", "angle" },
 			 { "P", "float" },
 			 { "", "0.0" },
-			 "P", "polygon_api", "rotatex"));
+			 "P", "polygon_api", "rotatex","[S]"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rotatey,
 			 "rotatey",
 			 { "orig", "angle" },
 			 { "P", "float" },
 			 { "", "0.0" },
-			 "P", "polygon_api", "rotatey"));
+			 "P", "polygon_api", "rotatey","[S]"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rotatez,
 			 "rotatez",
 			 { "orig", "angle" },
 			 { "P", "float" },
 			 { "", "0.0" },
-			 "P", "polygon_api", "rotatez"));
+			 "P", "polygon_api", "rotatez","[S]"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::scale,
 			 "scale",
 			 { "orig", "sx", "sy", "sz" },
 			 { "P", "float", "float", "float" },
 			 { "", "1.0", "1.0", "1.0" },
-			 "P", "polygon_api", "scale"));
+			 "P", "polygon_api", "scale","[S]"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::shadow,
 			 "shadow",
 			 { "orig", "pos", "u_x", "u_y", "light_vec" },
@@ -4672,6 +4809,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "EveryApi&", "P", "PTS" },
 			 { "ev", "", "" },
 			 "ML", "materials_api", "render_instanced_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::render_instanced2_ml,
+			 "p_render_inst2",
+			 { "ev", "va", "pta" },
+			 { "EveryApi&", "VA", "PTA" },
+			 { "ev", "", "" },
+			 "ML", "materials_api", "render_instanced2_ml","","Can be used for dynamic changes for pta"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::shading_shader,
 			 "p_shading",
 			 { "ev", "mainloop", "level1", "level2", "level3" },
@@ -4817,7 +4960,7 @@ std::vector<GameApiItem*> shadermoduleapi_functions()
 			 { "obj", "name", "value" },
 			 { "SFO", "std::string", "std::string" },
 			 { "", "a", "0" },
-			 "SFO", "sh_api", "bind_arg"));
+			 "SFO", "sh_api", "bind_arg","","Allows dynamic anims in the future"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::color_from_normal,
 			 "color_from_normal",
 			 { "obj" },
@@ -4865,7 +5008,7 @@ std::vector<GameApiItem*> shadermoduleapi_functions()
 			 { "prim", "inside", "outside" },
 			 { "SFO", "SFO", "SFO" },
 			 { "", "", "" },
-			 "SFO", "sh_api", "bounding_primitive"));
+			 "SFO", "sh_api", "bounding_primitive","","Allows huge speedup in rendering of sfo"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::render,
 			 "render",
 			 { "obj" },
@@ -5187,7 +5330,7 @@ std::vector<GameApiItem*> floatbitmapapi_functions()
 			 { "bb" },
 			 { "BB" },
 			 { "" },
-			 "FB", "float_bitmap_api", "distance_field"));
+			 "FB", "float_bitmap_api", "distance_field","[B]","Broken"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::add_border,
 			 "add_border",
 			 { "fb" },

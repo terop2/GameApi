@@ -629,17 +629,17 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 
   return e2;
 }
-void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH array_texture, const Event &ee, M in_MV, M in_T, M in_N)
+void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH array_texture, M in_MV, M in_T, M in_N)
 {
   MainLoopItem *item = find_main_loop(e, ml);
   MainLoopEnv ek;
   ek.sh_color = color.id;
   ek.sh_texture = texture.id;
   ek.sh_array_texture = array_texture.id;
-  ek.type = ee.type;
-  ek.ch = ee.ch;
-  ek.cursor_pos = *find_point(e,ee.cursor_pos);
-  ek.button = ee.button;
+  //ek.type = ee.type;
+  //ek.ch = ee.ch;
+  //ek.cursor_pos = *find_point(e,ee.cursor_pos);
+  //ek.button = ee.button;
   ek.env = find_matrix(e,in_MV);
   ek.in_MV = find_matrix(e, in_MV);
   ek.in_T = find_matrix(e, in_T);
@@ -647,7 +647,16 @@ void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH array_text
   ek.time = get_time()/1000.0;
   item->execute(ek);
 }
-
+void GameApi::MainLoopApi::event_ml(ML ml, const Event &ee)
+{
+  MainLoopEvent e2;
+  e2.type = ee.type;
+  e2.ch = ee.ch;
+  e2.cursor_pos = *find_point(e,ee.cursor_pos);
+  e2.button = ee.button;
+  MainLoopItem *item = find_main_loop(e, ml);
+  item->handle_event(e2);
+}
 class ArrayMainLoop : public MainLoopItem
 {
 public:
@@ -658,6 +667,14 @@ public:
     for(int i=0;i<s;i++)
       {
 	vec[i]->execute(e);
+      }
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->handle_event(e);
       }
   }
   int shader_id() { return -1; }
@@ -709,12 +726,12 @@ LogoEnv *logo_env = 0;
 bool GameApi::MainLoopApi::logo_iter()
 {
   LogoEnv *env = logo_env;
-  GameApi::MainLoopApi::Event event = env->ev->mainloop_api.get_event();
+  /*GameApi::MainLoopApi::Event event =*/ env->ev->mainloop_api.get_event();
   env->ev->mainloop_api.clear_3d();
   M in_MV = env->ev->mainloop_api.in_MV(*env->ev, true);
   M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
   M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
-  env->ev->mainloop_api.execute_ml(env->res, env->color, env->texture, env->arr, event,in_MV, in_T, in_N);
+  env->ev->mainloop_api.execute_ml(env->res, env->color, env->texture, env->arr,in_MV, in_T, in_N);
   env->ev->mainloop_api.swapbuffers();
   frame_count++;
   if (frame_count>300) {

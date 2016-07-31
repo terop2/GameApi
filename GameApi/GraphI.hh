@@ -248,6 +248,8 @@ public:
   virtual std::string ParamType(int i, int p) const=0;
   virtual std::string ParamDefault(int i, int p) const=0;
   virtual std::string ReturnType(int i) const=0;
+  virtual std::string Symbols() const=0;
+  virtual std::string Comment() const=0;
   virtual int Execute(GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)=0;
   virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)=0;
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) { }
@@ -282,10 +284,10 @@ struct MainLoopEnv
   int sh_array_texture = 0;
 
   // from event api
-  int type;
-  int ch;
-  Point cursor_pos;
-  int button;
+  //int type;
+  //int ch;
+  //Point cursor_pos;
+  //int button;
 
   float time = 0.0;
 
@@ -301,10 +303,19 @@ struct MainLoopEnv
   int sfo_id=-1;
 };
 
+struct MainLoopEvent
+{
+  int type;
+  int ch;
+  Point cursor_pos;
+  int button;
+};
+
 class MainLoopItem
 {
 public:
   virtual void execute(MainLoopEnv &e)=0;
+  virtual void handle_event(MainLoopEvent &e)=0;
   virtual int shader_id() { return -1; }
 };
 
@@ -457,6 +468,7 @@ class Material
 public:
   virtual int mat(int p) const=0; 
   virtual int mat_inst(int p, int pts) const=0;
+  virtual int mat_inst2(int p, int pta) const=0;
 };
 
 class ShaderCall

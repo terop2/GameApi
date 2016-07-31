@@ -73,6 +73,8 @@ void iter(void *arg)
 	InteractionApi::quake_movement_event(*env->ev,e, env->pos_x, env->pos_y, env->rot_y,
 				   env->data, env->speed_x, env->speed_y,
 				   1.0, 1.0*3.14159*2.0/360.0);
+	env->ev->mainloop_api.event_ml(env->mainloop, e);
+
       }
 
     InteractionApi::quake_movement_frame(*env->ev, env->pos_x, env->pos_y, env->rot_y,
@@ -92,7 +94,7 @@ void iter(void *arg)
 	M in_T = env->ev->mainloop_api.in_MV(*env->ev, true);
 	M in_N = env->ev->mainloop_api.in_MV(*env->ev, true);
 
-	env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->arr_texture_sh, e, in_MV, in_T, in_N);
+	env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N);
 
 
     env->ev->mainloop_api.fpscounter();

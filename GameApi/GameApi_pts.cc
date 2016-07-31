@@ -213,6 +213,11 @@ EXPORT GameApi::PTS GameApi::PointsApi::shadow_points(GameApi::PTS obj,
   Vector *light = find_vector(e, light_vec);
   return add_points_api_points(e, new ShadowPoints(pts, *pt, *uu_x, *uu_y, *light));
 }
+int GameApi::PointsApi::num_points(PTA pta)
+{
+  PointArray3 *arr = find_point_array3(e, pta);
+  return arr->numpoints;
+}
 float *GameApi::PointsApi::point_access(GameApi::PTA pta, int pointnum)
 {
   PointArray3 *arr = find_point_array3(e, pta);
@@ -646,6 +651,9 @@ class PointsApiRender : public MainLoopItem
 {
 public:
   PointsApiRender(GameApi::Env &env, GameApi::EveryApi &ev, PointArray3 *arr) : env(env), ev(ev), arr(arr) { }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
   void execute(MainLoopEnv &e)
   {
     GameApi::SH sh;

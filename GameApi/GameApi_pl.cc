@@ -442,6 +442,9 @@ public:
   SaveModel(GameApi::PolygonApi &api, GameApi::P poly, std::string filename) : api(api), poly(poly), filename(filename)
   {
   }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
   void execute(MainLoopEnv &e)
   {
     api.save_model(poly, filename);
@@ -2429,6 +2432,9 @@ class UpdateVA : public MainLoopItem
 {
 public:
   UpdateVA(GameApi::PolygonApi &api, GameApi::VA va, GameApi::P p, bool keep) : api(api), va(va), p(p), keep(keep) { }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
   void execute(MainLoopEnv &e)
   {
     api.update_vertex_array(va,p,keep);
@@ -2667,6 +2673,9 @@ public:
     shader.id = -1;
   }
   int shader_id() { return shader.id; }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
   void execute(MainLoopEnv &e)
   { 
 
@@ -2738,6 +2747,9 @@ public:
     //ev.mainloop_api.alpha(true); 
     firsttime = true;
   }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -2792,6 +2804,9 @@ public:
   {
     firsttime = true;
   }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -2839,6 +2854,9 @@ public:
   TextureArrShaderML(GameApi::EveryApi &ev, MainLoopItem *next) : ev(ev), next(next) 
   {
     firsttime = true;
+  }
+  void handle_event(MainLoopEvent &e)
+  {
   }
   void execute(MainLoopEnv &e)
   {
@@ -2889,6 +2907,9 @@ public:
     //ev.mainloop_api.init_3d(sh);
     //ev.mainloop_api.alpha(true); 
     firsttime = true;
+  }
+  void handle_event(MainLoopEvent &e)
+  {
   }
   void execute(MainLoopEnv &e)
   {
@@ -2946,6 +2967,9 @@ public:
     //ev.mainloop_api.alpha(true); 
     firsttime = true;
   }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -3001,6 +3025,9 @@ public:
     firsttime = true;
   }
   int shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -3075,6 +3102,9 @@ public:
     firsttime = true;
   }
   int shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -3102,7 +3132,7 @@ public:
     GameApi::US a4v = ev.uber_api.v_specular(a3v);
 
     GameApi::US a2 = ev.uber_api.v_passall(a4v);
-    ee.us_vertex_shader = a2.id;
+    ee.us_vertex_shader = a4v.id;
 
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;

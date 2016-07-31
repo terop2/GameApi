@@ -309,6 +309,8 @@ GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, FtA a
     }
   GameApiItem *item = functions[i];
   std::string return_type = item->ReturnType(0);
+  std::string symbols = item->Symbols();
+  std::string comment = item->Comment();
   std::vector<std::string> param_types;
   std::vector<std::string> param_tooltip;
   int sss = item->ParamCount(0);
@@ -319,7 +321,7 @@ GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, FtA a
     }
   std::vector<std::string> param_types2 = reduce_list_to_types_only(param_types);
   std::vector<std::string> param_tooltip2 = reduce_list_to_string_only(param_types, param_tooltip);
-  W node = gui.canvas_item_gameapi_node(100,100, func_name, param_types2, param_tooltip2, return_type, atlas, atlas_bm, connect_click, uid, params);
+  W node = gui.canvas_item_gameapi_node(100,100, func_name, param_types2, param_tooltip2, return_type, atlas, atlas_bm, connect_click, uid, params, symbols, comment);
   return node;
 }
 
@@ -1278,8 +1280,10 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
       std::vector<std::string> param_types2 = reduce_list_to_types_only(param_types);
       std::vector<std::string> param_tooltip2 = reduce_list_to_string_only(param_types, param_tooltip);
       std::string return_type = item->ReturnType(0);
+      std::string symbols = item->Symbols();
+      std::string comment = item->Comment();
 
-      W node = gui.canvas_item_gameapi_node(100,100, line->module_name, param_types2, param_tooltip2, return_type, atlas, atlas_bm, connect_clicks[i], line->uid, params);
+      W node = gui.canvas_item_gameapi_node(100,100, line->module_name, param_types2, param_tooltip2, return_type, atlas, atlas_bm, connect_clicks[i], line->uid, params, symbols,comment);
 
       // W codegen_0 = gui.highlight(20,20);
       // W codegen_1 = gui.button(20,20, 0xff88ff88, 0xff44ff44);

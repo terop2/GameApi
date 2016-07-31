@@ -376,6 +376,9 @@ class LI_Render : public MainLoopItem
 {
 public:
   LI_Render(GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LLA l) : ev(ev), api(api), l(l) { }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
   void execute(MainLoopEnv &e) {
     GameApi::SH sh;
     sh.id = e.sh_color;
@@ -394,6 +397,9 @@ class LI_Render_Inst : public MainLoopItem
 {
 public:
   LI_Render_Inst(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LLA l, GameApi::PTA pta) : env(env), ev(ev), api(api), l(l),pta(pta) { firsttime=true; }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
   void execute(MainLoopEnv &e) {
     GameApi::SH sh;
     sh.id = e.sh_color;
@@ -612,6 +618,9 @@ class LI_Update : public MainLoopItem
 {
 public:
   LI_Update(GameApi::LinesApi &api, GameApi::LLA la, GameApi::LI li) : api(api), la(la), li(li) { }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
   void execute(MainLoopEnv &e) { api.update(la,li); }
   int shader_id() { return -1; }
 
