@@ -610,7 +610,10 @@ public:
     aa/=size;
     return Color(rr,gg,bb,aa);
   }
-
+  float rf() const { return r/255.0; }
+  float gf() const { return g/255.0; }
+  float bf() const { return b/255.0; }
+  float af() const { return alpha/255.0; }
 public:
   int r,g,b; // each component 0.255
   int alpha;

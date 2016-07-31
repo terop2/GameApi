@@ -309,7 +309,7 @@ P pieces(unsigned int i, EveryApi &ev, Models &m)
     }
   case 17:
     {
-      P p2 = m.lucy;
+      P p2 = ev.polygon_api.empty(); //m.lucy;
 #if 0
 
       P p3 = ev.polygon_api.color_from_normals(p);
@@ -936,12 +936,13 @@ int main(int argc, char *argv[]) {
   //ev.shader_api.load("Shader.txt");
   ev.shader_api.load_default();
   //SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour:snoise:snoise:point_light:light", "colour:light:light:bands:snoise:snoise:point_light");
-  SH sh = ev.shader_api.get_shader("comb", "comb", "", "colour:snoise:snoise:point_light:light", "colour:light:light:bands:snoise:snoise",false);
+  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:snoise:snoise:point_light:light", "colour:light:light:bands:snoise:snoise",false);
   //SH sh = ev.shader_api.get_shader("comb", "comb", "", "passall", "diffuse:specular:ambient",false);
 
-  SH sh2 = ev.shader_api.get_shader("comb", "comb", "", "blur", "blur",false);
-  SH sh3 = ev.shader_api.get_shader("comb", "comb", "", "texture:light:snoise", "texture:light:snoise",false);
-  SH sh4 = ev.shader_api.get_shader("empty", "empty", "", "", "", false);
+  SH sh2 = ev.shader_api.get_normal_shader("comb", "comb", "", "blur", "blur",false);
+  SH sh3 = ev.shader_api.get_normal_shader("comb", "comb", "", "texture:light:snoise", "texture:light:snoise",false);
+  SH sh4 = ev.shader_api.get_normal_shader("empty", "empty", "", "", "", false);
+#if 0
   ev.shader_api.bind_attrib(sh, 0, "in_Position");
   ev.shader_api.bind_attrib(sh, 1, "in_Normal");
   ev.shader_api.bind_attrib(sh, 2, "in_Color");
@@ -979,6 +980,7 @@ int main(int argc, char *argv[]) {
   ev.shader_api.use(sh4);
   ev.shader_api.set_default_projection(sh4, "in_P");
 #endif
+#endif
 
   // rest of the initializations
   ev.mainloop_api.init_3d(sh);
@@ -997,7 +999,7 @@ int main(int argc, char *argv[]) {
 
 
   Models m;
-#if 1
+#if 0
   m.teapot = ev.polygon_api.load_model("./teapot.obj", 0);
   m.lucy = ev.polygon_api.load_model("./lucy.obj", 1);
   P pk = ev.polygon_api.empty();

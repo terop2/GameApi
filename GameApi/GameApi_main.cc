@@ -80,6 +80,66 @@ EXPORT unsigned int GameApi::MainLoopApi::random()
   Random r;
   return r.next();
 }
+EXPORT GameApi::PT GameApi::MainLoopApi::random_point_3d(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+{
+  float x = float(random())/float(rand_max());
+  float y = float(random())/float(rand_max());
+  float z = float(random())/float(rand_max());
+  
+  float xx = start_x + x*(end_x-start_x);
+  float yy = start_y + y*(end_y-start_y);
+  float zz = start_z + z*(end_z-start_z);
+  return add_point(e, xx,yy,zz);
+}
+
+EXPORT GameApi::PT GameApi::MainLoopApi::random_point_2d(float start_x, float end_x, float start_y, float end_y, float z)
+{
+  float x = float(random())/float(rand_max());
+  float y = float(random())/float(rand_max());
+   
+  float xx = start_x + x*(end_x-start_x);
+  float yy = start_y + y*(end_y-start_y);
+  float zz = z;
+  return add_point(e, xx,yy,zz);
+}
+
+EXPORT GameApi::V GameApi::MainLoopApi::random_dir_vector_2d_xy(float length)
+{
+  float x = float(random())/float(rand_max());
+
+  float alfa = 2.0*3.14159*x;
+
+  float xx = length*cos(alfa);
+  float yy = length*sin(alfa);
+  return add_vector(e, xx,yy,0.0);
+  
+}
+EXPORT GameApi::V GameApi::MainLoopApi::random_dir_vector_2d_xz(float length)
+{
+
+  float x = float(random())/float(rand_max());
+
+  float alfa = 2.0*3.14159*x;
+
+  float xx = length*cos(alfa);
+  float yy = length*sin(alfa);
+  return add_vector(e, xx,0.0,yy);
+
+}
+EXPORT GameApi::V GameApi::MainLoopApi::random_dir_vector_3d(float length)
+{
+  float x = float(random())/float(rand_max());
+  float y = float(random())/float(rand_max());
+  
+  float alfa = 3.14159*y;
+  float beta = 2.0*3.14159*x;
+
+  float xx = length * sin(alfa) * cos(beta);
+  float yy = length * sin(alfa) * sin(beta);
+  float zz = length * cos(alfa);
+  return add_vector(e,xx,yy,zz);
+}
+
 EXPORT void GameApi::MainLoopApi::profile(std::string label, bool start)
 {
 #ifndef EMSCRIPTEN
@@ -245,11 +305,12 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
     }
 }
 
-EXPORT void GameApi::MainLoopApi::clear()
+EXPORT void GameApi::MainLoopApi::clear(unsigned int col)
 {
   //glClearColor(255,255,255,255);
   glClearStencil(0);
-  glClearColor(0,0,0,0);
+  Color c(col);
+  glClearColor(c.rf(),c.gf(),c.bf(),c.af());
   glStencilMask(~0);
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
   //glLoadIdentity();

@@ -175,6 +175,7 @@ void iter(void *data)
   envi.speed2 = envi.speed*2.0;
   envi.old_time = envi.time;
 
+
   //envi.ev->fbo_api.bind_fbo(envi.fbo);
     envi.ev->mainloop_api.clear();
     envi.ev->shader_api.use(envi.sh);
@@ -325,11 +326,12 @@ void iter(void *data)
       {
 	envi.rotangle+=envi.rotspeed;
       }
+  envi.ev->mainloop_api.fpscounter();
 
 }
 SFO shader_character(EveryApi &ev, SFO outside)
 {
-  float k = 15.0;
+  float k = 1.0;
   PT center = ev.point_api.point(0.0,-30.0,0.0);
   PT hand_center = ev.point_api.point(40.0, 10.0, 0.0);
   PT hand_center2= ev.point_api.point(-40.0, 10.0, 0.0);

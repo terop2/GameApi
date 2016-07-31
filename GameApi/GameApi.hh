@@ -187,7 +187,7 @@ public:
   IMPORT void init_3d(SH sh, int screen_width = 800, int screen_heigth = 600);
   IMPORT void nvidia_init();
   IMPORT void transfer_sdl_surface(MainLoopApi &orig);
-  IMPORT void clear();
+  IMPORT void clear(unsigned int col = 0xff000000);
   IMPORT void clear_3d(unsigned int col = 0xff000000);
   IMPORT void switch_to_3d(bool b, SH sh, int screen_width=800., int screen_height = 600);
   IMPORT void alpha(bool enabled);
@@ -213,6 +213,15 @@ public:
   IMPORT void delay(int ms);
   IMPORT unsigned int random();
   IMPORT unsigned int rand_max();
+  IMPORT PT random_point_3d(float start_x, float end_x,
+			 float start_y, float end_y,
+			 float start_z, float end_z);
+  IMPORT PT random_point_2d(float start_x, float end_x,
+			    float start_y, float end_y,
+			    float z);
+  IMPORT V random_dir_vector_2d_xy(float length); 
+  IMPORT V random_dir_vector_2d_xz(float length); 
+  IMPORT V random_dir_vector_3d(float length);
   IMPORT int get_screen_width();
   IMPORT int get_screen_height();
   IMPORT bool logo_iter();
@@ -871,7 +880,10 @@ public:
     bool left=false;
     bool right=false;
   };
-  static void wasd_movement(MainLoopApi::Event &e,
+  static void wasd_movement_event(MainLoopApi::Event &e,
+			    float &pos_x, float &pos_y, Wasd_data &data,
+			    float speed_x, float speed_y);
+  static void wasd_movement_frame(MainLoopApi::Event &e,
 			    float &pos_x, float &pos_y, Wasd_data &data,
 			    float speed_x, float speed_y);
   struct Quake_data {
@@ -1007,6 +1019,7 @@ public:
   void set_matrix(MN n, M m);
   M get_matrix(MN n, float time);
   ML move_ml(EveryApi &ev, ML ml, MN mn);
+  ML move_ml_array(EveryApi &ev, std::vector<ML> ml, std::vector<MN> mn);
   ML key_event(EveryApi &ev, ML ml, MN mn, int type, int ch, int button, float duration);
   ML wasd(EveryApi &ev, ML ml, MN w, MN a, MN s, MN d, float duration);
 private:
@@ -2164,7 +2177,8 @@ public:
 			PT fTL, PT fTR, PT fBL, PT fBR);
 
   IMPORT PTA prepare(PTS p);
-  float *point_access(PTA pta, int pointnum);
+  float *point_access(PTA pta, int pointnum); // use ptr[0], ptr[1] and ptr[2] to access the x,y,z coordinate
+  IMPORT void set_point(PTA pta, int pointnum, float x, float y, float z);
   //unsigned int *color_access(PTA pta, int pointnum);
   //void update(PTA array);
   IMPORT void render(PTA array);

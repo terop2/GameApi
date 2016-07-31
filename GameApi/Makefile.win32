@@ -87,7 +87,7 @@ CC2FLAGS = -pg -g -std=c++11 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(IN
 #`pkg-config gtkmm-2.4 --cflags`
 
 
-default: glew.o libGameApi.dll main.exe
+default: glew.o libGameApi.dll
 
 all: libGameApi.so libGameApi.dll install main
 
