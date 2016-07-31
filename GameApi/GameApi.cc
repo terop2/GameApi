@@ -2589,10 +2589,70 @@ private:
   MainLoopItem *next;
   GameApi::MN mn;
 };
+
+class MoveMLArray : public MainLoopItem
+{
+public:
+  MoveMLArray(GameApi::Env &e, GameApi::EveryApi &ev, std::vector<MainLoopItem *> next, std::vector<GameApi::MN> mn) : e(e), ev(ev), next(next), mn(mn) 
+  { 
+    start_time = ev.mainloop_api.get_time();
+  }
+  void reset_time() {
+    start_time = ev.mainloop_api.get_time();
+  }
+  int shader_id() { return next[0]->shader_id(); }
+  void execute(MainLoopEnv &env)
+  {
+    int s = std::min(next.size(), mn.size());
+    for(int i=0;i<s;i++)
+      {
+	GameApi::SH s1;
+	s1.id = env.sh_texture;
+	GameApi::SH s2;
+	s2.id = env.sh_array_texture;
+	GameApi::SH s3;
+	s3.id = env.sh_color;
+	float time = (ev.mainloop_api.get_time()-start_time)/100.0;
+	GameApi::M mat = ev.move_api.get_matrix(mn[i], time);
+	GameApi::M m2 = add_matrix2(e, env.env);
+	GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
+	ev.shader_api.use(s1);
+	ev.shader_api.set_var(s1, "in_MV", mat2);
+	ev.shader_api.use(s2);
+	ev.shader_api.set_var(s2, "in_MV", mat2);
+	ev.shader_api.use(s3);
+	ev.shader_api.set_var(s3, "in_MV", mat2);
+	env.in_MV = find_matrix(e, mat2);
+	
+	Matrix old_env = env.env;
+	env.env = find_matrix(e,mat2) * env.env;
+	next[i]->execute(env);
+	env.env = old_env;
+      }
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  float start_time;
+  std::vector<MainLoopItem *> next;
+  std::vector<GameApi::MN> mn;
+};
+
+
 GameApi::ML GameApi::MovementNode::move_ml(EveryApi &ev, GameApi::ML ml, GameApi::MN move)
 {
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new MoveML(e,ev,item, move));
+}
+GameApi::ML GameApi::MovementNode::move_ml_array(EveryApi &ev, std::vector<GameApi::ML> ml, std::vector<GameApi::MN> move)
+{
+  int s = ml.size();
+  std::vector<MainLoopItem*> vec2;
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_main_loop(e, ml[i]));
+    }
+  return add_main_loop(e, new MoveMLArray(e,ev, vec2, move));
 }
 GameApi::ML GameApi::MovementNode::key_event(EveryApi &ev, GameApi::ML ml, GameApi::MN move, int type, int ch, int button, float duration)
 {

@@ -2,7 +2,7 @@
 #include "GameApi.hh"
 #include "GameApi_h.hh"
 
-void GameApi::InteractionApi::wasd_movement(MainLoopApi::Event &e,
+void GameApi::InteractionApi::wasd_movement_event(MainLoopApi::Event &e,
 				   float &pos_x, float &pos_y, Wasd_data &data, float speed_x, float speed_y)
 {
   if ((e.ch=='w'||e.ch==26||e.ch==82) && e.type==0x300) { data.up = true; }
@@ -13,12 +13,18 @@ void GameApi::InteractionApi::wasd_movement(MainLoopApi::Event &e,
   if ((e.ch=='a'||e.ch==4||e.ch==80) && e.type==0x301) { data.left = false; }
   if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x300) { data.right = true; }
   if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x301) { data.right = false; }
+}
+
+void GameApi::InteractionApi::wasd_movement_frame(MainLoopApi::Event &e,
+				   float &pos_x, float &pos_y, Wasd_data &data, float speed_x, float speed_y)
+{
 
   if (data.up) { pos_y-=speed_y; }
   if (data.down) { pos_y+=speed_y; }
   if (data.left) { pos_x-=speed_x; }
-  if (data.right) { pos_y+=speed_x; } 
+  if (data.right) { pos_x+=speed_x; } 
 }
+
 
 void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Event &e,
 				    float &pos_x, float &pos_y, float &rot_y, 

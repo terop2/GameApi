@@ -1,6 +1,53 @@
 
 #include "GameApi_h.hh"
 #include "GameApi_gui.hh"
+#define ORIGINAL_COLORS 1
+#ifdef ORIGINAL_COLORS
+const unsigned int c_tooltip_button = 0xff888888;
+const unsigned int c_tooltip_button2 = 0xff444444;
+const unsigned int c_list_item_title = 0xff884422;  // light
+const unsigned int c_list_item_title2 = 0xff442211; // dark
+const unsigned int c_canvas_item = 0xff888888; // light
+const unsigned int c_canvas_item2 = 0xff666666; // dark
+const unsigned int c_canvas_item_text_button = 0xff330033; // dark
+const unsigned int c_canvas_item_text_button2 = 0xff880088; // light
+const unsigned int c_canvas_item_node_0 = 0xffff8844;
+const unsigned int c_canvas_item_node_0_2 = 0xff884422;
+const unsigned int c_canvas_item_node_1 = 0xff884422;
+const unsigned int c_canvas_item_node_1_2 = 0xff442211;
+const unsigned int c_dialog_1 = 0xff888888;
+const unsigned int c_dialog_1_2 = 0xff444444;
+const unsigned int c_dialog_button_1 = 0xff00ff00;
+const unsigned int c_dialog_button_2 = 0xff008800;
+#endif
+#ifdef NEW_COLORS
+//const unsigned int c_dark = 0xff7b1fa2;
+//const unsigned int c_prim = 0xff9c27b0;
+//const unsigned int c_light = 0xffe1bee7;
+
+const unsigned int c_dark = 0xff388e3c;
+const unsigned int c_prim = 0xff4caf50;
+const unsigned int c_light = 0xffc8e6c9;
+
+const unsigned int c_tooltip_button = c_dark; //0xffe1bee7;
+const unsigned int c_tooltip_button2 = c_prim;
+const unsigned int c_list_item_title = c_dark; //0xff7b1fa2;  // light
+const unsigned int c_list_item_title2 = c_prim; // dark
+const unsigned int c_canvas_item = c_dark; //0xff7b1fa2; // light
+const unsigned int c_canvas_item2 = c_prim; // dark
+const unsigned int c_canvas_item_text_button = c_dark; //0xff7b1fa2; // dark
+const unsigned int c_canvas_item_text_button2 = c_prim; // light
+const unsigned int c_canvas_item_node_0 = c_prim; //0xff9c27b0;
+const unsigned int c_canvas_item_node_0_2 = c_dark;
+const unsigned int c_canvas_item_node_1 = c_dark; //0xff7b1fa2;
+const unsigned int c_canvas_item_node_1_2 = c_prim;
+const unsigned int c_dialog_1 = c_dark;
+const unsigned int c_dialog_1_2 = c_prim;
+const unsigned int c_dialog_button_1 = c_prim;
+const unsigned int c_dialog_button_2 = c_dark;
+
+#endif
+
 
 class EmptyWidget : public GuiWidgetForward
 {
@@ -116,7 +163,7 @@ public:
     Point2d p = { -666.0, -666.0 };
     update(p, -1,-1, -1);
     Point2d p2 = { 0.0, 0.0 };
-    set_pos(p2);
+    set_pos(p2); 
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
@@ -1428,7 +1475,7 @@ EXPORT GameApi::W GameApi::GuiApi::tooltip(W orig, W insert, std::string label, 
 {
   W w = text(label, atlas, atlas_bm, x_gap);
   W w1 = margin(w, 5,5,5,5);
-  W w2 = button(size_x(w1),size_y(w1), 0xff888888, 0xff444444);
+  W w2 = button(size_x(w1),size_y(w1), c_tooltip_button, c_tooltip_button2 /*0xff888888, c_dialog_1_2*/);
   W w3 = layer(w2,w1);
   float p_x = pos_x(orig) + size_x(orig) + 10.0;
   float p_y = pos_y(orig) + 10.0;
@@ -1503,7 +1550,7 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_title(int sx, std::string label, Ft
   W node_t = text(label, atlas, atlas_bm);
   W node_t0 = margin(node_t, 5,5,5,5);
   std::cout << "List Item title height: " << size_y(node_t0) << std::endl;
-  W node_0 = button(sx, size_y(node_t0), 0xff884422, 0xff442211);
+  W node_0 = button(sx, size_y(node_t0), c_list_item_title, c_list_item_title2 /*0xff884422, 0xff442211*/);
   W node_1 = layer(node_0, node_t0);
   W node_2 = highlight(node_1);
   return node_2;
@@ -1674,7 +1721,7 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
       W txt_11 = tooltip(txt_1, txt_1, tt, atlas, atlas_bm, 2, 0.0);
       int width = size_x(txt_1);
       if (max_width<width) max_width = width;
-      W txt_2 = button(size_x(txt_1), size_y(txt_1), 0xff888888, 0xff666666);
+      W txt_2 = button(size_x(txt_1), size_y(txt_1), c_canvas_item,c_canvas_item2 /*0xff888888, 0xff666666*/);
       W txt_3 = layer(txt_2, txt_11);
       W txt_4 = click_area(txt_3, 0.0,0.0,size_x(txt_3), size_y(txt_3),0);
       
@@ -1704,13 +1751,13 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
   W txt_111 = click_area(txt_11, 0.0, 0.0, size_x(txt_11), size_y(txt_11),0);
   set_id(txt_111, uid);
   connect_click = txt_111;
-  W txt_2 = button(size_x(txt_1), size_y(txt_1), 0xff330033, 0xff880088);
+  W txt_2 = button(size_x(txt_1), size_y(txt_1), c_canvas_item_text_button, c_canvas_item_text_button2 /*0xff330033, 0xff880088*/);
   W txt_3 = layer(txt_2, txt_111);
 
   int ssx_0 = std::max(sx, max_width+4+20+4+max_width2);
   int ssx = std::max(ssx_0,size_x(node_22));
-  W node_0 = button(ssx,ssy, 0xffff8844, 0xff884422);
-  W node_1 = button(ssx,size_y(node_22), 0xff884422, 0xff442211);
+  W node_0 = button(ssx,ssy, c_canvas_item_node_0, c_canvas_item_node_0_2 /*0xffff8844, 0xff884422*/);
+  W node_1 = button(ssx,size_y(node_22), c_canvas_item_node_1, c_canvas_item_node_1_2 /*0xff884422, 0xff442211*/);
   W node_12 = highlight(node_1);
 
   int sy0 = std::max(sy, size_y(array)+size_y(node_22)+5);
@@ -1803,13 +1850,13 @@ EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x,
 {
   W bm_1 = poly(p, sh, 800,600, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
-  W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
+  W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
   W bm_4 = layer(bm_3, bm_2);
   
   W but_1 = text("Close", atlas, atlas_bm);
   W but_2 = center_align(but_1, size_x(bm_4));
   W but_3 = center_y(but_2, 60.0);
-  W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
+  W but_4 = button(size_x(but_3), size_y(but_3), c_dialog_button_1, c_dialog_button_2);
   W but_41 = highlight(but_4);
   W but_5 = layer(but_41, but_3);
   W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
@@ -1818,7 +1865,7 @@ EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x,
   W code_1 = text("CodeGen", atlas, atlas_bm);
   W code_2 = center_align(code_1, size_x(bm_4));
   W code_3 = center_y(code_2, 60.0);
-  W code_4 = button(size_x(code_3), size_y(code_3), 0xff00ff00, 0xff008800);
+  W code_4 = button(size_x(code_3), size_y(code_3), c_dialog_button_1, c_dialog_button_2);
   W code_41 = highlight(code_4);
   W code_5 = layer(code_41, code_3);
   W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
@@ -1836,13 +1883,13 @@ EXPORT GameApi::W GameApi::GuiApi::va_dialog(VA p, SH sh, int screen_size_x, int
 {
   W bm_1 = va(p, sh, 800,600, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
-  W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
+  W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
   W bm_4 = layer(bm_3, bm_2);
   
   W but_1 = text("Close", atlas, atlas_bm);
   W but_2 = center_align(but_1, size_x(bm_4));
   W but_3 = center_y(but_2, 60.0);
-  W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
+  W but_4 = button(size_x(but_3), size_y(but_3), c_dialog_button_1, c_dialog_button_2);
   W but_41 = highlight(but_4);
   W but_5 = layer(but_41, but_3);
   W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
@@ -1851,7 +1898,7 @@ EXPORT GameApi::W GameApi::GuiApi::va_dialog(VA p, SH sh, int screen_size_x, int
   W code_1 = text("CodeGen", atlas, atlas_bm);
   W code_2 = center_align(code_1, size_x(bm_4));
   W code_3 = center_y(code_2, 60.0);
-  W code_4 = button(size_x(code_3), size_y(code_3), 0xff00ff00, 0xff008800);
+  W code_4 = button(size_x(code_3), size_y(code_3), c_dialog_button_1, c_dialog_button_2);
   W code_41 = highlight(code_4);
   W code_5 = layer(code_41, code_3);
   W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
@@ -1869,13 +1916,13 @@ EXPORT GameApi::W GameApi::GuiApi::ml_dialog(ML p, SH sh, SH sh2, SH sh_arr, int
 {
   W bm_1 = ml(p, sh, sh2, sh_arr, 800,600, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
-  W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
+  W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
   W bm_4 = layer(bm_3, bm_2);
   
   W but_1 = text("Close", atlas, atlas_bm);
   W but_2 = center_align(but_1, size_x(bm_4));
   W but_3 = center_y(but_2, 60.0);
-  W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
+  W but_4 = button(size_x(but_3), size_y(but_3), c_dialog_button_1, c_dialog_button_2);
   W but_41 = highlight(but_4);
   W but_5 = layer(but_41, but_3);
   W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
@@ -1884,7 +1931,7 @@ EXPORT GameApi::W GameApi::GuiApi::ml_dialog(ML p, SH sh, SH sh2, SH sh_arr, int
   W code_1 = text("CodeGen", atlas, atlas_bm);
   W code_2 = center_align(code_1, size_x(bm_4));
   W code_3 = center_y(code_2, 60.0);
-  W code_4 = button(size_x(code_3), size_y(code_3), 0xff00ff00, 0xff008800);
+  W code_4 = button(size_x(code_3), size_y(code_3), c_dialog_button_1, c_dialog_button_2);
   W code_41 = highlight(code_4);
   W code_5 = layer(code_41, code_3);
   W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
@@ -1905,13 +1952,13 @@ EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atl
 {
   W bm_1 = shader_plane(p, 800,600*600/800, screen_x, screen_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
-  W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
+  W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
   W bm_4 = layer(bm_3, bm_2);
   
   W but_1 = text("Close", atlas, atlas_bm);
   W but_2 = center_align(but_1, size_x(bm_4));
   W but_3 = center_y(but_2, 60.0);
-  W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
+  W but_4 = button(size_x(but_3), size_y(but_3), c_dialog_button_1, c_dialog_button_2);
   W but_41 = highlight(but_4);
   W but_5 = layer(but_41, but_3);
   W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
@@ -1920,7 +1967,7 @@ EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atl
   W code_1 = text("CodeGen", atlas, atlas_bm);
   W code_2 = center_align(code_1, size_x(bm_4));
   W code_3 = center_y(code_2, 60.0);
-  W code_4 = button(size_x(code_3), size_y(code_3), 0xff00ff00, 0xff008800);
+  W code_4 = button(size_x(code_3), size_y(code_3), c_dialog_button_1, c_dialog_button_2);
   W code_41 = highlight(code_4);
   W code_5 = layer(code_41, code_3);
   W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
@@ -1939,13 +1986,13 @@ EXPORT GameApi::W GameApi::GuiApi::lines_dialog(LI p, SH sh, int screen_size_x, 
 {
   W bm_1 = lines(p, sh, 800,600, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
-  W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
+  W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
   W bm_4 = layer(bm_3, bm_2);
   
   W but_1 = text("Close", atlas, atlas_bm);
   W but_2 = center_align(but_1, size_x(bm_4));
   W but_3 = center_y(but_2, 60.0);
-  W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
+  W but_4 = button(size_x(but_3), size_y(but_3), c_dialog_button_1, c_dialog_button_2);
   W but_41 = highlight(but_4);
   W but_5 = layer(but_41, but_3);
   W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
@@ -1954,7 +2001,7 @@ EXPORT GameApi::W GameApi::GuiApi::lines_dialog(LI p, SH sh, int screen_size_x, 
   W code_1 = text("CodeGen", atlas, atlas_bm);
   W code_2 = center_align(code_1, size_x(bm_4));
   W code_3 = center_y(code_2, 60.0);
-  W code_4 = button(size_x(code_3), size_y(code_3), 0xff00ff00, 0xff008800);
+  W code_4 = button(size_x(code_3), size_y(code_3), c_dialog_button_1, c_dialog_button_2);
   W code_41 = highlight(code_4);
   W code_5 = layer(code_41, code_3);
   W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
@@ -1972,13 +2019,13 @@ EXPORT GameApi::W GameApi::GuiApi::pts_dialog(PTS p, SH sh, int screen_size_x, i
 {
   W bm_1 = pts(p, sh, 800,600, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
-  W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
+  W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
   W bm_4 = layer(bm_3, bm_2);
    
   W but_1 = text("Close", atlas, atlas_bm);
   W but_2 = center_align(but_1, size_x(bm_4));
   W but_3 = center_y(but_2, 60.0);
-  W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
+  W but_4 = button(size_x(but_3), size_y(but_3), c_dialog_button_1, c_dialog_button_2);
   W but_41 = highlight(but_4);
   W but_5 = layer(but_41, but_3);
   W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
@@ -1987,7 +2034,7 @@ EXPORT GameApi::W GameApi::GuiApi::pts_dialog(PTS p, SH sh, int screen_size_x, i
   W code_1 = text("CodeGen", atlas, atlas_bm);
   W code_2 = center_align(code_1, size_x(bm_4));
   W code_3 = center_y(code_2, 60.0);
-  W code_4 = button(size_x(code_3), size_y(code_3), 0xff00ff00, 0xff008800);
+  W code_4 = button(size_x(code_3), size_y(code_3), c_dialog_button_1, c_dialog_button_2);
   W code_41 = highlight(code_4);
   W code_5 = layer(code_41, code_3);
   W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
@@ -2022,13 +2069,13 @@ EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atl
 
   W bm_1 = icon(cbm_2);
   W bm_2 = margin(bm_1, 10,10,10,10);
-  W bm_3 = button(size_x(bm_2), size_y(bm_2), 0xff888888, 0xff444444);
+  W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
   W bm_4 = layer(bm_3, bm_2);
   
   W but_1 = text("Close", atlas, atlas_bm);
   W but_2 = center_align(but_1, size_x(bm_4));
   W but_3 = center_y(but_2, 60.0);
-  W but_4 = button(size_x(but_3), size_y(but_3), 0xff00ff00, 0xff008800);
+  W but_4 = button(size_x(but_3), size_y(but_3), c_dialog_button_1, c_dialog_button_2);
   W but_41 = highlight(but_4);
   W but_5 = layer(but_41, but_3);
   W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
@@ -2037,7 +2084,7 @@ EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atl
   W code_1 = text("CodeGen", atlas, atlas_bm);
   W code_2 = center_align(code_1, size_x(bm_4));
   W code_3 = center_y(code_2, 60.0);
-  W code_4 = button(size_x(code_3), size_y(code_3), 0xff00ff00, 0xff008800);
+  W code_4 = button(size_x(code_3), size_y(code_3), c_dialog_button_1, c_dialog_button_2);
   W code_41 = highlight(code_4);
   W code_5 = layer(code_41, code_3);
   W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
@@ -2090,10 +2137,10 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &l
   W array = array_y(&vec2[0], vec2.size(), 35);
   W array_1 = margin(array, 10,10,10,10);
   W array_1a = center_align(array_1, 500);
-  W array_2 = button(500, size_y(array_1), 0xff884422, 0xff442211);
+  W array_2 = button(500, size_y(array_1), c_dialog_1, c_dialog_1_2 /*0xff884422, 0xff442211*/);
   W array_3 = layer(array_2, array_1a);
 
-  W cancel_button = button(250,50, 0xff884422, 0xff442211);
+  W cancel_button = button(250,50, c_dialog_button_1, c_dialog_button_1 /*0xff884422, 0xff442211*/);
   W cancel_button_1 = text("Cancel", atlas,atlas_bm, 4);
   W cancel_button_11 = center_align(cancel_button_1, 250);
   W cancel_button_111 = center_y(cancel_button_11, 50);
@@ -2102,7 +2149,7 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &l
   W cancel_button_4 = layer(cancel_button_2, cancel_button_3);
   W cancel_area = click_area(cancel_button_4, 0,0,250,50,0);
   cancel_but = cancel_area;
-  W ok_button = button(250,50, 0xff884422, 0xff442211);
+  W ok_button = button(250,50, c_dialog_button_1, c_dialog_button_1/*0xff884422, 0xff442211*/);
   W ok_button_1 = text("Ok", atlas,atlas_bm, 4);
   W ok_button_11 = center_align(ok_button_1, 250);
   W ok_button_111 = center_y(ok_button_11, 50);
@@ -2373,7 +2420,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, 
       return edit;
     }
   std::cout << "TYPE ERROR: " << type << std::endl;
-  W dummy = button(30,30, 0xffffffff, 0xff888888);
+  W dummy = button(30,30, 0xffffffff, c_dialog_1);
   return dummy;
 }
 
@@ -2452,7 +2499,7 @@ GameApi::W GameApi::GuiApi::main_menu(std::vector<std::string> labels, FtA atlas
   //PT pt1 = ev.point_api.point(0.0,0.0,0.0);
   //PT pt2 = ev.point_api.point(0.0, size_y(w), 0.0);
   //W w3 = gradient(size_x(w), size_y(w), pt1, pt2, 0xffffaa88, 0xffff8844);
-  W w3 = button(size_x(w), size_y(w), 0xffff8844, 0xff884422);
+  W w3 = button(size_x(w), size_y(w), c_list_item_title, c_list_item_title2 /*0xffff8844, 0xff884422*/);
 
   W w4 = layer(w3,w);
   W w5 = margin(w4, 2,2,2,2);
@@ -2814,16 +2861,20 @@ private:
 };
 GameApi::W GameApi::GuiApi::gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int color_1, unsigned int color_2)
 {
+  //color_2 = color_1;
   BM bm = ev.bitmap_api.gradient(pos_1, pos_2, color_1, color_2, sx, sy);
   return icon(bm);
 }
 GameApi::W GameApi::GuiApi::button(int sx, int sy, unsigned int color_1, unsigned int color_2)
 {
+  //color_2 = color_1;
+
   PT pt1 = ev.point_api.point(0.0, 0.0, 0.0);
   PT pt2 = ev.point_api.point(0.0, sy, 0.0);
   BM w = ev.bitmap_api.gradient(pt1, pt2, color_1, color_2, sx,sy);
   unsigned int color_1L = color_1;
   unsigned int color_2L = color_2;
+#if 1
   unsigned char *ptr = (unsigned char *)&color_1L;
   unsigned char *ptr2 = (unsigned char *)&color_2L;
   ptr[0] = (unsigned char) (float(ptr[0])*0.8);
@@ -2834,10 +2885,12 @@ GameApi::W GameApi::GuiApi::button(int sx, int sy, unsigned int color_1, unsigne
   ptr2[1] = (unsigned char) (float(ptr2[1])*0.8);
   ptr2[2] = (unsigned char) (float(ptr2[2])*0.8);
   ptr2[3] = (unsigned char) (float(ptr2[3])*0.8);
+#endif
   BM w2 = ev.bitmap_api.gradient(pt1, pt2, color_1L, color_2L,sx,sy);
 
   unsigned int color_1D = color_1;
   unsigned int color_2D = color_2;
+#if 1
   unsigned char *ptrD = (unsigned char*)&color_1D;
   unsigned char *ptr2D = (unsigned char*)&color_2D;
   ptrD[0] = (unsigned char) (float(ptrD[0])*0.6);
@@ -2848,6 +2901,7 @@ GameApi::W GameApi::GuiApi::button(int sx, int sy, unsigned int color_1, unsigne
   ptr2D[1] = (unsigned char) (float(ptr2D[1])*0.6);
   ptr2D[2] = (unsigned char) (float(ptr2D[2])*0.6);
   ptr2D[3] = (unsigned char) (float(ptr2D[3])*0.6);
+#endif
   BM w3 = ev.bitmap_api.gradient(pt1, pt2, color_1D, color_2D,sx,sy);
 
   BB mask_0 = ev.bool_bitmap_api.empty(sx,sy);
@@ -2915,7 +2969,7 @@ GameApi::W GameApi::GuiApi::menu(W main_menu, int menu_id, std::vector<std::stri
   W w22 = margin(w2, 4,4,4,4);
   //PT pt1 = ev.point_api.point(0.0,0.0,0.0);
   //PT pt2 = ev.point_api.point(0.0, size_y(w2), 0.0);
-  W w3 = button(size_x(w22), size_y(w22), 0xffff8844, 0xff884422);
+  W w3 = button(size_x(w22), size_y(w22), c_list_item_title, c_list_item_title2 /*0xffff8844, 0xff884422*/);
     //gradient(size_x(w2), size_y(w2), pt1, pt2, 0xffff8844, 0xff884422);
   W w4 = layer(w3,w22);
   set_pos(w4, pos.x, pos.y+size.dy);
@@ -2943,7 +2997,7 @@ GameApi::W GameApi::GuiApi::popup_menu(int x, int y, std::vector<std::string> la
 
   W w2 = array_y(&vec[0], vec.size(), 2);
   W w22 = margin(w2, 4,4,4,4);
-  W w3 = button(size_x(w22), size_y(w22), 0xffff8844, 0xff884422);
+  W w3 = button(size_x(w22), size_y(w22), c_list_item_title, c_list_item_title2 /*0xffff8844, 0xff884422*/);
   W w4 = layer(w3,w22);
   set_pos(w4, x, y);
   return w4;

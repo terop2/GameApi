@@ -367,7 +367,7 @@ void iter(void *arg)
 
   env->ev->shader_api.use(env->sh);
 
-    env->ev->mainloop_api.clear();
+    env->ev->mainloop_api.clear(0xff000000);
     //env->ev->mainloop_api.clear_3d();
     
     env->gui->render(env->txt2);

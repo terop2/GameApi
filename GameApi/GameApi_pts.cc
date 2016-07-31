@@ -218,6 +218,13 @@ float *GameApi::PointsApi::point_access(GameApi::PTA pta, int pointnum)
   PointArray3 *arr = find_point_array3(e, pta);
   return &arr->array[pointnum*3];
 }
+EXPORT void GameApi::PointsApi::set_point(PTA pta, int pointnum, float x, float y, float z)
+{
+  float *ptr = point_access(pta, pointnum);
+  ptr[0] = x;
+  ptr[1] = y;
+  ptr[2] = z;
+}
 #if 0
 unsigned int *GameApi::PointsApi::color_access(GameApi::PTA pta, int pointnum)
 {
