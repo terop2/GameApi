@@ -2660,9 +2660,10 @@ public:
       {
 	following = false;
       }
-
     if (firsttime || changed)
       {
+	if (firsttime)
+	  {
 	GameApi::BB b = ev.bool_bitmap_api.empty(sx,sy);
 	GameApi::BB b1 = ev.bool_bitmap_api.rectangle(b, 0.0, 0.0, float(sx), 2.0);
 	GameApi::BB b2 = ev.bool_bitmap_api.rectangle(b1, 0.0, 0.0, 2.0, float(sy));
@@ -2675,6 +2676,8 @@ public:
 	GameApi::BB k2 = ev.bool_bitmap_api.rectangle(k, 0.0, 0.0, float(sx-2-2-2-2), float(sy)/float(area_y)*float(sy-2-2-2-2));
 	thumb = ev.bool_bitmap_api.to_bitmap(k2, 255,255,255,255, 0,0,0,0);
 	thumb_va = ev.sprite_api.create_vertex_array(thumb);
+	  }
+
 	firsttime = false;
 	changed=false;
 	old_area_y = area_y;
@@ -2754,6 +2757,8 @@ public:
 
     if (firsttime ||changed)
       {
+	if (firsttime)
+	  {
 	GameApi::BB b = ev.bool_bitmap_api.empty(sx,sy);
 	GameApi::BB b1 = ev.bool_bitmap_api.rectangle(b, 0.0, 0.0, float(sx), 2.0);
 	GameApi::BB b2 = ev.bool_bitmap_api.rectangle(b1, 0.0, 0.0, 2.0, float(sy));
@@ -2766,6 +2771,8 @@ public:
 	GameApi::BB k2 = ev.bool_bitmap_api.rectangle(k, 0.0, 0.0, float(sx)/float(area_x)*float(sx-2-2-2-2), float(sy-2-2-2-2));
 	thumb = ev.bool_bitmap_api.to_bitmap(k2, 255,255,255,255, 0,0,0,0);
 	thumb_va = ev.sprite_api.create_vertex_array(thumb);
+	  }
+
 	firsttime = false;
 	changed=false;
 	old_area_x = area_x;
