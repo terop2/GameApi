@@ -2101,6 +2101,9 @@ public:
       }
   }
   int shader_id() { return -1; }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
   void execute(MainLoopEnv &e)
   {
     GameApi::SH sh;

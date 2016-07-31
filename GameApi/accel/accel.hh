@@ -58,7 +58,7 @@ public:
   virtual void clear()=0;
   virtual AccelNode *find_point(Point p) const=0;
   virtual AccelNode *find_next(AccelNode *current, Point start, Point target) const=0;
-  virtual std::vector<AccelNode*> find_span(Point p1, Point p2) const=0;
+  virtual std::vector<AccelNode*> find_ray(Point p1, Point p2) const=0;
   virtual std::vector<AccelNode*> find_tri(Point p1, Point p2, Point p3) const=0;
   virtual std::vector<AccelNode*> find_cube(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) const=0;
   virtual std::vector<AccelNode*> find_quad(Point p1, Point p2, Point p3, Point p4) const=0;

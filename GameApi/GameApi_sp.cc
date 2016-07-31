@@ -179,6 +179,9 @@ class RenderVertexArray4 : public MainLoopItem
 {
 public:
   RenderVertexArray4(GameApi::EveryApi &ev, GameApi::SpriteApi &sp, GameApi::VA va) : ev(ev), sp(sp), va(va) { }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
   void execute(MainLoopEnv &e)
   {
     GameApi::SH sh;
@@ -264,6 +267,9 @@ class UpdateVertexArray4 : public MainLoopItem
 {
 public:
   UpdateVertexArray4(GameApi::SpriteApi &api, GameApi::VA va, GameApi::BM bm) : api(api), va(va), bm(bm) { }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
   void execute(MainLoopEnv &e)
   {
     api.update_vertex_array(va,bm);

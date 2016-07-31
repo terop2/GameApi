@@ -249,7 +249,8 @@ public:
   IMPORT Event get_event();
   void waittof();
   SP screenspace();
-  void execute_ml(ML ml, SH color, SH texture, SH arr_texture, const Event &e, M in_MV, M in_T, M in_N);
+  void execute_ml(ML ml, SH color, SH texture, SH arr_texture, M in_MV, M in_T, M in_N);
+  void event_ml(ML ml, const Event &e);
   ML array_ml(std::vector<ML> vec);
   M in_MV(EveryApi &ev, bool is_3d);
   M in_T(EveryApi &ev, bool is_3d);
@@ -939,6 +940,7 @@ public:
 
   ML bind(P p, MT mat);
   ML bind_inst(P p, PTS pts, MT mat);
+  ML bind_inst2(P p, PTA pta, MT mat);
   ML render_instanced_ml(EveryApi &ev, P p, PTS pts);
   ML render_instanced2_ml(EveryApi &ev, VA va, PTA pta);
 
@@ -1097,7 +1099,7 @@ public:
   int canvas_item_index(W canvas, W item);
   int canvas_item(W canvas, W item, int x, int y);
   void del_canvas_item(W canvas, int id);
-  W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltips, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params);
+  W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltips, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params, std::string symbol, std::string comment);
   W list_item_title(int sx, std::string label, FtA atlas, BM atlas_bm);
   W list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, std::vector<std::string> subitems_tooltip, FtA atlas2, BM atlas_bm2, W insert);
   W list_item(BM icon, std::string label, int sx, int sy);
@@ -2177,6 +2179,7 @@ public:
 			PT fTL, PT fTR, PT fBL, PT fBR);
 
   IMPORT PTA prepare(PTS p);
+  IMPORT int num_points(PTA pta);
   float *point_access(PTA pta, int pointnum); // use ptr[0], ptr[1] and ptr[2] to access the x,y,z coordinate
   IMPORT void set_point(PTA pta, int pointnum, float x, float y, float z);
   //unsigned int *color_access(PTA pta, int pointnum);

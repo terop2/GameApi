@@ -454,12 +454,179 @@ public:
     AccelNode *n = find_node(s);
     return n;
   }
-  Point point_at_edge_of_box(Point start, Point target, AccelNode *discard) const
+  Point2d edge_component( float start_x, float target_x, // x is special
+			  float start_y, float target_y,
+			  float start_z, float target_z, int x_spec)
+  {
+    float s_x = start_x;
+    float e_x = target_x;
+    int x;
+    bool forward;
+    if (s_x < e_x)
+      {
+	forward = true;
+	x = x_spec + 1;
+      }
+    else
+      {
+	forward = false;
+	x = x_spec;
+      }
+    float p_x = start_x + x*(end_x-start_x)/sx;
+    float d_x = fabs(p_x-s_x);
+    float dx = fabs(target_x-start_x);
+    float dy = fabs(target_y-start_y);
+    float dz = fabs(target_z-start_z);
+    float ky = dy*d_x/dx;
+    float kz = dz*d_x/dx;
+    if (!forward) { ky = -ky; kz = -kz; }
+    Point2d p;
+    p.x = ky;
+    p.y = kz;
+    return p;
+  }
+
+  Point point_at_edge_of_box(Point current, Point target, AccelNode *discard) const
   {
     // TODO RAY-BOX INTERSECTION
+    AccelNodeSpec spec = find_spec(current);
+
+    Point2d pyz = edge_component( current.x, target.x,
+				 current.y, target.y,
+				 current.z, target.z, spec.x);
+    Point2d pxz = edge_component( current.y, target.y,
+				 current.x, target.x,
+				 current.z, target.z, spec.y);
+    Point2d pxy = edge_component( current.z, target.z,
+				 current.x, target.x,
+				 current.y, target.y, spec.z);
+    
+    float x_delta = std::min(fabs(pxz.x),fabs(pxy.x));
+    float y_delta = std::min(fabs(pyz.x),fabs(pxy.y));
+    float z_delta = std::min(fabs(pyz.y),fabs(pxz.y));
+    float x_mult = pyz.x < 0.0 ? -1.0 : 1.0;
+    float y_mult = pxz.x < 0.0 ? -1.0 : 1.0;
+    float z_mult = pxy.x < 0.0 ? -1.0 : 1.0;
+
+    Vector v = { x_mult*x_delta, y_mult*y_delta, z_mult*z_delta };
+    return current + v;
+  }
+  bool point_box_intersection(Point p, AccelNode *node)
+  {
+    AccelNodeSpec spec = find_spec(node);
+    p.x-=start_x;
+    p.y-=start_y;
+    p.z-=start_z;
+    p.x/=end_x-start_x;
+    p.y/=end_y-start_y;
+    p.z/=end_z-start_z;
+    p.x*=sx;
+    p.y*=sy;
+    p.z*=sz;
+    int x = (int)p.x;
+    int y = (int)p.y;
+    int z = (int)p.z;
+    return x==spec.x && y==spec.y && z==spec.z;
   }
   virtual AccelNode *find_next(AccelNode *current, Point start, Point target) const
   {
+    if (point_box_intersection(target, current)) return 0; // we're at target
+    AccelNodeSpec spec = find_spec(current);
+
+    Point2d pyz = edge_component( start.x, target.x,
+				 start.y, target.y,
+				 start.z, target.z, spec.x);
+    Point2d pxz = edge_component( start.y, target.y,
+				 start.x, target.x,
+				 start.z, target.z, spec.y);
+    Point2d pxy = edge_component( start.z, target.z,
+				  start.x, target.x,
+				  start.y, target.y, spec.z);
+
+    bool b_x = fabs(pxz.x) < fabs(pxy.x);
+    bool b_y = fabs(pyz.x) < fabs(pxy.y);
+    bool b_z = fabs(pyz.y) < fabs(pxz.y);
+
+    int x_dir=0;
+    int y_dir=0;
+    int z_dir=0;
+    // TODO: what happens if x_dir, y_dir or z_dir is 0?
+    if (b_x) { /* choose pxz */ 
+      if (pxz.x < 0.0) { 
+	y_dir = -1;
+      } else {
+	y_dir = 1;
+      }
+    } else { 
+      if (pxy.x < 0.0)
+	{
+	  z_dir = -1;
+	}
+      else
+	{
+	  z_dir = 1;
+	}
+      /* choose pxy */ 
+    }
+    if (b_y) {
+      if (pyz.x < 0.0)
+	{
+	  x_dir = -1;
+	}
+      else
+	{
+	  x_dir = 1;
+	}
+      /* choose pyz */ 
+    } else {
+      if (pxy.y < 0.0)
+	{
+	  z_dir = -1;
+	}
+      else
+	{
+	  z_dir = 1;
+	}
+      /* choose pxy */ 
+    }
+    if (b_z) { 
+      if (pyz.y < 0.0)
+	{
+	  x_dir = -1;
+	}
+      else
+	{
+	  x_dir = 1;
+	}
+      /* choose pyz */ 
+    } else { 
+      if (pxz.y < 0.0)
+	{
+	  y_dir = -1;
+	}
+      else
+	{
+	  y_dir = 1;
+	}
+      /* choose pxz */ 
+    }
+    float x_delta = std::min(fabs(pxz.x),fabs(pxy.x));
+    float y_delta = std::min(fabs(pyz.x),fabs(pxy.y));
+    float z_delta = std::min(fabs(pyz.y),fabs(pxz.y));
+
+    if (x_delta < y_delta && x_delta < z_delta)
+      {
+	spec.x+=x_dir;
+      }
+    if (y_delta < x_delta && y_delta < z_delta)
+      {
+	spec.y+=y_dir;
+      }
+    if (z_delta < x_delta && z_delta < y_delta)
+      {
+	spec.z+=z_dir;
+      }
+    return find_node(spec);
   }
   virtual std::vector<AccelNode*> find_quad(Point p1, Point p2, Point p3, Point p4) const
   {
@@ -476,7 +643,7 @@ public:
 		     zzzmin, zzzmax);
 		     
   }
-  virtual std::vector<AccelNode*> find_span(Point p1, Point p2) const
+  virtual std::vector<AccelNode*> find_ray(Point p1, Point p2) const
   {
     std::vector<AccelNode*> vec;
     AccelNode *n = find_point(p1);
