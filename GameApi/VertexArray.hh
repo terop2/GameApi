@@ -26,6 +26,15 @@ public:
       }
     bm_id = 0;
   }
+  void clear_arrays()
+  {
+    std::map<int, Polys*>::iterator it = m_set.begin();
+    for(;it!=m_set.end();it++)
+      {
+	delete m_set[(*it).first];
+	m_set[(*it).first] = new Polys;
+      }
+  }
   void set_bm_id(int id) { bm_id=0; }
   int get_bm_id() const { return bm_id; }
   ~VertexArraySet();

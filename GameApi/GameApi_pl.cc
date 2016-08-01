@@ -2450,6 +2450,16 @@ EXPORT GameApi::ML GameApi::PolygonApi::update_vertex_array_ml(GameApi::VA va, G
 {
   return add_main_loop(e, new UpdateVA(*this, va, p, keep));
 }
+EXPORT void GameApi::PolygonApi::update_vertex_array_no_memory(GameApi::VA va, GameApi::P p)
+{
+  FaceCollection *faces = find_facecoll(e, p);
+  RenderVertexArray *rend = find_vertex_array_render(e, va);
+  VertexArraySet *set = find_vertex_array(e, va);
+  set->clear_arrays();
+  FaceCollectionVertexArray2 faces2(*faces, *set);
+  faces2.copy(0,faces->NumFaces());
+  rend->update(0);
+}
 EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P p, bool keep)
 {
 #ifdef THREADS

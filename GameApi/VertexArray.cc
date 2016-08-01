@@ -745,14 +745,14 @@ void RenderVertexArray::prepare(int id)
 void RenderVertexArray::del()
 {
 #ifdef VAO
-  glDeleteVertexArrays(2, &vao[0]);
+  glDeleteVertexArrays(3, &vao[0]);
 #endif
-#ifdef VAO
   glDeleteBuffers(1,&buffers[0]);
   glDeleteBuffers(1,&buffers[1]);
   glDeleteBuffers(1,&buffers[2]);
   glDeleteBuffers(1,&buffers[3]);
   glDeleteBuffers(1,&buffers[4]);
+  glDeleteBuffers(1,&pos_buffer);
 
   glDeleteBuffers(1,&buffers2[0]);
   glDeleteBuffers(1,&buffers2[1]);
@@ -765,7 +765,6 @@ void RenderVertexArray::del()
   glDeleteBuffers(1,&buffers3[2]);
   glDeleteBuffers(1,&buffers3[3]);
   glDeleteBuffers(1,&buffers3[4]);
-#endif
 }
 void RenderVertexArray::prepare_instanced(int id, Point *positions, int size)
 {
