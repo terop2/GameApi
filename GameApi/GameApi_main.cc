@@ -471,6 +471,21 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
       }
   }
 #endif
+
+#if 0
+  if (GLEW_NVX_gpu_memory_info ) // seems I don't have extension available
+    {
+      int readint = -1;
+      glGetIntegerv(GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &readint );
+
+      int readgpuint = -1;
+      glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &readgpuint);
+      std::cout << "MEMORY AVAILABLE: " << readint * 1024 << std::endl;
+      std::cout << "GPU MEMORY AVAILABLE: " << readgpuint * 1024 << std::endl;
+    }
+#endif
+
+
   //MainLoopPriv *p = (MainLoopPriv*)priv;
   //glLoadIdentity();
 #ifdef SDL2_USED

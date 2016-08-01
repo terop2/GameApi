@@ -1047,12 +1047,15 @@ void iter(void *arg)
 	  }
 
 	  }
+#if 0
 	float param_x = env->gui->dynamic_param(env->txt2, 0);
 	env->gui->set_dynamic_param(env->scroll_area, 1, param_x);
 	float param_x1 = env->gui->dynamic_param(env->scrollbar_x, 0);
 	env->gui->set_dynamic_param(env->canvas_area, 0, param_x1);
 	float param_y1 = env->gui->dynamic_param(env->scrollbar_y, 0);
 	env->gui->set_dynamic_param(env->canvas_area, 1, param_y1);
+#endif
+
 	env->ev->mod_api.update_lines_from_canvas(env->canvas, env->mod, 0);
 	
 	int area_y = env->gui->size_y(env->array);
@@ -1229,6 +1232,13 @@ void iter(void *arg)
 	      }
 	  }
       }
+    	float param_x = env->gui->dynamic_param(env->txt2, 0);
+	env->gui->set_dynamic_param(env->scroll_area, 1, param_x);
+	float param_x1 = env->gui->dynamic_param(env->scrollbar_x, 0);
+	env->gui->set_dynamic_param(env->canvas_area, 0, param_x1);
+	float param_y1 = env->gui->dynamic_param(env->scrollbar_y, 0);
+	env->gui->set_dynamic_param(env->canvas_area, 1, param_y1);
+
 }
 float f(float w)
 {

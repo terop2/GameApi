@@ -1678,6 +1678,7 @@ public:
   IMPORT bool is_array_texture(VA va);
 
   IMPORT void update_vertex_array(VA va, P p, bool keep=false);
+  IMPORT void update_vertex_array_no_memory(VA va, P p);
   IMPORT ML update_vertex_array_ml(VA va, P p, bool keep=false);
   IMPORT VA create_vertex_array(P p, bool keep=false); // slow
   IMPORT void render_vertex_array(VA va); // fast

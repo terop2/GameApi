@@ -1,5 +1,3 @@
 
 all:
-	g++ -ggdb -g -std=c++11 test.cpp -L.. -I.. -lGameApi
-
-# -Wl,--large-address-aware
+	g++ -ggdb -Wl,--large-address-aware -g -std=c++11 test.cpp -L.. -I.. -lGameApi

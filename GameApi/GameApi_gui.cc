@@ -1371,6 +1371,7 @@ public:
 
     if (size.dx != oldsize.dx ||size.dy!=oldsize.dy)
       {
+	
 	changed = true;
       }
 
@@ -1519,8 +1520,8 @@ public:
 	    line = ev.lines_api.change_color(line, 0xffffffff);
 	    line_2 = ev.polygon_api.from_lines(line, [this](int a,float b,float c,float d,float e,float f,float g,unsigned int h,unsigned int i) { return line_to_poly(a,b,c,d,e,f,g,h,i); });
 	    
-	    
-	    ev.polygon_api.update_vertex_array(line_3, line_2, true);
+	     
+	    ev.polygon_api.update_vertex_array_no_memory(line_3, line_2);
 	  }
 	//ev.lines_api.update(line_p, line);
       }
@@ -2647,7 +2648,7 @@ public:
 	start_pos = mouse;
       }
     if (button==0 && following)
-      {
+      { // moving this to render() doesnt help since it needs mouse position
 	float delta = mouse.y - start_pos.y;
 	current_pos = current_pos + delta/float(sy-2-2-2-2);
 
@@ -2656,6 +2657,7 @@ public:
 
 	start_pos = mouse;
       }
+
     if (button==-1)
       {
 	following = false;
@@ -2685,6 +2687,7 @@ public:
   }
   void render()
   {
+
     if (!firsttime)
       {
 	Point2d p = get_pos();
@@ -2724,6 +2727,7 @@ private:
   Point2d start_pos;
   int old_area_y;
   bool changed;
+  bool button_pressed;
 };
 
 class ScrollBarX : public GuiWidgetForward
