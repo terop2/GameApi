@@ -645,6 +645,7 @@ class MeshStateBitmap : public StateBitmap<StateInfo, StateColumn, StateRow>
 {
 public:
   MeshStateBitmap(Mesh &m) : StateBitmap<StateInfo, StateColumn, StateRow>(CountX(m), CountY(m)), m(m) { }
+  void Prepare() { }
 
   void Copy()
   {
@@ -693,6 +694,7 @@ class MeshNormalsStateBitmap : public StateBitmap<StateInfo, StateColumn, StateR
 public:
   MeshNormalsStateBitmap(Mesh &m, MeshNormals &n) : StateBitmap<StateInfo, StateColumn, StateRow>(CountX(m), CountY(m)), m(m),n(n) { }
 
+  void Prepare() { }
   void Copy()
   {
     int frames = m.NumFrames();
@@ -740,6 +742,7 @@ class MeshColorsStateBitmap : public StateBitmap<StateInfo, StateColumn, StateRo
 public:
   MeshColorsStateBitmap(Mesh &m, MeshColors &n) : StateBitmap<StateInfo, StateColumn, StateRow>(CountX(m), CountY(m)), m(m),n(n) { }
 
+  void Prepare() { }
   void Copy()
   {
     int frames = m.NumFrames();
@@ -785,6 +788,7 @@ class MeshTexCoordStateBitmap : public StateBitmap<StateInfo, StateColumn, State
 {
 public:
   MeshTexCoordStateBitmap(Mesh &m, MeshTexCoords &n) : StateBitmap<StateInfo, StateColumn, StateRow>(CountX(m), CountY(m)), m(m),n(n) { }
+  void Prepare() { }
 
   void Copy()
   {

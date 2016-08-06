@@ -98,6 +98,7 @@ class WaveformBitmap : public Bitmap<Color>
 {
 public:
   WaveformBitmap(Waveform &wv, float start_x, float end_x, float start_y, float end_y, int sx, int sy, Color true_color, Color false_color) : wv(wv), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), sx(sx), sy(sy), true_color(true_color), false_color(false_color) { }
+  void Prepare() { }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual Color Map(int x, int y) const
@@ -136,6 +137,7 @@ public:
     done = BufferRefMask::NewBuffer(sx,sy);
     render(p,p.z);
   }
+  void Prepare() { }
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   bool Map(int x, int y) const 
@@ -180,6 +182,7 @@ class FloatRangeBitmap : public Bitmap<bool>
 {
 public:
   FloatRangeBitmap(Bitmap<float> &fb, float rs, float re) : fb(fb), rs(rs), re(re) { }
+  void Prepare() { fb.Prepare(); }
   virtual int SizeX() const { return fb.SizeX(); }
   virtual int SizeY() const { return fb.SizeY(); }
   virtual bool Map(int x, int y) const
@@ -196,6 +199,8 @@ class SectionsBoolBitmap : public Bitmap<bool>
 {
 public:
   SectionsBoolBitmap(int sx, int sy, float x, float y, std::function<bool (float angle)> f) : sx(sx), sy(sy), x(x), y(y), f(f) { }
+  void Prepare() { }
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   
@@ -222,6 +227,7 @@ class ConicalGradientBitmap : public Bitmap<Color>
 {
 public:
   ConicalGradientBitmap(int sx, int sy, float x, float y, float angle1, float angle2, unsigned int color_1, unsigned int color_2) : sx(sx), sy(sy), x(x), y(y), angle1(angle1), angle2(angle2), color_1(color_1), color_2(color_2) { }
+  void Prepare() { }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   
@@ -256,6 +262,8 @@ class PartCircleBoolBitmap : public Bitmap<bool>
 {
 public:
   PartCircleBoolBitmap(int sx, int sy, float x, float y, float start_angle, float end_angle, float start_rad, float end_rad) : sx(sx), sy(sy), x(x), y(y), sa(start_angle), ea(end_angle), sr(start_rad), er(end_rad) { }
+  void Prepare() { }
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   
@@ -287,6 +295,8 @@ public:
     range_start(range_start), 
     range_end(range_end) 
   { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual bool Map(int x, int y) const
@@ -304,6 +314,8 @@ class GrayScaleBitmapFromFloatBitmap : public Bitmap<Color>
 {
 public:
   GrayScaleBitmapFromFloatBitmap(Bitmap<float> &bm, Color c1, Color c2) : bm(bm), c1(c1), c2(c2) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual Color Map(int x, int y) const
@@ -321,6 +333,8 @@ class FloatBitmapFromBoolBitmap : public Bitmap<float>
 {
 public:
   FloatBitmapFromBoolBitmap(Bitmap<bool> &bm, int csx, int csy) : bm(bm), csx(csx), csy(csy) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX()/csx+1; }
   virtual int SizeY() const { return bm.SizeY()/csy+1; }
   virtual float Map(int x, int y) const
@@ -348,6 +362,8 @@ class ChooseTBitmap : public Bitmap<T>
 {
 public:
   ChooseTBitmap(Bitmap<bool> &bm, T false_t, T true_t) : bm(bm), false_t(false_t), true_t(true_t) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual T Map(int x, int y) const
@@ -366,6 +382,14 @@ class FontCharacterString : public Bitmap<T>
 {
 public:
   FontCharacterString(T def, int x_gap) : def(def), x_gap(x_gap) { }
+  void Prepare() { 
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->Prepare();
+      }
+  }
+
   void push_back(Bitmap<T> *bm, int top) 
   { 
     vec.push_back(bm); 
@@ -435,6 +459,8 @@ class NotBitmap : public Bitmap<bool>
 {
 public:
   NotBitmap(Bitmap<bool> &bm) : bm(bm) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   bool Map(int x, int y) const { return !bm.Map(x,y); }
@@ -446,6 +472,11 @@ class OrBitmap : public Bitmap<bool>
 {
 public:
   OrBitmap(Bitmap<bool> &bm1, Bitmap<bool> &bm2) : bm1(bm1), bm2(bm2) { }
+  void Prepare() { 
+    bm1.Prepare();
+    bm2.Prepare();
+  }
+
   virtual int SizeX() const { return bm1.SizeX(); }
   virtual int SizeY() const { return bm1.SizeY(); }
   bool Map(int x, int y) const { return bm1.Map(x,y)||bm2.Map(x,y); }
@@ -457,6 +488,11 @@ class XorBitmap : public Bitmap<bool>
 {
 public:
   XorBitmap(Bitmap<bool> &bm1, Bitmap<bool> &bm2) : bm1(bm1), bm2(bm2) { }
+  void Prepare() { 
+    bm1.Prepare();
+    bm2.Prepare();
+  }
+
   virtual int SizeX() const { return bm1.SizeX(); }
   virtual int SizeY() const { return bm1.SizeY(); }
   bool Map(int x, int y) const { return bm1.Map(x,y) ^ bm2.Map(x,y); }
@@ -469,6 +505,11 @@ class AndNotBitmap : public Bitmap<bool>
 {
 public:
   AndNotBitmap(Bitmap<bool> &bm1, Bitmap<bool> &bm2) : bm1(bm1), bm2(bm2) { }
+  void Prepare() { 
+    bm1.Prepare();
+    bm2.Prepare();
+  }
+
   virtual int SizeX() const { return bm1.SizeX(); }
   virtual int SizeY() const { return bm1.SizeY(); }
   bool Map(int x, int y) const { return bm1.Map(x,y) && !bm2.Map(x,y); }
@@ -481,6 +522,10 @@ class EquivalenceClassIntBitmap : public Bitmap<bool>
 {
 public:
   EquivalenceClassIntBitmap(Bitmap<int> &bm, int val) : bm(bm), val(val) { }
+  void Prepare() { 
+    bm.Prepare();
+  }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual bool Map(int x, int y) const
@@ -496,6 +541,10 @@ class EquivalenceClassColorBitmap : public Bitmap<bool>
 {
 public:
   EquivalenceClassColorBitmap(Bitmap<Color> &bm, Color val) : bm(bm), val(val) { }
+  void Prepare() { 
+    bm.Prepare();
+  }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual bool Map(int x, int y) const
@@ -515,6 +564,12 @@ class CombineBitmaps : public Bitmap<std::pair<T,K> >
 {
 public:
   CombineBitmaps(Bitmap<T> &bm1, Bitmap<K> &bm2) : bm1(bm1), bm2(bm2) { }
+
+  void Prepare() { 
+    bm1.Prepare();
+    bm2.Prepare();
+  }
+
   virtual int SizeX() const { return bm1.SizeX(); }
   virtual int SizeY() const { return bm1.SizeY(); }
   virtual std::pair<T,K> Map(int x, int y) const
@@ -532,6 +587,12 @@ class ChooseBitmap : public Bitmap<T>
 {
 public:
   ChooseBitmap(Bitmap<T> &bm1, Bitmap<T> &bm2, Bitmap<bool> &which) : bm1(bm1), bm2(bm2), which(which) { }
+  void Prepare() { 
+    bm1.Prepare();
+    bm2.Prepare();
+    which.Prepare();
+  }
+
   virtual int SizeX() const { return bm1.SizeX(); }
   virtual int SizeY() const { return bm1.SizeY(); }
   virtual T Map(int x, int y) const
@@ -558,6 +619,10 @@ class InverseMapBitmap : public Bitmap<T>
 {
 public:
   InverseMapBitmap(Bitmap<T> &bm, std::pair<int,int> (*fptr)(std::pair<int,int>), int sx, int sy) : bm(bm), fptr(fptr),sx(sx), sy(sy) { }
+  void Prepare() { 
+    bm.Prepare();
+  }
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual T Map(int x, int y) const
@@ -640,6 +705,10 @@ class BitmapArray : public Array<int, C>
 {
 public:
   BitmapArray(Bitmap<C> &bm) : bm(bm) { }
+  void Prepare() { 
+    bm.Prepare();
+  }
+
   int Size() const { return bm.SizeX()*bm.SizeY(); }
   C Index(int i) const
   {
@@ -714,6 +783,11 @@ class LighterBitmap : public Bitmap<Color>
 {
 public:
   LighterBitmap(Bitmap<Color> &orig, Bitmap<float> &light, Point2d pos) : orig(orig), light(light),pos(pos) { }
+  void Prepare() { 
+    orig.Prepare();
+    light.Prepare();
+  }
+
   virtual int SizeX() const { return orig.SizeX(); }
   virtual int SizeY() const { return orig.SizeY(); }
   virtual Color Map(int x, int y) const
@@ -734,6 +808,11 @@ class DarkerBitmap : public Bitmap<Color>
 {
 public:
   DarkerBitmap(Bitmap<Color> &orig, Bitmap<float> &dark, Point2d pos) : orig(orig), dark(dark),pos(pos) { }
+  void Prepare() { 
+    orig.Prepare();
+    dark.Prepare();
+  }
+
   virtual int SizeX() const { return orig.SizeX(); }
   virtual int SizeY() const { return orig.SizeY(); }
   virtual Color Map(int x, int y) const
@@ -756,6 +835,8 @@ class DynBitmap : public Bitmap<T>
 {
 public:
   DynBitmap(int sx, int sy) : vec(sx*sy), sx(sx), sy(sy) { }
+  void Prepare() { }
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual T Map(int x, int y) const
@@ -792,6 +873,10 @@ public:
 	}
     
   }
+  void Prepare() { 
+    bm.Prepare();
+  }
+
   ~MemoizeBitmap() { BufferRef::FreeBuffer(buf); }
   void MemoizeAll()
   {
@@ -828,6 +913,11 @@ class InterpolateBitmap : public Bitmap<Color>
 {
 public:
   InterpolateBitmap(Bitmap<Color> &c1, Bitmap<Color> &c2, float xx) :c1(c1), c2(c2),xx(xx) { }
+  void Prepare() { 
+    c1.Prepare();
+    c2.Prepare();
+  }
+
   virtual int SizeX() const { return std::min(c1.SizeX(),c2.SizeX()); }
   virtual int SizeY() const { return std::min(c1.SizeY(),c2.SizeY()); }
   virtual Color Map(int x, int y) const
@@ -874,6 +964,8 @@ class GraphBitmap : public Bitmap<Color>
 {
 public:
   GraphBitmap(Function<float,float> &f, Color top, Color middle, Color bottom, float up_delta, float down_delta, float start_x, float end_x, float start_y, float end_y, int size_x, int size_y) : f(f), top(top), middle(middle), bottom(bottom), up(up_delta), down(down_delta), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), size_x(size_x), size_y(size_y) { }
+  void Prepare() { }
+
   virtual int SizeX() const { return size_x; }
   virtual int SizeY() const { return size_y; }
 
@@ -910,6 +1002,8 @@ public:
 	       int left_border, int right_border, int top_border, int bottom_border) : next(next), left(left), right(right), top(top), bottom(bottom),
 										       left_border(left_border), right_border(right_border),
 										       top_border(top_border), bottom_border(bottom_border) { }
+  void Prepare() { next.Prepare(); }
+
   virtual int SizeX() const { return left_border + next.SizeX() + right_border; }
   virtual int SizeY() const { return top_border + next.SizeY() + bottom_border; }
   virtual Color Map(int x, int y) const
@@ -932,6 +1026,8 @@ class ModifyBitmap : public Bitmap<T>
 {
 public:
   ModifyBitmap(Bitmap<T> &bm, Bitmap<T> &bm2, int x, int y) : bm(bm), bm2(bm2), x(x), y(y) { }
+  void Prepare() { bm.Prepare(); bm2.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual T Map(int xx, int yy) const
@@ -953,6 +1049,11 @@ class BlitBitmapClass : public Bitmap<Color>
 {
 public:
   BlitBitmapClass(Bitmap<Color> &bm, Bitmap<Color> &bm2, int x, int y) : bm(bm), bm2(bm2), x(x), y(y) { }
+  void Prepare() { 
+    bm.Prepare();
+    bm2.Prepare();
+  }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual Color Map(int xx, int yy) const
@@ -979,6 +1080,11 @@ class BlitBitmapClassMasked : public Bitmap<Color>
 {
 public:
   BlitBitmapClassMasked(Bitmap<Color> &bm, Bitmap<Color> &bm2, int x, int y, Bitmap<float> &mask) : bm(bm), bm2(bm2), x(x), y(y), mask(mask) { }
+  void Prepare() { 
+    bm.Prepare();
+    bm2.Prepare();
+  }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual Color Map(int xx, int yy) const
@@ -1005,6 +1111,12 @@ class BlitBitmapClassMasked2 : public Bitmap<Color>
 {
 public:
   BlitBitmapClassMasked2(Bitmap<Color> &bm, Bitmap<Color> &bm2, int x, int y, Bitmap<bool> &mask) : bm(bm), bm2(bm2), x(x), y(y), mask(mask) { }
+  void Prepare() { 
+    bm.Prepare();
+    bm2.Prepare();
+    mask.Prepare();
+  }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual Color Map(int xx, int yy) const
@@ -1041,6 +1153,8 @@ class SubBitmap : public Bitmap<T>
 {
 public:
   SubBitmap(Bitmap<T> &bm, int x, int y, int width, int height) : bm(bm), x(x), y(y), width(width), height(height) { }
+  void Prepare() { bm.Prepare(); }
+
   int SizeX() const { return width; }
   int SizeY() const { return height; }
   T Map(int mx, int my) const
@@ -1060,6 +1174,8 @@ public:
 	     T bg_color) : bm(bm), l(l), t(t), r(r),b(b),bg_color(bg_color) 
   {
   }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return l+bm.SizeX()+r; }
   virtual int SizeY() const { return t+bm.SizeY()+b; }
   virtual T Map(int x, int y) const
@@ -1120,6 +1236,8 @@ class QuadBitmapFromSphere : public Bitmap<Quad>
 public:
   QuadBitmapFromSphere(Point center, float radius, int sx, int sy) 
     : sx(sx), sy(sy), sphere(sx,sy), mat(sphere, Matrix::Scale(radius,radius,radius)*Matrix::Translate(center.x,center.y,center.z)) { }
+  void Prepare() { }
+
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   Quad Map(int x, int y) const
@@ -1143,6 +1261,8 @@ class QuadBitmapFromObjects : public Bitmap<Quad>
 {
 public:
   QuadBitmapFromObjects(FaceCollection &coll, Array<int,Point> &pos) : coll(coll), pos(pos) { }
+  void Prepare() { coll.Prepare(); }
+
   int SizeX() const { return pos.Size(); }
   int SizeY() const { return coll.NumFaces(); }
   Quad Map(int x, int y) const
@@ -1163,6 +1283,8 @@ template<class T>
 class BitmapStore : public Bitmap<T>
 {
 public:
+  void Prepare() { }
+
   virtual int SizeX() const { return width; }
   virtual int SizeY() const { return height; }
   virtual T Map(int x, int y) const { return array[x+y*height]; }
@@ -1197,6 +1319,7 @@ class ConvertBitmap : public Bitmap<K>
 {
 public:
   ConvertBitmap(Bitmap<T> &bm) : bm(bm) { }
+  void Prepare() { bm.Prepare(); }
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual K Map(int x, int y) const
@@ -1212,6 +1335,7 @@ class PosBitmap : public Bitmap<Pos>
 {
 public:
   PosBitmap(int sx, int sy) : sx(sx), sy(sy) { }
+  void Prepare() { }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual Pos Map(int x, int y) const
@@ -1257,6 +1381,8 @@ class StructBitmap : public Bitmap<std::pair<T,K> >
 {
 public:
   StructBitmap(Array<int, T> &a1, Array<int,K> &a2) : a1(a1), a2(a2) { }
+  void Prepare() { }
+
   int SizeX() const { return a1.Size(); }
   int SizeY() const { return a2.Size(); }
   std::pair<T,K> Map(int x, int y) const { return std::make_pair(a1.Index(x),a2.Index(y)); }
@@ -1269,6 +1395,8 @@ class ColumnRowBitmap : public Bitmap<Size>
 {
 public:
   ColumnRowBitmap(Array<int, int> &column_x, Array<int, int> &row_y) : x(column_x), y(row_y) { }
+  void Prepare() { }
+
   int SizeX() const { return x.Size(); }
   int SizeY() const { return y.Size(); }
   Size Map(int xx, int yy) const { Size s; s.sx = x.Index(xx); s.sy = y.Index(yy); return s; }
@@ -1282,6 +1410,8 @@ class MBitmap : public Bitmap<T>
 {
 public:
   MBitmap(int x, int y) : bm(new T[x*y]), sx(x), sy(y) { }
+  void Prepare() { }
+
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   T Map(int xx, int yy) const 
@@ -1323,6 +1453,8 @@ class MapBitmap : public Bitmap<K>
   // TODO: x and y are not passed to f().
 public:
   MapBitmap(Bitmap<T1> &bm, Function<T2,K> &f) : bm(bm), f(f) { }
+  void Prepare() { bm.Prepare();}
+
   int SizeX() const { return bm.SizeX(); }
   int SizeY() const { return bm.SizeY(); }
   K Map(int x, int y) const { return f.Index(bm.Map(x,y)); }
@@ -1354,6 +1486,8 @@ class ConstantBitmap : public Bitmap<C>
 {
 public:
   ConstantBitmap(C c, int x, int y) : c(c), x(x), y(y) { }
+  void Prepare() { }
+
   int SizeX() const { return x; }
   int SizeY() const { return y; }
   C Map(int , int ) const
@@ -1371,6 +1505,8 @@ class BitmapRelation : public Bitmap<C>
 public:
   BitmapRelation(Bitmap<C> &bm, C unknown_value, int xx, int yy) : bm(bm),xx(xx), yy(yy), val(bm.Map(xx,yy)), unknown_value(unknown_value) { }
   BitmapRelation(Bitmap<C> &bm, C unknown_value, C value) : bm(bm), val(value), unknown_value(unknown_value) { }
+  void Prepare() { bm.Prepare(); }
+
   int SizeX() const { return bm.SizeX(); }
   int SizeY() const { return bm.SizeY(); }
   C Map(int x, int y) const
@@ -1395,6 +1531,8 @@ private:
 class RandomBitmap : public Bitmap<float>
 {
 public:
+  void Prepare() { }
+
   int SizeX() const { return x; }
   int SizeY() const { return y; }
   float Map(int xx, int yy) const { return bitmap[xx+x*yy]; }
@@ -1432,6 +1570,8 @@ class RepeatBitmap : public Bitmap<C>
 {
 public:
   RepeatBitmap(Bitmap<C> &bm, int times_x, int times_y) : bm(bm), times_x(times_x), times_y(times_y) { }
+  void Prepare() { bm.Prepare(); }
+
   int SizeX() const { return times_x*bm.SizeX(); }
   int SizeY() const { return times_y*bm.SizeY(); }
   C Map(int x, int y) const
@@ -1451,6 +1591,8 @@ class SubstituteBitmapPixels : public Bitmap<C>
 public:
   // all bitmaps returned by func() must be same size
   SubstituteBitmapPixels(Bitmap<T> &bm, Function<T, Bitmap<C>*> &func, int sx, int sy) : bm(bm), func(func),sx(sx),sy(sy) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX()*sx; }
   virtual int SizeY() const { return bm.SizeY()*sy; }
   virtual C Map(int x, int y) const
@@ -1475,6 +1617,8 @@ class RotateZoomer : public Bitmap<C>
 {
 public:
   RotateZoomer(Bitmap<C> &bm, int sx, int sy, Point2d p1, Vector2d vx, Vector2d vy, C outside) : bm(bm), sx(sx),sy(sy), p1(p1), vx(vx), vy(vy),outside(outside) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual C Map(int x, int y) const
@@ -1500,6 +1644,8 @@ class CombineBitmapX : public Bitmap<C>
 {
 public:
   CombineBitmapX(Bitmap<C> &bm, Bitmap<C> &bm2) : bm(bm), bm2(bm2) { }
+  void Prepare() { bm.Prepare(); bm2.Prepare(); }
+
   int SizeX() const { return bm.SizeX()+bm2.SizeX(); }
   int SizeY() const { return std::min(bm.SizeY(), bm.SizeY()); }
   C Map(int x, int y) const
@@ -1523,6 +1669,8 @@ class FloatPointBitmap : public Bitmap<float>
 public:
   FloatPointBitmap(Point p) : p(p) { }
   FloatPointBitmap(Vector v) : p(Point(v)) { }
+  void Prepare() { }
+
   int SizeX() const { return 1; }
   int SizeY() const { return 3; }
   float Map(int x, int y) const
@@ -1543,6 +1691,8 @@ class RowMultiply : public Bitmap<float>
 {
 public:
   RowMultiply(Bitmap<float> &bm, int row, float val) : bm(bm), row(row), val(val) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual float Map(int x, int y) const
@@ -1567,6 +1717,8 @@ class RowAddition : public Bitmap<float>
 {
 public:
   RowAddition(Bitmap<float> &bm, int row1, int row2, float val_for_row2) : bm(bm), row1(row1), row2(row2), val(val_for_row2) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual float Map(int x, int y) const
@@ -1591,6 +1743,8 @@ class NodeToOne : public Bitmap<float>
 {
 public:
   NodeToOne(Bitmap<float> &bm, int x_and_y) : m(bm, x_and_y, 1.0/bm.Map(x_and_y, x_and_y)) { }
+  void Prepare() { m.Prepare(); }
+
   virtual int SizeX() const { return m.SizeX(); }
   virtual int SizeY() const { return m.SizeY(); }
   virtual float Map(int x, int y) const
@@ -1604,6 +1758,8 @@ class NodeToZero : public Bitmap<float>
 { // assumes bm.Map(x,x) has diagonal as 1.0
 public:
   NodeToZero(Bitmap<float> &bm, int x, int y) : add(bm, y, x, -bm.Map(x,y)) { }
+  void Prepare() { add.Prepare(); }
+
   int SizeX() const { return add.SizeX(); }
   int SizeY() const { return add.SizeY(); }
   float Map(int x, int y) const { return add.Map(x,y); }
@@ -1626,6 +1782,7 @@ public:
   HeightMapCubesFromBitmap(Bitmap<float> &bm_min, Bitmap<float> &bm_max, float sx, float sy, float sz) : bm_min(bm_min), bm_max(bm_max) { }
   int SizeX() const { return bm_min.SizeX(); }
   int SizeY() const { return bm_min.SizeY(); }
+  void Prepare() { bm_min.Prepare(); bm_max.Prepare(); }
   Cube3 Map(int x, int y) const
   {
     Cube3 c;
@@ -1748,6 +1905,7 @@ class LayeredBitmap : public Bitmap<int>
 public:
   LayeredBitmap(Array<int, Bitmap<bool>*> &arr,
 		Array<int, int> &arr2) : arr(arr), arr2(arr2) { }
+  void Prepare() { }
 
   int SizeX() const { return arr.Index(0)->SizeX(); }
   int SizeY() const { return arr.Index(0)->SizeY(); }
@@ -1779,6 +1937,13 @@ class LayeredBitmap2 : public Bitmap<T>
 public:
   LayeredBitmap2() { }
   void push_back(Bitmap<T> *t) { vec.push_back(t); }
+  void Prepare() { 
+    int s = vec.Size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->Prepare();
+      }
+  }
   void finish_push_backs() 
   {
     pos.clear();
@@ -1817,6 +1982,8 @@ class BitmapCircle : public Bitmap<bool>
 {
 public:
   BitmapCircle(Point2d center, float radius, int sx, int sy) : center(center), radius(radius), sx(sx), sy(sy) { }
+  void Prepare() { }
+
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   bool Map(int x, int y) const
@@ -1838,6 +2005,8 @@ class PointGrid : public Bitmap<Point>
 {
 public:
   PointGrid(int x, int y, Point p, Vector u_x, Vector u_y, int sx, int sy) : x(x), y(y), p(p), u_x(u_x), u_y(u_y), sx(sx), sy(sy) { }
+  void Prepare() { }
+
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   Point Map(int xx, int yy) const
@@ -1859,6 +2028,8 @@ class UnsignedIntFromBitmap : public Bitmap<unsigned int>
 {
 public:
   UnsignedIntFromBitmap(Bitmap<Color> &bm) : bm(bm) { }
+  void Prepare() { bm.Prepare(); }
+
   int SizeX() const { return bm.SizeX(); }
   int SizeY() const { return bm.SizeY(); }
   unsigned int Map(int x, int y) const
@@ -1872,6 +2043,8 @@ class BitmapFromUnsignedInt : public Bitmap<Color>
 {
 public:
   BitmapFromUnsignedInt(Bitmap<unsigned int> &bm) : bm(bm) { }
+  void Prepare() { bm.Prepare(); }
+
   int SizeX() const { return bm.SizeX(); }
   int SizeY() const { return bm.SizeY(); }
   Color Map(int x, int y) const
@@ -1897,6 +2070,8 @@ public:
 	  vec.push_back(s);
       }
   }
+  void Prepare() { }
+
   virtual int SizeX() const { return sizex; }
   virtual int SizeY() const { return sizey; }
   T Map(int x, int y) const
@@ -1939,6 +2114,7 @@ class BitmapFromBuffer : public ColorBitmap
 {
 public:
   BitmapFromBuffer(BufferRef buf) : buf(buf) { }
+  void Prepare() { }
   int SizeX() const { return buf.width; }
   int SizeY() const { return buf.height; }
   Color Map(int x, int y) const
@@ -1968,6 +2144,7 @@ public:
   {
     buf = BufferRef::NewBuffer(1,1);
     //Gen();
+    t.Prepare();
   }
   ~BufferFromBitmap() { delete [] buf.buffer; }
   void Gen() const
@@ -1992,6 +2169,8 @@ class FlipColours : public Bitmap<Color>
 {
 public:
   FlipColours(Bitmap<Color> &c) : c(c) { }
+  void Prepare() { c.Prepare(); }
+
   virtual int SizeX() const { return c.SizeX(); }
   virtual int SizeY() const { return c.SizeY(); }
   virtual Color Map(int x, int y) const
@@ -2047,6 +2226,7 @@ class RotateContinuousBitmap : public ContinuousBitmap<C>
 {
 public:
   RotateContinuousBitmap(ContinuousBitmap<C> *orig, float center_x, float center_y, float angle) : orig(orig), center_x(center_x), center_y(center_y), angle(angle) { }
+  void Prepare() { orig->Prepare(); }
   virtual float SizeX() const { return orig->SizeX(); }
   virtual float SizeY() const { return orig->SizeY(); }
   virtual C Map(float x, float y) const
@@ -2074,7 +2254,13 @@ template<class T>
 class InverseCreateContinuousBitmap : public ContinuousBitmap<T>
 {
 public:
-  InverseCreateContinuousBitmap(Bitmap<T> &bm, std::pair<int,int> (*fptr)(float,float), float sx, float sy) : bm(bm), fptr(fptr),sx(sx),sy(sy) { }
+  InverseCreateContinuousBitmap(Bitmap<T> &bm, std::pair<int,int> (*fptr)(float,float), float sx, float sy) : bm(bm), fptr(fptr),sx(sx),sy(sy) { 
+
+  }
+  virtual void Prepare() { 
+    bm.Prepare();
+  }
+
   virtual float SizeX() const { return sx; }
   virtual float SizeY() const { return sy; }
   virtual T Map(float x, float y) const
@@ -2093,6 +2279,8 @@ class RandomSamplingBitmap : public Bitmap<Color>
 {
 public:
   RandomSamplingBitmap(ContinuousBitmap<Color> &c, int count) : c(c), count(count) { }
+  void Prepare() { c.Prepare(); }
+
   int SizeX() const { return c.SizeX()+1; }
   int SizeY() const { return c.SizeY()+1; }
   Color Map(int x, int y) const
@@ -2128,6 +2316,7 @@ class Function2Bitmap : public ContinuousBitmap<T>
 {
 public:
   Function2Bitmap(float sx, float sy, Function2<float,float,T> &f) : sx(sx), sy(sy), f(f) { }
+  void Prepare() { }
   virtual float SizeX() const { return sx; }
   virtual float SizeY() const { return sy; }
   virtual T Map(float x, float y) const { return f.Index(x,y); }
@@ -2142,6 +2331,8 @@ class BorderBitmap2 : public ContinuousBitmap<bool>
 { // requires == operation
 public:
   BorderBitmap2(float width, ContinuousBitmap<T> &c) : width(width), c(c) { }
+  void Prepare() { c.Prepare(); }
+
   virtual float SizeX() const
   {
     return c.SizeX();
@@ -2171,6 +2362,8 @@ class ConstantContinuousBitmap : public ContinuousBitmap<C>
 {
 public:
   ConstantContinuousBitmap(float sx, float sy, C c) : sx(sx), sy(sy), c(c) { }
+  void Prepare() { }
+
   virtual float SizeX() const { return sx; }
   virtual float SizeY() const { return sy; }
   virtual C Map(float x, float y) const { return c; }
@@ -2184,6 +2377,8 @@ class ContinuousStructBitmap : public ContinuousBitmap<std::pair<T,K> >
 {
 public:
   ContinuousStructBitmap(Array<float, T> &a1, Array<float,K> &a2) : a1(a1), a2(a2) { }
+  void Prepare() { }
+
   float SizeX() const { return a1.Size(); }
   float SizeY() const { return a2.Size(); }
   std::pair<T,K> Map(float x, float y) const { return std::make_pair(a1.Index(x),a2.Index(y)); }
@@ -2198,6 +2393,8 @@ class MapContinuousBitmap : public ContinuousBitmap<K>
 { // T1 => T2 conversion needs to exists
 public:
   MapContinuousBitmap(ContinuousBitmap<T1> &bm, Function<T2,K> &f) : bm(bm), f(f) { }
+  void Prepare() { bm.Prepare(); }
+
   float SizeX() const { return bm.SizeX(); }
   float SizeY() const { return bm.SizeY(); }
   K Map(float x, float y) const { return f.Index(bm.Map(x,y)); }
@@ -2212,6 +2409,7 @@ class SpiralContinuousBitmap : public ContinuousBitmap<Point2d>
 public:
   SpiralContinuousBitmap(float sx, float sy, Point2d center,
 			 Function<float, float> &mymap) : sx(sx), sy(sy), center(center), mymap(mymap) { }
+  void Prepare() { }
   
   float SizeX() const { return sx; }
   float SizeY() const { return sy; }
@@ -2238,6 +2436,8 @@ class AndNotColorContinuousBitmap : public ContinuousBitmap<Color>
 public:
   AndNotColorContinuousBitmap(ContinuousBitmap<Color> &bm,
 			      ContinuousBitmap<bool> &cut_out) : bm(bm), cut_out(cut_out) { }
+  void Prepare() { bm.Prepare(); cut_out.Prepare(); }
+
   float SizeX() const { return bm.SizeX(); }
   float SizeY() const { return bm.SizeY(); }
   Color Map(float x, float y) const
@@ -2258,6 +2458,8 @@ class AndNotContinuousBitmap : public ContinuousBitmap<bool>
 public:
   AndNotContinuousBitmap(ContinuousBitmap<bool> &bm,
 			 ContinuousBitmap<bool> &cut_out) : bm(bm), cut_out(cut_out) { }
+  void Prepare() { bm.Prepare(); cut_out.Prepare(); }
+
   float SizeX() const { return bm.SizeX(); }
   float SizeY() const { return bm.SizeY(); }
   bool Map(float x, float y) const
@@ -2279,6 +2481,14 @@ class OrContinuousBitmap : public ContinuousBitmap<bool>
 public:
   template<class It>
   OrContinuousBitmap(It beg, It end) : vec(beg, end) { }
+  void Prepare() { 
+    int sz = vec.size();
+    for(int i=0;i<sz;i++)
+      {
+	vec[i]->Prepare();
+      }
+  }
+
   float SizeX() const
   {
     float s = 0.0;
@@ -2318,6 +2528,8 @@ class TriangleCoordsContinuousBitmap : public ContinuousBitmap<float>
 {
 public:
   TriangleCoordsContinuousBitmap(float sx, float sy, const Point2d &p1, const Point2d &p2, const Point2d &p3, float val1, float val2, float val3) : sx(sx), sy(sy), p1(p1), p2(p2), p3(p3), val1(val1), val2(val2), val3(val3) { }
+  void Prepare() { }
+
   float SizeX() const { return sx; }
   float SizeY() const { return sy; }
   float Map(float x, float y) const
@@ -2419,6 +2631,7 @@ class TriangleContinuousBitmap : public ContinuousBitmap<bool>
 {
 public:
   TriangleContinuousBitmap(float sx, float sy, const Point2d &p1, const Point2d &p2, const Point2d &p3) : sx(sx),sy(sy), p1(p1), p2(p2), p3(p3) { }
+  void Prepare() { }
   float SizeX() const
   {
     return sx;
@@ -2461,6 +2674,8 @@ class QuadContinuousBitmap : public ContinuousBitmap<bool>
 {
 public:
   QuadContinuousBitmap(float sx, float sy, Point2d p1, Point2d p2, Point2d p3, Point2d p4) : tri1(sx,sy, p1,p2,p3), tri2(sx,sy,p1,p3,p4) { }
+  void Prepare() { }
+
   virtual float SizeX() const { return tri1.SizeX(); }
   virtual float SizeY() const { return tri1.SizeY(); }
   virtual bool Map(float x, float y) const
@@ -2476,6 +2691,8 @@ class ColorTriangle : public ContinuousBitmap<Color>
 {
 public:
   ColorTriangle(float sx, float sy, const Point2d &p1, const Point2d &p2, const Point2d &p3, const Color &c, const Color &c2) : tri(sx,sy,p1,p2,p3), c(c), c2(c2) { }
+  void Prepare() { }
+
   float SizeX() const { return tri.SizeX(); }
   float SizeY() const { return tri.SizeY(); }
   Color Map(float x, float y) const
@@ -2502,6 +2719,8 @@ public:
       a(sx,sy,p1,p2,p3,c1.alpha,c2.alpha,c3.alpha),
       background(background)
   { }
+  void Prepare() { }
+
   float SizeX() const { return sx; }
   float SizeY() const { return sy; }
   Color Map(float x, float y) const
@@ -2524,6 +2743,7 @@ class GradientBitmap : public ContinuousBitmap<Color>
 {
 public:
   GradientBitmap(float sx, float sy, Point2d p1, Point2d p2, Color c1, Color c2) : sx(sx), sy(sy), p1(p1), p2(p2), c1(c1), c2(c2) { }
+  void Prepare() { }
 
   float SizeX() const { return sx; }
   float SizeY() const { return sy; }
@@ -2539,6 +2759,13 @@ class ContinuousBitmapArray : public ContinuousBitmap<Color>
 {
 public:
   ContinuousBitmapArray(float sx, float sy, Array<int, ContinuousBitmap<Color>*> &arr) : sx(sx), sy(sy), arr(arr) { }
+  void Prepare() { 
+    int size = arr.Size();
+    for(int i=0;i<size;i++)
+      {
+	arr.Index(i)->Prepare();
+      }
+  }
   float SizeX() const 
   {
     return sx;
@@ -2573,6 +2800,8 @@ public:
       ty(sx,sy,p1,p2,p3,t1.y,t2.y,t3.y), texture(texture)
   {
   }
+  void Prepare() { texture.Prepare(); }
+
   float SizeX() const { return sx; }
   float SizeY() const { return sy; }
   Color Map(float x, float y) const
@@ -2594,6 +2823,7 @@ class CircleContinuousBitmap : public ContinuousBitmap<bool>
 {
 public:
   CircleContinuousBitmap(float size_x, float size_y, float center_x, float center_y, float radius) : size_x(size_x), size_y(size_y), center_x(center_x), center_y(center_y), radius(radius) { }
+  void Prepare() { }
   float SizeX() const
   {
     return size_x;
@@ -2617,6 +2847,8 @@ class SampleBitmap : public Bitmap<Color>
 {
 public:
   SampleBitmap(ContinuousBitmap<Color> &c, int sx, int sy) : c(c),sx(sx), sy(sy) { }
+  void Prepare() { c.Prepare(); }
+
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   Color Map(int x, int y) const
@@ -2650,6 +2882,7 @@ class ContinuousBitmapFromBitmap : public ContinuousBitmap<T>
 {
 public:
   ContinuousBitmapFromBitmap(Bitmap<T> &bitmap, float xsize, float ysize) : bitmap(bitmap), xsize(xsize), ysize(ysize) { }
+  void Prepare() { bitmap.Prepare(); }
   float SizeX() const { return xsize; }
   float SizeY() const { return ysize; }
   T Map(float x, float y) const
@@ -2670,6 +2903,8 @@ class BitmapFromContinuousBitmap : public Bitmap<T>
 {
 public:
   BitmapFromContinuousBitmap(ContinuousBitmap<T> &bitmap, int xsize, int ysize) : bitmap(bitmap), xsize(xsize), ysize(ysize) { }
+  void Prepare() { bitmap.Prepare(); }
+
   int SizeX() const { return xsize; }
   int SizeY() const { return ysize; }
   T Map(int x, int y) const
@@ -2726,7 +2961,7 @@ private:
 class QuadVoxelFromObjects : public Voxel<Quad>
 { // FaceCollection must use quads
 public:
-  QuadVoxelFromObjects(FaceCollection &coll, Bitmap<Point> &pos) : coll(coll), pos(pos) { }
+  QuadVoxelFromObjects(FaceCollection &coll, Bitmap<Point> &pos) : coll(coll), pos(pos) { pos.Prepare(); }
   int SizeX() const { return pos.SizeX(); }
   int SizeY() const { return pos.SizeY(); }
   int SizeZ() const { return coll.NumFaces(); }
@@ -2792,7 +3027,7 @@ private:
 class QuadBitmapElem : public BoxableFaceCollection
 {
 public:
-  QuadBitmapElem(Bitmap<Quad> &voxel) : voxel(voxel) { }
+  QuadBitmapElem(Bitmap<Quad> &voxel) : voxel(voxel) { voxel.Prepare(); }
 
   virtual int NumFaces() const { return voxel.SizeX()*voxel.SizeY(); }
   virtual int NumPoints(int face) const { return 4; }
@@ -2893,7 +3128,7 @@ template<class X, class Y>
 class StructVoxel : public Voxel<std::pair<X,Y> >
 {
 public:
-  StructVoxel(Bitmap<X> &bm, Array<int, Y> &a) : bm(bm), a(a) { }
+  StructVoxel(Bitmap<X> &bm, Array<int, Y> &a) : bm(bm), a(a) { bm.Prepare(); }
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual int SizeZ() const { return a.Size(); }
@@ -3020,6 +3255,8 @@ public:
   RayTracingBitmap(Function<Point2d,Point> &raytrace, // use RayTracingFunction
 		   ContinuousVoxel<Color> &color,
 		   int sx, int sy) : raytrace(raytrace), color(color), sx(sx), sy(sy) { }
+  void Prepare() { }
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual Color Map(int x, int y) const
@@ -3148,6 +3385,7 @@ class PlaneBitmap : public ContinuousBitmap<T>
 {
 public:
   PlaneBitmap(ContinuousVoxel<T> &voxel, Plane pl, float sx, float sy) : voxel(voxel), pl(pl), sx(sx), sy(sy) { }
+  void Prepare() { }
   virtual float SizeX() const { return sx; }
   virtual float SizeY() const { return sy; }
   virtual T Map(float x, float y) const
@@ -3363,6 +3601,7 @@ class BitmapizeArray : public ColorBitmap
 {
 public:
   BitmapizeArray(Array<std::pair<int,int>,Color> &func) : func(func) { }
+  void Prepare() { }
   int SizeX() const
   {
     return func.Size().first;
@@ -3482,7 +3721,8 @@ template<class T>
 class EnumerateBitmap
 {
 public:
-  EnumerateBitmap(Bitmap<T> &bm, HandleValue<T> &hv) : bm(bm), hv(hv) { }
+  EnumerateBitmap(Bitmap<T> &bm, HandleValue<T> &hv) : bm(bm), hv(hv) { bm.Prepare(); }
+
   void Gen()
   {
     int sizey = bm.SizeY();
@@ -4085,7 +4325,10 @@ void RenderVoxel(VolumeObject &orv, int size, float wholesize, HandleValue<std::
 class WallsFromMap
 {
 public:
-  WallsFromMap(Bitmap<bool> &mymap, Bitmap<unsigned int> &mycolor, HandleValue<std::pair<std::pair<int,int>, std::pair<int, unsigned int> > > &hv, int x, int y) : mymap(mymap), mycolor(mycolor), hv(hv), x(x), y(y) { }
+  WallsFromMap(Bitmap<bool> &mymap, Bitmap<unsigned int> &mycolor, HandleValue<std::pair<std::pair<int,int>, std::pair<int, unsigned int> > > &hv, int x, int y) : mymap(mymap), mycolor(mycolor), hv(hv), x(x), y(y) { 
+    mymap.Prepare();
+    mycolor.Prepare();
+  }
   void Gen()
   {
     Recurse(x,y);
@@ -4403,7 +4646,7 @@ class FacesFromMap : public BoxableFaceCollection
 public:
   FacesFromMap(Bitmap<bool> &mymap, Bitmap<Point> &pos) : mymap(mymap), pos(pos) { Refresh(); }
   
-  void Prepare() { }
+  void Prepare() { mymap.Prepare(); pos.Prepare(); }
   void SetBox(Matrix m) { }
   virtual int NumFaces() const { return vec.size(); }
   virtual int NumPoints(int face) const { return 4; }
@@ -4489,6 +4732,8 @@ class GraphFromMap : public Graph, public GraphData<VertexData3d, EdgeData3d>
 public:
   GraphFromMap(Bitmap<bool> &mymap, Bitmap<Point> &pos, bool twoway, float radius) : mymap(mymap), twoway(twoway), pos(pos), radius(radius) 
   {
+    mymap.Prepare();
+    pos.Prepare();
     Refresh();
   }
   VertexData3d Vertex(int v) const 
@@ -4681,6 +4926,7 @@ class NormalMapping1 : public Bitmap<Point>
 {
 public:
   NormalMapping1(SurfaceIn3d &surf, SurfaceIn3d &polys, int sizex, int sizey) : surf(surf), polys(polys), sizex(sizex), sizey(sizey) { }
+  void Prepare() { }
 
   virtual int SizeX() const { return sizex; }
   virtual int SizeY() const { return sizey; }
@@ -4985,6 +5231,12 @@ class ChooseBitmap2 : public Bitmap<Color>
 public:
   ChooseBitmap2(Bitmap<Color> &bm1, Bitmap<Color> &bm2, Bitmap<float> &choose)
     : bm1(bm1), bm2(bm2), choose(choose) { }
+  void Prepare() { 
+    bm1.Prepare();
+    bm2.Prepare();
+    choose.Prepare();
+  }
+
   virtual int SizeX() const { return bm1.SizeX(); }
   virtual int SizeY() const { return bm1.SizeY(); }
   virtual Color Map(int x, int y) const
@@ -5006,6 +5258,15 @@ class ContainerBitmap : public Bitmap<T>
 {
 public:
   ContainerBitmap(int sx, int sy, T def) : sx(sx), sy(sy), def(def) { }
+
+  void Prepare() { 
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->Prepare();
+      }
+  }
+
   int push_back(TRect rect, Bitmap<T> *bm)
   {
     rects.push_back(rect);
@@ -5042,6 +5303,14 @@ class LayerBitmap : public Bitmap<T>
 {
 public:
   LayerBitmap(T (*fptr)(T *,int), int sx, int sy, T def) : fptr(fptr), sx(sx), sy(sy), def(def) { }
+  void Prepare() { 
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->Prepare();
+      }
+  }
+
   void push_back(Bitmap<T> *bm)
   {
     vec.push_back(bm);
@@ -5183,6 +5452,8 @@ class FieldBitmap : public Bitmap<float>
 {
 public:
   FieldBitmap(Field &f, Bitmap<Point> &pos) : f(f), pos(pos) { }
+  void Prepare() { pos.Prepare(); }
+
   int SizeX() const { return pos.SizeX(); }
   int SizeY() const { return pos.SizeY(); }
   float Map(int x, int y) const { return f.Index(pos.Map(x,y)); }
@@ -5227,6 +5498,8 @@ class ChessBoard : public Bitmap<bool>
 {
 public:
   ChessBoard(int sx, int sy, bool b) : sx(sx), sy(sy), b(b) { }
+  void Prepare() { }
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual bool Map(int x, int y) const
@@ -5258,6 +5531,8 @@ public:
   CollectBitmapsBitmap(const Bitmap<K> &bm, 
 		       const Function<K,Bitmap<T>* > &func) 
     : bm(bm), func(func) { }
+  void Prepare() { bm.Prepare(); }
+
   int SizeX() const
   {
     return bm.SizeX();
@@ -5280,6 +5555,7 @@ class FlattenBitmap : public Bitmap<T>
 {
 public:
   FlattenBitmap(Bitmap<Bitmap<T>* > &bm) : bm(bm) { }
+  void Prepare() { }
   int SizeX() const
   {
     return StartX(bm.SizeX());
@@ -5353,6 +5629,7 @@ class CombineBitmaps2 : public Bitmap<T>
 { // ideal for chessboard
 public:
   CombineBitmaps2(const Bitmap<K> &bm, const Function<K, Bitmap<T>* > &func) : collect(bm, func), flatten(collect) { }
+  void Prepare() { }
   int SizeX() const { return flatten.SizeX(); }
   int SizeY() const { return flatten.SizeY(); }
   T Map(int x, int y) const { return flatten.Map(x,y); }
@@ -5365,6 +5642,7 @@ class ChessBoardBitmap : public Bitmap<Color>, private Function<bool, Bitmap<Col
 {
 public:
   ChessBoardBitmap(Color c1, Color c2, int sx, int sy, int ssx, int ssy) : white_bm(c1, sx,sy), black_bm(c2,sx,sy), bitmap_bool(ssx,ssy, true), combine(bitmap_bool, *this) { }
+  void Prepare() { }
   Bitmap<Color> *Index(bool b) const
   {
     if (b) return &white_bm;
@@ -5492,6 +5770,8 @@ class SizeBitmapTo2 : public Bitmap<Color>
 {
 public:
   SizeBitmapTo2(Bitmap<Color> &bm) : bm(bm) { }
+  void Prepare() { bm.Prepare(); }
+
   int SizeX() const 
   {
     int a=1;
@@ -5528,8 +5808,8 @@ private:
 class MeshTexturesImpl : public MeshTextures
 {
 public:
-  MeshTexturesImpl(Bitmap<Color> &bm) : /*bm(bm),*/ bm2(bm), next(empty), ref(0) { }
-  MeshTexturesImpl(Bitmap<Color> &bm, MeshTextures &tex) : /*bm(bm),*/ bm2(bm), next(tex), ref(0) { }
+  MeshTexturesImpl(Bitmap<Color> &bm) : /*bm(bm),*/ bm2(bm), next(empty), ref(0) { bm.Prepare();}
+  MeshTexturesImpl(Bitmap<Color> &bm, MeshTextures &tex) : /*bm(bm),*/ bm2(bm), next(tex), ref(0) { bm.Prepare(); }
   ~MeshTexturesImpl() { delete ref; }
   virtual int NumTextures() const { return 1+next.NumTextures(); }
   virtual void GenTexture(int num) 
@@ -5730,6 +6010,8 @@ class SphereDist : public Bitmap<float>
 { // distance from bitmap to sphere surface
 public:
   SphereDist(Point center, float r, int sx, int sy, Point2d tl, Point2d br) : center(center), /*r(r),*/ sx(sx), sy(sy), tl(tl), br(br) { }
+  void Prepare() { }
+
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   float Map(int x, int y) const
@@ -5764,7 +6046,7 @@ private:
 class BitmapSprite : public Sprite
 {
 public:
-  BitmapSprite(Bitmap<Color> &c, Point2d pos) : c(c), pos(pos) { }
+  BitmapSprite(Bitmap<Color> &c, Point2d pos) : c(c), pos(pos) { c.Prepare(); }
   virtual int NumFrames() const { return 1; }
   virtual int XSize(int frame) const { return c.SizeX(); }
   virtual int YSize(int frame) const { return c.SizeY(); }
@@ -5970,6 +6252,7 @@ class Mandelbrot : public Bitmap<int>
 public: // good values are x=[-2..1], y=[-1,1]
   Mandelbrot(bool julia, float start_x, float end_x, float start_y, float end_y, int sx, int sy, int count, float xx, float yy) : julia(julia), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y),sx(sx), sy(sy), count(count), xx(xx), yy(yy) { }
 
+  void Prepare() { }
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   int Map(int x, int y) const
@@ -6049,6 +6332,8 @@ public:
       c1(c1), c2(c2), bm(bm)
   {
   }
+  void Prepare() { bm.Prepare(); }
+
   int SizeX() const { return bm.SizeX(); }
   int SizeY() const { return bm.SizeY(); }
   Color Map(int x, int y) const
@@ -6123,7 +6408,7 @@ protected:
 class BitmapRectSplitter : public RectSplitter
 {
 public:
-  BitmapRectSplitter(ContinuousBitmap<Color> &vals) : vals(vals) { }
+  BitmapRectSplitter(ContinuousBitmap<Color> &vals) : vals(vals) { vals.Prepare(); }
   virtual int Count() const { return 1; }
   virtual Rect Rects(int val, Rect parent) const
   {
@@ -6161,7 +6446,7 @@ private:
 class BitmapTextureSurfaceIn3d : public SurfaceIn3dImpl
 {
 public:
-  BitmapTextureSurfaceIn3d(SurfaceIn3d &surf, Bitmap<class Color> &tex) : SurfaceIn3dImpl(surf), tex(tex) { }
+  BitmapTextureSurfaceIn3d(SurfaceIn3d &surf, Bitmap<class Color> &tex) : SurfaceIn3dImpl(surf), tex(tex) { tex.Prepare(); }
   virtual unsigned int Color(float x, float y) const 
   {
     if (x<0.0 || y<0.0) { return 0x00000000; }
@@ -6182,7 +6467,7 @@ private:
 class BitmapSphere : public SurfaceIn3d
 {
 public:
-  BitmapSphere(ContinuousBitmap<float> &bm, Point center, float radius0, float radius1) : bm(bm), center(center), radius0(radius0), radius1(radius1) { }
+  BitmapSphere(ContinuousBitmap<float> &bm, Point center, float radius0, float radius1) : bm(bm), center(center), radius0(radius0), radius1(radius1) { bm.Prepare(); }
   Point Index(float x, float y) const
   {
     Matrix m = Matrix::XRotation(x)*Matrix::YRotation(y);
@@ -6219,6 +6504,8 @@ class ContinuousColorBitmapToFloatBitmap : public ContinuousBitmap<float>
 {
 public:
   ContinuousColorBitmapToFloatBitmap(ContinuousBitmap<Color> &bm) : bm(bm) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual float SizeX() const { return bm.SizeX(); }
   virtual float SizeY() const { return bm.SizeY(); }
   virtual float Map(float x, float y) const
@@ -6239,6 +6526,8 @@ class HeightMap3DataImpl : public HeightMap3Data
 {
 public:
   HeightMap3DataImpl(Bitmap<Color> &c) : c(c) { }
+  void Prepare() { c.Prepare(); }
+
   int SizeX() const { return c.SizeX(); }
   int SizeY() const { return c.SizeY(); }
   float Map(int x, int y) const
@@ -6263,6 +6552,7 @@ public:
 	     Vector u_z) : bm(bm), /*min_val(min_val), max_val(max_val),*/
 			   p(p), u_x(u_x), u_y(u_y), u_z(u_z), cached_face(-1) 
   {
+    bm.Prepare();
     float start_x = 0.0;
     float start_y = 0.0;
     float start_z = 0.0;
@@ -6928,7 +7218,7 @@ template<class T>
 class BitmapEnumeration : public Array<int,std::pair<int,int> >
 {
 public:
-  BitmapEnumeration(Bitmap<T> &bm) : bm(bm) { }
+  BitmapEnumeration(Bitmap<T> &bm) : bm(bm) {bm.Prepare(); }
   int Size() const
   {
     return bm.SizeX()*bm.SizeY();
@@ -6948,7 +7238,7 @@ template<class A>
 class BitmapSubset : public Function<std::pair<int,int>, A>
 {
 public:
-  BitmapSubset(Bitmap<A> &bm) : bm(bm) { }
+  BitmapSubset(Bitmap<A> &bm) : bm(bm) {bm.Prepare(); }
   A Index(std::pair<int,int> p) const
   {
     return bm.Map(p.first,p.second);
@@ -6987,6 +7277,8 @@ class RenderPolyToBitmap : public Bitmap<Color>
 {
 public:
   RenderPolyToBitmap(Point2d center_in_bm, Point center, int sx, int sy, FaceCollection *coll, Bitmap<Color> &bg) : center(center), sx(sx), sy(sy), coll(coll),bg(bg) { }
+  void Prepare() { bg.Prepare(); coll->Prepare(); }
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual Color Map(int x, int y) const
@@ -7076,6 +7368,8 @@ class TextureIBitmap : public Bitmap<Color>
 {
 public:
   TextureIBitmap(TextureI &ti) : ti(ti) { }
+  void Prepare() { }
+
   virtual int SizeX() const { return ti.SizeX(); }
   virtual int SizeY() const { return ti.SizeY(); }
   virtual Color Map(int x, int y) const { return ti.Map(x,y); }  
@@ -7109,7 +7403,8 @@ class TexAssign : public TextureI
 {
 public:
   TexAssign(TextureI &next, int id, int x, int y, Bitmap<Color> &bm)
-    : next(next), id(id), x(x), y(y), bm(bm) { }
+    : next(next), id(id), x(x), y(y), bm(bm) { bm.Prepare(); }
+
   virtual int SizeX() const { return next.SizeX(); }
   virtual int SizeY() const { return next.SizeY(); }
   virtual Color Map(int x, int y) const 
@@ -7248,6 +7543,8 @@ private:
 class FBO : public Bitmap<Color>
 {
 public:
+  void Prepare() { }
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual Color Map(int x, int y) const
@@ -7272,7 +7569,7 @@ private:
 class BitmapVolume : public VolumeObject
 {
 public:
-  BitmapVolume(Bitmap<bool> *b, float dist) : b(b), dist(dist) { }
+  BitmapVolume(Bitmap<bool> *b, float dist) : b(b), dist(dist) { b->Prepare(); }
   virtual bool Inside(Point v) const {
     if (b->Map(v.x,v.y) && v.z>0.0 && v.z<dist)
       {

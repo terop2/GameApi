@@ -18,6 +18,7 @@ class Zoom : public Bitmap<Color>
 {
 public:
   Zoom(Bitmap<Color> &bm, int level) : bm(bm), level(level) { }
+  void Prepare() { bm.Prepare(); }
 
   int SizeX() const { return level*bm.SizeX(); }
   int SizeY() const { return level*bm.SizeY(); }

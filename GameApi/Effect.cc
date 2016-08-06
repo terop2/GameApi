@@ -3521,6 +3521,8 @@ class DeltaFloatBitmap : public Bitmap<float>
 {
 public:
   DeltaFloatBitmap(int sx, int sy, float time, float dx, float dy) : sx(sx), sy(sy), time(time), dx(dx), dy(dy) { }
+  void Prepare() { }
+
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   float Map(int x, int y) const
@@ -3537,6 +3539,7 @@ class DeltaPosBitmap : public Bitmap<Point>
 {
 public:
   DeltaPosBitmap(int sx, int sy, Point p, Vector dx, Vector dy) : sx(sx), sy(sy), p(p), dx(dx), dy(dy) { }
+  void Prepare() { }
 
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
@@ -3552,6 +3555,8 @@ class CircleHeightMap : public Bitmap<Point>
 { // both bitmaps need to be same size
 public:
   CircleHeightMap(CurveIn3d &curve, Bitmap<float> &bm, Bitmap<Point> &pos, float time) : curve(curve), bm(bm), pos(pos), time(time) { }
+  void Prepare() { bm.Prepare(); pos.Prepare(); }
+
   int SizeX() const { return bm.SizeX(); }
   int SizeY() const { return bm.SizeY(); }
   Point Map(int x, int y) const
@@ -3573,6 +3578,8 @@ class TrueBitmap : public Bitmap<bool>
 {
 public:
   TrueBitmap(int sx, int sy) : sx(sx), sy(sy) { }
+  void Prepare() { }
+
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   bool Map(int x, int y) const { return true; }
@@ -3584,7 +3591,7 @@ class HeightMapPolygons : public BoxableFaceCollection
 {
 public:
   HeightMapPolygons(Bitmap<Point> &pos) : tr(pos.SizeX(),pos.SizeY()), faces(tr, pos) { }
-  void Prepare() { }
+  void Prepare() { faces.Prepare(); }
   virtual int NumFaces() const { return faces.NumFaces(); }
   virtual int NumPoints(int face) const { return faces.NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return faces.FacePoint(face,point); }
@@ -3605,6 +3612,7 @@ class SumBitmap : public Bitmap<float>
 {
 public:
   SumBitmap(Bitmap<float> &a1, Bitmap<float> &a2) : a1(a1), a2(a2) { }
+  void Prepare() { a1.Prepare(); a2.Prepare(); }
   int SizeX() const { return a1.SizeX(); }
   int SizeY() const { return a1.SizeY(); }
   float Map(int x, int y) const { return a1.Map(x,y)+a2.Map(x,y); }

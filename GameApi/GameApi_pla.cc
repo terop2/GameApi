@@ -660,6 +660,7 @@ class ColorContinuousBitmap : public ContinuousBitmap<Color>
 {
 public:
   ColorContinuousBitmap(ContinuousBitmap<bool> &bm, unsigned int color_0, unsigned int color_1) : bm(bm), color_0(color_0), color_1(color_1) { }
+  void Prepare() { bm.Prepare(); }
   float SizeX() const { return bm.SizeX(); }
   float SizeY() const { return bm.SizeY(); }
   Color Map(float x, float y) const

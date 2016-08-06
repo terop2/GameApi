@@ -433,6 +433,8 @@ class RenderingEquationBitmap : public Bitmap<Point2d>
 {
 public:
   RenderingEquationBitmap(Point ray_p, Vector ray_x, Vector ray_y, Vector ray_z, SurfaceIn3d &surf, int sx, int sy) : ray_p(ray_p), ray_x(ray_x), ray_y(ray_y), ray_z(ray_z), surf(surf), tl(ray_p), br(ray_p+ray_x+ray_y+ray_z), sx(sx), sy(sy) { }
+  void Prepare() { }
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual Point2d Map(int x, int y) const
@@ -487,6 +489,8 @@ class TextureBitmap : public Bitmap<Color>
 {
 public:
   TextureBitmap(Bitmap<Point2d> &coords, SurfaceIn3d &surf) : coords(coords), surface(surf) { }
+  void Prepare() { coords.Prepare(); }
+
   virtual int SizeX() const { return coords.SizeX(); }
   virtual int SizeY() const { return coords.SizeY(); }
   virtual Color Map(int x, int y) const
