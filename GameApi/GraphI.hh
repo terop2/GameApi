@@ -38,6 +38,7 @@ public:
   virtual int SizeX() const=0;
   virtual int SizeY() const=0;
   virtual C Map(int x, int y) const=0;
+  virtual void Prepare()=0;
   virtual ~Bitmap() { }
 };
 template<class C>
@@ -84,6 +85,7 @@ public:
   virtual float SizeX() const=0;
   virtual float SizeY() const=0;
   virtual C Map(float x, float y) const=0;
+  virtual void Prepare()=0;
   virtual ~ContinuousBitmap() { }
 };
 

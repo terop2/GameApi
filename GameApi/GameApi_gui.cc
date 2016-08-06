@@ -2178,6 +2178,7 @@ EXPORT GameApi::W GameApi::GuiApi::pts_dialog(PTS p, SH sh, int screen_size_x, i
 
 EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button)
 {
+  ev.bitmap_api.prepare(bm);
   float sx = float(ev.bitmap_api.size_x(bm));
   float sy = float(ev.bitmap_api.size_y(bm));
   if (sx>sy) {
@@ -4377,6 +4378,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "ML", "MN" },
 			 { "ev", "", "" },
 			 "ML", "move_api", "move_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::enable_ml,
+			 "enable_ml",
+			 { "ev", "ml", "start_time", "end_time" },
+			 { "EveryApi&", "ML", "float", "float" },
+			 { "ev", "", "0.0", "100.0" },
+			 "ML", "move_api", "enable_ml"));
 			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::tree_api, &GameApi::TreeApi::level,
 			 "tree_level",

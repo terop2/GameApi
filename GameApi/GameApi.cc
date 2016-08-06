@@ -2599,6 +2599,42 @@ private:
   GameApi::MN mn;
 };
 
+class EnableML : public MainLoopItem
+{
+public:
+  EnableML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, float start_time2, float end_time2) : e(e), ev(ev), next(next), start_time2(start_time2), end_time2(end_time2) 
+  { 
+    start_time = ev.mainloop_api.get_time();
+  }
+  void reset_time() {
+    start_time = ev.mainloop_api.get_time();
+  }
+  int shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &env)
+  {
+    float time = (ev.mainloop_api.get_time()-start_time)/100.0;
+    if (time>=start_time2 && time<end_time2)
+      {
+	next->handle_event(env);
+      }
+  }
+  void execute(MainLoopEnv &env)
+  {
+    float time = (ev.mainloop_api.get_time()-start_time)/100.0;
+    if (time>=start_time2 && time<end_time2)
+      {
+	next->execute(env);
+      }
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  float start_time;
+  MainLoopItem *next;
+  float start_time2, end_time2;
+};
+
+
 class MoveMLArray : public MainLoopItem
 {
 public:
@@ -2660,6 +2696,12 @@ GameApi::ML GameApi::MovementNode::move_ml(EveryApi &ev, GameApi::ML ml, GameApi
 {
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new MoveML(e,ev,item, move));
+}
+GameApi::ML GameApi::MovementNode::enable_ml(EveryApi &ev, GameApi::ML ml, float start_time, float end_time)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new EnableML(e,ev,item, start_time, end_time));
+
 }
 GameApi::ML GameApi::MovementNode::move_ml_array(EveryApi &ev, std::vector<GameApi::ML> ml, std::vector<GameApi::MN> move)
 {
@@ -3307,21 +3349,26 @@ public:
 	if (u_f.id == 0)
 	  u_f = ev.uber_api.f_empty(false);
       }
+#if 1
     if (ev.polygon_api.is_texture(va))
       {
 	sh.id = e.sh_texture;
 	if (firsttime)
 	  {
-	    u_v = ev.uber_api.v_texture(u_v);
-	    u_f = ev.uber_api.f_texture(u_f);
+	    if (e.us_vertex_shader==-1)
+	      u_v = ev.uber_api.v_texture(u_v);
+	    if (e.us_fragment_shader==-1)
+	      u_f = ev.uber_api.f_texture(u_f);
 	  }
 	if (ev.polygon_api.is_array_texture(va))
 	  {
 	    sh.id = e.sh_array_texture;
 	      if (firsttime)
 	      {
-	    		u_v = ev.uber_api.v_texture_arr(u_v);
-	    		u_f = ev.uber_api.f_texture_arr(u_f);
+		if (e.us_vertex_shader==-1)
+		  u_v = ev.uber_api.v_texture_arr(u_v);
+		if (e.us_fragment_shader==-1)
+		  u_f = ev.uber_api.f_texture_arr(u_f);
 	      }
 	  }
       }
@@ -3330,12 +3377,19 @@ public:
 	sh.id = e.sh_color;
 	if (firsttime)
 	  {
-	    u_v = ev.uber_api.v_colour(u_v);
-	    u_v = ev.uber_api.v_light(u_v);
-	    u_f = ev.uber_api.f_colour(u_f);
-	    u_f = ev.uber_api.f_light(u_f);
+	    if (e.us_vertex_shader==-1)
+	      {
+		u_v = ev.uber_api.v_colour(u_v);
+		u_v = ev.uber_api.v_light(u_v);
+	      }
+	    if (e.us_fragment_shader==-1)
+	      {
+		u_f = ev.uber_api.f_colour(u_f);
+		u_f = ev.uber_api.f_light(u_f);
+	      }
 	  }
       }
+#endif
     //std::cout << "RenderInstanced::Execute" << std::endl;
     if (shader.id==-1)
       {
@@ -3420,13 +3474,15 @@ public:
 	if (u_f.id == 0)
 	  u_f = ev.uber_api.f_empty(false);
       }
-
+#if 1
     if (ev.polygon_api.is_texture(va))
       {
 	sh.id = e.sh_texture;
 	if (firsttime)
 	  {
-	    u_v = ev.uber_api.v_texture(u_v);
+	    if (e.us_vertex_shader==-1)
+	      u_v = ev.uber_api.v_texture(u_v);
+	    if (e.us_fragment_shader==-1)
 	    u_f = ev.uber_api.f_texture(u_f);
 	  }
 
@@ -3436,7 +3492,9 @@ public:
 	    sh.id = e.sh_array_texture;
 	      if (firsttime)
 	      {
+	    if (e.us_vertex_shader==-1)
 	    		u_v = ev.uber_api.v_texture_arr(u_v);
+	    if (e.us_fragment_shader==-1)
 	    		u_f = ev.uber_api.f_texture_arr(u_f);
 	       }
 	  }
@@ -3446,10 +3504,13 @@ public:
 	sh.id = e.sh_color;
 	if (firsttime)
 	  {
-	    u_v = ev.uber_api.v_colour(u_v);
-	    u_f = ev.uber_api.f_colour(u_f);
+	    if (e.us_vertex_shader==-1)
+	      u_v = ev.uber_api.v_colour(u_v);
+	    if (e.us_fragment_shader==-1)
+	      u_f = ev.uber_api.f_colour(u_f);
 	  }
       }
+#endif
     if (shader.id==-1)
       {
 	//std::cout << "RenderInstanced2::SHADER" << std::endl;

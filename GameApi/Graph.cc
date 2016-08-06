@@ -835,6 +835,8 @@ public:
     u_y_1 = pb - p;
     u_y_2 = pb2 - p;    
   }
+  void Prepare() { }
+
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   Point Map(int x, int y) const 

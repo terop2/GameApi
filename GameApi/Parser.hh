@@ -584,6 +584,8 @@ public:
   {
   public:
     VectorVectorBitmap(std::vector<std::vector<T2> > &vec) : vec(vec) { }
+  void Prepare() {}
+
     virtual int SizeX() const { if (vec.size()==0) return 0; return vec[0].size(); }
     virtual int SizeY() const { return vec.size(); }
     virtual T Map(int x, int y) const

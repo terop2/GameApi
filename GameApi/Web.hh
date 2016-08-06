@@ -262,7 +262,9 @@ private:
 class PpmFileReader : public Bitmap<Color>
 {
 public:
-  PpmFileReader(std::string filename) : filename(filename) { flag = Read(); }
+  PpmFileReader(std::string filename) : filename(filename) { }
+  void Prepare() { flag = Read(); }
+
   bool status() { return flag; }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
@@ -307,7 +309,7 @@ private:
 class PpmFile : public File
 {
 public:
-  PpmFile(std::string filename, Bitmap<Color> &contents, bool alpha) : filename(filename), contents(contents), alpha(alpha) { std::cout << "Alpha: " << alpha << std::endl; }
+  PpmFile(std::string filename, Bitmap<Color> &contents, bool alpha) : filename(filename), contents(contents), alpha(alpha) { std::cout << "Alpha: " << alpha << std::endl; contents.Prepare(); }
   virtual std::string FileName() const { return filename; }
   virtual std::string Contents() const 
   { 
@@ -346,7 +348,7 @@ private:
 class PgmFile : public File
 {
 public:
-  PgmFile(std::string filename, Bitmap<Color> &contents) : filename(filename), contents(contents) { }
+  PgmFile(std::string filename, Bitmap<Color> &contents) : filename(filename), contents(contents) { contents.Prepare(); }
   virtual std::string FileName() const { return filename; }
   virtual std::string Contents() const 
   {
@@ -388,7 +390,7 @@ public:
     contents(contents), 
     tmpfilename(tempfilename),
     tmpfilename2(tempfilename2)
-  { }
+  { contents.Prepare(); }
 
   virtual std::string FileName() const { return filename; }
   virtual std::string Contents() const 
@@ -429,7 +431,7 @@ private:
 class HtmlImage : public HtmlPart, public File
 {
 public:
-  HtmlImage(std::string png_filename, Bitmap<Color> &c, int width, int height) : png(png_filename, c), img(png_filename, width, height) { }
+  HtmlImage(std::string png_filename, Bitmap<Color> &c, int width, int height) : png(png_filename, c), img(png_filename, width, height) { c.Prepare(); }
   std::string Part() const { return img.Part(); }
   std::string FileName() const { return png.FileName(); }
   std::string Contents() const { return png.Contents(); }
@@ -441,7 +443,7 @@ private:
 class PngBitmapFunction : public Function<Pos, HtmlImage*>
 {
 public:
-  PngBitmapFunction(std::string file_basename, Bitmap<Color> &bm, int sx, int sy) : filename(file_basename), bm(bm),sx(sx), sy(sy), img(0), constant(0) { }
+  PngBitmapFunction(std::string file_basename, Bitmap<Color> &bm, int sx, int sy) : filename(file_basename), bm(bm),sx(sx), sy(sy), img(0), constant(0) { bm.Prepare(); }
   HtmlImage *Index(Pos c) const;
   std::string Num(int i) const { std::stringstream s; s << i; return s.str(); }
 private:
@@ -456,7 +458,7 @@ private:
 class BitmapDirectory : public Directory
 {
 public:
-  BitmapDirectory(Directory &d, Bitmap<File*> &bm) : d(d), bm(bm) { }
+  BitmapDirectory(Directory &d, Bitmap<File*> &bm) : d(d), bm(bm) { bm.Prepare(); }
 
   virtual std::string DirectoryName() const { return d.DirectoryName(); }
   virtual int NumFiles() const { return d.NumFiles()+bm.SizeX()*bm.SizeY(); }

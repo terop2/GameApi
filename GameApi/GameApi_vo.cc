@@ -801,11 +801,14 @@ public:
 			       int sx, int sy)
     : colors(colors),  sx(sx), sy(sy) 
   {
+    coll->Prepare();
     p00 = coll->FacePoint(face, 0);
     p01 = coll->FacePoint(face, 1);
     p11 = coll->FacePoint(face, 2);
     p10 = coll->FacePoint(face, 3);
   }
+  void Prepare() {  }
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual Color Map(int x, int y) const
@@ -837,6 +840,8 @@ class ArrayBM : public Bitmap<Color>
 {
 public:
   ArrayBM(ColorVolumeObject *col, int sx, int sy, float ssx, float ssy, float z) : col(col) { }
+  void Prepare() { }
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual Color Map(int x, int y) const
@@ -1130,6 +1135,8 @@ public:
 	    Vector u_y,
 	    Vector u_z,
 	    float surface_value) : obj(obj), sx(sx), sy(sy), pos(pos), u_x(u_x), u_y(u_y), u_z(u_z), surf_val(surface_value) { }
+  void Prepare() { }
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual Color Map(int x, int y) const
@@ -1649,6 +1656,8 @@ public:
     : pos(pos), u_x(u_x), u_y(u_y), m_u_z(u_z), dist(dist), colors(colors), sx(sx), sy(sy) { 
     m_u_z/=m_u_z.Dist();
   }
+  void Prepare() { }
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual Color Map(int x, int y) const

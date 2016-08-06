@@ -45,6 +45,7 @@ class FontGlyphBitmap : public Bitmap<int>, public LineCollection
 {
 public:
   FontGlyphBitmap(void *priv_, std::string filename, int sx, int sy);
+  void Prepare() { }
   void load_glyph(long idx);
   void load_glyph_outline(long idx, float sx, float sy);
   int bitmap_top(long idx) const;

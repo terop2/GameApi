@@ -84,6 +84,8 @@ class SpanArrays : public Bitmap<Color>
 {
 public:
   SpanArrays(Array<int,float> &a1, Array<int,float> &a2, ContinuousBitmap<Color> *f) : a1(a1) ,a2(a2), f(f) { } 
+  void Prepare() {}
+
   int SizeX() const { return a1.Size(); }
   int SizeY() const { return a2.Size(); }
   Color Map(int x, int y) const

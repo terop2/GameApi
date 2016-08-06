@@ -1324,6 +1324,7 @@ void PreCalcExecute(Render &rend, FrameAnim &f, float duration, int numframes)
 #undef LoadImage
 BufferRef LoadImage(std::string filename, bool &success)
 {
+  std::cout << "Loading: " << filename << std::endl;
   //SDL_Surface *surf = IMG_Load(filename.c_str());
   std::vector<unsigned char> mem;
   ifstream ss(filename.c_str(), ios_base::binary|ios_base::in);
@@ -1333,6 +1334,11 @@ BufferRef LoadImage(std::string filename, bool &success)
       mem.push_back((unsigned char)c);
     }
   std::cout << "FileSize: " << mem.size() << std::endl;
+  if (mem.size()==0) { success=false;
+      std::cout << "Cannot load " << filename << std::endl;
+      BufferRef r;
+      return r;
+  }
   
   int x,y;
   int comp;

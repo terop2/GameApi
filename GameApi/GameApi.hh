@@ -406,7 +406,7 @@ public:
   IMPORT unsigned int colorvalue(BM bm, int x, int y);
   IMPORT int size_x(BM bm);
   IMPORT int size_y(BM bm);
-  
+  IMPORT void prepare(BM bm);
   
   IMPORT BMA empty_array();
   BMA array(BM *array, int size);
@@ -1022,6 +1022,7 @@ public:
   M get_matrix(MN n, float time);
   ML move_ml(EveryApi &ev, ML ml, MN mn);
   ML move_ml_array(EveryApi &ev, std::vector<ML> ml, std::vector<MN> mn);
+  ML enable_ml(EveryApi &ev, ML ml, float start_time, float end_time);
   ML key_event(EveryApi &ev, ML ml, MN mn, int type, int ch, int button, float duration);
   ML wasd(EveryApi &ev, ML ml, MN w, MN a, MN s, MN d, float duration);
 private:

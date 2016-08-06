@@ -72,6 +72,8 @@ class AlphaColorBitmap : public Bitmap<Color>
 {
 public:
   AlphaColorBitmap(Bitmap<Color> &bm, unsigned int key) : bm(bm), key(key) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual Color Map(int x, int y) const
@@ -133,6 +135,8 @@ class BitmapArrayElem : public Bitmap<Color>
 {
 public:
   BitmapArrayElem(BitmapArray2<Color> *arr, int i) : arr(arr), i(i) { }
+  void Prepare() { }
+
   virtual int SizeX() const { return arr->SizeX(i); }
   virtual int SizeY() const { return arr->SizeY(i); }
   virtual Color Map(int x, int y) const
@@ -170,6 +174,7 @@ class ColorRangeBitmap : public Bitmap<Color>
 {
 public:
   ColorRangeBitmap(Bitmap<Color> &bm, unsigned int source_upper, unsigned int source_lower, unsigned int target_upper, unsigned int target_lower) : bm(bm), source_upper(source_upper), source_lower(source_lower), target_upper(target_upper), target_lower(target_lower) { }
+  void Prepare() { bm.Prepare(); }
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual Color Map(int x, int y) const 
@@ -200,6 +205,7 @@ class GradientBitmap2 : public Bitmap<Color>
 {
 public:
   GradientBitmap2(Point2d pos_1, Point2d pos_2, unsigned int color_1, unsigned int color_2, int sx, int sy) : pos_1(pos_1), pos_2(pos_2), color_1(color_1), color_2(color_2), sx(sx), sy(sy) { }
+  void Prepare() { }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual Color Map(int x, int y) const
@@ -237,6 +243,8 @@ class RadialGradient : public Bitmap<Color>
 {
 public:
   RadialGradient(int sx, int sy, Point2d pos, float r1, float r2, unsigned int color_1, unsigned int color_2) : sx(sx),sy(sy), pos(pos), r1(r1), r2(r2), color_1(color_1), color_2(color_2) { }
+  void Prepare() { }
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual Color Map(int x, int y) const
@@ -286,6 +294,8 @@ class BitmapTransformFromFunction : public Bitmap<T>
 {
 public:
   BitmapTransformFromFunction(Bitmap<T> &bm, std::function<T (int,int,T)> f) : bm(bm),  f(f) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual T Map(int x, int y) const
@@ -302,6 +312,8 @@ class BitmapFromFunction : public Bitmap<T>
 {
 public:
   BitmapFromFunction(std::function< T(int,int) > f, int sx, int sy) : f(f), sx(sx),sy(sy) { }
+  void Prepare() { }
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual T Map(int x, int y) const
@@ -355,6 +367,8 @@ class ChessBoardBitmap2 : public Bitmap<Color>
 {
 public:
   ChessBoardBitmap2(int tile_sx, int tile_sy, int count_x, int count_y, Color c1, Color c2) : tile_sx(tile_sx), tile_sy(tile_sy), count_x(count_x), count_y(count_y), c1(c1), c2(c2) { }
+  void Prepare() { }
+
   int SizeX() const { return tile_sx*count_x; }
   int SizeY() const { return tile_sy*count_y; }
   Color Map(int x, int y) const
@@ -453,10 +467,75 @@ EXPORT void GameApi::BitmapApi::savebitmap(BM bm, std::string filename, bool alp
   filehandle.close();
 }
 
+class LoadBitmapBitmap : public Bitmap<Color>
+{
+public:
+  LoadBitmapBitmap(std::string filename) : filename(filename),cbm(0) { }
+  virtual int SizeX() const { 
+    if (!cbm) { std::cout << "LoadBitmapBitmap::Prepare() for Bitmap not called at SizeX()" << std::endl; }
+
+    return cbm->SizeX(); }
+  virtual int SizeY() const {
+    if (!cbm) { std::cout << "LoadBitmapBitmap::Prepare() for Bitmap not called at SizeY()" << std::endl; } 
+    return cbm->SizeY(); }
+  virtual Color Map(int x, int y) const { 
+    if (!cbm) { std::cout << "LoadBitmapBitmap::Prepare() for Bitmap not called at Map()" << std::endl; }
+    return cbm->Map(x,y); }
+  virtual void Prepare()
+  {
+    if (cbm)
+      {
+	//std::cout << "Attempt to Prepare twice" << std::endl;
+      }
+    if (!cbm)
+      {
+    std::cout << "Load Bitmap Prepare " << filename << std::endl;
+    PpmFileReader *file = new PpmFileReader(filename);
+    file->Prepare();
+    if (file->status()==true)
+      {
+	cbm = file;
+	return;
+      }
+    delete file;
+
+
+    bool b = false;
+    img = LoadImage(filename, b);
+    if (b==false) {
+      img = BufferRef::NewBuffer(10,10);
+      for(int x=0;x<10;x++)
+	for(int y=0;y<10;y++)
+	  {
+	    img.buffer[x+y*img.ydelta] = ((x+y)&1)==1 ? 0xffffffff : 0xff000000;
+	  }
+      std::cout << "ERROR: File not found: " << filename << std::endl;
+    }
+    //::EnvImpl *env = ::EnvImpl::Environment(&e);
+    //env->deletes.push_back(std::shared_ptr<void>(img.buffer, &ArrayDelete<unsigned int>));
+    
+    cbm = new BitmapFromBuffer(img);
+      }
+  }
+private:
+  std::string filename;
+  BufferRef img;
+  Bitmap<Color> *cbm;
+};
+
 EXPORT GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
 {
+  Bitmap<Color> *bm = new LoadBitmapBitmap(filename);
+  BitmapColorHandle *handle = new BitmapColorHandle;
+  handle->bm = bm;
+  BM bm2 = add_bitmap(e, handle);
+  return bm2;
+
+  
+#if 0
   // PPM FILE READING
   PpmFileReader *file = new PpmFileReader(filename);
+  file->Prepare();
   if (file->status()==true)
     {
       BitmapColorHandle *handle = new BitmapColorHandle;
@@ -489,6 +568,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
   handle->bm = buf;
   BM bm = add_bitmap(e, handle);
   return bm;
+#endif
 }
 EXPORT GameApi::BM GameApi::BitmapApi::loadtilebitmap(std::string filename, int sx, int sy)
 {
@@ -869,6 +949,8 @@ class BitmapFromString : public Bitmap<T>
 {
 public:
   BitmapFromString(char *array, int sx, int sy, std::function<T (char)> f) : array(array), sx(sx), sy(sy),  f(f) { }
+  void Prepare() { }
+
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   T Map(int x, int y) const
@@ -950,6 +1032,8 @@ class FlipBitmap : public Bitmap<Color>
 {
 public:
   FlipBitmap(Bitmap<Color> &bm, bool x, bool y) : bm(bm), flip_x(x), flip_y(y) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual Color Map(int x, int y) const
@@ -973,6 +1057,8 @@ class DupXBitmap : public Bitmap<Color>
 {
 public:
   DupXBitmap(Bitmap<Color> &orig) : bm(orig) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX()*2; }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual Color Map(int x, int y) const
@@ -1095,6 +1181,8 @@ class ChooseBitmap3 : public Bitmap<Color>
 {
 public:
   ChooseBitmap3(Bitmap<bool> &bools, Bitmap<Color> &true_bitmap, Bitmap<Color> &false_bitmap) : bools(bools), true_bitmap(true_bitmap), false_bitmap(false_bitmap) { }
+  void Prepare() { bools.Prepare(); true_bitmap.Prepare(); false_bitmap.Prepare(); }
+
   virtual int SizeX() const { return std::min(std::min(bools.SizeX(), true_bitmap.SizeX()), false_bitmap.SizeX()); }
   virtual int SizeY() const { return std::min(std::min(bools.SizeY(), true_bitmap.SizeY()), false_bitmap.SizeY()); }
   virtual Color Map(int x, int y) const
@@ -1113,6 +1201,8 @@ class ChooseBitmap4 : public Bitmap<Color>
 {
 public:
   ChooseBitmap4(Bitmap<float> &floats, Bitmap<Color> &bitmap_0, Bitmap<Color> &bitmap_1) : floats(floats), bitmap_0(bitmap_0), bitmap_1(bitmap_1) { }
+  void Prepare() { floats.Prepare(); bitmap_0.Prepare(); bitmap_1.Prepare(); }
+
   virtual int SizeX() const { return std::min(std::min(floats.SizeX(), bitmap_0.SizeX()), bitmap_1.SizeX()); }
   virtual int SizeY() const { return std::min(std::min(floats.SizeY(), bitmap_0.SizeY()), bitmap_1.SizeY()); }
   virtual Color Map(int x, int y) const
@@ -1130,6 +1220,8 @@ class PerlinNoise : public Bitmap<float>
 {
 public:
   PerlinNoise(Bitmap<float> &grad_1, Bitmap<float> &grad_2) : grad_1(grad_1), grad_2(grad_2) { }
+  void Prepare() { grad_1.Prepare(); grad_2.Prepare(); }
+
   int SizeX() const { return grad_1.SizeX(); }
   int SizeY() const { return grad_1.SizeY(); }
   float Map(int x, int y) const
@@ -1226,6 +1318,8 @@ class EquivalenceClassFromArea : public Bitmap<bool>
 {
 public:
   EquivalenceClassFromArea(Bitmap<Color> &bm, T f) : bm(bm),  f(f) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual bool Map(int x, int y) const
@@ -1289,6 +1383,8 @@ class LineBoolBitmap : public Bitmap<bool>
 {
 public:
   LineBoolBitmap(Bitmap<bool> &bg, Point2d p1, Point2d p2, float line_width1, float line_width2) : bg(bg), p1(p1), p2(p2), line_width1(line_width1), line_width2(line_width2) { }
+  void Prepare() { bg.Prepare(); }
+
   virtual int SizeX() const { return bg.SizeX(); }
   virtual int SizeY() const { return bg.SizeY(); }
   virtual bool Map(int x, int y) const
@@ -1316,6 +1412,8 @@ class EllipseBoolBitmap : public Bitmap<bool>
 {
 public:
   EllipseBoolBitmap(Bitmap<bool> &bg, Point2d c1, Point2d c2, float sum) : bg(bg), c1(c1), c2(c2), sum(sum) { }
+  void Prepare() { bg.Prepare(); }
+
   virtual int SizeX() const { return bg.SizeX(); }
   virtual int SizeY() const { return bg.SizeY(); }
   virtual bool Map(int x, int y) const
@@ -1446,6 +1544,8 @@ class BoolBitmapSprite : public Bitmap<bool>
 {
 public:
   BoolBitmapSprite(Bitmap<bool> &bg, Bitmap<bool> &sprite, float x, float y, float mult_x, float mult_y) : bg(bg), sprite(sprite), x(x), y(y), mult_x(mult_x), mult_y(mult_y) { }
+  void Prepare() { bg.Prepare(); sprite.Prepare(); }
+
   int SizeX() const {return bg.SizeX(); }
   int SizeY() const {return bg.SizeY(); }
   bool Map(int mx, int my) const {
@@ -1531,6 +1631,8 @@ class BitmapFromRed : public Bitmap<float>
 {
 public:
   BitmapFromRed(Bitmap<Color> &bm) : bm(bm) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual float Map(int x, int y) const
@@ -1556,6 +1658,8 @@ class BitmapFromGreen : public Bitmap<float>
 {
 public:
   BitmapFromGreen(Bitmap<Color> &bm) : bm(bm) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual float Map(int x, int y) const
@@ -1573,6 +1677,8 @@ class SpaceFillFloatBitmap : public Bitmap<float>
 public:
   SpaceFillFloatBitmap(Point *pt, float *values, int size, int sx, int sy) : pt(pt), values(values), size(size), sx(sx), sy(sy) { }
   ~SpaceFillFloatBitmap() { delete [] pt; }
+  void Prepare() { }
+
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   float Map(int x, int y) const
@@ -1616,6 +1722,8 @@ class BitmapFromBlue : public Bitmap<float>
 {
 public:
   BitmapFromBlue(Bitmap<Color> &bm) : bm(bm) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual float Map(int x, int y) const
@@ -1641,6 +1749,8 @@ class BitmapFromAlpha : public Bitmap<float>
 {
 public:
   BitmapFromAlpha(Bitmap<Color> &bm) : bm(bm) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual float Map(int x, int y) const
@@ -1666,6 +1776,8 @@ class FromBoolBitmap : public Bitmap<float>
 {
 public:
   FromBoolBitmap(Bitmap<bool> &bm, float val_true, float val_false) : bm(bm), val_true(val_true), val_false(val_false) { }
+  void Prepare() { bm.Prepare(); }
+
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual float Map(int x, int y) const
@@ -1688,6 +1800,8 @@ float mymin(float x, float y)
 class DistanceFieldBitmap : public Bitmap<float>
 {
 public:
+  void Prepare() { bm->Prepare(); }
+
   DistanceFieldBitmap(Bitmap<bool> *bm) : bm(bm) 
   {
     int sx = bm->SizeX();
@@ -1774,6 +1888,8 @@ class BorderFloatBitmap : public Bitmap<float>
 {
 public:
   BorderFloatBitmap(Bitmap<float> *bm) : bm(bm) { }
+  void Prepare() { bm->Prepare(); }
+
   int SizeX() const { return bm->SizeX(); }
   int SizeY() const { return bm->SizeY(); }
   float Map(int x, int y) const
@@ -1829,6 +1945,8 @@ class BitmapFromRGBA : public Bitmap<Color>
 {
 public:
   BitmapFromRGBA(Bitmap<float> &r, Bitmap<float> &g, Bitmap<float> &b, Bitmap<float> &a) : r(r), g(g), b(b), a(a) { }
+  void Prepare() { r.Prepare(); g.Prepare(); b.Prepare(); a.Prepare(); }
+
   virtual int SizeX() const { return r.SizeX(); }
   virtual int SizeY() const { return r.SizeY(); }
   virtual Color Map(int x, int y) const
@@ -1870,6 +1988,8 @@ class FloatModBitmap : public Bitmap<bool>
 {
 public:
   FloatModBitmap(Bitmap<float> &fb, float mod_value) : fb(fb), mod_value(mod_value) { }
+  void Prepare() { fb.Prepare(); }
+
   int SizeX() const { return fb.SizeX(); }
   int SizeY() const { return fb.SizeY(); }
   bool Map(int x, int y) const
@@ -1962,6 +2082,7 @@ class DistanceRenderContinuousBitmap : public ContinuousBitmap<Color>
 {
 public:
   DistanceRenderContinuousBitmap(DistanceRenderable *dist, ColorVolumeObject *colours, float sx, float sy) : dist(dist), colours(colours),sx(sx),sy(sy) { }
+  void Prepare() { }
   virtual float SizeX() const { return sx; }
   virtual float SizeY() const { return sy; }
   virtual Color Map(float x, float y) const
@@ -1998,6 +2119,7 @@ class FunctionContinuousBitmap : public ContinuousBitmap<Color>
 {
 public:
   FunctionContinuousBitmap( std::function<unsigned int (float, float)> f, float sx, float sy) : f(f), sx(sx), sy(sy) { }
+  void Prepare() { }
   virtual float SizeX() const { return sx; }
   virtual float SizeY() const { return sy; }
   virtual Color Map(float x, float y) const
@@ -2044,6 +2166,7 @@ class ComposeSurfaceColor : public ContinuousBitmap<Color>
 {
 public:
   ComposeSurfaceColor(SurfaceImpl *impl, ColorVolumeObject *obj) : impl(impl), obj(obj) { }
+  void Prepare() { }
   virtual float SizeX() const { return impl->surf->XSize(); }
   virtual float SizeY() const { return impl->surf->YSize(); }
   virtual Color Map(float x, float y) const
@@ -2175,4 +2298,10 @@ EXPORT GameApi::TXID GameApi::FloatBitmapApi::to_texid(FB fb)
   id2.id = id;
   return id2;
 
+}
+void GameApi::BitmapApi::prepare(BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  b2->Prepare();
 }
