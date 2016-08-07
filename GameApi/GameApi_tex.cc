@@ -5,7 +5,7 @@ EXPORT GameApi::TextureApi::TextureApi(GameApi::Env &e) : e(e) { count=0; }
 EXPORT GameApi::TX GameApi::TextureApi::tex_plane(int sx, int sy)
 {
   return add_texture(e, new TexPlane(sx,sy));
-}
+} 
 EXPORT GameApi::TX GameApi::TextureApi::tex_bitmap(GameApi::BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);

@@ -3760,6 +3760,7 @@ class ColorMapPoly : public SingleForwardFaceCollection
 {
 public:
   ColorMapPoly(Bitmap<::Color> *bm, Point pos, Vector u_x, Vector u_y) : bm(bm), pos(pos), u_x(u_x), u_y(u_y) { }
+  void Prepare() { bm->Prepare(); }
   virtual int NumFaces() const { return bm->SizeX()*bm->SizeY(); }
   virtual int NumPoints(int face) const { return 4; }
   virtual Point FacePoint(int face, int point) const
@@ -3822,6 +3823,7 @@ class ColorMapPoly2 : public SingleForwardFaceCollection
 {
 public:
   ColorMapPoly2(Bitmap<::Color> *bm, Bitmap<float> *fb, Point pos, Vector u_x, Vector u_y) : bm(bm),fb(fb), pos(pos), u_x(u_x), u_y(u_y) { u_z = Vector::CrossProduct(u_x,u_y); u_z/=u_z.Dist(); }
+  void Prepare() { bm->Prepare(); }
   virtual int NumFaces() const { return bm->SizeX()*bm->SizeY(); }
   virtual int NumPoints(int face) const { return 4; }
   virtual Point FacePoint(int face, int point) const
@@ -3881,6 +3883,7 @@ public:
   ColorMapPoly2_cyl(Bitmap<::Color> *bm, Bitmap<float> *fb, Point pos, Vector u_x, Vector u_y) : bm(bm), fb(fb), pos(pos), u_x(u_x), u_y(u_y) {
     u_z = Vector::CrossProduct(u_x,u_y); u_z/=u_z.Dist(); 
   }
+  void Prepare() { bm->Prepare(); }
   virtual int NumFaces() const { return bm->SizeX()*bm->SizeY(); }
   virtual int NumPoints(int face) const { return 4; }
   virtual Point FacePoint(int face, int point) const
@@ -3948,6 +3951,7 @@ public:
     u_z = Vector::CrossProduct(u_x,u_y); u_z/=u_z.Dist(); 
     u_z *= u_x.Dist();
   }
+  void Prepare() { bm->Prepare(); fb->Prepare(); }
   virtual int NumFaces() const { return bm->SizeX()*bm->SizeY(); }
   virtual int NumPoints(int face) const { return 4; }
   virtual Point FacePoint(int face, int point) const
@@ -4541,4 +4545,93 @@ GameApi::P GameApi::PolygonApi::resize_to_correct_size(P model)
 {
   FaceCollection *coll = find_facecoll(e, model);
   return add_polygon2(e, new ResizeFaceCollection(coll),1);
+}
+
+class PersistentCachePoly : public FaceCollection
+{
+public:
+  PersistentCachePoly(FaceCollection &c, std::string filename) : c(c), filename(filename),res(0) { }
+  virtual void Prepare()
+  {
+    if (!res) {
+      std::ifstream ss(filename.c_str());
+      int count = 0;
+      char c2;
+      while(ss.get(c2)) { count++; }
+      if (count==0)
+	{
+	  std::cout << "Saving " << filename << std::endl;
+	  SaveObjModelFaceCollection save(&c);
+	  save.save(filename);
+	}
+      std::cout << "Loading " << filename << std::endl;
+      res = new LoadObjModelFaceCollection(filename,0);
+      res->Prepare();
+    }
+  }
+  virtual int NumFaces() const 
+  {
+    if (!res) { std::cout << "PersistentCachePoly:FaceCollection Prepare not called!" << std::endl; }
+    if (!res) return c.NumFaces();
+    return res->NumFaces();
+  }
+  virtual int NumPoints(int face) const
+  {
+    if (!res) { std::cout << "PersistentCachePoly:FaceCollection Prepare not called!" << std::endl; }
+    if (!res) { return c.NumPoints(face); }
+    return res->NumPoints(face);
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    if (!res) { std::cout << "PersistentCachePoly:FaceCollection Prepare not called!" << std::endl; }
+    if (!res) { return c.FacePoint(face,point); }
+    return res->FacePoint(face,point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    if (!res) { std::cout << "PersistentCachePoly:FaceCollection Prepare not called!" << std::endl; }
+    if (!res) { return c.PointNormal(face,point); }
+    return res->PointNormal(face,point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    if (!res) { std::cout << "PersistentCachePoly:FaceCollection Prepare not called!" << std::endl; }
+    if (!res) { return c.Attrib(face,point,id); }
+    return res->Attrib(face,point,id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    if (!res) { std::cout << "PersistentCachePoly:FaceCollection Prepare not called!" << std::endl; }
+    if (!res) { return c.AttribI(face,point,id); }
+    return res->AttribI(face,point,id);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    if (!res) { std::cout << "PersistentCachePoly:FaceCollection Prepare not called!" << std::endl; }
+    if (!res) { return c.Color(face,point); }
+    return res->Color(face,point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    if (!res) { std::cout << "PersistentCachePoly:FaceCollection Prepare not called!" << std::endl; }
+    if (!res) { return c.TexCoord(face,point); }
+    return res->TexCoord(face,point);
+  }
+  virtual float TexCoord3(int face, int point) const 
+  {
+    if (!res) { std::cout << "PersistentCachePoly:FaceCollection Prepare not called!" << std::endl; }
+    if (!res) { return c.TexCoord3(face,point); }
+    return res->TexCoord3(face,point);
+  }
+private:
+  FaceCollection &c;
+  std::string filename;
+  FaceCollection *res;
+};
+GameApi::P GameApi::PolygonApi::persistent_cache(P p, std::string filename)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  GameApi::P p2 = add_polygon2(e, new PersistentCachePoly(*coll, filename),1);
+  GameApi::P cache = file_cache(p2, filename, 0);
+  return cache;
 }

@@ -401,6 +401,7 @@ public:
   IMPORT BM color_range(BM orig, unsigned int source_upper, unsigned int source_lower, unsigned int target_upper, unsigned int target_lower);
   IMPORT BM memoize(BM orig);
   IMPORT BM memoize_all(BM orig);
+  IMPORT BM persistent_cache(BM orig, std::string filename);
   IMPORT BM alt(std::vector<BM> vec, int index);
   IMPORT int intvalue(BM bm, int x, int y);
   IMPORT unsigned int colorvalue(BM bm, int x, int y);
@@ -1662,6 +1663,7 @@ public:
   IMPORT P smooth_normals(P orig);
   IMPORT P memoize(P orig);
   IMPORT P memoize_all(P orig);
+  IMPORT P persistent_cache(P orig, std::string filename);
 
   IMPORT ID find_point_id(P p, int facenum, int pointnum); // save id's to ENV.
   IMPORT ID find_normal_id(P p, int facenum, int pointnum);

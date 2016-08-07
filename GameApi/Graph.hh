@@ -7391,7 +7391,7 @@ private:
 class TexBitmap : public TextureI
 {
 public:
-  TexBitmap(Bitmap<Color> &bm) : bm(bm) { }
+  TexBitmap(Bitmap<Color> &bm) : bm(bm) { bm.Prepare(); }
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
   virtual Color Map(int x, int y) const { return bm.Map(x,y); }

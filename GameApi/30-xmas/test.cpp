@@ -197,6 +197,30 @@ ML happy_xmas_text(EveryApi &ev)
 {
 BM I1=ev.bitmap_api.newbitmap(250,50,00000000);
 Ft I2=ev.font_api.newfont("FreeSans.ttf",20,20);
+BM I3=ev.font_api.font_string(I2,"Merry",5);
+BM I4=ev.bitmap_api.blitbitmap(I1,I3,0,0);
+Ft I5=ev.font_api.newfont("FreeSans.ttf",20,20);
+BM I6=ev.font_api.font_string(I5,"Christmas",5);
+BM I7=ev.bitmap_api.blitbitmap(I4,I6,100,2);
+BM I8=ev.bitmap_api.persistent_cache(I7,"cache.ppm");
+P I9=ev.polygon_api.color_map(I8,250,50,0);
+P I10=ev.polygon_api.scale(I9,1,-1,1);
+P I11=ev.polygon_api.translate(I10,-125,0,0);
+P I12=ev.polygon_api.scale(I11,3,3,3);
+VA I13=ev.polygon_api.create_vertex_array(I12,true);
+ML I14=ev.polygon_api.render_vertex_array_ml(ev,I13);
+MN I15=ev.move_api.empty();
+MN I16=ev.move_api.trans2(I15,0,0,300);
+ float time_delta = 500.0;
+MN I17=ev.move_api.translate(I16,time_delta+0,time_delta+30,0,0,-300);
+MN I18=ev.move_api.translate(I17,time_delta+100,time_delta+130,0,1000,0);
+ MN I18a = ev.move_api.scale2(I18, -1.0,1.0,-1.0);
+ML I19=ev.move_api.move_ml(ev,I14,I18a);
+ ML I19a = ev.move_api.enable_ml(ev,I19, time_delta, time_delta+130.0);
+
+#if 0
+BM I1=ev.bitmap_api.newbitmap(250,50,00000000);
+Ft I2=ev.font_api.newfont("FreeSans.ttf",20,20);
 BM I3=ev.font_api.font_string(I2,"Happy",5);
 BM I4=ev.bitmap_api.blitbitmap(I1,I3,0,0);
 Ft I5=ev.font_api.newfont("FreeSans.ttf",20,20);
@@ -216,7 +240,8 @@ MN I17=ev.move_api.translate(I16,time_delta+100,time_delta+130,0,1000,0);
  MN I17a = ev.move_api.scale2(I17, -1.0,1.0,-1.0);
 ML I18=ev.move_api.move_ml(ev,I13,I17a);
  ML I18a = ev.move_api.enable_ml(ev,I18, time_delta, time_delta+130.0);
- return I18a;
+#endif
+ return I19a;
 }
 
 ML reki(EveryApi &ev)
