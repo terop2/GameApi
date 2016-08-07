@@ -2305,3 +2305,57 @@ void GameApi::BitmapApi::prepare(BM bm)
   ::Bitmap<Color> *b2 = find_color_bitmap(handle);
   b2->Prepare();
 }
+
+class PersistentCache : public Bitmap<Color>
+{
+public:
+  PersistentCache(Bitmap<Color> &c, std::string filename) : c(c), filename(filename),res(0) { }
+  virtual int SizeX() const { 
+    if (!res) { std::cout << "PersistentCache:Bitmap Prepare not called!" << std::endl; }
+    return res->SizeX()-1; }
+  virtual int SizeY() const { 
+    if (!res) { std::cout << "PersistentCache:Bitmap Prepare not called!" << std::endl; }
+
+    return res->SizeY()-1; }
+  virtual Color Map(int x, int y) const
+  {
+    if (!res) { std::cout << "PersistentCache:Bitmap Prepare not called!" << std::endl; }
+    return res->Map(x,y);
+  }
+  virtual void Prepare()
+  {
+    if (!res)
+      {
+	std::ifstream ss(filename.c_str());
+	int count = 0;
+	char c2;
+	while(ss.get(c2)) { count++; }
+	if (count==0)
+	  {
+	    PpmFile file(filename, c, true);
+	    std::string contents = file.Contents();
+	    std::ofstream ss(filename.c_str());
+	    ss << contents;
+	    ss.close();
+	  }
+	res = new PpmFileReader(filename);
+	res->Prepare();
+      }
+  }
+
+private:
+  Bitmap<Color> &c;
+  std::string filename;
+  Bitmap<Color> *res;
+};
+GameApi::BM GameApi::BitmapApi::persistent_cache(BM bm, std::string filename)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+
+  ::Bitmap<Color> *b3 = new PersistentCache(*b2, filename);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b3;
+  BM bm2 = add_bitmap(e, handle2);
+  return bm2;
+}

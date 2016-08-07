@@ -4772,6 +4772,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P" },
 			 { "" },
 			 "P", "polygon_api", "memoize"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::persistent_cache,
+			 "persistent_cache",
+			 { "p", "filename" },
+			 { "P", "std::string" },
+			 { "", "cache.obj" },
+			 "P", "polygon_api", "persistent_cache"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, (GameApi::P (GameApi::PolygonApi::*)(GameApi::EveryApi&,std::vector<GameApi::P>,std::string,std::string,float,float,int,int))&GameApi::PolygonApi::world_from_bitmap,
 			 "world_from_bitmap",
 			 { "ev", "pieces", "filename", "chars", "dx", "dy", "sx", "sy" },
@@ -5557,6 +5563,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "ev", "", "map.txt", ".01234567", "100", "100", "5", "5" },
 			 "BM", "bitmap_api", "world_from_bitmap2"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::persistent_cache,
+			 "bm_persistent_cache",
+			 { "bm", "filename" },
+			 { "BM", "std::string" },
+			 { "", "cache.ppm" },
+			 "BM", "bitmap_api", "persistent_cache"));
  
   vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::create_vertex_array,
 			 "bm_prepare",

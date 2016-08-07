@@ -348,7 +348,7 @@ struct IDImpl
 
 struct Font
 {
-  FontGlyphBitmap *bm;
+  Bitmap<int> *bm;
 };
 
 struct ObjectWithPos
