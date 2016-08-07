@@ -614,7 +614,7 @@ std::string GameApi::WModApi::return_type(WM mod2, int id, std::string line_uid)
       if (line->uid == line_uid)
 	{
 	  std::string module_name = line->module_name;
-	  std::cout << "return type module name: " << module_name << std::endl;
+	  //std::cout << "return type module name: " << module_name << std::endl;
 	  static std::vector<GameApiItem*> vec = all_functions();
 	  int sd = vec.size();
 	  for(int k=0;k<sd;k++)
@@ -901,12 +901,12 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
 
 		    }
 		  ss+="]";
-		  std::cout << "Param: " << ss << std::endl;
+		  //std::cout << "Param: " << ss << std::endl;
 		  params.push_back(ss);
 		}
 	      else
 		{
-		  std::cout << "Param: " << p << std::endl;
+		  //std::cout << "Param: " << p << std::endl;
 
 		  params.push_back(p);
 		}
@@ -992,7 +992,7 @@ void GameApi::WModApi::change_param_value(WM mod2, int id, std::string uid, int 
 	{
 	  GameApiParam &param = line.params[param_index];
 	  param.value = newvalue;
-	  std::cout << "Param: " << param.param_name << " changed to " << newvalue << std::endl;
+	  //std::cout << "Param: " << param.param_name << " changed to " << newvalue << std::endl;
 	}
     }
 }
