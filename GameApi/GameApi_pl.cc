@@ -2518,7 +2518,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   int num_threads = 4;
   FaceCollection *faces = find_facecoll(e, p);
   faces->Prepare();
-  std::cout << "FaceColl: " << faces << " " << faces->NumFaces() << std::endl; 
+  //std::cout << "FaceColl: " << faces << " " << faces->NumFaces() << std::endl; 
   ThreadedPrepare prep(faces);  
   int s = faces->NumFaces();   
   //std::cout << "NumFaces: " << s << std::endl;
