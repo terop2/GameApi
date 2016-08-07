@@ -1350,9 +1350,19 @@ int main(int argc, char *argv[]) {
   Ft font3 = ev.font_api.newfont("../Chunkfive.otf", 30*font_scale,30*font_scale); // 30,30
 
 
-  if (argc==2)
+  std::ifstream ss("atlas0.txt");
+  char c;
+  bool flag = false;
+  if (ss.get(c))
     {
-      if (std::string(argv[1])=="--generate-font-atlas")
+    }
+  else
+    {
+      flag = true;
+    }
+  if (argc==2 ||flag)
+    {
+      if (flag ||std::string(argv[1])=="--generate-font-atlas")
 	{
 	  //std::cout << "Generating logo." << std::endl;
 	  //ev.mainloop_api.save_logo(ev);
@@ -1378,7 +1388,7 @@ int main(int argc, char *argv[]) {
 
 	  ev.bitmap_api.savebitmap(atlas_bm3, "atlas_bm2.ppm", true);
 	  std::cout << "Done." << std::endl;
-	  exit(0);
+	  //exit(0);
 	}
     }
 
