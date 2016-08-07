@@ -446,7 +446,7 @@ EXPORT void GameApi::MainLoopApi::finish()
 }
 EXPORT void GameApi::MainLoopApi::swapbuffers()
 {
-#if 1
+#if 0
   int e = -1;
   MainLoopPriv *pp = (MainLoopPriv*)priv;
   int i = 0;

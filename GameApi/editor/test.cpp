@@ -14,7 +14,7 @@
 using namespace GameApi;
 
 
-std::string hexify(std::string s)
+std::string hexify2(std::string s)
 {
   std::string res;
   int ss = s.size();
@@ -31,7 +31,7 @@ std::string hexify(std::string s)
   return res;
 }
 
-std::string unhexify(std::string s)
+std::string unhexify2(std::string s)
 {
   std::string res;
   int ss = s.size();

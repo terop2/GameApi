@@ -3279,7 +3279,7 @@ class FromStreamClass
 public:
   T from_stream(std::string s, GameApi::EveryApi &ev)
   {
-  std::cout << "Type using default: " << typeid(T).name() << std::endl;
+    //std::cout << "Type using default: " << typeid(T).name() << std::endl;
   T t;
   std::stringstream is(s);
   is >> t;
@@ -3527,13 +3527,13 @@ int funccall(GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
       ss << s[i] << " ";
     }
 #endif
-  std::cout << "FuncCall: " << ss.str() << std::endl;
+  //std::cout << "FuncCall: " << ss.str() << std::endl;
 
   std::stringstream ss2(ss.str());
   
   T *ptr = &(ev.*api);
   RT val = (ptr->*fptr)(from_stream2<P>(ss2,ev)...);
-  std::cout << "FuncCall returning: " << val.id << std::endl;
+  //std::cout << "FuncCall returning: " << val.id << std::endl;
   return val.id;
 }
 
