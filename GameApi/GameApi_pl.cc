@@ -2560,6 +2560,57 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   return add_vertex_array(e, s, arr2);
 #endif
 }
+
+EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array_attribs(GameApi::P p, bool keep, std::vector<int> attribs, std::vector<int> attribi)
+{ 
+#ifdef THREADS
+  int num_threads = 4;
+  FaceCollection *faces = find_facecoll(e, p);
+  faces->Prepare();
+  //std::cout << "FaceColl: " << faces << " " << faces->NumFaces() << std::endl; 
+  ThreadedPrepare prep(faces);  
+  int s = faces->NumFaces();   
+  //std::cout << "NumFaces: " << s << std::endl;
+  if (s<100) { num_threads=1; }
+  int delta_s = s/num_threads+1;
+  std::vector<int> vec;
+  //std::cout << "NumThreads2: " << num_threads << std::endl;
+  for(int i=0;i<num_threads;i++)
+    {  
+      int start_range = i*delta_s; 
+      int  end_range = (i+1)*delta_s;
+      if (end_range>s) { end_range = s; } 
+      if (i==num_threads-1) {end_range = s; }
+      vec.push_back(prep.push_thread(start_range, end_range,attribs,attribi));
+    }
+  for(int i=0;i<num_threads;i++)
+    {
+      prep.join(vec[i]);
+    }
+  VertexArraySet *set = prep.collect();
+  RenderVertexArray *arr2 = new RenderVertexArray(*set);
+  arr2->prepare(0);
+  if (!keep)
+    {
+      set->free_memory();
+    }
+  return add_vertex_array(e, set, arr2);
+#else
+  FaceCollection *faces = find_facecoll(e, p);
+  faces->Prepare();
+  VertexArraySet *s = new VertexArraySet;
+  FaceCollectionVertexArray2 arr(*faces, *s);
+  arr.reserve(0);
+  arr.copy(0,faces->NumFaces(),attribs,attribi);  
+  RenderVertexArray *arr2 = new RenderVertexArray(*s);
+  arr2->prepare(0); 
+  if (!keep)
+    s->free_memory();
+  return add_vertex_array(e, s, arr2);
+#endif
+}
+
+
 #if 0
 EXPORT int GameApi::PolygonApi::access_point_count(VA va, bool triangle)
 {
@@ -3027,6 +3078,78 @@ private:
   bool firsttime;
 };
 
+class SkeletalShader : public MainLoopItem
+{
+public:
+  SkeletalShader(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next) : env(env), ev(ev), next(next) 
+  {
+    firsttime = true;
+  }
+  int shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+
+    if (firsttime)
+      {
+	firsttime = false;
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a1.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    GameApi::US a2v = ev.uber_api.v_skeletal(vertex);
+    //ee.sfo_id = sfo.id;
+    ee.us_vertex_shader = a2v.id;
+
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a1.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+      }
+
+    int sh_id = next->shader_id();
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	GameApi::SH sh;
+	sh.id = sh_id;
+	ev.shader_api.use(sh);
+
+
+      }
+    GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+    GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+    GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+    ev.shader_api.set_var(sh, "in_MV", m);
+    ev.shader_api.set_var(sh, "in_T", m1);
+    ev.shader_api.set_var(sh, "in_N", m2);
+    float time = ee.time;
+    ev.shader_api.set_var(sh, "time", time);
+    
+    next->execute(ee);
+
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  GameApi::SH sh;
+  bool firsttime;
+};
+
 class DistFieldMeshShader : public MainLoopItem
 {
 public:
@@ -3238,6 +3361,12 @@ EXPORT GameApi::ML GameApi::PolygonApi::toon_shader(EveryApi &ev, ML mainloop)
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new DistFieldMeshShader(e,ev,item,sfo));
 }
+EXPORT GameApi::ML GameApi::PolygonApi::skeletal_shader(EveryApi &ev, ML mainloop)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new SkeletalShader(e,ev,item));
+}
+
 EXPORT GameApi::ML GameApi::PolygonApi::shading_shader(EveryApi &ev, ML mainloop,
 						      unsigned int level1,
 						      unsigned int level2,
@@ -4634,4 +4763,43 @@ GameApi::P GameApi::PolygonApi::persistent_cache(P p, std::string filename)
   GameApi::P p2 = add_polygon2(e, new PersistentCachePoly(*coll, filename),1);
   GameApi::P cache = file_cache(p2, filename, 0);
   return cache;
+}
+
+class BuildOffsets : public ForwardFaceCollection
+{
+public:
+  BuildOffsets(FaceCollection *coll, std::vector<Point> vec) : ForwardFaceCollection(*coll), coll(coll), vec(vec) { }
+  Point FacePoint(int face, int point) const
+  {
+    int part = ForwardFaceCollection::AttribI(face,point, AttrPart);
+    int s = vec.size();
+    if (part>=0 && part<s)
+      {
+	Point p = vec[part];
+	Point p2 = ForwardFaceCollection::FacePoint(face,point);
+	Vector v = p2-p;
+	Point p3 = v;
+	return p3;
+      }
+    Point p0;
+    p0.x = 0.0;
+    p0.y = 0.0;
+    p0.z = 0.0;
+    return p0;
+  }
+private:
+  FaceCollection *coll;
+  std::vector<Point> vec;
+};
+
+GameApi::P GameApi::PolygonApi::build_offsets(P p, std::vector<PT> points)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  int s = points.size();
+  std::vector<Point> vec;
+  for(int i=0;i<s;i++)
+    {
+      vec.push_back(*find_point(e, points[i]));
+    }
+  return add_polygon2(e, new BuildOffsets(coll, vec),1);  
 }

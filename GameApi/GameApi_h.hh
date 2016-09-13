@@ -529,6 +529,7 @@ struct EnvImpl
   std::vector<MatrixArray*> matrix_arrays;
   std::vector<Curve<Matrix>*> matrix_curves;
   std::vector<PlaneShape*> plane_shapes;
+  std::vector<SkeletalNode*> skeletals;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -799,6 +800,7 @@ struct FaceCollPolyHandle : public PolyHandle
 //
 // add functions
 //
+GameApi::SA add_skeletal(GameApi::Env &e, SkeletalNode *n);
 GameApi::PP add_plane_shape(GameApi::Env &e, PlaneShape *shape);
 GameApi::MC add_matrix_curve(GameApi::Env &e, Curve<Matrix> *curve);
 GameApi::MS add_matrix_array(GameApi::Env &e, MatrixArray *arr);
@@ -883,6 +885,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+SkeletalNode *find_skeletal(GameApi::Env &e, SkeletalNode *n);
 PlaneShape *find_plane_shape(GameApi::Env &e, GameApi::PP pp);
 Curve<Matrix> *find_matrix_curve(GameApi::Env &e, GameApi::MC m);
 MatrixArray *find_matrix_array(GameApi::Env &e, GameApi::MS m);

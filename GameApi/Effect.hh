@@ -67,7 +67,8 @@ enum AttribId
     AttrInternalNY_Y,
     AttrInternalNY_Z,
     AttrFace,
-    AttrFrame
+    AttrFrame,
+    AttrPart
   };
 
 
@@ -6270,8 +6271,11 @@ public:
   }
   int AttribI(int face, int point, int id) const 
   {
+    if (id==AttrPart)
+      {
+	return faces_num[face];
+      }
     return vec[faces_num[face]]->AttribI(faces_cache[face], point, id);
-
   }
 
   virtual int NumTextures() const 

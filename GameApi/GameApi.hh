@@ -998,6 +998,17 @@ private:
   Env &e;
 };
 
+class Skeletal
+{
+public:
+  Skeletal(Env &e) : e(e) { }
+  SA root(PT absolute_pos);
+  SA node(SA parent, MN matrix, PT point_offset);
+  ML sa_bind(std::vector<SA> pos, std::vector<P> vec);
+private:
+  Env &e;
+};
+
 class MovementNode
 {
 public:
@@ -1022,6 +1033,9 @@ public:
   void set_matrix(MN n, M m);
   M get_matrix(MN n, float time);
   ML move_ml(EveryApi &ev, ML ml, MN mn);
+  ML move_x_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x);
+  ML move_y_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_y, float end_y);
+  ML move_z_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_z, float end_z);
   ML move_ml_array(EveryApi &ev, std::vector<ML> ml, std::vector<MN> mn);
   ML enable_ml(EveryApi &ev, ML ml, float start_time, float end_time);
   ML key_event(EveryApi &ev, ML ml, MN mn, int type, int ch, int button, float duration);
@@ -1598,6 +1612,8 @@ public:
 
   IMPORT P skeletal_anim(P p, PT p_0, PT p_1, PT n_0, PT n_1);
 
+  IMPORT P build_offsets(P p, std::vector<PT> vec);
+
   IMPORT P or_elem(P p1, P p2);
   IMPORT P or_array(P *array, int size);
   IMPORT P or_array2(std::vector<P> vec);
@@ -1684,6 +1700,7 @@ public:
   IMPORT void update_vertex_array_no_memory(VA va, P p);
   IMPORT ML update_vertex_array_ml(VA va, P p, bool keep=false);
   IMPORT VA create_vertex_array(P p, bool keep=false); // slow
+  IMPORT VA create_vertex_array_attribs(P p, bool keep,std::vector<int> attribs, std::vector<int> attribi); // slow
   IMPORT void render_vertex_array(VA va); // fast
   IMPORT void prepare_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh);
   IMPORT void render_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh); // fast
@@ -1698,6 +1715,7 @@ public:
   IMPORT ML toon_shader(EveryApi &ev, ML mainloop);
   IMPORT ML texture_shader(EveryApi &ev, ML mainloop);
   IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop);
+  IMPORT ML skeletal_shader(EveryApi &ev, ML mainloop);
   IMPORT void explode(VA va, PT pos, float dist);
   //IMPORT int access_point_count(VA va, bool triangle);
   //IMPORT float *access_points(VA va, bool triangle, int face, int point);
@@ -2404,6 +2422,7 @@ public:
   US v_colour(US us);
   US v_blur(US us);
   US v_dist_field_mesh(US us, SFO sfo);
+  US v_skeletal(US us);
 
   US f_empty(bool transparent);
   US f_diffuse(US us);

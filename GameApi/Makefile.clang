@@ -19,14 +19,25 @@
 #
 
 
-CFiles=	Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
+CFiles=		Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
 	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc \
 	Widgets.cc Category.cc Plane.cc Coordinates.cc Triangle.cc Game.cc \
 	Editor.cc Web.cc Functions.cc ShaderExpr.cc Font.cc FontEditor.cc \
 	GameApi.cc GameApiTest.cc Games.cc HierarchyObject.cc Physics.cc \
         GameApiTest2.cc State.cc Serialize.cc KeyFrameEditor.cc Parser.cc \
-	FreeType.cc VertexArray.cc StateChange.cc DistanceObject.cc GameRunner.cc
+	FreeType.cc VertexArray.cc StateChange.cc DistanceObject.cc GameRunner.cc \
+	GameApi_an.cc GameApi_bm.cc GameApi_co.cc GameApi_dr.cc GameApi_ev.cc \
+	GameApi_ex.cc GameApi_fbo.cc GameApi_f.cc GameApi_fn.cc \
+	GameApi_fnt.cc GameApi_gr.cc GameApi_gui.cc GameApi_lay.cc \
+	GameApi_li.cc GameApi_main.cc GameApi_mx.cc GameApi_pc.cc \
+	GameApi_phy.cc GameApi_pla.cc GameApi_pl.cc GameApi_pt.cc \
+	GameApi_pts.cc GameApi_sh.cc GameApi_shm.cc GameApi_sm.cc \
+        GameApi_spa.cc GameApi_sp.cc GameApi_st.cc GameApi_su.cc \
+        GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \
+        GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
+        GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc \
+	GameApi_imp.cc
 
 CFiles2 = Main.cc
 
@@ -72,8 +83,8 @@ INC9WIN = "C:\Program Files (x86)\mingw-w64\i686-4.9.2-posix-dwarf-rt_v4-rev2\mi
 INCAWIN = "C:\Program Files (x86)\mingw-w64\i686-4.9.2-posix-dwarf-rt_v4-rev2\mingw32\i686-w64-mingw32\include"
 INCBWIN = d:\cvs\SDL2_mixer-2.0.0\i686-w64-mingw32/include/sdl2
 
-CCFLAGS = -g -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INC8WIN) -I$(INC9WIN) -I$(INCAWIN) -Wignored-attributes -DGAMEAPI_COMPILATION
-CC2FLAGS = -g -std=c++11 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -I$(INC8WIN) -I$(INC9WIN) -I$(INCAWIN) -I$(INCBWIN) -DGLEW_STATIC -stdlib=libc++ -Wignored-attributes -DGAMEAPI_COMPILATION
+CCFLAGS = -g -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INC8WIN) -I$(INC9WIN) -I$(INCAWIN) -Wignored-attributes -DGAMEAPI_COMPILATION -pthread
+CC2FLAGS = -g -std=c++11 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -I$(INC8WIN) -I$(INC9WIN) -I$(INCAWIN) -I$(INCBWIN) -DGLEW_STATIC -stdlib=libc++ -Wignored-attributes -DGAMEAPI_COMPILATION -pthread
 #`pkg-config gtkmm-2.4 --cflags`
 
 
@@ -97,7 +108,7 @@ libGameApi.so: $(GCHFiles) $(OFiles) Makefile
 	@clang++ -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lGLEW -lfreetype -lstdc++ 
 #`pkg-config gtkmm-2.4 --libs` 
 
-libGameApi.dll: $(GCH2Files) $(O2Files) Makefile.clang glew.o
+libGameApi.dll: $(O2Files) Makefile.clang glew.o
 	@echo clang++ libGameApi.dll
 	clang++ -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L. -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadGC2
 
