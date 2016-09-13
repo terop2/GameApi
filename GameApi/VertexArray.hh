@@ -80,22 +80,26 @@ public:
   int poly2_normal_count(int id, int i) const { return m_set[id]->poly_normals[i].size(); }
 #endif
 
-#if 0
+#if 1
   int tri_attrib_count(int id, int attrib_id) const { return m_set[id]->tri_attribs[attrib_id].size(); }
   const float *tri_attrib_polys(int id, int attrib_id) const { return tri_attrib_count(id,attrib_id) ? &m_set[id]->tri_attribs[attrib_id][0] : NULL; }
   int quad_attrib_count(int id, int attrib_id) const { return m_set[id]->quad_attribs[attrib_id].size(); }
   const float *quad_attrib_polys(int id, int attrib_id) const { return quad_attrib_count(id, attrib_id) ? &m_set[id]->quad_attribs[attrib_id][0] : NULL; }
   int poly_attrib_count(int id, int attrib_id) const { return m_set[id]->poly_attribs[attrib_id].size(); }
+#if 0
   int poly2_attrib_count(int id, int attrib_id, int i) const { return m_set[id]->poly_attribs[attrib_id][i].size(); }
   const float *poly_attrib_polys(int id, int attrib_id, int i) const { return poly2_attrib_count(id, attrib_id, i) ? &m_set[id]->poly_attribs[attrib_id][i][0] : NULL; }
+#endif
 
   int tri_attribi_count(int id, int attrib_id) const { return m_set[id]->tri_attribsi[attrib_id].size(); }
   const int *tri_attribi_polys(int id, int attrib_id) const { return tri_attribi_count(id,attrib_id) ? &m_set[id]->tri_attribsi[attrib_id][0] : NULL; }
   int quad_attribi_count(int id, int attrib_id) const { return m_set[id]->quad_attribsi[attrib_id].size(); }
   const int *quad_attribi_polys(int id, int attrib_id) const { return quad_attribi_count(id,attrib_id) ? &m_set[id]->quad_attribsi[attrib_id][0] : NULL; }
   int poly_attribi_count(int id, int attrib_id) const { return m_set[id]->poly_attribsi[attrib_id].size(); }
+#if 0
   int poly2_attribi_count(int id, int attrib_id, int i) const { return m_set[id]->poly_attribsi[attrib_id][i].size(); }
   const int *poly_attribi_polys(int id, int attrib_id, int i) const { return poly2_attribi_count(id, attrib_id, i) ? &m_set[id]->poly_attribsi[attrib_id][i][0] : NULL; }
+#endif
 
 #endif
 
@@ -146,6 +150,15 @@ public:
     std::vector<Point> tri_texcoord;
     std::vector<Point> quad_texcoord;
     std::vector<Point> poly_texcoord;
+
+    std::map<int,std::vector<float> > tri_attribs;
+    std::map<int,std::vector<float> > quad_attribs;
+    std::map<int,std::vector<float> > poly_attribs;
+
+    std::map<int,std::vector<int> > tri_attribsi;
+    std::map<int,std::vector<int> > quad_attribsi;
+    std::map<int,std::vector<int> > poly_attribsi;
+
   };
 public:
   static void append_to_polys(VertexArraySet::Polys &target, const VertexArraySet::Polys &source);
@@ -236,7 +249,7 @@ public:
 	    //std::cout << "PN!" << i << std::endl;
 	    v[j] = coll.PointNormal(i,j);
 
-#if 0
+#if 1
 	    for (int k=0;k<(int)attribs.size();k++)
 	      {
 		a[k][j] = coll.Attrib(i,j,attribs[k]);
@@ -262,7 +275,7 @@ public:
 	//  std::cout << "push_n!" << i << std::endl
 	s.push_normal(0, w, &v[0]);
 
-#if 0
+#if 1
 	for (int k=0;k<(int)attribs.size();k++)
 	  s.push_attrib(0, k, w, &a[k][0]);
 	for (int k=0;k<(int)attribsi.size();k++)
@@ -281,7 +294,7 @@ private:
   Point p[200];
   Point p2[200];
   Vector v[200];
-#if 0
+#if 1
   float a[30][200];
   int ai[30][200];
 #endif
@@ -298,13 +311,15 @@ struct ThreadInfo
   FaceCollectionVertexArray2 *va;
   int start_range;
   int end_range;
+  std::vector<int> attrib;
+  std::vector<int> attribi;
 };
 void *thread_func(void *data);
 class ThreadedPrepare
 {
 public:
   ThreadedPrepare(FaceCollection *faces) : faces(faces) { }
-  int push_thread(int start_range, int end_range)
+  int push_thread(int start_range, int end_range, std::vector<int> attrib=std::vector<int>(), std::vector<int> attribi=std::vector<int>())
   {
     //std::cout << "Thread " << start_range << " " << end_range << std::endl;
     VertexArraySet *s = new VertexArraySet;
@@ -317,6 +332,8 @@ public:
     info->va = va;
     info->start_range = start_range;
     info->end_range = end_range;
+    info->attrib = attrib;
+    info->attribi = attribi;
     ti.push_back(info);
 
     pthread_attr_t attr;

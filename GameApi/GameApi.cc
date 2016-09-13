@@ -326,6 +326,15 @@ GameApi::PP add_plane_shape(GameApi::Env &e, PlaneShape *sh)
   return im;
 
 }
+GameApi::SA add_skeletal(GameApi::Env &e, SkeletalNode *n)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->skeletals.push_back(n);
+  GameApi::SA im;
+  im.id = env->skeletals.size()-1;
+  return im;
+
+}
 GameApi::MC add_matrix_curve(GameApi::Env &e, Curve<Matrix> *m)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1069,6 +1078,12 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   Array<int,bool> *enable = info.enable_obj_array;
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
+}
+SkeletalNode *find_skeletal(GameApi::Env &e, GameApi::SA n)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->skeletals[n.id];
+
 }
 PlaneShape *find_plane_shape(GameApi::Env &e, GameApi::PP p)
 {
@@ -2551,6 +2566,62 @@ private:
   std::vector<float> start_times;
   float duration;
 };
+class KeyMoveML : public MainLoopItem
+{
+public:
+  KeyMoveML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, int key_forward, int key_backward, float speed, bool x, bool y, bool z, float start, float end) : e(e), ev(ev), next(next),forward(key_forward), backward(key_backward),speed(speed),x(x),y(y),z(z),start(start),end(end) { 
+    move_forward=false;
+    move_backward=false;
+    pos = 0.0;
+  }
+  int shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &eve)
+  {
+    if (eve.type==0x300 && eve.ch==forward) { move_forward=true; }
+    if (eve.type==0x301 && eve.ch==forward) { move_forward=false; }
+    if (eve.type==0x300 && eve.ch==backward) { move_backward=true; }
+    if (eve.type==0x301 && eve.ch==backward) { move_backward=false; }
+    next->handle_event(eve);
+  }
+  void execute(MainLoopEnv &env)
+  {
+    MainLoopEnv e = env;
+    if (move_forward) { pos+=speed;
+      if (pos>end) {pos=end; }
+    }
+    if (move_backward) { pos-=speed; 
+      if (pos<start) { pos=start; }
+    }
+    if (x) {
+      Matrix m = Matrix::Translate(pos,0.0,0.0);
+      e.in_MV = e.in_MV * m;
+    }
+    if (y) {
+      Matrix m = Matrix::Translate(0.0,pos,0.0);
+      e.in_MV = e.in_MV * m;
+
+    }
+    if (z) {
+      Matrix m = Matrix::Translate(0.0,0.0,pos);
+      e.in_MV = e.in_MV * m;
+
+    }
+    next->execute(e);
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  int forward;
+  int backward;
+  bool move_forward;
+  bool move_backward;
+  float pos;
+  float speed;
+  bool x,y,z;
+  float start,end;
+};
+
 class MoveML : public MainLoopItem
 {
 public:
@@ -2696,6 +2767,21 @@ GameApi::ML GameApi::MovementNode::move_ml(EveryApi &ev, GameApi::ML ml, GameApi
 {
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new MoveML(e,ev,item, move));
+}
+GameApi::ML GameApi::MovementNode::move_x_ml(EveryApi &ev, GameApi::ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new KeyMoveML(e,ev,item,key_forward, key_backward,speed,true,false,false,start_x, end_x));
+}
+GameApi::ML GameApi::MovementNode::move_y_ml(EveryApi &ev, GameApi::ML ml, int key_forward, int key_backward, float speed, float start_y, float end_y)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new KeyMoveML(e,ev,item,key_forward, key_backward,speed,false,true,false,start_y,end_y));
+}
+GameApi::ML GameApi::MovementNode::move_z_ml(EveryApi &ev, GameApi::ML ml, int key_forward, int key_backward, float speed, float start_z, float end_z)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new KeyMoveML(e,ev,item,key_forward, key_backward,speed,false,false,true,start_z,end_z));
 }
 GameApi::ML GameApi::MovementNode::enable_ml(EveryApi &ev, GameApi::ML ml, float start_time, float end_time)
 {
@@ -3018,6 +3104,22 @@ public:
 private:
   GameApi::EveryApi &ev;
 };
+class SkeletalMaterial : public MaterialForward
+{
+public:
+  SkeletalMaterial(GameApi::EveryApi &ev) : ev(ev) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+  }
+private:
+  GameApi::EveryApi &ev;
+};
 
 class TextureArrayMaterial : public MaterialForward
 {
@@ -3081,8 +3183,8 @@ public:
   virtual GameApi::ML mat2(GameApi::P p) const
   {
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
-    GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
-    GameApi::VA I12=ev.polygon_api.create_vertex_array(I11,true);
+    //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
     GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
     GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
     GameApi::TXID I15=ev.texture_api.prepare(I14);
@@ -3094,8 +3196,8 @@ public:
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
-    GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
-    GameApi::VA I12=ev.polygon_api.create_vertex_array(I11,true);
+    //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
     GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
     GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
     GameApi::TXID I15=ev.texture_api.prepare(I14);
@@ -3108,8 +3210,8 @@ public:
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
-    GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
-    GameApi::VA I12=ev.polygon_api.create_vertex_array(I11,true);
+    //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
     GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
     GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
     GameApi::TXID I15=ev.texture_api.prepare(I14);
@@ -3270,6 +3372,7 @@ GameApi::MT GameApi::MaterialsApi::web(EveryApi &ev, MT nxt)
   Material *mat = find_material(e, nxt);
   return add_material(e, new WebMaterial(ev,mat));
 }
+
 
 #if 0
 GameApi::ML GameApi::MaterialsApi::web(EveryApi &ev, P p)
@@ -3827,7 +3930,7 @@ public:
     //out+=");\n";
     return out;
   }
-  std::string define_strings() const { return ""; } // TODO, MAYBE ASK DEFINE STRINGS FROM SFO
+  std::string define_strings() const { return next->define_strings(); } // TODO, MAYBE ASK DEFINE STRINGS FROM SFO
 private:
   ShaderCall *next;
   ShaderModule *mod;
@@ -3838,6 +3941,11 @@ GameApi::US GameApi::UberShaderApi::v_dist_field_mesh(US us, SFO sfo)
   ShaderCall *next = find_uber(e,us);
   ShaderModule *mod = find_shader_module(e, sfo);
   return add_uber(e, new V_DistFieldMesh(next,mod));
+}
+GameApi::US GameApi::UberShaderApi::v_skeletal(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("skeletal", next, "SKELETAL"));
 }
 
 
@@ -4390,3 +4498,59 @@ GameApi::MT GameApi::MaterialsApi::dist_field_mesh(EveryApi &ev, SFO sfo, MT nex
   Material *nxt = find_material(e, next);
   return add_material(e, new DistanceFieldMesh(ev,sfo2,nxt));
 }
+
+class SkeletalRoot : public SkeletalNode
+{
+public:
+  SkeletalRoot(Point p) : p(p) { }
+  Point pos(float time) const { return p; }
+  Matrix mat(float time) const { return Matrix::Identity(); }
+private:
+  Point p;
+};
+
+GameApi::SA GameApi::Skeletal::root(PT pos)
+{
+  Point *pt = find_point(e, pos);
+  return add_skeletal(e, new SkeletalRoot(*pt));
+}
+class SkeletalImpl : public SkeletalNode
+{
+public:
+  SkeletalImpl(SkeletalNode *sk, Movement *mn, Point pt) : sk(sk), mn(mn), pt(pt) { }
+  virtual Matrix mat(float time) const
+  {
+    return mn->get_whole_matrix(time);
+  }
+  virtual Point pos(float time) const
+  {
+    Point pt0 = sk->pos(time);
+    Matrix m = mat(time);
+    return pt0 + pt * m;
+  }
+private:
+  SkeletalNode *sk;
+  Movement *mn;
+  Point pt;
+}; 
+GameApi::SA GameApi::Skeletal::node(SA parent, MN matrix, PT point_offset)
+{
+  SkeletalNode *sk = find_skeletal(e, parent);
+  Movement *mn = find_move(e, matrix);
+  Point *pt = find_point(e, point_offset);
+  return add_skeletal(e, new SkeletalImpl(sk, mn, *pt));
+}
+#if 0
+class SA_Bind : public MainLoopItem
+{
+public:
+  SA_Bind(std::vector<SkeletalNode*> sk, std::vector
+  void execute(MainLoopEnv &e)
+  {
+  }
+};
+  GameApi::ML GameApi::Skeletal::sa_bind(EveryApi &ev, std::vector<SA> pos, std::vector<P> vec)
+{
+  GameApi::P obj = ev.polygon_api.or_array(
+}
+#endif

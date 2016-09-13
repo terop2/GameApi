@@ -502,5 +502,11 @@ public:
   virtual float SizeY() const=0;
 };
 
+class SkeletalNode
+{
+public:
+  virtual Matrix mat(float time) const=0;
+  virtual Point pos(float time) const=0;
+};
 
 #endif

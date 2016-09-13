@@ -222,7 +222,7 @@ void VertexArraySet::push_normal(int id, int num, Vector *points)
 
 void VertexArraySet::push_attrib(int id, int attrib_id, int num, float *points)
 {
-#if 0
+#if 1
   Polys *p = m_set[id];
   if (!p)
     {
@@ -237,10 +237,10 @@ void VertexArraySet::push_attrib(int id, int attrib_id, int num, float *points)
     }
   else if (num==4)
     {
-      std::cout << "Attrib1: " << points[0] << std::endl;
-      std::cout << "Attrib2: " << points[1] << std::endl;
-      std::cout << "Attrib3: " << points[2] << std::endl;
-      std::cout << "Attrib4: " << points[3] << std::endl;
+      //std::cout << "Attrib1: " << points[0] << std::endl;
+      //std::cout << "Attrib2: " << points[1] << std::endl;
+      //std::cout << "Attrib3: " << points[2] << std::endl;
+      //std::cout << "Attrib4: " << points[3] << std::endl;
       p->quad_attribs[attrib_id].push_back(points[0]);
       p->quad_attribs[attrib_id].push_back(points[1]);
       p->quad_attribs[attrib_id].push_back(points[2]);
@@ -250,19 +250,21 @@ void VertexArraySet::push_attrib(int id, int attrib_id, int num, float *points)
     }
   else
     {
+#if 0
       p->poly_attribs[attrib_id].push_back(std::vector<float>());
       int s = p->poly_attribs[attrib_id].size()-1;
       for(int i=0;i<num;i++)
 	{
 	  p->poly_attribs[attrib_id][s].push_back(points[i]);
 	}
+#endif
     }
 #endif
 }
 
 void VertexArraySet::push_attribi(int id, int attrib_id, int num, int *points)
 {
-#if 0
+#if 1
   Polys *p = m_set[id];
   if (!p)
     {
@@ -286,12 +288,14 @@ void VertexArraySet::push_attribi(int id, int attrib_id, int num, int *points)
     }
   else
     {
+#if 0
       p->poly_attribsi[attrib_id].push_back(std::vector<int>());
       int s = p->poly_attribsi[attrib_id].size()-1;
       for(int i=0;i<num;i++)
 	{
 	  p->poly_attribsi[attrib_id][s].push_back(points[i]);
 	}
+#endif
     }
 #endif
 }
@@ -1162,7 +1166,7 @@ void RenderVertexArray2::render(int id, int attr1, int attr2, int attr3, int att
 void *thread_func(void *data)
 {
   ThreadInfo *ti = (ThreadInfo*)data;
-  ti->va->copy(ti->start_range, ti->end_range);
+  ti->va->copy(ti->start_range, ti->end_range,ti->attrib, ti->attribi);
   return 0; 
 }
  

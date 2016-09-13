@@ -4378,6 +4378,24 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "ML", "MN" },
 			 { "ev", "", "" },
 			 "ML", "move_api", "move_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::move_x_ml,
+			 "move_x_ml",
+			 { "ev", "ml", "key_forward", "key_backward", "speed", "start_x", "end_x" },
+			 { "EveryApi&", "ML", "int", "int", "float","float", "float" },
+			 { "ev", "", "100", "97", "5.0","-100.0", "100.0" },
+			 "ML", "move_api", "move_x_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::move_y_ml,
+			 "move_y_ml",
+			 { "ev", "ml", "key_forward", "key_backward", "speed","start_y", "end_y" },
+			 { "EveryApi&", "ML", "int", "int", "float","float", "float" },
+			 { "ev", "", "119", "115", "5.0","-100.0","100.0" },
+			 "ML", "move_api", "move_y_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::move_z_ml,
+			 "move_z_ml",
+			 { "ev", "ml", "key_forward", "key_backward", "speed","start_z", "end_z" },
+			 { "EveryApi&", "ML", "int", "int", "float","float","float" },
+			 { "ev", "", "107", "109", "5.0","-100.0","100.0" },
+			 "ML", "move_api", "move_z_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::enable_ml,
 			 "enable_ml",
 			 { "ev", "ml", "start_time", "end_time" },
@@ -4677,6 +4695,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P" },
 			 { "" },
 			 "P", "polygon_api", "recalculate_normals"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::build_offsets,
+			 "p_offsets",
+			 { "orig", "vec" },
+			 { "P", "[PT]" },
+			 { "", "" },
+			 "P", "polygon_api", "build_offsets"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_grayscale,
 			 "color_grayscale",
 			 { "orig" },

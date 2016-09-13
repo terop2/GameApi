@@ -81,8 +81,8 @@ INC7WIN = d:\cvs\pthread\pre-built.2\include
 EMINC1 = f:\emscripten\1.30.0\system\include\SDL
 EMINC2 = f:\emscripten\1.30.0\system\include
 
-CCFLAGS = -O3 -std=c++11 -Wall -Wno-warn-absolute-paths -Wunused-private-field -Wmismatched-tags
-CC2FLAGS = -std=c++11 -Wall -O3 -DGLEW_STATIC -Wno-warn-absolute-paths -I$(EMINC1) -I$(EMINC2)
+CCFLAGS = -O3 -std=c++11 -Wall -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags
+CC2FLAGS = -std=c++11 -Wall -O3 -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2)
 #`pkg-config gtkmm-2.4 --cflags`
 
 
@@ -132,11 +132,11 @@ CCWIN = em++
 #mingw32-g++
 
 $(DFiles): objs/%.d: %.cc
-	$(CCWIN) -M $(CCFLAGS) $(CC2FLAGS) $< \
+	@$(CCWIN) -M $(CCFLAGS) $(CC2FLAGS) $< \
 	|sed 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
 
 $(D2Files): objs/%.d2: %.cc
-	$(CCWIN) -M $(CC2FLAGS) $< \
+	@$(CCWIN) -M $(CC2FLAGS) $< \
 	|sed 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
 
 $(OFiles): objs/%.bc : %.cc
