@@ -290,6 +290,27 @@ Matrix Program::get_matrix_var(const std::string &name)
   return m;
   
 }
+void Program::set_var_matrix(const std::string &name, const std::vector<float> &v)
+{
+  GLint loc = glGetUniformLocation(priv->program, name.c_str());
+  glUniformMatrix4fv(loc, v.size()/16, GL_FALSE, &v[0]);
+
+#if 0
+  int s = v.size()/16;
+  for(int i=0;i<s;i++)
+    {
+      const float *ptr = &v[i*16];
+      std::stringstream ss;
+      ss << name << "[" << i << "]";
+    }
+
+#endif
+}
+void Program::set_var(const std::string &name, const std::vector<Point> &v)
+{
+  GLint loc = glGetUniformLocation(priv->program, name.c_str());
+  glUniform3fv(loc, v.size(), (float*)&v[0]);
+}
 void Program::set_var(const std::string &name, Matrix m)
 {
   GLint loc = glGetUniformLocation(priv->program, name.c_str());
@@ -1044,17 +1065,17 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#ifdef SKELETAL\n"
 "in int bone_id;\n"
-"mat4 bones[50];\n"
-"vec3 bone_pos[50];\n"
+"uniform mat4 bones[50];\n"
+"uniform vec3 bone_pos[50];\n"
 "#endif\n"
     //"flat out vec4 ex_FlatColor;\n"
 "//M:\n"
 "#ifdef SKELETAL\n"
 "vec4 skeletal(vec4 pos)\n"
 "{\n"
-"    mat4 m = bones[bone_id];\n"
 "    vec3 p = bone_pos[bone_id];\n"
-"    vec4 p2 = pos * m;\n"
+    "    mat4 m = bones[bone_id];\n" // TODO, how to pass mat4 to vertex shader
+"    vec4 p2 = pos*m;\n"
 "    vec4 p3 = p2 + vec4(p,0.0);\n"
 "    return p3;\n"
 "}\n"

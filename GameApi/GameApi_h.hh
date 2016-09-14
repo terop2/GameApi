@@ -885,7 +885,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
-SkeletalNode *find_skeletal(GameApi::Env &e, SkeletalNode *n);
+SkeletalNode *find_skeletal(GameApi::Env &e, GameApi::SA n);
 PlaneShape *find_plane_shape(GameApi::Env &e, GameApi::PP pp);
 Curve<Matrix> *find_matrix_curve(GameApi::Env &e, GameApi::MC m);
 MatrixArray *find_matrix_array(GameApi::Env &e, GameApi::MS m);

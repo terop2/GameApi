@@ -1004,7 +1004,7 @@ public:
   Skeletal(Env &e) : e(e) { }
   SA root(PT absolute_pos);
   SA node(SA parent, MN matrix, PT point_offset);
-  ML sa_bind(std::vector<SA> pos, std::vector<P> vec);
+  ML skeletal_bind(EveryApi &ev, std::vector<P> vec, std::vector<PT> vec2, std::vector<SA> sa_vec);
 private:
   Env &e;
 };
@@ -1715,7 +1715,7 @@ public:
   IMPORT ML toon_shader(EveryApi &ev, ML mainloop);
   IMPORT ML texture_shader(EveryApi &ev, ML mainloop);
   IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop);
-  IMPORT ML skeletal_shader(EveryApi &ev, ML mainloop);
+  IMPORT ML skeletal_shader(EveryApi &ev, ML mainloop, std::vector<SA> vec);
   IMPORT void explode(VA va, PT pos, float dist);
   //IMPORT int access_point_count(VA va, bool triangle);
   //IMPORT float *access_points(VA va, bool triangle, int face, int point);
@@ -2487,6 +2487,8 @@ public:
   IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z, float k);
   IMPORT void set_var(GameApi::SH shader, std::string name, int val);
   IMPORT void set_var(GameApi::SH shader, std::string name, M matrix);
+  IMPORT void set_var(GameApi::SH shader, std::string name, const std::vector<M> &m, int num);
+  IMPORT void set_var(GameApi::SH shader, std::string name, const std::vector<PT> &v);
   IMPORT M get_matrix_var(GameApi::SH shader, std::string name);
 private:
   ShaderApi(const ShaderApi&);
@@ -2578,7 +2580,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -2629,6 +2631,7 @@ struct EveryApi
   UberShaderApi uber_api;
   CurveApi curve_api;
   MatricesApi matrices_api;
+  Skeletal skeletal_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);

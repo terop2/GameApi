@@ -3081,7 +3081,7 @@ private:
 class SkeletalShader : public MainLoopItem
 {
 public:
-  SkeletalShader(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next) : env(env), ev(ev), next(next) 
+  SkeletalShader(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, std::vector<SkeletalNode*> vec) : env(env), ev(ev), next(next), vec(vec) 
   {
     firsttime = true;
   }
@@ -3123,7 +3123,7 @@ public:
     //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
-	GameApi::SH sh;
+	//GameApi::SH sh;
 	sh.id = sh_id;
 	ev.shader_api.use(sh);
 
@@ -3132,12 +3132,32 @@ public:
     GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
     GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
     GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+    ev.shader_api.use(sh);
     ev.shader_api.set_var(sh, "in_MV", m);
     ev.shader_api.set_var(sh, "in_T", m1);
     ev.shader_api.set_var(sh, "in_N", m2);
     float time = ee.time;
     ev.shader_api.set_var(sh, "time", time);
-    
+
+    std::vector<GameApi::M> vec1;
+    std::vector<GameApi::PT> vec2;
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	//std::cout << time << std::endl;
+	Matrix mm = vec[i]->mat(time);
+	//std::cout << mm << std::endl;
+	GameApi::M m = add_matrix2(env, mm);
+	Point ppt = vec[i]->pos(time);
+	//std::cout << "Point: " << ppt << std::endl;
+	GameApi::PT pt = add_point(env, ppt.x, ppt.y, ppt.z); // TODO MEM LEAK ON POINTS
+	vec1.push_back(m);
+	vec2.push_back(pt); 
+      }
+
+    ev.shader_api.set_var(sh, "bones", vec1,50);
+    ev.shader_api.set_var(sh, "bone_pos", vec2);
+
     next->execute(ee);
 
   }
@@ -3148,6 +3168,7 @@ private:
   MainLoopItem *next;
   GameApi::SH sh;
   bool firsttime;
+  std::vector<SkeletalNode*> vec;
 };
 
 class DistFieldMeshShader : public MainLoopItem
@@ -3195,7 +3216,7 @@ public:
     //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
-	GameApi::SH sh;
+	//GameApi::SH sh;
 	sh.id = sh_id;
 	ev.shader_api.use(sh);
 
@@ -3286,7 +3307,7 @@ public:
     //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
-	GameApi::SH sh;
+	//GameApi::SH sh;
 	sh.id = sh_id;
 	ev.shader_api.use(sh);
 
@@ -3361,10 +3382,16 @@ EXPORT GameApi::ML GameApi::PolygonApi::toon_shader(EveryApi &ev, ML mainloop)
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new DistFieldMeshShader(e,ev,item,sfo));
 }
-EXPORT GameApi::ML GameApi::PolygonApi::skeletal_shader(EveryApi &ev, ML mainloop)
+EXPORT GameApi::ML GameApi::PolygonApi::skeletal_shader(EveryApi &ev, ML mainloop, std::vector<SA> vec)
 {
+  std::vector<SkeletalNode*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_skeletal(e,vec[i]));
+    }
   MainLoopItem *item = find_main_loop(e, mainloop);
-  return add_main_loop(e, new SkeletalShader(e,ev,item));
+  return add_main_loop(e, new SkeletalShader(e,ev,item,vec2));
 }
 
 EXPORT GameApi::ML GameApi::PolygonApi::shading_shader(EveryApi &ev, ML mainloop,
