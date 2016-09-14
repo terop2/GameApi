@@ -3104,22 +3104,6 @@ public:
 private:
   GameApi::EveryApi &ev;
 };
-class SkeletalMaterial : public MaterialForward
-{
-public:
-  SkeletalMaterial(GameApi::EveryApi &ev) : ev(ev) { }
-  virtual GameApi::ML mat2(GameApi::P p) const
-  {
-  }
-  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
-  {
-  }
-  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
-  {
-  }
-private:
-  GameApi::EveryApi &ev;
-};
 
 class TextureArrayMaterial : public MaterialForward
 {
@@ -4540,6 +4524,20 @@ GameApi::SA GameApi::Skeletal::node(SA parent, MN matrix, PT point_offset)
   Point *pt = find_point(e, point_offset);
   return add_skeletal(e, new SkeletalImpl(sk, mn, *pt));
 }
+GameApi::ML GameApi::Skeletal::skeletal_bind(EveryApi &ev, std::vector<P> vec, std::vector<PT> vec2, std::vector<SA> savec)
+{
+  GameApi::P pp = ev.polygon_api.or_array2(vec);
+  GameApi::P pp2 = ev.polygon_api.build_offsets(pp, vec2);
+
+  std::vector<int> vecattribs;
+  vecattribs.push_back(AttrPart);
+  GameApi::VA va = ev.polygon_api.create_vertex_array_attribs(pp2,false,std::vector<int>(), vecattribs);
+  GameApi::ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+  
+  GameApi::ML ml2 = ev.polygon_api.skeletal_shader(ev, ml, savec);
+  return ml2;
+}
+
 #if 0
 class SA_Bind : public MainLoopItem
 {

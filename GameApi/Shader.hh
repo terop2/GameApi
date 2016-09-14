@@ -96,6 +96,8 @@ public: // uniform variable
   void set_var(const std::string &name, float *array, int count);
   void set_var(const std::string &name, int *array, int count);
   void set_var(const std::string &name, int val);
+  void set_var_matrix(const std::string &name, const std::vector<float> &v);
+  void set_var(const std::string &name, const std::vector<Point> &v);
   Matrix get_matrix_var(const std::string &name);
   void bind_attrib(int num, std::string name);
   void bind_frag(int num, std::string name);

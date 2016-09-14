@@ -117,6 +117,7 @@ GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format,
   bind_attrib_1(sh, 3, "in_TexCoord");
   bind_attrib_1(sh, 4, "in_Position2");
   bind_attrib_1(sh, 5, "in_InstPos");
+  bind_attrib_1(sh, 6, "bone_id");
   link_1(sh);
   use_1(sh);
   set_default_projection_1(sh, "in_P");
@@ -285,6 +286,36 @@ EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, M 
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->set_var(name, mat);
+}
+EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, const std::vector<PT> &m)
+{
+  std::vector<Point> v;
+  int s=m.size();
+  for(int i=0;i<s;i++)
+    {
+      v.push_back(*find_point(e,m[i]));
+    }
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[shader.id]);
+  prog->set_var(name, v);
+}
+EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, const std::vector<M> &m, int num)
+{
+
+  std::vector<float> v;
+  int s = m.size();
+  for(int i=0;i<s;i++)
+    {
+      Matrix mm = find_matrix(e,m[i]);
+      //std::cout << mm << std::endl;
+      for(int ii=0;ii<16;ii++)
+	v.push_back(mm.matrix[ii]);
+    }
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[shader.id]);
+  prog->set_var_matrix(name, v);
 }
 
 EXPORT void GameApi::ShaderApi::bindnames(GameApi::SH shader, 

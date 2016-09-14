@@ -86,20 +86,16 @@ public:
   int quad_attrib_count(int id, int attrib_id) const { return m_set[id]->quad_attribs[attrib_id].size(); }
   const float *quad_attrib_polys(int id, int attrib_id) const { return quad_attrib_count(id, attrib_id) ? &m_set[id]->quad_attribs[attrib_id][0] : NULL; }
   int poly_attrib_count(int id, int attrib_id) const { return m_set[id]->poly_attribs[attrib_id].size(); }
-#if 0
-  int poly2_attrib_count(int id, int attrib_id, int i) const { return m_set[id]->poly_attribs[attrib_id][i].size(); }
-  const float *poly_attrib_polys(int id, int attrib_id, int i) const { return poly2_attrib_count(id, attrib_id, i) ? &m_set[id]->poly_attribs[attrib_id][i][0] : NULL; }
-#endif
+  int poly2_attrib_count(int id, int attrib_id) const { return m_set[id]->poly_attribs[attrib_id].size(); }
+  const float *poly_attrib_polys(int id, int attrib_id) const { return poly2_attrib_count(id, attrib_id) ? &m_set[id]->poly_attribs[attrib_id][0] : NULL; }
 
   int tri_attribi_count(int id, int attrib_id) const { return m_set[id]->tri_attribsi[attrib_id].size(); }
   const int *tri_attribi_polys(int id, int attrib_id) const { return tri_attribi_count(id,attrib_id) ? &m_set[id]->tri_attribsi[attrib_id][0] : NULL; }
   int quad_attribi_count(int id, int attrib_id) const { return m_set[id]->quad_attribsi[attrib_id].size(); }
   const int *quad_attribi_polys(int id, int attrib_id) const { return quad_attribi_count(id,attrib_id) ? &m_set[id]->quad_attribsi[attrib_id][0] : NULL; }
   int poly_attribi_count(int id, int attrib_id) const { return m_set[id]->poly_attribsi[attrib_id].size(); }
-#if 0
-  int poly2_attribi_count(int id, int attrib_id, int i) const { return m_set[id]->poly_attribsi[attrib_id][i].size(); }
-  const int *poly_attribi_polys(int id, int attrib_id, int i) const { return poly2_attribi_count(id, attrib_id, i) ? &m_set[id]->poly_attribsi[attrib_id][i][0] : NULL; }
-#endif
+  int poly2_attribi_count(int id, int attrib_id) const { return m_set[id]->poly_attribsi[attrib_id].size(); }
+  const int *poly_attribi_polys(int id, int attrib_id) const { return poly2_attribi_count(id, attrib_id) ? &m_set[id]->poly_attribsi[attrib_id][0] : NULL; }
 
 #endif
 
@@ -187,6 +183,12 @@ private:
   int quad_count;
   int poly_count;
   unsigned int pos_buffer;
+  std::vector<unsigned int> attrib_buffer;
+  std::vector<unsigned int> attrib_buffer2;
+  std::vector<unsigned int> attrib_buffer3;
+  std::vector<unsigned int> attribi_buffer;
+  std::vector<unsigned int> attribi_buffer2;
+  std::vector<unsigned int> attribi_buffer3;
 };
 
 class RenderVertexArray2
@@ -255,9 +257,9 @@ public:
 		a[k][j] = coll.Attrib(i,j,attribs[k]);
 	      }
 
-	    for (int k=0;k<(int)attribs.size();k++)
+	    for (int k=0;k<(int)attribsi.size();k++)
 	      {
-		ai[k][j] = coll.AttribI(i,j,attribs[k]);
+		ai[k][j] = coll.AttribI(i,j,attribsi[k]);
 	      }
 #endif
 	    //std::cout << "COL!" << i << std::endl;
@@ -277,9 +279,9 @@ public:
 
 #if 1
 	for (int k=0;k<(int)attribs.size();k++)
-	  s.push_attrib(0, k, w, &a[k][0]);
+	  s.push_attrib(0, attribs[k], w, &a[k][0]);
 	for (int k=0;k<(int)attribsi.size();k++)
-	  s.push_attribi(0, k, w, &ai[k][0]);
+	  s.push_attribi(0, attribsi[k], w, &ai[k][0]);
 #endif
 	//  std::cout << "push_c!" << std::endl;
 	s.push_color(0, w, &c[0]);

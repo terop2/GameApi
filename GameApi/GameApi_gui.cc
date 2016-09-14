@@ -622,6 +622,7 @@ public:
     e.ch = -1;
     e.button = -1;
     left=false; right=false;
+    ev.mainloop_api.reset_time();
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
@@ -3479,6 +3480,7 @@ MACRO(GameApi::MT)
 MACRO(GameApi::C)
 MACRO(GameApi::MS)
 MACRO(GameApi::MC)
+MACRO(GameApi::SA)
 #undef MACRO
 
 
@@ -4378,6 +4380,24 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "ML", "MN" },
 			 { "ev", "", "" },
 			 "ML", "move_api", "move_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::skeletal_api, &GameApi::Skeletal::root,
+			 "sa_root",
+			 { "points" },
+			 { "PT" },
+			 { "" },
+			 "SA", "skeletal_api", "root"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::skeletal_api, &GameApi::Skeletal::node,
+			 "sa_node",
+			 { "parent", "matrix", "point_offset" },
+			 { "SA", "MN", "PT" },
+			 { "", "", "" },
+			 "SA", "skeletal_api", "node"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::skeletal_api, &GameApi::Skeletal::skeletal_bind,
+			 "skeletal_bind",
+			 { "ev", "model", "points", "movement" },
+			 { "EveryApi&", "[P]", "[PT]", "[SA]" },
+			 { "ev", "", "", "" },
+			 "ML", "skeletal_api", "skeletal_bind"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::move_x_ml,
 			 "move_x_ml",
 			 { "ev", "ml", "key_forward", "key_backward", "speed", "start_x", "end_x" },
