@@ -40,6 +40,15 @@ W list_y(std::vector<W> v, int gap_y);
 W list_x(std::vector<W> v, int gap_x);
 W grid_y(std::vector<W> v, int sx, int gap_x, int gap_y);
 W layer(std::vector<W> v);
+// TODO RESPONSIVE DESIGN
+W percentage_xx(W w1, W w2, float val, float val2);
+W percentage_margin(W w, float val, float val2, float val3);
+W height_y(W w1, int height);
+W max_width(W w1, int width);
+W flex_image_keep_aspect_x(W w1, float percentage_width);
+W flex_image_keep_aspect_y(W w1, float percentage_height);
+W flex_grid(std::vector<W> w, int max_width);
+// END TODO
 W hide(W widget);
 W show_button(W button_content, W hidden_element);
 W hide_button(W button_content, W hidden_element);

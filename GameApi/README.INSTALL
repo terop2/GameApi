@@ -8,3 +8,10 @@ Copyright information:
  1) piano_variations.ogg has samples from "Bright Yamaha Grand Piano" from fluid-soundfont-gm midi samples (under MIT license, see packages.ubuntu.com/trusty/sound/fluid-soundfont-gm) from ubuntu linux distribution.
     and the music for piano_variations.ogg was created by Esa Pulkkinen, and is
     available via MIT license.
+
+
+POSSIBLE INSTALL PROBLEMS:
+ 1) many of the tool might require the following stuff:
+    ./a.exe --generate-font-atlas
+ and/or
+    ./a.exe --generate-logo

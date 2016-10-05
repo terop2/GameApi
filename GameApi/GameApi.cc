@@ -2488,7 +2488,7 @@ class KeyEventML : public MainLoopItem
 public:
   KeyEventML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, GameApi::MN mn, int type, int ch, int button, float duration) : e(e), ev(ev), next(next), mn(mn), type(type), ch(ch), button(button), duration(duration) 
   { 
-    start_time = ev.mainloop_api.get_time();
+    start_time = 0.0; //ev.mainloop_api.get_time();
     b=false;
   }
   void reset_time() {
@@ -2627,7 +2627,7 @@ class MoveML : public MainLoopItem
 public:
   MoveML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, GameApi::MN mn) : e(e), ev(ev), next(next), mn(mn) 
   { 
-    start_time = ev.mainloop_api.get_time();
+    start_time = 0.0; //ev.mainloop_api.get_time();
   }
   void reset_time() {
     start_time = ev.mainloop_api.get_time();
@@ -2675,7 +2675,7 @@ class EnableML : public MainLoopItem
 public:
   EnableML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, float start_time2, float end_time2) : e(e), ev(ev), next(next), start_time2(start_time2), end_time2(end_time2) 
   { 
-    start_time = ev.mainloop_api.get_time();
+    start_time = 0.0; //ev.mainloop_api.get_time();
   }
   void reset_time() {
     start_time = ev.mainloop_api.get_time();
@@ -2711,7 +2711,7 @@ class MoveMLArray : public MainLoopItem
 public:
   MoveMLArray(GameApi::Env &e, GameApi::EveryApi &ev, std::vector<MainLoopItem *> next, std::vector<GameApi::MN> mn) : e(e), ev(ev), next(next), mn(mn) 
   { 
-    start_time = ev.mainloop_api.get_time();
+    start_time = 0.0; //ev.mainloop_api.get_time();
   }
   void reset_time() {
     start_time = ev.mainloop_api.get_time();
@@ -2920,7 +2920,7 @@ class TreeMainLoop : public MainLoopItem
 public:
   TreeMainLoop(GameApi::Env &e, GameApi::EveryApi &ev, TreeStack *t, std::vector<MainLoopItem*> vec) : e(e), ev(ev), next(vec), tree2(t) 
   {
-    start_time = ev.mainloop_api.get_time();
+    start_time = 0.0; //ev.mainloop_api.get_time();
   }
   int shader_id() { return -1; }
   void execute_one(MainLoopEnv &env, Matrix m, int level)
