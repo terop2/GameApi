@@ -622,10 +622,13 @@ public:
     e.ch = -1;
     e.button = -1;
     left=false; right=false;
-    ev.mainloop_api.reset_time();
   }
   void update(Point2d mouse, int button, int ch, int type)
   {
+    if (firsttime)
+      {
+	ev.mainloop_api.reset_time();
+      }
     if (type==0x300 || type==0x301)
       {
 	e.type = type;
