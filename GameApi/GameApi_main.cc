@@ -35,6 +35,7 @@ EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_heigh
   p->screen = InitSDL(screenx,screeny,false);
 #endif
   SDL_SetWindowTitle(sdl_window, window_title.c_str());
+
   p->screen_width = screenx;
   p->screen_height = screeny;
   time = SDL_GetTicks();
