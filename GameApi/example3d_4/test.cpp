@@ -159,7 +159,7 @@ int main(int argc, char *argv[]) {
 #endif
   ML ml = mainloop(ev, env.move);
   MN mn0 = ev.move_api.empty();
-  MN mn = ev.move_api.trans2(mn0, 0.0, 0.0, 0.0);
+  MN mn = ev.move_api.trans2(mn0, 0.0, 0.0, -400.0);
   ML ml2 = ev.move_api.move_ml(ev, ml, mn);
   env.mainloop = ml2;
 
