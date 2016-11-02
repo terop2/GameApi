@@ -2,6 +2,18 @@
 #include "GameApi_h.hh"
 #include "GameApi_gui.hh"
 
+#ifdef RASP_PI_COMPILE_HACK_1
+#define FIRST_PART 1
+#else
+#ifdef RASP_PI_COMPILE_HACK_2
+#define SECOND_PART 1
+#else
+#define FIRST_PART 1
+#define SECOND_PART 1
+#endif
+#endif
+
+#ifdef FIRST_PART
 const float keypress_rot_speed = 6.0;
 
 #define ORIGINAL_COLORS 1
@@ -3276,6 +3288,7 @@ void GameApi::GuiApi::set_id(W w, std::string id)
   GuiWidget *ww = find_widget(e, w);
   ww->set_id(id);
 }
+#endif
 
 template<class T>
 class FromStreamClass
@@ -3542,6 +3555,7 @@ int funccall(GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
   return val.id;
 }
 
+
 static std::string unique_id_apiitem()
 {
   static int id = 0;
@@ -3634,6 +3648,18 @@ GameApiItem* ApiItemF(T (GameApi::EveryApi::*api), RT (T::*fptr)(P...),
 {
   return new ApiItem<T,RT,P...>(api, fptr, name, param_name, param_type, param_default, return_type, api_name, func_name, symbols,comment);
 }
+std::vector<GameApiItem*> textureapi_functions();
+std::vector<GameApiItem*> volumeapi_functions();
+std::vector<GameApiItem*> floatvolumeapi_functions();
+std::vector<GameApiItem*> colorvolumeapi_functions();
+std::vector<GameApiItem*> vectorapi_functions();
+std::vector<GameApiItem*> pointapi_functions();
+std::vector<GameApiItem*> fontapi_functions();
+std::vector<GameApiItem*> textureapi_functions();
+std::vector<GameApiItem*> booleanopsapi_functions();
+
+
+#ifdef FIRST_PART
 std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::vector<GameApiItem*> vec2)
 {
   int s = vec2.size();
@@ -4288,6 +4314,8 @@ std::vector<GameApiItem*> fontapi_functions()
 #endif
   return vec;
 }
+#endif
+#ifdef SECOND_PART
 std::vector<GameApiItem*> moveapi_functions()
 {
   std::vector<GameApiItem*> vec;
@@ -6071,3 +6099,4 @@ GameApi::W GameApi::GuiApi::insert_widget(W item, std::function<void(int,int)> f
   GuiWidget *w = find_widget(e, item);
   return add_widget(e, new InsertWidget(ev,w,f));
 }
+#endif
