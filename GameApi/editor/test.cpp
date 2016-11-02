@@ -94,7 +94,6 @@ public:
 
 extern std::vector<GameApiItem*> global_functions;
 
-#ifdef WINDOWS
 struct DllData
 {
 public:
@@ -104,16 +103,51 @@ public:
   void (*display)(int i, int disp);
   std::string (*type_symbol)();
 };
+const int num_alternatives = 1;
+const char *k_api_name[] = { "_Z8api_namev" };
+const char *k_functions[] = { "_Z9functionsv" };
+const char *k_num_displays[] = { "_Z12num_displaysv" };
+const char *k_display[] = { "_Z7displayii" };
+const char *k_type_symbol[] = { "_Z11type_symbolv" };
 void load_library(DllData &data, std::string lib_name)
 {
+#ifdef WINDOWS
   const char *lib = lib_name.c_str();
   HMODULE mod = LoadLibrary(lib);
   std::cout << "HMODULE: " << mod << std::endl;
-  FARPROC api = GetProcAddress( mod, "_Z8api_namev" );
-  FARPROC func = GetProcAddress( mod, "_Z9functionsv" );
-  FARPROC num = GetProcAddress( mod, "_Z12num_displaysv" );
-  FARPROC disp = GetProcAddress( mod, "_Z7displayii" );
-  FARPROC type = GetProcAddress( mod, "_Z11type_symbolv" );
+  FARPROC api=0,func=0,num=0,disp=0,type=0;
+  for(int i=0;i<num_alternatives;i++)
+    {
+      if (!api)
+      api = GetProcAddress( mod, k_api_name[i] );
+      if (!func)
+      func = GetProcAddress( mod, k_functions[i] );
+      if (!num)
+      num = GetProcAddress( mod, k_num_displays[i] );
+      if (!disp)
+      disp = GetProcAddress( mod, k_display[i] );
+      if (!type)
+      type = GetProcAddress( mod, k_type_symbol[i] );
+    }
+#else
+  const char *lib = lib_name.c_str();
+  void *handle = dlopen(lib, RTLD_NOW);
+  void *api=0,*func=0, *num=0, *disp=0,*type=0;
+  for(int i=0;i<num_alternatives;i++)
+    {
+      if (!api)
+	api = dlsym(handle, k_api_name[i]);
+      if (!func)
+	func = dlsym(handle, k_functions[i]);
+      if (!num)
+	num = dlsym(handle, k_num_displays[i]);
+      if (!disp)
+	disp = dlsym(handle, k_display[i]);
+      if (!type)
+	type = dlsym(handle, k_type_symbol[i] );
+    }
+  
+#endif
   //std::cout << "ApiNameFar: " << api << std::endl;
 
   data.api_name = (std::string (*)()) api;
@@ -140,7 +174,7 @@ std::vector<DllData> load_dlls(std::string filename)
     }
   return vec;
 }
-#endif
+
 struct Envi {
   EveryApi *ev;
   GuiApi *gui;
@@ -1302,6 +1336,8 @@ int main(int argc, char *argv[]) {
 
 #ifdef WINDOWS
   env.dlls = load_dlls("DllList.txt");
+#else
+  env.dlls = load_dlls("DllList_linux.txt");
 #endif
   int screen_x = 1200;
   int screen_y = 900;
