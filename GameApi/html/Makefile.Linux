@@ -1,0 +1,4 @@
+
+all:
+	g++ -std=c++11 -c ui.cc -o ui.o
+	g++ -std=c++11 -shared -h ui.o -o libWebUi.so
