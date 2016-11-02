@@ -3389,6 +3389,8 @@ void set_empty(GameApi::EveryApi &ev, T &t) { t.id=0; }
 #define MACRO3(lab, funccall) \
   if (s==#lab) { return #funccall; }
 
+std::string empty_param(std::string s);
+#ifdef FIRST_PART
 std::string empty_param(std::string s)
 {
   if (s.size()>1 && s[0]=='[')
@@ -3418,8 +3420,9 @@ MACRO3(MT,ev.materials_api.def(ev))
 MACRO3(C,ev.curve_api.linear(std::vector<GameApi::PT>()))
   return "@";
 }
+#endif
 
-
+#ifdef FIRST_PART
 MACRO2(GameApi::BM,ev.bitmap_api.newbitmap(10,10,0x00000000))
 MACRO2(GameApi::FD,ev.dist_api.cube(0.0,0.0,0.0,0.0,0.0,0.0))
 MACRO2(GameApi::BO,ev.bool_api.cube(ev,0.0,0.0,0.0,0.0,0.0,0.0,1,1))
@@ -3438,7 +3441,7 @@ MACRO2(GameApi::LI,ev.lines_api.from_polygon(ev.polygon_api.empty()))
 MACRO2(GameApi::MN,ev.move_api.empty())
 MACRO2(GameApi::MT,ev.materials_api.def(ev))
 MACRO2(GameApi::C,ev.curve_api.linear(std::vector<GameApi::PT>()))
-
+#endif
 
 #define MACRO(lab) \
 template<> \
@@ -3658,6 +3661,7 @@ std::vector<GameApiItem*> fontapi_functions();
 std::vector<GameApiItem*> textureapi_functions();
 std::vector<GameApiItem*> booleanopsapi_functions();
 
+std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::vector<GameApiItem*> vec2);
 
 #ifdef FIRST_PART
 std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::vector<GameApiItem*> vec2)
