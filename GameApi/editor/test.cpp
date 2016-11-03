@@ -8,6 +8,8 @@
 #include <ctime>
 #ifdef WINDOWS
 #include <windows.h>
+#else
+#include <dlfcn.h>
 #endif
 #include <fstream>
 #include <iostream>
@@ -248,9 +250,7 @@ struct Envi {
   int screen_size_x, screen_size_y;
 
   std::string filename;
-#ifdef WINDOWS
   std::vector<DllData> dlls;
-#endif
   bool logo_shown = false;
 };
 void add_to_canvas(GuiApi &gui, W canvas, W item)
