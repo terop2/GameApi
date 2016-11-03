@@ -8,11 +8,15 @@
 #ifdef RASP_PI_COMPILE_HACK_2
 #define SECOND_PART 1
 #else
+#ifdef RASP_PI_COMPILE_HACK_3
+#define THIRD_PART 1
+#else
 #define FIRST_PART 1
 #define SECOND_PART 1
+#define THIRD_PART 1
 #endif
 #endif
-
+#endif
 #ifdef FIRST_PART
 const float keypress_rot_speed = 6.0;
 
@@ -4319,6 +4323,10 @@ std::vector<GameApiItem*> fontapi_functions()
   return vec;
 }
 #endif
+std::vector<GameApiItem*> moveapi_functions();
+std::vector<GameApiItem*> polygonapi_functions();
+std::vector<GameApiItem*> shadermoduleapi_functions();
+
 #ifdef SECOND_PART
 std::vector<GameApiItem*> moveapi_functions()
 {
@@ -5127,6 +5135,8 @@ std::vector<GameApiItem*> shadermoduleapi_functions()
   return vec;
 
 }
+#endif
+#ifdef THIRD_PART
 std::vector<GameApiItem*> linesapi_functions()
 {
   std::vector<GameApiItem*> vec;
