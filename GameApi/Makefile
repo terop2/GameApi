@@ -29,7 +29,9 @@ CFiles=	Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
 	FreeType.cc VertexArray.cc StateChange.cc DistanceObject.cc GameRunner.cc \
 	GameApi_an.cc GameApi_bm.cc GameApi_co.cc GameApi_dr.cc GameApi_ev.cc \
 	GameApi_ex.cc GameApi_fbo.cc GameApi_f.cc GameApi_fn.cc \
-	GameApi_fnt.cc GameApi_gr.cc GameApi_gui_1.cc GameApi_gui_2.cc GameApi_lay.cc \
+	GameApi_fnt.cc GameApi_gr.cc GameApi_gui_1.cc GameApi_gui_2.cc \
+        GameApi_gui_3.cc \
+        GameApi_lay.cc \
 	GameApi_li.cc GameApi_main.cc GameApi_mx.cc GameApi_pc.cc \
 	GameApi_phy.cc GameApi_pla.cc GameApi_pl.cc GameApi_pt.cc \
 	GameApi_pts.cc GameApi_sh.cc GameApi_shm.cc GameApi_sm.cc \
