@@ -128,15 +128,16 @@ TAGS: $(CFiles)
 
 CC = g++
 CCWIN = g++
-#mingw32-g++
+RM = "c:\program files (x86)\git\bin\rm.exe"
+SED = "c:\program files (x86)\git\bin\sed.exe"
 
 $(DFiles): objs/%.d: %.cc
 	@gcc -M $(CCFLAGS) $(CC2FLAGS) $< \
-	|sed 's,\($*\)\.o[ :]*,objs/\1.o $@ : ,g' > $@
+	|$(SED) 's,\($*\)\.o[ :]*,objs/\1.o $@ : ,g' > $@
 
 $(D2Files): objs/%.d2: %.cc    
 	@$(CCWIN) -M $(CC2FLAGS) $< \
-	|sed 's,\($*\)\.obj[ :]*,objs/\1.obj $@ : ,g' > $@
+	|$(SED) 's,\($*\)\.obj[ :]*,objs/\1.obj $@ : ,g' > $@
 
 $(OFiles): objs/%.o : %.cc
 	@echo g++ $< -o $@
@@ -169,12 +170,12 @@ $(GCHFiles_examples): objs/%.hh.gch : %.hh GameApi.hh
 	@$(CC) $(CCFLAGS) -std=c++0x -g -I. -x c++-header $< -o $@ 
 
 clean:
-	@rm -rf objs/*.o objs/*.obj objs/*.d objs/*.d2 objs/*.gch objs/*.gch2
-	@rm main
+	@$(RM) -rf objs/*.o objs/*.obj objs/*.d objs/*.d2 objs/*.gch objs/*.gch2
+	@$(RM) main
 	@echo Clean.
 
 profile:
-	rm profile.txt
+	$(RM) profile.txt
 	gprof ./main ./gmon.out >profile.txt
 
 
