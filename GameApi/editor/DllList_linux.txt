@@ -1,1 +1,1 @@
-..\html\libWebUi.so
+../html/libWebUi.so

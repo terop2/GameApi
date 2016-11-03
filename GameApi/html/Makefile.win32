@@ -1,6 +1,6 @@
 
 all:
-	g++ -std=c++11 -c ui.cc -o ui.o
+	g++ -DWINDOWS-std=c++11 -c ui.cc -o ui.o
 	g++ -std=c++11 -shared -g ui.o -o libWebUi.dll
 	g++ -std=c++11 ui_test.cc -L. -o uitest.exe -lWebUi
 	uitest.exe
