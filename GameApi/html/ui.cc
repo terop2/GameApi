@@ -329,7 +329,11 @@ void display(int i, int disp)
       std::ofstream f("tst.html");
       f << page;
       f.close();
+#ifdef WINDOWS
       system("start tst.html");
+#else
+      system("x-www-browser tst.html");
+#endif
       break;
     }
 }

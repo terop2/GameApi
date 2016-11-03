@@ -105,12 +105,12 @@ public:
   void (*display)(int i, int disp);
   std::string (*type_symbol)();
 };
-const int num_alternatives = 1;
-const char *k_api_name[] = { "_Z8api_namev" };
-const char *k_functions[] = { "_Z9functionsv" };
-const char *k_num_displays[] = { "_Z12num_displaysv" };
-const char *k_display[] = { "_Z7displayii" };
-const char *k_type_symbol[] = { "_Z11type_symbolv" };
+const int num_alternatives = 2;
+const char *k_api_name[] = { "_Z8api_namev", "_Z8api_nameB5cxx11v" };
+const char *k_functions[] = { "_Z9functionsv", "_Z9functionsv" };
+const char *k_num_displays[] = { "_Z12num_displaysv", "_Z12num_displaysv" };
+const char *k_display[] = { "_Z7displayii", "_Z7displayii" };
+const char *k_type_symbol[] = { "_Z11type_symbolv", "_Z11type_symbolB5cxx11v" };
 void load_library(DllData &data, std::string lib_name)
 {
 #ifdef WINDOWS
@@ -148,6 +148,7 @@ void load_library(DllData &data, std::string lib_name)
       if (!type)
 	type = dlsym(handle, k_type_symbol[i] );
     }
+  std::cout << api << " " << func << " "<< num << " "<< disp << " "<< type << std::endl;
   
 #endif
   //std::cout << "ApiNameFar: " << api << std::endl;
@@ -911,7 +912,6 @@ void iter(void *arg)
 		    else 
 		      {
 			display = false;
-#ifdef WINDOWS			
 			int s = env->dlls.size();
 			bool success = false;
 			for(int i=0;i<s;i++)
@@ -927,7 +927,6 @@ void iter(void *arg)
 			if (!success) {
 			  std::cout << "Type not found" << type << std::endl;
 			}
-#endif
 		      }
 		    if (display)
 		      {
@@ -1205,12 +1204,10 @@ void iter(void *arg)
 		  default:
 		    {
 		      std::cout << "SEL: " << sel << std::endl;
-#ifdef WINDOWS		      
 		      DllData &d = env->dlls[sel-16];
 		      std::vector<Item*> funcs = (*d.functions)();
 		      Item *item = funcs[sel2-1];
 		      name = item->Name();
-#endif		      
 		      break;
 		    }
 
@@ -1514,7 +1511,6 @@ int main(int argc, char *argv[]) {
       items.push_back(gui.textureapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.booleanopsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
 
-#ifdef WINDOWS
       int s = env.dlls.size();
       for(int ii=0;ii<s;ii++)
 	{
@@ -1531,7 +1527,6 @@ int main(int argc, char *argv[]) {
 	  W w = functions_widget(gui, apiname, vec, atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips);
 	  items.push_back(w);
 	}
-#endif
     }
   W array = gui.array_y(&items[0], items.size(), 5);
   W scroll_area = gui.scroll_area(array, gui.size_x(array), screen_y-30, screen_y);
