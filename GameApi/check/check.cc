@@ -216,6 +216,8 @@ void check_includes(std::string platform)
 
 int main()
 {
+  std::cout << "General requirements: mingw, sdl2, sdl2_image, sdl2_mixer, gnu make, git, freetype6, glew, emscripten" << std::endl;
+
   // WIN32 compilation
   std::string win32_mingw_make = find_exe("win32", "bin\\mingw32-make.exe",mingw_path, "mingw not found");
   std::string win32_gnu_gcc = find_exe("win32", "bin\\g++.exe", mingw_path, "mingw g++ not found");
@@ -234,4 +236,5 @@ int main()
   check_includes("linux");
   check_includes("raspi");
 
+  std::cout << "ALL LOOKS OK!" << std::endl;
 }
