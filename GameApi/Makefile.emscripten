@@ -129,19 +129,21 @@ TAGS: $(CFiles)
 
 CC = em++
 CCWIN = em++
+SED = "c:\program files (x86)\git\bin\sed.exe"
+RM = "c:\program files (x86)\git\bin\rm.exe"
 #mingw32-g++
 
 $(DFiles): objs/%.d: %.cc
 	@$(CCWIN) -M $(CCFLAGS) $(CC2FLAGS) $< \
-	|sed 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
+	|$(SED) 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
 
 $(D2Files): objs/%.d2: %.cc
 	@$(CCWIN) -M $(CC2FLAGS) $< \
-	|sed 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
+	|$(SED) 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
 
 $(OFiles): objs/%.bc : %.cc
-	@echo g++ $< -o $@
-	$(CCWIN) -c $(CCFLAGS) $< -o $@
+	@echo em++ $< -o $@
+	@$(CCWIN) -c $(CCFLAGS) $< -o $@
 
 $(O2Files): objs/%.bc : %.cc
 	@echo mingw $<
@@ -170,12 +172,12 @@ $(O2Files_examples): objs/%.bc : %.cc GameApi.hh
 #	@$(CC) $(CCFLAGS) -std=c++0x -I. -x c++-header $< -o $@ 
 
 clean:
-	@rm -rf objs/*.bc objs/*.bc objs/*.d objs/*.d2 objs/*.gch objs/*.gch2
-	@rm main
+	@$(RM) -rf objs/*.bc objs/*.bc objs/*.d objs/*.d2 objs/*.gch objs/*.gch2
+	@$(RM) main
 	@echo Clean.
 
 profile:
-	rm profile.txt
+	$(RM) profile.txt
 	gprof ./main ./gmon.out >profile.txt
 
 
