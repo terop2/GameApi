@@ -422,6 +422,11 @@ struct BO_Impl
   GameApi::O bools;
   GameApi::FD fd;
 };
+struct PD_Impl
+{
+  GameApi::P mesh;
+  GameApi::SFO distance_field;
+};
 
 static const int ArrayElements = 2;
 template<class T>
@@ -516,6 +521,7 @@ struct EnvImpl
   std::vector<TriStrip*> tri_strip;
   std::vector<Cutter*> cutters;
   std::vector<BO_Impl> boolean_ops;
+  std::vector<PD_Impl> polydistfield;
   std::vector<std::vector<int> > handle_array;
   std::vector<std::vector<int> > template_array;
   std::vector<Collision*> collision_array;
@@ -885,6 +891,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+PD_Impl find_polydistfield(GameApi::Env &e, GameApi::PD p);
 SkeletalNode *find_skeletal(GameApi::Env &e, GameApi::SA n);
 PlaneShape *find_plane_shape(GameApi::Env &e, GameApi::PP pp);
 Curve<Matrix> *find_matrix_curve(GameApi::Env &e, GameApi::MC m);

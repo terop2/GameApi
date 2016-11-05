@@ -1252,6 +1252,7 @@ ShaderFile::ShaderFile()
 "in vec4 ex_Color;\n"
     //"flat in vec4 ex_FlatColor;\n"
 "out vec4 out_Color;\n"
+"uniform float time;\n"
 "#ifdef EX_TEXCOORD\n"
 "in vec3 ex_TexCoord;\n"
 "#endif\n"
@@ -1288,6 +1289,9 @@ ShaderFile::ShaderFile()
 "uniform vec4 level1_color;\n"
 "uniform vec4 level2_color;\n"
 "uniform vec4 level3_color;\n"
+
+"//M:\n"
+
 "vec4 white(vec4 rgb)\n"
 "{\n"
 "   return vec4(1.0,1.0,1.0,1.0);\n"
@@ -1867,7 +1871,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines);
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

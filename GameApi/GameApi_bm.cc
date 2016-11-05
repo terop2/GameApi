@@ -1800,10 +1800,9 @@ float mymin(float x, float y)
 class DistanceFieldBitmap : public Bitmap<float>
 {
 public:
-  void Prepare() { bm->Prepare(); }
-
-  DistanceFieldBitmap(Bitmap<bool> *bm) : bm(bm) 
-  {
+  void Prepare() 
+  { 
+    bm->Prepare(); 
     int sx = bm->SizeX();
     int sy = bm->SizeY();
     array_x = new float[sx*sy];
@@ -1819,6 +1818,11 @@ public:
       }
     step1();
     step2();
+
+  }
+
+  DistanceFieldBitmap(Bitmap<bool> *bm) : bm(bm) 
+  {
   }
   int SizeX() const { return bm->SizeX(); }
   int SizeY() const { return bm->SizeY(); }

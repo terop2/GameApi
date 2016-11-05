@@ -4526,6 +4526,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "SFO", "MT" },
 			 { "ev", "","" },
 			 "MT", "materials_api", "dist_field_mesh","[B]","Loses animations from SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::mesh_color_from_sfo,
+			 "m_dist_field_color",
+			 { "ev", "sfo", "mt" },
+			 { "EveryApi&", "SFO", "MT" },
+			 { "ev", "", "" },
+			 "MT", "materials_api", "mesh_color_from_sfo"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bind,
 			 "m_bind",
 			 { "p", "mat" },
