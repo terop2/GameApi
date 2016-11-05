@@ -673,6 +673,7 @@ private:
   ShaderModule *obj;
 };
 
+
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::grayscale(SFO obj)
 {
   ShaderModule *obj_m = find_shader_module(e, obj);
@@ -1318,10 +1319,10 @@ public:
   virtual std::string Function() const
   {
     return mod1->Function() + mod2->Function() +
-      "float color_mix" + uid +  "(vec3 pt, float t) {\n"
+      "float color_mix" + uid +  "(vec3 pt, float t, float time) {\n"
       "   return " + funccall_to_string(mod1) + ";\n"
       "}\n"
-      "vec4 color_mix_color" + uid + "(vec3 pt, float t) {\n"
+      "vec4 color_mix_color" + uid + "(vec3 pt, float t, float time) {\n"
       "   vec4 col1 = " + color_funccall_to_string(mod1) + ";\n"
       "   vec4 col2 = " + color_funccall_to_string(mod2) + ";\n"
       "   return mix(col1, col2, t);\n"
@@ -1330,11 +1331,23 @@ public:
   }
   virtual std::string FunctionName() const { return "color_mix" + uid; }
   virtual std::string ColorFunctionName() const { return "color_mix_color" + uid; }
-  virtual int NumArgs() const {return 2; }
+  virtual int NumArgs() const {return 3; }
   virtual bool FreeVariable(int i) const { return true; }
-  virtual std::string ArgName(int i) const {if (i==0) return "pt"; return "t"; }
-  virtual std::string ArgValue(int i) const { if (i==0) return "pt"; return "0.5"; }
-  virtual std::string ArgType(int i) const { if (i==0) return "vec3"; return "float"; }
+  virtual std::string ArgName(int i) const {
+    if (i==0) return "pt"; 
+    if (i==1) return "t";
+    return "time"; 
+  }
+  virtual std::string ArgValue(int i) const { 
+    if (i==0) return "pt"; 
+    if (i==1) return "0.5";
+    return "time"; 
+  }
+  virtual std::string ArgType(int i) const { 
+    if (i==0) return "vec3"; 
+    if (i==1) return "float";
+    return "float"; 
+  }
 private:
   ShaderModule *mod1;
   ShaderModule *mod2;

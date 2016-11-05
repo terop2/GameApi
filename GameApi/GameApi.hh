@@ -869,6 +869,7 @@ public:
   IMPORT SFO spherical(SFO obj, PT tl, PT br, float rr, float rp);
   IMPORT SFO render(SFO obj);
   IMPORT SFO v_render(SFO obj);
+  IMPORT SFO f_render_color(SFO obj);
 private:
   Env &e;
 };
@@ -938,6 +939,8 @@ public:
   MT snow(EveryApi &ev, MT nxt);
   MT web(EveryApi &ev, MT nxt); // TODO: add line width property
   MT dist_field_mesh(EveryApi &ev, SFO sfo, MT next);
+
+  MT mesh_color_from_sfo(EveryApi &ev, SFO sfo, MT next);
 
   ML bind(P p, MT mat);
   ML bind_inst(P p, PTS pts, MT mat);
@@ -1490,6 +1493,39 @@ private:
   Env &e;
 };
 
+struct PD { int id; };
+class PolygonDistanceField
+{
+public:
+  PolygonDistanceField(Env &e) : e(e) { }
+  PD empty();
+  PD create_pd(P mesh, SFO distance_field);
+  PD cube(EveryApi &ev, float start_x, float end_x,
+	  float start_y, float end_y,
+	  float start_z, float end_z);
+  PD rounded_cube(EveryApi &ev, float start_x, float end_x,
+		  float start_y, float end_y,
+		  float start_z, float end_z,
+		  float radius);
+  PD sphere(EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2);
+  PD cone(EveryApi &ev, int numfaces, PT p1, PT p2, float rad1, float rad2);
+  PD or_array(EveryApi &ev, std::vector<PD> vec);
+  PD translate(EveryApi &ev, PD orig, float dx, float dy, float dz);
+  PD rotatex(EveryApi &ev, PD orig, float angle);
+  PD rotatey(EveryApi &ev, PD orig, float angle);
+  PD rotatez(EveryApi &ev, PD orig, float angle);
+  PD scale(EveryApi &ev, PD orig, float sx, float sy, float sz);
+  PD ambient_occulsion_sfo(EveryApi &ev, PD obj, float d, float i);
+  MT mesh_color_from_sfo(EveryApi &ev, PD orig, MT next);
+  
+  ML render_scene(EveryApi &ev, PD object, PD world); // this has access to sfo, P and matrix stack -- should make dynamic movement possible with proper shading which responds to movement of the objects in the scene. especially AO needs to be recalculated, but will also allow other shading stuff. This hasnt worked before since P object doesnt have access to shader side, SFO can't deal with meshes and matrix stack/ML is completely separate and it's needed for movement. // shader side needs to respond to matrix stack changes. So this is basically a bridge between matrix stack and shaders.
+  std::vector<ML> render_scene_array(EveryApi &ev, std::vector<PD> vec); // this on the other hand, is completely different -- it can connect multiple objects together in nice way. Unfortunately, builder doesn't support this api, but it's anyway useful later. (we can make builder support this prototype)
+
+  P get_poly(PD p);
+  SFO get_distance_field(PD p);
+private:
+  Env &e;
+};
 class PolygonApi
 {
 public:
@@ -1706,6 +1742,7 @@ public:
   IMPORT void render_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh); // fast
   IMPORT ML render_vertex_array_ml(EveryApi &ev, VA va);
   IMPORT ML dist_field_mesh_shader(EveryApi &ev, ML mainloop, SFO sfo);
+  IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML shading_shader(EveryApi &ev, ML mainloop,
 			  unsigned int level1,
 			  unsigned int level2,
@@ -2424,6 +2461,7 @@ public:
   US v_dist_field_mesh(US us, SFO sfo);
   US v_skeletal(US us);
 
+  US f_mesh_color(US us, SFO sfo);
   US f_empty(bool transparent);
   US f_diffuse(US us);
   US f_ambient(US us);

@@ -1079,6 +1079,11 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
 }
+PD_Impl find_polydistfield(GameApi::Env &e, GameApi::PD p)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->polydistfield[p.id];
+}
 SkeletalNode *find_skeletal(GameApi::Env &e, GameApi::SA n)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -3920,11 +3925,60 @@ private:
   ShaderModule *mod;
   mutable int id;
 };
+
+class F_MeshColor : public ShaderCall
+{
+public:
+  F_MeshColor(ShaderCall *next, ShaderModule *mod) : next(next), mod(mod) { }
+  int index(int base) const {
+    id = next->index(base)+1;
+    return id;
+  }
+  std::string func_call() const
+  {
+    std::string out;
+    out+=next->func_call();
+    std::stringstream ss;
+    int i = id;
+    ss << i+1;
+    std::stringstream ss2;
+    ss2 << i;
+    out+="vec3 pos";
+    out+=ss.str();
+    out+=" = ";
+    out+="gl_FragCoord.xyz;\n";
+    out+="pos" + ss.str() + ".x*=gl_FragCoord.w;\n";
+    out+="pos" + ss.str() + ".y*=gl_FragCoord.w;\n";
+    out+="pos" + ss.str() + ".z*=gl_FragCoord.w;\n";
+    out+="vec4 rgb";
+    out+=ss.str();
+    out+=" = ";
+    out+=color_funccall_to_string_with_replace(mod, "pt", "pos" + ss.str());
+    out+=";\n";
+    //out+=funcname;
+    //out+="(pos";
+    //out+=ss2.str();
+    //out+=");\n";
+    return out;
+  }
+  std::string define_strings() const { return next->define_strings(); } // TODO, MAYBE ASK DEFINE STRINGS FROM SFO
+private:
+  ShaderCall *next;
+  ShaderModule *mod;
+  mutable int id;
+};
+
 GameApi::US GameApi::UberShaderApi::v_dist_field_mesh(US us, SFO sfo)
 {
   ShaderCall *next = find_uber(e,us);
   ShaderModule *mod = find_shader_module(e, sfo);
   return add_uber(e, new V_DistFieldMesh(next,mod));
+}
+GameApi::US GameApi::UberShaderApi::f_mesh_color(US us, SFO sfo)
+{
+  ShaderCall *next = find_uber(e, us);
+  ShaderModule *mod = find_shader_module(e, sfo);
+  return add_uber(e, new F_MeshColor(next,mod));
 }
 GameApi::US GameApi::UberShaderApi::v_skeletal(US us)
 {
@@ -4476,11 +4530,56 @@ private:
   GameApi::SFO sfo;
   Material *next;
 };
+
+class MeshColorFromSfo : public MaterialForward
+{
+public:
+  MeshColorFromSfo(GameApi::EveryApi &ev, GameApi::SFO sfo, Material *next) : ev(ev), sfo(sfo),next(next) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat(p.id);
+    GameApi::ML df = ev.polygon_api.mesh_color_shader(ev, ml,sfo);
+    return df;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    //GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    //GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    GameApi::ML ml;
+    ml.id = next->mat_inst(p.id, pts.id);
+    GameApi::ML df = ev.polygon_api.mesh_color_shader(ev, ml,sfo);
+    return df;
+  }
+
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    //GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    //GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(p.id, pta.id);
+    GameApi::ML df = ev.polygon_api.mesh_color_shader(ev, ml,sfo);
+    return df;
+  }
+
+private:
+  GameApi::EveryApi &ev;
+  GameApi::SFO sfo;
+  Material *next;
+};
+
 GameApi::MT GameApi::MaterialsApi::dist_field_mesh(EveryApi &ev, SFO sfo, MT next)
 {
   SFO sfo2 = ev.sh_api.v_render(sfo);
   Material *nxt = find_material(e, next);
   return add_material(e, new DistanceFieldMesh(ev,sfo2,nxt));
+}
+GameApi::MT GameApi::MaterialsApi::mesh_color_from_sfo(EveryApi &ev, SFO sfo, MT next)
+{
+  Material *nxt = find_material(e, next);
+  return add_material(e, new MeshColorFromSfo(ev, sfo, nxt));
 }
 
 class SkeletalRoot : public SkeletalNode
@@ -4542,13 +4641,133 @@ GameApi::ML GameApi::Skeletal::skeletal_bind(EveryApi &ev, std::vector<P> vec, s
 class SA_Bind : public MainLoopItem
 {
 public:
-  SA_Bind(std::vector<SkeletalNode*> sk, std::vector
+  SA_Bind(std::vector<SkeletalNode*> sk, std::vector<>);
   void execute(MainLoopEnv &e)
   {
   }
 };
   GameApi::ML GameApi::Skeletal::sa_bind(EveryApi &ev, std::vector<SA> pos, std::vector<P> vec)
 {
-  GameApi::P obj = ev.polygon_api.or_array(
+  GameApi::P obj = ev.polygon_api.or_array();
 }
 #endif
+
+GameApi::PD GameApi::PolygonDistanceField::create_pd(P mesh, SFO distance_field)
+{
+  PD_Impl pd;
+  pd.mesh = mesh;
+  pd.distance_field = distance_field;
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->polydistfield.push_back(pd);
+  PD pd2;
+  pd2.id = env->polydistfield.size()-1;
+  return pd2;
+}
+GameApi::PD GameApi::PolygonDistanceField::cube(EveryApi &ev, float start_x, float end_x,
+				       float start_y, float end_y,
+				       float start_z, float end_z)
+{
+  SFO cube_sfo = ev.sh_api.cube(start_x, end_x,
+				start_y, end_y,
+				start_z, end_z);
+  P cube_p = ev.polygon_api.cube(start_x, end_x,
+				 start_y, end_y,
+				 start_z, end_z);
+  return create_pd(cube_p, cube_sfo);
+}
+
+GameApi::PD GameApi::PolygonDistanceField::rounded_cube(EveryApi &ev,
+					       float start_x, float end_x,
+					       float start_y, float end_y,
+					       float start_z, float end_z,
+					       float radius)
+{
+  SFO c_sfo = ev.sh_api.rounded_cube(start_x, end_x,
+				     start_y, end_y,
+				     start_z, end_z,
+				     radius);
+  P c_p = ev.polygon_api.rounded_cube(ev,start_x, end_x,
+				      start_y, end_y,
+				      start_z, end_z,
+				      radius);
+  return create_pd(c_p, c_sfo);
+}
+
+GameApi::PD GameApi::PolygonDistanceField::sphere(EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2)
+{
+  SFO sfo = ev.sh_api.sphere(center, radius);
+  P p = ev.polygon_api.sphere(center, radius, numfaces1, numfaces2);
+  return create_pd(p,sfo);
+}
+#if 0
+GameApi::PD GameApi::PolygonDistanceField::cone(EveryApi &ev, int numfaces, PT p1, PT p2, float rad1, float rad2)
+{
+}
+#endif
+
+GameApi::PD GameApi::PolygonDistanceField::or_array(EveryApi &ev, std::vector<PD> vec)
+{
+  if (vec.size()==0) { GameApi::PD p; p.id = 0; return p; }
+  PD p = vec[0];
+  PD_Impl pi = find_polydistfield(e, p);
+  SFO pi_sfo = pi.distance_field;
+  P pi_p = pi.mesh;
+  std::vector<P> vec2;
+  vec2.push_back(pi_p);
+  int s = vec.size();
+  for(int i=1;i<s;i++)
+    {
+      PD pp = vec[i];
+      PD_Impl ppi = find_polydistfield(e,pp);
+      pi_sfo = ev.sh_api.or_elem(pi_sfo, ppi.distance_field);
+      vec2.push_back(ppi.mesh);
+    }
+  P res_p = ev.polygon_api.or_array2(vec2);
+  return create_pd(res_p, pi_sfo);
+}
+GameApi::PD GameApi::PolygonDistanceField::ambient_occulsion_sfo(EveryApi &ev,
+						       PD obj, float d, float i)
+{
+  SFO sfo = get_distance_field(obj);
+  SFO sfo2 = ev.sh_api.ambient_occulsion(sfo, d,i);
+  PD_Impl impl = find_polydistfield(e,obj);
+  return create_pd(impl.mesh,sfo2);
+}
+GameApi::SFO GameApi::PolygonDistanceField::get_distance_field(PD pd)
+{
+  PD_Impl impl = find_polydistfield(e,pd);
+  return impl.distance_field;
+}
+
+GameApi::MT GameApi::PolygonDistanceField::mesh_color_from_sfo(EveryApi &ev, PD orig, MT next)
+{
+  PD_Impl impl = find_polydistfield(e,orig);
+  return ev.materials_api.mesh_color_from_sfo(ev, impl.distance_field, next);
+}
+GameApi::ML GameApi::PolygonDistanceField::render_scene(EveryApi &ev, PD pd, PD world)
+{
+  // TODO
+  //P p = get_poly(pd);
+  //SFO sfo = get_distance_field(world);
+  
+}
+
+std::vector<GameApi::ML> GameApi::PolygonDistanceField::render_scene_array(EveryApi &ev, std::vector<PD> vec)
+{
+  int s = vec.size();
+  std::vector<ML> mls;
+  std::vector<PD> world_vec;
+  for(int i=0;i<s;i++)
+    {
+      PD pd = vec[i];
+      world_vec.push_back(pd);
+    }
+  PD world = or_array(ev,world_vec);
+  for(int i=0;i<s;i++)
+    {
+      PD pd = vec[i];
+      ML ml = render_scene(ev, pd, world);
+      mls.push_back(ml);
+    }
+  return mls;
+}
