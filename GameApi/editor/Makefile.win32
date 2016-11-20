@@ -1,3 +1,4 @@
 
 all:
-	g++ -DWINDOWS -ggdb -Wl,--large-address-aware -g -std=c++11 test.cpp -L.. -I.. -lGameApi 
+	g++ -DWINDOWS -ggdb -Wl,--large-address-aware -g -std=c++11 test.cpp -L.. -I.. -lGameApi -Wl,-rpath='$$ORIGIN/..'
+

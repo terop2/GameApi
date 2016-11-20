@@ -462,6 +462,7 @@ public:
     rot_y = 0.0;
     left=false; right=false;
   }
+  ~PolyGuiWidget() { std::cout << "PolyGuiWidget destructor" << std::endl; }
   void update(Point2d mouse, int button, int ch, int type)
   {
 #ifdef EMSCRIPTEN
@@ -1992,9 +1993,10 @@ EXPORT GameApi::W GameApi::GuiApi::color_editor(std::string &col, FtA atlas, BM 
   return edit2; 
 }
 
-EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button)
+EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &mem)
 {
   W bm_1 = poly(p, sh, 800,600, screen_size_x,screen_size_y);
+  mem = bm_1;
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
   W bm_4 = layer(bm_3, bm_2);
@@ -3422,6 +3424,8 @@ MACRO3(LI,ev.lines_api.from_polygon(ev.polygon_api.empty()))
 MACRO3(MN,ev.move_api.empty())
 MACRO3(MT,ev.materials_api.def(ev))
 MACRO3(C,ev.curve_api.linear(std::vector<GameApi::PT>()))
+MACRO3(PD,ev.polygon_dist_api.empty(ev))
+MACRO3(WV,ev.waveform_api.empty(1.0))
   return "@";
 }
 #endif
@@ -3445,6 +3449,8 @@ MACRO2(GameApi::LI,ev.lines_api.from_polygon(ev.polygon_api.empty()))
 MACRO2(GameApi::MN,ev.move_api.empty())
 MACRO2(GameApi::MT,ev.materials_api.def(ev))
 MACRO2(GameApi::C,ev.curve_api.linear(std::vector<GameApi::PT>()))
+MACRO2(GameApi::PD,ev.polygon_dist_api.empty(ev))
+MACRO2(GameApi::WV,ev.waveform_api.empty(1.0))
 #endif
 
 #define MACRO(lab) \
@@ -3504,6 +3510,8 @@ MACRO(GameApi::C)
 MACRO(GameApi::MS)
 MACRO(GameApi::MC)
 MACRO(GameApi::SA)
+MACRO(GameApi::PD)
+MACRO(GameApi::WV)
 #undef MACRO
 
 
@@ -4568,6 +4576,119 @@ std::vector<GameApiItem*> moveapi_functions()
 #endif
   return vec;
 }
+std::vector<GameApiItem*> waveform_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::empty,
+			 "wv_empty",
+			 { "length" },
+			 { "float" },
+			 { "1.0" },
+			 "WV", "waveform_api", "empty"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::step,
+			 "wv_step",
+			 { "flip" },
+			 { "bool" },
+			 { "false" },
+			 "WV", "waveform_api", "step"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::sinwave,
+			 "wv_sin",
+			 { "length", "freq" },
+			 { "float", "float" },
+			 { "6.28318", "1.0" },
+			 "WV", "waveform_api", "sinwave"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::repeat,
+			 "wv_repeat",
+			 { "wave", "num" },
+			 { "WV", "int" },
+			 { "", "2" },
+			 "WV", "waveform_api", "repeat"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::length_change,
+			 "wv_set_length",
+			 { "wave", "new_length" },
+			 { "WV", "float" },
+			 { "", "1.0" },
+			 "WV", "waveform_api", "length_change"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::waveform_bitmap,
+			 "wv_bitmap",
+			 { "wave", "sx", "sy", "true_color", "false_color" },
+			 { "WV", "int", "int", "unsigned int", "unsigned int" },
+			 { "", "100", "100", "ffffffff", "00000000" },
+			 "BM", "waveform_api", "waveform_bitmap"));
+  return vec;
+}
+std::vector<GameApiItem*> polydistfield_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_dist_api, &GameApi::PolygonDistanceField::create_pd,
+			 "create_pd",
+			 { "mesh", "dist_field" },
+			 { "P", "SFO" },
+			 { "", "" },
+			 "PD", "polygon_dist_api", "create_pd"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_dist_api, &GameApi::PolygonDistanceField::cube,
+			 "cube_pd",
+			 { "ev", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			 { "EveryApi&", "float", "float", "float", "float", "float", "float" },
+			 { "ev", "0.0", "100.0", "0.0", "100.0", "0.0", "100.0" },
+			 "PD", "polygon_dist_api", "cube"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_dist_api, &GameApi::PolygonDistanceField::rounded_cube,
+			 "rounded_cube_pd",
+			 { "ev", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "radius" },
+			 { "EveryApi&", "float", "float", "float", "float", "float", "float", "float" },
+			 { "ev", "0.0", "100.0", "0.0", "100.0", "0.0", "100.0", "20.0" },
+			 "PD", "polygon_dist_api", "rounded_cube"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_dist_api, &GameApi::PolygonDistanceField::sphere,
+			 "sphere_pd",
+			 { "ev", "center", "radius", "numfaces1", "numfaces2" },
+			 { "EveryApi&", "PT", "float", "int", "int" },
+			 { "ev", "", "100.0", "30", "30" },
+			 "PD", "polygon_dist_api", "sphere"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_dist_api, &GameApi::PolygonDistanceField::or_array,
+			 "or_array_pd",
+			 { "ev", "vec" },
+			 { "EveryApi&", "[PD]" },
+			 { "ev", "" },
+			 "PD", "polygon_dist_api", "or_array"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_dist_api, &GameApi::PolygonDistanceField::color_from_normal,
+			 "pd_color_from_normal",
+			 { "ev", "obj" },
+			 { "EveryApi&", "PD" },
+			 { "ev", "" },
+			 "PD", "polygon_dist_api", "color_from_normal"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_dist_api, &GameApi::PolygonDistanceField::colormod_from_position,
+			 "pd_colormod",
+			 { "ev", "obj", "px", "py", "pz", "sx", "sy", "sz" },
+			 { "EveryApi&", "PD", "float", "float", "float", "float", "float", "float" },
+			 { "ev", "", "0.0", "0.0", "0.0", "100.0", "100.0", "100.0" },
+			 "PD", "polygon_dist_api", "colormod_from_position"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_dist_api, &GameApi::PolygonDistanceField::ambient_occulsion_sfo,
+			 "ambient_occulsion_sfo",
+			 { "ev", "obj", "d", "i" },
+			 { "EveryApi&", "PD", "float", "float" },
+			 { "ev", "", "10.2", "30.0" },
+			 "PD", "polygon_dist_api", "ambient_occulsion_sfo"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_dist_api, &GameApi::PolygonDistanceField::get_distance_field,
+			 "to_sfo",
+			 { "pd" },
+			 { "PD" },
+			 { "" },
+			 "SFO", "poly_dist_api", "get_distance_field"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_dist_api, &GameApi::PolygonDistanceField::get_polygon,
+			 "to_p",
+			 { "pd" },
+			 { "PD" },
+			 { "" },
+			 "P", "poly_dist_api", "get_polygon"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_dist_api, &GameApi::PolygonDistanceField::mesh_color_from_sfo,
+			 "mesh_color_from_sfo",
+			 { "ev", "pd", "mat" },
+			 { "EveryApi&", "PD", "MT" },
+			 { "ev", "", "" },
+			 "MT", "poly_dist_api", "mesh_color_from_sfo"));
+ 
+  return vec;
+}
 std::vector<GameApiItem*> polygonapi_functions()
 {
   std::vector<GameApiItem*> vec;
@@ -4685,7 +4806,7 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 "color_map",
 			 { "bm", "sx", "sy", "z" },
 			 { "BM", "float", "float", "float" },
-			 { "", "100", "100", "0" },
+			 { "", "200", "200", "0" },
 			 "P", "polygon_api", "color_map"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, (GameApi::P (GameApi::PolygonApi::*)(GameApi::BM, GameApi::FB,float,float,float))&GameApi::PolygonApi::color_map3,
@@ -4912,7 +5033,7 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 "p_prepare",
 			 { "p", "b" },
 			 { "P", "bool" },
-			 { "", "true" },
+			 { "", "false" },
 			 "VA", "polygon_api", "create_vertex_array"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::render_vertex_array_ml,
 			 "p_render",
@@ -5446,10 +5567,10 @@ std::vector<GameApiItem*> floatbitmapapi_functions()
 			 "FB", "float_bitmap_api", "from_bool"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::distance_field,
 			 "distance_field",
-			 { "bb" },
-			 { "BB" },
-			 { "" },
-			 "FB", "float_bitmap_api", "distance_field","[B]","Broken"));
+			 { "fb", "max_value" },
+			 { "FB", "float" },
+			 { "", "100.0" },
+			 "FB", "float_bitmap_api", "distance_field"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::add_border,
 			 "add_border",
 			 { "fb" },
@@ -5564,6 +5685,19 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "std::string" },
 			 { "test.png" },
 			 "BM", "bitmap_api", "loadbitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::border,
+			 "border",
+			 { "bm", "left", "right", "top", "bottom" },
+			 { "BM", "int", "int", "int", "int" },
+			 { "", "5", "5", "5", "5" },
+			 "BM", "bitmap_api", "border"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::add_shape_border,
+			 "add_shape_border",
+			 { "ev", "bm", "dist_field_size", "start_range", "end_range", "r", "g", "b", "a", "border_size" },
+			 { "EveryApi&", "BM", "float", "float", "float", "int", "int", "int", "int", "int" },
+			 { "ev", "", "7.0", "0.5", "0.9", "0", "0", "0", "255", "5" },
+			 "BM", "bitmap_api", "add_shape_border"));
+			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::subbitmap,
 			 "sub",
 			 { "orig", "x", "y", "width", "height" },
@@ -5650,6 +5784,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "int", "int", "int", "int", "unsigned int", "unsigned int" },
 			 { "10", "10", "8", "8", "ffffffff", "ff888888" },
 			 "BM", "bitmap_api", "chessboard"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::simple_blur,
+			 "blur",
+			 { "bm", "center", "left", "right", "top", "bottom" },
+			 { "BM", "float", "float", "float", "float", "float" },
+			 { "", "0.5", "0.125", "0.125", "0.125", "0.125" },
+			 "BM", "bitmap_api", "simple_blur"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::world_from_bitmap2,
 			 "bm_world_from_bitmap",
@@ -5816,6 +5956,8 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> vf = booleanopsapi_functions();
   std::vector<GameApiItem*> vg = global_functions;
   std::vector<GameApiItem*> vh = moveapi_functions();
+  std::vector<GameApiItem*> vi = polydistfield_functions();
+  std::vector<GameApiItem*> vj = waveform_functions();
 
   std::vector<GameApiItem*> a1 = append_vectors(v1,v2);
   std::vector<GameApiItem*> a2 = append_vectors(v3,v4);
@@ -5833,11 +5975,20 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> ae = append_vectors(ad, vf);
   std::vector<GameApiItem*> af = append_vectors(ae, vg);
   std::vector<GameApiItem*> ag = append_vectors(af, vh);
-  return ag;
+  std::vector<GameApiItem*> ah = append_vectors(ag, vi);
+  std::vector<GameApiItem*> ai = append_vectors(ah, vj);
+  return ai;
 }
 std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)
 {
   std::vector<GameApiItem*> funcs = bitmapapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+std::string GameApi::GuiApi::waveformapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = waveform_functions();
   GameApiItem *item = funcs[i];
   std::string name = item->Name(0);
   return name;
@@ -5884,6 +6035,13 @@ std::string GameApi::GuiApi::linesapi_functions_item_label(int i)
 std::string GameApi::GuiApi::polygonapi_functions_item_label(int i)
 {
   std::vector<GameApiItem*> funcs = polygonapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+std::string GameApi::GuiApi::polygondistapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = polydistfield_functions();
   GameApiItem *item = funcs[i];
   std::string name = item->Name(0);
   return name;
@@ -6005,6 +6163,10 @@ GameApi::W GameApi::GuiApi::bitmapapi_functions_list_item(FtA atlas1, BM atlas_b
 {
   return functions_widget(*this, "BitmapApi", bitmapapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
+GameApi::W GameApi::GuiApi::waveformapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
+{
+  return functions_widget(*this, "WaveformApi", waveform_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+}
 
 GameApi::W GameApi::GuiApi::textureapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {
@@ -6076,6 +6238,10 @@ GameApi::W GameApi::GuiApi::polygonapi_functions_list_item(FtA atlas1, BM atlas_
 {
   return functions_widget(*this, "PolygonApi", polygonapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
+GameApi::W GameApi::GuiApi::polygondistapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
+{
+  return functions_widget(*this, "PolyDistApi", polydistfield_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+}
 
 class InsertWidget : public GuiWidgetForward
 {
@@ -6120,3 +6286,8 @@ GameApi::W GameApi::GuiApi::insert_widget(W item, std::function<void(int,int)> f
   return add_widget(e, new InsertWidget(ev,w,f));
 }
 #endif
+void GameApi::GuiApi::delete_widget(W w)
+{
+  GuiWidget *ww = new EmptyWidget(ev);
+  add_update_widget(e, w, ww);
+}

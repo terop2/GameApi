@@ -108,7 +108,7 @@ public:
     val -= start_y;
     val /= end_y-start_y;
     val *= float(sy);
-    float start_range = 0.0;
+    float start_range = start_y;
     start_range -= start_y;
     start_range /= end_y-start_y;
     start_range *= float(sy);

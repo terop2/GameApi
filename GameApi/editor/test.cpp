@@ -179,6 +179,7 @@ std::vector<DllData> load_dlls(std::string filename)
 }
 
 struct Envi {
+  Env *env;
   EveryApi *ev;
   GuiApi *gui;
   std::string target_string;
@@ -187,6 +188,7 @@ struct Envi {
   W editor;
   bool editor_visible;
   W display;
+  W mem;
   bool display_visible;
   W txt;
   W txt2;
@@ -779,7 +781,9 @@ void iter(void *arg)
 			BO p;
 			p.id = id;
 			P p2 = env->ev->bool_api.to_polygon(p);
-			env->display = env->gui->polygon_dialog(p2, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			  env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
+			env->display = env->gui->polygon_dialog(p2, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->mem);
 		      }
 		    else
 		    if (type=="VA")
@@ -802,6 +806,8 @@ void iter(void *arg)
 			    sh=env->sh3;
 			  }
 			//std::cout << "ID: " << p.id << std::endl;
+			  env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
 			env->display = env->gui->va_dialog(p, sh, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 			
 		      } else
@@ -809,7 +815,8 @@ void iter(void *arg)
 			{
 			  ML ml;
 			  ml.id = id;
-			  
+			  env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
 			  env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 
 			} else
@@ -822,7 +829,9 @@ void iter(void *arg)
 								   -300.0, 300.0,
 								   -300.0, 300.0,
 								   -300.0, 300.0);
-			    env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			  env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
+			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->mem);
 			  }
 			else
 			  if (type=="FD")
@@ -834,6 +843,8 @@ void iter(void *arg)
 			      V u_y = env->ev->vector_api.vector(0.0, 600.0, 0.0);
 			      V u_z = env->ev->vector_api.vector(0.0, 0.0, 600.0);
 			      BM bm = env->ev->dist_api.render(fd, pt, u_x, u_y, u_z, 300, 300);
+			  env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
 			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 
 			    }
@@ -842,6 +853,8 @@ void iter(void *arg)
 		      {
 			BM bm;
 			bm.id = id;
+			  env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
 			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 		      } 
 		    else if (type=="CBM")
@@ -849,6 +862,8 @@ void iter(void *arg)
 			CBM cbm;
 			cbm.id = id;
 			BM bm = env->ev->cont_bitmap_api.sample(cbm, 200,200);
+			  env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
 			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 
 		      }
@@ -857,6 +872,8 @@ void iter(void *arg)
 			BB bb;
 			bb.id = id;
 			BM bm = env->ev->bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
+			  env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
 			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 			
 		      }
@@ -864,9 +881,12 @@ void iter(void *arg)
 		      {
 			FB fb;
 			fb.id = id;
-			BB bb = env->ev->float_bitmap_api.to_bool_mod(fb,100.0);
-			BM bm = env->ev->bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
-			//BM bm = env->ev->float_bitmap_api.to_grayscale_color(fb, 255,255,255,255, 0,0,0,0);
+			
+			//BB bb = env->ev->float_bitmap_api.to_bool_mod(fb,100.0);
+			//BM bm = env->ev->bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
+			BM bm = env->ev->float_bitmap_api.to_grayscale_color(fb, 255,255,255,255, 0,0,0,0);
+			  env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
 			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 			
 		      }
@@ -876,12 +896,16 @@ void iter(void *arg)
 			p.id = id;
 			env->ev->polygon_api.print_stat(p);
 			std::cout << "ID: " << p.id << std::endl;
-			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			  env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
+			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->mem);
 		      }
 		    else if (type=="LI")
 		      {
 			LI p;
 			p.id = id;
+			 env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
 			env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 			
 		      }
@@ -890,6 +914,8 @@ void iter(void *arg)
 			C p0;
 			p0.id = id;
 			LI p = env->ev->curve_api.to_lines(p0, 40);
+			 env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
 			env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 			
 		      }
@@ -899,6 +925,8 @@ void iter(void *arg)
 			p.id = id;
 			std::cout << "PTS NumPoints: " << env->ev->points_api.NumPoints(p) << std::endl;
 			std::cout << "PTS0: " << env->ev->points_api.pos_x(p,0) << " " << env->ev->points_api.pos_y(p,0) << " " << env->ev->points_api.pos_z(p,0) << std::endl;
+			env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
 			env->display = env->gui->pts_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
 
 		      }
@@ -906,6 +934,8 @@ void iter(void *arg)
 		      {
 			SFO p;
 			p.id = id;
+			env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
 			env->display = env->gui->shader_dialog(p, env->display_close, env->atlas3, env->atlas_bm3, env->screen_size_x, env->screen_size_y, env->codegen_button);
 			
 		      }
@@ -1201,10 +1231,17 @@ void iter(void *arg)
 		  case 15:
 		    name = env->gui->booleanopsapi_functions_item_label(sel2-1);
 		    break;
+		  case 16:
+		    name = env->gui->polygondistapi_functions_item_label(sel2-1);
+		    break;
+		  case 17:
+		    name = env->gui->waveformapi_functions_item_label(sel2-1);
+		    break;
+
 		  default:
 		    {
 		      std::cout << "SEL: " << sel << std::endl;
-		      DllData &d = env->dlls[sel-16];
+		      DllData &d = env->dlls[sel-18];
 		      std::vector<Item*> funcs = (*d.functions)();
 		      Item *item = funcs[sel2-1];
 		      name = item->Name();
@@ -1320,7 +1357,14 @@ private:
 
 W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector<GameApiItem*> vec, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::FtA atlas2, GameApi::BM atlas_bm2, GameApi::W insert);
 
+void terminate_handler()
+{
+  std::cout << "Terminate Handler called!" << std::endl;
+  for(;;);
+}
+
 int main(int argc, char *argv[]) {
+  std::set_terminate(&terminate_handler);
   srand(time(NULL));
   Env *e2 = new Env;
   Env &e = *e2;
@@ -1330,6 +1374,7 @@ int main(int argc, char *argv[]) {
 
 
   Envi env;
+  env.env = e2;
 
 #ifdef WINDOWS
   env.dlls = load_dlls("DllList.txt");
@@ -1510,6 +1555,8 @@ int main(int argc, char *argv[]) {
       items.push_back(gui.fontapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.textureapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.booleanopsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.polygondistapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.waveformapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
 
       int s = env.dlls.size();
       for(int ii=0;ii<s;ii++)
@@ -1585,6 +1632,8 @@ int main(int argc, char *argv[]) {
   env.unique_id_counter = ev.mainloop_api.random();
   //env.editor = editor;
   env.editor_visible = false;
+  env.display = gui.empty();
+  env.mem = gui.empty();
   env.display_visible = false;
   //env.wave = wave;
   //env.test1 = test1;
@@ -1628,7 +1677,6 @@ int main(int argc, char *argv[]) {
 #else
   emscripten_set_main_loop_arg(iter, (void*)&env, 30,1);
 #endif
-
 
 
 }
