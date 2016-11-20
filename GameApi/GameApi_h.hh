@@ -427,6 +427,14 @@ struct PD_Impl
   GameApi::P mesh;
   GameApi::SFO distance_field;
 };
+struct Pa_Impl
+{
+  std::vector<GameApi::P> vec;
+};
+struct Va_Impl
+{
+  std::vector<GameApi::VA> vec;
+};
 
 static const int ArrayElements = 2;
 template<class T>
@@ -536,6 +544,9 @@ struct EnvImpl
   std::vector<Curve<Matrix>*> matrix_curves;
   std::vector<PlaneShape*> plane_shapes;
   std::vector<SkeletalNode*> skeletals;
+  std::vector<std::shared_ptr<void> > temp_deletes;
+  std::vector<Pa_Impl> polygon_array;
+  std::vector<Va_Impl> va_array;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -546,6 +557,11 @@ struct EnvImpl
 #endif
   std::vector<Font> fonts;
   static ::EnvImpl *Environment(GameApi::Env *e) { return (EnvImpl*)e->envimpl; }
+  EXPORT void free_temp_memory()
+  {
+    temp_deletes.resize(0);
+    temp_deletes.shrink_to_fit();
+  }
   EXPORT void free_memory()
   {
     deletes.resize(0);
@@ -826,6 +842,7 @@ GameApi::A<T> add_array(GameApi::Env &e, std::vector<T> *arr);
 GameApi::ML add_main_loop(GameApi::Env &e, MainLoopItem *item);
 GameApi::FtA add_font_atlas(GameApi::Env &e, FontAtlasInfo *info);
 GameApi::W add_widget(GameApi::Env &e, GuiWidget *w);
+void add_update_widget(GameApi::Env &e, GameApi::W widget, GuiWidget *w);
 GameApi::SFO add_shader_module(GameApi::Env &e, ShaderModule *vol);
 GameApi::SM add_sample(GameApi::Env &e, Samples *s);
 GameApi::TRK add_tracker(GameApi::Env &e, Tracker *trk);

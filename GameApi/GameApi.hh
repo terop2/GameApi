@@ -25,6 +25,8 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct Pa { int id; };
+  struct Va { int id; };
   struct AS { int id; };
   struct MC { int id; };
   struct MS { int id; };
@@ -168,6 +170,7 @@ class Env
 public:
   IMPORT Env();
   IMPORT void free_memory();
+  IMPORT void free_temp_memory();
   IMPORT ~Env();
   IMPORT static Env *Latest_Env();
 private:
@@ -275,6 +278,7 @@ public:
 	IMPORT void preparesprite(BM bm, int bbm_choose = -1);
 
 	IMPORT VA create_vertex_array(BM bm);
+        IMPORT void delete_vertex_array(VA va);
         IMPORT void update_vertex_array(VA va, BM bm);
         IMPORT ML update_vertex_array_ml(VA va, BM bm);
         IMPORT void clipping_sprite(VA va, int sx, int sy, float tex_l, float tex_t, float tex_r, float teb_b);
@@ -358,6 +362,8 @@ public:
 	IMPORT BM loadtilebitmap(std::string filename, int tile_sx, int tile_sy);
 	IMPORT BM loadposbitmap(std::string filename);
 	IMPORT BM findtile(BM tile_bitmap, int x, int y);
+  IMPORT BM border(BM, int left ,int right ,int top ,int bottom);
+  IMPORT BM add_shape_border(EveryApi &ev, BM bm, float dist_field_size, float start_range, float end_range, int r, int g, int b, int a, int border_size);
 	BM subbitmap(BM orig, int x, int y, int width, int height);
 	IMPORT BM subbitmapimage(BM orig, int r_start_range, int r_end_range, int g_start_range, int g_end_range, int b_start_range, int b_end_range, unsigned int empty_color);
 
@@ -403,6 +409,7 @@ public:
   IMPORT BM memoize_all(BM orig);
   IMPORT BM persistent_cache(BM orig, std::string filename);
   IMPORT BM alt(std::vector<BM> vec, int index);
+  IMPORT BM simple_blur(BM bm, float center, float left, float right, float top, float bottom);
   IMPORT int intvalue(BM bm, int x, int y);
   IMPORT unsigned int colorvalue(BM bm, int x, int y);
   IMPORT int size_x(BM bm);
@@ -815,6 +822,7 @@ class ShaderModuleApi
 {
 public:
   IMPORT ShaderModuleApi(Env &e) : e(e) { }
+  IMPORT SFO empty();
   IMPORT SFO function(std::function<std::string (std::string id)> function, std::string function_name, std::vector<std::string> param_names = std::vector<std::string>(), std::vector<std::string> arg_values = std::vector<std::string>());
   IMPORT SFO color_function(SFO orig, std::function<std::string (std::string)> function, std::string function_name);
   IMPORT SFO sphere(); // vec3 center, float radius
@@ -870,7 +878,10 @@ public:
   IMPORT SFO render(SFO obj);
   IMPORT SFO v_render(SFO obj);
   IMPORT SFO f_render_color(SFO obj);
+  IMPORT SFO color_from_position(SFO obj, float sx, float sy, float sz);
+  IMPORT SFO colormod_from_position(SFO obj, float px, float py, float pz, float sx, float sy, float sz);
 private:
+
   Env &e;
 };
 
@@ -1076,6 +1087,7 @@ class GuiApi
 {
 public:
   GuiApi(Env &e, EveryApi &ev, SH sh) : e(e), ev(ev), sh(sh) { }
+  void delete_widget(W w);
   W empty();
   W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=3);
   W icon(BM bitmap);
@@ -1126,7 +1138,7 @@ public:
   W dialog_item(std::string text, BM icon, int sx, int sy);
   W dialog_border(W item);
   W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
-  W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
+  W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &mem);
   W va_dialog(VA p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
   W ml_dialog(ML p, SH sh, SH sh2, SH sh_arr, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
   W shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_size_x, int screen_size_y, W &codegen_button);
@@ -1160,6 +1172,7 @@ public:
   W boolbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   W floatbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   W polygonapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W polygondistapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   W shadermoduleapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   W linesapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   W pointsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
@@ -1172,12 +1185,15 @@ public:
   W textureapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   W booleanopsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   W moveapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W waveformapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
 
 
   std::string bitmapapi_functions_item_label(int i);
+  std::string waveformapi_functions_item_label(int i);
   std::string boolbitmapapi_functions_item_label(int i);
   std::string floatbitmapapi_functions_item_label(int i);
   std::string polygonapi_functions_item_label(int i);
+  std::string polygondistapi_functions_item_label(int i);
   std::string shadermoduleapi_functions_item_label(int i);
   std::string linesapi_functions_item_label(int i);
   std::string pointsapi_functions_item_label(int i);
@@ -1498,7 +1514,7 @@ class PolygonDistanceField
 {
 public:
   PolygonDistanceField(Env &e) : e(e) { }
-  PD empty();
+  PD empty(EveryApi &ev);
   PD create_pd(P mesh, SFO distance_field);
   PD cube(EveryApi &ev, float start_x, float end_x,
 	  float start_y, float end_y,
@@ -1515,14 +1531,29 @@ public:
   PD rotatey(EveryApi &ev, PD orig, float angle);
   PD rotatez(EveryApi &ev, PD orig, float angle);
   PD scale(EveryApi &ev, PD orig, float sx, float sy, float sz);
+  PD color_from_normal(EveryApi &ev, PD obj);
   PD ambient_occulsion_sfo(EveryApi &ev, PD obj, float d, float i);
+  PD colormod_from_position(EveryApi &ev, PD obj, float px, float py, float pz, float sx, float sy, float sz);
   MT mesh_color_from_sfo(EveryApi &ev, PD orig, MT next);
   
   ML render_scene(EveryApi &ev, PD object, PD world); // this has access to sfo, P and matrix stack -- should make dynamic movement possible with proper shading which responds to movement of the objects in the scene. especially AO needs to be recalculated, but will also allow other shading stuff. This hasnt worked before since P object doesnt have access to shader side, SFO can't deal with meshes and matrix stack/ML is completely separate and it's needed for movement. // shader side needs to respond to matrix stack changes. So this is basically a bridge between matrix stack and shaders.
   std::vector<ML> render_scene_array(EveryApi &ev, std::vector<PD> vec); // this on the other hand, is completely different -- it can connect multiple objects together in nice way. Unfortunately, builder doesn't support this api, but it's anyway useful later. (we can make builder support this prototype)
 
-  P get_poly(PD p);
+  P get_polygon(PD p);
   SFO get_distance_field(PD p);
+private:
+  Env &e;
+};
+class PolygonArrayApi
+{
+public:
+  PolygonArrayApi(Env &e) : e(e) { }
+  Pa split_p(EveryApi &ev, P p, int max_chunk);
+  Va create_vertex_array(EveryApi &ev, Pa p, bool keep=false);
+  void delete_vertex_array(EveryApi &ev, Va va);
+  void render_vertex_array(EveryApi &ev, Va p);
+  void prepare_vertex_array_instanced(EveryApi &ev, ShaderApi &sha, Va va, PTA pta, SH sh);
+  void render_vertex_array_instanced(EveryApi &ev, ShaderApi &sha, Va va, PTA pta, SH sh);
 private:
   Env &e;
 };
@@ -1600,6 +1631,7 @@ public:
   IMPORT P cut_faces(P p, O o, CT cutter);
   IMPORT P tri_to_quad(P p);
 
+  IMPORT P split_p(P p, int start_face, int end_face);
   IMPORT P subpoly_change(P p, P p2, O choose);
 
   IMPORT P span(LI li, M matrix, int num_steps);
@@ -1736,6 +1768,7 @@ public:
   IMPORT void update_vertex_array_no_memory(VA va, P p);
   IMPORT ML update_vertex_array_ml(VA va, P p, bool keep=false);
   IMPORT VA create_vertex_array(P p, bool keep=false); // slow
+  IMPORT void delete_vertex_array(VA arr);
   IMPORT VA create_vertex_array_attribs(P p, bool keep,std::vector<int> attribs, std::vector<int> attribi); // slow
   IMPORT void render_vertex_array(VA va); // fast
   IMPORT void prepare_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh);
@@ -1823,6 +1856,7 @@ public:
 	IMPORT WV empty(float length);
 	IMPORT WV function(std::function<float(float)> f, float length, float min_value, float max_value);
 	IMPORT WV sinwave(float length, float freq);
+        IMPORT WV repeat(WV wave, int num);
 	IMPORT WV sample(float *array, int length, float samplelength);
 	IMPORT WV int_sample(int *array, int length, float samplelength, int min_value, int max_value);
 	IMPORT WV mix(WV orig, float pos, WV sample);
@@ -1831,6 +1865,7 @@ public:
 	IMPORT float length(WV orig);
 	IMPORT float get_value(WV orig, float val);
 	IMPORT WV length_change(WV orig, float new_length);
+  IMPORT WV step(bool b);
 	IMPORT BM waveform_bitmap(WV wave, int sx, int sy, unsigned int true_color, unsigned int false_color);
 
 private:
@@ -2066,7 +2101,7 @@ public: // values are [0.0..1.0]
   IMPORT BM subfloatbitmap(FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color);
   
   IMPORT FB from_bool(BB b, float val_true, float val_false);
-  IMPORT FB distance_field(BB bb);
+  IMPORT FB distance_field(FB bb, float max_value);
   
   IMPORT FB add_border(FB fb);
 
@@ -2448,6 +2483,7 @@ public:
   US v_specular(US us);
   US v_inst(US us);
   US v_passall(US us);
+  US v_pass_position(US us);
   US v_point_light(US us);
   US v_snoise(US us);
   US v_light(US us);
@@ -2461,7 +2497,7 @@ public:
   US v_dist_field_mesh(US us, SFO sfo);
   US v_skeletal(US us);
 
-  US f_mesh_color(US us, SFO sfo);
+  US f_mesh_color(US us, SFO sfo); // this requires v_pass_position() in vertex shader
   US f_empty(bool transparent);
   US f_diffuse(US us);
   US f_ambient(US us);
@@ -2618,7 +2654,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -2670,6 +2706,8 @@ struct EveryApi
   CurveApi curve_api;
   MatricesApi matrices_api;
   Skeletal skeletal_api;
+  PolygonArrayApi polygon_arr_api;
+  PolygonDistanceField polygon_dist_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);
@@ -3069,9 +3107,9 @@ private:
   class PolygonObj : public RenderObject, public MoveScaleObject3d
   {
   public:
-    PolygonObj(EveryApi &ev, P p, SH sh) : api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), sh(sh) 
+    PolygonObj(EveryApi &ev, P p, SH sh) : ev(ev), api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), sh(sh) 
     {
-      m_p.push_back(p);
+      m_p.push_back(ev.polygon_arr_api.split_p(ev,p,500000));
       id.resize(1);
       m_va2.resize(1);
       current_pos = mat.identity();
@@ -3087,9 +3125,13 @@ private:
       first = true;
     }
 
-    PolygonObj(EveryApi &ev, std::vector<P> anim_p, SH sh) : api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), sh(sh) 
+    PolygonObj(EveryApi &ev, std::vector<P> anim_p, SH sh) : ev(ev), api(ev.polygon_api), shapi(ev.shader_api), mat(ev.matrix_api), tex(ev.texture_api), sh(sh) 
     {
-      m_p = anim_p;
+      int s = anim_p.size();
+      for(int i=0;i<s;i++)
+	{
+	  m_p.push_back(ev.polygon_arr_api.split_p(ev,anim_p[i],500000));
+	}
       id.resize(anim_p.size());
       m_va2.resize(anim_p.size());
       current_pos = mat.identity();
@@ -3103,7 +3145,7 @@ private:
       anim_time = 0.0;
       first = true;
     }
-
+#if 0
     PolygonObj(PolygonApi &api, ShaderApi &shapi, MatrixApi &mat, TextureApi &tex,P p, SH sh) : api(api), shapi(shapi), mat(mat), tex(tex), sh(sh) 
     {
       m_p.push_back(p);
@@ -3120,13 +3162,23 @@ private:
       anim_time = 0.0;
       first = true;
     }
+#endif
+    ~PolygonObj() {
+      int s = va_mem.size();
+      for(int i=0;i<s;i++)
+	{
+	  ev.polygon_arr_api.delete_vertex_array(ev,va_mem[i]);
+	}
+    }
     void prepare(bool keep=false) 
     { 
       m_va2.clear();
       for(int i=0;i<(int)m_p.size();i++)
 	{
-	  VA va = api.create_vertex_array(m_p[i], id[i].id!=0||keep);
-	  VA va2;
+	  Va va = ev.polygon_arr_api.create_vertex_array(ev,m_p[i], id[i].id!=0||keep);
+	  va_mem.push_back(va);
+	  Va va2;
+#ifdef TODO
 	  if (id[i].id!=0) {
 	    va2 = tex.bind(va, id[i]);
 	  } else {
@@ -3134,8 +3186,11 @@ private:
 	      va2 = tex.bind_arr(va, txa_id);
 	    }
 	    else
+#endif
 	      va2 = va;
+#ifdef TODO
 	  }
+#endif
 	  m_va2.push_back(va2);
 	}
     }
@@ -3145,7 +3200,7 @@ private:
       shapi.set_var(sh, "in_N", normal_matrix); 
       //shapi.set_var(sh, "in_T", m2);
       shapi.set_var(sh, "in_POS", anim_time);
-      api.render_vertex_array(m_va2[anim_id]); 
+      ev.polygon_arr_api.render_vertex_array(ev,m_va2[anim_id]); 
       shapi.set_var(sh, "in_POS", 0.0f);
     }
     void render_instanced(PTA pta) {
@@ -3156,10 +3211,10 @@ private:
       shapi.set_var(sh, "in_POS", anim_time);
       if (first)
 	{
-	  api.prepare_vertex_array_instanced(shapi, m_va2[anim_id], pta,sh);
+	  ev.polygon_arr_api.prepare_vertex_array_instanced(ev,shapi, m_va2[anim_id], pta,sh);
 	  first = false;
 	}
-      api.render_vertex_array_instanced(shapi, m_va2[anim_id], pta, sh); 
+      ev.polygon_arr_api.render_vertex_array_instanced(ev,shapi, m_va2[anim_id], pta, sh); 
       shapi.set_var(sh, "in_POS", 0.0f);
     }
     void set_pos(float pos_x, float pos_y, float pos_z)
@@ -3204,11 +3259,13 @@ private:
     {
       anim_time = time;
     }
+#if 0
     void explode(PT pos, float val)
     {
       api.explode(m_va2[anim_id], pos, val);
       api.update(m_va2[anim_id]);
     }
+#endif
     void set_var(std::string name, float r, float g, float b, float a)
     {
       shapi.set_var(sh, name, r,g,b,a);
@@ -3220,6 +3277,7 @@ private:
       //m2 = mat.mult(mat.mult(current_rot, current_scale), current_rot2);
     }
   private:
+    EveryApi &ev;
     PolygonApi &api;
     ShaderApi &shapi;
     MatrixApi &mat;
@@ -3231,10 +3289,11 @@ private:
     M m;
     M normal_matrix;
     M m2;
-    std::vector<P> m_p;
+    std::vector<Pa> m_p;
     SH sh;
     //VA va;
-    std::vector<VA> m_va2;
+    std::vector<Va> m_va2;
+    std::vector<Va> va_mem;
     std::vector<TXID> id;
     TXA txa_id;
     int anim_id;

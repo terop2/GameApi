@@ -305,9 +305,15 @@ EXPORT GameApi::Env::Env()
   envimpl = (void*)new ::EnvImpl;
 }
 EXPORT void GameApi::Env::free_memory()
+{ 
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+ env->free_memory();
+}
+EXPORT void GameApi::Env::free_temp_memory()
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
-  env->free_memory();
+ env->free_temp_memory();
+
 }
 
 EXPORT GameApi::Env::~Env()
@@ -682,6 +688,12 @@ GameApi::VA add_vertex_array(GameApi::Env &e, VertexArraySet *va, RenderVertexAr
   GameApi::VA bm;
   bm.id = env->vertex_array.size()-1;
   return bm;
+}
+void add_update_widget(GameApi::Env &e, GameApi::W widget, GuiWidget *w)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  delete env->widgets[widget.id];
+  env->widgets[widget.id] = w;
 }
 void add_update_vertex_array(GameApi::Env &e, GameApi::VA va_h, VertexArraySet *va, RenderVertexArray *arr)
 {
@@ -2042,6 +2054,92 @@ pthread_t thread;
 void GameApi::prepare(GameApi::RenderObject &o)
 {
   pthread_create(&thread, NULL, Thread_Call, (void*)&o);
+}
+
+GameApi::Pa GameApi::PolygonArrayApi::split_p(EveryApi &ev, P p, int max_chunk)
+{
+  FaceCollection *f = find_facecoll(e, p);
+  std::vector<P> vec;
+  int num = f->NumFaces();
+  int start = 0;
+  std::cout << "split_p" << std::endl;
+  while(num > max_chunk)
+    { 
+      std::cout << "Range: " << start << " " << max_chunk << std::endl;
+      vec.push_back(ev.polygon_api.split_p(p, start, start+max_chunk));
+      start += max_chunk;
+      num -= max_chunk;
+    }
+  std::cout << "LastRange: " << start << " " << num << std::endl;
+  vec.push_back(ev.polygon_api.split_p(p, start, start+num));
+  Pa_Impl impl;
+  impl.vec = vec;
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->polygon_array.push_back(impl);
+  Pa pa;
+  pa.id = env->polygon_array.size()-1;
+  return pa;  
+}
+GameApi::Va GameApi::PolygonArrayApi::create_vertex_array(EveryApi &ev, Pa p, bool keep)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  Pa_Impl &impl = env->polygon_array[p.id];
+  int s = impl.vec.size();
+  Va_Impl va_impl;
+  for(int i=0;i<s;i++)
+    {
+      P pp = impl.vec[i];
+      VA va = ev.polygon_api.create_vertex_array(pp, keep);
+      va_impl.vec.push_back(va);
+    }
+  env->va_array.push_back(va_impl);
+  Va va;
+  va.id = env->va_array.size()-1;
+  return va;
+}
+void GameApi::PolygonArrayApi::render_vertex_array(EveryApi &ev, Va p)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  Va_Impl &impl = env->va_array[p.id];
+  int s = impl.vec.size();
+  for(int i=0;i<s;i++)
+    {
+      VA va = impl.vec[i];
+      ev.polygon_api.render_vertex_array(va);
+    }
+}
+void GameApi::PolygonArrayApi::prepare_vertex_array_instanced(EveryApi &ev, ShaderApi &sha, Va va, PTA pta, SH sh)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  Va_Impl &impl = env->va_array[va.id];
+  int s = impl.vec.size();
+  for(int i=0;i<s;i++)
+    {
+      VA va = impl.vec[i];
+      ev.polygon_api.prepare_vertex_array_instanced(sha, va, pta, sh);
+    }
+}
+void GameApi::PolygonArrayApi::render_vertex_array_instanced(EveryApi &ev, ShaderApi &sha, Va va, PTA pta, SH sh)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  Va_Impl &impl = env->va_array[va.id];
+  int s = impl.vec.size();
+  for(int i=0;i<s;i++)
+    {
+      VA va = impl.vec[i];
+      ev.polygon_api.render_vertex_array_instanced(sha, va, pta, sh);
+    }
+}
+void GameApi::PolygonArrayApi::delete_vertex_array(EveryApi &ev, Va va)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  Va_Impl &impl = env->va_array[va.id];
+  int s = impl.vec.size();
+  for(int i=0;i<s;i++)
+    {
+      VA va = impl.vec[i];
+      ev.polygon_api.delete_vertex_array(va);
+    }
 }
 
 GameApi::BO GameApi::BooleanOps::create_bo(P mesh, O bools, FD fd)
@@ -3829,7 +3927,12 @@ GameApi::US GameApi::UberShaderApi::v_specular(US us)
 GameApi::US GameApi::UberShaderApi::v_passall(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("passall", next,"EX_COLOR EX_TEXCOORD EX_NORMAL EX_POSITION IN_COLOR IN_TEXCOORD IN_NORMLA IN_POSITION"));
+  return add_uber(e, new V_ShaderCallFunction("passall", next,"EX_COLOR EX_TEXCOORD EX_NORMAL EX_POSITION IN_COLOR IN_TEXCOORD IN_NORMAL IN_POSITION"));
+}
+GameApi::US GameApi::UberShaderApi::v_pass_position(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("passpos", next,"EX_POSITION IN_POSITION"));
 }
 
 GameApi::US GameApi::UberShaderApi::v_point_light(US us)
@@ -3926,6 +4029,7 @@ private:
   mutable int id;
 };
 
+
 class F_MeshColor : public ShaderCall
 {
 public:
@@ -3946,10 +4050,10 @@ public:
     out+="vec3 pos";
     out+=ss.str();
     out+=" = ";
-    out+="gl_FragCoord.xyz;\n";
-    out+="pos" + ss.str() + ".x*=gl_FragCoord.w;\n";
-    out+="pos" + ss.str() + ".y*=gl_FragCoord.w;\n";
-    out+="pos" + ss.str() + ".z*=gl_FragCoord.w;\n";
+    out+="ex_Position;\n";
+    //out+="pos" + ss.str() + ".x/=gl_FragCoord.w;\n";
+    //out+="pos" + ss.str() + ".y/=gl_FragCoord.w;\n";
+    //out+="pos" + ss.str() + ".z/=gl_FragCoord.w;\n";
     out+="vec4 rgb";
     out+=ss.str();
     out+=" = ";
@@ -3961,7 +4065,7 @@ public:
     //out+=");\n";
     return out;
   }
-  std::string define_strings() const { return next->define_strings(); } // TODO, MAYBE ASK DEFINE STRINGS FROM SFO
+  std::string define_strings() const { return "EX_POSITION " + next->define_strings(); } // TODO, MAYBE ASK DEFINE STRINGS FROM SFO
 private:
   ShaderCall *next;
   ShaderModule *mod;
@@ -4651,7 +4755,17 @@ public:
   GameApi::P obj = ev.polygon_api.or_array();
 }
 #endif
-
+GameApi::PD GameApi::PolygonDistanceField::empty(EveryApi &ev)
+{
+  PD_Impl pd;
+  pd.mesh = ev.polygon_api.empty();
+  pd.distance_field = ev.sh_api.cube();
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->polydistfield.push_back(pd);
+  PD pd2;
+  pd2.id = env->polydistfield.size()-1;
+  return pd2;
+}
 GameApi::PD GameApi::PolygonDistanceField::create_pd(P mesh, SFO distance_field)
 {
   PD_Impl pd;
@@ -4725,6 +4839,13 @@ GameApi::PD GameApi::PolygonDistanceField::or_array(EveryApi &ev, std::vector<PD
   P res_p = ev.polygon_api.or_array2(vec2);
   return create_pd(res_p, pi_sfo);
 }
+GameApi::PD GameApi::PolygonDistanceField::color_from_normal(EveryApi &ev, PD obj)
+{
+  SFO sfo = get_distance_field(obj);
+  SFO sfo2 = ev.sh_api.color_from_normal(sfo);
+  PD_Impl impl = find_polydistfield(e,obj);
+  return create_pd(impl.mesh,sfo2);
+}
 GameApi::PD GameApi::PolygonDistanceField::ambient_occulsion_sfo(EveryApi &ev,
 						       PD obj, float d, float i)
 {
@@ -4733,10 +4854,23 @@ GameApi::PD GameApi::PolygonDistanceField::ambient_occulsion_sfo(EveryApi &ev,
   PD_Impl impl = find_polydistfield(e,obj);
   return create_pd(impl.mesh,sfo2);
 }
+GameApi::PD GameApi::PolygonDistanceField::colormod_from_position(EveryApi &ev, PD obj, float px, float py, float pz, float sx, float sy, float sz)
+{
+  SFO sfo = get_distance_field(obj);
+  SFO sfo2 = ev.sh_api.colormod_from_position(sfo, px,py,pz,sx,sy,sz);
+  PD_Impl impl = find_polydistfield(e,obj);
+  return create_pd(impl.mesh,sfo2);
+
+}
 GameApi::SFO GameApi::PolygonDistanceField::get_distance_field(PD pd)
 {
   PD_Impl impl = find_polydistfield(e,pd);
   return impl.distance_field;
+}
+GameApi::P GameApi::PolygonDistanceField::get_polygon(PD pd)
+{
+  PD_Impl impl = find_polydistfield(e,pd);
+  return impl.mesh;
 }
 
 GameApi::MT GameApi::PolygonDistanceField::mesh_color_from_sfo(EveryApi &ev, PD orig, MT next)

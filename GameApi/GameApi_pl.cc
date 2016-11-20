@@ -2460,6 +2460,11 @@ EXPORT void GameApi::PolygonApi::update_vertex_array_no_memory(GameApi::VA va, G
   faces2.copy(0,faces->NumFaces());
   rend->update(0);
 }
+EXPORT void GameApi::PolygonApi::delete_vertex_array(GameApi::VA va)
+{
+  GameApi::P p = empty();
+  update_vertex_array(va,p);
+}
 EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P p, bool keep)
 {
 #ifdef THREADS
@@ -2544,6 +2549,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   if (!keep)
     {
       set->free_memory();
+      //::EnvImpl *env = ::EnvImpl::Environment(&e);
+      //env->temp_deletes.push_back(std::shared_ptr<void>( arr2 ) );
     }
   return add_vertex_array(e, set, arr2);
 #else
@@ -3270,10 +3277,10 @@ public:
       GameApi::US a1 = ev.uber_api.v_colour(a0);
       ee.us_vertex_shader = a1.id;
     }
-    //vertex.id = ee.us_vertex_shader;
-    //GameApi::US a2v = ev.uber_api.v_dist_field_mesh(vertex, sfo);
+    vertex.id = ee.us_vertex_shader;
+    GameApi::US a2v = ev.uber_api.v_pass_position(vertex);
     ee.sfo_id = sfo.id;
-    //ee.us_vertex_shader = a2v.id;
+    ee.us_vertex_shader = a2v.id;
 
 
     GameApi::US fragment;
@@ -4265,7 +4272,7 @@ EXPORT GameApi::P GameApi::PolygonApi::color_map(BM bm, float sx, float sy, floa
 
   Point pos(0.0, 0.0, z);
   Vector u_x(sx, 0.0, 0.0);
-  Vector u_y(0.0, sy, 0.0);
+  Vector u_y(0.0, -sy, 0.0);
   return add_polygon2(e, new ColorMapPoly(bm1, pos, u_x, u_y), 1);
 }
 
@@ -4911,4 +4918,35 @@ GameApi::P GameApi::PolygonApi::build_offsets(P p, std::vector<PT> points)
       vec.push_back(*find_point(e, points[i]));
     }
   return add_polygon2(e, new BuildOffsets(coll, vec),1);  
+}
+
+
+class SplitterFaceCollection : public FaceCollection
+{
+public:
+  SplitterFaceCollection(FaceCollection &coll, int start, int end) : coll(coll), start(start), end(end) { }
+  virtual void Prepare() { return coll.Prepare(); }
+  virtual int NumFaces() const { return std::min(end-start,coll.NumFaces()-start); }
+  virtual int NumPoints(int face) const
+  {
+    return coll.NumPoints(face+start);
+  }
+  virtual Point FacePoint(int face, int point) const { return coll.FacePoint(face+start,point); }
+  virtual Vector PointNormal(int face, int point) const { return coll.PointNormal(face+start, point); }
+  virtual float Attrib(int face, int point, int id) const { return coll.Attrib(face+start, point, id); }
+  virtual int AttribI(int face, int point, int id) const { return coll.AttribI(face+start, point, id); }
+  virtual unsigned int Color(int face, int point) const { return coll.Color(face+start, point); }
+  virtual Point2d TexCoord(int face, int point) const { return coll.TexCoord(face+start,point); }
+  virtual float TexCoord3(int face, int point) const { return coll.TexCoord3(face+start,point); }
+
+private:
+  FaceCollection &coll;
+  int start;
+  int end;
+};
+
+GameApi::P GameApi::PolygonApi::split_p(P p, int start_face, int end_face)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  return add_polygon2(e, new SplitterFaceCollection(*coll, start_face,end_face),1);
 }

@@ -1811,9 +1811,9 @@ public:
       {
 	for(int y=0;y<sy;y++)
 	  {
-	    bool b = bm->Map(x,y);
-	    array_x[x+y*sx] = b ? 0.0 : 1000.0;
-	    array_y[x+y*sx] = b ? 0.0 : 1000.0;
+	    float b = bm->Map(x,y);
+	    array_x[x+y*sx] = 1000.0-1000.0*b;
+	    array_y[x+y*sx] = 1000.0-1000.0*b;
 	  }
       }
     step1();
@@ -1821,7 +1821,7 @@ public:
 
   }
 
-  DistanceFieldBitmap(Bitmap<bool> *bm) : bm(bm) 
+  DistanceFieldBitmap(Bitmap<float> *bm, float max_value) : bm(bm), max_value(max_value) 
   {
   }
   int SizeX() const { return bm->SizeX(); }
@@ -1829,9 +1829,17 @@ public:
   float Map(int x, int y) const
   {
     int sx = bm->SizeX();
-    return mymin(array_x[x+y*sx],array_y[x+y*sx])/std::max(SizeX(),SizeY());
+    return scale(mymin(array_x[x+y*sx],array_y[x+y*sx]));
   }
-
+  float scale(float x) const
+  {
+    x/=max_value;
+    x = 1.0 - x;
+    x = std::max(x, 0.0f);
+    //std::cout << "DistanceFieldBitmap: " << x << std::endl;
+    return x;
+  }
+  
   void step2()
   {
     int sx = bm->SizeX();
@@ -1840,19 +1848,19 @@ public:
       {
 	for(int x=0;x<sx-1;x++)
 	  {
-	    //array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[x+(y+1)*sx]);
+	    array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[x+(y+1)*sx]+1.0);
 	    array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[x+(y+1)*sx]+1.0);
 	  }
 	for(int x=1;x<sx-1;x++)
 	  {
 	    array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[(x-1)+(y)*sx]+1.0);
-	    //array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x-1)+(y)*sx]);
+	    array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x-1)+(y)*sx]+1.0);
 
 	  }
 	for(int x=sx-2;x>=0;x--)
 	  {
 	    array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[(x+1)+(y)*sx]+1.0);
-	    //array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x+1)+(y)*sx]);
+	    array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x+1)+(y)*sx]+1.0);
 	    //std::cout << array_x[x+y*sx] << "#" << array_y[x+y*sx] << std::endl;
 
 	  }
@@ -1865,18 +1873,18 @@ public:
     for(int y=1;y<sy-1;y++) {
       for(int x=0;x<sx-1;x++)
 	{
-	  //array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[x+(y-1)*sx]);
+	  array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[x+(y-1)*sx]+1.0);
 	  array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[x+(y-1)*sx]+1.0);
 	}
       for(int x=1;x<sx-1;x++)
 	{
 	  array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[(x-1)+y*sx]+1.0);
-	  //array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x-1)+y*sx]);
+	  array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x-1)+y*sx]+1.0);
 	}
       for(int x=sx-2;x>=0;x--)
 	{
 	  array_x[x+y*sx] = mymin(array_x[x+y*sx], array_x[(x+1)+y*sx]+1.0);
-	  //array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x+1)+y*sx]);
+	  array_y[x+y*sx] = mymin(array_y[x+y*sx], array_y[(x+1)+y*sx]+1.0);
 	}
     }
     
@@ -1884,9 +1892,10 @@ public:
   ~DistanceFieldBitmap() { delete [] array_x; delete [] array_y; }
 
 private:
-  Bitmap<bool> *bm;
+  Bitmap<float> *bm;
   float *array_x;
   float *array_y;
+  float max_value;
 };
 class BorderFloatBitmap : public Bitmap<float>
 {
@@ -1929,10 +1938,10 @@ public:
 private:
   Bitmap<float> *bm;
 };
-EXPORT GameApi::FB GameApi::FloatBitmapApi::distance_field(BB bb)
+EXPORT GameApi::FB GameApi::FloatBitmapApi::distance_field(FB bb, float max_value)
 {
-  Bitmap<bool> *bm = find_bool_bitmap(e, bb)->bitmap;
-  return add_float_bitmap(e, new DistanceFieldBitmap(bm));
+  Bitmap<float> *bm = find_float_bitmap(e, bb)->bitmap;
+  return add_float_bitmap(e, new DistanceFieldBitmap(bm, max_value));
 }
 EXPORT GameApi::FB GameApi::FloatBitmapApi::add_border(FB fb)
 {
@@ -2358,6 +2367,81 @@ GameApi::BM GameApi::BitmapApi::persistent_cache(BM bm, std::string filename)
   ::Bitmap<Color> *b2 = find_color_bitmap(handle);
 
   ::Bitmap<Color> *b3 = new PersistentCache(*b2, filename);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b3;
+  BM bm2 = add_bitmap(e, handle2);
+  return bm2;
+}
+GameApi::BM GameApi::BitmapApi::border(BM bm, int left, int right, int top, int bottom)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  ::Bitmap<Color> *b3 = new BorderBitmap(*b2, Color::Transparent(),Color::Transparent(),Color::Transparent(),Color::Transparent(),
+					 left, right, top, bottom);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b3;
+  BM bm2 = add_bitmap(e, handle2);
+  return bm2;
+}
+
+//Ft I1=ev.font_api.newfont(FreeSans.ttf,40,20);
+//BM I2=ev.font_api.font_string(I1,Quantum,5);
+GameApi::BM GameApi::BitmapApi::add_shape_border(EveryApi &ev, GameApi::BM bm, float dist_field_size, float start_range, float end_range, int r, int g, int b, int a, int border_size)
+{
+  BM I1=ev.bitmap_api.border(bm,border_size,border_size,border_size,border_size);
+  FB I2=ev.float_bitmap_api.from_alpha(I1);
+  FB I3=ev.float_bitmap_api.distance_field(I2,dist_field_size);
+  BB I4=ev.bool_bitmap_api.from_float_bitmap(I3,start_range,end_range);
+  BM I5=ev.bool_bitmap_api.to_bitmap(I4,r,g,b,a,0,0,0,0);
+  BM I5a = ev.bitmap_api.border(I5,2,2,2,2);
+  BM I5b = ev.bitmap_api.simple_blur(I5a, 0.5, 0.125, 0.125, 0.125, 0.125);
+  BM I5c = ev.bitmap_api.simple_blur(I5b, 0.5, 0.125, 0.125, 0.125, 0.125);
+  //Ft I3=ev.font_api.newfont(FreeSans.ttf,40,20);
+  //BM I4=ev.font_api.font_string(I3,Quantum,5);
+  BM I6=ev.bitmap_api.blitbitmap(I5c,bm,border_size,border_size);
+  return I6;
+}
+
+class SimpleBlur : public Bitmap<Color>
+{
+public:
+  SimpleBlur(Bitmap<Color> &bm,
+       float center_mult,
+       float left_mult,
+       float right_mult,
+       float top_mult,
+       float bottom_mult
+       ) : bm(bm), center(center_mult),
+	   left(left_mult), right(right_mult), top(top_mult), bottom(bottom_mult) 
+  { }
+  void Prepare() { bm.Prepare(); }
+  virtual int SizeX() const { return bm.SizeX()-2; }
+  virtual int SizeY() const { return bm.SizeY()-2; }
+  virtual Color Map(int x, int y) const
+  {
+    int xx = x + 1;
+    int yy = y + 1;
+    Color c = bm.Map(xx,yy);
+    Color l = bm.Map(xx-1,yy);
+    Color r = bm.Map(xx+1,yy);
+    Color t = bm.Map(xx,yy-1);
+    Color b = bm.Map(xx,yy+1);
+    c*=center;
+    l*=left;
+    r*=right;
+    t*=top;
+    b*=bottom;
+    return c+l+r+t+b;
+  }
+private:
+  Bitmap<Color> &bm;
+  float center, left,right,top,bottom;
+};
+GameApi::BM GameApi::BitmapApi::simple_blur(BM bm, float center, float left, float right, float top, float bottom)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  ::Bitmap<Color> *b3 = new SimpleBlur(*b2, center, left, right, top, bottom);
   BitmapColorHandle *handle2 = new BitmapColorHandle;
   handle2->bm = b3;
   BM bm2 = add_bitmap(e, handle2);
