@@ -483,42 +483,42 @@ void VertexArraySet::append_to_polys(Polys &target, const Polys &source)
     {
       target.tri_polys.push_back(source.tri_polys[i]);
     }
-  std::cout << "tri_polys: " << target.tri_polys.size() << std::endl;
+  //std::cout << "tri_polys: " << target.tri_polys.size() << std::endl;
   int s2 = source.quad_polys.size();
   target.quad_polys.reserve(target.quad_polys.size()+s2);
   for(int i=0;i<s2;i++)
     {
       target.quad_polys.push_back(source.quad_polys[i]);
     }
-  std::cout << "quad_polys: " << target.quad_polys.size() << std::endl;
+  //std::cout << "quad_polys: " << target.quad_polys.size() << std::endl;
   int s2a = source.poly_polys.size();
   target.poly_polys.reserve(s2a);
   for(int i=0;i<s2a;i++)
     {
       target.poly_polys.push_back(source.poly_polys[i]);
     }
-  std::cout << "poly_polys: " << target.poly_polys.size() << std::endl;
+  //std::cout << "poly_polys: " << target.poly_polys.size() << std::endl;
   int s3 = source.tri_polys2.size();
   target.tri_polys2.reserve(target.tri_polys2.size()+s3);
   for(int i=0;i<s3;i++)
     {
       target.tri_polys2.push_back(source.tri_polys2[i]);
     }
-  std::cout << "tri_polys2: " << target.tri_polys2.size() << std::endl;
+  //std::cout << "tri_polys2: " << target.tri_polys2.size() << std::endl;
   int s4 = source.quad_polys2.size();
   target.quad_polys2.reserve(target.quad_polys2.size()+s4);
   for(int i=0;i<s4;i++)
     {
       target.quad_polys2.push_back(source.quad_polys2[i]);
     }
-  std::cout << "quad_polys2: " << target.quad_polys2.size() << std::endl;
+  //std::cout << "quad_polys2: " << target.quad_polys2.size() << std::endl;
   int s2b = source.poly_polys2.size();
   target.poly_polys2.reserve(target.poly_polys2.size()+s2b);
   for(int i=0;i<s2b;i++)
     {
       target.poly_polys2.push_back(source.poly_polys2[i]);
     }
-  std::cout << "poly_polys2: " << target.poly_polys2.size() << std::endl;
+  //std::cout << "poly_polys2: " << target.poly_polys2.size() << std::endl;
 
   int s5 = source.tri_normals.size();
   target.tri_normals.reserve(target.tri_normals.size()+s5);
@@ -526,21 +526,21 @@ void VertexArraySet::append_to_polys(Polys &target, const Polys &source)
     {
       target.tri_normals.push_back(source.tri_normals[i]);
     }
-  std::cout << "tri_normals: " << target.tri_normals.size() << std::endl;
+  //std::cout << "tri_normals: " << target.tri_normals.size() << std::endl;
   int s6 = source.quad_normals.size();
   target.quad_normals.reserve(target.quad_normals.size()+s6);
   for(int i=0;i<s6;i++)
     {
       target.quad_normals.push_back(source.quad_normals[i]);
     }
-  std::cout << "quad_normals: " << target.quad_normals.size() << std::endl;
+  //std::cout << "quad_normals: " << target.quad_normals.size() << std::endl;
   int s2c = source.poly_normals.size();
   target.poly_normals.reserve(target.poly_normals.size()+s2c);
   for(int i=0;i<s2c;i++)
     {
       target.poly_normals.push_back(source.poly_normals[i]);
     }
-  std::cout << "poly_normals: " << target.poly_normals.size() << std::endl;
+  //std::cout << "poly_normals: " << target.poly_normals.size() << std::endl;
 
   int s7 = source.tri_color.size();
   target.tri_color.reserve(target.tri_color.size()+s7);
@@ -548,21 +548,21 @@ void VertexArraySet::append_to_polys(Polys &target, const Polys &source)
     {
       target.tri_color.push_back(source.tri_color[i]);
     }
-  std::cout << "tri_color: " << target.tri_color.size() << std::endl;
+  //std::cout << "tri_color: " << target.tri_color.size() << std::endl;
   int s8 = source.quad_color.size();
   target.quad_color.reserve(s8);
   for(int i=0;i<s8;i++)
     {
       target.quad_color.push_back(source.quad_color[i]);
     }
-  std::cout << "quad_color: " << target.quad_color.size() << std::endl;
+  //std::cout << "quad_color: " << target.quad_color.size() << std::endl;
   int s2d = source.poly_color.size();
   target.poly_color.reserve(target.poly_color.size()+s2d);
   for(int i=0;i<s2d;i++)
     {
       target.poly_color.push_back(source.poly_color[i]);
     }
-  std::cout << "poly_color: " << target.poly_color.size() << std::endl;
+  //std::cout << "poly_color: " << target.poly_color.size() << std::endl;
 
   int s9 = source.tri_texcoord.size();
   target.tri_texcoord.reserve(target.tri_texcoord.size()+s9);
@@ -570,21 +570,21 @@ void VertexArraySet::append_to_polys(Polys &target, const Polys &source)
     {
       target.tri_texcoord.push_back(source.tri_texcoord[i]);
     }
-  std::cout << "tri_texcoord: " << target.tri_texcoord.size() << std::endl;
+  //std::cout << "tri_texcoord: " << target.tri_texcoord.size() << std::endl;
   int s10 = source.quad_texcoord.size();
   target.quad_texcoord.reserve(target.quad_texcoord.size()+s10);
   for(int i=0;i<s10;i++)
     {
       target.quad_texcoord.push_back(source.quad_texcoord[i]);
     }
-  std::cout << "quad_texcoord: " << target.quad_texcoord.size() << std::endl;
+  //std::cout << "quad_texcoord: " << target.quad_texcoord.size() << std::endl;
   int s2e = source.poly_texcoord.size();
   target.poly_texcoord.reserve(target.poly_texcoord.size()+s2e);
   for(int i=0;i<s2e;i++)
     {
       target.poly_texcoord.push_back(source.poly_texcoord[i]);
     }
-  std::cout << "poly_texcoord: " << target.poly_texcoord.size() << std::endl;
+  //std::cout << "poly_texcoord: " << target.poly_texcoord.size() << std::endl;
 
   append_from_map(source.tri_attribs, target.tri_attribs);
   append_from_map(source.quad_attribs, target.quad_attribs);

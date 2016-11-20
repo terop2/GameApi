@@ -2128,6 +2128,96 @@ GameApi::CBM GameApi::ContinuousBitmapApi::constant(unsigned int color, float x,
   return add_continuous_bitmap(e, new ConstantContinuousBitmap<Color>(x,y,Color(color)));
 }
 
+
+
+struct BiCubicData
+{
+public:
+  float x1_f_0;
+  float x1_f_1;
+  float x1_df_0;
+  float x1_df_1;
+  float x2_f_0;
+  float x2_f_1;
+  float x2_df_0;
+  float x2_df_1;
+};
+
+class BiCubicInterpolate : public Function<Point2d, float>, DFunction<Point2d, float>
+{
+public:
+  BiCubicInterpolate(BiCubicData &data) : data(data),
+					  i1(data.x1_f_0,
+					     data.x1_f_1,
+					     data.x1_df_0,
+					     data.x1_df_1),
+					  i2(data.x2_f_0,
+					     data.x2_f_1,
+					     data.x2_df_0,
+					     data.x2_df_1) { }
+  float Index(Point2d p) const
+  {
+    float val1 = i1.Index(p.x);
+    float val2 = i2.Index(p.x);
+    float d1 = i1.DIndex(p.x);
+    float d2 = i2.DIndex(p.x);
+    CubicInterpolate iy(val1, val2, d1,d2);
+    return iy.Index(p.y);
+  }
+  float DIndex(Point2d p) const
+  {
+    float val1 = i1.Index(p.x);
+    float val2 = i2.Index(p.x);
+    float d1 = i1.DIndex(p.x);
+    float d2 = i2.DIndex(p.x);
+    CubicInterpolate iy(val1, val2, d1,d2);
+    return iy.DIndex(p.y);
+  }
+private:
+  BiCubicData &data;
+  CubicInterpolate i1;
+  CubicInterpolate i2;
+};
+
+class BiCubicInterpolateBitmap : public ContinuousBitmap<Color>
+{
+public:
+  BiCubicInterpolateBitmap(float f_0, float f_1, float df_0, float df_1,
+			 float ff_0, float ff_1, float dff_0, float dff_1) 
+  {
+    data.x1_f_0 = f_0;
+    data.x1_f_1 = f_1;
+    data.x1_df_0 = df_0;
+    data.x1_df_1 = df_1;
+
+    data.x2_f_0 = ff_0;
+    data.x2_f_1 = ff_1;
+    data.x2_df_0 = dff_0;
+    data.x2_df_1 = dff_1;
+    inter = new BiCubicInterpolate(data);
+  }
+  ~BiCubicInterpolateBitmap() { delete inter; }
+  virtual float SizeX() const { return 1.0; }
+  virtual float SizeY() const { return 1.0; }
+  virtual Color Map(float x, float y) const
+  {
+    Point2d p = {x,y };
+    float val = inter->Index(p);
+    //std::cout << val << std::endl;
+    return Color(val,val,val,1.0f);
+  }
+  virtual void Prepare() { }
+ 
+private:
+  BiCubicData data;
+  BiCubicInterpolate *inter;
+};
+
+GameApi::CBM GameApi::ContinuousBitmapApi::bicubic(float f_0, float f_1, float df_0, float df_1,
+						   float ff_0, float ff_1, float dff_0, float dff_1)
+{
+  return add_continuous_bitmap(e, new BiCubicInterpolateBitmap(f_0,f_1,df_0,df_1, ff_0, ff_1, dff_0, dff_1));
+}
 class FunctionContinuousBitmap : public ContinuousBitmap<Color>
 {
 public:

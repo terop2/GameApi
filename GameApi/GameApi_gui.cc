@@ -80,9 +80,9 @@ public:
   {
     old_time = ev.mainloop_api.get_time();
   }
-  void update(Point2d mouse_pos, int button, int ch, int type)
+  void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
   {
-    GuiWidgetForward::update(mouse_pos, button, ch, type);
+    GuiWidgetForward::update(mouse_pos, button, ch, type, mouse_wheel_y);
     float current_time = ev.mainloop_api.get_time();
     float delta = current_time - old_time;
     if (delta > time && vec.size()>0)
@@ -102,14 +102,14 @@ public:
     uid = unique_id();
     state = 0;
     Point2d p = { -666.0, -666.0 };
-    update(p, -1,-1, -1);
+    update(p, -1,-1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
 
   }
-  void update(Point2d mouse_pos, int button, int ch, int type)
+  void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
   {
-    GuiWidgetForward::update(mouse_pos, button, ch, type);
+    GuiWidgetForward::update(mouse_pos, button, ch, type,mouse_wheel_y);
     Point2d pos = vec[0]->get_pos();
     Vector2d sz = vec[0]->get_size();
     if (state==0 && mouse_pos.x>pos.x && mouse_pos.x<pos.x+sz.dx &&
@@ -180,11 +180,11 @@ class TextGuiWidgetAtlas : public GuiWidgetForward
 public:
   TextGuiWidgetAtlas(GameApi::EveryApi &ev, std::string label, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::SH sh, int x_gap) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), label(label), atlas(atlas), atlas_bm(atlas_bm), sh(sh), x_gap(x_gap) { firsttime = true; 
     Point2d p = { -666.0, -666.0 };
-    update(p, -1,-1, -1);
+    update(p, -1,-1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2); 
   }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
     if (firsttime)
       {
@@ -233,11 +233,11 @@ class EditorGuiWidget : public GuiWidgetForward
 public:
   EditorGuiWidget(GameApi::EveryApi &ev, std::string allowed_chars, T &target_m, GameApi::Ft font, GameApi::SH sh) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), allowed_chars(allowed_chars), target(target_m), font(font), sh(sh) { firsttime = true; active=false; 
     Point2d p = { -666.0, -666.0 };
-    update(p, -1,-1, -1);
+    update(p, -1,-1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
   }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
     bool changed = false;
     Point2d pos = get_pos();
@@ -341,12 +341,12 @@ class EditorGuiWidgetAtlas : public GuiWidgetForward
 public:
   EditorGuiWidgetAtlas(GameApi::EveryApi &ev, std::string allowed_chars, T &target_m, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::SH sh, int x_gap) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), allowed_chars(allowed_chars), target(target_m), atlas(atlas), atlas_bm(atlas_bm), sh(sh), x_gap(x_gap) { firsttime = true; active=false; 
     Point2d p = { -666.0, -666.0 };
-    update(p, -1,-1, -1);
+    update(p, -1,-1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
     shift=false;
   }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
     bool changed = false;
     Point2d pos = get_pos();
@@ -456,14 +456,14 @@ class PolyGuiWidget : public GuiWidgetForward
 public:
   PolyGuiWidget(GameApi::EveryApi &ev, GameApi::P p, GameApi::SH sh, GameApi::SH old_sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), sh(sh), old_sh(old_sh), p(p), obj(ev, p, sh),sx(sx),sy(sy), screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
     Point2d p3 = {-666.0, -666.0 };
-    update(p3, -1,-1,-1);
+    update(p3, -1,-1,-1,0);
     Point2d p2 = { 0.0,0.0 };
     set_pos(p2);
     rot_y = 0.0;
     left=false; right=false;
   }
   ~PolyGuiWidget() { std::cout << "PolyGuiWidget destructor" << std::endl; }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
 #ifdef EMSCRIPTEN
     if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
@@ -540,14 +540,14 @@ class VAGuiWidget : public GuiWidgetForward
 public:
   VAGuiWidget(GameApi::EveryApi &ev, GameApi::VA p, GameApi::SH sh, GameApi::SH old_sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), sh(sh), old_sh(old_sh), p(p),sx(sx),sy(sy), screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
     Point2d p3 = {-666.0, -666.0 };
-    update(p3, -1,-1,-1);
+    update(p3, -1,-1,-1,0);
     Point2d p2 = { 0.0,0.0 };
     set_pos(p2);
     rot_y = 0.0;
     mat = ev.matrix_api.identity();
     left=false; right=false;
   }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
 #ifdef EMSCRIPTEN
     if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
@@ -629,7 +629,7 @@ class MLGuiWidget : public GuiWidgetForward
 public:
   MLGuiWidget(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::ML p, GameApi::SH sh, GameApi::SH sh2, GameApi::SH sh_arr, GameApi::SH old_sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), env(env), sh(sh), sh2(sh2), sh_arr(sh_arr), old_sh(old_sh), p(p),sx(sx),sy(sy), screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
     Point2d p3 = {-666.0, -666.0 };
-    update(p3, -1,-1,-1);
+    update(p3, -1,-1,-1,0);
     Point2d p2 = { 0.0,0.0 };
     set_pos(p2);
     rot_y = 0.0;
@@ -640,7 +640,7 @@ public:
     e.button = -1;
     left=false; right=false;
   }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
     if (firsttime)
       {
@@ -767,7 +767,7 @@ class ShaderPlaneGuiWidget : public GuiWidgetForward
 public:
   ShaderPlaneGuiWidget(GameApi::EveryApi &ev, GameApi::SFO p, GameApi::SH sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), sh(sh), p(p),sx(sx),sy(sy),screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
     Point2d p3 = {-666.0, -666.0 };
-    update(p3, -1,-1,-1);
+    update(p3, -1,-1,-1,0);
     Point2d p2 = { 0.0,0.0 };
     set_pos(p2);
     rot_y = 0.0;
@@ -800,7 +800,7 @@ public:
   }
   
 
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
 
 #ifdef EMSCRIPTEN
@@ -890,13 +890,13 @@ class PTSGuiWidget : public GuiWidgetForward
 public:
   PTSGuiWidget(GameApi::EveryApi &ev, GameApi::PTS p, GameApi::SH sh, GameApi::SH old_sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), sh(sh), old_sh(old_sh), p(p), obj(ev, p, sh),sx(sx),sy(sy), screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
     Point2d p3 = {-666.0, -666.0 };
-    update(p3, -1,-1,-1);
+    update(p3, -1,-1,-1,0);
     Point2d p2 = { 0.0,0.0 };
     set_pos(p2);
     rot_y = 0.0;
     left=false; right=false;
   }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
 #ifdef EMSCRIPTEN
     if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
@@ -975,12 +975,12 @@ class LinesGuiWidget : public GuiWidgetForward
 public:
   LinesGuiWidget(GameApi::EveryApi &ev, GameApi::LI p, GameApi::SH sh, GameApi::SH old_sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), sh(sh), old_sh(old_sh), p(p), obj(ev, p, sh),sx(sx),sy(sy), screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
     Point2d p3 = {-666.0, -666.0 };
-    update(p3, -1,-1,-1);
+    update(p3, -1,-1,-1,0);
     Point2d p2 = { 0.0,0.0 };
     set_pos(p2);
     rot_y = 0.0;
   }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
 #ifdef EMSCRIPTEN
     if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
@@ -1056,12 +1056,12 @@ class IconGuiWidget : public GuiWidgetForward
 public:
   IconGuiWidget(GameApi::EveryApi &ev, GameApi::BM bm, GameApi::SH sh) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), sh(sh), bm(bm) { firsttime=true;
     Point2d p = { -666.0, -666.0 };
-    update(p, -1,-1, -1);
+    update(p, -1,-1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
 
   }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
     if (firsttime)
       {
@@ -1096,7 +1096,7 @@ public:
   MarginGuiWidget(GameApi::EveryApi &ev, GuiWidget *w, int l, int t, int r, int b) : GuiWidgetForward(ev, { w }), l(l), t(t), r(r), b(b) 
   {
     Point2d p = { -666.0, -666.0 };
-    update(p, -1, -1, -1);
+    update(p, -1, -1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
   }
@@ -1112,9 +1112,9 @@ public:
     Vector2d v = { float(l), float(t) };
     vec[0]->set_pos(p+v);
   }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
-    GuiWidgetForward::update(mouse,button,ch, type);
+    GuiWidgetForward::update(mouse,button,ch, type, mouse_wheel_y);
     Vector2d v = vec[0]->get_size();
     Vector2d vv = { float(l+r), float(t+b) };
     Vector2d vvv = v+vv;
@@ -1135,7 +1135,7 @@ public:
   LayerGuiWidget(GameApi::EveryApi &ev, GuiWidget *w1, GuiWidget *w2) : GuiWidgetForward(ev, { w1, w2 }) 
   { 
     Point2d p = { -666.0, -666.0 };
-    update(p, -1,-1, -1);
+    update(p, -1,-1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
   }
@@ -1151,9 +1151,9 @@ public:
     vec[0]->set_size(size);
     vec[1]->set_size(size);
   }
-  void update(Point2d mouse_pos, int button, int ch, int type)
+  void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
   {
-    GuiWidgetForward::update(mouse_pos, button,ch, type);
+    GuiWidgetForward::update(mouse_pos, button,ch, type, mouse_wheel_y);
     Vector2d v1 = vec[0]->get_size();
     Vector2d v2 = vec[1]->get_size();
     Vector2d mx = { std::max(v1.dx, v2.dx), std::max(v1.dy,v2.dy) };
@@ -1172,7 +1172,7 @@ public:
   ArrayXWidget(GameApi::EveryApi &ev, std::vector<GuiWidget*> vec, int x_gap) : GuiWidgetForward(ev, vec), x_gap(x_gap) 
   {
     Point2d pos = { -666.0, -666.0 };
-    update(pos, -1,-1, -1);
+    update(pos, -1,-1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
   }
@@ -1193,9 +1193,9 @@ public:
   {
     GuiWidgetForward::set_size(size);
   }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
-    GuiWidgetForward::update(mouse,button,ch, type);
+    GuiWidgetForward::update(mouse,button,ch, type, mouse_wheel_y);
     int s = vec.size();
     float sz = 0;
     float sz_max = 0;
@@ -1222,7 +1222,7 @@ public:
   ArrayYWidget(GameApi::EveryApi &ev, std::vector<GuiWidget*> vec, int y_gap) : GuiWidgetForward(ev, vec), y_gap(y_gap) 
   {
     Point2d pos = { -666.0, -666.0 };
-    update(pos, -1,-1, -1);
+    update(pos, -1,-1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
   }
@@ -1243,9 +1243,9 @@ public:
   {
     GuiWidgetForward::set_size(size);
   }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
-    GuiWidgetForward::update(mouse,button,ch, type);
+    GuiWidgetForward::update(mouse,button,ch, type, mouse_wheel_y);
     int s = vec.size();
     float sz = 0;
     float sz_max = 0;
@@ -1290,9 +1290,9 @@ public:
     size.dx = sx;
     size.dy = sy;
     Point2d p = { -666.0, -666.0 };
-    update(p, -1,-1,-1);
+    update(p, -1,-1,-1,0);
   }
-  void update(Point2d mouse, int button,int ch, int type)
+  void update(Point2d mouse, int button,int ch, int type, int mouse_wheel_y)
   {
     Point2d p = get_pos();
     Vector2d s = get_size();
@@ -1367,11 +1367,11 @@ public:
     firsttime=true; 
     changed=false;
     Point2d p = { -666.0, -666.0 };
-    update(p, -1, -1, -1);
+    update(p, -1, -1, -1,0);
   }
-  void update(Point2d mouse, int button,int ch, int type)
+  void update(Point2d mouse, int button,int ch, int type, int mouse_wheel_y)
   {
-    GuiWidgetForward::update(mouse, button,ch, type);
+    GuiWidgetForward::update(mouse, button,ch, type, mouse_wheel_y);
     Point2d p = get_pos();
     Vector2d s = get_size();
     if (mouse.x >= p.x && mouse.x < p.x+s.dx && mouse.y>=p.y && mouse.y< p.y+s.dy)
@@ -1475,7 +1475,7 @@ public:
     GuiWidgetForward::set_pos(p2);
     //delta_vec = p2 - p + delta_vec;
     Point2d p = { -666.0, -666.0 };
-    update(p, -1, -1, -1);
+    update(p, -1, -1, -1,0);
 
   }
   GameApi::PT line_func(int linenum, bool id)
@@ -1511,7 +1511,7 @@ public:
     //GameApi::P poly = ev.polygon_api.quad_z(sx,ex,sy,ey,0.0);
     return ev.polygon_api.color(poly, 0xffffffff);
   }
-  void update(Point2d mouse_pos, int button, int ch, int type)
+  void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
   {
     using std::placeholders::_1;
     using std::placeholders::_2;
@@ -1722,11 +1722,11 @@ class MouseMoveWidget : public GuiWidgetForward
 public:
   MouseMoveWidget(GameApi::EveryApi &ev, GuiWidget *wid, int area_x, int area_y, int area_width, int area_height) : GuiWidgetForward(ev, { wid } ), area_x(area_x), area_y(area_y), area_width(area_width), area_height(area_height) { move_ongoing = false; 
     Point2d p = { -666.0, -666.0 };
-    update(p, -1, -1, -1);
+    update(p, -1, -1, -1,0);
   }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
-    GuiWidgetForward::update(mouse,button,ch, type);
+    GuiWidgetForward::update(mouse,button,ch, type, mouse_wheel_y);
     if (!move_ongoing && button==0 && type==1025 && mouse.x >= pos.x+area_x && mouse.x < pos.x+area_x+area_width &&
 	mouse.y >= pos.y+area_y && mouse.y < pos.y+area_y+area_height)
       {
@@ -1754,18 +1754,69 @@ private:
   Point2d old_mouse;
 };
 
+class RectangleWidget : public GuiWidgetForward
+{
+public:
+  RectangleWidget(GameApi::EveryApi &ev, GameApi::SH sh, int start_x, int end_x, int start_y, int end_y, unsigned int color) : GuiWidgetForward(ev, { } ), sh(sh), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), color(color) {
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1, -1, -1,0);
+    firsttime = true;
+  }
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
+  {
+    GuiWidgetForward::update(mouse,button,ch, type, mouse_wheel_y);
+    Vector2d sz = { float(end_x-start_x), float(end_y-start_y) };
+    size = sz;
+    if (firsttime)
+      {
+	sx = size.dx;
+	sy = size.dy;
+	GameApi::BB b = ev.bool_bitmap_api.empty(sx,sy);
+	GameApi::BB b1 = ev.bool_bitmap_api.rectangle(b, 0.0, 0.0, float(sx),float(sy));
+	Color c(color);
+	bg = ev.bool_bitmap_api.to_bitmap(b1, c.r,c.g,c.b,c.alpha,0,0,0,0);
+	bg_va = ev.sprite_api.create_vertex_array(bg);
+	firsttime = false;
+      }
+
+  }
+  void render() {
+    if (!firsttime)
+      {
+	Point2d p = get_pos();
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x, p.y, 0.0));
+	ev.sprite_api.render_sprite_vertex_array(bg_va);
+      }
+
+  }
+private:
+  int sx,sy;
+  GameApi::SH sh;
+  GameApi::BM bg;
+  GameApi::VA bg_va;
+  int start_x, end_x;
+  int start_y, end_y;
+  bool firsttime;
+  unsigned int color;
+};
+
+GameApi::W GameApi::GuiApi::rectangle(int start_x, int end_x, int start_y, int end_y, unsigned int color)
+{
+  return add_widget(e, new RectangleWidget(ev,sh,start_x, end_x, start_y, end_y, color));
+}
+
 class ClickAreaWidget : public GuiWidgetForward
 {
 public:
   ClickAreaWidget(GameApi::EveryApi &ev, GuiWidget *wid, int area_x, int area_y, int area_width, int area_height, int button_id2) : GuiWidgetForward(ev, { wid } ), area_x(area_x), area_y(area_y), area_width(area_width), area_height(area_height) { done=false;
     selected = false;
     Point2d p = { -666.0, -666.0 };
-    update(p, -1, -1, -1);
+    update(p, -1, -1, -1,0);
     button_id = button_id2;
   }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
-    GuiWidgetForward::update(mouse,button,ch, type);
+    GuiWidgetForward::update(mouse,button,ch, type, mouse_wheel_y);
 
     if (done) {selected=false; }
     if (button==-1) {done = false; }
@@ -1795,12 +1846,12 @@ class KeyAreaWidget : public GuiWidgetForward
 public:
   KeyAreaWidget(GameApi::EveryApi &ev, GuiWidget *wid, int area_x, int area_y, int area_width, int area_height, int key) : GuiWidgetForward(ev, { wid } ), area_x(area_x), area_y(area_y), area_width(area_width), area_height(area_height),key(key) { done=false;
     Point2d p = { -666.0, -666.0 };
-    update(p, -1, -1, -1);
+    update(p, -1, -1, -1,0);
     selected=false;
   }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
-    GuiWidgetForward::update(mouse,button,ch, type);
+    GuiWidgetForward::update(mouse,button,ch, type, mouse_wheel_y);
 
     if (done) {selected=false; }
     if (ch==-1) {done = false; }
@@ -2320,7 +2371,7 @@ class RightAlignWidget : public GuiWidgetForward
 public:
   RightAlignWidget(GameApi::EveryApi &ev, GuiWidget *wid, int sx) : GuiWidgetForward(ev, { wid }), sx(sx) {
     Point2d p = { -666.0, -666.0 };
-    update(p, -1, -1, -1);
+    update(p, -1, -1, -1,0);
 
   }
   void set_pos(Point2d pos)
@@ -2330,9 +2381,9 @@ public:
     Point2d p = { pos.x + sx - size.dx, pos.y };
     vec[0]->set_pos(p);
   }
-  void update(Point2d mouse_pos, int button, int ch, int type)
+  void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
   {
-    GuiWidgetForward::update(mouse_pos, button, ch, type);
+    GuiWidgetForward::update(mouse_pos, button, ch, type, mouse_wheel_y);
     set_pos(get_pos());
     size.dx = sx;
     size.dy = vec[0]->get_size().dy;
@@ -2345,7 +2396,7 @@ class CenterAlignWidget : public GuiWidgetForward
 public:
   CenterAlignWidget(GameApi::EveryApi &ev, GuiWidget *wid, int sx) : GuiWidgetForward(ev, { wid }), sx(sx) {
     Point2d p = { -666.0, -666.0 };
-    update(p, -1, -1, -1);
+    update(p, -1, -1, -1,0);
 
   }
   void set_pos(Point2d pos)
@@ -2355,9 +2406,9 @@ public:
     Point2d p = { pos.x + (sx - size.dx)/2, pos.y };
     vec[0]->set_pos(p);
   }
-  void update(Point2d mouse_pos, int button, int ch, int type)
+  void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
   {
-    GuiWidgetForward::update(mouse_pos, button, ch, type);
+    GuiWidgetForward::update(mouse_pos, button, ch, type, mouse_wheel_y);
     set_pos(get_pos());
     size.dx = sx;
     size.dy = vec[0]->get_size().dy;
@@ -2371,7 +2422,7 @@ class CenterYWidget : public GuiWidgetForward
 public:
   CenterYWidget(GameApi::EveryApi &ev, GuiWidget *wid, int sy) : GuiWidgetForward(ev, { wid }), sy(sy) {
     Point2d p = { -666.0, -666.0 };
-    update(p, -1, -1, -1);
+    update(p, -1, -1, -1,0);
 
   }
   void set_pos(Point2d pos)
@@ -2381,9 +2432,9 @@ public:
     Point2d p = { pos.x, pos.y + (sy-size.dy)/2};
     vec[0]->set_pos(p);
   }
-  void update(Point2d mouse_pos, int button, int ch, int type)
+  void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
   {
-    GuiWidgetForward::update(mouse_pos, button, ch, type);
+    GuiWidgetForward::update(mouse_pos, button, ch, type, mouse_wheel_y);
     set_pos(get_pos());
     size.dx = vec[0]->get_size().dx;
     size.dy = sy; 
@@ -2656,11 +2707,12 @@ GameApi::W GameApi::GuiApi::main_menu(std::vector<std::string> labels, FtA atlas
   return w5;
 }
 
+
 class ScrollBarY : public GuiWidgetForward
 {
 public:
   ScrollBarY(GameApi::EveryApi &ev, GameApi::SH sh, int sx, int sy, int area_y) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), sh(sh), sx(sx), sy(sy), area_y(area_y) { firsttime=true; current_pos = 0.0; following = false; old_area_y = area_y; changed=false; }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
     Point2d p = get_pos();
     float size_y = float(sy)/float(area_y)*float(sy-2-2-2-2);
@@ -2757,7 +2809,7 @@ class ScrollBarX : public GuiWidgetForward
 {
 public:
   ScrollBarX(GameApi::EveryApi &ev, GameApi::SH sh, int sx, int sy, int area_x) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), sh(sh), sx(sx), sy(sy), area_x(area_x) { firsttime=true; current_pos = 0.0; following = false;  changed=false; old_area_x = area_x; }
-  void update(Point2d mouse, int button, int ch, int type)
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
     Point2d p = get_pos();
     float size_x = float(sx)/float(area_x)*float(sx-2-2-2-2);
@@ -2861,7 +2913,7 @@ public:
   { 
     firsttime = true; 
     Point2d p = { -666.0, -666.0 };
-    update(p, -1,-1, -1);
+    update(p, -1,-1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
     time = 0.0;
@@ -2870,7 +2922,7 @@ public:
   Vector2d get_size() const { return size; }
   void set_pos(Point2d pos_p) { pos = pos_p; }
   void set_size(Vector2d vec_p) { size = vec_p; }
-  void update(Point2d mouse_pos, int button,int ch, int type)
+  void update(Point2d mouse_pos, int button,int ch, int type, int mouse_wheel_y)
   {
     if (firsttime)
       {
@@ -2925,7 +2977,7 @@ class ScrollAreaWidget : public GuiWidgetForward
 {
 public:
   ScrollAreaWidget(GameApi::EveryApi &ev, GameApi::SH sh, GuiWidget *orig, int sx, int sy, int screen_y) : GuiWidgetForward(ev, { orig }), sh(sh), orig(orig), sx(sx), sy(sy), screen_y(screen_y) { firsttime = true; Vector2d v = { float(sx),float(sy)}; size = v; top=0.0; left=0.0; 
-    
+    mouse_wheel_move=0.0;
 }
   void set_pos(Point2d pos)
   {
@@ -2941,7 +2993,7 @@ public:
     sx=(int)sz.dx;
     sy=(int)sz.dy;
   }
-  void update(Point2d mouse_pos, int button, int ch, int type)
+  void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
   {
     Point2d mouse = mouse_pos;
     if (mouse.x>=pos.x-80 && mouse.x<pos.x+size.dx+80 &&
@@ -2950,12 +3002,23 @@ public:
 	//Vector2d sz = vec[0]->get_size();
 	//mouse.x -= left*(sz.dx-size.dx);
 	//mouse.y -= top*(sz.dy-size.dy);
-	orig->update(mouse, button,ch, type);
+	orig->update(mouse, button,ch, type, mouse_wheel_y);
       }
     else
       {
 	Point2d mouse = {-666.0, -666.0 };
-	orig->update(mouse, button,ch, type);
+	orig->update(mouse, button,ch, type, mouse_wheel_y);
+      }
+    if (type==1027 && mouse.x>pos.x && mouse.x<pos.x+size.dx &&
+	mouse.y>pos.y && mouse.y<pos.y+size.dy)
+      { // mouse wheel
+	//std::cout << "Mouse wheel" << mouse_wheel_y << std::endl;
+	mouse_wheel_move+=mouse_wheel_y*80.0;
+	Point2d pos = get_pos();
+	Vector2d sz = vec[0]->get_size();
+	Point2d pos2 = { pos.x-left*(sz.dx-size.dx), pos.y-top*(sz.dy-size.dy)+mouse_wheel_move };
+	vec[0]->set_pos(pos2);
+
       }
   }
   void render()
@@ -2975,7 +3038,7 @@ public:
     }
     Point2d pos = get_pos();
     Vector2d sz = vec[0]->get_size();
-    Point2d pos2 = { pos.x-left*(sz.dx-size.dx), pos.y-top*(sz.dy-size.dy) };
+    Point2d pos2 = { pos.x-left*(sz.dx-size.dx), pos.y-top*(sz.dy-size.dy)+mouse_wheel_move };
     //std::cout << "dyn: " << left << " " << top << std::endl;
     vec[0]->set_pos(pos2);
   }
@@ -2987,6 +3050,7 @@ private:
   GuiWidget *orig;
   int sx,sy;
   float top, left;
+  float mouse_wheel_move;
   int screen_y;
 };
 class OrElemGuiWidget : public GuiWidget
@@ -2997,7 +3061,7 @@ public:
   virtual Vector2d get_size() const { if (b) return w1->get_size(); else return w2->get_size(); }
   virtual void set_pos(Point2d pos) { if (b) w1->set_pos(pos); else w2->set_pos(pos); } 
   virtual void set_size(Vector2d size) { if (b) w1->set_size(size); else w2->set_size(size); }
-  virtual void update(Point2d mouse_pos, int button, int ch, int type) { if (b) w1->update(mouse_pos, button,ch,type); else w2->update(mouse_pos, button,ch,type); }
+  virtual void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y) { if (b) w1->update(mouse_pos, button,ch,type,mouse_wheel_y); else w2->update(mouse_pos, button,ch,type,mouse_wheel_y); }
   virtual void render() { if (b) w1->render(); else w2->render(); }
   virtual int render_to_bitmap() { if (b) return w1->render_to_bitmap(); else return w2->render_to_bitmap(); }
   virtual void select_item(int item) { if (item==0) b=true; if (item==1) b=false; }
@@ -3212,12 +3276,12 @@ void GameApi::GuiApi::set_size(W w, float sx, float sy)
   GuiWidget *ww = find_widget(e, w);
   ww->set_size(v);
 }
-void GameApi::GuiApi::update(W w, PT mouse, int button,int ch, int type)
+void GameApi::GuiApi::update(W w, PT mouse, int button,int ch, int type, int mouse_wheel_y)
 {
   GuiWidget *ww = find_widget(e, w);
   Point *pt = find_point(e, mouse);
   Point2d pt2 = { pt->x, pt->y };
-  ww->update(pt2, button,ch, type);
+  ww->update(pt2, button,ch, type, mouse_wheel_y);
 }
 void GameApi::GuiApi::render(W w)
 {
@@ -4597,6 +4661,12 @@ std::vector<GameApiItem*> waveform_functions()
 			 { "float", "float" },
 			 { "6.28318", "1.0" },
 			 "WV", "waveform_api", "sinwave"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::cubic,
+			 "wv_cubic",
+			 { "f_0", "f_1", "df_0", "df_1", "min_y", "max_y" },
+			 { "float", "float", "float", "float", "float", "float" },
+			 { "0.0", "0.0", "0.5", "-0.5", "-5.0", "5.0" },
+			 "WV", "waveform_api", "cubic"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::repeat,
 			 "wv_repeat",
 			 { "wave", "num" },
@@ -5842,6 +5912,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "CBM", "int", "int" },
 			 { "", "200", "200" },
 			 "BM", "cont_bitmap_api", "to_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::cont_bitmap_api, &GameApi::ContinuousBitmapApi::bicubic,
+			 "cbm_bicubic",
+			 { "f_0", "f_1", "df_0", "df_1", "ff_0", "ff_1", "dff_0", "dff_1" },
+			 { "float", "float", "float", "float", "float", "float", "float", "float" },
+			 { "0.0", "0.0", "0.5", "-0.5", "1.0", "1.0", "0.5", "-0.5" },
+			 "CBM", "cont_bitmap_api", "bicubic"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::cont_bitmap_api, &GameApi::ContinuousBitmapApi::sample,
 			 "cbm_sample",
@@ -6151,8 +6227,8 @@ GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector
       typestr+=item->ReturnType(0);
       vec3.push_back(typestr);
     }
-  GameApi::W w = gui.list_item_opened(120, label, atlas, atlas_bm, vec2, vec3, atlas2, atlas_bm2, insert);
-  GameApi::W w2 = gui.list_item_title(120, label, atlas, atlas_bm);
+  GameApi::W w = gui.list_item_opened(140-5, label, atlas, atlas_bm, vec2, vec3, atlas2, atlas_bm2, insert);
+  GameApi::W w2 = gui.list_item_title(140-5, label, atlas, atlas_bm);
   GameApi::W or_elem = gui.or_elem(w,w2);
   return or_elem;
 }
@@ -6249,9 +6325,9 @@ public:
   InsertWidget(GameApi::EveryApi &ev,GuiWidget *w, std::function<void(int,int)> f) : GuiWidgetForward(ev, { w }), f(f) { activated = true;  state=false; }
   void activate() { activated = true; }
   void deactivate() { activated = false; }
-  void update(Point2d mouse_pos, int button,int ch, int type)
+  void update(Point2d mouse_pos, int button,int ch, int type, int mouse_wheel_y)
   {
-    GuiWidgetForward::update(mouse_pos, button,ch, type);
+    GuiWidgetForward::update(mouse_pos, button,ch, type, mouse_wheel_y);
     if (activated)
       {
 	set_pos(mouse_pos);

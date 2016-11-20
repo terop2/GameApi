@@ -236,6 +236,7 @@ public:
     int ch;
     PT cursor_pos;
     int button;
+    int mouse_wheel_y;
     bool joy0_button0;
     bool joy0_button1;
     bool joy0_button2;
@@ -1105,6 +1106,7 @@ public:
   W click_area(W widget, int area_x, int area_y, int area_width, int area_height, int button_id);
   W key_area(W widget, int area_x, int area_y, int area_width, int area_height, int key);
   W or_elem(W w1, W w2);
+  W rectangle(int start_x, int end_x, int start_y, int end_y, unsigned int color);
   W highlight(int sx, int sy);
   W highlight(W wid);
   W margin(W item, int left, int top, int right, int bottom);
@@ -1211,7 +1213,7 @@ public:
 
   void set_pos(W w, float px, float py);
   void set_size(W ow, float sx, float sy);
-  void update(W w, PT mouse_cursor_pos, int button, int ch, int type);
+  void update(W w, PT mouse_cursor_pos, int button, int ch, int type, int mouse_wheel_y);
   void render(W w);
   int chosen_item(W w);
   void select_item(W w, int item);
@@ -1866,6 +1868,7 @@ public:
 	IMPORT float get_value(WV orig, float val);
 	IMPORT WV length_change(WV orig, float new_length);
   IMPORT WV step(bool b);
+  IMPORT WV cubic(float f_0, float f_1, float df_0, float df_1, float min_y, float max_y);
 	IMPORT BM waveform_bitmap(WV wave, int sx, int sy, unsigned int true_color, unsigned int false_color);
 
 private:
@@ -2145,6 +2148,8 @@ public:
 
   IMPORT CBM rotate(CBM bm, float center_x, float center_y, float angle);
   IMPORT CBM surfacecolor(S s, COV cov);
+  IMPORT CBM bicubic(float f_0, float f_1, float df_0, float df_1,
+		     float ff_0, float ff_1, float dff_0, float dff_1);
   IMPORT unsigned int get_pixel(CBM bitmap, float x, float y);
 public: // Different rendering functions...
   CBM distance_render(FD obj, COV colours, float sx,float sy);

@@ -593,6 +593,7 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   //e2.current_time = p->current_time;
   //e2.delta_time = p->delta_time;
   int x,y;
+  int mouse_wheel_y = 0;
   int val = SDL_GetMouseState(&x, &y);
   e2.type = event.type;
   e2.ch = event.key.keysym.sym;
@@ -603,6 +604,11 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
       SDL_TouchFingerEvent *ptr = &event.tfinger;
       x = (int)ptr->x;
       y = (int)ptr->y;
+    }
+  if (event.type==SDL_MOUSEWHEEL)
+    {
+      SDL_MouseWheelEvent *ptr = &event.wheel;
+      mouse_wheel_y = ptr->y;
     }
 
   int id = 0;
@@ -634,6 +640,7 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   e2.joy0_button1 = but2==1;
   e2.joy0_button2 = but3==1;
   e2.joy0_button3 = but4==1;
+  e2.mouse_wheel_y = mouse_wheel_y;
 
   SDL_Joystick *joy2 = SDL_JoystickOpen(1);
   unsigned int a_but1 = SDL_JoystickGetButton(joy2, 0);  

@@ -101,3 +101,77 @@ EXPORT GameApi::WV GameApi::WaveformApi::function(std::function<float (float)> f
   return add_waveform(e, new FunctionWaveform(f, length, min_value, max_value));
 }
 
+class RepeatWaveform2 : public Waveform
+{
+public:
+  RepeatWaveform2(Waveform *wv, int num) : wv(wv), num(num) { }
+  virtual float Length() const { 
+    return wv->Length()*num; 
+  }
+  virtual float Min() const { return wv->Min(); }
+  virtual float Max() const { return wv->Max(); }
+  virtual float Index(float val) const 
+  {
+    float len = wv->Length();
+    val = fmod(val, len);
+    return wv->Index(val);
+  }
+
+private:
+  Waveform *wv;
+  int num;
+};
+
+class StepWaveform : public Waveform
+{
+public:
+  StepWaveform(bool flip) : flip(flip) { }
+  virtual float Length() const { 
+    return 1.0;
+  }
+  virtual float Min() const { return 0.0; }
+  virtual float Max() const { return 1.0; }
+  virtual float Index(float pos) const 
+  {
+    float val=0.0;
+    if (pos>0.5) { val=1.0; }
+    if (flip) { val = 1.0-val; }
+    return val;
+  }
+private:
+  bool flip;
+};
+
+EXPORT GameApi::WV GameApi::WaveformApi::repeat(WV wave, int num)
+{
+  Waveform *wave2 = find_waveform(e, wave);
+
+  return add_waveform(e, new RepeatWaveform2(wave2, num));
+}
+EXPORT GameApi::WV GameApi::WaveformApi::step(bool flip)
+{
+  return add_waveform(e, new StepWaveform(flip));
+}
+
+
+class CubicInterpolateWaveform : public Waveform
+{
+public:
+  CubicInterpolateWaveform(float f_0, float f_1, float df_0, float df_1, float min_y, float max_y) : cb(f_0, f_1, df_0, df_1), min_y(min_y), max_y(max_y) { }
+  virtual float Length() const { 
+    return 1.0;
+  }
+  virtual float Min() const { return min_y; }
+  virtual float Max() const { return max_y; }
+  virtual float Index(float pos) const 
+  {
+    return cb.Index(pos);
+  }
+private:
+  CubicInterpolate cb;
+  float min_y, max_y;
+};
+GameApi::WV GameApi::WaveformApi::cubic(float f_0, float f_1, float df_0, float df_1, float min_y, float max_y)
+{
+  return add_waveform(e, new CubicInterpolateWaveform(f_0, f_1, df_0, df_1, min_y, max_y));
+}

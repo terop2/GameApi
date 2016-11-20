@@ -321,12 +321,16 @@ class Color
 {
 public:
   // vector [(-1,-1,-1)..(1,1,1)]
-  Color() : r(0), g(0), b(0), alpha(255) { }
+  Color() : r(0), g(0), b(0), alpha(255) { check(); }
   Color(Vector v);
+  Color(float r_, float g_, float b_, float a_) : r(255.0*r_),g(255.0*g_), b(255.0*b_), alpha(255.0*a_) { check(); }
+  Color(double r_, double g_, double b_, double a_) : r(255.0*r_), g(255.0*g_), b(255.0*b_), alpha(255.0*a_) { check(); }
   Color(int r, int g, int b);
   Color(int r, int g, int b, int alpha);
   Color(unsigned int color);
-  void operator*=(float k) { r *= k; g *=k; b *=k; alpha*=k; }
+  void check();
+
+  void operator*=(float k) { r *= k; g *=k; b *=k; alpha*=k; check(); }
   friend Color operator+(const Color &c1, const Color &c2)
   {
     Color res;
@@ -334,6 +338,7 @@ public:
     res.g = c1.g+c2.g;
     res.b = c1.b+c2.b;
     res.alpha = c1.alpha+c2.alpha;
+    res.check();
     return res;
   }
   Color clamp() const
@@ -355,11 +360,13 @@ public:
   friend Color operator*(Color c, float val)
   {
     c*=val;
+    c.check();
     return c;
   }
   friend Color operator*(float val, Color c)
   {
     c*=val;
+    c.check();
     return c;
   }
   static unsigned short PixelConvert(unsigned int pixel)

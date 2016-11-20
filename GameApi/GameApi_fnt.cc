@@ -133,7 +133,7 @@ EXPORT GameApi::BM GameApi::FontApi::font_string_from_atlas(EveryApi &ev, FtA at
   FontAtlasInfo *info = find_font_atlas(e, atlas);
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
   int sz = str.length();
-  FontCharacterString<Color> *array = new FontCharacterString<Color>(Color(0.0,0.0,0.0,0.0), x_gap);
+  FontCharacterString<Color> *array = new FontCharacterString<Color>(Color(0.0f,0.0f,0.0f,0.0f), x_gap);
   for(int i=0;i<sz;i++)
     {
       char ch = str[i];
@@ -199,7 +199,7 @@ EXPORT GameApi::BM GameApi::FontApi::font_string(Ft font, std::string str, int x
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   int sz = str.size();
-  FontCharacterString<Color> *array = new FontCharacterString<Color>(Color(0.0,0.0,0.0,0.0), x_gap);
+  FontCharacterString<Color> *array = new FontCharacterString<Color>(Color(0.0f,0.0f,0.0f,0.0f), x_gap);
   for(int i=0;i<sz;i++)
     {
       char ch = str[i];
