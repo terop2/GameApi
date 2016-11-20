@@ -722,13 +722,15 @@ float Plane::CoordsY(Point p) const
 
 
 Color::Color(int r_, int g_, int b_)
-  : r(r_&0xff), g(g_&0xff), b(b_&0xff), alpha(0xff)
+  : r(r_), g(g_), b(b_), alpha(0xff)
 {
+  check();
 }
 
 Color::Color(int r_, int g_, int b_, int alpha_)
-  : r(r_&0xff), g(g_&0xff), b(b_&0xff), alpha(alpha_&0xff)
+  : r(r_), g(g_), b(b_), alpha(alpha_)
 {
+  check();
 }
 
 
@@ -738,6 +740,7 @@ Color::Color(Vector v)
   g = int(v.dy*255.0)&0xff;
   b = int(v.dz*255.0)&0xff;
   alpha = 255;
+  check();
 }
 Color::Color(unsigned int color)
   : r((color&0xff0000u)>>16),
@@ -745,6 +748,25 @@ Color::Color(unsigned int color)
     b((color&0xffu)>>0),
         alpha((color&0xff000000u)>>24)
 {
+  check();
+}
+void Color::check()
+{
+    bool bb = (r>255) ||(g>255)||(b>255)||(alpha>255)||(r<0)||(g<0)||(b<0)||(alpha<0);
+    if(bb) {
+      r = r %511;
+      g = g %511;
+      b = b %511;
+      alpha = alpha %511;
+      if (r>255) { r=255-(r-256); }
+      if (g>255) { g=255-(g-256); }
+      if (b>255) { b=255-(b-256); }
+      if (alpha>255) { alpha=255-(alpha-256); }
+    if (r<0) { r=-r; }
+    if (g<0) { g=-g; }
+    if (b<0) { b=-b; }
+    if (alpha<0) { alpha=-alpha;  }
+    }
 }
 
 Matrix Matrix::Transpose(const Matrix &m)

@@ -202,6 +202,7 @@ struct Envi {
   W dialog_cancel, dialog_ok;
   W display_close;
   W codegen_button;
+  W line;
   std::string codegen_uid;
 
   W list_tooltips;
@@ -409,8 +410,8 @@ void iter(void *arg)
     env->ev->mainloop_api.clear(0xff000000);
     //env->ev->mainloop_api.clear_3d();
     
-    env->gui->render(env->txt2);
-
+    //env->gui->render(env->txt2);
+    env->gui->render(env->line);
     env->gui->render(env->txt);
     env->gui->render(env->scroll_area);
     //env->gui->render(env->wave);
@@ -418,7 +419,7 @@ void iter(void *arg)
     //env->gui->render(env->test1);
     env->gui->render(env->canvas_area);
     env->gui->render(env->scrollbar_x);
-    env->gui->render(env->scrollbar_y);
+    //env->gui->render(env->scrollbar_y);
     env->gui->render(env->list_tooltips);
     if (env->popup_visible)
       {
@@ -1027,15 +1028,16 @@ void iter(void *arg)
 	      }
 	  }
 	
-	env->gui->update(env->txt, e.cursor_pos, e.button, e.ch, e.type);
+	env->gui->update(env->line, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	env->gui->update(env->txt, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	if (env->display_visible)
 	  {
-	    env->gui->update(env->display, e.cursor_pos, e.button, e.ch, e.type);
+	    env->gui->update(env->display, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	  }
 	if (env->editor_visible)
-	  env->gui->update(env->editor, e.cursor_pos, e.button, e.ch, e.type);
+	  env->gui->update(env->editor, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	if (env->popup_visible)
-	  env->gui->update(env->popup_dialog, e.cursor_pos, e.button, e.ch, e.type);
+	  env->gui->update(env->popup_dialog, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	if (e.button == 0 && env->popup_visible) { 
 	  PT pos = e.cursor_pos;
 	  int x = env->ev->point_api.pt_x(pos);
@@ -1056,15 +1058,15 @@ void iter(void *arg)
 	    }
 	}
 
-	env->gui->update(env->txt2, e.cursor_pos, e.button, e.ch, e.type);
-	env->gui->update(env->scroll_area, e.cursor_pos, e.button,e.ch, e.type);
+	//env->gui->update(env->txt2, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	env->gui->update(env->scroll_area, e.cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
 	//env->gui->update(env->wave, e.cursor_pos, e.button);
 	//env->gui->update(env->gameapi, e.cursor_pos, e.button);
 	//env->gui->update(env->test1, e.cursor_pos, e.button);
-	env->gui->update(env->canvas_area, e.cursor_pos, e.button,e.ch, e.type);
-	env->gui->update(env->scrollbar_x, e.cursor_pos, e.button,e.ch, e.type);
-	env->gui->update(env->scrollbar_y, e.cursor_pos, e.button,e.ch, e.type);
-	env->gui->update(env->list_tooltips, e.cursor_pos, e.button, e.ch, e.type);
+	env->gui->update(env->canvas_area, e.cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
+	env->gui->update(env->scrollbar_x, e.cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
+	//env->gui->update(env->scrollbar_y, e.cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
+	env->gui->update(env->list_tooltips, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	
 	//int s4 = env->connect_links.size();
 	//for(int i4 = 0;i4<s4;i4++)
@@ -1076,12 +1078,12 @@ void iter(void *arg)
 	
 	if (env->insert_ongoing)
 	  {
-	    env->gui->update(env->insert_widget, e.cursor_pos, e.button,e.ch, e.type);
+	    env->gui->update(env->insert_widget, e.cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
 	  }
 	if (env->connect_ongoing)
 	  {
-	    env->gui->update(env->connect_widget, e.cursor_pos, e.button, e.ch, e.type);
-	    env->gui->update(env->connect_line, e.cursor_pos, e.button, e.ch, e.type);
+	    env->gui->update(env->connect_widget, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	    env->gui->update(env->connect_line, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	  }
 	
 	if (e.button==0)
@@ -1117,15 +1119,15 @@ void iter(void *arg)
 	env->gui->set_dynamic_param(env->scroll_area, 1, param_x);
 	float param_x1 = env->gui->dynamic_param(env->scrollbar_x, 0);
 	env->gui->set_dynamic_param(env->canvas_area, 0, param_x1);
-	float param_y1 = env->gui->dynamic_param(env->scrollbar_y, 0);
-	env->gui->set_dynamic_param(env->canvas_area, 1, param_y1);
+	//float param_y1 = env->gui->dynamic_param(env->scrollbar_y, 0);
+	//env->gui->set_dynamic_param(env->canvas_area, 1, param_y1);
 #endif
 
 	env->ev->mod_api.update_lines_from_canvas(env->canvas, env->mod, 0);
 	
-	int area_y = env->gui->size_y(env->array);
+	//int area_y = env->gui->size_y(env->array);
 	//std::cout << area_y << std::endl;
-	env->gui->set_dynamic_param(env->txt2, 0, area_y);
+	//env->gui->set_dynamic_param(env->txt2, 0, area_y);
 	
 	if (env->editor_visible)
 	  {
@@ -1175,6 +1177,9 @@ void iter(void *arg)
 		
 		env->gui->select_item(w, b?0:1);
 		env->flip_ongoing = true;
+		env->gui->set_dynamic_param(env->scroll_area, 1, 0.0 /* param_x */);
+		//env->gui->update(env->scroll_area, e.cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
+
 	      }
 	    if (sel2>0)
 	      {
@@ -1291,7 +1296,7 @@ void iter(void *arg)
 	  }
 	if (env->opened_menu_num != -1)
 	  {
-	    env->gui->update(env->menus[env->opened_menu_num], e.cursor_pos, e.button, e.ch, e.type);
+	    env->gui->update(env->menus[env->opened_menu_num], e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	    if (e.button == -1) { env->state=1; }
 	    if (e.button==0 && e.type==1025 && env->state==1)
 	      {
@@ -1302,12 +1307,12 @@ void iter(void *arg)
 	      }
 	  }
       }
-    	float param_x = env->gui->dynamic_param(env->txt2, 0);
-	env->gui->set_dynamic_param(env->scroll_area, 1, param_x);
+    //float param_x = env->gui->dynamic_param(env->txt2, 0);
+    //env->gui->set_dynamic_param(env->scroll_area, 1, 0.0 /* param_x */);
 	float param_x1 = env->gui->dynamic_param(env->scrollbar_x, 0);
 	env->gui->set_dynamic_param(env->canvas_area, 0, param_x1);
-	float param_y1 = env->gui->dynamic_param(env->scrollbar_y, 0);
-	env->gui->set_dynamic_param(env->canvas_area, 1, param_y1);
+	//float param_y1 = env->gui->dynamic_param(env->scrollbar_y, 0);
+	//env->gui->set_dynamic_param(env->canvas_area, 1, param_y1);
 
 }
 float f(float w)
@@ -1578,11 +1583,11 @@ int main(int argc, char *argv[]) {
   W array = gui.array_y(&items[0], items.size(), 5);
   W scroll_area = gui.scroll_area(array, gui.size_x(array), screen_y-30, screen_y);
 
-  W txt2 = gui.scrollbar_y(20, screen_y-30, gui.size_y(array));
-  gui.set_pos(txt2, gui.size_x(scroll_area), 30);
+  //W txt2 = gui.scrollbar_y(20, screen_y-30, gui.size_y(array));
+  //gui.set_pos(txt2, gui.size_x(scroll_area), 30);
 
   gui.set_pos(scroll_area, 0.0, 30.0);
-
+  gui.set_size(scroll_area, 140.0, screen_y);
   //W wave = gui.waveform(f, 0.0, 3.14159*2.0, -1.5, 1.5, 200, 100, 0xffffffff, 0x00000000);
 
   std::vector<std::string> params;
@@ -1606,23 +1611,26 @@ int main(int argc, char *argv[]) {
   add_to_canvas(gui, canvas, env.connect_links);
 
 
-  W canvas_area = gui.scroll_area(canvas, screen2_x-20, screen2_y-20, screen_y);
-  W scrollbar_y = gui.scrollbar_y(20, screen2_y-20, sy);
+  W canvas_area = gui.scroll_area(canvas, screen2_x, screen2_y-20, screen_y);
+  //W scrollbar_y = gui.scrollbar_y(20, screen2_y-20, sy);
   W scrollbar_x = gui.scrollbar_x(screen2_x-20, 20, sx); 
+
+  W line = gui.rectangle(0.0, 4.0, 20.0, screen_y, 0xffffffff);
+  gui.set_pos(line, 140-5, 20);
   gui.set_pos(canvas_area, 140, 30);
   gui.set_pos(scrollbar_x, 140, screen_y-20);
-  gui.set_pos(scrollbar_y, screen_x-20, 30);
+  //gui.set_pos(scrollbar_y, screen_x-20, 30);
   
   env.x = 0.0;
   env.y = 0.0;
   env.z = 0.0;
   env.target_string = "abcde";
 
-
+  env.line = line;
   env.gui = &gui;
   env.ev = &ev;
   env.txt = txt;
-  env.txt2 = txt2;
+  //env.txt2 = txt2;
   env.font = font;
   env.font3 = font3;
   env.atlas = atlas;
@@ -1642,7 +1650,7 @@ int main(int argc, char *argv[]) {
   env.mod = mod;
   env.canvas = canvas;
   env.canvas_area = canvas_area;
-  env.scrollbar_y = scrollbar_y;
+  //env.scrollbar_y = scrollbar_y;
   env.scrollbar_x = scrollbar_x;
   //env.gameapi = gameapi_2;
   env.scroll_area = scroll_area;

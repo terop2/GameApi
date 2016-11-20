@@ -32,6 +32,95 @@ struct QuadColor
 };
 
 template<class C>
+class SimpleShape
+{ // these use scanline conversion
+public:
+  virtual int SizeY() const=0; 
+  virtual int NumEdges(int y) const=0;
+  virtual float Edge(int y, int edge) const=0;
+  virtual C EdgeLeftSide(int y, int edge) const=0;
+  virtual C EdgeRightSide(int y, int edge) const=0;
+};
+template<class C, class I>
+class Filler
+{
+public:
+  virtual C Interpolate(I pos) const=0;
+};
+
+template<class C>
+class LineShape : public SimpleShape<C>
+{
+public:
+  LineShape(int sizey, Point2d pp1, Point2d pp2, C left, C right) : sizey(sizey),pp1(pp1), pp2(pp2),left(left), right(right) { }
+  int SizeY() const {return sizey;}
+  int NumEdges(int y) const
+  {
+    return 1;
+  }
+  float Edge(int y, int edge) const
+  {
+    Point2d p1 = { 0.0, y };
+    Point2d p2 = { 100.0, y };
+    Point2d p3 = pp1;
+    Point2d p4 = pp2;
+
+    float p_x = P_x(p1,p2,p3,p4);
+    return p_x;
+  }
+
+  float P_x(Point2d p1, Point2d p2,  Point2d p3, Point2d p4)
+  {
+    return det(det(p1.x,p1.y,p2.x,p2.y), det(p1.x,1.0,p2.x,1.0),
+	       det(p3.x,p3.y,p4.x,p4.y), det(p3.x,1.0,p4.x,1.0)) /
+      det(det(p1.x,1.0,p2.x,1.0), det(p1.y,1.0,p2.y,1.0),
+	  det(p3.x,1.0,p4.x,1.0), det(p3.y,1.0,p4.y,1.0));
+  }
+  /*
+  float P_y(Point2d p1, Point2d p2,  Point2d p3, Point2d p4)
+  {
+    return det(det(p1.x,p1.y,p2.x,p2.y), det(p1.y,1.0,p2.y,1.0),
+	       det(p3.x,p3.y,p4.x,p4.y), det(p3.y,1.0,p4.y,1.0)) /
+      det(det(p1.x,1.0,p2.x,1.0), det(p1.y,1.0,p2.y,1.0),
+	  det(p3.x,1.0,p4.x,1.0), det(p3.y,1.0,p4.y,1.0));
+  }
+  */
+  float det(float a, float b, float c, float d)
+  {
+    return a*d-b*c;
+  }
+  C EdgeLeftSide(int y, int edge) const { return left; }
+  C EdgeRightSide(int y, int edge) const { return right; }
+private:
+  int sizey;
+  Point2d pp1,pp2;
+  C left,right;
+};
+
+
+// This is meant for supporting derivative
+template<class I, class T>
+class DFunction
+{
+public:
+  virtual T DIndex(I i) const=0;
+};
+
+
+
+
+
+
+
+
+
+class CompactBitmap
+{
+public:
+  
+};
+
+template<class C>
 class Bitmap
 {
 public:
@@ -88,6 +177,8 @@ public:
   virtual void Prepare()=0;
   virtual ~ContinuousBitmap() { }
 };
+
+
 
 template<class Z, class C>
 class ContinuousBitmap2
@@ -213,7 +304,7 @@ public:
   virtual Vector2d get_size() const=0;
   virtual void set_pos(Point2d pos)=0;
   virtual void set_size(Vector2d size)=0;
-  virtual void update(Point2d mouse_pos, int button, int ch, int type)=0;
+  virtual void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)=0;
   virtual void render()=0;
   virtual int render_to_bitmap()=0; // returns bitmap id
   virtual bool content_changed() const=0;

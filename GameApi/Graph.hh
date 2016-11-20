@@ -93,6 +93,59 @@ class Region : public Array<int,Rect>
 typedef ArrayConvert<Region, int, Rect> RegionConvert;
 
 
+class CubicInterpolate : public Function<float,float>, public DFunction<float,float>
+{
+public:
+  CubicInterpolate(float f_0, float f_1, float df_0, float df_1) : f_0(f_0), f_1(f_1), df_0(df_0), df_1(df_1) { }
+  float Index(float x) const
+  {
+    float a = 2.0*f_0-2.0*f_1+df_0+df_1;
+    float b = -3.0*f_0+3.0*f_1-3.0*df_0-df_1;
+    float c = df_0;
+    float d = f_0;
+    return a*x*x*x + b*x*x + c*x + d;
+  }
+  float DIndex(float x) const
+  {
+    float a = 2.0*f_0-2.0*f_1+df_0+df_1;
+    float b = -3.0*f_0+3.0*f_1-3.0*df_0-df_1;
+    float c = df_0;
+    return 3.0*a*x*x + 2.0*b*x + c;
+  }
+private:
+  float f_0,f_1,df_0,df_1;
+};
+
+
+
+template<class C>
+class LinearInterpolation2 : public Function<float,C>
+{
+public:
+  LinearInterpolation2(C c1, C c2) : c1(c1), c2(c2) { }
+  C Interpolate(float pos) const
+  {
+    return c1*(1.0-pos)+c2*pos;
+  }
+private:
+  C c1;
+  C c2;
+};
+class WaveformInterpolate : public Function<float,float>
+{
+public:
+  WaveformInterpolate(Waveform &w) : w(w) { }
+  float Interpolate(float pos)
+  {
+    float val = w.Index(pos*w.Length());
+    return val;
+  }
+private:
+  Waveform &w;
+};
+
+
+
 
 class WaveformBitmap : public Bitmap<Color>
 {

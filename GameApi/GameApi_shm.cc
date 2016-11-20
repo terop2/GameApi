@@ -2182,3 +2182,79 @@ EXPORT GameApi::SFO GameApi::ShaderModuleApi::grayscale_from_distance(SFO obj, S
   SFO m2 = bind_arg(m, "length", ToNum(length));
   return m2;
 }
+#if 0
+EXPORT GameApi::SFO GameApi::ShaderModuleApi::color_from_position(SFO obj, float sx, float sy, float sz)
+{
+  ShaderModule *mod = find_shader_module(e, obj);
+  SFO m = add_shader_module(e, new ColorFromPosition(mod));
+  SFO m2 = bind_arg(m, "sx", ToNum(sx));
+  SFO m3 = bind_arg(m2, "sy", ToNum(sy));
+  SFO m4 = bind_arg(m3, "sz", ToNum(sz));
+  return m4;
+}
+#endif
+
+class ColorModFromPosition : public ShaderModule
+{
+public:
+  ColorModFromPosition(ShaderModule *mod) : mod(mod) { uid=unique_id(); }
+  virtual std::string Function() const
+  {
+    return mod->Function() +
+      "float colormod" + uid + "(vec3 pt, float px, float py, float pz, float sx, float sy, float sz)\n"
+      "{\n"
+      "    return " + funccall_to_string(mod) + ";\n"
+      "}\n"
+      "vec4 colormod_color" + uid + "(vec3 pt, float px, float py, float pz, float sx, float sy, float sz)\n"
+      "{\n"
+      "  float xx = mod(pt.x-px, sx)/sx;\n"    
+      "  float yy = mod(pt.y-py, sy)/sy;\n"
+      "  float zz = mod(pt.z-pz, sz)/sz;\n"
+      "  return vec4(xx,yy,zz,1.0);\n"
+      "}\n";
+  }
+  virtual std::string FunctionName() const { return "colormod" + uid; }
+  virtual std::string ColorFunctionName() const { return "colormod_color" + uid; }
+  virtual int NumArgs() const { return 7; }
+  virtual std::string ArgName(int i) const
+  {
+    if (i==0) return "pt";
+    if (i==1) return "px";
+    if (i==2) return "py";
+    if (i==3) return "pz";
+    if (i==4) return "sx";
+    if (i==5) return "sy";
+    if (i==6) return "sz";
+    return "";
+  }
+  virtual std::string ArgValue(int i) const
+  {
+    if (i==0) return "pt";
+    if (i==1) return "0.0";
+    if (i==2) return "0.0";
+    if (i==3) return "0.0";
+    if (i==4) return "100.0";
+    if (i==5) return "100.0";
+    if (i==6) return "100.0";
+    return "";
+  }
+private:
+  std::string uid;
+  ShaderModule *mod;
+};
+GameApi::SFO GameApi::ShaderModuleApi::empty()
+{
+  return cube();
+}
+GameApi::SFO GameApi::ShaderModuleApi::colormod_from_position(SFO obj, float px, float py, float pz, float sx, float sy, float sz)
+{
+  ShaderModule *mod = find_shader_module(e, obj);
+  SFO m = add_shader_module(e, new ColorModFromPosition(mod));
+  SFO m01 = bind_arg(m, "px", ToNum(px));
+  SFO m02 = bind_arg(m01, "px", ToNum(py));
+  SFO m03 = bind_arg(m02, "px", ToNum(pz));
+  SFO m2 = bind_arg(m03, "sx", ToNum(sx));
+  SFO m3 = bind_arg(m2, "sy", ToNum(sy));
+  SFO m4 = bind_arg(m3, "sz", ToNum(sz));
+  return m4;
+}

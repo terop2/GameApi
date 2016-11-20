@@ -40,7 +40,7 @@ public:
     size = size_p;
     // derived widget must override and implement to set child widgets.
   }
-  virtual void update(Point2d mouse_pos, int button, int ch, int type)
+  virtual void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
   {
     int s = vec.size();
     int selected_item = -1;
@@ -48,14 +48,14 @@ public:
       {
 	GuiWidget *w = vec[i];
 	if (firsttime>0) 
-	  w->update(mouse_pos, button,ch, type);
+	  w->update(mouse_pos, button,ch, type, mouse_wheel_y);
 	
 	Point2d p = w->get_pos();
 	Vector2d s = w->get_size();
 	if (mouse_pos.x >= p.x-80 && mouse_pos.x < p.x+s.dx+80 &&
 	    mouse_pos.y >= p.y-80 && mouse_pos.y < p.y+s.dy+80)
 	  {
-	    w->update(mouse_pos, button,ch, type);
+	    w->update(mouse_pos, button,ch, type, mouse_wheel_y);
 	  }
 	if (mouse_pos.x >= p.x && mouse_pos.x < p.x+s.dx &&
 	    mouse_pos.y >= p.y && mouse_pos.y < p.y+s.dy)
