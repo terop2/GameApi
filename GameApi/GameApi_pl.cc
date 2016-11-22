@@ -4950,3 +4950,20 @@ GameApi::P GameApi::PolygonApi::split_p(P p, int start_face, int end_face)
   FaceCollection *coll = find_facecoll(e, p);
   return add_polygon2(e, new SplitterFaceCollection(*coll, start_face,end_face),1);
 }
+
+GameApi::P GameApi::PolygonApi::line_to_cone(EveryApi &ev, LI li, float size, int numfaces)
+{
+  LineCollection *lines = find_line_array(e, li);
+  int s = lines->NumLines();
+  std::vector<P> vec;
+  for(int i=0;i<s;i++)
+    {
+      Point p1 = lines->LinePoint(i, 0);
+      Point p2 = lines->LinePoint(i, 1);
+      PT pp1 = ev.point_api.point(p1.x,p1.y,p1.z);
+      PT pp2 = ev.point_api.point(p2.x,p2.y,p2.z);
+      P ct = ev.polygon_api.cone(numfaces, pp1, pp2, size, size);
+      vec.push_back(ct);
+    }
+  return or_array2(vec);
+}
