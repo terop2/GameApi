@@ -1,6 +1,56 @@
 
 #include "GameApi_h.hh"
 
+
+#define ORIGINAL_COLORS 1
+#ifdef ORIGINAL_COLORS
+const unsigned int c_tooltip_button = 0xff888888;
+const unsigned int c_tooltip_button2 = 0xff444444;
+const unsigned int c_list_item_title = 0xff884422;  // light
+const unsigned int c_list_item_title2 = 0xff442211; // dark
+const unsigned int c_canvas_item = 0xff888888; // light
+const unsigned int c_canvas_item2 = 0xff666666; // dark
+const unsigned int c_canvas_item_text_button = 0xff330033; // dark
+const unsigned int c_canvas_item_text_button2 = 0xff880088; // light
+const unsigned int c_canvas_item_node_0 = 0xffff8844;
+const unsigned int c_canvas_item_node_0_2 = 0xff884422;
+const unsigned int c_canvas_item_node_1 = 0xff884422;
+const unsigned int c_canvas_item_node_1_2 = 0xff442211;
+const unsigned int c_dialog_1 = 0xff888888;
+const unsigned int c_dialog_1_2 = 0xff444444;
+const unsigned int c_dialog_button_1 = 0xff00ff00;
+const unsigned int c_dialog_button_2 = 0xff008800;
+#endif
+#ifdef NEW_COLORS
+//const unsigned int c_dark = 0xff7b1fa2;
+//const unsigned int c_prim = 0xff9c27b0;
+//const unsigned int c_light = 0xffe1bee7;
+
+const unsigned int c_dark = 0xff388e3c;
+const unsigned int c_prim = 0xff4caf50;
+const unsigned int c_light = 0xffc8e6c9;
+
+const unsigned int c_tooltip_button = c_dark; //0xffe1bee7;
+const unsigned int c_tooltip_button2 = c_prim;
+const unsigned int c_list_item_title = c_dark; //0xff7b1fa2;  // light
+const unsigned int c_list_item_title2 = c_prim; // dark
+const unsigned int c_canvas_item = c_dark; //0xff7b1fa2; // light
+const unsigned int c_canvas_item2 = c_prim; // dark
+const unsigned int c_canvas_item_text_button = c_dark; //0xff7b1fa2; // dark
+const unsigned int c_canvas_item_text_button2 = c_prim; // light
+const unsigned int c_canvas_item_node_0 = c_prim; //0xff9c27b0;
+const unsigned int c_canvas_item_node_0_2 = c_dark;
+const unsigned int c_canvas_item_node_1 = c_dark; //0xff7b1fa2;
+const unsigned int c_canvas_item_node_1_2 = c_prim;
+const unsigned int c_dialog_1 = c_dark;
+const unsigned int c_dialog_1_2 = c_prim;
+const unsigned int c_dialog_button_1 = c_prim;
+const unsigned int c_dialog_button_2 = c_dark;
+
+#endif
+
+
+
 class GuiWidgetForward : public GuiWidget
 {
 public:
@@ -13,7 +63,29 @@ public:
       }
     prev_pos.x = 0.0;
     prev_pos.y = 0.0;
-
+    isVisible = true;
+  }
+  void hide() { 
+    isVisible=false; 
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	GuiWidget *w = vec[i];
+	w->hide();
+      }
+  }
+  void show() {
+    isVisible=true; 
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	GuiWidget *w = vec[i];
+	w->show();
+      }
+  }
+  virtual bool is_visible() const
+  {
+    return isVisible;
   }
   virtual Point2d get_pos() const { return pos; }
   virtual Vector2d get_size() const { return size; }
@@ -52,8 +124,8 @@ public:
 	
 	Point2d p = w->get_pos();
 	Vector2d s = w->get_size();
-	if (mouse_pos.x >= p.x-80 && mouse_pos.x < p.x+s.dx+80 &&
-	    mouse_pos.y >= p.y-80 && mouse_pos.y < p.y+s.dy+80)
+	//if (mouse_pos.x >= p.x-80 && mouse_pos.x < p.x+s.dx+80 &&
+	//    mouse_pos.y >= p.y-80 && mouse_pos.y < p.y+s.dy+80)
 	  {
 	    w->update(mouse_pos, button,ch, type, mouse_wheel_y);
 	  }
@@ -74,17 +146,19 @@ public:
   }
   virtual void render()
   {
-    int s = vec.size();
-    for(int i=0;i<s;i++)
-      {
-	GuiWidget *w = vec[i];
-	Point2d p = w->get_pos();
-	Vector2d s = w->get_size();
-	if (p.x + s.dx>=0.0 && p.y+s.dy>=0.0 && p.x<1200.0 && p.y<1000.0)
-	  { // inside screen.
-	    w->render();
-	  }
-      }
+    if (is_visible()) {
+      int s = vec.size();
+      for(int i=0;i<s;i++)
+	{
+	  GuiWidget *w = vec[i];
+	  Point2d p = w->get_pos();
+	  Vector2d s = w->get_size();
+	  if (p.x + s.dx>=0.0 && p.y+s.dy>=0.0 && p.x<1200.0 && p.y<1000.0)
+	    { // inside screen.
+	      w->render();
+	    }
+	}
+    }
   }
   virtual int render_to_bitmap();
 
@@ -145,6 +219,7 @@ protected:
   Point2d prev_pos;
 public:
   std::vector<GuiWidget *> vec;
+  bool isVisible;
 };
 
 

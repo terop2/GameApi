@@ -1105,11 +1105,15 @@ public:
   W mouse_move(W widget, int area_x, int area_y, int area_width, int area_height);
   W click_area(W widget, int area_x, int area_y, int area_width, int area_height, int button_id);
   W key_area(W widget, int area_x, int area_y, int area_width, int area_height, int key);
+  W click_visibility(W area_widget, W hidden_widget);
+  W click_hide(W widget);
+  W top_right_corner_match(W wid, W floating); // returns floating
   W or_elem(W w1, W w2);
   W rectangle(int start_x, int end_x, int start_y, int end_y, unsigned int color);
   W highlight(int sx, int sy);
   W highlight(W wid);
   W margin(W item, int left, int top, int right, int bottom);
+  W left_align(W item, int sx);
   W right_align(W item, int sx);
   W center_align(W item, int sx);
   W center_y(W item, int sy);
@@ -1118,6 +1122,8 @@ public:
   W array_x(W *arr, int size, int x_gap);
   W timed_visibility(W orig, W timed_widget, W insert, float start_duration, float duration, float dx);
   W tooltip(W orig, W insert, std::string label, FtA atlas, BM atlas_bm, int x_gap=2, float dx=40.0);
+  W popup_box(std::string label, std::vector<std::string> options, FtA atlas, BM atlas_bm); 
+  W popup_box_menu(std::vector<std::string> options, FtA atlas, BM atlas_bm);
 
   W main_menu(std::vector<std::string> labels, FtA atlas, BM atlas_bm);
   W menu(W main_menu, int menu_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm);
@@ -1139,13 +1145,13 @@ public:
   W list(W *array, int size, int sx, int sy);
   W dialog_item(std::string text, BM icon, int sx, int sy);
   W dialog_border(W item);
-  W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
-  W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &mem);
-  W va_dialog(VA p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
-  W ml_dialog(ML p, SH sh, SH sh2, SH sh_arr, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
-  W shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_size_x, int screen_size_y, W &codegen_button);
-  W lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
-  W pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button);
+  W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
+  W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button, W &mem);
+  W va_dialog(VA p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
+  W ml_dialog(ML p, SH sh, SH sh2, SH sh_arr, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
+  W shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_size_x, int screen_size_y, W &codegen_button, W &collect_button);
+  W lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
+  W pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
 
   W button_with_text(std::string label);
   W button_with_icon(BM bitmap);
@@ -1232,6 +1238,15 @@ private:
   EveryApi &ev;
   SH sh;
 };
+  class EditNode;
+  struct CollectResult {
+    std::vector<EditNode*> res;
+    std::string p;
+    std::string pn;
+  };
+
+
+  int collect_counter(int mode); // 0=reset, 1=count_next
 
 class WModApi
 {
@@ -1259,6 +1274,9 @@ public:
   void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh);
 
   int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level);
+  
+
+  CollectResult collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);
   std::pair<std::string, std::string> codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);
   std::string return_type(WM mod2, int id, std::string line_uid);
   void delete_by_uid(WM mod2, int id, std::string line_uid);
@@ -1644,6 +1662,8 @@ public:
   IMPORT P sprite_bind(P p, Q bm, TX tx);
   P sprite_bind_1(P p, Q bm, TX tx);
   IMPORT P texture(P orig, BM bm, int bm_choose = -1); // all quads
+
+  IMPORT P line_to_cone(EveryApi &ev, LI li, float size, int numfaces);
 
   IMPORT P color(P orig, unsigned int color);
   IMPORT P color_voxel(P orig, VX colours, PT p, V u_x, V u_y, V u_z);
@@ -2260,6 +2280,8 @@ public:
   IMPORT PTS or_points(PTS p1, PTS p2);
   IMPORT PTS heightmap(BM colour, FB floatbitmap, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
   IMPORT PTS random_plane(PT pos, V u_x, V u_y, int numpoints);
+  IMPORT PTS random_bitmap_instancing(EveryApi &ev, BB bm, int count, float start_x, float end_x, float start_z, float end_z, float y);
+  IMPORT PTS random_mesh_quad_instancing(EveryApi &ev, P p, int count);
   IMPORT PTS surface(S surf, int sx, int sy);
   IMPORT PTS surface(std::function<PT (float,float)> surf,
 		     std::function<unsigned int (PT,float,float)> color,

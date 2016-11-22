@@ -300,11 +300,14 @@ public:
   void set_id(std::string id_m) { id = id_m; }
   std::string get_id() const { return id; }
   virtual ~GuiWidget() { }
+  virtual void hide() { }
+  virtual void show() { }
   virtual Point2d get_pos() const=0;
   virtual Vector2d get_size() const=0;
   virtual void set_pos(Point2d pos)=0;
   virtual void set_size(Vector2d size)=0;
   virtual void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)=0;
+  virtual bool is_visible() const=0;
   virtual void render()=0;
   virtual int render_to_bitmap()=0; // returns bitmap id
   virtual bool content_changed() const=0;
@@ -329,8 +332,9 @@ struct GameApiParam
   std::string param_name;
   std::string value;
 };
-
-
+namespace GameApi {
+class EditNode;
+};
 class GameApiItem
 {
 public:
@@ -344,6 +348,7 @@ public:
   virtual std::string Symbols() const=0;
   virtual std::string Comment() const=0;
   virtual int Execute(GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)=0;
+  virtual std::vector<GameApi::EditNode*> CollectNodes(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)=0;
   virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)=0;
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) { }
   virtual void EndEnv(GameApi::ExecuteEnv &e) { }
@@ -599,5 +604,20 @@ public:
   virtual Matrix mat(float time) const=0;
   virtual Point pos(float time) const=0;
 };
+
+namespace GameApi {
+class EditNode {
+public:
+  // 0=no source, 1=mouse_x, 2=mouse_y
+  virtual void SetSource(int i)=0;
+  // 0=no edit, 1=edit_x, 2=edit_y, 3=edit_z
+  virtual void SetMode(int i)=0;
+  virtual void CurrentPos(Point &p) const=0;
+  virtual void HandleMouseMove(int x, int y)=0;
+  virtual void HandleMousePress(int type)=0;
+  virtual std::string GetValue() const=0;
+};
+}
+
 
 #endif

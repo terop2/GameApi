@@ -706,3 +706,60 @@ GameApi::ML GameApi::PointsApi::render_ml(EveryApi &ev, PTA array)
   PointArray3 *arr = find_point_array3(e, array);
   return add_main_loop(e, new PointsApiRender(e, ev,arr));
 }
+
+
+GameApi::PTS GameApi::PointsApi::random_bitmap_instancing(EveryApi &ev, BB bm, int count, float start_x, float end_x, float start_z, float end_z, float y)
+{
+  std::vector<Point> *points = new std::vector<Point>;
+  std::vector<unsigned int> *color2 = new std::vector<unsigned int>;
+  int sx = ev.bool_bitmap_api.size_x(bm);
+  int sy = ev.bool_bitmap_api.size_y(bm);
+  for(int i=0;i<count;i++)
+    {
+      Random r;
+      float xp = double(r.next())/r.maximum();
+      float yp = double(r.next())/r.maximum();
+      float xx = xp*sx;
+      float yy = yp*sy;
+      bool b = ev.bool_bitmap_api.boolvalue(bm, xx,yy);
+      if (b) {
+	Point p(start_x + (end_x-start_x)*xp, y, start_z+(end_z-start_z)*yp);
+	points->push_back(p);
+	color2->push_back(0xffffffff);
+      }
+    }
+   return add_points_api_points(e, new SurfacePoints(points, color2));  
+ 
+}
+GameApi::PTS GameApi::PointsApi::random_mesh_quad_instancing(EveryApi &ev, P p, int count)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  std::vector<Point> *points = new std::vector<Point>;
+  std::vector<unsigned int> *color2 = new std::vector<unsigned int>;
+
+  for(int i=0;i<count;i++)
+    {
+      Random r;
+      float xp = double(r.next())/r.maximum();
+      float yp = double(r.next())/r.maximum();
+      float zp = double(r.next())/r.maximum();
+      xp*=2.0;
+      yp*=2.0;
+      xp-=1.0;
+      yp-=1.0;
+      zp*=float(coll->NumFaces());
+      Point p1 = coll->FacePoint(int(zp), 0);
+      Point p2 = coll->FacePoint(int(zp), 1);
+      Point p3 = coll->FacePoint(int(zp), 2);
+      Point p4 = coll->FacePoint(int(zp), 3);
+      Point p = 1.0/4.0*((1.0f-xp)*(1.0f-yp)*Vector(p1) + (1.0f+xp)*(1.0f-yp)*Vector(p2) + (1.0f+xp)*(1.0f+yp)*Vector(p3) + (1.0f-xp)*(1.0f+yp)*Vector(p4));
+      points->push_back(p);
+      color2->push_back(0xffffffff);
+    }
+   return add_points_api_points(e, new SurfacePoints(points, color2));
+}
+/*
+GameApi::PTS GameApi::PointsApi::random_bitmap_edge_instancing(BB bm, float start_x, float end_x, float start_z, float end_z, float y)
+{
+}
+*/

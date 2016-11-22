@@ -202,6 +202,7 @@ struct Envi {
   W dialog_cancel, dialog_ok;
   W display_close;
   W codegen_button;
+  W collect_button;
   W line;
   std::string codegen_uid;
 
@@ -528,6 +529,15 @@ void iter(void *arg)
 		std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, env->codegen_uid,100);
 		std::cout << p.second << std::endl;
 	      }
+	    int chosen3 = env->gui->chosen_item(env->collect_button);
+	    if (chosen3 == 0)
+	      {
+		/* collect here */
+		std::cout << "Collect" << std::endl;
+		GameApi::collect_counter(0);
+		CollectResult res = env->ev->mod_api.collect_nodes(*env->ev, env->mod, 0, env->codegen_uid,100);
+		// TODO.
+	      }
 	    
 	  }
 	int s = env->delete_key.size();
@@ -784,7 +794,7 @@ void iter(void *arg)
 			P p2 = env->ev->bool_api.to_polygon(p);
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->polygon_dialog(p2, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->mem);
+			env->display = env->gui->polygon_dialog(p2, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->mem);
 		      }
 		    else
 		    if (type=="VA")
@@ -809,7 +819,7 @@ void iter(void *arg)
 			//std::cout << "ID: " << p.id << std::endl;
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->va_dialog(p, sh, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			env->display = env->gui->va_dialog(p, sh, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 			
 		      } else
 		      if (type=="ML")
@@ -818,7 +828,7 @@ void iter(void *arg)
 			  ml.id = id;
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			  env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 
 			} else
 			if (type=="O")
@@ -832,7 +842,7 @@ void iter(void *arg)
 								   -300.0, 300.0);
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->mem);
+			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->mem);
 			  }
 			else
 			  if (type=="FD")
@@ -846,7 +856,7 @@ void iter(void *arg)
 			      BM bm = env->ev->dist_api.render(fd, pt, u_x, u_y, u_z, 300, 300);
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 
 			    }
 		    else
@@ -856,7 +866,7 @@ void iter(void *arg)
 			bm.id = id;
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 		      } 
 		    else if (type=="CBM")
 		      {
@@ -865,7 +875,7 @@ void iter(void *arg)
 			BM bm = env->ev->cont_bitmap_api.sample(cbm, 200,200);
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 
 		      }
 		    else if (type=="BB")
@@ -875,7 +885,7 @@ void iter(void *arg)
 			BM bm = env->ev->bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 			
 		      }
 		    else if (type=="FB")
@@ -888,7 +898,7 @@ void iter(void *arg)
 			BM bm = env->ev->float_bitmap_api.to_grayscale_color(fb, 255,255,255,255, 0,0,0,0);
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 			
 		      }
 		    else if (type=="P")
@@ -899,7 +909,7 @@ void iter(void *arg)
 			std::cout << "ID: " << p.id << std::endl;
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->mem);
+			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->mem);
 		      }
 		    else if (type=="LI")
 		      {
@@ -907,7 +917,7 @@ void iter(void *arg)
 			p.id = id;
 			 env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 			
 		      }
 		    else if (type=="C")
@@ -917,7 +927,7 @@ void iter(void *arg)
 			LI p = env->ev->curve_api.to_lines(p0, 40);
 			 env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button,env->collect_button);
 			
 		      }
 		    else if (type=="PTS")
@@ -928,7 +938,7 @@ void iter(void *arg)
 			std::cout << "PTS0: " << env->ev->points_api.pos_x(p,0) << " " << env->ev->points_api.pos_y(p,0) << " " << env->ev->points_api.pos_z(p,0) << std::endl;
 			env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->pts_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button);
+			env->display = env->gui->pts_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button,env->collect_button);
 
 		      }
 		    else if (type=="SFO")
@@ -937,7 +947,7 @@ void iter(void *arg)
 			p.id = id;
 			env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->shader_dialog(p, env->display_close, env->atlas3, env->atlas_bm3, env->screen_size_x, env->screen_size_y, env->codegen_button);
+			env->display = env->gui->shader_dialog(p, env->display_close, env->atlas3, env->atlas_bm3, env->screen_size_x, env->screen_size_y, env->codegen_button, env->collect_button);
 			
 		      }
 		    else 

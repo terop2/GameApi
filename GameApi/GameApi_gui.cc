@@ -20,53 +20,6 @@
 #ifdef FIRST_PART
 const float keypress_rot_speed = 6.0;
 
-#define ORIGINAL_COLORS 1
-#ifdef ORIGINAL_COLORS
-const unsigned int c_tooltip_button = 0xff888888;
-const unsigned int c_tooltip_button2 = 0xff444444;
-const unsigned int c_list_item_title = 0xff884422;  // light
-const unsigned int c_list_item_title2 = 0xff442211; // dark
-const unsigned int c_canvas_item = 0xff888888; // light
-const unsigned int c_canvas_item2 = 0xff666666; // dark
-const unsigned int c_canvas_item_text_button = 0xff330033; // dark
-const unsigned int c_canvas_item_text_button2 = 0xff880088; // light
-const unsigned int c_canvas_item_node_0 = 0xffff8844;
-const unsigned int c_canvas_item_node_0_2 = 0xff884422;
-const unsigned int c_canvas_item_node_1 = 0xff884422;
-const unsigned int c_canvas_item_node_1_2 = 0xff442211;
-const unsigned int c_dialog_1 = 0xff888888;
-const unsigned int c_dialog_1_2 = 0xff444444;
-const unsigned int c_dialog_button_1 = 0xff00ff00;
-const unsigned int c_dialog_button_2 = 0xff008800;
-#endif
-#ifdef NEW_COLORS
-//const unsigned int c_dark = 0xff7b1fa2;
-//const unsigned int c_prim = 0xff9c27b0;
-//const unsigned int c_light = 0xffe1bee7;
-
-const unsigned int c_dark = 0xff388e3c;
-const unsigned int c_prim = 0xff4caf50;
-const unsigned int c_light = 0xffc8e6c9;
-
-const unsigned int c_tooltip_button = c_dark; //0xffe1bee7;
-const unsigned int c_tooltip_button2 = c_prim;
-const unsigned int c_list_item_title = c_dark; //0xff7b1fa2;  // light
-const unsigned int c_list_item_title2 = c_prim; // dark
-const unsigned int c_canvas_item = c_dark; //0xff7b1fa2; // light
-const unsigned int c_canvas_item2 = c_prim; // dark
-const unsigned int c_canvas_item_text_button = c_dark; //0xff7b1fa2; // dark
-const unsigned int c_canvas_item_text_button2 = c_prim; // light
-const unsigned int c_canvas_item_node_0 = c_prim; //0xff9c27b0;
-const unsigned int c_canvas_item_node_0_2 = c_dark;
-const unsigned int c_canvas_item_node_1 = c_dark; //0xff7b1fa2;
-const unsigned int c_canvas_item_node_1_2 = c_prim;
-const unsigned int c_dialog_1 = c_dark;
-const unsigned int c_dialog_1_2 = c_prim;
-const unsigned int c_dialog_button_1 = c_prim;
-const unsigned int c_dialog_button_2 = c_dark;
-
-#endif
-
 
 class EmptyWidget : public GuiWidgetForward
 {
@@ -201,6 +154,7 @@ public:
   }
   void render()
   {
+    if (is_visible())
     if (!firsttime)
       {
 	Point2d p = get_pos();
@@ -297,6 +251,7 @@ public:
   }
   void render()
   {
+    if (is_visible())
     if (!firsttime)
       {
 	Point2d p = get_pos();
@@ -420,6 +375,7 @@ public:
   }
   void render()
   {
+    if (is_visible())
     if (!firsttime)
       {
 	Point2d p = get_pos();
@@ -498,6 +454,7 @@ public:
   }  
   void render()
   {
+    if (is_visible()) {
     if (left)
       {
 	rot_y+=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
@@ -522,6 +479,7 @@ public:
 	glViewport(0,0,screen_x, screen_y);
 	ev.shader_api.use(old_sh);
       }
+    }
   }
 private:
   GameApi::SH sh;
@@ -582,6 +540,8 @@ public:
   }  
   void render()
   {
+    if (is_visible())
+      {
     if (left)
       {
 	rot_y+=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
@@ -609,6 +569,7 @@ public:
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
 	glViewport(0,0,screen_x, screen_y);
 	ev.shader_api.use(old_sh);
+      }
       }
   }
 private:
@@ -691,6 +652,8 @@ public:
   }  
   void render()
   {
+    if (is_visible())
+      {
     if (left)
       {
 	rot_y+=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
@@ -741,6 +704,7 @@ public:
 	ev.mainloop_api.switch_to_3d(false, sh_arr, screen_x, screen_y);
 	glViewport(0,0,screen_x, screen_y);
 	ev.shader_api.use(old_sh);
+      }
       }
   }
 private:
@@ -850,6 +814,8 @@ public:
   }  
   void render()
   {
+    if (is_visible())
+      {
     if (left)
       {
 	rot_y+=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
@@ -869,6 +835,7 @@ public:
 	obj->set_pos(pos.x, pos.y, 0.0);
 	obj->render();
 	ev.shader_api.use(sh);
+      }
       }
   }
 private:
@@ -930,6 +897,8 @@ public:
   }  
   void render()
   {
+    if (is_visible())
+      {
     if (left)
       {
 	rot_y+=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
@@ -955,6 +924,7 @@ public:
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
 	glViewport(0,0,screen_x, screen_y);
 	ev.shader_api.use(old_sh);
+      }
       }
   }
 private:
@@ -1014,6 +984,8 @@ public:
   }  
   void render()
   {
+    if (is_visible())
+      {
     if (left)
       {
 	rot_y+=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
@@ -1037,6 +1009,7 @@ public:
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
 	glViewport(0,0,screen_x, screen_y);
 	ev.shader_api.use(old_sh);
+      }
       }
   }
 private:
@@ -1073,11 +1046,14 @@ public:
   }
   void render()
   {
+    if (is_visible())
+      {
     if (!firsttime)
       {
 	Point2d p = get_pos();
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5,p.y+0.5,0.0));
 	ev.sprite_api.render_sprite_vertex_array(bm_va);
+      }
       }
   }
   int render_to_bitmap()
@@ -1210,7 +1186,10 @@ public:
   }
   void render()
   {
+    if (is_visible())
+      {
     GuiWidgetForward::render();
+      }
   }
 private:
   int x_gap;
@@ -1275,7 +1254,10 @@ public:
   int chosen_item() const { return selected_item; }
   void render()
   {
+    if (is_visible())
+      {
     GuiWidgetForward::render();
+      }
   }
 private:
   int y_gap;
@@ -1328,11 +1310,14 @@ public:
   }
   void render()
   {
+    if (is_visible())
+      {
     if (!firsttime && enabled)
       {
 	Point2d p = get_pos();
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5, p.y+0.5, 0.0));
 	ev.sprite_api.render_sprite_vertex_array(bm_va);
+      }
       }
   }
   int render_to_bitmap()
@@ -1414,12 +1399,15 @@ public:
   }
   void render()
   {
+    if (is_visible())
+      {
     GuiWidgetForward::render();
     if (!firsttime && enabled)
       {
 	Point2d p = get_pos();
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5, p.y+0.5, 0.0));
 	ev.sprite_api.render_sprite_vertex_array(bm_va);
+      }
       }
   }
   int render_to_bitmap()
@@ -1568,6 +1556,8 @@ public:
   }
   void render()
   {
+    if (is_visible())
+      {
     if (!firsttime)
       {
 	ev.shader_api.use(sh);
@@ -1575,6 +1565,7 @@ public:
 	//ev.lines_api.render(line_p);
 	ev.polygon_api.render_vertex_array(line_3);
 	ev.shader_api.use(sh2);
+      }
       }
   }
 private:
@@ -1781,11 +1772,14 @@ public:
 
   }
   void render() {
+    if (is_visible())
+      {
     if (!firsttime)
       {
 	Point2d p = get_pos();
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x, p.y, 0.0));
 	ev.sprite_api.render_sprite_vertex_array(bg_va);
+      }
       }
 
   }
@@ -2044,7 +2038,7 @@ EXPORT GameApi::W GameApi::GuiApi::color_editor(std::string &col, FtA atlas, BM 
   return edit2; 
 }
 
-EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &mem)
+EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button, W &mem)
 {
   W bm_1 = poly(p, sh, 800,600, screen_size_x,screen_size_y);
   mem = bm_1;
@@ -2053,7 +2047,7 @@ EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x,
   W bm_4 = layer(bm_3, bm_2);
   
   W but_1 = text("Close", atlas, atlas_bm);
-  W but_2 = center_align(but_1, size_x(bm_4));
+  W but_2 = center_align(but_1, size_x(bm_4)/3);
   W but_3 = center_y(but_2, 60.0);
   W but_4 = button(size_x(but_3), size_y(but_3), c_dialog_button_1, c_dialog_button_2);
   W but_41 = highlight(but_4);
@@ -2062,7 +2056,7 @@ EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x,
   close_button = but_6;
 
   W code_1 = text("CodeGen", atlas, atlas_bm);
-  W code_2 = center_align(code_1, size_x(bm_4));
+  W code_2 = center_align(code_1, size_x(bm_4)/3);
   W code_3 = center_y(code_2, 60.0);
   W code_4 = button(size_x(code_3), size_y(code_3), c_dialog_button_1, c_dialog_button_2);
   W code_41 = highlight(code_4);
@@ -2070,15 +2064,29 @@ EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x,
   W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
   codegen_button = code_6;
 
+  W coll_1 = text("Edit", atlas, atlas_bm);
+  W coll_2 = center_align(coll_1, size_x(bm_4)/3);
+  W coll_3 = center_y(coll_2, 60.0);
+  W coll_4 = button(size_x(coll_3), size_y(coll_3), c_dialog_button_1, c_dialog_button_2);
+  W coll_41 = highlight(coll_4);
+  W coll_5 = layer(coll_41, coll_3);
+  W coll_6 = click_area(coll_5, 0,0,size_x(coll_5), size_y(coll_5),0);
+  collect_button = coll_6;
 
-  W arr[] = { bm_4, code_6, but_6 };
+
+  W arr_x[] = { code_6, coll_6, but_6 };
+  W arr_x2 = array_x(&arr_x[0], 3, 0);
+
+  W popup = popup_box("Popup", { "Test1", "Test2", "Test3" }, atlas, atlas_bm);
+
+  W arr[] = { bm_4, arr_x2, popup };
   W arr_2 = array_y(&arr[0], 3, 0);
 
   W arr_3 = mouse_move(arr_2, 0,0, size_x(arr_2), size_y(arr_2));
   return arr_3;
 }
 
-EXPORT GameApi::W GameApi::GuiApi::va_dialog(VA p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button)
+EXPORT GameApi::W GameApi::GuiApi::va_dialog(VA p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button)
 {
   W bm_1 = va(p, sh, 800,600, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
@@ -2111,7 +2119,7 @@ EXPORT GameApi::W GameApi::GuiApi::va_dialog(VA p, SH sh, int screen_size_x, int
   return arr_3;
 }
 
-EXPORT GameApi::W GameApi::GuiApi::ml_dialog(ML p, SH sh, SH sh2, SH sh_arr, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button)
+EXPORT GameApi::W GameApi::GuiApi::ml_dialog(ML p, SH sh, SH sh2, SH sh_arr, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button)
 {
   W bm_1 = ml(p, sh, sh2, sh_arr, 800,600, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
@@ -2147,7 +2155,7 @@ EXPORT GameApi::W GameApi::GuiApi::ml_dialog(ML p, SH sh, SH sh2, SH sh_arr, int
 
 
 
-EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_x, int screen_y, W &codegen_button)
+EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_x, int screen_y, W &codegen_button, W &collect_button)
 {
   W bm_1 = shader_plane(p, 800,600*600/800, screen_x, screen_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
@@ -2181,7 +2189,7 @@ EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atl
 }
 
 
-EXPORT GameApi::W GameApi::GuiApi::lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button)
+EXPORT GameApi::W GameApi::GuiApi::lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W& collect_button)
 {
   W bm_1 = lines(p, sh, 800,600, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
@@ -2214,7 +2222,7 @@ EXPORT GameApi::W GameApi::GuiApi::lines_dialog(LI p, SH sh, int screen_size_x, 
   return arr_3;
 }
 
-EXPORT GameApi::W GameApi::GuiApi::pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button)
+EXPORT GameApi::W GameApi::GuiApi::pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button)
 {
   W bm_1 = pts(p, sh, 800,600, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
@@ -2249,7 +2257,7 @@ EXPORT GameApi::W GameApi::GuiApi::pts_dialog(PTS p, SH sh, int screen_size_x, i
 
 
 
-EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button)
+EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W&collect_button)
 {
   ev.bitmap_api.prepare(bm);
   float sx = float(ev.bitmap_api.size_x(bm));
@@ -2391,6 +2399,31 @@ public:
 private:
   int sx;
 };
+class LeftAlignWidget : public GuiWidgetForward
+{
+public:
+  LeftAlignWidget(GameApi::EveryApi &ev, GuiWidget *wid, int sx) : GuiWidgetForward(ev, { wid }), sx(sx) {
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1, -1, -1,0);
+
+  }
+  void set_pos(Point2d pos)
+  {
+    GuiWidgetForward::set_pos(pos);
+    //Vector2d size = vec[0]->get_size();
+    Point2d p = { pos.x, pos.y };
+    vec[0]->set_pos(p);
+  }
+  void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
+  {
+    GuiWidgetForward::update(mouse_pos, button, ch, type, mouse_wheel_y);
+    set_pos(get_pos());
+    size.dx = sx;
+    size.dy = vec[0]->get_size().dy;
+  }
+private:
+  int sx;
+};
 class CenterAlignWidget : public GuiWidgetForward
 {
 public:
@@ -2448,6 +2481,11 @@ EXPORT GameApi::W GameApi::GuiApi::right_align(W item, int sx)
 {
   GuiWidget *wid = find_widget(e, item);
   return add_widget(e, new RightAlignWidget(ev, wid, sx));
+}
+EXPORT GameApi::W GameApi::GuiApi::left_align(W item, int sx)
+{
+  GuiWidget *wid = find_widget(e, item);
+  return add_widget(e, new LeftAlignWidget(ev, wid, sx));
 }
 EXPORT GameApi::W GameApi::GuiApi::center_align(W item, int sx)
 {
@@ -2762,7 +2800,8 @@ public:
   }
   void render()
   {
-
+    if (is_visible())
+      {
     if (!firsttime)
       {
 	Point2d p = get_pos();
@@ -2772,6 +2811,7 @@ public:
 	float pos_y = current_pos * (float(sy) - float(sy)/float(area_y)*float(sy));
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+2+2+0.5, p.y+pos_y+2+2+0.5, 0.0));
 	ev.sprite_api.render_sprite_vertex_array(thumb_va);
+      }
       }
   }
   float dynamic_param(int id) const
@@ -2859,6 +2899,8 @@ public:
   }
   void render()
   {
+    if (is_visible())
+      {
     if (!firsttime)
       {
 	Point2d p = get_pos();
@@ -2868,6 +2910,7 @@ public:
 	float pos_x = current_pos * (float(sx) - float(sx)/float(area_x)*float(sx));
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+pos_x+2+2+0.5, p.y+2+2+0.5, 0.0));
 	ev.sprite_api.render_sprite_vertex_array(thumb_va);
+      }
       }
   }
   float dynamic_param(int id) const
@@ -2918,6 +2961,7 @@ public:
     set_pos(p2);
     time = 0.0;
   }
+  bool is_visible() const { return true; }
   Point2d get_pos() const { return pos; }
   Vector2d get_size() const { return size; }
   void set_pos(Point2d pos_p) { pos = pos_p; }
@@ -2939,11 +2983,14 @@ public:
   }
   void render()
   {
+    if (is_visible())
+      {
     if (!firsttime)
       {
 	Point2d pos = get_pos();
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(pos.x+0.5, pos.y+0.5, 0.0));
 	ev.sprite_api.render_sprite_vertex_array(wave_bm_va);
+      }
       }
   }
   int render_to_bitmap()
@@ -2983,7 +3030,7 @@ public:
   {
     GuiWidgetForward::set_pos(pos);
     Vector2d sz = vec[0]->get_size();
-    Point2d pos2 = { pos.x-left*(sz.dx-size.dx), pos.y-top*(sz.dy-size.dy) };
+    Point2d pos2 = { pos.x-left*(sz.dx-size.dx), pos.y-top*(sz.dy-size.dy)+mouse_wheel_move };
     vec[0]->set_pos(pos2);
   }
   void set_size(Vector2d sz)
@@ -3023,10 +3070,13 @@ public:
   }
   void render()
   {
+    if (is_visible())
+      {
     glEnable(GL_SCISSOR_TEST);
     glScissor(pos.x, screen_y-pos.y-size.dy, size.dx, size.dy);
     vec[0]->render();
     glDisable(GL_SCISSOR_TEST);
+      }
   }
 
   int chosen_item() const { return orig->chosen_item(); }
@@ -3056,13 +3106,14 @@ private:
 class OrElemGuiWidget : public GuiWidget
 {
 public:
-  OrElemGuiWidget(GuiWidget *w1, GuiWidget *w2) : b(false), w1(w1), w2(w2) { }
+  OrElemGuiWidget(GuiWidget *w1, GuiWidget *w2) : b(false), w1(w1), w2(w2) { isVisible=true; }
+  virtual bool is_visible() const { return isVisible; }
   virtual Point2d get_pos() const { if (b) return w1->get_pos(); else return w2->get_pos(); }
   virtual Vector2d get_size() const { if (b) return w1->get_size(); else return w2->get_size(); }
   virtual void set_pos(Point2d pos) { if (b) w1->set_pos(pos); else w2->set_pos(pos); } 
   virtual void set_size(Vector2d size) { if (b) w1->set_size(size); else w2->set_size(size); }
   virtual void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y) { if (b) w1->update(mouse_pos, button,ch,type,mouse_wheel_y); else w2->update(mouse_pos, button,ch,type,mouse_wheel_y); }
-  virtual void render() { if (b) w1->render(); else w2->render(); }
+  virtual void render() { if (is_visible()) {if (b) w1->render(); else w2->render();}  }
   virtual int render_to_bitmap() { if (b) return w1->render_to_bitmap(); else return w2->render_to_bitmap(); }
   virtual void select_item(int item) { if (item==0) b=true; if (item==1) b=false; }
   virtual int chosen_item() const { if (b) return w1->chosen_item(); else return w2->chosen_item(); }
@@ -3081,6 +3132,7 @@ private:
   bool b;
   GuiWidget *w1;
   GuiWidget *w2;
+  bool isVisible;
 };
 GameApi::W GameApi::GuiApi::gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int color_1, unsigned int color_2)
 {
@@ -3587,7 +3639,71 @@ template<typename T> T from_stream2(std::stringstream &is, GameApi::EveryApi &ev
   return cls.from_stream(s,ev);
 }
 
+class GameApiEditNode_float_coord : public GameApi::EditNode
+{
+public:
+  GameApiEditNode_float_coord(int count, std::string param_type, std::string param_value, std::string param_name) : source(0), mode(0), count(count), param_type(param_type), param_value(param_value), param_name(param_name) { move=false; mod=false; source=0; mode=0; }
+  void SetSource(int i) { source=i; }
+  void SetMode(int i) { mode=i; }
+  void CurrentPos(Point &p) const
+  {
+    if (param_type=="float") {
+      std::stringstream ss(param_value);
+      if (mode==1) { ss >> p.x; }
+      if (mode==2) { ss >> p.y; }
+      if (mode==3) { ss >> p.z; }
+    }
+  }
+  void HandleMouseMove(int x, int y) 
+  {
+    mod=false;
+    if (source==1) { res = x; mod = true;}
+    if (source==2) { res = y; mod = true; }
+    if (mod && move && param_type=="float") {
+      std::stringstream ss;
+      ss << res;
+      param_value = ss.str();
+    }
+  }
+  // type==0 no event
+  // type==1 mouse down
+  // type==2 mouse up
+  void HandleMousePress(int type) {
+    if (type==1) { move=true; }
+    if (type==2) { move=false; }
+  }
+  std::string GetValue() const { return param_value; }
+private:
+  int source; // 0=no source, 1=mouse_x, 2=mouse_y
+  int mode; // 0=no edit, 1=edit_x, 2=edit_y, 3=edit_z
+  int count;
+  std::string param_type;
+  std::string param_value;
+  std::string param_name;
+  int res;
+  bool mod;
+  bool move;
+};
 
+int GameApi::collect_counter(int mode)
+{
+  static int count=0;
+  if (mode==0) { count=0; }
+  if (mode==1) { count++; }
+  return count;
+}
+
+std::vector<GameApi::EditNode*> collectnodes(std::string name, std::vector<std::string> param_type, std::vector<std::string> param_names, std::vector<std::string> params, std::vector<std::string> param_name)
+{
+  int s=param_type.size();
+  std::cout << "Params: " << s << std::endl;
+  for(int i=0;i<s;i++)
+    {
+      int count = GameApi::collect_counter(1);
+      std::cout << count << " " << name << ":" << param_type[i] << " " << param_names[i] << ": " << param_name[i] << std::endl;
+    }
+  return std::vector<GameApi::EditNode*>();
+}
 
 template<class T, class RT, class... P>
 int funccall(GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
@@ -3627,9 +3743,9 @@ int funccall(GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
   //std::cout << "FuncCall: " << ss.str() << std::endl;
 
   std::stringstream ss2(ss.str());
-  
   T *ptr = &(ev.*api);
   RT val = (ptr->*fptr)(from_stream2<P>(ss2,ev)...);
+ 
   //std::cout << "FuncCall returning: " << val.id << std::endl;
   return val.id;
 }
@@ -3670,6 +3786,10 @@ public:
   int Execute(GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)
   {
     return funccall(ev, api, fptr, params, e, param_name); 
+  }
+  std::vector<GameApi::EditNode*> CollectNodes(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)
+  {
+    return collectnodes(name,param_type, param_names, params, param_name);
   }
   std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)
   {
@@ -4872,6 +4992,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "EveryApi&", "LI", "float", "float", "float", "int" },
 			 { "ev", "", "0.0", "0.0", "100.0", "1" },
 			 "P", "polygon_api", "linear_span"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::line_to_cone,
+			 "li_to_cone",
+			 { "ev", "li", "size", "numfaces" },
+			 { "EveryApi&", "LI", "float", "int" },
+			 { "ev", "", "10.0", "15" },
+			 "P", "polygon_api", "line_to_cone"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_map,
 			 "color_map",
 			 { "bm", "sx", "sy", "z" },
@@ -5529,6 +5655,18 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "PT", "V", "V", "int" },
 			 { "", "", "", "100" },
 			 "PTS", "points_api", "random_plane"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::random_bitmap_instancing,
+			 "random_bitmap",
+			 { "ev", "bb", "count", "start_x", "end_x", "start_z", "end_z", "y" },
+			 { "EveryApi&", "BB", "int", "float", "float", "float", "float", "float" },
+			 { "ev", "", "300", "-300.0", "300.0", "-300.0", "300.0", "0.0"},
+			 "PTS", "points_api", "random_bitmap_instancing"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::random_mesh_quad_instancing,
+			 "random_quad",
+			 { "ev", "p", "count" },
+			 { "EveryApi&", "P", "int" },
+			 { "ev", "", "300" },
+			 "PTS", "points_api", "random_mesh_quad_instancing"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::prepare,
 			 "pts_prepare",
 			 { "p" },
@@ -6345,9 +6483,12 @@ public:
   }
   void render()
   {
+    if (is_visible())
+      {
     if (activated)
       {
 	vec[0]->render();
+      }
       }
   }
 private:

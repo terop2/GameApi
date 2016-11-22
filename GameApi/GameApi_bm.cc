@@ -2537,3 +2537,4 @@ GameApi::BM GameApi::BitmapApi::simple_blur(BM bm, float center, float left, flo
   BM bm2 = add_bitmap(e, handle2);
   return bm2;
 }
+

@@ -682,6 +682,145 @@ void GameApi::WModApi::delete_by_uid(WM mod2, int id, std::string line_uid)
   
 
 }
+
+GameApi::CollectResult GameApi::WModApi::collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level)
+{
+  static std::vector<GameApiItem*> vec = all_functions();
+
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+  
+  int s = func->lines.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiLine *line = &func->lines[i];
+      if (line->uid == line_uid)
+	{
+
+	  // COLLECT PARAMS & RECURSE
+	  int ss = line->params.size();
+	  std::vector<std::string> params;
+	  std::vector<std::string> param_names;
+	  level-=ss;
+	  for(int ii=0;ii<ss;ii++)
+	    {
+	      //level--;
+	      GameApiParam *param = &line->params[ii];
+	      std::string p = "";
+	      std::string pn = param->value;
+	      if (level<=0)
+		{ // Stopping recursion
+		  int sd = vec.size();
+		  for(int k=0;k<sd;k++)
+		    {
+		      GameApiItem *item = vec[k];
+		      std::string name = item->Name(0);
+		      if (name == line->module_name)
+			{
+			  if (pn.size()>0 && pn[0]=='[')
+			    pn="[]";
+			  else
+			    pn = "@";
+			  break;
+			}
+		    }
+		}
+
+	      if (pn.size()==0)
+		{
+		  std::cout << "COLLECT FAILED at param!" << std::endl;
+		  CollectResult res;
+		  res.p = "";
+		  res.pn = "";
+		  return res;;
+		}
+	      if (pn.size()>3 && pn[0]=='u' && pn[1] == 'i' && pn[2] =='d')
+		{
+		  CollectResult res = collect_nodes(ev, mod2, id, pn, level-1);
+		  p = res.p;
+		  pn = res.pn;
+		}
+	      if (pn.size()>1 && pn[0]=='[' && pn[pn.size()-1]==']')
+		{
+		  std::string param_type = "";
+		  int sd = vec.size();
+		  for(int k=0;k<sd;k++)
+		    {
+		      GameApiItem *item = vec[k];
+		      std::string name = item->Name(0);
+		      if (name == line->module_name)
+			{
+			  std::string paramtype = item->ParamType(0,ii);
+			  param_type=paramtype;
+			}
+		    }
+		  param_type = param_type.substr(1,param_type.size()-2);
+
+		  
+		  int prev = 1;
+		  std::string ss = "std::vector<" + param_type + ">{";
+		  int sz = pn.size();
+		  for(int i=1;i<sz;i++)
+		    {
+		      if (pn[i]==',' || pn[i]==']')
+			{
+			  std::string substr = pn.substr(prev, i-prev);
+			  //std::cout << "substr: " << substr << std::endl;
+			  if (substr.size()>3 && substr[0]=='u' && substr[1] == 'i' && substr[2] =='d')
+			    {
+			      CollectResult res = collect_nodes(ev, mod2, id, substr, level-1);
+			      p += res.p;
+			      ss += res.pn;
+			    }
+			  else
+			    {
+			      ss+=substr;
+			    }
+			  prev = i+1;
+			  //ss+=substr;
+			  if (i!=sz-1) { ss+=","; }
+			}
+
+		    }
+		  ss+="}";
+		  //std::cout << "Param: " << ss << std::endl;
+		  param_names.push_back(ss);
+		  params.push_back(p);
+		}
+	      else
+		{
+		  params.push_back(p);
+		  param_names.push_back(pn);
+		}
+	    }
+	  // EXECUTE
+	  int sd = vec.size();
+	  for(int k=0;k<sd;k++)
+	    {
+	      GameApiItem *item = vec[k];
+	      std::string name = item->Name(0);
+	      if (name == line->module_name)
+		{
+		  std::vector<EditNode*> val = item->CollectNodes(ev, params, param_names);
+		  std::pair<std::string,std::string> val2 = item->CodeGen(ev, params, param_names);
+		  CollectResult res;
+		  res.res = val;
+		  res.p = val2.second;
+		  res.pn = val2.first;
+		  
+		  return res;
+		}
+	    }
+	}
+    }
+  std::cout << "COLLECT FAILED! " << std::endl;
+  CollectResult res;
+  res.p = "";
+  res.pn = "";
+  return res;
+
+}
 std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level)
 {
   static std::vector<GameApiItem*> vec = all_functions();

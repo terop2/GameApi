@@ -4905,3 +4905,200 @@ std::vector<GameApi::ML> GameApi::PolygonDistanceField::render_scene_array(Every
     }
   return mls;
 }
+
+
+
+#include "GameApi_gui.hh"
+
+class ClickHide : public GuiWidgetForward
+{
+public:
+  ClickHide(GameApi::EveryApi &ev, GuiWidget *wid) : GuiWidgetForward(ev, {wid}) {
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1,-1,-1,0);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
+    //state=0;
+  }
+  void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
+  {
+    GuiWidgetForward::update(mouse_pos,button, ch, type, mouse_wheel_y);
+    //std::cout << "clickhide button=" << button << " " << type << std::endl;
+    if (button==0 && type==1025) {
+      if (vec.size() >0) {
+	Point2d pos = vec[0]->get_pos();
+	Vector2d sz = vec[0]->get_size();
+	//std::cout << "clickhide:" << pos.x << " " << pos.y << " " << sz.dx << " " << sz.dy << std::endl;
+
+	if (mouse_pos.x > pos.x && mouse_pos.x< pos.x+sz.dx &&
+	    mouse_pos.y > pos.y && mouse_pos.y< pos.y+sz.dy)
+	  {
+	    vec[0]->hide();
+	    //state=1;
+	  }
+      }
+    }
+    //if (state==1 && button==-1) state=0;
+    Vector2d sz = vec[0]->get_size();
+    size.dx = sz.dx;
+    size.dy = sz.dy;
+
+  }
+private:
+  //int state;
+};
+
+class ClickVisibilityWidget : public GuiWidgetForward
+{
+public:
+  ClickVisibilityWidget(GameApi::EveryApi &ev, GuiWidget *area, GuiWidget *hidden) : GuiWidgetForward(ev, {area,hidden}), area(area), hidden(hidden) { 
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1,-1,-1,0);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
+    hidden->hide();
+    //state = 0;
+  }
+
+  void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
+  {
+    GuiWidgetForward::update(mouse_pos,button, ch, type, mouse_wheel_y);
+    //std::cout << "clickvisibility button=" << button << " " << type << std::endl;
+    if (button==0 && type==1025) {
+      Point2d pos = area->get_pos();
+      Vector2d sz = area->get_size();
+      //Point2d pos2 = hidden->get_pos();
+      //Vector2d sz2 = hidden->get_size();
+      //std::cout << "vis: " << pos.x << " " << pos.y << " " << sz.dx << " " << sz.dy << std::endl;
+      //std::cout << "hid: " << pos2.x << " " << pos2.y << " " << sz2.dx << " " << sz2.dy << std::endl;
+      if (mouse_pos.x > pos.x && mouse_pos.x< pos.x+sz.dx &&
+	  mouse_pos.y > pos.y && mouse_pos.y< pos.y+sz.dy)
+	{
+	  if (hidden->is_visible()) { hidden->hide(); } else { hidden->show(); }
+	}
+      //state=1;
+    }
+    //if (state==1 && button==-1) { state=0; }
+    Vector2d sz = area->get_size();
+    size.dx = sz.dx;
+    size.dy = sz.dy;
+  }
+
+private:
+  GuiWidget *area;
+  GuiWidget *hidden;
+  //int state;
+};
+
+GameApi::W GameApi::GuiApi::click_visibility(W area_widget, W hidden_widget)
+{
+  GuiWidget *w1 = find_widget(e, area_widget);
+  GuiWidget *w2 = find_widget(e, hidden_widget);
+  return add_widget(e, new ClickVisibilityWidget(ev, w1, w2));
+}
+
+
+GameApi::W GameApi::GuiApi::click_hide(W widget)
+{
+  GuiWidget *w1 = find_widget(e, widget);
+  return add_widget(e, new ClickHide(ev, w1));
+}
+
+
+GameApi::W GameApi::GuiApi::popup_box(std::string label, std::vector<std::string> options, FtA atlas, BM atlas_bm)
+{
+  W txt_1 = text(label, atlas, atlas_bm);
+  W txt_2 = margin(txt_1, 5,5,5,5);
+  W txt_2a = center_y(txt_2, 70.0);
+  //W but_1 = button(size_x(txt_2)+30.0, size_y(txt_2), c_list_item_title, c_list_item_title2);
+  W but_2 = button(20.0, 20.0, c_canvas_item_node_1, c_canvas_item_node_1_2);
+  W but_2a = center_align(but_2, 70.0);
+  W but_2b = center_y(but_2a, 70.0);
+  //W but_2a = margin(but_2,5,5,5,5);
+  std::vector<W> vec;
+  vec.push_back(txt_2a);
+  vec.push_back(but_2b);
+  W x_arr = array_x(&vec[0], vec.size(), 3);
+
+  W mar = margin(x_arr, 2,2,2,2);
+  W but_1 = button(size_x(mar), size_y(mar), c_list_item_title, c_list_item_title2);
+  W lay = layer(but_1, mar);
+
+  W menu = popup_box_menu(options, atlas, atlas_bm);
+  W w6 = top_right_corner_match(lay,menu);
+  W menu_hide = click_hide(w6);
+  W menu_visibility = click_visibility(lay, menu_hide);
+  return menu_visibility;
+}
+
+class TopRightBottomRight : public GuiWidgetForward
+{
+public:
+  TopRightBottomRight(GameApi::EveryApi &ev, GuiWidget *wid, GuiWidget *floating) : GuiWidgetForward(ev, {floating } ),wid(wid), floating(floating) {
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1,-1, -1,0);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2); 
+  }
+  void set_pos(Point2d pos)
+  {
+    //wid->set_pos(pos);
+    Point2d p = wid->get_pos();
+    Vector2d v1 = { wid->get_size().dx -floating->get_size().dx,wid->get_size().dy };
+    p += v1;
+    GuiWidgetForward::set_pos(p);
+    floating->set_pos(p);
+  }
+  void set_size(Vector2d size)
+  {
+    GuiWidgetForward::set_size(size);
+    floating->set_size(size);
+  }
+  void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
+  {
+    GuiWidgetForward::update(mouse_pos, button,ch, type, mouse_wheel_y);
+    Vector2d v1 = floating->get_size();
+    //Vector2d v2 = vec[1]->get_size();
+    size = v1;
+
+  }
+private:
+  GuiWidget *wid;
+  GuiWidget *floating;
+};
+
+GameApi::W GameApi::GuiApi::top_right_corner_match(W wid, W floating)
+{
+  GuiWidget *wid2 = find_widget(e, wid);
+  GuiWidget *floating2 = find_widget(e, floating);
+  return add_widget(e, new TopRightBottomRight(ev, wid2, floating2));
+}
+
+GameApi::W GameApi::GuiApi::popup_box_menu(std::vector<std::string> options, FtA atlas, BM atlas_bm)
+{
+  std::vector<W> vec;
+  int s = options.size();
+  int width = 0;
+  for(int i=0;i<s;i++)
+    {
+      std::string s = options[i];
+      W txt_1 = text(s, atlas, atlas_bm);
+      if (width<size_x(txt_1)) { width = size_x(txt_1); }
+      vec.push_back(txt_1);
+    }
+  int s2 = options.size();
+  for(int i=0;i<s2;i++)
+    {
+      W txt_1 = vec[i];
+      W txt_1a = left_align(txt_1, width);
+      W txt_2 = margin(txt_1a, 5,5,5,5);
+      W txt_3 = highlight(size_x(txt_2), size_y(txt_2));
+      W txt_4 = layer(txt_2, txt_3);
+      vec[i] = txt_4;
+    }
+  W w = array_y(&vec[0], vec.size(), 3);
+  W w2 = button(size_x(w), size_y(w), c_list_item_title, c_list_item_title2);
+  W w3 = layer(w2,w);
+  W w5 = margin(w3,2,2,2,2);
+  return w5;
+}
