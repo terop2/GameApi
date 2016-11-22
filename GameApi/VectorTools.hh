@@ -255,6 +255,7 @@ public:
   {
     *this = *this * m;
   }
+  static Matrix Zero();
   static Matrix KeepRotation(const Matrix &m);
   static Matrix Transpose(const Matrix &m);
   static Matrix XRotation(float rot);

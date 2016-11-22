@@ -228,6 +228,16 @@ Matrix operator*(const Matrix &m1, const Matrix &m2)
   return r;
 }
 
+Matrix Matrix::Zero()
+{
+  Matrix r = { { 0.0, 0.0, 0.0, 0.0,
+	       0.0, 0.0, 0.0, 0.0,
+	       0.0, 0.0, 0.0, 0.0,
+	       0.0, 0.0, 0.0, 1.0 } };
+  r.is_identity = false;
+  return r;
+}
+
 Matrix Matrix::Identity()
 {
   Matrix r = { { 1.0, 0.0, 0.0, 0.0,
