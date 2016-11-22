@@ -2487,6 +2487,79 @@ private:
   Matrix one;
 };
 
+class AnimEnable : public Movement
+{
+public:
+  AnimEnable(Movement *next, float start_time, float end_time) : next(next), start_time(start_time), end_time(end_time) { }
+  void set_matrix(Matrix m) { }
+  Matrix get_whole_matrix(float time) const
+  {
+    if (time<start_time) { return Matrix::Zero(); }
+    if (time>end_time) { return Matrix::Zero(); }
+    return next->get_whole_matrix(time);
+  }
+private:
+  Movement *next;
+  float start_time,end_time;
+};
+
+class AnimDisable : public Movement
+{
+public:
+  AnimDisable(Movement *next, float start_time, float end_time) : next(next), start_time(start_time), end_time(end_time) { }
+  void set_matrix(Matrix m) { }
+  Matrix get_whole_matrix(float time) const
+  {
+    if (time<start_time) { return next->get_whole_matrix(time); }
+    if (time>end_time) { return next->get_whole_matrix(time); }
+    return Matrix::Zero(); 
+  }
+private:
+  Movement *next;
+  float start_time,end_time;
+};
+class AnimChoose : public Movement
+{
+public:
+  AnimChoose(std::vector<Movement*> vec, float start_time, float duration) : vec(vec), start_time(start_time), duration(duration) { }
+  void set_matrix(Matrix m) { }
+  Matrix get_whole_matrix(float time) const
+  {
+    if (vec.size()==0) return Matrix::Identity();
+    if (time < start_time) return vec[0]->get_whole_matrix(time);
+    if (time > start_time+duration*vec.size()) return vec[vec.size()-1]->get_whole_matrix(time);
+    int val = (time-start_time)/duration;
+    return vec[val]->get_whole_matrix(time);
+  }
+private:
+  std::vector<Movement*> vec;
+  float start_time;
+  float duration;
+};
+
+GameApi::MN GameApi::MovementNode::anim_enable(MN next, float start_time, float end_time)
+{
+  Movement *next2 = find_move(e, next);
+  return add_move(e, new AnimEnable(next2, start_time, end_time));
+}
+GameApi::MN GameApi::MovementNode::anim_disable(MN next, float start_time, float end_time)
+{
+  Movement *next2 = find_move(e, next);
+  return add_move(e, new AnimDisable(next2, start_time, end_time));
+}
+GameApi::MN GameApi::MovementNode::anim_choose(std::vector<MN> vec, float start_time, float duration)
+{
+  std::vector<Movement*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_move(e,vec[i]));
+    }
+
+  return add_move(e, new AnimChoose(vec2, start_time, duration));
+}
+
+
 GameApi::MN GameApi::MovementNode::compress(MN next, float start_time, float end_time)
 {
   Movement *nxt = find_move(e, next);

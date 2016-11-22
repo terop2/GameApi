@@ -1044,6 +1044,9 @@ public:
 	    float v_x, float v_y, float v_z, float angle);
   MN compress(MN next, float start_time, float end_time);
   MN change_time(MN next, float d_time);
+  MN anim_enable(MN next, float start_time, float end_time);
+  MN anim_disable(MN next, float start_time, float end_time);
+  MN anim_choose(std::vector<MN> vec, float start_time, float duration);
   MN time_repeat(MN next, float start_time, float repeat_duration);
   void set_matrix(MN n, M m);
   M get_matrix(MN n, float time);
@@ -1664,6 +1667,7 @@ public:
   IMPORT P texture(P orig, BM bm, int bm_choose = -1); // all quads
 
   IMPORT P line_to_cone(EveryApi &ev, LI li, float size, int numfaces);
+  IMPORT P static_instancing(EveryApi &ev, P obj, PTS pos);
 
   IMPORT P color(P orig, unsigned int color);
   IMPORT P color_voxel(P orig, VX colours, PT p, V u_x, V u_y, V u_z);

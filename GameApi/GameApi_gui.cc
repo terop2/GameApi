@@ -4609,6 +4609,24 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "MN", "float", "float" },
 			 { "", "0.0", "100.0" },
 			 "MN", "move_api", "time_repeat"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::anim_enable,
+			 "anim_enable",
+			 { "next", "start_time", "end_time" },
+			 { "MN", "float", "float" },
+			 { "", "0.0", "100.0" },
+			 "MN", "move_api", "anim_enable"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::anim_disable,
+			 "anim_disable",
+			 { "next", "start_time", "end_time" },
+			 { "MN", "float", "float" },
+			 { "", "0.0", "100.0" },
+			 "MN", "move_api", "anim_disable"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::anim_choose,
+			 "anim_choose",
+			 { "vec", "start_time", "duration" },
+			 { "[MN]", "float", "float" },
+			 { "", "0.0", "100.0" },
+			 "MN", "move_api", "anim_choose"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::move_ml,
 			 "move_ml",
 			 { "ev", "ml", "mn" },
@@ -4998,6 +5016,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "EveryApi&", "LI", "float", "int" },
 			 { "ev", "", "10.0", "15" },
 			 "P", "polygon_api", "line_to_cone"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::static_instancing,
+			 "static_instancing",
+			 { "ev", "obj", "pos" },
+			 { "EveryApi&", "P", "PTS" },
+			 { "ev", "", "" },
+			 "P", "polygon_api", "static_instancing"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_map,
 			 "color_map",
 			 { "bm", "sx", "sy", "z" },

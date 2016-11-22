@@ -60,8 +60,8 @@ public:
   }
   float Edge(int y, int edge) const
   {
-    Point2d p1 = { 0.0, y };
-    Point2d p2 = { 100.0, y };
+    Point2d p1 = { 0.0f, float(y) };
+    Point2d p2 = { 100.0f, float(y) };
     Point2d p3 = pp1;
     Point2d p4 = pp2;
 

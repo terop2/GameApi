@@ -4967,3 +4967,17 @@ GameApi::P GameApi::PolygonApi::line_to_cone(EveryApi &ev, LI li, float size, in
     }
   return or_array2(vec);
 }
+
+GameApi::P GameApi::PolygonApi::static_instancing(EveryApi &ev, P obj, PTS pos)
+{
+  PointsApiPoints *obj2 = find_pointsapi_points(e, pos);
+  int s = obj2->NumPoints();
+  std::vector<P> vec;
+  for(int i=0;i<s;i++)
+    {
+      Point pp = obj2->Pos(i);
+      P trans = translate(obj, pp.x,pp.y,pp.z);
+      vec.push_back(trans);
+    }
+  return or_array2(vec);
+}

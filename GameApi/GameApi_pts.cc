@@ -391,16 +391,28 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
 #ifdef VAO
   glGenVertexArrays(1, &arr->vao[0]);
   glBindVertexArray(arr->vao[0]);
+  const int vertex_id = 0;
+#endif
+#ifndef VAO
+  const int vertex_id = 0;
 #endif
   glGenBuffers(2, &arr->buffer[0]);
+  glEnableVertexAttribArray(vertex_id);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[0]);
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0,0);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[1]);
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color, GL_STATIC_DRAW);
-  glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, 0);
-  glEnableVertexAttribArray(0);
+#ifdef VAO
+  glEnableVertexAttribArray(vertex_id);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[0]);
+  glVertexAttribPointer(vertex_id, 3, GL_FLOAT, GL_FALSE, 0,0);
+  glEnableVertexAttribArray(4);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[0]);
+  glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0,0);
   glEnableVertexAttribArray(2);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[1]);
+  glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, 0);
+#endif
 #ifdef VAO
   glBindVertexArray(0);
 #endif
@@ -492,13 +504,23 @@ EXPORT void GameApi::PointsApi::render(GameApi::PTA array)
   glBindVertexArray(arr->vao[0]);
 #endif
 #ifndef VAO
+  const int vertex_id = 0;
+  glEnableVertexAttribArray(vertex_id);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[0]);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0,0);
+  glVertexAttribPointer(vertex_id, 3, GL_FLOAT, GL_FALSE, 0,0);
+  glEnableVertexAttribArray(4);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[0]);
+  glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0,0);
+  glEnableVertexAttribArray(2);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[1]);
   glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, 0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  //glBindBuffer(GL_ARRAY_BUFFER, 0);
 #endif
   glDrawArrays(GL_POINTS, 0, arr->numpoints);
+#ifndef VAO
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(2);
+#endif
   
 }
 
@@ -691,8 +713,31 @@ public:
       }
 #endif
     ev.shader_api.use(sh);
+#ifdef VAO
     glBindVertexArray(arr->vao[0]);
+#endif
+#ifndef VAO
+  const int vertex_id = 0;
+  glEnableVertexAttribArray(vertex_id);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[0]);
+  glVertexAttribPointer(vertex_id, 3, GL_FLOAT, GL_FALSE, 0,0);
+  glEnableVertexAttribArray(4);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[0]);
+  glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0,0);
+  glEnableVertexAttribArray(2);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[1]);
+  glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, 0);
+  //glBindBuffer(GL_ARRAY_BUFFER, 0);
+#endif
+
     glDrawArrays(GL_POINTS, 0, arr->numpoints);
+
+#ifndef VAO
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(2);
+  glDisableVertexAttribArray(4);
+#endif
+
   }
   int shader_id() { return -1; }
 private:
@@ -748,10 +793,13 @@ GameApi::PTS GameApi::PointsApi::random_mesh_quad_instancing(EveryApi &ev, P p, 
       xp-=1.0;
       yp-=1.0;
       zp*=float(coll->NumFaces());
-      Point p1 = coll->FacePoint(int(zp), 0);
-      Point p2 = coll->FacePoint(int(zp), 1);
-      Point p3 = coll->FacePoint(int(zp), 2);
-      Point p4 = coll->FacePoint(int(zp), 3);
+      int zpi = int(zp);
+      if (zpi<0) zpi = 0;
+      if (zpi>=coll->NumFaces()) zpi = coll->NumFaces()-1;
+      Point p1 = coll->FacePoint(zpi, 0);
+      Point p2 = coll->FacePoint(zpi, 1);
+      Point p3 = coll->FacePoint(zpi, 2);
+      Point p4 = coll->FacePoint(zpi, 3);
       Point p = 1.0/4.0*((1.0f-xp)*(1.0f-yp)*Vector(p1) + (1.0f+xp)*(1.0f-yp)*Vector(p2) + (1.0f+xp)*(1.0f+yp)*Vector(p3) + (1.0f-xp)*(1.0f+yp)*Vector(p4));
       points->push_back(p);
       color2->push_back(0xffffffff);
