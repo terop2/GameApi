@@ -6362,7 +6362,7 @@ private:
   {
     Point2d r;
     r.x = p1.x*p2.x-p1.y*p2.y;
-    r.y = p1.y*p2.x+p1.x*p2.y;
+    r.y = p1.x*p2.y+p1.y*p2.x;
     return r;
   }
 
@@ -6374,6 +6374,36 @@ private:
   int count;
   float xx,yy;
 };
+
+class MandelbrotVolume : public VolumeObject
+{
+public:
+  MandelbrotVolume(bool julia, int count, float yy) : julia(julia), count(count),yy(yy) { }
+  virtual bool Inside(Point v) const {
+    // xyz={-300.0 .. 300.0}
+    Vector vv = v;
+    vv/=300.0f;
+    // -1.0 .. 1.0
+    vv.dx *= 1.5f;
+    // x = { -1.5 .. 1.5 }
+    vv.dx -= 0.5f;
+    // x = { -2.0 .. 1.0 }
+    vv.dz *= 2.0f;
+    // z={ -2.0 .. 2.0 }
+    vv.dz -=2.0;
+    vv.dz *=6.0/4.0;
+    vv.dz +=4.0;
+    // z={-4.0 .. 2.0 }
+    Mandelbrot brot(julia, vv.dx, vv.dx, vv.dy,vv.dy, 1,1, count, vv.dz, yy);
+    int count2 = brot.Map(0,0);
+    return count2>count-1;
+  }
+private:
+  bool julia;
+  int count;
+  float yy;
+};
+
 
 class MapBitmapToColor : public Bitmap<Color>
 {

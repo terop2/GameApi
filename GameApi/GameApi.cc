@@ -3386,6 +3386,53 @@ private:
   GameApi::BM bm;
 };
 
+class BrashMetal : public MaterialForward
+{
+public:
+  BrashMetal(GameApi::EveryApi &ev, Material *next, int count=80000) : ev(ev), next(next), count(count) { }
+
+  virtual GameApi::ML mat2(GameApi::P I4) const
+  {
+    GameApi::PT I1=ev.point_api.point(0.0,0.0,0.0);
+    GameApi::P I2=ev.polygon_api.sphere(I1,5,2,2);
+    //PT I3=ev.point_api.point(0.0,0.0,0.0);
+    //P I4=ev.polygon_api.torus2(ev,80,18,I3,400,80);
+    GameApi::PTS I5=ev.points_api.random_mesh_quad_instancing(ev,I4,count);
+    GameApi::MT I6=ev.materials_api.def(ev);
+    GameApi::MT I7=ev.materials_api.snow(ev,I6);
+    GameApi::MT I8=ev.materials_api.web(ev,I7);
+    GameApi::ML I9=ev.materials_api.bind_inst(I2,I5,I8);
+    //PT I10=ev.point_api.point(0.0,0.0,0.0);
+    //P I11=ev.polygon_api.torus2(ev,80,18,I10,400,80);
+    GameApi::MT I12=ev.materials_api.def(ev);
+    GameApi::MT I13=ev.materials_api.snow(ev,I12);
+    GameApi::MT I14=ev.materials_api.web(ev,I13);
+    GameApi::ML I15=ev.materials_api.bind(I4,I14);
+    GameApi::ML I16=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{I9,I15});
+    return I16;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::PTA pta = ev.points_api.prepare(pts);
+    GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    return ml;
+
+    // TODO how to implement instancing
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    return ml;
+    // TODO how to implement instancing
+  }
+private:
+  GameApi::EveryApi &ev;
+  Material *next;
+  int count;
+};
+
 class SnowMaterial : public MaterialForward
 {
 public:
@@ -3449,6 +3496,11 @@ GameApi::MT GameApi::MaterialsApi::snow(EveryApi &ev, MT nxt)
 {
   Material *mat = find_material(e, nxt);
   return add_material(e, new SnowMaterial(ev, mat));
+}
+GameApi::MT GameApi::MaterialsApi::brashmetal(EveryApi &ev, MT nxt, int count)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new BrashMetal(ev, mat, count));
 }
 
 #if 0

@@ -146,6 +146,7 @@ public:
 #endif
 };
 
+
 class BitmapVolume; // see Graph.hh
 
 class MatrixVolumeObject : public VolumeObject

@@ -3,6 +3,7 @@
 #ifndef GAMEAPI_HH
 #define GAMEAPI_HH
 
+#include "deps.hh"
 #include <string>
 #include <functional>
 #include <vector>
@@ -180,6 +181,7 @@ public:
   void *envimpl;
   friend struct EnvImpl;
 };
+#ifdef F_MAINLOOP_API
 class MainLoopApi
 {
 public:
@@ -268,8 +270,9 @@ private:
   Env &e;
   void *priv;
 };
+#endif
 
-
+#ifdef F_SPRITE_API
 class SpriteApi
 {
 public:
@@ -304,7 +307,9 @@ private:
   void *priv;
   Env &e;
 };
+#endif
 
+#ifdef F_TEXTURE_API
 class TextureApi
 {
 public:
@@ -329,7 +334,9 @@ private:
   Env &e;
   int count;
 };
+#endif
 
+#ifdef F_GRID_API
 class GridApi
 {
 public:
@@ -347,7 +354,9 @@ private:
   void *priv;
   Env &e;
 };
+#endif
 
+#ifdef F_BITMAP_API
 class BitmapApi
 {
 public:
@@ -426,8 +435,9 @@ private:
   void *priv;
   Env &e;
 };
+#endif
 
-
+#ifdef F_FLOAT_API
 class FloatApi
 {
 public:
@@ -439,7 +449,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_ARRAY_API
 template<class T>
 class ArrayApi
 { // handle arrays
@@ -449,7 +461,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_FLOAT_ARRAY_API
 class FloatArrayApi
 {
 public:
@@ -465,7 +479,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_FONT_API
 class FontApi
 {
 public:
@@ -490,7 +506,9 @@ private:
   void *priv;
   Env &e;
 };
+#endif
 
+#ifdef F_ANIM_API
 class AnimApi
 {
 public:
@@ -527,7 +545,9 @@ private:
   void *priv;
   Env &e;
 };
+#endif
 
+#ifdef F_EVENT_API
 class EventApi
 {
 public:
@@ -569,8 +589,9 @@ private:
   void *priv;
   Env &e;
 };
+#endif
 
-
+#ifdef F_CURVE_API
 class CurveApi
 {
 public:
@@ -597,6 +618,9 @@ public:
 private:
   Env &e;
 };
+#endif
+
+#ifdef F_MATRIX_CURVE_API
 class MatrixCurveApi
 {
 public:
@@ -608,8 +632,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
-
+#ifdef F_CURVES_API
 class CurvesApi
 {
 public:
@@ -620,7 +645,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_FUNCTION_API
 class FunctionApi
 {
 public:
@@ -656,7 +683,9 @@ private:
   Env &e;
   void *priv;
 };
+#endif
 
+#ifdef F_SPACE_API
 class SpaceApi
 {
 public:
@@ -683,7 +712,9 @@ private:
   void operator=(const SpaceApi&);
   Env &e;
 };
+#endif
 
+#ifdef F_DUP_API
 class DupApi
 {
 public:
@@ -696,7 +727,9 @@ public:
   RM dup_rm(RM r);
   IS dup_is(IS i);
 };
+#endif
 
+#ifdef F_TEXT_API
 class TextApi
 {
 public:
@@ -713,7 +746,9 @@ private:
   int sx,sy;
   char start_char, end_char;
 };
+#endif
 
+#ifdef F_IMPLICIT_API
 class ImplicitApi
 {
 public:
@@ -732,7 +767,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_VOLUME_API
 class VolumeApi
 {
 public:	IMPORT VolumeApi(Env &e);
@@ -771,7 +808,8 @@ public:	IMPORT VolumeApi(Env &e);
 	IMPORT O mandelbulb(float n, float p_x, float p_y, float p_z,
 	       float c_x, float c_y, float c_z,
 	       float radius,
-	       int iterations);
+ 	       int iterations);
+  IMPORT O mandelbrot_volume(bool julia, int count, float yy);
 
 	IMPORT BB plane(O o, int sx, int sy,
 	   PT u_p, V u_x, V u_y,
@@ -818,7 +856,9 @@ private:
 
   Env &e;
 };
+#endif
 
+#ifdef F_SHADER_MODULE_API
 class ShaderModuleApi
 {
 public:
@@ -885,7 +925,9 @@ private:
 
   Env &e;
 };
+#endif
 
+#ifdef F_INTERACTION_API
 class InteractionApi
 {
 public:
@@ -916,8 +958,9 @@ public:
 			     Quake_data &data,
 			     float &speed_x, float &speed_y, float speed, float rot_speed);
 };
+#endif
 
-
+#ifdef F_PICKING_API
 class PickingApi
 {
 public:
@@ -928,7 +971,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_TREE_API
 class TreeApi
 {
 public:
@@ -940,7 +985,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_MATERIALS_API
 class MaterialsApi
 {
 public:
@@ -949,6 +996,7 @@ public:
   MT texture(EveryApi &ev, BM bm);
   MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
   MT snow(EveryApi &ev, MT nxt);
+  MT brashmetal(EveryApi &ev, MT nxt, int count);
   MT web(EveryApi &ev, MT nxt); // TODO: add line width property
   MT dist_field_mesh(EveryApi &ev, SFO sfo, MT next);
 
@@ -965,7 +1013,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_INPUT_API
 class InputApi
 {
 public:
@@ -974,7 +1024,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_PHYSICS_API
 class PhysicsApi
 {
 public:
@@ -999,7 +1051,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_COLLISION_PLANE
 class CollisionPlane
 {
 public:
@@ -1012,7 +1066,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_SKELETAL
 class Skeletal
 {
 public:
@@ -1023,7 +1079,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_MOVEMENT_NODE
 class MovementNode
 {
 public:
@@ -1061,7 +1119,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_EXPR_API
 class ExprApi
 {
 public:
@@ -1086,7 +1146,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_GUI_API
 class GuiApi
 {
 public:
@@ -1241,6 +1303,8 @@ private:
   EveryApi &ev;
   SH sh;
 };
+#endif
+
   class EditNode;
   struct CollectResult {
     std::vector<EditNode*> res;
@@ -1251,6 +1315,7 @@ private:
 
   int collect_counter(int mode); // 0=reset, 1=count_next
 
+#ifdef F_WMOD_API
 class WModApi
 {
 public:
@@ -1286,7 +1351,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_FLOAT_VOLUME_API
 class FloatVolumeApi
 {
 public:
@@ -1319,8 +1386,9 @@ private:
   void operator=(const FloatVolumeApi&);
   Env &e;
 };
+#endif
 
-
+#ifdef F_COLOR_VOLUME_API
 class ColorVolumeApi
 {
 public:
@@ -1343,7 +1411,9 @@ private:
   void operator=(const ColorVolumeApi&);
   Env &e;
 };
+#endif
 
+#ifdef F_VECTOR_VOLUME_API
 class VectorVolumeApi
 {
 public:
@@ -1358,7 +1428,9 @@ private:
 
   Env &e;
 };
+#endif
 
+#ifdef F_DISTANCE_FLOAT_VOLUME_API
 class DistanceFloatVolumeApi
 {
 public:
@@ -1421,8 +1493,9 @@ private:
 
   Env &e;
 };
+#endif
 
-
+#ifdef F_SEPARATE_API
 class SeparateApi
 {
 public:
@@ -1441,7 +1514,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_SURFACE_API
 class SurfaceApi
 {
 public:
@@ -1465,7 +1540,9 @@ private:
   void *priv;
   Env &e;
 };
+#endif
 
+#ifdef F_TRISTRIP_API
 class TriStripApi
 {
 public:
@@ -1494,7 +1571,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_CUTTER_API
 class CutterApi
 {
 public:
@@ -1507,8 +1586,11 @@ public:
 private:
   Env &e;
 };
+#endif
 
   struct BO { int id; };
+#ifdef F_BOOLEAN_OPS
+
 class BooleanOps
 {
 public:
@@ -1531,8 +1613,10 @@ public:
 private:
   Env &e;
 };
-
+#endif
 struct PD { int id; };
+
+#ifdef F_POLYGON_DISTANCE_FIELD
 class PolygonDistanceField
 {
 public:
@@ -1567,6 +1651,8 @@ public:
 private:
   Env &e;
 };
+#endif
+#ifdef F_POLYGON_ARRAY_API
 class PolygonArrayApi
 {
 public:
@@ -1580,6 +1666,8 @@ public:
 private:
   Env &e;
 };
+#endif
+#ifdef F_POLYGON_API
 class PolygonApi
 {
 public:
@@ -1641,6 +1729,7 @@ public:
 		    BM bm_front, BM bm_back, BM bm_left, BM bm_right, BM bm_top, BM bm_bottom);
 	IMPORT P sphere(PT center, float radius, int numfaces1, int numfaces2);
 	IMPORT P cone(int numfaces, PT p1, PT p2, float rad1, float rad2);
+  IMPORT P torus2(EveryApi &ev, int numfaces1, int numfacesw2, PT center, float radius1, float radius2);
   IMPORT P torus(int numfaces1, int numfaces2, PT center, V u_x, V u_y, float radius1, V uu_x, V uu_y, float radius2);
 	IMPORT P ring(float sx, float sy, float x, int steps); // use RingEffect::Init() to implement
   enum HeightMapType { EQuad, ETriangle };
@@ -1874,7 +1963,9 @@ private:
   void *priv;
   Env &e;
 };
+#endif
 
+#ifdef F_WAVEFORM_API
 class WaveformApi
 { // [0..length] -> [-1..1]
 public: 
@@ -1900,6 +1991,8 @@ private:
   void operator=(const WaveformApi&);
   Env &e;
 };
+#endif
+#ifdef F_SAMPLE_COLLECTION_API
 class SampleCollectionApi
 {
 public:
@@ -1915,6 +2008,8 @@ public:
 private:
   Env &e;
 };
+#endif
+#ifdef F_TRACKER_API
 class TrackerApi
 {
 public:
@@ -1929,9 +2024,11 @@ public:
 private:
   Env &e;
 };
+#endif
 
 class ShaderApi;
 
+#ifdef F_STATE_CHANGE_API
 class StateChangeApi
 {
 public:
@@ -1952,7 +2049,9 @@ private:
   Env &e;
   ShaderApi &api;
 };
+#endif
 
+#ifdef F_NEW_PLANE_API
 class NewPlaneApi
 {
 public:
@@ -1971,7 +2070,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_PLANE_API
 class PlaneApi
 { // 2d coordinates in PT
   // could be array of pointcollections
@@ -2042,7 +2143,9 @@ private:
   void operator=(const PlaneApi&);
   Env &e;
 };
+#endif
 
+#ifdef F_BOOL_BITMAP_API
 class BoolBitmapApi
 { // NxN->2
 public:
@@ -2096,7 +2199,9 @@ private:
 
   Env &e;
 };
+#endif
 
+#ifdef F_FLOAT_BITMAP_API
 class FloatBitmapApi
 { // NxN->R
 public: // values are [0.0..1.0]
@@ -2146,7 +2251,9 @@ private:
   void operator=(const FloatBitmapApi&);
   Env &e;
 };
+#endif
 
+#ifdef F_VECTOR_BITMAP_API
 class VectorBitmapApi
 {
 public: 
@@ -2158,7 +2265,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_CONTINUOUS_BITMAP_API
 class ContinuousBitmapApi
 { // RxR->RGB
 public:
@@ -2184,7 +2293,9 @@ private:
 
   Env &e;
 };
+#endif
 
+#ifdef F_VOXEL_API
 class VoxelApi
 { // we don't have good ways to render these. RayTraceBitmap is one way,
   // but it could be useful in other rendering systems to get colours from
@@ -2200,8 +2311,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
-
+#ifdef F_COLOR_API
 class ColorApi
 { // ()->RGB
 public:
@@ -2214,7 +2326,9 @@ private:
   void operator=(const ColorApi&);
   Env &e;
 };
+#endif
 
+#ifdef F_POINT_API
 class PointApi
 { // ()->PT
 public:
@@ -2242,7 +2356,9 @@ private:
   void operator=(const PointApi&);
   Env &e;
 };
-		     
+#endif
+
+#ifdef F_POINT_COLLECTION_API		     
 class PointCollectionApi
   { // int -> PT
 public:
@@ -2259,6 +2375,9 @@ private:
   void operator=(const PointCollectionApi&);
   Env &e;
 };
+#endif
+
+#ifdef F_MATRICES_API
 class MatricesApi
 {
 public:
@@ -2270,7 +2389,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_POINTS_API
 class PointsApi
 {
 public:
@@ -2323,7 +2444,9 @@ private:
 
   Env &e;
 };
-		     
+#endif
+
+#ifdef F_LINES_API		     
 class LinesApi
 {
 public:
@@ -2376,8 +2499,9 @@ private:
   void operator=(const LinesApi&);
   Env &e;
 };
-		     
+#endif		     
 
+#ifdef F_VECTOR_API
 class VectorApi
 { // to be implemented via virtual Vector vec() const=0;
   // ()->V
@@ -2400,7 +2524,9 @@ private:
   void operator=(const VectorApi&);
  Env &e;
 };
+#endif
 
+#ifdef F_SPACE_VECTOR_API
 class SpaceVectorApi
 { // f : PT->V
 public:
@@ -2413,6 +2539,9 @@ private:
   void operator=(const SpaceVectorApi&);
   Env &e;
 };
+#endif
+
+#ifdef F_MATRIX_API
 class MatrixApi
 { 
 public:
@@ -2440,6 +2569,8 @@ private:
   void operator=(const MatrixApi&);
   Env &e;
 };
+#endif
+#ifdef F_OBJECT_MOVE_API
 class ObjectMoveApi
 {
 public:
@@ -2456,7 +2587,9 @@ private:
 
   Env &e;
 };
+#endif
 
+#ifdef F_VBO_API
 class VBOApi
 {
 public:
@@ -2480,9 +2613,9 @@ private:
   void *priv;
   Env &e;
 };
+#endif
 
-
-
+#ifdef F_PATH_API
 class PathApi
 {
 public:
@@ -2501,7 +2634,9 @@ private:
   void *priv;
   Env &e;
 };
+#endif
 
+#ifdef F_UBER_SHADER_API
 class UberShaderApi
 {
 public:
@@ -2548,7 +2683,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_SHADER_API
 class ShaderApi
 {
 public:
@@ -2603,7 +2740,9 @@ private:
   void *priv;
   Env &e;
 };
+#endif
 
+#ifdef F_FRAMEBUFFER_API
 class FrameBufferApi
 {
 public:
@@ -2621,7 +2760,9 @@ private:
   void operator=(const FrameBufferApi&);
   Env &e;
 };
+#endif
 
+#ifdef F_LAYOUT_API
 class LayoutApi
 {
 public:
@@ -2647,7 +2788,9 @@ public:
 private:
   Env &e;
 };
+#endif
 
+#ifdef F_DRAW_API
 class DrawApi
 {
 public:
@@ -2679,6 +2822,7 @@ public:
 private:
   Env &e;
 };
+#endif
 
   
 struct EveryApi
@@ -2745,6 +2889,7 @@ private:
 
 };
 
+#ifdef F_GAMES_API
 class GamesApi
 {
 public:
@@ -2757,6 +2902,7 @@ private:
   Env &e;
   //void *priv;
 };
+#endif
 
 
   //
