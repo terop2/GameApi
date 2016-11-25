@@ -23,7 +23,11 @@ private:
   VolumeObject *model;
   VolumeObject *subset;
   unsigned int col;
-};
+}; 
+EXPORT GameApi::O GameApi::VolumeApi::mandelbrot_volume(bool julia, int count, float yy)
+{  
+  return add_volume(e, new MandelbrotVolume(julia, count,yy));
+}
 EXPORT GameApi::O GameApi::VolumeApi::subset_color(O model, O color_subset, unsigned int color)
 {
   VolumeObject *model_1 = find_volume(e, model);

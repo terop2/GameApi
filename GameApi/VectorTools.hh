@@ -36,13 +36,11 @@ inline float Max(float a, float b)
   return a > b ? a : b;
 }
 
-
 class ComponentMultipliers
 {
 public:
   float xm, ym, zm;
 };
-
 
 class Vector;
 
@@ -57,7 +55,9 @@ public:
 public:
   float Dist() const;
   friend float Dist(const Point &a, const Point &b);
+
   //void Normalize() { x/=s; y/=s; z/=s; s=1.0; }
+
   static Point Origo() { Point p; p.x = 0; p.y = 0; p.z = 0;  return p; }
   static Point Interpolate(const Point &aVec, const Point &aVec2, float aVal)
   {
@@ -68,6 +68,7 @@ public:
     //v.s = aVec.s*aVal + aVec2.s*(1.0-aVal);
     return v;
   }
+
   void operator+=(const Vector &v);
   void operator-=(const Vector &v);
   friend Point operator+(const Point &p, const Vector &v);
@@ -75,6 +76,8 @@ public:
   friend std::ostream &operator<<(std::ostream &o, const Point &p);
   friend std::istream &operator>>(std::istream &i, Point &p);
 };
+
+
 
 class SphericalPoint
 {
@@ -88,8 +91,6 @@ public:
   float alfa;
   float beta;
 };
-
-
 
 class Vector // a function Point->Point
 {
@@ -194,6 +195,7 @@ public:
     v.dz = -dz;
     return v;
   }
+
   void XMultiply(const ComponentMultipliers &aMult)
   {
     dx*=aMult.xm;
@@ -212,6 +214,7 @@ public:
     dy*=aMult.zm;
     dz*=aMult.zm;
   }
+
   float Dist() const;
   friend float Dist(const Vector &a, const Vector &b) { return (b-a).Dist(); }
 
@@ -236,12 +239,12 @@ public:
   float dx,dy,dz;
 };
 
+
 struct AxisAngle
 {
   float angle;
   Vector axis;
 };
-
 
 class Matrix // a function point->point
 {
@@ -315,7 +318,6 @@ public:
   Vector u_x;
   Vector u_y;
 };
-
 
 
 class Color
@@ -954,7 +956,5 @@ class Cube3d
 public:
   virtual void Draw(FlexibleCube c, GC3d *gc) const=0;
 };
-
-
 
 #endif

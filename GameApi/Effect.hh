@@ -85,6 +85,7 @@ public:
 class Render;
 class LineCollection;
 class FaceCollection;
+
 class FrameAnim
 {
 public:

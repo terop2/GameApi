@@ -19,7 +19,7 @@ struct Envi {
   float speed_x = 1.0;
   float speed_y = 1.0;
   InteractionApi::Quake_data data;
-  bool logo_shown = false;
+  bool logo_shown = true;
   SH color_sh;
   SH texture_sh;
   SH arr_texture_sh;
@@ -170,7 +170,8 @@ int main(int argc, char *argv[]) {
   env.arr_texture_sh = sh3;
 
   ev.mainloop_api.reset_time();
-  ev.mainloop_api.display_logo(ev);
+  if (env.logo_shown)
+    ev.mainloop_api.display_logo(ev);
   ev.mainloop_api.alpha(true);
 
 #ifndef EMSCRIPTEN

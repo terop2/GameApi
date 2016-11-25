@@ -794,6 +794,14 @@ EXPORT GameApi::P GameApi::PolygonApi::sphere(PT center, float radius, int numfa
     FaceCollection *coll = new SphereElem(*p, radius, numfaces1, numfaces2);
     return add_polygon(e, coll,1);
 }
+EXPORT GameApi::P GameApi::PolygonApi::torus2(EveryApi &ev, int numfaces1, int numfaces2, PT center, float radius1, float radius2)
+{
+  V u_x = ev.vector_api.vector(1.0,0.0,0.0);
+  V u_y = ev.vector_api.vector(0.0,1.0,0.0);
+  V uu_x = ev.vector_api.vector(1.0,0.0,0.0);
+  V uu_y = ev.vector_api.vector(0.0,0.0,1.0);
+  return torus(numfaces1, numfaces2, center, u_x, u_y, radius1, uu_x, uu_y, radius2);
+}
 EXPORT GameApi::P GameApi::PolygonApi::torus(int numfaces1, int numfaces2, PT center, V u_x, V u_y, float radius1, V uu_x, V uu_y, float radius2)
 {
   Point *cent = find_point(e, center);

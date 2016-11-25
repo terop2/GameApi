@@ -3969,6 +3969,19 @@ std::vector<GameApiItem*> volumeapi_functions()
 			 { "PT", "PT", "PT", "float", "float" },
 			 { "", "", "", "100.0", "50.0" },
 			 "O", "volume_api", "torus"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::mandelbrot_volume,
+			 "o_mandelbrot",
+			 { "julia", "count", "yy" },
+			 { "bool", "int", "float" },
+			 { "false", "64", "0.0" },
+			 "O", "volume_api", "mandelbrot_volume"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::mandelbulb,
+			 "o_mandelbulb",
+			 { "n", "p_x", "p_y", "p_z", "c_x", "c_y", "c_z", "radius", "iterations" },
+			 { "float", "float", "float", "float", "float", "float", "float", "float", "int" },
+			 { "2.5,", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "100.0", "64" },
+			 "O", "volume_api", "mandelbulb"));
+			   
   vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::colour,
 			 "o_colour",
 			 { "object", "color" },
@@ -4724,6 +4737,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "MT" },
 			 { "ev", "" },
 			 "MT", "materials_api", "snow"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::brashmetal,
+			 "m_brashmetal",
+			 { "ev", "nxt", "count" },
+			 { "EveryApi&", "MT", "int" },
+			 { "ev", "", "80000" },
+			 "MT", "materials_api", "brashmetal"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::web,
 			 "m_web",
 			 { "ev", "nxt" },
@@ -4992,12 +5011,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "int", "PT", "PT", "float", "float" },
 			 { "30", "(0.0,0.0,0.0)", "(0.0,100.0,0.0)", "30.0", "10.0" },
 			 "P", "polygon_api", "cone"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::torus,
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::torus2,
 			 "torus",
-			 { "numfaces1", "numfaces2", "center", "u_x", "u_y", "radius1", "uu_x", "uu_y", "radius2" },
-			 { "int", "int", "PT", "V", "V", "float", "V", "V", "float" },
-			 { "20", "20", "", "", "", "30.0", "", "", "10.0" },
-			 "P", "polygon_api", "torus"));
+			 { "ev", "numfaces1", "numfaces2", "center", "radius1", "radius2" },
+			 { "EveryApi&", "int", "int", "PT", "float", "float" },
+			 { "ev", "20", "20", "", "250.0", "50.0" },
+			 "P", "polygon_api", "torus2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::deform,
 			 "deform",
 			 { "obj", "bools", "dx", "dy", "dz" },
@@ -6016,6 +6035,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "int", "int", "int", "int", "unsigned int", "unsigned int" },
 			 { "10", "10", "8", "8", "ffffffff", "ff888888" },
 			 "BM", "bitmap_api", "chessboard"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::mandelbrot,
+			 "mandelbrot",
+			 { "is_julia", "start_x", "end_x", "start_y", "end_y", "xx", "yy", "sx", "sy", "count" },
+			 { "bool", "float", "float", "float", "float", "float", "float", "int", "int", "int" },
+			 { "false", "-2.0", "1.0", "-1.0", "1.0", "0.0", "0.0", "256", "256", "64" },
+			 "BM", "bitmap_api", "mandelbrot"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::simple_blur,
 			 "blur",
 			 { "bm", "center", "left", "right", "top", "bottom" },
