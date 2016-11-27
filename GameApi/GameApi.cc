@@ -2745,44 +2745,95 @@ private:
 class KeyMoveML : public MainLoopItem
 {
 public:
-  KeyMoveML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, int key_forward, int key_backward, float speed, bool x, bool y, bool z, float start, float end) : e(e), ev(ev), next(next),forward(key_forward), backward(key_backward),speed(speed),x(x),y(y),z(z),start(start),end(end) { 
+  KeyMoveML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, int key_forward, int key_backward, float speed, float rot_speed, bool x, bool y, bool z, bool rot_x, bool rot_y, bool rot_z, float start, float end) : e(e), ev(ev), next(next),forward(key_forward), backward(key_backward),speed(speed),rot_speed(rot_speed), x(x),y(y),z(z),rot_x(rot_x), rot_y(rot_y), rot_z(rot_z), start(start),end(end) { 
     move_forward=false;
     move_backward=false;
     pos = 0.0;
+    angle=0.0;
   }
   int shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &eve)
   {
-    if (eve.type==0x300 && eve.ch==forward) { move_forward=true; }
-    if (eve.type==0x301 && eve.ch==forward) { move_forward=false; }
-    if (eve.type==0x300 && eve.ch==backward) { move_backward=true; }
-    if (eve.type==0x301 && eve.ch==backward) { move_backward=false; }
+    int ch = eve.ch;
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+
+
+    if (eve.type==0x300 && ch==forward) { move_forward=true; }
+    if (eve.type==0x301 && ch==forward) { move_forward=false; }
+    if (eve.type==0x300 && ch==backward) { move_backward=true; }
+    if (eve.type==0x301 && ch==backward) { move_backward=false; }
     next->handle_event(eve);
   }
   void execute(MainLoopEnv &env)
   {
-    MainLoopEnv e = env;
+    GameApi::SH s1;
+    s1.id = env.sh_texture;
+    GameApi::SH s2;
+    s2.id = env.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = env.sh_color;
+
+
+    if (x||y||z)
+      {
     if (move_forward) { pos+=speed;
       if (pos>end) {pos=end; }
     }
     if (move_backward) { pos-=speed; 
       if (pos<start) { pos=start; }
     }
+      }
+    if (rot_x||rot_y||rot_z)
+      {
+	if (move_forward) { angle+=rot_speed; }
+	if (angle>end) { angle=end; }
+	if (move_backward) { angle-=rot_speed; }
+	if (angle<start) { angle=start; }
+      }
+    
+    Matrix m = Matrix::Identity();
     if (x) {
-      Matrix m = Matrix::Translate(pos,0.0,0.0);
-      e.in_MV = e.in_MV * m;
+      m = Matrix::Translate(pos,0.0,0.0);
+      //e.in_MV = e.in_MV * m;
     }
     if (y) {
-      Matrix m = Matrix::Translate(0.0,pos,0.0);
-      e.in_MV = e.in_MV * m;
+      m = Matrix::Translate(0.0,pos,0.0);
+      //e.in_MV = e.in_MV * m;
 
     }
     if (z) {
-      Matrix m = Matrix::Translate(0.0,0.0,pos);
-      e.in_MV = e.in_MV * m;
-
+      m = Matrix::Translate(0.0,0.0,pos);
+      //e.in_MV = e.in_MV * m;
     }
-    next->execute(e);
+    if (rot_x) {
+      m = Matrix::XRotation(angle);
+    }
+    if (rot_y) {
+      m = Matrix::YRotation(angle);
+    }
+    if (rot_z) {
+      m = Matrix::ZRotation(angle);
+    }
+    GameApi::M mat = add_matrix2(e, m);
+    GameApi::M m2 = add_matrix2(e, env.env);
+    GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", mat2);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", mat2);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", mat2);
+    Matrix old_in_MV = env.in_MV;
+    env.in_MV = find_matrix(e, mat2);
+    Matrix old_env = env.env;
+    env.env = find_matrix(e,mat2);/* * env.env*/;
+    next->execute(env);
+    env.env = old_env;
+    env.in_MV = old_in_MV;
   }
 private:
   GameApi::Env &e;
@@ -2793,8 +2844,11 @@ private:
   bool move_forward;
   bool move_backward;
   float pos;
+  float angle;
   float speed;
+  float rot_speed;
   bool x,y,z;
+  bool rot_x, rot_y, rot_z;
   float start,end;
 };
 
@@ -2831,12 +2885,14 @@ public:
     ev.shader_api.set_var(s2, "in_MV", mat2);
     ev.shader_api.use(s3);
     ev.shader_api.set_var(s3, "in_MV", mat2);
+    Matrix old_in_MV = env.in_MV;
     env.in_MV = find_matrix(e, mat2);
 
     Matrix old_env = env.env;
-    env.env = find_matrix(e,mat2) * env.env;
+    env.env = find_matrix(e,mat2); /* * env.env*/;
     next->execute(env);
     env.env = old_env;
+    env.in_MV = old_in_MV;
   }
 private:
   GameApi::Env &e;
@@ -2947,18 +3003,35 @@ GameApi::ML GameApi::MovementNode::move_ml(EveryApi &ev, GameApi::ML ml, GameApi
 GameApi::ML GameApi::MovementNode::move_x_ml(EveryApi &ev, GameApi::ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x)
 {
   MainLoopItem *item = find_main_loop(e, ml);
-  return add_main_loop(e, new KeyMoveML(e,ev,item,key_forward, key_backward,speed,true,false,false,start_x, end_x));
+  return add_main_loop(e, new KeyMoveML(e,ev,item,key_forward, key_backward,speed,0.0,true,false,false,false,false,false,start_x, end_x));
 }
 GameApi::ML GameApi::MovementNode::move_y_ml(EveryApi &ev, GameApi::ML ml, int key_forward, int key_backward, float speed, float start_y, float end_y)
 {
   MainLoopItem *item = find_main_loop(e, ml);
-  return add_main_loop(e, new KeyMoveML(e,ev,item,key_forward, key_backward,speed,false,true,false,start_y,end_y));
+  return add_main_loop(e, new KeyMoveML(e,ev,item,key_forward, key_backward,speed,0.0, false,true,false,false,false,false,start_y,end_y));
 }
 GameApi::ML GameApi::MovementNode::move_z_ml(EveryApi &ev, GameApi::ML ml, int key_forward, int key_backward, float speed, float start_z, float end_z)
 {
   MainLoopItem *item = find_main_loop(e, ml);
-  return add_main_loop(e, new KeyMoveML(e,ev,item,key_forward, key_backward,speed,false,false,true,start_z,end_z));
+  return add_main_loop(e, new KeyMoveML(e,ev,item,key_forward, key_backward,speed,0.0,false,false,true,false,false,false,start_z,end_z));
 }
+
+GameApi::ML GameApi::MovementNode::rot_x_ml(EveryApi &ev, GameApi::ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new KeyMoveML(e,ev,item,key_forward, key_backward,0.0,speed,false,false,false,true,false,false,start_x, end_x));
+}
+GameApi::ML GameApi::MovementNode::rot_y_ml(EveryApi &ev, GameApi::ML ml, int key_forward, int key_backward, float speed, float start_y, float end_y)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new KeyMoveML(e,ev,item,key_forward, key_backward,0.0,speed,false,true,false,false,true,false,start_y,end_y));
+}
+GameApi::ML GameApi::MovementNode::rot_z_ml(EveryApi &ev, GameApi::ML ml, int key_forward, int key_backward, float speed, float start_z, float end_z)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new KeyMoveML(e,ev,item,key_forward, key_backward,0.0,speed,false,false,false,false,false,true,start_z,end_z));
+}
+
 GameApi::ML GameApi::MovementNode::enable_ml(EveryApi &ev, GameApi::ML ml, float start_time, float end_time)
 {
   MainLoopItem *item = find_main_loop(e, ml);
@@ -3389,7 +3462,7 @@ private:
 class BrashMetal : public MaterialForward
 {
 public:
-  BrashMetal(GameApi::EveryApi &ev, Material *next, int count=80000) : ev(ev), next(next), count(count) { }
+  BrashMetal(GameApi::EveryApi &ev, Material *next, int count=80000, bool web=true) : ev(ev), next(next), count(count),web(web) { }
 
   virtual GameApi::ML mat2(GameApi::P I4) const
   {
@@ -3400,8 +3473,10 @@ public:
     GameApi::PTS I5=ev.points_api.random_mesh_quad_instancing(ev,I4,count);
     GameApi::MT I6=ev.materials_api.def(ev);
     GameApi::MT I7=ev.materials_api.snow(ev,I6);
-    GameApi::MT I8=ev.materials_api.web(ev,I7);
-    GameApi::ML I9=ev.materials_api.bind_inst(I2,I5,I8);
+    if (web) {
+      I7=ev.materials_api.web(ev,I7);
+    }
+    GameApi::ML I9=ev.materials_api.bind_inst(I2,I5,I7);
     //PT I10=ev.point_api.point(0.0,0.0,0.0);
     //P I11=ev.polygon_api.torus2(ev,80,18,I10,400,80);
     GameApi::MT I12=ev.materials_api.def(ev);
@@ -3413,10 +3488,34 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
-    GameApi::PTA pta = ev.points_api.prepare(pts);
-    GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
-    GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
-    return ml;
+    GameApi::P I4 = ev.polygon_api.static_instancing(ev, p, pts);
+
+    GameApi::PT I1=ev.point_api.point(0.0,0.0,0.0);
+    GameApi::P I2=ev.polygon_api.sphere(I1,5,2,2);
+    //PT I3=ev.point_api.point(0.0,0.0,0.0);
+    //P I4=ev.polygon_api.torus2(ev,80,18,I3,400,80);
+    GameApi::PTS I5=ev.points_api.random_mesh_quad_instancing(ev,I4,count);
+    GameApi::MT I6=ev.materials_api.def(ev);
+    GameApi::MT I7=ev.materials_api.snow(ev,I6);
+    if (web) {
+      I7=ev.materials_api.web(ev,I7);
+    }
+    GameApi::ML I9=ev.materials_api.bind_inst(I2,I5,I7);
+    //PT I10=ev.point_api.point(0.0,0.0,0.0);
+    //P I11=ev.polygon_api.torus2(ev,80,18,I10,400,80);
+    GameApi::MT I12=ev.materials_api.def(ev);
+    GameApi::MT I13=ev.materials_api.snow(ev,I12);
+    GameApi::MT I14=ev.materials_api.web(ev,I13);
+    GameApi::ML I15=ev.materials_api.bind(I4,I14);
+    GameApi::ML I16=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{I9,I15});
+    return I16;
+
+
+
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    //GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    //GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    //return ml;
 
     // TODO how to implement instancing
   }
@@ -3431,6 +3530,7 @@ private:
   GameApi::EveryApi &ev;
   Material *next;
   int count;
+  bool web;
 };
 
 class SnowMaterial : public MaterialForward
@@ -3497,10 +3597,10 @@ GameApi::MT GameApi::MaterialsApi::snow(EveryApi &ev, MT nxt)
   Material *mat = find_material(e, nxt);
   return add_material(e, new SnowMaterial(ev, mat));
 }
-GameApi::MT GameApi::MaterialsApi::brashmetal(EveryApi &ev, MT nxt, int count)
+GameApi::MT GameApi::MaterialsApi::brashmetal(EveryApi &ev, MT nxt, int count, bool web)
 {
   Material *mat = find_material(e, nxt);
-  return add_material(e, new BrashMetal(ev, mat, count));
+  return add_material(e, new BrashMetal(ev, mat, count, web));
 }
 
 #if 0

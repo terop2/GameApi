@@ -996,7 +996,7 @@ public:
   MT texture(EveryApi &ev, BM bm);
   MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
   MT snow(EveryApi &ev, MT nxt);
-  MT brashmetal(EveryApi &ev, MT nxt, int count);
+  MT brashmetal(EveryApi &ev, MT nxt, int count, bool web);
   MT web(EveryApi &ev, MT nxt); // TODO: add line width property
   MT dist_field_mesh(EveryApi &ev, SFO sfo, MT next);
 
@@ -1112,6 +1112,9 @@ public:
   ML move_x_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x);
   ML move_y_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_y, float end_y);
   ML move_z_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_z, float end_z);
+  ML rot_x_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x);
+  ML rot_y_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_y, float end_y);
+  ML rot_z_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_z, float end_z);
   ML move_ml_array(EveryApi &ev, std::vector<ML> ml, std::vector<MN> mn);
   ML enable_ml(EveryApi &ev, ML ml, float start_time, float end_time);
   ML key_event(EveryApi &ev, ML ml, MN mn, int type, int ch, int button, float duration);
@@ -2416,6 +2419,9 @@ public:
   IMPORT PTS from_volume(O o, PT pos, V u_x, V u_y, V u_z, int sx, int sy, int sz);
   IMPORT PTS move(PTS obj, float dx, float dy, float dz);
   IMPORT PTS scale(PTS obj, float sx, float sy, float sz);
+  IMPORT PTS rot_x(PTS obj, float angle);
+  IMPORT PTS rot_y(PTS obj, float angle);
+  IMPORT PTS rot_z(PTS obj, float angle);
   IMPORT PTS shadow_points(PTS obj, PT pos, V u_x, V u_y, V light_vec);
 
   IMPORT PTS unit_cube(PTS orig, PT pos, V u_x, V u_y, V u_z);

@@ -166,6 +166,25 @@ EXPORT GameApi::PTS GameApi::PointsApi::move(GameApi::PTS obj, float dx, float d
 
   return add_points_api_points(e, new MatrixPoints(obj2, Matrix::Translate(dx,dy,dz)));
 }
+EXPORT GameApi::PTS GameApi::PointsApi::rot_x(GameApi::PTS obj, float angle)
+{
+  PointsApiPoints *obj2 = find_pointsapi_points(e, obj);
+
+  return add_points_api_points(e, new MatrixPoints(obj2, Matrix::XRotation(angle)));
+}
+EXPORT GameApi::PTS GameApi::PointsApi::rot_y(GameApi::PTS obj, float angle)
+{
+  PointsApiPoints *obj2 = find_pointsapi_points(e, obj);
+
+  return add_points_api_points(e, new MatrixPoints(obj2, Matrix::YRotation(angle)));
+}
+EXPORT GameApi::PTS GameApi::PointsApi::rot_z(GameApi::PTS obj, float angle)
+{
+  PointsApiPoints *obj2 = find_pointsapi_points(e, obj);
+
+  return add_points_api_points(e, new MatrixPoints(obj2, Matrix::ZRotation(angle)));
+}
+
 EXPORT GameApi::PTS GameApi::PointsApi::or_points(GameApi::PTS p1, GameApi::PTS p2)
 {
   PointsApiPoints *pts1 = find_pointsapi_points(e, p1);

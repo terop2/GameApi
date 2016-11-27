@@ -54,7 +54,7 @@ void iter(void *arg)
     M a_m3 = env->ev->matrix_api.trans(0.0,0.0,0.0);
     M a_mm = env->ev->matrix_api.mult(a_m3 /*env->ev->matrix_api.mult(a_m3,a_m)*/,a_m2);
 
-    env->ev->move_api.set_matrix(env->move, a_mm);
+    //env->ev->move_api.set_matrix(env->move, a_mm);
     //env->poly->set_rotation_matrix2(a_mm);
     //env->poly->set_pos(env->pos_x, 0.0, env->pos_y);
     //env->poly->render();
@@ -159,7 +159,7 @@ int main(int argc, char *argv[]) {
 #endif
   ML ml = mainloop(ev, env.move);
   MN mn0 = ev.move_api.empty();
-  MN mn = ev.move_api.trans2(mn0, 0.0, 0.0, -400.0);
+  MN mn = ev.move_api.trans2(mn0, 0.0, 0.0, -100.0);
   ML ml2 = ev.move_api.move_ml(ev, ml, mn);
   env.mainloop = ml2;
 
