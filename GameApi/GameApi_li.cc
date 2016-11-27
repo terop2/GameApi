@@ -923,38 +923,112 @@ GameApi::LI GameApi::LinesApi::point_array(std::vector<PT> vec)
 
 
 class SplitLines : public LineCollection
-{
+{ // this code is optimized for memory usage. Previous version did
+  // eat too much memory.
 public:
-  SplitLines(LineCollection *coll, float dist) {
-    int s = coll->NumLines();
+  SplitLines(LineCollection *coll, float dist) : m_coll(coll), dist(dist) {
+    int s = m_coll->NumLines();
     for(int i=0;i<s;i++)
       {
-	Point p = coll->LinePoint(i, 0);
-	Point p2 = coll->LinePoint(i, 1);
-	unsigned int c = coll->LineColor(i, 0);
-	unsigned int c2 = coll->LineColor(i, 1);
+	Point p = m_coll->LinePoint(i, 0);
+	Point p2 = m_coll->LinePoint(i, 1);
 	float d = Dist(p,p2);
-	if (d<dist) { vec.push_back(p); vec.push_back(p2); continue; }
+	if (d<dist) { indexes.push_back(1); continue; }
 	int count = d/dist;
-	float delta = dist/d;
-	float pos = 0.0;
-      	for(int i=0;i<count;i++)
-	  {
-	    vec.push_back(Point::Interpolate(p,p2,pos));
-	    vec.push_back(Point::Interpolate(p,p2,pos+delta));
-	    color.push_back(Color::Interpolate(c,c2,pos));
-	    color.push_back(Color::Interpolate(c,c2,pos+delta));
-	    pos+=delta;
-	  }
+	indexes.push_back(count);
       }
   }
-  int NumLines() const { return vec.size()/2; }
-  Point LinePoint(int line, int point) const { return vec[line*2+point]; }
-  unsigned int LineColor(int line, int point) const { return color[line*2+point]; }
+  int NumLines() const {
+    int s = indexes.size();
+    int count = 0;
+    for(int i=0;i<s;i++)
+      {
+	count+=indexes[i];
+      }
+    return count;
+  }
+  Point LinePoint(int line, int point) const {
+    int s = indexes.size();
+    int count = 0;
+    for(int i=0;i<s;i++)
+      {
+	int oldcount = count;
+	count+=indexes[i];
+	if (count > line) {
+	  // i is the 1st index
+	  int j = line - oldcount;
+	  // j is the 2nd index
+	  Point p = m_coll->LinePoint(i, 0);
+	  Point p2 = m_coll->LinePoint(i, 1);
+
+	  float d = Dist(p,p2);
+	  if (d<dist) {
+	    if (point==0) return p;
+	    if (point==1) return p2;
+	    Point p0(0.0,0.0,0.0);
+	    return p0;
+	  }
+	  float delta = dist/d;
+	  float pos = delta*j;
+	  
+	  if (point == 0)
+	    {
+	      return Point::Interpolate(p,p2,pos);
+	    }
+	  else
+	    {
+	      return Point::Interpolate(p,p2,pos+delta);
+	    }
+	}
+      }
+    Point p0(0.0,0.0,0.0);
+    return p0;
+  }
+  unsigned int LineColor(int line, int point) const { 
+    int s = indexes.size();
+    int count = 0;
+    for(int i=0;i<s;i++)
+      {
+	int oldcount = count;
+	count+=indexes[i];
+	if (count > line) {
+	  // i is the 1st index
+	  int j = line - oldcount;
+	  // j is the 2nd index
+	  Point p = m_coll->LinePoint(i, 0);
+	  Point p2 = m_coll->LinePoint(i, 1);
+
+	  float d = Dist(p,p2);
+	  if (d<dist) {
+	    unsigned int cp = m_coll->LineColor(i, 0);
+	    unsigned int cp2 = m_coll->LineColor(i, 1);
+	    if (point==0) return cp;
+	    if (point==1) return cp2;
+	    unsigned int p0 = 0x0;
+	    return p0;
+	  }
+	  float delta = dist/d;
+	  float pos = delta*j;
+	  
+	  unsigned int cp = m_coll->LineColor(i, 0);
+	  unsigned int cp2 = m_coll->LineColor(i, 1);
+	  if (point == 0)
+	    {
+	      return Color::Interpolate(cp,cp2,pos);
+	    }
+	  else
+	    {
+	      return Color::Interpolate(cp,cp2,pos+delta);
+	    }
+	}
+      }
+    unsigned int p0 = 0x0;
+    return p0;
+  }
 private:
+  LineCollection *m_coll;
   float dist;
-  std::vector<Point> vec;
-  std::vector<unsigned int> color;
+  std::vector<int> indexes;
 };
 
 GameApi::LI GameApi::LinesApi::split_lines(LI li, float dist)
