@@ -2481,6 +2481,8 @@ public:
   IMPORT LI roty(LI lines, float angle);
   IMPORT LI rotz(LI lines, float angle);
   IMPORT P line_product(LI lines1, LI lines2);
+  IMPORT LI split_lines(LI lines, float dist);
+  IMPORT LI twist_y(LI lines, float y_0, float angle_per_y_unit);
 
   IMPORT LI unit_cube(LI orig, PT pos, V u_x, V u_y, V u_z);
   IMPORT LI unit_to_cube(LI orig, PT pos, V u_x, V u_y, V u_z);
