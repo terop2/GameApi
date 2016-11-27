@@ -600,6 +600,7 @@ public:
     e.ch = -1;
     e.button = -1;
     left=false; right=false;
+    keys_enabled=true;
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
@@ -624,7 +625,17 @@ public:
     if (ch==39) ch='0';
     if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
 #endif
+    if (ch=='p' && type==0x300)
+      {
+	keys_enabled = false;
+      }
+    if (ch=='o' && type==0x300)
+      {
+	keys_enabled = true;
+      }
 
+
+    if (keys_enabled){
     if (ch=='a' && type==0x300)
       {
 	left=true;
@@ -641,7 +652,7 @@ public:
       {
 	right=false;
       }
-
+    }
     if (firsttime)
       {
 	//obj.prepare();
@@ -717,6 +728,7 @@ private:
   GameApi::M mat;
   GameApi::MainLoopApi::Event e;
   //GameApi::PolygonObj obj;
+  bool keys_enabled;
   bool firsttime;
   int sx,sy;
   int screen_x, screen_y;
@@ -4682,6 +4694,24 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "ML", "int", "int", "float","float","float" },
 			 { "ev", "", "107", "109", "5.0","-100.0","100.0" },
 			 "ML", "move_api", "move_z_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::rot_x_ml,
+			 "rot_x_ml",
+			 { "ev", "ml", "key_forward", "key_backward", "speed", "start_angle", "end_angle"},
+			 { "EveryApi&", "ML", "int", "int", "float","float", "float" },
+			 { "ev", "", "100", "97", "0.01","-100000.0", "100000.0" },
+			 "ML", "move_api", "rot_x_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::rot_y_ml,
+			 "rot_y_ml",
+			 { "ev", "ml", "key_forward", "key_backward", "speed","start_y", "end_y" },
+			 { "EveryApi&", "ML", "int", "int", "float","float", "float" },
+			 { "ev", "", "100", "97", "0.01","-100.0","100.0" },
+			 "ML", "move_api", "rot_y_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::move_z_ml,
+			 "rot_z_ml",
+			 { "ev", "ml", "key_forward", "key_backward", "speed","start_z", "end_z" },
+			 { "EveryApi&", "ML", "int", "int", "float","float","float" },
+			 { "ev", "", "100", "97", "0.01","-100000.0","100000.0" },
+			 "ML", "move_api", "rot_z_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::enable_ml,
 			 "enable_ml",
 			 { "ev", "ml", "start_time", "end_time" },
@@ -4739,9 +4769,9 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "MT", "materials_api", "snow"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::brashmetal,
 			 "m_brashmetal",
-			 { "ev", "nxt", "count" },
-			 { "EveryApi&", "MT", "int" },
-			 { "ev", "", "80000" },
+			 { "ev", "nxt", "count", "web" },
+			 { "EveryApi&", "MT", "int", "bool" },
+			 { "ev", "", "80000", "true" },
 			 "MT", "materials_api", "brashmetal"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::web,
 			 "m_web",
@@ -5668,6 +5698,24 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "PTS", "float", "float", "float" },
 			 { "", "0.0", "0.0", "0.0" },
 			 "PTS", "points_api", "move"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::rot_x,
+			 "rot_x_pts",
+			 { "obj", "angle" },
+			 { "PTS", "float" },
+			 { "", "1.570795" },
+			 "PTS", "points_api", "rot_x"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::rot_y,
+			 "rot_y_pts",
+			 { "obj", "angle" },
+			 { "PTS", "float" },
+			 { "", "1.570795" },
+			 "PTS", "points_api", "rot_y"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::rot_z,
+			 "rot_z_pts",
+			 { "obj", "angle" },
+			 { "PTS", "float" },
+			 { "", "1.570795" },
+			 "PTS", "points_api", "rot_z"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::scale,
 			 "scale_pts",
 			 { "obj", "sx", "sy", "sz" },
