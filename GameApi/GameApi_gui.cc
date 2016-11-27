@@ -5584,6 +5584,18 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "LI", "LI" },
 			 { "", "" },
 			 "P", "lines_api", "line_product"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::split_lines,
+			 "li_split",
+			 { "li", "dist" },
+			 { "LI", "float" },
+			 { "", "5.0" },
+			 "LI", "lines_api", "split_lines"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::twist_y,
+			 "li_twist",
+			 { "li", "y_0", "angle_per_y_unit" },
+			 { "LI", "float", "float" },
+			 { "", "0.0", "0.031459" },
+			 "LI", "lines_api", "twist_y"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::prepare,
 			 "li_prepare",
 			 { "li" },

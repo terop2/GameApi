@@ -920,3 +920,71 @@ GameApi::LI GameApi::LinesApi::point_array(std::vector<PT> vec)
     }
   return add_line_array(e, new PointArrayLineCollection(vec2));
 }
+
+
+class SplitLines : public LineCollection
+{
+public:
+  SplitLines(LineCollection *coll, float dist) {
+    int s = coll->NumLines();
+    for(int i=0;i<s;i++)
+      {
+	Point p = coll->LinePoint(i, 0);
+	Point p2 = coll->LinePoint(i, 1);
+	unsigned int c = coll->LineColor(i, 0);
+	unsigned int c2 = coll->LineColor(i, 1);
+	float d = Dist(p,p2);
+	if (d<dist) { vec.push_back(p); vec.push_back(p2); continue; }
+	int count = d/dist;
+	float delta = dist/d;
+	float pos = 0.0;
+      	for(int i=0;i<count;i++)
+	  {
+	    vec.push_back(Point::Interpolate(p,p2,pos));
+	    vec.push_back(Point::Interpolate(p,p2,pos+delta));
+	    color.push_back(Color::Interpolate(c,c2,pos));
+	    color.push_back(Color::Interpolate(c,c2,pos+delta));
+	    pos+=delta;
+	  }
+      }
+  }
+  int NumLines() const { return vec.size()/2; }
+  Point LinePoint(int line, int point) const { return vec[line*2+point]; }
+  unsigned int LineColor(int line, int point) const { return color[line*2+point]; }
+private:
+  float dist;
+  std::vector<Point> vec;
+  std::vector<unsigned int> color;
+};
+
+GameApi::LI GameApi::LinesApi::split_lines(LI li, float dist)
+{
+  LineCollection *lines = find_line_array(e, li);
+  return add_line_array(e, new SplitLines(lines, dist));
+}
+
+class TwistLines : public LineCollection
+{
+public:
+  TwistLines(LineCollection *coll, float y_0, float angle_per_y_unit) : coll(coll), y_0(y_0), angle(angle_per_y_unit) { }
+  int NumLines() const { return coll->NumLines(); }
+  Point LinePoint(int line, int point) const
+  {
+    Point p = coll->LinePoint(line,point);
+    float yy = p.y;
+    yy-=y_0;
+    float ang = yy*angle;
+    Matrix m = Matrix::YRotation(ang);
+    return p*m;
+  }
+private:
+  LineCollection *coll;
+  float y_0;
+  float angle;
+};
+
+GameApi::LI GameApi::LinesApi::twist_y(LI li, float y_0, float angle_per_y_unit)
+{
+  LineCollection *lines = find_line_array(e, li);
+  return add_line_array(e, new TwistLines(lines, y_0, angle_per_y_unit));  
+}
