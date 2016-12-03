@@ -1,5 +1,6 @@
 #include "GameApi.hh"
-
+#include <sstream>
+#include <fstream>
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif
@@ -19,14 +20,76 @@ struct Envi {
   float speed_x = 1.0;
   float speed_y = 1.0;
   InteractionApi::Quake_data data;
-  bool logo_shown = true;
+  bool logo_shown = false;
   SH color_sh;
   SH texture_sh;
   SH arr_texture_sh;
 };
 
+std::string code=
+  "PT I1=ev.point_api.point(0.0,0.0,0.0);\n"
+  "P I2=ev.polygon_api.torus2(ev,7,9,I1,250,100);\n"
+  "MT I3=ev.materials_api.def(ev);\n"
+  "MT I4=ev.materials_api.snow(ev,I3);\n"
+  "ML I5=ev.materials_api.bind(I2,I4);\n"
+  "MN I6=ev.move_api.empty();\n"
+  "MN I7=ev.move_api.anim_enable(I6,0,100);\n"
+  "MN I8=ev.move_api.time_repeat(I7,0,200);\n"
+  "ML I9=ev.move_api.move_ml(ev,I5,I8);\n"
+  "PT I10=ev.point_api.point(0.0,0.0,0.0);\n"
+  "P I11=ev.polygon_api.torus2(ev,7,9,I10,250,100);\n"
+  "MT I12=ev.materials_api.def(ev);\n"
+  "MT I13=ev.materials_api.brashmetal(ev,I12,80000,false);\n"
+  "ML I14=ev.materials_api.bind(I11,I13);\n"
+  "MN I15=ev.move_api.empty();\n"
+  "MN I16=ev.move_api.anim_enable(I15,100,200);\n"
+  "MN I17=ev.move_api.time_repeat(I16,0,200);\n"
+  "ML I18=ev.move_api.move_ml(ev,I14,I17);\n"
+  "ML I19=ev.mainloop_api.array_ml(std::vector<ML>{I9,I18});\n"
+  "MN I20=ev.move_api.empty();\n"
+  "MN I21=ev.move_api.rotate(I20,0,10000,0,0,0,0,1,0,600);\n"
+  "ML I22=ev.move_api.move_ml(ev,I19,I21);\n"
+  "ML I23=ev.move_api.move_x_ml(ev,I22,100,97,5,-100,100);\n"
+  "ML I24=ev.move_api.move_y_ml(ev,I23,119,115,5.0,-100.0,100.0);\n"
+  "PT I25=ev.point_api.point(0.0,0.0,0.0);\n"
+  "P I26=ev.polygon_api.torus2(ev,7,8,I25,25,15);\n"
+  "P I27=ev.polygon_api.recalculate_normals(I26);\n"
+  "P I28=ev.polygon_api.color_from_normals(I27);\n"
+  "BB I29=ev.bool_bitmap_api.empty(100,100);\n"
+  "BB I30=ev.bool_bitmap_api.circle(I29,50,50,50);\n"
+  "PTS I31=ev.points_api.random_bitmap_instancing(ev,I30,300,-300,300,-300,300,0);\n"
+  "PTS I32=ev.points_api.rot_x(I31,1.5708);\n"
+  "PTS I33=ev.points_api.scale(I32,3,3,3);\n"
+  "BB I34=ev.bool_bitmap_api.empty(100,100);\n"
+  "BB I35=ev.bool_bitmap_api.circle(I34,50,50,50);\n"
+  "PTS I36=ev.points_api.random_bitmap_instancing(ev,I35,300,-300,300,-300,300,0);\n"
+  "PTS I37=ev.points_api.rot_x(I36,1.5708);\n"
+  "PTS I38=ev.points_api.scale(I37,3,3,3);\n"
+  "PTS I39=ev.points_api.move(I38,2500,0,0);\n"
+  "PTS I40=ev.points_api.or_points(I33,I39);\n"
+  "BB I41=ev.bool_bitmap_api.empty(100,100);\n"
+  "BB I42=ev.bool_bitmap_api.circle(I41,50,50,50);\n"
+  "PTS I43=ev.points_api.random_bitmap_instancing(ev,I42,300,-300,300,-300,300,0);\n"
+  "PTS I44=ev.points_api.rot_x(I43,1.5708);\n"
+  "PTS I45=ev.points_api.scale(I44,3,3,3);\n"
+  "PTS I46=ev.points_api.move(I45,-2500,0,0);\n"
+  "PTS I47=ev.points_api.or_points(I40,I46);\n"
+  "MT I48=ev.materials_api.def(ev);\n"
+  "MT I49=ev.materials_api.web(ev,I48);\n"
+  "ML I50=ev.materials_api.bind_inst(I28,I47,I49);\n"
+  "MN I51=ev.move_api.empty();\n"
+  "MN I52=ev.move_api.trans2(I51,5000,0,0);\n"
+  "MN I53=ev.move_api.translate(I52,0,100,-10000,0,0);\n"
+  "MN I54=ev.move_api.time_repeat(I53,0.0,100.0);\n"
+  "ML I55=ev.move_api.move_ml(ev,I50,I54);\n"
+  "ML I56=ev.mainloop_api.array_ml(std::vector<ML>{I24,I55});\n";
+
 ML mainloop(EveryApi &ev, MN &move)
 {
+  ExecuteEnv e;
+  std::pair<int,std::string> p = GameApi::execute_codegen(ev, code, e);
+  std::cout << "execute_codegen: " << p.second << std::endl;
+#if 0
   P I1=ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
   VA I2=ev.polygon_api.create_vertex_array(I1,true);
   ML I3=ev.polygon_api.render_vertex_array_ml(ev,I2);
@@ -34,6 +97,9 @@ ML mainloop(EveryApi &ev, MN &move)
   MN I5=ev.move_api.trans2(I4,0.0,0.0,0.0);
   move = I5;
   ML I6=ev.move_api.move_ml(ev,I3,I5);
+#endif
+  ML I6;
+  I6.id = p.first;
   return I6;
 }
 
@@ -108,9 +174,26 @@ int main(int argc, char *argv[]) {
   EveryApi ev(e);
 
   Envi env;
+  int w_width = 800;
+  int w_height = 600;
+  if (argc==4 && std::string(argv[1])=="--size")
+    {
+      std::string width = argv[2];
+      std::string height = argv[3];
+      std::stringstream ss(width);
+      ss >> w_width;
+      std::stringstream ss2(height);
+      ss2 >> w_height;
+    }
+  std::ifstream file("code.txt");
+  std::string c = "";
+  char cc = ' ';
+  while(file.get(cc)) { c+=cc; }
+  code = c; // global var
+
 
   // initialize window
-  ev.mainloop_api.init_window();
+  ev.mainloop_api.init_window(w_width,w_height);
 
   // shader initialization
   ev.shader_api.load_default();
@@ -123,6 +206,7 @@ int main(int argc, char *argv[]) {
   ev.mainloop_api.init_3d(sh2);
   ev.mainloop_api.init_3d(sh3);
   ev.shader_api.use(sh);
+
 
   if (argc==2 && std::string(argv[1])=="--generate-logo")
     {
@@ -159,7 +243,7 @@ int main(int argc, char *argv[]) {
 #endif
   ML ml = mainloop(ev, env.move);
   MN mn0 = ev.move_api.empty();
-  MN mn = ev.move_api.trans2(mn0, 0.0, 0.0, -100.0);
+  MN mn = ev.move_api.trans2(mn0, 0.0, 0.0, -400.0);
   ML ml2 = ev.move_api.move_ml(ev, ml, mn);
   env.mainloop = ml2;
 

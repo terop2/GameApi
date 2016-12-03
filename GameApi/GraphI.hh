@@ -345,6 +345,8 @@ public:
   virtual std::string ParamType(int i, int p) const=0;
   virtual std::string ParamDefault(int i, int p) const=0;
   virtual std::string ReturnType(int i) const=0;
+  virtual std::string ApiName(int i) const=0;
+  virtual std::string FuncName(int i) const=0;
   virtual std::string Symbols() const=0;
   virtual std::string Comment() const=0;
   virtual int Execute(GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)=0;

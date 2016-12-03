@@ -1,0 +1,4 @@
+cd meshpage.org
+put web_page.data
+put web_page.html
+put web_page.js
