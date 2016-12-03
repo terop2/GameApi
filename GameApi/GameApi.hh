@@ -146,6 +146,8 @@ struct ExecuteEnv
   std::vector<std::string> values;
 };
 
+
+
   template<class P, class R>
   class FunctionCb
   {
@@ -154,6 +156,9 @@ struct ExecuteEnv
   };
 
   struct EveryApi;
+
+  std::pair<int,std::string> execute_codegen(EveryApi &ev, std::string text, ExecuteEnv &e);
+
 #ifndef __clang__
 #define IMPORT 
 #define EXPORT

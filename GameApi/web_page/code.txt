@@ -1,0 +1,7 @@
+PT I1=ev.point_api.point(0.0,0.0,0.0);
+P I2=ev.polygon_api.torus2(ev,9,21,I1,350,55);
+LI I3=ev.lines_api.from_polygon(I2);
+P I4=ev.polygon_api.line_to_cone(ev,I3,30,44);
+MT I5=ev.materials_api.def(ev);
+MT I6=ev.materials_api.snow(ev,I5);
+ML I7=ev.materials_api.bind(I4,I6);

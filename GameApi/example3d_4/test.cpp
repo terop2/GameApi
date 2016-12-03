@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
     //ev.mainloop_api.delay(10);
   }
 #else
-  emscripten_set_main_loop_arg(iter, (void*)&env, 60,1);
+  emscripten_set_main_loop_arg(iter, (void*)&env, 0,1);
 #endif
 
 
