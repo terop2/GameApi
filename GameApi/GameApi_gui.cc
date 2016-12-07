@@ -17,16 +17,22 @@
 #endif
 #endif
 #endif
-#ifdef FIRST_PART
-const float keypress_rot_speed = 6.0;
 
 std::vector<GameApiItem*> all_functions();
+std::vector<GameApiItem*> polydistfield_functions();
+std::vector<GameApiItem*> waveform_functions();
 
 class EmptyWidget : public GuiWidgetForward
 {
 public:
   EmptyWidget(GameApi::EveryApi &ev) : GuiWidgetForward(ev,{ }) { }
 };
+
+
+#ifdef FIRST_PART
+const float keypress_rot_speed = 6.0;
+
+
 class TimedWidget2 : public GuiWidgetForward
 {
 public:
@@ -3698,6 +3704,7 @@ private:
   bool move;
 };
 
+#if 0
 int GameApi::collect_counter(int mode)
 {
   static int count=0;
@@ -3705,7 +3712,8 @@ int GameApi::collect_counter(int mode)
   if (mode==1) { count++; }
   return count;
 }
-
+#endif
+#if 0
 std::vector<GameApi::EditNode*> collectnodes(std::string name, std::vector<std::string> param_type, std::vector<std::string> param_names, std::vector<std::string> params, std::vector<std::string> param_name)
 {
   int s=param_type.size();
@@ -3717,6 +3725,7 @@ std::vector<GameApi::EditNode*> collectnodes(std::string name, std::vector<std::
     }
   return std::vector<GameApi::EditNode*>();
 }
+#endif
 
 template<class T, class RT, class... P>
 int funccall(GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
@@ -3774,7 +3783,7 @@ static std::string unique_id_apiitem()
   return std::string("I") + ss.str();
 }
 
-
+#ifdef FIRST_PART
 int find_char(std::string line, int start_char, char ch, bool braces=true)
 {
   int s = line.size();
@@ -4069,7 +4078,7 @@ std::pair<int,std::string> GameApi::execute_codegen(GameApi::EveryApi &ev, std::
 
   return std::make_pair(val, "OK");
 }
-
+#endif
 
 template<class T, class RT, class... P>
 class ApiItem : public GameApiItem
@@ -4100,10 +4109,12 @@ public:
   {
     return funccall(ev, api, fptr, params, e, param_name); 
   }
+#if 0
   std::vector<GameApi::EditNode*> CollectNodes(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)
   {
     return collectnodes(name,param_type, param_names, params, param_name);
   }
+#endif
   std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)
   {
     std::string s;
@@ -6948,9 +6959,11 @@ GameApi::W GameApi::GuiApi::insert_widget(W item, std::function<void(int,int)> f
   GuiWidget *w = find_widget(e, item);
   return add_widget(e, new InsertWidget(ev,w,f));
 }
-#endif
+
 void GameApi::GuiApi::delete_widget(W w)
 {
   GuiWidget *ww = new EmptyWidget(ev);
   add_update_widget(e, w, ww);
 }
+
+#endif
