@@ -2207,9 +2207,34 @@ public:
     for(int y=0;y<t.SizeY();y++)
       for(int x=0;x<t.SizeX();x++)
 	{
-	  int color = t.Map(x,y).Pixel();
+	  unsigned int color = t.Map(x,y).Pixel();
 	  buf.buffer[x+y*buf.ydelta] = color;
 	}
+  }
+  void FlipBytes() {
+    BufferRef::FreeBuffer(buf);
+    buf = BufferRef::NewBuffer(t.SizeX(), t.SizeY());
+    for(int y=0;y<t.SizeY();y++)
+      for(int x=0;x<t.SizeX();x++)
+	{
+	  unsigned int color = t.Map(x,y).Pixel();
+	  flip_color(color);
+	  buf.buffer[x+y*buf.ydelta] = color;
+	}
+  }
+  void flip_color(unsigned int &col)
+  {
+    unsigned int r = col & 0x00ff0000;
+    unsigned int g = col & 0x0000ff00;
+    unsigned int b = col & 0x000000ff;
+    unsigned int a = col & 0xff000000;
+    r>>=16;
+    g>>=8;
+    a>>=24;
+    r<<=24;
+    g<<=16;
+    b<<=8;
+    col = r+g+b+a;
   }
   BufferRef Buffer() const { return buf; }
 private:

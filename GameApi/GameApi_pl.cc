@@ -2747,6 +2747,7 @@ public:
   RenderVA(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::PolygonApi &api, GameApi::VA va) : env(env), ev(ev), api(api), va(va)
   {
     shader.id = -1;
+    firsttime = true;
   }
   int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
@@ -2768,12 +2769,71 @@ public:
       {
 	sh.id = e.sh_color;
       }
+
+    GameApi::US u_v;
+    GameApi::US u_f;
+    u_v.id = 0;
+    u_f.id = 0;
+    if (e.us_vertex_shader!=-1)
+      u_v.id = e.us_vertex_shader;
+    if (e.us_fragment_shader!=-1)
+      u_f.id = e.us_fragment_shader;
+    if (firsttime)
+      {
+	if (u_v.id == 0)
+	  u_v = ev.uber_api.v_empty();
+	if (u_f.id == 0)
+	  u_f = ev.uber_api.f_empty(true);
+      }
+
+#if 1
+    if (ev.polygon_api.is_texture(va))
+      {
+	sh.id = e.sh_texture;
+	if (firsttime)
+	  {
+	    if (e.us_vertex_shader==-1)
+	      u_v = ev.uber_api.v_texture(u_v);
+	    if (e.us_fragment_shader==-1)
+	      u_f = ev.uber_api.f_texture(u_f);
+	  }
+	if (ev.polygon_api.is_array_texture(va))
+	  {
+	    sh.id = e.sh_array_texture;
+	      if (firsttime)
+	      {
+		if (e.us_vertex_shader==-1)
+		  u_v = ev.uber_api.v_texture_arr(u_v);
+		if (e.us_fragment_shader==-1)
+		  u_f = ev.uber_api.f_texture_arr(u_f);
+	      }
+	  }
+      }
+    else
+      {
+	sh.id = e.sh_color;
+	if (firsttime)
+	  {
+	    if (e.us_vertex_shader==-1)
+	      {
+		u_v = ev.uber_api.v_colour(u_v);
+		u_v = ev.uber_api.v_light(u_v);
+	      }
+	    if (e.us_fragment_shader==-1)
+	      {
+		u_f = ev.uber_api.f_colour(u_f);
+		u_f = ev.uber_api.f_light(u_f);
+	      }
+	  }
+      }
+#endif
+
     if (shader.id==-1 && e.us_vertex_shader!=-1 && e.us_fragment_shader!=-1)
       {
 	GameApi::US vertex;
 	GameApi::US fragment;
-	vertex.id = e.us_vertex_shader;
-	fragment.id = e.us_fragment_shader;
+	vertex.id = u_v.id; //e.us_vertex_shader;
+	fragment.id = u_f.id; //e.us_fragment_shader;
 	if (e.sfo_id==-1)
 	  {
 	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment);
@@ -2803,6 +2863,7 @@ public:
 
 	sh = shader;
       }
+    if (firsttime) { firsttime = false; }
     ev.shader_api.use(sh);
     api.render_vertex_array(va);
   }
@@ -2810,6 +2871,7 @@ private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
   GameApi::PolygonApi &api;
+  bool firsttime;
   GameApi::VA va;
   GameApi::SH shader;
 };
@@ -2853,7 +2915,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(false);
+      GameApi::US a0 = ev.uber_api.f_empty(true);
       GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a1.id;
     }
@@ -2902,7 +2964,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(false);
+      GameApi::US a0 = ev.uber_api.f_empty(true);
       //GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a0.id;
     }
@@ -2953,7 +3015,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(false);
+      GameApi::US a0 = ev.uber_api.f_empty(true);
       //GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a0.id;
     }
@@ -3014,7 +3076,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(false);
+      GameApi::US a0 = ev.uber_api.f_empty(true);
       GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a1.id;
     }
@@ -3074,7 +3136,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(false);
+      GameApi::US a0 = ev.uber_api.f_empty(true);
       GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a1.id;
     }
@@ -3127,7 +3189,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(false);
+      GameApi::US a0 = ev.uber_api.f_empty(true);
       GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a1.id;
     }
@@ -3220,7 +3282,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(false);
+      GameApi::US a0 = ev.uber_api.f_empty(true);
       GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a1.id;
     }
@@ -3294,7 +3356,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(false);
+      GameApi::US a0 = ev.uber_api.f_empty(true);
       GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a1.id;
     }
@@ -3383,7 +3445,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(false);
+      GameApi::US a0 = ev.uber_api.f_empty(true);
       GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a1.id;
     }

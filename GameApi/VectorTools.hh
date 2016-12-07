@@ -333,6 +333,12 @@ public:
   Color(unsigned int color);
   void check();
 
+  friend std::ostream &operator<<(std::ostream &o, const Color &c)
+  {
+    o << "(" << c.r << "," << c.g << "," << c.b << "," << c.alpha << ")";
+    return o;
+  }
+
   void operator*=(float k) { r *= k; g *=k; b *=k; alpha*=k; check(); }
   friend Color operator+(const Color &c1, const Color &c2)
   {

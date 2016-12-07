@@ -6,8 +6,46 @@
 #endif
 #include <cmath>
 
-using namespace GameApi;
+void onload(unsigned int, void*, const char* var)
+{
+  std::cout << "POST RESULT: " << var << std::endl;
+  std::ifstream ss(var);
+  std::string data;
+  char ch;
+  while(ss>>ch) { data+=ch; }
+  //std::cout << "POST FILE: " << data << std::endl;
+}
+void onerror(unsigned int, void*, int)
+{
+  std::cout << "POST ERROR: " << std::endl;
+}
+void onprogress(unsigned int, void*, int)
+{
+}
 
+std::string hexify5(std::string s)
+{
+  std::string res;
+  int ss = s.size();
+  for(int i=0;i<ss;i++)
+    {
+      unsigned char c = s[i];
+      unsigned char c2 = c & 0xf;
+      unsigned char c3 = c & 0xf0;
+      c3>>=4;
+      const char *chrs = "0123456789ABCDEF";
+      res+=chrs[c3];
+      res+=chrs[c2];
+    }
+  return res;
+}
+
+
+std::vector<std::string> screenshot_filenames;
+std::vector<float> screenshot_times;
+std::vector<bool> screenshot_done;
+
+using namespace GameApi;
 struct Envi {
   EveryApi *ev;
   //PolygonObj *poly;
@@ -84,11 +122,27 @@ std::string code=
   "ML I55=ev.move_api.move_ml(ev,I50,I54);\n"
   "ML I56=ev.mainloop_api.array_ml(std::vector<ML>{I24,I55});\n";
 
+std::string strip_spaces(std::string data)
+{
+  std::string res;
+  int s = data.size();
+  for(int i=0;i<s-1;i++)
+    {
+      char c1 = data[i];
+      char c2 = data[i+1];
+      if (c1==' ' && c2==' ') { }
+      else { res+=c1; }
+    }
+  char c3 = data[s-1];
+  res+=c3;
+  while(res[0]==' ') res = res.substr(1);
+  while(res[res.size()-1]==' ') res = res.substr(0,res.size()-1);
+  return res;
+}
 ML mainloop(EveryApi &ev, MN &move)
 {
   ExecuteEnv e;
   std::pair<int,std::string> p = GameApi::execute_codegen(ev, code, e);
-  std::cout << "execute_codegen: " << p.second << std::endl;
 #if 0
   P I1=ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
   VA I2=ev.polygon_api.create_vertex_array(I1,true);
@@ -165,32 +219,126 @@ void iter(void *arg)
 
     env->ev->mainloop_api.fpscounter();
     // swapbuffers
+
     env->ev->mainloop_api.swapbuffers();
 
+
+    int s = screenshot_done.size();
+    for(int i=0;i<s;i++)
+      {
+	if (screenshot_done[i] == false && env->ev->mainloop_api.get_time() > screenshot_times[i])
+	  {
+	    BM img = env->ev->mainloop_api.screenshot();
+	    env->ev->bitmap_api.savebitmap(img, screenshot_filenames[i], false);
+	    screenshot_done[i] = true;
+	    std::ifstream ss(screenshot_filenames[i], std::ios::binary);
+	    char ch;
+	    std::string data;
+	    while(ss.get(ch)) { data+=ch; }
+	    std::string hex_data = hexify5(data);
+	    std::stringstream ss2;
+	    ss2 << i;
+	    std::string request_params = "user=terop&key=" + ss2.str() + "&data=" + hex_data;
+#ifdef EMSCRIPTEN
+	    emscripten_async_wget2("save_screenshot.php", "tmp.txt", "POST", request_params.c_str(), 0, &onload, &onerror, &onprogress);
+#endif
+	  }
+      }
+
+
+}
+std::string decode(std::string s)
+{
+  int ss = s.size();
+  std::string str;
+  for(int i=0;i<ss;i++)
+    {
+      char c = s[i];
+      if (c=='@') c='\n';
+      str+=c;
+    }
+  return str;
+}
+std::string insert_enter(std::string s)
+{
+  if (s.length()>0)
+    {
+      char c = s[s.size()-1];
+      if (c!='\n') s+='\n';
+    }
+  return s;
+}
+bool check_count(std::vector<std::string> cmd_args, int current_arg, int count)
+{
+  return cmd_args.size()-current_arg >= count;
 }
 
 int main(int argc, char *argv[]) {
+  std::cout << "COMMANDLINE ARGS: " << std::endl;
+  int s = argc;
+  std::vector<std::string> cmd_args;
+  for(int i=0;i<s;i++)
+    {
+      std::cout << "Arg #" << i << ":" << argv[i] << std::endl;
+      cmd_args.push_back(argv[i]);
+    }
   Env e;
   EveryApi ev(e);
 
   Envi env;
   int w_width = 800;
   int w_height = 600;
-  if (argc==4 && std::string(argv[1])=="--size")
+  int current_arg = 1; // start after the current filename
+  while(cmd_args.size()-current_arg > 0)
     {
-      std::string width = argv[2];
-      std::string height = argv[3];
-      std::stringstream ss(width);
-      ss >> w_width;
-      std::stringstream ss2(height);
-      ss2 >> w_height;
+      if (check_count(cmd_args, current_arg, 3) && cmd_args[current_arg]=="--size")
+	{
+	  std::string width = cmd_args[current_arg+1];
+	  std::string height = cmd_args[current_arg+2];
+	  std::stringstream ss(width);
+	  ss >> w_width;
+	  std::stringstream ss2(height);
+	  ss2 >> w_height;
+	  std::cout << "Choose size: " << w_width << "x" << w_height << std::endl;
+	  current_arg+=3;
+	  continue;
+	} else
+      if (check_count(cmd_args, current_arg, 2) && cmd_args[current_arg]=="--code")
+	{
+	  std::cout << "Choosing code!" << std::endl;
+	  code = insert_enter(strip_spaces(decode(cmd_args[current_arg+1])));
+	  current_arg+=2;
+	  continue;
+	} else
+      if (check_count(cmd_args, current_arg, 3) && cmd_args[current_arg]=="--screenshot")
+	{
+	  std::cout << "Screenshot filename: " << cmd_args[current_arg+1] << " at " << cmd_args[current_arg+2] << std::endl;
+	  std::string screenshot_filename = cmd_args[current_arg+1];
+	  float screenshot_time = 0.0;
+	  std::stringstream ss_time(cmd_args[current_arg+2]);
+	  ss_time >> screenshot_time;
+	  screenshot_filenames.push_back(screenshot_filename);
+	  screenshot_times.push_back(screenshot_time);
+	  screenshot_done.push_back(false);
+	  current_arg+=3;
+	  continue;
+	} else
+      
+      if (cmd_args[current_arg]=="--generate-logo")
+	{
+	  std::cout << "Generating Logo" << std::endl;
+	  ev.mainloop_api.save_logo(ev);
+	  exit(0);
+	} else
+	{
+	  std::cout << "Invalid commandline args" << std::endl;
+	  std::cout << "Alternatives are: " << std::endl;
+	  std::cout << "   --size 100 200" << std::endl;
+	  std::cout << "   --code data" << std::endl;
+	  std::cout << "   --generate-logo" << std::endl;
+	  exit(0);
+	}
     }
-  std::ifstream file("code.txt");
-  std::string c = "";
-  char cc = ' ';
-  while(file.get(cc)) { c+=cc; }
-  code = c; // global var
-
 
   // initialize window
   ev.mainloop_api.init_window(w_width,w_height);
@@ -208,12 +356,6 @@ int main(int argc, char *argv[]) {
   ev.shader_api.use(sh);
 
 
-  if (argc==2 && std::string(argv[1])=="--generate-logo")
-    {
-      std::cout << "Generating Logo" << std::endl;
-      ev.mainloop_api.save_logo(ev);
-      exit(0);
-    }
 
   //P p3 = ev.polygon_api.cube(0.0, 100.0, 0.0, 100.0, 0.0, 100.0);
 #if 0

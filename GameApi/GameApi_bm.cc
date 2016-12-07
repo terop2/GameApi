@@ -462,8 +462,8 @@ EXPORT void GameApi::BitmapApi::savebitmap(BM bm, std::string filename, bool alp
   Bitmap<Color> *bm2 = find_color_bitmap(handle);
   PpmFile file(filename, *bm2, alpha);
   std::string pngcontents = file.Contents();
-  std::ofstream filehandle(filename.c_str(), std::ios_base::out);
-  filehandle << pngcontents;
+  std::ofstream filehandle(filename.c_str(), std::ios_base::out|std::ios::binary);
+  filehandle.write(pngcontents.c_str(), pngcontents.size()); // << pngcontents;
   filehandle.close();
 }
 
@@ -1302,6 +1302,7 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::empty(int sx, int sy)
 {
   return add_bool_bitmap(e, new ConstantBitmap<bool>(false, sx,sy));
 }
+
 EXPORT GameApi::FB GameApi::FloatBitmapApi::empty(int sx, int sy)
 {
   return add_float_bitmap(e, new ConstantBitmap<float>(0.0, sx,sy));
@@ -1646,6 +1647,42 @@ private:
   Bitmap<Color> &bm;
 };
 
+class GaussianBitmap : public Bitmap<float>
+{
+public:
+  GaussianBitmap(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy) : start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z), sx(sx),sy(sy)
+  {
+  }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual float Map(int x, int y) const
+  {
+    float xx = float(x);
+    float yy = float(y);
+    xx-=start_x;
+    yy-=start_y;
+    xx/=end_x-start_x;
+    yy/=end_y-start_y;
+
+    xx*=6.0;
+    yy*=6.0;
+    xx-=3.0;
+    yy-=3.0;
+    float val = exp(-xx*xx-yy*yy);
+    val*=(end_z-start_z);
+    val+=start_z;
+    return val;
+  }
+  virtual void Prepare() { }
+
+private:
+  float start_x, end_x, start_y, end_y, start_z, end_z;
+  int sx,sy;
+};
+EXPORT GameApi::FB GameApi::FloatBitmapApi::gaussian(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy)
+{
+  return add_float_bitmap(e, new GaussianBitmap(start_x, end_x, start_y, end_y, start_z, end_z, sx,sy));
+}
 EXPORT GameApi::FB GameApi::FloatBitmapApi::from_red(BM bm)
 {
   BitmapHandle *handle = find_bitmap(e,bm);

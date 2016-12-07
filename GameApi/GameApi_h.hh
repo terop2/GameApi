@@ -547,6 +547,7 @@ struct EnvImpl
   std::vector<std::shared_ptr<void> > temp_deletes;
   std::vector<Pa_Impl> polygon_array;
   std::vector<Va_Impl> va_array;
+  std::vector<MixedI*> mixed;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -822,6 +823,7 @@ struct FaceCollPolyHandle : public PolyHandle
 //
 // add functions
 //
+GameApi::MX add_mixed(GameApi::Env &e, MixedI *n);
 GameApi::SA add_skeletal(GameApi::Env &e, SkeletalNode *n);
 GameApi::PP add_plane_shape(GameApi::Env &e, PlaneShape *shape);
 GameApi::MC add_matrix_curve(GameApi::Env &e, Curve<Matrix> *curve);
@@ -908,6 +910,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+MixedI *find_mixed(GameApi::Env &e, GameApi::MX m);
 PD_Impl find_polydistfield(GameApi::Env &e, GameApi::PD p);
 SkeletalNode *find_skeletal(GameApi::Env &e, GameApi::SA n);
 PlaneShape *find_plane_shape(GameApi::Env &e, GameApi::PP pp);

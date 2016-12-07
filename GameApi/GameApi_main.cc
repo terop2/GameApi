@@ -437,7 +437,27 @@ EXPORT GameApi::BM GameApi::MainLoopApi::screenshot()
   int h = p->screen_height; //surf->h;
 
   BufferRef ref = BufferRef::NewBuffer(w,h);
-  glReadPixels(0,0,w,h, GL_BGRA, GL_UNSIGNED_BYTE, ref.buffer);
+
+  glReadPixels(0,0,w,h, GL_RGBA /*GL_BGRA*/, GL_UNSIGNED_BYTE, ref.buffer);
+
+  for(int y=0;y<h;y++)
+    for(int x=0;x<w;x++)
+      {
+	unsigned int pix = ref.buffer[x+y*ref.ydelta];
+	// opengl format
+	unsigned int cr = pix & 0xff000000;
+	unsigned int cg = pix & 0x00ff0000;
+	unsigned int cb = pix & 0x0000ff00;
+	unsigned int ca = pix & 0x000000ff;
+	cr>>=24;
+	cg>>=16;
+	cb>>=8;
+	ca<<=24;
+	cr<<=16;
+	cg<<=8;
+	ref.buffer[x+y*ref.ydelta] = cr+cg+cb+ca;
+      }
+
   Bitmap<Color> *bm = new BitmapFromBuffer(ref);
   return add_color_bitmap2(e, bm);
 }

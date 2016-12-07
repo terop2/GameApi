@@ -391,6 +391,8 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
 
   sdl_window = SDL_CreateWindow("Program", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scr_x, scr_y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
  
+  
+
   SDL_GLContext context;
   context = SDL_GL_CreateContext(sdl_window);
   if (!context) { 
