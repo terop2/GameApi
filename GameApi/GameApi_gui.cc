@@ -4056,22 +4056,16 @@ std::string ToString(int num)
 std::pair<int,std::string> GameApi::execute_codegen(GameApi::EveryApi &ev, std::string text, GameApi::ExecuteEnv &e)
 {
   int error_line_num = 0;
-  std::cout << "1" << std::endl;
   std::vector<CodeGenLine> vec = parse_codegen(text, error_line_num);
-  std::cout << "2" << std::endl;
   if (vec.size()==0) {
     return std::make_pair(0,std::string("Error at line ") + ToString(error_line_num));
   }
-  std::cout << "3" << std::endl;
   std::vector<CodeGenVectors> vecvec;
   bool err2 = false;
   add_params_linkage(vec,vecvec,err2);
   if (err2) { return std::make_pair(0, std::string("Error at params_linkage")); }
-  std::cout << "4" << std::endl;
   link_api_items(vec, all_functions());
-  std::cout << "5" << std::endl;
   int val = execute_api(ev, vec, vecvec, vec.size()-1, e);
-  std::cout << "6" << std::endl;
 
   return std::make_pair(val, "OK");
 }
@@ -5155,6 +5149,36 @@ std::vector<GameApiItem*> waveform_functions()
 			 { "float", "float" },
 			 { "6.28318", "1.0" },
 			 "WV", "waveform_api", "sinwave"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::gaussian,
+			 "wv_gaussian",
+			 { "start_x", "end_x", "start_y", "end_y" },
+			 { "float", "float", "float", "float" },
+			 { "-100.0", "100.0", "-100.0", "100.0" },
+			 "WV", "waveform_api", "gaussian"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::sum,
+			 "wv_sum",
+			 { "w1", "w2" },
+			 { "WV", "WV" },
+			 { "", "" },
+			 "WV", "waveform_api", "sum"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::move,
+			 "wv_move",
+			 { "w1", "delta" },
+			 { "WV", "float" },
+			 { "", "0.0" },
+			 "WV", "waveform_api", "move"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::scale,
+			 "wv_scale",
+			 { "w1", "scale" },
+			 { "WV", "float" },
+			 { "", "1.0" },
+			 "WV", "waveform_api", "scale"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::waveform_rotated_polygon,
+			 "wv_rot_poly",
+			 { "wave", "start_angle", "end_angle", "radius", "num_samples", "num_waves" },
+			 { "WV", "float", "float", "float", "int", "int" },
+			 { "", "0.0", "6.28318", "300.0", "40", "40" },
+			 "P", "waveform_api", "waveform_rotated_polygon"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::cubic,
 			 "wv_cubic",
 			 { "f_0", "f_1", "df_0", "df_1", "min_y", "max_y" },
@@ -6165,6 +6189,12 @@ std::vector<GameApiItem*> floatbitmapapi_functions()
 			 { "", "", "0.5" },
 			 "FB", "float_bitmap_api", "mix_fb"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::gaussian,
+			 "bm_gaussian",
+			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "sx", "sy" },
+			 { "float", "float", "float", "float", "float", "float", "int", "int" },
+			 { "0.0", "100.0", "0.0", "100.0", "0.0", "1.0", "100", "100" },
+			 "FB", "float_bitmap_api", "gaussian"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::to_grayscale_color,
 			 "to_grayscale_color",
 			 { "fb", "r", "g", "b", "a", "r2", "g2", "b2", "a2" },

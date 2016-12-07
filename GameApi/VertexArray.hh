@@ -25,6 +25,7 @@ public:
 	m_set[(*it).first] = new Polys(*(*it).second);
       }
     bm_id = 0;
+    texture_id = s.texture_id;
   }
   void clear_arrays()
   {

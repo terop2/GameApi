@@ -621,5 +621,16 @@ public:
 };
 }
 
+class MixedI
+{
+public:
+  virtual int NumItems() const=0;
+  virtual std::string Type() const=0;
+  virtual std::string Print() const=0;
+  virtual std::string Name(int i) const=0;
+  virtual std::string Value(int i) const=0;
+  virtual MixedI *Access(int i) const=0;
+  virtual MixedI *Clone() const=0;
+};
 
 #endif

@@ -26,6 +26,7 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct MX { int id; };
   struct Pa { int id; };
   struct Va { int id; };
   struct AS { int id; };
@@ -276,6 +277,34 @@ private:
   void *priv;
 };
 #endif
+
+class MixedApi
+{
+public:
+  MixedApi(Env &e) : e(e) { }
+  // constructing
+  MX mx_float(float val);
+  MX mx_int(int val);
+  MX mx_bool(bool val);
+  MX mx_point(float x, float y, float z);
+  MX mx_vector(float dx, float dy, float dz);
+  MX mx_color(int r, int g, int b, int a);
+  MX mx_pair(std::string name, MX val);
+  MX mx_string(std::string value);
+  MX mx_array(std::vector<MX> vec);
+
+  // accessing
+  int mx_size(MX arr);
+  MX mx_index(MX arr, int idx);
+  MX mx_find(MX arr, std::string name);
+  float mx_to_float(MX val, float def=0.0);
+  int mx_to_int(MX val, int def=-1);
+  std::vector<std::string> mx_names(MX val);
+  std::vector<MX> mx_values(MX val);
+private:
+  Env &e;
+};
+
 
 #ifdef F_SPRITE_API
 class SpriteApi
@@ -1981,6 +2010,10 @@ public:
 	IMPORT WV empty(float length);
 	IMPORT WV function(std::function<float(float)> f, float length, float min_value, float max_value);
 	IMPORT WV sinwave(float length, float freq);
+  IMPORT WV gaussian(float start_x, float end_x, float start_y, float end_y);
+  IMPORT WV sum(WV w1, WV w2);
+  IMPORT WV move(WV w1, float delta);
+  IMPORT WV scale(WV w1, float scale);
         IMPORT WV repeat(WV wave, int num);
 	IMPORT WV sample(float *array, int length, float samplelength);
 	IMPORT WV int_sample(int *array, int length, float samplelength, int min_value, int max_value);
@@ -1993,6 +2026,7 @@ public:
   IMPORT WV step(bool b);
   IMPORT WV cubic(float f_0, float f_1, float df_0, float df_1, float min_y, float max_y);
 	IMPORT BM waveform_bitmap(WV wave, int sx, int sy, unsigned int true_color, unsigned int false_color);
+  IMPORT P waveform_rotated_polygon(WV wave, float start_angle, float end_angle, float radius, int num_samples, int num_waves);
 
 private:
   WaveformApi(const WaveformApi&);
@@ -2219,6 +2253,7 @@ public: // values are [0.0..1.0]
   IMPORT FB function(std::function<float(int, int)> f, int sx, int sy);
   IMPORT FB newfloatbitmap(char *array, int sx, int sy, std::function<float(char)> f);
   IMPORT FB from_bool_bitmap(BB bm, int csx, int csy);
+  IMPORT FB gaussian(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy);
   IMPORT FB grayscale(BM color_bm);
   IMPORT FB from_red(BM color_bm);
   IMPORT FB from_green(BM color_bm);

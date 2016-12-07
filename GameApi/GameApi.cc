@@ -332,6 +332,14 @@ GameApi::PP add_plane_shape(GameApi::Env &e, PlaneShape *sh)
   return im;
 
 }
+GameApi::MX add_mixed(GameApi::Env &e, MixedI *m)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->mixed.push_back(m);
+  GameApi::MX im;
+  im.id = env->mixed.size()-1;
+  return im;
+}
 GameApi::SA add_skeletal(GameApi::Env &e, SkeletalNode *n)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1095,6 +1103,11 @@ PD_Impl find_polydistfield(GameApi::Env &e, GameApi::PD p)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->polydistfield[p.id];
+}
+MixedI *find_mixed(GameApi::Env &e, GameApi::MX m)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->mixed[m.id];
 }
 SkeletalNode *find_skeletal(GameApi::Env &e, GameApi::SA n)
 {
@@ -3762,7 +3775,7 @@ public:
 	if (u_v.id == 0)
 	  u_v = ev.uber_api.v_empty();
 	if (u_f.id == 0)
-	  u_f = ev.uber_api.f_empty(false);
+	  u_f = ev.uber_api.f_empty(true);
       }
 #if 1
     if (ev.polygon_api.is_texture(va))
@@ -3887,7 +3900,7 @@ public:
 	if (u_v.id == 0)
 	  u_v = ev.uber_api.v_empty();
 	if (u_f.id == 0)
-	  u_f = ev.uber_api.f_empty(false);
+	  u_f = ev.uber_api.f_empty(true);
       }
 #if 1
     if (ev.polygon_api.is_texture(va))
@@ -5326,4 +5339,222 @@ GameApi::W GameApi::GuiApi::popup_box_menu(std::vector<std::string> options, FtA
   W w3 = layer(w2,w);
   W w5 = margin(w3,2,2,2,2);
   return w5;
+}
+
+template<class T>
+class GenericMixed : public MixedI
+{
+public:
+  GenericMixed(T val, std::string type) : val(val), type(type) { }
+  virtual std::string Type() const { return type; }
+  virtual int NumItems() const { return 1; }
+  virtual std::string Name(int i) const { std::stringstream ss; ss << i; return ss.str(); }
+  virtual std::string Value(int i) const { std::stringstream ss; ss << val; return ss.str(); }
+  virtual std::string Print() const { return Value(0); }
+  virtual MixedI *Access(int i) const { return 0; }
+  virtual MixedI *Clone() const { return new GenericMixed<T>(val,type); }
+private:
+  T val;
+  std::string type;
+};
+
+class PairMixed : public MixedI
+{
+public:
+  PairMixed(std::string name, MixedI &mx) : name(name), mx(mx) { }
+  virtual std::string Type() const { return "pair"; }
+  virtual int NumItems() const { return 1; }
+  virtual std::string Name(int i) const { return name; }
+  virtual std::string Value(int i) const { return mx.Print(); }
+  virtual std::string Print() const
+  {
+    return " ( " + Name(0) + " => " + Value(0) + " ) "; 
+  }
+  virtual MixedI *Access(int i) const { return 0; }
+  virtual MixedI *Clone() const { return new PairMixed(name,mx); }
+private:
+  std::string name;
+  MixedI &mx;
+};
+
+class ArrayMixed : public MixedI
+{
+public:
+  ArrayMixed(std::vector<MixedI*> vec) : vec(vec) { }
+  virtual std::string Type() const { return "array"; }
+  virtual int NumItems() const { return vec.size(); }
+  virtual std::string Name(int i) const 
+  {
+    std::stringstream ss;
+    ss << i;
+    return ss.str();
+  }
+  virtual std::string Value(int i) const {
+    return vec[i]->Print();
+  }
+  virtual std::string Print() const
+  {
+    std::string res;
+    res += " [ ";
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	if (i!=0) { res+=","; }
+	res+=vec[i]->Print();
+      }
+    res+= " ] ";
+    return res;
+  }
+  MixedI *Access(int i) const { return vec[i]; }
+  MixedI *Clone() const { return new ArrayMixed(vec); }
+private:
+  std::vector<MixedI*> vec;
+};
+
+GameApi::MX GameApi::MixedApi::mx_float(float val)
+{
+  return add_mixed(e, new GenericMixed<float>(val,"float"));
+}
+GameApi::MX GameApi::MixedApi::mx_int(int val)
+{
+  return add_mixed(e, new GenericMixed<int>(val,"int"));
+}
+GameApi::MX GameApi::MixedApi::mx_bool(bool val)
+{
+  return add_mixed(e, new GenericMixed<bool>(val, "bool"));
+}
+GameApi::MX GameApi::MixedApi::mx_point(float x, float y, float z)
+{
+  Point val(x,y,z);
+  return add_mixed(e, new GenericMixed<Point>(val, "point"));
+}
+GameApi::MX GameApi::MixedApi::mx_vector(float dx, float dy, float dz)
+{
+  Vector val(dx,dy,dz);
+  return add_mixed(e, new GenericMixed<Vector>(val, "vector"));
+}
+GameApi::MX GameApi::MixedApi::mx_color(int r, int g, int b, int a)
+{
+  return add_mixed(e, new GenericMixed<Color>(Color(r,g,b,a), "color"));
+}
+GameApi::MX GameApi::MixedApi::mx_pair(std::string name, MX val)
+{
+  MixedI *val2 = find_mixed(e, val);
+  return add_mixed(e, new PairMixed(name,*val2));
+}
+GameApi::MX GameApi::MixedApi::mx_string(std::string value)
+{
+  return add_mixed(e, new GenericMixed<std::string>(value,"string"));
+}
+GameApi::MX GameApi::MixedApi::mx_array(std::vector<MX> vec)
+{
+  std::vector<MixedI*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_mixed(e,vec[i]));
+    }
+  return add_mixed(e, new ArrayMixed(vec2));
+}
+
+int GameApi::MixedApi::mx_size(MX arr)
+{
+  MixedI *arr2 = find_mixed(e, arr);
+  return arr2->NumItems();
+}
+class EmptyMixed : public MixedI 
+{
+public:
+  virtual std::string Type() const { return "empty"; }
+  virtual int NumItems() const { return 0; }
+  virtual std::string Name(int i) const { return ""; }
+  virtual std::string Value(int i) const { return ""; }
+  virtual std::string Print() const { return "()"; }
+  virtual MixedI *Access(int i) const { return 0; }
+  virtual MixedI *Clone() const { return new EmptyMixed; }
+};
+GameApi::MX GameApi::MixedApi::mx_index(MX arr, int idx)
+{
+  MixedI *arr2 = find_mixed(e, arr);
+  MixedI *item = arr2->Access(idx);
+  if (!item) { return add_mixed(e, new EmptyMixed); }
+  return add_mixed(e, item);
+}
+class CloneMixed : public MixedI
+{
+public:
+  CloneMixed(MixedI *val) : val(val) { }
+  virtual std::string Type() const { return val->Type(); }
+  virtual int NumItems() const { return val->NumItems(); }
+  virtual std::string Name(int i) const { return val->Name(i); }
+  virtual std::string Value(int i) const { return val->Value(i); }
+  virtual std::string Print() const { return val->Print(); }
+  virtual MixedI *Access(int i) const { return val->Access(i); }
+  virtual MixedI *Clone() const { return val->Clone(); }
+private:
+  MixedI *val;
+};
+
+GameApi::MX GameApi::MixedApi::mx_find(MX arr, std::string name)
+{
+  MixedI *arr2 = find_mixed(e, arr);
+  int s = arr2->NumItems();
+  for(int i=0;i<s;i++)
+    {
+      MixedI *item = arr2->Access(i);
+      if (item->Type()!="pair") { continue; }
+      if (name==item->Name(0))
+	{
+	  return add_mixed(e, item);
+	}
+    }
+  std::stringstream ss(name);
+  int idx;
+  if (ss >> idx) {
+    if (idx>=0 && idx<s) {
+      MixedI *val = arr2->Access(idx);
+      return add_mixed(e,new CloneMixed(val));
+    }
+  }
+  return add_mixed(e, new EmptyMixed);
+}
+
+float GameApi::MixedApi::mx_to_float(MX val, float def)
+{
+  MixedI *item = find_mixed(e, val);
+  if (item->Type()=="float") {
+    std::stringstream ss(item->Value(0));
+    float val=def;
+    ss >> val;
+    return val;
+  }
+  return def;
+}
+int GameApi::MixedApi::mx_to_int(MX val, int def)
+{
+  MixedI *item = find_mixed(e, val);
+  if (item->Type()=="int") {
+    std::stringstream ss(item->Value(0));
+    int val=def;
+    ss >> val;
+    return val;
+  }
+  return def;
+}
+
+std::vector<std::string> GameApi::MixedApi::mx_names(MX val)
+{
+  MixedI *item = find_mixed(e, val);
+  std::vector<std::string> names;
+  int s = item->NumItems();
+  for(int i=0;i<s;i++) names.push_back(item->Name(i));
+  return names;
+}
+std::vector<GameApi::MX> GameApi::MixedApi::mx_values(MX val)
+{
+  MixedI *item = find_mixed(e, val);
+  std::vector<GameApi::MX> values;
+  int s = item->NumItems();
+  for(int i=0;i<s;i++) values.push_back(add_mixed(e,new CloneMixed(item->Access(i))));
+  return values;
 }
