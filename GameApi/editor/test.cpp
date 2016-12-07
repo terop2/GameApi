@@ -532,11 +532,13 @@ void iter(void *arg)
 	    int chosen3 = env->gui->chosen_item(env->collect_button);
 	    if (chosen3 == 0)
 	      {
+#if 0
 		/* collect here */
 		std::cout << "Collect" << std::endl;
 		GameApi::collect_counter(0);
 		CollectResult res = env->ev->mod_api.collect_nodes(*env->ev, env->mod, 0, env->codegen_uid,100);
 		// TODO.
+#endif
 	      }
 	    
 	  }
