@@ -683,6 +683,7 @@ void GameApi::WModApi::delete_by_uid(WM mod2, int id, std::string line_uid)
 
 }
 
+#if 0
 GameApi::CollectResult GameApi::WModApi::collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level)
 {
   static std::vector<GameApiItem*> vec = all_functions();
@@ -821,6 +822,7 @@ GameApi::CollectResult GameApi::WModApi::collect_nodes(EveryApi &ev, WM mod2, in
   return res;
 
 }
+#endif
 std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level)
 {
   static std::vector<GameApiItem*> vec = all_functions();

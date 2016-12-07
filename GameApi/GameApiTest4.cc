@@ -115,6 +115,7 @@ PT horse_head_func(EveryApi &ev, int idx, void *data)
 
 void Game(EveryApi &e)
 {
+  #if 0
   MainLoopApi &loop = e.mainloop_api;
   PointApi &points = e.point_api;
   //VectorApi &vec = e.vector_api;
@@ -159,7 +160,7 @@ void Game(EveryApi &e)
   WV sinw = wv.sinwave(2.0*3.14159, 1.0);
   BM red = wv.waveform_bitmap(sinw, 100,100, 0xffffffff, 0xff000000);
   BB red_1 = e.bool_bitmap_api.from_bitmaps_color(red, 255,255,255);
-  FB red_2 = e.float_bitmap_api.distance_field(red_1);
+  FB red_2 = e.float_bitmap_api.distance_field(red_1, 1.0f);
   //FB red_2 = e.float_bitmap_api.from_bool(red_1, 1.0, 0.0);
   BM red_3 = e.float_bitmap_api.to_grayscale_color(red_2, 255,255,255,255, 0,0,0,0);
 
@@ -354,5 +355,5 @@ void Game(EveryApi &e)
       MainLoopApi::Event ev = e.mainloop_api.get_event(); 
       if (ev.ch==27) break;
     }
- 
+#endif 
 }
