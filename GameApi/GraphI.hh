@@ -390,6 +390,7 @@ struct MainLoopEnv
   //int button;
 
   float time = 0.0;
+  float delta_time = 0.0;
 
   Matrix env;
   //std::string vertex_shader = "";
@@ -509,7 +510,7 @@ class Movement
 {
 public:
   virtual void set_matrix(Matrix m)=0;
-  virtual Matrix get_whole_matrix(float time) const=0;
+  virtual Matrix get_whole_matrix(float time, float delta_time) const=0;
 };
 
 class ImplicitFunction2d

@@ -691,6 +691,7 @@ void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH array_text
   ek.in_T = find_matrix(e, in_T);
   ek.in_N = find_matrix(e, in_N);
   ek.time = get_time()/1000.0;
+  ek.delta_time = get_delta_time();
   item->execute(ek);
 }
 void GameApi::MainLoopApi::event_ml(ML ml, const Event &ee)

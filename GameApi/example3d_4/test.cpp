@@ -66,6 +66,7 @@ void iter(void *arg)
     MainLoopApi::Event e;
     while((e = env->ev->mainloop_api.get_event()).last==true)
       {
+	std::cout << e.ch << " " << e.type << std::endl;
 #ifndef EMSCRIPTEN
 	if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif
