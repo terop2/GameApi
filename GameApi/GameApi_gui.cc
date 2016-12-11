@@ -617,6 +617,7 @@ public:
       }
     if (type==0x300 || type==0x301)
       {
+	std::cout << "update: " << type << " " << ch << " " << button << std::endl;
 	e.type = type;
 	e.ch = ch;
 	e.button = button;
@@ -4982,6 +4983,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "ML", "MN", "int", "float" },
 			 { "ev", "", "", "32", "10.0" },
 			 "ML", "move_api", "key_activate_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::temp_key_activate_ml,
+			 "tmp_key_activate_ml",
+			 { "ev", "ml", "mn", "key", "duration" },
+			 { "EveryApi&", "ML", "MN", "int", "float" },
+			 { "ev", "", "", "32", "10.0" },
+			 "ML", "move_api", "temp_key_activate_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::skeletal_api, &GameApi::Skeletal::root,
 			 "sa_root",
 			 { "points" },

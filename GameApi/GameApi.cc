@@ -3129,6 +3129,134 @@ private:
 
 
 
+class TempKeyActivateML : public MainLoopItem
+{
+public:
+  TempKeyActivateML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, GameApi::MN nm, int key, float duration) : e(e), ev(ev), next(next), mn(nm),key(key), duration(duration)
+  { 
+    start_time = 0.0; //ev.mainloop_api.get_time();
+    start_time2 = 0.0;
+    anim_pos = 0.0;
+    collect = ev.matrix_api.identity();
+    anim_ongoing = false;
+    anim_ongoing2 = false;
+    key_pressed = false;
+  }
+  void reset_time() {
+    start_time = ev.mainloop_api.get_time();
+  }
+  int shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &eve)
+  {
+    int ch = eve.ch;
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+    bool start_anim = false;
+    bool start_anim2 = false;
+    if (eve.type==0x300 && ch == key && !anim_ongoing && !anim_ongoing2 && !key_pressed) { start_anim = true; }
+    if (eve.type==0x300 && ch == key) { key_pressed = true; }
+    if (eve.type==0x301 && ch == key) { key_pressed = false;  start_anim2 = true; }
+
+    if (start_anim) {
+      std::cout << "start_anim" << std::endl;
+      anim_ongoing = true; start_time = ev.mainloop_api.get_time(); anim_pos = 0.0; 
+    }
+    if (start_anim2) {
+      std::cout << "start_anim2" << std::endl;
+      anim_ongoing = false;
+      anim_ongoing2 = true; 
+      start_time2 = ev.mainloop_api.get_time();  
+      anim_pos_at_change = anim_pos;
+      float time = (ev.mainloop_api.get_time()-start_time)/100.0;
+      time_at_change = std::min(time,duration/100.0);
+
+      //      collect = ev.move_api.get_matrix(mn, anim_pos_at_change, ev.mainloop_api.get_delta_time());
+    }
+
+    next->handle_event(eve);
+  }
+  void execute(MainLoopEnv &env)
+  {
+    GameApi::SH s1;
+    s1.id = env.sh_texture;
+    GameApi::SH s2;
+    s2.id = env.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = env.sh_color;
+    GameApi::M mat,m2,mat2;
+    if (anim_ongoing) {
+      float time = (ev.mainloop_api.get_time()-start_time)/100.0;
+      mat = ev.move_api.get_matrix(mn, time, ev.mainloop_api.get_delta_time());
+      m2 = add_matrix2(e, env.env);
+      mat2 = mat;
+      //mat2 = ev.matrix_api.mult(mat2, collect);
+      mat2 = ev.matrix_api.mult(mat2,m2);
+
+      anim_pos += env.delta_time;
+      if (anim_pos > duration-env.delta_time) {
+	std::cout << "anim_ongoing=false" << std::endl;
+	anim_ongoing = false;
+	collect = ev.move_api.get_matrix(mn, time, ev.mainloop_api.get_delta_time());
+	//anim_ongoing2 = true;
+	//start_time2 = ev.mainloop_api.get_time();  
+	//anim_pos_at_change = anim_pos;
+      }
+    } else if (anim_ongoing2) {
+      float time = (ev.mainloop_api.get_time()-start_time2)/100.0;
+      mat = ev.move_api.get_matrix(mn, time_at_change-time, ev.mainloop_api.get_delta_time());
+      m2 = add_matrix2(e, env.env);
+      mat2 = mat;
+      //mat2 = ev.matrix_api.mult(mat2, collect);
+      mat2 = ev.matrix_api.mult(mat2,m2);
+
+      anim_pos -= env.delta_time;
+      if (time_at_change - time - ev.mainloop_api.get_delta_time() < 0.0) {
+	std::cout << "anim_ongoing2=false" << std::endl;
+	anim_ongoing2 = false;
+	collect = ev.matrix_api.identity();
+      }
+    } else {
+      m2 = add_matrix2(e, env.env);
+      mat2 = ev.matrix_api.mult(collect,m2);
+    }
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", mat2);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", mat2);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", mat2);
+    Matrix old_in_MV = env.in_MV;
+    env.in_MV = find_matrix(e, mat2);
+
+    Matrix old_env = env.env;
+    env.env = find_matrix(e,mat2); /* * env.env*/;
+    next->execute(env);
+    env.env = old_env;
+    env.in_MV = old_in_MV;
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  float start_time;
+  float start_time2;
+  MainLoopItem *next;
+  GameApi::MN mn;
+  int key;
+  bool anim_ongoing;
+  bool anim_ongoing2;
+  float anim_pos;
+  float duration;
+  GameApi::M collect;
+  bool key_pressed;
+  float anim_pos_at_change;
+  float time_at_change;
+};
+
+
+
 
 class EnableML : public MainLoopItem
 {
@@ -3232,6 +3360,11 @@ GameApi::ML GameApi::MovementNode::key_activate_ml(EveryApi &ev, GameApi::ML ml,
 {
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new KeyActivateML(e,ev,item, move, key, duration));
+}
+GameApi::ML GameApi::MovementNode::temp_key_activate_ml(EveryApi &ev, GameApi::ML ml, GameApi::MN move, int key, float duration)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new TempKeyActivateML(e, ev, item, move, key, duration));
 }
 GameApi::ML GameApi::MovementNode::move_x_ml(EveryApi &ev, GameApi::ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x)
 {
