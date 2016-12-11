@@ -1147,6 +1147,7 @@ public:
   M get_matrix(MN n, float time, float delta_time);
   ML move_ml(EveryApi &ev, ML ml, MN mn);
   ML key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
+  ML temp_key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
   ML move_x_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x);
   ML move_y_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_y, float end_y);
   ML move_z_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_z, float end_z);
