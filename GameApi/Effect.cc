@@ -1851,7 +1851,7 @@ VBOState::VBOState()
   //bool g_fVBOSupported = IsExtensionSupported( "GL_ARB_vertex_buffer_object" );
   //if( g_fVBOSupported )
   //{
-  std::cout << glGetString( GL_EXTENSIONS ) << std::endl;
+  //std::cout << glGetString( GL_EXTENSIONS ) << std::endl;
       // Get Pointers To The GL Functions
 #ifdef VBOS
 

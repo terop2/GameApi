@@ -2783,7 +2783,7 @@ public:
 	if (u_v.id == 0)
 	  u_v = ev.uber_api.v_empty();
 	if (u_f.id == 0)
-	  u_f = ev.uber_api.f_empty(true);
+	  u_f = ev.uber_api.f_empty(false);
       }
 
 #if 1
@@ -2915,7 +2915,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(true);
+      GameApi::US a0 = ev.uber_api.f_empty(false);
       GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a1.id;
     }
@@ -2964,7 +2964,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(true);
+      GameApi::US a0 = ev.uber_api.f_empty(false);
       //GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a0.id;
     }
@@ -3015,7 +3015,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(true);
+      GameApi::US a0 = ev.uber_api.f_empty(false);
       //GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a0.id;
     }
@@ -3076,7 +3076,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(true);
+      GameApi::US a0 = ev.uber_api.f_empty(false);
       GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a1.id;
     }
@@ -3136,7 +3136,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(true);
+      GameApi::US a0 = ev.uber_api.f_empty(false);
       GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a1.id;
     }
@@ -3189,7 +3189,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(true);
+      GameApi::US a0 = ev.uber_api.f_empty(false);
       GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a1.id;
     }
@@ -3282,7 +3282,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(true);
+      GameApi::US a0 = ev.uber_api.f_empty(false);
       GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a1.id;
     }
@@ -3356,7 +3356,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(true);
+      GameApi::US a0 = ev.uber_api.f_empty(false);
       GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a1.id;
     }
@@ -3445,7 +3445,7 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      GameApi::US a0 = ev.uber_api.f_empty(true);
+      GameApi::US a0 = ev.uber_api.f_empty(false);
       GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a1.id;
     }
@@ -4074,12 +4074,13 @@ EXPORT GameApi::P GameApi::PolygonApi::tri_to_quad(P p)
 class ColorMapPoly : public SingleForwardFaceCollection
 {
 public:
-  ColorMapPoly(Bitmap<::Color> *bm, Point pos, Vector u_x, Vector u_y) : bm(bm), pos(pos), u_x(u_x), u_y(u_y) { }
-  void Prepare() { bm->Prepare(); }
-  virtual int NumFaces() const { return bm->SizeX()*bm->SizeY(); }
-  virtual int NumPoints(int face) const { return 4; }
+  ColorMapPoly(Bitmap<::Color> *bm, Point pos, Vector u_x, Vector u_y) : bm(bm), pos(pos), u_x(u_x), u_y(u_y) { prepared = false; }
+    void Prepare() { bm->Prepare(); prepared = true; }
+  virtual int NumFaces() const { if (!prepared) const_cast<ColorMapPoly*>(this)->Prepare(); return bm->SizeX()*bm->SizeY(); }
+  virtual int NumPoints(int face) const { if (!prepared) const_cast<ColorMapPoly*>(this)->Prepare(); return 4; }
   virtual Point FacePoint(int face, int point) const
   {
+    if (!prepared) const_cast<ColorMapPoly*>(this)->Prepare();
     int xx = face/bm->SizeY();
     int yy = face - xx*bm->SizeY();
     if (point==1 ||point==2) { xx++; }
@@ -4092,6 +4093,7 @@ public:
   }
   virtual Vector PointNormal(int face, int point) const
   {
+if (!prepared) const_cast<ColorMapPoly*>(this)->Prepare();
     Vector v(0.0,0.0,-1.0);
     return v;
   }
@@ -4099,6 +4101,7 @@ public:
   virtual int AttribI(int face, int point, int id) const { return 0; }
   virtual unsigned int Color(int face, int point) const
   {
+if (!prepared) const_cast<ColorMapPoly*>(this)->Prepare();
     int xx = face/bm->SizeY();
     int yy = face - xx*bm->SizeY();
     if (point==1 ||point==2) { xx++; }
@@ -4110,6 +4113,7 @@ private:
   Bitmap<::Color> *bm;
   Point pos;
   Vector u_x, u_y;
+  bool prepared;
 };
 #if 0
 class ColorMapPoly4 : public FaceCollection

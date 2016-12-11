@@ -2353,7 +2353,7 @@ class EmptyMovement : public Movement
 public:
   EmptyMovement() : m_m(Matrix::Identity()) { }
   void set_matrix(Matrix m) { m_m = m; }
-  Matrix get_whole_matrix(float time) const { return m_m; }
+  Matrix get_whole_matrix(float time, float delta_time) const { return m_m; }
 private:
   Matrix m_m;
 };
@@ -2366,9 +2366,9 @@ class LevelMovement : public Movement
 public:
   LevelMovement(Movement *m) : m(m) { }
   void set_matrix(Matrix m) { m_m = m; }
-  Matrix get_whole_matrix(float time) const
+  Matrix get_whole_matrix(float time, float delta_time) const
   {
-    return m_m * m->get_whole_matrix(time);
+    return m_m * m->get_whole_matrix(time, delta_time);
   }
 private:
   Movement *m;
@@ -2388,13 +2388,13 @@ public:
       dx(dx), dy(dy), dz(dz) { }
   void set_matrix(Matrix m) { }
   void set_pos(float ddx, float ddy, float ddz) { dx=ddx; dy=ddy; dz=ddz; }
-  Matrix get_whole_matrix(float time) const
+  Matrix get_whole_matrix(float time, float delta_time) const
   {
-    if (time<start_time) { return next->get_whole_matrix(time); }
-    if (time>=end_time) { return Matrix::Translate(dx,dy,dz)*next->get_whole_matrix(time); }
+    if (time<start_time) { return next->get_whole_matrix(time, delta_time); }
+    if (time>=end_time) { return Matrix::Translate(dx,dy,dz)*next->get_whole_matrix(time,delta_time); }
     float d = time - start_time;
     d/=(end_time-start_time);
-    return Matrix::Translate(dx*d,dy*d,dz*d)*next->get_whole_matrix(time);
+    return Matrix::Translate(dx*d,dy*d,dz*d)*next->get_whole_matrix(time, delta_time);
   }
 private:
   Movement *next;
@@ -2418,16 +2418,16 @@ public:
       sx(sx), sy(sy), sz(sz) { }
   void set_matrix(Matrix m) { }
   void set_scale(float ssx, float ssy, float ssz) { sx=ssx; sy=ssy; sz=ssz; }
-  Matrix get_whole_matrix(float time) const
+  Matrix get_whole_matrix(float time, float delta_time) const
   {
-    if (time<start_time) { return next->get_whole_matrix(time); }
-    if (time>=end_time) { return Matrix::Scale(sx,sy,sz)*next->get_whole_matrix(time); }
+    if (time<start_time) { return next->get_whole_matrix(time, delta_time); }
+    if (time>=end_time) { return Matrix::Scale(sx,sy,sz)*next->get_whole_matrix(time, delta_time); }
     float d = time - start_time;
     d/=(end_time-start_time); // [0..1]
     float ssx = (1.0-d)*1.0 + d*sx;
     float ssy = (1.0-d)*1.0 + d*sy;
     float ssz = (1.0-d)*1.0 + d*sz;
-    return Matrix::Scale(ssx,ssy,ssz)*next->get_whole_matrix(time);
+    return Matrix::Scale(ssx,ssy,ssz)*next->get_whole_matrix(time, delta_time);
   }
 private:
   Movement *next;
@@ -2454,13 +2454,13 @@ public:
       p_x(p_x), p_y(p_y), p_z(p_z),
       v_x(v_x), v_y(v_y), v_z(v_z), angle(angle) { }
   void set_matrix(Matrix m) { }
-  Matrix get_whole_matrix(float time) const
+  Matrix get_whole_matrix(float time, float delta_time) const
   {
-    if (time<start_time) { return next->get_whole_matrix(time); }
-    if (time>=end_time) { return Matrix::RotateAroundAxisPoint(Point(p_x,p_y,p_z),Vector(v_x,v_y,v_z), angle)*next->get_whole_matrix(time); }
+    if (time<start_time) { return next->get_whole_matrix(time, delta_time); }
+    if (time>=end_time) { return Matrix::RotateAroundAxisPoint(Point(p_x,p_y,p_z),Vector(v_x,v_y,v_z), angle)*next->get_whole_matrix(time, delta_time); }
     float d = time - start_time;
     d/=(end_time-start_time); // [0..1]
-    return Matrix::RotateAroundAxisPoint(Point(p_x,p_y,p_z),Vector(v_x,v_y,v_z), d*angle)*next->get_whole_matrix(time);
+    return Matrix::RotateAroundAxisPoint(Point(p_x,p_y,p_z),Vector(v_x,v_y,v_z), d*angle)*next->get_whole_matrix(time, delta_time);
   }
 private:
   Movement *next;
@@ -2483,15 +2483,15 @@ class CompressMovement : public Movement
 public:
   CompressMovement(Movement *next, float start_time, float end_time) : next(next), start_time(start_time), end_time(end_time) 
   { 
-    zero = next->get_whole_matrix(start_time);
-    one = next->get_whole_matrix(end_time);
+    zero = next->get_whole_matrix(start_time, 1.0);
+    one = next->get_whole_matrix(end_time,1.0);
   }
   void set_matrix(Matrix m) { }
-  Matrix get_whole_matrix(float time) const
+  Matrix get_whole_matrix(float time, float delta_time) const
   {
     if (time<start_time) { return zero; }
     if (time>end_time) { return one; }
-    return next->get_whole_matrix(time);
+    return next->get_whole_matrix(time, delta_time);
   }
 private:
   Movement *next;
@@ -2505,11 +2505,11 @@ class AnimEnable : public Movement
 public:
   AnimEnable(Movement *next, float start_time, float end_time) : next(next), start_time(start_time), end_time(end_time) { }
   void set_matrix(Matrix m) { }
-  Matrix get_whole_matrix(float time) const
+  Matrix get_whole_matrix(float time, float delta_time) const
   {
     if (time<start_time) { return Matrix::Zero(); }
     if (time>end_time) { return Matrix::Zero(); }
-    return next->get_whole_matrix(time);
+    return next->get_whole_matrix(time, delta_time);
   }
 private:
   Movement *next;
@@ -2521,10 +2521,10 @@ class AnimDisable : public Movement
 public:
   AnimDisable(Movement *next, float start_time, float end_time) : next(next), start_time(start_time), end_time(end_time) { }
   void set_matrix(Matrix m) { }
-  Matrix get_whole_matrix(float time) const
+  Matrix get_whole_matrix(float time, float delta_time) const
   {
-    if (time<start_time) { return next->get_whole_matrix(time); }
-    if (time>end_time) { return next->get_whole_matrix(time); }
+    if (time<start_time) { return next->get_whole_matrix(time,delta_time); }
+    if (time>end_time) { return next->get_whole_matrix(time,delta_time); }
     return Matrix::Zero(); 
   }
 private:
@@ -2536,13 +2536,13 @@ class AnimChoose : public Movement
 public:
   AnimChoose(std::vector<Movement*> vec, float start_time, float duration) : vec(vec), start_time(start_time), duration(duration) { }
   void set_matrix(Matrix m) { }
-  Matrix get_whole_matrix(float time) const
+  Matrix get_whole_matrix(float time, float delta_time) const
   {
     if (vec.size()==0) return Matrix::Identity();
-    if (time < start_time) return vec[0]->get_whole_matrix(time);
-    if (time > start_time+duration*vec.size()) return vec[vec.size()-1]->get_whole_matrix(time);
+    if (time < start_time) return vec[0]->get_whole_matrix(time,delta_time);
+    if (time > start_time+duration*vec.size()) return vec[vec.size()-1]->get_whole_matrix(time,delta_time);
     int val = (time-start_time)/duration;
-    return vec[val]->get_whole_matrix(time);
+    return vec[val]->get_whole_matrix(time,delta_time);
   }
 private:
   std::vector<Movement*> vec;
@@ -2583,10 +2583,10 @@ class TimeChangeMovement : public Movement
 public:
   TimeChangeMovement(Movement *nxt, float d_time) : nxt(nxt), d_time(d_time) { }
   void set_matrix(Matrix m) { }
-  Matrix get_whole_matrix(float time) const
+  Matrix get_whole_matrix(float time, float delta_time) const
   {
     time -= d_time;
-    return nxt->get_whole_matrix(time);
+    return nxt->get_whole_matrix(time, delta_time);
   }
   
 private:
@@ -2598,14 +2598,52 @@ class MatrixMovement : public Movement
 public:
   MatrixMovement(Movement *next, Matrix m) : next(next), m(m) { }
   void set_matrix(Matrix mm) { m = mm; }
-  Matrix get_whole_matrix(float time) const
+  Matrix get_whole_matrix(float time, float delta_time) const
   {
-    return next->get_whole_matrix(time)*m;
+    return next->get_whole_matrix(time, delta_time)*m;
   }
 private:
   Movement *next;
   Matrix m;
 };
+class EventActivateMovement : public Movement
+{
+public:
+  EventActivateMovement(Movement *next, Movement *event, float activate_time, float duration) : next(next), event(event), activate_time(activate_time), duration(duration) { 
+    event_activated=false;
+    collect = Matrix::Identity();
+  }
+  void set_matrix(Matrix mm) { }
+  Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    Matrix n = next->get_whole_matrix(time, delta_time);
+    
+    if (time > activate_time && time - delta_time < activate_time)
+      {
+	event_activated = true;
+      }
+    if (event_activated) { n = n * event->get_whole_matrix(time-activate_time, delta_time) * collect; }
+    else { n = n * collect; }
+    if (event_activated && time - activate_time > duration) {
+      event_activated = false;
+      collect = collect * event->get_whole_matrix(duration,delta_time);
+    }
+    return n;
+  }
+private:
+  Movement *next;
+  Movement *event;
+  float activate_time;
+  mutable bool event_activated;
+  float duration;
+  mutable Matrix collect;
+};
+GameApi::MN GameApi::MovementNode::event_activate(MN next, MN event, float activate_time, float duration)
+{
+  Movement *nxt = find_move(e, next);
+  Movement *eve = find_move(e, event);
+  return add_move(e, new EventActivateMovement(nxt,eve,activate_time, duration));
+}
 GameApi::MN GameApi::MovementNode::trans2(MN next, float dx, float dy, float dz)
 {
   Movement *nxt = find_move(e, next);
@@ -2636,12 +2674,12 @@ class TimeRepeatMovement : public Movement
 public:
   TimeRepeatMovement(Movement *m, float start_time, float repeat_duration) : m(m), start_time(start_time), repeat_duration(repeat_duration) { }
   void set_matrix(Matrix mm) { }
-  Matrix get_whole_matrix(float time) const
+  Matrix get_whole_matrix(float time, float delta_time) const
   {
-    if (time < start_time) { return m->get_whole_matrix(time); }
+    if (time < start_time) { return m->get_whole_matrix(time, delta_time); }
     float d = time - start_time;
     float dd = fmod(d,repeat_duration);
-    return m->get_whole_matrix(start_time+dd);
+    return m->get_whole_matrix(start_time+dd, delta_time);
   }
 private:
   Movement *m;
@@ -2666,10 +2704,10 @@ void GameApi::MovementNode::set_matrix(MN n, M m)
   Matrix mm = find_matrix(e, m);
   nn->set_matrix(mm);
 }
-GameApi::M GameApi::MovementNode::get_matrix(MN n, float time)
+GameApi::M GameApi::MovementNode::get_matrix(MN n, float time, float delta_time)
 {
   Movement *nn = find_move(e, n);
-  Matrix m = nn->get_whole_matrix(time);
+  Matrix m = nn->get_whole_matrix(time, delta_time);
   return add_matrix2(e, m);
 }
 class KeyEventML : public MainLoopItem
@@ -2719,7 +2757,7 @@ public:
     for(int i=0;i<s;i++)
       {
 	float time = (ev.mainloop_api.get_time()-start_times[i])/100.0;
-	GameApi::M mat = ev.move_api.get_matrix(mn, time);
+	GameApi::M mat = ev.move_api.get_matrix(mn, time, ev.mainloop_api.get_delta_time());
 	res2 = ev.matrix_api.mult(res2, mat);
       }
     for(int i=0;i<s;i++)
@@ -2755,6 +2793,85 @@ private:
   std::vector<float> start_times;
   float duration;
 };
+class JumpML : public MainLoopItem
+{
+public:
+  JumpML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, int key_jump, float height, float jump_duration) : e(e), ev(ev), next(next), key_jump(key_jump), height(height), jump_duration(jump_duration) { pos=0.0; jump_position=0.0; jump_going_up = false; jump_going_down=false; }
+  int shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &eve)
+  {
+    int ch = eve.ch;
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+    if (eve.type==0x300 && ch==key_jump && !jump_going_up && !jump_going_down) { jump_going_up=true; }
+
+  }
+
+  void execute(MainLoopEnv &env)
+  {
+    GameApi::SH s1;
+    s1.id = env.sh_texture;
+    GameApi::SH s2;
+    s2.id = env.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = env.sh_color;
+
+    if (jump_going_down)
+      {
+      pos-=height/(jump_duration/2.0)*env.delta_time;
+      jump_position += env.delta_time;
+      if (jump_position > jump_duration) {
+	jump_going_down = false;
+	pos = 0.0;
+	jump_position = 0.0;
+      }
+      }
+    if (jump_going_up) {
+      pos+=height/(jump_duration/2.0)*env.delta_time;
+      jump_position += env.delta_time;
+      if (jump_position > jump_duration/2.0) {
+	jump_going_down = true;
+	jump_going_up = false;
+      }
+    }
+    
+    Matrix m = Matrix::Identity();
+    m = Matrix::Translate(0.0,pos,0.0);
+
+    GameApi::M mat = add_matrix2(e, m);
+    GameApi::M m2 = add_matrix2(e, env.env);
+    GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", mat2);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", mat2);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", mat2);
+    Matrix old_in_MV = env.in_MV;
+    env.in_MV = find_matrix(e, mat2);
+    Matrix old_env = env.env;
+    env.env = find_matrix(e,mat2);/* * env.env*/;
+    next->execute(env);
+    env.env = old_env;
+    env.in_MV = old_in_MV;
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  int key_jump;
+  float height;
+  float jump_duration;
+  bool jump_going_up;
+  bool jump_going_down;
+  float pos;
+  float jump_position;
+};
+
 class KeyMoveML : public MainLoopItem
 {
 public:
@@ -2889,7 +3006,7 @@ public:
     GameApi::SH s3;
     s3.id = env.sh_color;
     float time = (ev.mainloop_api.get_time()-start_time)/100.0;
-    GameApi::M mat = ev.move_api.get_matrix(mn, time);
+    GameApi::M mat = ev.move_api.get_matrix(mn, time, ev.mainloop_api.get_delta_time());
     GameApi::M m2 = add_matrix2(e, env.env);
     GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
     ev.shader_api.use(s1);
@@ -2914,6 +3031,104 @@ private:
   MainLoopItem *next;
   GameApi::MN mn;
 };
+
+class KeyActivateML : public MainLoopItem
+{
+public:
+  KeyActivateML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, GameApi::MN mn, int key, float duration) : e(e), ev(ev), next(next), mn(mn),key(key), duration(duration)
+  { 
+    start_time = 0.0; //ev.mainloop_api.get_time();
+    anim_pos = 0.0;
+    collect = ev.matrix_api.identity();
+    anim_ongoing = false;
+    key_pressed = false;
+  }
+  void reset_time() {
+    start_time = ev.mainloop_api.get_time();
+  }
+  int shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &eve)
+  {
+    int ch = eve.ch;
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+    bool start_anim = false;
+    if (eve.type==0x300 && ch == key) { key_pressed = true; }
+    if (eve.type==0x300 && ch == key && !anim_ongoing) { start_anim = true; }
+    if (eve.type==0x301 && ch == key) { key_pressed = false; }
+
+    if (start_anim) {
+      anim_ongoing = true; start_time = ev.mainloop_api.get_time(); anim_pos = 0.0; 
+    }
+
+    next->handle_event(eve);
+  }
+  void execute(MainLoopEnv &env)
+  {
+    GameApi::SH s1;
+    s1.id = env.sh_texture;
+    GameApi::SH s2;
+    s2.id = env.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = env.sh_color;
+    GameApi::M mat,m2,mat2;
+    if (anim_ongoing) {
+      float time = (ev.mainloop_api.get_time()-start_time)/100.0;
+      mat = ev.move_api.get_matrix(mn, time, ev.mainloop_api.get_delta_time());
+      m2 = add_matrix2(e, env.env);
+      mat2 = mat;
+      mat2 = ev.matrix_api.mult(mat2, collect);
+      mat2 = ev.matrix_api.mult(mat2,m2);
+
+      anim_pos += env.delta_time;
+      if (anim_pos > duration-env.delta_time) {
+	anim_ongoing = false;
+	collect = ev.matrix_api.mult(collect, ev.move_api.get_matrix(mn, duration, env.delta_time));
+	
+	if (key_pressed) { // repeat animation if key is being pressed down when anim stops
+	  anim_ongoing = true; start_time = ev.mainloop_api.get_time(); anim_pos = 0.0; 
+	}
+
+      }
+
+    } else {
+      m2 = add_matrix2(e, env.env);
+      mat2 = ev.matrix_api.mult(collect,m2);
+    }
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", mat2);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", mat2);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", mat2);
+    Matrix old_in_MV = env.in_MV;
+    env.in_MV = find_matrix(e, mat2);
+
+    Matrix old_env = env.env;
+    env.env = find_matrix(e,mat2); /* * env.env*/;
+    next->execute(env);
+    env.env = old_env;
+    env.in_MV = old_in_MV;
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  float start_time;
+  MainLoopItem *next;
+  GameApi::MN mn;
+  int key;
+  bool anim_ongoing;
+  float anim_pos;
+  float duration;
+  GameApi::M collect;
+  bool key_pressed;
+};
+
+
+
 
 class EnableML : public MainLoopItem
 {
@@ -2982,7 +3197,7 @@ public:
 	GameApi::SH s3;
 	s3.id = env.sh_color;
 	float time = (ev.mainloop_api.get_time()-start_time)/100.0;
-	GameApi::M mat = ev.move_api.get_matrix(mn[i], time);
+	GameApi::M mat = ev.move_api.get_matrix(mn[i], time, ev.mainloop_api.get_delta_time());
 	GameApi::M m2 = add_matrix2(e, env.env);
 	GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
 	ev.shader_api.use(s1);
@@ -3013,10 +3228,20 @@ GameApi::ML GameApi::MovementNode::move_ml(EveryApi &ev, GameApi::ML ml, GameApi
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new MoveML(e,ev,item, move));
 }
+GameApi::ML GameApi::MovementNode::key_activate_ml(EveryApi &ev, GameApi::ML ml, GameApi::MN move, int key, float duration)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new KeyActivateML(e,ev,item, move, key, duration));
+}
 GameApi::ML GameApi::MovementNode::move_x_ml(EveryApi &ev, GameApi::ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x)
 {
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new KeyMoveML(e,ev,item,key_forward, key_backward,speed,0.0,true,false,false,false,false,false,start_x, end_x));
+}
+GameApi::ML GameApi::MovementNode::jump_ml(EveryApi &ev, GameApi::ML ml, int key_jump, float height, float jump_duration)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new JumpML(e,ev,item,key_jump, height, jump_duration));
 }
 GameApi::ML GameApi::MovementNode::move_y_ml(EveryApi &ev, GameApi::ML ml, int key_forward, int key_backward, float speed, float start_y, float end_y)
 {
@@ -3134,7 +3359,8 @@ public:
   int num_childs() const { return vec.size(); }
   Matrix get_child(int i, float time) const
   {
-    Matrix m = vec[i]->get_whole_matrix(time);
+    // TODO tree cannot use delta_time properly
+    Matrix m = vec[i]->get_whole_matrix(time, 1.0);
     return m;
   }
 private:
@@ -3367,6 +3593,48 @@ private:
   GameApi::EveryApi &ev;
 };
 
+class SkeletalMaterial : public MaterialForward
+{
+public:
+  SkeletalMaterial(GameApi::EveryApi &ev) : ev(ev) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    // these are in skeletal_bind_materiaal
+    //GameApi::P pp = ev.polygon_api.or_array2(vec);
+    //GameApi::P pp2 = ev.polygon_api.build_offsets(pp, vec2);
+
+    std::vector<int> vecattribs;
+    vecattribs.push_back(AttrPart);
+    GameApi::VA va = ev.polygon_api.create_vertex_array_attribs(p,false,std::vector<int>(),vecattribs);
+    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    //GameApi::ML ml2 = ev.polygon_api.skeletal_shader(ev, ml, savec);
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    //std::cout << "mat2_inst" << std::endl;
+    std::vector<int> vecattribs;
+    vecattribs.push_back(AttrPart);
+    GameApi::PTA pta = ev.points_api.prepare(pts);
+    GameApi::VA va = ev.polygon_api.create_vertex_array_attribs(p,false,std::vector<int>(), vecattribs);
+    GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    //std::cout << "mat2_inst" << std::endl;
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    std::vector<int> vecattribs;
+    vecattribs.push_back(AttrPart);
+    GameApi::VA va = ev.polygon_api.create_vertex_array_attribs(p,false,std::vector<int>(), vecattribs);
+    GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    return ml;
+  }
+private:
+  GameApi::EveryApi &ev;
+};
+
+
 class TextureArrayMaterial : public MaterialForward
 {
 public:
@@ -3596,6 +3864,10 @@ private:
 GameApi::MT GameApi::MaterialsApi::def(EveryApi &ev)
 {
   return add_material(e, new DefaultMaterial(ev));
+}
+GameApi::MT GameApi::MaterialsApi::skeletal(EveryApi &ev)
+{
+  return add_material(e, new SkeletalMaterial(ev));
 }
 GameApi::MT GameApi::MaterialsApi::texture(EveryApi &ev, BM bm)
 {
@@ -4945,7 +5217,8 @@ public:
   SkeletalImpl(SkeletalNode *sk, Movement *mn, Point pt) : sk(sk), mn(mn), pt(pt) { }
   virtual Matrix mat(float time) const
   {
-    return mn->get_whole_matrix(time);
+    // TODO: skeletal can't use delta_time properly.
+    return mn->get_whole_matrix(time, 1.0);
   }
   virtual Point pos(float time) const
   {
@@ -4977,6 +5250,17 @@ GameApi::ML GameApi::Skeletal::skeletal_bind(EveryApi &ev, std::vector<P> vec, s
   
   GameApi::ML ml2 = ev.polygon_api.skeletal_shader(ev, ml, savec);
   return ml2;
+}
+GameApi::ML GameApi::Skeletal::skeletal_bind_material(EveryApi &ev, std::vector<P> vec, std::vector<PT> vec2, std::vector<SA> savec, MT material)
+{
+    GameApi::P pp = ev.polygon_api.or_array2(vec);
+    GameApi::P pp2 = ev.polygon_api.build_offsets(pp, vec2);
+    Material *mat2 = find_material(e, material);
+    int val = mat2->mat(pp2.id);
+    GameApi::ML ml;
+    ml.id = val;
+    GameApi::ML ml2 = ev.polygon_api.skeletal_shader(ev, ml, savec);
+    return ml2;
 }
 
 #if 0

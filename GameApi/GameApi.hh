@@ -1027,6 +1027,7 @@ class MaterialsApi
 public:
   MaterialsApi(Env &e) : e(e) { }
   MT def(EveryApi &ev);
+  MT skeletal(EveryApi &ev);
   MT texture(EveryApi &ev, BM bm);
   MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
   MT snow(EveryApi &ev, MT nxt);
@@ -1110,6 +1111,7 @@ public:
   SA root(PT absolute_pos);
   SA node(SA parent, MN matrix, PT point_offset);
   ML skeletal_bind(EveryApi &ev, std::vector<P> vec, std::vector<PT> vec2, std::vector<SA> sa_vec);
+  ML skeletal_bind_material(EveryApi &ev, std::vector<P> vec, std::vector<PT> vec2, std::vector<SA> sa_vec, MT material);
 private:
   Env &e;
 };
@@ -1136,19 +1138,22 @@ public:
 	    float v_x, float v_y, float v_z, float angle);
   MN compress(MN next, float start_time, float end_time);
   MN change_time(MN next, float d_time);
+  MN event_activate(MN next, MN event, float event_time, float duration);
   MN anim_enable(MN next, float start_time, float end_time);
   MN anim_disable(MN next, float start_time, float end_time);
   MN anim_choose(std::vector<MN> vec, float start_time, float duration);
   MN time_repeat(MN next, float start_time, float repeat_duration);
   void set_matrix(MN n, M m);
-  M get_matrix(MN n, float time);
+  M get_matrix(MN n, float time, float delta_time);
   ML move_ml(EveryApi &ev, ML ml, MN mn);
+  ML key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
   ML move_x_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x);
   ML move_y_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_y, float end_y);
   ML move_z_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_z, float end_z);
   ML rot_x_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x);
   ML rot_y_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_y, float end_y);
   ML rot_z_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_z, float end_z);
+  ML jump_ml(EveryApi &ev, ML ml, int key_jump, float height, float jump_duration);
   ML move_ml_array(EveryApi &ev, std::vector<ML> ml, std::vector<MN> mn);
   ML enable_ml(EveryApi &ev, ML ml, float start_time, float end_time);
   ML key_event(EveryApi &ev, ML ml, MN mn, int type, int ch, int button, float duration);

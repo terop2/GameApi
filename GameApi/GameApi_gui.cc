@@ -4964,12 +4964,24 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "[MN]", "float", "float" },
 			 { "", "0.0", "100.0" },
 			 "MN", "move_api", "anim_choose"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::event_activate,
+			 "anim_event",
+			 { "next", "event", "event_time", "event_duration" },
+			 { "MN", "MN", "float", "float" },
+			 { "", "", "10.0", "100.0" },
+			 "MN", "move_api", "event_activate"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::move_ml,
 			 "move_ml",
 			 { "ev", "ml", "mn" },
 			 { "EveryApi&", "ML", "MN" },
 			 { "ev", "", "" },
 			 "ML", "move_api", "move_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_activate_ml,
+			 "key_activate_ml",
+			 { "ev", "ml", "mn", "key", "duration" },
+			 { "EveryApi&", "ML", "MN", "int", "float" },
+			 { "ev", "", "", "32", "10.0" },
+			 "ML", "move_api", "key_activate_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::skeletal_api, &GameApi::Skeletal::root,
 			 "sa_root",
 			 { "points" },
@@ -4988,6 +5000,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "[P]", "[PT]", "[SA]" },
 			 { "ev", "", "", "" },
 			 "ML", "skeletal_api", "skeletal_bind"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::skeletal_api, &GameApi::Skeletal::skeletal_bind_material,
+			 "skeletal_material",
+			 { "ev", "model", "points", "movement", "material" },
+			 { "EveryApi&", "[P]", "[PT]", "[SA]", "MT" },
+			 { "ev", "", "", "", "" },
+			 "ML", "skeletal_api", "skeletal_bind_material"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::move_x_ml,
 			 "move_x_ml",
 			 { "ev", "ml", "key_forward", "key_backward", "speed", "start_x", "end_x" },
@@ -5006,6 +5024,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "ML", "int", "int", "float","float","float" },
 			 { "ev", "", "107", "109", "5.0","-100.0","100.0" },
 			 "ML", "move_api", "move_z_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::jump_ml,
+			 "jump_ml",
+			 { "ev", "ml", "key_jump", "height", "jump_duration" },
+			 { "EveryApi&", "ML", "int", "float", "float" },
+			 { "ev", "", "32", "300.0", "10.0" },
+			 "ML", "move_api", "jump_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::rot_x_ml,
 			 "rot_x_ml",
 			 { "ev", "ml", "key_forward", "key_backward", "speed", "start_angle", "end_angle"},
@@ -5073,6 +5097,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "[BM]", "int", "int" },
 			 { "ev", "", "256", "256" },
 			 "MT", "materials_api", "texture_arr"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::skeletal,
+			 "m_skeletal",
+			 { "ev" },
+			 { "EveryApi&" },
+			 { "ev" },
+			 "MT", "materials_api", "skeletal"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::snow,
 			 "m_snow",
 			 { "ev", "nxt" },
