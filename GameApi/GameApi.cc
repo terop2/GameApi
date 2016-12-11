@@ -3141,6 +3141,8 @@ public:
     anim_ongoing = false;
     anim_ongoing2 = false;
     key_pressed = false;
+    key_canceled=false;
+    start_anim_chain = false;
   }
   void reset_time() {
     start_time = ev.mainloop_api.get_time();
@@ -3156,22 +3158,28 @@ public:
 #endif
     bool start_anim = false;
     bool start_anim2 = false;
-    if (eve.type==0x300 && ch == key && !anim_ongoing && !anim_ongoing2 && !key_pressed) { start_anim = true; }
+    if (eve.type==0x300 && ch == key && !anim_ongoing && !anim_ongoing2 && !key_pressed) { start_anim = true; } else if (eve.type==0x300 && ch==key && !key_pressed)
+      {
+	key_canceled=true;
+      }
     if (eve.type==0x300 && ch == key) { key_pressed = true; }
-    if (eve.type==0x301 && ch == key) { key_pressed = false;  start_anim2 = true; }
+    if (eve.type==0x301 && ch == key && !anim_ongoing2 && !key_canceled) { key_pressed = false;  start_anim2 = true; } 
+    if (eve.type==0x301 && ch==key) { key_canceled=false; }
 
     if (start_anim) {
+      start_anim_chain = false;
       std::cout << "start_anim" << std::endl;
       anim_ongoing = true; start_time = ev.mainloop_api.get_time(); anim_pos = 0.0; 
     }
-    if (start_anim2) {
+    if (start_anim2 && !start_anim_chain) {
+      start_anim_chain = true;
       std::cout << "start_anim2" << std::endl;
       anim_ongoing = false;
       anim_ongoing2 = true; 
       start_time2 = ev.mainloop_api.get_time();  
       anim_pos_at_change = anim_pos;
       float time = (ev.mainloop_api.get_time()-start_time)/100.0;
-      time_at_change = std::min(time,duration/100.0);
+      time_at_change = std::min(time,duration);
 
       //      collect = ev.move_api.get_matrix(mn, anim_pos_at_change, ev.mainloop_api.get_delta_time());
     }
@@ -3253,6 +3261,8 @@ private:
   bool key_pressed;
   float anim_pos_at_change;
   float time_at_change;
+  bool key_canceled;
+  bool start_anim_chain;
 };
 
 
