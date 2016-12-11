@@ -1,0 +1,3 @@
+
+all:
+	em++ -std=c++11 -O2 test.cpp ..\libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s DEMANGLE_SUPPORT=1 -s ALLOW_MEMORY_GROWTH=1 -L.. -L..\objs -I.. -o ld37.html --memory-init-file 0 --closure 1 --llvm-lto 1 -s ASSERTIONS=1
