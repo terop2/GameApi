@@ -323,6 +323,15 @@ EXPORT GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
+GameApi::CC add_color(GameApi::Env &e, ColorChange *cc)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->color_change.push_back(cc);
+  GameApi::CC im;
+  im.id = env->color_change.size()-1;
+  return im;
+
+}
 GameApi::PP add_plane_shape(GameApi::Env &e, PlaneShape *sh)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1103,6 +1112,11 @@ PD_Impl find_polydistfield(GameApi::Env &e, GameApi::PD p)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->polydistfield[p.id];
+}
+ColorChange *find_color(GameApi::Env &e, GameApi::CC cc)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->color_change[cc.id];
 }
 MixedI *find_mixed(GameApi::Env &e, GameApi::MX m)
 {
@@ -2361,6 +2375,46 @@ GameApi::MN GameApi::MovementNode::empty()
 {
   return add_move(e, new EmptyMovement);
 }
+class ColorStart : public ColorChange
+{
+public:
+  ColorStart(unsigned int color) : color(color) { }
+  Color get_whole_color(float time, float delta_time) const
+  {
+    return color;
+  }
+private:
+  unsigned int color;
+};
+class ColorInterpolate2 : public ColorChange
+{
+public:
+  ColorInterpolate2(ColorChange *next, unsigned int color, unsigned int color2, float start_time, float end_time) : next(next), color(color), color2(color2), start_time(start_time), end_time(end_time) { }
+  Color get_whole_color(float time, float delta_time) const
+  {
+    if (time < start_time) return next->get_whole_color(time, delta_time);
+    if (time >= end_time) return next->get_whole_color(time, delta_time);
+    float d =  time - start_time;
+    d/=(end_time-start_time);
+    return Color::Interpolate(color, color2, d);
+  }
+private:
+  ColorChange *next;
+  unsigned int color;
+  unsigned int color2;
+  float start_time;
+  float end_time;
+};
+
+GameApi::CC GameApi::MovementNode::color_start(unsigned int color)
+{
+  return add_color(e, new ColorStart(color));
+}
+GameApi::CC GameApi::MovementNode::color_interpolate(CC next, unsigned int color, unsigned int color2, float start_time, float end_time)
+{
+  ColorChange *cc = find_color(e, next);
+  return add_color(e, new ColorInterpolate2(cc, color, color2, start_time, end_time));
+}
 class LevelMovement : public Movement
 {
 public:
@@ -3032,6 +3086,57 @@ private:
   GameApi::MN mn;
 };
 
+
+class ColorML : public MainLoopItem
+{
+public:
+  ColorML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, int color_num, ColorChange *cc) : e(e), ev(ev), next(next), color_num(color_num), cc(cc) 
+  { 
+    start_time = 0.0; //ev.mainloop_api.get_time();
+    std::stringstream ss;
+    ss << color_num;
+    color_num2 = "color_array[" + ss.str() + "]";
+  }
+  void reset_time() {
+    start_time = ev.mainloop_api.get_time();
+  }
+  int shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &env)
+  {
+    next->handle_event(env);
+  }
+  void execute(MainLoopEnv &env)
+  {
+    GameApi::SH s1;
+    s1.id = env.sh_texture;
+    GameApi::SH s2;
+    s2.id = env.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = env.sh_color;
+    float time = (ev.mainloop_api.get_time()-start_time)/100.0;
+    Color c2 = cc->get_whole_color(time, env.delta_time);
+    //std::cout << color_num2 << " " << c2 << std::endl;
+
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, color_num2, c2.rf(),c2.gf(), c2.bf(), c2.af());
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, color_num2, c2.rf(),c2.gf(), c2.bf(), c2.af());
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, color_num2, c2.rf(),c2.gf(), c2.bf(), c2.af());
+
+    next->execute(env);
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  float start_time;
+  MainLoopItem *next;
+  int color_num;
+  ColorChange *cc;
+  std::string color_num2;
+};
+
+
 class KeyActivateML : public MainLoopItem
 {
 public:
@@ -3168,12 +3273,12 @@ public:
 
     if (start_anim) {
       start_anim_chain = false;
-      std::cout << "start_anim" << std::endl;
+      //std::cout << "start_anim" << std::endl;
       anim_ongoing = true; start_time = ev.mainloop_api.get_time(); anim_pos = 0.0; 
     }
     if (start_anim2 && !start_anim_chain) {
       start_anim_chain = true;
-      std::cout << "start_anim2" << std::endl;
+      //std::cout << "start_anim2" << std::endl;
       anim_ongoing = false;
       anim_ongoing2 = true; 
       start_time2 = ev.mainloop_api.get_time();  
@@ -3205,7 +3310,7 @@ public:
 
       anim_pos += env.delta_time;
       if (anim_pos > duration-env.delta_time) {
-	std::cout << "anim_ongoing=false" << std::endl;
+	//std::cout << "anim_ongoing=false" << std::endl;
 	anim_ongoing = false;
 	collect = ev.move_api.get_matrix(mn, time, ev.mainloop_api.get_delta_time());
 	//anim_ongoing2 = true;
@@ -3222,7 +3327,7 @@ public:
 
       anim_pos -= env.delta_time;
       if (time_at_change - time - ev.mainloop_api.get_delta_time() < 0.0) {
-	std::cout << "anim_ongoing2=false" << std::endl;
+	//std::cout << "anim_ongoing2=false" << std::endl;
 	anim_ongoing2 = false;
 	collect = ev.matrix_api.identity();
       }
@@ -3365,6 +3470,12 @@ GameApi::ML GameApi::MovementNode::move_ml(EveryApi &ev, GameApi::ML ml, GameApi
 {
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new MoveML(e,ev,item, move));
+}
+GameApi::ML GameApi::MovementNode::color_ml(EveryApi &ev, int color_num, ML ml, CC cc)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  ColorChange *cc2 = find_color(e, cc);
+  return add_main_loop(e, new ColorML(e,ev,item, color_num, cc2));
 }
 GameApi::ML GameApi::MovementNode::key_activate_ml(EveryApi &ev, GameApi::ML ml, GameApi::MN move, int key, float duration)
 {
@@ -4760,6 +4871,13 @@ GameApi::US GameApi::UberShaderApi::f_ambient(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("ambient", next,""));
 }
+GameApi::US GameApi::UberShaderApi::f_color_from_id(US us, int id)
+{
+  ShaderCall *next = find_uber(e, us);
+  std::stringstream ss;
+  ss << id;
+  return add_uber(e, new F_ShaderCallFunction("color_from_id_" + ss.str(), next, "COLOR_ARRAY"));
+}
 
 GameApi::US GameApi::UberShaderApi::f_specular(US us)
 {
@@ -4776,7 +4894,12 @@ GameApi::US GameApi::UberShaderApi::f_color_from_normals(US us)
 GameApi::US GameApi::UberShaderApi::f_point_light(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("point_light", next,"EX_POSITION LIGHTPOS"));
+  std::string def = next->define_strings();
+  def+="EX_POSITION LIGHTPOS";
+  std::string cur_def = "LIGHTPOS";
+  std::vector<std::string> str = replace_c_template_unique_ids(def, cur_def);
+  std::string id = str[str.size()-1];
+  return add_uber(e, new F_ShaderCallFunction("point_light" + id, next,"EX_POSITION LIGHTPOS"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_bands(US us)
@@ -5985,3 +6108,168 @@ std::vector<GameApi::MX> GameApi::MixedApi::mx_values(MX val)
   for(int i=0;i<s;i++) values.push_back(add_mixed(e,new CloneMixed(item->Access(i))));
   return values;
 }
+
+class EmptyEvent : public Event
+{
+public:
+  void execute(MainLoopEnv &e) { }
+  void handle_event(MainLoopEvent &e) { }
+  bool event_triggered() const { return false; }
+};
+class KeyEvent : public Event
+{
+public:
+  KeyEvent(Event *next, int key_id, int key_type) : next(next), key_id(key_id), key_type(key_type) { 
+    trigger = false;
+  }
+  void execute(MainLoopEnv &e) { return next->execute(e); }
+  void handle_event(MainLoopEvent &e)
+  {
+    if (e.ch == key_id && e.type == key_type)
+      {
+	trigger = true;
+      }
+    next->handle_event(e);
+  }
+  bool event_triggered() const {
+    bool t = trigger ||next->event_triggered();
+    trigger = false;
+    return t;
+  }
+private:
+  Event *next;
+  int key_id;
+  int key_type;
+  mutable bool trigger;
+};
+class TimerEvent : public Event
+{
+public:
+  TimerEvent(Event *next, float time) : next(next), time(time) { 
+    trigger = false;
+  }
+  
+  void execute(MainLoopEnv &e) { 
+    if (time > e.time*10.0 && time < e.time*10.0 + e.delta_time)
+      {
+	trigger = true;
+      }
+    return next->execute(e); 
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  bool event_triggered() const {
+    bool t = trigger||next->event_triggered();
+    trigger = false;
+    return t;
+  }
+private:
+  Event *next;
+  float time;
+  mutable bool trigger;
+};
+
+class DeltaTimerEvent : public Event
+{
+public:
+  DeltaTimerEvent(Event *next, Event *ev, float delta_time) : next(next), ev(ev), delta_time(delta_time) { 
+    state = 0;
+    trigger = false;
+  }
+  void execute(MainLoopEnv &e) {
+    if (ev->event_triggered())
+      {
+	start_time = e.time*10.0;
+	state = 1;
+      }
+    if (state == 1 && e.time*10.0 > start_time + delta_time)
+      {
+	state = 0;
+	trigger = true;
+      }
+    return next->execute(e); 
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  bool event_triggered() const {
+    bool t = trigger||next->event_triggered();
+    trigger = false;
+    return t;
+  }
+  
+private:
+  Event *next;
+  Event *ev;
+  float delta_time;
+  float start_time;
+  int state;
+  mutable bool trigger;
+};
+
+class EmptyAction : public Action
+{
+public:
+  MainLoopItem *get_main_loop(MainLoopItem *next) { return next; }
+  void trigger() { }
+};
+
+class ChooseMLAction : public Action
+{
+public:
+  ChooseMLAction(Action *next, MainLoopItem *alt) : next(next), alt(alt) { 
+    triggered = false;
+  }
+  MainLoopItem *get_main_loop(MainLoopItem *nxt)
+  {
+    if (triggered) { return next->get_main_loop(alt); }
+    return next->get_main_loop(nxt);
+  }
+  void trigger() {
+    next->trigger();
+    triggered = true;
+  }
+private:
+  Action *next;
+  MainLoopItem *alt;
+  bool triggered;
+};
+
+class MoveMLAction : public Action, private MainLoopItem
+{
+public:
+  MoveMLAction(Action *next, Movement *mov, float start_time, float end_time) : next(next), mov(mov), start_time(start_time), end_time(end_time) { 
+    next_item = 0;
+    current_time = 0.0;
+  }
+  virtual MainLoopItem *get_main_loop(MainLoopItem *next)
+  {
+    next_item = next;
+    return this;
+  }
+  virtual void trigger()=0;
+
+  virtual void execute(MainLoopEnv &e)
+  {
+    current_time = e.time*10.0;
+    if (next_item) { next_item->execute(e); }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (next_item) { next_item->handle_event(e); }
+  }
+  virtual int shader_id() { 
+    if (next_item) { return next_item->shader_id(); }
+    return -1;
+  }
+private:
+  Action *next;
+  Movement *mov;
+  float start_time;
+  float end_time;
+  MainLoopItem *next_item;
+  float current_time;
+};

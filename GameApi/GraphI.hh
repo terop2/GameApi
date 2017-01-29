@@ -402,6 +402,7 @@ struct MainLoopEnv
   Matrix in_T;
   Matrix in_N;
   int sfo_id=-1;
+  int spotlight_id = 1;
 };
 
 struct MainLoopEvent
@@ -511,6 +512,11 @@ class Movement
 public:
   virtual void set_matrix(Matrix m)=0;
   virtual Matrix get_whole_matrix(float time, float delta_time) const=0;
+};
+class ColorChange
+{
+public:
+  virtual Color get_whole_color(float time, float delta_time) const=0;
 };
 
 class ImplicitFunction2d
@@ -632,6 +638,21 @@ public:
   virtual std::string Value(int i) const=0;
   virtual MixedI *Access(int i) const=0;
   virtual MixedI *Clone() const=0;
+};
+
+class Event
+{
+public:
+  virtual void execute(MainLoopEnv &e)=0;
+  virtual void handle_event(MainLoopEvent &e)=0;
+  virtual bool event_triggered() const=0;
+};
+
+class Action
+{
+public:
+  virtual MainLoopItem *get_main_loop(MainLoopItem *next)=0;
+  virtual void trigger()=0;
 };
 
 #endif

@@ -489,14 +489,17 @@ ShaderFile::ShaderFile()
 "#ifdef LIGHTDIR\n"
 "uniform vec3 light_dir;\n"
 "#endif\n"
+"#template LIGHTPOS\n"
 "#ifdef LIGHTPOS\n"
-"uniform vec3 lightpos;\n"
+"uniform vec3 lightpos@;\n"
 "#endif\n"
+"#endtemplate\n"
 "#ifdef SKELETAL\n"
 "in int bone_id;\n"
 "mat4 bones[50];\n"
 "vec3 bone_pos[50];\n"
 "#endif\n"
+
 
     // NOTE: ADDING MORE uniform or attribute or varying varibles does not work, and gives black screen
 "//M:\n"
@@ -526,6 +529,8 @@ ShaderFile::ShaderFile()
 "}\n"
 "#endif\n"
 "#endif\n"
+"#endif\n"
+"#endif\n"
 "#ifdef IN_NORMAL\n"
 "#ifdef LIGHTDIR\n"
 "#ifdef EX_NORMAL2\n"
@@ -536,6 +541,8 @@ ShaderFile::ShaderFile()
 "    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
 "    return pos;\n"
 "}\n"
+"#endif\n"
+"#endif\n"
 "#endif\n"
 "#endif\n"
 "#ifdef IN_N\n"
@@ -575,32 +582,54 @@ ShaderFile::ShaderFile()
 "  ex_TexCoord = in_TexCoord;\n"
 "  ex_Normal = in_Normal;\n"
 "  ex_Position = in_Position;\n"
+"#ifdef INST\n"
+"  ex_Position = in_Position + in_InstPos;\n"
+"#endif\n"
 "  return pos;\n"
 "}\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
 "#endif\n"
 "#ifdef IN_POSITION\n"
 "#ifdef EX_POSITION\n"
 "vec4 passpos(vec4 pos)\n"
 "{\n"
 "  ex_Position = in_Position;\n"
+"#ifdef INST\n"
+"  ex_Position = in_Position + in_InstPos;\n"
+"#endif\n"
 "  return pos;\n"
 "}\n"
+"#endif\n"
 "#endif\n"
 "#ifdef EX_POSITION\n"
 "#ifdef IN_POSITION\n"
 "vec4 point_light(vec4 pos)\n"
 "{\n"
 "   ex_Position = in_Position;\n"
+"#ifdef INST\n"
+"  ex_Position = in_Position + in_InstPos;\n"
+"#endif\n"
 "   return pos;\n"
 "}\n"
+"#endif\n"
 "#endif\n"
 "#ifdef EX_POSITION\n"
 "#ifdef IN_POSITION\n"
 "vec4 snoise(vec4 pos)\n"
 "{\n"
 "   ex_Position = in_Position;\n"
+"#ifdef INST\n"
+"  ex_Position = in_Position + in_InstPos;\n"
+"#endif\n"
 "   return pos;\n"
 "}\n"
+"#endif\n"
 "#endif\n"
 "vec4 light(vec4 pos)\n"
 "{\n"
@@ -613,9 +642,15 @@ ShaderFile::ShaderFile()
 "vec4 ref(vec4 pos)\n"
 "{\n"
 "  ex_Position = in_Position;\n"
+"#ifdef INST\n"
+"  ex_Position = in_Position + in_InstPos;\n"
+"#endif\n"
 "  ex_Normal = in_Normal;\n"
 "  return pos;\n"
 "}\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
 "#endif\n"
 "#ifdef IN_POSITION\n"
 "vec4 wave(vec4 pos)\n"
@@ -634,6 +669,7 @@ ShaderFile::ShaderFile()
 "  return pos;\n"
 "}\n"
 "#endif\n"
+"#endif\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef IN_TEXCOORD\n"
 "vec4 texture(vec4 pos)\n"
@@ -641,6 +677,7 @@ ShaderFile::ShaderFile()
 "  ex_TexCoord = in_TexCoord;\n"
 "  return pos;\n"
 "}\n"
+"#endif\n"
 "#endif\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef IN_TEXCOORD\n"
@@ -650,6 +687,7 @@ ShaderFile::ShaderFile()
 "  return pos;\n"
 "}\n"
 "#endif\n"
+"#endif\n"
 "#ifdef EX_COLOR\n"
 "#ifdef IN_COLOR\n"
 "vec4 colour(vec4 pos)\n"
@@ -657,6 +695,7 @@ ShaderFile::ShaderFile()
 "   ex_Color = in_Color;\n"
 "   return pos;\n"
 "}\n"
+"#endif\n"
 "#endif\n"
 "vec4 empty(vec4 pos)\n"
 "{\n"
@@ -670,6 +709,8 @@ ShaderFile::ShaderFile()
 "  return pos;\n"
 "}\n"
 "#endif\n"
+"#endif\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "//C:\n"
@@ -681,6 +722,7 @@ ShaderFile::ShaderFile()
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
 "attribute vec3 in_Position;\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "  vec4 v = in_P * in_T * in_MV * vec4(in_Position,1.0);\n"
@@ -722,9 +764,14 @@ ShaderFile::ShaderFile()
 "varying vec3 ex_LightPos3;\n"
 "uniform vec3 light_dir;\n"
 #endif
-"#ifdef LIGHTPOS\n"
-"uniform vec3 lightpos;\n"
+"#ifdef COLOR_ARRAY\n"
+"uniform vec4 color_array[10];\n"
 "#endif\n"
+"#template LIGHTPOS\n"
+"#ifdef LIGHTPOS\n"
+"uniform vec3 lightpos@;\n"
+"#endif\n"
+"#endtemplate\n"
     //"uniform vec3 light_dir;\n"
  "uniform vec4 level1_color;\n"
  "uniform vec4 level2_color;\n"
@@ -795,16 +842,77 @@ ShaderFile::ShaderFile()
     //"   vec4 rgb2 = vec4(rrr,ggg,bbb,aaa);\n"
 "   return rgb;\n"
 "}\n"
-"#ifdef EX_POSITION\n"
-"#ifdef LIGHTPOS\n"
-"vec4 point_light(vec4 rgb)\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_0(vec4 rgb)\n"
 "{\n"
-"   float dist = length(ex_Position.xyz - lightpos);\n"
-"   float val = 100.0/dist;\n"
-"   return vec4(val*vec3(rgb),rgb.a);\n"
+"   return color_array[0];\n"
 "}\n"
 "#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_1(vec4 rgb)\n"
+"{\n"
+"   return color_array[1];\n"
+"}\n"
 "#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_2(vec4 rgb)\n"
+"{\n"
+"   return color_array[2];\n"
+"}\n"
+"#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_3(vec4 rgb)\n"
+"{\n"
+"   return color_array[3];\n"
+"}\n"
+"#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_4(vec4 rgb)\n"
+"{\n"
+"   return color_array[4];\n"
+"}\n"
+"#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_5(vec4 rgb)\n"
+"{\n"
+"   return color_array[5];\n"
+"}\n"
+"#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_6(vec4 rgb)\n"
+"{\n"
+"   return color_array[6];\n"
+"}\n"
+"#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_7(vec4 rgb)\n"
+"{\n"
+"   return color_array[7];\n"
+"}\n"
+"#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_8(vec4 rgb)\n"
+"{\n"
+"   return color_array[8];\n"
+"}\n"
+"#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_9(vec4 rgb)\n"
+"{\n"
+"   return color_array[9];\n"
+"}\n"
+"#endif\n"
+"#ifdef EX_POSITION\n"
+"#template LIGHTPOS\n"
+"#ifdef LIGHTPOS\n"
+"vec4 point_light@(vec4 rgb)\n"
+"{\n"
+"   float dist = length(ex_Position.xyz - lightpos@);\n"
+"   float val = 100.0/dist;\n"
+"   return vec4(val*vec3(rgb)+vec3(rgb),rgb.a);\n"
+"}\n"
+"#endif\n"
+"#endtemplate\n"
 "#ifdef EX_TEXCOORD\n"
 "vec4 dot2(vec4 rgb)\n"
 "{\n"
@@ -910,6 +1018,7 @@ ShaderFile::ShaderFile()
 "{\n"
 "   return rgb;\n"
 "}\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "//C:\n"
@@ -924,6 +1033,7 @@ ShaderFile::ShaderFile()
 "attribute vec3 in_Position;\n"
 "varying vec2 XY;\n"
 "\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "  XY = in_Normal.xy;\n"
@@ -953,6 +1063,7 @@ ShaderFile::ShaderFile()
 "//N:\n"
 "	fragColor = rgb;\n"
 "}\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "  vec4 color;\n"
@@ -969,6 +1080,7 @@ ShaderFile::ShaderFile()
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "   gl_Position = in_P * in_T * in_MV * vec4(in_Position,1.0);\n"
@@ -978,6 +1090,7 @@ ShaderFile::ShaderFile()
 "#version 100\n"
 "precision mediump float;\n"
 "varying vec3 ex_Color;\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "   gl_FragColor = vec4(ex_Color,1.0);\n"
@@ -987,6 +1100,7 @@ ShaderFile::ShaderFile()
 "#version 100\n"
 "precision mediump float;\n" 
 "varying vec3 ex_Color;\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "   gl_FragColor = vec4(1.0,1.0,1.0,1.0);\n"
@@ -1002,6 +1116,7 @@ ShaderFile::ShaderFile()
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "   gl_Position = in_P * in_T * in_MV *  vec4(in_Position,1.0);\n"
@@ -1013,6 +1128,7 @@ ShaderFile::ShaderFile()
 "uniform sampler2D tex;\n"
 "attribute vec3 ex_TexCoord;\n"
     //" vec4 out_Color;\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "   gl_FragColor = texture2D(tex, ex_TexCoord.xy);\n"
@@ -1068,9 +1184,11 @@ ShaderFile::ShaderFile()
 "#ifdef LIGHTDIR\n"
 "in vec3 light_dir;\n"
 "#endif\n"
+"#template LIGHTPOS\n"
 "#ifdef LIGHTPOS\n"
-"in vec3 lightpos;\n"
+"in vec3 lightpos@;\n"
 "#endif\n"
+"#endtemplate\n"
 "#ifdef SKELETAL\n"
 "in int bone_id;\n"
 "uniform mat4 bones[50];\n"
@@ -1104,6 +1222,8 @@ ShaderFile::ShaderFile()
 "}\n"
 "#endif\n"
 "#endif\n"
+"#endif\n"
+"#endif\n"
 "#ifdef IN_NORMAL\n"
 "#ifdef LIGHTDIR\n"
 "#ifdef EX_NORMAL2\n"
@@ -1114,6 +1234,8 @@ ShaderFile::ShaderFile()
 "    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
 "    return pos;\n"
 "}\n"
+"#endif\n"
+"#endif\n"
 "#endif\n"
 "#endif\n"
 "#ifdef EX_NORMAL\n"
@@ -1159,32 +1281,54 @@ ShaderFile::ShaderFile()
 "  ex_TexCoord = in_TexCoord;\n"
 "  ex_Normal = in_Normal;\n"
 "  ex_Position = in_Position;\n"
+"#ifdef INST\n"
+"  ex_Position = in_Position + in_InstPos;\n"
+"#endif\n"
 "  return pos;\n"
 "}\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
 "#endif\n"
 "#ifdef IN_POSITION\n"
 "#ifdef EX_POSITION\n"
 "vec4 passpos(vec4 pos)\n"
 "{\n"
 "  ex_Position = in_Position;\n"
+"#ifdef INST\n"
+"  ex_Position = in_Position + in_InstPos;\n"
+"#endif\n"
 "  return pos;\n"
 "}\n"
+"#endif\n"
 "#endif\n"
 "#ifdef EX_POSITION\n"
 "#ifdef IN_POSITION\n"
 "vec4 point_light(vec4 pos)\n"
 "{\n"
 "   ex_Position = in_Position;\n"
+"#ifdef INST\n"
+"  ex_Position = in_Position + in_InstPos;\n"
+"#endif\n"
 "   return pos;\n"
 "}\n"
+"#endif\n"
 "#endif\n"
 "#ifdef EX_POSITION\n"
 "#ifdef IN_POSITION\n"
 "vec4 snoise(vec4 pos)\n"
 "{\n"
 "   ex_Position = in_Position;\n"
+"#ifdef INST\n"
+"  ex_Position = in_Position + in_InstPos;\n"
+"#endif\n"
 "   return pos;\n"
 "}\n"
+"#endif\n"
 "#endif\n"
 "vec4 light(vec4 pos)\n"
 "{\n"
@@ -1197,9 +1341,15 @@ ShaderFile::ShaderFile()
 "vec4 ref(vec4 pos)\n"
 "{\n"
 "  ex_Position = in_Position;\n"
+"#ifdef INST\n"
+"  ex_Position = in_Position + in_InstPos;\n"
+"#endif\n"
 "  ex_Normal = in_Normal;\n"
 "  return pos;\n"
 "}\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
 "#endif\n"
 "#ifdef IN_POSITION\n"
 "vec4 wave(vec4 pos)\n"
@@ -1218,6 +1368,7 @@ ShaderFile::ShaderFile()
 "  return pos;\n"
 "}\n"
 "#endif\n"
+"#endif\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef IN_TEXCOORD\n"
 "vec4 texture(vec4 pos)\n"
@@ -1225,6 +1376,7 @@ ShaderFile::ShaderFile()
 "  ex_TexCoord = in_TexCoord;\n"
 "  return pos;\n"
 "}\n"
+"#endif\n"
 "#endif\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef IN_TEXCOORD\n"
@@ -1234,6 +1386,7 @@ ShaderFile::ShaderFile()
 "  return pos;\n"
 "}\n"
 "#endif\n"
+"#endif\n"
 "#ifdef EX_COLOR\n"
 "#ifdef IN_COLOR\n"
 "vec4 colour(vec4 pos)\n"
@@ -1241,6 +1394,7 @@ ShaderFile::ShaderFile()
 "   ex_Color = in_Color;\n"
 "   return pos;\n"
 "}\n"
+"#endif\n"
 "#endif\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef IN_TEXCOORD\n"
@@ -1250,10 +1404,12 @@ ShaderFile::ShaderFile()
 "  return pos;\n"
 "}\n"
 "#endif\n"
+"#endif\n"
 "vec4 empty(vec4 pos)\n"
 "{\n"
 "   return pos;\n"
 "}\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "//C:\n"
@@ -1294,13 +1450,18 @@ ShaderFile::ShaderFile()
 "uniform mat4 in_T;\n"
 "uniform mat4 in_N;\n"
 #endif
+"#ifdef COLOR_ARRAY\n"
+"uniform vec4 color_array[10];\n"
+"#endif\n"
 "uniform sampler2D tex;\n"
 "#ifdef TEXTURE_ARRAY\n"
 "uniform sampler2DArray texarr;\n"
 "#endif\n"
+"#template LIGHTPOS\n"
 "#ifdef LIGHTPOS\n"
-"uniform vec3 lightpos;\n"
+"uniform vec3 lightpos@;\n"
 "#endif\n"
+"#endtemplate\n"
     //"uniform vec3 light_dir;\n"
 "uniform vec4 level1_color;\n"
 "uniform vec4 level2_color;\n"
@@ -1340,6 +1501,66 @@ ShaderFile::ShaderFile()
 "}\n"
 "#endif\n"
 "#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_0(vec4 rgb)\n"
+"{\n"
+"   return color_array[0];\n"
+"}\n"
+"#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_1(vec4 rgb)\n"
+"{\n"
+"   return color_array[1];\n"
+"}\n"
+"#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_2(vec4 rgb)\n"
+"{\n"
+"   return color_array[2];\n"
+"}\n"
+"#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_3(vec4 rgb)\n"
+"{\n"
+"   return color_array[3];\n"
+"}\n"
+"#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_4(vec4 rgb)\n"
+"{\n"
+"   return color_array[4];\n"
+"}\n"
+"#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_5(vec4 rgb)\n"
+"{\n"
+"   return color_array[5];\n"
+"}\n"
+"#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_6(vec4 rgb)\n"
+"{\n"
+"   return color_array[6];\n"
+"}\n"
+"#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_7(vec4 rgb)\n"
+"{\n"
+"   return color_array[7];\n"
+"}\n"
+"#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_8(vec4 rgb)\n"
+"{\n"
+"   return color_array[8];\n"
+"}\n"
+"#endif\n"
+"#ifdef COLOR_ARRAY\n"
+"vec4 color_from_id_9(vec4 rgb)\n"
+"{\n"
+"   return color_array[9];\n"
+"}\n"
+"#endif\n"
 "#ifdef EX_NORMAL\n"
 "vec4 color_from_normals(vec4 rgb)\n"
 "{\n"
@@ -1352,14 +1573,16 @@ ShaderFile::ShaderFile()
 "   return rgb;\n"
 "}\n"
 "#ifdef EX_POSITION\n"
+"#template LIGHTPOS\n"
 "#ifdef LIGHTPOS\n"
-"vec4 point_light(vec4 rgb)"
-"{"
-"   float dist = length(ex_Position.xyz - lightpos);"
-"   float val = 100.0/dist;"
-"   return vec4(val*vec3(rgb),rgb.a);"
-"}"
+"vec4 point_light@(vec4 rgb)"
+"{\n"
+"   float dist = length(ex_Position.xyz - lightpos@);\n"
+"   float val = 100.0/dist;\n"
+"   return vec4(val*vec3(rgb)+vec3(rgb),rgb.a);\n"
+"}\n"
 "#endif\n"
+"#endtemplate\n"
 "#endif\n"
 "vec4 bands(vec4 rgb)\n"
 "{\n"
@@ -1479,6 +1702,7 @@ ShaderFile::ShaderFile()
 "{\n"
 "   return rgb;\n"
 "}\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "//C:\n"
@@ -1492,6 +1716,7 @@ ShaderFile::ShaderFile()
 "in vec3 in_Position;\n"
 "out vec2 XY;\n"
 "\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "  XY = in_Normal.xy;\n"
@@ -1521,6 +1746,7 @@ ShaderFile::ShaderFile()
 "//N:\n"
 "	fragColor = rgb;\n"
 "}\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "  vec4 color;\n"
@@ -1534,6 +1760,7 @@ ShaderFile::ShaderFile()
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
 "in vec3 in_Position;\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "  vec4 v = in_P * in_T * in_MV * vec4(in_Position,1.0);\n"
@@ -1544,6 +1771,7 @@ ShaderFile::ShaderFile()
 "#version 330\n"
 "precision mediump float;\n"
 "out vec4 out_Color;\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "   out_Color = vec4(1.0,1.0,1.0,1.0);\n"
@@ -1559,6 +1787,7 @@ ShaderFile::ShaderFile()
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "   gl_Position = in_P * in_T * in_MV * vec4(in_Position,1.0);\n"
@@ -1569,6 +1798,7 @@ ShaderFile::ShaderFile()
 "//precision mediump float;\n"
 "in vec3 ex_Color;\n"
 "out vec4 out_Color;\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "   out_Color = vec4(ex_Color,1.0);\n"
@@ -1584,6 +1814,7 @@ ShaderFile::ShaderFile()
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "   gl_Position = in_P * in_T * in_MV *  vec4(in_Position,1.0);\n"
@@ -1595,6 +1826,7 @@ ShaderFile::ShaderFile()
 "uniform sampler2D texture;\n"
 "in vec3 ex_TexCoord;\n"
 "out vec4 out_Color;\n"
+"//T:\n"
 "void main(void)\n"
 "{\n"
 "   out_Color = texture2D(texture, ex_TexCoord.xy);\n"
@@ -1665,15 +1897,118 @@ std::string ShaderFile::GeometryShader(std::string name)
 {
   return g_shaders[name];
 }
+std::vector<std::string> replace_c_template_unique_ids(std::string defines, std::string define)
+{
+  int id = 0;
+  std::vector<std::string> ids;
+  std::stringstream ss(defines);
+  std::string s;
+  while(ss >> s)
+    {
+      if (s == define) { 
+	id++;
+	std::stringstream ss2;
+	ss2 << id;
+	ids.push_back(ss2.str()); }
+    }
+  return ids;
+}
 std::string replace_c(std::string s, std::vector<std::string> comb, bool is_fragment, bool is_fbo, bool is_transparent, ShaderModule *mod, ShaderCall *call, std::string defines)
 {
+  int unique_id = 0;
   std::stringstream ss(s);
   std::string ww;
   std::string out;
-  std::string current_define;
+  std::vector<std::string> current_define;
+  std::vector<bool> current_bools;
+  std::vector<std::string> current_template;
+  std::vector<int> current_template_id;
 
-  while(std::getline(ss,ww))
+  bool inside_template = false;
+
+  int line_num = 0;
+
+  std::string templates = "";
+  std::vector<std::string> lines;
+  while(std::getline(ss,ww)) { lines.push_back(ww); }
+
+  while(unsigned(line_num)<lines.size())
     {
+      std::string ww = lines[line_num];
+      //std::cout << "Line: " << line_num << " : " << ww << std::endl;
+      line_num ++;
+      if (ww.substr(0,4)=="//T:")
+	{
+	  std::stringstream ss(templates);
+	  std::string ww2;
+	  int line = line_num;
+	  while(std::getline(ss,ww2)) { lines.insert( lines.begin()+line, ww2); line++; } 
+	  //out+=templates;
+	  continue;
+	}
+
+      if (ww.substr(0,10)=="#template ")
+	{
+	  std::stringstream ss(ww.substr(10));
+	  std::string s;
+	  ss >> s;
+
+
+	  std::string strings= defines;
+	  if (call)
+	    strings += " " + call->define_strings();
+	  std::stringstream ss2(strings);
+	  std::string s2;
+	  while(ss2>>s2)
+	    {
+	      if (s2==s)
+		{
+		  //int id = unique_id;
+		  unique_id++;
+		  current_template_id.push_back(unique_id);	  
+		  current_template.push_back("");
+		}
+	    }
+	  inside_template = true;
+	  continue;
+	}
+      if (ww.substr(0,12)=="#endtemplate")
+	{
+	  inside_template = false;
+	  int s = current_template.size();
+	  for(int i=0;i<s;i++)
+	    {
+	      templates+= current_template[i];
+	    }
+
+	  while (current_template.size() != 0)
+	    current_template.pop_back();
+	  while (current_template_id.size() != 0)
+	    current_template_id.pop_back();
+	  continue;
+	}
+      if (inside_template)
+	{ // here we're inside a template
+	  int s = current_template_id.size();
+	  for(int i=0;i<s;i++) {
+	    // here we should replace template num with the unique_id
+	    std::string res = "";
+	    char ch;
+	    std::stringstream ss(ww);
+	    while(ss.get(ch)) {
+	      if (ch=='@') {
+		std::stringstream ss2;
+		ss2 << i+1;
+		res+=ss2.str();
+	      } else {
+		res+=ch;
+	      }
+	    }
+	    current_template[i] += res + "\n";
+	  }
+	  continue;
+	}
+
       if (ww.substr(0,7)=="#ifdef ")
 	{
 	  std::stringstream ss(ww.substr(7));
@@ -1694,17 +2029,24 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 		  break;
 		}
 	    }
+	  current_bools.push_back(b);
 	  if (b) {
-	    current_define = s;
+	    current_define.push_back(s);
 	  }
 	  continue;
 	}
       if (ww.substr(0,6)=="#endif")
 	{
-	  current_define = "";
+	  if (current_bools.size()>0)
+	    {
+	    bool b = current_bools[current_bools.size()-1];
+	    if (b)
+	      current_define.pop_back();
+	    current_bools.pop_back();
+	    }
 	  continue;
 	}
-      if (current_define != "") { continue; }
+      if (current_define.size() != 0) { continue; }
 
       if (mod && ww.substr(0,4)=="//M:")
 	{
@@ -1887,7 +2229,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines);
-      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

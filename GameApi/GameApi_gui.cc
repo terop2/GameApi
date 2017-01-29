@@ -3648,6 +3648,7 @@ MACRO(GameApi::MC)
 MACRO(GameApi::SA)
 MACRO(GameApi::PD)
 MACRO(GameApi::WV)
+MACRO(GameApi::CC)
 #undef MACRO
 
 
@@ -4977,6 +4978,24 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "ML", "MN" },
 			 { "ev", "", "" },
 			 "ML", "move_api", "move_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::color_start,
+			 "color_start",
+			 { "color" },
+			 { "unsigned int" },
+			 { "ffffffff" },
+			 "CC", "move_api", "color_start"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::color_interpolate,
+			 "color_interpolate",
+			 { "next", "start_color", "end_color", "start_time", "end_time" },
+			 { "CC", "unsigned int", "unsigned int", "float", "float" },
+			 { "", "ffffffff", "ff888888", "0.0", "100.0" },
+			 "CC", "move_api", "color_interpolate"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::color_ml,
+			 "color_ml",
+			 { "ev", "color_num", "ml", "cc" },
+			 { "EveryApi&", "int", "ML", "CC" },
+			 { "ev", "0", "", "" },
+			 "ML", "move_api", "color_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_activate_ml,
 			 "key_activate_ml",
 			 { "ev", "ml", "mn", "key", "duration" },
@@ -5707,6 +5726,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "EveryApi&", "ML", "unsigned int", "unsigned int", "unsigned int" },
 			 { "ev", "", "ff442211", "ffff8844", "ffffffff" },
 			 "ML", "polygon_api", "shading_shader"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::spotlight_shader,
+			 "p_spotlight",
+			 { "ev", "mainloop", "light_color_id", "move" },
+			 { "EveryApi&", "ML", "int", "MN" },
+			 { "ev", "", "0", "" },
+			 "ML", "polygon_api", "spotlight_shader"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::noise_shader,
 			 "p_noise",
 			 { "ev", "mainloop" },
