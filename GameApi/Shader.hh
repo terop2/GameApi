@@ -1492,4 +1492,6 @@ void UpdateAnim(Anim &anim, AnimState &state, const std::vector<Attrib> &attribs
 void DrawAnim(float start, float end, AnimState &state, const std::vector<Attrib> &attribs=std::vector<Attrib>());
 
 
+std::vector<std::string> replace_c_template_unique_ids(std::string defines, std::string define);
+
 #endif

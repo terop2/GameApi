@@ -468,10 +468,10 @@ MN I438=ev.move_api.translate(I437,0,10,-150,0,0);
 ML I439=ev.move_api.key_activate_ml(ev,I436,I438,97,10);
 MN I440=ev.move_api.empty();
 MN I441=ev.move_api.translate(I440,0,10,0,0,150);
-ML I442=ev.move_api.key_activate_ml(ev,I439,I441,119,10);
+ML I442=ev.move_api.key_activate_ml(ev,I439,I441,115,10);
 MN I443=ev.move_api.empty();
 MN I444=ev.move_api.translate(I443,0,10,0,0,-150);
-ML I445=ev.move_api.key_activate_ml(ev,I442,I444,115,10);
+ML I445=ev.move_api.key_activate_ml(ev,I442,I444,119,10);
 MN I446=ev.move_api.empty();
 MN I447=ev.move_api.translate(I446,0,10,0,500,0);
 ML I448=ev.move_api.temp_key_activate_ml(ev,I445,I447,32,10);
@@ -530,7 +530,7 @@ void iter(void *arg)
     MainLoopApi::Event e;
     while((e = env->ev->mainloop_api.get_event()).last==true)
       {
-	std::cout << e.ch << " " << e.type << std::endl;
+	//std::cout << e.ch << " " << e.type << std::endl;
 #ifndef EMSCRIPTEN
 	if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif

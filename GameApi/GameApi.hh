@@ -26,6 +26,8 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct EV { int id; };
+  struct AC { int id; };
   struct MX { int id; };
   struct Pa { int id; };
   struct Va { int id; };
@@ -1117,6 +1119,32 @@ private:
 };
 #endif
 
+class EventNode
+{
+public:
+  EventNode(Env &e) : e(e) { }
+  EV empty_event();
+  EV key_event(EV next, int key_id, int key_type);
+  EV timer_event(EV next, float time);
+  EV delta_timer(EV next, EV event, float delta_time);
+  //EV event_enable(EV next, EV event, EV start_event, EV end_event);
+  //EV event_disable(EV next, EV event, EV start_event, EV end_event);
+
+  AC empty_action();
+  AC choose_ml_action(AC action, ML alternative);
+  AC move_ml_action(AC action, MN movement, float start_time, float end_time);
+  AC color_ml_action(AC action, int color_num, CC cc);
+  AC send_key_action(AC action, int key_id, int key_type);
+  AC change_time_action(AC action, float new_time);
+  AC array_action(std::vector<AC> arr);
+  AC sequence_action(std::vector<AC> arr, float time_step);
+  AC skip_time_action(AC action, float delta_time);
+
+  ML event_bind(ML next, EV event, AC action);
+private:
+  Env &e;
+};
+
 #ifdef F_MOVEMENT_NODE
 class MovementNode
 {
@@ -1143,8 +1171,11 @@ public:
   MN anim_disable(MN next, float start_time, float end_time);
   MN anim_choose(std::vector<MN> vec, float start_time, float duration);
   MN time_repeat(MN next, float start_time, float repeat_duration);
+  CC color_start(unsigned int color);
+  CC color_interpolate(CC next, unsigned int color, unsigned int color2, float start_time, float end_time);
   void set_matrix(MN n, M m);
   M get_matrix(MN n, float time, float delta_time);
+  ML color_ml(EveryApi &ev, int color_num, ML ml, CC cc);
   ML move_ml(EveryApi &ev, ML ml, MN mn);
   ML key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
   ML temp_key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
@@ -1938,6 +1969,11 @@ public:
 			  unsigned int level1,
 			  unsigned int level2,
 			  unsigned int level3);
+  IMPORT ML spotlight_shader(EveryApi &ev, ML mainloop,
+			     int light_color_id, MN move);
+  IMPORT ML ambient_shader(EveryApi &ev, ML mainloop,
+			   int ambient_color_id,
+			   float ambient_level);
   IMPORT ML noise_shader(EveryApi &ev, ML mainloop);
   IMPORT ML light_shader(EveryApi &ev, ML mainloop);
   IMPORT ML toon_shader(EveryApi &ev, ML mainloop);
@@ -2723,6 +2759,7 @@ public:
   US f_ambient(US us);
   US f_specular(US us);
   US f_color_from_normals(US us);
+  US f_color_from_id(US us, int id); // id = [0..9]
   US f_point_light(US us);
   US f_bands(US us);
   US f_snoise(US us);

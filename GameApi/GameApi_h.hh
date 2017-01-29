@@ -548,6 +548,7 @@ struct EnvImpl
   std::vector<Pa_Impl> polygon_array;
   std::vector<Va_Impl> va_array;
   std::vector<MixedI*> mixed;
+  std::vector<ColorChange*> color_change;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -823,6 +824,7 @@ struct FaceCollPolyHandle : public PolyHandle
 //
 // add functions
 //
+GameApi::CC add_color(GameApi::Env &e, ColorChange *cc);
 GameApi::MX add_mixed(GameApi::Env &e, MixedI *n);
 GameApi::SA add_skeletal(GameApi::Env &e, SkeletalNode *n);
 GameApi::PP add_plane_shape(GameApi::Env &e, PlaneShape *shape);
@@ -910,6 +912,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+ColorChange *find_color(GameApi::Env &e, GameApi::CC cc);
 MixedI *find_mixed(GameApi::Env &e, GameApi::MX m);
 PD_Impl find_polydistfield(GameApi::Env &e, GameApi::PD p);
 SkeletalNode *find_skeletal(GameApi::Env &e, GameApi::SA n);
