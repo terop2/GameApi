@@ -913,6 +913,7 @@ ShaderFile::ShaderFile()
 "}\n"
 "#endif\n"
 "#endtemplate\n"
+"#endif\n"
 "#ifdef EX_TEXCOORD\n"
 "vec4 dot2(vec4 rgb)\n"
 "{\n"
@@ -2212,7 +2213,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod, vertex_c, v_defines);
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -2229,7 +2230,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines);
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //     std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

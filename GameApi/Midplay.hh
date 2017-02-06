@@ -33,6 +33,7 @@ struct Chunk
 			     long(Len[3]); }
 };
 
+/*
 struct Event
 {
   long delta_time;
@@ -55,3 +56,4 @@ private:
   std::string contents;
   std::vector<Chunk*> chunks;
 };
+*/

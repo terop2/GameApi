@@ -1,0 +1,3 @@
+
+all:
+	em++ -std=c++11 -O2 test.cpp ..\libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s DEMANGLE_SUPPORT=1 -s ALLOW_MEMORY_GROWTH=1 -L.. -L..\objs -I.. -o example3d_4.html --preload-file logo.ppm --memory-init-file 0 -s DISABLE_EXCEPTION_CATCHING=1 --closure 1 --llvm-lto 1

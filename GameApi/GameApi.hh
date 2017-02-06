@@ -26,6 +26,7 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct BLK { int id; };
   struct EV { int id; };
   struct AC { int id; };
   struct MX { int id; };
@@ -189,6 +190,16 @@ public:
   void *envimpl;
   friend struct EnvImpl;
 };
+class BlockerApi
+{
+public:
+  BlockerApi(Env &e) : e(e) { }
+  BLK game_window(EveryApi &ev, ML ml);
+  void run(BLK blk);
+private:
+  Env &e;
+};
+
 #ifdef F_MAINLOOP_API
 class MainLoopApi
 {
@@ -237,6 +248,15 @@ public:
   IMPORT V random_dir_vector_3d(float length);
   IMPORT int get_screen_width();
   IMPORT int get_screen_height();
+  IMPORT void set_corner(int x, int y, int screen_sx, int screen_sy);
+  IMPORT int get_corner_x();
+  IMPORT int get_corner_y();
+  IMPORT int get_screen_rect_sx();
+  IMPORT int get_screen_rect_sy();
+  IMPORT int get_screen_sx();
+  IMPORT int get_screen_sy();
+
+
   IMPORT bool logo_iter();
   IMPORT void save_logo(EveryApi &ev);
   IMPORT void display_logo(EveryApi &ev);
@@ -263,7 +283,7 @@ public:
   IMPORT Event get_event();
   void waittof();
   SP screenspace();
-  void execute_ml(ML ml, SH color, SH texture, SH arr_texture, M in_MV, M in_T, M in_N);
+  void execute_ml(ML ml, SH color, SH texture, SH texture_2d, SH arr_texture, M in_MV, M in_T, M in_N);
   void event_ml(ML ml, const Event &e);
   ML array_ml(std::vector<ML> vec);
   M in_MV(EveryApi &ev, bool is_3d);
@@ -323,6 +343,7 @@ public:
         IMPORT ML update_vertex_array_ml(VA va, BM bm);
         IMPORT void clipping_sprite(VA va, int sx, int sy, float tex_l, float tex_t, float tex_r, float teb_b);
 	IMPORT void render_sprite_vertex_array(VA va);
+  IMPORT ML vertex_array_render(EveryApi &ev, BM bm);
   IMPORT ML render_sprite_vertex_array_ml(EveryApi &ev, VA va);
 
 	IMPORT void rendersprite(BM bm, SH sh, float x, float y, float mult_x = 1.0, float mult_y = 1.0);
@@ -337,6 +358,8 @@ public:
 	IMPORT PT pixelpos(BM bm, int x, int y);
   IMPORT std::vector<BM> bitmap_anim(std::function<BM (float)> f, std::vector<float> key_frames);
   IMPORT ML bitmap_anim_ml(EveryApi &ev, std::vector<BM> vec, std::vector<float> key_frames, float repeat_time);
+  IMPORT ML turn_to_2d(EveryApi &ev, ML ml, float tl_x, float tl_y, float br_x, float br_y);
+  IMPORT ML alt_ml_array(EveryApi &ev, std::vector<ML> vec, float start_time, float time_delta, bool repeat);
 private:
   SpriteApi(const SpriteApi&);
   void operator=(const SpriteApi&);
@@ -455,7 +478,7 @@ public:
   IMPORT BM memoize_all(BM orig);
   IMPORT BM persistent_cache(BM orig, std::string filename);
   IMPORT BM alt(std::vector<BM> vec, int index);
-  IMPORT BM simple_blur(BM bm, float center, float left, float right, float top, float bottom);
+  IMPORT BM simple_blur(BM bm, float center, float left, float right, float top, float bottom); // this is dangerous operation
   IMPORT int intvalue(BM bm, int x, int y);
   IMPORT unsigned int colorvalue(BM bm, int x, int y);
   IMPORT int size_x(BM bm);
@@ -1176,7 +1199,7 @@ public:
   void set_matrix(MN n, M m);
   M get_matrix(MN n, float time, float delta_time);
   ML color_ml(EveryApi &ev, int color_num, ML ml, CC cc);
-  ML move_ml(EveryApi &ev, ML ml, MN mn);
+  ML move_ml(EveryApi &ev, ML ml, MN mn, int clone_count=1, float time_delta=10.0);
   ML key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
   ML temp_key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
   ML move_x_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x);
@@ -1190,6 +1213,7 @@ public:
   ML enable_ml(EveryApi &ev, ML ml, float start_time, float end_time);
   ML key_event(EveryApi &ev, ML ml, MN mn, int type, int ch, int button, float duration);
   ML wasd(EveryApi &ev, ML ml, MN w, MN a, MN s, MN d, float duration);
+  ML key_printer_ml(ML ml);
 private:
   Env &e;
 };
@@ -1233,7 +1257,7 @@ public:
   W icon(BM bitmap);
   W poly(P p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
   W va(VA p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
-  W ml(ML p, SH sh, SH sh2, SH sh_arr, int sx, int sy, int screen_size_x, int screen_size_y);
+  W ml(ML p, SH sh, SH sh2, SH sh_2d, SH sh_arr, int sx, int sy, int screen_size_x, int screen_size_y);
   W shader_plane(SFO p, int sx, int sy, int screen_size_x, int screen_size_y);
   W lines(LI p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
   W pts(PTS p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
@@ -1287,7 +1311,7 @@ public:
   W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
   W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button, W &mem);
   W va_dialog(VA p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
-  W ml_dialog(ML p, SH sh, SH sh2, SH sh_arr, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
+  W ml_dialog(ML p, SH sh, SH sh2, SH sh_2d, SH sh_arr, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
   W shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_size_x, int screen_size_y, W &codegen_button, W &collect_button);
   W lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
   W pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
@@ -1333,10 +1357,12 @@ public:
   W booleanopsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   W moveapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   W waveformapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  W blockerapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
 
 
   std::string bitmapapi_functions_item_label(int i);
   std::string waveformapi_functions_item_label(int i);
+  std::string blockerapi_functions_item_label(int i);
   std::string boolbitmapapi_functions_item_label(int i);
   std::string floatbitmapapi_functions_item_label(int i);
   std::string polygonapi_functions_item_label(int i);
@@ -2749,7 +2775,7 @@ public:
   US v_texture(US us);
   US v_texture_arr(US us);
   US v_colour(US us);
-  US v_blur(US us);
+  US v_blur(US us); // dangerous operation
   US v_dist_field_mesh(US us, SFO sfo);
   US v_skeletal(US us);
 
@@ -2763,7 +2789,7 @@ public:
   US f_point_light(US us);
   US f_bands(US us);
   US f_snoise(US us);
-  US f_blur(US us);
+  US f_blur(US us); // dangerous operation
   US f_ref(US us);
   US f_light(US us);
   US f_toon(US us);
@@ -2920,7 +2946,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e), blocker_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -2974,6 +3000,7 @@ struct EveryApi
   Skeletal skeletal_api;
   PolygonArrayApi polygon_arr_api;
   PolygonDistanceField polygon_dist_api;
+  BlockerApi blocker_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);
