@@ -124,6 +124,8 @@ struct MainLoopPriv
   std::map<std::string, std::chrono::time_point<std::chrono::high_resolution_clock> > profile_start_time;
 #endif
   int screen_width, screen_height;
+  int corner_x=0, corner_y=0;
+  int screen_rect_sx=800, screen_rect_sy=600;
   int last_error=0;
 };
 
@@ -549,6 +551,7 @@ struct EnvImpl
   std::vector<Va_Impl> va_array;
   std::vector<MixedI*> mixed;
   std::vector<ColorChange*> color_change;
+  std::vector<Blocker*> blockers;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -824,6 +827,7 @@ struct FaceCollPolyHandle : public PolyHandle
 //
 // add functions
 //
+GameApi::BLK add_blocker(GameApi::Env &e, Blocker *blk);
 GameApi::CC add_color(GameApi::Env &e, ColorChange *cc);
 GameApi::MX add_mixed(GameApi::Env &e, MixedI *n);
 GameApi::SA add_skeletal(GameApi::Env &e, SkeletalNode *n);
@@ -912,6 +916,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+Blocker *find_blocker(GameApi::Env &e, GameApi::BLK blk);
 ColorChange *find_color(GameApi::Env &e, GameApi::CC cc);
 MixedI *find_mixed(GameApi::Env &e, GameApi::MX m);
 PD_Impl find_polydistfield(GameApi::Env &e, GameApi::PD p);

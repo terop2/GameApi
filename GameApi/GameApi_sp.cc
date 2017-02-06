@@ -164,6 +164,121 @@ EXPORT GameApi::SpriteApi::SpriteApi(GameApi::Env &e) : e(e)
 {
   priv = (void*) new SpritePriv;
 }
+class TurnTo2d : public MainLoopItem
+{
+public:
+  TurnTo2d(GameApi::EveryApi &ev, MainLoopItem *next, Point2d tl, Point2d br) : ev(ev), next(next), tl(tl), br(br) { 
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  void execute(MainLoopEnv &e)
+  {
+    screen_x = ev.mainloop_api.get_screen_sx();
+    screen_y = ev.mainloop_api.get_screen_sy();
+    corner_x = ev.mainloop_api.get_corner_x();
+    corner_y = ev.mainloop_api.get_corner_y();
+    rect_sx = ev.mainloop_api.get_screen_rect_sx();
+    rect_sy = ev.mainloop_api.get_screen_rect_sy();
+
+
+
+    
+    GameApi::SH sh = { e.sh_texture_2d };
+    ev.shader_api.use(sh);
+    ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
+    glViewport(corner_x+tl.x,screen_y-corner_y-(br.y-tl.y), br.x-tl.x, br.y-tl.y);
+
+    glDisable(GL_DEPTH_TEST);
+    int old_sh = e.sh_texture;
+    e.sh_texture = e.sh_texture_2d;
+    next->execute(e);
+    e.sh_texture = old_sh;
+    glEnable(GL_DEPTH_TEST);
+    ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
+    glViewport(corner_x,screen_y-corner_y-rect_sy,rect_sx, rect_sy);
+  }
+
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  Point2d tl,br;
+  int screen_x, screen_y;
+  int corner_x, corner_y;
+  int rect_sx, rect_sy;
+};
+
+class AltMLArray : public MainLoopItem
+{
+public:
+  AltMLArray(GameApi::EveryApi &ev, std::vector<MainLoopItem*> vec, float s_time, float time_delta, bool repeat) : ev(ev), vec(vec),s_time(s_time), time_delta(time_delta), repeat(repeat) { 
+    start_time = 0.0; //ev.mainloop_api.get_time();
+
+  }
+  void reset_time() {
+    start_time = ev.mainloop_api.get_time();
+  }
+
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void execute(MainLoopEnv &e)
+  {
+    if (vec.size()==0) { return; }
+    MainLoopItem *item = vec[0];
+    float time = (e.time*1000.0-start_time)/100.0;
+    if (time >= s_time+ time_delta*vec.size())
+      {
+	// repeat
+	if (repeat) {
+	  time = fmod(time-s_time, time_delta*vec.size())+s_time;
+	}
+	else
+	{
+	  item = vec[vec.size()-1];
+	}
+      }
+
+    if (time<s_time) {
+      item = vec[0];
+    }
+    if (time>=s_time && time < s_time + time_delta*vec.size())
+      {
+	int c = (time - s_time)/time_delta;
+	item = vec[c];
+      }
+    item->execute(e);
+  }  
+private:
+  GameApi::EveryApi &ev;
+  std::vector<MainLoopItem*> vec;
+  float start_time;
+  float s_time;
+  float time_delta;
+  bool repeat;
+};
+
+EXPORT GameApi::ML GameApi::SpriteApi::alt_ml_array(EveryApi &ev, std::vector<ML> vec, float start_time, float time_delta, bool repeat)
+{
+  std::vector<MainLoopItem*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      MainLoopItem *item = find_main_loop(e, vec[i]);
+      vec2.push_back(item);
+    }
+  return add_main_loop(e, new AltMLArray(ev, vec2, start_time, time_delta, repeat));
+}
+
+EXPORT GameApi::ML GameApi::SpriteApi::turn_to_2d(EveryApi &ev, ML ml, float tl_x, float tl_y, float br_x, float br_y)
+{
+  MainLoopItem *next = find_main_loop(e, ml);
+  Point2d tl = { tl_x, tl_y };
+  Point2d br = { br_x, br_y };
+  return add_main_loop(e, new TurnTo2d(ev,next,tl,br));
+}
+
 EXPORT GameApi::SpriteApi::~SpriteApi()
 {
   delete (SpritePriv*)priv;
@@ -305,6 +420,12 @@ EXPORT void GameApi::SpriteApi::update_vertex_array(VA va, BM bm)
   arr->prepare(0);
   //s->free_memory();
   add_update_vertex_array(e, va, s, arr);
+}
+EXPORT GameApi::ML GameApi::SpriteApi::vertex_array_render(EveryApi &ev, BM bm)
+{
+  GameApi::VA va = create_vertex_array(bm);
+  GameApi::ML ml = render_sprite_vertex_array_ml(ev, va);
+  return ml;
 }
 EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
 {

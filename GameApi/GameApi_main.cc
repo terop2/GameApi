@@ -26,6 +26,7 @@ extern SDL_Window *sdl_window;
 
 EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_height, std::string window_title)
 {
+  set_corner(0,0,screen_width, screen_height);
   MainLoopPriv *p = (MainLoopPriv*)priv;
   int screenx = screen_width;
   int screeny = screen_height;
@@ -259,6 +260,45 @@ EXPORT void GameApi::MainLoopApi::nvidia_init()
   glMatrixLoadIdentityEXT(GL_MODELVIEW);
   glMatrixOrthoEXT(GL_PROJECTION, 0, 800, 600, 0, -1, 1);
     }
+}
+
+EXPORT void GameApi::MainLoopApi::set_corner(int x, int y, int screen_sx, int screen_sy)
+{
+    MainLoopPriv *p = (MainLoopPriv*)priv;
+    p->corner_x = x;
+    p->corner_y = y;
+    p->screen_rect_sx = screen_sx;
+    p->screen_rect_sy = screen_sy;
+}
+EXPORT int GameApi::MainLoopApi::get_corner_x()
+{
+    MainLoopPriv *p = (MainLoopPriv*)priv;
+    return p->corner_x;
+}
+EXPORT int GameApi::MainLoopApi::get_corner_y()
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  return p->corner_y;
+}
+EXPORT int GameApi::MainLoopApi::get_screen_rect_sx()
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  return p->screen_rect_sx;
+}
+EXPORT int GameApi::MainLoopApi::get_screen_rect_sy()
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  return p->screen_rect_sy;
+}
+EXPORT int GameApi::MainLoopApi::get_screen_sx()
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  return p->screen_width;
+}
+EXPORT int GameApi::MainLoopApi::get_screen_sy()
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  return p->screen_height;
 }
 
 EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int screeny)
@@ -675,11 +715,12 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 
   return e2;
 }
-void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH array_texture, M in_MV, M in_T, M in_N)
+void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH texture_2d, SH array_texture, M in_MV, M in_T, M in_N)
 {
   MainLoopItem *item = find_main_loop(e, ml);
   MainLoopEnv ek;
   ek.sh_color = color.id;
+  ek.sh_texture_2d = texture_2d.id;
   ek.sh_texture = texture.id;
   ek.sh_array_texture = array_texture.id;
   //ek.type = ee.type;
@@ -767,6 +808,7 @@ struct LogoEnv
   GameApi::ML res;
   GameApi::SH color;
   GameApi::SH texture;
+  GameApi::SH texture_2d;
   GameApi::SH arr;
 };
 LogoEnv *logo_env = 0;
@@ -778,7 +820,7 @@ bool GameApi::MainLoopApi::logo_iter()
   M in_MV = env->ev->mainloop_api.in_MV(*env->ev, true);
   M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
   M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
-  env->ev->mainloop_api.execute_ml(env->res, env->color, env->texture, env->arr,in_MV, in_T, in_N);
+  env->ev->mainloop_api.execute_ml(env->res, env->color, env->texture, env->texture_2d, env->arr,in_MV, in_T, in_N);
   env->ev->mainloop_api.swapbuffers();
   frame_count++;
   if (frame_count>300) {
@@ -829,6 +871,7 @@ ML I34=ev.move_api.move_ml(ev,I30,I33);
 #endif
  SH color = ev.shader_api.colour_shader();  
  SH texture = ev.shader_api.texture_shader();
+ SH texture_2d = texture;
 #ifdef EMSCRIPTEN
  SH arr = texture;
 #else
@@ -836,14 +879,17 @@ ML I34=ev.move_api.move_ml(ev,I30,I33);
 #endif
  ev.mainloop_api.init_3d(color);
  ev.mainloop_api.init_3d(texture);
+ ev.mainloop_api.init_3d(texture_2d);
  ev.mainloop_api.init_3d(arr);
  LogoEnv *env = new LogoEnv;
  env->ev = &ev;
  env->res = res;
  env->color = color;
  env->texture = texture;
+ env->texture_2d = texture_2d;
  env->arr = arr;
  logo_env = env;
+ frame_count = 0;
 }
 GameApi::M GameApi::MainLoopApi::in_P(EveryApi &ev, bool is_3d)
 {

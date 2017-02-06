@@ -252,6 +252,7 @@ struct Envi {
   SH sh;
   SH sh3;
   SH sh_arr;
+  SH sh_2d;
   int screen_size_x, screen_size_y;
 
   std::string filename;
@@ -397,6 +398,7 @@ void iter(void *arg)
 {
   Envi *env = (Envi*)arg;
 
+
 #if 0
   if (env->logo_shown)
     {
@@ -456,7 +458,7 @@ void iter(void *arg)
       env->gui->render(env->editor);
 
     
-    env->ev->mainloop_api.fpscounter();
+    //env->ev->mainloop_api.fpscounter();
     // swapbuffers
     env->ev->mainloop_api.swapbuffers();
 
@@ -830,9 +832,28 @@ void iter(void *arg)
 			  ml.id = id;
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+			env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 
 			} else
+			if (type=="BLK")
+			  {
+
+			    BLK blk;
+			    blk.id = id;
+			  env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
+
+
+			    env->ev->blocker_api.run(blk);
+			    env->display = env->gui->empty();
+			    env->display_close = env->gui->empty();
+			    env->codegen_button = env->gui->empty();
+			    env->collect_button = env->gui->empty();
+			    env->ev->shader_api.use(env->sh);
+			    display = false;
+
+			  }
+		        else
 			if (type=="O")
 			  {
 			    O o;
@@ -1254,11 +1275,14 @@ void iter(void *arg)
 		  case 17:
 		    name = env->gui->waveformapi_functions_item_label(sel2-1);
 		    break;
+		  case 18:
+		    name = env->gui->blockerapi_functions_item_label(sel2-1);
+		    break;
 
 		  default:
 		    {
 		      std::cout << "SEL: " << sel << std::endl;
-		      DllData &d = env->dlls[sel-18];
+		      DllData &d = env->dlls[sel-19];
 		      std::vector<Item*> funcs = (*d.functions)();
 		      Item *item = funcs[sel2-1];
 		      name = item->Name();
@@ -1381,6 +1405,8 @@ void terminate_handler()
 }
 
 int main(int argc, char *argv[]) {
+
+
   std::set_terminate(&terminate_handler);
   srand(time(NULL));
   Env *e2 = new Env;
@@ -1442,6 +1468,7 @@ int main(int argc, char *argv[]) {
   // shader initialization
   ev.shader_api.load_default();
   SH sh = ev.shader_api.texture_shader();
+  SH sh_2d = ev.shader_api.texture_shader();
   SH sh_arr = ev.shader_api.texture_array_shader();
   SH sh2 = ev.shader_api.colour_shader();
   SH sh3 = ev.shader_api.colour_shader();
@@ -1516,6 +1543,7 @@ int main(int argc, char *argv[]) {
   ev.mainloop_api.init_3d(sh_arr, screen_x,screen_y);
   ev.mainloop_api.init(sh, screen_x,screen_y);
   ev.mainloop_api.init(sh2, screen_x,screen_y);
+  ev.mainloop_api.init(sh_2d, screen_x, screen_y);
 
   
   GuiApi gui(e, ev, sh);
@@ -1574,6 +1602,7 @@ int main(int argc, char *argv[]) {
       items.push_back(gui.booleanopsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.polygondistapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.waveformapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.blockerapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
 
       int s = env.dlls.size();
       for(int ii=0;ii<s;ii++)
@@ -1674,6 +1703,7 @@ int main(int argc, char *argv[]) {
   env.sh = sh;
   env.sh3 = sh3;
   env.sh_arr = sh_arr;
+  env.sh_2d = sh_2d;
   env.screen_size_x = screen_x;
   env.screen_size_y = screen_y;
   env.filename = filename;

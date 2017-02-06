@@ -381,6 +381,7 @@ struct MainLoopEnv
 {
   int sh_color = 0;
   int sh_texture = 0;
+  int sh_texture_2d = 0;
   int sh_array_texture = 0;
 
   // from event api
@@ -653,6 +654,12 @@ class Action
 public:
   virtual MainLoopItem *get_main_loop(MainLoopItem *next)=0;
   virtual void trigger()=0;
+};
+
+class Blocker
+{
+public:
+  virtual void Execute()=0; // must block execution
 };
 
 #endif

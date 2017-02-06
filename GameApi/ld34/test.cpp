@@ -545,7 +545,8 @@ int main(int argc, char *argv[]) {
   BM bitmap = ev.bitmap_api.loadbitmap("house.png");
   BB bb = ev.bool_bitmap_api.from_bitmaps_color(bitmap, 255,255,255);
   BB bb2 = ev.bool_bitmap_api.not_bitmap(bb);
-  FB dist = ev.float_bitmap_api.distance_field(bb2);
+  FB bb2a = ev.float_bitmap_api.from_bool(bb2, 1.0, 0.0);
+  FB dist = ev.float_bitmap_api.distance_field(bb2a,0.5f);
   BM dist_bm = ev.float_bitmap_api.to_grayscale_color(dist, 255,255,255,255, 0,0,0,0);
 
   TX tex = ev.texture_api.tex_bitmap(dist_bm);

@@ -595,7 +595,7 @@ private:
 class MLGuiWidget : public GuiWidgetForward
 {
 public:
-  MLGuiWidget(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::ML p, GameApi::SH sh, GameApi::SH sh2, GameApi::SH sh_arr, GameApi::SH old_sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), env(env), sh(sh), sh2(sh2), sh_arr(sh_arr), old_sh(old_sh), p(p),sx(sx),sy(sy), screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
+  MLGuiWidget(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::ML p, GameApi::SH sh, GameApi::SH sh2,GameApi::SH sh_2d, GameApi::SH sh_arr, GameApi::SH old_sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), env(env), sh(sh), sh2(sh2), sh_2d(sh_2d), sh_arr(sh_arr), old_sh(old_sh), p(p),sx(sx),sy(sy), screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
     Point2d p3 = {-666.0, -666.0 };
     update(p3, -1,-1,-1,0);
     Point2d p2 = { 0.0,0.0 };
@@ -617,7 +617,7 @@ public:
       }
     if (type==0x300 || type==0x301)
       {
-	std::cout << "update: " << type << " " << ch << " " << button << std::endl;
+	//std::cout << "update: " << type << " " << ch << " " << button << std::endl;
 	e.type = type;
 	e.ch = ch;
 	e.button = button;
@@ -690,10 +690,17 @@ public:
 	Point2d pos = get_pos();
 	Vector2d sz = get_size();
 	glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
+	int c_x = ev.mainloop_api.get_corner_x();
+	int c_y = ev.mainloop_api.get_corner_y();
+	int c_sx = ev.mainloop_api.get_screen_rect_sx();
+	int c_sy = ev.mainloop_api.get_screen_rect_sy();
+	ev.mainloop_api.set_corner(pos.x, pos.y, sz.dx,sz.dy);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
 	ev.shader_api.use(sh2);
 	ev.mainloop_api.switch_to_3d(true, sh2, screen_x, screen_y);
+	ev.shader_api.use(sh_2d);
+	ev.mainloop_api.switch_to_3d(false, sh_2d, screen_x, screen_y);
 	ev.shader_api.use(sh_arr);
 	ev.mainloop_api.switch_to_3d(true, sh_arr, screen_x, screen_y);
 	glEnable(GL_DEPTH_TEST);
@@ -702,13 +709,15 @@ public:
 	ev.shader_api.set_var(sh, "in_MV", mat);
 	ev.shader_api.use(sh2);
 	ev.shader_api.set_var(sh2, "in_MV", mat);
+	ev.shader_api.use(sh_2d);
+	ev.shader_api.set_var(sh_2d, "in_MV", mat);
 	ev.shader_api.use(sh_arr);
 	ev.shader_api.set_var(sh_arr, "in_MV", mat);
 	ev.shader_api.use(sh);
 	GameApi::M in_T = ev.mainloop_api.in_T(ev, true);
 	GameApi::M in_N = ev.mainloop_api.in_N(ev, true);
 	//e.inMV = find_matrix(env, mat);
-	ev.mainloop_api.execute_ml(p, sh, sh2, sh_arr,mat, in_T, in_N);
+	ev.mainloop_api.execute_ml(p, sh, sh2, sh2, sh_arr,mat, in_T, in_N);
 	e.type = -1;
 	e.ch = -1;
 	e.button = -1;
@@ -721,6 +730,9 @@ public:
 	ev.mainloop_api.switch_to_3d(false, sh2, screen_x, screen_y);
 	ev.shader_api.use(sh_arr);
 	ev.mainloop_api.switch_to_3d(false, sh_arr, screen_x, screen_y);
+	ev.shader_api.use(sh_2d);
+	ev.mainloop_api.switch_to_3d(false, sh_2d, screen_x, screen_y);
+	ev.mainloop_api.set_corner(c_x,c_y,c_sx,c_sy);
 	glViewport(0,0,screen_x, screen_y);
 	ev.shader_api.use(old_sh);
       }
@@ -730,6 +742,7 @@ private:
   GameApi::Env &env;
   GameApi::SH sh;
   GameApi::SH sh2;
+  GameApi::SH sh_2d;
   GameApi::SH sh_arr;
   GameApi::SH old_sh;
   GameApi::ML p;
@@ -2000,9 +2013,9 @@ EXPORT GameApi::W GameApi::GuiApi::va(VA p, SH sh2, int sx, int sy, int screen_s
 {
   return add_widget(e, new VAGuiWidget(ev, p, sh2, sh, sx,sy, screen_size_x, screen_size_y));
 }
-EXPORT GameApi::W GameApi::GuiApi::ml(ML p, SH sh2, SH sh3, SH sh_arr, int sx, int sy, int screen_size_x, int screen_size_y)
+EXPORT GameApi::W GameApi::GuiApi::ml(ML p, SH sh2, SH sh3, SH sh_2d, SH sh_arr, int sx, int sy, int screen_size_x, int screen_size_y)
 {
-  return add_widget(e, new MLGuiWidget(e, ev, p, sh2, sh3, sh_arr, sh, sx,sy, screen_size_x, screen_size_y));
+  return add_widget(e, new MLGuiWidget(e, ev, p, sh2, sh3, sh_2d, sh_arr, sh, sx,sy, screen_size_x, screen_size_y));
 }
 EXPORT GameApi::W GameApi::GuiApi::shader_plane(SFO p, int sx, int sy, int screen_x, int screen_y)
 {
@@ -2139,9 +2152,9 @@ EXPORT GameApi::W GameApi::GuiApi::va_dialog(VA p, SH sh, int screen_size_x, int
   return arr_3;
 }
 
-EXPORT GameApi::W GameApi::GuiApi::ml_dialog(ML p, SH sh, SH sh2, SH sh_arr, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button)
+EXPORT GameApi::W GameApi::GuiApi::ml_dialog(ML p, SH sh, SH sh2, SH sh_2d, SH sh_arr, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button)
 {
-  W bm_1 = ml(p, sh, sh2, sh_arr, 800,600, screen_size_x,screen_size_y);
+  W bm_1 = ml(p, sh, sh2, sh_2d, sh_arr, 800,600, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
   W bm_4 = layer(bm_3, bm_2);
@@ -3364,6 +3377,7 @@ void GameApi::GuiApi::render(W w)
 int GameApi::GuiApi::chosen_item(W w)
 {
   GuiWidget *ww = find_widget(e, w);
+  if (!ww) { return -1; }
   return ww->chosen_item();
 }
 void GameApi::GuiApi::select_item(W w, int item)
@@ -3375,6 +3389,7 @@ float GameApi::GuiApi::dynamic_param(W w, int id)
 {
   //std::cout << "GuiApi::dynamic_param" << w.id << std::endl;
   GuiWidget *ww = find_widget(e, w);
+  if (!ww) { return 0.0; }
   return ww->dynamic_param(id);
 }
 int GameApi::GuiApi::num_childs(W w)
@@ -3649,6 +3664,7 @@ MACRO(GameApi::SA)
 MACRO(GameApi::PD)
 MACRO(GameApi::WV)
 MACRO(GameApi::CC)
+MACRO(GameApi::BLK)
 #undef MACRO
 
 
@@ -4228,6 +4244,7 @@ std::vector<GameApiItem*> textureapi_functions()
 			 { "TX", "int" },
 			 { "", "0" },
 			 "Q", "texture_api", "get_tex_coord"));
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::prepare,
 			 "tx_prepare",
 			 { "tx" },
@@ -4253,6 +4270,7 @@ std::vector<GameApiItem*> textureapi_functions()
 			 { "VA", "TXA" },
 			 { "", "" },
 			 "VA", "texture_api", "bind_arr"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::to_bitmap,
 			 "tx_to_bitmap",
 			 { "txid" },
@@ -4974,9 +4992,9 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "MN", "move_api", "event_activate"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::move_ml,
 			 "move_ml",
-			 { "ev", "ml", "mn" },
-			 { "EveryApi&", "ML", "MN" },
-			 { "ev", "", "" },
+			 { "ev", "ml", "mn", "clone_count", "time_delta" },
+			 { "EveryApi&", "ML", "MN", "int", "float" },
+			 { "ev", "", "", "1", "10.0" },
 			 "ML", "move_api", "move_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::color_start,
 			 "color_start",
@@ -5178,6 +5196,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "P", "PTA", "MT" },
 			 { "", "", "" },
 			 "ML", "materials_api", "bind_inst2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_printer_ml,
+			 "key_printer_ml",
+			 { "ml" },
+			 { "ML" },
+			 { "" },
+			 "ML", "move_api", "key_printer_ml"));
 
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_event,
@@ -5193,6 +5217,17 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "ev", "",  "", "", "", "", "10.0" },
 			 "ML", "move_api", "wasd"));
 #endif
+  return vec;
+}
+std::vector<GameApiItem*> blocker_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_window, 
+			 "blk_window",
+			 { "ev", "ml" },
+			 { "EveryApi&", "ML" },
+			 { "ev", "" },
+			 "BLK", "blocker_api", "game_window"));
   return vec;
 }
 std::vector<GameApiItem*> waveform_functions()
@@ -5418,7 +5453,7 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 "cube",
 			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
 			 { "float", "float", "float", "float", "float", "float" },
-			 { "0.0", "100.0", "0.0", "100.0", "0.0", "100.0" },
+			 { "-100.0", "100.0", "-100.0", "100.0", "-100.0", "100.0" },
 			 "P", "polygon_api", "cube"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rounded_cube,
 			 "rounded_cube",
@@ -6531,7 +6566,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BM", "std::string" },
 			 { "", "cache.ppm" },
 			 "BM", "bitmap_api", "persistent_cache"));
- 
+#if 0 
   vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::create_vertex_array,
 			 "bm_prepare",
 			 { "bm" },
@@ -6550,6 +6585,32 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "EveryApi&", "VA" },
 			 { "ev", "" },
 			 "ML", "sprite_api", "render_sprite_vertex_array_ml"));
+#endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::vertex_array_render,
+			 "bm_render",
+			 { "ev", "bm" },
+			 { "EveryApi&", "BM" },
+			 { "ev", "" },
+			 "ML", "sprite_api", "vertex_array_render"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::alt_ml_array,
+			 "alt_ml",
+			 { "ev", "vec", "start_time", "time_delta", "repeat" },
+			 { "EveryApi&", "[ML]", "float", "float", "bool" },
+			 { "ev", "", "0.0", "10.0", "true" },
+			 "ML", "sprite_api", "alt_ml_array"));
+
+#if 0
+  // UNFORTUNATELY THIS DOES NOT WORK, WE SHOULD GET THIS WORKING ASAP,
+  // BUT THE FUNCTION IS BROKEN / works in builder, but does not work in
+  // example3d_4. (this allows builder to move to 2d mode, and this would
+  // be important feature)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::turn_to_2d,
+			 "bm_2d",
+			 { "ev", "ml", "tl_x", "tl_y", "br_x", "br_y" },
+			 { "EveryApi&", "ML","float", "float", "float", "float" },
+			 { "ev", "", "0.0", "0.0", "800.0", "600.0" },
+			 "ML", "sprite_api", "turn_to_2d"));
+#endif
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::cont_bitmap_api, &GameApi::ContinuousBitmapApi::empty,
 			 "cbm_empty",
@@ -6691,6 +6752,7 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> vh = moveapi_functions();
   std::vector<GameApiItem*> vi = polydistfield_functions();
   std::vector<GameApiItem*> vj = waveform_functions();
+  std::vector<GameApiItem*> vk = blocker_functions();
 
   std::vector<GameApiItem*> a1 = append_vectors(v1,v2);
   std::vector<GameApiItem*> a2 = append_vectors(v3,v4);
@@ -6710,7 +6772,8 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> ag = append_vectors(af, vh);
   std::vector<GameApiItem*> ah = append_vectors(ag, vi);
   std::vector<GameApiItem*> ai = append_vectors(ah, vj);
-  return ai;
+  std::vector<GameApiItem*> aj = append_vectors(ai, vk);
+  return aj;
 }
 std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)
 {
@@ -6722,6 +6785,13 @@ std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)
 std::string GameApi::GuiApi::waveformapi_functions_item_label(int i)
 {
   std::vector<GameApiItem*> funcs = waveform_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+std::string GameApi::GuiApi::blockerapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = blocker_functions();
   GameApiItem *item = funcs[i];
   std::string name = item->Name(0);
   return name;
@@ -6899,6 +6969,10 @@ GameApi::W GameApi::GuiApi::bitmapapi_functions_list_item(FtA atlas1, BM atlas_b
 GameApi::W GameApi::GuiApi::waveformapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {
   return functions_widget(*this, "WaveformApi", waveform_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+}
+GameApi::W GameApi::GuiApi::blockerapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
+{
+  return functions_widget(*this, "BlockerApi", blocker_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
 
 GameApi::W GameApi::GuiApi::textureapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)

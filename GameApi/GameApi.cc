@@ -323,6 +323,15 @@ EXPORT GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
+GameApi::BLK add_blocker(GameApi::Env &e, Blocker *blk)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->blockers.push_back(blk);
+  GameApi::BLK im;
+  im.id = env->blockers.size()-1;
+  return im;
+
+}
 GameApi::CC add_color(GameApi::Env &e, ColorChange *cc)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1107,6 +1116,11 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   Array<int,bool> *enable = info.enable_obj_array;
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
+}
+Blocker *find_blocker(GameApi::Env &e, GameApi::BLK blk)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->blockers[blk.id];
 }
 PD_Impl find_polydistfield(GameApi::Env &e, GameApi::PD p)
 {
@@ -2847,6 +2861,24 @@ private:
   std::vector<float> start_times;
   float duration;
 };
+class KeyPrinter : public MainLoopItem
+{
+public:
+  KeyPrinter(MainLoopItem *next) : next(next) { }
+  int shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &eve)
+  {
+    std::cout << "type: " << eve.type << " char: " << eve.ch << " button: " << eve.button << std::endl;
+    next->handle_event(eve);
+  }
+  void execute(MainLoopEnv &env)
+  {
+    next->execute(env);
+   }
+private:
+  MainLoopItem *next;
+};
+
 class JumpML : public MainLoopItem
 {
 public:
@@ -3039,7 +3071,7 @@ private:
 class MoveML : public MainLoopItem
 {
 public:
-  MoveML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, GameApi::MN mn) : e(e), ev(ev), next(next), mn(mn) 
+  MoveML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, GameApi::MN mn, int clone_count, float time_delta) : e(e), ev(ev), next(next), mn(mn), clone_count(clone_count), time_delta(time_delta) 
   { 
     start_time = 0.0; //ev.mainloop_api.get_time();
   }
@@ -3053,13 +3085,15 @@ public:
   }
   void execute(MainLoopEnv &env)
   {
+    for(int i=0;i<clone_count;i++)
+      {
     GameApi::SH s1;
     s1.id = env.sh_texture;
     GameApi::SH s2;
     s2.id = env.sh_array_texture;
     GameApi::SH s3;
     s3.id = env.sh_color;
-    float time = (ev.mainloop_api.get_time()-start_time)/100.0;
+    float time = (env.time*1000.0-start_time)/100.0+i*time_delta;
     GameApi::M mat = ev.move_api.get_matrix(mn, time, ev.mainloop_api.get_delta_time());
     GameApi::M m2 = add_matrix2(e, env.env);
     GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
@@ -3073,10 +3107,14 @@ public:
     env.in_MV = find_matrix(e, mat2);
 
     Matrix old_env = env.env;
+    float old_time = env.time;
     env.env = find_matrix(e,mat2); /* * env.env*/;
+    env.time = env.time + i*time_delta/10.0;
     next->execute(env);
     env.env = old_env;
+    env.time = old_time;
     env.in_MV = old_in_MV;
+      }
   }
 private:
   GameApi::Env &e;
@@ -3084,6 +3122,8 @@ private:
   float start_time;
   MainLoopItem *next;
   GameApi::MN mn;
+  int clone_count;
+  float time_delta;
 };
 
 
@@ -3465,11 +3505,15 @@ private:
   std::vector<GameApi::MN> mn;
 };
 
-
-GameApi::ML GameApi::MovementNode::move_ml(EveryApi &ev, GameApi::ML ml, GameApi::MN move)
+GameApi::ML GameApi::MovementNode::key_printer_ml(GameApi::ML ml)
 {
   MainLoopItem *item = find_main_loop(e, ml);
-  return add_main_loop(e, new MoveML(e,ev,item, move));
+  return add_main_loop(e, new KeyPrinter(item));
+}
+GameApi::ML GameApi::MovementNode::move_ml(EveryApi &ev, GameApi::ML ml, GameApi::MN move, int clone_count, float time_delta)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new MoveML(e,ev,item, move, clone_count, time_delta));
 }
 GameApi::ML GameApi::MovementNode::color_ml(EveryApi &ev, int color_num, ML ml, CC cc)
 {
@@ -5671,7 +5715,9 @@ GameApi::ML GameApi::PolygonDistanceField::render_scene(EveryApi &ev, PD pd, PD 
   // TODO
   //P p = get_poly(pd);
   //SFO sfo = get_distance_field(world);
-  
+  GameApi::ML ml;
+  ml.id = 0;
+  return ml;
 }
 
 std::vector<GameApi::ML> GameApi::PolygonDistanceField::render_scene_array(EveryApi &ev, std::vector<PD> vec)
@@ -6273,3 +6319,153 @@ private:
   MainLoopItem *next_item;
   float current_time;
 };
+
+
+
+struct Envi_2 {
+  GameApi::EveryApi *ev;
+  GameApi::MN move;
+  GameApi::ML mainloop;
+  float pos_x=0.0, pos_y=0.0;
+  float rot_y=0.0;
+  float speed = 10.0;
+  float rot_speed = 1.0*3.14159*2.0/360.0;
+  float speed_x = 1.0;
+  float speed_y = 1.0;
+  GameApi::InteractionApi::Quake_data data;
+  bool logo_shown = true;
+  GameApi::SH color_sh;
+  GameApi::SH texture_sh;
+  GameApi::SH arr_texture_sh;
+  bool exit = false;
+};
+
+
+void blocker_iter(void *arg)
+{
+  Envi_2 *env = (Envi_2*)arg;
+  if (env->logo_shown)
+    {
+      bool b = env->ev->mainloop_api.logo_iter();
+      if (b) { env->logo_shown = false; }
+      return;
+    }
+
+    env->ev->mainloop_api.clear_3d(0xff000000);
+
+    // handle esc event
+    GameApi::MainLoopApi::Event e;
+    while((e = env->ev->mainloop_api.get_event()).last==true)
+      {
+	//std::cout << e.ch << " " << e.type << std::endl;
+#ifndef EMSCRIPTEN
+	if (e.ch==27 && e.type==0x300) { env->exit = true; }
+#endif
+
+	GameApi::InteractionApi::quake_movement_event(*env->ev,e, env->pos_x, env->pos_y, env->rot_y,
+				   env->data, env->speed_x, env->speed_y,
+				   1.0, 1.0*3.14159*2.0/360.0);
+	env->ev->mainloop_api.event_ml(env->mainloop, e);
+
+      }
+    GameApi::InteractionApi::quake_movement_frame(*env->ev, env->pos_x, env->pos_y, env->rot_y,
+				   env->data, env->speed_x, env->speed_y,
+				   1.0, 1.0*3.14159*2.0/360.0);
+
+    GameApi::M mat = env->ev->matrix_api.identity();
+	env->ev->shader_api.use(env->color_sh);
+	env->ev->shader_api.set_var(env->color_sh, "in_MV", mat);
+	env->ev->shader_api.use(env->texture_sh);
+	env->ev->shader_api.set_var(env->texture_sh, "in_MV", mat);
+	env->ev->shader_api.use(env->arr_texture_sh);
+	env->ev->shader_api.set_var(env->arr_texture_sh, "in_MV", mat);
+	env->ev->shader_api.use(env->color_sh);
+
+	GameApi::M in_MV = env->ev->mainloop_api.in_MV(*env->ev, true);
+	GameApi::M in_T = env->ev->mainloop_api.in_MV(*env->ev, true);
+	GameApi::M in_N = env->ev->mainloop_api.in_MV(*env->ev, true);
+
+	env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N);
+
+    env->ev->mainloop_api.fpscounter();
+    // swapbuffers
+    env->ev->mainloop_api.swapbuffers();
+
+}
+
+class MainLoopBlocker_win32_and_emscripten : public Blocker
+{
+public:
+  MainLoopBlocker_win32_and_emscripten(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::ML code) : e(e), ev(ev), code(code) 
+  {
+  }
+  void Execute()
+  {
+    
+    Envi_2 env;
+    
+
+    GameApi::SH sh = ev.shader_api.colour_shader();
+    GameApi::SH sh2 = ev.shader_api.texture_shader();
+    GameApi::SH sh3 = ev.shader_api.texture_array_shader();
+    
+    // rest of the initializations
+    ev.mainloop_api.init_3d(sh);
+    ev.mainloop_api.init_3d(sh2);
+    ev.mainloop_api.init_3d(sh3);
+    ev.shader_api.use(sh);
+    
+    GameApi::ML ml = mainloop(ev);
+    GameApi::MN mn0 = ev.move_api.empty();
+    GameApi::MN mn = ev.move_api.trans2(mn0, 0.0, 0.0, -400.0);
+    GameApi::ML ml2 = ev.move_api.move_ml(ev, ml, mn);
+    env.mainloop = ml2;
+    
+    env.ev = &ev;
+    env.color_sh = sh;
+    env.texture_sh = sh2;
+    env.arr_texture_sh = sh3;
+    
+    ev.mainloop_api.reset_time();
+    if (env.logo_shown)
+      ev.mainloop_api.display_logo(ev);
+     ev.mainloop_api.alpha(true);
+     glEnable(GL_DEPTH_TEST);
+    GameApi::MainLoopApi::Event e;
+    while((e = env.ev->mainloop_api.get_event()).last==true)
+      {
+	/* this eats all events from queue */
+      }
+
+#ifndef EMSCRIPTEN
+    while(!env.exit) {
+      blocker_iter(&env);
+      //ev.mainloop_api.delay(10);
+    }
+#else
+    emscripten_set_main_loop_arg(blocker_iter, (void*)&env, 0,1);
+#endif 
+     glDisable(GL_DEPTH_TEST);
+  }
+  private:
+  
+  GameApi::ML mainloop(GameApi::EveryApi &ev)
+  {
+    return code;
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  GameApi::ML code;
+};
+
+GameApi::BLK GameApi::BlockerApi::game_window(GameApi::EveryApi &ev, ML ml)
+{
+  Blocker *blk = new MainLoopBlocker_win32_and_emscripten(e,ev,ml);
+  return add_blocker(e, blk);
+}
+void GameApi::BlockerApi::run(BLK blk)
+{
+  Blocker *blk2 = find_blocker(e, blk);
+  blk2->Execute();
+}

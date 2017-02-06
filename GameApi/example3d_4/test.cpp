@@ -22,6 +22,7 @@ struct Envi {
   bool logo_shown = true;
   SH color_sh;
   SH texture_sh;
+  SH texture_2d_sh;
   SH arr_texture_sh;
 };
 
@@ -66,7 +67,7 @@ void iter(void *arg)
     MainLoopApi::Event e;
     while((e = env->ev->mainloop_api.get_event()).last==true)
       {
-	std::cout << e.ch << " " << e.type << std::endl;
+	//std::cout << e.ch << " " << e.type << std::endl;
 #ifndef EMSCRIPTEN
 	if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif
@@ -95,7 +96,7 @@ void iter(void *arg)
 	M in_T = env->ev->mainloop_api.in_MV(*env->ev, true);
 	M in_N = env->ev->mainloop_api.in_MV(*env->ev, true);
 
-	env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N);
+	env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_2d_sh, env->arr_texture_sh, in_MV, in_T, in_N);
 
 
     env->ev->mainloop_api.fpscounter();
@@ -116,6 +117,7 @@ int main(int argc, char *argv[]) {
   // shader initialization
   ev.shader_api.load_default();
   SH sh = ev.shader_api.colour_shader();
+  SH sh_2d = ev.shader_api.get_normal_shader("screen", "screen", "", "", "", false);
   SH sh2 = ev.shader_api.texture_shader();
   SH sh3 = ev.shader_api.texture_array_shader();
 
@@ -123,6 +125,7 @@ int main(int argc, char *argv[]) {
   ev.mainloop_api.init_3d(sh);
   ev.mainloop_api.init_3d(sh2);
   ev.mainloop_api.init_3d(sh3);
+  ev.mainloop_api.init(sh_2d);
   ev.shader_api.use(sh);
 
   if (argc==2 && std::string(argv[1])=="--generate-logo")
@@ -132,32 +135,6 @@ int main(int argc, char *argv[]) {
       exit(0);
     }
 
-  //P p3 = ev.polygon_api.cube(0.0, 100.0, 0.0, 100.0, 0.0, 100.0);
-#if 0
-  PT center1 = ev.point_api.point(0.0,0.0,0.0);
-  PT center2 = ev.point_api.point(30.0,0.0,50.0);
-  //P p1 = ev.polygon_api.sphere(center1, 50.0, 30*2*2, 15*2*2);
-  float cs = 40.0;
-
-  BO p1 = ev.bool_api.cube(ev, -cs,cs, -cs,cs, -cs,cs, 8, 8);
-  BO p2 = ev.bool_api.sphere(ev, center1, 50.0, 30*2*2, 30*2*2);
-  BO p3bo = ev.bool_api.and_not(ev, p1, p2);
-  BO p22 = ev.bool_api.sphere(ev, center2, 40.0, 30*2, 30*2);
-  BO b22bo = ev.bool_api.and_not(ev, p3bo, p22);
-  P p3 = ev.bool_api.to_polygon(b22bo);
-  //O p3o = ev.bool_api.to_volume(b22bo);
-  //P p3 = ev.volume_api.rendercubes3(p3o, 80, 80, 80,
-  // 				    -100.0, 100.0,
-  // 				    -100.0, 100.0,
-  // 				    -100.0, 100.0);
-
-  P p31 = ev.polygon_api.recalculate_normals(p3);
-  P p32 = ev.polygon_api.color_from_normals(p31);
-
-  PolygonObj poly(ev, p32, sh);
-  poly.prepare();
-
-#endif
   ML ml = mainloop(ev, env.move);
   MN mn0 = ev.move_api.empty();
   MN mn = ev.move_api.trans2(mn0, 0.0, 0.0, -400.0);
@@ -168,6 +145,7 @@ int main(int argc, char *argv[]) {
   //env.poly = &poly;
   env.color_sh = sh;
   env.texture_sh = sh2;
+  env.texture_2d_sh = sh_2d;
   env.arr_texture_sh = sh3;
 
   ev.mainloop_api.reset_time();
@@ -183,7 +161,5 @@ int main(int argc, char *argv[]) {
 #else
   emscripten_set_main_loop_arg(iter, (void*)&env, 0,1);
 #endif
-
-
 
 }
