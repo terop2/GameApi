@@ -18,6 +18,7 @@ public:
   virtual std::string ParamType(int p) const=0;
   virtual std::string ParamDefault(int p) const=0;
   virtual std::string ReturnType() const=0;
+  virtual std::string Symbols() const=0;
   virtual int Execute(std::vector<std::string> params)=0;
   virtual std::pair<std::string, std::string> CodeGen(std::vector<std::string> params, std::vector<std::string> param_names)=0;
 };

@@ -5,6 +5,10 @@
 #ifndef EMSCRIPTEN
 //#define THREADS 1
 #endif
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
+
 
 
 #include "GameApi_h.hh"
@@ -6347,7 +6351,10 @@ void blocker_iter(void *arg)
   if (env->logo_shown)
     {
       bool b = env->ev->mainloop_api.logo_iter();
-      if (b) { env->logo_shown = false; }
+      if (b) { env->logo_shown = false; 
+	env->ev->mainloop_api.reset_time();
+
+      }
       return;
     }
 
@@ -6396,14 +6403,15 @@ void blocker_iter(void *arg)
 class MainLoopBlocker_win32_and_emscripten : public Blocker
 {
 public:
-  MainLoopBlocker_win32_and_emscripten(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::ML code) : e(e), ev(ev), code(code) 
+  MainLoopBlocker_win32_and_emscripten(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::ML code, bool logo) : e(e), ev(ev), code(code), logo(logo) 
   {
   }
   void Execute()
   {
     
     Envi_2 env;
-    
+
+    env.logo_shown = logo;
 
     GameApi::SH sh = ev.shader_api.colour_shader();
     GameApi::SH sh2 = ev.shader_api.texture_shader();
@@ -6457,11 +6465,12 @@ private:
   GameApi::Env &e;
   GameApi::EveryApi &ev;
   GameApi::ML code;
+  bool logo;
 };
 
-GameApi::BLK GameApi::BlockerApi::game_window(GameApi::EveryApi &ev, ML ml)
+GameApi::BLK GameApi::BlockerApi::game_window(GameApi::EveryApi &ev, ML ml, bool logo)
 {
-  Blocker *blk = new MainLoopBlocker_win32_and_emscripten(e,ev,ml);
+  Blocker *blk = new MainLoopBlocker_win32_and_emscripten(e,ev,ml,logo);
   return add_blocker(e, blk);
 }
 void GameApi::BlockerApi::run(BLK blk)

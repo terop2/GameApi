@@ -260,6 +260,7 @@ public:
   std::string ParamType(int p) const { return param_type[p]; }
   std::string ParamDefault(int p) const { return param_default[p]; }
   std::string ReturnType() const { return return_type; }
+  std::string Symbols() const { return "(inside plugin)"; }
   int Execute(std::vector<std::string> params)
   {
     return funccall(fptr, params, param_name);

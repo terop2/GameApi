@@ -5224,9 +5224,9 @@ std::vector<GameApiItem*> blocker_functions()
   std::vector<GameApiItem*> vec;
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_window, 
 			 "blk_window",
-			 { "ev", "ml" },
-			 { "EveryApi&", "ML" },
-			 { "ev", "" },
+			 { "ev", "ml", "logo" },
+			 { "EveryApi&", "ML","bool" },
+			 { "ev", "","false" },
 			 "BLK", "blocker_api", "game_window"));
   return vec;
 }
