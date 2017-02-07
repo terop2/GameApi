@@ -65,6 +65,7 @@ public:
   virtual std::string ParamType(int p) const=0;
   virtual std::string ParamDefault(int p) const=0;
   virtual std::string ReturnType() const=0;
+  virtual std::string Symbols() const=0;
   virtual int Execute(std::vector<std::string> params)=0;
   virtual std::pair<std::string, std::string> CodeGen(std::vector<std::string> params, std::vector<std::string> param_names)=0;
 };
@@ -1379,7 +1380,7 @@ public:
   {
     return ii->ReturnType();
   }
-  virtual std::string Symbols() const { return ""; }
+  virtual std::string Symbols() const { return ii->Symbols(); }
   virtual std::string Comment() const { return ""; }
 
   virtual int Execute(GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)

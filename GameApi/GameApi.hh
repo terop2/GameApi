@@ -194,7 +194,7 @@ class BlockerApi
 {
 public:
   BlockerApi(Env &e) : e(e) { }
-  BLK game_window(EveryApi &ev, ML ml);
+  BLK game_window(EveryApi &ev, ML ml, bool logo);
   void run(BLK blk);
 private:
   Env &e;
