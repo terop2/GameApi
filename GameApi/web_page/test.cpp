@@ -139,7 +139,7 @@ std::string strip_spaces(std::string data)
   while(res[res.size()-1]==' ') res = res.substr(0,res.size()-1);
   return res;
 }
-ML mainloop(EveryApi &ev, MN &move)
+BLK mainloop(EveryApi &ev)
 {
   ExecuteEnv e;
   std::pair<int,std::string> p = GameApi::execute_codegen(ev, code, e);
@@ -152,7 +152,7 @@ ML mainloop(EveryApi &ev, MN &move)
   move = I5;
   ML I6=ev.move_api.move_ml(ev,I3,I5);
 #endif
-  ML I6;
+  BLK I6;
   I6.id = p.first;
   return I6;
 }
@@ -214,7 +214,7 @@ void iter(void *arg)
 	M in_T = env->ev->mainloop_api.in_MV(*env->ev, true);
 	M in_N = env->ev->mainloop_api.in_MV(*env->ev, true);
 
-	env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N);
+	env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N);
 
 
     env->ev->mainloop_api.fpscounter();
@@ -342,7 +342,11 @@ int main(int argc, char *argv[]) {
 
   // initialize window
   ev.mainloop_api.init_window(w_width,w_height);
+  ev.shader_api.load_default();
 
+  BLK blk = mainloop(ev);
+  ev.blocker_api.run(blk);
+#if 0
   // shader initialization
   ev.shader_api.load_default();
   SH sh = ev.shader_api.colour_shader();
@@ -409,6 +413,6 @@ int main(int argc, char *argv[]) {
   emscripten_set_main_loop_arg(iter, (void*)&env, 0,1);
 #endif
 
-
+#endif
 
 }
