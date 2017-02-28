@@ -4008,6 +4008,8 @@ void link_api_items(std::vector<CodeGenLine> &vec, std::vector<GameApiItem*> fun
       for(int j=0;j<ss;j++)
 	{
 	  GameApiItem* item = functions[j];
+	  std::cout << "Compare: " << line.func_name << " " << item->FuncName(0) << std::endl;
+	  std::cout << "Compare2: " << line.api_name << " " << item->ApiName(0) << std::endl;
 	  if (line.func_name == item->FuncName(0) &&
 	      line.api_name == item->ApiName(0))
 	    {
@@ -4022,6 +4024,7 @@ void link_api_items(std::vector<CodeGenLine> &vec, std::vector<GameApiItem*> fun
 int execute_api(GameApi::EveryApi &ev, const std::vector<CodeGenLine> &vec, std::vector<CodeGenVectors> &vecvec, int line_num, GameApi::ExecuteEnv &e)
 {
   CodeGenLine l = vec[line_num];
+  std::cout << l.api_name << "." << l.func_name << std::endl;
   int s = l.params_linkage.size();
   std::vector<std::string> params = l.params;
   for(int i=0;i<s;i++)
