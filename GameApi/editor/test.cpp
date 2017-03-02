@@ -117,7 +117,7 @@ void load_library(DllData &data, std::string lib_name)
 #ifdef WINDOWS
   const char *lib = lib_name.c_str();
   HMODULE mod = LoadLibrary(lib);
-  std::cout << "HMODULE: " << mod << std::endl;
+  //std::cout << "HMODULE: " << mod << std::endl;
   FARPROC api=0,func=0,num=0,disp=0,type=0;
   for(int i=0;i<num_alternatives;i++)
     {
@@ -692,7 +692,7 @@ void iter(void *arg)
 	      int chosen = env->gui->chosen_item(w);
 	      if (chosen==0)
 		{
-		  std::cout << "popup selection!" << std::endl;
+		  //std::cout << "popup selection!" << std::endl;
 		  env->popup_visible = false;
 		  std::string uid = env->gui->get_id(w);
 		  popup_uid = uid;
@@ -716,7 +716,7 @@ void iter(void *arg)
 	      int chosen = env->gui->chosen_item(w);
 	      if (chosen==0)
 		{
-		  std::cout << "popup open!" << std::endl;
+		  //std::cout << "popup open!" << std::endl;
 		  std::string uid = env->gui->get_id(w);
 
 		  PT pos = e.cursor_pos;
@@ -777,7 +777,7 @@ void iter(void *arg)
 	    //	    std::string uid = env->gui->get_id(w);
 		    
 	      {
-		    std::cout << "Execute for uid: " << uid << std::endl;
+		//std::cout << "Execute for uid: " << uid << std::endl;
 		    
 		    // Execute
 		    GameApi::ExecuteEnv exeenv;
@@ -836,6 +836,18 @@ void iter(void *arg)
 			env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 
 			} else
+			if (type=="KF")
+			  {
+			    KF kf;
+			    kf.id = id;
+     			  env->env->free_temp_memory();
+   			env->gui->delete_widget(env->mem);
+			ML ml = env->ev->vertex_anim_api.vertex_anim_render(*env->ev, kf);
+
+			env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+
+			  }
+		        else
 			if (type=="BLK")
 			  {
 

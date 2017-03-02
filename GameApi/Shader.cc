@@ -60,7 +60,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   glCompileShader(handle);
   int val = glGetError();
   if (val!=GL_NO_ERROR) {
-    std::cout << "glCompileShader ERROR: " << val << std::endl;
+    //std::cout << "glCompileShader ERROR: " << val << std::endl;
     char buf[256];
     GLsizei length=0;
     glGetShaderInfoLog(handle, 256, &length, &buf[0]);
@@ -130,7 +130,7 @@ Program::~Program()
 }
 void Program::push_back(const Shader &shader)
 {
-  std::cout << "AttachShader: " << shader.priv->handle << std::endl;
+  //std::cout << "AttachShader: " << shader.priv->handle << std::endl;
   glAttachShader/*ObjectARB*/(priv->program, shader.priv->handle);
   int val = glGetError();
   if (val!=GL_NO_ERROR)

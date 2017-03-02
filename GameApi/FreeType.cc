@@ -28,7 +28,7 @@ FontGlyphBitmap::FontGlyphBitmap(void *priv_, std::string filename, int sx, int 
 	       filename.c_str(),
 	       0,
 	       &priv->face);
-  std::cout << "Font err: " << err << std::endl;
+  //std::cout << "Font err: " << err << std::endl;
   if (err!=0)
     {
       std::cout << "Remember to recompile the code after changing envimpl size" << std::endl;

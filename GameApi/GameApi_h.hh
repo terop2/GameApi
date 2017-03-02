@@ -797,7 +797,7 @@ struct EnvImpl
   {
 #ifndef EMSCRIPTEN
     int err = FT_Init_FreeType(&lib);
-    std::cout << "Freetype init error: " << err << std::endl;
+    //std::cout << "Freetype init error: " << err << std::endl;
 #endif
     cursor_pos_point_id.id = -1;
   }
