@@ -787,7 +787,7 @@ GameApi::PTS GameApi::PointsApi::random_bitmap_instancing(EveryApi &ev, BB bm, i
       float yy = yp*sy;
       bool b = ev.bool_bitmap_api.boolvalue(bm, xx,yy);
       if (b) {
-	Point p(start_x + (end_x-start_x)*xp, y, start_z+(end_z-start_z)*yp);
+	Point p(start_x + (end_x-start_x)*xp, start_z+(end_z-start_z)*yp, y);
 	points->push_back(p);
 	color2->push_back(0xffffffff);
       }

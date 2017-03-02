@@ -26,6 +26,9 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct CPP { int id; };
+  struct PTT { int id; }; 
+  struct KF { int id; };
   struct BLK { int id; };
   struct EV { int id; };
   struct AC { int id; };
@@ -674,6 +677,10 @@ public:
   
   PTS sample(C input_curve, int num_samples);
   LI to_lines(C curve, int num_lines);
+
+  // curve_pos
+  CPP xy_sum();
+
 private:
   Env &e;
 };
@@ -1142,6 +1149,36 @@ private:
 };
 #endif
 
+class VertexAnimApi
+{
+public:
+  VertexAnimApi(Env &e) : e(e) { }
+  KF keyframe_mesh(P part);
+  KF keyframe_bind(EveryApi &ev, KF keyframe, PTT pointtransform, float delta_time);
+  KF keyframe_bind2(EveryApi &ev, KF keyframe, PTT pointtransform, float delta_time, bool dif);
+  KF curve_trans(EveryApi &ev, KF kf, C curve, CPP pos, int numsamples, float duration);
+  KF repeat_keyframes(KF rep, int count);
+
+  KF sample_rot(EveryApi &ev, KF kf, float nx, float ny, float nz, float angle, int numsamples, float duration);
+  
+
+  //KF keyframe_bind2(KF keyframe, O subpart, PTT pointtransform, float delta_time);
+  PTT empty_trans();
+  PTT curve_accessor(C curve, CPP pos, float start_pos, float time_mult);
+  PTT rot_accessor(float start_time, float time_mult, float nx, float ny, float nz, float dist_angle);
+  PTT translate_trans(PTT prev, float speed_x, float speed_y, float speed_z);
+  PTT translate_trans2(PTT prev, float duration,float dist_x, float dist_y, float dist_z);
+  PTT rotate_trans(PTT prev, float nx, float ny, float nz, float speed_angle);
+  PTT rotate_trans2(PTT prev, float duration,float nx, float ny, float nz, float dist_angle);
+  PTT scale_trans(PTT prev, float scale_speed_x, float scale_speed_y, float scale_speed_z);
+  PTT scale_trans2(PTT prev, float duration,float scale_dist_x, float scale_dist_y, float scale_dist_z);
+  ML vertex_anim_render(EveryApi &ev, KF kf);
+public:
+  P change_pos(P p, P orig, PTT transform, float delta_time, bool dif);
+private:
+  Env &e;
+};
+
 class EventNode
 {
 public:
@@ -1200,6 +1237,7 @@ public:
   M get_matrix(MN n, float time, float delta_time);
   ML color_ml(EveryApi &ev, int color_num, ML ml, CC cc);
   ML move_ml(EveryApi &ev, ML ml, MN mn, int clone_count=1, float time_delta=10.0);
+  ML repeat_ml(EveryApi &ev, ML ml, float duration);
   ML key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
   ML temp_key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
   ML move_x_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x);
@@ -1775,6 +1813,8 @@ public:
 	IMPORT ~PolygonApi();
   
   IMPORT void print_stat(P p);
+  IMPORT void print_data(P p);
+  IMPORT void print_data2(P p);
   IMPORT void print_stat(VA p);
 	IMPORT P empty();
         IMPORT P load_model(std::string filename, int obj_num);
@@ -1880,6 +1920,7 @@ public:
 		unsigned int color_1, unsigned int color_2,
 		unsigned int color_3, unsigned int color_4);
   IMPORT P color_from_normals(P orig);
+  IMPORT P color_alpha(P orig, unsigned int alpha);
   IMPORT P color_grayscale(P orig);
   IMPORT P color_from_texcoord(P orig,
 			       unsigned int color_1, unsigned int color_2,
@@ -2516,7 +2557,7 @@ public:
   IMPORT PTS or_points(PTS p1, PTS p2);
   IMPORT PTS heightmap(BM colour, FB floatbitmap, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
   IMPORT PTS random_plane(PT pos, V u_x, V u_y, int numpoints);
-  IMPORT PTS random_bitmap_instancing(EveryApi &ev, BB bm, int count, float start_x, float end_x, float start_z, float end_z, float y);
+  IMPORT PTS random_bitmap_instancing(EveryApi &ev, BB bm, int count, float start_x, float end_x, float start_y, float end_y, float z);
   IMPORT PTS random_mesh_quad_instancing(EveryApi &ev, P p, int count);
   IMPORT PTS surface(S surf, int sx, int sy);
   IMPORT PTS surface(std::function<PT (float,float)> surf,
@@ -2946,7 +2987,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
   : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e), blocker_api(e) { }
+    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e), blocker_api(e), vertex_anim_api(e) { }
 
   MainLoopApi mainloop_api;
   PointApi point_api;
@@ -3001,6 +3042,7 @@ struct EveryApi
   PolygonArrayApi polygon_arr_api;
   PolygonDistanceField polygon_dist_api;
   BlockerApi blocker_api;
+  VertexAnimApi vertex_anim_api;
 private:
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);

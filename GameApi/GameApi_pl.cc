@@ -18,6 +18,44 @@ EXPORT GameApi::P GameApi::PolygonApi::from_polygon(P p, std::function<P (int fa
 {
   return from_polygon_1(p,f);
 }
+void GameApi::PolygonApi::print_data(P p)
+{
+  if (p.id == -1) { std::cout << "INVALID P OBJECT at print_data" << std::endl; return; }
+  FaceCollection *coll = find_facecoll(e, p);
+  if (!coll) { std::cout << "INVALID FACECOLLECTION at print_data" << std::endl;  return; }
+  int s = coll->NumFaces();
+  for(int i=0;i<s;i++)
+    {
+      std::cout << "Face " << i << ": ";
+      int ss = coll->NumPoints(i);
+      for(int j=0;j<ss;j++)
+	{
+	  Point p = coll->FacePoint(i,j);
+	  std::cout << p << " ";
+	}
+      std::cout << std::endl;
+    }
+
+}
+void GameApi::PolygonApi::print_data2(P p)
+{
+  if (p.id == -1) { std::cout << "INVALID P OBJECT at print_data" << std::endl; return; }
+  FaceCollection *coll = find_facecoll(e, p);
+  if (!coll) { std::cout << "INVALID FACECOLLECTION at print_data" << std::endl;  return; }
+  int s = coll->NumFaces();
+  for(int i=0;i<s;i++)
+    {
+      std::cout << "Face2 " << i << ": ";
+      int ss = coll->NumPoints(i);
+      for(int j=0;j<ss;j++)
+	{
+	  Point p = coll->EndFacePoint(i,j);
+	  std::cout << p << " ";
+	}
+      std::cout << std::endl;
+    }
+
+}
 void GameApi::PolygonApi::print_stat(P p)
 {
   //FaceCollPolyHandle *handle = find_poly(e, p);
@@ -993,6 +1031,20 @@ public:
     return a+cc;
   }
 };
+class ColorAlpha : public ForwardFaceCollection
+{
+public:
+  ColorAlpha(FaceCollection *coll, unsigned int alpha) : ForwardFaceCollection(*coll), alpha(alpha) { }
+  virtual unsigned int Color(int face, int point) const
+  {
+    unsigned int c = ForwardFaceCollection::Color(face,point);
+    c = c & 0x00ffffff;
+    c = c | (alpha << 24);
+    return c;
+  }
+private:
+  unsigned int alpha;
+};
 class ColorFromNormals : public ForwardFaceCollection
 {
 public:
@@ -1214,6 +1266,12 @@ EXPORT GameApi::P GameApi::PolygonApi::color_from_normals(P orig)
 {
   FaceCollection *c = find_facecoll(e, orig);
   FaceCollection *c2 = new ColorFromNormals(c);
+  return add_polygon2(e, c2, 1);
+}
+EXPORT GameApi::P GameApi::PolygonApi::color_alpha(P orig, unsigned int alpha)
+{
+  FaceCollection *c = find_facecoll(e, orig);
+  FaceCollection *c2 = new ColorAlpha(c, alpha);
   return add_polygon2(e, c2, 1);
 }
 class ColorCubeElem : public ForwardFaceCollection

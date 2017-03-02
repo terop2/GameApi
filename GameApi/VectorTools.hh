@@ -254,6 +254,11 @@ public:
   friend Matrix operator*(const Matrix &m1, const Matrix &m2);
   
 public:
+  void operator*=(float v)
+  {
+    for(int i=0;i<16;i++)
+      matrix[i]*=v;
+  }
   void operator*=(const Matrix &m) 
   {
     *this = *this * m;
