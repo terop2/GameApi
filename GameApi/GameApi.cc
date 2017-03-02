@@ -6411,10 +6411,12 @@ struct Envi_2 {
   float speed_y = 1.0;
   GameApi::InteractionApi::Quake_data data;
   bool logo_shown = true;
+  bool fpscounter = false;
   GameApi::SH color_sh;
   GameApi::SH texture_sh;
   GameApi::SH arr_texture_sh;
   bool exit = false;
+  float timeout = 100000.0f;
 };
 
 
@@ -6467,7 +6469,13 @@ void blocker_iter(void *arg)
 
 	env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N);
 
-    env->ev->mainloop_api.fpscounter();
+	if (env->fpscounter)
+	  env->ev->mainloop_api.fpscounter();
+	if (env->ev->mainloop_api.get_time()/1000.0*10.0 > env->timeout)
+	  {
+	    env->exit = true;
+	  }
+
     // swapbuffers
     env->ev->mainloop_api.swapbuffers();
 
@@ -6476,8 +6484,11 @@ void blocker_iter(void *arg)
 class MainLoopBlocker_win32_and_emscripten : public Blocker
 {
 public:
-  MainLoopBlocker_win32_and_emscripten(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::ML code, bool logo) : e(e), ev(ev), code(code), logo(logo) 
+  MainLoopBlocker_win32_and_emscripten(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::ML code, bool logo, bool fpscounter) : e(e), ev(ev), code(code), logo(logo), fpscounter(fpscounter), timeout(100000.0f) 
   {
+  }
+  void SetTimeout(float duration) {
+    timeout = duration;
   }
   void Execute()
   {
@@ -6485,6 +6496,8 @@ public:
     Envi_2 env;
 
     env.logo_shown = logo;
+    env.fpscounter = fpscounter;
+    env.timeout = timeout;
 
     GameApi::SH sh = ev.shader_api.colour_shader();
     GameApi::SH sh2 = ev.shader_api.texture_shader();
@@ -6539,12 +6552,53 @@ private:
   GameApi::EveryApi &ev;
   GameApi::ML code;
   bool logo;
+  bool fpscounter;
+  float timeout;
 };
 
-GameApi::BLK GameApi::BlockerApi::game_window(GameApi::EveryApi &ev, ML ml, bool logo)
+GameApi::BLK GameApi::BlockerApi::game_window(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter)
 {
-  Blocker *blk = new MainLoopBlocker_win32_and_emscripten(e,ev,ml,logo);
+  Blocker *blk = new MainLoopBlocker_win32_and_emscripten(e,ev,ml,logo, fpscounter);
   return add_blocker(e, blk);
+}
+class BlockerSeq : public Blocker
+{
+public:
+  BlockerSeq(std::vector<Blocker*> vec) : vec(vec) { }
+  void SetTimeout(float duration) {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	Blocker *blk = vec[i];
+	blk->SetTimeout(duration);
+      }
+  }
+  void Execute() 
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	Blocker *blk = vec[i];
+	blk->Execute();
+      }
+  }
+private:
+  std::vector<Blocker*> vec;
+};
+GameApi::BLK GameApi::BlockerApi::game_seq(std::vector<BLK> vec, float duration)
+{
+  // this test prevents using game_seq to creating flickering
+  // effects which causes epilepsy etc. So please don't remove it.
+  if (duration < 40) { duration=40; }
+  std::vector<Blocker*> blks;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      Blocker *blk = find_blocker(e,vec[i]);
+      blk->SetTimeout(duration);
+      blks.push_back(blk);
+    }
+  return add_blocker(e, new BlockerSeq(blks));
 }
 void GameApi::BlockerApi::run(BLK blk)
 {

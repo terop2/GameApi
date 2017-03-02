@@ -660,6 +660,7 @@ class Blocker
 {
 public:
   virtual void Execute()=0; // must block execution
+  virtual void SetTimeout(float duration)=0;
 };
 
 class PointTransform
