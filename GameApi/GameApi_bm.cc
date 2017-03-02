@@ -489,7 +489,7 @@ public:
       }
     if (!cbm)
       {
-    std::cout << "Load Bitmap Prepare " << filename << std::endl;
+	//std::cout << "Load Bitmap Prepare " << filename << std::endl;
     PpmFileReader *file = new PpmFileReader(filename);
     file->Prepare();
     if (file->status()==true)

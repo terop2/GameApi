@@ -25,7 +25,7 @@ EXPORT void GameApi::ShaderApi::set_default_projection(SH shader, std::string na
 }
 void GameApi::ShaderApi::set_default_projection_1(SH shader, std::string name)
 {
-  std::cout << "SetDefaultProjection:" << std::endl;
+  //std::cout << "SetDefaultProjection:" << std::endl;
   Matrix m = Matrix::Perspective(80.0, (double)800/600, 10.1, 60000.0);
   if (shader.id==-1) return;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
@@ -225,7 +225,7 @@ EXPORT void GameApi::ShaderApi::bind_frag(GameApi::SH shader, int attachment_num
 }
 void GameApi::ShaderApi::bind_attrib_1(GameApi::SH shader, int num, std::string name)
 {
-  std::cout << "SHADER: " << shader.id << std::endl;
+  //std::cout << "SHADER: " << shader.id << std::endl;
   if (shader.id==-1) return;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;

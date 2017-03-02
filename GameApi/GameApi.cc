@@ -21,9 +21,9 @@ std::string color_funccall_to_string_with_replace(ShaderModule *mod, std::string
 EnvImpl::EnvImpl() : event_infos(new EmptySequencer2), mutex(PTHREAD_MUTEX_INITIALIZER)
 {
 #ifndef EMSCRIPTEN
-    int err = FT_Init_FreeType(&lib);
-    std::cout << "Freetype init error: " << err << std::endl;
-    std::cout << &lib << std::endl;
+    FT_Init_FreeType(&lib);
+    //std::cout << "Freetype init error: " << err << std::endl;
+    //std::cout << &lib << std::endl;
 #endif 
     cursor_pos_point_id.id = -1;
 }
@@ -6664,7 +6664,7 @@ GameApi::KF GameApi::VertexAnimApi::curve_trans(EveryApi &ev, KF kf, C curve, CP
   Curve<Point> *cur = find_curve(e, curve);
   float curve_length = cur->Size();
   int s = numsamples;
-  float delta_pos = curve_length/numsamples;
+  //float delta_pos = curve_length/numsamples;
   float delta_time = duration/numsamples;
   for(int i=0;i<s;i++)
     {
@@ -6912,7 +6912,6 @@ public:
 	vec.push_back(p);
       }
     ranges = vec;
-
   }
   void Prepare_2()
   {
@@ -6990,10 +6989,19 @@ public:
 	  }
 	currenttime += val;
       }
+    bool end = false;
+    if (choose==-1)
+      {
+	choose = ranges2.size()-1;
+	end = true;
+      }
     if (choose!=-1) {
       //std::cout << "choose: " << choose << ": " << (time-currenttime)/step_size << std::endl;
       ev.shader_api.use(sh);
-      ev.shader_api.set_var(sh, "in_POS", (time - currenttime)/step_size); 
+      if (!end)
+	ev.shader_api.set_var(sh, "in_POS", (time - currenttime)/step_size); 
+      else
+	ev.shader_api.set_var(sh, "in_POS", 1.0f); 
       ev.polygon_api.render_vertex_array(ranges2[choose]);
     }
   }

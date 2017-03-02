@@ -56,14 +56,14 @@ GameApiModule load_gameapi(std::string filename)
       std::string line;
       std::getline(ss,line); // eat the previous line
       std::getline(ss,line);
-      std::cout << "LINE1: " << line << std::endl;
+      //std::cout << "LINE1: " << line << std::endl;
       std::stringstream ss2(line);
       std::string param_name;
       while(ss2>>param_name) {
 	f.param_names.push_back(param_name);
       }
       std::getline(ss,line);
-      std::cout << "LINE2: " << line << std::endl;
+      //std::cout << "LINE2: " << line << std::endl;
       std::stringstream ss3(line);
       std::string param_type;
       while(ss3>>param_type) {
@@ -73,7 +73,7 @@ GameApiModule load_gameapi(std::string filename)
 	{
 	  GameApiLine g_line;
 	  std::getline(ss,line);
-	  std::cout << "LINE3: " << line << std::endl;
+	  //std::cout << "LINE3: " << line << std::endl;
 	  std::stringstream ss4(line);
 	  char c;
 	  int x, y;
@@ -547,7 +547,7 @@ void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, 
 			  std::stringstream ss2;
 			  ss2 << value << " " << target_uid << " " << real_num;
 			  gui.set_id(line, ss2.str());
-			  std::cout << "LINK2: " << ss2.str() << std::endl;
+			  //std::cout << "LINK2: " << ss2.str() << std::endl;
 			  links.push_back(line);
 			}
 		      
@@ -589,7 +589,7 @@ void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, 
 			  std::stringstream ss2;
 			  ss2 << value << " " << target_uid << " " << real_num;
 			  gui.set_id(line, ss2.str());
-			  std::cout << "LINK: " << ss2.str() << std::endl;
+			  //std::cout << "LINK: " << ss2.str() << std::endl;
 			  links.push_back(line);
 			}
 		      
