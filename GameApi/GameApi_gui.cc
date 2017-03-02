@@ -5379,10 +5379,16 @@ std::vector<GameApiItem*> blocker_functions()
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_window, 
 			 "blk_window",
-			 { "ev", "ml", "logo" },
-			 { "EveryApi&", "ML","bool" },
-			 { "ev", "","false" },
+			 { "ev", "ml", "logo", "fpscounter" },
+			 { "EveryApi&", "ML","bool","bool" },
+			 { "ev", "","false","false" },
 			 "BLK", "blocker_api", "game_window"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_seq,
+			 "blk_seq",
+			 { "vec", "duration" },
+			 { "[BLK]", "float" },
+			 { "", "100.0" },
+			 "BLK", "blocker_api", "game_seq"));
 
   return vec;
 }

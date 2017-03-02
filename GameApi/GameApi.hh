@@ -197,7 +197,8 @@ class BlockerApi
 {
 public:
   BlockerApi(Env &e) : e(e) { }
-  BLK game_window(EveryApi &ev, ML ml, bool logo);
+  BLK game_window(EveryApi &ev, ML ml, bool logo, bool fpscounter);
+  BLK game_seq(std::vector<BLK> vec, float duration);
   void run(BLK blk);
 private:
   Env &e;
