@@ -327,6 +327,30 @@ EXPORT GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
+GameApi::PTT add_point_transform(GameApi::Env &e, PointTransform *trans)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->point_transforms.push_back(trans);
+  GameApi::PTT im;
+  im.id = env->point_transforms.size()-1;
+  return im;
+}
+GameApi::KF add_vertex_anim(GameApi::Env &e, VertexAnimNode *node)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->vertex_anims.push_back(node);
+  GameApi::KF im;
+  im.id = env->vertex_anims.size()-1;
+  return im;
+}
+GameApi::CPP add_curve_pos(GameApi::Env &e, CurvePos *pos)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->curve_pos.push_back(pos);
+  GameApi::CPP im;
+  im.id = env->curve_pos.size()-1;
+  return im;
+}
 GameApi::BLK add_blocker(GameApi::Env &e, Blocker *blk)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1120,6 +1144,21 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   Array<int,bool> *enable = info.enable_obj_array;
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
+}
+CurvePos *find_curve_pos(GameApi::Env &e, GameApi::CPP cp)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->curve_pos[cp.id];
+}
+PointTransform *find_point_transform(GameApi::Env &e, GameApi::PTT ptt)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->point_transforms[ptt.id];
+}
+VertexAnimNode *find_vertex_anim(GameApi::Env &e, GameApi::KF kf)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->vertex_anims[kf.id];
 }
 Blocker *find_blocker(GameApi::Env &e, GameApi::BLK blk)
 {
@@ -3514,6 +3553,30 @@ GameApi::ML GameApi::MovementNode::key_printer_ml(GameApi::ML ml)
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new KeyPrinter(item));
 }
+class RepeatML : public MainLoopItem
+{
+public:
+  RepeatML(MainLoopItem *next, float duration) : next(next), duration(duration) { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    float time = e.time;
+    float newtime = fmod(time, duration/10.0);
+    MainLoopEnv ee = e;
+    ee.time = newtime;
+    next->execute(ee);
+  }
+  virtual void handle_event(MainLoopEvent &e) { return next->handle_event(e); }
+  virtual int shader_id() { return next->shader_id(); }
+private:
+  MainLoopItem *next;
+  float duration;
+
+};
+GameApi::ML GameApi::MovementNode::repeat_ml(EveryApi &ev, GameApi::ML ml, float duration)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new RepeatML(item, duration));  
+}
 GameApi::ML GameApi::MovementNode::move_ml(EveryApi &ev, GameApi::ML ml, GameApi::MN move, int clone_count, float time_delta)
 {
   MainLoopItem *item = find_main_loop(e, ml);
@@ -5055,6 +5118,16 @@ private:
   float r;
 };
 
+class XYSumCurvePos : public CurvePos
+{
+public:
+  virtual float FindPos(Point p, float curve_length) const { return  (p.x+p.y+p.z)/(300.0+300.0+300.0)*curve_length; }
+};
+GameApi::CPP GameApi::CurveApi::xy_sum()
+{
+  return add_curve_pos(e, new XYSumCurvePos);
+}
+
 GameApi::C GameApi::CurveApi::line(PT p1, PT p2)
 {
   Point *pp1 = find_point(e, p1);
@@ -6477,4 +6550,493 @@ void GameApi::BlockerApi::run(BLK blk)
 {
   Blocker *blk2 = find_blocker(e, blk);
   blk2->Execute();
+}
+
+class KeyFrameMesh : public VertexAnimNode
+{
+public:
+  KeyFrameMesh(int coll) : coll(coll) { }
+  int NumKeyFrames() { return 2; }
+  virtual float StepDuration(int keyframe_gap) const { return 0.001; }
+  int FaceColl(int keyframe_gap) const
+  {
+    return coll;
+  }
+  Point KeyFramePoint(Point p, int keyframe_gap, int point_num) const
+  {
+    return p;
+  }
+private:
+  int coll;
+};
+
+GameApi::KF GameApi::VertexAnimApi::keyframe_mesh(P part)
+{
+  return add_vertex_anim(e, new KeyFrameMesh(part.id));
+}
+
+class ChangePos : public ForwardFaceCollection
+{
+public:
+  ChangePos(FaceCollection &coll, FaceCollection &orig, PointTransform &trans, float delta_time, bool dif) : ForwardFaceCollection(coll), orig(orig), trans(trans), delta_time(delta_time), dif(dif) { }
+  virtual Point FacePoint(int face, int point) const
+  {
+    // this FacePoint/EndFacePoint logic looks odd, but is needed
+    // because of chaining of facecollections.
+    Point p;
+    if (!dif) {
+      p = ForwardFaceCollection::EndFacePoint(face,point);
+    } else {
+      p = orig.FacePoint(face,point);
+      return trans.Map(p, 0.0);
+    }
+    return p;
+  }
+  virtual Point EndFacePoint(int face, int point) const
+  {
+    Point p;
+    if (!dif) {
+      p = ForwardFaceCollection::EndFacePoint(face,point);
+    } else {
+      p = orig.FacePoint(face,point);
+    }
+    return trans.Map(p, delta_time);
+  }
+private:
+  FaceCollection &orig;
+  PointTransform &trans;
+  float delta_time;
+  bool dif;
+};
+
+GameApi::P GameApi::VertexAnimApi::change_pos(P p, P orig, PTT transform, float delta_time, bool different_pos)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  FaceCollection *orig2 = find_facecoll(e, orig);
+  PointTransform *trans = find_point_transform(e, transform);
+  return add_polygon2(e, new ChangePos(*coll, *orig2, *trans, delta_time, different_pos));
+}
+
+class CurveAccessor : public PointTransform
+{
+public:
+  CurveAccessor(float start_time, Curve<Point> &curve, CurvePos &pos, float time_multiplier) : start_time(start_time), curve(curve), pos(pos), time_mult(time_multiplier) { }
+  Point Map(Point p, float delta_time) const {
+    float val = pos.FindPos(p, curve.Size());
+    Point pp = p+curve.Index(start_time*time_mult+val+time_mult*(delta_time));
+    return pp;
+  }
+private:
+  float start_time;
+  Curve<Point> &curve;
+  CurvePos &pos;
+  float time_mult;
+};
+class RotAccessor : public PointTransform
+{
+public:
+  RotAccessor(float start_time, float time_mult, float nx, float ny, float nz, float dist_angle) : start_time(start_time), time_mult(time_mult), nx(nx), ny(ny), nz(nz), dist_angle(dist_angle) { }
+  Point Map(Point p, float delta_time) const {
+    float progress = start_time*time_mult + time_mult*delta_time;
+    Matrix m = Matrix::RotateAroundAxis(Vector(nx,ny,nz), progress);
+    return p*m;
+  }
+private:
+  float start_time;
+  float time_mult;
+  float nx,ny,nz;
+  float dist_angle;
+};
+GameApi::PTT GameApi::VertexAnimApi::curve_accessor(C curve, CPP pos, float start_time, float time_mult)
+{
+  Curve<Point> *cur = find_curve(e, curve);
+  CurvePos *cur_pos = find_curve_pos(e, pos);
+  return add_point_transform(e, new CurveAccessor(start_time, *cur, *cur_pos, time_mult));
+}
+
+
+GameApi::PTT GameApi::VertexAnimApi::rot_accessor(float start_time, float time_mult, float nx, float ny, float nz, float dist_angle)
+{
+  return add_point_transform(e, new RotAccessor(start_time, time_mult, nx, ny,nz, dist_angle));
+}
+GameApi::KF GameApi::VertexAnimApi::curve_trans(EveryApi &ev, KF kf, C curve, CPP pos, int numsamples, float duration)
+{
+  Curve<Point> *cur = find_curve(e, curve);
+  float curve_length = cur->Size();
+  int s = numsamples;
+  float delta_pos = curve_length/numsamples;
+  float delta_time = duration/numsamples;
+  for(int i=0;i<s;i++)
+    {
+      PTT pt = curve_accessor(curve, pos, i*delta_time, curve_length/duration);
+      kf = keyframe_bind2(ev, kf, pt, delta_time, true);
+    }
+  return kf;
+}
+GameApi::KF GameApi::VertexAnimApi::sample_rot(EveryApi &ev, KF kf, float nx, float ny, float nz, float angle, int numsamples, float duration)
+{
+  //Curve<Point> *cur = find_curve(e, curve);
+  float curve_length = angle; //cur->Size();
+  int s = numsamples;
+  //float delta_pos = curve_length/numsamples;
+  float delta_time = duration/numsamples;
+  for(int i=0;i<s;i++)
+    {
+      //PTT empty = empty_trans();
+      //PTT pt = rotate_trans2(empty, delta_time, nx,ny,nz, angle/numsamples);
+      PTT pt = rot_accessor(i*delta_time, curve_length/duration, nx,ny,nz, angle);
+      kf = keyframe_bind2(ev, kf, pt, delta_time, true);
+    }
+  return kf;
+}
+
+// change pos needs to be different.
+class KeyFrameBind : public VertexAnimNode
+{
+public:
+  KeyFrameBind(GameApi::EveryApi &ev, VertexAnimNode *va, GameApi::PTT pt, float delta_time, bool dif) : ev(ev), va(va), pt(pt), delta_time(delta_time), dif(dif) { temp = 0; }
+  int NumKeyFrames() { return va->NumKeyFrames() + 1; }
+  virtual float StepDuration(int keyframe_gap) const { 
+    int prev_count = va->NumKeyFrames();
+    if (keyframe_gap < prev_count) { return va->StepDuration(keyframe_gap); }
+    return delta_time;
+  }
+  int FaceColl(int keyframe_gap) const
+  {
+    int prev_count = va->NumKeyFrames();
+    if (keyframe_gap < prev_count) { return va->FaceColl(keyframe_gap); }
+    int coll = va->FaceColl(prev_count-1);
+    int orig = va->FaceColl(0);
+    GameApi::P p = { coll };
+    GameApi::P orig2 = { orig };
+    GameApi::P p2 = ev.vertex_anim_api.change_pos(p, orig2, pt, delta_time, dif);
+    return p2.id;
+  }
+private:
+  GameApi::EveryApi &ev;
+  VertexAnimNode *va;
+  GameApi::PTT pt;
+  float delta_time;
+  mutable FaceCollection *temp;
+  bool dif;
+};
+
+
+GameApi::KF GameApi::VertexAnimApi::keyframe_bind(EveryApi &ev, KF keyframe, PTT transform, float delta_time)
+{
+  VertexAnimNode *va = find_vertex_anim(e, keyframe);
+  return add_vertex_anim(e, new KeyFrameBind(ev,va,transform,delta_time, false));
+}
+GameApi::KF GameApi::VertexAnimApi::keyframe_bind2(EveryApi &ev, KF keyframe, PTT transform, float delta_time, bool dif)
+{
+  VertexAnimNode *va = find_vertex_anim(e, keyframe);
+  return add_vertex_anim(e, new KeyFrameBind(ev,va,transform,delta_time, dif));
+}
+
+class EmptyTransform : public PointTransform
+{
+public:
+  EmptyTransform() { }
+  Point Map(Point p, float delta_time) const { return p; }
+};
+class TransformSpeed : public PointTransform
+{
+public:
+  TransformSpeed(PointTransform *prev) : prev(prev) { }
+  virtual Matrix Mat() const=0;
+  Point Map(Point p, float delta_time) const
+  {
+    Matrix m = Mat();
+    delta_time /= 10.0;
+    m*=delta_time;
+    return prev->Map(p,delta_time)*m;
+  }
+private:
+  PointTransform *prev;
+};
+class TransformDist : public PointTransform
+{
+public:
+  TransformDist(PointTransform *prev, float duration) : prev(prev), duration(duration) { 
+    if (duration==0.0f) duration=10.0f;
+  }
+  virtual Matrix Mat() const=0;
+  Point Map(Point p, float delta_time) const
+  {
+    Matrix m = Mat();
+    m*=1.0/duration;
+    m*=delta_time;
+    return prev->Map(p,delta_time)*m;
+  }
+private:
+  PointTransform *prev;
+  float duration;
+};
+
+GameApi::PTT GameApi::VertexAnimApi::empty_trans()
+{
+  return add_point_transform(e, new EmptyTransform);
+}
+
+class TranslateSpeed : public TransformSpeed
+{
+public:
+  TranslateSpeed(PointTransform *prev, float speed_x, float speed_y, float speed_z) : TransformSpeed(prev), speed_x(speed_x), speed_y(speed_y), speed_z(speed_z) { }
+  virtual Matrix Mat() const { return Matrix::Translate(speed_x, speed_y, speed_z); }
+private:
+  float speed_x, speed_y, speed_z;
+};
+class TranslateDist : public TransformDist
+{
+public:
+  TranslateDist(PointTransform *prev, float duration, float dist_x, float dist_y, float dist_z) : TransformDist(prev, duration), dist_x(dist_x), dist_y(dist_y), dist_z(dist_z) { }
+  virtual Matrix Mat() const { return Matrix::Translate(dist_x, dist_y, dist_z); }
+private:
+  float dist_x, dist_y, dist_z;
+};
+class RotateSpeed : public TransformSpeed
+{
+public:
+  RotateSpeed(PointTransform *prev, float nx, float ny, float nz, float angle) : TransformSpeed(prev), nx(nx), ny(ny), nz(nz), angle(angle) { }
+  virtual Matrix Mat() const { return Matrix::RotateAroundAxis(Vector(nx,ny,nz),angle); }
+private:
+  float nx,ny,nz;
+  float angle;
+};
+class RotateDist : public TransformDist
+{
+public:
+  RotateDist(PointTransform *prev, float duration, float nx, float ny, float nz, float angle) : TransformDist(prev, duration), nx(nx), ny(ny), nz(nz) { }
+  virtual Matrix Mat() const { return Matrix::RotateAroundAxis(Vector(nx,ny,nz), angle); }
+private:
+  float nx,ny,nz;
+  float angle;
+};
+
+
+class ScaleSpeed : public TransformSpeed
+{
+public:
+  ScaleSpeed(PointTransform *prev, float sx, float sy, float sz) : TransformSpeed(prev), sx(sx), sy(sy), sz(sz) { }
+  virtual Matrix Mat() const { return Matrix::Scale(sx,sy,sz); }
+private:
+  float sx,sy,sz;
+};
+class ScaleDist : public TransformDist
+{
+public:
+  ScaleDist(PointTransform *prev, float duration, float sx, float sy, float sz) : TransformDist(prev, duration), sx(sx), sy(sy), sz(sz) { }
+  virtual Matrix Mat() const { return Matrix::Scale(sx,sy,sz); }
+private:
+  float sx,sy,sz;
+};
+
+
+GameApi::PTT GameApi::VertexAnimApi::translate_trans(PTT prev, float speed_x, float speed_y, float speed_z)
+{
+  PointTransform *prev2 = find_point_transform(e, prev);
+  return add_point_transform(e, new TranslateSpeed(prev2, speed_x, speed_y, speed_z));
+}
+GameApi::PTT GameApi::VertexAnimApi::translate_trans2(PTT prev, float duration, float dist_x, float dist_y, float dist_z)
+{
+  PointTransform *prev2 = find_point_transform(e, prev);
+  return add_point_transform(e, new TranslateDist(prev2, duration, dist_x, dist_y, dist_z));
+
+}
+
+GameApi::PTT GameApi::VertexAnimApi::rotate_trans(PTT prev, float nx, float ny, float nz, float speed_angle)
+{
+  PointTransform *prev2 = find_point_transform(e, prev);
+  return add_point_transform(e, new RotateSpeed(prev2, nx, ny, nz, speed_angle));
+}
+GameApi::PTT GameApi::VertexAnimApi::rotate_trans2(PTT prev, float duration, float nx, float ny, float nz, float dist_angle)
+{
+  PointTransform *prev2 = find_point_transform(e, prev);
+  return add_point_transform(e, new RotateDist(prev2, duration, nx, ny, nz, dist_angle));
+
+}
+GameApi::PTT GameApi::VertexAnimApi::scale_trans(PTT prev, float scale_speed_x, float scale_speed_y, float scale_speed_z)
+{
+  PointTransform *prev2 = find_point_transform(e, prev);
+  return add_point_transform(e, new ScaleSpeed(prev2, scale_speed_x, scale_speed_y, scale_speed_z));
+
+}
+
+GameApi::PTT GameApi::VertexAnimApi::scale_trans2(PTT prev, float duration, float scale_dist_x, float scale_dist_y, float scale_dist_z)
+{
+  PointTransform *prev2 = find_point_transform(e, prev);
+  return add_point_transform(e, new ScaleDist(prev2, duration, scale_dist_x, scale_dist_y, scale_dist_z));
+
+}
+
+GameApi::P linear_func(float val, GameApi::P c_start, GameApi::P c_end, float time_start, float time_end)
+{
+  float time_avg = (time_start + time_end)/2.0f;
+  if (val < time_avg) { return c_start; }
+  return c_end;
+}
+
+class AnimFaceCollection : public ForwardFaceCollection
+{
+public:
+  AnimFaceCollection(FaceCollection *coll1, FaceCollection *coll2) : ForwardFaceCollection(*coll1), coll2(coll2) { }
+  
+  virtual Point EndFacePoint(int face, int point) const { return coll2->FacePoint(face, point); }
+  virtual Vector EndPointNormal(int face, int point) const { return coll2->PointNormal(face,point); }
+  virtual float EndAttrib(int face, int point, int id) const { return coll2->Attrib(face, point, id); }
+  virtual int EndAttribI(int face, int point, int id) const { return coll2->AttribI(face,point,id); }
+  virtual unsigned int EndColor(int face, int point) const { return coll2->Color(face,point); }
+  virtual Point2d EndTexCoord(int face, int point) const { return coll2->TexCoord(face,point); }
+  virtual float EndTexCoord3(int face, int point) const { return TexCoord3(face,point); }
+
+private:
+  FaceCollection *coll2;
+};
+
+class VertexAnimMainLoop : public MainLoopItem
+{
+public:
+  VertexAnimMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, VertexAnimNode *va) : env(env), ev(ev), va(va) 
+  {
+    Prepare_1();
+    Prepare_2();
+    firsttime = true;
+  }
+  void Prepare_1() {
+    std::vector<GameApi::P> vec;
+    int s = va->NumKeyFrames();
+    for(int i=0;i<s;i++)
+      {
+        int coll = va->FaceColl(i);
+	GameApi::P p = { coll };
+	vec.push_back(p);
+      }
+    ranges = vec;
+
+  }
+  void Prepare_2()
+  {
+    std::vector<GameApi::VA> vas;
+    int s = ranges.size();
+    for(int i=0;i<s;i++)
+      {
+	vas.push_back(ev.polygon_api.create_vertex_array(ranges[i]));
+      }
+    ranges2 = vas;
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void execute(MainLoopEnv &e) 
+  {
+    MainLoopEnv ee = e;
+    if (firsttime)
+      {
+	//start_time = e.time*10.0;
+
+	GameApi::US vertex;
+	vertex.id = ee.us_vertex_shader;
+	if (vertex.id == -1)
+	  {
+	    GameApi::US a0 = ev.uber_api.v_empty();
+	    GameApi::US a1 = ev.uber_api.v_colour(a0);
+	    ee.us_vertex_shader = a1.id;
+	  }
+	vertex.id = ee.us_vertex_shader;
+
+	GameApi::US fragment;
+	fragment.id = ee.us_fragment_shader;
+	if (fragment.id == -1)
+	  {
+	    GameApi::US a0 = ev.uber_api.f_empty(false);
+	    GameApi::US a1 = ev.uber_api.f_colour(a0);
+	    ee.us_fragment_shader = a1.id;
+	  }
+	fragment.id = ee.us_fragment_shader;
+
+	int sh_id = e.sh_color; // TODO TEXTURE SUPPORT
+	if (sh_id != -1)
+	{
+		sh.id = sh_id;
+	}
+    {
+	ev.shader_api.use(sh);
+    }
+    firsttime = false;
+      }
+    GameApi::M m = add_matrix2( env, e.in_MV );
+    GameApi::M m1 = add_matrix2( env, e.in_T );
+    GameApi::M m2 = add_matrix2( env, e.in_N );
+    ev.shader_api.set_var( sh, "in_MV", m);
+    ev.shader_api.set_var( sh, "in_T", m1);
+    ev.shader_api.set_var( sh, "in_N", m2);
+    ev.shader_api.set_var( sh, "time", e.time);
+    ev.shader_api.use(sh);
+
+    //std::cout << e.time << " " << start_time << std::endl;
+    float time = e.time*10.0;
+    int s = va->NumKeyFrames();
+    float currenttime = 0.0f;
+    int choose = -1;
+    float step_size = 1.0f;
+    for(int i=0;i<s;i++)
+      {
+	float val = va->StepDuration(i);
+	if (currenttime + val > time && currenttime < time)
+	  {
+	    step_size = val;
+	    choose=i;
+	    break;
+	  }
+	currenttime += val;
+      }
+    if (choose!=-1) {
+      //std::cout << "choose: " << choose << ": " << (time-currenttime)/step_size << std::endl;
+      ev.shader_api.use(sh);
+      ev.shader_api.set_var(sh, "in_POS", (time - currenttime)/step_size); 
+      ev.polygon_api.render_vertex_array(ranges2[choose]);
+    }
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  VertexAnimNode *va;
+  std::vector<GameApi::P> ranges;
+  std::vector<GameApi::VA> ranges2;
+  bool firsttime;
+  GameApi::SH sh;
+  float start_time;
+};
+
+GameApi::ML GameApi::VertexAnimApi::vertex_anim_render(EveryApi &ev, KF kf)
+{
+  VertexAnimNode *va = find_vertex_anim(e, kf);
+  return add_main_loop(e, new VertexAnimMainLoop(e,ev, va));
+  
+}
+class RepeatVertexAnimNode : public VertexAnimNode
+{
+public:
+  RepeatVertexAnimNode(VertexAnimNode *next, int repeat_count) : next(next), repeat_count(repeat_count) { }
+  virtual int NumKeyFrames() { return next->NumKeyFrames()*repeat_count; } // n
+  virtual float StepDuration(int keyframe_gap) const
+  {
+    int s = next->NumKeyFrames();
+    while(keyframe_gap >= s) keyframe_gap-=s;
+    return next->StepDuration(keyframe_gap);
+  }
+  virtual int FaceColl(int keyframe_gap) const
+  {
+    int s = next->NumKeyFrames();
+    while(keyframe_gap >= s) keyframe_gap-=s;
+    return next->FaceColl(keyframe_gap);
+  }
+private:
+  VertexAnimNode *next;
+  int repeat_count;
+};
+GameApi::KF GameApi::VertexAnimApi::repeat_keyframes(KF rep, int count)
+{
+  VertexAnimNode *va = find_vertex_anim(e, rep);
+  return add_vertex_anim(e, new RepeatVertexAnimNode(va,count));
 }

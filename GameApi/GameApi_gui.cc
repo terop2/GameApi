@@ -2110,10 +2110,10 @@ EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x,
   W arr_x[] = { code_6, coll_6, but_6 };
   W arr_x2 = array_x(&arr_x[0], 3, 0);
 
-  W popup = popup_box("Popup", { "Test1", "Test2", "Test3" }, atlas, atlas_bm);
+  //W popup = popup_box("Popup", { "Test1", "Test2", "Test3" }, atlas, atlas_bm);
 
-  W arr[] = { bm_4, arr_x2, popup };
-  W arr_2 = array_y(&arr[0], 3, 0);
+  W arr[] = { bm_4, arr_x2 };
+  W arr_2 = array_y(&arr[0], 2, 0);
 
   W arr_3 = mouse_move(arr_2, 0,0, size_x(arr_2), size_y(arr_2));
   return arr_3;
@@ -3665,6 +3665,9 @@ MACRO(GameApi::PD)
 MACRO(GameApi::WV)
 MACRO(GameApi::CC)
 MACRO(GameApi::BLK)
+MACRO(GameApi::PTT)
+MACRO(GameApi::KF)
+MACRO(GameApi::CPP)
 #undef MACRO
 
 
@@ -4949,7 +4952,7 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "", "0.0", "100.0",
 			     "0.0", "0.0", "0.0",
 			     "0.0", "1.0", "0.0",
-			     "3.14159" },
+			     "6.28318" },
 			 "MN", "move_api", "rotate"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::compress,
 			 "anim_compress",
@@ -4999,6 +5002,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "ML", "MN", "int", "float" },
 			 { "ev", "", "", "1", "10.0" },
 			 "ML", "move_api", "move_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::repeat_ml,
+			 "repeat_ml",
+			 { "ev", "ml", "duration" },
+			 { "EveryApi&", "ML", "float" },
+			 { "ev", "", "100.0" },
+			 "ML", "move_api", "repeat_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::color_start,
 			 "color_start",
 			 { "color" },
@@ -5220,6 +5229,88 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "ev", "",  "", "", "", "", "10.0" },
 			 "ML", "move_api", "wasd"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::keyframe_mesh,
+			 "kf_mesh",
+			 { "part" },
+			 { "P" },
+			 { "" },
+			 "KF", "vertex_anim_api", "keyframe_mesh"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::keyframe_bind,
+			 "kf_bind",
+			 { "ev", "keyframe", "transform", "delta_time" },
+			 { "EveryApi&", "KF", "PTT", "float" },
+			 { "ev", "", "", "10.0" },
+			 "KF", "vertex_anim_api", "keyframe_bind"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::repeat_keyframes,
+			 "kf_repeat",
+			 { "keyframe", "count" },
+			 { "KF", "int" },
+			 { "", "100" },
+			 "KF", "vertex_anim_api", "repeat_keyframes"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::curve_trans,
+			 "kf_curve",
+			 { "ev", "keyframe", "curve", "pos", "numsamples", "duration" },
+			 { "EveryApi&", "KF", "C", "CPP", "int", "float" },
+			 { "ev", "", "", "", "10", "30.0" },
+			 "KF", "vertex_anim_api", "curve_trans"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::vertex_anim_render,
+			 "kf_render",
+			 { "ev", "keyframe" },
+			 { "EveryApi&",  "KF" },
+			 { "ev",  "" },
+			 "ML", "vertex_anim_api", "vertex_anim_render"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::sample_rot,
+			 "kf_rot",
+			 { "ev", "kf", "nx", "ny", "nz", "angle", "numsamples", "duration" },
+			 { "EveryApi&", "KF", "float", "float", "float", "float", "int", "float" },
+			 { "ev", "", "0.0", "1.0", "0.0", "6.282", "15", "30.0" },
+			 "KF", "vertex_anim_api", "sample_rot"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::empty_trans,
+			 "ptt_empty",
+			 { },
+			 { },
+			 { },
+			 "PTT", "vertex_anim_api", "empty_trans"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::translate_trans,
+			 "ptt_trans_s",
+			 { "prev", "speed_x", "speed_y", "speed_z" },
+			 { "PTT", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0" },
+			 "PTT", "vertex_anim_api", "translate_trans"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::translate_trans2,
+			 "ptt_trans_d",
+			 { "prev", "duration", "dist_x", "dist_y", "dist_z" },
+			 { "PTT", "float", "float", "float", "float" },
+			 { "", "10.0", "0.0", "0.0", "0.0" },
+			 "PTT", "vertex_anim_api", "translate_trans2"));
+#if 0
+  // rotation doesnt work in vertex anim, since vertex anim
+  // uses time ranges + linear interpolation inside the range
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::rotate_trans,
+			 "ptt_rotate_s",
+			 { "prev", "nx", "ny", "nz", "speed_angle" },
+			 { "PTT", "float", "float", "float", "float" },
+			 { "", "0.0", "1.0", "0.0", "6.282" },
+			 "PTT", "vertex_anim_api", "rotate_trans"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::rotate_trans2,
+			 "ptt_rotate_d",
+			 { "prev", "duration", "nx", "ny", "nz", "dist_angle" },
+			 { "PTT", "float", "float", "float", "float", "float" },
+			 { "", "10.0", "0.0", "1.0", "0.0", "6.282" },
+			 "PTT", "vertex_anim_api", "rotate_trans2"));
+#endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::scale_trans,
+			 "ptt_scale_s",
+			 { "prev", "speed_x", "speed_y", "speed_z" },
+			 { "PTT", "float", "float", "float" },
+			 { "", "1.0", "1.0", "1.0" },
+			 "PTT", "vertex_anim_api", "scale_trans"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::scale_trans2,
+			 "ptt_scale_d",
+			 { "prev", "duration", "dist_x", "dist_y", "dist_z" },
+			 { "PTT", "float", "float", "float", "float" },
+			 { "", "10.0", "1.0", "1.0", "1.0" },
+			 "PTT", "vertex_anim_api", "scale_trans2"));
   return vec;
 }
 std::vector<GameApiItem*> blocker_functions()
@@ -5555,6 +5646,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P", "unsigned int", "unsigned int", "unsigned int", "unsigned int" },
 			 { "", "ffffffff", "ffffffff", "ff888888", "ff888888" },
 			 "P", "polygon_api", "color_faces"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_alpha,
+			 "color_alpha",
+			 { "orig", "alpha" },
+			 { "P", "unsigned int" },
+			 { "", "ff" },
+			 "P", "polygon_api", "color_alpha"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_from_normals,
 			 "color_from_normals",
 			 { "orig" },
@@ -6006,7 +6103,7 @@ std::vector<GameApiItem*> linesapi_functions()
 			 "border_from_bool_bitmap",
 			 { "b", "start_x", "end_x", "start_y", "end_y", "z" },
 			 { "BB", "float", "float", "float", "float", "float" },
-			 { "",   "0.0", "100.0", "0.0", "100.0", "0.0" },
+			 { "",   "-300.0", "300.0", "-300.0", "300.0", "0.0" },
 			 "LI", "lines_api", "border_from_bool_bitmap"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::translate,
 			 "li_translate",
@@ -6128,6 +6225,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "C", "int" },
 			 { "", "40" },
 			 "LI", "curve_api", "to_lines"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::xy_sum,
+			 "cpp_sum",
+			 { },
+			 { },
+			 { },
+			 "CPP", "curve_api", "xy_sum"));
 
   return vec;
 }
@@ -6202,7 +6305,7 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 "PTS", "points_api", "random_plane"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::random_bitmap_instancing,
 			 "random_bitmap",
-			 { "ev", "bb", "count", "start_x", "end_x", "start_z", "end_z", "y" },
+			 { "ev", "bb", "count", "start_x", "end_x", "start_y", "end_y", "z" },
 			 { "EveryApi&", "BB", "int", "float", "float", "float", "float", "float" },
 			 { "ev", "", "300", "-300.0", "300.0", "-300.0", "300.0", "0.0"},
 			 "PTS", "points_api", "random_bitmap_instancing"));

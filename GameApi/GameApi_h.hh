@@ -552,6 +552,9 @@ struct EnvImpl
   std::vector<MixedI*> mixed;
   std::vector<ColorChange*> color_change;
   std::vector<Blocker*> blockers;
+  std::vector<VertexAnimNode*> vertex_anims;
+  std::vector<PointTransform*> point_transforms;
+  std::vector<CurvePos*> curve_pos;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -827,6 +830,9 @@ struct FaceCollPolyHandle : public PolyHandle
 //
 // add functions
 //
+GameApi::CPP add_curve_pos(GameApi::Env &e, CurvePos *pos);
+GameApi::PTT add_point_transform(GameApi::Env &e, PointTransform *ptt);
+GameApi::KF add_vertex_anim(GameApi::Env &e, VertexAnimNode *node);
 GameApi::BLK add_blocker(GameApi::Env &e, Blocker *blk);
 GameApi::CC add_color(GameApi::Env &e, ColorChange *cc);
 GameApi::MX add_mixed(GameApi::Env &e, MixedI *n);
@@ -916,6 +922,9 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+CurvePos *find_curve_pos(GameApi::Env &e, GameApi::CP pos);
+PointTransform *find_point_transform(GameApi::Env &e, GameApi::PTT pt);
+VertexAnimNode *find_vertex_anim(GameApi::Env &e, GameApi::KF kf);
 Blocker *find_blocker(GameApi::Env &e, GameApi::BLK blk);
 ColorChange *find_color(GameApi::Env &e, GameApi::CC cc);
 MixedI *find_mixed(GameApi::Env &e, GameApi::MX m);

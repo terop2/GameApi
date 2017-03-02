@@ -662,4 +662,24 @@ public:
   virtual void Execute()=0; // must block execution
 };
 
+class PointTransform
+{
+public:
+  virtual Point Map(Point p, float delta_time) const=0;
+};
+class FaceCollection;
+
+class VertexAnimNode
+{ // KF type, gap=[0..n-1]
+public:
+  virtual int NumKeyFrames()=0; // n
+  virtual float StepDuration(int keyframe_gap) const=0;
+  virtual int FaceColl(int keyframe_gap) const=0;
+};
+class CurvePos
+{
+public:
+  virtual float FindPos(Point p, float curve_length) const=0;
+};
+
 #endif
