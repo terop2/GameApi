@@ -26,6 +26,9 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct IF { int id; };
+  struct SF { int id; };
+  struct ARR { int id; };
   struct CPP { int id; };
   struct PTT { int id; }; 
   struct KF { int id; };
@@ -197,8 +200,8 @@ class BlockerApi
 {
 public:
   BlockerApi(Env &e) : e(e) { }
-  BLK game_window(EveryApi &ev, ML ml, bool logo, bool fpscounter);
-  BLK game_seq(std::vector<BLK> vec, float duration);
+  BLK game_window(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration);
+  BLK game_seq(EveryApi &ev, std::vector<BLK> vec);
   void run(BLK blk);
 private:
   Env &e;
@@ -229,6 +232,7 @@ public:
   IMPORT void outline_third();
   IMPORT void outline_disable();
   IMPORT float get_time();
+  IMPORT void advance_time(float val);
   IMPORT float get_delta_time();
   IMPORT void reset_time();
   IMPORT int get_framenum();
@@ -259,7 +263,8 @@ public:
   IMPORT int get_screen_rect_sy();
   IMPORT int get_screen_sx();
   IMPORT int get_screen_sy();
-
+  IMPORT void set_screen_size(int sx, int sy);
+  IMPORT void set_viewport(int x, int y, int sx, int sy);
 
   IMPORT bool logo_iter();
   IMPORT void save_logo(EveryApi &ev);
@@ -287,7 +292,7 @@ public:
   IMPORT Event get_event();
   void waittof();
   SP screenspace();
-  void execute_ml(ML ml, SH color, SH texture, SH texture_2d, SH arr_texture, M in_MV, M in_T, M in_N);
+  void execute_ml(ML ml, SH color, SH texture, SH texture_2d, SH arr_texture, M in_MV, M in_T, M in_N, int screen_width, int screen_height);
   void event_ml(ML ml, const Event &e);
   ML array_ml(std::vector<ML> vec);
   M in_MV(EveryApi &ev, bool is_3d);
@@ -450,6 +455,7 @@ public:
 	IMPORT BM repeat_bitmap(BM orig, int xcount, int ycount);
 	IMPORT BM sample_bitmap(BM orig, float xmult, float ymult, float x, float y);
   IMPORT BM scale_bitmap(EveryApi &ev, BM orig, int sx, int sy);
+  IMPORT BM scale_bitmap_fullscreen(EveryApi &ev, BM orig);
         IMPORT BM world_from_bitmap(std::function<BM(int)> f, BM int_bm, int dx, int dy);
   IMPORT BM world_from_bitmap2(EveryApi &ev, std::vector<BM> v, std::string filename, std::string chars, int dx, int dy, int sx, int sy);
         IMPORT BM dup_x(BM orig);
@@ -563,6 +569,11 @@ public:
   IMPORT BM font_string_from_atlas(EveryApi &ev, FtA atlas, BM atlas_bm, std::string str, int x_gap);
   IMPORT void save_atlas(FtA atlas, std::string filename);
   IMPORT FtA  load_atlas(std::string filename);
+  IMPORT ARR font_string_array(Ft font, std::string s, int i);
+  IMPORT SF time_string_fetcher(EveryApi &ev);
+  IMPORT IF char_fetcher_from_string(SF string_fetcher, std::string alternatives, int idx);
+  IMPORT ML dynamic_character(EveryApi &ev, std::vector<BM> vec, IF fetcher, int x, int y);
+  IMPORT ML dynamic_string(EveryApi &ev, Ft font, std::string alternative_chars, SF fetcher, int x, int y, int numchars);
 private:
   FontApi(const FontApi&);
   void operator=(const FontApi&);
@@ -1063,7 +1074,8 @@ public:
   MT skeletal(EveryApi &ev);
   MT texture(EveryApi &ev, BM bm);
   MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
-  MT snow(EveryApi &ev, MT nxt);
+  MT snow(EveryApi &ev, MT nxt, unsigned int color1=0xffaaaaaa, unsigned int color2=0xffeeeeee, unsigned int color3=0xffffffff, float mix_val=0.5f);
+  MT choose_color(EveryApi &ev, MT nxt, unsigned int color, float mix_val);
   MT brashmetal(EveryApi &ev, MT nxt, int count, bool web);
   MT web(EveryApi &ev, MT nxt); // TODO: add line width property
   MT dist_field_mesh(EveryApi &ev, SFO sfo, MT next);
@@ -2044,6 +2056,7 @@ public:
 			   float ambient_level);
   IMPORT ML noise_shader(EveryApi &ev, ML mainloop);
   IMPORT ML light_shader(EveryApi &ev, ML mainloop);
+  IMPORT ML choose_color_shader(EveryApi &ev, ML mainloop, unsigned int color, float mix_val);
   IMPORT ML toon_shader(EveryApi &ev, ML mainloop);
   IMPORT ML texture_shader(EveryApi &ev, ML mainloop);
   IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop);
@@ -2839,6 +2852,7 @@ public:
   US f_texture_arr(US us);
   US f_colour(US us);
   US f_mix_color(US us, US us2, float val); // TODO
+  US f_choose_color(US us);
 private:
   Env &e;
 };

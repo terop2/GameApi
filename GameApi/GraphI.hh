@@ -404,6 +404,10 @@ struct MainLoopEnv
   Matrix in_N;
   int sfo_id=-1;
   int spotlight_id = 1;
+  int screen_x = 0; // these are the main window sizes
+  int screen_y = 0;
+  int screen_width = 800;
+  int screen_height = 600;
 };
 
 struct MainLoopEvent
@@ -681,6 +685,32 @@ class CurvePos
 {
 public:
   virtual float FindPos(Point p, float curve_length) const=0;
+};
+
+enum ArrayTypesInUse
+  {
+    E_BM=1,
+    E_P
+  };
+
+//int array_type_to_int(GameApi::BM b); // the definitions are in gameapi.cc beginning
+//int array_type_to_int(GameApi::P b);
+
+struct ArrayType
+{
+  int type; // arraytypesinuse
+  std::vector<int> vec;
+};
+
+class IntFetcher
+{
+public:
+  virtual int get_int() const=0;
+};
+class StringFetcher
+{
+public:
+  virtual std::string get_str() const=0;
 };
 
 #endif

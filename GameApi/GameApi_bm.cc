@@ -154,6 +154,15 @@ EXPORT GameApi::BM GameApi::BitmapApi::scale_bitmap(EveryApi &ev, BM orig, int s
   BM ret = ev.cont_bitmap_api.to_bitmap(cbm, sx,sy);
   return ret;
 }
+EXPORT GameApi::BM GameApi::BitmapApi::scale_bitmap_fullscreen(EveryApi &ev, BM orig)
+{
+  int sx = ev.mainloop_api.get_screen_sx();
+  int sy = ev.mainloop_api.get_screen_sy();
+  CBM cbm = ev.cont_bitmap_api.from_bitmap(orig, 1.0, 1.0);
+  BM ret = ev.cont_bitmap_api.to_bitmap(cbm, sx,sy);
+  return ret;
+}
+
 EXPORT GameApi::BM GameApi::BitmapApi::array_elem(BMA array, int i)
 {
   BitmapArray2<Color> *arr = find_bitmap_array(e, array);

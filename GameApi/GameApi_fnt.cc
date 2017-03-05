@@ -1,5 +1,6 @@
 
 #include "GameApi_h.hh"
+#include <iomanip>
 
 struct FontPriv
 {
@@ -193,6 +194,178 @@ EXPORT void GameApi::FontApi::save_atlas(FtA atlas, std::string filename)
       ss << p.second.top << std::endl;
     }
   ss.close();
+}
+
+EXPORT GameApi::ARR GameApi::FontApi::font_string_array(Ft font, std::string str, int x_gap)
+{
+  //::EnvImpl *env = ::EnvImpl::Environment(&e);
+  int sz = str.size();
+  std::vector<int> bms;
+  for(int i=0;i<sz;i++)
+    {
+      char ch = str[i];
+      BM bm = glyph(font, ch);
+      bms.push_back(bm.id);
+       
+      //Bitmap<int> *bm2 = env->fonts[font.id].bm;
+      //FontGlyphBitmap *bm3 = dynamic_cast<FontGlyphBitmap*>(bm2);
+      //int top = bm3->bitmap_top(ch);
+     //BitmapHandle *handle = find_bitmap(e,bm);
+      //Bitmap<Color> *col = find_color_bitmap(handle);
+      
+    }
+  ArrayType *val = new ArrayType;
+  val->type = E_BM;
+  val->vec = bms;
+  return add_array(e, val);
+}
+class DynChar : public MainLoopItem
+{
+public:
+  DynChar(GameApi::EveryApi &ev, IntFetcher *fetch, std::vector<GameApi::BM> vec, int x, int y) : ev(ev), fetch(fetch), vec(vec),x(x),y(y) 
+  {
+    std::vector<GameApi::VA> va_vec;
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	va_vec.push_back(ev.sprite_api.create_vertex_array(vec[i]));
+      }
+    vas = va_vec;
+    sh.id = -1;
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    sh.id = e.sh_texture;
+    int idx = fetch->get_int();
+    int s = vas.size();
+    if (idx>=0 && idx<s) {
+      ev.shader_api.use(sh);
+      ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(x,y,0));
+      ev.sprite_api.render_sprite_vertex_array(vas[idx]);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual int shader_id() { return sh.id; }
+
+private:
+  GameApi::EveryApi &ev;
+  IntFetcher *fetch;
+  std::vector<GameApi::BM> vec;
+  std::vector<GameApi::VA> vas;
+  int x,y;
+  GameApi::SH sh;
+};
+
+EXPORT GameApi::ML GameApi::FontApi::dynamic_character(GameApi::EveryApi &ev, std::vector<GameApi::BM> vec, GameApi::IF fetcher, int x, int y)
+{
+  IntFetcher *fetch = find_int_fetcher(e, fetcher);
+  return add_main_loop(e, new DynChar(ev, fetch, vec,x,y));
+}
+EXPORT GameApi::ML GameApi::FontApi::dynamic_string(GameApi::EveryApi &ev, GameApi::Ft font, std::string alternative_chars, GameApi::SF fetcher, int x, int y, int numchars)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+
+
+  int s = alternative_chars.size();
+  std::vector<BM> chars;
+  int xmax = 0;
+  int ymax = 0;
+  for(int i=0;i<s;i++)
+    {
+      BM bm = glyph(font, (long)alternative_chars[i]);
+      int x = ev.bitmap_api.size_x(bm);
+      int y = ev.bitmap_api.size_y(bm);
+      if (x>xmax) xmax = x;
+      if (y>ymax) ymax = y;
+    }
+
+
+
+
+  int s2 = alternative_chars.size();
+  //std::vector<BM> chars;
+  for(int i=0;i<s2;i++)
+    {
+      char ch = alternative_chars[i];
+      Bitmap<int> *bm2 = env->fonts[font.id].bm;
+      FontGlyphBitmap *bm3 = dynamic_cast<FontGlyphBitmap*>(bm2);
+      int top = bm3->bitmap_top(ch);
+
+
+      BM bm = glyph(font, (long)alternative_chars[i]);
+      int xx = ev.bitmap_api.size_x(bm);
+      //int yy = ev.bitmap_api.size_y(bm);
+      BM bm4 = ev.bitmap_api.growbitmap(bm, (xmax-xx)/2, ymax-top, (xmax-xx)/2, 0);
+      chars.push_back(bm4);
+    }
+
+  IF char_fetch;
+  std::vector<ML> ml;
+  for(int i=0;i<numchars;i++)
+    {
+      char_fetch = char_fetcher_from_string(fetcher, alternative_chars, i);
+      ml.push_back(dynamic_character(ev, chars, char_fetch, x+xmax*i,y));
+    }
+  return ev.mainloop_api.array_ml(ml);
+}
+
+class ChooseCharFetcher : public IntFetcher
+{
+public:
+  ChooseCharFetcher(StringFetcher *fetch, std::string alternatives, int index) : fetch(fetch), alternatives(alternatives), index(index) { }
+  int get_int() const
+  {
+    std::string val = fetch->get_str();
+    int s = val.size();
+    if (index>=0 && index < s) {
+      char c = val[index];
+      int ss = alternatives.size();
+      for(int i=0;i<ss;i++)
+	{
+	  if (alternatives[i]==c) { return i; }
+	}
+      return 0;
+    } else {
+      return 0;
+    }
+  }
+private:
+  StringFetcher *fetch;
+  std::string alternatives;
+  int index;
+};
+EXPORT GameApi::IF GameApi::FontApi::char_fetcher_from_string(SF string_fetcher, std::string alternatives, int idx)
+{
+  StringFetcher *str = find_string_fetcher(e, string_fetcher);
+  return add_int_fetcher(e, new ChooseCharFetcher(str, alternatives, idx));
+}
+
+class TimeStringFetcher : public StringFetcher
+{
+public:
+  TimeStringFetcher(GameApi::EveryApi &ev) { 
+    start_time = SDL_GetTicks();
+  }
+  std::string get_str() const {
+    unsigned int time = SDL_GetTicks();
+    unsigned int time_to_use = time - start_time;
+    time_to_use /= 1000;
+
+    unsigned int beg = time_to_use % 100;
+    unsigned int end = (time_to_use / 100) % 100;
+    std::stringstream ss;
+    ss << std::setfill('0') << std::setw(2) << end;
+    ss << ":";
+    ss << std::setfill('0') << std::setw(2) << beg;
+    return ss.str();
+  }
+private:
+  unsigned int start_time;
+};
+
+EXPORT GameApi::SF GameApi::FontApi::time_string_fetcher(GameApi::EveryApi &ev)
+{
+  return add_string_fetcher(e, new TimeStringFetcher(ev));
 }
 
 EXPORT GameApi::BM GameApi::FontApi::font_string(Ft font, std::string str, int x_gap)

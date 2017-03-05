@@ -855,9 +855,13 @@ void iter(void *arg)
 			    blk.id = id;
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-
-
+			int sx = env->ev->mainloop_api.get_screen_sx();
+			int sy = env->ev->mainloop_api.get_screen_sy();
+			//env->ev->mainloop_api.set_screen_size(1200,900);
+			//env->ev->mainloop_api.set_viewport(0,0,1200,900);
 			    env->ev->blocker_api.run(blk);
+			    //env->ev->mainloop_api.set_screen_size(sx,sy);
+			    //env->ev->mainloop_api.set_viewport(0,0,sx,sy);
 			    env->display = env->gui->empty();
 			    env->display_close = env->gui->empty();
 			    env->codegen_button = env->gui->empty();
