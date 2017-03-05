@@ -717,7 +717,7 @@ public:
 	GameApi::M in_T = ev.mainloop_api.in_T(ev, true);
 	GameApi::M in_N = ev.mainloop_api.in_N(ev, true);
 	//e.inMV = find_matrix(env, mat);
-	ev.mainloop_api.execute_ml(p, sh, sh2, sh2, sh_arr,mat, in_T, in_N);
+	ev.mainloop_api.execute_ml(p, sh, sh2, sh2, sh_arr,mat, in_T, in_N, sz.dx, sz.dy);
 	e.type = -1;
 	e.ch = -1;
 	e.button = -1;
@@ -3668,6 +3668,8 @@ MACRO(GameApi::BLK)
 MACRO(GameApi::PTT)
 MACRO(GameApi::KF)
 MACRO(GameApi::CPP)
+MACRO(GameApi::IF)
+MACRO(GameApi::SF)
 #undef MACRO
 
 
@@ -4825,6 +4827,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "Ft", "std::string", "int" },
 			 { "", "Hello", "5" },
 			 "BM", "font_api", "font_string"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::dynamic_string,
+			 "dyn_string",
+			 { "ev", "font", "alternative_chars", "fetcher", "x", "y", "numchars" },
+			 { "EveryApi&", "Ft", "std::string", "SF", "int", "int", "int" },
+			 { "ev", "", "0123456789:", "", "0", "0", "5" },
+			 "ML", "font_api", "dynamic_string"));
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::glyph_fb,
 			 "glyph_fb",
@@ -4875,6 +4883,30 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "atlas1.txt" },
 			 "FtA", "font_api", "load_atlas"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_string_array,
+			 "fnt_chars",
+			 { "font", "string", "x_gap" },
+			 { "Ft", "std::string", "int" },
+			 { "", "0123456789", "2" },
+			 "ARR", "font_api", "font_string_array"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::time_string_fetcher,
+			 "fnt_time",
+			 { "ev" },
+			 { "EveryApi&" },
+			 { "ev" },
+			 "SF", "font_api", "time_string_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::char_fetcher_from_string,
+			 "fnt_char_idx",
+			 { "string_fetcher", "alternatives", "idx" },
+			 { "SF", "std::string", "int" },
+			 { "", "0123456789", "0" },
+			 "IF", "font_api", "char_fetcher_from_string"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::dynamic_character,
+			 "fnt_dyn_char",
+			 { "ev", "vec", "fetcher", "x", "y" },
+			 { "EveryApi&", "[BM]", "IF", "int", "int" },
+			 { "ev", "", "", "0","0" },
+			 "ML", "font_api", "dynamic_character"));
   return vec;
 }
 #endif
@@ -5089,10 +5121,16 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "MT", "materials_api", "skeletal"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::snow,
 			 "m_snow",
-			 { "ev", "nxt" },
-			 { "EveryApi&", "MT" },
-			 { "ev", "" },
+			 { "ev", "nxt", "color1", "color2", "color3", "mix_val" },
+			 { "EveryApi&", "MT", "unsigned int", "unsigned int", "unsigned int", "float" },
+			 { "ev", "", "ffaaaaaa", "ffeeeeee", "ffffffff", "0.5" },
 			 "MT", "materials_api", "snow"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::choose_color,
+			 "m_choose_color",
+			 { "ev", "nxt", "color", "mix_val" },
+			 { "EveryApi&", "MT", "unsigned int", "float" },
+			 { "ev", "", "ffff8844", "0.5" },
+			 "MT", "materials_api", "choose_color"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::brashmetal,
 			 "m_brashmetal",
 			 { "ev", "nxt", "count", "web" },
@@ -5379,15 +5417,15 @@ std::vector<GameApiItem*> blocker_functions()
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_window, 
 			 "blk_window",
-			 { "ev", "ml", "logo", "fpscounter" },
-			 { "EveryApi&", "ML","bool","bool" },
-			 { "ev", "","false","false" },
+			 { "ev", "ml", "logo", "fpscounter", "start_time", "duration" },
+			 { "EveryApi&", "ML","bool","bool", "float", "float" },
+			 { "ev", "","false","false", "0.0", "100000.0" },
 			 "BLK", "blocker_api", "game_window"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_seq,
 			 "blk_seq",
-			 { "vec", "duration" },
-			 { "[BLK]", "float" },
-			 { "", "100.0" },
+			 { "ev", "vec" },
+			 { "EveryApi&", "[BLK]" },
+			 { "ev", "" },
 			 "BLK", "blocker_api", "game_seq"));
 
   return vec;
@@ -5905,6 +5943,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "EveryApi&", "ML", "unsigned int", "unsigned int", "unsigned int" },
 			 { "ev", "", "ff442211", "ffff8844", "ffffffff" },
 			 "ML", "polygon_api", "shading_shader"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::choose_color_shader,
+			 "p_color",
+			 { "ev", "mainloop", "color", "mix_val" },
+			 { "EveryApi&", "ML", "unsigned int", "float" },
+			 { "ev", "", "ffaa9988", "0.5" },
+			 "ML", "polygon_api", "choose_color_shader"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::spotlight_shader,
 			 "p_spotlight",
 			 { "ev", "mainloop", "light_color_id", "move" },
@@ -6625,7 +6669,18 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BM", "BM", "int", "int", "BB" },
 			 { "", "", "0", "0", "" },
 			 "BM", "bitmap_api", "blitbitmap"));
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::scale_bitmap,
+			 "bm_scale",
+			 { "ev", "orig", "sx", "sy" },
+			 { "EveryApi&", "BM", "int", "int" },
+			 { "ev", "", "800", "600" },
+			 "BM", "bitmap_api", "scale_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::scale_bitmap_fullscreen,
+			 "bm_fullscreen",
+			 { "ev", "orig" },
+			 { "EveryApi&", "BM" },
+			 { "ev", "" },
+			 "BM", "bitmap_api", "scale_bitmap_fullscreen"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::interpolate_bitmap,
 			 "interpolate",
 			 { "orig1", "orig2", "x" },
@@ -6725,7 +6780,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "ev", "" },
 			 "ML", "sprite_api", "vertex_array_render"));
 
-#if 0
+#if 1
   // UNFORTUNATELY THIS DOES NOT WORK, WE SHOULD GET THIS WORKING ASAP,
   // BUT THE FUNCTION IS BROKEN / works in builder, but does not work in
   // example3d_4. (this allows builder to move to 2d mode, and this would

@@ -555,6 +555,9 @@ struct EnvImpl
   std::vector<VertexAnimNode*> vertex_anims;
   std::vector<PointTransform*> point_transforms;
   std::vector<CurvePos*> curve_pos;
+  std::vector<ArrayType*> arrays2;
+  std::vector<IntFetcher*> int_fetchers;
+  std::vector<StringFetcher*> string_fetchers;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -830,6 +833,9 @@ struct FaceCollPolyHandle : public PolyHandle
 //
 // add functions
 //
+GameApi::IF add_int_fetcher(GameApi::Env &e, IntFetcher *i);
+GameApi::SF add_string_fetcher(GameApi::Env &e, StringFetcher *str);
+GameApi::ARR add_array(GameApi::Env &e, ArrayType *arr);
 GameApi::CPP add_curve_pos(GameApi::Env &e, CurvePos *pos);
 GameApi::PTT add_point_transform(GameApi::Env &e, PointTransform *ptt);
 GameApi::KF add_vertex_anim(GameApi::Env &e, VertexAnimNode *node);
@@ -922,6 +928,9 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+StringFetcher *find_string_fetcher(GameApi::Env &e, GameApi::SF s);
+IntFetcher *find_int_fetcher(GameApi::Env &e, GameApi::IF f);
+ArrayType *find_array(GameApi::Env &e, GameApi::ARR arr);
 CurvePos *find_curve_pos(GameApi::Env &e, GameApi::CP pos);
 PointTransform *find_point_transform(GameApi::Env &e, GameApi::PTT pt);
 VertexAnimNode *find_vertex_anim(GameApi::Env &e, GameApi::KF kf);

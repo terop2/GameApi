@@ -782,6 +782,14 @@ ShaderFile::ShaderFile()
 "uniform sampler2DArray texarr;\n"
 "#endif\n"
 #endif
+"#ifdef CHOOSE_COLOR\n"
+"uniform vec4 color_choice;\n"
+"uniform float mix_val;\n"
+"vec4 choose_color(vec4 rgb)\n"
+"{\n"
+"    return vec4(mix(rgb.rgb,color_choice.rgb,mix_val),rgb.a);\n"
+"}\n"
+"#endif\n"
 "vec4 white(vec4 rgb)\n"
 "{\n"
 "   return vec4(1.0,1.0,1.0,1.0);\n"
@@ -1470,6 +1478,14 @@ ShaderFile::ShaderFile()
 
 "//M:\n"
 
+"#ifdef CHOOSE_COLOR\n"
+"uniform vec4 color_choice;\n"
+"uniform float mix_val;\n"
+"vec4 choose_color(vec4 rgb)\n"
+"{\n"
+"    return vec4(mix(rgb.rgb,color_choice.rgb,mix_val),rgb.a);\n"
+"}\n"
+"#endif\n"
 "vec4 white(vec4 rgb)\n"
 "{\n"
 "   return vec4(1.0,1.0,1.0,1.0);\n"
@@ -2230,7 +2246,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines);
-      //     std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

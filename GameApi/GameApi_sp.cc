@@ -167,7 +167,7 @@ EXPORT GameApi::SpriteApi::SpriteApi(GameApi::Env &e) : e(e)
 class TurnTo2d : public MainLoopItem
 {
 public:
-  TurnTo2d(GameApi::EveryApi &ev, MainLoopItem *next, Point2d tl, Point2d br) : ev(ev), next(next), tl(tl), br(br) { 
+  TurnTo2d(GameApi::EveryApi &ev, MainLoopItem *next, Point2d tl, Point2d br) : ev(ev), next(next), tl(tl), br(br) {
   }
   void handle_event(MainLoopEvent &e)
   {
@@ -175,6 +175,10 @@ public:
   }
   void execute(MainLoopEnv &e)
   {
+    tl.x = e.screen_x;
+    tl.y = e.screen_y;
+    br.x = e.screen_width;
+    br.y = e.screen_height;
     screen_x = ev.mainloop_api.get_screen_sx();
     screen_y = ev.mainloop_api.get_screen_sy();
     corner_x = ev.mainloop_api.get_corner_x();
@@ -182,9 +186,6 @@ public:
     rect_sx = ev.mainloop_api.get_screen_rect_sx();
     rect_sy = ev.mainloop_api.get_screen_rect_sy();
 
-
-
-    
     GameApi::SH sh = { e.sh_texture_2d };
     ev.shader_api.use(sh);
     ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);

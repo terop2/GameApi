@@ -290,6 +290,12 @@ EXPORT int GameApi::MainLoopApi::get_screen_rect_sy()
   MainLoopPriv *p = (MainLoopPriv*)priv;
   return p->screen_rect_sy;
 }
+EXPORT void GameApi::MainLoopApi::set_screen_size(int sx, int sy)
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  p->screen_width = sx;
+  p->screen_height = sy;
+}
 EXPORT int GameApi::MainLoopApi::get_screen_sx()
 {
   MainLoopPriv *p = (MainLoopPriv*)priv;
@@ -464,6 +470,10 @@ EXPORT float GameApi::MainLoopApi::get_delta_time()
 EXPORT void GameApi::MainLoopApi::reset_time()
 {
   time = SDL_GetTicks();
+}
+EXPORT void GameApi::MainLoopApi::advance_time(float val)
+{
+  time+=val;
 }
 EXPORT int GameApi::MainLoopApi::get_framenum()
 {
@@ -715,7 +725,7 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 
   return e2;
 }
-void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH texture_2d, SH array_texture, M in_MV, M in_T, M in_N)
+void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH texture_2d, SH array_texture, M in_MV, M in_T, M in_N, int screen_size_x, int screen_size_y)
 {
   MainLoopItem *item = find_main_loop(e, ml);
   MainLoopEnv ek;
@@ -733,6 +743,10 @@ void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH texture_2d
   ek.in_N = find_matrix(e, in_N);
   ek.time = get_time()/1000.0;
   ek.delta_time = get_delta_time();
+  ek.screen_x = 0;
+  ek.screen_y = 0;
+  ek.screen_width = screen_size_x;
+  ek.screen_height = screen_size_y;
   item->execute(ek);
 }
 void GameApi::MainLoopApi::event_ml(ML ml, const Event &ee)
@@ -779,6 +793,10 @@ int GameApi::MainLoopApi::get_screen_height()
   MainLoopPriv *p = (MainLoopPriv*)priv;
   return p->screen_height;
 }
+void GameApi::MainLoopApi::set_viewport(int x, int y, int sx, int sy)
+{
+  glViewport(x,y,sx,sy);
+}
 
 GameApi::ML GameApi::MainLoopApi::array_ml(std::vector<ML> vec)
 {
@@ -820,7 +838,7 @@ bool GameApi::MainLoopApi::logo_iter()
   M in_MV = env->ev->mainloop_api.in_MV(*env->ev, true);
   M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
   M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
-  env->ev->mainloop_api.execute_ml(env->res, env->color, env->texture, env->texture_2d, env->arr,in_MV, in_T, in_N);
+  env->ev->mainloop_api.execute_ml(env->res, env->color, env->texture, env->texture_2d, env->arr,in_MV, in_T, in_N, get_screen_sx(), get_screen_sy());
   env->ev->mainloop_api.swapbuffers();
   frame_count++;
   if (frame_count>300) {
