@@ -192,10 +192,13 @@ public:
     glViewport(corner_x+tl.x,screen_y-corner_y-(br.y-tl.y), br.x-tl.x, br.y-tl.y);
 
     glDisable(GL_DEPTH_TEST);
-    int old_sh = e.sh_texture;
-    e.sh_texture = e.sh_texture_2d;
-    next->execute(e);
-    e.sh_texture = old_sh;
+    //int old_sh = e.sh_texture;
+    MainLoopEnv ee = e;
+    ee.sh_texture = e.sh_texture_2d;
+    //ee.env = e.env * Matrix::Translate(0.0,0.0,400.0);
+    ee.is_2d = true;
+    next->execute(ee);
+    //e.sh_texture = old_sh;
     glEnable(GL_DEPTH_TEST);
     ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
     glViewport(corner_x,screen_y-corner_y-rect_sy,rect_sx, rect_sy);
@@ -294,7 +297,7 @@ EXPORT void GameApi::SpriteApi::spritepos(BM bm, float x, float y)
 class RenderVertexArray4 : public MainLoopItem
 {
 public:
-  RenderVertexArray4(GameApi::EveryApi &ev, GameApi::SpriteApi &sp, GameApi::VA va) : ev(ev), sp(sp), va(va) { }
+  RenderVertexArray4(GameApi::Env &ee, GameApi::EveryApi &ev, GameApi::SpriteApi &sp, GameApi::VA va) : ee(ee), ev(ev), sp(sp), va(va) { }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -303,17 +306,20 @@ public:
     GameApi::SH sh;
     sh.id = e.sh_texture;
     ev.shader_api.use(sh);
+    //std::cout << e.in_MV << std::endl;
+    //ev.shader_api.set_var(sh, "in_MV", add_matrix2(ee,e.in_MV));
     sp.render_sprite_vertex_array(va);
   }
   int shader_id() { return -1; }
 private:
+  GameApi::Env &ee;
   GameApi::EveryApi &ev;
   GameApi::SpriteApi &sp;
   GameApi::VA va;
 };
 EXPORT GameApi::ML GameApi::SpriteApi::render_sprite_vertex_array_ml(EveryApi &ev, VA va)
 {
-  return add_main_loop(e, new RenderVertexArray4(ev, *this, va));
+  return add_main_loop(e, new RenderVertexArray4(e, ev, *this, va));
 }
 
 EXPORT void GameApi::SpriteApi::render_sprite_vertex_array(VA va)

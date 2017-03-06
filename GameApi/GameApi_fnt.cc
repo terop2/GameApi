@@ -351,8 +351,8 @@ public:
     unsigned int time_to_use = time - start_time;
     time_to_use /= 1000;
 
-    unsigned int beg = time_to_use % 100;
-    unsigned int end = (time_to_use / 100) % 100;
+    unsigned int beg = time_to_use % 60;
+    unsigned int end = (time_to_use / 60) % 60;
     std::stringstream ss;
     ss << std::setfill('0') << std::setw(2) << end;
     ss << ":";

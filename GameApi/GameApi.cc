@@ -3181,7 +3181,10 @@ public:
     s3.id = env.sh_color;
     float time = (env.time*1000.0-start_time)/100.0+i*time_delta;
     GameApi::M mat = ev.move_api.get_matrix(mn, time, ev.mainloop_api.get_delta_time());
+    Matrix mat_i = find_matrix(e, mat);
+    //std::cout << mat_i << std::endl;
     GameApi::M m2 = add_matrix2(e, env.env);
+    //std::cout << env.env << std::endl;
     GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
     ev.shader_api.use(s1);
     ev.shader_api.set_var(s1, "in_MV", mat2);
@@ -3189,17 +3192,18 @@ public:
     ev.shader_api.set_var(s2, "in_MV", mat2);
     ev.shader_api.use(s3);
     ev.shader_api.set_var(s3, "in_MV", mat2);
-    Matrix old_in_MV = env.in_MV;
-    env.in_MV = find_matrix(e, mat2);
+    //Matrix old_in_MV = env.in_MV;
+    MainLoopEnv ee = env;
+    ee.in_MV = find_matrix(e, mat2);
 
-    Matrix old_env = env.env;
-    float old_time = env.time;
-    env.env = find_matrix(e,mat2); /* * env.env*/;
-    env.time = env.time + i*time_delta/10.0;
-    next->execute(env);
-    env.env = old_env;
-    env.time = old_time;
-    env.in_MV = old_in_MV;
+    //Matrix old_env = env.env;
+    //float old_time = env.time;
+    ee.env = find_matrix(e,mat2); /* * env.env*/;
+    ee.time = env.time + i*time_delta/10.0;
+    next->execute(ee);
+    //env.env = old_env;
+    //env.time = old_time;
+    //env.in_MV = old_in_MV;
       }
   }
 private:
@@ -6560,9 +6564,9 @@ void blocker_iter(void *arg)
 	env->ev->shader_api.set_var(env->arr_texture_sh, "in_MV", mat);
 	env->ev->shader_api.use(env->color_sh);
 
-	GameApi::M in_MV = env->ev->mainloop_api.in_MV(*env->ev, true);
-	GameApi::M in_T = env->ev->mainloop_api.in_MV(*env->ev, true);
-	GameApi::M in_N = env->ev->mainloop_api.in_MV(*env->ev, true);
+	GameApi::M in_MV = mat; //env->ev->mainloop_api.in_MV(*env->ev, true);
+	GameApi::M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
+	GameApi::M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
 
 	env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
 
@@ -6609,10 +6613,10 @@ public:
     ev.shader_api.use(sh);
     
     GameApi::ML ml = mainloop(ev);
-    GameApi::MN mn0 = ev.move_api.empty();
-    GameApi::MN mn = ev.move_api.trans2(mn0, 0.0, 0.0, -400.0);
-    GameApi::ML ml2 = ev.move_api.move_ml(ev, ml, mn);
-    env.mainloop = ml2;
+    //GameApi::MN mn0 = ev.move_api.empty();
+    //GameApi::MN mn = ev.move_api.trans2(mn0, 0.0, 0.0, -400.0);
+    //GameApi::ML ml2 = ev.move_api.move_ml(ev, ml, mn);
+    env.mainloop = ml;
     
     env.ev = &ev;
     env.color_sh = sh;
