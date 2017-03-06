@@ -2015,6 +2015,7 @@ EXPORT GameApi::W GameApi::GuiApi::va(VA p, SH sh2, int sx, int sy, int screen_s
 }
 EXPORT GameApi::W GameApi::GuiApi::ml(ML p, SH sh2, SH sh3, SH sh_2d, SH sh_arr, int sx, int sy, int screen_size_x, int screen_size_y)
 {
+  
   return add_widget(e, new MLGuiWidget(e, ev, p, sh2, sh3, sh_2d, sh_arr, sh, sx,sy, screen_size_x, screen_size_y));
 }
 EXPORT GameApi::W GameApi::GuiApi::shader_plane(SFO p, int sx, int sy, int screen_x, int screen_y)
@@ -5280,6 +5281,19 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "float" },
 			 { "ev", "", "100.0" },
 			 "ML", "move_api", "repeat_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::vertex_array_render,
+			 "bm_render",
+			 { "ev", "bm" },
+			 { "EveryApi&", "BM" },
+			 { "ev", "" },
+			 "ML", "sprite_api", "vertex_array_render"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::turn_to_2d,
+			 "bm_2d",
+			 { "ev", "ml", "tl_x", "tl_y", "br_x", "br_y" },
+			 { "EveryApi&", "ML","float", "float", "float", "float" },
+			 { "ev", "", "0.0", "0.0", "800.0", "600.0" },
+			 "ML", "sprite_api", "turn_to_2d"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::create_vertex_array,
 			 "p_prepare",
 			 { "p", "b" },
@@ -5304,6 +5318,19 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "VA", "PTA" },
 			 { "ev", "", "" },
 			 "ML", "materials_api", "render_instanced2_ml","","Can be used for dynamic changes for pta"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::prepare,
+			 "pts_prepare",
+			 { "p" },
+			 { "PTS" },
+			 { "" },
+			 "PTA", "points_api", "prepare"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::render_ml,
+			 "pts_render",
+			 { "ev", "a" },
+			 { "EveryApi&", "PTA" },
+			 { "ev", "" },
+			 "ML", "points_api", "render_ml"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::prepare,
 			 "li_prepare",
 			 { "li" },
@@ -6385,18 +6412,6 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "EveryApi&", "P", "int" },
 			 { "ev", "", "300" },
 			 "PTS", "points_api", "random_mesh_quad_instancing"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::prepare,
-			 "pts_prepare",
-			 { "p" },
-			 { "PTS" },
-			 { "" },
-			 "PTA", "points_api", "prepare"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::render_ml,
-			 "pts_render",
-			 { "ev", "a" },
-			 { "EveryApi&", "PTA" },
-			 { "ev", "" },
-			 "ML", "points_api", "render_ml"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::from_points,
 			 "ms_from_points",
@@ -6773,25 +6788,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "ev", "" },
 			 "ML", "sprite_api", "render_sprite_vertex_array_ml"));
 #endif
-  vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::vertex_array_render,
-			 "bm_render",
-			 { "ev", "bm" },
-			 { "EveryApi&", "BM" },
-			 { "ev", "" },
-			 "ML", "sprite_api", "vertex_array_render"));
 
-#if 1
-  // UNFORTUNATELY THIS DOES NOT WORK, WE SHOULD GET THIS WORKING ASAP,
-  // BUT THE FUNCTION IS BROKEN / works in builder, but does not work in
-  // example3d_4. (this allows builder to move to 2d mode, and this would
-  // be important feature)
-  vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::turn_to_2d,
-			 "bm_2d",
-			 { "ev", "ml", "tl_x", "tl_y", "br_x", "br_y" },
-			 { "EveryApi&", "ML","float", "float", "float", "float" },
-			 { "ev", "", "0.0", "0.0", "800.0", "600.0" },
-			 "ML", "sprite_api", "turn_to_2d"));
-#endif
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::cont_bitmap_api, &GameApi::ContinuousBitmapApi::empty,
 			 "cbm_empty",

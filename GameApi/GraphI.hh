@@ -408,6 +408,7 @@ struct MainLoopEnv
   int screen_y = 0;
   int screen_width = 800;
   int screen_height = 600;
+  bool is_2d = false;
 };
 
 struct MainLoopEvent
