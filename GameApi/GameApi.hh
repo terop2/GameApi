@@ -471,6 +471,7 @@ public:
   
   IMPORT BM addsubrects(BM orig); // use subbitmap with orig bitmap.
   IMPORT void savebitmap(BM orig, std::string filename, bool alpha=false);
+  IMPORT ML savebitmap_ml(EveryApi &ev, BM bm, std::string filename, bool alpha, float time);
   IMPORT BM mandelbrot(bool julia,
 		       float start_x, float end_x, // [-2..1]
 		       float start_y, float end_y, // [-1,1]

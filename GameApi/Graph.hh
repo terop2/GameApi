@@ -2211,6 +2211,20 @@ public:
 	  buf.buffer[x+y*buf.ydelta] = color;
 	}
   }
+  void GenPrepare() const
+  {
+    BufferRef::FreeBuffer(buf);
+    buf = BufferRef::NewBuffer(t.SizeX(), t.SizeY());
+  }
+  void Gen(int start_x, int end_x, int start_y, int end_y) const
+  {
+    for(int y=start_y;y<end_y;y++)
+      for(int x=start_x;x<end_x;x++)
+	{
+	  unsigned int color = t.Map(x,y).Pixel();
+	  buf.buffer[x+y*buf.ydelta] = color;
+	}
+  }
   void FlipBytes() {
     BufferRef::FreeBuffer(buf);
     buf = BufferRef::NewBuffer(t.SizeX(), t.SizeY());

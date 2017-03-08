@@ -2980,6 +2980,60 @@ void ArrayRender::UpdateAllTextures(MeshTextures &tex)
       UpdateTexture(tex, i);
     }
 }
+struct ThreadInfo_bitmap
+{
+  pthread_t thread_id;
+  int start_x, end_x;
+  int start_y, end_y;
+  BufferFromBitmap *buffer;
+};
+void *thread_func_bitmap(void* data);
+void *thread_func_bitmap(void *data)
+{
+  ThreadInfo_bitmap *ti = (ThreadInfo_bitmap*)data;
+  ti->buffer->Gen(ti->start_x, ti->end_x, ti->start_y, ti->end_y);
+  return 0;
+}
+class ThreadedUpdateTexture
+{
+public:
+  int push_thread(BufferFromBitmap* bm, int start_x, int end_x, int start_y, int end_y)
+  {
+    //std::cout << "Starting thread" << std::endl;
+    buffers.push_back(bm);
+    ThreadInfo_bitmap *info = new ThreadInfo_bitmap;
+    info->buffer = bm;
+    info->start_x = start_x;
+    info->start_y = start_y;
+    info->end_x = end_x;
+    info->end_y = end_y;
+    ti.push_back(info);
+    
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setstacksize(&attr, 3000000);
+    pthread_create(&info->thread_id, &attr, &thread_func_bitmap, (void*)info);
+    pthread_attr_destroy(&attr);
+    return buffers.size()-1;
+  }
+  void join(int id)
+  {
+    void *res;
+    pthread_join(ti[id]->thread_id, &res);
+  }
+  ~ThreadedUpdateTexture() {
+    int s = ti.size();
+    for(int i=0;i<s;i++)
+      {
+	delete ti[i];
+      }
+
+  }
+private:
+  std::vector<BufferFromBitmap*> buffers;
+  std::vector<ThreadInfo_bitmap*> ti;
+};
+
 void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
 {
   //std::cout << "UpdateTexture " << num << std::endl;
@@ -2996,7 +3050,33 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
   BitmapFromBuffer buf(ref);
   FlipColours flip(buf);
   BufferFromBitmap buf2(flip);
-  buf2.Gen(); 
+  buf2.GenPrepare();
+
+  int numthreads = 4;
+  ThreadedUpdateTexture threads;
+  int sx = flip.SizeX();
+  int sy = flip.SizeY();
+  int dsy = sy/numthreads + 1;
+  std::vector<int> ids;
+  for(int i=0;i<numthreads;i++)
+    {
+      int start_x = 0;
+      int end_x = sx;
+      int start_y = i*dsy;
+      int end_y = (i+1)*dsy;
+      if (start_y>sy) { start_y = sy; }
+      if (end_y>sy) end_y = sy;
+      
+      if (end_y-start_y > 0)
+	ids.push_back(threads.push_thread(&buf2, start_x, end_x, start_y, end_y));
+    }
+  int ss = ids.size();
+  for(int i=0;i<ss;i++)
+    {
+      threads.join(ids[i]);
+    }
+
+  //buf2.Gen(); 
   BufferRef ref2 = buf2.Buffer(); 
   int sizex = ref2.width;
   int sizey = ref2.height;
