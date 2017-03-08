@@ -468,7 +468,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::newtilebitmap(int sx, int sy, int tile_sx
 
 BufferRef LoadImage(std::string filename, bool &success);
 
-EXPORT void GameApi::BitmapApi::savebitmap(BM bm, std::string filename, bool alpha)
+EXPORT void GameApi::BitmapApi::savebitmap(GameApi::BM bm, std::string filename, bool alpha)
 {  
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *bm2 = find_color_bitmap(handle);
@@ -477,6 +477,30 @@ EXPORT void GameApi::BitmapApi::savebitmap(BM bm, std::string filename, bool alp
   std::ofstream filehandle(filename.c_str(), std::ios_base::out|std::ios::binary);
   filehandle.write(pngcontents.c_str(), pngcontents.size()); // << pngcontents;
   filehandle.close();
+}
+class SaveBitmapML : public MainLoopItem
+{
+public:
+  SaveBitmapML(GameApi::EveryApi &ev, GameApi::BM bm, std::string filename, bool alpha, float time) : ev(ev), bm(bm), filename(filename), alpha(alpha), time(time) { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (time > e.time*10.0 && time < e.time*10.0 + e.delta_time)
+      {
+	ev.bitmap_api.savebitmap(bm, filename, alpha);
+      }
+  }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual int shader_id() { return -1; }
+private:
+  GameApi::EveryApi &ev;
+  GameApi::BM bm;
+  std::string filename;
+  bool alpha;
+  float time;
+};
+EXPORT GameApi::ML GameApi::BitmapApi::savebitmap_ml(EveryApi &ev, BM bm, std::string filename, bool alpha, float time)
+{
+  return add_main_loop(e, new SaveBitmapML(ev, bm, filename, alpha, time));
 }
 
 std::vector<unsigned char> load_from_url(std::string url)
