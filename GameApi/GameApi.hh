@@ -437,6 +437,7 @@ public:
 	IMPORT BM newcolorbitmap(char *array, int sz, int sy, std::function<unsigned int(char)> f);
 	IMPORT BM newtilebitmap(int sx, int sy, int tile_sx, int tile_sy);
 	IMPORT BM loadbitmap(std::string filename);
+        IMPORT BM loadbitmapfromurl(std::string url);
 	IMPORT BM loadtilebitmap(std::string filename, int tile_sx, int tile_sy);
 	IMPORT BM loadposbitmap(std::string filename);
 	IMPORT BM findtile(BM tile_bitmap, int x, int y);
@@ -1371,6 +1372,7 @@ public:
   W button_with_icon(BM bitmap);
   W opengl_wrapper(W widget);
   W string_editor(std::string allowed_chars, std::string &target, FtA atlas, BM atlas_bm, int x_gap);
+  W url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap);
   W float_editor(float &target, FtA atlas, BM atlas_bm, int x_gap);
   W int_editor(int &target, FtA atlas, BM atlas_bm, int x_gap);
   W long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap);
@@ -2339,7 +2341,8 @@ public:
   
   IMPORT BB part_circle(int sx, int sy, float x, float y, float start_angle, float end_angle, float start_rad, float end_rad);
   IMPORT BB sections(int sx, int sy, float x, float y, std::function<bool (float angle)> f);
-  
+  IMPORT BB rings(int sx, int sy, float center_x_start, float center_y_start, float center_x_end, float center_y_end, float start_radius, float end_radius, float start_thickness, float end_thickness, int numrings);
+
   IMPORT BB not_bitmap(BB b);
   IMPORT BB or_bitmap(BB b1, BB b2);
   IMPORT BB andnot_bitmap(BB b1, BB not_b2);

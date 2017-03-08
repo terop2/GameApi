@@ -1511,7 +1511,9 @@ int main(int argc, char *argv[]) {
 	  //std::cout << "Generating logo." << std::endl;
 	  //ev.mainloop_api.save_logo(ev);
 	  std::cout << "Generating font atlas. " << std::endl;
-	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><[]";
+	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#¤%&/()=?+\\*^.,-<>|§½;:[]_ ";
+
+	  //std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><[]";
 	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 10*font_scale,13*font_scale, 25*font_scale);
 	  FtA atlas2 = ev.font_api.font_atlas_info(ev, font2, chars, 10*font_scale,13*font_scale, 25*font_scale);
 	  FtA atlas3 = ev.font_api.font_atlas_info(ev, font3, chars, 30*font_scale,30*font_scale, 65*font_scale);

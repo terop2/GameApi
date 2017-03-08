@@ -1324,10 +1324,50 @@ void PreCalcExecute(Render &rend, FrameAnim &f, float duration, int numframes)
 }
 
 #undef LoadImage
+BufferRef LoadImageFromString(std::vector<unsigned char> buffer, bool &success)
+{
+  std::vector<unsigned char> mem;
+  int s = buffer.size();
+  for(int i=0;i<s;i++) mem.push_back(buffer[i]);
+
+  int x=0,y=0;
+  int comp=0;
+  stbi_uc * ptr = stbi_load_from_memory(&mem[0], mem.size(), &x, &y, &comp, 4);
+  std::cout << "ImageSize: " << x << " " << y << " " << comp << std::endl;
+  BufferRef ref;
+  ref.buffer = (unsigned int *)ptr;
+  ref.width = x;
+  ref.height = y;
+  ref.ydelta = x;
+
+#if 1
+  if (comp==3||comp==4)
+  for(int yy=0;yy<y;yy++)
+    for(int xx=0;xx<x;xx++)
+      {
+	unsigned int val = ref.buffer[xx+yy*ref.ydelta];
+	unsigned int a = val &0xff000000;
+	unsigned int r = val &0xff0000;
+	unsigned int g = val &0x00ff00;
+	unsigned int b = val &0x0000ff;
+	r>>=16;
+	g>>=8;
+
+	b<<=16;
+	g<<=8;
+	val = a+r+g+b; 
+	ref.buffer[xx+yy*ref.ydelta] = val;
+      }
+#endif
+  success = true;
+  return ref;
+  
+
+}
 BufferRef LoadImage(std::string filename, bool &success)
 {
   std::cout << "Loading: " << filename << std::endl;
-  //SDL_Surface *surf = IMG_Load(filename.c_str());
+  //SDL_Surface *surf = IMG_Load(filename.c_str()); 
   std::vector<unsigned char> mem;
   ifstream ss(filename.c_str(), ios_base::binary|ios_base::in);
   char c;
@@ -1352,7 +1392,7 @@ BufferRef LoadImage(std::string filename, bool &success)
   ref.height = y;
   ref.ydelta = x;
 #if 1
-  if (comp==3)
+  if (comp==3 ||comp==4)
   for(int yy=0;yy<y;yy++)
     for(int xx=0;xx<x;xx++)
       {
@@ -1366,7 +1406,7 @@ BufferRef LoadImage(std::string filename, bool &success)
 
 	b<<=16;
 	g<<=8;
-	val = a+r+g+b; 
+	val = a+r+g+b;  
 	ref.buffer[xx+yy*ref.ydelta] = val;
       }
 #endif

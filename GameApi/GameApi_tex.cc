@@ -158,8 +158,26 @@ EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
   BufferRef ref = BufferRef::NewBuffer(width, height);
   glReadBuffer( GL_COLOR_ATTACHMENT0 );
   glGetTexImage( GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
+
+  int xx = ref.width;
+  int yy = ref.height;
+  for(int y = 0; y<yy; y++)
+    for(int x = 0; x<xx; x++)
+      {
+	unsigned int col = ref.buffer[x+y*ref.ydelta];
+	int r = col &0xff0000;
+	int g = col &0xff00;
+	int b = col &0xff;
+	r >>= 16;
+	g >>= 8;
+	b <<= 16;
+	g <<= 8;
+	unsigned int col2 = (col & 0xff000000) + r+g+b;
+	ref.buffer[x+y*ref.ydelta] = col2;
+      }
   
   Bitmap<Color> *bm = new BitmapFromBuffer(ref);
+
   //env->deletes.push_back(std::shared_ptr<void>(bm));
   //Bitmap<Color> *bm2 = new FlipColours(*bm);
   return add_color_bitmap2(e, bm);
