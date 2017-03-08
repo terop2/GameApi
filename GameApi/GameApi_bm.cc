@@ -1,5 +1,8 @@
 
 #include "GameApi_h.hh"
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
 
 
 template<class T>
@@ -476,6 +479,143 @@ EXPORT void GameApi::BitmapApi::savebitmap(BM bm, std::string filename, bool alp
   filehandle.close();
 }
 
+std::vector<unsigned char> load_from_url(std::string url)
+{ // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
+#ifdef WINDOWS
+    std::string cmd = "../curl/curl.exe -s -N --url " + url;
+#else
+    std::string cmd = "curl -s -N --url " + url;
+#endif
+    FILE *f = popen(cmd.c_str(), "rb");
+    unsigned char c;
+    std::vector<unsigned char> buffer;
+    while(fread(&c,1,1,f)==1) { buffer.push_back(c); }
+    //std::cout << "::" << std::string(buffer.begin(),buffer.end()) << "::" << std::endl;
+    if (buffer.size()==0)
+      {
+#ifdef WINDOWS
+    std::string cmd = "./curl/curl.exe -s -N --url " + url;
+#else
+    std::string cmd = "curl -s -N --url " + url;
+#endif
+    FILE *f = popen(cmd.c_str(), "rb");
+    unsigned char c;
+    //std::vector<unsigned char> buffer;
+    while(fread(&c,1,1,f)==1) { buffer.push_back(c); }
+      }
+    return buffer;
+}
+class LoadBitmapFromUrl;
+std::map<int, LoadBitmapFromUrl*> load_map;
+void onload_cb(const char *data);
+void onerror_cb(const char *data);
+void onerror_cb(const char *data)
+{
+}
+
+class LoadBitmapFromUrl : public Bitmap<Color>
+{
+public:
+  LoadBitmapFromUrl(std::string url) : url(url) { }
+
+  virtual int SizeX() const { 
+    if (!cbm) { return 100; }
+
+    return cbm->SizeX(); }
+  virtual int SizeY() const {
+    if (!cbm) { return 100; } 
+    return cbm->SizeY(); }
+  virtual Color Map(int x, int y) const { 
+    if (!cbm) { return Color(0xffffffff); }
+    return cbm->Map(x,y); }
+  void LoadFinished(std::vector<unsigned char> vec)
+  {
+    
+    bool b = false;
+    img = LoadImageFromString(vec, b);
+
+    if (b==false) {
+      img = BufferRef::NewBuffer(10,10);
+      for(int x=0;x<10;x++)
+	for(int y=0;y<10;y++)
+	  {
+	    img.buffer[x+y*img.ydelta] = ((x+y)&1)==1 ? 0xffffffff : 0xff000000;
+	  }
+      //std::cout << "ERROR: File not found: " << filename << std::endl;
+    }
+
+
+    cbm = new BitmapFromBuffer(img);    
+    load_finished = true;
+  }
+  virtual void Prepare() {
+#ifndef EMSCRIPTEN
+    std::vector<unsigned char> data = load_from_url(url);
+
+    bool b = false;
+    img = LoadImageFromString(data, b);
+    if (b==false) {
+      img = BufferRef::NewBuffer(10,10);
+      for(int x=0;x<10;x++)
+	for(int y=0;y<10;y++)
+	  {
+	    img.buffer[x+y*img.ydelta] = ((x+y)&1)==1 ? 0xffffffff : 0xff000000;
+	  }
+      //std::cout << "ERROR: File not found: " << filename << std::endl;
+    }
+    cbm = new BitmapFromBuffer(img);
+#else
+    static int i_static = 1;
+    i_static++;
+    std::stringstream ss;
+    ss << "url" << i_static << "a.txt";
+    load_map[i_static] = this;
+    std::string s = ss.str();
+    char *buf = new char[s.size()+1];
+    std::copy(s.begin(), s.end(), buf);
+    buf[s.size()]=0;
+
+    char *buf2 = new char[url.size()+1];
+    std::copy(url.begin(), url.end(), buf2);
+    buf2[url.size()]=0;
+
+    emscripten_async_wget(buf2, buf, &onload_cb, &onerror_cb);
+    while(!load_finished)
+      {
+       emscripten_sleep(1);
+      }
+    delete [] buf;
+    delete [] buf2;
+#endif
+    
+  }
+private:
+  std::string url;
+  BufferRef img;
+  Bitmap<Color> *cbm=0;
+  bool load_finished = false;
+};
+
+void onload_cb(const char *data)
+{
+    FILE *f = fopen(data, "rb");
+    unsigned char c;
+    std::vector<unsigned char> buffer;
+    while(fread(&c,1,1,f)==1) { buffer.push_back(c); }    
+
+    char ch;
+    std::stringstream ss(data);
+    ss >> ch >>  ch >> ch;
+    int i_static = 0;
+    ss >> i_static;
+
+    std::cout << "Data: " << data << " : " << i_static << std::endl;
+    LoadBitmapFromUrl* obj = load_map[i_static];
+    if (obj)
+      obj->LoadFinished(buffer);
+}
+
+
 class LoadBitmapBitmap : public Bitmap<Color>
 {
 public:
@@ -532,6 +672,14 @@ private:
   Bitmap<Color> *cbm;
 };
 
+EXPORT GameApi::BM GameApi::BitmapApi::loadbitmapfromurl(std::string url)
+{
+  Bitmap<Color> *bm = new LoadBitmapFromUrl(url);
+  BitmapColorHandle *handle = new BitmapColorHandle;
+  handle->bm = bm;
+  BM bm2 = add_bitmap(e, handle);
+  return bm2;
+}
 EXPORT GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
 {
   Bitmap<Color> *bm = new LoadBitmapBitmap(filename);
@@ -1293,6 +1441,26 @@ EXPORT GameApi::BM GameApi::BoolBitmapApi::choose_bitmap(BB bools, BM true_bitma
   Bitmap<Color> *false2 = find_color_bitmap(handle2);
   Bitmap<Color> *bm = new ChooseBitmap3(*bools2, *true2, *false2);
   return add_color_bitmap2(e, bm);
+}
+EXPORT GameApi::BB GameApi::BoolBitmapApi::rings(int sx, int sy, float center_x_start, float center_y_start, float center_x_end, float center_y_end, float start_radius, float end_radius, float start_thickness, float end_thickness, int numrings)
+{
+  BB bg = empty(sx,sy);
+  int s = numrings;
+  float delta_val = 1.0/numrings;
+  for(int i=0;i<s;i++)
+    {
+      float val = i*delta_val;
+      float center_x = (1.0-val)*center_x_start + val*center_x_end;
+      float center_y = (1.0-val)*center_y_start + val*center_y_end;
+      float radius = (1.0-val)*start_radius + val * end_radius;
+      float thickness = (1.0-val)*start_thickness + val * end_thickness;
+
+      BB c1 = circle(bg, center_x, center_y, radius);
+      BB c2 = circle(bg, center_x, center_y, radius-thickness);
+      BB cc = andnot_bitmap(c1,c2);
+      bg = or_bitmap(bg, cc);
+    }
+  return bg;
 }
 EXPORT GameApi::BB GameApi::BoolBitmapApi::transform(BB orig, std::function<bool (int,int, bool)> f)
 {

@@ -339,7 +339,17 @@ public:
     if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
 #endif
     if (ch==13) { ch='\n'; }
-    if (shift) { ch = std::toupper(ch); }
+    if (shift) { 
+      const char *chars1 = "§1234567890+',.-abcdefghijklmnopqrstuvwxyz";
+      const char *chars2 = "½!\"#¤%&/()=?`;:_ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      int s = strlen(chars1);
+      for(int i=0;i<s;i++)
+	{
+	  if (ch == chars1[i]) ch=chars2[i];
+	}
+      if (ch==45) ch='_';
+      //ch = std::toupper(ch); 
+    }
     if (active && type==768)
       {
 	int s = allowed_chars.size();
@@ -2046,6 +2056,13 @@ EXPORT GameApi::W GameApi::GuiApi::float_editor(float &target, FtA atlas, BM atl
   W w2 = highlight(w);
   return w2;
 }
+EXPORT GameApi::W GameApi::GuiApi::url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap)
+{
+  std::string allowed_chars = "0123456789.-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#¤%&/()=?+\\*^.,-<>|§½;:_";
+  W w = add_widget(e, new EditorGuiWidgetAtlas<std::string>(ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap));
+  W w2 = highlight(w);
+  return w2;
+}
 
 EXPORT GameApi::W GameApi::GuiApi::int_editor(int &target, FtA atlas, BM atlas_bm, int x_gap)
 {
@@ -2677,9 +2694,17 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, 
     }
   if (type=="std::string" || type=="bool")
     {
+      if (target.s.size()>4 && target.s.substr(0,4)=="http")
+	{
+	  W edit = url_editor(target.s, atlas, atlas_bm, x_gap);
+	  return edit;
+	}
+      else 
+	{
       std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*\n";
       W edit = string_editor(allowed, target.s, atlas, atlas_bm, x_gap);
       return edit;
+	}
     }
   if (type=="float")
     {
@@ -6572,6 +6597,12 @@ std::vector<GameApiItem*> boolbitmapapi_functions()
 			 { "int", "int", "float", "float", "float", "float", "float", "float" },
 			 { "100", "100", "50.0", "50.0", "0.0", "1.0", "30.0", "50.0" },
 			 "BB", "bool_bitmap_api", "part_circle"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::rings,
+			 "rings",
+			 { "sx", "sy", "center_x_start", "center_y_start", "center_x_end", "center_y_end", "start_radius", "end_radius", "start_thickness", "end_thickness", "numrings" },
+			 { "int", "int", "float", "float", "float", "float", "float", "float", "float", "float", "int" },
+			 { "300", "300", "150", "150", "150", "150", "10", "180", "30", "30", "20" },
+			 "BB", "bool_bitmap_api", "rings"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::not_bitmap,
 			 "not_bitmap",
 			 { "b" },
@@ -6632,6 +6663,19 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "std::string" },
 			 { "test.png" },
 			 "BM", "bitmap_api", "loadbitmap"));
+#if 0
+  // doesnt work in emscripten, all solutions seem to fail miserably,
+  // with emscripten_async_wget didn't work fine.
+  // and emscripten_wget had simlar problems
+  // also it would make emscripten build alot larger for no good reason
+  // when you had to use -s ASYNCIFY and other flags
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::loadbitmapfromurl,
+			 "bm_url",
+			 { "url" },
+			 { "std::string" },
+			 { "http://tpgames.org/gameapi_logo.png" },
+			 "BM", "bitmap_api", "loadbitmapfromurl"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::border,
 			 "border",
 			 { "bm", "left", "right", "top", "bottom" },

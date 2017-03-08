@@ -2409,6 +2409,7 @@ public:
 
 void Execute(FrameAnim &f, SDL_Surface *screen);
 BufferRef LoadImage(std::string filename, bool &success);
+BufferRef LoadImageFromString(std::vector<unsigned char> buffer, bool &success);
 
 class PointCollection : public Array<int, Point>
 {
