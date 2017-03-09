@@ -297,12 +297,26 @@ EXPORT void GameApi::SpriteApi::spritepos(BM bm, float x, float y)
 class RenderVertexArray4 : public MainLoopItem
 {
 public:
-  RenderVertexArray4(GameApi::Env &ee, GameApi::EveryApi &ev, GameApi::SpriteApi &sp, GameApi::VA va) : ee(ee), ev(ev), sp(sp), va(va) { }
+  RenderVertexArray4(GameApi::Env &ee, GameApi::EveryApi &ev, GameApi::SpriteApi &sp, GameApi::BM bm) : ee(ee), ev(ev), sp(sp), bm(bm) 
+  {
+    firsttime = true;
+    va.id = -1;
+  }
   void handle_event(MainLoopEvent &e)
   {
   }
   void execute(MainLoopEnv &e)
   {
+    if (firsttime)
+      {
+	// this is inside frame loop because url loading
+	// requires some time before rendering can happen
+	// this can be done only after url loading finished
+	// url loading happens while frames are being updated.
+	va = ev.sprite_api.create_vertex_array(bm);
+	firsttime = false;
+      }
+
     GameApi::SH sh;
     sh.id = e.sh_texture;
     ev.shader_api.use(sh);
@@ -316,10 +330,12 @@ private:
   GameApi::EveryApi &ev;
   GameApi::SpriteApi &sp;
   GameApi::VA va;
+  GameApi::BM bm;
+  bool firsttime;
 };
-EXPORT GameApi::ML GameApi::SpriteApi::render_sprite_vertex_array_ml(EveryApi &ev, VA va)
+EXPORT GameApi::ML GameApi::SpriteApi::render_sprite_vertex_array_ml(EveryApi &ev, BM bm)
 {
-  return add_main_loop(e, new RenderVertexArray4(e, ev, *this, va));
+  return add_main_loop(e, new RenderVertexArray4(e, ev, *this, bm));
 }
 
 EXPORT void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
@@ -430,8 +446,8 @@ EXPORT void GameApi::SpriteApi::update_vertex_array(VA va, BM bm)
 }
 EXPORT GameApi::ML GameApi::SpriteApi::vertex_array_render(EveryApi &ev, BM bm)
 {
-  GameApi::VA va = create_vertex_array(bm);
-  GameApi::ML ml = render_sprite_vertex_array_ml(ev, va);
+  //GameApi::VA va = create_vertex_array(bm);
+  GameApi::ML ml = render_sprite_vertex_array_ml(ev, bm);
   return ml;
 }
 EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)

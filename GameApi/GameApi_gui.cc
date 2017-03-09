@@ -18,6 +18,10 @@
 #endif
 #endif
 
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
+
 std::vector<GameApiItem*> all_functions();
 std::vector<GameApiItem*> polydistfield_functions();
 std::vector<GameApiItem*> waveform_functions();
@@ -341,7 +345,7 @@ public:
     if (ch==13) { ch='\n'; }
     if (shift) { 
       const char *chars1 = "§1234567890+',.-abcdefghijklmnopqrstuvwxyz";
-      const char *chars2 = "½!\"#¤%&/()=?`;:_ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const char *chars2 = "½!\"#¤%&/()=?*;:_ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       int s = strlen(chars1);
       for(int i=0;i<s;i++)
 	{
@@ -3930,6 +3934,48 @@ CodeGenLine parse_codegen_line(std::string line)
   line2.params = params;
   return line2;
 }
+std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
+int async_pending_count = 0;
+void onerror_cb(void *arg)
+{
+    char *url = (char*)arg;
+    std::string url_str(url);
+    load_url_buffers[url_str] = (std::vector<unsigned char>*)-1;
+    async_pending_count--;
+}
+void onload_cb(void *arg, void *data, int datasize)
+{
+  std::cout << "url loading complete!" << std::endl;
+    std::vector<unsigned char> buffer;
+    unsigned char *dataptr = (unsigned char*)data;
+    for(int i=0;i<datasize;i++) { buffer.push_back(dataptr[i]); }
+
+    char *url = (char*)arg;
+    std::string url_str(url);
+
+    load_url_buffers[url_str] = new std::vector<unsigned char>(buffer);
+    async_pending_count--;
+}
+
+void LoadUrls(const CodeGenLine &line)
+{
+  if (line.api_name!="bitmap_api" || line.func_name!="loadbitmapfromurl")
+    return;
+#ifdef EMSCRIPTEN
+  
+  std::string url = line.params[0];
+  std::cout << "loading url: " << url << std::endl;
+
+  url = "load_url.php?url=" + url;
+
+    char *buf2 = new char[url.size()+1];
+    std::copy(url.begin(), url.end(), buf2);
+    buf2[url.size()]=0;
+    
+    async_pending_count++;
+    emscripten_async_wget_data(buf2, (void*)buf2 , &onload_cb, &onerror_cb);
+#endif
+}
 std::vector<CodeGenLine> parse_codegen(std::string text, int &error_line_num)
 {
   int idx = 0;
@@ -3942,6 +3988,7 @@ std::vector<CodeGenLine> parse_codegen(std::string text, int &error_line_num)
       std::string line = text.substr(old_idx, idx-old_idx-1);
       CodeGenLine l = parse_codegen_line(line);
       if (l.return_type=="@") { error_line_num = line_num; return std::vector<CodeGenLine>(); }
+      LoadUrls(l);
       vec.push_back(l);
       line_num++;
       old_idx = idx+1;
@@ -4039,8 +4086,8 @@ void link_api_items(std::vector<CodeGenLine> &vec, std::vector<GameApiItem*> fun
       for(int j=0;j<ss;j++)
 	{
 	  GameApiItem* item = functions[j];
-	  std::cout << "Compare: " << line.func_name << " " << item->FuncName(0) << std::endl;
-	  std::cout << "Compare2: " << line.api_name << " " << item->ApiName(0) << std::endl;
+	  //std::cout << "Compare: " << line.func_name << " " << item->FuncName(0) << std::endl;
+	  //std::cout << "Compare2: " << line.api_name << " " << item->ApiName(0) << std::endl;
 	  if (line.func_name == item->FuncName(0) &&
 	      line.api_name == item->ApiName(0))
 	    {
@@ -5319,18 +5366,20 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "", "0.0", "0.0", "800.0", "600.0" },
 			 "ML", "sprite_api", "turn_to_2d"));
 
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::create_vertex_array,
 			 "p_prepare",
 			 { "p", "b" },
 			 { "P", "bool" },
 			 { "", "false" },
 			 "VA", "polygon_api", "create_vertex_array"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::render_vertex_array_ml,
+#endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::render_vertex_array_ml2,
 			 "p_render",
-			 { "ev", "va" },
-			 { "EveryApi&", "VA" },
+			 { "ev", "p" },
+			 { "EveryApi&", "P" },
 			 { "ev", "" },
-			 "ML", "polygon_api", "render_vertex_array_ml"));
+			 "ML", "polygon_api", "render_vertex_array_ml2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::render_instanced_ml,
 			 "p_render_inst",
 			 { "ev", "p", "pts" },
@@ -6663,7 +6712,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "std::string" },
 			 { "test.png" },
 			 "BM", "bitmap_api", "loadbitmap"));
-#if 0
+#if 1
   // doesnt work in emscripten, all solutions seem to fail miserably,
   // with emscripten_async_wget didn't work fine.
   // and emscripten_wget had simlar problems
@@ -6827,8 +6876,8 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "ML", "sprite_api", "update_vertex_array_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::render_sprite_vertex_array_ml,
 			 "bm_render",
-			 { "ev", "va" },
-			 { "EveryApi&", "VA" },
+			 { "ev", "bm" },
+			 { "EveryApi&", "BM" },
 			 { "ev", "" },
 			 "ML", "sprite_api", "render_sprite_vertex_array_ml"));
 #endif

@@ -2980,6 +2980,7 @@ void ArrayRender::UpdateAllTextures(MeshTextures &tex)
       UpdateTexture(tex, i);
     }
 }
+#ifndef EMSCRIPTEN
 struct ThreadInfo_bitmap
 {
   pthread_t thread_id;
@@ -3033,6 +3034,7 @@ private:
   std::vector<BufferFromBitmap*> buffers;
   std::vector<ThreadInfo_bitmap*> ti;
 };
+#endif
 
 void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
 {
@@ -3050,6 +3052,9 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
   BitmapFromBuffer buf(ref);
   FlipColours flip(buf);
   BufferFromBitmap buf2(flip);
+#ifdef EMSCRIPTEN
+  buf2.Gen();
+#else
   buf2.GenPrepare();
 
   int numthreads = 4;
@@ -3075,6 +3080,7 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
     {
       threads.join(ids[i]);
     }
+#endif
 
   //buf2.Gen(); 
   BufferRef ref2 = buf2.Buffer(); 

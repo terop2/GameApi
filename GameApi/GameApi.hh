@@ -353,7 +353,7 @@ public:
         IMPORT void clipping_sprite(VA va, int sx, int sy, float tex_l, float tex_t, float tex_r, float teb_b);
 	IMPORT void render_sprite_vertex_array(VA va);
   IMPORT ML vertex_array_render(EveryApi &ev, BM bm);
-  IMPORT ML render_sprite_vertex_array_ml(EveryApi &ev, VA va);
+  IMPORT ML render_sprite_vertex_array_ml(EveryApi &ev, BM bm);
 
 	IMPORT void rendersprite(BM bm, SH sh, float x, float y, float mult_x = 1.0, float mult_y = 1.0);
 	IMPORT void rendersprite2(BM bm, SH sh, PT pos);
@@ -2046,6 +2046,7 @@ public:
   IMPORT void prepare_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh);
   IMPORT void render_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh); // fast
   IMPORT ML render_vertex_array_ml(EveryApi &ev, VA va);
+  IMPORT ML render_vertex_array_ml2(EveryApi &ev, P va);
   IMPORT ML dist_field_mesh_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML shading_shader(EveryApi &ev, ML mainloop,
