@@ -6520,10 +6520,12 @@ struct Envi_2 {
   int screen_height=600;
 };
 
-
+extern int async_pending_count;
 void blocker_iter(void *arg)
 {
   Envi_2 *env = (Envi_2*)arg;
+  //std::cout << "async: " << async_pending_count << std::endl;
+  if (async_pending_count > 0) { env->logo_shown = true; }
   if (env->logo_shown)
     {
       bool b = env->ev->mainloop_api.logo_iter();
@@ -6581,6 +6583,7 @@ void blocker_iter(void *arg)
     env->ev->mainloop_api.swapbuffers();
 
 }
+extern int async_pending_count;
 
 class MainLoopBlocker_win32_and_emscripten : public Blocker
 {
@@ -6613,6 +6616,8 @@ public:
     ev.shader_api.use(sh);
     
     GameApi::ML ml = mainloop(ev);
+    if (async_pending_count > 0) { env.logo_shown = true; }
+
     //GameApi::MN mn0 = ev.move_api.empty();
     //GameApi::MN mn = ev.move_api.trans2(mn0, 0.0, 0.0, -400.0);
     //GameApi::ML ml2 = ev.move_api.move_ml(ev, ml, mn);

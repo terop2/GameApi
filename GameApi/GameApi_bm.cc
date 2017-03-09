@@ -529,13 +529,7 @@ std::vector<unsigned char> load_from_url(std::string url)
       }
     return buffer;
 }
-class LoadBitmapFromUrl;
-std::map<int, LoadBitmapFromUrl*> load_map;
-void onload_cb(const char *data);
-void onerror_cb(const char *data);
-void onerror_cb(const char *data)
-{
-}
+extern std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
 
 class LoadBitmapFromUrl : public Bitmap<Color>
 {
@@ -552,11 +546,32 @@ public:
   virtual Color Map(int x, int y) const { 
     if (!cbm) { return Color(0xffffffff); }
     return cbm->Map(x,y); }
-  void LoadFinished(std::vector<unsigned char> vec)
+  void LoadFinished(std::vector<unsigned char> *vec)
   {
-    
+    bool failed = false;
+    if (vec==(std::vector<unsigned char>*)-1) {
+      std::cout << "URL " << url << " loading failed!" << std::endl;
+      failed = true;
+    }
+    if (vec==0) {
+      std::cout << "URL " << url << " loading timeouted!" << std::endl;
+      failed = true;
+    }
+    if (failed)
+      {
+	img = BufferRef::NewBuffer(10,10);
+	for(int x=0;x<10;x++)
+	  for(int y=0;y<10;y++)
+	    {
+	      img.buffer[x+y*img.ydelta] = ((x+y)&1)==1 ? 0xffffffff : 0xff000000;
+	    }
+	cbm = new BitmapFromBuffer(img);    
+	return;
+      }
+    std::cout << "URL " << url << " loading succeeded!" << std::endl;
+
     bool b = false;
-    img = LoadImageFromString(vec, b);
+    img = LoadImageFromString(*vec, b);
 
     if (b==false) {
       img = BufferRef::NewBuffer(10,10);
@@ -567,8 +582,6 @@ public:
 	  }
       //std::cout << "ERROR: File not found: " << filename << std::endl;
     }
-
-
     cbm = new BitmapFromBuffer(img);    
     load_finished = true;
   }
@@ -589,27 +602,10 @@ public:
     }
     cbm = new BitmapFromBuffer(img);
 #else
-    static int i_static = 1;
-    i_static++;
-    std::stringstream ss;
-    ss << "url" << i_static << "a.txt";
-    load_map[i_static] = this;
-    std::string s = ss.str();
-    char *buf = new char[s.size()+1];
-    std::copy(s.begin(), s.end(), buf);
-    buf[s.size()]=0;
+    url = "load_url.php?url=" + url;
 
-    char *buf2 = new char[url.size()+1];
-    std::copy(url.begin(), url.end(), buf2);
-    buf2[url.size()]=0;
-
-    emscripten_async_wget(buf2, buf, &onload_cb, &onerror_cb);
-    while(!load_finished)
-      {
-       emscripten_sleep(1);
-      }
-    delete [] buf;
-    delete [] buf2;
+    std::vector<unsigned char> *vec = load_url_buffers[url];
+    LoadFinished(vec);
 #endif
     
   }
@@ -620,24 +616,6 @@ private:
   bool load_finished = false;
 };
 
-void onload_cb(const char *data)
-{
-    FILE *f = fopen(data, "rb");
-    unsigned char c;
-    std::vector<unsigned char> buffer;
-    while(fread(&c,1,1,f)==1) { buffer.push_back(c); }    
-
-    char ch;
-    std::stringstream ss(data);
-    ss >> ch >>  ch >> ch;
-    int i_static = 0;
-    ss >> i_static;
-
-    std::cout << "Data: " << data << " : " << i_static << std::endl;
-    LoadBitmapFromUrl* obj = load_map[i_static];
-    if (obj)
-      obj->LoadFinished(buffer);
-}
 
 
 class LoadBitmapBitmap : public Bitmap<Color>

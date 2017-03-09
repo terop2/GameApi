@@ -857,8 +857,8 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
   //P I11=ev.polygon_api.translate(I10,-400,200,0);
   //VA I12=ev.polygon_api.create_vertex_array(I11,true);
   //ML I13=ev.polygon_api.render_vertex_array_ml(ev,I12);
-  VA va = ev.sprite_api.create_vertex_array(I7a);
-  ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, va);
+  //VA va = ev.sprite_api.create_vertex_array(I7a);
+  ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, I7a);
 MN I14=ev.move_api.empty();
  MN I14a=ev.move_api.scale2(I14, 4,4,4);
  MN I14b=ev.move_api.trans2(I14a,-800,400,0);
