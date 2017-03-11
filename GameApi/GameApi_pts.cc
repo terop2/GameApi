@@ -774,6 +774,8 @@ GameApi::ML GameApi::PointsApi::render_ml(EveryApi &ev, PTA array)
 
 GameApi::PTS GameApi::PointsApi::random_bitmap_instancing(EveryApi &ev, BB bm, int count, float start_x, float end_x, float start_z, float end_z, float y)
 {
+  Bitmap<bool> *bb = find_bool_bitmap(e, bm)->bitmap;
+  bb->Prepare();
   std::vector<Point> *points = new std::vector<Point>;
   std::vector<unsigned int> *color2 = new std::vector<unsigned int>;
   int sx = ev.bool_bitmap_api.size_x(bm);
@@ -798,6 +800,7 @@ GameApi::PTS GameApi::PointsApi::random_bitmap_instancing(EveryApi &ev, BB bm, i
 GameApi::PTS GameApi::PointsApi::random_mesh_quad_instancing(EveryApi &ev, P p, int count)
 {
   FaceCollection *coll = find_facecoll(e, p);
+  coll->Prepare();
   std::vector<Point> *points = new std::vector<Point>;
   std::vector<unsigned int> *color2 = new std::vector<unsigned int>;
 
@@ -815,13 +818,30 @@ GameApi::PTS GameApi::PointsApi::random_mesh_quad_instancing(EveryApi &ev, P p, 
       int zpi = int(zp);
       if (zpi<0) zpi = 0;
       if (zpi>=coll->NumFaces()) zpi = coll->NumFaces()-1;
-      Point p1 = coll->FacePoint(zpi, 0);
-      Point p2 = coll->FacePoint(zpi, 1);
-      Point p3 = coll->FacePoint(zpi, 2);
-      Point p4 = coll->FacePoint(zpi, 3);
-      Point p = 1.0/4.0*((1.0f-xp)*(1.0f-yp)*Vector(p1) + (1.0f+xp)*(1.0f-yp)*Vector(p2) + (1.0f+xp)*(1.0f+yp)*Vector(p3) + (1.0f-xp)*(1.0f+yp)*Vector(p4));
-      points->push_back(p);
-      color2->push_back(0xffffffff);
+      int num = coll->NumPoints(zpi);
+      if (num != 4 && num != 3) { std::cout << "Error quad: " << num << std::endl; }
+      if (num==4) {
+	Point p1 = coll->FacePoint(zpi, 0);
+	Point p2 = coll->FacePoint(zpi, 1);
+	Point p3 = coll->FacePoint(zpi, 2);
+	Point p4 = coll->FacePoint(zpi, 3);
+	Point p = 1.0/4.0*((1.0f-xp)*(1.0f-yp)*Vector(p1) + (1.0f+xp)*(1.0f-yp)*Vector(p2) + (1.0f+xp)*(1.0f+yp)*Vector(p3) + (1.0f-xp)*(1.0f+yp)*Vector(p4));
+	if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) continue;
+	points->push_back(p);
+	color2->push_back(0xffffffff);
+      } else if (num==3)
+	{
+	Point p1 = coll->FacePoint(zpi, 0);
+	Point p2 = coll->FacePoint(zpi, 1);
+	Point p3 = coll->FacePoint(zpi, 2);
+      float r1 = double(r.next())/r.maximum();
+      float r2 = double(r.next())/r.maximum();
+	Point p = Point((1.0-sqrt(r1))*Vector(p1) + (sqrt(r1)*(1.0-r2))*Vector(p2) + (r2*sqrt(r1))*Vector(p3));
+	if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) continue;
+	points->push_back(p);
+	color2->push_back(0xffffffff);
+
+	}
     }
    return add_points_api_points(e, new SurfacePoints(points, color2));
 }

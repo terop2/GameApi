@@ -4365,6 +4365,7 @@ class OutlineFaces : public LineCollection
 public:
   OutlineFaces(FaceCollection &c) : c(c) 
   {
+    c.Prepare();
     int faces = c.NumFaces();
     int cc = 0;
     for(int i=0;i<faces;i++)

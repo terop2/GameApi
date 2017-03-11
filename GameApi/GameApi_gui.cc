@@ -5522,6 +5522,8 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML","bool","bool", "float", "float" },
 			 { "ev", "","false","false", "0.0", "100000.0" },
 			 "BLK", "blocker_api", "game_window"));
+#if 0
+  // doesnt work in emscripten
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_seq,
 			 "blk_seq",
 			 { "ev", "vec" },
@@ -5529,6 +5531,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "" },
 			 "BLK", "blocker_api", "game_seq"));
 
+#endif
   return vec;
 }
 std::vector<GameApiItem*> waveform_functions()
