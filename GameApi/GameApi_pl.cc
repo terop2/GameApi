@@ -4,8 +4,8 @@
 
 EXPORT GameApi::PolygonApi::PolygonApi(GameApi::Env &e) : e(e)
 {
-  priv = (void*)new PolyPriv;
-}
+  priv = (void*)new PolyPriv;  
+} 
 
 EXPORT GameApi::PolygonApi::~PolygonApi()
 {

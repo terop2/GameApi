@@ -222,7 +222,7 @@ EXPORT GameApi::ARR GameApi::FontApi::font_string_array(Ft font, std::string str
 class DynChar : public MainLoopItem
 {
 public:
-  DynChar(GameApi::EveryApi &ev, IntFetcher *fetch, std::vector<GameApi::BM> vec, int x, int y) : ev(ev), fetch(fetch), vec(vec),x(x),y(y) 
+  DynChar(GameApi::EveryApi &ev, Fetcher<int> *fetch, std::vector<GameApi::BM> vec, int x, int y) : ev(ev), fetch(fetch), vec(vec),x(x),y(y) 
   {
     std::vector<GameApi::VA> va_vec;
     int s = vec.size();
@@ -236,7 +236,7 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     sh.id = e.sh_texture;
-    int idx = fetch->get_int();
+    int idx = fetch->get();
     int s = vas.size();
     if (idx>=0 && idx<s) {
       ev.shader_api.use(sh);
@@ -249,7 +249,7 @@ public:
 
 private:
   GameApi::EveryApi &ev;
-  IntFetcher *fetch;
+  Fetcher<int> *fetch;
   std::vector<GameApi::BM> vec;
   std::vector<GameApi::VA> vas;
   int x,y;
@@ -258,7 +258,7 @@ private:
 
 EXPORT GameApi::ML GameApi::FontApi::dynamic_character(GameApi::EveryApi &ev, std::vector<GameApi::BM> vec, GameApi::IF fetcher, int x, int y)
 {
-  IntFetcher *fetch = find_int_fetcher(e, fetcher);
+  Fetcher<int> *fetch = find_int_fetcher(e, fetcher);
   return add_main_loop(e, new DynChar(ev, fetch, vec,x,y));
 }
 EXPORT GameApi::ML GameApi::FontApi::dynamic_string(GameApi::EveryApi &ev, GameApi::Ft font, std::string alternative_chars, GameApi::SF fetcher, int x, int y, int numchars)
@@ -309,13 +309,14 @@ EXPORT GameApi::ML GameApi::FontApi::dynamic_string(GameApi::EveryApi &ev, GameA
   return ev.mainloop_api.array_ml(ml);
 }
 
-class ChooseCharFetcher : public IntFetcher
+class ChooseCharFetcher : public Fetcher<int>
 {
 public:
-  ChooseCharFetcher(StringFetcher *fetch, std::string alternatives, int index) : fetch(fetch), alternatives(alternatives), index(index) { }
-  int get_int() const
+  ChooseCharFetcher(Fetcher<std::string> *fetch, std::string alternatives, int index) : fetch(fetch), alternatives(alternatives), index(index) { }
+  void set(int i) { }
+  int get() const
   {
-    std::string val = fetch->get_str();
+    std::string val = fetch->get();
     int s = val.size();
     if (index>=0 && index < s) {
       char c = val[index];
@@ -330,23 +331,24 @@ public:
     }
   }
 private:
-  StringFetcher *fetch;
+  Fetcher<std::string> *fetch;
   std::string alternatives;
   int index;
 };
 EXPORT GameApi::IF GameApi::FontApi::char_fetcher_from_string(SF string_fetcher, std::string alternatives, int idx)
 {
-  StringFetcher *str = find_string_fetcher(e, string_fetcher);
+  Fetcher<std::string> *str = find_string_fetcher(e, string_fetcher);
   return add_int_fetcher(e, new ChooseCharFetcher(str, alternatives, idx));
 }
 
-class TimeStringFetcher : public StringFetcher
+class TimeStringFetcher : public Fetcher<std::string>
 {
 public:
   TimeStringFetcher(GameApi::EveryApi &ev) { 
     start_time = SDL_GetTicks();
   }
-  std::string get_str() const {
+  void set(std::string s) { }
+  std::string get() const {
     unsigned int time = SDL_GetTicks();
     unsigned int time_to_use = time - start_time;
     time_to_use /= 1000;

@@ -703,15 +703,26 @@ struct ArrayType
   std::vector<int> vec;
 };
 
-class IntFetcher
+template<class T>
+class Fetcher
 {
 public:
-  virtual int get_int() const=0;
-};
-class StringFetcher
-{
-public:
-  virtual std::string get_str() const=0;
+  virtual void set(T t)=0;
+  virtual T get() const=0;
 };
 
+#if 0
+class SoundPhysicalKey
+{ // SD type
+public:
+  virtual void handle_event(int key)=0;
+  virtual void execute() =0;
+  virtual void set_wave(Function<float,float> *wv)=0;
+};
+class SoundVolumeWave
+{ // WVI
+public:
+  virtual void set_wave(Function<float,float> *wv)=0;
+};
+#endif
 #endif

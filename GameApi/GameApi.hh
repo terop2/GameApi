@@ -26,6 +26,7 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct FF { int id; };
   struct IF { int id; };
   struct SF { int id; };
   struct ARR { int id; };
@@ -196,6 +197,17 @@ public:
   void *envimpl;
   friend struct EnvImpl;
 };
+#if 0
+class SoundApi
+{
+public:
+  SoundApi(Env e) : e(e) { }
+  SD physical_key_press(ML ml, WVI wv); 
+private:
+  Env &e;
+};
+#endif
+
 class BlockerApi
 {
 public:
