@@ -556,8 +556,9 @@ struct EnvImpl
   std::vector<PointTransform*> point_transforms;
   std::vector<CurvePos*> curve_pos;
   std::vector<ArrayType*> arrays2;
-  std::vector<IntFetcher*> int_fetchers;
-  std::vector<StringFetcher*> string_fetchers;
+  std::vector<Fetcher<int>*> int_fetchers;
+  std::vector<Fetcher<std::string>*> string_fetchers;
+  std::vector<Fetcher<float>*> float_fetchers;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -833,8 +834,9 @@ struct FaceCollPolyHandle : public PolyHandle
 //
 // add functions
 //
-GameApi::IF add_int_fetcher(GameApi::Env &e, IntFetcher *i);
-GameApi::SF add_string_fetcher(GameApi::Env &e, StringFetcher *str);
+GameApi::FF add_float_fetcher(GameApi::Env &e, Fetcher<float> *f);
+GameApi::IF add_int_fetcher(GameApi::Env &e, Fetcher<int> *i);
+GameApi::SF add_string_fetcher(GameApi::Env &e, Fetcher<std::string> *str);
 GameApi::ARR add_array(GameApi::Env &e, ArrayType *arr);
 GameApi::CPP add_curve_pos(GameApi::Env &e, CurvePos *pos);
 GameApi::PTT add_point_transform(GameApi::Env &e, PointTransform *ptt);
@@ -928,8 +930,9 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
-StringFetcher *find_string_fetcher(GameApi::Env &e, GameApi::SF s);
-IntFetcher *find_int_fetcher(GameApi::Env &e, GameApi::IF f);
+Fetcher<float> *find_float_fetcher(GameApi::Env &e, GameApi::FF f);
+Fetcher<std::string> *find_string_fetcher(GameApi::Env &e, GameApi::SF s);
+Fetcher<int> *find_int_fetcher(GameApi::Env &e, GameApi::IF f);
 ArrayType *find_array(GameApi::Env &e, GameApi::ARR arr);
 CurvePos *find_curve_pos(GameApi::Env &e, GameApi::CP pos);
 PointTransform *find_point_transform(GameApi::Env &e, GameApi::PTT pt);

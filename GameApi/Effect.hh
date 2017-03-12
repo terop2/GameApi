@@ -6533,13 +6533,7 @@ public:
   {
     return Color::White().Pixel();
   }
-  virtual Point2d TexCoord(int face, int point) const
-  {
-    Point2d p;
-    p.x = 0;
-    p.y = 0;
-    return p;
-  }
+  virtual Point2d TexCoord(int face, int point) const;
   virtual int AttribI(int face, int point, int id) const
   {
     return 0;
@@ -7989,32 +7983,17 @@ class SphereElem : public SingleForwardBoxableFaceCollection
 {
 public:
   SphereElem(int numfaces, int numfaces2) :  numfaces(numfaces), numfaces2(numfaces2), center(Point(0.0,0.0,0.0)), radius(1.0) { }
-  SphereElem(Point center, float radius, int numfaces1, int numfaces2) : numfaces(numfaces1), numfaces2(numfaces2), center(center), radius(radius) { }
+  SphereElem(Point center, float radius, int numfaces1, int numfaces2);
   virtual void SetBox(Matrix b) { /*box = b; inverted=false; */}
   void Prepare() {}
-  virtual int NumFaces() const { return (numfaces*2)*numfaces2; } // *2
+  virtual int NumFaces() const;
   virtual int NumPoints(int face) const { return 4; }
   virtual Point FacePoint(int face, int point) const;
   virtual unsigned int Color(int face, int point) const
   {
     return Color::White().Pixel();
   }
-  virtual Point2d TexCoord(int face, int point) const
-  {
-    int face1 = face / numfaces;
-    int face2 = face - face1*numfaces;
-    int numfaces3 = numfaces*2;
-    float deltaangle1 = 1.0/numfaces3;
-    float deltaangle2 = 1.0/numfaces2;
-    float angle1 = face2*deltaangle1;
-    float angle2 = face1*deltaangle2;
-    if (point==2||point==3) angle1+=deltaangle1;
-    if (point==1||point==2) angle2+=deltaangle2;
-    Point2d p;
-    p.x = angle2;
-    p.y = angle1;
-    return p;
-  }
+  virtual Point2d TexCoord(int face, int point) const;
   virtual int AttribI(int face, int point, int id) const
   {
     return 0;

@@ -185,19 +185,36 @@ void AttachBoxes(const BoxCollection &c, const std::vector<Boxable*> &v)
       v[i]->SetBox(c.BoxIndex(i));
     }
 }
+SphereElem::SphereElem(Point center, float radius, int numfaces1, int numfaces2) : numfaces(numfaces1*2), numfaces2(numfaces2), center(center), radius(radius) { }
 
+int SphereElem::NumFaces() const { return numfaces*numfaces2; }
 Point SphereElem::FacePoint(int face, int point) const
 {
-  int face1 = face / numfaces;
-  int face2 = face - face1*numfaces;
-  int numfaces3 = numfaces*2;
+    int face1 = face / numfaces;
+    int face2 = face - (face1*numfaces);
+
+    if (point==1 || point==2) face1++;
+    if (point==2 || point==3) face2++;
+
+    float f1 = float(face1)/numfaces2;
+    float f2 = float(face2)/numfaces;
+
+    f1*=3.14159;
+    f2*=2.0*3.14159;
+    float angle1 = f1;
+    float angle2 = f2;
+    /*
+  int face1 = face / (numfaces);
+  int face2 = face - face1*(numfaces);
+  //int numfaces3 = numfaces*2;
   //Vector p = Vector(0.0, 0.0, radius); 
-  float deltaangle1 = 2.0*  3.14159/numfaces3;
+  float deltaangle1 = 2.0*  3.14159/(numfaces);
   float deltaangle2 =   3.14159/numfaces2; 
   float angle1 = face2*deltaangle1;
   float angle2 = face1*deltaangle2;
   if (point==2||point==1) angle1+=deltaangle1;
   if (point==3||point==2) angle2+=deltaangle2;
+    */
   //Matrix m = Matrix::XRotation(angle1)*Matrix::YRotation(angle2);
   Vector pp;
   pp.dx = radius*sin(angle1)*cos(angle2);
@@ -206,6 +223,36 @@ Point SphereElem::FacePoint(int face, int point) const
   return center+pp;
   
 }
+Point2d SphereElem::TexCoord(int face, int point) const
+  {
+    int face1 = face / numfaces;
+    int face2 = face - (face1*numfaces);
+
+    if (point==1 || point==2) face1++;
+    if (point==2 || point==3) face2++;
+
+    float f1 = float(face1)/numfaces2;
+    float f2 = float(face2)/numfaces;
+    Point2d p = { f1,f2 };
+    return p;
+    /*
+    int face1 = face / (numfaces);
+    int face2 = face - face1*(numfaces);
+    //int numfaces3 = numfaces*2;
+    float deltaangle1 = 1.0/(numfaces+1);
+    float deltaangle2 = 1.0/(numfaces2+1);
+    float angle1 = face2*deltaangle1;
+    float angle2 = face1*deltaangle2;
+    if (point==2||point==3) angle1+=deltaangle1;
+    if (point==1||point==2) angle2+=deltaangle2;
+    Point2d p;
+    p.x = angle1;
+    p.y = angle2;
+    std::cout << "SphereElem TexCoord: " << face << " " << point << " " << face1 << " " << face2 << " " << angle1 << " " << angle2 << std::endl;
+    return p;
+    */
+  }
+
 Point ConeElem::FacePoint(int face, int point) const
 {
   Point2d pp;
@@ -269,7 +316,29 @@ Point CylinderElem::FacePoint(int face, int point) const
   Point p = Point(cos(alfa), sin(alfa), val);
   return p;
 }
+Point2d CubeElem::TexCoord(int face, int point) const
+{
+  {
+    Point2d p;
+    if (point==0) {
+      p.x = 0;
+      p.y = 0; }
+    if (point==1) {
+      p.x = 1;
+      p.y = 0;
+    }
+    if (point==2) {
+      p.x = 1;
+      p.y = 1;
+    }
+    if (point==3) {
+      p.x = 0;
+      p.y = 1;
+    }
+    return p;
+  }
 
+}
 Point CubeElem::FacePoint(int face, int point) const
 {
   static int face1[] = { 1, 0, 5, 4 };

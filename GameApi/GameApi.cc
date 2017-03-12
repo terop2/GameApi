@@ -331,7 +331,15 @@ EXPORT GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
-GameApi::IF add_int_fetcher(GameApi::Env &e, IntFetcher *i)
+GameApi::FF add_float_fetcher(GameApi::Env &e, Fetcher<float> *f)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->float_fetchers.push_back(f);
+  GameApi::FF im;
+  im.id = env->float_fetchers.size()-1;
+  return im;
+}
+GameApi::IF add_int_fetcher(GameApi::Env &e, Fetcher<int> *i)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->int_fetchers.push_back(i);
@@ -339,7 +347,7 @@ GameApi::IF add_int_fetcher(GameApi::Env &e, IntFetcher *i)
   im.id = env->int_fetchers.size()-1;
   return im;
 }
-GameApi::SF add_string_fetcher(GameApi::Env &e, StringFetcher *i)
+GameApi::SF add_string_fetcher(GameApi::Env &e, Fetcher<std::string> *i)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->string_fetchers.push_back(i);
@@ -1173,12 +1181,17 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
 }
-IntFetcher *find_int_fetcher(GameApi::Env &e, GameApi::IF i)
+Fetcher<float> *find_float_fetcher(GameApi::Env &e, GameApi::FF f)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->float_fetchers[f.id];
+}
+Fetcher<int> *find_int_fetcher(GameApi::Env &e, GameApi::IF i)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->int_fetchers[i.id];
 }
-StringFetcher *find_string_fetcher(GameApi::Env &e, GameApi::SF s)
+Fetcher<std::string> *find_string_fetcher(GameApi::Env &e, GameApi::SF s)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->string_fetchers[s.id];
