@@ -344,7 +344,7 @@ Point CubeElem::FacePoint(int face, int point) const
   static int face1[] = { 1, 0, 5, 4 };
   static int face2[] = { 0, 7, 6, 5 };
   static int face3[] = { 7, 2, 3, 6 };
-  static int face4[] = { 1, 4, 3, 2 };
+  static int face4[] = { 2, 1, 4, 3 };
   static int face5[] = { 0, 1, 2, 7 };
   static int face6[] = { 5, 6, 3, 4 };
   static int *faces[] = { &face1[0], &face2[0], &face3[0], &face4[0], &face5[0], &face6[0] };
