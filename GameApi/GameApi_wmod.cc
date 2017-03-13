@@ -252,6 +252,7 @@ void GameApi::WModApi::update_lines_from_canvas(W canvas, WM mod2, int id)
   GameApiFunction *func = &mod->funcs[id];
 
   GuiWidget *wid = find_widget(e, canvas);
+  if (!wid) return;
   Point2d canvas_pos = wid->get_pos();
 #ifdef EMSCRIPTEN
   CanvasWidget *can = static_cast<CanvasWidget*>(wid);
@@ -264,6 +265,7 @@ void GameApi::WModApi::update_lines_from_canvas(W canvas, WM mod2, int id)
     {
       GameApiLine *line = &func->lines[i]; 
       GuiWidget *w = can->find_widget(line->uid);
+      if (!w) continue;
       Point2d pos = w->get_pos();
       line->x = int(pos.x-canvas_pos.x);
       line->y = int(pos.y-canvas_pos.y);
@@ -524,7 +526,7 @@ void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, 
 	      if (line2.uid == value)
 		{
 		  W w1 = gui.find_canvas_item(canvas, value);
-		  
+		  if (w1.id==-1) continue;
 		  int ssss = connect_targets.size();
 		  for(int iiii=0;iiii<ssss; iiii++)
 		    {
@@ -566,7 +568,8 @@ void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, 
 	      if (line2.uid == value)
 		{
 		  W w1 = gui.find_canvas_item(canvas, value);
-		  
+		  if (w1.id==-1) continue;
+
 		  int ssss = connect_targets.size();
 		  for(int iiii=0;iiii<ssss; iiii++)
 		    {
@@ -1409,6 +1412,7 @@ void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, 
 	  GameApiItem* item = functions[j];
 	  if (item->Name(0) == line->module_name) break;
 	}
+      if (j==ss) continue;
       GameApiItem *item = functions[j];
       std::vector<std::string> param_types;
       std::vector<std::string> param_tooltip;

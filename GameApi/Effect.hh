@@ -6364,8 +6364,23 @@ public:
   virtual Point2d TexCoord(int face, int point) const
   {
     Point2d p;
-    p.x = 0;
-    p.y = 0;
+    if (point==0) {
+      p.x = 0;
+      p.y = 0;
+    }
+    if (point==1) {
+      p.x = 1;
+      p.y = 0;
+    }
+    if (point==2) {
+      p.x = 1;
+      p.y = 1;
+    }
+    if (point==3) {
+      p.x = 0;
+      p.y = 1;
+    }
+
     return p;
   }
   virtual int AttribI(int face, int point, int id) const

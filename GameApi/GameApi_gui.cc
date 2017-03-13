@@ -1674,6 +1674,14 @@ EXPORT GameApi::W GameApi::GuiApi::canvas(int sx, int sy)
 EXPORT GameApi::W GameApi::GuiApi::find_canvas_item(W canvas, std::string id)
 {
   GuiWidget *w = find_widget(e, canvas);
+  if (!w) {
+    {
+      std::cout << "ERROR: find_canvas_item failed to find canvas!" << std::endl;
+      GameApi::W wx;
+      wx.id = -1;
+      return wx;
+    }
+  }
 #ifndef EMSCRIPTEN
   CanvasWidget *ww = dynamic_cast<CanvasWidget*>(w);
 #else
@@ -1683,6 +1691,9 @@ EXPORT GameApi::W GameApi::GuiApi::find_canvas_item(W canvas, std::string id)
   if (!item)
     {
       std::cout << "ERROR: find_canvas_item failed to find widget from canvas!" << std::endl;
+      GameApi::W wx;
+      wx.id = -1;
+      return wx;
     }
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   int s = env->widgets.size();
@@ -1693,7 +1704,7 @@ EXPORT GameApi::W GameApi::GuiApi::find_canvas_item(W canvas, std::string id)
     }
   std::cout << "ERROR: find_canvas_item failed to find widget!" << std::endl;
   GameApi::W wx;
-  wx.id = 0;
+  wx.id = -1;
   return wx;
 
 }
@@ -3897,6 +3908,50 @@ struct CodeGenLine {
   std::vector<std::string> params_linkage;
   GameApiItem *item;
 };
+void CodeGenLineErrorCheck(const CodeGenLine &line, std::vector<GameApiItem*> functions)
+{
+  int s = functions.size();
+  bool found = false;
+  for(int i=0;i<s;i++)
+    {
+      GameApiItem *item = functions[i];
+      if (item->ApiName(0) == line.api_name && item->FuncName(0)==line.func_name)
+	{
+	  found = true;
+	  if (item->ParamCount(0) != int(line.params.size()))
+	    {
+	      std::cout << "ERROR: Param arity problem" << std::endl;
+	      std::cout << item->ApiName(0) << "::" << item->FuncName(0) << "(";
+	      int ss = item->ParamCount(0);
+	      for(int i=0;i<ss;i++)
+		{
+		  std::cout << item->ParamType(0,i);
+		  if (i!=ss-1) std::cout << " ";
+		}
+	      std::cout << ");" << std::endl;
+	      int ss2 = line.params.size();
+	      std::cout << line.api_name << "::" << line.func_name << "(";
+	      for(int j=0;j<ss2;j++)
+		{
+		  std::cout << line.params[j];
+		  if (j!=ss2-1) std::cout << " ";
+		}
+	      std::cout << ");" << std::endl;
+	    }
+	}
+    }
+  if (!found) {
+    std::cout << "ERROR: function not found! " << std::endl;
+    int ss2 = line.params.size();
+    std::cout << line.api_name << "::" << line.func_name << "(";
+    for(int j=0;j<ss2;j++)
+      {
+	std::cout << line.params[j];
+	if (j!=ss2-1) std::cout << " ";
+      }
+    std::cout << ");" << std::endl;
+  }
+}
 CodeGenLine parse_codegen_line(std::string line)
 {
   CodeGenLine error = { "@", "@", "@", "@", { } };
@@ -3987,6 +4042,7 @@ std::vector<CodeGenLine> parse_codegen(std::string text, int &error_line_num)
     {
       std::string line = text.substr(old_idx, idx-old_idx-1);
       CodeGenLine l = parse_codegen_line(line);
+      CodeGenLineErrorCheck(l, all_functions());
       if (l.return_type=="@") { error_line_num = line_num; return std::vector<CodeGenLine>(); }
       LoadUrls(l);
       vec.push_back(l);
@@ -4011,7 +4067,7 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
     {
       CodeGenLine l = lines[i];
       line_map[l.label_num] = i;
-      std::cout << "Map: " << l.label_num << "=" << i << std::endl;
+      //std::cout << "Map: " << l.label_num << "=" << i << std::endl;
     }
 
   // iterate all parameters
@@ -4034,7 +4090,7 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
 	    }
 	  if (param_value.size()>strlen("std::vector<"))
 	    {
-	      std::cout << "Check Array" << param_value << std::endl;
+	      //std::cout << "Check Array" << param_value << std::endl;
 	      std::string substr = param_value.substr(0,strlen("std::vector<"));
 	      if (substr=="std::vector<")
 		{ // array
@@ -4050,7 +4106,7 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
 		    if (pos2==pos+1) break;
 		    if (pos2==-1) { std::cout << "Error=true" << std::endl; error=true; return; }
 		    std::string param = param_value.substr(pos,pos2-pos);
-		    std::cout << "ArrParam: " << param << std::endl;
+		    //std::cout << "ArrParam: " << param << std::endl;
 
 		    std::string param_linkage = "";
 		    if (param.size()>0 && param[0]=='I')
@@ -4098,11 +4154,86 @@ void link_api_items(std::vector<CodeGenLine> &vec, std::vector<GameApiItem*> fun
       if (found==false) { std::cout << "NOT FOUND: " << line.api_name << " " << line.func_name<< std::endl; }
     }
 }
+#if 1
+int execute_api(GameApi::EveryApi &ev, const std::vector<CodeGenLine> &vec, std::vector<CodeGenVectors> &vecvec, int /*line_num*/, GameApi::ExecuteEnv &e)
+{
+  std::vector<std::string> res_vec;
+  int s2 = vec.size();
+  for(int ij=0;ij<s2;ij++)
+    {
+      CodeGenLine l = vec[ij];
 
+      int s = l.params_linkage.size();
+      std::vector<std::string> params = l.params;
+      for(int i=0;i<s;i++)
+	{
+	  std::string link = l.params_linkage[i];
+	  if (link.size()>0 && link[0]=='%')
+	    {
+	      int j = i;
+	      std::string sub = link.substr(1);
+	      std::stringstream ss(sub);
+	      int idx = 0;
+	      ss >> idx;
+	      int s = vecvec[idx].params.size();
+	      std::vector<std::string> params2;
+	      for(int i=0;i<s;i++)
+		{
+		  std::string link = vecvec[idx].params[i];
+		  //std::cout << "arrlink: " << link << std::endl;
+		  std::stringstream ss(link);
+		  int num;
+		  ss >> num;
+		  //std::cout << "execute_api1:" << num << std::endl;
+		  std::string val = res_vec[num]; //execute_api(ev, vec, vecvec, num, e);
+		  //std::stringstream ss2;
+		  //ss2 << val;
+		  params2.push_back( val /*ss2.str()*/ );
+		}
+	      std::string res = "[";
+	      for(int i=0;i<s;i++)
+		{
+		  if (i!=0) { res+=","; }
+		  std::string p = params2[i];
+		  res+=p;
+		}
+	      res+="]";
+	      params[j] = res;
+	    }
+	  else if (link!="")
+	    {
+	      //std::cout << "link: " << link << std::endl;
+	      std::stringstream ss(link);
+	      int num;
+	      ss >> num;
+	      //std::cout << "execute_api2:" << num << std::endl;
+	      std::string val = res_vec[num]; //execute_api(ev, vec, vecvec, num, e);
+	      //std::stringstream ss2;
+	      //ss2 << val;
+	      params[i] = val; //ss2.str();
+	    }
+	  //std::cout << "Param: " << params[i] << std::endl;
+    }
+      
+      int val = l.item->Execute(ev, params, e);
+      std::stringstream ss2;
+      ss2 << val;
+      res_vec.push_back(ss2.str());
+    }
+  std::string s = res_vec[res_vec.size()-1];
+  std::stringstream ss(s);
+  int val = -1;
+  ss >> val;
+  return val;
+  
+}
+#endif
+
+#if 0
 int execute_api(GameApi::EveryApi &ev, const std::vector<CodeGenLine> &vec, std::vector<CodeGenVectors> &vecvec, int line_num, GameApi::ExecuteEnv &e)
 {
   CodeGenLine l = vec[line_num];
-  std::cout << l.api_name << "." << l.func_name << std::endl;
+  //std::cout << l.api_name << "." << l.func_name << std::endl;
   int s = l.params_linkage.size();
   std::vector<std::string> params = l.params;
   for(int i=0;i<s;i++)
@@ -4120,7 +4251,7 @@ int execute_api(GameApi::EveryApi &ev, const std::vector<CodeGenLine> &vec, std:
 	  for(int i=0;i<s;i++)
 	    {
 	      std::string link = vecvec[idx].params[i];
-  	      std::cout << "arrlink: " << link << std::endl;
+  	      //std::cout << "arrlink: " << link << std::endl;
 	      std::stringstream ss(link);
 	      int num;
 	      ss >> num;
@@ -4141,7 +4272,7 @@ int execute_api(GameApi::EveryApi &ev, const std::vector<CodeGenLine> &vec, std:
 	}
       else if (link!="")
 	{
-	  std::cout << "link: " << link << std::endl;
+	  //std::cout << "link: " << link << std::endl;
 	  std::stringstream ss(link);
 	  int num;
 	  ss >> num;
@@ -4150,11 +4281,13 @@ int execute_api(GameApi::EveryApi &ev, const std::vector<CodeGenLine> &vec, std:
 	  ss2 << val;
 	  params[i] = ss2.str();
 	}
-      std::cout << "Param: " << params[i] << std::endl;
+      //std::cout << "Param: " << params[i] << std::endl;
     }
   int val = l.item->Execute(ev, params, e);
   return val;
 }
+#endif
+
 std::string ToString(int num)
 {
   std::stringstream ss;
