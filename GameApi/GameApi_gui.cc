@@ -6764,6 +6764,12 @@ std::vector<GameApiItem*> boolbitmapapi_functions()
 			 { "BB", "float", "float", "float", "float", "float", "float" },
 			 { "", "0.0", "0.0", "100.0", "100.0", "3.0", "3.0" },
 			 "BB", "bool_bitmap_api", "line"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::tri,
+			 "tri",
+			 { "orig", "p1_x", "p1_y", "p2_x", "p2_y", "p3_x", "p3_y" },
+			 { "BB", "float", "float", "float", "float", "float", "float" },
+			 { "", "0", "0", "100", "30", "50", "100" },
+			 "BB", "bool_bitmap_api", "tri"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::circle,
 			 "circle",
 			 { "bg", "center_x", "center_y", "radius" },

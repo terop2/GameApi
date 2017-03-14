@@ -1444,6 +1444,41 @@ EXPORT GameApi::BM GameApi::BoolBitmapApi::choose_bitmap(BB bools, BM true_bitma
   Bitmap<Color> *bm = new ChooseBitmap3(*bools2, *true2, *false2);
   return add_color_bitmap2(e, bm);
 }
+class TriBoolBitmap : public Bitmap<bool>
+{
+public:
+  TriBoolBitmap(Bitmap<bool> *bb, Point2d p0, Point2d p1, Point2d p2) : bb(bb), p0(p0), p1(p1), p2(p2) { }
+  void Prepare() {
+    float A = (-p1.y * p2.x + p0.y*(-p1.x + p2.x) + p0.x*(p1.y - p2.y) + p1.x*p2.y);
+    if (A<=0.0f)
+      {
+	std::swap(p0,p2);
+      }
+  }
+  int SizeX() const { return bb->SizeX(); }
+  int SizeY() const { return bb->SizeY(); }
+  bool Map(int x, int y) const
+  {
+    Point2d p = { float(x),float(y) };
+    float s = (p0.y*p2.x - p0.x*p2.y + (p2.y-p0.y)*p.x + (p0.x-p2.x)*p.y);
+    float t = (p0.x*p1.y - p0.y*p1.x + (p0.y-p1.y)*p.x + (p1.x-p0.x)*p.y);
+    if (s<= 0.0 || t<=0.0) return false;
+    float A = (-p1.y * p2.x + p0.y*(-p1.x+p2.x) + p0.x*(p1.y-p2.y) + p1.x*p2.y);
+    return (s+t)<A;
+
+  }
+private:
+  Bitmap<bool> *bb;
+  Point2d p0,p1,p2;
+};
+EXPORT GameApi::BB GameApi::BoolBitmapApi::tri(BB orig, float p1_x, float p1_y, float p2_x, float p2_y, float p3_x, float p3_y)
+{
+  Bitmap<bool> *bb = find_bool_bitmap(e, orig)->bitmap;
+  Point2d p1 = { p1_x, p1_y };
+  Point2d p2 = { p2_x, p2_y };
+  Point2d p3 = { p3_x, p3_y };
+  return add_bool_bitmap(e, new TriBoolBitmap(bb, p1,p2,p3));
+}
 EXPORT GameApi::BB GameApi::BoolBitmapApi::rings(int sx, int sy, float center_x_start, float center_y_start, float center_x_end, float center_y_end, float start_radius, float end_radius, float start_thickness, float end_thickness, int numrings)
 {
   BB bg = empty(sx,sy);

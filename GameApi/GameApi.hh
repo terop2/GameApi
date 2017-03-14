@@ -2344,6 +2344,8 @@ public:
 			            int b_start, int b_end, 
 			            int a_start, int a_end);
   IMPORT BB line(BB bg, float p_x, float p_y, float p2_x, float p2_y, float line_width1, float line_width2);
+  IMPORT BB tri(BB orig, float p1_x, float p1_y, float p2_x, float p2_y, float p3_x, float p3_y);
+
   IMPORT BB circle(BB bg, float center_x, float center_y, float radius);
   IMPORT BB ellipse(BB bg, float center_x, float center_y, float center2_x, float center2_y, float sum_of_distances);
   //IMPORT BB rectangle(BB bg, int x, int y, int width, int height); // for static ones
