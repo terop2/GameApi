@@ -45,7 +45,7 @@ class FontGlyphBitmap : public Bitmap<int>, public LineCollection
 {
 public:
   FontGlyphBitmap(void *priv_, std::string filename, int sx, int sy);
-  void Prepare() { }
+  virtual void Prepare();
   void load_glyph(long idx);
   void load_glyph_outline(long idx, float sx, float sy);
   int bitmap_top(long idx) const;
@@ -61,7 +61,7 @@ public:
   //virtual float SizeX() const { return m_sx; }
   //virtual float SizeY() const { return m_sy; }
 
-  ~FontGlyphBitmap();
+  virtual ~FontGlyphBitmap();
 private:
   GlyphPriv *priv;
 public:
@@ -71,4 +71,5 @@ public:
   std::vector<Point2d> points; // twice the amount of points
   std::vector<Point2d> control1;
   std::vector<Point2d> control2;
+  std::string url;
 };
