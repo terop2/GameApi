@@ -117,6 +117,9 @@ void load_library(DllData &data, std::string lib_name)
 #ifdef WINDOWS
   const char *lib = lib_name.c_str();
   HMODULE mod = LoadLibrary(lib);
+  if (mod==NULL) {
+    std::cout << "ERROR: LoadLibrary: " << GetLastError() << std::endl;
+  }
   //std::cout << "HMODULE: " << mod << std::endl;
   FARPROC api=0,func=0,num=0,disp=0,type=0;
   for(int i=0;i<num_alternatives;i++)
