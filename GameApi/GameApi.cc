@@ -28,6 +28,8 @@ EnvImpl::EnvImpl() : event_infos(new EmptySequencer2), mutex(PTHREAD_MUTEX_INITI
     FT_Init_FreeType(&lib);
     //std::cout << "Freetype init error: " << err << std::endl;
     //std::cout << &lib << std::endl;
+#else
+    FT_Init_FreeType(&lib);
 #endif 
     cursor_pos_point_id.id = -1;
 }

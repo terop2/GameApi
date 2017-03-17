@@ -18,16 +18,10 @@ EXPORT GameApi::FontApi::~FontApi()
 EXPORT GameApi::Ft GameApi::FontApi::newfont(std::string filename, int sx, int sy)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
-#ifndef EMSCRIPTEN
   Font fnt; 
   std::cout << &env->lib << std::endl;
   fnt.bm = new FontGlyphBitmap((void*)&env->lib,filename.c_str(), sx,sy);
   env->fonts.push_back(fnt); 
-#else
-  Font fnt;
-  fnt.bm = new ConstantBitmap<int>(128,sx,sy);
-  env->fonts.push_back(fnt);
-#endif 
   GameApi::Ft font;
   font.id = env->fonts.size()-1;
   return font;
