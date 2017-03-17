@@ -1,28 +1,21 @@
 
 #include "FreeType.hh"
-#ifndef EMSCRIPTEN
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#endif
 #include <string>
 //#include <freetype/ftoutln.h>
-#ifndef EMSCRIPTEN
 #include FT_OUTLINE_H
-#endif
 struct GlyphPriv
 {
-#ifndef EMSCRIPTEN
   FT_Library *lib;
   FT_Face face;
   FT_UInt chosen_glyph;
-#endif
 };
 
 FontGlyphBitmap::FontGlyphBitmap(void *priv_, std::string filename, int sx, int sy)
   : m_sx(0.0), m_sy(0.0)
 {
   priv = new GlyphPriv;
-#ifndef EMSCRIPTEN
   priv->lib = (FT_Library*)priv_;
   int err = FT_New_Face( *priv->lib,
 	       filename.c_str(),
@@ -35,15 +28,6 @@ FontGlyphBitmap::FontGlyphBitmap(void *priv_, std::string filename, int sx, int 
     }
   /*int err3 = */
  FT_Set_Char_Size(priv->face, sx*64,sy*64,100,100);
-#endif
-  //FT_Size_RequestRec sizerequest;
-  //sizerequest.type = FT_SIZE_REQUEST_TYPE_BBOX;
-  //sizerequest.width = sx;
-  //sizerequest.height = sy;
-  //sizerequest.horiResolution = 0;
-  //sizerequest.vertResolution = 0;
-  //int err2 = FT_Request_Size( priv->face, &sizerequest );
-  //std::cout << "FontGlyphBitmap:" << std::hex << err << " " << err3 << std::endl;
 }
 FontGlyphBitmap::~FontGlyphBitmap()
 {
@@ -51,15 +35,12 @@ FontGlyphBitmap::~FontGlyphBitmap()
 }
 void FontGlyphBitmap::load_glyph(long idx)
 {
-#ifndef EMSCRIPTEN
   FT_UInt glyphindex = FT_Get_Char_Index(priv->face, idx);
   /*int err1 =*/ FT_Load_Glyph(priv->face, glyphindex, FT_LOAD_RENDER|FT_LOAD_TARGET_NORMAL);
   /*int err2 =*/ FT_Render_Glyph(priv->face->glyph, FT_RENDER_MODE_NORMAL);
   //std::cout << "load_glyph: " << err1 << " " << err2 << std::endl;
-#endif
 }
 
-#ifndef EMSCRIPTEN
 int MoveToFunc(const FT_Vector *to, void *user)
 {
   //std::cout << "MoveToFunc" << std::endl;
@@ -87,7 +68,6 @@ int LineToFunc(const FT_Vector *to, void *user)
   bm->control2.push_back(p2);
   return 0;
 }
-#endif
 #if 0
 class ConicPointCollection : public PointCollection
 {
@@ -114,7 +94,6 @@ private:
   int type;
 };
 #endif
-#ifndef EMSCRIPTEN
 int ConicToFunc(const FT_Vector *control, const FT_Vector *to, void *user)
 {
   //std::cout << "ConicToFunc" << std::endl;
@@ -159,7 +138,6 @@ int CubicToFunc(const FT_Vector *control1, const FT_Vector *control2,
   bm->move_point = p;
   return 0;
 }
-#endif
 int FontGlyphBitmap::NumLines() const
 {
   //std::cout << "NumLines" << points.size() << std::endl;
@@ -174,7 +152,6 @@ Point FontGlyphBitmap::LinePoint(int line, int point) const
 
 void FontGlyphBitmap::load_glyph_outline(long idx, float sx, float sy)
 {
-#ifndef EMSCRIPTEN
 
   m_sx = sx; m_sy = sy;
   types.clear();
@@ -195,43 +172,34 @@ void FontGlyphBitmap::load_glyph_outline(long idx, float sx, float sy)
   funcs.shift = 0;
   funcs.delta = 0L;
   FT_Outline_Decompose( outline, &funcs, (void*)this);
-#endif  
 }
 
 int FontGlyphBitmap::bitmap_top(long idx) const
 {
-#ifndef EMSCRIPTEN
 
   FT_UInt glyphindex = FT_Get_Char_Index(priv->face, idx);
   /*int err1 =*/ FT_Load_Glyph(priv->face, glyphindex, FT_LOAD_RENDER|FT_LOAD_TARGET_NORMAL);
   return priv->face->glyph->bitmap_top;
-#endif
 }
 
 int FontGlyphBitmap::SizeX() const
 {
-#ifndef EMSCRIPTEN
 
   int val = priv->face->glyph->bitmap.width;
   //std::cout << "SizeX:" << val << std::endl;
   return val;
-#endif
 }
 
 int FontGlyphBitmap::SizeY() const
 {
-#ifndef EMSCRIPTEN
   int val = priv->face->glyph->bitmap.rows; 
   //std::cout << "SizeY:" << val << std::endl;
   return val;
-#endif
 }
 
 int FontGlyphBitmap::Map(int x, int y) const
 {
-#ifndef EMSCRIPTEN
   if (x<0 || x>=SizeX() || y<0 || y>=SizeY())
     return 0;
   return (int)priv->face->glyph->bitmap.buffer[x+y*priv->face->glyph->bitmap.pitch];
-#endif
 }

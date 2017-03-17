@@ -50,10 +50,8 @@
 #endif
 #include <SDL_mixer.h>
 
-#ifndef EMSCRIPTEN
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#endif
 #undef LoadImage
 
 #include "FreeType.hh"
@@ -564,9 +562,7 @@ struct EnvImpl
   pthread_mutex_t mutex;
   void lock() { pthread_mutex_lock(&mutex); }
   void unlock() { pthread_mutex_unlock(&mutex); }
-#ifndef EMSCRIPTEN
   FT_Library lib;
-#endif
   std::vector<Font> fonts;
   static ::EnvImpl *Environment(GameApi::Env *e) { return (EnvImpl*)e->envimpl; }
   EXPORT void free_temp_memory()

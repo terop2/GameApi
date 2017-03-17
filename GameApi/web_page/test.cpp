@@ -214,6 +214,7 @@ int main(int argc, char *argv[]) {
 	} else
       if (check_count(cmd_args, current_arg, 3) && cmd_args[current_arg]=="--screenshot")
 	{
+#if 0
 	  std::cout << "Screenshot filename: " << cmd_args[current_arg+1] << " at " << cmd_args[current_arg+2] << std::endl;
 	  std::string screenshot_filename = cmd_args[current_arg+1];
 	  float screenshot_time = 0.0;
@@ -222,6 +223,7 @@ int main(int argc, char *argv[]) {
 	  screenshot_filenames.push_back(screenshot_filename);
 	  screenshot_times.push_back(screenshot_time);
 	  screenshot_done.push_back(false);
+#endif
 	  current_arg+=3;
 	  continue;
 	} else
