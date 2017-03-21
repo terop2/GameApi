@@ -1,5 +1,5 @@
 
-#include "FreeType.hh"
+#include "GameApi_h.hh"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <string>
@@ -12,22 +12,13 @@ struct GlyphPriv
   FT_UInt chosen_glyph;
 };
 
-FontGlyphBitmap::FontGlyphBitmap(void *priv_, std::string filename, int sx, int sy)
-  : m_sx(0.0), m_sy(0.0)
+FontGlyphBitmap::FontGlyphBitmap(GameApi::Env &e, void *priv_, std::string filename, int sx, int sy)
+  : m_sx(0.0), m_sy(0.0),e(e), filename(filename), priv_(priv_),sx(sx),sy(sy)
 {
-  priv = new GlyphPriv;
-  priv->lib = (FT_Library*)priv_;
-  int err = FT_New_Face( *priv->lib,
-	       filename.c_str(),
-	       0,
-	       &priv->face);
-  //std::cout << "Font err: " << err << std::endl;
-  if (err!=0)
-    {
-      std::cout << "Remember to recompile the code after changing envimpl size" << std::endl;
-    }
-  /*int err3 = */
- FT_Set_Char_Size(priv->face, sx*64,sy*64,100,100);
+  priv = 0;
+  state = 0;
+  m_idx = -1;
+  old_idx = -2;
 }
 FontGlyphBitmap::~FontGlyphBitmap()
 {
@@ -35,10 +26,7 @@ FontGlyphBitmap::~FontGlyphBitmap()
 }
 void FontGlyphBitmap::load_glyph(long idx)
 {
-  FT_UInt glyphindex = FT_Get_Char_Index(priv->face, idx);
-  /*int err1 =*/ FT_Load_Glyph(priv->face, glyphindex, FT_LOAD_RENDER|FT_LOAD_TARGET_NORMAL);
-  /*int err2 =*/ FT_Render_Glyph(priv->face->glyph, FT_RENDER_MODE_NORMAL);
-  //std::cout << "load_glyph: " << err1 << " " << err2 << std::endl;
+  m_idx = idx;
 }
 
 int MoveToFunc(const FT_Vector *to, void *user)
@@ -149,6 +137,49 @@ Point FontGlyphBitmap::LinePoint(int line, int point) const
   //std::cout << line << " " << point << ":" << p.x << " " << p.y << std::endl;
   return p;
 }
+void FontGlyphBitmap::check_load()
+{
+  if (!priv || state==1) {
+#ifndef EMSCRIPTEN
+  // This is done in GameApi_gui.cc if we're inside emscripten
+  e.async_load_url(filename);
+#endif
+  std::vector<unsigned char> *ptr = e.get_loaded_async_url(filename);
+  if (!ptr) { return; } else {
+    std::fstream ss("font.ttf", std::ios_base::binary | std::ios_base::out);
+    int s = ptr->size();
+    for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
+    ss.close();
+    filename="font.ttf";
+    state=2;
+  }
+  priv = new GlyphPriv;
+  priv->lib = (FT_Library*)priv_;
+  int err = FT_New_Face( *priv->lib,
+      filename.c_str(),
+      0,
+      &priv->face);
+  //std::cout << "Font err: " << err << std::endl;
+  if (err!=0)
+    {
+    std::cout << "FT_New_Face ERROR: " << err << std::endl;
+    std::cout << "Remember to recompile the code after changing envimpl size" << std::endl;
+  }
+  FT_Set_Char_Size(priv->face, sx*64,sy*64,100,100);
+  }
+
+
+  if ((priv && m_idx != -1 && state!=3) || old_idx != m_idx) {
+    FT_UInt glyphindex = FT_Get_Char_Index(priv->face, m_idx);
+    /*int err1 =*/ FT_Load_Glyph(priv->face, glyphindex, FT_LOAD_RENDER|FT_LOAD_TARGET_NORMAL);
+    /*int err2 =*/ FT_Render_Glyph(priv->face->glyph, FT_RENDER_MODE_NORMAL);
+    //std::cout << "load_glyph: " << err1 << " " << err2 << std::endl;
+    if (state==2)
+      state=3;
+    old_idx = m_idx;
+  }
+
+}
 
 void FontGlyphBitmap::load_glyph_outline(long idx, float sx, float sy)
 {
@@ -176,29 +207,44 @@ void FontGlyphBitmap::load_glyph_outline(long idx, float sx, float sy)
 
 int FontGlyphBitmap::bitmap_top(long idx) const
 {
-
-  FT_UInt glyphindex = FT_Get_Char_Index(priv->face, idx);
-  /*int err1 =*/ FT_Load_Glyph(priv->face, glyphindex, FT_LOAD_RENDER|FT_LOAD_TARGET_NORMAL);
-  return priv->face->glyph->bitmap_top;
+    const_cast<FontGlyphBitmap*>(this)->check_load();
+  if (priv) {
+    FT_UInt glyphindex = FT_Get_Char_Index(priv->face, idx);
+    /*int err1 =*/ FT_Load_Glyph(priv->face, glyphindex, FT_LOAD_RENDER|FT_LOAD_TARGET_NORMAL);
+    return priv->face->glyph->bitmap_top;
+  } else { 
+    return 0; 
+  }
 }
-
 int FontGlyphBitmap::SizeX() const
 {
-
-  int val = priv->face->glyph->bitmap.width;
-  //std::cout << "SizeX:" << val << std::endl;
-  return val;
+    const_cast<FontGlyphBitmap*>(this)->check_load();
+  if (priv) {
+    int val = priv->face->glyph->bitmap.width;
+    //std::cout << "SizeX:" << val << std::endl;
+    return val;
+  } else {
+    return 0;
+  }
 }
 
 int FontGlyphBitmap::SizeY() const
 {
-  int val = priv->face->glyph->bitmap.rows; 
-  //std::cout << "SizeY:" << val << std::endl;
-  return val;
+    const_cast<FontGlyphBitmap*>(this)->check_load();
+  if (priv) {
+    int val = priv->face->glyph->bitmap.rows; 
+    //std::cout << "SizeY:" << val << std::endl;
+    return val;
+  } else {
+    return 0;
+  }
 }
 
 int FontGlyphBitmap::Map(int x, int y) const
 {
+    const_cast<FontGlyphBitmap*>(this)->check_load();
+  if (!priv)
+    return 0;
   if (x<0 || x>=SizeX() || y<0 || y>=SizeY())
     return 0;
   return (int)priv->face->glyph->bitmap.buffer[x+y*priv->face->glyph->bitmap.pitch];

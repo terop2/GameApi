@@ -9,9 +9,8 @@
 #include <emscripten.h>
 #endif
 
-
-
 #include "GameApi_h.hh"
+#include "FreeType2.hh"
 
 int array_type_to_int(GameApi::BM b) { return E_BM; }
 int array_type_to_int(GameApi::P b) { return E_P; }
@@ -32,6 +31,7 @@ EnvImpl::EnvImpl() : event_infos(new EmptySequencer2), mutex(PTHREAD_MUTEX_INITI
     FT_Init_FreeType(&lib);
 #endif 
     cursor_pos_point_id.id = -1;
+    async_loader = new ASyncLoader;
 }
 
 GameApi::BM add_color_bitmap2(GameApi::Env &e, Bitmap<Color> *bm);
@@ -326,6 +326,17 @@ EXPORT void GameApi::Env::free_temp_memory()
 
 }
 
+EXPORT void GameApi::Env::async_load_url(std::string url)
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  env->async_loader->load_urls(url);
+}
+EXPORT std::vector<unsigned char> *GameApi::Env::get_loaded_async_url(std::string url)
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  return env->async_loader->get_loaded_data(url);
+}
+
 EXPORT GameApi::Env::~Env()
 {
   delete (::EnvImpl*)envimpl;
@@ -333,6 +344,30 @@ EXPORT GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
+GameApi::SD add_string_display(GameApi::Env &e, StringDisplay *sd)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->string_displays.push_back(sd);
+  GameApi::SD im;
+  im.id = env->string_displays.size()-1;
+  return im;
+}
+GameApi::GI add_glyph_interface(GameApi::Env &e, GlyphInterface *gi)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->glyph_interfaces.push_back(gi);
+  GameApi::GI im;
+  im.id = env->glyph_interfaces.size()-1;
+  return im;
+}
+GameApi::FI add_font_interface(GameApi::Env &e, FontInterface *fi)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->font_interfaces.push_back(fi);
+  GameApi::FI im;
+  im.id = env->font_interfaces.size()-1;
+  return im;
+}
 GameApi::FF add_float_fetcher(GameApi::Env &e, Fetcher<float> *f)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1182,6 +1217,22 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   Array<int,bool> *enable = info.enable_obj_array;
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
+}
+GlyphInterface *find_glyph_interface(GameApi::Env &e, GameApi::GI gi)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->glyph_interfaces[gi.id];
+}
+
+FontInterface *find_font_interface(GameApi::Env &e, GameApi::FI fi)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->font_interfaces[fi.id];
+}
+StringDisplay *find_string_display(GameApi::Env &e, GameApi::SD sd)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->string_displays[sd.id];
 }
 Fetcher<float> *find_float_fetcher(GameApi::Env &e, GameApi::FF f)
 {
@@ -3196,7 +3247,7 @@ public:
     s3.id = env.sh_color;
     float time = (env.time*1000.0-start_time)/100.0+i*time_delta;
     GameApi::M mat = ev.move_api.get_matrix(mn, time, ev.mainloop_api.get_delta_time());
-    Matrix mat_i = find_matrix(e, mat);
+    //Matrix mat_i = find_matrix(e, mat);
     //std::cout << mat_i << std::endl;
     GameApi::M m2 = add_matrix2(e, env.env);
     //std::cout << env.env << std::endl;
@@ -7292,4 +7343,239 @@ GameApi::KF GameApi::VertexAnimApi::repeat_keyframes(KF rep, int count)
 {
   VertexAnimNode *va = find_vertex_anim(e, rep);
   return add_vertex_anim(e, new RepeatVertexAnimNode(va,count));
+}
+
+std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
+
+void onerror_async_cb(void *arg)
+{
+  std::cout << "ERROR: url loading error! " << std::endl;
+    char *url = (char*)arg;
+    std::string url_str(url);
+    load_url_buffers_async[url_str] = (std::vector<unsigned char>*)-1;
+    async_pending_count--;
+}
+void onload_async_cb(void *arg, void *data, int datasize)
+{
+  std::vector<unsigned char> buffer;
+  unsigned char *dataptr = (unsigned char*)data;
+  for(int i=0;i<datasize;i++) { buffer.push_back(dataptr[i]); }
+  
+  char *url = (char*)arg;
+  std::string url_str(url);
+  
+  std::cout << "url loading complete! " << url_str << std::endl;
+  load_url_buffers_async[url_str] = new std::vector<unsigned char>(buffer);
+  async_pending_count--;
+}
+
+std::vector<unsigned char> load_from_url(std::string url);
+
+void ASyncLoader::load_urls(std::string url)
+  {
+#ifdef EMSCRIPTEN
+    url = "load_url.php?url=" + url;
+
+    std::cout << "url loading started! " << url << std::endl;
+
+    // if we have already loaded the same url, don't load again
+    if (load_url_buffers_async[url]) { return; }
+    
+    char *buf2 = new char[url.size()+1];
+    std::copy(url.begin(), url.end(), buf2);
+    buf2[url.size()]=0;
+    
+    async_pending_count++;
+    emscripten_async_wget_data(buf2, (void*)buf2 , &onload_async_cb, &onerror_async_cb);
+#else
+    std::string url2 = "load_url.php?url=" + url;
+    if (load_url_buffers_async[url2]) { return; }
+    std::vector<unsigned char> buf = load_from_url(url);
+    load_url_buffers_async[url2] = new std::vector<unsigned char>(buf);
+#endif
+  }
+std::vector<unsigned char> *ASyncLoader::get_loaded_data(std::string url) const
+  {
+    url = "load_url.php?url=" + url;
+    std::cout << "url fetch " << url << std::endl;
+    return load_url_buffers_async[url];
+  }
+
+
+class StringDisplayToBitmap : public Bitmap<int>
+{
+public:
+  StringDisplayToBitmap(StringDisplay &sd, int def) : sd(sd),def(def) {}
+  void Prepare() { }
+  int SizeX() const
+  {
+    int s = sd.Count();
+    int maxx = 0;
+    for(int i=0;i<s;i++)
+      {
+	int x = sd.X(i) + sd.SX(i);
+	if (x>maxx) maxx = x;
+      }
+    return maxx;
+  }
+  int SizeY() const
+  {
+    int s = sd.Count();
+    int maxy = 0;
+    for(int i=0;i<s;i++)
+      {
+	int y = sd.Y(i) + sd.SY(i);
+	if (y>maxy) maxy = y;
+      }
+    return maxy;
+
+  }
+  int Map(int x, int y) const
+  {
+    int s = sd.Count();
+    //int maxy = 0;
+    for(int i=0;i<s;i++)
+      {
+	int xx = sd.X(i);
+	if (x<xx) continue;
+	int yy = sd.Y(i);
+	if (y<yy) continue;
+	if (x>xx+sd.SX(i)) continue;
+	if (y>yy+sd.SY(i)) continue;
+	return sd.Map(i, x-xx, y-yy);
+      }
+    return def;
+  }
+private:
+  StringDisplay &sd;
+  int def;
+};
+GameApi::BM GameApi::FontApi::string_display_to_bitmap(SD sd, int def)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  StringDisplay *sdd = find_string_display(e, sd);
+  Bitmap<int> *bm1 = new StringDisplayToBitmap(*sdd, def);
+  env->deletes.push_back(std::shared_ptr<void>(bm1)); 
+  Bitmap<Color> *bm2 = new MapBitmapToColor(0,255,Color(255,255,255,255), Color(255,255,255,0), *bm1);
+  return add_color_bitmap(e, bm2);
+}
+
+class ChooseGlyphFromFont : public GlyphInterface
+{
+public:
+  ChooseGlyphFromFont(FontInterface &fi, long idx) : fi(fi), idx(idx) { }
+  virtual int Top() const { return fi.Top(idx); }
+  virtual int SizeX() const { return fi.SizeX(idx); }
+  virtual int SizeY() const { return fi.SizeY(idx); }
+  virtual int Map(int x, int y) const
+  {
+    return fi.Map(idx,x,y);
+  }
+private:
+  FontInterface &fi;
+  long idx;
+};
+GameApi::GI GameApi::FontApi::choose_glyph_from_font(FI font, long idx)
+{
+  FontInterface *fi = find_font_interface(e, font);
+  return add_glyph_interface(e, new ChooseGlyphFromFont(*fi, idx));
+}
+
+class StringDisplayFromGlyphs : public StringDisplay
+{
+public:
+  StringDisplayFromGlyphs(std::vector<GlyphInterface*> vec, std::string str, int x_gap, int empty_line_height) : vec(vec), x_gap(x_gap), str(str), empty_line_height(empty_line_height) { }
+  virtual int Count() const { return vec.size(); }
+  virtual int X(int c) const
+  {
+    int s = vec.size();
+    int x = 0;
+    for(int i=0;i<s;i++)
+      {
+	if (i==c) { return x; }
+	GlyphInterface *gi = vec[i];
+	x+=gi->SizeX();
+	x+=x_gap;
+	if (str[i]=='\n') x=0;
+      }
+    return 0;
+  }
+  virtual int Y(int c) const
+  {
+    //int s = str.size();
+    int y = 0;
+    int prev_pos = 0;
+    for(int i=0;i<c;i++)
+      {
+	if (str[i]=='\n') { 
+	  int maxy = 0;
+	  if (prev_pos+1 >= c) { maxy = empty_line_height; }
+	  for(int j=prev_pos+1;j<c;j++)
+	    {
+	      maxy = std::max(maxy, vec[j]->Top() + vec[j]->SizeY());
+	    }
+	  y+=maxy;
+	  prev_pos = i;
+	}
+      }
+    return y+PositiveDelta()+vec[c]->Top();
+  }
+  virtual int SX(int c) const
+  {
+    return vec[c]->SizeX();
+  }
+  virtual int SY(int c) const
+  {
+    return vec[c]->SizeY();
+  }
+  virtual int Map(int c, int x, int y) const
+  {
+    return vec[c]->Map(x,y);
+  }
+  int PositiveDelta() const
+  {
+    int sz = vec.size();
+    int min_delta=0;
+    for(int i=0;i<sz;i++)
+      {
+	int delta = vec[i]->Top();
+	if (delta<min_delta) min_delta=delta;
+      }
+    return -min_delta;
+  }
+private:
+  std::vector<GlyphInterface*> vec;
+  int x_gap;
+  std::string str;
+  int empty_line_height;
+};
+
+GameApi::SD GameApi::FontApi::draw_text_string_sd(std::vector<GI> glyphs, std::string str, int gap_x, int empty_line_height)
+{
+  int s = glyphs.size();
+  std::vector<GlyphInterface*> vec;
+  for(int i=0;i<s;i++)
+    {
+      vec.push_back(find_glyph_interface(e, glyphs[i]));
+    }
+  return add_string_display(e, new StringDisplayFromGlyphs(vec, str, gap_x, empty_line_height));
+}
+GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_gap, int empty_line_height)
+{
+  int s = str.size();
+  std::vector<GI> glyphs;
+  for(int i=0;i<s;i++)
+    {
+      GI glyph = choose_glyph_from_font(font, (long)str[i]);
+      glyphs.push_back(glyph);
+    }
+  SD sd = draw_text_string_sd(glyphs, str, x_gap, empty_line_height);
+  BM bm = string_display_to_bitmap(sd,0);
+  return bm;
+}
+GameApi::FI GameApi::FontApi::load_font(std::string ttf_filename, int sx, int sy)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  void *priv_ = (void*)&env->lib;
+  return add_font_interface(e, new FontInterfaceImpl(e, priv_, ttf_filename, sx,sy));
 }

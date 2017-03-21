@@ -557,6 +557,10 @@ struct EnvImpl
   std::vector<Fetcher<int>*> int_fetchers;
   std::vector<Fetcher<std::string>*> string_fetchers;
   std::vector<Fetcher<float>*> float_fetchers;
+  ASyncLoader *async_loader;
+  std::vector<GlyphInterface*> glyph_interfaces;
+  std::vector<FontInterface*> font_interfaces;
+  std::vector<StringDisplay*> string_displays;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -830,6 +834,9 @@ struct FaceCollPolyHandle : public PolyHandle
 //
 // add functions
 //
+GameApi::FI add_font_interface(GameApi::Env &e, FontInterface *fi);
+GameApi::GI add_glyph_interface(GameApi::Env &e, GlyphInterface *gi);
+GameApi::SD add_string_display(GameApi::Env &e, StringDisplay *sd);
 GameApi::FF add_float_fetcher(GameApi::Env &e, Fetcher<float> *f);
 GameApi::IF add_int_fetcher(GameApi::Env &e, Fetcher<int> *i);
 GameApi::SF add_string_fetcher(GameApi::Env &e, Fetcher<std::string> *str);
@@ -926,6 +933,9 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+StringDisplay *find_string_display(GameApi::Env &e, GameApi::SD sd);
+GlyphInterface *find_glyph_interface(GameApi::Env &e, GameApi::GI gi);
+FontInterface *find_font_interface(GameApi::Env &e, GameApi::FI fi);
 Fetcher<float> *find_float_fetcher(GameApi::Env &e, GameApi::FF f);
 Fetcher<std::string> *find_string_fetcher(GameApi::Env &e, GameApi::SF s);
 Fetcher<int> *find_int_fetcher(GameApi::Env &e, GameApi::IF f);
