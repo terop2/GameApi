@@ -26,6 +26,9 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct FI { int id; };
+  struct SD { int id; };
+  struct GI { int id; };
   struct FF { int id; };
   struct IF { int id; };
   struct SF { int id; };
@@ -166,9 +169,10 @@ struct ExecuteEnv
     virtual R Map(P p) const=0;
   };
 
+  class Env;
   struct EveryApi;
 
-  std::pair<int,std::string> execute_codegen(EveryApi &ev, std::string text, ExecuteEnv &e);
+  std::pair<int,std::string> execute_codegen(Env &e2, EveryApi &ev, std::string text, ExecuteEnv &e);
 
 #ifndef __clang__
 #define IMPORT 
@@ -188,6 +192,8 @@ public:
   IMPORT Env();
   IMPORT void free_memory();
   IMPORT void free_temp_memory();
+  IMPORT void async_load_url(std::string url);
+  IMPORT std::vector<unsigned char> *get_loaded_async_url(std::string url);
   IMPORT ~Env();
   IMPORT static Env *Latest_Env();
 private:
@@ -585,9 +591,15 @@ public:
   IMPORT FtA  load_atlas(std::string filename);
   IMPORT ARR font_string_array(Ft font, std::string s, int i);
   IMPORT SF time_string_fetcher(EveryApi &ev);
+  IMPORT SF score_string_fetcher(std::string id, std::string label, int numdigits);
   IMPORT IF char_fetcher_from_string(SF string_fetcher, std::string alternatives, int idx);
   IMPORT ML dynamic_character(EveryApi &ev, std::vector<BM> vec, IF fetcher, int x, int y);
   IMPORT ML dynamic_string(EveryApi &ev, Ft font, std::string alternative_chars, SF fetcher, int x, int y, int numchars);
+  IMPORT FI load_font(std::string ttf_filename, int sx, int sy);
+  IMPORT GI choose_glyph_from_font(FI font, long idx);
+  IMPORT SD draw_text_string_sd(std::vector<GI> glyphs, std::string str, int gap_x, int empty_line_height);
+  IMPORT BM string_display_to_bitmap(SD sd, int def);
+  IMPORT BM draw_text_string(FI font, std::string str, int x_gap, int empty_line_height);
 private:
   FontApi(const FontApi&);
   void operator=(const FontApi&);

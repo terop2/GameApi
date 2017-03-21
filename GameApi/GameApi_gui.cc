@@ -3711,6 +3711,9 @@ MACRO(GameApi::KF)
 MACRO(GameApi::CPP)
 MACRO(GameApi::IF)
 MACRO(GameApi::SF)
+MACRO(GameApi::SD)
+MACRO(GameApi::FI)
+MACRO(GameApi::GI)
 #undef MACRO
 
 
@@ -4011,6 +4014,30 @@ void onload_cb(void *arg, void *data, int datasize)
     load_url_buffers[url_str] = new std::vector<unsigned char>(buffer);
     async_pending_count--;
 }
+struct ASyncData
+{
+  std::string api_name;
+  std::string func_name;
+  int param_num;
+};
+ASyncData async_data[] = { { "font_api", "newfont", 0 },
+			   { "font_api", "load_font", 0 }
+};
+
+void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line)
+{
+  int s = sizeof(async_data)/sizeof(ASyncData);
+  for(int i=0;i<s;i++)
+    {
+      ASyncData &dt = async_data[i];
+      if (line.api_name == dt.api_name && line.func_name == dt.func_name)
+	{
+	  int param_num = dt.param_num;
+	  std::string url = line.params[param_num];
+	  e.async_load_url(url);
+	}
+    }
+}			 
 
 void LoadUrls(const CodeGenLine &line)
 {
@@ -4031,7 +4058,7 @@ void LoadUrls(const CodeGenLine &line)
     emscripten_async_wget_data(buf2, (void*)buf2 , &onload_cb, &onerror_cb);
 #endif
 }
-std::vector<CodeGenLine> parse_codegen(std::string text, int &error_line_num)
+std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, std::string text, int &error_line_num)
 {
   int idx = 0;
   int old_idx = 0;
@@ -4045,6 +4072,7 @@ std::vector<CodeGenLine> parse_codegen(std::string text, int &error_line_num)
       CodeGenLineErrorCheck(l, all_functions());
       if (l.return_type=="@") { error_line_num = line_num; return std::vector<CodeGenLine>(); }
       LoadUrls(l);
+      LoadUrls_async(env,l);
       vec.push_back(l);
       line_num++;
       old_idx = idx+1;
@@ -4154,6 +4182,10 @@ void link_api_items(std::vector<CodeGenLine> &vec, std::vector<GameApiItem*> fun
       if (found==false) { std::cout << "NOT FOUND: " << line.api_name << " " << line.func_name<< std::endl; }
     }
 }
+
+
+
+
 #if 1
 int execute_api(GameApi::EveryApi &ev, const std::vector<CodeGenLine> &vec, std::vector<CodeGenVectors> &vecvec, int /*line_num*/, GameApi::ExecuteEnv &e)
 {
@@ -4294,10 +4326,10 @@ std::string ToString(int num)
   ss << num;
   return ss.str();
 }
-std::pair<int,std::string> GameApi::execute_codegen(GameApi::EveryApi &ev, std::string text, GameApi::ExecuteEnv &e)
+std::pair<int,std::string> GameApi::execute_codegen(GameApi::Env &env, GameApi::EveryApi &ev, std::string text, GameApi::ExecuteEnv &e)
 {
   int error_line_num = 0;
-  std::vector<CodeGenLine> vec = parse_codegen(text, error_line_num);
+  std::vector<CodeGenLine> vec = parse_codegen(env, text, error_line_num);
   if (vec.size()==0) {
     return std::make_pair(0,std::string("Error at line ") + ToString(error_line_num));
   }
@@ -4310,6 +4342,26 @@ std::pair<int,std::string> GameApi::execute_codegen(GameApi::EveryApi &ev, std::
 
   return std::make_pair(val, "OK");
 }
+
+template<class T>
+class CodeGenBuilderValue : public BuilderValue<T>
+{
+public:
+  CodeGenBuilderValue(GameApi::Env &env, GameApi::EveryApi &ev, std::string text, GameApi::ExecuteEnv &e) : env(env), ev(ev), text(text),e(e) { }
+  T get() const
+  {
+    std::pair<int, std::string> p = execute_codegen(env, ev, text, e);
+    T t;
+    t.id = p.first;
+    return t;
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string text;
+  GameApi::ExecuteEnv &e;
+};
+
 #endif
 
 template<class T, class RT, class... P>
@@ -5007,7 +5059,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "newfont",
 			 { "file", "sx", "sy" },
 			 { "std::string", "int", "int" },
-			 { "FreeSans.ttf", "20", "20" },
+			 { "http://tpgames.org/FreeSans.ttf", "20", "20" },
 			 "Ft", "font_api", "newfont"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::glyph,
 			 "glyph",
@@ -5101,6 +5153,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "EveryApi&" },
 			 { "ev" },
 			 "SF", "font_api", "time_string_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::score_string_fetcher,
+			 "fnt_score",
+			 { "id", "label", "numdigits" },
+			 { "std::string", "std::string", "int" },
+			 { "score", "Score: ", "5" },
+			 "SF", "font_api", "score_string_fetcher"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::char_fetcher_from_string,
 			 "fnt_char_idx",
 			 { "string_fetcher", "alternatives", "idx" },
@@ -5113,6 +5171,18 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "EveryApi&", "[BM]", "IF", "int", "int" },
 			 { "ev", "", "", "0","0" },
 			 "ML", "font_api", "dynamic_character"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::load_font,
+			 "FI_load",
+			 { "ttf_filename", "sx", "sy" },
+			 { "std::string", "int", "int" },
+			 { "http://tpgames.org/Chunkfive.otf", "200", "200" },
+			 "FI", "font_api", "load_font"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::draw_text_string,
+			 "FI_drawtext",
+			 { "font", "str", "x_gap", "line_height" },
+			 { "FI", "std::string", "int", "int" },
+			 { "", "Hello", "5", "30" },
+			 "BM", "font_api", "draw_text_string"));
   return vec;
 }
 #endif

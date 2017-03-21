@@ -20,7 +20,7 @@ EXPORT GameApi::Ft GameApi::FontApi::newfont(std::string filename, int sx, int s
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   Font fnt; 
   std::cout << &env->lib << std::endl;
-  fnt.bm = new FontGlyphBitmap((void*)&env->lib,filename.c_str(), sx,sy);
+  fnt.bm = new FontGlyphBitmap(e, (void*)&env->lib,filename.c_str(), sx,sy);
   env->fonts.push_back(fnt); 
   GameApi::Ft font;
   font.id = env->fonts.size()-1;
@@ -48,19 +48,41 @@ EXPORT GameApi::PL GameApi::FontApi::glyph_plane(GameApi::Ft font, long idx, flo
   PlanePoints2d *plane = new FontLineCollectionWrapper(coll, bm->Types(), sx, sy, dx,dy);
   return add_plane(e, plane);
 }
+class GlyphChooser : public Bitmap<int>
+{
+public:
+  GlyphChooser(long idx, FontGlyphBitmap &bm) : idx(idx),bm(bm) { }
+  void Prepare() { bm.Prepare(); }
+  int SizeX() const {
+    bm.load_glyph(idx);
+    return bm.SizeX(); 
+  }
+  int SizeY() const {
+    bm.load_glyph(idx);
+    return bm.SizeY(); 
+  }
+  int Map(int x, int y) const {
+    bm.load_glyph(idx);
+    return bm.Map(x,y);
+  }
+private:
+  long idx;
+  FontGlyphBitmap &bm;
+};
 EXPORT GameApi::BM GameApi::FontApi::glyph(GameApi::Ft font, long idx)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   Bitmap<int> *bmA = env->fonts[font.id].bm;
   FontGlyphBitmap *bm3 = dynamic_cast<FontGlyphBitmap*>(bmA);
-  bm3->load_glyph(idx);
-  Bitmap<int> *bm = env->fonts[font.id].bm;
-  Bitmap<Color> *cbm = new MapBitmapToColor(0,255,Color(255,255,255,255), Color(255,255,255,0), *bm);
-  MemoizeBitmap *mbm = new MemoizeBitmap(*cbm);
-  mbm->MemoizeAll();
+  //bm3->load_glyph(idx);
+  Bitmap<int> *bm4 = new GlyphChooser(idx, *bm3);
+  //Bitmap<int> *bm = env->fonts[font.id].bm;
+  Bitmap<Color> *cbm = new MapBitmapToColor(0,256,Color(255,255,255,255), Color(255,255,255,0), *bm4);
+  //MemoizeBitmap *mbm = new MemoizeBitmap(*cbm);
+  //mbm->MemoizeAll();
   env->deletes.push_back(std::shared_ptr<void>(cbm)); 
   BitmapColorHandle *chandle2 = new BitmapColorHandle;
-  chandle2->bm = mbm;
+  chandle2->bm = cbm;
   BM bm2 = add_bitmap(e,chandle2); 
   //FB bm2_a = ev.float_bitmap_api.from_red(bm2);
   //BM bm2_b = ev.float_bitmap_api.to_grayscale_color(bm2_a, 255,255,255,255, 0,0,0,0);
@@ -335,6 +357,30 @@ EXPORT GameApi::IF GameApi::FontApi::char_fetcher_from_string(SF string_fetcher,
   return add_int_fetcher(e, new ChooseCharFetcher(str, alternatives, idx));
 }
 
+std::map<std::string, int> number_map;
+
+class ScoreStringFetcher : public Fetcher<std::string>
+{
+public:
+  ScoreStringFetcher(std::string id, std::string label, int numdigits) : id(id), label(label), numdigits(numdigits) { }
+  void set(std::string s) { }
+  std::string get() const {
+    std::string s = label;
+    std::stringstream ss;
+    ss << std::setfill('0') << std::setw(numdigits) << number_map[id];
+    s+=ss.str();
+    return s;
+  }
+private:
+  std::string id;
+  std::string label;
+  int numdigits;
+};
+GameApi::SF GameApi::FontApi::score_string_fetcher(std::string id, std::string label, int numdigits)
+{
+  return add_string_fetcher(e, new ScoreStringFetcher(id, label, numdigits));
+}
+
 class TimeStringFetcher : public Fetcher<std::string>
 {
 public:
@@ -368,7 +414,7 @@ EXPORT GameApi::BM GameApi::FontApi::font_string(Ft font, std::string str, int x
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   int sz = str.size();
-  FontCharacterString<Color> *array = new FontCharacterString<Color>(Color(0.0f,0.0f,0.0f,0.0f), x_gap);
+  FontCharacterString<Color> *array = new FontCharacterString<Color>(Color(1.0f,1.0f,1.0f,0.0f), x_gap);
   for(int i=0;i<sz;i++)
     {
       char ch = str[i];
