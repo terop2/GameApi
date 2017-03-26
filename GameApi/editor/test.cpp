@@ -230,8 +230,10 @@ struct Envi {
   Ft font;
   Ft font3;
   FtA atlas;
+  FtA atlas2;
   FtA atlas3;
   BM atlas_bm;
+  BM atlas_bm2;
   BM atlas_bm3;
   bool insert_ongoing;
   bool insert_ongoing2;
@@ -304,7 +306,8 @@ void connect_target(int x, int y, Envi *envi)
 	  int real_index = vec[num];
 	  std::cout << "Real index: " << real_index << std::endl;
 	  bool is_array = false;
-	  bool b = envi->ev->mod_api.typecheck(envi->mod, 0, envi->connect_start_uid, uid, real_index, is_array);
+	  bool is_array_return = false; // TODO
+	  bool b = envi->ev->mod_api.typecheck(envi->mod, 0, envi->connect_start_uid, uid, real_index, is_array, is_array_return);
 	  if (b) 
 	    {
 	      if (is_array)
@@ -1072,7 +1075,7 @@ void iter(void *arg)
 		    //for(int kk = 0; kk < s; kk++)
 		    //     std::cout << env->vec4[kk] << " " << env->vec4[kk]->i_value << std::endl;
 
-		    env->editor = env->gui->edit_dialog(labels,env->vec4,env->atlas3, env->atlas_bm3, types, env->dialog_cancel, env->dialog_ok);
+		    env->editor = env->gui->edit_dialog(labels,env->vec4,env->atlas3, env->atlas_bm3, types, env->dialog_cancel, env->dialog_ok, env->atlas2, env->atlas_bm2);
 		    env->gui->set_pos(env->editor, 200,50);
 		    
 		    env->editor_visible = true;
@@ -1697,8 +1700,10 @@ int main(int argc, char *argv[]) {
   env.font = font;
   env.font3 = font3;
   env.atlas = atlas;
+  env.atlas2 = atlas2;
   env.atlas3 = atlas3;
   env.atlas_bm = atlas_bm;
+  env.atlas_bm2 = atlas_bm2;
   env.atlas_bm3 = atlas_bm3;
   env.unique_id_counter = ev.mainloop_api.random();
   //env.editor = editor;

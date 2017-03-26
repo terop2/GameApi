@@ -1063,7 +1063,7 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
 	      std::string name = item->Name(0);
 	      if (name == line->module_name)
 		{
-		  int val = item->Execute(ev, params, exeenv);
+		  int val = item->Execute(e, ev, params, exeenv);
 		  item->EndEnv(exeenv);
 		  return val;
 		}
@@ -1073,7 +1073,7 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
   std::cout << "EXECUTE FAILED! " << std::endl;
   return -1;
 }
-bool GameApi::WModApi::typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, bool &is_array)
+bool GameApi::WModApi::typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, bool &is_array, bool &is_array_return)
 {
   is_array=false;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1105,6 +1105,14 @@ bool GameApi::WModApi::typecheck(WM mod2, int id, std::string uid1, std::string 
       if (item->Name(0) == module1)
 	{
 	  type1 = item->ReturnType(0);
+	  if (type1.size()>2) {
+	    if (type1[0]=='[' && type1[type1.size()-1]==']')
+	      {
+		is_array_return=true;
+		type1 = type1.substr(1,type1.size()-2);
+	      }
+	  }
+
 	}
       if (item->Name(0) == module2)
 	{

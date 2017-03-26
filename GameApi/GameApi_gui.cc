@@ -2371,7 +2371,7 @@ EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atl
   return arr_3;
 }
 
-EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &labels, const std::vector<GameApi::GuiApi::EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_but, W &ok_but)
+EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &labels, const std::vector<GameApi::GuiApi::EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_but, W &ok_but, FtA atlas_tiny, BM atlas_tiny_bm)
 {
   assert(vec.size()==labels.size());
   assert(labels.size()==types.size());
@@ -2392,45 +2392,48 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &l
       //std::cout << "edit_dialog" << i << " " << target << " " << target->i_value << std::endl;
       std::string type = types[i];
       std::string label = labels[i];
-      W edit = generic_editor(*target, atlas, atlas_bm, type, 8);
       W lab = text(label, atlas,atlas_bm, 8);
       W lab_2 = right_align(lab, size_x1);
+      W edit = generic_editor(*target, atlas, atlas_bm, type, 8, atlas_tiny, atlas_tiny_bm, size_y(lab));
+
       W array2[] = { lab_2, edit };
       W array3 = array_x(&array2[0], 2, 5);
       vec2.push_back(array3);
     }
+  int button_width = 350;
   if (vec2.size()==0)
     {
       W lab0 = text("", atlas, atlas_bm, 8);
       W lab = text("(No data)", atlas, atlas_bm, 8);
-      W lab_2 = center_align(lab, 500);
+      W lab_2 = center_align(lab, button_width*2);
       vec2.push_back(lab0);
       vec2.push_back(lab_2);
       vec2.push_back(lab0);
     }
   W array = array_y(&vec2[0], vec2.size(), 35);
   W array_1 = margin(array, 10,10,10,10);
-  W array_1a = center_align(array_1, 500);
-  W array_2 = button(500, size_y(array_1), c_dialog_1, c_dialog_1_2 /*0xff884422, 0xff442211*/);
+  W array_1a = center_align(array_1, button_width*2);
+  W array_2 = button(button_width*2, size_y(array_1), c_dialog_1, c_dialog_1_2 /*0xff884422, 0xff442211*/);
   W array_3 = layer(array_2, array_1a);
 
-  W cancel_button = button(250,50, c_dialog_button_1, c_dialog_button_1 /*0xff884422, 0xff442211*/);
+
+  W cancel_button = button(button_width,50, c_dialog_button_1, c_dialog_button_1 /*0xff884422, 0xff442211*/);
   W cancel_button_1 = text("Cancel", atlas,atlas_bm, 4);
-  W cancel_button_11 = center_align(cancel_button_1, 250);
+  W cancel_button_11 = center_align(cancel_button_1, button_width);
   W cancel_button_111 = center_y(cancel_button_11, 50);
   W cancel_button_2 = layer(cancel_button, cancel_button_111);
   W cancel_button_3 = highlight(size_x(cancel_button_2), size_y(cancel_button_2));
   W cancel_button_4 = layer(cancel_button_2, cancel_button_3);
-  W cancel_area = click_area(cancel_button_4, 0,0,250,50,0);
+  W cancel_area = click_area(cancel_button_4, 0,0,button_width,50,0);
   cancel_but = cancel_area;
-  W ok_button = button(250,50, c_dialog_button_1, c_dialog_button_1/*0xff884422, 0xff442211*/);
+  W ok_button = button(button_width,50, c_dialog_button_1, c_dialog_button_1/*0xff884422, 0xff442211*/);
   W ok_button_1 = text("Ok", atlas,atlas_bm, 4);
-  W ok_button_11 = center_align(ok_button_1, 250);
+  W ok_button_11 = center_align(ok_button_1, button_width);
   W ok_button_111 = center_y(ok_button_11, 50);
   W ok_button_2 = layer(ok_button, ok_button_111);
   W ok_button_3 = highlight(size_x(ok_button_2), size_y(ok_button_2));
   W ok_button_4 = layer(ok_button_2, ok_button_3);
-  W ok_area = click_area(ok_button_4, 0,0,250,50,0);
+  W ok_area = click_area(ok_button_4, 0,0,button_width,50,0);
   ok_but = ok_area;
   W button_array[] = { cancel_area, ok_area };
   W button_arr = array_x(&button_array[0], 2, 0);
@@ -2683,7 +2686,7 @@ EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::str
     }
 }
 
-EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap)
+EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap, FtA atlas_tiny, BM atlas_tiny_bm, int sy)
 {
   //std::cout << "Generic editor: " << type << std::endl;
   if (type=="EveryApi&")
@@ -2711,14 +2714,16 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, 
     {
       if (target.s.size()>4 && target.s.substr(0,4)=="http")
 	{
-	  W edit = url_editor(target.s, atlas, atlas_bm, x_gap);
-	  return edit;
+	  W edit = url_editor(target.s, atlas_tiny, atlas_tiny_bm, x_gap);
+	  W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
+	  return edit_2;
 	}
       else 
 	{
       std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*\n";
-      W edit = string_editor(allowed, target.s, atlas, atlas_bm, x_gap);
-      return edit;
+      W edit = string_editor(allowed, target.s, atlas_tiny, atlas_tiny_bm, x_gap);
+      W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
+      return edit_2;
 	}
     }
   if (type=="float")
@@ -3547,7 +3552,7 @@ class FromStreamClass<std::vector<T>>
 public:
   std::vector<T> from_stream(std::string s, GameApi::EveryApi &ev)
   {
-    std::cout << "Vector:" << s << std::endl;
+    //std::cout << "Vector:" << s << std::endl;
     std::vector<T> vec;
     if (s.size()<2)
       {
@@ -3714,6 +3719,7 @@ MACRO(GameApi::SF)
 MACRO(GameApi::SD)
 MACRO(GameApi::FI)
 MACRO(GameApi::GI)
+MACRO(GameApi::ARR)
 #undef MACRO
 
 
@@ -3794,9 +3800,13 @@ std::vector<GameApi::EditNode*> collectnodes(std::string name, std::vector<std::
 }
 #endif
 
+template<class T>
+int template_get_id(T t) { return t.id; }
+int template_get_id(GameApi::ARR a) { return 0; }
+
 template<class T, class RT, class... P>
-int funccall(GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
-	     RT (T::*fptr)(P...), std::vector<std::string> s, GameApi::ExecuteEnv &e, std::vector<std::string> param_name)
+int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
+	     RT (T::*fptr)(P...), std::vector<std::string> s, GameApi::ExecuteEnv &e, std::vector<std::string> param_name, std::string return_type)
 {
   int s3 = s.size();
   if (s.size()!=param_name.size()) { std::cout << "funccall: param_names and parameter values std::vectors different size" << std::endl; }
@@ -3835,9 +3845,15 @@ int funccall(GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
   std::stringstream ss2(ss.str());
   T *ptr = &(ev.*api);
   RT val = (ptr->*fptr)(from_stream2<P>(ss2,ev)...);
- 
+  
+  if (return_type.size()>2 && return_type[0]=='[' && return_type[return_type.size()-1]==']')
+    { // array return type
+      GameApi::ARR arr = add_array(ee, val);
+      return arr.id;
+    }
+  
   //std::cout << "FuncCall returning: " << val.id << std::endl;
-  return val.id;
+  return template_get_id(val);
 }
 
 
@@ -3955,6 +3971,18 @@ void CodeGenLineErrorCheck(const CodeGenLine &line, std::vector<GameApiItem*> fu
     std::cout << ");" << std::endl;
   }
 }
+template<class T>
+std::ostream &operator<<(std::ostream &o, const std::vector<T> &v)
+{
+  int s = v.size();
+  for(int i=0;i<s;i++)
+    {
+    o << v[i];
+    if (i!=s-1) { o << ","; }
+    }
+  return o;
+}
+
 CodeGenLine parse_codegen_line(std::string line)
 {
   CodeGenLine error = { "@", "@", "@", "@", { } };
@@ -3990,6 +4018,8 @@ CodeGenLine parse_codegen_line(std::string line)
   line2.api_name = api_name;
   line2.func_name = func_name;
   line2.params = params;
+
+  std::cout << "CodeGenLine: " << line2.api_name << " " << line2.func_name << " " << line2.params << std::endl;
   return line2;
 }
 std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
@@ -4109,7 +4139,7 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
 	  std::string param_value = l.params[j];
 	  std::string param_linkage = "";
 	  // TODO std::vector types
-	  if (param_value.size()>0 && param_value[0]=='I')
+	  if (param_value.size()>0 && param_value[0]=='I' && line_map.find(param_value)!=line_map.end())
 	    {
 	      int linkage = line_map[param_value];
 	      std::stringstream ss;
@@ -4186,8 +4216,7 @@ void link_api_items(std::vector<CodeGenLine> &vec, std::vector<GameApiItem*> fun
 
 
 
-#if 1
-int execute_api(GameApi::EveryApi &ev, const std::vector<CodeGenLine> &vec, std::vector<CodeGenVectors> &vecvec, int /*line_num*/, GameApi::ExecuteEnv &e)
+int execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std::vector<CodeGenLine> &vec, std::vector<CodeGenVectors> &vecvec, int /*line_num*/, GameApi::ExecuteEnv &e)
 {
   std::vector<std::string> res_vec;
   int s2 = vec.size();
@@ -4212,15 +4241,11 @@ int execute_api(GameApi::EveryApi &ev, const std::vector<CodeGenLine> &vec, std:
 	      for(int i=0;i<s;i++)
 		{
 		  std::string link = vecvec[idx].params[i];
-		  //std::cout << "arrlink: " << link << std::endl;
 		  std::stringstream ss(link);
 		  int num;
 		  ss >> num;
-		  //std::cout << "execute_api1:" << num << std::endl;
-		  std::string val = res_vec[num]; //execute_api(ev, vec, vecvec, num, e);
-		  //std::stringstream ss2;
-		  //ss2 << val;
-		  params2.push_back( val /*ss2.str()*/ );
+		  std::string val = res_vec[num]; 
+		  params2.push_back( val );
 		}
 	      std::string res = "[";
 	      for(int i=0;i<s;i++)
@@ -4234,20 +4259,15 @@ int execute_api(GameApi::EveryApi &ev, const std::vector<CodeGenLine> &vec, std:
 	    }
 	  else if (link!="")
 	    {
-	      //std::cout << "link: " << link << std::endl;
 	      std::stringstream ss(link);
 	      int num;
 	      ss >> num;
-	      //std::cout << "execute_api2:" << num << std::endl;
-	      std::string val = res_vec[num]; //execute_api(ev, vec, vecvec, num, e);
-	      //std::stringstream ss2;
-	      //ss2 << val;
-	      params[i] = val; //ss2.str();
+	      std::string val = res_vec[num]; 
+	      params[i] = val; 
 	    }
-	  //std::cout << "Param: " << params[i] << std::endl;
     }
       
-      int val = l.item->Execute(ev, params, e);
+      int val = l.item->Execute(ee,ev, params, e);
       std::stringstream ss2;
       ss2 << val;
       res_vec.push_back(ss2.str());
@@ -4259,66 +4279,7 @@ int execute_api(GameApi::EveryApi &ev, const std::vector<CodeGenLine> &vec, std:
   return val;
   
 }
-#endif
 
-#if 0
-int execute_api(GameApi::EveryApi &ev, const std::vector<CodeGenLine> &vec, std::vector<CodeGenVectors> &vecvec, int line_num, GameApi::ExecuteEnv &e)
-{
-  CodeGenLine l = vec[line_num];
-  //std::cout << l.api_name << "." << l.func_name << std::endl;
-  int s = l.params_linkage.size();
-  std::vector<std::string> params = l.params;
-  for(int i=0;i<s;i++)
-    {
-      std::string link = l.params_linkage[i];
-      if (link.size()>0 && link[0]=='%')
-	{
-	  int j = i;
-	  std::string sub = link.substr(1);
-	  std::stringstream ss(sub);
-	  int idx = 0;
-	  ss >> idx;
-	  int s = vecvec[idx].params.size();
-	  std::vector<std::string> params2;
-	  for(int i=0;i<s;i++)
-	    {
-	      std::string link = vecvec[idx].params[i];
-  	      //std::cout << "arrlink: " << link << std::endl;
-	      std::stringstream ss(link);
-	      int num;
-	      ss >> num;
-	      int val = execute_api(ev, vec, vecvec, num, e);
-	      std::stringstream ss2;
-	      ss2 << val;
-	      params2.push_back( ss2.str() );
-	    }
-	  std::string res = "[";
-	  for(int i=0;i<s;i++)
-	    {
-	      if (i!=0) { res+=","; }
-	      std::string p = params2[i];
-	      res+=p;
-	    }
-	  res+="]";
-	  params[j] = res;
-	}
-      else if (link!="")
-	{
-	  //std::cout << "link: " << link << std::endl;
-	  std::stringstream ss(link);
-	  int num;
-	  ss >> num;
-	  int val = execute_api(ev, vec, vecvec, num, e);
-	  std::stringstream ss2;
-	  ss2 << val;
-	  params[i] = ss2.str();
-	}
-      //std::cout << "Param: " << params[i] << std::endl;
-    }
-  int val = l.item->Execute(ev, params, e);
-  return val;
-}
-#endif
 
 std::string ToString(int num)
 {
@@ -4338,7 +4299,7 @@ std::pair<int,std::string> GameApi::execute_codegen(GameApi::Env &env, GameApi::
   add_params_linkage(vec,vecvec,err2);
   if (err2) { return std::make_pair(0, std::string("Error at params_linkage")); }
   link_api_items(vec, all_functions());
-  int val = execute_api(ev, vec, vecvec, vec.size()-1, e);
+  int val = execute_api(env, ev, vec, vecvec, vec.size()-1, e);
 
   return std::make_pair(val, "OK");
 }
@@ -4389,9 +4350,9 @@ public:
   std::string FuncName(int i) const { return func_name; }
   std::string Symbols() const { return symbols; }
   std::string Comment() const { return comment; }
-  int Execute(GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)
+  int Execute(GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)
   {
-    return funccall(ev, api, fptr, params, e, param_name); 
+    return funccall(ee, ev, api, fptr, params, e, param_name, return_type); 
   }
 #if 0
   std::vector<GameApi::EditNode*> CollectNodes(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)
@@ -5055,6 +5016,7 @@ std::vector<GameApiItem*> pointapi_functions()
 std::vector<GameApiItem*> fontapi_functions()
 {
   std::vector<GameApiItem*> vec;
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::newfont,
 			 "newfont",
 			 { "file", "sx", "sy" },
@@ -5147,6 +5109,13 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "Ft", "std::string", "int" },
 			 { "", "0123456789", "2" },
 			 "ARR", "font_api", "font_string_array"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_string_array2,
+			 "fnt_chars2",
+			 { "font", "string" },
+			 { "FI", "std::string" },
+			 { "", "0123456789" },
+			 "[BM]", "font_api", "font_string_array2"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::time_string_fetcher,
 			 "fnt_time",
 			 { "ev" },
@@ -5171,9 +5140,10 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "EveryApi&", "[BM]", "IF", "int", "int" },
 			 { "ev", "", "", "0","0" },
 			 "ML", "font_api", "dynamic_character"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::load_font,
 			 "FI_load",
-			 { "ttf_filename", "sx", "sy" },
+			 { "url", "sx", "sy" },
 			 { "std::string", "int", "int" },
 			 { "http://tpgames.org/Chunkfive.otf", "200", "200" },
 			 "FI", "font_api", "load_font"));

@@ -4054,9 +4054,10 @@ public:
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     //std::cout << "mat2_inst" << std::endl;
-    GameApi::PTA pta = ev.points_api.prepare(pts);
-    GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
-    GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    //GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    //GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    GameApi::ML ml = ev.materials_api.render_instanced_ml(ev, p, pts);
     return ml;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
@@ -7562,11 +7563,12 @@ GameApi::SD GameApi::FontApi::draw_text_string_sd(std::vector<GI> glyphs, std::s
 }
 GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_gap, int empty_line_height)
 {
+  std::cout << "draw_text_string: " << str << std::endl;
   int s = str.size();
   std::vector<GI> glyphs;
   for(int i=0;i<s;i++)
     {
-      GI glyph = choose_glyph_from_font(font, (long)str[i]);
+      GI glyph = choose_glyph_from_font(font, (long)(str[i]));
       glyphs.push_back(glyph);
     }
   SD sd = draw_text_string_sd(glyphs, str, x_gap, empty_line_height);

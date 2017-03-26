@@ -325,6 +325,7 @@ private:
 namespace GameApi
 {
   class ExecuteEnv;
+  class Env;
 };
 
 struct GameApiParam
@@ -349,7 +350,7 @@ public:
   virtual std::string FuncName(int i) const=0;
   virtual std::string Symbols() const=0;
   virtual std::string Comment() const=0;
-  virtual int Execute(GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)=0;
+  virtual int Execute(GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)=0;
   //virtual std::vector<GameApi::EditNode*> CollectNodes(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)=0;
   virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)=0;
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) { }

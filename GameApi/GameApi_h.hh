@@ -840,6 +840,15 @@ GameApi::SD add_string_display(GameApi::Env &e, StringDisplay *sd);
 GameApi::FF add_float_fetcher(GameApi::Env &e, Fetcher<float> *f);
 GameApi::IF add_int_fetcher(GameApi::Env &e, Fetcher<int> *i);
 GameApi::SF add_string_fetcher(GameApi::Env &e, Fetcher<std::string> *str);
+template<class T>
+GameApi::ARR add_array(GameApi::Env &e, T t) { 
+  /* this is because of arrays in builder, template instantiation
+     wouldnt be accepted without this version -- real check is in runtime */
+  std::cout << "ERROR: Array version used with non-arrays! " << std::endl;
+  GameApi::ARR arr;
+  arr.id = -1;
+  return arr;
+}
 GameApi::ARR add_array(GameApi::Env &e, ArrayType *arr);
 GameApi::CPP add_curve_pos(GameApi::Env &e, CurvePos *pos);
 GameApi::PTT add_point_transform(GameApi::Env &e, PointTransform *ptt);
