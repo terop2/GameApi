@@ -11,9 +11,9 @@ struct GlyphData
 {
   int top;
   int sx,sy;
-  int *bitmap_data;
+  int *bitmap_data=0;
 
-  FT_Library *lib;
+  FT_Library *lib=0;
   FT_Face face;
 };
 
@@ -45,9 +45,11 @@ int FontInterfaceImpl::Map(long idx, int x, int y) const
 
 void FontInterfaceImpl::gen_glyph_data(long idx)
 {
+  //std::cout << "try gen_glyph_data:" << idx << std::endl;
   GlyphData *data = glyph_data[idx];
   if (data) return;
-  
+  std::cout << "gen_glyph_data:" << idx << std::endl;
+
   if (!data) {
     data = new GlyphData;
     glyph_data[idx] = data;
@@ -56,21 +58,25 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
 #ifndef EMSCRIPTEN
   e.async_load_url(ttf_filename);
 #endif
+  std::stringstream ss2;
+  ss2 << "font" << idx << ".ttf";
+
   std::vector<unsigned char> *ptr = e.get_loaded_async_url(ttf_filename);
   if (!ptr) {
     std::cout << "async not ready yet, failing..." << std::endl;
     exit(0);
   } else {
-    std::fstream ss("font.ttf", std::ios_base::binary | std::ios_base::out);
-    int s = ptr->size();
-    for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
-    ss.close();
+    //std::fstream ss(ss2.str().c_str(), std::ios_base::binary | std::ios_base::out);
+    //int s = ptr->size();
+    //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
+    //ss.close();
   }
   data->lib = (FT_Library*)priv_;
-  int err = FT_New_Face( *data->lib,
-      "font.ttf",
-      0,
-      &data->face);
+  int err = FT_New_Memory_Face( *data->lib,
+				&ptr->operator[](0) /*"font.ttf"*/,
+				ptr->size(),
+				0,
+				&data->face);
   if (err!=0)
     {
     std::cout << "FT_New_Face ERROR: " << err << std::endl;

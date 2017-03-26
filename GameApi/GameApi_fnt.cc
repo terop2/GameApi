@@ -212,6 +212,25 @@ EXPORT void GameApi::FontApi::save_atlas(FtA atlas, std::string filename)
   ss.close();
 }
 
+EXPORT GameApi::ARR GameApi::FontApi::font_string_array2(FI font, std::string str)
+{
+  int sz = str.size();
+  std::vector<int> bms;
+  for(int i=0;i<sz;i++)
+    {
+      char ch = str[i];
+      std::string s;
+      s+=ch;
+      BM bm = draw_text_string(font, s, 0, 0);
+      bms.push_back(bm.id);
+    }
+
+  ArrayType *val = new ArrayType;
+  val->type = E_BM;
+  val->vec = bms;
+  return add_array(e, val);
+}
+
 EXPORT GameApi::ARR GameApi::FontApi::font_string_array(Ft font, std::string str, int x_gap)
 {
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -221,14 +240,7 @@ EXPORT GameApi::ARR GameApi::FontApi::font_string_array(Ft font, std::string str
     {
       char ch = str[i];
       BM bm = glyph(font, ch);
-      bms.push_back(bm.id);
-       
-      //Bitmap<int> *bm2 = env->fonts[font.id].bm;
-      //FontGlyphBitmap *bm3 = dynamic_cast<FontGlyphBitmap*>(bm2);
-      //int top = bm3->bitmap_top(ch);
-     //BitmapHandle *handle = find_bitmap(e,bm);
-      //Bitmap<Color> *col = find_color_bitmap(handle);
-      
+      bms.push_back(bm.id);      
     }
   ArrayType *val = new ArrayType;
   val->type = E_BM;
@@ -239,6 +251,10 @@ class DynChar : public MainLoopItem
 {
 public:
   DynChar(GameApi::EveryApi &ev, Fetcher<int> *fetch, std::vector<GameApi::BM> vec, int x, int y) : ev(ev), fetch(fetch), vec(vec),x(x),y(y) 
+  {
+    firsttime = true;
+  }
+  void first_time_calc()
   {
     std::vector<GameApi::VA> va_vec;
     int s = vec.size();
@@ -251,6 +267,11 @@ public:
   }
   virtual void execute(MainLoopEnv &e)
   {
+    if (firsttime) {
+      first_time_calc();
+      firsttime = false;
+    }
+
     sh.id = e.sh_texture;
     int idx = fetch->get();
     int s = vas.size();
@@ -270,7 +291,70 @@ private:
   std::vector<GameApi::VA> vas;
   int x,y;
   GameApi::SH sh;
+  bool firsttime;
 };
+#if 0
+class DynChar2 : public MainLoopItem
+{
+public:
+  DynChar(GameApi::EveryApi &ev, GameApi::FI font, Fetcher<int> *fetch, std::vector<GameApi::GI> vec, std::string alternatives, int x, int y) : ev(ev), font(font), fetch(fetch), vec(vec),alternatives(alternatives), x(x),y(y) 
+  {
+    firsttime = true;
+  }
+
+  void first_time_calc()
+  {
+    std::vector<GameApi::VA> va_vec;
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	std::string s;
+	s+=alternatives[i];
+	BM bm = ev.font_api.draw_text_string(font, s, 0, 0);
+	va_vec.push_back(ev.sprite_api.create_vertex_array(bm));
+      }
+    vas = va_vec;
+    sh.id = -1;
+  }
+
+
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+      first_time_calc();
+      firsttime = false;
+    }
+
+    sh.id = e.sh_texture;
+    int idx = fetch->get();
+    int s = vas.size();
+    if (idx>=0 && idx<s) {
+      ev.shader_api.use(sh);
+      ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(x,y,0));
+      ev.sprite_api.render_sprite_vertex_array(vas[idx]);
+    }
+  }
+
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual int shader_id() { return sh.id; }
+
+private:
+  GameApi::EveryApi &ev;
+  FI font;
+  Fetcher<int> *fetch;
+  std::vector<GameApi::GI> vec;
+  std::string alternatives;
+  std::vector<GameApi::VA> vas;
+  int x,y;
+  GameApi::SH sh;
+  bool firsttime;
+};
+EXPORT GameApi::ML GameApi::FontApi::dynamic_character2(GameApi::EveryApi &ev, std::vector<GameApi::GI> vec, std::string alternatives, IF fetcher, int x, int y)
+{
+  Fetcher<int> *fetch = find_int_fetcher(e, fetcher);
+  return add_main_loop(e, new DynChar2(ev, fetch, vec,alternatives,x,y));
+}
+#endif
 
 EXPORT GameApi::ML GameApi::FontApi::dynamic_character(GameApi::EveryApi &ev, std::vector<GameApi::BM> vec, GameApi::IF fetcher, int x, int y)
 {
