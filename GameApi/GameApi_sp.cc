@@ -333,6 +333,8 @@ private:
   GameApi::BM bm;
   bool firsttime;
 };
+
+
 EXPORT GameApi::ML GameApi::SpriteApi::render_sprite_vertex_array_ml(EveryApi &ev, BM bm)
 {
   return add_main_loop(e, new RenderVertexArray4(e, ev, *this, bm));

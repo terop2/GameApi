@@ -5107,6 +5107,49 @@ private:
   mutable int id;
 };
 
+class F_Sandbox : public ShaderCall
+{
+public:
+  F_Sandbox(ShaderCall *next, ShaderModule *mod) : next(next), mod(mod) { }
+  int index(int base) const {
+    id = next->index(base)+1;
+    return id;
+  }
+  std::string func_call() const
+  {
+    std::string out;
+    out+=next->func_call();
+    std::stringstream ss;
+    int i = id;
+    ss << i+1;
+    std::stringstream ss2;
+    ss2 << i;
+    out+="vec3 pos";
+    out+=ss.str();
+    out+=" = ";
+    out+="ex_TexCoord;\n";
+    out+="pos" + ss.str() + ".x*=300.0;\n";
+    out+="pos" + ss.str() + ".y*=300.0;\n";
+    //out+="pos" + ss.str() + ".z/=gl_FragCoord.w;\n";
+    out+="vec4 rgb";
+    out+=ss.str();
+    out+=" = ";
+    out+=color_funccall_to_string_with_replace(mod, "pt", "pos" + ss.str());
+    out+=";\n";
+    //out+=funcname;
+    //out+="(pos";
+    //out+=ss2.str();
+    //out+=");\n";
+    return out;
+  }
+  std::string define_strings() const { return "EX_TEXCOORD " + next->define_strings(); } // TODO, MAYBE ASK DEFINE STRINGS FROM SFO
+private:
+  ShaderCall *next;
+  ShaderModule *mod;
+  mutable int id;
+};
+
+
 GameApi::US GameApi::UberShaderApi::v_dist_field_mesh(US us, SFO sfo)
 {
   ShaderCall *next = find_uber(e,us);
@@ -5118,6 +5161,12 @@ GameApi::US GameApi::UberShaderApi::f_mesh_color(US us, SFO sfo)
   ShaderCall *next = find_uber(e, us);
   ShaderModule *mod = find_shader_module(e, sfo);
   return add_uber(e, new F_MeshColor(next,mod));
+}
+GameApi::US GameApi::UberShaderApi::f_sandbox(US us, SFO sfo)
+{
+  ShaderCall *next = find_uber(e, us);
+  ShaderModule *mod = find_shader_module(e, sfo);
+  return add_uber(e, new F_Sandbox(next,mod));
 }
 GameApi::US GameApi::UberShaderApi::v_skeletal(US us)
 {
@@ -5697,6 +5746,38 @@ private:
   Material *next;
 };
 
+class SFO_Sandbox : public MaterialForward
+{
+public:
+  SFO_Sandbox(GameApi::EveryApi &ev, GameApi::SFO sfo, Material *next) : ev(ev), sfo(sfo), next(next) { }
+  virtual GameApi::ML mat2(GameApi::P p) const 
+  {
+    GameApi::ML ml;
+    ml.id = next->mat(p.id);
+    GameApi::ML df = ev.polygon_api.sfo_sandbox_shader(ev, ml,sfo);
+    return df;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst(p.id, pts.id);
+    GameApi::ML df = ev.polygon_api.sfo_sandbox_shader(ev, ml,sfo);
+    return df;
+
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(p.id, pta.id);
+    GameApi::ML df = ev.polygon_api.sfo_sandbox_shader(ev, ml,sfo);
+    return df;
+  }
+private:
+  GameApi::EveryApi &ev;
+  GameApi::SFO sfo;
+  Material *next;
+};
+
 class MeshColorFromSfo : public MaterialForward
 {
 public:
@@ -5741,6 +5822,11 @@ GameApi::MT GameApi::MaterialsApi::dist_field_mesh(EveryApi &ev, SFO sfo, MT nex
   SFO sfo2 = ev.sh_api.v_render(sfo);
   Material *nxt = find_material(e, next);
   return add_material(e, new DistanceFieldMesh(ev,sfo2,nxt));
+}
+GameApi::MT GameApi::MaterialsApi::sfo_sandbox(EveryApi &ev, SFO sfo, MT next)
+{
+  Material *nxt = find_material(e, next);
+  return add_material(e, new SFO_Sandbox(ev, sfo, nxt));
 }
 GameApi::MT GameApi::MaterialsApi::mesh_color_from_sfo(EveryApi &ev, SFO sfo, MT next)
 {
@@ -7581,3 +7667,4 @@ GameApi::FI GameApi::FontApi::load_font(std::string ttf_filename, int sx, int sy
   void *priv_ = (void*)&env->lib;
   return add_font_interface(e, new FontInterfaceImpl(e, priv_, ttf_filename, sx,sy));
 }
+
