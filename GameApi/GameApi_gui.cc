@@ -5401,6 +5401,14 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "SFO", "MT" },
 			 { "ev", "", "" },
 			 "MT", "materials_api", "mesh_color_from_sfo"));
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::sfo_sandbox,
+			 "m_sandbox",
+			 { "ev", "sfo", "mt" },
+			 { "EveryApi&", "SFO", "MT" },
+			 { "ev", "", "" },
+			 "MT", "materials_api", "sfo_sandbox"));
+#endif
 
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_event,
@@ -5920,6 +5928,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "float", "float", "float", "float", "float" },
 			 { "0.0", "100.0", "0.0", "100.0", "0.0" },
 			 "P", "polygon_api", "quad_z"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::fullscreen_quad,
+			 "quad_fullscreen",
+			 { "ev" },
+			 { "EveryApi&" },
+			 { "ev" },
+			 "P", "polygon_api", "fullscreen_quad"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::polygon2,
 			 "polygon",
 			 { "vec" },

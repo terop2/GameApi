@@ -580,7 +580,7 @@ public:
       ;
   }
   virtual std::string FunctionName() const { return "render"; }
-  virtual std::string ColorFunctionName() const { return "render_color"; }
+  virtual std::string ColorFunctionName() const { return "render"; }
   virtual int NumArgs() const { return 2; }
   virtual bool FreeVariable(int i) const { return true; }
   virtual std::string ArgName(int i) const { 
