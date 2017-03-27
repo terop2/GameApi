@@ -59,14 +59,6 @@
 #include "KeyFrameEditor.hh"
 #include "Parser.hh"
 
-#ifdef EMSCRIPTEN
-#include <SDL/SDL_ttf.h>
-#include <emscripten.h>
-#else
-#include <SDL2/SDL_ttf.h>
-#endif
-
-
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -378,7 +370,6 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
 
   SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK);
 
-  TTF_Init();
 
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);

@@ -2,8 +2,6 @@
 #include "GameApi_h.hh"
 #include <iomanip>
 
-extern std::map<std::string, std::vector<unsigned char>*> load_url_font_buffers;
-
 struct FontPriv
 {
 };
@@ -16,6 +14,7 @@ EXPORT GameApi::FontApi::~FontApi()
 {
   delete (FontPriv*)priv;
 }
+
 EXPORT GameApi::Ft GameApi::FontApi::newfont(std::string filename, int sx, int sy)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -25,14 +24,9 @@ EXPORT GameApi::Ft GameApi::FontApi::newfont(std::string filename, int sx, int s
   fnt.bm = new FontGlyphBitmap((void*)&env->lib,filename.c_str(), sx,sy);
   env->fonts.push_back(fnt); 
 #else
-  Font fnt; 
-  //std::cout << &env->lib << std::endl;
-  fnt.bm = new FontGlyphBitmap((void*)0,filename.c_str(), sx,sy);
-  env->fonts.push_back(fnt); 
-
-  //Font fnt;
-  //fnt.bm = new ConstantBitmap<int>(128,sx,sy);
-  //env->fonts.push_back(fnt);
+  Font fnt;
+  fnt.bm = new ConstantBitmap<int>(128,sx,sy);
+  env->fonts.push_back(fnt);
 #endif 
   GameApi::Ft font;
   font.id = env->fonts.size()-1;
@@ -60,38 +54,19 @@ EXPORT GameApi::PL GameApi::FontApi::glyph_plane(GameApi::Ft font, long idx, flo
   PlanePoints2d *plane = new FontLineCollectionWrapper(coll, bm->Types(), sx, sy, dx,dy);
   return add_plane(e, plane);
 }
-class GlyphChooser : public Bitmap<int>
-{
-public:
-  GlyphChooser(Bitmap<int> *bm, long idx) : bm(bm), idx(idx) { }
-  void Prepare() {
-    bm->Prepare();
-    FontGlyphBitmap *bm3 = dynamic_cast<FontGlyphBitmap*>(bm);
-    bm3->load_glyph(idx);
-  }
-  int SizeX() const { return bm->SizeX(); }
-  int SizeY() const { return bm->SizeY(); }
-  int Map(int x, int y) const { return bm->Map(x,y); }
-private:
-  Bitmap<int> *bm;
-  long idx;
-};
 EXPORT GameApi::BM GameApi::FontApi::glyph(GameApi::Ft font, long idx)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   Bitmap<int> *bmA = env->fonts[font.id].bm;
-  //bmA->Prepare();
-  //FontGlyphBitmap *bm3 = dynamic_cast<FontGlyphBitmap*>(bmA);
-  //bm3->load_glyph(idx);
-  Bitmap<int> *bm = new GlyphChooser(bmA,idx);
-  //Bitmap<int> *bm = env->fonts[font.id].bm;
+  FontGlyphBitmap *bm3 = dynamic_cast<FontGlyphBitmap*>(bmA);
+  bm3->load_glyph(idx);
+  Bitmap<int> *bm = env->fonts[font.id].bm;
   Bitmap<Color> *cbm = new MapBitmapToColor(0,255,Color(255,255,255,255), Color(255,255,255,0), *bm);
-  //MemoizeBitmap *mbm = new MemoizeBitmap(*cbm);
-  //mbm->MemoizeAll();
-  env->deletes.push_back(std::shared_ptr<void>(bm)); 
+  MemoizeBitmap *mbm = new MemoizeBitmap(*cbm);
+  mbm->MemoizeAll();
   env->deletes.push_back(std::shared_ptr<void>(cbm)); 
   BitmapColorHandle *chandle2 = new BitmapColorHandle;
-  chandle2->bm = cbm;
+  chandle2->bm = mbm;
   BM bm2 = add_bitmap(e,chandle2); 
   //FB bm2_a = ev.float_bitmap_api.from_red(bm2);
   //BM bm2_b = ev.float_bitmap_api.to_grayscale_color(bm2_a, 255,255,255,255, 0,0,0,0);
@@ -112,7 +87,6 @@ EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info(EveryApi &ev, Ft font, std
       char ch = chars[i];
       BM bm = glyph(font, ch);
       Bitmap<int> *bmA = env->fonts[font.id].bm;
-      bmA->Prepare();
       FontGlyphBitmap *bm2 = dynamic_cast<FontGlyphBitmap*>(bmA);
       int top = bm2->bitmap_top(ch);
       int xx = x;

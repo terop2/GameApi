@@ -3990,7 +3990,6 @@ CodeGenLine parse_codegen_line(std::string line)
   return line2;
 }
 std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
-std::map<std::string, std::vector<unsigned char>*> load_url_font_buffers;
 int async_pending_count = 0;
 void onerror_cb(void *arg)
 {
@@ -4012,48 +4011,7 @@ void onload_cb(void *arg, void *data, int datasize)
     load_url_buffers[url_str] = new std::vector<unsigned char>(buffer);
     async_pending_count--;
 }
-void onerror_font_cb(void *arg)
-{
-    char *url = (char*)arg;
-    std::string url_str(url);
-    load_url_font_buffers[url_str] = (std::vector<unsigned char>*)-1;
-    async_pending_count--;
-}
-void onload_font_cb(void *arg, void *data, int datasize)
-{
-  std::cout << "url loading complete!" << std::endl;
-    std::vector<unsigned char> buffer;
-    unsigned char *dataptr = (unsigned char*)data;
-    for(int i=0;i<datasize;i++) { buffer.push_back(dataptr[i]); }
 
-    char *url = (char*)arg;
-    std::string url_str(url);
-
-    load_url_font_buffers[url_str] = new std::vector<unsigned char>(buffer);
-    async_pending_count--;
-}
-
-void LoadUrls_font(const CodeGenLine &line)
-{
-  if (line.api_name!="font_api" ||line.func_name!="newfont")
-    return;
-
-#ifdef EMSCRIPTEN
-  
-  std::string url = line.params[0];
-  std::cout << "loading url: " << url << std::endl;
-
-  url = "load_url.php?url=" + url;
-
-    char *buf2 = new char[url.size()+1];
-    std::copy(url.begin(), url.end(), buf2);
-    buf2[url.size()]=0;
-    
-    async_pending_count++;
-    emscripten_async_wget_data(buf2, (void*)buf2 , &onload_font_cb, &onerror_font_cb);
-#endif
-
-}
 void LoadUrls(const CodeGenLine &line)
 {
   if (line.api_name!="bitmap_api" || line.func_name!="loadbitmapfromurl")
@@ -4087,7 +4045,6 @@ std::vector<CodeGenLine> parse_codegen(std::string text, int &error_line_num)
       CodeGenLineErrorCheck(l, all_functions());
       if (l.return_type=="@") { error_line_num = line_num; return std::vector<CodeGenLine>(); }
       LoadUrls(l);
-      LoadUrls_font(l);
       vec.push_back(l);
       line_num++;
       old_idx = idx+1;
@@ -5050,7 +5007,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "newfont",
 			 { "file", "sx", "sy" },
 			 { "std::string", "int", "int" },
-			 { "http://tpgames.org/FreeSans.ttf", "20", "20" },
+			 { "FreeSans.ttf", "20", "20" },
 			 "Ft", "font_api", "newfont"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::glyph,
 			 "glyph",
