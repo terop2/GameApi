@@ -6,12 +6,8 @@
 //#define THREADS 1
 #endif
 #ifdef EMSCRIPTEN
-#include <SDL/SDL_ttf.h>
 #include <emscripten.h>
-#else
-#include <SDL2/SDL_ttf.h>
 #endif
-
 
 
 
@@ -29,10 +25,9 @@ std::string color_funccall_to_string_with_replace(ShaderModule *mod, std::string
 EnvImpl::EnvImpl() : event_infos(new EmptySequencer2), mutex(PTHREAD_MUTEX_INITIALIZER)
 {
 #ifndef EMSCRIPTEN
-   FT_Init_FreeType(&lib);
+    FT_Init_FreeType(&lib);
     //std::cout << "Freetype init error: " << err << std::endl;
     //std::cout << &lib << std::endl;
-#else
 #endif 
     cursor_pos_point_id.id = -1;
 }

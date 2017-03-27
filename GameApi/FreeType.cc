@@ -17,34 +17,20 @@ struct GlyphPriv
   FT_UInt chosen_glyph;
 #endif
 };
-extern std::vector<unsigned char> load_from_url(std::string url);
 
 FontGlyphBitmap::FontGlyphBitmap(void *priv_, std::string filename, int sx, int sy)
   : m_sx(0.0), m_sy(0.0)
 {
-  std::cout << "Loading font " << filename << std::endl;
-  std::vector<unsigned char> buf = load_from_url(filename);
-  std::fstream file("font.otf", std::ios_base::out|std::ios_base::binary);
-  int s = buf.size();
-  for(int i=0;i<s;i++)
-    {
-      file.put(buf[i]);
-    }
-  file.close();
-  filename = "font.otf";
-
-
   priv = new GlyphPriv;
 #ifndef EMSCRIPTEN
   priv->lib = (FT_Library*)priv_;
   int err = FT_New_Face( *priv->lib,
-	       filename.c_str(), 
+	       filename.c_str(),
 	       0,
 	       &priv->face);
   //std::cout << "Font err: " << err << std::endl;
   if (err!=0)
     {
-      std::cout << "ERROR: " << err << std::endl;
       std::cout << "Remember to recompile the code after changing envimpl size" << std::endl;
     }
   /*int err3 = */
@@ -63,7 +49,6 @@ FontGlyphBitmap::~FontGlyphBitmap()
 {
   delete (GlyphPriv*)priv;
 }
-void FontGlyphBitmap::Prepare() { }
 void FontGlyphBitmap::load_glyph(long idx)
 {
 #ifndef EMSCRIPTEN

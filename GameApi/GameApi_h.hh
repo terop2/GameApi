@@ -566,8 +566,6 @@ struct EnvImpl
   void unlock() { pthread_mutex_unlock(&mutex); }
 #ifndef EMSCRIPTEN
   FT_Library lib;
-#else
-  
 #endif
   std::vector<Font> fonts;
   static ::EnvImpl *Environment(GameApi::Env *e) { return (EnvImpl*)e->envimpl; }
@@ -788,8 +786,26 @@ struct EnvImpl
   delete event_infos;
   event_infos = 0;
 
+#if 0
+  int s6 = matrix.size();
+  for(int i6=0;i6<s6;i6++)
+    {
+      MatrixInterface *i = matrix[i6];
+      delete i;
+    }
+#endif
   }
   EnvImpl();
+#if 0
+  EnvImpl() : event_infos(new EmptySequencer2) 
+  {
+#ifndef EMSCRIPTEN
+    int err = FT_Init_FreeType(&lib);
+    //std::cout << "Freetype init error: " << err << std::endl;
+#endif
+    cursor_pos_point_id.id = -1;
+  }
+#endif
   ~EnvImpl();
 };
 
