@@ -1110,6 +1110,8 @@ public:
 
   MT mesh_color_from_sfo(EveryApi &ev, SFO sfo, MT next);
 
+  MT sfo_sandbox(EveryApi &ev, SFO sfo, MT next);
+
   ML bind(P p, MT mat);
   ML bind_inst(P p, PTS pts, MT mat);
   ML bind_inst2(P p, PTA pta, MT mat);
@@ -1879,6 +1881,7 @@ public:
 	IMPORT P quad_z(float x1, float x2,
 	   float y1, float y2,
  	   float z);
+        IMPORT P fullscreen_quad(EveryApi &ev);
         IMPORT P tri_strip(PT *array, int size);
         IMPORT P polygon2(std::vector<PT> vec);
         IMPORT P polygon(PT *array, int size); // use render_dynamic with this.
@@ -2075,6 +2078,7 @@ public:
   IMPORT ML render_vertex_array_ml2(EveryApi &ev, P va);
   IMPORT ML dist_field_mesh_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
+  IMPORT ML sfo_sandbox_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML shading_shader(EveryApi &ev, ML mainloop,
 			  unsigned int level1,
 			  unsigned int level2,
@@ -2868,6 +2872,7 @@ public:
   US v_skeletal(US us);
 
   US f_mesh_color(US us, SFO sfo); // this requires v_pass_position() in vertex shader
+  US f_sandbox(US us, SFO sfo); // this requires texture coordinates
   US f_empty(bool transparent);
   US f_diffuse(US us);
   US f_ambient(US us);
