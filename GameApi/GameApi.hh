@@ -26,6 +26,9 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct FI { int id; };
+  struct SD { int id; };
+  struct GI { int id; };
   struct FF { int id; };
   struct IF { int id; };
   struct SF { int id; };
@@ -166,9 +169,10 @@ struct ExecuteEnv
     virtual R Map(P p) const=0;
   };
 
+  class Env;
   struct EveryApi;
 
-  std::pair<int,std::string> execute_codegen(EveryApi &ev, std::string text, ExecuteEnv &e);
+  std::pair<int,std::string> execute_codegen(Env &e2, EveryApi &ev, std::string text, ExecuteEnv &e);
 
 #ifndef __clang__
 #define IMPORT 
@@ -188,6 +192,8 @@ public:
   IMPORT Env();
   IMPORT void free_memory();
   IMPORT void free_temp_memory();
+  IMPORT void async_load_url(std::string url);
+  IMPORT std::vector<unsigned char> *get_loaded_async_url(std::string url);
   IMPORT ~Env();
   IMPORT static Env *Latest_Env();
 private:
@@ -583,11 +589,19 @@ public:
   IMPORT BM font_string_from_atlas(EveryApi &ev, FtA atlas, BM atlas_bm, std::string str, int x_gap);
   IMPORT void save_atlas(FtA atlas, std::string filename);
   IMPORT FtA  load_atlas(std::string filename);
-  IMPORT ARR font_string_array(Ft font, std::string s, int i);
+  IMPORT ARR font_string_array(Ft font, std::string s, int x_gap);
+  IMPORT ARR font_string_array2(FI font, std::string s);
   IMPORT SF time_string_fetcher(EveryApi &ev);
+  IMPORT SF score_string_fetcher(std::string id, std::string label, int numdigits);
   IMPORT IF char_fetcher_from_string(SF string_fetcher, std::string alternatives, int idx);
   IMPORT ML dynamic_character(EveryApi &ev, std::vector<BM> vec, IF fetcher, int x, int y);
   IMPORT ML dynamic_string(EveryApi &ev, Ft font, std::string alternative_chars, SF fetcher, int x, int y, int numchars);
+  IMPORT FI load_font(std::string ttf_filename, int sx, int sy);
+  IMPORT GI choose_glyph_from_font(FI font, long idx);
+  IMPORT SD draw_text_string_sd(std::vector<GI> glyphs, std::string str, int gap_x, int empty_line_height);
+  IMPORT BM string_display_to_bitmap(SD sd, int def);
+  IMPORT BM draw_text_string(FI font, std::string str, int x_gap, int empty_line_height);
+  IMPORT ML dynamic_character2(EveryApi &ev, std::vector<GI> vec, std::string alternatives, IF fetcher, int x, int y);
 private:
   FontApi(const FontApi&);
   void operator=(const FontApi&);
@@ -1400,11 +1414,11 @@ public:
     std::string color;
     std::string s;
   };
-  W generic_editor(EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap);
+  W generic_editor(EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap, FtA atlas_tiny, BM atlas_tiny_bm, int sy);
   void generic_to_string(const EditTypes &source, std::string type, std::string &target);
   void string_to_generic(EditTypes &target, std::string type, const std::string &source);
   IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, Ft font, const std::vector<std::string> &types, W &cancel_button, W &ok_button);
-  IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_button, W &ok_button);
+  IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_button, W &ok_button, FtA atlas_tiny, BM atlas_tiny_bm);
   W bitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   W boolbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   W floatbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
@@ -1504,7 +1518,7 @@ public:
   std::string param_value(WM mod2, int id, std::string uid, int param_index);
   std::vector<std::string> parse_param_array(std::string s);
   std::string generate_param_array(std::vector<std::string> v);
-  bool typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, bool &is_array);
+  bool typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, bool &is_array, bool &is_array_return);
   void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh);
 
   int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level);

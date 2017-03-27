@@ -50,10 +50,8 @@
 #endif
 #include <SDL_mixer.h>
 
-#ifndef EMSCRIPTEN
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#endif
 #undef LoadImage
 
 #include "FreeType.hh"
@@ -559,14 +557,16 @@ struct EnvImpl
   std::vector<Fetcher<int>*> int_fetchers;
   std::vector<Fetcher<std::string>*> string_fetchers;
   std::vector<Fetcher<float>*> float_fetchers;
+  ASyncLoader *async_loader;
+  std::vector<GlyphInterface*> glyph_interfaces;
+  std::vector<FontInterface*> font_interfaces;
+  std::vector<StringDisplay*> string_displays;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
   void lock() { pthread_mutex_lock(&mutex); }
   void unlock() { pthread_mutex_unlock(&mutex); }
-#ifndef EMSCRIPTEN
   FT_Library lib;
-#endif
   std::vector<Font> fonts;
   static ::EnvImpl *Environment(GameApi::Env *e) { return (EnvImpl*)e->envimpl; }
   EXPORT void free_temp_memory()
@@ -834,9 +834,21 @@ struct FaceCollPolyHandle : public PolyHandle
 //
 // add functions
 //
+GameApi::FI add_font_interface(GameApi::Env &e, FontInterface *fi);
+GameApi::GI add_glyph_interface(GameApi::Env &e, GlyphInterface *gi);
+GameApi::SD add_string_display(GameApi::Env &e, StringDisplay *sd);
 GameApi::FF add_float_fetcher(GameApi::Env &e, Fetcher<float> *f);
 GameApi::IF add_int_fetcher(GameApi::Env &e, Fetcher<int> *i);
 GameApi::SF add_string_fetcher(GameApi::Env &e, Fetcher<std::string> *str);
+template<class T>
+GameApi::ARR add_array(GameApi::Env &e, T t) { 
+  /* this is because of arrays in builder, template instantiation
+     wouldnt be accepted without this version -- real check is in runtime */
+  std::cout << "ERROR: Array version used with non-arrays! " << std::endl;
+  GameApi::ARR arr;
+  arr.id = -1;
+  return arr;
+}
 GameApi::ARR add_array(GameApi::Env &e, ArrayType *arr);
 GameApi::CPP add_curve_pos(GameApi::Env &e, CurvePos *pos);
 GameApi::PTT add_point_transform(GameApi::Env &e, PointTransform *ptt);
@@ -930,6 +942,9 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+StringDisplay *find_string_display(GameApi::Env &e, GameApi::SD sd);
+GlyphInterface *find_glyph_interface(GameApi::Env &e, GameApi::GI gi);
+FontInterface *find_font_interface(GameApi::Env &e, GameApi::FI fi);
 Fetcher<float> *find_float_fetcher(GameApi::Env &e, GameApi::FF f);
 Fetcher<std::string> *find_string_fetcher(GameApi::Env &e, GameApi::SF s);
 Fetcher<int> *find_int_fetcher(GameApi::Env &e, GameApi::IF f);

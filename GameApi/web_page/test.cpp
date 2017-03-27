@@ -142,10 +142,10 @@ std::string strip_spaces(std::string data)
   while(res[res.size()-1]==' ') res = res.substr(0,res.size()-1);
   return res;
 }
-BLK mainloop(EveryApi &ev)
+BLK mainloop(Env &e2, EveryApi &ev)
 {
   ExecuteEnv e;
-  std::pair<int,std::string> p = GameApi::execute_codegen(ev, code, e);
+  std::pair<int,std::string> p = GameApi::execute_codegen(e2, ev, code, e);
   BLK I6;
   I6.id = p.first;
   return I6;
@@ -214,6 +214,7 @@ int main(int argc, char *argv[]) {
 	} else
       if (check_count(cmd_args, current_arg, 3) && cmd_args[current_arg]=="--screenshot")
 	{
+#if 0
 	  std::cout << "Screenshot filename: " << cmd_args[current_arg+1] << " at " << cmd_args[current_arg+2] << std::endl;
 	  std::string screenshot_filename = cmd_args[current_arg+1];
 	  float screenshot_time = 0.0;
@@ -222,6 +223,7 @@ int main(int argc, char *argv[]) {
 	  screenshot_filenames.push_back(screenshot_filename);
 	  screenshot_times.push_back(screenshot_time);
 	  screenshot_done.push_back(false);
+#endif
 	  current_arg+=3;
 	  continue;
 	} else
@@ -246,7 +248,7 @@ int main(int argc, char *argv[]) {
   ev.mainloop_api.init_window(w_width,w_height);
   ev.shader_api.load_default();
 
-  BLK blk = mainloop(ev);
+  BLK blk = mainloop(e, ev);
   ev.blocker_api.run(blk);
 
 }

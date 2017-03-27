@@ -325,6 +325,7 @@ private:
 namespace GameApi
 {
   class ExecuteEnv;
+  class Env;
 };
 
 struct GameApiParam
@@ -349,7 +350,7 @@ public:
   virtual std::string FuncName(int i) const=0;
   virtual std::string Symbols() const=0;
   virtual std::string Comment() const=0;
-  virtual int Execute(GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)=0;
+  virtual int Execute(GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)=0;
   //virtual std::vector<GameApi::EditNode*> CollectNodes(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)=0;
   virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)=0;
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) { }
@@ -711,18 +712,104 @@ public:
   virtual T get() const=0;
 };
 
-#if 0
-class SoundPhysicalKey
-{ // SD type
+class ASyncLoader
+{
 public:
-  virtual void handle_event(int key)=0;
-  virtual void execute() =0;
-  virtual void set_wave(Function<float,float> *wv)=0;
+  void load_urls(std::string url);
+  std::vector<unsigned char> *get_loaded_data(std::string url) const;
 };
-class SoundVolumeWave
-{ // WVI
+
+template<class T>
+class BuilderValue
+{
 public:
-  virtual void set_wave(Function<float,float> *wv)=0;
+  virtual T get() const=0;
+};
+
+template<class T>
+class RefBuilderValue : public BuilderValue<T>
+{
+public:
+  RefBuilderValue(const T &ref) : ref(ref) { }
+  T get() const { return ref; }
+private:
+  const T &ref;
+};
+template<class T>
+class BuilderArray
+{
+public:
+  virtual int Size() const=0;
+  virtual BuilderValue<T> *Index(int i) const=0;
+};
+
+template<class T>
+class BuilderArrImpl : public BuilderArray<T>
+{
+public:
+  BuilderArrImpl(std::vector<T> vec) : vec(vec), ref(val) { }
+  int Size() const { return vec.size(); }
+  BuilderValue<T> *Index(int i) const {
+    val = vec[i];
+    return &ref;
+  }
+private:
+  std::vector<T> vec;
+  RefBuilderValue<T> ref;
+  T val;
+};
+
+#if 0
+template<class T, class K>
+class FMapArray : public BuilderArray<K>
+{
+public:
+  FMapArray(BuilderArray<T> &arr, Function<T,K> &f) : arr(arr), f(f), ref(val) { }
+  int Size() const { return arr.Size(); }
+  BuilderValue<K> *Index(int i) const {
+    BuilderValue<T> *t = arr.Index(i);
+    T t2 = t->get();
+    K k1 = f.Index(t2);
+    val = k1;
+    return ref;
+  }
+private:
+  BuilderArray<T> &arr;
+  Function<T,K> &f;
+  RefBuilderValue<K> ref;
+  K val;
 };
 #endif
+
+class FontInterface
+{
+public:
+  virtual int Top(long idx) const=0;
+  virtual int SizeX(long idx) const=0;
+  virtual int SizeY(long idx) const=0;
+  virtual int Map(long idx, int x, int y) const=0;
+};
+
+class GlyphInterface
+{
+public:
+  virtual int Top() const=0; // needs to be fast
+  virtual int SizeX() const=0;
+  virtual int SizeY() const=0; // needs to be fast
+  virtual int Map(int x, int y) const=0;
+};
+
+
+class StringDisplay
+{
+public:
+  virtual int Count() const=0;
+  virtual int X(int c) const=0;
+  virtual int Y(int c) const=0;
+  virtual int SX(int c) const=0;
+  virtual int SY(int c) const=0;
+  virtual int Map(int c, int x, int y) const=0;
+};
+
+
 #endif

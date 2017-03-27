@@ -41,14 +41,19 @@ private:
   std::vector<int> types;
 };
 
+namespace GameApi {
+  class Env;
+}
+
 class FontGlyphBitmap : public Bitmap<int>, public LineCollection
 {
 public:
-  FontGlyphBitmap(void *priv_, std::string filename, int sx, int sy);
+  FontGlyphBitmap(GameApi::Env &e, void *priv_, std::string filename, int sx, int sy);
   void Prepare() { }
   void load_glyph(long idx);
   void load_glyph_outline(long idx, float sx, float sy);
   int bitmap_top(long idx) const;
+  void check_load();
   virtual int SizeX() const;
   virtual int SizeY() const;
   virtual int Map(int x, int y) const;
@@ -66,9 +71,16 @@ private:
   GlyphPriv *priv;
 public:
   float m_sx, m_sy;
+  GameApi::Env &e;
+  std::string filename;
+  long m_idx;
+  void *priv_;
+  int sx,sy;
   Point2d move_point;
   std::vector<int> types;
   std::vector<Point2d> points; // twice the amount of points
   std::vector<Point2d> control1;
   std::vector<Point2d> control2;
+  int state;
+  long old_idx;
 };

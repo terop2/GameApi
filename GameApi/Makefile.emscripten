@@ -26,7 +26,7 @@ CFiles= Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
 	Editor.cc Web.cc Functions.cc ShaderExpr.cc Font.cc FontEditor.cc \
 	GameApi.cc GameApiTest.cc Games.cc HierarchyObject.cc Physics.cc \
         GameApiTest2.cc State.cc Serialize.cc KeyFrameEditor.cc Parser.cc \
-	FreeType.cc VertexArray.cc StateChange.cc DistanceObject.cc GameRunner.cc \
+	FreeType.cc FreeType2.cc VertexArray.cc StateChange.cc DistanceObject.cc GameRunner.cc \
 	GameApi_an.cc GameApi_bm.cc GameApi_co.cc GameApi_dr.cc GameApi_ev.cc \
 	GameApi_ex.cc GameApi_fbo.cc GameApi_f.cc GameApi_fn.cc \
 	GameApi_fnt.cc GameApi_gr.cc GameApi_gui.cc GameApi_lay.cc \
@@ -80,9 +80,10 @@ INC6WIN = d:\cvs\freetype\include\freetype2
 INC7WIN = d:\cvs\pthread\pre-built.2\include
 EMINC1 = f:\emscripten\1.30.0\system\include\SDL
 EMINC2 = f:\emscripten\1.30.0\system\include
+EMINC3 = d:\cvs\gameapi-code\GameApi\GameApi\freetype\include
 
-CCFLAGS = -O3 -Os -Oz -std=c++11 -Wall -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags --memory-init-file 0 -s NO_FILESYSTEM=1 -s DISABLE_EXCEPTION_CATCHING=1
-CC2FLAGS = -std=c++11 -Wall -O3 -Os -Oz -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2)
+CCFLAGS = -g -O3 -Os -Oz -std=c++11 -Wall -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags --memory-init-file 0 -s NO_FILESYSTEM=1 -s DISABLE_EXCEPTION_CATCHING=1 -I$(EMINC1) -I$(EMINC2) -I$(EMINC3)
+CC2FLAGS = -g -std=c++11 -Wall -O3 -Os -Oz -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3)
 #`pkg-config gtkmm-2.4 --cflags`
 
 
