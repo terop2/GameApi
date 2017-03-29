@@ -1062,3 +1062,73 @@ GameApi::LI GameApi::LinesApi::twist_y(LI li, float y_0, float angle_per_y_unit)
   LineCollection *lines = find_line_array(e, li);
   return add_line_array(e, new TwistLines(lines, y_0, angle_per_y_unit));  
 }
+
+class MeshLines : public LineCollection
+{
+public:
+  MeshLines(std::vector<Point> points, std::vector<unsigned int> color) : points(points), color(color) { }
+  virtual int NumLines() const { return points.size()/2; }
+  virtual Point LinePoint(int line, int point) const
+  {
+    line*=2;
+    if (point==0) return points[line];
+    return points[line+1];
+  }
+  virtual unsigned int LineColor(int line, int point) const { 
+    line*=2;
+    if (point==0) return color[line];
+    return color[line+1];
+  }
+
+private:
+  std::vector<Point> points;
+  std::vector<unsigned int> color;
+};
+
+GameApi::LI GameApi::LinesApi::random_mesh_quad_lines(EveryApi &ev, P p, int count)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  coll->Prepare();
+  std::vector<Point> *points = new std::vector<Point>;
+  std::vector<unsigned int> *color2 = new std::vector<unsigned int>;
+  for(int i=0;i<count*2;i++)
+    {
+      Random r;
+      float xp = double(r.next())/r.maximum();
+      float yp = double(r.next())/r.maximum();
+      float zp = double(r.next())/r.maximum();
+      xp*=2.0;
+      yp*=2.0;
+      xp-=1.0;
+      yp-=1.0;
+      zp*=float(coll->NumFaces());
+      int zpi = int(zp);
+      if (zpi<0) zpi = 0;
+      if (zpi>=coll->NumFaces()) zpi = coll->NumFaces()-1;
+      int num = coll->NumPoints(zpi);
+      if (num != 4 && num != 3) { std::cout << "Error quad: " << num << std::endl; }
+      if (num==4) {
+	Point p1 = coll->FacePoint(zpi, 0);
+	Point p2 = coll->FacePoint(zpi, 1);
+	Point p3 = coll->FacePoint(zpi, 2);
+	Point p4 = coll->FacePoint(zpi, 3);
+	Point p = 1.0/4.0*((1.0f-xp)*(1.0f-yp)*Vector(p1) + (1.0f+xp)*(1.0f-yp)*Vector(p2) + (1.0f+xp)*(1.0f+yp)*Vector(p3) + (1.0f-xp)*(1.0f+yp)*Vector(p4));
+	if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) continue;
+	points->push_back(p);
+	color2->push_back(0xffffffff);
+      } else if (num==3)
+	{
+	  Point p1 = coll->FacePoint(zpi, 0);
+	  Point p2 = coll->FacePoint(zpi, 1);
+	  Point p3 = coll->FacePoint(zpi, 2);
+	  float r1 = double(r.next())/r.maximum();
+	  float r2 = double(r.next())/r.maximum();
+	  Point p = Point((1.0-sqrt(r1))*Vector(p1) + (sqrt(r1)*(1.0-r2))*Vector(p2) + (r2*sqrt(r1))*Vector(p3));
+	  if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) continue;
+	  points->push_back(p);
+	  color2->push_back(0xffffffff);
+	  
+	}
+    }
+  return add_line_array(e, new MeshLines(*points, *color2));
+}

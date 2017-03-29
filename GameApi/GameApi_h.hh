@@ -561,6 +561,7 @@ struct EnvImpl
   std::vector<GlyphInterface*> glyph_interfaces;
   std::vector<FontInterface*> font_interfaces;
   std::vector<StringDisplay*> string_displays;
+  std::vector<CmdExecute*> cmds;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -834,6 +835,7 @@ struct FaceCollPolyHandle : public PolyHandle
 //
 // add functions
 //
+GameApi::CMD add_cmds(GameApi::Env &e, CmdExecute *cmds);
 GameApi::FI add_font_interface(GameApi::Env &e, FontInterface *fi);
 GameApi::GI add_glyph_interface(GameApi::Env &e, GlyphInterface *gi);
 GameApi::SD add_string_display(GameApi::Env &e, StringDisplay *sd);
@@ -942,6 +944,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+CmdExecute *find_cmds(GameApi::Env &e, GameApi::CMD cmds);
 StringDisplay *find_string_display(GameApi::Env &e, GameApi::SD sd);
 GlyphInterface *find_glyph_interface(GameApi::Env &e, GameApi::GI gi);
 FontInterface *find_font_interface(GameApi::Env &e, GameApi::FI fi);

@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <utility>
+#include <functional>
 #include "VectorTools.hh"
 
 namespace GameApi
@@ -811,5 +812,17 @@ public:
   virtual int Map(int c, int x, int y) const=0;
 };
 
+
+class CmdExecute {
+public:
+  virtual void Execute(char c)=0;
+  virtual Point pos() const=0;
+  virtual int obj_type() const=0;
+  virtual void set_hooks(std::function<void (char)> f)=0;
+  virtual void set_units(Vector v_x, Vector v_y, Vector v_z)=0;
+  virtual Vector get_unit_x() const=0;
+  virtual Vector get_unit_y() const=0;
+  virtual Vector get_unit_z() const=0;
+};
 
 #endif

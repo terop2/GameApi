@@ -3145,7 +3145,7 @@ private:
 class TextureShaderML : public MainLoopItem
 {
 public:
-  TextureShaderML(GameApi::EveryApi &ev, MainLoopItem *next) : ev(ev), next(next) 
+  TextureShaderML(GameApi::EveryApi &ev, MainLoopItem *next, float mix) : ev(ev), next(next),mix(mix) 
   {
     firsttime = true;
   }
@@ -3179,6 +3179,16 @@ public:
     GameApi::US a2f = ev.uber_api.f_texture(fragment);
     ee.us_fragment_shader = a2f.id;
     }
+
+    int sh_id = next->shader_id();
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	sh.id = sh_id;
+	ev.shader_api.use(sh);
+	ev.shader_api.set_var(sh, "color_mix", mix);
+      }
     next->execute(ee);
   }
   int shader_id() { return next->shader_id(); }
@@ -3188,6 +3198,7 @@ private:
   MainLoopItem *next;
   GameApi::SH sh;
   bool firsttime;
+  float mix;
 };
 
 
@@ -3195,7 +3206,7 @@ private:
 class TextureArrShaderML : public MainLoopItem
 {
 public:
-  TextureArrShaderML(GameApi::EveryApi &ev, MainLoopItem *next) : ev(ev), next(next) 
+  TextureArrShaderML(GameApi::EveryApi &ev, MainLoopItem *next, float mix) : ev(ev), next(next),mix(mix) 
   {
     firsttime = true;
   }
@@ -3229,6 +3240,15 @@ public:
     GameApi::US a2f = ev.uber_api.f_texture_arr(fragment);
     ee.us_fragment_shader = a2f.id;
     }
+    int sh_id = next->shader_id();
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	sh.id = sh_id;
+	ev.shader_api.use(sh);
+	ev.shader_api.set_var(sh, "color_mix", mix);
+      }
 
     next->execute(ee);
   }
@@ -3239,6 +3259,7 @@ private:
   MainLoopItem *next;
   GameApi::SH sh;
   bool firsttime;
+  float mix;
 };
 
 
@@ -3836,7 +3857,7 @@ class ShaderParamML : public MainLoopItem
 {
 public:
   ShaderParamML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir,
-		unsigned int level1, unsigned int level2, unsigned int level3) : env(env), ev(ev), next(next), light_dir(light_dir), level1(level1), level2(level2), level3(level3) 
+		unsigned int level1, unsigned int level2, unsigned int level3, float spec_size, bool ambient, bool diffuse, bool specular) : env(env), ev(ev), next(next), light_dir(light_dir), level1(level1), level2(level2), level3(level3), spec_size(spec_size), ambient(ambient), diffuse(diffuse), specular(specular) 
   { 
     //sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:passall", "colour:ambient:diffuse:specular:light");
     //ev.mainloop_api.init_3d(sh);
@@ -3884,10 +3905,13 @@ public:
       ee.us_fragment_shader = a1.id;
     }
     fragment.id = ee.us_fragment_shader;
-    GameApi::US a2f = ev.uber_api.f_ambient(fragment);
-    GameApi::US a3f = ev.uber_api.f_diffuse(a2f);
-    GameApi::US a4f = ev.uber_api.f_specular(a3f);
-    ee.us_fragment_shader = a4f.id;
+    if (ambient)
+      fragment = ev.uber_api.f_ambient(fragment);
+    if (diffuse)
+      fragment = ev.uber_api.f_diffuse(fragment);
+    if (specular)
+      fragment = ev.uber_api.f_specular(fragment);
+    ee.us_fragment_shader = fragment.id;
 
       }
 
@@ -3902,6 +3926,7 @@ public:
 
 
 	ev.shader_api.set_var(sh, "light_dir", light_dir.dx, light_dir.dy, light_dir.dz);
+	ev.shader_api.set_var(sh, "specular_size", spec_size);
 	ev.shader_api.set_var(sh, "level1_color",
 			      ((level1&0xff0000)>>16)/255.0,
 			      ((level1&0xff00)>>8)/255.0,
@@ -3938,6 +3963,8 @@ private:
   unsigned int level1, level2, level3;
   GameApi::SH sh;
   bool firsttime;
+  float spec_size;
+  bool ambient, diffuse, specular;
 };
 EXPORT GameApi::ML GameApi::PolygonApi::noise_shader(EveryApi &ev, ML mainloop)
 {
@@ -3962,15 +3989,15 @@ EXPORT GameApi::ML GameApi::PolygonApi::choose_color_shader(EveryApi &ev, ML mai
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new ChooseColorShaderML(e, ev, item, color, mix_val));
 }
-EXPORT GameApi::ML GameApi::PolygonApi::texture_shader(EveryApi &ev, ML mainloop)
+EXPORT GameApi::ML GameApi::PolygonApi::texture_shader(EveryApi &ev, ML mainloop, float mix=0.5)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
-  return add_main_loop(e, new TextureShaderML(ev, item));
+  return add_main_loop(e, new TextureShaderML(ev, item, mix));
 }
-EXPORT GameApi::ML GameApi::PolygonApi::texture_arr_shader(EveryApi &ev, ML mainloop)
+EXPORT GameApi::ML GameApi::PolygonApi::texture_arr_shader(EveryApi &ev, ML mainloop, float mix=0.5)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
-  return add_main_loop(e, new TextureArrShaderML(ev, item));
+  return add_main_loop(e, new TextureArrShaderML(ev, item, mix));
 }
 
 EXPORT GameApi::ML GameApi::PolygonApi::light_shader(EveryApi &ev, ML mainloop)
@@ -4013,11 +4040,11 @@ EXPORT GameApi::ML GameApi::PolygonApi::skeletal_shader(EveryApi &ev, ML mainloo
 EXPORT GameApi::ML GameApi::PolygonApi::shading_shader(EveryApi &ev, ML mainloop,
 						      unsigned int level1,
 						      unsigned int level2,
-						      unsigned int level3)
+						       unsigned int level3, float spec_size, bool ambient, bool diffuse, bool specular)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
   Vector light_dir(1.0,1.0,1.0);
-  return add_main_loop(e, new ShaderParamML(e, ev, item, light_dir, level1, level2, level3));
+  return add_main_loop(e, new ShaderParamML(e, ev, item, light_dir, level1, level2, level3, spec_size, ambient, diffuse, specular));
 }
 EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml(EveryApi &ev, VA va)
 {
@@ -5516,4 +5543,10 @@ GameApi::P GameApi::PolygonApi::static_instancing(EveryApi &ev, P obj, PTS pos)
       vec.push_back(trans);
     }
   return or_array2(vec);
+}
+
+GameApi::P GameApi::PolygonApi::flip_normals(P obj)
+{
+  FaceCollection *obj2 = find_facecoll(e, obj);
+  return add_polygon2(e, new FlipNormals(*obj2),1);
 }

@@ -3720,6 +3720,7 @@ MACRO(GameApi::SD)
 MACRO(GameApi::FI)
 MACRO(GameApi::GI)
 MACRO(GameApi::ARR)
+MACRO(GameApi::CMD)
 #undef MACRO
 
 
@@ -4638,7 +4639,7 @@ std::vector<GameApiItem*> volumeapi_functions()
 			 "o_render",
 			 { "object", "sx", "sy", "sz", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
 			 { "O", "int", "int", "int", "float", "float", "float", "float", "float", "float" },
-			 { "", "100", "100", "100", "-100.0", "100.0", "-100.0", "100.0", "-100.0", "100.0" },
+			 { "", "100", "100", "100", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0" },
 			 "P", "volume_api", "rendercubes3"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::implicit_api, &GameApi::ImplicitApi::sphere,
 			 "im_sphere",
@@ -5010,6 +5011,37 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "", "", "0.5" },
 			 "PT", "point_api", "mix"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::default_cmds,
+			 "cmd_def",
+			 { "dx", "dy", "dz" },
+			 { "float", "float", "float" },
+			 { "10.0", "10.0", "10.0" },
+			 "CMD", "move_api", "default_cmds"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::cmd_repeat,
+			 "cmd_repeat",
+			 { "cmds", "repeat", "dx", "dy", "dz" },
+			 { "CMD", "std::string", "float", "float", "float" },
+			 { "", ".dd.", "10.0", "10.0", "10.0" },
+			 "CMD", "move_api", "cmd_repeat"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::cmd_rotate,
+			 "cmd_rotate",
+			 { "cmds", "v_x", "v_y", "v_z", "angle", "delta_angle" },
+			 { "CMD", "float", "float", "float", "float", "float" },
+			 { "", "0.0", "0.0", "1.0", "0.0", "1.57" },
+			 "CMD", "move_api", "cmd_rotate"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::cmd_to_pts,
+			 "cmd_to_pts",
+			 { "cmds", "commands" },
+			 { "CMD", "std::string" },
+			 { "", "." },
+			 "PTS", "move_api", "cmd_to_pts"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::cmd_to_li,
+			 "cmd_to_li",
+			 { "cmds", "commands" },
+			 { "CMD", "std::string" },
+			 { "", "." },
+			 "LI", "move_api", "cmd_to_li"));
+
   return vec;
 }
 
@@ -5349,15 +5381,15 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "MT", "materials_api", "def"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture,
 			 "m_texture",
-			 { "ev", "bm" },
-			 { "EveryApi&", "BM" },
-			 { "ev", "" },
+			 { "ev", "bm", "mix" },
+			 { "EveryApi&", "BM","float" },
+			 { "ev", "","1.0" },
 			 "MT", "materials_api", "texture"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_arr,
 			 "m_texture_arr",
-			 { "ev", "vec", "sx", "sy" },
-			 { "EveryApi&", "[BM]", "int", "int" },
-			 { "ev", "", "256", "256" },
+			 { "ev", "vec", "sx", "sy", "mix" },
+			 { "EveryApi&", "[BM]", "int", "int", "float" },
+			 { "ev", "", "256", "256", "1.0" },
 			 "MT", "materials_api", "texture_arr"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::skeletal,
 			 "m_skeletal",
@@ -5371,6 +5403,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "MT", "unsigned int", "unsigned int", "unsigned int", "float" },
 			 { "ev", "", "ffaaaaaa", "ffeeeeee", "ffffffff", "0.5" },
 			 "MT", "materials_api", "snow"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::flat,
+			 "m_flat",
+			 { "ev", "nxt", "color1", "color2", "color3"  },
+			 { "EveryApi&", "MT", "unsigned int", "unsigned int", "unsigned int" },
+			 { "ev", "", "ff8888ff", "ffff4422", "ffffffff" },
+			 "MT", "materials_api", "flat"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::choose_color,
 			 "m_choose_color",
 			 { "ev", "nxt", "color", "mix_val" },
@@ -6084,6 +6122,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P" },
 			 { "" },
 			 "P", "polygon_api", "recalculate_normals"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::flip_normals,
+			 "flip_normals",
+			 { "orig" },
+			 { "P" },
+			 { "" },
+			 "P", "polygon_api", "flip_normals"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::build_offsets,
 			 "p_offsets",
 			 { "orig", "vec" },
@@ -6230,9 +6274,9 @@ std::vector<GameApiItem*> polygonapi_functions()
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::shading_shader,
 			 "p_shading",
-			 { "ev", "mainloop", "level1", "level2", "level3" },
-			 { "EveryApi&", "ML", "unsigned int", "unsigned int", "unsigned int" },
-			 { "ev", "", "ff442211", "ffff8844", "ffffffff" },
+			 { "ev", "mainloop", "level1", "level2", "level3", "spec_size", "ambient", "diffuse", "specular" },
+			 { "EveryApi&", "ML", "unsigned int", "unsigned int", "unsigned int", "float", "bool", "bool", "bool" },
+			 { "ev", "", "ff442211", "ffff8844", "ffffffff", "15.0", "true", "true", "true" },
 			 "ML", "polygon_api", "shading_shader"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::choose_color_shader,
 			 "p_color",
@@ -6472,6 +6516,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "P" },
 			 { "" },
 			 "LI", "lines_api", "from_polygon"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::random_mesh_quad_lines,
+			 "li_from_quads",
+			 { "ev", "p", "count" },
+			 { "EveryApi&", "P", "int" },
+			 { "ev", "", "1000" },
+			 "LI", "lines_api", "random_mesh_quad_lines"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::border_from_bool_bitmap,
 			 "border_from_bool_bitmap",
 			 { "b", "start_x", "end_x", "start_y", "end_y", "z" },

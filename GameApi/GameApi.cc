@@ -1218,6 +1218,11 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
 }
+CmdExecute *find_cmds(GameApi::Env &e, GameApi::CMD cmds2)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->cmds[cmds2.id];
+}
 GlyphInterface *find_glyph_interface(GameApi::Env &e, GameApi::GI gi)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1403,7 +1408,7 @@ GuiWidget *find_widget(GameApi::Env &e, GameApi::W w)
   int s = env->widgets.size();
   if (w.id>=0 && w.id<s)
     return env->widgets[w.id];
-  std::cout << "find_widget failed!" << w.id << std::endl;
+  //std::cout << "find_widget failed!" << w.id << std::endl;
   //assert(0);
   return 0;
 }
@@ -1515,7 +1520,15 @@ GameApi::V add_vector(GameApi::Env &e, float dx, float dy, float dz)
   return pt;
 }
 
+GameApi::CMD add_cmds(GameApi::Env &e, CmdExecute *cmds2)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->cmds.push_back(cmds2);
+  GameApi::CMD c;
+  c.id = env->cmds.size()-1;
+  return c;
 
+}
 GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -4117,7 +4130,7 @@ private:
 class TextureArrayMaterial : public MaterialForward
 {
 public:
-  TextureArrayMaterial(GameApi::EveryApi &ev, std::vector<GameApi::BM> vec, int sx, int sy) : ev(ev), vec(vec),sx(sx),sy(sy) { }
+  TextureArrayMaterial(GameApi::EveryApi &ev, std::vector<GameApi::BM> vec, int sx, int sy, float mix) : ev(ev), vec(vec),sx(sx),sy(sy), mix(mix) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
     GameApi::P I10=p; 
@@ -4127,7 +4140,7 @@ public:
     GameApi::TXA I14 = ev.texture_api.prepare_arr(ev, vec, sx,sy);
     GameApi::VA I16 = ev.texture_api.bind_arr(I12, I14);
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml(ev,I16);
-    GameApi::ML I18=ev.polygon_api.texture_arr_shader(ev, I17);
+    GameApi::ML I18=ev.polygon_api.texture_arr_shader(ev, I17,mix);
     return I18;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
@@ -4142,7 +4155,7 @@ public:
 
     GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
-    GameApi::ML I18=ev.polygon_api.texture_arr_shader(ev, I17);
+    GameApi::ML I18=ev.polygon_api.texture_arr_shader(ev, I17,mix);
     return I18;
   }
 
@@ -4158,7 +4171,7 @@ public:
 
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
-    GameApi::ML I18=ev.polygon_api.texture_arr_shader(ev, I17);
+    GameApi::ML I18=ev.polygon_api.texture_arr_shader(ev, I17,mix);
     return I18;
   }
 
@@ -4167,12 +4180,13 @@ private:
   GameApi::EveryApi &ev;
   std::vector<GameApi::BM> vec;
   int sx,sy;
+  float mix;
 };
 
 class TextureMaterial : public MaterialForward
 {
 public:
-  TextureMaterial(GameApi::EveryApi &ev, GameApi::BM bm) : ev(ev), bm(bm) { }
+  TextureMaterial(GameApi::EveryApi &ev, GameApi::BM bm, float mix) : ev(ev), bm(bm), mix(mix) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
@@ -4183,7 +4197,7 @@ public:
     GameApi::TXID I15=ev.texture_api.prepare(I14);
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml(ev,I16);
-    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17);
+    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17, mix);
     return I18;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
@@ -4197,7 +4211,7 @@ public:
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
-    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17);
+    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17,mix);
     return I18;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
@@ -4211,12 +4225,13 @@ public:
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
-    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17);
+    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17,mix);
     return I18;
   }
 private:
   GameApi::EveryApi &ev;
   GameApi::BM bm;
+  float mix;
 };
 
 class BrashMetal : public MaterialForward
@@ -4343,6 +4358,50 @@ private:
   float mix_val;
 };
 
+class FlatMaterial : public MaterialForward
+{
+public:
+  FlatMaterial(GameApi::EveryApi &ev, Material *next, unsigned int color1, unsigned int color2, unsigned int color3) : ev(ev), next(next), color1(color1), color2(color2), color3(color3) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
+    GameApi::ML ml;
+    ml.id = next->mat(p1.id);
+    GameApi::ML sh = ev.polygon_api.shading_shader(ev, ml, color1, color2, color3);
+    return sh;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
+    GameApi::ML ml;
+    ml.id = next->mat_inst(p1.id, pts.id);
+    //VA va = ev.polygon_api.create_vertex_array(p3,false);
+    //ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    GameApi::ML sh = ev.polygon_api.shading_shader(ev, ml, color1, color2, color3);
+    return sh;
+
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(p1.id, pta.id);
+    //VA va = ev.polygon_api.create_vertex_array(p3,false);
+    //ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    GameApi::ML sh = ev.polygon_api.shading_shader(ev, ml, color1, color2, color3);
+    return sh;
+
+  }
+private:
+  GameApi::EveryApi &ev;
+  Material *next;
+  unsigned int color1, color2, color3;
+};
+
+
 class ChooseColorMaterial : public MaterialForward
 {
 public:
@@ -4389,18 +4448,23 @@ GameApi::MT GameApi::MaterialsApi::skeletal(EveryApi &ev)
 {
   return add_material(e, new SkeletalMaterial(ev));
 }
-GameApi::MT GameApi::MaterialsApi::texture(EveryApi &ev, BM bm)
+GameApi::MT GameApi::MaterialsApi::texture(EveryApi &ev, BM bm, float mix)
 {
-  return add_material(e, new TextureMaterial(ev, bm));
+  return add_material(e, new TextureMaterial(ev, bm,mix));
 }
-GameApi::MT GameApi::MaterialsApi::texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy)
+GameApi::MT GameApi::MaterialsApi::texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix)
 {
-  return add_material(e, new TextureArrayMaterial(ev, vec, sx,sy));
+  return add_material(e, new TextureArrayMaterial(ev, vec, sx,sy,mix));
 }
 GameApi::MT GameApi::MaterialsApi::snow(EveryApi &ev, MT nxt, unsigned int color1, unsigned int color2, unsigned int color3, float mix_val)
 {
   Material *mat = find_material(e, nxt);
   return add_material(e, new SnowMaterial(ev, mat, color1, color2, color3, mix_val));
+}
+GameApi::MT GameApi::MaterialsApi::flat(EveryApi &ev, MT nxt, unsigned int color1, unsigned int color2, unsigned int color3)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new FlatMaterial(ev, mat, color1, color2, color3));
 }
 GameApi::MT GameApi::MaterialsApi::choose_color(EveryApi &ev, MT nxt, unsigned int color, float mix_val)
 {
@@ -5202,7 +5266,7 @@ GameApi::US GameApi::UberShaderApi::f_color_from_id(US us, int id)
 GameApi::US GameApi::UberShaderApi::f_specular(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("specular", next,"EX_NORMAL2 EX_LIGHTPOS2"));
+  return add_uber(e, new F_ShaderCallFunction("specular", next,"EX_NORMAL2 EX_LIGHTPOS2 SPECULAR_SIZE"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_color_from_normals(US us)
@@ -5261,13 +5325,13 @@ GameApi::US GameApi::UberShaderApi::f_toon(US us)
 GameApi::US GameApi::UberShaderApi::f_texture(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("texture", next,"EX_TEXCOORD"));
+  return add_uber(e, new F_ShaderCallFunction("texture", next,"EX_TEXCOORD COLOR_MIX"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_texture_arr(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("texture_arr", next,"EX_TEXCOORD TEXTURE_ARRAY"));
+  return add_uber(e, new F_ShaderCallFunction("texture_arr", next,"EX_TEXCOORD TEXTURE_ARRAY COLOR_MIX"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_colour(US us)
@@ -7668,3 +7732,248 @@ GameApi::FI GameApi::FontApi::load_font(std::string ttf_filename, int sx, int sy
   return add_font_interface(e, new FontInterfaceImpl(e, priv_, ttf_filename, sx,sy));
 }
 
+class RotateCmds : public CmdExecute
+{
+public:
+  RotateCmds(CmdExecute *cmds, float v_x, float v_y, float v_z, float angle, float delta_angle) : cmds(cmds),v_x(v_x), v_y(v_y), v_z(v_z), old_angle(0.0), angle(angle), delta_angle(delta_angle) { do_changes(angle); }
+  Point pos() const { return cmds->pos(); }
+  int obj_type() const { return cmds->obj_type(); }
+  void set_hooks(std::function<void (char)> f) { cmds->set_hooks(f); }
+  void Execute(char c) {
+    switch(c) {
+    case 'r': 
+      angle+=delta_angle; 
+      setup_angle(); 
+      break;
+    case 't': 
+      angle-=delta_angle; 
+      setup_angle();
+      break;
+    default:
+      cmds->Execute(c);
+      break;
+    }
+  }
+  virtual void set_units(Vector v_x, Vector v_y, Vector v_z) { return cmds->set_units(v_x,v_y,v_z); }
+  virtual Vector get_unit_x() const { return cmds->get_unit_x(); }
+  virtual Vector get_unit_y() const { return cmds->get_unit_y(); }
+  virtual Vector get_unit_z() const { return cmds->get_unit_z(); }
+
+  void setup_angle()
+  {
+    undo_changes();
+    do_changes(angle);
+  }
+  void undo_changes()
+  {
+    Vector a_x = cmds->get_unit_x();
+    Vector a_y = cmds->get_unit_y();
+    Vector a_z = cmds->get_unit_z();
+    Matrix m = Matrix::RotateAroundAxis(Vector(v_x,v_y,v_z), -old_angle);
+    cmds->set_units(a_x*m,a_y*m,a_z*m);
+    old_angle = 0.0f;
+  }
+  void do_changes(float newangle)
+  {
+    Vector a_x = cmds->get_unit_x();
+    Vector a_y = cmds->get_unit_y();
+    Vector a_z = cmds->get_unit_z();
+    Matrix m = Matrix::RotateAroundAxis(Vector(v_x,v_y,v_z), newangle);
+    cmds->set_units(a_x*m, a_y*m, a_z*m);
+    old_angle = newangle;
+  }
+private:
+  CmdExecute *cmds;
+  float v_x, v_y, v_z;
+  float old_angle;
+  float angle;
+  float delta_angle;
+};
+class RepeatCmds : public CmdExecute
+{
+public:
+  RepeatCmds(CmdExecute *cmds, std::string repeat, float dx, float dy, float dz) : cmds(cmds),repeat(repeat),dx(Vector(dx,0.0,0.0)),dy(Vector(0.0,dy,0.0)),dz(Vector(0.0,0.0,dz)) 
+  {
+    type_delta=0;
+  }
+  Point pos() const { return cmds->pos() + Vector(pos_delta.x,pos_delta.y,pos_delta.z); }
+  int obj_type() const { return type_delta+cmds->obj_type(); }
+  void set_hooks(std::function<void (char)> f) { cmds->set_hooks(f); }
+  virtual void set_units(Vector v_x, Vector v_y, Vector v_z) { cmds->set_units(v_x, v_y, v_z); }
+  virtual Vector get_unit_x() const { return dx; }
+  virtual Vector get_unit_y() const { return dy; }
+  virtual Vector get_unit_z() const { return dz; }
+
+  void Execute(char c) {
+    switch(c) {
+    case 'w': pos_delta-=dy; break;
+    case 'a': pos_delta-=dx; break;
+    case 's': pos_delta+=dy; break;
+    case 'd': pos_delta+=dx; break;
+    case 'n': pos_delta-=dz; break;
+    case 'm': pos_delta+=dz; break;
+    case 'u': type_delta++; break;
+    case 'i': type_delta--; break;
+    case '.':
+      {
+	int s = repeat.size();
+	for(int i=0;i<s;i++) {
+	  char c = repeat[i];
+	  cmds->Execute(c);
+	}
+	break;
+      }
+    default:
+      cmds->Execute(c);
+      break;
+    };
+  }  
+private:
+  CmdExecute *cmds;
+  std::string repeat;
+  Point pos_delta;
+  int type_delta;
+  Vector dx,dy,dz;
+};
+class DefaultCmds : public CmdExecute
+{
+public:
+  DefaultCmds(float dx, float dy, float dz) : ddx(dx),ddy(dy),ddz(dz), p_x(0), p_y(0), p_z(0),type(0),dx(Vector(dx,0.0,0.0)),dy(Vector(0.0,dy,0.0)),dz(Vector(0.0,0.0,dz)),point(0.0,0.0,0.0) { }
+  Point pos() const { return point; }
+  int obj_type() const { return type; }
+  void set_hooks(std::function<void (char)> f) { m_f = f; }
+  virtual void set_units(Vector v_x, Vector v_y, Vector v_z)
+  {
+    dx = v_x;
+    dy = v_y;
+    dz = v_z;
+  }
+  virtual Vector get_unit_x() const
+  {
+    return dz;
+  }
+  virtual Vector get_unit_y() const
+  {
+    return dy;
+  }
+  virtual Vector get_unit_z() const
+  {
+    return dz;
+  }
+  void Execute(char c) {
+    switch(c) {
+    case 'w': point-=dy; break;
+    case 'a': point-=dx; break;
+    case 's': point+=dy; break;
+    case 'd': point+=dx; break;
+    case 'n': point-=dz; break;
+    case 'm': point+=dz; break;
+    case 'u': type++; break;
+    case 'i': type--; break;
+    case '#': point=Point(0.0,0.0,0.0); 
+      dx=Vector(ddx,0.0,0.0);
+      dy=Vector(0.0,ddy,0.0);
+      dz=Vector(0.0,0.0,ddz);
+      break;
+
+    case '.': m_f('.'); break;
+    case ':': m_f(':'); break;
+    };
+  }
+
+private:
+  float ddx,ddy,ddz;
+  int p_x, p_y, p_z;
+  int type;
+  Vector dx,dy,dz;
+  Point point;
+  std::function<void (char)> m_f;
+};
+
+GameApi::CMD GameApi::MovementNode::default_cmds(float dx, float dy, float dz)
+{
+  return add_cmds(e, new DefaultCmds(dx,dy,dz));
+}
+GameApi::CMD GameApi::MovementNode::cmd_repeat(CMD cmds2, std::string repeat, float dx, float dy, float dz)
+{
+  CmdExecute *cmds = find_cmds(e, cmds2);
+  return add_cmds(e, new RepeatCmds(cmds, repeat,dx,dy,dz));
+}
+GameApi::CMD GameApi::MovementNode::cmd_rotate(CMD cmds2, float v_x, float v_y, float v_z, float angle, float delta_angle)
+{
+  CmdExecute *cmds = find_cmds(e, cmds2);
+  return add_cmds(e, new RotateCmds(cmds,v_x,v_y,v_z, angle, delta_angle));
+}
+
+class CmdPoints : public PointsApiPoints
+{
+public:
+  CmdPoints(CmdExecute *cmds, std::string commands) : cmds(cmds) {
+    cmds->set_hooks(std::bind(&CmdPoints::insert, this, GameApi::_1));
+    int s = commands.size();
+    for(int i=0;i<s;i++)
+      cmds->Execute(commands[i]);
+  }
+  void insert(char c) {
+    if (c=='.') {
+      Point p = cmds->pos();
+      vec.push_back(p);
+    }
+  }
+  virtual int NumPoints() const { return vec.size(); }
+  virtual Point Pos(int i) const { return vec[i]; }
+  virtual unsigned int Color(int i) const
+  {
+    return 0xffffffff;
+  }
+private:
+  CmdExecute *cmds;
+  std::vector<Point> vec;
+};
+
+GameApi::PTS GameApi::MovementNode::cmd_to_pts(CMD cmds2, std::string commands)
+{
+  CmdExecute *cmds = find_cmds(e, cmds2);
+  return add_points_api_points(e, new CmdPoints(cmds, commands));
+}
+
+class CmdLines : public LineCollection
+{
+public:
+  CmdLines(CmdExecute *cmds, std::string commands) : cmds(cmds) {
+    cmds->set_hooks(std::bind(&CmdLines::insert, this, GameApi::_1));
+    int s = commands.size();
+    for(int i=0;i<s;i++)
+      cmds->Execute(commands[i]);
+  }
+  void insert(char c) {
+    if (c=='.') {
+      Point p = cmds->pos();
+      vec.push_back(old_point);
+      vec.push_back(p);
+      old_point = p;
+    }
+    if (c==':') {
+      old_point = cmds->pos();
+    }
+  }
+  virtual int NumLines() const { return vec.size()/2; }
+  virtual Point LinePoint(int line, int point) const
+  {
+    line*=2;
+    if (point==1) line++;
+    return vec[line];
+  }
+  virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; }
+private:
+  CmdExecute *cmds;
+  std::vector<Point> vec;
+  Point old_point;
+};
+
+
+GameApi::LI GameApi::MovementNode::cmd_to_li(CMD cmds2, std::string commands)
+{
+  CmdExecute *cmds = find_cmds(e, cmds2);
+  return add_line_array(e, new CmdLines(cmds, commands));
+}

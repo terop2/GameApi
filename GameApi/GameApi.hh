@@ -26,6 +26,7 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct CMD { int id; };
   struct FI { int id; };
   struct SD { int id; };
   struct GI { int id; };
@@ -1100,9 +1101,10 @@ public:
   MaterialsApi(Env &e) : e(e) { }
   MT def(EveryApi &ev);
   MT skeletal(EveryApi &ev);
-  MT texture(EveryApi &ev, BM bm);
-  MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
+  MT texture(EveryApi &ev, BM bm, float mix);
+  MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
   MT snow(EveryApi &ev, MT nxt, unsigned int color1=0xffaaaaaa, unsigned int color2=0xffeeeeee, unsigned int color3=0xffffffff, float mix_val=0.5f);
+  MT flat(EveryApi &ev, MT nxt, unsigned int color1, unsigned int color2, unsigned int color3);
   MT choose_color(EveryApi &ev, MT nxt, unsigned int color, float mix_val);
   MT brashmetal(EveryApi &ev, MT nxt, int count, bool web);
   MT web(EveryApi &ev, MT nxt); // TODO: add line width property
@@ -1295,6 +1297,11 @@ public:
   ML key_event(EveryApi &ev, ML ml, MN mn, int type, int ch, int button, float duration);
   ML wasd(EveryApi &ev, ML ml, MN w, MN a, MN s, MN d, float duration);
   ML key_printer_ml(ML ml);
+  CMD default_cmds(float dx, float dy, float dz);
+  CMD cmd_repeat(CMD cmds, std::string repeat, float dx, float dy, float dz);
+  CMD cmd_rotate(CMD cmds, float v_x, float v_y, float v_z, float angle, float delta_angle);
+  PTS cmd_to_pts(CMD cmds, std::string commands);
+  LI cmd_to_li(CMD cmds, std::string commands);
 private:
   Env &e;
 };
@@ -1899,6 +1906,7 @@ public:
 			float start_z, float end_z,
 			float round_radius);
   IMPORT P deform(P obj, O bools, float dx, float dy, float dz);
+  IMPORT P flip_normals(P obj);
   IMPORT P color_map2(BM bm, PT pos, V u_x, V u_y);
   IMPORT P color_map(BM bm, float sx, float sy, float z);
   IMPORT P color_map3(BM bm, FB height, PT pos, V u_x, V u_y);
@@ -2082,7 +2090,7 @@ public:
   IMPORT ML shading_shader(EveryApi &ev, ML mainloop,
 			  unsigned int level1,
 			  unsigned int level2,
-			  unsigned int level3);
+			   unsigned int level3, float spec_size=5.0f, bool ambient=true, bool diffuse=true, bool specular=true);
   IMPORT ML spotlight_shader(EveryApi &ev, ML mainloop,
 			     int light_color_id, MN move);
   IMPORT ML ambient_shader(EveryApi &ev, ML mainloop,
@@ -2092,8 +2100,8 @@ public:
   IMPORT ML light_shader(EveryApi &ev, ML mainloop);
   IMPORT ML choose_color_shader(EveryApi &ev, ML mainloop, unsigned int color, float mix_val);
   IMPORT ML toon_shader(EveryApi &ev, ML mainloop);
-  IMPORT ML texture_shader(EveryApi &ev, ML mainloop);
-  IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop);
+  IMPORT ML texture_shader(EveryApi &ev, ML mainloop, float mix);
+  IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML skeletal_shader(EveryApi &ev, ML mainloop, std::vector<SA> vec);
   IMPORT void explode(VA va, PT pos, float dist);
   //IMPORT int access_point_count(VA va, bool triangle);
@@ -2689,6 +2697,7 @@ public:
   IMPORT LI unit_to_flex(LI orig, 
 			PT bTL, PT bTR, PT bBL, PT bBR,
 			PT fTL, PT fTR, PT fBL, PT fBR);
+  IMPORT LI random_mesh_quad_lines(EveryApi &ev, P p, int count);
 
   IMPORT LLA prepare(LI l);
   IMPORT void update(LLA la, LI l);
