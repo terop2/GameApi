@@ -2056,8 +2056,12 @@ public:
     bm->Prepare(); 
     int sx = bm->SizeX();
     int sy = bm->SizeY();
+    delete [] array_x;
+    delete [] array_y;
     array_x = new float[sx*sy];
     array_y = new float[sx*sy];
+    array_sx = sx;
+    array_sy = sy;
     for(int x=0;x<sx;x++)
       {
 	for(int y=0;y<sy;y++)
@@ -2072,13 +2076,18 @@ public:
 
   }
 
-  DistanceFieldBitmap(Bitmap<float> *bm, float max_value) : bm(bm), max_value(max_value) 
+  DistanceFieldBitmap(Bitmap<float> *bm, float max_value) : bm(bm), max_value(max_value), array_x(0), array_y(0), array_sx(0), array_sy(0)
   {
   }
   int SizeX() const { return bm->SizeX(); }
   int SizeY() const { return bm->SizeY(); }
   float Map(int x, int y) const
   {
+    if (x<0 || x>=bm->SizeX()) return 0.0;
+    if (y<0 || y>=bm->SizeY()) return 0.0;
+    if (array_sx != bm->SizeX()) const_cast<DistanceFieldBitmap*>(this)->Prepare();
+    if (array_sy != bm->SizeY()) const_cast<DistanceFieldBitmap*>(this)->Prepare();
+
     int sx = bm->SizeX();
     return scale(mymin(array_x[x+y*sx],array_y[x+y*sx]));
   }
@@ -2144,9 +2153,11 @@ public:
 
 private:
   Bitmap<float> *bm;
+  float max_value;
   float *array_x;
   float *array_y;
-  float max_value;
+  int array_sx;
+  int array_sy;
 };
 class BorderFloatBitmap : public Bitmap<float>
 {

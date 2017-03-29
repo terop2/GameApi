@@ -54,11 +54,11 @@ void GameApi::ShaderApi::link_1(GameApi::SH shader)
 }
 EXPORT GameApi::SH GameApi::ShaderApi::texture_shader()
 {
-  return get_normal_shader_1("comb", "comb", "", "texture:light:light", "texture:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD");
+  return get_normal_shader_1("comb", "comb", "", "texture:light:light", "texture:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX");
 }
 EXPORT GameApi::SH GameApi::ShaderApi::texture_array_shader()
 {
-  return get_normal_shader_1("comb", "comb", "", "texture_arr:light:light", "texture_arr:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD TEXTURE_ARRAY");
+  return get_normal_shader_1("comb", "comb", "", "texture_arr:light:light", "texture_arr:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD TEXTURE_ARRAY COLOR_MIX");
 }
 
 EXPORT GameApi::SH GameApi::ShaderApi::colour_shader()

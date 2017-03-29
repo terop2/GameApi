@@ -55,6 +55,7 @@ EXPORT void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_heigh
   prog->set_var("in_MV", m2);
   prog->set_var("in_T", m2);
   prog->set_var("in_POS", 0.0f);
+  prog->set_var("color_mix", 0.5f);
   alpha_1(false);
 
 #if 0
@@ -248,6 +249,7 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
   prog->set_var("in_T", m3);
   prog->set_var("in_POS", 0.0f);
+  prog->set_var("color_mix", 0.5f);
   alpha_1(false);
   glEnable(GL_DEPTH_TEST);
   //glEnable(GL_MULTISAMPLE );
@@ -869,10 +871,10 @@ ML I17=ev.move_api.move_ml(ev,I13,I16a);
  ML res = I17;
 #else
 BM I18=ev.bitmap_api.newbitmap(500,300,0x00000000);
-Ft I19=ev.font_api.newfont("FreeSans.ttf",80,80);
+Ft I19=ev.font_api.newfont("http://tpgames.org/FreeSans.ttf",80,80);
 BM I20=ev.font_api.font_string(I19,"GameApi",5);
 BM I21=ev.bitmap_api.blitbitmap(I18,I20,0,0);
-Ft I22=ev.font_api.newfont("FreeSans.ttf",18,18);
+Ft I22=ev.font_api.newfont("http://tpgames.org/FreeSans.ttf",18,18);
 BM I23=ev.font_api.font_string(I22,"Win32Edition",5);
 BM I24=ev.bitmap_api.blitbitmap(I21,I23,160,88);
 P I25=ev.polygon_api.color_map(I24,500,300,0);

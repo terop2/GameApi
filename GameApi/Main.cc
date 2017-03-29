@@ -363,7 +363,7 @@ c  for(int i=0;i<size1&&!exit2;i+=100)
 }
 #endif
 
-SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
+SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize)
 {
 #ifdef SDL2_USED
   int screenx = scr_x, screeny = scr_y;
@@ -389,7 +389,10 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias)
 #endif
   //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
-  sdl_window = SDL_CreateWindow("Program", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scr_x, scr_y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+  if (resize)
+    sdl_window = SDL_CreateWindow("Program", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scr_x, scr_y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE);
+  else
+    sdl_window = SDL_CreateWindow("Program", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scr_x, scr_y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
  
   
 
