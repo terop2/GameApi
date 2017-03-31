@@ -871,11 +871,16 @@ ML I17=ev.move_api.move_ml(ev,I13,I16a);
  ML res = I17;
 #else
 BM I18=ev.bitmap_api.newbitmap(500,300,0x00000000);
-Ft I19=ev.font_api.newfont("http://tpgames.org/FreeSans.ttf",80,80);
-BM I20=ev.font_api.font_string(I19,"GameApi",5);
+ FI I19 = ev.font_api.load_font("http://tpgames.org/FreeSans.ttf", 80,80);
+ BM I20 = ev.font_api.draw_text_string(I19, "GameApi", 5, 30);
+
+ //Ft I19=ev.font_api.newfont("http://tpgames.org/FreeSans.ttf",80,80);
+ //BM I20=ev.font_api.font_string(I19,"GameApi",5);
 BM I21=ev.bitmap_api.blitbitmap(I18,I20,0,0);
-Ft I22=ev.font_api.newfont("http://tpgames.org/FreeSans.ttf",18,18);
-BM I23=ev.font_api.font_string(I22,"Win32Edition",5);
+//Ft I22=ev.font_api.newfont("http://tpgames.org/FreeSans.ttf",18,18);
+//BM I23=ev.font_api.font_string(I22,"Win32Edition",5);
+ FI I22 = ev.font_api.load_font("http://tpgames.org/FreeSans.ttf", 18,18);
+ BM I23 = ev.font_api.draw_text_string(I22, "Win32Edition", 5, 30);
 BM I24=ev.bitmap_api.blitbitmap(I21,I23,160,88);
 P I25=ev.polygon_api.color_map(I24,500,300,0);
 P I26=ev.polygon_api.rotatex(I25,3.14159);
