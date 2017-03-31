@@ -17,7 +17,7 @@ struct GlyphData
   FT_Face face;
 };
 
-FontInterfaceImpl::FontInterfaceImpl(GameApi::Env &e, void *priv_, std::string ttf_filename, int sx, int sy) : e(e), ttf_filename(ttf_filename), sx(sx), sy(sy), priv_(priv_) 
+FontInterfaceImpl::FontInterfaceImpl(GameApi::Env &e, void *priv_, std::string ttf_filename, int sx, int sy) : e(e), ttf_filename(ttf_filename), sx(sx), sy(sy), priv_(priv_), mutex(PTHREAD_MUTEX_INITIALIZER)
 { 
   priv = 0;
 }
@@ -46,8 +46,11 @@ int FontInterfaceImpl::Map(long idx, int x, int y) const
 void FontInterfaceImpl::gen_glyph_data(long idx)
 {
   //std::cout << "try gen_glyph_data:" << idx << std::endl;
+  pthread_mutex_lock(&mutex);
   GlyphData *data = glyph_data[idx];
-  if (data) return;
+  if (data) { 
+    pthread_mutex_unlock(&mutex);
+    return; }
   std::cout << "gen_glyph_data:" << idx << std::endl;
 
   if (!data) {
@@ -64,6 +67,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   std::vector<unsigned char> *ptr = e.get_loaded_async_url(ttf_filename);
   if (!ptr) {
     std::cout << "async not ready yet, failing..." << std::endl;
+    pthread_mutex_unlock(&mutex);
     exit(0);
   } else {
     //std::fstream ss(ss2.str().c_str(), std::ios_base::binary | std::ios_base::out);
@@ -83,6 +87,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
     {
     std::cout << "FT_New_Face ERROR: " << err << std::endl;
     std::cout << "Remember to recompile the code after changing envimpl size" << std::endl;
+    pthread_mutex_unlock(&mutex);
     exit(0);
     }
   FT_Set_Char_Size(data->face, sx*64,sy*64,100,100);
@@ -100,4 +105,6 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
       {
 	data->bitmap_data[ix+iy*data->sx] = (int)data->face->glyph->bitmap.buffer[ix+iy*data->face->glyph->bitmap.pitch];
       }
+    pthread_mutex_unlock(&mutex);
+
 }

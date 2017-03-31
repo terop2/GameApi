@@ -23,4 +23,5 @@ private:
   void *priv;
   int state;
   long old_idx;
+  mutable pthread_mutex_t mutex;
 };
