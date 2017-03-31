@@ -130,7 +130,7 @@ struct Envi
   int completed_time=0;
   VA completed;
   int start_time=0;
-  bool logo_shown=true;
+  bool logo_shown=false;
 };
 
 void render_score(int score, int x, Envi &e)
@@ -558,7 +558,7 @@ int main(int argc, char *argv[]) {
   float f = 0.0;
 
 
-  Ft font = ev.font_api.newfont("FreeSans.ttf", 30,30);
+  Ft font = ev.font_api.newfont("http://tpgames.org/FreeSans.ttf", 30,30);
   BM score = ev.font_api.font_string(font, "Score:", 3);
   int score_width = ev.bitmap_api.size_x(score);
   VA score_va = ev.sprite_api.create_vertex_array(score);
@@ -620,7 +620,8 @@ int main(int argc, char *argv[]) {
 
 #if 1
   ev.mainloop_api.reset_time();
-  ev.mainloop_api.display_logo(ev);
+  if (envi.logo_shown)
+    ev.mainloop_api.display_logo(ev);
   ev.mainloop_api.alpha(true);
   ev.shader_api.use(sh2);
   ev.mainloop_api.switch_to_3d(false, sh, 800,600);
