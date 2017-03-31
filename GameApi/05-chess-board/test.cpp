@@ -156,7 +156,7 @@ struct Envi {
   SH sh;
 #endif
   SH sh3;
-  int logo_shown = true;
+  int logo_shown = false;
 } env;
 
 std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e, bool attack);
@@ -1401,7 +1401,7 @@ int main(int argc, char *argv[]) {
   ev.shader_api.load_default();
   //SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:light:snoise", "colour:light:snoise");
   //#ifndef EMSCRIPTEN
-  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:passall:ambient:diffuse:specular", "colour:ambient:diffuse:specular", false, {-1}, "EX_COLOR IN_COLOR EX_TEXCOORD IN_TEXCOORD EX_NORMAL IN_NORMAL IN_POSITION EX_POSITION LIGHTDIR EX_NORMAL2 EX_LIGHTPOS2", "EX_NORMAL2 EX_LIGHTPOS2 EX_COLOR");
+  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:passall:ambient:diffuse", "colour:ambient:diffuse", false, {-1}, "EX_COLOR IN_COLOR EX_TEXCOORD IN_TEXCOORD EX_NORMAL IN_NORMAL IN_POSITION EX_POSITION LIGHTDIR EX_NORMAL2 EX_LIGHTPOS2", "EX_NORMAL2 EX_LIGHTPOS2 EX_COLOR SPECULAR_SIZE");
   //#else
   //  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:passall", "colour:light");
   //#endif
@@ -1424,6 +1424,7 @@ int main(int argc, char *argv[]) {
 
   ev.shader_api.use(sh);
   ev.shader_api.set_var(sh, "light_dir", 1.0, 1.0, 1.0);
+  ev.shader_api.set_var(sh, "specular_size", 0.003f);
 
   ev.shader_api.set_var(sh, "level1_color", 1.0, 1.0, 1.0, 1.0);
   ev.shader_api.set_var(sh, "level2_color", 1.0, 1.0, 1.0, 1.0);
@@ -1517,7 +1518,8 @@ int main(int argc, char *argv[]) {
   //env.cursor = obj;
   //e->free_memory();
   ev.mainloop_api.reset_time();
-  ev.mainloop_api.display_logo(ev);
+  if (env.logo_shown)
+    ev.mainloop_api.display_logo(ev);
 
 #ifndef EMSCRIPTEN
   while(1) {

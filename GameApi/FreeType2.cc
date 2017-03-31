@@ -72,8 +72,10 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
     //ss.close();
   }
   data->lib = (FT_Library*)priv_;
+  unsigned char *ptr2 = new unsigned char[ptr->size()+1];
+  std::copy(ptr->begin(), ptr->end(), ptr2);
   int err = FT_New_Memory_Face( *data->lib,
-				&ptr->operator[](0) /*"font.ttf"*/,
+				ptr2 /*"font.ttf"*/,
 				ptr->size(),
 				0,
 				&data->face);
