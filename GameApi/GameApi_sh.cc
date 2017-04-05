@@ -69,10 +69,10 @@ EXPORT GameApi::SH GameApi::ShaderApi::shader_choice(EveryApi &ev, int i)
 {
   SH sh = colour_shader();
   switch(i) {
-  case 0: sh = colour_shader();
-  case 1: sh = texture_shader();
-  case 2: sh = texture_array_shader();
-  case 3: sh = colour_texture_shader();
+  case 0: sh = colour_shader(); break;
+  case 1: sh = texture_shader();break;
+  case 2: sh = texture_array_shader(); break;
+  case 3: sh = colour_texture_shader();break;
   };
   int width = ev.mainloop_api.get_screen_width();
   int height = ev.mainloop_api.get_screen_height();
@@ -83,7 +83,7 @@ EXPORT GameApi::SH GameApi::ShaderApi::shader_choice(EveryApi &ev, int i)
 }
 EXPORT GameApi::SH GameApi::ShaderApi::colour_texture_shader()
 {
-  return get_normal_shader_1("comb", "comb", "","colour:texture:light:light", "colour:texture:light:light");
+  return get_normal_shader_1("comb", "comb", "","colour:texture:light:light", "colour:texture:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX");
 }
 EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
 						  std::string f_format,

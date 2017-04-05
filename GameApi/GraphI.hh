@@ -329,10 +329,14 @@ namespace GameApi
   class Env;
 };
 
+struct GameApiLine;
+
 struct GameApiParam
 {
   std::string param_name;
   std::string value;
+  bool is_array = false;
+  GameApiLine *array_return_target = 0;
 };
 namespace GameApi {
 class EditNode;
@@ -363,6 +367,7 @@ struct GameApiLine
   int x,y;
   std::string module_name;
   std::string uid;
+  bool array_return = false;
   std::vector<GameApiParam> params;
 };
 
@@ -823,6 +828,16 @@ public:
   virtual Vector get_unit_x() const=0;
   virtual Vector get_unit_y() const=0;
   virtual Vector get_unit_z() const=0;
+};
+
+class CurvePatch
+{
+public:
+  virtual float start_x() const=0;
+  virtual float end_x() const=0;
+  virtual float start_y() const=0;
+  virtual float end_y() const=0;
+  virtual Point Map(float x, float y) const=0;
 };
 
 #endif

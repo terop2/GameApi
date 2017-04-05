@@ -70,10 +70,14 @@ public:
   virtual std::pair<std::string, std::string> CodeGen(std::vector<std::string> params, std::vector<std::string> param_names)=0;
 };
 
+struct GameApiLine;
+
 struct GameApiParam
 {
   std::string param_name;
   std::string value;
+  bool is_array = false;
+  GameApiLine *array_return_target = 0;
 };
 
 
@@ -310,6 +314,14 @@ void connect_target(int x, int y, Envi *envi)
 	  bool b = envi->ev->mod_api.typecheck(envi->mod, 0, envi->connect_start_uid, uid, real_index, is_array, is_array_return);
 	  if (b) 
 	    {
+	      if (is_array_return)
+		{
+		  std::string val2 = envi->connect_start_uid; 
+		  envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, val2);
+		  int ii = envi->ev->mod_api.find_line_index(envi->mod, 0, val2);
+		  envi->ev->mod_api.change_param_is_array(envi->mod, 0, uid, real_index, true, ii);
+		}
+	      else
 	      if (is_array)
 		{
 		  std::string val = envi->ev->mod_api.param_value(envi->mod, 0, uid, real_index);
@@ -387,7 +399,19 @@ void callback_func(int x, int y, Envi *envi)
 
 
   std::vector<std::pair<std::string,std::string> > vec = envi->ev->mod_api.defaults_from_function(envi->insert_mod_name);
-  envi->ev->mod_api.insert_to_mod(envi->mod, 0, envi->insert_mod_name, uid, envi->gui->pos_x(envi->chosen_item), envi->gui->pos_y(envi->chosen_item), vec);
+  std::vector<GameApi::WModApi::InsertParam> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApi::WModApi::InsertParam pp;
+      pp.first = vec[i].first;
+      pp.second = vec[i].second;
+      pp.is_array = false; // will be filled later
+      pp.line_index_in_gameapi_function_lines_array = -1; // will be filled later
+      std::cout << "Insert_To_mod: " << pp.first << " " << pp.second << std::endl;
+      vec2.push_back(pp);
+    }
+  envi->ev->mod_api.insert_to_mod(envi->mod, 0, envi->insert_mod_name, uid, false, envi->gui->pos_x(envi->chosen_item), envi->gui->pos_y(envi->chosen_item), vec2);
 }
 
 template<class T>
@@ -535,6 +559,7 @@ void iter(void *arg)
 	      {
 		/* code generation here */
 		std::cout << "CodeGen" << std::endl;
+		env->ev->mod_api.codegen_reset_counter();
 		std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, env->codegen_uid,1000);
 		std::cout << p.second << std::endl;
 	      }

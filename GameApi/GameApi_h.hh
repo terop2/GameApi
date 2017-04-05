@@ -562,6 +562,7 @@ struct EnvImpl
   std::vector<FontInterface*> font_interfaces;
   std::vector<StringDisplay*> string_displays;
   std::vector<CmdExecute*> cmds;
+  std::vector<CurvePatch*> curve_patches;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -830,11 +831,17 @@ struct FaceCollPolyHandle : public PolyHandle
 };
 #endif
 
+#define ARRMACRO(arr,arr2) \
+  arr add_array_ ## arr2 (GameApi::Env &e, ArrayType *type); \
+  ArrayType *find_array_ ## arr2 (GameApi::Env &e, arr a);
 
+ARRMACRO(GameApi::PAR,par)
+#undef ARRMACRO
 
 //
 // add functions
 //
+GameApi::PA add_patch(GameApi::Env &e, CurvePatch *patch);
 GameApi::CMD add_cmds(GameApi::Env &e, CmdExecute *cmds);
 GameApi::FI add_font_interface(GameApi::Env &e, FontInterface *fi);
 GameApi::GI add_glyph_interface(GameApi::Env &e, GlyphInterface *gi);
@@ -944,6 +951,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+CurvePatch *find_patch(GameApi::Env &e, GameApi::PA patch);
 CmdExecute *find_cmds(GameApi::Env &e, GameApi::CMD cmds);
 StringDisplay *find_string_display(GameApi::Env &e, GameApi::SD sd);
 GlyphInterface *find_glyph_interface(GameApi::Env &e, GameApi::GI gi);

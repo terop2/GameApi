@@ -186,9 +186,9 @@ private:
   GameApi::FtA atlas;
   GameApi::BM atlas_bm;
   GameApi::SH sh;
-  GameApi::BM rendered_bitmap;
+  GameApi::BM rendered_bitmap; 
   GameApi::BM scaled_bitmap;
-  GameApi::VA rendered_bitmap_va;
+ GameApi::VA rendered_bitmap_va;
   int x_gap;
 };
 
@@ -299,6 +299,120 @@ class Conv<std::string>
 public:
   static void set(std::string &target, std::string s) { target = s; }
   static void get(const std::string &target, std::string &s) { s=target; }
+};
+
+template<class T>
+class MultilineEditor : public GuiWidgetForward
+{
+public:
+  MultilineEditor(GameApi::EveryApi &ev, std::string allowed_chars, T &target_m, GameApi::FI font, GameApi::SH sh, int x_gap, int line_height) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), allowed_chars(allowed_chars), target(target_m), font(font), sh(sh), x_gap(x_gap), line_height(line_height) {
+    firsttime = true; active=false;
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1, -1, -1, 0);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
+    shift=false;
+  }
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
+  {
+    bool changed = false;
+    Point2d pos = get_pos();
+    Vector2d sz = get_size();
+    if (button == 0 && type==1025 && mouse.x>=pos.x && mouse.x < pos.x+sz.dx
+	&& mouse.y>=pos.y && mouse.y<pos.y+sz.dy)
+      {
+	active = true;
+      }
+    else if (button==0 && type==1025)
+      {
+	active = false;
+      }
+    //std::cout << type << " " << ch << std::endl;
+    if (type==768 && (ch==1073742049||ch==1073742053)) { shift=true; std::cout << "Shift1" << std::endl; }
+    if (type==769 && (ch==1073742049||ch==1073742053)) { shift=false; std::cout << "Shift2" << std::endl; }
+
+    if (firsttime)
+      {
+	Conv<T>::get(target, label);
+      }
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+    if (ch==13) { ch='\n'; }
+    if (shift) { 
+      const char *chars1 = "§1234567890+',.-abcdefghijklmnopqrstuvwxyz";
+      const char *chars2 = "½!\"#¤%&/()=?*;:_ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      int s = strlen(chars1);
+      for(int i=0;i<s;i++)
+	{
+	  if (ch == chars1[i]) ch=chars2[i];
+	}
+      if (ch==45) ch='_';
+    }
+    if (active && type==768)
+      {
+	int s = allowed_chars.size();
+	for(int i=0;i<s;i++)
+	  {
+	    if (allowed_chars[i]==ch)
+	      {
+		label.push_back(ch);
+		changed = true;
+	      }
+	  }
+	if ((ch==8 ||ch==42) && label.size()>0)
+	  {
+	    label.erase(label.begin()+(label.size()-1));
+	    changed = true;
+	  }
+      }
+
+    // note, spaces are not allowed.
+    if (active) {
+      Conv<T>::set(target, label);
+    }
+
+    if (firsttime || changed)
+      {
+	rendered_bitmap = ev.font_api.draw_text_string(font, label, x_gap, line_height);
+	int sx = ev.bitmap_api.size_x(rendered_bitmap);
+	int sy = ev.bitmap_api.size_y(rendered_bitmap);
+	GameApi::CBM cbm = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0,1.0);
+	scaled_bitmap = ev.cont_bitmap_api.sample(cbm, sx/2, sy/2);
+	rendered_bitmap_va = ev.sprite_api.create_vertex_array(scaled_bitmap);
+	firsttime = false;
+      }
+    size.dx = ev.bitmap_api.size_x(scaled_bitmap);
+    size.dy = ev.bitmap_api.size_y(scaled_bitmap);
+  }
+
+  void render()
+  {
+    if (is_visible())
+    if (!firsttime)
+      {
+	Point2d p = get_pos();
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5,p.y+0.5,0.0));
+	ev.sprite_api.render_sprite_vertex_array(rendered_bitmap_va);
+
+      }
+  }
+private:
+  bool firsttime;
+  std::string allowed_chars;
+  T &target;
+  std::string label;
+  GameApi::FI font;
+  GameApi::SH sh;
+  GameApi::BM rendered_bitmap;
+  GameApi::BM scaled_bitmap;
+  GameApi::VA rendered_bitmap_va;
+  bool active;
+  int x_gap;
+  int line_height;
+  bool shift;
 };
 
 template<class T>
@@ -2063,6 +2177,12 @@ EXPORT GameApi::W GameApi::GuiApi::string_editor(std::string allowed_chars, std:
   W e2 = highlight(e1);
   return e2;
 }
+EXPORT GameApi::W GameApi::GuiApi::multiline_string_editor(std::string allowed_chars, std::string &target, FI font, int x_gap, int line_height)
+{
+  W e1 = add_widget(e, new MultilineEditor<std::string>(ev, allowed_chars, target, font, sh, x_gap, line_height));
+  W e2 = highlight(e1);
+  return e2;
+}
 
 EXPORT GameApi::W GameApi::GuiApi::float_editor(float &target, FtA atlas, BM atlas_bm, int x_gap)
 {
@@ -3721,6 +3841,7 @@ MACRO(GameApi::FI)
 MACRO(GameApi::GI)
 MACRO(GameApi::ARR)
 MACRO(GameApi::CMD)
+MACRO(GameApi::PA)
 #undef MACRO
 
 
@@ -4116,7 +4237,7 @@ struct CodeGenVectors {
   std::vector<std::string> params;
 };
 
-void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVectors> &vectors, bool &error)
+void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVectors> &vectors, bool &error, std::map<std::string, int> env_map)
 {
   error = false;
   // create line_map
@@ -4174,6 +4295,12 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
 			std::stringstream ss;
 			ss << linkage;
 			param_linkage = ss.str();
+		      } else if (param.size()>0 && param[0]=='E')
+		      {
+			int linkage = env_map[param];
+			std::stringstream ss;
+			ss << linkage;
+			param_linkage = std::string("E") + ss.str();
 		      }
 		    vec.params.push_back(param_linkage);
 		    pos = pos2+1;
@@ -4230,7 +4357,18 @@ int execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std::vector<CodeG
       for(int i=0;i<s;i++)
 	{
 	  std::string link = l.params_linkage[i];
-	  if (link.size()>0 && link[0]=='%')
+	  if (link.size()>0 && link[0]=='E')
+	    {
+	      std::string sub = link.substr(1);
+	      std::stringstream ss(sub);
+	      int idx = 0;
+	      ss >> idx;
+	      int val = e.env[idx];
+	      std::stringstream ss2;
+	      ss2 << val;
+	      params[i] = ss2.str();
+	    }
+	  else if (link.size()>0 && link[0]=='%')
 	    {
 	      int j = i;
 	      std::string sub = link.substr(1);
@@ -4296,8 +4434,9 @@ std::pair<int,std::string> GameApi::execute_codegen(GameApi::Env &env, GameApi::
     return std::make_pair(0,std::string("Error at line ") + ToString(error_line_num));
   }
   std::vector<CodeGenVectors> vecvec;
+  std::map<std::string, int> envmap = e.envmap; 
   bool err2 = false;
-  add_params_linkage(vec,vecvec,err2);
+  add_params_linkage(vec,vecvec,err2, envmap);
   if (err2) { return std::make_pair(0, std::string("Error at params_linkage")); }
   link_api_items(vec, all_functions());
   int val = execute_api(env, ev, vec, vecvec, vec.size()-1, e);
@@ -5558,6 +5697,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "[ML]" },
 			 { "" },
 			 "ML", "mainloop_api", "array_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::seq_ml,
+			 "seq_ml",
+			 { "vec", "time" },
+			 { "[ML]", "float" },
+			 { "", "30.0" },
+			 "ML", "mainloop_api", "seq_ml"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::move_ml,
 			 "move_ml",
@@ -5942,6 +6087,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "PT", "PT", "PT" },
 			 { "", "", "" },
 			 "P", "polygon_api", "triangle"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::quads_to_triangles,
+			 "to_triangles",
+			 { "p" },
+			 { "P" },
+			 { "" },
+			 "P", "polygon_api", "quads_to_triangles"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::quad,
 			 "quad",
 			 { "p1", "p2", "p3", "p4" },
@@ -5972,12 +6123,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "EveryApi&" },
 			 { "ev" },
 			 "P", "polygon_api", "fullscreen_quad"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::polygon2,
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::polygon3,
 			 "polygon",
 			 { "vec" },
-			 { "[PT]" },
+			 { "PTS" },
 			 { "" },
-			 "P", "polygon_api", "polygon2"));
+			 "P", "polygon_api", "polygon3"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, (GameApi::P (GameApi::PolygonApi::*)(float,float,float,float,float,float))&GameApi::PolygonApi::cube,
 			 "cube",
 			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
@@ -6582,6 +6733,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "PT", "float" },
 			 { "", "100.0" },
 			 "C", "curve_api", "circle_xz"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::circle_xy_wave,
+			 "c_circle_wave",
+			 { "start_r", "end_r", "wave", "length" },
+			 { "float", "float", "WV", "float" },
+			 { "200.0", "220.0", "", "6.283" },
+			 "C", "curve_api", "circle_xy_wave"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::linear,
 			 "c_linear",
 			 { "vec" },
@@ -6636,6 +6793,30 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "C", "int" },
 			 { "", "40" },
 			 "LI", "curve_api", "to_lines"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::curve_product,
+			 "c_product",
+			 { "c1", "c2", "point" },
+			 { "C", "C", "PT" },
+			 { "", "", "" },
+			 "PA", "curve_api", "curve_product"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::patch_sample,
+			 "pa_sample",
+			 { "patch", "sx", "sy" },
+			 { "PA", "int", "int" },
+			 { "", "10", "10" },
+			 "P", "curve_api", "patch_sample"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::x_curve,
+			 "pa_x",
+			 { "patch", "y" },
+			 { "PA", "float" },
+			 { "", "0.0" },
+			 "C", "curve_api", "x_curve"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::y_curve,
+			 "pa_y",
+			 { "patch", "x" },
+			 { "PA", "float" },
+			 { "", "0.0" },
+			 "C", "curve_api", "y_curve"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::xy_sum,
 			 "cpp_sum",
 			 { },

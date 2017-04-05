@@ -344,6 +344,32 @@ EXPORT GameApi::Env::~Env()
 
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
+#define ARRMACRO2(arr,arr2) \
+  arr add_array_ ## arr2 (GameApi::Env &e, ArrayType *type) {	\
+    ::EnvImpl *env = ::EnvImpl::Environment(&e);	    \
+  env->arrays2.push_back(type); \
+  arr im;\
+  im.id = env->arrays2.size()-1; \
+  return im;\
+  } \
+  ArrayType *find_array_ ## arr2(GameApi::Env &e, arr a) \
+  { \
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);\
+  return env->arrays2[a.id];\
+  }
+
+ARRMACRO2(GameApi::PAR,par)
+#undef ARRMACRO2
+
+GameApi::PA add_patch(GameApi::Env &e, CurvePatch *patch)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->curve_patches.push_back(patch);
+  GameApi::PA im;
+  im.id = env->curve_patches.size()-1;
+  return im;
+
+}
 GameApi::SD add_string_display(GameApi::Env &e, StringDisplay *sd)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1217,6 +1243,11 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   Array<int,bool> *enable = info.enable_obj_array;
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
+}
+CurvePatch *find_patch(GameApi::Env &e, GameApi::PA patch)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->curve_patches[patch.id];
 }
 CmdExecute *find_cmds(GameApi::Env &e, GameApi::CMD cmds2)
 {
@@ -5412,6 +5443,35 @@ GameApi::C GameApi::CurveApi::line(PT p1, PT p2)
   Point *pp2 = find_point(e, p2);
   return add_curve(e, new LineCurve(*pp1, *pp2));
 }
+class WaveCircleCurve : public Curve<Point>
+{
+public:
+  WaveCircleCurve(Waveform *wave, float start_r, float end_r, float length) : wave(wave), start_r(start_r), end_r(end_r), length(length) { }
+  float Size() const { return length; }
+  Point Index(float p) const {
+    float pos = p;
+    pos/=length; // [0..1]
+    pos*=wave->Length(); // [0..wave->Length()]
+    float r = wave->Index(pos); // [min..max]
+    //r/=wave->Max()-wave->Min();  // [min..min+1]
+    //r-=wave->Min();  // [0..1]
+    r*=end_r-start_r; // [0..(end_r-start_r)]
+    r+=start_r; // [start_r..end_r]
+    float x = r*cos(p);
+    float y = r*sin(p);
+    Point p2 = { x,y,0.0f };
+    return p2;
+  }
+private:
+  Waveform *wave;
+  float start_r, end_r;
+  float length;
+};
+GameApi::C GameApi::CurveApi::circle_xy_wave(float start_r, float end_r, WV wave, float length)
+{
+  Waveform *wv = find_waveform(e, wave);
+  return add_curve(e, new WaveCircleCurve(wv, start_r, end_r, length));
+}
 GameApi::C GameApi::CurveApi::circle_xy(PT center, float r)
 {
   Point *c = find_point(e, center);
@@ -5614,6 +5674,138 @@ GameApi::LI GameApi::CurveApi::to_lines(C curve, int num_lines)
   Curve<Point> *c = find_curve(e, curve);
   return add_line_array(e, new CurveLineCollection(c, num_lines));
 }
+
+class ProductPatch : public CurvePatch
+{
+public:
+  ProductPatch(Curve<Point> &c1, Curve<Point> &c2, Point c2_center) : c1(c1), c2(c2), c2_center(c2_center) { }
+  virtual float start_x() const { return 0.0; }
+  virtual float end_x() const { return c1.Size(); }
+  virtual float start_y() const { return 0.0; }
+  virtual float end_y() const { return c2.Size(); }
+  virtual Point Map(float x, float y) const
+  {
+    Point p = c1.Index(x);
+    Point p2 = c2.Index(y);
+    Vector v2 = p2-c2_center;
+    p+=v2;
+    return p;
+  }
+private:
+  Curve<Point> &c1;
+  Curve<Point> &c2;
+  Point c2_center;
+};
+
+GameApi::PA GameApi::CurveApi::curve_product(C c1, C c2, PT c2_center)
+{
+  Point *pt = find_point(e, c2_center);
+  Curve<Point> *p1 = find_curve(e, c1);
+  Curve<Point> *p2 = find_curve(e, c2);
+  return add_patch(e, new ProductPatch(*p1, *p2, *pt));
+}
+class PatchSample : public FaceCollection
+{
+public:
+  PatchSample(CurvePatch &patch, int sx, int sy) : patch(patch), sx(sx), sy(sy) { }
+  virtual void Prepare() { }
+  virtual int NumFaces() const { return sx*sy; }
+  virtual int NumPoints(int face) const
+  {
+    return 4;
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int y = face/sx;
+    int x = face - y*sx;
+    float dx = (patch.end_x() - patch.start_x())/sx;
+    float dy = (patch.end_y() - patch.start_y())/sy;
+    float xx = float(x)/sx;
+    float yy = float(y)/sy;
+    float pos_x = patch.start_x() + xx * dx;
+    float pos_y = patch.start_y() + yy * dy;
+    if (point==1 ||point==2) pos_x+=dx;
+    if (point==2 ||point==3) pos_y+=dy;
+    return patch.Map(pos_x, pos_y);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Point p1 = FacePoint(face,0);
+    Point p2 = FacePoint(face,1);
+    Point p3 = FacePoint(face,2);
+    return -Vector::CrossProduct(p2-p1, p3-p1);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return 0.0;
+  }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const { return 0xffffffff; }
+  virtual Point2d TexCoord(int face, int point) const {
+    int y = face/sx;
+    int x = face - y*sx;
+    float dx = (1.0 - 0.0)/sx;
+    float dy = (1.0 - 0.0)/sy;
+    float xx = float(x)/sx;
+    float yy = float(y)/sy;
+    float pos_x = xx * dx;
+    float pos_y = yy * dy;
+    Point2d p;
+    p.x = pos_x;
+    p.y = pos_y;
+    return p;
+    
+  }
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
+private:
+  CurvePatch &patch;
+  int sx,sy;
+};
+GameApi::P GameApi::CurveApi::patch_sample(PA patch, int sx, int sy)
+{
+  CurvePatch *p = find_patch(e, patch);
+  return add_polygon2(e, new PatchSample(*p, sx,sy));
+}
+
+class Patch_X_Curve : public Curve<Point>
+{
+public:
+  Patch_X_Curve(CurvePatch &p, float y) : p(p), y(y) { }
+  float Size() const { return p.end_x() - p.start_x(); }
+  Point Index(float x) const
+  {
+    Point pp = p.Map(p.start_x()+x,y);
+    return pp;
+  }
+private:
+  CurvePatch &p;
+  float y;
+};
+class Patch_Y_Curve : public Curve<Point>
+{
+public:
+  Patch_Y_Curve(CurvePatch &p, float x) : p(p), x(x) { }
+  float Size() const { return p.end_y() - p.start_y(); }
+  Point Index(float y) const
+  {
+    Point pp = p.Map(x, p.start_y()+y);
+    return pp;
+  }
+private:
+  CurvePatch &p;
+  float x;
+};
+GameApi::C GameApi::CurveApi::x_curve(PA patch, float y)
+{
+  CurvePatch *p = find_patch(e, patch);
+  return add_curve(e, new Patch_X_Curve(*p, y));
+}
+GameApi::C GameApi::CurveApi::y_curve(PA patch, float x)
+{
+  CurvePatch *p = find_patch(e, patch);
+  return add_curve(e, new Patch_Y_Curve(*p, x));
+}
+
 class FromPointsMatrices : public MatrixArray
 {
 public:

@@ -34,6 +34,7 @@ using std::placeholders::_9;
   struct IF { int id; };
   struct SF { int id; };
   struct ARR { int id; };
+  struct PAR { int id; }; // P array
   struct CPP { int id; };
   struct PTT { int id; }; 
   struct KF { int id; };
@@ -159,6 +160,8 @@ struct ExecuteEnv
 {
   std::vector<std::string> names;
   std::vector<std::string> values;
+  std::map<std::string, int> envmap;
+  std::vector<int> env; // contains indexes to EnvImpl/all vectors
 };
 
 
@@ -314,6 +317,7 @@ public:
   void execute_ml(ML ml, SH color, SH texture, SH texture_2d, SH arr_texture, M in_MV, M in_T, M in_N, int screen_width, int screen_height);
   void event_ml(ML ml, const Event &e);
   ML array_ml(std::vector<ML> vec);
+  ML seq_ml(std::vector<ML> vec, float time);
   M in_MV(EveryApi &ev, bool is_3d);
   M in_T(EveryApi &ev, bool is_3d);
   M in_N(EveryApi &ev, bool is_3d);
@@ -702,6 +706,7 @@ public:
   C line(PT p1, PT p2);
   C circle_xy(PT center, float r);
   C circle_xz(PT center, float r);
+  C circle_xy_wave(float start_r, float end_r, WV wave, float length);
   C linear(std::vector<PT> vec);
   C bezier(std::vector<PT> vec);
   
@@ -713,6 +718,10 @@ public:
   C change_length(C curve, float new_length);
   C split(C orig_curve, float start_var, float end_var);
 
+  PA curve_product(C c1, C c2, PT c2_center);
+  P patch_sample(PA patch, int sx, int sy);
+  C x_curve(PA patch, float y);
+  C y_curve(PA patch, float x);
 
   PT pos(C curve, float p);
   
@@ -1408,6 +1417,7 @@ public:
   W button_with_icon(BM bitmap);
   W opengl_wrapper(W widget);
   W string_editor(std::string allowed_chars, std::string &target, FtA atlas, BM atlas_bm, int x_gap);
+  W multiline_string_editor(std::string allowed_chars, std::string &target, FI font, int x_gap, int line_height);
   W url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap);
   W float_editor(float &target, FtA atlas, BM atlas_bm, int x_gap);
   W int_editor(int &target, FtA atlas, BM atlas_bm, int x_gap);
@@ -1520,10 +1530,18 @@ public:
   std::vector<std::string> labels_from_function(WM mod, int id, std::string funcname);
   std::vector<std::string*> refs_from_function(WM mod, int id, std::string funcname);
   std::vector<std::pair<std::string,std::string> > defaults_from_function(std::string module_name);
-  void insert_to_mod(WM mod, int id, std::string modname, std::string uid, int x, int y, std::vector<std::pair<std::string, std::string> > params);
+  struct InsertParam {
+    std::string first;
+    std::string second;
+    bool is_array = false;
+    int line_index_in_gameapi_function_lines_array = -1;
+  };
+  void insert_to_mod(WM mod, int id, std::string modname, std::string uid, bool array_return, int x, int y, std::vector<InsertParam> params);
   
   std::string get_funcname(WM mod2, int id, std::string uid);
   void change_param_value(WM mod2, int id, std::string uid, int param_index, std::string newvalue);
+  void change_param_is_array(WM mod2, int id, std::string uid, int param_index, bool is_array, int ref_line_index);
+  int find_line_index(WM mod2, int id, std::string uid);
   std::string param_value(WM mod2, int id, std::string uid, int param_index);
   std::vector<std::string> parse_param_array(std::string s);
   std::string generate_param_array(std::vector<std::string> v);
@@ -1534,6 +1552,7 @@ public:
   
 
   CollectResult collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);
+  void codegen_reset_counter();
   std::pair<std::string, std::string> codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);
   std::string return_type(WM mod2, int id, std::string line_uid);
   void delete_by_uid(WM mod2, int id, std::string line_uid);
@@ -1862,7 +1881,13 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  // Array functions
+  ARR poly_array(std::vector<P> vec);
+  P poly_index(ARR arr, int idx);
+  int poly_size(ARR arr);
+  ARR poly_execute(EveryApi &ev, ARR arr, std::string gameapi_script);
   
+  // normal functions
   IMPORT void print_stat(P p);
   IMPORT void print_data(P p);
   IMPORT void print_data2(P p);
@@ -1892,6 +1917,7 @@ public:
         IMPORT P tri_strip(PT *array, int size);
         IMPORT P polygon2(std::vector<PT> vec);
         IMPORT P polygon(PT *array, int size); // use render_dynamic with this.
+        IMPORT P polygon3(PTS points);
 	IMPORT P tri_vertex_array(float *v_array, int v_size,
 		     float *n_array, int n_size,
 		     unsigned int *c_array, int c_size,
@@ -2090,7 +2116,7 @@ public:
   IMPORT ML shading_shader(EveryApi &ev, ML mainloop,
 			  unsigned int level1,
 			  unsigned int level2,
-			   unsigned int level3, float spec_size=5.0f, bool ambient=true, bool diffuse=true, bool specular=true);
+			   unsigned int level3, float spec_size=5.0f, bool ambient=true, bool diffuse=true, bool specular=false);
   IMPORT ML spotlight_shader(EveryApi &ev, ML mainloop,
 			     int light_color_id, MN move);
   IMPORT ML ambient_shader(EveryApi &ev, ML mainloop,
@@ -2266,9 +2292,12 @@ public:
   IMPORT PP function(std::function<PT (int idx)> f, int num_points, float px, float py, float sx, float sy);
   IMPORT PP color_function(PP pl, std::function<unsigned int (int idx)> f);
   IMPORT PP polygon(std::vector<PT> vec);
+  IMPORT PP polygon2(PTS pts); // kills z
   IMPORT PP color(PP p, unsigned int color);
   IMPORT PP trans(PP pl, float dx, float dy);
-  IMPORT PP or_elem(PP p1, PP p2);
+  IMPORT std::vector<PP> single_elem(PP p1);
+  IMPORT std::vector<PP> or_elem(PP p1, PP p2);
+  IMPORT std::vector<PP> or_elem(std::vector<PP> p1, std::vector<PP> p2);
   IMPORT PP cicle(PT center, float radius, int numpoints);
   IMPORT PP star(PT center, float radius_1, float radius_2, int numpoints);
   
