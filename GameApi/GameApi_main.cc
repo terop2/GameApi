@@ -727,6 +727,51 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 
   return e2;
 }
+class SeqML : public MainLoopItem
+{
+public:
+  SeqML(std::vector<MainLoopItem*> vec, float time) : vec(vec), time(time) { num2 = -1; }
+  virtual void execute(MainLoopEnv &e)
+  {
+    float num = e.time*10.0/time;
+    num2 = (int)num;
+    float newtime = fmod(e.time,time/10.0);
+    MainLoopEnv ee = e;
+    ee.time = newtime;
+    int s = vec.size();
+    if (num2>=0 && num2<s) {
+      vec[num2]->execute(ee);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    int s = vec.size();
+    if (num2>=0 && num2<s) {
+      vec[num2]->handle_event(e);
+    }
+  }
+  virtual int shader_id() {
+    int s = vec.size();
+    if (num2>=0 && num2<s) {
+      return vec[num2]->shader_id();
+    } else { return -1; }
+  }
+private:
+  std::vector<MainLoopItem*> vec;
+  float time;
+  int num2;
+};
+GameApi::ML GameApi::MainLoopApi::seq_ml(std::vector<ML> vec, float time)
+{
+  int s = vec.size();
+  std::vector<MainLoopItem*> vec2;
+  for(int i=0;i<s;i++)
+    {
+      MainLoopItem *item = find_main_loop(e, vec[i]);
+      vec2.push_back(item);
+    }
+  return add_main_loop(e, new SeqML(vec2, time));
+}
 void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH texture_2d, SH array_texture, M in_MV, M in_T, M in_N, int screen_size_x, int screen_size_y)
 {
   MainLoopItem *item = find_main_loop(e, ml);

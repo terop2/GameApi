@@ -92,3 +92,4 @@ public:
   virtual Coords Coordinates() const=0;
 #endif
 };
+

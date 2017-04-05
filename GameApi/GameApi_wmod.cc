@@ -86,10 +86,13 @@ GameApiModule load_gameapi(std::string filename)
 	  ss4 >> mod_name;
 	  std::string uid;
 	  ss4 >> uid;
+	  bool is_array;
+	  ss4 >> is_array;
 	  g_line.x = x;
 	  g_line.y = y;
 	  g_line.uid = uid;
 	  g_line.module_name = mod_name;
+	  g_line.array_return = is_array;
 	  std::string name_value;
 	  while(ss4>>name_value)
 	    {
@@ -98,9 +101,25 @@ GameApiModule load_gameapi(std::string filename)
 	      //std::cout << name_value << std::endl;
 	      int s = name_value.size();
 	      int i = 0;
+	      int i1=0,i2=0,i3=0;
 	      for(;i<s;i++) { if (name_value[i]==':') break; }
-	      p.param_name = name_value.substr(0, std::max(i,0));
-	      p.value = unhexify(name_value.substr(i+1, s-i-1));
+	      i1 = i;
+	      i++;
+	      for(;i<s;i++) { if (name_value[i]==':') break; }
+	      i2 = i;
+	      i++;
+	      for(;i<s;i++) { if (name_value[i]==':') break; }
+	      i3 = 3;
+	      p.param_name = name_value.substr(0, std::max(i1,0));
+	      p.value = unhexify(name_value.substr(i1+1, i2-i1-1));
+	      std::string is_array_str = name_value.substr(i2+1, i3-i2-1);
+	      if (is_array_str=="true") { p.is_array = true; }
+	      std::string array_target_str = name_value.substr(i3+1, s-i3-1);
+	      int array_index = -1;
+	      std::stringstream ss(array_target_str);
+	      ss >> array_index;
+	      GameApiLine *array_line = p.is_array && array_index != -1 ? &f.lines[array_index] : NULL;
+	      p.array_return_target = array_line;
 	      //std::cout << "Name: " << p.param_name << " Value: " << p.value << std::endl;
 	      g_line.params.push_back(p);
 	    }
@@ -141,7 +160,7 @@ void save_gameapi(const GameApiModule &mod, std::string filename)
       for(int k=0;k<s4;k++)
 	{
 	  const GameApiLine &line = func.lines[k];
-	  ss << '(' << line.x << "," << line.y << ')' << line.module_name << " " << line.uid;
+	  ss << '(' << line.x << "," << line.y << ')' << line.module_name << " " << line.uid << " " << line.array_return;
 	  int s = line.params.size();
 	  if (s!=0) ss << " ";
 	  for(int i=0;i<s;i++)
@@ -149,7 +168,13 @@ void save_gameapi(const GameApiModule &mod, std::string filename)
 	      const GameApiParam &p = line.params[i];
 	      std::string name = p.param_name;
 	      std::string value = hexify(p.value);
-	      ss << name << ":" << value;
+	      std::string is_array = p.is_array ? "true" : "false";
+	      int array_line = p.array_return_target ? (p.array_return_target - &func.lines[0])/sizeof(GameApiLine) : -1;
+	      std::stringstream ss2;
+	      ss2 << array_line;
+	      std::string array_line_str = ss2.str();
+	      
+	      ss << name << ":" << value << ":" << is_array << ":" << array_line_str;
 	      if (i!=s-1) ss << " ";
 	    }
 	  ss << std::endl;
@@ -826,6 +851,16 @@ GameApi::CollectResult GameApi::WModApi::collect_nodes(EveryApi &ev, WM mod2, in
 
 }
 #endif
+int env_counter(bool reset)
+{
+  static int i =0;
+  if (reset) i=0;
+  return i++;
+}
+void GameApi::WModApi::codegen_reset_counter()
+{
+  env_counter(true);
+}
 std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level)
 {
   static std::vector<GameApiItem*> vec = all_functions();
@@ -872,8 +907,12 @@ std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mo
 
 	      if (pn.size()==0)
 		{
-		  std::cout << "CODEGEN FAILED at param!" << std::endl;
-		  return std::make_pair("","");
+		  int val = env_counter(false);
+		  std::stringstream ss;
+		  ss << val;
+		  pn = std::string("E") + ss.str();
+		  //std::cout << "CODEGEN FAILED at param!" << std::endl;
+		  //return std::make_pair("","");
 		}
 	      if (pn.size()>3 && pn[0]=='u' && pn[1] == 'i' && pn[2] =='d')
 		{
@@ -897,6 +936,7 @@ std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mo
 		    }
 		  param_type = param_type.substr(1,param_type.size()-2);
 
+		  // ARRAYTODO, HOW TO HANDLE ARRAY RETURN VALUES
 		  
 		  int prev = 1;
 		  std::string ss = "std::vector<" + param_type + ">{";
@@ -1019,6 +1059,7 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
 		  sw << val;
 		  p = sw.str();
 		}
+	      // ARRAYTODO: HOW TO HANDLE ARRAY RETURN VALUES
 	      if (p.size()>1 && p[0]=='[' && p[p.size()-1]==']')
 		{
 		  int prev = 1;
@@ -1131,6 +1172,44 @@ bool GameApi::WModApi::typecheck(WM mod2, int id, std::string uid1, std::string 
   return type1==type2;
 
 }
+int GameApi::WModApi::find_line_index(WM mod2, int id, std::string uid)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+  int s = func->lines.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiLine &line = func->lines[i];
+      if (line.uid == uid)
+	{
+	  return i;
+	}
+    }
+  return -1;
+}
+void GameApi::WModApi::change_param_is_array(WM mod2, int id, std::string uid, int param_index, bool is_array, int ref_line_index)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+  int s = func->lines.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiLine &line = func->lines[i];
+      if (line.uid == uid)
+	{
+	  GameApiParam &param = line.params[param_index];
+	  param.is_array = is_array;
+	  if (ref_line_index != -1)
+	    param.array_return_target = &func->lines[ref_line_index];
+	  else
+	    param.array_return_target = 0;
+	  //std::cout << "Param: " << param.param_name << " changed to " << newvalue << std::endl;
+	}
+    }
+
+}
 void GameApi::WModApi::change_param_value(WM mod2, int id, std::string uid, int param_index, std::string newvalue)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1224,7 +1303,7 @@ std::string GameApi::WModApi::get_funcname(WM mod2, int id, std::string uid)
     }
   return "";
 }
-void GameApi::WModApi::insert_to_mod(WM mod2, int id, std::string modname, std::string uid, int x, int y, std::vector<std::pair<std::string,std::string> > params)
+void GameApi::WModApi::insert_to_mod(WM mod2, int id, std::string modname, std::string uid, bool array_return, int x, int y, std::vector<InsertParam> params)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -1235,12 +1314,26 @@ void GameApi::WModApi::insert_to_mod(WM mod2, int id, std::string modname, std::
   new_line.y = y;
   new_line.module_name = modname;
   new_line.uid = uid;
+  new_line.array_return = array_return;
   int s = params.size();
   for(int i=0;i<s;i++)
     {
-      std::pair<std::string, std::string> p = params[i];
-      GameApiParam pp = { p.first, p.second };
-      new_line.params.push_back(pp);
+      InsertParam p = params[i];
+      if (p.line_index_in_gameapi_function_lines_array != -1) {
+	GameApiParam pp;
+	pp.param_name = p.first;
+	pp.value = p.second;
+	pp.is_array = p.is_array;
+	pp.array_return_target = &func->lines[p.line_index_in_gameapi_function_lines_array];
+	new_line.params.push_back(pp);
+      } else {
+	GameApiParam pp;
+	pp.param_name = p.first;
+	pp.value = p.second;
+	pp.is_array = false;
+	pp.array_return_target = 0;
+	new_line.params.push_back(pp);
+      }
     }
   func->lines.push_back(new_line);
 

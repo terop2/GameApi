@@ -156,7 +156,7 @@ struct Envi {
   SH sh;
 #endif
   SH sh3;
-  int logo_shown = false;
+  int logo_shown = true;
 } env;
 
 std::vector<Pos> possible_moves(WorldObj &o, int x, int y, Envi &e, bool attack);

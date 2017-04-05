@@ -1141,15 +1141,56 @@ public:
 	  }
 	else
 	  {
-	    counts.push_back(count);
-	    counts2.push_back(counter); counter+=count;
-	    for(int i=0;i<count;i++)
+	    int j = count;
+	    int prev = j;
+	    int prev2 = 1;
+	    for(int i=2;i<count/2+1;i++,j--)
 	      {
+		counts.push_back(3);
+		counts2.push_back(counter); counter+=3;
+
+		vec.push_back(coll->FacePoint(f, prev%count));
+		norm.push_back(coll->PointNormal(f,prev%count));
+		color.push_back(coll->Color(f,prev%count));
+		texcoord.push_back(coll->TexCoord(f,prev%count));
+
+		vec.push_back(coll->FacePoint(f,prev2));
+		norm.push_back(coll->PointNormal(f,prev2));
+		color.push_back(coll->Color(f,prev2));
+		texcoord.push_back(coll->TexCoord(f,prev2));
+
+		vec.push_back(coll->FacePoint(f,i));
+		norm.push_back(coll->PointNormal(f,i));
+		color.push_back(coll->Color(f,i+2));
+		texcoord.push_back(coll->TexCoord(f,i));
+
+
+		//i++; j--;
+		//if (i>=count/2) break;
+
+		counts.push_back(3);
+		counts2.push_back(counter); counter+=3;
+
+		vec.push_back(coll->FacePoint(f,j%count));
+		norm.push_back(coll->PointNormal(f,j%count));
+		color.push_back(coll->Color(f,j%count));
+		texcoord.push_back(coll->TexCoord(f,j%count));
+
+		vec.push_back(coll->FacePoint(f,j-1));
+		norm.push_back(coll->PointNormal(f,j-1));
+		color.push_back(coll->Color(f,j-1));
+		texcoord.push_back(coll->TexCoord(f,j-1));
+
 		vec.push_back(coll->FacePoint(f,i));
 		norm.push_back(coll->PointNormal(f,i));
 		color.push_back(coll->Color(f,i));
 		texcoord.push_back(coll->TexCoord(f,i));
+
+		prev--; prev2++;
+
 	      }
+	    
+
 	  }
       }
   }
@@ -2437,6 +2478,25 @@ EXPORT GameApi::P GameApi::PolygonApi::tri_strip(PT *array, int size)
 EXPORT GameApi::P GameApi::PolygonApi::polygon2(std::vector<PT> vec)
 {
   return polygon(&vec[0], vec.size());
+}
+EXPORT GameApi::P GameApi::PolygonApi::polygon3(PTS points)
+{
+  PointsApiPoints *p = find_pointsapi_points(e, points);
+  PolygonElem *coll = new PolygonElem;
+  int sz = p->NumPoints();
+  for(int i=0;i<sz;i++)
+    {
+      Point pp = p->Pos(i);
+      coll->push_back(pp);
+    }
+  FaceCollPolyHandle *handle = new FaceCollPolyHandle;
+  handle->coll = coll;
+  handle->collowned = false;
+  handle->collarray = NULL; 
+  handle->collarrayowned = false;
+
+  return add_polygon(e, handle);
+
 }
 
 EXPORT GameApi::P GameApi::PolygonApi::polygon(PT *array, int size)
@@ -5549,4 +5609,48 @@ GameApi::P GameApi::PolygonApi::flip_normals(P obj)
 {
   FaceCollection *obj2 = find_facecoll(e, obj);
   return add_polygon2(e, new FlipNormals(*obj2),1);
+}
+GameApi::ARR GameApi::PolygonApi::poly_array(std::vector<P> vec)
+{
+  ArrayType *arr = new ArrayType;
+  arr->type = 0;
+  int s = vec.size();
+  for(int i=0;i<s;i++) arr->vec.push_back(vec[i].id);
+  return add_array(e, arr);
+}
+int GameApi::PolygonApi::poly_size(ARR arr)
+{
+  ArrayType *t = find_array(e, arr);
+  return t->vec.size();
+}
+GameApi::P GameApi::PolygonApi::poly_index(ARR arr, int idx)
+{
+  ArrayType *t = find_array(e, arr);
+  int s = t->vec.size();
+  if (idx>=0 && idx<s)
+    {
+      GameApi::P p;
+      p.id = t->vec[idx];
+      return p;
+    }
+  std::cout << "Array index error!" << std::endl;
+  GameApi::P p = empty();
+  return p;
+}
+
+GameApi::ARR GameApi::PolygonApi::poly_execute(EveryApi &ev, ARR arr, std::string gameapi_script)
+{
+  ArrayType *t = find_array(e, arr);
+  int s = t->vec.size();
+  ArrayType *t2 = new ArrayType;
+  t2->type = 0;
+  for(int i=0;i<s;i++)
+    {
+      ExecuteEnv env;
+      env.envmap["E0"] = 0;
+      env.env.push_back( t->vec[i] );
+      std::pair<int, std::string> p = execute_codegen(e, ev, gameapi_script, env);
+      t2->vec.push_back(p.first);
+    }
+  return add_array(e, t2);
 }
