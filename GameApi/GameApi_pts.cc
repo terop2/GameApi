@@ -797,6 +797,121 @@ GameApi::PTS GameApi::PointsApi::random_bitmap_instancing(EveryApi &ev, BB bm, i
    return add_points_api_points(e, new SurfacePoints(points, color2));  
  
 }
+class StandardBox : public PointsApiPoints
+{
+public:
+  StandardBox(int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : sx(sx), sy(sy), sz(sz), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) { }
+  int NumPoints() const { return sx*sy*sz; }
+  Point Pos(int i) const {
+    int x = i/(sy*sz);
+    int x_left = i - x*sy*sz;
+    int y = x_left/sy;
+    int y_left = x_left - y*sy;
+    int z = y_left;
+
+    // these are [0..1]
+    float xx = float(x)/sx;
+    float yy = float(y)/sy;
+    float zz = float(z)/sz;
+
+    float pos_x = start_x + xx*(end_x-start_x);
+    float pos_y = start_y + yy*(end_y-start_y);
+    float pos_z = start_z + zz*(end_z-start_z);
+    Point p = { pos_x, pos_y, pos_z };
+    return p;
+  }
+  unsigned int Color(int i) const { return 0xffffffff; }
+private:
+  int sx,sy,sz;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+};
+GameApi::PTS GameApi::PointsApi::standard_box(int sx, int sy, int sz,
+					      float start_x, float end_x,
+					      float start_y, float end_y,
+					      float start_z, float end_z
+					      )
+{
+  return add_points_api_points(e, new StandardBox(sx,sy,sz,
+						  start_x, end_x,
+						  start_y, end_y,
+						  start_z, end_z
+						  ));
+}
+GameApi::PTS GameApi::PointsApi::matrix_points(PTS orig, M matrix)
+{
+  Matrix m = find_matrix(e, matrix);
+  PointsApiPoints *pts = find_pointsapi_points(e, orig);
+  return add_points_api_points(e, new MatrixPoints(pts, m));
+}
+GameApi::LI GameApi::PointsApi::matrix_display(EveryApi &ev, M matrix)
+{
+  PTS pts = standard_box(10,10,10, -300.0,300.0, -300.0,300.0, -300.0,300.0);
+  PTS pts2 = matrix_points(pts, matrix);
+  LI li = ev.lines_api.from_points2(pts, pts2);
+  return li;
+}
+GameApi::LI GameApi::PointsApi::matrix2_display(EveryApi &ev, M matrix1, M matrix2, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+{
+  PTS pts = standard_box(sx,sy,sz, start_x, end_x, start_y, end_y, start_z,end_z);
+  PTS pts1 = matrix_points(pts, matrix1);
+  PTS pts2 = matrix_points(pts, matrix2);
+  LI li = ev.lines_api.from_points2(pts1, pts2);
+  return li;
+}
+class MovementDisplay : public MainLoopItem
+{
+public:
+  MovementDisplay(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *item, GameApi::MN mn, int count, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : env(env), ev(ev), item(item), mn(mn),sx(sx),sy(sy),sz(sz),start_x(start_x), end_x(end_x),start_y(start_y), end_y(end_y),start_z(start_z), end_z(end_z), count(count)
+  {
+    prev_time.push_back(0.0);
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    float start_time = prev_time.front();
+    float end_time = e.time;
+
+    float s_time = start_time*10.0;
+    float e_time = end_time*10.0;
+    GameApi::M mat = ev.move_api.get_matrix(mn, s_time, ev.mainloop_api.get_delta_time());
+    GameApi::M mat2 = ev.move_api.get_matrix(mn, e_time, ev.mainloop_api.get_delta_time());
+    GameApi::LI li = ev.points_api.matrix2_display(ev, mat, mat2,sx,sy,sz,start_x,end_x,start_y,end_y,start_z,end_z);
+    GameApi::LLA lip = ev.lines_api.prepare(li);
+    GameApi::ML ml = ev.lines_api.render_ml(ev,lip);
+    MainLoopItem *item2 = find_main_loop(env, ml);
+    item2->execute(e);
+    
+    prev_time.push_back(e.time);
+    int s = prev_time.size();
+    if (s>=count) {
+      prev_time.erase(prev_time.begin());
+    }
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual int shader_id() { return item->shader_id(); }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *item;
+  GameApi::MN mn;
+  std::vector<float> prev_time;
+  int sx,sy,sz;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+  int count;
+};
+GameApi::ML GameApi::PointsApi::movement_display(EveryApi &ev, ML ml, MN mn, int count, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new MovementDisplay(e,ev, item, mn,count, sx,sy,sz,start_x,end_x,start_y,end_y,start_z,end_z));
+}
 GameApi::PTS GameApi::PointsApi::random_mesh_quad_instancing(EveryApi &ev, P p, int count)
 {
   FaceCollection *coll = find_facecoll(e, p);

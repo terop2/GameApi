@@ -365,9 +365,11 @@ struct VertexArrayWithPos
 struct PointArray2
 {
   float *array; // 3*numpoints items
+  float *array2_1;
   unsigned int *color_array;
   int numpoints;
   GLuint buffer;
+  GLuint buffer2_1;
   GLuint buffer2;
   GLuint vao[1];
   GLuint pos_buffer;

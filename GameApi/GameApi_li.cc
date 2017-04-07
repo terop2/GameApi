@@ -511,7 +511,8 @@ EXPORT void GameApi::LinesApi::render_inst(LLA l, PTA instances)
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, array->buffer);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  glBindBuffer(GL_ARRAY_BUFFER, array->buffer);
+  glEnableVertexAttribArray(4);
+  glBindBuffer(GL_ARRAY_BUFFER, array->buffer2_1);
   glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(2);
   glBindBuffer(GL_ARRAY_BUFFER, array->buffer2);
@@ -536,6 +537,7 @@ EXPORT void GameApi::LinesApi::render_inst(LLA l, PTA instances)
   glDrawArraysInstanced(GL_LINES, 0, array->numpoints, size);
 #ifndef VAO
   glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(4);
   glDisableVertexAttribArray(2);
 #endif
 }
@@ -550,7 +552,7 @@ EXPORT void GameApi::LinesApi::render(LLA l)
   glBindBuffer(GL_ARRAY_BUFFER, array->buffer);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(4);
-  glBindBuffer(GL_ARRAY_BUFFER, array->buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, array->buffer2_1);
   glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(2);
   glBindBuffer(GL_ARRAY_BUFFER, array->buffer2);
@@ -611,6 +613,8 @@ void GameApi::LinesApi::update(LLA lines)
   PointArray2 *arr = find_lines_array(e, lines);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2_1);
+  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array2_1, GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, GL_STATIC_DRAW);
 }
@@ -697,14 +701,18 @@ EXPORT void GameApi::LinesApi::update(LLA la, LI l)
   LineCollection *coll = find_line_array(e, l);
   int count = coll->NumLines();
   float *array = 0;
+  float *array2_1 = 0;
   unsigned int *color_array = 0;
   if (count > 0) {
     array = new float[count*6];
+    array2_1 = new float[count*6];
     color_array = new unsigned int[count*2];
     for(int i=0;i<count;i++)
       {
 	Point p = coll->LinePoint(i,0);
 	Point p2 = coll->LinePoint(i,1);
+	Point k = coll->EndLinePoint(i,0);
+	Point k2 = coll->EndLinePoint(i,1);
 	unsigned int color1 = coll->LineColor(i,0);
 	unsigned int color2 = coll->LineColor(i,1);
 	//std::cout << std::hex << color1 << ";" << std::hex << color2 << std::endl;
@@ -714,13 +722,24 @@ EXPORT void GameApi::LinesApi::update(LLA la, LI l)
 	array[i*6+3] = p2.x;
 	array[i*6+4] = p2.y;
 	array[i*6+5] = p2.z;
+
+	array2_1[i*6+0] = k.x;
+	array2_1[i*6+1] = k.y;
+	array2_1[i*6+2] = k.z;
+	array2_1[i*6+3] = k2.x;
+	array2_1[i*6+4] = k2.y;
+	array2_1[i*6+5] = k2.z;
+
 	color_array[i*2+0] = color1;
 	color_array[i*2+1] = color2;
+
+
 	//std::cout << i << ":" << "(" << p.x << "," << p.y << "," << p.z << ")-(" << p2.x<< "," << p2.y << "," << p2.z << ")" << std::endl;
       }
   }
   PointArray2 *arr = new PointArray2;
   arr->array = array;
+  arr->array2_1 = array2_1;
   arr->color_array = color_array;
   arr->numpoints = count*2;
 #ifdef VAO
@@ -731,13 +750,15 @@ EXPORT void GameApi::LinesApi::update(LLA la, LI l)
   glGenBuffers(1, &arr->buffer2);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2_1);
+  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array2_1, GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, GL_STATIC_DRAW);
 #ifdef VAO
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2_1);
   glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(2);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
@@ -754,14 +775,20 @@ EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
   LineCollection *coll = find_line_array(e, l);
   int count = coll->NumLines();
   float *array = 0;
+  float *array2_1 = 0;
   unsigned int *color_array = 0;
   if (count > 0) {
     array = new float[count*6];
+    array2_1 = new float[count*6];
     color_array = new unsigned int[count*2];
     for(int i=0;i<count;i++)
       {
 	Point p = coll->LinePoint(i,0);
 	Point p2 = coll->LinePoint(i,1);
+	Point k = coll->EndLinePoint(i,0);
+	Point k2 = coll->EndLinePoint(i,1);
+	if (p.x==p2.x && p.y==p2.y && p.z==p2.z)
+	  p2.x+=1.0;
 	unsigned int color1 = coll->LineColor(i,0);
 	unsigned int color2 = coll->LineColor(i,1);
 	//std::cout << std::hex << color1 << ";" << std::hex << color2 << std::endl;
@@ -771,6 +798,14 @@ EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
 	array[i*6+3] = p2.x;
 	array[i*6+4] = p2.y;
 	array[i*6+5] = p2.z;
+
+	array2_1[i*6+0] = k.x;
+	array2_1[i*6+1] = k.y;
+	array2_1[i*6+2] = k.z;
+	array2_1[i*6+3] = k2.x;
+	array2_1[i*6+4] = k2.y;
+	array2_1[i*6+5] = k2.z;
+
 	color_array[i*2+0] = swap_color(color1);
 	color_array[i*2+1] = swap_color(color2);
 	//std::cout << i << ":" << "(" << p.x << "," << p.y << "," << p.z << ")-(" << p2.x<< "," << p2.y << "," << p2.z << ")" << std::endl;
@@ -778,6 +813,7 @@ EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
   }
   PointArray2 *arr = new PointArray2;
   arr->array = array;
+  arr->array2_1 = array2_1;
   arr->color_array = color_array;
   arr->numpoints = count*2;
 #ifdef VAO
@@ -788,16 +824,20 @@ EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
   // END OF INSTANCED RENDERING
 #endif
   glGenBuffers(1, &arr->buffer);
+  glGenBuffers(1, &arr->buffer2_1);
   glGenBuffers(1, &arr->buffer2);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2_1);
+  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array2_1, GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
   glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, GL_STATIC_DRAW);
 #ifdef VAO
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
+  glEnableVertexAttribArray(4);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2_1);
   glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(2);
   glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
