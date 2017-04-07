@@ -7130,6 +7130,40 @@ public:
   {
     return coll;
   }
+  int Lines(int keyframe_gap) const
+  {
+    return -1;
+  }
+  int Points(int keyframe_gap) const
+  {
+    return -1;
+  }
+  Point KeyFramePoint(Point p, int keyframe_gap, int point_num) const
+  {
+    return p;
+  }
+private:
+  int coll;
+};
+
+class KeyFrameLines : public VertexAnimNode
+{
+public:
+  KeyFrameLines(int coll) : coll(coll) { }
+  int NumKeyFrames() { return 2; }
+  virtual float StepDuration(int keyframe_gap) const { return 0.001; }
+  int FaceColl(int keyframe_gap) const
+  {
+    return -1;
+  }
+  int Lines(int keyframe_gap) const
+  {
+    return coll;
+  }
+  int Points(int keyframe_gap) const
+  {
+    return -1;
+  }
   Point KeyFramePoint(Point p, int keyframe_gap, int point_num) const
   {
     return p;
@@ -7142,6 +7176,47 @@ GameApi::KF GameApi::VertexAnimApi::keyframe_mesh(P part)
 {
   return add_vertex_anim(e, new KeyFrameMesh(part.id));
 }
+GameApi::KF GameApi::VertexAnimApi::keyframe_lines(LI part)
+{
+  return add_vertex_anim(e, new KeyFrameLines(part.id));
+}
+class ChangePosLI : public LineCollection
+{
+public:
+  ChangePosLI(LineCollection &coll, LineCollection &orig, PointTransform &trans, float delta_time, bool dif) : coll(coll), orig(orig), trans(trans), delta_time(delta_time),dif(dif) {}
+
+  virtual int NumLines() const { return coll.NumLines(); }
+  virtual Point LinePoint(int line, int point) const
+  {
+    Point p;
+    if (!dif) {
+      p = coll.EndLinePoint(line,point);
+    } else {
+      p = orig.LinePoint(line,point);
+      return trans.Map(p, 0.0);
+    }
+    return p;
+
+  }
+  virtual Point EndLinePoint(int line, int point) const {
+    Point p;
+    if (!dif) {
+      p = coll.EndLinePoint(line,point);
+    } else {
+      p = orig.LinePoint(line,point);
+    }
+    return trans.Map(p, delta_time);
+  }
+  virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; }
+
+  
+private:
+  LineCollection &coll;
+  LineCollection &orig;
+  PointTransform &trans;
+  float delta_time;
+  bool dif;
+};
 
 class ChangePos : public ForwardFaceCollection
 {
@@ -7176,6 +7251,14 @@ private:
   float delta_time;
   bool dif;
 };
+
+GameApi::LI GameApi::VertexAnimApi::change_pos_li(LI p, LI orig, PTT transform, float delta_time, bool different_pos)
+{
+  LineCollection *li = find_line_array(e, p);
+  LineCollection *orig2 = find_line_array(e, orig);
+  PointTransform *trans = find_point_transform(e, transform);
+  return add_line_array(e, new ChangePosLI(*li, *orig2, *trans, delta_time, different_pos));
+}
 
 GameApi::P GameApi::VertexAnimApi::change_pos(P p, P orig, PTT transform, float delta_time, bool different_pos)
 {
@@ -7277,7 +7360,24 @@ public:
     int orig = va->FaceColl(0);
     GameApi::P p = { coll };
     GameApi::P orig2 = { orig };
+    if (coll==-1 || orig==-1) {
+      return -1;
+    }
     GameApi::P p2 = ev.vertex_anim_api.change_pos(p, orig2, pt, delta_time, dif);
+    return p2.id;
+  }
+  int Lines(int keyframe_gap) const
+  {
+    int prev_count = va->NumKeyFrames();
+    if (keyframe_gap < prev_count) { return va->Lines(keyframe_gap); }
+    int lines = va->Lines(prev_count-1);
+    int orig = va->Lines(0);
+    GameApi::LI p = { lines };
+    GameApi::LI orig2 = { orig };
+    if (lines==-1||orig==-1) {
+      return -1;
+    }
+    GameApi::LI p2 = ev.vertex_anim_api.change_pos_li(p, orig2, pt, delta_time,dif);
     return p2.id;
   }
 private:
@@ -7481,6 +7581,17 @@ public:
 	vec.push_back(p);
       }
     ranges = vec;
+
+    std::vector<GameApi::LI> vec2;
+    int s2 = va->NumKeyFrames();
+    for(int i=0;i<s2;i++)
+      {
+	int coll = va->Lines(i);
+	GameApi::LI li = { coll };
+	vec2.push_back(li);
+      }
+    li_ranges = vec2;
+
   }
   void Prepare_2()
   {
@@ -7488,9 +7599,34 @@ public:
     int s = ranges.size();
     for(int i=0;i<s;i++)
       {
-	vas.push_back(ev.polygon_api.create_vertex_array(ranges[i]));
+	GameApi::P p1 = ranges[i];
+	if (p1.id==-1) {
+	  GameApi::VA va;
+	  va.id = -1;
+	  vas.push_back(va);
+	} else {
+	  GameApi::VA va = ev.polygon_api.create_vertex_array(p1);
+	  vas.push_back(va);
+	}
       }
     ranges2 = vas;
+
+    std::vector<GameApi::LLA> vas2;
+    int s2 = li_ranges.size();
+    for(int i=0;i<s2;i++)
+      {
+	GameApi::LI li = li_ranges[i];
+	if (li.id==-1) {
+	  GameApi::LLA lla;
+	  lla.id = -1;
+	  vas2.push_back(lla);
+	} else {
+	  GameApi::LLA lla = ev.lines_api.prepare(li);
+	  vas2.push_back(lla);
+	}
+      }
+    li_ranges2 = vas2;
+
   }
   int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
@@ -7499,7 +7635,8 @@ public:
   void execute(MainLoopEnv &e) 
   {
     if (ranges2.size()<1) { return; }
-    GameApi::SH sh;
+    GameApi::SH sh = { e.sh_color };
+    if (ranges2[0].id!=-1) {
     if (ev.polygon_api.is_texture(ranges2[0]))
       {
 	sh.id = e.sh_texture;
@@ -7512,6 +7649,7 @@ public:
       {
 	sh.id = e.sh_color;
       }
+    }
 
     GameApi::US u_v;
     GameApi::US u_f;
@@ -7530,6 +7668,7 @@ public:
       }
 
 #if 1
+    if (ranges2[0].id!=-1) {
     if (ev.polygon_api.is_texture(ranges2[0]))
       {
 	sh.id = e.sh_texture;
@@ -7569,6 +7708,7 @@ public:
 	      }
 	  }
       }
+    }
 #endif
     if (shader.id==-1 && e.us_vertex_shader!=-1 && e.us_fragment_shader!=-1)
       {
@@ -7638,8 +7778,11 @@ public:
       if (!end)
 	ev.shader_api.set_var(sh, "in_POS", (time - currenttime)/step_size); 
       else
-	ev.shader_api.set_var(sh, "in_POS", 1.0f); 
-      ev.polygon_api.render_vertex_array(ranges2[choose]);
+	ev.shader_api.set_var(sh, "in_POS", 1.0f);
+      if (ranges2[choose].id != -1)
+	ev.polygon_api.render_vertex_array(ranges2[choose]);
+      if (li_ranges2[choose].id != -1)
+	ev.lines_api.render(li_ranges2[choose]);
     }
   }
 private:
@@ -7648,6 +7791,8 @@ private:
   VertexAnimNode *va;
   std::vector<GameApi::P> ranges;
   std::vector<GameApi::VA> ranges2;
+  std::vector<GameApi::LI> li_ranges;
+  std::vector<GameApi::LLA> li_ranges2;
   bool firsttime;
   //GameApi::SH sh;
   GameApi::SH shader;
@@ -7677,6 +7822,12 @@ public:
     int s = next->NumKeyFrames();
     while(keyframe_gap >= s) keyframe_gap-=s;
     return next->FaceColl(keyframe_gap);
+  }
+  virtual int Lines(int keyframe_gap) const
+  {
+    int s = next->NumKeyFrames();
+    while(keyframe_gap >= s) keyframe_gap-=s;
+    return next->Lines(keyframe_gap);
   }
 private:
   VertexAnimNode *next;
@@ -8169,3 +8320,4 @@ GameApi::LI GameApi::MovementNode::cmd_to_li(CMD cmds2, std::string commands)
   CmdExecute *cmds = find_cmds(e, cmds2);
   return add_line_array(e, new CmdLines(cmds, commands));
 }
+

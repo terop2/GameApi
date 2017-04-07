@@ -4285,6 +4285,9 @@ public:
   virtual int NumLines() const =0;
   virtual Point LinePoint(int line, int point) const = 0;
   virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; }
+
+  virtual Point EndLinePoint(int line, int point) const { return LinePoint(line,point); }
+  virtual unsigned int EndLineColor(int line, int point) const { return LineColor(line,point); }
 };
 
 

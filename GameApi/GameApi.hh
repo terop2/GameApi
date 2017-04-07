@@ -1208,6 +1208,7 @@ class VertexAnimApi
 public:
   VertexAnimApi(Env &e) : e(e) { }
   KF keyframe_mesh(P part);
+  KF keyframe_lines(LI part);
   KF keyframe_bind(EveryApi &ev, KF keyframe, PTT pointtransform, float delta_time);
   KF keyframe_bind2(EveryApi &ev, KF keyframe, PTT pointtransform, float delta_time, bool dif);
   KF curve_trans(EveryApi &ev, KF kf, C curve, CPP pos, int numsamples, float duration);
@@ -1229,6 +1230,7 @@ public:
   ML vertex_anim_render(EveryApi &ev, KF kf);
 public:
   P change_pos(P p, P orig, PTT transform, float delta_time, bool dif);
+  LI change_pos_li(LI p, LI orig, PTT transform, float delta_time, bool dif);
 private:
   Env &e;
 };
@@ -1311,6 +1313,7 @@ public:
   CMD cmd_rotate(CMD cmds, float v_x, float v_y, float v_z, float angle, float delta_angle);
   PTS cmd_to_pts(CMD cmds, std::string commands);
   LI cmd_to_li(CMD cmds, std::string commands);
+
 private:
   Env &e;
 };
@@ -2677,6 +2680,12 @@ public:
   IMPORT ML render_ml(EveryApi &ev, PTA array);
   IMPORT void explode(PTA array, float x, float y, float z, float dist);
 
+  IMPORT PTS standard_box(int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
+  IMPORT PTS matrix_points(PTS orig, M matrix);
+  IMPORT LI matrix_display(EveryApi &ev, M matrix);
+  IMPORT LI matrix2_display(EveryApi &ev, M matrix1, M matrix2, int sx,int sy,int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
+  IMPORT ML movement_display(EveryApi &ev, ML ml, MN mn, int count, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
+  
   IMPORT int NumPoints(PTS p);
   IMPORT float pos_x(PTS p, int index);
   IMPORT float pos_y(PTS p, int index);

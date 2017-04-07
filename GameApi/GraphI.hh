@@ -688,6 +688,8 @@ public:
   virtual int NumKeyFrames()=0; // n
   virtual float StepDuration(int keyframe_gap) const=0;
   virtual int FaceColl(int keyframe_gap) const=0;
+  virtual int Lines(int keyframe_gap) const=0;
+  //virtual int Points(int keyframe_gap) const=0;
 };
 class CurvePos
 {

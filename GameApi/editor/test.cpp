@@ -982,6 +982,17 @@ void iter(void *arg)
 			env->gui->delete_widget(env->mem);
 			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->mem);
 		      }
+		    else if (type=="MN")
+		      {
+			MN mn;
+			mn.id = id;
+			M m = env->ev->move_api.get_matrix(mn, 10.0, 0.01);
+			LI p = env->ev->points_api.matrix_display(*env->ev, m);
+			env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
+			env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+			
+		      }
 		    else if (type=="LI")
 		      {
 			LI p;

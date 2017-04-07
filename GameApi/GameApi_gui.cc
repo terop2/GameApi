@@ -1110,6 +1110,8 @@ public:
     Point2d p2 = { 0.0,0.0 };
     set_pos(p2);
     rot_y = 0.0;
+    left = false;
+    right=false;
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
@@ -5607,6 +5609,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "P" },
 			 { "" },
 			 "KF", "vertex_anim_api", "keyframe_mesh"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::keyframe_lines,
+			 "kf_lines",
+			 { "part" },
+			 { "LI" },
+			 { "" },
+			 "KF", "vertex_anim_api", "keyframe_lines"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::keyframe_bind,
 			 "kf_bind",
 			 { "ev", "keyframe", "transform", "delta_time" },
@@ -5710,7 +5718,16 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "MN", "int", "float" },
 			 { "ev", "", "", "1", "10.0" },
 			 "ML", "move_api", "move_ml"));
-
+#if 0
+  // This doesnt work since it eats too much memory.
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::movement_display,
+			 "move_display_ml",
+			 { "ev", "ml", "mn", "frames", "sx","sy","sz","s_x","e_x", "s_y", "e_y", "s_z", "e_z" },
+			 { "EveryApi&", "ML", "MN","int", "int","int","int","float","float", "float","float","float","float" },
+			 { "ev", "", "","30", "10","10","10","-300.0","300.0","-300.0","300.0", "-300.0","300.0" },
+			 "ML", "points_api", "movement_display"));
+#endif
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::repeat_ml,
 			 "repeat_ml",
 			 { "ev", "ml", "duration" },
