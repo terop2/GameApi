@@ -1,0 +1,3 @@
+
+all:
+	g++ test.cpp -std=c++11 -I.. -L.. -o test.exe -lGameApi

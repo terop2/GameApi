@@ -506,7 +506,7 @@ EXPORT GameApi::ML GameApi::BitmapApi::savebitmap_ml(EveryApi &ev, BM bm, std::s
 std::vector<unsigned char> load_from_url(std::string url)
 { // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
 #ifdef WINDOWS
-    std::string cmd = "../curl/curl.exe -s -N --url " + url;
+    std::string cmd = "..\\curl\\curl.exe -s -N --url " + url;
 #else
     std::string cmd = "curl -s -N --url " + url;
 #endif
@@ -518,7 +518,7 @@ std::vector<unsigned char> load_from_url(std::string url)
     if (buffer.size()==0)
       {
 #ifdef WINDOWS
-    std::string cmd = "./curl/curl.exe -s -N --url " + url;
+    std::string cmd = ".\\curl\\curl.exe -s -N --url " + url;
 #else
     std::string cmd = "curl -s -N --url " + url;
 #endif

@@ -6173,6 +6173,109 @@ private:
 typedef FunctionImpl2<FaceCollection*, FaceCollection*, int, int, SplitQuads> SplitQuadsFunction;
 
 
+class OrElem2 : public FaceCollection
+{
+public:
+  OrElem2(FaceCollection *coll1, FaceCollection *coll2) : coll1(coll1), coll2(coll2),s(0),s2(0) { }
+  void Prepare() {
+    coll1->Prepare();
+    coll2->Prepare();
+    s = coll1->NumFaces();
+    s2 = coll1->NumTextures();
+  }
+  int get_index(int face) const
+  {
+    if (face<s) { return face; }
+    return face-s;
+  }
+  FaceCollection *get_elem(int face) const {
+    if (face<s) return coll1;
+    return coll2;
+  }
+  int get_index2(int face) const
+  {
+    if (face<s2) { return face; }
+    return face-s2;
+  }
+  FaceCollection *get_elem2(int face) const {
+    if (face<s2) return coll1;
+    return coll2;
+  }
+  virtual int NumFaces() const { return coll1->NumFaces()+coll2->NumFaces(); }
+  virtual int NumPoints(int face) const
+  {
+    return get_elem(face)->NumPoints(get_index(face));
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return get_elem(face)->FacePoint(get_index(face), point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return get_elem(face)->PointNormal(get_index(face), point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return get_elem(face)->Attrib(get_index(face), point,id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return get_elem(face)->AttribI(get_index(face), point,id);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return get_elem(face)->Color(get_index(face), point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return get_elem(face)->TexCoord(get_index(face), point);
+  }
+  virtual float TexCoord3(int face, int point) const {
+    return get_elem(face)->TexCoord3(get_index(face), point);
+
+  }
+  virtual Point EndFacePoint(int face, int point) const {
+    return get_elem(face)->EndFacePoint(get_index(face), point);
+  }
+  virtual Vector EndPointNormal(int face, int point) const {
+    return get_elem(face)->EndPointNormal(get_index(face), point);
+  }
+  virtual float EndAttrib(int face, int point, int id) const {
+    return get_elem(face)->EndAttrib(get_index(face), point,id);
+  }
+  virtual int EndAttribI(int face, int point, int id) const {
+    return get_elem(face)->EndAttribI(get_index(face), point,id);
+  }
+  virtual unsigned int EndColor(int face, int point) const {
+    return get_elem(face)->EndColor(get_index(face), point);
+  }
+  virtual Point2d EndTexCoord(int face, int point) const {
+    return get_elem(face)->EndTexCoord(get_index(face), point);
+  }
+  virtual float EndTexCoord3(int face, int point) const {
+    return get_elem(face)->EndTexCoord3(get_index(face), point);
+  }
+
+  virtual float Duration() const { return 1.0; }
+
+  virtual int NumTextures() const { return coll1->NumTextures() + coll2->NumTextures(); }
+  virtual void GenTexture(int num) {
+    get_elem2(num)->GenTexture(get_index2(num));
+  }
+  virtual BufferRef TextureBuf(int num) const {
+    return get_elem2(num)->TextureBuf(get_index2(num));
+  }
+  virtual int FaceTexture(int face) const {
+    return get_elem(face)->FaceTexture(get_index(face));
+
+  }
+
+private:
+  FaceCollection *coll1;
+  FaceCollection *coll2;
+  int s;
+  int s2;
+};
 
 template<class T>
 class OrElem : public T /*BoxableFaceCollection*/
@@ -6195,6 +6298,9 @@ public:
     int sum = 0;
     int f = 0;
     int k = 0;
+    int s = NumFaces();
+    faces_cache.reserve(s);
+    faces_num.reserve(s);
     //int faces = NumFaces();
     for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++,k++)
       {

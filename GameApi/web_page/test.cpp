@@ -125,6 +125,8 @@ std::string code=
   "ML I55=ev.move_api.move_ml(ev,I50,I54);\n"
   "ML I56=ev.mainloop_api.array_ml(std::vector<ML>{I24,I55});\n";
 
+std::string homepageurl = "";
+
 std::string strip_spaces(std::string data)
 {
   std::string res;
@@ -212,6 +214,11 @@ int main(int argc, char *argv[]) {
 	  current_arg+=2;
 	  continue;
 	} else
+	if (check_count(cmd_args, current_arg, 2) && cmd_args[current_arg]=="--homepage") {
+	  homepageurl = strip_spaces(cmd_args[current_arg+1]);
+	  current_arg+=2;
+	}
+      else
       if (check_count(cmd_args, current_arg, 3) && cmd_args[current_arg]=="--screenshot")
 	{
 #if 0
@@ -246,6 +253,7 @@ int main(int argc, char *argv[]) {
 
   // initialize window
   ev.mainloop_api.init_window(w_width,w_height);
+  ev.mainloop_api.set_homepage_url(homepageurl);
   ev.shader_api.load_default();
 
   BLK blk = mainloop(e, ev);

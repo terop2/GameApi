@@ -326,10 +326,10 @@ EXPORT void GameApi::Env::free_temp_memory()
 
 }
 
-EXPORT void GameApi::Env::async_load_url(std::string url)
+EXPORT void GameApi::Env::async_load_url(std::string url, std::string homepage)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
-  env->async_loader->load_urls(url);
+  env->async_loader->load_urls(url, homepage);
 }
 EXPORT std::vector<unsigned char> *GameApi::Env::get_loaded_async_url(std::string url)
 {
@@ -5437,6 +5437,19 @@ GameApi::CPP GameApi::CurveApi::xy_sum()
   return add_curve_pos(e, new XYSumCurvePos);
 }
 
+class XYSumCurvePos2 : public CurvePos
+{
+public:
+  XYSumCurvePos2(float xmult, float ymult, float zmult) : xmult(xmult), ymult(ymult), zmult(zmult) { }
+  virtual float FindPos(Point p, float curve_length) const { return  (p.x*xmult+p.y*ymult+p.z*zmult)/(300.0+300.0+300.0)*curve_length; }
+private:
+  float xmult,ymult,zmult;
+};
+GameApi::CPP GameApi::CurveApi::xy_sum2(float xmult, float ymult, float zmult)
+{
+  return add_curve_pos(e, new XYSumCurvePos2(xmult,ymult,zmult));
+}
+
 GameApi::C GameApi::CurveApi::line(PT p1, PT p2)
 {
   Point *pp1 = find_point(e, p1);
@@ -5822,6 +5835,28 @@ private:
   PointsApiPoints *p;
 };
 
+class MSRandomRot : public MatrixArray
+{
+public:
+  MSRandomRot(Point p, int count) : p(p), count(count) { }
+  int Size() const { return count; }
+  Matrix Index(int i) const
+  {
+    Random r;
+    float val = double(r.next())/r.maximum();
+    val*=2.0*3.14159;
+    return Matrix::RotateAroundAxis(Vector(p), val);
+  }
+private:
+  Point p;
+  int count;
+};
+
+GameApi::MS GameApi::MatricesApi::ms_random_rot(float px, float py, float pz, int count)
+{
+  return add_matrix_array(e, new MSRandomRot(Point(px,py,pz), count));
+}
+
 GameApi::MS GameApi::MatricesApi::from_points(PTS pts)
 {
   PointsApiPoints *points = find_pointsapi_points(e, pts);
@@ -5855,6 +5890,22 @@ GameApi::MS GameApi::MatricesApi::mult(MS m, M mat)
   MatrixArray *arr = find_matrix_array(e, m);
   Matrix mm = find_matrix(e, mat);
   return add_matrix_array(e, new MultArray1(arr,mm));
+}
+class MultArray3 : public MatrixArray
+{
+public:
+  MultArray3(MatrixArray *arr1, MatrixArray *arr2) : arr1(arr1), arr2(arr2) { }
+  int Size() const { return std::min(arr1->Size(),arr2->Size()); }
+  Matrix Index(int i) const { return arr1->Index(i)*arr2->Index(i); }
+private:
+  MatrixArray *arr1;
+  MatrixArray *arr2;
+};
+GameApi::MS GameApi::MatricesApi::mult_array(MS m1, MS m2)
+{
+  MatrixArray *arr1 = find_matrix_array(e, m1);
+  MatrixArray *arr2 = find_matrix_array(e, m2);
+  return add_matrix_array(e, new MultArray3(arr1,arr2));
 }
 GameApi::MS GameApi::MatricesApi::mult(M mat, MS m)
 {
@@ -7841,14 +7892,17 @@ GameApi::KF GameApi::VertexAnimApi::repeat_keyframes(KF rep, int count)
 
 std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
 
+std::string striphomepage(std::string);
 void onerror_async_cb(void *arg)
 {
   std::cout << "ERROR: url loading error! " << std::endl;
     char *url = (char*)arg;
     std::string url_str(url);
-    load_url_buffers_async[url_str] = (std::vector<unsigned char>*)-1;
+  std::string url_only(striphomepage(url_str));
+    load_url_buffers_async[url_only] = (std::vector<unsigned char>*)-1;
     async_pending_count--;
 }
+std::string striphomepage(std::string);
 void onload_async_cb(void *arg, void *data, int datasize)
 {
   std::vector<unsigned char> buffer;
@@ -7857,32 +7911,34 @@ void onload_async_cb(void *arg, void *data, int datasize)
   
   char *url = (char*)arg;
   std::string url_str(url);
+  std::string url_only(striphomepage(url_str));
   
   std::cout << "url loading complete! " << url_str << std::endl;
-  load_url_buffers_async[url_str] = new std::vector<unsigned char>(buffer);
+  load_url_buffers_async[url_only] = new std::vector<unsigned char>(buffer);
   async_pending_count--;
 }
 
 std::vector<unsigned char> load_from_url(std::string url);
 
-void ASyncLoader::load_urls(std::string url)
+void ASyncLoader::load_urls(std::string url, std::string homepage)
   {
 #ifdef EMSCRIPTEN
     url = "load_url.php?url=" + url;
+    std::string url3 = url + "&homepage=" + homepage;
 
     std::cout << "url loading started! " << url << std::endl;
 
     // if we have already loaded the same url, don't load again
     if (load_url_buffers_async[url]) { return; }
     
-    char *buf2 = new char[url.size()+1];
-    std::copy(url.begin(), url.end(), buf2);
-    buf2[url.size()]=0;
+    char *buf2 = new char[url3.size()+1];
+    std::copy(url3.begin(), url3.end(), buf2);
+    buf2[url3.size()]=0;
     
     async_pending_count++;
     emscripten_async_wget_data(buf2, (void*)buf2 , &onload_async_cb, &onerror_async_cb);
 #else
-    std::string url2 = "load_url.php?url=" + url;
+    std::string url2 = "load_url.php?url=" + url ;
     if (load_url_buffers_async[url2]) { return; }
     std::vector<unsigned char> buf = load_from_url(url);
     load_url_buffers_async[url2] = new std::vector<unsigned char>(buf);
@@ -8068,11 +8124,12 @@ GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_g
   BM bm = string_display_to_bitmap(sd,0);
   return bm;
 }
+extern std::string gameapi_homepageurl;
 GameApi::FI GameApi::FontApi::load_font(std::string ttf_filename, int sx, int sy)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   void *priv_ = (void*)&env->lib;
-  return add_font_interface(e, new FontInterfaceImpl(e, priv_, ttf_filename, sx,sy));
+  return add_font_interface(e, new FontInterfaceImpl(e, priv_, ttf_filename, gameapi_homepageurl, sx,sy));
 }
 
 class RotateCmds : public CmdExecute

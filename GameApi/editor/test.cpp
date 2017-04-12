@@ -357,14 +357,16 @@ void connect_target(int x, int y, Envi *envi)
 		}
 	      
 	      W start_link = envi->gui->find_canvas_item(envi->canvas, envi->connect_start_uid);
-	      
-	      W link = envi->gui->line( start_link, envi->gui->size_x(start_link),(envi->gui->size_y(start_link)-16)/2+16+5,
-					wid, 0,10, envi->sh2, envi->sh);
-	      std::stringstream ss2;
-	      ss2 << envi->connect_start_uid << " " << uid << " " << real_index; 
-	      envi->gui->set_id(link, ss2.str());
-	      envi->connect_links.push_back(link);
-	      add_to_canvas(*envi->gui, envi->canvas, link);
+	      if (start_link.id!=-1)
+		{
+		  W link = envi->gui->line( start_link, envi->gui->size_x(start_link),(envi->gui->size_y(start_link)-16)/2+16+5,
+					    wid, 0,10, envi->sh2, envi->sh);
+		  std::stringstream ss2;
+		  ss2 << envi->connect_start_uid << " " << uid << " " << real_index; 
+		  envi->gui->set_id(link, ss2.str());
+		  envi->connect_links.push_back(link);
+		  add_to_canvas(*envi->gui, envi->canvas, link);
+		}
 
 	    } else
 	    {
@@ -1190,7 +1192,7 @@ void iter(void *arg)
 		std::cout << "Connect_click" << std::endl;
 		std::string uid = env->gui->get_id(wid);
 		W canvas_item = env->gui->find_canvas_item(env->canvas, uid);
-		
+		if (canvas_item.id==-1) continue;
 		BM bm = env->ev->bitmap_api.newbitmap(2,2);
 		W ico_1 = env->gui->icon(bm);
 		env->connect_widget = env->gui->insert_widget(ico_1, std::bind(&connect_target, _1, _2, env));

@@ -523,7 +523,8 @@ ShaderFile::ShaderFile()
 "#ifdef EX_LIGHTPOS2\n"
 "vec4 diffuse(vec4 pos)\n"
 "{\n"
-"    ex_Normal2 = normalize(vec3(in_T * in_MV * vec4(in_Normal,0.0)));\n"
+    "    ex_Normal2 = normalize(vec3(in_T * in_MV * vec4(in_Normal,0.0)));\n"
+    //"    ex_Normal2 = vec4(mat3(transpose(inverse(in_MV)))*in_Normal, 0.0);\n"
 "    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
 "    return pos;\n"
 "}\n"
@@ -538,7 +539,8 @@ ShaderFile::ShaderFile()
 "vec4 specular(vec4 pos)\n"
 "{\n"
 "    ex_Normal2 = normalize(vec3(in_T * in_MV * vec4(in_Normal,0.0)));\n"
-"    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
+    //"    ex_Normal2 = vec4(mat3(transpose(inverse(in_MV)))*in_Normal, 0.0);\n"
+    "    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
 "    return pos;\n"
 "}\n"
 "#endif\n"
@@ -1240,7 +1242,9 @@ ShaderFile::ShaderFile()
 "#ifdef EX_LIGHTPOS2\n"
 "vec4 diffuse(vec4 pos)\n"
 "{\n"
-"    ex_Normal2 = normalize(vec3(in_T * in_MV * vec4(in_Normal,0.0)));\n"
+
+    "    ex_Normal2 = normalize(vec3(in_T * in_MV * vec4(in_Normal,0.0)));\n"
+    //"    ex_Normal2 = vec4(mat3(transpose(inverse(in_MV)))*in_Normal, 0.0);\n"
 "    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
 "    return pos;\n"
 "}\n"
@@ -1254,7 +1258,8 @@ ShaderFile::ShaderFile()
 "#ifdef EX_LIGHTPOS2\n"
 "vec4 specular(vec4 pos)\n"
 "{\n"
-"    ex_Normal2 = normalize(vec3(in_T * in_MV * vec4(in_Normal,0.0)));\n"
+    "    ex_Normal2 = normalize(vec3(in_T * in_MV * vec4(in_Normal,0.0)));\n"
+    //"    ex_Normal2 = vec4(mat3(transpose(inverse(in_MV)))*in_Normal, 0.0);\n"
 "    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
 "    return pos;\n"
 "}\n"
@@ -2263,7 +2268,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod, vertex_c, v_defines, false);
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);

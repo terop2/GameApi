@@ -17,7 +17,7 @@ struct GlyphData
   FT_Face face;
 };
 
-FontInterfaceImpl::FontInterfaceImpl(GameApi::Env &e, void *priv_, std::string ttf_filename, int sx, int sy) : e(e), ttf_filename(ttf_filename), sx(sx), sy(sy), priv_(priv_), mutex(PTHREAD_MUTEX_INITIALIZER)
+FontInterfaceImpl::FontInterfaceImpl(GameApi::Env &e, void *priv_, std::string ttf_filename, std::string homepage, int sx, int sy) : e(e), ttf_filename(ttf_filename), homepage(homepage), sx(sx), sy(sy), priv_(priv_), mutex(PTHREAD_MUTEX_INITIALIZER)
 { 
   priv = 0;
 }
@@ -59,7 +59,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   }
 
 #ifndef EMSCRIPTEN
-  e.async_load_url(ttf_filename);
+  e.async_load_url(ttf_filename, homepage);
 #endif
   std::stringstream ss2;
   ss2 << "font" << idx << ".ttf";

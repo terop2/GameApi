@@ -907,10 +907,11 @@ EXPORT GameApi::P GameApi::PolygonApi::or_elem(P p1, P p2)
 {
   FaceCollection *pp1 = find_facecoll(e, p1);
   FaceCollection *pp2 = find_facecoll(e, p2);
-  OrElem<FaceCollection> *coll = new OrElem<FaceCollection>;
-  coll->push_back(pp1);
-  coll->push_back(pp2);
-  coll->update_faces_cache();
+  //OrElem<FaceCollection> *coll = new OrElem<FaceCollection>;
+  //coll->push_back(pp1);
+  //coll->push_back(pp2);
+  //coll->update_faces_cache();
+  FaceCollection *coll = new OrElem2(pp1,pp2);
   return add_polygon2(e, coll,1);
 }
  
@@ -5590,6 +5591,21 @@ GameApi::P GameApi::PolygonApi::line_to_cone(EveryApi &ev, LI li, float size, in
     }
   return or_array2(vec);
 }
+GameApi::P GameApi::PolygonApi::static_instancing_matrix(EveryApi &ev, P obj, MS matrix_array)
+{
+  MatrixArray *arr = find_matrix_array(e, matrix_array);
+  int s = arr->Size();
+  std::vector<P> vec;
+  for(int i=0;i<s;i++)
+    {
+      Matrix m = arr->Index(i);
+      M m2 = add_matrix2(e, m);
+      P trans = matrix(obj, m2);
+      vec.push_back(trans);
+    }
+  return or_array2(vec);
+  
+}
 
 GameApi::P GameApi::PolygonApi::static_instancing(EveryApi &ev, P obj, PTS pos)
 {
@@ -5603,6 +5619,33 @@ GameApi::P GameApi::PolygonApi::static_instancing(EveryApi &ev, P obj, PTS pos)
       vec.push_back(trans);
     }
   return or_array2(vec);
+}
+GameApi::P GameApi::PolygonApi::static_instancing_with_color(EveryApi &ev, P obj, BM bm, float start_x, float end_x, float start_y, float end_y, float z)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  b2->Prepare();
+  int sx = b2->SizeX();
+  int sy = b2->SizeY();
+  
+  //int s = obj2->NumPoints();
+  std::vector<P> vec;
+  for(int y=0;y<sy;y++)
+    for(int x=0;x<sx;x++)
+    {
+      Color c = b2->Map(x,y);
+      float xx = float(x)/sx;
+      float yy = float(y)/sy;
+      xx*=(end_x-start_x);
+      yy*=(end_y-start_y);
+      xx+=start_x;
+      yy+=start_y;
+      Point pp(xx,yy,z);
+      P trans = translate(obj, pp.x,pp.y,pp.z);
+      P cc = color(trans, c.Pixel());
+      vec.push_back(cc);
+    }
+  return or_array2(vec);  
 }
 
 GameApi::P GameApi::PolygonApi::flip_normals(P obj)
@@ -5654,3 +5697,4 @@ GameApi::ARR GameApi::PolygonApi::poly_execute(EveryApi &ev, ARR arr, std::strin
     }
   return add_array(e, t2);
 }
+
