@@ -965,3 +965,94 @@ GameApi::PTS GameApi::PointsApi::random_bitmap_edge_instancing(BB bm, float star
 {
 }
 */
+
+class PTSGrid : public PointsApiPoints
+{
+public:
+  PTSGrid(Bitmap<::Color> &bm, float start_x, float end_x, float start_y, float end_y, float z) : bm(bm), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), z(z) { bm.Prepare(); }
+  virtual int NumPoints() const { return bm.SizeX()*bm.SizeY(); }
+  virtual Point Pos(int i) const
+  {
+    int y = i / bm.SizeX();
+    int x = i - y*bm.SizeX();
+    float yy = float(y)/bm.SizeY();
+    float xx = float(x)/bm.SizeX();
+    xx*=(end_x-start_x);
+    yy*=(end_y-start_y);
+    xx+=start_x;
+    yy+=start_y;
+    Point p(xx,yy,z);
+    return p;
+  }
+  virtual unsigned int Color(int i) const
+  {
+    int y = i / bm.SizeX();
+    int x = i - y*bm.SizeX();
+    ::Color c = bm.Map(x,y);
+    return c.Pixel();
+  }
+
+private:
+  Bitmap<::Color> &bm;
+  float start_x, end_x, start_y, end_y, z;
+};
+
+GameApi::PTS GameApi::PointsApi::pts_grid(BM bm, float start_x, float end_x, float start_y, float end_y, float z)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  return add_points_api_points(e, new PTSGrid(*b2, start_x, end_x, start_y, end_y, z));
+}
+
+class PTSGridBB : public PointsApiPoints
+{
+public:
+  PTSGridBB(Bitmap<bool> &bb, float start_x, float end_x, float start_y, float end_y, float z) : bb(bb), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), z(z)
+  {
+    bb.Prepare();
+    collect_pixels();
+  }
+  void collect_pixels()
+  {
+    int sx = bb.SizeX();
+    int sy = bb.SizeY();
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++)
+	{
+	  bool b = bb.Map(x,y);
+	  if (b) {
+	    vec_x.push_back(x);
+	    vec_y.push_back(y);
+	  }
+	}
+  }
+  virtual int NumPoints() const { return vec_x.size(); }
+  virtual Point Pos(int i) const
+  {
+    int x = vec_x[i];
+    int y = vec_y[i];
+    float xx = float(x)/bb.SizeX();
+    float yy = float(y)/bb.SizeY();
+    xx *= (end_x-start_x);
+    yy *= (end_y-start_y);
+    xx+=start_x;
+    yy+=start_y;
+    Point p(xx,yy,z);
+    return p;
+  }
+  virtual unsigned int Color(int i) const
+  {
+    return 0xffffffff;
+  }
+private:
+  Bitmap<bool> &bb;
+  std::vector<int> vec_x;
+  std::vector<int> vec_y;
+  float start_x, end_x, start_y, end_y, z;
+};
+
+GameApi::PTS GameApi::PointsApi::pts_grid_bb(BB bb, float start_x, float end_x, float start_y, float end_y, float z)
+{
+  Bitmap<bool> *bb2 = find_bool_bitmap(e, bb)->bitmap;
+  return add_points_api_points(e, new PTSGridBB(*bb2, start_x, end_x, start_y, end_y, z));
+}

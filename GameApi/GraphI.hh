@@ -432,6 +432,10 @@ public:
   virtual void execute(MainLoopEnv &e)=0;
   virtual void handle_event(MainLoopEvent &e)=0;
   virtual int shader_id() { return -1; }
+  virtual void set_vars(std::map<std::string, std::string> vars) { }
+  virtual std::map<std::string, std::string> get_vars() const {
+    return std::map<std::string,std::string>();
+  }
 };
 
 class ExprNode
@@ -723,7 +727,7 @@ public:
 class ASyncLoader
 {
 public:
-  void load_urls(std::string url);
+  void load_urls(std::string url, std::string homepage);
   std::vector<unsigned char> *get_loaded_data(std::string url) const;
 };
 

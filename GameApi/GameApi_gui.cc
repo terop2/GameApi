@@ -3991,7 +3991,7 @@ static std::string unique_id_apiitem()
 }
 
 #ifdef FIRST_PART
-int find_char(std::string line, int start_char, char ch, bool braces=true)
+int find_char(const std::string &line, int start_char, char ch, bool braces=true)
 {
   int s = line.size();
   int level=0;
@@ -4146,13 +4146,26 @@ CodeGenLine parse_codegen_line(std::string line)
   std::cout << "CodeGenLine: " << line2.api_name << " " << line2.func_name << " " << line2.params << std::endl;
   return line2;
 }
+
+std::string striphomepage(std::string url)
+{ 
+  int s = url.size();
+  int i = 0;
+  for(;i<s;i++) if (url[i]=='&') break;
+  std::string res = url.substr(0,i);
+  std::cout << "Url without homepage: " << res << std::endl;
+  return res;
+}
+
 std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
 int async_pending_count = 0;
 void onerror_cb(void *arg)
 {
     char *url = (char*)arg;
     std::string url_str(url);
-    load_url_buffers[url_str] = (std::vector<unsigned char>*)-1;
+      std::string url_only(striphomepage(url_str));
+
+    load_url_buffers[url_only] = (std::vector<unsigned char>*)-1;
     async_pending_count--;
 }
 void onload_cb(void *arg, void *data, int datasize)
@@ -4164,8 +4177,9 @@ void onload_cb(void *arg, void *data, int datasize)
 
     char *url = (char*)arg;
     std::string url_str(url);
-
-    load_url_buffers[url_str] = new std::vector<unsigned char>(buffer);
+    std::string url_only(striphomepage(url_str));
+    
+    load_url_buffers[url_only] = new std::vector<unsigned char>(buffer);
     async_pending_count--;
 }
 struct ASyncData
@@ -4178,7 +4192,7 @@ ASyncData async_data[] = { { "font_api", "newfont", 0 },
 			   { "font_api", "load_font", 0 }
 };
 
-void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line)
+void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
 {
   int s = sizeof(async_data)/sizeof(ASyncData);
   for(int i=0;i<s;i++)
@@ -4188,12 +4202,12 @@ void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line)
 	{
 	  int param_num = dt.param_num;
 	  std::string url = line.params[param_num];
-	  e.async_load_url(url);
+	  e.async_load_url(url,homepage);
 	}
     }
 }			 
 
-void LoadUrls(const CodeGenLine &line)
+void LoadUrls(const CodeGenLine &line, std::string homepage)
 {
   if (line.api_name!="bitmap_api" || line.func_name!="loadbitmapfromurl")
     return;
@@ -4202,7 +4216,7 @@ void LoadUrls(const CodeGenLine &line)
   std::string url = line.params[0];
   std::cout << "loading url: " << url << std::endl;
 
-  url = "load_url.php?url=" + url;
+  url = "load_url.php?url=" + url + "&homepage=" + homepage;
 
     char *buf2 = new char[url.size()+1];
     std::copy(url.begin(), url.end(), buf2);
@@ -4212,23 +4226,32 @@ void LoadUrls(const CodeGenLine &line)
     emscripten_async_wget_data(buf2, (void*)buf2 , &onload_cb, &onerror_cb);
 #endif
 }
-std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, std::string text, int &error_line_num)
+std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev, std::string text, int &error_line_num)
 {
   int idx = 0;
   int old_idx = 0;
   int line_num = 0;
   error_line_num = 0;
   std::vector<CodeGenLine> vec;
+  std::vector<GameApiItem*> funcs = all_functions();
+  std::string homepage = ev.mainloop_api.get_homepage_url();
   while((idx=find_char(text, idx, '\n'))!= -1)
     {
       std::string line = text.substr(old_idx, idx-old_idx-1);
       CodeGenLine l = parse_codegen_line(line);
-      CodeGenLineErrorCheck(l, all_functions());
+      CodeGenLineErrorCheck(l, funcs);
       if (l.return_type=="@") { error_line_num = line_num; return std::vector<CodeGenLine>(); }
-      LoadUrls(l);
-      LoadUrls_async(env,l);
+      LoadUrls(l, homepage);
+      LoadUrls_async(env,l, homepage);
       vec.push_back(l);
       line_num++;
+#if 1
+      if (line_num > 400) {
+	// quick exit if line_num is larger than 400, for line number misuse.
+	std::cout << "Number of lines in CodeGen is limited to 400 lines" << std::endl;
+	exit(0);
+      }
+#endif
       old_idx = idx+1;
       idx++;
     }
@@ -4431,7 +4454,7 @@ std::string ToString(int num)
 std::pair<int,std::string> GameApi::execute_codegen(GameApi::Env &env, GameApi::EveryApi &ev, std::string text, GameApi::ExecuteEnv &e)
 {
   int error_line_num = 0;
-  std::vector<CodeGenLine> vec = parse_codegen(env, text, error_line_num);
+  std::vector<CodeGenLine> vec = parse_codegen(env, ev, text, error_line_num);
   if (vec.size()==0) {
     return std::make_pair(0,std::string("Error at line ") + ToString(error_line_num));
   }
@@ -5542,7 +5565,7 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "m_snow",
 			 { "ev", "nxt", "color1", "color2", "color3", "mix_val" },
 			 { "EveryApi&", "MT", "unsigned int", "unsigned int", "unsigned int", "float" },
-			 { "ev", "", "ffaaaaaa", "ffeeeeee", "ffffffff", "0.5" },
+			 { "ev", "", "ffaaaaaa", "ffeeeeee", "ffffffff", "0.95" },
 			 "MT", "materials_api", "snow"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::flat,
 			 "m_flat",
@@ -5711,7 +5734,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "[ML]", "float" },
 			 { "", "30.0" },
 			 "ML", "mainloop_api", "seq_ml"));
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::collision_detection,
+			 "collision_ml",
+			 { "ev", "player_size", "player_pos", "player_trans", "enemy_size", "enemy_pos", "enemy_trans", "normal_game", "gameover_screen" },
+			 { "EveryApi&", "float", "PT", "MN", "float", "PTS", "MN", "ML", "ML" },
+			 { "ev", "100.0", "", "", "10.0", "", "", "", "" },
+			 "ML", "mainloop_api", "collision_detection"));
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::move_ml,
 			 "move_ml",
 			 { "ev", "ml", "mn", "clone_count", "time_delta" },
@@ -6201,6 +6230,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "EveryApi&", "P", "PTS" },
 			 { "ev", "", "" },
 			 "P", "polygon_api", "static_instancing"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::static_instancing_with_color,
+			 "static_inst_color",
+			 { "ev", "obj", "bm", "start_x", "end_x", "start_y", "end_y", "z" },
+			 { "EveryApi&", "P", "BM", "float", "float", "float", "float", "float" },
+			 { "ev", "", "", "-200.0", "200.0", "-200.0", "200.0", "0.0" },
+			 "P", "polygon_api", "static_instancing_with_color"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_map,
 			 "color_map",
 			 { "bm", "sx", "sy", "z" },
@@ -6840,6 +6875,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { },
 			 { },
 			 "CPP", "curve_api", "xy_sum"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::xy_sum2,
+			 "cpp_sum2",
+			 { "xmult", "ymult", "zmult" },
+			 { "float", "float", "float" },
+			 { "1.0", "1.0", "1.0" },
+			 "CPP", "curve_api", "xy_sum2"));
 
   return vec;
 }
@@ -6924,6 +6965,18 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "EveryApi&", "P", "int" },
 			 { "ev", "", "300" },
 			 "PTS", "points_api", "random_mesh_quad_instancing"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::pts_grid,
+			 "pts_grid",
+			 { "bm", "start_x", "end_x", "start_y", "end_y", "z" },
+			 { "BM", "float", "float", "float", "float", "float" },
+			 { "", "-200.0", "200.0", "-200.0", "200.0", "0.0" },
+			 "PTS", "points_api", "pts_grid"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::pts_grid_bb,
+			 "pts_grid_bb",
+			 { "bb", "start_x", "end_x", "start_y", "end_y", "z" },
+			 { "BB", "float", "float", "float", "float", "float" },
+			 { "", "-200.0", "200.0", "-200.0", "200.0", "0.0" },
+			 "PTS", "points_api", "pts_grid_bb"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::from_points,
 			 "ms_from_points",
@@ -6931,12 +6984,30 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "PTS" },
 			 { "" },
 			 "MS", "matrices_api", "from_points"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::mult_array,
+			 "ms_mult",
+			 { "m1", "m2" },
+			 { "MS", "MS" },
+			 { "","" },
+			 "MS", "matrices_api", "mult_array"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::ms_random_rot,
+			 "ms_random_rot",
+			 { "px", "py", "pz", "count" },
+			 { "float", "float", "float", "int" },
+			 { "0.0", "1.0", "0.0", "30" },
+			 "MS", "matrices_api", "ms_random_rot"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::subarray,
 			 "ms_subarray",
 			 { "ms", "start", "count" },
 			 { "MS", "int", "int" },
 			 { "", "0", "0" },
 			 "MS", "matrices_api", "subarray"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::static_instancing_matrix,
+			 "ms_static_inst",
+			 { "ev", "obj", "matrices" },
+			 { "EveryApi&", "P", "MS" },
+			 { "ev", "", "" },
+			 "P", "polygon_api", "static_instancing_matrix"));
   return vec;
 }
 std::vector<GameApiItem*> floatbitmapapi_functions()
@@ -7815,6 +7886,23 @@ void GameApi::GuiApi::delete_widget(W w)
 {
   GuiWidget *ww = new EmptyWidget(ev);
   add_update_widget(e, w, ww);
+}
+
+std::vector<std::pair<std::string,std::string> > GameApi::GuiApi::get_functions_mapping()
+{
+  std::vector<std::pair<std::string,std::string> > vec;
+
+  std::vector<GameApiItem*> funcs = all_functions();
+  int s = funcs.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiItem *i2 = funcs[i];
+      std::string apiname = i2->ApiName(0);
+      std::string funcname = i2->FuncName(0);
+      std::string name = i2->Name(0);
+      vec.push_back(std::make_pair(apiname + "." + funcname,name));
+    }
+  return vec;
 }
 
 #endif

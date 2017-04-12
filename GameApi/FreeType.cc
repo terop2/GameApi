@@ -142,7 +142,7 @@ void FontGlyphBitmap::check_load()
   if (!priv || state==1) {
 #ifndef EMSCRIPTEN
   // This is done in GameApi_gui.cc if we're inside emscripten
-  e.async_load_url(filename);
+    e.async_load_url(filename,"");
 #endif
   std::vector<unsigned char> *ptr = e.get_loaded_async_url(filename);
   if (!ptr) { return; } else {

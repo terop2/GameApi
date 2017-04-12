@@ -761,6 +761,78 @@ private:
   float time;
   int num2;
 };
+class CollisionDetection : public MainLoopItem
+{
+public:
+  CollisionDetection(GameApi::EveryApi &ev, float player_size, Point* player_pos, Movement* player_trans,
+		     float enemy_size, PointsApiPoints* enemy_pos, Movement* enemy_trans,
+		     MainLoopItem* normal_game_screen, MainLoopItem *gameover_screen)
+    : ev(ev), player_size(player_size), player_pos(player_pos), player_trans(player_trans), enemy_size(enemy_size), enemy_pos(enemy_pos), enemy_trans(enemy_trans), normal_game_screen(normal_game_screen), gameover_screen(gameover_screen)
+  {
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    Point p = *player_pos;
+    Matrix m = player_trans->get_whole_matrix(e.time*10.0, ev.mainloop_api.get_delta_time());
+    Point pl_pos = p * m;
+
+    int s = enemy_pos->NumPoints();
+    for(int i=0;i<s;i++)
+      {
+	Point p2 = enemy_pos->Pos(i);
+	Matrix m2 = enemy_trans->get_whole_matrix(e.time*10.0, ev.mainloop_api.get_delta_time());
+	Point en_pos = p2 * m2;
+
+	Vector v = pl_pos - en_pos;
+	float d = v.Dist();
+	if (d<player_size+enemy_size)
+	  { // hit
+	    state = 1;  
+	  }
+      }
+
+    
+    if (state==0) { normal_game_screen->execute(e); }
+    else { gameover_screen->execute(e); }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (state==0) { normal_game_screen->handle_event(e); }
+    else { gameover_screen->handle_event(e); }
+  }
+  virtual int shader_id() {
+    if (state==0) { return normal_game_screen->shader_id(); }
+    else { return gameover_screen->shader_id(); }
+  }
+
+private:
+  GameApi::EveryApi &ev;
+  float player_size;
+  Point *player_pos;
+  Movement *player_trans;
+  float enemy_size;
+  PointsApiPoints *enemy_pos;
+  Movement *enemy_trans;
+  MainLoopItem *normal_game_screen;
+  MainLoopItem *gameover_screen;
+private:
+  int state=0;
+};
+GameApi::ML GameApi::MainLoopApi::collision_detection(EveryApi &ev,
+						      float player_size, PT player_pos, MN player_trans,
+						      float enemy_size, PTS enemy_pos, MN enemy_trans,
+						      ML normal_game_screen, ML gameover_screen)
+{
+  Point *ply_pos = find_point(e, player_pos);
+  PointsApiPoints *en_pos = find_pointsapi_points(e, enemy_pos);
+  Movement *ply_trans = find_move(e, player_trans);
+  Movement *en_trans = find_move(e, enemy_trans);
+  MainLoopItem *game_screen = find_main_loop(e, normal_game_screen);
+  MainLoopItem *gameover = find_main_loop(e, gameover_screen);
+  return add_main_loop(e, new CollisionDetection(ev,player_size, ply_pos, ply_trans,
+						 enemy_size, en_pos, en_trans,
+						 game_screen, gameover));
+}
 GameApi::ML GameApi::MainLoopApi::seq_ml(std::vector<ML> vec, float time)
 {
   int s = vec.size();
@@ -1007,4 +1079,14 @@ GameApi::M GameApi::MainLoopApi::in_MV(EveryApi &ev, bool is_3d)
     {
       return ev.matrix_api.identity();      
     }
+}
+std::string gameapi_homepageurl;
+std::string GameApi::MainLoopApi::get_homepage_url()
+{
+  return gameapi_homepageurl;
+}
+void GameApi::MainLoopApi::set_homepage_url(std::string url)
+{
+  std::cout << "Homepage set to: " << url << std::endl;
+  gameapi_homepageurl = url;
 }

@@ -83,8 +83,8 @@ INC6WIN = d:\cvs\freetype\include\freetype2
 INC7WIN = d:\cvs\pthread\pre-built.2\include
 INC8WIN = d:\cvs\SDL2_mixer-2.0.0\i686-w64-mingw32/include/sdl2
 
-CCFLAGS = -ggdb -g -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2 -pthread
-CC2FLAGS = -ggdb -g -std=c++11 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -I$(INC8WIN) -DGLEW_STATIC -pthread
+CCFLAGS = -DWINDOWS -ggdb -g -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2 -pthread
+CC2FLAGS = -DWINDOWS -ggdb -g -std=c++11 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -I$(INC8WIN) -DGLEW_STATIC -pthread
 #`pkg-config gtkmm-2.4 --cflags`
 
 

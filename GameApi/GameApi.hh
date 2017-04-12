@@ -196,7 +196,7 @@ public:
   IMPORT Env();
   IMPORT void free_memory();
   IMPORT void free_temp_memory();
-  IMPORT void async_load_url(std::string url);
+  IMPORT void async_load_url(std::string url, std::string homepage);
   IMPORT std::vector<unsigned char> *get_loaded_async_url(std::string url);
   IMPORT ~Env();
   IMPORT static Env *Latest_Env();
@@ -318,10 +318,17 @@ public:
   void event_ml(ML ml, const Event &e);
   ML array_ml(std::vector<ML> vec);
   ML seq_ml(std::vector<ML> vec, float time);
+  ML collision_detection(EveryApi &ev,
+			 float player_size, PT player_pos, MN player_trans,
+			 float enemy_size, PTS enemy_pos, MN enemy_trans,
+			 ML normal_game_screen, ML gameover_screen);
+
   M in_MV(EveryApi &ev, bool is_3d);
   M in_T(EveryApi &ev, bool is_3d);
   M in_N(EveryApi &ev, bool is_3d);
   M in_P(EveryApi &ev, bool is_3d);
+  std::string get_homepage_url();
+  void set_homepage_url(std::string url);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);
@@ -730,7 +737,7 @@ public:
 
   // curve_pos
   CPP xy_sum();
-
+  CPP xy_sum2(float xmult, float ymult, float zmult);
 private:
   Env &e;
 };
@@ -1500,6 +1507,8 @@ public:
   int pos_y(W w);
   int size_x(W w);
   int size_y(W w);
+
+  std::vector<std::pair<std::string,std::string> > get_functions_mapping();
 private:
   Env &e;
   EveryApi &ev;
@@ -1979,7 +1988,9 @@ public:
 
   IMPORT P line_to_cone(EveryApi &ev, LI li, float size, int numfaces);
   IMPORT P static_instancing(EveryApi &ev, P obj, PTS pos);
-
+  IMPORT P static_instancing_matrix(EveryApi &ev, P obj, MS matrix_array);
+  IMPORT P static_instancing_with_color(EveryApi &ev, P obj, BM bm, float start_x, float end_x, float start_y, float end_y, float z);
+  
   IMPORT P color(P orig, unsigned int color);
   IMPORT P color_voxel(P orig, VX colours, PT p, V u_x, V u_y, V u_z);
   IMPORT P mix_color(P orig, P orig2, float val);
@@ -2629,6 +2640,8 @@ public:
   MS mult(MS m, M mat);
   MS mult(M mat, MS m);
   MS subarray(MS m, int start, int count);
+  MS ms_random_rot(float px, float py, float pz, int count);
+  MS mult_array(MS m1, MS m2);
 private:
   Env &e;
 };
@@ -2645,6 +2658,8 @@ public:
 			float start_x, float start_y, float start_z,
 			float end_x, float end_y, float end_z);
   IMPORT PTS color_points(PTS p, unsigned int color);
+  IMPORT PTS pts_grid(BM bm, float start_x, float end_x, float start_y, float en_y, float z);
+  IMPORT PTS pts_grid_bb(BB bb, float start_x, float end_x, float start_y, float en_y, float z);
   IMPORT PTS or_points(PTS p1, PTS p2);
   IMPORT PTS heightmap(BM colour, FB floatbitmap, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
   IMPORT PTS random_plane(PT pos, V u_x, V u_y, int numpoints);
