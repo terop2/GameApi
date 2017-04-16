@@ -1667,6 +1667,7 @@ int main(int argc, char *argv[]) {
       items.push_back(gui.waveformapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.blockerapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
 
+#ifdef WINDOWS
       int s = env.dlls.size();
       for(int ii=0;ii<s;ii++)
 	{
@@ -1683,6 +1684,7 @@ int main(int argc, char *argv[]) {
 	  W w = functions_widget(gui, apiname, vec, atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips);
 	  items.push_back(w);
 	}
+#endif
     }
   W array = gui.array_y(&items[0], items.size(), 5);
   W scroll_area = gui.scroll_area(array, gui.size_x(array), screen_y-30, screen_y);

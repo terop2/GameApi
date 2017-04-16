@@ -8022,14 +8022,6 @@ public:
 };
 
 
-class PointsApiPoints
-{
-public:
-  virtual int NumPoints() const=0;
-  virtual Point Pos(int i) const=0;
-  virtual unsigned int Color(int i) const=0;
-  virtual ~PointsApiPoints() {}
-};
 
 class SpacePoints : public PointsApiPoints
 {

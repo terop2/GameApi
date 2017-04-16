@@ -1785,11 +1785,42 @@ float Solve(const Function<float, float> &func, float t_0, float t_1)
   for(;t<t_1;)
     {
       float Ht = func.Index(t);
-      if (Ht < 0.1) return t;
-      t += Ht / 20.0;
+      if (fabs(Ht) < 0.001) return t;
+      t += fabs(Ht) / 5.0;
     }
-  return t_0;
+  return t_1;
 }
+
+ClosestDistanceFromCurve::DistRes ClosestDistanceFromCurve::MinDistanceFromCurve(Curve<Point> &p, Point center, float derivative_step) const
+  {
+    float old_res = 0.0;
+    float min_res = 0.0;
+    float min_val = 6000000.0;
+    while(1) {
+      Curve<Point> &p2 = p; // (x) -> (x,y,z)
+      Distance4 d(center); // (x,y,z)->(d)
+      FuncCompose<Point> comp(p2, d);
+      Derivate df(comp, derivative_step);
+      float res = Solve(df, old_res+0.01, p2.Size());
+      //std::cout << res << std::endl;
+      old_res = res;
+      float dist = comp.Index(res);
+      if (dist < min_val) { min_res = res; min_val = dist; }
+      //if (res>=p2.Size() || fabs(res-(old_res+0.01))<0.0001) { break; }
+      break;
+    }
+    Curve<Point> &p2 = p; // (x) -> (x,y,z)
+    Distance4 d(center); // (x,y,z)->(d)
+    FuncCompose<Point> comp(p2, d);
+    float dist = comp.Index(min_res);
+    Point p3 = p2.Index(min_res);
+    DistRes res2;
+    res2.distance = dist;
+    res2.pos = p3;
+    res2.pos_in_curve = min_res;
+    return res2;
+  }
+
 
 float SolveWithFailure(const Function<float, float> &func, float t_0, float t_1, bool &success)
 {

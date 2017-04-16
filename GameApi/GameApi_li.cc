@@ -1103,6 +1103,30 @@ GameApi::LI GameApi::LinesApi::twist_y(LI li, float y_0, float angle_per_y_unit)
   return add_line_array(e, new TwistLines(lines, y_0, angle_per_y_unit));  
 }
 
+class Fur2 : public LineCollection
+{
+public:
+  Fur2(PointsApiPoints *pts, Point center, float dist) : pts(pts), center(center), dist(dist) { }
+  virtual int NumLines() const { return pts->NumPoints(); }
+  virtual Point LinePoint(int line, int point) const
+  {
+    if (point==0) { return pts->Pos(line); }
+    Point p = pts->Pos(line);
+    Vector dir = p - center;
+    dir/=dir.Dist();
+    dir*=dist;
+    return p + dir;
+  }
+  virtual unsigned int LineColor(int line, int point) const {
+    return pts->Color(line);
+  }
+  
+private:
+  PointsApiPoints *pts;
+  Point center;
+  float dist;
+};
+
 class MeshLines : public LineCollection
 {
 public:
@@ -1124,6 +1148,13 @@ private:
   std::vector<Point> points;
   std::vector<unsigned int> color;
 };
+
+GameApi::LI GameApi::LinesApi::fur(PTS points, PT center, float dist)
+{
+  PointsApiPoints *pts = find_pointsapi_points(e, points);
+  Point *pt = find_point(e, center);
+  return add_line_array(e, new Fur2(pts, *pt, dist));
+}
 
 GameApi::LI GameApi::LinesApi::random_mesh_quad_lines(EveryApi &ev, P p, int count)
 {
@@ -1171,4 +1202,44 @@ GameApi::LI GameApi::LinesApi::random_mesh_quad_lines(EveryApi &ev, P p, int cou
 	}
     }
   return add_line_array(e, new MeshLines(*points, *color2));
+}
+
+class RandomAngleLines : public LineCollection
+{
+public:
+  RandomAngleLines(LineCollection *coll, float max_angle) : coll(coll), max_angle(max_angle) { }
+  virtual int NumLines() const { return coll->NumLines(); }
+  virtual Point LinePoint(int line, int point) const
+  {
+    if (point==0) return coll->LinePoint(line, 0);
+    Random r;
+    float angle1 = double(r.next())/r.maximum();
+    float angle2 = double(r.next())/r.maximum();
+    angle1*=max_angle;
+    angle2*=2.0*3.14159;
+
+    Point p1 = coll->LinePoint(line,0);
+    Point p2 = coll->LinePoint(line,1);
+    Vector v = p2-p1;
+    Vector v2 = { 0.0, 1.0, 0.0 };
+    Vector xx = Vector::CrossProduct(v,v2);
+    Matrix m = Matrix::RotateAroundAxis(xx, angle1);
+    Vector v3 = v*m;
+    Matrix m2 = Matrix::RotateAroundAxis(v, angle2);
+    Vector v4 = v3*m2;
+    Point p3 = p1 + v4;
+    return p3;
+  }
+  virtual unsigned int LineColor(int line, int point) const { return coll->LineColor(line,point); }
+
+private:
+  LineCollection *coll;
+  float max_angle;
+};
+
+GameApi::LI GameApi::LinesApi::random_angle(LI lines, float max_angle)
+{
+  LineCollection *lines2 = find_line_array(e, lines);
+  return add_line_array(e, new RandomAngleLines(lines2, max_angle));
+
 }

@@ -1133,8 +1133,11 @@ public:
   ML bind(P p, MT mat);
   ML bind_inst(P p, PTS pts, MT mat);
   ML bind_inst2(P p, PTA pta, MT mat);
+  ML bind_inst_fade(P p, PTS pts, MT mat, bool flip, float start_time, float end_time);
   ML render_instanced_ml(EveryApi &ev, P p, PTS pts);
+  ML render_instanced_ml_fade(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time);
   ML render_instanced2_ml(EveryApi &ev, VA va, PTA pta);
+  ML render_instanced2_ml_fade(EveryApi &ev, VA va, PTA pta, bool flip, float start_time, float end_time);
 
   //ML snow(EveryApi &ev, P p);
   //ML web(EveryApi &ev, P p);
@@ -1415,6 +1418,7 @@ public:
   W list(W *array, int size, int sx, int sy);
   W dialog_item(std::string text, BM icon, int sx, int sy);
   W dialog_border(W item);
+  W copy_paste_dialog(SH sh, W &close_button, FI font, FtA atlas, BM atlas_bm, std::string &edit);
   W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
   W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button, W &mem);
   W va_dialog(VA p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
@@ -1592,6 +1596,8 @@ public:
 
         IMPORT O subvolume(FO f, float start_range, float end_range);
 
+        IMPORT FO min_distance(C curve);
+  
 	IMPORT FO shadow(FD fd, V light_dir, float mint, float maxt, float k);
 
   //FO plus(FO f1, FO f2);
@@ -1946,7 +1952,7 @@ public:
   IMPORT P deform(P obj, O bools, float dx, float dy, float dz);
   IMPORT P flip_normals(P obj);
   IMPORT P color_map2(BM bm, PT pos, V u_x, V u_y);
-  IMPORT P color_map(BM bm, float sx, float sy, float z);
+  IMPORT P color_map(BM bm, float start_x, float end_x, float start_y, float end_y, float z);
   IMPORT P color_map3(BM bm, FB height, PT pos, V u_x, V u_y);
   IMPORT P color_map3(BM bm, FB height, float sx, float sy, float z);
   IMPORT P color_map3_cyl(BM bm, FB height, PT pos, V u_x, V u_y);
@@ -2121,7 +2127,7 @@ public:
   IMPORT VA create_vertex_array_attribs(P p, bool keep,std::vector<int> attribs, std::vector<int> attribi); // slow
   IMPORT void render_vertex_array(VA va); // fast
   IMPORT void prepare_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh);
-  IMPORT void render_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh); // fast
+  IMPORT void render_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh, int hide_n = -1); // fast
   IMPORT ML render_vertex_array_ml(EveryApi &ev, VA va);
   IMPORT ML render_vertex_array_ml2(EveryApi &ev, P va);
   IMPORT ML dist_field_mesh_shader(EveryApi &ev, ML mainloop, SFO sfo);
@@ -2672,6 +2678,7 @@ public:
 		     float start_v, float end_v,
 		     float step_u, float step_v);
   IMPORT PTS from_volume(O o, PT pos, V u_x, V u_y, V u_z, int sx, int sy, int sz);
+  IMPORT PTS anim_mix(PTS o1, PTS o2, float start_val, float end_val, float start_time, float end_time);
   IMPORT PTS move(PTS obj, float dx, float dy, float dz);
   IMPORT PTS scale(PTS obj, float sx, float sy, float sz);
   IMPORT PTS rot_x(PTS obj, float angle);
@@ -2690,7 +2697,8 @@ public:
   float *point_access(PTA pta, int pointnum); // use ptr[0], ptr[1] and ptr[2] to access the x,y,z coordinate
   IMPORT void set_point(PTA pta, int pointnum, float x, float y, float z);
   //unsigned int *color_access(PTA pta, int pointnum);
-  //void update(PTA array);
+  void update_from_data(PTA array, PTS p);
+  void update(PTA array);
   IMPORT void render(PTA array);
   IMPORT ML render_ml(EveryApi &ev, PTA array);
   IMPORT void explode(PTA array, float x, float y, float z, float dist);
@@ -2742,9 +2750,11 @@ public:
   IMPORT LI roty(LI lines, float angle);
   IMPORT LI rotz(LI lines, float angle);
   IMPORT P line_product(LI lines1, LI lines2);
+  IMPORT LI fur(PTS pts, PT center, float dist);
   IMPORT LI split_lines(LI lines, float dist);
   IMPORT LI twist_y(LI lines, float y_0, float angle_per_y_unit);
-
+  IMPORT LI random_angle(LI lines, float max_angle);
+  
   IMPORT LI unit_cube(LI orig, PT pos, V u_x, V u_y, V u_z);
   IMPORT LI unit_to_cube(LI orig, PT pos, V u_x, V u_y, V u_z);
   IMPORT LI unit_to_flex(LI orig, 

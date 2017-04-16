@@ -4184,7 +4184,7 @@ EXPORT void GameApi::PolygonApi::prepare_vertex_array_instanced(ShaderApi &shapi
   PointArray3 *arr = find_point_array3(e, pta);
   rend->prepare_instanced(0, (Point*)arr->array, arr->numpoints);
 }
-EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi, VA va, PTA pta, SH sh)
+EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi, VA va, PTA pta, SH sh, int hide_n)
 {
 #if 0
   VertexArraySet *s = find_vertex_array(e, va);
@@ -4252,7 +4252,12 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       TextureEnable(*env->renders[s->texture_id], 0, true);
       //RenderVertexArray arr(*s);
       //arr.render(0);
-      rend->render_instanced(0, (Point*)arr->array, arr->numpoints);
+      int hide_num = 0;
+      if (hide_n != -1) { hide_num = hide_n; }
+      int show_num = arr->numpoints-hide_num;
+      show_num = std::max(0,show_num);
+      show_num = std::min(arr->numpoints, show_num);
+      rend->render_instanced(0, (Point*)arr->array, show_num);
       TextureEnable(*env->renders[s->texture_id], 0, false);
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
@@ -4266,7 +4271,13 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
-      rend->render_instanced(0, (Point*)arr->array, arr->numpoints);
+      int hide_num = 0;
+      if (hide_n != -1) { hide_num = hide_n; }
+      int show_num = arr->numpoints-hide_num;
+      show_num = std::max(0,show_num);
+      show_num = std::min(arr->numpoints, show_num);
+
+      rend->render_instanced(0, (Point*)arr->array, show_num);
       //rend->render(0);
 
       glDisable(GL_TEXTURE_2D);
@@ -4279,14 +4290,27 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
 #endif
       glActiveTexture(GL_TEXTURE0+0);
       glBindTexture(GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
-      rend->render_instanced(0, (Point*)arr->array, arr->numpoints);
+
+      int hide_num = 0;
+      if (hide_n != -1) { hide_num = hide_n; }
+      int show_num = arr->numpoints-hide_num;
+      show_num = std::max(0,show_num);
+      show_num = std::min(arr->numpoints, show_num);
+
+      rend->render_instanced(0, (Point*)arr->array, show_num);
       glDisable(GL_TEXTURE_2D_ARRAY);
     }
   else
     {
       //RenderVertexArray arr(*s);
       //arr.render(0);
-      rend->render_instanced(0, (Point*)arr->array, arr->numpoints);
+      int hide_num = 0;
+      if (hide_n != -1) { hide_num = hide_n; }
+      int show_num = arr->numpoints-hide_num;
+      show_num = std::max(0,show_num);
+      show_num = std::min(arr->numpoints, show_num);
+
+      rend->render_instanced(0, (Point*)arr->array, show_num);
       //rend->render(0);
     }
 #endif
@@ -4889,14 +4913,14 @@ private:
 
 };
  
-EXPORT GameApi::P GameApi::PolygonApi::color_map(BM bm, float sx, float sy, float z)
+EXPORT GameApi::P GameApi::PolygonApi::color_map(BM bm, float start_x, float end_x, float start_y, float end_y, float z)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<::Color> *bm1 = find_color_bitmap(handle);
 
-  Point pos(0.0, 0.0, z);
-  Vector u_x(sx, 0.0, 0.0);
-  Vector u_y(0.0, -sy, 0.0);
+  Point pos(start_x, start_y, z);
+  Vector u_x(end_x-start_x, 0.0, 0.0);
+  Vector u_y(0.0, end_y-start_y, 0.0);
   return add_polygon2(e, new ColorMapPoly(bm1, pos, u_x, u_y), 1);
 }
 

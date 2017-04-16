@@ -4278,17 +4278,6 @@ private:
 };
 typedef FunctionImpl0<FaceCollection*, FaceCollection*, FlipNormals> FlipNormalsFunction;
 
-class LineCollection
-{
-public:
-  virtual ~LineCollection() { }
-  virtual int NumLines() const =0;
-  virtual Point LinePoint(int line, int point) const = 0;
-  virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; }
-
-  virtual Point EndLinePoint(int line, int point) const { return LinePoint(line,point); }
-  virtual unsigned int EndLineColor(int line, int point) const { return LineColor(line,point); }
-};
 
 
 class ForwardLineCollection : public LineCollection
@@ -8931,6 +8920,53 @@ typedef SolvableCompose<Point> SolvableComposePoint;
 
 float Solve(const Function<float, float> &func, float t_0, float t_1);
 float SolveWithFailure(const Function<float, float> &func, float t_0, float t_1, bool &success);
+
+
+class Distance4 : public Function<Point, float>
+{
+public:
+  Distance4(Point center) : center(center) { }
+  float Index(Point p) const { p-=Vector(center); return sqrt(p.x*p.x+p.y*p.y+p.z*p.z); }
+private:
+  Point center;
+};
+class Derivate : public Function<float,float>
+{
+public:
+  Derivate(Function<float,float> &f, float dx) : f(f), dx(dx) { }
+  float Index(float x) const
+  {
+    float rx = (f.Index(x+dx) - f.Index(x))/(dx);
+    return rx;
+  }
+private:
+  Function<float,float> &f;
+  float dx;
+};
+template<class T>
+class FuncCompose : public Function<float, float>
+{
+public:
+  FuncCompose(Function<float,T> &f1, Function<T,float> &f2) : f1(f1), f2(f2) { }
+  float Index(float x) const { return f2.Index(f1.Index(x)); }
+private:
+  Function<float,T> &f1;
+  Function<T,float> &f2;
+};
+
+class ClosestDistanceFromCurve
+{
+public:
+  struct DistRes {
+    float distance;
+    Point pos;
+    float pos_in_curve;
+  };
+  DistRes MinDistanceFromCurve(Curve<Point> &p, Point center, float derivative_step=0.01) const;
+};
+
+
+
 
 class Packing : public PointCollection2d
 {
