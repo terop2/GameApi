@@ -185,6 +185,20 @@ public:
   virtual ~FloatVolumeObject() { }
 };
 
+class MinDistFloatVolume : public FloatVolumeObject
+{
+public:
+  MinDistFloatVolume(Curve<Point> &curve) : curve(curve) { }
+  float FloatValue(Point p) const
+  {
+    ClosestDistanceFromCurve::DistRes res = closest.MinDistanceFromCurve(curve, p);
+    return res.distance;
+  }
+private:
+  Curve<Point> &curve;
+  ClosestDistanceFromCurve closest;
+};
+
 class ColorVolumeObject {
 public:
   virtual unsigned int ColorValue(Point p) const=0;

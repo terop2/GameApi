@@ -760,7 +760,6 @@ EXPORT GameApi::COV GameApi::ColorVolumeApi::from_float_volume(FO obj, unsigned 
   FloatVolumeObject *obj2 = find_float_volume(e, obj);
   return add_color_volume(e, new ColorVolumeFromFloatVolume(obj2, col0, col1));
 }
-
 class ColorVolumeFromContinuousBitmap : public ColorVolumeObject
 {
 public:
@@ -1003,6 +1002,11 @@ EXPORT GameApi::FO GameApi::FloatVolumeApi::shadow(FD fd, V light_dir, float min
   DistanceRenderable *dist = find_distance(e, fd);
   Vector *vv = find_vector(e, light_dir);
   return add_float_volume(e, new Shadow(dist, *vv, mint, maxt, k));
+}
+EXPORT GameApi::FO GameApi::FloatVolumeApi::min_distance(C curve)
+{
+  Curve<Point> *c = find_curve(e, curve);
+  return add_float_volume(e, new MinDistFloatVolume(*c));
 }
 
 class MixColorVolume : public ColorVolumeObject

@@ -4081,9 +4081,20 @@ public:
     return ml.id;
 
   }
+  int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::PTS p3;
+    p3.id = pts;
+    GameApi::ML ml = mat_inst_fade(p2,p3, flip, start_time, end_time);
+    return ml.id;
+
+  }
   virtual GameApi::ML mat2(GameApi::P p) const=0;
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const=0;
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const=0;
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const=0;
 };
 class DefaultMaterial : public MaterialForward
 {
@@ -4112,6 +4123,12 @@ public:
     GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
     return ml;
   }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml = ev.materials_api.render_instanced_ml_fade(ev, p, pts, flip, start_time, end_time);
+    return ml;
+  }
+
 private:
   GameApi::EveryApi &ev;
 };
@@ -4153,6 +4170,18 @@ public:
     GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
     return ml;
   }
+
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    //std::cout << "mat2_inst" << std::endl;
+    std::vector<int> vecattribs;
+    vecattribs.push_back(AttrPart);
+    GameApi::PTA pta = ev.points_api.prepare(pts);
+    GameApi::VA va = ev.polygon_api.create_vertex_array_attribs(p,false,std::vector<int>(), vecattribs);
+    GameApi::ML ml = ev.materials_api.render_instanced2_ml_fade(ev, va, pta, flip, start_time, end_time);
+    return ml;
+  }
+
 private:
   GameApi::EveryApi &ev;
 };
@@ -4206,6 +4235,21 @@ public:
     return I18;
   }
 
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::P I10=p; 
+    GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I11,true);
+    //GameApi::BM I13=bm;
+
+    GameApi::TXA I14 = ev.texture_api.prepare_arr(ev, vec, sx,sy);
+    GameApi::VA I16 = ev.texture_api.bind_arr(I12, I14);
+
+    GameApi::PTA pta = ev.points_api.prepare(pts);
+    GameApi::ML I17=ev.materials_api.render_instanced2_ml_fade(ev,I16,pta,flip,start_time,end_time);
+    GameApi::ML I18=ev.polygon_api.texture_arr_shader(ev, I17,mix);
+    return I18;
+  }
 
 private:
   GameApi::EveryApi &ev;
@@ -4259,6 +4303,21 @@ public:
     GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17,mix);
     return I18;
   }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
+    GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
+    GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
+    GameApi::TXID I15=ev.texture_api.prepare(I14);
+    GameApi::VA I16=ev.texture_api.bind(I12,I15);
+    GameApi::PTA pta = ev.points_api.prepare(pts);
+    GameApi::ML I17=ev.materials_api.render_instanced2_ml_fade(ev,I16,pta, flip, start_time, end_time);
+    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17,mix);
+    return I18;
+  }
+
 private:
   GameApi::EveryApi &ev;
   GameApi::BM bm;
@@ -4332,6 +4391,41 @@ public:
     return ml;
     // TODO how to implement instancing
   }
+
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::P I4 = ev.polygon_api.static_instancing(ev, p, pts);
+
+    GameApi::PT I1=ev.point_api.point(0.0,0.0,0.0);
+    GameApi::P I2=ev.polygon_api.sphere(I1,5,2,2);
+    //PT I3=ev.point_api.point(0.0,0.0,0.0);
+    //P I4=ev.polygon_api.torus2(ev,80,18,I3,400,80);
+    GameApi::PTS I5=ev.points_api.random_mesh_quad_instancing(ev,I4,count);
+    GameApi::MT I6=ev.materials_api.def(ev);
+    GameApi::MT I7=ev.materials_api.snow(ev,I6);
+    if (web) {
+      I7=ev.materials_api.web(ev,I7);
+    }
+    GameApi::ML I9=ev.materials_api.bind_inst_fade(I2,I5,I7, flip, start_time, end_time);
+    //PT I10=ev.point_api.point(0.0,0.0,0.0);
+    //P I11=ev.polygon_api.torus2(ev,80,18,I10,400,80);
+    GameApi::MT I12=ev.materials_api.def(ev);
+    GameApi::MT I13=ev.materials_api.snow(ev,I12);
+    GameApi::MT I14=ev.materials_api.web(ev,I13);
+    GameApi::ML I15=ev.materials_api.bind(I4,I14);
+    GameApi::ML I16=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{I9,I15});
+    return I16;
+
+
+
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    //GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    //GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    //return ml;
+
+    // TODO how to implement instancing
+  }
+
 private:
   GameApi::EveryApi &ev;
   Material *next;
@@ -4382,6 +4476,21 @@ public:
     return sh;
 
   }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
+    GameApi::P p2 = ev.polygon_api.color_grayscale(p1);
+    GameApi::P p3 = ev.polygon_api.mix_color(p1,p2,mix_val);
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p3.id, pts.id, flip, start_time, end_time);
+    //VA va = ev.polygon_api.create_vertex_array(p3,false);
+    //ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    GameApi::ML sh = ev.polygon_api.shading_shader(ev, ml, color1, color2, color3);
+    return sh;
+
+  }
+
 private:
   GameApi::EveryApi &ev;
   Material *next;
@@ -4426,6 +4535,19 @@ public:
     return sh;
 
   }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p1.id, pts.id, flip, start_time, end_time);
+    //VA va = ev.polygon_api.create_vertex_array(p3,false);
+    //ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    GameApi::ML sh = ev.polygon_api.shading_shader(ev, ml, color1, color2, color3);
+    return sh;
+
+  }
+
 private:
   GameApi::EveryApi &ev;
   Material *next;
@@ -4464,6 +4586,17 @@ public:
     return sh;
 
   }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+    //VA va = ev.polygon_api.create_vertex_array(p3,false);
+    //ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    GameApi::ML sh = ev.polygon_api.choose_color_shader(ev, ml, color, mix_val);
+    return sh;
+
+  }
+
 private:
   GameApi::EveryApi &ev;
   Material *next;
@@ -4578,6 +4711,23 @@ public:
     return I11;
   }
 
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::PTA pta = ev.points_api.prepare(pts);
+    
+    GameApi::P I2=p;
+    GameApi::LI I3=ev.lines_api.from_polygon(I2);
+    GameApi::LI I4=ev.lines_api.change_color(I3,0xff000000);
+    GameApi::LLA I5=ev.lines_api.prepare(I4);
+    GameApi::ML I6=ev.lines_api.render_inst_ml(ev,I5,pta);
+    GameApi::P I8=p; 
+    //VA I9=ev.polygon_api.create_vertex_array(I8,true);
+    //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
+    GameApi::ML I10;
+    I10.id = next->mat_inst_fade(I8.id,pts.id, flip, start_time, end_time);
+    GameApi::ML I11=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{I6,I10});
+    return I11;
+  }
 
 private:
   GameApi::EveryApi &ev;
@@ -4636,21 +4786,37 @@ GameApi::ML GameApi::MaterialsApi::bind_inst(P p, PTS pts, MT mat)
   ml.id = val;
   return ml;
 }
+GameApi::ML GameApi::MaterialsApi::bind_inst_fade(P p, PTS pts, MT mat, bool flip, float start_time, float end_time)
+{
+  Material *mat2 = find_material(e, mat);
+  int val = mat2->mat_inst_fade(p.id,pts.id, flip, start_time, end_time);
+  GameApi::ML ml;
+  ml.id = val;
+  return ml;
+}
 class RenderInstanced : public MainLoopItem
 {
 public:
-  RenderInstanced(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts) : env(e), ev(ev), p(p), pts(pts) { firsttime = true; shader.id=-1; }
+  RenderInstanced(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; shader.id=-1; }
   int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
+    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    obj2->HandleEvent(e);
   }
   void execute(MainLoopEnv &e)
   {
+    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    bool changed = obj2->Update(e);
     // MainLoopEnv ee = e;
     if (firsttime)
       {
 	pta = ev.points_api.prepare(pts);
 	va = ev.polygon_api.create_vertex_array(p,false);
+      }
+    if (changed)
+      {
+	ev.points_api.update_from_data(pta, pts);
       }
 
     GameApi::SH sh;
@@ -4748,14 +4914,35 @@ public:
 	sh = shader;
       }
     ev.shader_api.use(sh);
-    if (firsttime) {
+    if (firsttime || changed) {
       firsttime = false;
       //std::cout << "RenderInstanced::PREPARE" << std::endl;
       ev.polygon_api.prepare_vertex_array_instanced(ev.shader_api, va, pta, sh);
     }
 
     ev.shader_api.set_var(sh, "in_POS", 0.0f);
-    ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh);
+
+    int hide_n = -1;
+    if (fade)
+      {
+	int start_n = ev.points_api.NumPoints(pts);
+	int end_n = 0;
+	if (flip) { std::swap(start_n, end_n); } 
+
+	float time = e.time*10.0;
+	if (time < start_time) { hide_n = start_n; }
+	else if (time > end_time) { hide_n = end_n; }
+	else {
+	  float d = time - start_time;
+	  d/=end_time-start_time;
+	  d*=float(end_n-start_n);
+	  d+=float(start_n);
+	  hide_n = (int)d;
+	}
+      }
+
+    
+    ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
   }
 private:
   GameApi::Env &env;
@@ -4766,12 +4953,15 @@ private:
   GameApi::VA va;
   GameApi::PTA pta;
   GameApi::SH shader;
+  bool fade, flip;
+  float start_time, end_time;
+
 };
 
 class RenderInstanced2 : public MainLoopItem
 {
 public:
-  RenderInstanced2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::VA va, GameApi::PTA pta) : env(e), ev(ev), va(va), pta(pta) { firsttime = true; shader.id=-1; }
+  RenderInstanced2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::VA va, GameApi::PTA pta, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), va(va), pta(pta), fade(fade), flip(flip), start_time(start_time), end_time(end_time) { firsttime = true; shader.id=-1; }
   int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
@@ -4875,7 +5065,26 @@ public:
       ev.polygon_api.prepare_vertex_array_instanced(ev.shader_api, va, pta, sh);
     }
 
-    ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh);
+    int hide_n = -1;
+    if (fade)
+      {
+	int start_n = ev.points_api.num_points(pta);
+	int end_n = 0;
+	if (flip) { std::swap(start_n, end_n); } 
+
+	float time = e.time*10.0;
+	if (time < start_time) { hide_n = start_n; }
+	else if (time > end_time) { hide_n = end_n; }
+	else {
+	  float d = time - start_time;
+	  d/=end_time-start_time;
+	  d*=float(end_n-start_n);
+	  d+=float(start_n);
+	  hide_n = (int)d;
+	}
+      }
+    
+    ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
   }
 private:
   GameApi::Env &env;
@@ -4886,16 +5095,28 @@ private:
   GameApi::VA va;
   GameApi::PTA pta;
   GameApi::SH shader;
+  bool fade, flip;
+  float start_time, end_time;
 };
 
 GameApi::ML GameApi::MaterialsApi::render_instanced_ml(GameApi::EveryApi &ev, P p, PTS pts)
 {
-  return add_main_loop(e, new RenderInstanced(e, ev, p,pts));
+  return add_main_loop(e, new RenderInstanced(e, ev, p,pts, false,false,0.0,0.0));
 }
+GameApi::ML GameApi::MaterialsApi::render_instanced_ml_fade(GameApi::EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time)
+{
+  return add_main_loop(e, new RenderInstanced(e, ev, p,pts, true,flip,start_time,end_time));  
+}
+
 GameApi::ML GameApi::MaterialsApi::render_instanced2_ml(GameApi::EveryApi &ev, VA va, PTA pta)
 {
-  return add_main_loop(e, new RenderInstanced2(e, ev, va,pta));
+  return add_main_loop(e, new RenderInstanced2(e, ev, va,pta,false,false,0.0,0.0));
 }
+GameApi::ML GameApi::MaterialsApi::render_instanced2_ml_fade(GameApi::EveryApi &ev, VA va, PTA pta, bool flip, float start_time, float end_time)
+{
+  return add_main_loop(e, new RenderInstanced2(e, ev, va,pta, true,flip,start_time,end_time));  
+}
+
 
 class V_ShaderCallFunction : public ShaderCall
 {
@@ -6046,6 +6267,16 @@ public:
     GameApi::ML df = ev.polygon_api.dist_field_mesh_shader(ev, ml,sfo);
     return df;
   }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    //GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    //GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p.id, pts.id,flip,start_time, end_time);
+    GameApi::ML df = ev.polygon_api.dist_field_mesh_shader(ev, ml,sfo);
+    return df;
+  }
 
 private:
   GameApi::EveryApi &ev;
@@ -6079,6 +6310,15 @@ public:
     GameApi::ML df = ev.polygon_api.sfo_sandbox_shader(ev, ml,sfo);
     return df;
   }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+    GameApi::ML df = ev.polygon_api.sfo_sandbox_shader(ev, ml,sfo);
+    return df;
+
+  }
+
 private:
   GameApi::EveryApi &ev;
   GameApi::SFO sfo;
@@ -6117,7 +6357,18 @@ public:
     GameApi::ML df = ev.polygon_api.mesh_color_shader(ev, ml,sfo);
     return df;
   }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    //GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    //GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+    GameApi::ML df = ev.polygon_api.mesh_color_shader(ev, ml,sfo);
+    return df;
+  }
 
+  
 private:
   GameApi::EveryApi &ev;
   GameApi::SFO sfo;

@@ -593,6 +593,7 @@ public:
   virtual int mat(int p) const=0; 
   virtual int mat_inst(int p, int pts) const=0;
   virtual int mat_inst2(int p, int pta) const=0;
+  virtual int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const=0;
 };
 
 class ShaderCall
@@ -845,5 +846,17 @@ public:
   virtual float end_y() const=0;
   virtual Point Map(float x, float y) const=0;
 };
+
+class PointsApiPoints
+{
+public:
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) { return false; }
+  virtual int NumPoints() const=0;
+  virtual Point Pos(int i) const=0;
+  virtual unsigned int Color(int i) const=0;
+  virtual ~PointsApiPoints() {}
+};
+
 
 #endif

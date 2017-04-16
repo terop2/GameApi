@@ -38,6 +38,16 @@ class OrPoints : public PointsApiPoints
 {
 public:
   OrPoints(PointsApiPoints *pts1, PointsApiPoints *pts2): pts1(pts1), pts2(pts2) { }
+  virtual void HandleEvent(MainLoopEvent &event) {
+    pts1->HandleEvent(event);
+    pts2->HandleEvent(event);
+  }
+  virtual bool Update(MainLoopEnv &e) {
+    bool b1 = pts1->Update(e);
+    bool b2 = pts2->Update(e);
+    return b1 || b2;
+  }
+
   virtual int NumPoints() const { return pts1->NumPoints()+pts2->NumPoints(); }
   virtual Point Pos(int i) const
   {
@@ -64,6 +74,7 @@ class SurfacePoints : public PointsApiPoints
 {
 public:
   SurfacePoints(std::vector<Point> *points, std::vector<unsigned int> *color) :points(points), color(color) { }
+
   virtual int NumPoints() const { return points->size(); }
   virtual Point Pos(int i) const { return points->operator[](i); }
   virtual unsigned int Color(int i) const
@@ -121,6 +132,9 @@ class MatrixPoints : public PointsApiPoints
 {
 public:
   MatrixPoints(PointsApiPoints *pts, Matrix m) : pts(pts), m(m) { }
+  virtual void HandleEvent(MainLoopEvent &event) { pts->HandleEvent(event); }
+  virtual bool Update(MainLoopEnv &e) { return pts->Update(e); }
+
   int NumPoints() const { return pts->NumPoints(); }
   Point Pos(int i) const {
     Point p = pts->Pos(i);
@@ -166,6 +180,58 @@ EXPORT GameApi::PTS GameApi::PointsApi::move(GameApi::PTS obj, float dx, float d
 
   return add_points_api_points(e, new MatrixPoints(obj2, Matrix::Translate(dx,dy,dz)));
 }
+class AnimMixPTS : public PointsApiPoints
+{
+public:
+  AnimMixPTS(PointsApiPoints *o1, PointsApiPoints *o2, float start_val, float end_val, float start_time, float end_time) : o1(o1), o2(o2), start_val(start_val), end_val(end_val), start_time(start_time), end_time(end_time)
+  {
+    pos = 0.0;
+  }
+  void HandleEvent(MainLoopEvent &event) { o1->HandleEvent(event); o2->HandleEvent(event); }
+  bool Update(MainLoopEnv &e) {
+    float time = e.time*10.0;
+    float current_time = time;
+
+    float t = current_time;
+    pos = 0.0;
+    if (t<start_time) pos = start_val;
+    else if (t>=end_time) pos= end_val;
+    else {
+      float d = t-start_time;
+      d/=(end_time-start_time);
+      d*=(end_val-start_val);
+      d+=start_val;
+      pos = d;
+    }
+    o1->Update(e);
+    o2->Update(e);
+    return true;
+  }
+  int NumPoints() const { return std::min(o1->NumPoints(), o2->NumPoints()); }
+  Point Pos(int i) const
+  {
+    Point p1 = o1->Pos(i);
+    Point p2 = o2->Pos(i);
+    return Point::Interpolate(p1,p2,1.0-pos);
+  }
+  unsigned int Color(int i) const
+  { 
+    unsigned int p1 = o1->Color(i);
+    unsigned int p2 = o2->Color(i);
+    return Color::Interpolate(p1,p2,1.0-pos);
+  }
+private:
+  PointsApiPoints *o1, *o2;
+  float start_val, end_val;
+  float start_time, end_time;
+  float pos;
+};
+EXPORT GameApi::PTS GameApi::PointsApi::anim_mix(GameApi::PTS obj1, GameApi::PTS obj2, float start_val, float end_val, float start_time, float end_time)
+{
+  PointsApiPoints *o1 = find_pointsapi_points(e, obj1);
+  PointsApiPoints *o2 = find_pointsapi_points(e, obj2);
+  return add_points_api_points(e, new AnimMixPTS(o1, o2, start_val, end_val, start_time, end_time));
+}
 EXPORT GameApi::PTS GameApi::PointsApi::rot_x(GameApi::PTS obj, float angle)
 {
   PointsApiPoints *obj2 = find_pointsapi_points(e, obj);
@@ -196,6 +262,9 @@ class ShadowPoints : public PointsApiPoints
 {
 public:
   ShadowPoints(PointsApiPoints *pts, Point pos, Vector u_x, Vector u_y, Vector light_vec) : pts(pts), pos(pos), u_x(u_x), u_y(u_y), light_vec(light_vec) { }
+  void HandleEvent(MainLoopEvent &event) { pts->HandleEvent(event); }
+  virtual bool Update(MainLoopEnv &e) { return pts->Update(e); }
+
   virtual int NumPoints() const
   {
     return pts->NumPoints();
@@ -255,15 +324,8 @@ unsigned int *GameApi::PointsApi::color_access(GameApi::PTA pta, int pointnum)
   PointArray3 *arr = find_point_array3(e, pta);
   return &arr->color[pointnum];
 }
-void GameApi::PointsApi::update(GameApi::PTA pta)
-{
-  PointArray3 *arr = find_point_array3(e, pta);
-  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[0]);
-  glBufferSubData(GL_ARRAY_BUFFER, 0, arr->numpoints*sizeof(float)*3, arr->array);
-  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[1]);
-  glBufferSubData(GL_ARRAY_BUFFER, 0, arr->numpoints*sizeof(unsigned int), arr->color);
-}
 #endif
+
 unsigned int swap_color(unsigned int c)
 {
   unsigned int ca = c & 0xff000000;
@@ -276,6 +338,37 @@ unsigned int swap_color(unsigned int c)
   //cg<<=8;
   return ca+cr+cg+cb;
 }
+
+void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p)
+{
+  PointsApiPoints *pts = find_pointsapi_points(e, p);
+  int numpoints = pts->NumPoints();
+
+  PointArray3 *arr = find_point_array3(e, pta);
+  float *array = arr->array;
+  unsigned int *color = arr->color;
+  for(int i=0;i<numpoints;i++)
+    {
+      Point p = pts->Pos(i);
+      unsigned int c = pts->Color(i);
+      array[i*3+0] = p.x;
+      array[i*3+1] = p.y;
+      array[i*3+2] = p.z;
+      color[i] = swap_color(c);
+    }
+
+  
+  update(pta);
+}
+void GameApi::PointsApi::update(GameApi::PTA pta)
+{
+  PointArray3 *arr = find_point_array3(e, pta);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[0]);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, arr->numpoints*sizeof(float)*3, arr->array);
+  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer[1]);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, arr->numpoints*sizeof(unsigned int), arr->color);
+}
+
 
 
 struct ThreadInfo_pts
@@ -572,6 +665,9 @@ class PointsApiColorFunction : public PointsApiPoints
 {
 public:
   PointsApiColorFunction(GameApi::Env &e, PointsApiPoints *orig, std::function<unsigned int(int pointnum, GameApi::PT pos)> f) : e(e), orig(orig), f(f) { }
+  void HandleEvent(MainLoopEvent &event) { orig->HandleEvent(event); }
+  virtual bool Update(MainLoopEnv &e) { return orig->Update(e); }
+
   virtual int NumPoints() const { return orig->NumPoints(); }
   virtual Point Pos(int i) const { return orig->Pos(i); }
   virtual unsigned int Color(int i) const
@@ -676,6 +772,9 @@ class ColorPoints : public PointsApiPoints
 {
 public:
   ColorPoints(PointsApiPoints *next, unsigned int color) : next(next), color(color) { }
+  void HandleEvent(MainLoopEvent &event) { next->HandleEvent(event); }
+  virtual bool Update(MainLoopEnv &e) { return next->Update(e); }
+
   int NumPoints() const { return next->NumPoints(); }
   Point Pos(int i) const { return next->Pos(i); }
   unsigned int Color(int i) const {return color; }

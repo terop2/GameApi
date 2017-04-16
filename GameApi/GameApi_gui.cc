@@ -415,6 +415,7 @@ private:
   bool shift;
 };
 
+
 template<class T>
 class EditorGuiWidgetAtlas : public GuiWidgetForward
 {
@@ -2224,6 +2225,41 @@ EXPORT GameApi::W GameApi::GuiApi::color_editor(std::string &col, FtA atlas, BM 
   W edit = string_editor(allowed_chars, col, atlas, atlas_bm, x_gap);
   W edit2 = highlight(edit);
   return edit2; 
+}
+EXPORT GameApi::W GameApi::GuiApi::copy_paste_dialog(SH sh, W &close_button,FI font, FtA atlas, BM atlas_bm, std::string &edit)
+{
+  std::string allowed_chars= "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#§%&/()=?\\|<>,.-;:_^~*'Âˆ‰≈÷ƒ+";
+  W w = multiline_string_editor( allowed_chars, edit, font, 5, 30);
+
+  W bm_2 = margin(w, 10,10,10,10);
+  W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
+  W bm_4 = layer(bm_3, bm_2);
+  
+  W but_1 = text("Close", atlas, atlas_bm);
+  W but_2 = center_align(but_1, size_x(bm_4));
+  W but_3 = center_y(but_2, 60.0);
+  W but_4 = button(size_x(but_3), size_y(but_3), c_dialog_button_1, c_dialog_button_2);
+  W but_41 = highlight(but_4);
+  W but_5 = layer(but_41, but_3);
+  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
+  close_button = but_6;
+
+  //W code_1 = text("CodeGen", atlas, atlas_bm);
+  //W code_2 = center_align(code_1, size_x(bm_4));
+  //W code_3 = center_y(code_2, 60.0);
+  //W code_4 = button(size_x(code_3), size_y(code_3), c_dialog_button_1, c_dialog_button_2);
+  //W code_41 = highlight(code_4);
+  //W code_5 = layer(code_41, code_3);
+  //W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
+  //codegen_button = code_6;
+
+
+  W arr[] = { bm_4, but_6 };
+  W arr_2 = array_y(&arr[0], 2, 0);
+
+  W arr_3 = mouse_move(arr_2, 0,0, size_x(arr_2), size_y(arr_2));
+  return arr_3;
+
 }
 
 EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button, W &mem)
@@ -4904,6 +4940,12 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "FO", "FO" },
 			 { "", "" },
 			 "FO", "float_volume_api", "maximum"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::min_distance,
+			 "fo_min_distance",
+			 { "curve" },
+			 { "C" },
+			 { "" },
+			 "FO", "float_volume_api", "min_distance"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::subvolume,
 			 "fo_subvolume",
 			 { "f", "start_range", "end_range" },
@@ -5796,6 +5838,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "P", "PTS" },
 			 { "ev", "", "" },
 			 "ML", "materials_api", "render_instanced_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::render_instanced_ml_fade,
+			 "p_render_inst_fade",
+			 { "ev", "p", "pts", "flip", "start_time", "end_time" },
+			 { "EveryApi&", "P", "PTS", "bool", "float", "float" },
+			 { "ev", "", "", "false", "10.0", "40.0" },
+			 "ML", "materials_api", "render_instanced_ml_fade"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::render_instanced2_ml,
 			 "p_render_inst2",
 			 { "ev", "va", "pta" },
@@ -5841,7 +5889,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "P", "PTS", "MT" },
 			 { "", "", "" },
 			 "ML", "materials_api", "bind_inst"));
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bind_inst_fade,
+			 "m_fade_inst",
+			 { "p", "pts", "mat", "flip", "start_time", "end_time" },
+			 { "P", "PTS", "MT", "bool", "float", "float" },
+			 { "", "", "", "false", "10.0", "40.0" },
+			 "ML", "materials_api", "bind_inst_fade"));
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::rot_x_ml,
 			 "rot_x_ml",
 			 { "ev", "ml", "key_forward", "key_backward", "speed", "start_angle", "end_angle"},
@@ -6238,9 +6292,9 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 "P", "polygon_api", "static_instancing_with_color"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_map,
 			 "color_map",
-			 { "bm", "sx", "sy", "z" },
-			 { "BM", "float", "float", "float" },
-			 { "", "200", "200", "0" },
+			 { "bm", "statt_x", "end_x", "start_y", "end_y", "z" },
+			 { "BM", "float", "float", "float", "float", "float" },
+			 { "", "-200", "200", "-200", "200", "0" },
 			 "P", "polygon_api", "color_map"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, (GameApi::P (GameApi::PolygonApi::*)(GameApi::BM, GameApi::FB,float,float,float))&GameApi::PolygonApi::color_map3,
@@ -6719,6 +6773,18 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "P" },
 			 { "" },
 			 "LI", "lines_api", "from_polygon"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::fur,
+			 "li_fur",
+			 { "pts", "center", "dist" },
+			 { "PTS", "PT", "float" },
+			 { "", "", "10.0" },
+			 "LI", "lines_api", "fur"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::random_angle,
+			 "li_rand_angle",
+			 { "lines", "max_angle" },
+			 { "LI", "float" },
+			 { "", "0.3" },
+			 "LI", "lines_api", "random_angle"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::random_mesh_quad_lines,
 			 "li_from_quads",
 			 { "ev", "p", "count" },
@@ -6905,6 +6971,12 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "PTS", "float", "float", "float" },
 			 { "", "0.0", "0.0", "0.0" },
 			 "PTS", "points_api", "move"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::anim_mix,
+			 "anim_mix_pts",
+			 { "obj1", "obj2", "start_val", "end_val", "start_time", "end_time" },
+			 { "PTS", "PTS", "float", "float", "float", "float" },
+			 { "", "", "0.0", "1.0", "10.0", "40.0" },
+			 "PTS", "points_api", "anim_mix"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::rot_x,
 			 "rot_x_pts",
 			 { "obj", "angle" },
