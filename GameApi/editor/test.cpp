@@ -312,6 +312,7 @@ void connect_target(int x, int y, Envi *envi)
 	  bool is_array = false;
 	  bool is_array_return = false; // TODO
 	  bool b = envi->ev->mod_api.typecheck(envi->mod, 0, envi->connect_start_uid, uid, real_index, is_array, is_array_return);
+	  bool erase = false;
 	  if (b) 
 	    {
 	      if (is_array_return)
@@ -320,6 +321,7 @@ void connect_target(int x, int y, Envi *envi)
 		  envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, val2);
 		  int ii = envi->ev->mod_api.find_line_index(envi->mod, 0, val2);
 		  envi->ev->mod_api.change_param_is_array(envi->mod, 0, uid, real_index, true, ii);
+		  erase = true;
 		}
 	      else
 	      if (is_array)
@@ -328,35 +330,39 @@ void connect_target(int x, int y, Envi *envi)
 		  std::vector<std::string> vec = envi->ev->mod_api.parse_param_array(val);
 		  vec.push_back(envi->connect_start_uid);
 		  std::string val2 = envi->ev->mod_api.generate_param_array(vec);
-		  envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, val2);		  
+		  envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, val2);
+		  erase=false;
 		}
 	      else
 		{
 		  envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, envi->connect_start_uid);
-	      
-	      int sk = envi->connect_links.size();
-	      for(int i=0;i<sk;i++)
+		  erase = true;
+		}
+	      if (erase)
 		{
-		  W wid = envi->connect_links[i];
-		  std::string str = envi->gui->get_id(wid);
-		  std::stringstream ss(str);
-		  std::string uid1;
-		  std::string uid2;
-		  int val;
-		  ss>> uid1 >> uid2 >> val;
-		  if (uid2==uid && val == real_index)
+		  int sk = envi->connect_links.size();
+		  for(int i=0;i<sk;i++)
 		    {
-		      envi->connect_links.erase(envi->connect_links.begin()+i);
-		      int index = envi->gui->canvas_item_index(envi->canvas, wid);
-		      if (index != -1)
-			envi->gui->del_canvas_item(envi->canvas, index);
-		      break;
+		      W wid = envi->connect_links[i];
+		      std::string str = envi->gui->get_id(wid);
+		      std::stringstream ss(str);
+		      std::string uid1;
+		      std::string uid2;
+		      int val;
+		      ss>> uid1 >> uid2 >> val;
+		      if (uid2==uid && val == real_index)
+			{
+			  envi->connect_links.erase(envi->connect_links.begin()+i);
+			  int index = envi->gui->canvas_item_index(envi->canvas, wid);
+			  if (index != -1)
+			    envi->gui->del_canvas_item(envi->canvas, index);
+			  break;
+			}
 		    }
-		}
-
-		}
-	      
-	      W start_link = envi->gui->find_canvas_item(envi->canvas, envi->connect_start_uid);
+		
+		} 
+	    
+	  W start_link = envi->gui->find_canvas_item(envi->canvas, envi->connect_start_uid);
 	      if (start_link.id!=-1)
 		{
 		  W link = envi->gui->line( start_link, envi->gui->size_x(start_link),(envi->gui->size_y(start_link)-16)/2+16+5,
@@ -372,9 +378,9 @@ void connect_target(int x, int y, Envi *envi)
 	    {
 	      std::cout << "TypeCheck failed!" << std::endl;
 	    }
-	}
-      
     }
+      
+}
 
 }
 void callback_func(int x, int y, Envi *envi)

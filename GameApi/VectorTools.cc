@@ -1235,3 +1235,11 @@ bool LineProperties::TriangleIntersection(Point v1, Point v2, Point v3)
       return false;
     return true;
 }
+
+bool TriangleProperties::is_inside_circum_sphere(Point p) const
+{
+  Point center = circum_center();
+  float radius = circum_radius();
+  SphereProperties2 prop(center, radius);
+  return prop.InsideSphere(p);
+}

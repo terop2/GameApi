@@ -614,6 +614,9 @@ public:
   IMPORT BM string_display_to_bitmap(SD sd, int def);
   IMPORT BM draw_text_string(FI font, std::string str, int x_gap, int empty_line_height);
   IMPORT ML dynamic_character2(EveryApi &ev, std::vector<GI> vec, std::string alternatives, IF fetcher, int x, int y);
+  IMPORT IF timed_int_fetcher(EveryApi &ev, int start, int end, float start_time, float end_time);
+  IMPORT std::vector<GameApi::BM> bm_array_id_inv(ARR arr);
+  IMPORT ARR bm_array_id(std::vector<BM> vec);
 private:
   FontApi(const FontApi&);
   void operator=(const FontApi&);
@@ -1121,6 +1124,8 @@ public:
   MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
   MT snow(EveryApi &ev, MT nxt, unsigned int color1=0xffaaaaaa, unsigned int color2=0xffeeeeee, unsigned int color3=0xffffffff, float mix_val=0.5f);
   MT flat(EveryApi &ev, MT nxt, unsigned int color1, unsigned int color2, unsigned int color3);
+  MT fur(EveryApi &ev, MT nxt, PT center, float dist, float max_angle, int count, float size, int cone_numfaces);
+
   MT choose_color(EveryApi &ev, MT nxt, unsigned int color, float mix_val);
   MT brashmetal(EveryApi &ev, MT nxt, int count, bool web);
   MT web(EveryApi &ev, MT nxt); // TODO: add line width property
@@ -3111,9 +3116,13 @@ private:
 struct EveryApi
 {
 	EveryApi(Env &e)
-  : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e), blocker_api(e), vertex_anim_api(e) { }
+	  : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
+	    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e), blocker_api(e), vertex_anim_api(e),
 
+	    env(e)
+  { }
+  Env &get_env() { return env; }
+  
   MainLoopApi mainloop_api;
   PointApi point_api;
   VectorApi vector_api;
@@ -3169,6 +3178,7 @@ struct EveryApi
   BlockerApi blocker_api;
   VertexAnimApi vertex_anim_api;
 private:
+  Env &env;
   EveryApi(const EveryApi&);
   void operator=(const EveryApi&);
 

@@ -409,6 +409,27 @@ EXPORT GameApi::ML GameApi::FontApi::dynamic_string(GameApi::EveryApi &ev, GameA
   return ev.mainloop_api.array_ml(ml);
 }
 
+class TimedIntFetcher : public Fetcher<int>
+{
+public:
+  TimedIntFetcher(GameApi::EveryApi &ev, int start, int end, float start_time, float duration) : ev(ev), start(start), end(end), start_time(start_time), duration(duration) { }
+  void set(int i) { }
+  int get() const {
+    float val = ev.mainloop_api.get_time()/100.0;
+    if (val<start_time) return start;
+    if (val>=start_time+(end-start)*duration) return end;
+    float d = (val-start_time)/duration;
+    int di = start + (int)d;
+    return di;
+  }
+private:
+  GameApi::EveryApi &ev;
+  int start;
+  int end;
+  float start_time;
+  float duration;
+};
+
 class ChooseCharFetcher : public Fetcher<int>
 {
 public:
@@ -435,6 +456,10 @@ private:
   std::string alternatives;
   int index;
 };
+EXPORT GameApi::IF GameApi::FontApi::timed_int_fetcher(EveryApi &ev, int start, int end, float start_time, float end_time)
+{
+  return add_int_fetcher(e, new TimedIntFetcher(ev, start, end, start_time, (end_time-start_time)/(end-start)));
+}
 EXPORT GameApi::IF GameApi::FontApi::char_fetcher_from_string(SF string_fetcher, std::string alternatives, int idx)
 {
   Fetcher<std::string> *str = find_string_fetcher(e, string_fetcher);
@@ -513,4 +538,30 @@ EXPORT GameApi::BM GameApi::FontApi::font_string(Ft font, std::string str, int x
   BitmapColorHandle *chandle2 = new BitmapColorHandle;
   chandle2->bm = array;
   return add_bitmap(e,chandle2);
+}
+EXPORT std::vector<GameApi::BM> GameApi::FontApi::bm_array_id_inv(ARR arr)
+{
+  ArrayType *t = find_array(e, arr);
+  std::vector<GameApi::BM> vec;
+  int s = t->vec.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApi::BM bm;
+      bm.id = t->vec[i];
+      vec.push_back(bm);
+    }
+  return vec;
+}
+EXPORT GameApi::ARR GameApi::FontApi::bm_array_id(std::vector<BM> vec)
+{
+  std::vector<int> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(vec[i].id);
+    }
+  ArrayType *arr = new ArrayType;
+  arr->type = 0;
+  arr->vec = vec2;
+  return add_array(e, arr);
 }
