@@ -4554,6 +4554,65 @@ private:
   unsigned int color1, color2, color3;
 };
 
+class FurMaterial : public MaterialForward
+{
+public:
+  FurMaterial(GameApi::EveryApi &ev, Material *next, GameApi::PT center, float dist, float max_angle, int count, float size, int cone_numfaces) : ev(ev), next(next), center(center), dist(dist), max_angle(max_angle), count(count), size(size), cone_numfaces(cone_numfaces) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::PTS pts = ev.points_api.random_mesh_quad_instancing(ev, p, count);
+    GameApi::LI li = ev.lines_api.fur(pts, center, dist);
+    GameApi::LI li2 = ev.lines_api.random_angle(li, max_angle);
+    GameApi::P  pl = ev.polygon_api.line_to_cone(ev, li2, size, cone_numfaces);
+    GameApi::P  pl2 = ev.polygon_api.or_elem(pl, p);
+    GameApi::ML ml;
+    ml.id = next->mat(pl2.id);
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::PTS pts2 = ev.points_api.random_mesh_quad_instancing(ev, p, count);
+    GameApi::LI li = ev.lines_api.fur(pts2, center, dist);
+    GameApi::LI li2 = ev.lines_api.random_angle(li, max_angle);
+    GameApi::P  pl = ev.polygon_api.line_to_cone(ev, li2, size, cone_numfaces);
+    GameApi::P  pl2 = ev.polygon_api.or_elem(pl, p);
+    GameApi::ML ml;
+    ml.id = next->mat_inst(pl2.id, pts.id);
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::PTS pts = ev.points_api.random_mesh_quad_instancing(ev, p, count);
+    GameApi::LI li = ev.lines_api.fur(pts, center, dist);
+    GameApi::LI li2 = ev.lines_api.random_angle(li, max_angle);
+    GameApi::P  pl = ev.polygon_api.line_to_cone(ev, li2, size, cone_numfaces);
+    GameApi::P  pl2 = ev.polygon_api.or_elem(pl, p);
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(pl2.id, pta.id);
+    return ml;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::PTS pts2 = ev.points_api.random_mesh_quad_instancing(ev, p, count);
+    GameApi::LI li = ev.lines_api.fur(pts2, center, dist);
+    GameApi::LI li2 = ev.lines_api.random_angle(li, max_angle);
+    GameApi::P  pl = ev.polygon_api.line_to_cone(ev, li2, size, cone_numfaces);
+    GameApi::P  pl2 = ev.polygon_api.or_elem(pl, p);
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(pl2.id, pts.id, flip, start_time, end_time);
+    return ml;
+  }
+private:
+  GameApi::EveryApi &ev;
+  Material *next;
+  GameApi::PT center;
+  float dist;
+  float max_angle;
+  int count;
+  float size;
+  int cone_numfaces;
+};
+
 
 class ChooseColorMaterial : public MaterialForward
 {
@@ -4612,6 +4671,12 @@ GameApi::MT GameApi::MaterialsApi::skeletal(EveryApi &ev)
 {
   return add_material(e, new SkeletalMaterial(ev));
 }
+GameApi::MT GameApi::MaterialsApi::fur(EveryApi &ev, MT nxt, PT center, float dist, float max_angle, int count, float size, int cone_numfaces)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new FurMaterial(ev, mat, center, dist, max_angle, count, size, cone_numfaces));
+}
+				      
 GameApi::MT GameApi::MaterialsApi::texture(EveryApi &ev, BM bm, float mix)
 {
   return add_material(e, new TextureMaterial(ev, bm,mix));

@@ -3712,6 +3712,22 @@ public:
   {
     //std::cout << "Vector:" << s << std::endl;
     std::vector<T> vec;
+    if (s.size()>0 && s[0]!='[')
+      { // ARR version
+	std::cout << "Arr version" << s << std::endl;
+	GameApi::ARR arr;
+	std::stringstream ss(s);
+	ss >> arr.id;
+	ArrayType *t = find_array(ev.get_env(), arr);
+	int s = t->vec.size();
+	for(int i=0;i<s;i++)
+	  {
+	    T tt;
+	    tt.id = t->vec[i];
+	    vec.push_back(tt);
+	  }
+	return vec;
+      }
     if (s.size()<2)
       {
 	std::cout << "from_stream length problem" << std::endl;
@@ -4000,20 +4016,22 @@ int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api
       ss << s[i] << " ";
     }
 #endif
-  //std::cout << "FuncCall: " << ss.str() << std::endl;
+  std::cout << "FuncCall: " << ss.str() << std::endl;
 
   std::stringstream ss2(ss.str());
   T *ptr = &(ev.*api);
   RT val = (ptr->*fptr)(from_stream2<P>(ss2,ev)...);
-  
+
+#if 0
   if (return_type.size()>2 && return_type[0]=='[' && return_type[return_type.size()-1]==']')
     { // array return type
       GameApi::ARR arr = add_array(ee, val);
       return arr.id;
     }
+#endif
   
-  //std::cout << "FuncCall returning: " << val.id << std::endl;
-  return template_get_id(val);
+  std::cout << "FuncCall returning: " << val.id << std::endl;
+  return val.id; //template_get_id(val);
 }
 
 
@@ -5372,12 +5390,6 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "SF", "std::string", "int" },
 			 { "", "0123456789", "0" },
 			 "IF", "font_api", "char_fetcher_from_string"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::dynamic_character,
-			 "fnt_dyn_char",
-			 { "ev", "vec", "fetcher", "x", "y" },
-			 { "EveryApi&", "[BM]", "IF", "int", "int" },
-			 { "ev", "", "", "0","0" },
-			 "ML", "font_api", "dynamic_character"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::load_font,
 			 "FI_load",
@@ -5391,6 +5403,26 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "FI", "std::string", "int", "int" },
 			 { "", "Hello", "5", "30" },
 			 "BM", "font_api", "draw_text_string"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::bm_array_id,
+			 "bm_array_id",
+			 { "vec" },
+			 { "[BM]" },
+			 { "" },
+			 "[BM]", "font_api", "bm_array_id"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::dynamic_character,
+			 "bm_chooser",
+			 { "ev", "vec", "fetcher", "x", "y" },
+			 { "EveryApi&", "[BM]", "IF", "int", "int" },
+			 { "ev", "", "", "0","0" },
+			 "ML", "font_api", "dynamic_character"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::timed_int_fetcher,
+			 "if_timed",
+			 { "ev", "start", "end", "start_time", "end_time" },
+			 { "EveryApi&", "int", "int", "float", "float" },
+			 { "ev", "0", "10", "0.0", "30.0" },
+			 "IF", "font_api", "timed_int_fetcher"));
+  
   return vec;
 }
 #endif
@@ -5615,6 +5647,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "MT", "unsigned int", "unsigned int", "unsigned int" },
 			 { "ev", "", "ff8888ff", "ffff4422", "ffffffff" },
 			 "MT", "materials_api", "flat"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::fur,
+			 "m_fur",
+			 { "ev", "nxt", "center", "dist", "max_angle", "count", "size", "cone_numfaces" },
+			 { "EveryApi&", "MT", "PT", "float", "float", "int", "float", "int" },
+			 { "ev", "", "", "60.0", "1.59", "1500", "2.0", "4" },
+			 "MT", "materials_api", "fur"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::choose_color,
 			 "m_choose_color",
 			 { "ev", "nxt", "color", "mix_val" },

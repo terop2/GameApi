@@ -840,6 +840,7 @@ struct FaceCollPolyHandle : public PolyHandle
 ARRMACRO(GameApi::PAR,par)
 #undef ARRMACRO
 
+
 //
 // add functions
 //
@@ -1049,7 +1050,6 @@ SpaceImpl *find_space(GameApi::Env &e, GameApi::SP s);
 LineImpl *find_line(GameApi::Env &e, GameApi::LN l);
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 Cutter *find_cutter(GameApi::Env &e, GameApi::CT cut);
-
 
 
 template<class T>
