@@ -1,1 +1,1 @@
-d:\cvs\gnumake\bin\make.exe -f Makefile.clang %1
+d:\cvs\gnumake\bin\make.exe -j 4 -f Makefile.clang %1

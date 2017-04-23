@@ -318,9 +318,10 @@ public:
   void event_ml(ML ml, const Event &e);
   ML array_ml(std::vector<ML> vec);
   ML seq_ml(std::vector<ML> vec, float time);
+  ML timed_tmp_seq_ml(ML curr, ML end, float start_time, float end_time, float show_duration, int key);
   ML collision_detection(EveryApi &ev,
-			 float player_size, PT player_pos, MN player_trans,
-			 float enemy_size, PTS enemy_pos, MN enemy_trans,
+			 float player_size,
+			 float enemy_size, 
 			 ML normal_game_screen, ML gameover_screen);
 
   M in_MV(EveryApi &ev, bool is_3d);
@@ -329,6 +330,7 @@ public:
   M in_P(EveryApi &ev, bool is_3d);
   std::string get_homepage_url();
   void set_homepage_url(std::string url);
+  ML load_song(EveryApi& ev, ML next, std::string url);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);
@@ -1329,6 +1331,11 @@ public:
   PTS cmd_to_pts(CMD cmds, std::string commands);
   LI cmd_to_li(CMD cmds, std::string commands);
 
+
+  ML player(ML prev);
+  ML enemy(ML prev);
+  ML player_pos(ML prev, PT pos);
+  ML enemy_pos(ML prev, PTS pos);
 private:
   Env &e;
 };
@@ -2017,6 +2024,8 @@ public:
   IMPORT P texcoord_spherical(PT center, P orig);
   IMPORT P texcoord_spherical2(EveryApi &ev, PT center, float r, P orig);
   IMPORT P texcoord_cylindar(P orig, float start_y, float end_y);
+  IMPORT P texcoord_from_normal(P p);
+  IMPORT P fix_texcoord(P p);
   IMPORT P color_cube(P orig,
 	       PT o, PT u_x, PT u_y, PT u_z,
 	       unsigned int color_o, unsigned int color_x, unsigned int color_y, unsigned int color_z);
@@ -2104,6 +2113,7 @@ public:
   IMPORT P change_texture(P orig, std::function<int(int face)> f, BM *array, int size);
 
   IMPORT P recalculate_normals(P orig);
+  IMPORT P average_normals(P orig, int sx, int sy);
   IMPORT P smooth_normals(P orig);
   IMPORT P memoize(P orig);
   IMPORT P memoize_all(P orig);

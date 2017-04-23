@@ -53,6 +53,7 @@ EXPORT void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_heigh
   prog->set_var("in_P", m);
   Matrix m2 = Matrix::Identity();
   prog->set_var("in_MV", m2);
+  prog->set_var("in_iMV", Matrix::Inverse(m2));
   prog->set_var("in_T", m2);
   prog->set_var("in_POS", 0.0f);
   prog->set_var("color_mix", 0.5f);
@@ -246,6 +247,7 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   prog->set_var("in_P", m);
   Matrix m2 = Matrix::Identity();
   prog->set_var("in_MV", m2);
+  prog->set_var("in_iMV", Matrix::Inverse(m2));
   Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
   prog->set_var("in_T", m3);
   prog->set_var("in_POS", 0.0f);
@@ -352,6 +354,7 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
       //glTranslatef(0.375, 0.375, 0.0);
       Matrix m2 = Matrix::Translate(0.375, 0.375, 0.0);
       prog->set_var("in_MV", m2);
+      prog->set_var("in_iMV", Matrix::Inverse(m2));
       Matrix m3 = Matrix::Identity();
       prog->set_var("in_T", m3);
     }
@@ -730,9 +733,21 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 class SeqML : public MainLoopItem
 {
 public:
-  SeqML(std::vector<MainLoopItem*> vec, float time) : vec(vec), time(time) { num2 = -1; }
+  SeqML(std::vector<MainLoopItem*> vec, float time) : vec(vec), time(time) { num2 = -1; firsttime = true; }
   virtual void execute(MainLoopEnv &e)
   {
+    if (firsttime)
+      {
+	int s = vec.size();
+	for(int i=0;i<s;i++)
+	  {
+	    vec[i]->execute(e);
+	  }
+	
+      firsttime = false;
+      return;
+      }
+
     float num = e.time*10.0/time;
     num2 = (int)num;
     float newtime = fmod(e.time,time/10.0);
@@ -760,27 +775,102 @@ private:
   std::vector<MainLoopItem*> vec;
   float time;
   int num2;
+  bool firsttime;
 };
+
+class TimedTmpSeqML : public MainLoopItem
+{
+public:
+  TimedTmpSeqML(MainLoopItem *curr, MainLoopItem *end, float start_time, float end_time, float show_duration, int key) : curr(curr), end(end), start_time(start_time), end_time(end_time), show_duration(show_duration), current_item(false), key_pressed(false), key(key) { firsttime = true; old_key_pressed = false; }
+  void handle_event(MainLoopEvent &e)
+  {
+    if (e.type==0x300 && e.ch==key)
+      {
+	key_pressed = true;
+      }
+    if (e.type==0x301 && e.ch==key)
+      {
+	key_pressed = false;
+      }
+    if (current_item) {
+      end->handle_event(e);
+    } else {
+      curr->handle_event(e);
+    }
+	   
+  }
+  void execute(MainLoopEnv &e)
+  {
+    if (firsttime)
+      {
+      end->execute(e);
+      curr->execute(e);
+      firsttime = false;
+      return;
+      }
+    
+    if (e.time*10.0>=start_time && e.time*10.0 <end_time && !current_item)
+      {
+	if (old_key_pressed && !key_pressed) {
+	  current_item = true;
+	  chosen_time = e.time;
+	}
+	
+      }
+
+    if (current_item) {
+      MainLoopEnv ee = e;
+      ee.time = e.time - chosen_time;
+      if (ee.time*10.0 > show_duration) { current_item = false; }
+      end->execute(ee);
+    } else {
+      curr->execute(e);
+    }
+    old_key_pressed = key_pressed;
+  }
+  int shader_id() {
+    if (current_item) {
+      return end->shader_id();
+    } else {
+      return curr->shader_id();
+    }
+  }
+  
+private:
+  MainLoopItem *curr;
+  MainLoopItem *end;
+  float start_time;
+  float end_time;
+  float show_duration;
+  float chosen_time;
+  bool current_item;
+  bool key_pressed;
+  int key;
+  bool firsttime;
+  bool old_key_pressed;
+};
+
 class CollisionDetection : public MainLoopItem
 {
 public:
-  CollisionDetection(GameApi::EveryApi &ev, float player_size, Point* player_pos, Movement* player_trans,
-		     float enemy_size, PointsApiPoints* enemy_pos, Movement* enemy_trans,
+  CollisionDetection(GameApi::EveryApi &ev, float player_size, float enemy_size,
 		     MainLoopItem* normal_game_screen, MainLoopItem *gameover_screen)
-    : ev(ev), player_size(player_size), player_pos(player_pos), player_trans(player_trans), enemy_size(enemy_size), enemy_pos(enemy_pos), enemy_trans(enemy_trans), normal_game_screen(normal_game_screen), gameover_screen(gameover_screen)
+    : ev(ev), player_size(player_size), enemy_size(enemy_size), normal_game_screen(normal_game_screen), gameover_screen(gameover_screen)
   {
   }
   virtual void execute(MainLoopEnv &e)
   {
-    Point p = *player_pos;
-    Matrix m = player_trans->get_whole_matrix(e.time*10.0, ev.mainloop_api.get_delta_time());
+    check_world(e);
+    Point p = e.current_world->player_pos;
+    Matrix m = e.current_world->player_matrix;
     Point pl_pos = p * m;
 
-    int s = enemy_pos->NumPoints();
+    int s = e.current_world->enemy_pieces.size();
     for(int i=0;i<s;i++)
       {
-	Point p2 = enemy_pos->Pos(i);
-	Matrix m2 = enemy_trans->get_whole_matrix(e.time*10.0, ev.mainloop_api.get_delta_time());
+	EnemyPiece &piece = get_enemy_piece(e, i);
+	Point p2 = piece.enemy_position;
+	Matrix m2 = e.current_world->enemy_matrix;
 	Point en_pos = p2 * m2;
 
 	Vector v = pl_pos - en_pos;
@@ -818,19 +908,21 @@ private:
 private:
   int state=0;
 };
+GameApi::ML GameApi::MainLoopApi::timed_tmp_seq_ml(ML curr, ML end, float start_time, float end_time, float show_duration, int key)
+{
+  MainLoopItem *curr_item = find_main_loop(e, curr);
+  MainLoopItem *end_item = find_main_loop(e, end);
+  return add_main_loop(e, new TimedTmpSeqML(curr_item, end_item, start_time, end_time, show_duration, key));
+}
 GameApi::ML GameApi::MainLoopApi::collision_detection(EveryApi &ev,
-						      float player_size, PT player_pos, MN player_trans,
-						      float enemy_size, PTS enemy_pos, MN enemy_trans,
+						      float player_size, 
+						      float enemy_size, 
 						      ML normal_game_screen, ML gameover_screen)
 {
-  Point *ply_pos = find_point(e, player_pos);
-  PointsApiPoints *en_pos = find_pointsapi_points(e, enemy_pos);
-  Movement *ply_trans = find_move(e, player_trans);
-  Movement *en_trans = find_move(e, enemy_trans);
   MainLoopItem *game_screen = find_main_loop(e, normal_game_screen);
   MainLoopItem *gameover = find_main_loop(e, gameover_screen);
-  return add_main_loop(e, new CollisionDetection(ev,player_size, ply_pos, ply_trans,
-						 enemy_size, en_pos, en_trans,
+  return add_main_loop(e, new CollisionDetection(ev,player_size, 
+						 enemy_size,
 						 game_screen, gameover));
 }
 GameApi::ML GameApi::MainLoopApi::seq_ml(std::vector<ML> vec, float time)
@@ -1089,4 +1181,46 @@ void GameApi::MainLoopApi::set_homepage_url(std::string url)
 {
   std::cout << "Homepage set to: " << url << std::endl;
   gameapi_homepageurl = url;
+}
+class SongML : public MainLoopItem
+{
+public:
+  SongML(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, MainLoopItem *next, std::string homepage) : env(env), ev(ev), url(url), next(next), homepage(homepage) {
+    firsttime = true;
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+#ifndef EMSCRIPTEN
+  env.async_load_url(url, homepage);
+#endif      
+      std::vector<unsigned char> *ptr = env.get_loaded_async_url(url);
+      std::ofstream ss("song.ogg", std::ofstream::out | std::ofstream::binary);
+      int s = ptr->size();
+      for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
+      ss.close();
+      ev.tracker_api.play_ogg("song.ogg");
+      firsttime = false;
+    }
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual int shader_id() { return next->shader_id(); }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string url;
+  bool firsttime;
+  MainLoopItem *next;
+  std::string homepage;
+};
+
+GameApi::ML GameApi::MainLoopApi::load_song(EveryApi &ev, ML next, std::string url)
+{
+  MainLoopItem *nxt = find_main_loop(e, next);
+  std::string homepage = ev.mainloop_api.get_homepage_url();
+  return add_main_loop(e, new SongML(e,ev, url, nxt, homepage));
 }
