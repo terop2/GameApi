@@ -1280,7 +1280,8 @@ void RenderVertexArray::render(int id)
     }
 
 #endif
-    glDrawArrays(GL_TRIANGLES, 0, tri_count);
+    if (tri_count > 0)
+      glDrawArrays(GL_TRIANGLES, 0, tri_count);
 #if 1
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
@@ -1354,7 +1355,8 @@ void RenderVertexArray::render(int id)
     }
 
 #endif
-    glDrawArrays(GL_TRIANGLES, 0, quad_count);
+    if (quad_count >0)
+      glDrawArrays(GL_TRIANGLES, 0, quad_count);
 #if 1
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
@@ -1408,7 +1410,8 @@ void RenderVertexArray::render(int id)
     glEnableVertexAttribArray(3);
     glEnableVertexAttribArray(4);
 #endif
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, poly_count);
+    if (poly_count > 0)
+      glDrawArrays(GL_TRIANGLE_STRIP, 0, poly_count);
 #if 1
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);

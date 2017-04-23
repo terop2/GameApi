@@ -1068,4 +1068,8 @@ GameApi::A<T> GameApi::ArrayApi<T>::array(std::vector<T> vec)
   return a;
 }
 
+void check_world(MainLoopEnv &e);
+void check_world_elements(MainLoopEnv &e);
+EnemyPiece &get_enemy_piece(MainLoopEnv &e, int index);
+
 #endif

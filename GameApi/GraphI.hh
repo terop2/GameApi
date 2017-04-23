@@ -383,6 +383,74 @@ struct GameApiModule
 {
   std::vector<GameApiFunction> funcs;
 };
+enum PieceUserDataIds
+  {
+  };
+struct WorldPiece
+{
+  std::string script;
+  Point delta_pos;
+  int p;  
+  std::map<int, void*> user_data;
+};
+struct PlayerPiece
+{
+  std::string script;
+  Point delta_pos;
+  int p;
+  std::map<int, void*> user_data;
+};
+struct EnemyPiece
+{
+  std::string script;
+  Point delta_pos;
+  int p;
+  Point enemy_position;
+  float enemy_rot_y;
+  std::map<int, void*> user_data;
+};
+struct WorldElement
+{
+  int index;
+};
+struct World
+{
+  // Actual world
+  WorldElement *world = 0; // these are indexes, not owned
+  int world_sx = 100;
+  int world_sy = 100;
+  int world_sz = 1;
+  Vector world_dx, world_dy, world_dz;
+  Point world_pos;
+
+  std::vector<WorldPiece> world_pieces;
+
+  // Player
+  Point player_pos;
+  Matrix player_matrix;
+  std::vector<PlayerPiece> player_pieces;
+
+  // Camera
+  Point camera_pos;
+  float rot_y;
+  Vector camera_normal;
+  
+  // enemies
+  Matrix enemy_matrix;
+  std::vector<EnemyPiece> enemy_pieces;
+};
+
+struct ContentPiece
+{
+  std::string url;
+  std::string script;
+};
+
+struct ContentCollection
+{
+  std::vector<std::string> content_item_names;
+  std::vector<ContentPiece> content_items;
+};
 
 struct MainLoopEnv
 {
@@ -416,7 +484,12 @@ struct MainLoopEnv
   int screen_width = 800;
   int screen_height = 600;
   bool is_2d = false;
+
+  // Game properties
+  World *current_world = 0;
+  ContentCollection *avail_content =0;
 };
+
 
 struct MainLoopEvent
 {

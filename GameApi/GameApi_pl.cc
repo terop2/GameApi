@@ -1790,6 +1790,13 @@ EXPORT GameApi::P GameApi::PolygonApi::recalculate_normals(P orig)
   FaceCollection *coll2 = new RecalculateNormals(*coll);
   return add_polygon(e, coll2, 1);
 }
+EXPORT GameApi::P GameApi::PolygonApi::average_normals(P orig, int sx, int sy)
+{
+  FaceCollection *coll = find_facecoll(e, orig);
+  FaceCollection *coll2 = new AverageNormals(coll, sx,sy);
+  return add_polygon(e, coll2, 1);
+}
+
 EXPORT GameApi::P GameApi::PolygonApi::memoize(P orig)
 {
   FaceCollection *coll = find_facecoll(e, orig);
@@ -5592,6 +5599,110 @@ private:
   int start;
   int end;
 };
+class TexCoordFromNormal : public ForwardFaceCollection
+{
+public:
+  TexCoordFromNormal(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  Point2d TexCoord(int face, int point) const
+  { 
+    Vector n = coll->PointNormal(face,point);
+    int nxt = point+2;
+    nxt = nxt % coll->NumPoints(face);
+    Vector n2 = coll->PointNormal(face,nxt);
+    n/=n.Dist();
+    n2/=n2.Dist();
+    float r = sqrt(n.dx*n.dx+n.dy*n.dy+n.dz*n.dz);
+    float r2 = sqrt(n2.dx*n2.dx+n2.dy*n2.dy+n2.dz*n2.dz);
+    float alfa = acos(n.dz/r);
+    float alfa2 = acos(n2.dz/r2);
+    float beta = atan2(n.dy,n.dx);
+    float beta2 = atan2(n2.dy,n2.dx);
+    alfa/=3.14159265;
+    beta/=2.0*3.14159265;
+    alfa2/=3.14159265;
+    beta2/=2.0*3.14159265;
+#if 1
+    while (alfa<0.0) alfa+=1.0;
+    while (beta<0.0) beta+=1.0;
+    while (alfa>1.0) alfa-=1.0;
+    while (beta>1.0) beta-=1.0;
+
+    while (alfa2<0.0) alfa2+=1.0;
+    while (beta2<0.0) beta2+=1.0;
+    while (alfa2>1.0) alfa2-=1.0;
+    while (beta2>1.0) beta2-=1.0;
+#endif
+    if (alfa-alfa2 > 0.5) { alfa-=1.0; }
+    if (beta-beta2 > 0.5) { beta-=1.0; }
+    if (alfa-alfa2 < -0.5) { alfa+=1.0; }
+    if (beta-beta2 < -0.5) { beta+=1.0; }
+    
+    Point2d p;
+    p.x = alfa;
+    p.y = beta;
+    return p;
+  }
+private:
+  FaceCollection *coll;
+};
+GameApi::P GameApi::PolygonApi::texcoord_from_normal(P p)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  return add_polygon2(e, new TexCoordFromNormal(coll),1);
+}
+class FixTexCoord : public ForwardFaceCollection
+{
+public:
+  FixTexCoord(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) {}
+
+  Point2d TexCoord(int face, int point) const
+  {
+    int prev = point - 1;
+    int next = point + 1;
+    if (coll->NumPoints(face)==4) { prev--; next++; }
+    prev = prev % coll->NumPoints(face);
+    next = next % coll->NumPoints(face);
+
+    Point2d tx_prev = coll->TexCoord(face, prev);
+    Point2d tx_curr = coll->TexCoord(face, point);
+    //Point2d tx_next = coll->TexCoord(face, next);
+
+    Vector2d v1 = tx_curr - tx_prev;
+    //Vector2d v2 = tx_next - tx_curr;
+     
+    float dist1 = v1.Dist();
+    //float dist2 = v2.Dist();
+    if (dist1>0.5) {
+      Point2d tx_test1 = tx_curr;
+      tx_test1.x -= 1.0;
+      Point2d tx_test2 = tx_curr;
+      tx_test2.y -= 1.0;
+      Point2d tx_test3 = tx_curr;
+      tx_test3.x += 1.0;
+      Point2d tx_test4 = tx_curr;
+      tx_test4.y += 1.0;
+
+      float d0 = (tx_curr - tx_prev).Dist();
+      float d1 = (tx_test1 - tx_prev).Dist();
+      float d2 = (tx_test2 - tx_prev).Dist();
+      float d3 = (tx_test3 - tx_prev).Dist();
+      float d4 = (tx_test4 - tx_prev).Dist();
+      if (d0 < d1 && d0 < d2 && d0 < d3 && d0 < d4) { return tx_curr; }
+      if (d1 < d2 && d1 < d3 && d1 < d4) { return tx_test1; }
+      if (d2 < d1 && d2 < d3 && d2 < d4) { return tx_test2; }
+      if (d3 < d1 && d3 < d2 && d3 < d4) { return tx_test3; }
+      if (d4 < d1 && d4 < d2 && d4 < d3) { return tx_test4; }
+    }
+    return tx_curr;
+  }
+private:
+  FaceCollection *coll;
+};
+GameApi::P GameApi::PolygonApi::fix_texcoord(P p)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  return add_polygon2(e, new FixTexCoord(coll),1);
+}
 
 GameApi::P GameApi::PolygonApi::split_p(P p, int start_face, int end_face)
 {

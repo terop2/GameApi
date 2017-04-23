@@ -3033,12 +3033,16 @@ public:
 	    i--; s--;
 	  }
       }
+    GameApi::M res2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res2));
     ev.shader_api.use(s1);
     ev.shader_api.set_var(s1, "in_MV", res2);
+    ev.shader_api.set_var(s1, "in_iMV", res2i);
     ev.shader_api.use(s2);
     ev.shader_api.set_var(s2, "in_MV", res2);
+    ev.shader_api.set_var(s2, "in_iMV", res2i);
     ev.shader_api.use(s3);
     ev.shader_api.set_var(s3, "in_MV", res2);
+    ev.shader_api.set_var(s3, "in_iMV", res2i);
     env.in_MV = find_matrix(e, res2);
     Matrix old_env = env.env;
     env.env = env.env * find_matrix(e,res2);
@@ -3126,12 +3130,16 @@ public:
     GameApi::M mat = add_matrix2(e, m);
     GameApi::M m2 = add_matrix2(e, env.env);
     GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
+    GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
     ev.shader_api.use(s1);
     ev.shader_api.set_var(s1, "in_MV", mat2);
+    ev.shader_api.set_var(s1, "in_iMV", mat2i);
     ev.shader_api.use(s2);
     ev.shader_api.set_var(s2, "in_MV", mat2);
+    ev.shader_api.set_var(s1, "in_iMV", mat2i);
     ev.shader_api.use(s3);
     ev.shader_api.set_var(s3, "in_MV", mat2);
+    ev.shader_api.set_var(s1, "in_iMV", mat2i);
     Matrix old_in_MV = env.in_MV;
     env.in_MV = find_matrix(e, mat2);
     Matrix old_env = env.env;
@@ -3233,12 +3241,16 @@ public:
     GameApi::M mat = add_matrix2(e, m);
     GameApi::M m2 = add_matrix2(e, env.env);
     GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
+    GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
     ev.shader_api.use(s1);
     ev.shader_api.set_var(s1, "in_MV", mat2);
+    ev.shader_api.set_var(s1, "in_iMV", mat2i);
     ev.shader_api.use(s2);
     ev.shader_api.set_var(s2, "in_MV", mat2);
+    ev.shader_api.set_var(s2, "in_iMV", mat2i);
     ev.shader_api.use(s3);
     ev.shader_api.set_var(s3, "in_MV", mat2);
+    ev.shader_api.set_var(s3, "in_iMV", mat2i);
     Matrix old_in_MV = env.in_MV;
     env.in_MV = find_matrix(e, mat2);
     Matrix old_env = env.env;
@@ -3296,12 +3308,16 @@ public:
     GameApi::M m2 = add_matrix2(e, env.env);
     //std::cout << env.env << std::endl;
     GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
+    GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
     ev.shader_api.use(s1);
     ev.shader_api.set_var(s1, "in_MV", mat2);
+    ev.shader_api.set_var(s1, "in_iMV", mat2i);
     ev.shader_api.use(s2);
     ev.shader_api.set_var(s2, "in_MV", mat2);
+    ev.shader_api.set_var(s2, "in_iMV", mat2i);
     ev.shader_api.use(s3);
     ev.shader_api.set_var(s3, "in_MV", mat2);
+    ev.shader_api.set_var(s3, "in_iMV", mat2i);
     //Matrix old_in_MV = env.in_MV;
     MainLoopEnv ee = env;
     ee.in_MV = find_matrix(e, mat2);
@@ -3443,12 +3459,16 @@ public:
       m2 = add_matrix2(e, env.env);
       mat2 = ev.matrix_api.mult(collect,m2);
     }
+    GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
     ev.shader_api.use(s1);
     ev.shader_api.set_var(s1, "in_MV", mat2);
+    ev.shader_api.set_var(s1, "in_iMV", mat2i);
     ev.shader_api.use(s2);
     ev.shader_api.set_var(s2, "in_MV", mat2);
+    ev.shader_api.set_var(s2, "in_iMV", mat2i);
     ev.shader_api.use(s3);
     ev.shader_api.set_var(s3, "in_MV", mat2);
+    ev.shader_api.set_var(s3, "in_iMV", mat2i);
     Matrix old_in_MV = env.in_MV;
     env.in_MV = find_matrix(e, mat2);
 
@@ -3575,12 +3595,16 @@ public:
       m2 = add_matrix2(e, env.env);
       mat2 = ev.matrix_api.mult(collect,m2);
     }
+    GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
     ev.shader_api.use(s1);
     ev.shader_api.set_var(s1, "in_MV", mat2);
+    ev.shader_api.set_var(s1, "in_iMV", mat2i);
     ev.shader_api.use(s2);
     ev.shader_api.set_var(s2, "in_MV", mat2);
+    ev.shader_api.set_var(s2, "in_iMV", mat2i);
     ev.shader_api.use(s3);
     ev.shader_api.set_var(s3, "in_MV", mat2);
+    ev.shader_api.set_var(s3, "in_iMV", mat2i);
     Matrix old_in_MV = env.in_MV;
     env.in_MV = find_matrix(e, mat2);
 
@@ -3683,12 +3707,16 @@ public:
 	GameApi::M mat = ev.move_api.get_matrix(mn[i], time, ev.mainloop_api.get_delta_time());
 	GameApi::M m2 = add_matrix2(e, env.env);
 	GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
+	GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
 	ev.shader_api.use(s1);
 	ev.shader_api.set_var(s1, "in_MV", mat2);
+	ev.shader_api.set_var(s1, "in_iMV", mat2i);
 	ev.shader_api.use(s2);
 	ev.shader_api.set_var(s2, "in_MV", mat2);
+	ev.shader_api.set_var(s2, "in_iMV", mat2i);
 	ev.shader_api.use(s3);
 	ev.shader_api.set_var(s3, "in_MV", mat2);
+	ev.shader_api.set_var(s3, "in_iMV", mat2i);
 	env.in_MV = find_matrix(e, mat2);
 	
 	Matrix old_env = env.env;
@@ -3945,12 +3973,16 @@ public:
 	  //GameApi::M mat = ev.move_api.get_matrix(mn, time);
 	  //GameApi::M m2 = add_matrix2(e, env.env);
 	  GameApi::M mat2 = m2; //ev.matrix_api.mult(mat,m2);
+	  GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
 	  ev.shader_api.use(s1);
 	  ev.shader_api.set_var(s1, "in_MV", mat2);
+	  ev.shader_api.set_var(s1, "in_iMV", mat2i);
 	  ev.shader_api.use(s2);
 	  ev.shader_api.set_var(s2, "in_MV", mat2);
+	  ev.shader_api.set_var(s2, "in_iMV", mat2i);
 	  ev.shader_api.use(s3);
 	  ev.shader_api.set_var(s3, "in_MV", mat2);
+	  ev.shader_api.set_var(s3, "in_iMV", mat2i);
 	  env.in_MV = find_matrix(e, mat2);
 	  
 	  Matrix old_env = env.env;
@@ -4973,6 +5005,7 @@ public:
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
+	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_N", m2);
 
@@ -5116,6 +5149,7 @@ public:
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
+	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_N", m2);
 	ev.shader_api.set_var(shader, "in_POS", 0.0f);
@@ -7336,10 +7370,14 @@ void blocker_iter(void *arg)
     GameApi::M mat = env->ev->matrix_api.identity();
 	env->ev->shader_api.use(env->color_sh);
 	env->ev->shader_api.set_var(env->color_sh, "in_MV", mat);
+	env->ev->shader_api.set_var(env->color_sh, "in_iMV", env->ev->matrix_api.transpose(env->ev->matrix_api.inverse(mat)));
 	env->ev->shader_api.use(env->texture_sh);
 	env->ev->shader_api.set_var(env->texture_sh, "in_MV", mat);
+	env->ev->shader_api.set_var(env->texture_sh, "in_iMV", env->ev->matrix_api.transpose(env->ev->matrix_api.inverse(mat)));
+
 	env->ev->shader_api.use(env->arr_texture_sh);
 	env->ev->shader_api.set_var(env->arr_texture_sh, "in_MV", mat);
+	env->ev->shader_api.set_var(env->arr_texture_sh, "in_iMV", env->ev->matrix_api.transpose(env->ev->matrix_api.inverse(mat)));
 	env->ev->shader_api.use(env->color_sh);
 
 	GameApi::M in_MV = mat; //env->ev->mainloop_api.in_MV(*env->ev, true);
@@ -8106,6 +8144,7 @@ public:
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
+	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_N", m2);
 	ev.shader_api.set_var(shader, "time", e.time);
@@ -8692,5 +8731,149 @@ GameApi::LI GameApi::MovementNode::cmd_to_li(CMD cmds2, std::string commands)
 {
   CmdExecute *cmds = find_cmds(e, cmds2);
   return add_line_array(e, new CmdLines(cmds, commands));
+}
+
+void check_world(MainLoopEnv &e)
+{
+  if (e.current_world) return;
+  e.current_world = new World;
+}
+void check_world_elements(MainLoopEnv &e)
+{
+  World *w = e.current_world;
+  if (!w) return;
+  if (w->world) return;
+  w->world = new WorldElement[w->world_sx*w->world_sy*w->world_sz];
+}
+
+class Player : public MainLoopItem
+{
+public:
+  Player(MainLoopItem *next) : next(next) { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    check_world(e);
+    e.current_world->player_matrix = e.in_MV;
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual int shader_id() { return next->shader_id(); }
+
+private:
+  MainLoopItem *next;
+};
+
+
+class Enemy : public MainLoopItem
+{
+public:
+  Enemy(MainLoopItem *next) : next(next) { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    check_world(e);
+    e.current_world->enemy_matrix = e.in_MV;
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual int shader_id() { return next->shader_id(); }
+
+private:
+  MainLoopItem *next;
+};
+
+GameApi::ML GameApi::MovementNode::player(ML prev)
+{
+  MainLoopItem *item = find_main_loop(e, prev);
+  return add_main_loop(e, new Player(item));
+}
+GameApi::ML GameApi::MovementNode::enemy(ML prev)
+{
+  MainLoopItem *item = find_main_loop(e, prev);
+  return add_main_loop(e, new Enemy(item));
+}
+
+class PlayerPos : public MainLoopItem
+{
+public:
+  PlayerPos(MainLoopItem *next, Point p) : next(next),p(p) { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    check_world(e);
+    e.current_world->player_pos = p;
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual int shader_id() { return next->shader_id(); }
+
+private:
+  MainLoopItem *next;
+  Point p;
+};
+
+GameApi::ML GameApi::MovementNode::player_pos(ML prev, PT pos)
+{
+  MainLoopItem *item = find_main_loop(e, prev);
+  Point *pt = find_point(e, pos);
+  return add_main_loop(e, new PlayerPos(item, *pt));
+}
+EnemyPiece &get_enemy_piece(MainLoopEnv &e, int index)
+{
+  check_world(e);
+  World *w = e.current_world;
+  while (index >= (int)w->enemy_pieces.size()) {
+    EnemyPiece piece;
+    w->enemy_pieces.push_back(piece);
+  }
+  EnemyPiece &piece = w->enemy_pieces[index];
+  return piece;
+}
+
+class EnemyPos : public MainLoopItem
+{
+public:
+  EnemyPos(MainLoopItem *next, PointsApiPoints *pts) : next(next), pts(pts) { firsttime = true; }
+  virtual void execute(MainLoopEnv &e)
+  {
+    check_world(e);
+    if (firsttime)
+      {
+	int s = pts->NumPoints();
+	for(int i=0;i<s;i++)
+	  {
+	    Point pt = pts->Pos(i);
+	    EnemyPiece &p = get_enemy_piece(e, i);
+	    p.enemy_position = pt;
+	  }
+	firsttime = false;
+      }
+    
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual int shader_id() { return next->shader_id(); }
+
+private:
+  MainLoopItem *next;
+  PointsApiPoints *pts;
+  bool firsttime;
+};
+
+GameApi::ML GameApi::MovementNode::enemy_pos(ML prev, PTS pos)
+{
+  MainLoopItem *item = find_main_loop(e, prev);
+  PointsApiPoints *pts = find_pointsapi_points(e, pos);
+  return add_main_loop(e, new EnemyPos(item, pts));
 }
 

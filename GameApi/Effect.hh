@@ -3066,6 +3066,48 @@ public:
     return v / v.Dist();
   }
 };
+class AverageNormals : public ForwardFaceCollection
+{
+public:
+  AverageNormals(FaceCollection *coll, int sx, int sy) : ForwardFaceCollection(*coll), sx(sx),sy(sy), coll(coll) { }
+  Vector PointNormal(int face, int point) const 
+  {
+    int face_xp = face + 1;
+    int face_xm = face - 1;
+    int face_yp = face + sx;
+    int face_ym = face - sx;
+    int face_xm_ym = face - 1 - sx;
+    int face_xp_ym = face + 1 - sx;
+    int face_xm_yp = face - 1 + sx;
+    int face_xp_yp = face + 1 + sx;
+
+    Vector n_face = coll->PointNormal(face,point);
+    Vector n_xm_ym = coll->PointNormal(face_xm_ym, point);
+    Vector n_xp_ym = coll->PointNormal(face_xp_ym, point);
+    Vector n_xm_yp = coll->PointNormal(face_xm_yp, point);
+    Vector n_xp_yp = coll->PointNormal(face_xp_yp, point);
+    Vector n_xp = coll->PointNormal(face_xp, point);
+    Vector n_xm = coll->PointNormal(face_xm, point);
+    Vector n_yp = coll->PointNormal(face_yp, point);
+    Vector n_ym = coll->PointNormal(face_ym, point);
+
+    Vector n,n2;
+    Vector p,p2;
+    
+    switch(point) {
+    case 0: n = n_xm_ym; n2=n_ym; p=n_xm; p2=n_face; break;
+    case 1: n = n_ym; n2=n_xp_ym; p=n_face; p2=n_xp; break;
+    case 2: n = n_face; n2=n_xp; p=n_yp; p2=n_xp_yp; break;
+    case 3: n = n_xm; n2=n_face; p=n_xm_yp; p2=n_yp; break;
+    };
+    Vector avg = n+n2+p+p2;
+    avg/=4.0;
+    return avg;    
+  }
+private:
+  int sx,sy;
+  FaceCollection *coll;
+};
 
 class SmoothNormals : public ForwardFaceCollection
 {
