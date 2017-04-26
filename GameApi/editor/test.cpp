@@ -818,7 +818,7 @@ void iter(void *arg)
 		    
 	      {
 		//std::cout << "Execute for uid: " << uid << std::endl;
-		    
+		env->env->free_temp_memory();
 		    // Execute
 		    GameApi::ExecuteEnv exeenv;
 		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000);
@@ -895,11 +895,13 @@ void iter(void *arg)
 			    blk.id = id;
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
+			//std::vector<int> v = env->env->store_counts();
 			int sx = env->ev->mainloop_api.get_screen_sx();
 			int sy = env->ev->mainloop_api.get_screen_sy();
 			//env->ev->mainloop_api.set_screen_size(1200,900);
 			//env->ev->mainloop_api.set_viewport(0,0,1200,900);
 			    env->ev->blocker_api.run(blk);
+			    //env->env->free_to_counts(v);
 			    //env->ev->mainloop_api.set_screen_size(sx,sy);
 			    //env->ev->mainloop_api.set_viewport(0,0,sx,sy);
 			    env->display = env->gui->empty();
@@ -1469,7 +1471,7 @@ W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector<GameApiI
 
 void print_stack_trace()
 {
-
+#if 1
   HANDLE process = GetCurrentProcess();
   HANDLE thread = GetCurrentThread();
   
@@ -1536,17 +1538,22 @@ void print_stack_trace()
   }
   
   SymCleanup(process);
+#endif
 }
+
 
 void terminate_handler()
 {
+  //print_counters();
   print_stack_trace();
   std::cout << "Terminate Handler called!" << std::endl;
   for(;;);
 }
-
+void clear_counters();
+void print_counters();
 int main(int argc, char *argv[]) {
-
+  //clear_counters();
+  SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T) -1, (SIZE_T)-1);
 
   std::set_terminate(&terminate_handler);
   srand(time(NULL));
@@ -1864,7 +1871,7 @@ int main(int argc, char *argv[]) {
   ev.shader_api.use(sh);
   ev.mainloop_api.alpha(true);
 
-
+  //print_counters();
   //ev.mainloop_api.display_logo(ev);
 
 #ifndef EMSCRIPTEN

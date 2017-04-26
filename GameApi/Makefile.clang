@@ -42,8 +42,10 @@ CFiles=	Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
 
 CFiles2 = Main.cc
 
-CFiles_examples = GameApiTest3.cc GameApiTest4.cc GameApiWorld.cc GameApiTest5.cc GameApiTest6.cc GameApiTest7.cc GameApiTest8.cc GameApiTest9.cc GameApiTestA.cc
-CFiles2_examples = ExampleMain.cc
+CFiles_examples =
+# GameApiTest3.cc GameApiTest4.cc GameApiWorld.cc GameApiTest5.cc GameApiTest6.cc GameApiTest7.cc GameApiTest8.cc GameApiTest9.cc GameApiTestA.cc
+CFiles2_examples =
+#ExampleMain.cc
 Subdirs = 
 #module1
 
@@ -84,8 +86,8 @@ INC9WIN = "C:\Program Files (x86)\mingw-w64\i686-4.9.2-posix-dwarf-rt_v4-rev2\mi
 INCAWIN = "C:\Program Files (x86)\mingw-w64\i686-4.9.2-posix-dwarf-rt_v4-rev2\mingw32\i686-w64-mingw32\include"
 INCBWIN = d:\cvs\SDL2_mixer-2.0.0\i686-w64-mingw32/include/sdl2
 
-CCFLAGS = -g -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INC8WIN) -I$(INC9WIN) -I$(INCAWIN) -Wignored-attributes -DGAMEAPI_COMPILATION -pthread
-CC2FLAGS = -g -std=c++11 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -I$(INC8WIN) -I$(INC9WIN) -I$(INCAWIN) -I$(INCBWIN) -DGLEW_STATIC -stdlib=libc++ -Wignored-attributes -DGAMEAPI_COMPILATION -pthread
+CCFLAGS = -mwindows -g -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INC8WIN) -I$(INC9WIN) -I$(INCAWIN) -Wignored-attributes -DGAMEAPI_COMPILATION -pthread
+CC2FLAGS = -mwindows -g -std=c++11 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -I$(INC8WIN) -I$(INC9WIN) -I$(INCAWIN) -I$(INCBWIN) -DGLEW_STATIC -stdlib=libc++ -Wignored-attributes -DGAMEAPI_COMPILATION -pthread
 #`pkg-config gtkmm-2.4 --cflags`
 
 
@@ -97,11 +99,11 @@ examples: main
 
 main: $(GCHFiles_examples) $(OFiles_examples) Makefile GameApi.hh libGameApi.so
 	@echo clang++ main
-	@clang++ -g $(OFiles_examples) -std=c++11 -o main -L. -lGameApi -lGL -lm -lstdc++
+	@clang++ -mwindows -g $(OFiles_examples) -std=c++11 -o main -L. -lGameApi -lGL -lm -lstdc++
 
 main.exe: $(GCHFiles_examples) $(O2Files_examples) Makefile GameApi.hh libGameApi.dll
 	@echo clang++ main.exe
-	@$(CCWIN) -g $(O2Files_examples) -o main.exe -L. -lGameApi -lopengl32 -lm -lstdc++
+	@$(CCWIN) -mwindows -g $(O2Files_examples) -o main.exe -L. -lGameApi -lopengl32 -lm -lstdc++
 
 
 libGameApi.so: $(GCHFiles) $(OFiles) Makefile

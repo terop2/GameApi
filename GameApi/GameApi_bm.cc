@@ -1317,15 +1317,15 @@ EXPORT GameApi::BM GameApi::BitmapApi::world_from_bitmap(std::function<BM(int)> 
     }
   return current;
 }
-EXPORT GameApi::BM GameApi::FloatBitmapApi::subfloatbitmap(FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color)
+EXPORT GameApi::BM GameApi::FloatBitmapApi::subfloatbitmap(GameApi::EveryApi &ev, FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color)
 {
-  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->deletes.push_back(std::shared_ptr<void>(ev));
+  //GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  //::EnvImpl *env = ::EnvImpl::Environment(&e);
+  //env->deletes.push_back(std::shared_ptr<void>(ev));
   GameApi::BB b = to_bool(fb, range_start, range_end);
   Color c(true_color);
   Color c2(false_color);
-  GameApi::BM bm = ev->bool_bitmap_api.to_bitmap_1(b, c.r, c.g, c.b, c.alpha,
+  GameApi::BM bm = ev.bool_bitmap_api.to_bitmap_1(b, c.r, c.g, c.b, c.alpha,
 						 c2.r, c2.g, c2.b, c2.alpha);
   return bm;
 }
@@ -1737,10 +1737,37 @@ EXPORT float GameApi::FloatBitmapApi::floatvalue(FB bm, int x, int y)
   return b->Map(x,y);
 }
 
-
+class RectBitmap44 : public Bitmap<bool>
+{
+public:
+  RectBitmap44(Bitmap<bool> *next, float x, float y, float width, float height)
+    : next(next), x(x), y(y), width(width), height(height)
+  {
+  }
+  virtual int SizeX() const { return next->SizeX(); }
+  virtual int SizeY() const { return next->SizeY(); }
+  virtual bool Map(int xx, int yy) const
+  {
+    bool res = true;
+    if (xx<x) res=false;
+  if (xx>=x+width) res=false;
+  if (yy<y) res=false;
+  if (yy>=y+height) res=false;
+  if (res==false) return next->Map(xx,yy);
+  return true;
+  }
+  virtual void Prepare() { next->Prepare(); }
+private:
+  Bitmap<bool> *next;
+  float x,y,width,height;
+};
 EXPORT GameApi::BB GameApi::BoolBitmapApi::rectangle(BB bg, float x, float y, float width, float height)
 {
-
+  BoolBitmap *handle3 = find_bool_bitmap(e,bg);
+  Bitmap<bool> *bm = handle3->bitmap;
+  return add_bool_bitmap(e, new RectBitmap44(bm, x,y,width,height));
+#if 0
+  
   Rectangle_data *d = new Rectangle_data;
   d->start_x = x;
   d->start_y = y;
@@ -1753,6 +1780,7 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::rectangle(BB bg, float x, float y, fl
   using std::placeholders::_2;
   using std::placeholders::_3;
   return or_bitmap(bg, function(std::bind(Rectangle_func,_1, _2,(void*)d), size_x(bg), size_y(bg)));
+#endif
 }
 
 class BoolBitmapSprite : public Bitmap<bool>
@@ -1836,9 +1864,9 @@ EXPORT GameApi::FloatBitmapApi::~FloatBitmapApi() { }
 
 EXPORT GameApi::FB GameApi::FloatBitmapApi::function(std::function<float (int,int)> f, int sx, int sy)
 {
-  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->deletes.push_back(std::shared_ptr<void>(ev));
+  //GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  //::EnvImpl *env = ::EnvImpl::Environment(&e);
+  //env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_float_bitmap(e, new BitmapFromFunction<float>(f,sx,sy));
 }
 
@@ -2311,9 +2339,9 @@ struct PointArray
 
 GameApi::BB GameApi::BoolBitmapApi::function(std::function<bool (int,int)> f, int sx, int sy)
 {
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  GameApi::EveryApi *ev = new GameApi::EveryApi(e);
-  env->deletes.push_back(std::shared_ptr<void>(ev));
+  //::EnvImpl *env = ::EnvImpl::Environment(&e);
+  //GameApi::EveryApi *ev = new GameApi::EveryApi(e);
+  //env->deletes.push_back(std::shared_ptr<void>(ev));
   
   return add_bool_bitmap(e, new BitmapFromFunction<bool>(f, sx,sy));
 }

@@ -58,6 +58,12 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
     glyph_data[idx] = data;
   }
 
+  static std::map<std::string, unsigned char *> loaded_maps;
+  static std::map<std::string, int> loaded_sizes;
+  unsigned char *ptr2 = loaded_maps[ttf_filename];
+  int size = loaded_sizes[ttf_filename];
+  if (!ptr2) {
+  
 #ifndef EMSCRIPTEN
   e.async_load_url(ttf_filename, homepage);
 #endif
@@ -75,12 +81,17 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
     //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
     //ss.close();
   }
-  data->lib = (FT_Library*)priv_;
-  unsigned char *ptr2 = new unsigned char[ptr->size()+1];
+  ptr2 = new unsigned char[ptr->size()+1];
   std::copy(ptr->begin(), ptr->end(), ptr2);
+  size = ptr->size();
+  loaded_maps[ttf_filename] = ptr2;
+  loaded_sizes[ttf_filename] = size;
+  }
+  data->lib = (FT_Library*)priv_;
+  
   int err = FT_New_Memory_Face( *data->lib,
 				ptr2 /*"font.ttf"*/,
-				ptr->size(),
+			        size,
 				0,
 				&data->face);
   if (err!=0)

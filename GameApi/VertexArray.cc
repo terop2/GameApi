@@ -550,7 +550,7 @@ void VertexArraySet::append_to_polys(Polys &target, const Polys &source)
     }
   //std::cout << "tri_color: " << target.tri_color.size() << std::endl;
   int s8 = source.quad_color.size();
-  target.quad_color.reserve(s8);
+  target.quad_color.reserve(target.quad_color.size()+s8);
   for(int i=0;i<s8;i++)
     {
       target.quad_color.push_back(source.quad_color[i]);

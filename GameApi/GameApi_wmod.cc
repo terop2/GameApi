@@ -181,14 +181,14 @@ void save_gameapi(const GameApiModule &mod, std::string filename)
 	}
     }
 }
-void GameApi::WModApi::save(GameApi::WM wm, std::string filename)
+EXPORT void GameApi::WModApi::save(GameApi::WM wm, std::string filename)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[wm.id];
   save_gameapi(*mod, filename);
 }
 
-GameApi::WM GameApi::WModApi::load(std::string filename)
+EXPORT GameApi::WM GameApi::WModApi::load(std::string filename)
 {
   GameApiModule mod = load_gameapi(filename);
   GameApiModule *mod2 = new GameApiModule(mod);
@@ -270,7 +270,7 @@ std::vector<std::string> reduce_list_to_types_only(std::vector<std::string> type
     }
   return ret;
 }
-void GameApi::WModApi::update_lines_from_canvas(W canvas, WM mod2, int id)
+EXPORT void GameApi::WModApi::update_lines_from_canvas(W canvas, WM mod2, int id)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -297,7 +297,7 @@ void GameApi::WModApi::update_lines_from_canvas(W canvas, WM mod2, int id)
     }
 }
 
-std::vector<int> GameApi::WModApi::indexes_from_funcname(std::string func_name)
+EXPORT std::vector<int> GameApi::WModApi::indexes_from_funcname(std::string func_name)
 {
   static std::vector<GameApiItem*> functions = all_functions();
 
@@ -322,7 +322,7 @@ std::vector<int> GameApi::WModApi::indexes_from_funcname(std::string func_name)
   return param_indexes2;
 }
 
-GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid, std::vector<W> &params)
+EXPORT GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid, std::vector<W> &params)
 {
   static std::vector<GameApiItem*> functions = all_functions();
 
@@ -417,7 +417,7 @@ std::vector<std::string*> remove_unnecessary_refs(std::vector<std::string*> refs
     }
   return res;  
 }
-std::vector<std::string*> GameApi::WModApi::refs_from_function(WM mod2, int id, std::string funcname)
+EXPORT std::vector<std::string*> GameApi::WModApi::refs_from_function(WM mod2, int id, std::string funcname)
 {
   //std::cout << "refs_from_function: " << funcname << std::endl;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -476,7 +476,7 @@ std::vector<std::string*> GameApi::WModApi::refs_from_function(WM mod2, int id, 
   return std::vector<std::string*>();
 
 }
-std::vector<std::string> GameApi::WModApi::types_from_function(WM mod2, int id, std::string funcname)
+EXPORT std::vector<std::string> GameApi::WModApi::types_from_function(WM mod2, int id, std::string funcname)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -522,7 +522,7 @@ std::vector<std::string> GameApi::WModApi::types_from_function(WM mod2, int id, 
   std::vector<std::string> types2 = filter_unnecessary_types(types);
   return types2;
 }
-void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh)
+EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -629,7 +629,7 @@ void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, 
 	}
     }
 }
-std::string GameApi::WModApi::return_type(WM mod2, int id, std::string line_uid)
+EXPORT std::string GameApi::WModApi::return_type(WM mod2, int id, std::string line_uid)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -661,7 +661,7 @@ std::string GameApi::WModApi::return_type(WM mod2, int id, std::string line_uid)
   return "";
 }
 
-void GameApi::WModApi::delete_by_uid(WM mod2, int id, std::string line_uid)
+EXPORT void GameApi::WModApi::delete_by_uid(WM mod2, int id, std::string line_uid)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -712,7 +712,7 @@ void GameApi::WModApi::delete_by_uid(WM mod2, int id, std::string line_uid)
 }
 
 #if 0
-GameApi::CollectResult GameApi::WModApi::collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level)
+EXPORT GameApi::CollectResult GameApi::WModApi::collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level)
 {
   static std::vector<GameApiItem*> vec = all_functions();
 
@@ -857,11 +857,11 @@ int env_counter(bool reset)
   if (reset) i=0;
   return i++;
 }
-void GameApi::WModApi::codegen_reset_counter()
+EXPORT void GameApi::WModApi::codegen_reset_counter()
 {
   env_counter(true);
 }
-std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level)
+EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level)
 {
   static std::vector<GameApiItem*> vec = all_functions();
 
@@ -992,7 +992,7 @@ std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mo
   return std::make_pair("","");
 
 }
-int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level)
+EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level)
 {
   static std::vector<GameApiItem*> vec = all_functions();
 
@@ -1117,7 +1117,7 @@ int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_ui
   std::cout << "EXECUTE FAILED! " << std::endl;
   return -1;
 }
-bool GameApi::WModApi::typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, bool &is_array, bool &is_array_return)
+EXPORT bool GameApi::WModApi::typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, bool &is_array, bool &is_array_return)
 {
   is_array=false;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1175,7 +1175,7 @@ bool GameApi::WModApi::typecheck(WM mod2, int id, std::string uid1, std::string 
   return type1==type2;
 
 }
-int GameApi::WModApi::find_line_index(WM mod2, int id, std::string uid)
+EXPORT int GameApi::WModApi::find_line_index(WM mod2, int id, std::string uid)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -1191,7 +1191,7 @@ int GameApi::WModApi::find_line_index(WM mod2, int id, std::string uid)
     }
   return -1;
 }
-void GameApi::WModApi::change_param_is_array(WM mod2, int id, std::string uid, int param_index, bool is_array, int ref_line_index)
+EXPORT void GameApi::WModApi::change_param_is_array(WM mod2, int id, std::string uid, int param_index, bool is_array, int ref_line_index)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -1213,7 +1213,7 @@ void GameApi::WModApi::change_param_is_array(WM mod2, int id, std::string uid, i
     }
 
 }
-void GameApi::WModApi::change_param_value(WM mod2, int id, std::string uid, int param_index, std::string newvalue)
+EXPORT void GameApi::WModApi::change_param_value(WM mod2, int id, std::string uid, int param_index, std::string newvalue)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -1231,7 +1231,7 @@ void GameApi::WModApi::change_param_value(WM mod2, int id, std::string uid, int 
     }
 }
 
-std::vector<std::string> GameApi::WModApi::parse_param_array(std::string s)
+EXPORT std::vector<std::string> GameApi::WModApi::parse_param_array(std::string s)
 {
   if (s.size()<2) { 
     return std::vector<std::string>();
@@ -1254,7 +1254,7 @@ std::vector<std::string> GameApi::WModApi::parse_param_array(std::string s)
   return vec;
 }
 
-std::string GameApi::WModApi::generate_param_array(std::vector<std::string> v)
+EXPORT std::string GameApi::WModApi::generate_param_array(std::vector<std::string> v)
 {
   if (v.size()==0) return "";
   std::stringstream ss;
@@ -1269,7 +1269,7 @@ std::string GameApi::WModApi::generate_param_array(std::vector<std::string> v)
   return ss.str();
 }
 
-std::string GameApi::WModApi::param_value(WM mod2, int id, std::string uid, int param_index)
+EXPORT std::string GameApi::WModApi::param_value(WM mod2, int id, std::string uid, int param_index)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -1289,7 +1289,7 @@ std::string GameApi::WModApi::param_value(WM mod2, int id, std::string uid, int 
   return "";
 }
 
-std::string GameApi::WModApi::get_funcname(WM mod2, int id, std::string uid)
+EXPORT std::string GameApi::WModApi::get_funcname(WM mod2, int id, std::string uid)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -1306,7 +1306,7 @@ std::string GameApi::WModApi::get_funcname(WM mod2, int id, std::string uid)
     }
   return "";
 }
-void GameApi::WModApi::insert_to_mod(WM mod2, int id, std::string modname, std::string uid, bool array_return, int x, int y, std::vector<InsertParam> params)
+EXPORT void GameApi::WModApi::insert_to_mod(WM mod2, int id, std::string modname, std::string uid, bool array_return, int x, int y, std::vector<InsertParam> params)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -1341,7 +1341,7 @@ void GameApi::WModApi::insert_to_mod(WM mod2, int id, std::string modname, std::
   func->lines.push_back(new_line);
 
 }
-std::vector<std::pair<std::string,std::string> > GameApi::WModApi::defaults_from_function(std::string module_name)
+EXPORT std::vector<std::pair<std::string,std::string> > GameApi::WModApi::defaults_from_function(std::string module_name)
 {
   std::vector<std::pair<std::string,std::string> > res;
 
@@ -1370,7 +1370,7 @@ std::vector<std::pair<std::string,std::string> > GameApi::WModApi::defaults_from
   return std::vector<std::pair<std::string,std::string> >();
 }
 
-std::vector<std::string> GameApi::WModApi::labels_from_function(WM mod2, int id, std::string funcname)
+EXPORT std::vector<std::string> GameApi::WModApi::labels_from_function(WM mod2, int id, std::string funcname)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -1419,7 +1419,7 @@ std::vector<std::string> GameApi::WModApi::labels_from_function(WM mod2, int id,
   std::vector<std::string> labels2 = remove_unnecessary_labels(types, labels);
   return labels2;
 }
-void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks, W &delete_key, W &codegen_button, W &popup_open)
+EXPORT void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks, W &delete_key, W &codegen_button, W &popup_open)
 {
   int pos_x = gui.pos_x(item);
   int pos_y = gui.pos_y(item);
@@ -1492,7 +1492,7 @@ void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, 
   
 }
 
-void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p, std::vector<W> &params, std::vector<W> &display_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open)
+EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p, std::vector<W> &params, std::vector<W> &display_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
