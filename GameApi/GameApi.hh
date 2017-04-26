@@ -195,6 +195,8 @@ class Env
 public:
   IMPORT Env();
   IMPORT void free_memory();
+  IMPORT std::vector<int> store_counts();
+  IMPORT void free_to_counts(std::vector<int> vec);
   IMPORT void free_temp_memory();
   IMPORT void async_load_url(std::string url, std::string homepage);
   IMPORT std::vector<unsigned char> *get_loaded_async_url(std::string url);
@@ -222,9 +224,9 @@ class BlockerApi
 {
 public:
   BlockerApi(Env &e) : e(e) { }
-  BLK game_window(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration);
-  BLK game_seq(EveryApi &ev, std::vector<BLK> vec);
-  void run(BLK blk);
+  IMPORT BLK game_window(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration);
+  IMPORT BLK game_seq(EveryApi &ev, std::vector<BLK> vec);
+  IMPORT void run(BLK blk);
 private:
   Env &e;
 };
@@ -316,7 +318,7 @@ public:
   SP screenspace();
   void execute_ml(ML ml, SH color, SH texture, SH texture_2d, SH arr_texture, M in_MV, M in_T, M in_N, int screen_width, int screen_height);
   void event_ml(ML ml, const Event &e);
-  ML array_ml(std::vector<ML> vec);
+  IMPORT ML array_ml(std::vector<ML> vec);
   ML seq_ml(std::vector<ML> vec, float time);
   ML timed_tmp_seq_ml(ML curr, ML end, float start_time, float end_time, float show_duration, int key);
   ML collision_detection(EveryApi &ev,
@@ -379,6 +381,7 @@ public:
 	IMPORT void preparesprite(BM bm, int bbm_choose = -1);
 
 	IMPORT VA create_vertex_array(BM bm);
+  IMPORT void clear_arrays(VA va);
         IMPORT void delete_vertex_array(VA va);
         IMPORT void update_vertex_array(VA va, BM bm);
         IMPORT ML update_vertex_array_ml(VA va, BM bm);
@@ -401,6 +404,9 @@ public:
   IMPORT ML bitmap_anim_ml(EveryApi &ev, std::vector<BM> vec, std::vector<float> key_frames, float repeat_time);
   IMPORT ML turn_to_2d(EveryApi &ev, ML ml, float tl_x, float tl_y, float br_x, float br_y);
   IMPORT ML alt_ml_array(EveryApi &ev, std::vector<ML> vec, float start_time, float time_delta, bool repeat);
+  IMPORT ARR sprite_atlas_x(EveryApi &ev, BM orig, int start_x, int end_x, int start_y, int end_y, int delta_x, int count);
+  IMPORT ARR sprite_atlas_y(EveryApi &ev, BM orig, int start_x, int end_x, int start_y, int end_y, int delta_y, int count);
+  IMPORT ARR sprite_atlas_xy(EveryApi &ev, BM orig, int start_x, int end_x, int start_y, int end_y, int delta_x, int delta_y, int count_x, int count_y);
 private:
   SpriteApi(const SpriteApi&);
   void operator=(const SpriteApi&);
@@ -715,34 +721,34 @@ class CurveApi
 {
 public:
   CurveApi(Env &e) : e(e) { }
-  C line(PT p1, PT p2);
-  C circle_xy(PT center, float r);
-  C circle_xz(PT center, float r);
-  C circle_xy_wave(float start_r, float end_r, WV wave, float length);
-  C linear(std::vector<PT> vec);
-  C bezier(std::vector<PT> vec);
+  IMPORT C line(PT p1, PT p2);
+  IMPORT C circle_xy(PT center, float r);
+  IMPORT C circle_xz(PT center, float r);
+  IMPORT C circle_xy_wave(float start_r, float end_r, WV wave, float length);
+  IMPORT C linear(std::vector<PT> vec);
+  IMPORT C bezier(std::vector<PT> vec);
   
-  C scale(C curve, float mx, float my, float mz);
-  C trans(C curve, float dx, float dy, float dz);
+  IMPORT C scale(C curve, float mx, float my, float mz);
+  IMPORT C trans(C curve, float dx, float dy, float dz);
   //C constantspeed(C curve, float speed);
-  C compose(std::vector<C> vec);
+  IMPORT C compose(std::vector<C> vec);
   //C plane(C curve2d, PT pos, PT u_x, PT u_y);
-  C change_length(C curve, float new_length);
-  C split(C orig_curve, float start_var, float end_var);
+  IMPORT C change_length(C curve, float new_length);
+  IMPORT C split(C orig_curve, float start_var, float end_var);
 
-  PA curve_product(C c1, C c2, PT c2_center);
-  P patch_sample(PA patch, int sx, int sy);
-  C x_curve(PA patch, float y);
-  C y_curve(PA patch, float x);
+  IMPORT PA curve_product(C c1, C c2, PT c2_center);
+  IMPORT P patch_sample(PA patch, int sx, int sy);
+  IMPORT C x_curve(PA patch, float y);
+  IMPORT C y_curve(PA patch, float x);
 
-  PT pos(C curve, float p);
+  IMPORT PT pos(C curve, float p);
   
-  PTS sample(C input_curve, int num_samples);
-  LI to_lines(C curve, int num_lines);
+  IMPORT PTS sample(C input_curve, int num_samples);
+  IMPORT LI to_lines(C curve, int num_lines);
 
   // curve_pos
-  CPP xy_sum();
-  CPP xy_sum2(float xmult, float ymult, float zmult);
+  IMPORT CPP xy_sum();
+  IMPORT CPP xy_sum2(float xmult, float ymult, float zmult);
 private:
   Env &e;
 };
@@ -753,10 +759,10 @@ class MatrixCurveApi
 {
 public:
   MatrixCurveApi(Env &e) : e(e) { }
-  MC from_curve(C curve);
-  MC circle_xy(float radius);
-  MC circle_xz(float radius);
-  MS sample(MC m_curve, int num);
+  IMPORT MC from_curve(C curve);
+  IMPORT MC circle_xy(float radius);
+  IMPORT MC circle_xz(float radius);
+  IMPORT MS sample(MC m_curve, int num);
 private:
   Env &e;
 };
@@ -881,17 +887,17 @@ class ImplicitApi
 {
 public:
   ImplicitApi(Env &e) : e(e) { }
-  IM sphere(float r);
-  IM blob(float c, float c_x, float c_y, float cc_x, float cc_y);
-  IM translate(IM obj, float dx, float dy, float dz);
-  IM from_distance(FD fd, float pos_x, float pos_y, float pos_z, float u_x, float u_y, float u_z, float sx, float sy);
-  IM from_distance_cyl(FD fd, float pos_x, float pos_y, float pos_z, float u_x, float u_y, float u_z, float sx, float sy);
-  IM from_distance_sph(FD fd, float pos_x, float pos_y, float pos_z, float u_x, float u_y, float u_z, float sx, float sy);
-  FB render_upper(IM obj, float size_x, float size_y, int sx, int sy, float dx, float dy);
-  FB render_lower(IM obj, float size_x, float size_y, int sx, int sy, float dx, float dy);
+  IMPORT IM sphere(float r);
+  IMPORT IM blob(float c, float c_x, float c_y, float cc_x, float cc_y);
+  IMPORT IM translate(IM obj, float dx, float dy, float dz);
+  IMPORT IM from_distance(FD fd, float pos_x, float pos_y, float pos_z, float u_x, float u_y, float u_z, float sx, float sy);
+  IMPORT IM from_distance_cyl(FD fd, float pos_x, float pos_y, float pos_z, float u_x, float u_y, float u_z, float sx, float sy);
+  IMPORT IM from_distance_sph(FD fd, float pos_x, float pos_y, float pos_z, float u_x, float u_y, float u_z, float sx, float sy);
+  IMPORT FB render_upper(IM obj, float size_x, float size_y, int sx, int sy, float dx, float dy);
+  IMPORT FB render_lower(IM obj, float size_x, float size_y, int sx, int sy, float dx, float dy);
 
-  BM render_upper_color(IM obj, float size_x, float size_y, int sx, int sy, float dx, float dy);
-  BM render_lower_color(IM obj, float size_x, float size_y, int sx, int sy, float dx, float dy);
+  IMPORT BM render_upper_color(IM obj, float size_x, float size_y, int sx, int sy, float dx, float dy);
+  IMPORT BM render_lower_color(IM obj, float size_x, float size_y, int sx, int sy, float dx, float dy);
 private:
   Env &e;
 };
@@ -1120,31 +1126,31 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
-  MT def(EveryApi &ev);
-  MT skeletal(EveryApi &ev);
-  MT texture(EveryApi &ev, BM bm, float mix);
-  MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
-  MT snow(EveryApi &ev, MT nxt, unsigned int color1=0xffaaaaaa, unsigned int color2=0xffeeeeee, unsigned int color3=0xffffffff, float mix_val=0.5f);
-  MT flat(EveryApi &ev, MT nxt, unsigned int color1, unsigned int color2, unsigned int color3);
-  MT fur(EveryApi &ev, MT nxt, PT center, float dist, float max_angle, int count, float size, int cone_numfaces);
+  IMPORT MT def(EveryApi &ev);
+  IMPORT MT skeletal(EveryApi &ev);
+  IMPORT MT texture(EveryApi &ev, BM bm, float mix);
+  IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
+  IMPORT MT snow(EveryApi &ev, MT nxt, unsigned int color1=0xffaaaaaa, unsigned int color2=0xffeeeeee, unsigned int color3=0xffffffff, float mix_val=0.5f);
+  IMPORT MT flat(EveryApi &ev, MT nxt, unsigned int color1, unsigned int color2, unsigned int color3);
+  IMPORT MT fur(EveryApi &ev, MT nxt, PT center, float dist, float max_angle, int count, float size, int cone_numfaces);
 
-  MT choose_color(EveryApi &ev, MT nxt, unsigned int color, float mix_val);
-  MT brashmetal(EveryApi &ev, MT nxt, int count, bool web);
-  MT web(EveryApi &ev, MT nxt); // TODO: add line width property
-  MT dist_field_mesh(EveryApi &ev, SFO sfo, MT next);
+  IMPORT MT choose_color(EveryApi &ev, MT nxt, unsigned int color, float mix_val);
+  IMPORT MT brashmetal(EveryApi &ev, MT nxt, int count, bool web);
+  IMPORT MT web(EveryApi &ev, MT nxt); // TODO: add line width property
+  IMPORT MT dist_field_mesh(EveryApi &ev, SFO sfo, MT next);
 
-  MT mesh_color_from_sfo(EveryApi &ev, SFO sfo, MT next);
+  IMPORT MT mesh_color_from_sfo(EveryApi &ev, SFO sfo, MT next);
 
-  MT sfo_sandbox(EveryApi &ev, SFO sfo, MT next);
+  IMPORT MT sfo_sandbox(EveryApi &ev, SFO sfo, MT next);
 
-  ML bind(P p, MT mat);
-  ML bind_inst(P p, PTS pts, MT mat);
-  ML bind_inst2(P p, PTA pta, MT mat);
-  ML bind_inst_fade(P p, PTS pts, MT mat, bool flip, float start_time, float end_time);
-  ML render_instanced_ml(EveryApi &ev, P p, PTS pts);
-  ML render_instanced_ml_fade(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time);
-  ML render_instanced2_ml(EveryApi &ev, VA va, PTA pta);
-  ML render_instanced2_ml_fade(EveryApi &ev, VA va, PTA pta, bool flip, float start_time, float end_time);
+  IMPORT ML bind(P p, MT mat);
+  IMPORT ML bind_inst(P p, PTS pts, MT mat);
+  IMPORT ML bind_inst2(P p, PTA pta, MT mat);
+  IMPORT ML bind_inst_fade(P p, PTS pts, MT mat, bool flip, float start_time, float end_time);
+  IMPORT ML render_instanced_ml(EveryApi &ev, P p, PTS pts);
+  IMPORT ML render_instanced_ml_fade(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time);
+  IMPORT ML render_instanced2_ml(EveryApi &ev, VA va, PTA pta);
+  IMPORT ML render_instanced2_ml_fade(EveryApi &ev, VA va, PTA pta, bool flip, float start_time, float end_time);
 
   //ML snow(EveryApi &ev, P p);
   //ML web(EveryApi &ev, P p);
@@ -1224,30 +1230,30 @@ class VertexAnimApi
 {
 public:
   VertexAnimApi(Env &e) : e(e) { }
-  KF keyframe_mesh(P part);
-  KF keyframe_lines(LI part);
-  KF keyframe_bind(EveryApi &ev, KF keyframe, PTT pointtransform, float delta_time);
-  KF keyframe_bind2(EveryApi &ev, KF keyframe, PTT pointtransform, float delta_time, bool dif);
-  KF curve_trans(EveryApi &ev, KF kf, C curve, CPP pos, int numsamples, float duration);
-  KF repeat_keyframes(KF rep, int count);
+  IMPORT KF keyframe_mesh(P part);
+  IMPORT KF keyframe_lines(LI part);
+  IMPORT KF keyframe_bind(EveryApi &ev, KF keyframe, PTT pointtransform, float delta_time);
+  IMPORT KF keyframe_bind2(EveryApi &ev, KF keyframe, PTT pointtransform, float delta_time, bool dif);
+  IMPORT KF curve_trans(EveryApi &ev, KF kf, C curve, CPP pos, int numsamples, float duration);
+  IMPORT KF repeat_keyframes(KF rep, int count);
 
-  KF sample_rot(EveryApi &ev, KF kf, float nx, float ny, float nz, float angle, int numsamples, float duration);
+  IMPORT KF sample_rot(EveryApi &ev, KF kf, float nx, float ny, float nz, float angle, int numsamples, float duration);
   
 
   //KF keyframe_bind2(KF keyframe, O subpart, PTT pointtransform, float delta_time);
-  PTT empty_trans();
-  PTT curve_accessor(C curve, CPP pos, float start_pos, float time_mult);
-  PTT rot_accessor(float start_time, float time_mult, float nx, float ny, float nz, float dist_angle);
-  PTT translate_trans(PTT prev, float speed_x, float speed_y, float speed_z);
-  PTT translate_trans2(PTT prev, float duration,float dist_x, float dist_y, float dist_z);
-  PTT rotate_trans(PTT prev, float nx, float ny, float nz, float speed_angle);
-  PTT rotate_trans2(PTT prev, float duration,float nx, float ny, float nz, float dist_angle);
-  PTT scale_trans(PTT prev, float scale_speed_x, float scale_speed_y, float scale_speed_z);
-  PTT scale_trans2(PTT prev, float duration,float scale_dist_x, float scale_dist_y, float scale_dist_z);
-  ML vertex_anim_render(EveryApi &ev, KF kf);
+  IMPORT PTT empty_trans();
+  IMPORT PTT curve_accessor(C curve, CPP pos, float start_pos, float time_mult);
+  IMPORT PTT rot_accessor(float start_time, float time_mult, float nx, float ny, float nz, float dist_angle);
+  IMPORT PTT translate_trans(PTT prev, float speed_x, float speed_y, float speed_z);
+  IMPORT PTT translate_trans2(PTT prev, float duration,float dist_x, float dist_y, float dist_z);
+  IMPORT PTT rotate_trans(PTT prev, float nx, float ny, float nz, float speed_angle);
+  IMPORT PTT rotate_trans2(PTT prev, float duration,float nx, float ny, float nz, float dist_angle);
+  IMPORT PTT scale_trans(PTT prev, float scale_speed_x, float scale_speed_y, float scale_speed_z);
+  IMPORT PTT scale_trans2(PTT prev, float duration,float scale_dist_x, float scale_dist_y, float scale_dist_z);
+  IMPORT ML vertex_anim_render(EveryApi &ev, KF kf);
 public:
-  P change_pos(P p, P orig, PTT transform, float delta_time, bool dif);
-  LI change_pos_li(LI p, LI orig, PTT transform, float delta_time, bool dif);
+  IMPORT P change_pos(P p, P orig, PTT transform, float delta_time, bool dif);
+  IMPORT LI change_pos_li(LI p, LI orig, PTT transform, float delta_time, bool dif);
 private:
   Env &e;
 };
@@ -1283,59 +1289,59 @@ class MovementNode
 {
 public:
   MovementNode(Env &e) : e(e) {}
-  MN empty();
-  MN level(MN next);
-  MN trans2(MN next, float dx, float dy, float dz);
-  MN scale2(MN next, float sx, float sy, float sz);
-  MN rotatex(MN next, float angle);
-  MN rotatey(MN next, float angle);
-  MN rotatez(MN next, float angle);
-  MN translate(MN next, float start_time, float end_time,
+  IMPORT MN empty();
+  IMPORT MN level(MN next);
+  IMPORT MN trans2(MN next, float dx, float dy, float dz);
+  IMPORT MN scale2(MN next, float sx, float sy, float sz);
+  IMPORT MN rotatex(MN next, float angle);
+  IMPORT MN rotatey(MN next, float angle);
+  IMPORT MN rotatez(MN next, float angle);
+  IMPORT MN translate(MN next, float start_time, float end_time,
 	       float dx, float dy, float dz);
-  MN scale(MN next, float start_time, float end_time,
+  IMPORT MN scale(MN next, float start_time, float end_time,
 	   float sx, float sy, float sz);
-  MN rotate(MN next, float start_time, float end_time,
+  IMPORT MN rotate(MN next, float start_time, float end_time,
 	    float p_x, float p_y, float p_z,
 	    float v_x, float v_y, float v_z, float angle);
-  MN compress(MN next, float start_time, float end_time);
-  MN change_time(MN next, float d_time);
-  MN event_activate(MN next, MN event, float event_time, float duration);
-  MN anim_enable(MN next, float start_time, float end_time);
-  MN anim_disable(MN next, float start_time, float end_time);
-  MN anim_choose(std::vector<MN> vec, float start_time, float duration);
-  MN time_repeat(MN next, float start_time, float repeat_duration);
-  CC color_start(unsigned int color);
-  CC color_interpolate(CC next, unsigned int color, unsigned int color2, float start_time, float end_time);
-  void set_matrix(MN n, M m);
-  M get_matrix(MN n, float time, float delta_time);
-  ML color_ml(EveryApi &ev, int color_num, ML ml, CC cc);
-  ML move_ml(EveryApi &ev, ML ml, MN mn, int clone_count=1, float time_delta=10.0);
-  ML repeat_ml(EveryApi &ev, ML ml, float duration);
-  ML key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
-  ML temp_key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
-  ML move_x_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x);
-  ML move_y_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_y, float end_y);
-  ML move_z_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_z, float end_z);
-  ML rot_x_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x);
-  ML rot_y_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_y, float end_y);
-  ML rot_z_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_z, float end_z);
-  ML jump_ml(EveryApi &ev, ML ml, int key_jump, float height, float jump_duration);
-  ML move_ml_array(EveryApi &ev, std::vector<ML> ml, std::vector<MN> mn);
-  ML enable_ml(EveryApi &ev, ML ml, float start_time, float end_time);
-  ML key_event(EveryApi &ev, ML ml, MN mn, int type, int ch, int button, float duration);
-  ML wasd(EveryApi &ev, ML ml, MN w, MN a, MN s, MN d, float duration);
-  ML key_printer_ml(ML ml);
-  CMD default_cmds(float dx, float dy, float dz);
-  CMD cmd_repeat(CMD cmds, std::string repeat, float dx, float dy, float dz);
-  CMD cmd_rotate(CMD cmds, float v_x, float v_y, float v_z, float angle, float delta_angle);
-  PTS cmd_to_pts(CMD cmds, std::string commands);
-  LI cmd_to_li(CMD cmds, std::string commands);
+  IMPORT MN compress(MN next, float start_time, float end_time);
+  IMPORT MN change_time(MN next, float d_time);
+  IMPORT MN event_activate(MN next, MN event, float event_time, float duration);
+  IMPORT MN anim_enable(MN next, float start_time, float end_time);
+  IMPORT MN anim_disable(MN next, float start_time, float end_time);
+  IMPORT MN anim_choose(std::vector<MN> vec, float start_time, float duration);
+  IMPORT MN time_repeat(MN next, float start_time, float repeat_duration);
+  IMPORT CC color_start(unsigned int color);
+  IMPORT CC color_interpolate(CC next, unsigned int color, unsigned int color2, float start_time, float end_time);
+  IMPORT void set_matrix(MN n, M m);
+  IMPORT M get_matrix(MN n, float time, float delta_time);
+  IMPORT ML color_ml(EveryApi &ev, int color_num, ML ml, CC cc);
+  IMPORT ML move_ml(EveryApi &ev, ML ml, MN mn, int clone_count=1, float time_delta=10.0);
+  IMPORT ML repeat_ml(EveryApi &ev, ML ml, float duration);
+  IMPORT ML key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
+ IMPORT  ML temp_key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
+  IMPORT ML move_x_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x);
+  IMPORT ML move_y_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_y, float end_y);
+  IMPORT ML move_z_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_z, float end_z);
+  IMPORT ML rot_x_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x);
+  IMPORT ML rot_y_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_y, float end_y);
+  IMPORT ML rot_z_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_z, float end_z);
+  IMPORT ML jump_ml(EveryApi &ev, ML ml, int key_jump, float height, float jump_duration);
+  IMPORT ML move_ml_array(EveryApi &ev, std::vector<ML> ml, std::vector<MN> mn);
+  IMPORT ML enable_ml(EveryApi &ev, ML ml, float start_time, float end_time);
+  IMPORT ML key_event(EveryApi &ev, ML ml, MN mn, int type, int ch, int button, float duration);
+  IMPORT ML wasd(EveryApi &ev, ML ml, MN w, MN a, MN s, MN d, float duration);
+  IMPORT ML key_printer_ml(ML ml);
+  IMPORT CMD default_cmds(float dx, float dy, float dz);
+  IMPORT CMD cmd_repeat(CMD cmds, std::string repeat, float dx, float dy, float dz);
+  IMPORT CMD cmd_rotate(CMD cmds, float v_x, float v_y, float v_z, float angle, float delta_angle);
+  IMPORT PTS cmd_to_pts(CMD cmds, std::string commands);
+  IMPORT LI cmd_to_li(CMD cmds, std::string commands);
 
 
-  ML player(ML prev);
-  ML enemy(ML prev);
-  ML player_pos(ML prev, PT pos);
-  ML enemy_pos(ML prev, PTS pos);
+  IMPORT ML player(ML prev);
+  IMPORT ML enemy(ML prev);
+  IMPORT ML player_pos(ML prev, PT pos);
+  IMPORT ML enemy_pos(ML prev, PTS pos);
 private:
   Env &e;
 };
@@ -1373,83 +1379,84 @@ class GuiApi
 {
 public:
   GuiApi(Env &e, EveryApi &ev, SH sh) : e(e), ev(ev), sh(sh) { }
-  void delete_widget(W w);
-  W empty();
-  W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=3);
-  W icon(BM bitmap);
-  W poly(P p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
-  W va(VA p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
-  W ml(ML p, SH sh, SH sh2, SH sh_2d, SH sh_arr, int sx, int sy, int screen_size_x, int screen_size_y);
-  W shader_plane(SFO p, int sx, int sy, int screen_size_x, int screen_size_y);
-  W lines(LI p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
-  W pts(PTS p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
-  W line(W target1, int delta_x, int delta_y,
+  IMPORT void delete_widget(W w);
+  IMPORT W empty();
+  IMPORT W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=3);
+  IMPORT W icon(BM bitmap);
+  IMPORT W icon_shared(BM bitmap, int key);
+  IMPORT W poly(P p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
+  IMPORT W va(VA p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
+  IMPORT W ml(ML p, SH sh, SH sh2, SH sh_2d, SH sh_arr, int sx, int sy, int screen_size_x, int screen_size_y);
+  IMPORT W shader_plane(SFO p, int sx, int sy, int screen_size_x, int screen_size_y);
+  IMPORT W lines(LI p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
+  IMPORT W pts(PTS p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
+  IMPORT W line(W target1, int delta_x, int delta_y,
 	 W target2, int delta2_x, int delta2_y, SH sh, SH old_sh);
-  W gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int colot_1, unsigned int color_2);
-  W button(int sx, int sy, unsigned int color_1, unsigned int color_2);
-  W mouse_move(W widget, int area_x, int area_y, int area_width, int area_height);
-  W click_area(W widget, int area_x, int area_y, int area_width, int area_height, int button_id);
-  W key_area(W widget, int area_x, int area_y, int area_width, int area_height, int key);
-  W click_visibility(W area_widget, W hidden_widget);
-  W click_hide(W widget);
-  W top_right_corner_match(W wid, W floating); // returns floating
-  W or_elem(W w1, W w2);
-  W rectangle(int start_x, int end_x, int start_y, int end_y, unsigned int color);
-  W highlight(int sx, int sy);
-  W highlight(W wid);
-  W margin(W item, int left, int top, int right, int bottom);
-  W left_align(W item, int sx);
-  W right_align(W item, int sx);
-  W center_align(W item, int sx);
-  W center_y(W item, int sy);
-  W layer(W w1, W w2);
-  W array_y(W *arr, int size, int y_gap);
-  W array_x(W *arr, int size, int x_gap);
-  W timed_visibility(W orig, W timed_widget, W insert, float start_duration, float duration, float dx);
-  W tooltip(W orig, W insert, std::string label, FtA atlas, BM atlas_bm, int x_gap=2, float dx=40.0);
-  W popup_box(std::string label, std::vector<std::string> options, FtA atlas, BM atlas_bm); 
-  W popup_box_menu(std::vector<std::string> options, FtA atlas, BM atlas_bm);
+  IMPORT W gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int colot_1, unsigned int color_2);
+  IMPORT W button(int sx, int sy, unsigned int color_1, unsigned int color_2);
+  IMPORT W mouse_move(W widget, int area_x, int area_y, int area_width, int area_height);
+  IMPORT W click_area(W widget, int area_x, int area_y, int area_width, int area_height, int button_id);
+  IMPORT W key_area(W widget, int area_x, int area_y, int area_width, int area_height, int key);
+  IMPORT W click_visibility(W area_widget, W hidden_widget);
+  IMPORT W click_hide(W widget);
+  IMPORT W top_right_corner_match(W wid, W floating); // returns floating
+  IMPORT W or_elem(W w1, W w2);
+  IMPORT W rectangle(int start_x, int end_x, int start_y, int end_y, unsigned int color);
+  IMPORT W highlight(int sx, int sy);
+  IMPORT W highlight(W wid);
+  IMPORT W margin(W item, int left, int top, int right, int bottom);
+  IMPORT W left_align(W item, int sx);
+  IMPORT W right_align(W item, int sx);
+  IMPORT W center_align(W item, int sx);
+  IMPORT W center_y(W item, int sy);
+  IMPORT W layer(W w1, W w2);
+  IMPORT W array_y(W *arr, int size, int y_gap);
+  IMPORT W array_x(W *arr, int size, int x_gap);
+  IMPORT W timed_visibility(W orig, W timed_widget, W insert, float start_duration, float duration, float dx);
+  IMPORT W tooltip(W orig, W insert, std::string label, FtA atlas, BM atlas_bm, int x_gap=2, float dx=40.0);
+  IMPORT W popup_box(std::string label, std::vector<std::string> options, FtA atlas, BM atlas_bm); 
+  IMPORT W popup_box_menu(std::vector<std::string> options, FtA atlas, BM atlas_bm);
 
-  W main_menu(std::vector<std::string> labels, FtA atlas, BM atlas_bm);
-  W menu(W main_menu, int menu_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm);
-  W submenu(W menu, int menu_pane_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm);
-  W popup_menu(int x, int y, std::vector<std::string> labels, FtA atlas, BM atlas_bm, std::vector<W> &areas);
-  W scrollbar_y(int sx, int sy, int area_y);
-  W scrollbar_x(int sx, int sy, int area_x);
-  W scroll_area(W orig, int sx, int sy, int screen_y);
-  W waveform(std::function<float (float)> f, float start_range, float end_range, float min_value, float max_value, int sx, int sy, unsigned int true_color, unsigned int false_color);
-  W canvas(int sx, int sy);
-  W find_canvas_item(W canvas, std::string id);
-  int canvas_item_index(W canvas, W item);
-  int canvas_item(W canvas, W item, int x, int y);
-  void del_canvas_item(W canvas, int id);
-  W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltips, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params, std::string symbol, std::string comment);
-  W list_item_title(int sx, std::string label, FtA atlas, BM atlas_bm);
-  W list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, std::vector<std::string> subitems_tooltip, FtA atlas2, BM atlas_bm2, W insert);
-  W list_item(BM icon, std::string label, int sx, int sy);
-  W list(W *array, int size, int sx, int sy);
-  W dialog_item(std::string text, BM icon, int sx, int sy);
-  W dialog_border(W item);
-  W copy_paste_dialog(SH sh, W &close_button, FI font, FtA atlas, BM atlas_bm, std::string &edit);
-  W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
-  W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button, W &mem);
-  W va_dialog(VA p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
-  W ml_dialog(ML p, SH sh, SH sh2, SH sh_2d, SH sh_arr, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
-  W shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_size_x, int screen_size_y, W &codegen_button, W &collect_button);
-  W lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
-  W pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
+  IMPORT W main_menu(std::vector<std::string> labels, FtA atlas, BM atlas_bm);
+  IMPORT W menu(W main_menu, int menu_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm);
+  IMPORT W submenu(W menu, int menu_pane_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm);
+  IMPORT W popup_menu(int x, int y, std::vector<std::string> labels, FtA atlas, BM atlas_bm, std::vector<W> &areas);
+  IMPORT W scrollbar_y(int sx, int sy, int area_y);
+  IMPORT W scrollbar_x(int sx, int sy, int area_x);
+  IMPORT W scroll_area(W orig, int sx, int sy, int screen_y);
+  IMPORT W waveform(std::function<float (float)> f, float start_range, float end_range, float min_value, float max_value, int sx, int sy, unsigned int true_color, unsigned int false_color);
+  IMPORT W canvas(int sx, int sy);
+  IMPORT W find_canvas_item(W canvas, std::string id);
+  IMPORT int canvas_item_index(W canvas, W item);
+  IMPORT int canvas_item(W canvas, W item, int x, int y);
+  IMPORT void del_canvas_item(W canvas, int id);
+  IMPORT W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltips, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params, std::string symbol, std::string comment);
+  IMPORT W list_item_title(int sx, std::string label, FtA atlas, BM atlas_bm);
+  IMPORT W list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, std::vector<std::string> subitems_tooltip, FtA atlas2, BM atlas_bm2, W insert);
+  IMPORT W list_item(BM icon, std::string label, int sx, int sy);
+  IMPORT W list(W *array, int size, int sx, int sy);
+  IMPORT W dialog_item(std::string text, BM icon, int sx, int sy);
+  IMPORT W dialog_border(W item);
+  IMPORT W copy_paste_dialog(SH sh, W &close_button, FI font, FtA atlas, BM atlas_bm, std::string &edit);
+  IMPORT W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
+  IMPORT W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button, W &mem);
+  IMPORT W va_dialog(VA p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
+  IMPORT W ml_dialog(ML p, SH sh, SH sh2, SH sh_2d, SH sh_arr, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
+  IMPORT W shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_size_x, int screen_size_y, W &codegen_button, W &collect_button);
+  IMPORT W lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
+  IMPORT W pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
 
-  W button_with_text(std::string label);
-  W button_with_icon(BM bitmap);
-  W opengl_wrapper(W widget);
-  W string_editor(std::string allowed_chars, std::string &target, FtA atlas, BM atlas_bm, int x_gap);
-  W multiline_string_editor(std::string allowed_chars, std::string &target, FI font, int x_gap, int line_height);
-  W url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap);
-  W float_editor(float &target, FtA atlas, BM atlas_bm, int x_gap);
-  W int_editor(int &target, FtA atlas, BM atlas_bm, int x_gap);
-  W long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap);
-  W point_editor(float &x, float &y, float &z, FtA atlas, BM atlas_bm, int x_gap);
-  W color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap);
+  IMPORT W button_with_text(std::string label);
+  IMPORT W button_with_icon(BM bitmap);
+  IMPORT W opengl_wrapper(W widget);
+  IMPORT W string_editor(std::string allowed_chars, std::string &target, FtA atlas, BM atlas_bm, int x_gap);
+  IMPORT W multiline_string_editor(std::string allowed_chars, std::string &target, FI font, int x_gap, int line_height);
+  IMPORT W url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap);
+  IMPORT W float_editor(float &target, FtA atlas, BM atlas_bm, int x_gap);
+  IMPORT W int_editor(int &target, FtA atlas, BM atlas_bm, int x_gap);
+  IMPORT W long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap);
+  IMPORT W point_editor(float &x, float &y, float &z, FtA atlas, BM atlas_bm, int x_gap);
+  IMPORT W color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap);
   struct EditTypes
   {
     int i_value;
@@ -1459,72 +1466,72 @@ public:
     std::string color;
     std::string s;
   };
-  W generic_editor(EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap, FtA atlas_tiny, BM atlas_tiny_bm, int sy);
-  void generic_to_string(const EditTypes &source, std::string type, std::string &target);
-  void string_to_generic(EditTypes &target, std::string type, const std::string &source);
+  IMPORT W generic_editor(EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap, FtA atlas_tiny, BM atlas_tiny_bm, int sy);
+  IMPORT void generic_to_string(const EditTypes &source, std::string type, std::string &target);
+  IMPORT void string_to_generic(EditTypes &target, std::string type, const std::string &source);
   IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, Ft font, const std::vector<std::string> &types, W &cancel_button, W &ok_button);
   IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_button, W &ok_button, FtA atlas_tiny, BM atlas_tiny_bm);
-  W bitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W boolbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W floatbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W polygonapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W polygondistapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W shadermoduleapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W linesapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W pointsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W pointapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W vectorapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W volumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W floatvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W colorvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W fontapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W textureapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W booleanopsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W moveapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W waveformapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  W blockerapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W bitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W boolbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W floatbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W polygonapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W polygondistapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W shadermoduleapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W linesapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W pointsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W pointapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W vectorapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W volumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W floatvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W colorvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W fontapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W textureapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W booleanopsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W moveapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W waveformapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W blockerapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
 
 
-  std::string bitmapapi_functions_item_label(int i);
-  std::string waveformapi_functions_item_label(int i);
-  std::string blockerapi_functions_item_label(int i);
-  std::string boolbitmapapi_functions_item_label(int i);
-  std::string floatbitmapapi_functions_item_label(int i);
-  std::string polygonapi_functions_item_label(int i);
-  std::string polygondistapi_functions_item_label(int i);
-  std::string shadermoduleapi_functions_item_label(int i);
-  std::string linesapi_functions_item_label(int i);
-  std::string pointsapi_functions_item_label(int i);
-  std::string pointapi_functions_item_label(int i);
-  std::string vectorapi_functions_item_label(int i);
-  std::string volumeapi_functions_item_label(int i);
-  std::string floatvolumeapi_functions_item_label(int i);
-  std::string colorvolumeapi_functions_item_label(int i);
-  std::string fontapi_functions_item_label(int i);
-  std::string textureapi_functions_item_label(int i);
-  std::string booleanopsapi_functions_item_label(int i);
-  std::string moveapi_functions_item_label(int i);
-  W insert_widget(W item, std::function<void(int,int)> f);
-  void insert_widget_activate(W w, bool b);
+  IMPORT std::string bitmapapi_functions_item_label(int i);
+  IMPORT std::string waveformapi_functions_item_label(int i);
+  IMPORT std::string blockerapi_functions_item_label(int i);
+  IMPORT std::string boolbitmapapi_functions_item_label(int i);
+  IMPORT std::string floatbitmapapi_functions_item_label(int i);
+  IMPORT std::string polygonapi_functions_item_label(int i);
+  IMPORT std::string polygondistapi_functions_item_label(int i);
+  IMPORT std::string shadermoduleapi_functions_item_label(int i);
+  IMPORT std::string linesapi_functions_item_label(int i);
+  IMPORT std::string pointsapi_functions_item_label(int i);
+  IMPORT std::string pointapi_functions_item_label(int i);
+  IMPORT std::string vectorapi_functions_item_label(int i);
+  IMPORT std::string volumeapi_functions_item_label(int i);
+  IMPORT std::string floatvolumeapi_functions_item_label(int i);
+  IMPORT std::string colorvolumeapi_functions_item_label(int i);
+  IMPORT std::string fontapi_functions_item_label(int i);
+  IMPORT std::string textureapi_functions_item_label(int i);
+  IMPORT std::string booleanopsapi_functions_item_label(int i);
+  IMPORT std::string moveapi_functions_item_label(int i);
+  IMPORT W insert_widget(W item, std::function<void(int,int)> f);
+  IMPORT void insert_widget_activate(W w, bool b);
 
-  void set_pos(W w, float px, float py);
-  void set_size(W ow, float sx, float sy);
-  void update(W w, PT mouse_cursor_pos, int button, int ch, int type, int mouse_wheel_y);
-  void render(W w);
-  int chosen_item(W w);
-  void select_item(W w, int item);
-  float dynamic_param(W w, int id);
-  void set_dynamic_param(W w, int id, float val);
-  std::string get_id(W w);
-  void set_id(W w, std::string id);
-  int num_childs(W w);
-  W get_child(W w, int i);
-  int pos_x(W w);
-  int pos_y(W w);
-  int size_x(W w);
-  int size_y(W w);
+  IMPORT void set_pos(W w, float px, float py);
+  IMPORT void set_size(W ow, float sx, float sy);
+  IMPORT void update(W w, PT mouse_cursor_pos, int button, int ch, int type, int mouse_wheel_y);
+  IMPORT void render(W w);
+  IMPORT int chosen_item(W w);
+  IMPORT void select_item(W w, int item);
+  IMPORT float dynamic_param(W w, int id);
+  IMPORT void set_dynamic_param(W w, int id, float val);
+  IMPORT std::string get_id(W w);
+  IMPORT void set_id(W w, std::string id);
+  IMPORT int num_childs(W w);
+  IMPORT W get_child(W w, int i);
+  IMPORT int pos_x(W w);
+  IMPORT int pos_y(W w);
+  IMPORT int size_x(W w);
+  IMPORT int size_y(W w);
 
-  std::vector<std::pair<std::string,std::string> > get_functions_mapping();
+  IMPORT std::vector<std::pair<std::string,std::string> > get_functions_mapping();
 private:
   Env &e;
   EveryApi &ev;
@@ -1547,43 +1554,43 @@ class WModApi
 {
 public:
   WModApi(Env &e) : e(e) { }
-  WM load(std::string filename);
-  void save(WM mod, std::string ilename);
-  void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open);
-  void update_lines_from_canvas(W canvas, WM mod, int id);
-  void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks, W &delete_key, W &codegen_button, W &popup_open);
-  W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid, std::vector<W> &params);
-  std::vector<int> indexes_from_funcname(std::string funcname);
-  std::vector<std::string> types_from_function(WM mod, int id, std::string funcname);
-  std::vector<std::string> labels_from_function(WM mod, int id, std::string funcname);
-  std::vector<std::string*> refs_from_function(WM mod, int id, std::string funcname);
-  std::vector<std::pair<std::string,std::string> > defaults_from_function(std::string module_name);
+  IMPORT WM load(std::string filename);
+  IMPORT void save(WM mod, std::string ilename);
+  IMPORT void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open);
+  IMPORT void update_lines_from_canvas(W canvas, WM mod, int id);
+  IMPORT void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks, W &delete_key, W &codegen_button, W &popup_open);
+  IMPORT W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid, std::vector<W> &params);
+  IMPORT std::vector<int> indexes_from_funcname(std::string funcname);
+  IMPORT std::vector<std::string> types_from_function(WM mod, int id, std::string funcname);
+  IMPORT std::vector<std::string> labels_from_function(WM mod, int id, std::string funcname);
+  IMPORT std::vector<std::string*> refs_from_function(WM mod, int id, std::string funcname);
+  IMPORT std::vector<std::pair<std::string,std::string> > defaults_from_function(std::string module_name);
   struct InsertParam {
     std::string first;
     std::string second;
     bool is_array = false;
     int line_index_in_gameapi_function_lines_array = -1;
   };
-  void insert_to_mod(WM mod, int id, std::string modname, std::string uid, bool array_return, int x, int y, std::vector<InsertParam> params);
+  IMPORT void insert_to_mod(WM mod, int id, std::string modname, std::string uid, bool array_return, int x, int y, std::vector<InsertParam> params);
   
-  std::string get_funcname(WM mod2, int id, std::string uid);
-  void change_param_value(WM mod2, int id, std::string uid, int param_index, std::string newvalue);
-  void change_param_is_array(WM mod2, int id, std::string uid, int param_index, bool is_array, int ref_line_index);
-  int find_line_index(WM mod2, int id, std::string uid);
-  std::string param_value(WM mod2, int id, std::string uid, int param_index);
-  std::vector<std::string> parse_param_array(std::string s);
-  std::string generate_param_array(std::vector<std::string> v);
-  bool typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, bool &is_array, bool &is_array_return);
-  void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh);
+  IMPORT std::string get_funcname(WM mod2, int id, std::string uid);
+  IMPORT void change_param_value(WM mod2, int id, std::string uid, int param_index, std::string newvalue);
+  IMPORT void change_param_is_array(WM mod2, int id, std::string uid, int param_index, bool is_array, int ref_line_index);
+  IMPORT int find_line_index(WM mod2, int id, std::string uid);
+  IMPORT std::string param_value(WM mod2, int id, std::string uid, int param_index);
+  IMPORT std::vector<std::string> parse_param_array(std::string s);
+  IMPORT std::string generate_param_array(std::vector<std::string> v);
+  IMPORT bool typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, bool &is_array, bool &is_array_return);
+  IMPORT void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh);
 
-  int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level);
+  IMPORT int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level);
   
 
-  CollectResult collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);
-  void codegen_reset_counter();
-  std::pair<std::string, std::string> codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);
-  std::string return_type(WM mod2, int id, std::string line_uid);
-  void delete_by_uid(WM mod2, int id, std::string line_uid);
+  IMPORT CollectResult collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);
+  IMPORT void codegen_reset_counter();
+  IMPORT std::pair<std::string, std::string> codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);
+  IMPORT std::string return_type(WM mod2, int id, std::string line_uid);
+  IMPORT void delete_by_uid(WM mod2, int id, std::string line_uid);
 private:
   Env &e;
 };
@@ -1833,21 +1840,21 @@ class BooleanOps
 {
 public:
   BooleanOps(Env &e) : e(e) { }
-  BO create_bo(P mesh, O bools, FD fd);
-  BO cube(EveryApi &ev, 
+  IMPORT BO create_bo(P mesh, O bools, FD fd);
+  IMPORT BO cube(EveryApi &ev, 
 	  float start_x, float end_x,
 	  float start_y, float end_y,
 	  float start_z, float end_z,
 	  int split_x, int split_y);
-  BO sphere(EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2);
+  IMPORT BO sphere(EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2);
   //BO cone(int numfaces, PT p1, PT p2, float rad1, float rad2);
   //BO torus(int numfaces1, int numfaces2, PT center, V u_x, V u_y, float radius1, V uu_x, V uu_y, float radius2);
-  BO or_elem(EveryApi &ev, BO obj, BO obj2);
-  BO and_not(EveryApi &ev, BO obj, BO not_obj);
-  BO intersect(EveryApi &ev, BO obj, BO obj2);
-  P to_polygon(BO obj);
-  O to_volume(BO obj);
-  FD to_dist(BO obj);
+  IMPORT BO or_elem(EveryApi &ev, BO obj, BO obj2);
+  IMPORT BO and_not(EveryApi &ev, BO obj, BO not_obj);
+  IMPORT BO intersect(EveryApi &ev, BO obj, BO obj2);
+  IMPORT P to_polygon(BO obj);
+  IMPORT O to_volume(BO obj);
+  IMPORT FD to_dist(BO obj);
 private:
   Env &e;
 };
@@ -1859,33 +1866,33 @@ class PolygonDistanceField
 {
 public:
   PolygonDistanceField(Env &e) : e(e) { }
-  PD empty(EveryApi &ev);
-  PD create_pd(P mesh, SFO distance_field);
-  PD cube(EveryApi &ev, float start_x, float end_x,
+  IMPORT PD empty(EveryApi &ev);
+  IMPORT PD create_pd(P mesh, SFO distance_field);
+  IMPORT PD cube(EveryApi &ev, float start_x, float end_x,
 	  float start_y, float end_y,
 	  float start_z, float end_z);
-  PD rounded_cube(EveryApi &ev, float start_x, float end_x,
+  IMPORT PD rounded_cube(EveryApi &ev, float start_x, float end_x,
 		  float start_y, float end_y,
 		  float start_z, float end_z,
 		  float radius);
-  PD sphere(EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2);
-  PD cone(EveryApi &ev, int numfaces, PT p1, PT p2, float rad1, float rad2);
-  PD or_array(EveryApi &ev, std::vector<PD> vec);
-  PD translate(EveryApi &ev, PD orig, float dx, float dy, float dz);
-  PD rotatex(EveryApi &ev, PD orig, float angle);
-  PD rotatey(EveryApi &ev, PD orig, float angle);
-  PD rotatez(EveryApi &ev, PD orig, float angle);
-  PD scale(EveryApi &ev, PD orig, float sx, float sy, float sz);
-  PD color_from_normal(EveryApi &ev, PD obj);
-  PD ambient_occulsion_sfo(EveryApi &ev, PD obj, float d, float i);
-  PD colormod_from_position(EveryApi &ev, PD obj, float px, float py, float pz, float sx, float sy, float sz);
-  MT mesh_color_from_sfo(EveryApi &ev, PD orig, MT next);
+  IMPORT PD sphere(EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2);
+  IMPORT PD cone(EveryApi &ev, int numfaces, PT p1, PT p2, float rad1, float rad2);
+  IMPORT PD or_array(EveryApi &ev, std::vector<PD> vec);
+  IMPORT PD translate(EveryApi &ev, PD orig, float dx, float dy, float dz);
+  IMPORT PD rotatex(EveryApi &ev, PD orig, float angle);
+  IMPORT PD rotatey(EveryApi &ev, PD orig, float angle);
+  IMPORT PD rotatez(EveryApi &ev, PD orig, float angle);
+  IMPORT PD scale(EveryApi &ev, PD orig, float sx, float sy, float sz);
+  IMPORT PD color_from_normal(EveryApi &ev, PD obj);
+  IMPORT PD ambient_occulsion_sfo(EveryApi &ev, PD obj, float d, float i);
+  IMPORT PD colormod_from_position(EveryApi &ev, PD obj, float px, float py, float pz, float sx, float sy, float sz);
+  IMPORT MT mesh_color_from_sfo(EveryApi &ev, PD orig, MT next);
   
-  ML render_scene(EveryApi &ev, PD object, PD world); // this has access to sfo, P and matrix stack -- should make dynamic movement possible with proper shading which responds to movement of the objects in the scene. especially AO needs to be recalculated, but will also allow other shading stuff. This hasnt worked before since P object doesnt have access to shader side, SFO can't deal with meshes and matrix stack/ML is completely separate and it's needed for movement. // shader side needs to respond to matrix stack changes. So this is basically a bridge between matrix stack and shaders.
-  std::vector<ML> render_scene_array(EveryApi &ev, std::vector<PD> vec); // this on the other hand, is completely different -- it can connect multiple objects together in nice way. Unfortunately, builder doesn't support this api, but it's anyway useful later. (we can make builder support this prototype)
+  IMPORT ML render_scene(EveryApi &ev, PD object, PD world); // this has access to sfo, P and matrix stack -- should make dynamic movement possible with proper shading which responds to movement of the objects in the scene. especially AO needs to be recalculated, but will also allow other shading stuff. This hasnt worked before since P object doesnt have access to shader side, SFO can't deal with meshes and matrix stack/ML is completely separate and it's needed for movement. // shader side needs to respond to matrix stack changes. So this is basically a bridge between matrix stack and shaders.
+  IMPORT std::vector<ML> render_scene_array(EveryApi &ev, std::vector<PD> vec); // this on the other hand, is completely different -- it can connect multiple objects together in nice way. Unfortunately, builder doesn't support this api, but it's anyway useful later. (we can make builder support this prototype)
 
-  P get_polygon(PD p);
-  SFO get_distance_field(PD p);
+  IMPORT P get_polygon(PD p);
+  IMPORT SFO get_distance_field(PD p);
 private:
   Env &e;
 };
@@ -2172,6 +2179,10 @@ public:
   //IMPORT float *access_texcoord(VA va, bool triangle, int face, int point);
   //IMPORT void update(VA va);
 
+  IMPORT ML sprite_render(EveryApi &ev, BM bm, float start_x, float end_x, float start_y, float end_y, float z);
+  IMPORT ML sprite_render_inst(EveryApi &ev, BM bm, PTS pts, float start_x, float end_x, float start_y, float end_y, float z);
+  IMPORT ML sprite_render_fade(EveryApi &ev, BM bm, PTS pts, float start_x, float end_x, float start_y, float end_y, float z, bool flip, float start_time, float end_time);
+  
   IMPORT P anim_target_vector(P p, V v);
   IMPORT P anim_target_scale(P p, PT center, float scale_x, float scale_y, float scale_z);
   IMPORT P anim_target_matrix(P p, M matrix);
@@ -2505,7 +2516,7 @@ public: // values are [0.0..1.0]
   IMPORT BM to_color(FB r, FB g, FB b, FB a);
   IMPORT BM choose_bitmap(FB fb, BM bm1, BM bm2);
   IMPORT FB perlin_noise(FB grad_1, FB grad_2);
-  IMPORT BM subfloatbitmap(FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color);
+  IMPORT BM subfloatbitmap(EveryApi &ev, FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color);
   
   IMPORT FB from_bool(BB b, float val_true, float val_false);
   IMPORT FB distance_field(FB bb, float max_value);
@@ -2657,12 +2668,12 @@ class MatricesApi
 {
 public:
   MatricesApi(Env &e) :e(e) { }
-  MS from_points(PTS pts);
-  MS mult(MS m, M mat);
-  MS mult(M mat, MS m);
-  MS subarray(MS m, int start, int count);
-  MS ms_random_rot(float px, float py, float pz, int count);
-  MS mult_array(MS m1, MS m2);
+  IMPORT MS from_points(PTS pts);
+  IMPORT MS mult(MS m, M mat);
+  IMPORT MS mult(M mat, MS m);
+  IMPORT MS subarray(MS m, int start, int count);
+  IMPORT MS ms_random_rot(float px, float py, float pz, int count);
+  IMPORT MS mult_array(MS m1, MS m2);
 private:
   Env &e;
 };

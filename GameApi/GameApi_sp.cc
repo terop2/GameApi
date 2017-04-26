@@ -470,6 +470,12 @@ EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
   //s->free_memory();
   return add_vertex_array(e, s, arr); 
 }
+EXPORT void GameApi::SpriteApi::clear_arrays(VA va)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  RenderVertexArray *rend = find_vertex_array_render(e, va);
+  s->clear_arrays();
+}
 
 EXPORT void GameApi::SpriteApi::preparesprite(BM bm, int bbm_choose)
 {
@@ -581,4 +587,45 @@ EXPORT GameApi::PT GameApi::SpriteApi::pixelpos(BM bm, int x, int y)
   PT pt;
   pt.id = 0;
   return pt;
+}
+
+EXPORT GameApi::ARR GameApi::SpriteApi::sprite_atlas_x(EveryApi &ev, BM orig, int start_x, int end_x, int start_y, int end_y, int delta_x, int count)
+{
+  ev.bitmap_api.prepare(orig);
+  int s=count;
+  ArrayType *arr = new ArrayType;
+  arr->type=1;
+  for(int i=0;i<s;i++)
+    {
+      BM sub = ev.bitmap_api.subbitmap(orig, start_x+delta_x*i, start_y, end_x-start_x, end_y-start_y);
+      arr->vec.push_back(sub.id);
+    }
+  return add_array(e, arr);
+}
+EXPORT GameApi::ARR GameApi::SpriteApi::sprite_atlas_y(EveryApi &ev, BM orig, int start_x, int end_x, int start_y, int end_y, int delta_y, int count)
+{
+  ev.bitmap_api.prepare(orig);
+  int s=count;
+  ArrayType *arr = new ArrayType;
+  arr->type=1;
+  for(int i=0;i<s;i++)
+    {
+      BM sub = ev.bitmap_api.subbitmap(orig, start_x, start_y+delta_y*i, end_x-start_x, end_y-start_y);
+      arr->vec.push_back(sub.id);
+    }
+  return add_array(e, arr);
+}
+
+EXPORT GameApi::ARR GameApi::SpriteApi::sprite_atlas_xy(EveryApi &ev, BM orig, int start_x, int end_x, int start_y, int end_y, int delta_x, int delta_y, int count_x, int count_y)
+{
+  ev.bitmap_api.prepare(orig);
+  ArrayType *arr = new ArrayType;
+  arr->type=1;
+  for(int i=0;i<count_y;i++)
+    for(int j=0;j<count_x;j++)
+    {
+      BM sub = ev.bitmap_api.subbitmap(orig, start_x+delta_x*j, start_y+delta_y*i, end_x-start_x, end_y-start_y);
+      arr->vec.push_back(sub.id);
+    }
+  return add_array(e, arr);
 }

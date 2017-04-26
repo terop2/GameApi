@@ -736,6 +736,7 @@ public:
   SeqML(std::vector<MainLoopItem*> vec, float time) : vec(vec), time(time) { num2 = -1; firsttime = true; }
   virtual void execute(MainLoopEnv &e)
   {
+    #if 0
     if (firsttime)
       {
 	int s = vec.size();
@@ -747,7 +748,8 @@ public:
       firsttime = false;
       return;
       }
-
+    #endif
+    
     float num = e.time*10.0/time;
     num2 = (int)num;
     float newtime = fmod(e.time,time/10.0);
@@ -801,6 +803,7 @@ public:
   }
   void execute(MainLoopEnv &e)
   {
+    #if 0
     if (firsttime)
       {
       end->execute(e);
@@ -808,7 +811,7 @@ public:
       firsttime = false;
       return;
       }
-    
+    #endif
     if (e.time*10.0>=start_time && e.time*10.0 <end_time && !current_item)
       {
 	if (old_key_pressed && !key_pressed) {
@@ -1009,7 +1012,7 @@ void GameApi::MainLoopApi::set_viewport(int x, int y, int sx, int sy)
   glViewport(x,y,sx,sy);
 }
 
-GameApi::ML GameApi::MainLoopApi::array_ml(std::vector<ML> vec)
+EXPORT GameApi::ML GameApi::MainLoopApi::array_ml(std::vector<ML> vec)
 {
   std::vector<MainLoopItem*> vec2;
   int s = vec.size();

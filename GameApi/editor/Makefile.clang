@@ -1,3 +1,8 @@
 
+INC8WIN = "C:\Program Files (x86)\mingw-w64\i686-4.9.2-posix-dwarf-rt_v4-rev2\mingw32\i686-w64-mingw32\include\c++"
+INC9WIN = "C:\Program Files (x86)\mingw-w64\i686-4.9.2-posix-dwarf-rt_v4-rev2\mingw32\i686-w64-mingw32\include\c++\i686-w64-mingw32"
+INCAWIN = "C:\Program Files (x86)\mingw-w64\i686-4.9.2-posix-dwarf-rt_v4-rev2\mingw32\i686-w64-mingw32\include"
+
+
 all:
-	g++ -std=c++11 test.cpp -L.. -I.. -lGameApi
+	clang++ -DWINDOWS -std=c++11 test.cpp -L.. -I.. -lGameApi -I$(INC8WIN) -I$(INC9WIN) -I$(INCAWIN)

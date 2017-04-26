@@ -3152,7 +3152,7 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
   BitmapFromBuffer buf(ref);
   FlipColours flip(buf);
   BufferFromBitmap buf2(flip);
-#ifdef EMSCRIPTEN
+#if 1
   buf2.Gen();
 #else
   buf2.GenPrepare();
@@ -3204,7 +3204,7 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
+  
 }
 void ArrayRender::EnableTexture(int num)
 {
@@ -3537,7 +3537,11 @@ void ArrayRender::Prepare()
   glBindBuffer(GL_ARRAY_BUFFER, buffer[4]);
   glVertexAttribPointer(4,3, GL_FLOAT, GL_FALSE, 0,0);
 #endif
-  
+  delete [] q_vertex_array; q_vertex_array=0;
+  delete [] q_normal_array; q_normal_array=0;
+  delete [] q_color_array; q_color_array=0;
+  delete [] q_tex_coord_array; q_tex_coord_array=0;
+
 }
 void ArrayRender::Render(int vertexframe, int normalframe, int colorframe, int texcoordframe, int vertex_pos, int vertex_size)
 {

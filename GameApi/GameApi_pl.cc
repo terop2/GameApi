@@ -4919,7 +4919,32 @@ private:
   Vector u_z;
 
 };
- 
+
+EXPORT GameApi::ML GameApi::PolygonApi::sprite_render(EveryApi &ev, BM bm, float start_x, float end_x, float start_y, float end_y, float z)
+{
+  GameApi::P I1=ev.polygon_api.quad_z(start_x,end_x,start_y,end_y,z);
+  GameApi::BM I2=bm; 
+  GameApi::MT I3=ev.materials_api.texture(ev,I2,1.0);
+  GameApi::ML I4=ev.materials_api.bind(I1,I3);
+  return I4;
+}
+EXPORT GameApi::ML GameApi::PolygonApi::sprite_render_inst(EveryApi &ev, BM bm, PTS pts, float start_x, float end_x, float start_y, float end_y, float z)
+{
+  P I5=ev.polygon_api.quad_z(start_x,end_x,start_y,end_y,z);
+  BM I6=bm;
+  MT I7=ev.materials_api.texture(ev,I6,1.0);
+  ML I8=ev.materials_api.bind_inst(I5,pts,I7);
+  return I8;
+}
+EXPORT GameApi::ML GameApi::PolygonApi::sprite_render_fade(EveryApi &ev, BM bm, PTS pts, float start_x, float end_x, float start_y, float end_y, float z, bool flip, float start_time, float end_time)
+{
+  P I9=ev.polygon_api.quad_z(start_x,end_x,start_y,end_y,z);
+  BM I10=bm; //ev.bitmap_api.chessboard(10,10,8,8,ffffffff,ff888888);
+  MT I11=ev.materials_api.texture(ev,I10,1.0);
+  ML I12=ev.materials_api.bind_inst_fade(I9,pts,I11,flip,start_time,end_time);
+  return I12;
+}
+							  
 EXPORT GameApi::P GameApi::PolygonApi::color_map(BM bm, float start_x, float end_x, float start_y, float end_y, float z)
 {
   BitmapHandle *handle = find_bitmap(e, bm);

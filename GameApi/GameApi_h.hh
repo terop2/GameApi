@@ -60,6 +60,9 @@
 #define SPECIAL_TEX_ID 600000
 #define SPECIAL_TEX_IDA 700000
 
+void *operator new( std::size_t count);
+void operator delete(void* ptr) noexcept;
+
 std::string unique_id();
 
 struct TexCoordQuad
@@ -577,6 +580,50 @@ struct EnvImpl
   {
     temp_deletes.resize(0);
     temp_deletes.shrink_to_fit();
+  }
+  EXPORT std::vector<int> store_counts() const
+  {
+    std::vector<int> vec;
+    vec.push_back(vertex_array_render.size());
+    vec.push_back(vertex_array.size());
+    vec.push_back(renders.size());
+    vec.push_back(renders2.size());
+    return vec;
+  }
+  EXPORT void free_to_counts(std::vector<int> vec)
+  {
+      int sk2 = vertex_array_render.size();
+      int start0=vec[0];
+   for(int ii2=start0;ii2<sk2;ii2++)
+    {
+      RenderVertexArray *s = vertex_array_render[ii2];
+      delete s;
+    }
+   int start1 = vec[1];
+  int sk1 = vertex_array.size();
+  for(int ii1=start1;ii1<sk1;ii1++)
+    {
+      VertexArraySet *s = vertex_array[ii1];
+      delete s;
+    }
+
+  int start2 = vec[2];
+  std::map<int, ArrayRender*>::iterator it = renders.begin();
+  std::advance(it,start2);
+  for(;it!=renders.end();it++)
+    {
+      ArrayRender *rend = (*it).second;
+      delete rend;
+    }
+  int start3 = vec[3];
+  std::map<int, ArrayRender*>::iterator it2 = renders2.begin();
+  std::advance(it,start3);
+  for(;it2!=renders2.end();it2++)
+    {
+      ArrayRender *rend = (*it2).second;
+      delete rend;
+    }
+  
   }
   EXPORT void free_memory()
   {
