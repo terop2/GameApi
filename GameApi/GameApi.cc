@@ -12,6 +12,7 @@
 #include "GameApi_h.hh"
 #include "FreeType2.hh"
 
+#if 0
 void *operator new( std::size_t count)
 {
   static int counter = 0;
@@ -28,7 +29,7 @@ void operator delete(void* ptr) noexcept
 {
   free(ptr);
 }
-
+#endif
 
 int array_type_to_int(GameApi::BM b) { return E_BM; }
 int array_type_to_int(GameApi::P b) { return E_P; }
@@ -1149,7 +1150,14 @@ GameApi::VO add_vector_volume(GameApi::Env &e, VectorVolumeObject *o)
   return pt;
 }
 
-
+GameApi::VX add_int_voxel(GameApi::Env &e, Voxel<int> *o)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->voxels2.push_back(o);
+  GameApi::VX pt;
+  pt.id = env->voxels2.size()-1;
+  return pt;
+}
 GameApi::VX add_voxel(GameApi::Env &e, Voxel<unsigned int> *o)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1158,6 +1166,7 @@ GameApi::VX add_voxel(GameApi::Env &e, Voxel<unsigned int> *o)
   pt.id = env->voxels.size()-1;
   return pt;
 }
+
 
 GameApi::CO add_color(GameApi::Env &e, int r, int g, int b, int a)
 {
@@ -1271,6 +1280,16 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   Array<int,bool> *enable = info.enable_obj_array;
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
+}
+PropertyArray *find_property_array(GameApi::Env &e, GameApi::PR pr)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->prop_array[pr.id];
+}
+Space3d *find_space_3d(GameApi::Env &e, GameApi::SP sp)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->space_3d[sp.id];
 }
 CurvePatch *find_patch(GameApi::Env &e, GameApi::PA patch)
 {
@@ -1578,6 +1597,22 @@ GameApi::V add_vector(GameApi::Env &e, float dx, float dy, float dz)
   //pt.type = 0;
   return pt;
 }
+GameApi::PR add_property_array(GameApi::Env &e, PropertyArray *arr)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->prop_array.push_back(arr);
+  GameApi::PR c;
+  c.id = env->prop_array.size()-1;
+  return c;
+}
+GameApi::SP add_space_3d(GameApi::Env &e, Space3d *sp)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->space_3d.push_back(sp);
+  GameApi::SP c;
+  c.id = env->space_3d.size()-1;
+  return c;
+}
 
 GameApi::CMD add_cmds(GameApi::Env &e, CmdExecute *cmds2)
 {
@@ -1700,6 +1735,17 @@ Voxel<unsigned int> *find_voxel(GameApi::Env &e, GameApi::VX b)
     handle = ee->voxels[b.id];
   return handle;
 }
+
+Voxel<int> *find_int_voxel(GameApi::Env &e, GameApi::VX b)
+{
+  EnvImpl *ee = ::EnvImpl::Environment(&e);
+  Voxel<int> *handle = 0;
+
+  if (b.id >=0 && b.id < (int)ee->voxels2.size())
+    handle = ee->voxels2[b.id];
+  return handle;
+}
+
 
 Separate* find_separate(GameApi::Env &e, GameApi::SA p)
 {
@@ -3308,7 +3354,9 @@ class MoveML : public MainLoopItem
 {
 public:
   MoveML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, GameApi::MN mn, int clone_count, float time_delta) : e(e), ev(ev), next(next), mn(mn), clone_count(clone_count), time_delta(time_delta) 
-  { 
+  {
+    firsttime = true;
+    firsttime2 = false;
     start_time = 0.0; //ev.mainloop_api.get_time();
   }
   void reset_time() {
@@ -3321,6 +3369,15 @@ public:
   }
   void execute(MainLoopEnv &env)
   {
+    if (firsttime) {
+      firsttime2 = true;
+    }
+    if (!firsttime && firsttime2)
+      {
+	reset_time();
+	firsttime2 = false;
+      }
+    firsttime = false;
     for(int i=0;i<clone_count;i++)
       {
     GameApi::SH s1;
@@ -3368,6 +3425,8 @@ private:
   GameApi::MN mn;
   int clone_count;
   float time_delta;
+  bool firsttime;
+  bool firsttime2;
 };
 
 
@@ -8904,5 +8963,297 @@ GameApi::ML GameApi::MovementNode::enemy_pos(ML prev, PTS pos)
   MainLoopItem *item = find_main_loop(e, prev);
   PointsApiPoints *pts = find_pointsapi_points(e, pos);
   return add_main_loop(e, new EnemyPos(item, pts));
+}
+
+class BlitVoxel_voxel : public Voxel<int>
+{
+public:
+  BlitVoxel_voxel(Voxel<int> *bg, Voxel<int> *obj, int p_x, int p_y, int p_z) : bg(bg), obj(obj),p_x(p_x), p_y(p_y), p_z(p_z) { }
+  virtual int SizeX() const { return bg->SizeX(); }
+  virtual int SizeY() const { return bg->SizeY(); }
+  virtual int SizeZ() const { return bg->SizeZ(); }
+  virtual int Map(int x, int y, int z) const
+  {
+    int val = obj->Map(x-p_x,y-p_y,z-p_z);
+    if (val==-1) return bg->Map(x,y,z);
+    return val;
+  }
+private:
+  Voxel<int> *bg;
+  Voxel<int> *obj;
+  int p_x, p_y, p_z;
+};
+class BlitVoxel : public Voxel<int>
+{
+public:
+  BlitVoxel(VolumeObject *obj,
+	    int sx, int sy, int sz,
+	    float start_x, float end_x,
+	    float start_y, float end_y,
+	    float start_z, float end_z,
+	    int false_value, int true_value) : obj(obj),
+					       sx(sx), sy(sy), sz(sz),
+					       start_x(start_x), end_x(end_x),
+					       start_y(start_y), end_y(end_y),
+					       start_z(start_z), end_z(end_z),
+					       false_value(false_value), true_value(true_value) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual int SizeZ() const { return sz; }
+  virtual int Map(int x, int y, int z) const
+  {
+    float xx = float(x)/sx*(end_x-start_x)+start_x;
+    float yy = float(y)/sy*(end_y-start_y)+start_y;
+    float zz = float(z)/sz*(end_z-start_z)+start_z;
+    Point p(xx,yy,zz);
+    bool b = obj->Inside(p);
+    if (b) {
+      return true_value;
+    }
+    return false_value;
+  }
+
+private:
+  Voxel<int> *next;
+  VolumeObject *obj;
+  int sx,sy,sz;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+  int false_value, true_value;
+};
+class EmptyVoxel : public Voxel<int>
+{
+public:
+  EmptyVoxel(int sx, int sy, int sz) : sx(sx), sy(sy), sz(sz) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual int SizeZ() const { return sz; }
+  virtual int Map(int x, int y, int z) const
+  {
+    return -1;
+  }
+private:
+  int sx,sy,sz;
+};
+GameApi::VX GameApi::VoxelApi::empty_voxel(int sx, int sy, int sz)
+{
+  return add_int_voxel(e, new EmptyVoxel(sx,sy,sz));
+}
+class VoxelLandscape : public Voxel<int>
+{
+public:
+  VoxelLandscape(Bitmap<float> &bm, int height, int false_value, int true_value) : bm(bm), height(height), false_value(false_value), true_value(true_value) {}
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return height; }
+  virtual int SizeZ() const { return bm.SizeY(); }
+  virtual int Map(int x, int y, int z) const
+  {
+    float val = bm.Map(x,z);
+    float val0 = val*height;
+    if (val0 < float(y)) { return false_value; }
+    float val1 = bm.Map(x+1,z);
+    float val2 = bm.Map(x,z+1);
+    float val3 = bm.Map(x-1,z);
+    float val4 = bm.Map(x,z-1);
+    float m = std::min(std::min(val1,val2), std::min(val3,val4));
+    float val00 = m*height - 1;
+    if (val00 > float(y)) { return false_value; }
+    return true_value;
+  }
+private:
+  Bitmap<float> &bm;
+  int height;
+  int false_value;
+  int true_value;
+};
+class SubVoxel : public Voxel<int>
+{
+public:
+  SubVoxel(Voxel<int> *vx, int start_x, int end_x,
+	   int start_y, int end_y,
+	   int start_z, int end_z) : vx(vx), start_x(start_x), end_x(end_x),
+				     start_y(start_y), end_y(end_y),
+				     start_z(start_z), end_z(end_z) { }
+
+  virtual int SizeX() const { return end_x-start_x; }
+  virtual int SizeY() const { return end_y-start_y; }
+  virtual int SizeZ() const { return end_z-start_z; }
+  virtual int Map(int x, int y, int z) const
+  {
+    // clip to specified area
+    if (x<start_x) return -1;
+    if (x>=end_x) return -1;
+    if (y<start_y) return -1;
+    if (y>=end_y) return -1;
+    if (z<start_z) return -1;
+    if (x>=end_z) return -1;
+    // clip to available space
+    int xx = x+start_x;
+    int yy = y+start_y;
+    int zz = z+start_z;
+    if (xx>=vx->SizeX()) return -1;
+    if (yy>=vx->SizeY()) return -1;
+    if (zz>=vx->SizeZ()) return -1;
+    if (xx<0) return -1;
+    if (yy<0) return -1;
+    if (zz<0) return -1;
+    return vx->Map(xx, yy, zz);
+  }
+private:
+  Voxel<int> *vx;
+  int start_x, end_x;
+  int start_y, end_y;
+  int start_z, end_z;
+};
+GameApi::VX GameApi::VoxelApi::subvoxel(VX voxel, int start_x, int end_x,
+					int start_y, int end_y,
+					int start_z, int end_z)
+{
+  Voxel<int> *vx = find_int_voxel(e, voxel);
+  return add_int_voxel(e, new SubVoxel(vx, start_x, end_x, start_y, end_y, start_z, end_z));
+}
+GameApi::VX GameApi::VoxelApi::voxel_landscape_from_fbm(FB bitmap, int height, int false_value, int true_value)
+{
+  Bitmap<float> *fbm = find_float_bitmap(e, bitmap)->bitmap;
+  return add_int_voxel(e, new VoxelLandscape(*fbm, height, false_value, true_value));
+}
+GameApi::VX GameApi::VoxelApi::blit_voxel2(VX voxel, VX voxel2, int p_x, int p_y, int p_z)
+{
+  Voxel<int> *v0 = find_int_voxel(e, voxel);
+  Voxel<int> *v1 = find_int_voxel(e, voxel2);
+  return add_int_voxel(e, new BlitVoxel_voxel(v0,v1, p_x,p_y,p_z));
+}
+GameApi::VX GameApi::VoxelApi::blit_voxel(O object,
+					  int sx, int sy, int sz,
+					  float start_x, float end_x,
+					  float start_y, float end_y,
+					  float start_z, float end_z,
+					  int false_value, int true_value)
+{
+  VolumeObject *obj = find_volume(e, object);
+  return add_int_voxel(e,new BlitVoxel(obj, sx,sy,sz,
+				       start_x, end_x,
+				       start_y, end_y,
+				       start_z, end_z,
+				       false_value, true_value));
+}
+
+
+class VoxelToPTS 
+{
+public:
+  VoxelToPTS(Voxel<int> *vx, int count, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+  {
+    int sx = vx->SizeX();
+    int sy = vx->SizeY();
+    int sz = vx->SizeZ();
+    Point p;
+    float dx = end_x-start_x;
+    float dy = end_y-start_y;
+    float dz = end_z-start_z;
+    pts.resize(count);
+    for(int i=0;i<sx;i++) {
+      p.x = float(i)/sx*dx+start_x;
+      for(int j=0;j<sy;j++) {
+	p.y = float(j)/sy*dy+start_y;
+	for(int k=0;k<sz;k++)
+	  {
+	    int val = vx->Map(i,j,k);
+	    if (val>=0 && val<count) {
+	      p.z = float(k)/sz*dz+start_z;
+	      pts[val].push_back(p);
+	    }
+	  }
+      }
+    }
+  }
+  PointsApiPoints *get(int val);
+public:
+  std::vector<std::vector<Point> > pts;
+};
+
+class VPTS : public PointsApiPoints
+{
+public:
+  VPTS(VoxelToPTS &pts, int val) : pts(pts), val(val) { }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) { return false; }
+  virtual int NumPoints() const
+  {
+    return pts.pts[val].size();
+  }
+  virtual Point Pos(int i) const
+  {
+    return pts.pts[val][i];
+  }
+  virtual unsigned int Color(int i) const
+  {
+    return 0xffffffff;
+  }
+private:
+  VoxelToPTS &pts;
+  int val;
+};
+
+PointsApiPoints *VoxelToPTS::get(int val)
+{
+  return new VPTS(*this, val);
+}
+
+
+// ARR = array of PTS
+GameApi::ARR GameApi::VoxelApi::voxel_instancing(VX voxel,
+						 int count,
+						 float start_x, float end_x,
+						 float start_y, float end_y,
+						 float start_z, float end_z)
+{
+  Voxel<int> *vx = find_int_voxel(e, voxel);
+  VoxelToPTS *pts = new VoxelToPTS(vx, count, start_x, end_x, start_y, end_y, start_z, end_z);
+  int s = count;
+  std::vector<int> vec;
+  ArrayType *array = new ArrayType;
+  array->type = 2;
+  for(int i=0;i<s;i++)
+    {
+      PointsApiPoints *p = pts->get(i);
+      PTS pts = add_points_api_points(e, p);
+      array->vec.push_back(pts.id);
+    }
+  return add_array(e,array);
+}
+GameApi::ML GameApi::VoxelApi::voxel_render(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec)
+{
+  int s = std::min(objs.size(), vec.size());
+  std::vector<ML> mls;
+  for(int i=0;i<s;i++)
+    {
+      ML o = ev.materials_api.render_instanced_ml(ev, objs[i], vec[i]);
+      mls.push_back(o);
+    }
+  return ev.mainloop_api.array_ml(mls);
+}
+GameApi::ML GameApi::VoxelApi::voxel_bind(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec, MT mt)
+{
+  int s = std::min(objs.size(), vec.size());
+  std::vector<ML> mls;
+  for(int i=0;i<s;i++)
+    {
+      ML o = ev.materials_api.bind_inst(objs[i], vec[i], mt);
+      mls.push_back(o);
+    }
+  return ev.mainloop_api.array_ml(mls);
+}
+GameApi::P GameApi::VoxelApi::voxel_static(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec)
+{
+  int s = std::min(objs.size(), vec.size());
+  std::vector<P> mls;
+  for(int i=0;i<s;i++)
+    {
+      P o = ev.polygon_api.static_instancing(ev, objs[i], vec[i]);
+      mls.push_back(o);
+    }
+  return ev.polygon_api.or_array2(mls);
 }
 

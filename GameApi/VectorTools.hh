@@ -697,6 +697,20 @@ public:
   bool TriangleIntersection(Point p1, Point p2, Point p3);
   bool QuadIntersection(Point p1, Point p2, Point p3, Point p4);
   float LineCoords(Point p) const;
+  Matrix translate_to_p1() const { return Matrix::Translate(p1.x,p1.y,p1.z); }
+  Matrix translate_to_p2() const { return Matrix::Translate(p2.x,p2.y,p2.z); }
+  Matrix rotate_z_from_p1_in_2d() const
+  {
+    Vector v = p2-p1;
+    float angle = atan2(v.dy,v.dx);
+    return Matrix::ZRotation(angle);
+  }
+  Matrix scale_length_in_2d() const
+  {
+    Vector v = p2-p1;
+    float d = v.Dist();
+    return Matrix::Scale(d,d,1.0);
+  }
 private:
   Point p1, p2;
 };

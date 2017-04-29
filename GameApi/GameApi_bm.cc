@@ -2828,3 +2828,50 @@ GameApi::BM GameApi::BitmapApi::simple_blur(BM bm, float center, float left, flo
   return bm2;
 }
 
+class Dithering : public Bitmap<bool>
+{
+public:
+  Dithering(Bitmap<float> &val) : val(val) { }
+  void Prepare() { val.Prepare(); }
+  int SizeX() const { return val.SizeX(); }
+  int SizeY() const { return val.SizeY(); }
+  float error(int x, int y) const
+  {
+    int key = x+(y<<16);
+    std::map<int, float>::const_iterator i = errors.find(key);
+    if (i != errors.end())
+      {
+	return (*i).second;
+      }
+    if (x<0 || y<0 || x>=SizeX() || y>=SizeY())
+      return 0.0;
+    float e1 = error(x-1,y);
+    float e2 = error(x,y-1);
+    float v = e1+e2;
+    v+=val.Map(x-1,y);
+    v+=val.Map(x,y-1);
+    v-=Map(x-1,y)?1.0:0.0;
+    v-=Map(x,y-1)?1.0:0.0;
+    if (v>1.0) v=1.0;
+    if (v<-1.0) v=-1.0;
+    errors[key] = v;
+    return v;
+  }
+  bool Map(int x, int y) const
+  {
+    float err = error(x,y);
+    float v = val.Map(x,y);
+    v+=err;
+    if (v<0.5) return false;
+    return true;
+  }
+private:
+  Bitmap<float> &val;
+  mutable std::map<int, float> errors;
+};
+
+GameApi::BB GameApi::BoolBitmapApi::black_white_dithering(FB bm)
+{
+  Bitmap<float> *val = find_float_bitmap(e, bm)->bitmap;
+  return add_bool_bitmap(e, new Dithering(*val));
+}

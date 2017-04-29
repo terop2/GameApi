@@ -794,6 +794,8 @@ template<class T>
 class Fetcher
 {
 public:
+  virtual void event(MainLoopEvent &e)=0;
+  virtual void frame(MainLoopEnv &e)=0;
   virtual void set(T t)=0;
   virtual T get() const=0;
 };
@@ -931,5 +933,28 @@ public:
   virtual ~PointsApiPoints() {}
 };
 
+class Space3d
+{
+public:
+  virtual float SizeX() const=0;
+  virtual float SizeY() const=0;
+  virtual float SizeZ() const=0;
+  virtual int Map(float x, float y, float z) const=0;
+};
+
+class PropertyArray
+{
+public:
+  virtual int NumProp() const=0;
+  virtual unsigned int Color(int i) const=0;
+};
+
+class EnableArray
+{
+public:
+  virtual int NumEnables() const=0;
+  virtual void Enable(int i)=0;
+  virtual void Disable(int i)=0;
+};
 
 #endif
