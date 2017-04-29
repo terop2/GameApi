@@ -26,6 +26,7 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct PR { int id; };
   struct CMD { int id; };
   struct FI { int id; };
   struct SD { int id; };
@@ -333,6 +334,7 @@ public:
   std::string get_homepage_url();
   void set_homepage_url(std::string url);
   ML load_song(EveryApi& ev, ML next, std::string url);
+  ML skybox(EveryApi &ev, BM land, BM sky); // 100x100 bm's required
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);
@@ -623,6 +625,7 @@ public:
   IMPORT BM draw_text_string(FI font, std::string str, int x_gap, int empty_line_height);
   IMPORT ML dynamic_character2(EveryApi &ev, std::vector<GI> vec, std::string alternatives, IF fetcher, int x, int y);
   IMPORT IF timed_int_fetcher(EveryApi &ev, int start, int end, float start_time, float end_time);
+  IMPORT IF repeat_int_fetcher(IF fetcher, float duration);
   IMPORT std::vector<GameApi::BM> bm_array_id_inv(ARR arr);
   IMPORT ARR bm_array_id(std::vector<BM> vec);
 private:
@@ -2478,6 +2481,7 @@ public:
   IMPORT int size_x(BB bm);
   IMPORT int size_y(BB bm);
   IMPORT bool boolvalue(BB bb, int x, int y);
+  IMPORT BB black_white_dithering(FB fb);
 private:
   BoolBitmapApi(const BoolBitmapApi&);
   void operator=(const BoolBitmapApi&);
@@ -2594,6 +2598,17 @@ public:
   IMPORT BM sw_rays(O volume, VX colours, int sx, int sy, float vx, float vy, float vz, float z);
   IMPORT P render_boxes(VX v, float sx, float sy, float sz);
   IMPORT PTS instanced_positions(VX x, float sx, float sy, float sz, unsigned int value);
+
+  // int voxel
+  IMPORT VX empty_voxel(int sx, int sy, int sz);
+  IMPORT VX subvoxel(VX voxel, int start_x, int end_x, int start_y, int end_y, int start_z, int end_z);
+  IMPORT VX blit_voxel2(VX voxel, VX voxel2, int p_x, int p_y, int p_z);
+  IMPORT VX blit_voxel(O object, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int false_value, int true_value);
+  IMPORT ARR voxel_instancing(VX voxel, int count, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
+  IMPORT ML voxel_render(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec);
+  IMPORT ML voxel_bind(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec, MT material);
+  IMPORT P voxel_static(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec);
+  IMPORT VX voxel_landscape_from_fbm(FB bitmap, int height, int false_val, int true_val);
 private:
   Env &e;
 };

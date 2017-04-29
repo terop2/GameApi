@@ -754,7 +754,8 @@ public:
     num2 = (int)num;
     float newtime = fmod(e.time,time/10.0);
     MainLoopEnv ee = e;
-    ee.time = newtime;
+    // ee.time trick doesn't work with moveml
+    //ee.time = newtime;
     int s = vec.size();
     if (num2>=0 && num2<s) {
       vec[num2]->execute(ee);
@@ -803,7 +804,7 @@ public:
   }
   void execute(MainLoopEnv &e)
   {
-    #if 0
+    #if 1
     if (firsttime)
       {
       end->execute(e);
@@ -823,8 +824,8 @@ public:
 
     if (current_item) {
       MainLoopEnv ee = e;
-      ee.time = e.time - chosen_time;
-      if (ee.time*10.0 > show_duration) { current_item = false; }
+      float tt = e.time - chosen_time;
+      if (tt*10.0 > show_duration) { current_item = false; }
       end->execute(ee);
     } else {
       curr->execute(e);
@@ -1226,4 +1227,21 @@ GameApi::ML GameApi::MainLoopApi::load_song(EveryApi &ev, ML next, std::string u
   MainLoopItem *nxt = find_main_loop(e, next);
   std::string homepage = ev.mainloop_api.get_homepage_url();
   return add_main_loop(e, new SongML(e,ev, url, nxt, homepage));
+}
+
+// note, BM's need to be 100x100 bitmaps
+GameApi::ML GameApi::MainLoopApi::skybox(EveryApi &ev, BM I9_land, BM I15_sky)
+{
+  BM I9 = ev.bitmap_api.scale_bitmap(ev, I9_land, 100, 100);
+  BM I15 = ev.bitmap_api.scale_bitmap(ev, I15_sky, 100,100);
+  
+  PT I1=ev.point_api.point(0.0,0.0,0.0);
+  P I2=ev.polygon_api.sphere(I1,10000,30,30);
+  P I3=ev.polygon_api.rotatex(I2,1.59);
+  BM I4=ev.bitmap_api.newbitmap(200,100,00000000);
+  BM I10=ev.bitmap_api.blitbitmap(I4,I9,0,0);
+  BM I16=ev.bitmap_api.blitbitmap(I10,I15,100,0);
+  MT I17=ev.materials_api.texture(ev,I16,1.0);
+  ML I18=ev.materials_api.bind(I3,I17);
+  return I18;
 }

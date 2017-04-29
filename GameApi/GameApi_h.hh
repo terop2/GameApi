@@ -492,6 +492,7 @@ struct EnvImpl
   std::vector<std::string> shader_int_parameter;
   
   std::vector<Voxel<unsigned int>*> voxels;
+  std::vector<Voxel<int>*> voxels2;
   std::vector<TROArray*> timeranges; // statechange time ranges
   std::vector<VArray*> timerange_vertexarrays; // statechange vertex arrays
   std::vector<ShaderPriv2*> shaders;
@@ -568,6 +569,8 @@ struct EnvImpl
   std::vector<StringDisplay*> string_displays;
   std::vector<CmdExecute*> cmds;
   std::vector<CurvePatch*> curve_patches;
+  std::vector<PropertyArray*> prop_array;
+  std::vector<Space3d*> space_3d;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -891,6 +894,8 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::PR add_property_array(GameApi::Env &e, PropertyArray *arr);
+GameApi::SP add_space_3d(GameApi::Env &e, Space3d *sp);
 GameApi::PA add_patch(GameApi::Env &e, CurvePatch *patch);
 GameApi::CMD add_cmds(GameApi::Env &e, CmdExecute *cmds);
 GameApi::FI add_font_interface(GameApi::Env &e, FontInterface *fi);
@@ -985,6 +990,7 @@ GameApi::FO add_float_volume(GameApi::Env &e, FloatVolumeObject *o);
 GameApi::COV add_color_volume(GameApi::Env &e, ColorVolumeObject *o);
 GameApi::VO add_vector_volume(GameApi::Env &e, VectorVolumeObject *o);
 GameApi::VX add_voxel(GameApi::Env &e, Voxel<unsigned int> *o);
+GameApi::VX add_int_voxel(GameApi::Env &e, Voxel<int> *o);
 GameApi::CO add_color(GameApi::Env &e, int r, int g, int b, int a);
 GameApi::E add_event(GameApi::Env &e, const EventInfo &info);
 GameApi::L add_link(GameApi::Env &e, GameApi::E e1, GameApi::E e2, LinkInfo info);
@@ -1001,6 +1007,8 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+PropertyArray *find_prop_array(GameApi::Env &e, GameApi::PR prop);
+Space3d *find_space_3d(GameApi::Env &e, GameApi::SP space);
 CurvePatch *find_patch(GameApi::Env &e, GameApi::PA patch);
 CmdExecute *find_cmds(GameApi::Env &e, GameApi::CMD cmds);
 StringDisplay *find_string_display(GameApi::Env &e, GameApi::SD sd);
@@ -1061,6 +1069,7 @@ Waveform *find_waveform(GameApi::Env &e, GameApi::WV b);
 ContinuousBitmap<Color> *find_continuous_bitmap(GameApi::Env &e, GameApi::CBM b);
 FloatBitmap *find_float_bitmap(GameApi::Env &e, GameApi::FB b);
 Voxel<unsigned int> *find_voxel(GameApi::Env &e, GameApi::VX b);
+Voxel<int> *find_int_voxel(GameApi::Env &e, GameApi::VX b);
 Separate* find_separate(GameApi::Env &e, GameApi::SA p);
 PlaneData *find_plane_array(GameApi::Env &e, GameApi::PLA p);
 PlanePoints2d* find_plane(GameApi::Env &e, GameApi::PL p);

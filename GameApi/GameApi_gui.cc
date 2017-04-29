@@ -139,6 +139,7 @@ private:
   float dx;
 };
 
+#ifndef EMSCRIPTEN
 std::map<std::string, int> shared_text;
 class TextGuiWidgetAtlas : public GuiWidgetForward
 {
@@ -201,7 +202,7 @@ private:
  GameApi::VA rendered_bitmap_va;
   int x_gap;
 };
-
+#endif
 template<class T>
 class EditorGuiWidget : public GuiWidgetForward
 {
@@ -1247,6 +1248,7 @@ private:
   //static std::map<int, int> arrs;
 };
 
+#ifndef EMSCRIPTEN
 std::map<int, int> shared_sprites;
 class IconGuiWidgetShared : public GuiWidgetForward
 {
@@ -1308,6 +1310,7 @@ private:
   //static std::map<int, int> arrs;
   int key;
 };
+#endif
 
 //std::map<int,int> IconGuiWidget::arrs;
 class MarginGuiWidget : public GuiWidgetForward
@@ -1845,6 +1848,157 @@ private:
   GameApi::SH sh2;
   Vector2d delta_vec;
 };
+
+class LineWidget2 : public GuiWidgetForward
+{
+public:
+  LineWidget2(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::SH sh, GuiWidget *t1, int delta_x, int delta_y,
+	     GuiWidget *t2, int delta2_x, int delta2_y, GameApi::SH sh2)
+    : GuiWidgetForward(ev, { } ), env(env), sh(sh), t1(t1), delta_x(delta_x), delta_y(delta_y),
+      t2(t2), delta2_x(delta2_x), delta2_y(delta2_y),sh2(sh2) { firsttime = true; 
+    Point2d p = t1->get_pos();
+    p.x += delta_x;
+    p.y += delta_y;
+    Point2d p2 = t2->get_pos();
+    p2.x += delta2_x;
+    p2.y += delta2_y;
+    Point2d pp = { std::min(p.x,p2.x), std::min(p.y,p2.y) };
+    Point2d pp2 = { std::max(p.x,p2.x), std::max(p.y,p2.y) };
+    Vector2d sz = pp2-pp;
+    pos = pp;
+    size = sz;
+    Vector2d d = { 0.0, 0.0 };
+    delta_vec = d;
+}
+  void set_pos(Point2d p2)
+  {
+    //Point2d p = pos;
+    GuiWidgetForward::set_pos(p2);
+    //delta_vec = p2 - p + delta_vec;
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1, -1, -1,0);
+
+  }
+  GameApi::PT line_func(int linenum, bool id)
+  {
+    if (id)
+      return ev.point_api.point(100.0,0.0,0.0);
+    return ev.point_api.point(0.0,0.0,0.0);
+  }
+  GameApi::P line_to_poly(int i, float sx, float sy, float sz, float ex, float ey, float ez, unsigned int scolor, unsigned int ecolor)
+  {
+    //std::cout << sx << " " << sy << " " << sz << ":" << ex << " " << ey << " " << ez << std::endl;
+    GameApi::PT p1 = ev.point_api.point(sx-2,sy,0.0);
+    GameApi::PT p2 = ev.point_api.point(sx,sy+2,0.0);
+    GameApi::PT p3 = ev.point_api.point(ex+2,ey,0.0);
+    GameApi::PT p4 = ev.point_api.point(ex,ey+2,0.0);
+    GameApi:: P poly =  ev.polygon_api.quad(p1,p2,p3,p4);
+    //GameApi::P poly = ev.polygon_api.quad_z(sx,ex,sy,ey,0.0);
+    return ev.polygon_api.color(poly, 0xffffffff);
+  }
+  void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
+  {
+    using std::placeholders::_1;
+    using std::placeholders::_2;
+    using std::placeholders::_3;
+    using std::placeholders::_4;
+    using std::placeholders::_5;
+    using std::placeholders::_6;
+    using std::placeholders::_7;
+    using std::placeholders::_8;
+    using std::placeholders::_9;
+    if (firsttime)
+      {
+	line = ev.lines_api.function([this](int a,bool b){ return line_func(a,b); }, 1);
+	line = ev.lines_api.change_color(line, 0xffffffff);
+	line_2 = ev.polygon_api.from_lines(line, [this](int a,float b,float c,float d,float e,float f,float g,unsigned int h,unsigned int i) { return line_to_poly(a,b,c,d,e,f,g,h,i); });
+	line_3 = ev.polygon_api.create_vertex_array(line_2, true);
+	//line_p = ev.lines_api.prepare(line);
+	firsttime = false;
+      }
+    else
+      {
+#if 0
+	if (old_t1_pos.x != t1->get_pos().x ||old_t2_pos.x != t2->get_pos().x
+	    ||old_t1_pos.y != t1->get_pos().y || old_t2_pos.y != t2->get_pos().y)
+	  {
+	    line = ev.lines_api.function([this](int a,bool b){ return line_func(a,b); }, 1);
+	    line = ev.lines_api.change_color(line, 0xffffffff);
+	    line_2 = ev.polygon_api.from_lines(line, [this](int a,float b,float c,float d,float e,float f,float g,unsigned int h,unsigned int i) { return line_to_poly(a,b,c,d,e,f,g,h,i); });
+	    
+	     
+	    ev.polygon_api.update_vertex_array_no_memory(line_3, line_2);
+	  }
+	//ev.lines_api.update(line_p, line);
+#endif
+      }
+    old_t1_pos = t1->get_pos();
+    old_t2_pos = t2->get_pos();
+
+
+    Point2d p = t1->get_pos();
+    p.x += delta_x;
+    p.y += delta_y;
+    p+=delta_vec;
+    Point2d p2 = t2->get_pos();
+    p2.x += delta2_x;
+    p2.y += delta2_y;
+    p2+=delta_vec;
+    Point2d pp = { std::min(p.x,p2.x), std::min(p.y,p2.y) };
+    Point2d pp2 = { std::max(p.x,p2.x), std::max(p.y,p2.y) };
+    Vector2d sz = pp2-pp;
+    pos = pp;
+    size = sz;
+    
+
+  }
+  void render()
+  {
+    if (is_visible())
+      {
+    if (!firsttime)
+      {
+	ev.shader_api.use(sh);
+	Point2d p = t1->get_pos();
+	p.x += delta_x;
+	p.y += delta_y;
+	p+=delta_vec;
+	Point2d p2 = t2->get_pos();
+	p2.x += delta2_x;
+	p2.y += delta2_y;
+	p2+=delta_vec;
+	LineProperties prop(Point(p.x,p.y,0.0), Point(p2.x,p2.y,0.0));
+	Matrix m0 = Matrix::Scale(1.0/100.0, 1.0/100.0,1.0);
+	Matrix m1 = prop.translate_to_p1();
+	Matrix m2 = prop.rotate_z_from_p1_in_2d();
+	Matrix m3 = prop.scale_length_in_2d();
+	Matrix mm = m0*m3*m2*m1;
+	GameApi::M mm2 = add_matrix2(env, mm);
+	ev.shader_api.set_var(sh, "in_MV", mm2);
+	//ev.lines_api.render(line_p);
+	ev.polygon_api.render_vertex_array(line_3);
+	ev.shader_api.use(sh2);
+      }
+      }
+  }
+private:
+  GameApi::Env &env;
+  GameApi::SH sh;
+  bool firsttime;
+  GuiWidget *t1;
+  int delta_x, delta_y;
+  GuiWidget *t2;
+  int delta2_x, delta2_y;
+  GameApi::LI line;
+  GameApi::P line_2;
+  GameApi::VA line_3;
+  //GameApi::LLA line_p;
+  Point2d old_t1_pos;
+  Point2d old_t2_pos;
+  GameApi::SH sh2;
+  Vector2d delta_vec;
+};
+
 EXPORT GameApi::W GameApi::GuiApi::timed_visibility(W orig, W timed_widget, W insert, float start_duration, float duration, float dx)
 {
   GuiWidget *o = find_widget(e,orig);
@@ -1878,7 +2032,7 @@ EXPORT GameApi::W GameApi::GuiApi::line(W target1, int delta_x, int delta_y,
 {
   GuiWidget *t1 = find_widget(e, target1);
   GuiWidget *t2 = find_widget(e, target2);
-  return add_widget(e, new LineWidget(ev, sh, t1, delta_x, delta_y,
+  return add_widget(e, new LineWidget2(e,ev, sh, t1, delta_x, delta_y,
 				      t2, delta2_x, delta2_y, old_sh));
 }
 EXPORT GameApi::W GameApi::GuiApi::canvas(int sx, int sy)
@@ -2237,7 +2391,9 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
 
 EXPORT GameApi::W GameApi::GuiApi::text(std::string label, FtA atlas, BM atlas_bm, int x_gap)
 {
+#ifndef EMSCRIPTEN
   return add_widget(e, new TextGuiWidgetAtlas(ev, label, atlas, atlas_bm, sh, x_gap));
+#endif
 }
 
 EXPORT GameApi::W GameApi::GuiApi::icon(BM bm)
@@ -2246,7 +2402,9 @@ EXPORT GameApi::W GameApi::GuiApi::icon(BM bm)
 }
 EXPORT GameApi::W GameApi::GuiApi::icon_shared(BM bm, int key)
 {
+#ifndef EMSCRIPTEN
   return add_widget(e, new IconGuiWidgetShared(ev, bm, sh, key));
+#endif
 }
 EXPORT GameApi::W GameApi::GuiApi::poly(P p, SH sh2, int sx, int sy, int screen_size_x, int screen_size_y)
 {
@@ -5382,7 +5540,62 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "CMD", "std::string" },
 			 { "", "." },
 			 "LI", "move_api", "cmd_to_li"));
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::empty_voxel,
+			 "vx_empty",
+			 { "sx", "sy", "sz" },
+			 { "int", "int", "int" },
+			 { "30", "30", "30" },
+			 "VX", "voxel_api", "empty_voxel"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::subvoxel,
+			 "vx_sub",
+			 { "voxel", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			 { "VX", "int", "int", "int", "int", "int", "int" },
+			 { "", "0", "100", "0", "100", "0", "100" },
+			 "VX", "voxel_api", "subvoxel"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::voxel_landscape_from_fbm,
+			 "vx_landscape_bm",
+			 { "bitmap", "height", "false_val", "true_val" },
+			 { "FB", "int", "int", "int" },
+			 { "", "30", "-1", "0" },
+			 "VX", "voxel_api", "voxel_landscape_from_fbm"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::blit_voxel2,
+			 "vx_or_elem",
+			 { "v1", "v2", "p_x", "p_y", "p_z" },
+			 { "VX", "VX", "int", "int", "int" },
+			 { "", "", "0", "0", "0" },
+			 "VX", "voxel_api", "blit_voxel2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::blit_voxel,
+			 "vx_blit",
+			 { "object", "sx","sy", "sz", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "false_value", "true_value" },
+			 { "O", "int", "int", "int", "float","float", "float", "float", "float", "float", "int", "int" },
+			 { "", "30", "30", "30", "-200.0", "200.0", "-200.0", "200.0", "-200.0", "200.0", "-1", "0" },
+			 "VX", "voxel_api", "blit_voxel"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::voxel_instancing,
+			 "vx_inst",
+			 { "voxel", "count", "start_x", "end_x", "start_y","end_y", "start_z", "end_z" },
+			 { "VX", "int", "float", "float", "float", "float", "float", "float" },
+			 { "", "1", "-200.0","200.0", "-200.0", "200.0", "-200.0", "200.0" },
+			 "[PTS]", "voxel_api", "voxel_instancing"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::voxel_render,
+			 "vx_render",
+			 { "ev", "objs", "ptss" },
+			 { "EveryApi&", "[P]", "[PTS]" },
+			 { "ev", "", "" },
+			  "ML", "voxel_api", "voxel_render"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::voxel_bind,
+			 "vx_bind",
+			 { "ev", "objs", "ptss", "mt" },
+			 { "EveryApi&", "[P]", "[PTS]", "MT" },
+			 { "ev", "", "", "" },
+			 "ML", "voxel_api", "voxel_bind"));
+  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::voxel_static,
+			 "vx_static",
+			 { "ev", "objs", "ptss" },
+			 { "EveryApi&", "[P]", "[PTS]" },
+			 { "ev", "", "" },
+			 "P", "voxel_api", "voxel_static"));
+  
   return vec;
 }
 
@@ -5539,6 +5752,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "EveryApi&", "int", "int", "float", "float" },
 			 { "ev", "0", "10", "0.0", "30.0" },
 			 "IF", "font_api", "timed_int_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::repeat_int_fetcher,
+			 "if_repeat",
+			 { "fetcher", "duration" },
+			 { "IF", "float" },
+			 { "", "30.0" },
+			 "IF", "font_api", "repeat_int_fetcher"));
   
   return vec;
 }
@@ -5912,6 +6131,12 @@ std::vector<GameApiItem*> blocker_functions()
 
   std::vector<GameApiItem*> vec;
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::skybox,
+			 "skybox_ml",
+			 { "ev", "land", "sky" },
+			 { "EveryApi&", "BM", "BM" },
+			 { "ev", "", "" },
+			 "ML", "mainloop_api", "skybox"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::alt_ml_array,
 			 "alt_ml",
 			 { "ev", "vec", "start_time", "time_delta", "repeat" },
@@ -7378,6 +7603,12 @@ std::vector<GameApiItem*> floatbitmapapi_functions()
 			 { "float", "float", "float", "float", "float", "float", "int", "int" },
 			 { "0.0", "100.0", "0.0", "100.0", "0.0", "1.0", "100", "100" },
 			 "FB", "float_bitmap_api", "gaussian"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::perlin_noise,
+			 "bm_perlin",
+			 { "grad_1", "grad_2" },
+			 { "FB", "FB" },
+			 { "", "" },
+			 "FB", "float_bitmap_api", "perlin_noise"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::to_grayscale_color,
 			 "to_grayscale_color",
 			 { "fb", "r", "g", "b", "a", "r2", "g2", "b2", "a2" },
@@ -7510,6 +7741,12 @@ std::vector<GameApiItem*> boolbitmapapi_functions()
 			 { "BB", "int", "int", "int", "int", "int", "int", "int", "int" },
 			 { "", "255", "255", "255", "255", "0", "0", "0", "0" },
 			 "BM", "bool_bitmap_api", "to_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::black_white_dithering,
+			 "fb_dither",
+			 { "float_bitmap" },
+			 { "FB" },
+			 { "" },
+			 "BB", "bool_bitmap_api", "black_white_dithering"));
   return vec;
 }
 

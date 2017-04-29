@@ -253,6 +253,7 @@ public:
   DynChar(GameApi::EveryApi &ev, Fetcher<int> *fetch, std::vector<GameApi::BM> vec, int x, int y) : ev(ev), fetch(fetch), vec(vec),x(x),y(y) 
   {
     firsttime = true;
+    sh.id = -1;
   }
   void first_time_calc()
   {
@@ -273,15 +274,19 @@ public:
     }
 
     sh.id = e.sh_texture;
+    fetch->frame(e);
     int idx = fetch->get();
     int s = vas.size();
     if (idx>=0 && idx<s) {
       ev.shader_api.use(sh);
-      ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(x,y,0));
+      GameApi::M m = add_matrix2(ev.get_env(),e.in_MV);
+      GameApi::M m2 = ev.matrix_api.trans(x,y,0);
+      GameApi::M mm = ev.matrix_api.mult(m,m2);
+      ev.shader_api.set_var(sh, "in_MV", mm);
       ev.sprite_api.render_sprite_vertex_array(vas[idx]);
     }
   }
-  virtual void handle_event(MainLoopEvent &e) { }
+  virtual void handle_event(MainLoopEvent &e) { fetch->event(e); }
   virtual int shader_id() { return sh.id; }
 
 private:
@@ -408,14 +413,47 @@ EXPORT GameApi::ML GameApi::FontApi::dynamic_string(GameApi::EveryApi &ev, GameA
     }
   return ev.mainloop_api.array_ml(ml);
 }
+class RepeatIntFetcher : public Fetcher<int>
+{
+public:
+  RepeatIntFetcher(Fetcher<int> *fetch, float duration) : fetch(fetch), duration(duration) { }
+  virtual void event(MainLoopEvent &e) {
+    fetch->event(e);
+  }
+  virtual void frame(MainLoopEnv &e) {
+    MainLoopEnv ee = e;
+    ee.time = fmod(e.time, duration/10.0);
+    fetch->frame(ee);
+  }
+  void set(int i) { fetch->set(i); }
+  int get() const { return fetch->get(); }
+private:
+  Fetcher<int> *fetch;
+  float duration;
+};
+
 
 class TimedIntFetcher : public Fetcher<int>
 {
 public:
-  TimedIntFetcher(GameApi::EveryApi &ev, int start, int end, float start_time, float duration) : ev(ev), start(start), end(end), start_time(start_time), duration(duration) { }
+  TimedIntFetcher(GameApi::EveryApi &ev, int start, int end, float start_time, float duration) : ev(ev), start(start), end(end), start_time(start_time), duration(duration)
+  {
+    firsttime = true;
+  }
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) {
+    if (firsttime)
+      time_origin = e.time*10.0;
+    firsttime = false;
+    
+    current_time = e.time*10.0;
+    current_time -= time_origin;
+  }
+
   void set(int i) { }
   int get() const {
-    float val = ev.mainloop_api.get_time()/100.0;
+    firsttime = false;
+    float val = current_time;
     if (val<start_time) return start;
     if (val>=start_time+(end-start)*duration) return end;
     float d = (val-start_time)/duration;
@@ -428,12 +466,18 @@ private:
   int end;
   float start_time;
   float duration;
+  mutable float time_origin;
+  mutable bool firsttime;
+  mutable float current_time;
 };
 
 class ChooseCharFetcher : public Fetcher<int>
 {
 public:
   ChooseCharFetcher(Fetcher<std::string> *fetch, std::string alternatives, int index) : fetch(fetch), alternatives(alternatives), index(index) { }
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { }
+
   void set(int i) { }
   int get() const
   {
@@ -460,6 +504,11 @@ EXPORT GameApi::IF GameApi::FontApi::timed_int_fetcher(EveryApi &ev, int start, 
 {
   return add_int_fetcher(e, new TimedIntFetcher(ev, start, end, start_time, (end_time-start_time)/(end-start)));
 }
+EXPORT GameApi::IF GameApi::FontApi::repeat_int_fetcher(IF fetcher, float duration)
+{
+  Fetcher<int> *fetch = find_int_fetcher(e, fetcher);
+  return add_int_fetcher(e, new RepeatIntFetcher(fetch, duration));
+}
 EXPORT GameApi::IF GameApi::FontApi::char_fetcher_from_string(SF string_fetcher, std::string alternatives, int idx)
 {
   Fetcher<std::string> *str = find_string_fetcher(e, string_fetcher);
@@ -472,6 +521,9 @@ class ScoreStringFetcher : public Fetcher<std::string>
 {
 public:
   ScoreStringFetcher(std::string id, std::string label, int numdigits) : id(id), label(label), numdigits(numdigits) { }
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { }
+
   void set(std::string s) { }
   std::string get() const {
     std::string s = label;
@@ -494,10 +546,16 @@ class TimeStringFetcher : public Fetcher<std::string>
 {
 public:
   TimeStringFetcher(GameApi::EveryApi &ev) { 
-    start_time = SDL_GetTicks();
+    firsttime = true;
   }
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { }
+
   void set(std::string s) { }
   std::string get() const {
+    if (firsttime)
+      start_time = SDL_GetTicks();
+    firsttime = false;
     unsigned int time = SDL_GetTicks();
     unsigned int time_to_use = time - start_time;
     time_to_use /= 1000;
@@ -511,7 +569,8 @@ public:
     return ss.str();
   }
 private:
-  unsigned int start_time;
+  mutable unsigned int start_time;
+  mutable bool firsttime;
 };
 
 EXPORT GameApi::SF GameApi::FontApi::time_string_fetcher(GameApi::EveryApi &ev)
