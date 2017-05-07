@@ -1155,3 +1155,14 @@ GameApi::PTS GameApi::PointsApi::pts_grid_bb(BB bb, float start_x, float end_x, 
   Bitmap<bool> *bb2 = find_bool_bitmap(e, bb)->bitmap;
   return add_points_api_points(e, new PTSGridBB(*bb2, start_x, end_x, start_y, end_y, z));
 }
+class SinglePTS : public PointsApiPoints
+{
+public:
+  virtual int NumPoints() const { return 1; }
+  virtual Point Pos(int i) const { Point p; p.x=0.0; p.y=0.0; p.z=0.0; return p; }
+  virtual unsigned int Color(int i) const { return 0xffffffff; }
+};
+GameApi::PTS GameApi::PointsApi::single_pts()
+{
+  return add_points_api_points(e, new SinglePTS);
+}

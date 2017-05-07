@@ -2258,3 +2258,95 @@ GameApi::SFO GameApi::ShaderModuleApi::colormod_from_position(SFO obj, float px,
   SFO m4 = bind_arg(m3, "sz", ToNum(sz));
   return m4;
 }
+
+class SFOML : public MainLoopItem
+{
+public:
+  SFOML(GameApi::EveryApi &ev, GameApi::SFO sfo, float sx, float sy) : ev(ev), sfo(sfo), sx(sx), sy(sy) {
+    firsttime = true;
+  }
+  GameApi::V func(int face, int point, GameApi::EveryApi &ev)
+  {
+    switch(point)
+      {
+      case 0: return ev.vector_api.vector(0.0,0.0,0.0);
+      case 1: return ev.vector_api.vector(1.0,0.0,0.0);
+      case 2: return ev.vector_api.vector(1.0,1.0,0.0);
+      case 3: return ev.vector_api.vector(0.0,1.0,0.0);
+      };
+    return ev.vector_api.vector(0.0,0.0,0.0);
+  }
+  
+  GameApi::PT func2(int face, int point, GameApi::EveryApi &ev)
+  {
+    switch(point)
+      {
+      case 0: return ev.point_api.point(0.0,1.0,0.0);
+      case 1: return ev.point_api.point(1.0,1.0,0.0);
+      case 2: return ev.point_api.point(1.0,0.0,0.0);
+      case 3: return ev.point_api.point(0.0,0.0,0.0);
+      };
+    return ev.point_api.point(0.0,0.0,0.0);
+  }
+
+  virtual void execute(MainLoopEnv &e)
+  {
+    using std::placeholders::_1;
+    using std::placeholders::_2;
+
+    
+    if (firsttime)
+      {
+	GameApi::SFO render = ev.sh_api.render(sfo);
+	sh2 = ev.shader_api.get_normal_shader("screen", "screen", "", "", "", false, render);
+	int screen_x = ev.mainloop_api.get_screen_width();
+	int screen_y = ev.mainloop_api.get_screen_height();
+	ev.mainloop_api.init_3d(sh2, screen_x, screen_y);
+	ev.mainloop_api.alpha(true);
+	GameApi::P poly_0;
+	if (sx<0.0 ||sy<0.0)
+	  {
+	    poly_0 = ev.polygon_api.fullscreen_quad(ev);
+	  }
+	else
+	  {
+	    poly_0 = ev.polygon_api.quad_z(0.0, sx,
+					 0.0, sy,
+					 0.0);
+	  }
+	GameApi::P poly_1 = ev.polygon_api.normal_function(poly_0, std::bind(&SFOML::func, this, _1, _2, std::ref(ev)));
+	GameApi::P poly_2 = ev.polygon_api.texcoord_function(poly_1, std::bind(&SFOML::func2, this, _1, _2, std::ref(ev)));
+	va = ev.polygon_api.create_vertex_array(poly_2, true);
+	firsttime = false;
+      }
+
+    GameApi::M m = add_matrix2( ev.get_env(), e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+    GameApi::M m1 = add_matrix2(ev.get_env(), e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+    GameApi::M m2 = add_matrix2(ev.get_env(), e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+    ev.shader_api.use(sh2);
+    ev.shader_api.set_var(sh2, "in_MV", m);
+    ev.shader_api.set_var(sh2, "in_T", m1);
+    ev.shader_api.set_var(sh2, "in_N", m2);
+    ev.shader_api.set_var(sh2, "time", e.time);
+	
+    
+    ev.polygon_api.render_vertex_array(va);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+  }
+  virtual int shader_id() { return -1; }
+private:
+  GameApi::EveryApi &ev;
+  GameApi::SFO sfo;
+  GameApi::PolygonObj *obj;
+  bool firsttime;
+  GameApi::SH sh2,sh;
+  GameApi::VA va;
+  float sx,sy;
+};
+
+GameApi::ML GameApi::ShaderModuleApi::sfo_to_ml(EveryApi &ev, SFO sfo, float sx, float sy)
+{
+  return add_main_loop(e, new SFOML(ev, sfo, sx,sy));
+}

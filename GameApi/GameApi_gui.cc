@@ -1888,10 +1888,11 @@ public:
   GameApi::P line_to_poly(int i, float sx, float sy, float sz, float ex, float ey, float ez, unsigned int scolor, unsigned int ecolor)
   {
     //std::cout << sx << " " << sy << " " << sz << ":" << ex << " " << ey << " " << ez << std::endl;
-    GameApi::PT p1 = ev.point_api.point(sx-2,sy,0.0);
-    GameApi::PT p2 = ev.point_api.point(sx,sy+2,0.0);
-    GameApi::PT p3 = ev.point_api.point(ex+2,ey,0.0);
-    GameApi::PT p4 = ev.point_api.point(ex,ey+2,0.0);
+    int width = 200;
+    GameApi::PT p1 = ev.point_api.point(sx,sy,0.0);
+    GameApi::PT p2 = ev.point_api.point(sx,sy+width,0.0);
+    GameApi::PT p3 = ev.point_api.point(ex,ey,0.0);
+    GameApi::PT p4 = ev.point_api.point(ex,ey+width,0.0);
     GameApi:: P poly =  ev.polygon_api.quad(p1,p2,p3,p4);
     //GameApi::P poly = ev.polygon_api.quad_z(sx,ex,sy,ey,0.0);
     return ev.polygon_api.color(poly, 0xffffffff);
@@ -4505,7 +4506,8 @@ struct ASyncData
 };
 ASyncData async_data[] = { { "font_api", "newfont", 0 },
 			   { "font_api", "load_font", 0 },
-			   { "mainloop_api", "load_song", 2 }
+			   { "mainloop_api", "load_song", 2 },
+			   { "polygon_api", "p_url", 1 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -5220,6 +5222,18 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "FO", "float", "float" },
 			 { "", "0.5", "1.0" },
 			 "O", "float_volume_api", "subvolume"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::interpolate,
+			 "fo_interpolate",
+			 { "f1", "f2", "val" },
+			 { "FO", "FO", "float" },
+			 { "", "", "0.5" },
+			 "FO", "float_volume_api", "interpolate"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::smooth,
+			 "fo_smooth",
+			 { "vec", "val" },
+			 { "[FO]", "float" },
+			 { "", "0.01" },
+			 "FO", "float_volume_api", "smooth"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::vector_volume_api, &GameApi::VectorVolumeApi::normal2,
 			 "fo_normal",
 			 { "fo", "stepsize" },
@@ -5745,7 +5759,13 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "EveryApi&", "[BM]", "IF", "int", "int" },
 			 { "ev", "", "", "0","0" },
 			 "ML", "font_api", "dynamic_character"));
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::ml_chooser,
+			 "ml_choosr",
+			 { "vec", "fetcher" },
+			 { "[ML]", "IF" },
+			 { "", "" },
+			 "ML", "font_api", "ml_chooser"));
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::timed_int_fetcher,
 			 "if_timed",
 			 { "ev", "start", "end", "start_time", "end_time" },
@@ -5758,7 +5778,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "IF", "float" },
 			 { "", "30.0" },
 			 "IF", "font_api", "repeat_int_fetcher"));
-  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::keypress_int_fetcher,
+			 "if_keypress",
+			 { "key", "key_down_value", "key_up_value" },
+			 { "int", "int", "int" },
+			 { "32", "1", "0" },
+			 "IF", "font_api", "keypress_int_fetcher"));
   return vec;
 }
 #endif
@@ -6280,7 +6305,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "LLA" },
 			 { "ev", "" },
 			 "ML", "lines_api", "render_ml"));
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::sfo_to_ml,
+			 "sfo_render",
+			 { "ev", "sfo", "sx", "sy" },
+			 { "EveryApi&", "SFO", "float", "float" },
+			 { "ev", "", "-1.0", "-1.0" },
+			 "ML", "sh_api", "sfo_to_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, (GameApi::PTS (GameApi::VolumeApi::*)(GameApi::O,int,int,int, float,float, float,float, float,float))&GameApi::VolumeApi::instanced_positions,
 			 "o_to_pts",
 			 { "object", "sx", "sy", "sz", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
@@ -6345,6 +6375,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "int", "ML", "CC" },
 			 { "ev", "0", "", "" },
 			 "ML", "move_api", "color_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::all_cursor_keys,
+			 "wasd_ml",
+			 { "ev", "ml", "speed", "duration" },
+			 { "EveryApi&", "ML", "float", "float" },
+			 { "ev", "", "8.0", "1.0" },
+			 "ML", "move_api", "all_cursor_keys"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_activate_ml,
 			 "key_activate_ml",
 			 { "ev", "ml", "mn", "key", "duration" },
@@ -6357,6 +6393,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "MN", "int", "float" },
 			 { "ev", "", "", "32", "10.0" },
 			 "ML", "move_api", "temp_key_activate_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::comb_key_activate_ml,
+			 "comb_key_activate_ml",
+			 { "ev", "ml", "mn", "key", "key_2", "duration" },
+			 { "EveryApi&", "ML", "MN", "int", "int", "float" },
+			 { "ev", "", "", "32", "32", "10.0" },
+			 "ML", "move_api", "comb_key_activate_ml"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_printer_ml,
 			 "key_printer_ml",
 			 { "ml" },
@@ -6598,6 +6641,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P", "std::string" },
 			 { "", "test.obj" },
 			 "ML", "polygon_api", "save_model_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_url,
+			 "p_url",
+			 { "ev", "url", "count" },
+			 { "EveryApi&", "std::string", "int" },
+			 { "ev", "http://tpgames.org/example.obj", "10" },
+			 "P", "polygon_api", "p_url"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::alt,
 			 "p_alt",
 			 { "vec", "index" },
@@ -6678,6 +6727,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "PT", "float", "int", "int" },
 			 { "(0.0,0.0,0.0)",  "100.0", "30", "30" },
 			 "P", "polygon_api", "sphere"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::disc,
+			 "disc",
+			 { "ev", "numfaces", "center_x", "center_y", "center_z", "normal_x", "normal_y", "normal_z", "radius" },
+			 { "EveryApi&", "int", "float", "float", "float", "float", "float", "float", "float" },
+			 { "ev", "30", "0.0", "0.0" ,"0.0", "0.0", "0.0", "1.0", "100.0" },
+			 "P", "polygon_api", "disc"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::cone,
 			 "cone",
 			 { "numfaces", "p1", "p2", "radius1", "radius2" },
@@ -6809,6 +6864,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P" },
 			 { "" },
 			 "P", "polygon_api", "recalculate_normals"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::spherical_normals,
+			 "spherical_normals",
+			 { "p", "p_x", "p_y", "p_z" },
+			 { "P", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0" },
+			 "P", "polygon_api", "spherical_normals"));
 #if 0
   // doesnt work too well
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::average_normals,
@@ -7528,6 +7589,12 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "MS", "int", "int" },
 			 { "", "0", "0" },
 			 "MS", "matrices_api", "subarray"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::from_lines_2d,
+			 "ms_from_lines_2d",
+			 { "li" },
+			 { "LI" },
+			 { "" },
+			 "MS", "matrices_api", "from_lines_2d"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::static_instancing_matrix,
 			 "ms_static_inst",
 			 { "ev", "obj", "matrices" },

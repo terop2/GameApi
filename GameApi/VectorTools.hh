@@ -709,7 +709,7 @@ public:
   {
     Vector v = p2-p1;
     float d = v.Dist();
-    return Matrix::Scale(d,d,1.0);
+    return Matrix::Scale(d,1.0,1.0);
   }
 private:
   Point p1, p2;

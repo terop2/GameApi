@@ -182,6 +182,7 @@ private:
 class FloatVolumeObject {
 public:
   virtual float FloatValue(Point p) const=0;
+  virtual Vector FloatNormal(Point p) const; // uses partial derivatives
   virtual ~FloatVolumeObject() { }
 };
 

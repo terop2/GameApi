@@ -156,6 +156,9 @@ using std::placeholders::_9;
   //struct E { int id; };
   //struct A { int id; };
 
+  struct EveryApi;
+  std::vector<PTS> arr_to_pts_arr(EveryApi &ev, ARR a);
+
 
 struct ExecuteEnv
 {
@@ -626,6 +629,8 @@ public:
   IMPORT ML dynamic_character2(EveryApi &ev, std::vector<GI> vec, std::string alternatives, IF fetcher, int x, int y);
   IMPORT IF timed_int_fetcher(EveryApi &ev, int start, int end, float start_time, float end_time);
   IMPORT IF repeat_int_fetcher(IF fetcher, float duration);
+  IMPORT IF keypress_int_fetcher(int key, int key_down_value, int key_up_value);
+  IMPORT ML ml_chooser(std::vector<ML> vec, IF fetcher);
   IMPORT std::vector<GameApi::BM> bm_array_id_inv(ARR arr);
   IMPORT ARR bm_array_id(std::vector<BM> vec);
 private:
@@ -1058,6 +1063,7 @@ public:
   IMPORT SFO f_render_color(SFO obj);
   IMPORT SFO color_from_position(SFO obj, float sx, float sy, float sz);
   IMPORT SFO colormod_from_position(SFO obj, float px, float py, float pz, float sx, float sy, float sz);
+  IMPORT ML sfo_to_ml(EveryApi &ev, SFO sfo, float sx, float sy);
 private:
 
   Env &e;
@@ -1321,6 +1327,7 @@ public:
   IMPORT ML move_ml(EveryApi &ev, ML ml, MN mn, int clone_count=1, float time_delta=10.0);
   IMPORT ML repeat_ml(EveryApi &ev, ML ml, float duration);
   IMPORT ML key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
+  IMPORT ML comb_key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, int key_2, float duration);
  IMPORT  ML temp_key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
   IMPORT ML move_x_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_x, float end_x);
   IMPORT ML move_y_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, float speed, float start_y, float end_y);
@@ -1341,6 +1348,9 @@ public:
   IMPORT LI cmd_to_li(CMD cmds, std::string commands);
 
 
+  IMPORT ML all_cursor_keys(EveryApi &ev, ML ml, float speed, float duration);
+  IMPORT ML cursor_keys(EveryApi &ev, ML ml, int key_up, int key_left, int key_down, int key_right, float speed, float duration);
+  
   IMPORT ML player(ML prev);
   IMPORT ML enemy(ML prev);
   IMPORT ML player_pos(ML prev, PT pos);
@@ -1617,7 +1627,8 @@ public:
 	IMPORT FO maximum(FO f1, FO f2);
 
         IMPORT O subvolume(FO f, float start_range, float end_range);
-
+        IMPORT FO smooth(std::vector<FO> vec, float val);
+        IMPORT FO interpolate(FO f1, FO f2, float val);
         IMPORT FO min_distance(C curve);
   
 	IMPORT FO shadow(FD fd, V light_dir, float mint, float maxt, float k);
@@ -1935,6 +1946,8 @@ public:
 	IMPORT P empty();
         IMPORT P load_model(std::string filename, int obj_num);
   IMPORT P load_model_all(std::string filename, int count);
+  IMPORT P load_model_all_no_cache(std::string filename, int count);
+  IMPORT P p_url(EveryApi &ev, std::string url, int count);
   IMPORT P file_cache(P model, std::string filename, int obj_num);
   IMPORT P resize_to_correct_size(P model);
         IMPORT void save_model(P poly, std::string filename);
@@ -1991,6 +2004,7 @@ public:
   IMPORT P torus2(EveryApi &ev, int numfaces1, int numfacesw2, PT center, float radius1, float radius2);
   IMPORT P torus(int numfaces1, int numfaces2, PT center, V u_x, V u_y, float radius1, V uu_x, V uu_y, float radius2);
 	IMPORT P ring(float sx, float sy, float x, int steps); // use RingEffect::Init() to implement
+  IMPORT P disc(EveryApi &ev, int numfaces, float center_x, float center_y, float center_z, float normal_x, float normal_y, float normal_z, float radius);
   enum HeightMapType { EQuad, ETriangle };
   IMPORT P heightmap(BM bm, HeightMapType t,
 	      float min_x, float max_x, 
@@ -2123,6 +2137,7 @@ public:
   IMPORT P change_texture(P orig, std::function<int(int face)> f, BM *array, int size);
 
   IMPORT P recalculate_normals(P orig);
+  IMPORT P spherical_normals(P p, float p_x, float p_y, float p_z);
   IMPORT P average_normals(P orig, int sx, int sy);
   IMPORT P smooth_normals(P orig);
   IMPORT P memoize(P orig);
@@ -2689,6 +2704,7 @@ public:
   IMPORT MS subarray(MS m, int start, int count);
   IMPORT MS ms_random_rot(float px, float py, float pz, int count);
   IMPORT MS mult_array(MS m1, MS m2);
+  IMPORT MS from_lines_2d(LI li);
 private:
   Env &e;
 };
@@ -2699,6 +2715,7 @@ class PointsApi
 {
 public:
   PointsApi(Env &e) : e(e) { }
+  IMPORT PTS single_pts();
   IMPORT PTS function(std::function<PT(int pointnum)> f, int numpoints);
   IMPORT PTS color_function(PTS orig, std::function<unsigned int(int pointnum, PT pos)> f);
   IMPORT PTS from_float_volume(FO float_volume, int numpoints, 

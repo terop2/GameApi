@@ -302,3 +302,19 @@ bool FaceCollectionVolume::Inside(Point p) const
     }
   return res;
 }
+
+Vector FloatVolumeObject::FloatNormal(Point p) const
+{
+  float v_0 = FloatValue(p);
+  float v_x = FloatValue(p+Vector(0.01,0.0,0.0));
+  float v_y = FloatValue(p+Vector(0.0,0.01,0.0));
+  float v_z = FloatValue(p+Vector(0.0,0.0,0.01));
+  float dx = v_x - v_0;
+  float dy = v_y - v_0;
+  float dz = v_z - v_0;
+  dx/=0.01;
+  dy/=0.01;
+  dz/=0.01;
+  Vector vv = { dx,dy,dz };
+  return vv;
+}
