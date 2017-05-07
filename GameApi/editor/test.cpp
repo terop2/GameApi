@@ -524,7 +524,7 @@ void iter(void *arg)
 	  }
 	if (e.type==1024 && e.button==0 && env->key_state==true)
 	  {
-	    // FIX EMSCRIPTEN EVENTS NOT GIVING KEYDOWN EVENTS.
+	    // FIX EMSCRIPTEN EENTS NOT GIVING KEYDOWN EVENTS.
 	    e.type=1025;
 	    env->key_state = false;
 	  }
@@ -867,6 +867,28 @@ void iter(void *arg)
 			env->display = env->gui->va_dialog(p, sh, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 			
 		      } else
+		      if (type=="VX")
+			{
+			  GameApi::EveryApi &ev = *env->ev;
+			  VX vx;
+			  vx.id = id;
+			  P I12=ev.polygon_api.cube(-10,10,-10,10,-10,10);
+			  P I13=ev.polygon_api.cube(-10,10,-10,10,-10,10);
+			  P I14=ev.polygon_api.color(I13,0xffff0000);
+			  P I15=ev.polygon_api.cube(-10,10,-10,10,-10,10);
+			  P I16=ev.polygon_api.color(I15,0xffffff00);
+			  //O I17=ev.volume_api.mandelbrot_volume(false,64,0.0);
+			  //VX I18=ev.voxel_api.blit_voxel(I17,30,30,30,-200,200,-200,200,-200,200,-1,2);
+			  ARR I19=ev.voxel_api.voxel_instancing(vx,3,-300,300,-300,300,-300,300);
+			  MT I20=ev.materials_api.def(ev);
+			  ML I21=ev.voxel_api.voxel_bind(ev,std::vector<P>{I12,I14,I16},arr_to_pts_arr(ev,I19),I20);
+			  ML ml = I21;
+			  env->env->free_temp_memory();
+			  env->gui->delete_widget(env->mem);
+			  env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+
+
+			} else
 		      if (type=="ML")
 			{
 			  ML ml;

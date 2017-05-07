@@ -1,0 +1,32 @@
+
+Requirements before compiling:
+  apt-get install g++
+  apt-get install git
+  apt-get install make
+  apt-get install libsdl2-dev
+  apt-get install libsdl2-mixer-dev
+  apt-get install libsdl2-image-dev
+  apt-get install libfreetype6-dev
+
+How to compile the code from scratch:
+
+  mkdir GameApi
+  cd GameApi
+  git clone https://github.com/terop2/GameApi.git
+
+Then you need to compile it:
+  cd GameApi
+  make -j 4
+
+This should produce libgameapi.so file
+
+Then final steps are as follows:
+  cd editor
+  make -f Makefile.Linux
+
+This should produce a.out file which is the gameapi builder, and you can
+execute the builder using:
+  LD_LIBRARY_PATH=.. ./a.out
+
+
+

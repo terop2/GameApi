@@ -2370,6 +2370,7 @@ void GameApi::prepare(GameApi::RenderObject &o)
 GameApi::Pa GameApi::PolygonArrayApi::split_p(EveryApi &ev, P p, int max_chunk)
 {
   FaceCollection *f = find_facecoll(e, p);
+  f->Prepare();
   std::vector<P> vec;
   int num = f->NumFaces();
   int start = 0;
@@ -3581,6 +3582,114 @@ private:
 
 
 
+class CombKeyActivateML : public MainLoopItem
+{
+public:
+  CombKeyActivateML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, GameApi::MN mn, int key, int key_2, float duration) : e(e), ev(ev), next(next), mn(mn),key(key), key_2(key_2), duration(duration)
+  { 
+    start_time = 0.0; //ev.mainloop_api.get_time();
+    anim_pos = 0.0;
+    collect = ev.matrix_api.identity();
+    anim_ongoing = false;
+    key_pressed = false;
+    key2_pressed = false;
+  }
+  void reset_time() {
+    start_time = ev.mainloop_api.get_time();
+  }
+  int shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &eve)
+  {
+    int ch = eve.ch;
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+    bool start_anim = false;
+    if (eve.type==0x300 && ch == key) { key_pressed = true; }
+    if (eve.type==0x300 && ch == key_2) { key2_pressed = true; }
+    if (eve.type==0x300 && key2_pressed && ch == key && !anim_ongoing) { start_anim = true; }
+    if (eve.type==0x300 && key_pressed && ch == key_2 && !anim_ongoing) { start_anim = true; }
+    if (eve.type==0x301 && ch == key) { key_pressed = false; }
+    if (eve.type==0x301 && ch == key_2) { key2_pressed = false; }
+
+    if (start_anim) {
+      anim_ongoing = true; start_time = ev.mainloop_api.get_time(); anim_pos = 0.0; 
+    }
+
+    next->handle_event(eve);
+  }
+  void execute(MainLoopEnv &env)
+  {
+    GameApi::SH s1;
+    s1.id = env.sh_texture;
+    GameApi::SH s2;
+    s2.id = env.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = env.sh_color;
+    GameApi::M mat,m2,mat2;
+    if (anim_ongoing) {
+      float time = (ev.mainloop_api.get_time()-start_time)/100.0;
+      mat = ev.move_api.get_matrix(mn, time, ev.mainloop_api.get_delta_time());
+      m2 = add_matrix2(e, env.env);
+      mat2 = mat;
+      mat2 = ev.matrix_api.mult(mat2, collect);
+      mat2 = ev.matrix_api.mult(mat2,m2);
+
+      anim_pos += env.delta_time;
+      if (anim_pos > duration-env.delta_time) {
+	anim_ongoing = false;
+	collect = ev.matrix_api.mult(collect, ev.move_api.get_matrix(mn, duration, env.delta_time));
+	
+	if (key_pressed && key2_pressed) { // repeat animation if key is being pressed down when anim stops
+	  anim_ongoing = true; start_time = ev.mainloop_api.get_time(); anim_pos = 0.0; 
+	}
+
+      }
+
+    } else {
+      m2 = add_matrix2(e, env.env);
+      mat2 = ev.matrix_api.mult(collect,m2);
+    }
+    GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", mat2);
+    ev.shader_api.set_var(s1, "in_iMV", mat2i);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", mat2);
+    ev.shader_api.set_var(s2, "in_iMV", mat2i);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", mat2);
+    ev.shader_api.set_var(s3, "in_iMV", mat2i);
+    Matrix old_in_MV = env.in_MV;
+    env.in_MV = find_matrix(e, mat2);
+
+    Matrix old_env = env.env;
+    env.env = find_matrix(e,mat2); /* * env.env*/;
+    next->execute(env);
+    env.env = old_env;
+    env.in_MV = old_in_MV;
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  float start_time;
+  MainLoopItem *next;
+  GameApi::MN mn;
+  int key;
+  int key_2;
+  bool anim_ongoing;
+  float anim_pos;
+  float duration;
+  GameApi::M collect;
+  bool key_pressed;
+  bool key2_pressed;
+};
+
+
+
+
 class TempKeyActivateML : public MainLoopItem
 {
 public:
@@ -3602,26 +3711,32 @@ public:
   int shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &eve)
   {
+    bool start_anim = false;
+    bool start_anim2 = false;
     int ch = eve.ch;
 #ifdef EMSCRIPTEN
     if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
     if (ch==39) ch='0';
     if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
 #endif
-    bool start_anim = false;
-    bool start_anim2 = false;
     if (eve.type==0x300 && ch == key && !anim_ongoing && !anim_ongoing2 && !key_pressed) { start_anim = true; } else if (eve.type==0x300 && ch==key && !key_pressed)
       {
 	key_canceled=true;
       }
     if (eve.type==0x300 && ch == key) { key_pressed = true; }
     if (eve.type==0x301 && ch == key && !anim_ongoing2 && !key_canceled) { key_pressed = false;  start_anim2 = true; } 
-    if (eve.type==0x301 && ch==key) { key_canceled=false; }
+    if (eve.type==0x301 && ch==key) { key_canceled=false;
+      //if (!anim_ongoing && !anim_ongoing2 && anim_pos>0.0) {
+      //	anim_pos = duration;
+      //	start_anim2 = true;
+      //}
+    }
 
     if (start_anim) {
       start_anim_chain = false;
       //std::cout << "start_anim" << std::endl;
       anim_ongoing = true; start_time = ev.mainloop_api.get_time(); anim_pos = 0.0; 
+      start_anim = false;
     }
     if (start_anim2 && !start_anim_chain) {
       start_anim_chain = true;
@@ -3634,12 +3749,16 @@ public:
       time_at_change = std::min(time,duration);
 
       //      collect = ev.move_api.get_matrix(mn, anim_pos_at_change, ev.mainloop_api.get_delta_time());
+      start_anim2 = false;
     }
 
+    
     next->handle_event(eve);
   }
   void execute(MainLoopEnv &env)
   {
+
+
     GameApi::SH s1;
     s1.id = env.sh_texture;
     GameApi::SH s2;
@@ -3660,6 +3779,19 @@ public:
 	//std::cout << "anim_ongoing=false" << std::endl;
 	anim_ongoing = false;
 	collect = ev.move_api.get_matrix(mn, time, ev.mainloop_api.get_delta_time());
+
+	if (0)
+	{
+	  start_anim_chain = true;
+	  //std::cout << "start_anim2" << std::endl;
+	  anim_ongoing = false;
+	  anim_ongoing2 = true; 
+	  start_time2 = ev.mainloop_api.get_time();  
+	  anim_pos_at_change = anim_pos;
+	  float time = (ev.mainloop_api.get_time()-start_time)/100.0;
+	  time_at_change = std::min(time,duration);
+	}
+
 	//anim_ongoing2 = true;
 	//start_time2 = ev.mainloop_api.get_time();  
 	//anim_pos_at_change = anim_pos;
@@ -3864,6 +3996,11 @@ EXPORT GameApi::ML GameApi::MovementNode::key_activate_ml(EveryApi &ev, GameApi:
 {
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new KeyActivateML(e,ev,item, move, key, duration));
+}
+EXPORT GameApi::ML GameApi::MovementNode::comb_key_activate_ml(EveryApi &ev, GameApi::ML ml, GameApi::MN move, int key, int key_2, float duration)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new CombKeyActivateML(e,ev,item, move, key, key_2, duration));
 }
 EXPORT GameApi::ML GameApi::MovementNode::temp_key_activate_ml(EveryApi &ev, GameApi::ML ml, GameApi::MN move, int key, float duration)
 {
@@ -4221,8 +4358,10 @@ public:
   DefaultMaterial(GameApi::EveryApi &ev) : ev(ev) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-    GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
-    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    //GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    //GameApi::ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    GameApi::PTS pts = ev.points_api.single_pts();
+    GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p,pts);
     return ml;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
@@ -6269,6 +6408,35 @@ EXPORT GameApi::MS GameApi::MatricesApi::from_points(PTS pts)
 {
   PointsApiPoints *points = find_pointsapi_points(e, pts);
   return add_matrix_array(e, new FromPointsMatrices(points));
+}
+
+class From2dLinesMatrices : public MatrixArray
+{
+public:
+  From2dLinesMatrices(LineCollection *coll) : coll(coll) { }
+  int Size() const {
+    return coll->NumLines();
+  }
+  Matrix Index(int i) const
+  {
+    Point p1 = coll->LinePoint(i, 0);
+    Point p2 = coll->LinePoint(i, 1);
+    LineProperties lprop(p1,p2);
+    Matrix m0 = Matrix::Scale(1.0/300.0, 1.0, 1.0);
+    Matrix m1 = lprop.translate_to_p1();
+    Matrix m2 = lprop.rotate_z_from_p1_in_2d();
+    Matrix m3 = lprop.scale_length_in_2d();
+    return m0*m3*m2*m1;
+  }
+private:
+  LineCollection *coll;
+};
+
+// requires x=0..300 3d object
+EXPORT GameApi::MS GameApi::MatricesApi::from_lines_2d(LI li)
+{
+  LineCollection *lines = find_line_array(e,li);
+  return add_matrix_array(e, new From2dLinesMatrices(lines));
 }
 
 class MultArray1 : public MatrixArray
@@ -9201,6 +9369,20 @@ PointsApiPoints *VoxelToPTS::get(int val)
   return new VPTS(*this, val);
 }
 
+std::vector<GameApi::PTS> GameApi::arr_to_pts_arr(GameApi::EveryApi &ev, GameApi::ARR a)
+{
+  std::vector<GameApi::PTS> vec;
+  ArrayType *t = find_array(ev.get_env(), a);
+  int s = t->vec.size();
+  for(int i=0;i<s;i++)
+    {
+      int val = t->vec[i];
+      GameApi::PTS pts;
+      pts.id = val;
+      vec.push_back(pts);
+    }
+  return vec;
+}
 
 // ARR = array of PTS
 GameApi::ARR GameApi::VoxelApi::voxel_instancing(VX voxel,
@@ -9257,3 +9439,48 @@ GameApi::P GameApi::VoxelApi::voxel_static(EveryApi &ev, std::vector<P> objs, st
   return ev.polygon_api.or_array2(mls);
 }
 
+GameApi::ML GameApi::MovementNode::all_cursor_keys(EveryApi &ev, ML ml, float speed, float duration)
+{
+  ML ml1 = cursor_keys(ev,ml,119,97,115,100, speed, duration);
+  ML ml2 = cursor_keys(ev,ml1, 1073741906, 1073741904, 1073741905, 1073741903, speed, duration);
+  ML ml3 = cursor_keys(ev,ml2, 82, 80, 81, 79, speed, duration);
+  return ml3;
+}
+
+GameApi::ML GameApi::MovementNode::cursor_keys(EveryApi &ev, ML I10, int key_up, int key_left, int key_down, int key_right, float speed, float duration)
+{
+  int k_100 = key_right;
+  int k_119 = key_up;
+  int k_115 = key_down;
+  int k_97 = key_left;
+
+  float s_8 = speed;
+  float s_234 = speed*sqrt(2) - speed;
+  
+  float s_1 = duration;
+MN I11=ev.move_api.empty();
+MN I12=ev.move_api.translate(I11,0,s_1,s_8,0,0);
+ML I13=ev.move_api.key_activate_ml(ev,I10,I12,k_100,s_1);
+MN I14=ev.move_api.empty();
+MN I15=ev.move_api.translate(I14,0,s_1,0,-s_8,0);
+ML I16=ev.move_api.key_activate_ml(ev,I13,I15,k_119,s_1);
+MN I17=ev.move_api.empty();
+MN I18=ev.move_api.translate(I17,0,s_1,0,s_8,0);
+ML I19=ev.move_api.key_activate_ml(ev,I16,I18,k_115,s_1);
+MN I20=ev.move_api.empty();
+MN I21=ev.move_api.translate(I20,0,s_1,-s_8,0,0);
+ML I22=ev.move_api.key_activate_ml(ev,I19,I21,k_97,s_1);
+MN I23=ev.move_api.empty();
+MN I24=ev.move_api.translate(I23,0,s_1,-s_234,s_234,0);
+ML I25=ev.move_api.comb_key_activate_ml(ev,I22,I24,k_100,k_119,s_1);
+MN I26=ev.move_api.empty();
+MN I27=ev.move_api.translate(I26,0,s_1,-s_234,-s_234,0);
+ML I28=ev.move_api.comb_key_activate_ml(ev,I25,I27,k_115,k_100,s_1);
+MN I29=ev.move_api.empty();
+MN I30=ev.move_api.translate(I29,0,s_1,s_234,-s_234,0);
+ML I31=ev.move_api.comb_key_activate_ml(ev,I28,I30,k_115,k_97,s_1);
+MN I32=ev.move_api.empty();
+MN I33=ev.move_api.translate(I32,0,s_1,s_234,s_234,0);
+ML I34=ev.move_api.comb_key_activate_ml(ev,I31,I33,k_119,k_97,s_1);
+ return I34;
+}

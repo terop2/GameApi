@@ -14,6 +14,12 @@ EXPORT GameApi::PT GameApi::PointApi::move(PT p1, float dx, float dy, float dz)
   Point *p = find_point(e,p1);
   return add_point(e, p->x+dx,p->y+dy,p->z+dz);
 }
+EXPORT GameApi::PT GameApi::PointApi::move(PT p1, V vec)
+{
+  Point *p = find_point(e, p1);
+  Vector *v = find_vector(e, vec);
+  return add_point(e, p->x+v->dx, p->y+v->dy, p->z+v->dz);
+}
 EXPORT GameApi::PT GameApi::PointApi::mix(PT p1, PT p2, float val)
 {
   Point *pp1 = find_point(e,p1);

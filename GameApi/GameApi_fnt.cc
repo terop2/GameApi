@@ -432,6 +432,39 @@ private:
   float duration;
 };
 
+class KeyPressIntFetcher : public Fetcher<int>
+{
+public:
+  KeyPressIntFetcher(int key, int key_down_value, int key_up_value) : key(key), key_down_value(key_down_value), key_up_value(key_up_value) {
+    key_down = false;
+  }
+  virtual void event(MainLoopEvent &e) {
+    int ch = e.ch;
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+
+    if (e.type==0x300 && ch==key) {
+      key_down = true;
+    }
+    if (e.type==0x301 && ch==key) {
+      key_down = false;
+    }
+  }
+  virtual void frame(MainLoopEnv &e) { }
+  void set(int i) { }
+  int get() const {
+    if (key_down) { return key_down_value; }
+    else { return key_up_value; }
+  }
+  
+private:
+  int key;
+  int key_down_value, key_up_value;
+  bool key_down;
+};
 
 class TimedIntFetcher : public Fetcher<int>
 {
@@ -509,10 +542,51 @@ EXPORT GameApi::IF GameApi::FontApi::repeat_int_fetcher(IF fetcher, float durati
   Fetcher<int> *fetch = find_int_fetcher(e, fetcher);
   return add_int_fetcher(e, new RepeatIntFetcher(fetch, duration));
 }
+EXPORT GameApi::IF GameApi::FontApi::keypress_int_fetcher(int key, int key_down_value, int key_up_value)
+{
+  return add_int_fetcher(e, new KeyPressIntFetcher(key, key_down_value, key_up_value));
+}
 EXPORT GameApi::IF GameApi::FontApi::char_fetcher_from_string(SF string_fetcher, std::string alternatives, int idx)
 {
   Fetcher<std::string> *str = find_string_fetcher(e, string_fetcher);
   return add_int_fetcher(e, new ChooseCharFetcher(str, alternatives, idx));
+}
+class MLChooser : public MainLoopItem
+{
+public:
+  MLChooser(std::vector<MainLoopItem*> vec, Fetcher<int> &f) : vec(vec),f(f) {}
+  virtual void execute(MainLoopEnv &e)
+  {
+    f.frame(e);
+    int val = f.get();
+    int s = vec.size();
+    if (val>=0 && val<s) vec[val]->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    f.event(e);
+    int val = f.get();
+    int s = vec.size();
+    if (val>=0 && val<s) vec[val]->handle_event(e);
+  }
+  virtual int shader_id() {
+    int val = f.get();
+    int s = vec.size();
+    if (val>=0 && val<s) return vec[val]->shader_id();
+    return -1;
+  }
+private:
+  std::vector<MainLoopItem*> vec;
+  Fetcher<int> &f;
+};
+EXPORT GameApi::ML GameApi::FontApi::ml_chooser(std::vector<ML> vec, IF fetcher)
+{
+  std::vector<MainLoopItem*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    vec2.push_back(find_main_loop(e, vec[i]));
+  Fetcher<int> *f = find_int_fetcher(e, fetcher);
+  return add_main_loop(e, new MLChooser(vec2, *f));
 }
 
 std::map<std::string, int> number_map;

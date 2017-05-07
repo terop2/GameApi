@@ -1,0 +1,141 @@
+
+GameApi is a new 3d engine, and this article explains minor parts of
+the gameapi opengl architecture. We start first by explaining the mesh
+data struture, and then move to rendering and furher to frame loop. Functional
+programming is used in c++ environment.
+
+Mesh data structure in GameApi is using the following interface definition:
+
+class FaceCollection
+{
+public:
+  virtual ~FaceCollection() { }
+  virtual void Prepare()=0;
+  virtual int NumFaces() const = 0;
+  virtual int NumPoints(int face) const=0;
+  virtual Point FacePoint(int face, int point) const=0;
+  virtual Vector PointNormal(int face, int point) const=0;
+  virtual float Attrib(int face, int point, int id) const=0;
+  virtual int AttribI(int face, int point, int id) const=0;
+  virtual unsigned int Color(int face, int point) const=0;
+  virtual Point2d TexCoord(int face, int point) const=0;
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
+  ...
+};
+
+This is basically array of faces, where each face has some number of
+vertices. Each vertex has different kinds of data attached, position,
+normal, color, texture coordinates are the most important data a mesh
+is storing. This data structure is different from ordinary meshes in the following ways:
+ 1) it doesnt require this data to be stored in memory
+ 2) it allows other shapes than just triangles. Arbitrary polygons are allowed.
+ 3) it's just an interface that can be implemented in many ways
+
+The class hierarchy has also ForwardFaceCollection class, which allows
+forwarding all the calls to another FaceCollection, and then
+overriding some of the functions for actual functionality. Every
+FaceCollection implementation should check if it can use
+ForwardFaceCollection base class instead of FaceCollection base class.
+Important part of ForwardFaceCollection is as follows:
+
+class ForwardFaceCollection : public FaceCollection
+{
+public:
+  ForwardFaceCollection(FaceCollection &coll) : coll(coll) { }
+  virtual void Prepare() { coll.Prepare(); }
+  virtual int NumFaces() const { return coll.NumFaces(); }
+  virtual int NumPoints(int face) const { return coll.NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const { return coll.FacePoint(face,point); }
+  virtual Point EndFacePoint(int face, int point) const { return coll.EndFacePoint(face, point); }
+
+  virtual Vector PointNormal(int face, int point) const { return coll.PointNormal(face,point); }
+  virtual float Attrib(int face, int point, int id) const { return coll.Attrib(face,point,id); }
+  virtual int AttribI(int face, int point, int id) const { return coll.AttribI(face,point,id); }
+  virtual unsigned int Color(int face, int point) const { return coll.Color(face,point); }
+  virtual Point2d TexCoord(int face, int point) const { return coll.TexCoord(face,point); }
+  virtual float TexCoord3(int face, int point) const { return coll.TexCoord3(face,point); }
+  virtual int NumTextures() const { return coll.NumTextures(); }
+  virtual void GenTexture(int num) { coll.GenTexture(num); }
+  virtual BufferRef TextureBuf(int num) const { return coll.TextureBuf(num); }
+  virtual int FaceTexture(int face) const { return coll.FaceTexture(face); }
+private:
+  FaceCollection &coll;
+};
+
+This forms the basis for chaining mesh data structures, i.e. GameApi's builder
+application can build mesh from small pieces, because this class can forward
+calls. Overriding one of the functions means that the module decides to choose
+that piece of data, and leave rest of the decisions to the next module.
+
+Normal mesh implementation class would look something like this:
+
+class SphereElem : public FaceCollection
+{
+public:
+   SphereElem(int numfaces, int numfaces) : numfaces(numfaces), numfaces2(numfaces2) { }
+   /* override few member functions here */
+private:
+   int numfaces, numfaces2;
+};
+
+Now what does the software do with the mesh data structure? It would be nice
+if we can render it. Rendering needs to use the following functions:
+
+VA create_vertex_array(P p, bool keep);
+void render_vertex_array(VA va);
+
+note that create_vertex_array() is good nice functional programming thing, which
+converts from one data structure to another. But what are these P and VA types?
+Their definition is:
+ struct P { int id; };
+ struct VA { int id; };
+
+P is simply handle to the mesh data structure. Every P value, there
+exists instance of FaceCollection. This structure is handled in another
+article, namely http://sivut.koti.soon.fi/~terop/pure.html but basic
+idea is that there is std::vector<FaceCollection*> vec; stored in
+a place called EnvImpl, and id in P structure is the index for the vec's item.
+Then this FaceCollection* stores actually the derived class instance, so the
+vector can store SphereElem class instance, instead of just the interface.
+
+This create_vertex_array(P p) is actually changing the data structure
+-- in FaceCollection, we didn't actually have the data in memory,
+instead we only had a way to fetch the data from the interface. So
+create_vertex_array is doing exactly this - it fetches the data from
+the interface, and stores it in memory buffer. This memory buffer will
+be stored in data structure behind VA handle. This VA stands for
+"vertex array", which means it's memory storage of the array of
+vertices. Once fetched, they will be stored in the memory, and then it
+is moved to GPU memory using opengl calls glBufferData /
+glBufferSubData calls.
+
+Now it gets interesting, render_vertex_array(VA va); is taking this
+array and the necessary GPU handles, and blitting the object to
+screen. This is very fast operation, since it's designed to be placed
+to game frame loop. For frame loop, there's this interface called
+MainLoopItem, defined as follows:
+
+class MainLoopItem
+{
+public:
+  virtual void execute(MainLoopEnv &e)=0;
+  virtual void handle_event(MainLoopEvent &e)=0;
+  virtual int shader_id() { return -1; }
+  ...
+};
+
+This handles all the frame loop stuff. It's marked ML type in GameApi
+builder, and nodes derived from MainLoopItem can be placed to game
+frame loop.  So for rendering, we want conversion from P to ML,
+usually written P->ML.  I.e. we want to take mesh data structure, and
+convert it to form that can be placed to frame loop.
+
+ML render_vertex_array_ml2(EveryApi &ev, P p);
+
+is the signature of the function, and it's available in builder as "p_render".
+It implements MainLoopItem interface in such way that the mesh can be drawn
+to screen.
+
+Actual event loop is called blk_window, since it creates event loop and handles
+the window. It results in BLK type.
+

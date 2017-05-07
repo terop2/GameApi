@@ -711,6 +711,10 @@ public:
     float v = ff.FloatValue(p);
     return v>=start&&v<=end;
   }
+  Vector Normal(Point p) const
+  {
+    return ff.FloatNormal(p);
+  }
 private:
   FloatVolumeObject &ff;
   float start, end;
@@ -720,6 +724,56 @@ EXPORT GameApi::O GameApi::FloatVolumeApi::subvolume(FO f, float start_range, fl
 {
   FloatVolumeObject *ff = find_float_volume(e, f);
   return add_volume(e, new SubVolumeObject(*ff, start_range, end_range));
+}
+class InterpolateFloatVolume : public FloatVolumeObject
+{
+public:
+  InterpolateFloatVolume(FloatVolumeObject *f1, FloatVolumeObject *f2, float val) : f1(f1), f2(f2), val(val) { }
+  float FloatValue(Point p) const
+  {
+    float v1 = f1->FloatValue(p);
+    float v2 = f2->FloatValue(p);
+    return v1*(1.0-val)+v2*val;
+  }
+private:
+  FloatVolumeObject *f1;
+  FloatVolumeObject *f2;
+  float val;
+};
+EXPORT GameApi::FO GameApi::FloatVolumeApi::interpolate(FO f1, FO f2, float val)
+{
+  FloatVolumeObject *ff1 = find_float_volume(e, f1);
+  FloatVolumeObject *ff2 = find_float_volume(e, f2);
+  return add_float_volume(e, new InterpolateFloatVolume(ff1, ff2, val));
+}
+class SmoothFloatVolume : public FloatVolumeObject
+{
+public:
+  SmoothFloatVolume(std::vector<FloatVolumeObject*> vec, float val) : vec(vec), val(val) { }
+  float FloatValue(Point p) const
+  {
+    int s = vec.size();
+    float val2 = 1.0;
+    for(int i=0;i<s;i++)
+      {
+	val2*=vec[i]->FloatValue(p);
+      }
+    val2-=val;
+    return val2;
+  }
+private:
+  std::vector<FloatVolumeObject*> vec;
+  float val;
+};
+EXPORT GameApi::FO GameApi::FloatVolumeApi::smooth(std::vector<FO> vec, float val)
+{
+  std::vector<FloatVolumeObject*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_float_volume(e, vec[i]));
+    }
+  return add_float_volume(e, new SmoothFloatVolume(vec2, val));
 }
 EXPORT GameApi::FO GameApi::FloatVolumeApi::function(std::function<float (float x, float y, float z)> f)
 {

@@ -452,6 +452,20 @@ EXPORT GameApi::P GameApi::PolygonApi::empty()
 {
   return add_polygon(e,new EmptyBoxableFaceCollection, 1);
 }
+EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(std::string filename, int count)
+{
+  int s=count;
+  std::vector<P> vec;
+  for(int i=0;i<s;i++)
+    {
+      GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(filename, i), 1);
+      vec.push_back(model);
+    }
+  GameApi::P obj = or_array2(vec);
+  GameApi::P resize = resize_to_correct_size(obj);
+  return resize;
+
+}
 
 EXPORT GameApi::P GameApi::PolygonApi::load_model_all(std::string filename, int count)
 {
@@ -466,6 +480,76 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all(std::string filename, int 
   GameApi::P obj = or_array2(vec);
   GameApi::P resize = resize_to_correct_size(obj);
   return resize;
+}
+class NetworkedFaceCollection : public FaceCollection
+{
+public:
+  NetworkedFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string url, std::string homepage, int count) : e(e), ev(ev), url(url), homepage(homepage), count(count), empty(empty)
+  {
+    current = empty;
+    filled = 0;
+  }
+  void Prepare()
+  {
+    if (current == empty) {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+
+    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    if (!ptr) {
+      std::cout << "p_url async not ready yet, failing..." << std::endl;
+      return;
+    }
+    static int num=0;
+    num++;
+    std::stringstream ss2;
+    ss2 << "p_url_file" << num << ".obj";
+    std::string filename = ss2.str();
+    std::fstream ss(filename.c_str(), std::ios_base::binary |std::ios_base::out);
+    int s = ptr->size();
+    for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
+    ss.close();
+    GameApi::P p = ev.polygon_api.load_model_all_no_cache(filename, count);
+    FaceCollection *coll = find_facecoll(e, p);
+    filled = coll;
+    current = filled;
+    current->Prepare();
+    }
+  }
+
+  virtual int NumFaces() const { return current->NumFaces(); }
+  virtual int NumPoints(int face) const { return current->NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const { return current->FacePoint(face,point); }
+  virtual Point EndFacePoint(int face, int point) const { return current->EndFacePoint(face, point); }
+
+  virtual Vector PointNormal(int face, int point) const { return current->PointNormal(face,point); }
+  virtual float Attrib(int face, int point, int id) const { return current->Attrib(face,point,id); }
+  virtual int AttribI(int face, int point, int id) const { return current->AttribI(face,point,id); }
+  virtual unsigned int Color(int face, int point) const { return current->Color(face,point); }
+  virtual Point2d TexCoord(int face, int point) const { return current->TexCoord(face,point); }
+  virtual float TexCoord3(int face, int point) const { return current->TexCoord3(face,point); }
+  virtual int NumTextures() const { return current->NumTextures(); }
+  virtual void GenTexture(int num) { current->GenTexture(num); }
+  virtual BufferRef TextureBuf(int num) const { return current->TextureBuf(num); }
+  virtual int FaceTexture(int face) const { return current->FaceTexture(face); }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  std::string url;
+  std::string homepage;
+  int count;
+  FaceCollection *empty;
+  FaceCollection *filled;
+  FaceCollection *current;
+};
+extern std::string gameapi_homepageurl;
+EXPORT GameApi::P GameApi::PolygonApi::p_url(EveryApi &ev, std::string url, int count)
+{
+  P p = empty();
+  FaceCollection *emp = find_facecoll(e, p);
+  return add_polygon2(e, new NetworkedFaceCollection(e,ev, emp, url, gameapi_homepageurl, count),1); 
 }
 EXPORT GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
 {
@@ -5435,9 +5519,9 @@ private:
   }
   void calc_center()
   {
-    center_x = (end_x-start_x)/2.0;
-    center_y = (end_y-start_y)/2.0;
-    center_z = (end_z-start_z)/2.0;
+    center_x = start_x+(end_x-start_x)/2.0;
+    center_y = start_y+(end_y-start_y)/2.0;
+    center_z = start_z+(end_z-start_z)/2.0;
   }
   void calc_size()
   {
@@ -5451,7 +5535,7 @@ private:
     
     float val = std::max(std::max(size_x, size_y), size_z);
     float val2 = 1.0/val;
-    val2*= 300.0;
+    val2*= 400.0;
     Matrix m2 = Matrix::Scale(val2, val2, val2);
     Matrix mm = m * m2;
     m_m= mm;
@@ -5858,3 +5942,34 @@ GameApi::ARR GameApi::PolygonApi::poly_execute(EveryApi &ev, ARR arr, std::strin
   return add_array(e, t2);
 }
 
+GameApi::P GameApi::PolygonApi::disc(EveryApi &ev, int numfaces, float center_x, float center_y, float center_z, float normal_x, float normal_y, float normal_z, float radius)
+{
+  PT center = ev.point_api.point(center_x, center_y, center_z);
+  V normal = ev.vector_api.vector(normal_x, normal_y, normal_z);
+  V tiny_normal = ev.vector_api.mul(normal, 0.001);
+  PT center_2 = ev.point_api.move(center, tiny_normal);
+  return ev.polygon_api.cone(numfaces, center, center_2, radius, 0.0001);
+}
+
+class SphNormals : public ForwardFaceCollection
+{
+public:
+  SphNormals(FaceCollection *coll, Point pt) : ForwardFaceCollection(*coll), coll(coll), pt(pt) { }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Point p = ForwardFaceCollection::FacePoint(face,point);
+    Vector v = p - pt;
+    v/=v.Dist();
+    return v;
+  }
+private:
+  FaceCollection *coll;
+  Point pt;
+};
+
+GameApi::P GameApi::PolygonApi::spherical_normals(P p, float p_x, float p_y, float p_z)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  return add_polygon2(e, new SphNormals(coll, Point(p_x,p_y,p_z)),1);
+}
+						 

@@ -20,7 +20,7 @@ int main() {
 
 
 
-  Ft fnt = ev.font_api.newfont("./FreeSans.ttf", 60,60);
+  Ft fnt = ev.font_api.newfont("http://tpgames.org/FreeSans.ttf", 60,60);
   BM bg = ev.bitmap_api.newbitmap((340+20),160);
   BM txt0 = ev.font_api.font_string(fnt, "Premier", 10);
   BM bg_txt = ev.bitmap_api.blitbitmap(bg, txt0, 10, 0);
