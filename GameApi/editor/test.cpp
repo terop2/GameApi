@@ -1493,7 +1493,7 @@ W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector<GameApiI
 
 void print_stack_trace()
 {
-#if 1
+#if 0
   HANDLE process = GetCurrentProcess();
   HANDLE thread = GetCurrentThread();
   
@@ -1575,7 +1575,7 @@ void clear_counters();
 void print_counters();
 int main(int argc, char *argv[]) {
   //clear_counters();
-  SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T) -1, (SIZE_T)-1);
+  //SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T) -1, (SIZE_T)-1);
 
   std::set_terminate(&terminate_handler);
   srand(time(NULL));
