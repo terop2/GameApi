@@ -1281,6 +1281,21 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
 }
+PointsInPlane *find_plane_points(GameApi::Env &e, GameApi::PLP pl)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->plane_points2[pl.id];
+}
+LinesInPlane *find_plane_lines(GameApi::Env &e, GameApi::PLL pl)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->plane_lines[pl.id];
+}
+FacesInPlane *find_plane_faces(GameApi::Env &e, GameApi::PLF pl)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->plane_faces[pl.id];  
+}
 PropertyArray *find_property_array(GameApi::Env &e, GameApi::PR pr)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1597,6 +1612,31 @@ GameApi::V add_vector(GameApi::Env &e, float dx, float dy, float dz)
   //pt.type = 0;
   return pt;
 }
+GameApi::PLP add_plane_points(GameApi::Env &e, PointsInPlane *pl)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->plane_points2.push_back(pl);
+  GameApi::PLP c;
+  c.id = env->plane_points2.size()-1;
+  return c;
+}
+GameApi::PLL add_plane_lines(GameApi::Env &e, LinesInPlane *pl)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->plane_lines.push_back(pl);
+  GameApi::PLL c;
+  c.id = env->plane_lines.size()-1;
+  return c;
+}
+GameApi::PLF add_plane_faces(GameApi::Env &e, FacesInPlane *pl)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->plane_faces.push_back(pl);
+  GameApi::PLF c;
+  c.id = env->plane_faces.size()-1;
+  return c;
+}
+
 GameApi::PR add_property_array(GameApi::Env &e, PropertyArray *arr)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -7591,7 +7631,7 @@ void blocker_iter(void *arg)
 {
   Envi_2 *env = (Envi_2*)arg;
   //std::cout << "async: " << async_pending_count << std::endl;
-  if (async_pending_count > 0) { env->logo_shown = true; }
+  if (async_pending_count > 0) { env->logo_shown = true; } else { env->logo_shown = false; }
   if (env->logo_shown)
     {
       bool b = env->ev->mainloop_api.logo_iter();
@@ -8516,6 +8556,9 @@ void onerror_async_cb(void *arg)
 std::string striphomepage(std::string);
 void onload_async_cb(void *arg, void *data, int datasize)
 {
+  if (datasize==0) {
+      std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
+  }
   std::vector<unsigned char> buffer;
   unsigned char *dataptr = (unsigned char*)data;
   for(int i=0;i<datasize;i++) { buffer.push_back(dataptr[i]); }
@@ -8552,6 +8595,9 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     std::string url2 = "load_url.php?url=" + url ;
     if (load_url_buffers_async[url2]) { return; }
     std::vector<unsigned char> buf = load_from_url(url);
+    if (buf.size()==0) {
+      std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
+    }
     load_url_buffers_async[url2] = new std::vector<unsigned char>(buf);
 #endif
   }
@@ -8982,12 +9028,55 @@ private:
   Point old_point;
 };
 
+class CmdPolygon : public FacesInPlane
+{
+public:
+  CmdPolygon(CmdExecute *cmds, std::string commands) : cmds(cmds) {
+    cmds->set_hooks(std::bind(&CmdPolygon::insert, this, GameApi::_1));
+    int s = commands.size();
+    for(int i=0;i<s;i++)
+      {
+	cmds->Execute(commands[i]);
+      }
+  }
+  void insert(char c) {
+    if (c=='.') {
+      Point p = cmds->pos();
+      Point2d pp = { p.x, p.y };
+      vec.push_back(pp);
+    }
+  }
+  virtual int Size() const { return 1; }
+  virtual int NumPoints(int face) const { return vec.size(); }
+  virtual Point2d Map(int face, int point) const
+  {
+    return vec[point];
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    Point2d p;
+    p.x = 0.0;
+    p.y = 0.0;
+    return p;
+  }
+  virtual unsigned int Color(int face, int point) const { return 0xffffffff; }
+private:
+  CmdExecute *cmds;
+  std::vector<Point2d> vec;
+};
+
 
 GameApi::LI GameApi::MovementNode::cmd_to_li(CMD cmds2, std::string commands)
 {
   CmdExecute *cmds = find_cmds(e, cmds2);
   return add_line_array(e, new CmdLines(cmds, commands));
 }
+GameApi::PLF GameApi::MovementNode::cmd_to_plf(CMD cmds2, std::string commands)
+{
+  CmdExecute *cmds = find_cmds(e, cmds2);
+  return add_plane_faces(e, new CmdPolygon(cmds, commands));
+}
+
 
 void check_world(MainLoopEnv &e)
 {

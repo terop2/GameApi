@@ -170,6 +170,7 @@ EXPORT GameApi::FtA GameApi::FontApi::load_atlas(std::string filename)
 {
   FontAtlasInfo *info = new FontAtlasInfo;
   std::ifstream ss(filename.c_str());
+  ss.tie(nullptr);
   //char c;
   ss >> info->atlas_sx >> info->atlas_sy;
   int num;

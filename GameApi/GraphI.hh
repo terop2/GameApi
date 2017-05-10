@@ -957,4 +957,32 @@ public:
   virtual void Disable(int i)=0;
 };
 
+class PointsInPlane
+{
+public:
+  virtual int Size() const=0;
+  virtual Point2d Map(int i) const=0;
+  virtual unsigned int Color(int i) const=0;
+};
+
+class LinesInPlane
+{
+public:
+  virtual int Size() const=0;
+  virtual Point2d Map(int i, bool second) const=0;
+  virtual unsigned int Color(int i, bool second) const=0;
+};
+
+class FacesInPlane
+{
+public:
+  virtual int Size() const=0;
+  virtual int NumPoints(int face) const=0;
+  virtual Point2d Map(int face, int point) const=0;
+  virtual Point2d TexCoord(int face, int point) const=0;
+  virtual unsigned int Color(int face, int point) const=0;
+  virtual Vector Normal(int face, int point) const { Vector v; v.dx = 0.0; v.dy=0.0; v.dz=-1.0; return v; }
+  // note, no normal implemented
+};
+
 #endif

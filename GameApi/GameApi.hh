@@ -26,6 +26,9 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct PLP { int id; };
+  struct PLL { int id; };
+  struct PLF { int id; };
   struct PR { int id; };
   struct CMD { int id; };
   struct FI { int id; };
@@ -1346,7 +1349,7 @@ public:
   IMPORT CMD cmd_rotate(CMD cmds, float v_x, float v_y, float v_z, float angle, float delta_angle);
   IMPORT PTS cmd_to_pts(CMD cmds, std::string commands);
   IMPORT LI cmd_to_li(CMD cmds, std::string commands);
-
+  IMPORT PLF cmd_to_plf(CMD cmds, std::string commands);
 
   IMPORT ML all_cursor_keys(EveryApi &ev, ML ml, float speed, float duration);
   IMPORT ML cursor_keys(EveryApi &ev, ML ml, int key_up, int key_left, int key_down, int key_right, float speed, float duration);
@@ -2367,6 +2370,13 @@ public:
   
   IMPORT LI to_lines(PP pl, float z);
   IMPORT P to_poly(PP pl, float z);
+
+  //
+  // new plane
+  // 
+  PLF reverse_faces(PLF faces); // if triangulate doesnt work, use reverse_faces first
+  PLF triangulate(PLF faces);
+  P to_polygon(PLF faces);
 private:
   Env &e;
 };
@@ -3170,7 +3180,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
 	  : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-	    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e), blocker_api(e), vertex_anim_api(e),
+	    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e), blocker_api(e), vertex_anim_api(e), newplane_api(e),
 
 	    env(e)
   { }
@@ -3230,6 +3240,7 @@ struct EveryApi
   PolygonDistanceField polygon_dist_api;
   BlockerApi blocker_api;
   VertexAnimApi vertex_anim_api;
+  NewPlaneApi newplane_api;
 private:
   Env &env;
   EveryApi(const EveryApi&);

@@ -571,6 +571,9 @@ struct EnvImpl
   std::vector<CurvePatch*> curve_patches;
   std::vector<PropertyArray*> prop_array;
   std::vector<Space3d*> space_3d;
+  std::vector<LinesInPlane*> plane_lines;
+  std::vector<PointsInPlane*> plane_points2;
+  std::vector<FacesInPlane*> plane_faces;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -894,6 +897,9 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::PLP add_plane_points(GameApi::Env &e, PointsInPlane *pl);
+GameApi::PLL add_plane_lines(GameApi::Env &e, LinesInPlane *pl);
+GameApi::PLF add_plane_faces(GameApi::Env &e, FacesInPlane *pl);
 GameApi::PR add_property_array(GameApi::Env &e, PropertyArray *arr);
 GameApi::SP add_space_3d(GameApi::Env &e, Space3d *sp);
 GameApi::PA add_patch(GameApi::Env &e, CurvePatch *patch);
@@ -1007,6 +1013,9 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+PointsInPlane *find_plane_points(GameApi::Env &e, GameApi::PLP plane);
+LinesInPlane *find_plane_lines(GameApi::Env &e, GameApi::PLL plane);
+FacesInPlane *find_plane_faces(GameApi::Env &e, GameApi::PLF plane);
 PropertyArray *find_prop_array(GameApi::Env &e, GameApi::PR prop);
 Space3d *find_space_3d(GameApi::Env &e, GameApi::SP space);
 CurvePatch *find_patch(GameApi::Env &e, GameApi::PA patch);

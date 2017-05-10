@@ -1,0 +1,25 @@
+
+Math concepts used in gameapi:
+ 1) bitmap              BM  : (int x,int y)->rgba
+ 2) boolbitmap          BB  : (int x,int y)->bool
+ 3) floatbitmap         FB  : (int x,int y)->float
+ 4) continuousbitmap    CBM : (x, y)->rgba
+ 5) polygon (mesh)      P   : (face:int, point:int)->(pos,normal,color,texcoord)
+ 6) points              PTS : [(pos,color)]
+ 7) lines               LI  : [((pos,color),(pos,color))]
+ 8) curve               C   : (float)->Point
+ 9) volumeobject        O   : (x,y,z)->bool
+10) floatvolumeobject   FO  : (x,y,z)->float
+11) colorvolumeobject   COV : (x,y,z)->rgba
+12) distancefield       FD  : (x,y,z)->float  (cpu version)
+13) distancefield       SFO : (x,y,z)->float (shader version) 
+14) matrixnode          MN  : (time)->Matrix
+15) booleanops          BO  : (P,O,FD)
+16) waveform            WV  : float->float
+17) voxel               VX  : (int x, int y, int z)->int
+18) point               PT  : (x,y,z)
+19) vector              V   : (dx,dy,dz)
+20) matrixarray         MS  : [Matrix]
+21) commands            CMD : string->[Points], wasd and '.' 
+22) mainloop            ML  : (execute::(e)->(),handle_event::(e)->())
+23) blocker             BLK : run :: ()->()
