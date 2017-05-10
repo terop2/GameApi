@@ -2720,6 +2720,7 @@ public:
     if (!res)
       {
 	std::ifstream ss(filename.c_str());
+	ss.tie(nullptr);
 	int count = 0;
 	char c2;
 	while(ss.get(c2)) { count++; }

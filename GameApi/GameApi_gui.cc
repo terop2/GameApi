@@ -4158,6 +4158,9 @@ MACRO(GameApi::GI)
 MACRO(GameApi::ARR)
 MACRO(GameApi::CMD)
 MACRO(GameApi::PA)
+MACRO(GameApi::PLF)
+MACRO(GameApi::PLL)
+MACRO(GameApi::PLP)
 #undef MACRO
 
 
@@ -5498,7 +5501,25 @@ std::vector<GameApiItem*> vectorapi_functions()
 			 { "prev", "pos" },
 			 { "ML", "PTS" },
 			 { "", "" },
-			 "ML", "move_api", "enemy_pos")); 
+			 "ML", "move_api", "enemy_pos"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::newplane_api, &GameApi::NewPlaneApi::to_polygon,
+			 "plf_poly",
+			 { "faces" },
+			 { "PLF" },
+			 { "" },
+			 "P", "newplane_api", "to_polygon"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::newplane_api, &GameApi::NewPlaneApi::reverse_faces,
+			 "plf_reversefaces",
+			 { "faces" },
+			 { "PLF" },
+			 { "" },
+			 "PLF", "newplane_api", "reverse_faces"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::newplane_api, &GameApi::NewPlaneApi::triangulate,
+			 "triangulate2d",
+			 { "faces" },
+			 { "PLF" },
+			 { "" },
+			 "PLF", "newplane_api", "triangulate"));
   
   return vec;
 }
@@ -5554,6 +5575,12 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "CMD", "std::string" },
 			 { "", "." },
 			 "LI", "move_api", "cmd_to_li"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::cmd_to_plf,
+			 "cmd_to_plf",
+			 { "cmds", "commands" },
+			 { "CMD", "std::string" },
+			 { "", "." },
+			 "PLF", "move_api", "cmd_to_plf"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::empty_voxel,
 			 "vx_empty",
 			 { "sx", "sy", "sz" },

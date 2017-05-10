@@ -11000,12 +11000,16 @@ class LoadObjModelFaceCollection : public SingleForwardBoxableFaceCollection
 public:
   LoadObjModelFaceCollection(std::string filename, int objcount) : filename(filename), obj_num(objcount) 
   {
+    firsttime = true;
   }
   void Prepare()
   {
-    std::cout << "Loading: " << filename << " " << obj_num << std::endl;
-    check_invalidate();
-    Load(); 
+    if (firsttime) {
+      std::cout << "Loading: " << filename << " " << obj_num << std::endl;
+      check_invalidate();
+      Load();
+      firsttime = false;
+    }
   }
   void check_invalidate() const { const_cast<LoadObjModelFaceCollection*>(this)->check_invalidate2(); }
   void check_invalidate2()
@@ -11292,6 +11296,7 @@ private:
   std::vector<int> face_counts;
   int obj_num;
   mutable std::vector<int> counts;
+  mutable bool firsttime;
 };
 
 #endif
