@@ -1,0 +1,458 @@
+
+BitmapApi
+  new -- creates new bitmap
+  load -- loads bitmap from file (broken)
+  bm_url -- loads bitmap from url
+  bm_atlas_x -- splits bitmap to sprite sheet in x-direction
+  bm_atlas_y -- splits bitmap to sprite sheet in y-direction
+  bm_atlas_xy -- splits bitmap to sprite sheet in a grid
+  border -- adds a simple border
+  add_shape_border -- adds more complicated border
+  sub -- bitmap's subarea
+  alt -- choose a bitmap using a constant
+  blit -- blit a bitmap
+  blitFB -- blit a bitmap with mask
+  blitBB -- blit a bitmap with boolean mask
+  bm_scale -- scale a bitmap
+  bm_fullscreen -- scale a bitmap to fullscreen
+  interpolate -- fade a bitmap
+  repeat -- repeat bitmap in x and y directions
+  flip_x -- flip a bitmap in x direction
+  flip_y -- flip a bitmap in y direction
+  gradient -- draw a gradient
+  chessboard -- draw a chessboard
+  mandelbrot -- draw a mandelbrot fractal
+  blur -- blur the image
+  bm_world_from_bitmap -- create a 2d world
+  bm_persistent_cache -- save bitmap to file and cache accesses through the file
+  cbm_empty -- create empty continuous bitmap
+  cbm_from_bitmap -- create continuous bitmap from bitmap
+  cbm_to_bitmap -- create bitmap from continuous bitmap
+  cbm_bicubic -- bicubic continuous bitmap
+  cbm_sample -- sample continuous bitmap to produce a bitmap
+  cbm_rotate -- rotate a continuous bitmap
+
+BoolBitmap
+  emptybool -- create empty boolean bitmap
+  bb_from_bitmap -- create boolean bitmap from color bitmap
+  from_float_bitmap -- create boolean bitmap from float bitmap
+  line -- draw a line
+  tri -- draw a triangle
+  circle -- draw circle
+  rectangle -- draw rectangle
+  part_circle -- draw angular part of a circle
+  rings -- draw many rings (SLOW)
+  not_bitmap -- not-operation on boolean bitmaps
+  or_bitmap -- or-operation on boolean bitmaps
+  xor_bitmap -- xor-operation on boolean bitmaps
+  choose_bitmap -- choose operation
+  bb_sprite -- sprite blitting
+  to_bitmap -- convert bool bitmap to bitmap
+  fb_dither -- dithering algorithm
+
+FloatBitmap
+  emptyfloat -- create empty float bitmap
+  from_red -- create float bitmap from red component of bitmap
+  from_green -- create float bitmap from green component of bitmap
+  from_blue -- create float bitmap from blue component of bitmap
+  from_alpha -- create float bitmap from alpha component of bitmap
+  bm_gaussian -- create float bitmap from a highlight
+  bm_perlin -- create perlin noise bitmap
+  to_grayscale_color -- convert float bitmap to grayscale bitmap
+  choose_bitmap -- BROKEN
+  from_bool -- convert boolean bitmap to float bitmap
+  distance_field -- create distance field bitmap
+  add_border -- adds some border
+
+PolygonApi
+   empty -- create empty polygon
+   load_model -- DO NOT USE
+   load_model_all -- loads a polygon from .obj file.. DO NOT USE
+   save_model -- saves .obj file
+   p_alt -- choose polygon
+   p_array -- array of polygons
+   triangle -- draw a triangle
+   to_triangles -- convert polygons to triangles
+   quad -- draw a quad
+   quad_x -- draw a quad
+   quad_y -- draw a quad
+   quad_z -- draw a quad
+   quad_fullscreen -- draw a fullscreen quad
+   polygon -- draw a polygon (convex)
+   cube -- draw a cube
+   rounded_cube -- draw rounded cube (SLOW)
+   sphere -- draw a sphere
+   disc -- draw a disc
+   cone -- draw a cone
+   torus -- draw a torus
+   deform -- move some object's vertices if they're in specified area of the space
+   linear_span -- create 3d object from lines by spanning
+   li_to_cone -- substitute lines with cones
+   static_instancing -- instancing operation with meshes
+   static_inst_color -- instancing operation with bitmap grids
+   color_map -- convert bitmap to 3d object
+   color_map3 -- convert bitmap to 3d object with height information
+   color_map3_cyl -- convert bitmap to 3d object with cylinder coordinates
+   color_map3_sph -- convert bitmap to 3d object with spherical coordinates
+   color -- choose color to 3d object. Changes whole color vertex array
+   p_mix_color -- mix color from vertex arrays
+   color_faces -- choose color for quad's vertices
+   color_alpha -- choose alpha channel from color
+   color_from_normals -- transform normals to colors
+   color_from_texcoords -- transform texture coordinates to colors
+   color_range -- change color values
+   color_lambert -- lambert shading (BROKEN)
+   recalc_normals -- recalculate normals using cross product
+   spherical_normals -- choose normals coming from single point
+   flip_normals -- change direction of normals
+   p_offsets -- UNKNOWN
+   color_grayscale -- make colours grayscale
+   choose_texture -- choose which texture to render for this object
+   texcoord -- manually specify texture coordinates for all faces
+   texcoord_spherical -- spherical texture coordinates (BROKEN)
+   p_or_elem -- combine two 3d objects
+   p_or_array -- combile whole array of 3d objects
+   translate -- move 3d object to different location (STATIC - not for animations)
+   rotatex -- rotate 3d object
+   rotatey -- rotate 3d object
+   rotatez -- rotate 3d object 
+   scale -- scale 3d object
+   shadow -- project 3d object vertices to a plane
+   reflection -- mirror 3d object vertices from a plane
+   subpoly_change -- change part of 3d object to different shape
+   memoize -- function programming memoize for 3d objects
+   persistent_cache -- caching 3d object to a file
+   world_from_bitmap -- create a world from pieces
+   p_to_bitmap -- render 3d object to a bitmap
+   p_shading -- shading shader
+   p_color -- color shader
+   p_spotlight -- spotlight shader
+   p_noise -- noise shader
+   p_light -- lighter color shader
+   p_toon -- toon shader
+   shader -- fetch shaders
+
+ShaderApi
+   sh_sphere -- sphere
+   sh_cube -- cube
+   sh_rcube -- rounded cube
+   sh_texture -- texture map
+   texture_box -- box around texture
+   sh_line -- line
+   sh_plane -- plane
+   sh_torus -- torus
+   sh_color -- color
+   rot_x -- x rotation
+   rot_y -- y rotation
+   rot_z -- z rotation
+   and_not -- boolean operation
+   sh_or_elem -- combine two objects
+   sh_blend -- combine with blending
+   sh_trans -- translate
+   bind_arg -- choose shader parameters
+   color_from_normals -- choose color from normals
+   stop_generation -- ...
+   mix_color -- color mixing
+   sh_grayscale -- grayscale color
+   sh_noise -- noise
+   ambient_occulsion -- colouring
+   soft_shadow -- shadow
+   bounding_primitive -- speed up distance field shaders
+   render -- rendering
+   v_render -- vertex shader rendering
+
+LinesApi
+   li_points -- lines from points
+   change_color -- color change
+   change_color2 -- color change
+   li_from_polygon -- convert 3d object to edge lines
+   li_fur -- convert points to a fur
+   li_rand_angle -- randomly move angle
+   li_from_quads -- random lines from quad surfaces
+   border_from_bool -- convert boolean bitmap to edge lines
+   li_translate --
+   li_scalee --
+   li_product -- multiply two linesets
+   li_split -- split lines to many lines
+   li_twist -- twist lines
+   li_update -- BROKEN
+   c_line -- curve from 2 points
+   c_circle_xy -- circle curve in xy plane
+   c_circle_xz -- circle curve in xz plane
+   c_circle_wave -- circular waveform
+   c_linear -- curve from many points
+   c_bezier -- bezier curve
+   c_scale -- scale a curve
+   c_trans -- translate curve
+   c_compose -- connect two curves
+   c_change_length -- length change
+   c_split -- curve split
+   c_sample -- convert curve to many 3d points
+   c_render -- convert curve to lines
+   c_product -- product of two curves
+   pa_sample -- sample product
+   pa_x -- x projection of a product
+   pa_y -- y projection of a product
+   cpp_sum -- sum
+   cpp_sum2 -- sum
+
+PointsApi
+  from_float_volume -- float volume to points
+  or_points -- array of points concatenation
+  move_pts -- translate points
+  anim_mix_pts -- animated interpolation of points
+  rot_x_pts -- rotate points
+  rot_y_pts -- rotate points
+  rot_z_pts -- rotate points
+  scale_pts -- scale points
+  color_pts -- choose point colors
+  from_volume -- volumeobject to pts conversion
+  shadow_points -- project points to a plane
+  random_plane -- generate random points in a plane
+  random_bitmap -- bool bitmap true area converted to random points
+  random_quad -- 3d object faces to random points conversion
+  pts_grid -- bitmap to points conversion
+  pts_grid_bb -- bool bitmap to points conversion
+  ms_from_points -- matrix generation from points
+  ms_mult -- matrix multiplication for whole array
+  ms_random_rot -- randomly rotate matrices
+  ms_subarray -- choose subarray
+  ms_from_lines_2d -- matrix from lines
+  ms_static_inst -- static instancing with matrices
+
+MoveApi
+  mn_empty -- identity matrix
+  mn_custom -- ???
+  mn_translate -- move
+  mn_scale -- scale
+  mn_rotatex -- rotate
+  mn_rotatey -- rotate
+  mn_rotatez -- rotate
+  anim_translate -- animated translate
+  anim_scale -- animated scale
+  anim_rotate -- animated rotate
+  anim_compress -- compress animation
+  anim_time -- change animation time
+  anim_repeat -- make repeated animations
+  anim_enable -- enable some elements in animation
+  anim_disable -- disable some elements in animation
+  anim_choose -- choose elements
+e  anim_event -- ???
+  color_start -- ???
+  color_interpolate -- ??
+  sa_root -- skeletal animation tree root
+  sa_node -- skeletal animation tree node
+  move_x_ml -- move
+  move_y_ml -- move
+  move_z_ml -- move
+  jump_ml -- jump
+  tree_level -- recursive tree level
+  tree -- recursive tree
+  tree_p -- recursive tree (static)
+  m_def -- default material
+  m_texture -- texture material
+  m_texture_arr -- texture array material
+  m_skeletal -- skeletal animation material
+  m_snow -- snow material
+  m_flat -- flat shaded polygon material
+  m_fur -- fur material
+  m_choose_color -- color change material
+  m_brashmetal -- metal surface
+  m_web -- mesh edge lines
+  m_dist_field -- distance field material
+  m_dist_field_color -- distance field colors
+  kf_mesh -- vertex animation mesh
+  kf_lines -- vertex animation lines
+  kf_bind -- vertex animation operations
+  kf_repeat -- repeated vertex animation
+  kf_curve -- make vertex move in a curve
+  kf_rot -- make vertices rotate
+  ptt_empty -- empty ptt
+  ptt_trans_s -- translate in constant speed
+  ptt_trans_d -- translate certain distance
+  ptt_scale_s -- scale in constant speed
+  ptt_scale_d -- scale distance
+
+PointApi
+  point -- constructor of PT type
+  move -- move a point
+  mix -- interpolate points
+  cmd_def -- commands start (wasd and . in the string)
+  cmd_repeat -- repeated commands
+  cmd_rotate -- rotate command sequences
+  cmd_to_pts -- commands to points
+  cmd_to_li -- commands to lines
+  vx_empty -- empty voxel
+  vx_sub -- subvoxel
+  vx_landscape_bm -- create voxel from float bitmap
+  vx_or_elem -- combine voxels
+  vx_blit -- convert volume object to voxel
+  vx_inst -- voxel converted to data structure needed for instancing
+  vx_render -- rendering voxel
+  vx_bind -- rendering voxel with material
+  vx_static -- static instancing version of voxel rendering
+
+VectorApi
+   vector -- constructor of vector
+   player -- choose player
+   enemy -- choose enemy
+   player_pos -- set player position
+   enemy_pos -- set enemy positions
+
+VolumeApi
+   o_from_bool_bitmap -- create volumeobect from bool bitmap
+   o_sphere -- sphere volume
+   o_cube -- cube volume
+   o_torus -- torus volume
+   o_mandelbrot -- 3d mandelbrot fractal
+   o_mandelbulb -- 3d mandelbulb fractal (BROKEN)
+   o_colour -- set volumeobject colours
+   o_subset_color -- set partial colour values
+   o_move -- translate volume object
+   o_rotatex -- rotate
+   o_rotatey -- rotate
+   o_rotatez -- rotate
+   o_scale -- scale
+   o_notop -- boolean not operation for whole space
+   o_minop -- intersection operation
+   o_maxop -- union operation
+   o_andnot -- andnot operation
+   im_sphere -- implicit function sphere
+   im_blob -- implicit function blob
+   im_translate -- move
+   im_from_distance -- convert distance field to implicit function
+   im_distance_cyl -- convert distance field to implicit function cylindar
+   im_distance_sph -- convert distance field to implicit function spherical
+   im_render_upper -- render upper plane of implicit function
+   im_render_lower -- render lower plane of implicit function
+   im_upper_color -- colours of upper plane
+   im_lower_color -- colours of lower plane
+
+FVolumeApi
+  fo_from_volume -- float volume object from volume object
+  fo_from_fbm -- float volume object from float bitmap
+  fo_move -- translate
+  fo_min -- intersection
+  fo_max -- union
+  fo_min_distance -- ???
+  fo_subvolume -- choose range from float values
+  fo_interpolate -- interpolate float volumes
+  fo_smooth -- smooth combination of float volumes
+  fo_normal -- set normal direction
+  setup_normal -- render normals
+  fd_sphere -- cpu side distance fields sphere
+  fd_cube -- distance field cube
+  fd_round_cube -- rounded cube
+  fd_torus -- torus
+  fd_line -- line
+  fd_min -- intersection
+  fd_max -- union
+  fd_and_not -- andnot operation
+  fd_blend -- blend operation
+  fd_color -- set colour
+  fd_trans -- move
+  fd_rot_x -- rotate
+  fd_rot_y -- rotate
+  fd_rot_z -- rotate
+  fd_normal -- set normal
+  fd_recalc_normals -- calculate normals
+  fd_amb_occul -- ambient occulsion
+  fd_render2 -- render to a bitmap
+  fd_render_bm -- render to a bitmap with parameters
+  fd_render_cyl_p -- render to a 3d object cylinder coordinates
+  fd_render_sph_p -- render to a 3d object spherical coordinates
+
+CVolumeApi
+  cov_from_fo -- colour volume object from float volume
+  cov_from_o -- colour volume object from volume object
+  cov_from_cbm -- colour volume object from continuous bitmap
+  cov_mix -- mix colours
+  cov_color_from_normal -- choose colour from normals
+
+FontApi
+  FI_load -- load font from url
+  FI_drawtext -- draw text string
+  bm_array_id -- bitmap array identity function
+  bm_chooser -- choose bitmap dynamically
+  ml_chooser -- choose mainloop dynamically
+  if_timed -- timing
+  if_repeat -- repeat
+  if_keypress -- bind keypresses dynamically
+
+TextureApi (use m_texture instead from MoveApi)
+  tex_plane -- texture plane
+  tex_bitmap -- bitmap to texture conversion
+  tex_assign -- assign a texture bitmap
+  tex_coord -- texture position
+  get_tex_coord -- get position
+  tx_to_bitmap -- find texture bitmap
+
+BooleanOps
+  create_bo -- create object suitable for boolean operations
+  cube_bo -- cube
+  sphere_bo -- sphere
+  or_elem_bo -- combine two objects to single object
+  and_not_bo -- andnot operation
+  intersect_bo -- intersection
+  to_poly -- convert bo to mesh
+  to_volume -- convert bo to volume
+  to_dist -- convert bo to distance field
+
+ WaveformApi
+  wv_empty -- empty waveform
+  wv_step -- step waveform
+  wv_sin -- sin waveform
+  wv_gaussian -- gaussian waveform
+  wv_sum -- sum waveforms
+  wv_move -- move waveform
+  wv_scale -- scale waveform
+  wv_rot_poly -- convert waveform to 3d object
+  wv_cubic -- cubic waveform
+  wv_repeat -- repeat waveform
+  wv_set_length -- set length of waveform
+  wv_bitmap -- convert waveform to bitmap for displaying it
+
+MainLoopApi
+  skybox_ml -- skybox
+  alt_ml -- choose from multiple ml's.
+  array_ml -- use multiple ml's simultaniously
+  seq_ml -- sequence one ml after another
+  timed_tmp_seq -- sequence with timing
+  collision_ml -- collision detection
+  move_ml -- move 3d objects based in animated matrices
+  repeat_ml -- repeated playing of the sequences
+  bm_render -- render bitmap
+  bm_2d -- use 2d rendering
+  sp_render -- sprite rendering
+  sp_render_inst -- instaced sprite rendering
+  sp_render_fade -- instances sprite rendering appear/disappear
+  p_render -- 3d object rendering
+  p_render_inst -- instanced 3d object rendering
+  p_render_inst_fade -- instanced 3d object rendering appear/disappear
+  p_render_inst2 -- BROKEN
+  pts_prepare -- prepare points
+  pts_render -- render points (HAVE PROBLEMS IN EMSCRIPTEN BUILD)
+  li_prepare -- prepare lines
+  li_render -- render lines
+  o_to_pts -- convert volume object to points
+  o_render -- render volume object
+  m_bind -- render 3d object with material
+  m_bind_inst -- instanced rendering of 3d object with material
+  m_fade_inst -- instanced rendering of 3d object with material appear/disappear
+  rot_x_ml -- rotate based on key
+  rot_y_ml -- rotate based on key
+  rot_z_ml -- rotate based on key
+  enable_ml -- enable/disable displaying of drawing
+  color_ml -- choose color
+  wasd_ml -- wasd keyboard input
+  key_activate_ml -- single keypress input
+  tmp_key_activate_ml -- keypress changes position temporarily
+  comb_key_activate_ml -- key combinations
+  key_printer_ml -- print keycodes to std::cout
+  skeletal_bind -- skeletal animation drawing
+  skeletal_material -- skeletal animation drawing with materials
+  tree_ml -- recursive tree rendering
+  kf_render -- vertex animation rendering
+  song_ml -- play ogg file
+  blk_window -- create window and run event loop
+  
