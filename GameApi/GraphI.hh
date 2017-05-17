@@ -459,6 +459,13 @@ struct MainLoopEnv
   int sh_texture_2d = 0;
   int sh_array_texture = 0;
 
+  // put only shader functions to these
+  std::string v_shader_functions;
+  std::string f_shader_functions;
+
+  std::vector<std::string> v_shader_funcnames;
+  std::vector<std::string> f_shader_funcnames;
+  
   // from event api
   //int type;
   //int ch;
@@ -983,6 +990,41 @@ public:
   virtual unsigned int Color(int face, int point) const=0;
   virtual Vector Normal(int face, int point) const { Vector v; v.dx = 0.0; v.dy=0.0; v.dz=-1.0; return v; }
   // note, no normal implemented
+};
+
+template<class T>
+class PathValues
+{
+public:
+  virtual float Size() const=0;
+  virtual T get(float x) const=0;
+};
+
+template<class T>
+class AreaValues
+{
+public:
+  virtual float SizeX() const=0;
+  virtual float SizeY() const=0;
+  virtual T get(float x, float y) const=0;
+};
+template<class T>
+class VolumeValues
+{
+public:
+  virtual float SizeX() const=0;
+  virtual float SizeY() const=0;
+  virtual float SizeZ() const=0;
+  virtual T get(float x, float y, float z) const=0;
+  virtual ~VolumeValues() { }
+};
+
+class TextureID
+{
+public:
+  virtual void handle_event(MainLoopEvent &e)=0;
+  virtual void render(MainLoopEnv &e)=0;
+  virtual int texture() const=0;
 };
 
 #endif

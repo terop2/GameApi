@@ -811,7 +811,7 @@ public:
 	GameApi::US fragment;
 	vertex.id = e.us_vertex_shader;
 	fragment.id = e.us_fragment_shader;
-	shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment);
+	shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions);
 	ev.mainloop_api.init_3d(shader);
 	ev.mainloop_api.alpha(true); 
       }
@@ -1165,4 +1165,38 @@ public:
 GameApi::PTS GameApi::PointsApi::single_pts()
 {
   return add_points_api_points(e, new SinglePTS);
+}
+
+class LIFromPTS : public LineCollection
+{
+public:
+  LIFromPTS(PointsApiPoints *p1, float dx, float dy, float dz) : p1(p1),dx(dx),dy(dy),dz(dz) { }
+  virtual int NumLines() const { return p1->NumPoints(); }
+  virtual Point LinePoint(int line, int point) const
+  {
+    Point p = p1->Pos(line);
+    if (point==1) p=p+Vector(dx,dy,dz);
+    return p;
+  }
+  virtual unsigned int LineColor(int line, int point) const {
+    return p1->Color(line);
+  }
+
+private:
+  PointsApiPoints *p1;
+  float dx,dy,dz;
+};
+
+GameApi::LI GameApi::PointsApi::li_from_pts(PTS pts, float dx, float dy, float dz)
+{
+  PointsApiPoints *p1 = find_pointsapi_points(e, pts);
+  return add_line_array(e, new LIFromPTS(p1,dx,dy,dz));
+}
+
+GameApi::ML GameApi::PointsApi::pts_render(EveryApi &ev, PTS pts)
+{
+  LI I3=ev.points_api.li_from_pts(pts,1,1,1);
+  LLA I4=ev.lines_api.prepare(I3);
+  ML I5=ev.lines_api.render_ml(ev,I4);
+  return I5;
 }

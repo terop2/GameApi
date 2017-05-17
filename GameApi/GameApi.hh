@@ -1148,6 +1148,7 @@ public:
 
   IMPORT MT choose_color(EveryApi &ev, MT nxt, unsigned int color, float mix_val);
   IMPORT MT brashmetal(EveryApi &ev, MT nxt, int count, bool web);
+  IMPORT MT marble(EveryApi &ev, MT nxt, int count, float cubesize);
   IMPORT MT web(EveryApi &ev, MT nxt); // TODO: add line width property
   IMPORT MT dist_field_mesh(EveryApi &ev, SFO sfo, MT next);
 
@@ -1343,6 +1344,7 @@ public:
   IMPORT ML enable_ml(EveryApi &ev, ML ml, float start_time, float end_time);
   IMPORT ML key_event(EveryApi &ev, ML ml, MN mn, int type, int ch, int button, float duration);
   IMPORT ML wasd(EveryApi &ev, ML ml, MN w, MN a, MN s, MN d, float duration);
+  IMPORT ML quake_ml(EveryApi &ev, ML ml, float speed, float rot_speed);
   IMPORT ML key_printer_ml(ML ml);
   IMPORT CMD default_cmds(float dx, float dy, float dz);
   IMPORT CMD cmd_repeat(CMD cmds, std::string repeat, float dx, float dy, float dz);
@@ -1636,6 +1638,8 @@ public:
   
 	IMPORT FO shadow(FD fd, V light_dir, float mint, float maxt, float k);
 
+  IMPORT FB integrate_render(FO obj, int sx, int sy, int numsamples);
+  
   //FO plus(FO f1, FO f2);
 	IMPORT BM raytrace(FO object, int sx, int sy,
 	      PT ray_0, PT ray_x, PT ray_y, PT ray_z, float surface_value);
@@ -2186,6 +2190,8 @@ public:
 			   int ambient_color_id,
 			   float ambient_level);
   IMPORT ML noise_shader(EveryApi &ev, ML mainloop);
+  IMPORT ML custom_shader(EveryApi &ev, ML mainloop, std::string v_shader, std::string f_shader, std::string v_funcname, std::string f_funcname);
+  IMPORT ML dither_shader(EveryApi &ev, ML mainloop);
   IMPORT ML light_shader(EveryApi &ev, ML mainloop);
   IMPORT ML choose_color_shader(EveryApi &ev, ML mainloop, unsigned int color, float mix_val);
   IMPORT ML toon_shader(EveryApi &ev, ML mainloop);
@@ -2781,6 +2787,8 @@ public:
   IMPORT float pos_x(PTS p, int index);
   IMPORT float pos_y(PTS p, int index);
   IMPORT float pos_z(PTS p, int index);
+  IMPORT ML pts_render(EveryApi &ev, PTS pts);
+  IMPORT LI li_from_pts(PTS pts, float dx, float dy, float dz);
 private:
   PointsApi(const PointsApi&);
   void operator=(const PointsApi&);
@@ -3010,7 +3018,8 @@ public:
   US v_blur(US us); // dangerous operation
   US v_dist_field_mesh(US us, SFO sfo);
   US v_skeletal(US us);
-
+  US v_custom(US us, std::string v_funcname);
+  
   US f_mesh_color(US us, SFO sfo); // this requires v_pass_position() in vertex shader
   US f_sandbox(US us, SFO sfo); // this requires texture coordinates
   US f_empty(bool transparent);
@@ -3031,6 +3040,7 @@ public:
   US f_colour(US us);
   US f_mix_color(US us, US us2, float val); // TODO
   US f_choose_color(US us);
+  US f_custom(US us, std::string f_funcname);
 private:
   Env &e;
 };
@@ -3050,10 +3060,11 @@ public:
 			      std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, std::string v_defines="IN_NORMAL IN_COLOR IN_TEXCOORD IN_POSITION EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD");
   IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,
 			      US v_comb, US f_comb, bool trans=true, SFO mod={-1}, std::string v_defines="", std::string f_defines="");
+  IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format, US v_comb, US f_comb, std::string v_shader, std::string f_shader, bool trans=true, SFO mod={-1}, std::string v_defines="", std::string f_defines="");
   SH get_shader_1(std::string v_format, std::string f_format, std::string g_format,
-		  std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, US v_c={-1}, US f_c={-1}, std::string v_defines="IN_NORMAL IN_COLOR IN_TEXCOORD IN_POSITION EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD EX_POSITION", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD");
+		  std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, US v_c={-1}, US f_c={-1}, std::string v_defines="IN_NORMAL IN_COLOR IN_TEXCOORD IN_POSITION EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD EX_POSITION", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string v_shader="", std::string f_shader="");
   SH get_normal_shader_1(std::string v_format, std::string f_format, std::string g_format,
-			 std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod = { -1 }, US v_c = { -1 }, US f_c = { -1 }, std::string v_defines="IN_NORMAL IN_POSITION IN_COLOR IN_TEXCOORD EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD");
+			 std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod = { -1 }, US v_c = { -1 }, US f_c = { -1 }, std::string v_defines="IN_NORMAL IN_POSITION IN_COLOR IN_TEXCOORD EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string v_shader="", std::string f_shader="");
   IMPORT SH texture_shader();
   IMPORT SH texture_array_shader();
   IMPORT SH colour_shader();
@@ -3106,6 +3117,8 @@ public:
   IMPORT TXID depth_id(FBO buffer);
   IMPORT bool fbo_status(FBO buffer);
   IMPORT BM fbo_to_bitmap(EveryApi &ev, FBO buffer);
+  IMPORT TXID fbo_ml(EveryApi &ev, ML mainloop, int sx, int sy);
+  IMPORT ML fbo_ml_blit(EveryApi &ev, TXID id, float start_x, float end_x, float start_y, float end_y, float z);
 private:
   FrameBufferApi(const FrameBufferApi &);
   void operator=(const FrameBufferApi&);

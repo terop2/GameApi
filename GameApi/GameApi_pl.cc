@@ -3053,13 +3053,13 @@ public:
 	fragment.id = u_f.id; //e.us_fragment_shader;
 	if (e.sfo_id==-1)
 	  {
-	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment);
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions);
 	  }
 	else
 	  {
 	    GameApi::SFO sfo;
 	    sfo.id = e.sfo_id;
-	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment, false, sfo);
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
 	  }
 	ev.mainloop_api.init_3d(shader);
 	ev.mainloop_api.alpha(true); 
@@ -3192,13 +3192,13 @@ public:
 	fragment.id = u_f.id; //e.us_fragment_shader;
 	if (e.sfo_id==-1)
 	  {
-	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment);
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions);
 	  }
 	else
 	  {
 	    GameApi::SFO sfo;
 	    sfo.id = e.sfo_id;
-	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment, false, sfo);
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
 	  }
 	ev.mainloop_api.init_3d(shader);
 	ev.mainloop_api.alpha(true); 
@@ -3293,6 +3293,80 @@ private:
   GameApi::SH sh;
   bool firsttime;
 };
+
+class CustomShaderML : public MainLoopItem
+{
+public:
+  CustomShaderML(GameApi::EveryApi &ev, MainLoopItem *next, std::string v_shaderstring, std::string f_shaderstring, std::string v_funcname, std::string f_funcname) : ev(ev), next(next), v_shaderstring(v_shaderstring), f_shaderstring(f_shaderstring), v_funcname(v_funcname), f_funcname(f_funcname) 
+  {
+    firsttime = true;
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    if (firsttime) {
+      firsttime = false;
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a1.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    GameApi::US a2 = ev.uber_api.v_custom(vertex, v_funcname);
+    ee.us_vertex_shader = a2.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a1.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    GameApi::US a2f = ev.uber_api.f_custom(fragment, f_funcname);
+    ee.us_fragment_shader = a2f.id;
+    }
+
+    int s = ee.v_shader_funcnames.size();
+    bool v_add=true;
+    for(int i=0;i<s;i++)
+      {
+	if (ee.v_shader_funcnames[i] == v_funcname) v_add=false;
+      }
+    int s2 = ee.f_shader_funcnames.size();
+    bool f_add=true;
+    for(int i=0;i<s2;i++)
+      {
+	if (ee.f_shader_funcnames[i] == f_funcname) f_add=false;
+      }
+    if (v_add)
+      {
+      ee.v_shader_functions += v_shaderstring;
+      ee.v_shader_funcnames.push_back(v_funcname);
+      }
+    if (f_add)
+      {
+      ee.f_shader_functions += f_shaderstring;
+      ee.f_shader_funcnames.push_back(f_funcname);
+      }
+    next->execute(ee);
+  }
+  int shader_id() { return next->shader_id(); }
+
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  GameApi::SH sh;
+  bool firsttime;
+  std::string v_shaderstring, f_shaderstring;
+  std::string v_funcname, f_funcname;
+};
+
 
 class TextureShaderML : public MainLoopItem
 {
@@ -4122,6 +4196,11 @@ EXPORT GameApi::ML GameApi::PolygonApi::noise_shader(EveryApi &ev, ML mainloop)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new NoiseShaderML(ev, item));
+}
+EXPORT GameApi::ML GameApi::PolygonApi::custom_shader(EveryApi &ev, ML mainloop, std::string v_shaderstring, std::string f_shaderstring, std::string v_funcname, std::string f_funcname)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new CustomShaderML(ev, item,v_shaderstring,f_shaderstring,v_funcname,f_funcname));
 }
 EXPORT GameApi::ML GameApi::PolygonApi::spotlight_shader(EveryApi &ev, ML mainloop, int light_color_id, MN move)
 {
@@ -5973,4 +6052,18 @@ GameApi::P GameApi::PolygonApi::spherical_normals(P p, float p_x, float p_y, flo
   FaceCollection *coll = find_facecoll(e, p);
   return add_polygon2(e, new SphNormals(coll, Point(p_x,p_y,p_z)),1);
 }
-						 
+
+std::string dither_shader_string =
+				     "vec4 dither(vec4 rgb)\n"
+				     "{\n"
+				     "  uint i=uint(gl_FragCoord.x)%16u + 16u*(uint(gl_FragCoord.y)%16u);\n"
+				     "  vec4 threshold = vec4((i*107u)%256u,(i*107u+5u)%256u,(i*107u+11u)%256u,(i*107u+3u)%256u)/256.;\n"
+				     "  return rgb+(step(threshold,fract(rgb*255))-fract(rgb*255))/255.;\n"
+				     "}\n"
+				     ;
+
+				 
+GameApi::ML GameApi::PolygonApi::dither_shader(EveryApi &ev, ML mainloop)
+{
+  return custom_shader(ev,mainloop,"",dither_shader_string,"","dither");
+}

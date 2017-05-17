@@ -2876,3 +2876,4 @@ GameApi::BB GameApi::BoolBitmapApi::black_white_dithering(FB bm)
   Bitmap<float> *val = find_float_bitmap(e, bm)->bitmap;
   return add_bool_bitmap(e, new Dithering(*val));
 }
+

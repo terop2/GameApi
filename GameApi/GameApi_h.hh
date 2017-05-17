@@ -574,6 +574,7 @@ struct EnvImpl
   std::vector<LinesInPlane*> plane_lines;
   std::vector<PointsInPlane*> plane_points2;
   std::vector<FacesInPlane*> plane_faces;
+  std::map<int, TextureID*> txids;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -897,6 +898,7 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::TXID add_txid(GameApi::Env &e, TextureID *txid);
 GameApi::PLP add_plane_points(GameApi::Env &e, PointsInPlane *pl);
 GameApi::PLL add_plane_lines(GameApi::Env &e, LinesInPlane *pl);
 GameApi::PLF add_plane_faces(GameApi::Env &e, FacesInPlane *pl);
@@ -1013,6 +1015,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+TextureID *find_txid(GameApi::Env &e, GameApi::TXID id);
 PointsInPlane *find_plane_points(GameApi::Env &e, GameApi::PLP plane);
 LinesInPlane *find_plane_lines(GameApi::Env &e, GameApi::PLL plane);
 FacesInPlane *find_plane_faces(GameApi::Env &e, GameApi::PLF plane);

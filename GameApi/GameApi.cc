@@ -390,6 +390,16 @@ SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 ARRMACRO2(GameApi::PAR,par)
 #undef ARRMACRO2
 
+GameApi::TXID add_txid(GameApi::Env &e, TextureID *txid)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  int id = txid->texture();
+  env->txids[id] = txid;
+  GameApi::TXID tx;
+  tx.id = id;
+  return tx;
+}
+
 GameApi::PA add_patch(GameApi::Env &e, CurvePatch *patch)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1280,6 +1290,25 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   Array<int,bool> *enable = info.enable_obj_array;
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
+}
+class TexIDEmpty : public TextureID {
+public:
+  TexIDEmpty(int id) : id(id) { }
+  int texture() const { return id; }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual void render(MainLoopEnv &e) { }
+private:
+  int id;
+};
+TextureID *find_txid(GameApi::Env &e, GameApi::TXID id)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  TextureID *txid = env->txids[id.id];
+  if (txid==0) {
+    GameApi::TXID id2 = add_txid(e, new TexIDEmpty(id.id));
+    txid = env->txids[id2.id];
+  }
+  return txid;
 }
 PointsInPlane *find_plane_points(GameApi::Env &e, GameApi::PLP pl)
 {
@@ -4910,7 +4939,76 @@ private:
   float size;
   int cone_numfaces;
 };
+class Marble : public MaterialForward
+{
+public:
+  Marble(GameApi::EveryApi &ev, Material *next, int count, float cubesize) : ev(ev), next(next), count(count), cubesize(cubesize) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::P I1=ev.polygon_api.cube(-cubesize,cubesize,-cubesize,cubesize,-cubesize,cubesize);
+    GameApi::MS I2=ev.matrices_api.ms_random_rot(0,1,0,count);
+    GameApi::P I3=p;
+    GameApi::PTS I4=ev.points_api.random_mesh_quad_instancing(ev,I3,count);
+    GameApi::MS I5=ev.matrices_api.from_points(I4);
+    GameApi::MS I6=ev.matrices_api.mult_array(I2,I5);
+    GameApi::P I7=ev.polygon_api.static_instancing_matrix(ev,I1,I6);
+    
+        GameApi::ML ml;
+    ml.id = next->mat(I7.id);
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::P I1=ev.polygon_api.cube(-cubesize,cubesize,-cubesize,cubesize,-cubesize,cubesize);
+    GameApi::MS I2=ev.matrices_api.ms_random_rot(0,1,0,count);
+    GameApi::P I3=p;
+    GameApi::PTS I4=ev.points_api.random_mesh_quad_instancing(ev,I3,count);
+    GameApi::MS I5=ev.matrices_api.from_points(I4);
+    GameApi::MS I6=ev.matrices_api.mult_array(I2,I5);
+    GameApi::P I7=ev.polygon_api.static_instancing_matrix(ev,I1,I6);
 
+    GameApi::ML ml;
+    ml.id = next->mat_inst(I7.id, pts.id);
+    return ml;
+  }
+
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::P I1=ev.polygon_api.cube(-cubesize,cubesize,-cubesize,cubesize,-cubesize,cubesize);
+    GameApi::MS I2=ev.matrices_api.ms_random_rot(0,1,0,count);
+    GameApi::P I3=p;
+    GameApi::PTS I4=ev.points_api.random_mesh_quad_instancing(ev,I3,count);
+    GameApi::MS I5=ev.matrices_api.from_points(I4);
+    GameApi::MS I6=ev.matrices_api.mult_array(I2,I5);
+    GameApi::P I7=ev.polygon_api.static_instancing_matrix(ev,I1,I6);
+
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(I7.id, pta.id);
+
+    return ml;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::P I1=ev.polygon_api.cube(-cubesize,cubesize,-cubesize,cubesize,-cubesize,cubesize);
+    GameApi::MS I2=ev.matrices_api.ms_random_rot(0,1,0,count);
+    GameApi::P I3=p;
+    GameApi::PTS I4=ev.points_api.random_mesh_quad_instancing(ev,I3,count);
+    GameApi::MS I5=ev.matrices_api.from_points(I4);
+    GameApi::MS I6=ev.matrices_api.mult_array(I2,I5);
+    GameApi::P I7=ev.polygon_api.static_instancing_matrix(ev,I1,I6);
+
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(I7.id, pts.id, flip, start_time, end_time);
+
+    return ml;
+  }
+  
+private:
+  GameApi::EveryApi &ev;
+  Material *next;
+  int count;
+  float cubesize;
+};
 
 class ChooseColorMaterial : public MaterialForward
 {
@@ -5002,6 +5100,11 @@ EXPORT GameApi::MT GameApi::MaterialsApi::brashmetal(EveryApi &ev, MT nxt, int c
 {
   Material *mat = find_material(e, nxt);
   return add_material(e, new BrashMetal(ev, mat, count, web));
+}
+EXPORT GameApi::MT GameApi::MaterialsApi::marble(EveryApi &ev, MT nxt, int count, float cubesize)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new Marble(ev, mat, count, cubesize));
 }
 
 #if 0
@@ -5250,12 +5353,12 @@ public:
 	GameApi::US vertex2 = ev.uber_api.v_inst(vertex);
 	//GameApi::US fragment2 = ev.uber_api.f_inst(fragment);
 	if (e.sfo_id==-1)
-	  shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment);
+	  shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions);
 	else
 	  {
 	    GameApi::SFO sfo;
 	    sfo.id = e.sfo_id;
-	    shader=ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment, false, sfo);
+	    shader=ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
 	  }
 	ev.mainloop_api.init_3d(shader);
 	ev.mainloop_api.alpha(true); 
@@ -5395,12 +5498,12 @@ public:
 	GameApi::US vertex2 = ev.uber_api.v_inst(vertex);
 	//GameApi::US fragment2 = ev.uber_api.f_inst(fragment);
 	if (e.sfo_id==-1)
-	  shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment);
+	  shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions);
 	else
 	  {
 	    GameApi::SFO sfo;
 	    sfo.id = e.sfo_id;
-	    shader=ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment, false, sfo);
+	    shader=ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
 	  }
 	ev.mainloop_api.init_3d(shader);
 	ev.mainloop_api.alpha(true); 
@@ -5925,6 +6028,17 @@ GameApi::US GameApi::UberShaderApi::f_ref(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("ref", next,"EX_POSITION EX_NORMAL"));
+}
+GameApi::US GameApi::UberShaderApi::v_custom(US us, std::string v_funcname)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction(v_funcname, next,""));
+
+}
+GameApi::US GameApi::UberShaderApi::f_custom(US us, std::string f_funcname)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction(f_funcname, next,""));
 }
 
 GameApi::US GameApi::UberShaderApi::f_light(US us)
@@ -8419,13 +8533,13 @@ public:
 	fragment.id = u_f.id; //e.us_fragment_shader;
 	if (e.sfo_id==-1)
 	  {
-	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment);
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions);
 	  }
 	else
 	  {
 	    GameApi::SFO sfo;
 	    sfo.id = e.sfo_id;
-	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment, false, sfo);
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
 	  }
 	ev.mainloop_api.init_3d(shader);
 	ev.mainloop_api.alpha(true); 
@@ -9572,4 +9686,50 @@ MN I32=ev.move_api.empty();
 MN I33=ev.move_api.translate(I32,0,s_1,s_234,s_234,0);
 ML I34=ev.move_api.comb_key_activate_ml(ev,I31,I33,k_119,k_97,s_1);
  return I34;
+}
+
+class QuakeML : public MainLoopItem
+{
+public:
+  QuakeML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, float speed, float rot_speed) : env(env), ev(ev), next(next), speed(speed), rot_speed(rot_speed) { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
+    MainLoopEnv eee = e;
+    GameApi::M env_m = add_matrix2(env, e.in_MV);
+    GameApi::M rot_y2 = ev.matrix_api.yrot(rot_y);
+    GameApi::M trans = ev.matrix_api.trans(pos_x, 0.0, pos_y+400);
+    GameApi::M trans2 = ev.matrix_api.trans(0.0,0.0,-400.0);
+    GameApi::M scale = ev.matrix_api.scale(1.0,1.0,-1.0);
+    GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(trans,rot_y2),trans2),scale));
+    eee.in_MV = find_matrix(env, res);
+    next->execute(eee);
+    
+
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    GameApi::MainLoopApi::Event ee;
+    ee.type = e.type;
+    ee.ch = e.ch;
+    ee.button = e.button;
+    GameApi::InteractionApi::quake_movement_event(ev,ee,pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
+    next->handle_event(e);
+  }
+  virtual int shader_id() { return -1; }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  float pos_x=0.0, pos_y=0.0, rot_y=0.0;
+  GameApi::InteractionApi::Quake_data dt;
+  float speed_x=0.0, speed_y=0.0;
+  float speed, rot_speed;
+};
+
+GameApi::ML GameApi::MovementNode::quake_ml(EveryApi &ev, ML ml,float speed, float rot_speed)
+{
+  MainLoopItem *mml = find_main_loop(e,ml);
+  return add_main_loop(e, new QuakeML(e,ev, mml, speed, rot_speed));
 }
