@@ -504,6 +504,7 @@ ShaderFile::ShaderFile()
 
     // NOTE: ADDING MORE uniform or attribute or varying varibles does not work, and gives black screen
 "//M:\n"
+"//B:\n"
 "#ifdef SKELETAL\n"
 "vec4 skeletal(vec4 pos)\n"
 "{\n"
@@ -810,6 +811,7 @@ ShaderFile::ShaderFile()
 "    return vec4(mix(rgb.rgb,color_choice.rgb,mix_val),rgb.a);\n"
 "}\n"
 "#endif\n"
+"//B:\n"
 "vec4 white(vec4 rgb)\n"
 "{\n"
 "   return vec4(1.0,1.0,1.0,1.0);\n"
@@ -1234,6 +1236,7 @@ ShaderFile::ShaderFile()
 "#endif\n"
     //"flat out vec4 ex_FlatColor;\n"
 "//M:\n"
+"//B:\n"
 "#ifdef SKELETAL\n"
 "vec4 skeletal(vec4 pos)\n"
 "{\n"
@@ -1524,6 +1527,7 @@ ShaderFile::ShaderFile()
 "    return vec4(mix(rgb.rgb,color_choice.rgb,mix_val),rgb.a);\n"
 "}\n"
 "#endif\n"
+"//B:\n"
 "vec4 white(vec4 rgb)\n"
 "{\n"
 "   return vec4(1.0,1.0,1.0,1.0);\n"
@@ -1977,7 +1981,7 @@ std::vector<std::string> replace_c_template_unique_ids(std::string defines, std:
     }
   return ids;
 }
-std::string replace_c(std::string s, std::vector<std::string> comb, bool is_fragment, bool is_fbo, bool is_transparent, ShaderModule *mod, ShaderCall *call, std::string defines, bool is_get_pixel)
+std::string replace_c(std::string s, std::vector<std::string> comb, bool is_fragment, bool is_fbo, bool is_transparent, ShaderModule *mod, ShaderCall *call, std::string defines, bool is_get_pixel, std::string shader)
 {
   int unique_id = 0;
   std::stringstream ss(s);
@@ -2115,6 +2119,10 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
       if (mod && ww.substr(0,4)=="//M:")
 	{
 	  out+=mod->Function();
+	}
+      if (ww.substr(0,4)=="//B:")
+	{
+	  out+=shader;
 	}
       if (mod && ww.substr(0,4)=="//N:")
 	{
@@ -2265,7 +2273,7 @@ std::string add_line_numbers(std::string s)
     }
   return res;
 }
-int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec, std::vector<std::string> f_vec, bool is_trans, ShaderModule *mod, ShaderCall *vertex_c, ShaderCall *fragment_c, std::string v_defines, std::string f_defines)
+int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec, std::vector<std::string> f_vec, bool is_trans, ShaderModule *mod, ShaderCall *vertex_c, ShaderCall *fragment_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
 {
   int id = progs.size();
   Program *p = new Program;
@@ -2277,7 +2285,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       std::cout << "VName: " << name << std::endl;
       std::string shader = file.VertexShader(name);
-      std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod, vertex_c, v_defines, false);
+      std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod, vertex_c, v_defines, false,v_shader);
       
       //std::cout << "::" << ss << "::" << std::endl;
       std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
@@ -2296,7 +2304,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
-      std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false);
+      std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader);
       std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);

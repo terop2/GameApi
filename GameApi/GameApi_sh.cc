@@ -54,16 +54,16 @@ void GameApi::ShaderApi::link_1(GameApi::SH shader)
 }
 EXPORT GameApi::SH GameApi::ShaderApi::texture_shader()
 {
-  return get_normal_shader_1("comb", "comb", "", "texture:light:light", "texture:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX");
+  return get_normal_shader_1("comb", "comb", "", "texture:light:light", "texture:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX","","");
 }
 EXPORT GameApi::SH GameApi::ShaderApi::texture_array_shader()
 {
-  return get_normal_shader_1("comb", "comb", "", "texture_arr:light:light", "texture_arr:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD TEXTURE_ARRAY COLOR_MIX");
+  return get_normal_shader_1("comb", "comb", "", "texture_arr:light:light", "texture_arr:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD TEXTURE_ARRAY COLOR_MIX","","");
 }
 
 EXPORT GameApi::SH GameApi::ShaderApi::colour_shader()
 {
-  return get_normal_shader_1("comb", "comb", "","colour:light:light", "colour:light:light", true, {-1}, {-1}, {-1}, "EX_COLOR IN_COLOR", "EX_COLOR");
+  return get_normal_shader_1("comb", "comb", "","colour:light:light", "colour:light:light", true, {-1}, {-1}, {-1}, "EX_COLOR IN_COLOR", "EX_COLOR","","");
 }
 EXPORT GameApi::SH GameApi::ShaderApi::shader_choice(EveryApi &ev, int i)
 {
@@ -83,7 +83,7 @@ EXPORT GameApi::SH GameApi::ShaderApi::shader_choice(EveryApi &ev, int i)
 }
 EXPORT GameApi::SH GameApi::ShaderApi::colour_texture_shader()
 {
-  return get_normal_shader_1("comb", "comb", "","colour:texture:light:light", "colour:texture:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX");
+  return get_normal_shader_1("comb", "comb", "","colour:texture:light:light", "colour:texture:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX","","");
 }
 EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
 						  std::string f_format,
@@ -92,7 +92,7 @@ EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
 							 std::string f_comb, bool trans, SFO mod, std::string v_defines, std::string f_defines)
 {
   GameApi::US us1 = { -1 };
-  return get_normal_shader_1(v_format, f_format, g_format, v_comb, f_comb, trans,mod, us1,us1, v_defines, f_defines);
+  return get_normal_shader_1(v_format, f_format, g_format, v_comb, f_comb, trans,mod, us1,us1, v_defines, f_defines,"","");
 }
 EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
 							 std::string f_format,
@@ -102,15 +102,29 @@ EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
 							 bool trans, 
 							 SFO mod, std::string v_defines, std::string f_defines)
 {
-  return get_normal_shader_1(v_format, f_format, g_format, "", "", trans,mod, v_comb, f_comb,v_defines,f_defines);
+  return get_normal_shader_1(v_format, f_format, g_format, "", "", trans,mod, v_comb, f_comb,v_defines,f_defines,"","");
 }
+
+EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
+							 std::string f_format,
+							 std::string g_format,
+							 US v_comb,
+							 US f_comb,
+							 std::string v_shader,
+							 std::string f_shader,
+							 bool trans, 
+							 SFO mod, std::string v_defines, std::string f_defines)
+{
+  return get_normal_shader_1(v_format, f_format, g_format, "", "", trans,mod, v_comb, f_comb,v_defines,f_defines, v_shader, f_shader);
+}
+
 GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format,
 						  std::string f_format,
 						  std::string g_format,
 						  std::string v_comb,
-						    std::string f_comb, bool trans, SFO mod, US v_c, US f_c, std::string v_defines, std::string f_defines)
+						    std::string f_comb, bool trans, SFO mod, US v_c, US f_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
 {
-  SH sh = get_shader_1(v_format, f_format, g_format, v_comb, f_comb,trans,mod,v_c, f_c, v_defines, f_defines);
+  SH sh = get_shader_1(v_format, f_format, g_format, v_comb, f_comb,trans,mod,v_c, f_c, v_defines, f_defines, v_shader, f_shader);
   const int vertex_id = 7;
   bind_attrib_1(sh, 0, "in_Position");
   bind_attrib_1(sh, 1, "in_Normal");
@@ -161,7 +175,7 @@ GameApi::SH GameApi::ShaderApi::get_shader_1(std::string v_format,
 					std::string f_format,
 					   std::string g_format, 
 					   std::string v_comb,
-					     std::string f_comb, bool trans, SFO module, US v_c, US f_c, std::string v_defines, std::string f_defines)
+					     std::string f_comb, bool trans, SFO module, US v_c, US f_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
 {
   ShaderModule *mod = 0;
   if (module.id!=-1)
@@ -185,7 +199,7 @@ GameApi::SH GameApi::ShaderApi::get_shader_1(std::string v_format,
   std::vector<std::string> f_vec;
   combparse(v_comb, v_vec);
   combparse(f_comb, f_vec);
-  p->ids[p->count] = p->seq->GetShader(v_format, f_format, g_format, v_vec, f_vec, trans, mod,vertex_c,fragment_c, v_defines, f_defines);
+  p->ids[p->count] = p->seq->GetShader(v_format, f_format, g_format, v_vec, f_vec, trans, mod,vertex_c,fragment_c, v_defines, f_defines, v_shader, f_shader);
   p->count++;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->shader_privs[p->count-1] = p;

@@ -4957,7 +4957,7 @@ std::vector<GameApiItem*> textureapi_functions()
 			 { "TX", "int" },
 			 { "", "0" },
 			 "Q", "texture_api", "get_tex_coord"));
-#if 0
+#if 1
   vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::prepare,
 			 "tx_prepare",
 			 { "tx" },
@@ -4990,6 +4990,18 @@ std::vector<GameApiItem*> textureapi_functions()
 			 { "TXID" },
 			 { "" },
 			 "BM", "texture_api", "to_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::fbo_api, &GameApi::FrameBufferApi::fbo_ml,
+			 "fbo_id",
+			 { "ev", "mainloop", "sx", "sy" },
+			 { "EveryApi&", "ML", "int", "int" },
+			 { "ev", "", "800", "600" },
+			 "TXID", "fbo_api", "fbo_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::fbo_api, &GameApi::FrameBufferApi::fbo_ml_blit,
+			 "fbo_ml",
+			 { "ev", "txid", "start_x", "end_x", "start_y", "end_y", "z" },
+			 { "EveryApi&", "TXID", "float", "float", "float", "float", "float" },
+			 { "ev", "", "0.0", "800", "0.0", "600", "0.0" },
+			 "ML", "fbo_api", "fbo_ml_blit"));
 
   return vec;
 }
@@ -5243,6 +5255,12 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "FO", "float" },
 			 { "", "0.1" },
 			 "VO", "vector_volume_api", "normal2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::integrate_render,
+			 "fo_itg_render",
+			 { "obj", "sx", "sy", "numsamples" },
+			 { "FO", "int", "int", "int" },
+			 { "", "800", "600", "3" },
+			 "FB", "float_volume_api", "integrate_render"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::vector_volume_api, &GameApi::VectorVolumeApi::setup_normal,
 			 "setup_normal",
 			 { "orig", "v" },
@@ -6053,6 +6071,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "MT", "int", "bool" },
 			 { "ev", "", "80000", "true" },
 			 "MT", "materials_api", "brashmetal"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::marble,
+			 "m_marble",
+			 { "ev", "nxt", "count", "cubesize" },
+			 { "EveryApi&", "MT", "int", "float" },
+			 { "ev", "", "300", "10" },
+			 "MT", "materials_api", "marble"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::web,
 			 "m_web",
 			 { "ev", "nxt" },
@@ -6307,6 +6331,9 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "VA", "PTA" },
 			 { "ev", "", "" },
 			 "ML", "materials_api", "render_instanced2_ml","","Can be used for dynamic changes for pta"));
+#if 0
+  // doesnt work in emscripten
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::prepare,
 			 "pts_prepare",
 			 { "p" },
@@ -6320,6 +6347,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "" },
 			 "ML", "points_api", "render_ml"));
 
+#endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::pts_render,
+			 "pts_render",
+			 { "ev", "pts" },
+			 { "EveryApi&", "PTS" },
+			 { "ev", "" },
+			 "ML", "points_api", "pts_render"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::prepare,
 			 "li_prepare",
 			 { "li" },
@@ -6408,6 +6442,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "float", "float" },
 			 { "ev", "", "8.0", "1.0" },
 			 "ML", "move_api", "all_cursor_keys"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::quake_ml,
+			 "quake_ml",
+			 { "ev", "ml", "speed", "rot_speed" },
+			 { "EveryApi&", "ML", "float", "float" },
+			 { "ev", "", "20.0", "0.03" },
+			 "ML", "move_api", "quake_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_activate_ml,
 			 "key_activate_ml",
 			 { "ev", "ml", "mn", "key", "duration" },
@@ -7095,6 +7135,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "EveryApi&", "ML" },
 			 { "ev", "" },
 			 "ML", "polygon_api", "noise_shader"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::dither_shader,
+			 "p_dither",
+			 { "ev", "mainloop" },
+			 { "EveryApi&", "ML" },
+			 { "ev", "" },
+			 "ML", "polygon_api", "dither_shader"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::light_shader,
 			 "p_light",
 			 { "ev", "mainloop" },
@@ -7297,6 +7343,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "[PT]" },
 			 { "" },
 			 "LI", "lines_api", "point_array"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::li_from_pts,
+			 "li_from_pts",
+			 { "pts1", "dx", "dy", "dz" },
+			 { "PTS", "float", "float", "float" },
+			 { "", "0.0","0.01","0.0" },
+			 "LI", "points_api", "li_from_pts"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, (GameApi::LI (GameApi::LinesApi::*)(GameApi::LI, unsigned int))&GameApi::LinesApi::change_color,
 			 "change_color",
 			 { "li", "color" },
@@ -8013,7 +8065,13 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BM", "float", "float", "float", "float", "float" },
 			 { "", "0.5", "0.125", "0.125", "0.125", "0.125" },
 			 "BM", "bitmap_api", "simple_blur"));
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::memoize,
+			 "bm_memoize",
+			 { "bm" },
+			 { "BM" },
+			 { "" },
+			 "BM", "bitmap_api", "memoize"));
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::world_from_bitmap2,
 			 "bm_world_from_bitmap",
 			 { "ev", "v", "filename", "chars", "dx", "dy", "sx", "sy" },
