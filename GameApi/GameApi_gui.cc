@@ -5201,6 +5201,12 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "O", "float", "float" },
 			 { "", "0.0", "1.0" },
 			 "FO", "float_volume_api", "from_volume"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::waveform_sphere,
+			 "wv_sphere",
+			 { "wave", "r" },
+			 { "WV", "float" },
+			 { "", "200.0" },
+			 "FO", "float_volume_api", "waveform_sphere"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::from_float_bitmap,
 			 "fo_from_fbm",
 			 { "bm", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
@@ -6417,7 +6423,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "int", "int", "float","float", "float" },
 			 { "ev", "", "100", "97", "0.01","-100.0","100.0" },
 			 "ML", "move_api", "rot_y_ml"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::move_z_ml,
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::rot_z_ml,
 			 "rot_z_ml",
 			 { "ev", "ml", "key_forward", "key_backward", "speed","start_z", "end_z" },
 			 { "EveryApi&", "ML", "int", "int", "float","float","float" },
@@ -6571,6 +6577,12 @@ std::vector<GameApiItem*> waveform_functions()
 			 { "WV", "float" },
 			 { "", "0.0" },
 			 "WV", "waveform_api", "move"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::wave_move_y,
+			 "wv_move_y",
+			 { "wave", "delta" },
+			 { "WV", "float" },
+			 { "", "0.0" },
+			 "WV", "float_volume_api", "wave_move_y"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::scale,
 			 "wv_scale",
 			 { "w1", "scale" },
@@ -7762,7 +7774,7 @@ std::vector<GameApiItem*> floatbitmapapi_functions()
 			 { "", "255", "255", "255", "255", "0", "0", "0", "0" },
 			 "BM", "float_bitmap_api", "to_grayscale_color"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::choose_bitmap,
-			 "choose_bitmap",
+			 "fb_choose_bitmap",
 			 { "fb", "bm1", "bm2" },
 			 { "FB", "BM", "BM" },
 			 { "", "", "" },

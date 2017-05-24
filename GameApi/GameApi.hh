@@ -26,6 +26,7 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct SI { int id; };
   struct PLP { int id; };
   struct PLL { int id; };
   struct PLF { int id; };
@@ -1630,7 +1631,8 @@ public:
 	IMPORT FO move(FO f1, float dx, float dy, float dz);
 	IMPORT FO minimum(FO f1, FO f2);
 	IMPORT FO maximum(FO f1, FO f2);
-
+  IMPORT FO waveform_sphere(WV wav, float r);
+  IMPORT WV wave_move_y(WV wav, float delta);
         IMPORT O subvolume(FO f, float start_range, float end_range);
         IMPORT FO smooth(std::vector<FO> vec, float val);
         IMPORT FO interpolate(FO f1, FO f2, float val);

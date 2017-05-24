@@ -64,7 +64,30 @@ public:
       }
     return all;
   }
-  T avg() { return sum()/numsamples; }
+  T avg() {
+    int s = numsamples;
+    Random r;
+    float ss1 = curve.SizeX();
+    float ss2 = curve.SizeY();
+    float ss3 = curve.SizeZ();
+    T all = 0;
+    int count = 0;
+    for(int i=0;i<s;i++)
+      {
+	float p1 = double(r.next())/r.maximum();
+	float p2 = double(r.next())/r.maximum();
+	float p3 = double(r.next())/r.maximum();
+	p1*=ss1;
+	p2*=ss2;
+	p3*=ss3;
+	T val = curve.get(p1,p2,p3);
+	if (val>0.1) {
+	  count++;
+	  all+=val;
+	}
+      }
+    return all/count;
+  }
   T integrate() {
     float s1 = curve.SizeX();
     float s2 = curve.SizeY();
@@ -243,4 +266,64 @@ GameApi::FB GameApi::FloatVolumeApi::integrate_render(FO obj, int sx, int sy, in
 {
   FloatVolumeObject *ff = find_float_volume(e, obj);
   return add_float_bitmap(e, new RenderVolume(*ff, sx,sy,numsamples));
+}
+
+#if 0
+float hemisphere_integrator(Point p, Vector n, float radius, FloatVolumeObject *objs, int numsamples)
+{
+  Random r;
+  int s = numsamples;
+  for(int i=0;i<s;i++)
+    {
+      float r = radius * double(r.next())/r.maximum();
+      float alfa = 
+    }
+}
+#endif
+
+class WaveformSphere : public FloatVolumeObject
+{
+public:
+  WaveformSphere(Waveform *wv, float r) : wv(wv), r(r) { }
+  float FloatValue(Point p) const
+  {
+    float rr = p.Dist();
+    rr/=r;
+    if (rr<0.0) return 0.0;
+    if (rr>1.0) return 0.0;
+    rr*=wv->Length();
+    float val = wv->Index(rr);
+    return val;
+  }
+
+private:
+  Waveform *wv;
+  float r;
+};
+
+GameApi::FO GameApi::FloatVolumeApi::waveform_sphere(WV wav, float r)
+{
+  Waveform *wv = find_waveform(e, wav);
+  return add_float_volume(e, new WaveformSphere(wv,r));
+}
+
+class WVMoveY : public Waveform
+{
+public:
+  WVMoveY(Waveform *next, float delta) : next(next), delta(delta) { }
+  float Length() const { return next->Length(); }
+  float Min() const { return delta + next->Min(); }
+  float Max() const { return delta + next->Max(); }
+  float Index(float val) const
+  {
+    return delta + next->Index(val);
+  }
+private:
+  Waveform *next;
+  float delta;
+};
+GameApi::WV GameApi::FloatVolumeApi::wave_move_y(WV wav, float delta)
+{
+  Waveform *wv = find_waveform(e, wav);
+  return add_waveform(e, new WVMoveY(wv, delta));
 }

@@ -1027,4 +1027,28 @@ public:
   virtual int texture() const=0;
 };
 
+class WorldSpec
+{
+public:
+  virtual int NumItems() const=0;
+  virtual int PosX(int i) const=0;
+  virtual int PosY(int i) const=0;
+  virtual int Item(int i) const=0;
+};
+
+class Cursor
+{
+public:
+  virtual void update()=0;
+  virtual int PosX() const=0;
+  virtual int PosY() const=0;
+};
+
+class ShaderI
+{
+public:
+  virtual std::string funcname() const=0;
+  virtual std::string shader() const=0;
+};
+
 #endif

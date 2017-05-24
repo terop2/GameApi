@@ -332,3 +332,42 @@ GameApi::WV GameApi::WaveformApi::cubic(float f_0, float f_1, float df_0, float 
 {
   return add_waveform(e, new CubicInterpolateWaveform(f_0, f_1, df_0, df_1, min_y, max_y));
 }
+
+class DerivativeWaveform : public Waveform
+{
+public:
+  DerivativeWaveform(Waveform *wv, float delta) : wv(wv), delta(delta) { }
+  virtual float Length() const { return wv->Length(); }
+  virtual float Min() const { return wv->Min(); }
+  virtual float Max() const { return wv->Max(); }
+  virtual float Index(float val) const
+  {
+    float v1 = wv->Index(val+delta);
+    float v2 = wv->Index(val);
+    float vv = v1-v2;
+    vv/=delta;
+    return vv;
+  }
+
+private:
+  Waveform *wv;
+  float delta;
+};
+
+class IntegrateWaveform : public Waveform
+{
+public:
+  IntegrateWaveform(Waveform *wv, float delta) : wv(wv), delta(delta) { }
+  virtual float Length() const { return wv->Length(); }
+  virtual float Min() const { return wv->Min(); }
+  virtual float Max() const { return wv->Max(); }
+  virtual float Index(float val) const
+  {
+    float v = wv->Index(val);
+    v*=delta;
+    return v;
+  }
+private:
+  Waveform *wv;
+  float delta;
+};
