@@ -1058,7 +1058,7 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 		  std::stringstream sw;
 		  sw << val;
 		  p = sw.str();
-		  std::cout << "Num From UID: " << p << std::endl;
+		  //std::cout << "Num From UID: " << p << std::endl;
 		}
 	      // ARRAYTODO: HOW TO HANDLE ARRAY RETURN VALUES
 	      if (p.size()>1 && p[0]=='[' && p[p.size()-1]==']')
@@ -1105,10 +1105,10 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 	      std::string name = item->Name(0);
 	      if (name == line->module_name)
 		{
-		  std::cout << "Execute: " << name << std::endl;
+		  //std::cout << "Execute: " << name << std::endl;
 		  int val = item->Execute(e, ev, params, exeenv);
 		  item->EndEnv(exeenv);
-		  std::cout << "Execute " << name << " returns " << val << std::endl;
+		  //std::cout << "Execute " << name << " returns " << val << std::endl;
 		  return val;
 		}
 	    }

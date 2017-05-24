@@ -1300,6 +1300,11 @@ public:
 private:
   int id;
 };
+ShaderI *find_shader(GameApi::Env &e, GameApi::SI si)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->shader_interface[si.id];
+}
 TextureID *find_txid(GameApi::Env &e, GameApi::TXID id)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1618,6 +1623,15 @@ NDim<float,Point> *find_dim(GameApi::Env &e, GameApi::MV mv)
   return env->dims[mv.id];
 }
 
+GameApi::SI add_shader(GameApi::Env &e, ShaderI *sid)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->shader_interface.push_back(sid);
+  GameApi::SI c;
+  c.id = env->shader_interface.size()-1;
+  return c;
+
+}
 GameApi::PT add_point(GameApi::Env &e, float x, float y, float z)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -9733,3 +9747,44 @@ GameApi::ML GameApi::MovementNode::quake_ml(EveryApi &ev, ML ml,float speed, flo
   MainLoopItem *mml = find_main_loop(e,ml);
   return add_main_loop(e, new QuakeML(e,ev, mml, speed, rot_speed));
 }
+
+#if 0
+class ModifyWorld : public MainLoopItem, public WorldSpec
+{
+public:
+  ModifyWorld(Cursor &c) : c(c) { }
+  virtual int NumItems() const { return item.size(); }
+  virtual int PosX(int i) const { return pos_x[i]; }
+  virtual int PosY(int i) const { return pos_y[i]; }
+  virtual int Item(int i) const { return item[i]; }
+
+  virtual void execute(MainLoopEnv &e)
+  {
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    c.update();
+    static const char *letters = "qwertyuiopasdfghjklzxcvbnm";
+    int s = strlen(letters);
+    int value = -1;
+    for(int i=0;i<s;i++)
+      {
+	if (e.ch==letters[i]) {
+	  value = i;
+	}
+      }
+    if (value != -1 && e.type==0x300)
+      {
+	int p_x = c.PosX();
+	int p_y = c.PosY();
+	pos_x.push_back(p_x);
+	pos_y.push_back(p_y);
+	item.push_back(value);
+      }
+  }
+private:
+  std::vector<int> pos_x;
+  std::vector<int> pos_y;
+  std::vector<int> item;
+};
+#endif
