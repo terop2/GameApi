@@ -2877,3 +2877,303 @@ GameApi::BB GameApi::BoolBitmapApi::black_white_dithering(FB bm)
   return add_bool_bitmap(e, new Dithering(*val));
 }
 
+class XBitmap : public ContinuousBitmap<float>
+{
+public:
+  XBitmap(float sx, float sy) : sx(sx), sy(sy) {}
+  void Prepare() { }
+  float SizeX() const { return sx; }
+  float SizeY() const { return sy; }
+  float Map(float x, float y) const
+  {
+    return x;
+  }
+private:
+  float sx,sy;
+};
+class CBitmap : public ContinuousBitmap<float>
+{
+public:
+  CBitmap(float sx, float sy, float val) : sx(sx), sy(sy), val(val) {}
+  void Prepare() { }
+  float SizeX() const { return sx; }
+  float SizeY() const { return sy; }
+  float Map(float x, float y) const
+  {
+    return val;
+  }
+private:
+  float sx,sy, val;
+};
+
+GameApi::CFB GameApi::FloatBitmapApi::C_bitmap(float sx, float sy, float c)
+{
+  return add_cont_float(e, new CBitmap(sx,sy,c));
+}
+GameApi::CFB GameApi::FloatBitmapApi::X_bitmap(float sx, float sy)
+{
+  return add_cont_float(e, new XBitmap(sx,sy));
+}
+
+class YBitmap : public ContinuousBitmap<float>
+{
+public:
+  YBitmap(float sx, float sy) : sx(sx), sy(sy) {}
+  void Prepare() { }
+  float SizeX() const { return sx; }
+  float SizeY() const { return sy; }
+  float Map(float x, float y) const
+  {
+    return y;
+  }
+private:
+  float sx,sy;
+
+};
+
+GameApi::CFB GameApi::FloatBitmapApi::Y_bitmap(float sx, float sy)
+{
+  return add_cont_float(e, new YBitmap(sx,sy));
+}
+
+class MulBitmap_c : public ContinuousBitmap<float>
+{
+public:
+  MulBitmap_c(std::vector<ContinuousBitmap<float>* > a1) : a1(a1) { }
+  void Prepare() {
+    int s = a1.size();
+    for(int i=0;i<s;i++)
+      a1[i]->Prepare();
+  }
+  float SizeX() const {
+    int s = a1.size();
+    float sx = 100000.0;
+    for(int i=0;i<s;i++)
+      {
+	float ssx = a1[i]->SizeX();
+	if (sx>ssx) sx=ssx;
+      }
+    return sx;
+  }
+  float SizeY() const {
+    int s = a1.size();
+    float sy = 100000.0;
+    for(int i=0;i<s;i++)
+      {
+	float ssy = a1[i]->SizeY();
+	if (sy>ssy) sy=ssy;
+      }
+    return sy;
+   }
+  float Map(float x, float y) const
+  {
+    int s = a1.size();
+    float val = 1.0;
+    for(int i=0;i<s;i++)
+      {
+	val*=a1[i]->Map(x,y);
+      }
+    return val;
+  }
+private:
+  std::vector<ContinuousBitmap<float>*> a1;
+};
+
+class AddBitmap_c : public ContinuousBitmap<float>
+{
+public:
+  AddBitmap_c(std::vector<ContinuousBitmap<float>* > a1) : a1(a1) { }
+  void Prepare() {
+    int s = a1.size();
+    for(int i=0;i<s;i++)
+      a1[i]->Prepare();
+  }
+  float SizeX() const {
+    int s = a1.size();
+    float sx = 100000.0;
+    for(int i=0;i<s;i++)
+      {
+	float ssx = a1[i]->SizeX();
+	if (sx>ssx) sx=ssx;
+      }
+    return sx;
+  }
+  float SizeY() const {
+    int s = a1.size();
+    float sy = 100000.0;
+    for(int i=0;i<s;i++)
+      {
+	float ssy = a1[i]->SizeY();
+	if (sy>ssy) sy=ssy;
+      }
+    return sy;
+   }
+  float Map(float x, float y) const
+  {
+    int s = a1.size();
+    float val = 1.0;
+    for(int i=0;i<s;i++)
+      {
+	val+=a1[i]->Map(x,y);
+      }
+    return val;
+  }
+private:
+  std::vector<ContinuousBitmap<float>*> a1;
+};
+
+GameApi::CFB GameApi::FloatBitmapApi::MulBitmap(std::vector<CFB> a1)
+{
+  int s = a1.size();
+  std::vector<ContinuousBitmap<float> *> vec;
+  for(int i=0;i<s;i++)
+    {
+      vec.push_back(find_cont_float(e, a1[i]));
+    }
+  return add_cont_float(e, new MulBitmap_c(vec));
+}
+GameApi::CFB GameApi::FloatBitmapApi::AddBitmap(std::vector<CFB> a1)
+{
+  int s = a1.size();
+  std::vector<ContinuousBitmap<float> *> vec;
+  for(int i=0;i<s;i++)
+    {
+      vec.push_back(find_cont_float(e, a1[i]));
+    }
+  return add_cont_float(e, new AddBitmap_c(vec));
+}
+
+class EqualizerBitmap : public ContinuousBitmap<bool>
+{
+public:
+  EqualizerBitmap(ContinuousBitmap<float> &a1,
+		  ContinuousBitmap<float> &a2) : a1(a1), a2(a2) { }
+  void Prepare() {
+    a1.Prepare();
+    a2.Prepare();
+  }
+
+  float SizeX() const { return std::min(a1.SizeX(), a2.SizeX()); }
+  float SizeY() const { return std::min(a1.SizeY(), a2.SizeY()); }
+  bool Map(float x, float y) const
+  {
+    return a1.Map(x,y) < a2.Map(x,y);
+  }
+private:
+  ContinuousBitmap<float> &a1;
+  ContinuousBitmap<float> &a2;
+};
+GameApi::CBB GameApi::FloatBitmapApi::Equalizer(CFB a1, CFB a2)
+{
+  ContinuousBitmap<float> *aa1 = find_cont_float(e, a1);
+  ContinuousBitmap<float> *aa2 = find_cont_float(e, a2);
+  return add_cont_bool(e, new EqualizerBitmap(*aa1, *aa2));
+}
+
+class SampleContFloatBitmap : public Bitmap<float>
+{
+public:
+  SampleContFloatBitmap(ContinuousBitmap<float> &bm, int sx, int sy, float start_x, float end_x, float start_y, float end_y, float mult) : bm(bm), sx(sx), sy(sy), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y),mult(mult) { }
+  void Prepare() { bm.Prepare(); }
+  int SizeX() const { return sx; }
+  int SizeY() const { return sy; }
+  float Map(int x, int y) const
+  {
+    float xx = x*(end_x-start_x)/sx + start_x;
+    float yy = y*(end_y-start_y)/sy + start_y;
+    float val = bm.Map(xx,yy);
+    val*=mult;
+    return val;
+  }
+private:
+  ContinuousBitmap<float> &bm;
+  int sx,sy;
+  float start_x, end_x;
+  float start_y, end_y;
+  float mult;
+};
+
+class SampleContBoolBitmap : public Bitmap<bool>
+{
+public:
+  SampleContBoolBitmap(ContinuousBitmap<bool> &bm, int sx, int sy, float start_x, float end_x, float start_y, float end_y) : bm(bm), sx(sx), sy(sy), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y) { }
+  void Prepare() { bm.Prepare(); }
+  int SizeX() const { return sx; }
+  int SizeY() const { return sy; }
+  bool Map(int x, int y) const
+  {
+    float xx = x*(end_x-start_x)/sx + start_x;
+    float yy = y*(end_y-start_y)/sy + start_y;
+    bool val = bm.Map(xx,yy);
+    return val;
+  }
+private:
+  ContinuousBitmap<bool> &bm;
+  int sx,sy;
+  float start_x, end_x;
+  float start_y, end_y;
+};
+class SqrtContFloat_c : public ContinuousBitmap<float>
+{
+public:
+  SqrtContFloat_c(ContinuousBitmap<float> &bm) : bm(bm) {}
+  virtual float SizeX() const { return bm.SizeX(); }
+  virtual float SizeY() const { return bm.SizeY(); }
+  virtual float Map(float x, float y) const
+  {
+    return sqrt(bm.Map(x,y));
+  }
+  virtual void Prepare()
+  {
+  }
+private:
+  ContinuousBitmap<float> &bm;
+};
+GameApi::CFB GameApi::FloatBitmapApi::SqrtContFloat(CFB a1)
+{
+  ContinuousBitmap<float> *bm = find_cont_float(e, a1);
+  return add_cont_float(e, new SqrtContFloat_c(*bm));
+}
+
+GameApi::FB GameApi::FloatBitmapApi::SampleContFloat(CFB a1, float start_x, float end_x, float start_y, float end_y, int sx, int sy, float mult)
+{
+  ContinuousBitmap<float> *bm = find_cont_float(e, a1);
+  return add_float_bitmap(e, new SampleContFloatBitmap(*bm, sx,sy, start_x, end_x, start_y, end_y, mult));
+}
+GameApi::BB GameApi::FloatBitmapApi::SampleContBool(CBB a1, float start_x, float end_x, float start_y, float end_y, int sx, int sy)
+{
+  ContinuousBitmap<bool> *bm = find_cont_bool(e, a1);
+  return add_bool_bitmap(e, new SampleContBoolBitmap(*bm, sx,sy, start_x, end_x, start_y, end_y));
+}
+
+class FuncCont : public ContinuousBitmap<float>
+{
+public:
+  FuncCont(double (*fptr)(double), ContinuousBitmap<float> &arg) : fptr(fptr), arg(arg) { }
+  void Prepare() {}
+  virtual float SizeX() const { return arg.SizeX(); }
+  virtual float SizeY() const { return arg.SizeY(); }
+  virtual float Map(float x, float y) const
+  {
+    return fptr(arg.Map(x,y));
+  }
+private:
+  double (*fptr)(double);
+  ContinuousBitmap<float> &arg;
+};
+
+GameApi::CFB GameApi::FloatBitmapApi::Sin(CFB arg)
+{
+  ContinuousBitmap<float> *arg2 = find_cont_float(e, arg);
+  return add_cont_float(e, new FuncCont(&sin, *arg2));					
+}
+GameApi::CFB GameApi::FloatBitmapApi::Cos(CFB arg)
+{
+  ContinuousBitmap<float> *arg2 = find_cont_float(e, arg);
+  return add_cont_float(e, new FuncCont(&cos, *arg2));					
+}
+GameApi::CFB GameApi::FloatBitmapApi::Tan(CFB arg)
+{
+  ContinuousBitmap<float> *arg2 = find_cont_float(e, arg);
+  return add_cont_float(e, new FuncCont(&tan, *arg2));				
+}

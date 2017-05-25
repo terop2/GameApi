@@ -4161,6 +4161,8 @@ MACRO(GameApi::PA)
 MACRO(GameApi::PLF)
 MACRO(GameApi::PLL)
 MACRO(GameApi::PLP)
+MACRO(GameApi::CBB)
+MACRO(GameApi::CFB)
 #undef MACRO
 
 
@@ -8156,8 +8158,82 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "CBM", "float", "float", "float" },
 			 { "", "0.5", "0.5", "0.0" },
 			 "CBM", "cont_bitmap_api", "rotate"));
-  
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::C_bitmap,
+			 "cfb_c",
+			 { "sx", "sy", "C" },
+			 { "float","float", "float" },
+			 { "100.0", "100.0", "1.0" },
+			 "CFB", "float_bitmap_api", "C_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::X_bitmap,
+			 "cfb_x",
+			 { "sx", "sy" },
+			 { "float", "float" },
+			 { "300.0", "300.0" },
+			 "CFB", "float_bitmap_api", "X_bitmap"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::Y_bitmap,
+			 "cfb_y",
+			 { "sx", "sy" },
+			 { "float", "float" },
+			 { "300.0", "300.0" },
+			 "CFB", "float_bitmap_api", "Y_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::AddBitmap,
+			 "cfb_add",
+			 { "vec" },
+			 { "[CFB]" },
+			 { "" },
+			 "CFB", "float_bitmap_api", "AddBitmap"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::MulBitmap,
+			 "cfb_mul",
+			 { "vec" },
+			 { "[CFB]" },
+			 { "" },
+			 "CFB", "float_bitmap_api", "MulBitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::SqrtContFloat,
+			 "cfb_sqrt",
+			 { "val" },
+			 { "CFB" },
+			 { "" },
+			 "CFB", "float_bitmap_api", "SqrtContFloat"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::Sin,
+			 "cfb_sin",
+			 { "val" },
+			 { "CFB" },
+			 { "" },
+			 "CFB", "float_bitmap_api", "Sin"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::Cos,
+			 "cfb_cos",
+			 { "val" },
+			 { "CFB" },
+			 { "" },
+			 "CFB", "float_bitmap_api", "Cos"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::Tan,
+			 "cfb_tan",
+			 { "val" },
+			 { "CFB" },
+			 { "" },
+			 "CFB", "float_bitmap_api", "Tan"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::SampleContFloat,
+			 "cfb_sample",
+			 { "bm", "start_x", "end_x", "start_y", "end_y", "sx", "sy", "mult" },
+			 { "CFB", "float", "float", "float", "float", "int", "int", "float" },
+			 { "", "-300.0", "300.0", "-300.0", "300.0", "100", "100", "1.0" },
+			 "FB", "float_bitmap_api", "SampleContFloat"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::Equalizer,
+			 "cfb_equalizer",
+			 { "a1", "a2" },
+			 { "CFB", "CFB" },
+			 { "", "" },
+			 "CBB", "float_bitmap_api", "Equalizer"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::SampleContBool,
+			 "cbb_sample",
+			 { "bm", "start_x", "end_x", "start_y", "end_y", "sx", "sy" },
+			 { "CBB", "float", "float", "float", "float", "int", "int" },
+			 { "", "-300.0", "300.0", "-300.0", "300.0", "100", "100" },
+			 "BB", "float_bitmap_api", "SampleContBool"));
+  
   return vec;
 }
 

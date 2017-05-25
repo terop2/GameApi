@@ -576,6 +576,8 @@ struct EnvImpl
   std::vector<FacesInPlane*> plane_faces;
   std::map<int, TextureID*> txids;
   std::vector<ShaderI*> shader_interface;
+  std::vector<ContinuousBitmap<float>*> cont_floats;
+  std::vector<ContinuousBitmap<bool>*> cont_bools;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -899,6 +901,8 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::CBB add_cont_bool(GameApi::Env &e, ContinuousBitmap<bool> *bm);
+GameApi::CFB add_cont_float(GameApi::Env &e, ContinuousBitmap<float> *bm);
 GameApi::SI add_shader(GameApi::Env &e, ShaderI *shid);
 GameApi::TXID add_txid(GameApi::Env &e, TextureID *txid);
 GameApi::PLP add_plane_points(GameApi::Env &e, PointsInPlane *pl);
@@ -1017,6 +1021,8 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+ContinuousBitmap<float> *find_cont_float(GameApi::Env &e, GameApi::CFB bm);
+ContinuousBitmap<bool> *find_cont_bool(GameApi::Env &e, GameApi::CBB bm);
 ShaderI *find_shader(GameApi::Env &e, GameApi::SI id);
 TextureID *find_txid(GameApi::Env &e, GameApi::TXID id);
 PointsInPlane *find_plane_points(GameApi::Env &e, GameApi::PLP plane);
