@@ -26,6 +26,8 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct CBB { int id; };
+  struct CFB { int id; };
   struct SI { int id; };
   struct PLP { int id; };
   struct PLL { int id; };
@@ -2565,7 +2567,21 @@ public: // values are [0.0..1.0]
   IMPORT BB to_bool_mod(FB f, float mod_value);
 
   IMPORT TXID to_texid(FB bm);
+
+  IMPORT CFB C_bitmap(float sx, float sy, float val);
+  IMPORT CFB X_bitmap(float sx, float sy);
+  IMPORT CFB Y_bitmap(float sx, float sy);
+  IMPORT CFB MulBitmap(std::vector<CFB> vec);
+  IMPORT CFB AddBitmap(std::vector<CFB> vec);
+  IMPORT CFB SqrtContFloat(CFB val);
+  IMPORT CFB Sin(CFB val);
+  IMPORT CFB Cos(CFB val);
+  IMPORT CFB Tan(CFB val);
+  IMPORT FB SampleContFloat(CFB a1, float start_x,float end_x,float start_y,float end_y,int sx,int sy, float mult);
+  IMPORT BB SampleContBool(CBB a1, float start_x,float end_x,float start_y,float end_y,int sx,int sy);
+  IMPORT CBB Equalizer(CFB,CFB);
   
+
   IMPORT int size_x(FB bm);
   IMPORT int size_y(FB bm);
   IMPORT float floatvalue(FB bm, int x, int y);

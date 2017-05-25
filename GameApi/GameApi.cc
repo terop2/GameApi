@@ -1300,6 +1300,18 @@ public:
 private:
   int id;
 };
+ContinuousBitmap<float> *find_cont_float(GameApi::Env &e, GameApi::CFB bm)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->cont_floats[bm.id];
+
+}
+ContinuousBitmap<bool> *find_cont_bool(GameApi::Env &e, GameApi::CBB bm)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->cont_bools[bm.id];
+
+}
 ShaderI *find_shader(GameApi::Env &e, GameApi::SI si)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1623,6 +1635,24 @@ NDim<float,Point> *find_dim(GameApi::Env &e, GameApi::MV mv)
   return env->dims[mv.id];
 }
 
+GameApi::CFB add_cont_float(GameApi::Env &e, ContinuousBitmap<float> *bm)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->cont_floats.push_back(bm);
+  GameApi::CFB c;
+  c.id = env->cont_floats.size()-1;
+  return c;
+
+}
+GameApi::CBB add_cont_bool(GameApi::Env &e, ContinuousBitmap<bool> *bm)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->cont_bools.push_back(bm);
+  GameApi::CBB c;
+  c.id = env->cont_bools.size()-1;
+  return c;
+
+}
 GameApi::SI add_shader(GameApi::Env &e, ShaderI *sid)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -9747,6 +9777,8 @@ GameApi::ML GameApi::MovementNode::quake_ml(EveryApi &ev, ML ml,float speed, flo
   MainLoopItem *mml = find_main_loop(e,ml);
   return add_main_loop(e, new QuakeML(e,ev, mml, speed, rot_speed));
 }
+
+
 
 #if 0
 class ModifyWorld : public MainLoopItem, public WorldSpec
