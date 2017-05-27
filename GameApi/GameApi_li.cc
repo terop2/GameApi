@@ -570,6 +570,7 @@ EXPORT void GameApi::LinesApi::render(LLA l)
   glDrawArrays(GL_LINES, 0, array->numpoints);
 #ifndef VAO
   glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(4);
   glDisableVertexAttribArray(2);
 #endif
 }
