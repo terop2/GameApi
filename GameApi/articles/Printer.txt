@@ -1,0 +1,13 @@
+
+Steps required to bring the models to 3d printers:
+ 1) create a model (of type P) with the builder
+ 2) save it to a file with save_model
+ 3) pass the file to netfabb
+ 4) pass the file to printer's slicer software
+ 5) print
+
+Useful primitives for printing are at least:
+ 1) static_instancing
+ 2) cube/sphere/cone/torus
+ 3) or_elem
+ 

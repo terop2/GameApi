@@ -375,7 +375,7 @@ EXPORT GameApi::LI GameApi::LinesApi::border_from_bool_bitmap(GameApi::BB b, flo
 class LI_Render : public MainLoopItem
 {
 public:
-  LI_Render(GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LLA l) : ev(ev), api(api), l(l) { }
+  LI_Render(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LLA l) : env(e), ev(ev), api(api), l(l) { }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -383,11 +383,20 @@ public:
     GameApi::SH sh;
     sh.id = e.sh_color;
     ev.shader_api.use(sh);
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "time", e.time);
+
     api.render(l);
   }
   int shader_id() { return -1; }
 
 private:
+  GameApi::Env &env;
   GameApi::EveryApi &ev;
   GameApi::LinesApi &api;
   GameApi::LLA l;
@@ -467,7 +476,7 @@ private:
 
 EXPORT GameApi::ML GameApi::LinesApi::render_ml(EveryApi &ev, LLA l)
 {
-  return add_main_loop(e, new LI_Render(ev, *this, l));
+  return add_main_loop(e, new LI_Render(e, ev, *this, l));
 }
 EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml(EveryApi &ev, LLA l, PTA pta)
 {
