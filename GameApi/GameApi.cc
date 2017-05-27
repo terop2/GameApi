@@ -3496,6 +3496,8 @@ public:
       {
     GameApi::SH s1;
     s1.id = env.sh_texture;
+    GameApi::SH s11;
+    s11.id = env.sh_texture_2d;
     GameApi::SH s2;
     s2.id = env.sh_array_texture;
     GameApi::SH s3;
@@ -3511,6 +3513,9 @@ public:
     ev.shader_api.use(s1);
     ev.shader_api.set_var(s1, "in_MV", mat2);
     ev.shader_api.set_var(s1, "in_iMV", mat2i);
+    ev.shader_api.use(s11);
+    ev.shader_api.set_var(s11, "in_MV", mat2);
+    ev.shader_api.set_var(s11, "in_iMV", mat2i);
     ev.shader_api.use(s2);
     ev.shader_api.set_var(s2, "in_MV", mat2);
     ev.shader_api.set_var(s2, "in_iMV", mat2i);
@@ -9746,7 +9751,28 @@ public:
     GameApi::M trans2 = ev.matrix_api.trans(0.0,0.0,-400.0);
     GameApi::M scale = ev.matrix_api.scale(1.0,1.0,-1.0);
     GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(trans,rot_y2),trans2),scale));
+
+    GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
+    GameApi::SH s1;
+    s1.id = e.sh_texture;
+    GameApi::SH s2;
+    s2.id = e.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = e.sh_color;
+
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", res);
+    ev.shader_api.set_var(s1, "in_iMV", mat2i);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", res);
+    ev.shader_api.set_var(s2, "in_iMV", mat2i);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", res);
+    ev.shader_api.set_var(s3, "in_iMV", mat2i);
+
+    
     eee.in_MV = find_matrix(env, res);
+  
     next->execute(eee);
     
 
