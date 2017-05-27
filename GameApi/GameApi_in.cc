@@ -45,8 +45,8 @@ void GameApi::InteractionApi::quake_movement_frame(EveryApi &ev, float &pos_x, f
  float delta = ev.mainloop_api.get_delta_time()*7.0;
   if (data.backward) { pos_y += delta*speed_y; pos_x+=delta*speed_x; }
   if (data.forward) { pos_y -= delta*speed_y; pos_x-=delta*speed_x; }
-  if (data.left) { rot_y -= delta*rot_speed; }
-  if (data.right) { rot_y += delta*rot_speed; }
+  if (data.left) { rot_y += delta*rot_speed; }
+  if (data.right) { rot_y -= delta*rot_speed; }
 
   speed_x = speed*cos(rot_y+3.14159/2.0);
   speed_y = speed*sin(rot_y+3.14159/2.0);
