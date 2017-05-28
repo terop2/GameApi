@@ -528,6 +528,12 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
 #ifdef VAO
   glBindVertexArray(0);
 #endif
+  glDisableVertexAttribArray(vertex_id);
+#ifdef VAO
+  glDisableVertexAttribArray(4);
+  glDisableVertexAttribArray(2);
+#endif
+  
   return add_point_array3(e,arr);
 }
 class PTSFromFloatVolume : public PointsApiPoints
@@ -632,6 +638,7 @@ EXPORT void GameApi::PointsApi::render(GameApi::PTA array)
 #ifndef VAO
   glDisableVertexAttribArray(0);
   glDisableVertexAttribArray(2);
+  glDisableVertexAttribArray(4);
 #endif
   
 }
@@ -1199,4 +1206,46 @@ GameApi::ML GameApi::PointsApi::pts_render(EveryApi &ev, PTS pts)
   LLA I4=ev.lines_api.prepare(I3);
   ML I5=ev.lines_api.render_ml(ev,I4);
   return I5;
+}
+
+class MemoizePTS : public PointsApiPoints
+{
+public:
+  MemoizePTS(PointsApiPoints *next) : next(next) {}
+  void HandleEvent(MainLoopEvent &event) { }
+  bool Update(MainLoopEnv &e) { return false; }
+  int NumPoints() const { return next->NumPoints(); }
+  Point Pos(int i) const
+  {
+    std::map<int,Point>::const_iterator ii = mymap.find(i);
+    if (ii!=mymap.end())
+      {
+	return (*ii).second;
+      }
+    Point p = next->Pos(i);
+    mymap[i] = p;
+    return p;
+  }
+  unsigned int Color(int i) const
+  {
+    std::map<int,unsigned int>::const_iterator ii = mymap_color.find(i);
+    if (ii!=mymap_color.end())
+      {
+	return (*ii).second;
+      }
+    unsigned int p = next->Color(i);
+    mymap_color[i] = p;
+    return p;
+
+  }
+private:
+  PointsApiPoints *next;
+  mutable std::map<int, Point> mymap;
+  mutable std::map<int, unsigned int> mymap_color;
+};
+
+GameApi::PTS GameApi::PointsApi::memoize_pts(PTS pts)
+{
+  PointsApiPoints *p = find_pointsapi_points(e, pts);
+  return add_points_api_points(e, new MemoizePTS(p));
 }

@@ -1194,11 +1194,14 @@ public:
   struct PHI { PH phy; int id; };
   PH empty();
   PHI anchor_point(PH phy, PT pos);
+  PH anchor_point2(PH phy, PT pos) { PHI pp = anchor_point(phy,pos); return pp.phy; }
   PH ext_force(PH phy, int point, V dir);
   PH ext_force_all(PH phy, V dir);
   PH anchor_link(PH phy, int p1, int p2, float dist);
   PH force_obj(PH phy, O obj,
 	       V dir);
+  // PH gameover_obj(PH phy, O obj, int point)
+  // PH keypress_force(PH phy, int point, V dir, int key);
   //PH array(PH *arr, int size);
 
   int num_anchors(PH phy);
@@ -1208,6 +1211,7 @@ public:
 
   PTS init_points(PH pos);
   void step_points(PH phy, PTA prev_frame, float timestep);
+  PTS physics_action(EveryApi &ev, PH phy);
 private:
   Env &e;
 };
@@ -1349,6 +1353,7 @@ public:
   IMPORT ML wasd(EveryApi &ev, ML ml, MN w, MN a, MN s, MN d, float duration);
   IMPORT ML quake_ml(EveryApi &ev, ML ml, float speed, float rot_speed);
   IMPORT ML key_printer_ml(ML ml);
+  IMPORT ML local_move(EveryApi &ev, ML inner_ml, PTS center_points);
   IMPORT CMD default_cmds(float dx, float dy, float dz);
   IMPORT CMD cmd_repeat(CMD cmds, std::string repeat, float dx, float dy, float dz);
   IMPORT CMD cmd_rotate(CMD cmds, float v_x, float v_y, float v_z, float angle, float delta_angle);
@@ -2807,6 +2812,7 @@ public:
   IMPORT float pos_z(PTS p, int index);
   IMPORT ML pts_render(EveryApi &ev, PTS pts);
   IMPORT LI li_from_pts(PTS pts, float dx, float dy, float dz);
+  IMPORT PTS memoize_pts(PTS pts);
 private:
   PointsApi(const PointsApi&);
   void operator=(const PointsApi&);

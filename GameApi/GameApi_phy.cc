@@ -204,6 +204,52 @@ GameApi::PTS GameApi::PhysicsApi::init_points(PH phy)
   PointsApiPoints *pts = new PointsPhysics(node);
   return add_points_api_points(e, pts);
 }
+class PhysicsAction : public PointsApiPoints
+{
+public:
+  PhysicsAction(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::PH phy) : e(e), ev(ev), phy(phy) { firsttime = true; points2.id=-1; }
+  // TODO, keyboard handling needed in physics area too
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) {
+    if (firsttime) {
+      points = ev.physics_api.init_points(phy);
+      points2 = ev.points_api.prepare(points);
+      firsttime = false;
+    } else
+      ev.physics_api.step_points(phy, points2, e.delta_time);
+    return true;
+  }
+  virtual int NumPoints() const
+  {
+    if (points2.id==-1) return 0;
+    PointArray3 *pa = find_point_array3(e, points2);
+    return pa->numpoints;
+  }
+  virtual Point Pos(int i) const
+  {
+    if (points2.id==-1) return Point(0.0,0.0,0.0);
+    PointArray3 *pa = find_point_array3(e, points2);
+    return Point(pa->array[i*3+0], pa->array[i*3+1], pa->array[i*3+2]);
+  }
+  virtual unsigned int Color(int i) const
+  {
+    if (points2.id==-1) return 0xffffffff;
+    PointArray3 *pa = find_point_array3(e, points2);
+    return pa->color[i];
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  GameApi::PH phy;
+  bool firsttime;
+  GameApi::PTS points;
+  GameApi::PTA points2;
+};
+GameApi::PTS GameApi::PhysicsApi::physics_action(EveryApi &ev, PH phy)
+{
+  return add_points_api_points(e, new PhysicsAction(e, ev, phy));
+}
+
 
 void GameApi::PhysicsApi::step_points(PH phy, PTA prev_frame, float timestep)
 {
@@ -220,7 +266,7 @@ void GameApi::PhysicsApi::step_points(PH phy, PTA prev_frame, float timestep)
 	  sum += node->Force(i,f);
 	}
       Point p(arr->array[i*3+0], arr->array[i*3+1], arr->array[i*3+2]);
-      //std::cout << "Physics begin: " << p << std::endl;
+      std::cout << "Physics begin: " << p << std::endl;
       int fnn = node->NumForceVolumes();
       for(int ff=0;ff<fnn;ff++)
 	{
@@ -236,12 +282,14 @@ void GameApi::PhysicsApi::step_points(PH phy, PTA prev_frame, float timestep)
       std::pair<int,int> link = node->Link(i);
       Point p1(arr->array[link.first*3+0], arr->array[link.first*3+1], arr->array[link.first*3+2]);
       Point p2(arr->array[link.second*3+0], arr->array[link.second*3+1], arr->array[link.second*3+2]);
-      Vector f1 = vec[link.first];
-      Vector f2 = vec[link.second];
-      std::pair<Vector,Vector> pp1 = Vector::SplitToComponents(f1, p2-p1);
-      std::pair<Vector,Vector> pp2 = Vector::SplitToComponents(f2, p1-p2);
-      vec[link.first] += pp2.first;
-      vec[link.second] += pp1.first;
+      float dist = (p1-p2).Dist();
+      dist-=node->LinkDistance(i);
+      dist/=2.0;
+      Vector v = p1-p2;
+      v/=v.Dist();
+      v*=dist;
+      vec[link.first] += -v;
+      vec[link.second] += v;
     }
 
   for(int i=0;i<arr->numpoints;i++)
