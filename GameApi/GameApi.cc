@@ -9803,7 +9803,69 @@ GameApi::ML GameApi::MovementNode::quake_ml(EveryApi &ev, ML ml,float speed, flo
   MainLoopItem *mml = find_main_loop(e,ml);
   return add_main_loop(e, new QuakeML(e,ev, mml, speed, rot_speed));
 }
+class LocalMove : public MainLoopItem
+{
+public:
+  LocalMove(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *inner, PointsApiPoints *o) : env(env), ev(ev), inner(inner), o(o) { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    o->Update(e);
+    int s = o->NumPoints();
+    for(int i=0;i<s;i++)
+      {
+	Point p = o->Pos(i);
+	GameApi::M m = ev.matrix_api.trans(p.x,p.y,p.z);
+	GameApi::M m2 = add_matrix2(env, e.in_MV);
+	MainLoopEnv ee = e;
 
+	GameApi::SH s1;
+	s1.id = e.sh_texture;
+	GameApi::SH s11;
+	s11.id = e.sh_texture_2d;
+	GameApi::SH s2;
+	s2.id = e.sh_array_texture;
+	GameApi::SH s3;
+	s3.id = e.sh_color;
+	
+	GameApi::M mat2 = ev.matrix_api.mult(m,m2);
+	GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
+	ev.shader_api.use(s1);
+	ev.shader_api.set_var(s1, "in_MV", mat2);
+	ev.shader_api.set_var(s1, "in_iMV", mat2i);
+	ev.shader_api.use(s11);
+	ev.shader_api.set_var(s11, "in_MV", mat2);
+	ev.shader_api.set_var(s11, "in_iMV", mat2i);
+	ev.shader_api.use(s2);
+	ev.shader_api.set_var(s2, "in_MV", mat2);
+	ev.shader_api.set_var(s2, "in_iMV", mat2i);
+	ev.shader_api.use(s3);
+	ev.shader_api.set_var(s3, "in_MV", mat2);
+	ev.shader_api.set_var(s3, "in_iMV", mat2i);
+	
+	
+	ee.in_MV = find_matrix(env, m) * e.in_MV;
+	ee.env = find_matrix(env, m) * e.in_MV;
+	inner->execute(ee);
+      }	  
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    inner->handle_event(e);
+  }
+  virtual int shader_id() { return -1; }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *inner;
+  PointsApiPoints *o;
+};
+GameApi::ML GameApi::MovementNode::local_move(EveryApi &ev, ML inner_ml, PTS center_points)
+{
+  MainLoopItem *item = find_main_loop(e, inner_ml);
+  PointsApiPoints *o = find_pointsapi_points(e, center_points);
+  return add_main_loop(e, new LocalMove(e, ev, item, o));
+}
 
 
 #if 0

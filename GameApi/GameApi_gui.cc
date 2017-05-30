@@ -3920,13 +3920,31 @@ public:
   T from_stream(std::string s, GameApi::EveryApi &ev)
   {
     //std::cout << "Type using default: " << typeid(T).name() << std::endl;
+    bool neg = false;
+    if (s.size()>0 && s[0]=='-')
+      {
+	neg = true;
+	s = s.substr(1);
+      }
+    
   T t;
   std::stringstream is(s);
   is >> t;
+  if (neg) t = -t;
+
+  std::cout << "Default: " << t << std::endl;
   return t;
   }
 };
-
+template<>
+class FromStreamClass<std::string>
+{
+public:
+  std::string from_stream(std::string s, GameApi::EveryApi &ev)
+  {
+    return s;
+  }
+};
 template<>
 class FromStreamClass<GameApi::EveryApi &>
 {
@@ -4163,6 +4181,7 @@ MACRO(GameApi::PLL)
 MACRO(GameApi::PLP)
 MACRO(GameApi::CBB)
 MACRO(GameApi::CFB)
+MACRO(GameApi::PH)
 #undef MACRO
 
 
@@ -5546,6 +5565,48 @@ std::vector<GameApiItem*> vectorapi_functions()
 			 { "PLF" },
 			 { "" },
 			 "PLF", "newplane_api", "triangulate"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::physics_api, &GameApi::PhysicsApi::empty,
+			 "phy_empty",
+			 { },
+			 { },
+			 { },
+			 "PH", "physics_api", "empty"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::physics_api, &GameApi::PhysicsApi::anchor_point2,
+			 "phy_anchor",
+			 { "phy", "pos" },
+			 { "PH", "PT" },
+			 { "", "" },
+			 "PH", "physics_api", "anchor_point2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::physics_api, &GameApi::PhysicsApi::ext_force,
+			 "phy_force",
+			 { "phy", "point", "dir" },
+			 { "PH", "int", "V" },
+			 { "", "0", "" },
+			 "PH", "physics_api", "ext_force"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::physics_api, &GameApi::PhysicsApi::ext_force_all,
+			 "phy_force_all",
+			 { "phy", "dir" },
+			 { "PH", "V" },
+			 { "", "" },
+			 "PH", "physics_api", "ext_force_all"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::physics_api, &GameApi::PhysicsApi::anchor_link,
+			 "phy_link",
+			 { "phy", "p1", "p2", "dist" },
+			 { "PH", "int", "int", "float" },
+			 { "", "0", "1", "100" },
+			 "PH", "physics_api", "anchor_link"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::physics_api, &GameApi::PhysicsApi::force_obj,
+			 "phy_object",
+			 { "phy", "obj", "dir" },
+			 { "PH", "O", "V" },
+			 { "", "", "" },
+			 "PH", "physics_api", "force_obj"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::physics_api, &GameApi::PhysicsApi::physics_action,
+			 "phy_points",
+			 { "ev", "phy" },
+			 { "EveryApi&", "PH" },
+			 { "ev", "" },
+			 "PTS", "physics_api", "physics_action"));
   
   return vec;
 }
@@ -5890,6 +5951,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "MN", "float" },
 			 { "", "0.0" },
 			 "MN", "move_api", "rotatez"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::local_move,
+			 "local_move",
+			 { "ev", "inner_ml", "center_points" },
+			 { "EveryApi&", "ML", "PTS" },
+			 { "ev", "", "" },
+			 "ML", "move_api", "local_move"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::translate,
 			 "anim_translate",
@@ -7657,6 +7724,12 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "BB", "float", "float", "float", "float", "float" },
 			 { "", "-200.0", "200.0", "-200.0", "200.0", "0.0" },
 			 "PTS", "points_api", "pts_grid_bb"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::memoize_pts,
+			 "pts_memoize",
+			 { "pts" },
+			 { "PTS" },
+			 { "" },
+			 "PTS", "points_api", "memoize_pts"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::from_points,
 			 "ms_from_points",
