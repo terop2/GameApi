@@ -127,6 +127,8 @@ public:
   void free_memory();  
   void explode(int id, Point p, float dist);
   void print_stat(int id);
+  void clone(int id_source, int id_target);
+  void apply_change(DynamicChange *change, int id_source, int id_target, MainLoopEnv &e);
 public:
   struct Polys {
     std::vector<Point> tri_polys;

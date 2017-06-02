@@ -967,7 +967,7 @@ public:
   MandelBulb(float n, Point p, Point center, float radius, int iterations) : n(n), p(p), sp(center,radius), iterations(iterations)  { }
   bool Inside(Point C) const;
 private:
-  static Point Step(Point p, Point C, float n);
+  static Point Step(Point w);
   float n;
   Point p;
   SphereVolume sp;

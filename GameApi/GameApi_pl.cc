@@ -3234,6 +3234,149 @@ private:
 };
 
 
+class RenderDynP : public MainLoopItem
+{
+public:
+  RenderDynP(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::PolygonApi &api, GameApi::P p, GameApi::DC dc) : env(env), ev(ev), api(api), p(p), dc(dc)
+  {
+    shader.id = -1;
+    firsttime = true;
+  }
+  int shader_id() { return shader.id; }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void execute(MainLoopEnv &e)
+  { 
+    if (firsttime)
+      {
+	va = ev.polygon_api.create_vertex_array(p,true);
+	ev.polygon_api.clone(va);
+      }
+
+    GameApi::SH sh;
+    if (ev.polygon_api.is_texture(va))
+      {
+	sh.id = e.sh_texture;
+	if (ev.polygon_api.is_array_texture(va))
+	  {
+	    sh.id = e.sh_array_texture;
+	  }
+      }
+    else
+      {
+	sh.id = e.sh_color;
+      }
+
+    GameApi::US u_v;
+    GameApi::US u_f;
+    u_v.id = 0;
+    u_f.id = 0;
+    if (e.us_vertex_shader!=-1)
+      u_v.id = e.us_vertex_shader;
+    if (e.us_fragment_shader!=-1)
+      u_f.id = e.us_fragment_shader;
+    if (firsttime)
+      {
+	if (u_v.id == 0)
+	  u_v = ev.uber_api.v_empty();
+	if (u_f.id == 0)
+	  u_f = ev.uber_api.f_empty(false);
+      }
+
+#if 1
+    if (ev.polygon_api.is_texture(va))
+      {
+	sh.id = e.sh_texture;
+	if (firsttime)
+	  {
+	    if (e.us_vertex_shader==-1)
+	      u_v = ev.uber_api.v_texture(u_v);
+	    if (e.us_fragment_shader==-1)
+	      u_f = ev.uber_api.f_texture(u_f);
+	  }
+	if (ev.polygon_api.is_array_texture(va))
+	  {
+	    sh.id = e.sh_array_texture;
+	      if (firsttime)
+	      {
+		if (e.us_vertex_shader==-1)
+		  u_v = ev.uber_api.v_texture_arr(u_v);
+		if (e.us_fragment_shader==-1)
+		  u_f = ev.uber_api.f_texture_arr(u_f);
+	      }
+	  }
+      }
+    else
+      {
+	sh.id = e.sh_color;
+	if (firsttime)
+	  {
+	    if (e.us_vertex_shader==-1)
+	      {
+		u_v = ev.uber_api.v_colour(u_v);
+		u_v = ev.uber_api.v_light(u_v);
+	      }
+	    if (e.us_fragment_shader==-1)
+	      {
+		u_f = ev.uber_api.f_colour(u_f);
+		u_f = ev.uber_api.f_light(u_f);
+	      }
+	  }
+      }
+#endif
+
+    if (shader.id==-1 && e.us_vertex_shader!=-1 && e.us_fragment_shader!=-1)
+      {
+	GameApi::US vertex;
+	GameApi::US fragment;
+	vertex.id = u_v.id; //e.us_vertex_shader;
+	fragment.id = u_f.id; //e.us_fragment_shader;
+	if (e.sfo_id==-1)
+	  {
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions);
+	  }
+	else
+	  {
+	    GameApi::SFO sfo;
+	    sfo.id = e.sfo_id;
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
+	  }
+	ev.mainloop_api.init_3d(shader);
+	ev.mainloop_api.alpha(true); 
+
+      }
+
+    if (shader.id!=-1)
+      {
+	ev.shader_api.use(sh);
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.use(shader);
+	ev.shader_api.set_var(shader, "in_MV", m);
+	ev.shader_api.set_var(shader, "in_T", m1);
+	ev.shader_api.set_var(shader, "in_N", m2);
+	ev.shader_api.set_var(shader, "time", e.time);
+
+	sh = shader;
+      }
+    if (firsttime) { firsttime = false; }
+    ev.shader_api.use(sh);
+    api.render_vertex_array_dyn(va,dc,e);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::PolygonApi &api;
+  bool firsttime;
+  GameApi::VA va;
+  GameApi::P p;
+  GameApi::DC dc;
+  GameApi::SH shader;
+};
+
+
 class NoiseShaderML : public MainLoopItem
 {
 public:
@@ -4285,7 +4428,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2(EveryApi &ev, P 
 {
   return add_main_loop(e, new RenderP(e, ev, *this, p));
 }
-
+EXPORT GameApi::ML GameApi::PolygonApi::render_dynamic_ml(EveryApi &ev, P p, DC dyn)
+{
+  return add_main_loop(e, new RenderDynP(e, ev, *this, p, dyn));
+}
 EXPORT void GameApi::PolygonApi::print_stat(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
@@ -4345,6 +4491,60 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       //RenderVertexArray arr(*s);
       //arr.render(0);
       rend->render(0);
+    }
+}
+EXPORT void GameApi::PolygonApi::clone(VA va)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  s->clone(0,1);
+}
+EXPORT void GameApi::PolygonApi::render_vertex_array_dyn(VA va, DC dc, MainLoopEnv &ee)
+{
+  DynamicChange *ddc = find_dyn_change(e, dc);
+  VertexArraySet *s = find_vertex_array(e, va);
+  s->apply_change(ddc, 0, 1, ee);
+  RenderVertexArray *rend = find_vertex_array_render(e, va);
+  rend->update(1);
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  if (s->texture_id!=-1 && s->texture_id<SPECIAL_TEX_ID)
+    {
+      TextureEnable(*env->renders[s->texture_id], 0, true);
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(1);
+      TextureEnable(*env->renders[s->texture_id], 0, false);
+    }
+  else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
+    {
+      glEnable(GL_TEXTURE_2D);
+#ifndef EMSCRIPTEN
+      glClientActiveTexture(GL_TEXTURE0+0);
+#endif
+      glActiveTexture(GL_TEXTURE0+0);
+      glBindTexture(GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(1);
+
+      glDisable(GL_TEXTURE_2D);
+    }
+  else if (s->texture_id!=-1)
+    {
+      glEnable(GL_TEXTURE_2D_ARRAY);
+#ifndef EMSCRIPTEN
+      glClientActiveTexture(GL_TEXTURE0+0);
+#endif
+      glActiveTexture(GL_TEXTURE0+0);
+      glBindTexture(GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
+      rend->render(1);
+      glDisable(GL_TEXTURE_2D_ARRAY);
+    }
+  else
+    {
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(1);
     }
 }
 EXPORT void GameApi::PolygonApi::prepare_vertex_array_instanced(ShaderApi &shapi, VA va, PTA pta, SH sh)
@@ -6053,17 +6253,26 @@ GameApi::P GameApi::PolygonApi::spherical_normals(P p, float p_x, float p_y, flo
   return add_polygon2(e, new SphNormals(coll, Point(p_x,p_y,p_z)),1);
 }
 
-std::string dither_shader_string =
-				     "vec4 dither(vec4 rgb)\n"
-				     "{\n"
-				     "  uint i=uint(gl_FragCoord.x)%16u + 16u*(uint(gl_FragCoord.y)%16u);\n"
-				     "  vec4 threshold = vec4((i*107u)%256u,(i*107u+5u)%256u,(i*107u+11u)%256u,(i*107u+3u)%256u)/256.;\n"
-				     "  return rgb+(step(threshold,fract(rgb*255))-fract(rgb*255))/255.;\n"
-				     "}\n"
-				     ;
+std::string Num(float val) {
+  std::stringstream ss;
+  ss << val;
+  return ss.str();
+}
 
-				 
+// 3d position: gl_FragCoord
+std::string dither_shader_string_v =
+	"vec4 dither(vec4 pos)\n"
+	"{\n"
+	"   ex_Position = in_Position;\n"
+	"   return pos;\n"
+	"}\n";
+std::string dither_shader_string_f =
+	"vec4 dither(vec4 rgb)\n"
+	"{\n"
+	"   float v = gl_FragDepth;\n"
+	"   return vec4(v,v,v,1.0);\n"
+	"}\n";				     				 
 GameApi::ML GameApi::PolygonApi::dither_shader(EveryApi &ev, ML mainloop)
 {
-  return custom_shader(ev,mainloop,"",dither_shader_string,"","dither");
+  return custom_shader(ev,mainloop,dither_shader_string_v,dither_shader_string_f,"dither","dither");
 }
