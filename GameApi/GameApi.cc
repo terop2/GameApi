@@ -1300,6 +1300,11 @@ public:
 private:
   int id;
 };
+DynamicChange *find_dyn_change(GameApi::Env &e, GameApi::DC dc)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->dyn_change[dc.id];
+}
 ContinuousBitmap<float> *find_cont_float(GameApi::Env &e, GameApi::CFB bm)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1635,6 +1640,14 @@ NDim<float,Point> *find_dim(GameApi::Env &e, GameApi::MV mv)
   return env->dims[mv.id];
 }
 
+GameApi::DC add_dyn_change(GameApi::Env &e, DynamicChange *dc)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->dyn_change.push_back(dc);
+  GameApi::DC c;
+  c.id = env->dyn_change.size()-1;
+  return c;
+}
 GameApi::CFB add_cont_float(GameApi::Env &e, ContinuousBitmap<float> *bm)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -6081,13 +6094,13 @@ GameApi::US GameApi::UberShaderApi::f_ref(US us)
 GameApi::US GameApi::UberShaderApi::v_custom(US us, std::string v_funcname)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction(v_funcname, next,""));
+  return add_uber(e, new V_ShaderCallFunction(v_funcname, next,"IN_POSITION EX_POSITION"));
 
 }
 GameApi::US GameApi::UberShaderApi::f_custom(US us, std::string f_funcname)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction(f_funcname, next,""));
+  return add_uber(e, new F_ShaderCallFunction(f_funcname, next,"EX_POSITION"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_light(US us)
@@ -9908,3 +9921,59 @@ private:
   std::vector<int> item;
 };
 #endif
+
+class WaveChange : public DynamicChange
+{
+public:
+  WaveChange(float r, float speed1,float speed2, float dist1, float dist2, int sx, int sy) : r(r),speed1(speed1), speed2(speed2), dist1(dist1), dist2(dist2), sx(sx), sy(sy) { }
+  void applychange(float *source, float *target, int size, MainLoopEnv &e)
+  {
+    //std::cout << "applychange: " << size << std::endl;
+    int s = size/3;
+    float s1 = speed1*e.time;
+    float s2 = speed2*e.time;
+    float delta1 = dist1/sx;
+    float delta2 = dist2/sy;
+    float x,y,z;
+    for(int i=0;i<s;i++)
+      {
+	if (i%sx==0) { s2+=delta2; s1=speed1*e.time; }
+	x = source[i*3];
+	y = source[i*3+1];
+	z = source[i*3+2];
+	x+=r*sin(s1)*cos(s2);
+	y+=r*sin(s1)*sin(s2);
+	z+=r*cos(s1);
+	target[i*3] = x;
+	target[i*3+1] = y;
+	target[i*3+2] = z;
+	s1+=delta1;
+      }
+  }
+private:
+  float r;
+  float speed1,speed2;
+  float dist1, dist2;
+  int sx,sy;
+};
+class IdentityChange : public DynamicChange
+{
+public:
+  void applychange(float *source, float *target, int size, MainLoopEnv &e)
+  {
+    for(int i=0;i<size;i++)
+      {
+	*target++ = *source++;
+      }     
+  }
+};
+
+GameApi::DC GameApi::MovementNode::identity()
+{
+  return add_dyn_change(e, new IdentityChange);
+}
+
+GameApi::DC GameApi::MovementNode::wave(float r, float speed1, float speed2, float dist1, float dist2, int sx, int sy)
+{
+  return add_dyn_change(e, new WaveChange(r,speed1, speed2, dist1, dist2, sx,sy));
+}

@@ -160,6 +160,77 @@ GameApi::PH GameApi::PhysicsApi::force_obj(PH phy, O obj, V dir)
   Vector *vec = find_vector(e, dir);
   return add_physics(e, new ForceObjPhysics(node, obj2, *vec));
 }
+class PhyFromP : public PhysicsNode
+{
+public:
+  PhyFromP(FaceCollection *coll) : coll(coll) { }
+  int NumAnchors() const {
+    int s = coll->NumFaces();
+    int count = 0;
+    for(int i=0;i<s;i++)
+      {
+	count +=coll->NumPoints(i);
+      }
+    return count;
+      
+  }
+  Point AnchorPoint(int ii) const
+  {
+    int s = coll->NumFaces();
+    int count = 0;
+    int oldcount = 0;
+    for(int i=0;i<s;i++)
+      {
+	count+=coll->NumPoints(i);
+	if (count>ii) { return coll->FacePoint(i,ii-oldcount); }
+	oldcount = count;
+      }
+    Point p(0.0,0.0,0.0);
+    return p;
+  }
+  int NumForces(int i) const { return 0; }
+  Vector Force(int i, int f) const { Vector v; v.dx=0; v.dy=0; v.dz=0; return v; }
+  int NumLinks() const
+  {
+    return NumAnchors();
+  }
+  float LinkDistance(int i) const
+  {
+    std::pair<int,int> p = Link(i);
+    Point p1 = AnchorPoint(p.first);
+    Point p2 = AnchorPoint(p.second);
+    return (p1-p2).Dist();
+  }
+  std::pair<int,int> Link(int ii) const
+  {
+    int s = coll->NumFaces();
+    int count = 0;
+    int oldcount = 0;
+    for(int i=0;i<s;i++)
+      {
+	int numpoints = coll->NumPoints(i);
+	count+=numpoints;
+	if (count>ii) {
+	  int point = ii-oldcount;
+	  if (point==numpoints-1) { point=0; } else { point++; }
+	  return std::make_pair(ii,oldcount+point);
+	}
+	oldcount = count;
+      }
+    std::cout << "Link error" << std::endl;
+    return std::make_pair(0,0);
+  }
+  int NumForceVolumes() const { return 0; }
+  Vector ForceVolume(int vv, Point p) const { Vector v; v.dx=0; v.dy=0; v.dz=0; return v; }
+private:
+  FaceCollection *coll;
+};
+
+GameApi::PH GameApi::PhysicsApi::phy_from_p(P p)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  return add_physics(e, new PhyFromP(coll));
+}
 
 //GameApi::PH GameApi::PhysicsApi::array(PH *arr, int size)
 //{
@@ -266,7 +337,7 @@ void GameApi::PhysicsApi::step_points(PH phy, PTA prev_frame, float timestep)
 	  sum += node->Force(i,f);
 	}
       Point p(arr->array[i*3+0], arr->array[i*3+1], arr->array[i*3+2]);
-      std::cout << "Physics begin: " << p << std::endl;
+      //std::cout << "Physics begin: " << p << std::endl;
       int fnn = node->NumForceVolumes();
       for(int ff=0;ff<fnn;ff++)
 	{

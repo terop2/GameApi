@@ -578,6 +578,7 @@ struct EnvImpl
   std::vector<ShaderI*> shader_interface;
   std::vector<ContinuousBitmap<float>*> cont_floats;
   std::vector<ContinuousBitmap<bool>*> cont_bools;
+  std::vector<DynamicChange*> dyn_change;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -901,6 +902,7 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::DC add_dyn_change(GameApi::Env &e, DynamicChange *dc);
 GameApi::CBB add_cont_bool(GameApi::Env &e, ContinuousBitmap<bool> *bm);
 GameApi::CFB add_cont_float(GameApi::Env &e, ContinuousBitmap<float> *bm);
 GameApi::SI add_shader(GameApi::Env &e, ShaderI *shid);
@@ -1021,6 +1023,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+DynamicChange *find_dyn_change(GameApi::Env &e, GameApi::DC dc);
 ContinuousBitmap<float> *find_cont_float(GameApi::Env &e, GameApi::CFB bm);
 ContinuousBitmap<bool> *find_cont_bool(GameApi::Env &e, GameApi::CBB bm);
 ShaderI *find_shader(GameApi::Env &e, GameApi::SI id);

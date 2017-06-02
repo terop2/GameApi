@@ -1051,4 +1051,10 @@ public:
   virtual std::string shader() const=0;
 };
 
+class DynamicChange
+{
+public:
+  virtual void applychange(float *source, float *target, int size_in_floats, MainLoopEnv &e)=0;
+};
+
 #endif

@@ -200,36 +200,37 @@ bool VolumeEffect::Frame(float time)
   return false;
 }
 
-bool MandelBulb::Inside(Point C) const
+bool MandelBulb::Inside(Point px) const
 {
-  Point a_p = p;
+  Point a_p = px;
+  a_p.x/=300.0; 
+  a_p.y/=300.0; 
+  a_p.z/=300.0;
+  float dz = 1.0;
+  float m = Vector::DotProduct(a_p,a_p);
   for(int i=0;i<iterations;i++)
     {
-      a_p = Step(a_p, C, n);
-      if (!sp.Inside(a_p))
-	{
-	  //current_iteration_count = i;
-	  return false;
-	}
+      a_p = Step(a_p);
+      //if (a_p.Dist()>4.0) break;
     }
-  return true;
+  return (a_p.Dist()>4.0);
 }
 
-Point MandelBulb::Step(Point p, Point C, float n)
+Point MandelBulb::Step(Point w)
 {
-  float x = p.x;
-  float y = p.y;
-  float z = p.z;
-  float r = sqrt(x*x+y*y+z*z);
-  float r_n = pow(r,n);
-  float alpha = atan2(y,x);
-  float beta = atan2(z, sqrt(x*x+y*y));
-  float nx = cos(n*alpha)*cos(n*beta);
-  float ny = sin(n*alpha)*cos(n*beta);
-  float nz = sin(n*beta);
-  Point z_n(r_n*nx,r_n*ny,r_n*nz);
-  Point z_n_c = z_n + C;
-  return z_n_c;
+  float wr = w.Dist();
+  float wl = w.y/wr;
+  if (wl<-1.0) wl=-1.0;
+  if (wl>1.0) wl=1.0;
+  float wo = acos(wl);
+  float wi = atan2(w.x,w.z);
+  wr = powf(wr, 8.0);
+  wo = wo * 8.0;
+  wi = wi * 8.0;
+  w.x = wr * sin(wo)*sin(wi);
+  w.y = wr * cos(wo);
+  w.z = wr * sin(wo)*cos(wi);
+  return w;
 }
 
 void FractalEffect::Init()

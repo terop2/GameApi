@@ -408,6 +408,66 @@ void VertexArraySet::push_texcoord(int id, int num, Point *points)
 
     }
 }
+template<class T>
+void clone_vector(std::vector<T> &source, std::vector<T> &target)
+{
+  target.clear();
+  int s = source.size();
+  for(int i=0;i<s;i++) target.push_back(source[i]);
+}
+template<class T>
+void clone_map(std::map<int, std::vector<T>> &source,
+	       std::map<int, std::vector<T>> &target)
+{
+  target.clear();
+  typename std::map<int,std::vector<T>>::iterator i=source.begin();
+  for(;i!=source.end();i++)
+    {
+      target[(*i).first] = (*i).second;
+    }
+}
+void VertexArraySet::clone(int id_source, int id_target)
+{
+  check_m_set(id_target);
+  Polys *source = m_set[id_source];
+  Polys *target = m_set[id_target];
+  clone_vector(source->tri_polys, target->tri_polys);
+  clone_vector(source->quad_polys, target->quad_polys);
+  clone_vector(source->poly_polys, target->poly_polys);
+  clone_vector(source->tri_polys2, target->tri_polys2);
+  clone_vector(source->quad_polys2, target->quad_polys2);
+  clone_vector(source->poly_polys2, target->poly_polys2);
+  clone_vector(source->tri_normals, target->tri_normals);
+  clone_vector(source->quad_normals, target->quad_normals);
+  clone_vector(source->poly_normals, target->poly_normals);
+  clone_vector(source->tri_color, target->tri_color);
+  clone_vector(source->quad_color, target->quad_color);
+  clone_vector(source->poly_color, target->poly_color);
+  clone_vector(source->tri_texcoord, target->tri_texcoord);
+  clone_vector(source->quad_texcoord, target->quad_texcoord);
+  clone_vector(source->poly_texcoord, target->poly_texcoord);
+
+  clone_map(source->tri_attribs, target->tri_attribs);
+  clone_map(source->quad_attribs, target->quad_attribs);
+  clone_map(source->poly_attribs, target->poly_attribs);
+
+  clone_map(source->tri_attribsi, target->tri_attribsi);
+  clone_map(source->quad_attribsi, target->quad_attribsi);
+  clone_map(source->poly_attribsi, target->poly_attribsi);
+}
+void VertexArraySet::apply_change(DynamicChange *change, int id_source, int id_target, MainLoopEnv &e)
+{
+  Polys *source = m_set[id_source];
+  Polys *target = m_set[id_target];
+  change->applychange(&source->tri_polys[0].x, &target->tri_polys[0].x, source->tri_polys.size()*3, e);
+  change->applychange(&source->quad_polys[0].x, &target->quad_polys[0].x, source->quad_polys.size()*3, e);
+  change->applychange(&source->poly_polys[0].x, &target->poly_polys[0].x, source->poly_polys.size()*3, e);
+
+  change->applychange(&source->tri_polys2[0].x, &target->tri_polys2[0].x, source->tri_polys2.size()*3, e);
+  change->applychange(&source->quad_polys2[0].x, &target->quad_polys2[0].x, source->quad_polys2.size()*3, e);
+  change->applychange(&source->poly_polys2[0].x, &target->poly_polys2[0].x, source->poly_polys2.size()*3, e);
+
+}
 VertexArraySet::~VertexArraySet()
 {
     std::map<int,Polys*>::iterator it = m_set.begin();
@@ -1210,6 +1270,7 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
 
 
 }
+
 void RenderVertexArray::render(int id)
 {
   VertexArraySet::Polys *p = s.m_set[id];

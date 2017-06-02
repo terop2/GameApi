@@ -4182,6 +4182,7 @@ MACRO(GameApi::PLP)
 MACRO(GameApi::CBB)
 MACRO(GameApi::CFB)
 MACRO(GameApi::PH)
+MACRO(GameApi::DC)
 #undef MACRO
 
 
@@ -5601,12 +5602,30 @@ std::vector<GameApiItem*> vectorapi_functions()
 			 { "PH", "O", "V" },
 			 { "", "", "" },
 			 "PH", "physics_api", "force_obj"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::physics_api, &GameApi::PhysicsApi::phy_from_p,
+			 "phy_p",
+			 { "p" },
+			 { "P" },
+			 { "" },
+			 "PH", "physics_api", "phy_from_p"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::physics_api, &GameApi::PhysicsApi::physics_action,
 			 "phy_points",
 			 { "ev", "phy" },
 			 { "EveryApi&", "PH" },
 			 { "ev", "" },
 			 "PTS", "physics_api", "physics_action"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::identity,
+			 "dc_identity",
+			 { },
+			 { },
+			 { },
+			 "DC", "move_api", "identity"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::wave,
+			 "dc_wave",
+			 { "r", "speed1", "speed2", "dist1", "dist2", "sx", "sy" },
+			 { "float", "float", "float", "float", "float", "int", "int" },
+			 { "30.0", "1.0", "1.0", "30.0", "30.0", "30", "30" },
+			 "DC", "move_api", "wave"));
   
   return vec;
 }
@@ -6394,6 +6413,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "P", "PTS" },
 			 { "ev", "", "" },
 			 "ML", "materials_api", "render_instanced_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::render_dynamic_ml,
+			 "p_render_dyn",
+			 { "ev", "p", "dyn" },
+			 { "EveryApi&", "P", "DC" },
+			 { "ev", "", "" },
+			 "ML", "polygon_api", "render_dynamic_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::render_instanced_ml_fade,
 			 "p_render_inst_fade",
 			 { "ev", "p", "pts", "flip", "start_time", "end_time" },

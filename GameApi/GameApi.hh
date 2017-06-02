@@ -9,6 +9,10 @@
 #include <vector>
 #include <map>
 #include <iostream>
+
+
+class MainLoopEnv;
+
 namespace GameApi
 {
 using std::placeholders::_1;
@@ -26,6 +30,8 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+
+  struct DC { int id; };
   struct CBB { int id; };
   struct CFB { int id; };
   struct SI { int id; };
@@ -162,6 +168,7 @@ using std::placeholders::_9;
   //struct E { int id; };
   //struct A { int id; };
 
+  
   struct EveryApi;
   std::vector<PTS> arr_to_pts_arr(EveryApi &ev, ARR a);
 
@@ -1200,6 +1207,7 @@ public:
   PH anchor_link(PH phy, int p1, int p2, float dist);
   PH force_obj(PH phy, O obj,
 	       V dir);
+  PH phy_from_p(P p);
   // PH gameover_obj(PH phy, O obj, int point)
   // PH keypress_force(PH phy, int point, V dir, int key);
   //PH array(PH *arr, int size);
@@ -1368,6 +1376,8 @@ public:
   IMPORT ML enemy(ML prev);
   IMPORT ML player_pos(ML prev, PT pos);
   IMPORT ML enemy_pos(ML prev, PTS pos);
+  IMPORT DC identity();
+  IMPORT DC wave(float r,float speed1,float speed2,float dist1, float dist2,int sx,int sy);
 private:
   Env &e;
 };
@@ -2182,10 +2192,13 @@ public:
   IMPORT void delete_vertex_array(VA arr);
   IMPORT VA create_vertex_array_attribs(P p, bool keep,std::vector<int> attribs, std::vector<int> attribi); // slow
   IMPORT void render_vertex_array(VA va); // fast
+  IMPORT void clone(VA va);
+  IMPORT void render_vertex_array_dyn(VA va, DC dc, MainLoopEnv &e);
   IMPORT void prepare_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh);
   IMPORT void render_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh, int hide_n = -1); // fast
   IMPORT ML render_vertex_array_ml(EveryApi &ev, VA va);
   IMPORT ML render_vertex_array_ml2(EveryApi &ev, P va);
+  IMPORT ML render_dynamic_ml(EveryApi &ev, P p, DC dyn);
   IMPORT ML dist_field_mesh_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML sfo_sandbox_shader(EveryApi &ev, ML mainloop, SFO sfo);
