@@ -9922,6 +9922,42 @@ private:
 };
 #endif
 
+class ExplosionChange : public DynamicChange
+{
+public:
+  ExplosionChange(Point center, float start_val, float end_val, float start_time, float end_time) : center(center), start_val(start_val), end_val(end_val), start_time(start_time), end_time(end_time) { }
+  void applychange(float *source, float *target, int size, MainLoopEnv &e)
+  {
+    float time = e.time*10.0;
+    float d = start_val;
+    if (time < start_time) { d=start_val; }
+    else if (time>end_time) { d=end_val; }
+    else
+      {
+	d = start_val + (end_val-start_val)*(time-start_time)/(end_time-start_time);
+      }
+    int s = size/3;
+    for(int i=0;i<s;i++)
+      {
+	float x = source[i*3];
+	float y = source[i*3+1];
+	float z = source[i*3+2];
+	Point p(x,y,z);
+	Vector v=p-center;
+	v*=d;
+	p+=v;
+	target[i*3] = p.x;
+	target[i*3+1] = p.y;
+	target[i*3+2] = p.z;
+      }
+    
+  }
+private:
+  Point center;
+  float start_val, end_val;
+  float start_time, end_time;
+};
+
 class WaveChange : public DynamicChange
 {
 public:
@@ -9972,8 +10008,38 @@ GameApi::DC GameApi::MovementNode::identity()
 {
   return add_dyn_change(e, new IdentityChange);
 }
-
+GameApi::DC GameApi::MovementNode::explosion(float center_x, float center_y, float center_z, float start_val, float end_val, float start_time, float end_time)
+{
+  return add_dyn_change(e, new ExplosionChange(Point(center_x, center_y, center_z), start_val, end_val, start_time, end_time));
+}
 GameApi::DC GameApi::MovementNode::wave(float r, float speed1, float speed2, float dist1, float dist2, int sx, int sy)
 {
   return add_dyn_change(e, new WaveChange(r,speed1, speed2, dist1, dist2, sx,sy));
+}
+class SplitChange : public DynamicChange
+{
+public:
+  SplitChange(DynamicChange *d1, DynamicChange *d2, float val) : d1(d1),d2(d2), val(val) {
+    if (val<0.0) val=0.0;
+    if (val>1.0) val=1.0;
+  }
+  void applychange(float *source, float *target, int size, MainLoopEnv &e)
+  {
+    int s = size/3;
+    float v = val*s;
+    int ss = (int)v;
+    ss*=3;
+    d1->applychange(source,target,ss,e);
+    d2->applychange(source+ss,target+ss,size-ss,e);
+  }
+private:
+  DynamicChange *d1;
+  DynamicChange *d2;
+  float val;
+};
+GameApi::DC GameApi::MovementNode::split(DC d1, DC d2, float val)
+{
+  DynamicChange *dd1 = find_dyn_change(e, d1);
+  DynamicChange *dd2 = find_dyn_change(e, d2);
+  return add_dyn_change(e, new SplitChange(dd1,dd2,val));
 }

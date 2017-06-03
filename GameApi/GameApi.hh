@@ -1378,6 +1378,9 @@ public:
   IMPORT ML enemy_pos(ML prev, PTS pos);
   IMPORT DC identity();
   IMPORT DC wave(float r,float speed1,float speed2,float dist1, float dist2,int sx,int sy);
+  IMPORT DC explosion(float center_x, float center_y, float center_z, float start_val, float end_val, float start_time, float end_time);
+  IMPORT DC compose(DC d1, DC d2);
+  IMPORT DC split(DC d1, DC d2, float val);
 private:
   Env &e;
 };

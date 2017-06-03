@@ -5626,6 +5626,18 @@ std::vector<GameApiItem*> vectorapi_functions()
 			 { "float", "float", "float", "float", "float", "int", "int" },
 			 { "30.0", "1.0", "1.0", "30.0", "30.0", "30", "30" },
 			 "DC", "move_api", "wave"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::explosion,
+			 "dc_explosion",
+			 { "center_x", "center_y", "center_z", "start_val", "end_val", "start_time", "end_time" },
+			 { "float", "float", "float", "float", "float", "float", "float" },
+			 { "0.0", "0.0", "0.0", "1.0", "10.0", "0.0", "30.0" },
+			 "DC", "move_api", "explosion"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::split,
+			 "dc_split",
+			 { "d1", "d2", "val" },
+			 { "DC", "DC", "float" },
+			 { "", "", "0.5" },
+			 "DC", "move_api", "split"));
   
   return vec;
 }
