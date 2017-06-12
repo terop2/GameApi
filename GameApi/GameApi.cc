@@ -10043,3 +10043,107 @@ GameApi::DC GameApi::MovementNode::split(DC d1, DC d2, float val)
   DynamicChange *dd2 = find_dyn_change(e, d2);
   return add_dyn_change(e, new SplitChange(dd1,dd2,val));
 }
+
+class WavePoints : public PointsApiPoints
+{
+public:
+  WavePoints(Waveform &wv, int num_samples, Point pos, Vector u_x, Vector u_y) : wv(wv), num_samples(num_samples),pos(pos), u_x(u_x), u_y(u_y) { }
+  virtual void HandleEvent(MainLoopEvent &event) { wv.HandleEvent(event); }
+  virtual bool Update(MainLoopEnv &e) { return wv.Update(e); }
+  virtual int NumPoints() const
+  {
+    return num_samples;
+  }
+  virtual Point Pos(int i) const
+  {
+    float val = float(i)/num_samples*wv.Length();
+    float v = wv.Index(val);
+    return pos + val*u_x + v*u_y;
+  }
+  virtual unsigned int Color(int i) const
+  {
+    return 0xffffffff;
+  }
+private:
+  Waveform &wv;
+  int num_samples;
+  Point pos;
+  Vector u_x, u_y;
+};
+GameApi::PTS GameApi::PointsApi::wave_points(WV wave, int num_samples,
+					     float pos_x, float pos_y, float pos_z,
+					     float u_x_x, float u_x_y, float u_x_z,
+					     float u_y_x, float u_y_y, float u_y_z)
+{
+  Waveform *wv = find_waveform(e, wave);
+  return add_points_api_points(e, new WavePoints(*wv, num_samples, Point(pos_x, pos_y, pos_z), Vector(u_x_x, u_x_y, u_x_z), Vector(u_y_x, u_y_y, u_y_z)));
+}
+
+class FilterComponent : public PointsApiPoints
+{
+public:
+  FilterComponent(PointsApiPoints *pts, int comp, float val) : pts(pts), comp(comp), val(val) { }
+  void HandleEveent(MainLoopEvent &event) { pts->HandleEvent(event); }
+  bool Update(MainLoopEnv &e) { return pts->Update(e); }
+  int NumPoints() const { return pts->NumPoints(); }
+  Point Pos(int i) const
+  {
+    Point p = pts->Pos(i);
+    if (comp==0) { p.x=val; }
+    if (comp==1) { p.y=val; }
+    if (comp==2) { p.z=val; }
+    return p;
+  }
+  unsigned int Color(int i) const {return pts->Color(i); }
+private:
+  PointsApiPoints *pts;
+  int comp;
+  float val;
+};
+
+GameApi::PTS GameApi::PointsApi::filter_component(PTS pts, int comp, float val)
+{
+  PointsApiPoints *pts2 = find_pointsapi_points(e, pts);
+  return add_points_api_points(e, new FilterComponent(pts2, comp, val));
+}
+
+class AnimRotPTS : public PointsApiPoints
+{
+public:
+  AnimRotPTS(PointsApiPoints *next, float start_time, float end_time, Vector v, float rotate_amount) : next(next), start_time(start_time), end_time(end_time), v(v), rotate_amount(rotate_amount) {
+    m = Matrix::Identity();
+    firsttime = true;
+  }
+  void HandleEvent(MainLoopEvent &event) { next->HandleEvent(event); }
+  bool Update(MainLoopEnv &e) {
+    if (firsttime) { firsttime = false; return true; }
+    float time = e.time*10.0;
+    if (time < start_time) { m = Matrix::Identity(); return false; }
+    if (time > end_time) { m = Matrix::RotateAroundAxis(v,rotate_amount); return false; }
+    
+    float val = (time-start_time)/(end_time-start_time);
+    val*=rotate_amount;
+    m = Matrix::RotateAroundAxis(v, val);
+    
+    return true;
+  }
+  int NumPoints() const { return next->NumPoints(); }
+  Point Pos(int i) const
+  {
+    return next->Pos(i)*m;
+  }
+  unsigned int Color(int i) const { return next->Color(i); }
+private:
+  PointsApiPoints *next;
+  float start_time, end_time;
+  Vector v;
+  float rotate_amount;
+  Matrix m;
+  bool firsttime;
+};
+
+GameApi::PTS GameApi::PointsApi::anim_rot_pts(PTS pts, float start_time, float end_time, float v_x, float v_y, float v_z, float rotate_amount)
+{
+  PointsApiPoints *next = find_pointsapi_points(e, pts);
+  return add_points_api_points(e, new AnimRotPTS(next, start_time, end_time, Vector(v_x,v_y,v_z), rotate_amount));
+}

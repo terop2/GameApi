@@ -1,4 +1,4 @@
 cd meshpage.org
-put web_page.data
-put web_page.html
-put web_page.js
+put web_page_asmjs.data
+put web_page_asmjs.html
+put web_page_asmjs.js

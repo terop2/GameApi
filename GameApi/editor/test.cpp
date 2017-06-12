@@ -417,7 +417,7 @@ void callback_func(int x, int y, Envi *envi)
       pp.second = vec[i].second;
       pp.is_array = false; // will be filled later
       pp.line_index_in_gameapi_function_lines_array = -1; // will be filled later
-      std::cout << "Insert_To_mod: " << pp.first << " " << pp.second << std::endl;
+      //std::cout << "Insert_To_mod: " << pp.first << " " << pp.second << std::endl;
       vec2.push_back(pp);
     }
   envi->ev->mod_api.insert_to_mod(envi->mod, 0, envi->insert_mod_name, uid, false, envi->gui->pos_x(envi->chosen_item), envi->gui->pos_y(envi->chosen_item), vec2);

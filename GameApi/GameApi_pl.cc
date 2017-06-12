@@ -4834,16 +4834,24 @@ public:
 	      {
 
 		//std::cout << "CUTTER: " << p1 << " " << p2 << " ";
-		Point c1 = cut->cut(p1,p2);
+		std::vector<Point> cl = cut->cut(p1,p2);
 		//std::cout << c1 << std::endl;
+		Point cl0 = cl[0];
+		float dist = (p1-cl[0]).Dist();
+		int s = cl.size();
+		for(int i=0;i<s;i++)
+		  {
+		    float d = (p1-cl[i]).Dist();
+		    if (dist>d) { cl0=cl[i]; dist = d; }
+		  }
 		if (!b1)
 		  {
 		    ref.push_back(p1);
-		    ref.push_back(c1);
+		    ref.push_back(cl0);
 		  }
 		if (!b2)
 		  {
-		    ref.push_back(c1);
+		    ref.push_back(cl0);
 		    ref.push_back(p2);
 		  }
 	      }
@@ -6128,7 +6136,20 @@ GameApi::P GameApi::PolygonApi::static_instancing_matrix(EveryApi &ev, P obj, MS
       vec.push_back(trans);
     }
   return or_array2(vec);
-  
+}
+EXPORT GameApi::LI GameApi::PolygonApi::li_static_instancing_matrix(EveryApi &ev, LI obj, MS matrix_array)
+{
+  MatrixArray *arr = find_matrix_array(e, matrix_array);
+  int s = arr->Size();
+  std::vector<LI> vec;
+  for(int i=0;i<s;i++)
+    {
+      Matrix m = arr->Index(i);
+      M m2 = add_matrix2(e, m);
+      LI trans = ev.lines_api.li_matrix(obj, m2);
+      vec.push_back(trans);
+    }
+  return ev.lines_api.li_or_array(vec);
 }
 
 GameApi::P GameApi::PolygonApi::static_instancing(EveryApi &ev, P obj, PTS pos)

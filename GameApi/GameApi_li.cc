@@ -235,6 +235,12 @@ private:
   Matrix m;
   LineCollection &coll;
 };
+EXPORT GameApi::LI GameApi::LinesApi::li_matrix(LI lines, M matrix)
+{
+  LineCollection *c = find_line_array(e, lines);
+  Matrix m = find_matrix(e, matrix);
+  return add_line_array(e, new MatrixLineCollection(m, *c));
+}
 EXPORT GameApi::LI GameApi::LinesApi::translate(LI lines, float dx, float dy, float dz)
 {
   LineCollection *c = find_line_array(e, lines);
@@ -1252,4 +1258,81 @@ GameApi::LI GameApi::LinesApi::random_angle(LI lines, float max_angle)
   LineCollection *lines2 = find_line_array(e, lines);
   return add_line_array(e, new RandomAngleLines(lines2, max_angle));
 
+}
+class LI_or_array : public LineCollection
+{
+public:
+  LI_or_array(std::vector<LineCollection*> vec) : vec(vec)
+  {
+    update_cache();
+  }
+  void update_cache()
+  {
+    int s2 = NumLines();
+    lines_cache.reserve(s2);
+    lines_num.reserve(s2);
+    int count = 0;
+    int sum = 0;
+    int f = 0;
+    int k = 0;
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	int oldsum = sum;
+	count = vec[i]->NumLines();
+	sum+=count;
+	for(int j=0;j<count;j++)
+	  {
+	    lines_cache.push_back(f-oldsum);
+	    lines_num.push_back(i);
+	    f++;
+	  }
+      }
+  }
+
+  
+  int NumLines() const
+  {
+    int s = vec.size();
+    int count=0;
+    for(int i=0;i<s;i++)
+      {
+	count+=vec[i]->NumLines();
+      }
+    return count;
+  }
+
+  Point LinePoint(int line, int point) const
+  {
+    return vec[lines_num[line]]->LinePoint(lines_cache[line], point);
+  }
+  unsigned int LineColor(int line, int point) const
+  {
+    return vec[lines_num[line]]->LineColor(lines_cache[line], point);
+    
+  }
+  Point EndLinePoint(int line, int point) const
+  {
+    return vec[lines_num[line]]->EndLinePoint(lines_cache[line], point);
+  }
+
+  unsigned int EndLineColor(int line, int point) const
+  {
+    return vec[lines_num[line]]->EndLineColor(lines_cache[line], point);
+  }
+  
+private:
+  std::vector<LineCollection*> vec;
+  std::vector<int> lines_cache;
+  std::vector<int> lines_num;
+};
+GameApi::LI GameApi::LinesApi::li_or_array(std::vector<LI> vec)
+{
+  std::vector<LineCollection*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_line_array(e, vec[i]));
+    }
+  return add_line_array(e, new LI_or_array(vec2));
 }

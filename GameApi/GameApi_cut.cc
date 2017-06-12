@@ -9,12 +9,12 @@ public:
   { 
 
   }
-  Point cut(Point p1, Point p2) const
+  std::vector<Point> cut(Point p1, Point p2) const
   {
 
     LinePlaneIntersection sect = LinePlaneIntersectionFunc(p1,p2,
 							   pos, pos+u_x, pos+u_y);
-    return IntersectionPoint(sect, p1, p2);
+    return std::vector<Point> { IntersectionPoint(sect, p1, p2) };
   }
 private:
   Point pos;
@@ -52,20 +52,21 @@ class DistanceCut : public Cutter
 {
 public:
   DistanceCut(DistanceRenderable *dr) : dr(dr) {}
-  Point cut(Point p1, Point p2) const
+  std::vector<Point> cut(Point p1, Point p2) const
   {
     Point p = p1;
     Vector v = (p2-p1);
     float dd = v.Dist();
     v /= dd;
+    std::vector<Point> vec;
     //int count = 0;
     float pos = 0.0;
     while(1) {
       float d = dr->distance(p);
       //std::cout << "Dist: " << d << std::endl;
       //std::cout << "Pos: " << pos << std::endl;
-      if (pos>1.0) return p2;
-      if (fabs(d)<0.0001) break;
+      if (pos>1.0) { vec.push_back(p2); return vec; }//std::vector<Point>{ p2 };
+      if (fabs(d)<0.0001) { vec.push_back(p); d+=0.2; }
       //if (count>30) return Point(0.0,0.0,0.0);
       // p+=v * d;
       pos+=fabs(d/dd);
@@ -75,7 +76,7 @@ public:
     }
     //if (pos<0.0 ||pos>1.0)
     //  std::cout << p1 << " " << p2 << ":" << p << std::endl;
-    return p;
+    return vec;
   }
 private:
   DistanceRenderable *dr;
@@ -98,9 +99,9 @@ public:
     u /= u.Dist();
     u*=dist;
     Point p2 = p1 + u;
-    Point cut_p = ct->cut(p1,p2);
+    std::vector<Point> cut_p = ct->cut(p1,p2);
     Vector v1 = p-p1;
-    Vector v2 = cut_p-p1;
+    Vector v2 = cut_p[0]-p1;
     return v1.Dist() < v2.Dist();
   }
 private:
