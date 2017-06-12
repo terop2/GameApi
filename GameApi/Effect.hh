@@ -4767,6 +4767,8 @@ class Waveform : public Function<float, float>
 {
 public:
   virtual ~Waveform() { }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) { return false; }
   virtual float Length() const=0;
   virtual float Min() const = 0;
   virtual float Max() const = 0;

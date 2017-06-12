@@ -3932,7 +3932,7 @@ public:
   is >> t;
   if (neg) t = -t;
 
-  std::cout << "Default: " << t << std::endl;
+  //std::cout << "Default: " << t << std::endl;
   return t;
   }
 };
@@ -7545,6 +7545,7 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "LLA", "LI" },
 			 { "", "" },
 			 "ML", "lines_api", "update_ml"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::line,
 			 "c_line",
 			 { "p1", "p2" },
@@ -7707,6 +7708,12 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "PTS", "float" },
 			 { "", "1.570795" },
 			 "PTS", "points_api", "rot_z"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::anim_rot_pts,
+			 "anim_rot_pts",
+			 { "pts", "start_time", "end_time", "v_x", "v_y", "v_z", "rotate_amount" },
+			 { "PTS", "float", "float", "float", "float", "float", "float" },
+			 { "", "0.0", "100.0", "0.0", "1.0", "0.0", "6.282" },
+			 "PTS", "points_api", "anim_rot_pts"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::scale,
 			 "scale_pts",
 			 { "obj", "sx", "sy", "sz" },
@@ -7719,6 +7726,22 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "PTS", "unsigned int" },
 			 { "", "ffffffff" },
 			 "PTS", "points_api", "color_points"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::wave_points,
+			 "wave_pts",
+			 { "wave", "num_samples", "pos_x", "pos_y", "pos_z",
+			     "u_x_x", "u_x_y", "u_x_z",
+			     "u_y_x", "u_y_y", "u_y_z" },
+			 { "WV", "int", "float", "float", "float",
+			     "float", "float", "float",
+			     "float", "float", "float" },
+			 { "", "50", "-300.0", "-300.0", "0.0", "600.0", "0.0", "0.0", "0.0", "600.0", "0.0" },
+			 "PTS", "points_api", "wave_points"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::filter_component,
+			 "filter_pts",
+			 { "pts", "comp", "val" },
+			 { "PTS", "int", "float" },
+			 { "", "2", "0.0" },
+			 "PTS", "points_api", "filter_component"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::from_volume,
 			 "from_volume",
 			 { "o", "pos", "u_x", "u_y", "u_z", "sx", "sy", "sz" },
@@ -7804,6 +7827,12 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "EveryApi&", "P", "MS" },
 			 { "ev", "", "" },
 			 "P", "polygon_api", "static_instancing_matrix"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::li_static_instancing_matrix,
+			 "ms_lines_inst",
+			 { "ev", "obj", "matrices" },
+			 { "EveryApi&", "LI", "MS" },
+			 { "ev", "", "" },
+			 "LI", "polygon_api", "li_static_instancing_matrix"));
   return vec;
 }
 std::vector<GameApiItem*> floatbitmapapi_functions()

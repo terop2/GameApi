@@ -1982,7 +1982,8 @@ public:
         IMPORT void save_model(P poly, std::string filename);
   IMPORT ML save_model_ml(P poly, std::string filename);
   IMPORT P prepare_cut(P p);
-
+  
+  
   //IMPORT P line(PT p1, PT p2);
 	IMPORT P triangle(PT p1, PT p2, PT p3);
 	IMPORT P quad(PT p1, PT p2, PT p3, PT p4);
@@ -2060,6 +2061,7 @@ public:
   IMPORT P line_to_cone(EveryApi &ev, LI li, float size, int numfaces);
   IMPORT P static_instancing(EveryApi &ev, P obj, PTS pos);
   IMPORT P static_instancing_matrix(EveryApi &ev, P obj, MS matrix_array);
+  IMPORT LI li_static_instancing_matrix(EveryApi &ev, LI obj, MS matrix_array);
   IMPORT P static_instancing_with_color(EveryApi &ev, P obj, BM bm, float start_x, float end_x, float start_y, float end_y, float z);
   
   IMPORT P color(P orig, unsigned int color);
@@ -2804,6 +2806,12 @@ public:
   IMPORT PTS unit_to_flex(PTS orig, 
 			PT bTL, PT bTR, PT bBL, PT bBR,
 			PT fTL, PT fTR, PT fBL, PT fBR);
+  IMPORT PTS wave_points(WV wave, int num_samples,
+			 float pos_x, float pos_y, float pos_z,
+			 float u_x_x, float u_x_y, float u_x_z,
+			 float u_y_x, float u_y_y, float u_y_z);
+  IMPORT PTS filter_component(PTS pts, int comp, float val);
+  IMPORT PTS anim_rot_pts(PTS pts, float start_time, float end_time, float v_x, float v_y, float v_z, float rotate_amount);
 
   IMPORT PTA prepare(PTS p);
   IMPORT int num_points(PTA pta);
@@ -2845,6 +2853,8 @@ public:
 	IMPORT LI function(std::function<PT(int linenum, bool id)> f,
 	      int numlines);
   IMPORT LI point_array(std::vector<PT> vec);
+  IMPORT LI li_or_array(std::vector<LI> vec);
+  IMPORT LI li_matrix(LI lines, M matrix);
   IMPORT LI color_function(LI lines, std::function<unsigned int(int linenum, bool id)> f);
   IMPORT LI change_color(LI li, unsigned int color);
   IMPORT LI change_color(LI li, unsigned int color_1, unsigned int color_2);

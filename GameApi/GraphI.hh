@@ -584,7 +584,7 @@ protected:
 class Cutter
 {
 public:
-  virtual Point cut(Point p1, Point p2) const=0;
+  virtual std::vector<Point> cut(Point p1, Point p2) const=0;
 };
 
 class Collision
