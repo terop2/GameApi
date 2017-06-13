@@ -54,6 +54,7 @@ public:
   DistanceCut(DistanceRenderable *dr) : dr(dr) {}
   std::vector<Point> cut(Point p1, Point p2) const
   {
+    std::swap(p1,p2);
     Point p = p1;
     Vector v = (p2-p1);
     float dd = v.Dist();
@@ -65,8 +66,8 @@ public:
       float d = dr->distance(p);
       //std::cout << "Dist: " << d << std::endl;
       //std::cout << "Pos: " << pos << std::endl;
-      if (pos>1.0) { vec.push_back(p2); return vec; }//std::vector<Point>{ p2 };
-      if (fabs(d)<0.0001) { vec.push_back(p); d+=0.2; }
+      if (pos>1.0) { vec.push_back(p2); break; }//std::vector<Point>{ p2 };
+      if (fabs(d)<0.0001) { vec.push_back(p); break; }
       //if (count>30) return Point(0.0,0.0,0.0);
       // p+=v * d;
       pos+=fabs(d/dd);

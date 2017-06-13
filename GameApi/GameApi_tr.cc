@@ -97,7 +97,7 @@ public:
     for(int i=0;i<f;i++)
       {
 	int c = coll->NumPoints(i);
-	for(int j=0;j<c/2;j++)
+	for(int j=0;j<c/2+1;j++)
 	  {
 	    int jj = j;
 	    Point p = coll->FacePoint(i,jj);
@@ -125,6 +125,11 @@ public:
 	    color.push_back(color[color.size()-1]);
 	    texcoord.push_back(texcoord[texcoord.size()-1]);
 	    normal.push_back(normal[normal.size()-1]);
+
+	    pos.push_back(pos[pos.size()-1]);
+	    color.push_back(color[color.size()-1]);
+	    texcoord.push_back(texcoord[texcoord.size()-1]);
+	    normal.push_back(normal[normal.size()-1]);
 	  }
 	if (i!=f-1) {
 	  Point p = coll->FacePoint(i+1,0);
@@ -135,6 +140,12 @@ public:
 	  color.push_back(col);
 	  texcoord.push_back(tex);
 	  normal.push_back(n);
+
+	  pos.push_back(p);
+	  color.push_back(col);
+	  texcoord.push_back(tex);
+	  normal.push_back(n);
+	  
 	}
       }
 
