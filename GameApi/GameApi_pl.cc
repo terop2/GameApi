@@ -4822,14 +4822,66 @@ public:
 	int p = i->NumPoints(ii);
 	//std::cout << p << std::endl;
 	std::vector<Point> &ref = faces[faces.size()-1];
+	std::cout << "start" << std::endl;
 	for(int jj=0;jj<p;jj++)
 	  {
 	    int jjj1 = jj;
-	    int jjj2 = (jjj1+1)%p;
+	    while(jjj1<0) jjj1+=p;
+	    while(jjj1>=p) jjj1-=p;
+	    int jjj2 = jjj1+1;
+	    while(jjj2<0) jjj2+=p;
+	    while(jjj2>=p) jjj2-=p;
 	    Point p1 = i->FacePoint(ii, jjj1);
 	    Point p2 = i->FacePoint(ii, jjj2);
 	    bool b1 = oo->Inside(p1);
 	    bool b2 = oo->Inside(p2);
+
+	    if (jj==0) { ref.push_back(p1); }
+
+	    if (!b1 && !b2) {
+	      std::cout << "!b1 && !b2" << std::endl;
+	      //ref.push_back(p1);
+		  ref.push_back(p2);	      
+	    }
+	    if (!b1 && b2) {
+	      std::cout << "!b1 && b2" << std::endl;
+	      Point prev = p1;
+	      Point curr = p2;
+	      for(int h=0;h<p;h++)
+		{
+		  int jjj3 = jjj2+h;
+		  while(jjj3<0) jjj3+=p;
+		  while(jjj3>=p) jjj3-=p;
+
+		  curr = i->FacePoint(ii, jjj3);
+		  bool b3 = oo->Inside(curr);
+		  if (!b3) break;
+		  prev = curr;
+		}
+	      std::vector<Point> c0 = cut->cut(p1,p2);
+	      std::vector<Point> c1 = cut->cut(prev,curr);
+	      //ref.push_back(p1);
+	      ref.push_back(c0[0]);
+	      ref.push_back(c1[0]);	      
+	      ref.push_back(curr);
+	    }
+#if 1
+	    if (b1 && !b2) {
+	      std::cout << "b1 && !b2" << std::endl;
+	      std::vector<Point> c0 = cut->cut(p1,p2);
+	      //ref.push_back(c0[0]);
+	      ref.push_back(p2);	      
+	    }
+#endif
+	    //if (b1 && b2)
+	    //  {
+	    //	  ref.push_back(p1);
+	    //	  ref.push_back(p2);	      
+	    //  }
+	    
+	    
+
+#if 0
 	    if (b1!=b2)
 	      {
 
@@ -4861,18 +4913,70 @@ public:
 		  ref.push_back(p1);
 		  ref.push_back(p2);
 		}
+		else
+		  {
+		    Point p0,p0a,p3,p3a;
+		    int h=0;
+		    for(;h<p;h++) {
+		      int jjj0 = jj-h;
+		      while(jjj0<0) jjj0+=p;
+		      while(jjj0>=p) jjj0-=p;
+
+		      int jjj0a = jj-h+1;
+		      while(jjj0a<0) jjj0a+=p;
+		      while(jjj0a>=p) jjj0a-=p;
+
+		      p0 = i->FacePoint(ii, jjj0);
+		      p0a = i->FacePoint(ii, jjj0a);
+		      bool b0 = oo->Inside(p0);
+		      if (!b0) break;
+		    }
+		    if (h==p) continue;
+		    h=0;
+		    for(;h<p;h++) {
+		      int jjj3 = (jjj1+2+h)%p;
+		      while(jjj3<0) jjj3+=p;
+		      while(jjj3>=p) jjj3-=p;
+		      int jjj3a = jjj1+1+h;
+		      while(jjj3a<0) jjj3a+=p;
+		      while(jjj3a>=p) jjj3a-=p;
+		      p3 = i->FacePoint(ii, jjj3);
+		      p3a = i->FacePoint(ii, jjj3a);
+		      bool b3 = oo->Inside(p3);
+		      if (!b3) break;
+		    }
+		    if (h==p) continue;
+		    
+		    std::vector<Point> c1 = cut->cut(p0,p0a);
+		    std::vector<Point> c2 = cut->cut(p3,p3a);
+		    ref.push_back(c1[0]);
+		    ref.push_back(c2[0]);
+		  }
 	      }
+#endif
 	  }
       }
   }
   void compress()
   {
     int f = faces.size();
+    int count = 0;
     for(int ii=0;ii<f; ii++)
       {
 	int p = faces[ii].size();
 	if (p==0 ||p==1 ||p==2) continue;
-	faces2.push_back(faces[ii]);
+	faces2.push_back(std::vector<Point>());
+#if 1
+	Point prev;
+	for(int i=0;i<p;i++)
+	  {
+	    if ((prev-faces[ii][i]).Dist()>0.001)
+	      faces2[count].push_back(faces[ii][i]);
+	    prev = faces[ii][i];
+	  }
+#endif
+	//			faces2[count].push_back(faces2[count][0]);
+	count++;
       }
   }
 
