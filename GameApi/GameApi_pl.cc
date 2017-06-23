@@ -6401,3 +6401,24 @@ GameApi::ML GameApi::PolygonApi::dither_shader(EveryApi &ev, ML mainloop)
 {
   return custom_shader(ev,mainloop,dither_shader_string_v,dither_shader_string_f,"dither","dither");
 }
+
+class LogCoordsFaceCollection : public ForwardFaceCollection
+{
+public:
+  LogCoordsFaceCollection(FaceCollection *coll) : ForwardFaceCollection(*coll) { }
+  Point FacePoint(int face, int point) const
+  {
+    Point p = ForwardFaceCollection::FacePoint(face,point);
+    SphericalPoint sp(Point(0.0,0.0,0.0));
+    sp.FromPoint(p);
+    sp.r = log(sp.r);
+    Point p2 = sp.ToPoint();
+    return p2;
+  }
+};
+
+GameApi::P GameApi::PolygonApi::log_coords(P p)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  return add_polygon2(e, new LogCoordsFaceCollection(coll),1);
+}

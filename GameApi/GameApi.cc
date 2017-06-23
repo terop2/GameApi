@@ -10147,3 +10147,4 @@ GameApi::PTS GameApi::PointsApi::anim_rot_pts(PTS pts, float start_time, float e
   PointsApiPoints *next = find_pointsapi_points(e, pts);
   return add_points_api_points(e, new AnimRotPTS(next, start_time, end_time, Vector(v_x,v_y,v_z), rotate_amount));
 }
+
