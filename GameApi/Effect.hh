@@ -6172,6 +6172,14 @@ public:
     SampleSurfaceIn3d sample(*s, 0, x, y);
     return sample.TexCoord(face1, point);
   }
+  virtual float TexCoord3(int face, int point) const
+  {
+    int face1 = face / faces.NumFaces();
+    int face2 = face - face1*faces.NumFaces();
+    const SurfaceIn3d *s = surf.Index(face2);
+    SampleSurfaceIn3d sample(*s, 0, x, y);
+    return sample.TexCoord3(face1, point);
+  }
 
 
   virtual Vector PointNormal(int face, int point) const

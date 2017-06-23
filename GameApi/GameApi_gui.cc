@@ -7161,6 +7161,19 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P", "float", "float", "float" },
 			 { "", "1.0", "1.0", "1.0" },
 			 "P", "polygon_api", "scale","[S]"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::log_coords,
+			 "log_coords",
+			 { "p" },
+			 { "P" },
+			 { "" },
+			 "P", "polygon_api", "log_coords"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::splitquads,
+			 "splitquads",
+			 { "p", "x_count", "y_count" },
+			 { "P", "int", "int" },
+			 { "", "5", "5" },
+			 "P", "polygon_api", "splitquads"));
+			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::shadow,
 			 "shadow",
 			 { "orig", "pos", "u_x", "u_y", "light_vec" },

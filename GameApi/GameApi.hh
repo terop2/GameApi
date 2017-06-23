@@ -2133,6 +2133,8 @@ public:
   IMPORT P scale(P orig, float sx, float sy, float sz);
   IMPORT P matrix(P orig, M mat);
 
+  IMPORT P log_coords(P p);
+  
   IMPORT P unit_cube(P orig, PT pos, V u_x, V u_y, V u_z);
   IMPORT P unit_to_cube(P orig, PT pos, V u_x, V u_y, V u_z);
   IMPORT P unit_to_flex(P orig, 
