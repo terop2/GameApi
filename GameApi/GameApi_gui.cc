@@ -6805,7 +6805,16 @@ std::vector<GameApiItem*> polydistfield_functions()
  
   return vec;
 }
+std::vector<GameApiItem*> polygonapi_functions1();
+std::vector<GameApiItem*> polygonapi_functions2();
 std::vector<GameApiItem*> polygonapi_functions()
+{
+  std::vector<GameApiItem*> i1 = polygonapi_functions1();
+  std::vector<GameApiItem*> i2 = polygonapi_functions2();
+  std::copy(i2.begin(),i2.end(),std::back_inserter(i1));
+  return i1;
+}
+std::vector<GameApiItem*> polygonapi_functions1()
 {
   std::vector<GameApiItem*> vec;
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::empty,
@@ -6966,6 +6975,12 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "EveryApi&", "P", "BM", "float", "float", "float", "float", "float" },
 			 { "ev", "", "", "-200.0", "200.0", "-200.0", "200.0", "0.0" },
 			 "P", "polygon_api", "static_instancing_with_color"));
+  return vec;
+}
+std::vector<GameApiItem*> polygonapi_functions2()
+{
+  std::vector<GameApiItem*> vec;
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_map,
 			 "color_map",
 			 { "bm", "statt_x", "end_x", "start_y", "end_y", "z" },
