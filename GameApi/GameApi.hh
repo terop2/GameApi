@@ -1378,6 +1378,7 @@ public:
   IMPORT ML enemy_pos(ML prev, PTS pos);
   IMPORT DC identity();
   IMPORT DC wave(float r,float speed1,float speed2,float dist1, float dist2,int sx,int sy);
+  IMPORT DC sphwave(float r1, float fr_1, float t_1, float r2, float fr_2, float t_2);
   IMPORT DC explosion(float center_x, float center_y, float center_z, float start_val, float end_val, float start_time, float end_time);
   IMPORT DC compose(DC d1, DC d2);
   IMPORT DC split(DC d1, DC d2, float val);
@@ -2134,6 +2135,8 @@ public:
   IMPORT P matrix(P orig, M mat);
 
   IMPORT P log_coords(P p);
+  IMPORT P log_coords2(P p, int x_count, int y_count, float sx, float sy, float sz);
+  IMPORT P spherical_wave(P p, float r1, float fr_1, float r2, float fr_2);
   
   IMPORT P unit_cube(P orig, PT pos, V u_x, V u_y, V u_z);
   IMPORT P unit_to_cube(P orig, PT pos, V u_x, V u_y, V u_z);

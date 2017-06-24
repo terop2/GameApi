@@ -9958,6 +9958,33 @@ private:
   float start_time, end_time;
 };
 
+class SphWaveChange : public DynamicChange
+{
+public:
+  SphWaveChange(float r1, float fr_1, float r2, float fr_2, float t_1, float t_2) : r1(r1), r2(r2), fr_1(fr_1), fr_2(fr_2), t_1(t_1), t_2(t_2) { }
+  void applychange(float *source, float *target, int size, MainLoopEnv &e)
+  {
+    int s = size/3;
+    SphericalPoint sp(Point(0.0,0.0,0.0));
+    for(int i=0;i<s;i++)
+      {
+	Point p(source[0],source[1],source[2]);
+	sp.FromPoint(p);
+	sp.r = sp.r + r1*cos(fr_1*sp.alfa+t_1*e.time) + r2*cos(fr_2*sp.beta+t_2*e.time);
+	Point p2 = sp.ToPoint();
+	target[0] = p2.x;
+	target[1] = p2.y;
+	target[2] = p2.z;
+	source+=3;
+	target+=3;
+      }
+  }
+private:
+  float r1,r2;
+  float fr_1, fr_2;
+  float t_1, t_2;
+};
+
 class WaveChange : public DynamicChange
 {
 public:
@@ -10015,6 +10042,10 @@ GameApi::DC GameApi::MovementNode::explosion(float center_x, float center_y, flo
 GameApi::DC GameApi::MovementNode::wave(float r, float speed1, float speed2, float dist1, float dist2, int sx, int sy)
 {
   return add_dyn_change(e, new WaveChange(r,speed1, speed2, dist1, dist2, sx,sy));
+}
+GameApi::DC GameApi::MovementNode::sphwave(float r1, float fr_1, float t_1, float r2, float fr_2, float t_2)
+{
+  return add_dyn_change(e, new SphWaveChange(r1,fr_1,r2,fr_2,t_1,t_2));
 }
 class SplitChange : public DynamicChange
 {

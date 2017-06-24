@@ -5626,6 +5626,12 @@ std::vector<GameApiItem*> vectorapi_functions()
 			 { "float", "float", "float", "float", "float", "int", "int" },
 			 { "30.0", "1.0", "1.0", "30.0", "30.0", "30", "30" },
 			 "DC", "move_api", "wave"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::sphwave,
+			 "dc_sphwave",
+			 { "r1", "fr_1", "t_1", "r2", "fr_2", "t_2" },
+			 { "float", "float", "float", "float", "float", "float" },
+			 { "30.0", "3.0", "1.0", "30.0", "5.0", "2.0" },
+			 "DC", "move_api", "sphwave"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::explosion,
 			 "dc_explosion",
 			 { "center_x", "center_y", "center_z", "start_val", "end_val", "start_time", "end_time" },
@@ -7161,12 +7167,27 @@ std::vector<GameApiItem*> polygonapi_functions()
 			 { "P", "float", "float", "float" },
 			 { "", "1.0", "1.0", "1.0" },
 			 "P", "polygon_api", "scale","[S]"));
+  #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::log_coords,
 			 "log_coords",
 			 { "p" },
 			 { "P" },
 			 { "" },
 			 "P", "polygon_api", "log_coords"));
+  #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::log_coords2,
+			 "log_coords",
+			 { "p", "x_count", "y_count", "sx", "sy", "sz" },
+			 { "P", "int", "int", "float", "float", "float" },
+			 { "", "5", "5", "30.0", "30.0", "30.0" },
+			 "P", "polygon_api", "log_coords2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::spherical_wave,
+			 "sph_wave",
+			 { "p", "r1", "freq_1", "r2", "freq_2" },
+			 { "P", "float", "float", "float", "float" },
+			 { "", "30.0", "1.0", "30.0", "3.0" },
+			 "P", "polygon_api", "spherical_wave"));
+			
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::splitquads,
 			 "splitquads",
 			 { "p", "x_count", "y_count" },
