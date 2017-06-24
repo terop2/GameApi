@@ -6422,3 +6422,36 @@ GameApi::P GameApi::PolygonApi::log_coords(P p)
   FaceCollection *coll = find_facecoll(e, p);
   return add_polygon2(e, new LogCoordsFaceCollection(coll),1);
 }
+
+GameApi::P GameApi::PolygonApi::log_coords2(P p, int x_count, int y_count, float sx, float sy, float sz)
+{
+  P p1 = splitquads(p, x_count,y_count);
+  P p2 = log_coords(p1);
+  P p3 = scale(p2,sx,sy,sz);
+  return p3;
+}
+
+class SphericalWave : public ForwardFaceCollection
+{
+public:
+  SphericalWave(FaceCollection *coll, float r1, float fr_1, float r2, float fr_2) : ForwardFaceCollection(*coll), r1(r1), r2(r2), fr_1(fr_1), fr_2(fr_2) { }
+  Point FacePoint(int face, int point) const
+  {
+    Point p = ForwardFaceCollection::FacePoint(face,point);
+    SphericalPoint sp(Point(0.0,0.0,0.0));
+    sp.FromPoint(p);
+    sp.r = sp.r + r1*cos(fr_1*sp.alfa) + r2*cos(fr_2*sp.beta);
+    Point p2 = sp.ToPoint();
+    return p2;
+  }
+private:
+  FaceCollection *coll;
+  float r1,r2;
+  float fr_1, fr_2;
+};
+
+GameApi::P GameApi::PolygonApi::spherical_wave(P p, float r1, float freq_1, float r2, float freq_2)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  return add_polygon2(e, new SphericalWave(coll, r1, freq_1, r2, freq_2), 1);
+}
