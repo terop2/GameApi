@@ -6391,6 +6391,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML","float", "float", "float", "float" },
 			 { "ev", "", "0.0", "0.0", "800.0", "600.0" },
 			 "ML", "sprite_api", "turn_to_2d"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::scale_2d_screen,
+			 "bm_2d_screen_scale",
+			 { "ev", "orig" },
+			 { "EveryApi&", "ML" },
+			 { "ev", "" },
+			 "ML", "mainloop_api", "scale_2d_screen"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sprite_render,
 			 "sp_render",
 			 { "ev", "bm", "start_x", "end_x", "start_y", "end_y", "z" },
