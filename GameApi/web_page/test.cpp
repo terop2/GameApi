@@ -253,6 +253,7 @@ int main(int argc, char *argv[]) {
 
   // initialize window
   ev.mainloop_api.init_window(w_width,w_height);
+  ev.mainloop_api.set_screen_size(w_width, w_height);
   ev.mainloop_api.set_homepage_url(homepageurl);
   ev.shader_api.load_default();
 
