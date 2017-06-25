@@ -10179,3 +10179,33 @@ GameApi::PTS GameApi::PointsApi::anim_rot_pts(PTS pts, float start_time, float e
   return add_points_api_points(e, new AnimRotPTS(next, start_time, end_time, Vector(v_x,v_y,v_z), rotate_amount));
 }
 
+class Scale2dScreen : public MainLoopItem
+{
+public:
+  Scale2dScreen(GameApi::EveryApi &ev, MainLoopItem *item) : ev(ev), item(item) {}
+  virtual void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    float source_sx = 800;
+    float source_sy = 600;
+    float target_sx = ev.mainloop_api.get_screen_sx();
+    float target_sy = ev.mainloop_api.get_screen_sy();
+    Matrix m1 = Matrix::Scale(target_sx/source_sx,target_sy/source_sy,1.0);
+    ee.in_MV = m1 * e.in_MV;
+    item->execute(ee);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual int shader_id() { return item->shader_id(); }
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *item;
+};
+
+GameApi::ML GameApi::MainLoopApi::scale_2d_screen(GameApi::EveryApi &ev, ML orig)
+{
+  MainLoopItem *item = find_main_loop(e, orig);
+  return add_main_loop(e, new Scale2dScreen(ev, item));
+}
