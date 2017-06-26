@@ -10182,16 +10182,19 @@ GameApi::PTS GameApi::PointsApi::anim_rot_pts(PTS pts, float start_time, float e
 class Scale2dScreen : public MainLoopItem
 {
 public:
-  Scale2dScreen(GameApi::EveryApi &ev, MainLoopItem *item) : ev(ev), item(item) {}
+  Scale2dScreen(GameApi::EveryApi &ev, MainLoopItem *item, float sx, float sy) : ev(ev), item(item), sx(sx), sy(sy) {}
   virtual void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
-    float source_sx = 800;
-    float source_sy = 600;
+    float source_sx = sx;
+    float source_sy = sy;
     float target_sx = ev.mainloop_api.get_screen_sx();
     float target_sy = ev.mainloop_api.get_screen_sy();
+    //float target_sx = 200;
+    //float target_sy = 200;
     Matrix m1 = Matrix::Scale(target_sx/source_sx,target_sy/source_sy,1.0);
-    ee.in_MV = m1 * e.in_MV;
+    ee.in_MV = e.in_MV * m1;
+    ee.env = e.env * m1;
     item->execute(ee);
   }
   virtual void handle_event(MainLoopEvent &e)
@@ -10202,10 +10205,11 @@ public:
 private:
   GameApi::EveryApi &ev;
   MainLoopItem *item;
+  float sx,sy;
 };
 
-GameApi::ML GameApi::MainLoopApi::scale_2d_screen(GameApi::EveryApi &ev, ML orig)
+GameApi::ML GameApi::MainLoopApi::scale_2d_screen(GameApi::EveryApi &ev, ML orig, float sx, float sy)
 {
   MainLoopItem *item = find_main_loop(e, orig);
-  return add_main_loop(e, new Scale2dScreen(ev, item));
+  return add_main_loop(e, new Scale2dScreen(ev, item,sx,sy));
 }
