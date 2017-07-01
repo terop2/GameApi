@@ -1243,3 +1243,102 @@ bool TriangleProperties::is_inside_circum_sphere(Point p) const
   SphereProperties2 prop(center, radius);
   return prop.InsideSphere(p);
 }
+
+std::vector<float> Polynomial::basis_vector(int count, float val)
+{
+  std::vector<float> vec;
+  float mul = 1.0;
+  for(int i=0;i<count;i++)
+    {
+      vec.push_back(mul);
+      mul*=val;
+    }
+  return vec;
+}
+float Polynomial::mul(std::vector<float> v1,
+		      std::vector<float> v2)
+{
+  int s = std::min(v1.size(), v2.size());
+  float val = 0.0;
+  for(int i=0;i<s;i++)
+    {
+      val+=v1[i]*v2[i];
+    }
+  return val;
+}
+
+std::vector<float> Polynomial::mul_matrix(const PolyMatrix &m, std::vector<float> &v)
+{
+  int s = v.size();
+  int sx = std::min(m.sx,s);
+  int sy = m.sy;
+  std::vector<float> res;
+  for(int y=0;y<sy;y++) {
+    float val = 0.0;
+    for(int x=0;x<sx;x++)
+      {
+	val+=m.grid[x+y*sx]*v[x];
+      }
+    res.push_back(val);
+  }
+  return res;
+}
+std::vector<float> Polynomial::scale(std::vector<float> v, float c)
+{
+  int s = v.size();
+  for(int i=0;i<s;i++)
+    v[i]*=c;
+  return v;
+}
+
+std::vector<float> Polynomial::add(std::vector<float> v1, std::vector<float> v2)
+{
+  std::vector<float> res;
+  int s = std::min(v1.size(), v2.size());
+  for(int i=0;i<s;i++)
+    {
+      res.push_back(v1[i]+v2[i]);
+    }
+  int s1 = v1.size();
+  int s2 = v2.size();
+  if (s1>s2) {
+    for(int i=s;i<s1;i++)
+      res.push_back(v1[i]);
+  } else if (s2>s1) {
+    for(int i=s;i<s2;i++)
+      res.push_back(v2[i]);
+  }
+  return res;
+}
+PolyMatrix PolyMatrix::ZeroMatrix(int sx, int sy)
+{
+  PolyMatrix m(sx,sy);
+  for(int y=0;y<sy;y++)
+    for(int x=0;x<sx;x++)
+      {
+	m.grid[x+y*sx] = 0.0f;
+      }
+  return m;
+}
+PolyMatrix PolyMatrix::IdentityMatrix(int sx, int sy)
+{
+  PolyMatrix m(sx,sy);
+  for(int y=0;y<sy;y++)
+    for(int x=0;x<sx;x++)
+      {
+	m.grid[x+y*sx] = x==y?1.0:0.0f;
+      }
+  return m;
+}
+PolyMatrix PolyMatrix::df_per_dx(int sx, int sy)
+{
+  PolyMatrix m(sx,sy);
+  for(int y=0;y<sy;y++)
+    for(int x=0;x<sx;x++)
+      {
+	float val = 0.0;
+	if (x-1==y) val=float(y+1);
+	m.grid[x+y*sx] = val;
+      }
+  return m;
+}
