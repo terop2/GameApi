@@ -31,6 +31,7 @@ using std::placeholders::_9;
 #undef rad2
 
 
+  struct PN { int id; };
   struct DC { int id; };
   struct CBB { int id; };
   struct CFB { int id; };
@@ -2325,6 +2326,10 @@ public:
 	IMPORT BM waveform_bitmap(WV wave, int sx, int sy, unsigned int true_color, unsigned int false_color);
   IMPORT P waveform_rotated_polygon(WV wave, float start_angle, float end_angle, float radius, int num_samples, int num_waves);
 
+  IMPORT PN std_polynomial(float x_5, float x_4, float x_3, float x_2, float x_1, float c);
+  IMPORT PN df_dx(PN poly);
+  IMPORT WV polynomial_wave(PN pn, float start_x, float end_x, float start_y, float end_y);
+  
 private:
   WaveformApi(const WaveformApi&);
   void operator=(const WaveformApi&);

@@ -22,6 +22,7 @@
 #define VECTORTOOLS_HH
 #include <iostream>
 #include <cmath>
+#include <vector>
 
 //#pragma warning(disable:4244)
 //#pragma warning(disable:4305)
@@ -1060,6 +1061,52 @@ class Cube3d
 {
 public:
   virtual void Draw(FlexibleCube c, GC3d *gc) const=0;
+};
+
+class PolyMatrix
+{
+public:
+  PolyMatrix(int sx, int sy) : sx(sx), sy(sy) {
+    grid = new float[sx*sy];
+  }
+  PolyMatrix(const PolyMatrix &m)
+    : sx(m.sx), sy(m.sy)
+  {
+    grid = new float[sx*sy];
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++)
+	grid[x+y*sx] = m.grid[x+y*sx];    
+  }
+  PolyMatrix &operator=(const PolyMatrix &m)
+  {
+    sx = m.sx;
+    sy = m.sy;
+    delete [] grid;
+    grid = new float[sx*sy];
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++)
+	grid[x+y*sx] = m.grid[x+y*sx];
+    return *this;
+  }
+  static PolyMatrix ZeroMatrix(int sx, int sy);
+  static PolyMatrix IdentityMatrix(int sx, int sy);
+  static PolyMatrix df_per_dx(int sx, int sy);
+  void set_val(int x, int y, float val) { grid[x+y*sx] = val; }
+  float read_val(int x, int y) const { return grid[x+y*sx]; }
+  ~PolyMatrix() { delete[] grid; }
+public:
+  int sx,sy;
+  float *grid;
+};
+
+class Polynomial
+{
+public:
+  static std::vector<float> basis_vector(int count, float val); //count=1: constant, count=2: x, count=3: x^2. etc.
+  static float mul(std::vector<float> v1, std::vector<float> v2); // v2 should be basis_vector
+  static std::vector<float> mul_matrix(const PolyMatrix &m, std::vector<float> &v);
+  static std::vector<float> scale(std::vector<float> v, float c);
+  static std::vector<float> add(std::vector<float> v1, std::vector<float> v2);
 };
 
 #endif

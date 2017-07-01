@@ -389,6 +389,15 @@ SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
 ARRMACRO2(GameApi::PAR,par)
 #undef ARRMACRO2
+GameApi::PN add_polynomial(GameApi::Env &e, std::vector<float> *pn)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->polynomials.push_back(pn);
+  GameApi::PN im;
+  im.id = env->polynomials.size()-1;
+  return im;
+
+}
 
 GameApi::TXID add_txid(GameApi::Env &e, TextureID *txid)
 {
@@ -1300,6 +1309,11 @@ public:
 private:
   int id;
 };
+std::vector<float> *find_polynomial(GameApi::Env &e, GameApi::PN pn)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->polynomials[pn.id];
+}
 DynamicChange *find_dyn_change(GameApi::Env &e, GameApi::DC dc)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -10212,4 +10226,55 @@ GameApi::ML GameApi::MainLoopApi::scale_2d_screen(GameApi::EveryApi &ev, ML orig
 {
   MainLoopItem *item = find_main_loop(e, orig);
   return add_main_loop(e, new Scale2dScreen(ev, item,sx,sy));
+}
+
+GameApi::PN GameApi::WaveformApi::std_polynomial(float x_5, float x_4, float x_3, float x_2, float x_1, float c)
+{
+  std::vector<float> *vec = new std::vector<float>;
+  vec->push_back(c);
+  vec->push_back(x_1);
+  vec->push_back(x_2);
+  vec->push_back(x_3);
+  vec->push_back(x_4);
+  vec->push_back(x_5);
+  return add_polynomial(e, vec);
+}
+class PolynomialWave : public Waveform
+{
+public:
+  PolynomialWave(std::vector<float> *vec, float start_x, float end_x, float start_y, float end_y) : vec(vec), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y) { }
+  void HandleEvent(MainLoopEvent &event) { }
+  bool Update(MainLoopEnv &e) { return false; }
+  float Length() const {
+    return end_x-start_x;
+  }
+  float Min() const { return start_y; }
+  float Max() const { return end_y; }
+  float Index(float val) const
+  {
+    val+=start_x;
+    std::vector<float> basis = Polynomial::basis_vector(vec->size(), val);
+    float v = Polynomial::mul(*vec, basis);
+    return v;
+  }
+private:
+  std::vector<float> *vec;
+  float start_x, end_x;
+  float start_y, end_y;
+};
+
+GameApi::WV GameApi::WaveformApi::polynomial_wave(PN pn, float start_x, float end_x, float start_y, float end_y)
+{
+  std::vector<float> *poly = find_polynomial(e, pn);
+  return add_waveform(e, new PolynomialWave(poly, start_x, end_x, start_y, end_y));
+}
+
+GameApi::PN GameApi::WaveformApi::df_dx(PN poly)
+{
+  std::vector<float> *vec = find_polynomial(e, poly);
+  int sx = vec->size();
+  int sy = vec->size();
+  std::vector<float> vec2 = Polynomial::mul_matrix(PolyMatrix::df_per_dx(sx,sy), *vec);
+  std::vector<float> *vec3 = new std::vector<float>(vec2);
+  return add_polynomial(e, vec3);
 }

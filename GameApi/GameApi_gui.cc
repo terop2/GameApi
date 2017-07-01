@@ -4183,6 +4183,7 @@ MACRO(GameApi::CBB)
 MACRO(GameApi::CFB)
 MACRO(GameApi::PH)
 MACRO(GameApi::DC)
+MACRO(GameApi::PN)
 #undef MACRO
 
 
@@ -6737,6 +6738,25 @@ std::vector<GameApiItem*> waveform_functions()
 			 { "WV", "int", "int", "unsigned int", "unsigned int" },
 			 { "", "100", "100", "ffffffff", "00000000" },
 			 "BM", "waveform_api", "waveform_bitmap"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::std_polynomial,
+			 "pn_std",
+			 { "x_5", "x_4", "x_3", "x_2", "x_1", "c" },
+			 { "float", "float", "float", "float", "float", "float" },
+			 { "0.0", "0.0", "0.0", "0.0", "0.0", "0.0" },
+			 "PN", "waveform_api", "std_polynomial"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::df_dx,
+			 "pn_df_dx",
+			 { "poly" },
+			 { "PN" },
+			 { "" },
+			 "PN", "waveform_api", "df_dx"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::polynomial_wave,
+			 "wv_polynomial",
+			 { "pn", "start_x", "end_x", "start_y", "end_y" },
+			 { "PN", "float", "float", "float", "float" },
+			 { "", "-5.0", "5.0", "5.0", "-5.0" },
+			 "WV", "waveform_api", "polynomial_wave"));
   return vec;
 }
 std::vector<GameApiItem*> polydistfield_functions()
