@@ -751,8 +751,8 @@ ShaderFile::ShaderFile()
 "#extension GL_EXT_texture_array : enable\n"
 "#endif\n"
 #endif
-"precision mediump float;\n"
-    //"uniform float time;\n"
+"precision lowp float;\n"
+"uniform float time;\n"
 "varying vec4 ex_Color;\n"
     //"flat varying vec4 ex_FlatColor;\n"
     //"out vec4 out_Color;\n"
