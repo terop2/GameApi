@@ -47,23 +47,30 @@ EXPORT void GameApi::FrameBufferApi::config_fbo(FBO buffer)
   
   glBindFramebuffer(GL_FRAMEBUFFER, priv->fbo_name);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, priv->texture, 0);
+  
   //GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
   //glDrawBuffers(1, DrawBuffers);
   //glReadBuffer( GL_COLOR_ATTACHMENT0 );
+  
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
-EXPORT void GameApi::FrameBufferApi::bind_fbo(FBO buffer)
+EXPORT GameApi::FrameBufferApi::vp GameApi::FrameBufferApi::bind_fbo(FBO buffer)
 {
   FBOPriv *priv = find_fbo(e, buffer);
   glBindFramebuffer(GL_FRAMEBUFFER, priv->fbo_name);
   glBindRenderbuffer(GL_RENDERBUFFER, priv->depthbuffer);
+  FrameBufferApi::vp viewport;
+  glGetIntegerv(GL_VIEWPORT, viewport.viewport);
   glViewport(0,0,priv->sx,priv->sy);
+  return viewport;
 }
-EXPORT void GameApi::FrameBufferApi::bind_screen(int sx, int sy)
+EXPORT void GameApi::FrameBufferApi::bind_screen(vp viewport)
 {
+
   glBindFramebuffer(GL_FRAMEBUFFER,0);
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  glViewport(0,0,sx,sy);
+  
+  glViewport(viewport.viewport[0],viewport.viewport[1],viewport.viewport[2],viewport.viewport[3]);
 }
 EXPORT bool GameApi::FrameBufferApi::fbo_status(FBO buffer)
 {
@@ -104,11 +111,18 @@ public:
     item->handle_event(e);
   }
   void render(MainLoopEnv &e) {
-    ev.fbo_api.bind_fbo(fbo);
+    int id=0;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &id);
+    glBindTexture(GL_TEXTURE_2D,0);
+    GameApi::FrameBufferApi::vp viewport = ev.fbo_api.bind_fbo(fbo);
     glClearColor(0.0,0.0,0.0,0.0);
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
     item->execute(e);
-    ev.fbo_api.bind_screen(ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
+    ev.fbo_api.bind_screen(viewport);
+    glBindTexture(GL_TEXTURE_2D, id);
+		  
   }
   int texture() const
   {

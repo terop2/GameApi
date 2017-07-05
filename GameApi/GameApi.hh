@@ -454,6 +454,7 @@ public:
 	IMPORT VA bind_arr(VA va, TXA tx);
         IMPORT TXA prepare_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
         IMPORT BM to_bitmap(TXID id);
+  IMPORT ML forward_to_txid(ML mainloop, TXID id);
 private:
   TextureApi(const TextureApi&);
   void operator=(const TextureApi&);
@@ -1153,6 +1154,7 @@ public:
   IMPORT MT def(EveryApi &ev);
   IMPORT MT skeletal(EveryApi &ev);
   IMPORT MT texture(EveryApi &ev, BM bm, float mix);
+  IMPORT MT textureid(EveryApi &ev, TXID txid, float mix);
   IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
   IMPORT MT snow(EveryApi &ev, MT nxt, unsigned int color1=0xffaaaaaa, unsigned int color2=0xffeeeeee, unsigned int color3=0xffffffff, float mix_val=0.5f);
   IMPORT MT flat(EveryApi &ev, MT nxt, unsigned int color1, unsigned int color2, unsigned int color3);
@@ -2228,6 +2230,7 @@ public:
   IMPORT ML dither_shader(EveryApi &ev, ML mainloop);
   IMPORT ML light_shader(EveryApi &ev, ML mainloop);
   IMPORT ML choose_color_shader(EveryApi &ev, ML mainloop, unsigned int color, float mix_val);
+  IMPORT ML blur_shader(EveryApi &ev, ML mainloop, float val);
   IMPORT ML toon_shader(EveryApi &ev, ML mainloop);
   IMPORT ML texture_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop, float mix);
@@ -3169,11 +3172,12 @@ private:
 class FrameBufferApi
 {
 public:
+  struct vp { int viewport[4]; };
   IMPORT FrameBufferApi(Env &e) : e(e) { }
   IMPORT FBO create_fbo(int sx, int sy);
   IMPORT void config_fbo(FBO buffer);
-  IMPORT void bind_fbo(FBO buffer);
-  IMPORT void bind_screen(int sx, int sy);
+  IMPORT vp bind_fbo(FBO buffer);
+  IMPORT void bind_screen(vp viewport);
   IMPORT TXID tex_id(FBO buffer);
   IMPORT TXID depth_id(FBO buffer);
   IMPORT bool fbo_status(FBO buffer);

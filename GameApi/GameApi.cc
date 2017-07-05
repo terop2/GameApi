@@ -4661,6 +4661,107 @@ private:
   float mix;
 };
 
+class ForwardRenderToTextureId : public MainLoopItem
+{
+public:
+  ForwardRenderToTextureId(MainLoopItem *next, TextureID *id) : next(next), id(id) { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    id->render(e);
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    id->handle_event(e);
+    next->handle_event(e);
+  }
+  virtual int shader_id() { return next->shader_id(); }
+
+private:
+  MainLoopItem *next;
+  TextureID *id;
+};
+GameApi::ML GameApi::TextureApi::forward_to_txid(ML mainloop, TXID id)
+{
+  MainLoopItem *next = find_main_loop(e, mainloop);
+  TextureID *txid = find_txid(e, id);
+  return add_main_loop(e, new ForwardRenderToTextureId(next, txid));
+}
+
+class TextureIDMaterial : public MaterialForward
+{
+public:
+  TextureIDMaterial(GameApi::EveryApi &ev, GameApi::TXID id, float mix) : ev(ev), txid(id), mix(mix) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+
+    GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
+    //GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
+    //GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
+    //GameApi::TXID I15=ev.texture_api.prepare(I14);
+    GameApi::TXID I15 = txid;
+    GameApi::VA I16=ev.texture_api.bind(I12,I15);
+    GameApi::ML I17=ev.polygon_api.render_vertex_array_ml(ev,I16);
+    GameApi::ML I17a = ev.texture_api.forward_to_txid(I17,I15);
+    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17a, mix);
+    return I18;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
+    //GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
+    //GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
+    //GameApi::TXID I15=ev.texture_api.prepare(I14);
+    GameApi::TXID I15 = txid;
+    GameApi::VA I16=ev.texture_api.bind(I12,I15);
+    GameApi::PTA pta = ev.points_api.prepare(pts);
+    GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
+    GameApi::ML I17a = ev.texture_api.forward_to_txid(I17,I15);
+    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17a,mix);
+    return I18;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
+    //GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
+    //GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
+    //GameApi::TXID I15=ev.texture_api.prepare(I14);
+    GameApi::TXID I15 = txid;
+    GameApi::VA I16=ev.texture_api.bind(I12,I15);
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
+    GameApi::ML I17a = ev.texture_api.forward_to_txid(I17,I15);
+    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17a,mix);
+    return I18;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
+    //GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
+    // GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
+    //GameApi::TXID I15=ev.texture_api.prepare(I14);
+    GameApi::TXID I15 = txid;
+    GameApi::VA I16=ev.texture_api.bind(I12,I15);
+    GameApi::PTA pta = ev.points_api.prepare(pts);
+    GameApi::ML I17=ev.materials_api.render_instanced2_ml_fade(ev,I16,pta, flip, start_time, end_time);
+    GameApi::ML I17a = ev.texture_api.forward_to_txid(I17,I15);
+    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17a,mix);
+    return I18;
+  }
+private:
+  GameApi::EveryApi &ev;
+  GameApi::TXID txid;
+  float mix;
+};
+
 class TextureMaterial : public MaterialForward
 {
 public:
@@ -5152,6 +5253,10 @@ EXPORT GameApi::MT GameApi::MaterialsApi::fur(EveryApi &ev, MT nxt, PT center, f
 EXPORT GameApi::MT GameApi::MaterialsApi::texture(EveryApi &ev, BM bm, float mix)
 {
   return add_material(e, new TextureMaterial(ev, bm,mix));
+}
+EXPORT GameApi::MT GameApi::MaterialsApi::textureid(EveryApi &ev, TXID txid, float mix)
+{
+  return add_material(e, new TextureIDMaterial(ev, txid,mix));
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix)
 {

@@ -3177,3 +3177,4 @@ GameApi::CFB GameApi::FloatBitmapApi::Tan(CFB arg)
   ContinuousBitmap<float> *arg2 = find_cont_float(e, arg);
   return add_cont_float(e, new FuncCont(&tan, *arg2));				
 }
+
