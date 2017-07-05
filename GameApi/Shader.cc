@@ -793,8 +793,8 @@ ShaderFile::ShaderFile()
     "uniform vec4 level1_color;\n"
  "uniform vec4 level2_color;\n"
  "uniform vec4 level3_color;\n"
-"uniform sampler2D tex;\n"
 "#endif\n"
+"uniform sampler2D tex;\n"
 #ifndef EMSCRIPTEN
 "#ifdef TEXTURE_ARRAY\n"
 "uniform sampler2DArray texarr;\n"
