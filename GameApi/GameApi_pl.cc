@@ -6402,12 +6402,28 @@ GameApi::ML GameApi::PolygonApi::dither_shader(EveryApi &ev, ML mainloop)
   return custom_shader(ev,mainloop,dither_shader_string_v,dither_shader_string_f,"dither","dither");
 }
 
+std::string ConvF(float val)
+{
+  std::stringstream ss;
+  ss << val;
+  std::string s = ss.str();
+  int sk = s.size();
+  bool val2 = false;
+  for(int i=0;i<sk;i++)
+    {
+      if (s[i]=='.') { val2=true; break; }
+    }
+  if (!val2) { s+=".0"; }
+  return s;
+}
+
 GameApi::ML GameApi::PolygonApi::wave_shader(EveryApi &ev, ML mainloop, float radius, float t_mult, float x_mult, float y_mult)
 {
-  std::stringstream ss; ss<<radius;
-  std::stringstream ss2; ss2<< t_mult;
-  std::stringstream ss3; ss3<< x_mult;
-  std::stringstream ss4; ss4<< y_mult;
+
+  std::string r = ConvF(radius);
+  std::string t = ConvF(t_mult);
+  std::string x = ConvF(x_mult);
+  std::string y = ConvF(y_mult);
   
 std::string wave_v =
 	"vec4 wave2(vec4 pos)\n"
@@ -6419,9 +6435,11 @@ std::string wave_v =
   std::string wave_f =
     "vec4 wave2(vec4 rgb)\n"
     "{\n"
-    "  float r = " + ss.str() + ";\n"
-    "  float t = " + ss2.str() + "*time + ex_TexCoord.x*" + ss3.str() +" + ex_TexCoord.y*" + ss4.str() + ";\n"
+    "  float r = " + r + ";\n"
+    "  float t = " + t + "*time + ex_TexCoord.x*" + x +" + ex_TexCoord.y*" + y + ";\n"
     "  vec2 t_mx = ex_TexCoord.xy + vec2(r*cos(t),r*sin(t));\n"
+    "  t_mx.x = clamp(t_mx.x,0.0,1.0);\n"
+    "  t_mx.y = clamp(t_mx.y,0.0,1.0);\n"
     "   vec4 tex_mx = texture2D(tex, t_mx);	\n"
     "   return tex_mx;\n"
     "}\n";

@@ -6148,13 +6148,13 @@ GameApi::US GameApi::UberShaderApi::f_empty(bool transparent)
 GameApi::US GameApi::UberShaderApi::f_diffuse(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("diffuse", next,"EX_NORMAL2 EX_LIGHTPOS2"));
+  return add_uber(e, new F_ShaderCallFunction("diffuse", next,"EX_NORMAL2 EX_LIGHTPOS2 LEVELS"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_ambient(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("ambient", next,""));
+  return add_uber(e, new F_ShaderCallFunction("ambient", next,"LEVELS"));
 }
 GameApi::US GameApi::UberShaderApi::f_color_from_id(US us, int id)
 {
@@ -6167,7 +6167,7 @@ GameApi::US GameApi::UberShaderApi::f_color_from_id(US us, int id)
 GameApi::US GameApi::UberShaderApi::f_specular(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("specular", next,"EX_NORMAL2 EX_LIGHTPOS2 SPECULAR_SIZE"));
+  return add_uber(e, new F_ShaderCallFunction("specular", next,"EX_NORMAL2 EX_LIGHTPOS2 SPECULAR_SIZE LEVELS"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_color_from_normals(US us)
