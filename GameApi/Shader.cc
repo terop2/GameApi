@@ -427,7 +427,7 @@ ShaderFile::ShaderFile(std::string filename)
 }
 
 #ifdef EMSCRIPTEN
-//#define OLD_SHADER 1
+#define OLD_SHADER 1
 #endif
 #ifdef RASBERRY
 #define OLD_SHADER 1
@@ -439,7 +439,7 @@ ShaderFile::ShaderFile()
 #ifdef OLD_SHADER
   std::string s =
 "//V: comb\n"
-"#version 300 es\n"
+"#version 100\n"
     // NOTE: ADDING MORE uniform or attribute or varying varibles does not work, and gives black screen
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
@@ -745,7 +745,7 @@ ShaderFile::ShaderFile()
 "}\n"
 "\n"
 "//F: comb\n"
-"#version 300 es\n"
+"#version 100\n"
 #ifndef EMSCRIPTEN
 "#ifdef TEXTURE_ARRAY\n"
 "#extension GL_EXT_texture_array : enable\n"
