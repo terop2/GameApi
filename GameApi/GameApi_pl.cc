@@ -5769,7 +5769,7 @@ GameApi::BM GameApi::PolygonApi::renderpolytobitmap(EveryApi &ev, P p, SH sh, fl
  
  FBO fbo = ev.fbo_api.create_fbo(sx,sy);
   ev.fbo_api.config_fbo(fbo);
-  ev.fbo_api.bind_fbo(fbo);
+  GameApi::FrameBufferApi::vp viewport = ev.fbo_api.bind_fbo(fbo);
 
   glEnable(GL_DEPTH_TEST);
   glDisable(GL_BLEND);
@@ -5780,7 +5780,7 @@ GameApi::BM GameApi::PolygonApi::renderpolytobitmap(EveryApi &ev, P p, SH sh, fl
   glEnable(GL_BLEND);
   while(!ev.fbo_api.fbo_status(fbo));
   //BM bm = ev.mainloop_api.screenshot();
-  ev.fbo_api.bind_screen(screen_width, screen_height);
+  ev.fbo_api.bind_screen(viewport);
   //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   glDisable(GL_DEPTH_TEST);
@@ -6402,6 +6402,40 @@ GameApi::ML GameApi::PolygonApi::dither_shader(EveryApi &ev, ML mainloop)
   return custom_shader(ev,mainloop,dither_shader_string_v,dither_shader_string_f,"dither","dither");
 }
 
+GameApi::ML GameApi::PolygonApi::blur_shader(EveryApi &ev, ML mainloop, float val)
+{
+  std::stringstream ss; ss<<val;
+
+std::string blur_v =
+	"vec4 blur2(vec4 pos)\n"
+	"{\n"
+	"  ex_TexCoord = in_TexCoord;\n"
+	"  return pos;\n"
+	"}\n";
+  
+  std::string blur_f =
+	"vec4 blur2(vec4 rgb)\n"
+	"{\n"
+    "  vec2 t_mx = ex_TexCoord.xy + vec2(-" + ss.str() + ",0.0);\n"
+    "  vec2 t_my = ex_TexCoord.xy + vec2(0.0,-" + ss.str() + ");\n"
+    "  vec2 t_px = ex_TexCoord.xy + vec2("+ss.str()+ ",0.0);\n"
+    "  vec2 t_py = ex_TexCoord.xy + vec2(0.0," + ss.str() + ");\n"
+	"\n"
+	"   vec4 tex2 = texture2D(tex, ex_TexCoord.xy);\n"
+	"   vec4 tex_mx = texture2D(tex, t_mx);	\n"
+	"   vec4 tex_my = texture2D(tex, t_my);	\n"
+	"   vec4 tex_px = texture2D(tex, t_px);	\n"
+	"   vec4 tex_py = texture2D(tex, t_py);\n"
+	"   vec4 t1 = mix(tex_mx, tex_px, 0.5);\n"
+	"   vec4 t2 = mix(tex_my, tex_py, 0.5);\n"
+	"   vec4 t12 = mix(t1,t2,0.5);\n"
+	"   vec4 t12t = mix(t12,tex2,0.5);\n"   	
+	"   return vec4(mix(vec3(rgb),vec3(t12t),t12t.a),t12t.a);\n"
+	"}\n";
+
+
+  return custom_shader(ev, mainloop, blur_v, blur_f, "blur2", "blur2");
+}
 class LogCoordsFaceCollection : public ForwardFaceCollection
 {
 public:

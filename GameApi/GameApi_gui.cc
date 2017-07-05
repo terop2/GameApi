@@ -6142,6 +6142,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "BM","float" },
 			 { "ev", "","1.0" },
 			 "MT", "materials_api", "texture"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::textureid,
+			 "m_texture_id",
+			 { "ev", "txid", "mix" },
+			 { "EveryApi&", "TXID", "float" },
+			 { "ev", "", "1.0" },
+			 "MT", "materials_api", "textureid"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_arr,
 			 "m_texture_arr",
 			 { "ev", "vec", "sx", "sy", "mix" },
@@ -7346,7 +7352,13 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "ML" },
 			 { "ev", "" },
 			 "ML", "polygon_api", "toon_shader"));
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::blur_shader,
+			 "p_blur",
+			 { "ev", "mainloop", "val" },
+			 { "EveryApi&", "ML", "float" },
+			 { "ev", "", "0.01" },
+			 "ML", "polygon_api", "blur_shader"));
+			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::shader_api, &GameApi::ShaderApi::shader_choice,
 			 "shader",
 			 { "ev", "choose" },
