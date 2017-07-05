@@ -6402,6 +6402,35 @@ GameApi::ML GameApi::PolygonApi::dither_shader(EveryApi &ev, ML mainloop)
   return custom_shader(ev,mainloop,dither_shader_string_v,dither_shader_string_f,"dither","dither");
 }
 
+GameApi::ML GameApi::PolygonApi::wave_shader(EveryApi &ev, ML mainloop, float radius, float t_mult, float x_mult, float y_mult)
+{
+  std::stringstream ss; ss<<radius;
+  std::stringstream ss2; ss2<< t_mult;
+  std::stringstream ss3; ss3<< x_mult;
+  std::stringstream ss4; ss4<< y_mult;
+  
+std::string wave_v =
+	"vec4 wave2(vec4 pos)\n"
+	"{\n"
+	"  ex_TexCoord = in_TexCoord;\n"
+	"  return pos;\n"
+	"}\n";
+  
+  std::string wave_f =
+    "vec4 wave2(vec4 rgb)\n"
+    "{\n"
+    "  float r = " + ss.str() + ";\n"
+    "  float t = " + ss2.str() + "*time + ex_TexCoord.x*" + ss3.str() +" + ex_TexCoord.y*" + ss4.str() + ";\n"
+    "  vec2 t_mx = ex_TexCoord.xy + vec2(r*cos(t),r*sin(t));\n"
+    "   vec4 tex_mx = texture2D(tex, t_mx);	\n"
+    "   return tex_mx;\n"
+    "}\n";
+
+
+  return custom_shader(ev, mainloop, wave_v, wave_f, "wave2", "wave2");
+
+}
+
 GameApi::ML GameApi::PolygonApi::blur_shader(EveryApi &ev, ML mainloop, float val)
 {
   std::stringstream ss; ss<<val;
