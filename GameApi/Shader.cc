@@ -427,7 +427,7 @@ ShaderFile::ShaderFile(std::string filename)
 }
 
 #ifdef EMSCRIPTEN
-#define OLD_SHADER 1
+//#define OLD_SHADER 1
 #endif
 #ifdef RASBERRY
 #define OLD_SHADER 1
@@ -1185,7 +1185,11 @@ ShaderFile::ShaderFile()
 #else
   std::string s =
 "//V: comb\n"
+#ifdef EMSCRIPTEN
+"#version 300 es\n"
+#else
 "#version 330\n"
+#endif
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
@@ -1469,7 +1473,11 @@ ShaderFile::ShaderFile()
 "}\n"
 "\n"
 "//F: comb\n"
+#ifdef EMSCRIPTEN
+"#version 300 es\n"
+#else
 "#version 330\n"
+#endif
 "#ifdef TEXTURE_ARRAY\n"
 "#extension GL_EXT_texture_array : enable\n"
 "#endif\n"
