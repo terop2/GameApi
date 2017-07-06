@@ -756,7 +756,7 @@ ShaderFile::ShaderFile()
 "uniform float time;\n"
 "in vec4 ex_Color;\n"
     //"flat varying vec4 ex_FlatColor;\n"
-    //"out vec4 out_Color;\n"
+"out vec4 out_Color;\n"
     //"uniform mat4 in_P;\n"
     //"uniform mat4 in_MV;\n"
     //"uniform mat4 in_T;\n"
