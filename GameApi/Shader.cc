@@ -2261,7 +2261,7 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 	      std::stringstream ss3;
 	      ss3 << s;
 	      
-#ifdef OLD_SHADER
+#ifdef OLD_SHADER_OUT
 	      if (is_fbo)
 		out += "gl_FragData[0] = rgb";
 	      else
