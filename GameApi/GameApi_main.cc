@@ -57,6 +57,7 @@ EXPORT void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_heigh
   prog->set_var("in_T", m2);
   prog->set_var("in_POS", 0.0f);
   prog->set_var("color_mix", 0.5f);
+  prog->set_var("time", 0.0f);
   alpha_1(false);
 
 #if 0
@@ -251,7 +252,8 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
   prog->set_var("in_T", m3);
   prog->set_var("in_POS", 0.0f);
-  prog->set_var("color_mix", 0.5f);
+  prog->set_var("color_mix", 0.5f); 
+  prog->set_var("time",0.0f);
   alpha_1(false);
   glEnable(GL_DEPTH_TEST);
   //glEnable(GL_MULTISAMPLE );
