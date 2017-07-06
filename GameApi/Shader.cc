@@ -201,8 +201,8 @@ void Program::GeomOutputVertices(int i)
 void Program::link()
 {
   glLinkProgram(priv->program);
-  int val = glGetError();
-  if (val!=GL_NO_ERROR) {
+  //int val = glGetError();
+  //if (val!=GL_NO_ERROR) {
 
   int len=0;
   char log[255];
@@ -210,7 +210,7 @@ void Program::link()
     //glGetInfoLogARB(priv->program, 255, &len, log);
   log[len]=0;
   std::cout << log << std::endl;
-  }
+  //}
   }
 void Program::use()
 {
