@@ -431,6 +431,7 @@ ShaderFile::ShaderFile(std::string filename)
 #endif
 #ifdef RASBERRY
 #define OLD_SHADER 1
+#define OLD_SHADER_OUT 1
 #endif 
 //#define OLD_SHADER 1
 
@@ -2220,7 +2221,7 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 		std::stringstream ss3;
 		ss3 << num+1;
 
-#ifdef OLD_SHADER
+#ifdef OLD_SHADER_OUT
 		if (is_fbo)
 		  out += "gl_FragData[0] = rgb";
 		else
