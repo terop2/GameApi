@@ -753,7 +753,7 @@ ShaderFile::ShaderFile()
 "#endif\n"
 #endif
 "precision mediump float;\n"
-"uniform float time;\n"
+    //"uniform float time;\n"
 "in vec4 ex_Color;\n"
     //"flat varying vec4 ex_FlatColor;\n"
 "out vec4 out_Color;\n"
