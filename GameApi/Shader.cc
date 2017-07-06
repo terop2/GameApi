@@ -206,7 +206,7 @@ void Program::link()
 
   int len=0;
   char log[255];
-    glGetShaderInfoLog(priv->program, 256, &len, &log[0]);
+    glGetProgramInfoLog(priv->program, 256, &len, &log[0]);
     //glGetInfoLogARB(priv->program, 255, &len, log);
   log[len]=0;
   std::cout << log << std::endl;
