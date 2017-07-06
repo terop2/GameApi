@@ -753,7 +753,6 @@ ShaderFile::ShaderFile()
 "#endif\n"
 #endif
 "precision mediump float;\n"
-"in float time;\n"
 "in vec4 ex_Color;\n"
     //"flat varying vec4 ex_FlatColor;\n"
 "out vec4 out_Color;\n"
@@ -796,6 +795,8 @@ ShaderFile::ShaderFile()
  "uniform vec4 level3_color;\n"
 "#endif\n"
 "uniform sampler2D tex;\n"
+"uniform float time;\n"
+
 #ifndef EMSCRIPTEN
 "#ifdef TEXTURE_ARRAY\n"
 "uniform sampler2DArray texarr;\n"
