@@ -446,6 +446,7 @@ ShaderFile::ShaderFile()
   std::string s =
 "//V: comb\n"
 "#version 300 es\n"
+"precision mediump float;\n"
     // NOTE: ADDING MORE uniform or attribute or varying varibles does not work, and gives black screen
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
