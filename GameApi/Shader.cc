@@ -1535,7 +1535,7 @@ ShaderFile::ShaderFile()
 "uniform vec4 level2_color;\n"
 "uniform vec4 level3_color;\n"
 "#endif\n"
-"uniform float time;\n"
+"in float time;\n"
     //"//M:\n"
 
 "#ifdef CHOOSE_COLOR\n"
