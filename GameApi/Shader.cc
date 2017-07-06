@@ -201,11 +201,11 @@ void Program::GeomOutputVertices(int i)
 void Program::link()
 {
   glLinkProgram(priv->program);
-  //int len=0;
-  //char log[255];
-  //glGetInfoLogARB(priv->program, 255, &len, log);
-  //log[len]=0;
-  //std::cout << log << std::endl;
+  int len=0;
+  char log[255];
+  glGetProgramInfoLog(priv->program, 255, &len, log);
+  log[len]=0;
+  std::cout << log << std::endl;
 }
 void Program::use()
 {
@@ -441,6 +441,7 @@ ShaderFile::ShaderFile()
 "//V: comb\n"
 "#version 100\n"
     // NOTE: ADDING MORE uniform or attribute or varying varibles does not work, and gives black screen
+"precision mediump float;\n"
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
@@ -752,7 +753,7 @@ ShaderFile::ShaderFile()
 "#endif\n"
 #endif
 "precision mediump float;\n"
-    //"uniform float time;\n"
+"uniform float time;\n"
 "varying vec4 ex_Color;\n"
     //"flat varying vec4 ex_FlatColor;\n"
     //"out vec4 out_Color;\n"
