@@ -3178,3 +3178,26 @@ GameApi::CFB GameApi::FloatBitmapApi::Tan(CFB arg)
   return add_cont_float(e, new FuncCont(&tan, *arg2));				
 }
 
+class IndicatorBitmap : public Bitmap<Color>
+{
+public:
+  IndicatorBitmap(int sx, int sy, int g_ind) : sx(sx), sy(sy), g_ind(g_ind) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    return Color(x*255/sx,y*255/sy,g_ind);
+  }
+  virtual void Prepare() { }
+
+private:
+  int sx,sy,g_ind;
+};
+
+GameApi::BM GameApi::BitmapApi::Indicator(int sx, int sy, int g_ind)
+{
+  Bitmap<Color> *bm = new IndicatorBitmap(sx,sy,g_ind);
+  BitmapColorHandle *handle = new BitmapColorHandle;
+  handle->bm = bm;
+  return add_bitmap(e, handle);
+}

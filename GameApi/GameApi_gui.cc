@@ -7362,7 +7362,7 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 "p_wave",
 			 { "ev", "mainloop", "radius", "t_mult", "x_mult", "y_mult" },
 			 { "EveryApi&", "ML", "float", "float", "float", "float" },
-			 { "ev", "", "10.0", "0.01", "0.03", "0.07" },
+			 { "ev", "", "0.02", "1.5", "17", "9" },
 			 "ML", "polygon_api", "wave_shader"));
 			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::shader_api, &GameApi::ShaderApi::shader_choice,
@@ -8286,6 +8286,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BM" },
 			 { "" },
 			 "BM", "bitmap_api", "flip_y"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::Indicator,
+			 "indicator",
+			 { "sx", "sy", "g_ind" },
+			 { "int", "int", "int" },
+			 { "256", "256", "0" },
+			 "BM", "bitmap_api", "Indicator"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::gradient,
 			 "gradient",
 			 { "pos_1", "pos_2", "color_1", "color_2", "sx", "sy" },
