@@ -559,6 +559,7 @@ public:
   IMPORT BMA empty_array();
   BMA array(BM *array, int size);
   IMPORT BM array_elem(BMA array, int i);
+  IMPORT BM Indicator(int sx, int sy, int g_ind);
 private:
   BitmapApi(const BitmapApi&);
   void operator=(const BitmapApi&);
