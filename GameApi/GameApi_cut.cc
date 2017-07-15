@@ -54,7 +54,10 @@ public:
   DistanceCut(DistanceRenderable *dr) : dr(dr) {}
   std::vector<Point> cut(Point p1, Point p2) const
   {
-    std::swap(p1,p2);
+    float d1 = dr->distance(p1);
+    float d2 = dr->distance(p2);
+    if (d1<d2)
+      std::swap(p1,p2);
     Point p = p1;
     Vector v = (p2-p1);
     float dd = v.Dist();
