@@ -310,7 +310,7 @@ EXPORT GameApi::LI GameApi::LinesApi::from_polygon(GameApi::P poly)
 class BorderFromBoolBitmap : public LineCollection
 {
 public:
-  BorderFromBoolBitmap(Bitmap<bool> &bm, float start_x, float end_x, float start_y, float end_y, float z) : bm(bm),start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), z(z) { Store(); }
+  BorderFromBoolBitmap(Bitmap<bool> &bm, float start_x, float end_x, float start_y, float end_y, float z) : bm(bm),start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), z(z) { bm.Prepare(); Store(); }
   virtual int NumLines() const { return p1.size(); }
   virtual Point LinePoint(int line, int point) const
   {
