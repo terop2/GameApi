@@ -4399,6 +4399,9 @@ class OutlineFaces : public LineCollection
 public:
   OutlineFaces(FaceCollection &c) : c(c) 
   {
+  }
+  void Prepare()
+  {
     c.Prepare();
     int faces = c.NumFaces();
     int cc = 0;

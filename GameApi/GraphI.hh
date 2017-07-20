@@ -932,6 +932,7 @@ public:
 class PointsApiPoints
 {
 public:
+  virtual void Prepare() { }
   virtual void HandleEvent(MainLoopEvent &event) { }
   virtual bool Update(MainLoopEnv &e) { return false; }
   virtual int NumPoints() const=0;

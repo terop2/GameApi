@@ -9,6 +9,7 @@ class HeightMapPoints : public PointsApiPoints
 {
 public:
   HeightMapPoints(Bitmap<::Color> &color, Bitmap<float> &height, Point pos, Vector u_x, Vector u_y, Vector u_z, int sx, int sy) : color(color), height(height), pos(pos), u_x(u_x), u_y(u_y), u_z(u_z), sx(sx), sy(sy) { }
+  void Prepare() { color.Prepare(); height.Prepare(); }
   virtual int NumPoints() const { return sx*sy; }
   virtual Point Pos(int i) const
   {
@@ -38,6 +39,7 @@ class OrPoints : public PointsApiPoints
 {
 public:
   OrPoints(PointsApiPoints *pts1, PointsApiPoints *pts2): pts1(pts1), pts2(pts2) { }
+  void Prepare() { pts1->Prepare(); pts2->Prepare(); }
   virtual void HandleEvent(MainLoopEvent &event) {
     pts1->HandleEvent(event);
     pts2->HandleEvent(event);
@@ -74,7 +76,7 @@ class SurfacePoints : public PointsApiPoints
 {
 public:
   SurfacePoints(std::vector<Point> *points, std::vector<unsigned int> *color) :points(points), color(color) { }
-
+  void Prepare() { }
   virtual int NumPoints() const { return points->size(); }
   virtual Point Pos(int i) const { return points->operator[](i); }
   virtual unsigned int Color(int i) const
@@ -132,6 +134,7 @@ class MatrixPoints : public PointsApiPoints
 {
 public:
   MatrixPoints(PointsApiPoints *pts, Matrix m) : pts(pts), m(m) { }
+  void Prepare() { pts->Prepare(); }
   virtual void HandleEvent(MainLoopEvent &event) { pts->HandleEvent(event); }
   virtual bool Update(MainLoopEnv &e) { return pts->Update(e); }
 
@@ -187,6 +190,7 @@ public:
   {
     pos = 0.0;
   }
+  void Prepare() { o1->Prepare(); o2->Prepare(); }
   void HandleEvent(MainLoopEvent &event) { o1->HandleEvent(event); o2->HandleEvent(event); }
   bool Update(MainLoopEnv &e) {
     float time = e.time*10.0;
@@ -262,6 +266,7 @@ class ShadowPoints : public PointsApiPoints
 {
 public:
   ShadowPoints(PointsApiPoints *pts, Point pos, Vector u_x, Vector u_y, Vector light_vec) : pts(pts), pos(pos), u_x(u_x), u_y(u_y), light_vec(light_vec) { }
+  void Prepare() {pts->Prepare(); }
   void HandleEvent(MainLoopEvent &event) { pts->HandleEvent(event); }
   virtual bool Update(MainLoopEnv &e) { return pts->Update(e); }
 
@@ -459,6 +464,7 @@ private:
 EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
 {
   PointsApiPoints *pts = find_pointsapi_points(e, p);
+  pts->Prepare();
   int numpoints = pts->NumPoints();
 #if 1
   //ndef THREADS
@@ -543,7 +549,8 @@ public:
     : fo(fo), array(0), numpoints(numpoints), 
       start_x(start_x), start_y(start_y), start_z(start_z), 
       end_x(end_x), end_y(end_y), end_z(end_z) 
-  { prepare(); }
+  { }
+  void Prepare() { prepare(); }
   ~PTSFromFloatVolume() { delete [] array; }
   virtual int NumPoints() const { return numpoints; }
   virtual Point Pos(int i) const
@@ -648,6 +655,7 @@ class PointApiPointFunction : public PointsApiPoints
 {
 public:
   PointApiPointFunction(GameApi::Env &e, std::function<GameApi::PT(int pointnum)> f, int numpoints) : e(e), f(f), numpoints(numpoints) { }
+  void Prepare() { }
   virtual int NumPoints() const
   {
     return numpoints;
@@ -672,6 +680,7 @@ class PointsApiColorFunction : public PointsApiPoints
 {
 public:
   PointsApiColorFunction(GameApi::Env &e, PointsApiPoints *orig, std::function<unsigned int(int pointnum, GameApi::PT pos)> f) : e(e), orig(orig), f(f) { }
+  void Prepare() {orig->Prepare(); }
   void HandleEvent(MainLoopEvent &event) { orig->HandleEvent(event); }
   virtual bool Update(MainLoopEnv &e) { return orig->Update(e); }
 
@@ -705,6 +714,7 @@ class SurfacePoints3 : public PointsApiPoints
 {
 public:
   SurfacePoints3(SurfaceIn3d *surf, int sx, int sy) : surf(surf), sx(sx), sy(sy) { }
+  void Prepare() { }
   int NumPoints() const {
     return sx*sy;
   }
@@ -779,6 +789,7 @@ class ColorPoints : public PointsApiPoints
 {
 public:
   ColorPoints(PointsApiPoints *next, unsigned int color) : next(next), color(color) { }
+  void Prepare() { next->Prepare(); }
   void HandleEvent(MainLoopEvent &event) { next->HandleEvent(event); }
   virtual bool Update(MainLoopEnv &e) { return next->Update(e); }
 
@@ -907,6 +918,7 @@ class StandardBox : public PointsApiPoints
 {
 public:
   StandardBox(int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : sx(sx), sy(sy), sz(sz), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) { }
+  void Prepare() {}
   int NumPoints() const { return sx*sy*sz; }
   Point Pos(int i) const {
     int x = i/(sy*sz);
@@ -1025,10 +1037,6 @@ public:
   ~MeshQuad() { delete[] points; delete[] color2; }
   virtual void HandleEvent(MainLoopEvent &event) { }
   virtual bool Update(MainLoopEnv &e) {
-    if (firsttime) {
-      Prepare();
-      firsttime = false;
-    }
     return false; }
   virtual int NumPoints() const { if (points) return points->size(); else { const_cast<MeshQuad*>(this)->Prepare(); return points->size(); } }
   virtual Point Pos(int i) const { if (points) return (*points)[i]; else { const_cast<MeshQuad*>(this)->Prepare(); return (*points)[i]; } }
@@ -1037,9 +1045,12 @@ public:
   void Prepare()
   {
     coll->Prepare();
-    points = new std::vector<Point>;
-    color2 = new std::vector<unsigned int>;
-    firsttime = false;
+    if (!points)
+      points = new std::vector<Point>;
+    if (!color2)
+      color2 = new std::vector<unsigned int>;
+    points->clear();
+    color2->clear();
     
     for(int i=0;i<count;i++)
       {
@@ -1150,6 +1161,7 @@ class PTSGrid : public PointsApiPoints
 {
 public:
   PTSGrid(Bitmap<::Color> &bm, float start_x, float end_x, float start_y, float end_y, float z) : bm(bm), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), z(z) { bm.Prepare(); }
+  void Prepare() { bm.Prepare(); }
   virtual int NumPoints() const { return bm.SizeX()*bm.SizeY(); }
   virtual Point Pos(int i) const
   {
@@ -1189,9 +1201,8 @@ class PTSGridBB : public PointsApiPoints
 public:
   PTSGridBB(Bitmap<bool> &bb, float start_x, float end_x, float start_y, float end_y, float z) : bb(bb), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), z(z)
   {
-    bb.Prepare();
-    collect_pixels();
   }
+  void Prepare() {bb.Prepare(); collect_pixels(); }
   void collect_pixels()
   {
     int sx = bb.SizeX();
@@ -1239,6 +1250,7 @@ GameApi::PTS GameApi::PointsApi::pts_grid_bb(BB bb, float start_x, float end_x, 
 class SinglePTS : public PointsApiPoints
 {
 public:
+  void Prepare() {}
   virtual int NumPoints() const { return 1; }
   virtual Point Pos(int i) const { Point p; p.x=0.0; p.y=0.0; p.z=0.0; return p; }
   virtual unsigned int Color(int i) const { return 0xffffffff; }
@@ -1251,20 +1263,21 @@ GameApi::PTS GameApi::PointsApi::single_pts()
 class LIFromPTS : public LineCollection
 {
 public:
-  LIFromPTS(PointsApiPoints *p1, float dx, float dy, float dz) : p1(p1),dx(dx),dy(dy),dz(dz) { }
-  virtual int NumLines() const { return p1->NumPoints(); }
+  LIFromPTS(PointsApiPoints *pk, float dx, float dy, float dz) : pk(pk),dx(dx),dy(dy),dz(dz) { }
+  void Prepare() { pk->Prepare(); }
+  virtual int NumLines() const { return pk->NumPoints(); }
   virtual Point LinePoint(int line, int point) const
   {
-    Point p = p1->Pos(line);
+    Point p = pk->Pos(line);
     if (point==1) p=p+Vector(dx,dy,dz);
     return p;
   }
   virtual unsigned int LineColor(int line, int point) const {
-    return p1->Color(line);
+    return pk->Color(line);
   }
 
 private:
-  PointsApiPoints *p1;
+  PointsApiPoints *pk;
   float dx,dy,dz;
 };
 
@@ -1286,6 +1299,7 @@ class MemoizePTS : public PointsApiPoints
 {
 public:
   MemoizePTS(PointsApiPoints *next) : next(next) {}
+  void Prepare() { next->Prepare(); }
   void HandleEvent(MainLoopEvent &event) { }
   bool Update(MainLoopEnv &e) { return false; }
   int NumPoints() const { return next->NumPoints(); }
