@@ -4822,7 +4822,7 @@ public:
 	int p = i->NumPoints(ii);
 	//std::cout << p << std::endl;
 	std::vector<Point> &ref = faces[faces.size()-1];
-	std::cout << "start" << std::endl;
+	//std::cout << "start" << std::endl;
 	for(int jj=0;jj<p;jj++)
 	  {
 	    int jjj1 = jj;
@@ -4839,12 +4839,12 @@ public:
 	    if (jj==0) { ref.push_back(p1); }
 
 	    if (!b1 && !b2) {
-	      std::cout << "!b1 && !b2" << std::endl;
+	      //std::cout << "!b1 && !b2" << std::endl;
 	      //ref.push_back(p1);
 		  ref.push_back(p2);	      
 	    }
 	    if (!b1 && b2) {
-	      std::cout << "!b1 && b2" << std::endl;
+	      //std::cout << "!b1 && b2" << std::endl;
 	      Point prev = p1;
 	      Point curr = p2;
 	      for(int h=0;h<p;h++)
@@ -4867,7 +4867,7 @@ public:
 	    }
 #if 1
 	    if (b1 && !b2) {
-	      std::cout << "b1 && !b2" << std::endl;
+	      //std::cout << "b1 && !b2" << std::endl;
 	      std::vector<Point> c0 = cut->cut(p1,p2);
 	      //ref.push_back(c0[0]);
 	      ref.push_back(p2);	      

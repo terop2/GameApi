@@ -1018,9 +1018,82 @@ GameApi::ML GameApi::PointsApi::movement_display(EveryApi &ev, ML ml, MN mn, int
   MainLoopItem *item = find_main_loop(e,ml);
   return add_main_loop(e, new MovementDisplay(e,ev, item, mn,count, sx,sy,sz,start_x,end_x,start_y,end_y,start_z,end_z));
 }
+class MeshQuad : public PointsApiPoints
+{
+public:
+  MeshQuad(FaceCollection *coll, int count) : coll(coll), count(count) { firsttime = true; points=0; color2=0;}
+  ~MeshQuad() { delete[] points; delete[] color2; }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) {
+    if (firsttime) {
+      Prepare();
+      firsttime = false;
+    }
+    return false; }
+  virtual int NumPoints() const { if (points) return points->size(); else { const_cast<MeshQuad*>(this)->Prepare(); return points->size(); } }
+  virtual Point Pos(int i) const { if (points) return (*points)[i]; else { const_cast<MeshQuad*>(this)->Prepare(); return (*points)[i]; } }
+  virtual unsigned int Color(int i) const { if (color2) return (*color2)[i]; else { const_cast<MeshQuad*>(this)->Prepare(); return (*color2)[i];}  }
+
+  void Prepare()
+  {
+    coll->Prepare();
+    points = new std::vector<Point>;
+    color2 = new std::vector<unsigned int>;
+    firsttime = false;
+    
+    for(int i=0;i<count;i++)
+      {
+	Random r;
+	float xp = double(r.next())/r.maximum();
+	float yp = double(r.next())/r.maximum();
+	float zp = double(r.next())/r.maximum();
+	xp*=2.0;
+	yp*=2.0;
+	xp-=1.0;
+	yp-=1.0;
+	zp*=float(coll->NumFaces());
+	int zpi = int(zp);
+	if (zpi<0) zpi = 0;
+	if (zpi>=coll->NumFaces()) zpi = coll->NumFaces()-1;
+	int num = coll->NumPoints(zpi);
+	if (num != 4 && num != 3) { std::cout << "Error quad: " << num << std::endl; }
+	if (num==4) {
+	  Point p1 = coll->FacePoint(zpi, 0);
+	  Point p2 = coll->FacePoint(zpi, 1);
+	  Point p3 = coll->FacePoint(zpi, 2);
+	  Point p4 = coll->FacePoint(zpi, 3);
+	  Point p = 1.0/4.0*((1.0f-xp)*(1.0f-yp)*Vector(p1) + (1.0f+xp)*(1.0f-yp)*Vector(p2) + (1.0f+xp)*(1.0f+yp)*Vector(p3) + (1.0f-xp)*(1.0f+yp)*Vector(p4));
+	  if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) continue;
+	  points->push_back(p);
+	  color2->push_back(0xffffffff);
+	} else if (num==3)
+	  {
+	    Point p1 = coll->FacePoint(zpi, 0);
+	    Point p2 = coll->FacePoint(zpi, 1);
+	    Point p3 = coll->FacePoint(zpi, 2);
+	    float r1 = double(r.next())/r.maximum();
+	    float r2 = double(r.next())/r.maximum();
+	    Point p = Point((1.0-sqrt(r1))*Vector(p1) + (sqrt(r1)*(1.0-r2))*Vector(p2) + (r2*sqrt(r1))*Vector(p3));
+	    if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) continue;
+	    points->push_back(p);
+	    color2->push_back(0xffffffff);
+	    
+	  }
+      }
+    
+  }
+private:
+  FaceCollection *coll;
+  int count;
+  std::vector<Point> *points;
+  std::vector<unsigned int> *color2;
+  bool firsttime;
+};
 GameApi::PTS GameApi::PointsApi::random_mesh_quad_instancing(EveryApi &ev, P p, int count)
 {
   FaceCollection *coll = find_facecoll(e, p);
+  return add_points_api_points(e, new MeshQuad(coll, count));
+  /*
   coll->Prepare();
   std::vector<Point> *points = new std::vector<Point>;
   std::vector<unsigned int> *color2 = new std::vector<unsigned int>;
@@ -1065,6 +1138,7 @@ GameApi::PTS GameApi::PointsApi::random_mesh_quad_instancing(EveryApi &ev, P p, 
 	}
     }
    return add_points_api_points(e, new SurfacePoints(points, color2));
+  */
 }
 /*
 GameApi::PTS GameApi::PointsApi::random_bitmap_edge_instancing(BB bm, float start_x, float end_x, float start_z, float end_z, float y)
