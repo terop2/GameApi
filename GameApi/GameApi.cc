@@ -5311,8 +5311,8 @@ public:
     GameApi::P I2=p;
     GameApi::LI I3=ev.lines_api.from_polygon(I2);
     GameApi::LI I4=ev.lines_api.change_color(I3,0xff000000);
-    GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_ml(ev,I5);
+    //GameApi::LLA I5=ev.lines_api.prepare(I4);
+    GameApi::ML I6=ev.lines_api.render_ml2(ev,I4);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
@@ -5329,8 +5329,8 @@ public:
     GameApi::P I2=p;
     GameApi::LI I3=ev.lines_api.from_polygon(I2);
     GameApi::LI I4=ev.lines_api.change_color(I3,0xff000000);
-    GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_inst_ml(ev,I5,pta);
+    //GameApi::LLA I5=ev.lines_api.prepare(I4);
+    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I4,pta);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
@@ -5347,8 +5347,8 @@ public:
     GameApi::P I2=p;
     GameApi::LI I3=ev.lines_api.from_polygon(I2);
     GameApi::LI I4=ev.lines_api.change_color(I3,0xff000000);
-    GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_inst_ml(ev,I5,pta);
+    //GameApi::LLA I5=ev.lines_api.prepare(I4);
+    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I4,pta);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
@@ -5365,8 +5365,8 @@ public:
     GameApi::P I2=p;
     GameApi::LI I3=ev.lines_api.from_polygon(I2);
     GameApi::LI I4=ev.lines_api.change_color(I3,0xff000000);
-    GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_inst_ml(ev,I5,pta);
+    //GameApi::LLA I5=ev.lines_api.prepare(I4);
+    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I4,pta);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);

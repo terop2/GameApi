@@ -7,6 +7,7 @@ class ColorLineCollection : public LineCollection
 {
 public:
   ColorLineCollection(LineCollection *coll, unsigned int color1, unsigned int color2) : coll(coll), color1(color1), color2(color2) { }
+  virtual void Prepare() { coll->Prepare(); }
   virtual int NumLines() const { return coll->NumLines(); }
   virtual Point LinePoint(int line, int point) const { return coll->LinePoint(line,point); }
   virtual unsigned int LineColor(int line, int point) const { if (point==0) return color1; else return color2; }
@@ -29,6 +30,8 @@ class ColorFunctionLines : public LineCollection
 {
 public:
   ColorFunctionLines(LineCollection *coll, std::function<unsigned int(int linenum, bool id)> f) : coll(coll), f(f) { }
+  virtual void Prepare() { coll->Prepare(); }
+
   int NumLines() const { return coll->NumLines(); }
   Point LinePoint(int line, int point) const { return coll->LinePoint(line,point); }
   unsigned int LineColor(int line, int point) const
@@ -48,6 +51,8 @@ class LineCollectionFunction : public LineCollection
 {
 public:
   LineCollectionFunction(GameApi::Env &e, std::function<GameApi::PT (int linenum, bool id)> f, int numlines) :  ev(e), f(f), numlines(numlines) { }
+  virtual void Prepare() {}
+
   virtual int NumLines() const { return numlines; }
   virtual Point LinePoint(int line, int point) const
   {
@@ -77,6 +82,7 @@ class LinesFromPlane : public LineCollection
 {
 public:
   LinesFromPlane(PlanePoints2d *plane) : plane(plane) { }
+  virtual void Prepare() { }
   virtual int NumLines() const {
     int s = plane->Size();
     int line=0;
@@ -154,6 +160,7 @@ class SliceLineCollection : public LineCollection
 {
 public:
   SliceLineCollection(FaceCollection *coll, Point pos, Vector u_x, Vector u_y) : coll(coll), pos(pos), u_x(u_x), u_y(u_y) { }
+  virtual void Prepare() { coll->Prepare(); }
   virtual int NumLines() const { return coll->NumFaces(); }
   virtual Point LinePoint(int line, int point) const 
   {
@@ -184,6 +191,7 @@ class NormalsLineCollection : public LineCollection
 {
 public:
   NormalsLineCollection(FaceCollection *coll, float length) : coll(coll),length(length) { }
+  virtual void Prepare() { coll->Prepare(); }
   virtual int NumLines() const { return coll->NumFaces(); }
   virtual Point LinePoint(int line, int point) const 
   {
@@ -224,6 +232,8 @@ class MatrixLineCollection : public LineCollection
 {
 public:
   MatrixLineCollection(Matrix m, LineCollection &coll) : m(m),coll(coll) { }
+  virtual void Prepare() { coll.Prepare(); }
+
   virtual int NumLines() const { return coll.NumLines(); }
   virtual Point LinePoint(int line, int point) const 
   {
@@ -279,6 +289,7 @@ class LineAnim : public ForwardFaceCollection
 {
 public:
   LineAnim(FaceCollection &p, LineCollection &c, float val) : ForwardFaceCollection(p), p(p), c(c), val(val) { }
+  void Prepare() { c.Prepare(); }
   Point FacePoint(int face, int point) const
   {
     int count = 0;
@@ -310,7 +321,8 @@ EXPORT GameApi::LI GameApi::LinesApi::from_polygon(GameApi::P poly)
 class BorderFromBoolBitmap : public LineCollection
 {
 public:
-  BorderFromBoolBitmap(Bitmap<bool> &bm, float start_x, float end_x, float start_y, float end_y, float z) : bm(bm),start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), z(z) { bm.Prepare(); Store(); }
+  BorderFromBoolBitmap(Bitmap<bool> &bm, float start_x, float end_x, float start_y, float end_y, float z) : bm(bm),start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), z(z) { }
+  virtual void Prepare() { bm.Prepare(); Store(); }
   virtual int NumLines() const { return p1.size(); }
   virtual Point LinePoint(int line, int point) const
   {
@@ -408,6 +420,46 @@ private:
   GameApi::LLA l;
 };
 
+
+class LI_Render2 : public MainLoopItem
+{
+public:
+  LI_Render2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l) : env(e), ev(ev), api(api), l(l) {firsttime=true; }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void execute(MainLoopEnv &e) {
+    GameApi::SH sh;
+    sh.id = e.sh_color;
+    ev.shader_api.use(sh);
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "time", e.time);
+
+	if (firsttime)
+	  {
+	    l2 = ev.lines_api.prepare(l);
+	    firsttime = false;
+	  }
+	
+    api.render(l2);
+  }
+  int shader_id() { return -1; }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::LinesApi &api;
+  GameApi::LI l;
+  GameApi::LLA l2;
+  bool firsttime;
+};
+
+
 class LI_Render_Inst : public MainLoopItem
 {
 public:
@@ -480,13 +532,96 @@ private:
   GameApi::SH shader;
 };
 
+class LI_Render_Inst2 : public MainLoopItem
+{
+public:
+  LI_Render_Inst2(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l0, GameApi::PTA pta) : env(env), ev(ev), api(api), l0(l0),pta(pta) { firsttime=true; }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void execute(MainLoopEnv &e) {
+    GameApi::SH sh;
+    sh.id = e.sh_color;
+    GameApi::US u_v,u_f;
+    u_v.id = 0;
+    u_f.id = 0;
+
+    if (firsttime)
+      {
+	if (u_v.id == 0)
+	  u_v = ev.uber_api.v_empty();
+	if (u_f.id == 0)
+	  u_f = ev.uber_api.f_empty(false);
+   
+	u_v = ev.uber_api.v_colour(u_v);
+	u_v = ev.uber_api.v_light(u_v);
+	u_f = ev.uber_api.f_colour(u_f);
+	u_f = ev.uber_api.f_light(u_f);
+      }
+
+    if (firsttime)
+      {
+	GameApi::US vertex;
+	GameApi::US fragment;
+	vertex.id = u_v.id; 
+	fragment.id = u_f.id; 
+	GameApi::US vertex2 = ev.uber_api.v_inst(vertex);
+	//GameApi::US fragment2 = ev.uber_api.f_inst(fragment);
+	shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment);
+	ev.mainloop_api.init_3d(shader);
+	ev.mainloop_api.alpha(true); 
+      }
+    if (shader.id!=-1)
+      {
+	ev.shader_api.use(sh);
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.use(shader);
+	ev.shader_api.set_var(shader, "in_MV", m);
+	ev.shader_api.set_var(shader, "in_T", m1);
+	ev.shader_api.set_var(shader, "in_N", m2);
+	sh = shader;
+      }
+
+    ev.shader_api.use(sh);
+    if (firsttime)
+      {
+	l=api.prepare(l0);
+	api.prepare_inst(l,pta);
+	firsttime=false;
+      }
+    api.render_inst(l,pta);
+  }
+  int shader_id() { return -1; }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::LinesApi &api;
+  GameApi::LI l0;
+  GameApi::LLA l;
+  GameApi::PTA pta;
+  bool firsttime;
+  GameApi::SH shader;
+};
+
+
 EXPORT GameApi::ML GameApi::LinesApi::render_ml(EveryApi &ev, LLA l)
 {
   return add_main_loop(e, new LI_Render(e, ev, *this, l));
 }
+EXPORT GameApi::ML GameApi::LinesApi::render_ml2(EveryApi &ev, LI l)
+{
+  return add_main_loop(e, new LI_Render2(e, ev, *this, l));
+}
 EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml(EveryApi &ev, LLA l, PTA pta)
 {
   return add_main_loop(e, new LI_Render_Inst(e, ev, *this, l, pta));
+}
+EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml2(EveryApi &ev, LI l, PTA pta)
+{
+  return add_main_loop(e, new LI_Render_Inst2(e, ev, *this, l, pta));
 }
 EXPORT void GameApi::LinesApi::prepare_inst(LLA l, PTA instances)
 {
@@ -658,6 +793,10 @@ class LineAnim2 : public PointsApiPoints
 {
 public:
   LineAnim2(LineCollection *coll, float val) : coll(coll), val(val) { }
+  void Prepare() { coll->Prepare(); }
+  bool Update(MainLoopEnv &e) {
+    return false;
+  }
   virtual int NumPoints() const { return coll->NumLines(); }
   virtual Point Pos(int i) const
   {
@@ -679,7 +818,11 @@ private:
 class LineAnim3 : public PointsApiPoints
 {
 public:
-  LineAnim3(LineCollection *coll, std::function<float(int)> f) : coll(coll), f(f) { }
+  LineAnim3(LineCollection *coll, std::function<float(int)> f) : coll(coll), f(f) { firsttime = true; }
+  void Prepare() {coll->Prepare(); }
+  bool Update(MainLoopEnv &e) {
+    return false;
+  }
   virtual int NumPoints() const { return coll->NumLines(); }
   virtual Point Pos(int i) const
   {
@@ -698,6 +841,7 @@ public:
 private:
   LineCollection *coll;
   std::function<float (int)> f;
+  bool firsttime;
 };
 
 EXPORT GameApi::PTS GameApi::LinesApi::pts_line_anim(LI lines, float val)
@@ -789,6 +933,7 @@ EXPORT void GameApi::LinesApi::update(LLA la, LI l)
 EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
 {
   LineCollection *coll = find_line_array(e, l);
+  coll->Prepare();
   int count = coll->NumLines();
   float *array = 0;
   float *array2_1 = 0;
@@ -868,6 +1013,7 @@ class FromPoints2 : public LineCollection
 {
 public:
   FromPoints2(PointsApiPoints *start, PointsApiPoints *end) : start(start), end(end) { }
+  void Prepare() { }
   virtual int NumLines() const { return std::min(start->NumPoints(), end->NumPoints()); }
   virtual Point LinePoint(int line, int point) const 
   {
@@ -892,6 +1038,7 @@ class LineProduct : public SingleForwardFaceCollection
 {
 public:
   LineProduct(LineCollection *coll, LineCollection *coll2) : coll(coll), coll2(coll2) { }
+  void Prepare() { coll->Prepare(); coll2->Prepare(); }
   virtual int NumFaces() const { return coll->NumLines()*coll2->NumLines(); }
   virtual int NumPoints(int face) const { return 4; }
   virtual Point FacePoint(int face, int point) const
@@ -953,6 +1100,7 @@ class PointArrayLineCollection : public LineCollection
 {
 public:
   PointArrayLineCollection(std::vector<Point> vec) : vec(vec) { }
+  void Prepare() { }
   int NumLines() const { return vec.size()-1; }
   Point LinePoint(int line, int point) const
   {
@@ -983,6 +1131,9 @@ class SplitLines : public LineCollection
   // eat too much memory.
 public:
   SplitLines(LineCollection *coll, float dist) : m_coll(coll), dist(dist) {
+  }
+  void Prepare() {
+    m_coll->Prepare();
     int s = m_coll->NumLines();
     for(int i=0;i<s;i++)
       {
@@ -1097,6 +1248,7 @@ class TwistLines : public LineCollection
 {
 public:
   TwistLines(LineCollection *coll, float y_0, float angle_per_y_unit) : coll(coll), y_0(y_0), angle(angle_per_y_unit) { }
+  void Prepare() { coll->Prepare(); }
   int NumLines() const { return coll->NumLines(); }
   Point LinePoint(int line, int point) const
   {
@@ -1123,6 +1275,7 @@ class Fur2 : public LineCollection
 {
 public:
   Fur2(PointsApiPoints *pts, Point center, float dist) : pts(pts), center(center), dist(dist) { }
+  void Prepare() { pts->Prepare(); }
   virtual int NumLines() const { return pts->NumPoints(); }
   virtual Point LinePoint(int line, int point) const
   {
@@ -1147,6 +1300,7 @@ class MeshLines : public LineCollection
 {
 public:
   MeshLines(std::vector<Point> points, std::vector<unsigned int> color) : points(points), color(color) { }
+  void Prepare() { }
   virtual int NumLines() const { return points.size()/2; }
   virtual Point LinePoint(int line, int point) const
   {
@@ -1224,6 +1378,7 @@ class RandomAngleLines : public LineCollection
 {
 public:
   RandomAngleLines(LineCollection *coll, float max_angle) : coll(coll), max_angle(max_angle) { }
+  void Prepare() { coll->Prepare(); }
   virtual int NumLines() const { return coll->NumLines(); }
   virtual Point LinePoint(int line, int point) const
   {
@@ -1264,6 +1419,10 @@ class LI_or_array : public LineCollection
 public:
   LI_or_array(std::vector<LineCollection*> vec) : vec(vec)
   {
+  }
+  void Prepare() {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->Prepare();
     update_cache();
   }
   void update_cache()
@@ -1274,7 +1433,7 @@ public:
     int count = 0;
     int sum = 0;
     int f = 0;
-    int k = 0;
+    //int k = 0;
     int s = vec.size();
     for(int i=0;i<s;i++)
       {

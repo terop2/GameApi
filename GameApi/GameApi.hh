@@ -2915,7 +2915,9 @@ public:
   IMPORT void prepare_inst(LLA array, PTA instances);
   IMPORT void render_inst(LLA array, PTA instances);
   IMPORT ML render_ml(EveryApi &ev, LLA array);
+  IMPORT ML render_ml2(EveryApi &ev, LI array);
   IMPORT ML render_inst_ml(EveryApi &ev, LLA array, PTA pta);
+  IMPORT ML render_inst_ml2(EveryApi &ev, LI array, PTA pta);
 private:
   LinesApi(const LinesApi&);
   void operator=(const LinesApi&);

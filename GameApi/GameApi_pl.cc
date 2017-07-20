@@ -287,6 +287,7 @@ class DistFromLines : public SingleForwardFaceCollection
 {
 public:
   DistFromLines(LineCollection *coll, float d1, float d2, Point center) : coll(coll), d1(d1), d2(d2), center(center) { }
+  void Prepare() { coll->Prepare(); }
   virtual int NumFaces() const { return coll->NumLines(); }
   virtual int NumPoints(int face) const
   {
@@ -1916,6 +1917,7 @@ public:
 	arr.push_back(mm);
       }
   }
+  void Prepare() { lines->Prepare(); }
   virtual int NumFaces() const { return lines->NumLines() * num_steps; }
   virtual int NumPoints(int face) const { return 4; }
   virtual Point FacePoint(int face, int point) const
@@ -6138,21 +6140,75 @@ GameApi::P GameApi::PolygonApi::split_p(P p, int start_face, int end_face)
   return add_polygon2(e, new SplitterFaceCollection(*coll, start_face,end_face),1);
 }
 
+class LineToCone : public FaceCollection
+{
+public:
+  LineToCone(GameApi::Env &e, GameApi::EveryApi &ev, LineCollection *coll, float size, int numfaces) : e(e), ev(ev), lines(coll),size(size),numfaces(numfaces) { coll=0; }
+  void Prepare() {
+    lines->Prepare();
+    int s = lines->NumLines();
+    std::vector<GameApi::P> vec;
+    for(int i=0;i<s;i++)
+      {
+	Point p1 = lines->LinePoint(i, 0);
+	Point p2 = lines->LinePoint(i, 1);
+	GameApi::PT pp1 = ev.point_api.point(p1.x,p1.y,p1.z);
+	GameApi::PT pp2 = ev.point_api.point(p2.x,p2.y,p2.z);
+	GameApi::P ct = ev.polygon_api.cone(numfaces, pp1, pp2, size, size);
+	vec.push_back(ct);
+    }
+    GameApi::P res = ev.polygon_api.or_array2(vec);
+    coll = find_facecoll(e,res);
+  }
+  virtual int NumFaces() const { return coll->NumFaces(); }
+  virtual int NumPoints(int face) const { return coll->NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return coll->FacePoint(face,point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return coll->PointNormal(face,point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return coll->Attrib(face,point,id);
+  }
+
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return coll->AttribI(face,point,id);
+  }
+
+  virtual unsigned int Color(int face, int point) const
+  {
+    return coll->Color(face,point);
+  }
+
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return coll->TexCoord(face,point);
+  }
+
+  virtual float TexCoord3(int face, int point) const
+  {
+    return coll->TexCoord3(face,point);
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  LineCollection *lines;
+  FaceCollection *coll;
+  float size;
+  int numfaces;
+};
+
+
 GameApi::P GameApi::PolygonApi::line_to_cone(EveryApi &ev, LI li, float size, int numfaces)
 {
   LineCollection *lines = find_line_array(e, li);
-  int s = lines->NumLines();
-  std::vector<P> vec;
-  for(int i=0;i<s;i++)
-    {
-      Point p1 = lines->LinePoint(i, 0);
-      Point p2 = lines->LinePoint(i, 1);
-      PT pp1 = ev.point_api.point(p1.x,p1.y,p1.z);
-      PT pp2 = ev.point_api.point(p2.x,p2.y,p2.z);
-      P ct = ev.polygon_api.cone(numfaces, pp1, pp2, size, size);
-      vec.push_back(ct);
-    }
-  return or_array2(vec);
+  return add_polygon2(e, new LineToCone(e,ev,lines,size,numfaces),1);
 }
 GameApi::P GameApi::PolygonApi::static_instancing_matrix(EveryApi &ev, P obj, MS matrix_array)
 {
