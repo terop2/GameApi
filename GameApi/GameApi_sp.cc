@@ -195,6 +195,7 @@ public:
     //int old_sh = e.sh_texture;
     MainLoopEnv ee = e;
     ee.sh_texture = e.sh_texture_2d;
+    ee.in_MV = Matrix::Identity();
     //ee.env = e.env * Matrix::Translate(0.0,0.0,400.0);
     ee.is_2d = true;
     next->execute(ee);
