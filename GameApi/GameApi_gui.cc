@@ -3687,8 +3687,8 @@ EXPORT GameApi::W GameApi::GuiApi::button(int sx, int sy, unsigned int color_1, 
   BB mask__0b = ev.bool_bitmap_api.rectangle(mask__0a, 0.0, float(sy-2), float(sx), 2.0);
   BB mask_2 = mask__0b;
 
-  BM w4 = ev.bitmap_api.blitbitmap(w2, w, 0, 0, mask_1);
-  BM w5 = ev.bitmap_api.blitbitmap(w4, w3, 0, 0, mask_2);
+  BM w4 = ev.bitmap_api.blitbitmap_bb(w2, w, 0, 0, mask_1);
+  BM w5 = ev.bitmap_api.blitbitmap_bb(w4, w3, 0, 0, mask_2);
   int key = sx+sy+color_1+color_2;
   return icon_shared(w5,key);
 }
@@ -3791,7 +3791,7 @@ int GuiWidgetForward::render_to_bitmap()
       p-=pos;
       GameApi::FB fb = ev.float_bitmap_api.from_alpha(bm_id_1);
       GameApi::BB bb3 = ev.bool_bitmap_api.from_float_bitmap(fb, 0.1, 1.2);
-      bg = ev.bitmap_api.blitbitmap(bg, bm_id_1, (int)p.x, (int)p.y, bb3);
+      bg = ev.bitmap_api.blitbitmap_bb(bg, bm_id_1, (int)p.x, (int)p.y, bb3);
     }
   return bg.id;
 }
@@ -8228,19 +8228,19 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BM", "BM", "int", "int" },
 			 { "", "", "0", "0" },
 			 "BM", "bitmap_api", "blitbitmap"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, (GameApi::BM (GameApi::BitmapApi::*)(GameApi::BM,GameApi::BM,int,int,GameApi::FB))&GameApi::BitmapApi::blitbitmap,
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, (GameApi::BM (GameApi::BitmapApi::*)(GameApi::BM,GameApi::BM,int,int,GameApi::FB))&GameApi::BitmapApi::blitbitmap_fb,
 			 "blitFB",
 			 { "bg", "orig", "x", "y", "mask" },
 			 { "BM", "BM", "int", "int", "FB" },
 			 { "", "", "0", "0", "" },
-			 "BM", "bitmap_api", "blitbitmap"));
+			 "BM", "bitmap_api", "blitbitmap_fb"));
 			 
-  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, (GameApi::BM (GameApi::BitmapApi::*)(GameApi::BM,GameApi::BM,int,int,GameApi::BB))&GameApi::BitmapApi::blitbitmap,
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, (GameApi::BM (GameApi::BitmapApi::*)(GameApi::BM,GameApi::BM,int,int,GameApi::BB))&GameApi::BitmapApi::blitbitmap_bb,
 			 "blitBB",
 			 { "bg", "orig", "x", "y", "mask" },
 			 { "BM", "BM", "int", "int", "BB" },
 			 { "", "", "0", "0", "" },
-			 "BM", "bitmap_api", "blitbitmap"));
+			 "BM", "bitmap_api", "blitbitmap_bb"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::scale_bitmap,
 			 "bm_scale",
 			 { "ev", "orig", "sx", "sy" },
