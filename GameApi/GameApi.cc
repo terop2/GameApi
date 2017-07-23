@@ -7926,11 +7926,11 @@ void blocker_iter(void *arg)
 {
   Envi_2 *env = (Envi_2*)arg;
   //std::cout << "async: " << async_pending_count << std::endl;
-  if (async_pending_count > 0) { env->logo_shown = true; } else { env->logo_shown = false; }
+  if (async_pending_count > 0) { env->logo_shown = true; }
   if (env->logo_shown)
     {
       bool b = env->ev->mainloop_api.logo_iter();
-      if (b) { env->logo_shown = false;
+      if (b && async_pending_count==0) { env->logo_shown = false;
 	env->ev->mainloop_api.reset_time();
 	env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
       }
