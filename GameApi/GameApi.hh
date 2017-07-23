@@ -507,8 +507,8 @@ public:
 
 	IMPORT BM growbitmap(BM small_orig_bitmap, int l, int t, int r, int b);
 	IMPORT BM blitbitmap(BM bg, BM orig, int x, int y);
-	IMPORT BM blitbitmap(BM bg, BM orig, int x, int y, FB mask);
-	IMPORT BM blitbitmap(BM bg, BM orig, int x, int y, BB mask);
+	IMPORT BM blitbitmap_fb(BM bg, BM orig, int x, int y, FB mask);
+	IMPORT BM blitbitmap_bb(BM bg, BM orig, int x, int y, BB mask);
 	IMPORT BM anim_array(BM *array, int size);
 	IMPORT BM modify_bitmap(BM orig, BM bm, int x, int y);
 	IMPORT BM interpolate_bitmap(BM orig1, BM orig2, float x); // x=[0..1]

@@ -979,7 +979,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y)
   return add_color_bitmap(e, new BlitBitmapClass(*bm1, *bm2, x,y));
 }
 
-EXPORT GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y, FB mask)
+EXPORT GameApi::BM GameApi::BitmapApi::blitbitmap_fb(BM bg, BM orig, int x, int y, FB mask)
 {
   BitmapHandle *handle = find_bitmap(e, bg);
   BitmapHandle *handle2 = find_bitmap(e, orig);
@@ -990,7 +990,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y, 
   return add_color_bitmap(e, new BlitBitmapClassMasked(*bm1, *bm2, x,y, *bm3));
 }
 
-EXPORT GameApi::BM GameApi::BitmapApi::blitbitmap(BM bg, BM orig, int x, int y, BB mask)
+EXPORT GameApi::BM GameApi::BitmapApi::blitbitmap_bb(BM bg, BM orig, int x, int y, BB mask)
 {
   BitmapHandle *handle = find_bitmap(e, bg);
   BitmapHandle *handle2 = find_bitmap(e, orig);
