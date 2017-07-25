@@ -119,7 +119,16 @@ public:
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
-    item->execute(e);
+    MainLoopEnv ee = e;
+    ee.v_shader_functions = "";
+    ee.f_shader_functions = "";
+    ee.v_shader_funcnames.clear();
+    ee.f_shader_funcnames.clear();
+    ee.us_vertex_shader=-1;
+    ee.us_fragment_shader=-1;
+    ee.in_MV = Matrix::Identity();
+    ee.env = Matrix::Identity();
+    item->execute(ee);
     ev.fbo_api.bind_screen(viewport);
     glBindTexture(GL_TEXTURE_2D, id);
 		  

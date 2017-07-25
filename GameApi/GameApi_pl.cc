@@ -6434,7 +6434,9 @@ std::string wave_v =
 
 GameApi::ML GameApi::PolygonApi::blur_shader(EveryApi &ev, ML mainloop, float val)
 {
-  std::stringstream ss; ss<<val;
+  //  std::stringstream ss; ss<<val;
+  std::string ss = ConvF(val);
+
 
 std::string blur_v =
 	"vec4 blur2(vec4 pos)\n"
@@ -6446,26 +6448,54 @@ std::string blur_v =
   std::string blur_f =
 	"vec4 blur2(vec4 rgb)\n"
 	"{\n"
-    "  vec2 t_mx = ex_TexCoord.xy + vec2(-" + ss.str() + ",0.0);\n"
-    "  vec2 t_my = ex_TexCoord.xy + vec2(0.0,-" + ss.str() + ");\n"
-    "  vec2 t_px = ex_TexCoord.xy + vec2("+ss.str()+ ",0.0);\n"
-    "  vec2 t_py = ex_TexCoord.xy + vec2(0.0," + ss.str() + ");\n"
+    "  vec2 t_mx = ex_TexCoord.xy + vec2(-" + ss + ",0.0);\n"
+    "  vec2 t_my = ex_TexCoord.xy + vec2(0.0,-" + ss + ");\n"
+    "  vec2 t_px = ex_TexCoord.xy + vec2("+ss+ ",0.0);\n"
+    "  vec2 t_py = ex_TexCoord.xy + vec2(0.0," + ss + ");\n"
 	"\n"
 	"   vec4 tex2 = texture2D(tex, ex_TexCoord.xy);\n"
 	"   vec4 tex_mx = texture2D(tex, t_mx);	\n"
 	"   vec4 tex_my = texture2D(tex, t_my);	\n"
 	"   vec4 tex_px = texture2D(tex, t_px);	\n"
 	"   vec4 tex_py = texture2D(tex, t_py);\n"
-	"   vec4 t1 = mix(tex_mx, tex_px, 0.5);\n"
-	"   vec4 t2 = mix(tex_my, tex_py, 0.5);\n"
-	"   vec4 t12 = mix(t1,t2,0.5);\n"
-	"   vec4 t12t = mix(t12,tex2,0.5);\n"   	
-	"   return vec4(mix(vec3(rgb),vec3(t12t),t12t.a),t12t.a);\n"
+	"   vec3 t1 = mix(tex_mx.rgb, tex_px.rgb, 0.5);\n"
+	"   vec3 t2 = mix(tex_my.rgb, tex_py.rgb, 0.5);\n"
+	"   vec3 t12 = mix(t1,t2,0.5);\n"
+	"   vec3 t12t = mix(t12,tex2.rgb,0.2);\n"   	
+	"   return vec4(t12t,1.0);\n"
 	"}\n";
 
 
   return custom_shader(ev, mainloop, blur_v, blur_f, "blur2", "blur2");
 }
+
+GameApi::ML GameApi::PolygonApi::bloom1_shader(EveryApi &ev, ML mainloop, float r_val, float g_val, float b_val)
+{
+  std::string ss_r = ConvF(r_val);
+  std::string ss_g = ConvF(g_val);
+  std::string ss_b = ConvF(b_val);
+
+std::string bloom1_v =
+	"vec4 bloom1(vec4 pos)\n"
+	"{\n"
+	"  ex_TexCoord = in_TexCoord;\n"
+	"  return pos;\n"
+	"}\n";
+  
+  std::string bloom1_f =
+    "vec4 bloom1(vec4 rgb)\n"
+    "{\n"
+    "   vec4 tex2 = texture2D(tex, ex_TexCoord.xy);\n"
+    "   vec3 v = vec3(" + ss_r + "," + ss_g + "," + ss_b + ");\n"
+    "   float val = dot(tex2.rgb, v);\n"
+    "   if (val <= 1.0) rgb = vec4(0,0,0,1.0);\n"
+    "   return rgb;\n"
+    "}\n";
+
+
+  return custom_shader(ev, mainloop, bloom1_v, bloom1_f, "bloom1", "bloom1");
+}
+
 class LogCoordsFaceCollection : public ForwardFaceCollection
 {
 public:
