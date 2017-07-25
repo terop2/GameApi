@@ -7358,6 +7358,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "ML", "float" },
 			 { "ev", "", "0.01" },
 			 "ML", "polygon_api", "blur_shader"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::bloom1_shader,
+			 "p_bloom_cut",
+			 { "ev", "mainloop", "r", "g", "b" },
+			 { "EveryApi&", "ML", "float", "float", "float" },
+			 { "ev", "", "0.5", "0.5", "0.5" },
+			 "ML", "polygon_api", "bloom1_shader"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::wave_shader,
 			 "p_wave",
 			 { "ev", "mainloop", "radius", "t_mult", "x_mult", "y_mult" },

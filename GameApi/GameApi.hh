@@ -2232,6 +2232,7 @@ public:
   IMPORT ML light_shader(EveryApi &ev, ML mainloop);
   IMPORT ML choose_color_shader(EveryApi &ev, ML mainloop, unsigned int color, float mix_val);
   IMPORT ML blur_shader(EveryApi &ev, ML mainloop, float val);
+  IMPORT ML bloom1_shader(EveryApi &ev, ML mainloop, float r_val, float g_val, float b_val);
   IMPORT ML wave_shader(EveryApi &ev, ML mainloop, float radius, float t_mult, float x_mult, float y_mult);
   IMPORT ML toon_shader(EveryApi &ev, ML mainloop);  
   IMPORT ML texture_shader(EveryApi &ev, ML mainloop, float mix);
