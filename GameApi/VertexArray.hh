@@ -225,7 +225,7 @@ public:
 	  }
 	else if (w==4)
 	  {
-	    quad_count+=6;
+	    quad_count+=4;
 	  }
 	else
 	  {
