@@ -46,6 +46,7 @@ using std::placeholders::_9;
   struct GI { int id; };
   struct FF { int id; };
   struct IF { int id; };
+  struct PF { int id; };
   struct SF { int id; };
   struct ARR { int id; };
   struct PAR { int id; }; // P array
@@ -647,6 +648,13 @@ public:
   IMPORT IF timed_int_fetcher(EveryApi &ev, int start, int end, float start_time, float end_time);
   IMPORT IF repeat_int_fetcher(IF fetcher, float duration);
   IMPORT IF keypress_int_fetcher(int key, int key_down_value, int key_up_value);
+  IMPORT IF x_comp(PF point_fetcher, float start_x, float end_x, int num_steps);
+  IMPORT IF y_comp(PF point_fetcher, float start_y, float end_y, int num_steps);
+  IMPORT IF z_comp(PF point_fetcher, float start_z, float end_z, int num_steps);
+  IMPORT PF point_fetcher_constant(float x, float y, float z);
+  IMPORT PF point_fetcher_part(PF point_fetcher, int component, FF float_fetcher);
+  IMPORT PF mouse_fetcher();
+  IMPORT FF choose_float_fetcher(IF int_fetcher, float a_1, float a_2, float a_3, float a_4, float a_5, float a_6, float a_7);
   IMPORT ML ml_chooser(std::vector<ML> vec, IF fetcher);
   IMPORT std::vector<GameApi::BM> bm_array_id_inv(ARR arr);
   IMPORT ARR bm_array_id(std::vector<BM> vec);
@@ -1331,6 +1339,7 @@ public:
   IMPORT MN rotatez(MN next, float angle);
   IMPORT MN translate(MN next, float start_time, float end_time,
 	       float dx, float dy, float dz);
+  IMPORT MN mn_fetcher(PF pf);
   IMPORT MN scale(MN next, float start_time, float end_time,
 	   float sx, float sy, float sz);
   IMPORT MN rotate(MN next, float start_time, float end_time,

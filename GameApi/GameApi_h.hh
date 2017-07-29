@@ -563,6 +563,7 @@ struct EnvImpl
   std::vector<Fetcher<int>*> int_fetchers;
   std::vector<Fetcher<std::string>*> string_fetchers;
   std::vector<Fetcher<float>*> float_fetchers;
+  std::vector<Fetcher<Point>*> point_fetchers;
   ASyncLoader *async_loader;
   std::vector<GlyphInterface*> glyph_interfaces;
   std::vector<FontInterface*> font_interfaces;
@@ -921,6 +922,7 @@ GameApi::GI add_glyph_interface(GameApi::Env &e, GlyphInterface *gi);
 GameApi::SD add_string_display(GameApi::Env &e, StringDisplay *sd);
 GameApi::FF add_float_fetcher(GameApi::Env &e, Fetcher<float> *f);
 GameApi::IF add_int_fetcher(GameApi::Env &e, Fetcher<int> *i);
+GameApi::PF add_point_fetcher(GameApi::Env &e, Fetcher<Point> *p);
 GameApi::SF add_string_fetcher(GameApi::Env &e, Fetcher<std::string> *str);
 template<class T>
 GameApi::ARR add_array(GameApi::Env &e, T t) { 
@@ -1044,6 +1046,7 @@ FontInterface *find_font_interface(GameApi::Env &e, GameApi::FI fi);
 Fetcher<float> *find_float_fetcher(GameApi::Env &e, GameApi::FF f);
 Fetcher<std::string> *find_string_fetcher(GameApi::Env &e, GameApi::SF s);
 Fetcher<int> *find_int_fetcher(GameApi::Env &e, GameApi::IF f);
+Fetcher<Point> *find_point_fetcher(GameApi::Env &e, GameApi::PF p);
 ArrayType *find_array(GameApi::Env &e, GameApi::ARR arr);
 CurvePos *find_curve_pos(GameApi::Env &e, GameApi::CP pos);
 PointTransform *find_point_transform(GameApi::Env &e, GameApi::PTT pt);

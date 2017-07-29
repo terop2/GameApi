@@ -4184,6 +4184,8 @@ MACRO(GameApi::CFB)
 MACRO(GameApi::PH)
 MACRO(GameApi::DC)
 MACRO(GameApi::PN)
+MACRO(GameApi::PF)
+MACRO(GameApi::FF)
 #undef MACRO
 
 
@@ -5912,7 +5914,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "ev", "", "", "0","0" },
 			 "ML", "font_api", "dynamic_character"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::ml_chooser,
-			 "ml_choosr",
+			 "ml_chooser",
 			 { "vec", "fetcher" },
 			 { "[ML]", "IF" },
 			 { "", "" },
@@ -5936,6 +5938,50 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "int", "int", "int" },
 			 { "32", "1", "0" },
 			 "IF", "font_api", "keypress_int_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::choose_float_fetcher,
+			 "ff_choose",
+			 { "int_fetcher", "a_0", "a_1", "a_2", "a_3", "a_4", "a_5", "a_6" },
+			 { "IF", "float", "float", "float", "float", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0" },
+			 "FF", "font_api", "choose_float_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::point_fetcher_constant,
+			 "pf_constant",
+			 { "x", "y", "z" },
+			 { "float", "float", "float" },
+			 { "0.0", "0.0", "0.0" },
+			 "PF", "font_api", "point_fetcher_constant"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::mouse_fetcher,
+			 "pf_mouse",
+			 { },
+			 { },
+			 { },
+			 "PF", "font_api", "mouse_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::point_fetcher_part,
+			 "pf_component",
+			 { "point_fetcher", "component", "float_fetcher" },
+			 { "PF", "int", "FF" },
+			 { "", "0", "" },
+			 "PF", "font_api", "point_fetcher_part"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::x_comp,
+			 "pf_x",
+			 { "point_fetcher", "start_x", "end_x", "numsteps" },
+			 { "PF", "float", "float", "int" },
+			 { "", "0.0", "300.0", "8" },
+			 "IF", "font_api", "x_comp"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::y_comp,
+			 "pf_y",
+			 { "point_fetcher", "start_y", "end_y", "numsteps" },
+			 { "PF", "float", "float", "int" },
+			 { "", "0.0", "300.0", "8" },
+			 "IF", "font_api", "y_comp"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::z_comp,
+			 "pf_z",
+			 { "point_fetcher", "start_z", "end_z", "numsteps" },
+			 { "PF", "float", "float", "int" },
+			 { "", "0.0", "300.0", "8" },
+			 "IF", "font_api", "z_comp"));
+
+  
   return vec;
 }
 #endif
@@ -5989,6 +6035,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "MN", "float" },
 			 { "", "0.0" },
 			 "MN", "move_api", "rotatez"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::mn_fetcher,
+			 "mn_pos_fetcher",
+			 { "point_fetcher" },
+			 { "PF" },
+			 { "" },
+			 "MN", "move_api", "mn_fetcher"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::local_move,
 			 "local_move",
 			 { "ev", "inner_ml", "center_points" },
