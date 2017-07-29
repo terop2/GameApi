@@ -78,35 +78,35 @@ void VertexArraySet::set_reserve(int id, int tri_count, int quad_count, int poly
       p = m_set[id];  
     }
   //std::cout << "Reserve: " << tri_count << " " << quad_count << std::endl;
-  if (tri_count)
+  if (tri_count && tri_count<1000000)
     p->tri_polys.reserve(tri_count*3);  
-  if (quad_count)
+  if (quad_count && quad_count<1000000)
     p->quad_polys.reserve(quad_count*6);
-  if (poly_count)
+  if (poly_count && poly_count<1000000)
     p->poly_polys.reserve(poly_count*3);
-  if (tri_count)
+  if (tri_count && tri_count<1000000)
     p->tri_polys2.reserve(tri_count*3);
-  if (quad_count)
+  if (quad_count && quad_count<1000000)
     p->quad_polys2.reserve(quad_count*6);  
-  if (poly_count)
+  if (poly_count && poly_count<1000000)
     p->poly_polys2.reserve(poly_count*3);
-  if (tri_count)
+  if (tri_count && tri_count<1000000)
     p->tri_normals.reserve(tri_count*3);  
-  if (quad_count)
+  if (quad_count && quad_count<1000000)
     p->quad_normals.reserve(quad_count*6); 
-  if (poly_count)
+  if (poly_count && poly_count<1000000)
     p->poly_normals.reserve(poly_count*3);
-  if (tri_count)
+  if (tri_count && tri_count<1000000)
     p->tri_color.reserve(tri_count*3); 
-  if (quad_count)
+  if (quad_count && quad_count<1000000)
     p->quad_color.reserve(quad_count*6);
-  if (poly_count)
+  if (poly_count && poly_count<1000000)
     p->poly_color.reserve(poly_count*3);
-  if (tri_count)
+  if (tri_count && tri_count<1000000)
     p->tri_texcoord.reserve(tri_count*3);
-  if (quad_count)
+  if (quad_count && quad_count<1000000)
     p->quad_texcoord.reserve(quad_count*6);
-  if (poly_count)
+  if (poly_count && poly_count<1000000)
     p->poly_texcoord.reserve(poly_count*3);
 }
 void VertexArraySet::push_poly(int id, int num, Point *points)
