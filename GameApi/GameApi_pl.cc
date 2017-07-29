@@ -586,6 +586,7 @@ EXPORT GameApi::ML GameApi::PolygonApi::save_model_ml(GameApi::P poly, std::stri
 EXPORT void GameApi::PolygonApi::save_model(GameApi::P poly, std::string filename)
 {
   FaceCollection *face = find_facecoll(e, poly);
+  face->Prepare();
   SaveObjModelFaceCollection save(face);
   save.save(filename);
 }
@@ -6143,7 +6144,7 @@ GameApi::P GameApi::PolygonApi::split_p(P p, int start_face, int end_face)
 class LineToCone : public FaceCollection
 {
 public:
-  LineToCone(GameApi::Env &e, GameApi::EveryApi &ev, LineCollection *coll, float size, int numfaces) : e(e), ev(ev), lines(coll),size(size),numfaces(numfaces) { coll=0; }
+  LineToCone(GameApi::Env &e, GameApi::EveryApi &ev, LineCollection *coll2, float size, int numfaces) : e(e), ev(ev), lines(coll2),size(size),numfaces(numfaces) { coll=0; }
   void Prepare() {
     lines->Prepare();
     int s = lines->NumLines();
@@ -6160,38 +6161,46 @@ public:
     GameApi::P res = ev.polygon_api.or_array2(vec);
     coll = find_facecoll(e,res);
   }
-  virtual int NumFaces() const { return coll->NumFaces(); }
-  virtual int NumPoints(int face) const { return coll->NumPoints(face); }
+  virtual int NumFaces() const { if (!coll) return 0; return coll->NumFaces(); }
+  virtual int NumPoints(int face) const { if (!coll) return 3; return coll->NumPoints(face); }
   virtual Point FacePoint(int face, int point) const
   {
+    if (!coll) return Point(0.0,0.0,0.0);
     return coll->FacePoint(face,point);
   }
   virtual Vector PointNormal(int face, int point) const
   {
+    if (!coll) return Vector(0.0,0.0,0.0);
     return coll->PointNormal(face,point);
   }
   virtual float Attrib(int face, int point, int id) const
   {
+    if (!coll) return 0.0;
+
     return coll->Attrib(face,point,id);
   }
 
   virtual int AttribI(int face, int point, int id) const
   {
+    if (!coll) return 0;
     return coll->AttribI(face,point,id);
   }
 
   virtual unsigned int Color(int face, int point) const
   {
+    if (!coll) return 0x00000000;
     return coll->Color(face,point);
   }
 
   virtual Point2d TexCoord(int face, int point) const
   {
+    if (!coll) { Point2d p; p.x=0.0; p.y=0.0; return p; }
     return coll->TexCoord(face,point);
   }
 
   virtual float TexCoord3(int face, int point) const
   {
+    if (!coll) { return 0.0; }
     return coll->TexCoord3(face,point);
   }
 

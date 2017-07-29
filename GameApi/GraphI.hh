@@ -607,6 +607,9 @@ public:
 class Movement
 {
 public:
+  virtual void event(MainLoopEvent &e)=0;
+  virtual void frame(MainLoopEnv &e)=0;
+
   virtual void set_matrix(Matrix m)=0;
   virtual Matrix get_whole_matrix(float time, float delta_time) const=0;
 };

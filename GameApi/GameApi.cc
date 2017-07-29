@@ -450,6 +450,14 @@ GameApi::FF add_float_fetcher(GameApi::Env &e, Fetcher<float> *f)
   im.id = env->float_fetchers.size()-1;
   return im;
 }
+GameApi::PF add_point_fetcher(GameApi::Env &e, Fetcher<Point> *f)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->point_fetchers.push_back(f);
+  GameApi::PF im;
+  im.id = env->point_fetchers.size()-1;
+  return im;
+}
 GameApi::IF add_int_fetcher(GameApi::Env &e, Fetcher<int> *i)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1401,6 +1409,11 @@ Fetcher<float> *find_float_fetcher(GameApi::Env &e, GameApi::FF f)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->float_fetchers[f.id];
+}
+Fetcher<Point> *find_point_fetcher(GameApi::Env &e, GameApi::PF f)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->point_fetchers[f.id];
 }
 Fetcher<int> *find_int_fetcher(GameApi::Env &e, GameApi::IF i)
 {
@@ -2791,6 +2804,9 @@ class EmptyMovement : public Movement
 {
 public:
   EmptyMovement() : m_m(Matrix::Identity()) { }
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { }
+
   void set_matrix(Matrix m) { m_m = m; }
   Matrix get_whole_matrix(float time, float delta_time) const { return m_m; }
 private:
@@ -2844,6 +2860,8 @@ class LevelMovement : public Movement
 {
 public:
   LevelMovement(Movement *m) : m(m) { }
+  virtual void event(MainLoopEvent &e) { m->event(e); }
+  virtual void frame(MainLoopEnv &e) { m->frame(e); }
   void set_matrix(Matrix m) { m_m = m; }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
@@ -2865,6 +2883,9 @@ public:
 		    float dx, float dy, float dz)
     : next(next), start_time(start_time), end_time(end_time),
       dx(dx), dy(dy), dz(dz) { }
+  virtual void event(MainLoopEvent &e) { next->event(e); }
+  virtual void frame(MainLoopEnv &e) { next->frame(e); }
+
   void set_matrix(Matrix m) { }
   void set_pos(float ddx, float ddy, float ddz) { dx=ddx; dy=ddy; dz=ddz; }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -2888,6 +2909,26 @@ EXPORT GameApi::MN GameApi::MovementNode::translate(MN next,
   return add_move(e, new TranslateMovement(nxt,start_time, end_time,
 					   dx,dy,dz));
 }
+class MN_Fetcher : public Movement
+{
+public:
+  MN_Fetcher(Fetcher<Point> *pf) : pf(pf) {}
+  virtual void event(MainLoopEvent &e) { pf->event(e); }
+  virtual void frame(MainLoopEnv &e) { pf->frame(e); }
+  virtual void set_matrix(Matrix m) { }
+  virtual Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    Point p = pf->get();
+    return Matrix::Translate(p.x,p.y,p.z);
+  }
+private:
+  Fetcher<Point> *pf;
+};
+EXPORT GameApi::MN GameApi::MovementNode::mn_fetcher(PF pf)
+{
+  Fetcher<Point> *ppf = find_point_fetcher(e, pf);
+  return add_move(e, new MN_Fetcher(ppf));
+}
 class ScaleMovement : public Movement
 {
 public:
@@ -2895,6 +2936,8 @@ public:
 		    float sx, float sy, float sz)
     : next(next), start_time(start_time), end_time(end_time),
       sx(sx), sy(sy), sz(sz) { }
+  virtual void event(MainLoopEvent &e) { next->event(e); }
+  virtual void frame(MainLoopEnv &e) { next->frame(e); }
   void set_matrix(Matrix m) { }
   void set_scale(float ssx, float ssy, float ssz) { sx=ssx; sy=ssy; sz=ssz; }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -2932,6 +2975,9 @@ public:
     : next(next), start_time(start_time), end_time(end_time),
       p_x(p_x), p_y(p_y), p_z(p_z),
       v_x(v_x), v_y(v_y), v_z(v_z), angle(angle) { }
+  virtual void event(MainLoopEvent &e) { next->event(e); }
+  virtual void frame(MainLoopEnv &e) { next->frame(e); }
+
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
@@ -2965,6 +3011,8 @@ public:
     zero = next->get_whole_matrix(start_time, 1.0);
     one = next->get_whole_matrix(end_time,1.0);
   }
+  virtual void event(MainLoopEvent &e) { next->event(e); }
+  virtual void frame(MainLoopEnv &e) { next->frame(e); }
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
@@ -2983,6 +3031,9 @@ class AnimEnable : public Movement
 {
 public:
   AnimEnable(Movement *next, float start_time, float end_time) : next(next), start_time(start_time), end_time(end_time) { }
+  virtual void event(MainLoopEvent &e) { next->event(e); }
+  virtual void frame(MainLoopEnv &e) { next->frame(e); }
+
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
@@ -2999,6 +3050,9 @@ class AnimDisable : public Movement
 {
 public:
   AnimDisable(Movement *next, float start_time, float end_time) : next(next), start_time(start_time), end_time(end_time) { }
+  virtual void event(MainLoopEvent &e) { next->event(e); }
+  virtual void frame(MainLoopEnv &e) { next->frame(e); }
+
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
@@ -3014,6 +3068,15 @@ class AnimChoose : public Movement
 {
 public:
   AnimChoose(std::vector<Movement*> vec, float start_time, float duration) : vec(vec), start_time(start_time), duration(duration) { }
+  virtual void event(MainLoopEvent &e) {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->event(e);
+  }
+  virtual void frame(MainLoopEnv &e) {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->frame(e);
+  }
+
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
@@ -3061,6 +3124,9 @@ class TimeChangeMovement : public Movement
 {
 public:
   TimeChangeMovement(Movement *nxt, float d_time) : nxt(nxt), d_time(d_time) { }
+  virtual void event(MainLoopEvent &e) { nxt->event(e); }
+  virtual void frame(MainLoopEnv &e) { nxt->frame(e); }
+
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
@@ -3076,6 +3142,9 @@ class MatrixMovement : public Movement
 {
 public:
   MatrixMovement(Movement *next, Matrix m) : next(next), m(m) { }
+  virtual void event(MainLoopEvent &e) { next->event(e); }
+  virtual void frame(MainLoopEnv &e) { next->frame(e); }
+
   void set_matrix(Matrix mm) { m = mm; }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
@@ -3088,10 +3157,13 @@ private:
 class EventActivateMovement : public Movement
 {
 public:
-  EventActivateMovement(Movement *next, Movement *event, float activate_time, float duration) : next(next), event(event), activate_time(activate_time), duration(duration) { 
+  EventActivateMovement(Movement *next, Movement *event2, float activate_time, float duration) : next(next), event2(event2), activate_time(activate_time), duration(duration) { 
     event_activated=false;
     collect = Matrix::Identity();
   }
+  virtual void event(MainLoopEvent &e) { next->event(e); event2->event(e); }
+  virtual void frame(MainLoopEnv &e) { next->frame(e); event2->frame(e); }
+
   void set_matrix(Matrix mm) { }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
@@ -3101,17 +3173,17 @@ public:
       {
 	event_activated = true;
       }
-    if (event_activated) { n = n * event->get_whole_matrix(time-activate_time, delta_time) * collect; }
+    if (event_activated) { n = n * event2->get_whole_matrix(time-activate_time, delta_time) * collect; }
     else { n = n * collect; }
     if (event_activated && time - activate_time > duration) {
       event_activated = false;
-      collect = collect * event->get_whole_matrix(duration,delta_time);
+      collect = collect * event2->get_whole_matrix(duration,delta_time);
     }
     return n;
   }
 private:
   Movement *next;
-  Movement *event;
+  Movement *event2;
   float activate_time;
   mutable bool event_activated;
   float duration;
@@ -3152,6 +3224,9 @@ class TimeRepeatMovement : public Movement
 {
 public:
   TimeRepeatMovement(Movement *m, float start_time, float repeat_duration) : m(m), start_time(start_time), repeat_duration(repeat_duration) { }
+  virtual void event(MainLoopEvent &e) { m->event(e); }
+  virtual void frame(MainLoopEnv &e) { m->frame(e); }
+
   void set_matrix(Matrix mm) { }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
@@ -3507,9 +3582,14 @@ public:
   void handle_event(MainLoopEvent &env)
   {
     next->handle_event(env);
+    Movement *move = find_move(e,mn);
+    move->event(env);
   }
   void execute(MainLoopEnv &env)
   {
+    Movement *move = find_move(e,mn);
+    move->frame(env);
+
     if (firsttime) {
       firsttime2 = true;
     }
@@ -3643,6 +3723,9 @@ public:
   int shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &eve)
   {
+    Movement *move = find_move(e, mn);
+    move->event(eve);
+
     int ch = eve.ch;
 #ifdef EMSCRIPTEN
     if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
@@ -3662,6 +3745,10 @@ public:
   }
   void execute(MainLoopEnv &env)
   {
+    Movement *move = find_move(e, mn);
+    move->frame(env);
+
+
     GameApi::SH s1;
     s1.id = env.sh_texture;
     GameApi::SH s2;
@@ -3745,6 +3832,9 @@ public:
   int shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &eve)
   {
+    Movement *move = find_move(e, mn);
+    move->event(eve);
+
     int ch = eve.ch;
 #ifdef EMSCRIPTEN
     if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
@@ -3767,6 +3857,9 @@ public:
   }
   void execute(MainLoopEnv &env)
   {
+    Movement *move = find_move(e, mn);
+    move->frame(env);
+
     GameApi::SH s1;
     s1.id = env.sh_texture;
     GameApi::SH s2;
@@ -3856,6 +3949,9 @@ public:
   int shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &eve)
   {
+    Movement *move = find_move(e, mn);
+    move->event(eve);
+
     bool start_anim = false;
     bool start_anim2 = false;
     int ch = eve.ch;
@@ -3902,6 +3998,8 @@ public:
   }
   void execute(MainLoopEnv &env)
   {
+    Movement *move = find_move(e, mn);
+    move->frame(env);
 
 
     GameApi::SH s1;

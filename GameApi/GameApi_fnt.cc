@@ -467,6 +467,171 @@ private:
   bool key_down;
 };
 
+class ChooseFloatFetcher : public Fetcher<float>
+{
+public:
+  ChooseFloatFetcher(Fetcher<int> *f,
+		     float a_1, float a_2, float a_3, float a_4, float a_5, float a_6, float a_7) : f(f), a_1(a_1), a_2(a_2), a_3(a_3), a_4(a_4), a_5(a_5), a_6(a_6), a_7(a_7) { }
+  virtual void event(MainLoopEvent &e) { f->event(e); }
+  virtual void frame(MainLoopEnv &e) { f->frame(e); }
+
+  void set(float t) { }
+  float get() const {
+    int val = f->get();
+    if (val>=0 && val<=6) {
+      float arr[] = { a_1, a_2, a_3, a_4, a_5, a_6, a_7 };
+      return arr[val];
+    } else { return 0.0; }
+  }
+private:
+  Fetcher<int> *f;
+  float a_1,a_2,a_3,a_4,a_5,a_6,a_7;
+};
+
+GameApi::FF GameApi::FontApi::choose_float_fetcher(IF int_fetcher, float a_1, float a_2, float a_3, float a_4, float a_5, float a_6, float a_7)
+{
+  Fetcher<int> *iif = find_int_fetcher(e, int_fetcher);
+  return add_float_fetcher(e, new ChooseFloatFetcher(iif, a_1, a_2, a_3,a_4,a_5,a_6,a_7));
+}
+
+class PointFetcherPart : public Fetcher<Point>
+{
+public:
+  PointFetcherPart(Fetcher<Point> *pos, int component, Fetcher<float> *comp) : pos(pos), component(component), comp(comp) { }
+  virtual void event(MainLoopEvent &e) { pos->event(e); comp->event(e); }
+  virtual void frame(MainLoopEnv &e) { pos->frame(e); comp->frame(e); }
+  virtual void set(Point t) { pos->set(t); }
+  virtual Point get() const {
+    Point p = pos->get();
+    if (component==0) p.x = comp->get();
+    if (component==1) p.y = comp->get();
+    if (component==2) p.z = comp->get();
+    return p;
+  }
+
+private:
+  Fetcher<Point> *pos;
+  int component;
+  Fetcher<float> *comp;
+};
+
+template<class T>
+class ConstantFetcher : public Fetcher<T>
+{
+public:
+  ConstantFetcher(T t) : m_t(t) { }
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { }
+  virtual void set(T t) { m_t = t; }
+  virtual T get() const { return m_t; }
+private:
+  T m_t;
+};
+
+class MouseFetcher : public Fetcher<Point>
+{
+public:
+  MouseFetcher() { }
+  virtual void event(MainLoopEvent &e) { m_t = e.cursor_pos; }
+  virtual void frame(MainLoopEnv &e) { }
+  virtual void set(Point t) { m_t = t; }
+  virtual Point get() const { return m_t; }
+private:
+  Point m_t;
+};
+GameApi::PF GameApi::FontApi::mouse_fetcher()
+{
+  return add_point_fetcher(e, new MouseFetcher);
+}
+class XComp : public Fetcher<int>
+{
+public:
+  XComp(Fetcher<Point> *pf, float start_x, float end_x, int num_steps) : pf(pf), start_x(start_x), end_x(end_x), num_steps(num_steps) { }
+  virtual void event(MainLoopEvent &e) { pf->event(e); }
+  virtual void frame(MainLoopEnv &e) { pf->frame(e); }
+  virtual void set(int t) { }
+  virtual int get() const
+  {
+    Point val2 = pf->get();
+    float val = val2.x;
+    val -= start_x;
+    val /= (end_x-start_x);
+    val *= num_steps;
+    return int(val);
+  }
+private:
+  Fetcher<Point> *pf;
+  float start_x, end_x;
+  int num_steps;
+};
+class YComp : public Fetcher<int>
+{
+public:
+  YComp(Fetcher<Point> *pf, float start_y, float end_y, int num_steps) : pf(pf), start_y(start_y), end_y(end_y), num_steps(num_steps) { }
+  virtual void event(MainLoopEvent &e) { pf->event(e); }
+  virtual void frame(MainLoopEnv &e) { pf->frame(e); }
+  virtual void set(int t) { }
+  virtual int get() const
+  {
+    Point val2 = pf->get();
+    float val = val2.y;
+    val -= start_y;
+    val /= (end_y-start_y);
+    val *= num_steps;
+    return int(val);
+  }
+private:
+  Fetcher<Point> *pf;
+  float start_y, end_y;
+  int num_steps;
+};
+class ZComp : public Fetcher<int>
+{
+public:
+  ZComp(Fetcher<Point> *pf, float start_z, float end_z, int num_steps) : pf(pf), start_z(start_z), end_z(end_z), num_steps(num_steps) { }
+  virtual void event(MainLoopEvent &e) { pf->event(e); }
+  virtual void frame(MainLoopEnv &e) { pf->frame(e); }
+  virtual void set(int t) { }
+  virtual int get() const
+  {
+    Point val2 = pf->get();
+    float val = val2.z;
+    val -= start_z;
+    val /= (end_z-start_z);
+    val *= num_steps;
+    return int(val);
+  }
+private:
+  Fetcher<Point> *pf;
+  float start_z, end_z;
+  int num_steps;
+};
+GameApi::IF GameApi::FontApi::x_comp(PF point_fetcher, float start_x, float end_x, int num_steps)
+{
+  Fetcher<Point> *pf = find_point_fetcher(e, point_fetcher);
+  return add_int_fetcher(e, new XComp(pf, start_x, end_x, num_steps));
+}
+GameApi::IF GameApi::FontApi::y_comp(PF point_fetcher, float start_y, float end_y, int num_steps)
+{
+  Fetcher<Point> *pf = find_point_fetcher(e, point_fetcher);
+  return add_int_fetcher(e, new YComp(pf, start_y, end_y, num_steps));
+}
+GameApi::IF GameApi::FontApi::z_comp(PF point_fetcher, float start_z, float end_z, int num_steps)
+{
+  Fetcher<Point> *pf = find_point_fetcher(e, point_fetcher);
+  return add_int_fetcher(e, new ZComp(pf, start_z, end_z, num_steps));
+}
+GameApi::PF GameApi::FontApi::point_fetcher_constant(float x, float y, float z)
+{
+  return add_point_fetcher(e, new ConstantFetcher<Point>(Point(x,y,z)));
+}
+GameApi::PF GameApi::FontApi::point_fetcher_part(PF point_fetcher, int component, FF float_fetcher)
+{
+  Fetcher<Point> *pf = find_point_fetcher(e, point_fetcher);
+  Fetcher<float> *ff = find_float_fetcher(e, float_fetcher);
+  return add_point_fetcher(e, new PointFetcherPart(pf, component, ff));
+}
+
 class TimedIntFetcher : public Fetcher<int>
 {
 public:
