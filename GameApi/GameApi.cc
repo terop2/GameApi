@@ -10002,7 +10002,8 @@ public:
 
     
     eee.in_MV = find_matrix(env, res);
-  
+    eee.env = find_matrix(env, res);
+
     next->execute(eee);
     
 
