@@ -184,7 +184,8 @@ void set_status(int val, int val_max) {
   ss1 << val;
   std::stringstream ss2;
   ss2 << val_max;
-  emscripten_run_script("setStatus('Running...(" + ss1.str() + "/" + ss2.str() + ")')");
+  std::string s = "setStatus('Running...(" + ss1.str() + "/" + ss2.str() + ")')";
+  emscripten_run_script(s.c_str());
 #endif
 }
 
