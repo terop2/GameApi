@@ -179,7 +179,7 @@ bool check_count(std::vector<std::string> cmd_args, int current_arg, int count)
 }
 
 void set_status(int val, int val_max) {
-#ifdef EMSCRIPTEN
+#if 0
   std::stringstream ss1;
   ss1 << val;
   std::stringstream ss2;
