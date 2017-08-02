@@ -178,6 +178,16 @@ bool check_count(std::vector<std::string> cmd_args, int current_arg, int count)
   return cmd_args.size()-current_arg >= count;
 }
 
+void set_status(int val, int val_max) {
+#ifdef EMSCRIPTEN
+  std::stringstream ss1;
+  ss1 << val;
+  std::stringstream ss2;
+  ss2 << val_max;
+  emscripten_run_script("setStatus('Running...(" + ss1.str() + "/" + ss2.str() + ")')");
+#endif
+}
+
 int main(int argc, char *argv[]) {
   std::cout << "COMMANDLINE ARGS: " << std::endl;
   int s = argc;
@@ -252,12 +262,16 @@ int main(int argc, char *argv[]) {
     }
 
   // initialize window
+  set_status(0,3);
   ev.mainloop_api.init_window(w_width,w_height);
+  set_status(1,3);
   ev.mainloop_api.set_screen_size(w_width, w_height);
   ev.mainloop_api.set_homepage_url(homepageurl);
   ev.shader_api.load_default();
+  set_status(2,3);
 
   BLK blk = mainloop(e, ev);
+  set_status(3,3);
   ev.blocker_api.run(blk);
 
 }
