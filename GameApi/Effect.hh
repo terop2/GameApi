@@ -10765,7 +10765,7 @@ public:
     int s = attrib_ids.size();
     for(int i=0;i<s;i++)
       if (attrib_ids[i]==id) return *attrib_buffers[i];
-    return *((Buffer<float>*)0);
+    return *attrib_buffers[0];
   }
 private:
   FaceCollection *coll;
