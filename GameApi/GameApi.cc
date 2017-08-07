@@ -515,6 +515,15 @@ GameApi::BLK add_blocker(GameApi::Env &e, Blocker *blk)
   return im;
 
 }
+GameApi::RUN add_splitter(GameApi::Env &e, Splitter *blk)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->splitters.push_back(blk);
+  GameApi::RUN im;
+  im.id = env->splitters.size()-1;
+  return im;
+
+}
 GameApi::CC add_color(GameApi::Env &e, ColorChange *cc)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1449,6 +1458,11 @@ Blocker *find_blocker(GameApi::Env &e, GameApi::BLK blk)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->blockers[blk.id];
+}
+Splitter *find_splitter(GameApi::Env &e, GameApi::RUN spl)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->splitters[spl.id];
 }
 PD_Impl find_polydistfield(GameApi::Env &e, GameApi::PD p)
 {
@@ -8088,6 +8102,155 @@ void blocker_iter(void *arg)
 }
 extern int async_pending_count;
 
+class MainLoopSplitter_win32_and_emscripten : public Splitter
+{
+public:
+  MainLoopSplitter_win32_and_emscripten(GameApi::ML code, bool logo, bool fpscounter, float start_time, float duration, int screen_width, int screen_height) : code(code), logo(logo), fpscounter(fpscounter), timeout(duration), start_time(start_time), screen_width(screen_width), screen_height(screen_height)
+  {
+  }
+  virtual void set_env(GameApi::Env *ei)
+  {
+    e = ei;
+  }
+  virtual void set_everyapi(GameApi::EveryApi *evi)
+  {
+    ev = evi;
+  }
+  virtual void Init()
+  {
+    Envi_2 &env = envi;
+    env.logo_shown = logo;
+    env.fpscounter = fpscounter;
+    env.timeout = start_time+timeout;
+    env.start_time = start_time;
+    env.screen_width = screen_width;
+    env.screen_height = screen_height;
+    env.ev = ev;
+    
+    GameApi::SH sh = env.ev->shader_api.colour_shader();
+    GameApi::SH sh2 = env.ev->shader_api.texture_shader();
+    GameApi::SH sh3 = env.ev->shader_api.texture_array_shader();
+    
+    // rest of the initializations
+    env.ev->mainloop_api.init_3d(sh);
+    env.ev->mainloop_api.init_3d(sh2);
+    env.ev->mainloop_api.init_3d(sh3);
+    env.ev->shader_api.use(sh);
+    
+    GameApi::ML ml = mainloop(*env.ev);
+    if (async_pending_count > 0) { env.logo_shown = true; }
+    
+    env.mainloop = ml;
+    
+    env.color_sh = sh;
+    env.texture_sh = sh2;
+    env.arr_texture_sh = sh3;
+    
+    env.ev->mainloop_api.reset_time();
+    if (env.logo_shown) {
+      env.ev->mainloop_api.display_logo(*env.ev);
+    } else {
+	env.ev->mainloop_api.advance_time(env.start_time/10.0*1000.0);
+    }
+     env.ev->mainloop_api.alpha(true);
+     glEnable(GL_DEPTH_TEST);
+     GameApi::MainLoopApi::Event e;
+     while((e = env.ev->mainloop_api.get_event()).last==true)
+       {
+	 /* this eats all events from queue */
+       }
+  }
+  virtual int Iter()
+  {
+    Envi_2 *env = (Envi_2*)&envi;
+    //std::cout << "async: " << async_pending_count << std::endl;
+    if (async_pending_count > 0) { env->logo_shown = true; }
+    if (env->logo_shown)
+      {
+	bool b = env->ev->mainloop_api.logo_iter();
+	if (b && async_pending_count==0) { env->logo_shown = false;
+	  env->ev->mainloop_api.reset_time();
+	  env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
+	}
+	return -1;
+      }
+
+    env->ev->mainloop_api.clear_3d(0xff000000);
+    
+    // handle esc event
+    GameApi::MainLoopApi::Event e;
+    while((e = env->ev->mainloop_api.get_event()).last==true)
+      {
+	//std::cout << e.ch << " " << e.type << std::endl;
+#ifndef EMSCRIPTEN
+	if (e.ch==27 && e.type==0x300) { env->exit = true; return 0; }
+#endif
+	
+	GameApi::InteractionApi::quake_movement_event(*env->ev,e, env->pos_x, env->pos_y, env->rot_y,
+						      env->data, env->speed_x, env->speed_y,
+				   1.0, 1.0*3.14159*2.0/360.0);
+	env->ev->mainloop_api.event_ml(env->mainloop, e);
+	
+      }
+    GameApi::InteractionApi::quake_movement_frame(*env->ev, env->pos_x, env->pos_y, env->rot_y,
+						  env->data, env->speed_x, env->speed_y,
+						  1.0, 1.0*3.14159*2.0/360.0);
+    
+    GameApi::M mat = env->ev->matrix_api.identity();
+    env->ev->shader_api.use(env->color_sh);
+    env->ev->shader_api.set_var(env->color_sh, "in_MV", mat);
+    env->ev->shader_api.set_var(env->color_sh, "in_iMV", env->ev->matrix_api.transpose(env->ev->matrix_api.inverse(mat)));
+    env->ev->shader_api.use(env->texture_sh);
+    env->ev->shader_api.set_var(env->texture_sh, "in_MV", mat);
+    env->ev->shader_api.set_var(env->texture_sh, "in_iMV", env->ev->matrix_api.transpose(env->ev->matrix_api.inverse(mat)));
+    
+    env->ev->shader_api.use(env->arr_texture_sh);
+    env->ev->shader_api.set_var(env->arr_texture_sh, "in_MV", mat);
+    env->ev->shader_api.set_var(env->arr_texture_sh, "in_iMV", env->ev->matrix_api.transpose(env->ev->matrix_api.inverse(mat)));
+    env->ev->shader_api.use(env->color_sh);
+    
+    GameApi::M in_MV = mat; //env->ev->mainloop_api.in_MV(*env->ev, true);
+    GameApi::M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
+    GameApi::M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
+    
+    env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+
+    if (env->fpscounter)
+      env->ev->mainloop_api.fpscounter();
+    if (env->ev->mainloop_api.get_time()/1000.0*10.0 > env->timeout)
+      {
+	env->exit = true;
+      }
+    
+    // swapbuffers
+    env->ev->mainloop_api.swapbuffers();
+    return -1;
+  }
+  virtual void Destroy()
+  {
+    // this is needed for win32 build in editor
+      glDisable(GL_DEPTH_TEST);
+  }
+  virtual Splitter* NextState(int code)
+  {
+    return 0;
+  }
+  GameApi::ML mainloop(GameApi::EveryApi &ev)
+  {
+    return code;
+  }
+
+private:
+  GameApi::ML code;
+  bool logo;
+  bool fpscounter;
+  float timeout;
+  float start_time;
+  int screen_width;
+  int screen_height;
+  Envi_2 envi;
+};
+
 class MainLoopBlocker_win32_and_emscripten : public Blocker
 {
 public:
@@ -8153,7 +8316,7 @@ public:
 #else
       emscripten_set_main_loop_arg(blocker_iter, (void*)&env, 0,1);
 #endif 
-     glDisable(GL_DEPTH_TEST);
+      glDisable(GL_DEPTH_TEST);
   }
   private:
   
@@ -8178,6 +8341,48 @@ EXPORT GameApi::BLK GameApi::BlockerApi::game_window(GameApi::EveryApi &ev, ML m
   Blocker *blk = new MainLoopBlocker_win32_and_emscripten(e,ev,ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
   return add_blocker(e, blk);
 }
+EXPORT GameApi::RUN GameApi::BlockerApi::game_window2(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration)
+{
+  Splitter *spl = new MainLoopSplitter_win32_and_emscripten(ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
+  return add_splitter(e, spl);
+}
+
+class SplitterSeq : public Splitter
+{
+public:
+  SplitterSeq(std::vector<Splitter*> vec) : vec(vec) { current_seq=0; }
+  virtual void Init() {
+    vec[current_seq]->e = e;
+    vec[current_seq]->ev = ev;
+    vec[current_seq]->Init();
+  }
+  virtual int Iter() { 
+    int exit = vec[current_seq]->Iter(); return exit; 
+  }
+  virtual void Destroy() { vec[current_seq]->Destroy(); }
+  virtual Splitter* NextState(int code) {
+    current_seq++;
+    int s = vec.size();
+    if (current_seq>=s) { return 0; }
+    return vec[current_seq];
+  }
+private:
+  std::vector<Splitter*> vec;
+  int current_seq;
+};
+
+EXPORT GameApi::RUN GameApi::BlockerApi::run_seq(GameApi::EveryApi &ev, std::vector<RUN> vec)
+{
+  std::vector<Splitter*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      Splitter *spl = find_splitter(e, vec[i]);
+      vec2.push_back(spl);
+    }
+  return add_splitter(e, new SplitterSeq(vec2));
+}
+
 class BlockerSeq : public Blocker
 {
 public:
@@ -8212,6 +8417,46 @@ EXPORT void GameApi::BlockerApi::run(BLK blk)
 {
   Blocker *blk2 = find_blocker(e, blk);
   blk2->Execute();
+}
+
+
+Splitter *splitter_current = 0;
+void splitter_iter2(void *arg)
+{
+  Splitter *blk2 = (Splitter*)arg;
+  int blocker_exit_code = blk2->Iter();
+  if (blocker_exit_code!=-1) 
+    {
+      Splitter *next = blk2->NextState(blocker_exit_code);
+      if (next) {
+	blk2->EnvTransfer(next);
+      }
+      blk2->Destroy();
+      if (next) {
+	next->Init();
+      }
+#ifdef EMSCRIPTEN
+      emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,1);
+#else
+      splitter_current = next;
+#endif
+    }
+}
+
+EXPORT void GameApi::BlockerApi::run2(EveryApi &ev, RUN spl)
+{
+  Splitter *spl2 = find_splitter(e, spl);
+  spl2->e = &e;
+  spl2->ev = &ev;
+  spl2->Init();
+  splitter_current = spl2;
+#ifdef EMSCRIPTEN
+  emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,1);
+#else
+  while(splitter_current) {
+    splitter_iter2((void*)splitter_current);
+  }
+#endif
 }
 
 class KeyFrameMesh : public VertexAnimNode

@@ -413,6 +413,10 @@ struct WorldElement
 {
   int index;
 };
+struct CollisionData
+{
+  std::vector<Point> bounding_box;
+};
 struct World
 {
   // Actual world
@@ -438,6 +442,8 @@ struct World
   // enemies
   Matrix enemy_matrix;
   std::vector<EnemyPiece> enemy_pieces;
+
+  std::map<std::string, CollisionData*> collision_data;
 };
 
 struct ContentPiece
@@ -761,6 +767,18 @@ class Blocker
 public:
   virtual void Execute()=0; // must block execution
   virtual void SetTimeout(float duration)=0;
+};
+class Splitter
+{
+public:
+  GameApi::Env *e;
+  GameApi::EveryApi *ev;
+public:
+  virtual void Init()=0;
+  virtual int Iter()=0;
+  virtual void Destroy()=0;
+  virtual Splitter* NextState(int code) { return this; }
+  virtual void EnvTransfer(Splitter *next) { next->e = e; next->ev = ev; }
 };
 
 class PointTransform
