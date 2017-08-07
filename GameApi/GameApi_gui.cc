@@ -25,6 +25,8 @@
 std::vector<GameApiItem*> all_functions();
 std::vector<GameApiItem*> polydistfield_functions();
 std::vector<GameApiItem*> waveform_functions();
+std::vector<GameApiItem*> blocker_functions();
+
 
 class EmptyWidget : public GuiWidgetForward
 {
@@ -4165,6 +4167,7 @@ MACRO(GameApi::PD)
 MACRO(GameApi::WV)
 MACRO(GameApi::CC)
 MACRO(GameApi::BLK)
+MACRO(GameApi::RUN)
 MACRO(GameApi::PTT)
 MACRO(GameApi::KF)
 MACRO(GameApi::CPP)
@@ -4268,8 +4271,9 @@ std::vector<GameApi::EditNode*> collectnodes(std::string name, std::vector<std::
 
 template<class T>
 int template_get_id(T t) { return t.id; }
+#ifdef FIRST_PART
 int template_get_id(GameApi::ARR a) { return 0; }
-
+#endif
 template<class T, class RT, class... P>
 int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
 	     RT (T::*fptr)(P...), std::vector<std::string> s, GameApi::ExecuteEnv &e, std::vector<std::string> param_name, std::string return_type)
@@ -4811,6 +4815,10 @@ std::pair<int,std::string> GameApi::execute_codegen(GameApi::Env &env, GameApi::
   if (err2) { return std::make_pair(0, std::string("Error at params_linkage")); }
   link_api_items(vec, all_functions());
   int val = execute_api(env, ev, vec, vecvec, vec.size()-1, e);
+  CodeGenLine last = vec[vec.size()-1];
+  if (last.return_type=="RUN") {
+    return std::make_pair(val,"RUN");
+  }
 
   return std::make_pair(val, "OK");
 }
@@ -6703,6 +6711,19 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML","bool","bool", "float", "float" },
 			 { "ev", "","false","false", "0.0", "100000.0" },
 			 "BLK", "blocker_api", "game_window"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_window2, 
+			 "run_window",
+			 { "ev", "ml", "logo", "fpscounter", "start_time", "duration" },
+			 { "EveryApi&", "ML","bool","bool", "float", "float" },
+			 { "ev", "","false","false", "0.0", "100000.0" },
+			 "RUN", "blocker_api", "game_window2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::run_seq,
+			 "run_seq",
+			 { "ev", "vec" },
+			 { "EveryApi&", "[RUN]" },
+			 { "ev", "" },
+			 "RUN", "blocker_api", "run_seq"));
+  
 #if 0
   // doesnt work in emscripten
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_seq,
@@ -7941,6 +7962,12 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "PTS" },
 			 { "" },
 			 "PTS", "points_api", "memoize_pts"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::collision_points,
+			 "pts_bounding_box",
+			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			 { "float", "float", "float", "float", "float", "float" },
+			 { "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0" },
+			 "PTS", "points_api", "collision_points"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::from_points,
 			 "ms_from_points",

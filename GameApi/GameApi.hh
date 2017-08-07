@@ -54,6 +54,7 @@ using std::placeholders::_9;
   struct PTT { int id; }; 
   struct KF { int id; };
   struct BLK { int id; };
+  struct RUN { int id; };
   struct EV { int id; };
   struct AC { int id; };
   struct MX { int id; };
@@ -246,6 +247,9 @@ public:
   IMPORT BLK game_window(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration);
   IMPORT BLK game_seq(EveryApi &ev, std::vector<BLK> vec);
   IMPORT void run(BLK blk);
+  IMPORT RUN game_window2(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration);
+  IMPORT void run2(EveryApi &ev, RUN spl);
+  IMPORT RUN run_seq(EveryApi &ev, std::vector<RUN> vec);
 private:
   Env &e;
 };
@@ -2801,6 +2805,8 @@ public:
   IMPORT PTS single_pts();
   IMPORT PTS function(std::function<PT(int pointnum)> f, int numpoints);
   IMPORT PTS color_function(PTS orig, std::function<unsigned int(int pointnum, PT pos)> f);
+  IMPORT PTS collision_points(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
+  IMPORT ML collision_bind(PTS bounding_box, std::string name);
   IMPORT PTS from_float_volume(FO float_volume, int numpoints, 
 			float start_x, float start_y, float start_z,
 			float end_x, float end_y, float end_z);

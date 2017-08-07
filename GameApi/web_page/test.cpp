@@ -144,13 +144,14 @@ std::string strip_spaces(std::string data)
   while(res[res.size()-1]==' ') res = res.substr(0,res.size()-1);
   return res;
 }
-BLK mainloop(Env &e2, EveryApi &ev)
+std::pair<int,std::string> mainloop(Env &e2, EveryApi &ev)
 {
   ExecuteEnv e;
   std::pair<int,std::string> p = GameApi::execute_codegen(e2, ev, code, e);
-  BLK I6;
+  return p;
+  /*  BLK I6;
   I6.id = p.first;
-  return I6;
+  return I6;*/
 }
 std::string decode(std::string s)
 {
@@ -263,16 +264,21 @@ int main(int argc, char *argv[]) {
     }
 
   // initialize window
-  set_status(0,3);
   ev.mainloop_api.init_window(w_width,w_height);
-  set_status(1,3);
   ev.mainloop_api.set_screen_size(w_width, w_height);
   ev.mainloop_api.set_homepage_url(homepageurl);
   ev.shader_api.load_default();
-  set_status(2,3);
 
-  BLK blk = mainloop(e, ev);
-  set_status(3,3);
-  ev.blocker_api.run(blk);
-
+  std::pair<int,std::string> blk = mainloop(e, ev);
+  if (blk.second == "RUN") {
+    RUN r;
+    r.id = blk.first;
+    ev.blocker_api.run2(ev,r);
+  } else if (blk.second=="OK") {
+    BLK b;
+    b.id = blk.first;
+    ev.blocker_api.run(b);
+  } else {
+    std::cout << "ERROR: internal error" << std::endl;
+  }
 }
