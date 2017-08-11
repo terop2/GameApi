@@ -417,6 +417,11 @@ struct CollisionData
 {
   std::vector<Point> bounding_box;
 };
+class CollisionAction
+{
+public:
+  virtual void Collide(std::string name1, std::string name2)=0;
+};
 struct World
 {
   // Actual world
@@ -444,6 +449,7 @@ struct World
   std::vector<EnemyPiece> enemy_pieces;
 
   std::map<std::string, CollisionData*> collision_data;
+  std::vector<std::pair<std::string,std::string> > collisions;
 };
 
 struct ContentPiece

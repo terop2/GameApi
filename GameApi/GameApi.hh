@@ -2807,6 +2807,7 @@ public:
   IMPORT PTS color_function(PTS orig, std::function<unsigned int(int pointnum, PT pos)> f);
   IMPORT PTS collision_points(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
   IMPORT ML collision_bind(PTS bounding_box, std::string name);
+  IMPORT ML collision_collect(ML mainloop);
   IMPORT PTS from_float_volume(FO float_volume, int numpoints, 
 			float start_x, float start_y, float start_z,
 			float end_x, float end_y, float end_z);
