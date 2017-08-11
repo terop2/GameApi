@@ -244,7 +244,7 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   */
   Program *prog = find_shader_program(e, sh);
   prog->use(); // 80.0, 10.1, 60000.0
-  Matrix m = Matrix::Perspective(80.0, (double)screenx/screeny, 10.1, 60000.0);
+  Matrix m = Matrix::Perspective(90.0*double(screeny)/double(screenx), (double)screenx/screeny, 10.1, 60000.0);
   //Matrix m = Matrix::Perspective2(-300.0, 300.0, -300.0, 300.0, 1.0, 610.0);
   prog->set_var("in_P", m);
   Matrix m2 = Matrix::Identity();
