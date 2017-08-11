@@ -1373,12 +1373,14 @@ GameApi::PTS GameApi::PointsApi::collision_points(float start_x, float end_x, fl
 {
   return add_points_api_points(e, new CollisionPoints(start_x, end_x, start_y, end_y, start_z, end_z));
 }
+void check_world(MainLoopEnv &e);
 class CollisionBind : public MainLoopItem
 {
 public:
   CollisionBind(PointsApiPoints *pts, std::string name) : pts(pts),name(name) { }
   virtual void execute(MainLoopEnv &e)
   {
+    check_world(e);
     World *w = e.current_world;
     std::map<std::string, CollisionData*> &coll_map = w->collision_data;
     CollisionData *d = new CollisionData;
@@ -1404,4 +1406,141 @@ GameApi::ML GameApi::PointsApi::collision_bind(PTS bounding_box, std::string nam
 {
   PointsApiPoints *pt = find_pointsapi_points(e, bounding_box);
   return add_main_loop(e, new CollisionBind(pt, name));
+}
+
+float AxisPos(Point p1, Point p2, Point p)
+{
+  Vector v1 = p-p1;
+  Vector v2 = p2-p1;
+  return Vector::FindProjectionLength(v1,v2);
+}
+
+std::pair<float,float> FindMinMaxAxis(Point p1, Point p2, std::vector<Point> vec)
+{
+  int s = vec.size();
+  float Min = 3000000.0;
+  float Max = -3000000.0;
+  for(int i=0;i<s;i++)
+    {
+      Point p = vec[i];
+      float val = AxisPos(p1,p2,p);
+      if (val>Max) Max=val;
+      if (val<Min) Min=val;
+    }
+  return std::make_pair(Min,Max);
+}
+
+bool FindCollideSeparated(Point p1, Point p2, std::vector<Point> vec1, std::vector<Point> vec2)
+{
+  std::pair<float,float> pp1 = FindMinMaxAxis(p1,p2,vec1);
+  std::pair<float,float> pp2 = FindMinMaxAxis(p1,p2,vec2);
+
+  if (pp1.first > pp1.second) std::swap(pp1.first,pp1.second);
+  if (pp2.first > pp2.second) std::swap(pp2.first,pp2.second);
+
+  if (pp1.first < pp2.first)
+    {
+      if (pp1.second < pp2.first) { return true; }
+    }
+  else
+    {
+      if (pp2.second < pp1.first) { return true; }
+    }
+  return false;
+}
+
+int axis_data[] = { 0,1,
+		    1,0,
+		    0,2,
+		    2,0,
+		    0,3,
+		    3,0,
+		    1,4,
+		    4,1,
+		    1,5,
+		    5,1,
+		    2,4,
+		    4,2,
+		    2,6,
+		    6,2,
+		    3,5,
+		    5,3,
+		    3,6,
+		    6,3,
+		    4,7,
+		    7,4,
+		    5,7,
+		    7,5,
+		    6,7,
+		    7,6
+		   
+};
+
+
+bool Collide(CollisionData *d1, CollisionData *d2)
+{
+  int s = sizeof(axis_data)/sizeof(int)/2;
+  CollisionData *d[2] = { d1,d2 };
+  for(int j=0;j<1;j++)
+    {
+      CollisionData *dd = d[j];
+      for(int i=0;i<s;i++)
+	{
+	  int d1_ = axis_data[i*2];
+	  int d2_ = axis_data[i*2+1];
+	  Point p1 = dd->bounding_box[d1_];
+	  Point p2 = dd->bounding_box[d2_];
+	  bool b = FindCollideSeparated(p1,p2,d1->bounding_box, d2->bounding_box);
+	  if (b) return false;
+	}
+    }
+  return true;
+}
+
+class CollisionCollect : public MainLoopItem
+{
+public:
+  CollisionCollect(MainLoopItem *next) : next(next) {}
+  virtual void execute(MainLoopEnv &e)
+  {
+    check_world(e);
+    World *w = e.current_world;
+    std::map<std::string, CollisionData*> &coll_map = w->collision_data;
+    coll_map.clear();
+
+    next->execute(e);
+    //World *w = e.current_world;
+    //d::map<std::string, CollisionData*> &coll_map = w->collision_data;
+    std::vector<std::pair<std::string,std::string> > &coll_res = w->collisions;
+    coll_res.clear();
+    int jj = 0;
+    std::map<std::string, CollisionData*>::const_iterator j = coll_map.begin();
+    for(;j!=coll_map.end();j++,jj++) {
+      std::map<std::string, CollisionData*>::const_iterator i = coll_map.begin();
+      std::pair<std::string, CollisionData*> p_j = *j;
+      int ii = 0;
+      for(;i!=coll_map.end();i++,ii++)
+	{
+	  if (ii>jj) continue;
+	  std::pair<std::string, CollisionData*> p_i = *i;
+	  bool b = Collide(p_j.second, p_i.second);
+	  if (b==true && jj!=ii) {
+	    coll_res.push_back(std::make_pair(p_j.first, p_i.first));
+	    //std::cout << "Collide: " << p_j.first << " " << p_i.first << std::endl;
+	  }
+	}
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+  }
+  virtual int shader_id() { return -1; }
+private:
+  MainLoopItem *next;
+};
+
+GameApi::ML GameApi::PointsApi::collision_collect(ML mainloop)
+{
+  MainLoopItem *next = find_main_loop(e, mainloop);
+  return add_main_loop(e, new CollisionCollect(next));
 }

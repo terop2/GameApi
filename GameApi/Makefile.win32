@@ -88,7 +88,13 @@ CC2FLAGS = -DWINDOWS -ggdb -g -std=c++11 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC
 #`pkg-config gtkmm-2.4 --cflags`
 
 
-default: glew.o libGameApi.dll
+default: touched glew.o libGameApi.dll
+
+touched: GameApi_gui.cc
+	touch GameApi_gui.cc
+	touch GameApi_gui_1.cc
+	touch GameApi_gui_2.cc
+	touch GameApi_gui_3.cc
 
 all: libGameApi.so libGameApi.dll install main
 
@@ -216,10 +222,6 @@ make_commit:
 
 make_push:
 	git push ~/cvs/demo-git-push/demo3d.git master
-
-GameApi_gui_1.cc : GameApi_gui.cc
-GameApi_gui_2.cc : GameApi_gui.cc
-GameApi_gui_3.cc : GameApi_gui.cc
 
 -include $(DFiles)
 -include $(D2Files)

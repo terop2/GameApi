@@ -243,8 +243,9 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   glMultMatrixf(&mat[0]);
   */
   Program *prog = find_shader_program(e, sh);
-  prog->use();
+  prog->use(); // 80.0, 10.1, 60000.0
   Matrix m = Matrix::Perspective(80.0, (double)screenx/screeny, 10.1, 60000.0);
+  //Matrix m = Matrix::Perspective2(-300.0, 300.0, -300.0, 300.0, 1.0, 610.0);
   prog->set_var("in_P", m);
   Matrix m2 = Matrix::Identity();
   prog->set_var("in_MV", m2);
@@ -985,7 +986,8 @@ public:
     int s = vec.size();
     for(int i=0;i<s;i++)
       {
-	vec[i]->execute(e);
+	MainLoopEnv ee = e;
+	vec[i]->execute(ee);
       }
   }
   void handle_event(MainLoopEvent &e)

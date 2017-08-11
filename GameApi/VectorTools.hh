@@ -275,6 +275,7 @@ public:
   static Matrix ProjectionTrans(float z_min);
   static Matrix PerspectiveProjection(float dist);
   static Matrix Perspective(float fovy, float aspect, float near, float far);
+  static Matrix Perspective2(float left, float right, float bottom, float top, float near, float far);
   static Matrix Ortho(float left, float right, float bottom, float top, float near, float far);
   static Matrix SphericalToCartesian(SphericalPoint p);
   static Matrix CartesianToSpherical(Point p);

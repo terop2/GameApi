@@ -6417,13 +6417,14 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ML", "ML", "float", "float", "float", "int" },
 			 { "", "", "0.0", "100.0", "30.0", "32" },
 			 "ML", "mainloop_api", "timed_tmp_seq_ml"));
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::collision_detection,
 			 "collision_ml",
 			 { "ev", "player_size", "enemy_size", "normal_game", "gameover_screen" },
 			 { "EveryApi&", "float", "float",  "ML", "ML" },
 			 { "ev", "100.0", "10.0", "", "" },
 			 "ML", "mainloop_api", "collision_detection"));
-  
+#endif  
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::move_ml,
 			 "move_ml",
 			 { "ev", "ml", "mn", "clone_count", "time_delta" },
@@ -7968,6 +7969,19 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "float", "float", "float", "float", "float", "float" },
 			 { "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0" },
 			 "PTS", "points_api", "collision_points"));
+  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::collision_bind,
+			 "pts_collision_bind",
+			 { "bounding_box", "name" },
+			 { "PTS", "std::string" },
+			 { "", "obj1" },
+			 "ML", "points_api", "collision_bind"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::collision_collect,
+			 "collidion_collect",
+			 { "mainloop" },
+			 { "ML" },
+			 { "" },
+			 "ML", "points_api", "collision_collect"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::from_points,
 			 "ms_from_points",

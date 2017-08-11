@@ -332,6 +332,26 @@ Matrix Matrix::PerspectiveProjection(float dist)
 #undef far
 #undef near
 
+Matrix Matrix::Perspective2(float l, float r,
+			    float b, float t,
+			    float n, float f)
+{
+  float c00 = 2.0*n/(r-l);
+  float c11 = 2.0*n/(t-b);
+  float c22 = -(f+n)/(f-n);
+  float c33 = 0.0;
+  float c20 = (r+l)/(r-l);
+  float c21 = (t+b)/(t-b);
+  float c32 = -2.0*(f+n)/(f-n);
+  float c23 = -1.0;
+
+  Matrix m = { { c00, 0.0, c20, 0.0,
+		 0.0, c11, c21, 0.0,
+		 0.0, 0.0, c22, c32,
+		 0.0, 0.0, c23, 0.0 }, false };
+  return m;
+}
+
 Matrix Matrix::Perspective(float fovy, float aspect, float near, float far)
 {
   float f = -1.0/tan(fovy/2.0);
