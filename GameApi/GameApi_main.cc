@@ -784,6 +784,74 @@ private:
   bool firsttime;
 };
 
+class CollisionSeqML : public MainLoopItem
+{
+public:
+  CollisionSeqML(MainLoopItem *curr, MainLoopItem *end, std::string obj1, std::string obj2, float show_duration) : curr(curr), end(end), obj1(obj1), obj2(obj2), show_duration(show_duration) { 
+    collision_detected=false; 
+    firsttime = true; 
+    old_collision_detected=false; 
+    current_item = false; 
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    if (current_item) {
+      end->handle_event(e);
+    } else {
+      curr->handle_event(e);
+    }
+  }
+
+  void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+      end->execute(e);
+      curr->execute(e);
+      firsttime = false;
+      return;
+    }
+    if (current_item) {
+      MainLoopEnv ee = e;
+      float tt = e.time - chosen_time;
+      if (tt*10.0 > show_duration) { current_item = false; }
+      end->execute(ee);
+    } else {
+      curr->execute(e);
+    }
+
+    check_world(e);
+    World *w = e.current_world;
+    std::vector<std::pair<std::string,std::string> > &coll_res = w->collisions;
+    int s = coll_res.size();
+    collision_detected = false;
+    for(int i=0;i<s;i++)
+      {
+	if ((coll_res[i].first == obj1 && coll_res[i].second == obj2) ||
+	    (coll_res[i].second == obj1 && coll_res[i].first == obj2)) {
+	  collision_detected = true;
+	}
+      }
+    if (!current_item) {
+	if (!old_collision_detected && collision_detected) {
+	  current_item = true;
+	  chosen_time = e.time;
+	}
+    }
+
+    old_collision_detected = collision_detected;
+
+  }
+private:
+  MainLoopItem *curr, *end;
+  std::string obj1, obj2;
+  float show_duration;
+  float chosen_time;
+  bool current_item;
+  bool collision_detected;
+  bool firsttime;
+  bool old_collision_detected;
+};
+
 class TimedTmpSeqML : public MainLoopItem
 {
 public:
@@ -920,6 +988,12 @@ GameApi::ML GameApi::MainLoopApi::timed_tmp_seq_ml(ML curr, ML end, float start_
   MainLoopItem *curr_item = find_main_loop(e, curr);
   MainLoopItem *end_item = find_main_loop(e, end);
   return add_main_loop(e, new TimedTmpSeqML(curr_item, end_item, start_time, end_time, show_duration, key));
+}
+GameApi::ML GameApi::MainLoopApi::collision_seq_ml(ML curr, ML end, std::string obj1, std::string obj2, float show_duration)
+{
+  MainLoopItem *curr_item = find_main_loop(e, curr);
+  MainLoopItem *end_item = find_main_loop(e, end);
+  return add_main_loop(e, new CollisionSeqML(curr_item, end_item, obj1, obj2, show_duration));
 }
 GameApi::ML GameApi::MainLoopApi::collision_detection(EveryApi &ev,
 						      float player_size, 
