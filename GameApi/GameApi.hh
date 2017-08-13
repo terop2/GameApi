@@ -1178,6 +1178,7 @@ public:
   IMPORT MT brashmetal(EveryApi &ev, MT nxt, int count, bool web);
   IMPORT MT marble(EveryApi &ev, MT nxt, int count, float cubesize);
   IMPORT MT web(EveryApi &ev, MT nxt); // TODO: add line width property
+  IMPORT MT bloom(EveryApi &ev, MT nxt, MN move);
   IMPORT MT dist_field_mesh(EveryApi &ev, SFO sfo, MT next);
 
   IMPORT MT mesh_color_from_sfo(EveryApi &ev, SFO sfo, MT next);
@@ -2087,7 +2088,7 @@ public:
   IMPORT P color(P orig, unsigned int color);
   IMPORT P color_voxel(P orig, VX colours, PT p, V u_x, V u_y, V u_z);
   IMPORT P mix_color(P orig, P orig2, float val);
-  IMPORT P color_lambert(P orig, unsigned int color, V light_dir);
+  IMPORT P color_lambert(P orig, unsigned int color, float light_dir_x, float light_dir_y, float light_dir_z, float pow, float intensity);
   IMPORT P texcoord_cube(P orig,
 		  PT o, PT u_x, PT u_y, PT u_z,  // these are 3d
 		  PT tex_o, PT tex_x, PT tex_y, PT tex_z); // tex_* are 2d
