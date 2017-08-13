@@ -126,8 +126,8 @@ public:
     ee.f_shader_funcnames.clear();
     ee.us_vertex_shader=-1;
     ee.us_fragment_shader=-1;
-    ee.in_MV = Matrix::Identity();
-    ee.env = Matrix::Identity();
+    //ee.in_MV = Matrix::Identity();
+    //ee.env = Matrix::Identity();
     item->execute(ee);
     ev.fbo_api.bind_screen(viewport);
     glBindTexture(GL_TEXTURE_2D, id);

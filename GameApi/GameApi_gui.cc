@@ -6238,6 +6238,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "MT", "PT", "float", "float", "int", "float", "int" },
 			 { "ev", "", "", "60.0", "1.59", "1500", "2.0", "4" },
 			 "MT", "materials_api", "fur"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bloom,
+			 "m_bloom",
+			 { "ev", "nxt", "mn" },
+			 { "EveryApi&", "MT", "MN" },
+			 { "ev", "", "" },
+			 "MT", "materials_api", "bloom"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::choose_color,
 			 "m_choose_color",
 			 { "ev", "nxt", "color", "mix_val" },
@@ -7164,9 +7170,9 @@ std::vector<GameApiItem*> polygonapi_functions2()
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_lambert,
 			 "color_lambert",
-			 { "orig", "color", "light_dir" },
-			 { "P", "unsigned int", "V" },
-			 { "", "ffffffff", "" },
+			 { "orig", "color", "light_dir_x", "light_dir_y", "light_dir_z", "pow", "intensity" },
+			 { "P", "unsigned int", "float", "float", "float", "float","float" },
+			 { "", "ff884422", "-2.0", "1.0", "2.0","1.0","0.3" },
 			 "P", "polygon_api", "color_lambert"));
 
 

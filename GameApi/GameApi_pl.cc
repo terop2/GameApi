@@ -1064,30 +1064,40 @@ EXPORT GameApi::P GameApi::PolygonApi::mix_color(P orig, P orig2, float val)
 class Lambert : public ForwardFaceCollection
 {
 public:
-  Lambert(FaceCollection *coll, unsigned int color, Vector light_dir) : ForwardFaceCollection(*coll), color(color), light_dir(light_dir) 
+  Lambert(FaceCollection *coll, unsigned int color, Vector light_dir, float pow, float intensity) : ForwardFaceCollection(*coll), color(color), light_dir(light_dir),pow(pow), intensity(intensity) 
   {
-    //light_dir /= light_dir.Dist();
+    light_dir /= light_dir.Dist();
   }
   unsigned int Color(int face, int point) const
   {
     Vector n = ForwardFaceCollection::PointNormal(face,point);
+    n /= n.Dist();
+   
     //n /= n.Dist();
     float dot = Vector::DotProduct(n,light_dir);
-    dot/=n.Dist();
-    dot/=light_dir.Dist();
     //if (dot<0.0) dot=0.0;
     //if (dot>1.0) dot=1.0;
-    return Color::Interpolate(color,0xffffffff, dot);
+    dot = std::pow(dot,pow);
+    // dot = fabs(dot);
+    dot*=intensity;
+    if (dot<0.0) dot=0.0;
+    //if (dot>1.0) dot=1.0;
+    ::Color c(color);
+    c.r*=dot;
+    c.g*=dot;
+    c.b*=dot;
+    return c.clamp().Pixel();
   }
 private:
   unsigned int color;
   Vector light_dir;
+  float pow;
+  float intensity;
 };
-EXPORT GameApi::P GameApi::PolygonApi::color_lambert(P orig, unsigned int color, V light_dir)
+EXPORT GameApi::P GameApi::PolygonApi::color_lambert(P orig, unsigned int color, float light_dir_x, float light_dir_y, float light_dir_z, float pow, float intensity)
 {
   FaceCollection *c = find_facecoll(e, orig);
-  Vector *light_dir_v = find_vector(e, light_dir);
-  FaceCollection *coll = new Lambert(c, color, *light_dir_v);
+  FaceCollection *coll = new Lambert(c, color, Vector(light_dir_x, light_dir_y, light_dir_z), pow, intensity);
   return add_polygon(e, coll,1);
   
 }
@@ -6471,7 +6481,13 @@ std::string blur_v =
 	"   vec3 t2 = mix(tex_my.rgb, tex_py.rgb, 0.5);\n"
 	"   vec3 t12 = mix(t1,t2,0.5);\n"
 	"   vec3 t12t = mix(t12,tex2.rgb,0.2);\n"   	
-	"   return vec4(t12t,1.0);\n"
+        "   float a1 = tex2.a;\n"
+        "   float a_mx = tex_mx.a;\n"
+        "   float a_my = tex_my.a;\n"
+        "   float a_px = tex_px.a;\n"
+        "   float a_py = tex_py.a;\n"
+        "   float a = max(max(max(max(a1,a_mx),a_my),a_px), a_py);\n"
+	"   return vec4(t12t,a);\n"
 	"}\n";
 
 
@@ -6497,7 +6513,7 @@ std::string bloom1_v =
     "   vec4 tex2 = texture2D(tex, ex_TexCoord.xy);\n"
     "   vec3 v = vec3(" + ss_r + "," + ss_g + "," + ss_b + ");\n"
     "   float val = dot(tex2.rgb, v);\n"
-    "   if (val <= 1.0) rgb = vec4(0,0,0,1.0);\n"
+    "   if (val <= 1.0) rgb = vec4(0,0,0,0.0);\n"
     "   return rgb;\n"
     "}\n";
 
