@@ -7982,6 +7982,12 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "ML" },
 			 { "" },
 			 "ML", "points_api", "collision_collect"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::collision_seq_ml,
+			 "collision_seq_ml",
+			 { "curr", "end", "obj1", "obj2", "show_duration" },
+			 { "ML", "ML", "std::string", "std::string", "float" },
+			 { "", "", "obj1", "obj2", "100.0" },
+			 "ML", "mainloop_api", "collision_seq_ml"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::from_points,
 			 "ms_from_points",
