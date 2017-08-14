@@ -100,17 +100,24 @@ EXPORT GameApi::BM GameApi::FrameBufferApi::fbo_to_bitmap(EveryApi &ev, FBO buff
 class FBOTextureID : public TextureID
 {
 public:
-  FBOTextureID(GameApi::EveryApi &ev, MainLoopItem *item, int sx, int sy) : ev(ev), item(item)
+  FBOTextureID(GameApi::EveryApi &ev, MainLoopItem *item, int sx, int sy, bool translate) : ev(ev), item(item), sx(sx), sy(sy),translate(translate)
   {
+    if (sx == -1) { sx=ev.mainloop_api.get_screen_width(); }
+    if (sy == -1) { sy=ev.mainloop_api.get_screen_height(); }
     fbo = ev.fbo_api.create_fbo(sx,sy);
     ev.fbo_api.config_fbo(fbo);
     id = ev.fbo_api.tex_id(fbo);
+
+    firsttime = true;
   }
   void handle_event(MainLoopEvent &e)
   {
     item->handle_event(e);
   }
   void render(MainLoopEnv &e) {
+    if (firsttime) {
+      firsttime = false;
+    }
     int id=0;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &id);
     glBindTexture(GL_TEXTURE_2D,0);
@@ -126,15 +133,31 @@ public:
     ee.f_shader_funcnames.clear();
     ee.us_vertex_shader=-1;
     ee.us_fragment_shader=-1;
-    //ee.in_MV = Matrix::Identity();
-    //ee.env = Matrix::Identity();
-    item->execute(ee);
+    ee.screen_x = 0;
+    ee.screen_y = 0;
+    //ee.screen_width = sx;
+    //ee.screen_height = sy;
+    
+    int old_x = viewport.viewport[0];
+    int old_y = viewport.viewport[1];
+    int oldwidth = viewport.viewport[2]-viewport.viewport[0];
+    int oldheight = viewport.viewport[3]-viewport.viewport[1];
+    
+    if (translate) {
+      ee.in_MV = Matrix::Translate(old_x,old_y,0.0); //*Matrix::Scale(1.0/oldwidth, 1.0/oldheight,1.0)*Matrix::Scale(sx,sy,1.0);
+      ee.env = Matrix::Translate(old_x,old_y,0.0); //*Matrix::Scale(1.0/oldwidth, 1.0/oldheight,1.0)*Matrix::Scale(sx,sy,1.0);
+    } else {
+      ee.in_MV = Matrix::Identity();
+      ee.env = Matrix::Identity();
+    }
+      item->execute(ee);
     ev.fbo_api.bind_screen(viewport);
     glBindTexture(GL_TEXTURE_2D, id);
 		  
   }
   int texture() const
   {
+    if (id.id==-1) return 0;
     return id.id;
   }
 private:
@@ -142,11 +165,14 @@ private:
   MainLoopItem *item;
   GameApi::FBO fbo;
   GameApi::TXID id;
+  int sx,sy;
+  bool firsttime;
+  bool translate;
 };
-GameApi::TXID GameApi::FrameBufferApi::fbo_ml(EveryApi &ev, GameApi::ML mainloop, int sx, int sy)
+GameApi::TXID GameApi::FrameBufferApi::fbo_ml(EveryApi &ev, GameApi::ML mainloop, int sx, int sy, bool translate)
 {
   MainLoopItem *ml = find_main_loop(e, mainloop);
-  return add_txid(e, new FBOTextureID(ev,ml,sx,sy));
+  return add_txid(e, new FBOTextureID(ev,ml,sx,sy, translate));
 }
 class FBOML : public MainLoopItem
 {
