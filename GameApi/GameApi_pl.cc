@@ -1042,6 +1042,7 @@ class MixColorFaceColl : public ForwardFaceCollection
 {
 public:
   MixColorFaceColl(FaceCollection *c1, FaceCollection *c2, float val) : ForwardFaceCollection(*c1), c1(c1), c2(c2),val(val) { }
+  void Prepare() { c1->Prepare(); c2->Prepare(); }
   unsigned int Color(int face, int point) const
   {
     unsigned int col1 = c1->Color(face,point);
@@ -6451,10 +6452,11 @@ std::string wave_v =
 
 }
 
-GameApi::ML GameApi::PolygonApi::blur_shader(EveryApi &ev, ML mainloop, float val)
+GameApi::ML GameApi::PolygonApi::blur_shader(EveryApi &ev, ML mainloop, float x_val, float y_val)
 {
   //  std::stringstream ss; ss<<val;
-  std::string ss = ConvF(val);
+  std::string x_ss = ConvF(x_val);
+  std::string y_ss = ConvF(y_val);
 
 
 std::string blur_v =
@@ -6464,6 +6466,7 @@ std::string blur_v =
 	"  return pos;\n"
 	"}\n";
   
+#if 0
   std::string blur_f =
 	"vec4 blur2(vec4 rgb)\n"
 	"{\n"
@@ -6489,7 +6492,35 @@ std::string blur_v =
         "   float a = max(max(max(max(a1,a_mx),a_my),a_px), a_py);\n"
 	"   return vec4(t12t,a);\n"
 	"}\n";
+#endif
 
+  std::string blur_f =
+    "vec4 blur2(vec4 rgb)\n"
+    "{\n"
+    "   vec2 pixelOffset = vec2(" + x_ss + "/800.0," + y_ss + "/600.0); \n"
+    "   vec3 colOut = vec3(0,0,0);\n"
+    "   float alphaOut = 0.0;\n"
+    "   const int stepCount = 2;\n"
+    "   const float gWeights[stepCount] = {\n"
+    "      0.44908,\n"
+    "      0.05092\n"
+    "    };\n"
+    "   const float gOffsets[stepCount] = {\n"
+    "     0.53805,\n"
+    "     2.06278 \n"
+    "    };\n"
+    "    for( int i=0; i < stepCount; i++) {\n"
+    "      vec2 texCoordOffset = gOffsets[i] * pixelOffset;\n"
+    "      vec4 tex1 = texture( tex, ex_TexCoord.xy + texCoordOffset );\n"
+    "      vec4 tex2 = texture( tex, ex_TexCoord.xy - texCoordOffset );\n"
+    "      float alpha = tex1.a + tex2.a;\n"
+    "      vec3 col = tex1.xyz + \n"
+    "                 tex2.xyz; \n"
+    "      colOut += gWeights[i] * col; \n"
+    "      alphaOut += gWeights[i] * alpha;\n"
+    "     }\n"
+    "     return vec4(colOut,alphaOut);\n"
+    "}\n";    
 
   return custom_shader(ev, mainloop, blur_v, blur_f, "blur2", "blur2");
 }
@@ -6573,4 +6604,33 @@ GameApi::P GameApi::PolygonApi::spherical_wave(P p, float r1, float freq_1, floa
 {
   FaceCollection *coll = find_facecoll(e, p);
   return add_polygon2(e, new SphericalWave(coll, r1, freq_1, r2, freq_2), 1);
+}
+
+class MainLoopPosition : public MainLoopItem
+{
+public:
+  MainLoopPosition(MainLoopItem *next) : next(next) { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    int viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    
+    MainLoopEnv ee = e;
+    ee.in_MV = e.in_MV * Matrix::Translate(viewport[0], viewport[1], 0.0);
+    ee.env = e.env * Matrix::Translate(viewport[0], viewport[1], 0.0);
+    next->execute(ee);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual int shader_id() { return next->shader_id(); }
+private:
+  MainLoopItem *next;
+};
+
+GameApi::ML GameApi::PolygonApi::position_based_on_screen(ML obj)
+{
+  MainLoopItem *next = find_main_loop(e, obj);
+  return add_main_loop(e, new MainLoopPosition(next));
 }

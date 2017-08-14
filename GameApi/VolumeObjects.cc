@@ -206,8 +206,8 @@ bool MandelBulb::Inside(Point px) const
   a_p.x/=300.0; 
   a_p.y/=300.0; 
   a_p.z/=300.0;
-  float dz = 1.0;
-  float m = Vector::DotProduct(a_p,a_p);
+  //float dz = 1.0;
+  //float m = Vector::DotProduct(a_p,a_p);
   for(int i=0;i<iterations;i++)
     {
       a_p = Step(a_p);

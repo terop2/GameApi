@@ -5182,7 +5182,7 @@ public:
    //GameApi::P I4=ev.polygon_api.color_from_normals(I3);
    GameApi::ML I5=ev.polygon_api.render_vertex_array_ml2(ev,I3);
    GameApi::ML II1 = ev.move_api.move_ml(ev, I5, move, 1,10.0);
-   GameApi::TXID I1a=ev.fbo_api.fbo_ml(ev,II1,800,600);
+   GameApi::TXID I1a=ev.fbo_api.fbo_ml(ev,II1,800,600,false);
    GameApi::MT I9=ev.materials_api.textureid(ev,I1a,0.9);
    GameApi::ML I10=ev.materials_api.bind(I2,I9);
    GameApi::MN I11=ev.move_api.empty();
@@ -5193,11 +5193,11 @@ public:
    GameApi::P I16=ev.polygon_api.texcoord_manual(I15,0.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0);
    GameApi::P I17=p;
    GameApi::ML I19=ev.polygon_api.render_vertex_array_ml2(ev,I17);
-   GameApi::TXID I2a=ev.fbo_api.fbo_ml(ev,I19,800,600);
+   GameApi::TXID I2a=ev.fbo_api.fbo_ml(ev,I19,800,600,false);
    GameApi::MT I23=ev.materials_api.textureid(ev,I2a,0);
    GameApi::ML I24=ev.materials_api.bind(I16,I23);
    GameApi::ML I25=ev.polygon_api.bloom1_shader(ev,I24,0.4,0.4,0.4);
-   GameApi::ML I26=ev.polygon_api.blur_shader(ev,I25,0.01);
+   GameApi::ML I26=ev.polygon_api.blur_shader(ev,I25,5,0);
    GameApi::ML I27=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{I14,I26});
    return I27;
   }

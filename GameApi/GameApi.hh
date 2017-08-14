@@ -2246,7 +2246,7 @@ public:
   IMPORT ML dither_shader(EveryApi &ev, ML mainloop);
   IMPORT ML light_shader(EveryApi &ev, ML mainloop);
   IMPORT ML choose_color_shader(EveryApi &ev, ML mainloop, unsigned int color, float mix_val);
-  IMPORT ML blur_shader(EveryApi &ev, ML mainloop, float val);
+  IMPORT ML blur_shader(EveryApi &ev, ML mainloop, float x_val, float y_val);
   IMPORT ML bloom1_shader(EveryApi &ev, ML mainloop, float r_val, float g_val, float b_val);
   IMPORT ML wave_shader(EveryApi &ev, ML mainloop, float radius, float t_mult, float x_mult, float y_mult);
   IMPORT ML toon_shader(EveryApi &ev, ML mainloop);  
@@ -2312,6 +2312,7 @@ public:
   IMPORT P dist_from_lines(LI li, float d1, float d2, PT center);
 
   IMPORT BM renderpolytobitmap(EveryApi &ev, P p, SH sh, float x, float y, float z, int sx, int sy);
+  IMPORT ML position_based_on_screen(ML obj); 
 private:
   PolygonApi(const PolygonApi&);
   void operator=(const PolygonApi&);
@@ -3205,7 +3206,7 @@ public:
   IMPORT TXID depth_id(FBO buffer);
   IMPORT bool fbo_status(FBO buffer);
   IMPORT BM fbo_to_bitmap(EveryApi &ev, FBO buffer);
-  IMPORT TXID fbo_ml(EveryApi &ev, ML mainloop, int sx, int sy);
+  IMPORT TXID fbo_ml(EveryApi &ev, ML mainloop, int sx, int sy, bool translate);
   IMPORT ML fbo_ml_blit(EveryApi &ev, TXID id, float start_x, float end_x, float start_y, float end_y, float z);
 private:
   FrameBufferApi(const FrameBufferApi &);

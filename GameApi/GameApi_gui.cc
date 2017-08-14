@@ -5025,10 +5025,16 @@ std::vector<GameApiItem*> textureapi_functions()
 			 "BM", "texture_api", "to_bitmap"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::fbo_api, &GameApi::FrameBufferApi::fbo_ml,
 			 "fbo_id",
-			 { "ev", "mainloop", "sx", "sy" },
-			 { "EveryApi&", "ML", "int", "int" },
-			 { "ev", "", "800", "600" },
+			 { "ev", "mainloop", "sx", "sy", "translate" },
+			 { "EveryApi&", "ML", "int", "int", "bool" },
+			 { "ev", "", "-1", "-1", "false" },
 			 "TXID", "fbo_api", "fbo_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::position_based_on_screen,
+			 "fbo_pos",
+			 { "obj" },
+			 { "ML" },
+			 { "" },
+			 "ML", "polygon_api", "position_based_on_screen"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::fbo_api, &GameApi::FrameBufferApi::fbo_ml_blit,
 			 "fbo_ml",
 			 { "ev", "txid", "start_x", "end_x", "start_y", "end_y", "z" },
@@ -7434,9 +7440,9 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 "ML", "polygon_api", "toon_shader"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::blur_shader,
 			 "p_blur",
-			 { "ev", "mainloop", "val" },
-			 { "EveryApi&", "ML", "float" },
-			 { "ev", "", "0.01" },
+			 { "ev", "mainloop", "x_val", "y_val" },
+			 { "EveryApi&", "ML", "float", "float" },
+			 { "ev", "", "5", "0" },
 			 "ML", "polygon_api", "blur_shader"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::bloom1_shader,
 			 "p_bloom_cut",
