@@ -4329,14 +4329,7 @@ int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api
 }
 
 
-static std::string unique_id_apiitem()
-{
-  static int id = 0;
-  id++;
-  std::stringstream ss;
-  ss << id;
-  return std::string("I") + ss.str();
-}
+std::string unique_id_apiitem();
 
 #ifdef FIRST_PART
 int find_char(const std::string &line, int start_char, char ch, bool braces=true)
@@ -9056,5 +9049,15 @@ std::vector<std::pair<std::string,std::string> > GameApi::GuiApi::get_functions_
     }
   return vec;
 }
+
+std::string unique_id_apiitem()
+{
+  static int id = 0;
+  id++;
+  std::stringstream ss;
+  ss << id;
+  return std::string("I") + ss.str();
+}
+
 
 #endif
