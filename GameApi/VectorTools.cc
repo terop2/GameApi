@@ -339,7 +339,7 @@ Matrix Matrix::Perspective2(float l, float r,
   float c00 = 2.0*n/(r-l);
   float c11 = 2.0*n/(t-b);
   float c22 = -(f+n)/(f-n);
-  float c33 = 0.0;
+  //float c33 = 0.0;
   float c20 = (r+l)/(r-l);
   float c21 = (t+b)/(t-b);
   float c32 = -2.0*(f+n)/(f-n);
