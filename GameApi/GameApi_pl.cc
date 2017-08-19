@@ -1523,69 +1523,69 @@ EXPORT GameApi::P GameApi::PolygonApi::translate(P orig, float dx, float dy, flo
 GameApi::P GameApi::PolygonApi::matrix(P orig, M mat)
 {
   Matrix mat2 = find_matrix(e, mat);
-  ::EnvImpl *env = ::EnvImpl::Environment(&e); 
+  //::EnvImpl *env = ::EnvImpl::Environment(&e); 
   FaceCollection *c = find_facecoll(e, orig);
-  BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
-  env->deletes.push_back(std::shared_ptr<void>(convert));  
+  //BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
+  //env->deletes.push_back(std::shared_ptr<void>(convert));  
   if (!c) { std::cout << "dynamic cast failed" << std::endl; }
-  FaceCollection *coll = new MatrixElem(*convert, mat2);
+  FaceCollection *coll = new MatrixElem(*c, mat2);
   return add_polygon2(e, coll,1);
 
 }
 GameApi::P GameApi::PolygonApi::translate_1(P orig, float dx, float dy, float dz)
 {
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  //::EnvImpl *env = ::EnvImpl::Environment(&e);
   FaceCollection *c = find_facecoll(e, orig);
-  BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
-  env->deletes.push_back(std::shared_ptr<void>(convert));  
+  //BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
+  //env->deletes.push_back(std::shared_ptr<void>(convert));  
   if (!c) { std::cout << "dynamic cast failed" << std::endl; }
-  FaceCollection *coll = new MatrixElem(*convert, Matrix::Translate(dx,dy,dz));
+  FaceCollection *coll = new MatrixElem(*c, Matrix::Translate(dx,dy,dz));
   return add_polygon2(e, coll,1);
 }
  
 EXPORT GameApi::P GameApi::PolygonApi::rotatex(P orig, float angle)
 {
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  //::EnvImpl *env = ::EnvImpl::Environment(&e);
   FaceCollection *c = find_facecoll(e, orig);
-  BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
-  env->deletes.push_back(std::shared_ptr<void>(convert));  
+  //BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
+  //env->deletes.push_back(std::shared_ptr<void>(convert));  
   if (!c) { std::cout << "dynamic cast failed" << std::endl; }
-  FaceCollection *coll = new MatrixElem(*convert, Matrix::XRotation(angle));
+  FaceCollection *coll = new MatrixElem(*c, Matrix::XRotation(angle));
   return add_polygon(e, coll,1);
 }
 
 EXPORT GameApi::P GameApi::PolygonApi::rotatey(P orig, float angle)
 {
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  //::EnvImpl *env = ::EnvImpl::Environment(&e);
   FaceCollection *c = find_facecoll(e, orig);
-  BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
-  env->deletes.push_back(std::shared_ptr<void>(convert));  
+  //BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
+  //env->deletes.push_back(std::shared_ptr<void>(convert));  
   if (!c) { std::cout << "dynamic cast failed" << std::endl; }
-  FaceCollection *coll = new MatrixElem(*convert, Matrix::YRotation(angle));
+  FaceCollection *coll = new MatrixElem(*c, Matrix::YRotation(angle));
   return add_polygon(e, coll,1);
 }
 
 EXPORT GameApi::P GameApi::PolygonApi::rotatez(P orig, float angle)
 {
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  //::EnvImpl *env = ::EnvImpl::Environment(&e);
   FaceCollection *c = find_facecoll(e, orig);
-  BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
-  env->deletes.push_back(std::shared_ptr<void>(convert));  
+  //BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
+  //env->deletes.push_back(std::shared_ptr<void>(convert));  
   if (!c) { std::cout << "dynamic cast failed" << std::endl; }
-  FaceCollection *coll = new MatrixElem(*convert, Matrix::ZRotation(angle));
+  FaceCollection *coll = new MatrixElem(*c, Matrix::ZRotation(angle));
   return add_polygon(e, coll,1);
 }
 
 EXPORT GameApi::P GameApi::PolygonApi::rotate(P orig, PT point, V axis, float angle)
 {
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  //::EnvImpl *env = ::EnvImpl::Environment(&e);
   Point *pp = find_point(e, point);
   Vector *ax = find_vector(e, axis);
   FaceCollection *c = find_facecoll(e, orig);
-  BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
-  env->deletes.push_back(std::shared_ptr<void>(convert));  
+  //BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
+  //env->deletes.push_back(std::shared_ptr<void>(convert));  
   if (!c) { std::cout << "dynamic cast failed" << std::endl; }
-  FaceCollection *coll = new MatrixElem(*convert, Matrix::RotateAroundAxisPoint(*pp, *ax, angle));
+  FaceCollection *coll = new MatrixElem(*c, Matrix::RotateAroundAxisPoint(*pp, *ax, angle));
   return add_polygon(e, coll,1);
 }
 
