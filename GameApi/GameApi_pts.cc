@@ -1374,6 +1374,47 @@ GameApi::PTS GameApi::PointsApi::collision_points(float start_x, float end_x, fl
   return add_points_api_points(e, new CollisionPoints(start_x, end_x, start_y, end_y, start_z, end_z));
 }
 void check_world(MainLoopEnv &e);
+
+class CollisionBindInst : public MainLoopItem
+{
+public:
+  CollisionBindInst(PointsApiPoints *pts, PointsApiPoints *pts2, std::string name) : pts(pts), pts2(pts2), name(name) {}
+  virtual void execute(MainLoopEnv &e)
+  {
+    check_world(e);
+    World *w = e.current_world;
+    std::map<std::string, CollisionData*> &coll_map = w->collision_data;
+    int ss = pts2->NumPoints();
+    for(int j=0;j<ss;j++)
+      {
+
+	Point inst_pos = pts2->Pos(j);
+	CollisionData *d = new CollisionData;
+	int s = pts->NumPoints();
+	for(int i=0;i<s;i++)
+	  {
+	    Point p = pts->Pos(i);
+	    Point p2 = p * e.in_MV;
+	    p2.x += inst_pos.x;
+	    p2.y += inst_pos.y;
+	    p2.z += inst_pos.z;
+	    d->bounding_box.push_back(p2);
+	  }
+	std::stringstream ss;
+	ss << j;
+	std::string name2 = name + ss.str();;
+	delete coll_map[name2];
+	coll_map[name2]= d;
+      }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+  }
+private:
+  PointsApiPoints *pts, *pts2;
+  std::string name;
+};
+
 class CollisionBind : public MainLoopItem
 {
 public:
@@ -1406,6 +1447,12 @@ GameApi::ML GameApi::PointsApi::collision_bind(PTS bounding_box, std::string nam
 {
   PointsApiPoints *pt = find_pointsapi_points(e, bounding_box);
   return add_main_loop(e, new CollisionBind(pt, name));
+}
+GameApi::ML GameApi::PointsApi::collision_bind_inst(PTS bounding_box, PTS inst_points, std::string name)
+{
+  PointsApiPoints *pt1 = find_pointsapi_points(e, bounding_box);
+  PointsApiPoints *pt2 = find_pointsapi_points(e, inst_points);
+  return add_main_loop(e, new CollisionBindInst(pt1, pt2, name));
 }
 
 float AxisPos(Point p1, Point p2, Point p)
