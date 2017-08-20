@@ -826,8 +826,8 @@ public:
     collision_detected = false;
     for(int i=0;i<s;i++)
       {
-	if ((coll_res[i].first == obj1 && coll_res[i].second == obj2) ||
-	    (coll_res[i].second == obj1 && coll_res[i].first == obj2)) {
+	if ((coll_res[i].first.find(obj1)!=std::string::npos && coll_res[i].second.find(obj2)!=std::string::npos) ||
+	    (coll_res[i].second.find(obj1)!=std::string::npos && coll_res[i].first.find(obj2)!=std::string::npos)) {
 	  collision_detected = true;
 	}
       }
