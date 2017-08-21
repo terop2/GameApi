@@ -1121,6 +1121,8 @@ public:
     bool backward=false;
     bool left=false;
     bool right=false;
+    bool side_left=false;
+    bool side_right=false;
   };
   static void quake_movement_event(GameApi::EveryApi &ev, MainLoopApi::Event &e,
 			     float &pos_x, float &pos_y, float &rot_y,
