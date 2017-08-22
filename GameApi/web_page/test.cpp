@@ -188,6 +188,7 @@ void set_status(int val, int val_max) {
 }
 
 int main(int argc, char *argv[]) {
+  set_status(1,6);
   std::cout << "COMMANDLINE ARGS: " << std::endl;
   int s = argc;
   std::vector<std::string> cmd_args;
@@ -261,12 +262,16 @@ int main(int argc, char *argv[]) {
     }
 
   // initialize window
+  set_status(2,6);
   ev.mainloop_api.init_window(w_width,w_height);
+  set_status(3,6);
   ev.mainloop_api.set_screen_size(w_width, w_height);
   ev.mainloop_api.set_homepage_url(homepageurl);
   ev.shader_api.load_default();
+  set_status(4,6);
 
   std::pair<int,std::string> blk = mainloop(e, ev);
+  set_status(5,6);
   if (blk.second == "RUN") {
     RUN r;
     r.id = blk.first;
