@@ -180,13 +180,10 @@ bool check_count(std::vector<std::string> cmd_args, int current_arg, int count)
 }
 
 void set_status(int val, int val_max) {
-#if 0
-  std::stringstream ss1;
-  ss1 << val;
-  std::stringstream ss2;
-  ss2 << val_max;
-  std::string s = "Module.setStatus('Running...(" + ss1.str() + "/" + ss2.str() + ")');";
-  emscripten_run_script(s.c_str());
+#ifdef EMSCRIPTEN
+  EM_ASM_({
+      Module.setStatus('Running...(' + $0 + '/' + $1 + ')');
+    },val,val_max);
 #endif
 }
 
