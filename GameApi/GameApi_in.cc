@@ -41,10 +41,10 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x301) { data.right = false; }
 
 
-  if ((e.ch=='z'||e.ch=='z'-'a'+4) && e.type==0x300) { data.side_left = true; }
-  if ((e.ch=='z'||e.ch=='z'-'a'+4) && e.type==0x301) { data.side_left = false; }
-  if ((e.ch=='x'||e.ch=='x'-'a'+4) && e.type==0x300) { data.side_right = true; }
-  if ((e.ch=='x'||e.ch=='x'-'a'+4) && e.type==0x301) { data.side_right = false; }
+  if ((e.ch=='z'||e.ch==29) && e.type==0x300) { data.side_left = true; }
+  if ((e.ch=='z'||e.ch==29) && e.type==0x301) { data.side_left = false; }
+  if ((e.ch=='x'||e.ch==27) && e.type==0x300) { data.side_right = true; }
+  if ((e.ch=='x'||e.ch==27) && e.type==0x301) { data.side_right = false; }
 
 }
 void GameApi::InteractionApi::quake_movement_frame(EveryApi &ev, float &pos_x, float &pos_y, float &rot_y, Quake_data &data, float &speed_x, float &speed_y, float speed, float rot_speed)
