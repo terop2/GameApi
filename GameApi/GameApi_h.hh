@@ -32,6 +32,9 @@
 #include "Effect2.hh"
 #include <iostream>
 #include <pthread.h>
+#ifdef EMSCRIPTEN
+#include <emscripten/threading.h>
+#endif
 #include <fstream>
 
 #include <memory>
