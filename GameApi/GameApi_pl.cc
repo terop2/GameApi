@@ -6521,14 +6521,14 @@ std::string blur_v =
 
   std::string blur_f =
     "   const int stepCount = 2;\n"
-    "   const float gWeights[stepCount] = {\n"
+    "   const float gWeights[stepCount] = float[stepCount](\n"
     "      0.44908,\n"
     "      0.05092\n"
-    "    };\n"
-    "   const float gOffsets[stepCount] = {\n"
+    "    );\n"
+    "   const float gOffsets[stepCount] = float[stepCount](\n"
     "     0.53805,\n"
     "     2.06278 \n"
-    "    };\n"
+    "    );\n"
     "vec4 blur2(vec4 rgb)\n"
     "{\n"
     "   vec2 pixelOffset = vec2(" + x_ss + "/800.0," + y_ss + "/600.0); \n"
