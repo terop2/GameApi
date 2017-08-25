@@ -6520,12 +6520,6 @@ std::string blur_v =
 #endif
 
   std::string blur_f =
-    "vec4 blur2(vec4 rgb)\n"
-    "{\n"
-    "   vec2 pixelOffset = vec2(" + x_ss + "/800.0," + y_ss + "/600.0); \n"
-    "   vec3 colOut = vec3(0,0,0);\n"
-    "   float alphaOut = 0.0;\n"
-    "   const int stepCount = 2;\n"
     "   const float gWeights[stepCount] = {\n"
     "      0.44908,\n"
     "      0.05092\n"
@@ -6534,6 +6528,12 @@ std::string blur_v =
     "     0.53805,\n"
     "     2.06278 \n"
     "    };\n"
+    "vec4 blur2(vec4 rgb)\n"
+    "{\n"
+    "   vec2 pixelOffset = vec2(" + x_ss + "/800.0," + y_ss + "/600.0); \n"
+    "   vec3 colOut = vec3(0,0,0);\n"
+    "   float alphaOut = 0.0;\n"
+    "   const int stepCount = 2;\n"
     "    for( int i=0; i < stepCount; i++) {\n"
     "      vec2 texCoordOffset = gOffsets[i] * pixelOffset;\n"
     "      vec4 tex1 = texture( tex, ex_TexCoord.xy + texCoordOffset );\n"
