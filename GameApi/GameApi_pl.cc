@@ -2760,7 +2760,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 { 
 #ifdef THREADS
 #ifdef EMSCRIPTEN
-  if (emscripten_has_threding_support()) {
+  if (emscripten_has_threading_support()) {
 #endif
   int num_threads = 4;
   FaceCollection *faces = find_facecoll(e, p);
