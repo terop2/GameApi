@@ -2759,6 +2759,9 @@ EXPORT void GameApi::PolygonApi::explode(VA va, PT pos, float dist)
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 { 
 #ifdef THREADS
+#ifdef EMSCRIPTEN
+  if (emscripten_has_threding_support()) {
+#endif
   int num_threads = 4;
   FaceCollection *faces = find_facecoll(e, p);
   faces->Prepare();
@@ -2791,7 +2794,25 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       //::EnvImpl *env = ::EnvImpl::Environment(&e);
       //env->temp_deletes.push_back(std::shared_ptr<void>( arr2 ) );
     }
+#ifdef EMSCRIPTEN
   return add_vertex_array(e, set, arr2);
+  } else {
+    FaceCollection *faces = find_facecoll(e, p);
+    faces->Prepare();
+    VertexArraySet *s = new VertexArraySet;
+    FaceCollectionVertexArray2 arr(*faces, *s);
+    arr.reserve(0);
+    arr.copy(0,faces->NumFaces());  
+    RenderVertexArray *arr2 = new RenderVertexArray(*s);
+    arr2->prepare(0); 
+    if (!keep)
+      s->free_memory();
+    return add_vertex_array(e, s, arr2);
+  }
+#else
+  return add_vertex_array(e, set, arr2);
+#endif
+
 #else
   FaceCollection *faces = find_facecoll(e, p);
   faces->Prepare();
