@@ -41,4 +41,5 @@ Here's story of how licensing in gameapi wprks.
    - The following modules are needed to compile:
         - emscripten: MIT license or NCSA Open Source 
         - mingw: MIT
+        - linux side g++: GPL
 
