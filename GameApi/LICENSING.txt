@@ -33,10 +33,11 @@ Here's story of how licensing in gameapi wprks.
    - Asset licenses(not needed to use gameapi, but might be visible in examples/in web page):
        - teapot.obj: public domain (Utah Teapot)
        - bunny.obj: free with attribution (Stanford bunny)
-       - XMASSONG.ogg: LGPL
-       - XMAS2.ogg: LGPL
-       - XMAS3.ogg: LGPL
-      
+       - XMASSONG.ogg: MIT
+       - XMAS2.ogg: MIT
+       - XMAS3.ogg: MIT
+       - piano_variations.ogg: MIT      
+
    - The following modules are needed to compile:
         - emscripten: MIT license or NCSA Open Source 
         - mingw: MIT
