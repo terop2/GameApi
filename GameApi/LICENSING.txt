@@ -1,0 +1,38 @@
+
+Here's story of how licensing in gameapi wprks.
+
+1) There's two parameters that we track:
+   a) my own chosen license, i.e. which license we hope our own code to be in
+   b) project's actual license, i.e. which licenses we can distribute the whole thing
+
+2) Current situation is that: 
+   - Chosen license for the actual code is LGPL as long as we can control it
+      Chosen license LGPL applies to these modules:
+       - GameApi Library
+       - GameApi builder application
+       - All the example games
+       - web_page
+       - mesh-page (this is available if you ask via email at terop@kotiposti.net, but it's just the html/php files for the meshpage.org web site)
+   - Actual license needs to be GPL and LGPL combination, in such way that
+     some assets are under GPL, which means the whole project need to be available
+     under GPL. Thus we've made the whole project availalbe under GPL too, so
+    both LGPL and GPL are available.
+   - in addition to this, there' separate licenses for external stuff:
+       - OpenGL: no license required
+       - libfreetype: FTL or GPLv2
+       - FreeSans.ttf file: GPLv3
+       - Chunkfive.otf: SIL Open Font License v1.10
+       - stb_image: CC0: Creative Commons Zero v1.0 Universal
+       - SDL2: zlib license
+       - SDL2_image: zlib license
+       - SDL2_mixer: zlib license
+   (sdl2_image is not really used in gameapi, but there might still be some
+    code left which uses the library, since we use stb_image currently for
+    this purpose)
+
+   - Asset licenses(not needed to use gameapi, but might be visible in examples/in web page):
+       - teapot.obj: public domain (Utah Teapot)
+       - bunny.obj: free with attribution (Stanford bunny)
+       
+
+
