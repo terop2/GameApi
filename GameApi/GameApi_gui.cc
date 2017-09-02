@@ -6663,6 +6663,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "MN", "int", "int", "float" },
 			 { "ev", "", "", "32", "32", "10.0" },
 			 "ML", "move_api", "comb_key_activate_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::keyboard_toggle,
+			 "key_toggle",
+			 { "ml1", "ml2", "key" },
+			 { "ML", "ML", "int" },
+			 { "", "", "32" },
+			 "ML", "mainloop_api", "keyboard_toggle"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_printer_ml,
 			 "key_printer_ml",

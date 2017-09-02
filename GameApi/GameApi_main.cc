@@ -1323,3 +1323,35 @@ GameApi::ML GameApi::MainLoopApi::skybox(EveryApi &ev, BM I9_land, BM I15_sky)
   ML I18=ev.materials_api.bind(I3,I17);
   return I18;
 }
+
+class KeyboardToggle : public MainLoopItem
+{
+public:
+  KeyboardToggle(MainLoopItem *item, MainLoopItem *item2, int key) : key(key), item(item), item2(item2) { hold=false; toggle=false; firsttime=true; }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) { item->execute(e); item2->execute(e); firsttime=false; return; }
+    if (!toggle) { item->execute(e); } else { item2->execute(e); } 
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (e.type==0x300 && e.ch==key && !hold) { hold=true; toggle=!toggle; }
+    if (e.type==0x301 && e.ch==key) { hold=false; }
+    if (!toggle) { item->handle_event(e); } else { item2->handle_event(e); } 
+  }
+  virtual int shader_id() { if (!toggle) return item->shader_id(); else return item2->shader_id(); }
+
+private:
+  int key;
+  MainLoopItem *item;
+  MainLoopItem *item2;
+  bool toggle;
+  bool hold;
+  bool firsttime;
+};
+GameApi::ML GameApi::MainLoopApi::keyboard_toggle(ML m1, ML m2, int key)
+{
+  MainLoopItem *item = find_main_loop(e, m1);
+  MainLoopItem *item2 = find_main_loop(e, m2);
+  return add_main_loop(e, new KeyboardToggle(item, item2, key));
+}

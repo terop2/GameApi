@@ -359,6 +359,7 @@ public:
   ML load_song(EveryApi& ev, ML next, std::string url);
   ML skybox(EveryApi &ev, BM land, BM sky); // 100x100 bm's required
   ML scale_2d_screen(EveryApi &ev, ML orig, float sx, float sy);
+  ML keyboard_toggle(ML m1, ML m2, int key);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);
