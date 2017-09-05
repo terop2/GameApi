@@ -1495,7 +1495,7 @@ GameApi::LI GameApi::LinesApi::li_or_array(std::vector<LI> vec)
     }
   return add_line_array(e, new LI_or_array(vec2));
 }
-
+#if 0
 class IFCImport : public LineCollection
 {
 public:
@@ -1637,3 +1637,4 @@ GameApi::LI GameApi::LinesApi::import_ifc(EveryApi &ev, std::string url)
 {
   return add_line_array(e, new IFCImport(e, ev, url, gameapi_homepageurl));
 }
+#endif
