@@ -2942,6 +2942,7 @@ public:
   IMPORT ML render_ml2(EveryApi &ev, LI array);
   IMPORT ML render_inst_ml(EveryApi &ev, LLA array, PTA pta);
   IMPORT ML render_inst_ml2(EveryApi &ev, LI array, PTA pta);
+  IMPORT LI import_ifc(EveryApi &ev, std::string url);
 private:
   LinesApi(const LinesApi&);
   void operator=(const LinesApi&);

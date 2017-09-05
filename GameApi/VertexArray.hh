@@ -40,6 +40,7 @@ public:
   int get_bm_id() const { return bm_id; }
   ~VertexArraySet();
   void set_reserve(int id, int tri_count, int quad_count, int poly_count);
+  void free_reserve(int id);
   // id is the vertex array num to be used 0 = beginning, 1 = end
   // num is the number of points (all calls should share same num)
   void push_poly(int id, int num, Point *points);
@@ -165,17 +166,45 @@ public:
   mutable std::map<int, Polys*> m_set;
 };
 
+struct RenderVertexArray_bufferids
+{
+  unsigned int buffers[5];
+  unsigned int vao[3];
+  unsigned int buffers2[5];
+  unsigned int buffers3[5];
+  unsigned int pos_buffer;
+  std::vector<unsigned int> attrib_buffer;
+  std::vector<unsigned int> attrib_buffer2;
+  std::vector<unsigned int> attrib_buffer3;
+  std::vector<unsigned int> attribi_buffer;
+  std::vector<unsigned int> attribi_buffer2;
+  std::vector<unsigned int> attribi_buffer3;
+};
+
+struct Counts {
+  int tri_count;
+  int quad_count;
+  int poly_count;
+};
+
+Counts CalcOffsets(FaceCollection *coll, int start);
+Counts CalcCounts(FaceCollection *coll, int start, int end);
+
 class RenderVertexArray
 {
 public:
-  RenderVertexArray(VertexArraySet &s) : s(s) { }
-  void prepare(int id);
+  RenderVertexArray(VertexArraySet &s) : s(s),nodelete(false) { }
+  void prepare(int id, bool isnull=false, int tri_count=-1, int quad_count=-1, int poly_count=-1);
   void update(int id);
+  void update_tri(int id, int buffer_id, int start, int end);
   void render(int id);
   void prepare_instanced(int id, Point *positions, int size);
   void render_instanced(int id, Point *positions, int size);
+  void update_buffers(RenderVertexArray_bufferids ids);
+  void fetch_buffers(RenderVertexArray_bufferids &ids);
+  void set_no_delete(bool b) { nodelete=b; }
   void del();
-  ~RenderVertexArray() { del(); }
+  ~RenderVertexArray() { if (!nodelete) del(); }
 private:
   VertexArraySet &s;
   unsigned int buffers[5];
@@ -192,6 +221,7 @@ private:
   std::vector<unsigned int> attribi_buffer;
   std::vector<unsigned int> attribi_buffer2;
   std::vector<unsigned int> attribi_buffer3;
+  bool nodelete;
 };
 
 class RenderVertexArray2
@@ -210,6 +240,13 @@ class FaceCollectionVertexArray2
 {
 public:
   FaceCollectionVertexArray2(const FaceCollection &coll, VertexArraySet &s) : coll(coll), s(s) { }
+  void reserve_fixed(int id, int count) {
+    //int ss = coll.NumFaces();
+    int tri_count=count*3;
+    int quad_count=count*4;
+    int poly_count=count*3;
+    s.set_reserve(id, tri_count, quad_count, poly_count);
+  }
   void reserve(int id)
   {
     int ss = coll.NumFaces();
@@ -357,6 +394,20 @@ public:
     void *res;
     //std::cout << "phread_join" << id << std::endl;
     pthread_join(ti[id]->thread_id, &res);
+  }
+  void transfer_to_gpu_mem(RenderVertexArray &r, int rend_id, int buf, int start, int end) {
+    int s = sets.size();
+    RenderVertexArray_bufferids ids;
+    r.fetch_buffers(ids);
+    for(int i=0;i<s;i++)
+      {
+	VertexArraySet * vs = sets[i];
+	RenderVertexArray rend(*vs);
+	rend.update_buffers(ids);
+	rend.set_no_delete(true);
+	rend.update_tri(rend_id, buf, start,end);
+      }
+
   }
   VertexArraySet *collect()
   {

@@ -2755,6 +2755,17 @@ EXPORT void GameApi::PolygonApi::explode(VA va, PT pos, float dist)
   s->explode(0, *pt, dist);
 }
 
+void ProgressBar(int val, int max)
+{
+  std::cout << "\r[";
+  for(int i=0;i<val;i++) {
+    std::cout << "#";
+  }
+  for(int i=val;i<max-1;i++) {
+    std::cout << "-";
+  }
+  std::cout << "]";
+}
  
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 { 
@@ -2764,8 +2775,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   if (emscripten_has_threading_support()) {
 #else
   if (0) {
-#endif
-#endif
+#endif // END OF __EMSCRIPTEN_PTHREADS
+#endif // END OF EMSCRIPTEN
   int num_threads = 4;
   FaceCollection *faces = find_facecoll(e, p);
   faces->Prepare();
@@ -2801,6 +2812,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 #ifdef EMSCRIPTEN
   return add_vertex_array(e, set, arr2);
   } else {
+#ifndef BATCHING
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
     VertexArraySet *s = new VertexArraySet;
@@ -2812,12 +2824,44 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     if (!keep)
       s->free_memory();
     return add_vertex_array(e, s, arr2);
+#else // BATCHING
+    FaceCollection *faces = find_facecoll(e, p);
+    faces->Prepare();
+    int total_faces = faces->NumFaces();
+    int batch_count = 10;
+    int batch_faces = faces->NumFaces()/batch_count+1;
+    Counts ct = CalcCounts(faces, 0, faces->NumFaces());
+    VertexArraySet *s = new VertexArraySet;
+    RenderVertexArray *arr2 = new RenderVertexArray(*s);
+    //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
+    arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, ct.poly_count*3);  // SIZES MUST BE KNOWN
+    for(int i=0;i<batch_count;i++) {
+      ProgressBar(i,batch_count);
+      int start = i*batch_faces;
+      int end = (i+1)*batch_faces;
+      if (end>total_faces) { end=total_faces; }
+      Counts ct2_counts = CalcCounts(faces, start, end);
+      Counts ct2_offsets = CalcOffsets(faces, start);
+      FaceCollectionVertexArray2 arr(*faces, *s);
+      //arr.reserve(0);
+      arr.copy(start,end);  
+      arr2->update_tri(0, 0, ct2_offsets.tri_count*3, ct2_offsets.tri_count*3 + ct2_counts.tri_count*3);
+      arr2->update_tri(0, 1, ct2_offsets.quad_count*6, ct2_offsets.quad_count*6 + ct2_counts.quad_count*6);
+      arr2->update_tri(0, 2, ct2_offsets.poly_count*3, ct2_offsets.poly_count*3 + ct2_counts.poly_count*3);
+      s->free_reserve(0);
+    }
+    //std::cout << "\n";
+    if (!keep)
+      s->free_memory();
+    return add_vertex_array(e, s, arr2);
+#endif // BATCHING
   }
-#else
+#else // EMSCRIPTEN
   return add_vertex_array(e, set, arr2);
-#endif
+#endif // end of EMSCRIPTEN
 
-#else
+#else // THREADS
+#ifndef BATCHING
   FaceCollection *faces = find_facecoll(e, p);
   faces->Prepare();
   VertexArraySet *s = new VertexArraySet;
@@ -2829,7 +2873,39 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   if (!keep)
     s->free_memory();
   return add_vertex_array(e, s, arr2);
-#endif
+
+#else // BATCHING
+    FaceCollection *faces = find_facecoll(e, p);
+    faces->Prepare();
+    int total_faces = faces->NumFaces();
+    int batch_count = 10;
+    int batch_faces = faces->NumFaces()/batch_count+1;
+    Counts ct = CalcCounts(faces, 0, faces->NumFaces());
+    VertexArraySet *s = new VertexArraySet;
+    RenderVertexArray *arr2 = new RenderVertexArray(*s);
+    //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
+    arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, ct.poly_count*3);  // SIZES MUST BE KNOWN
+    for(int i=0;i<batch_count;i++) {
+      ProgressBar(i,batch_count);
+      int start = i*batch_faces;
+      int end = (i+1)*batch_faces;
+      if (end>total_faces) { end=total_faces; }
+      Counts ct2_counts = CalcCounts(faces, start, end);
+      Counts ct2_offsets = CalcOffsets(faces, start);
+      FaceCollectionVertexArray2 arr(*faces, *s);
+      //arr.reserve(0);
+      arr.copy(start,end);  
+      arr2->update_tri(0, 0, ct2_offsets.tri_count*3, ct2_offsets.tri_count*3 + ct2_counts.tri_count*3);
+      arr2->update_tri(0, 1, ct2_offsets.quad_count*6, ct2_offsets.quad_count*6 + ct2_counts.quad_count*6);
+      arr2->update_tri(0, 2, ct2_offsets.poly_count*3, ct2_offsets.poly_count*3 + ct2_counts.poly_count*3);
+      s->free_reserve(0);
+    }
+    //std::cout << "\n";
+    if (!keep)
+      s->free_memory();
+    return add_vertex_array(e, s, arr2);
+#endif // end of BATCHING
+#endif // end of THREADS
 }
 
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array_attribs(GameApi::P p, bool keep, std::vector<int> attribs, std::vector<int> attribi)

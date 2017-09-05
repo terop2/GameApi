@@ -4532,7 +4532,8 @@ struct ASyncData
 ASyncData async_data[] = { { "font_api", "newfont", 0 },
 			   { "font_api", "load_font", 0 },
 			   { "mainloop_api", "load_song", 2 },
-			   { "polygon_api", "p_url", 1 }
+			   { "polygon_api", "p_url", 1 },
+			   { "lines_api", "import_ifc", 1 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -7729,6 +7730,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "LLA", "LI" },
 			 { "", "" },
 			 "ML", "lines_api", "update_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::import_ifc,
+			 "li_import_icf",
+			 { "ev", "url" },
+			 { "EveryApi&", "std::string" },
+			 { "ev", "http://tpgames.org/" },
+			 "LI", "lines_api", "import_ifc"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::line,
 			 "c_line",

@@ -1495,3 +1495,145 @@ GameApi::LI GameApi::LinesApi::li_or_array(std::vector<LI> vec)
     }
   return add_line_array(e, new LI_or_array(vec2));
 }
+
+class IFCImport : public LineCollection
+{
+public:
+  IFCImport(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string homepage) : e(e), ev(ev), url(url), homepage(homepage) {
+    current=0;
+  }
+  virtual void Prepare() {
+    if (current == 0) {
+#ifndef EMSCRIPTEN
+      e.async_load_url(url, homepage);
+#endif
+      std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+      if (!ptr) {
+	std::cout << "ifc_url async not ready yet, failing..." << std::endl;
+	return;
+      }
+      current = 1;
+      std::string s(ptr->begin(), ptr->end());
+      std::stringstream ss(s);
+      std::string line;
+      char *array[] = { "IFCCARTESIANPOINT((",
+			"IFCFACE",
+			"IFCPOLYLOOP",
+			"IFCCOLOURRGB($,"
+       };
+      int counter = 300000;
+      unsigned int colour = 0xffffffff;
+      vec.push_back(std::vector<Point>());
+      color.push_back(std::vector<unsigned int>());
+      while(std::getline(ss, line)) {
+	int s = sizeof(array)/sizeof(char*);
+	for(int i=0;i<s;i++) {
+	  std::string::iterator ii = std::search(line.begin(), line.end(),
+						array[i], array[i]+strlen(array[i]));
+	  if (ii!=line.end()) {
+	    std::advance(ii, strlen(array[i]));
+	    std::string s2(ii, line.end());
+	    if (i==0) { // point
+	      std::stringstream ss3(s2);
+	      double x,y,z;
+	      char ch;
+	      bool err = false;
+	      ss3 >> x;
+	      do {
+	      err = ss3 >> ch;
+	      } while(!err && ch!=',');
+	      ss3 >> y;
+	      do {
+	      err = ss3 >> ch;
+	      } while(!err && ch!=',');
+	      ss3 >> z;
+	      std::cout << "(" << x << "," << y << "," << z << ")" << std::endl;
+	      vec[vec.size()-1].push_back(Point(float(x),float(y),float(z)));
+	      color[color.size()-1].push_back(colour);
+	      counter--;
+	      if (counter<1) return;
+	    } else if (i==1) { // face
+	      
+	    } else if (i==2) { // polyloop
+	      vec.push_back(std::vector<Point>());
+	      color.push_back(std::vector<unsigned int>());
+	    } else if (i==3) { // colour
+	      std::stringstream ss3(s2);
+	      float r,g,b;
+	      char ch;
+	      ss3 >> r >> ch >> g >> ch >> b;
+	      Color c(r,g,b);
+	      colour = c.Pixel();
+	    }
+	  }
+	}
+      }
+    }
+  }
+  virtual int NumLines() const {
+    int s = vec.size();
+    int count = 0;
+    for(int i=0;i<s;i++) {
+      count+=vec[i].size()-1;
+    }
+    return count;
+  }
+  virtual Point LinePoint(int line, int point) const
+  {
+    int s = vec.size();
+    int count = 0;
+    for(int i=0;i<s;i++) {
+      int oldcount = count;
+      count+=vec[i].size()-1;
+      if (count>line) {
+	int i2 = line-oldcount;
+	if (point==0) {
+	  Point p = vec[i][i2];
+	  return p;
+	} else {
+	  Point p = vec[i][(i2+1)%vec[i].size()];
+	  return p;
+	}
+      }
+    }
+    Point p(0.0,0.0,0.0);
+    return p;
+  }
+  virtual unsigned int LineColor(int line, int point) const { 
+    int s = color.size();
+    int count = 0;
+    for(int i=0;i<s;i++) {
+      int oldcount = count;
+      count+=color[i].size()-1;
+      if (count>line) {
+	int i2 = line-oldcount;
+	if (point==0) {
+	  unsigned int p = color[i][i2];
+	  return p;
+	} else {
+	  unsigned int p = color[i][(i2+1)%vec[i].size()];
+	  return p;
+	}
+      }
+    }
+
+    return 0xffffffff;
+  }  
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  std::string url;
+  std::string homepage;
+  int filled;
+  LineCollection *empty;
+  int current;
+  std::vector<std::vector<Point> > vec;
+  std::vector<std::vector<unsigned int> > color;
+};
+  
+extern std::string gameapi_homepageurl;
+  
+GameApi::LI GameApi::LinesApi::import_ifc(EveryApi &ev, std::string url)
+{
+  return add_line_array(e, new IFCImport(e, ev, url, gameapi_homepageurl));
+}
