@@ -69,6 +69,30 @@ void VertexArraySet::explode(int id, Point pt, float dist)
 	}
     }
 }
+void VertexArraySet::free_reserve(int id)
+{
+  Polys *p = m_set[id];
+  if (!p)
+    {
+      m_set[id] = new Polys;
+      p = m_set[id];  
+    }
+  p->tri_polys.clear();
+  p->quad_polys.clear();
+  p->poly_polys.clear();
+  p->tri_polys2.clear();
+  p->quad_polys2.clear();
+  p->poly_polys2.clear();
+  p->tri_normals.clear();
+  p->quad_normals.clear();
+  p->poly_normals.clear();
+  p->tri_color.clear();
+  p->quad_color.clear();
+  p->poly_color.clear();
+  p->tri_texcoord.clear();
+  p->quad_texcoord.clear();
+  p->poly_texcoord.clear();  
+}
 void VertexArraySet::set_reserve(int id, int tri_count, int quad_count, int poly_count)
 {
   Polys *p = m_set[id];
@@ -671,23 +695,88 @@ void VertexArraySet::append_to_polys(Polys &target, const Polys &source)
 }
 
 #define ATTRIB_OFFSET(X) ((const GLvoid *)(sizeof(GLfloat) * (X)))
-void RenderVertexArray::update(int id)
+// buffer_id = 0 triangles
+// buffer_id = 1 quads
+// buffer_id = 2 polys
+
+
+void RenderVertexArray::update_tri(int id, int buffer_id, int start, int end)
 {
+  switch(buffer_id) {
+  case 0: {
+#ifdef VAO
+    glBindVertexArray(vao[0]);
+#endif
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.tri_polys(id));
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
+    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.tri_normal_polys(id));
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
+    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*4, (end-start)*sizeof(float)*4, s.tri_color_polys(id));
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[3]);
+    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.tri_texcoord_polys(id));
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[4]);
+    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.tri_polys2(id));
+  } break;
+  case 1: {
+#ifdef VAO
+    glBindVertexArray(vao[1]);
+#endif
+    
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[0]);
+    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.quad_polys(id));
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[1]);
+    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.quad_normal_polys(id));
+    
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[2]);
+    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*4, (end-start)*sizeof(float)*4, s.quad_color_polys(id));
+    
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[3]);
+    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.quad_texcoord_polys(id));
+    glBindBuffer(GL_ARRAY_BUFFER, buffers2[4]);
+    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.quad_polys2(id));
+  } break;
+  case 2: {
+#ifdef VAO
+    glBindVertexArray(vao[2]);
+#endif
+    
+    glBindBuffer(GL_ARRAY_BUFFER, buffers3[0]);
+    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.poly_polys(id));
+    glBindBuffer(GL_ARRAY_BUFFER, buffers3[1]);
+    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.poly_normal_polys(id));
+
+    glBindBuffer(GL_ARRAY_BUFFER, buffers3[2]);
+    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*4, (end-start)*sizeof(float)*4, s.poly_color_polys(id));
+    
+    glBindBuffer(GL_ARRAY_BUFFER, buffers3[3]);
+    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.poly_texcoord_polys(id));
+    glBindBuffer(GL_ARRAY_BUFFER, buffers3[4]);
+    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.poly_polys2(id));
+    
+
+  } break;
+
+}
+}
+void RenderVertexArray::update(int id)
+{ 
 #ifdef VAO
   glBindVertexArray(vao[0]);
 #endif
-
+ int start=0;
+  int end = s.tri_count(id);
   //std::cout << "Update" << std::endl;
   glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-  glBufferSubData(GL_ARRAY_BUFFER, 0, s.tri_count(id)*sizeof(float)*3, s.tri_polys(id));
+  glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, end*sizeof(float)*3, s.tri_polys(id));
   glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
-  glBufferSubData(GL_ARRAY_BUFFER, 0, s.tri_count(id)*sizeof(float)*3, s.tri_normal_polys(id));
+  glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, end*sizeof(float)*3, s.tri_normal_polys(id));
   glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
-  glBufferSubData(GL_ARRAY_BUFFER, 0, s.tri_count(id)*sizeof(float)*4, s.tri_color_polys(id));
+  glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*4, end*sizeof(float)*4, s.tri_color_polys(id));
   glBindBuffer(GL_ARRAY_BUFFER, buffers[3]);
-  glBufferSubData(GL_ARRAY_BUFFER, 0, s.tri_count(id)*sizeof(float)*3, s.tri_texcoord_polys(id));
+  glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, end*sizeof(float)*3, s.tri_texcoord_polys(id));
   glBindBuffer(GL_ARRAY_BUFFER, buffers[4]);
-  glBufferSubData(GL_ARRAY_BUFFER, 0, s.tri_count(id)*sizeof(float)*3, s.tri_polys2(id));
+  glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, end*sizeof(float)*3, s.tri_polys2(id));
 
 
 
@@ -728,9 +817,127 @@ void RenderVertexArray::update(int id)
 
 
 }
-
-void RenderVertexArray::prepare(int id)
+void RenderVertexArray::update_buffers(RenderVertexArray_bufferids ids)
 {
+  int s = 5;
+  for(int i=0;i<s;i++) { buffers[i]=ids.buffers[i]; buffers2[i]=ids.buffers2[i], buffers3[i]=ids.buffers3[i]; }
+  int ss = 3;
+  for(int i=0;i<ss;i++) { vao[i]=ids.vao[i]; }
+  pos_buffer=ids.pos_buffer;
+  //int a1 = ids.attrib_buffer.size();
+  // todo, attrib & attribi buffers
+
+
+  int a1 = ids.attrib_buffer.size();
+  if (a1>0)
+    attrib_buffer.resize(a1);
+  for(int i=0;i<a1;i++) { 
+    attrib_buffer[i] = ids.attrib_buffer[i];
+  }
+
+  int a2 = ids.attrib_buffer2.size();
+  if (a2>0)
+    attrib_buffer2.resize(a2);
+  for(int i=0;i<a2;i++) { 
+    attrib_buffer2[i] = ids.attrib_buffer2[i];
+  }
+
+  int a3 = ids.attrib_buffer3.size();
+  if (a3>0)
+    attrib_buffer3.resize(a3);
+  for(int i=0;i<a3;i++) { 
+    attrib_buffer3[i] = ids.attrib_buffer3[i];
+  }
+
+
+  {
+  int a1 = ids.attribi_buffer.size();
+  if (a1>0)
+    attribi_buffer.resize(a1);
+  for(int i=0;i<a1;i++) { 
+    attribi_buffer[i] = ids.attribi_buffer[i];
+  }
+
+  int a2 = ids.attribi_buffer2.size();
+  if (a2>0)
+    attribi_buffer2.resize(a2);
+  for(int i=0;i<a2;i++) { 
+    attribi_buffer2[i] = ids.attribi_buffer2[i];
+  }
+
+  int a3 = ids.attribi_buffer3.size();
+  if (a3>0)
+    attribi_buffer3.resize(a3);
+  for(int i=0;i<a3;i++) { 
+    attribi_buffer3[i] = ids.attribi_buffer3[i];
+  }
+
+  }
+}
+void RenderVertexArray::fetch_buffers(RenderVertexArray_bufferids &ids)
+{
+  int s = 5;
+  for(int i=0;i<s;i++) { ids.buffers[i]=buffers[i]; ids.buffers2[i]=buffers2[i], ids.buffers3[i]=buffers3[i]; }
+  int ss = 3;
+  for(int i=0;i<ss;i++) { ids.vao[i]=vao[i]; }
+  ids.pos_buffer=pos_buffer;
+
+  int a1 = attrib_buffer.size();
+  if (a1>0)
+    ids.attrib_buffer.resize(a1);
+  for(int i=0;i<a1;i++) { 
+    ids.attrib_buffer[i] = attrib_buffer[i];
+  }
+
+  int a2 = attrib_buffer2.size();
+  if (a2>0)
+    ids.attrib_buffer2.resize(a2);
+  for(int i=0;i<a2;i++) { 
+    ids.attrib_buffer2[i] = attrib_buffer2[i];
+  }
+
+  int a3 = attrib_buffer3.size();
+  if (a3>0)
+    ids.attrib_buffer3.resize(a3);
+  for(int i=0;i<a3;i++) { 
+    ids.attrib_buffer3[i] = attrib_buffer3[i];
+  }
+
+
+  {
+  int a1 = attribi_buffer.size();
+  if (a1>0)
+    ids.attribi_buffer.resize(a1);
+  for(int i=0;i<a1;i++) { 
+    ids.attribi_buffer[i] = attribi_buffer[i];
+  }
+
+  int a2 = attribi_buffer2.size();
+  if (a2>0)
+    ids.attribi_buffer2.resize(a2);
+  for(int i=0;i<a2;i++) { 
+    ids.attribi_buffer2[i] = attribi_buffer2[i];
+  }
+
+  int a3 = attribi_buffer3.size();
+  if (a3>0)
+    ids.attribi_buffer3.resize(a3);
+  for(int i=0;i<a3;i++) { 
+    ids.attribi_buffer3[i] = attribi_buffer3[i];
+  }
+
+  }
+}
+
+void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_count_, int poly_count_)
+{
+  if (tri_count_==-1) tri_count_ = s.tri_count(id);
+  if (quad_count_==-1) quad_count_ = s.quad_count(id);
+  if (poly_count_==-1) poly_count_ = s.poly_count_f(id);
+  tri_count = tri_count_;
+  quad_count = quad_count_;
+  poly_count = poly_count_;
+
   s.check_m_set(id);
 #ifdef VAO
   glGenVertexArrays(3,vao);
@@ -791,16 +998,16 @@ void RenderVertexArray::prepare(int id)
     }
   }
   glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-  glBufferData(GL_ARRAY_BUFFER, s.tri_count(id)*sizeof(float)*3, s.tri_polys(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, tri_count*sizeof(float)*3, isnull?0:s.tri_polys(id), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
-  glBufferData(GL_ARRAY_BUFFER, s.tri_count(id)*sizeof(float)*3, s.tri_normal_polys(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, tri_count*sizeof(float)*3, isnull?0:s.tri_normal_polys(id), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
-  glBufferData(GL_ARRAY_BUFFER, s.tri_count(id)*sizeof(float)*4, s.tri_color_polys(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, tri_count*sizeof(float)*4, isnull?0:s.tri_color_polys(id), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, buffers[3]);
-  glBufferData(GL_ARRAY_BUFFER, s.tri_count(id)*sizeof(float)*3, s.tri_texcoord_polys(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, tri_count*sizeof(float)*3, isnull?0:s.tri_texcoord_polys(id), GL_STATIC_DRAW);
 
   glBindBuffer(GL_ARRAY_BUFFER, buffers[4]);
-  glBufferData(GL_ARRAY_BUFFER, s.tri_count(id)*sizeof(float)*3, s.tri_polys2(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, tri_count*sizeof(float)*3, isnull?0:s.tri_polys2(id), GL_STATIC_DRAW);
 
   {
   // ATTRIB STARTS HERE
@@ -809,7 +1016,7 @@ void RenderVertexArray::prepare(int id)
   for(int i=0;i<ss;i++)
     {
       glBindBuffer(GL_ARRAY_BUFFER, attrib_buffer[i]);
-      glBufferData(GL_ARRAY_BUFFER, s.tri_count(id)*sizeof(float), s.tri_attrib_polys(id, (*ii).first), GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, tri_count*sizeof(float), isnull?0:s.tri_attrib_polys(id, (*ii).first), GL_STATIC_DRAW);
       ii++;
     }
 
@@ -822,7 +1029,7 @@ void RenderVertexArray::prepare(int id)
   for(int i=0;i<ss;i++)
     {
       glBindBuffer(GL_ARRAY_BUFFER, attribi_buffer[i]);
-      glBufferData(GL_ARRAY_BUFFER, s.tri_count(id)*sizeof(int), s.tri_attribi_polys(id, (*ii).first), GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, tri_count*sizeof(int), isnull?0:s.tri_attribi_polys(id, (*ii).first), GL_STATIC_DRAW);
       ii++;
     }
 
@@ -841,17 +1048,17 @@ void RenderVertexArray::prepare(int id)
   glGenBuffers(1,&buffers2[3]);
   glGenBuffers(1,&buffers2[4]);
   glBindBuffer(GL_ARRAY_BUFFER, buffers2[0]);
-  glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(float)*3, s.quad_polys(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, quad_count*sizeof(float)*3, isnull?0:s.quad_polys(id), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, buffers2[1]);
-  glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(float)*3, s.quad_normal_polys(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, quad_count*sizeof(float)*3, isnull?0:s.quad_normal_polys(id), GL_STATIC_DRAW);
 
   glBindBuffer(GL_ARRAY_BUFFER, buffers2[2]);
-  glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(float)*4, s.quad_color_polys(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, quad_count*sizeof(float)*4, isnull?0:s.quad_color_polys(id), GL_STATIC_DRAW);
 
   glBindBuffer(GL_ARRAY_BUFFER, buffers2[3]);
-  glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(float)*3, s.quad_texcoord_polys(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, quad_count*sizeof(float)*3, isnull?0:s.quad_texcoord_polys(id), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, buffers2[4]);
-  glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(float)*3, s.quad_polys2(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, quad_count*sizeof(float)*3, isnull?0:s.quad_polys2(id), GL_STATIC_DRAW);
 
   {
   int ss = p->quad_attribs.size();
@@ -859,7 +1066,7 @@ void RenderVertexArray::prepare(int id)
   for(int i=0;i<ss;i++)
     {
       glBindBuffer(GL_ARRAY_BUFFER, attrib_buffer2[i]);
-      glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(float), s.quad_attrib_polys(id, (*ii).first), GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, quad_count*sizeof(float), isnull?0:s.quad_attrib_polys(id, (*ii).first), GL_STATIC_DRAW);
       ii++;
     }
   }
@@ -870,8 +1077,8 @@ void RenderVertexArray::prepare(int id)
     {
       //std::cout << "Quad Attribi" << std::endl;
       glBindBuffer(GL_ARRAY_BUFFER, attribi_buffer2[i]);
-      const int *ptr = s.quad_attribi_polys(id, (*ii).first);
-      glBufferData(GL_ARRAY_BUFFER, s.quad_count(id)*sizeof(int), ptr, GL_STATIC_DRAW);
+      const int *ptr = isnull?0:s.quad_attribi_polys(id, (*ii).first);
+      glBufferData(GL_ARRAY_BUFFER, quad_count*sizeof(int), ptr, GL_STATIC_DRAW);
       ii++;
     }
 
@@ -890,17 +1097,17 @@ void RenderVertexArray::prepare(int id)
   glGenBuffers(1,&buffers3[3]);
   glGenBuffers(1,&buffers3[4]);
   glBindBuffer(GL_ARRAY_BUFFER, buffers3[0]);
-  glBufferData(GL_ARRAY_BUFFER, s.poly_count_f(id)*sizeof(float)*3, s.poly_polys(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, poly_count*sizeof(float)*3, isnull?0:s.poly_polys(id), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, buffers3[1]);
-  glBufferData(GL_ARRAY_BUFFER, s.poly_count_f(id)*sizeof(float)*3, s.poly_normal_polys(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, poly_count*sizeof(float)*3, isnull?0:s.poly_normal_polys(id), GL_STATIC_DRAW);
 
   glBindBuffer(GL_ARRAY_BUFFER, buffers3[2]);
-  glBufferData(GL_ARRAY_BUFFER, s.poly_count_f(id)*sizeof(float)*4, s.poly_color_polys(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, poly_count*sizeof(float)*4, isnull?0:s.poly_color_polys(id), GL_STATIC_DRAW);
 
   glBindBuffer(GL_ARRAY_BUFFER, buffers3[3]);
-  glBufferData(GL_ARRAY_BUFFER, s.poly_count_f(id)*sizeof(float)*3, s.poly_texcoord_polys(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, poly_count*sizeof(float)*3, isnull?0:s.poly_texcoord_polys(id), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, buffers3[4]);
-  glBufferData(GL_ARRAY_BUFFER, s.poly_count_f(id)*sizeof(float)*3, s.poly_polys2(id), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, poly_count*sizeof(float)*3, isnull?0:s.poly_polys2(id), GL_STATIC_DRAW);
 
   {
 #if 1
@@ -909,7 +1116,7 @@ void RenderVertexArray::prepare(int id)
   for(int i=0;i<ss;i++)
     {
       glBindBuffer(GL_ARRAY_BUFFER, attrib_buffer3[i]);
-      glBufferData(GL_ARRAY_BUFFER, s.poly_count_f(id)*sizeof(float), s.poly_attrib_polys(id, (*ii).first), GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, poly_count*sizeof(float), isnull?0:s.poly_attrib_polys(id, (*ii).first), GL_STATIC_DRAW);
       ii++;
     }
 #endif
@@ -921,7 +1128,7 @@ void RenderVertexArray::prepare(int id)
   for(int i=0;i<ss;i++)
     {
       glBindBuffer(GL_ARRAY_BUFFER, attribi_buffer3[i]);
-      glBufferData(GL_ARRAY_BUFFER, s.poly_count_f(id)*sizeof(int), s.poly_attribi_polys(id, (*ii).first), GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, poly_count*sizeof(int), isnull?0:s.poly_attribi_polys(id, (*ii).first), GL_STATIC_DRAW);
       ii++;
     }
 #endif
@@ -1067,9 +1274,9 @@ void RenderVertexArray::prepare(int id)
 #ifdef VAO
     glBindVertexArray(0);
 #endif
-    tri_count = s.tri_count(id);
-    quad_count = s.quad_count(id);
-    poly_count = s.poly_count_f(id);
+    //tri_count = s.tri_count(id);
+    //quad_count = s.quad_count(id);
+    //poly_count = s.poly_count_f(id);
 }
 void RenderVertexArray::del()
 {
@@ -1603,3 +1810,41 @@ void *thread_func(void *data)
   return 0; 
 }
  
+Counts CalcCounts(FaceCollection *coll, int start, int end)
+{
+  Counts c;
+  c.tri_count = 0;
+  c.quad_count = 0;
+  c.poly_count = 0;
+  int s = coll->NumFaces();
+  if (start<0) start=0;
+  if (end>s) end=s;
+  for(int i=start;i<end;i++)
+    {
+      int p = coll->NumPoints(i);
+      if (p==3) c.tri_count++;
+      else if (p==4) c.quad_count++;
+      else c.poly_count++;
+    }
+  return c;
+}
+
+Counts CalcOffsets(FaceCollection *coll, int start)
+{
+  Counts c;
+  c.tri_count = 0;
+  c.quad_count = 0;
+  c.poly_count = 0;
+  int s = coll->NumFaces();
+  if (start<0) start=0;
+  if (start>s) start=s;
+  for(int i=0;i<start;i++)
+    {
+      int p = coll->NumPoints(i);
+      if (p==3) c.tri_count++;
+      else if (p==4) c.quad_count++;
+      else c.poly_count++;
+    }
+  return c;
+}
+
