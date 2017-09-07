@@ -1824,7 +1824,7 @@ Counts CalcCounts(FaceCollection *coll, int start, int end)
       int p = coll->NumPoints(i);
       if (p==3) c.tri_count++;
       else if (p==4) c.quad_count++;
-      else c.poly_count++;
+      else c.poly_count+=p/2*2+2;
     }
   return c;
 }
@@ -1843,7 +1843,7 @@ Counts CalcOffsets(FaceCollection *coll, int start)
       int p = coll->NumPoints(i);
       if (p==3) c.tri_count++;
       else if (p==4) c.quad_count++;
-      else c.poly_count++;
+      else c.poly_count+=p/2*2+2;
     }
   return c;
 }
