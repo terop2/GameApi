@@ -2834,7 +2834,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     VertexArraySet *s = new VertexArraySet;
     RenderVertexArray *arr2 = new RenderVertexArray(*s);
     //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
-    arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, ct.poly_count*3);  // SIZES MUST BE KNOWN
+    arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
     for(int i=0;i<batch_count;i++) {
       ProgressBar(i,batch_count);
       int start = i*batch_faces;
@@ -2842,12 +2842,14 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       if (end>total_faces) { end=total_faces; }
       Counts ct2_counts = CalcCounts(faces, start, end);
       Counts ct2_offsets = CalcOffsets(faces, start);
+      int poly_offsets = CalcPolyOffsets(faces, start);
+      int poly_counts = CalcPolyCounts(faces, start, end);
       FaceCollectionVertexArray2 arr(*faces, *s);
       //arr.reserve(0);
       arr.copy(start,end);  
       arr2->update_tri(0, 0, ct2_offsets.tri_count*3, ct2_offsets.tri_count*3 + ct2_counts.tri_count*3);
       arr2->update_tri(0, 1, ct2_offsets.quad_count*6, ct2_offsets.quad_count*6 + ct2_counts.quad_count*6);
-      arr2->update_tri(0, 2, ct2_offsets.poly_count*3, ct2_offsets.poly_count*3 + ct2_counts.poly_count*3);
+      arr2->update_tri(0, 2, std::max(ct2_offsets.poly_count-1,0), std::max(ct2_offsets.poly_count-1,0) + (ct2_offsets.poly_count?ct2_counts.poly_count:ct2_counts.poly_count-1));
       s->free_reserve(0);
     }
     //std::cout << "\n";
@@ -2884,7 +2886,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     VertexArraySet *s = new VertexArraySet;
     RenderVertexArray *arr2 = new RenderVertexArray(*s);
     //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
-    arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, ct.poly_count*3);  // SIZES MUST BE KNOWN
+    arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
     for(int i=0;i<batch_count;i++) {
       ProgressBar(i,batch_count);
       int start = i*batch_faces;
@@ -2897,7 +2899,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       arr.copy(start,end);  
       arr2->update_tri(0, 0, ct2_offsets.tri_count*3, ct2_offsets.tri_count*3 + ct2_counts.tri_count*3);
       arr2->update_tri(0, 1, ct2_offsets.quad_count*6, ct2_offsets.quad_count*6 + ct2_counts.quad_count*6);
-      arr2->update_tri(0, 2, ct2_offsets.poly_count*3, ct2_offsets.poly_count*3 + ct2_counts.poly_count*3);
+      arr2->update_tri(0, 2, std::max(ct2_offsets.poly_count-1,0), std::max(ct2_offsets.poly_count-1,0) + (ct2_offsets.poly_count?ct2_counts.poly_count:ct2_counts.poly_count-1));
       s->free_reserve(0);
     }
     //std::cout << "\n";
