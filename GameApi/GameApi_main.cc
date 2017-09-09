@@ -755,7 +755,7 @@ public:
     
     float num = e.time*10.0/time;
     num2 = (int)num;
-    float newtime = fmod(e.time,time/10.0);
+    //float newtime = fmod(e.time,time/10.0);
     MainLoopEnv ee = e;
     // ee.time trick doesn't work with moveml
     //ee.time = newtime;
@@ -1174,7 +1174,7 @@ BM I21=ev.bitmap_api.blitbitmap(I18,I20,0,0);
  BM I23 = ev.font_api.draw_text_string(I22, "Win32Edition", 5, 30);
 BM I24=ev.bitmap_api.blitbitmap(I21,I23,160,88);
  P I25=ev.polygon_api.color_map(I24,0.0,500,0.0,300.0,0);
-P I26=ev.polygon_api.rotatex(I25,3.14159);
+ //P I26=ev.polygon_api.rotatex(I25,3.14159);
 P I27=ev.polygon_api.scale(I25,2,-2,2);
 P I28=ev.polygon_api.translate(I27,-400,200,0);
 VA I29=ev.polygon_api.create_vertex_array(I28,true);

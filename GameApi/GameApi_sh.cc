@@ -125,7 +125,7 @@ GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format,
 						    std::string f_comb, bool trans, SFO mod, US v_c, US f_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
 {
   SH sh = get_shader_1(v_format, f_format, g_format, v_comb, f_comb,trans,mod,v_c, f_c, v_defines, f_defines, v_shader, f_shader);
-  const int vertex_id = 7;
+  //const int vertex_id = 7;
   bind_attrib_1(sh, 0, "in_Position");
   bind_attrib_1(sh, 1, "in_Normal");
   bind_attrib_1(sh, 2, "in_Color");

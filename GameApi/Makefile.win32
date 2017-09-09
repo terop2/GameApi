@@ -88,7 +88,7 @@ CC2FLAGS = -DWINDOWS -ggdb -g -std=c++11 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC
 #`pkg-config gtkmm-2.4 --cflags`
 
 
-default: touched glew.o libGameApi.dll
+default: glew.o libGameApi.dll
 
 touched: GameApi_gui.cc
 	touch GameApi_gui.cc

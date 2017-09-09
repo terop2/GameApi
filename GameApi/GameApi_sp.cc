@@ -474,7 +474,7 @@ EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
 EXPORT void GameApi::SpriteApi::clear_arrays(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
-  RenderVertexArray *rend = find_vertex_array_render(e, va);
+  //RenderVertexArray *rend = find_vertex_array_render(e, va);
   s->clear_arrays();
 }
 
