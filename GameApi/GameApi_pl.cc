@@ -2777,6 +2777,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   if (0) {
 #endif // END OF __EMSCRIPTEN_PTHREADS
 #endif // END OF EMSCRIPTEN
+
+#ifndef BATCHING
   int num_threads = 4;
   FaceCollection *faces = find_facecoll(e, p);
   faces->Prepare();
@@ -2809,6 +2811,48 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       //::EnvImpl *env = ::EnvImpl::Environment(&e);
       //env->temp_deletes.push_back(std::shared_ptr<void>( arr2 ) );
     }
+#else // BATCHING
+  int num_threads = 4;
+  FaceCollection *faces = find_facecoll(e, p);
+  faces->Prepare();
+
+  ThreadedPrepare prep(faces);  
+  int s = faces->NumFaces();   
+  //std::cout << "NumFaces: " << s << std::endl;
+  if (s<100) { num_threads=1; }
+  int delta_s = s/num_threads+1;
+  std::vector<int> vec;
+  //std::cout << "NumThreads2: " << num_threads << std::endl;
+  Counts ct = CalcCounts(faces, 0, faces->NumFaces());
+  VertexArraySet *set = new VertexArraySet;
+  RenderVertexArray *arr2 = new RenderVertexArray(*set);
+  arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));
+  for(int i=0;i<num_threads;i++)
+    {  
+      int start_range = i*delta_s; 
+      int  end_range = (i+1)*delta_s;
+      if (end_range>s) { end_range = s; } 
+      if (i==num_threads-1) {end_range = s; }
+      vec.push_back(prep.push_thread2(start_range, end_range,arr2));
+    }
+  for(int i=0;i<num_threads;i++)
+    {
+      prep.join(vec[i]);
+    }
+  //VertexArraySet *set = new VertexArraySet;
+  //RenderVertexArray *arr2 = new RenderVertexArray(*set);
+  //arr2->prepare(0);
+  if (!keep)
+    {
+      set->free_memory();
+      //::EnvImpl *env = ::EnvImpl::Environment(&e);
+      //env->temp_deletes.push_back(std::shared_ptr<void>( arr2 ) );
+    }
+
+  
+#endif // BATCHING
+
+
 #ifdef EMSCRIPTEN
   return add_vertex_array(e, set, arr2);
   } else {
@@ -2842,8 +2886,6 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       if (end>total_faces) { end=total_faces; }
       Counts ct2_counts = CalcCounts(faces, start, end);
       Counts ct2_offsets = CalcOffsets(faces, start);
-      int poly_offsets = CalcPolyOffsets(faces, start);
-      int poly_counts = CalcPolyCounts(faces, start, end);
       FaceCollectionVertexArray2 arr(*faces, *s);
       //arr.reserve(0);
       arr.copy(start,end);  
@@ -2888,7 +2930,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
     for(int i=0;i<batch_count;i++) {
-      ProgressBar(i,batch_count);
+      ProgressBar(i,batch_count); 
       int start = i*batch_faces;
       int end = (i+1)*batch_faces;
       if (end>total_faces) { end=total_faces; }
@@ -5802,8 +5844,8 @@ GameApi::BM GameApi::PolygonApi::renderpolytobitmap(EveryApi &ev, P p, SH sh, fl
   GameApi::PolygonObj obj(ev, p, sh);
   obj.set_pos(x,y,z);
   obj.prepare();
-  int screen_width = ev.mainloop_api.get_screen_width();
-  int screen_height = ev.mainloop_api.get_screen_height();
+  //int screen_width = ev.mainloop_api.get_screen_width();
+  //int screen_height = ev.mainloop_api.get_screen_height();
   //Point2d pos = { 0.0, 0.0 };
   //Vector2d sz = { float(sx), float(sy) };
   //glViewport(pos.x, screen_height-pos.y-sz.dy, sz.dx, sz.dy);

@@ -140,8 +140,8 @@ public:
     
     int old_x = viewport.viewport[0];
     int old_y = viewport.viewport[1];
-    int oldwidth = viewport.viewport[2]-viewport.viewport[0];
-    int oldheight = viewport.viewport[3]-viewport.viewport[1];
+    //int oldwidth = viewport.viewport[2]-viewport.viewport[0];
+    //int oldheight = viewport.viewport[3]-viewport.viewport[1];
     
     if (translate) {
       ee.in_MV = Matrix::Translate(old_x,old_y,0.0); //*Matrix::Scale(1.0/oldwidth, 1.0/oldheight,1.0)*Matrix::Scale(sx,sy,1.0);

@@ -137,12 +137,12 @@ bool is_ear(FacesInPlane *coll, int face, int point, bool *enable_array)
   if (0.0 >= val) return false;
 
   
-  Vector2d v1 = p_prev - p_curr;
-  Vector2d v2 = p_next - p_curr;
-  float d = Vector2d::DotProduct(v1,v2);
-  d/=v1.Dist()*v2.Dist();
-  float angle = acos(d);
 #if 0
+  //Vector2d v1 = p_prev - p_curr;
+  //Vector2d v2 = p_next - p_curr;
+  //float d = Vector2d::DotProduct(v1,v2);
+  //d/=v1.Dist()*v2.Dist();
+  //float angle = acos(d);
   if (angle<0.0 || angle>3.14159265)
     {
       return false;

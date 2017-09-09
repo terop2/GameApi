@@ -346,6 +346,7 @@ private:
   const FaceCollection &coll;
   VertexArraySet &s;
 };
+class ThreadedPrepare;
 struct ThreadInfo
 {
   pthread_t thread_id;
@@ -355,6 +356,9 @@ struct ThreadInfo
   int end_range;
   std::vector<int> attrib;
   std::vector<int> attribi;
+  RenderVertexArray *r;
+  FaceCollection *faces;
+  ThreadedPrepare *prep;
 };
 void *thread_func(void *data);
 class ThreadedPrepare
@@ -376,6 +380,9 @@ public:
     info->end_range = end_range;
     info->attrib = attrib;
     info->attribi = attribi;
+    info->r = 0;
+    info->faces = 0;
+    info->prep = 0;
     ti.push_back(info);
 
     pthread_attr_t attr;
@@ -389,25 +396,53 @@ public:
     //std::cout << "returning: " << sets.size()-1 << std::endl;
     return sets.size()-1;
   }
+
+  int push_thread2(int start_range, int end_range, RenderVertexArray *r, std::vector<int> attrib=std::vector<int>(), std::vector<int> attribi=std::vector<int>())
+  {
+    //std::cout << "Thread " << start_range << " " << end_range << std::endl;
+    VertexArraySet *s = new VertexArraySet;
+    //s->set_reserve(0, (end_range-start_range)/10+1, (end_range-start_range)/10+1, (end_range-start_range)/10+1);
+    sets.push_back(s);
+    FaceCollectionVertexArray2 *va = new FaceCollectionVertexArray2(*faces, *s);
+    va2.push_back(va);
+    ThreadInfo *info = new ThreadInfo;
+    info->set = s;
+    info->va = va;
+    info->start_range = start_range;
+    info->end_range = end_range;
+    info->attrib = attrib;
+    info->attribi = attribi;
+    info->r = r;
+    info->faces = faces;
+    info->prep = this;
+    ti.push_back(info);
+
+    pthread_attr_t attr;
+
+    pthread_attr_init(&attr);
+    pthread_attr_setstacksize(&attr, 3000000);
+    //std::cout << "phread_create" << std::endl;
+    pthread_create(&info->thread_id, &attr, &thread_func, (void*)info);
+    //std::cout << "pthread_create_return: " << val << std::endl;
+    pthread_attr_destroy(&attr);
+    //std::cout << "returning: " << sets.size()-1 << std::endl;
+    return sets.size()-1;
+  }
+
   void join(int id)
   {
     void *res;
     //std::cout << "phread_join" << id << std::endl;
     pthread_join(ti[id]->thread_id, &res);
   }
-  void transfer_to_gpu_mem(RenderVertexArray &r, int rend_id, int buf, int start, int end) {
-    int s = sets.size();
+  void transfer_to_gpu_mem(VertexArraySet *set, RenderVertexArray &r, int rend_id, int buf, int start, int end) {
     RenderVertexArray_bufferids ids;
     r.fetch_buffers(ids);
-    for(int i=0;i<s;i++)
-      {
-	VertexArraySet * vs = sets[i];
-	RenderVertexArray rend(*vs);
-	rend.update_buffers(ids);
-	rend.set_no_delete(true);
-	rend.update_tri(rend_id, buf, start,end);
-      }
-
+    VertexArraySet * vs = set;
+    RenderVertexArray rend(*vs);
+    rend.update_buffers(ids);
+    rend.set_no_delete(true);
+    rend.update_tri(rend_id, buf, start,end);
   }
   VertexArraySet *collect()
   {

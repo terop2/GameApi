@@ -3,10 +3,12 @@
 
 //#define GL_GLEXT_PROTOTYPES
 #define NO_SDL_GLEXT
-#include "Effect.hh"
-#include "Effect2.hh"
+//#include "Effect.hh"
+//#include "Effect2.hh"
 #include <GL/glew.h>
 #include <SDL_opengl.h>
+
+#include "GameApi_h.hh"
 
 #ifndef EMSCRIPTEN
 #define VAO 1
@@ -1802,12 +1804,39 @@ void RenderVertexArray2::render(int id, int attr1, int attr2, int attr3, int att
     glDisableVertexAttribArray(aattr3);
     glDisableVertexAttribArray(aattr4);
   }
+Counts CalcCounts(FaceCollection *coll, int start, int end);
+Counts CalcOffsets(FaceCollection *coll, int start);
+void ProgressBar(int val, int max);
+
 
 void *thread_func(void *data)
 {
+#ifndef BATCHING
   ThreadInfo *ti = (ThreadInfo*)data;
   ti->va->copy(ti->start_range, ti->end_range,ti->attrib, ti->attribi);
-  return 0; 
+  return 0;
+#else
+  ThreadInfo *ti = (ThreadInfo*)data;
+  int s = 10;
+  int delta_s = (ti->end_range - ti->start_range)/s + 1;
+  for(int i=0;i<s;i++)
+    {
+      //ProgressBar(i,s);
+      int start_range = ti->start_range + i*delta_s;
+      int end_range = ti->start_range + (i+1)*delta_s;
+      if (start_range>ti->end_range) start_range=ti->end_range;
+      if (end_range>ti->end_range) end_range = ti->end_range;
+      if (i==s-1) end_range = ti->end_range;
+      std::cout << "Ranges: " << start_range << " " << end_range << std::endl;
+      Counts ct2_counts = CalcCounts(ti->faces, start_range, end_range);
+      Counts ct2_offsets = CalcOffsets(ti->faces, start_range);
+      ti->va->copy(start_range, end_range,ti->attrib, ti->attribi);
+      ti->prep->transfer_to_gpu_mem(ti->set, *ti->r, 0, 0, ct2_offsets.tri_count*3, ct2_offsets.tri_count*3 + ct2_counts.tri_count*3); 
+      ti->prep->transfer_to_gpu_mem(ti->set, *ti->r, 0, 1, ct2_offsets.quad_count*6, ct2_offsets.quad_count*6 + ct2_counts.quad_count*6);
+      ti->prep->transfer_to_gpu_mem(ti->set, *ti->r, 0, 2, std::max(ct2_offsets.poly_count-1,0), std::max(ct2_offsets.poly_count-1,0) + (ct2_offsets.poly_count?ct2_counts.poly_count:ct2_counts.poly_count-1));
+      ti->set->free_reserve(0);
+    }
+#endif
 }
  
 Counts CalcCounts(FaceCollection *coll, int start, int end)
