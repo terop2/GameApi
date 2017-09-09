@@ -138,10 +138,12 @@ RM = "c:\program files (x86)\git\bin\rm.exe"
 SED = "c:\program files (x86)\git\bin\sed.exe"
 
 $(DFiles): objs/%.d: %.cc
+	@echo Deps $< -o $@
 	@gcc -M $(CCFLAGS) $(CC2FLAGS) $< \
 	|$(SED) 's,\($*\)\.o[ :]*,objs/\1.o $@ : ,g' > $@
 
 $(D2Files): objs/%.d2: %.cc    
+	@echo Deps $< -o $@
 	@$(CCWIN) -M $(CC2FLAGS) $< \
 	|$(SED) 's,\($*\)\.obj[ :]*,objs/\1.obj $@ : ,g' > $@
 
