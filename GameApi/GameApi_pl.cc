@@ -1728,6 +1728,9 @@ EXPORT GameApi::P GameApi::PolygonApi::change_positions(P orig, std::function<PT
   FaceCollection *coll2 = new ChangePoints2(*coll, std::bind(&ChangePositions_Func, _1,_2,_3,(void*)&dt));
   return add_polygon(e, coll2, 1);
 #endif
+  GameApi::P p;
+  p.id = 0;
+  return p;
 }
 
 
@@ -1781,6 +1784,9 @@ EXPORT GameApi::P GameApi::PolygonApi::change_normals(P orig, std::function<V (V
   FaceCollection *coll2 = new ChangeNormal2(*coll, std::bind(&ChangeNormals_Func, _1, _2, _3, &dt));
   return add_polygon(e, coll2, 1);
 #endif
+  GameApi::P p;
+  p.id = 0;
+  return p;
 }
 
 
@@ -1828,6 +1834,9 @@ EXPORT GameApi::P GameApi::PolygonApi::change_colors(P orig, std::function<unsig
   FaceCollection *coll2 = new ChangeColor2(*coll, std::bind(ChangeColor_Func, _1,_2,_3,(void*)dt));
   return add_polygon(e, coll2, 1);
 #endif
+  GameApi::P p;
+  p.id = 0;
+  return p;
 }
 
 class ChangeTexture : public ForwardFaceCollection

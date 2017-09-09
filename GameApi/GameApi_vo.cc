@@ -1274,6 +1274,9 @@ EXPORT GameApi::FO GameApi::FloatVolumeApi::torusdistance(PT center, V u_x, V u_
   using std::placeholders::_3;
   return function(std::bind(torus_distance, _1,_2,_3,(void*)dt));
 #endif  
+  GameApi::FO fo;
+  fo.id=0;
+  return fo;
 }
 EXPORT GameApi::FO GameApi::FloatVolumeApi::minimum(FO f1, FO f2)
 {
@@ -1715,7 +1718,7 @@ class RenderDistance : public Bitmap<Color>
 {
 public:
   RenderDistance(Point pos, Vector u_x, Vector u_y, Vector u_z, DistanceRenderable &dist, int sx, int sy) 
-    : pos(pos), u_x(u_x), u_y(u_y), m_u_z(u_z), dist(dist), colors(colors), sx(sx), sy(sy) { 
+    : pos(pos), u_x(u_x), u_y(u_y), m_u_z(u_z), dist(dist), sx(sx), sy(sy) { 
     m_u_z/=m_u_z.Dist();
   }
   void Prepare() { }
@@ -1740,7 +1743,6 @@ private:
   Point pos;
   Vector u_x,u_y, m_u_z;
   DistanceRenderable &dist;
-  ColorVolumeObject &colors;
   int sx,sy;
 
 };
