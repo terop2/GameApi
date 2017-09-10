@@ -175,7 +175,7 @@ $(O2Files_examples): objs/%.bc : %.cc GameApi.hh
 #	@$(CC) $(CCFLAGS) -std=c++0x -I. -x c++-header $< -o $@ 
 
 clean:
-	@$(RM) -rf objs/*.bc objs/*.bc objs/*.d objs/*.d2 objs/*.gch objs/*.gch2
+	@$(RM) -rf objs/*.bc objs/*.bc objs/*.gch objs/*.gch2
 	@$(RM) main
 	@echo Clean.
 
