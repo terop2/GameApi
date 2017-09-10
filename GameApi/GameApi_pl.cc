@@ -2882,6 +2882,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     faces->Prepare();
     int total_faces = faces->NumFaces();
     int batch_count = 10;
+    if (total_faces<100) batch_count=1;
     int batch_faces = faces->NumFaces()/batch_count+1;
     Counts ct = CalcCounts(faces, 0, faces->NumFaces());
     VertexArraySet *s = new VertexArraySet;
@@ -2892,6 +2893,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       ProgressBar(i,batch_count);
       int start = i*batch_faces;
       int end = (i+1)*batch_faces;
+      if (start>total_faces) { start=total_faces; }
       if (end>total_faces) { end=total_faces; }
       Counts ct2_counts = CalcCounts(faces, start, end);
       Counts ct2_offsets = CalcOffsets(faces, start);
@@ -2932,6 +2934,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     faces->Prepare();
     int total_faces = faces->NumFaces();
     int batch_count = 10;
+    if (total_faces<100) batch_count=1;
     int batch_faces = faces->NumFaces()/batch_count+1;
     Counts ct = CalcCounts(faces, 0, faces->NumFaces());
     VertexArraySet *s = new VertexArraySet;
@@ -2942,6 +2945,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       ProgressBar(i,batch_count); 
       int start = i*batch_faces;
       int end = (i+1)*batch_faces;
+      if (start>total_faces) { start=total_faces; }
       if (end>total_faces) { end=total_faces; }
       Counts ct2_counts = CalcCounts(faces, start, end);
       Counts ct2_offsets = CalcOffsets(faces, start);

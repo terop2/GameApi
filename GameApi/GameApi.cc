@@ -10790,3 +10790,62 @@ GameApi::PN GameApi::WaveformApi::df_dx(PN poly)
   std::vector<float> *vec3 = new std::vector<float>(vec2);
   return add_polynomial(e, vec3);
 }
+
+GameApi::ML GameApi::MainLoopApi::fps_display(EveryApi &ev, ML ml)
+{
+  FI I1=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I2=ev.font_api.draw_text_string(I1,"0",5,30);
+  FI I3=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I4=ev.font_api.draw_text_string(I3,"1",5,30);
+  FI I5=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I6=ev.font_api.draw_text_string(I5,"2",5,30);
+  FI I7=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I8=ev.font_api.draw_text_string(I7,"3",5,30);
+  FI I9=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I10=ev.font_api.draw_text_string(I9,"4",5,30);
+  FI I11=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I12=ev.font_api.draw_text_string(I11,"5",5,30);
+  FI I13=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I14=ev.font_api.draw_text_string(I13,"6",5,30);
+  FI I15=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I16=ev.font_api.draw_text_string(I15,"7",5,30);
+  FI I17=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I18=ev.font_api.draw_text_string(I17,"8",5,30);
+  FI I19=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I20=ev.font_api.draw_text_string(I19,"9",5,30);
+  FF I21=ev.font_api.fps_fetcher(ev);
+  SF I22=ev.font_api.float_to_string_fetcher(I21);
+  IF I23=ev.font_api.char_fetcher_from_string(I22,"0123456789",0);
+  ML I24=ev.font_api.dynamic_character(ev,std::vector<BM>{I2,I4,I6,I8,I10,I12,I14,I16,I18,I20},I23,0,0);
+  FI I25=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I26=ev.font_api.draw_text_string(I25,"0",5,30);
+  FI I27=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I28=ev.font_api.draw_text_string(I27,"1",5,30);
+  FI I29=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I30=ev.font_api.draw_text_string(I29,"2",5,30);
+  FI I31=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I32=ev.font_api.draw_text_string(I31,"3",5,30);
+  FI I33=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I34=ev.font_api.draw_text_string(I33,"4",5,30);
+  FI I35=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I36=ev.font_api.draw_text_string(I35,"5",5,30);
+  FI I37=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I38=ev.font_api.draw_text_string(I37,"6",5,30);
+  FI I39=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I40=ev.font_api.draw_text_string(I39,"7",5,30);
+  FI I41=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I42=ev.font_api.draw_text_string(I41,"8",5,30);
+  FI I43=ev.font_api.load_font("http://tpgames.org/Chunkfive.otf",30,30);
+  BM I44=ev.font_api.draw_text_string(I43,"9",5,30);
+  FF I45=ev.font_api.fps_fetcher(ev);
+  SF I46=ev.font_api.float_to_string_fetcher(I45);
+  IF I47=ev.font_api.char_fetcher_from_string(I46,"0123456789",1);
+  ML I48=ev.font_api.dynamic_character(ev,std::vector<BM>{I26,I28,I30,I32,I34,I36,I38,I40,I42,I44},I47,0,0);
+  MN I49=ev.move_api.empty();
+  MN I50=ev.move_api.trans2(I49,35,0,0);
+  ML I51=ev.move_api.move_ml(ev,I48,I50,1,10.0);
+  ML I52=ev.mainloop_api.array_ml(std::vector<ML>{I24,I51});
+  ML I53=ev.sprite_api.turn_to_2d(ev,I52,0.0,0.0,800.0,600.0);
+  ML I54=ev.mainloop_api.array_ml(std::vector<ML>{ml,I53});
+  return I54;
+}

@@ -1,5 +1,6 @@
 
 #include "GameApi_h.hh"
+#include <iostream>
 #include <iomanip>
 
 struct FontPriv
@@ -493,6 +494,54 @@ GameApi::FF GameApi::FontApi::choose_float_fetcher(IF int_fetcher, float a_1, fl
   Fetcher<int> *iif = find_int_fetcher(e, int_fetcher);
   return add_float_fetcher(e, new ChooseFloatFetcher(iif, a_1, a_2, a_3,a_4,a_5,a_6,a_7));
 }
+class FPSFetcher : public Fetcher<float>
+{
+public:
+  FPSFetcher(GameApi::EveryApi &ev) :ev(ev) { counter=0; fps=0.0; }
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { 
+    counter++;
+    if (counter>10) { counter=0; fps=ev.mainloop_api.fpscounter(false); }
+  }
+
+  void set(float t) { }
+  float get() const {
+    return fps;
+  }
+private:
+  GameApi::EveryApi &ev;
+  float fps;
+  int counter;
+};
+GameApi::FF GameApi::FontApi::fps_fetcher(EveryApi &ev)
+{
+  return add_float_fetcher(e, new FPSFetcher(ev));
+}
+class FloatToStringFetcher : public Fetcher<std::string>
+{
+public:
+  FloatToStringFetcher(Fetcher<float> &ff) : ff(ff) { }
+  virtual void event(MainLoopEvent &e) { ff.event(e); }
+  virtual void frame(MainLoopEnv &e) { ff.frame(e); }
+
+  void set(std::string t) { }
+  std::string get() const {
+    std::stringstream ss;
+    float v = ff.get();
+    int v2 = (int)v;
+    if (v2<0) v2=0;
+    if (v2>99) v2=99;
+    ss << std::setfill('0') << std::setw(2) << v2;
+    return ss.str();
+  }
+private:
+  Fetcher<float> &ff;
+};
+GameApi::SF GameApi::FontApi::float_to_string_fetcher(FF fetcher)
+{
+  Fetcher<float> *ff = find_float_fetcher(e, fetcher);
+  return add_string_fetcher(e,new FloatToStringFetcher(*ff));
+}
 
 class PointFetcherPart : public Fetcher<Point>
 {
@@ -674,8 +723,8 @@ class ChooseCharFetcher : public Fetcher<int>
 {
 public:
   ChooseCharFetcher(Fetcher<std::string> *fetch, std::string alternatives, int index) : fetch(fetch), alternatives(alternatives), index(index) { }
-  virtual void event(MainLoopEvent &e) { }
-  virtual void frame(MainLoopEnv &e) { }
+  virtual void event(MainLoopEvent &e) { fetch->event(e); }
+  virtual void frame(MainLoopEnv &e) { fetch->frame(e); }
 
   void set(int i) { }
   int get() const

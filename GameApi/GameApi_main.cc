@@ -193,7 +193,7 @@ EXPORT void GameApi::MainLoopApi::print_profile()
     }
 #endif
 }
-EXPORT void GameApi::MainLoopApi::fpscounter()
+EXPORT float GameApi::MainLoopApi::fpscounter(bool print)
 {
   MainLoopPriv *p = (MainLoopPriv*)priv;
   unsigned int time = SDL_GetTicks();
@@ -208,9 +208,12 @@ EXPORT void GameApi::MainLoopApi::fpscounter()
   float fps = p->frame/(delta_time/1000.0f);
   if (p->count<0) { p->count = 0; }
   if (p->count>100) {
+    if (print) {
     std::cout << "FPS: " << fps << " delta_time:" << p->avg_time/100.0 << std::endl;
+    }
     p->count = 0;
   }
+  return fps;
 }
 
 EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_height)
