@@ -501,16 +501,18 @@ public:
   virtual void event(MainLoopEvent &e) { }
   virtual void frame(MainLoopEnv &e) { 
     counter++;
-    if (counter>10) { counter=0; fps=ev.mainloop_api.fpscounter(false); }
+    fps=ev.mainloop_api.fpscounter(false);
+    if (counter>10) { counter=0; fps2=fps; }
   }
 
   void set(float t) { }
   float get() const {
-    return fps;
+    return fps2;
   }
 private:
   GameApi::EveryApi &ev;
   float fps;
+  float fps2;
   int counter;
 };
 GameApi::FF GameApi::FontApi::fps_fetcher(EveryApi &ev)
