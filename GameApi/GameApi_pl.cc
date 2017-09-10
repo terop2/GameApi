@@ -2775,7 +2775,9 @@ void ProgressBar(int val, int max)
   }
   std::cout << "]";
 }
- 
+extern ThreadInfo *ti_global;
+extern int thread_counter;
+
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 { 
 #ifdef THREADS
@@ -2836,18 +2838,42 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   VertexArraySet *set = new VertexArraySet;
   RenderVertexArray *arr2 = new RenderVertexArray(*set);
   arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));
+  pthread_mutex_t *mutex1 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+  pthread_mutex_t *mutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+  pthread_mutex_t *mutex3 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+  thread_counter = 0;
+  pthread_mutex_lock(mutex3); // LOCK mutex3
+  pthread_mutex_lock(mutex2);
   for(int i=0;i<num_threads;i++)
     {  
       int start_range = i*delta_s; 
       int  end_range = (i+1)*delta_s;
       if (end_range>s) { end_range = s; } 
       if (i==num_threads-1) {end_range = s; }
-      vec.push_back(prep.push_thread2(start_range, end_range,arr2));
+      vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
     }
+  int progress = 0;
+  while(1) {
+    pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
+    progress++;
+    ProgressBar(progress/num_threads,10);
+
+    // now ti_global is available
+    ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 0, ti_global->ct2_offsets.tri_count*3, ti_global->ct2_offsets.tri_count*3 + ti_global->ct2_counts.tri_count*3); 
+    ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 1, ti_global->ct2_offsets.quad_count*6, ti_global->ct2_offsets.quad_count*6 + ti_global->ct2_counts.quad_count*6);
+    ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 2, std::max(ti_global->ct2_offsets.poly_count-1,0), std::max(ti_global->ct2_offsets.poly_count-1,0) + (ti_global->ct2_offsets.poly_count?ti_global->ct2_counts.poly_count:ti_global->ct2_counts.poly_count-1));
+    ti_global = 0;
+    pthread_mutex_unlock(mutex2); // release other process
+    if (thread_counter==num_threads) break;
+  }
+ 
   for(int i=0;i<num_threads;i++)
     {
       prep.join(vec[i]);
-    }
+     }
+  pthread_mutex_destroy(mutex1);
+  pthread_mutex_destroy(mutex2);
+  pthread_mutex_destroy(mutex3);
   //VertexArraySet *set = new VertexArraySet;
   //RenderVertexArray *arr2 = new RenderVertexArray(*set);
   //arr2->prepare(0);
