@@ -1807,7 +1807,8 @@ void RenderVertexArray2::render(int id, int attr1, int attr2, int attr3, int att
 Counts CalcCounts(FaceCollection *coll, int start, int end);
 Counts CalcOffsets(FaceCollection *coll, int start);
 void ProgressBar(int val, int max);
-
+ThreadInfo *ti_global;
+int thread_counter=0;
 
 void *thread_func(void *data)
 {
@@ -1827,16 +1828,21 @@ void *thread_func(void *data)
       if (start_range>ti->end_range) start_range=ti->end_range;
       if (end_range>ti->end_range) end_range = ti->end_range;
       if (i==s-1) end_range = ti->end_range;
-      std::cout << "Ranges: " << start_range << " " << end_range << std::endl;
       Counts ct2_counts = CalcCounts(ti->faces, start_range, end_range);
       Counts ct2_offsets = CalcOffsets(ti->faces, start_range);
       ti->va->copy(start_range, end_range,ti->attrib, ti->attribi);
-      ti->prep->transfer_to_gpu_mem(ti->set, *ti->r, 0, 0, ct2_offsets.tri_count*3, ct2_offsets.tri_count*3 + ct2_counts.tri_count*3); 
-      ti->prep->transfer_to_gpu_mem(ti->set, *ti->r, 0, 1, ct2_offsets.quad_count*6, ct2_offsets.quad_count*6 + ct2_counts.quad_count*6);
-      ti->prep->transfer_to_gpu_mem(ti->set, *ti->r, 0, 2, std::max(ct2_offsets.poly_count-1,0), std::max(ct2_offsets.poly_count-1,0) + (ct2_offsets.poly_count?ct2_counts.poly_count:ct2_counts.poly_count-1));
+      ti->ct2_counts = ct2_counts;
+      ti->ct2_offsets = ct2_offsets;
+      pthread_mutex_lock(ti->mutex1); // LOCK mutex1
+      // set data
+      ti_global = ti;
+      if (i==s-1) thread_counter++;
+      pthread_mutex_unlock(ti->mutex3); // unlock mutex3
+      pthread_mutex_lock(ti->mutex2); // WAIT FOR mutex2 to open
+      pthread_mutex_unlock(ti->mutex1); // release scope mutex1 
       ti->set->free_reserve(0);
     }
-#endif
+ #endif
   return 0;
 }
  

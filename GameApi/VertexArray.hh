@@ -349,6 +349,7 @@ private:
 class ThreadedPrepare;
 struct ThreadInfo
 {
+  ThreadInfo() { }
   pthread_t thread_id;
   VertexArraySet *set;
   FaceCollectionVertexArray2 *va;
@@ -359,6 +360,11 @@ struct ThreadInfo
   RenderVertexArray *r;
   FaceCollection *faces;
   ThreadedPrepare *prep;
+  pthread_mutex_t *mutex1;
+  pthread_mutex_t *mutex2;
+  pthread_mutex_t *mutex3;
+  Counts ct2_offsets;
+  Counts ct2_counts;
 };
 void *thread_func(void *data);
 class ThreadedPrepare
@@ -397,7 +403,7 @@ public:
     return sets.size()-1;
   }
 
-  int push_thread2(int start_range, int end_range, RenderVertexArray *r, std::vector<int> attrib=std::vector<int>(), std::vector<int> attribi=std::vector<int>())
+  int push_thread2(int start_range, int end_range, RenderVertexArray *r, pthread_mutex_t *mutex1, pthread_mutex_t *mutex2, pthread_mutex_t *mutex3, std::vector<int> attrib=std::vector<int>(), std::vector<int> attribi=std::vector<int>())
   {
     //std::cout << "Thread " << start_range << " " << end_range << std::endl;
     VertexArraySet *s = new VertexArraySet;
@@ -415,6 +421,9 @@ public:
     info->r = r;
     info->faces = faces;
     info->prep = this;
+    info->mutex1 = mutex1;
+    info->mutex2 = mutex2;
+    info->mutex3 = mutex3;
     ti.push_back(info);
 
     pthread_attr_t attr;
