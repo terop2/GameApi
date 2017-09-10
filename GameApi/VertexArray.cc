@@ -704,21 +704,27 @@ void VertexArraySet::append_to_polys(Polys &target, const Polys &source)
 
 void RenderVertexArray::update_tri(int id, int buffer_id, int start, int end)
 {
+  if (start>=end) return;
   switch(buffer_id) {
   case 0: {
 #ifdef VAO
     glBindVertexArray(vao[0]);
 #endif
     glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.tri_polys(id));
+    if (s.tri_polys(id))
+      glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.tri_polys(id));
     glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
-    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.tri_normal_polys(id));
+    if (s.tri_normal_polys(id))
+      glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.tri_normal_polys(id));
     glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
-    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*4, (end-start)*sizeof(float)*4, s.tri_color_polys(id));
+    if (s.tri_color_polys(id))
+      glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*4, (end-start)*sizeof(float)*4, s.tri_color_polys(id));
     glBindBuffer(GL_ARRAY_BUFFER, buffers[3]);
-    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.tri_texcoord_polys(id));
+    if (s.tri_texcoord_polys(id))
+      glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.tri_texcoord_polys(id));
     glBindBuffer(GL_ARRAY_BUFFER, buffers[4]);
-    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.tri_polys2(id));
+    if (s.tri_polys2(id))
+      glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.tri_polys2(id));
   } break;
   case 1: {
 #ifdef VAO
@@ -726,17 +732,22 @@ void RenderVertexArray::update_tri(int id, int buffer_id, int start, int end)
 #endif
     
     glBindBuffer(GL_ARRAY_BUFFER, buffers2[0]);
-    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.quad_polys(id));
+    if (s.quad_polys(id))
+      glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.quad_polys(id));
     glBindBuffer(GL_ARRAY_BUFFER, buffers2[1]);
-    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.quad_normal_polys(id));
+    if (s.quad_normal_polys(id))
+      glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.quad_normal_polys(id));
     
     glBindBuffer(GL_ARRAY_BUFFER, buffers2[2]);
-    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*4, (end-start)*sizeof(float)*4, s.quad_color_polys(id));
+    if (s.quad_color_polys(id))
+      glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*4, (end-start)*sizeof(float)*4, s.quad_color_polys(id));
     
     glBindBuffer(GL_ARRAY_BUFFER, buffers2[3]);
-    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.quad_texcoord_polys(id));
+    if (s.quad_texcoord_polys(id))
+      glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.quad_texcoord_polys(id));
     glBindBuffer(GL_ARRAY_BUFFER, buffers2[4]);
-    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.quad_polys2(id));
+    if (s.quad_polys2(id))
+      glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.quad_polys2(id));
   } break;
   case 2: {
 #ifdef VAO
@@ -744,17 +755,22 @@ void RenderVertexArray::update_tri(int id, int buffer_id, int start, int end)
 #endif
     
     glBindBuffer(GL_ARRAY_BUFFER, buffers3[0]);
-    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.poly_polys(id));
+    if (s.poly_polys(id))
+      glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.poly_polys(id));
     glBindBuffer(GL_ARRAY_BUFFER, buffers3[1]);
-    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.poly_normal_polys(id));
+    if (s.poly_normal_polys(id))
+      glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.poly_normal_polys(id));
 
     glBindBuffer(GL_ARRAY_BUFFER, buffers3[2]);
-    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*4, (end-start)*sizeof(float)*4, s.poly_color_polys(id));
+    if (s.poly_color_polys(id))
+      glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*4, (end-start)*sizeof(float)*4, s.poly_color_polys(id));
     
     glBindBuffer(GL_ARRAY_BUFFER, buffers3[3]);
-    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.poly_texcoord_polys(id));
+    if (s.poly_texcoord_polys(id))
+      glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.poly_texcoord_polys(id));
     glBindBuffer(GL_ARRAY_BUFFER, buffers3[4]);
-    glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.poly_polys2(id));
+    if (s.poly_polys2(id))
+      glBufferSubData(GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.poly_polys2(id));
     
 
   } break;

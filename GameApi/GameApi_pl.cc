@@ -2712,9 +2712,43 @@ EXPORT void GameApi::PolygonApi::delete_vertex_array(GameApi::VA va)
   GameApi::P p = empty();
   update_vertex_array(va,p);
 }
+void ProgressBar(int val, int max)
+{
+  std::cout << "\r[";
+  for(int i=0;i<val;i++) {
+    std::cout << "#";
+  }
+  for(int i=val;i<max-1;i++) {
+    std::cout << "-";
+  }
+  std::cout << "]";
+}
+extern ThreadInfo *ti_global;
+extern int thread_counter;
+
+
 EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P p, bool keep)
 {
+  if (keep) {
+    FaceCollection *faces = find_facecoll(e, p);
+    faces->Prepare();
+    VertexArraySet *s = new VertexArraySet;
+    FaceCollectionVertexArray2 arr(*faces, *s);
+    arr.reserve(0);
+    arr.copy(0,faces->NumFaces());  
+    RenderVertexArray *arr2 = new RenderVertexArray(*s);
+    arr2->prepare(0); 
+    if (!keep)
+      s->free_memory();
+    add_update_vertex_array(e, va, s, arr2);
+
+  }
+
+
 #ifdef THREADS
+
+
+#ifndef BATCHING
   int num_threads = 1;
   FaceCollection *faces = find_facecoll(e, p);
   ThreadedPrepare prep(faces);
@@ -2743,6 +2777,71 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
       set->free_memory();
     }
   add_update_vertex_array(e, va, set, arr2);
+#else // BATCHING
+  int num_threads = 4;
+  FaceCollection *faces = find_facecoll(e, p);
+  faces->Prepare();
+
+  ThreadedPrepare prep(faces);  
+  int s = faces->NumFaces();   
+  //std::cout << "NumFaces: " << s << std::endl;
+  if (s<100) { num_threads=1; }
+  int delta_s = s/num_threads+1;
+  std::vector<int> vec;
+  //std::cout << "NumThreads2: " << num_threads << std::endl;
+  Counts ct = CalcCounts(faces, 0, faces->NumFaces());
+  VertexArraySet *set = new VertexArraySet;
+  RenderVertexArray *arr2 = new RenderVertexArray(*set);
+  arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));
+  pthread_mutex_t *mutex1 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+  pthread_mutex_t *mutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+  pthread_mutex_t *mutex3 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+  thread_counter = 0;
+  pthread_mutex_lock(mutex3); // LOCK mutex3
+  pthread_mutex_lock(mutex2);
+  for(int i=0;i<num_threads;i++)
+    {  
+      int start_range = i*delta_s; 
+      int  end_range = (i+1)*delta_s;
+      if (end_range>s) { end_range = s; } 
+      if (i==num_threads-1) {end_range = s; }
+      vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
+    }
+  int progress = 0;
+  while(1) {
+    pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
+    progress++;
+    ProgressBar(progress/num_threads,10);
+
+    // now ti_global is available
+    ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 0, ti_global->ct2_offsets.tri_count*3, ti_global->ct2_offsets.tri_count*3 + ti_global->ct2_counts.tri_count*3); 
+    ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 1, ti_global->ct2_offsets.quad_count*6, ti_global->ct2_offsets.quad_count*6 + ti_global->ct2_counts.quad_count*6);
+    ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 2, std::max(ti_global->ct2_offsets.poly_count-1,0), std::max(ti_global->ct2_offsets.poly_count-1,0) + (ti_global->ct2_offsets.poly_count?ti_global->ct2_counts.poly_count:ti_global->ct2_counts.poly_count-1));
+    ti_global = 0;
+    pthread_mutex_unlock(mutex2); // release other process
+    if (thread_counter==num_threads) break;
+  }
+ 
+  for(int i=0;i<num_threads;i++)
+    {
+      prep.join(vec[i]);
+     }
+  pthread_mutex_destroy(mutex1);
+  pthread_mutex_destroy(mutex2);
+  pthread_mutex_destroy(mutex3);
+  //VertexArraySet *set = new VertexArraySet;
+  //RenderVertexArray *arr2 = new RenderVertexArray(*set);
+  //arr2->prepare(0);
+  if (!keep)
+    {
+      set->free_memory();
+      //::EnvImpl *env = ::EnvImpl::Environment(&e);
+      //env->temp_deletes.push_back(std::shared_ptr<void>( arr2 ) );
+    }
+  add_update_vertex_array(e, va, set, arr2);
+  
+#endif
+
 #else
   FaceCollection *faces = find_facecoll(e, p);
   VertexArraySet *s = new VertexArraySet;
@@ -2764,22 +2863,23 @@ EXPORT void GameApi::PolygonApi::explode(VA va, PT pos, float dist)
   s->explode(0, *pt, dist);
 }
 
-void ProgressBar(int val, int max)
-{
-  std::cout << "\r[";
-  for(int i=0;i<val;i++) {
-    std::cout << "#";
-  }
-  for(int i=val;i<max-1;i++) {
-    std::cout << "-";
-  }
-  std::cout << "]";
-}
-extern ThreadInfo *ti_global;
-extern int thread_counter;
 
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 { 
+  if (keep) {
+    FaceCollection *faces = find_facecoll(e, p);
+    faces->Prepare();
+    VertexArraySet *s = new VertexArraySet;
+    FaceCollectionVertexArray2 arr(*faces, *s);
+    arr.reserve(0);
+    arr.copy(0,faces->NumFaces());  
+    RenderVertexArray *arr2 = new RenderVertexArray(*s);
+    arr2->prepare(0); 
+    if (!keep)
+      s->free_memory();
+    return add_vertex_array(e, s, arr2);
+  }
+
 #ifdef THREADS
 #ifdef EMSCRIPTEN
 #ifdef __EMSCRIPTEN_PTHREADS__
