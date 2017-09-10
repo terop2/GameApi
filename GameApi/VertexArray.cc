@@ -1837,6 +1837,7 @@ void *thread_func(void *data)
       ti->set->free_reserve(0);
     }
 #endif
+  return 0;
 }
  
 Counts CalcCounts(FaceCollection *coll, int start, int end)

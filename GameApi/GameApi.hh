@@ -286,7 +286,8 @@ public:
   IMPORT void swapbuffers();
   IMPORT void finish();
   IMPORT BM screenshot();
-  IMPORT void fpscounter();
+  IMPORT float fpscounter(bool print=true);
+  IMPORT ML fps_display(EveryApi &ev, ML ml);
   IMPORT void profile(std::string label, bool start);
   IMPORT void print_profile();
   IMPORT void delay(int ms);
@@ -661,6 +662,8 @@ public:
   IMPORT PF point_fetcher_part(PF point_fetcher, int component, FF float_fetcher);
   IMPORT PF mouse_fetcher();
   IMPORT FF choose_float_fetcher(IF int_fetcher, float a_1, float a_2, float a_3, float a_4, float a_5, float a_6, float a_7);
+  IMPORT FF fps_fetcher(EveryApi &ev);
+  IMPORT SF float_to_string_fetcher(FF fetcher);
   IMPORT ML ml_chooser(std::vector<ML> vec, IF fetcher);
   IMPORT std::vector<GameApi::BM> bm_array_id_inv(ARR arr);
   IMPORT ARR bm_array_id(std::vector<BM> vec);

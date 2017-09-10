@@ -5889,12 +5889,6 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "std::string", "std::string", "int" },
 			 { "score", "Score: ", "5" },
 			 "SF", "font_api", "score_string_fetcher"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::char_fetcher_from_string,
-			 "fnt_char_idx",
-			 { "string_fetcher", "alternatives", "idx" },
-			 { "SF", "std::string", "int" },
-			 { "", "0123456789", "0" },
-			 "IF", "font_api", "char_fetcher_from_string"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::load_font,
 			 "FI_load",
@@ -5969,6 +5963,25 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "PF", "int", "FF" },
 			 { "", "0", "" },
 			 "PF", "font_api", "point_fetcher_part"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::fps_fetcher,
+			 "fnt_fps",
+			 { "ev" },
+			 { "EveryApi&" },
+			 { "ev" },
+			 "FF", "font_api", "fps_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::float_to_string_fetcher,
+			 "fnt_float_to_string",
+			 { "fetcher" },
+			 { "FF" },
+			 { "" },
+			 "SF", "font_api", "float_to_string_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::char_fetcher_from_string,
+			 "fnt_char_idx",
+			 { "string_fetcher", "alternatives", "idx" },
+			 { "SF", "std::string", "int" },
+			 { "", "0123456789", "0" },
+			 "IF", "font_api", "char_fetcher_from_string"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::x_comp,
 			 "pf_x",
 			 { "point_fetcher", "start_x", "end_x", "numsteps" },
@@ -6676,6 +6689,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ML" },
 			 { "" },
 			 "ML", "move_api", "key_printer_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::fps_display,
+			 "fps_display",
+			 { "ev", "ml" },
+			 { "EveryApi&", "ML" },
+			 { "ev", "" },
+			 "ML", "mainloop_api", "fps_display"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::skeletal_api, &GameApi::Skeletal::skeletal_bind,
 			 "skeletal_bind",

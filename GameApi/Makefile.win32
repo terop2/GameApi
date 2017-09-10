@@ -178,9 +178,13 @@ $(GCHFiles_examples): objs/%.hh.gch : %.hh GameApi.hh
 	@$(CC) $(CCFLAGS) -std=c++0x -g -I. -x c++-header $< -o $@ 
 
 clean:
-	@$(RM) -rf objs/*.o objs/*.obj objs/*.d objs/*.d2 objs/*.gch objs/*.gch2
+	@$(RM) -rf objs/*.o objs/*.obj objs/*.gch objs/*.gch2
 	@$(RM) main
 	@echo Clean.
+
+cleandeps:
+	@$(RM) -rf objs/*.d objs/*.d2
+	@echo Cleandeps.
 
 logs:
 	make.bat 1> foo.err 2>&1
@@ -225,7 +229,7 @@ make_commit:
 make_push:
 	git push ~/cvs/demo-git-push/demo3d.git master
 
--include $(DFiles)
+#-include $(DFiles)
 -include $(D2Files)
--include $(DFiles_examples)
--include $(D2Files_examples)
+#-include $(DFiles_examples)
+#-include $(D2Files_examples)
