@@ -4532,7 +4532,8 @@ struct ASyncData
 ASyncData async_data[] = { { "font_api", "newfont", 0 },
 			   { "font_api", "load_font", 0 },
 			   { "mainloop_api", "load_song", 2 },
-			   { "polygon_api", "p_url", 1 }
+			   { "polygon_api", "p_url", 1 },
+			   { "mainloop_api", "fps_display", 2 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -6691,9 +6692,9 @@ std::vector<GameApiItem*> blocker_functions()
 			 "ML", "move_api", "key_printer_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::fps_display,
 			 "fps_display",
-			 { "ev", "ml" },
-			 { "EveryApi&", "ML" },
-			 { "ev", "" },
+			 { "ev", "ml", "font" },
+			 { "EveryApi&", "ML", "std::string" },
+			 { "ev", "", "http://tpgames.org/Chunkfive.otf" },
 			 "ML", "mainloop_api", "fps_display"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::skeletal_api, &GameApi::Skeletal::skeletal_bind,

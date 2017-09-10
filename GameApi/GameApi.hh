@@ -287,7 +287,7 @@ public:
   IMPORT void finish();
   IMPORT BM screenshot();
   IMPORT float fpscounter(bool print=true);
-  IMPORT ML fps_display(EveryApi &ev, ML ml);
+  IMPORT ML fps_display(EveryApi &ev, ML ml, std::string font);
   IMPORT void profile(std::string label, bool start);
   IMPORT void print_profile();
   IMPORT void delay(int ms);
