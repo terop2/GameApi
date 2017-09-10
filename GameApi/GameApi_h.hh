@@ -7,10 +7,7 @@
 #ifndef EMSCRIPTEN
 #define THREADS 1
 #endif
-//#ifndef THREADS
-// batching doesnt work with threads.
 #define BATCHING 1
-//#endif
 
 #ifndef EMSCRIPTEN
 #define VAO 1
