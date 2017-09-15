@@ -1580,8 +1580,9 @@ public:
   }
   virtual void handle_event(MainLoopEvent &e)
   {
+    next->handle_event(e);
   }
-  virtual int shader_id() { return -1; }
+  virtual int shader_id() { return next->shader_id(); }
 private:
   MainLoopItem *next;
 };

@@ -6683,6 +6683,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ML", "ML", "int" },
 			 { "", "", "32" },
 			 "ML", "mainloop_api", "keyboard_toggle"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::touch_rotate,
+			 "touch_rotate",
+			 { "ev", "ml", "leftright", "topdown", "x_speed", "y_speed" },
+			 { "EveryApi&", "ML", "bool", "bool", "float", "float" },
+			 { "ev", "", "true", "true", "0.01", "0" },
+			 "ML", "mainloop_api", "touch_rotate"));
+			 
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_printer_ml,
 			 "key_printer_ml",
@@ -8032,6 +8039,13 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "ML", "ML", "std::string", "std::string", "float" },
 			 { "", "", "obj1", "obj2", "100.0" },
 			 "ML", "mainloop_api", "collision_seq_ml"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::collision_gen_key,
+			 "collision_gen_key",
+			 { "curr", "obj1", "obj2", "key", "keypress_duration" },
+			 { "ML", "std::string", "std::string", "int", "float" },
+			 { "", "obj1", "obj2", "32", "10.0" },
+			 "ML", "mainloop_api", "collision_gen_key"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::from_points,
 			 "ms_from_points",

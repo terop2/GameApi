@@ -10791,6 +10791,86 @@ GameApi::PN GameApi::WaveformApi::df_dx(PN poly)
   return add_polynomial(e, vec3);
 }
 
+
+class TouchRotate : public MainLoopItem
+{
+public:
+  TouchRotate(GameApi::Env &e2, GameApi::EveryApi &ev, MainLoopItem *next, bool leftright, bool topdown, float x_speed, float y_speed) : e2(e2), ev(ev), next(next), leftright(leftright), topdown(topdown), x_speed(x_speed), y_speed(y_speed) { mousedown=false; fixed=Point(0.0,0.0,0.0); 
+    if (!leftright) x_speed=0.0;
+    if (!topdown) y_speed=0.0;
+  }
+  int shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &e) 
+  {
+    if (e.type==1025 && e.button==0) {
+      mousedown=true;
+      mousedown_pos = e.cursor_pos;
+    }
+    if (e.type==1026 && e.button==-1) {
+      mousedown=false;
+      fixed+=mouse_delta;
+      mouse_delta=Vector(0.0,0.0,0.0);
+    }
+    if (e.type==1024 && mousedown)
+      {
+	mouse_delta = e.cursor_pos - mousedown_pos;
+      }
+    next->handle_event(e);
+  }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    ee.in_MV = ee.in_MV * Matrix::XRotation((fixed.y+mouse_delta.dy)*y_speed) * Matrix::YRotation((fixed.x+mouse_delta.dx)*x_speed);
+    ee.env = ee.env * Matrix::XRotation((fixed.y+mouse_delta.dy)*y_speed) * Matrix::YRotation((fixed.x+mouse_delta.dx)*x_speed);
+
+    GameApi::SH s1;
+    s1.id = e.sh_texture;
+    GameApi::SH s11;
+    s11.id = e.sh_texture_2d;
+    GameApi::SH s2;
+    s2.id = e.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = e.sh_color;
+
+
+    GameApi::M mat2 = add_matrix2(e2,ee.env);
+    GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", mat2);
+    ev.shader_api.set_var(s1, "in_iMV", mat2i);
+    ev.shader_api.use(s11);
+    ev.shader_api.set_var(s11, "in_MV", mat2);
+    ev.shader_api.set_var(s11, "in_iMV", mat2i);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", mat2);
+    ev.shader_api.set_var(s2, "in_iMV", mat2i);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", mat2);
+    ev.shader_api.set_var(s3, "in_iMV", mat2i);
+
+
+    next->execute(ee);
+  }
+private:
+  GameApi::Env &e2;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  bool leftright;
+  bool topdown;
+  
+  bool mousedown;
+  Point mousedown_pos;
+  Vector mouse_delta;
+  Point fixed;
+  float x_speed, y_speed;
+};
+
+GameApi::ML GameApi::MainLoopApi::touch_rotate(GameApi::EveryApi &ev, ML ml, bool leftright, bool topdown, float x_speed, float y_speed)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new TouchRotate(e,ev,item, leftright, topdown,x_speed,y_speed));
+}
+
 GameApi::ML GameApi::MainLoopApi::fps_display(EveryApi &ev, ML ml, std::string font)
 {
   FI I1=ev.font_api.load_font(font,30,30);

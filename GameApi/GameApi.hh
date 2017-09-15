@@ -346,6 +346,7 @@ public:
   ML seq_ml(std::vector<ML> vec, float time);
   ML timed_tmp_seq_ml(ML curr, ML end, float start_time, float end_time, float show_duration, int key);
   ML collision_seq_ml(ML curr, ML end, std::string obj1, std::string obj2, float show_duration);
+  ML collision_gen_key(ML curr, std::string obj1, std::string obj2, int key, float duration);
   ML collision_detection(EveryApi &ev,
 			 float player_size,
 			 float enemy_size, 
@@ -361,6 +362,7 @@ public:
   ML skybox(EveryApi &ev, BM land, BM sky); // 100x100 bm's required
   ML scale_2d_screen(EveryApi &ev, ML orig, float sx, float sy);
   ML keyboard_toggle(ML m1, ML m2, int key);
+  ML touch_rotate(EveryApi &ev, ML ml, bool leftright, bool topdown, float x_speed, float y_speed);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);

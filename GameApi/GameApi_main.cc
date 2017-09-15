@@ -787,6 +787,72 @@ private:
   bool firsttime;
 };
 
+class CollisionGenKey : public MainLoopItem
+{
+public:
+  CollisionGenKey(MainLoopItem *curr, std::string obj1, std::string obj2, int key, float keypress_duration) : curr(curr), obj1(obj1), obj2(obj2), key(key), keypress_duration(keypress_duration) 
+  {
+    collision_detected=false;
+    keypress_ongoing=false;
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    curr->handle_event(e);
+  }
+  void execute(MainLoopEnv &e)
+  {
+    curr->execute(e);
+ 
+    check_world(e);
+    World *w = e.current_world;
+    std::vector<std::pair<std::string,std::string> > &coll_res = w->collisions;
+    int s = coll_res.size();
+    collision_detected = false;
+    if (!keypress_ongoing)
+    for(int i=0;i<s;i++)
+      {
+	if ((coll_res[i].first.find(obj1)!=std::string::npos && coll_res[i].second.find(obj2)!=std::string::npos) ||
+	    (coll_res[i].second.find(obj1)!=std::string::npos && coll_res[i].first.find(obj2)!=std::string::npos)) {
+	  collision_detected = true;
+	}
+      }
+    if (collision_detected && !keypress_ongoing)
+      {
+	keypress_starttime = e.time;
+	MainLoopEvent ev2;
+	ev2.type=768;
+	ev2.ch=key;
+	ev2.cursor_pos=Point(0.0,0.0,0.0);
+	ev2.button=-1;
+	curr->handle_event(ev2);
+	keypress_ongoing = true;
+      }
+    if (keypress_ongoing)
+      {
+	float delta = e.time - keypress_starttime;
+	if (delta*10.0>keypress_duration) {
+	  MainLoopEvent ev2;
+	  ev2.type=769;
+	  ev2.ch=key;
+	  ev2.cursor_pos=Point(0.0,0.0,0.0);
+	  ev2.button=-1;
+	  curr->handle_event(ev2);
+	  keypress_ongoing = false;
+	}
+      }
+
+  }
+private:
+  MainLoopItem *curr;
+  std::string obj1;
+  std::string obj2;
+  int key;
+  bool collision_detected;
+  float keypress_duration;
+  float keypress_starttime;
+  bool keypress_ongoing;
+};
+
 class CollisionSeqML : public MainLoopItem
 {
 public:
@@ -998,6 +1064,12 @@ GameApi::ML GameApi::MainLoopApi::collision_seq_ml(ML curr, ML end, std::string 
   MainLoopItem *end_item = find_main_loop(e, end);
   return add_main_loop(e, new CollisionSeqML(curr_item, end_item, obj1, obj2, show_duration));
 }
+GameApi::ML GameApi::MainLoopApi::collision_gen_key(ML curr, std::string obj1, std::string obj2, int key, float duration)
+{
+  MainLoopItem *curr_item = find_main_loop(e, curr);
+  return add_main_loop(e, new CollisionGenKey(curr_item, obj1, obj2, key, duration));
+}
+
 GameApi::ML GameApi::MainLoopApi::collision_detection(EveryApi &ev,
 						      float player_size, 
 						      float enemy_size, 
