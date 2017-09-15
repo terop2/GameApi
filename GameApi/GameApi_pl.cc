@@ -482,6 +482,74 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all(std::string filename, int 
   GameApi::P resize = resize_to_correct_size(obj);
   return resize;
 }
+
+std::map<std::string, int> prepare_cache_data;
+
+class PrepareCache : public FaceCollection
+{
+public:
+  PrepareCache(GameApi::Env &e, std::string id, FaceCollection *coll) : e(e), id(id), coll(coll) {}
+  void Prepare()
+  {
+    if (prepare_cache_data.find(id)!=prepare_cache_data.end())
+      {
+	return;
+      }
+    coll->Prepare();
+    GameApi::P num = add_polygon2(e, coll,1);
+    prepare_cache_data[id] = num.id;
+  }
+  FaceCollection *get_coll() const
+  {
+    int num = prepare_cache_data[id];
+    GameApi::P p;
+    p.id = num;
+    FaceCollection *coll = find_facecoll(e, p);
+    return coll;
+  }
+
+  virtual int NumFaces() const 
+  {
+    return get_coll()->NumFaces();
+  }
+  virtual int NumPoints(int face) const
+  {
+    return get_coll()->NumPoints(face);
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return get_coll()->FacePoint(face,point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return get_coll()->PointNormal(face,point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return get_coll()->Attrib(face,point,id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return get_coll()->AttribI(face,point,id);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return get_coll()->Color(face,point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return get_coll()->TexCoord(face,point);
+  }
+  virtual float TexCoord3(int face, int point) const {
+    return get_coll()->TexCoord3(face,point);
+  }
+private:
+  GameApi::Env &e;
+  std::string id;
+  FaceCollection *coll;
+};
+
+
 class NetworkedFaceCollection : public FaceCollection
 {
 public:
@@ -550,7 +618,10 @@ EXPORT GameApi::P GameApi::PolygonApi::p_url(EveryApi &ev, std::string url, int 
 {
   P p = empty();
   FaceCollection *emp = find_facecoll(e, p);
-  return add_polygon2(e, new NetworkedFaceCollection(e,ev, emp, url, gameapi_homepageurl, count),1); 
+  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollection(e,ev, emp, url, gameapi_homepageurl, count),1); 
+  FaceCollection *coll = find_facecoll(e,p1);
+  GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll),1);
+  return p2;
 }
 EXPORT GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
 {
