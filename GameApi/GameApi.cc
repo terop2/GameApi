@@ -10802,16 +10802,16 @@ public:
   int shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &e) 
   {
-    if (e.type==1025 && e.button==0) {
+    if ((e.type==1025 && e.button==0) || e.type==SDL_FINGERDOWN) {
       mousedown=true;
       mousedown_pos = e.cursor_pos;
     }
-    if (e.type==1026 && e.button==-1) {
+    if ((e.type==1026 && e.button==-1) || e.type==SDL_FINGERUP) {
       mousedown=false;
       fixed+=mouse_delta;
       mouse_delta=Vector(0.0,0.0,0.0);
     }
-    if (e.type==1024 && mousedown)
+    if ((e.type==1024||e.type==SDL_FINGERMOTION) && mousedown)
       {
 	mouse_delta = e.cursor_pos - mousedown_pos;
       }
