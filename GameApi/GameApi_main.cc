@@ -683,8 +683,8 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   if (event.type==SDL_FINGERMOTION||event.type==SDL_FINGERDOWN||event.type==SDL_FINGERUP)
     {
       SDL_TouchFingerEvent *ptr = &event.tfinger;
-      x = (int)ptr->x;
-      y = (int)ptr->y;
+      x = int(ptr->x * get_screen_width());
+      y = int(ptr->y * get_screen_height());
     }
   if (event.type==SDL_MOUSEWHEEL)
     {
