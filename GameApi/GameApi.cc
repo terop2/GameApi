@@ -10798,6 +10798,7 @@ public:
   TouchRotate(GameApi::Env &e2, GameApi::EveryApi &ev, MainLoopItem *next, bool leftright, bool topdown, float x_speed, float y_speed) : e2(e2), ev(ev), next(next), leftright(leftright), topdown(topdown), x_speed(x_speed), y_speed(y_speed) { mousedown=false; fixed=Point(0.0,0.0,0.0); 
     if (!leftright) x_speed=0.0;
     if (!topdown) y_speed=0.0;
+    accumulated=Matrix::Identity();
   }
   int shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &e) 
@@ -10814,14 +10815,22 @@ public:
     if ((e.type==1024||e.type==SDL_FINGERMOTION) && mousedown)
       {
 	mouse_delta = e.cursor_pos - mousedown_pos;
+        mousedown_pos = e.cursor_pos;
       }
     next->handle_event(e);
   }
   void execute(MainLoopEnv &e)
   {
+    Matrix curr1 = Matrix::YRotation(mouse_delta.dx*x_speed);
+    Matrix curr2 = Matrix::XRotation(mouse_delta.dy*y_speed);
+    Matrix curr = curr1 * curr2;
+    
+    accumulated *= curr;
+    mouse_delta=Vector(0.0,0.0,0.0);
+
     MainLoopEnv ee = e;
-    ee.in_MV = ee.in_MV * Matrix::XRotation((fixed.y+mouse_delta.dy)*y_speed) * Matrix::YRotation((fixed.x+mouse_delta.dx)*x_speed);
-    ee.env = ee.env * Matrix::XRotation((fixed.y+mouse_delta.dy)*y_speed) * Matrix::YRotation((fixed.x+mouse_delta.dx)*x_speed);
+    ee.in_MV = ee.in_MV * accumulated; //Matrix::XRotation((fixed.y+mouse_delta.dy)*y_speed) * Matrix::YRotation((fixed.x+mouse_delta.dx)*x_speed);
+    ee.env = ee.env * accumulated; //Matrix::XRotation((fixed.y+mouse_delta.dy)*y_speed) * Matrix::YRotation((fixed.x+mouse_delta.dx)*x_speed);
 
     GameApi::SH s1;
     s1.id = e.sh_texture;
@@ -10863,6 +10872,9 @@ private:
   Vector mouse_delta;
   Point fixed;
   float x_speed, y_speed;
+
+  Matrix accumulated;
+  
 };
 
 GameApi::ML GameApi::MainLoopApi::touch_rotate(GameApi::EveryApi &ev, ML ml, bool leftright, bool topdown, float x_speed, float y_speed)
