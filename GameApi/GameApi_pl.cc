@@ -483,7 +483,17 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all(std::string filename, int 
   return resize;
 }
 
-std::map<std::string, int> prepare_cache_data;
+std::vector<std::pair<std::string, int> > prepare_cache_data;
+
+int find_data(std::string data) {
+  int s = prepare_cache_data.size();
+  for(int i=0;i<s;i++)
+    {
+      std::pair<std::string,int> p = prepare_cache_data[i];
+      if (p.first==data) return p.second;
+    }
+  return -1;
+}
 
 class PrepareCache : public FaceCollection
 {
@@ -491,17 +501,20 @@ public:
   PrepareCache(GameApi::Env &e, std::string id, FaceCollection *coll) : e(e), id(id), coll(coll) {}
   void Prepare()
   {
-    if (prepare_cache_data.find(id)!=prepare_cache_data.end())
+    //std::cout << "PrepareCache: " << id << std::endl;
+    if (find_data(id)!=-1)
       {
+	//std::cout << "PrepareCache: SKIPPED!" << std::endl;
 	return;
       }
     coll->Prepare();
     GameApi::P num = add_polygon2(e, coll,1);
-    prepare_cache_data[id] = num.id;
+    prepare_cache_data.push_back(std::make_pair(id,num.id));
   }
   FaceCollection *get_coll() const
   {
-    int num = prepare_cache_data[id];
+    int num = find_data(id);
+    if (num==-1) {const_cast<PrepareCache*>(this)->Prepare(); num=find_data(id); }
     GameApi::P p;
     p.id = num;
     FaceCollection *coll = find_facecoll(e, p);
@@ -1275,7 +1288,18 @@ public:
     for(int f=0;f<s;f++)
       {
 	int count = coll->NumPoints(f);
-	if (count==4)
+	if (count==3) { 
+	  counts.push_back(3);
+	  counts2.push_back(counter); counter+=3;
+	  for(int i=0;i<3;i++) { 
+	    vec.push_back(coll->FacePoint(f,i));
+	    norm.push_back(coll->PointNormal(f,i));
+	    color.push_back(coll->Color(f,i));
+	    texcoord.push_back(coll->TexCoord(f,i));
+	  }
+					      
+	}
+	else if (count==4)
 	  {
 	    counts.push_back(3);
 	    counts2.push_back(counter); counter+=3;
