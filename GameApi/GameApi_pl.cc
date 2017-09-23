@@ -749,6 +749,7 @@ public:
       Point2d pp;
       pp.x = alfa;
       pp.y = beta;
+      std::cout << "texcoord: " << pp.x << " " << pp.y << std::endl;
       return pp;
     }
 private:
@@ -838,7 +839,7 @@ EXPORT GameApi::P GameApi::PolygonApi::texcoord_spherical(PT center, P orig)
   Point *center_1 = find_point(e, center);
   FaceCollection *face = find_facecoll(e, orig);
   
-  return add_polygon(e, new TexCoordSpherical(*center_1, face),1);
+  return add_polygon2(e, new TexCoordSpherical(*center_1, face),1);
 }
 EXPORT GameApi::P GameApi::PolygonApi::texcoord_cylindar(P orig, float start_y, float end_y)
 {
@@ -6122,8 +6123,9 @@ public:
     float alfa = ev.point_api.pt_x(sph);
     float beta = ev.point_api.pt_y(sph);
     Point2d pp;
-    pp.x = alfa/3.14159;
-    pp.y = beta/3.14159/2.0;
+    pp.x = alfa/3.14159265;
+    pp.y = 0.5+beta/3.14159265/2.0;
+    // std::cout << "texcoord: " << pp.x << " " << pp.y << std::endl;
     return pp;
   }
 private:
@@ -7158,6 +7160,7 @@ class SphereMap2 : public SurfaceIn3d
 {
 public:
   SphereMap2(float p_x, float p_y, float p_z, Bitmap<float> &fb, float start_radius, float end_radius, float start_values, float end_values) : p_x(p_x), p_y(p_y), p_z(p_z), fb(fb), start_radius(start_radius), end_radius(end_radius), start_values(start_values), end_values(end_values) { }
+  virtual void Prepare() { fb.Prepare(); }
   virtual Point Index(float x, float y) const
   {
     float cx = x*fb.SizeX();
