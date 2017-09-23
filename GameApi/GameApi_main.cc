@@ -58,6 +58,13 @@ EXPORT void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_heigh
   prog->set_var("in_POS", 0.0f);
   prog->set_var("color_mix", 0.5f);
   prog->set_var("time", 0.0f);
+  int s = 64;
+  for(int i=0;i<s;i++) {
+    std::stringstream ss2; ss2 << i;
+    std::string ss = "texsampler[" + ss2.str() + "]";
+    prog->set_var(ss, i);
+  }
+
   alpha_1(false);
 
 #if 0
@@ -258,6 +265,12 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   prog->set_var("in_POS", 0.0f);
   prog->set_var("color_mix", 0.5f); 
   prog->set_var("time",0.0f);
+  int s = 64;
+  for(int i=0;i<s;i++) {
+    std::stringstream ss2; ss2 << i;
+    std::string ss = "texsampler[" + ss2.str() + "]";
+    prog->set_var(ss, i);
+  }
   alpha_1(false);
   glEnable(GL_DEPTH_TEST);
   //glEnable(GL_MULTISAMPLE );

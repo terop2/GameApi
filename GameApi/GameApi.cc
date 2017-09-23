@@ -4940,6 +4940,69 @@ private:
   float mix;
 };
 
+
+class ManyTextureMaterial : public MaterialForward
+{
+public:
+  ManyTextureMaterial(GameApi::EveryApi &ev, std::vector<GameApi::BM> bm, float mix) : ev(ev), bm(bm), mix(mix) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
+    std::vector<GameApi::BM> I13=bm;
+    std::vector<GameApi::TXID> I15 = ev.texture_api.prepare_many(ev, I13);
+    GameApi::VA I16=ev.texture_api.bind_many(I12,I15);
+    GameApi::ML I17=ev.polygon_api.render_vertex_array_ml(ev,I16);
+    GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17, mix);
+    return I18;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
+    std::vector<GameApi::BM> I13=bm;
+    std::vector<GameApi::TXID> I15 = ev.texture_api.prepare_many(ev, I13);
+    GameApi::VA I16=ev.texture_api.bind_many(I12,I15);
+    GameApi::PTA pta = ev.points_api.prepare(pts);
+    GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
+    GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
+    return I18;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
+    std::vector<GameApi::BM> I13=bm;
+    std::vector<GameApi::TXID> I15 = ev.texture_api.prepare_many(ev, I13);
+    GameApi::VA I16=ev.texture_api.bind_many(I12,I15);
+    GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
+    GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
+    return I18;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
+    std::vector<GameApi::BM> I13=bm;
+    std::vector<GameApi::TXID> I15 = ev.texture_api.prepare_many(ev, I13);
+    GameApi::VA I16=ev.texture_api.bind_many(I12,I15);
+    GameApi::PTA pta = ev.points_api.prepare(pts);
+    GameApi::ML I17=ev.materials_api.render_instanced2_ml_fade(ev,I16,pta, flip, start_time, end_time);
+    GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
+    return I18;
+  }
+
+private:
+  GameApi::EveryApi &ev;
+  std::vector<GameApi::BM> bm;
+  float mix;
+};
+
+
 class BrashMetal : public MaterialForward
 {
 public:
@@ -5433,6 +5496,11 @@ EXPORT GameApi::MT GameApi::MaterialsApi::textureid(EveryApi &ev, TXID txid, flo
 {
   return add_material(e, new TextureIDMaterial(ev, txid,mix));
 }
+EXPORT GameApi::MT GameApi::MaterialsApi::texture_many(EveryApi &ev, std::vector<BM> vec, float mix)
+{
+  return add_material(e, new ManyTextureMaterial(ev, vec,mix));
+}
+
 EXPORT GameApi::MT GameApi::MaterialsApi::texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix)
 {
   return add_material(e, new TextureArrayMaterial(ev, vec, sx,sy,mix));
@@ -6151,6 +6219,11 @@ GameApi::US GameApi::UberShaderApi::v_texture(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("texture", next,"EX_TEXCOORD IN_TEXCOORD"));
 }
+GameApi::US GameApi::UberShaderApi::v_manytexture(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("manytextures", next,"MANYTEXTURES EX_TEXCOORD IN_TEXCOORD"));
+}
 
 GameApi::US GameApi::UberShaderApi::v_texture_arr(US us)
 {
@@ -6413,6 +6486,12 @@ GameApi::US GameApi::UberShaderApi::f_texture(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("texture", next,"EX_TEXCOORD COLOR_MIX"));
+}
+
+GameApi::US GameApi::UberShaderApi::f_manytexture(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("manytextures", next,"MANYTEXTURES EX_TEXCOORD COLOR_MIX"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_texture_arr(US us)

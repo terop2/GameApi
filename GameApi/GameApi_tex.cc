@@ -21,6 +21,18 @@ EXPORT GameApi::VA GameApi::TextureApi::bind(GameApi::VA va, GameApi::TXID tx)
   arr->prepare(0);
   return add_vertex_array(e, ns, arr);
 }
+EXPORT GameApi::VA GameApi::TextureApi::bind_many(GameApi::VA va, std::vector<GameApi::TXID> vec)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  VertexArraySet *ns = new VertexArraySet(*s);
+  int s1 = vec.size();
+  for(int i=0;i<s1;i++) {
+    ns->texture_many_ids.push_back(vec[i].id);
+  }
+  RenderVertexArray *arr = new RenderVertexArray(*ns);
+  arr->prepare(0);
+  return add_vertex_array(e, ns, arr);
+}
 EXPORT GameApi::VA GameApi::TextureApi::bind_arr(GameApi::VA va, GameApi::TXA tx)
 {
   VertexArraySet *s = find_vertex_array(e, va);
@@ -63,6 +75,38 @@ GameApi::Q GameApi::TextureApi::get_tex_coord_1(TX tx, int id)
   Point2d p1 = tex->AreaS(i);
   Point2d p2 = tex->AreaE(i);
   return add_tex_quad(e, p1,p2);
+}
+EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev, std::vector<BM> vec)
+{
+  std::vector<GLuint> ids;
+  std::vector<GameApi::TXID> txidvec;
+  ids.resize(vec.size());
+  glGenTextures(vec.size(), &ids[0]);
+#ifndef EMSCRIPTEN
+  glClientActiveTexture(GL_TEXTURE0+0);
+#endif
+  glActiveTexture(GL_TEXTURE0+0);
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      BitmapHandle *handle = find_bitmap(e, vec[i]);
+      Bitmap<Color> *bm = find_color_bitmap(handle);
+      FlipColours flip(*bm);
+      BufferFromBitmap buf(flip);
+      buf.Gen();
+
+      glBindTexture(GL_TEXTURE_2D, ids[i]);
+      glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,bm->SizeX(),bm->SizeY(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+      GameApi::TXID id2;
+      id2.id = ids[i];
+      txidvec.push_back(id2);
+    }
+  return txidvec;
 }
 EXPORT GameApi::TXA GameApi::TextureApi::prepare_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy)
 {
@@ -142,6 +186,24 @@ EXPORT void GameApi::TextureApi::use(TXID tx, int i)
 #endif
   glActiveTexture(GL_TEXTURE0+i);
   glBindTexture(GL_TEXTURE_2D, tx.id);
+}
+EXPORT void GameApi::TextureApi::use_many(std::vector<TXID> tx, int i)
+{
+  glEnable(GL_TEXTURE_2D);
+  int s = tx.size();
+  for(int i=0;i<s;i++)
+    {
+    glActiveTexture(GL_TEXTURE0+i);
+#ifndef EMSCRIPTEN
+    glClientActiveTexture(GL_TEXTURE0+i);
+#endif
+    glBindTexture(GL_TEXTURE_2D, tx[i].id);
+    }
+  glActiveTexture(GL_TEXTURE0+0);
+#ifndef EMSCRIPTEN
+  glClientActiveTexture(GL_TEXTURE0+0);
+#endif
+
 }
 EXPORT void GameApi::TextureApi::unuse(TXID tx)
 {
