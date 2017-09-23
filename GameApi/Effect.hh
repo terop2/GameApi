@@ -1859,6 +1859,7 @@ class SurfaceIn3d
 {
 public:
   virtual ~SurfaceIn3d() { }
+  virtual void Prepare() { }
   virtual Point Index(float x, float y) const = 0;
   virtual Point2d Texture(float x, float y) const = 0;
   virtual float Attrib(float x, float y, int id) const=0;
@@ -5938,7 +5939,7 @@ class SampleSurfaceIn3d : public SingleForwardFaceCollection, public TextureCoor
 {
 public:
   SampleSurfaceIn3d(const SurfaceIn3d &surf, int texture, int x, int y) : surf(surf), texture(texture), x(x), y(y) { }
-  void Prepare() { }
+  void Prepare() { const_cast<SurfaceIn3d&>(surf).Prepare(); }
   virtual int Texture(int face) const { return texture; }
   virtual Point2d TexCoord(int face, int point) const
   {

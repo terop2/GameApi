@@ -86,7 +86,7 @@ EXPORT GameApi::PT GameApi::PointApi::spherical_coords(PT pos)
   float z = pt->z;
   float r = sqrt(x*x+y*y+z*z);
   float alfa = acos(z/r);
-  float beta = atan(y/x);
+  float beta = atan2(y,x);
   //std::cout << "Spherical" << x << " " << y << " " << z << ":" << r << " " << alfa << " " << beta << std::endl; 
   return add_point(e, alfa, beta, r);
 }
