@@ -1203,6 +1203,8 @@ public:
   IMPORT ML bind_inst_fade(P p, PTS pts, MT mat, bool flip, float start_time, float end_time);
   IMPORT ML render_instanced_ml(EveryApi &ev, P p, PTS pts);
   IMPORT ML render_instanced_ml_fade(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time);
+  IMPORT ML render_instanced_ml_texture(EveryApi &ev, P p, PTS pts, std::vector<BM> vec);
+  IMPORT ML render_instanced_ml_fade_texture(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time, std::vector<BM> vec);
   IMPORT ML render_instanced2_ml(EveryApi &ev, VA va, PTA pta);
   IMPORT ML render_instanced2_ml_fade(EveryApi &ev, VA va, PTA pta, bool flip, float start_time, float end_time);
 
@@ -2241,6 +2243,7 @@ public:
   IMPORT void render_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh, int hide_n = -1); // fast
   IMPORT ML render_vertex_array_ml(EveryApi &ev, VA va);
   IMPORT ML render_vertex_array_ml2(EveryApi &ev, P va);
+  IMPORT ML render_vertex_array_ml2_texture(EveryApi &ev, P va, std::vector<BM> vec);
   IMPORT ML render_dynamic_ml(EveryApi &ev, P p, DC dyn);
   IMPORT ML dist_field_mesh_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
