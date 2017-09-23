@@ -60,6 +60,10 @@ EXPORT GameApi::SH GameApi::ShaderApi::texture_array_shader()
 {
   return get_normal_shader_1("comb", "comb", "", "texture_arr:light:light", "texture_arr:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD TEXTURE_ARRAY COLOR_MIX","","");
 }
+EXPORT GameApi::SH GameApi::ShaderApi::texture_many_shader()
+{
+  return get_normal_shader_1("comb", "comb", "", "manytextures:light:light", "manytextures:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "MANYTEXTURES EX_TEXCOORD COLOR_MIX","","");
+}
 
 EXPORT GameApi::SH GameApi::ShaderApi::colour_shader()
 {

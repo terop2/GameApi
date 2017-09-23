@@ -13,9 +13,11 @@ class VertexArraySet
 {
 public:
   int texture_id;
+  std::vector<int> texture_many_ids;
   int bm_id;
   bool is_texture() { return texture_id!=-1; }
   bool is_array_texture() { return texture_id>= 700000; }
+  bool is_many_texture() { return texture_many_ids.size()!=0; }
   VertexArraySet() : texture_id(-1) { }
   VertexArraySet(const VertexArraySet &s)
   {

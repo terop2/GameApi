@@ -6221,6 +6221,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "TXID", "float" },
 			 { "ev", "", "1.0" },
 			 "MT", "materials_api", "textureid"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_many,
+			 "m_texture_many",
+			 { "ev", "vec", "mix" },
+			 { "EveryApi&", "[BM]", "float" },
+			 { "ev", "", "1.0" },
+			 "MT", "materials_api", "texture_many"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_arr,
 			 "m_texture_arr",
 			 { "ev", "vec", "sx", "sy", "mix" },
@@ -6967,6 +6973,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { },
 			 { },
 			 "P", "polygon_api", "empty"));
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::load_model,
 			 "load_model",
 			 { "filename", "obj_num" },
@@ -6979,6 +6986,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "std::string", "int" },
 			 { "test.obj", "30" },
 			 "P", "polygon_api", "load_model_all"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::save_model_ml,
 			 "save_model",
 			 { "poly", "filename" },
@@ -7071,6 +7079,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "PT", "float", "int", "int" },
 			 { "(0.0,0.0,0.0)",  "100.0", "30", "30" },
 			 "P", "polygon_api", "sphere"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sphere_map,
+			 "sphere_map",
+			 { "c_x", "c_y", "c_z", "fb", "start_radius", "end_radius", "start_values", "end_values", "sx", "sy" },
+			 { "float", "float", "float", "FB", "float", "float", "float", "float", "int", "int" },
+			 { "0.0", "0.0", "0.0", "", "200.0", "250.0", "0.0", "1.0", "30", "30" },
+			 "P", "polygon_api", "sphere_map"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::disc,
 			 "disc",
 			 { "ev", "numfaces", "center_x", "center_y", "center_z", "normal_x", "normal_y", "normal_z", "radius" },

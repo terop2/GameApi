@@ -458,9 +458,12 @@ public:
 	IMPORT Q get_tex_coord(TX tx, int id);
 	Q get_tex_coord_1(TX tx, int id);
 	IMPORT TXID prepare(TX tx);
+  IMPORT std::vector<TXID> prepare_many(EveryApi &ev, std::vector<BM> vec);
 	IMPORT void use(TXID tx, int i = 0);
+  IMPORT void use_many(std::vector<TXID> vec, int i=0);
 	IMPORT void unuse(TXID tx);
 	IMPORT VA bind(VA va, TXID tx);
+        IMPORT VA bind_many(VA va, std::vector<TXID> tx);
 	IMPORT VA bind_arr(VA va, TXA tx);
         IMPORT TXA prepare_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
         IMPORT BM to_bitmap(TXID id);
@@ -1177,6 +1180,7 @@ public:
   IMPORT MT skeletal(EveryApi &ev);
   IMPORT MT texture(EveryApi &ev, BM bm, float mix);
   IMPORT MT textureid(EveryApi &ev, TXID txid, float mix);
+  IMPORT MT texture_many(EveryApi&ev, std::vector<BM> vec, float mix);
   IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
   IMPORT MT snow(EveryApi &ev, MT nxt, unsigned int color1=0xffaaaaaa, unsigned int color2=0xffeeeeee, unsigned int color3=0xffffffff, float mix_val=0.5f);
   IMPORT MT flat(EveryApi &ev, MT nxt, unsigned int color1, unsigned int color2, unsigned int color3);
@@ -2059,6 +2063,7 @@ public:
 		    float start_z, float end_z,
 		    BM bm_front, BM bm_back, BM bm_left, BM bm_right, BM bm_top, BM bm_bottom);
 	IMPORT P sphere(PT center, float radius, int numfaces1, int numfaces2);
+  IMPORT P sphere_map(float c_x, float c_y, float c_z, FB fb, float start_radius, float end_radius, float start_values, float end_values, int sx, int sy);
 	IMPORT P cone(int numfaces, PT p1, PT p2, float rad1, float rad2);
   IMPORT P torus2(EveryApi &ev, int numfaces1, int numfacesw2, PT center, float radius1, float radius2);
   IMPORT P torus(int numfaces1, int numfaces2, PT center, V u_x, V u_y, float radius1, V uu_x, V uu_y, float radius2);
@@ -2259,6 +2264,7 @@ public:
   IMPORT ML wave_shader(EveryApi &ev, ML mainloop, float radius, float t_mult, float x_mult, float y_mult);
   IMPORT ML toon_shader(EveryApi &ev, ML mainloop);  
   IMPORT ML texture_shader(EveryApi &ev, ML mainloop, float mix);
+  IMPORT ML texture_many_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML skeletal_shader(EveryApi &ev, ML mainloop, std::vector<SA> vec);
   IMPORT void explode(VA va, PT pos, float dist);
@@ -3111,6 +3117,7 @@ public:
   US v_wave(US us);
   US v_toon(US us);
   US v_texture(US us);
+  US v_manytexture(US us);
   US v_texture_arr(US us);
   US v_colour(US us);
   US v_blur(US us); // dangerous operation
@@ -3134,6 +3141,7 @@ public:
   US f_light(US us);
   US f_toon(US us);
   US f_texture(US us);
+  US f_manytexture(US us);
   US f_texture_arr(US us);
   US f_colour(US us);
   US f_mix_color(US us, US us2, float val); // TODO
@@ -3165,6 +3173,7 @@ public:
 			 std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod = { -1 }, US v_c = { -1 }, US f_c = { -1 }, std::string v_defines="IN_NORMAL IN_POSITION IN_COLOR IN_TEXCOORD EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string v_shader="", std::string f_shader="");
   IMPORT SH texture_shader();
   IMPORT SH texture_array_shader();
+  IMPORT SH texture_many_shader();
   IMPORT SH colour_shader();
   IMPORT SH colour_texture_shader();
   IMPORT SH shader_choice(EveryApi &ev, int i);
