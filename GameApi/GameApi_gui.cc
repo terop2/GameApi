@@ -4512,7 +4512,6 @@ void onerror_cb(void *arg)
 }
 void onload_cb(void *arg, void *data, int datasize)
 {
-  std::cout << "url loading complete!" << std::endl;
     std::vector<unsigned char> buffer;
     unsigned char *dataptr = (unsigned char*)data;
     for(int i=0;i<datasize;i++) { buffer.push_back(dataptr[i]); }
@@ -4520,6 +4519,7 @@ void onload_cb(void *arg, void *data, int datasize)
     char *url = (char*)arg;
     std::string url_str(url);
     std::string url_only(striphomepage(url_str));
+    std::cout << "url loading complete! " << url_only << std::endl;
     
     load_url_buffers[url_only] = new std::vector<unsigned char>(buffer);
     async_pending_count--;
