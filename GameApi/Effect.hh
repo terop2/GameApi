@@ -1876,6 +1876,7 @@ class SurfaceIn3dImpl : public SurfaceIn3d
 {
 public:
   SurfaceIn3dImpl(SurfaceIn3d &next) : next(next) { }
+  virtual void Prepare() { next.Prepare(); }
   virtual Point Index(float x, float y) const { return next.Index(x,y); }
   virtual Point2d Texture(float x, float y) const { return next.Texture(x,y); }
   virtual float Attrib(float x, float y, int id) const { return next.Attrib(x,y,id); }

@@ -1,4 +1,4 @@
- 
+  
 #include "VertexArray.hh"
 
 //#define GL_GLEXT_PROTOTYPES

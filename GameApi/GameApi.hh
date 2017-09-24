@@ -2215,6 +2215,9 @@ public:
   IMPORT P memoize_all(P orig);
   IMPORT P persistent_cache(P orig, std::string filename);
 
+  IMPORT S s_spherical(float c_x, float c_y, float c_z, FB fb, float start_radius, float end_radius, float start_values, float end_values);
+  IMPORT P s_sample(S surf, int sx, int sy);
+
   IMPORT ID find_point_id(P p, int facenum, int pointnum); // save id's to ENV.
   IMPORT ID find_normal_id(P p, int facenum, int pointnum);
   IMPORT ID find_color_id(P p, int facenum, int pointnum);
@@ -3304,7 +3307,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
 	  : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-	    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e), blocker_api(e), vertex_anim_api(e), newplane_api(e),
+	    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e), blocker_api(e), vertex_anim_api(e), newplane_api(e), surface_api(e),
 
 	    env(e)
   { }
@@ -3365,6 +3368,7 @@ struct EveryApi
   BlockerApi blocker_api;
   VertexAnimApi vertex_anim_api;
   NewPlaneApi newplane_api;
+  SurfaceApi surface_api;
 private:
   Env &env;
   EveryApi(const EveryApi&);

@@ -843,6 +843,7 @@ struct EnvImpl
     }
   func.resize(0);
   func.shrink_to_fit();
+#if 0
   int s5 = surfaces.size();
   for(int i5=0;i5<s5;i5++)
     {
@@ -852,6 +853,7 @@ struct EnvImpl
     }  
   surfaces.resize(0);
   surfaces.shrink_to_fit();
+#endif
   delete event_infos;
   event_infos = 0;
 
@@ -976,6 +978,7 @@ GameApi::FA add_float_array(GameApi::Env &e, Array<int,float> *arr);
 GameApi::FD add_distance(GameApi::Env &e, DistanceRenderable *dist);
 GameApi::SP add_space(GameApi::Env &e, SpaceImpl i);
 GameApi::S add_surface(GameApi::Env &e, SurfaceImpl i);
+GameApi::S add_surface2(GameApi::Env &e, SurfaceIn3d *s);
 GameApi::BM add_bitmap(GameApi::Env &e, BitmapHandle *handle);
 GameApi::BM add_color_bitmap(GameApi::Env &e, Bitmap<Color> *bm);
 GameApi::BM add_color_bitmap2(GameApi::Env &e, Bitmap<Color> *bm);
@@ -1118,6 +1121,7 @@ VertexArraySet *find_vertex_array(GameApi::Env &e, GameApi::VA p);
 FaceCollection *find_facecoll(GameApi::Env &e, GameApi::P p);
 FunctionImpl *find_function(GameApi::Env &e, GameApi::F f);
 SurfaceImpl *find_surface(GameApi::Env &e, GameApi::S f);
+SurfaceIn3d *find_surface2(GameApi::Env &e, GameApi::S f);
 AnimImpl find_anim(GameApi::Env &e, GameApi::IS i);
 Bitmap<Color> *find_color_bitmap(BitmapHandle *handle, int bbm_choose=-1);
 Bitmap<Pos> *find_pos_bitmap(BitmapHandle *handle, int bbm_choose=-1);

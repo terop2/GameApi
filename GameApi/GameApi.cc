@@ -790,6 +790,12 @@ GameApi::SP add_space(GameApi::Env &e, SpaceImpl i)
   //sp.type = 0;
   return sp;
 }
+GameApi::S add_surface2(GameApi::Env &e, SurfaceIn3d *s)
+{
+  SurfaceImpl i;
+  i.surf = s;
+  return add_surface(e,i);
+}
 GameApi::S add_surface(GameApi::Env &e, SurfaceImpl i)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -2007,6 +2013,10 @@ FunctionImpl *find_function(GameApi::Env &e, GameApi::F f)
   return handle;
 }
 
+SurfaceIn3d *find_surface2(GameApi::Env &e, GameApi::S s)
+{
+  return find_surface(e,s)->surf;
+}
 SurfaceImpl *find_surface(GameApi::Env &e, GameApi::S f)
 {
   EnvImpl *ee = ::EnvImpl::Environment(&e);
