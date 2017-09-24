@@ -551,10 +551,16 @@ public:
     bool failed = false;
     if (vec==(std::vector<unsigned char>*)-1) {
       std::cout << "URL " << url << " loading failed!" << std::endl;
+#ifdef EMSCRIPTEN
+      stacktrace();
+#endif
       failed = true;
     }
     if (vec==0) {
       std::cout << "URL " << url << " loading timeouted!" << std::endl;
+#ifdef EMSCRIPTEN
+      stacktrace();
+#endif
       failed = true;
     }
     if (failed)
