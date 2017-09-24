@@ -555,19 +555,14 @@ public:
     return cbm->Map(x,y); }
   void LoadFinished(std::vector<unsigned char> *vec)
   {
+    if (loadfinished) return;
     bool failed = false;
     if (vec==(std::vector<unsigned char>*)-1) {
       std::cout << "URL " << url << " loading failed!" << std::endl;
-#ifdef EMSCRIPTEN
-      stackTrace();
-#endif
       failed = true;
     }
     if (vec==0) {
       std::cout << "URL " << url << " loading timeouted!" << std::endl;
-#ifdef EMSCRIPTEN
-      stackTrace();
-#endif
       failed = true;
     }
     if (failed)
