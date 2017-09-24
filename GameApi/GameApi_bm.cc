@@ -610,9 +610,9 @@ public:
     }
     cbm = new BitmapFromBuffer(img);
 #else
-    url = "load_url.php?url=" + url;
+    std::string url2 = "load_url.php?url=" + url;
 
-    std::vector<unsigned char> *vec = load_url_buffers[url];
+    std::vector<unsigned char> *vec = load_url_buffers[url2];
     LoadFinished(vec);
 #endif
     
