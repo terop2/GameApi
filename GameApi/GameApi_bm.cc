@@ -682,11 +682,58 @@ private:
   Bitmap<Color> *cbm;
 };
 
+std::vector<std::pair<std::string,int> > bitmap_prepare_cache_data;
+int bitmap_find_data(std::string data) {
+  int s = bitmap_prepare_cache_data.size();
+  for(int i=0;i<s;i++)
+    {
+      std::pair<std::string,int> p = bitmap_prepare_cache_data[i];
+      if (p.first==data) return p.second;
+    }
+  return -1;
+}
+
+class BitmapPrepareCache : public Bitmap<Color>
+{
+public:
+  BitmapPrepareCache(GameApi::Env &e, std::string id, Bitmap<Color> *bm) : e(e), id(id), bm(bm) { }
+  void Prepare()
+  {
+    if (bitmap_find_data(id)!=-1) {
+      return;
+    }
+    bm->Prepare();
+    GameApi::BM num = add_color_bitmap2(e, bm);
+    bitmap_prepare_cache_data.push_back(std::make_pair(id,num.id));
+  }
+  Bitmap<Color> *get_bm() const
+  {
+    int num = bitmap_find_data(id);
+    if (num==-1) { const_cast<BitmapPrepareCache*>(this)->Prepare(); num=bitmap_find_data(id); }
+    GameApi::BM bm2;
+    bm2.id = num;
+    BitmapHandle *handle = find_bitmap(e, bm2);
+    Bitmap<Color> *bbm = find_color_bitmap(handle);
+    return bbm;
+  }
+  virtual int SizeX() const { return get_bm()->SizeX(); }
+  virtual int SizeY() const { return get_bm()->SizeY(); }
+  virtual Color Map(int x, int y) const
+  {
+    return get_bm()->Map(x,y);
+  }
+private:
+  GameApi::Env &e;
+  std::string id;
+  Bitmap<Color> *bm;
+};
+
 EXPORT GameApi::BM GameApi::BitmapApi::loadbitmapfromurl(std::string url)
 {
   Bitmap<Color> *bm = new LoadBitmapFromUrl(url);
+  Bitmap<Color> *bbm = new BitmapPrepareCache(e, url, bm);
   BitmapColorHandle *handle = new BitmapColorHandle;
-  handle->bm = bm;
+  handle->bm = bbm;
   BM bm2 = add_bitmap(e, handle);
   return bm2;
 }
