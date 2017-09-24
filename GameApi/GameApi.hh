@@ -534,6 +534,7 @@ public:
         IMPORT BM dup_x(BM orig);
 	IMPORT BM flip_x(BM orig);
 	IMPORT BM flip_y(BM orig);
+  IMPORT BM rot90(BM orig);
         IMPORT BM alpha_color(BM orig, unsigned int color_key);
   IMPORT BM gradient(PT pos_1, PT pos_2, unsigned int color_1, unsigned int color_2, int sx, int sy);
   IMPORT BM radial_gradient(int sx, int sy, PT pos, float r1, float r2, unsigned int color_1, unsigned int color_2);

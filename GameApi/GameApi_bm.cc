@@ -1242,6 +1242,21 @@ EXPORT GameApi::IS GameApi::AnimApi::single(int val, float duration)
   return is;
 }
 
+class Rot90Bitmap : public Bitmap<Color>
+{
+public:
+  Rot90Bitmap(Bitmap<Color> &bm) : bm(bm) { }
+  void Prepare() { bm.Prepare(); }
+  virtual int SizeX() const { return bm.SizeY(); }
+  virtual int SizeY() const { return bm.SizeX(); }
+  virtual Color Map(int x, int y) const
+  {
+    return bm.Map(y,x);
+  }
+private:
+  Bitmap<Color> &bm;
+};
+
 class FlipBitmap : public Bitmap<Color>
 {
 public:
@@ -1311,6 +1326,15 @@ EXPORT GameApi::BM GameApi::BitmapApi::flip_y(BM orig)
   BitmapColorHandle *chandle2 = new BitmapColorHandle;
   chandle2->bm = rep;
   return add_bitmap(e,chandle2);
+}
+EXPORT GameApi::BM GameApi::BitmapApi::rot90(BM orig)
+{
+  BitmapHandle *handle = find_bitmap(e, orig);
+  BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
+  Bitmap<Color> *rep = new Rot90Bitmap(*chandle->bm);
+  BitmapColorHandle *chandle2 = new BitmapColorHandle;
+  chandle2->bm = rep;
+  return add_bitmap(e, chandle2);
 }
 EXPORT GameApi::BM GameApi::BitmapApi::repeat_bitmap(BM orig, int xcount, int ycount)
 {
