@@ -6568,7 +6568,8 @@ private:
 class BitmapTextureSurfaceIn3d : public SurfaceIn3dImpl
 {
 public:
-  BitmapTextureSurfaceIn3d(SurfaceIn3d &surf, Bitmap<class Color> &tex) : SurfaceIn3dImpl(surf), tex(tex) { tex.Prepare(); }
+  BitmapTextureSurfaceIn3d(SurfaceIn3d &surf, Bitmap<class Color> &tex) : SurfaceIn3dImpl(surf), tex(tex) { }
+  virtual void Prepare() { SurfaceIn3dImpl::Prepare(); tex.Prepare(); }
   virtual unsigned int Color(float x, float y) const 
   {
     if (x<0.0 || y<0.0) { return 0x00000000; }
@@ -6578,8 +6579,10 @@ public:
     y/=sy;
     x*=tex.SizeX();
     y*=tex.SizeY();
-    std::cout << "Color:" << x << " " << y << std::endl;
-    return tex.Map(x,y).Pixel();
+    //std::cout << "Color:" << x << " " << y << std::endl;
+    unsigned int cl = tex.Map(x,y).Pixel(); 
+    //std::cout << "Color: " << cl << std::endl;
+    return cl;
   }
 
 private:

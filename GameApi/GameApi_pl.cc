@@ -7355,6 +7355,21 @@ private:
   float start_values, end_values;
 };
 
+GameApi::S GameApi::PolygonApi::s_spherical(float c_x, float c_y, float c_z, FB fb, float start_radius, float end_radius, float start_values, float end_values)
+{
+  Bitmap<float> *fb2 = find_float_bitmap(e, fb)->bitmap;
+  SurfaceIn3d *surf = new SphereMap2(c_x,c_y,c_z, *fb2, start_radius, end_radius, start_values, end_values);
+  SurfaceImpl impl;
+  impl.surf = surf;
+  return add_surface(e, impl);
+}
+GameApi::P GameApi::PolygonApi::s_sample(S surf, int sx, int sy)
+{
+  SurfaceImpl *surf2 = find_surface(e, surf);
+  SurfaceIn3d *surf3 = surf2->surf;
+  return add_polygon2(e, new SampleSurfaceIn3d(*surf3, 0, sx,sy),1);
+}
+
 GameApi::P GameApi::PolygonApi::sphere_map(float c_x, float c_y, float c_z, FB fb, float start_radius, float end_radius, float start_values, float end_values, int sx, int sy)
 {
   Bitmap<float> *fb2 = find_float_bitmap(e, fb)->bitmap;

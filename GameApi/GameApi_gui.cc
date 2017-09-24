@@ -4189,6 +4189,7 @@ MACRO(GameApi::DC)
 MACRO(GameApi::PN)
 MACRO(GameApi::PF)
 MACRO(GameApi::FF)
+MACRO(GameApi::S)
 #undef MACRO
 
 
@@ -8574,6 +8575,24 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "", "0.5", "0.5", "0.0" },
 			 "CBM", "cont_bitmap_api", "rotate"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::s_spherical,
+			 "s_spherical",
+			 { "c_x", "c_y", "c_z", "fb", "start_radius", "end_radius", "start_values", "end_values" },
+			 { "float", "float", "float", "FB", "float", "float", "float", "float" },
+			 { "0.0", "0.0", "0.0", "", "300", "350", "0.0", "1.0" },
+			 "S", "polygon_api", "s_spherical"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::surface_api, &GameApi::SurfaceApi::texture,
+			 "s_bitmap",
+			 { "orig", "texture" },
+			 { "S", "BM" },
+			 { "", "" },
+			 "S", "surface_api", "texture"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::s_sample,
+			 "s_sample",
+			 { "surf", "sx", "sy" },
+			 { "S", "int", "int" },
+			 { "", "300", "300" },
+			 "P", "polygon_api", "s_sample"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::C_bitmap,
 			 "cfb_c",
 			 { "sx", "sy", "C" },
