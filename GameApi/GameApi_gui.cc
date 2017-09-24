@@ -8464,6 +8464,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BM" },
 			 { "" },
 			 "BM", "bitmap_api", "flip_y"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::rot90,
+			 "rot90",
+			 { "orig" },
+			 { "BM" },
+			 { "" },
+			 "BM", "bitmap_api", "rot90"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::Indicator,
 			 "indicator",
 			 { "sx", "sy", "g_ind" },
