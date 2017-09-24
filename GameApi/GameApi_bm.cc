@@ -531,6 +531,13 @@ std::vector<unsigned char> load_from_url(std::string url)
 }
 extern std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
 
+void stackTrace()
+{
+#ifdef EMSCRIPTEN
+  emscripten_run_script("stackTrace()");
+#endif
+}
+
 class LoadBitmapFromUrl : public Bitmap<Color>
 {
 public:
