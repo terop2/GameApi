@@ -3115,3 +3115,17 @@ private:
 
 #endif
 
+class MultiplicationTableI : public Bitmap<int>
+{
+public:
+  int SizeX() const { return 65535; }
+  int SizeY() const { return 65535; }
+  int Map(int x, int y) const { return x*y; }
+};
+class MultiplicationTableF : public ContinuousBitmap<float>
+{
+public:
+  float SizeX() const { return 65535.0; }
+  float SizeY() const { return 65535.0; }
+  float Map(float x, float y) const { return x*y; }
+};

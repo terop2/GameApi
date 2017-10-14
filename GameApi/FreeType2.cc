@@ -17,37 +17,61 @@ struct GlyphData
   FT_Face face;
 };
 
+std::string glyph_key(std::string ttf_filename, int sx, int sy)
+{
+  std::stringstream ss;
+  ss << ttf_filename << "@" << sx << "," << sy;
+  return ss.str();
+}
+
+
 FontInterfaceImpl::FontInterfaceImpl(GameApi::Env &e, void *priv_, std::string ttf_filename, std::string homepage, int sx, int sy) : e(e), ttf_filename(ttf_filename), homepage(homepage), sx(sx), sy(sy), priv_(priv_), mutex(PTHREAD_MUTEX_INITIALIZER)
 { 
   priv = 0;
+  key = glyph_key(ttf_filename, sx,sy);
 }
+
+std::map<std::string,std::map<long,GlyphData*>*> global_glyph_data;
+
+
 
 int FontInterfaceImpl::Top(long idx) const {
   const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
-  return glyph_data[idx]->top;
+  return global_glyph_data[key]->operator[](idx)->top;
 }
 int FontInterfaceImpl::SizeX(long idx) const {
   const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
-  return glyph_data[idx]->sx;
+  return global_glyph_data[key]->operator[](idx)->sx;
 }
 int FontInterfaceImpl::SizeY(long idx) const {
   const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
-  return glyph_data[idx]->sy;
+  return global_glyph_data[key]->operator[](idx)->sy;
 }
 int FontInterfaceImpl::Map(long idx, int x, int y) const
 {
   if (x<0 || x>=SizeX(idx) || y<0 || y>=SizeY(idx))
     return 0;
   const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
-  int sx = SizeX(idx);
-  return glyph_data[idx]->bitmap_data[x+y*sx];
+  int ssx = SizeX(idx);
+  return global_glyph_data[key]->operator[](idx)->bitmap_data[x+y*ssx];
 }
+
+std::map<std::string, unsigned char *> loaded_maps;
+std::map<std::string, int> loaded_sizes;
+
+
 
 void FontInterfaceImpl::gen_glyph_data(long idx)
 {
   //std::cout << "try gen_glyph_data:" << idx << std::endl;
+  //std::string key = glyph_key(ttf_filename,sx,sy);
   pthread_mutex_lock(&mutex);
-  GlyphData *data = glyph_data[idx];
+  std::map<long, GlyphData*> *mymap = global_glyph_data[key];
+  if (!mymap) {
+    global_glyph_data[key] = new std::map<long,GlyphData*>();
+    mymap = global_glyph_data[key];
+  }
+  GlyphData *data = mymap?mymap->operator[](idx):0; //glyph_data[idx];
   if (data) { 
     pthread_mutex_unlock(&mutex);
     return; }
@@ -55,15 +79,13 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
 
   if (!data) {
     data = new GlyphData;
-    glyph_data[idx] = data;
+    global_glyph_data[key]->operator[](idx) = data;
   }
 
-  static std::map<std::string, unsigned char *> loaded_maps;
-  static std::map<std::string, int> loaded_sizes;
   unsigned char *ptr2 = loaded_maps[ttf_filename];
   int size = loaded_sizes[ttf_filename];
   if (!ptr2) {
-  
+    std::cout << "loading font: " << ttf_filename << std::endl;
 #ifndef EMSCRIPTEN
   e.async_load_url(ttf_filename, homepage);
 #endif
