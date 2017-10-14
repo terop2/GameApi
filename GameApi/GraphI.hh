@@ -906,6 +906,7 @@ private:
 class FontInterface
 {
 public:
+  virtual void Prepare() { }
   virtual int Top(long idx) const=0;
   virtual int SizeX(long idx) const=0;
   virtual int SizeY(long idx) const=0;

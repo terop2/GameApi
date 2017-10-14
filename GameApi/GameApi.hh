@@ -363,6 +363,7 @@ public:
   ML scale_2d_screen(EveryApi &ev, ML orig, float sx, float sy);
   ML keyboard_toggle(ML m1, ML m2, int key);
   ML touch_rotate(EveryApi &ev, ML ml, bool leftright, bool topdown, float x_speed, float y_speed);
+  P load_P_script(EveryApi &ev, std::string url);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);
@@ -545,6 +546,8 @@ public:
   IMPORT BM addsubrects(BM orig); // use subbitmap with orig bitmap.
   IMPORT void savebitmap(BM orig, std::string filename, bool alpha=false);
   IMPORT ML savebitmap_ml(EveryApi &ev, BM bm, std::string filename, bool alpha, float time);
+  IMPORT void save_png(BM bm, std::string filename);
+  IMPORT ML save_png_ml(EveryApi &ev, BM bm, std::string filename);
   IMPORT BM mandelbrot(bool julia,
 		       float start_x, float end_x, // [-2..1]
 		       float start_y, float end_y, // [-1,1]
@@ -2082,6 +2085,7 @@ public:
   IMPORT P linear_span(EveryApi &ev, LI li, float dx, float dy, float dz, int num_steps);
   IMPORT P cut_faces(P p, O o, CT cutter);
   IMPORT P tri_to_quad(P p);
+  IMPORT P curve_to_poly(C c, float start_x, float end_x, float start_y, float end_y, float start_angle, float end_angle, int numinstances);
 
   IMPORT P split_p(P p, int start_face, int end_face);
   IMPORT P subpoly_change(P p, P p2, O choose);

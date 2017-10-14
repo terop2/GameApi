@@ -7379,3 +7379,50 @@ GameApi::P GameApi::PolygonApi::sphere_map(float c_x, float c_y, float c_z, FB f
   FaceCollection *coll = new SampleSurfaceIn3d(*surf, 0, sx,sy);
   return add_polygon2(e, coll, 1);
 }
+
+class CurveToPoly : public FaceCollection
+{
+public:
+  CurveToPoly(Curve<Point> *curve, float start_x, float end_x, float start_y, float end_y, float start_angle, float end_angle, int numinstances) : curve(curve), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_angle(start_angle), end_angle(end_angle), numinstances(numinstances) {}
+  void Prepare() { }
+  int NumFaces() const { return numinstances; }
+  int NumPoints(int face) const { return 4; }
+  Point FacePoint(int face, int point) const
+  {
+    float p = float(face)/numinstances;
+    Point2d p11 = { start_x, start_y };
+    Point2d p21 = { end_x, start_y };
+    Point2d p12 = { start_x, end_y };
+    Point2d p22 = { end_x, end_y };
+    float angle = start_angle+p*(end_angle-start_angle);
+    Point2d rot_p11 = { float(cos(angle)*p11.x) -float(sin(angle)*p11.y), float(sin(angle)*p11.x)+float(cos(angle)*p11.y) };
+    Point2d rot_p12 = { float(cos(angle)*p12.x -sin(angle)*p12.y), float(sin(angle)*p12.x+cos(angle)*p12.y) };
+    Point2d rot_p21 = { float(cos(angle)*p21.x -sin(angle)*p21.y), float(sin(angle)*p21.x+cos(angle)*p21.y) };
+    Point2d rot_p22 = { float(cos(angle)*p22.x -sin(angle)*p22.y), float(sin(angle)*p22.x+cos(angle)*p22.y) };
+    Point curve_pos = curve->Index(p*curve->Size());
+    switch(point) {
+    case 0: return curve_pos+Vector(rot_p11.x, rot_p11.y, 0.0);
+    case 1: return curve_pos+Vector(rot_p12.x, rot_p12.y, 0.0);
+    case 2: return curve_pos+Vector(rot_p22.x, rot_p22.y, 0.0);
+    case 3: return curve_pos+Vector(rot_p21.x, rot_p21.y, 0.0);
+    };
+  }
+  Vector PointNormal(int face, int point) const { return Point(0.0,0.0,1.0); }
+  float Attrib(int face, int point, int id) const { return 0.0; }
+  int AttribI(int face, int point, int id) const { return 0; }
+  unsigned int Color(int face, int point) const { return 0xffffffff; }
+  Point2d TexCoord(int face, int point) const { Point2d p; p.x = 0.0; p.y = 0.0; return p; }
+  float TexCoord3(int face, int point) const { return 0.0; }
+private:
+  Curve<Point> *curve;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_angle, end_angle;
+  int numinstances;
+};
+
+GameApi::P GameApi::PolygonApi::curve_to_poly(C c, float start_x, float end_x, float start_y, float end_y, float start_angle, float end_angle, int numinstances)
+{
+  Curve<Point> *curve = find_curve(e, c);
+  return add_polygon2(e, new CurveToPoly(curve, start_x, end_x, start_y, end_y, start_angle, end_angle, numinstances),1);
+}

@@ -60,8 +60,9 @@
 #include "Parser.hh"
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image.h"
-
+#include "stb_image_write.h"
 
 //#pragma comment (lib, "glew32s.lib") 
 
@@ -1477,5 +1478,46 @@ BufferRef CopyFromSDLSurface(SDL_Surface *surf)
   SDL_UnlockSurface(surf);
   return buf;
 }
+struct savecontext 
+{
+  std::ofstream *stream;
+};
+void save_write_func(void *context, void *data, int size)
+{
+  savecontext *ctx = (savecontext*)context;
+  (*ctx->stream).write((const char*)data, size);
+}
 
+
+void SaveImage(BufferRef ref, std::string filename)
+{
+  int x = ref.width;
+  int y = ref.height;
+
+  for(int yy=0;yy<y;yy++)
+    for(int xx=0;xx<x;xx++)
+      {
+	unsigned int val = ref.buffer[xx+yy*ref.ydelta];
+	unsigned int a = val &0xff000000;
+	unsigned int r = val &0xff0000;
+	unsigned int g = val &0x00ff00;
+	unsigned int b = val &0x0000ff;
+	r>>=16;
+	g>>=8;
+
+	b<<=16;
+	g<<=8;
+	val = a+r+g+b;  
+	ref.buffer[xx+yy*ref.ydelta] = val;
+      }
+
+
+  savecontext ctx;
+  ctx.stream = new std::ofstream(filename.c_str(),ios_base::out|ios_base::binary);
+  stbi_write_png_to_func(&save_write_func, &ctx, ref.width, ref.height,4,ref.buffer,ref.ydelta*sizeof(unsigned int));
+
+  ctx.stream->close();
+  delete ctx.stream;
+  ctx.stream = 0;
+}
 

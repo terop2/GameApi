@@ -4534,7 +4534,8 @@ ASyncData async_data[] = { { "font_api", "newfont", 0 },
 			   { "font_api", "load_font", 0 },
 			   { "mainloop_api", "load_song", 2 },
 			   { "polygon_api", "p_url", 1 },
-			   { "mainloop_api", "fps_display", 2 }
+			   { "mainloop_api", "fps_display", 2 },
+			   { "mainloop_api", "load_P_script", 1 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -4811,11 +4812,13 @@ std::pair<int,std::string> GameApi::execute_codegen(GameApi::Env &env, GameApi::
   link_api_items(vec, all_functions());
   int val = execute_api(env, ev, vec, vecvec, vec.size()-1, e);
   CodeGenLine last = vec[vec.size()-1];
-  if (last.return_type=="RUN") {
-    return std::make_pair(val,"RUN");
-  }
+  if (last.return_type=="BLK") return std::make_pair(val,"OK");
+  return std::make_pair(val,last.return_type);
+  //if (last.return_type=="RUN") {
+  //  return std::make_pair(val,"RUN");
+  //}
 
-  return std::make_pair(val, "OK");
+  // return std::make_pair(val, "OK");
 }
 
 template<class T>
@@ -6411,6 +6414,12 @@ std::vector<GameApiItem*> blocker_functions()
 {
 
   std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_P_script,
+			 "p_script",
+			 { "ev", "url" },
+			 { "EveryApi&", "std::string" },
+			 { "ev", "http://tpgames.org/ufo.mp" },
+			 "P", "mainloop_api", "load_P_script"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::skybox,
 			 "skybox_ml",
@@ -7122,6 +7131,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "LI", "float", "int" },
 			 { "ev", "", "10.0", "15" },
 			 "P", "polygon_api", "line_to_cone"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::curve_to_poly,
+			 "curve_to_poly",
+			 { "curve", "start_x", "end_x", "start_y", "end_y", "start_angle", "end_angle", "numinstances" },
+			 { "C", "float", "float", "float", "float", "float", "float", "int" },
+			 { "", "-4.0", "4.0", "-2.0", "2.0", "1.2", "7.48318", "120" },
+			 "P", "polygon_api", "curve_to_poly"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::static_instancing,
 			 "static_instancing",
 			 { "ev", "obj", "pos" },
@@ -8335,6 +8350,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "std::string" },
 			 { "test.png" },
 			 "BM", "bitmap_api", "loadbitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::save_png_ml,
+			 "save_png",
+			 { "ev", "bm", "filename" },
+			 { "EveryApi&", "BM", "std::string" },
+			 { "ev", "", "test.png" },
+			 "ML", "bitmap_api", "save_png_ml"));
 #if 1
   // doesnt work in emscripten, all solutions seem to fail miserably,
   // with emscripten_async_wget didn't work fine.

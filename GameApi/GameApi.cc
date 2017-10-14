@@ -9726,6 +9726,46 @@ GameApi::SD GameApi::FontApi::draw_text_string_sd(std::vector<GI> glyphs, std::s
     }
   return add_string_display(e, new StringDisplayFromGlyphs(vec, str, gap_x, empty_line_height));
 }
+
+extern std::vector<std::pair<std::string,int> > bitmap_prepare_cache_data;
+int bitmap_find_data(std::string data);
+
+class BitmapPrepareCache2 : public Bitmap<Color>
+{
+public:
+  BitmapPrepareCache2(GameApi::Env &e, std::string id, Bitmap<Color> *bm) : e(e), id(id), bm(bm) { }
+  void Prepare()
+  {
+    if (bitmap_find_data(id)!=-1) {
+      return;
+    }
+    bm->Prepare();
+    GameApi::BM num = add_color_bitmap2(e, bm);
+    bitmap_prepare_cache_data.push_back(std::make_pair(id,num.id));
+  }
+  Bitmap<Color> *get_bm() const
+  {
+    int num = bitmap_find_data(id);
+    if (num==-1) { const_cast<BitmapPrepareCache2*>(this)->Prepare(); num=bitmap_find_data(id); }
+    GameApi::BM bm2;
+    bm2.id = num;
+    BitmapHandle *handle = find_bitmap(e, bm2);
+    Bitmap<Color> *bbm = find_color_bitmap(handle);
+    return bbm;
+  }
+  virtual int SizeX() const { return get_bm()->SizeX(); }
+  virtual int SizeY() const { return get_bm()->SizeY(); }
+  virtual Color Map(int x, int y) const
+  {
+    return get_bm()->Map(x,y);
+  }
+private:
+  GameApi::Env &e;
+  std::string id;
+  Bitmap<Color> *bm;
+};
+
+
 GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_gap, int empty_line_height)
 {
   std::cout << "draw_text_string: " << str << std::endl;
@@ -9738,8 +9778,17 @@ GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_g
     }
   SD sd = draw_text_string_sd(glyphs, str, x_gap, empty_line_height);
   BM bm = string_display_to_bitmap(sd,0);
+  //BitmapHandle *bbm = find_bitmap(e, bm);
+  //Bitmap<Color> *bbm1 = find_color_bitmap(bbm);
+  //Bitmap<Color> *bbm2 = new BitmapPrepareCache2(e, str, bbm1);
+  //BitmapColorHandle *handle = new BitmapColorHandle;
+  //handle->bm = bbm2;
+  //BM bm2 = add_bitmap(e,handle);
+
   return bm;
 }
+
+
 extern std::string gameapi_homepageurl;
 GameApi::FI GameApi::FontApi::load_font(std::string ttf_filename, int sx, int sy)
 {
@@ -11198,4 +11247,53 @@ GameApi::ML GameApi::MainLoopApi::fps_display(EveryApi &ev, ML ml, std::string f
   ML I53=ev.sprite_api.turn_to_2d(ev,I52,0.0,0.0,800.0,600.0);
   ML I54=ev.mainloop_api.array_ml(std::vector<ML>{ml,I53});
   return I54;
+}
+
+class P_script : public FaceCollection
+{
+public:
+  P_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url) : e(e), ev(ev), url(url), coll(0) {}
+  void Prepare() { 
+    std::string homepage = gameapi_homepageurl;
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+    std::string code(vec->begin(), vec->end());
+    GameApi::ExecuteEnv e2;
+    std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
+    if (p.second=="P") {
+      GameApi::P pp;
+      pp.id = p.first;
+      p_data = pp;
+      coll = find_facecoll(e,p_data);
+      coll->Prepare();
+      return;
+    }
+    GameApi::P pp;
+    pp.id = -1;
+    p_data = pp;
+    coll = 0;
+  }
+  virtual int NumFaces() const { if (!coll) return 0; return coll->NumFaces(); }
+  virtual int NumPoints(int face) const { if (!coll) return 3; return coll->NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const { if (!coll) return Point(0.0,0.0,0.0); return coll->FacePoint(face,point); }
+  virtual Vector PointNormal(int face, int point) const { if (!coll) return Vector(0.0,0.0,0.0); return coll->PointNormal(face,point); }
+  virtual float Attrib(int face, int point, int id) const { if (!coll) return 0.0; return coll->Attrib(face,point,id); }
+  virtual int AttribI(int face, int point, int id) const { if (!coll) return 0; return coll->AttribI(face,point,id); }
+  virtual unsigned int Color(int face, int point) const { if (!coll) return 0xffffffff; return coll->Color(face,point); }
+  virtual Point2d TexCoord(int face, int point) const { if (!coll) { Point2d p; p.x = 0.0; p.y = 0.0; return p; } return coll->TexCoord(face,point); }
+  virtual float TexCoord3(int face, int point) const { if (!coll) return 0.0; return coll->TexCoord3(face,point); }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  std::string url;
+  GameApi::P p_data;
+  FaceCollection *coll;
+};
+
+GameApi::P GameApi::MainLoopApi::load_P_script(EveryApi &ev, std::string url)
+{
+  return add_polygon2(e, new P_script(e,ev,url));
 }

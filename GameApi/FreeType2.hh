@@ -25,4 +25,5 @@ private:
   int state;
   long old_idx;
   mutable pthread_mutex_t mutex;
+  std::string key;
 };

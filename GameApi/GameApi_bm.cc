@@ -3280,3 +3280,39 @@ GameApi::BM GameApi::BitmapApi::Indicator(int sx, int sy, int g_ind)
   handle->bm = bm;
   return add_bitmap(e, handle);
 }
+
+void SaveImage(BufferRef ref, std::string filename);
+void GameApi::BitmapApi::save_png(BM bm, std::string filename)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *bbm = find_color_bitmap(handle);
+  BufferFromBitmap buf(*bbm);
+  buf.Gen();
+  BufferRef ref = buf.Buffer();
+  SaveImage(ref, filename);
+}
+class SavePngML : public MainLoopItem
+{
+public:
+  SavePngML(GameApi::EveryApi &ev, GameApi::BM bm, std::string filename) : ev(ev), bm(bm), filename(filename) { 
+    firsttime = true;
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) { 
+      ev.bitmap_api.save_png(bm,filename);
+      firsttime = false;
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual int shader_id() { return -1; }
+private:
+  GameApi::EveryApi &ev;
+  GameApi::BM bm;
+  std::string filename;
+  bool firsttime;
+};
+  GameApi::ML GameApi::BitmapApi::save_png_ml(GameApi::EveryApi &ev, BM bm, std::string filename)
+{
+  return add_main_loop(e, new SavePngML(ev, bm, filename));
+}
