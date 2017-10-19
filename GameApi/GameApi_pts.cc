@@ -1592,3 +1592,4 @@ GameApi::ML GameApi::PointsApi::collision_collect(ML mainloop)
   MainLoopItem *next = find_main_loop(e, mainloop);
   return add_main_loop(e, new CollisionCollect(next));
 }
+

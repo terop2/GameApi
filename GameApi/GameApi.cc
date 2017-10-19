@@ -11297,3 +11297,60 @@ GameApi::P GameApi::MainLoopApi::load_P_script(EveryApi &ev, std::string url)
 {
   return add_polygon2(e, new P_script(e,ev,url));
 }
+
+class ML_script : public MainLoopItem
+{
+public:
+  ML_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url) : e(e), ev(ev), url(url), main2(0) { firsttime = true; }
+  virtual void execute(MainLoopEnv &e3)
+  {
+    if (firsttime) {
+      std::string homepage = gameapi_homepageurl;
+#ifndef EMSCRIPTEN
+      e.async_load_url(url, homepage);
+#endif
+      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+      std::string code(vec->begin(), vec->end());
+      GameApi::ExecuteEnv e2;
+      std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
+      if (p.second=="ML") {
+	GameApi::ML pp;
+	pp.id = p.first;
+	main2 = find_main_loop(e,pp);
+	main2->execute(e3);
+	firsttime = false;
+	return;
+      }
+      //GameApi::P pp;
+      //pp.id = -1;
+      main2 = 0;
+    }
+    if (main2)
+      main2->execute(e3);
+  }
+
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (main2) {
+      main2->handle_event(e);
+    }
+  }
+  virtual int shader_id() { 
+    if (main2) {
+      return main2->shader_id();
+    }
+    return -1;
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  std::string url;
+  bool firsttime;
+  MainLoopItem *main2;
+};
+
+GameApi::ML GameApi::MainLoopApi::load_ML_script(EveryApi &ev, std::string url)
+{
+  return add_main_loop(e, new ML_script(e,ev,url));
+}
