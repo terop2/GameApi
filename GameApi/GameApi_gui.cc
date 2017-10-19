@@ -4535,7 +4535,8 @@ ASyncData async_data[] = { { "font_api", "newfont", 0 },
 			   { "mainloop_api", "load_song", 2 },
 			   { "polygon_api", "p_url", 1 },
 			   { "mainloop_api", "fps_display", 2 },
-			   { "mainloop_api", "load_P_script", 1 }
+			   { "mainloop_api", "load_P_script", 1 },
+			   { "mainloop_api", "load_ML_script", 1 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -6420,6 +6421,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "std::string" },
 			 { "ev", "http://tpgames.org/ufo.mp" },
 			 "P", "mainloop_api", "load_P_script"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_ML_script,
+			 "ml_script",
+			 { "ev", "url" },
+			 { "EveryApi&", "std::string" },
+			 { "ev", "http://tpgames.org/sheep.mp" },
+			 "ML", "mainloop_api", "load_ML_script"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::skybox,
 			 "skybox_ml",
