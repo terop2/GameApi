@@ -260,7 +260,7 @@ public:
   std::string ParamType(int p) const { return param_type[p]; }
   std::string ParamDefault(int p) const { return param_default[p]; }
   std::string ReturnType() const { return return_type; }
-  std::string Symbols() const { return "(inside plugin)"; }
+  std::string Symbols() const { return ""; }
   int Execute(std::vector<std::string> params)
   {
     return funccall(fptr, params, param_name);
@@ -361,6 +361,13 @@ std::vector<Item*> functions()
 			 { }, // param default
 			 "W", // return type
 			 "empty"));
+  vec.push_back(ApiItemF(&gameapi_animation,
+			 "wb_gameapi",
+			 { "num", "sx", "sy" },
+			 { "std::string", "int", "int" },
+			 { "82", "800", "600" },
+			 "W",
+			 "gameapi_animation"));
   vec.push_back(ApiItemF(&list_y,
 			 "wb_list_y",
 			 { "vec", "gap_y" },
@@ -627,6 +634,41 @@ private:
 W empty()
 {
   return add_w(new EmptyWidget);
+}
+class GameApiAnimation : public Widget
+{
+public:
+  GameApiAnimation(std::string num, int sx, int sy) : num(num),sx(sx),sy(sy) {}
+  int preferred_width(std::string path) { return sx+30; }
+  int preferred_height(std::string path) { return sy+50; }
+  int num_lines() const {
+    return 1;
+  }
+  std::string Page(std::string path)
+  {
+    std::stringstream ssx30ss; ssx30ss << (sx+30);
+    std::string ssx30 = ssx30ss.str();
+    std::stringstream ssy50ss; ssy50ss << (sy+50);
+    std::string ssy50 = ssy50ss.str();
+    std::stringstream ssx00ss; ssx00ss << (sx);
+    std::string ssx00 = ssx00ss.str();
+    std::stringstream ssy00ss; ssy00ss << (sy);
+    std::string ssy00 = ssy00ss.str();
+    std::string s = std::string("<embed width=\"") + ssx30 + "\" height=\"" + ssy50 + "\" src=\"https://www.meshpage.org/mesh.php?id=GVILK@" + num + "&noheaders=1&width=" + ssx00 + "&height=" + ssy00 + "\"/>";
+    return s;
+  }
+  std::string Css(std::string path) { return Widget::Css(path); }
+  std::string CssProp(std::string path)
+  {
+    return Widget::CssProp(path);
+  }
+private:
+  std::string num;
+  int sx,sy;
+};
+W gameapi_animation(std::string num, int sx, int sy)
+{
+  return add_w(new GameApiAnimation(num,sx,sy));
 }
 W list_y(std::vector<W> v, int gap_y)
 {

@@ -11249,10 +11249,27 @@ GameApi::ML GameApi::MainLoopApi::fps_display(EveryApi &ev, ML ml, std::string f
   return I54;
 }
 
+int find_str(std::string val, std::string repl)
+{
+  std::size_t pos = val.find(repl);
+  if (pos==std::string::npos) return -1;
+  return pos;
+}
+
+std::string replace_str(std::string val, std::string repl, std::string subst)
+{
+  while(1) {
+  int pos = find_str(val, repl);
+  if (pos==-1) return val;
+  val.replace(pos,pos+repl.size(),subst);
+  }
+  return "ERROR";
+}
+
 class P_script : public FaceCollection
 {
 public:
-  P_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url) : e(e), ev(ev), url(url), coll(0) {}
+  P_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url), p1(p1), p2(p2), p3(p3), p4(p4), p5(p5), coll(0) {}
   void Prepare() { 
     std::string homepage = gameapi_homepageurl;
 #ifndef EMSCRIPTEN
@@ -11260,6 +11277,11 @@ public:
 #endif
     std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
     std::string code(vec->begin(), vec->end());
+    code = replace_str(code, "%1", p1);
+    code = replace_str(code, "%2", p2);
+    code = replace_str(code, "%3", p3);
+    code = replace_str(code, "%4", p4);
+    code = replace_str(code, "%5", p5);
     GameApi::ExecuteEnv e2;
     std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
     if (p.second=="P") {
@@ -11289,19 +11311,20 @@ private:
   GameApi::Env &e;
   GameApi::EveryApi &ev;
   std::string url;
+  std::string p1,p2,p3,p4,p5;
   GameApi::P p_data;
   FaceCollection *coll;
 };
 
-GameApi::P GameApi::MainLoopApi::load_P_script(EveryApi &ev, std::string url)
+GameApi::P GameApi::MainLoopApi::load_P_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
-  return add_polygon2(e, new P_script(e,ev,url));
+  return add_polygon2(e, new P_script(e,ev,url, p1,p2,p3,p4,p5));
 }
 
 class ML_script : public MainLoopItem
 {
 public:
-  ML_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url) : e(e), ev(ev), url(url), main2(0) { firsttime = true; }
+  ML_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url),p1(p1), p2(p2), p3(p3), p4(p4), p5(p5) , main2(0) { firsttime = true; }
   virtual void execute(MainLoopEnv &e3)
   {
     if (firsttime) {
@@ -11311,6 +11334,11 @@ public:
 #endif
       std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
       std::string code(vec->begin(), vec->end());
+      code = replace_str(code, "%1", p1);
+      code = replace_str(code, "%2", p2);
+      code = replace_str(code, "%3", p3);
+      code = replace_str(code, "%4", p4);
+      code = replace_str(code, "%5", p5);
       GameApi::ExecuteEnv e2;
       std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
       if (p.second=="ML") {
@@ -11346,11 +11374,12 @@ private:
   GameApi::Env &e;
   GameApi::EveryApi &ev;
   std::string url;
+  std::string p1,p2,p3,p4,p5;
   bool firsttime;
   MainLoopItem *main2;
 };
 
-GameApi::ML GameApi::MainLoopApi::load_ML_script(EveryApi &ev, std::string url)
+GameApi::ML GameApi::MainLoopApi::load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
-  return add_main_loop(e, new ML_script(e,ev,url));
+  return add_main_loop(e, new ML_script(e,ev,url,p1,p2,p3,p4,p5));
 }

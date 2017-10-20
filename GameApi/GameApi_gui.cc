@@ -6417,15 +6417,15 @@ std::vector<GameApiItem*> blocker_functions()
   std::vector<GameApiItem*> vec;
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_P_script,
 			 "p_script",
-			 { "ev", "url" },
-			 { "EveryApi&", "std::string" },
-			 { "ev", "http://tpgames.org/ufo.mp" },
+			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
+			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
+			 { "ev", "http://tpgames.org/ufo.mp", "a", "b", "c", "d", "e" },
 			 "P", "mainloop_api", "load_P_script"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_ML_script,
 			 "ml_script",
-			 { "ev", "url" },
-			 { "EveryApi&", "std::string" },
-			 { "ev", "http://tpgames.org/sheep.mp" },
+			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
+			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
+			 { "ev", "http://tpgames.org/sheep.mp", "a", "b", "c", "d", "e" },
 			 "ML", "mainloop_api", "load_ML_script"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::skybox,
