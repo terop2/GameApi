@@ -127,11 +127,10 @@ public:
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
     MainLoopEnv ee = e;
-    // seems to break suomi100 flag.
-    //ee.v_shader_functions = "";
-    //ee.f_shader_functions = "";
-    //ee.v_shader_funcnames.clear();
-    //ee.f_shader_funcnames.clear();
+    ee.v_shader_functions = "";
+    ee.f_shader_functions = "";
+    ee.v_shader_funcnames.clear();
+    ee.f_shader_funcnames.clear();
     ee.us_vertex_shader=-1;
     ee.us_fragment_shader=-1;
     ee.screen_x = 0;
