@@ -1598,6 +1598,7 @@ ShaderFile::ShaderFile()
 "    return vec4(mix(rgb.rgb,color_choice.rgb,mix_val),rgb.a);\n"
 "}\n"
 "#endif\n"
+"//M:\n"
 "//B:\n"
 "vec4 white(vec4 rgb)\n"
 "{\n"
