@@ -363,8 +363,8 @@ public:
   ML scale_2d_screen(EveryApi &ev, ML orig, float sx, float sy);
   ML keyboard_toggle(ML m1, ML m2, int key);
   ML touch_rotate(EveryApi &ev, ML ml, bool leftright, bool topdown, float x_speed, float y_speed);
-  P load_P_script(EveryApi &ev, std::string url);
-  ML load_ML_script(EveryApi &ev, std::string url);
+  P load_P_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  ML load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);

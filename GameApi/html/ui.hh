@@ -37,6 +37,7 @@ struct W {
 };
 
 W empty();
+W gameapi_animation(std::string num, int sx, int sy);
 W list_y(std::vector<W> v, int gap_y);
 W list_x(std::vector<W> v, int gap_x);
 W grid_y(std::vector<W> v, int sx, int gap_x, int gap_y);
