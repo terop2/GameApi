@@ -4536,7 +4536,8 @@ ASyncData async_data[] = { { "font_api", "newfont", 0 },
 			   { "polygon_api", "p_url", 1 },
 			   { "mainloop_api", "fps_display", 2 },
 			   { "mainloop_api", "load_P_script", 1 },
-			   { "mainloop_api", "load_ML_script", 1 }
+			   { "mainloop_api", "load_ML_script", 1 },
+			   { "mainloop_api", "load_BM_script", 1 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -4587,7 +4588,9 @@ std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev,
       std::string line = text.substr(old_idx, idx-old_idx-1);
       CodeGenLine l = parse_codegen_line(line);
       CodeGenLineErrorCheck(l, funcs);
-      if (l.return_type=="@") { error_line_num = line_num; return std::vector<CodeGenLine>(); }
+      if (l.return_type=="@") {
+	std::cout << "ERROR:" << line << std::endl;
+	error_line_num = line_num; return std::vector<CodeGenLine>(); }
       LoadUrls(l, homepage);
       LoadUrls_async(env,l, homepage);
       vec.push_back(l);
@@ -6415,17 +6418,23 @@ std::vector<GameApiItem*> blocker_functions()
 {
 
   std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_BM_script,
+			 "bm_script",
+			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
+			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
+			 { "ev", "http://tpgames.org/tiiliseina_bm.mp", "a", "b", "c", "d", "e" },
+			 "BM", "mainloop_api", "load_BM_script"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_P_script,
 			 "p_script",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://tpgames.org/ufo.mp", "a", "b", "c", "d", "e" },
+			 { "ev", "http://tpgames.org/blob_p.mp", "a", "b", "c", "d", "e" },
 			 "P", "mainloop_api", "load_P_script"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_ML_script,
 			 "ml_script",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://tpgames.org/sheep.mp", "a", "b", "c", "d", "e" },
+			 { "ev", "http://tpgames.org/marble_cube_ml.mp", "a", "b", "c", "d", "e" },
 			 "ML", "mainloop_api", "load_ML_script"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::skybox,
@@ -7096,6 +7105,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "PT", "float", "int", "int" },
 			 { "(0.0,0.0,0.0)",  "100.0", "30", "30" },
 			 "P", "polygon_api", "sphere"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::plane_map,
+			 "plane_map",
+			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "start_values", "end_values", "fb", "sx", "sy" },
+			 { "float", "float", "float", "float", "float", "float", "float", "float", "FB", "int", "int" },
+			 { "-200.0", "200.0", "-200.0", "200.0", "0.0", "70.0", "0.0", "1.0", "", "256", "256" },
+			 "P", "polygon_api", "plane_map"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sphere_map,
 			 "sphere_map",
 			 { "c_x", "c_y", "c_z", "fb", "start_radius", "end_radius", "start_values", "end_values", "sx", "sy" },

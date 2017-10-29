@@ -365,6 +365,7 @@ public:
   ML touch_rotate(EveryApi &ev, ML ml, bool leftright, bool topdown, float x_speed, float y_speed);
   P load_P_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   ML load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  BM load_BM_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);
@@ -2071,6 +2072,7 @@ public:
 		    BM bm_front, BM bm_back, BM bm_left, BM bm_right, BM bm_top, BM bm_bottom);
 	IMPORT P sphere(PT center, float radius, int numfaces1, int numfaces2);
   IMPORT P sphere_map(float c_x, float c_y, float c_z, FB fb, float start_radius, float end_radius, float start_values, float end_values, int sx, int sy);
+  IMPORT P plane_map(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float start_values, float end_values, FB fb, int sx, int sy);
 	IMPORT P cone(int numfaces, PT p1, PT p2, float rad1, float rad2);
   IMPORT P torus2(EveryApi &ev, int numfaces1, int numfacesw2, PT center, float radius1, float radius2);
   IMPORT P torus(int numfaces1, int numfaces2, PT center, V u_x, V u_y, float radius1, V uu_x, V uu_y, float radius2);
