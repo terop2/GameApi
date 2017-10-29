@@ -1,0 +1,9 @@
+BO I1=ev.bool_api.cube(ev,-300,300,-300,300,-300,300,18,18); 
+PT I2=ev.point_api.point(0.0,0.0,0.0); 
+BO I3=ev.bool_api.sphere(ev,I2,400,30,30); 
+BO I4=ev.bool_api.and_not(ev,I1,I3); 
+P I5=ev.bool_api.to_polygon(I4); 
+P I6=ev.polygon_api.scale(I5,0.8,0.8,0.8); 
+MT I7=ev.materials_api.def(ev); 
+MT I8=ev.materials_api.snow(ev,I7,ffaaaaaa,ffeeeeee,ffffffff,0.5); 
+ML I9=ev.materials_api.bind(I6,I8); 

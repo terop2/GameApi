@@ -5768,7 +5768,7 @@ public:
       }
 #endif
     //std::cout << "RenderInstanced::Execute" << std::endl;
-    if (shader.id==-1)
+    if (firsttime && shader.id==-1)
       {
 	//std::cout << "RenderInstanced::SHADER" << std::endl;
 	GameApi::US vertex;
@@ -5793,7 +5793,7 @@ public:
     if (shader.id!=-1)
       {
 	//std::cout << "RenderInstanced::USESHADER" << std::endl;
-	ev.shader_api.use(sh);
+	//ev.shader_api.use(sh);
 	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
@@ -11382,4 +11382,58 @@ private:
 GameApi::ML GameApi::MainLoopApi::load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
   return add_main_loop(e, new ML_script(e,ev,url,p1,p2,p3,p4,p5));
+}
+
+class BM_script : public Bitmap<Color>
+{
+public:
+  BM_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url), p1(p1), p2(p2), p3(p3), p4(p4), p5(p5), bitmap(0) { }
+  void Prepare() {
+    std::string homepage = gameapi_homepageurl;
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+    std::string code(vec->begin(), vec->end());
+    code = replace_str(code, "%1", p1);
+    code = replace_str(code, "%2", p2);
+    code = replace_str(code, "%3", p3);
+    code = replace_str(code, "%4", p4);
+    code = replace_str(code, "%5", p5);
+    GameApi::ExecuteEnv e2;
+    std::pair<int, std::string> p = GameApi::execute_codegen(e,ev,code,e2);
+    if (p.second=="BM") {
+      GameApi::BM bm;
+      bm.id = p.first;
+      BitmapHandle *handle = find_bitmap(e, bm);
+      bitmap = find_color_bitmap(handle);
+      bitmap->Prepare();
+      return;
+    }
+    bitmap=0;
+  }
+  virtual int SizeX() const { if (bitmap) return bitmap->SizeX(); return 1; }
+  virtual int SizeY() const { if (bitmap) return bitmap->SizeY(); return 1; }
+  virtual Color Map(int x, int y) const
+  {
+    if (bitmap) {
+      return bitmap->Map(x,y);
+    }
+    return Color();
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  std::string url;
+  std::string p1,p2,p3,p4,p5;
+  Bitmap<Color> *bitmap;
+};
+
+GameApi::BM GameApi::MainLoopApi::load_BM_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
+{
+  Bitmap<Color> *bm = new BM_script(e,ev,url,p1,p2,p3,p4,p5);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = bm;
+  return add_bitmap(e, handle2);
 }

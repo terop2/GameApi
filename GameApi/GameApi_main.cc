@@ -1160,7 +1160,16 @@ public:
 	vec[i]->handle_event(e);
       }
   }
-  int shader_id() { return -1; }
+#if 0
+  int shader_id() { 
+    int s = vec.size();
+    for(int i=s-1;i>=0;i--)
+      {
+	if (vec[i]->shader_id()!=-1) return vec[i]->shader_id();
+      }
+    return -1; 
+  }
+#endif
 private:
   std::vector<MainLoopItem*> vec;
 };
@@ -1185,6 +1194,7 @@ EXPORT GameApi::ML GameApi::MainLoopApi::array_ml(std::vector<ML> vec)
   int s = vec.size();
   for(int i=0;i<s;i++)
     {
+      //std::cout << "array_ml id: " << vec[i].id << std::endl;
       vec2.push_back(find_main_loop(e,vec[i]));
     }
   return add_main_loop(e, new ArrayMainLoop(vec2));

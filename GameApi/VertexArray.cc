@@ -1503,10 +1503,19 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
       //std::cout << "InstancingQUAD: " << quad_count << " " << size << std::endl;
     }
 
+#if 1
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
+    glDisableVertexAttribArray(3);
+    glDisableVertexAttribArray(4);
+    glDisableVertexAttribArray(5);
+#endif
 
 #ifdef VAO
     glBindVertexArray(0);
 #endif
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
 }
@@ -1725,6 +1734,7 @@ void RenderVertexArray::render(int id)
 #ifdef VAO
     glBindVertexArray(0);
 #endif
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
    

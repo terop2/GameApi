@@ -3509,7 +3509,7 @@ public:
   { 
     if (firsttime)
       {
-	va = ev.polygon_api.create_vertex_array(p);
+	va = ev.polygon_api.create_vertex_array(p,false);
       }
 
     GameApi::SH sh;
@@ -3584,7 +3584,7 @@ public:
       }
 #endif
 
-    if (shader.id==-1 && e.us_vertex_shader!=-1 && e.us_fragment_shader!=-1)
+    if (firsttime && shader.id==-1)
       {
 	GameApi::US vertex;
 	GameApi::US fragment;
@@ -3607,20 +3607,24 @@ public:
 
     if (shader.id!=-1)
       {
-	ev.shader_api.use(sh);
+#if 1
+    //ev.shader_api.use(sh);
 	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
+	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_N", m2);
-	ev.shader_api.set_var(shader, "time", e.time);
+	//ev.shader_api.set_var(shader, "time", e.time);
 
 	sh = shader;
-      }
+#endif
+	}
     if (firsttime) { firsttime = false; }
     ev.shader_api.use(sh);
+    ev.shader_api.set_var(sh, "in_POS", 0.0f);
     api.render_vertex_array(va);
   }
 private:
@@ -4838,10 +4842,12 @@ public:
     //ev.mainloop_api.init_3d(sh);
     //ev.mainloop_api.alpha(true);
     firsttime = true;
+    sh.id = -1;
   }
   int shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &e)
   {
+    next->handle_event(e);
   }
   void execute(MainLoopEnv &e)
   {
@@ -4854,9 +4860,10 @@ public:
     if (ee.fragment_shader!="") { ee.fragment_shader+=":"; }
     ee.fragment_shader+="ambient:diffuse:specular";
 #endif
-    if (firsttime)
+      if (firsttime)
       {
 	firsttime = false;
+#if 1
     GameApi::US vertex;
     vertex.id = ee.us_vertex_shader;
     if (vertex.id==-1) { 
@@ -4887,7 +4894,7 @@ public:
     if (specular)
       fragment = ev.uber_api.f_specular(fragment);
     ee.us_fragment_shader = fragment.id;
-
+#endif
       }
 
     int sh_id = next->shader_id();
@@ -4897,7 +4904,6 @@ public:
 	//GameApi::SH sh;
 	sh.id = sh_id;
 	ev.shader_api.use(sh);
-
 
 
 	ev.shader_api.set_var(sh, "light_dir", light_dir.dx, light_dir.dy, light_dir.dz);
@@ -4926,7 +4932,7 @@ public:
 	ev.shader_api.set_var(sh, "in_T", m1);
 	ev.shader_api.set_var(sh, "in_N", m2);
 	ev.shader_api.set_var(sh, "time", e.time);
-
+	ev.shader_api.set_var(sh, "in_POS", 0.0f);
 
     next->execute(ee);
   }
@@ -5037,7 +5043,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml(EveryApi &ev, VA 
 }
 EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2(EveryApi &ev, P p)
 {
-  return add_main_loop(e, new RenderP(e, ev, *this, p));
+    GameApi::PTS pts = ev.points_api.single_pts();
+    GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p,pts);
+    return ml;
+    // return add_main_loop(e, new RenderP(e, ev, *this, p));
 }
  EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2_texture(EveryApi &ev, P p, std::vector<BM> bm)
  {
@@ -7305,6 +7314,55 @@ GameApi::ML GameApi::PolygonApi::position_based_on_screen(ML obj)
   return add_main_loop(e, new MainLoopPosition(next));
 }
 
+class PlaneMap2 : public SurfaceIn3d
+{
+public:
+  PlaneMap2(Bitmap<float> &fb, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float start_values, float end_values) : fb(fb), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z), start_values(start_values), end_values(end_values) {
+  }
+  virtual void Prepare() { fb.Prepare(); }
+  virtual Point Index(float x, float y) const
+  {
+    float cx = x*fb.SizeX();
+    float cy = y*fb.SizeY();
+    float zval = fb.Map(int(cx),int(cy));
+    zval-=start_values;
+    zval/=(end_values-start_values);
+    zval*=(end_z-start_z);
+    zval+=start_z;
+
+    float xval = start_x+x*(end_x-start_x);
+    float yval = start_y+y*(end_y-start_y);
+    Point p(xval,yval,zval);
+    return p;
+  }
+  virtual Point2d Texture(float x, float y) const
+  {
+    Point2d p;
+    p.x = x;
+    p.y = y;
+    return p;
+  }
+  virtual float Attrib(float x, float y, int id) const { return 0.0; }
+  virtual int AttribI(float x, float y, int id) const { return 0; }
+  virtual Vector Normal(float x, float y) const
+  {
+    Vector v;
+    v.dx = 0.0;
+    v.dy = 0.0;
+    v.dz = end_z-start_z;
+    return v;
+  }
+  virtual unsigned int Color(float x, float y) const { return 0xffffffff; }
+  virtual float XSize() const { return 1.0; }
+  virtual float YSize() const { return 1.0; }
+private:
+  Bitmap<float> &fb;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+  float start_values, end_values;
+};
+
 class SphereMap2 : public SurfaceIn3d
 {
 public:
@@ -7363,6 +7421,7 @@ GameApi::S GameApi::PolygonApi::s_spherical(float c_x, float c_y, float c_z, FB 
   impl.surf = surf;
   return add_surface(e, impl);
 }
+
 GameApi::P GameApi::PolygonApi::s_sample(S surf, int sx, int sy)
 {
   SurfaceImpl *surf2 = find_surface(e, surf);
@@ -7379,6 +7438,16 @@ GameApi::P GameApi::PolygonApi::sphere_map(float c_x, float c_y, float c_z, FB f
   FaceCollection *coll = new SampleSurfaceIn3d(*surf, 0, sx,sy);
   return add_polygon2(e, coll, 1);
 }
+
+ GameApi::P GameApi::PolygonApi::plane_map(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float start_values, float end_values, FB fb, int sx, int sy)
+ {
+   Bitmap<float> *fb2 = find_float_bitmap(e, fb)->bitmap;
+   SurfaceIn3d *surf = new PlaneMap2(*fb2, start_x, end_x, start_y, end_y, start_z, end_z, start_values, end_values);
+   ::EnvImpl *env = ::EnvImpl::Environment(&e);
+   env->deletes.push_back(std::shared_ptr<void>(surf));
+   FaceCollection *coll = new SampleSurfaceIn3d(*surf, 0, sx,sy);
+   return add_polygon2(e, coll, 1);
+ }
 
 class CurveToPoly : public FaceCollection
 {
@@ -7406,6 +7475,7 @@ public:
     case 2: return curve_pos+Vector(rot_p22.x, rot_p22.y, 0.0);
     case 3: return curve_pos+Vector(rot_p21.x, rot_p21.y, 0.0);
     };
+    return curve_pos;
   }
   Vector PointNormal(int face, int point) const { return Point(0.0,0.0,1.0); }
   float Attrib(int face, int point, int id) const { return 0.0; }

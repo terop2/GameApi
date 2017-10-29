@@ -1,0 +1,12 @@
+P I1=ev.polygon_api.cube(-10,10,-10,10,-10,10); 
+MS I2=ev.matrices_api.ms_random_rot(0,1,0,3000); 
+P I3=ev.polygon_api.cube(-200,200,-200,200,-200,200); 
+LI I4=ev.lines_api.from_polygon(I3); 
+P I5=ev.polygon_api.line_to_cone(ev,I4,20,15); 
+PTS I6=ev.points_api.random_mesh_quad_instancing(ev,I5,3000); 
+MS I7=ev.matrices_api.from_points(I6); 
+MS I8=ev.matrices_api.mult_array(I2,I7); 
+P I9=ev.polygon_api.static_instancing_matrix(ev,I1,I8); 
+MT I10=ev.materials_api.def(ev); 
+MT I11=ev.materials_api.snow(ev,I10,ffaaaaaa,ffeeeeee,ffffffff,0.5); 
+ML I12=ev.materials_api.bind(I9,I11); 
