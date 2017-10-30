@@ -410,6 +410,7 @@ public:
 	ev.shader_api.set_var(sh, "time", e.time);
 
     api.render(l);
+    ev.shader_api.unuse(sh);
   }
   int shader_id() { return -1; }
 
@@ -447,6 +448,7 @@ public:
 	  }
 	
     api.render(l2);
+    ev.shader_api.unuse(sh);
   }
   int shader_id() { return -1; }
 
@@ -519,6 +521,7 @@ public:
 	firsttime=false;
       }
     api.render_inst(l,pta);
+    ev.shader_api.unuse(sh);
   }
   int shader_id() { return -1; }
 
@@ -592,6 +595,7 @@ public:
 	firsttime=false;
       }
     api.render_inst(l,pta);
+    ev.shader_api.unuse(sh);
   }
   int shader_id() { return -1; }
 
