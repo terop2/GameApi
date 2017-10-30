@@ -5698,6 +5698,7 @@ public:
   void execute(MainLoopEnv &e)
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    if (firsttime) { obj2->Prepare(); }
     bool changed = obj2->Update(e);
     // MainLoopEnv ee = e;
     if (firsttime)
@@ -5768,7 +5769,7 @@ public:
       }
 #endif
     //std::cout << "RenderInstanced::Execute" << std::endl;
-    if (firsttime && shader.id==-1)
+    if (firsttime || shader.id==-1)
       {
 	//std::cout << "RenderInstanced::SHADER" << std::endl;
 	GameApi::US vertex;
@@ -5810,11 +5811,12 @@ public:
       firsttime = false;
       //std::cout << "RenderInstanced::PREPARE" << std::endl;
       ev.polygon_api.prepare_vertex_array_instanced(ev.shader_api, va, pta, sh);
-    }
+      }
 
     ev.shader_api.set_var(sh, "in_POS", 0.0f);
 
     int hide_n = -1;
+    fade = false;
     if (fade)
       {
 	int start_n = ev.points_api.NumPoints(pts);
@@ -5835,6 +5837,7 @@ public:
 
     
     ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
+    ev.shader_api.unuse(sh);
   }
 private:
   GameApi::Env &env;
