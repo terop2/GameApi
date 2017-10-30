@@ -1,0 +1,14 @@
+PT I1=ev.point_api.point(15,-60,15);
+PT I2=ev.point_api.point(15,-57,15);
+PT I3=ev.point_api.point(15,-53,15);
+PT I4=ev.point_api.point(15,-40,15);
+PT I5=ev.point_api.point(15,-32,15);
+PT I6=ev.point_api.point(15,-25,15);
+P I7=ev.polygon_api.cone(30,I1,I2,8,9);
+P I8=ev.polygon_api.cone(30,I2,I3,4,8);
+P I9=ev.polygon_api.cone(30,I3,I4,4,4);
+P I10=ev.polygon_api.cone(30,I4,I5,6,4);
+P I11=ev.polygon_api.cone(30,I5,I6,0,6);
+P I12=ev.polygon_api.cube(13,17,-25,-18,13,17);
+P I13=ev.polygon_api.cube(10,20,-22,-20,13,17);
+P I14=ev.polygon_api.or_array2(std::vector<P>{I7,I8,I9,I10,I11,I12,I13});
