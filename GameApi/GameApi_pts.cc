@@ -873,7 +873,7 @@ public:
   glDisableVertexAttribArray(2);
   glDisableVertexAttribArray(4);
 #endif
-
+  ev.shader_api.unuse(sh);
   }
   int shader_id() { return -1; }
 private:
