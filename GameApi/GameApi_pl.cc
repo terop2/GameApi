@@ -3483,6 +3483,7 @@ public:
     if (firsttime) { firsttime = false; }
     ev.shader_api.use(sh);
     api.render_vertex_array(va);
+    ev.shader_api.unuse(sh);
   }
 private:
   GameApi::Env &env;
@@ -3626,6 +3627,7 @@ public:
     ev.shader_api.use(sh);
     ev.shader_api.set_var(sh, "in_POS", 0.0f);
     api.render_vertex_array(va);
+    ev.shader_api.unuse(sh);
   }
 private:
   GameApi::Env &env;
@@ -3770,6 +3772,7 @@ public:
     if (firsttime) { firsttime = false; }
     ev.shader_api.use(sh);
     api.render_vertex_array(va);
+    ev.shader_api.unuse(sh);
   }
 private:
   GameApi::Env &env;
@@ -3913,6 +3916,7 @@ public:
     if (firsttime) { firsttime = false; }
     ev.shader_api.use(sh);
     api.render_vertex_array_dyn(va,dc,e);
+    ev.shader_api.unuse(sh);
   }
 private:
   GameApi::Env &env;
@@ -4108,6 +4112,7 @@ public:
 	ev.shader_api.set_var(sh, "color_mix", mix);
       }
     next->execute(ee);
+    ev.shader_api.unuse(sh);
   }
   int shader_id() { return next->shader_id(); }
 
@@ -4169,6 +4174,7 @@ public:
 	ev.shader_api.set_var(sh, "color_mix", mix);
       }
     next->execute(ee);
+    ev.shader_api.unuse(sh);
   }
   int shader_id() { return next->shader_id(); }
 
@@ -4230,6 +4236,7 @@ public:
       }
 
     next->execute(ee);
+    ev.shader_api.unuse(sh);
   }
   int shader_id() { return next->shader_id(); }
 
@@ -4442,6 +4449,7 @@ public:
     ev.shader_api.set_var(sh, "bone_pos", vec2);
 
     next->execute(ee);
+    ev.shader_api.unuse(sh);
 
   }
 
@@ -4821,6 +4829,7 @@ public:
 
     ee.spotlight_id = e.spotlight_id+1;
     next->execute(ee);
+    ev.shader_api.unuse(sh);
   }
 private:
   GameApi::Env &env;
@@ -4838,13 +4847,11 @@ public:
   ShaderParamML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir,
 		unsigned int level1, unsigned int level2, unsigned int level3, float spec_size, bool ambient, bool diffuse, bool specular) : env(env), ev(ev), next(next), light_dir(light_dir), level1(level1), level2(level2), level3(level3), spec_size(spec_size), ambient(ambient), diffuse(diffuse), specular(specular) 
   { 
-    //sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:passall", "colour:ambient:diffuse:specular:light");
-    //ev.mainloop_api.init_3d(sh);
-    //ev.mainloop_api.alpha(true);
     firsttime = true;
     sh.id = -1;
   }
-  int shader_id() { return next->shader_id(); }
+  int shader_id() { if (sh.id != -1) return sh.id; return next->shader_id(); 
+  }
   void handle_event(MainLoopEvent &e)
   {
     next->handle_event(e);
@@ -4852,15 +4859,7 @@ public:
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
-#if 0
-    if (ee.vertex_shader=="") { ee.vertex_shader+="colour"; }
-    if (ee.vertex_shader!="") { ee.vertex_shader+=":"; }
-    ee.vertex_shader+="passall";
-    if (ee.fragment_shader=="") { ee.fragment_shader+="colour"; }
-    if (ee.fragment_shader!="") { ee.fragment_shader+=":"; }
-    ee.fragment_shader+="ambient:diffuse:specular";
-#endif
-      if (firsttime)
+     if (firsttime)
       {
 	firsttime = false;
 #if 1
@@ -4898,11 +4897,11 @@ public:
       }
 
     int sh_id = next->shader_id();
+    sh.id = sh_id;
     //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
 	//GameApi::SH sh;
-	sh.id = sh_id;
 	ev.shader_api.use(sh);
 
 

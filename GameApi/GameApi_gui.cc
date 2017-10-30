@@ -4873,6 +4873,9 @@ public:
   std::string Comment() const { return comment; }
   int Execute(GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)
   {
+    if (params.size()!=param_name.size()) {
+      std::cout << "Error: param vectors different size: " << ApiName(0) << "::" << FuncName(0) << std::endl;
+    }
     return funccall(ee, ev, api, fptr, params, e, param_name, return_type); 
   }
 #if 0
