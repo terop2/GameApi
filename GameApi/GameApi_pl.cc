@@ -4750,7 +4750,7 @@ public:
     ev.shader_api.set_var(sh, "mix_val", mix_val);
 
     next->execute(ee);
-
+    ev.shader_api.unuse(sh);
   }
 
 private:
@@ -4934,6 +4934,7 @@ public:
 	ev.shader_api.set_var(sh, "in_POS", 0.0f);
 
     next->execute(ee);
+    ev.shader_api.unuse(sh);
   }
 private:
   GameApi::Env &env;

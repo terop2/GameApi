@@ -3361,6 +3361,7 @@ public:
     Matrix old_env = env.env;
     env.env = env.env * find_matrix(e,res2);
     next->execute(env);
+    ev.shader_api.unuse(s3);
     env.env = old_env;
 
   }
@@ -3459,6 +3460,7 @@ public:
     Matrix old_env = env.env;
     env.env = find_matrix(e,mat2);/* * env.env*/;
     next->execute(env);
+    ev.shader_api.unuse(s3);
     env.env = old_env;
     env.in_MV = old_in_MV;
   }
@@ -3570,6 +3572,7 @@ public:
     Matrix old_env = env.env;
     env.env = find_matrix(e,mat2);/* * env.env*/;
     next->execute(env);
+    ev.shader_api.unuse(s3);
     env.env = old_env;
     env.in_MV = old_in_MV;
   }
@@ -3662,6 +3665,7 @@ public:
     ee.env = find_matrix(e,mat2); /* * env.env*/;
     ee.time = env.time + i*time_delta/10.0;
     next->execute(ee);
+    ev.shader_api.unuse(s3);
     //env.env = old_env;
     //env.time = old_time;
     //env.in_MV = old_in_MV;
@@ -3718,6 +3722,7 @@ public:
     ev.shader_api.set_var(s3, color_num2, c2.rf(),c2.gf(), c2.bf(), c2.af());
 
     next->execute(env);
+    ev.shader_api.unuse(s3);
   }
 private:
   GameApi::Env &e;
@@ -3819,6 +3824,7 @@ public:
     Matrix old_env = env.env;
     env.env = find_matrix(e,mat2); /* * env.env*/;
     next->execute(env);
+    ev.shader_api.unuse(s3);
     env.env = old_env;
     env.in_MV = old_in_MV;
   }
@@ -3930,6 +3936,7 @@ public:
     Matrix old_env = env.env;
     env.env = find_matrix(e,mat2); /* * env.env*/;
     next->execute(env);
+    ev.shader_api.unuse(s3);
     env.env = old_env;
     env.in_MV = old_in_MV;
   }
@@ -4097,6 +4104,7 @@ public:
     Matrix old_env = env.env;
     env.env = find_matrix(e,mat2); /* * env.env*/;
     next->execute(env);
+    ev.shader_api.unuse(s3);
     env.env = old_env;
     env.in_MV = old_in_MV;
   }
@@ -4208,6 +4216,7 @@ public:
 	Matrix old_env = env.env;
 	env.env = find_matrix(e,mat2) * env.env;
 	next[i]->execute(env);
+	ev.shader_api.unuse(s3);
 	env.env = old_env;
       }
   }
@@ -4482,6 +4491,7 @@ public:
 	  if (level<ss) {
 	    next[level]->execute(env);
 	  }
+	  ev.shader_api.unuse(s3);
 	  env.env = old_env;
   }
   void execute_recurse(MainLoopEnv &e, Matrix mm, int current_level)
@@ -6005,6 +6015,7 @@ public:
 
     
     ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
+    ev.shader_api.unuse(sh);
   }
 private:
   GameApi::Env &env;
@@ -6149,6 +6160,7 @@ public:
       }
     
     ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
+    ev.shader_api.unuse(sh);
   }
 private:
   GameApi::Env &env;
@@ -9448,7 +9460,9 @@ public:
       if (li_ranges2[choose].id != -1)
 	ev.lines_api.render(li_ranges2[choose]);
     }
+    ev.shader_api.unuse(sh);
   }
+
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
@@ -10623,7 +10637,7 @@ public:
     eee.env = find_matrix(env, res);
 
     next->execute(eee);
-    
+    ev.shader_api.unuse(s3);
 
   }
   virtual void handle_event(MainLoopEvent &e)
@@ -10695,6 +10709,7 @@ public:
 	ee.in_MV = find_matrix(env, m) * e.in_MV;
 	ee.env = find_matrix(env, m) * e.in_MV;
 	inner->execute(ee);
+	ev.shader_api.unuse(s3);
       }	  
   }
   virtual void handle_event(MainLoopEvent &e)
@@ -11169,6 +11184,7 @@ public:
 
 
     next->execute(ee);
+    ev.shader_api.unuse(s3);
   }
 private:
   GameApi::Env &e2;
