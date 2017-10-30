@@ -1735,11 +1735,11 @@ EXPORT GameApi::P GameApi::PolygonApi::splitquads(P orig, int x_count, int y_cou
 {
   FaceCollection *coll = find_facecoll(e, orig);
   FaceCollection *next = new SplitQuads(*coll, x_count, y_count);
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->deletes.push_back(std::shared_ptr<void>(next));  
-  MemoizeFaces *next2 = new MemoizeFaces(*next);
-  next2->Reset();
-  return add_polygon(e, next2, 1);
+  //::EnvImpl *env = ::EnvImpl::Environment(&e);
+  //env->deletes.push_back(std::shared_ptr<void>(next));  
+  //MemoizeFaces *next2 = new MemoizeFaces(*next);
+  //next2->Reset();
+  return add_polygon(e, next, 1);
 }
 
 

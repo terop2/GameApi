@@ -7563,7 +7563,7 @@ public:
   //MemoizeFaces(const MemoizeFaces &c) : c(c.c), numfaces(c.numfaces), numpoints(c.numpoints), facepoint(c.facepoint), color(c.color), normal(c.normal), facetexture(c.facetexture),mutex(PTHREAD_MUTEX_INITIALIZER)
   //{
   // }
-  void Prepare() { MemoizeAll(); }
+  void Prepare() { c.Prepare(); /*MemoizeAll();*/ }
   void operator=(const MemoizeFaces &c)
   {
     pthread_mutex_lock(&mutex);
