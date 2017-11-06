@@ -1593,3 +1593,26 @@ GameApi::ML GameApi::PointsApi::collision_collect(ML mainloop)
   return add_main_loop(e, new CollisionCollect(next));
 }
 
+class PTArray : public PointsApiPoints
+{
+public:
+  PTArray(std::vector<Point> vec) : vec(vec) {}
+  void Prepare() { }
+  void HandleEvent(MainLoopEvent &event) { }
+  bool Update(MainLoopEnv &e) { return false; }
+  int NumPoints() const { return vec.size(); }
+  Point Pos(int i) const { return vec[i]; }
+  unsigned int Color(int i) const { return 0xffffffff; }
+private:
+  std::vector<Point> vec;
+};
+
+GameApi::PTS GameApi::PointsApi::pt_array(EveryApi &ev, std::vector<PT> vec)
+{
+  int s = vec.size();
+  std::vector<Point> vec2;
+  for(int i=0;i<s;i++) {
+    vec2.push_back(*find_point(e,vec[i]));
+  }
+  return add_points_api_points(e, new PTArray(vec2));
+}

@@ -31,6 +31,7 @@ using std::placeholders::_9;
 #undef rad2
 
 
+  struct SBM { int id; };
   struct PN { int id; };
   struct DC { int id; };
   struct CBB { int id; };
@@ -579,6 +580,8 @@ public:
   BMA array(BM *array, int size);
   IMPORT BM array_elem(BMA array, int i);
   IMPORT BM Indicator(int sx, int sy, int g_ind);
+  IMPORT BM avg(BM bm1, BM bm2);
+  IMPORT BM fix_edges(BM bm);
 private:
   BitmapApi(const BitmapApi&);
   void operator=(const BitmapApi&);
@@ -2255,6 +2258,11 @@ public:
   IMPORT ML render_vertex_array_ml(EveryApi &ev, VA va);
   IMPORT ML render_vertex_array_ml2(EveryApi &ev, P va);
   IMPORT ML render_vertex_array_ml2_texture(EveryApi &ev, P va, std::vector<BM> vec);
+  IMPORT SBM texture_sbm();
+  IMPORT SBM combine_sbm(SBM texture1, SBM texture2);
+  IMPORT SBM bloom_cut_sbm(SBM texture, float r, float g, float b);
+  IMPORT SBM blur_sbm(SBM texture, float pixel_x, float pixel_y);
+  IMPORT ML sbm_texture(EveryApi &ev, ML mainloop, SBM bitmap);
   IMPORT ML render_dynamic_ml(EveryApi &ev, P p, DC dyn);
   IMPORT ML dist_field_mesh_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
@@ -2834,6 +2842,7 @@ class PointsApi
 public:
   PointsApi(Env &e) : e(e) { }
   IMPORT PTS single_pts();
+  IMPORT PTS pt_array(EveryApi &ev, std::vector<PT> vec);
   IMPORT PTS function(std::function<PT(int pointnum)> f, int numpoints);
   IMPORT PTS color_function(PTS orig, std::function<unsigned int(int pointnum, PT pos)> f);
   IMPORT PTS collision_points(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);

@@ -3316,3 +3316,47 @@ private:
 {
   return add_main_loop(e, new SavePngML(ev, bm, filename));
 }
+
+class AvgBitmap : public Bitmap<Color>
+{
+public:
+  AvgBitmap(Bitmap<Color> &bm1, Bitmap<Color> &bm2) : bm1(bm1), bm2(bm2) { }
+  virtual int SizeX() const { return std::min(bm1.SizeX(), bm2.SizeX()); }
+  virtual int SizeY() const { return std::min(bm1.SizeY(), bm2.SizeY()); }
+  virtual Color Map(int x, int y) const
+  {
+    Color c1 = bm1.Map(x,y);
+    Color c2 = bm2.Map(x,y);
+    return Color::Interpolate(c1,c2,0.5);
+  }
+  virtual void Prepare()
+  {
+    bm1.Prepare();
+    bm2.Prepare();
+  }
+private:
+  Bitmap<Color> &bm1;
+  Bitmap<Color> &bm2;
+};
+
+GameApi::BM GameApi::BitmapApi::avg(BM bm1, BM bm2)
+{
+  BitmapHandle *handle1 = find_bitmap(e, bm1);
+  ::Bitmap<Color> *b1 = find_color_bitmap(handle1);
+  BitmapHandle *handle2 = find_bitmap(e, bm2);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle2);
+
+  Bitmap<Color> *b = new AvgBitmap(*b1, *b2);
+
+  BitmapColorHandle *handle3 = new BitmapColorHandle;
+  handle3->bm = b;
+  BM bm = add_bitmap(e, handle3);
+  return bm;
+}
+
+GameApi::BM GameApi::BitmapApi::fix_edges(BM bm)
+{
+  BM bm2 = flip_x(bm);
+  BM bm3 = flip_y(bm2);
+  return avg(bm,bm3);
+}
