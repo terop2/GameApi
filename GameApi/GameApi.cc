@@ -1332,6 +1332,11 @@ public:
 private:
   int id;
 };
+ShaderBitmap *find_shader_bitmap(GameApi::Env &e, GameApi::SBM sbm)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->shaderbitmaps[sbm.id];
+}
 std::vector<float> *find_polynomial(GameApi::Env &e, GameApi::PN pn)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1686,7 +1691,14 @@ NDim<float,Point> *find_dim(GameApi::Env &e, GameApi::MV mv)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->dims[mv.id];
 }
-
+GameApi::SBM add_shader_bitmap(GameApi::Env &e, ShaderBitmap *sbm)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->shaderbitmaps.push_back(sbm);
+  GameApi::SBM c;
+  c.id = env->shaderbitmaps.size()-1;
+  return c;
+}
 GameApi::DC add_dyn_change(GameApi::Env &e, DynamicChange *dc)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -5254,7 +5266,9 @@ public:
    GameApi::P I2=ev.polygon_api.texcoord_manual(I1,0.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0);
    GameApi::P I3=p; 
    //GameApi::P I4=ev.polygon_api.color_from_normals(I3);
-   GameApi::ML I5=ev.polygon_api.render_vertex_array_ml2(ev,I3);
+   //GameApi::ML I5=ev.polygon_api.render_vertex_array_ml2(ev,I3);
+   GameApi::ML I5;
+   I5.id = next->mat(I3.id);
    GameApi::ML II1 = ev.move_api.move_ml(ev, I5, move, 1,10.0);
    GameApi::TXID I1a=ev.fbo_api.fbo_ml(ev,II1,800,600,false);
    GameApi::MT I9=ev.materials_api.textureid(ev,I1a,0.9);
@@ -5266,7 +5280,9 @@ public:
    GameApi::P I15=ev.polygon_api.fullscreen_quad(ev);
    GameApi::P I16=ev.polygon_api.texcoord_manual(I15,0.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0);
    GameApi::P I17=p;
-   GameApi::ML I19=ev.polygon_api.render_vertex_array_ml2(ev,I17);
+   //GameApi::ML I19=ev.polygon_api.render_vertex_array_ml2(ev,I17);
+   GameApi::ML I19;
+   I19.id = next->mat(I17.id);
    GameApi::TXID I2a=ev.fbo_api.fbo_ml(ev,I19,800,600,false);
    GameApi::MT I23=ev.materials_api.textureid(ev,I2a,0);
    GameApi::ML I24=ev.materials_api.bind(I16,I23);

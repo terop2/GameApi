@@ -7204,6 +7204,237 @@ std::string blur_v =
   return custom_shader(ev, mainloop, blur_v, blur_f, "blur2", "blur2");
 }
 
+ static std::string shader_unique_id()
+ {
+   static int id = 0;
+   id++;
+   std::stringstream ss;
+   ss << id;
+   return ss.str();
+ }
+
+ class TextureManySBM : public ShaderBitmap
+ {
+ public:
+   TextureManySBM() { m_id = shader_unique_id(); }
+   virtual std::string bitmapname() const { return "sbm" + m_id; }
+   virtual std::string bitmapbody() const { 
+     return "vec4 sbm" + m_id + "(vec3 pos)\n"
+       "{\n"
+       "  if (pos.z<0.7)\n"
+       "  return texture2D(texsampler[0],pos.xy);\n"
+       "  if (pos.z<1.7)\n"
+       "  return texture2D(texsampler[1],pos.xy);\n"
+       "  if (pos.z<2.7)\n"
+       "  return texture2D(texsampler[2],pos.xy);\n"
+       "  if (pos.z<3.7)\n"
+       "  return texture2D(texsampler[3],pos.xy);\n"
+       "  if (pos.z<4.7)\n"
+       "  return texture2D(texsampler[4],pos.xy);\n"
+       "  if (pos.z<5.7)\n"
+       "  return texture2D(texsampler[5],pos.xy);\n"
+       "  if (pos.z<6.7)\n"
+       "  return texture2D(texsampler[6],pos.xy);\n"
+       "  if (pos.z<7.7)\n"
+       "  return texture2D(texsampler[7],pos.xy);\n"
+       "  if (pos.z<8.7)\n"
+       "  return texture2D(texsampler[8],pos.xy);\n"
+       "  if (pos.z<9.7)\n"
+       "  return texture2D(texsampler[9],pos.xy);\n"
+       "  if (pos.z<10.7)\n"
+       "  return texture2D(texsampler[10],pos.xy);\n"
+       "  return vec4(0.0,0.0,0.0,0.0);\n"
+       "}";
+   }
+   virtual std::string bitmapbody_v_init() const { return ""; }
+   virtual std::string bitmapbody_v_body() const { return "ex_TexCoord = in_TexCoord;\nreturn pos;"; }
+   virtual std::string bitmapbody_f_init() const { return ""; /*uniform sampler2D texsampler[16];\n";*/ }
+   virtual std::string bitmapbody_f_body() const { return ""; }
+ private:
+   std::string m_id;
+ };
+
+
+GameApi::SBM GameApi::PolygonApi::texture_sbm()
+{
+  return add_shader_bitmap(e, new TextureManySBM);
+}
+
+class BloomCutSbm : public ShaderBitmap
+{
+public:
+  BloomCutSbm(ShaderBitmap *tex, float r, float g, float b) : tex(tex),r(r), g(g), b(b) { m_id = shader_unique_id(); }
+  virtual std::string bitmapname() const { return "bloom_cut" + m_id; }
+  virtual std::string bitmapbody() const
+  {
+    std::string rr = ConvF(r);
+    std::string gg = ConvF(g);
+    std::string bb = ConvF(b);
+
+    return tex->bitmapbody() +
+      "vec4 bloom_cut" + m_id + "(vec3 pos)\n"
+      "{\n"
+      "   vec4 tex2 = " + tex->bitmapname() + "(pos);\n"
+      "   if (tex2.r < " + rr + ") tex2 = vec4(0.0,0.0,0.0,0.0);\n"
+      "   if (tex2.g < " + gg + ") tex2 = vec4(0.0,0.0,0.0,0.0);\n"
+      "   if (tex2.b < " + bb + ") tex2 = vec4(0.0,0.0,0.0,0.0);\n"
+      "   return tex2;\n"
+      "}\n";
+  }
+  virtual std::string bitmapbody_v_init() const
+  {
+    return tex->bitmapbody_v_init() + "";
+  }
+  virtual std::string bitmapbody_v_body() const
+  {
+    return tex->bitmapbody_v_body() + "";
+  }
+  virtual std::string bitmapbody_f_init() const
+  {
+    return tex->bitmapbody_f_init() + "";
+  }
+  virtual std::string bitmapbody_f_body() const
+  {
+    return tex->bitmapbody_f_body() + "";
+  }
+
+private:
+  ShaderBitmap *tex;
+  std::string m_id;
+  float r,g,b;
+};
+
+ GameApi::SBM GameApi::PolygonApi::bloom_cut_sbm(SBM texture, float r, float g, float b)
+{
+  ShaderBitmap *tex = find_shader_bitmap(e, texture);
+  return add_shader_bitmap(e, new BloomCutSbm(tex,r,g,b));
+}
+
+class BlurSbm : public ShaderBitmap
+{
+public:
+  BlurSbm(ShaderBitmap *tex, float pixel_x, float pixel_y) : tex(tex), pixel_x(pixel_x), pixel_y(pixel_y) { m_id = shader_unique_id(); }
+  virtual std::string bitmapname() const { return "blur_sbm" + m_id; }
+  virtual std::string bitmapbody() const
+  {
+    std::string x_ss = ConvF(pixel_x);
+    std::string y_ss = ConvF(pixel_y);
+
+    return tex->bitmapbody() + 
+    "vec4 blur_sbm" + m_id + "(vec3 pos)\n"
+    "{\n"
+    "     float gWeights[stepCount" + m_id + "];\n"
+    "    float gOffsets[stepCount" + m_id + "];\n"
+    "    gWeights[0] = 0.44908;\n"
+    "    gWeights[1] = 0.05092;\n"
+    "    gOffsets[0] = 0.53805;\n"
+    "    gOffsets[1] = 2.06278;\n"
+    "   vec2 pixelOffset = vec2(" + x_ss + "," + y_ss + "); \n"
+    "   vec3 colOut = vec3(0,0,0);\n"
+    "   float alphaOut = 0.0;\n"
+    "    for( int i=0; i < stepCount" + m_id + "; i++) {\n"
+    "      vec2 texCoordOffset = gOffsets[i] * pixelOffset;\n"
+      "      vec4 tex1 = " + tex->bitmapname() + "( vec3(pos.xy + texCoordOffset,pos.z) );\n"
+      "      vec4 tex2 = " + tex->bitmapname() + "( vec3(pos.xy - texCoordOffset,pos.z) );\n"
+    "      float alpha = tex1.a + tex2.a;\n"
+    "      vec3 col = tex1.xyz + \n"
+    "                 tex2.xyz; \n"
+    "      colOut += gWeights[i] * col; \n"
+    "      alphaOut += gWeights[i] * alpha;\n"
+    "     }\n"
+    "     return vec4(colOut,alphaOut);\n"
+    "}\n";    
+
+  }
+  virtual std::string bitmapbody_v_init() const
+  {
+    return tex->bitmapbody_v_init() + "";
+  }
+  virtual std::string bitmapbody_v_body() const
+  {
+    return tex->bitmapbody_v_body() + "";
+  }
+  virtual std::string bitmapbody_f_init() const
+  {
+    return tex->bitmapbody_f_init() + "   const int stepCount" + m_id + " = 2;\n";
+  }
+  virtual std::string bitmapbody_f_body() const
+  {
+    return tex->bitmapbody_f_body() + "";
+  }
+
+private:
+  ShaderBitmap *tex;
+  float pixel_x, pixel_y;
+  std::string m_id;
+};
+
+GameApi::SBM GameApi::PolygonApi::blur_sbm(SBM texture, float pixel_x, float pixel_y)
+{
+  ShaderBitmap *tex = find_shader_bitmap(e, texture);
+  return add_shader_bitmap(e, new BlurSbm(tex, pixel_x, pixel_y));
+}
+ 
+class CombineSbm : public ShaderBitmap
+{
+public:
+  CombineSbm(ShaderBitmap *sbm1, ShaderBitmap *sbm2) : sbm1(sbm1), sbm2(sbm2) { m_id=shader_unique_id(); }
+  virtual std::string bitmapname() const { return "combine" + m_id; }
+  virtual std::string bitmapbody() const
+  {
+    return sbm1->bitmapbody() + sbm2->bitmapbody() +
+      "vec4 combine" + m_id + "(vec3 pos)\n"
+      "{\n"
+      "  vec4 tex1 = " + sbm1->bitmapname() + "(pos);\n"
+      "  vec4 tex2 = " + sbm2->bitmapname() + "(pos);\n"
+      "  return clamp(tex1+tex2,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));\n"
+      "}\n"
+      ;
+  }
+  virtual std::string bitmapbody_v_init() const
+  {
+    return sbm1->bitmapbody_v_init() + sbm2->bitmapbody_v_init();
+  }
+  virtual std::string bitmapbody_v_body() const
+  {
+    return sbm1->bitmapbody_v_body() + sbm2->bitmapbody_v_body();
+  }
+  virtual std::string bitmapbody_f_init() const
+  {
+    return sbm1->bitmapbody_f_init() + sbm2->bitmapbody_f_init();
+  }
+  virtual std::string bitmapbody_f_body() const
+  {
+    return sbm1->bitmapbody_f_body() + sbm2->bitmapbody_f_body();
+  }
+private:
+  ShaderBitmap *sbm1, *sbm2;
+  std::string m_id;
+};
+
+GameApi::SBM GameApi::PolygonApi::combine_sbm(SBM texture1, SBM texture2)
+{
+  ShaderBitmap *tex1 = find_shader_bitmap(e, texture1);
+  ShaderBitmap *tex2 = find_shader_bitmap(e, texture2);
+  return add_shader_bitmap(e, new CombineSbm(tex1, tex2));
+}
+
+GameApi::ML GameApi::PolygonApi::sbm_texture(EveryApi &ev, ML mainloop, SBM bitmap)
+{
+  ShaderBitmap *sbm = find_shader_bitmap(e, bitmap);
+  std::string v = sbm->bitmapbody_v_init() +
+    "vec4 sbmtex(vec4 pos)\n"
+    "{\n" + sbm->bitmapbody_v_body() + " }\n";
+  std::string f = sbm->bitmapbody_f_init() +
+    sbm->bitmapbody() +
+    "vec4 sbmtex(vec4 rgb) {\n"
+    "  " + sbm->bitmapbody_f_body() + " "
+    "  vec4 col = " + sbm->bitmapname() + "(ex_TexCoord.xyz);\n"
+    "  return col;\n"
+    "}\n";
+  return custom_shader(ev, mainloop, v, f, "sbmtex", "sbmtex");
+}
+
 GameApi::ML GameApi::PolygonApi::bloom1_shader(EveryApi &ev, ML mainloop, float r_val, float g_val, float b_val)
 {
   std::string ss_r = ConvF(r_val);
@@ -7370,15 +7601,15 @@ public:
   virtual void Prepare() { fb.Prepare(); }
   virtual Point Index(float x, float y) const
   {
-    float cx = x*fb.SizeX();
-    float cy = y*fb.SizeY();
+    float cx = x*(fb.SizeX()-1.0);
+    float cy = y*(fb.SizeY()-1.0);
     float r = fb.Map(int(cx),int(cy));
     r-=start_values;
     r/=(end_values-start_values);
     r*=(end_radius-start_radius);
     r+=start_radius;
-    float angle1 = x*3.14159;
-    float angle2 = y*3.14159*2.0;
+    float angle1 = x*3.14159265;
+    float angle2 = y*3.14159265*2.0;
     
     Point p;
     p.x = p_x + r*sin(angle1)*cos(angle2);

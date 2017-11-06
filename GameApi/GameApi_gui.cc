@@ -4190,6 +4190,7 @@ MACRO(GameApi::PN)
 MACRO(GameApi::PF)
 MACRO(GameApi::FF)
 MACRO(GameApi::S)
+MACRO(GameApi::SBM)
 #undef MACRO
 
 
@@ -7477,6 +7478,36 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "ev", "", "", "0.0", "0.0", "0.0", "800", "600" },
 			 "BM", "polygon_api", "renderpolytobitmap"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texture_sbm,
+			 "sbm_many_texture",
+			 { },
+			 { },
+			 { },
+			 "SBM", "polygon_api", "texture_sbm"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::blur_sbm,
+			 "sbm_blur",
+			 { "texture", "pixel_x", "pixel_y" },
+			 { "SBM", "float", "float" },
+			 { "", "0.01", "0.01" },
+			 "SBM", "polygon_api", "blur_sbm"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::bloom_cut_sbm,
+			 "sbm_bloom_cut",
+			 { "texture","r_cut", "g_cut", "b_cut" },
+			 { "SBM", "float", "float", "float" },
+			 { "", "0.7", "0.7", "0.7" },
+			 "SBM", "polygon_api", "bloom_cut_sbm"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::combine_sbm,
+			 "sbm_combine",
+			 { "texture1", "texture2" },
+			 { "SBM", "SBM" },
+			 { "", "" },
+			 "SBM", "polygon_api", "combine_sbm"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sbm_texture,
+			 "p_sbm",
+			 { "ev", "mainloop", "bitmap" },
+			 { "EveryApi&", "ML", "SBM" },
+			 { "ev", "", "" },
+			 "ML", "polygon_api", "sbm_texture"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::shading_shader,
 			 "p_shading",
 			 { "ev", "mainloop", "level1", "level2", "level3", "spec_size", "ambient", "diffuse", "specular" },
@@ -7939,6 +7970,12 @@ std::vector<GameApiItem*> linesapi_functions()
 std::vector<GameApiItem*> pointsapi_functions()
 {
   std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::pt_array,
+			 "pt_array",
+			 { "ev", "vec" },
+			 { "EveryApi&", "[PT]" },
+			 { "ev", "" },
+			 "PTS", "points_api", "pt_array"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::from_float_volume,
 			 "from_float_volume",
 			 { "volume", "numpoints", "start_x", "start_y", "start_z", "end_x", "end_y", "end_z" },
@@ -8413,6 +8450,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			   { "ev", "", "0", "10", "0", "10", "10", "10", "2", "2" },
 			 "[BM]", "sprite_api", "sprite_atlas_xy"));
 
+    vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::fix_edges,
+			   "edge_fix",
+			   { "bm" },
+			   { "BM" },
+			   { "" },
+			   "BM", "bitmap_api", "fix_edges"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::border,
 			 "border",
 			 { "bm", "left", "right", "top", "bottom" },

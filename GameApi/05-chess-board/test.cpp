@@ -1401,7 +1401,7 @@ int main(int argc, char *argv[]) {
   ev.shader_api.load_default();
   //SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:light:snoise", "colour:light:snoise");
   //#ifndef EMSCRIPTEN
-  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:passall:ambient:diffuse", "colour:ambient:diffuse", false, {-1}, "EX_COLOR IN_COLOR EX_TEXCOORD IN_TEXCOORD EX_NORMAL IN_NORMAL IN_POSITION EX_POSITION LIGHTDIR EX_NORMAL2 EX_LIGHTPOS2", "EX_NORMAL2 EX_LIGHTPOS2 EX_COLOR SPECULAR_SIZE");
+  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:passall:ambient:diffuse", "colour:ambient:diffuse", false, {-1}, "EX_COLOR IN_COLOR EX_TEXCOORD IN_TEXCOORD EX_NORMAL IN_NORMAL IN_POSITION EX_POSITION LIGHTDIR EX_NORMAL2 EX_LIGHTPOS2 LEVELS", "EX_NORMAL2 EX_LIGHTPOS2 LEVELS EX_COLOR SPECULAR_SIZE");
   //#else
   //  SH sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:passall", "colour:light");
   //#endif

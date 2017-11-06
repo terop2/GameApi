@@ -1087,4 +1087,16 @@ public:
   virtual void applychange(float *source, float *target, int size_in_floats, MainLoopEnv &e)=0;
 };
 
+class ShaderBitmap
+{
+public:
+  virtual std::string bitmapname() const=0;
+  virtual std::string bitmapbody() const=0;
+  virtual std::string bitmapbody_v_init() const=0;
+  virtual std::string bitmapbody_v_body() const=0;
+  virtual std::string bitmapbody_f_init() const=0;
+  virtual std::string bitmapbody_f_body() const=0;
+};
+
+
 #endif
