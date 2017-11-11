@@ -11371,12 +11371,16 @@ std::string replace_str(std::string val, std::string repl, std::string subst)
   }
   return "ERROR";
 }
+void P_cb(void *data);
 
 class P_script : public FaceCollection
 {
 public:
-  P_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url), p1(p1), p2(p2), p3(p3), p4(p4), p5(p5), coll(0) {}
-  void Prepare() { 
+  P_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url), p1(p1), p2(p2), p3(p3), p4(p4), p5(p5), coll(0) {
+    e.async_load_callback(url, &P_cb, this);
+
+  }
+  void Prepare2() {
     std::string homepage = gameapi_homepageurl;
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
@@ -11395,6 +11399,16 @@ public:
       pp.id = p.first;
       p_data = pp;
       coll = find_facecoll(e,p_data);
+      return;
+    }
+  }
+  void Prepare() { 
+    if (!coll) { 
+#ifdef EMSCRIPTEN
+      std::cout << "P_script: script not ready at Prepare()" << std::endl;
+#endif
+      Prepare2(); }
+    if (coll) {
       coll->Prepare();
       return;
     }
@@ -11422,19 +11436,28 @@ private:
   FaceCollection *coll;
 };
 
+void P_cb(void *data)
+{
+  P_script *script = (P_script*)data;
+  script->Prepare2();
+}
+
+
 GameApi::P GameApi::MainLoopApi::load_P_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
   return add_polygon2(e, new P_script(e,ev,url, p1,p2,p3,p4,p5));
 }
 
+void ML_cb(void* data);
+
 class ML_script : public MainLoopItem
 {
 public:
-  ML_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url),p1(p1), p2(p2), p3(p3), p4(p4), p5(p5) , main2(0) { firsttime = true; }
-  virtual void execute(MainLoopEnv &e3)
-  {
-    if (firsttime) {
-      std::string homepage = gameapi_homepageurl;
+  ML_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url),p1(p1), p2(p2), p3(p3), p4(p4), p5(p5) , main2(0) { firsttime = true; 
+       e.async_load_callback(url, &ML_cb, this); 
+  }
+  void Prepare2() {
+    std::string homepage = gameapi_homepageurl;
 #ifndef EMSCRIPTEN
       e.async_load_url(url, homepage);
 #endif
@@ -11451,13 +11474,25 @@ public:
 	GameApi::ML pp;
 	pp.id = p.first;
 	main2 = find_main_loop(e,pp);
-	main2->execute(e3);
-	firsttime = false;
+	//main2->execute(e3);
+	//firsttime = false;
 	return;
       }
       //GameApi::P pp;
       //pp.id = -1;
       main2 = 0;
+
+  }
+  virtual void execute(MainLoopEnv &e3)
+  {
+    if (firsttime) {
+      if (!main2) {
+#ifdef EMSCRIPTEN
+      std::cout << "ML_script: script not ready at Prepare()" << std::endl;
+#endif
+	Prepare2();
+      }
+      firsttime = false;
     }
     if (main2)
       main2->execute(e3);
@@ -11484,6 +11519,13 @@ private:
   bool firsttime;
   MainLoopItem *main2;
 };
+
+void ML_cb(void *data)
+{
+  ML_script *script = (ML_script*)data;
+  script->Prepare2();
+}
+
 
 GameApi::ML GameApi::MainLoopApi::load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
