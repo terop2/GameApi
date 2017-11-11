@@ -360,6 +360,11 @@ EXPORT void GameApi::Env::async_load_url(std::string url, std::string homepage)
   ::EnvImpl *env = (::EnvImpl*)envimpl;
   env->async_loader->load_urls(url, homepage);
 }
+EXPORT void GameApi::Env::async_load_callback(std::string url, void (*fptr)(void*), void *data)
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  env->async_loader->set_callback(url, fptr, data);
+}
 EXPORT std::vector<unsigned char> *GameApi::Env::get_loaded_async_url(std::string url)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
@@ -5259,9 +5264,23 @@ private:
 class BloomMaterial : public MaterialForward
 {
 public:
-  BloomMaterial(GameApi::EveryApi &ev, Material *next, GameApi::MN move) : ev(ev), next(next),move(move) { }
+  BloomMaterial(GameApi::EveryApi &ev, Material *next, GameApi::BM bm, float r_cut, float g_cut, float b_cut, float pixel_x, float pixel_y) : ev(ev), next(next),bm(bm),r_cut(r_cut), g_cut(g_cut), b_cut(b_cut), pixel_x(pixel_x), pixel_y(pixel_y) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+    // TODO next material support.
+    // requires adding m_bind/m_bind_inst/m_bind_inst2/m_bind_inst_fade to Material class.
+    GameApi::BM I9 = bm;
+    GameApi::MT I10=ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{I9},0);
+    GameApi::ML I11=ev.materials_api.bind(p,I10);
+    GameApi::SBM I15=ev.polygon_api.texture_sbm();
+    GameApi::SBM I16=ev.polygon_api.texture_sbm();
+    GameApi::SBM I17=ev.polygon_api.bloom_cut_sbm(I16,r_cut,g_cut,b_cut);
+    GameApi::SBM I18=ev.polygon_api.blur_sbm(I17,pixel_x,0);
+    GameApi::SBM I19=ev.polygon_api.blur_sbm(I18,0,pixel_y);
+    GameApi::SBM I20=ev.polygon_api.combine_sbm(I15,I19);
+    GameApi::ML I21=ev.polygon_api.sbm_texture(ev,I11,I20);
+    return I21;
+/*
    GameApi::P I1=ev.polygon_api.fullscreen_quad(ev);
    GameApi::P I2=ev.polygon_api.texcoord_manual(I1,0.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0);
    GameApi::P I3=p; 
@@ -5290,30 +5309,57 @@ public:
    GameApi::ML I26=ev.polygon_api.blur_shader(ev,I25,5,0);
    GameApi::ML I27=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{I14,I26});
    return I27;
+*/
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
-    GameApi::ML ml;
-    ml.id = next->mat_inst(p.id, pts.id);
-    return ml;
+    GameApi::BM I9 = bm;
+    GameApi::MT I10=ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{I9},0);
+    GameApi::ML I11=ev.materials_api.bind_inst(p,pts,I10);
+    GameApi::SBM I15=ev.polygon_api.texture_sbm();
+    GameApi::SBM I16=ev.polygon_api.texture_sbm();
+    GameApi::SBM I17=ev.polygon_api.bloom_cut_sbm(I16,r_cut,g_cut,b_cut);
+    GameApi::SBM I18=ev.polygon_api.blur_sbm(I17,pixel_x,0);
+    GameApi::SBM I19=ev.polygon_api.blur_sbm(I18,0,pixel_y);
+    GameApi::SBM I20=ev.polygon_api.combine_sbm(I15,I19);
+    GameApi::ML I21=ev.polygon_api.sbm_texture(ev,I11,I20);
+    return I21;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
-    GameApi::ML ml;
-    ml.id = next->mat_inst2(p.id, pta.id);
-    return ml;
-
+    GameApi::BM I9 = bm;
+    GameApi::MT I10=ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{I9},0);
+    GameApi::ML I11=ev.materials_api.bind_inst2(p,pta,I10);
+    GameApi::SBM I15=ev.polygon_api.texture_sbm();
+    GameApi::SBM I16=ev.polygon_api.texture_sbm();
+    GameApi::SBM I17=ev.polygon_api.bloom_cut_sbm(I16,r_cut,g_cut,b_cut);
+    GameApi::SBM I18=ev.polygon_api.blur_sbm(I17,pixel_x,0);
+    GameApi::SBM I19=ev.polygon_api.blur_sbm(I18,0,pixel_y);
+    GameApi::SBM I20=ev.polygon_api.combine_sbm(I15,I19);
+    GameApi::ML I21=ev.polygon_api.sbm_texture(ev,I11,I20);
+    return I21;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
-    GameApi::ML ml;
-    ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
-    return ml;
+    GameApi::BM I9 = bm;
+    GameApi::MT I10=ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{I9},0);
+    GameApi::ML I11=ev.materials_api.bind_inst_fade(p,pts,I10,flip,start_time,end_time);
+    GameApi::SBM I15=ev.polygon_api.texture_sbm();
+    GameApi::SBM I16=ev.polygon_api.texture_sbm();
+    GameApi::SBM I17=ev.polygon_api.bloom_cut_sbm(I16,r_cut,g_cut,b_cut);
+    GameApi::SBM I18=ev.polygon_api.blur_sbm(I17,pixel_x,0);
+    GameApi::SBM I19=ev.polygon_api.blur_sbm(I18,0,pixel_y);
+    GameApi::SBM I20=ev.polygon_api.combine_sbm(I15,I19);
+    GameApi::ML I21=ev.polygon_api.sbm_texture(ev,I11,I20);
+    return I21;
+
   }
 private:
   GameApi::EveryApi &ev;
   Material *next;
-  GameApi::MN move;
+  GameApi::BM bm;
+  float r_cut, g_cut, b_cut;
+  float pixel_x, pixel_y;
 };
 
 class FurMaterial : public MaterialForward
@@ -5508,10 +5554,10 @@ EXPORT GameApi::MT GameApi::MaterialsApi::fur(EveryApi &ev, MT nxt, PT center, f
   return add_material(e, new FurMaterial(ev, mat, center, dist, max_angle, count, size, cone_numfaces));
 }
 
-EXPORT GameApi::MT GameApi::MaterialsApi::bloom(EveryApi &ev, MT nxt, MN mn)
+EXPORT GameApi::MT GameApi::MaterialsApi::bloom(EveryApi &ev, MT nxt, BM bm, float r_cut, float g_cut, float b_cut, float pixel_x, float pixel_y)
 {
   Material *mat = find_material(e, nxt);
-  return add_material(e, new BloomMaterial(ev, mat, mn));
+  return add_material(e, new BloomMaterial(ev, mat, bm, r_cut, g_cut, b_cut, pixel_x, pixel_y));
 }
 
 				      
@@ -9534,6 +9580,8 @@ EXPORT GameApi::KF GameApi::VertexAnimApi::repeat_keyframes(KF rep, int count)
 }
 
 std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
+struct ASyncCallback { void (*fptr)(void*); void *data; };
+std::map<std::string, ASyncCallback*> load_url_callbacks;
 
 std::string striphomepage(std::string);
 void onerror_async_cb(void *arg)
@@ -9562,10 +9610,26 @@ void onload_async_cb(void *arg, void *data, int datasize)
   std::cout << "url loading complete! " << url_str << std::endl;
   load_url_buffers_async[url_only] = new std::vector<unsigned char>(buffer);
   async_pending_count--;
+  
+  std::cout << "Async cb!" << url_only << std::endl;
+  ASyncCallback *cb = load_url_callbacks[url_only];
+  if (cb) {
+    std::cout << "Load cb!" << url_only << std::endl;
+    (*cb->fptr)(cb->data);
+  }
 }
 
 std::vector<unsigned char> load_from_url(std::string url);
 
+void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
+{
+  url = "load_url.php?url=" + url;
+  ASyncCallback* cb = new ASyncCallback;
+  cb->fptr = fptr;
+  cb->data = data;
+  load_url_callbacks[url] = cb;
+  std::cout << "async set callback" << url << std::endl;
+}
 void ASyncLoader::load_urls(std::string url, std::string homepage)
   {
 #ifdef EMSCRIPTEN
@@ -9591,6 +9655,13 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
     }
     load_url_buffers_async[url2] = new std::vector<unsigned char>(buf);
+    std::cout << "Async cb!" << url2 << std::endl;
+    ASyncCallback *cb = load_url_callbacks[url2];
+    if (cb) {
+      std::cout << "Load cb!" << url2 << std::endl;
+      (*cb->fptr)(cb->data);
+    }
+
 #endif
   }
 std::vector<unsigned char> *ASyncLoader::get_loaded_data(std::string url) const
@@ -11418,12 +11489,16 @@ GameApi::ML GameApi::MainLoopApi::load_ML_script(EveryApi &ev, std::string url, 
 {
   return add_main_loop(e, new ML_script(e,ev,url,p1,p2,p3,p4,p5));
 }
+void BM_cb(void *data);
 
 class BM_script : public Bitmap<Color>
 {
 public:
-  BM_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url), p1(p1), p2(p2), p3(p3), p4(p4), p5(p5), bitmap(0) { }
-  void Prepare() {
+  BM_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url), p1(p1), p2(p2), p3(p3), p4(p4), p5(p5), bitmap(0) 
+  {
+    e.async_load_callback(url, &BM_cb, this);
+  }
+  void Prepare2() {
     std::string homepage = gameapi_homepageurl;
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
@@ -11442,10 +11517,21 @@ public:
       bm.id = p.first;
       BitmapHandle *handle = find_bitmap(e, bm);
       bitmap = find_color_bitmap(handle);
-      bitmap->Prepare();
       return;
     }
     bitmap=0;
+
+  }
+  void Prepare() {
+    if (bitmap)
+     bitmap->Prepare();
+    else {
+#ifdef EMSCRIPTEN
+      std::cout << "BM_script: script not ready at Prepare()" << std::endl;
+#endif
+      Prepare2();
+      bitmap->Prepare();
+    }
   }
   virtual int SizeX() const { if (bitmap) return bitmap->SizeX(); return 1; }
   virtual int SizeY() const { if (bitmap) return bitmap->SizeY(); return 1; }
@@ -11464,6 +11550,13 @@ private:
   std::string p1,p2,p3,p4,p5;
   Bitmap<Color> *bitmap;
 };
+
+void BM_cb(void *data)
+{
+  BM_script *script = (BM_script*)data;
+  script->Prepare2();
+}
+
 
 GameApi::BM GameApi::MainLoopApi::load_BM_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {

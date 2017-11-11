@@ -3357,6 +3357,7 @@ GameApi::BM GameApi::BitmapApi::avg(BM bm1, BM bm2)
 GameApi::BM GameApi::BitmapApi::fix_edges(BM bm)
 {
   BM bm2 = flip_x(bm);
-  BM bm3 = flip_y(bm2);
-  return avg(bm,bm3);
+  BM bm3 = flip_y(bm);
+  BM bm4 = flip_y(bm2);
+  return avg(avg(bm,bm2),avg(bm4,bm3));
 }
