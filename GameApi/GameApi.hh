@@ -220,6 +220,7 @@ public:
   IMPORT void free_to_counts(std::vector<int> vec);
   IMPORT void free_temp_memory();
   IMPORT void async_load_url(std::string url, std::string homepage);
+  IMPORT void async_load_callback(std::string url, void (*fptr)(void*), void *data);
   IMPORT std::vector<unsigned char> *get_loaded_async_url(std::string url);
   IMPORT ~Env();
   IMPORT static Env *Latest_Env();
@@ -1199,7 +1200,7 @@ public:
   IMPORT MT brashmetal(EveryApi &ev, MT nxt, int count, bool web);
   IMPORT MT marble(EveryApi &ev, MT nxt, int count, float cubesize);
   IMPORT MT web(EveryApi &ev, MT nxt); // TODO: add line width property
-  IMPORT MT bloom(EveryApi &ev, MT nxt, MN move);
+  IMPORT MT bloom(EveryApi &ev, MT nxt, BM bm, float r_cut, float g_cut, float b_cut, float pixel_x, float pixel_y);
   IMPORT MT dist_field_mesh(EveryApi &ev, SFO sfo, MT next);
 
   IMPORT MT mesh_color_from_sfo(EveryApi &ev, SFO sfo, MT next);

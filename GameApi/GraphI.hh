@@ -840,6 +840,7 @@ class ASyncLoader
 public:
   void load_urls(std::string url, std::string homepage);
   std::vector<unsigned char> *get_loaded_data(std::string url) const;
+  void set_callback(std::string url, void (*fptr)(void*), void *data);
 };
 
 template<class T>

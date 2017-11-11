@@ -1371,20 +1371,23 @@ public:
 		counts.push_back(3);
 		counts2.push_back(counter); counter+=3;
 
-		vec.push_back(coll->FacePoint(f,j%count));
-		norm.push_back(coll->PointNormal(f,j%count));
-		color.push_back(coll->Color(f,j%count));
-		texcoord.push_back(coll->TexCoord(f,j%count));
+		vec.push_back(coll->FacePoint(f,i));
+		norm.push_back(coll->PointNormal(f,i));
+		color.push_back(coll->Color(f,i));
+		texcoord.push_back(coll->TexCoord(f,i));
+
 
 		vec.push_back(coll->FacePoint(f,j-1));
 		norm.push_back(coll->PointNormal(f,j-1));
 		color.push_back(coll->Color(f,j-1));
 		texcoord.push_back(coll->TexCoord(f,j-1));
 
-		vec.push_back(coll->FacePoint(f,i));
-		norm.push_back(coll->PointNormal(f,i));
-		color.push_back(coll->Color(f,i));
-		texcoord.push_back(coll->TexCoord(f,i));
+
+		vec.push_back(coll->FacePoint(f,j%count));
+		norm.push_back(coll->PointNormal(f,j%count));
+		color.push_back(coll->Color(f,j%count));
+		texcoord.push_back(coll->TexCoord(f,j%count));
+
 
 		prev--; prev2++;
 

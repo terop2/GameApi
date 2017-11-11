@@ -6271,9 +6271,9 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "MT", "materials_api", "fur"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bloom,
 			 "m_bloom",
-			 { "ev", "nxt", "mn" },
-			 { "EveryApi&", "MT", "MN" },
-			 { "ev", "", "" },
+			 { "ev", "nxt", "bm","r_cut", "g_cut", "b_cut", "pixel_x", "pixel_y" },
+			 { "EveryApi&", "MT", "BM", "float", "float", "float", "float", "float" },
+			 { "ev", "", "", "0.7", "0.7", "0.7", "0.01", "0.01" },
 			 "MT", "materials_api", "bloom"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::choose_color,
 			 "m_choose_color",
