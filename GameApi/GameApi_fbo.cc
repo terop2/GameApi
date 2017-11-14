@@ -91,7 +91,9 @@ EXPORT GameApi::BM GameApi::FrameBufferApi::fbo_to_bitmap(EveryApi &ev, FBO buff
   glBindTexture( GL_TEXTURE_2D, priv->texture);
 
   BufferRef ref = BufferRef::NewBuffer(width, height);
+#ifndef EMSCRIPTEN
   glGetTexImage( GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
+#endif
 
 
   Bitmap<Color> *bm = new BitmapFromBuffer(ref);

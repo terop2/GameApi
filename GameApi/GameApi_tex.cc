@@ -120,7 +120,9 @@ EXPORT GameApi::TXA GameApi::TextureApi::prepare_arr(EveryApi &ev, std::vector<B
   GLsizei layercount = vec.size();
 
   glBindTexture(GL_TEXTURE_2D_ARRAY, id);
+#ifndef EMSCRIPTEN
   glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, width, height, layercount);
+#endif
 
   int s = layercount;
   for(int i=0;i<s;i++)
@@ -138,8 +140,9 @@ EXPORT GameApi::TXA GameApi::TextureApi::prepare_arr(EveryApi &ev, std::vector<B
 
       BufferFromBitmap buf(*b2);
       buf.Gen();
-
+#ifndef EMSCRIPTEN
       glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+#endif
     }
   glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
   glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
@@ -216,11 +219,15 @@ EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
   
   glBindTexture(GL_TEXTURE_2D, tx.id);
   int width=1, height=1;
+#ifndef EMSCRIPTEN
   glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
   glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+#endif
   BufferRef ref = BufferRef::NewBuffer(width, height);
+#ifndef EMSCRIPTEN
   glReadBuffer( GL_COLOR_ATTACHMENT0 );
   glGetTexImage( GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
+#endif
 
   int xx = ref.width;
   int yy = ref.height;
