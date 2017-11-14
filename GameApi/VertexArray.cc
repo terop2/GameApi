@@ -1193,7 +1193,9 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
   for(int i=0;i<ss;i++)
     {
       glBindBuffer(GL_ARRAY_BUFFER, attribi_buffer[i]);
+#ifndef EMSCRIPTEN
       glVertexAttribIPointer(counter, 1, GL_INT, 0,0);
+#endif
       counter++;
     }
     }
@@ -1236,7 +1238,9 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
     {
       glBindBuffer(GL_ARRAY_BUFFER, attribi_buffer2[i]);
       std::cout << "Counter: " << counter << std::endl;
+#ifndef EMSCRIPTEN
       glVertexAttribIPointer(counter, 1, GL_INT, 0,0);
+#endif
       counter++;			    
     }
     }
@@ -1280,7 +1284,9 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
   for(int i=0;i<ss;i++)
     {
       glBindBuffer(GL_ARRAY_BUFFER, attribi_buffer3[i]);
+#ifndef EMSCRIPTEN
       glVertexAttribIPointer(counter, 1, GL_INT, 0,0);
+#endif
       counter++;			    
     }
     }
@@ -1556,7 +1562,9 @@ void RenderVertexArray::render(int id)
   for(int i=0;i<ss;i++)
     {
       glBindBuffer(GL_ARRAY_BUFFER, attribi_buffer[i]);
+#ifndef EMSCRIPTEN
       glVertexAttribIPointer(counter, 1, GL_INT, 0,0);
+#endif
       counter++;
     }
     }
