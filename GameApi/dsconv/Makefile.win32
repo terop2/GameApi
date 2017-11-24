@@ -1,0 +1,3 @@
+
+all:
+	g++ -Wl,--large-address-aware -std=c++11 test.cpp -L.. -Ld:\cvs\pthread\pre-built.2\lib\x86 -I.. -lGameApi -lpthreadGC2 -pthread -o dsconv.exe

@@ -626,6 +626,60 @@ private:
   FaceCollection *filled;
   FaceCollection *current;
 };
+
+class NetworkedFaceCollectionDS : public FaceCollection
+{
+public:
+  NetworkedFaceCollectionDS(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string url, std::string homepage) : e(e), ev(ev), url(url), homepage(homepage), empty(empty)
+  {
+    current = empty;
+    filled = 0;
+  }
+  void Prepare()
+  {
+    if (current==empty) {
+#ifndef EMSCRIPTEN
+      e.async_load_url(url, homepage);
+#endif
+      std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+      if (!ptr) {
+	std::cout << "p_ds_url async not ready yet, failing..." << std::endl;
+	return;
+      }
+      GameApi::P p = ev.polygon_api.p_ds(ev,*ptr);
+      FaceCollection *coll = find_facecoll(e,p);
+      coll->Prepare();
+      filled = coll;
+      current = filled;
+    }
+  }
+  virtual int NumFaces() const { return current->NumFaces(); }
+  virtual int NumPoints(int face) const { return current->NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const { return current->FacePoint(face,point); }
+  virtual Point EndFacePoint(int face, int point) const { return current->EndFacePoint(face, point); }
+
+  virtual Vector PointNormal(int face, int point) const { return current->PointNormal(face,point); }
+  virtual float Attrib(int face, int point, int id) const { return current->Attrib(face,point,id); }
+  virtual int AttribI(int face, int point, int id) const { return current->AttribI(face,point,id); }
+  virtual unsigned int Color(int face, int point) const { return current->Color(face,point); }
+  virtual Point2d TexCoord(int face, int point) const { return current->TexCoord(face,point); }
+  virtual float TexCoord3(int face, int point) const { return current->TexCoord3(face,point); }
+  virtual int NumTextures() const { return current->NumTextures(); }
+  virtual void GenTexture(int num) { current->GenTexture(num); }
+  virtual BufferRef TextureBuf(int num) const { return current->TextureBuf(num); }
+  virtual int FaceTexture(int face) const { return current->FaceTexture(face); }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  std::string url;
+  std::string homepage;
+  FaceCollection *empty;
+  FaceCollection *filled;
+  FaceCollection *current;
+};
+
+
+
 extern std::string gameapi_homepageurl;
 EXPORT GameApi::P GameApi::PolygonApi::p_url(EveryApi &ev, std::string url, int count)
 {
@@ -636,6 +690,16 @@ EXPORT GameApi::P GameApi::PolygonApi::p_url(EveryApi &ev, std::string url, int 
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll),1);
   return p2;
 }
+EXPORT GameApi::P GameApi::PolygonApi::p_ds_url(EveryApi &ev, std::string url)
+{
+  P p = empty();
+  FaceCollection *emp = find_facecoll(e,p);
+  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionDS(e,ev,emp,url,gameapi_homepageurl),1);
+  FaceCollection *coll = find_facecoll(e,p1);
+  GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll),1);
+  return p2;
+}
+
 EXPORT GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
 {
   GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(filename, num), 1);
@@ -7729,4 +7793,195 @@ GameApi::P GameApi::PolygonApi::curve_to_poly(C c, float start_x, float end_x, f
 {
   Curve<Point> *curve = find_curve(e, c);
   return add_polygon2(e, new CurveToPoly(curve, start_x, end_x, start_y, end_y, start_angle, end_angle, numinstances),1);
+}
+
+struct DSVertexHeader
+{
+  int numfaces;
+};
+
+class DSFaceCollection : public FaceCollection
+{
+public:
+  DSFaceCollection(DiskStore *ds) :ds(ds) { ready=false; }
+  void Prepare() { ds->Prepare(); ready=true; }
+  int NumFaces() const {
+    if (!ready) return 0;
+    int num = find_block(6); // header
+    unsigned char *ptr = ds->Block(num);
+    DSVertexHeader *head = (DSVertexHeader*)ptr;
+    return head->numfaces;
+  }
+  int NumPoints(int face) const
+  {
+    if (!ready) return 0;
+    int num = find_block(7);
+    unsigned char *ptr = ds->Block(num);
+    int *array = (int*)ptr;
+    return array[face];
+  }
+  Point FacePoint(int face, int point) const {
+    if (!ready) return Point(0.0,0.0,0.0);
+    int num = find_block(0);
+    unsigned char *ptr = ds->Block(num);
+    Point *array = (Point*)ptr;
+    int pos = vertex_index(face,point);
+    return array[pos];
+  }
+  Vector PointNormal(int face, int point) const
+  {
+    if (!ready) return Vector(0.0,0.0,0.0);
+    int num = find_block(3);
+    unsigned char *ptr = ds->Block(num);
+    Vector *array = (Vector*)ptr;
+    int pos = vertex_index(face,point);
+    return array[pos];
+  }
+  float Attrib(int face, int point, int id) const { return 0.0; }
+  int AttribI(int face, int point, int id) const { return 0; }
+  unsigned int Color(int face, int point) const
+  {
+    if (!ready) return 0xff000000;
+    int num = find_block(1);
+    unsigned char *ptr = ds->Block(num);
+    unsigned int *array = (unsigned int*)ptr;
+    int pos = vertex_index(face,point);
+    return array[pos];
+  }
+  Point2d TexCoord(int face, int point) const
+  {
+    if (!ready) { Point2d p; p.x=0.0; p.y =0.0; return p; }
+    int num = find_block(2);
+    unsigned char *ptr = ds->Block(num);
+    Point2d *array = (Point2d*)ptr;
+    int pos = vertex_index(face,point);
+    return array[pos];
+  }
+  float TexCoord3(int face, int point) const
+  {
+    if (!ready) return 0.0;
+    int num = find_block(9);
+    unsigned char *ptr = ds->Block(num);
+    float *array = (float*)ptr;
+    int pos = vertex_index(face,point);
+    return array[pos];
+  }
+  int find_block(int id) const
+  {
+    int s = ds->NumBlocks();
+    for(int i=0;i<s;i++) { if (ds->BlockType(i)==id) return i; }
+    std::cout << "DSFaceCollection: couldnt find block " << id << std::endl;
+    for(int i=0;i<s;i++) { std::cout << "Block type: " << ds->BlockType(i) << std::endl; }
+    return -1;
+  }
+  int vertex_index(int face, int point) const
+  {
+    int num = find_block(8);
+    unsigned char *ptr = ds->Block(num);
+    int *array = (int*)ptr;
+    return array[face]+point;
+  }
+private:
+  DiskStore *ds;
+  bool ready;
+};
+
+GameApi::P GameApi::PolygonApi::p_ds(EveryApi &ev, std::vector<unsigned char> vec)
+{
+  DS ds = ev.mainloop_api.load_ds_from_mem(vec);
+  DiskStore *dds = find_disk_store(e, ds);
+  return add_polygon2(e, new DSFaceCollection(dds),1);
+}
+
+class DiskStoreCollection : public DiskStore
+{
+public:
+  DiskStoreCollection(FaceCollection *coll) : coll(coll) { }
+  void Prepare() { 
+    coll->Prepare();
+    int s = coll->NumFaces();
+    header.numfaces=s;
+    int accum = 0;
+    for(int i=0;i<s;i++) {
+      int ss = coll->NumPoints(i);
+      pointcounts.push_back(ss);
+      vertexindex.push_back(accum);
+      accum +=ss;
+    }
+    for(int i=0;i<s;i++)
+      {
+	int ss = coll->NumPoints(i);
+	for(int j=0;j<ss;j++) {
+	  Point p = coll->FacePoint(i,j);
+	  Vector n = coll->PointNormal(i,j);
+	  unsigned int c = coll->Color(i,j);
+	  Point2d tx = coll->TexCoord(i,j);
+	  float tx3 = coll->TexCoord3(i,j);
+	  vertex.push_back(p);
+	  normal.push_back(n);
+	  color.push_back(c);
+	  texcoord.push_back(tx);
+	  texcoord3.push_back(tx3);
+	}
+      }
+  }
+  int Type() const { return 0; }
+  int NumBlocks() const { return 8; }
+  int BlockType(int block) const {
+    switch(block) {
+    case 0: return 6; // vertexheader
+    case 1: return 7; // vertexpointcounts
+    case 2: return 8; // vertexindex
+    case 3: return 0; // vertex
+    case 4: return 3; // normal
+    case 5: return 1; // color
+    case 6: return 2; // texcoord
+    case 7: return 9; // texcoord3
+    };
+    return -1;
+  }
+  int BlockSizeInBytes(int block) const
+  {
+    switch(block) {
+    case 0: return sizeof(header);
+    case 1: return pointcounts.size()*sizeof(int);
+    case 2: return vertexindex.size()*sizeof(int);
+    case 3: return vertex.size()*sizeof(Point);
+    case 4: return normal.size()*sizeof(Vector);
+    case 5: return color.size()*sizeof(unsigned int);
+    case 6: return texcoord.size()*sizeof(Point2d);
+    case 7: return texcoord3.size()*sizeof(float);
+    };
+    return -1;
+  }
+  unsigned char *Block(int block) const
+  {
+    switch(block) {
+    case 0: return (unsigned char*)&header;
+    case 1: return (unsigned char*)&pointcounts[0];
+    case 2: return (unsigned char*)&vertexindex[0];
+    case 3: return (unsigned char*)&vertex[0];
+    case 4: return (unsigned char*)&normal[0];
+    case 5: return (unsigned char*)&color[0];
+    case 6: return (unsigned char*)&texcoord[0];
+    case 7: return (unsigned char*)&texcoord3[0];
+    };
+    return 0;
+  }
+private:
+  FaceCollection *coll;
+  DSVertexHeader header;
+  std::vector<int> pointcounts;
+  std::vector<int> vertexindex;
+  std::vector<Point> vertex;
+  std::vector<Vector> normal;
+  std::vector<unsigned int> color;
+  std::vector<Point2d> texcoord;
+  std::vector<float> texcoord3;
+};
+
+GameApi::DS GameApi::PolygonApi::p_ds_inv(GameApi::P p)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  return add_disk_store(e, new DiskStoreCollection(coll));
 }

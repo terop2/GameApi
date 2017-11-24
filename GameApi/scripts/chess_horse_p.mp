@@ -67,4 +67,3 @@ PT I66=ev.point_api.point(15,-53,15);
 P I67=ev.polygon_api.cone(30,I65,I66,2,8);
 P I68=ev.polygon_api.or_elem(I64,I67);
 P I69=ev.polygon_api.or_elem(I61,I68);
-P I70=ev.polygon_api.scale(I69,5,5,5);

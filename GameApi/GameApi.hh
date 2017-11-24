@@ -31,6 +31,7 @@ using std::placeholders::_9;
 #undef rad2
 
 
+  struct DS { int id; };
   struct SBM { int id; };
   struct PN { int id; };
   struct DC { int id; };
@@ -368,6 +369,10 @@ public:
   P load_P_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   ML load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   BM load_BM_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+
+  DS load_ds_from_mem(std::vector<unsigned char> vec);
+  DS load_ds_from_disk(std::string filename);
+  void save_ds(std::string output_filename, DS ds);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);
@@ -2022,6 +2027,9 @@ public:
   IMPORT P load_model_all(std::string filename, int count);
   IMPORT P load_model_all_no_cache(std::string filename, int count);
   IMPORT P p_url(EveryApi &ev, std::string url, int count);
+  IMPORT P p_ds(EveryApi &ev, std::vector<unsigned char> vec);
+  IMPORT P p_ds_url(EveryApi &ev, std::string url);
+  IMPORT DS p_ds_inv(P model);
   IMPORT P file_cache(P model, std::string filename, int obj_num);
   IMPORT P resize_to_correct_size(P model);
         IMPORT void save_model(P poly, std::string filename);

@@ -404,6 +404,14 @@ GameApi::PN add_polynomial(GameApi::Env &e, std::vector<float> *pn)
 
 }
 
+GameApi::DS add_disk_store(GameApi::Env &e, DiskStore *ds)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->disk_store.push_back(ds);
+  GameApi::DS im;
+  im.id = env->disk_store.size()-1;
+  return im;
+}
 GameApi::TXID add_txid(GameApi::Env &e, TextureID *txid)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1337,6 +1345,12 @@ public:
 private:
   int id;
 };
+DiskStore *find_disk_store(GameApi::Env &e, GameApi::DS ds)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->disk_store[ds.id];
+
+}
 ShaderBitmap *find_shader_bitmap(GameApi::Env &e, GameApi::SBM sbm)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -11607,3 +11621,99 @@ GameApi::BM GameApi::MainLoopApi::load_BM_script(EveryApi &ev, std::string url, 
   handle2->bm = bm;
   return add_bitmap(e, handle2);
 }
+
+struct FileHeader
+{
+  char d;
+  char s;
+  int type;
+  int numblocks;
+};
+struct FileBlock
+{
+  int block_type;
+  int block_size_in_bytes;
+  int block_offset_from_beginning_of_file;
+};
+
+class LoadDS : public DiskStore
+{
+public:
+  LoadDS(std::vector<unsigned char> file) : vec(file), valid(false) { }
+  void Prepare() {
+    header = (FileHeader*)&vec[0];
+    blocks = (FileBlock*)&vec[sizeof(FileHeader)];
+    wholefile = (unsigned char*)&vec[0];
+    valid = header->d=='d' && header->s=='s';
+    std::cout << "LoadDS: valid=" << valid << " " << header->d << " " << header->s << std::endl;
+  }
+  int Type() const { return header->type; }
+  int NumBlocks() const { return valid ? header->numblocks : 0; }
+  int BlockType(int block) const { return blocks[block].block_type; }
+  int BlockSizeInBytes(int block) const { return blocks[block].block_size_in_bytes; }
+  unsigned char *Block(int block) const { return wholefile + blocks[block].block_offset_from_beginning_of_file; }
+private:
+  std::vector<unsigned char> vec;
+  FileHeader *header;
+  FileBlock *blocks;
+  unsigned char *wholefile;
+  bool valid;
+};
+
+GameApi::DS GameApi::MainLoopApi::load_ds_from_disk(std::string filename)
+{
+  std::ifstream t(filename,std::ios::in | std::ios::binary);
+  std::string str;
+  if (t) {
+    t.seekg(0,std::ios::end);
+    str.resize(t.tellg());
+    t.seekg(0,std::ios::beg);
+    t.read(&str[0],str.size());
+    t.close();
+  }
+  std::vector<unsigned char> vec(str.begin(),str.end());
+  return add_disk_store(e, new LoadDS(vec));
+}
+GameApi::DS GameApi::MainLoopApi::load_ds_from_mem(std::vector<unsigned char> vec)
+{
+   return add_disk_store(e, new LoadDS(vec));
+}
+
+void GameApi::MainLoopApi::save_ds(std::string output_filename, DS ds)
+{
+  std::ofstream ff(output_filename, std::ios::out | std::ios::binary);
+
+  int offset = 0;
+  DiskStore *dds = find_disk_store(e, ds);
+  dds->Prepare();
+  FileHeader h;
+  h.d = 'd';
+  h.s = 's';
+  h.type = dds->Type();
+  h.numblocks = dds->NumBlocks();
+  std::cout << "Writing Header:" << sizeof(FileHeader) << std::endl;
+  ff.write((char*)&h, (int)sizeof(FileHeader));
+  offset += sizeof(FileHeader);
+  int s = h.numblocks;
+  offset += sizeof(FileBlock)*s;
+  for(int i=0;i<s;i++)
+    {
+      FileBlock b;
+      b.block_type = dds->BlockType(i);
+      b.block_size_in_bytes = dds->BlockSizeInBytes(i);
+      b.block_offset_from_beginning_of_file = offset;
+      offset += b.block_size_in_bytes;
+      std::cout << "Writing FileBlock:" << sizeof(FileBlock) << std::endl;
+      ff.write((char*)&b,(int)sizeof(FileBlock));
+    }
+  for(int i=0;i<s;i++)
+    {
+      int s = dds->BlockSizeInBytes(i);
+      unsigned char *ptr = dds->Block(i);
+      std::cout << "Writing Block:" << s << std::endl;
+      ff.write((char*)ptr, s);
+    }
+  std::cout << "Closing file" << std::endl;
+  ff.close();
+}
+

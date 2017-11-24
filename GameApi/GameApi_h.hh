@@ -587,6 +587,7 @@ struct EnvImpl
   std::vector<DynamicChange*> dyn_change;
   std::vector<std::vector<float> *> polynomials;
   std::vector<ShaderBitmap*> shaderbitmaps;
+  std::vector<DiskStore*> disk_store;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -912,6 +913,7 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::DS add_disk_store(GameApi::Env &e, DiskStore *ds);
 GameApi::SBM add_shader_bitmap(GameApi::Env &e, ShaderBitmap *sbm);
 GameApi::PN add_polynomial(GameApi::Env &e, std::vector<float> *pn);
 GameApi::DC add_dyn_change(GameApi::Env &e, DynamicChange *dc);
@@ -1038,6 +1040,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+DiskStore *find_disk_store(GameApi::Env &e, GameApi::DS store);
 ShaderBitmap *find_shader_bitmap(GameApi::Env &e, GameApi::SBM sbm);
 std::vector<float> *find_polynomial(GameApi::Env &e, GameApi::PN pn);
 DynamicChange *find_dyn_change(GameApi::Env &e, GameApi::DC dc);
