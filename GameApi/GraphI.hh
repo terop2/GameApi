@@ -1100,4 +1100,17 @@ public:
 };
 
 
+class DiskStore
+{
+public:
+  // types: 0=P, 1=BM, 2=VX
+  virtual void Prepare()=0;
+  virtual int Type() const=0;
+  virtual int NumBlocks() const=0;
+  // blocktypes: 0=vertex, 1=color, 2=texcoord, 3=normal, 4=bitmap, 5=voxel, 6=vertexheader, 7=vertexpointcounts, 8=vertexindex, 9=texcoord3
+  virtual int BlockType(int block) const=0;
+  virtual int BlockSizeInBytes(int block) const=0;
+  virtual unsigned char* Block(int block) const=0;
+};
+
 #endif

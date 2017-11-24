@@ -6,7 +6,7 @@ GameApi::SurfaceApi::SurfaceApi(GameApi::Env &e) : e(e)
 }
 GameApi::SurfaceApi::~SurfaceApi()
 {
-  delete(PolyPriv*)priv;
+  delete(SurfPriv*)priv;
 }
 GameApi::S GameApi::SurfaceApi::bitmapsphere(PT center, float radius0, float radius1, BM height)
 {
