@@ -9616,7 +9616,7 @@ ASyncCallback *rem_async_cb(std::string url)
   int s = load_url_callbacks.size();
   for(int i=s-1;i>=0;i--)
     {
-      if (load_url_callbacks[i]==url) break;
+      if (load_url_callbacks[i].url==url) break;
     }
   ASyncCallback *cb = load_url_callbacks[i].cb;
   load_url_callbacks.erase(load_url_callbacks.begin()+i);
