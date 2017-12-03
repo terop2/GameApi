@@ -11425,6 +11425,10 @@ public:
       async_taken=false;
       return;
     }
+    if (async_taken)
+      async_pending_count--;
+    async_taken = false;
+    
   }
   void Prepare() { 
     if (!coll) { 
@@ -11510,6 +11514,9 @@ public:
       //GameApi::P pp;
       //pp.id = -1;
       main2 = 0;
+      if (async_taken)
+	async_pending_count--;
+      async_taken = false;
 
   }
   virtual void execute(MainLoopEnv &e3)
@@ -11596,6 +11603,9 @@ public:
       return;
     }
     bitmap=0;
+    if (async_taken)
+      async_pending_count--;
+    async_taken=false;
 
   }
   void Prepare() {
