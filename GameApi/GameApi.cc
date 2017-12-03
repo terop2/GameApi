@@ -9601,7 +9601,7 @@ EXPORT GameApi::KF GameApi::VertexAnimApi::repeat_keyframes(KF rep, int count)
 
 std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
 struct ASyncCallback { void (*fptr)(void*); void *data; };
-struct ASyncCallback2 { std::string url; ASyncCallback *cb; }
+struct ASyncCallback2 { std::string url; ASyncCallback *cb; };
 //std::map<std::string, ASyncCallback*> load_url_callbacks;
 std::vector<ASyncCallback2> load_url_callbacks;
 void add_async_cb(std::string url, ASyncCallback *cb)
