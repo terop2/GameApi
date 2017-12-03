@@ -9612,7 +9612,7 @@ void onerror_async_cb(void *arg)
   std::string url_only(striphomepage(url_str));
     load_url_buffers_async[url_only] = (std::vector<unsigned char>*)-1;
     async_pending_count--;
-    std::cout << "ASync pending dec (onerror_async_cb)" << std::endl;
+    std::cout << "ASync pending dec (onerror_async_cb) -->" << async_pending_count << std::endl;
     
   ASyncCallback *cb = load_url_callbacks[url_only];
   if (cb) {
@@ -9638,7 +9638,7 @@ void onload_async_cb(void *arg, void *data, int datasize)
   std::cout << "url loading complete! " << url_str << std::endl;
   load_url_buffers_async[url_only] = new std::vector<unsigned char>(buffer);
   async_pending_count--;
-    std::cout << "ASync pending dec (onload_async_cb)" << std::endl;
+  std::cout << "ASync pending dec (onload_async_cb) -->" << async_pending_count<< std::endl;
   
   std::cout << "Async cb!" << url_only << std::endl;
   ASyncCallback *cb = load_url_callbacks[url_only];
@@ -9681,7 +9681,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     buf2[url3.size()]=0;
     
     async_pending_count++;
-    std::cout << "ASync pending inc (load_urls)" << std::endl;
+    std::cout << "ASync pending inc (load_urls) -->" << async_pending_count << std::endl;
 
     emscripten_async_wget_data(buf2, (void*)buf2 , &onload_async_cb, &onerror_async_cb);
 #else

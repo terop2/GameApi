@@ -4511,7 +4511,7 @@ void onerror_cb(void *arg)
 
     load_url_buffers[url_only] = (std::vector<unsigned char>*)-1;
     async_pending_count--;
-    std::cout << "async_pending_count dec (onerror_cb)" << std::endl;
+    std::cout << "async_pending_count dec (onerror_cb) -->" << async_pending_count << std::endl;
 }
 void onload_cb(void *arg, void *data, int datasize)
 {
@@ -4526,7 +4526,7 @@ void onload_cb(void *arg, void *data, int datasize)
     
     load_url_buffers[url_only] = new std::vector<unsigned char>(buffer);
     async_pending_count--;
-    std::cout << "async_pending_count dec (onlosd_cb)" << std::endl;
+    std::cout << "async_pending_count dec (onlosd_cb) -->" << async_pending_count << std::endl;
 }
 struct ASyncData
 {
@@ -4576,7 +4576,7 @@ void LoadUrls(const CodeGenLine &line, std::string homepage)
     buf2[url.size()]=0;
     
     async_pending_count++;
-    std::cout << "async_pending_count inc (LoadUrls)" << std::endl;
+    std::cout << "async_pending_count inc (LoadUrls) -->" << async_pending_count << std::endl;
 
     emscripten_async_wget_data(buf2, (void*)buf2 , &onload_cb, &onerror_cb);
 #endif
