@@ -9740,7 +9740,7 @@ GameApi::BM GameApi::FontApi::string_display_to_bitmap(SD sd, int def)
   StringDisplay *sdd = find_string_display(e, sd);
   Bitmap<int> *bm1 = new StringDisplayToBitmap(*sdd, def);
   env->deletes.push_back(std::shared_ptr<void>(bm1)); 
-  Bitmap<Color> *bm2 = new MapBitmapToColor(0,255,Color(255,255,255,255), Color(255,255,255,0), *bm1);
+  Bitmap<Color> *bm2 = new MapBitmapToColor(0,255,Color(255,255,255,255), Color(0,0,0,0), *bm1);
   return add_color_bitmap(e, bm2);
 }
 

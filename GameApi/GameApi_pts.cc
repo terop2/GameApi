@@ -1443,16 +1443,41 @@ private:
   PointsApiPoints *pts;
   std::string name;
 };
-GameApi::ML GameApi::PointsApi::collision_bind(PTS bounding_box, std::string name)
+GameApi::ML GameApi::PointsApi::collision_bind(EveryApi &ev,PTS bounding_box, std::string name)
 {
   PointsApiPoints *pt = find_pointsapi_points(e, bounding_box);
-  return add_main_loop(e, new CollisionBind(pt, name));
+  GameApi::ML ml = add_main_loop(e, new CollisionBind(pt, name));
+#ifndef EMSCRIPTEN
+  GameApi::PT I1=ev.point_api.point(0.0,0.0,0.0);
+  GameApi::P I2=ev.polygon_api.sphere(I1,5,8,8);
+  GameApi::ML I3=ev.materials_api.render_instanced_ml(ev,I2,bounding_box);
+#endif
+  GameApi::ML res = ev.mainloop_api.array_ml({ml
+#ifndef EMSCRIPTEN
+	,I3
+#endif
+	});
+
+  return res;
 }
-GameApi::ML GameApi::PointsApi::collision_bind_inst(PTS bounding_box, PTS inst_points, std::string name)
+GameApi::ML GameApi::PointsApi::collision_bind_inst(EveryApi &ev, PTS bounding_box, PTS inst_points, std::string name)
 {
   PointsApiPoints *pt1 = find_pointsapi_points(e, bounding_box);
   PointsApiPoints *pt2 = find_pointsapi_points(e, inst_points);
-  return add_main_loop(e, new CollisionBindInst(pt1, pt2, name));
+  GameApi::ML ml = add_main_loop(e, new CollisionBindInst(pt1, pt2, name));
+
+#ifndef EMSCRIPTEN
+  GameApi::PT I1=ev.point_api.point(0.0,0.0,0.0);
+  GameApi::P I2=ev.polygon_api.sphere(I1,5,8,8);
+  GameApi::P I2a=ev.polygon_api.static_instancing(ev,I2,bounding_box);
+  GameApi::ML I3=ev.materials_api.render_instanced_ml(ev,I2a,inst_points);
+#endif
+  GameApi::ML res = ev.mainloop_api.array_ml({ml
+#ifndef EMSCRIPTEN
+	,I3
+#endif
+	});
+  return res;
 }
 
 float AxisPos(Point p1, Point p2, Point p)

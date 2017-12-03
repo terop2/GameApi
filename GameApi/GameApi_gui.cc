@@ -8116,15 +8116,15 @@ std::vector<GameApiItem*> pointsapi_functions()
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::collision_bind,
 			 "pts_collision_bind",
-			 { "bounding_box", "name" },
-			 { "PTS", "std::string" },
-			 { "", "obj1" },
+			 { "ev","bounding_box", "name" },
+			 { "EveryApi&","PTS", "std::string" },
+			 { "ev", "", "obj1" },
 			 "ML", "points_api", "collision_bind"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::collision_bind_inst,
 			 "pts_coll_bind_inst",
-			 { "bounding_box", "inst_points", "name" },
-			 { "PTS", "PTS", "std::string" },
-			 { "", "", "obj1" },
+			 { "ev","bounding_box", "inst_points", "name" },
+			 { "EveryApi&","PTS", "PTS", "std::string" },
+			 { "ev", "", "", "obj1" },
 			 "ML", "points_api", "collision_bind_inst"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::collision_collect,
 			 "collidion_collect",

@@ -393,53 +393,62 @@ EXPORT GameApi::LI GameApi::LinesApi::border_from_bool_bitmap(GameApi::BB b, flo
 class LI_Render : public MainLoopItem
 {
 public:
-  LI_Render(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LLA l) : env(e), ev(ev), api(api), l(l) { }
+  LI_Render(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LLA l) : env(e), ev(ev), api(api), l(l) { shader.id = -1;}
   void handle_event(MainLoopEvent &e)
   {
   }
   void execute(MainLoopEnv &e) {
     GameApi::SH sh;
     sh.id = e.sh_color;
+    shader = sh;
     ev.shader_api.use(sh);
 	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+
 	ev.shader_api.set_var(sh, "in_T", m1);
 	ev.shader_api.set_var(sh, "in_N", m2);
 	ev.shader_api.set_var(sh, "time", e.time);
+    ev.shader_api.set_var(sh, "in_POS", 0.0f);
 
     api.render(l);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return -1; }
+  int shader_id() { return shader.id; }
 
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
   GameApi::LinesApi &api;
   GameApi::LLA l;
+  GameApi::SH shader;
 };
 
 
 class LI_Render2 : public MainLoopItem
 {
 public:
-  LI_Render2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l) : env(e), ev(ev), api(api), l(l) {firsttime=true; }
+  LI_Render2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l) : env(e), ev(ev), api(api), l(l) {firsttime=true; shader.id=-1; }
   void handle_event(MainLoopEvent &e)
   {
   }
   void execute(MainLoopEnv &e) {
     GameApi::SH sh;
     sh.id = e.sh_color;
+    shader = sh;
     ev.shader_api.use(sh);
 	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+
 	ev.shader_api.set_var(sh, "in_T", m1);
 	ev.shader_api.set_var(sh, "in_N", m2);
 	ev.shader_api.set_var(sh, "time", e.time);
+	ev.shader_api.set_var(sh, "in_POS", 0.0f);
 
 	if (firsttime)
 	  {
@@ -450,7 +459,7 @@ public:
     api.render(l2);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return -1; }
+  int shader_id() { return shader.id; }
 
 private:
   GameApi::Env &env;
@@ -459,6 +468,7 @@ private:
   GameApi::LI l;
   GameApi::LLA l2;
   bool firsttime;
+  GameApi::SH shader;
 };
 
 
@@ -952,8 +962,8 @@ EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
 	Point p2 = coll->LinePoint(i,1);
 	Point k = coll->EndLinePoint(i,0);
 	Point k2 = coll->EndLinePoint(i,1);
-	if (p.x==p2.x && p.y==p2.y && p.z==p2.z)
-	  p2.x+=1.0;
+	//if (p.x==p2.x && p.y==p2.y && p.z==p2.z)
+	//  p2.x+=1.0;
 	unsigned int color1 = coll->LineColor(i,0);
 	unsigned int color2 = coll->LineColor(i,1);
 	//std::cout << std::hex << color1 << ";" << std::hex << color2 << std::endl;
