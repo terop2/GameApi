@@ -9666,6 +9666,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     std::cout << "url loading started! " << url << std::endl;
 
     // if we have already loaded the same url, don't load again
+#if 0
     if (load_url_buffers_async[url]) { 
       ASyncCallback *cb = load_url_callbacks[url];
       if (cb) {
@@ -9674,7 +9675,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
       }
       return; 
     }
-    
+#endif    
     char *buf2 = new char[url3.size()+1];
     std::copy(url3.begin(), url3.end(), buf2);
     buf2[url3.size()]=0;
