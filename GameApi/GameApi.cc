@@ -11651,7 +11651,7 @@ public:
       bitmap = find_color_bitmap(handle);
       if (async_taken)
       	async_pending_count--;
-      /async_taken=false;
+      async_taken=false;
       return;
     }
     bitmap=0;
