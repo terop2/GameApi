@@ -9614,7 +9614,8 @@ void add_async_cb(std::string url, ASyncCallback *cb)
 ASyncCallback *rem_async_cb(std::string url)
 {
   int s = load_url_callbacks.size();
-  for(int i=s-1;i>=0;i--)
+  int i = s-1;
+  for(;i>=0;i--)
     {
       if (load_url_callbacks[i].url==url) break;
     }
