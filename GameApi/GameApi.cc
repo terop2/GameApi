@@ -11392,7 +11392,7 @@ class P_script : public FaceCollection
 public:
   P_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url), p1(p1), p2(p2), p3(p3), p4(p4), p5(p5), coll(0) {
     e.async_load_callback(url, &P_cb, this);
-    async_pending_count++;
+    async_pending_count++; async_taken = true;
   }
   void Prepare2() {
     std::string homepage = gameapi_homepageurl;
@@ -11413,7 +11413,9 @@ public:
       pp.id = p.first;
       p_data = pp;
       coll = find_facecoll(e,p_data);
-      async_pending_count--;
+      if (async_taken)
+	async_pending_count--;
+      async_taken=false;
       return;
     }
   }
@@ -11449,6 +11451,7 @@ private:
   std::string p1,p2,p3,p4,p5;
   GameApi::P p_data;
   FaceCollection *coll;
+  bool async_taken;
 };
 
 void P_cb(void *data)
@@ -11470,7 +11473,7 @@ class ML_script : public MainLoopItem
 public:
   ML_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url),p1(p1), p2(p2), p3(p3), p4(p4), p5(p5) , main2(0) { firsttime = true; 
        e.async_load_callback(url, &ML_cb, this); 
-       async_pending_count++;
+       async_pending_count++; async_taken=true;
   }
   void Prepare2() {
     std::string homepage = gameapi_homepageurl;
@@ -11490,8 +11493,9 @@ public:
 	GameApi::ML pp;
 	pp.id = p.first;
 	main2 = find_main_loop(e,pp);
-        async_pending_count--;
-
+	if (async_taken)
+	  async_pending_count--;
+	async_taken = false;
 	//main2->execute(e3);
 	//firsttime = false;
 	return;
@@ -11536,6 +11540,7 @@ private:
   std::string p1,p2,p3,p4,p5;
   bool firsttime;
   MainLoopItem *main2;
+  bool async_taken;
 };
 
 void ML_cb(void *data)
@@ -11557,7 +11562,7 @@ public:
   BM_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url), p1(p1), p2(p2), p3(p3), p4(p4), p5(p5), bitmap(0) 
   {
     e.async_load_callback(url, &BM_cb, this);
-    async_pending_count++;
+    async_pending_count++; async_taken = true;
   }
   void Prepare2() {
     std::string homepage = gameapi_homepageurl;
@@ -11578,7 +11583,9 @@ public:
       bm.id = p.first;
       BitmapHandle *handle = find_bitmap(e, bm);
       bitmap = find_color_bitmap(handle);
-      async_pending_count--;
+      if (async_taken)
+	async_pending_count--;
+      async_taken=false;
       return;
     }
     bitmap=0;
@@ -11612,6 +11619,7 @@ private:
   std::string url;
   std::string p1,p2,p3,p4,p5;
   Bitmap<Color> *bitmap;
+  bool async_taken;
 };
 
 void BM_cb(void *data)
