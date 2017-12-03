@@ -11483,6 +11483,7 @@ private:
 
 void P_cb(void *data)
 {
+  std::ccout << "P_cb" << std::endl;
   P_script *script = (P_script*)data;
   script->Prepare2();
 }
@@ -11500,7 +11501,8 @@ class ML_script : public MainLoopItem
 public:
   ML_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url),p1(p1), p2(p2), p3(p3), p4(p4), p5(p5) , main2(0) { firsttime = true; 
        e.async_load_callback(url, &ML_cb, this); 
-       //async_pending_count++; async_taken=true;
+       async_pending_count++; async_taken=true;
+       std::cout << "async_pending_count inc (ML_sctipr) " << async_pending_count << std::endl;
   }
   void Prepare2() {
     std::string homepage = gameapi_homepageurl;
@@ -11520,9 +11522,10 @@ public:
 	GameApi::ML pp;
 	pp.id = p.first;
 	main2 = find_main_loop(e,pp);
-	//if (async_taken)
-	//  async_pending_count--;
-	//async_taken = false;
+	if (async_taken)
+	  async_pending_count--;
+	std::cout << "async_pending_count dec (ML_sctipr) " << async_pending_count << std::endl;
+	async_taken = false;
 	//main2->execute(e3);
 	//firsttime = false;
 	return;
@@ -11530,9 +11533,10 @@ public:
       //GameApi::P pp;
       //pp.id = -1;
       main2 = 0;
-      //if (async_taken)
-      //async_pending_count--;
-      //async_taken = false;
+      if (async_taken)
+      async_pending_count--;
+      async_taken = false;
+       std::cout << "async_pending_count dec (ML_sctipr2) " << async_pending_count << std::endl;
 
   }
   virtual void execute(MainLoopEnv &e3)
@@ -11575,6 +11579,7 @@ private:
 
 void ML_cb(void *data)
 {
+  std::ccout << "ML_cb" << std::endl;
   ML_script *script = (ML_script*)data;
   script->Prepare2();
 }
@@ -11657,6 +11662,8 @@ private:
 
 void BM_cb(void *data)
 {
+  std::ccout << "BM_cb" << std::endl;
+
   BM_script *script = (BM_script*)data;
   script->Prepare2();
 }
