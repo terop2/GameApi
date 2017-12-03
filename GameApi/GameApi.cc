@@ -11483,7 +11483,7 @@ private:
 
 void P_cb(void *data)
 {
-  std::ccout << "P_cb" << std::endl;
+  std::cout << "P_cb" << std::endl;
   P_script *script = (P_script*)data;
   script->Prepare2();
 }
@@ -11579,7 +11579,7 @@ private:
 
 void ML_cb(void *data)
 {
-  std::ccout << "ML_cb" << std::endl;
+  std::cout << "ML_cb" << std::endl;
   ML_script *script = (ML_script*)data;
   script->Prepare2();
 }
@@ -11662,7 +11662,7 @@ private:
 
 void BM_cb(void *data)
 {
-  std::ccout << "BM_cb" << std::endl;
+  std::cout << "BM_cb" << std::endl;
 
   BM_script *script = (BM_script*)data;
   script->Prepare2();
