@@ -8513,6 +8513,7 @@ void blocker_iter(void *arg)
 
 }
 extern int async_pending_count;
+int async_pending_count_previous=-1;
 
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
@@ -8577,6 +8578,11 @@ public:
     Envi_2 *env = (Envi_2*)&envi;
     //std::cout << "async: " << async_pending_count << std::endl;
     if (async_pending_count > 0) { env->logo_shown = true; }
+    if (async_pending_count != async_pending_count_previous)
+      {
+	std::cout << "ASync pending count=" << async_pending_count << std::endl;
+	async_pending_count_previous = async_pending_count;
+      }
     if (env->logo_shown)
       {
 	bool b = env->ev->mainloop_api.logo_iter();
