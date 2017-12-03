@@ -11508,7 +11508,7 @@ public:
 #ifdef EMSCRIPTEN
       std::cout << "ML_script: script not ready at Prepare()" << std::endl;
 #endif
-      //Prepare2();
+      Prepare2();
       }
       firsttime = false;
     }
