@@ -11508,7 +11508,7 @@ public:
 #ifdef EMSCRIPTEN
       std::cout << "ML_script: script not ready at Prepare()" << std::endl;
 #endif
-      Prepare2();
+      //Prepare2();
       }
       firsttime = false;
     }
@@ -11592,7 +11592,8 @@ public:
       std::cout << "BM_script: script not ready at Prepare()" << std::endl;
 #endif
       Prepare2();
-      bitmap->Prepare();
+      if (bitmap)
+	bitmap->Prepare();
     }
   }
   virtual int SizeX() const { if (bitmap) return bitmap->SizeX(); return 1; }
