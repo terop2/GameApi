@@ -4504,6 +4504,7 @@ std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
 int async_pending_count = 0;
 void onerror_cb(void *arg)
 {
+  std::cout << "ERROR: onerror_cb" << std::endl; 
     char *url = (char*)arg;
     std::string url_str(url);
       std::string url_only(striphomepage(url_str));
