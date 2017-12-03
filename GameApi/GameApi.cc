@@ -9606,6 +9606,13 @@ void onerror_async_cb(void *arg)
   std::string url_only(striphomepage(url_str));
     load_url_buffers_async[url_only] = (std::vector<unsigned char>*)-1;
     async_pending_count--;
+
+  ASyncCallback *cb = load_url_callbacks[url_only];
+  if (cb) {
+    std::cout << "Load cb!" << url_only << std::endl;
+    (*cb->fptr)(cb->data);
+  }
+
 }
 std::string striphomepage(std::string);
 void onload_async_cb(void *arg, void *data, int datasize)
