@@ -9601,7 +9601,28 @@ EXPORT GameApi::KF GameApi::VertexAnimApi::repeat_keyframes(KF rep, int count)
 
 std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
 struct ASyncCallback { void (*fptr)(void*); void *data; };
-std::map<std::string, ASyncCallback*> load_url_callbacks;
+struct ASyncCallback2 { std::string url; ASyncCallback *cb; }
+//std::map<std::string, ASyncCallback*> load_url_callbacks;
+std::vector<ASyncCallback2> load_url_callbacks;
+void add_async_cb(std::string url, ASyncCallback *cb)
+{
+  ASyncCallback2 cb2;
+  cb2.url = url;
+  cb2.cb = cb;
+  load_url_callbacks.push_back(cb2);
+}
+ASyncCallback *rem_async_cb(std::string url)
+{
+  int s = load_url_callbacks.size();
+  for(int i=s-1;i>=0;i--)
+    {
+      if (load_url_callbacks[i]==url) break;
+    }
+  ASyncCallback *cb = load_url_callbacks[i].cb;
+  load_url_callbacks.erase(load_url_callbacks.begin()+i);
+  return cb;
+}
+
 
 std::string striphomepage(std::string);
 void onerror_async_cb(void *arg)
@@ -9614,7 +9635,7 @@ void onerror_async_cb(void *arg)
     async_pending_count--;
     std::cout << "ASync pending dec (onerror_async_cb) -->" << async_pending_count << std::endl;
     
-  ASyncCallback *cb = load_url_callbacks[url_only];
+    ASyncCallback *cb = rem_async_cb(url_only); //load_url_callbacks[url_only];
   if (cb) {
     std::cout << "Load cb!" << url_only << std::endl;
     (*cb->fptr)(cb->data);
@@ -9641,7 +9662,7 @@ void onload_async_cb(void *arg, void *data, int datasize)
   std::cout << "ASync pending dec (onload_async_cb) -->" << async_pending_count<< std::endl;
   
   std::cout << "Async cb!" << url_only << std::endl;
-  ASyncCallback *cb = load_url_callbacks[url_only];
+  ASyncCallback *cb = rem_async_cb(url_only); //load_url_callbacks[url_only];
   if (cb) {
     std::cout << "Load cb!" << url_only << std::endl;
     (*cb->fptr)(cb->data);
@@ -9656,7 +9677,8 @@ void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
   ASyncCallback* cb = new ASyncCallback;
   cb->fptr = fptr;
   cb->data = data;
-  load_url_callbacks[url] = cb;
+  //load_url_callbacks[url] = cb;
+  add_async_cb(url,cb);
   std::cout << "async set callback" << url << std::endl;
 }
 void ASyncLoader::load_urls(std::string url, std::string homepage)
@@ -9669,7 +9691,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
     // if we have already loaded the same url, don't load again
     if (load_url_buffers_async[url]) { 
-      ASyncCallback *cb = load_url_callbacks[url];
+      ASyncCallback *cb = rem_async_cb(url); //load_url_callbacks[url];
       if (cb) {
 	std::cout << "Load cb!" << url << std::endl;
 	(*cb->fptr)(cb->data);
@@ -9693,7 +9715,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     }
     load_url_buffers_async[url2] = new std::vector<unsigned char>(buf);
     std::cout << "Async cb!" << url2 << std::endl;
-    ASyncCallback *cb = load_url_callbacks[url2];
+    ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
     if (cb) {
       std::cout << "Load cb!" << url2 << std::endl;
       (*cb->fptr)(cb->data);
@@ -11495,6 +11517,8 @@ GameApi::P GameApi::MainLoopApi::load_P_script(EveryApi &ev, std::string url, st
 }
 
 void ML_cb(void* data);
+
+
 
 class ML_script : public MainLoopItem
 {
