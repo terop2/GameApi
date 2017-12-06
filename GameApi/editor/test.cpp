@@ -1100,6 +1100,7 @@ void iter(void *arg)
 			for(int i=0;i<s;i++)
 			  {
 			    DllData &d = env->dlls[i];
+			    if (d.type_symbol)
 			    if (type==(*d.type_symbol)())
 			      {
 				(*d.display)(id,0);
