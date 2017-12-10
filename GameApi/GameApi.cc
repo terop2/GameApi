@@ -4868,7 +4868,7 @@ public:
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml(ev,I16);
     GameApi::ML I17a = ev.texture_api.forward_to_txid(I17,I15);
-    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17a, mix);
+    GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a, mix);
     return I18;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
@@ -4884,7 +4884,7 @@ public:
     GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
     GameApi::ML I17a = ev.texture_api.forward_to_txid(I17,I15);
-    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17a,mix);
+    GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a,mix);
     return I18;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
@@ -4900,7 +4900,7 @@ public:
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
     GameApi::ML I17a = ev.texture_api.forward_to_txid(I17,I15);
-    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17a,mix);
+    GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a,mix);
     return I18;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
@@ -4916,7 +4916,7 @@ public:
     GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml_fade(ev,I16,pta, flip, start_time, end_time);
     GameApi::ML I17a = ev.texture_api.forward_to_txid(I17,I15);
-    GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17a,mix);
+    GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a,mix);
     return I18;
   }
 private:
