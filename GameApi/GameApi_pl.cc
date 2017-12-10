@@ -7406,7 +7406,7 @@ public:
     "      float alpha = tex1.a + tex2.a;\n"
     "      vec3 col = tex1.xyz + \n"
     "                 tex2.xyz; \n"
-    "      colOut += gWeights[i] * col; \n"
+    "      colOut += sqrt(gWeights[i] * col*col); \n"
     "      alphaOut += gWeights[i] * alpha;\n"
     "     }\n"
     "     return vec4(colOut,alphaOut);\n"

@@ -4276,9 +4276,11 @@ int template_get_id(T t) { return t.id; }
 #ifdef FIRST_PART
 int template_get_id(GameApi::ARR a) { return 0; }
 #endif
-template<class T, class RT, class... P>
-int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
-	     RT (T::*fptr)(P...), std::vector<std::string> s, GameApi::ExecuteEnv &e, std::vector<std::string> param_name, std::string return_type)
+
+void funccall_1(std::vector<std::string> &s, GameApi::ExecuteEnv &e, std::vector<std::string> param_name);
+
+#ifdef FIRST_PART
+void funccall_1(std::vector<std::string> &s, GameApi::ExecuteEnv &e, std::vector<std::string> param_name)
 {
   int s3 = s.size();
   if (s.size()!=param_name.size()) { std::cout << "funccall: param_names and parameter values std::vectors different size" << std::endl; }
@@ -4297,7 +4299,32 @@ int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api
 	}
       
     }
-
+}
+#endif
+template<class T, class RT, class... P>
+int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
+	     RT (T::*fptr)(P...), std::vector<std::string> s, GameApi::ExecuteEnv &e, std::vector<std::string> param_name, std::string return_type)
+{
+  funccall_1(s,e,param_name);
+#if 0
+  int s3 = s.size();
+  if (s.size()!=param_name.size()) { std::cout << "funccall: param_names and parameter values std::vectors different size" << std::endl; }
+  for(int i=0;i<s3;i++)
+    {
+      std::string pn = param_name[i];
+      int s4 = e.names.size();
+      for(int j=0;j<s4;j++)
+	{
+	  std::string n = e.names[j];
+	  std::string v = e.values[j];
+	  if (pn == n)
+	    {
+	      s[i] = v;
+	    }
+	}
+      
+    }
+#endif
 
   std::stringstream ss;
   int s2 = s.size();
@@ -4852,7 +4879,45 @@ private:
 };
 
 #endif
+std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_type, std::string return_type, std::string api_name, std::string func_name);
 
+
+#ifdef FIRST_PART
+std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_type, std::string return_type, std::string api_name, std::string func_name)
+{
+      std::string s;
+    int ss = params.size();
+   for(int i=0;i<ss;i++)
+      {
+	s+= params[i];
+      }
+
+    s+= return_type;
+    s+= " ";
+    std::string id = unique_id_apiitem();
+    s+= id;
+    s+= "=";
+    s+= "ev.";
+    s+= api_name;
+    s+= ".";
+    s+= func_name;
+    s+= "(";
+    int sk = param_names.size();
+    for(int i=0;i<sk;i++)
+      {
+	if (param_names[i]=="@")
+	  {
+	    s+=empty_param(param_type[i]);
+	  }
+	else
+	  s+= param_names[i];
+	if (i!=int(param_names.size())-1) s+=",";
+      }
+    s+=");\n";
+    return std::make_pair(id, s);
+
+}
+#endif
 template<class T, class RT, class... P>
 class ApiItem : public GameApiItem
 {
@@ -4893,7 +4958,9 @@ public:
 #endif
   std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)
   {
-    std::string s;
+    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, param_type, return_type,api_name,func_name);
+    return p;
+#if 0
     int ss = params.size();
    for(int i=0;i<ss;i++)
       {
@@ -4923,6 +4990,7 @@ public:
       }
     s+=");\n";
     return std::make_pair(id, s);
+#endif
   }
 private:
   T (GameApi::EveryApi::*api);

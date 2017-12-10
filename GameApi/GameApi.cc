@@ -11439,8 +11439,9 @@ class P_script : public FaceCollection
 public:
   P_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url), p1(p1), p2(p2), p3(p3), p4(p4), p5(p5), coll(0) {
     e.async_load_callback(url, &P_cb, this);
-
+#ifdef EMSCRIPTEN
     async_pending_count++; async_taken = true;
+#endif
        std::cout << "async_pending_count inc (P_sctipr) " << async_pending_count << std::endl;
   }
   void Prepare2() {
@@ -11462,15 +11463,19 @@ public:
       pp.id = p.first;
       p_data = pp;
       coll = find_facecoll(e,p_data);
+#ifdef EMSCRIPTEN
       if (async_taken)
       	async_pending_count--;
+#endif
       async_taken=false;
        std::cout << "async_pending_count inc (P_sctipt) " << async_pending_count << std::endl;
 
       return;
     }
+#ifdef EMSCRIPTEN
     if (async_taken)
       async_pending_count--;
+#endif
     async_taken = false;
        std::cout << "async_pending_count inc (P_sctipt2) " << async_pending_count << std::endl;
     
@@ -11532,7 +11537,9 @@ class ML_script : public MainLoopItem
 public:
   ML_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url),p1(p1), p2(p2), p3(p3), p4(p4), p5(p5) , main2(0) { firsttime = true; 
        e.async_load_callback(url, &ML_cb, this); 
+#ifdef EMSCRIPTEN
        async_pending_count++; async_taken=true;
+#endif
        std::cout << "async_pending_count inc (ML_sctipr) " << async_pending_count << std::endl;
   }
   void Prepare2() {
@@ -11553,8 +11560,10 @@ public:
 	GameApi::ML pp;
 	pp.id = p.first;
 	main2 = find_main_loop(e,pp);
+#ifdef EMSCRIPTEN
 	if (async_taken)
 	  async_pending_count--;
+#endif
 	std::cout << "async_pending_count dec (ML_sctipr) " << async_pending_count << std::endl;
 	async_taken = false;
 	//main2->execute(e3);
@@ -11564,8 +11573,10 @@ public:
       //GameApi::P pp;
       //pp.id = -1;
       main2 = 0;
+#ifdef EMSCRIPTEN
       if (async_taken)
       async_pending_count--;
+#endif
       async_taken = false;
        std::cout << "async_pending_count dec (ML_sctipr2) " << async_pending_count << std::endl;
 
@@ -11628,7 +11639,9 @@ public:
   BM_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url), p1(p1), p2(p2), p3(p3), p4(p4), p5(p5), bitmap(0) 
   {
     e.async_load_callback(url, &BM_cb, this);
+#ifdef EMSCRIPTEN
     async_pending_count++; async_taken = true;
+#endif
   }
   void Prepare2() {
     std::string homepage = gameapi_homepageurl;
@@ -11649,14 +11662,18 @@ public:
       bm.id = p.first;
       BitmapHandle *handle = find_bitmap(e, bm);
       bitmap = find_color_bitmap(handle);
+#ifdef EMSCRIPTEN
       if (async_taken)
       	async_pending_count--;
+#endif
       async_taken=false;
       return;
     }
     bitmap=0;
+#ifdef EMSCRIPTEN
     if (async_taken)
       async_pending_count--;
+#endif
     async_taken=false;
 
   }
