@@ -7393,9 +7393,13 @@ public:
     "     float gWeights[stepCount" + m_id + "];\n"
     "    float gOffsets[stepCount" + m_id + "];\n"
     "    gWeights[0] = 0.44908;\n"
-    "    gWeights[1] = 0.05092;\n"
+    "    gWeights[1] = 0.35092;\n"
+    "    gWeights[2] = 0.25092;\n"
+    "    gWeights[3] = 0.15092;\n"
     "    gOffsets[0] = 0.53805;\n"
     "    gOffsets[1] = 2.06278;\n"
+    "    gOffsets[2] = 4.06278;\n"
+    "    gOffsets[3] = 8.06278;\n"
     "   vec2 pixelOffset = vec2(" + x_ss + "," + y_ss + "); \n"
     "   vec3 colOut = vec3(0,0,0);\n"
     "   float alphaOut = 0.0;\n"
@@ -7423,7 +7427,7 @@ public:
   }
   virtual std::string bitmapbody_f_init() const
   {
-    return tex->bitmapbody_f_init() + "   const int stepCount" + m_id + " = 2;\n";
+    return tex->bitmapbody_f_init() + "   const int stepCount" + m_id + " = 4;\n";
   }
   virtual std::string bitmapbody_f_body() const
   {
