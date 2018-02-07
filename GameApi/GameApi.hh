@@ -31,6 +31,7 @@ using std::placeholders::_9;
 #undef rad2
 
 
+  struct IBM { int id; };
   struct DS { int id; };
   struct SBM { int id; };
   struct PN { int id; };
@@ -527,6 +528,8 @@ public:
   IMPORT BM add_shape_border(EveryApi &ev, BM bm, float dist_field_size, float start_range, float end_range, int r, int g, int b, int a, int border_size);
 	BM subbitmap(BM orig, int x, int y, int width, int height);
 	IMPORT BM subbitmapimage(BM orig, int r_start_range, int r_end_range, int g_start_range, int g_end_range, int b_start_range, int b_end_range, unsigned int empty_color);
+
+  IMPORT IBM random_int_bitmap(int sx,int sy,int min_value,int max_value);
 
 	IMPORT BM growbitmap(BM small_orig_bitmap, int l, int t, int r, int b);
 	IMPORT BM blitbitmap(BM bg, BM orig, int x, int y);
@@ -2636,6 +2639,8 @@ public: // values are [0.0..1.0]
   IMPORT FB function(std::function<float(int, int)> f, int sx, int sy);
   IMPORT FB newfloatbitmap(char *array, int sx, int sy, std::function<float(char)> f);
   IMPORT FB from_bool_bitmap(BB bm, int csx, int csy);
+  IMPORT FB dist(int sx, int sy, float p_x, float p_y);
+  IMPORT FB blur_bitmap(FB fb, float d);
   IMPORT FB gaussian(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy);
   IMPORT FB grayscale(BM color_bm);
   IMPORT FB from_red(BM color_bm);

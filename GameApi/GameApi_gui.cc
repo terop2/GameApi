@@ -8324,6 +8324,18 @@ std::vector<GameApiItem*> floatbitmapapi_functions()
 			 { "", "", "0.5" },
 			 "FB", "float_bitmap_api", "mix_fb"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::dist,
+			 "bm_dist",
+			 { "sx", "sy", "p_x", "p_y" },
+			 { "int", "int", "float", "float" },
+			 { "100", "100", "50.0", "50.0" },
+			 "FB", "float_bitmap_api", "dist"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::blur_bitmap,
+			 "bm_blur",
+			 { "fb", "d" },
+			 { "FB", "float" },
+			 { "", "0.5" },
+			 "FB", "float_bitmap_api", "blur_bitmap"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::gaussian,
 			 "bm_gaussian",
 			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "sx", "sy" },
