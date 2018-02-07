@@ -3361,3 +3361,54 @@ GameApi::BM GameApi::BitmapApi::fix_edges(BM bm)
   BM bm4 = flip_y(bm2);
   return avg(avg(bm,bm2),avg(bm4,bm3));
 }
+
+
+class DistFB : public Bitmap<float>
+{
+public:
+  DistFB(int sx, int sy, float p_x, float p_y) : sx(sx), sy(sy),px(p_x), py(p_y) { }
+  int SizeX() const { return sx; }
+  int SizeY() const { return sy; }
+  float Map(int x, int y) const {
+    float xx = x-px;
+    float yy = y-py;
+    return sqrtf(xx*xx+yy*yy)/std::max(sx,sy);
+  }
+  void Prepare() { }
+private:
+  int sx,sy;
+  float px,py;
+};
+
+GameApi::FB GameApi::FloatBitmapApi::dist(int sx, int sy, float p_x, float p_y)
+{
+  return add_float_bitmap(e, new DistFB(sx,sy,p_x,p_y));
+}
+
+
+class BlurBitmap : public Bitmap<float>
+{
+public:
+  BlurBitmap(Bitmap<float> &fb, float d) : fb(fb), d(d) {
+  }
+  int SizeX() const { return fb.SizeX(); }
+  int SizeY() const { return fb.SizeY(); }
+  float Map(int x, int y) const {
+    float val = fb.Map(x,y);
+    val/=d;
+    val*=3.0;
+    float xx = -(val*val)/(val*val+1.0)+1.0;
+    return xx;
+  }
+  void Prepare() { fb.Prepare(); }
+private:
+  Bitmap<float> &fb;
+  float d;
+};
+
+
+GameApi::FB GameApi::FloatBitmapApi::blur_bitmap(FB fb, float d)
+{
+  Bitmap<float> *ffb = find_float_bitmap(e, fb)->bitmap;
+  return add_float_bitmap(e, new BlurBitmap(*ffb, d));
+}

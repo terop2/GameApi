@@ -1345,6 +1345,13 @@ public:
 private:
   int id;
 };
+
+Bitmap<int> *find_int_bitmap(GameApi::Env &e, GameApi::IBM bm)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->int_bitmaps[bm.id];
+}
+
 DiskStore *find_disk_store(GameApi::Env &e, GameApi::DS ds)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1709,6 +1716,17 @@ NDim<float,Point> *find_dim(GameApi::Env &e, GameApi::MV mv)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->dims[mv.id];
+}
+
+
+GameApi::IBM add_int_bitmap(GameApi::Env &e, Bitmap<int> *bm)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->int_bitmaps.push_back(bm);
+  GameApi::IBM c;
+  c.id = env->int_bitmaps.size()-1;
+  return c;
+
 }
 GameApi::SBM add_shader_bitmap(GameApi::Env &e, ShaderBitmap *sbm)
 {
@@ -11820,3 +11838,26 @@ void GameApi::MainLoopApi::save_ds(std::string output_filename, DS ds)
   ff.close();
 }
 
+class RandomIntBitmap : public Bitmap<int>
+{
+public:
+  RandomIntBitmap(int sx, int sy, int min_value, int max_value) : sx(sx), sy(sy), min_value(min_value), max_value(max_value) {}
+  void Prepare() { }
+  int SizeX() const { return sx; }
+  int SizeY() const { return sy; }
+  int Map(int x, int y) const {
+    Random r;
+    float val = double(r.next())/r.maximum();
+    val*=(max_value-min_value);
+    val+=min_value;
+    return int(val);
+  }
+private:
+  int sx,sy;
+  int min_value, max_value;
+};
+
+GameApi::IBM GameApi::BitmapApi::random_int_bitmap(int sx, int sy, int min_value, int max_value)
+{
+  return add_int_bitmap(e,new RandomIntBitmap(sx,sy,min_value,max_value));
+}

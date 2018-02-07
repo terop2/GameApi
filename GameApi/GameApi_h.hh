@@ -588,6 +588,7 @@ struct EnvImpl
   std::vector<std::vector<float> *> polynomials;
   std::vector<ShaderBitmap*> shaderbitmaps;
   std::vector<DiskStore*> disk_store;
+  std::vector<Bitmap<int>*> int_bitmaps;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -913,6 +914,7 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::IBM add_int_bitmap(GameApi::Env &e, Bitmap<int> *bm);
 GameApi::DS add_disk_store(GameApi::Env &e, DiskStore *ds);
 GameApi::SBM add_shader_bitmap(GameApi::Env &e, ShaderBitmap *sbm);
 GameApi::PN add_polynomial(GameApi::Env &e, std::vector<float> *pn);
@@ -1040,6 +1042,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+Bitmap<int> *find_int_bitmap(GameApi::Env &e, GameApi::IBM bm);
 DiskStore *find_disk_store(GameApi::Env &e, GameApi::DS store);
 ShaderBitmap *find_shader_bitmap(GameApi::Env &e, GameApi::SBM sbm);
 std::vector<float> *find_polynomial(GameApi::Env &e, GameApi::PN pn);
