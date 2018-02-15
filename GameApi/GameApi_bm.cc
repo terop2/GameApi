@@ -3412,3 +3412,54 @@ GameApi::FB GameApi::FloatBitmapApi::blur_bitmap(FB fb, float d)
   Bitmap<float> *ffb = find_float_bitmap(e, fb)->bitmap;
   return add_float_bitmap(e, new BlurBitmap(*ffb, d));
 }
+
+class FBToIbm : public Bitmap<int>
+{
+public:
+  FBToIbm(Bitmap<float> &fb, float start, float d) : fb(fb), start(start), d(d) { }
+  virtual int SizeX() const { return fb.SizeX(); }
+  virtual int SizeY() const { return fb.SizeY(); }
+  virtual int Map(int x, int y) const
+  {
+    float val = fb.Map(x,y);
+    val-=start;
+    val/=d;
+    return int(val);
+  }
+  virtual void Prepare()
+  {
+    fb.Prepare();
+  }
+
+private:
+  Bitmap<float> &fb;
+  float start;
+  float d;
+};
+
+GameApi::IBM GameApi::BitmapApi::convert_fb_to_ibm_bitmap(FB fb, float start, float d)
+{
+  Bitmap<float> *ffb = find_float_bitmap(e, fb)->bitmap;
+  return add_int_bitmap(e, new FBToIbm(*ffb, start, d));
+}
+
+class IBMToVX : public Voxel<int>
+{
+public:
+  IBMToVX(Bitmap<int> *bi) : bi(bi) {}
+  virtual int SizeX() const { return bi->SizeX(); }
+  virtual int SizeY() const { return bi->SizeY(); }
+  virtual int SizeZ() const { return 1; }
+  virtual int Map(int x, int y, int z) const
+  {
+    return bi->Map(x,y);
+  }
+private:
+  Bitmap<int> *bi;
+};
+
+GameApi::VX GameApi::BitmapApi::convert_ibm_to_vx(IBM bm)
+{
+  Bitmap<int> *bi = find_int_bitmap(e, bm);
+  return add_int_voxel(e, new IBMToVX(bi));
+}

@@ -4191,6 +4191,7 @@ MACRO(GameApi::PF)
 MACRO(GameApi::FF)
 MACRO(GameApi::S)
 MACRO(GameApi::SBM)
+MACRO(GameApi::IBM)
 #undef MACRO
 
 
@@ -6369,9 +6370,9 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "MT", "materials_api", "marble"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::web,
 			 "m_web",
-			 { "ev", "nxt" },
-			 { "EveryApi&", "MT" },
-			 { "ev", "" },
+			 { "ev", "nxt", "mult", "linewidth", "linecolor" },
+			 { "EveryApi&", "MT", "float", "float","unsigned int" },
+			 { "ev", "", "1.03", "2.0","ff000000" },
 			 "MT", "materials_api", "web"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dist_field_mesh,
 			 "m_dist_field",
@@ -8378,6 +8379,18 @@ std::vector<GameApiItem*> floatbitmapapi_functions()
 			 { "FB" },
 			 { "" },
 			 "FB", "float_bitmap_api", "add_border"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::convert_fb_to_ibm_bitmap,
+			 "fb_to_ibm",
+			 { "fb", "start", "d" },
+			 { "FB", "float", "float" },
+			 { "", "0.0", "0.3" },
+			 "IBM", "bitmap_api", "convert_fb_to_ibm_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::convert_ibm_to_vx,
+			 "ibm_to_vx",
+			 { "bm" },
+			 { "IBM" },
+			 { "" },
+			 "VX", "bitmap_api", "convert_ibm_to_vx"));
 
   return vec;
 }

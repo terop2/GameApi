@@ -405,6 +405,9 @@ public:
 	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	GameApi::M m3 = ev.matrix_api.trans(0.0,0.0,-1.1);
+	m = ev.matrix_api.mult(m3,m);
+
 	ev.shader_api.set_var(sh, "in_MV", m);
 	ev.shader_api.set_var(sh, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 
@@ -442,6 +445,8 @@ public:
 	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	GameApi::M m3 = ev.matrix_api.trans(0.0,0.0,-1.1);
+	m = ev.matrix_api.mult(m3,m);
 	ev.shader_api.set_var(sh, "in_MV", m);
 	ev.shader_api.set_var(sh, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 
@@ -518,6 +523,8 @@ public:
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	ev.shader_api.use(shader);
+	GameApi::M m3 = ev.matrix_api.trans(0.0,0.0,-1.1);
+	m = ev.matrix_api.mult(m3,m);
 	ev.shader_api.set_var(shader, "in_MV", m);
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_N", m2);
@@ -591,6 +598,9 @@ public:
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	ev.shader_api.use(shader);
+	GameApi::M m3 = ev.matrix_api.trans(0.0,0.0,-1.1);
+	m = ev.matrix_api.mult(m3,m);
+
 	ev.shader_api.set_var(shader, "in_MV", m);
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_N", m2);
@@ -1652,3 +1662,27 @@ GameApi::LI GameApi::LinesApi::import_ifc(EveryApi &ev, std::string url)
   return add_line_array(e, new IFCImport(e, ev, url, gameapi_homepageurl));
 }
 #endif
+
+class LinePosMult : public LineCollection
+{
+public:
+  LinePosMult(float val, LineCollection *coll) : val(val), coll(coll) {}
+  virtual void Prepare() { coll->Prepare(); }
+  virtual int NumLines() const { return coll->NumLines(); }
+  virtual Point LinePoint(int line, int point) const { 
+    Point p = coll->LinePoint(line,point);
+    p.x*=val;
+    p.y*=val;
+    p.z*=val;
+    return p; }
+  virtual unsigned int LineColor(int line, int point) const { return coll->LineColor(line,point);}
+
+private:
+  float val;
+  LineCollection *coll;
+};
+GameApi::LI GameApi::LinesApi::line_pos_mult(float val, LI li)
+{
+  LineCollection *lines = find_line_array(e, li);
+  return add_line_array(e, new LinePosMult(val, lines));
+}

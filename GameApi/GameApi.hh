@@ -530,7 +530,8 @@ public:
 	IMPORT BM subbitmapimage(BM orig, int r_start_range, int r_end_range, int g_start_range, int g_end_range, int b_start_range, int b_end_range, unsigned int empty_color);
 
   IMPORT IBM random_int_bitmap(int sx,int sy,int min_value,int max_value);
-
+  IMPORT IBM convert_fb_to_ibm_bitmap(FB fb, float start, float d);
+  IMPORT VX convert_ibm_to_vx(IBM bm);
 	IMPORT BM growbitmap(BM small_orig_bitmap, int l, int t, int r, int b);
 	IMPORT BM blitbitmap(BM bg, BM orig, int x, int y);
 	IMPORT BM blitbitmap_fb(BM bg, BM orig, int x, int y, FB mask);
@@ -1207,7 +1208,7 @@ public:
   IMPORT MT choose_color(EveryApi &ev, MT nxt, unsigned int color, float mix_val);
   IMPORT MT brashmetal(EveryApi &ev, MT nxt, int count, bool web);
   IMPORT MT marble(EveryApi &ev, MT nxt, int count, float cubesize);
-  IMPORT MT web(EveryApi &ev, MT nxt); // TODO: add line width property
+  IMPORT MT web(EveryApi &ev, MT nxt, float val=1.01, float linewidth=2.0, unsigned int color=0xff000000); // TODO: add line width property
   IMPORT MT bloom(EveryApi &ev, MT nxt, BM bm, float r_cut, float g_cut, float b_cut, float pixel_x, float pixel_y);
   IMPORT MT dist_field_mesh(EveryApi &ev, SFO sfo, MT next);
 
@@ -2940,6 +2941,7 @@ public:
 	IMPORT LinesApi(Env &e) : e(e) { }
 	IMPORT LI function(std::function<PT(int linenum, bool id)> f,
 	      int numlines);
+  IMPORT LI line_pos_mult(float val, LI li);
   IMPORT LI point_array(std::vector<PT> vec);
   IMPORT LI li_or_array(std::vector<LI> vec);
   IMPORT LI li_matrix(LI lines, M matrix);
