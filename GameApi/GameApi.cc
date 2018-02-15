@@ -5653,14 +5653,16 @@ EXPORT GameApi::ML GameApi::MaterialsApi::snow(EveryApi &ev, P p)
 class WebMaterial : public MaterialForward
 {
 public:
-  WebMaterial(GameApi::EveryApi &ev, Material *next) : ev(ev),next(next) {}
+  WebMaterial(GameApi::EveryApi &ev, Material *next, float val, float linewidth, unsigned int color) : ev(ev),next(next),val(val),linewidth(linewidth),color(color) {}
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+    glLineWidth(linewidth);
     GameApi::P I2=p;
     GameApi::LI I3=ev.lines_api.from_polygon(I2);
-    GameApi::LI I4=ev.lines_api.change_color(I3,0xff000000);
+    GameApi::LI I4=ev.lines_api.change_color(I3,color);
+    GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
     //GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_ml2(ev,I4);
+    GameApi::ML I6=ev.lines_api.render_ml2(ev,I5);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
@@ -5672,13 +5674,15 @@ public:
 
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
+    glLineWidth(linewidth);
     GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
     GameApi::LI I3=ev.lines_api.from_polygon(I2);
-    GameApi::LI I4=ev.lines_api.change_color(I3,0xff000000);
+    GameApi::LI I4=ev.lines_api.change_color(I3,color);
+    GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
     //GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I4,pta);
+    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I5,pta);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
@@ -5691,12 +5695,14 @@ public:
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
     //GameApi::PTA pta = ev.points_api.prepare(pts);
+    glLineWidth(linewidth);
     
     GameApi::P I2=p;
     GameApi::LI I3=ev.lines_api.from_polygon(I2);
-    GameApi::LI I4=ev.lines_api.change_color(I3,0xff000000);
+    GameApi::LI I4=ev.lines_api.change_color(I3,color);
+    GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
     //GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I4,pta);
+    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I5,pta);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
@@ -5708,13 +5714,16 @@ public:
 
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
+    glLineWidth(linewidth);
     GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
     GameApi::LI I3=ev.lines_api.from_polygon(I2);
-    GameApi::LI I4=ev.lines_api.change_color(I3,0xff000000);
+    GameApi::LI I4=ev.lines_api.change_color(I3,color);
+    GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
+
     //GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I4,pta);
+    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I5,pta);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
@@ -5727,12 +5736,15 @@ public:
 private:
   GameApi::EveryApi &ev;
   Material *next;
+  float val;
+  float linewidth;
+  unsigned int color;
 };
 
-EXPORT GameApi::MT GameApi::MaterialsApi::web(EveryApi &ev, MT nxt)
+EXPORT GameApi::MT GameApi::MaterialsApi::web(EveryApi &ev, MT nxt, float val, float linewidth, unsigned int color)
 {
   Material *mat = find_material(e, nxt);
-  return add_material(e, new WebMaterial(ev,mat));
+  return add_material(e, new WebMaterial(ev,mat,val,linewidth,color));
 }
 
 
