@@ -5675,20 +5675,21 @@ public:
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     glLineWidth(linewidth);
-    GameApi::PTA pta = ev.points_api.prepare(pts);
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
     GameApi::LI I3=ev.lines_api.from_polygon(I2);
     GameApi::LI I4=ev.lines_api.change_color(I3,color);
     GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
     //GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I5,pta);
+    GameApi::ML I6=ev.lines_api.render_inst_ml3(ev,I5,pts);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
     GameApi::ML I10;
     I10.id = next->mat_inst(I8.id,pts.id);
     GameApi::ML I11=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{I6,I10});
+    //GameApi::ML I12=ev.mainloop_api.prepare_pts(I11,pts);
     return I11;
   }
 
@@ -10614,11 +10615,11 @@ public:
   }
   void Prepare() {
     if (!prepared) {
-      prepared=true;
     vx->Prepare();
     int sx = vx->SizeX();
     int sy = vx->SizeY();
     int sz = vx->SizeZ();
+    if (sx && sy && sz)  prepared=true;
     Point p;
     float dx = end_x-start_x;
     float dy = end_y-start_y;

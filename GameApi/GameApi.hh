@@ -370,7 +370,8 @@ public:
   P load_P_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   ML load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   BM load_BM_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
-
+  ML prepare_pts(ML ml, PTS pts);
+  
   DS load_ds_from_mem(std::vector<unsigned char> vec);
   DS load_ds_from_disk(std::string filename);
   void save_ds(std::string output_filename, DS ds);
@@ -2994,6 +2995,7 @@ public:
   IMPORT ML render_ml2(EveryApi &ev, LI array);
   IMPORT ML render_inst_ml(EveryApi &ev, LLA array, PTA pta);
   IMPORT ML render_inst_ml2(EveryApi &ev, LI array, PTA pta);
+  IMPORT ML render_inst_ml3(EveryApi &ev, LI array, PTS pts);
   IMPORT LI import_ifc(EveryApi &ev, std::string url);
 private:
   LinesApi(const LinesApi&);
