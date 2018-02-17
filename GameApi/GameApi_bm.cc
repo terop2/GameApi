@@ -3447,9 +3447,15 @@ class IBMToVX : public Voxel<int>
 {
 public:
   IBMToVX(Bitmap<int> *bi) : bi(bi) {}
-  virtual int SizeX() const { return bi->SizeX(); }
-  virtual int SizeY() const { return bi->SizeY(); }
-  virtual int SizeZ() const { return 1; }
+  void Prepare() { bi->Prepare(); }
+  virtual int SizeX() const { 
+    return bi->SizeX(); 
+  }
+  virtual int SizeY() const { 
+    return bi->SizeY(); 
+  }
+  virtual int SizeZ() const { 
+    return 1; }
   virtual int Map(int x, int y, int z) const
   {
     return bi->Map(x,y);
@@ -3462,4 +3468,94 @@ GameApi::VX GameApi::BitmapApi::convert_ibm_to_vx(IBM bm)
 {
   Bitmap<int> *bi = find_int_bitmap(e, bm);
   return add_int_voxel(e, new IBMToVX(bi));
+}
+
+struct Ret {
+  int sx;
+  int sy;
+  char *buffer;
+  std::string characters;
+};
+Ret bitmapparser(unsigned char *buf)
+{
+  std::string buf3((const char*)buf);
+  std::stringstream ss(buf3);
+  int sx;
+  int sy;
+  ss >> sx;
+  ss >> sy;
+  std::string str;
+  std::getline(ss,str);
+  std::getline(ss,str);
+
+  char *buf2 = new char[sx*sy];
+  char ch;
+  for(int y=0;y<sy;y++)
+    {
+    for(int x=0;x<sx;x++)
+      {
+	ss >> ch;
+	buf2[x+y*sx] = ch;
+      }
+    //ss >> ch; // eat \n
+    //ss >> ch; // eat \r
+    }
+  Ret ret;
+  ret.sx = sx;
+  ret.sy = sy;
+  ret.buffer = buf2;
+  ret.characters = str;
+  std::cout << "IntBitmapLoader stats: " << sx << " " << sy << " " << str << std::endl;
+  return ret;
+}
+
+class IntBitmapLoader : public Bitmap<int>
+{
+public:
+  IntBitmapLoader(GameApi::Env &e, std::string url, std::string homepage) : e(e), url(url), homepage(homepage),buf(0),sx(0),sy(0), chars("@") { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual int Map(int x, int y) const
+  {
+    int s = chars.size();
+    unsigned char c = buf[x+sx*y];
+    int val = -1;
+    for(int i=0;i<s;i++)
+      {
+	if (chars[i]==c) { val=i; break; }
+      }
+    return val;
+  }
+
+  void Prepare() {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    if (!ptr) {
+      std::cout << "intbitmap_loader async not ready yet, failing..." << std::endl;
+      return;
+     }
+    Ret r = bitmapparser(&ptr->operator[](0));
+    sx = r.sx;
+    sy = r.sy;
+    buf = r.buffer;
+    chars = r.characters;
+  }
+  ~IntBitmapLoader() { delete [] buf; }
+private:
+  GameApi::Env &e;
+  std::string url;
+  std::string homepage;
+  char *buf;
+  int sx;
+  int sy;
+  std::string chars;
+};
+
+extern std::string gameapi_homepageurl;
+
+GameApi::IBM GameApi::BitmapApi::intbitmap_loader(std::string url)
+{
+  return add_int_bitmap(e, new IntBitmapLoader(e,url, gameapi_homepageurl));
 }

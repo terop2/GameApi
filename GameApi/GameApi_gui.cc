@@ -4570,7 +4570,8 @@ ASyncData async_data[] = { { "font_api", "newfont", 0 },
 			   { "mainloop_api", "load_P_script", 1 },
 			   { "mainloop_api", "load_ML_script", 1 },
 			   { "mainloop_api", "load_BM_script", 1 },
-			   { "polygon_api", "p_ds_url", 1 }
+			   { "polygon_api", "p_ds_url", 1 },
+			   { "bitmap_api", "load_map", 0 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -8517,6 +8518,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "std::string" },
 			 { "test.png" },
 			 "BM", "bitmap_api", "loadbitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::intbitmap_loader,
+			 "load_map",
+			 { "url" },
+			 { "std::string" },
+			 { "http://tpgames.org/examplemap.txt" },
+			 "IBM", "bitmap_api", "intbitmap_loader"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::save_png_ml,
 			 "save_png",
 			 { "ev", "bm", "filename" },

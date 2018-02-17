@@ -6,6 +6,7 @@ class VoxelFunction : public Voxel<unsigned int>
 {
 public:
   VoxelFunction(GameApi::EveryApi &ev, unsigned int (*fptr)(GameApi::EveryApi &ev,int x, int y, int z, void *data), int sx, int sy, int sz, void*data) : ev(ev), fptr(fptr), sx(sx), sy(sy), sz(sz), data(data) { }
+  void Prepare() { }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual int SizeZ() const { return sz; }
@@ -41,6 +42,7 @@ EXPORT unsigned int GameApi::VoxelApi::get_pixel(VX v, int x, int y, int z)
 EXPORT GameApi::PTS GameApi::VoxelApi::instanced_positions(VX vx, float sx, float sy, float sz, unsigned int value)
 {
   Voxel<unsigned int> *c = find_voxel(e, vx);
+  c->Prepare();
   int ssx = c->SizeX();
   int ssy = c->SizeY();
   int ssz = c->SizeZ();

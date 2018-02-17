@@ -151,6 +151,7 @@ template<class C>
 class Voxel
 {
 public:
+  virtual void Prepare()=0;
   virtual int SizeX() const=0;
   virtual int SizeY() const=0;
   virtual int SizeZ() const=0;
@@ -194,6 +195,7 @@ template<class C>
 class ContinuousVoxel
 {
 public:
+  virtual void Prepare()=0;
   virtual float SizeX() const=0;
   virtual float SizeY() const=0;
   virtual float SizeZ() const=0;
