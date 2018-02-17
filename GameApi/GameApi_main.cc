@@ -1453,3 +1453,32 @@ GameApi::ML GameApi::MainLoopApi::keyboard_toggle(ML m1, ML m2, int key)
   MainLoopItem *item2 = find_main_loop(e, m2);
   return add_main_loop(e, new KeyboardToggle(item, item2, key));
 }
+class PreparePTS : public MainLoopItem
+{
+public:
+  PreparePTS(MainLoopItem *item, PointsApiPoints *points) : item(item), points(points), firsttime(true) {}
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+      firsttime = false;
+      points->Prepare();
+    }
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual int shader_id() { return item->shader_id(); }
+
+private:
+  MainLoopItem *item;
+  PointsApiPoints *points;
+  bool firsttime;
+};
+GameApi::ML GameApi::MainLoopApi::prepare_pts(ML ml, PTS pts)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  PointsApiPoints *points = find_pointsapi_points(e, pts);
+  return add_main_loop(e, new PreparePTS(item, points));
+}

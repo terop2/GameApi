@@ -631,6 +631,90 @@ private:
 };
 
 
+
+class LI_Render_Inst3 : public MainLoopItem
+{
+public:
+  LI_Render_Inst3(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l0, GameApi::PTS pts) : env(env), ev(ev), api(api), l0(l0),pts(pts) { firsttime=true; }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void execute(MainLoopEnv &e) {
+    GameApi::SH sh;
+    sh.id = e.sh_color;
+    GameApi::US u_v,u_f;
+    u_v.id = 0;
+    u_f.id = 0;
+
+    if (firsttime)
+      {
+	if (u_v.id == 0)
+	  u_v = ev.uber_api.v_empty();
+	if (u_f.id == 0)
+	  u_f = ev.uber_api.f_empty(false);
+   
+	u_v = ev.uber_api.v_colour(u_v);
+	u_v = ev.uber_api.v_light(u_v);
+	u_f = ev.uber_api.f_colour(u_f);
+	u_f = ev.uber_api.f_light(u_f);
+      }
+
+    if (firsttime)
+      {
+	GameApi::US vertex;
+	GameApi::US fragment;
+	vertex.id = u_v.id; 
+	fragment.id = u_f.id; 
+	GameApi::US vertex2 = ev.uber_api.v_inst(vertex);
+	//GameApi::US fragment2 = ev.uber_api.f_inst(fragment);
+	shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment);
+	ev.mainloop_api.init_3d(shader);
+	ev.mainloop_api.alpha(true); 
+      }
+    if (shader.id!=-1)
+      {
+	ev.shader_api.use(sh);
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.use(shader);
+	GameApi::M m3 = ev.matrix_api.trans(0.0,0.0,-1.1);
+	m = ev.matrix_api.mult(m3,m);
+
+	ev.shader_api.set_var(shader, "in_MV", m);
+	ev.shader_api.set_var(shader, "in_T", m1);
+	ev.shader_api.set_var(shader, "in_N", m2);
+	sh = shader;
+      }
+
+    ev.shader_api.use(sh);
+    if (firsttime)
+      {
+	pta = ev.points_api.prepare(pts);
+	
+	l=api.prepare(l0);
+	api.prepare_inst(l,pta);
+	firsttime=false;
+      }
+    api.render_inst(l,pta);
+    ev.shader_api.unuse(sh);
+  }
+  int shader_id() { return -1; }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::LinesApi &api;
+  GameApi::LI l0;
+  GameApi::LLA l;
+  GameApi::PTS pts;
+  GameApi::PTA pta;
+  bool firsttime;
+  GameApi::SH shader;
+};
+
+
+
 EXPORT GameApi::ML GameApi::LinesApi::render_ml(EveryApi &ev, LLA l)
 {
   return add_main_loop(e, new LI_Render(e, ev, *this, l));
@@ -646,6 +730,10 @@ EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml(EveryApi &ev, LLA l, PTA pt
 EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml2(EveryApi &ev, LI l, PTA pta)
 {
   return add_main_loop(e, new LI_Render_Inst2(e, ev, *this, l, pta));
+}
+EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml3(EveryApi &ev, LI l, PTS pts)
+{
+  return add_main_loop(e, new LI_Render_Inst3(e, ev, *this, l, pts));
 }
 EXPORT void GameApi::LinesApi::prepare_inst(LLA l, PTA instances)
 {
