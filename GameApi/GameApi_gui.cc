@@ -4571,7 +4571,7 @@ ASyncData async_data[] = { { "font_api", "newfont", 0 },
 			   { "mainloop_api", "load_ML_script", 1 },
 			   { "mainloop_api", "load_BM_script", 1 },
 			   { "polygon_api", "p_ds_url", 1 },
-			   { "bitmap_api", "load_map", 0 }
+			   { "bitmap_api", "intbitmap_loader", 0 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
