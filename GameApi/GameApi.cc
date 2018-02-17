@@ -10608,8 +10608,13 @@ GameApi::VX GameApi::VoxelApi::blit_voxel(O object,
 class VoxelToPTS 
 {
 public:
-  VoxelToPTS(Voxel<int> *vx, int count, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : vx(vx)
+  VoxelToPTS(Voxel<int> *vx, int count, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : vx(vx),count(count), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z)
   {
+    prepared=false;
+  }
+  void Prepare() {
+    if (!prepared) {
+      prepared=true;
     vx->Prepare();
     int sx = vx->SizeX();
     int sy = vx->SizeY();
@@ -10633,18 +10638,26 @@ public:
 	  }
       }
     }
+    }
   }
   PointsApiPoints *get(int val);
 public:
   std::vector<std::vector<Point> > pts;
   Voxel<int> *vx;
+  bool prepared;
+  int count;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
 };
 
 class VPTS : public PointsApiPoints
 {
 public:
   VPTS(VoxelToPTS &pts, int val, Voxel<int> *vx) : pts(pts), val(val),vx(vx) { }
-  void Prepare() { vx->Prepare(); }
+  void Prepare() {
+    pts.Prepare();
+    /*vx->Prepare();*/ }
   virtual void HandleEvent(MainLoopEvent &event) { }
   virtual bool Update(MainLoopEnv &e) { return false; }
   virtual int NumPoints() const
