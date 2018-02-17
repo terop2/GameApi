@@ -3422,6 +3422,7 @@ class SphereNormalContinuousVoxel : public ContinuousVoxel<Vector>
 {
 public:
   SphereNormalContinuousVoxel(Point center) : center(center) { }
+  void Prepare() { }
   virtual float SizeX() const { return 1.0; }
   virtual float SizeY() const { return 1.0; }
   virtual float SizeZ() const { return 1.0; }
@@ -3515,6 +3516,7 @@ class SampleVoxel : public Voxel<T>
 {
 public:
   SampleVoxel(ContinuousVoxel<T> &v, int x, int y, int z) : v(v), x(x), y(y), z(z) { }
+  void Prepare() { v.Prepare(); }
   int SizeX() const { return x; }
   int SizeY() const { return y; }
   int SizeZ() const { return z; }
@@ -3539,6 +3541,7 @@ class VoxelToContinuousVoxel : public ContinuousVoxel<T>
 {
 public:
   VoxelToContinuousVoxel(Voxel<T> &vx) : vx(vx) { }
+  void Prepare() { vx.Prepare(); }
   int SizeX() const { return vx.SizeX(); }
   int SizeY() const { return vx.SizeY(); }
   int SizeZ() const { return vx.SizeZ(); }
@@ -3555,6 +3558,7 @@ class VolumeVoxel : public ContinuousVoxel<bool>
 {
 public:
   VolumeVoxel(VolumeObject &vol, Range<float> x, Range<float> y, Range<float> z) : vol(vol), x(x), y(y), z(z) { }
+  void Prepare() { }
   float SizeX() const { return x.end-x.start; }
   float SizeY() const { return y.end-y.start; }
   float SizeZ() const { return z.end-z.start; }

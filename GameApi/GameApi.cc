@@ -10429,6 +10429,7 @@ class BlitVoxel_voxel : public Voxel<int>
 {
 public:
   BlitVoxel_voxel(Voxel<int> *bg, Voxel<int> *obj, int p_x, int p_y, int p_z) : bg(bg), obj(obj),p_x(p_x), p_y(p_y), p_z(p_z) { }
+  void Prepare() { bg->Prepare(); obj->Prepare(); }
   virtual int SizeX() const { return bg->SizeX(); }
   virtual int SizeY() const { return bg->SizeY(); }
   virtual int SizeZ() const { return bg->SizeZ(); }
@@ -10457,6 +10458,7 @@ public:
 					       start_y(start_y), end_y(end_y),
 					       start_z(start_z), end_z(end_z),
 					       false_value(false_value), true_value(true_value) { }
+  void Prepare() {}
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual int SizeZ() const { return sz; }
@@ -10486,6 +10488,7 @@ class EmptyVoxel : public Voxel<int>
 {
 public:
   EmptyVoxel(int sx, int sy, int sz) : sx(sx), sy(sy), sz(sz) { }
+  void Prepare() { }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual int SizeZ() const { return sz; }
@@ -10504,6 +10507,7 @@ class VoxelLandscape : public Voxel<int>
 {
 public:
   VoxelLandscape(Bitmap<float> &bm, int height, int false_value, int true_value) : bm(bm), height(height), false_value(false_value), true_value(true_value) {}
+  void Prepare() { bm.Prepare(); }
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return height; }
   virtual int SizeZ() const { return bm.SizeY(); }
@@ -10535,6 +10539,7 @@ public:
 	   int start_z, int end_z) : vx(vx), start_x(start_x), end_x(end_x),
 				     start_y(start_y), end_y(end_y),
 				     start_z(start_z), end_z(end_z) { }
+  void Prepare() { vx->Prepare(); }
 
   virtual int SizeX() const { return end_x-start_x; }
   virtual int SizeY() const { return end_y-start_y; }
@@ -10603,8 +10608,9 @@ GameApi::VX GameApi::VoxelApi::blit_voxel(O object,
 class VoxelToPTS 
 {
 public:
-  VoxelToPTS(Voxel<int> *vx, int count, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+  VoxelToPTS(Voxel<int> *vx, int count, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : vx(vx)
   {
+    vx->Prepare();
     int sx = vx->SizeX();
     int sy = vx->SizeY();
     int sz = vx->SizeZ();
@@ -10631,12 +10637,14 @@ public:
   PointsApiPoints *get(int val);
 public:
   std::vector<std::vector<Point> > pts;
+  Voxel<int> *vx;
 };
 
 class VPTS : public PointsApiPoints
 {
 public:
-  VPTS(VoxelToPTS &pts, int val) : pts(pts), val(val) { }
+  VPTS(VoxelToPTS &pts, int val, Voxel<int> *vx) : pts(pts), val(val),vx(vx) { }
+  void Prepare() { vx->Prepare(); }
   virtual void HandleEvent(MainLoopEvent &event) { }
   virtual bool Update(MainLoopEnv &e) { return false; }
   virtual int NumPoints() const
@@ -10654,11 +10662,12 @@ public:
 private:
   VoxelToPTS &pts;
   int val;
+  Voxel<int> *vx;
 };
 
 PointsApiPoints *VoxelToPTS::get(int val)
 {
-  return new VPTS(*this, val);
+  return new VPTS(*this, val,vx);
 }
 
 std::vector<GameApi::PTS> GameApi::arr_to_pts_arr(GameApi::EveryApi &ev, GameApi::ARR a)

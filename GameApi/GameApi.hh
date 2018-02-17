@@ -517,6 +517,8 @@ public:
 	IMPORT BM function(std::function<unsigned(int, int)> f, int sx, int sy);
 	IMPORT BM transform(BM orig, std::function<unsigned int(int, int, unsigned int)> f);
 	IMPORT BM newintbitmap(char *array, int sx, int sy, std::function<int(char)> f);
+        IMPORT IBM intbitmap_loader(std::string url);
+       
 	IMPORT BM newcolorbitmap(char *array, int sz, int sy, std::function<unsigned int(char)> f);
 	IMPORT BM newtilebitmap(int sx, int sy, int tile_sx, int tile_sy);
 	IMPORT BM loadbitmap(std::string filename);
