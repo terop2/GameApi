@@ -589,6 +589,7 @@ struct EnvImpl
   std::vector<ShaderBitmap*> shaderbitmaps;
   std::vector<DiskStore*> disk_store;
   std::vector<Bitmap<int>*> int_bitmaps;
+  std::vector<InputForMoving*> move_input;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -914,6 +915,8 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+
+GameApi::INP add_move_input(GameApi::Env &e, InputForMoving *im);
 GameApi::IBM add_int_bitmap(GameApi::Env &e, Bitmap<int> *bm);
 GameApi::DS add_disk_store(GameApi::Env &e, DiskStore *ds);
 GameApi::SBM add_shader_bitmap(GameApi::Env &e, ShaderBitmap *sbm);
@@ -1042,6 +1045,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+InputForMoving *find_move_input(GameApi::Env &e, GameApi::INP im);
 Bitmap<int> *find_int_bitmap(GameApi::Env &e, GameApi::IBM bm);
 DiskStore *find_disk_store(GameApi::Env &e, GameApi::DS store);
 ShaderBitmap *find_shader_bitmap(GameApi::Env &e, GameApi::SBM sbm);

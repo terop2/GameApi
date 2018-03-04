@@ -1346,6 +1346,11 @@ private:
   int id;
 };
 
+InputForMoving *find_move_input(GameApi::Env &e, GameApi::INP im)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->move_input[im.id];
+}
 Bitmap<int> *find_int_bitmap(GameApi::Env &e, GameApi::IBM bm)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1718,6 +1723,14 @@ NDim<float,Point> *find_dim(GameApi::Env &e, GameApi::MV mv)
   return env->dims[mv.id];
 }
 
+GameApi::INP add_move_input(GameApi::Env &e, InputForMoving *im)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->move_input.push_back(im);
+  GameApi::INP c;
+  c.id = env->move_input.size()-1;
+  return c;
+}
 
 GameApi::IBM add_int_bitmap(GameApi::Env &e, Bitmap<int> *bm)
 {
@@ -8485,7 +8498,7 @@ void blocker_iter(void *arg)
   if (env->logo_shown)
     {
       bool b = env->ev->mainloop_api.logo_iter();
-      if (b && async_pending_count==0) { env->logo_shown = false;
+      if (/*b &&*/ async_pending_count==0) { env->logo_shown = false;
 	env->ev->mainloop_api.reset_time();
 	env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
       }
@@ -8617,7 +8630,7 @@ public:
     if (env->logo_shown)
       {
 	bool b = env->ev->mainloop_api.logo_iter();
-	if (b && async_pending_count==0) { env->logo_shown = false;
+	if (/*b &&*/ async_pending_count==0) { env->logo_shown = false;
 	  env->ev->mainloop_api.reset_time();
 	  env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
 	}
@@ -11895,4 +11908,383 @@ private:
 GameApi::IBM GameApi::BitmapApi::random_int_bitmap(int sx, int sy, int min_value, int max_value)
 {
   return add_int_bitmap(e,new RandomIntBitmap(sx,sy,min_value,max_value));
+}
+
+class NormalMove : public InputForMoving
+{
+public:
+  NormalMove() : up(false), down(false), left(false), right(false),x(0.0), y(0.0) { }
+  void execute(MainLoopEnv &e) { calc(); }
+  void handle_event(MainLoopEvent &e)
+  {
+    if ((e.ch=='w'||e.ch==26 || e.ch==82) && e.type==0x300) { up=true; }
+    if ((e.ch=='w'||e.ch==26 || e.ch==82) && e.type==0x301) { up=false; }
+
+    if ((e.ch=='s'||e.ch==22 || e.ch==81) && e.type==0x300) { down=true; }
+    if ((e.ch=='s'||e.ch==22 || e.ch==81) && e.type==0x301) { down=false; }
+    
+    if ((e.ch=='a'||e.ch==4||e.ch==80) && e.type==0x300) { left=true; }
+    if ((e.ch=='a'||e.ch==4||e.ch==80) && e.type==0x301) { left=false; }
+
+    if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x300) { right=true; }
+    if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x301) { right=false; }
+
+  }
+  float XPos() const { 
+    return x;
+  }
+
+  float YPos() const {
+    return y;
+  }
+  float ZPos() const { return 0.0; }
+  void calc() {
+    x=0.0;
+    y=0.0;
+    if (up && !down && !left && !right) y=1.0;
+    if (!up && down && !left && !right) y=-1.0;
+
+    if (!up && !down && left && !right) x=-1.0;
+    if (!up && !down && !left && right) x=1.0;
+
+    if (up && !down && left && !right) { y=1.0/sqrt(2.0); x=-1.0/sqrt(2.0); }
+    if (!up && down && left && !right) { y=-1.0/sqrt(2.0); x=-1.0/sqrt(2.0); }
+
+    if (up && !down && !left && right) { y=1.0/sqrt(2.0); x=+1.0/sqrt(2.0); }
+    if (!up && down && !left && right) { y=-1.0/sqrt(2.0); x=+1.0/sqrt(2.0); }
+  }
+private:
+  bool up;
+  bool down;
+  bool left;
+  bool right;
+  float x;
+  float y;
+};
+
+GameApi::INP GameApi::MainLoopApi::cursor_keys_normal_move()
+{
+  return add_move_input(e, new NormalMove);
+}
+
+class MoveSequence : public InputForMoving
+{
+public:
+  MoveSequence(float time_per_char, std::string str, float start_time) : time(time_per_char), str(str), start_time(start_time) { 
+  }
+  void execute(MainLoopEnv &env)
+  {
+    float t = (env.time*1000.0-start_time)/100.0;
+    int val = int(t/time);
+    int s = str.size();
+    x=0.0;
+    y=0.0;
+    z=0.0;
+    if (val>=0 && val<s) {
+      char ch = str[val];
+      if (ch=='w') { y=-1.0; }
+      if (ch=='s') { y=1.0; }
+      if (ch=='a') { x=-1.0; }
+      if (ch=='d') { x=1.0; }
+      if (ch=='z') { z=-1.0; }
+      if (ch=='x') { z=1.0; }
+    }
+  }  
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  float XPos() const { 
+    return x;
+  }
+
+  float YPos() const {
+    return y;
+  }
+  float ZPos() const { return z; }
+private:
+  float time;
+  std::string str;
+  float start_time;
+  float x,y,z;
+};
+
+class RotateMove : public InputForMoving
+{
+public:
+  RotateMove(float speed_rot, float r_forward, float r_normal, float r_backward) : speed_rot(speed_rot), r_forward(r_forward), r_normal(r_normal), r_backward(r_backward) { }
+  void execute(MainLoopEnv &e) { 
+    calc();
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    if ((e.ch=='w'||e.ch==26 || e.ch==82) && e.type==0x300) { up=true; }
+    if ((e.ch=='w'||e.ch==26 || e.ch==82) && e.type==0x301) { up=false; }
+
+    if ((e.ch=='s'||e.ch==22 || e.ch==81) && e.type==0x300) { down=true; }
+    if ((e.ch=='s'||e.ch==22 || e.ch==81) && e.type==0x301) { down=false; }
+    
+    if ((e.ch=='a'||e.ch==4||e.ch==80) && e.type==0x300) { left=true; }
+    if ((e.ch=='a'||e.ch==4||e.ch==80) && e.type==0x301) { left=false; }
+
+    if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x300) { right=true; }
+    if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x301) { right=false; }
+  }
+  void calc() { 
+    if (left) current_angle-=speed_rot;
+    if (right) current_angle+=speed_rot;
+    if (up) current_radius=r_forward; 
+    else
+      if (down) current_radius=r_backward; 
+      else
+	current_radius=r_normal;
+  }
+  float XPos() const { 
+    return current_radius*cos(current_angle);
+  }
+
+  float YPos() const {
+    return current_radius*sin(current_angle);
+  }
+  float ZPos() const { return 0.0; }
+
+private:
+  float speed_rot, r_forward, r_normal, r_backward;
+  float current_angle;
+  float current_radius;
+  bool up,down,left,right;
+};
+
+GameApi::INP GameApi::MainLoopApi::cursor_keys_rotate_move(float speed_rot, float r_forward, float r_normal, float r_backward)
+{
+  return add_move_input(e, new RotateMove(speed_rot, r_forward, r_normal, r_backward));
+}
+GameApi::INP GameApi::MainLoopApi::move_sequence(float start_time, float time_per_char, std::string str)
+{
+  return add_move_input(e, new MoveSequence(time_per_char, str, start_time));
+}
+
+class CollisionMove : public InputForMoving
+{
+public:
+  CollisionMove(Bitmap<int> *scene, float start_x, float end_x, float start_y, float end_y, float s_x, float m_x, float e_x, float s_y, float m_y, float e_y, float speed_up, float speed_down, float speed_left, float speed_right, float speed_gravity) : scene(scene), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y),up(false),down(false),left(false), right(false),s_x(s_x), m_x(m_x), e_x(e_x), s_y(s_y), m_y(m_y), e_y(e_y), speed_up(speed_up), speed_down(speed_down), speed_left(speed_left), speed_right(speed_right), speed_gravity(speed_gravity) { firsttime = true; xpos=0.0; ypos=0.0; zpos=0.0; up=false; down=false; left=false; right=false; }
+  void execute(MainLoopEnv &e) { 
+    if (firsttime) { firsttime = false; scene->Prepare(); }
+    Point p(xpos+e_x,ypos+m_y,zpos);
+    Point2d pp = to_bm(p);
+    int val = scene->Map(int(pp.x),int(pp.y));
+    if (right && val==0) { xpos+=speed_right*e.delta_time; }
+
+    Point p2(xpos+s_x,ypos+m_y,zpos);
+    Point2d pp2 = to_bm(p2);
+    int val2 = scene->Map(int(pp2.x),int(pp2.y));
+    if (left && val2==0) { xpos+=speed_left*e.delta_time; }
+
+    Point p3(xpos+m_x,ypos+s_y,zpos);
+    Point2d pp3 = to_bm(p3);
+    int val3 = scene->Map(int(pp3.x),int(pp3.y));
+    if (up && val3==0) { ypos+=speed_up*e.delta_time; }
+
+    Point p4(xpos+m_x,ypos+e_y,zpos);
+    Point2d pp4 = to_bm(p4);
+    int val4 = scene->Map(int(pp4.x),int(pp4.y));
+    if (down && val4==0) { ypos+=speed_down*e.delta_time; }
+    if (val4==0) { ypos+=speed_gravity*e.delta_time; }
+  }
+  Point2d to_bm(Point p) const
+  {
+    p-=Vector(start_x,start_y,0.0);
+    p.x /= (end_x-start_x);
+    p.y /= (end_y-start_y);
+    if (p.x<0.0 || p.x>1.0) { } else
+      if (p.y<0.0 || p.y>1.0) { } else
+	{
+	  p.x *= scene->SizeX();
+	  p.y *= scene->SizeY();
+	}
+    Point2d pp = { p.x,p.y };
+    return pp;
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    if ((e.ch=='w'||e.ch==26 || e.ch==82) && e.type==0x300) { up=true; }
+    if ((e.ch=='w'||e.ch==26 || e.ch==82) && e.type==0x301) { up=false; }
+
+    if ((e.ch=='s'||e.ch==22 || e.ch==81) && e.type==0x300) { down=true; }
+    if ((e.ch=='s'||e.ch==22 || e.ch==81) && e.type==0x301) { down=false; }
+    
+    if ((e.ch=='a'||e.ch==4||e.ch==80) && e.type==0x300) { left=true; }
+    if ((e.ch=='a'||e.ch==4||e.ch==80) && e.type==0x301) { left=false; }
+
+    if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x300) { right=true; }
+    if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x301) { right=false; }
+
+  }
+  float XPos() const {
+    return xpos;
+  }
+  float YPos() const {
+    return ypos;
+  }
+  float ZPos() const
+  {
+    return zpos;
+  }
+
+private:
+  Bitmap<int> *scene;
+  float start_x, end_x;
+  float start_y, end_y;
+  bool up,down,left,right;
+  float xpos,ypos,zpos;
+  float s_x,m_x,e_x,s_y,m_y,e_y;
+  float speed_up, speed_down, speed_left, speed_right;
+  bool firsttime;
+  float speed_gravity;
+};
+
+class MoveSpeed : public InputForMoving
+{
+public:
+  MoveSpeed(InputForMoving *next, float speed) : next(next), speed(speed),x(0.0),y(0.0),z(0.0) { }
+  void execute(MainLoopEnv &e) { 
+    next->execute(e);
+    x+=speed*next->XPos()*e.delta_time;
+    y+=speed*next->YPos()*e.delta_time;
+    z+=speed*next->ZPos()*e.delta_time;
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  float XPos() const {
+    return x;
+  }
+  float YPos() const {
+    return y;
+  }
+  float ZPos() const
+  {
+    return z;
+  }
+private:
+  InputForMoving *next;
+  float speed;
+  float x,y,z;
+};
+GameApi::INP GameApi::MainLoopApi::move_collision(IBM scene, float start_x, float end_x, float start_y, float end_y, float s_x, float m_x, float e_x, float s_y, float m_y, float e_y, float speed_up, float speed_down, float speed_left, float speed_right, float speed_gravity)
+{
+  Bitmap<int> *bm = find_int_bitmap(e, scene);
+  return add_move_input(e, new CollisionMove(bm, start_x, end_x, start_y, end_y, s_x, m_x, e_x, s_y, m_y, e_y, speed_up, speed_down, speed_left, speed_right, speed_gravity));
+}
+GameApi::INP GameApi::MainLoopApi::move_speed(INP orig, float speed)
+{
+  InputForMoving *o = find_move_input(e, orig);
+  return add_move_input(e, new MoveSpeed(o, speed));
+};
+
+
+class MoveIN : public MainLoopItem
+{
+public:
+  MoveIN(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *item, InputForMoving *in) : e(e), ev(ev), item(item), in(in) { }
+  virtual void execute(MainLoopEnv &env)
+  {
+    GameApi::M mat = ev.matrix_api.trans(in->XPos(), in->YPos(), in->ZPos());
+    GameApi::M m2 = add_matrix2(e,env.env);
+    GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
+    GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
+ 
+    GameApi::SH s1;
+    s1.id = env.sh_texture;
+    GameApi::SH s11;
+    s11.id = env.sh_texture_2d;
+    GameApi::SH s2;
+    s2.id = env.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = env.sh_color;
+ 
+   ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", mat2);
+    ev.shader_api.set_var(s1, "in_iMV", mat2i);
+    ev.shader_api.use(s11);
+    ev.shader_api.set_var(s11, "in_MV", mat2);
+    ev.shader_api.set_var(s11, "in_iMV", mat2i);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", mat2);
+    ev.shader_api.set_var(s2, "in_iMV", mat2i);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", mat2);
+    ev.shader_api.set_var(s3, "in_iMV", mat2i);
+ 
+
+    MainLoopEnv ee = env;
+    ee.in_MV = find_matrix(e, mat2);
+    ee.env = find_matrix(e,mat2);
+    item->execute(ee);
+    in->execute(ee);
+    ev.shader_api.unuse(s3);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+    in->handle_event(e);
+  }
+  virtual int shader_id() { return item->shader_id(); }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  MainLoopItem *item;
+  InputForMoving *in;
+};
+GameApi::ML GameApi::MainLoopApi::move_in(EveryApi &ev, ML ml, INP in)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  InputForMoving *in2 = find_move_input(e,in);
+  return add_main_loop(e, new MoveIN(e,ev,item, in2));
+}
+
+class Gravity2 : public InputForMoving
+{
+public:
+  Gravity2(InputForMoving *mv, Bitmap<int> *bm, float start_x, float end_x, float start_y, float end_y, float speed) : mv(mv), bm(bm), speed(speed), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y) { ypos=0.0; firsttime = true; }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+      firsttime = false;
+      bm->Prepare();
+    }
+    Point p(mv->XPos(), mv->YPos()+ypos, mv->ZPos());
+    p-=Vector(start_x,start_y,0.0);
+    p.x /= (end_x-start_x);
+    p.y /= (end_y-start_y);
+    if (p.x<0.0 || p.x>1.0) { } else
+      if (p.y<0.0 || p.y>1.0) { } else
+	{
+	  p.x *= bm->SizeX();
+	  p.y *= bm->SizeY();
+	  int val = bm->Map(int(p.x),int(p.y));
+	  if (val==0) { ypos+=speed*e.delta_time; }
+	}
+    mv->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e) { mv->handle_event(e); }
+  virtual float XPos() const { return mv->XPos(); }
+  virtual float YPos() const { return mv->YPos()+ypos; }
+  virtual float ZPos() const { return mv->ZPos(); }
+private:
+  InputForMoving *mv;
+  Bitmap<int> *bm;
+  float speed;
+  float start_x, end_x;
+  float start_y, end_y;
+  float ypos;
+  bool firsttime;
+};
+
+GameApi::INP GameApi::MainLoopApi::gravity(INP im, IBM bitmap, float start_x, float end_x, float start_y, float end_y, float speed)
+{
+  InputForMoving *mv = find_move_input(e, im);
+  Bitmap<int> *bm = find_int_bitmap(e, bitmap);
+  return add_move_input(e, new Gravity2(mv, bm, start_x, end_x, start_y, end_y, speed));
 }
