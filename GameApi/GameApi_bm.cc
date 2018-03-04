@@ -3559,3 +3559,30 @@ GameApi::IBM GameApi::BitmapApi::intbitmap_loader(std::string url)
 {
   return add_int_bitmap(e, new IntBitmapLoader(e,url, gameapi_homepageurl));
 }
+
+unsigned int color_array[] = { 0x00000000, 0xffffffff, 0xffff0000, 0xff00ff00, 0xff0000ff, 0xff00ffff, 0xffffff00, 0xffffffff };
+
+class IntBitmap_BM : public Bitmap<Color>
+{
+public:
+  IntBitmap_BM(Bitmap<int> &bm) : bm(bm) { }
+  int SizeX() const { return bm.SizeX(); }
+  int SizeY() const { return bm.SizeY(); }
+  Color Map(int x, int y) const
+  {
+    int val = bm.Map(x,y);
+    int end = sizeof(color_array)/sizeof(unsigned int);
+    if (val<0 ||val>=end) return Color(0xffffffff);
+    unsigned int color = color_array[val];
+    return Color(color);
+  }
+  void Prepare() { bm.Prepare(); }
+private:
+  Bitmap<int> &bm;
+};
+
+GameApi::BM GameApi::BitmapApi::intbitmap_bm(IBM ibm)
+{
+  Bitmap<int> *bi = find_int_bitmap(e, ibm);
+  return add_color_bitmap(e, new IntBitmap_BM(*bi));
+}

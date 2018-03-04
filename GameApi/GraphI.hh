@@ -1115,4 +1115,14 @@ public:
   virtual unsigned char* Block(int block) const=0;
 };
 
+class InputForMoving
+{
+public:
+  virtual void execute(MainLoopEnv &e)=0;
+  virtual void handle_event(MainLoopEvent &e)=0;
+  virtual float XPos() const=0;
+  virtual float YPos() const=0;
+  virtual float ZPos() const=0;
+};
+
 #endif

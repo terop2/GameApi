@@ -4192,6 +4192,7 @@ MACRO(GameApi::FF)
 MACRO(GameApi::S)
 MACRO(GameApi::SBM)
 MACRO(GameApi::IBM)
+MACRO(GameApi::INP)
 #undef MACRO
 
 
@@ -6236,6 +6237,42 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "CC", "unsigned int", "unsigned int", "float", "float" },
 			 { "", "ffffffff", "ff888888", "0.0", "100.0" },
 			 "CC", "move_api", "color_interpolate"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::cursor_keys_normal_move,
+			 "move_normal",
+			 { },
+			 { },
+			 { },
+			 "INP", "mainloop_api", "cursor_keys_normal_move"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::cursor_keys_rotate_move,
+			 "move_rotate",
+			 { "speed_rot", "r_forward", "r_normal", "r_backward" },
+			 { "float", "float", "float", "float" },
+			 { "0.3141", "1.0", "0.0", "-1.0" },
+			 "INP", "mainloop_api", "cursor_keys_rotate_move"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::move_speed,
+			 "move_speed",
+			 { "orig", "speed" },
+			 { "INP", "float" },
+			 { "", "1.0" },
+			 "INP", "mainloop_api", "move_speed"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::move_collision,
+			 "move_coll",
+			 { "scene", "start_x", "end_x", "start_y", "end_y", "s_x", "m_x", "e_x", "s_y", "m_y", "e_y", "speed_up", "speed_down", "speed_left", "speed_right", "speed_gravity" },
+			 { "IBM", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float" },
+			 { "","-200.0", "200.0", "-200.0", "200.0", "-5.0", "0.0", "5.0", "5.0", "0.0", "-5.0", "20.0", "-10.0", "-10.0", "10.0", "-10.0" },
+			 "INP", "mainloop_api", "move_collision"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::move_sequence,
+			 "move_sequence",
+			 { "start_time", "time_per_char", "string" },
+			 { "float", "float", "std::string" },
+			 { "0.0", "3.0", "wwddssaa" },
+			 "INP", "mainloop_api", "move_sequence"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gravity,
+			 "move_gravity",
+			 { "inp", "scene", "start_x", "end_x", "start_y", "end_y","speed" },
+			 { "INP", "IBM", "float", "float", "float", "float","float" },
+			 { "", "", "0.0", "800.0", "0.0", "600.0", "10.0" },
+			 "INP", "mainloop_api", "gravity"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::skeletal_api, &GameApi::Skeletal::root,
 			 "sa_root",
 			 { "points" },
@@ -6562,6 +6599,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "MN", "int", "float" },
 			 { "ev", "", "", "1", "10.0" },
 			 "ML", "move_api", "move_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::move_in,
+			 "move_in",
+			 { "ev", "ml", "in" },
+			 { "EveryApi&", "ML", "INP" },
+			 { "ev", "", "" },
+			 "ML", "mainloop_api", "move_in"));
 #if 0
   // This doesnt work since it eats too much memory.
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::movement_display,
@@ -8380,6 +8423,18 @@ std::vector<GameApiItem*> floatbitmapapi_functions()
 			 { "FB" },
 			 { "" },
 			 "FB", "float_bitmap_api", "add_border"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::intbitmap_loader,
+			 "load_map",
+			 { "url" },
+			 { "std::string" },
+			 { "http://tpgames.org/examplemap.txt" },
+			 "IBM", "bitmap_api", "intbitmap_loader"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::intbitmap_bm,
+			 "ibm_to_bm",
+			 { "ibm" },
+			 { "IBM" },
+			 { "" },
+			 "BM", "bitmap_api", "intbitmap_bm"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::convert_fb_to_ibm_bitmap,
 			 "fb_to_ibm",
 			 { "fb", "start", "d" },
@@ -8518,12 +8573,6 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "std::string" },
 			 { "test.png" },
 			 "BM", "bitmap_api", "loadbitmap"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::intbitmap_loader,
-			 "load_map",
-			 { "url" },
-			 { "std::string" },
-			 { "http://tpgames.org/examplemap.txt" },
-			 "IBM", "bitmap_api", "intbitmap_loader"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::save_png_ml,
 			 "save_png",
 			 { "ev", "bm", "filename" },

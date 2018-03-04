@@ -31,6 +31,7 @@ using std::placeholders::_9;
 #undef rad2
 
 
+  struct INP { int id; };
   struct IBM { int id; };
   struct DS { int id; };
   struct SBM { int id; };
@@ -375,6 +376,14 @@ public:
   DS load_ds_from_mem(std::vector<unsigned char> vec);
   DS load_ds_from_disk(std::string filename);
   void save_ds(std::string output_filename, DS ds);
+
+  INP cursor_keys_normal_move();
+  INP cursor_keys_rotate_move(float speed_rot, float pos_forward, float pos_normal, float pos_backward);
+  INP move_sequence(float start_time, float time_per_char, std::string str);
+  INP move_speed(INP orig, float speed);
+  INP gravity(INP im, IBM bitmap, float start_x, float end_x, float start_y, float end_y, float speed);
+  INP move_collision(IBM scene, float start_x, float end_x, float start_y, float end_y, float s_x, float m_x, float e_x, float s_y, float m_y, float e_y, float speed_up, float speed_down, float speed_left, float speed_right, float speed_gravity);
+  ML move_in(EveryApi &ev, ML ml, INP in);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);
@@ -519,7 +528,8 @@ public:
 	IMPORT BM transform(BM orig, std::function<unsigned int(int, int, unsigned int)> f);
 	IMPORT BM newintbitmap(char *array, int sx, int sy, std::function<int(char)> f);
         IMPORT IBM intbitmap_loader(std::string url);
-       
+  IMPORT BM intbitmap_bm(IBM ibm);
+
 	IMPORT BM newcolorbitmap(char *array, int sz, int sy, std::function<unsigned int(char)> f);
 	IMPORT BM newtilebitmap(int sx, int sy, int tile_sx, int tile_sy);
 	IMPORT BM loadbitmap(std::string filename);
