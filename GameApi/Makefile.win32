@@ -101,21 +101,21 @@ all: libGameApi.so libGameApi.dll install main
 examples: main
 
 main: $(GCHFiles_examples) $(OFiles_examples) Makefile GameApi.hh libGameApi.so
-	@echo g++ main
+	#@echo g++ main
 	@g++ -g $(OFiles_examples) -std=c++11 -o main -L. -lGameApi -lGL -lm -lstdc++
 
 main.exe: $(GCHFiles_examples) $(O2Files_examples) Makefile GameApi.hh libGameApi.dll
-	@echo mingw main.exe
+	#@echo mingw main.exe
 	@$(CCWIN) -g $(O2Files_examples) -o main.exe -L. -lGameApi -lopengl32 -lm -lstdc++
 
 
 libGameApi.so: $(OFiles) Makefile
-	@echo g++ libGameApi.so
+	#@echo g++ libGameApi.so
 	@g++ -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lGLEW -lfreetype -lstdc++ 
 #`pkg-config gtkmm-2.4 --libs` 
 
 libGameApi.dll: $(O2Files) Makefile.win32 glew.o
-	@echo mingw libGameApi.dll
+	#@echo mingw libGameApi.dll
 	@g++ -ggdb -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadGC2 -pthread
 
 #	@strip libGameApi.dll
@@ -134,25 +134,25 @@ TAGS: $(CFiles)
 
 CC = g++
 CCWIN = g++
-RM = "c:\program files (x86)\git\bin\rm.exe"
-SED = "c:\program files (x86)\git\bin\sed.exe"
+RM = "c:\program files\git\bin\rm.exe"
+SED = "d:\cvs\gnumake\bin\sed.exe"
 
 $(DFiles): objs/%.d: %.cc
-	@echo Deps $< -o $@
+	#@echo Deps $< -o $@
 	@gcc -M $(CCFLAGS) $(CC2FLAGS) $< \
 	|$(SED) 's,\($*\)\.o[ :]*,objs/\1.o $@ : ,g' > $@
 
 $(D2Files): objs/%.d2: %.cc    
-	@echo Deps $< -o $@
+	#@echo Deps $< -o $@
 	@$(CCWIN) -M $(CC2FLAGS) $< \
 	|$(SED) 's,\($*\)\.obj[ :]*,objs/\1.obj $@ : ,g' > $@
 
 $(OFiles): objs/%.o : %.cc
-	@echo g++ $< -o $@
+	#@echo g++ $< -o $@
 	@$(CC) -std=c++11 -g -c $(CCFLAGS) $< -o $@
 
 $(O2Files): objs/%.obj : %.cc
-	@echo mingw $<
+	#@echo mingw $<
 	@$(CCWIN) -g -c $(CC2FLAGS) $< -o $@
 
 glew.o:
@@ -163,7 +163,7 @@ $(OFiles_examples): objs/%.o : %.cc GameApi.hh
 	@$(CC) -std=c++0x -g -c -I. $(CCFLAGS) $< -o $@ 
 
 $(O2Files_examples): objs/%.obj : %.cc GameApi.hh
-	@echo mingw $<
+	#@echo mingw $<
 	@$(CCWIN) -std=c++0x -g -c -I. $(CC2FLAGS) $< -o $@ 
 
 
@@ -171,7 +171,7 @@ $(GCHFiles): objs/%.hh.gch : %.hh
 	@$(CC) $(CCFLAGS) -std=c++11 -g -x c++-header $< -o $@ 
 
 $(GCH2Files): objs/%.hh.gch2 : %.hh
-	@echo mingw $<
+	#@echo mingw $<
 	@$(CCWIN) $(CC2FLAGS) -g -x c++-header $< -o $@ 
 
 $(GCHFiles_examples): objs/%.hh.gch : %.hh GameApi.hh
