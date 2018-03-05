@@ -991,6 +991,16 @@ void iter(void *arg)
 
 			    }
 		    else
+		      if (type=="IBM")
+			{
+			  IBM bm;
+			  bm.id = id;
+			  BM bm2 = env->ev->bitmap_api.intbitmap_bm(bm);
+			  env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
+			env->display = env->gui->bitmap_dialog(bm2, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+			  
+			} else
 		    if (type=="BM")
 		      {
 			BM bm;
