@@ -8498,7 +8498,7 @@ void blocker_iter(void *arg)
   if (env->logo_shown)
     {
       bool b = env->ev->mainloop_api.logo_iter();
-      if (/*b &&*/ async_pending_count==0) { env->logo_shown = false;
+      if (b && async_pending_count==0) { env->logo_shown = false;
 	env->ev->mainloop_api.reset_time();
 	env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
       }
@@ -8630,7 +8630,7 @@ public:
     if (env->logo_shown)
       {
 	bool b = env->ev->mainloop_api.logo_iter();
-	if (/*b &&*/ async_pending_count==0) { env->logo_shown = false;
+	if (b && async_pending_count==0) { env->logo_shown = false;
 	  env->ev->mainloop_api.reset_time();
 	  env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
 	}
