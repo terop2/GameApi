@@ -7010,6 +7010,7 @@ EXPORT GameApi::LI GameApi::PolygonApi::li_static_instancing_matrix(EveryApi &ev
 GameApi::P GameApi::PolygonApi::static_instancing(EveryApi &ev, P obj, PTS pos)
 {
   PointsApiPoints *obj2 = find_pointsapi_points(e, pos);
+  obj2->Prepare();
   int s = obj2->NumPoints();
   std::vector<P> vec;
   for(int i=0;i<s;i++)
