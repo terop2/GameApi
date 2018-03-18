@@ -3986,6 +3986,40 @@ public:
   }
 };
 
+template<>
+class FromStreamClass<std::vector<std::string>>
+{
+public:
+  std::vector<std::string> from_stream(std::string s, GameApi::EveryApi &ev)
+  {
+    std::vector<std::string> vec;
+    if (s.size()<2)
+      {
+	std::cout << "from_stream length problem" << std::endl;
+	return vec;
+      }
+    char c = s[0];
+    if (c!='[') { std::cout << "from_stream parse error on std::vector" << std::endl; return vec; }
+
+    FromStreamClass<std::string> cls;
+    int ss = s.size();
+    std::string next;
+    int prev = 1;
+    for(int i=1;i<ss;i++)
+      {
+	if (s[i]==',' || s[i]==']')
+	  {
+	    std::string substr = s.substr(prev, i-prev);
+	    std::string t = cls.from_stream(substr, ev);
+	    vec.push_back(t);
+	    prev=i+1;
+	    if (s[i]==']') { break; }
+	  }
+      }
+    return vec;
+  } 
+};
+
 template<class T>
 class FromStreamClass<std::vector<T>>
 {
@@ -4567,6 +4601,7 @@ ASyncData async_data[] = { { "font_api", "newfont", 0 },
 			   { "font_api", "load_font", 0 },
 			   { "mainloop_api", "load_song", 2 },
 			   { "polygon_api", "p_url", 1 },
+			   { "polygon_api", "p_url_mtl", 1 },
 			   { "mainloop_api", "fps_display", 2 },
 			   { "mainloop_api", "load_P_script", 1 },
 			   { "mainloop_api", "load_ML_script", 1 },
@@ -4713,7 +4748,9 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
 			std::stringstream ss;
 			ss << linkage;
 			param_linkage = std::string("E") + ss.str();
-		      }
+		      } else {
+		      param_linkage = param;
+		    }
 		    vec.params.push_back(param_linkage);
 		    pos = pos2+1;
 		    if (param_value[pos2]=='}') break;
@@ -4754,7 +4791,15 @@ void link_api_items(std::vector<CodeGenLine> &vec, std::vector<GameApiItem*> fun
 }
 
 
-
+bool is_num(std::string s)
+{
+  int ss = s.size();
+  for(int i=0;i<ss;i++)
+    {
+      if (s[i]<'0' || s[i]>'9') return false;
+    }
+  return true;
+}
 
 int execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std::vector<CodeGenLine> &vec, std::vector<CodeGenVectors> &vecvec, int /*line_num*/, GameApi::ExecuteEnv &e)
 {
@@ -4792,11 +4837,15 @@ int execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std::vector<CodeG
 	      for(int i=0;i<s;i++)
 		{
 		  std::string link = vecvec[idx].params[i];
-		  std::stringstream ss(link);
-		  int num;
-		  ss >> num;
-		  std::string val = res_vec[num]; 
-		  params2.push_back( val );
+		  if (is_num(link)) {
+		    std::stringstream ss(link);
+		    int num;
+		    ss >> num;
+		    std::string val = res_vec[num]; 
+		    params2.push_back( val );
+		  } else {
+		    params2.push_back(link);
+		  }
 		}
 	      std::string res = "[";
 	      for(int i=0;i<s;i++)
@@ -6364,6 +6413,18 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&" },
 			 { "ev" },
 			 "MT", "materials_api", "skeletal"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::shading1,
+			 "m_shading1",
+			 { "ev", "nxt", "mix_val1", "mix_val2" },
+			 { "EveryApi&", "MT", "float", "float" },
+			 { "ev", "", "0.95", "0.5" },
+			 "MT", "materials_api", "shading1"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::shading2,
+			 "m_shading2",
+			 { "ev", "nxt", "color1", "color2", "color3" },
+			 { "EveryApi&", "MT", "unsigned int", "unsigned int", "unsigned int" },
+			 { "ev", "", "ffaaaaaa", "ffeeeeee", "ffffffff" },
+			 "MT", "materials_api", "shading2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::snow,
 			 "m_snow",
 			 { "ev", "nxt", "color1", "color2", "color3", "mix_val" },
@@ -7148,6 +7209,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "std::string", "int" },
 			 { "ev", "http://tpgames.org/example.obj", "10" },
 			 "P", "polygon_api", "p_url"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_url_mtl,
+			 "p_url_mtl",
+			 { "ev", "url", "count", "material_names" },
+			 { "EveryApi&", "std::string", "int", "[std::string]" },
+			 { "ev", "http://tpgames.org/example.obj", "10", "" },
+			 "P", "polygon_api", "p_url_mtl"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_ds_url,
 			 "p_ds_url",
 			 { "ev", "url" },
@@ -7348,6 +7415,22 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "", "", "0.5" },
 			 "P", "polygon_api", "mix_color"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::min_color,
+			 "p_min_color",
+			 { "orig", "orig2" },
+			 { "P", "P" },
+			 { "", "" },
+			 "P", "polygon_api", "min_color"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::max_color,
+			 "p_max_color",
+			 { "orig", "orig2" },
+			 { "P", "P" },
+			 { "", "" },
+			 "P", "polygon_api", "max_color"));
+
+
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_faces,
 			 "color_faces",
 			 { "orig", "color_1", "color_2", "color_3", "color_4" },
@@ -7374,6 +7457,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "", "ffff8844", "ff884422", "ffaa8844", "ffffffff" },
 			 "P", "polygon_api", "color_from_texcoord"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_distance,
+			 "color_distance",
+			 { "model", "center_x", "center_y", "center_z", "color_center", "color_dist", "dist_center", "dist_dist" },
+			 { "P", "float", "float", "float", "unsigned int", "unsigned int", "float", "float" },
+			 { "", "0.0", "0.0", "0.0", "ffffffff", "ff000000", "10.0", "300.0" },
+			 "P", "polygon_api", "color_distance"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::color_range,
 			 "color_range",
 			 { "orig", "source_upper", "source_lower", "upper_range", "lower_range" },

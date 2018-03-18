@@ -1215,6 +1215,8 @@ public:
   IMPORT MT texture_many(EveryApi&ev, std::vector<BM> vec, float mix);
   IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
   IMPORT MT snow(EveryApi &ev, MT nxt, unsigned int color1=0xffaaaaaa, unsigned int color2=0xffeeeeee, unsigned int color3=0xffffffff, float mix_val=0.5f);
+  IMPORT MT shading1(EveryApi &ev, MT nxt, float mix_val, float mix_val2);
+  IMPORT MT shading2(EveryApi &ev, MT nxt, unsigned int color1, unsigned int colo2, unsigned int color3);
   IMPORT MT flat(EveryApi &ev, MT nxt, unsigned int color1, unsigned int color2, unsigned int color3);
   IMPORT MT fur(EveryApi &ev, MT nxt, PT center, float dist, float max_angle, int count, float size, int cone_numfaces);
 
@@ -2023,6 +2025,27 @@ private:
 };
 #endif
 #ifdef F_POLYGON_API
+
+struct MaterialDef
+{
+  std::string material_name;
+  float Ns;
+  float Ni;
+  float d;
+  float Tr;
+  int illum;
+  float Ka_x, Ka_y, Ka_z;
+  float Kd_x,Kd_y,Kd_z;
+  float Ks_x,Ks_y,Ks_z;
+  float Ke_x,Ke_y,Ke_z;
+  std::string map_Ka;
+  std::string map_Kd;
+  std::string map_d;
+  std::string map_bump;
+  std::string bump;
+};
+
+
 class PolygonApi
 {
 public:
@@ -2043,7 +2066,9 @@ public:
         IMPORT P load_model(std::string filename, int obj_num);
   IMPORT P load_model_all(std::string filename, int count);
   IMPORT P load_model_all_no_cache(std::string filename, int count);
+  IMPORT P load_model_all_no_cache_mtl(std::string filename, int count, std::vector<std::string> material_names);
   IMPORT P p_url(EveryApi &ev, std::string url, int count);
+  IMPORT P p_url_mtl(EveryApi &ev, std::string url, int count, std::vector<std::string> material_names);
   IMPORT P p_ds(EveryApi &ev, std::vector<unsigned char> vec);
   IMPORT P p_ds_url(EveryApi &ev, std::string url);
   IMPORT DS p_ds_inv(P model);
@@ -2137,9 +2162,12 @@ public:
   IMPORT LI li_static_instancing_matrix(EveryApi &ev, LI obj, MS matrix_array);
   IMPORT P static_instancing_with_color(EveryApi &ev, P obj, BM bm, float start_x, float end_x, float start_y, float end_y, float z);
   
+  IMPORT P color_distance(P faces, float center_x, float center_y, float center_z, unsigned int color_center, unsigned int color_dist, float dist_center, float dist_dist);
   IMPORT P color(P orig, unsigned int color);
   IMPORT P color_voxel(P orig, VX colours, PT p, V u_x, V u_y, V u_z);
   IMPORT P mix_color(P orig, P orig2, float val);
+  IMPORT P min_color(P orig, P orig2);
+  IMPORT P max_color(P orig, P orig2);
   IMPORT P color_lambert(P orig, unsigned int color, float light_dir_x, float light_dir_y, float light_dir_z, float pow, float intensity);
   IMPORT P texcoord_cube(P orig,
 		  PT o, PT u_x, PT u_y, PT u_z,  // these are 3d
@@ -2375,6 +2403,11 @@ public:
 
   IMPORT BM renderpolytobitmap(EveryApi &ev, P p, SH sh, float x, float y, float z, int sx, int sy);
   IMPORT ML position_based_on_screen(ML obj); 
+
+
+  IMPORT std::vector<MaterialDef> parse_mtl(std::string filename);
+  IMPORT std::string output_ml(std::string objfileurl, int count, std::string prefix, std::vector<MaterialDef> filenames);
+  
 private:
   PolygonApi(const PolygonApi&);
   void operator=(const PolygonApi&);

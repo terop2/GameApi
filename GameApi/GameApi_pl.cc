@@ -283,6 +283,34 @@ EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(std::function<P (int c)
   return p;
 }
 
+class ColorDistance3 : public ForwardFaceCollection
+{
+public:
+  ColorDistance3(FaceCollection *faces, Point center, unsigned int color_center, unsigned int color_dist, float dist_center, float dist_dist) : ForwardFaceCollection(*faces), center(center), color_center(color_center), color_dist(color_dist), dist_center(dist_center), dist_dist(dist_dist) { }
+  virtual unsigned int Color(int face, int point) const
+  {
+    Point p = ForwardFaceCollection::FacePoint(face,point);
+    p-=center;
+    float d = p.Dist();
+    d-=dist_center;
+    d/=dist_dist-dist_center;
+    if (d<0.0) d=0.0;
+    if (d>1.0) d=1.0;
+    return Color::Interpolate(color_center, color_dist, d);
+  }
+private:
+  Point center;
+  unsigned int color_center, color_dist;
+  float dist_center, dist_dist;
+};
+
+GameApi::P GameApi::PolygonApi::color_distance(P faces, float center_x, float center_y, float center_z, unsigned int color_center, unsigned int color_dist, float dist_center, float dist_dist)
+{
+  FaceCollection *face = find_facecoll(e, faces);
+  Point pt(center_x, center_y, center_z);
+  return add_polygon2(e, new ColorDistance3(face, pt, color_center, color_dist, dist_center, dist_dist),1);
+}
+
 class DistFromLines : public SingleForwardFaceCollection
 {
 public:
@@ -459,7 +487,7 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(std::string filen
   std::vector<P> vec;
   for(int i=0;i<s;i++)
     {
-      GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(filename, i), 1);
+      GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(filename, i, std::vector<std::string>()), 1);
       vec.push_back(model);
     }
   GameApi::P obj = or_array2(vec);
@@ -468,13 +496,29 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(std::string filen
 
 }
 
+EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(std::string filename, int count, std::vector<std::string> material_names)
+{
+  int s=count;
+  std::vector<P> vec;
+  for(int i=0;i<s;i++)
+    {
+      GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(filename, i,material_names), 1);
+      vec.push_back(model);
+    }
+  GameApi::P obj = or_array2(vec);
+  GameApi::P resize = resize_to_correct_size(obj);
+  return resize;
+
+}
+
+
 EXPORT GameApi::P GameApi::PolygonApi::load_model_all(std::string filename, int count)
 {
   int s=count;
   std::vector<P> vec;
   for(int i=0;i<s;i++)
     {
-      GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(filename, i), 1);
+      GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(filename, i, std::vector<std::string>()), 1);
       GameApi::P cache = file_cache(model, filename,i);
       vec.push_back(cache);
     }
@@ -627,6 +671,72 @@ private:
   FaceCollection *current;
 };
 
+class NetworkedFaceCollectionMTL : public FaceCollection
+{
+public:
+  NetworkedFaceCollectionMTL(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string url, std::string homepage, int count, std::vector<std::string> material_names) : e(e), ev(ev), url(url), homepage(homepage), count(count), empty(empty), material_names(material_names)
+  {
+    current = empty;
+    filled = 0;
+  }
+  void Prepare()
+  {
+    if (current == empty) {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+
+    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    if (!ptr) {
+      std::cout << "p_url async not ready yet, failing..." << std::endl;
+      return;
+    }
+    static int num=0;
+    num++;
+    std::stringstream ss2;
+    ss2 << "p_url_file" << num << ".obj";
+    std::string filename = ss2.str();
+    std::fstream ss(filename.c_str(), std::ios_base::binary |std::ios_base::out);
+    int s = ptr->size();
+    for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
+    ss.close();
+    GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(filename, count,material_names);
+    FaceCollection *coll = find_facecoll(e, p);
+    filled = coll;
+    current = filled;
+    current->Prepare();
+    }
+  }
+
+  virtual int NumFaces() const { return current->NumFaces(); }
+  virtual int NumPoints(int face) const { return current->NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const { return current->FacePoint(face,point); }
+  virtual Point EndFacePoint(int face, int point) const { return current->EndFacePoint(face, point); }
+
+  virtual Vector PointNormal(int face, int point) const { return current->PointNormal(face,point); }
+  virtual float Attrib(int face, int point, int id) const { return current->Attrib(face,point,id); }
+  virtual int AttribI(int face, int point, int id) const { return current->AttribI(face,point,id); }
+  virtual unsigned int Color(int face, int point) const { return current->Color(face,point); }
+  virtual Point2d TexCoord(int face, int point) const { return current->TexCoord(face,point); }
+  virtual float TexCoord3(int face, int point) const { return current->TexCoord3(face,point); }
+  virtual int NumTextures() const { return current->NumTextures(); }
+  virtual void GenTexture(int num) { current->GenTexture(num); }
+  virtual BufferRef TextureBuf(int num) const { return current->TextureBuf(num); }
+  virtual int FaceTexture(int face) const { return current->FaceTexture(face); }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  std::string url;
+  std::string homepage;
+  int count;
+  FaceCollection *empty;
+  FaceCollection *filled;
+  FaceCollection *current;
+  std::vector<std::string> material_names;
+};
+
+
 class NetworkedFaceCollectionDS : public FaceCollection
 {
 public:
@@ -690,6 +800,15 @@ EXPORT GameApi::P GameApi::PolygonApi::p_url(EveryApi &ev, std::string url, int 
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll),1);
   return p2;
 }
+EXPORT GameApi::P GameApi::PolygonApi::p_url_mtl(EveryApi &ev, std::string url, int count, std::vector<std::string> material_names)
+{
+  P p = empty();
+  FaceCollection *emp = find_facecoll(e, p);
+  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL(e,ev, emp, url, gameapi_homepageurl, count,material_names),1); 
+  FaceCollection *coll = find_facecoll(e,p1);
+  GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll),1);
+  return p2;
+}
 EXPORT GameApi::P GameApi::PolygonApi::p_ds_url(EveryApi &ev, std::string url)
 {
   P p = empty();
@@ -702,7 +821,7 @@ EXPORT GameApi::P GameApi::PolygonApi::p_ds_url(EveryApi &ev, std::string url)
 
 EXPORT GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
 {
-  GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(filename, num), 1);
+  GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(filename, num, std::vector<std::string>()), 1);
   GameApi::P cache = file_cache(model, filename,num);
   GameApi::P resize = resize_to_correct_size(cache);
   return resize;
@@ -1211,11 +1330,57 @@ private:
   float val;
 };
 
+class MaxColorFaceColl : public ForwardFaceCollection
+{
+public:
+  MaxColorFaceColl(FaceCollection *c1, FaceCollection *c2) : ForwardFaceCollection(*c1), c1(c1), c2(c2) { }
+  void Prepare() { c1->Prepare(); c2->Prepare(); }
+  unsigned int Color(int face, int point) const
+  {
+    unsigned int col1 = c1->Color(face,point);
+    unsigned int col2 = c2->Color(face,point);
+    return Color::max_color(col1, col2);
+  }
+
+private:
+  FaceCollection *c1;
+  FaceCollection *c2;
+};
+class MinColorFaceColl : public ForwardFaceCollection
+{
+public:
+  MinColorFaceColl(FaceCollection *c1, FaceCollection *c2) : ForwardFaceCollection(*c1), c1(c1), c2(c2) { }
+  void Prepare() { c1->Prepare(); c2->Prepare(); }
+  unsigned int Color(int face, int point) const
+  {
+    unsigned int col1 = c1->Color(face,point);
+    unsigned int col2 = c2->Color(face,point);
+    return Color::min_color(col1, col2);
+  }
+
+private:
+  FaceCollection *c1;
+  FaceCollection *c2;
+};
+
+
 EXPORT GameApi::P GameApi::PolygonApi::mix_color(P orig, P orig2, float val)
 {
   FaceCollection *c1 = find_facecoll(e, orig);
   FaceCollection *c2 = find_facecoll(e, orig2);
   return add_polygon(e, new MixColorFaceColl(c1,c2,val), 1);
+}
+EXPORT GameApi::P GameApi::PolygonApi::min_color(P orig, P orig2)
+{
+  FaceCollection *c1 = find_facecoll(e, orig);
+  FaceCollection *c2 = find_facecoll(e, orig2);
+  return add_polygon(e, new MinColorFaceColl(c1,c2), 1);
+}
+EXPORT GameApi::P GameApi::PolygonApi::max_color(P orig, P orig2)
+{
+  FaceCollection *c1 = find_facecoll(e, orig);
+  FaceCollection *c2 = find_facecoll(e, orig2);
+  return add_polygon(e, new MaxColorFaceColl(c1,c2), 1);
 }
 class Lambert : public ForwardFaceCollection
 {
@@ -6655,7 +6820,7 @@ public:
 	  save.save(filename);
 	}
       std::cout << "Loading " << filename << std::endl;
-      res = new LoadObjModelFaceCollection(filename,0);
+      res = new LoadObjModelFaceCollection(filename,0, std::vector<std::string>());
       res->Prepare();
     }
   }
@@ -7989,4 +8154,105 @@ GameApi::DS GameApi::PolygonApi::p_ds_inv(GameApi::P p)
 {
   FaceCollection *coll = find_facecoll(e, p);
   return add_disk_store(e, new DiskStoreCollection(coll));
+}
+
+
+
+ class MTLParser
+ {
+ public:
+   MTLParser(std::string filename) : filename(filename) { }
+   void load_file() {
+     int count = -1;
+    std::ifstream ss(filename.c_str());
+     std::string line;
+     GameApi::MaterialDef def2;
+
+     while(std::getline(ss,line)) {
+       std::stringstream ss(line);
+       std::string id;
+       ss >> id;
+       if (id=="newmtl") {
+	 if (count!=-1) {
+	   GameApi::MaterialDef def = def2;
+	   filenames.push_back(def);
+	 }
+	 count++;
+	 ss >> def2.material_name;
+	 def2.Ns = std::numeric_limits<float>::quiet_NaN();
+	 def2.Ni = std::numeric_limits<float>::quiet_NaN();
+	 def2.d = std::numeric_limits<float>::quiet_NaN();
+	 def2.Tr = std::numeric_limits<float>::quiet_NaN();
+	 def2.illum = 0;
+	 def2.Ka_x = def2.Ka_y = def2.Ka_z = 0.0;
+	 def2.Kd_x = def2.Kd_y = def2.Kd_z = 0.0;
+	 def2.Ks_x = def2.Ks_y = def2.Ks_z = 0.0;
+	 def2.Ke_x = def2.Ke_y = def2.Ke_z = 0.0;
+       }
+       if (id=="Ns") { ss >> def2.Ns; }
+       if (id=="Ni") { ss >> def2.Ni; }
+       if (id=="d") { ss >> def2.d; }
+       if (id=="Tr") { ss >> def2.Tr; }
+       if (id=="illum") { ss >> def2.illum; }
+       if (id=="Ka") { ss >> def2.Ka_x >> def2.Ka_y >> def2.Ka_z; }
+       if (id=="Kd") { ss >> def2.Kd_x >> def2.Kd_y >> def2.Kd_z; }
+       if (id=="Ks") { ss >> def2.Ks_x >> def2.Ks_y >> def2.Ks_z; }
+       if (id=="Ke") { ss >> def2.Ke_x >> def2.Ke_y >> def2.Ke_z; }
+       if (id=="map_Ka") { ss >> def2.map_Ka; }
+       if (id=="map_Kd") { ss >> def2.map_Kd; }
+       if (id=="map_d") { ss >> def2.map_d; }
+       if (id=="map_bump") { ss >> def2.map_bump; }
+       if (id=="bump") { ss >> def2.bump; }
+     }
+     GameApi::MaterialDef def = def2;
+     filenames.push_back(def);
+   }
+   std::vector<GameApi::MaterialDef> get() const { return filenames; }
+ private:
+   std::string filename;
+   std::vector<GameApi::MaterialDef> filenames;
+   std::string material_name;
+ };
+
+// note, this function doesnt go to gameapi builder
+ std::vector<GameApi::MaterialDef> GameApi::PolygonApi::parse_mtl(std::string filename)
+{
+  MTLParser parser(filename);
+  parser.load_file();
+  return parser.get();
+}
+ std::string GameApi::PolygonApi::output_ml(std::string objfileurl, int count, std::string prefix, std::vector<GameApi::MaterialDef> filenames)
+ {
+   int s2 = filenames.size();
+   std::string label = "std::vector<std::string>{";
+   for(int i=0;i<s2;i++)
+     {
+       label+=filenames[i].material_name;
+       if (i!=s2-1) label+=",";
+     }
+  label+="}";
+  std::string res;
+  std::stringstream ss;
+  ss << count;
+  
+  res+="P I1=ev.polygon_api.p_url_mtl(ev," + objfileurl + "," + ss.str() + "," + label + ");\n";
+  int s = filenames.size();
+  std::string names;
+  names="std::vector<BM>{";
+  for(int i=0;i<s;i++)
+   {
+     std::stringstream ii;
+     ii << i+2;
+     res+="BM I" + ii.str() + "=ev.bitmap_api.loadbitmapfromurl(" + prefix + "/" + filenames[i].map_Ka + ");\n";
+     names+="I" + ii.str();
+     if (i!=s-1) names+=",";
+   }
+  names+="}";
+  std::stringstream sk;
+  sk << s+2;
+  std::stringstream sk2;
+  sk2 << s+3;
+  res+="MT I" + sk.str() + "=ev.materials_api.texture_many(ev," + names + ",1.0);\n";
+  res+="ML I" + sk2.str() + "=ev.materials_api.bind(I1,I" + sk.str() + ");\n";
+  return res;
 }

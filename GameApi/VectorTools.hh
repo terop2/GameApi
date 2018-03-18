@@ -569,6 +569,44 @@ public:
     a4 <<= 24;
     return r4+g4+b4+a4;
   }
+  static unsigned int max_color(unsigned int pixel1, unsigned int pixel2)
+  {
+    unsigned int b = pixel1 & 0xff;
+    unsigned int g = pixel1 & 0xff00;
+    unsigned int r = pixel1 & 0xff0000;
+    unsigned int a = pixel1 & 0xff000000;
+    unsigned int b2 = pixel2 & 0xff;
+    unsigned int g2 = pixel2 & 0xff00;
+    unsigned int r2 = pixel2 & 0xff0000;
+    unsigned int a2 = pixel2 & 0xff000000;
+
+    unsigned int mb = std::max(b,b2);
+    unsigned int mg = std::max(g,g2);
+    unsigned int mr = std::max(r,r2);
+    unsigned int ma = std::max(a,a2);
+
+    return mr+mg+mb+ma;
+
+  }
+  static unsigned int min_color(unsigned int pixel1, unsigned int pixel2)
+  {
+    unsigned int b = pixel1 & 0xff;
+    unsigned int g = pixel1 & 0xff00;
+    unsigned int r = pixel1 & 0xff0000;
+    unsigned int a = pixel1 & 0xff000000;
+    unsigned int b2 = pixel2 & 0xff;
+    unsigned int g2 = pixel2 & 0xff00;
+    unsigned int r2 = pixel2 & 0xff0000;
+    unsigned int a2 = pixel2 & 0xff000000;
+
+    unsigned int mb = std::min(b,b2);
+    unsigned int mg = std::min(g,g2);
+    unsigned int mr = std::min(r,r2);
+    unsigned int ma = std::min(a,a2);
+
+    return mr+mg+mb+ma;
+
+  }
   static unsigned int Interpolate(unsigned int pixel1, unsigned int pixel2, float val)
   {
 

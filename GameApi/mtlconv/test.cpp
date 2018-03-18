@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
   Env e;
   EveryApi ev(e);
 
-  std::vector<std::string> v = ev.polygon_api.parse_mtl(arg);
+  std::vector<GameApi::MaterialDef> v = ev.polygon_api.parse_mtl(arg);
   std::string ml = ev.polygon_api.output_ml(url, num, url2, v);
   std::ofstream ss(out_filename.c_str());
   ss << ml;
