@@ -116,7 +116,7 @@ libGameApi.so: $(OFiles) Makefile
 
 libGameApi.dll: $(O2Files) Makefile.win32 glew.o
 	#@echo mingw libGameApi.dll
-	@g++ -ggdb -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadGC2 -pthread
+	@g++ -ggdb -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -pthread
 
 #	@strip libGameApi.dll
 
@@ -134,7 +134,7 @@ TAGS: $(CFiles)
 
 CC = g++
 CCWIN = g++
-RM = "c:\program files\git\bin\rm.exe"
+RM = "d:\cvs\gnumake\bin\rm.exe"
 SED = "d:\cvs\gnumake\bin\sed.exe"
 
 $(DFiles): objs/%.d: %.cc

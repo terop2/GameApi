@@ -5185,6 +5185,110 @@ private:
   bool web;
 };
 
+class ShadingMaterial1 : public MaterialForward
+{
+public:
+  ShadingMaterial1(GameApi::EveryApi &ev, Material *next, float mix_val, float mix_val2) : ev(ev), next(next), mix_val(mix_val), mix_val2(mix_val2) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
+    GameApi::P p2 = ev.polygon_api.color_grayscale(p1);
+    GameApi::P p3 = ev.polygon_api.mix_color(p1,p2,mix_val);
+    GameApi::P p4 = ev.polygon_api.mix_color(p3,p,mix_val2);
+    GameApi::ML ml;
+    ml.id = next->mat(p4.id);
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
+    GameApi::P p2 = ev.polygon_api.color_grayscale(p1);
+    GameApi::P p3 = ev.polygon_api.mix_color(p1,p2,mix_val);
+    GameApi::P p4 = ev.polygon_api.mix_color(p3,p,mix_val2);
+    GameApi::ML ml;
+    ml.id = next->mat_inst(p4.id, pts.id);
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
+    GameApi::P p2 = ev.polygon_api.color_grayscale(p1);
+    GameApi::P p3 = ev.polygon_api.mix_color(p1,p2,mix_val);
+    GameApi::P p4 = ev.polygon_api.mix_color(p3,p,mix_val2);
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(p4.id, pta.id);
+    //VA va = ev.polygon_api.create_vertex_array(p3,false);
+    //ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    return ml;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
+    GameApi::P p2 = ev.polygon_api.color_grayscale(p1);
+    GameApi::P p3 = ev.polygon_api.mix_color(p1,p2,mix_val);
+    GameApi::P p4 = ev.polygon_api.mix_color(p3,p,mix_val2);
+
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p4.id, pts.id, flip, start_time, end_time);
+    //VA va = ev.polygon_api.create_vertex_array(p3,false);
+    //ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    return ml;
+  }
+private:
+  GameApi::EveryApi &ev;
+  Material *next;
+  float mix_val;
+  float mix_val2;
+};
+
+class ShadingMaterial2 : public MaterialForward
+{
+public:
+  ShadingMaterial2(GameApi::EveryApi &ev, Material *next, unsigned int color1, unsigned int color2, unsigned int color3) : ev(ev), next(next), color1(color1), color2(color2), color3(color3) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat(p.id);
+    GameApi::ML sh = ev.polygon_api.shading_shader(ev, ml, color1, color2, color3);
+    return sh;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst(p.id, pts.id);
+    GameApi::ML sh = ev.polygon_api.shading_shader(ev, ml, color1, color2, color3);
+    return sh;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(p.id, pta.id);
+    //VA va = ev.polygon_api.create_vertex_array(p3,false);
+    //ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    GameApi::ML sh = ev.polygon_api.shading_shader(ev, ml, color1, color2, color3);
+    return sh;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+    //VA va = ev.polygon_api.create_vertex_array(p3,false);
+    //ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    GameApi::ML sh = ev.polygon_api.shading_shader(ev, ml, color1, color2, color3);
+    return sh;
+  }
+private:
+  GameApi::EveryApi &ev;
+  Material *next;
+  unsigned int color1, color2, color3;
+};
+
+
 class SnowMaterial : public MaterialForward
 {
 public:
@@ -5195,6 +5299,7 @@ public:
     GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
     GameApi::P p2 = ev.polygon_api.color_grayscale(p1);
     GameApi::P p3 = ev.polygon_api.mix_color(p1,p2,mix_val);
+    //GameApi::P p4 = ev.polygon_api.max_color(p3,p);
     GameApi::ML ml;
     ml.id = next->mat(p3.id);
     GameApi::ML sh = ev.polygon_api.shading_shader(ev, ml, color1, color2, color3);
@@ -5206,6 +5311,7 @@ public:
     GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
     GameApi::P p2 = ev.polygon_api.color_grayscale(p1);
     GameApi::P p3 = ev.polygon_api.mix_color(p1,p2,mix_val);
+    //GameApi::P p4 = ev.polygon_api.max_color(p3,p);
     GameApi::ML ml;
     ml.id = next->mat_inst(p3.id, pts.id);
     //VA va = ev.polygon_api.create_vertex_array(p3,false);
@@ -5220,6 +5326,7 @@ public:
     GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
     GameApi::P p2 = ev.polygon_api.color_grayscale(p1);
     GameApi::P p3 = ev.polygon_api.mix_color(p1,p2,mix_val);
+    //GameApi::P p4 = ev.polygon_api.max_color(p3,p);
     GameApi::ML ml;
     ml.id = next->mat_inst2(p3.id, pta.id);
     //VA va = ev.polygon_api.create_vertex_array(p3,false);
@@ -5234,6 +5341,7 @@ public:
     GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
     GameApi::P p2 = ev.polygon_api.color_grayscale(p1);
     GameApi::P p3 = ev.polygon_api.mix_color(p1,p2,mix_val);
+    //GameApi::P p4 = ev.polygon_api.max_color(p3,p);
     GameApi::ML ml;
     ml.id = next->mat_inst_fade(p3.id, pts.id, flip, start_time, end_time);
     //VA va = ev.polygon_api.create_vertex_array(p3,false);
@@ -5627,6 +5735,16 @@ EXPORT GameApi::MT GameApi::MaterialsApi::snow(EveryApi &ev, MT nxt, unsigned in
 {
   Material *mat = find_material(e, nxt);
   return add_material(e, new SnowMaterial(ev, mat, color1, color2, color3, mix_val));
+}
+EXPORT GameApi::MT GameApi::MaterialsApi::shading1(EveryApi &ev, MT nxt, float mix_val, float mix_val2)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new ShadingMaterial1(ev, mat, mix_val,mix_val2));
+}
+EXPORT GameApi::MT GameApi::MaterialsApi::shading2(EveryApi &ev, MT nxt, unsigned int color1, unsigned int color2, unsigned int color3)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new ShadingMaterial2(ev, mat, color1, color2, color3));
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::flat(EveryApi &ev, MT nxt, unsigned int color1, unsigned int color2, unsigned int color3)
 {

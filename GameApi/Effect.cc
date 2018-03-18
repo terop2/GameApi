@@ -4824,3 +4824,345 @@ Point ReflectFaceCollection::FacePoint(int face, int point) const
     return pp2;
 }
 
+LoadObjModelFaceCollection::LoadObjModelFaceCollection(std::string filename, int objcount, std::vector<std::string> material_names) : filename(filename), obj_num(objcount), material_names_external(material_names) 
+  {
+    firsttime = true;
+  }
+void LoadObjModelFaceCollection::Prepare()
+  {
+    if (firsttime) {
+      std::cout << "Loading: " << filename << " " << obj_num << std::endl;
+      check_invalidate();
+      Load();
+      firsttime = false;
+    }
+  }
+void LoadObjModelFaceCollection::check_invalidate() const { const_cast<LoadObjModelFaceCollection*>(this)->check_invalidate2(); }
+void LoadObjModelFaceCollection::check_invalidate2()
+  {
+    static int filesize_store = -1;
+    static int objcount = -1;
+    int val = filesize(filename);
+    if (filesize_store != val) { filesize_store = val; }
+    if (objcount != obj_num) { objcount = obj_num; }
+  }
+
+  void LoadObjModelFaceCollection::Load() const { const_cast<LoadObjModelFaceCollection*>(this)->Load2(); }
+  void LoadObjModelFaceCollection::Load2() {
+    std::ifstream file(filename.c_str());
+    std::string line;
+    int obj_count = 0;
+    int vertex_count = 0;
+    int vertex_count2 = 0;
+    int face_count=0;
+    int normal_count =0;
+    int normal_count2 = 0;
+    int color_count = 0;
+    int color_count2 = 0;
+    int tex_count = 0;
+    int tex_count2 = 0;
+
+    int obj_base_v = 0;
+    int obj_base_t = 0;
+    int obj_base_n = 0;
+    //int obj_base_c = 0;
+    int mtl_material = -1;
+    while(std::getline(file, line))
+      {
+	std::string word;
+	std::stringstream ss(line);
+	ss>>word;
+	if (word == "usemtl")
+	  {
+	    std::string material_name;
+	    ss >> material_name;
+	    material_names_internal.push_back(material_name);
+	    mtl_material++;
+	  }
+	if (word == "o")
+	  {
+	    //std::cout << "o" << std::flush;
+	    obj_count++;
+	    obj_base_v = vertex_count2;
+	    obj_base_n = normal_count2;
+	    obj_base_t = tex_count2;
+	    //obj_base_c = color_count2;
+	  }
+	if (word == "v" && obj_count==obj_num)
+	  {
+	    //std::cout << "v" << std::flush;
+	    vertex_count++;
+	    if (vertex_count % 1000==0) 
+	      std::cout << "v" << std::flush;
+	    float x,y,z;
+	    ss >> x >> y >> z;
+	    //std::cout << "Vertex:" << vertex_data.size() << " " << x << " " << y << " " << z << std::endl;
+	    Point p(x,y,z);
+	    vertex_data.push_back(p);
+	  } else if (word =="v") { vertex_count2++; }
+	if (word == "vt" && obj_count==obj_num)
+	  {	
+	    //std::cout << "vt" << std::flush;
+
+	    tex_count++;
+	    if (tex_count %1000 == 0)
+	      std::cout << "t" << std::flush;
+	    //std::cout << "Texture:" << texcoord_data.size() << std::endl;
+	    float tx,ty,tz;
+	    ss >> tx >> ty >> tz;
+	    Point2d p = { tx, ty };
+	    texcoord_data.push_back(p);
+	    texcoord3_data.push_back(0.0);
+	  } else if (word=="vt") { tex_count2++; }
+	if (word == "vn" && obj_count==obj_num)
+	  {
+	    //std::cout << "vn" << std::flush;
+	    normal_count++;
+	    if (normal_count %1000 == 0)
+	      std::cout << "n" << std::flush;
+
+	    //std::cout << "Normal:" << normal_data.size() << std::endl;
+
+	    float nx, ny, nz;
+	    ss >> nx >> ny >> nz;
+	    Vector v(nx,ny,nz);
+	    normal_data.push_back(v);
+	  } else if (word=="vn") { normal_count2++; }
+	if (word == "vc" && obj_count==obj_num)
+	  {
+	    //std::cout << "vc" << std::flush;
+	    color_count++;
+	    if (color_count %1000 == 0)
+	      std::cout << "c" << std::flush;
+
+	    //std::cout << "Normal:" << normal_data.size() << std::endl;
+
+	    int nr, ng, nb, na;
+	    ss >> nr >> ng >> nb >> na;
+	    ::Color vc(nr,ng,nb,na);
+	    color_data.push_back(vc.clamp().Pixel());
+	  } else if (word=="vc") { color_count2++; }
+	if (word == "f" && obj_count==obj_num)
+	  {
+	    //std::cout << "f" << std::flush;
+	    face_count++;
+	    if (face_count % 1000 == 0)
+	      std::cout << "f" << std::flush;
+
+	    int v_index, t_index, n_index;
+	    int count = 0;
+	    char c;
+	    bool t_bool = texcoord_data.size()!=0;
+	    bool n_bool = normal_data.size()!=0;
+	    
+	    //std::cout << "Face:" << face_counts.size() << std::endl;
+	    if (t_bool && n_bool) {
+	      while(ss>>v_index>> c >>t_index>> c >>n_index)
+		{
+		  //std::cout << "1" << std::flush;
+	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
+	    if (t_index<0) t_index = texcoord_data.size()+t_index+1;
+	    if (n_index<0) n_index = normal_data.size()+n_index+1;
+	    v_index -= obj_base_v;
+	    t_index -= obj_base_t;
+	    n_index -= obj_base_n;
+	    vertex_index.push_back(v_index -1);
+	    texture_index.push_back(t_index-1);
+	    if (int(texcoord3_data.size())>t_index-1)
+	      texcoord3_data[t_index-1]=mtl_material+0.3;
+	    normal_index.push_back(n_index-1);
+		  //std::cout << "Index: " << v_index << " " << t_index << " " << n_index << std::endl;
+		  count++;
+		}
+	    }
+	    if (t_bool && !n_bool)
+	      {
+		while(ss>>v_index>> c >>t_index)
+		  {
+		    //std::cout << "2" << std::flush;
+	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
+	    if (t_index<0) t_index = texcoord_data.size()+t_index+1;
+	    //if (n_index<0) n_index = -n_index;
+	    v_index -= obj_base_v;
+	    t_index -= obj_base_t;
+	    vertex_index.push_back(v_index-1);
+	    texture_index.push_back(t_index-1);
+	    if (int(texcoord3_data.size())>t_index-1)
+	      texcoord3_data[t_index-1]=mtl_material+0.3;
+	    normal_index.push_back(0);
+		    //std::cout << "Index: " << v_index << " " << t_index << " " << n_index << std::endl;
+		    count++;
+		  }
+	      }
+	    if (!t_bool && n_bool)
+	      {
+
+		while(ss>>v_index>> c>> c >>n_index)
+		  {
+		    //std::cout << "3" << std::flush;
+	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
+	    //if (t_index<0) t_index = -t_index;
+	    if (n_index<0) n_index = normal_data.size()+n_index+1;
+	    v_index -= obj_base_v;
+	    n_index -= obj_base_n;
+
+	    vertex_index.push_back(v_index-1);
+	    texture_index.push_back(0);
+	    if (int(texcoord3_data.size())>0)
+	      texcoord3_data[0]=mtl_material+0.3;
+	    normal_index.push_back(n_index-1);
+		    //std::cout << "Index: " << v_index << " " << t_index << " " << n_index << std::endl;
+		    count++;
+		  }
+	      }
+	    if (!t_bool && !n_bool) {
+	      while(ss>>v_index)
+		{
+		  //std::cout << "4" << std::flush;
+	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
+
+	    v_index -= obj_base_v;
+
+	    //if (t_index<0) t_index = -t_index;
+	    //if (n_index<0) n_index = -n_index;
+
+	    vertex_index.push_back(v_index-1);
+		  texture_index.push_back(0);
+		  if (int(texcoord3_data.size())>0)
+		    texcoord3_data[0]=mtl_material+0.3;
+
+		  normal_index.push_back(0);
+		  //std::cout << "Index: " << v_index << " " << t_index << " " << n_index << std::endl;
+		  count++;
+		}
+	    }
+
+	    face_counts.push_back(count);
+	  }
+      }
+    if (texcoord_data.size()==0) 
+      {
+	Point2d p;
+	p.x = 0.0;
+	p.y = 0.0;
+	texcoord_data.push_back(p);
+      }
+    if (texcoord3_data.size()==0) 
+      {
+	texcoord3_data.push_back(0.0);
+      }
+    if (normal_data.size()==0)
+      {
+	Point p(0.0,0.0,0.0);
+	normal_data.push_back(p);
+      }
+    if (vertex_data.size()==0)
+      {
+	Point p(0.0,0.0,0.0);
+	vertex_data.push_back(p);
+	vertex_data.push_back(p);
+	vertex_data.push_back(p);
+      }
+    if (color_data.size()==0)
+      {
+	color_data.push_back(0xffffffff);
+      }
+  }
+  int LoadObjModelFaceCollection::NumFaces() const {
+    return face_counts.size()<=0 ? 1 : face_counts.size(); }
+  int LoadObjModelFaceCollection::NumPoints(int face) const {
+    return face_counts.size()<=0 ? 3 : face_counts[face]; }
+  Point LoadObjModelFaceCollection::FacePoint(int face, int point) const
+  {
+    int c = Count(face,point);
+    if (c>=0 && c<(int)vertex_index.size())
+      {
+	int index = vertex_index[c];
+	if (index>=0 && index<(int)vertex_data.size())
+	  return vertex_data[index];
+      }
+    Point p(0.0,0.0,0.0);
+    return p;
+  }
+  Vector LoadObjModelFaceCollection::PointNormal(int face, int point) const
+  {
+    int c = Count(face,point);
+    if (c>=0 && c<(int)normal_index.size())
+      {
+	int index = normal_index[c];
+	if (index>=0 && index<(int)normal_data.size())
+	  {
+	    return normal_data[index];
+	  }
+      }
+    Vector v(0.0,0.0,0.0);
+    return v;
+  }
+  float LoadObjModelFaceCollection::Attrib(int face, int point, int id) const {
+    return 0.0; 
+  }
+  int LoadObjModelFaceCollection::AttribI(int face, int point, int id) const {
+    return 0; }
+  unsigned int LoadObjModelFaceCollection::Color(int face, int point) const { 
+    int c = Count(face,point);
+    if (c>=0 && c<(int)vertex_index.size())
+      {
+	int index = vertex_index[c];
+	if (index>=0 && index<(int)color_data.size())
+	  return color_data[index];
+      }
+    unsigned int p = 0xffffffff;
+    //Point p(0.0,0.0,0.0);
+    return p;
+  }
+  float LoadObjModelFaceCollection::TexCoord3(int face, int point) const
+  {
+    int c = Count(face,point);
+    if (c>=0 && c<(int)texture_index.size())
+      {
+	int index = texture_index[c];
+	if (index>=0 && index<(int)texcoord3_data.size())
+	  {
+	    float i = texcoord3_data[index];
+	    int ii = int(i);
+	    std::string mat_name = "";
+	    int s2 = material_names_internal.size();
+	    if (ii>=0 && ii<s2) mat_name = material_names_internal[ii];
+	    int s3 = material_names_external.size();
+	    for(int i3=0;i3<s3;i3++)
+	      {
+		if (material_names_external[i3]==mat_name) return float(i3)+0.5;
+	      }
+	    return i;
+	  }
+      }
+    return 0.0;
+  }
+  Point2d LoadObjModelFaceCollection::TexCoord(int face, int point) const
+  {
+    int c = Count(face,point);
+    if (c>=0 && c<(int)texture_index.size())
+      {
+	int index = texture_index[c];
+	if (index>=0 && index<(int)texcoord_data.size())
+	  {
+	    return texcoord_data[index];
+	  }
+      }
+    Point2d p = { 0.0, 0.0 };
+    return p;
+  }
+
+  int LoadObjModelFaceCollection::Count(int face, int point) const {
+    int s = face_counts.size();
+    if (counts.size()>0) { return counts[face]+point; }
+    //if (s>0) { return face_counts[0]*face+point; }
+    int c = 0;
+    counts.push_back(c);
+    for(int i=0;i<s;i++)
+      {
+	c+=face_counts[i];
+	counts.push_back(c);
+      }
+    return counts[face]+point;
+  }
