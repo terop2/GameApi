@@ -1213,6 +1213,7 @@ public:
   IMPORT MT texture(EveryApi &ev, BM bm, float mix);
   IMPORT MT textureid(EveryApi &ev, TXID txid, float mix);
   IMPORT MT texture_many(EveryApi&ev, std::vector<BM> vec, float mix);
+  IMPORT MT texture_many2(EveryApi &ev, float mix);
   IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
   IMPORT MT snow(EveryApi &ev, MT nxt, unsigned int color1=0xffaaaaaa, unsigned int color2=0xffeeeeee, unsigned int color3=0xffffffff, float mix_val=0.5f);
   IMPORT MT shading1(EveryApi &ev, MT nxt, float mix_val, float mix_val2);
@@ -1238,10 +1239,10 @@ public:
   IMPORT ML render_instanced_ml(EveryApi &ev, P p, PTS pts);
   IMPORT ML render_instanced_ml_fade(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time);
   IMPORT ML render_instanced_ml_texture(EveryApi &ev, P p, PTS pts, std::vector<BM> vec);
+  IMPORT ML render_instanced_ml_texture2(EveryApi &ev, P p, PTS pts);
   IMPORT ML render_instanced_ml_fade_texture(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time, std::vector<BM> vec);
   IMPORT ML render_instanced2_ml(EveryApi &ev, VA va, PTA pta);
   IMPORT ML render_instanced2_ml_fade(EveryApi &ev, VA va, PTA pta, bool flip, float start_time, float end_time);
-
   //ML snow(EveryApi &ev, P p);
   //ML web(EveryApi &ev, P p);
 private:
@@ -2068,6 +2069,7 @@ public:
   IMPORT P load_model_all_no_cache(std::string filename, int count);
   IMPORT P load_model_all_no_cache_mtl(std::string filename, int count, std::vector<std::string> material_names);
   IMPORT P p_url(EveryApi &ev, std::string url, int count);
+  IMPORT P p_mtl(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count);
   IMPORT P p_url_mtl(EveryApi &ev, std::string url, int count, std::vector<std::string> material_names);
   IMPORT P p_ds(EveryApi &ev, std::vector<unsigned char> vec);
   IMPORT P p_ds_url(EveryApi &ev, std::string url);
@@ -2312,6 +2314,7 @@ public:
   IMPORT ML render_vertex_array_ml(EveryApi &ev, VA va);
   IMPORT ML render_vertex_array_ml2(EveryApi &ev, P va);
   IMPORT ML render_vertex_array_ml2_texture(EveryApi &ev, P va, std::vector<BM> vec);
+  IMPORT ML render_vertex_array_ml2_texture2(EveryApi &ev, P p);
   IMPORT SBM texture_sbm();
   IMPORT SBM combine_sbm(SBM texture1, SBM texture2);
   IMPORT SBM bloom_cut_sbm(SBM texture, float r, float g, float b);
@@ -2407,6 +2410,10 @@ public:
 
   IMPORT std::vector<MaterialDef> parse_mtl(std::string filename);
   IMPORT std::string output_ml(std::string objfileurl, int count, std::string prefix, std::vector<MaterialDef> filenames);
+
+  IMPORT int p_num_textures(P p);
+  IMPORT void p_gen_texture(P p, int i);
+  IMPORT BM p_texture(P p, int i);
   
 private:
   PolygonApi(const PolygonApi&);
