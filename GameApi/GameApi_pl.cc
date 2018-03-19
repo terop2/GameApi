@@ -764,7 +764,9 @@ public:
     current = empty;
     filled = 0;
     e.async_load_callback(mtl_url, &MTL2_CB, (void*)this);
+#ifdef EMSCRIPTEN
     async_pending_count++;
+#endif
   }
   void PrepareMTL()
   {
@@ -798,6 +800,7 @@ public:
 	buffer.push_back(ref);
 	e.async_load_callback(dt->url, &MTL_CB, (void*)dt);
 	e.async_load_url(dt->url, homepage);
+	flags.push_back(1);
 #ifndef EMSCRIPTEN
 	//Prepare2(dt->url,b_i);
 #endif
@@ -819,7 +822,7 @@ public:
       std::cout << "p_mtl prepare2 " << url << " " << i << std::endl;
 
 #ifdef EMSCRIPTEN
-	async_pending_count--;
+      if (flags[i]==1) { async_pending_count--; flags[i]=0; }
 #endif
 
   }
@@ -894,6 +897,7 @@ private:
   bool async_taken;
   std::vector<BufferRef> buffer;
   std::vector<std::string> material_names;
+  std::vector<int> flags;
 };
 
 void MTL_CB(void *data)
