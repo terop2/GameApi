@@ -17,10 +17,10 @@ int main(int argc, char *argv[])
   std::string url = argv[2];
   std::string url2 = argv[3];
   int num = 10;
-  if (argc==4) { std::string num = argv[4]; 
-    std::stringstream ss; 
-    ss >> num;
-  }
+  std::string num2 = argv[4]; 
+  std::stringstream ss2(num2); 
+  ss2 >> num;
+ 
   
   std::string out_filename = arg.substr(0,arg.size()-4);
   out_filename+=".ml";

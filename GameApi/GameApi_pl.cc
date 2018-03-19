@@ -600,6 +600,11 @@ public:
   virtual float TexCoord3(int face, int point) const {
     return get_coll()->TexCoord3(face,point);
   }
+  virtual int NumTextures() const { return get_coll()->NumTextures(); }
+  virtual void GenTexture(int num) { get_coll()->GenTexture(num); }
+  virtual BufferRef TextureBuf(int num) const { return get_coll()->TextureBuf(num); }
+  virtual int FaceTexture(int face) const { return get_coll()->FaceTexture(face); }
+
 private:
   GameApi::Env &e;
   std::string id;
@@ -736,6 +741,171 @@ private:
   std::vector<std::string> material_names;
 };
 
+void MTL_CB(void *data);
+void MTL2_CB(void *data);
+class NetworkedFaceCollectionMTL2;
+struct CBData {
+  NetworkedFaceCollectionMTL2 *t;
+  int i;
+  std::string url;
+};
+
+
+extern int async_pending_count;
+
+std::string convert_slashes(std::string s);
+
+
+class NetworkedFaceCollectionMTL2 : public FaceCollection
+{
+public:
+  NetworkedFaceCollectionMTL2(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string obj_url, std::string homepage, int count, std::string mtl_url, std::string url_prefix) : e(e), ev(ev), url(obj_url), homepage(homepage), mtl_url(mtl_url), url_prefix(url_prefix), count(count), empty(empty)
+  {
+    current = empty;
+    filled = 0;
+    e.async_load_callback(mtl_url, &MTL2_CB, (void*)this);
+    async_pending_count++;
+  }
+  void PrepareMTL()
+  {
+    std::vector<unsigned char> *ptr2 = e.get_loaded_async_url(mtl_url);
+    if (!ptr2) {
+      std::cout << "p_mtl .mtl async not ready yet, failing..." << std::endl;
+      return;
+    }
+    static int num=0;
+    num++;
+
+    std::stringstream a_ss2;
+    a_ss2 << "p_mtl_file" << num << ".mtl";
+    std::string a_filename = a_ss2.str();
+    std::fstream a_ss(a_filename.c_str(), std::ios_base::binary |std::ios_base::out);
+    int a_s = ptr2->size();
+    for(int a_i=0;a_i<a_s;a_i++) a_ss.put(ptr2->operator[](a_i));
+    a_ss.close();
+
+    std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(a_filename);
+
+    BufferRef ref; ref.buffer=0;
+    int b_s = mat.size();
+    for(int b_i=0;b_i<b_s;b_i++)
+      {
+	material_names.push_back(mat[b_i].material_name);
+	CBData *dt = new CBData;
+	dt->t = this;
+	dt->i = b_i;
+	dt->url = convert_slashes(url_prefix+"/"+mat[b_i].map_Ka);
+	buffer.push_back(ref);
+	e.async_load_callback(dt->url, &MTL_CB, (void*)dt);
+	e.async_load_url(dt->url, homepage);
+#ifndef EMSCRIPTEN
+	//Prepare2(dt->url,b_i);
+#endif
+#ifdef EMSCRIPTEN
+	async_pending_count++;
+#endif
+      }
+#ifdef EMSCRIPTEN
+    async_pending_count--;
+#endif
+    
+  }
+  void Prepare2(std::string url, int i)
+  {
+      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+      bool b = false;
+      BufferRef img = LoadImageFromString(*vec,b);
+      buffer[i] = img;
+      std::cout << "p_mtl prepare2 " << url << " " << i << std::endl;
+
+#ifdef EMSCRIPTEN
+	async_pending_count--;
+#endif
+
+  }
+  void Prepare()
+  {
+    if (current == empty) {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+    e.async_load_url(mtl_url, homepage);
+#endif
+
+    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    if (!ptr) {
+      std::cout << "p_mtl .obj async not ready yet, failing..." << std::endl;
+      return;
+    }
+    static int num=0;
+    num++;
+    std::stringstream ss2;
+    ss2 << "p_mtl_file" << num << ".obj";
+    std::string filename = ss2.str();
+    std::fstream ss(filename.c_str(), std::ios_base::binary |std::ios_base::out);
+    int s = ptr->size();
+    for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
+    ss.close();
+
+    GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(filename, count,material_names);
+    FaceCollection *coll = find_facecoll(e, p);
+    filled = coll;
+    current = filled;
+    current->Prepare();
+    }
+  }
+
+  virtual int NumFaces() const { return current->NumFaces(); }
+  virtual int NumPoints(int face) const { return current->NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const { return current->FacePoint(face,point); }
+  virtual Point EndFacePoint(int face, int point) const { return current->EndFacePoint(face, point); }
+
+  virtual Vector PointNormal(int face, int point) const { return current->PointNormal(face,point); }
+  virtual float Attrib(int face, int point, int id) const { return current->Attrib(face,point,id); }
+  virtual int AttribI(int face, int point, int id) const { return current->AttribI(face,point,id); }
+  virtual unsigned int Color(int face, int point) const { return current->Color(face,point); }
+  virtual Point2d TexCoord(int face, int point) const { return current->TexCoord(face,point); }
+  virtual float TexCoord3(int face, int point) const { return current->TexCoord3(face,point); }
+  virtual int NumTextures() const { return buffer.size(); }
+  virtual void GenTexture(int num) {
+    int s = buffer.size();
+    if (num>=0 && num<s)
+      if (buffer[num].buffer==0) std::cout << "ERROR, p_mtl texture not ready!" << std::endl;
+  }
+  virtual BufferRef TextureBuf(int num) const {
+    int s = buffer.size();
+    if (num>=0 && num < s)
+      return buffer[num];
+    BufferRef ref = BufferRef::NewBuffer(1,1);
+    return ref;
+  }
+  virtual int FaceTexture(int face) const { return current->FaceTexture(face); }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  std::string url;
+  std::string homepage;
+  std::string mtl_url;
+  std::string url_prefix;
+  int count;
+  FaceCollection *empty;
+  FaceCollection *filled;
+  FaceCollection *current;
+  bool async_taken;
+  std::vector<BufferRef> buffer;
+  std::vector<std::string> material_names;
+};
+
+void MTL_CB(void *data)
+{
+  CBData *dt = (CBData*)data;
+  dt->t->Prepare2(dt->url, dt->i);
+}
+void MTL2_CB(void *data)
+{
+  NetworkedFaceCollectionMTL2 *dt = (NetworkedFaceCollectionMTL2*)data;
+  dt->PrepareMTL();
+}
 
 class NetworkedFaceCollectionDS : public FaceCollection
 {
@@ -809,6 +979,16 @@ EXPORT GameApi::P GameApi::PolygonApi::p_url_mtl(EveryApi &ev, std::string url, 
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll),1);
   return p2;
 }
+EXPORT GameApi::P GameApi::PolygonApi::p_mtl(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count)
+{
+  P p = empty();
+  FaceCollection *emp = find_facecoll(e, p);
+  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL2(e,ev, emp, obj_url, gameapi_homepageurl, count,mtl_url,prefix),1); 
+  FaceCollection *coll = find_facecoll(e,p1);
+  GameApi::P p2 = add_polygon2(e, new PrepareCache(e,obj_url,coll),1);
+  return p2;
+}
+
 EXPORT GameApi::P GameApi::PolygonApi::p_ds_url(EveryApi &ev, std::string url)
 {
   P p = empty();
@@ -4018,6 +4198,160 @@ private:
 };
 
 
+class RenderPTex2 : public MainLoopItem
+{
+public:
+  RenderPTex2(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::PolygonApi &api, GameApi::P p) : env(env), ev(ev), api(api), p(p)
+  {
+    shader.id = -1;
+    firsttime = true;
+  }
+  int shader_id() { return shader.id; }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void execute(MainLoopEnv &e)
+  { 
+    if (firsttime)
+      {
+	va = ev.polygon_api.create_vertex_array(p, true);
+
+	// This loop fetches the textures from P type
+	std::vector<GameApi::BM> bm;
+	int s = ev.polygon_api.p_num_textures(p);
+	for(int i=0;i<s;i++) {
+	  ev.polygon_api.p_gen_texture(p,i);
+	  bm.push_back(ev.polygon_api.p_texture(p,i));
+	}
+	
+	std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev, bm);
+	va = ev.texture_api.bind_many(va, id);
+      }
+
+
+    GameApi::SH sh;
+    if (ev.polygon_api.is_texture(va))
+      {
+	sh.id = e.sh_texture;
+	if (ev.polygon_api.is_array_texture(va))
+	  {
+	    sh.id = e.sh_array_texture;
+	  }
+      }
+    else
+      {
+	sh.id = e.sh_color;
+      }
+
+    GameApi::US u_v;
+    GameApi::US u_f;
+    u_v.id = 0;
+    u_f.id = 0;
+    if (e.us_vertex_shader!=-1)
+      u_v.id = e.us_vertex_shader;
+    if (e.us_fragment_shader!=-1)
+      u_f.id = e.us_fragment_shader;
+    if (firsttime)
+      {
+	if (u_v.id == 0)
+	  u_v = ev.uber_api.v_empty();
+	if (u_f.id == 0)
+	  u_f = ev.uber_api.f_empty(false);
+      }
+
+#if 1
+    if (ev.polygon_api.is_texture(va))
+      {
+	sh.id = e.sh_texture;
+	if (firsttime)
+	  {
+	    if (e.us_vertex_shader==-1)
+	      u_v = ev.uber_api.v_texture(u_v);
+	    if (e.us_fragment_shader==-1)
+	      u_f = ev.uber_api.f_texture(u_f);
+	  }
+	if (ev.polygon_api.is_array_texture(va))
+	  {
+	    sh.id = e.sh_array_texture;
+	      if (firsttime)
+	      {
+		if (e.us_vertex_shader==-1)
+		  u_v = ev.uber_api.v_texture_arr(u_v);
+		if (e.us_fragment_shader==-1)
+		  u_f = ev.uber_api.f_texture_arr(u_f);
+	      }
+	  }
+      }
+    else
+      {
+	sh.id = e.sh_color;
+	if (firsttime)
+	  {
+	    if (e.us_vertex_shader==-1)
+	      {
+		u_v = ev.uber_api.v_colour(u_v);
+		u_v = ev.uber_api.v_light(u_v);
+	      }
+	    if (e.us_fragment_shader==-1)
+	      {
+		u_f = ev.uber_api.f_colour(u_f);
+		u_f = ev.uber_api.f_light(u_f);
+	      }
+	  }
+      }
+#endif
+
+    if (shader.id==-1 && e.us_vertex_shader!=-1 && e.us_fragment_shader!=-1)
+      {
+	GameApi::US vertex;
+	GameApi::US fragment;
+	vertex.id = u_v.id; //e.us_vertex_shader;
+	fragment.id = u_f.id; //e.us_fragment_shader;
+	if (e.sfo_id==-1)
+	  {
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions);
+	  }
+	else
+	  {
+	    GameApi::SFO sfo;
+	    sfo.id = e.sfo_id;
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
+	  }
+	ev.mainloop_api.init_3d(shader);
+	ev.mainloop_api.alpha(true); 
+
+      }
+
+    if (shader.id!=-1)
+      {
+	ev.shader_api.use(sh);
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.use(shader);
+	ev.shader_api.set_var(shader, "in_MV", m);
+	ev.shader_api.set_var(shader, "in_T", m1);
+	ev.shader_api.set_var(shader, "in_N", m2);
+	ev.shader_api.set_var(shader, "time", e.time);
+
+	sh = shader;
+      }
+    if (firsttime) { firsttime = false; }
+    ev.shader_api.use(sh);
+    api.render_vertex_array(va);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::PolygonApi &api;
+  bool firsttime;
+  GameApi::VA va;
+  GameApi::P p;
+  GameApi::SH shader;
+};
+
+
 class RenderDynP : public MainLoopItem
 {
 public:
@@ -4231,6 +4565,7 @@ public:
   }
   void handle_event(MainLoopEvent &e)
   {
+    next->handle_event(e);
   }
   void execute(MainLoopEnv &e)
   {
@@ -5283,6 +5618,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2(EveryApi &ev, P 
  EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2_texture(EveryApi &ev, P p, std::vector<BM> bm)
  {
    return add_main_loop(e, new RenderPTex(e, ev, *this, p, bm));
+ }
+ EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2_texture2(EveryApi &ev, P p)
+ {
+   return add_main_loop(e, new RenderPTex2(e, ev, *this, p));
  }
 EXPORT GameApi::ML GameApi::PolygonApi::render_dynamic_ml(EveryApi &ev, P p, DC dyn)
 {
@@ -8212,15 +8551,26 @@ GameApi::DS GameApi::PolygonApi::p_ds_inv(GameApi::P p)
    std::string filename;
    std::vector<GameApi::MaterialDef> filenames;
    std::string material_name;
- };
+};
 
 // note, this function doesnt go to gameapi builder
- std::vector<GameApi::MaterialDef> GameApi::PolygonApi::parse_mtl(std::string filename)
+std::vector<GameApi::MaterialDef> GameApi::PolygonApi::parse_mtl(std::string filename)
 {
   MTLParser parser(filename);
   parser.load_file();
   return parser.get();
 }
+
+ std::string convert_slashes(std::string s)
+ {
+   int ss = s.size();
+   for(int i=0;i<ss;i++)
+     {
+       if (s[i]=='\\') s[i]='/';
+     }
+   return s;
+ }
+
  std::string GameApi::PolygonApi::output_ml(std::string objfileurl, int count, std::string prefix, std::vector<GameApi::MaterialDef> filenames)
  {
    int s2 = filenames.size();
@@ -8242,17 +8592,46 @@ GameApi::DS GameApi::PolygonApi::p_ds_inv(GameApi::P p)
   for(int i=0;i<s;i++)
    {
      std::stringstream ii;
-     ii << i+2;
-     res+="BM I" + ii.str() + "=ev.bitmap_api.loadbitmapfromurl(" + prefix + "/" + filenames[i].map_Ka + ");\n";
-     names+="I" + ii.str();
+     ii << (i*2)+2;
+     std::stringstream ii2;
+     ii2 << (i*2+1)+2;
+     res+="BM I" + ii.str() + "=ev.bitmap_api.loadbitmapfromurl(" + convert_slashes(prefix + "/" + filenames[i].map_Ka) + ");\n";
+     res+="BM I" + ii2.str() + "=ev.bitmap_api.scale_bitmap(ev,I" + ii.str() + ",256,256);\n";
+     names+="I" + ii2.str();
      if (i!=s-1) names+=",";
    }
   names+="}";
   std::stringstream sk;
-  sk << s+2;
+  sk << (s*2)+2;
   std::stringstream sk2;
-  sk2 << s+3;
+  sk2 << (s*2)+3;
   res+="MT I" + sk.str() + "=ev.materials_api.texture_many(ev," + names + ",1.0);\n";
   res+="ML I" + sk2.str() + "=ev.materials_api.bind(I1,I" + sk.str() + ");\n";
   return res;
 }
+
+int GameApi::PolygonApi::p_num_textures(P p)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  return coll->NumTextures();
+}
+// you're only allowed to call this from ML type execute() or prepare()
+void GameApi::PolygonApi::p_gen_texture(P p, int i)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  coll->GenTexture(i);
+}
+// this can only be called after p_gen_texture.
+GameApi::BM GameApi::PolygonApi::p_texture(P p, int i)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  BufferRef ref = coll->TextureBuf(i);
+  if (ref.buffer==0) { ref = BufferRef::NewBuffer(1,1); }
+  std::cout << "p_texture" << (int)ref.buffer << " " << ref.width << " " << ref.height << std::endl; 
+  ::Bitmap<Color> *bm = new BitmapFromBuffer(ref);
+  BitmapColorHandle *handle2 = new BitmapColorHandle; 
+  handle2->bm = bm;
+  BM bm2 = add_bitmap(e, handle2);
+  return bm2;
+}
+ 

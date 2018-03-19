@@ -2168,8 +2168,8 @@ class BitmapFromBuffer : public ColorBitmap
 public:
   BitmapFromBuffer(BufferRef buf) : buf(buf) { }
   void Prepare() { }
-  int SizeX() const { return buf.width; }
-  int SizeY() const { return buf.height; }
+  int SizeX() const { if (buf.buffer!=0) return buf.width; return 0; }
+  int SizeY() const { if (buf.buffer!=0) return buf.height; return 0; }
   Color Map(int x, int y) const
   {
     if (x >= 0 && x <int(buf.width))
@@ -2203,9 +2203,11 @@ public:
   void Gen() const
   {
     BufferRef::FreeBuffer(buf);
-    buf = BufferRef::NewBuffer(t.SizeX(), t.SizeY());
-    for(int y=0;y<t.SizeY();y++)
-      for(int x=0;x<t.SizeX();x++)
+    int sx = t.SizeX();
+    int sy = t.SizeY();
+    buf = BufferRef::NewBuffer(sx, sy);
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++)
 	{
 	  unsigned int color = t.Map(x,y).Pixel();
 	  buf.buffer[x+y*buf.ydelta] = color;

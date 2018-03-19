@@ -24,6 +24,8 @@
 
 BufferRef BufferRef::NewBuffer(int width, int height)
 {
+  if (width<0) width=0;
+  if (height<0) height=0;
   if (width==0) { width++; }
   if (height==0) {height++; }
   unsigned int *buffer = new unsigned int[width*height];
