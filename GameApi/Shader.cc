@@ -824,7 +824,7 @@ ShaderFile::ShaderFile()
 "}\n"
 "#endif\n"
 "#ifdef MANYTEXTURES\n"
-"uniform sampler2D texsampler[32];\n"
+"uniform sampler2D texsampler[16];\n"
 "#endif"
 "//M:\n"
 "//B:\n"
