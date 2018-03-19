@@ -2080,7 +2080,8 @@ public:
   IMPORT ML save_model_ml(P poly, std::string filename);
   IMPORT P prepare_cut(P p);
   
-  
+  IMPORT P texture_splitter(P p, int start_index, int end_index);
+
   //IMPORT P line(PT p1, PT p2);
 	IMPORT P triangle(PT p1, PT p2, PT p3);
 	IMPORT P quad(PT p1, PT p2, PT p3, PT p4);

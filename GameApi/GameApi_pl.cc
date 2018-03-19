@@ -8639,3 +8639,71 @@ GameApi::BM GameApi::PolygonApi::p_texture(P p, int i)
   return bm2;
 }
  
+ class FaceCollectionSplitter : public FaceCollection
+ {
+ public:
+   FaceCollectionSplitter(FaceCollection *coll, int start_index, int end_index) : coll(coll), start_index(start_index), end_index(end_index) { }
+   virtual void Prepare()
+   {
+     coll->Prepare();
+     int s = coll->NumFaces();
+     for(int i=0;i<s;i++) {
+       float val = coll->TexCoord3(i,0);
+       int val2 = int(val);
+       if (val2>=start_index && val2<end_index) {
+	 facenums.push_back(i);
+       }
+     }
+   }
+   virtual int NumFaces() const { return facenums.size(); }
+   virtual int NumPoints(int face) const
+   {
+     return coll->NumPoints(facenums[face]);
+   }
+   virtual Point FacePoint(int face, int point) const
+   {
+     return coll->FacePoint(facenums[face],point);
+   }
+   virtual Vector PointNormal(int face, int point) const
+   {
+     return coll->PointNormal(facenums[face],point);
+   }
+   virtual float Attrib(int face, int point, int id) const
+   {
+     return coll->Attrib(facenums[face],point,id);
+   }
+   virtual int AttribI(int face, int point, int id) const
+   {
+     return coll->AttribI(facenums[face],point,id);
+   }
+   virtual unsigned int Color(int face, int point) const
+   {
+     return coll->Color(facenums[face],point);
+   }
+   virtual Point2d TexCoord(int face, int point) const
+   {
+     return coll->TexCoord(facenums[face],point);
+   }
+   virtual float TexCoord3(int face, int point) const { 
+     return coll->TexCoord3(facenums[face],point)-start_index;
+   }
+
+
+  virtual int NumTextures() const { return end_index-start_index; }
+   virtual void GenTexture(int num) { coll->GenTexture(start_index + num); }
+  virtual BufferRef TextureBuf(int num) const {
+    return coll->TextureBuf(start_index + num);
+  }
+  virtual int FaceTexture(int face) const {
+    return coll->FaceTexture(facenums[face]) -start_index;
+  }
+ private:
+   FaceCollection *coll;
+   int start_index, end_index;
+   std::vector<int> facenums;
+ };
+ GameApi::P GameApi::PolygonApi::texture_splitter(P p, int start_index, int end_index)
+ {
+   FaceCollection *coll = find_facecoll(e, p);
+   return add_polygon2(e, new FaceCollectionSplitter(coll, start_index, end_index),1);
+ }

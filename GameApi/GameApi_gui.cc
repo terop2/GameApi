@@ -7223,6 +7223,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "std::string", "std::string", "std::string", "int" },
 			 { "ev", "http://tpgames.org/sponza/sponza.obj", "http://tpgames.org/sponza/sponza.mtl", "http://tpgames.org/sponza", "1" },
 			 "P", "polygon_api", "p_mtl"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texture_splitter,
+			 "p_tex_splitter",
+			 { "obj", "start_index", "end_index" },
+			 { "P", "int", "int" },
+			 { "", "0", "16" },
+			 "P", "polygon_api", "texture_splitter"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_url_mtl,
 			 "p_url_mtl",
 			 { "ev", "url", "count", "material_names" },
