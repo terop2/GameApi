@@ -1092,8 +1092,6 @@ ShaderFile::ShaderFile()
 "  return mix(rgb, texture2D(texsampler[14],ex_TexCoord.xy), color_mix);\n"
 "  if (ex_TexCoord.z<15.7)\n"
 "  return mix(rgb, texture2D(texsampler[15],ex_TexCoord.xy), color_mix);\n"
-"  if (ex_TexCoord.z<16.7)\n"
-"  return mix(rgb, texture2D(texsampler[16],ex_TexCoord.xy), color_mix);\n"
 "}\n"
 "#endif\n"
 "#endif\n"
