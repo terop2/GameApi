@@ -1215,6 +1215,7 @@ public:
   IMPORT MT texture_many(EveryApi&ev, std::vector<BM> vec, float mix);
   IMPORT MT texture_many2(EveryApi &ev, float mix);
   IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
+  IMPORT MT phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT MT snow(EveryApi &ev, MT nxt, unsigned int color1=0xffaaaaaa, unsigned int color2=0xffeeeeee, unsigned int color3=0xffffffff, float mix_val=0.5f);
   IMPORT MT shading1(EveryApi &ev, MT nxt, float mix_val, float mix_val2);
   IMPORT MT shading2(EveryApi &ev, MT nxt, unsigned int color1, unsigned int colo2, unsigned int color3);
@@ -2079,9 +2080,12 @@ public:
         IMPORT void save_model(P poly, std::string filename);
   IMPORT ML save_model_ml(P poly, std::string filename);
   IMPORT P prepare_cut(P p);
+  IMPORT P mesh_resize(P p, float start_x, float end_x, float start_y, float end_Y, float start_z, float end_z);
   
   IMPORT P texture_splitter(P p, int start_index, int end_index);
-
+  IMPORT P replace_texture(P p, BM bm, int num);
+  IMPORT P texture_storage(P p, int texture_sx, int texture_sy);
+  
   //IMPORT P line(PT p1, PT p2);
 	IMPORT P triangle(PT p1, PT p2, PT p3);
 	IMPORT P quad(PT p1, PT p2, PT p3, PT p4);
@@ -2112,6 +2116,9 @@ public:
 			float start_y, float end_y,
 			float start_z, float end_z,
 			float round_radius);
+  IMPORT P repeat_xy_p(EveryApi &ev, P p, float start_x, float start_y, float dx, float dy, int sx, int sy);
+  IMPORT P repeat_xz_p(EveryApi &ev, P p, float start_x, float start_z, float dx, float dz, int sx, int sz);
+  IMPORT P repeat_yz_p(EveryApi &ev, P p, float start_y, float start_z, float dy, float dz, int sy, int sz);
   IMPORT P deform(P obj, O bools, float dx, float dy, float dz);
   IMPORT P flip_normals(P obj);
   IMPORT P color_map2(BM bm, PT pos, V u_x, V u_y);
@@ -2325,6 +2332,7 @@ public:
   IMPORT ML dist_field_mesh_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML sfo_sandbox_shader(EveryApi &ev, ML mainloop, SFO sfo);
+  IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML shading_shader(EveryApi &ev, ML mainloop,
 			  unsigned int level1,
 			  unsigned int level2,
@@ -2922,6 +2930,8 @@ public:
 			float start_x, float start_y, float start_z,
 			float end_x, float end_y, float end_z);
   IMPORT PTS color_points(PTS p, unsigned int color);
+  IMPORT PTS li_pts(LI li, float pos);
+  IMPORT PTS li_pts2(LI li); 
   IMPORT PTS pts_grid(BM bm, float start_x, float end_x, float start_y, float en_y, float z);
   IMPORT PTS pts_grid_bb(BB bb, float start_x, float end_x, float start_y, float en_y, float z);
   IMPORT PTS or_points(PTS p1, PTS p2);
@@ -3218,13 +3228,14 @@ public:
   US v_dist_field_mesh(US us, SFO sfo);
   US v_skeletal(US us);
   US v_custom(US us, std::string v_funcname);
-  
+  US v_phong(US us);
   US f_mesh_color(US us, SFO sfo); // this requires v_pass_position() in vertex shader
   US f_sandbox(US us, SFO sfo); // this requires texture coordinates
   US f_empty(bool transparent);
   US f_diffuse(US us);
   US f_ambient(US us);
   US f_specular(US us);
+  US f_phong(US us);
   US f_color_from_normals(US us);
   US f_color_from_id(US us, int id); // id = [0..9]
   US f_point_light(US us);
