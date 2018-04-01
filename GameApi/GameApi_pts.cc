@@ -1641,3 +1641,43 @@ GameApi::PTS GameApi::PointsApi::pt_array(EveryApi &ev, std::vector<PT> vec)
   }
   return add_points_api_points(e, new PTArray(vec2));
 }
+
+class LIPTS : public PointsApiPoints
+{
+public:
+  LIPTS(LineCollection *coll, float pos) : coll(coll),pos(pos) { }
+  virtual void Prepare() { coll->Prepare(); }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) { return false; }
+  virtual int NumPoints() const
+  {
+    return coll->NumLines();
+  }
+  virtual Point Pos(int i) const
+  {
+    Point p1 = coll->LinePoint(i,0);
+    Point p2 = coll->LinePoint(i,1);
+    return Point::Interpolate(p1,p2,pos);
+  }
+  virtual unsigned int Color(int i) const
+  {
+    unsigned int c1 = coll->LineColor(i,0);
+    unsigned int c2 = coll->LineColor(i,1);
+    return Color::Interpolate(c1,c2,pos);
+  }
+private:
+  LineCollection *coll;
+  float pos;
+};
+
+GameApi::PTS GameApi::PointsApi::li_pts(LI li, float pos)
+{
+  LineCollection *lines = find_line_array(e,li);
+  return add_points_api_points(e, new LIPTS(lines, pos));
+}
+GameApi::PTS GameApi::PointsApi::li_pts2(LI li)
+{
+  PTS p1 = li_pts(li,0.0f);
+  PTS p2 = li_pts(li,1.0f);
+  return or_points(p1,p2);
+}

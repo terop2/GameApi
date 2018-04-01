@@ -1086,8 +1086,8 @@ void iter(void *arg)
 		      {
 			PTS p;
 			p.id = id;
-			std::cout << "PTS NumPoints: " << env->ev->points_api.NumPoints(p) << std::endl;
-			std::cout << "PTS0: " << env->ev->points_api.pos_x(p,0) << " " << env->ev->points_api.pos_y(p,0) << " " << env->ev->points_api.pos_z(p,0) << std::endl;
+			//std::cout << "PTS NumPoints: " << env->ev->points_api.NumPoints(p) << std::endl;
+			//std::cout << "PTS0: " << env->ev->points_api.pos_x(p,0) << " " << env->ev->points_api.pos_y(p,0) << " " << env->ev->points_api.pos_z(p,0) << std::endl;
 			env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
 			env->display = env->gui->pts_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button,env->collect_button);

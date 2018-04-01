@@ -6433,6 +6433,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "MT", "unsigned int", "unsigned int", "unsigned int" },
 			 { "ev", "", "ffaaaaaa", "ffeeeeee", "ffffffff" },
 			 "MT", "materials_api", "shading2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::phong,
+			 "m_phong",
+			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow" },
+			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
+			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "15.0" },
+			 "MT", "materials_api", "phong"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::snow,
 			 "m_snow",
 			 { "ev", "nxt", "color1", "color2", "color3", "mix_val" },
@@ -7223,12 +7229,6 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "std::string", "std::string", "std::string", "int" },
 			 { "ev", "http://tpgames.org/sponza/sponza.obj", "http://tpgames.org/sponza/sponza.mtl", "http://tpgames.org/sponza", "1" },
 			 "P", "polygon_api", "p_mtl"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texture_splitter,
-			 "p_tex_splitter",
-			 { "obj", "start_index", "end_index" },
-			 { "P", "int", "int" },
-			 { "", "0", "16" },
-			 "P", "polygon_api", "texture_splitter"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_url_mtl,
 			 "p_url_mtl",
 			 { "ev", "url", "count", "material_names" },
@@ -7351,6 +7351,74 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "int", "int", "PT", "float", "float" },
 			 { "ev", "20", "20", "", "250.0", "50.0" },
 			 "P", "polygon_api", "torus2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::or_elem,
+			 "p_or_elem",
+			 { "p1", "p2" },
+			 { "P", "P" },
+			 { "", "" },
+			 "P", "polygon_api", "or_elem"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::or_array2,
+			 "p_or_array",
+			 { "vec" },
+			 { "[P]" },
+			 { "" },
+			 "P", "polygon_api", "or_array2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::translate,
+			 "translate",
+			 { "orig", "dx", "dy", "dz" },
+			 { "P", "float", "float", "float" },
+			 { "", "0.0", "0.0", "0.0" },
+			 "P", "polygon_api", "translate","[S]"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rotatex,
+			 "rotatex",
+			 { "orig", "angle" },
+			 { "P", "float" },
+			 { "", "0.0" },
+			 "P", "polygon_api", "rotatex","[S]"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rotatey,
+			 "rotatey",
+			 { "orig", "angle" },
+			 { "P", "float" },
+			 { "", "0.0" },
+			 "P", "polygon_api", "rotatey","[S]"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rotatez,
+			 "rotatez",
+			 { "orig", "angle" },
+			 { "P", "float" },
+			 { "", "0.0" },
+			 "P", "polygon_api", "rotatez","[S]"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::scale,
+			 "scale",
+			 { "orig", "sx", "sy", "sz" },
+			 { "P", "float", "float", "float" },
+			 { "", "1.0", "1.0", "1.0" },
+			 "P", "polygon_api", "scale","[S]"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::mesh_resize,
+			 "mesh_resize",
+			 { "p", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			 { "P", "float", "float", "float", "float", "float", "float" },
+			 { "", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0" },
+			 "P", "polygon_api", "mesh_resize"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::repeat_xy_p,
+			 "p_repeat_xy",
+			 { "ev", "p", "start_x", "start_y", "dx", "dy", "sx", "sy" },
+			 { "EveryApi&", "P", "float", "float", "float", "float", "int", "int" },
+			 { "ev", "", "0.0", "0.0", "30.0", "30.0", "10", "10" },
+			 "P", "polygon_api", "repeat_xy_p"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::repeat_xz_p,
+			 "p_repeat_xz",
+			 { "ev", "p", "start_x", "start_z", "dx", "dz", "sx", "sz" },
+			 { "EveryApi&", "P", "float", "float", "float", "float", "int", "int" },
+			 { "ev", "", "0.0", "0.0", "30.0", "30.0", "10", "10" },
+			 "P", "polygon_api", "repeat_xz_p"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::repeat_yz_p,
+			 "p_repeat_yz",
+			 { "ev", "p", "start_y", "start_z", "dy", "dz", "sy", "sz" },
+			 { "EveryApi&", "P", "float", "float", "float", "float", "int", "int" },
+			 { "ev", "", "0.0", "0.0", "30.0", "30.0", "10", "10" },
+			 "P", "polygon_api", "repeat_yz_p"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::deform,
 			 "deform",
 			 { "obj", "bools", "dx", "dy", "dz" },
@@ -7572,50 +7640,25 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "PT", "float", "P" },
 			 { "ev", "", "100.0", "" },
 			 "P", "polygon_api", "texcoord_spherical2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texture_splitter,
+			 "p_tex_splitter",
+			 { "obj", "start_index", "end_index" },
+			 { "P", "int", "int" },
+			 { "", "0", "16" },
+			 "P", "polygon_api", "texture_splitter"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texture_storage,
+			 "p_tex_storage",
+			 { "obj", "texture_sx", "texture_sy" },
+			 { "P", "int", "int" },
+			 { "", "1024", "1024" },
+			 "P", "polygon_api", "texture_storage"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::replace_texture,
+			 "p_tex_replace",
+			 { "obj", "bm", "num" },
+			 { "P", "BM", "int" },
+			 { "", "", "0" },
+			 "P", "polygon_api", "replace_texture"));
 
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::or_elem,
-			 "p_or_elem",
-			 { "p1", "p2" },
-			 { "P", "P" },
-			 { "", "" },
-			 "P", "polygon_api", "or_elem"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::or_array2,
-			 "p_or_array",
-			 { "vec" },
-			 { "[P]" },
-			 { "" },
-			 "P", "polygon_api", "or_array2"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::translate,
-			 "translate",
-			 { "orig", "dx", "dy", "dz" },
-			 { "P", "float", "float", "float" },
-			 { "", "0.0", "0.0", "0.0" },
-			 "P", "polygon_api", "translate","[S]"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rotatex,
-			 "rotatex",
-			 { "orig", "angle" },
-			 { "P", "float" },
-			 { "", "0.0" },
-			 "P", "polygon_api", "rotatex","[S]"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rotatey,
-			 "rotatey",
-			 { "orig", "angle" },
-			 { "P", "float" },
-			 { "", "0.0" },
-			 "P", "polygon_api", "rotatey","[S]"));
-
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rotatez,
-			 "rotatez",
-			 { "orig", "angle" },
-			 { "P", "float" },
-			 { "", "0.0" },
-			 "P", "polygon_api", "rotatez","[S]"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::scale,
-			 "scale",
-			 { "orig", "sx", "sy", "sz" },
-			 { "P", "float", "float", "float" },
-			 { "", "1.0", "1.0", "1.0" },
-			 "P", "polygon_api", "scale","[S]"));
   #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::log_coords,
 			 "log_coords",
@@ -7998,6 +8041,18 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "PTS", "float", "float", "float" },
 			 { "", "0.0","0.01","0.0" },
 			 "LI", "points_api", "li_from_pts"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::li_pts,
+			 "li_to_pts",
+			 { "li", "pos" },
+			 { "LI", "float" },
+			 { "", "0.0" },
+			 "PTS", "points_api", "li_pts"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::li_pts2,
+			 "li_to_pts2",
+			 { "li" },
+			 { "LI" },
+			 { "" },
+			 "PTS", "points_api", "li_pts2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, (GameApi::LI (GameApi::LinesApi::*)(GameApi::LI, unsigned int))&GameApi::LinesApi::change_color,
 			 "change_color",
 			 { "li", "color" },
