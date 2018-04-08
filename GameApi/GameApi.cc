@@ -355,7 +355,7 @@ EXPORT void GameApi::Env::free_temp_memory()
 
 }
 
-void InstallProgress(int num,std::string label);
+void InstallProgress(int num,std::string label, int max=15);
 EXPORT void GameApi::Env::async_load_url(std::string url, std::string homepage)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
