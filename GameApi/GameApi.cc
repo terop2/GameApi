@@ -2995,6 +2995,46 @@ EXPORT GameApi::MN GameApi::MovementNode::translate(MN next,
   return add_move(e, new TranslateMovement(nxt,start_time, end_time,
 					   dx,dy,dz));
 }
+extern int async_pending_count;
+extern int progress_info_global_val;
+extern int progress_info_global_max;
+class ScaleProgress : public Movement
+{
+public:
+  ScaleProgress(Movement *next, bool is_x, bool is_y, bool is_z) : next(next), is_x(is_x), is_y(is_y), is_z(is_z) { 
+    max_async_pending = 0;
+  }
+  virtual void event(MainLoopEvent &e) { next->event(e); }
+  virtual void frame(MainLoopEnv &e) { next->frame(e); }
+  void set_matrix(Matrix m) { }
+  void set_pos(float ddx, float ddy, float ddz) { }
+  Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    float x = is_x ? val() : 1.0;
+    float y = is_y ? val() : 1.0;
+    float z = is_z ? val() : 1.0;
+    return Matrix::Scale(x,y,z)*next->get_whole_matrix(time,delta_time);
+  }
+  float val() const {
+    if (async_pending_count>max_async_pending) max_async_pending=async_pending_count;
+    if (async_pending_count!=0) {
+      float val = 1.0-(async_pending_count/max_async_pending);
+      return val;
+    }
+    float val = float(progress_info_global_val)/float(progress_info_global_max);
+    return val;
+  }
+private:
+  Movement *next;
+  mutable int max_async_pending;
+  bool is_x, is_y, is_z;
+};
+
+GameApi::MN GameApi::MovementNode::scale_progress(MN next, bool is_x, bool is_y, bool is_z)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new ScaleProgress(nxt,is_x,is_y,is_z));
+}
 class MN_Fetcher : public Movement
 {
 public:
@@ -10141,10 +10181,10 @@ void onload_async_cb(void *arg, void *data, int datasize)
   async_pending_count--;
   std::cout << "ASync pending dec (onload_async_cb) -->" << async_pending_count<< std::endl;
   
-  std::cout << "Async cb!" << url_only << std::endl;
+  //std::cout << "Async cb!" << url_only << std::endl;
   ASyncCallback *cb = rem_async_cb(url_only); //load_url_callbacks[url_only];
   if (cb) {
-    std::cout << "Load cb!" << url_only << std::endl;
+    //std::cout << "Load cb!" << url_only << std::endl;
     (*cb->fptr)(cb->data);
   }
 }
@@ -10206,7 +10246,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 std::vector<unsigned char> *ASyncLoader::get_loaded_data(std::string url) const
   {
     url = "load_url.php?url=" + url;
-    std::cout << "url fetch " << url << std::endl;
+    //std::cout << "url fetch " << url << std::endl;
     return load_url_buffers_async[url];
   }
 

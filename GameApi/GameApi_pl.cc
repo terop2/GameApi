@@ -820,8 +820,19 @@ public:
       std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
       bool b = false;
       BufferRef img = LoadImageFromString(*vec,b);
+      
+      // flip texture in y-direction
+      int sx = img.width;
+      int sy = img.height;
+      for(int y=0;y<sy/2;y++)
+	for(int x=0;x<sx;x++)
+	  {
+	    std::swap(img.buffer[x+y*img.ydelta],img.buffer[x+(sy-y-1)*img.ydelta]);
+	  }
+
+
       buffer[i] = img;
-      std::cout << "p_mtl prepare2 " << url << " " << i << std::endl;
+      //std::cout << "p_mtl prepare2 " << url << " " << i << std::endl;
 
 #ifdef EMSCRIPTEN
       if (flags[i]==1) { async_pending_count--; flags[i]=0; }
@@ -3232,8 +3243,12 @@ EXPORT void GameApi::PolygonApi::delete_vertex_array(GameApi::VA va)
   GameApi::P p = empty();
   update_vertex_array(va,p);
 }
+int progress_info_global_val = 0;
+int progress_info_global_max = 0;
 void ProgressBar(int val, int max)
 {
+  progress_info_global_val = val;
+  progress_info_global_max = max;
   std::cout << "\r[";
   for(int i=0;i<val;i++) {
     std::cout << "#";
@@ -8816,6 +8831,10 @@ class TextureStorage : public ForwardFaceCollection
 public:
   TextureStorage(FaceCollection *coll, int texture_sx, int texture_sy) : ForwardFaceCollection(*coll), coll(coll), texture_sx(texture_sx), texture_sy(texture_sy)
   {
+    if (texture_sx>1024 ||texture_sy>1024)
+      {
+	std::cout << "Warning: Textures of sizes >1024 might not work in emscripten: " << texture_sx << " " << texture_sy << std::endl;
+      }
     buf = BufferRef::NewBuffer(texture_sx, texture_sy);
   }
   void Prepare()

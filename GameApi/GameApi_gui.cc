@@ -6196,6 +6196,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "MN", "float" },
 			 { "", "0.0" },
 			 "MN", "move_api", "rotatez"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::scale_progress,
+			 "mn_scale_progress",
+			 { "next", "is_x", "is_y", "is_z" },
+			 { "MN", "bool", "bool", "bool" },
+			 { "", "true", "false", "false" },
+			 "MN", "move_api", "scale_progress"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::mn_fetcher,
 			 "mn_pos_fetcher",
 			 { "point_fetcher" },

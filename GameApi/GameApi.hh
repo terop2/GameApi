@@ -1395,6 +1395,7 @@ public:
   IMPORT MN rotatez(MN next, float angle);
   IMPORT MN translate(MN next, float start_time, float end_time,
 	       float dx, float dy, float dz);
+  IMPORT MN scale_progress(MN next, bool is_x, bool is_y, bool is_z);
   IMPORT MN mn_fetcher(PF pf);
   IMPORT MN scale(MN next, float start_time, float end_time,
 	   float sx, float sy, float sz);
