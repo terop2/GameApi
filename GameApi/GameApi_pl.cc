@@ -3249,10 +3249,11 @@ struct ProgressI {
 };
 std::vector<ProgressI > progress_max;
 std::vector<ProgressI > progress_val;
-void ProgressBar(int num, int val, int max);
+void ProgressBar(int num, int val, int max, std::string label);
 
-void InstallProgress(int num)
+void InstallProgress(int num, std::string label)
 {
+  std::cout << "InstallProgress: '" << label << "'" << std::endl
   //std::cout << "IB: " << num << std::endl;
   ProgressI p; p.num = num;
   int s = progress_max.size();
@@ -3267,7 +3268,7 @@ void InstallProgress(int num)
     progress_max.push_back(p);
   if (!val_done)
     progress_val.push_back(p);
-  ProgressBar(num,0,15);
+  ProgressBar(num,0,15,"installprogress");
 }
 int FindProgressVal()
 {
@@ -3287,8 +3288,10 @@ int FindProgressMax()
     }
   return sum;
 }
-void ProgressBar(int num, int val, int max)
+void ProgressBar(int num, int val, int max, std::string label)
 {
+  std::cout << "ProgressBar: '" << label << "'" << std::endl
+
   //std::cout << "PB: " << num << std::endl;
   {
   int s = progress_val.size();
@@ -3414,11 +3417,11 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
       vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
     }
   int progress = 0;
-  InstallProgress(0);
+  InstallProgress(0,"pthread");
   while(1) {
     pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
     progress++;
-    ProgressBar(0,progress/num_threads,10);
+    ProgressBar(0,progress/num_threads,10,"pthread");
 
     // now ti_global is available
     ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 0, ti_global->ct2_offsets.tri_count*3, ti_global->ct2_offsets.tri_count*3 + ti_global->ct2_counts.tri_count*3); 
@@ -3560,11 +3563,11 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
     }
   int progress = 0;
-  InstallProgress(1);
+  InstallProgress(1,"pthread");
   while(1) {
     pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
     progress++;
-    ProgressBar(1,progress/num_threads,10);
+    ProgressBar(1,progress/num_threads,10,"pthread");
 
     // now ti_global is available
     ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 0, ti_global->ct2_offsets.tri_count*3, ti_global->ct2_offsets.tri_count*3 + ti_global->ct2_counts.tri_count*3); 
@@ -3623,9 +3626,9 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     RenderVertexArray *arr2 = new RenderVertexArray(*s);
     //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
-    InstallProgress(2);
+    InstallProgress(2,"batching");
     for(int i=0;i<batch_count;i++) {
-      ProgressBar(2,i,batch_count);
+      ProgressBar(2,i,batch_count,"batching");
       int start = i*batch_faces;
       int end = (i+1)*batch_faces;
       if (start>total_faces) { start=total_faces; }
@@ -3676,9 +3679,9 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     RenderVertexArray *arr2 = new RenderVertexArray(*s);
     //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
-    InstallProgress(3);
+    InstallProgress(3,"batching");
     for(int i=0;i<batch_count;i++) {
-      ProgressBar(3,i,batch_count); 
+      ProgressBar(3,i,batch_count,"batching"); 
       int start = i*batch_faces;
       int end = (i+1)*batch_faces;
       if (start>total_faces) { start=total_faces; }
@@ -9826,7 +9829,7 @@ class ShadowColor : public ForwardFaceCollection
 {
 public:
   ShadowColor(FaceCollection *coll, int num, Vector light_dir) : ForwardFaceCollection(*coll), coll(coll),count(num), light_dir(light_dir), grid(0), cache(0) { 
-    InstallProgress(4);
+    InstallProgress(4,"lighting");
 }
   void DoIt(int section)
   {
@@ -9864,7 +9867,7 @@ public:
     float p=15.0/float(num);
     for(int h=0;h<num;h++) {
       if (h%100==0)
-	ProgressBar(4,p*h,p*num);
+	ProgressBar(4,p*h,p*num,"lighting");
       float xp = double(r.next())/r.maximum();
       float yp = double(r.next())/r.maximum();
       float zp = double(r.next())/r.maximum();
