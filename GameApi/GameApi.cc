@@ -355,7 +355,7 @@ EXPORT void GameApi::Env::free_temp_memory()
 
 }
 
-void InstallProgress(int num);
+void InstallProgress(int num,std::string label);
 EXPORT void GameApi::Env::async_load_url(std::string url, std::string homepage)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
@@ -367,7 +367,7 @@ EXPORT void GameApi::Env::async_load_callback(std::string url, void (*fptr)(void
   ::EnvImpl *env = (::EnvImpl*)envimpl;
   env->async_loader->set_callback(url, fptr, data);
 }
-void ProgressBar(int num, int val, int max);
+void ProgressBar(int num, int val, int max, std::string label);
 EXPORT std::vector<unsigned char> *GameApi::Env::get_loaded_async_url(std::string url)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
@@ -10193,7 +10193,7 @@ void onload_async_cb(void *arg, void *data, int datasize)
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url_only2[i]);
   sum = sum % 1000;
-  ProgressBar(sum,7,15);
+  ProgressBar(sum,7,15,url_only2);
   }
   
   //std::cout << "url loading complete! " << url_str << std::endl;
@@ -10214,7 +10214,7 @@ void onload_async_cb(void *arg, void *data, int datasize)
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url_only2[i]);
   sum = sum % 1000;
-  ProgressBar(sum,15,15);
+  ProgressBar(sum,15,15,url_only2);
   }
 
 }
@@ -10228,7 +10228,7 @@ void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
-  InstallProgress(sum);
+  InstallProgress(sum,url);
 
 
   url = "load_url.php?url=" + url;
@@ -10249,7 +10249,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
-  InstallProgress(sum);
+  InstallProgress(sum,url);
 
 #ifdef EMSCRIPTEN
     url = "load_url.php?url=" + url;
@@ -10267,11 +10267,11 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
       { // progressbar
 	std::string url_plain = stripprefix(url);
-	int s = url.size();
+	int s = url_plain.size();
 	int sum=0;
-	for(int i=0;i<s;i++) sum+=int(url[i]);
+	for(int i=0;i<s;i++) sum+=int(url_plain[i]);
 	sum = sum % 1000;
-	ProgressBar(sum,15,15);
+	ProgressBar(sum,15,15,url_plain);
       }
 
       return; 
@@ -10290,7 +10290,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
-  ProgressBar(sum,7,15);
+  ProgressBar(sum,7,15,url);
   }
 
 
@@ -10313,7 +10313,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
-  ProgressBar(sum,15,15);
+  ProgressBar(sum,15,15,url);
   }
 
 
