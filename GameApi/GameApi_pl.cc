@@ -3251,9 +3251,9 @@ std::vector<ProgressI > progress_max;
 std::vector<ProgressI > progress_val;
 void ProgressBar(int num, int val, int max, std::string label);
 
-void InstallProgress(int num, std::string label)
+void InstallProgress(int num, std::string label, int max=15)
 {
-  std::cout << "InstallProgress: '" << label << "'" << std::endl;
+  //std::cout << "InstallProgress: '" << label << "'" << std::endl;
   //std::cout << "IB: " << num << std::endl;
   ProgressI p; p.num = num;
   int s = progress_max.size();
@@ -3268,7 +3268,7 @@ void InstallProgress(int num, std::string label)
     progress_max.push_back(p);
   if (!val_done)
     progress_val.push_back(p);
-  ProgressBar(num,0,15,"installprogress");
+  ProgressBar(num,0,max,"installprogress");
 }
 int FindProgressVal()
 {
@@ -3290,7 +3290,7 @@ int FindProgressMax()
 }
 void ProgressBar(int num, int val, int max, std::string label)
 {
-  std::cout << "ProgressBar: '" << label << "'" << std::endl;
+  //std::cout << "ProgressBar: '" << label << "'" << std::endl;
 
   //std::cout << "PB: " << num << std::endl;
   {
@@ -9829,7 +9829,7 @@ class ShadowColor : public ForwardFaceCollection
 {
 public:
   ShadowColor(FaceCollection *coll, int num, Vector light_dir) : ForwardFaceCollection(*coll), coll(coll),count(num), light_dir(light_dir), grid(0), cache(0) { 
-    InstallProgress(4,"lighting");
+    InstallProgress(4,"lighting",150);
 }
   void DoIt(int section)
   {
@@ -9847,7 +9847,7 @@ public:
 		   bounds.first.z-10.0,bounds.second.z+10.0);
 
     bind_accel(coll,grid);
-    std::cout << "Generating lights..." << std::endl;
+    //std::cout << "Generating lights..." << std::endl;
   
     delete cache;
     cache = new AreaCache;
@@ -9864,7 +9864,7 @@ public:
     
     int num = count;
     Random r;
-    float p=15.0/float(num);
+    float p=150.0/float(num);
     for(int h=0;h<num;h++) {
       if (h%100==0)
 	ProgressBar(4,p*h,p*num,"lighting");
