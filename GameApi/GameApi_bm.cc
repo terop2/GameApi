@@ -576,7 +576,7 @@ public:
 	cbm = new BitmapFromBuffer(img);    
 	return;
       }
-    std::cout << "URL " << url << " loading succeeded!" << std::endl;
+    //std::cout << "URL " << url << " loading succeeded!" << std::endl;
 
     bool b = false;
     img = LoadImageFromString(*vec, b);

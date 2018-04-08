@@ -3327,7 +3327,7 @@ void ProgressBar(int num, int val, int max)
   for(int i=val2;i<max2-1;i++) {
     std::cout << "-";
   }
-  std::cout << "] (" << val1 << "/" << max1 << ") (" << val << "/" << max << ")          ";
+  std::cout << "] (" << val1 << "/" << max1 << ") (" << val << "/" << max << ") " << num;
 }
 extern ThreadInfo *ti_global;
 extern int thread_counter;
