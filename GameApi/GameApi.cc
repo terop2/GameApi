@@ -3017,16 +3017,13 @@ public:
   }
   float val() const {
     if (async_pending_count>max_async_pending) max_async_pending=async_pending_count;
-    if (async_pending_count!=0) {
-      float val = 1.0-(async_pending_count/max_async_pending);
-      if (val<0.1) val=0.1;
-      if (val>1.0) val=1.0;
-      return val;
-    }
-    float val = float(progress_info_global_val)/float(progress_info_global_max);
-      if (val<0.1) val=0.1;
-      if (val>1.0) val=1.0;
-    return val;
+    float val1 = 1.0-(async_pending_count/max_async_pending);
+    if (val1<0.1) val1=0.1;
+    if (val1>1.0) val1=1.0;
+    float val2 = float(progress_info_global_val)/float(progress_info_global_max);
+    if (val2<0.1) val2=0.1;
+    if (val2>1.0) val2=1.0;
+    return (val1+val2)/2.0;
   }
 private:
   Movement *next;
