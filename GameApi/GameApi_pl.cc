@@ -9063,3 +9063,818 @@ GameApi::P GameApi::PolygonApi::mesh_resize(P p, float start_x, float end_x, flo
   FaceCollection *coll = find_facecoll(e, p);
   return add_polygon(e, new MeshResize(coll, Point(start_x, start_y, start_z), Point(end_x, end_y, end_z)), 1);
 }
+
+class SmoothNormals2 : public ForwardFaceCollection
+{
+public:
+  SmoothNormals2(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  struct Data { Data() : v{0.01,0.01,0.01}, count(0) { } Vector v; int count; };
+  
+  virtual void Prepare() {
+    coll->Prepare();
+
+    int s = coll->NumFaces();
+    int count = 0;
+    for(int i=0;i<s;i++) {
+      int s2 = coll->NumPoints(i);
+      for(int j=0;j<s2;j++) {
+	Point p = coll->FacePoint(i,j);
+	Point p1 = coll->FacePoint(i,(j+0)%s2);
+	Point p2 = coll->FacePoint(i,(j+1)%s2);
+	Point p3 = coll->FacePoint(i,(j+2)%s2);
+	Point p4 = coll->FacePoint(i,(j+3)%s2);
+	float area = Vector::DotProduct(coll->PointNormal(i,j),Vector::CrossProduct(p1,p2) + Vector::CrossProduct(p2,p3) + Vector::CrossProduct(p3,p4))/2.0;
+	float a1 = Vector::Angle(p2-p1,p3-p1);
+	float a2 = Vector::Angle(p3-p2,p1-p2);
+	float a3 = Vector::Angle(p1-p3,p2-p3);
+	Data &v = mymap[key(p)];
+	Vector n = coll->PointNormal(i,j);
+	v.v+=n*a1;
+	//v.v+=a2*n;
+	//v.v+=a3*n;
+	v.count++;
+      }
+    }
+  }
+  std::tuple<int,int,int> key(Point p) const
+  {
+    return std::make_tuple(int(p.x*1.0),int(p.y*1.0),int(p.z*1.0));
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Point p = coll->FacePoint(face,point);
+    Data v = mymap[key(p)];
+    if (v.count==1) { return coll->PointNormal(face,point); }
+    if (v.count==0) v.count++;
+    Vector vv = v.v/float(v.count);
+    float dist = vv.Dist();
+    if (dist<0.01) { vv=Vector(1.0,0.0,0.0); dist=1.0; }
+    return (vv)/dist;
+  }
+private:
+  FaceCollection *coll;
+  mutable std::map<std::tuple<int,int,int>, Data> mymap;
+};
+
+GameApi::P GameApi::PolygonApi::smooth_normals2(P p) {
+  FaceCollection *coll = find_facecoll(e, p);
+  return add_polygon2(e, new SmoothNormals2(coll),1);
+}
+
+
+
+class AccelNode
+{
+public:
+  std::vector<void*> vec;
+};
+
+class AccelStructure
+{
+public:
+  virtual void clear()=0;
+  virtual AccelNode *find_point(Point p) const=0;
+  virtual AccelNode *find_next(AccelNode *current, Point start, Point target, float &tmin) const=0;
+  virtual std::vector<AccelNode*> find_ray(Point p1, Point p2, float &tmin) const=0;
+  virtual std::vector<AccelNode*> find_tri(Point p1, Point p2, Point p3) const=0;
+  virtual std::vector<AccelNode*> find_cube(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) const=0;
+  virtual std::vector<AccelNode*> find_quad(Point p1, Point p2, Point p3, Point p4) const=0;
+  virtual void push_back(Point p, void *data)=0;
+  virtual void push_back(AccelNode *n, void *data)=0;
+};
+
+struct AccelNodeSpec
+{
+  int x,y,z;
+};
+
+class GridAccel : public AccelStructure
+{
+public:
+  GridAccel(int sx, int sy, int sz,
+	    float start_x, float end_x,
+	    float start_y, float end_y,
+	    float start_z, float end_z) : sx(sx), sy(sy), sz(sz),
+					  start_x(start_x), end_x(end_x),
+					  start_y(start_y), end_y(end_y),
+					  start_z(start_z), end_z(end_z) 
+  { 
+    grid = new AccelNode[sx*sy*sz];
+  }
+  void clear()
+  {
+    delete [] grid;
+    grid = new AccelNode[sx*sy*sz];
+  }
+  AccelNode *find_node(const AccelNodeSpec &spec) const
+  {
+    if (spec.z>=0&&spec.z<sz)
+      if (spec.y>=0&&spec.y<sy)
+	if (spec.x>=0&&spec.x<sx)
+	  return &grid[spec.z*sx*sy +
+		       spec.y*sx +
+		       spec.x];
+    return 0;
+  }
+  AccelNodeSpec find_spec(AccelNode *n) const
+  {
+    if (!n) { AccelNodeSpec s; s.x = 0; s.y=0; s.z=0; return s; }
+    int num = n - grid;
+    int zz = num / (sx*sy);
+    int rest = num - zz*sx*sy;
+    int yy = rest / sx;
+    int rest2 = rest - yy*sx;
+    int xx = rest2;
+    AccelNodeSpec s;
+    s.x = xx;
+    s.y = yy;
+    s.z = zz;
+    return s;
+  }
+  std::pair<Point,Point> bounds(AccelNodeSpec spec) const
+  {
+    float pos_x = start_x+float(spec.x)/float(sx)*(end_x-start_x);
+    float pos_y = start_y+float(spec.y)/float(sy)*(end_y-start_y);
+    float pos_z = start_z+float(spec.z)/float(sz)*(end_z-start_z);
+    float tend_x = pos_x + (end_x-start_x)/float(sx);
+    float tend_y = pos_y + (end_y-start_y)/float(sy);
+    float tend_z = pos_z + (end_z-start_z)/float(sz);
+    return std::make_pair(Point(pos_x,pos_y,pos_z),Point(tend_x,tend_y,tend_z));
+  }
+  bool hit(Point ray_pos, Vector ray_dir, std::pair<Point,Point> bound, float &tmin, float &tmax) const
+  {
+    tmin = (bound.first.x - ray_pos.x)/ray_dir.dx;
+    tmax = (bound.second.x - ray_pos.x)/ray_dir.dx;
+    
+    if (tmin > tmax) std::swap(tmin,tmax);
+    
+    float tymin = (bound.first.y - ray_pos.y) / ray_dir.dy;
+    float tymax = (bound.second.y - ray_pos.y) / ray_dir.dy;
+
+    if (tymin > tymax) std::swap(tymin,tymax);
+    if ((tmin > tymax) ||(tymin > tmax)) return false;
+    if (tymin > tmin)
+      tmin = tymin;
+    if (tymax < tmax)
+      tmax = tymax;
+    float tzmin = (bound.first.z - ray_pos.z) / ray_dir.dz;
+    float tzmax = (bound.second.z - ray_pos.z) / ray_dir.dz;
+    
+    if (tzmin > tzmax) std::swap(tzmin,tzmax);
+    
+    if ((tmin > tzmax) || (tzmin > tmax)) return false;
+    if (tzmin > tmin) tmin=tzmin;
+    if (tzmax < tmax) tmax = tzmax;
+    return true;
+  }
+  virtual AccelNode *find_point(Point p) const
+  {
+    if (p.x<start_x) { return 0; }
+    if (p.y<start_y) { return 0; }
+    if (p.z<start_z) { return 0; }
+    if (p.x>end_x) { return 0; }
+    if (p.y>end_y) { return 0; }
+    if (p.z>end_z) { return 0; }
+				 
+    p-=Vector(start_x, start_y, start_z);
+    float dx = p.x / (end_x-start_x);
+    float dy = p.y / (end_y-start_y);
+    float dz = p.z / (end_z-start_z);
+    // now [0..1]
+    float ddx = dx * sx;
+    float ddy = dy * sy;
+    float ddz = dz * sz;
+    // now [0..box]
+    AccelNodeSpec s;
+    s.x = int(ddx);
+    s.y = int(ddy);
+    s.z = int(ddz);
+    AccelNode *n = find_node(s);
+    return n;
+  }
+  Point2d edge_component( float start_x, float target_x, // x is special
+			  float start_y, float target_y,
+			  float start_z, float target_z, int x_spec) const
+  {
+    float s_x = start_x;
+    float e_x = target_x;
+    int x = 0;
+    bool forward;
+    if (s_x < e_x)
+      {
+	forward = true;
+	x = x_spec + 1;
+      }
+    else
+      {
+	forward = false;
+	x = x_spec; // why not -1?
+      }
+    float p_x = start_x + x*(end_x-start_x)/sx;
+    float d_x = fabs(p_x-s_x);
+    float dx = fabs(target_x-start_x);
+    float dy = fabs(target_y-start_y);
+    float dz = fabs(target_z-start_z);
+    //if (dx<0.01) dx=1.0;
+    //if (dy<0.01) dy=1.0;
+    //if (dz<0.01) dz=1.0;
+    float ky = dy*d_x/dx;
+    float kz = dz*d_x/dx;
+    if (!forward) { ky = -ky; kz = -kz; }
+    Point2d p;
+    p.x = ky;
+    p.y = kz;
+    return p;
+  }
+
+  Point point_at_edge_of_box(Point current, Point target, AccelNode *discard) const
+  {
+    // TODO RAY-BOX INTERSECTION
+    AccelNodeSpec spec = find_spec(find_point(current));
+
+    Point2d pyz = edge_component( current.x, target.x,
+				 current.y, target.y,
+				 current.z, target.z, spec.x);
+    Point2d pxz = edge_component( current.y, target.y,
+				 current.x, target.x,
+				 current.z, target.z, spec.y);
+    Point2d pxy = edge_component( current.z, target.z,
+				 current.x, target.x,
+				 current.y, target.y, spec.z);
+    
+    float x_delta = std::min(fabs(pxz.x),fabs(pxy.x));
+    float y_delta = std::min(fabs(pyz.x),fabs(pxy.y));
+    float z_delta = std::min(fabs(pyz.y),fabs(pxz.y));
+    float x_mult = pyz.x < 0.0 ? -1.0 : 1.0;
+    float y_mult = pxz.x < 0.0 ? -1.0 : 1.0;
+    float z_mult = pxy.x < 0.0 ? -1.0 : 1.0;
+
+
+    Vector v = { x_mult*x_delta, y_mult*y_delta, z_mult*z_delta };
+    return current + v;
+  }
+  bool point_box_intersection(Point p, AccelNode *node) const
+  {
+    AccelNodeSpec spec = find_spec(node);
+    p.x-=start_x;
+    p.y-=start_y;
+    p.z-=start_z;
+    p.x/=end_x-start_x;
+    p.y/=end_y-start_y;
+    p.z/=end_z-start_z;
+    p.x*=sx;
+    p.y*=sy;
+    p.z*=sz;
+    int x = (int)p.x;
+    int y = (int)p.y;
+    int z = (int)p.z;
+    return x==spec.x && y==spec.y && z==spec.z;
+  }
+  virtual AccelNode *find_next(AccelNode *current, Point start, Point target, float &tmin) const
+  {
+    if (point_box_intersection(target, current)) return 0; // we're at target
+
+    AccelNodeSpec spec = find_spec(current);
+    AccelNodeSpec spec_px = spec; spec_px.x++;
+    AccelNodeSpec spec_mx = spec; spec_mx.x--;
+    AccelNodeSpec spec_py = spec; spec_py.y++;
+    AccelNodeSpec spec_my = spec; spec_my.y--;
+    AccelNodeSpec spec_pz = spec; spec_pz.z++;
+    AccelNodeSpec spec_mz = spec; spec_mz.z--;
+    
+    std::pair<Point,Point> b_px = bounds(spec_px);
+    std::pair<Point,Point> b_mx = bounds(spec_mx);
+    std::pair<Point,Point> b_py = bounds(spec_py);
+    std::pair<Point,Point> b_my = bounds(spec_my);
+    std::pair<Point,Point> b_pz = bounds(spec_pz);
+    std::pair<Point,Point> b_mz = bounds(spec_mz);
+    
+    Vector dir = target-start;
+    float tmin_px, tmax_px;
+    float tmin_mx, tmax_mx;
+    float tmin_py, tmax_py;
+    float tmin_my, tmax_my;
+    float tmin_pz, tmax_pz;
+    float tmin_mz, tmax_mz;
+    tmin = 99999999.0;
+    if (hit(start,dir, b_px,tmin_px,tmax_px)) {  
+      if (tmin_px<tmin && tmin_px>0.0001) { spec = spec_px; tmin=tmin_px; } 
+      if (tmax_px<tmin && tmax_px>0.0001) { spec = spec_px; tmin=tmax_px; } 
+    }
+    if (hit(start,dir, b_mx,tmin_mx,tmax_mx)) {  
+      if (tmin_mx<tmin && tmin_mx>0.0001) { spec = spec_mx; tmin=tmin_mx; } 
+      if (tmax_mx<tmin && tmax_mx>0.0001) { spec = spec_mx; tmin=tmax_mx; } 
+    }
+    if (hit(start,dir, b_py,tmin_py,tmax_py)) {  
+      if (tmin_py<tmin && tmin_py>0.0001) { spec = spec_py; tmin=tmin_py;} 
+      if (tmax_py<tmin && tmax_py>0.0001) { spec = spec_py; tmin=tmax_py; } 
+    }
+    if (hit(start,dir, b_my,tmin_my,tmax_my)) { 
+      if (tmin_my<tmin && tmin_my>0.0001) { spec = spec_my; tmin=tmin_my; } 
+      if (tmax_my<tmin && tmax_my>0.0001) { spec = spec_my; tmin=tmax_my; } 
+    }
+    if (hit(start,dir, b_pz,tmin_pz,tmax_pz)) { 
+      if (tmin_pz<tmin && tmin_pz>0.0001) { spec = spec_pz; tmin=tmin_pz;} 
+      if (tmax_pz<tmin && tmax_pz>0.0001) { spec = spec_pz; tmin=tmax_pz; } 
+    }
+    if (hit(start,dir, b_mz,tmin_mz,tmax_mz)) { 
+      if (tmin_mz<tmin && tmin_mz>0.0001) { spec = spec_mz; tmin=tmin_mz; } 
+      if (tmax_mz<tmin && tmax_mz>0.0001) { spec = spec_mz; tmin=tmax_mz; } 
+    }
+    if (tmin>9999999.0) { return 0; }
+
+    return find_node(spec);
+    
+
+
+ #if 0
+    AccelNodeSpec spec = find_spec(current);
+
+    std::cout << "Spec: " << spec.x << " " << spec.y << " " << spec.z << std::endl;
+
+    Point2d pyz = edge_component( start.x, target.x,
+				 start.y, target.y,
+				 start.z, target.z, spec.x);
+    Point2d pxz = edge_component( start.y, target.y,
+				 start.x, target.x,
+				 start.z, target.z, spec.y);
+    Point2d pxy = edge_component( start.z, target.z,
+				  start.x, target.x,
+				  start.y, target.y, spec.z);
+
+    std::cout << "Edge components(pyz,pxz,pxy): " << pyz << " " << pxz << " " << pxy << std::endl;
+
+    bool b_x = fabs(pxz.x) < fabs(pxy.x);
+    bool b_y = fabs(pyz.x) < fabs(pxy.y);
+    bool b_z = fabs(pyz.y) < fabs(pxz.y);
+
+    std::cout << "Bools: " << b_x << " " << b_y << " " << b_z << std::endl;
+
+    int x_dir=0;
+    int y_dir=0;
+    int z_dir=0;
+    // TODO: what happens if x_dir, y_dir or z_dir is 0?
+    if (b_x) { /* choose pxz */ 
+      if (pxz.x < 0.0) { 
+	y_dir = -1;
+      } else {
+	y_dir = 1;
+      }
+    } else { 
+      if (pxy.x < 0.0)
+	{
+	  z_dir = -1;
+	}
+      else
+	{
+	  z_dir = 1;
+	}
+      /* choose pxy */ 
+    }
+    if (b_y) {
+      if (pyz.x < 0.0)
+	{
+	  x_dir = -1;
+	}
+      else
+	{
+	  x_dir = 1;
+	}
+      /* choose pyz */ 
+    } else {
+      if (pxy.y < 0.0)
+	{
+	  z_dir = -1;
+	}
+      else
+	{
+	  z_dir = 1;
+	}
+      /* choose pxy */ 
+    }
+    if (b_z) { 
+      if (pyz.y < 0.0)
+	{
+	  x_dir = -1;
+	}
+      else
+	{
+	  x_dir = 1;
+	}
+      /* choose pyz */ 
+    } else { 
+      if (pxz.y < 0.0)
+	{
+	  y_dir = -1;
+	}
+      else
+	{
+	  y_dir = 1;
+	}
+      /* choose pxz */ 
+    }
+    std::cout << "Dirs: " << x_dir << " " << y_dir << " " << z_dir << std::endl;
+    float x_delta = std::min(fabs(pxz.x),fabs(pxy.x));
+    float y_delta = std::min(fabs(pyz.x),fabs(pxy.y));
+    float z_delta = std::min(fabs(pyz.y),fabs(pxz.y));
+
+    std::cout << "Deltas: " << x_delta << " " << y_delta << " " << z_delta << std::endl;
+
+    if (x_delta < y_delta && x_delta < z_delta && x_dir!=0)
+      {
+	spec.x+=x_dir;
+	std::cout << "MoveX" << x_dir << std::endl;
+      } else
+    if (y_delta < x_delta && y_delta < z_delta && y_dir!=0)
+      {
+	spec.y+=y_dir;
+	std::cout << "MoveY" << y_dir << std::endl;
+      } else
+    if (z_delta < x_delta && z_delta < y_delta && z_dir!=0)
+      {
+	spec.z+=z_dir;
+	std::cout << "MoveZ" << z_dir << std::endl;
+      } 
+    return find_node(spec);
+#endif
+  }
+  virtual std::vector<AccelNode*> find_quad(Point p1, Point p2, Point p3, Point p4) const
+  {
+    int xxxmin = std::min(std::min(p1.x,p2.x),std::min(p3.x,p4.x));
+    int yyymin = std::min(std::min(p1.y,p2.y),std::min(p3.y,p4.y));
+    int zzzmin = std::min(std::min(p1.z,p2.z),std::min(p3.z,p4.z));
+
+    int xxxmax = std::max(std::max(p1.x,p2.x),std::max(p3.x,p4.x));
+    int yyymax = std::max(std::max(p1.y,p2.y),std::max(p3.y,p4.y));
+    int zzzmax = std::max(std::max(p1.z,p2.z),std::max(p3.z,p4.z));
+
+    return find_cube(xxxmin, xxxmax,
+		     yyymin, yyymax,
+		     zzzmin, zzzmax);
+		     
+  }
+  virtual std::vector<AccelNode*> find_ray(Point p1, Point p2, float &tmin) const
+  {
+    std::vector<AccelNode*> vec;
+    AccelNode *n = find_point(p1);
+    vec.push_back(n);
+    //std::cout << "find_ray_s: " << n << " " << p1 << " " << p2 << std::endl;
+    float t = 0.0;
+    while(n && !(std::isnan(p1.x)||std::isnan(p1.y)||std::isnan(p1.z)))
+      {
+    //std::cout << "find_ray: " << n << " " << p1 << " " << p2 << std::endl;
+	float tmin;
+	n = find_next(n, p1, p2,tmin);
+	if (n)
+	  {
+            p1 = p1+tmin*Vector(p2-p1);
+	    t+=tmin;
+	    vec.push_back(n);
+	  } 
+      }
+    tmin = t;
+    //std::cout << "Exit ray: " << n << " " << p1 << std::endl;
+    return vec;
+  }
+  virtual std::vector<AccelNode*> find_tri(Point p1, Point p2, Point p3) const
+  {
+    int xxxmin = std::min(std::min(p1.x,p2.x),p3.x);
+    int yyymin = std::min(std::min(p1.y,p2.y),p3.y);
+    int zzzmin = std::min(std::min(p1.z,p2.z),p3.z);
+
+    int xxxmax = std::max(std::max(p1.x,p2.x),p3.x);
+    int yyymax = std::max(std::max(p1.y,p2.y),p3.y);
+    int zzzmax = std::max(std::max(p1.z,p2.z),p3.z);
+
+    return find_cube(xxxmin, xxxmax,
+		     yyymin, yyymax,
+		     zzzmin, zzzmax);
+  }
+  virtual std::vector<AccelNode*> find_cube(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) const
+  {
+    AccelNode *n0 = find_point(Point(start_x, start_y, start_z));
+    AccelNode *nx = find_point(Point(end_x, start_y, start_z));
+    AccelNode *ny = find_point(Point(start_x, end_y, start_z));
+    AccelNode *nz = find_point(Point(start_x, start_y, end_z));
+    
+    AccelNodeSpec s0 = find_spec(n0);
+    AccelNodeSpec sx = find_spec(nx);
+    AccelNodeSpec sy = find_spec(ny);
+    AccelNodeSpec sz = find_spec(nz);
+
+
+    int s_x = s0.x;
+    int e_x = sx.x;
+    int s_y = s0.y;
+    int e_y = sy.y;
+    int s_z = s0.z;
+    int e_z = sz.z;
+    if (e_x==s_x) e_x++;
+    if (e_y==s_y) e_y++;
+    if (e_z==s_z) e_z++;
+
+    std::vector<AccelNode*> vec;
+    for(int z=s_z;z<e_z;z++)
+      for(int y=s_y;y<e_y;y++)
+	for(int x=s_x;x<e_x;x++)
+	  {
+	    AccelNodeSpec s = { x,y,z };
+	    vec.push_back(find_node(s));
+	  }
+    return vec;
+  }
+  virtual void push_back(Point p, void *data)
+  {
+    AccelNode *n = find_point(p);
+    push_back(n, data);
+  }
+  virtual void push_back(AccelNode *n, void *data)
+  {
+    if (n)
+      n->vec.push_back(data);
+  }
+
+private:
+  int sx,sy,sz;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+  AccelNode *grid;
+};
+
+std::pair<Point,Point> find_bounds(FaceCollection *coll)
+{
+  Point mymin, mymax;
+  mymin = Point(10000000.0,1000000.0,100000.0);
+  mymax = Point(-1000000.0,-100000.0,-100000.0);
+  int s = coll->NumFaces();
+  for(int i=0;i<s;i++)
+    {
+      int sp = coll->NumPoints(i);
+      for(int j=0;j<sp;j++)
+	{
+	  Point p = coll->FacePoint(i,j);
+	  if (p.x<mymin.x) mymin.x = p.x;
+	  if (p.y<mymin.y) mymin.y = p.y;
+	  if (p.z<mymin.z) mymin.z = p.z;
+
+	  if (p.x>mymax.x) mymax.x = p.x;
+	  if (p.y>mymax.y) mymax.y = p.y;
+	  if (p.z>mymax.z) mymax.z = p.z;
+	}
+    }
+  return std::make_pair(mymin,mymax);
+}
+
+struct Accel_P_ref
+{
+  FaceCollection *coll;
+  int face;
+};
+
+// note, FaceCollection must be prepared before this
+void bind_accel(FaceCollection *coll, AccelStructure *accel) {
+  int s = coll->NumFaces();
+  for(int i=0;i<s;i++)
+    {
+      Accel_P_ref *ref = new Accel_P_ref;
+      ref->coll = coll;
+      ref->face = i;
+      int c = coll->NumPoints(i);
+      std::vector<AccelNode*> vec;
+      switch(c) {
+      case 3:
+	{
+	  Point p1 = coll->FacePoint(i,0);
+	  Point p2 = coll->FacePoint(i,1);
+	  Point p3 = coll->FacePoint(i,2);
+	  vec = accel->find_tri(p1,p2,p3);
+	  break;
+	}
+      case 4:
+	{
+	  Point p1 = coll->FacePoint(i,0);
+	  Point p2 = coll->FacePoint(i,1);
+	  Point p3 = coll->FacePoint(i,2);
+	  Point p4 = coll->FacePoint(i,3);
+	  vec = accel->find_quad(p1,p2,p3,p4);
+	  break;
+	}
+      };
+      int s = vec.size();
+      for(int i=0;i<s;i++)
+	{
+	  accel->push_back(vec[i], (void*)ref);
+	}
+    }
+
+}
+
+class AreaCache
+{
+public:
+  struct Area { int face; float area; };
+  void push_area(int face, float area) { 
+    if (std::isnan(area)) return;
+    Area a; a.face = face; a.area=area; areas.push_back(a); }
+  void calc_sum(int count)
+  {
+    sum = 0.0;
+    int s = areas.size();
+    for(int i=0;i<s;i++) {
+      sum+=areas[i].area;
+    }
+    sum/=float(areas.size());
+    p = float(1.0)/float(sum);
+    int ss = areas.size();
+    float pos = 0.0;
+    for(int i=0;i<ss;i++)
+      {
+	Area a = areas[i];
+	//std::cout << "Area: " << a.face << " " << a.area << std::endl;
+	float delta = p*a.area;
+	//std::cout << "Delta:" << delta << std::endl;
+	for(float pp=0.0;pp<delta;pp+=1.0) {
+	  pick.push_back(a);
+	}
+      }
+    //std::cout << "Pick size: " << pick.size() << std::endl;
+    p = float(pick.size())/float(sum);
+    m_count = count;
+  }
+  float range() const { return sum; }
+  int choose(float val) const
+  {
+    int s = pick.size();
+    int val2 = int(val*s/m_count);
+    //std::cout << val2 << std::endl;
+    if (val2>=0 && val2<s)
+      {
+	Area a = pick[val2];
+	//std::cout << "Choose " << a.face << std::endl;
+	return a.face;
+      }
+    std::cout << "Choose none" << std::endl;
+    return 0;
+  }
+
+private:
+  std::vector<Area> areas;
+  float m_count;
+  float sum;
+  float p;
+  std::vector<Area> pick;
+};
+
+
+class ShadowColor : public ForwardFaceCollection
+{
+public:
+  ShadowColor(FaceCollection *coll, int num, Vector light_dir) : ForwardFaceCollection(*coll), coll(coll),count(num), light_dir(light_dir) { }
+  void Prepare() {
+    ForwardFaceCollection::Prepare();
+
+    std::pair<Point,Point> bounds = find_bounds(coll);
+    int numfaces = coll->NumFaces();
+    GridAccel grid(15,15,15,
+		   bounds.first.x-10.0,bounds.second.x+10.0,
+		   bounds.first.y-10.0,bounds.second.y+10.0,
+		   bounds.first.z-10.0,bounds.second.z+10.0);
+
+    bind_accel(coll,&grid);
+  
+    AreaCache cache;
+    int sj = numfaces;
+    for(int w=0;w<sj;w++)
+      {
+	Point p1 = coll->FacePoint(w,0);
+	Point p2 = coll->FacePoint(w,1);
+	Point p3 = coll->FacePoint(w,2);
+	Point p4 = coll->FacePoint(w,3);
+	cache.push_area(w,AreaTools::QuadArea(p1,p2,p3,p4));
+      }
+    cache.calc_sum(30000);
+    
+    int num = count;
+    Random r;
+    for(int h=0;h<num;h++) {
+      float xp = double(r.next())/r.maximum();
+      float yp = double(r.next())/r.maximum();
+      float zp = double(r.next())/r.maximum();
+      xp*=2.0;
+      yp*=2.0;
+      xp-=1.0;
+      yp-=1.0;
+      zp*=float(30000.0);
+      //std::cout << "Random: " << xp << " " << yp << " " << zp << std::endl;
+      if (std::isnan(xp)) continue;
+      if (std::isnan(yp)) continue;
+      if (std::isnan(zp)) continue;
+      
+      int zpi = cache.choose(zp);
+      if (zpi<0) zpi = 0;
+      if (zpi>=numfaces) zpi = numfaces-1;
+      //std::cout << "zpi: " << zpi << std::endl;
+
+      int num = int(coll->TexCoord3(zpi,0));
+      //std::cout << "num: " << num << std::endl;
+      BufferRef ref = coll->TextureBuf(num);
+      int sx = ref.width;
+      int sy = ref.height;
+      
+      
+      Point p1 = coll->FacePoint(zpi, 0);
+      Point p2 = coll->FacePoint(zpi, 1);
+      Point p3 = coll->FacePoint(zpi, 2);
+      Point p4 = coll->FacePoint(zpi, 3);
+      Point p = 1.0/4.0*((1.0f-xp)*(1.0f-yp)*Vector(p1) + (1.0f+xp)*(1.0f-yp)*Vector(p2) + (1.0f+xp)*(1.0f+yp)*Vector(p3) + (1.0f-xp)*(1.0f+yp)*Vector(p4));
+
+      Point2d t1 = coll->TexCoord(zpi, 0);
+      Point2d t2 = coll->TexCoord(zpi, 1);
+      Point2d t3 = coll->TexCoord(zpi, 2);
+      Point2d t4 = coll->TexCoord(zpi, 3);
+      //std::cout << "TexCoord: " << t1 << " " << t2 << " " << t3 << " " << t4 << std::endl;
+      Point t = 1.0/4.0*((1.0f-xp)*(1.0f-yp)*Vector(t1.x,t1.y,0.0) + (1.0f+xp)*(1.0f-yp)*Vector(t2.x,t2.y,0.0) + (1.0f+xp)*(1.0f+yp)*Vector(t3.x,t3.y,0.0) + (1.0f-xp)*(1.0f+yp)*Vector(t4.x,t4.y,0.0));
+      Point2d tt = { t.x,t.y };
+      
+      //std::cout << "Pos: " << p << " tex: " << t << std::endl;
+
+      int x = int(tt.x*sx);
+      int y = int(tt.y*sy);
+      
+      if (x<0 || x>=sx) continue;
+      if (y<0 || y>=sy) continue;
+
+      ref.buffer[x+y*ref.ydelta] = 0x80ffffff;
+
+	  Point pos = p;
+	  Point pos_end = pos+light_dir*200.0;
+
+	  //std::cout << pos << " " << pos_end << std::endl;
+	  float tmin = 0.0;
+	  std::vector<AccelNode*> ray_data = grid.find_ray(pos,pos_end, tmin);
+	  int s = ray_data.size();
+	  //std::cout << "ray_data:  " << s << std::endl;
+	  bool exit = false;
+	  for(int i=0;i<s;i++) {
+	    AccelNode *n = ray_data[i];
+	    //std::cout << "accelnode: " << n << std::endl;
+	    if (!n) continue;
+	    int ss = n->vec.size();
+	    //std::cout << "count:" << ss << std::endl;
+	    for(int j=0;j<ss;j++)
+	      {
+		void *ptr = n->vec[j];
+		//std::cout << "void*: " << int(ptr) << std::endl;
+		if (!ptr) continue;
+		Accel_P_ref *ref2 = (Accel_P_ref*)ptr;
+		FaceCollection *coll = ref2->coll;
+		int face = ref2->face;
+		Point p1 = coll->FacePoint(face,0);
+		Point p2 = coll->FacePoint(face,1);
+		Point p3 = coll->FacePoint(face,2);
+		Point p4 = coll->FacePoint(face,3);
+		
+		//std::cout << "LineProperties:" << pos << " " << pos+light_dir << std::endl;
+		LineProperties p(pos,pos+light_dir /* *20 */);
+		float t;
+		bool b = p.QuadIntersection(p1,p2,p3,p4,t);
+		//std::cout << "quadintersect: " << b << std::endl;
+		if (b) {
+		  //std::cout << "intersect" << std::endl;
+		  //Plane pl(p1,p2-p1, p3-p1);
+		  //float val = pl.Dist(pos);
+		  Point pos2 = pos + t*light_dir;
+		  Vector v = pos2-pos;
+		  float val = v.Dist();
+		  //std::cout << "Dist: " << val << std::endl;
+		  if (val>255.0) val=255.0;
+		  //val = 255.0-val;
+		  int val2 = int(val);
+		  //unsigned int old = ref.buffer[x+y*ref.ydelta];
+		  //unsigned int old2 = old&0xff;
+		  //if (val2<old2) {
+		    unsigned int rgb = 0x80000000 + (val2<<16) + (val2<<8); /*+ val2*/;
+		    //std::cout << "rgb: " << x << " " << y << ":" << std::hex << int(rgb) << std::endl;
+		    ref.buffer[x+y*ref.ydelta] = rgb;
+		    //}
+		  exit = true;
+		  break;
+		}
+	      }
+	    if (exit==true) break;
+	  }
+    }
+  }
+private:
+  FaceCollection *coll;
+  int count;
+  Vector light_dir;
+};
+
+GameApi::P GameApi::PolygonApi::light_transport(P p, int num, float light_dir_x, float light_dir_y, float light_dir_z)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  Vector light_dir(light_dir_x, light_dir_y, light_dir_z);
+  return add_polygon2(e, new ShadowColor(coll, num, light_dir),1);
+}

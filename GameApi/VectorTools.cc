@@ -1194,11 +1194,16 @@ bool IsWithInBoundingBox(Point2d p, Point2d top_left, Point2d bottom_right)
     }
   return false;
 }
-bool LineProperties::QuadIntersection(Point a1, Point a2, Point a3, Point a4)
+bool LineProperties::QuadIntersection(Point a1, Point a2, Point a3, Point a4, float &t)
 {
-  return TriangleIntersection(a1,a2,a3) || TriangleIntersection(a1,a3,a4);
+  float t1,t2;
+  bool b = TriangleIntersection(a1,a2,a3,t1);
+  bool b2 = TriangleIntersection(a1,a3,a4,t2);
+  if (b2) t=t2;
+  if (b) t=t1;
+  return b||b2;
 }
-bool LineProperties::TriangleIntersection(Point v1, Point v2, Point v3)
+bool LineProperties::TriangleIntersection(Point v1, Point v2, Point v3, float &t2)
 {
 #if 0
   Vector O = p1;
@@ -1222,6 +1227,8 @@ bool LineProperties::TriangleIntersection(Point v1, Point v2, Point v3)
     //}
     // return false;			  
 #endif
+
+#if 0
     Vector u = v2-v1;
     Vector v = v3-v1;
     Vector n = Vector::CrossProduct(u,v);
@@ -1253,7 +1260,41 @@ bool LineProperties::TriangleIntersection(Point v1, Point v2, Point v3)
     float t = (uv*wu - uu*wv) / D;
     if (t<0.0 || (s+t)>1.0)
       return false;
+    t2 = t;
     return true;
+#endif
+    Vector v0v1 = v2-v1;
+    Vector v0v2 = v3-v1;
+    Vector N = Vector::CrossProduct(v0v1,v0v2);
+    float area2 = N.Dist();
+    Vector dir = p2-p1;
+    float NdotRayDirection = Vector::DotProduct(N,dir);
+    if (fabs(NdotRayDirection) < 0.01) return false;
+    
+    float d = Vector::DotProduct(N,v1);
+    
+    t2 = (Vector::DotProduct(N,Vector(p1)) + d)/ NdotRayDirection;
+    if (t2<0.0) return false;
+    
+    Vector P = p1 + t2*dir;
+    Vector C;
+    Vector edge0 = v2-v1;
+    Vector vp0 = P-v1;
+    C=Vector::CrossProduct(edge0, vp0);
+    if (Vector::DotProduct(N,C) < 0.0) return false;
+    
+    Vector edge1 = v3-v2;
+    Vector vp1 = P-v2;
+    C=Vector::CrossProduct(edge1,vp1);
+    if (Vector::DotProduct(N,C) <0.0) return false;
+    
+    Vector edge2 = v1-v3;
+    Vector vp2 = P-v3;
+    C=Vector::CrossProduct(edge2,vp2);
+    if (Vector::DotProduct(N,C)<0.0) return false;
+    
+    return true;
+
 }
 
 bool TriangleProperties::is_inside_circum_sphere(Point p) const
@@ -1361,4 +1402,18 @@ PolyMatrix PolyMatrix::df_per_dx(int sx, int sy)
 	m.grid[x+y*sx] = val;
       }
   return m;
+}
+
+float AreaTools::TriArea(Point p1, Point p2, Point p3)
+{
+  Vector v1 = p2-p1;
+  Vector v2 = p3-p1;
+  float dot = Vector::DotProduct(v1,v2)/v1.Dist()/v2.Dist();
+  float angle = acos(dot);
+  return 1.0/2.0*v1.Dist()*v2.Dist()*sin(angle);
+}
+
+float AreaTools::QuadArea(Point p1, Point p2, Point p3, Point p4)
+{
+  return TriArea(p1,p2,p3) + TriArea(p1,p3,p4);
 }

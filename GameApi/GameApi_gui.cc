@@ -7572,6 +7572,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "P" },
 			 { "" },
 			 "P", "polygon_api", "recalculate_normals"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::smooth_normals2,
+			 "smooth_normals",
+			 { "orig" },
+			 { "P" },
+			 { "" },
+			 "P", "polygon_api", "smooth_normals2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::spherical_normals,
 			 "spherical_normals",
 			 { "p", "p_x", "p_y", "p_z" },
@@ -7652,6 +7658,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "P", "int", "int" },
 			 { "", "1024", "1024" },
 			 "P", "polygon_api", "texture_storage"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::light_transport,
+			 "p_tex_light",
+			 { "obj", "num", "light_dir_x", "light_dir_y", "light_dir_z" },
+			 { "P", "int", "float", "float", "float" },
+			 { "", "10000", "1.0", "1.0", "1.0" },
+			 "P", "polygon_api", "light_transport"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::replace_texture,
 			 "p_tex_replace",
 			 { "obj", "bm", "num" },

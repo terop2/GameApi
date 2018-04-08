@@ -10975,7 +10975,8 @@ public:
 	for(int j=0;j<ss;j++)
 	  {
 	    Point2d p = coll->TexCoord(i,j);
-	    file << "vt " << p.x << " " << p.y << std::endl;
+	    float p2 = coll->TexCoord3(i,j);
+	    file << "vt " << p.x << " " << p.y << " " << p2 << std::endl;
 	  }
       }
     for(int i=0;i<s;i++)

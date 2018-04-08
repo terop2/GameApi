@@ -5425,6 +5425,7 @@ public:
   virtual GameApi::ML mat2(GameApi::P p) const
   {
     GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
     GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     GameApi::ML ml;
     ml.id = next->mat(p1.id);
@@ -5434,6 +5435,7 @@ public:
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
     GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     GameApi::ML ml;
     ml.id = next->mat_inst(p1.id, pts.id);
@@ -5444,6 +5446,7 @@ public:
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
     GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
     GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     GameApi::ML ml;
     ml.id = next->mat_inst2(p1.id, pta.id);
@@ -5454,6 +5457,7 @@ public:
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
     GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
     GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     GameApi::ML ml;
     ml.id = next->mat_inst_fade(p1.id, pts.id, flip, start_time, end_time);
