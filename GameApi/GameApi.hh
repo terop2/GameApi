@@ -2085,6 +2085,9 @@ public:
   IMPORT P texture_splitter(P p, int start_index, int end_index);
   IMPORT P replace_texture(P p, BM bm, int num);
   IMPORT P texture_storage(P p, int texture_sx, int texture_sy);
+  IMPORT P light_transport(P p, int num, float light_dir_x, float light_dir_y, float light_dir_z);
+  
+  IMPORT P smooth_normals2(P p);
   
   //IMPORT P line(PT p1, PT p2);
 	IMPORT P triangle(PT p1, PT p2, PT p3);

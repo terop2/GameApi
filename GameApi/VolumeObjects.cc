@@ -288,7 +288,8 @@ bool FaceCollectionVolume::Inside(Point p) const
 	  Point p1 = coll->FacePoint(i,0);
 	  Point p2 = coll->FacePoint(i,1);
 	  Point p3 = coll->FacePoint(i,2);
-	  bool b = line.TriangleIntersection(p1,p2,p3);
+	  float t;
+	  bool b = line.TriangleIntersection(p1,p2,p3,t);
 	  res = res ^ b;
 	}
       else if (ss==4)
@@ -297,7 +298,8 @@ bool FaceCollectionVolume::Inside(Point p) const
 	  Point p2 = coll->FacePoint(i,1);
 	  Point p3 = coll->FacePoint(i,2);
 	  Point p4 = coll->FacePoint(i,3);
-	  bool b = line.QuadIntersection(p1,p2,p3,p4);
+	  float t;
+	  bool b = line.QuadIntersection(p1,p2,p3,p4,t);
 	  res = res ^ b;
 	}
     }

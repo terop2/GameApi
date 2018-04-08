@@ -704,6 +704,13 @@ Point UnitToFlex(Point p,
 
 
 
+class AreaTools
+{
+public:
+  static float TriArea(Point p1, Point p2, Point p3);
+  static float QuadArea(Point p1, Point p2, Point p3, Point p4);
+};
+
 struct Line
 {
   Point p;
@@ -734,8 +741,8 @@ public:
   Point MiddlePoint(float x) const;
   Vector PerpendicularVector(float angle, float length);
   float Dist(Point p);
-  bool TriangleIntersection(Point p1, Point p2, Point p3);
-  bool QuadIntersection(Point p1, Point p2, Point p3, Point p4);
+  bool TriangleIntersection(Point p1, Point p2, Point p3, float &r);
+  bool QuadIntersection(Point p1, Point p2, Point p3, Point p4, float &r);
   float LineCoords(Point p) const;
   Matrix translate_to_p1() const { return Matrix::Translate(p1.x,p1.y,p1.z); }
   Matrix translate_to_p2() const { return Matrix::Translate(p2.x,p2.y,p2.z); }
@@ -755,66 +762,6 @@ private:
   Point p1, p2;
 };
 
-class TriangleProperties
-{
-public:
-  TriangleProperties(Point p1, Point p2, Point p3) : p1(p1), p2(p2), p3(p3) { }
-  Point Center() const
-  {
-    Point pp = p1+Vector(p2)+Vector(p3);
-    pp.x /= 3.0;
-    pp.y /= 3.0;
-    pp.z /= 3.0;
-    return pp;
-  }
-  float side_length_1_2() const
-  {
-    Vector v = p2-p1;
-    return v.Dist();
-  }
-  float side_length_2_3() const
-  {
-    Vector v = p3-p2;
-    return v.Dist();
-  }
-  float side_length_3_1() const
-  {
-    Vector v = p1-p3;
-    return v.Dist();
-  }
-  Point circum_center() const
-  {
-    // get side lengths
-    float a = side_length_1_2();
-    float b = side_length_2_3();
-    float c = side_length_3_1();
-
-    // barycentric coordinates
-    float xx = a*a*(b*b+c*c-a*a);
-    float yy = b*b*(c*c+a*a-b*b);
-    float zz = c*c*(a*a+b*b-c*c);
-
-    // convert to point
-    Point bary(xx,yy,zz);
-    Point p = barycentric_to_point(bary);
-    return p;
-  }
-  float circum_radius() const
-  {
-    float a = side_length_1_2();
-    float b = side_length_2_3();
-    float c = side_length_3_1();
-    return a*b*c/sqrt((a+b+c)*(b+c-a)*(c+a-b)*(a+b-c));
-  }
-  Point barycentric_to_point(Point bary) const
-  {
-    Point pp = Point(Vector(p1)*bary.x + Vector(p2)*bary.y + Vector(p3)*bary.z);
-    return pp;
-  }
-  bool is_inside_circum_sphere(Point p) const;
-private:
-  Point p1,p2,p3;
-};
 
 #if 1
 
@@ -978,6 +925,82 @@ inline Point2d operator+(const Point2d &p, const Vector2d &p2)
   res.y = p.y + p2.dy;
   return res;
 }
+
+class TriangleProperties
+{
+public:
+  TriangleProperties(Point p1, Point p2, Point p3) : p1(p1), p2(p2), p3(p3) { }
+  Point Center() const
+  {
+    Point pp = p1+Vector(p2)+Vector(p3);
+    pp.x /= 3.0;
+    pp.y /= 3.0;
+    pp.z /= 3.0;
+    return pp;
+  }
+  float side_length_1_2() const
+  {
+    Vector v = p2-p1;
+    return v.Dist();
+  }
+  float side_length_2_3() const
+  {
+    Vector v = p3-p2;
+    return v.Dist();
+  }
+  float side_length_3_1() const
+  {
+    Vector v = p1-p3;
+    return v.Dist();
+  }
+  Point circum_center() const
+  {
+    // get side lengths
+    float a = side_length_1_2();
+    float b = side_length_2_3();
+    float c = side_length_3_1();
+
+    // barycentric coordinates
+    float xx = a*a*(b*b+c*c-a*a);
+    float yy = b*b*(c*c+a*a-b*b);
+    float zz = c*c*(a*a+b*b-c*c);
+
+    // convert to point
+    Point bary(xx,yy,zz);
+    Point p = barycentric_to_point(bary);
+    return p;
+  }
+  float circum_radius() const
+  {
+    float a = side_length_1_2();
+    float b = side_length_2_3();
+    float c = side_length_3_1();
+    return a*b*c/sqrt((a+b+c)*(b+c-a)*(c+a-b)*(a+b-c));
+  }
+  Point barycentric_to_point(Point bary) const
+  {
+    Point pp = Point(Vector(p1)*bary.x + Vector(p2)*bary.y + Vector(p3)*bary.z);
+    return pp;
+  }
+  static Point texture_to_barycentric(Point2d v1, Point2d v2, Point2d v3, Point2d p)
+  {
+    Point B;
+    B.x = ((v2.y-v3.y)*(p.x-v3.x) + (v3.x-v2.x)*(p.y-v3.y))/ ((v2.y-v3.y)*(v1.x-v3.x) + (v3.x-v2.x)*(v1.y-v3.y));
+    B.y = ((v3.y-v1.y)*(p.x-v3.x) + (v1.x-v3.x)*(p.y-v3.y)) /((v3.y-v1.y)*(v2.x-v3.x)+(v1.x-v3.x)*(v2.y-v3.y));
+    B.z = 1-B.x-B.y;
+    return B;
+  }
+  static bool is_inside_triangle(Point bary)
+  {
+    return (bary.x >= 0.0) && (bary.x <=1.0) &&
+      (bary.y>=0.0) && (bary.y<=1.0) &&
+      (bary.z>=0.0) && (bary.z<=1.0);
+  }
+  bool is_inside_circum_sphere(Point p) const;
+private:
+  Point p1,p2,p3;
+};
+
 
 class CubePlanes
 {
