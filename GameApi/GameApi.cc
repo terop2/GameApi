@@ -10171,7 +10171,7 @@ std::string striphomepage(std::string);
 std::string stripprefix(std::string s)
 {
   int len = strlen("load_url.php?url=");
-  return s.substr(len,s.size()-len-1);
+  return s.substr(len,s.size()-len);
 }
 void onload_async_cb(void *arg, void *data, int datasize)
 {
