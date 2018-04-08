@@ -3243,20 +3243,91 @@ EXPORT void GameApi::PolygonApi::delete_vertex_array(GameApi::VA va)
   GameApi::P p = empty();
   update_vertex_array(va,p);
 }
-int progress_info_global_val = 1;
-int progress_info_global_max = 5;
-void ProgressBar(int val, int max)
+struct ProgressI {
+  int num;
+  int value;
+};
+std::vector<ProgressI > progress_max;
+std::vector<ProgressI > progress_val;
+void ProgressBar(int num, int val, int max);
+
+void InstallProgress(int num)
 {
-  progress_info_global_val = val;
-  progress_info_global_max = max;
+  //std::cout << "IB: " << num << std::endl;
+  ProgressI p; p.num = num;
+  int s = progress_max.size();
+  int s2 = progress_val.size();
+  bool max_done = false;
+  bool val_done = false;
+  for(int i=0;i<std::min(s,s2);i++) {
+    if (progress_max[i].num==num) max_done=true;
+    if (progress_val[i].num==num) val_done=true;
+  }
+  if (!max_done)
+    progress_max.push_back(p);
+  if (!val_done)
+    progress_val.push_back(p);
+  ProgressBar(num,0,15);
+}
+int FindProgressVal()
+{
+  int s = progress_val.size();
+  int sum = 0;
+  for(int i=0;i<s;i++)
+    sum+=progress_val[i].value;
+  return sum;
+}
+int FindProgressMax()
+{
+  int s = progress_max.size();
+  int sum = 0;
+  for(int i=0;i<s;i++)
+    {
+      sum+=progress_max[i].value;
+    }
+  return sum;
+}
+void ProgressBar(int num, int val, int max)
+{
+  //std::cout << "PB: " << num << std::endl;
+  {
+  int s = progress_val.size();
+  for(int i=0;i<s;i++)
+    {
+      int num2 = progress_val[i].num;
+      if (num2==num) {
+	progress_val[i].value = val;
+      }
+    }
+  }
+
+  {
+  int s = progress_max.size();
+  for(int i=0;i<s;i++)
+    {
+      int num2 = progress_max[i].num;
+      if (num2==num) {
+	progress_max[i].value = max;
+      }
+    }
+  }
+
+  int val1 = FindProgressVal();
+  int max1 = FindProgressMax();
+  float v = float(val1)/float(max1);
+  v*=30.0;
+  int val2 = int(v);
+  float vv = 1.0;
+  vv*=30.0;
+  int max2 = int(vv);
   std::cout << "\r[";
-  for(int i=0;i<val;i++) {
+  for(int i=0;i<val2;i++) {
     std::cout << "#";
   }
-  for(int i=val;i<max-1;i++) {
+  for(int i=val2;i<max2-1;i++) {
     std::cout << "-";
   }
-  std::cout << "]";
+  std::cout << "] (" << val1 << "/" << max1 << ") (" << val << "/" << max << ")          ";
 }
 extern ThreadInfo *ti_global;
 extern int thread_counter;
@@ -3343,10 +3414,11 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
       vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
     }
   int progress = 0;
+  InstallProgress(0);
   while(1) {
     pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
     progress++;
-    ProgressBar(progress/num_threads,10);
+    ProgressBar(0,progress/num_threads,10);
 
     // now ti_global is available
     ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 0, ti_global->ct2_offsets.tri_count*3, ti_global->ct2_offsets.tri_count*3 + ti_global->ct2_counts.tri_count*3); 
@@ -3488,10 +3560,11 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
     }
   int progress = 0;
+  InstallProgress(1);
   while(1) {
     pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
     progress++;
-    ProgressBar(progress/num_threads,10);
+    ProgressBar(1,progress/num_threads,10);
 
     // now ti_global is available
     ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 0, ti_global->ct2_offsets.tri_count*3, ti_global->ct2_offsets.tri_count*3 + ti_global->ct2_counts.tri_count*3); 
@@ -3550,8 +3623,9 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     RenderVertexArray *arr2 = new RenderVertexArray(*s);
     //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
+    InstallProgress(2);
     for(int i=0;i<batch_count;i++) {
-      ProgressBar(i,batch_count);
+      ProgressBar(2,i,batch_count);
       int start = i*batch_faces;
       int end = (i+1)*batch_faces;
       if (start>total_faces) { start=total_faces; }
@@ -3602,8 +3676,9 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     RenderVertexArray *arr2 = new RenderVertexArray(*s);
     //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
+    InstallProgress(3);
     for(int i=0;i<batch_count;i++) {
-      ProgressBar(i,batch_count); 
+      ProgressBar(3,i,batch_count); 
       int start = i*batch_faces;
       int end = (i+1)*batch_faces;
       if (start>total_faces) { start=total_faces; }
@@ -9151,6 +9226,7 @@ public:
 class AccelStructure
 {
 public:
+  virtual ~AccelStructure() { }
   virtual void clear()=0;
   virtual AccelNode *find_point(Point p) const=0;
   virtual AccelNode *find_next(AccelNode *current, Point start, Point target, float &tmin) const=0;
@@ -9749,21 +9825,29 @@ private:
 class ShadowColor : public ForwardFaceCollection
 {
 public:
-  ShadowColor(FaceCollection *coll, int num, Vector light_dir) : ForwardFaceCollection(*coll), coll(coll),count(num), light_dir(light_dir) { }
+  ShadowColor(FaceCollection *coll, int num, Vector light_dir) : ForwardFaceCollection(*coll), coll(coll),count(num), light_dir(light_dir), grid(0), cache(0) { 
+    InstallProgress(4);
+}
+  void DoIt(int section)
+  {
+  }
+  virtual ~ShadowColor() { delete grid; delete cache; }
   void Prepare() {
     ForwardFaceCollection::Prepare();
 
     std::pair<Point,Point> bounds = find_bounds(coll);
     int numfaces = coll->NumFaces();
-    GridAccel grid(8,8,8,
+    delete grid;
+    grid = new GridAccel(8,8,8,
 		   bounds.first.x-10.0,bounds.second.x+10.0,
 		   bounds.first.y-10.0,bounds.second.y+10.0,
 		   bounds.first.z-10.0,bounds.second.z+10.0);
 
-    bind_accel(coll,&grid);
+    bind_accel(coll,grid);
     std::cout << "Generating lights..." << std::endl;
   
-    AreaCache cache;
+    delete cache;
+    cache = new AreaCache;
     int sj = numfaces;
     for(int w=0;w<sj;w++)
       {
@@ -9771,16 +9855,16 @@ public:
 	Point p2 = coll->FacePoint(w,1);
 	Point p3 = coll->FacePoint(w,2);
 	Point p4 = coll->FacePoint(w,3);
-	cache.push_area(w,AreaTools::QuadArea(p1,p2,p3,p4));
+	cache->push_area(w,AreaTools::QuadArea(p1,p2,p3,p4));
       }
-    cache.calc_sum(30000);
+    cache->calc_sum(30000);
     
     int num = count;
     Random r;
-    float p=7.0/float(num);
+    float p=15.0/float(num);
     for(int h=0;h<num;h++) {
       if (h%100==0)
-	ProgressBar(p*h,p*num);
+	ProgressBar(4,p*h,p*num);
       float xp = double(r.next())/r.maximum();
       float yp = double(r.next())/r.maximum();
       float zp = double(r.next())/r.maximum();
@@ -9794,7 +9878,7 @@ public:
       if (std::isnan(yp)) continue;
       if (std::isnan(zp)) continue;
       
-      int zpi = cache.choose(zp);
+      int zpi = cache->choose(zp);
       if (zpi<0) zpi = 0;
       if (zpi>=numfaces) zpi = numfaces-1;
       //std::cout << "zpi: " << zpi << std::endl;
@@ -9835,7 +9919,7 @@ public:
 
 	  //std::cout << pos << " " << pos_end << std::endl;
 	  float tmin = 0.0;
-	  std::vector<AccelNode*> ray_data = grid.find_ray(pos,pos_end, tmin);
+	  std::vector<AccelNode*> ray_data = grid->find_ray(pos,pos_end, tmin);
 	  int s = ray_data.size();
 	  //std::cout << "ray_data:  " << s << std::endl;
 	  bool exit = false;
@@ -9893,6 +9977,8 @@ private:
   FaceCollection *coll;
   int count;
   Vector light_dir;
+  GridAccel *grid;
+  AreaCache *cache;
 };
 
 GameApi::P GameApi::PolygonApi::light_transport(P p, int num, float light_dir_x, float light_dir_y, float light_dir_z)
