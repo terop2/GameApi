@@ -3243,8 +3243,8 @@ EXPORT void GameApi::PolygonApi::delete_vertex_array(GameApi::VA va)
   GameApi::P p = empty();
   update_vertex_array(va,p);
 }
-int progress_info_global_val = 0;
-int progress_info_global_max = 0;
+int progress_info_global_val = 1;
+int progress_info_global_max = 5;
 void ProgressBar(int val, int max)
 {
   progress_info_global_val = val;
