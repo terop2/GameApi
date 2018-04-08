@@ -9824,50 +9824,40 @@ private:
   std::vector<Area> pick;
 };
 
+ class ShadowColor;
+struct ShadowCB
+{
+  ShadowColor *m_this;
+  int current;
+};
+
+void shadow_color_callback(void *ptr);
 
 class ShadowColor : public ForwardFaceCollection
 {
 public:
   ShadowColor(FaceCollection *coll, int num, Vector light_dir) : ForwardFaceCollection(*coll), coll(coll),count(num), light_dir(light_dir), grid(0), cache(0) { 
-    InstallProgress(4,"lighting",150);
+    for(int i=0;i<split_count;i++)
+      InstallProgress(4+i,"lighting",15);
+      
 }
   void DoIt(int section)
   {
   }
   virtual ~ShadowColor() { delete grid; delete cache; }
-  void Prepare() {
-    ForwardFaceCollection::Prepare();
 
-    std::pair<Point,Point> bounds = find_bounds(coll);
+  void ASyncCallback(int q)
+  {
+      async_pending_count--;
+
+
     int numfaces = coll->NumFaces();
-    delete grid;
-    grid = new GridAccel(8,8,8,
-		   bounds.first.x-10.0,bounds.second.x+10.0,
-		   bounds.first.y-10.0,bounds.second.y+10.0,
-		   bounds.first.z-10.0,bounds.second.z+10.0);
-
-    bind_accel(coll,grid);
-    //std::cout << "Generating lights..." << std::endl;
-  
-    delete cache;
-    cache = new AreaCache;
-    int sj = numfaces;
-    for(int w=0;w<sj;w++)
-      {
-	Point p1 = coll->FacePoint(w,0);
-	Point p2 = coll->FacePoint(w,1);
-	Point p3 = coll->FacePoint(w,2);
-	Point p4 = coll->FacePoint(w,3);
-	cache->push_area(w,AreaTools::QuadArea(p1,p2,p3,p4));
-      }
-    cache->calc_sum(30000);
-    
     int num = count;
     Random r;
-    float p=150.0/float(num);
-    for(int h=0;h<num;h++) {
+    float p=15.0/float(num/split_count);
+    for(int h=0;h<num/split_count;h++) {
       if (h%100==0)
-	ProgressBar(4,p*h,p*num,"lighting");
+	ProgressBar(4+q,p*h,p*num/split_count,"lighting");
       float xp = double(r.next())/r.maximum();
       float yp = double(r.next())/r.maximum();
       float zp = double(r.next())/r.maximum();
@@ -9975,14 +9965,69 @@ public:
 	    if (exit==true) break;
 	  }
     }
+
+  }
+  void Prepare() {
+    ForwardFaceCollection::Prepare();
+
+    std::pair<Point,Point> bounds = find_bounds(coll);
+    int numfaces = coll->NumFaces();
+    delete grid;
+    grid = new GridAccel(8,8,8,
+		   bounds.first.x-10.0,bounds.second.x+10.0,
+		   bounds.first.y-10.0,bounds.second.y+10.0,
+		   bounds.first.z-10.0,bounds.second.z+10.0);
+
+    bind_accel(coll,grid);
+    //std::cout << "Generating lights..." << std::endl;
+  
+    delete cache;
+    cache = new AreaCache;
+    int sj = numfaces;
+    for(int w=0;w<sj;w++)
+      {
+	Point p1 = coll->FacePoint(w,0);
+	Point p2 = coll->FacePoint(w,1);
+	Point p3 = coll->FacePoint(w,2);
+	Point p4 = coll->FacePoint(w,3);
+	cache->push_area(w,AreaTools::QuadArea(p1,p2,p3,p4));
+      }
+    cache->calc_sum(30000);
+
+#ifdef EMSCRIPTEN
+    
+    for(int q=0;q<split_count;q++) {
+      ShadowCB *cb = new ShadowCB;
+      cb->m_this = this;
+      cb->current = q;
+      async_pending_count++;
+      emscripten_async_call(&shadow_color_callback, cb, -10);
+    }
+#else
+    for(int q=0;q<split_count;q++)
+      {
+      ShadowCB *cb = new ShadowCB;
+      cb->m_this = this;
+      cb->current = q;
+      shadow_color_callback(cb);
+      }
+#endif
   }
 private:
+  int split_count=100;
   FaceCollection *coll;
   int count;
   Vector light_dir;
   GridAccel *grid;
   AreaCache *cache;
 };
+
+ void shadow_color_callback(void *ptr)
+ {
+   ShadowCB *cb = (ShadowCB*)ptr;
+   int q = cb->current;
+   cb->m_this->ASyncCallback(q);
+ }
 
 GameApi::P GameApi::PolygonApi::light_transport(P p, int num, float light_dir_x, float light_dir_y, float light_dir_z)
 {
