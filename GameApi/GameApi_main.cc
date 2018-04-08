@@ -1260,32 +1260,30 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
 
   ML I26;
   {
-BB I1=ev.bool_bitmap_api.empty(100,20);
-BB I2=ev.bool_bitmap_api.rectangle(I1,0,0,100,2);
-BB I3=ev.bool_bitmap_api.rectangle(I2,0,18,100,2);
-BB I4=ev.bool_bitmap_api.rectangle(I3,0,0,2,20);
-BB I5=ev.bool_bitmap_api.rectangle(I4,98,0,2,20);
-BM I6=ev.bool_bitmap_api.to_bitmap(I5,255,255,255,255,0,0,0,0);
-ML I7=ev.sprite_api.vertex_array_render(ev,I6);
-MN I8=ev.move_api.empty();
-MN I9=ev.move_api.scale2(I8,5,5,1);
-MN I10=ev.move_api.trans2(I9,350,700,0);
-ML I11=ev.move_api.move_ml(ev,I7,I10,1,10.0);
-ML I12=ev.sprite_api.turn_to_2d(ev,I11,0.0,0.0,800.0,600.0);
-BB I13=ev.bool_bitmap_api.empty(92,20);
-BB I14=ev.bool_bitmap_api.rectangle(I13,0,4,92,12);
-BM I15=ev.bool_bitmap_api.to_bitmap(I14,255,255,255,255,0,0,0,0);
-ML I16=ev.sprite_api.vertex_array_render(ev,I15);
-MN I17=ev.move_api.empty();
-MN I18=ev.move_api.trans2(I17,4,0,0);
-MN I19=ev.move_api.scale_progress(I18,true,false,false);
-ML I20=ev.move_api.move_ml(ev,I16,I19,1,10.0);
-MN I21=ev.move_api.empty();
-MN I22=ev.move_api.scale2(I21,5,5,1);
-MN I23=ev.move_api.trans2(I22,350,700,0);
-ML I24=ev.move_api.move_ml(ev,I20,I23,1,10.0);
-ML I25=ev.sprite_api.turn_to_2d(ev,I24,0.0,0.0,800.0,600.0);
-I26=ev.mainloop_api.array_ml(std::vector<ML>{I12,I25});
+BB I1=ev.bool_bitmap_api.empty(92,20);
+BB I2=ev.bool_bitmap_api.rectangle(I1,0,4,92,12);
+BM I3=ev.bool_bitmap_api.to_bitmap(I2,255,255,255,255,0,0,0,0);
+ML I4=ev.sprite_api.vertex_array_render(ev,I3);
+MN I5=ev.move_api.empty();
+MN I6=ev.move_api.trans2(I5,4,0,0);
+MN I7=ev.move_api.scale_progress(I6,true,false,false);
+ML I8=ev.move_api.move_ml(ev,I4,I7,1,10.0);
+MN I9=ev.move_api.empty();
+MN I10=ev.move_api.scale2(I9,5,5,1);
+MN I11=ev.move_api.trans2(I10,-230,-300,0);
+ML I12=ev.move_api.move_ml(ev,I8,I11,1,10.0);
+BB I13=ev.bool_bitmap_api.empty(100,20);
+BB I14=ev.bool_bitmap_api.rectangle(I13,0,0,100,2);
+BB I15=ev.bool_bitmap_api.rectangle(I14,0,18,100,2);
+BB I16=ev.bool_bitmap_api.rectangle(I15,0,0,2,20);
+BB I17=ev.bool_bitmap_api.rectangle(I16,98,0,2,20);
+BM I18=ev.bool_bitmap_api.to_bitmap(I17,255,255,255,255,0,0,0,0);
+ML I19=ev.sprite_api.vertex_array_render(ev,I18);
+MN I20=ev.move_api.empty();
+MN I21=ev.move_api.scale2(I20,5,5,1);
+MN I22=ev.move_api.trans2(I21,-230,-300,0);
+ML I23=ev.move_api.move_ml(ev,I19,I22,1,10);
+I26=ev.mainloop_api.array_ml(std::vector<ML>{I12,I23});
   }
   ML I17a = ev.mainloop_api.array_ml(std::vector<ML>{I17,I26});
 
