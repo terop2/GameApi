@@ -1259,13 +1259,13 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
   ML I17=ev.move_api.move_ml(ev,I13,I16a);
 
   ML I26;
-  {
-BB I1=ev.bool_bitmap_api.empty(92,20);
-BB I2=ev.bool_bitmap_api.rectangle(I1,0,4,92,12);
+  { // PROGRESS BAR
+BB I1=ev.bool_bitmap_api.empty(92,12);
+BB I2=ev.bool_bitmap_api.rectangle(I1,0,0,92,12);
 BM I3=ev.bool_bitmap_api.to_bitmap(I2,255,255,255,255,0,0,0,0);
 ML I4=ev.sprite_api.vertex_array_render(ev,I3);
 MN I5=ev.move_api.empty();
-MN I6=ev.move_api.trans2(I5,4,0,0);
+MN I6=ev.move_api.trans2(I5,4,4,0);
 MN I7=ev.move_api.scale_progress(I6,true,false,false);
 ML I8=ev.move_api.move_ml(ev,I4,I7,1,10.0);
 MN I9=ev.move_api.empty();
