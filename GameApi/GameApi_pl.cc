@@ -1,5 +1,8 @@
  
 #include "GameApi_h.hh"
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
  
 
 EXPORT GameApi::PolygonApi::PolygonApi(GameApi::Env &e) : e(e)
