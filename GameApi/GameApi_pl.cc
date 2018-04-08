@@ -3253,7 +3253,7 @@ void ProgressBar(int num, int val, int max, std::string label);
 
 void InstallProgress(int num, std::string label)
 {
-  std::cout << "InstallProgress: '" << label << "'" << std::endl
+  std::cout << "InstallProgress: '" << label << "'" << std::endl;
   //std::cout << "IB: " << num << std::endl;
   ProgressI p; p.num = num;
   int s = progress_max.size();
@@ -3290,7 +3290,7 @@ int FindProgressMax()
 }
 void ProgressBar(int num, int val, int max, std::string label)
 {
-  std::cout << "ProgressBar: '" << label << "'" << std::endl
+  std::cout << "ProgressBar: '" << label << "'" << std::endl;
 
   //std::cout << "PB: " << num << std::endl;
   {
