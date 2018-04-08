@@ -10168,6 +10168,11 @@ void onerror_async_cb(void *arg)
 
 }
 std::string striphomepage(std::string);
+std::string stripprefix(std::string s)
+{
+  int len = strlen("load_url.php?url=");
+  return s.substr(len,s.size()-len-1);
+}
 void onload_async_cb(void *arg, void *data, int datasize)
 {
 
@@ -10183,9 +10188,10 @@ void onload_async_cb(void *arg, void *data, int datasize)
   std::string url_only(striphomepage(url_str));
 
   { // progressbar
-  int s = url_only.size();
+    std::string url_only2 = stripprefix(url_only);
+  int s = url_only2.size();
   int sum=0;
-  for(int i=0;i<s;i++) sum+=int(url_only[i]);
+  for(int i=0;i<s;i++) sum+=int(url_only2[i]);
   sum = sum % 1000;
   ProgressBar(sum,7,15);
   }
@@ -10203,9 +10209,10 @@ void onload_async_cb(void *arg, void *data, int datasize)
   }
 
   { // progressbar
-  int s = url_only.size();
+    std::string url_only2 = stripprefix(url_only);
+  int s = url_only2.size();
   int sum=0;
-  for(int i=0;i<s;i++) sum+=int(url_only[i]);
+  for(int i=0;i<s;i++) sum+=int(url_only2[i]);
   sum = sum % 1000;
   ProgressBar(sum,15,15);
   }
