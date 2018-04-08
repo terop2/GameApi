@@ -10264,6 +10264,16 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 	//std::cout << "Load cb!" << url << std::endl;
 	(*cb->fptr)(cb->data);
       }
+
+      { // progressbar
+	std::string url_plain = stripprefix(url);
+	int s = url.size();
+	int sum=0;
+	for(int i=0;i<s;i++) sum+=int(url[i]);
+	sum = sum % 1000;
+	ProgressBar(sum,15,15);
+      }
+
       return; 
     }
     char *buf2 = new char[url3.size()+1];
