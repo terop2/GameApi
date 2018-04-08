@@ -9736,12 +9736,13 @@ public:
 
     std::pair<Point,Point> bounds = find_bounds(coll);
     int numfaces = coll->NumFaces();
-    GridAccel grid(15,15,15,
+    GridAccel grid(8,8,8,
 		   bounds.first.x-10.0,bounds.second.x+10.0,
 		   bounds.first.y-10.0,bounds.second.y+10.0,
 		   bounds.first.z-10.0,bounds.second.z+10.0);
 
     bind_accel(coll,&grid);
+    std::cout << "Generating lights..." << std::endl;
   
     AreaCache cache;
     int sj = numfaces;
@@ -9757,7 +9758,10 @@ public:
     
     int num = count;
     Random r;
+    float p=7.0/float(num);
     for(int h=0;h<num;h++) {
+      if (h%100==0)
+	ProgressBar(p*h,p*num);
       float xp = double(r.next())/r.maximum();
       float yp = double(r.next())/r.maximum();
       float zp = double(r.next())/r.maximum();
