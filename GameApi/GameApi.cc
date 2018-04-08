@@ -355,19 +355,23 @@ EXPORT void GameApi::Env::free_temp_memory()
 
 }
 
+void InstallProgress(int num);
 EXPORT void GameApi::Env::async_load_url(std::string url, std::string homepage)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
   env->async_loader->load_urls(url, homepage);
+
 }
 EXPORT void GameApi::Env::async_load_callback(std::string url, void (*fptr)(void*), void *data)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
   env->async_loader->set_callback(url, fptr, data);
 }
+void ProgressBar(int num, int val, int max);
 EXPORT std::vector<unsigned char> *GameApi::Env::get_loaded_async_url(std::string url)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
+
   return env->async_loader->get_loaded_data(url);
 }
 
@@ -2996,8 +3000,8 @@ EXPORT GameApi::MN GameApi::MovementNode::translate(MN next,
 					   dx,dy,dz));
 }
 extern int async_pending_count;
-extern int progress_info_global_val;
-extern int progress_info_global_max;
+int FindProgressVal();
+int FindProgressMax();
 class ScaleProgress : public Movement
 {
 public:
@@ -3016,14 +3020,14 @@ public:
     return Matrix::Scale(x,y,z)*next->get_whole_matrix(time,delta_time);
   }
   float val() const {
-    if (async_pending_count>max_async_pending) max_async_pending=async_pending_count;
-    float val1 = 1.0-(async_pending_count/max_async_pending);
-    if (val1<0.1) val1=0.1;
-    if (val1>1.0) val1=1.0;
-    float val2 = float(progress_info_global_val)/float(progress_info_global_max);
+    //if (async_pending_count>max_async_pending) max_async_pending=async_pending_count;
+    //float val1 = 1.0-(async_pending_count/max_async_pending);
+    //if (val1<0.1) val1=0.1;
+    //if (val1>1.0) val1=1.0;
+    float val2 = float(FindProgressVal())/float(FindProgressMax());
     if (val2<0.1) val2=0.1;
     if (val2>1.0) val2=1.0;
-    return (val1+val2)/2.0;
+    return val2;
   }
 private:
   Movement *next;
@@ -10166,6 +10170,7 @@ void onerror_async_cb(void *arg)
 std::string striphomepage(std::string);
 void onload_async_cb(void *arg, void *data, int datasize)
 {
+
   if (datasize==0) {
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
   }
@@ -10176,11 +10181,19 @@ void onload_async_cb(void *arg, void *data, int datasize)
   char *url = (char*)arg;
   std::string url_str(url);
   std::string url_only(striphomepage(url_str));
+
+  { // progressbar
+  int s = url_only.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url_only[i]);
+  sum = sum % 1000;
+  ProgressBar(sum,7,15);
+  }
   
-  std::cout << "url loading complete! " << url_str << std::endl;
+  //std::cout << "url loading complete! " << url_str << std::endl;
   load_url_buffers_async[url_only] = new std::vector<unsigned char>(buffer);
   async_pending_count--;
-  std::cout << "ASync pending dec (onload_async_cb) -->" << async_pending_count<< std::endl;
+  //std::cout << "ASync pending dec (onload_async_cb) -->" << async_pending_count<< std::endl;
   
   //std::cout << "Async cb!" << url_only << std::endl;
   ASyncCallback *cb = rem_async_cb(url_only); //load_url_callbacks[url_only];
@@ -10188,33 +10201,60 @@ void onload_async_cb(void *arg, void *data, int datasize)
     //std::cout << "Load cb!" << url_only << std::endl;
     (*cb->fptr)(cb->data);
   }
+
+  { // progressbar
+  int s = url_only.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url_only[i]);
+  sum = sum % 1000;
+  ProgressBar(sum,15,15);
+  }
+
 }
 
 std::vector<unsigned char> load_from_url(std::string url);
 
 void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
 {
+  // progress bar
+  int s = url.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url[i]);
+  sum = sum % 1000;
+  InstallProgress(sum);
+
+
   url = "load_url.php?url=" + url;
   ASyncCallback* cb = new ASyncCallback;
   cb->fptr = fptr;
   cb->data = data;
   //load_url_callbacks[url] = cb;
   add_async_cb(url,cb);
-  std::cout << "async set callback" << url << std::endl;
+
+
+
+  //std::cout << "async set callback" << url << std::endl;
 }
 void ASyncLoader::load_urls(std::string url, std::string homepage)
   {
+  // progress bar
+  int s = url.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url[i]);
+  sum = sum % 1000;
+  InstallProgress(sum);
+
 #ifdef EMSCRIPTEN
     url = "load_url.php?url=" + url;
     std::string url3 = url + "&homepage=" + homepage;
 
-    std::cout << "url loading started! " << url << std::endl;
+    //std::cout << "url loading started! " << url << std::endl;
 
     // if we have already loaded the same url, don't load again
     if (load_url_buffers_async[url]) { 
       ASyncCallback *cb = rem_async_cb(url); //load_url_callbacks[url];
       if (cb) {
-	std::cout << "Load cb!" << url << std::endl;
+	//std::cout << "Load cb!" << url << std::endl;
 	(*cb->fptr)(cb->data);
       }
       return; 
@@ -10224,10 +10264,19 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     buf2[url3.size()]=0;
     
     async_pending_count++;
-    std::cout << "ASync pending inc (load_urls) -->" << async_pending_count << std::endl;
+    //    std::cout << "ASync pending inc (load_urls) -->" << async_pending_count << std::endl;
 
     emscripten_async_wget_data(buf2, (void*)buf2 , &onload_async_cb, &onerror_async_cb);
 #else
+  { // progressbar
+  int s = url.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url[i]);
+  sum = sum % 1000;
+  ProgressBar(sum,7,15);
+  }
+
+
     std::string url2 = "load_url.php?url=" + url ;
     if (load_url_buffers_async[url2]) { return; }
     std::vector<unsigned char> buf = load_from_url(url);
@@ -10235,12 +10284,21 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
     }
     load_url_buffers_async[url2] = new std::vector<unsigned char>(buf);
-    std::cout << "Async cb!" << url2 << std::endl;
+    //std::cout << "Async cb!" << url2 << std::endl;
     ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
     if (cb) {
-      std::cout << "Load cb!" << url2 << std::endl;
+      //std::cout << "Load cb!" << url2 << std::endl;
       (*cb->fptr)(cb->data);
     }
+
+  { // progressbar
+  int s = url.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url[i]);
+  sum = sum % 1000;
+  ProgressBar(sum,15,15);
+  }
+
 
 #endif
   }

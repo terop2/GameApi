@@ -1337,7 +1337,7 @@ BufferRef LoadImageFromString(std::vector<unsigned char> buffer, bool &success)
   int x=0,y=0;
   int comp=0;
   stbi_uc * ptr = stbi_load_from_memory(&mem[0], mem.size(), &x, &y, &comp, 4);
-  std::cout << "ImageSize: " << x << " " << y << " " << comp << std::endl;
+  //std::cout << "ImageSize: " << x << " " << y << " " << comp << std::endl;
   BufferRef ref;
   ref.buffer = (unsigned int *)ptr;
   ref.width = x;
