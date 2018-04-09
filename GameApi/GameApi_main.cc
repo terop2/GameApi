@@ -1240,7 +1240,7 @@ bool GameApi::MainLoopApi::logo_iter()
 void GameApi::MainLoopApi::display_logo(EveryApi &ev)
 {
 #ifdef EMSCRIPTEN
-  BM I7 = ev.bitmap_api.loadbitmap("logo.ppm");
+  BM I7 = ev.bitmap_api.loadbitmap("web_page/logo.ppm");
   BM I7a = ev.bitmap_api.flip_y(I7);
   //P I8=ev.polygon_api.color_map(I7,500,300,0);
   //P I9=ev.polygon_api.rotatex(I8,3.14159);
