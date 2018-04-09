@@ -2008,7 +2008,7 @@ private:
   Vector2d delta_vec;
 };
 
-EXPORT GameApi::W GameApi::GuiApi::timed_visibility(W orig, W timed_widget, W insert, float start_duration, float duration, float dx)
+GameApi::W GameApi::GuiApi::timed_visibility(W orig, W timed_widget, W insert, float start_duration, float duration, float dx)
 {
   GuiWidget *o = find_widget(e,orig);
   GuiWidget *t = find_widget(e,timed_widget);
