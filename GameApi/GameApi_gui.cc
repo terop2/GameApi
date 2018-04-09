@@ -4637,7 +4637,7 @@ void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepa
 	}
     }
 }			 
-void InstallProgress(int num, std::string label);
+void InstallProgress(int num, std::string label, int max=15);
 
 void LoadUrls(const CodeGenLine &line, std::string homepage)
 {
