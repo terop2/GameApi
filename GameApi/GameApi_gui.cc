@@ -355,8 +355,13 @@ public:
 #endif
     if (ch==13) { ch='\n'; }
     if (shift) { 
+#ifdef EMSCRIPTEN
+      const char *chars1 = "";
+      const char *chars2 = "";
+#else
       const char *chars1 = "§1234567890+',.-abcdefghijklmnopqrstuvwxyz";
       const char *chars2 = "½!\"#¤%&/()=?*;:_ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+#endif
       int s = strlen(chars1);
       for(int i=0;i<s;i++)
 	{
@@ -472,8 +477,13 @@ public:
 #endif
     if (ch==13) { ch='\n'; }
     if (shift) { 
+#ifdef EMSCRIPTEN
+      const char *chars1 = "";
+      const char *chars2 = "";
+#else
       const char *chars1 = "§1234567890+',.-abcdefghijklmnopqrstuvwxyz";
       const char *chars2 = "½!\"#¤%&/()=?*;:_ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+#endif
       int s = strlen(chars1);
       for(int i=0;i<s;i++)
 	{
