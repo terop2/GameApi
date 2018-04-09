@@ -2403,7 +2403,7 @@ EXPORT GameApi::W GameApi::GuiApi::text(std::string label, FtA atlas, BM atlas_b
 #ifndef EMSCRIPTEN
   return add_widget(e, new TextGuiWidgetAtlas(ev, label, atlas, atlas_bm, sh, x_gap));
 #else
-  W w;
+  GameApi::W w;
   w.id = 0;
   return w;
 #endif
