@@ -9997,13 +9997,12 @@ public:
     cache->calc_sum(30000);
 
 #ifdef EMSCRIPTEN
-    
     for(int q=0;q<split_count;q++) {
       ShadowCB *cb = new ShadowCB;
       cb->m_this = this;
       cb->current = q;
       async_pending_count++;
-      emscripten_async_call(&shadow_color_callback, cb, -1000);
+      emscripten_async_call(&shadow_color_callback, cb, -100*q);
     }
 #else
     for(int q=0;q<split_count;q++)
