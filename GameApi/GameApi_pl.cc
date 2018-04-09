@@ -9840,19 +9840,15 @@ class ShadowColor : public ForwardFaceCollection
 {
 public:
   ShadowColor(FaceCollection *coll, int num, Vector light_dir) : ForwardFaceCollection(*coll), coll(coll),count(num), light_dir(light_dir), grid(0), cache(0) { 
-    for(int i=0;i<split_count;i++)
+    for(int i=0;i<split_count;i++) { 
       InstallProgress(4+i,"lighting",15);
+    }
       
 }
-  void DoIt(int section)
-  {
-  }
   virtual ~ShadowColor() { delete grid; delete cache; }
 
   void ASyncCallback(int q)
   {
-      async_pending_count--;
-
 
     int numfaces = coll->NumFaces();
     int num = count;
@@ -9968,6 +9964,9 @@ public:
 	    if (exit==true) break;
 	  }
     }
+#ifdef EMSCRIPTEN
+      async_pending_count--;
+#endif
 
   }
   void Prepare() {
@@ -10004,7 +10003,7 @@ public:
       cb->m_this = this;
       cb->current = q;
       async_pending_count++;
-      emscripten_async_call(&shadow_color_callback, cb, -10);
+      emscripten_async_call(&shadow_color_callback, cb, -1000);
     }
 #else
     for(int q=0;q<split_count;q++)
