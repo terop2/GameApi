@@ -505,6 +505,9 @@ EXPORT GameApi::ML GameApi::BitmapApi::savebitmap_ml(EveryApi &ev, BM bm, std::s
 
 std::vector<unsigned char> load_from_url(std::string url)
 { // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
+
+
+
 #ifdef WINDOWS
     std::string cmd = "..\\curl\\curl.exe -s -N --url " + url;
 #else
@@ -537,7 +540,7 @@ void stackTrace()
   emscripten_run_script("stackTrace()");
 #endif
 }
-
+void ProgressBar(int num, int val, int max, std::string label);
 class LoadBitmapFromUrl : public Bitmap<Color>
 {
 public:
@@ -592,6 +595,16 @@ public:
     }
     cbm = new BitmapFromBuffer(img);    
     load_finished = true;
+
+
+  { // progressbar
+  int s = url.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url[i]);
+  sum = sum % 1000;
+  ProgressBar(sum,15,15,url);
+  }
+
   }
   virtual void Prepare() {
 #ifndef EMSCRIPTEN
@@ -614,6 +627,10 @@ public:
 
     std::vector<unsigned char> *vec = load_url_buffers[url2];
     LoadFinished(vec);
+
+
+
+
 #endif
     
   }

@@ -4576,6 +4576,8 @@ void onerror_cb(void *arg)
     async_pending_count--;
     std::cout << "async_pending_count dec (onerror_cb) -->" << async_pending_count << std::endl;
 }
+std::string stripprefix(std::string s);
+
 void onload_cb(void *arg, void *data, int datasize)
 {
     std::vector<unsigned char> buffer;
@@ -4590,6 +4592,15 @@ void onload_cb(void *arg, void *data, int datasize)
     load_url_buffers[url_only] = new std::vector<unsigned char>(buffer);
     async_pending_count--;
     std::cout << "async_pending_count dec (onlosd_cb) -->" << async_pending_count << std::endl;
+  { // progressbar
+    std::string url_plain(stripprefix(url_only));
+  int s = url_plain.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url_plain[i]);
+  sum = sum % 1000;
+  ProgressBar(sum,15,15,url_plain);
+  }
+
 }
 struct ASyncData
 {
@@ -4636,6 +4647,14 @@ void LoadUrls(const CodeGenLine &line, std::string homepage)
   std::string url = line.params[0];
   std::cout << "loading url: " << url << std::endl;
 
+  // progress bar
+  int s = url.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url[i]);
+  sum = sum % 1000;
+  InstallProgress(sum,url);
+
+
   url = "load_url.php?url=" + url + "&homepage=" + homepage;
 
     char *buf2 = new char[url.size()+1];
@@ -4644,6 +4663,8 @@ void LoadUrls(const CodeGenLine &line, std::string homepage)
     
     async_pending_count++;
     std::cout << "async_pending_count inc (LoadUrls) -->" << async_pending_count << std::endl;
+
+
 
     emscripten_async_wget_data(buf2, (void*)buf2 , &onload_cb, &onerror_cb);
 #endif
