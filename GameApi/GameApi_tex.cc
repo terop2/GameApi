@@ -192,7 +192,7 @@ EXPORT void GameApi::TextureApi::use(TXID tx, int i)
 }
 EXPORT void GameApi::TextureApi::use_many(std::vector<TXID> tx, int i)
 {
-  glEnable(GL_TEXTURE_2D);
+  //glEnable(GL_TEXTURE_2D);
   int s = tx.size();
   for(int i=0;i<s;i++)
     {
@@ -210,7 +210,7 @@ EXPORT void GameApi::TextureApi::use_many(std::vector<TXID> tx, int i)
 }
 EXPORT void GameApi::TextureApi::unuse(TXID tx)
 {
-  glDisable(GL_TEXTURE_2D);
+  //glDisable(GL_TEXTURE_2D);
 }
 
 EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
