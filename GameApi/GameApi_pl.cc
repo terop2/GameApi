@@ -10015,7 +10015,7 @@ public:
 #endif
   }
 private:
-  int split_count=100;
+  int split_count=10;
   FaceCollection *coll;
   int count;
   Vector light_dir;
