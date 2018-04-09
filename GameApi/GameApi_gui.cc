@@ -4577,7 +4577,7 @@ void onerror_cb(void *arg)
     std::cout << "async_pending_count dec (onerror_cb) -->" << async_pending_count << std::endl;
 }
 std::string stripprefix(std::string s);
-
+void ProgressBar(int num, int val, int max, std::string label);
 void onload_cb(void *arg, void *data, int datasize)
 {
     std::vector<unsigned char> buffer;
@@ -4637,6 +4637,7 @@ void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepa
 	}
     }
 }			 
+void InstallProgress(int num, std::string label);
 
 void LoadUrls(const CodeGenLine &line, std::string homepage)
 {
