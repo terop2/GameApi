@@ -1732,7 +1732,7 @@ public:
     size = sz;
     Vector2d d = { 0.0, 0.0 };
     delta_vec = d;
-}
+  }
   void set_pos(Point2d p2)
   {
     //Point2d p = pos;
@@ -1745,7 +1745,6 @@ public:
   GameApi::PT line_func(int linenum, bool id)
   {
     if (id==false) {
-      {
 	Point2d pos = t1->get_pos();
 	pos.x += delta_x;
 	pos.y += delta_y;
@@ -1759,7 +1758,7 @@ public:
 	return ev.point_api.point(pos.x, pos.y, 0.0);
       }
     return ev.point_api.point(0.0,0.0,0.0);
-  }
+    }
   GameApi::P line_to_poly(int i, float sx, float sy, float sz, float ex, float ey, float ez, unsigned int scolor, unsigned int ecolor)
   {
     //std::cout << sx << " " << sy << " " << sz << ":" << ex << " " << ey << " " << ez << std::endl;
@@ -2008,7 +2007,7 @@ private:
   Vector2d delta_vec;
 };
 
-GameApi::W GameApi::GuiApi::timed_visibility(W orig, W timed_widget, W insert, float start_duration, float duration, float dx)
+EXPORT GameApi::W GameApi::GuiApi::timed_visibility(W orig, W timed_widget, W insert, float start_duration, float duration, float dx)
 {
   GuiWidget *o = find_widget(e,orig);
   GuiWidget *t = find_widget(e,timed_widget);
