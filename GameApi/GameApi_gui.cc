@@ -2458,7 +2458,11 @@ EXPORT GameApi::W GameApi::GuiApi::float_editor(float &target, FtA atlas, BM atl
 }
 EXPORT GameApi::W GameApi::GuiApi::url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap)
 {
+#ifdef EMSCRIPTEN
+  std::string allowed_chars="";
+#else
   std::string allowed_chars = "0123456789.-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#§%&/()=?+\\*^.,-<>|ßΩ;:_";
+#endif
   W w = add_widget(e, new EditorGuiWidgetAtlas<std::string>(ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap));
   W w2 = highlight(w);
   return w2;
@@ -2490,7 +2494,11 @@ EXPORT GameApi::W GameApi::GuiApi::color_editor(std::string &col, FtA atlas, BM 
 }
 EXPORT GameApi::W GameApi::GuiApi::copy_paste_dialog(SH sh, W &close_button,FI font, FtA atlas, BM atlas_bm, std::string &edit)
 {
+#ifdef EMSCRIPTEN
+  std::string allowed_chars= "";
+#else
   std::string allowed_chars= "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#§%&/()=?\\|<>,.-;:_^~*'Âˆ‰≈÷ƒ+";
+#endif
   W w = multiline_string_editor( allowed_chars, edit, font, 5, 30);
 
   W bm_2 = margin(w, 10,10,10,10);
