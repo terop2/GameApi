@@ -25,9 +25,11 @@
 #include <vector>
 #include <map>
 #include <cmath>
+#undef M_PI
 #include <iostream>
 #include "Pieces.hh"
 #include <SDL.h>
+#undef M_PI
 #include "Buffer.hh"
 #include "Intersect.hh"
 #include "Shader.hh"
