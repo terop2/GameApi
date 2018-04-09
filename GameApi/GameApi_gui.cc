@@ -1744,24 +1744,20 @@ public:
   }
   GameApi::PT line_func(int linenum, bool id)
   {
-    switch(id) {
-    case false: 
+    if (id==false) {
       {
 	Point2d pos = t1->get_pos();
 	pos.x += delta_x;
 	pos.y += delta_y;
 	pos+=delta_vec;
 	return ev.point_api.point(pos.x, pos.y, 0.0);
-      }
-    case true:
-      {
+      } else {
 	Point2d pos = t2->get_pos();
 	pos.x += delta2_x;
 	pos.y += delta2_y;
 	pos+=delta_vec;
 	return ev.point_api.point(pos.x, pos.y, 0.0);
       }
-    };
     return ev.point_api.point(0.0,0.0,0.0);
   }
   GameApi::P line_to_poly(int i, float sx, float sy, float sz, float ex, float ey, float ez, unsigned int scolor, unsigned int ecolor)
@@ -2406,7 +2402,12 @@ EXPORT GameApi::W GameApi::GuiApi::text(std::string label, FtA atlas, BM atlas_b
 {
 #ifndef EMSCRIPTEN
   return add_widget(e, new TextGuiWidgetAtlas(ev, label, atlas, atlas_bm, sh, x_gap));
+#else
+  W w;
+  w.id = 0;
+  return w;
 #endif
+  
 }
 
 EXPORT GameApi::W GameApi::GuiApi::icon(BM bm)
