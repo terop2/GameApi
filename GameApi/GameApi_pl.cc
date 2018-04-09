@@ -9996,7 +9996,7 @@ public:
       }
     cache->calc_sum(30000);
 
-#ifdef EMSCRIPTEN
+#if 0
     for(int q=0;q<split_count;q++) {
       ShadowCB *cb = new ShadowCB;
       cb->m_this = this;
