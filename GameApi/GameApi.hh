@@ -373,6 +373,8 @@ public:
   ML load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   BM load_BM_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   ML prepare_pts(ML ml, PTS pts);
+  ML depthfunc(ML ml, int val); 
+  ML blendfunc(ML ml, int val, int val2);
   
   DS load_ds_from_mem(std::vector<unsigned char> vec);
   DS load_ds_from_disk(std::string filename);
@@ -2088,6 +2090,7 @@ public:
   IMPORT P replace_texture(P p, BM bm, int num);
   IMPORT P texture_storage(P p, int texture_sx, int texture_sy);
   IMPORT P light_transport(P p, int num, float light_dir_x, float light_dir_y, float light_dir_z);
+  IMPORT BM texture_from_p(P p, int num);
   
   IMPORT P smooth_normals2(P p);
   

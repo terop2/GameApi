@@ -9170,9 +9170,7 @@ public:
   virtual void Destroy()
   {
     // this is needed for win32 build in editor
-#ifndef EMSCRIPTEN
       glDisable(GL_DEPTH_TEST);
-#endif
   }
   virtual Splitter* NextState(int code)
   {

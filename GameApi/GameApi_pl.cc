@@ -9174,7 +9174,7 @@ public:
     coll->Prepare();
 
     int s = coll->NumFaces();
-    int count = 0;
+    //int count = 0;
     for(int i=0;i<s;i++) {
       int s2 = coll->NumPoints(i);
       for(int j=0;j<s2;j++) {
@@ -9182,11 +9182,11 @@ public:
 	Point p1 = coll->FacePoint(i,(j+0)%s2);
 	Point p2 = coll->FacePoint(i,(j+1)%s2);
 	Point p3 = coll->FacePoint(i,(j+2)%s2);
-	Point p4 = coll->FacePoint(i,(j+3)%s2);
-	float area = Vector::DotProduct(coll->PointNormal(i,j),Vector::CrossProduct(p1,p2) + Vector::CrossProduct(p2,p3) + Vector::CrossProduct(p3,p4))/2.0;
+	//Point p4 = coll->FacePoint(i,(j+3)%s2);
+	//float area = Vector::DotProduct(coll->PointNormal(i,j),Vector::CrossProduct(p1,p2) + Vector::CrossProduct(p2,p3) + Vector::CrossProduct(p3,p4))/2.0;
 	float a1 = Vector::Angle(p2-p1,p3-p1);
-	float a2 = Vector::Angle(p3-p2,p1-p2);
-	float a3 = Vector::Angle(p1-p3,p2-p3);
+	//float a2 = Vector::Angle(p3-p2,p1-p2);
+	//float a3 = Vector::Angle(p1-p3,p2-p3);
 	Data &v = mymap[key(p)];
 	Vector n = coll->PointNormal(i,j);
 	v.v+=n*a1;
@@ -9788,7 +9788,7 @@ public:
     sum/=float(areas.size());
     p = float(1.0)/float(sum);
     int ss = areas.size();
-    float pos = 0.0;
+    //float pos = 0.0;
     for(int i=0;i<ss;i++)
       {
 	Area a = areas[i];
@@ -9815,7 +9815,7 @@ public:
 	//std::cout << "Choose " << a.face << std::endl;
 	return a.face;
       }
-    std::cout << "Choose none" << std::endl;
+    //std::cout << "Choose none" << std::endl;
     return 0;
   }
 
@@ -9907,7 +9907,7 @@ public:
       ref.buffer[x+y*ref.ydelta] = 0x80ffffff;
 
 	  Point pos = p;
-	  Point pos_end = pos+light_dir*200.0;
+	  Point pos_end = pos+light_dir*2000.0;
 
 	  //std::cout << pos << " " << pos_end << std::endl;
 	  float tmin = 0.0;
@@ -9946,6 +9946,8 @@ public:
 		  Point pos2 = pos + t*light_dir;
 		  Vector v = pos2-pos;
 		  float val = v.Dist();
+
+		  val/=10.0;
 		  //std::cout << "Dist: " << val << std::endl;
 		  if (val>255.0) val=255.0;
 		  //val = 255.0-val;
@@ -9959,7 +9961,7 @@ public:
 		    //}
 		  exit = true;
 		  break;
-		}
+		  }
 	      }
 	    if (exit==true) break;
 	  }
@@ -9970,12 +9972,15 @@ public:
 
   }
   void Prepare() {
+#ifdef EMSCRIPTEN
+    std::cout << "Warning, you should save the bitmaps created with p_tex_light to a file, upload to a web server and load them to textures via bm_url (p_tex_light is so slow that it shouldn't be used in release builds)" << std::endl;
+#endif
     ForwardFaceCollection::Prepare();
 
     std::pair<Point,Point> bounds = find_bounds(coll);
     int numfaces = coll->NumFaces();
     delete grid;
-    grid = new GridAccel(8,8,8,
+    grid = new GridAccel(18,18,18,
 		   bounds.first.x-10.0,bounds.second.x+10.0,
 		   bounds.first.y-10.0,bounds.second.y+10.0,
 		   bounds.first.z-10.0,bounds.second.z+10.0);
@@ -10035,4 +10040,43 @@ GameApi::P GameApi::PolygonApi::light_transport(P p, int num, float light_dir_x,
   FaceCollection *coll = find_facecoll(e, p);
   Vector light_dir(light_dir_x, light_dir_y, light_dir_z);
   return add_polygon2(e, new ShadowColor(coll, num, light_dir),1);
+}
+
+class TextureFromP : public Bitmap<Color>
+{
+public:
+  TextureFromP(FaceCollection *coll, int num) : coll(coll), num(num) { firsttime = true; }
+  virtual int SizeX() const { return ref.width; }
+  virtual int SizeY() const { return ref.height; }
+  virtual Color Map(int x, int y) const
+  {
+    unsigned int c = ref.buffer[x+y*ref.ydelta];
+    return Color(c);
+  }
+  virtual void Prepare()
+  {
+    if (firsttime) {
+      firsttime = false;
+      coll->Prepare();
+      coll->GenTexture(num);
+      ref = coll->TextureBuf(num);
+    }
+  }
+private:
+  FaceCollection *coll;
+  int num;
+  BufferRef ref;
+  bool firsttime;
+};
+
+GameApi::BM GameApi::PolygonApi::texture_from_p(P p, int num)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+
+  Bitmap<Color> *bbm = new TextureFromP(coll,num);
+  BitmapColorHandle *handle = new BitmapColorHandle;
+  handle->bm = bbm;
+  BM bm2 = add_bitmap(e, handle);
+
+  return bm2;
 }
