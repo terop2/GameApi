@@ -95,6 +95,14 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
       BufferFromBitmap buf(flip);
       buf.Gen();
 
+      int sx = bm->SizeX();
+      int sy = bm->SizeY();
+      if (!(sx==1 ||sx==2||sx==4||sx==8||sx==16||sx==32||sx==64||sx==128||sx==256||sx==512||sx==1024||sx==2048||sx==4096||sx==8192||sx==16384))
+	std::cout << "Warning: power of 2 textures are needed in emscripten when GL_REPEAT is used" << std::endl;
+      if (!(sy==1 ||sy==2||sy==4||sy==8||sy==16||sy==32||sy==64||sy==128||sy==256||sy==512||sy==1024||sy==2048||sy==4096||sy==8192||sy==16384))
+	std::cout << "Warning: power of 2 textures are needed in emscripten when GL_REPEAT is used" << std::endl;
+      
+      
       glBindTexture(GL_TEXTURE_2D, ids[i]);
       glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,bm->SizeX(),bm->SizeY(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buf.Buffer().buffer);
       glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);      
