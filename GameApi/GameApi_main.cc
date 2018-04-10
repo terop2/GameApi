@@ -1512,3 +1512,92 @@ GameApi::ML GameApi::MainLoopApi::prepare_pts(ML ml, PTS pts)
   PointsApiPoints *points = find_pointsapi_points(e, pts);
   return add_main_loop(e, new PreparePTS(item, points));
 }
+
+class DepthFunc : public MainLoopItem
+{
+public:
+  DepthFunc(MainLoopItem *next, int i) : next(next),i(i) {}
+  virtual void execute(MainLoopEnv &e) {
+    switch(i) {
+    case 0: glDepthFunc(GL_LEQUAL); break;
+    case 1: glDepthFunc(GL_EQUAL); break;
+    case 2: glDepthFunc(GL_ALWAYS); break;
+    case 3: glDepthFunc(GL_LESS); break;
+    case 4: glDepthFunc(GL_GREATER); break;
+    case 5: glDepthFunc(GL_GEQUAL); break;
+    };
+    next->execute(e);
+    glDepthFunc(GL_LEQUAL);
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    next->handle_event(e);
+  }
+  virtual int shader_id() { return next->shader_id(); }
+private:
+  MainLoopItem *next;
+  int i;
+};
+
+GameApi::ML GameApi::MainLoopApi::depthfunc(ML ml, int val)
+{
+  MainLoopItem *next = find_main_loop(e,ml);
+  return add_main_loop(e, new DepthFunc(next,val));
+}
+
+class BlendFunc : public MainLoopItem
+{
+public:
+  BlendFunc(MainLoopItem *next, int i, int i2) : next(next),i(i),i2(i2) {}
+  virtual void execute(MainLoopEnv &e) {
+    GLenum s = GL_SRC_COLOR;
+    GLenum d = GL_ONE_MINUS_SRC_COLOR;
+    switch(i) {
+    case 0: s=GL_ZERO; break;
+    case 1: s=GL_ONE; break;
+    case 2: s=GL_SRC_COLOR; break;
+    case 3: s=GL_ONE_MINUS_SRC_COLOR; break;
+    case 4: s=GL_DST_COLOR; break;
+    case 5: s=GL_ONE_MINUS_DST_COLOR; break;
+    case 6: s=GL_SRC_ALPHA; break;
+    case 7: s=GL_ONE_MINUS_SRC_ALPHA; break;
+    case 8: s=GL_DST_ALPHA; break;
+    case 9: s=GL_ONE_MINUS_DST_ALPHA; break;
+    case 10: s=GL_CONSTANT_COLOR; break;
+    case 11: s=GL_ONE_MINUS_CONSTANT_COLOR; break;
+    case 12: s=GL_CONSTANT_ALPHA; break;
+    };
+
+    switch(i2) {
+    case 0: d=GL_ZERO; break;
+    case 1: d=GL_ONE; break;
+    case 2: d=GL_SRC_COLOR; break;
+    case 3: d=GL_ONE_MINUS_SRC_COLOR; break;
+    case 4: d=GL_DST_COLOR; break;
+    case 5: d=GL_ONE_MINUS_DST_COLOR; break;
+    case 6: d=GL_SRC_ALPHA; break;
+    case 7: d=GL_ONE_MINUS_SRC_ALPHA; break;
+    case 8: d=GL_DST_ALPHA; break;
+    case 9: d=GL_ONE_MINUS_DST_ALPHA; break;
+    case 10: d=GL_CONSTANT_COLOR; break;
+    case 11: d=GL_ONE_MINUS_CONSTANT_COLOR; break;
+    case 12: d=GL_CONSTANT_ALPHA; break;
+    };
+    glBlendFunc(s,d);
+    next->execute(e);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    next->handle_event(e);
+  }
+  virtual int shader_id() { return next->shader_id(); }
+private:
+  MainLoopItem *next;
+  int i,i2;
+};
+
+
+GameApi::ML GameApi::MainLoopApi::blendfunc(ML ml, int val, int val2)
+{
+  MainLoopItem *next = find_main_loop(e,ml);
+  return add_main_loop(e, new BlendFunc(next,val,val2));
+}

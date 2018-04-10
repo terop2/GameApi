@@ -2417,6 +2417,10 @@ EXPORT GameApi::W GameApi::GuiApi::icon_shared(BM bm, int key)
 {
 #ifndef EMSCRIPTEN
   return add_widget(e, new IconGuiWidgetShared(ev, bm, sh, key));
+#else
+  W w;
+  w.id = 0;
+  return w;
 #endif
 }
 EXPORT GameApi::W GameApi::GuiApi::poly(P p, SH sh2, int sx, int sy, int screen_size_x, int screen_size_y)
@@ -7014,6 +7018,18 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev",  "" },
 			 "ML", "vertex_anim_api", "vertex_anim_render"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::depthfunc,
+			 "ogl_depthfunc",
+			 { "ml", "val" },
+			 { "ML", "int" },
+			 { "", "1" },
+			 "ML", "mainloop_api", "depthfunc"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::blendfunc,
+			 "ogl_blendfunc",
+			 { "ml", "val", "val2" },
+			 { "ML", "int", "int" },
+			 { "", "2", "3" },
+			 "ML", "mainloop_api", "blendfunc"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_song,
 			 "song_ml",
 			 { "ev", "next", "url" },
@@ -7710,6 +7726,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "P", "int", "float", "float", "float" },
 			 { "", "10000", "1.0", "1.0", "1.0" },
 			 "P", "polygon_api", "light_transport"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texture_from_p,
+			 "texture_from_p",
+			 { "obj", "num" },
+			 { "P", "int" },
+			 { "", "0" },
+			 "BM", "polygon_api", "texture_from_p"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::replace_texture,
 			 "p_tex_replace",
 			 { "obj", "bm", "num" },
