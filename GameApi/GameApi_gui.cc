@@ -6489,6 +6489,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
 			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "15.0" },
 			 "MT", "materials_api", "phong"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dyn_lights,
+			 "m_dyn_lights",
+			 { "ev", "nxt", "light_pos_x", "light_pos_y", "light_pos_z", "dist", "dyn_point" },
+			 { "EveryApi&", "MT", "float", "float", "float", "float", "int" },
+			 { "ev", "", "0.0", "0.0", "0.0", "500.0", "-1" },
+			 "MT", "materials_api", "dyn_lights"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::snow,
 			 "m_snow",
 			 { "ev", "nxt", "color1", "color2", "color3", "mix_val" },
@@ -6730,6 +6736,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "INP" },
 			 { "ev", "", "" },
 			 "ML", "mainloop_api", "move_in"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::dyn_points,
+			 "dyn_points_ml",
+			 { "ml", "move", "pointnum", "pos_x", "pos_y", "pos_z" },
+			 { "ML", "MN", "int", "float", "float", "float" },
+			 { "", "", "0", "0.0", "0.0", "0.0" },
+			 "ML", "mainloop_api", "dyn_points"));
+		     
 #if 0
   // This doesnt work since it eats too much memory.
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::movement_display,

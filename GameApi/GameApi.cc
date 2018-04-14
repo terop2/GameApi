@@ -5520,6 +5520,53 @@ private:
 };
 
 
+
+class DynLightsMaterial : public MaterialForward
+{
+public:
+  DynLightsMaterial(GameApi::EveryApi &ev, Material *next, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point) : ev(ev), next(next), light_pos_x(light_pos_x), light_pos_y(light_pos_y), light_pos_z(light_pos_z), dist(dist), dyn_point(dyn_point) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat(p.id);
+    GameApi::ML sh = ev.polygon_api.dyn_lights_shader(ev, ml, light_pos_x, light_pos_y, light_pos_z, dist, dyn_point);
+    return sh;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst(p.id, pts.id);
+    GameApi::ML sh = ev.polygon_api.dyn_lights_shader(ev, ml, light_pos_x, light_pos_y, light_pos_z, dist, dyn_point);
+    return sh;
+
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(p.id, pta.id);
+    GameApi::ML sh = ev.polygon_api.dyn_lights_shader(ev, ml, light_pos_x, light_pos_y, light_pos_z, dist, dyn_point);
+    return sh;
+
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+    GameApi::ML sh = ev.polygon_api.dyn_lights_shader(ev, ml, light_pos_x, light_pos_y, light_pos_z, dist, dyn_point);
+    return sh;
+
+  }
+
+private:
+  GameApi::EveryApi &ev;
+  Material *next;
+  float light_pos_x, light_pos_y, light_pos_z;
+  float dist;
+  int dyn_point;
+};
+
+
+
 class FlatMaterial : public MaterialForward
 {
 public:
@@ -5907,6 +5954,11 @@ EXPORT GameApi::MT GameApi::MaterialsApi::phong(EveryApi &ev, MT nxt, float ligh
 {
   Material *mat = find_material(e, nxt);
   return add_material(e, new PhongMaterial(ev, mat, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow));
+}
+EXPORT GameApi::MT GameApi::MaterialsApi::dyn_lights(EveryApi &ev, MT nxt, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new DynLightsMaterial(ev, mat, light_pos_x, light_pos_y, light_pos_z, dist, dyn_point));
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::shading1(EveryApi &ev, MT nxt, float mix_val, float mix_val2)
 {
@@ -6942,6 +6994,11 @@ GameApi::US GameApi::UberShaderApi::v_phong(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("phong", next,"EX_NORMAL2 EX_LIGHTPOS2 LIGHTDIR IN_NORMAL"));
 }
+GameApi::US GameApi::UberShaderApi::v_dyn_lights(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("dyn_lights", next,"IN_POSITION EX_POSITION"));
+}
 
 GameApi::US GameApi::UberShaderApi::v_diffuse(US us)
 {
@@ -7190,6 +7247,12 @@ GameApi::US GameApi::UberShaderApi::f_phong(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("phong", next,"EX_NORMAL2 EX_LIGHTPOS2 LEVELS"));
+}
+GameApi::US GameApi::UberShaderApi::f_dyn_lights(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("dyn_lights", next,"EX_POSITION"));
+
 }
 
 GameApi::US GameApi::UberShaderApi::f_ambient(US us)
@@ -12837,4 +12900,67 @@ GameApi::INP GameApi::MainLoopApi::gravity(INP im, IBM bitmap, float start_x, fl
   InputForMoving *mv = find_move_input(e, im);
   Bitmap<int> *bm = find_int_bitmap(e, bitmap);
   return add_move_input(e, new Gravity2(mv, bm, start_x, end_x, start_y, end_y, speed));
+}
+
+
+std::vector<Point> dyn_points;
+
+class DynPoints : public MainLoopItem
+{
+public:
+  DynPoints(GameApi::Env &ee,GameApi::EveryApi &ev, MainLoopItem *next, Movement *mn, int pointnum, Point start_pos) : ee(ee), ev(ev), next(next), mn(mn), pointnum(pointnum), start_pos(start_pos) {
+    start_time = 0.0; //ev.mainloop_api.get_time();
+    firsttime = true;
+    firsttime2 = false;
+  }
+  void reset_time()
+  {
+    start_time = ev.mainloop_api.get_time();
+  }
+
+  virtual void execute(MainLoopEnv &e)
+  {
+
+    if (firsttime) {
+      firsttime2 = true;
+    }
+    if (!firsttime && firsttime2)
+      {
+	reset_time();
+	firsttime2 = false;
+      }
+    firsttime = false;
+
+    float time = (e.time*1000.0-start_time) / 100.0;
+    Matrix m = mn->get_whole_matrix(time,ev.mainloop_api.get_delta_time());
+    Point pp = start_pos*m;
+    int s = dyn_points.size();
+    if (pointnum>s-1) dyn_points.resize(pointnum+1);
+    dyn_points[pointnum] = pp;
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+    mn->event(e);
+  }
+  virtual int shader_id() { return next->shader_id(); }
+
+private:
+  GameApi::Env &ee;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  Movement *mn;
+  int pointnum;
+  bool firsttime;
+  bool firsttime2;
+  float start_time;
+  Point start_pos;
+};
+
+GameApi::ML GameApi::MainLoopApi::dyn_points(EveryApi &ev, ML ml, MN move, int pointnum, float pos_x, float pos_y, float pos_z)
+{
+  MainLoopItem *ma = find_main_loop(e,ml);
+  Movement *mn = find_move(e, move);
+  return add_main_loop(e, new DynPoints(e,ev, ma, mn, pointnum, Point(pos_x,pos_y,pos_z)));
 }
