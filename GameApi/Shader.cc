@@ -851,7 +851,7 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#ifdef MANYTEXTURES\n"
 "uniform sampler2D texsampler[15];\n"
-"#endif"
+"#endif\n"
 "//M:\n"
 "//B:\n"
 "vec4 white(vec4 rgb)\n"
