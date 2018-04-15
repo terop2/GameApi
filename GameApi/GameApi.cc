@@ -5527,12 +5527,12 @@ public:
   DynLightsMaterial(GameApi::EveryApi &ev, Material *next, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point) : ev(ev), next(next), light_pos_x(light_pos_x), light_pos_y(light_pos_y), light_pos_z(light_pos_z), dist(dist), dyn_point(dyn_point) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    //GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
     //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
-    GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
 
     GameApi::ML ml;
-    ml.id = next->mat(p1.id);
+    ml.id = next->mat(p.id);
     GameApi::ML sh = ev.polygon_api.dyn_lights_shader(ev, ml, light_pos_x, light_pos_y, light_pos_z, dist, dyn_point);
     return sh;
   }
@@ -12924,7 +12924,8 @@ public:
 
   virtual void execute(MainLoopEnv &e)
   {
-    mn->frame(e);
+    MainLoopEnv ee = e;
+    mn->frame(ee);
     if (firsttime) {
       firsttime2 = true;
     }
@@ -12942,7 +12943,7 @@ public:
     while (pointnum>s-1) { dyn_points.push_back(pp); s=dyn_points.size(); }
     if (pointnum>=0)
       dyn_points[pointnum] = pp;
-    next->execute(e);
+    next->execute(ee);
   }
   virtual void handle_event(MainLoopEvent &e)
   {
