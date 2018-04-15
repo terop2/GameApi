@@ -914,7 +914,7 @@ ShaderFile::ShaderFile()
 "{\n"
 "    return rgb + level2_color*vec4(0.2,0.2,0.2,1.0)*0.8;\n"
 "}\n"
-"#endif"
+"#endif\n"
 "#ifdef EX_NORMAL2\n"
 "#ifdef EX_LIGHTPOS2\n"
 "#ifdef SPECULAR_SIZE\n"
