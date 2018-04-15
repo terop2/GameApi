@@ -908,7 +908,7 @@ ShaderFile::ShaderFile()
          "d=1.0-d;\n"
            "d=clamp(d,0.0,1.0);\n"
 
-	" return vec4(d,d,d,rgb.a);\n"
+    " return vec4(d,d,d,1.0 /*rgb.a*/);\n"
 	"}\n"
 "#endif\n"
 	"#ifdef LEVELS\n"
