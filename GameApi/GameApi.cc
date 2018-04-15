@@ -12920,7 +12920,7 @@ public:
 
   virtual void execute(MainLoopEnv &e)
   {
-
+    mn->frame(e);
     if (firsttime) {
       firsttime2 = true;
     }
@@ -12936,7 +12936,7 @@ public:
     Point pp = start_pos*m*e.env;
     int s = dyn_points.size();
     while (pointnum>s-1) { dyn_points.push_back(pp); s=dyn_points.size(); }
-    if (pointnum>0)
+    if (pointnum>=0)
       dyn_points[pointnum] = pp;
     next->execute(e);
   }
