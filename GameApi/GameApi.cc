@@ -12933,10 +12933,11 @@ public:
 
     float time = (e.time*1000.0-start_time) / 100.0;
     Matrix m = mn->get_whole_matrix(time,ev.mainloop_api.get_delta_time());
-    Point pp = start_pos*m;
+    Point pp = start_pos*m*e.env;
     int s = dyn_points.size();
-    if (pointnum>s-1) dyn_points.resize(pointnum+1);
-    dyn_points[pointnum] = pp;
+    while (pointnum>s-1) { dyn_points.push_back(pp); s=dyn_points.size(); }
+    if (pointnum>0)
+      dyn_points[pointnum] = pp;
     next->execute(e);
   }
   virtual void handle_event(MainLoopEvent &e)
