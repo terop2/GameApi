@@ -5787,7 +5787,7 @@ public:
       {
 	//GameApi::SH sh;
 	ev.shader_api.use(sh);
-#if 0
+#if 1
 	int s = dyn_points_global.size();
 	if (dyn_point>=0 && dyn_point<s) {
 	  light_pos = dyn_points_global[dyn_point];
