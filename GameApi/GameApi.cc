@@ -12907,7 +12907,7 @@ GameApi::INP GameApi::MainLoopApi::gravity(INP im, IBM bitmap, float start_x, fl
 }
 
 
-std::vector<Point> dyn_points;
+std::vector<Point> dyn_points_global;
 
 class DynPoints : public MainLoopItem
 {
@@ -12939,10 +12939,10 @@ public:
     float time = (e.time*1000.0-start_time) / 100.0;
     Matrix m = mn->get_whole_matrix(time,ev.mainloop_api.get_delta_time());
     Point pp = start_pos*m*e.env;
-    int s = dyn_points.size();
-    while (pointnum>s-1) { dyn_points.push_back(pp); s=dyn_points.size(); }
+    int s = dyn_points_global.size();
+    while (pointnum>s-1) { dyn_points_global.push_back(pp); s=dyn_points_global.size(); }
     if (pointnum>=0)
-      dyn_points[pointnum] = pp;
+      dyn_points_global[pointnum] = pp;
     next->execute(ee);
   }
   virtual void handle_event(MainLoopEvent &e)
