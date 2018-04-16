@@ -5732,7 +5732,9 @@ private:
 };
 
 
-extern std::vector<Point> dyn_points_global;
+extern std::vector<float> dyn_points_global_x;
+extern std::vector<float> dyn_points_global_y;
+extern std::vector<float> dyn_points_global_z;
 
 class DynLightsShaderML : public MainLoopItem
 {
@@ -5788,9 +5790,9 @@ public:
 	//GameApi::SH sh;
 	ev.shader_api.use(sh);
 #if 1
-	int s = dyn_points_global.size();
+	int s = dyn_points_global_x.size();
 	if (dyn_point>=0 && dyn_point<s) {
-	  light_pos = dyn_points_global[dyn_point];
+	  light_pos = Point(dyn_points_global_x[dyn_point],dyn_points_global_y[dyn_point],dyn_points_global_z[dyn_point]);
 	}
 #endif
 	ev.shader_api.set_var(sh, "dyn_light_pos", light_pos.x, light_pos.y, light_pos.z);
