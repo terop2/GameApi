@@ -5787,11 +5787,12 @@ public:
       {
 	//GameApi::SH sh;
 	ev.shader_api.use(sh);
+#if 0
 	int s = dyn_points_global.size();
 	if (dyn_point>=0 && dyn_point<s) {
 	  light_pos = dyn_points_global[dyn_point];
 	}
-
+#endif
 	ev.shader_api.set_var(sh, "dyn_light_pos", light_pos.x, light_pos.y, light_pos.z);
 	ev.shader_api.set_var(sh, "dyn_light_dist", dist);
       }
