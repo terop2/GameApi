@@ -1,4 +1,4 @@
-        
+o        
 #define SDL2_USED  
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
@@ -2981,10 +2981,10 @@ public:
   Matrix get_whole_matrix(float time, float delta_time) const
   {
     if (time<start_time) { Matrix m=Matrix::Identity(); return next?next->get_whole_matrix(time, delta_time):m; }
-    if (time>=end_time) { Matrix m=Matrix::Identity(); return Matrix::Translate(dx,dy,dz)*next?next->get_whole_matrix(time,delta_time):m; }
+    if (time>=end_time) { Matrix m=Matrix::Identity(); return Matrix::Translate(dx,dy,dz)*(next?next->get_whole_matrix(time,delta_time):m); }
     float d = time - start_time;
     d/=(end_time-start_time);
-    return Matrix::Translate(dx*d,dy*d,dz*d)*next?next->get_whole_matrix(time, delta_time):Matrix::Identity();
+    return Matrix::Translate(dx*d,dy*d,dz*d)*(next?next->get_whole_matrix(time, delta_time):Matrix::Identity());
   }
 private:
   Movement *next;
@@ -12924,6 +12924,7 @@ public:
 
   virtual void execute(MainLoopEnv &e)
   {
+    if (!mn ||!next) return;
     MainLoopEnv ee = e; 
    mn->frame(ee);
     if (firsttime) {
@@ -12950,7 +12951,7 @@ public:
     next->handle_event(e);
     mn->event(e);
   }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual int shader_id() { return next?next->shader_id():-1; }
 
 private:
   GameApi::Env &ee;
