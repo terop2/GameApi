@@ -6738,9 +6738,9 @@ std::vector<GameApiItem*> blocker_functions()
 			 "ML", "mainloop_api", "move_in"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::dyn_points,
 			 "dyn_points_ml",
-			 { "ml", "move", "pointnum", "pos_x", "pos_y", "pos_z" },
-			 { "ML", "MN", "int", "float", "float", "float" },
-			 { "", "", "0", "0.0", "0.0", "0.0" },
+			 { "ev", "ml", "move", "pointnum", "pos_x", "pos_y", "pos_z" },
+			 { "EveryApi&", "ML", "MN", "int", "float", "float", "float" },
+			 { "ev", "", "", "0", "0.0", "0.0", "0.0" },
 			 "ML", "mainloop_api", "dyn_points"));
 		     
 #if 0
