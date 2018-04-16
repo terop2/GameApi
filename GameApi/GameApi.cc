@@ -12924,8 +12924,9 @@ public:
 
   virtual void execute(MainLoopEnv &e)
   {
-    MainLoopEnv ee = e;
-    mn->frame(ee);
+    MainLoopEnv ee = e; 
+#if 0
+   mn->frame(ee);
     if (firsttime) {
       firsttime2 = true;
     }
@@ -12939,7 +12940,6 @@ public:
     float time = (e.time*1000.0-start_time) / 100.0;
     Matrix m = mn->get_whole_matrix(time,ev.mainloop_api.get_delta_time());
     Point pp = start_pos*m*e.env;
-#if 0
     int s = dyn_points_global.size();
     while (pointnum>s-1) { dyn_points_global.push_back(pp); s=dyn_points_global.size(); }
     if (pointnum>=0)
