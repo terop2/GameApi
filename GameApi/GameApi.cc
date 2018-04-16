@@ -12949,7 +12949,7 @@ public:
       dyn_points_global_x.push_back(pp.x); 
       dyn_points_global_y.push_back(pp.y); 
       dyn_points_global_z.push_back(pp.z); 
-      s=dyn_points_global.size(); 
+      s=dyn_points_global_x.size(); 
     }
     if (pointnum>=0) {
       dyn_points_global_x[pointnum] = pp.x;
