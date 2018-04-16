@@ -2983,7 +2983,8 @@ public:
     if (time<start_time) { Matrix m=Matrix::Identity(); return next?next->get_whole_matrix(time, delta_time):m; }
     if (time>=end_time) { Matrix m=Matrix::Identity(); return Matrix::Translate(dx,dy,dz)*(next?next->get_whole_matrix(time,delta_time):m); }
     float d = time - start_time;
-    d/=(end_time-start_time);
+    if (fabs(end_time-start_time)>0.01)
+      d/=(end_time-start_time);
     return Matrix::Translate(dx*d,dy*d,dz*d)*(next?next->get_whole_matrix(time, delta_time):Matrix::Identity());
   }
 private:
