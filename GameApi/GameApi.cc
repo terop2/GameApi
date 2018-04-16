@@ -2973,18 +2973,18 @@ public:
 		    float dx, float dy, float dz)
     : next(next), start_time(start_time), end_time(end_time),
       dx(dx), dy(dy), dz(dz) { }
-  virtual void event(MainLoopEvent &e) { next->event(e); }
-  virtual void frame(MainLoopEnv &e) { next->frame(e); }
+  virtual void event(MainLoopEvent &e) { if (next) next->event(e); }
+  virtual void frame(MainLoopEnv &e) { if (next) next->frame(e); }
 
   void set_matrix(Matrix m) { }
   void set_pos(float ddx, float ddy, float ddz) { dx=ddx; dy=ddy; dz=ddz; }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
-    if (time<start_time) { return next->get_whole_matrix(time, delta_time); }
-    if (time>=end_time) { return Matrix::Translate(dx,dy,dz)*next->get_whole_matrix(time,delta_time); }
+    if (time<start_time) { Matrix m=Matrix::Identity(); return next?next->get_whole_matrix(time, delta_time):m; }
+    if (time>=end_time) { Matrix m=Matrix::Identity(); return Matrix::Translate(dx,dy,dz)*next?next->get_whole_matrix(time,delta_time):m; }
     float d = time - start_time;
     d/=(end_time-start_time);
-    return Matrix::Translate(dx*d,dy*d,dz*d)*next->get_whole_matrix(time, delta_time);
+    return Matrix::Translate(dx*d,dy*d,dz*d)*next?next->get_whole_matrix(time, delta_time):Matrix::Identity();
   }
 private:
   Movement *next;
@@ -12925,7 +12925,6 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e; 
-#if 0
    mn->frame(ee);
     if (firsttime) {
       firsttime2 = true;
@@ -12944,7 +12943,6 @@ public:
     while (pointnum>s-1) { dyn_points_global.push_back(pp); s=dyn_points_global.size(); }
     if (pointnum>=0)
       dyn_points_global[pointnum] = pp;
-#endif
     next->execute(ee);
   }
   virtual void handle_event(MainLoopEvent &e)
@@ -12970,5 +12968,6 @@ GameApi::ML GameApi::MainLoopApi::dyn_points(EveryApi &ev, ML ml, MN move, int p
 {
   MainLoopItem *ma = find_main_loop(e,ml);
   Movement *mn = find_move(e, move);
-  return add_main_loop(e, new DynPoints(e,ev, ma, mn, pointnum, Point(pos_x,pos_y,pos_z)));
+  Point pos(pos_x,pos_y,pos_z);
+  return add_main_loop(e, new DynPoints(e,ev, ma, mn, pointnum, pos));
 }
