@@ -7002,7 +7002,7 @@ GameApi::US GameApi::UberShaderApi::v_phong(US us)
 GameApi::US GameApi::UberShaderApi::v_dyn_lights(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("dyn_lights", next,"IN_POSITION EX_POSITION"));
+  return add_uber(e, new V_ShaderCallFunction("dyn_lights", next,"IN_NORMAL EX_NORMAL2 IN_POSITION EX_POSITION"));
 }
 
 GameApi::US GameApi::UberShaderApi::v_diffuse(US us)
@@ -7256,7 +7256,7 @@ GameApi::US GameApi::UberShaderApi::f_phong(US us)
 GameApi::US GameApi::UberShaderApi::f_dyn_lights(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("dyn_lights", next,"EX_POSITION"));
+  return add_uber(e, new F_ShaderCallFunction("dyn_lights", next,"EX_NORMAL2 EX_POSITION"));
 
 }
 
