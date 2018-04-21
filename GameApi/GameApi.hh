@@ -3037,6 +3037,7 @@ public:
   IMPORT LI render_slice_2d(P p, PT pos, V u_x, V u_y);
   IMPORT LI translate(LI lines, float dx, float dy, float dz);
   IMPORT LI scale(LI lines, float m_x, float m_y, float m_z);
+  IMPORT LI li_or_elem(LI li1, LI li2);
   IMPORT LI rotx(LI lines, float angle);
   IMPORT LI roty(LI lines, float angle);
   IMPORT LI rotz(LI lines, float angle);

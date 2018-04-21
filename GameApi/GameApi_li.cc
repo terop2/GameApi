@@ -1774,3 +1774,44 @@ GameApi::LI GameApi::LinesApi::line_pos_mult(float val, LI li)
   LineCollection *lines = find_line_array(e, li);
   return add_line_array(e, new LinePosMult(val, lines));
 }
+
+class LIOrElem : public LineCollection
+{
+public:
+  LIOrElem(LineCollection *lines1, LineCollection *lines2) : lines1(lines1), lines2(lines2) { s=lines1->NumLines(); s2=lines2->NumLines(); }
+  virtual void Prepare() {
+    lines1->Prepare();
+    lines2->Prepare();
+    s=lines1->NumLines();
+    s2=lines2->NumLines();
+  }
+  int get_index(int line) const {
+    //std::cout << "get_index: " << line << " " << s << std::endl;
+    if (line<s) return line;
+    return line-s;
+  }
+  LineCollection *get_elem(int line) const {
+    //std::cout << "get_elem: " << line << " " << s << std::endl;
+    if (line<s) return lines1;
+    return lines2;
+  }
+  virtual int NumLines() const { return lines1->NumLines()+lines2->NumLines(); }
+  virtual Point LinePoint(int line, int point) const
+  {
+    return get_elem(line)->LinePoint(get_index(line),point);
+  }
+  virtual unsigned int LineColor(int line, int point) const {
+    return get_elem(line)->LineColor(get_index(line),point);
+  }
+private:
+  LineCollection *lines1;
+  LineCollection *lines2;
+  int s,s2;
+};
+
+GameApi::LI GameApi::LinesApi::li_or_elem(LI li1, LI li2)
+{
+  LineCollection *lines1 = find_line_array(e, li1);
+  LineCollection *lines2 = find_line_array(e, li2);
+  return add_line_array(e, new LIOrElem(lines1,lines2));
+}

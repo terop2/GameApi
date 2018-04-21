@@ -4714,9 +4714,9 @@ std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev,
       vec.push_back(l);
       line_num++;
 #if 1
-      if (line_num > 400) {
+      if (line_num > 1800) {
 	// quick exit if line_num is larger than 400, for line number misuse.
-	std::cout << "Number of lines in CodeGen is limited to 400 lines" << std::endl;
+	std::cout << "Number of lines in CodeGen is limited to 1800 lines" << std::endl;
 	exit(0);
       }
 #endif
@@ -8200,6 +8200,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "LI", "float", "float", "float" },
 			 { "", "1.0", "1.0", "1.0" },
 			 "LI", "lines_api", "scale"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::li_or_elem,
+			 "li_or_elem",
+			 { "li1", "li2" },
+			 { "LI", "LI" },
+			 { "", "" },
+			 "LI", "lines_api", "li_or_elem"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::line_product,
 			 "li_product",
 			 { "li1", "li2" },
