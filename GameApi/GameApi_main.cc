@@ -800,6 +800,7 @@ private:
 };
 
 extern int score;
+extern int hidden_score;
 
 class SeqMLScore : public MainLoopItem
 {
@@ -820,7 +821,7 @@ public:
       }
     
     //float num = e.time*10.0/time;
-    num2 = score>target_score?1:0;
+    num2 = hidden_score>target_score?1:0;
     //float newtime = fmod(e.time,time/10.0);
     MainLoopEnv ee = e;
     // ee.time trick doesn't work with moveml

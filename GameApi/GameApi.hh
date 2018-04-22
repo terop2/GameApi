@@ -392,6 +392,7 @@ public:
   INP move_collision(IBM scene, float start_x, float end_x, float start_y, float end_y, float s_x, float m_x, float e_x, float s_y, float m_y, float e_y, float speed_up, float speed_down, float speed_left, float speed_right, float speed_gravity);
   ML move_in(EveryApi &ev, ML ml, INP in);
   ML score_adder(EveryApi &ev, ML ml, O o, MN transform, int enter_score, int leave_score, int dyn_point, float timeout);
+  ML score_hidder(EveryApi &ev, ML ml, O o, int max_count);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);
