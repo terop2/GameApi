@@ -13166,8 +13166,10 @@ float debug_pos_x=0.0, debug_pos_y=0.0, debug_pos_z=0.0;
 
 GameApi::ML GameApi::MainLoopApi::debug_obj(EveryApi &ev)
 {  
-  P p = ev.polygon_api.cube(-10.0,10.0, -10.0, 10.0, -10.0,10.0);
-  ML ml1 = ev.polygon_api.render_vertex_array_ml2(ev, p);
+  P p = ev.polygon_api.cube(-3.0,3.0, -3.0, 3.0, -3.0,3.0);
+  MT mat0 = ev.materials_api.def(ev);
+  MT mat = ev.materials_api.snow(ev,mat0,0xffaaaaaa, 0xffeeeeee, 0xffffffff, 0.95);
+  ML ml1 = ev.materials_api.bind(p,mat);
   MN mn2 = ev.move_api.empty();
   MN mn = ev.move_api.debug_translate(mn2);
   ML ml2 = ev.move_api.move_ml(ev,ml1,mn,1,10.0);
