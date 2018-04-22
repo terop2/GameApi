@@ -6968,7 +6968,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "float", "float" },
 			 { "ev", "", "20.0", "0.03" },
 			 "ML", "move_api", "quake_ml"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::debug_obj,
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::debug_obj, 
 			 "debug_obj",
 			 { "ev" },
 			 { "EveryApi&" },
