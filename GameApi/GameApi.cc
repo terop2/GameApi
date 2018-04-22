@@ -9136,6 +9136,7 @@ extern int async_pending_count;
 int async_pending_count_previous=-1;
 
 extern int score;
+extern int hidden_score;
 
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
@@ -9154,7 +9155,8 @@ public:
   virtual void Init()
   {
     score = 0;
-    
+    hidden_score = 0;
+
     Envi_2 &env = envi;
     env.logo_shown = logo;
     env.fpscounter = fpscounter;
@@ -9294,6 +9296,7 @@ private:
 };
 
 extern int score;
+extern int hidden_score;
 
 class MainLoopBlocker_win32_and_emscripten : public Blocker
 {
@@ -9301,6 +9304,7 @@ public:
   MainLoopBlocker_win32_and_emscripten(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::ML code, bool logo, bool fpscounter, float start_time, float duration, int screen_width, int screen_height) : e(e), ev(ev), code(code), logo(logo), fpscounter(fpscounter), timeout(duration), start_time(start_time), screen_width(screen_width), screen_height(screen_height)
   {
     score = 0;
+    hidden_score=0;
   }
   void SetTimeout(float duration) {
   }
@@ -13093,6 +13097,7 @@ GameApi::ML GameApi::MainLoopApi::dyn_points(EveryApi &ev, ML ml, MN move, int p
 }
 extern std::map<std::string, int> number_map;
 int score=0; // remember to add to number_map["score"]
+int hidden_score=0;
 
 class ScoreAdder : public MainLoopItem
 {
@@ -13189,4 +13194,55 @@ GameApi::ML GameApi::MainLoopApi::score_adder(EveryApi &ev,ML ml, O o, MN transf
   VolumeObject *obj = find_volume(e, o);
   Movement *mv = find_move(e, transform);
   return add_main_loop(e, new ScoreAdder(ev,item, obj, mv, enter_score, leave_score, dyn_point,timeout));
+}
+
+class ScoreHidder : public MainLoopItem
+{
+public:
+  ScoreHidder(GameApi::EveryApi &ev, MainLoopItem *item, VolumeObject *obj, int max_count) : ev(ev), item(item), obj(obj), max_count(max_count) { prev_p=false; }
+
+  void enter_event(float time) {
+      int transfer = score>max_count?max_count:score;
+      if (transfer<0) transfer=0;
+      hidden_score+=transfer;
+      score-=transfer;
+      number_map["score"] = score;
+  }
+  void leave_event(float time) {
+      int transfer = score>max_count?max_count:score;
+      if (transfer<0) transfer=0;
+      hidden_score+=transfer;
+      score-= transfer;
+      number_map["score"] = score;
+  }
+
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual int shader_id() { return item->shader_id(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    Point p = Point(0, 0, -400);
+    p.x-=quake_pos_x;
+    p.z-=quake_pos_y;
+
+    bool b = obj->Inside(p);
+    if (b && b!=prev_p) { prev_p = b; enter_event(e.time*10.0); } else
+    if (!b && b!=prev_p) { prev_p = b; leave_event(e.time*10.0); }
+    item->execute(e);
+  }
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *item;
+  VolumeObject *obj;
+  int max_count;
+  bool prev_p;
+};
+
+GameApi::ML GameApi::MainLoopApi::score_hidder(EveryApi &ev, ML ml, O o, int max_count)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  VolumeObject *obj = find_volume(e, o);
+  return add_main_loop(e, new ScoreHidder(ev,item,obj,max_count));
 }
