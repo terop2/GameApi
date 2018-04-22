@@ -494,6 +494,8 @@ GameApi::FF GameApi::FontApi::choose_float_fetcher(IF int_fetcher, float a_1, fl
   Fetcher<int> *iif = find_int_fetcher(e, int_fetcher);
   return add_float_fetcher(e, new ChooseFloatFetcher(iif, a_1, a_2, a_3,a_4,a_5,a_6,a_7));
 }
+
+
 class FPSFetcher : public Fetcher<float>
 {
 public:
@@ -519,6 +521,30 @@ GameApi::FF GameApi::FontApi::fps_fetcher(EveryApi &ev)
 {
   return add_float_fetcher(e, new FPSFetcher(ev));
 }
+
+extern int score;
+
+class ScoreFetcher : public Fetcher<int>
+{
+public:
+  ScoreFetcher(GameApi::EveryApi &ev) :ev(ev) { }
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { 
+  }
+
+  void set(int t) { }
+  int get() const {
+    return score;
+  }
+private:
+  GameApi::EveryApi &ev;
+};
+
+
+GameApi::IF GameApi::FontApi::score_fetcher(EveryApi &ev)
+{
+  return add_int_fetcher(e, new ScoreFetcher(ev));
+}
 class FloatToStringFetcher : public Fetcher<std::string>
 {
 public:
@@ -543,6 +569,33 @@ GameApi::SF GameApi::FontApi::float_to_string_fetcher(FF fetcher)
 {
   Fetcher<float> *ff = find_float_fetcher(e, fetcher);
   return add_string_fetcher(e,new FloatToStringFetcher(*ff));
+}
+
+class IntToStringFetcher : public Fetcher<std::string>
+{
+public:
+  IntToStringFetcher(Fetcher<int> &ff) : ff(ff) { }
+  virtual void event(MainLoopEvent &e) { ff.event(e); }
+  virtual void frame(MainLoopEnv &e) { ff.frame(e); }
+
+  void set(std::string t) { }
+  std::string get() const {
+    std::stringstream ss;
+    int v = ff.get();
+    int v2 = (int)v;
+    if (v2<0) v2=0;
+    if (v2>99999) v2=99999; 
+    ss << std::setfill('0') << std::setw(5) << v2;
+    return ss.str();
+  }
+private:
+  Fetcher<int> &ff;
+};
+
+GameApi::SF GameApi::FontApi::int_to_string_fetcher(IF fetcher)
+{
+  Fetcher<int> *ff = find_int_fetcher(e, fetcher);
+  return add_string_fetcher(e,new IntToStringFetcher(*ff));
 }
 
 class PointFetcherPart : public Fetcher<Point>

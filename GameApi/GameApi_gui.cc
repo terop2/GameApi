@@ -5334,6 +5334,12 @@ std::vector<GameApiItem*> volumeapi_functions()
 			 { "O", "O" },
 			 { "", "" },
 			 "O", "volume_api", "andnot_op"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::instancing_volume,
+			 "o_inst",
+			 { "volume", "pts" },
+			 { "O", "PTS" },
+			 { "", "" },
+			 "O", "volume_api", "instancing_volume"));
 #if 0
   // keeps crashing
   vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, (GameApi::PTS (GameApi::VolumeApi::*)(GameApi::O,int,float))&GameApi::VolumeApi::instanced_positions,
@@ -6068,6 +6074,8 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "EveryApi&" },
 			 { "ev" },
 			 "SF", "font_api", "time_string_fetcher"));
+#endif
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::score_string_fetcher,
 			 "fnt_score",
 			 { "id", "label", "numdigits" },
@@ -6075,6 +6083,13 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "score", "Score: ", "5" },
 			 "SF", "font_api", "score_string_fetcher"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::score_adder,
+			 "score_adder",
+			 { "ev", "ml", "o", "mn", "enter_score", "leave_score", "dyn_point", "timeout" },
+			 { "EveryApi&", "ML", "O", "MN", "int", "int", "int", "float" },
+			 { "ev", "", "", "", "1", "0", "-1", "5.0" },
+			 "ML", "mainloop_api", "score_adder"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::load_font,
 			 "FI_load",
 			 { "url", "sx", "sy" },
@@ -6996,6 +7011,14 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "std::string" },
 			 { "ev", "", "http://tpgames.org/Chunkfive.otf" },
 			 "ML", "mainloop_api", "fps_display"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::score_display,
+			 "score_display",
+			 { "ev", "ml", "font" },
+			 { "EveryApi&", "ML", "std::string" },
+			 { "ev", "", "http://tpgames.org/Chunkfive.otf" },
+			 "ML", "mainloop_api", "score_display"));
+
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::skeletal_api, &GameApi::Skeletal::skeletal_bind,
 			 "skeletal_bind",

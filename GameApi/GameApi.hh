@@ -294,6 +294,7 @@ public:
   IMPORT BM screenshot();
   IMPORT float fpscounter(bool print=true);
   IMPORT ML fps_display(EveryApi &ev, ML ml, std::string font);
+  IMPORT ML score_display(EveryApi &ev, ML ml, std::string font);
   IMPORT void profile(std::string label, bool start);
   IMPORT void print_profile();
   IMPORT void delay(int ms);
@@ -388,6 +389,7 @@ public:
   INP gravity(INP im, IBM bitmap, float start_x, float end_x, float start_y, float end_y, float speed);
   INP move_collision(IBM scene, float start_x, float end_x, float start_y, float end_y, float s_x, float m_x, float e_x, float s_y, float m_y, float e_y, float speed_up, float speed_down, float speed_left, float speed_right, float speed_gravity);
   ML move_in(EveryApi &ev, ML ml, INP in);
+  ML score_adder(EveryApi &ev, ML ml, O o, MN transform, int enter_score, int leave_score, int dyn_point, float timeout);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);
@@ -683,7 +685,7 @@ public:
   IMPORT ARR font_string_array(Ft font, std::string s, int x_gap);
   IMPORT ARR font_string_array2(FI font, std::string s);
   IMPORT SF time_string_fetcher(EveryApi &ev);
-  IMPORT SF score_string_fetcher(std::string id, std::string label, int numdigits);
+  IMPORT SF score_string_fetcher(std::string id, std::string label, int numdigits); // use score_display instead.
   IMPORT IF char_fetcher_from_string(SF string_fetcher, std::string alternatives, int idx);
   IMPORT ML dynamic_character(EveryApi &ev, std::vector<BM> vec, IF fetcher, int x, int y);
   IMPORT ML dynamic_string(EveryApi &ev, Ft font, std::string alternative_chars, SF fetcher, int x, int y, int numchars);
@@ -704,7 +706,9 @@ public:
   IMPORT PF mouse_fetcher();
   IMPORT FF choose_float_fetcher(IF int_fetcher, float a_1, float a_2, float a_3, float a_4, float a_5, float a_6, float a_7);
   IMPORT FF fps_fetcher(EveryApi &ev);
+  IMPORT IF score_fetcher(EveryApi &ev);
   IMPORT SF float_to_string_fetcher(FF fetcher);
+  IMPORT SF int_to_string_fetcher(IF fetcher);
   IMPORT ML ml_chooser(std::vector<ML> vec, IF fetcher);
   IMPORT std::vector<GameApi::BM> bm_array_id_inv(ARR arr);
   IMPORT ARR bm_array_id(std::vector<BM> vec);
@@ -1003,6 +1007,7 @@ public:	IMPORT VolumeApi(Env &e);
 	IMPORT O cone(PT p1, PT p2, float rad1, float rad2);
 	IMPORT O torus(PT center, PT u_x, PT u_y, float dist1, float dist2);
 
+  IMPORT O instancing_volume(O o, PTS p);
 	IMPORT O colour(O object, unsigned int col);
 	IMPORT O reflect(O object, float val); // val = [0..1]
 	IMPORT O cubetexture(O object, PT origo, PT u_x, PT u_y, PT u_z, BM bm);

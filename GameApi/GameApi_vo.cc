@@ -1951,3 +1951,29 @@ EXPORT GameApi::P GameApi::DistanceFloatVolumeApi::distance_poly_sph(EveryApi &e
   GameApi::P p_2 = ev.polygon_api.scale(p_l, 0.02, 0.02, 0.02);
   return p_2;
 }
+
+class InstancingVolumeObject : public VolumeObject
+{
+public:
+  InstancingVolumeObject(VolumeObject *obj, PointsApiPoints *pts) : obj(obj), pts(pts) {}
+  bool Inside(Point p) const
+  {
+    int s = pts->NumPoints();
+    bool bb = false;
+    for(int i=0;i<s;i++) {
+      Point pp = p-pts->Pos(i);
+      bool b = obj->Inside(pp);
+      bb |= b;
+    }
+    return bb;
+  }
+private:
+  VolumeObject *obj;
+  PointsApiPoints *pts;
+};
+GameApi::O GameApi::VolumeApi::instancing_volume(O o, PTS p)
+{
+  VolumeObject *obj = find_volume(e, o);
+  PointsApiPoints *points = find_pointsapi_points(e,p);
+  return add_volume(e, new InstancingVolumeObject(obj,points));
+}
