@@ -324,6 +324,7 @@ public:
   IMPORT bool logo_iter();
   IMPORT void save_logo(EveryApi &ev);
   IMPORT void display_logo(EveryApi &ev);
+  IMPORT ML debug_obj(EveryApi &ev);
   struct Event
   {
     int type;
@@ -1403,6 +1404,7 @@ public:
   IMPORT MN rotatex(MN next, float angle);
   IMPORT MN rotatey(MN next, float angle);
   IMPORT MN rotatez(MN next, float angle);
+  IMPORT MN debug_translate(MN next);
   IMPORT MN translate(MN next, float start_time, float end_time,
 	       float dx, float dy, float dz);
   IMPORT MN scale_progress(MN next, bool is_x, bool is_y, bool is_z);

@@ -2992,6 +2992,35 @@ private:
   float start_time, end_time;
   float dx,dy,dz;
 };
+
+extern float debug_pos_x, debug_pos_y, debug_pos_z;
+
+class DebugTranslateMovement : public Movement
+{
+public:
+  DebugTranslateMovement(Movement *next)
+    : next(next){ }
+  virtual void event(MainLoopEvent &e) { if (next) next->event(e); }
+  virtual void frame(MainLoopEnv &e) { if (next) next->frame(e); }
+
+  void set_matrix(Matrix m) { }
+  void set_pos(float ddx, float ddy, float ddz) { }
+  Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    return Matrix::Translate(debug_pos_x, debug_pos_y, debug_pos_z);
+  }
+private:
+  Movement *next;
+  float start_time, end_time;
+  float dx,dy,dz;
+};
+
+EXPORT GameApi::MN GameApi::MovementNode::debug_translate(MN next)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new DebugTranslateMovement(nxt));
+}
+
 EXPORT GameApi::MN GameApi::MovementNode::translate(MN next, 
 					     float start_time, float end_time,
 					     float dx, float dy, float dz)
@@ -11432,6 +11461,7 @@ ML I34=ev.move_api.comb_key_activate_ml(ev,I31,I33,k_119,k_97,s_1);
 }
 
 float quake_pos_x, quake_pos_y;
+float quake_rot_y;
 
 class QuakeML : public MainLoopItem
 {
@@ -11442,6 +11472,7 @@ public:
     GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
     quake_pos_x = pos_x;
     quake_pos_y = pos_y;
+    quake_rot_y = rot_y;
     MainLoopEnv eee = e;
     GameApi::M env_m = add_matrix2(env, e.in_MV);
     GameApi::M rot_y2 = ev.matrix_api.yrot(rot_y);
@@ -13085,13 +13116,29 @@ public:
   }
   virtual void execute(MainLoopEnv &e)
   {
-    Point p = Point(quake_pos_x, 0, quake_pos_y-400);
+    Point p = Point(0, 0, -400);
+    Matrix m = Matrix::YRotation(-quake_rot_y);
+    p = p * m;
+    //p.x*=1.2;
+    //p.y*=1.2;
+    //p.z*=1.2;
+    //Matrix m2 = Matrix::YRotation(-quake_rot_y);
+    //p = p * m2;
+    p.x-=quake_pos_x;
+    p.z-=quake_pos_y+200;
+
+    debug_pos_x = p.x;
+    debug_pos_y = p.y;
+    debug_pos_z = p.z;
+
     int s = dyn_points_global_x.size();
     if (dyn_point>=0 && dyn_point<s)
       {
 	p = Point(dyn_points_global_x[dyn_point],dyn_points_global_y[dyn_point],dyn_points_global_z[dyn_point]);
       }
-    p = p * move->get_whole_matrix(e.time*10.0, ev.mainloop_api.get_delta_time());
+    p = p * Matrix::Inverse(move->get_whole_matrix(e.time*10.0, ev.mainloop_api.get_delta_time()));
+
+
     bool b = obj->Inside(p);
     if (b && b!=prev_p) { prev_p = b; enter_event(e.time*10.0); } else
     if (!b && b!=prev_p) { prev_p = b; leave_event(e.time*10.0); }
@@ -13114,6 +13161,18 @@ private:
   bool prev_p;
   float prev_time, prev_time2;
 };
+
+float debug_pos_x=0.0, debug_pos_y=0.0, debug_pos_z=0.0;
+
+GameApi::ML GameApi::MainLoopApi::debug_obj(EveryApi &ev)
+{  
+  P p = ev.polygon_api.cube(-10.0,10.0, -10.0, 10.0, -10.0,10.0);
+  ML ml1 = ev.polygon_api.render_vertex_array_ml2(ev, p);
+  MN mn2 = ev.move_api.empty();
+  MN mn = ev.move_api.debug_translate(mn2);
+  ML ml2 = ev.move_api.move_ml(ev,ml1,mn,1,10.0);
+  return ml2;
+}
 
 GameApi::ML GameApi::MainLoopApi::score_adder(EveryApi &ev,ML ml, O o, MN transform, int enter_score, int leave_score, int dyn_point, float timeout)
 {
