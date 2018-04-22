@@ -9135,6 +9135,8 @@ void blocker_iter(void *arg)
 extern int async_pending_count;
 int async_pending_count_previous=-1;
 
+extern int score;
+
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
 public:
@@ -9151,6 +9153,8 @@ public:
   }
   virtual void Init()
   {
+    score = 0;
+    
     Envi_2 &env = envi;
     env.logo_shown = logo;
     env.fpscounter = fpscounter;
@@ -9289,11 +9293,14 @@ private:
   Envi_2 envi;
 };
 
+extern int score;
+
 class MainLoopBlocker_win32_and_emscripten : public Blocker
 {
 public:
   MainLoopBlocker_win32_and_emscripten(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::ML code, bool logo, bool fpscounter, float start_time, float duration, int screen_width, int screen_height) : e(e), ev(ev), code(code), logo(logo), fpscounter(fpscounter), timeout(duration), start_time(start_time), screen_width(screen_width), screen_height(screen_height)
   {
+    score = 0;
   }
   void SetTimeout(float duration) {
   }
