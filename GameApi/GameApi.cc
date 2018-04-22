@@ -11431,6 +11431,8 @@ ML I34=ev.move_api.comb_key_activate_ml(ev,I31,I33,k_119,k_97,s_1);
  return I34;
 }
 
+float quake_pos_x, quake_pos_y;
+
 class QuakeML : public MainLoopItem
 {
 public:
@@ -11438,6 +11440,8 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
+    quake_pos_x = pos_x;
+    quake_pos_y = pos_y;
     MainLoopEnv eee = e;
     GameApi::M env_m = add_matrix2(env, e.in_MV);
     GameApi::M rot_y2 = ev.matrix_api.yrot(rot_y);
@@ -12039,6 +12043,71 @@ GameApi::ML GameApi::MainLoopApi::touch_rotate(GameApi::EveryApi &ev, ML ml, boo
 {
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new TouchRotate(e,ev,item, leftright, topdown,x_speed,y_speed));
+}
+
+GameApi::ML GameApi::MainLoopApi::score_display(EveryApi &ev, ML ml, std::string font)
+{
+  FI I1=ev.font_api.load_font(font,30,30);
+  BM I2=ev.font_api.draw_text_string(I1,"0",5,30);
+  FI I3=ev.font_api.load_font(font,30,30);
+  BM I4=ev.font_api.draw_text_string(I3,"1",5,30);
+  FI I5=ev.font_api.load_font(font,30,30);
+  BM I6=ev.font_api.draw_text_string(I5,"2",5,30);
+  FI I7=ev.font_api.load_font(font,30,30);
+  BM I8=ev.font_api.draw_text_string(I7,"3",5,30);
+  FI I9=ev.font_api.load_font(font,30,30);
+  BM I10=ev.font_api.draw_text_string(I9,"4",5,30);
+  FI I11=ev.font_api.load_font(font,30,30);
+  BM I12=ev.font_api.draw_text_string(I11,"5",5,30);
+  FI I13=ev.font_api.load_font(font,30,30);
+  BM I14=ev.font_api.draw_text_string(I13,"6",5,30);
+  FI I15=ev.font_api.load_font(font,30,30);
+  BM I16=ev.font_api.draw_text_string(I15,"7",5,30);
+  FI I17=ev.font_api.load_font(font,30,30);
+  BM I18=ev.font_api.draw_text_string(I17,"8",5,30);
+  FI I19=ev.font_api.load_font(font,30,30);
+  BM I20=ev.font_api.draw_text_string(I19,"9",5,30);
+
+  IF I21=ev.font_api.score_fetcher(ev);
+  SF I22=ev.font_api.int_to_string_fetcher(I21);
+
+  IF I23=ev.font_api.char_fetcher_from_string(I22,"0123456789",0);
+  ML I24=ev.font_api.dynamic_character(ev,std::vector<BM>{I2,I4,I6,I8,I10,I12,I14,I16,I18,I20},I23,0,0);
+
+  IF I25=ev.font_api.char_fetcher_from_string(I22,"0123456789",1);
+  ML I26=ev.font_api.dynamic_character(ev,std::vector<BM>{I2,I4,I6,I8,I10,I12,I14,I16,I18,I20},I25,0,0);
+
+  IF I27=ev.font_api.char_fetcher_from_string(I22,"0123456789",2);
+  ML I28=ev.font_api.dynamic_character(ev,std::vector<BM>{I2,I4,I6,I8,I10,I12,I14,I16,I18,I20},I27,0,0);
+
+  IF I29=ev.font_api.char_fetcher_from_string(I22,"0123456789",3);
+  ML I30=ev.font_api.dynamic_character(ev,std::vector<BM>{I2,I4,I6,I8,I10,I12,I14,I16,I18,I20},I29,0,0);
+
+  IF I31=ev.font_api.char_fetcher_from_string(I22,"0123456789",4);
+  ML I32=ev.font_api.dynamic_character(ev,std::vector<BM>{I2,I4,I6,I8,I10,I12,I14,I16,I18,I20},I31,0,0);
+
+  MN I49a=ev.move_api.empty();
+  MN I50a=ev.move_api.trans2(I49a,35,0,0);
+  ML I51a=ev.move_api.move_ml(ev,I26,I50a,1,10.0);
+
+  MN I49b=ev.move_api.empty();
+  MN I50b=ev.move_api.trans2(I49b,35+35,0,0);
+  ML I51b=ev.move_api.move_ml(ev,I28,I50b,1,10.0);
+
+  MN I49c=ev.move_api.empty();
+  MN I50c=ev.move_api.trans2(I49c,35+35+35,0,0);
+  ML I51c=ev.move_api.move_ml(ev,I30,I50c,1,10.0);
+
+  MN I49d=ev.move_api.empty();
+  MN I50d=ev.move_api.trans2(I49d,35+35+35+35,0,0);
+  ML I51d=ev.move_api.move_ml(ev,I32,I50d,1,10.0);
+
+
+  ML I52=ev.mainloop_api.array_ml(std::vector<ML>{I24,I51a,I51b,I51c,I51d});
+  ML I53=ev.sprite_api.turn_to_2d(ev,I52,0.0,0.0,800.0,600.0);
+  ML I54=ev.mainloop_api.array_ml(std::vector<ML>{ml,I53});
+  return I54;
+
 }
 
 GameApi::ML GameApi::MainLoopApi::fps_display(EveryApi &ev, ML ml, std::string font)
@@ -12983,4 +13052,73 @@ GameApi::ML GameApi::MainLoopApi::dyn_points(EveryApi &ev, ML ml, MN move, int p
   Movement *mn = find_move(e, move);
   Point pos(pos_x,pos_y,pos_z);
   return add_main_loop(e, new DynPoints(e,ev, ma, mn, pointnum, pos));
+}
+extern std::map<std::string, int> number_map;
+int score=0; // remember to add to number_map["score"]
+
+class ScoreAdder : public MainLoopItem
+{
+public:
+  ScoreAdder(GameApi::EveryApi &ev,MainLoopItem *item, VolumeObject *obj, Movement *move, int enter_score, int leave_score, int dyn_point, float timeout) : ev(ev), item(item), obj(obj), move(move), enter_score(enter_score), leave_score(leave_score), dyn_point(dyn_point),timeout(timeout) {
+    prev_p = false;
+    prev_time = 0.0;
+    prev_time2 = 0.0;
+}
+
+  void enter_event(float time) {
+    if (time>prev_time+timeout) {
+      prev_time = time;
+      score+=enter_score;
+      if (score<0) score=0;
+      if (score>99999) score=99999;
+      number_map["score"] = score;
+    }
+  }
+  void leave_event(float time) {
+    if (time>prev_time2+timeout) {
+      prev_time2 = time;
+      score+=leave_score;
+      if (score<0) score=0;
+      if (score>99999) score=99999;
+      number_map["score"] = score;
+    }
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    Point p = Point(quake_pos_x, 0, quake_pos_y-400);
+    int s = dyn_points_global_x.size();
+    if (dyn_point>=0 && dyn_point<s)
+      {
+	p = Point(dyn_points_global_x[dyn_point],dyn_points_global_y[dyn_point],dyn_points_global_z[dyn_point]);
+      }
+    p = p * move->get_whole_matrix(e.time*10.0, ev.mainloop_api.get_delta_time());
+    bool b = obj->Inside(p);
+    if (b && b!=prev_p) { prev_p = b; enter_event(e.time*10.0); } else
+    if (!b && b!=prev_p) { prev_p = b; leave_event(e.time*10.0); }
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual int shader_id() { return item->shader_id(); }
+
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *item;
+  VolumeObject *obj;
+  Movement *move;
+  int enter_score, leave_score;
+  int dyn_point;
+  float timeout;
+  bool prev_p;
+  float prev_time, prev_time2;
+};
+
+GameApi::ML GameApi::MainLoopApi::score_adder(EveryApi &ev,ML ml, O o, MN transform, int enter_score, int leave_score, int dyn_point, float timeout)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  VolumeObject *obj = find_volume(e, o);
+  Movement *mv = find_move(e, transform);
+  return add_main_loop(e, new ScoreAdder(ev,item, obj, mv, enter_score, leave_score, dyn_point,timeout));
 }
