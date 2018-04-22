@@ -13117,15 +13117,15 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     Point p = Point(0, 0, -400);
-    Matrix m = Matrix::YRotation(-quake_rot_y);
-    p = p * m;
+    //Matrix m = Matrix::YRotation(-quake_rot_y);
+    //p = p * m;
     //p.x*=1.2;
     //p.y*=1.2;
     //p.z*=1.2;
     //Matrix m2 = Matrix::YRotation(-quake_rot_y);
     //p = p * m2;
     p.x-=quake_pos_x;
-    p.z-=quake_pos_y+200;
+    p.z-=quake_pos_y;
 
     debug_pos_x = p.x;
     debug_pos_y = p.y;
