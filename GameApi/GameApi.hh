@@ -353,6 +353,7 @@ public:
   IMPORT ML array_ml(std::vector<ML> vec);
   IMPORT ML dyn_points(EveryApi &ev, ML ml, MN move, int pointnum, float pos_x, float pos_y, float pos_z);
   ML seq_ml(std::vector<ML> vec, float time);
+  ML seq_ml_score(ML ml1, ML ml2, int score);
   ML timed_tmp_seq_ml(ML curr, ML end, float start_time, float end_time, float show_duration, int key);
   ML collision_seq_ml(ML curr, ML end, std::string obj1, std::string obj2, float show_duration);
   ML collision_gen_key(ML curr, std::string obj1, std::string obj2, int key, float duration);

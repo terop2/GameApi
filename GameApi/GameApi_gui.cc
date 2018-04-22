@@ -6726,6 +6726,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "[ML]", "float" },
 			 { "", "30.0" },
 			 "ML", "mainloop_api", "seq_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::seq_ml_score,
+			 "seq_ml_score",
+			 { "ml1", "ml2", "target_score" },
+			 { "ML", "ML", "int" },
+			 { "", "", "100" },
+			 "ML", "mainloop_api", "seq_ml_score"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timed_tmp_seq_ml,
 			 "timed_tmp_seq_ml",
 			 { "curr", "end", "start_time", "end_time", "show_duration", "key" },
