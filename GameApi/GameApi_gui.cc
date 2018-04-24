@@ -4820,7 +4820,7 @@ void link_api_items(std::vector<CodeGenLine> &vec, std::vector<GameApiItem*> fun
     int ss = functions.size();
     for(int k=0;k<ss;k++){
       GameApiItem* item = functions[k];
-      func_name_map[item->FuncName(0)] = item;
+      func_name_map[item->FuncName(0)+"%"+item->ApiName(0)] = item;
     }
   }
   int s = vec.size();
@@ -4831,7 +4831,7 @@ void link_api_items(std::vector<CodeGenLine> &vec, std::vector<GameApiItem*> fun
       bool found = false;
       //for(int j=0;j<ss;j++)
 	{
-	  GameApiItem* item = func_name_map[line.func_name]; //functions[j];
+	  GameApiItem* item = func_name_map[line.func_name+"%"+line.api_name]; //functions[j];
 	  //std::cout << "Compare: " << line.func_name << " " << item->FuncName(0) << std::endl;
 	  //std::cout << "Compare2: " << line.api_name << " " << item->ApiName(0) << std::endl;
 	  if (line.func_name == item->FuncName(0) &&
