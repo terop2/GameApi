@@ -255,15 +255,15 @@ Point2d SphereElem::TexCoord(int face, int point) const
 
 Point ConeElem::FacePoint(int face, int point) const
 {
-  //Point2d pp;
-  //pp.x= 0.0;
-  //pp.y= 0.0;
-  //Circle c1(pp, rad1);
-  //Circle c2(pp, rad2);
-  //PlaneCurveIn3d curve1(c1, pl1);
-  //PlaneCurveIn3d curve2(c2, pl2);
-  //SampleCurve3d sample1(curve1, numfaces);
-  //SampleCurve3d sample2(curve2, numfaces);
+  Point2d pp;
+  pp.x= 0.0;
+  pp.y= 0.0;
+  Circle c1(pp, rad1);
+  Circle c2(pp, rad2);
+  PlaneCurveIn3d curve1(c1, pl1);
+  PlaneCurveIn3d curve2(c2, pl2);
+  SampleCurve3d sample1(curve1, numfaces);
+  SampleCurve3d sample2(curve2, numfaces);
   int addx = 0;
   int addy = 0;
   switch(point)
