@@ -8210,8 +8210,8 @@ class ConeElem : public SingleForwardBoxableFaceCollection
 {
 public:
   ConeElem(int numfaces, Point p1, Point p2, float rad1, float rad2)
-    : numfaces(numfaces), p1(p1), p2(p2), rad1(rad1), rad2(rad2), lp(p1,p2), pl1(lp.PlaneFromLine(0.0, 0.0, 1.0)), pl2(lp.PlaneFromLine(1.0,0.0,1.0)),c1(pp,rad1),c2(pp,rad2),curve1(c1,pl1),curve2(c2,pl2),sample1(curve1,numfaces),sample2(curve2,numfaces) { pl1.Normalize(); pl2.Normalize(); }
-  ConeElem(int numfaces, Point p1, Point p2, float rad1, float rad2, Plane pl1, Plane pl2) :  numfaces(numfaces), p1(p1), p2(p2), rad1(rad1), rad2(rad2), lp(p1, p2), pl1(pl1), pl2(pl2),c1(pp,rad1),c2(pp,rad2),curve1(c1,pl1),curve2(c2,pl2),sample1(curve1,numfaces),sample2(curve2,numfaces) { pl1.Normalize(); pl2.Normalize(); }
+    : numfaces(numfaces), p1(p1), p2(p2), rad1(rad1), rad2(rad2), lp(p1,p2), pl1(lp.PlaneFromLine(0.0, 0.0, 1.0)), pl2(lp.PlaneFromLine(1.0,0.0,1.0)) { pl1.Normalize(); pl2.Normalize(); }
+  ConeElem(int numfaces, Point p1, Point p2, float rad1, float rad2, Plane pl1, Plane pl2) :  numfaces(numfaces), p1(p1), p2(p2), rad1(rad1), rad2(rad2), lp(p1, p2), pl1(pl1), pl2(pl2) { pl1.Normalize(); pl2.Normalize(); }
   void Prepare() { }
   virtual void SetBox(Matrix b) { /*box = b;*/ }
   virtual int NumFaces() const { return numfaces; }
@@ -8261,13 +8261,6 @@ private:
   float rad1, rad2;
   LineProperties lp;
   Plane pl1, pl2;
-  Point2d pp = { 0.0, 0.0};
-  Circle c1;
-  Circle c2;
-  PlaneCurveIn3d curve1;
-  PlaneCurveIn3d curve2;
-  SampleCurve3d sample1;
-  SampleCurve3d sample2;
 };
 typedef FunctionImplT2<BoxableFaceCollection*, int, int, SphereElem> SphereElemFunction;
 
