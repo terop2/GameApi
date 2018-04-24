@@ -4815,15 +4815,23 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
 
 void link_api_items(std::vector<CodeGenLine> &vec, std::vector<GameApiItem*> functions)
 {
+  static std::map<std::string,GameApiItem*> func_name_map;
+  if (func_name_map.size()==0) {
+    int ss = functions.size();
+    for(int k=0;k<ss;k++){
+      GameApiItem* item = functions[k];
+      func_name_map[item->FuncName(0)] = item;
+    }
+  }
   int s = vec.size();
   for(int i=0;i<s;i++)
     {
       CodeGenLine &line = vec[i];
-      int ss = functions.size();
+      //int ss = functions.size();
       bool found = false;
-      for(int j=0;j<ss;j++)
+      //for(int j=0;j<ss;j++)
 	{
-	  GameApiItem* item = functions[j];
+	  GameApiItem* item = func_name_map[line.func_name]; //functions[j];
 	  //std::cout << "Compare: " << line.func_name << " " << item->FuncName(0) << std::endl;
 	  //std::cout << "Compare2: " << line.api_name << " " << item->ApiName(0) << std::endl;
 	  if (line.func_name == item->FuncName(0) &&
