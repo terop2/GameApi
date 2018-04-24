@@ -2983,7 +2983,7 @@ public:
     if (time<start_time) { Matrix m=Matrix::Identity(); return next?next->get_whole_matrix(time, delta_time):m; }
     if (time>=end_time) { Matrix m=Matrix::Identity(); return Matrix::Translate(dx,dy,dz)*(next?next->get_whole_matrix(time,delta_time):m); }
     float d = time - start_time;
-    if (fabs(end_time-start_time)>0.01)
+    //if (fabs(end_time-start_time)>0.01)
       d/=(end_time-start_time);
     return Matrix::Translate(dx*d,dy*d,dz*d)*(next?next->get_whole_matrix(time, delta_time):Matrix::Identity());
   }
@@ -6306,7 +6306,7 @@ public:
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
-	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+	//ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_N", m2);
 
@@ -6475,7 +6475,7 @@ public:
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
-	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+	//ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_N", m2);
 
@@ -6650,7 +6650,7 @@ public:
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
-	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+	//ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_N", m2);
 
@@ -6796,7 +6796,7 @@ public:
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
-	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+	//ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_N", m2);
 	ev.shader_api.set_var(shader, "in_POS", 0.0f);
@@ -11492,7 +11492,7 @@ public:
     GameApi::M scale = ev.matrix_api.scale(1.0,1.0,-1.0);
     GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(trans,rot_y2),trans2),scale));
 
-    GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
+    //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
     GameApi::SH s1;
     s1.id = e.sh_texture;
     GameApi::SH s2;
@@ -11502,13 +11502,13 @@ public:
 
     ev.shader_api.use(s1);
     ev.shader_api.set_var(s1, "in_MV", res);
-    ev.shader_api.set_var(s1, "in_iMV", mat2i);
+    //ev.shader_api.set_var(s1, "in_iMV", mat2i);
     ev.shader_api.use(s2);
     ev.shader_api.set_var(s2, "in_MV", res);
-    ev.shader_api.set_var(s2, "in_iMV", mat2i);
+    //ev.shader_api.set_var(s2, "in_iMV", mat2i);
     ev.shader_api.use(s3);
     ev.shader_api.set_var(s3, "in_MV", res);
-    ev.shader_api.set_var(s3, "in_iMV", mat2i);
+    //ev.shader_api.set_var(s3, "in_iMV", mat2i);
 
     
     eee.in_MV = find_matrix(env, res);
