@@ -300,7 +300,17 @@ EXPORT void GameApi::WModApi::update_lines_from_canvas(W canvas, WM mod2, int id
 EXPORT std::vector<int> GameApi::WModApi::indexes_from_funcname(std::string func_name)
 {
   static std::vector<GameApiItem*> functions = all_functions();
+  static std::map<std::string,GameApiItem*> funcmap;
+  if (funcmap.size()==0) {
+    int s = functions.size();
+    for(int i=0;i<s;i++) {
+      GameApiItem *item = functions[i];
+      std::string name = item->Name(0);
+      funcmap[name]=item;
+    }
+  }
 
+  /*
   int s = functions.size();
   int i = 0;
   for(;i<s;i++)
@@ -309,7 +319,8 @@ EXPORT std::vector<int> GameApi::WModApi::indexes_from_funcname(std::string func
       std::string name = item->Name(0);
       if (func_name == name) break;
     }
-  GameApiItem *item = functions[i];
+  */
+  GameApiItem *item = funcmap[func_name]; //functions[i];
   std::vector<std::string> param_types;
   std::vector<int> param_indexes;
   int sss = item->ParamCount(0);
@@ -1291,9 +1302,13 @@ EXPORT std::string GameApi::WModApi::param_value(WM mod2, int id, std::string ui
 
 EXPORT std::string GameApi::WModApi::get_funcname(WM mod2, int id, std::string uid)
 {
+  static std::map<std::string,std::string> cache;
+
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
   GameApiFunction *func = &mod->funcs[id];
+
+  if (cache[uid]!="") return cache[uid];
 
   int s = func->lines.size();
   for(int i=0;i<s;i++)
@@ -1301,6 +1316,7 @@ EXPORT std::string GameApi::WModApi::get_funcname(WM mod2, int id, std::string u
       GameApiLine line = func->lines[i];
       if (line.uid == uid)
 	{
+	  cache[uid]=line.module_name;
 	  return line.module_name;
 	}
     }

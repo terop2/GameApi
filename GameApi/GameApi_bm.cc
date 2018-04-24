@@ -216,7 +216,10 @@ EXPORT GameApi::BM GameApi::BitmapApi::color_range(BM orig, unsigned int source_
 class GradientBitmap2 : public Bitmap<Color>
 {
 public:
-  GradientBitmap2(Point2d pos_1, Point2d pos_2, unsigned int color_1, unsigned int color_2, int sx, int sy) : pos_1(pos_1), pos_2(pos_2), color_1(color_1), color_2(color_2), sx(sx), sy(sy) { }
+  GradientBitmap2(Point2d pos_1, Point2d pos_2, unsigned int color_1, unsigned int color_2, int sx, int sy) : pos_1(pos_1), pos_2(pos_2), color_1(color_1), color_2(color_2), sx(sx), sy(sy) { 
+    u_x = Point(pos_2.x, pos_2.y, 0.0)-Point(pos_1.x, pos_1.y, 0.0);
+    v = u_x.Dist();
+  }
   void Prepare() { }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
@@ -224,9 +227,7 @@ public:
   {
     //std::cout << "gradient" << std::endl;
     Vector u = Point(x, y, 0.0)-Point(pos_1.x, pos_1.y, 0.0);
-    Vector u_x = Point(pos_2.x, pos_2.y, 0.0)-Point(pos_1.x, pos_1.y, 0.0);
     float val = Vector::DotProduct(u, u_x);
-    float v = u_x.Dist();
     val /= v;
     val /= v; 
     // now [0.0 .. 1.0]
@@ -241,6 +242,8 @@ private:
   unsigned int color_1;
   unsigned int color_2;
   int sx,sy;
+  Vector u_x;
+  float v;
 };
 EXPORT GameApi::BM GameApi::BitmapApi::gradient(PT pos_1, PT pos_2, unsigned int color_1, unsigned int color_2, int sx, int sy)
 {
