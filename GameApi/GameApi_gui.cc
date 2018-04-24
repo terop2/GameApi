@@ -4830,7 +4830,7 @@ void link_api_items(std::vector<CodeGenLine> &vec, std::vector<GameApiItem*> fun
 	      line.api_name == item->ApiName(0))
 	    {
 	      line.item = item;
-	      found=true;
+	      found=true; break;
 	    }
 	}
       if (found==false) { std::cout << "NOT FOUND: " << line.api_name << " " << line.func_name<< std::endl; }
