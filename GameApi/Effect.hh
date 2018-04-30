@@ -28,7 +28,9 @@
 #undef M_PI
 #include <iostream>
 #include "Pieces.hh"
+#ifndef DEPS
 #include <SDL.h>
+#endif
 #undef M_PI
 #include "Buffer.hh"
 #include "Intersect.hh"
@@ -8206,12 +8208,19 @@ private:
 typedef FunctionImplT2<BoxableFaceCollection*, int, int, SphereElem> SphereElemFunction;
 #undef rad1
 #undef rad2
+
+class NormalizedPlane
+{
+public:
+  NormalizedPlane(Plane pl) : m_pl(pl) { m_pl.Normalize(); }
+  Plane m_pl;
+};
+
 class ConeElem : public SingleForwardBoxableFaceCollection
 {
 public:
-  ConeElem(int numfaces, Point p1, Point p2, float rad1, float rad2)
-    : numfaces(numfaces), p1(p1), p2(p2), rad1(rad1), rad2(rad2), lp(p1,p2), pl1(lp.PlaneFromLine(0.0, 0.0, 1.0)), pl2(lp.PlaneFromLine(1.0,0.0,1.0)) { pl1.Normalize(); pl2.Normalize(); }
-  ConeElem(int numfaces, Point p1, Point p2, float rad1, float rad2, Plane pl1, Plane pl2) :  numfaces(numfaces), p1(p1), p2(p2), rad1(rad1), rad2(rad2), lp(p1, p2), pl1(pl1), pl2(pl2) { pl1.Normalize(); pl2.Normalize(); }
+  ConeElem(int numfaces, Point p1, Point p2, float rad1, float rad2);
+  ConeElem(int numfaces, Point p1, Point p2, float rad1, float rad2, Plane pl1_, Plane pl2_);
   void Prepare() { }
   virtual void SetBox(Matrix b) { /*box = b;*/ }
   virtual int NumFaces() const { return numfaces; }
@@ -8260,7 +8269,11 @@ private:
   Point p1, p2;
   float rad1, rad2;
   LineProperties lp;
-  Plane pl1, pl2;
+  NormalizedPlane pl1, pl2;
+  Point2d pp = { 0.0, 0.0 };
+  Circle c1,c2;
+  PlaneCurveIn3d curve1,curve2;
+  SampleCurve3d sample1, sample2;
 };
 typedef FunctionImplT2<BoxableFaceCollection*, int, int, SphereElem> SphereElemFunction;
 

@@ -325,6 +325,7 @@ public:
   IMPORT void save_logo(EveryApi &ev);
   IMPORT void display_logo(EveryApi &ev);
   IMPORT ML debug_obj(EveryApi &ev);
+  IMPORT ML restart_screen(EveryApi &ev, ML ml, std::string fontname);
   struct Event
   {
     int type;
@@ -550,7 +551,7 @@ public:
   IMPORT BM add_shape_border(EveryApi &ev, BM bm, float dist_field_size, float start_range, float end_range, int r, int g, int b, int a, int border_size);
 	BM subbitmap(BM orig, int x, int y, int width, int height);
 	IMPORT BM subbitmapimage(BM orig, int r_start_range, int r_end_range, int g_start_range, int g_end_range, int b_start_range, int b_end_range, unsigned int empty_color);
-
+  IMPORT BM plus_bitmap(BM bm, BM bm2);
   IMPORT IBM random_int_bitmap(int sx,int sy,int min_value,int max_value);
   IMPORT IBM convert_fb_to_ibm_bitmap(FB fb, float start, float d);
   IMPORT VX convert_ibm_to_vx(IBM bm);
@@ -2955,6 +2956,7 @@ public:
   IMPORT PTS pts_grid(BM bm, float start_x, float end_x, float start_y, float en_y, float z);
   IMPORT PTS pts_grid_bb(BB bb, float start_x, float end_x, float start_y, float en_y, float z);
   IMPORT PTS or_points(PTS p1, PTS p2);
+  IMPORT PTS sort_pts(PTS p);
   IMPORT PTS heightmap(BM colour, FB floatbitmap, PT pos, V u_x, V u_y, V u_z, int sx, int sy);
   IMPORT PTS random_plane(PT pos, V u_x, V u_y, int numpoints);
   IMPORT PTS random_bitmap_instancing(EveryApi &ev, BB bm, int count, float start_x, float end_x, float start_y, float end_y, float z);

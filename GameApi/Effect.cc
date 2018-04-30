@@ -253,17 +253,25 @@ Point2d SphereElem::TexCoord(int face, int point) const
     */
   }
 
+ConeElem::ConeElem(int numfaces, Point p1, Point p2, float rad1, float rad2)
+  : numfaces(numfaces), p1(p1), p2(p2), rad1(rad1), rad2(rad2), lp(p1,p2), pl1(lp.PlaneFromLine(0.0, 0.0, 1.0)), pl2(lp.PlaneFromLine(1.0,0.0,1.0)),c1(pp,rad1), c2(pp,rad2), curve1(&c1,pl1.m_pl), curve2(&c2,pl2.m_pl), sample1(curve1,numfaces), sample2(curve2,numfaces) { /*pl1.pl.Normalize(); pl2.pl.Normalize();*/ }
+ConeElem::ConeElem(int numfaces, Point p1, Point p2, float rad1, float rad2, Plane pl1_, Plane pl2_) :  numfaces(numfaces), p1(p1), p2(p2), rad1(rad1), rad2(rad2), lp(p1, p2), pl1(pl1_), pl2(pl2_),c1(pp,rad1),c2(pp,rad2),curve1(&c1,pl1.m_pl), curve2(&c2,pl2.m_pl), sample1(curve1,numfaces), sample2(curve2,numfaces) { /*pl1.pl.Normalize(); pl2.pl.Normalize();*/ }
+
+
 Point ConeElem::FacePoint(int face, int point) const
 {
+  /*
   Point2d pp;
   pp.x= 0.0;
   pp.y= 0.0;
   Circle c1(pp, rad1);
   Circle c2(pp, rad2);
-  PlaneCurveIn3d curve1(c1, pl1);
-  PlaneCurveIn3d curve2(c2, pl2);
+  PlaneCurveIn3d curve1(const_cast<CurveIn2d*>(static_cast<const CurveIn2d*>(&c1)), pl1.m_pl);
+  PlaneCurveIn3d curve2(const_cast<CurveIn2d*>(static_cast<const CurveIn2d*>(&c2)), pl2.m_pl);
   SampleCurve3d sample1(curve1, numfaces);
   SampleCurve3d sample2(curve2, numfaces);
+  */
+  
   int addx = 0;
   int addy = 0;
   switch(point)

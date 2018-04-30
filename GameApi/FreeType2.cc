@@ -75,7 +75,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   if (data) { 
     pthread_mutex_unlock(&mutex);
     return; }
-  std::cout << "gen_glyph_data:" << idx << std::endl;
+  //std::cout << "gen_glyph_data:" << idx << std::endl;
 
   if (!data) {
     data = new GlyphData;
@@ -85,7 +85,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   unsigned char *ptr2 = loaded_maps[ttf_filename];
   int size = loaded_sizes[ttf_filename];
   if (!ptr2) {
-    std::cout << "loading font: " << ttf_filename << std::endl;
+    //std::cout << "loading font: " << ttf_filename << std::endl;
 #ifndef EMSCRIPTEN
   e.async_load_url(ttf_filename, homepage);
 #endif

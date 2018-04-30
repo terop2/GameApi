@@ -1681,3 +1681,60 @@ GameApi::PTS GameApi::PointsApi::li_pts2(LI li)
   PTS p2 = li_pts(li,1.0f);
   return or_points(p1,p2);
 }
+
+class CompareCC {
+public:
+  CompareCC(PointsApiPoints *p, MainLoopEnv *e) : p(p), e(e) {}
+  bool operator()(int p1, int p2) 
+  {
+    Point pp1 = p->Pos(p1);
+    Point pp2 = p->Pos(p2);
+    Matrix m = e->in_MV;
+    pp1 = pp1*m;
+    pp2 = pp2*m;
+    return pp1.z < pp2.z;
+  }
+private:
+  PointsApiPoints *p;
+  MainLoopEnv *e;
+  MainLoopItem *item;
+};
+
+class SortPTS : public PointsApiPoints
+{
+public:
+  SortPTS(PointsApiPoints *pts) : pts(pts) { }
+  virtual void Prepare() { pts->Prepare(); }
+  virtual void HandleEvent(MainLoopEvent &event) { pts->HandleEvent(event); }
+  virtual bool Update(MainLoopEnv &e) { 
+    vec = std::vector<int>();
+    int s = pts->NumPoints();
+    for(int i=0;i<s;i++) vec.push_back(i);
+    CompareCC c(pts,&e);
+    std::sort(vec.begin(),vec.end(),c);
+
+    return pts->Update(e); 
+  }
+  virtual int NumPoints() const
+  {
+    return pts->NumPoints();
+  }
+  virtual Point Pos(int i) const
+  {
+    return pts->Pos(vec[i]);
+  }
+  virtual unsigned int Color(int i) const
+  {
+    return pts->Color(vec[i]);
+  }
+
+private:
+  PointsApiPoints *pts;
+  std::vector<int> vec;
+};
+
+GameApi::PTS GameApi::PointsApi::sort_pts(PTS points)
+{
+  PointsApiPoints *obj2 = find_pointsapi_points(e, points);
+  return add_points_api_points(e, new SortPTS(obj2));
+}
