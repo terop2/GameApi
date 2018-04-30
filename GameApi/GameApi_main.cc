@@ -1659,3 +1659,27 @@ GameApi::ML GameApi::MainLoopApi::blendfunc(ML ml, int val, int val2)
   MainLoopItem *next = find_main_loop(e,ml);
   return add_main_loop(e, new BlendFunc(next,val,val2));
 }
+
+GameApi::ML GameApi::MainLoopApi::restart_screen(EveryApi &ev, ML ml, std::string fontname)
+{
+  BM I1=ev.bitmap_api.newbitmap(500,30,00000000);
+  FI I2=ev.font_api.load_font(fontname,30,30);
+  BM I3=ev.font_api.draw_text_string(I2,"Press",5,30);
+  BM I4=ev.bitmap_api.blitbitmap(I1,I3,0,0);
+  FI I5=ev.font_api.load_font(fontname,30,30);
+  BM I6=ev.font_api.draw_text_string(I5,"R",5,30);
+  BM I7=ev.bitmap_api.blitbitmap(I4,I6,160,0);
+  FI I8=ev.font_api.load_font(fontname,30,30);
+  BM I9=ev.font_api.draw_text_string(I8,"to",5,30);
+  BM I10=ev.bitmap_api.blitbitmap(I7,I9,210,0);
+  FI I11=ev.font_api.load_font(fontname,30,30);
+  BM I12=ev.font_api.draw_text_string(I11,"Restart",5,30);
+  BM I13=ev.bitmap_api.blitbitmap(I10,I12,285,0);
+  ML I14=ev.sprite_api.vertex_array_render(ev,I13);
+  MN I15=ev.move_api.empty();
+  MN I16=ev.move_api.trans2(I15,150,300,0);
+  ML I17=ev.move_api.move_ml(ev,I14,I16,1,10.0);
+  ML I18=ev.sprite_api.turn_to_2d(ev,I17,0.0,0.0,800.0,600.0);
+  ML I19=ev.mainloop_api.array_ml(std::vector<ML>{I18,ml});
+  return I19;
+}

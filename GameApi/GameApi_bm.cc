@@ -219,6 +219,7 @@ public:
   GradientBitmap2(Point2d pos_1, Point2d pos_2, unsigned int color_1, unsigned int color_2, int sx, int sy) : pos_1(pos_1), pos_2(pos_2), color_1(color_1), color_2(color_2), sx(sx), sy(sy) { 
     u_x = Point(pos_2.x, pos_2.y, 0.0)-Point(pos_1.x, pos_1.y, 0.0);
     v = u_x.Dist();
+    v = v*v;
   }
   void Prepare() { }
   virtual int SizeX() const { return sx; }
@@ -229,7 +230,7 @@ public:
     Vector u = Point(x, y, 0.0)-Point(pos_1.x, pos_1.y, 0.0);
     float val = Vector::DotProduct(u, u_x);
     val /= v;
-    val /= v; 
+    //val /= v; 
     // now [0.0 .. 1.0]
     if (val<0.0) return 0;
     if (val>1.0) return 0;
@@ -3605,4 +3606,43 @@ GameApi::BM GameApi::BitmapApi::intbitmap_bm(IBM ibm)
 {
   Bitmap<int> *bi = find_int_bitmap(e, ibm);
   return add_color_bitmap(e, new IntBitmap_BM(*bi));
+}
+
+class PlusBitmap : public Bitmap<Color>
+{
+public:
+  PlusBitmap(Bitmap<Color> &bm1, Bitmap<Color> &bm2) : bm1(bm1), bm2(bm2) { }
+  virtual int SizeX() const { return std::min(bm1.SizeX(),bm2.SizeX()); }
+  virtual int SizeY() const { return std::min(bm1.SizeY(),bm2.SizeY()); }
+  virtual Color Map(int x, int y) const
+  {
+    Color c1 = bm1.Map(x,y);
+    Color c2 = bm2.Map(x,y);
+    int r = c1.r + c2.r;
+    int g = c1.g + c2.g;
+    int b = c1.b + c2.b;
+    if (r>255) r=255;
+    if (g>255) g=255;
+    if (b>255) b=255;
+    int a = (c1.alpha+c2.alpha)/2;
+    return Color(r,g,b,a);
+  }
+  virtual void Prepare()
+  {
+    bm1.Prepare();
+    bm2.Prepare();
+  }
+
+private:
+  Bitmap<Color> &bm1;
+  Bitmap<Color> &bm2;
+};
+
+GameApi::BM GameApi::BitmapApi::plus_bitmap(BM bm, BM bm2)
+{
+  BitmapHandle *bm_h = find_bitmap(e,bm);
+  BitmapHandle *bm2_h = find_bitmap(e,bm2);
+  Bitmap<Color> *bbm = find_color_bitmap(bm_h);
+  Bitmap<Color> *bbm2 = find_color_bitmap(bm2_h);
+  return add_color_bitmap(e, new PlusBitmap(*bbm,*bbm2));
 }

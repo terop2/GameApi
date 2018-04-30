@@ -4643,7 +4643,8 @@ ASyncData async_data[] = { { "font_api", "newfont", 0 },
 			   { "mainloop_api", "load_ML_script", 1 },
 			   { "mainloop_api", "load_BM_script", 1 },
 			   { "polygon_api", "p_ds_url", 1 },
-			   { "bitmap_api", "intbitmap_loader", 0 }
+			   { "bitmap_api", "intbitmap_loader", 0 },
+			   { "mainloop_api", "restart_screen", 2 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -7039,7 +7040,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "std::string" },
 			 { "ev", "", "http://tpgames.org/Chunkfive.otf" },
 			 "ML", "mainloop_api", "score_display"));
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::restart_screen,
+			 "restart_screen",
+			 { "ev", "ml", "fontname" },
+			 { "EveryApi&", "ML", "std::string" },
+			 { "ev", "", "http://tpgames.org/Chunkfive.otf" },
+			 "ML", "mainloop_api", "restart_screen"));
+			
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::skeletal_api, &GameApi::Skeletal::skeletal_bind,
 			 "skeletal_bind",
@@ -8432,6 +8439,12 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 { "PTS", "PTS", "float", "float", "float", "float" },
 			 { "", "", "0.0", "1.0", "10.0", "40.0" },
 			 "PTS", "points_api", "anim_mix"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::sort_pts,
+			 "sort_pts",
+			 { "points" },
+			 { "PTS" },
+			 { "" },
+			 "PTS", "points_api", "sort_pts"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::rot_x,
 			 "rot_x_pts",
 			 { "obj", "angle" },
@@ -8995,6 +9008,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "", "", "0.0" },
 			 "BM", "bitmap_api", "interpolate_bitmap"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::plus_bitmap,
+			 "bm_plus",
+			 { "bm1", "bm2" },
+			 { "BM", "BM" },
+			 { "", "" },
+			 "BM", "bitmap_api", "plus_bitmap"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::repeat_bitmap,
 			 "repeat",
 			 { "orig1", "x_count", "y_xount" },

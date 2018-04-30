@@ -11511,7 +11511,7 @@ public:
     //ev.shader_api.set_var(s3, "in_iMV", mat2i);
 
     
-    eee.in_MV = find_matrix(env, res);
+    eee.in_MV = find_matrix(env, res); 
     eee.env = find_matrix(env, res);
 
     next->execute(eee);

@@ -43,8 +43,11 @@
 #include <chrono>
 
 #define NO_SDL_GLEXT 
+#ifndef DEPS
 #include <GL/glew.h> 
 #include <GL/gl.h>
+#endif
+#ifndef DEPS
 #ifdef SDL2_USED
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -53,9 +56,10 @@
 #include <SDL/SDL_opengl.h>
 #endif
 #include <SDL_mixer.h>
-
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#endif
+
 #undef LoadImage
 
 #include "FreeType.hh"
