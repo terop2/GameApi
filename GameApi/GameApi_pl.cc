@@ -5033,7 +5033,7 @@ private:
 class TextureCubemapShaderML : public MainLoopItem
 {
 public:
-  TextureCubemapShaderML(GameApi::EveryApi &ev, MainLoopItem *next, float mix) : ev(ev), next(next),mix(mix) 
+  TextureCubemapShaderML(GameApi::EveryApi &ev, MainLoopItem *next, float mix, float mix2) : ev(ev), next(next),mix(mix), mix2(mix2) 
   {
     firsttime = true;
   }
@@ -5076,6 +5076,7 @@ public:
 	sh.id = sh_id;
 	ev.shader_api.use(sh);
 	ev.shader_api.set_var(sh, "color_mix", mix);
+	ev.shader_api.set_var(sh, "color_mix2", mix2);
       }
     next->execute(ee);
     ev.shader_api.unuse(sh);
@@ -5088,6 +5089,7 @@ private:
   GameApi::SH sh;
   bool firsttime;
   float mix;
+  float mix2;
 };
 
 
@@ -6091,10 +6093,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::texture_shader(EveryApi &ev, ML mainloop
    MainLoopItem *item = find_main_loop(e, mainloop);
    return add_main_loop(e, new TextureManyShaderML(ev, item, mix));
  }
- EXPORT GameApi::ML GameApi::PolygonApi::texture_cubemap_shader(EveryApi &ev, ML mainloop, float mix=0.5)
+ EXPORT GameApi::ML GameApi::PolygonApi::texture_cubemap_shader(EveryApi &ev, ML mainloop, float mix=0.5, float mix2=0.5)
  {
    MainLoopItem *item = find_main_loop(e, mainloop);
-   return add_main_loop(e, new TextureCubemapShaderML(ev, item, mix));
+   return add_main_loop(e, new TextureCubemapShaderML(ev, item, mix,mix2));
  }
 EXPORT GameApi::ML GameApi::PolygonApi::texture_arr_shader(EveryApi &ev, ML mainloop, float mix=0.5)
 {

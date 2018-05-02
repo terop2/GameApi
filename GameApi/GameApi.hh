@@ -1234,7 +1234,7 @@ public:
   IMPORT MT texture(EveryApi &ev, BM bm, float mix);
   IMPORT MT textureid(EveryApi &ev, TXID txid, float mix);
   IMPORT MT texture_many(EveryApi&ev, std::vector<BM> vec, float mix);
-  IMPORT MT texture_cubemap(EveryApi&ev, std::vector<BM> vec, float mix);
+  IMPORT MT texture_cubemap(EveryApi&ev, std::vector<BM> vec, float mix, float mix2);
   IMPORT MT texture_many2(EveryApi &ev, float mix);
   IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
   IMPORT MT phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
@@ -2386,7 +2386,7 @@ public:
   IMPORT ML toon_shader(EveryApi &ev, ML mainloop);  
   IMPORT ML texture_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML texture_many_shader(EveryApi &ev, ML mainloop, float mix);
-  IMPORT ML texture_cubemap_shader(EveryApi &ev, ML mainloop, float mix);
+  IMPORT ML texture_cubemap_shader(EveryApi &ev, ML mainloop, float mix, float mix2);
   IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML skeletal_shader(EveryApi &ev, ML mainloop, std::vector<SA> vec);
   IMPORT void explode(VA va, PT pos, float dist);

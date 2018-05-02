@@ -5153,19 +5153,19 @@ private:
 class CubemapTextureMaterial : public MaterialForward
 {
 public:
-  CubemapTextureMaterial(GameApi::EveryApi &ev, std::vector<GameApi::BM> bm, float mix) : ev(ev), bm(bm), mix(mix) { }
+  CubemapTextureMaterial(GameApi::EveryApi &ev, std::vector<GameApi::BM> bm, float mix, float mix2) : ev(ev), bm(bm), mix(mix),mix2(mix2) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
     GameApi::P I10=p; 
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_cubemap(ev,I10,bm);
-    GameApi::ML I18=ev.polygon_api.texture_cubemap_shader(ev, I17, mix);
+    GameApi::ML I18=ev.polygon_api.texture_cubemap_shader(ev, I17, mix,mix2);
     return I18;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     //GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_cubemap(ev,p,pts,bm);
-    GameApi::ML I18=ev.polygon_api.texture_cubemap_shader(ev, I17,mix);
+    GameApi::ML I18=ev.polygon_api.texture_cubemap_shader(ev, I17,mix,mix2);
     return I18;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
@@ -5200,6 +5200,7 @@ private:
   GameApi::EveryApi &ev;
   std::vector<GameApi::BM> bm;
   float mix;
+  float mix2;
 };
 
 
@@ -6022,9 +6023,9 @@ EXPORT GameApi::MT GameApi::MaterialsApi::texture_many(EveryApi &ev, std::vector
 {
   return add_material(e, new ManyTextureMaterial(ev, vec,mix));
 }
-EXPORT GameApi::MT GameApi::MaterialsApi::texture_cubemap(EveryApi &ev, std::vector<BM> vec, float mix)
+EXPORT GameApi::MT GameApi::MaterialsApi::texture_cubemap(EveryApi &ev, std::vector<BM> vec, float mix, float mix2)
 {
-  return add_material(e, new CubemapTextureMaterial(ev, vec,mix));
+  return add_material(e, new CubemapTextureMaterial(ev, vec,mix,mix2));
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::texture_many2(EveryApi &ev, float mix)
 {
