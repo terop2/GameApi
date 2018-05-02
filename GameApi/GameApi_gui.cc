@@ -6486,9 +6486,9 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "MT", "materials_api", "texture_many2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_cubemap,
 			 "m_texture_cubemap",
-			 { "ev", "vec", "mix" },
-			 { "EveryApi&", "[BM]", "float" },
-			 { "ev", "", "1.0" },
+			 { "ev", "vec", "mix", "mix2" },
+			 { "EveryApi&", "[BM]", "float","float" },
+			 { "ev", "", "1.0", "1.0" },
 			 "MT", "materials_api", "texture_cubemap"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_arr,
