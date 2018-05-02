@@ -3646,3 +3646,203 @@ GameApi::BM GameApi::BitmapApi::plus_bitmap(BM bm, BM bm2)
   Bitmap<Color> *bbm2 = find_color_bitmap(bm2_h);
   return add_color_bitmap(e, new PlusBitmap(*bbm,*bbm2));
 }
+
+class GradientFB : public Bitmap<float>
+{
+public:
+  GradientFB(int sx, int sy, float val, float val2, bool flip) : sx(sx), sy(sy), val(val), val2(val2), flip(flip) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual float Map(int x, int y) const
+  {
+    float p;
+    if (flip) { p = float(x)/float(sx);  }
+    else { p=float(y)/float(sy); }
+    p = p*val2+(1.0-p)*val;
+    return p;
+  }
+  virtual void Prepare() { }
+private:
+  int sx, sy;
+  float val,val2;
+  bool flip;
+};
+
+GameApi::FB GameApi::BitmapApi::gradient_fb(int sx, int sy, float val, float val2, bool flip)
+{
+  return add_float_bitmap(e, new GradientFB(sx,sy,val,val2,flip));
+}
+
+class RadialFB : public Bitmap<float>
+{
+public:
+  RadialFB(int sx, int sy, float x, float y, float r, float val_at_zero, float val_at_r) : sx(sx), sy(sy), m_x(x),m_y(y), r(r), val_at_zero(val_at_zero), val_at_r(val_at_r) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual float Map(int x, int y) const
+  {
+    float xx = x-m_x;
+    float yy = y-m_y;
+    float d = sqrt(xx*xx+yy*yy);
+    d/=r;
+    return d*val_at_r + (1.0-d)*val_at_zero;
+  }
+  virtual void Prepare() { }
+
+private:
+  int sx, sy;
+  float m_x, m_y;
+  float mult;
+  float r;
+  float val_at_zero;
+  float val_at_r;
+};
+
+
+GameApi::FB GameApi::BitmapApi::radial_fb(int sx, int sy, float x, float y, float r, float val_at_zero, float val_at_r)
+{
+  return add_float_bitmap(e, new RadialFB(sx,sy, x,y, r, val_at_zero, val_at_r));
+}
+
+class SinFB : public Bitmap<float>
+{
+public:
+  SinFB(Bitmap<float> &fb) : fb(fb) { }
+  virtual int SizeX() const { return fb.SizeX(); }
+  virtual int SizeY() const { return fb.SizeY(); }
+  virtual float Map(int x, int y) const
+  {
+    return sin(fb.Map(x,y));
+  }
+  virtual void Prepare() { fb.Prepare(); }
+private:
+  Bitmap<float> &fb;
+};
+
+GameApi::FB GameApi::BitmapApi::sin_fb(FB gradient)
+{
+  Bitmap<float> *fb = find_float_bitmap(e, gradient)->bitmap;
+  return add_float_bitmap(e, new SinFB(*fb));
+}
+
+class PlusFB : public Bitmap<float>
+{
+public:
+  PlusFB(Bitmap<float> &b1, Bitmap<float> &b2) : b1(b1), b2(b2) { }
+  virtual int SizeX() const { return std::min(b1.SizeX(),b2.SizeX()); }
+  virtual int SizeY() const { return std::min(b1.SizeY(),b2.SizeY()); }
+  virtual float Map(int x, int y) const
+  {
+    return b1.Map(x,y)+b2.Map(x,y);
+  }
+  virtual void Prepare() { b1.Prepare(); b2.Prepare(); }
+private:
+  Bitmap<float> &b1, &b2;
+};
+
+
+GameApi::FB GameApi::BitmapApi::plus_fb(FB f1, FB f2)
+{
+  Bitmap<float> *fb1 = find_float_bitmap(e, f1)->bitmap;
+  Bitmap<float> *fb2 = find_float_bitmap(e, f2)->bitmap;
+  return add_float_bitmap(e, new PlusFB(*fb1,*fb2));
+}
+
+
+class SubBitmap2 : public Bitmap<Color>
+{
+public:
+  SubBitmap2(Bitmap<Color> &bm, int choose) : bm(bm), choose(choose) { }
+  int BaseX() const { return bm.SizeX(); }
+  int BaseY() const { return bm.SizeY(); }
+
+  int Val() const { return std::min(BaseX()/4,BaseY()/3); }
+
+  int LeftX() const { return 0; }
+  int LeftY() const { return Val(); }
+  int TopX() const { return Val(); }
+  int TopY() const { return 0; }
+  int FrontX() const { return Val(); }
+  int FrontY() const { return Val(); }
+  int BottomX() const { return Val(); }
+  int BottomY() const { return Val()*2; }
+  int RightX() const { return Val()*2; }
+  int RightY() const { return Val(); }
+  int BackX() const { return Val()*3; }
+  int BackY() const { return Val(); }
+  
+  int SizeX() const { return Val(); }
+  int SizeY() const { return Val(); }
+  
+  Color Map(int mx, int my) const
+  {
+    float pos_x = 0.0, pos_y = 0.0;
+    switch(choose) {
+    case 0: pos_x = RightX(); pos_y = RightY(); break;
+    case 1: pos_x = LeftX(); pos_y = LeftY(); break;
+    case 2: pos_x = TopX(); pos_y = TopY(); break;
+    case 3: pos_x = BottomX(); pos_y = BottomY(); break;
+    case 4: pos_x = BackX(); pos_y = BackY(); break;
+    case 5: pos_x = FrontX(); pos_y = FrontY(); break;
+    };
+    return bm.Map(mx+pos_x, my+pos_y);
+  }
+  void Prepare() { bm.Prepare(); }
+private:
+  Bitmap<Color> &bm;
+  int choose;
+};
+
+
+GameApi::ARR GameApi::BitmapApi::cubemap(BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<Color> *BM = find_color_bitmap(handle);
+  Bitmap<Color> *R0 = new SubBitmap2(*BM, 0);
+  Bitmap<Color> *R = new FlipBitmap(*R0, true,false);
+  Bitmap<Color> *L0 = new SubBitmap2(*BM, 1);
+  Bitmap<Color> *L = new FlipBitmap(*L0, true,false);
+  Bitmap<Color> *T0 = new SubBitmap2(*BM, 2);
+  Bitmap<Color> *T = new FlipBitmap(*T0, false,true);
+
+  Bitmap<Color> *Bot0 = new SubBitmap2(*BM, 3);
+  Bitmap<Color> *Bot = new FlipBitmap(*Bot0, false,true);
+  Bitmap<Color> *Back0 = new SubBitmap2(*BM, 4);
+  Bitmap<Color> *Back = new FlipBitmap(*Back0, true,false);
+  Bitmap<Color> *F0 = new SubBitmap2(*BM, 5);
+  Bitmap<Color> *F = new FlipBitmap(*F0, true,false);
+
+  BitmapColorHandle *handle_r = new BitmapColorHandle;
+  handle_r->bm = R;
+  GameApi::BM bm_r = add_bitmap(e, handle_r);
+
+  BitmapColorHandle *handle_l = new BitmapColorHandle;
+  handle_l->bm = L;
+  GameApi::BM bm_l = add_bitmap(e, handle_l);
+
+  BitmapColorHandle *handle_t = new BitmapColorHandle;
+  handle_t->bm = T;
+  GameApi::BM bm_t = add_bitmap(e, handle_t);
+
+  BitmapColorHandle *handle_bot = new BitmapColorHandle;
+  handle_bot->bm = Bot;
+  GameApi::BM bm_bot = add_bitmap(e, handle_bot);
+
+  BitmapColorHandle *handle_back = new BitmapColorHandle;
+  handle_back->bm = Back;
+  GameApi::BM bm_back = add_bitmap(e, handle_back);
+
+  BitmapColorHandle *handle_f = new BitmapColorHandle;
+  handle_f->bm = F;
+  GameApi::BM bm_f = add_bitmap(e, handle_f);
+
+  ArrayType *array = new ArrayType;
+  array->type=0;
+  array->vec.push_back(bm_r.id);
+  array->vec.push_back(bm_l.id);
+  array->vec.push_back(bm_t.id);
+  array->vec.push_back(bm_bot.id);
+  array->vec.push_back(bm_back.id);
+  array->vec.push_back(bm_f.id);
+  return add_array(e, array);
+}
