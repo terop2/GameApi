@@ -67,6 +67,8 @@
 
 #define SPECIAL_TEX_ID 600000
 #define SPECIAL_TEX_IDA 700000
+#define SPECIAL_TEX_ID_CUBEMAP 800000
+#define SPECIAL_TEX_ID_CUBEMAP_END 900000
 
 void *operator new( std::size_t count);
 void operator delete(void* ptr) noexcept;

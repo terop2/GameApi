@@ -21,6 +21,15 @@ EXPORT GameApi::VA GameApi::TextureApi::bind(GameApi::VA va, GameApi::TXID tx)
   arr->prepare(0);
   return add_vertex_array(e, ns, arr);
 }
+EXPORT GameApi::VA GameApi::TextureApi::bind_cubemap(GameApi::VA va, GameApi::TXID tx)
+{
+  VertexArraySet *s = find_vertex_array(e, va);
+  VertexArraySet *ns = new VertexArraySet(*s);
+  ns->texture_id = SPECIAL_TEX_ID_CUBEMAP+tx.id;
+  RenderVertexArray *arr = new RenderVertexArray(*ns);
+  arr->prepare(0);
+  return add_vertex_array(e, ns, arr);
+}
 EXPORT GameApi::VA GameApi::TextureApi::bind_many(GameApi::VA va, std::vector<GameApi::TXID> vec)
 {
   VertexArraySet *s = find_vertex_array(e, va);
@@ -75,6 +84,57 @@ GameApi::Q GameApi::TextureApi::get_tex_coord_1(TX tx, int id)
   Point2d p1 = tex->AreaS(i);
   Point2d p2 = tex->AreaE(i);
   return add_tex_quad(e, p1,p2);
+}
+EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right, BM left, BM top, BM bottom, BM back, BM front)
+{
+  GLuint id;
+  GameApi::TXID txid;
+  glGenTextures(1, &id);
+  txid.id = id;
+#ifndef EMSCRIPTEN
+  glClientActiveTexture(GL_TEXTURE0+0);
+#endif
+  glActiveTexture(GL_TEXTURE0+0);
+
+  std::vector<BM> vec;
+  vec.push_back(right);
+  vec.push_back(left);
+  vec.push_back(top);
+  vec.push_back(bottom);
+  vec.push_back(back);
+  vec.push_back(front);
+
+
+  int sizex=-1;
+  int sizey=-1;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      BitmapHandle *handle = find_bitmap(e, vec[i]);
+      Bitmap<Color> *bm = find_color_bitmap(handle);
+      FlipColours flip(*bm);
+      BufferFromBitmap buf(flip);
+      buf.Gen();
+
+      if (sizex==-1) sizex=bm->SizeX();
+      if (sizey==-1) sizey=bm->SizeY();
+      if (sizex!=sizey) {std::cout << "Warning: Cubemap textures dimensions need to be the same" << std::endl; }
+
+      if (bm->SizeX() != sizex) { std::cout << "Warning: Cubemap textures need to be same size" << std::endl; }
+      if (bm->SizeY() != sizey) { std::cout << "Warning: Cubemap textures need to be same size" << std::endl; }
+
+
+      glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,0,GL_RGBA,bm->SizeX(),bm->SizeY(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+    }
+  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
+  glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+  glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // GL_REPEAT
+  glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
+  glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE); 
+
+  return txid;
 }
 EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev, std::vector<BM> vec)
 {

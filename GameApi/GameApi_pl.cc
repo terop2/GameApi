@@ -4304,6 +4304,172 @@ private:
 };
 
 
+class RenderPTexCubemap : public MainLoopItem
+{
+public:
+  RenderPTexCubemap(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::PolygonApi &api, GameApi::P p, std::vector<GameApi::BM> bm) : env(env), ev(ev), api(api), p(p), bm(bm)
+  {
+    shader.id = -1;
+    firsttime = true;
+  }
+  int shader_id() { return shader.id; }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void execute(MainLoopEnv &e)
+  { 
+    if (firsttime)
+      {
+	va = ev.polygon_api.create_vertex_array(p, true);
+	GameApi::BM right,left,top,bottom,back,front;
+	right.id = 0;
+	left.id = 0;
+	top.id = 0;
+	bottom.id = 0;
+	back.id = 0;
+	front.id = 0;
+	if (bm.size()>0) right = bm[0];
+	if (bm.size()>1) left = bm[1];
+	if (bm.size()>2) top = bm[2];
+	if (bm.size()>3) bottom = bm[3];
+	if (bm.size()>4) back = bm[4];
+	if (bm.size()>5) front = bm[5];
+	if (left.id==0) left=right;
+	if (top.id==0) top=right;
+	if (bottom.id==0) bottom=right;
+	if (back.id==0) back=right;
+	if (front.id==0) front=right;
+	GameApi::TXID id = ev.texture_api.prepare_cubemap(ev, right,left,top,bottom,back,front);
+	va = ev.texture_api.bind_cubemap(va, id);
+      }
+
+
+    GameApi::SH sh;
+    if (ev.polygon_api.is_texture(va))
+      {
+	sh.id = e.sh_texture;
+	if (ev.polygon_api.is_array_texture(va))
+	  {
+	    sh.id = e.sh_array_texture;
+	  }
+      }
+    else
+      {
+	sh.id = e.sh_color;
+      }
+
+    GameApi::US u_v;
+    GameApi::US u_f;
+    u_v.id = 0;
+    u_f.id = 0;
+    if (e.us_vertex_shader!=-1)
+      u_v.id = e.us_vertex_shader;
+    if (e.us_fragment_shader!=-1)
+      u_f.id = e.us_fragment_shader;
+    if (firsttime)
+      {
+	if (u_v.id == 0)
+	  u_v = ev.uber_api.v_empty();
+	if (u_f.id == 0)
+	  u_f = ev.uber_api.f_empty(false);
+      }
+
+#if 1
+    if (ev.polygon_api.is_texture(va))
+      {
+	sh.id = e.sh_texture;
+	if (firsttime)
+	  {
+	    if (e.us_vertex_shader==-1)
+	      u_v = ev.uber_api.v_texture(u_v);
+	    if (e.us_fragment_shader==-1)
+	      u_f = ev.uber_api.f_texture(u_f);
+	  }
+	if (ev.polygon_api.is_array_texture(va))
+	  {
+	    sh.id = e.sh_array_texture;
+	      if (firsttime)
+	      {
+		if (e.us_vertex_shader==-1)
+		  u_v = ev.uber_api.v_texture_arr(u_v);
+		if (e.us_fragment_shader==-1)
+		  u_f = ev.uber_api.f_texture_arr(u_f);
+	      }
+	  }
+      }
+    else
+      {
+	sh.id = e.sh_color;
+	if (firsttime)
+	  {
+	    if (e.us_vertex_shader==-1)
+	      {
+		u_v = ev.uber_api.v_colour(u_v);
+		u_v = ev.uber_api.v_light(u_v);
+	      }
+	    if (e.us_fragment_shader==-1)
+	      {
+		u_f = ev.uber_api.f_colour(u_f);
+		u_f = ev.uber_api.f_light(u_f);
+	      }
+	  }
+      }
+#endif
+
+    if (shader.id==-1 && e.us_vertex_shader!=-1 && e.us_fragment_shader!=-1)
+      {
+	GameApi::US vertex;
+	GameApi::US fragment;
+	vertex.id = u_v.id; //e.us_vertex_shader;
+	fragment.id = u_f.id; //e.us_fragment_shader;
+	if (e.sfo_id==-1)
+	  {
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions);
+	  }
+	else
+	  {
+	    GameApi::SFO sfo;
+	    sfo.id = e.sfo_id;
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
+	  }
+	ev.mainloop_api.init_3d(shader);
+	ev.mainloop_api.alpha(true); 
+
+      }
+
+    if (shader.id!=-1)
+      {
+	ev.shader_api.use(sh);
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.use(shader);
+	ev.shader_api.set_var(shader, "in_MV", m);
+	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+
+	ev.shader_api.set_var(shader, "in_T", m1);
+	ev.shader_api.set_var(shader, "in_N", m2);
+	ev.shader_api.set_var(shader, "time", e.time);
+
+	sh = shader;
+      }
+    if (firsttime) { firsttime = false; }
+    ev.shader_api.use(sh);
+    api.render_vertex_array(va);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::PolygonApi &api;
+  bool firsttime;
+  GameApi::VA va;
+  GameApi::P p;
+  GameApi::SH shader;
+  std::vector<GameApi::BM> bm;
+};
+
+
 class RenderPTex2 : public MainLoopItem
 {
 public:
@@ -4838,6 +5004,67 @@ public:
     }
     fragment.id = ee.us_fragment_shader;
     GameApi::US a2f = ev.uber_api.f_manytexture(fragment);
+    ee.us_fragment_shader = a2f.id;
+    }
+
+    int sh_id = next->shader_id();
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	sh.id = sh_id;
+	ev.shader_api.use(sh);
+	ev.shader_api.set_var(sh, "color_mix", mix);
+      }
+    next->execute(ee);
+    ev.shader_api.unuse(sh);
+  }
+  int shader_id() { return next->shader_id(); }
+
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  GameApi::SH sh;
+  bool firsttime;
+  float mix;
+};
+
+
+class TextureCubemapShaderML : public MainLoopItem
+{
+public:
+  TextureCubemapShaderML(GameApi::EveryApi &ev, MainLoopItem *next, float mix) : ev(ev), next(next),mix(mix) 
+  {
+    firsttime = true;
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    if (firsttime) {
+      firsttime = false;
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      //GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    GameApi::US a2 = ev.uber_api.v_cubemaptexture(vertex);
+    ee.us_vertex_shader = a2.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      //GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    GameApi::US a2f = ev.uber_api.f_cubemaptexture(fragment);
     ee.us_fragment_shader = a2f.id;
     }
 
@@ -5864,6 +6091,11 @@ EXPORT GameApi::ML GameApi::PolygonApi::texture_shader(EveryApi &ev, ML mainloop
    MainLoopItem *item = find_main_loop(e, mainloop);
    return add_main_loop(e, new TextureManyShaderML(ev, item, mix));
  }
+ EXPORT GameApi::ML GameApi::PolygonApi::texture_cubemap_shader(EveryApi &ev, ML mainloop, float mix=0.5)
+ {
+   MainLoopItem *item = find_main_loop(e, mainloop);
+   return add_main_loop(e, new TextureCubemapShaderML(ev, item, mix));
+ }
 EXPORT GameApi::ML GameApi::PolygonApi::texture_arr_shader(EveryApi &ev, ML mainloop, float mix=0.5)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
@@ -5944,6 +6176,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2(EveryApi &ev, P 
  {
    return add_main_loop(e, new RenderPTex(e, ev, *this, p, bm));
  }
+ EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2_cubemap(EveryApi &ev, P p, std::vector<BM> bm)
+ {
+   return add_main_loop(e, new RenderPTexCubemap(e, ev, *this, p, bm));
+ }
  EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2_texture2(EveryApi &ev, P p)
  {
    return add_main_loop(e, new RenderPTex2(e, ev, *this, p));
@@ -5995,6 +6231,22 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       //arr.render(0);
       rend->render(0);
       TextureEnable(*env->renders[s->texture_id], 0, false);
+    }
+  else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID_CUBEMAP && s->texture_id<SPECIAL_TEX_ID_CUBEMAP_END)
+    {
+      glEnable(GL_TEXTURE_CUBE_MAP);
+#ifndef EMSCRIPTEN
+      glClientActiveTexture(GL_TEXTURE0+0);
+#endif
+      glActiveTexture(GL_TEXTURE0+0);
+      glBindTexture(GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
+
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(0);
+
+      glDisable(GL_TEXTURE_CUBE_MAP);
+
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
     {
@@ -6066,6 +6318,23 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_dyn(VA va, DC dc, MainLoopE
       rend->render(1);
       TextureEnable(*env->renders[s->texture_id], 0, false);
     }
+  else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID_CUBEMAP && s->texture_id<SPECIAL_TEX_ID_CUBEMAP_END)
+    {
+      glEnable(GL_TEXTURE_CUBE_MAP);
+#ifndef EMSCRIPTEN
+      glClientActiveTexture(GL_TEXTURE0+0);
+#endif
+      glActiveTexture(GL_TEXTURE0+0);
+      glBindTexture(GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
+
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(1);
+
+      glDisable(GL_TEXTURE_CUBE_MAP);
+
+    }
+
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
     {
       glEnable(GL_TEXTURE_2D);
@@ -6147,6 +6416,22 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       //arr.render(0);
       rend->render(0);
       TextureEnable(*env->renders[s->texture_id], 0, false);
+    }
+  else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID_CUBEMAP && s->texture_id<SPECIAL_TEX_ID_CUBEMAP_END)
+    {
+      glEnable(GL_TEXTURE_CUBE_MAP);
+#ifndef EMSCRIPTEN
+      glClientActiveTexture(GL_TEXTURE0+0);
+#endif
+      glActiveTexture(GL_TEXTURE0+0);
+      glBindTexture(GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
+
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(0);
+
+      glDisable(GL_TEXTURE_CUBE_MAP);
+
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
     {
@@ -10202,3 +10487,29 @@ GameApi::BM GameApi::PolygonApi::texture_from_p(P p, int num)
 
   return bm2;
 }
+
+ class NormalToTexCoord : public ForwardFaceCollection
+ {
+ public:
+   NormalToTexCoord(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+   Point2d TexCoord(int face, int point) const {
+     Vector n = ForwardFaceCollection::PointNormal(face,point);
+     Point2d p;
+     p.x = n.dx;
+     p.y = n.dy;
+     return p;
+   }
+   float TexCoord3(int face, int point) const
+   {
+     Vector n = ForwardFaceCollection::PointNormal(face,point);
+     return n.dz;
+   }
+ private:
+   FaceCollection *coll;
+ };
+
+ GameApi::P GameApi::PolygonApi::from_normal_to_texcoord(P p)
+ {
+   FaceCollection *coll = find_facecoll(e,p);
+   return add_polygon2(e, new NormalToTexCoord(coll),1);
+ }

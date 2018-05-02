@@ -490,11 +490,13 @@ public:
 	Q get_tex_coord_1(TX tx, int id);
 	IMPORT TXID prepare(TX tx);
   IMPORT std::vector<TXID> prepare_many(EveryApi &ev, std::vector<BM> vec);
+  IMPORT TXID prepare_cubemap(EveryApi &ev, BM right, BM left, BM top, BM bottom, BM back, BM front);
 	IMPORT void use(TXID tx, int i = 0);
   IMPORT void use_many(std::vector<TXID> vec, int i=0);
 	IMPORT void unuse(TXID tx);
 	IMPORT VA bind(VA va, TXID tx);
         IMPORT VA bind_many(VA va, std::vector<TXID> tx);
+        IMPORT VA bind_cubemap(VA va, TXID id);
 	IMPORT VA bind_arr(VA va, TXA tx);
         IMPORT TXA prepare_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
         IMPORT BM to_bitmap(TXID id);
@@ -567,6 +569,7 @@ public:
   IMPORT BM scale_bitmap(EveryApi &ev, BM orig, int sx, int sy);
   IMPORT BM scale_bitmap_fullscreen(EveryApi &ev, BM orig);
         IMPORT BM world_from_bitmap(std::function<BM(int)> f, BM int_bm, int dx, int dy);
+  IMPORT ARR cubemap(BM bm);
   IMPORT BM world_from_bitmap2(EveryApi &ev, std::vector<BM> v, std::string filename, std::string chars, int dx, int dy, int sx, int sy);
         IMPORT BM dup_x(BM orig);
 	IMPORT BM flip_x(BM orig);
@@ -615,6 +618,11 @@ public:
   IMPORT BM Indicator(int sx, int sy, int g_ind);
   IMPORT BM avg(BM bm1, BM bm2);
   IMPORT BM fix_edges(BM bm);
+
+  IMPORT FB gradient_fb(int sx, int sy, float val, float val2, bool flip);
+  IMPORT FB radial_fb(int sx, int sy, float x, float y, float r, float val_at_zero, float val_at_r);
+  IMPORT FB sin_fb(FB gradient);
+  IMPORT FB plus_fb(FB f1, FB f2);
 private:
   BitmapApi(const BitmapApi&);
   void operator=(const BitmapApi&);
@@ -1226,6 +1234,7 @@ public:
   IMPORT MT texture(EveryApi &ev, BM bm, float mix);
   IMPORT MT textureid(EveryApi &ev, TXID txid, float mix);
   IMPORT MT texture_many(EveryApi&ev, std::vector<BM> vec, float mix);
+  IMPORT MT texture_cubemap(EveryApi&ev, std::vector<BM> vec, float mix);
   IMPORT MT texture_many2(EveryApi &ev, float mix);
   IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
   IMPORT MT phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
@@ -1254,6 +1263,7 @@ public:
   IMPORT ML render_instanced_ml(EveryApi &ev, P p, PTS pts);
   IMPORT ML render_instanced_ml_fade(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time);
   IMPORT ML render_instanced_ml_texture(EveryApi &ev, P p, PTS pts, std::vector<BM> vec);
+  IMPORT ML render_instanced_ml_cubemap(EveryApi &ev, P p, PTS pts, std::vector<BM> vec);
   IMPORT ML render_instanced_ml_texture2(EveryApi &ev, P p, PTS pts);
   IMPORT ML render_instanced_ml_fade_texture(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time, std::vector<BM> vec);
   IMPORT ML render_instanced2_ml(EveryApi &ev, VA va, PTA pta);
@@ -2105,6 +2115,7 @@ public:
   IMPORT BM texture_from_p(P p, int num);
   
   IMPORT P smooth_normals2(P p);
+  IMPORT P from_normal_to_texcoord(P p);
   
   //IMPORT P line(PT p1, PT p2);
 	IMPORT P triangle(PT p1, PT p2, PT p3);
@@ -2342,6 +2353,7 @@ public:
   IMPORT ML render_vertex_array_ml(EveryApi &ev, VA va);
   IMPORT ML render_vertex_array_ml2(EveryApi &ev, P va);
   IMPORT ML render_vertex_array_ml2_texture(EveryApi &ev, P va, std::vector<BM> vec);
+  IMPORT ML render_vertex_array_ml2_cubemap(EveryApi &ev, P va, std::vector<BM> vec);
   IMPORT ML render_vertex_array_ml2_texture2(EveryApi &ev, P p);
   IMPORT SBM texture_sbm();
   IMPORT SBM combine_sbm(SBM texture1, SBM texture2);
@@ -2374,6 +2386,7 @@ public:
   IMPORT ML toon_shader(EveryApi &ev, ML mainloop);  
   IMPORT ML texture_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML texture_many_shader(EveryApi &ev, ML mainloop, float mix);
+  IMPORT ML texture_cubemap_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML skeletal_shader(EveryApi &ev, ML mainloop, std::vector<SA> vec);
   IMPORT void explode(VA va, PT pos, float dist);
@@ -3245,6 +3258,7 @@ public:
   US v_toon(US us);
   US v_texture(US us);
   US v_manytexture(US us);
+  US v_cubemaptexture(US us);
   US v_texture_arr(US us);
   US v_colour(US us);
   US v_blur(US us); // dangerous operation
@@ -3272,6 +3286,7 @@ public:
   US f_toon(US us);
   US f_texture(US us);
   US f_manytexture(US us);
+  US f_cubemaptexture(US us);
   US f_texture_arr(US us);
   US f_colour(US us);
   US f_mix_color(US us, US us2, float val); // TODO

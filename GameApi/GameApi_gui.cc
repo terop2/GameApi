@@ -6484,6 +6484,13 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "float" },
 			 { "ev", "0.5" },
 			 "MT", "materials_api", "texture_many2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_cubemap,
+			 "m_texture_cubemap",
+			 { "ev", "vec", "mix" },
+			 { "EveryApi&", "[BM]", "float" },
+			 { "ev", "", "1.0" },
+			 "MT", "materials_api", "texture_cubemap"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_arr,
 			 "m_texture_arr",
 			 { "ev", "vec", "sx", "sy", "mix" },
@@ -7750,6 +7757,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "P", "float", "float", "float", "float", "float", "float", "float", "float" },
 			 { "", "0.0", "0.0", "1.0", "0.0", "1.0", "1.0", "0.0", "1.0" },
 			 "P", "polygon_api", "texcoord_manual"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::from_normal_to_texcoord,
+			 "texcoord_from_normal",
+			 { "p" },
+			 { "P" },
+			 { "" },
+			 "P", "polygon_api", "from_normal_to_texcoord"));
 #if 0
   // doesnt work since wrapping at edge of texture works wrong
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texcoord_from_normal,
@@ -8689,6 +8702,30 @@ std::vector<GameApiItem*> floatbitmapapi_functions()
 			 { "", "", "0.5" },
 			 "FB", "float_bitmap_api", "mix_fb"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::gradient_fb,
+			 "gradient_fb",
+			 { "sx", "sy", "val", "val2", "flip" },
+			 { "int", "int", "float", "float", "bool" },
+			 { "100", "100", "0.0", "1.0", "false" },
+			 "FB", "bitmap_api", "gradient_fb"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::radial_fb,
+			 "radial_fb",
+			 { "sx", "sy", "x", "y", "r", "val_at_zero", "val_at_r" },
+			 { "int", "int", "float", "float", "float", "float", "float" },
+			 { "100", "100", "50", "50", "50", "1.0", "0.0" },
+			 "FB", "bitmap_api", "radial_fb"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::sin_fb,
+			 "sin_fb",
+			 { "gradient" },
+			 { "FB" },
+			 { "" },
+			 "FB", "bitmap_api", "sin_fb"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::plus_fb,
+			 "plus_fb",
+			 { "f1", "f2" },
+			 { "FB", "FB" },
+			 { "","" },
+			 "FB", "bitmap_api", "plus_fb"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::dist,
 			 "bm_dist",
 			 { "sx", "sy", "p_x", "p_y" },
@@ -8930,6 +8967,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			   { "EveryApi&", "BM", "int", "int", "int", "int", "int", "int", "int", "int" },
 			   { "ev", "", "0", "10", "0", "10", "10", "10", "2", "2" },
 			 "[BM]", "sprite_api", "sprite_atlas_xy"));
+    vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::cubemap,
+			   "bm_cubemap",
+			   { "bm" },
+			   { "BM" },
+			   { "" },
+			   "[BM]", "bitmap_api", "cubemap"));
 
     vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::fix_edges,
 			   "edge_fix",
