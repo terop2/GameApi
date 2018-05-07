@@ -214,3 +214,70 @@ void GameApi::TrackerApi::play_ogg(std::string filename)
   Mix_Music *mus = Mix_LoadMUS(filename.c_str());
   Mix_PlayMusic(mus, 1);
 }
+
+int music_initialized = 0;
+
+class PlayWavViaKeypress : public MainLoopItem
+{
+public:
+  PlayWavViaKeypress(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, std::string url, std::string homepage, int key) : env(env), ev(ev), next(next), url(url), homepage(homepage), key(key) { firsttime=true; initialized=false; chunk = 0;
+    if (!music_initialized) {
+      Mix_Init(0);
+      Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
+#ifndef EMSCRIPTEN
+      int c = Mix_GetNumMusicDecoders();
+      for(int i=0;i<c;i++)
+	{
+	  Mix_GetMusicDecoder(i);
+	}
+#endif
+      Mix_AllocateChannels(16);
+      music_initialized=1;
+    }
+  }
+
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    chunk = Mix_LoadWAV_RW(SDL_RWFromMem(&vec->operator[](0), vec->size()),0);
+    if (!chunk) {
+      std::cout << "Invalid wav file/Mix_QuickLoad_WAV failed" << std::endl;
+    }
+    initialized = true;
+    }
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (initialized) { 
+      if (e.ch == key && e.type==0x300) {
+	Mix_PlayChannel(-1,chunk, 0);
+      }
+    }
+    return next->handle_event(e);
+  }
+  virtual int shader_id() { return next->shader_id(); }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  std::string url;
+  std::string homepage;
+  int key;
+  bool firsttime;
+  bool initialized;
+  Mix_Chunk *chunk;
+};
+
+extern std::string gameapi_homepageurl;
+
+GameApi::ML GameApi::TrackerApi::play_wave_via_keypress(EveryApi &ev, ML ml, std::string url, int key)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  std::string homepage = gameapi_homepageurl;
+  return add_main_loop(e, new PlayWavViaKeypress(e,ev,item, url, homepage, key));
+}

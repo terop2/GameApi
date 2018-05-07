@@ -9608,7 +9608,9 @@ public:
     ev.mainloop_api.reset_time();
     if (env.logo_shown) {
       ev.mainloop_api.display_logo(ev);
-    } else {
+    } 
+    else 
+      {
 	ev.mainloop_api.advance_time(env.start_time/10.0*1000.0);
     }
      ev.mainloop_api.alpha(true);
@@ -12413,6 +12415,72 @@ GameApi::ML GameApi::MainLoopApi::score_display(EveryApi &ev, ML ml, std::string
   return I54;
 
 }
+
+GameApi::ML GameApi::MainLoopApi::time_display(EveryApi &ev, ML ml, std::string font, float start_time)
+{
+  FI I1=ev.font_api.load_font(font,30,30);
+  BM I2=ev.font_api.draw_text_string(I1,"0",5,30);
+  FI I3=ev.font_api.load_font(font,30,30);
+  BM I4=ev.font_api.draw_text_string(I3,"1",5,30);
+  FI I5=ev.font_api.load_font(font,30,30);
+  BM I6=ev.font_api.draw_text_string(I5,"2",5,30);
+  FI I7=ev.font_api.load_font(font,30,30);
+  BM I8=ev.font_api.draw_text_string(I7,"3",5,30);
+  FI I9=ev.font_api.load_font(font,30,30);
+  BM I10=ev.font_api.draw_text_string(I9,"4",5,30);
+  FI I11=ev.font_api.load_font(font,30,30);
+  BM I12=ev.font_api.draw_text_string(I11,"5",5,30);
+  FI I13=ev.font_api.load_font(font,30,30);
+  BM I14=ev.font_api.draw_text_string(I13,"6",5,30);
+  FI I15=ev.font_api.load_font(font,30,30);
+  BM I16=ev.font_api.draw_text_string(I15,"7",5,30);
+  FI I17=ev.font_api.load_font(font,30,30);
+  BM I18=ev.font_api.draw_text_string(I17,"8",5,30);
+  FI I19=ev.font_api.load_font(font,30,30);
+  BM I20=ev.font_api.draw_text_string(I19,"9",5,30);
+
+  IF I21=ev.font_api.time_fetcher(ev, start_time);
+  SF I22=ev.font_api.int_to_string_fetcher(I21);
+
+  IF I23=ev.font_api.char_fetcher_from_string(I22,"0123456789",0);
+  ML I24=ev.font_api.dynamic_character(ev,std::vector<BM>{I2,I4,I6,I8,I10,I12,I14,I16,I18,I20},I23,0,0);
+
+  IF I25=ev.font_api.char_fetcher_from_string(I22,"0123456789",1);
+  ML I26=ev.font_api.dynamic_character(ev,std::vector<BM>{I2,I4,I6,I8,I10,I12,I14,I16,I18,I20},I25,0,0);
+
+  IF I27=ev.font_api.char_fetcher_from_string(I22,"0123456789",2);
+  ML I28=ev.font_api.dynamic_character(ev,std::vector<BM>{I2,I4,I6,I8,I10,I12,I14,I16,I18,I20},I27,0,0);
+
+  IF I29=ev.font_api.char_fetcher_from_string(I22,"0123456789",3);
+  ML I30=ev.font_api.dynamic_character(ev,std::vector<BM>{I2,I4,I6,I8,I10,I12,I14,I16,I18,I20},I29,0,0);
+
+  IF I31=ev.font_api.char_fetcher_from_string(I22,"0123456789",4);
+  ML I32=ev.font_api.dynamic_character(ev,std::vector<BM>{I2,I4,I6,I8,I10,I12,I14,I16,I18,I20},I31,0,0);
+
+  MN I49a=ev.move_api.empty();
+  MN I50a=ev.move_api.trans2(I49a,35,0,0);
+  ML I51a=ev.move_api.move_ml(ev,I26,I50a,1,10.0);
+
+  MN I49b=ev.move_api.empty();
+  MN I50b=ev.move_api.trans2(I49b,35+35,0,0);
+  ML I51b=ev.move_api.move_ml(ev,I28,I50b,1,10.0);
+
+  MN I49c=ev.move_api.empty();
+  MN I50c=ev.move_api.trans2(I49c,35+35+35,0,0);
+  ML I51c=ev.move_api.move_ml(ev,I30,I50c,1,10.0);
+
+  MN I49d=ev.move_api.empty();
+  MN I50d=ev.move_api.trans2(I49d,35+35+35+35,0,0);
+  ML I51d=ev.move_api.move_ml(ev,I32,I50d,1,10.0);
+
+
+  ML I52=ev.mainloop_api.array_ml(std::vector<ML>{I24,I51a,I51b,I51c,I51d});
+  ML I53=ev.sprite_api.turn_to_2d(ev,I52,0.0,0.0,800.0,600.0);
+  ML I54=ev.mainloop_api.array_ml(std::vector<ML>{ml,I53});
+  return I54;
+
+}
+
 
 GameApi::ML GameApi::MainLoopApi::fps_display(EveryApi &ev, ML ml, std::string font)
 {
