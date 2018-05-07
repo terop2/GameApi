@@ -69,9 +69,9 @@ Classify classify_event(Sequencer2 &seq, int e1, int e2, float time, int last_do
   EventInfo i = seq.Event(e1);
   if (i.activation_event_id != -1 && i.deactivation_event_id != -1)
     {
-      Classify ac_class = classify_event(seq, i.activation_event_id, i.deactivation_event_id, time, last_down_key, last_up_key, vec);
-      if (ac_class == EBefore) return EBefore;
-      if (ac_class == EFuture) return EFuture;
+      Classify ac_classa = classify_event(seq, i.activation_event_id, i.deactivation_event_id, time, last_down_key, last_up_key, vec);
+      if (ac_classa == EBefore) return EBefore;
+      if (ac_classa == EFuture) return EFuture;
     }
   if (i.timer)
     {

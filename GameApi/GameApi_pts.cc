@@ -1104,58 +1104,7 @@ GameApi::PTS GameApi::PointsApi::random_mesh_quad_instancing(EveryApi &ev, P p, 
 {
   FaceCollection *coll = find_facecoll(e, p);
   return add_points_api_points(e, new MeshQuad(coll, count));
-  /*
-  coll->Prepare();
-  std::vector<Point> *points = new std::vector<Point>;
-  std::vector<unsigned int> *color2 = new std::vector<unsigned int>;
-
-  for(int i=0;i<count;i++)
-    {
-      Random r;
-      float xp = double(r.next())/r.maximum();
-      float yp = double(r.next())/r.maximum();
-      float zp = double(r.next())/r.maximum();
-      xp*=2.0;
-      yp*=2.0;
-      xp-=1.0;
-      yp-=1.0;
-      zp*=float(coll->NumFaces());
-      int zpi = int(zp);
-      if (zpi<0) zpi = 0;
-      if (zpi>=coll->NumFaces()) zpi = coll->NumFaces()-1;
-      int num = coll->NumPoints(zpi);
-      if (num != 4 && num != 3) { std::cout << "Error quad: " << num << std::endl; }
-      if (num==4) {
-	Point p1 = coll->FacePoint(zpi, 0);
-	Point p2 = coll->FacePoint(zpi, 1);
-	Point p3 = coll->FacePoint(zpi, 2);
-	Point p4 = coll->FacePoint(zpi, 3);
-	Point p = 1.0/4.0*((1.0f-xp)*(1.0f-yp)*Vector(p1) + (1.0f+xp)*(1.0f-yp)*Vector(p2) + (1.0f+xp)*(1.0f+yp)*Vector(p3) + (1.0f-xp)*(1.0f+yp)*Vector(p4));
-	if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) continue;
-	points->push_back(p);
-	color2->push_back(0xffffffff);
-      } else if (num==3)
-	{
-	Point p1 = coll->FacePoint(zpi, 0);
-	Point p2 = coll->FacePoint(zpi, 1);
-	Point p3 = coll->FacePoint(zpi, 2);
-      float r1 = double(r.next())/r.maximum();
-      float r2 = double(r.next())/r.maximum();
-	Point p = Point((1.0-sqrt(r1))*Vector(p1) + (sqrt(r1)*(1.0-r2))*Vector(p2) + (r2*sqrt(r1))*Vector(p3));
-	if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) continue;
-	points->push_back(p);
-	color2->push_back(0xffffffff);
-
-	}
-    }
-   return add_points_api_points(e, new SurfacePoints(points, color2));
-  */
 }
-/*
-GameApi::PTS GameApi::PointsApi::random_bitmap_edge_instancing(BB bm, float start_x, float end_x, float start_z, float end_z, float y)
-{
-}
-*/
 
 class PTSGrid : public PointsApiPoints
 {

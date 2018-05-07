@@ -4630,21 +4630,25 @@ struct ASyncData
   std::string func_name;
   int param_num;
 };
-ASyncData async_data[] = { { "font_api", "newfont", 0 },
-			   { "font_api", "load_font", 0 },
-			   { "mainloop_api", "load_song", 2 },
-			   { "polygon_api", "p_url", 1 },
-			   { "polygon_api", "p_url_mtl", 1 },
-			   { "polygon_api", "p_mtl", 1 },
-			   { "polygon_api", "p_mtl", 2 },
-			   { "mainloop_api", "fps_display", 2 },
-			   { "mainloop_api", "score_display", 2 },
-			   { "mainloop_api", "load_P_script", 1 },
-			   { "mainloop_api", "load_ML_script", 1 },
-			   { "mainloop_api", "load_BM_script", 1 },
-			   { "polygon_api", "p_ds_url", 1 },
-			   { "bitmap_api", "intbitmap_loader", 0 },
-			   { "mainloop_api", "restart_screen", 2 }
+ASyncData async_data[] = { 
+  { "font_api", "newfont", 0 },
+  { "font_api", "load_font", 0 },
+  { "mainloop_api", "load_song", 2 },
+  { "polygon_api", "p_url", 1 },
+  { "polygon_api", "p_url_mtl", 1 },
+  { "polygon_api", "p_mtl", 1 },
+  { "polygon_api", "p_mtl", 2 },
+  { "mainloop_api", "fps_display", 2 },
+  { "mainloop_api", "score_display", 2 },
+  { "mainloop_api", "time_display", 2 },
+  { "mainloop_api", "load_P_script", 1 },
+  { "mainloop_api", "load_ML_script", 1 },
+  { "mainloop_api", "load_BM_script", 1 },
+  { "polygon_api", "p_ds_url", 1 },
+  { "bitmap_api", "intbitmap_loader", 0 },
+  { "mainloop_api", "restart_screen", 2 },
+  { "tracker_api", "play_wave_via_keypress", 2 }
+  // Note, this is function name, not user interface name.
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -7047,6 +7051,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "std::string" },
 			 { "ev", "", "http://tpgames.org/Chunkfive.otf" },
 			 "ML", "mainloop_api", "score_display"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::time_display,
+			 "time_display",
+			 { "ev", "ml", "font", "time" },
+			 { "EveryApi&", "ML", "std::string", "float" },
+			 { "ev", "", "http://tpgames.org/Chunkfive.otf", "1000.0" },
+			 "ML", "mainloop_api", "time_display"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::restart_screen,
 			 "restart_screen",
 			 { "ev", "ml", "fontname" },
@@ -7107,6 +7117,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "std::string" },
 			 { "ev", "", "http://tpgames.org/piano_variations.ogg" },
 			 "ML", "mainloop_api", "load_song"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::tracker_api, &GameApi::TrackerApi::play_wave_via_keypress,
+			 "sound_ml",
+			 { "ev", "ml", "url", "key" },
+			 { "EveryApi&", "ML", "std::string", "int" },
+			 { "ev", "", "http://tpgames.org/Snap.wav", "32" },
+			 "ML", "tracker_api", "play_wave_via_keypress"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_window, 
 			 "blk_window",
 			 { "ev", "ml", "logo", "fpscounter", "start_time", "duration" },

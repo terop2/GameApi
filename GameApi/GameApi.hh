@@ -295,6 +295,7 @@ public:
   IMPORT float fpscounter(bool print=true);
   IMPORT ML fps_display(EveryApi &ev, ML ml, std::string font);
   IMPORT ML score_display(EveryApi &ev, ML ml, std::string font);
+  IMPORT ML time_display(EveryApi &ev, ML ml, std::string font, float start_time);
   IMPORT void profile(std::string label, bool start);
   IMPORT void print_profile();
   IMPORT void delay(int ms);
@@ -719,6 +720,7 @@ public:
   IMPORT FF choose_float_fetcher(IF int_fetcher, float a_1, float a_2, float a_3, float a_4, float a_5, float a_6, float a_7);
   IMPORT FF fps_fetcher(EveryApi &ev);
   IMPORT IF score_fetcher(EveryApi &ev);
+  IMPORT IF time_fetcher(EveryApi &ev, float start_time);
   IMPORT SF float_to_string_fetcher(FF fetcher);
   IMPORT SF int_to_string_fetcher(IF fetcher);
   IMPORT ML ml_chooser(std::vector<ML> vec, IF fetcher);
@@ -2532,6 +2534,7 @@ public:
   IMPORT void play_song(EveryApi &ev, TBUF buf, WAV samples, int framenum, int speed);
   IMPORT void play_mp3(std::string filename);
   IMPORT void play_ogg(std::string filename);
+  IMPORT ML play_wave_via_keypress(EveryApi &ev, ML ml, std::string url, int key);
 private:
   Env &e;
 };

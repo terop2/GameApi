@@ -540,6 +540,33 @@ private:
   GameApi::EveryApi &ev;
 };
 
+class TimeFetcher : public Fetcher<int>
+{
+public:
+  TimeFetcher(GameApi::EveryApi &ev, float start_time) :ev(ev), start_time(start_time) { }
+  virtual void event(MainLoopEvent &e)
+  {
+  }
+  virtual void frame(MainLoopEnv &e) { 
+  }
+
+  void set(int t) { }
+  int get() const {
+    float time = start_time/10.0 - ev.mainloop_api.get_time()/1000.0;
+    return int(time);
+  }
+private:
+  GameApi::EveryApi &ev;
+  float start_time;
+  float time;
+};
+
+
+
+GameApi::IF GameApi::FontApi::time_fetcher(EveryApi &ev, float start_time)
+{
+  return add_int_fetcher(e, new TimeFetcher(ev,start_time));
+}
 
 GameApi::IF GameApi::FontApi::score_fetcher(EveryApi &ev)
 {
