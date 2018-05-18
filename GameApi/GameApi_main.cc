@@ -393,6 +393,9 @@ EXPORT void GameApi::MainLoopApi::clear(unsigned int col)
   glClearColor(c.rf(),c.gf(),c.bf(),c.af());
   glStencilMask(~0);
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  } else {
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
   }
   //glLoadIdentity();
   //glTranslatef(0.375, 0.375, 0.0);
@@ -418,6 +421,9 @@ EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
   g>>=8;
   glClearColor(r/256.0,g/256.0,b/256.0,a/256.0);
   glStencilMask(~0);
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  } else {
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
   }
 #ifndef EMSCRIPTEN
