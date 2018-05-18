@@ -202,9 +202,15 @@ int main(int argc, char *argv[]) {
 
   int w_width = 800;
   int w_height = 600;
+  std::string seamless_url="";
   int current_arg = 1; // start after the current filename
   while(cmd_args.size()-current_arg > 0)
     {
+      if (check_count(cmd_args, current_arg, 2) && cmd_args[current_arg]=="--seamless")
+	{
+	  seamless_url = cmd_args[current_arg+1];
+	  current_arg+=2;
+	} else
       if (check_count(cmd_args, current_arg, 3) && cmd_args[current_arg]=="--size")
 	{
 	  std::string width = cmd_args[current_arg+1];
@@ -267,6 +273,7 @@ int main(int argc, char *argv[]) {
   set_status(3,6);
   ev.mainloop_api.set_screen_size(w_width, w_height);
   ev.mainloop_api.set_homepage_url(homepageurl);
+  ev.mainloop_api.set_seamless_url(seamless_url);
   ev.shader_api.load_default();
   set_status(4,6);
 
