@@ -7608,13 +7608,13 @@ GameApi::US GameApi::UberShaderApi::f_ref(US us)
 GameApi::US GameApi::UberShaderApi::v_custom(US us, std::string v_funcname)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction(v_funcname, next,"IN_POSITION EX_POSITION"));
+  return add_uber(e, new V_ShaderCallFunction(v_funcname, next,"MANYTEXTURES IN_POSITION EX_POSITION IN_TEXCOORD EX_TEXCOORD COLOR_MIX"));
 
 }
 GameApi::US GameApi::UberShaderApi::f_custom(US us, std::string f_funcname)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction(f_funcname, next,"EX_POSITION"));
+  return add_uber(e, new F_ShaderCallFunction(f_funcname, next,"MANYTEXTURES EX_POSITION IN_TEXCOORD EX_TEXCOORD COLOR_MIX"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_light(US us)
@@ -9328,6 +9328,7 @@ struct Envi_2 {
 };
 
 extern int async_pending_count;
+extern std::string gameapi_seamless_url;
 void blocker_iter(void *arg)
 {
   Envi_2 *env = (Envi_2*)arg;
@@ -9335,7 +9336,11 @@ void blocker_iter(void *arg)
   if (async_pending_count > 0) { env->logo_shown = true; }
   if (env->logo_shown)
     {
-      bool b = env->ev->mainloop_api.logo_iter();
+      bool b=false;
+      if (gameapi_seamless_url=="")
+	b = env->ev->mainloop_api.logo_iter();
+      else
+	b = env->ev->mainloop_api.seamless_iter();
       if (b && async_pending_count==0) { env->logo_shown = false;
 	env->ev->mainloop_api.reset_time();
 	env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
@@ -9449,7 +9454,11 @@ public:
     
     env.ev->mainloop_api.reset_time();
     if (env.logo_shown) {
-      env.ev->mainloop_api.display_logo(*env.ev);
+      if (gameapi_seamless_url == "") {
+	env.ev->mainloop_api.display_logo(*env.ev);
+      } else {
+	env.ev->mainloop_api.display_seamless(*env.ev);
+      }
     } else {
 	env.ev->mainloop_api.advance_time(env.start_time/10.0*1000.0);
     }
@@ -9473,7 +9482,12 @@ public:
       }
     if (env->logo_shown)
       {
-	bool b = env->ev->mainloop_api.logo_iter();
+	bool b = false;
+	if (gameapi_seamless_url=="") {
+	  b = env->ev->mainloop_api.logo_iter();
+	} else {
+	  b = env->ev->mainloop_api.seamless_iter();
+	}
 	if (b && async_pending_count==0) { env->logo_shown = false;
 	  env->ev->mainloop_api.reset_time();
 	  env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
@@ -9607,7 +9621,11 @@ public:
     
     ev.mainloop_api.reset_time();
     if (env.logo_shown) {
-      ev.mainloop_api.display_logo(ev);
+      if (gameapi_seamless_url=="") {
+	ev.mainloop_api.display_logo(ev);
+      } else {
+	ev.mainloop_api.display_seamless(ev);
+      }
     } 
     else 
       {
@@ -13575,4 +13593,14 @@ GameApi::ML GameApi::MainLoopApi::score_hidder(EveryApi &ev, ML ml, O o, int max
   MainLoopItem *item = find_main_loop(e,ml);
   VolumeObject *obj = find_volume(e, o);
   return add_main_loop(e, new ScoreHidder(ev,item,obj,max_count));
+}
+
+GameApi::MT GameApi::MaterialsApi::noise(EveryApi &ev, int sx, int sy, int r, int g, int b, int a,
+					 int r2, int g2, int b2, int a2, float mix)
+{
+  BM I1=ev.bitmap_api.noise_vectors(sx,sy);
+  FB I2=ev.float_bitmap_api.from_red(I1);
+  BM I3=ev.float_bitmap_api.to_grayscale_color(I2,r,g,b,a,r2,g2,b2,a2);
+  MT I4=ev.materials_api.texture_many(ev,std::vector<BM>{I3},mix);
+  return I4;
 }

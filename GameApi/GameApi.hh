@@ -325,6 +325,8 @@ public:
   IMPORT bool logo_iter();
   IMPORT void save_logo(EveryApi &ev);
   IMPORT void display_logo(EveryApi &ev);
+  IMPORT bool seamless_iter();
+  IMPORT void display_seamless(EveryApi &ev);
   IMPORT ML debug_obj(EveryApi &ev);
   IMPORT ML restart_screen(EveryApi &ev, ML ml, std::string fontname);
   struct Event
@@ -370,6 +372,8 @@ public:
   M in_P(EveryApi &ev, bool is_3d);
   std::string get_homepage_url();
   void set_homepage_url(std::string url);
+  void set_seamless_url(std::string url);
+
   ML load_song(EveryApi& ev, ML next, std::string url);
   ML skybox(EveryApi &ev, BM land, BM sky); // 100x100 bm's required
   ML scale_2d_screen(EveryApi &ev, ML orig, float sx, float sy);
@@ -555,6 +559,7 @@ public:
 	BM subbitmap(BM orig, int x, int y, int width, int height);
 	IMPORT BM subbitmapimage(BM orig, int r_start_range, int r_end_range, int g_start_range, int g_end_range, int b_start_range, int b_end_range, unsigned int empty_color);
   IMPORT BM plus_bitmap(BM bm, BM bm2);
+  IMPORT BM noise_vectors(int sx, int sy);
   IMPORT IBM random_int_bitmap(int sx,int sy,int min_value,int max_value);
   IMPORT IBM convert_fb_to_ibm_bitmap(FB fb, float start, float d);
   IMPORT VX convert_ibm_to_vx(IBM bm);
@@ -1246,7 +1251,8 @@ public:
   IMPORT MT shading2(EveryApi &ev, MT nxt, unsigned int color1, unsigned int colo2, unsigned int color3);
   IMPORT MT flat(EveryApi &ev, MT nxt, unsigned int color1, unsigned int color2, unsigned int color3);
   IMPORT MT fur(EveryApi &ev, MT nxt, PT center, float dist, float max_angle, int count, float size, int cone_numfaces);
-
+  IMPORT MT noise(EveryApi &ev, int sx, int sy, int r, int g, int b, int a, int r2, int g2, int b2, int a2, float mix);
+  
   IMPORT MT choose_color(EveryApi &ev, MT nxt, unsigned int color, float mix_val);
   IMPORT MT brashmetal(EveryApi &ev, MT nxt, int count, bool web);
   IMPORT MT marble(EveryApi &ev, MT nxt, int count, float cubesize);
@@ -2358,6 +2364,8 @@ public:
   IMPORT ML render_vertex_array_ml2_cubemap(EveryApi &ev, P va, std::vector<BM> vec);
   IMPORT ML render_vertex_array_ml2_texture2(EveryApi &ev, P p);
   IMPORT SBM texture_sbm();
+  IMPORT SBM sbm_circle(float start_time, float end_time, float start_pos_x, float start_pos_y, float end_pos_x, float end_pos_y, float start_radius, float end_radius);
+  IMPORT SBM sfo_sbm(EveryApi &ev, SFO sfo);
   IMPORT SBM combine_sbm(SBM texture1, SBM texture2);
   IMPORT SBM bloom_cut_sbm(SBM texture, float r, float g, float b);
   IMPORT SBM blur_sbm(SBM texture, float pixel_x, float pixel_y);

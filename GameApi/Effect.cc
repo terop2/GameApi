@@ -349,6 +349,7 @@ Point2d CubeElem::TexCoord(int face, int point) const
 }
 Point CubeElem::FacePoint(int face, int point) const
 {
+  if (face>5) return Point(0.0,0.0,0.0);
   static int face1[] = { 1, 0, 5, 4 };
   static int face2[] = { 0, 7, 6, 5 };
   static int face3[] = { 7, 2, 3, 6 };

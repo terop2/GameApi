@@ -1701,8 +1701,8 @@ int main(int argc, char *argv[]) {
     {
       if (flag ||std::string(argv[1])=="--generate-font-atlas")
 	{
-	  //std::cout << "Generating logo." << std::endl;
-	  //ev.mainloop_api.save_logo(ev);
+	  std::cout << "Generating logo." << std::endl;
+	  ev.mainloop_api.save_logo(ev);
 	  std::cout << "Generating font atlas. " << std::endl;
 	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#¤%&/()=?+\\*^.,-<>|§½;:[]_ ";
 
