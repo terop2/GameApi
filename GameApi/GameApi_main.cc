@@ -1325,6 +1325,28 @@ bool GameApi::MainLoopApi::seamless_iter()
 }
 void GameApi::MainLoopApi::display_seamless(EveryApi &ev)
 {
+ SH color = ev.shader_api.colour_shader();  
+ SH texture = ev.shader_api.texture_shader();
+ SH texture_2d = texture;
+#ifdef EMSCRIPTEN
+ SH arr = texture;
+#else
+ SH arr = ev.shader_api.texture_array_shader();
+#endif
+ ev.mainloop_api.init_3d(color);
+ ev.mainloop_api.init_3d(texture);
+ ev.mainloop_api.init_3d(texture_2d);
+ ev.mainloop_api.init_3d(arr);
+ LogoEnv *env = new LogoEnv;
+ env->ev = &ev;
+ env->res = res;
+ env->color = color;
+ env->texture = texture;
+ env->texture_2d = texture_2d;
+ env->arr = arr;
+ logo_env = env;
+ frame_count = 0;
+
 }
 void GameApi::MainLoopApi::display_logo(EveryApi &ev)
 {
