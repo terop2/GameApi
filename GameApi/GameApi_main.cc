@@ -1313,6 +1313,7 @@ bool GameApi::MainLoopApi::logo_iter()
 }
 bool GameApi::MainLoopApi::seamless_iter()
 {
+  LogoEnv *env = logo_env;
   env->ev->mainloop_api.clear_3d();
   env->ev->mainloop_api.swapbuffers();
   frame_count++;
