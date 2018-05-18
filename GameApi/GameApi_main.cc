@@ -1339,7 +1339,7 @@ void GameApi::MainLoopApi::display_seamless(EveryApi &ev)
  ev.mainloop_api.init_3d(arr);
  LogoEnv *env = new LogoEnv;
  env->ev = &ev;
- env->res = res;
+ //env->res = res;
  env->color = color;
  env->texture = texture;
  env->texture_2d = texture_2d;
