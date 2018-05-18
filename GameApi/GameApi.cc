@@ -9326,14 +9326,14 @@ struct Envi_2 {
   int screen_width=800;
   int screen_height=600;
 };
-
+int logo_shown=true;
 extern int async_pending_count;
 extern std::string gameapi_seamless_url;
 void blocker_iter(void *arg)
 {
   Envi_2 *env = (Envi_2*)arg;
   //std::cout << "async: " << async_pending_count << std::endl;
-  if (async_pending_count > 0) { env->logo_shown = true; }
+  if (async_pending_count > 0) { env->logo_shown = true; logo_shown=true; }
   if (env->logo_shown)
     {
       bool b=false;
@@ -9341,7 +9341,7 @@ void blocker_iter(void *arg)
 	b = env->ev->mainloop_api.logo_iter();
       else
 	b = env->ev->mainloop_api.seamless_iter();
-      if (b && async_pending_count==0) { env->logo_shown = false;
+      if (b && async_pending_count==0) { env->logo_shown = false; logo_shown=false;
 	env->ev->mainloop_api.reset_time();
 	env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
       }
@@ -9482,13 +9482,14 @@ public:
       }
     if (env->logo_shown)
       {
+	logo_shown = true;
 	bool b = false;
 	if (gameapi_seamless_url=="") {
 	  b = env->ev->mainloop_api.logo_iter();
 	} else {
 	  b = env->ev->mainloop_api.seamless_iter();
 	}
-	if (b && async_pending_count==0) { env->logo_shown = false;
+	if (b && async_pending_count==0) { env->logo_shown = false; logo_shown=false;
 	  env->ev->mainloop_api.reset_time();
 	  env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
 	}
