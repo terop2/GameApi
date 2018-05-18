@@ -9326,7 +9326,7 @@ struct Envi_2 {
   int screen_width=800;
   int screen_height=600;
 };
-int logo_shown=true;
+bool logo_shown=true;
 extern int async_pending_count;
 extern std::string gameapi_seamless_url;
 void blocker_iter(void *arg)
@@ -9444,7 +9444,7 @@ public:
     env.ev->shader_api.use(sh);
     
     GameApi::ML ml = mainloop(*env.ev);
-    if (async_pending_count > 0) { env.logo_shown = true; }
+    if (async_pending_count > 0) { env.logo_shown = true; logo_shown = true; }
     
     env.mainloop = ml;
     
@@ -9474,7 +9474,7 @@ public:
   {
     Envi_2 *env = (Envi_2*)&envi;
     //std::cout << "async: " << async_pending_count << std::endl;
-    if (async_pending_count > 0) { env->logo_shown = true; }
+    if (async_pending_count > 0) { env->logo_shown = true; logo_shown=true; }
     if (async_pending_count != async_pending_count_previous)
       {
 	std::cout << "ASync pending count=" << async_pending_count << std::endl;
