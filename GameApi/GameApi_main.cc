@@ -1305,13 +1305,14 @@ bool GameApi::MainLoopApi::logo_iter()
   }
   return false;
 }
+extern int async_pending_count;
 bool GameApi::MainLoopApi::seamless_iter()
 {
   LogoEnv *env = logo_env;
   env->ev->mainloop_api.clear_3d_transparent();
   env->ev->mainloop_api.swapbuffers();
   frame_count++;
-  if (frame_count>300) {
+  if (frame_count>300 ||async_pending_count==0) {
     return true;
   }
   return false;
