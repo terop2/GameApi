@@ -9347,7 +9347,7 @@ void blocker_iter(void *arg)
       }
       return;
     }
-
+  logo_shown = false;
     env->ev->mainloop_api.clear_3d(0xff000000);
 
     // handle esc event
@@ -9495,6 +9495,7 @@ public:
 	}
 	return -1;
       }
+  logo_shown = false;
 
     env->ev->mainloop_api.clear_3d(0xff000000);
     
