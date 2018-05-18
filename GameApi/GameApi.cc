@@ -9326,14 +9326,13 @@ struct Envi_2 {
   int screen_width=800;
   int screen_height=600;
 };
-bool logo_shown=true;
 extern int async_pending_count;
 extern std::string gameapi_seamless_url;
 void blocker_iter(void *arg)
 {
   Envi_2 *env = (Envi_2*)arg;
   //std::cout << "async: " << async_pending_count << std::endl;
-  if (async_pending_count > 0) { env->logo_shown = true; logo_shown=true; }
+  if (async_pending_count > 0) { env->logo_shown = true; }
   if (env->logo_shown)
     {
       bool b=false;
@@ -9341,13 +9340,12 @@ void blocker_iter(void *arg)
 	b = env->ev->mainloop_api.logo_iter();
       else
 	b = env->ev->mainloop_api.seamless_iter();
-      if (b && async_pending_count==0) { env->logo_shown = false; logo_shown=false;
+      if (b && async_pending_count==0) { env->logo_shown = false;
 	env->ev->mainloop_api.reset_time();
 	env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
       }
       return;
     }
-  logo_shown = false;
     env->ev->mainloop_api.clear_3d(0xff000000);
 
     // handle esc event
@@ -9444,7 +9442,7 @@ public:
     env.ev->shader_api.use(sh);
     
     GameApi::ML ml = mainloop(*env.ev);
-    if (async_pending_count > 0) { env.logo_shown = true; logo_shown = true; }
+    if (async_pending_count > 0) { env.logo_shown = true; }
     
     env.mainloop = ml;
     
@@ -9474,7 +9472,7 @@ public:
   {
     Envi_2 *env = (Envi_2*)&envi;
     //std::cout << "async: " << async_pending_count << std::endl;
-    if (async_pending_count > 0) { env->logo_shown = true; logo_shown=true; }
+    if (async_pending_count > 0) { env->logo_shown = true; }
     if (async_pending_count != async_pending_count_previous)
       {
 	std::cout << "ASync pending count=" << async_pending_count << std::endl;
@@ -9482,20 +9480,18 @@ public:
       }
     if (env->logo_shown)
       {
-	logo_shown = true;
 	bool b = false;
 	if (gameapi_seamless_url=="") {
 	  b = env->ev->mainloop_api.logo_iter();
 	} else {
 	  b = env->ev->mainloop_api.seamless_iter();
 	}
-	if (b && async_pending_count==0) { env->logo_shown = false; logo_shown=false;
+	if (b && async_pending_count==0) { env->logo_shown = false;
 	  env->ev->mainloop_api.reset_time();
 	  env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
 	}
 	return -1;
       }
-  logo_shown = false;
 
     env->ev->mainloop_api.clear_3d(0xff000000);
     

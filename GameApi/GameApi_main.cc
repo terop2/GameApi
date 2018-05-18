@@ -382,21 +382,15 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
       prog->set_var("in_T", m3);
     }
 }
-extern bool logo_shown;
 extern std::string gameapi_seamless_url;
 EXPORT void GameApi::MainLoopApi::clear(unsigned int col)
 {
-  if (gameapi_seamless_url=="" || !logo_shown) {
   //glClearColor(255,255,255,255);
   glClearStencil(0);
   Color c(col);
   glClearColor(c.rf(),c.gf(),c.bf(),c.af());
   glStencilMask(~0);
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-  } else {
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-  }
   //glLoadIdentity();
   //glTranslatef(0.375, 0.375, 0.0);
   //glTranslatef(0.0, 0.0, -260.0);
@@ -405,11 +399,15 @@ EXPORT void GameApi::MainLoopApi::clear(unsigned int col)
   //glTranslatef(0.0, -100.0, 0.0);
 
 }
+EXPORT void GameApi::MainLoopApi::clear_3d_transparent()
+{
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+}
 EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
 {
   //glClearColor(255,255,255,255);
   
-  if (gameapi_seamless_url=="" || !logo_shown) {
   glClearStencil(0);
 
   int r = color & 0x00ff0000;
@@ -422,10 +420,6 @@ EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
   glClearColor(r/256.0,g/256.0,b/256.0,a/256.0);
   glStencilMask(~0);
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-  } else {
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-  }
 #ifndef EMSCRIPTEN
   glLoadIdentity();
   glTranslatef(0.375, 0.375, 0.0);
@@ -1314,7 +1308,7 @@ bool GameApi::MainLoopApi::logo_iter()
 bool GameApi::MainLoopApi::seamless_iter()
 {
   LogoEnv *env = logo_env;
-  env->ev->mainloop_api.clear_3d();
+  env->ev->mainloop_api.clear_3d_transparent();
   env->ev->mainloop_api.swapbuffers();
   frame_count++;
   if (frame_count>300) {

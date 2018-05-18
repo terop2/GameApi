@@ -272,6 +272,7 @@ public:
   IMPORT void nvidia_init();
   IMPORT void transfer_sdl_surface(MainLoopApi &orig);
   IMPORT void clear(unsigned int col = 0xff000000);
+  IMPORT void clear_3d_transparent();
   IMPORT void clear_3d(unsigned int col = 0xff000000);
   IMPORT void switch_to_3d(bool b, SH sh, int screen_width=800., int screen_height = 600);
   IMPORT void alpha(bool enabled);
