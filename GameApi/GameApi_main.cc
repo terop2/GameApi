@@ -1313,6 +1313,8 @@ bool GameApi::MainLoopApi::logo_iter()
 }
 bool GameApi::MainLoopApi::seamless_iter()
 {
+  env->ev->mainloop_api.clear_3d();
+  env->ev->mainloop_api.swapbuffers();
   frame_count++;
   if (frame_count>300) {
     return true;
