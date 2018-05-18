@@ -383,14 +383,17 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
     }
 }
 
+extern std::string gameapi_seamless_url;
 EXPORT void GameApi::MainLoopApi::clear(unsigned int col)
 {
+  if (gameapi_seamless_url=="") {
   //glClearColor(255,255,255,255);
   glClearStencil(0);
   Color c(col);
   glClearColor(c.rf(),c.gf(),c.bf(),c.af());
   glStencilMask(~0);
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  }
   //glLoadIdentity();
   //glTranslatef(0.375, 0.375, 0.0);
   //glTranslatef(0.0, 0.0, -260.0);
@@ -402,6 +405,8 @@ EXPORT void GameApi::MainLoopApi::clear(unsigned int col)
 EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
 {
   //glClearColor(255,255,255,255);
+  
+  if (gameapi_seamless_url=="") {
   glClearStencil(0);
 
   int r = color & 0x00ff0000;
@@ -414,6 +419,7 @@ EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
   glClearColor(r/256.0,g/256.0,b/256.0,a/256.0);
   glStencilMask(~0);
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  }
 #ifndef EMSCRIPTEN
   glLoadIdentity();
   glTranslatef(0.375, 0.375, 0.0);
