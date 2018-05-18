@@ -1264,12 +1264,12 @@ EXPORT GameApi::ML GameApi::MainLoopApi::array_ml(std::vector<ML> vec)
 void GameApi::MainLoopApi::save_logo(EveryApi &ev)
 {
   BM I1=ev.bitmap_api.newbitmap(500,300,0x00000000);
-  Ft I2=ev.font_api.newfont("FreeSans.ttf",80,80);
-  BM I3=ev.font_api.font_string(I2,"GameApi",5);
+  Ft I2=ev.font_api.newfont("http://tpgames.org/FreeSans.ttf",80,80);
+  BM I3=ev.font_api.font_string(I2,"qtamoVR",5);
   BM I4=ev.bitmap_api.blitbitmap(I1,I3,0,0);
-  Ft I5=ev.font_api.newfont("FreeSans.ttf",18,18);
-  BM I6=ev.font_api.font_string(I5,"EmscriptenEdition",5);
-  BM I7=ev.bitmap_api.blitbitmap(I4,I6,90,88);
+  Ft I5=ev.font_api.newfont("http://tpgames.org/FreeSans.ttf",18,18);
+  BM I6=ev.font_api.font_string(I5,"Loading",5);
+  BM I7=ev.bitmap_api.blitbitmap(I4,I6,80,88);
   ev.bitmap_api.savebitmap(I7, "logo.ppm", true);
 }
 int frame_count=0;
@@ -1298,6 +1298,18 @@ bool GameApi::MainLoopApi::logo_iter()
     return true;
   }
   return false;
+}
+bool GameApi::MainLoopApi::seamless_iter()
+{
+  frame_count++;
+  if (frame_count>300) {
+    return true;
+  }
+  return false;
+
+}
+void GameApi::MainLoopApi::display_seamless(EveryApi &ev)
+{
 }
 void GameApi::MainLoopApi::display_logo(EveryApi &ev)
 {
@@ -1448,6 +1460,11 @@ std::string gameapi_homepageurl;
 std::string GameApi::MainLoopApi::get_homepage_url()
 {
   return gameapi_homepageurl;
+}
+std::string gameapi_seamless_url;
+void GameApi::MainLoopApi::set_seamless_url(std::string url)
+{
+  gameapi_seamless_url = url;
 }
 void GameApi::MainLoopApi::set_homepage_url(std::string url)
 {

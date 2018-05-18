@@ -3846,3 +3846,38 @@ GameApi::ARR GameApi::BitmapApi::cubemap(BM bm)
   array->vec.push_back(bm_f.id);
   return add_array(e, array);
 }
+
+class NoiseVectors : public Bitmap<Color>
+{
+public:
+  NoiseVectors(int sx, int sy) : sx(sx), sy(sy) {}
+  int SizeX() const { return sx; }
+  int SizeY() const { return sy; }
+  
+  Color Map(int mx, int my) const
+  {
+    Random r;
+    float xp = double(r.next())/r.maximum();
+    float yp = double(r.next())/r.maximum();
+    xp*=3.14159;
+    yp*=3.14159*2.0;
+    float x = 127*sin(xp)*cos(yp);
+    float y = 127*sin(xp)*sin(yp);
+    float z = 127*cos(xp);
+    Color c2(128+int(x),128+int(y),128+int(z),255);
+    return c2;    
+  }
+  void Prepare() { }
+private:
+  int sx,sy;
+};
+
+GameApi::BM GameApi::BitmapApi::noise_vectors(int sx, int sy)
+{
+  Bitmap<Color> *b = new NoiseVectors(sx,sy);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm = add_bitmap(e, handle2);
+  return bm;
+
+}

@@ -6549,6 +6549,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "MT", "PT", "float", "float", "int", "float", "int" },
 			 { "ev", "", "", "60.0", "1.59", "1500", "2.0", "4" },
 			 "MT", "materials_api", "fur"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::noise,
+			 "m_noise",
+			 { "ev", "sx", "sy", "r", "g", "b", "a", "r2", "g2", "b2", "a2", "mix" },
+			 { "EveryApi&", "int", "int", "int", "int", "int", "int", "int", "int", "int", "int", "float" },
+			 { "ev", "1024", "1024", "255", "255", "255", "255", "0", "0", "0", "255", "0.5" },
+			 "MT", "materials_api", "noise"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bloom,
 			 "m_bloom",
 			 { "ev", "nxt", "bm","r_cut", "g_cut", "b_cut", "pixel_x", "pixel_y" },
@@ -7121,7 +7127,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "sound_ml",
 			 { "ev", "ml", "url", "key" },
 			 { "EveryApi&", "ML", "std::string", "int" },
-			 { "ev", "", "http://tpgames.org/Snap.wav", "32" },
+			 { "ev", "", "http://tpgames.org/Clap.wav", "32" },
 			 "ML", "tracker_api", "play_wave_via_keypress"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_window, 
 			 "blk_window",
@@ -7928,36 +7934,6 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "ev", "", "", "0.0", "0.0", "0.0", "800", "600" },
 			 "BM", "polygon_api", "renderpolytobitmap"));
 
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texture_sbm,
-			 "sbm_many_texture",
-			 { },
-			 { },
-			 { },
-			 "SBM", "polygon_api", "texture_sbm"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::blur_sbm,
-			 "sbm_blur",
-			 { "texture", "pixel_x", "pixel_y" },
-			 { "SBM", "float", "float" },
-			 { "", "0.01", "0.01" },
-			 "SBM", "polygon_api", "blur_sbm"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::bloom_cut_sbm,
-			 "sbm_bloom_cut",
-			 { "texture","r_cut", "g_cut", "b_cut" },
-			 { "SBM", "float", "float", "float" },
-			 { "", "0.7", "0.7", "0.7" },
-			 "SBM", "polygon_api", "bloom_cut_sbm"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::combine_sbm,
-			 "sbm_combine",
-			 { "texture1", "texture2" },
-			 { "SBM", "SBM" },
-			 { "", "" },
-			 "SBM", "polygon_api", "combine_sbm"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sbm_texture,
-			 "p_sbm",
-			 { "ev", "mainloop", "bitmap" },
-			 { "EveryApi&", "ML", "SBM" },
-			 { "ev", "", "" },
-			 "ML", "polygon_api", "sbm_texture"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::shading_shader,
 			 "p_shading",
 			 { "ev", "mainloop", "level1", "level2", "level3", "spec_size", "ambient", "diffuse", "specular" },
@@ -8194,6 +8170,51 @@ std::vector<GameApiItem*> shadermoduleapi_functions()
 			 { "SFO" },
 			 { "" },
 			 "SFO", "sh_api", "v_render"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texture_sbm,
+			 "sbm_many_texture",
+			 { },
+			 { },
+			 { },
+			 "SBM", "polygon_api", "texture_sbm"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sbm_circle,
+			 "sbm_circle",
+			 { "start_time", "end_time", "start_pos_x", "start_pos_y", "end_pos_x", "end_pos_y", "start_radius", "end_radius" },
+			 { "float", "float", "float", "float", "float", "float", "float", "float" },
+			 { "0.0", "100.0", "0.0", "0.0", "0.0", "0.0", "100.0", "120.0" },
+			 "SBM", "polygon_api", "sbm_circle"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::blur_sbm,
+			 "sbm_blur",
+			 { "texture", "pixel_x", "pixel_y" },
+			 { "SBM", "float", "float" },
+			 { "", "0.01", "0.01" },
+			 "SBM", "polygon_api", "blur_sbm"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::bloom_cut_sbm,
+			 "sbm_bloom_cut",
+			 { "texture","r_cut", "g_cut", "b_cut" },
+			 { "SBM", "float", "float", "float" },
+			 { "", "0.7", "0.7", "0.7" },
+			 "SBM", "polygon_api", "bloom_cut_sbm"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::combine_sbm,
+			 "sbm_combine",
+			 { "texture1", "texture2" },
+			 { "SBM", "SBM" },
+			 { "", "" },
+			 "SBM", "polygon_api", "combine_sbm"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sfo_sbm,
+			 "sfo_sbm",
+			 { "ev", "sfo" },
+			 { "EveryApi&", "SFO" },
+			 { "ev", "" },
+			 "SBM", "polygon_api", "sfo_sbm"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sbm_texture,
+			 "p_sbm",
+			 { "ev", "mainloop", "bitmap" },
+			 { "EveryApi&", "ML", "SBM" },
+			 { "ev", "", "" },
+			 "ML", "polygon_api", "sbm_texture"));
+
+
   return vec;
 
 }
@@ -9111,6 +9132,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "int", "int", "int" },
 			 { "256", "256", "0" },
 			 "BM", "bitmap_api", "Indicator"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::noise_vectors,
+			 "noise_vec",
+			 { "sx", "sy" },
+			 { "int", "int" },
+			 { "256", "256" },
+			 "BM", "bitmap_api", "noise_vectors"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::gradient,
 			 "gradient",
 			 { "pos_1", "pos_2", "color_1", "color_2", "sx", "sy" },

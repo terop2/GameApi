@@ -4893,6 +4893,20 @@ public:
       ee.f_shader_functions += f_shaderstring;
       ee.f_shader_funcnames.push_back(f_funcname);
       }
+
+    int sh_id = next->shader_id();
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	sh.id = sh_id;
+	ev.shader_api.use(sh);
+
+
+      }
+    ev.shader_api.set_var(sh, "time",float(e.time*10.0));
+
+
     next->execute(ee);
   }
   int shader_id() { return next->shader_id(); }
@@ -8606,7 +8620,107 @@ GameApi::SBM GameApi::PolygonApi::combine_sbm(SBM texture1, SBM texture2)
   ShaderBitmap *tex2 = find_shader_bitmap(e, texture2);
   return add_shader_bitmap(e, new CombineSbm(tex1, tex2));
 }
+ std::string funccall_to_string(ShaderModule *mod);
 
+
+class SBMCircle : public ShaderBitmap
+{
+public:
+  SBMCircle(float start_time, float end_time, Point start_pos, Point end_pos, float start_radius, float end_radius) : start_time(start_time), end_time(end_time), start_pos(start_pos), end_pos(end_pos), start_radius(start_radius), end_radius(end_radius) { m_id = shader_unique_id(); }
+  
+  virtual std::string bitmapname() const { return "Circle" + m_id; }
+  virtual std::string bitmapbody() const
+  {
+    std::stringstream start_time_t; start_time_t << start_time;
+    std::stringstream end_time_t; end_time_t << end_time;
+    
+    std::stringstream start_pos_x; start_pos_x << start_pos.x;
+    std::stringstream start_pos_y; start_pos_y << start_pos.y;
+    std::stringstream start_pos_z; start_pos_z << start_pos.z;
+
+    std::stringstream end_pos_x; end_pos_x << end_pos.x;
+    std::stringstream end_pos_y; end_pos_y << end_pos.y;
+    std::stringstream end_pos_z; end_pos_z << end_pos.z;
+    
+    std::stringstream start_radius_t; start_radius_t << start_radius;
+    std::stringstream end_radius_t; end_radius_t << end_radius;
+    
+    std::string s;
+    s+="vec4 Circle" + m_id + "(vec3 pos)\n";
+    s+="{\n";
+    s+="    pos.x*=600.0;\n";
+    s+="    pos.y*=600.0;\n";
+    s+="    pos.x-=300.0;\n";
+    s+="    pos.y-=300.0;\n";
+    s+="    float time_pos = (time-" + start_time_t.str() +")/(" + end_time_t.str() + "-" + start_time_t.str() + ");\n";
+    s+="    if (time_pos <0.0) return vec4(0.0,0.0,0.0,0.0);\n";
+    s+="    if (time_pos >1.0) return vec4(0.0,0.0,0.0,0.0);\n";
+    s+="    float pos_x = time_pos*" + end_pos_x.str() + "+(1.0-time_pos)*" + start_pos_x.str() + ";\n";
+    s+="    float pos_y = time_pos*" + end_pos_y.str() + "+(1.0-time_pos)*" + start_pos_y.str() + ";\n";
+    s+="    float pos_z = time_pos*" + end_pos_z.str() + "+(1.0-time_pos)*" + start_pos_z.str() + ";\n";
+    s+="    float radius = time_pos*" + end_radius_t.str() + "+(1.0-time_pos)*" + start_radius_t.str() + ";\n";
+    s+="    pos.x-=pos_x;\n";
+    s+="    pos.y-=pos_y;\n";
+    s+="    pos.z-=pos_z;\n";
+    s+="    float dist = length(pos);\n";
+    s+="    if (dist<radius) return vec4(1.0,1.0,1.0,1.0);\n";
+    s+="    return vec4(0.0,0.0,0.0,0.0);\n";
+    s+="}\n";
+    return s;
+  }
+  virtual std::string bitmapbody_v_init() const { return ""; }
+  virtual std::string bitmapbody_v_body() const { return "ex_TexCoord = in_TexCoord;\n return pos;"; }
+  virtual std::string bitmapbody_f_init() const { return ""; }
+  virtual std::string bitmapbody_f_body() const { return ""; }
+private:
+  std::string m_id;
+  float start_time, end_time;
+  Point start_pos, end_pos;
+  float start_radius, end_radius;
+};
+
+GameApi::SBM GameApi::PolygonApi::sbm_circle(float start_time, float end_time, float start_pos_x, float start_pos_y, float end_pos_x, float end_pos_y, float start_radius, float end_radius)
+{
+  return add_shader_bitmap(e, new SBMCircle(start_time, end_time, Point(start_pos_x, start_pos_y, 0.0), Point(end_pos_x, end_pos_y, 0.0), start_radius, end_radius));
+}
+
+
+class SFOSBM : public ShaderBitmap
+{
+public:
+  SFOSBM(ShaderModule *mod) : mod(mod) { m_id = shader_unique_id(); }
+  virtual std::string bitmapname() const { return "SFOSBM" + m_id; }
+  virtual std::string bitmapbody() const {
+    std::string s = mod->Function();
+    s+="\n";
+    s+="vec4 SFOSBM" + m_id + "(vec3 pos)\n";
+    s+="{\n";    
+    s+="   vec3 p0 = vec3(pos.x*600.0-300.0,pos.y*600.0-300.0,-400.0);\n";
+    s+="   vec3 p1 = vec3(pos.x*600.0-300.0,pos.y*600.0-300.0,-399.0);\n";
+    s+="vec4 rgb = ";
+    s+=funccall_to_string(mod);
+    s+=";\n";
+    s+="return rgb;\n";
+    s+="}\n";
+    return s;
+  }
+  virtual std::string bitmapbody_v_init() const { return ""; }
+  virtual std::string bitmapbody_v_body() const { return "ex_TexCoord = in_TexCoord;\n return pos;"; }
+  virtual std::string bitmapbody_f_init() const { return ""; }
+  virtual std::string bitmapbody_f_body() const { return ""; }
+ 
+private:
+  ShaderModule *mod;
+  std::string m_id;
+};
+ 
+GameApi::SBM GameApi::PolygonApi::sfo_sbm(EveryApi &ev, SFO sfo)
+{
+  GameApi::SFO sfo2 = ev.sh_api.render(sfo);
+  ShaderModule *mod = find_shader_module(e, sfo2);
+  return add_shader_bitmap(e, new SFOSBM(mod));
+}
+ 
 GameApi::ML GameApi::PolygonApi::sbm_texture(EveryApi &ev, ML mainloop, SBM bitmap)
 {
   ShaderBitmap *sbm = find_shader_bitmap(e, bitmap);
