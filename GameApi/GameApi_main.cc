@@ -382,11 +382,11 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
       prog->set_var("in_T", m3);
     }
 }
-
+extern bool logo_shown;
 extern std::string gameapi_seamless_url;
 EXPORT void GameApi::MainLoopApi::clear(unsigned int col)
 {
-  if (gameapi_seamless_url=="") {
+  if (gameapi_seamless_url=="" || !logo_shown) {
   //glClearColor(255,255,255,255);
   glClearStencil(0);
   Color c(col);
@@ -409,7 +409,7 @@ EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
 {
   //glClearColor(255,255,255,255);
   
-  if (gameapi_seamless_url=="") {
+  if (gameapi_seamless_url=="" || !logo_shown) {
   glClearStencil(0);
 
   int r = color & 0x00ff0000;
