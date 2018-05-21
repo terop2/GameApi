@@ -1736,3 +1736,125 @@ GameApi::ML GameApi::MainLoopApi::restart_screen(EveryApi &ev, ML ml, std::strin
   ML I19=ev.mainloop_api.array_ml(std::vector<ML>{I18,ml});
   return I19;
 }
+
+
+
+struct Store {
+  float time;
+  int type;
+  int ch;
+  Point cursor_pos;
+  int button;
+};
+
+class RecordKeyPresses : public MainLoopItem
+{
+public:
+  RecordKeyPresses(MainLoopItem *item, std::string output_filename) : item(item), output_filename(output_filename) { }
+
+  virtual void execute(MainLoopEnv &e) {
+    time = e.time;
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (e.ch=='o' && e.type==0x300) {
+      save();
+    }
+    Store s;
+    s.time = time;
+    s.type=e.type;
+    s.ch = e.ch;
+    s.cursor_pos = e.cursor_pos;
+    s.button = e.button;
+    vec.push_back(s);
+    item->handle_event(e);    
+  }
+  virtual int shader_id() { return item->shader_id(); }
+
+  void save() {
+    std::ofstream ss(output_filename.c_str());
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	Store s = vec[i];
+	ss << "{ " << s.time << " , " << s.type << " , " << s.ch << " , " << s.cursor_pos << " , " << s.button << " }" << std::endl;
+      }
+    ss.close();
+  }
+private:
+  float time;
+  MainLoopItem *item;
+  std::string output_filename;
+  std::vector<Store> vec;
+};
+
+GameApi::ML GameApi::MainLoopApi::record_keypresses(ML ml, std::string output_filename)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new RecordKeyPresses(item, output_filename));
+}
+
+class PlaybackKeyPresses : public MainLoopItem
+{
+public:
+  PlaybackKeyPresses(GameApi::Env &ee, MainLoopItem *item, std::string url, std::string homepageurl) : ee(ee), item(item), url(url), homepageurl(homepageurl) { current_item = 0; firsttime = true; }
+  virtual void execute(MainLoopEnv &e) {
+    if (firsttime) {
+#ifndef EMSCRIPTEN
+    ee.async_load_url(url, homepageurl);
+#endif
+    std::vector<unsigned char> *vec = ee.get_loaded_async_url(url);
+    std::string ss(vec->begin(), vec->end());
+    load(ss);
+    firsttime = false;
+    }
+    time = e.time; item->execute(e);
+
+    int s = vec.size();
+    for(int i=current_item;i<s;i++) {
+      Store s = vec[i];
+      if (time<s.time) { current_item=i; break; }
+      if (time>=s.time) {
+	MainLoopEvent ee;
+	ee.type = s.type;
+	ee.ch = s.ch;
+	ee.cursor_pos = s.cursor_pos;
+	ee.button = s.button;
+	item->handle_event(ee);
+	//std::cout << "Event: " << ee.ch << " " << ee.type << std::endl;
+      }
+    }
+
+
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    // TODO, is this call needed?
+    //item->handle_event(e);
+  }
+  virtual int shader_id() { return item->shader_id(); }
+
+  void load(std::string contents) {
+    std::stringstream ss(contents);
+    char ch;
+    Store s;
+    while(ss >> ch >> s.time >> ch >> s.type >> ch >> s.ch >> ch >> s.cursor_pos >> ch >> s.button >> ch) {
+      vec.push_back(s);
+      //std::cout << s.time << " " << s.type << " " << s.ch << " " << s.cursor_pos << " " << s.button << std::endl;
+    }
+  }
+private:
+  GameApi::Env &ee;
+  float time;
+  bool firsttime;
+  MainLoopItem *item;
+  std::string url;
+  std::string homepageurl;
+  std::vector<Store> vec;
+  int current_item;
+};
+  GameApi::ML GameApi::MainLoopApi::playback_keypresses(ML ml, std::string url)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new PlaybackKeyPresses(e,item, url, gameapi_homepageurl));
+}

@@ -39,7 +39,7 @@ CFiles=	Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
         GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \
         GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
         GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc \
-	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc
+	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc GameApi_vr.cc
 
 
 CFiles2 = Main.cc
@@ -74,6 +74,7 @@ LIB5WIN = d:\cvs\SDL2_image-2.0.0\i686-w64-mingw32\lib
 LIB6WIN = d:\cvs\glew-1.10.0\lib
 LIB7WIN = d:\cvs\pthread\pre-built.2\lib\x86
 LIB8WIN = d:\cvs\SDL2_mixer-2.0.0\i686-w64-mingw32\lib
+LIB9WIN = openvr
 INC1WIN = d:\cvs\SDL2-2.0.1\i686-w64-mingw32\include\sdl2
 INC2WIN = d:\cvs\glew-1.10.0/include
 INC3WIN = d:\cvs\SDL2_image-2.0.0/i686-w64-mingw32/include\sdl2
@@ -116,7 +117,7 @@ libGameApi.so: $(OFiles) Makefile
 
 libGameApi.dll: $(O2Files) Makefile.win32 glew.o
 	#@echo mingw libGameApi.dll
-	@g++ -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -pthread
+	@g++ -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -pthread -lopenvr_api
 
 #	@strip libGameApi.dll
 

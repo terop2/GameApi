@@ -4647,7 +4647,8 @@ ASyncData async_data[] = {
   { "polygon_api", "p_ds_url", 1 },
   { "bitmap_api", "intbitmap_loader", 0 },
   { "mainloop_api", "restart_screen", 2 },
-  { "tracker_api", "play_wave_via_keypress", 2 }
+  { "tracker_api", "play_wave_via_keypress", 2 },
+  { "mainloop_api", "playback_keypresses", 1 }
   // Note, this is function name, not user interface name.
 };
 
@@ -7037,7 +7038,19 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "", "true", "true", "0.01", "0" },
 			 "ML", "mainloop_api", "touch_rotate"));
 			 
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::record_keypresses,
+			 "key_record_ml",
+			 { "ml", "output_filename" },
+			 { "ML", "std::string" },
+			 { "", "key_record.txt" },
+			 "ML", "mainloop_api", "record_keypresses"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::playback_keypresses,
+			 "key_playback_ml",
+			 { "ml", "input_url" },
+			 { "ML", "std::string" },
+			 { "", "http://tpgames.org/key_record.txt" },
+			 "ML", "mainloop_api", "playback_keypresses" ));
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_printer_ml,
 			 "key_printer_ml",
 			 { "ml" },
@@ -7141,6 +7154,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML","bool","bool", "float", "float" },
 			 { "ev", "","false","false", "0.0", "100000.0" },
 			 "RUN", "blocker_api", "game_window2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_window,
+			 "vr_window",
+			 { "ev", "ml", "logo", "fpscounter", "start_time", "duration" },
+			 { "EveryApi&", "ML", "bool", "bool", "float", "float" },
+			 { "ev", "", "false", "false", "0.0", "100000.0" },
+			 "RUN", "blocker_api", "vr_window"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::run_seq,
 			 "run_seq",
 			 { "ev", "vec" },
