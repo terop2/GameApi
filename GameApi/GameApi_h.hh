@@ -1,6 +1,7 @@
 #ifndef GAMEAPI_H_H
 #define GAMEAPI_H_H
 
+#define VIRTUAL_REALITY 1
 #define SDL2_USED  
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
@@ -960,7 +961,8 @@ GameApi::CPP add_curve_pos(GameApi::Env &e, CurvePos *pos);
 GameApi::PTT add_point_transform(GameApi::Env &e, PointTransform *ptt);
 GameApi::KF add_vertex_anim(GameApi::Env &e, VertexAnimNode *node);
 GameApi::BLK add_blocker(GameApi::Env &e, Blocker *blk);
-GameApi::RUN add_blocker(GameApi::Env &e, Splitter *spl);
+//GameApi::RUN add_blocker(GameApi::Env &e, Splitter *spl);
+GameApi::RUN add_splitter(GameApi::Env &e, Splitter *spl);
 GameApi::CC add_color(GameApi::Env &e, ColorChange *cc);
 GameApi::MX add_mixed(GameApi::Env &e, MixedI *n);
 GameApi::SA add_skeletal(GameApi::Env &e, SkeletalNode *n);
