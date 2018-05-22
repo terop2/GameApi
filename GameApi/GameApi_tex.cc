@@ -157,18 +157,18 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 
       int sx = bm->SizeX();
       int sy = bm->SizeY();
+      bool power_of_two = true;
       if (!(sx==1 ||sx==2||sx==4||sx==8||sx==16||sx==32||sx==64||sx==128||sx==256||sx==512||sx==1024||sx==2048||sx==4096||sx==8192||sx==16384))
-	std::cout << "Warning: power of 2 textures are needed in emscripten when GL_REPEAT is used" << std::endl;
+	power_of_two = false;
       if (!(sy==1 ||sy==2||sy==4||sy==8||sy==16||sy==32||sy==64||sy==128||sy==256||sy==512||sy==1024||sy==2048||sy==4096||sy==8192||sy==16384))
-	std::cout << "Warning: power of 2 textures are needed in emscripten when GL_REPEAT is used" << std::endl;
-      
+	power_of_two = false;
       
       glBindTexture(GL_TEXTURE_2D, ids[i]);
       glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,bm->SizeX(),bm->SizeY(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buf.Buffer().buffer);
       glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
       glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
-      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_REPEAT); // GL_REPEAT
-      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_REPEAT); // these cause power-of-two texture requirement in emscripten.
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, power_of_two?GL_REPEAT:GL_CLAMP_TO_EDGE); // GL_REPEAT
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, power_of_two?GL_REPEAT:GL_CLAMP_TO_EDGE); // these cause power-of-two texture requirement in emscripten.
       glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
       GameApi::TXID id2;
       id2.id = ids[i];
