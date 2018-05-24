@@ -129,6 +129,8 @@ public:
   virtual int SizeY() const=0;
   virtual C Map(int x, int y) const=0;
   virtual void Prepare()=0;
+  //virtual void handle_event(MainLoopEvent &e) { }
+  //virtual void render(MainLoopEnv &e) { }
   virtual ~Bitmap() { }
 };
 template<class C>

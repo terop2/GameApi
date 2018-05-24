@@ -7,7 +7,7 @@
 #include <SDL_opengl.h>
 
 #ifdef VIRTUAL_REALITY
-#include "openvr/openvr.h"
+#include "openvr/openvr_mingw.h"
 
 
 class VR {
@@ -21,7 +21,13 @@ public:
     GLuint m_nResolveTextureId;
     GLuint m_nResolveFramebufferId;
   };
-
+  struct VertexDataWindow
+  {
+    Point2d position;
+    Point2d texCoord;
+    VertexDataWindow(Point2d p, Point2d tx) : position(p), texCoord(tx) { }
+  };
+  
 public:
   void InitVR(); // before SDL_CreateWindow
   bool Initialized() const { return hmd!=NULL; }
@@ -31,6 +37,7 @@ public:
   void Submit(); // at rendering
   void HandleEvent();
   void SetupCameras();
+  void SetupCompanionWindow();
   void RenderStereoTargets(std::function<void()> render_left, std::function<void()> render_right);
   Matrix GetCurrentViewProjectionMatrix( vr::Hmd_Eye nEye );
   void UpdateActionState();
@@ -103,11 +110,13 @@ void VR::InitVR() {
   if (eError != vr::VRInitError_None) {
     std::cout << "ERROR: virtual reality initialization failed!" << std::endl;
   }
-
+  std::cout << "OK: virtual reality initialization successful!" << std::endl;
+  
   if (!vr::VRCompositor() )
     {
       std::cout << "VR Compositor initialization failed!\n" << std::endl;
     }
+  std::cout << "OK: VR Compositor initialization successful!" << std::endl;
 
 }
 void VR::Cleanup()
@@ -159,6 +168,7 @@ bool VR::CreateFrameBuffer(int nWidth, int nHeight, FramebufferDesc &framebuffer
    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
    if (status != GL_FRAMEBUFFER_COMPLETE)
      {
+       std::cout << "FrameBuffer not complete!" << std::endl;
        return false;
      }
    
@@ -182,6 +192,15 @@ void VR::SetupCameras()
   projection_right = GetHMDMatrixProjectionEye( vr::Eye_Right );
   pos_left = GetHMDMatrixPoseEye( vr::Eye_Left );
   pos_right = GetHMDMatrixPoseEye( vr::Eye_Right );
+}
+void VR::SetupCompanionWindow()
+{
+#if 0
+  if (!hmd) return;
+  std::vector<VertexDataWindow> nVerts;
+
+  nVerts.push_back(VertexDataWindow(
+#endif
 }
 Matrix VR::GetCurrentViewProjectionMatrix( vr::Hmd_Eye nEye )
 {
@@ -501,6 +520,203 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
 {
   Splitter *spl = new MainLoopSplitter_vr(ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
   return add_splitter(e, spl);
+}
+vr::IVRSystem *hmd = 0;
+Matrix hmd_pose;
+void check_vr_compositor_init()
+{
+  if (!vr::VRCompositor()) {
+    vr::EVRInitError eError = vr::VRInitError_None;
+    hmd = vr::VR_Init( &eError, vr::VRApplication_Scene );
+  }
+  if (!vr::VRCompositor()) {
+    std::cout << "ERROR: VR compositor initialization failed!" << std::endl;
+  }
+  vr::TrackedDevicePose_t pose[ vr::k_unMaxTrackedDeviceCount ];
+  vr::VRCompositor()->WaitGetPoses(pose, vr::k_unMaxTrackedDeviceCount, NULL,0);
+
+}
+class SubmitML : public MainLoopItem
+{
+public:
+  SubmitML(MainLoopItem *item, TextureID *left, TextureID *right) : item(item), left(left), right(right) {
+    firsttime = true;
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+      check_vr_compositor_init();
+      firsttime = false;
+    }
+    item->execute(e);
+    left->render(e);
+    right->render(e);
+
+    int texid_left = left->texture();
+    int texid_right = right->texture();
+    vr::Texture_t leftTexture = { (void*)(uintptr_t)texid_left, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+    vr::VRCompositor()->Submit(vr::Eye_Left, &leftTexture);
+
+    vr::Texture_t rightTexture = { (void*)(uintptr_t)texid_right, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+    vr::VRCompositor()->Submit(vr::Eye_Right, &rightTexture);
+    vr::VRCompositor()->WaitGetPoses(pose, vr::k_unMaxTrackedDeviceCount, NULL,0);
+    int s = vr::k_unMaxTrackedDeviceCount;
+    for(int nDevice = 0; nDevice < s; ++nDevice) 
+      {
+	if (pose[nDevice].bPoseIsValid ) {
+	  device_pose[nDevice] = ConvertMatrix( pose[nDevice].mDeviceToAbsoluteTracking );
+	  
+	}
+      }
+    if (pose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid ) {
+      hmd_pose = device_pose[vr::k_unTrackedDeviceIndex_Hmd];
+      hmd_pose = Matrix::Inverse(hmd_pose);
+    }
+
+  }
+  Matrix ConvertMatrix( const vr::HmdMatrix34_t &pose)
+  {
+    Matrix m = { pose.m[0][0], pose.m[1][0], pose.m[2][0], 0.0f,
+		 pose.m[0][1], pose.m[1][1], pose.m[2][1], 0.0f,
+		 pose.m[0][2], pose.m[1][2], pose.m[2][2], 0.0f,
+	       pose.m[0][3], pose.m[1][3], pose.m[2][3], 1.0f, false };
+    return m;
+  }
+
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    left->handle_event(e);
+    right->handle_event(e);
+    item->handle_event(e);
+  }
+  virtual int shader_id() { return item->shader_id(); }
+private:
+  bool firsttime;
+  MainLoopItem *item;
+  TextureID *left;
+  TextureID *right;
+  vr::TrackedDevicePose_t pose[ vr::k_unMaxTrackedDeviceCount ];
+  Matrix device_pose[ vr::k_unMaxTrackedDeviceCount ];
+};
+EXPORT GameApi::ML GameApi::BlockerApi::vr_submit_ml(ML ml, TXID left, TXID right)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  TextureID *left_eye = find_txid(e, left);
+  TextureID *right_eye = find_txid(e, right);
+  return add_main_loop(e, new SubmitML(item, left_eye, right_eye));
+}
+EXPORT GameApi::RUN GameApi::BlockerApi::vr_submit(EveryApi &ev, TXID left, TXID right)
+{
+
+P I1=ev.polygon_api.vr_fullscreen_quad(ev,false);
+MT I2=ev.materials_api.textureid(ev,left,1.0);
+ML I3=ev.materials_api.bind(I1,I2);
+P I4=ev.polygon_api.vr_fullscreen_quad(ev,true);
+ MT I5=ev.materials_api.textureid(ev,right,1.0);
+ML I6=ev.materials_api.bind(I4,I5);
+ML I7=ev.mainloop_api.array_ml(std::vector<ML>{I3,I6});
+RUN I8=ev.blocker_api.game_window2(ev,I7,false,false,0.0,100000.0);
+ return I8;
+}
+
+class PoseMovement : public Movement
+{
+public:
+  PoseMovement(Movement *next) : next(next) { }
+  virtual void event(MainLoopEvent &e) { if (next) next->event(e); }
+  virtual void frame(MainLoopEnv &e) { if (next) next->frame(e); }
+  void set_matrix(Matrix m) { }
+  Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    return next->get_whole_matrix(time,delta_time)*hmd_pose;
+  }
+private:
+  Movement *next;
+  bool eye;
+};
+EXPORT GameApi::MN GameApi::MovementNode::pose(MN next)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new PoseMovement(nxt));
+}
+
+class HMDProjection : public MainLoopItem
+{
+public:
+  HMDProjection(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *item, bool eye, float near, float far) : env(env), ev(ev), item(item), eye(eye), m_fNearClip(near), m_fFarClip(far) {}
+
+
+Matrix GetHMDMatrixPoseEye( vr::Hmd_Eye nEye )
+{
+  if (!hmd) { return Matrix::Identity(); }
+  vr::HmdMatrix34_t mat = hmd->GetEyeToHeadTransform( nEye );
+  Matrix m = { mat.m[0][0], mat.m[1][0], mat.m[2][0], 0.0,
+	       mat.m[0][1], mat.m[1][1], mat.m[2][1], 0.0,
+	       mat.m[0][2], mat.m[1][2], mat.m[2][2], 0.0,
+	       mat.m[0][3], mat.m[1][3], mat.m[2][3], 0.0, false };
+  return m;
+}
+
+Matrix GetHMDMatrixProjectionEye( vr::Hmd_Eye nEye )
+{
+  if (!hmd) { return Matrix::Identity(); }
+  vr::HmdMatrix44_t mat = hmd->GetProjectionMatrix( nEye, m_fNearClip, m_fFarClip );
+  Matrix m = { mat.m[0][0], mat.m[1][0], mat.m[2][0], mat.m[3][0],
+	       mat.m[0][1], mat.m[1][1], mat.m[2][1], mat.m[3][1],
+	       mat.m[0][2], mat.m[1][2], mat.m[2][2], mat.m[3][2],
+	       mat.m[0][3], mat.m[1][3], mat.m[2][3], mat.m[3][3], false };
+  return m;
+}
+
+  virtual void execute(MainLoopEnv &e)
+  {
+    GameApi::SH sh_color, sh_texture, sh_texture_2d, sh_array_texture;
+    GameApi::SH vertex, fragment;
+    sh_color.id = e.sh_color;
+    sh_texture.id = e.sh_texture;
+    sh_texture_2d.id = e.sh_texture_2d;
+    sh_array_texture.id = e.sh_array_texture;
+    vertex.id = e.us_vertex_shader;
+    fragment.id = e.us_fragment_shader;
+
+    Matrix proj_matrix; Matrix pos_mat;
+    if (eye==false) {
+      proj_matrix=GetHMDMatrixProjectionEye( vr::Eye_Left );
+      pos_mat= GetHMDMatrixPoseEye( vr::Eye_Left );
+    }
+    else {
+      proj_matrix=GetHMDMatrixProjectionEye( vr::Eye_Right );
+      pos_mat= GetHMDMatrixPoseEye( vr::Eye_Right );
+    }
+    Matrix proj_m = proj_matrix * pos_mat;
+    GameApi::M proj = add_matrix2( env, proj_m );
+    ev.shader_api.set_var(sh_color, "in_P", proj);
+    ev.shader_api.set_var(sh_texture, "in_P", proj);
+    ev.shader_api.set_var(sh_texture_2d, "in_P", proj);
+    ev.shader_api.set_var(sh_array_texture, "in_P", proj);
+    ev.shader_api.set_var(vertex, "in_P", proj);
+    ev.shader_api.set_var(fragment, "in_P", proj);
+    
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual int shader_id() { return item->shader_id(); }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *item;
+  bool eye;
+  float m_fNearClip, m_fFarClip;
+};
+
+EXPORT GameApi::ML GameApi::MainLoopApi::setup_hmd_projection(EveryApi &ev, ML ml, bool eye, float nnear, float nfar)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new HMDProjection(e,ev,item, eye, nnear,nfar));
 }
 
 #endif

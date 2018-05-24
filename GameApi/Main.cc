@@ -17,6 +17,7 @@
 // You should have received a copy of the GNU Library General Public License
 // along with Polygon.  If not, see <http://www.gnu.org/licenses/>.
 //
+#define VIRTUAL_REALITY 1
 #define SDL2_USED
 #define NO_SDL_GLEXT
 //#define GL3_PROTOTYPES 1
@@ -364,6 +365,7 @@ c  for(int i=0;i<size1&&!exit2;i+=100)
 }
 #endif
 
+void check_vr_compositor_init();
 SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize)
 {
 #ifdef SDL2_USED
@@ -389,7 +391,9 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool re
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 #endif
   //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-
+#ifdef VIRTUAL_REALITY
+  check_vr_compositor_init();
+#endif  
   if (resize)
     sdl_window = SDL_CreateWindow("Program", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scr_x, scr_y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE);
   else

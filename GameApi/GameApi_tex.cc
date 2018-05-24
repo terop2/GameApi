@@ -281,12 +281,97 @@ EXPORT void GameApi::TextureApi::unuse(TXID tx)
   glDisable(GL_TEXTURE_2D);
 }
 
+class TextureID;
+
+#if 0
+class ToBitmap : public Bitmap<Color>
+{
+public:
+  ToBitmap(TextureID *id) : id(id) { ref=Buffer::NewBuffer(1,1); }
+  virtual int SizeX() const
+  {
+    return m_width;
+  }
+  virtual int SizeY() const
+  {
+    return m_height;
+  }
+  virtual Color Map(int x, int y) const
+  {
+    return ref.buffer[x+y*ref.ydelta];
+  }
+  virtual void Prepare()
+  {
+    int width=256, height=256;
+    TextureID *txid = id;
+    MainLoopEnv e;
+    e.in_MV = Matrix::Identity();
+    e.in_T = Matrix::Identity();
+    e.in_N = Matrix::Identity();
+    txid->render(e);
+    int id = txid->texture();
+    glBindTexture(GL_TEXTURE_2D, id);
+  
+#ifndef EMSCRIPTEN
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+#endif
+    ref = BufferRef::NewBuffer(width, height);
+#ifndef EMSCRIPTEN
+  glReadBuffer( GL_COLOR_ATTACHMENT0 );
+  glGetTexImage( GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
+#endif
+
+
+  int xx = ref.width;
+  int yy = ref.height;
+  for(int y = 0; y<yy; y++)
+    for(int x = 0; x<xx; x++)
+      {
+	unsigned int col = ref.buffer[x+y*ref.ydelta];
+	int r = col &0xff0000;
+	int g = col &0xff00;
+	int b = col &0xff;
+	r >>= 16;
+	g >>= 8;
+	b <<= 16;
+	g <<= 8;
+	unsigned int col2 = (col & 0xff000000) + r+g+b;
+	ref.buffer[x+y*ref.ydelta] = col2;
+      }
+
+  
+    m_width = width;
+    m_height = height;
+  }
+  //virtual void handle_event(MainLoopEvent &e) { }
+  //virtual void render(MainLoopEnv &e) {
+  //  id->render(e);
+  //  Prepare();
+  // }
+private:
+  TextureID *id;
+  int m_width, m_height;
+  BufferRef ref;
+};
+
+
+EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
+{
+  TextureID *id = find_txid(e,tx);
+  return add_color_bitmap(e, new ToBitmap(id));
+}
+#endif
+#if 1
 EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
 {
   //EnvImpl *env = ::EnvImpl::Environment(&e);
+
+  TextureID *txid = find_txid(e, tx);
+  int id = txid->texture();
   
-  glBindTexture(GL_TEXTURE_2D, tx.id);
-  int width=1, height=1;
+  glBindTexture(GL_TEXTURE_2D, id);
+  int width=256, height=256;
 #ifndef EMSCRIPTEN
   glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
   glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
@@ -320,3 +405,4 @@ EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
   //Bitmap<Color> *bm2 = new FlipColours(*bm);
   return add_color_bitmap2(e, bm);
 }
+#endif
