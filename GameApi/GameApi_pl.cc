@@ -1286,6 +1286,15 @@ EXPORT GameApi::P GameApi::PolygonApi::fullscreen_quad(EveryApi &ev)
   int sy = 600-40; //ev.mainloop_api.get_screen_sy();
   return quad_z(-sx,sx, -sy, sy, 0.0);
 }
+EXPORT GameApi::P GameApi::PolygonApi::vr_fullscreen_quad(EveryApi &ev, bool is_right)
+{
+  int sx = 800-40; //ev.mainloop_api.get_screen_sx();
+  int sy = 600-40; //ev.mainloop_api.get_screen_sy();
+  if (!is_right)
+    return quad_z(-sx,0, -sy, sy, 0.0);
+  else
+    return quad_z(0,sx,-sy,sy,0.0);
+}
 EXPORT GameApi::P GameApi::PolygonApi::quad_z(float x1, float x2,
 		  float y1, float y2,
 		  float z)

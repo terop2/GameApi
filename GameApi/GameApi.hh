@@ -255,6 +255,8 @@ public:
   IMPORT void run(BLK blk);
   IMPORT RUN game_window2(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration);
   IMPORT RUN vr_window(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float dura);
+  IMPORT RUN vr_submit(EveryApi &ev, TXID left, TXID right);
+  IMPORT ML vr_submit_ml(ML ml, TXID left, TXID right);
   IMPORT void run2(EveryApi &ev, RUN spl);
   IMPORT RUN run_seq(EveryApi &ev, std::vector<RUN> vec);
 private:
@@ -389,7 +391,7 @@ public:
   ML blendfunc(ML ml, int val, int val2);
   ML record_keypresses(ML ml, std::string output_filename);
   ML playback_keypresses(ML ml, std::string input_url);
-
+  ML setup_hmd_projection(EveryApi &ev, ML ml, bool eye, float n, float f);
   
   DS load_ds_from_mem(std::vector<unsigned char> vec);
   DS load_ds_from_disk(std::string filename);
@@ -1430,6 +1432,7 @@ public:
   IMPORT MN rotatex(MN next, float angle);
   IMPORT MN rotatey(MN next, float angle);
   IMPORT MN rotatez(MN next, float angle);
+  IMPORT MN pose(MN next);
   IMPORT MN debug_translate(MN next);
   IMPORT MN translate(MN next, float start_time, float end_time,
 	       float dx, float dy, float dz);
@@ -2143,7 +2146,8 @@ public:
 	   float y1, float y2,
  	   float z);
         IMPORT P fullscreen_quad(EveryApi &ev);
-        IMPORT P tri_strip(PT *array, int size);
+  IMPORT P vr_fullscreen_quad(EveryApi &ev, bool is_right);
+  IMPORT P tri_strip(PT *array, int size);
         IMPORT P polygon2(std::vector<PT> vec);
         IMPORT P polygon(PT *array, int size); // use render_dynamic with this.
         IMPORT P polygon3(PTS points);

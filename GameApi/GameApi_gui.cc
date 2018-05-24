@@ -6270,6 +6270,14 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "MN", "float" },
 			 { "", "0.0" },
 			 "MN", "move_api", "rotatez"));
+#ifdef VIRTUAL_REALITY
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::pose,
+			 "mn_hmd_pose",
+			 { "next" },
+			 { "MN" },
+			 { "" },
+			 "MN", "move_api", "pose"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::scale_progress,
 			 "mn_scale_progress",
 			 { "next", "is_x", "is_y", "is_z" },
@@ -7161,6 +7169,24 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "bool", "bool", "float", "float" },
 			 { "ev", "", "false", "false", "0.0", "100000.0" },
 			 "RUN", "blocker_api", "vr_window"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_submit,
+			 "vr_submit",
+			 { "ev", "left_eye", "right_eye" },
+			 { "EveryApi&", "TXID", "TXID" },
+			 { "ev", "", "" },
+			 "RUN", "blocker_api", "vr_submit"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_submit_ml,
+			 "vr_submit_ml",
+			 { "ml", "left_eye", "right_eye" },
+			 { "ML", "TXID", "TXID" },
+			 { "", "", "" },
+			 "ML", "blocker_api", "vr_submit_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::setup_hmd_projection,
+			 "vr_projection",
+			 { "ev", "ml", "eye", "near", "far" },
+			 { "EveryApi&", "ML", "bool", "float", "float" },
+			 { "ev", "", "false", "10.1", "60000.0" },
+			 "ML", "mainloop_api", "setup_hmd_projection"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::run_seq,
 			 "run_seq",
@@ -7472,6 +7498,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&" },
 			 { "ev" },
 			 "P", "polygon_api", "fullscreen_quad"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::vr_fullscreen_quad,
+			 "vr_fullscreen_quad",
+			 { "ev", "is_right_eye" },
+			 { "EveryApi&", "bool" },
+			 { "ev", "false" },
+			 "P", "polygon_api", "vr_fullscreen_quad"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::polygon3,
 			 "polygon",
 			 { "vec" },
