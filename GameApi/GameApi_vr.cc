@@ -519,10 +519,10 @@ private:
 EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration, bool invert)
 {
   ML I43 = ev.mainloop_api.setup_hmd_projection(ev,ml,false,10.1,60000.0);
-  TXID I44 = ev.fbo_api.fbo_ml(ev,I43,1024,1024,false);
+  TXID I44 = ev.fbo_api.fbo_ml(ev,I43,1080,1200,false);
   ///
   ML I66 = ev.mainloop_api.setup_hmd_projection(ev,ml,true,10.1,60000.0);
-  TXID I67 = ev.fbo_api.fbo_ml(ev,I66,1024,1024,false);
+  TXID I67 = ev.fbo_api.fbo_ml(ev,I66,1080,1200,false);
   ML I68 = ev.blocker_api.vr_submit_ml(ml, I44,I67,invert);
   RUN I69 = ev.blocker_api.game_window2(ev,I68,logo,fpscounter,start_time,duration);
   //Splitter *spl = new MainLoopSplitter_vr(ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
@@ -530,7 +530,7 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
   return I69;
 }
 vr::IVRSystem *hmd = 0;
-Matrix hmd_pose;
+Matrix hmd_pose = Matrix::Identity();
 void check_vr_compositor_init()
 {
   if (!vr::VRCompositor()) {
@@ -540,9 +540,10 @@ void check_vr_compositor_init()
   if (!vr::VRCompositor()) {
     std::cout << "ERROR: VR compositor initialization failed!" << std::endl;
   }
-  vr::TrackedDevicePose_t pose[ vr::k_unMaxTrackedDeviceCount ];
-  vr::VRCompositor()->WaitGetPoses(pose, vr::k_unMaxTrackedDeviceCount, NULL,0);
-
+  if (hmd) {
+    vr::TrackedDevicePose_t pose[ vr::k_unMaxTrackedDeviceCount ];
+    vr::VRCompositor()->WaitGetPoses(pose, vr::k_unMaxTrackedDeviceCount, NULL,0);
+  }
 }
 class SubmitML : public MainLoopItem
 {
@@ -557,6 +558,7 @@ public:
       firsttime = false;
     }
     item->execute(e);
+    if (hmd) {
     left->render(e);
     right->render(e);
 
@@ -582,7 +584,7 @@ public:
 	hmd_pose = Matrix::Inverse(hmd_pose);
       }
     }
-
+    }
   }
   Matrix ConvertMatrix( const vr::HmdMatrix34_t &pose)
   {
