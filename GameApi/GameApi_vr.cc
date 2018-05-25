@@ -518,8 +518,16 @@ private:
 
 EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration)
 {
-  Splitter *spl = new MainLoopSplitter_vr(ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
-  return add_splitter(e, spl);
+  ML I43 = ev.mainloop_api.setup_hmd_projection(ev,ml,false,10.1,60000.0);
+  TXID I44 = ev.fbo_api.fbo_ml(ev,I43,1024,1024,false);
+  ///
+  ML I66 = ev.mainloop_api.setup_hmd_projection(ev,ml,true,10.1,60000.0);
+  TXID I67 = ev.fbo_api.fbo_ml(ev,I66,1024,1024,false);
+  ML I68 = ev.blocker_api.vr_submit_ml(ml, I44,I67);
+  RUN I69 = ev.blocker_api.game_window2(ev,I68,logo,fpscounter,start_time,duration);
+  //Splitter *spl = new MainLoopSplitter_vr(ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
+  //return add_splitter(e, spl);
+  return I69;
 }
 vr::IVRSystem *hmd = 0;
 Matrix hmd_pose;
@@ -570,16 +578,16 @@ public:
       }
     if (pose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid ) {
       hmd_pose = device_pose[vr::k_unTrackedDeviceIndex_Hmd];
-      hmd_pose = Matrix::Inverse(hmd_pose);
+      //hmd_pose = Matrix::Inverse(hmd_pose);
     }
 
   }
   Matrix ConvertMatrix( const vr::HmdMatrix34_t &pose)
   {
-    Matrix m = { pose.m[0][0], pose.m[1][0], pose.m[2][0], 0.0f,
-		 pose.m[0][1], pose.m[1][1], pose.m[2][1], 0.0f,
-		 pose.m[0][2], pose.m[1][2], pose.m[2][2], 0.0f,
-	       pose.m[0][3], pose.m[1][3], pose.m[2][3], 1.0f, false };
+    Matrix m = { pose.m[0][0], pose.m[0][1], pose.m[0][2], pose.m[0][3],
+		 pose.m[1][0], pose.m[1][1], pose.m[1][2], pose.m[1][3],
+		 pose.m[2][0], pose.m[2][1], pose.m[2][2], pose.m[2][3],
+	         0.0, 0.0,0.0, 1.0f, false };
     return m;
   }
 
@@ -653,7 +661,12 @@ Matrix GetHMDMatrixPoseEye( vr::Hmd_Eye nEye )
   Matrix m = { mat.m[0][0], mat.m[1][0], mat.m[2][0], 0.0,
 	       mat.m[0][1], mat.m[1][1], mat.m[2][1], 0.0,
 	       mat.m[0][2], mat.m[1][2], mat.m[2][2], 0.0,
-	       mat.m[0][3], mat.m[1][3], mat.m[2][3], 0.0, false };
+	       mat.m[0][3], mat.m[1][3], mat.m[2][3], 1.0, false };
+  //std::cout << "Pose:" << std::endl;
+  //for(int i=0;i<16;i++)
+  //  std::cout << m.matrix[i] << ",";
+  //std::cout << std::endl;
+
   return m;
 }
 
@@ -665,6 +678,12 @@ Matrix GetHMDMatrixProjectionEye( vr::Hmd_Eye nEye )
 	       mat.m[0][1], mat.m[1][1], mat.m[2][1], mat.m[3][1],
 	       mat.m[0][2], mat.m[1][2], mat.m[2][2], mat.m[3][2],
 	       mat.m[0][3], mat.m[1][3], mat.m[2][3], mat.m[3][3], false };
+  //m.matrix[10]=0.0f;
+  //m.matrix[11]=0.0f;
+  //std::cout << "Proj:" << std::endl;
+  //for(int i=0;i<16;i++)
+  //  std::cout << m.matrix[i] << ",";
+  //std::cout << std::endl;
   return m;
 }
 
@@ -696,8 +715,10 @@ Matrix GetHMDMatrixProjectionEye( vr::Hmd_Eye nEye )
     ev.shader_api.set_var(sh_array_texture, "in_P", proj);
     ev.shader_api.set_var(vertex, "in_P", proj);
     ev.shader_api.set_var(fragment, "in_P", proj);
-    
+    glEnable( GL_MULTISAMPLE );
     item->execute(e);
+    glDisable( GL_MULTISAMPLE );
+    
   }
   virtual void handle_event(MainLoopEvent &e)
   {
@@ -718,5 +739,7 @@ EXPORT GameApi::ML GameApi::MainLoopApi::setup_hmd_projection(EveryApi &ev, ML m
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new HMDProjection(e,ev,item, eye, nnear,nfar));
 }
+
+
 
 #endif
