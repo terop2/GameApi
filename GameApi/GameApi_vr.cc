@@ -516,14 +516,14 @@ private:
 
 
 
-EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration)
+EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration, bool invert)
 {
   ML I43 = ev.mainloop_api.setup_hmd_projection(ev,ml,false,10.1,60000.0);
   TXID I44 = ev.fbo_api.fbo_ml(ev,I43,1024,1024,false);
   ///
   ML I66 = ev.mainloop_api.setup_hmd_projection(ev,ml,true,10.1,60000.0);
   TXID I67 = ev.fbo_api.fbo_ml(ev,I66,1024,1024,false);
-  ML I68 = ev.blocker_api.vr_submit_ml(ml, I44,I67);
+  ML I68 = ev.blocker_api.vr_submit_ml(ml, I44,I67,invert);
   RUN I69 = ev.blocker_api.game_window2(ev,I68,logo,fpscounter,start_time,duration);
   //Splitter *spl = new MainLoopSplitter_vr(ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
   //return add_splitter(e, spl);
@@ -547,7 +547,7 @@ void check_vr_compositor_init()
 class SubmitML : public MainLoopItem
 {
 public:
-  SubmitML(MainLoopItem *item, TextureID *left, TextureID *right) : item(item), left(left), right(right) {
+  SubmitML(MainLoopItem *item, TextureID *left, TextureID *right, bool invert) : item(item), left(left), right(right), invert(invert) {
     firsttime = true;
   }
   virtual void execute(MainLoopEnv &e)
@@ -578,7 +578,9 @@ public:
       }
     if (pose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid ) {
       hmd_pose = device_pose[vr::k_unTrackedDeviceIndex_Hmd];
-      //hmd_pose = Matrix::Inverse(hmd_pose);
+      if (invert) {
+	hmd_pose = Matrix::Inverse(hmd_pose);
+      }
     }
 
   }
@@ -605,13 +607,14 @@ private:
   TextureID *right;
   vr::TrackedDevicePose_t pose[ vr::k_unMaxTrackedDeviceCount ];
   Matrix device_pose[ vr::k_unMaxTrackedDeviceCount ];
+  bool invert;
 };
-EXPORT GameApi::ML GameApi::BlockerApi::vr_submit_ml(ML ml, TXID left, TXID right)
+		   EXPORT GameApi::ML GameApi::BlockerApi::vr_submit_ml(ML ml, TXID left, TXID right, bool invert)
 {
   MainLoopItem *item = find_main_loop(e, ml);
   TextureID *left_eye = find_txid(e, left);
   TextureID *right_eye = find_txid(e, right);
-  return add_main_loop(e, new SubmitML(item, left_eye, right_eye));
+  return add_main_loop(e, new SubmitML(item, left_eye, right_eye, invert));
 }
 EXPORT GameApi::RUN GameApi::BlockerApi::vr_submit(EveryApi &ev, TXID left, TXID right)
 {

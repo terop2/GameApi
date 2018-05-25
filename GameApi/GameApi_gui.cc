@@ -7165,9 +7165,9 @@ std::vector<GameApiItem*> blocker_functions()
 #ifdef VIRTUAL_REALITY
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_window,
 			 "vr_window",
-			 { "ev", "ml", "logo", "fpscounter", "start_time", "duration" },
-			 { "EveryApi&", "ML", "bool", "bool", "float", "float" },
-			 { "ev", "", "false", "false", "0.0", "100000.0" },
+			 { "ev", "ml", "logo", "fpscounter", "start_time", "duration", "invert" },
+			 { "EveryApi&", "ML", "bool", "bool", "float", "float", "bool" },
+			 { "ev", "", "false", "false", "0.0", "100000.0", "false" },
 			 "RUN", "blocker_api", "vr_window"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_submit,
 			 "vr_submit",
@@ -7177,9 +7177,9 @@ std::vector<GameApiItem*> blocker_functions()
 			 "RUN", "blocker_api", "vr_submit"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_submit_ml,
 			 "vr_submit_ml",
-			 { "ml", "left_eye", "right_eye" },
-			 { "ML", "TXID", "TXID" },
-			 { "", "", "" },
+			 { "ml", "left_eye", "right_eye", "invert" },
+			 { "ML", "TXID", "TXID", "bool" },
+			 { "", "", "", "false" },
 			 "ML", "blocker_api", "vr_submit_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::setup_hmd_projection,
 			 "vr_projection",
