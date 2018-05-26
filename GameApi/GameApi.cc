@@ -9774,7 +9774,7 @@ void splitter_iter2(void *arg)
 }
 
 #ifdef VIRTUAL_REALITY
-extern vr_run2(Splitter *spl2);
+void vr_run2(Splitter *spl2);
 #endif
 EXPORT void GameApi::BlockerApi::run2(EveryApi &ev, RUN spl)
 {
