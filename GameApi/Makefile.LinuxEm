@@ -78,9 +78,9 @@ INC4WIN = d:\cvs\SDL2-2.0.1/i686-w64-mingw32/include/SDL2
 INC5WIN = d:\cvs\freetype\include
 INC6WIN = d:\cvs\freetype\include\freetype2
 INC7WIN = d:\cvs\pthread\pre-built.2\include
-EMINC1 = /root/emscripten/emsdk_portable/emscripten/1.37.9/system/include/SDL
-EMINC2 = /root/emscripten/emsdk_portable/emscripten/1.37.9/system/include
-EMINC3 = /root/emscripten/emsdk_portable/emscripten/1.37.9/tests/freetype/include
+EMINC1 = /root/emscripten2/emsdk/emscripten/1.38.3/system/include/SDL
+EMINC2 = /root/emscripten2/emsdk/emscripten/1.38.3/system/include
+EMINC3 = /root/emscripten2/emsdk/emscripten/1.38.3/tests/freetype/include
 
 CCFLAGS = -g -O3 -Os -Oz -std=c++11 -Wall -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags --memory-init-file 0 -s NO_FILESYSTEM=1 -s DISABLE_EXCEPTION_CATCHING=1 -s USE_PTHREADS=1 -I$(EMINC1) -I$(EMINC2) -I$(EMINC3)
 CC2FLAGS = -g -std=c++11 -Wall -O3 -Os -Oz -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3)
