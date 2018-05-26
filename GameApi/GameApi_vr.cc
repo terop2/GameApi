@@ -10,6 +10,7 @@
 #ifndef EMSCRIPTEN
 #include "openvr/openvr_mingw.h"
 #else
+#include <emscripten.h>
 #include <emscripten/vr.h>
 #endif
 
