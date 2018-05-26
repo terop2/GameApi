@@ -25,14 +25,16 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
   RUN I69 = ev.blocker_api.game_window2(ev,I68,logo,fpscounter,start_time,duration);
   return I69;
 }
+#ifndef EMSCRIPTEN
 vr::IVRSystem *hmd = 0;
+#endif
 Matrix hmd_pose = Matrix::Identity();
 #ifdef EMSCRIPTEN
 VRDisplayHandle *current_display;
-bool emscripten_vr_ready = false;
+bool vr_vr_ready = false;
 void vr_cb(void *arg)
 {
-  emscripten_vr_ready = true;
+  vr_vr_ready = true;
 }
 #endif
 EXPORT void check_vr_compositor_init()
@@ -50,7 +52,7 @@ EXPORT void check_vr_compositor_init()
     vr::VRCompositor()->WaitGetPoses(pose, vr::k_unMaxTrackedDeviceCount, NULL,0);
   }
 #else
-  if (!emscripten_vr_ready) {
+  if (!vr_vr_ready) {
     int val = emscripten_vr_init(&vr_cb, NULL);
     if (val==0) { std::cout << "Emscripten VR not found!" << std::endl;
     }
@@ -101,7 +103,7 @@ public:
     }
     }
 #else
-    if (emscripten_vr_ready) {
+    if (vr_vr_ready) {
 	emscripten_vr_submit_frame(current_display);
       
       //VRDisplayCapabilities cap;
@@ -340,7 +342,7 @@ void splitter_iter3(void *arg)
 
 void vr_run2(Splitter *spl2)
 {
-      if (emscripten_vr_ready) {
+      if (vr_vr_ready) {
       int s = emscripten_vr_count_displays();
       for(int i=0;i<s;i++) {
 	VRDisplayHandle *display = new VRDisplayHandle;
