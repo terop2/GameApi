@@ -365,7 +365,7 @@ c  for(int i=0;i<size1&&!exit2;i+=100)
 }
 #endif
 
-void check_vr_compositor_init();
+IMPORT void check_vr_compositor_init();
 SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize)
 {
 #ifdef SDL2_USED
