@@ -110,7 +110,7 @@ public:
       
       VRFrameData d;
       int val = emscripten_vr_get_frame_data( *current_display, &d);
-      if (d.pose.poseFlags & VR_POSE_ORIENTATION != 0) {
+      if ((d.pose.poseFlags & VR_POSE_ORIENTATION) != 0) {
 	VRQuaternion q = d.pose.orientation;
 	Quarternion q2;
 	q2.x = q.x; q2.y = q.y; q2.z = q.z; q2.w = q.w;
