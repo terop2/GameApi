@@ -248,7 +248,7 @@ Matrix GetHMDMatrixProjectionEye( bool eye )
 #else
   VRFrameData d;
   int val = emscripten_vr_get_frame_data(current_display, &d);
-  if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl;
+  if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl; }
   Matrix m;
   if (!eye) {
     for(int i=0;i<16;i++) m.matrix[i] = d.leftProjectionMatrix[i];
