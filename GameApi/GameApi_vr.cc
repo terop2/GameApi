@@ -119,6 +119,13 @@ public:
 	q2.x = q.x; q2.y = q.y; q2.z = q.z; q2.w = q.w;
 	std::cout << "quarternion: " << q.x << " " << q.y << " " << q.z << " " << q.w << std::endl;
 	hmd_pose = Quarternion::QuarToMatrix(q2);
+	if (invert) {
+	  hmd_pose = Matrix::Inverse(hmd_pose);
+	}
+	if (translate) {
+	  hmd_pose = Matrix::Translate(0.0,0.0,-1200.0) * hmd_pose;
+	}
+
       }
     }
 #endif
@@ -251,13 +258,14 @@ Matrix GetHMDMatrixProjectionEye( bool eye )
 
 
 #else
+  if (!vr_vr_ready) return Matrix::Identity();
   VRFrameData d;
   int val = emscripten_vr_get_frame_data(*current_display, &d);
   if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl; }
   Matrix m;
   if (!eye) {
     for(int j=0;j<4;j++)
-      for(int i=0;i<4;i++) m.matrix[i] = d.leftProjectionMatrix[i];
+      for(int i=0;i<4;i++) m.matrix[i+j*4] = d.leftProjectionMatrix[j+i*4];
   } else {
 	for(int j=0;j<4;j++)
     for(int i=0;i<4;i++) m.matrix[i+j*4] = d.rightProjectionMatrix[j+i*4];
@@ -351,20 +359,20 @@ void splitter_iter3(void *arg)
 
 void vr_run2(Splitter *spl2)
 {
-      if (vr_vr_ready) {
-      int s = emscripten_vr_count_displays();
-      for(int i=0;i<s;i++) {
-	VRDisplayHandle *display = new VRDisplayHandle;
-	*display = emscripten_vr_get_display_handle(i);
-	const char *name = emscripten_vr_get_display_name( *display );
-	std::cout << "VR Display #" << i << ": " << name << std::endl;
-	Splitter_arg *arg = new Splitter_arg;
-	arg->display = display;
-	arg->spl = spl2;
-	emscripten_vr_set_display_render_loop_arg(*display, &splitter_iter3, (void*)&arg);
-      }
+  //if (vr_vr_ready) {
+    int s = emscripten_vr_count_displays();
+    for(int i=0;i<s;i++) {
+      VRDisplayHandle *display = new VRDisplayHandle;
+      *display = emscripten_vr_get_display_handle(i);
+      const char *name = emscripten_vr_get_display_name( *display );
+      std::cout << "VR Display #" << i << ": " << name << std::endl;
+      Splitter_arg *arg = new Splitter_arg;
+      arg->display = display;
+      arg->spl = spl2;
+      emscripten_vr_set_display_render_loop_arg(*display, &splitter_iter3, (void*)&arg);
+    }
+    //} else {std::cout << "vr_vr_ready is not done early enoguh!" << std::endl;
   emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,1);
-      }
 }
 
 #endif
