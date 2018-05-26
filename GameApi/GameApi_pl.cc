@@ -1686,6 +1686,9 @@ public:
   {
     Vector v = ForwardFaceCollection::PointNormal(face,point);
     v/=v.Dist();
+    if (std::isnan(v.dx)) v.dx=0.0;
+    if (std::isnan(v.dy)) v.dy=0.0;
+    if (std::isnan(v.dz)) v.dz=0.0;
     int r = v.dx*127.5+127.5;
     int g = v.dy*127.5+127.5;
     int b = v.dz*127.5+127.5;
