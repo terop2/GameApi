@@ -1128,11 +1128,15 @@ GameApi::PT add_point(GameApi::Env &e, float x, float y)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   Point p = Point(x,y,0.0);
+#ifndef EMSCRIPTEN
   env->lock();
+#endif
   env->pt.push_back(p);
   GameApi::PT pt;
   pt.id = env->pt.size()-1;
+#ifndef EMSCRIPTEN
   env->unlock();
+#endif
   //pt.type = 0;
   return pt;
 }
@@ -1792,12 +1796,16 @@ GameApi::PT add_point(GameApi::Env &e, float x, float y, float z)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   Point p = Point(x,y,z);
+#ifndef EMSCRIPTEN
   env->lock();
+#endif
   env->pt.push_back(p);
   GameApi::PT pt;
   pt.id = env->pt.size()-1;
   //pt.type = 0;
+#ifndef EMSCRIPTEN
   env->unlock();
+#endif
   return pt;
 }
 
