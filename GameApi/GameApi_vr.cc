@@ -209,11 +209,11 @@ Matrix GetHMDMatrixPoseEye( bool eye )
 	       mat.m[0][3], mat.m[1][3], mat.m[2][3], 1.0, false };
 
 #else
+  Matrix m = Matrix::Identity();
   if (vr_vr_ready) {
     VRFrameData d;
     int val = emscripten_vr_get_frame_data(*current_display, &d);
     if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl;
-      Matrix m;
       if (!eye) {
 	for(int i=0;i<16;i++) m.matrix[i] = d.leftViewMatrix[i];
       } else {
