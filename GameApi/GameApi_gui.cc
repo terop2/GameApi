@@ -4571,7 +4571,7 @@ CodeGenLine parse_codegen_line(std::string line)
   line2.func_name = func_name;
   line2.params = params;
 
-  std::cout << "CodeGenLine: " << line2.api_name << " " << line2.func_name << " " << line2.params << std::endl;
+  //std::cout << "CodeGenLine: " << line2.api_name << " " << line2.func_name << " " << line2.params << std::endl;
   return line2;
 }
 
@@ -4774,7 +4774,7 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
 	      std::string substr = param_value.substr(0,strlen("std::vector<"));
 	      if (substr=="std::vector<")
 		{ // array
-		  std::cout << "Is Array" << param_value << std::endl;
+		  //std::cout << "Is Array" << param_value << std::endl;
 		  int pos = find_char(param_value, 13, '>');
 		  if (pos==-1) { error = true; return; }
 		  std::string type = param_value.substr(13,pos);
