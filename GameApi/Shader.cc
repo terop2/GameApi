@@ -2574,7 +2574,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
     {
       std::string::iterator ii = std::find(i, v_format.end(), ':');
       std::string name(i, ii);
-      std::cout << "VName: " << name << std::endl;
+      //std::cout << "VName: " << name << std::endl;
       std::string shader = file.VertexShader(name);
       std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod, vertex_c, v_defines, false,v_shader);
       
@@ -2593,7 +2593,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
     {
       std::string::iterator ii = std::find(i, f_format.end(), ':');
       std::string name(i, ii);
-      std::cout << "FName: " << name << std::endl;
+      //std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader);
       //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
