@@ -221,6 +221,7 @@ Matrix GetHMDMatrixPoseEye( bool eye )
       }
       m.is_identity = false;
     } else { m=Matrix::Identity(); }
+  }
 #endif
   
   //std::cout << "Pose:" << std::endl;
@@ -358,5 +359,6 @@ void vr_run2(Splitter *spl2)
   emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,1);
       }
 }
+
 #endif
 #endif
