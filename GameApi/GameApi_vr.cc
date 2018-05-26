@@ -120,6 +120,7 @@ public:
     }
 #endif
   }
+#ifndef EMSCRIPTEN
   Matrix ConvertMatrix( const vr::HmdMatrix34_t &pose)
   {
     Matrix m = { pose.m[0][0], pose.m[0][1], pose.m[0][2], 0.0 /*pose.m[0][3]*/,
@@ -128,7 +129,7 @@ public:
 	         0.0, 0.0,0.0, 1.0f, false };
     return m;
   }
-
+#endif
   virtual void handle_event(MainLoopEvent &e)
   {
     left->handle_event(e);
