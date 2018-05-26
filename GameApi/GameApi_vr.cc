@@ -105,7 +105,8 @@ public:
     }
 #else
     if (vr_vr_ready) {
-	emscripten_vr_submit_frame(*current_display);
+      std::cout << "vr submit_frame" << std::endl;
+      emscripten_vr_submit_frame(*current_display);
       
       //VRDisplayCapabilities cap;
       //int emscripen_vr_get_eye_parameters( display, &cap );
@@ -116,6 +117,7 @@ public:
 	VRQuaternion q = d.pose.orientation;
 	Quarternion q2;
 	q2.x = q.x; q2.y = q.y; q2.z = q.z; q2.w = q.w;
+	std::cout << "quarternion: " << q.x << " " << q.y << " " << q.z << " " << q.w << std::endl;
 	hmd_pose = Quarternion::QuarToMatrix(q2);
       }
     }
@@ -216,9 +218,11 @@ Matrix GetHMDMatrixPoseEye( bool eye )
     int val = emscripten_vr_get_frame_data(*current_display, &d);
     if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl;
       if (!eye) {
-	for(int i=0;i<16;i++) m.matrix[i] = d.leftViewMatrix[i];
+	for(int j=0;j<4;j++)
+	for(int i=0;i<4;i++) m.matrix[i+j*4] = d.leftViewMatrix[j+i*4];
       } else {
-	for(int i=0;i<16;i++) m.matrix[i] = d.rightViewMatrix[i];
+	for(int j=0;j<4;j++)
+	for(int i=0;i<4;i++) m.matrix[i+j*4] = d.rightViewMatrix[j+i*4];
       }
       m.is_identity = false;
     } else { m=Matrix::Identity(); }
