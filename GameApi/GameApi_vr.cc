@@ -356,6 +356,7 @@ void vr_run2(Splitter *spl2)
 	emscripten_vr_set_display_render_loop_arg(display, &splitter_iter3, (void*)&arg);
       }
   emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,1);
+      }
 }
 #endif
 #endif
