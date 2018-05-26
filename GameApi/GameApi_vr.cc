@@ -105,7 +105,10 @@ public:
     }
 #else
     if (vr_vr_ready && current_display != 0 && current_display!=-1) {
+      static int ii=0;
+      if (ii==0) { ii++;
       std::cout << "vr submit_frame" << std::endl;
+      }
       emscripten_vr_submit_frame(current_display);
       
       //VRDisplayCapabilities cap;
@@ -117,7 +120,10 @@ public:
 	VRQuaternion q = d.pose.orientation;
 	Quarternion q2;
 	q2.x = q.x; q2.y = q.y; q2.z = q.z; q2.w = q.w;
-	std::cout << "quarternion: " << q.x << " " << q.y << " " << q.z << " " << q.w << std::endl;
+	static int i = 0;
+	if (i==0) { i++; 
+	  std::cout << "quarternion: " << q.x << " " << q.y << " " << q.z << " " << q.w << std::endl;
+	}
 	hmd_pose = Quarternion::QuarToMatrix(q2);
 	if (invert) {
 	  hmd_pose = Matrix::Inverse(hmd_pose);
