@@ -241,7 +241,7 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   //glColor4f(1.0,1.0,1.0, 0.5);
   time = SDL_GetTicks();
 #endif
-  glDisable(GL_LIGHTING);
+  //glDisable(GL_LIGHTING);
   //glDisable(GL_DEPTH_TEST);
   //glMatrixMode( GL_PROJECTION ); 
   // glLoadIdentity(); 
