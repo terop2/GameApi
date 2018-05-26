@@ -208,7 +208,7 @@ Matrix GetHMDMatrixPoseEye( bool eye )
 	       mat.m[0][3], mat.m[1][3], mat.m[2][3], 1.0, false };
 
 #else
-  if (emscripen_vr_ready) {
+  if (vr_vr_ready) {
     VRFrameData d;
     int val = emscripten_vr_get_frame_data(current_display, &d);
     if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl;
