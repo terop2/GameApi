@@ -53,11 +53,8 @@ EXPORT void check_vr_compositor_init()
   }
 #else
   if (!vr_vr_ready) {
-    emscripten_vr_init();
-    //if (val==0) { std::cout << "Emscripten VR not found!" << std::endl;
-    //} else {
-      vr_vr_ready = true;
-      //}
+    int val = emscripten_vr_init(&vr_cg,NULL);
+    if (val==0) { std::cout << "Emscripten VR not found!" << std::endl;
 #endif
 }
 class SubmitML : public MainLoopItem
@@ -106,15 +103,15 @@ public:
     }
 #else
     if (vr_vr_ready) {
-	emscripten_vr_submit_frame(current_display);
+	emscripten_vr_submit_frame(*current_display);
       
       //VRDisplayCapabilities cap;
       //int emscripen_vr_get_eye_parameters( display, &cap );
       
-      WebVRPositionState d;
+      VRFrameData d;
       int val = emscripten_vr_get_frame_data( *current_display, &d);
-      if (d.hasOrientation != 0) {
-	WebVRPoint q = d.orientation;
+      if (d.pose.hasOrientation != 0) {
+	VRQuarternion q = d.pose.orientation;
 	Quarternion q2;
 	q2.x = q.x; q2.y = q.y; q2.z = q.z; q2.w = q.w;
 	hmd_pose = Quarternion::QuarToMatrix(q2);
