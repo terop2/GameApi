@@ -35,7 +35,7 @@ void vr_cb(void *arg)
   emscripten_vr_ready = true;
 }
 #endif
-void check_vr_compositor_init()
+EXPORT void check_vr_compositor_init()
 {
 #ifndef EMSCRIPTEN
   if (!vr::VRCompositor()) {
