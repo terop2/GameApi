@@ -211,7 +211,7 @@ Matrix GetHMDMatrixPoseEye( bool eye )
 #else
   if (vr_vr_ready) {
     VRFrameData d;
-    int val = emscripten_vr_get_frame_data(current_display, &d);
+    int val = emscripten_vr_get_frame_data(*current_display, &d);
     if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl;
       Matrix m;
       if (!eye) {
@@ -247,7 +247,7 @@ Matrix GetHMDMatrixProjectionEye( bool eye )
 
 #else
   VRFrameData d;
-  int val = emscripten_vr_get_frame_data(current_display, &d);
+  int val = emscripten_vr_get_frame_data(*current_display, &d);
   if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl; }
   Matrix m;
   if (!eye) {
