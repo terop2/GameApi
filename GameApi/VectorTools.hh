@@ -623,6 +623,7 @@ public:
     a2 >>= 4;
 
     float val1 = 1.0-val;
+    if (std::isnan(val)) { val=0.0; val1=1.0; }
     unsigned int b3 = ((unsigned int)(b*val1 + b2*val)) & 0xff;
     unsigned int g3 = ((unsigned int)(g*val1 + g2*val)) & 0xff00;
     unsigned int r3 = ((unsigned int)(r*val1 + r2*val)) & 0xff0000;
