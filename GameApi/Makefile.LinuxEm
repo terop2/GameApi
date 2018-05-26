@@ -37,10 +37,10 @@ CFiles= Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
         GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \
         GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
         GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc \
-	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc GameApi_vr.cc
+	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc Main.cc GameApi_vr.cc
 
 
-CFiles2 = Main.cc
+CFiles2 = 
 
 CFiles_examples = GameApiTest3.cc GameApiTest4.cc GameApiWorld.cc GameApiTest5.cc GameApiTest6.cc GameApiTest7.cc GameApiTest8.cc GameApiTest9.cc GameApiTestA.cc
 CFiles2_examples = ExampleMain.cc
