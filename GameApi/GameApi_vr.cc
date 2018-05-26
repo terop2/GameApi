@@ -398,7 +398,7 @@ void splitter_iter3(void *arg)
         std::cout << "Left eye: " << leftParam.offset.x << " " << leftParam.offset.y << " " << leftParam.offset.z << std::endl;
     std::cout << "Right eye: " << rightParam.offset.x << " " << rightParam.offset.y << " " << rightParam.offset.z << std::endl;
 
-    emscripten_vr_set_display_render_loop_arg(*display, &splitter_iter2, (void*)spl);
+    emscripten_vr_set_display_render_loop_arg(current_display, &splitter_iter2, (void*)spl);
   }
 
   render_loop_called++;
