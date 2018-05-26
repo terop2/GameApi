@@ -254,9 +254,9 @@ public:
   IMPORT BLK game_seq(EveryApi &ev, std::vector<BLK> vec);
   IMPORT void run(BLK blk);
   IMPORT RUN game_window2(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration);
-  IMPORT RUN vr_window(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float dura, bool invert);
+  IMPORT RUN vr_window(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float dura, bool invert, bool translate);
   IMPORT RUN vr_submit(EveryApi &ev, TXID left, TXID right);
-  IMPORT ML vr_submit_ml(ML ml, TXID left, TXID right, bool invert);
+  IMPORT ML vr_submit_ml(ML ml, TXID left, TXID right, bool invert, bool translate);
   IMPORT void run2(EveryApi &ev, RUN spl);
   IMPORT RUN run_seq(EveryApi &ev, std::vector<RUN> vec);
 private:
@@ -391,7 +391,7 @@ public:
   ML blendfunc(ML ml, int val, int val2);
   ML record_keypresses(ML ml, std::string output_filename);
   ML playback_keypresses(ML ml, std::string input_url);
-  ML setup_hmd_projection(EveryApi &ev, ML ml, bool eye, float n, float f);
+  ML setup_hmd_projection(EveryApi &ev, ML ml, bool eye, float n, float f, bool translate);
   
   DS load_ds_from_mem(std::vector<unsigned char> vec);
   DS load_ds_from_disk(std::string filename);
