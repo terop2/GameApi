@@ -31,7 +31,7 @@ vr::IVRSystem *hmd = 0;
 #endif
 Matrix hmd_pose = Matrix::Identity();
 #ifdef EMSCRIPTEN
-VRDisplayHandle *current_display;
+VRDisplayHandle current_display= 0;
 bool vr_vr_ready = false;
 void vr_cb(void *arg)
 {
@@ -222,7 +222,7 @@ Matrix GetHMDMatrixPoseEye( bool eye )
   Matrix m = Matrix::Identity();
   if (vr_vr_ready && current_display != 0 && current_display!=-1) {
     VRFrameData d;
-    int val = emscripten_vr_get_frame_data(*current_display, &d);
+    int val = emscripten_vr_get_frame_data(current_display, &d);
     if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl;
       if (!eye) {
 	for(int j=0;j<4;j++)
@@ -260,7 +260,7 @@ Matrix GetHMDMatrixProjectionEye( bool eye )
 #else
   if (!vr_vr_ready ||current_display==NULL||current_display==-1) return Matrix::Identity();
   VRFrameData d;
-  int val = emscripten_vr_get_frame_data(*current_display, &d);
+  int val = emscripten_vr_get_frame_data(current_display, &d);
   if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl; }
   Matrix m;
   if (!eye) {
@@ -356,36 +356,36 @@ void splitter_iter3(void *arg)
   //current_display = a->display;
   Splitter *spl = a->spl;
 
-  if (current_display==NULL) {
+  if (current_display==0) {
     if (!emscripten_vr_ready()) { splitter_iter2((void*)spl); return; }
 
     int s = emscripten_vr_count_displays();
-    if (s==0) { std::cout << "No displays found" << std::Endl; }
+    if (s==0) { std::cout << "No displays found" << std::endl; }
     std::cout << "Found " << s << " displays" << std::endl;
     VRDisplayHandle *display = new VRDisplayHandle;
     for(int i=0;i<s;i++) {
-      current_display = new VRDisplayHandle(emscripten_vr_get_display_handle(i));
-      const char *name = emscripten_vr_get_display_name( *display );
+      current_display = emscripten_vr_get_display_handle(i);
+      const char *name = emscripten_vr_get_display_name( current_display );
       std::cout << "Found display " << name << std::endl;
-      if (!emscripten_vr_get_display_capabilities(*current_display, &caps)) {
+      if (!emscripten_vr_get_display_capabilities(current_display, &caps)) {
 	std::cout << "Failed to get display capabilities" << std::endl;
 	continue;
       }
-      if (!emscripten_vr_display_connected( *current_display)) {
+      if (!emscripten_vr_display_connected( current_display)) {
 	std::cout << "Display is not connected" << std::endl;
 	continue;
       }
       
     }
-    if (current_display==NULL) {
+    if (current_display==0) {
       std::cout << "No display found!" << std::endl;
       current_display=-1;
       return;
     }
 
     VREyeParameters leftParam, rightParam;
-    emscripten_vr_get_eye_parameters(*current_display, VREyeLeft, &leftParam);
-    emscripten_vr_get_eye_parameters(*current_display, VREyeRight, &rightParam);
+    emscripten_vr_get_eye_parameters(current_display, VREyeLeft, &leftParam);
+    emscripten_vr_get_eye_parameters(current_display, VREyeRight, &rightParam);
         std::cout << "Left eye: " << leftParam.offset.x << " " << leftParam.offset.y << " " << leftParam.offset.z << std::endl;
     std::cout << "Right eye: " << rightParam.offset.x << " " << rightParam.offset.y << " " << rightParam.offset.z << std::endl;
 
@@ -393,21 +393,21 @@ void splitter_iter3(void *arg)
   }
 
   render_loop_called++;
-  if (render_loop_called==1 && current_display!=NULL && current_display != -1) {
+  if (render_loop_called==1 && current_display!=0 && current_display != -1) {
     VRLayerInit init = { "#canvas", VR_LAYER_DEFAULT_LEFT_BOUNDS, VR_LAYER_DEFAULT_RIGHT_BOUNDS };
     if (!emscripten_vr_request_present(current_display, &init, requestPresentCallback, NULL)) {
       std::cout << "request_present with default canvas failed." << std::endl;
       return;
     }
-  if (emscripten_vr_display_presenting(*current_display)) {
+  if (emscripten_vr_display_presenting(current_display)) {
     std::cout << "Error: expected display is not presenting.\n" << std::endl;
     return; }
   VRFrameData data;
-  if (!emscripten_vr_get_frame_data(*current_display, &data)) {
+  if (!emscripten_vr_get_frame_data(current_display, &data)) {
     std::cout << "Could not get frame data. (first iteration)\n" << std::endl;
     return;
   }
-  if (!emscripten_vr_submit_frame(*current_display)) {
+  if (!emscripten_vr_submit_frame(current_display)) {
     std::cout << "Error: failed to submit frame to VR display " << *current_display << "(first iteration)" << std::endl;
     return;
   }
