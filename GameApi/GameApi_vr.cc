@@ -349,6 +349,9 @@ struct Splitter_arg
   VRDisplayHandle* display;
   Splitter *spl;
 };
+
+void requestPresentCallback(void *) {}
+
 int render_loop_called = 0;
 void splitter_iter3(void *arg)
 {
