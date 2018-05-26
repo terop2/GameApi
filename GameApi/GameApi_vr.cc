@@ -55,6 +55,7 @@ EXPORT void check_vr_compositor_init()
   if (!vr_vr_ready) {
     int val = emscripten_vr_init(&vr_cb,NULL);
     if (val==0) { std::cout << "Emscripten VR not found!" << std::endl; }
+  }
 #endif
 }
 class SubmitML : public MainLoopItem
