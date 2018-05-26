@@ -106,13 +106,13 @@ public:
 #else
     if (vr_vr_ready && current_display != 0 && current_display!=-1) {
       std::cout << "vr submit_frame" << std::endl;
-      emscripten_vr_submit_frame(*current_display);
+      emscripten_vr_submit_frame(current_display);
       
       //VRDisplayCapabilities cap;
       //int emscripen_vr_get_eye_parameters( display, &cap );
       
       VRFrameData d;
-      int val = emscripten_vr_get_frame_data( *current_display, &d);
+      int val = emscripten_vr_get_frame_data( current_display, &d);
       if ((d.pose.poseFlags & VR_POSE_ORIENTATION) != 0) {
 	VRQuaternion q = d.pose.orientation;
 	Quarternion q2;
@@ -367,10 +367,10 @@ void splitter_iter3(void *arg)
       current_display = emscripten_vr_get_display_handle(i);
       const char *name = emscripten_vr_get_display_name( current_display );
       std::cout << "Found display " << name << std::endl;
-      if (!emscripten_vr_get_display_capabilities(current_display, &caps)) {
-	std::cout << "Failed to get display capabilities" << std::endl;
-	continue;
-      }
+      //if (!emscripten_vr_get_display_capabilities(current_display, &caps)) {
+      //	std::cout << "Failed to get display capabilities" << std::endl;
+      //	continue;
+      //}
       if (!emscripten_vr_display_connected( current_display)) {
 	std::cout << "Display is not connected" << std::endl;
 	continue;
@@ -408,7 +408,7 @@ void splitter_iter3(void *arg)
     return;
   }
   if (!emscripten_vr_submit_frame(current_display)) {
-    std::cout << "Error: failed to submit frame to VR display " << *current_display << "(first iteration)" << std::endl;
+    std::cout << "Error: failed to submit frame to VR display " << current_display << "(first iteration)" << std::endl;
     return;
   }
   return;
