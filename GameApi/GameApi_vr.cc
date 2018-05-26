@@ -104,7 +104,7 @@ public:
     }
     }
 #else
-    if (vr_vr_ready && current_display >= 0) {
+    if (vr_vr_ready && current_display != 0) {
       std::cout << "vr submit_frame" << std::endl;
       emscripten_vr_submit_frame(*current_display);
       
@@ -220,7 +220,7 @@ Matrix GetHMDMatrixPoseEye( bool eye )
 
 #else
   Matrix m = Matrix::Identity();
-  if (vr_vr_ready && current_display >= 0) {
+  if (vr_vr_ready && current_display != 0) {
     VRFrameData d;
     int val = emscripten_vr_get_frame_data(*current_display, &d);
     if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl;
@@ -258,7 +258,7 @@ Matrix GetHMDMatrixProjectionEye( bool eye )
 
 
 #else
-  if (!vr_vr_ready ||current_display==-1) return Matrix::Identity();
+  if (!vr_vr_ready ||current_display==NULL) return Matrix::Identity();
   VRFrameData d;
   int val = emscripten_vr_get_frame_data(*current_display, &d);
   if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl; }
@@ -373,7 +373,7 @@ void vr_run2(Splitter *spl2)
     }
     //} else {std::cout << "vr_vr_ready is not done early enoguh!" << std::endl;
     Splitter_arg *arg = new Splitter_arg;
-    arg->display = -1;
+    arg->display = NULL;
     arg->spl = spl2;
     emscripten_set_main_loop_arg(splitter_iter3, (void*)arg, 0,1);
 }
