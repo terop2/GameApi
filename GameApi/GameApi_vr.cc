@@ -30,7 +30,7 @@ vr::IVRSystem *hmd = 0;
 #endif
 Matrix hmd_pose = Matrix::Identity();
 #ifdef EMSCRIPTEN
-WebVRDeviceId *current_display;
+VRDisplayHandle *current_display;
 bool vr_vr_ready = false;
 void vr_cb(void *arg)
 {
@@ -112,7 +112,7 @@ public:
       //int emscripen_vr_get_eye_parameters( display, &cap );
       
       WebVRPositionState d;
-      int val = emscripten_vr_sensor_get_state( *current_display, true, &d);
+      int val = emscripten_vr_get_frame_data( *current_display, &d);
       if (d.hasOrientation != 0) {
 	WebVRPoint q = d.orientation;
 	Quarternion q2;
