@@ -256,9 +256,11 @@ Matrix GetHMDMatrixProjectionEye( bool eye )
   if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl; }
   Matrix m;
   if (!eye) {
-    for(int i=0;i<16;i++) m.matrix[i] = d.leftProjectionMatrix[i];
+    for(int j=0;j<4;j++)
+      for(int i=0;i<4;i++) m.matrix[i] = d.leftProjectionMatrix[i];
   } else {
-    for(int i=0;i<16;i++) m.matrix[i] = d.rightProjectionMatrix[i];
+	for(int j=0;j<4;j++)
+    for(int i=0;i<4;i++) m.matrix[i+j*4] = d.rightProjectionMatrix[j+i*4];
   }
   m.is_identity = false;
 #endif
