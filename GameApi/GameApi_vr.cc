@@ -105,6 +105,8 @@ public:
     }
 #else
     if (vr_vr_ready && current_display != 0 && current_display!=-1) {
+      left->render(e);
+      right->render(e);
       static int ii=0;
       if (ii==0) { ii++;
       std::cout << "vr submit_frame" << std::endl;
