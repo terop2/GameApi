@@ -7174,7 +7174,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "left_eye", "right_eye" },
 			 { "EveryApi&", "TXID", "TXID" },
 			 { "ev", "", "" },
-			 "RUN", "blocker_api", "vr_submit"));
+			 "ML", "blocker_api", "vr_submit"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_submit_ml,
 			 "vr_submit_ml",
 			 { "ml", "left_eye", "right_eye", "invert", "translate" },
