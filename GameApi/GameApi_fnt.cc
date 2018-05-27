@@ -415,6 +415,30 @@ EXPORT GameApi::ML GameApi::FontApi::dynamic_string(GameApi::EveryApi &ev, GameA
     }
   return ev.mainloop_api.array_ml(ml);
 }
+class ToggleButtonIntFetcher : public Fetcher<int>
+{
+public:
+  ToggleButtonIntFetcher(float start_x, float end_x, float start_y, float end_y) : start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y) { toggle=false; }
+  virtual void event(MainLoopEvent &e)
+  {
+    if (e.cursor_pos.x > start_x && e.cursor_pos.x < end_x)
+      if (e.cursor_pos.y > start_y && e.cursor_pos.y < end_y)
+	{
+	  if (e.type==1025 && e.button ==0) { toggle=!toggle; }
+	}
+  }
+  virtual void frame(MainLoopEnv &e) { }
+  virtual void set(int t) { toggle=t==1; }
+  virtual int get() const
+  {
+    return toggle ? 1 : 0;
+  }
+
+private:
+  float start_x, end_x;
+  float start_y, end_y;
+  bool toggle;
+};
 class RepeatIntFetcher : public Fetcher<int>
 {
 public:
@@ -571,6 +595,10 @@ GameApi::IF GameApi::FontApi::time_fetcher(EveryApi &ev, float start_time)
 GameApi::IF GameApi::FontApi::score_fetcher(EveryApi &ev)
 {
   return add_int_fetcher(e, new ScoreFetcher(ev));
+}
+GameApi::IF GameApi::FontApi::toggle_button_fetcher(float start_x, float end_x, float start_y, float end_y)
+{
+  return add_int_fetcher(e, new ToggleButtonIntFetcher(start_x,end_x,start_y,end_y));
 }
 class FloatToStringFetcher : public Fetcher<std::string>
 {
