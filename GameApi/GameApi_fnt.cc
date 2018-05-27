@@ -879,13 +879,19 @@ EXPORT GameApi::IF GameApi::FontApi::char_fetcher_from_string(SF string_fetcher,
 class MLChooser : public MainLoopItem
 {
 public:
-  MLChooser(std::vector<MainLoopItem*> vec, Fetcher<int> &f) : vec(vec),f(f) {}
+  MLChooser(std::vector<MainLoopItem*> vec, Fetcher<int> &f) : vec(vec),f(f) { firsttime = true; }
   virtual void execute(MainLoopEnv &e)
   {
-    f.frame(e);
-    int val = f.get();
-    int s = vec.size();
-    if (val>=0 && val<s) vec[val]->execute(e);
+    if (!firsttime) {
+      f.frame(e);
+      int val = f.get();
+      int s = vec.size();
+      if (val>=0 && val<s) vec[val]->execute(e);
+    } else {
+      int s = vec.size();
+      for(int i=0;i<s;i++) vec[i]->execute(e);
+      firsttime=false;
+    }
   }
   virtual void handle_event(MainLoopEvent &e)
   {
@@ -903,6 +909,7 @@ public:
 private:
   std::vector<MainLoopItem*> vec;
   Fetcher<int> &f;
+  bool firsttime;
 };
 EXPORT GameApi::ML GameApi::FontApi::ml_chooser(std::vector<ML> vec, IF fetcher)
 {
