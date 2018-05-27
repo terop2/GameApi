@@ -391,7 +391,7 @@ public:
   ML blendfunc(ML ml, int val, int val2);
   ML record_keypresses(ML ml, std::string output_filename);
   ML playback_keypresses(ML ml, std::string input_url);
-  ML setup_hmd_projection(EveryApi &ev, ML ml, bool eye, float n, float f, bool translate);
+  ML setup_hmd_projection(EveryApi &ev, ML ml, bool eye, bool is_standard, float n, float f, bool translate);
   
   DS load_ds_from_mem(std::vector<unsigned char> vec);
   DS load_ds_from_disk(std::string filename);
@@ -722,6 +722,8 @@ public:
   IMPORT ML dynamic_character2(EveryApi &ev, std::vector<GI> vec, std::string alternatives, IF fetcher, int x, int y);
   IMPORT IF timed_int_fetcher(EveryApi &ev, int start, int end, float start_time, float end_time);
   IMPORT IF repeat_int_fetcher(IF fetcher, float duration);
+  IMPORT IF toggle_button_fetcher(float start_x, float end_x, float start_y, float end_y);
+  IMPORT IF hmd_state_fetcher();
   IMPORT IF keypress_int_fetcher(int key, int key_down_value, int key_up_value);
   IMPORT IF x_comp(PF point_fetcher, float start_x, float end_x, int num_steps);
   IMPORT IF y_comp(PF point_fetcher, float start_y, float end_y, int num_steps);
