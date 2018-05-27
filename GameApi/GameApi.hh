@@ -735,6 +735,7 @@ public:
   IMPORT FF fps_fetcher(EveryApi &ev);
   IMPORT IF score_fetcher(EveryApi &ev);
   IMPORT IF time_fetcher(EveryApi &ev, float start_time);
+  IMPORT IF hmd_request_presenting(IF i);
   IMPORT SF float_to_string_fetcher(FF fetcher);
   IMPORT SF int_to_string_fetcher(IF fetcher);
   IMPORT ML ml_chooser(std::vector<ML> vec, IF fetcher);
