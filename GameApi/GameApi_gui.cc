@@ -6135,7 +6135,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "[ML]", "IF" },
 			 { "", "" },
 			 "ML", "font_api", "ml_chooser"));
-  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::toggle_button_fetcher,
+			 "if_toggle",
+			 { "start_x", "end_x", "start_y", "end_y" },
+			 { "float", "float", "float", "float" },
+			 { "0.0", "800.0", "0.0", "600.0" },
+			 "IF", "font_api", "toggle_button_fetcher"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::timed_int_fetcher,
 			 "if_timed",
 			 { "ev", "start", "end", "start_time", "end_time" },
@@ -7183,9 +7188,9 @@ std::vector<GameApiItem*> blocker_functions()
 			 "ML", "blocker_api", "vr_submit_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::setup_hmd_projection,
 			 "vr_projection",
-			 { "ev", "ml", "eye", "near", "far","translate" },
-			 { "EveryApi&", "ML", "bool", "float", "float","bool" },
-			 { "ev", "", "false", "10.1", "60000.0", "true" },
+			 { "ev", "ml", "eye", "is_std", "near", "far","translate" },
+			 { "EveryApi&", "ML", "bool", "bool", "float", "float","bool" },
+			 { "ev", "", "false", "true", "10.1", "60000.0", "true" },
 			 "ML", "mainloop_api", "setup_hmd_projection"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::run_seq,
