@@ -23,11 +23,11 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
   ML I66 = ev.mainloop_api.setup_hmd_projection(ev,ml,true,10.1,60000.0, false);
   TXID I67 = ev.fbo_api.fbo_ml(ev,I66,1080,1200,false);
   ML res = ev.blocker_api.vr_submit_ml(ml, I44,I67,invert,translate);
-#ifdef EMSCRIPTEN  
-  ML I70 = ev.blocker_api.vr_submit(ev, I44, I67);
-  std::vector<ML> vec = std::vector<ML>{I70,res};
-  res = ev.mainloop_api.array_ml(vec);
-#endif
+  //#ifdef EMSCRIPTEN  
+    // ML I70 = ev.blocker_api.vr_submit(ev, I44, I67);
+  //std::vector<ML> vec = std::vector<ML>{I70,res};
+  // res = ev.mainloop_api.array_ml(vec);
+  //#endif
   RUN I69 = ev.blocker_api.game_window2(ev,res,logo,fpscounter,start_time,duration);
 
   return I69;
@@ -365,6 +365,10 @@ struct Splitter_arg
   Splitter *spl;
 };
 
+void choose_display()
+{
+}
+
 void requestPresentCallback(void *) {}
 
 int render_loop_called = 0;
@@ -385,10 +389,11 @@ void splitter_iter3(void *arg)
       current_display = emscripten_vr_get_display_handle(i);
       const char *name = emscripten_vr_get_display_name( current_display );
       std::cout << "Found display " << name << std::endl;
-      //if (!emscripten_vr_get_display_capabilities(current_display, &caps)) {
-      //	std::cout << "Failed to get display capabilities" << std::endl;
-      //	continue;
-      //}
+      VRDisplayCapabilities caps;
+      if (!emscripten_vr_get_display_capabilities(current_display, &caps)) {
+      	std::cout << "Failed to get display capabilities" << std::endl;
+      	continue;
+      }
       if (!emscripten_vr_display_connected( current_display)) {
 	std::cout << "Display is not connected" << std::endl;
 	continue;
@@ -408,6 +413,7 @@ void splitter_iter3(void *arg)
     std::cout << "Right eye: " << rightParam.offset.x << " " << rightParam.offset.y << " " << rightParam.offset.z << std::endl;
 
     emscripten_vr_set_display_render_loop_arg(current_display, &splitter_iter2, (void*)spl);
+
   }
 
   render_loop_called++;
@@ -439,6 +445,8 @@ void vr_run2(Splitter *spl2)
 {
   //if (vr_vr_ready) {
     //} else {std::cout << "vr_vr_ready is not done early enoguh!" << std::endl;
+
+
     Splitter_arg *arg = new Splitter_arg;
     arg->display = NULL;
     arg->spl = spl2;
