@@ -649,7 +649,7 @@ public:
   virtual void set(int t) { }
   virtual int get() const
   {
-#ifdef VIRTUAL_REALILTY
+#ifdef VIRTUAL_REALITY
 #ifndef EMSCRIPTEN    
     if (!hmd) return 0; else return 1;
 #else

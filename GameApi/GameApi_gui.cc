@@ -6159,6 +6159,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "int", "int", "int" },
 			 { "32", "1", "0" },
 			 "IF", "font_api", "keypress_int_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::hmd_state_fetcher,
+			 "if_hmd",
+			 { },
+			 { },
+			 { },
+			 "IF", "font_api", "hmd_state_fetcher"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::choose_float_fetcher,
 			 "ff_choose",
 			 { "int_fetcher", "a_0", "a_1", "a_2", "a_3", "a_4", "a_5", "a_6" },
