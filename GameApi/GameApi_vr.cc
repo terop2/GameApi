@@ -22,8 +22,14 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
   ///
   ML I66 = ev.mainloop_api.setup_hmd_projection(ev,ml,true,10.1,60000.0, false);
   TXID I67 = ev.fbo_api.fbo_ml(ev,I66,1080,1200,false);
-  ML I68 = ev.blocker_api.vr_submit_ml(ml, I44,I67,invert,translate);
-  RUN I69 = ev.blocker_api.game_window2(ev,I68,logo,fpscounter,start_time,duration);
+  ML res = ev.blocker_api.vr_submit_ml(ml, I44,I67,invert,translate);
+#ifdef EMSCRIPTEN  
+  ML I70 = ev.blocker_api.vr_submit(ev, I44, I67);
+  std::vector<ML> vec = std::vector<ML>{I70,res};
+  res = ev.mainloop_api.array_ml(vec);
+#endif
+  RUN I69 = ev.blocker_api.game_window2(ev,res,logo,fpscounter,start_time,duration);
+
   return I69;
 }
 #ifndef EMSCRIPTEN
@@ -174,7 +180,7 @@ EXPORT GameApi::ML GameApi::BlockerApi::vr_submit_ml(ML ml, TXID left, TXID righ
   TextureID *right_eye = find_txid(e, right);
   return add_main_loop(e, new SubmitML(item, left_eye, right_eye, invert, translate));
 }
-EXPORT GameApi::RUN GameApi::BlockerApi::vr_submit(EveryApi &ev, TXID left, TXID right)
+EXPORT GameApi::ML GameApi::BlockerApi::vr_submit(EveryApi &ev, TXID left, TXID right)
 {
 
 P I1=ev.polygon_api.vr_fullscreen_quad(ev,false);
@@ -184,8 +190,9 @@ P I4=ev.polygon_api.vr_fullscreen_quad(ev,true);
  MT I5=ev.materials_api.textureid(ev,right,1.0);
 ML I6=ev.materials_api.bind(I4,I5);
 ML I7=ev.mainloop_api.array_ml(std::vector<ML>{I3,I6});
-RUN I8=ev.blocker_api.game_window2(ev,I7,false,false,0.0,100000.0);
- return I8;
+ return I7;
+ //RUN I8=ev.blocker_api.game_window2(ev,I7,false,false,0.0,100000.0);
+ //return I8;
 }
 
 class PoseMovement : public Movement
