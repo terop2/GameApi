@@ -6,6 +6,9 @@
 #include <GL/glew.h>
 #include <SDL_opengl.h>
 
+
+
+
 #ifdef VIRTUAL_REALITY
 #ifndef EMSCRIPTEN
 #include "openvr/openvr_mingw.h"
@@ -17,18 +20,93 @@
 
 EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration, bool invert, bool translate)
 {
-  ML I43 = ev.mainloop_api.setup_hmd_projection(ev,ml,false,10.1,60000.0,false);
+  int screen_w = ev.mainloop_api.get_screen_width();
+  int screen_h = ev.mainloop_api.get_screen_height();
+  screen_w-=100;
+  screen_h-=100;
+  screen_w-=10;
+  screen_h-=10;
+
+  // hmd=false
+  ML I43 = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
   TXID I44 = ev.fbo_api.fbo_ml(ev,I43,1080,1200,false);
-  ///
-  ML I66 = ev.mainloop_api.setup_hmd_projection(ev,ml,true,10.1,60000.0, false);
+  ML I66 = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,10.1,60000.0, false);
   TXID I67 = ev.fbo_api.fbo_ml(ev,I66,1080,1200,false);
+
+  ML I43a = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
+  TXID I44a = ev.fbo_api.fbo_ml(ev,I43a,1080,1200,false);
+  ML I66a = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,10.1,60000.0, false);
+  TXID I67a = ev.fbo_api.fbo_ml(ev,I66a,1080,1200,false);
   ML res = ev.blocker_api.vr_submit_ml(ml, I44,I67,invert,translate);
+  ML I70a = ev.blocker_api.vr_submit(ev, I44a, I67a);
+  ML res_I70a = ev.blocker_api.vr_submit_ml(I70a, I44,I67,invert,translate);
+  // hmd=false outputs: res, res_I170a
+
+  //IF alt = ev.font_api.toggle_button_fetcher(screen_w,screen_w+100,screen_h,screen_h+100);
+  // ML cho = ev.font_api.ml_chooser(std::vector<ML>{res,I70a},alt);
+
+  // hmd=true
+  ML I43_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
+  TXID I44_b = ev.fbo_api.fbo_ml(ev,I43_b,1080,1200,false);
+  ML I66_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,10.1,60000.0, false);
+  TXID I67_b = ev.fbo_api.fbo_ml(ev,I66_b,1080,1200,false);
+
+  ML I43a_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
+  TXID I44a_b = ev.fbo_api.fbo_ml(ev,I43a_b,1080,1200,false);
+  ML I66a_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,10.1,60000.0, false);
+  TXID I67a_b = ev.fbo_api.fbo_ml(ev,I66a_b,1080,1200,false);
+  ML res_b = ev.blocker_api.vr_submit_ml(ml, I44_b,I67_b,invert,translate);
+  ML I70a_b = ev.blocker_api.vr_submit(ev, I44a_b, I67a_b);
+  ML res_I70a_b = ev.blocker_api.vr_submit_ml(I70a_b, I44_b,I67_b,invert,translate);
+
+  // hmd=true outputs res_b, res_I70a_b
+
+  IF alt2 = ev.font_api.hmd_state_fetcher();
+  ML cho2 = ev.font_api.ml_chooser(std::vector<ML>{res, res_b}, alt2);
+
+  IF alt3 = ev.font_api.hmd_state_fetcher();
+  ML cho3 = ev.font_api.ml_chooser(std::vector<ML>{res_I70a, res_I70a_b}, alt3);
+
+  
+  IF alt_b = ev.font_api.toggle_button_fetcher(screen_w,screen_w+100,screen_h,screen_h+100);
+  ML cho_b = ev.font_api.ml_chooser(std::vector<ML>{cho2,cho3},alt_b);
+ 
+  
+
+BB I1=ev.bool_bitmap_api.empty(100,100);
+BB I2=ev.bool_bitmap_api.rectangle(I1,0,0,2,100);
+BB I3=ev.bool_bitmap_api.rectangle(I2,0,0,100,2);
+BB I4=ev.bool_bitmap_api.rectangle(I3,98,0,2,100);
+BB I5=ev.bool_bitmap_api.rectangle(I4,0,98,100,2);
+BB I6=ev.bool_bitmap_api.empty(100,100);
+BB I7=ev.bool_bitmap_api.tri(I6,23,20,36,60,10,40);
+BB I8=ev.bool_bitmap_api.empty(100,100);
+BB I9=ev.bool_bitmap_api.tri(I8,23,20,49,40,36,60);
+BB I10=ev.bool_bitmap_api.or_bitmap(I7,I9);
+BB I11=ev.bool_bitmap_api.empty(100,100);
+BB I12=ev.bool_bitmap_api.tri(I11,75,20,62,60,49,40);
+BB I13=ev.bool_bitmap_api.empty(100,100);
+BB I14=ev.bool_bitmap_api.tri(I13,75,20,88,40,61,60);
+BB I15=ev.bool_bitmap_api.or_bitmap(I12,I14);
+BB I16=ev.bool_bitmap_api.or_bitmap(I10,I15);
+BB I17=ev.bool_bitmap_api.empty(100,100);
+BB I18=ev.bool_bitmap_api.tri(I17,23,20,76,20,49,41);
+BB I19=ev.bool_bitmap_api.or_bitmap(I16,I18);
+BB I20=ev.bool_bitmap_api.sprite(I5,I19,0,10,1,1);
+BM I21=ev.bool_bitmap_api.to_bitmap(I20,255,255,255,255,0,0,0,0);
+ML I22=ev.sprite_api.vertex_array_render(ev,I21);
+MN I23=ev.move_api.empty();
+MN I24=ev.move_api.trans2(I23,screen_w,screen_h,0);
+ML I25=ev.move_api.move_ml(ev,I22,I24,1,10.0);
+ML I26=ev.sprite_api.turn_to_2d(ev,I25,0.0,0.0,800.0,600.0);
+
+ ML arr = ev.mainloop_api.array_ml(std::vector<ML>{cho_b,I26});
+
   //#ifdef EMSCRIPTEN  
-    // ML I70 = ev.blocker_api.vr_submit(ev, I44, I67);
   //std::vector<ML> vec = std::vector<ML>{I70,res};
   // res = ev.mainloop_api.array_ml(vec);
   //#endif
-  RUN I69 = ev.blocker_api.game_window2(ev,res,logo,fpscounter,start_time,duration);
+  RUN I69 = ev.blocker_api.game_window2(ev,arr,logo,fpscounter,start_time,duration);
 
   return I69;
 }
@@ -36,6 +114,7 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
 vr::IVRSystem *hmd = 0;
 #endif
 Matrix hmd_pose = Matrix::Identity();
+bool vr_pose_not_active=false;
 #ifdef EMSCRIPTEN
 VRDisplayHandle current_display= 0;
 bool vr_vr_ready = false;
@@ -65,6 +144,8 @@ EXPORT void check_vr_compositor_init()
   }
 #endif
 }
+
+
 class SubmitML : public MainLoopItem
 {
 public:
@@ -77,7 +158,9 @@ public:
       check_vr_compositor_init();
       firsttime = false;
     }
+    vr_pose_not_active=true;
     item->execute(e);
+    vr_pose_not_active=false;
 #ifndef EMSCRIPTEN
     if (hmd) {
     left->render(e);
@@ -190,7 +273,15 @@ P I4=ev.polygon_api.vr_fullscreen_quad(ev,true);
  MT I5=ev.materials_api.textureid(ev,right,1.0);
 ML I6=ev.materials_api.bind(I4,I5);
 ML I7=ev.mainloop_api.array_ml(std::vector<ML>{I3,I6});
- return I7;
+//---
+MN I1a=ev.move_api.empty();
+MN I2a=ev.move_api.trans2(I1a,0,0,-500);
+ML I3a=ev.move_api.move_ml(ev,I7,I2a,1,10.0);
+//---
+ IF alt2 = ev.font_api.hmd_state_fetcher();
+ ML cho2 = ev.font_api.ml_chooser(std::vector<ML>{I3a, I7}, alt2);
+
+ return cho2;
  //RUN I8=ev.blocker_api.game_window2(ev,I7,false,false,0.0,100000.0);
  //return I8;
 }
@@ -204,6 +295,8 @@ public:
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
+    if (vr_pose_not_active)
+      return next->get_whole_matrix(time,delta_time);
     return next->get_whole_matrix(time,delta_time)*hmd_pose;
   }
 private:
@@ -219,13 +312,13 @@ EXPORT GameApi::MN GameApi::MovementNode::pose(MN next)
 class HMDProjection : public MainLoopItem
 {
 public:
-  HMDProjection(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *item, bool eye, float near, float far, bool translate) : env(env), ev(ev), item(item), eye(eye), m_fNearClip(near), m_fFarClip(far), translate(translate) {}
+  HMDProjection(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *item, bool eye, bool standard, float nr, float fr, bool translate) : env(env), ev(ev), item(item), eye(eye), is_standard(standard), m_fNearClip(nr), m_fFarClip(fr),  translate(translate) {}
 
 
-Matrix GetHMDMatrixPoseEye( bool eye )
+  Matrix GetHMDMatrixPoseEye( bool eye, bool is_std )
 {
 #ifndef EMSCRIPTEN
-  if (!hmd) { return Matrix::Identity(); }
+  if (!hmd || is_std) { return Matrix::Identity(); }
   vr::Hmd_Eye nEye = eye ? vr::Eye_Left : vr::Eye_Right;
   vr::HmdMatrix34_t mat = hmd->GetEyeToHeadTransform( nEye );
   Matrix m = { mat.m[0][0], mat.m[1][0], mat.m[2][0], 0.0,
@@ -235,7 +328,7 @@ Matrix GetHMDMatrixPoseEye( bool eye )
 
 #else
   Matrix m = Matrix::Identity();
-  if (vr_vr_ready && current_display != 0 && current_display!=-1) {
+  if ((vr_vr_ready && current_display != 0 && current_display!=-1) && !is_std) {
     VRFrameData d;
     int val = emscripten_vr_get_frame_data(current_display, &d);
     if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl;
@@ -260,10 +353,43 @@ Matrix GetHMDMatrixPoseEye( bool eye )
   return m;
 }
 
-Matrix GetHMDMatrixProjectionEye( bool eye )
+  int which_display()
+  {
+    // 0 = standard screen
+    // 1 = double standard screen
+    // 2 = left eye
+    // 3 = right eye
+
+  }
+  
+  Matrix DefaultProjection(GameApi::EveryApi &ev)
+  {
+    GameApi::M m = ev.mainloop_api.in_P(ev,true);
+    GameApi::M m2 = ev.matrix_api.scale(1.0,0.5,1.0);
+    GameApi::M m3 = ev.matrix_api.mult(m2,m);
+    Matrix mm = find_matrix(env, m3);
+    return mm;
+  }
+  Matrix DefaultSceneTranslate(GameApi::EveryApi &ev)
+  {
+    GameApi::M m = ev.matrix_api.trans(0.0,0.0,-500.0);
+    Matrix mm = find_matrix(env,m);
+    return mm;
+  }
+
+  Matrix GetHMDMatrixSceneTranslateEye( bool eye, bool is_std) {
+#ifndef EMSCRIPTEN
+  if (!hmd ||is_std) { return DefaultSceneTranslate(ev); }
+  return Matrix::Identity();
+#else
+  if ((!vr_vr_ready ||current_display==NULL||current_display==-1) ||is_std) { return DefaultSceneTranslate(ev); }
+  return Matrix::Identity();
+#endif
+  }
+  Matrix GetHMDMatrixProjectionEye( bool eye, bool is_std )
 {
 #ifndef EMSCRIPTEN
-  if (!hmd) { return Matrix::Identity(); }
+  if (!hmd) { return DefaultProjection(ev); }
   vr::Hmd_Eye nEye = eye ? vr::Eye_Left : vr::Eye_Right;
   vr::HmdMatrix44_t mat = hmd->GetProjectionMatrix( nEye, m_fNearClip, m_fFarClip );
   Matrix m = { mat.m[0][0], mat.m[1][0], mat.m[2][0], mat.m[3][0],
@@ -273,7 +399,7 @@ Matrix GetHMDMatrixProjectionEye( bool eye )
 
 
 #else
-  if (!vr_vr_ready ||current_display==NULL||current_display==-1) return Matrix::Identity();
+  if (!vr_vr_ready ||current_display==NULL||current_display==-1) { return DefaultProjection(ev); }
   VRFrameData d;
   int val = emscripten_vr_get_frame_data(current_display, &d);
   if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl; }
@@ -310,11 +436,11 @@ Matrix GetHMDMatrixProjectionEye( bool eye )
     fragment.id = e.us_fragment_shader;
 
     Matrix proj_matrix; Matrix pos_mat; Matrix scene_translate = Matrix::Identity();
-    proj_matrix=GetHMDMatrixProjectionEye( eye );
-    pos_mat= GetHMDMatrixPoseEye( eye );
+    proj_matrix=GetHMDMatrixProjectionEye( eye, is_standard );
+    pos_mat= GetHMDMatrixPoseEye( eye, is_standard );
     Matrix proj_m = proj_matrix * scene_translate * pos_mat;
     GameApi::M proj = add_matrix2( env, proj_m );
-    Matrix id_m = Matrix::Identity();
+    Matrix id_m = GetHMDMatrixSceneTranslateEye(eye, is_standard);
     GameApi::M id = add_matrix2( env, id_m );
     ev.shader_api.set_var(sh_color, "in_P", proj);
     ev.shader_api.set_var(sh_texture, "in_P", proj);
@@ -331,11 +457,19 @@ Matrix GetHMDMatrixProjectionEye( bool eye )
     ev.shader_api.set_var(fragment, "in_T", id);
 
     MainLoopEnv ee = e;
+    Matrix old = e.in_T;
     ee.in_T = id_m;
     glEnable( GL_MULTISAMPLE );
     item->execute(ee);
     glDisable( GL_MULTISAMPLE );
-    
+
+    GameApi::M old_m = add_matrix2(env, old);
+    ev.shader_api.set_var(sh_color,"in_T", old_m);
+    ev.shader_api.set_var(sh_texture,"in_T", old_m);
+    ev.shader_api.set_var(sh_array_texture,"in_T", old_m);
+    ev.shader_api.set_var(vertex,"in_T", old_m);
+    ev.shader_api.set_var(fragment,"in_T", old_m);
+    ev.shader_api.set_var(sh_color,"in_T", old_m);
   }
   virtual void handle_event(MainLoopEvent &e)
   {
@@ -348,14 +482,15 @@ private:
   GameApi::EveryApi &ev;
   MainLoopItem *item;
   bool eye;
+  bool is_standard;
   float m_fNearClip, m_fFarClip;
   bool translate;
 };
 
-EXPORT GameApi::ML GameApi::MainLoopApi::setup_hmd_projection(EveryApi &ev, ML ml, bool eye, float nnear, float nfar, bool translate)
+EXPORT GameApi::ML GameApi::MainLoopApi::setup_hmd_projection(EveryApi &ev, ML ml, bool eye, bool is_standard, float nnear, float nfar, bool translate)
 {
   MainLoopItem *item = find_main_loop(e, ml);
-  return add_main_loop(e, new HMDProjection(e,ev,item, eye, nnear,nfar, translate));
+  return add_main_loop(e, new HMDProjection(e,ev,item, eye, is_standard, nnear,nfar, translate));
 }
 #ifdef EMSCRIPTEN
 void splitter_iter2(void *arg);
@@ -454,4 +589,36 @@ void vr_run2(Splitter *spl2)
 }
 
 #endif
+
+
+
 #endif
+
+class HMDStateIntFetcher : public Fetcher<int>
+{
+public:
+  HMDStateIntFetcher() {}
+  virtual void event(MainLoopEvent &e)
+  {
+  }
+  virtual void frame(MainLoopEnv &e)
+  {
+  }
+  virtual void set(int t) { }
+  virtual int get() const
+  {
+#ifdef VIRTUAL_REALILTY
+#ifndef EMSCRIPTEN    
+    if (!hmd) return 0; else return 1;
+#else
+    if (!vr_vr_ready  && current_display != 0 && current_display!=-1) return 0; else return 1;
+#endif
+#endif
+    return 0;
+  }
+};
+
+GameApi::IF GameApi::FontApi::hmd_state_fetcher()
+{
+  return add_int_fetcher(e, new HMDStateIntFetcher());
+}
