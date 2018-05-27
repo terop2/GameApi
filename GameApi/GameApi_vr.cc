@@ -69,7 +69,8 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
 
   
   IF alt_b = ev.font_api.toggle_button_fetcher(screen_w,screen_w+100,screen_h,screen_h+100);
-  ML cho_b = ev.font_api.ml_chooser(std::vector<ML>{cho2,cho3},alt_b);
+  IF alt_c = ev.font_api.hmd_request_presenting(alt_b);
+  ML cho_b = ev.font_api.ml_chooser(std::vector<ML>{cho2,cho3},alt_c);
  
   
 
@@ -274,13 +275,14 @@ P I4=ev.polygon_api.vr_fullscreen_quad(ev,true);
 ML I6=ev.materials_api.bind(I4,I5);
 ML I7=ev.mainloop_api.array_ml(std::vector<ML>{I3,I6});
 //---
-MN I1a=ev.move_api.empty();
+#if 0
+ MN I1a=ev.move_api.empty();
 MN I2a=ev.move_api.trans2(I1a,0,0,-500);
 ML I3a=ev.move_api.move_ml(ev,I7,I2a,1,10.0);
 //---
  IF alt2 = ev.font_api.hmd_state_fetcher();
  ML cho2 = ev.font_api.ml_chooser(std::vector<ML>{I3a, I7}, alt2);
-
+#endif
  //ML cho2_2d = 
  
  return I7;
@@ -558,9 +560,9 @@ void splitter_iter3(void *arg)
     VRLayerInit init = { "#canvas0", VR_LAYER_DEFAULT_LEFT_BOUNDS, VR_LAYER_DEFAULT_RIGHT_BOUNDS };
     if (!emscripten_vr_request_present(current_display, &init, 1, requestPresentCallback, NULL)) {
       std::cout << "request_present with default canvas failed." << std::endl;
-      //return;
+      return;
     }
-  if (emscripten_vr_display_presenting(current_display)) {
+  if (!emscripten_vr_display_presenting(current_display)) {
     std::cout << "Error: expected display is not presenting.\n" << std::endl;
     return; }
   VRFrameData data;
@@ -595,6 +597,44 @@ void vr_run2(Splitter *spl2)
 
 
 #endif
+
+class HMDRequestPresentingCallback : public Fetcher<int>
+{
+public:
+  HMDRequestPresentingCallback(Fetcher<int> *fetcher) : fetcher(fetcher) { }
+
+  virtual void event(MainLoopEvent &e) { fetcher->event(e); }
+  virtual void frame(MainLoopEnv &e) { fetcher->frame(e); }
+  virtual void set(int t) { fetcher->set(t); }
+  virtual int get() const
+  {
+    int val = fetcher->get();
+    if (val==1 && oldval==0) {
+#ifdef EMSCRIPTEN      
+      std::cout << "Trying request presenting" << std::endl;
+      VRLayerInit init = { "#canvas0", VR_LAYER_DEFAULT_LEFT_BOUNDS, VR_LAYER_DEFAULT_RIGHT_BOUNDS };
+
+      if (!emscripten_vr_request_present(current_display, &init, 1, requestPresentCallback, NULL)) {
+	std::cout << "request_present with default canvas failed." << std::endl;
+      } else {
+      std::cout << "Request presenting success" << std::endl;
+      }
+#endif
+    }
+    oldval = val;
+    return val;
+  }
+
+private:
+  mutable int oldval;
+  Fetcher<int> *fetcher;
+};
+
+GameApi::IF GameApi::FontApi::hmd_request_presenting(IF i)
+{
+  Fetcher<int> *k = find_int_fetcher(e,i);
+  return add_int_fetcher(e, new HMDRequestPresentingCallback(k));
+}
 
 class HMDStateIntFetcher : public Fetcher<int>
 {
