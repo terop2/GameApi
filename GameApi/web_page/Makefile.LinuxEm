@@ -1,3 +1,3 @@
 
 all:
-	em++ -s USE_PTHREADS=2 -s WASM=1 -g --bind -std=c++11 -O2 test.cpp ../libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_FREETYPE=1 -s DEMANGLE_SUPPORT=1 -L.. -L../obs -I.. -o web_page.html --preload-file logo.ppm --memory-init-file 0 -s DISABLE_EXCEPTION_CATCHING=1 --preload-file FreeSans.ttf
+	(cd ..;em++ -s ASSERTIONS=2 --use-preload-cache -s WASM=1 -g -g4 --bind -std=c++11 -O2 web_page/test.cpp libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_FREETYPE=1 -s DEMANGLE_SUPPORT=1 -s TOTAL_MEMORY=1000Mb -L. -Lobs -I. -o web_page/web_page.html --preload-file web_page/logo.ppm --memory-init-file 0 -s DISABLE_EXCEPTION_CATCHING=1 --preload-file web_page/FreeSans.ttf)
