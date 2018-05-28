@@ -525,7 +525,7 @@ void onClick()
     }
     std::cout << "request_present succeeded on click!" << std::endl;
 }
-EM_BOOL touchCallback(int eventType, const EmscriptenMouseEvent* e, void *data)
+int touchCallback(int eventType, const EmscriptenMouseEvent* e, void *data)
 {
   if (!e || eventType!=EMSCRIPTEN_EVENT_TOUCHEND) return EM_FALSE;
   onClick();
@@ -574,7 +574,7 @@ void splitter_iter3(void *arg)
     }
 
     emscripten_set_click_callback("#canvas0", NULL, true, clickCallback);
-    emscripten_set_touchend_callback("#canvas0", NULL, true, touchCallback);
+    emscripten_set_touchend_callback("#canvas0", NULL, true, &touchCallback);
     
     VREyeParameters leftParam, rightParam;
     emscripten_vr_get_eye_parameters(current_display, VREyeLeft, &leftParam);
