@@ -51,10 +51,10 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
   ML I66_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,10.1,60000.0, false);
   TXID I67_b = ev.fbo_api.fbo_ml(ev,I66_b,1080,1200,false);
 
-  ML I43a_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
-  TXID I44a_b = ev.fbo_api.fbo_ml(ev,I43a_b,1080,1200,false);
-  ML I66a_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,10.1,60000.0, false);
-  TXID I67a_b = ev.fbo_api.fbo_ml(ev,I66a_b,1080,1200,false);
+  //ML I43a_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
+  TXID I44a_b = ev.fbo_api.fbo_ml(ev,ml/*I43a_b*/,1080,1200,false);
+  // ML I66a_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,10.1,60000.0, false);
+  TXID I67a_b = ev.fbo_api.fbo_ml(ev,ml/*I66a_b*/,1080,1200,false);
   ML res_b = ev.blocker_api.vr_submit_ml(ml, I44_b,I67_b,invert,translate);
   ML I70a_b = ev.blocker_api.vr_submit(ev, I44a_b, I67a_b);
   ML res_I70a_b = ev.blocker_api.vr_submit_ml(I70a_b, I44_b,I67_b,invert,translate);
@@ -277,15 +277,15 @@ ML I7=ev.mainloop_api.array_ml(std::vector<ML>{I3,I6});
 //---
 #if 0
  MN I1a=ev.move_api.empty();
-MN I2a=ev.move_api.trans2(I1a,0,0,-500);
+MN I2a=ev.move_api.trans2(I1a,0,0,-1200);
 ML I3a=ev.move_api.move_ml(ev,I7,I2a,1,10.0);
 //---
  IF alt2 = ev.font_api.hmd_state_fetcher();
- ML cho2 = ev.font_api.ml_chooser(std::vector<ML>{I3a, I7}, alt2);
+ ML cho2 = ev.font_api.ml_chooser(std::vector<ML>{I7, I3a}, alt2);
 #endif
  //ML cho2_2d = 
- 
- return I7;
+ ML cho3=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
+ return cho3;
  //RUN I8=ev.blocker_api.game_window2(ev,I7,false,false,0.0,100000.0);
  //return I8;
 }
@@ -293,24 +293,29 @@ ML I3a=ev.move_api.move_ml(ev,I7,I2a,1,10.0);
 class PoseMovement : public Movement
 {
 public:
-  PoseMovement(Movement *next) : next(next) { }
+  PoseMovement(Movement *next, bool pose_in_screen) : next(next), pose_in_screen(pose_in_screen) { }
   virtual void event(MainLoopEvent &e) { if (next) next->event(e); }
   virtual void frame(MainLoopEnv &e) { if (next) next->frame(e); }
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
+    if (pose_in_screen) {
+      return next->get_whole_matrix(time,delta_time)*hmd_pose;
+    } else {
     if (vr_pose_not_active)
       return next->get_whole_matrix(time,delta_time);
     return next->get_whole_matrix(time,delta_time)*hmd_pose;
+    }
   }
 private:
   Movement *next;
   bool eye;
+  bool pose_in_screen;
 };
-EXPORT GameApi::MN GameApi::MovementNode::pose(MN next)
+EXPORT GameApi::MN GameApi::MovementNode::pose(MN next, bool pose_in_screen)
 {
   Movement *nxt = find_move(e, next);
-  return add_move(e, new PoseMovement(nxt));
+  return add_move(e, new PoseMovement(nxt,pose_in_screen));
 }
 
 class HMDProjection : public MainLoopItem
@@ -509,6 +514,28 @@ void choose_display()
 }
 
 void requestPresentCallback(void *) {}
+void onClick()
+{
+  std::cout << "onclick trying request present!" << std::endl;
+      VRLayerInit init = { "#canvas0", VR_LAYER_DEFAULT_LEFT_BOUNDS, VR_LAYER_DEFAULT_RIGHT_BOUNDS };
+    if (!emscripten_vr_request_present(current_display, &init, 1, requestPresentCallback, NULL)) {
+      std::cout << "request_present with default canvas failed." << std::endl;
+      return;
+    }
+    std::cout << "request_present succeeded on click!" << std::endl;
+}
+EM_BOOL touchCallback(int eventType, const EmscriptenMouseEvent* e, void *data)
+{
+  if (!e || eventType!=EMSCRIPTEN_EVENT_TOUCHEND) return EM_FALSE;
+  onClick();
+  return EM_FALSE;
+}
+EM_BOOL clickCallback(int eventType, const EmscriptenMouseEvent* e, void *data)
+{
+  if (!e ||eventType!=EMSCRIPTEN_EVENT_CLICK) return EM_FALSE;
+  onClick();
+  return EM_FALSE;
+}
 
 int render_loop_called = 0;
 void splitter_iter3(void *arg)
@@ -545,6 +572,9 @@ void splitter_iter3(void *arg)
       return;
     }
 
+    emscripten_set_click_callback("#canvas0", NULL, true, clickCallback);
+    emscripten_set_touchend_callback("#canvas0", NULL, true, touchCallback);
+    
     VREyeParameters leftParam, rightParam;
     emscripten_vr_get_eye_parameters(current_display, VREyeLeft, &leftParam);
     emscripten_vr_get_eye_parameters(current_display, VREyeRight, &rightParam);
