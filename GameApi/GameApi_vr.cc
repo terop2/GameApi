@@ -574,7 +574,7 @@ void splitter_iter3(void *arg)
     }
 
     emscripten_set_click_callback("#canvas0", NULL, true, clickCallback);
-    emscripten_set_touchend_callback("#canvas0", NULL, true, touchCallback);
+    emscripten_set_touchend_callback("#canvas0", NULL, true, &touchCallback);
     
     VREyeParameters leftParam, rightParam;
     emscripten_vr_get_eye_parameters(current_display, VREyeLeft, &leftParam);
