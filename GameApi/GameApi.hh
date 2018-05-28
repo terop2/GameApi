@@ -1435,7 +1435,7 @@ public:
   IMPORT MN rotatex(MN next, float angle);
   IMPORT MN rotatey(MN next, float angle);
   IMPORT MN rotatez(MN next, float angle);
-  IMPORT MN pose(MN next);
+  IMPORT MN pose(MN next, bool pose_in_screen);
   IMPORT MN debug_translate(MN next);
   IMPORT MN translate(MN next, float start_time, float end_time,
 	       float dx, float dy, float dz);

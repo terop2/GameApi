@@ -6284,9 +6284,9 @@ std::vector<GameApiItem*> moveapi_functions()
 #ifdef VIRTUAL_REALITY
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::pose,
 			 "mn_hmd_pose",
-			 { "next" },
-			 { "MN" },
-			 { "" },
+			 { "next", "pose_in_screen" },
+			 { "MN", "bool" },
+			 { "", "false" },
 			 "MN", "move_api", "pose"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::scale_progress,
