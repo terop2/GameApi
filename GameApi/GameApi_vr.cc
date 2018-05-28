@@ -573,8 +573,8 @@ void splitter_iter3(void *arg)
       return;
     }
 
-    emscripten_set_click_callback("#canvas0", NULL, true, clickCallback);
-    emscripten_set_touchend_callback("#canvas0", NULL, true, (em_touch_callback_func)&touchCallback);
+    emscripten_set_click_callback("canvas#canvas0.emscripten", NULL, true, clickCallback);
+    emscripten_set_touchend_callback("canvas#canvas0.emscripten", NULL, true, (em_touch_callback_func)&touchCallback);
     
     VREyeParameters leftParam, rightParam;
     emscripten_vr_get_eye_parameters(current_display, VREyeLeft, &leftParam);
