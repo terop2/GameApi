@@ -525,7 +525,7 @@ void onClick()
     }
     std::cout << "request_present succeeded on click!" << std::endl;
 }
-EM_BOOL touchCallback(int eventType, const EmscriptenMouseEvent* e, void *data)
+int touchCallback(int eventType, const EmscriptenMouseEvent* e, void *data)
 {
   if (!e || eventType!=EMSCRIPTEN_EVENT_TOUCHEND) return EM_FALSE;
   onClick();
