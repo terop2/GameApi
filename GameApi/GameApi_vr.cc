@@ -144,7 +144,6 @@ EXPORT void check_vr_compositor_init()
     int val = emscripten_vr_init(&vr_cb,NULL);
     if (val==0) { std::cout << "Emscripten VR not found!" << std::endl; }
   }
-  deferUntilInEventHandler = true;
 #endif
 }
 
