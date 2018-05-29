@@ -519,7 +519,7 @@ void requestPresentCallback(void *arg) {
   Splitter *spl = a->spl;
   if (emscripten_vr_display_presenting(current_display))
     {
-      if (!emscripten_vr_set_display_render_loop(current_display, &splitter_iter2, (void*)spl))
+      if (!emscripten_vr_set_display_render_loop_arg(current_display, &splitter_iter2, (void*)spl))
 	{
 	  std::cout << "set_display render loop failed (in request present)" << std::endl;
 	} else {
