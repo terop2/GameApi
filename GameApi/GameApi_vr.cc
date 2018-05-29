@@ -547,7 +547,7 @@ int touchCallback(int eventType, const EmscriptenMouseEvent* e, void *data)
 EM_BOOL clickCallback(int eventType, const EmscriptenMouseEvent* e, void *data)
 {
   if (!e ||eventType!=EMSCRIPTEN_EVENT_CLICK) return EM_FALSE;
-  onClick();
+  onClick(data);
   return EM_FALSE;
 }
 
