@@ -514,21 +514,34 @@ void choose_display()
 {
 }
 
-void requestPresentCallback(void *) {}
-void onClick()
+void requestPresentCallback(void *arg) {
+  Splitter_arg *a = (Splitter_arg*)arg;
+  Splitter *spl = a->spl;
+  if (emscripten_vr_display_presenting(current_display))
+    {
+      if (!emscripten_vr_set_display_render_loop(current_display, &splitter_iter2, (void*)spl))
+	{
+	  std::cout << "set_display render loop failed (in request present)" << std::endl;
+	} else {
+	std::cout << "set_display render loop success." << std::endl;
+      }
+    }
+
+}
+void onClick(void *data)
 {
   std::cout << "onclick trying request present!" << std::endl;
       VRLayerInit init = { NULL, VR_LAYER_DEFAULT_LEFT_BOUNDS, VR_LAYER_DEFAULT_RIGHT_BOUNDS };
-    if (!emscripten_vr_request_present(current_display, &init, 1, requestPresentCallback, NULL)) {
-      std::cout << "request_present with default canvas failed." << std::endl;
+    if (!emscripten_vr_request_present(current_display, &init, 1, requestPresentCallback, data)) {
+      std::cout << "FAIL: request_present with default canvas failed." << std::endl;
       return;
     }
-    std::cout << "request_present succeeded on click!" << std::endl;
+    std::cout << "OK: request_present succeeded on click!" << std::endl;
 }
 int touchCallback(int eventType, const EmscriptenMouseEvent* e, void *data)
 {
   if (!e || eventType!=EMSCRIPTEN_EVENT_TOUCHEND) return EM_FALSE;
-  onClick();
+  onClick(data);
   return EM_FALSE;
 }
 EM_BOOL clickCallback(int eventType, const EmscriptenMouseEvent* e, void *data)
@@ -549,38 +562,38 @@ void splitter_iter3(void *arg)
     if (!emscripten_vr_ready()) { splitter_iter2((void*)spl); return; }
 
     int s = emscripten_vr_count_displays();
-    if (s==0) { std::cout << "No displays found" << std::endl; }
-    std::cout << "Found " << s << " displays" << std::endl;
+    if (s==0) { std::cout << "FAIL: No displays found" << std::endl; }
+    std::cout << "OK: Found " << s << " displays" << std::endl;
     VRDisplayHandle *display = new VRDisplayHandle;
     for(int i=0;i<s;i++) {
       current_display = emscripten_vr_get_display_handle(i);
       const char *name = emscripten_vr_get_display_name( current_display );
-      std::cout << "Found display " << name << std::endl;
+      std::cout << "OK: Found display " << name << std::endl;
       VRDisplayCapabilities caps;
       if (!emscripten_vr_get_display_capabilities(current_display, &caps)) {
-      	std::cout << "Failed to get display capabilities" << std::endl;
+      	std::cout << "FAIL: Failed to get display capabilities" << std::endl;
       	continue;
       }
       if (!emscripten_vr_display_connected( current_display)) {
-	std::cout << "Display is not connected" << std::endl;
+	std::cout << "FAIL: Display is not connected" << std::endl;
 	continue;
       }
       
     }
     if (current_display==0) {
-      std::cout << "No display found!" << std::endl;
+      std::cout << "FAIL: No display found!" << std::endl;
       current_display=-1;
       return;
     }
 
-    emscripten_set_click_callback("#canvas", NULL, true, clickCallback);
-    emscripten_set_touchend_callback("#canvas", NULL, true, (em_touch_callback_func)&touchCallback);
+    emscripten_set_click_callback("#canvas", a, true, clickCallback);
+    emscripten_set_touchend_callback("#canvas", a, true, (em_touch_callback_func)&touchCallback);
     
     VREyeParameters leftParam, rightParam;
     emscripten_vr_get_eye_parameters(current_display, VREyeLeft, &leftParam);
     emscripten_vr_get_eye_parameters(current_display, VREyeRight, &rightParam);
-        std::cout << "Left eye: " << leftParam.offset.x << " " << leftParam.offset.y << " " << leftParam.offset.z << std::endl;
-    std::cout << "Right eye: " << rightParam.offset.x << " " << rightParam.offset.y << " " << rightParam.offset.z << std::endl;
+        std::cout << "OK: Left eye: " << leftParam.offset.x << " " << leftParam.offset.y << " " << leftParam.offset.z << std::endl;
+    std::cout << "OK: Right eye: " << rightParam.offset.x << " " << rightParam.offset.y << " " << rightParam.offset.z << std::endl;
 
     emscripten_vr_set_display_render_loop_arg(current_display, &splitter_iter2, (void*)spl);
 
@@ -590,19 +603,19 @@ void splitter_iter3(void *arg)
   if (render_loop_called==1 && current_display!=0 && current_display != -1) {
     VRLayerInit init = { NULL, VR_LAYER_DEFAULT_LEFT_BOUNDS, VR_LAYER_DEFAULT_RIGHT_BOUNDS };
     if (!emscripten_vr_request_present(current_display, &init, 1, requestPresentCallback, NULL)) {
-      std::cout << "request_present with default canvas failed." << std::endl;
+      std::cout << "FAIL: request_present with default canvas failed." << std::endl;
       return;
     }
-  if (!emscripten_vr_display_presenting(current_display)) {
-    std::cout << "Error: expected display is not presenting.\n" << std::endl;
+  if (emscripten_vr_display_presenting(current_display)) {
+    std::cout << "FAIL: expected display is not presenting.\n" << std::endl;
     return; }
   VRFrameData data;
   if (!emscripten_vr_get_frame_data(current_display, &data)) {
-    std::cout << "Could not get frame data. (first iteration)\n" << std::endl;
+    std::cout << "FAIL: Could not get frame data. (first iteration)\n" << std::endl;
     return;
   }
   if (!emscripten_vr_submit_frame(current_display)) {
-    std::cout << "Error: failed to submit frame to VR display " << current_display << "(first iteration)" << std::endl;
+    std::cout << "FAIL: failed to submit frame to VR display " << current_display << "(first iteration)" << std::endl;
     return;
   }
   return;
@@ -646,9 +659,9 @@ public:
       VRLayerInit init = { NULL, VR_LAYER_DEFAULT_LEFT_BOUNDS, VR_LAYER_DEFAULT_RIGHT_BOUNDS };
 
       if (!emscripten_vr_request_present(current_display, &init, 1, requestPresentCallback, NULL)) {
-	std::cout << "request_present with default canvas failed." << std::endl;
+	std::cout << "FAIL: request_present with default canvas failed." << std::endl;
       } else {
-      std::cout << "Request presenting success" << std::endl;
+      std::cout << "OK: Request presenting success" << std::endl;
       }
 #endif
     }
