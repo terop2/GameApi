@@ -530,6 +530,11 @@ void requestPresentCallback(void *arg) {
 }
 void onClick(void *data)
 {
+  if (emscripten_vr_display_presenting(current_display)) {
+    emscripten_vr_exit_present(current_display);
+    emscripten_vr_cancel_display_render_loop(current_display);
+  } else {
+
   std::cout << "onclick trying request present!" << std::endl;
       VRLayerInit init = { NULL, VR_LAYER_DEFAULT_LEFT_BOUNDS, VR_LAYER_DEFAULT_RIGHT_BOUNDS };
     if (!emscripten_vr_request_present(current_display, &init, 1, requestPresentCallback, data)) {
@@ -537,6 +542,7 @@ void onClick(void *data)
       return;
     }
     std::cout << "OK: request_present succeeded on click!" << std::endl;
+  }
 }
 int touchCallback(int eventType, const EmscriptenMouseEvent* e, void *data)
 {
@@ -595,7 +601,7 @@ void splitter_iter3(void *arg)
         std::cout << "OK: Left eye: " << leftParam.offset.x << " " << leftParam.offset.y << " " << leftParam.offset.z << std::endl;
     std::cout << "OK: Right eye: " << rightParam.offset.x << " " << rightParam.offset.y << " " << rightParam.offset.z << std::endl;
 
-    emscripten_vr_set_display_render_loop_arg(current_display, &splitter_iter2, (void*)spl);
+    //emscripten_vr_set_display_render_loop_arg(current_display, &splitter_iter2, (void*)spl);
 
   }
 
