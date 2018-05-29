@@ -156,10 +156,10 @@ public:
   }
   virtual void execute(MainLoopEnv &e)
   {
-    if (firsttime) {
-      check_vr_compositor_init();
-      firsttime = false;
-    }
+    //if (firsttime) {
+    //  check_vr_compositor_init();
+    //  firsttime = false;
+    //}
     vr_pose_not_active=true;
     item->execute(e);
     vr_pose_not_active=false;
@@ -518,7 +518,7 @@ void requestPresentCallback(void *) {}
 void onClick()
 {
   std::cout << "onclick trying request present!" << std::endl;
-      VRLayerInit init = { "#canvas", VR_LAYER_DEFAULT_LEFT_BOUNDS, VR_LAYER_DEFAULT_RIGHT_BOUNDS };
+      VRLayerInit init = { NULL, VR_LAYER_DEFAULT_LEFT_BOUNDS, VR_LAYER_DEFAULT_RIGHT_BOUNDS };
     if (!emscripten_vr_request_present(current_display, &init, 1, requestPresentCallback, NULL)) {
       std::cout << "request_present with default canvas failed." << std::endl;
       return;
@@ -588,7 +588,7 @@ void splitter_iter3(void *arg)
 
   render_loop_called++;
   if (render_loop_called==1 && current_display!=0 && current_display != -1) {
-    VRLayerInit init = { "#canvas", VR_LAYER_DEFAULT_LEFT_BOUNDS, VR_LAYER_DEFAULT_RIGHT_BOUNDS };
+    VRLayerInit init = { NULL, VR_LAYER_DEFAULT_LEFT_BOUNDS, VR_LAYER_DEFAULT_RIGHT_BOUNDS };
     if (!emscripten_vr_request_present(current_display, &init, 1, requestPresentCallback, NULL)) {
       std::cout << "request_present with default canvas failed." << std::endl;
       return;
@@ -643,7 +643,7 @@ public:
     if (val==1 && oldval==0) {
 #ifdef EMSCRIPTEN      
       std::cout << "Trying request presenting" << std::endl;
-      VRLayerInit init = { "#canvas", VR_LAYER_DEFAULT_LEFT_BOUNDS, VR_LAYER_DEFAULT_RIGHT_BOUNDS };
+      VRLayerInit init = { NULL, VR_LAYER_DEFAULT_LEFT_BOUNDS, VR_LAYER_DEFAULT_RIGHT_BOUNDS };
 
       if (!emscripten_vr_request_present(current_display, &init, 1, requestPresentCallback, NULL)) {
 	std::cout << "request_present with default canvas failed." << std::endl;
