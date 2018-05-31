@@ -24,7 +24,11 @@
 //#include <GL3/gl3.h>
 //#define GLEW_STATIC
 #include <GL/glew.h>
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
+#endif
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <SDL_image.h>

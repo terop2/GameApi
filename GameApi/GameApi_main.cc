@@ -160,6 +160,7 @@ EXPORT GameApi::V GameApi::MainLoopApi::random_dir_vector_3d(float length)
 EXPORT void GameApi::MainLoopApi::profile(std::string label, bool start)
 {
 #ifndef EMSCRIPTEN
+#ifndef __APPLE__
   MainLoopPriv *p = (MainLoopPriv*)priv;
   std::chrono::time_point<std::chrono::high_resolution_clock> time;
   time = std::chrono::system_clock::now();
@@ -184,9 +185,11 @@ EXPORT void GameApi::MainLoopApi::profile(std::string label, bool start)
       p->profile_sums[label]+=count;
     }
 #endif
+#endif
 }
 EXPORT void GameApi::MainLoopApi::print_profile()
 {
+#ifndef __APPLE__
 #ifndef EMSCRIPTEN
   MainLoopPriv *p = (MainLoopPriv*)priv;
   auto i1 = p->profile_sums.begin();
@@ -200,6 +203,7 @@ EXPORT void GameApi::MainLoopApi::print_profile()
       i2++;
       if (i1==p->profile_sums.end()) break;
     }
+#endif
 #endif
 }
 EXPORT float GameApi::MainLoopApi::fpscounter(bool print)
