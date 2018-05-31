@@ -11,7 +11,7 @@
 
 #ifdef VIRTUAL_REALITY
 #ifndef EMSCRIPTEN
-#include "openvr/openvr_mingw.h"
+#include "openvr/openvr.h"
 #else
 #include <emscripten.h>
 #include <emscripten/vr.h>

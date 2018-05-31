@@ -796,9 +796,11 @@ ShaderFile::ShaderFile()
 "//F: comb\n"
 "#version 100\n"
 #ifndef EMSCRIPTEN
+#ifndef __APPLE__
 "#ifdef TEXTURE_ARRAY\n"
 "#extension GL_EXT_texture_array : enable\n"
 "#endif\n"
+#endif
 #endif
 "precision mediump float;\n"
 "uniform float time;\n"
@@ -845,9 +847,11 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "uniform sampler2D tex;\n"
 #ifndef EMSCRIPTEN
+#ifndef __APPLE__
 "#ifdef TEXTURE_ARRAY\n"
 "uniform sampler2DArray texarr;\n"
 "#endif\n"
+#endif
 #endif
 "#ifdef SPECULAR_SIZE\n"
 "uniform float specular_size;\n"
@@ -1198,7 +1202,11 @@ ShaderFile::ShaderFile()
 #ifdef EMSCRIPTEN
 "   return rgb;\n"
 #else
+#ifndef __APPLE__
 "   return mix(rgb, texture2DArray(texarr, ex_TexCoord), color_mix);\n"
+#else
+"   return rgb;\n"
+#endif
 #endif
 "}\n"
 "#endif\n"

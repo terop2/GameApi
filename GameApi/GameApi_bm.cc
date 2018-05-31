@@ -517,7 +517,12 @@ std::vector<unsigned char> load_from_url(std::string url)
 #else
     std::string cmd = "curl -s -N --url " + url;
 #endif
+#ifdef __APPLE__
+    FILE *f = popen(cmd.c_str(), "r");
+#else
     FILE *f = popen(cmd.c_str(), "rb");
+#endif
+    //std::cout<< "FILE: " << std::hex<<(long)f <<std::endl; 
     unsigned char c;
     std::vector<unsigned char> buffer;
     while(fread(&c,1,1,f)==1) { buffer.push_back(c); }
