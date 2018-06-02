@@ -9365,7 +9365,7 @@ GameApi::BM GameApi::PolygonApi::p_texture(P p, int i)
   FaceCollection *coll = find_facecoll(e, p);
   BufferRef ref = coll->TextureBuf(i);
   if (ref.buffer==0) { ref = BufferRef::NewBuffer(1,1); }
-  std::cout << "p_texture" << (int)ref.buffer << " " << ref.width << " " << ref.height << std::endl; 
+  //std::cout << "p_texture" << (int)ref.buffer << " " << ref.width << " " << ref.height << std::endl; 
   ::Bitmap<Color> *bm = new BitmapFromBuffer(ref);
   BitmapColorHandle *handle2 = new BitmapColorHandle; 
   handle2->bm = bm;

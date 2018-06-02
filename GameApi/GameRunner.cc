@@ -9,7 +9,11 @@
 
 #define NO_SDL_GLEXT
 #include <GL/glew.h>
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
+#endif
 #ifdef SDL2_USED
 #include <SDL.h>
 #include <SDL_opengl.h>
