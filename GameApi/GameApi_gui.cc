@@ -7188,9 +7188,9 @@ std::vector<GameApiItem*> blocker_functions()
 			 "ML", "blocker_api", "vr_submit"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_submit_ml,
 			 "vr_submit_ml",
-			 { "ml", "left_eye", "right_eye", "invert", "translate" },
-			 { "ML", "TXID", "TXID", "bool", "bool" },
-			 { "", "", "", "false", "true" },
+			 { "ev", "ml", "left_eye", "right_eye", "invert", "translate" },
+			 { "EveryApi&", "ML", "TXID", "TXID", "bool", "bool" },
+			 { "ev", "", "", "", "false", "true" },
 			 "ML", "blocker_api", "vr_submit_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::setup_hmd_projection,
 			 "vr_projection",

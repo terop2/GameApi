@@ -256,7 +256,7 @@ public:
   IMPORT RUN game_window2(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration);
   IMPORT RUN vr_window(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float dura, bool invert, bool translate);
   IMPORT ML vr_submit(EveryApi &ev, TXID left, TXID right);
-  IMPORT ML vr_submit_ml(ML ml, TXID left, TXID right, bool invert, bool translate);
+  IMPORT ML vr_submit_ml(EveryApi &ev, ML ml, TXID left, TXID right, bool invert, bool translate);
   IMPORT void run2(EveryApi &ev, RUN spl);
   IMPORT RUN run_seq(EveryApi &ev, std::vector<RUN> vec);
 private:
