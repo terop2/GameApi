@@ -1,0 +1,3 @@
+
+all:
+	g++ -fPIC -g -std=c++11 test.cpp -L.. -I.. -lGameApi -ldl

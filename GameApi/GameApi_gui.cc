@@ -5248,7 +5248,7 @@ std::vector<GameApiItem*> volumeapi_functions()
 			 "o_cube",
 			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
 			 { "float", "float", "float", "float", "float", "float" },
-			 { "0.0", "100.0", "0.0", "100.0", "0.0", "100.0" },
+			 { "-100.0", "100.0", "-100.0", "100.0", "-100.0", "100.0" },
 			 "O", "volume_api", "cube"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::cone,
 			 "o_cone",
@@ -7339,7 +7339,7 @@ std::vector<GameApiItem*> polydistfield_functions()
 			 "rounded_cube_pd",
 			 { "ev", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "radius" },
 			 { "EveryApi&", "float", "float", "float", "float", "float", "float", "float" },
-			 { "ev", "0.0", "100.0", "0.0", "100.0", "0.0", "100.0", "20.0" },
+			 { "ev", "-100.0", "100.0", "-100.0", "100.0", "-100.0", "100.0", "20.0" },
 			 "PD", "polygon_dist_api", "rounded_cube"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_dist_api, &GameApi::PolygonDistanceField::sphere,
 			 "sphere_pd",
@@ -7531,7 +7531,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "rounded_cube",
 			 { "ev", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "r_radius" },
 			 { "EveryApi&", "float", "float", "float", "float", "float", "float", "float" },
-			 { "ev", "0.0", "100.0", "0.0", "100.0", "0.0", "100.0", "20.0" },
+			 { "ev", "-100.0", "100.0", "-100.0", "100.0", "-100.0", "100.0", "20.0" },
 			 "P", "polygon_api", "rounded_cube"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sphere,

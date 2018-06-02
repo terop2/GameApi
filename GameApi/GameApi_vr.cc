@@ -11,7 +11,13 @@
 
 #ifdef VIRTUAL_REALITY
 #ifndef EMSCRIPTEN
+
+#ifdef WINDOWS
 #include "openvr/openvr_mingw.h"
+#else
+#include "openvr/openvr.h"
+#endif
+
 #else
 #include <emscripten.h>
 #include <emscripten/vr.h>
