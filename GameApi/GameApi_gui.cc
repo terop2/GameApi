@@ -5248,7 +5248,7 @@ std::vector<GameApiItem*> volumeapi_functions()
 			 "o_cube",
 			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
 			 { "float", "float", "float", "float", "float", "float" },
-			 { "0.0", "100.0", "0.0", "100.0", "0.0", "100.0" },
+			 { "-100.0", "100.0", "-100.0", "100.0", "-100.0", "100.0" },
 			 "O", "volume_api", "cube"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::cone,
 			 "o_cone",
@@ -7188,9 +7188,9 @@ std::vector<GameApiItem*> blocker_functions()
 			 "ML", "blocker_api", "vr_submit"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_submit_ml,
 			 "vr_submit_ml",
-			 { "ml", "left_eye", "right_eye", "invert", "translate" },
-			 { "ML", "TXID", "TXID", "bool", "bool" },
-			 { "", "", "", "false", "true" },
+			 { "ev", "ml", "left_eye", "right_eye", "invert", "translate" },
+			 { "EveryApi&", "ML", "TXID", "TXID", "bool", "bool" },
+			 { "ev", "", "", "", "false", "true" },
 			 "ML", "blocker_api", "vr_submit_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::setup_hmd_projection,
 			 "vr_projection",
@@ -7339,7 +7339,7 @@ std::vector<GameApiItem*> polydistfield_functions()
 			 "rounded_cube_pd",
 			 { "ev", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "radius" },
 			 { "EveryApi&", "float", "float", "float", "float", "float", "float", "float" },
-			 { "ev", "0.0", "100.0", "0.0", "100.0", "0.0", "100.0", "20.0" },
+			 { "ev", "-100.0", "100.0", "-100.0", "100.0", "-100.0", "100.0", "20.0" },
 			 "PD", "polygon_dist_api", "rounded_cube"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_dist_api, &GameApi::PolygonDistanceField::sphere,
 			 "sphere_pd",
@@ -7531,7 +7531,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "rounded_cube",
 			 { "ev", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "r_radius" },
 			 { "EveryApi&", "float", "float", "float", "float", "float", "float", "float" },
-			 { "ev", "0.0", "100.0", "0.0", "100.0", "0.0", "100.0", "20.0" },
+			 { "ev", "-100.0", "100.0", "-100.0", "100.0", "-100.0", "100.0", "20.0" },
 			 "P", "polygon_api", "rounded_cube"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sphere,

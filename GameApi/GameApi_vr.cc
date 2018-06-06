@@ -11,7 +11,13 @@
 
 #ifdef VIRTUAL_REALITY
 #ifndef EMSCRIPTEN
+
+#ifdef WINDOWS
+#include "openvr/openvr_mingw.h"
+#else
 #include "openvr/openvr.h"
+#endif
+
 #else
 #include <emscripten.h>
 #include <emscripten/vr.h>
@@ -38,9 +44,9 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
   TXID I44a = ev.fbo_api.fbo_ml(ev,I43a,1080,1200,false);
   ML I66a = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,10.1,60000.0, false);
   TXID I67a = ev.fbo_api.fbo_ml(ev,I66a,1080,1200,false);
-  ML res = ev.blocker_api.vr_submit_ml(ml, I44,I67,invert,translate);
+  ML res = ev.blocker_api.vr_submit_ml(ev,ml, I44,I67,invert,translate);
   ML I70a = ev.blocker_api.vr_submit(ev, I44a, I67a);
-  ML res_I70a = ev.blocker_api.vr_submit_ml(I70a, I44,I67,invert,translate);
+  ML res_I70a = ev.blocker_api.vr_submit_ml(ev,I70a, I44,I67,invert,translate);
   // hmd=false outputs: res, res_I170a
 
   //IF alt = ev.font_api.toggle_button_fetcher(screen_w,screen_w+100,screen_h,screen_h+100);
@@ -56,9 +62,9 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
   TXID I44a_b = ev.fbo_api.fbo_ml(ev,ml/*I43a_b*/,1080,1200,false);
   // ML I66a_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,10.1,60000.0, false);
   TXID I67a_b = ev.fbo_api.fbo_ml(ev,ml/*I66a_b*/,1080,1200,false);
-  ML res_b = ev.blocker_api.vr_submit_ml(ml, I44_b,I67_b,invert,translate);
+  ML res_b = ev.blocker_api.vr_submit_ml(ev,ml, I44_b,I67_b,invert,translate);
   ML I70a_b = ev.blocker_api.vr_submit(ev, I44a_b, I67a_b);
-  ML res_I70a_b = ev.blocker_api.vr_submit_ml(I70a_b, I44_b,I67_b,invert,translate);
+  ML res_I70a_b = ev.blocker_api.vr_submit_ml(ev,I70a_b, I44_b,I67_b,invert,translate);
 
   // hmd=true outputs res_b, res_I70a_b
 
@@ -151,7 +157,7 @@ EXPORT void check_vr_compositor_init()
 class SubmitML : public MainLoopItem
 {
 public:
-  SubmitML(MainLoopItem *item, TextureID *left, TextureID *right, bool invert, bool translate) : item(item), left(left), right(right), invert(invert), translate(translate) {
+  SubmitML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *item, TextureID *left, TextureID *right, bool invert, bool translate) :  env(env),ev(ev),item(item), left(left), right(right), invert(invert), translate(translate) {
     firsttime = true;
   }
   virtual void execute(MainLoopEnv &e)
@@ -199,9 +205,17 @@ public:
       left->render(e);
       right->render(e);
       static int ii=0;
-      if (ii==0) { ii++;
+      //if (ii==0) { ii++;
       std::cout << "vr submit_frame" << std::endl;
+      //}
+      if (firsttime) {
+	ml = ev.blocker_api.vr_submit(ev,add_txid(env,left),add_txid(env,right));
+	firsttime = false;
       }
+      MainLoopItem *item_n = find_main_loop(env, ml);
+      item_n->execute(e);
+
+      
       emscripten_vr_submit_frame(current_display);
       
       //VRDisplayCapabilities cap;
@@ -247,6 +261,8 @@ public:
   }
   virtual int shader_id() { return item->shader_id(); }
 private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
   bool firsttime;
   MainLoopItem *item;
   TextureID *left;
@@ -257,13 +273,14 @@ private:
 #endif
   bool invert;
   bool translate;
+  GameApi::ML ml;
 };
-EXPORT GameApi::ML GameApi::BlockerApi::vr_submit_ml(ML ml, TXID left, TXID right, bool invert, bool translate)
+EXPORT GameApi::ML GameApi::BlockerApi::vr_submit_ml(EveryApi &ev, ML ml, TXID left, TXID right, bool invert, bool translate)
 {
   MainLoopItem *item = find_main_loop(e, ml);
   TextureID *left_eye = find_txid(e, left);
   TextureID *right_eye = find_txid(e, right);
-  return add_main_loop(e, new SubmitML(item, left_eye, right_eye, invert, translate));
+  return add_main_loop(e, new SubmitML(e,ev,item, left_eye, right_eye, invert, translate));
 }
 EXPORT GameApi::ML GameApi::BlockerApi::vr_submit(EveryApi &ev, TXID left, TXID right)
 {
@@ -512,6 +529,14 @@ struct Splitter_arg
 
 void choose_display()
 {
+}
+
+int vr_activated=0;
+
+extern "C" int activate_vr(int i)
+{
+    vr_activated=i;
+    return 0;
 }
 
 void requestPresentCallback(void *arg) {
