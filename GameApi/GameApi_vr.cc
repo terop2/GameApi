@@ -128,6 +128,7 @@ VRDisplayHandle current_display= 0;
 bool vr_vr_ready = false;
 void vr_cb(void *arg)
 {
+  std::cout << "OK: VR ready! (now it's possible to call other functions)" << std::endl;
   vr_vr_ready = true;
 }
 #endif
@@ -205,9 +206,9 @@ public:
       left->render(e);
       right->render(e);
       static int ii=0;
-      //if (ii==0) { ii++;
+      if (ii==0) { ii++;
       std::cout << "vr submit_frame" << std::endl;
-      //}
+      }
       if (firsttime) {
 	ml = ev.blocker_api.vr_submit(ev,add_txid(env,left),add_txid(env,right));
 	firsttime = false;
@@ -380,14 +381,14 @@ public:
   return m;
 }
 
-  int which_display()
-  {
+  //int which_display()
+  //{
     // 0 = standard screen
     // 1 = double standard screen
     // 2 = left eye
     // 3 = right eye
 
-  }
+  //}
   
   Matrix DefaultProjection(GameApi::EveryApi &ev)
   {
@@ -429,14 +430,14 @@ public:
   if (!vr_vr_ready ||current_display==NULL||current_display==-1) { return DefaultProjection(ev); }
   VRFrameData d;
   int val = emscripten_vr_get_frame_data(current_display, &d);
-  if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl; }
+  if (!val) { std::cout << "FAIL: vr_get_frame_data invalid handle" << std::endl; }
   Matrix m;
   if (!eye) {
     for(int j=0;j<4;j++)
       for(int i=0;i<4;i++) m.matrix[i+j*4] = d.leftProjectionMatrix[j+i*4];
   } else {
-	for(int j=0;j<4;j++)
-    for(int i=0;i<4;i++) m.matrix[i+j*4] = d.rightProjectionMatrix[j+i*4];
+    for(int j=0;j<4;j++)
+      for(int i=0;i<4;i++) m.matrix[i+j*4] = d.rightProjectionMatrix[j+i*4];
   }
   m.is_identity = false;
 #endif
@@ -546,9 +547,9 @@ void requestPresentCallback(void *arg) {
     {
       if (!emscripten_vr_set_display_render_loop_arg(current_display, &splitter_iter2, (void*)spl))
 	{
-	  std::cout << "set_display render loop failed (in request present)" << std::endl;
+	  std::cout << "FAIL: set_display render loop failed (in request present)" << std::endl;
 	} else {
-	std::cout << "set_display render loop success." << std::endl;
+	std::cout << "OK: set_display render loop success." << std::endl;
       }
     }
 
@@ -561,6 +562,7 @@ void onClick(void *data)
   } else {
 
   std::cout << "onclick trying request present!" << std::endl;
+  std::cout << "TODO: canvas=NULL, should check if removing 2nd canvas from web page would fix it" << std::endl;
       VRLayerInit init = { NULL, VR_LAYER_DEFAULT_LEFT_BOUNDS, VR_LAYER_DEFAULT_RIGHT_BOUNDS };
     if (!emscripten_vr_request_present(current_display, &init, 1, requestPresentCallback, data)) {
       std::cout << "FAIL: request_present with default canvas failed." << std::endl;
@@ -724,6 +726,7 @@ public:
   virtual void set(int t) { }
   virtual int get() const
   {
+    // TODO: maybe this should use emscripten_vr_ready() && emscripten_vr_display_presenting(current_display) ?
 #ifdef VIRTUAL_REALITY
 #ifndef EMSCRIPTEN    
     if (!hmd) return 0; else return 1;
