@@ -38,9 +38,9 @@ CFiles=	Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
         GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \
         GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
         GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc \
-	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc
+	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc Main.cc GameApi_vr.cc
 
-CFiles2 = Main.cc
+CFiles2 = 
 
 Subdirs = 
 #module1
