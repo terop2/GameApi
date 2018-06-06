@@ -706,19 +706,23 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   e2.type = event.type;
   e2.ch = event.key.keysym.sym;
   if (event.type==256) { exit(0); }
-
+  
+#ifndef __APPLE__
   if (event.type==SDL_FINGERMOTION||event.type==SDL_FINGERDOWN||event.type==SDL_FINGERUP)
     {
       SDL_TouchFingerEvent *ptr = &event.tfinger;
       x = int(ptr->x * get_screen_width());
       y = int(ptr->y * get_screen_height());
     }
+#endif
+
   if (event.type==SDL_MOUSEWHEEL)
     {
       SDL_MouseWheelEvent *ptr = &event.wheel;
       mouse_wheel_y = ptr->y;
     }
 
+    
   int id = 0;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   if (env->cursor_pos_point_id.id==-1)
@@ -734,6 +738,11 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   env->pt[id].y = y;
   e2.cursor_pos.id = id;
   e2.button = -1;
+
+#ifdef __APPLE__
+  SDL_Keymod mod = SDL_GetModState();
+  if ((val & SDL_BUTTON(1))&&(mod & KMOD_CTRL)) { e2.button = 2; } else
+#endif  	  
   if (val & SDL_BUTTON(1)) { e2.button = 0; }
   if (val & SDL_BUTTON(2)) { e2.button = 1; }
   if (val & SDL_BUTTON(3)) { e2.button = 2; }
