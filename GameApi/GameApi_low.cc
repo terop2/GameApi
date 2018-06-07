@@ -42,8 +42,8 @@
 #undef glBindAttribLocation
 #undef glActiveTexture
 #undef glClientActiveTexture
-#undef glTexStorage3d
-#undef glTexSubImage3d
+#undef glTexStorage3D
+#undef glTexSubImage3D
 #undef glGenBuffers
 #undef glDeleteBuffers
 #undef glBindBuffer
@@ -148,15 +148,15 @@ public:
   }
   virtual void glTexStorage3D(int arr, int a, int flag, int w, int h, int layer_count) { 
 #ifdef GLEW_HACK
-#define glTexStorage3d GLEW_GET_FUN(__glewTexStorage3D)
+#define glTexStorage3D GLEW_GET_FUN(__glewTexStorage3D)
 #endif
-::glTexStorage3d(arr,a,flag,w,h,layer_count); 
+::glTexStorage3D(arr,a,flag,w,h,layer_count); 
 }
   virtual void glTexSubImage3D(int arr, int a,int b,int c,int d,int e,int f, int g, int rgba, int unsig_byte, void *buffer) { 
 #ifdef GLEW_HACK
-#define glTexSubImage3d GLEW_GET_FUN(__glewTexSubImage3D)
+#define glTexSubImage3D GLEW_GET_FUN(__glewTexSubImage3D)
 #endif
-::glTexSubImage3d(arr,a,b,c,d,e,f,g,rgba,unsig_byte,buffer); 
+::glTexSubImage3D(arr,a,b,c,d,e,f,g,rgba,unsig_byte,buffer); 
   }
   virtual void glGetTexLevelParameteriv(int a, int b, int w, int *ptr) { glGetTexLevelParameteriv(a,b,w,ptr); }
   virtual void glGetTexImage(int a, int b, int rgba, int unsign_byte, void *ptr) { ::glGetTexImage(a,b,rgba,unsign_byte,ptr); }
