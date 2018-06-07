@@ -65,7 +65,7 @@ Sprite *sprite_from_handle2(GameApi::Env &e, SpritePriv &env, BitmapHandle *hand
 	{
 	  delete rend;
 	}
-      env2->renders2[handle->id] = new ArrayRender;
+      env2->renders2[handle->id] = new ArrayRender(g_low);
       //env2->renders2[handle->id] = new ArrayRender;
       return ss;
     }
@@ -93,7 +93,7 @@ Sprite *sprite_from_handle2(GameApi::Env &e, SpritePriv &env, BitmapHandle *hand
 	{
 	  delete rend;
 	}
-      env2->renders2[handle->id] = new ArrayRender;
+      env2->renders2[handle->id] = new ArrayRender(g_low);
       //env2->renders2[handle->id] = new ArrayRender;
       return ss;
     }
@@ -124,7 +124,7 @@ Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handl
       ss->update_cache();
       env.sprites[handle->id] = ss;
       EnvImpl *env2 = ::EnvImpl::Environment(&e);
-      env2->renders[handle->id] = new ArrayRender;
+      env2->renders[handle->id] = new ArrayRender(g_low);
       //env2->renders2[handle->id] = new ArrayRender;
       return ss;
     }
@@ -147,7 +147,7 @@ Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handl
       Sprite *ss = new BitmapSprite(*chandle->bm, p);
       env.sprites[handle->id] = ss;
       EnvImpl *env2 = ::EnvImpl::Environment(&e);
-      env2->renders[handle->id] = new ArrayRender;
+      env2->renders[handle->id] = new ArrayRender(g_low);
       //env2->renders2[handle->id] = new ArrayRender;
       return ss;
     }
@@ -443,7 +443,7 @@ EXPORT void GameApi::SpriteApi::update_vertex_array(VA va, BM bm)
   PrepareSpriteToVA(*sprite, *s);
   TexturePrepare(*sprite, *env->renders2[bm.id]);
   s->texture_id = bm.id;
-  RenderVertexArray *arr = new RenderVertexArray(*s); 
+  RenderVertexArray *arr = new RenderVertexArray(g_low, *s); 
   arr->prepare(0);
   //s->free_memory();
   add_update_vertex_array(e, va, s, arr);
@@ -467,7 +467,7 @@ EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
   PrepareSpriteToVA(*sprite, *s);
   TexturePrepare(*sprite, *env->renders2[bm.id]);
   s->texture_id = bm.id;
-  RenderVertexArray *arr = new RenderVertexArray(*s); 
+  RenderVertexArray *arr = new RenderVertexArray(g_low, *s); 
   arr->prepare(0);
   //s->free_memory();
   return add_vertex_array(e, s, arr); 

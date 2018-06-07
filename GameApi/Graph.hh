@@ -6132,7 +6132,7 @@ private:
 class GridEffect2 : public FrameAnimPlugins
 {
 public:
-  GridEffect2(Render *rend) : FrameAnimPlugins(rend), scr(1024, 768, 500*10, 500*11, 1.0) { }
+  GridEffect2(Render *rend2) : FrameAnimPlugins(rend2), rend(g_low), scr(1024, 768, 500*10, 500*11, 1.0) { }
   void Init();
   bool Frame(float time);
   virtual float RotSpeed() const { return 0.0; }

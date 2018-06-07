@@ -6,8 +6,11 @@
 #include <map>
 #include "VectorTools.hh"
 #include "Effect.hh"
+//#include "GameApi_low.hh"
 #include <pthread.h>
 
+struct LowApi;
+extern LowApi *g_low;
 
 class VertexArraySet
 {
@@ -195,7 +198,7 @@ Counts CalcCounts(FaceCollection *coll, int start, int end);
 class RenderVertexArray
 {
 public:
-  RenderVertexArray(VertexArraySet &s) : s(s),nodelete(false) { }
+  RenderVertexArray(LowApi *g_low, VertexArraySet &s) : g_low(g_low), s(s),nodelete(false) { }
   void prepare(int id, bool isnull=false, int tri_count=-1, int quad_count=-1, int poly_count=-1);
   void update(int id);
   void update_tri(int id, int buffer_id, int start, int end);
@@ -208,6 +211,7 @@ public:
   void del();
   ~RenderVertexArray() { if (!nodelete) del(); }
 private:
+  LowApi *g_low;
   VertexArraySet &s;
   unsigned int buffers[5];
   unsigned int vao[3];
@@ -450,7 +454,7 @@ public:
     RenderVertexArray_bufferids ids;
     r.fetch_buffers(ids);
     VertexArraySet * vs = set;
-    RenderVertexArray rend(*vs);
+    RenderVertexArray rend(g_low, *vs);
     rend.update_buffers(ids);
     rend.set_no_delete(true);
     rend.update_tri(rend_id, buf, start,end);

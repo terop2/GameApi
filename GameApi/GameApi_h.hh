@@ -103,6 +103,7 @@ struct SpritePriv
 
 struct GridPriv
 {
+  GridPriv() : rend(g_low) { }
   ArrayRender rend;
   Bitmap<Color> *blocks;
   std::map<int, int> cellsx;
