@@ -3,7 +3,9 @@
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif
- 
+
+#include "GameApi_low.hh"
+
 
 EXPORT GameApi::PolygonApi::PolygonApi(GameApi::Env &e) : e(e)
 {
@@ -6237,19 +6239,19 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
   RenderVertexArray *rend = find_vertex_array_render(e, va);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   if (s->texture_many_ids.size()!=0) {
-    glEnable(GL_TEXTURE_2D);
+    g_low->ogl->glEnable(GL_TEXTURE_2D);
     int ss = s->texture_many_ids.size();
     for(int i=0;i<ss;i++)
       {
-	glActiveTexture(GL_TEXTURE0+i);
+	g_low->ogl->glActiveTexture(GL_TEXTURE0+i);
 #ifndef EMSCRIPTEN
-        glClientActiveTexture(GL_TEXTURE0+i);
+        g_low->ogl->glClientActiveTexture(GL_TEXTURE0+i);
 #endif
-	glBindTexture(GL_TEXTURE_2D, s->texture_many_ids[i]);
+	g_low->ogl->glBindTexture(GL_TEXTURE_2D, s->texture_many_ids[i]);
       }
       rend->render(0);
 
-      glDisable(GL_TEXTURE_2D);
+      g_low->ogl->glDisable(GL_TEXTURE_2D);
 
   } 
   else if (s->texture_id!=-1 && s->texture_id<SPECIAL_TEX_ID)
@@ -6262,45 +6264,45 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID_CUBEMAP && s->texture_id<SPECIAL_TEX_ID_CUBEMAP_END)
     {
-      glEnable(GL_TEXTURE_CUBE_MAP);
+      g_low->ogl->glEnable(GL_TEXTURE_CUBE_MAP);
 #ifndef EMSCRIPTEN
-      glClientActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
 #endif
-      glActiveTexture(GL_TEXTURE0+0);
-      glBindTexture(GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
+      g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
       rend->render(0);
 
-      glDisable(GL_TEXTURE_CUBE_MAP);
+      g_low->ogl->glDisable(GL_TEXTURE_CUBE_MAP);
 
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
     {
-      glEnable(GL_TEXTURE_2D);
+      g_low->ogl->glEnable(GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
-      glClientActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
 #endif
-      glActiveTexture(GL_TEXTURE0+0);
-      glBindTexture(GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+      g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
       rend->render(0);
 
-      glDisable(GL_TEXTURE_2D);
+      g_low->ogl->glDisable(GL_TEXTURE_2D);
     }
   else if (s->texture_id!=-1)
     {
-      glEnable(GL_TEXTURE_2D_ARRAY);
+      g_low->ogl->glEnable(GL_TEXTURE_2D_ARRAY);
 #ifndef EMSCRIPTEN
-      glClientActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
 #endif
-      glActiveTexture(GL_TEXTURE0+0);
-      glBindTexture(GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
+      g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
       rend->render(0);
-      glDisable(GL_TEXTURE_2D_ARRAY);
+      g_low->ogl->glDisable(GL_TEXTURE_2D_ARRAY);
     }
   else
     {
@@ -6323,19 +6325,19 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_dyn(VA va, DC dc, MainLoopE
   rend->update(1);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   if (s->texture_many_ids.size()!=0) {
-    glEnable(GL_TEXTURE_2D);
+    g_low->ogl->glEnable(GL_TEXTURE_2D);
     int ss = s->texture_many_ids.size();
     for(int i=0;i<ss;i++)
       {
-	glActiveTexture(GL_TEXTURE0+i);
+	g_low->ogl->glActiveTexture(GL_TEXTURE0+i);
 #ifndef EMSCRIPTEN
-        glClientActiveTexture(GL_TEXTURE0+i);
+        g_low->ogl->glClientActiveTexture(GL_TEXTURE0+i);
 #endif
-	glBindTexture(GL_TEXTURE_2D, s->texture_many_ids[i]);
+	g_low->ogl->glBindTexture(GL_TEXTURE_2D, s->texture_many_ids[i]);
       }
       rend->render(1);
 
-      glDisable(GL_TEXTURE_2D);
+      g_low->ogl->glDisable(GL_TEXTURE_2D);
 
   } 
   else if (s->texture_id!=-1 && s->texture_id<SPECIAL_TEX_ID)
@@ -6348,46 +6350,46 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_dyn(VA va, DC dc, MainLoopE
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID_CUBEMAP && s->texture_id<SPECIAL_TEX_ID_CUBEMAP_END)
     {
-      glEnable(GL_TEXTURE_CUBE_MAP);
+      g_low->ogl->glEnable(GL_TEXTURE_CUBE_MAP);
 #ifndef EMSCRIPTEN
-      glClientActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
 #endif
-      glActiveTexture(GL_TEXTURE0+0);
-      glBindTexture(GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
+      g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
       rend->render(1);
 
-      glDisable(GL_TEXTURE_CUBE_MAP);
+      g_low->ogl->glDisable(GL_TEXTURE_CUBE_MAP);
 
     }
 
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
     {
-      glEnable(GL_TEXTURE_2D);
+      g_low->ogl->glEnable(GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
-      glClientActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
 #endif
-      glActiveTexture(GL_TEXTURE0+0);
-      glBindTexture(GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+      g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
       rend->render(1);
 
-      glDisable(GL_TEXTURE_2D);
+      g_low->ogl->glDisable(GL_TEXTURE_2D);
     }
   else if (s->texture_id!=-1)
     {
-      glEnable(GL_TEXTURE_2D_ARRAY);
+      g_low->ogl->glEnable(GL_TEXTURE_2D_ARRAY);
 #ifndef EMSCRIPTEN
-      glClientActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
 #endif
-      glActiveTexture(GL_TEXTURE0+0);
-      glBindTexture(GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
+      g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
       rend->render(1);
-      glDisable(GL_TEXTURE_2D_ARRAY);
+      g_low->ogl->glDisable(GL_TEXTURE_2D_ARRAY);
     }
   else
     {
@@ -6421,19 +6423,19 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
 
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   if (s->texture_many_ids.size()!=0) {
-    glEnable(GL_TEXTURE_2D);
+    g_low->ogl->glEnable(GL_TEXTURE_2D);
     int ss = s->texture_many_ids.size();
     for(int i=0;i<ss;i++)
       {
-	glActiveTexture(GL_TEXTURE0+i);
+	g_low->ogl->glActiveTexture(GL_TEXTURE0+i);
 #ifndef EMSCRIPTEN
-        glClientActiveTexture(GL_TEXTURE0+i);
+        g_low->ogl->glClientActiveTexture(GL_TEXTURE0+i);
 #endif
-	glBindTexture(GL_TEXTURE_2D, s->texture_many_ids[i]);
+	g_low->ogl->glBindTexture(GL_TEXTURE_2D, s->texture_many_ids[i]);
       }
       rend->render(0);
 
-      glDisable(GL_TEXTURE_2D);
+      g_low->ogl->glDisable(GL_TEXTURE_2D);
 
   } 
   else
@@ -6447,45 +6449,45 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID_CUBEMAP && s->texture_id<SPECIAL_TEX_ID_CUBEMAP_END)
     {
-      glEnable(GL_TEXTURE_CUBE_MAP);
+      g_low->ogl->glEnable(GL_TEXTURE_CUBE_MAP);
 #ifndef EMSCRIPTEN
-      glClientActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
 #endif
-      glActiveTexture(GL_TEXTURE0+0);
-      glBindTexture(GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
+      g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
       rend->render(0);
 
-      glDisable(GL_TEXTURE_CUBE_MAP);
+      g_low->ogl->glDisable(GL_TEXTURE_CUBE_MAP);
 
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
     {
-      glEnable(GL_TEXTURE_2D);
+      g_low->ogl->glEnable(GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
-      glClientActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
 #endif
-      glActiveTexture(GL_TEXTURE0+0);
-      glBindTexture(GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+      g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
       rend->render(0);
 
-      glDisable(GL_TEXTURE_2D);
+      g_low->ogl->glDisable(GL_TEXTURE_2D);
     }
   else if (s->texture_id!=-1)
     {
-      glEnable(GL_TEXTURE_2D_ARRAY);
+      g_low->ogl->glEnable(GL_TEXTURE_2D_ARRAY);
 #ifndef EMSCRIPTEN
-      glClientActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
 #endif
-      glActiveTexture(GL_TEXTURE0+0);
-      glBindTexture(GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
+      g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
       rend->render(0);
-      glDisable(GL_TEXTURE_2D_ARRAY);
+      g_low->ogl->glDisable(GL_TEXTURE_2D_ARRAY);
     }
   else
     {
@@ -6500,15 +6502,15 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
   PointArray3 *arr = find_point_array3(e, pta);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   if (s->texture_many_ids.size()!=0) {
-    glEnable(GL_TEXTURE_2D);
+    g_low->ogl->glEnable(GL_TEXTURE_2D);
     int ss = s->texture_many_ids.size();
     for(int i=0;i<ss;i++)
       {
-	glActiveTexture(GL_TEXTURE0+i);
+	g_low->ogl->glActiveTexture(GL_TEXTURE0+i);
 #ifndef EMSCRIPTEN
-        glClientActiveTexture(GL_TEXTURE0+i);
+        g_low->ogl->glClientActiveTexture(GL_TEXTURE0+i);
 #endif
-	glBindTexture(GL_TEXTURE_2D, s->texture_many_ids[i]);
+	g_low->ogl->glBindTexture(GL_TEXTURE_2D, s->texture_many_ids[i]);
       }
       int hide_num = 0;
       if (hide_n != -1) { hide_num = hide_n; }
@@ -6517,7 +6519,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       show_num = std::min(arr->numpoints, show_num);
       rend->render_instanced(0, (Point*)arr->array, show_num);
 
-      glDisable(GL_TEXTURE_2D);
+      g_low->ogl->glDisable(GL_TEXTURE_2D);
 
   } 
   else if (s->texture_id!=-1 && s->texture_id<SPECIAL_TEX_ID)
@@ -6535,12 +6537,12 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
     {
-      glEnable(GL_TEXTURE_2D);
+      g_low->ogl->glEnable(GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
-      glClientActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
 #endif
-      glActiveTexture(GL_TEXTURE0+0);
-      glBindTexture(GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+      g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
@@ -6553,16 +6555,16 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       rend->render_instanced(0, (Point*)arr->array, show_num);
       //rend->render(0);
 
-      glDisable(GL_TEXTURE_2D);
+      g_low->ogl->glDisable(GL_TEXTURE_2D);
     }
   else if (s->texture_id!=-1)
     {
-      glEnable(GL_TEXTURE_2D_ARRAY);
+      g_low->ogl->glEnable(GL_TEXTURE_2D_ARRAY);
 #ifndef EMSCRIPTEN
-      glClientActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
 #endif
-      glActiveTexture(GL_TEXTURE0+0);
-      glBindTexture(GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
+      g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
 
       int hide_num = 0;
       if (hide_n != -1) { hide_num = hide_n; }
@@ -6571,7 +6573,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       show_num = std::min(arr->numpoints, show_num);
 
       rend->render_instanced(0, (Point*)arr->array, show_num);
-      glDisable(GL_TEXTURE_2D_ARRAY);
+      g_low->ogl->glDisable(GL_TEXTURE_2D_ARRAY);
     }
   else
     {
