@@ -369,9 +369,14 @@ c  for(int i=0;i<size1&&!exit2;i+=100)
 }
 #endif
 
+
+void initialize_low(int flags);
+
 IMPORT void check_vr_compositor_init();
 SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize)
 {
+  initialize_low(0);
+
 #ifdef SDL2_USED
   int screenx = scr_x, screeny = scr_y;
 

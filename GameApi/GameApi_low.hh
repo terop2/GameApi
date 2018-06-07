@@ -1,11 +1,73 @@
 
 // DO NOT PUT ANY INCLUDES HERE.
 
+
+#undef glActiveTexture
+#undef glClientActiveTexture
+#undef glTexStorage3d
+#undef glTexSubImage3d
+#undef glGenBuffers
+#undef glDeleteBuffers
+#undef glBindBuffer
+#undef glBufferData
+#undef glBufferSubData
+#undef glVertexAttribPointer
+#undef glVertexAttribIPointer
+#undef glVertexAttribDivisor
+#undef glGenVertexArrays
+#undef glDeleteVertexArrays
+#undef glBindVertexArray
+#undef glEnableVertexAttribArray
+#undef glDisableVertexAttribArray
+#undef glTexStorate3d
+#undef glTexSubImage3d
+#undef glDrawArraysInstanced
+#undef glGenFramebuffers
+#undef glBindFramebuffer
+#undef glBindRenderbuffer
+#undef glFramebufferRenderbuffer
+#undef glCreateShader
+#undef glShaderSource
+#undef glCompileShader
+#undef glGetShaderInfoLog
+#undef glGetShaderiv
+#undef glDeleteShader
+#undef glCreaeProgram
+#undef glDeleteProgram
+#undef glAttachhader
+#undef glDetachShader
+#undef glLinkProgram
+#undef glUseProgram
+#undef glGetProgramInfoLog
+#undef glBindFragDataLocation
+#undef glProgramParameteriEXT
+#undef glGetUniformLocation
+#undef glUniform1f
+#undef glUniform2f
+#undef glUniform3f
+#undef glUniform4f
+#undef glRenderbufferStorage
+#undef glShaderSource
+#undef glGetShaderInfoLog
+#undef glCreateProgram
+#undef glAttachShader
+#undef glGetProgramInfoLog
+#undef glUniform1iv
+#undef glUniform1fv
+#undef glUniformMatrix4fv
+#undef glUniform3fv
+#undef glTexStorage3D
+#undef glTexSubImage3D
+
+#undef Mix_PlayChannel
+
+
 class OpenglLowApi
 {
 public:
   virtual void init()=0;
   virtual void cleanup()=0;
+
   virtual void glColor4ub(int r, int g, int b, int a)=0;
   virtual void glColor4f(float r, float g, float b, float a)=0;
   virtual void glClearColor(float r, float g, float b, float a)=0;
@@ -27,17 +89,17 @@ public:
   virtual void glViewport(int x, int y, int w, int h)=0;
 
   // textures
-  virtual void glGenTextures(int val, int *tex)=0;
-  virtual void glDeleteTextures(int val, int *tex)=0;
+  virtual void glGenTextures(int val, unsigned int *tex)=0;
+  virtual void glDeleteTextures(int val, const unsigned int *tex)=0;
   virtual void glBindTexture(int ID, int tex)=0;
   virtual void glTexImage2D(int ID, int, int,int,int, int, int, int, void *ptr)=0;
-  virtual void glCopyTexImage2D(int ID, int,int,int,int, int,int, void* ptr)=0;
+  virtual void glCopyTexImage2D(int ID, int,int,int,int, int,int, int ptr)=0;
   virtual void glTexParameteri(int ID, int,int)=0;
   virtual void glHint(int hint, int value)=0;
   virtual void glActiveTexture(int a)=0;
   virtual void glClientActiveTexture(int a)=0;
-  virtual void glTexStorage3d(int arr, int, int flag, int w, int h, int layer_count)=0;
-  virtual void glTexSubImage3d(int arr, int,int,int,int,int,int, int, int rgba, int unsig_byte, void *buffer)=0;
+  virtual void glTexStorage3D(int arr, int, int flag, int w, int h, int layer_count)=0;
+  virtual void glTexSubImage3D(int arr, int,int,int,int,int,int, int, int rgba, int unsig_byte, void *buffer)=0;
   virtual void glGetTexLevelParameteriv(int a, int, int w, int *ptr)=0;
   virtual void glGetTexImage(int a, int, int rgba, int unsign_byte, void *ptr)=0;
   virtual void glReadBuffer(int a)=0;
@@ -50,15 +112,16 @@ public:
   virtual void glScissor(float x, float y, float w, float h)=0;
 
   // vertex arrays
-  virtual void glGenBuffers(int i, int *buffers)=0;
-  virtual void glDeleteBuffers(int count, int *buffers)=0;
-  virtual void glBindBufer(int a, void *data)=0;
-  virtual void glBufferData(int a, int size, void *ptr, int static_draw)=0;
-  virtual void glBufferSubData(int a, int, int, void*)=0;
-  virtual void glVertexAttribPointer(int, int, int gl_float, int boolean, int, void *ptr)=0;
+  virtual void glGenBuffers(int i, unsigned int *buffers)=0;
+  virtual void glDeleteBuffers(int count, const unsigned int *buffers)=0;
+  virtual void glBindBuffer(int a, unsigned int data)=0;
+  virtual void glBufferData(int a, int size, const void *ptr, int static_draw)=0;
+  virtual void glBufferSubData(int a, int, int, const void*)=0;
+  virtual void glVertexAttribPointer(int, int, int gl_float, int boolean, int, const void *ptr)=0;
+  virtual void glVertexAttribIPointer(int, int, int gl_float, int boolean, const void *ptr)=0;
   virtual void glVertexAttribDivisor(int, int)=0;
-  virtual void glGenVertexArrays(int i, int *arr)=0;
-  virtual void glDeleteVertexArrays(int count, int *vao)=0;
+  virtual void glGenVertexArrays(int i, unsigned int *arr)=0;
+  virtual void glDeleteVertexArrays(int count, unsigned int *vao)=0;
   virtual void glBindVertexArray(int vao)=0;
   virtual void glEnableVertexAttribArray(int a)=0;
   virtual void glDisableVertexAttribArray(int a)=0;
@@ -69,20 +132,20 @@ public:
   virtual void glReadPixels(int x, int y, int w, int h, int rgba, int mode, void *ptr)=0;
   
   // fbo
-  virtual void glGenFramebuffers(int i, int *fbo_id)=0;
-  virtual void glGenRenderBuffers(int i, int *rbo_id)=0;
-  virtual void glDeleteRenderBuffers(int i, int *rbo)=0;
-  virtual void glDeleteFrameBuffers(int i, int *fbo)=0;
+  virtual void glGenFramebuffers(int i, unsigned int *fbo_id)=0;
+  virtual void glGenRenderBuffers(int i, unsigned int *rbo_id)=0;
+  virtual void glDeleteRenderBuffers(int i, unsigned int *rbo)=0;
+  virtual void glDeleteFrameBuffers(int i, unsigned int *fbo)=0;
   virtual void glBindFramebuffer(int a, int fbo_id)=0;
   virtual void glBindRenderbuffer(int a, int fbo_id)=0;
   virtual void glRenderbufferStorage(int a, int d, int sx, int sy)=0;
-  virtual void glFramebufferRenderbuffer(int a, int d, int r, void *tex)=0;
+  virtual void glFramebufferRenderbuffer(int a, int d, int r, unsigned int tex)=0;
   
   // shaders
   virtual void glCreateShader(int shader)=0;
-  virtual void glShaderSource(int h, int c, char **strings, int *lengths)=0;
+  virtual void glShaderSource(int h, int c, const char **strings, int *lengths)=0;
   virtual void glCompileShader(int h)=0;
-  virtual void glGetShaderInfoLog(int h, int val, int *length, char *buf)=0;
+  virtual void glGetShaderInfoLog(unsigned int h, int val, int *length, char *buf)=0;
   virtual void glGetShaderiv(int handle, int gl_compile_status, int *ptr)=0;
   virtual void glDeleteShader(int h)=0;
   
@@ -93,7 +156,7 @@ public:
   virtual void glDetachShader(int p, int h)=0;
   virtual void glLinkProgram(int p)=0;
   virtual void glUseProgram(int p)=0;
-  virtual void glGetProgramInfoLog(int p, int num, int len, char *buf)=0;
+  virtual void glGetProgramInfoLog(unsigned int p, int num, int *len, char *buf)=0;
   virtual void glBindFragDataLocation(int p, int num, char *data)=0;
   virtual void glBindAttribLocation(int p, int num, char *data)=0;
   virtual void glProgramParameteriEXT(int p, int geom, int inputtype)=0;
@@ -108,7 +171,6 @@ public:
   virtual void glUniform1fv(int loc, int count, float *array)=0;
   virtual void glUniformMatrix4fv(int loc, int count, int boolean, float *matrix)=0;
   virtual void glUniform3fv(int loc, int count, float *arr)=0;
-  virtual void glBindAttribLocation(int p, int index, char *data)=0;
   
 
 
@@ -123,15 +185,21 @@ public:
 
 class FontLowApi
 {
+  virtual void init()=0;
+  virtual void cleanup()=0;
 };
 
 class OpenVRLowApi
 {
+  virtual void init()=0;
+  virtual void cleanup()=0;
 };
 
 class EmscriptenLowApi
 {
 public:
+  virtual void init()=0;
+  virtual void cleanup()=0;
   virtual void emscripten_set_main_loop_arg(void (*)(void*), void*, int, int)=0;
   virtual void emscripten_async_wget_data(void *buf2, void *data, void (*cb_sucess)(void*), void (*cb_fail)(void*))=0;
   virtual bool emscripten_has_threading_support()=0;
@@ -142,6 +210,8 @@ public:
 };
 class EmscriptenVRLowApi
 {
+  virtual void init()=0;
+  virtual void cleanup()=0;
   virtual void emscripten_vr_init(void (*)(void*), void*)=0;
   virtual void emscripten_vr_submit_frame(int disp)=0;
   virtual void emscripten_vr_get_frame_data(int disp, void *data)=0;
@@ -161,15 +231,22 @@ class EmscriptenVRLowApi
 
 class FileSystemLowApi
 {
-  void popen(char *name, char *flags);
+  virtual void init()=0;
+  virtual void cleanup()=0;
+  virtual void popen(char *name, char *flags);
 };
 
 class ImageLoadLowApi
 {
+  virtual void init()=0;
+  virtual void cleanup()=0;
+
 };
 
 class SDLLowApi
 {
+  virtual void init()=0;
+  virtual void cleanup()=0;
   virtual void SDL_Init(int flags)=0;
   virtual void SDL_GL_SetAttribute(int flag, int val)=0;
   virtual void* SDL_GL_GetProcAddress(char *name)=0;
@@ -197,6 +274,8 @@ class SDLLowApi
 class SDLMixerLowApi
 {
 public:
+  virtual void init()=0;
+  virtual void cleanup()=0;
   virtual void* Mix_LoadWav_RW(void *buf, int s)=0;
   virtual int Mix_OpenAudio(int rate, int flags, int val, int hup)=0;
   virtual int Mix_PlayChannel(int channel, void *mix_chunk, int val)=0;
@@ -208,22 +287,25 @@ public:
 
 class SDLImageLowApi
 {
+  virtual void init()=0;
+  virtual void cleanup()=0;
 };
 
 struct LowApi
 {
+  LowApi() : ogl(0), fnt(0), ems(0), fs(0), img(0), sdl(0), sdl_image(0), ovr(0), ems_vr(0) { }
   OpenglLowApi *ogl;
   FontLowApi *fnt;
-  OpenVRLowApi *ovr;
   EmscriptenLowApi *ems;
-  EmscriptenVRLowApi *ems_vr;
   FileSystemLowApi *fs;
   ImageLoadLowApi *img;
   SDLLowApi *sdl;
   SDLImageLowApi *sdl_image;
+  OpenVRLowApi *ovr;
+  EmscriptenVRLowApi *ems_vr;
 };
 
-LowApi *g_low;
+extern LowApi *g_low;
 
 enum { EStandard, EWeb };
 void initialize_low(int flags);
