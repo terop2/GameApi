@@ -60,6 +60,7 @@
 #undef glUniform3fv
 #undef glTexStorage3D
 #undef glTexSubImage3D
+#undef glGetAttribLocation
 
 #undef Mix_PlayChannel
 
@@ -70,6 +71,8 @@ public:
   virtual void init()=0;
   virtual void cleanup()=0;
 
+  virtual int glGetError()=0;
+  
   virtual void glColor4ub(int r, int g, int b, int a)=0;
   virtual void glColor4f(float r, float g, float b, float a)=0;
   virtual void glClearColor(float r, float g, float b, float a)=0;
@@ -144,7 +147,7 @@ public:
   virtual void glFramebufferRenderbuffer(int a, int d, int r, unsigned int tex)=0;
   
   // shaders
-  virtual void glCreateShader(int shader)=0;
+  virtual unsigned int glCreateShader(int shader)=0;
   virtual void glShaderSource(int h, int c, const char **strings, int *lengths)=0;
   virtual void glCompileShader(int h)=0;
   virtual void glGetShaderInfoLog(unsigned int h, int val, int *length, char *buf)=0;
@@ -159,21 +162,23 @@ public:
   virtual void glLinkProgram(int p)=0;
   virtual void glUseProgram(int p)=0;
   virtual void glGetProgramInfoLog(unsigned int p, int num, int *len, char *buf)=0;
-  virtual void glBindFragDataLocation(int p, int num, char *data)=0;
-  virtual void glBindAttribLocation(int p, int num, char *data)=0;
+  virtual void glBindFragDataLocation(int p, int num, const char *data)=0;
+  virtual void glBindAttribLocation(int p, int num, const char *data)=0;
   virtual void glProgramParameteriEXT(int p, int geom, int inputtype)=0;
   
   // uniforms
-  virtual int glGetUniformLocation(int p, char *data)=0;
+  virtual int glGetUniformLocation(int p, const char *data)=0;
+  virtual int glGetAttribLocation(int p, const char *data)=0;
   virtual void glUniform1f(int loc, float val)=0;
+  virtual void glUniform1i(int loc, int val)=0;
   virtual void glUniform2f(int loc, float val, float val2)=0;
   virtual void glUniform3f(int loc, float val, float val2, float val3)=0;
   virtual void glUniform4f(int loc, float val, float val2, float val3, float val4)=0;
   virtual void glUniform1iv(int loc, int count, int *array)=0;
   virtual void glUniform1fv(int loc, int count, float *array)=0;
-  virtual void glUniformMatrix4fv(int loc, int count, int boolean, float *matrix)=0;
+  virtual void glUniformMatrix4fv(int loc, unsigned int count, int boolean, const float *matrix)=0;
   virtual void glUniform3fv(int loc, int count, float *arr)=0;
-  
+  virtual void glGetUniformfv(int p, int loc, float *arr)=0;
 
 
   // Old

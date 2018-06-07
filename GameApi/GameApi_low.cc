@@ -81,9 +81,11 @@
 #undef glProgramParameteriEXT
 #undef glGetUniformLocation
 #undef glUniform1f
+#undef glUniform1i
 #undef glUniform2f
 #undef glUniform3f
 #undef glUniform4f
+#undef glGetUniformfv
 #undef glRenderbufferStorage
 #undef glShaderSource
 #undef glGetShaderInfoLog
@@ -96,6 +98,7 @@
 #undef glUniform3fv
 #undef glTexStorage3D
 #undef glTexSubImage3D
+#undef glGetAttribLocation
 
 #undef Mix_PlayChannel
 
@@ -106,6 +109,8 @@ public:
   virtual void init() { }
   virtual void cleanup() { }
 
+  virtual int glGetError() { return ::glGetError(); }
+  
   virtual void glColor4ub(int r, int g, int b, int a) { ::glColor4ub(r,g,b,a); }
   virtual void glColor4f(float r, float g, float b, float a) { ::glColor4f(r,g,b,a); }
   virtual void glClearColor(float r, float g, float b, float a) { ::glClearColor(r,g,b,a); }
@@ -290,11 +295,11 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 ::glFramebufferRenderbuffer(a,d,r,tex); }
   
   // shaders
-  virtual void glCreateShader(int shader) { 
+  virtual unsigned int glCreateShader(int shader) { 
 #ifdef GLEW_HACK
 #define glCreateShader GLEW_GET_FUN(__glewCreateShader)
 #endif
-::glCreateShader(shader); }
+return ::glCreateShader(shader); }
   virtual void glShaderSource(int h, int c, const char **strings, int *lengths) { 
 #ifdef GLEW_HACK
 #define glShaderSource GLEW_GET_FUN(__glewShaderSource)
@@ -357,12 +362,12 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #define glGetProgramInfoLog GLEW_GET_FUN(__glewGetProgramInfoLog)
 #endif
 ::glGetProgramInfoLog(p,num,len,buf); }
-  virtual void glBindFragDataLocation(int p, int num, char *data) { 
+  virtual void glBindFragDataLocation(int p, int num, const char *data) { 
 #ifdef GLEW_HACK
 #define glBindFragDataLocation GLEW_GET_FUN(__glewBindFragDataLocation)
 #endif
 ::glBindFragDataLocation(p,num,data); }
-  virtual void glBindAttribLocation(int p, int num, char *data) { 
+  virtual void glBindAttribLocation(int p, int num, const char *data) { 
 #ifdef GLEW_HACK
 #define glBindAttribLocation GLEW_GET_FUN(__glewBindAttribLocation)
 #endif
@@ -375,16 +380,27 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 ::glProgramParameteriEXT(p,geom,inputtype); }
   
   // uniforms
-  virtual int glGetUniformLocation(int p, char *data) { 
+  virtual int glGetUniformLocation(int p, const char *data) { 
 #ifdef GLEW_HACK
 #define glGetUniformLocation GLEW_GET_FUN(__glewGetUniformLocation)
 #endif
 return ::glGetUniformLocation(p,data); }
-  virtual void glUniform1f(int loc, float val) { 
+virtual int glGetAttribLocation(int program, const char *data) {
+#ifdef GLEW_HACK
+#define glGetAttribLocation GLEW_GET_FUN(__glewGetAttribLocation)
+#endif
+return ::glGetAttribLocation(program, data);
+}
+virtual void glUniform1f(int loc, float val) { 
 #ifdef GLEW_HACK
 #define glUniform1f GLEW_GET_FUN(__glewUniform1f)
 #endif
 ::glUniform1f(loc,val); }
+virtual void glUniform1i(int loc, int val) { 
+#ifdef GLEW_HACK
+#define glUniform1i GLEW_GET_FUN(__glewUniform1i)
+#endif
+::glUniform1i(loc,val); }
   virtual void glUniform2f(int loc, float val, float val2) { 
 #ifdef GLEW_HACK
 #define glUniform2f GLEW_GET_FUN(__glewUniform2f)
@@ -410,7 +426,7 @@ return ::glGetUniformLocation(p,data); }
 #define glUniform1fv GLEW_GET_FUN(__glewUniform1fv)
 #endif
 ::glUniform1fv(loc,count,array); }
-  virtual void glUniformMatrix4fv(int loc, int count, int boolean, float *matrix) { 
+  virtual void glUniformMatrix4fv(int loc, unsigned int count, int boolean, const float *matrix) { 
 #ifdef GLEW_HACK
 #define glUniformMatrix4fv GLEW_GET_FUN(__glewUniformMatrix4fv)
 #endif
@@ -421,7 +437,11 @@ return ::glGetUniformLocation(p,data); }
 #endif
 ::glUniform3fv(loc,count,arr); }
   
-
+virtual void glGetUniformfv(int p, int loc, float *arr) {
+#ifdef GLEW_HACK
+#define glGetUniformfv GLEW_GET_FUN(__glewGetUniformfv)
+#endif
+  ::glGetUniformfv(p,loc,arr); }
 
   // Old
   virtual void glEnableClientState(int a) { ::glEnableClientState(a); }
