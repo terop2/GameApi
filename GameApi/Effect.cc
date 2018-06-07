@@ -2925,6 +2925,8 @@ void SDLRender::DestroyState(void *state)
 }
 
 
+#include "GameApi_low.hh"
+
 int ArrayRender::NumVertices(FaceCollection &coll)
 {
   return coll.NumFaces()*coll.NumPoints(0);
@@ -3070,7 +3072,7 @@ void ArrayRender::AllocTexture(int count)
 {
   int texcount = count;
   texture = new int[texcount];
-  glGenTextures(texcount, (GLuint*)&texture[0]);
+  g_low->ogl->glGenTextures(texcount, (GLuint*)&texture[0]);
 #if 0
   GLenum e = glGetError();
   if (e!=GL_NO_ERROR)
@@ -3148,7 +3150,7 @@ private:
 void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
 {
   //std::cout << "UpdateTexture " << num << std::endl;
-  glActiveTexture(GL_TEXTURE0+num);
+  g_low->ogl->glActiveTexture(GL_TEXTURE0+num);
 #if 0
   GLenum e = glGetError();
   if (e!=GL_NO_ERROR)
@@ -3195,12 +3197,12 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
   BufferRef ref2 = buf2.Buffer(); 
   int sizex = ref2.width;
   int sizey = ref2.height;
-  glBindTexture(GL_TEXTURE_2D, texture[num]);
+  g_low->ogl->glBindTexture(GL_TEXTURE_2D, texture[num]);
   //for(int i=0;i<sizex;i++)
   //  {
   //    std::cout << std::hex << ref2.buffer[i+5*ref2.ydelta] << std::dec << std::endl;
   //  }
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sizex, sizey, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref2.buffer);
+  g_low->ogl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sizex, sizey, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref2.buffer);
 #if 0
   GLenum e2 = glGetError();
   if (e2!=GL_NO_ERROR)
@@ -3208,23 +3210,23 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
       std::cout << "ArrayRender::UpdateTexture2 error!" << e2 << std::endl;
     }
 #endif
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+  g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
+  g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+  g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  g_low->ogl->glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
   
 }
 void ArrayRender::EnableTexture(int num)
 {
   //std::cout << "EnableTexture " << num << std::endl;
-  glActiveTexture(GL_TEXTURE0+num);
-  glBindTexture(GL_TEXTURE_2D, texture[num]);
-  glEnable(GL_TEXTURE_2D);
+  g_low->ogl->glActiveTexture(GL_TEXTURE0+num);
+  g_low->ogl->glBindTexture(GL_TEXTURE_2D, texture[num]);
+  g_low->ogl->glEnable(GL_TEXTURE_2D);
 }
 void ArrayRender::DisableTexture()
 {
-  glDisable(GL_TEXTURE_2D);
+  g_low->ogl->glDisable(GL_TEXTURE_2D);
 }
 void ArrayRender::UpdateColors(Mesh &mesh, MeshColors &color, std::pair<int,int> p, int frame)
 {
@@ -3349,7 +3351,7 @@ ArrayRender::~ArrayRender()
 {
   if (texture_count)
     {
-      glDeleteTextures(texture_count, (const GLuint*)&texture[0]);
+      g_low->ogl->glDeleteTextures(texture_count, (const GLuint*)&texture[0]);
     }
   delete [] q_vertex_array;
   delete [] q_normal_array;
@@ -3514,37 +3516,37 @@ void ArrayRender::Prepare()
     }
 
 #ifdef VAO
-  glGenVertexArrays(1,vao);
-  glBindVertexArray(vao[0]);
+  g_low->ogl->glGenVertexArrays(1,vao);
+  g_low->ogl->glBindVertexArray(vao[0]);
 #endif
-  glGenBuffers(5, &buffer[0]);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
-  glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_vertex_array, GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
-  glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_normal_array, GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
-  glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(unsigned char)*4, q_color_array, GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[3]);
-  glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*2, q_tex_coord_array, GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[4]);
-  glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_vertex_array, GL_STATIC_DRAW);
+  g_low->ogl->glGenBuffers(5, &buffer[0]);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+  g_low->ogl->glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_vertex_array, GL_STATIC_DRAW);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
+  g_low->ogl->glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_normal_array, GL_STATIC_DRAW);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
+  g_low->ogl->glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(unsigned char)*4, q_color_array, GL_STATIC_DRAW);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[3]);
+  g_low->ogl->glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*2, q_tex_coord_array, GL_STATIC_DRAW);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[4]);
+  g_low->ogl->glBufferData(GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_vertex_array, GL_STATIC_DRAW);
 
 #ifdef VAO
-  glEnableVertexAttribArray(0);
-  glEnableVertexAttribArray(1);
-  glEnableVertexAttribArray(2);
-  glEnableVertexAttribArray(3);
-  glEnableVertexAttribArray(4);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
-  glVertexAttribPointer(0,3, GL_FLOAT, GL_FALSE, 0,0);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
-  glVertexAttribPointer(1,3, GL_FLOAT, GL_FALSE, 0,0);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
-  glVertexAttribPointer(2,4, GL_UNSIGNED_BYTE, GL_FALSE, 0,0);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[3]);
-  glVertexAttribPointer(3,2, GL_FLOAT, GL_FALSE, 0,0);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[4]);
-  glVertexAttribPointer(4,3, GL_FLOAT, GL_FALSE, 0,0);
+  g_low->ogl->glEnableVertexAttribArray(0);
+  g_low->ogl->glEnableVertexAttribArray(1);
+  g_low->ogl->glEnableVertexAttribArray(2);
+  g_low->ogl->glEnableVertexAttribArray(3);
+  g_low->ogl->glEnableVertexAttribArray(4);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+  g_low->ogl->glVertexAttribPointer(0,3, GL_FLOAT, GL_FALSE, 0,0);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
+  g_low->ogl->glVertexAttribPointer(1,3, GL_FLOAT, GL_FALSE, 0,0);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
+  g_low->ogl->glVertexAttribPointer(2,4, GL_UNSIGNED_BYTE, GL_FALSE, 0,0);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[3]);
+  g_low->ogl->glVertexAttribPointer(3,2, GL_FLOAT, GL_FALSE, 0,0);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[4]);
+  g_low->ogl->glVertexAttribPointer(4,3, GL_FLOAT, GL_FALSE, 0,0);
 #endif
   delete [] q_vertex_array; q_vertex_array=0;
   delete [] q_normal_array; q_normal_array=0;
@@ -3555,31 +3557,31 @@ void ArrayRender::Prepare()
 void ArrayRender::Render(int vertexframe, int normalframe, int colorframe, int texcoordframe, int vertex_pos, int vertex_size)
 {
 #ifdef VAO
-  glBindVertexArray(vao[0]);
+  g_low->ogl->glBindVertexArray(vao[0]);
 #else
-  glEnableVertexAttribArray(0);
-  glEnableVertexAttribArray(1);
-  glEnableVertexAttribArray(2);
-  glEnableVertexAttribArray(3);
-  glEnableVertexAttribArray(4);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
-  glVertexAttribPointer(0,3, GL_FLOAT, GL_FALSE, 0,0);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
-  glVertexAttribPointer(1,3, GL_FLOAT, GL_FALSE, 0,0);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
-  glVertexAttribPointer(2,4, GL_UNSIGNED_BYTE, GL_FALSE, 0,0);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[3]);
-  glVertexAttribPointer(3,2, GL_FLOAT, GL_FALSE, 0,0);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[4]);
-  glVertexAttribPointer(4,3, GL_FLOAT, GL_FALSE, 0,0);
+  g_low->ogl->glEnableVertexAttribArray(0);
+  g_low->ogl->glEnableVertexAttribArray(1);
+  g_low->ogl->glEnableVertexAttribArray(2);
+  g_low->ogl->glEnableVertexAttribArray(3);
+  g_low->ogl->glEnableVertexAttribArray(4);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+  g_low->ogl->glVertexAttribPointer(0,3, GL_FLOAT, GL_FALSE, 0,0);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
+  g_low->ogl->glVertexAttribPointer(1,3, GL_FLOAT, GL_FALSE, 0,0);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
+  g_low->ogl->glVertexAttribPointer(2,4, GL_UNSIGNED_BYTE, GL_FALSE, 0,0);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[3]);
+  g_low->ogl->glVertexAttribPointer(3,2, GL_FLOAT, GL_FALSE, 0,0);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[4]);
+  g_low->ogl->glVertexAttribPointer(4,3, GL_FLOAT, GL_FALSE, 0,0);
 #endif
-  glDrawArrays(GL_TRIANGLES, 0, vertex_size*6/4);
+  g_low->ogl->glDrawArrays(GL_TRIANGLES, 0, vertex_size*6/4);
 #ifndef VAO
-  glDisableVertexAttribArray(0);
-  glDisableVertexAttribArray(1);
-  glDisableVertexAttribArray(2);
-  glDisableVertexAttribArray(3);
-  glDisableVertexAttribArray(4);
+  g_low->ogl->glDisableVertexAttribArray(0);
+  g_low->ogl->glDisableVertexAttribArray(1);
+  g_low->ogl->glDisableVertexAttribArray(2);
+  g_low->ogl->glDisableVertexAttribArray(3);
+  g_low->ogl->glDisableVertexAttribArray(4);
 #endif
 
 #if 0
@@ -3633,23 +3635,23 @@ void ArrayRender::Render(int vertexframe, int normalframe, int colorframe, int t
 
 void ArrayRender::Render(bool normal, bool color, bool texcoord, int vertex_pos, int vertex_size)
 {
-  glEnableVertexAttribArray(0);
-  glEnableVertexAttribArray(1);
-  glEnableVertexAttribArray(2);
-  glEnableVertexAttribArray(3);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
-  glVertexAttribPointer(0,3, GL_FLOAT, GL_FALSE, 0,0);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
-  glVertexAttribPointer(1,3, GL_FLOAT, GL_FALSE, 0,0);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
-  glVertexAttribPointer(2,4, GL_UNSIGNED_BYTE, GL_FALSE, 0,0);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer[3]);
-  glVertexAttribPointer(3,2, GL_FLOAT, GL_FALSE, 0,0);
-  glDrawArrays(GL_TRIANGLES, 0, q_num_vertices);
-  glDisableVertexAttribArray(0);
-  glDisableVertexAttribArray(1);
-  glDisableVertexAttribArray(2);
-  glDisableVertexAttribArray(3);
+  g_low->ogl->glEnableVertexAttribArray(0);
+  g_low->ogl->glEnableVertexAttribArray(1);
+  g_low->ogl->glEnableVertexAttribArray(2);
+  g_low->ogl->glEnableVertexAttribArray(3);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+  g_low->ogl->glVertexAttribPointer(0,3, GL_FLOAT, GL_FALSE, 0,0);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
+  g_low->ogl->glVertexAttribPointer(1,3, GL_FLOAT, GL_FALSE, 0,0);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
+  g_low->ogl->glVertexAttribPointer(2,4, GL_UNSIGNED_BYTE, GL_FALSE, 0,0);
+  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, buffer[3]);
+  g_low->ogl->glVertexAttribPointer(3,2, GL_FLOAT, GL_FALSE, 0,0);
+  g_low->ogl->glDrawArrays(GL_TRIANGLES, 0, q_num_vertices);
+  g_low->ogl->glDisableVertexAttribArray(0);
+  g_low->ogl->glDisableVertexAttribArray(1);
+  g_low->ogl->glDisableVertexAttribArray(2);
+  g_low->ogl->glDisableVertexAttribArray(3);
 
 #if 0
   // enabling
@@ -3783,7 +3785,7 @@ public:
   int SizeY() const { return sy; }
   bool Map(int x, int y) const { return true; }
 private:
-  int sx,sy;
+ int sx,sy;
 };
 
 class HeightMapPolygons : public BoxableFaceCollection
@@ -4743,8 +4745,8 @@ void RenderBuffers::SetupVertex(const Buffer<float> &buf, int pos)
 void RenderBuffers::SetupAttrib(int id, const Buffer<float> &buf, int pos)
 {
   attrib_ids.push_back(id);
-  glEnableVertexAttribArray(id);
-  glVertexAttribPointer(id, 1, GL_FLOAT, GL_FALSE, 0, buf.Array()+pos);  
+  g_low->ogl->glEnableVertexAttribArray(id);
+  g_low->ogl->glVertexAttribPointer(id, 1, GL_FLOAT, GL_FALSE, 0, buf.Array()+pos);  
 }
 
 void RenderBuffers::SetupNormal(const Buffer<float> &buf, int pos)
@@ -4806,7 +4808,7 @@ void RenderBuffers::DisableAll()
   int s = attrib_ids.size();
   for(int i=0;i<s;i++)
     {
-      glDisableVertexAttribArray(attrib_ids[i]);
+      g_low->ogl->glDisableVertexAttribArray(attrib_ids[i]);
     }
   vertex=false;
   normal=false;
