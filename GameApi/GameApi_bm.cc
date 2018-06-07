@@ -4,6 +4,7 @@
 #include <emscripten.h>
 #endif
 
+#include "GameApi_low.hh"
 
 template<class T>
 void ArrayDelete(T *ptr)
@@ -2777,18 +2778,18 @@ EXPORT GameApi::TXID GameApi::FloatBitmapApi::to_texid(FB fb)
       }
 
   GLuint id;
-  glGenTextures(1, &id); 
+  g_low->ogl->glGenTextures(1, &id); 
 #ifndef EMSCRIPTEN
-  glClientActiveTexture(GL_TEXTURE0+0);
+  g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
 #endif
-  glActiveTexture(GL_TEXTURE0+0);
-  glBindTexture(GL_TEXTURE_2D, id);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, sx,sy, 0, GL_RED, GL_FLOAT, array);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+  g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
+  g_low->ogl->glBindTexture(GL_TEXTURE_2D, id);
+  g_low->ogl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, sx,sy, 0, GL_RED, GL_FLOAT, array);
+  g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
+  g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+  g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  g_low->ogl->glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
   
   delete []array;
 
