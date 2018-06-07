@@ -2688,7 +2688,7 @@ EXPORT void GameApi::PolygonApi::prepare(P p, int bbm_choose)
 EXPORT void GameApi::PolygonApi::preparepoly(P p, int bbm_choose)
 {
   PolyPriv *pp = (PolyPriv*)priv;
-  ArrayRender *r = new ArrayRender;
+  ArrayRender *r = new ArrayRender(g_low);
   pp->rend[p.id] = r;
   FaceCollPolyHandle *h2 = find_poly(e,p);
   //FaceCollPolyHandle *h2 = dynamic_cast<FaceCollPolyHandle*>(handle);
@@ -3360,7 +3360,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
     FaceCollectionVertexArray2 arr(*faces, *s);
     arr.reserve(0);
     arr.copy(0,faces->NumFaces());  
-    RenderVertexArray *arr2 = new RenderVertexArray(*s);
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
     arr2->prepare(0); 
     if (!keep)
       s->free_memory();
@@ -3394,7 +3394,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
       prep.join(vec[i]);
     }
   VertexArraySet *set = prep.collect();
-  RenderVertexArray *arr2 = new RenderVertexArray(*set);
+  RenderVertexArray *arr2 = new RenderVertexArray(g_low, *set);
   arr2->prepare(0);
   if (!keep)
     {
@@ -3415,7 +3415,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
   //std::cout << "NumThreads2: " << num_threads << std::endl;
   Counts ct = CalcCounts(faces, 0, faces->NumFaces());
   VertexArraySet *set = new VertexArraySet;
-  RenderVertexArray *arr2 = new RenderVertexArray(*set);
+  RenderVertexArray *arr2 = new RenderVertexArray(g_low,*set);
   arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));
   pthread_mutex_t *mutex1 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
   pthread_mutex_t *mutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
@@ -3473,7 +3473,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
   FaceCollectionVertexArray2 arr(*faces, *s);
   arr.reserve(0);
   arr.copy(0,faces->NumFaces());  
-  RenderVertexArray *arr2 = new RenderVertexArray(*s);
+  RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
   arr2->prepare(0); 
   if (!keep)
     s->free_memory();
@@ -3498,7 +3498,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     FaceCollectionVertexArray2 arr(*faces, *s);
     arr.reserve(0);
     arr.copy(0,faces->NumFaces());  
-    RenderVertexArray *arr2 = new RenderVertexArray(*s);
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
     arr2->prepare(0); 
     if (!keep)
       s->free_memory();
@@ -3539,7 +3539,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       prep.join(vec[i]);
     }
   VertexArraySet *set = prep.collect();
-  RenderVertexArray *arr2 = new RenderVertexArray(*set);
+  RenderVertexArray *arr2 = new RenderVertexArray(g_low,*set);
   arr2->prepare(0);
   if (!keep)
     {
@@ -3561,7 +3561,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   //std::cout << "NumThreads2: " << num_threads << std::endl;
   Counts ct = CalcCounts(faces, 0, faces->NumFaces());
   VertexArraySet *set = new VertexArraySet;
-  RenderVertexArray *arr2 = new RenderVertexArray(*set);
+  RenderVertexArray *arr2 = new RenderVertexArray(g_low, *set);
   arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));
   pthread_mutex_t *mutex1 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
   pthread_mutex_t *mutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
@@ -3624,7 +3624,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     FaceCollectionVertexArray2 arr(*faces, *s);
     arr.reserve(0);
     arr.copy(0,faces->NumFaces());  
-    RenderVertexArray *arr2 = new RenderVertexArray(*s);
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
     arr2->prepare(0); 
     if (!keep)
       s->free_memory();
@@ -3638,7 +3638,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     int batch_faces = faces->NumFaces()/batch_count+1;
     Counts ct = CalcCounts(faces, 0, faces->NumFaces());
     VertexArraySet *s = new VertexArraySet;
-    RenderVertexArray *arr2 = new RenderVertexArray(*s);
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
     //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
     InstallProgress(2,"batching");
@@ -3676,7 +3676,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   FaceCollectionVertexArray2 arr(*faces, *s);
   arr.reserve(0);
   arr.copy(0,faces->NumFaces());  
-  RenderVertexArray *arr2 = new RenderVertexArray(*s);
+  RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
   arr2->prepare(0); 
   if (!keep)
     s->free_memory();
@@ -3691,7 +3691,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     int batch_faces = faces->NumFaces()/batch_count+1;
     Counts ct = CalcCounts(faces, 0, faces->NumFaces());
     VertexArraySet *s = new VertexArraySet;
-    RenderVertexArray *arr2 = new RenderVertexArray(*s);
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
     //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
     InstallProgress(3,"batching");
@@ -3746,7 +3746,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array_attribs(GameApi::P p
       prep.join(vec[i]);
     }
   VertexArraySet *set = prep.collect();
-  RenderVertexArray *arr2 = new RenderVertexArray(*set);
+  RenderVertexArray *arr2 = new RenderVertexArray(g_low, *set);
   arr2->prepare(0);
   if (!keep)
     {
@@ -3760,7 +3760,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array_attribs(GameApi::P p
   FaceCollectionVertexArray2 arr(*faces, *s);
   arr.reserve(0);
   arr.copy(0,faces->NumFaces(),attribs,attribi);  
-  RenderVertexArray *arr2 = new RenderVertexArray(*s);
+  RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
   arr2->prepare(0); 
   if (!keep)
     s->free_memory();

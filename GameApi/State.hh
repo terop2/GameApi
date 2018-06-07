@@ -971,7 +971,7 @@ struct StateBitmaps
       {
 	//std::cout << "State:" << y << std::endl;
 	StateRow &row = bitmap->DynRow(y);
-	row.rend = new ArrayRender;
+	row.rend = new ArrayRender(g_low);
 	if (row.texture)
 	  row.rend->AllocTexture(1);
 	Mesh **meshes = new Mesh*[sx];

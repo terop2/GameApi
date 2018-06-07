@@ -18,7 +18,7 @@ EXPORT GameApi::VA GameApi::TextureApi::bind(GameApi::VA va, GameApi::TXID tx)
   VertexArraySet *s = find_vertex_array(e, va);
   VertexArraySet *ns = new VertexArraySet(*s);
   ns->texture_id = SPECIAL_TEX_ID+tx.id;
-  RenderVertexArray *arr = new RenderVertexArray(*ns);
+  RenderVertexArray *arr = new RenderVertexArray(g_low, *ns);
   arr->prepare(0);
   return add_vertex_array(e, ns, arr);
 }
@@ -27,7 +27,7 @@ EXPORT GameApi::VA GameApi::TextureApi::bind_cubemap(GameApi::VA va, GameApi::TX
   VertexArraySet *s = find_vertex_array(e, va);
   VertexArraySet *ns = new VertexArraySet(*s);
   ns->texture_id = SPECIAL_TEX_ID_CUBEMAP+tx.id;
-  RenderVertexArray *arr = new RenderVertexArray(*ns);
+  RenderVertexArray *arr = new RenderVertexArray(g_low, *ns);
   arr->prepare(0);
   return add_vertex_array(e, ns, arr);
 }
@@ -39,7 +39,7 @@ EXPORT GameApi::VA GameApi::TextureApi::bind_many(GameApi::VA va, std::vector<Ga
   for(int i=0;i<s1;i++) {
     ns->texture_many_ids.push_back(vec[i].id);
   }
-  RenderVertexArray *arr = new RenderVertexArray(*ns);
+  RenderVertexArray *arr = new RenderVertexArray(g_low,*ns);
   arr->prepare(0);
   return add_vertex_array(e, ns, arr);
 }
@@ -48,7 +48,7 @@ EXPORT GameApi::VA GameApi::TextureApi::bind_arr(GameApi::VA va, GameApi::TXA tx
   VertexArraySet *s = find_vertex_array(e, va);
   VertexArraySet *ns = new VertexArraySet(*s);
   ns->texture_id = SPECIAL_TEX_IDA+tx.id;
-  RenderVertexArray *arr = new RenderVertexArray(*ns);
+  RenderVertexArray *arr = new RenderVertexArray(g_low,*ns);
   arr->prepare(0);
   return add_vertex_array(e, ns, arr);
 }

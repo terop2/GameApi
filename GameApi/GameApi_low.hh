@@ -1,6 +1,8 @@
 
 // DO NOT PUT ANY INCLUDES HERE.
 
+#ifndef GAMEAPI_LOW_H
+#define GAMEAPI_LOW_H
 
 #undef glActiveTexture
 #undef glClientActiveTexture
@@ -309,3 +311,5 @@ extern LowApi *g_low;
 
 enum { EStandard, EWeb };
 void initialize_low(int flags);
+
+#endif

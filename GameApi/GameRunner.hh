@@ -76,7 +76,7 @@ private:
 	    int c = si.enable_obj_array->Size();
 	    for(int i=0;i<c;i++)
 	      {
-		vec->push_back(new ArrayRender);
+		vec->push_back(new ArrayRender(g_low));
 	      }
 	  }
 	PrepareState(st);

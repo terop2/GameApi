@@ -10260,11 +10260,14 @@ public:
 template<class T>
 class Bitmap;
 
+struct LowApi;
+extern LowApi *g_low;
+
 
 class ArrayRender
 {
 public:
-  ArrayRender() : vertex_array(0), used_vertex_count(0), used_face_count(0), normal_array(0), color_array(0),
+  ArrayRender(LowApi *g_low) :  g_low(g_low), vertex_array(0), used_vertex_count(0), used_face_count(0), normal_array(0), color_array(0),
 		  tex_coord_array(0), quads(false), index_array(0), texture(0), texture_count(0), textures(0), tex_size_x(0), tex_size_y(0), q_vertex_array(0), q_normal_array(0), q_color_array(0), q_tex_coord_array(0) 
   { 
   }
@@ -10298,6 +10301,7 @@ public:
 
   int TextureCount() const { return texture_count; }
 public:
+  LowApi *g_low;
   float *vertex_array; // 3 * float per vertex
   int vertex_array_size; 
   int *used_vertex_count;
@@ -10463,6 +10467,7 @@ private:
 class SDLArrayRender : public Render
 {
 public:
+  SDLArrayRender() : rend(g_low) { }
   void SetTime(float time);
   void SetMatrix(Matrix m);
   void RenderFaces(const FaceCollection &col);
@@ -10489,7 +10494,7 @@ void PreCalcExecute(Render &rend, FrameAnim &f, float duration, int numframes);
 class ArrayEffect : public FrameAnim
 {
 public:
-  ArrayEffect(Render *render) : FrameAnim(render) { }
+  ArrayEffect(Render *render) :  FrameAnim(render), rend(g_low) { }
   float XRot() const { return 0.0; }
   float YRot() const { return 1.0; }
   float ZRot() const { return 0.0; }
