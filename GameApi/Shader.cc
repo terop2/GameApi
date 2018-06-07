@@ -31,6 +31,8 @@
 #include <fstream>
 #include "GraphI.hh"
 
+#include "GameApi_low.hh"
+
 std::string funccall_to_string(ShaderModule *mod);
 std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string value);
 
@@ -46,7 +48,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
 {
   int count = shader.Count();
   bool b = vertex;
-  GLuint handle = glCreateShader(geom?GL_GEOMETRY_SHADER:(b?GL_VERTEX_SHADER:GL_FRAGMENT_SHADER));
+  GLuint handle = g_low->ogl->glCreateShader(geom?GL_GEOMETRY_SHADER:(b?GL_VERTEX_SHADER:GL_FRAGMENT_SHADER));
   std::vector<std::string> vec;
   const char **strings = new const char *[count];
   int *lengths = new int[count];
@@ -56,24 +58,24 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
      strings[i] = vec[i].c_str();
      lengths[i] = vec[i].size();
     }
-  glShaderSource(handle, count, strings, lengths);
-  glCompileShader(handle);
-  int val = glGetError();
+  g_low->ogl->glShaderSource(handle, count, strings, lengths);
+  g_low->ogl->glCompileShader(handle);
+  int val = g_low->ogl->glGetError();
   if (val!=GL_NO_ERROR) {
     //std::cout << "glCompileShader ERROR: " << val << std::endl;
     char buf[256];
     GLsizei length=0;
-    glGetShaderInfoLog(handle, 256, &length, &buf[0]);
+    g_low->ogl->glGetShaderInfoLog(handle, 256, &length, &buf[0]);
     buf[length]=0;
     std::cout << "InfoLog: " << buf << std::endl;
 
   }
   int i=0;
-  glGetShaderiv(handle, GL_COMPILE_STATUS, &i );
+  g_low->ogl->glGetShaderiv(handle, GL_COMPILE_STATUS, &i );
   if (i == 1) { std::cout << shader.Name() << " OK" << std::endl; 
     int len=0;
   char log[255];
-  glGetShaderInfoLog(handle, 255, &len, log);
+  g_low->ogl->glGetShaderInfoLog(handle, 255, &len, log);
   log[len]=0;
   std::cout << log << std::endl;
 
@@ -82,7 +84,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
     {
       int len=0;
       char buf[255];
-      glGetShaderInfoLog(handle, 255, &len, buf);
+      g_low->ogl->glGetShaderInfoLog(handle, 255, &len, buf);
       std::cout << shader.Name() << " ERROR: " << buf << std::endl;
     }
   delete [] strings;
@@ -98,7 +100,7 @@ Shader::~Shader()
     {
       (*i)->detach(*this);
     }
-  glDeleteShader(priv->handle);
+  g_low->ogl->glDeleteShader(priv->handle);
   delete priv;
 }
 
@@ -115,7 +117,7 @@ Program::Program()
   //std::cout << "RENDERER=" << glGetString(GL_RENDERER) << std::endl;
   //std::cout << "VERSION=" << glGetString(GL_VERSION) << std::endl;
   priv = new ProgramPriv;
-  priv->program = glCreateProgram(); //ObjectARB();  
+  priv->program = g_low->ogl->glCreateProgram(); //ObjectARB();  
 }
 Program::~Program()
 {
@@ -125,20 +127,20 @@ Program::~Program()
       detach(*(*i));
       delete (*i);
     }
-  glDeleteProgram(priv->program);
+  g_low->ogl->glDeleteProgram(priv->program);
   delete priv;
 }
 void Program::push_back(const Shader &shader)
 {
   //std::cout << "AttachShader: " << shader.priv->handle << std::endl;
-  glAttachShader/*ObjectARB*/(priv->program, shader.priv->handle);
+  g_low->ogl->glAttachShader/*ObjectARB*/(priv->program, shader.priv->handle);
   int val = glGetError();
   if (val!=GL_NO_ERROR)
     {
     std::cout << "glAttachShader ERROR: " << val << std::endl;
     char buf[256];
     GLsizei length=0;
-    glGetProgramInfoLog(priv->program, 256, &length, &buf[0]);
+    g_low->ogl->glGetProgramInfoLog(priv->program, 256, &length, &buf[0]);
     buf[length]=0;
     std::cout << "InfoLog: " << buf << std::endl;
     }
@@ -149,13 +151,13 @@ void Program::push_back(const Shader &shader)
 void Program::bind_frag(int num, std::string name)
 {
 #ifndef EMSCRIPTEN
-  glBindFragDataLocation( priv->program, num, name.c_str());
+  g_low->ogl->glBindFragDataLocation( priv->program, num, name.c_str());
 #endif
 }
 void Program::bind_attrib(int num, std::string name)
 {
   //int val2 = glGetError();
-  glBindAttribLocation(priv->program, num, name.c_str());
+  g_low->ogl->glBindAttribLocation(priv->program, num, name.c_str());
   int val = glGetError();
   if (val!=GL_NO_ERROR)
     std::cout << "BindAttribLocation ERROR: " << val << std::endl;
@@ -163,7 +165,7 @@ void Program::bind_attrib(int num, std::string name)
 void Program::detach(const Shader &shader)
 {
   std::cout << "detach " << shader.priv->shader->Name() << std::endl;
-  glDetachShader /*ObjectARB*/(priv->program, shader.priv->handle); 
+  g_low->ogl->glDetachShader /*ObjectARB*/(priv->program, shader.priv->handle); 
   priv->shaders.erase(std::remove(priv->shaders.begin(), priv->shaders.end(),&shader), priv->shaders.end());
   shader.priv->programs.erase(std::remove(shader.priv->programs.begin(), shader.priv->programs.end(), this), shader.priv->programs.end());
 }
@@ -190,98 +192,98 @@ void Program::GeomTypes(int input, int output)
     default: outputtype = GL_POINTS; break;
     };
 
-  glProgramParameteriEXT(priv->program, GL_GEOMETRY_INPUT_TYPE_EXT, inputtype);
-  glProgramParameteriEXT(priv->program, GL_GEOMETRY_OUTPUT_TYPE_EXT, outputtype);
+  g_low->ogl->glProgramParameteriEXT(priv->program, GL_GEOMETRY_INPUT_TYPE_EXT, inputtype);
+  g_low->ogl->glProgramParameteriEXT(priv->program, GL_GEOMETRY_OUTPUT_TYPE_EXT, outputtype);
 }
 void Program::GeomOutputVertices(int i)
 {
-  glProgramParameteriEXT(priv->program, GL_GEOMETRY_VERTICES_OUT_EXT, i);
+  g_low->ogl->glProgramParameteriEXT(priv->program, GL_GEOMETRY_VERTICES_OUT_EXT, i);
 }
 
 void Program::link()
 {
-  glLinkProgram(priv->program);
+  g_low->ogl->glLinkProgram(priv->program);
   int len=0;
   char log[255];
-  glGetProgramInfoLog(priv->program, 255, &len, log);
+  g_low->ogl->glGetProgramInfoLog(priv->program, 255, &len, log);
   log[len]=0;
   std::cout << log << std::endl;
 }
 void Program::use()
 {
-  glUseProgram(priv->program);
+  g_low->ogl->glUseProgram(priv->program);
 }
 void Program::unuse()
 {
-  glUseProgram(0);
+  g_low->ogl->glUseProgram(0);
 }
 
 void Program::set_var(const std::string &name, float val)
 {
   //std::cout << "set_var float:" << name << ":" << val << std::endl;
-  GLint loc = glGetUniformLocation(priv->program, name.c_str());
-  glUniform1f(loc, val);
+  GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
+  g_low->ogl->glUniform1f(loc, val);
 }
 void Program::set_var(int loc, float val)
 {
-  glUniform1f(loc, val);
+  g_low->ogl->glUniform1f(loc, val);
 }
 
 void Program::set_var(const std::string &name, float val1, float val2)
 {
-  GLint loc = glGetUniformLocation(priv->program, name.c_str());
-  glUniform2f(loc, val1, val2);
+  GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
+  g_low->ogl->glUniform2f(loc, val1, val2);
 }
 void Program::set_var(const std::string &name, const Point &p)
 {
-  GLint loc = glGetUniformLocation(priv->program, name.c_str());
-  glUniform3f(loc, p.x,p.y,p.z);
+  GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
+  g_low->ogl->glUniform3f(loc, p.x,p.y,p.z);
 }
 void Program::set_var(const std::string &name, const Vector &v)
 {
-  GLint loc = glGetUniformLocation(priv->program, name.c_str());
-  glUniform3f(loc, v.dx,v.dy,v.dz);
+  GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
+  g_low->ogl->glUniform3f(loc, v.dx,v.dy,v.dz);
 }
 
 void Program::set_var(const std::string &name, const Color &c)
 {
-  GLint loc = glGetUniformLocation(priv->program, name.c_str());
-  glUniform3f(loc, c.r/255.0, c.g/255.0, c.b/255.0);
+  GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
+  g_low->ogl->glUniform3f(loc, c.r/255.0, c.g/255.0, c.b/255.0);
 }
 
 int Program::get_loc(std::string name)
 {
-  return glGetUniformLocation(priv->program, name.c_str());
+  return g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
 }
 void Program::set_var(int loc, float val1, float val2, float val3, float val4)
 {
-  glUniform4f(loc, val1, val2, val3, val4);
+  g_low->ogl->glUniform4f(loc, val1, val2, val3, val4);
 }
 void Program::set_var(const std::string &name, float val1, float val2, float val3, float val4)
 {
-  GLint loc = glGetUniformLocation(priv->program, name.c_str());
-  glUniform4f(loc, val1, val2, val3, val4);
+  GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
+  g_low->ogl->glUniform4f(loc, val1, val2, val3, val4);
 }
 void Program::set_var(const std::string &name, float *array, int count)
 {
-  GLint loc = glGetUniformLocation(priv->program, name.c_str());
-  glUniform1fv(loc, count, array);
+  GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
+  g_low->ogl->glUniform1fv(loc, count, array);
 }
 void Program::set_var(const std::string &name, int *array, int count)
 {
-  GLint loc = glGetUniformLocation(priv->program, name.c_str());
-  glUniform1iv(loc, count, array);
+  GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
+  g_low->ogl->glUniform1iv(loc, count, array);
 }
 void Program::set_var(const std::string &name, int val)
 {
-  GLint loc = glGetUniformLocation(priv->program, name.c_str());
-  glUniform1i(loc, val);  
+  GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
+  g_low->ogl->glUniform1i(loc, val);  
 }
 Matrix Program::get_matrix_var(const std::string &name)
 {
-  GLint loc = glGetUniformLocation(priv->program, name.c_str());
+  GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
   float mat[16];
-  glGetUniformfv( priv->program, loc, &mat[0]);
+  g_low->ogl->glGetUniformfv( priv->program, loc, &mat[0]);
   
   Matrix m = { { mat[0], mat[4], mat[8], mat[12],
 		 mat[1], mat[5], mat[9], mat[13],
@@ -292,8 +294,8 @@ Matrix Program::get_matrix_var(const std::string &name)
 }
 void Program::set_var_matrix(const std::string &name, const std::vector<float> &v)
 {
-  GLint loc = glGetUniformLocation(priv->program, name.c_str());
-  glUniformMatrix4fv(loc, v.size()/16, GL_FALSE, &v[0]);
+  GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
+  g_low->ogl->glUniformMatrix4fv(loc, v.size()/16, GL_FALSE, &v[0]);
 
 #if 0
   int s = v.size()/16;
@@ -308,19 +310,19 @@ void Program::set_var_matrix(const std::string &name, const std::vector<float> &
 }
 void Program::set_var(const std::string &name, const std::vector<Point> &v)
 {
-  GLint loc = glGetUniformLocation(priv->program, name.c_str());
-  glUniform3fv(loc, v.size(), (float*)&v[0]);
+  GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
+  g_low->ogl->glUniform3fv(loc, v.size(), (float*)&v[0]);
 }
 void Program::set_var(const std::string &name, Matrix m)
 {
-  GLint loc = glGetUniformLocation(priv->program, name.c_str());
+  GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
   //std::cout << "glUniformLocation: " << loc << ":" << glGetError() << std::endl;
   float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
 		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
 		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
 
-  glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&mat[0]);
+  g_low->ogl->glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&mat[0]);
   //int val = glGetError();
   //std::cout << "UniformMatrix: " << std::hex << val << std::endl;
 
@@ -328,7 +330,7 @@ void Program::set_var(const std::string &name, Matrix m)
 Attrib Program::find_attr(const std::string &attr_name, int id)
 {
   Attrib atr;
-  atr.loc = glGetAttribLocation(priv->program, attr_name.c_str());
+  atr.loc = g_low->ogl->glGetAttribLocation(priv->program, attr_name.c_str());
   atr.id = id;
   atr.is_int = false;
   return atr;
@@ -336,14 +338,14 @@ Attrib Program::find_attr(const std::string &attr_name, int id)
 Attrib Program::find_attr_int(const std::string &attr_name, int id)
 {
   Attrib atr;
-  atr.loc = glGetAttribLocation(priv->program, attr_name.c_str());
+  atr.loc = g_low->ogl->glGetAttribLocation(priv->program, attr_name.c_str());
   atr.id = id;
   atr.is_int = true;
   return atr;
 }
 void Program::attr_loc(std::string s, int index)
 {
-  glBindAttribLocation(priv->program, index, s.c_str());
+  g_low->ogl->glBindAttribLocation(priv->program, index, s.c_str());
 }
 
 void MoveObjectParameters::SetParameters(Program &p) const
