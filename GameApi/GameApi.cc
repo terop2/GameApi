@@ -11427,7 +11427,7 @@ public:
 					       start_z(start_z), end_z(end_z),
 					       false_value(false_value), true_value(true_value) { 
     int ss = sx*sy*sz;
-    while (sx>10000 || sy>10000 ||sz>10000 || ss>1000000) { sx/=2; sy/=2; sz/=2; std::cout << "Warning: Voxel size too large (" << sx << "x" << sy << "x" << sz << ")" << std::endl; }
+    while (sx>10000 || sy>10000 ||sz>10000 || ss>1000000) { sx/=2; sy/=2; sz/=2; ss=sx*sy*sz; std::cout << "Warning: Voxel size too large (" << sx << "x" << sy << "x" << sz << ")" << std::endl; }
 }
   void Prepare() {}
   virtual int SizeX() const { return sx; }
