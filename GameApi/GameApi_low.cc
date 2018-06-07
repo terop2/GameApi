@@ -158,7 +158,7 @@ public:
 #endif
 ::glTexSubImage3D(arr,a,b,c,d,e,f,g,rgba,unsig_byte,buffer); 
   }
-  virtual void glGetTexLevelParameteriv(int a, int b, int w, int *ptr) { glGetTexLevelParameteriv(a,b,w,ptr); }
+  virtual void glGetTexLevelParameteriv(int a, int b, int w, int *ptr) { ::glGetTexLevelParameteriv(a,b,w,ptr); }
   virtual void glGetTexImage(int a, int b, int rgba, int unsign_byte, void *ptr) { ::glGetTexImage(a,b,rgba,unsign_byte,ptr); }
   virtual void glReadBuffer(int a) { ::glReadBuffer(a); }
   
