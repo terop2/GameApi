@@ -593,8 +593,9 @@ void splitter_iter3(void *arg)
   Splitter *spl = a->spl;
 
   if (current_display==0) {
-    if (!emscripten_vr_ready()) { splitter_iter2((void*)spl); return; }
-
+    //if (!emscripten_vr_ready()) { return; }
+    if (!vr_vr_ready) { return; }
+    
     int s = emscripten_vr_count_displays();
     if (s==0) { std::cout << "FAIL: No displays found" << std::endl; }
     std::cout << "OK: Found " << s << " displays" << std::endl;
