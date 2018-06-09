@@ -559,6 +559,12 @@ void requestPresentCallback(void *arg) {
   Splitter *spl = a->spl;
   if (emscripten_vr_display_presenting(current_display))
     {
+      VREyeParameters left, right;
+      emscripten_vr_get_eye_parameters(current_display, VREyeLeft, &left);
+      emscripten_vr_get_eye_parameters(current_display, VREyeRight, &right);
+      
+      emscripten_vr_canvas_element_size("#canvas", left.renderWidth + right.renderWidth, left.renderHeight);
+
       if (!emscripten_vr_set_display_render_loop_arg(current_display, &splitter_iter2, (void*)spl))
 	{
 	  std::cout << "FAIL: set_display render loop failed (in request present)" << std::endl;
