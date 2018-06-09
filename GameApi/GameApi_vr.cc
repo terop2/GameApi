@@ -216,6 +216,9 @@ public:
     }
 #else
     if (vr_vr_ready && current_display != 0 && current_display!=-1) {
+      VRFrameData d;
+      int val = emscripten_vr_get_frame_data( current_display, &d);
+
       left->render(e);
       right->render(e);
       static int ii=0;
