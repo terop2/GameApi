@@ -151,6 +151,19 @@ EXPORT void check_vr_compositor_init()
     int val = emscripten_vr_init(&vr_cb,NULL);
     if (val==0) { std::cout << "Emscripten VR not found!" << std::endl; }
   }
+  
+  EmscriptenWebGLContextAttributes attr;
+  emscripten_webgl_init_context_attributes(&attr);
+  attr.alpha = attr.depth = attr.stencil = attr.antialias = attr.preferLowPowerToHighPerformance = attr.failIfMajorPerformanceCaveat = 0;
+  attr.preserveDrawingBuffer = 1;
+  attr.enableExtensionsByDefault = 1;
+  attr.premultipliedAlpha = 0;
+  attr.majorVersion = 1;
+  attr.minorVersion = 0;
+  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(0, &attr);
+  emscripten_webgl_make_context_current(ctx);
+  
+
 #endif
 }
 
