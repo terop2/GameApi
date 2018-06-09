@@ -563,7 +563,7 @@ void requestPresentCallback(void *arg) {
       emscripten_vr_get_eye_parameters(current_display, VREyeLeft, &left);
       emscripten_vr_get_eye_parameters(current_display, VREyeRight, &right);
       
-      emscripten_vr_canvas_element_size("#canvas", left.renderWidth + right.renderWidth, left.renderHeight);
+      emscripten_set_canvas_element_size("#canvas", left.renderWidth + right.renderWidth, left.renderHeight);
 
       if (!emscripten_vr_set_display_render_loop_arg(current_display, &splitter_iter2, (void*)spl))
 	{
