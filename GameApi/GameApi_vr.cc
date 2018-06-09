@@ -217,8 +217,9 @@ public:
       item_n->execute(e);
 
       
-      emscripten_vr_submit_frame(current_display);
-      
+      int val = emscripten_vr_submit_frame(current_display);
+      if (!val) { std::cout << "FAIL: submit_frame failed!" << std::endl; }
+
       //VRDisplayCapabilities cap;
       //int emscripen_vr_get_eye_parameters( display, &cap );
       
