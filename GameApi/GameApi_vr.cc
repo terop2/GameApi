@@ -218,8 +218,8 @@ public:
     if (vr_vr_ready && current_display != 0 && current_display!=-1) {
       // This one gets poses, and is important or else the display doesnt 
       // render.
-      VRFrameData d;
-      int val4 = emscripten_vr_get_frame_data( current_display, &d);
+      VRFrameData d2;
+      int val4 = emscripten_vr_get_frame_data( current_display, &d2);
 
       left->render(e);
       right->render(e);
