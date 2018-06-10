@@ -152,21 +152,22 @@ EXPORT void check_vr_compositor_init()
     if (val==0) { std::cout << "Emscripten VR not found!" << std::endl; }
   }
   
-  EmscriptenWebGLContextAttributes attr;
-  emscripten_webgl_init_context_attributes(&attr);
-  attr.alpha = attr.depth = attr.stencil = attr.antialias = attr.preferLowPowerToHighPerformance = attr.failIfMajorPerformanceCaveat = 0;
-  attr.preserveDrawingBuffer = 1;
-  attr.enableExtensionsByDefault = 1;
-  attr.premultipliedAlpha = 0;
-  attr.majorVersion = 1;
-  attr.minorVersion = 0;
-  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(0, &attr);
-  emscripten_webgl_make_context_current(ctx);
+  //EmscriptenWebGLContextAttributes attr;
+  //emscripten_webgl_init_context_attributes(&attr);
+  //attr.alpha = attr.depth = attr.stencil = attr.antialias = attr.preferLowPowerToHighPerformance = attr.failIfMajorPerformanceCaveat = 0;
+  //attr.preserveDrawingBuffer = 1;
+  //attr.enableExtensionsByDefault = 1;
+  //attr.premultipliedAlpha = 0;
+  //attr.majorVersion = 1;
+  //attr.minorVersion = 0;
+  //EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(0, &attr);
+  //emscripten_webgl_make_context_current(ctx);
   
 
 #endif
 }
 
+VRFrameData g_d2;
 
 class SubmitML : public MainLoopItem
 {
@@ -218,8 +219,7 @@ public:
     if (vr_vr_ready && current_display != 0 && current_display!=-1) {
       // This one gets poses, and is important or else the display doesnt 
       // render.
-      VRFrameData d2;
-      int val4 = emscripten_vr_get_frame_data( current_display, &d2);
+      int val4 = emscripten_vr_get_frame_data( current_display, &g_d2);
 
       left->render(e);
       right->render(e);
@@ -376,8 +376,8 @@ public:
 #else
   Matrix m = Matrix::Identity();
   if ((vr_vr_ready && current_display != 0 && current_display!=-1) && !is_std) {
-    VRFrameData d;
-    int val = emscripten_vr_get_frame_data(current_display, &d);
+    VRFrameData d = g_d2;
+    //int val = emscripten_vr_get_frame_data(current_display, &d);
     if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl;
       if (!eye) {
 	for(int j=0;j<4;j++)
@@ -447,8 +447,9 @@ public:
 
 #else
   if (!vr_vr_ready ||current_display==NULL||current_display==-1) { return DefaultProjection(ev); }
-  VRFrameData d;
-  int val = emscripten_vr_get_frame_data(current_display, &d);
+    VRFrameData d = g_d2;
+    //VRFrameData d;
+    //int val = emscripten_vr_get_frame_data(current_display, &d);
   if (!val) { std::cout << "FAIL: vr_get_frame_data invalid handle" << std::endl; }
   Matrix m;
   if (!eye) {
@@ -568,7 +569,7 @@ void requestPresentCallback(void *arg) {
       emscripten_vr_get_eye_parameters(current_display, VREyeLeft, &left);
       emscripten_vr_get_eye_parameters(current_display, VREyeRight, &right);
       
-      emscripten_set_canvas_element_size("#canvas", left.renderWidth + right.renderWidth, left.renderHeight);
+      //emscripten_set_canvas_element_size("#canvas", left.renderWidth + right.renderWidth, left.renderHeight);
 
       if (!emscripten_vr_set_display_render_loop_arg(current_display, &splitter_iter2, (void*)spl))
 	{
