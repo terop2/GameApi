@@ -377,8 +377,8 @@ public:
   Matrix m = Matrix::Identity();
   if ((vr_vr_ready && current_display != 0 && current_display!=-1) && !is_std) {
     VRFrameData d = g_d2;
-    //int val = emscripten_vr_get_frame_data(current_display, &d);
-    if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl;
+    int val = 1; //emscripten_vr_get_frame_data(current_display, &d);
+    if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl; }
       if (!eye) {
 	for(int j=0;j<4;j++)
 	for(int i=0;i<4;i++) m.matrix[i+j*4] = d.leftViewMatrix[j+i*4];
@@ -387,7 +387,6 @@ public:
 	for(int i=0;i<4;i++) m.matrix[i+j*4] = d.rightViewMatrix[j+i*4];
       }
       m.is_identity = false;
-    } else { m=Matrix::Identity(); }
   }
 #endif
   
@@ -449,7 +448,7 @@ public:
   if (!vr_vr_ready ||current_display==NULL||current_display==-1) { return DefaultProjection(ev); }
     VRFrameData d = g_d2;
     //VRFrameData d;
-    //int val = emscripten_vr_get_frame_data(current_display, &d);
+    int val = 1; //emscripten_vr_get_frame_data(current_display, &d);
   if (!val) { std::cout << "FAIL: vr_get_frame_data invalid handle" << std::endl; }
   Matrix m;
   if (!eye) {
