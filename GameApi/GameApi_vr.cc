@@ -220,7 +220,9 @@ public:
     if (vr_vr_ready && current_display != 0 && current_display!=-1) {
       // This one gets poses, and is important or else the display doesnt 
       // render.
+      int val4 = emscripten_vr_get_frame_data( current_display, &g_d2);
 
+      ev.mainloop_api.clear_3d(0xff000000);
       left->render(e);
       right->render(e);
       static int ii=0;
@@ -238,7 +240,6 @@ public:
       int val3 = emscripten_vr_submit_frame(current_display);
       if (!val3) { std::cout << "FAIL: submit_frame failed!" << std::endl; }
 
-      int val4 = emscripten_vr_get_frame_data( current_display, &g_d2);
 
       
       //VRDisplayCapabilities cap;
