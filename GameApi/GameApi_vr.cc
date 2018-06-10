@@ -220,7 +220,13 @@ public:
     if (vr_vr_ready && current_display != 0 && current_display!=-1) {
       // This one gets poses, and is important or else the display doesnt 
       // render.
+      if (emscripten_vr_display_presenting(current_display)) {
+	std::cout << "FAIL: expected display is not presenting.\n" << std::endl;
+      }
+
+
       int val4 = emscripten_vr_get_frame_data( current_display, &g_d2);
+      if (!val4) { std::cout << "FAIL: get_frame_data failed!" << std::endl; }
 
       ev.mainloop_api.clear_3d(0xff000000);
       left->render(e);
@@ -665,22 +671,22 @@ void splitter_iter3(void *arg)
   render_loop_called++;
   if (render_loop_called==1 && current_display!=0 && current_display != -1) {
     VRLayerInit init = { NULL, VR_LAYER_DEFAULT_LEFT_BOUNDS, VR_LAYER_DEFAULT_RIGHT_BOUNDS };
-    if (!emscripten_vr_request_present(current_display, &init, 1, requestPresentCallback, NULL)) {
-      std::cout << "FAIL: request_present with default canvas failed." << std::endl;
-      return;
-    }
-  if (emscripten_vr_display_presenting(current_display)) {
-    std::cout << "FAIL: expected display is not presenting.\n" << std::endl;
-    return; }
-  VRFrameData data;
-  if (!emscripten_vr_get_frame_data(current_display, &data)) {
-    std::cout << "FAIL: Could not get frame data. (first iteration)\n" << std::endl;
-    return;
-  }
-  if (!emscripten_vr_submit_frame(current_display)) {
-    std::cout << "FAIL: failed to submit frame to VR display " << current_display << "(first iteration)" << std::endl;
-    return;
-  }
+    //if (!emscripten_vr_request_present(current_display, &init, 1, requestPresentCallback, NULL)) {
+    //  std::cout << "FAIL: request_present with default canvas failed." << std::endl;
+    //  return;
+    // }
+    // if (emscripten_vr_display_presenting(current_display)) {
+    // std::cout << "FAIL: expected display is not presenting.\n" << std::endl;
+    //return; }
+  //VRFrameData data;
+  //if (!emscripten_vr_get_frame_data(current_display, &data)) {
+  //  std::cout << "FAIL: Could not get frame data. (first iteration)\n" << std::endl;
+  //  return;
+  //}
+  //if (!emscripten_vr_submit_frame(current_display)) {
+  //  std::cout << "FAIL: failed to submit frame to VR display " << current_display << "(first iteration)" << std::endl;
+  //  return;
+  // }
   return;
   }
   
