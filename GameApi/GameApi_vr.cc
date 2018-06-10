@@ -166,8 +166,9 @@ EXPORT void check_vr_compositor_init()
 
 #endif
 }
-
+#ifdef EMSCRIPTEN
 VRFrameData g_d2;
+#endif
 
 class SubmitML : public MainLoopItem
 {
@@ -219,7 +220,6 @@ public:
     if (vr_vr_ready && current_display != 0 && current_display!=-1) {
       // This one gets poses, and is important or else the display doesnt 
       // render.
-      int val4 = emscripten_vr_get_frame_data( current_display, &g_d2);
 
       left->render(e);
       right->render(e);
@@ -238,6 +238,9 @@ public:
       int val3 = emscripten_vr_submit_frame(current_display);
       if (!val3) { std::cout << "FAIL: submit_frame failed!" << std::endl; }
 
+      int val4 = emscripten_vr_get_frame_data( current_display, &g_d2);
+
+      
       //VRDisplayCapabilities cap;
       //int emscripen_vr_get_eye_parameters( display, &cap );
       
