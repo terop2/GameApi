@@ -241,8 +241,8 @@ public:
       //VRDisplayCapabilities cap;
       //int emscripen_vr_get_eye_parameters( display, &cap );
       
-      VRFrameData d;
-      int val = emscripten_vr_get_frame_data( current_display, &d);
+      VRFrameData d = g_d2;
+      //int val = emscripten_vr_get_frame_data( current_display, &d);
       if ((d.pose.poseFlags & VR_POSE_ORIENTATION) != 0) {
 	VRQuaternion q = d.pose.orientation;
 	Quarternion q2;
