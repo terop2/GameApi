@@ -220,8 +220,8 @@ public:
     if (vr_vr_ready && current_display != 0 && current_display!=-1) {
       // This one gets poses, and is important or else the display doesnt 
       // render.
-      if (emscripten_vr_display_presenting(current_display)) {
-	std::cout << "FAIL: expected display is not presenting.\n" << std::endl;
+      if (!emscripten_vr_display_presenting(current_display)) {
+	std::cout << "FAIL: expected display is not presenting." << std::endl;
       }
 
 
