@@ -759,7 +759,7 @@ GameApi::TRK add_tracker(GameApi::Env &e, Tracker *trk)
   sm.id = env->trackers.size()-1;
   return sm;
 }
-GameApi::FBO add_fbo(GameApi::Env &e, GLuint fbo_name, GLuint texture, GLuint depthbuffer, int sx, int sy)
+GameApi::FBO add_fbo(GameApi::Env &e, Low_GLuint fbo_name, Low_GLuint texture, Low_GLuint depthbuffer, int sx, int sy)
 {
   FBOPriv p;
   p.fbo_name = fbo_name;
@@ -1097,10 +1097,10 @@ void add_update_lines_array(GameApi::Env &e, GameApi::LLA la, PointArray2 *array
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   PointArray2 *arr = env->pointarray[la.id];
-  glDeleteBuffers(1, &arr->buffer);
-  glDeleteBuffers(1, &arr->buffer2);
+  g_low->ogl->glDeleteBuffers(1, &arr->buffer);
+  g_low->ogl->glDeleteBuffers(1, &arr->buffer2);
 #ifdef VAO
-  glDeleteVertexArrays( 1, arr->vao );
+  g_low->ogl->glDeleteVertexArrays( 1, arr->vao );
 #endif
   delete [] env->pointarray[la.id]->array;
   delete [] env->pointarray[la.id]->color_array;
@@ -2587,16 +2587,16 @@ void GameApi::ObjectMoveApi::render_all(GameApi::VAA va)
       VertexArrayWithPos p = (*vec)[i];
       Matrix mm = find_matrix(e, p.m);
 #ifndef EMSCRIPTEN
-      glPushMatrix();
+      g_low->ogl->glPushMatrix();
       float mat[16] = { mm.matrix[0], mm.matrix[4], mm.matrix[8], mm.matrix[12],
 			mm.matrix[1], mm.matrix[5], mm.matrix[9], mm.matrix[13],
 			mm.matrix[2], mm.matrix[6], mm.matrix[10], mm.matrix[14],
 			mm.matrix[3], mm.matrix[7], mm.matrix[11], mm.matrix[15] };
       
-      glMultMatrixf(&mat[0]);
+      g_low->ogl->glMultMatrixf(&mat[0]);
 
       poly.render_vertex_array(p.va);
-      glPopMatrix();
+      g_low->ogl->glPopMatrix();
 #endif
     }
 }
@@ -6111,7 +6111,7 @@ public:
   WebMaterial(GameApi::EveryApi &ev, Material *next, float val, float linewidth, unsigned int color) : ev(ev),next(next),val(val),linewidth(linewidth),color(color) {}
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-    glLineWidth(linewidth);
+    g_low->ogl->glLineWidth(linewidth);
     GameApi::P I2=p;
     GameApi::LI I3=ev.lines_api.from_polygon(I2);
     GameApi::LI I4=ev.lines_api.change_color(I3,color);
@@ -6129,7 +6129,7 @@ public:
 
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
-    glLineWidth(linewidth);
+    g_low->ogl->glLineWidth(linewidth);
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
@@ -6151,7 +6151,7 @@ public:
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
     //GameApi::PTA pta = ev.points_api.prepare(pts);
-    glLineWidth(linewidth);
+    g_low->ogl->glLineWidth(linewidth);
     
     GameApi::P I2=p;
     GameApi::LI I3=ev.lines_api.from_polygon(I2);
@@ -6170,7 +6170,7 @@ public:
 
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
-    glLineWidth(linewidth);
+    g_low->ogl->glLineWidth(linewidth);
     GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
@@ -9469,7 +9469,7 @@ public:
 	env.ev->mainloop_api.advance_time(env.start_time/10.0*1000.0);
     }
      env.ev->mainloop_api.alpha(true);
-     glEnable(GL_DEPTH_TEST);
+     g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
      GameApi::MainLoopApi::Event e;
      while((e = env.ev->mainloop_api.get_event()).last==true)
        {
@@ -9555,7 +9555,7 @@ public:
   virtual void Destroy()
   {
     // this is needed for win32 build in editor
-      glDisable(GL_DEPTH_TEST);
+      g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
   }
   virtual Splitter* NextState(int code)
   {
@@ -9638,7 +9638,7 @@ public:
 	ev.mainloop_api.advance_time(env.start_time/10.0*1000.0);
     }
      ev.mainloop_api.alpha(true);
-     glEnable(GL_DEPTH_TEST);
+     g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
     GameApi::MainLoopApi::Event e;
     while((e = env.ev->mainloop_api.get_event()).last==true)
       {
@@ -9653,7 +9653,7 @@ public:
 #else
       emscripten_set_main_loop_arg(blocker_iter, (void*)&env, 0,1);
 #endif 
-      glDisable(GL_DEPTH_TEST);
+      g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
   }
   private:
   

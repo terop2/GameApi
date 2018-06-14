@@ -17,27 +17,27 @@ EXPORT GameApi::TXID GameApi::FrameBufferApi::depth_id(FBO buffer)
 }
 EXPORT GameApi::FBO GameApi::FrameBufferApi::create_fbo(int sx, int sy)
 {
-  GLuint fbo_name;
-  glGenFramebuffers(1, &fbo_name);
-  glBindFramebuffer(GL_FRAMEBUFFER, fbo_name);
+  Low_GLuint fbo_name;
+  g_low->ogl->glGenFramebuffers(1, &fbo_name);
+  g_low->ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, fbo_name);
 
-  GLuint texture;
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sx,sy, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  Low_GLuint texture;
+  g_low->ogl->glGenTextures(1, &texture);
+  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, texture);
+  g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, sx,sy, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, 0);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MAG_FILTER, Low_GL_NEAREST);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MIN_FILTER, Low_GL_NEAREST);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
 
-  GLuint depth_texture;
-  glGenRenderbuffers(1, &depth_texture);
-  glBindRenderbuffer(GL_RENDERBUFFER, depth_texture);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, sx, sy);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_texture);
+  Low_GLuint depth_texture;
+  g_low->ogl->glGenRenderbuffers(1, &depth_texture);
+  g_low->ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, depth_texture);
+  g_low->ogl->glRenderbufferStorage(Low_GL_RENDERBUFFER, Low_GL_DEPTH_COMPONENT16, sx, sy);
+  g_low->ogl->glFramebufferRenderbuffer(Low_GL_FRAMEBUFFER, Low_GL_DEPTH_ATTACHMENT, Low_GL_RENDERBUFFER, depth_texture);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  g_low->ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, 0);
+  g_low->ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, 0);
 
   return add_fbo(e, fbo_name, texture, depth_texture, sx,sy);
 }
@@ -45,41 +45,41 @@ EXPORT void GameApi::FrameBufferApi::config_fbo(FBO buffer)
 {
   FBOPriv *priv = find_fbo(e, buffer);
   
-  glBindFramebuffer(GL_FRAMEBUFFER, priv->fbo_name);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, priv->texture, 0);
+  g_low->ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, priv->fbo_name);
+  g_low->ogl->glFramebufferTexture2D(Low_GL_FRAMEBUFFER, Low_GL_COLOR_ATTACHMENT0, Low_GL_TEXTURE_2D, priv->texture, 0);
   
   //GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
   //glDrawBuffers(1, DrawBuffers);
   //glReadBuffer( GL_COLOR_ATTACHMENT0 );
   
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  g_low->ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, 0);
 }
 EXPORT GameApi::FrameBufferApi::vp GameApi::FrameBufferApi::bind_fbo(FBO buffer)
 {
   FBOPriv *priv = find_fbo(e, buffer);
-  glBindFramebuffer(GL_FRAMEBUFFER, priv->fbo_name);
-  glBindRenderbuffer(GL_RENDERBUFFER, priv->depthbuffer);
+  g_low->ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, priv->fbo_name);
+  g_low->ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, priv->depthbuffer);
   FrameBufferApi::vp viewport;
-  glGetIntegerv(GL_VIEWPORT, viewport.viewport);
-  glViewport(0,0,priv->sx,priv->sy);
+  g_low->ogl->glGetIntegerv(Low_GL_VIEWPORT, viewport.viewport);
+  g_low->ogl->glViewport(0,0,priv->sx,priv->sy);
   return viewport;
 }
 EXPORT void GameApi::FrameBufferApi::bind_screen(vp viewport)
 {
 
-  glBindFramebuffer(GL_FRAMEBUFFER,0);
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  g_low->ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER,0);
+  g_low->ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, 0);
   
-  glViewport(viewport.viewport[0],viewport.viewport[1],viewport.viewport[2],viewport.viewport[3]);
+  g_low->ogl->glViewport(viewport.viewport[0],viewport.viewport[1],viewport.viewport[2],viewport.viewport[3]);
 }
 EXPORT bool GameApi::FrameBufferApi::fbo_status(FBO buffer)
 {
   FBOPriv *priv = find_fbo(e, buffer);
-  glBindFramebuffer(GL_FRAMEBUFFER, priv->fbo_name);
-  int val = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-  std::cout << "CheckFrameBuffer: " << val << "== " << GL_FRAMEBUFFER_COMPLETE << std::endl;
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  return val == GL_FRAMEBUFFER_COMPLETE;
+  g_low->ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, priv->fbo_name);
+  int val = g_low->ogl->glCheckFramebufferStatus(Low_GL_FRAMEBUFFER);
+  std::cout << "CheckFrameBuffer: " << val << "== " << Low_GL_FRAMEBUFFER_COMPLETE << std::endl;
+  g_low->ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, 0);
+  return val == Low_GL_FRAMEBUFFER_COMPLETE;
 }
 EXPORT GameApi::BM GameApi::FrameBufferApi::fbo_to_bitmap(EveryApi &ev, FBO buffer)
 {
@@ -88,11 +88,11 @@ EXPORT GameApi::BM GameApi::FrameBufferApi::fbo_to_bitmap(EveryApi &ev, FBO buff
   int width = priv->sx;
   int height = priv->sy;
 
-  glBindTexture( GL_TEXTURE_2D, priv->texture);
+  g_low->ogl->glBindTexture( Low_GL_TEXTURE_2D, priv->texture);
 
   BufferRef ref = BufferRef::NewBuffer(width, height);
 #ifndef EMSCRIPTEN
-  glGetTexImage( GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
+  g_low->ogl->glGetTexImage( Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, ref.buffer);
 #endif
 
 
@@ -121,13 +121,13 @@ public:
       firsttime = false;
     }
     int id=0;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &id);
-    glBindTexture(GL_TEXTURE_2D,0);
+    g_low->ogl->glGetIntegerv(Low_GL_TEXTURE_BINDING_2D, &id);
+    g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
     GameApi::FrameBufferApi::vp viewport = ev.fbo_api.bind_fbo(fbo);
-    glClearColor(0.0,0.0,0.0,0.0);
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
+    g_low->ogl->glClearColor(0.0,0.0,0.0,0.0);
+    g_low->ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
+    g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+    g_low->ogl->glDepthMask(Low_GL_TRUE);
     MainLoopEnv ee = e;
     ee.v_shader_functions = "";
     ee.f_shader_functions = "";
@@ -154,7 +154,7 @@ public:
     }
       item->execute(ee);
     ev.fbo_api.bind_screen(viewport);
-    glBindTexture(GL_TEXTURE_2D, id);
+    g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
 		  
   }
   int texture() const

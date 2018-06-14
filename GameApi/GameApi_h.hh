@@ -43,23 +43,26 @@
 #include <cmath>
 #include <chrono>
 
-#define NO_SDL_GLEXT 
+
+//#define NO_SDL_GLEXT 
 #ifndef DEPS
-#include <GL/glew.h> 
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
+//#include <GL/glew.h> 
+//#ifdef __APPLE__
+//#include <OpenGL/gl.h>
+//#else
+//#include <GL/gl.h>
+//#endif
 #endif
 #ifndef DEPS
-#ifdef SDL2_USED
-#include <SDL.h>
-#include <SDL_opengl.h>
-#else
-#include <SDL/SDL.h> 
-#include <SDL/SDL_opengl.h>
-#endif
+//#ifdef SDL2_USED
+//#include <SDL.h>
+//#include <SDL_opengl.h>
+//#else
+//#include <SDL/SDL.h> 
+//#include <SDL/SDL_opengl.h>
+//#endif
+
+#include "GameApi_low.hh"
 #include <SDL_mixer.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -156,9 +159,9 @@ struct ShaderPriv2
 
 struct FBOPriv
 {
-  GLuint fbo_name;
-  GLuint texture;
-  GLuint depthbuffer;
+  Low_GLuint fbo_name;
+  Low_GLuint texture;
+  Low_GLuint depthbuffer;
   int sx,sy;
 };
 
@@ -387,11 +390,11 @@ struct PointArray2
   float *array2_1;
   unsigned int *color_array;
   int numpoints;
-  GLuint buffer;
-  GLuint buffer2_1;
-  GLuint buffer2;
-  GLuint vao[1];
-  GLuint pos_buffer;
+  Low_GLuint buffer;
+  Low_GLuint buffer2_1;
+  Low_GLuint buffer2;
+  Low_GLuint vao[1];
+  Low_GLuint pos_buffer;
 };
 
 struct PointArray3
@@ -399,8 +402,8 @@ struct PointArray3
   float *array;
   unsigned int *color;
   int numpoints;
-  GLuint buffer[2];
-  GLuint vao[1];
+  Low_GLuint buffer[2];
+  Low_GLuint vao[1];
 };
 
 struct PlaneData
@@ -994,7 +997,7 @@ void add_update_widget(GameApi::Env &e, GameApi::W widget, GuiWidget *w);
 GameApi::SFO add_shader_module(GameApi::Env &e, ShaderModule *vol);
 GameApi::SM add_sample(GameApi::Env &e, Samples *s);
 GameApi::TRK add_tracker(GameApi::Env &e, Tracker *trk);
-GameApi::FBO add_fbo(GameApi::Env &e, GLuint fbo_name, GLuint texture, GLuint depthbuffer, int sx, int sy);
+GameApi::FBO add_fbo(GameApi::Env &e, Low_GLuint fbo_name, Low_GLuint texture, Low_GLuint depthbuffer, int sx, int sy);
 GameApi::F add_float(GameApi::Env &e, LazyValue<float> *val);
 GameApi::FA add_float_array(GameApi::Env &e, Array<int,float> *arr);
 GameApi::FD add_distance(GameApi::Env &e, DistanceRenderable *dist);

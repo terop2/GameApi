@@ -628,14 +628,14 @@ public:
       {
 	Point2d pos = get_pos();
 	Vector2d sz = get_size();
-	glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
+	g_low->ogl->glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
-	glEnable(GL_DEPTH_TEST);
+	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
 	obj.render();
-	glDisable(GL_DEPTH_TEST);
+	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-	glViewport(0,0,screen_x, screen_y);
+	g_low->ogl->glViewport(0,0,screen_x, screen_y);
 	ev.shader_api.use(old_sh);
       }
     }
@@ -717,16 +717,16 @@ public:
       {
 	Point2d pos = get_pos();
 	Vector2d sz = get_size();
-	glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
+	g_low->ogl->glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
-	glEnable(GL_DEPTH_TEST);
+	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
 	//obj.render();
 	ev.shader_api.set_var(sh, "in_MV", mat);
 	ev.polygon_api.render_vertex_array(p);
-	glDisable(GL_DEPTH_TEST);
+	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-	glViewport(0,0,screen_x, screen_y);
+	g_low->ogl->glViewport(0,0,screen_x, screen_y);
 	ev.shader_api.use(old_sh);
       }
       }
@@ -841,7 +841,7 @@ public:
       {
 	Point2d pos = get_pos();
 	Vector2d sz = get_size();
-	glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
+	g_low->ogl->glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
 	int c_x = ev.mainloop_api.get_corner_x();
 	int c_y = ev.mainloop_api.get_corner_y();
 	int c_sx = ev.mainloop_api.get_screen_rect_sx();
@@ -855,7 +855,7 @@ public:
 	ev.mainloop_api.switch_to_3d(false, sh_2d, screen_x, screen_y);
 	ev.shader_api.use(sh_arr);
 	ev.mainloop_api.switch_to_3d(true, sh_arr, screen_x, screen_y);
-	glEnable(GL_DEPTH_TEST);
+	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
 	//obj.render();
 	ev.shader_api.use(sh);
 	ev.shader_api.set_var(sh, "in_MV", mat);
@@ -875,7 +875,7 @@ public:
 	e.button = -1;
 
 	//ev.polygon_api.render_vertex_array(p);
-	glDisable(GL_DEPTH_TEST);
+	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
 	ev.shader_api.use(sh2);
@@ -885,7 +885,7 @@ public:
 	ev.shader_api.use(sh_2d);
 	ev.mainloop_api.switch_to_3d(false, sh_2d, screen_x, screen_y);
 	ev.mainloop_api.set_corner(c_x,c_y,c_sx,c_sy);
-	glViewport(0,0,screen_x, screen_y);
+	g_low->ogl->glViewport(0,0,screen_x, screen_y);
 	ev.shader_api.use(old_sh);
       }
       }
@@ -1098,16 +1098,16 @@ public:
       {
 	Point2d pos = get_pos();
 	Vector2d sz = get_size();
-	glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
+	g_low->ogl->glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
-	glEnable(GL_DEPTH_TEST);
+	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
 	//glPointSize(5.0);
 	//ev.mainloop_api.clear_3d();
 	obj.render();
-	glDisable(GL_DEPTH_TEST);
+	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-	glViewport(0,0,screen_x, screen_y);
+	g_low->ogl->glViewport(0,0,screen_x, screen_y);
 	ev.shader_api.use(old_sh);
       }
       }
@@ -1187,14 +1187,14 @@ public:
       {
 	Point2d pos = get_pos();
 	Vector2d sz = get_size();
-	glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
+	g_low->ogl->glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
-	glEnable(GL_DEPTH_TEST);
+	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
 	obj.render();
-	glDisable(GL_DEPTH_TEST);
+	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-	glViewport(0,0,screen_x, screen_y);
+	g_low->ogl->glViewport(0,0,screen_x, screen_y);
 	ev.shader_api.use(old_sh);
       }
       }
@@ -1261,11 +1261,18 @@ private:
 };
 
 #ifndef EMSCRIPTEN
-std::map<int, int> shared_sprites;
+//std::map<int, int> shared_sprites;
+struct A { int key; int value; };
+std::vector<A> shared_sprites;
+int find_shared_sprites(int key) {
+  int s = shared_sprites.size();
+  for(int i=0;i<s;i++) { if (shared_sprites[i].key==key) return i; }
+  return -1;
+}
 class IconGuiWidgetShared : public GuiWidgetForward
 {
 public:
-  IconGuiWidgetShared(GameApi::EveryApi &ev, GameApi::BM bm, GameApi::SH sh, int key) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), ev(ev), sh(sh), bm(bm), key(key) { firsttime=true;
+  IconGuiWidgetShared(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::BM bm, GameApi::SH sh, int key) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), env(env), ev(ev), sh(sh), bm(bm), key(key) { firsttime=true;
     Point2d p = { -666.0, -666.0 };
     update(p, -1,-1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
@@ -1279,13 +1286,27 @@ public:
     size.dy = ev.bitmap_api.size_y(bm);
     if (firsttime)
       {
-	std::map<int,int>::iterator i = shared_sprites.find(key);
-	if (i!=shared_sprites.end()) {
-	  bm_va.id = (*i).second;
+	//std::map<int,int>::iterator i = shared_sprites.find(key);
+	int index = find_shared_sprites(key);
+	if (index!=-1) {
+	  bm_va.id = shared_sprites[index].value;
+	  RenderVertexArray *r = find_vertex_array_render(env, bm_va);
+	  if (!r) {
+	    GameApi::BM scaled = ev.bitmap_api.scale_bitmap(ev,bm, 100,100);
+	    bm_va = ev.sprite_api.create_vertex_array(scaled);
+	    A a;
+	    a.key = key;
+	    a.value = bm_va.id;
+	    shared_sprites.push_back(a);
+	  }
 	} else {
 	  GameApi::BM scaled = ev.bitmap_api.scale_bitmap(ev,bm, 100,100);
 	  bm_va = ev.sprite_api.create_vertex_array(scaled);
-	  shared_sprites[key] = bm_va.id;
+	  A a;
+	  a.key = key;
+	  a.value = bm_va.id;
+	  shared_sprites.push_back(a);
+	  //shared_sprites.push[key] = bm_va.id;
 	}
 	firsttime = false;
       }
@@ -1314,6 +1335,7 @@ public:
     return bm.id;
   }
 private:
+  GameApi::Env &env;
   GameApi::EveryApi &ev;
   bool firsttime;
   GameApi::SH sh;
@@ -2416,7 +2438,7 @@ EXPORT GameApi::W GameApi::GuiApi::icon(BM bm)
 EXPORT GameApi::W GameApi::GuiApi::icon_shared(BM bm, int key)
 {
 #ifndef EMSCRIPTEN
-  return add_widget(e, new IconGuiWidgetShared(ev, bm, sh, key));
+  return add_widget(e, new IconGuiWidgetShared(e,ev, bm, sh, key));
 #else
   W w;
   w.id = 0;
@@ -3593,10 +3615,10 @@ public:
   {
     if (is_visible())
       {
-    glEnable(GL_SCISSOR_TEST);
-    glScissor(pos.x, screen_y-pos.y-size.dy, size.dx, size.dy);
+    g_low->ogl->glEnable(Low_GL_SCISSOR_TEST);
+    g_low->ogl->glScissor(pos.x, screen_y-pos.y-size.dy, size.dx, size.dy);
     vec[0]->render();
-    glDisable(GL_SCISSOR_TEST);
+    g_low->ogl->glDisable(Low_GL_SCISSOR_TEST);
       }
   }
 

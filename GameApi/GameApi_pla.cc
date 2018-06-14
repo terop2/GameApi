@@ -844,6 +844,7 @@ EXPORT GameApi::PL GameApi::PlaneApi::star(GameApi::PT center, float radius_1, f
 
 EXPORT GameApi::PLA GameApi::PlaneApi::prepare(GameApi::PL pl)
 {
+#if 0
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   PlaneData data;
   PlanePoints2d *ptr = find_plane(e, pl);
@@ -895,9 +896,11 @@ std::cout << "Type ERROR!" << std::endl;
 #endif
     }
   return pla;
+#endif
 }
 EXPORT void GameApi::PlaneApi::render(GameApi::PLA pla, float x, float y, float mult_x, float mult_y)
 {
+#if 0
   //PlaneData *dt = find_plane_array(e,pla);
   //GLuint pathObj = glGenPathsNV(1);
   //glMatrixPushExt(GL_MODELVIEW);
@@ -920,6 +923,7 @@ EXPORT void GameApi::PlaneApi::render(GameApi::PLA pla, float x, float y, float 
   glPopMatrix();
 #endif
     }
+#endif
 }
 #if 0
 EXPORT GameApi::PL GameApi::PlaneApi::floodfill_border(GameApi::BB bitmap, int x, int y)

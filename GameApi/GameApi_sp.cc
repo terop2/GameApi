@@ -189,9 +189,9 @@ public:
     GameApi::SH sh = { e.sh_texture_2d };
     ev.shader_api.use(sh);
     ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-    glViewport(corner_x+tl.x,screen_y-corner_y-(br.y-tl.y), br.x-tl.x, br.y-tl.y);
+    g_low->ogl->glViewport(corner_x+tl.x,screen_y-corner_y-(br.y-tl.y), br.x-tl.x, br.y-tl.y);
 
-    glDisable(GL_DEPTH_TEST);
+    g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
     //int old_sh = e.sh_texture;
     MainLoopEnv ee = e;
     ee.sh_texture = e.sh_texture_2d;
@@ -200,9 +200,9 @@ public:
     ee.is_2d = true;
     next->execute(ee);
     //e.sh_texture = old_sh;
-    glEnable(GL_DEPTH_TEST);
+    g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
     ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
-    glViewport(corner_x,screen_y-corner_y-rect_sy,rect_sx, rect_sy);
+    g_low->ogl->glViewport(corner_x,screen_y-corner_y-rect_sy,rect_sx, rect_sy);
   }
 
 private:
@@ -346,6 +346,8 @@ EXPORT void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
+  if (!s || ((int)s)<0x100) { std::cout << "render_sprite_vertex_array ignored!" << std::endl; return; }
+  if (!rend || ((int)rend)<0x100){ std::cout << "render_sprite_vertex_array ignored!" << std::endl;  return; }
   //SpritePriv &spriv = *(SpritePriv*)priv;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
 
@@ -359,18 +361,18 @@ EXPORT void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
     }
   else if(s->texture_id!=-1)
     {
-      glEnable(GL_TEXTURE_2D);
+      g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
-      glClientActiveTexture(GL_TEXTURE0+0);
+      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      glActiveTexture(GL_TEXTURE0+0);
-      glBindTexture(GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
 
       rend->render(0);
       //      RenderVertexArray arr(*s);
       //arr.render(0);
 
-      glDisable(GL_TEXTURE_2D);
+      g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
     }
   else
     {
@@ -470,6 +472,7 @@ EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
   RenderVertexArray *arr = new RenderVertexArray(g_low, *s); 
   arr->prepare(0);
   //s->free_memory();
+  //std::cout << "add vertex array: " << (int)s << " " << (int)arr << std::endl;
   return add_vertex_array(e, s, arr); 
 }
 EXPORT void GameApi::SpriteApi::clear_arrays(VA va)
