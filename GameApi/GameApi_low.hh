@@ -9,6 +9,9 @@ typedef void Low_GLvoid;
 typedef int Low_GLenum;
 typedef float Low_GLfloat;
 typedef unsigned int Low_GLsizei;
+// old
+typedef char Low_GLbyte;
+typedef short Low_GLshort;
 enum
   {
     Low_GL_ARRAY_BUFFER=555, // glBindBuffer 1st arg, glBufferData 1st arg, glBufferSubData 1st arg
@@ -101,7 +104,17 @@ enum
     Low_GL_TEXTURE_WRAP_R,
     Low_GL_REPEAT,
     Low_GL_RGBA8,
-    
+
+    //
+    //  OLD STUFF
+    // 
+    Low_GL_VERTEX_ARRAY,
+    Low_GL_NORMAL_ARRAY,
+    Low_GL_COLOR_ARRAY,
+    Low_GL_TEXTURE_COORD_ARRAY,
+    Low_GL_POLYGON,
+    Low_GL_SHORT,
+    Low_GL_COMPILE,
   };
 enum {
     Low_GL_COLOR_BUFFER_BIT=1, // glClear
@@ -307,7 +320,27 @@ public:
   virtual void glMatrixMode(int i)=0;
   virtual void glLoadIdentity()=0;
   virtual void glTranslatef(float, float, float)=0;
-  
+  virtual void glDisableClientState(int) { }
+  virtual void glTexCoordPointer(int,int,int, void*) { }
+  virtual void glColorPointer(int,int,int,void*) { }
+  virtual void glVertexPointer(int,int,int,void*) { }
+  virtual void glNormalPointer(int,int,void*) { }
+  virtual void glRotatef(float,float,float,float) {}
+  //virtual void glEnableClientState(int) { }
+  //virtual void glDisableClientState(int) { }
+  virtual void glColor3f(float,float,float) { }
+  virtual void glCallList(int) { }
+  virtual void glEndList() { }
+  virtual void glEnd() { }
+  virtual void glVertex3f(float,float,float) { }
+  virtual void glNormal3f(float,float,float) { }
+  virtual void glTexCoord2f(float,float) { }
+  virtual void glVertexAttrib1s(int loc, short s) {}
+  virtual void glVertexAttrib1f(int loc, float s) {}
+  virtual void glBegin(int) { }
+  virtual void glNewList(int i, int k) { }
+  virtual int glGenLists(int) { return 0; }
+  virtual void glDeleteLists(int,int) {}
 };
 
 class FontLowApi

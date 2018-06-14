@@ -23,8 +23,8 @@
 #define _SCL_SECURE_NO_WARNINGS
 #include "Effect.hh"
 #include "Effect2.hh"
-#include <GL/glew.h>
-#include <SDL_opengl.h>
+//#include <GL/glew.h>
+//#include <SDL_opengl.h>
 #include "VectorTools.hh"
 //#include <GL/glut.h>
 #include "Bitmap.hh"
@@ -37,6 +37,7 @@
 #define VAO 1
 #endif
 
+#include "GameApi_low.hh"
 
 
 std::ostream &operator<<(std::ostream &o, const ObjectData &od)
@@ -385,37 +386,37 @@ void TexturePlugin::Init()
 {
   if (texture != 5566)
     {
-      glDeleteTextures(1, &texture);
+      g_low->ogl->glDeleteTextures(1, &texture);
     }
     if (buf.width != buf.ydelta) { std::cout << "TexturePlugin::ERROR" << std::endl; }
     int sizex = buf.width;
     int sizey = buf.height;
-    glGenTextures(1, &texture); // TODO, move glGenTextures somewhere else. Should not call this here, instead many textures must be allocated with same call.
-    glBindTexture(GL_TEXTURE_2D, texture);
+    g_low->ogl->glGenTextures(1, &texture); // TODO, move glGenTextures somewhere else. Should not call this here, instead many textures must be allocated with same call.
+    g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, texture);
     //unsigned int col = buf.buffer[0];
     std::cout << "TexturePlugin: " << texture << std::endl;
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sizex, sizey, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf.buffer);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+    g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, sizex, sizey, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.buffer);
+    g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
+    g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
+    g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
 }
 TexturePlugin::~TexturePlugin()
 {
-  glDeleteTextures(1, &texture);
+  g_low->ogl->glDeleteTextures(1, &texture);
 }
 
 void TexturePlugin::Start()
 {
-    glDisable(GL_LIGHTING);
-    glEnable(GL_TEXTURE_2D);
+    g_low->ogl->glDisable(Low_GL_LIGHTING);
+    g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 
 }
 void TexturePlugin::End()
 {
-    glDisable(GL_TEXTURE_2D);
-    glEnable(GL_LIGHTING);
+    g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+    g_low->ogl->glEnable(Low_GL_LIGHTING);
 }
 
 void RenderOpenGlCmds::Execute()
@@ -427,60 +428,60 @@ void RenderToTexture::PreCalc()
   cmds.PreCalc();
   if (in_precalc)
     {
-      glEnable(GL_TEXTURE_2D);
-      GLfloat params[4];
-      glGetFloatv(GL_VIEWPORT, params);
-      glViewport(0,0, plugin->buf.width, plugin->buf.height);
+      g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+      Low_GLfloat params[4];
+      g_low->ogl->glGetFloatv(Low_GL_VIEWPORT, params);
+      g_low->ogl->glViewport(0,0, plugin->buf.width, plugin->buf.height);
       cmds.Execute();
-      glBindTexture(GL_TEXTURE_2D, plugin->texture);
-      glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, plugin->buf.width, plugin->buf.height, 0);
-      glViewport(params[0],params[1],params[2],params[3]);
-      glDisable(GL_TEXTURE_2D);
+      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, plugin->texture);
+      g_low->ogl->glCopyTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, 0, 0, plugin->buf.width, plugin->buf.height, 0);
+      g_low->ogl->glViewport(params[0],params[1],params[2],params[3]);
+      g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
     }
 }
 void RenderToTexture::Execute()
 {
   if (!in_precalc)
     {
-      glEnable(GL_TEXTURE_2D);
-      GLfloat params[4];
-      glGetFloatv(GL_VIEWPORT, params);
-      glViewport(0,0, plugin->buf.width, plugin->buf.height);
+      g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+      Low_GLfloat params[4];
+      g_low->ogl->glGetFloatv(Low_GL_VIEWPORT, params);
+      g_low->ogl->glViewport(0,0, plugin->buf.width, plugin->buf.height);
       cmds.Execute();
-      glBindTexture(GL_TEXTURE_2D, plugin->texture);
-      glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, plugin->buf.width, plugin->buf.height, 0);
-      glViewport(params[0],params[1],params[2],params[3]);
-      glDisable(GL_TEXTURE_2D);
+      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, plugin->texture);
+      g_low->ogl->glCopyTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, 0, 0, plugin->buf.width, plugin->buf.height, 0);
+      g_low->ogl->glViewport(params[0],params[1],params[2],params[3]);
+      g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
     }
 }
 
 void TransparencyCmds::Execute()
 {
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glEnable(GL_BLEND);
-  glDisable(GL_DEPTH_TEST);
+  g_low->ogl->glBlendFunc(Low_GL_SRC_ALPHA, Low_GL_ONE_MINUS_SRC_ALPHA);
+  g_low->ogl->glEnable(Low_GL_BLEND);
+  g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
   inner_cmds.Execute();
-  glEnable(GL_DEPTH_TEST);
-  glDisable(GL_BLEND);
+  g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+  g_low->ogl->glDisable(Low_GL_BLEND);
 }
 
 void TextureCommands::Execute()
 {
-  glEnable(GL_TEXTURE_2D);
+  g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
   cmds.Execute();
-  glDisable(GL_TEXTURE_2D);
+  g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
 }
 void ColorCmds::Execute()
 {
-  glColor4ub(c.r, c.g, c.b, c.alpha);
+  g_low->ogl->glColor4ub(c.r, c.g, c.b, c.alpha);
   cmds.Execute();
-  glColor4f(1.0,1.0,1.0,1.0);
+  g_low->ogl->glColor4f(1.0,1.0,1.0,1.0);
 }
 
 struct DisplayListPriv
 {
-  GLuint displaylist;
-  ~DisplayListPriv() { glDeleteLists(displaylist, 1); }
+  Low_GLuint displaylist;
+  ~DisplayListPriv() { g_low->ogl->glDeleteLists(displaylist, 1); }
 };
 DisplayListCmds::~DisplayListCmds()
 {
@@ -493,19 +494,19 @@ void DisplayListCmds::PreCalc()
   delete priv2;
   priv2 = new DisplayListPriv;
   priv = priv2;
-  priv2->displaylist = glGenLists(1);
-  glNewList(priv2->displaylist, GL_COMPILE);
+  priv2->displaylist = g_low->ogl->glGenLists(1);
+  g_low->ogl->glNewList(priv2->displaylist, Low_GL_COMPILE);
   cmds.Execute();
-  glEnd();
+  g_low->ogl->glEnd();
 }
 void DisplayListCmds::Execute()
 {
   DisplayListPriv *priv2 = (DisplayListPriv*)priv;
-  glCallList(priv2->displaylist);
+  g_low->ogl->glCallList(priv2->displaylist);
 }
 Camera::Camera(MatrixCurve &curve, float time)
 {
-  glPushMatrix();
+  g_low->ogl->glPushMatrix();
   Matrix m = curve.Index(fmodf(time,curve.Size()));
   m = Matrix::Inverse(m);
       float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
@@ -514,12 +515,12 @@ Camera::Camera(MatrixCurve &curve, float time)
 			m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
 
 #ifndef EMSCRIPTEN
-  glMultMatrixf(&mat[0]);
+  g_low->ogl->glMultMatrixf(&mat[0]);
 #endif
 }
 Camera::~Camera()
 {
-  glPopMatrix();
+  g_low->ogl->glPopMatrix();
 }
 
 void RenderOpenGl(const FaceCollection &col, const BoxCollection &b, Boxable &elem)
@@ -567,18 +568,18 @@ void RenderOpenGl(const FaceCollection &col)
     {
       int polycount = col.NumPoints(face);
       //std::cout << "polycount=" << polycount << std::endl;
-      glBegin( GL_POLYGON );
+      g_low->ogl->glBegin( Low_GL_POLYGON );
       for(int v=0;v<polycount;v++)
 	{
 	  unsigned int color = col.Color(face, v);
-	  glColor4ub(color, color>>8, color>>16, color>>24);
+	  g_low->ogl->glColor4ub(color, color>>8, color>>16, color>>24);
 	  Vector vv = col.PointNormal(face, v);
-	  glNormal3f( vv.dx, vv.dy, vv.dz );
+	  g_low->ogl->glNormal3f( vv.dx, vv.dy, vv.dz );
 	  Point p = col.FacePoint(face, v);
 	  //std::cout << "Vertex: " << p.x << " " << p.y << " " << p.z << std::endl;
-	  glVertex3f( p.x, p.y, p.z );
+	  g_low->ogl->glVertex3f( p.x, p.y, p.z );
 	}
-      glEnd();
+      g_low->ogl->glEnd();
     }
 }
 
@@ -593,17 +594,17 @@ void RenderOpenGl(const FaceCollection &col, Function<int,bool> &removepolys)
     {
       if (removepolys.Index(face)) continue;
       int polycount = col.NumPoints(face);
-      glBegin( GL_POLYGON );
+      g_low->ogl->glBegin( Low_GL_POLYGON );
       for(int v=0;v<polycount;v++)
 	{
 	  unsigned int color = col.Color(face, v);
-	  glColor4ub(color, color>>8, color>>16, color>>24);
+	  g_low->ogl->glColor4ub(color, color>>8, color>>16, color>>24);
 	  Vector vv = col.PointNormal(face, v);
-	  glNormal3f( vv.dx, vv.dy, vv.dz );
+	  g_low->ogl->glNormal3f( vv.dx, vv.dy, vv.dz );
 	  Point p = col.FacePoint(face, v);
-	  glVertex3f( p.x, p.y, p.z );
+	  g_low->ogl->glVertex3f( p.x, p.y, p.z );
 	}
-      glEnd();
+      g_low->ogl->glEnd();
     }
 }
 
@@ -631,22 +632,22 @@ void RenderOpenGlLines(const LineCollection &lines)
     {
       Point p = lines.LinePoint(line, 0);
       Point p2 = lines.LinePoint(line, 1);
-      glBegin(GL_LINES);
-      glVertex3f(p.x,p.y,p.z);
-      glVertex3f(p2.x, p2.y, p2.z);
-      glEnd();
+      g_low->ogl->glBegin(Low_GL_LINES);
+      g_low->ogl->glVertex3f(p.x,p.y,p.z);
+      g_low->ogl->glVertex3f(p2.x, p2.y, p2.z);
+      g_low->ogl->glEnd();
     }
 }
 void RenderOpenGlPoly(const PointCollection &col)
 {
   int count = col.NumPoints();
-  glBegin(GL_POLYGON);
+  g_low->ogl->glBegin(Low_GL_POLYGON);
   for(int i = 0;i<count;i++)
     {
       Point p = col.Points(i);
-      glVertex3f(p.x,p.y,p.z);
+      g_low->ogl->glVertex3f(p.x,p.y,p.z);
     }
-  glEnd();
+  g_low->ogl->glEnd();
 }
 
 void RenderOpenGl(const FaceCollection &col, const TextureCoords &coords)
@@ -663,7 +664,7 @@ void RenderOpenGl(const FaceCollection &col, const TextureCoords &coords)
 	      //glEnable(GL_TEXTURE_2D);
 	    }
 	  //std::cout << "BIND: " << tex << std::endl;
-	  glBindTexture(GL_TEXTURE_2D, tex);
+	  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, tex);
 	}
       else
 	{
@@ -673,18 +674,18 @@ void RenderOpenGl(const FaceCollection &col, const TextureCoords &coords)
 	    }
 	}
       int polycount = col.NumPoints(face);
-      glBegin( GL_POLYGON );
+      g_low->ogl->glBegin( Low_GL_POLYGON );
       for(int v=0;v<polycount;v++)
 	{
 	  Point2d texcoord = coords.TexCoord(face, v);
-	  glTexCoord2f( texcoord.x, texcoord.y );
+	  g_low->ogl->glTexCoord2f( texcoord.x, texcoord.y );
 	  
 	  Vector vv = col.PointNormal(face, v);
-	  glNormal3f( vv.dx, vv.dy, vv.dz );
+	  g_low->ogl->glNormal3f( vv.dx, vv.dy, vv.dz );
 	  Point p = col.FacePoint(face, v);
-	  glVertex3f( p.x, p.y, p.z );
+	  g_low->ogl->glVertex3f( p.x, p.y, p.z );
 	}
-      glEnd();
+      g_low->ogl->glEnd();
     }
   //glDisable(GL_TEXTURE_2D);
 }
@@ -697,16 +698,16 @@ void RenderOpenGlObjects(const BoxCollectionWithObject &coll, VBOState &vbostate
       Matrix m = coll.BoxIndex(i);
       int object = coll.BoxObject(i);
       //std::cout << m << " " << object << std::endl;
-      glPushMatrix();
+      g_low->ogl->glPushMatrix();
       float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
 			m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
 			m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 			m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
 #ifndef EMSCRIPTEN
-      glMultMatrixf(&mat[0]);
+      g_low->ogl->glMultMatrixf(&mat[0]);
 #endif
       DrawVBO(object, vbostate, u);
-      glPopMatrix();
+      g_low->ogl->glPopMatrix();
     }
 }
 void RenderOpenGlObjects(const ObjectDataArray &arr, VBOState &vbostate, VBOUpdate u, ShaderUse *use)
@@ -719,16 +720,16 @@ void RenderOpenGlObjects(const ObjectDataArray &arr, VBOState &vbostate, VBOUpda
       int object = data.object;
       ShaderParameters *params = data.params;
       if (params&&use) use->set_params(*params);
-      glPushMatrix();
+      g_low->ogl->glPushMatrix();
       float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
 			m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
 			m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 			m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
 #ifndef EMSCRIPTEN
-      glMultMatrixf(&mat[0]);
+      g_low->ogl->glMultMatrixf(&mat[0]);
 #endif
       DrawVBO(object, vbostate, u);
-      glPopMatrix();
+      g_low->ogl->glPopMatrix();
     }
   //if (use)
   //   use->unuse();
@@ -737,7 +738,7 @@ void RenderOpenGlObjects(const ObjectDataArray &arr, VBOState &vbostate, VBOUpda
 void ColorElement::SetElemId(int id) 
 { 
   Color2 c = cont[id%cont.size()];
-  glColor3f(c.r, c.g, c.b);
+  g_low->ogl->glColor3f(c.r, c.g, c.b);
   ec.SetElemId(id);
 }
 CylinderEffect::CylinderEffect(Render *r)
@@ -942,11 +943,11 @@ void MoleculeEffect::Init()
 }
 void MoleculeEffect::Cleanup()
 {
-  glDisable(GL_TEXTURE_2D);
+  g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
 }
 
-GLfloat light_position1[] = { 100.0, 1.0, 0.0, -200.0 };
-GLfloat light_position3[] = { 1.0, 100.0, 0.0, -200.0 };
+Low_GLfloat light_position1[] = { 100.0, 1.0, 0.0, -200.0 };
+Low_GLfloat light_position3[] = { 1.0, 100.0, 0.0, -200.0 };
 
 
 void MoleculeEffect::PreFrame(float time)
@@ -954,8 +955,8 @@ void MoleculeEffect::PreFrame(float time)
 #if 0
   //glDisable(GL_LIGHTING);
 
-  glEnable(GL_TEXTURE_2D);
-  glColor4f(1.0,1.0,1.0,0.0);
+  g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+  g_low->ogl->glColor4f(1.0,1.0,1.0,0.0);
 
   shader.use();
 
@@ -977,8 +978,8 @@ void MoleculeEffect::PreFrame(float time)
   shader.set_params(np);
 
 
-  glPushMatrix();
-  glRotatef(time, 1.0,1.0,0.0);
+  g_low->ogl->glPushMatrix();
+  g_low->ogl->glRotatef(time, 1.0,1.0,0.0);
   CubeElem stars_cube;
   Matrix m[] = { Matrix::Scale(600,600,600) };
   MatrixCollection stars_coll(m,m+1);
@@ -988,8 +989,8 @@ void MoleculeEffect::PreFrame(float time)
   //SphericalTexCoords tex(stars_cube, ((TexturePlugin*)plugins[0])->Texture(), Point(0.0,0.0, 0.0));
   //FIX RenderOpenGl(stars_cube, stars_bc, tex);
   shader.unuse();
-  glPopMatrix();
-  glDisable(GL_TEXTURE_2D);
+  g_low->ogl->glPopMatrix();
+  g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
   //glEnable(GL_LIGHTING);
 #endif
 }
@@ -1133,7 +1134,7 @@ bool MoleculeInsideEffect::Frame(float time)
   RemovePolys rem2(m2,m1, EDraw);
   NotFunc remnot2(rem2);
   MemoizeFunction<bool> remnot2_m(m2.NumFaces(), rem2);
-  glColor3f(1.0,1.0,1.0);
+  g_low->ogl->glColor3f(1.0,1.0,1.0);
 
   NotFunc and_f_m_n(and_f_m);
 
@@ -1148,10 +1149,10 @@ bool MoleculeInsideEffect::Frame(float time)
   FilterFaces ff3(m3, remnot22_m);
   //RenderOpenGl(m3, remnot22);
 
-  glColor3f(1.0,0.0,0.0);
+  g_low->ogl->glColor3f(1.0,0.0,0.0);
   IntersectFaces iface(m1,m2);
   //RenderOpenGl(iface);
-  glColor3f(1.0,0.0,0.0);
+  g_low->ogl->glColor3f(1.0,0.0,0.0);
   IntersectFaces iface3(m2,m1);
   SplitPolygons split1(iface, iface3, m2, true);
   split1.DoSplitting();
@@ -1160,7 +1161,7 @@ bool MoleculeInsideEffect::Frame(float time)
   //RenderOpenGl(iface3);
 
 
-  glColor3f(1.0,1.0,1.0);
+  g_low->ogl->glColor3f(1.0,1.0,1.0);
 
   IntersectFaces iface2(m1,m3);
   // RenderOpenGl(iface2);
@@ -1182,7 +1183,7 @@ bool MoleculeInsideEffect::Frame(float time)
   OrElem<FaceCollection> or_elem(arr, arr+3);
   or_elem.update_faces_cache();
 
-  glColor3f(1.0,0.5, 0.3);
+  g_low->ogl->glColor3f(1.0,0.5, 0.3);
   RenderOpenGl(or_elem);
   //glColor3f(1.0,0.0,0.0);
   RenderOpenGl(split1);
@@ -1196,13 +1197,13 @@ bool MoleculeInsideEffect::Frame(float time)
   RenderOpenGl(split2);
   RenderOpenGl(split2a);
 
-  glColor3f(1.0,1.0,1.0);
-  glDisable(GL_LIGHTING);
+  g_low->ogl->glColor3f(1.0,1.0,1.0);
+  g_low->ogl->glDisable(Low_GL_LIGHTING);
   OutlineFaces out1(m2);
   RenderOpenGlLines(out1);
   OutlineFaces out2(m3);
   RenderOpenGlLines(out2);
-  glEnable(GL_LIGHTING);
+  g_low->ogl->glEnable(Low_GL_LIGHTING);
   //RenderOpenGl(split2a);
   //RenderOpenGl(iface2);
   //RenderOpenGl(iface4);
@@ -1396,7 +1397,7 @@ bool TestEffect::Frame(float time)
   //AndNotElem a(m1,m2);
   //a.SetBox(Matrix::Identity());
   //a.DoSplittin();
-  glColor3f(1.0,1.0,1.0);
+  g_low->ogl->glColor3f(1.0,1.0,1.0);
   RenderOpenGl(*obj);
 #endif
   return false;
@@ -1439,10 +1440,10 @@ bool HeightMapEffect::Frame(float time)
 {
   //if (time>1000.0) return true;
 #if 0
-  glEnable(GL_TEXTURE_2D);
+  g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 
   //glColor3f(0.1, 0.3, 1.0);
-  glColor3f(1.0, 1.0, 1.0);
+  g_low->ogl->glColor3f(1.0, 1.0, 1.0);
   Water w(time);
   HeightMap h(90,90, w);
   //HeightMap h(50,50, w);
@@ -1450,9 +1451,9 @@ bool HeightMapEffect::Frame(float time)
   //SimpleTexCoords tex(h, ((TexturePlugin*)plugins[0])->Texture());
   SpaceTexCoords tex(hm, ((TexturePlugin*)plugins[0])->Texture(), Point(0.0,0.0,0.0), Vector(500.0,0.0,0.0), Vector(0.0,500.0,0.0));
   // FIX RenderOpenGl(hm , tex);
-  glDisable(GL_TEXTURE_2D);
+  g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
 
-  glColor3f(1.0,1.0,1.0);
+  g_low->ogl->glColor3f(1.0,1.0,1.0);
   SphereElem s(30,30);
   MatrixElem m(s, Matrix::Scale(150.0,150.0,150.0)*Matrix::Translate(0.0,0.0+(300.0-time)*5.0,0.0));
   m.SetBox(Matrix::Identity());
@@ -1919,15 +1920,15 @@ void SplitPolygons::DoSplitting()
 class VBOStatePriv
 {
 public:
-  GLuint *id;
+  Low_GLuint *id;
   //GLuint id[5]; 
   bool initialized;
-  GLfloat *vertex;
-  GLfloat *normal;
-  GLfloat *texture;
-  GLbyte *color;
-  std::map<int, GLfloat*> attribs;
-  std::map<int, GLshort*> attribsI;
+  Low_GLfloat *vertex;
+  Low_GLfloat *normal;
+  Low_GLfloat *texture;
+  Low_GLbyte *color;
+  std::map<int, Low_GLfloat*> attribs;
+  std::map<int, Low_GLshort*> attribsI;
   int indexsize;
   int **index;
   struct State
@@ -1938,7 +1939,7 @@ public:
     int endindexrange;
   };
   std::map<int, State> ranges;
-  GLuint *displaylist;
+  Low_GLuint *displaylist;
   int numobjects;
   int numattribs;
 };
@@ -1988,10 +1989,10 @@ VBOState::~VBOState()
   if (impl->initialized)
     for(int i=0;i<impl->numobjects;i++)
       if (impl->displaylist[i])
-	glDeleteLists(impl->displaylist[i], 1);
+	g_low->ogl->glDeleteLists(impl->displaylist[i], 1);
 #endif
 #ifdef VBOS
-  glDeleteBuffersARB(4+impl->numobjects, &impl->id[0]);
+  g_low->ogl->glDeleteBuffersARB(4+impl->numobjects, &impl->id[0]);
 #endif
   delete [] impl->id;
   delete [] impl->vertex;
@@ -2001,10 +2002,10 @@ VBOState::~VBOState()
   delete [] impl->index;
   delete impl;
 }
-GLfloat mat_ambient1[] = { 0.8, 0.8, 0.8, 1.0 };
-GLfloat mat_diffuse1[] = { 0.9, 0.7, 0.1, 1.0 };
-GLfloat mat_specular1[] = { 1.0, 1.0, 1.0, 1.0 };
-GLfloat mat_shininess1[] = { 50.0 };
+Low_GLfloat mat_ambient1[] = { 0.8, 0.8, 0.8, 1.0 };
+Low_GLfloat mat_diffuse1[] = { 0.9, 0.7, 0.1, 1.0 };
+Low_GLfloat mat_specular1[] = { 1.0, 1.0, 1.0, 1.0 };
+Low_GLfloat mat_shininess1[] = { 50.0 };
 
 void UpdateVBO(const FaceCollection &faces, VBOState &state, VBOUpdate u, const std::vector<Attrib> &attribs)
 {
@@ -2044,18 +2045,18 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 #ifdef DISPLAY_LISTS
   if (!state.impl->displaylist)
     {
-      state.impl->displaylist = new GLuint[state.impl->numobjects];
+      state.impl->displaylist = new Low_GLuint[state.impl->numobjects];
       for(int i=0;i<state.impl->numobjects;i++)
 	state.impl->displaylist[i]=0;
     }
-  state.impl->displaylist[obj] = glGenLists(1);
+  state.impl->displaylist[obj] = g_low->ogl->glGenLists(1);
 #endif
 
 #ifdef VBOS
   if (!state.impl->initialized)
     {
-    state.impl->id = new GLuint[4+state.impl->numobjects+attribs.size()];
-    glGenBuffersARB(4+state.impl->numobjects+attribs.size(), &state.impl->id[0]);
+    state.impl->id = new Low_GLuint[4+state.impl->numobjects+attribs.size()];
+    g_low->ogl->glGenBuffersARB(4+state.impl->numobjects+attribs.size(), &state.impl->id[0]);
     }
 #endif
 
@@ -2080,29 +2081,29 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
       //u = UpdateAll;
     }
   if (u & UpdateVertex)
-    glEnableClientState(GL_VERTEX_ARRAY);
+    g_low->ogl->glEnableClientState(Low_GL_VERTEX_ARRAY);
   if (u & UpdateNormal)
-    glEnableClientState(GL_NORMAL_ARRAY);
+    g_low->ogl->glEnableClientState(Low_GL_NORMAL_ARRAY);
   if (u & UpdateColor)
-    glEnableClientState(GL_COLOR_ARRAY);
+    g_low->ogl->glEnableClientState(Low_GL_COLOR_ARRAY);
   //if (u & UpdateTexture)
   // glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   for(std::vector<Attrib>::const_iterator i = attribs.begin();i!=attribs.end();i++)
-    glEnableVertexAttribArray((*i).loc);
+    g_low->ogl->glEnableVertexAttribArray((*i).loc);
   
   if (u & UpdateVertex)
     {
 #ifdef VBOS
 
-      glBindBufferARB(GL_ARRAY_BUFFER_ARB, state.impl->id[0]); // vertex
+      g_low->ogl->glBindBufferARB(Low_GL_ARRAY_BUFFER_ARB, state.impl->id[0]); // vertex
 
 #endif
       if (!state.impl->initialized)
 	{
-	  state.impl->vertex = new GLfloat[(rangeend-rangestart)*3];
+	  state.impl->vertex = new Low_GLfloat[(rangeend-rangestart)*3];
 	  faces.UpdateVertexList(rangestart, rangeend, state.impl->vertex);
 #ifdef VBOS
-	  glBufferDataARB(GL_ARRAY_BUFFER_ARB, (rangeend-rangestart)*3*sizeof(GLfloat), state.impl->vertex, GL_STATIC_DRAW_ARB);
+	  g_low->ogl->glBufferDataARB(Low_GL_ARRAY_BUFFER_ARB, (rangeend-rangestart)*3*sizeof(GLfloat), state.impl->vertex, Low_GL_STATIC_DRAW_ARB);
 #endif
 	}
       else
@@ -2110,26 +2111,26 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 	  faces.UpdateVertexList(rangestart, rangeend, state.impl->vertex);
 #ifdef VBOS
 
-	  glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, rangestart*3*sizeof(GLfloat), (rangeend-rangestart)*3*sizeof(GLfloat), state.impl->vertex);
+	  g_low->ogl->glBufferSubDataARB(Low_GL_ARRAY_BUFFER_ARB, rangestart*3*sizeof(GLfloat), (rangeend-rangestart)*3*sizeof(GLfloat), state.impl->vertex);
 #endif
 	}
 #ifdef DISPLAY_LISTS
-      glVertexPointer(3, GL_FLOAT, 0, state.impl->vertex); // 0 if ARB
+      g_low->ogl->glVertexPointer(3, Low_GL_FLOAT, 0, state.impl->vertex); // 0 if ARB
 #endif
     }
   if (u & UpdateNormal)
     {
 #ifdef VBOS
 
-      glBindBufferARB(GL_ARRAY_BUFFER_ARB, state.impl->id[1]); // normal
+      g_low->ogl->glBindBufferARB(Low_GL_ARRAY_BUFFER_ARB, state.impl->id[1]); // normal
 #endif
       if (!state.impl->initialized)
 	{
-	  state.impl->normal = new GLfloat[(rangeend-rangestart)*3];
+	  state.impl->normal = new Low_GLfloat[(rangeend-rangestart)*3];
 	  faces.UpdateNormalList(rangestart, rangeend, state.impl->normal);
 #ifdef VBOS
 
-	  glBufferDataARB(GL_ARRAY_BUFFER_ARB, (rangeend-rangestart)*3*sizeof(GLfloat), state.impl->normal, GL_STATIC_DRAW_ARB);
+	  g_low->ogl->glBufferDataARB(Low_GL_ARRAY_BUFFER_ARB, (rangeend-rangestart)*3*sizeof(GLfloat), state.impl->normal, Low_GL_STATIC_DRAW_ARB);
 #endif
 	}
       else
@@ -2138,25 +2139,25 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 	  faces.UpdateNormalList(rangestart, rangeend, state.impl->normal);
 #ifdef VBOS
 
-	  glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, rangestart*3*sizeof(GLfloat), (rangeend-rangestart)*3*sizeof(GLfloat), state.impl->normal);
+	  g_low->ogl->glBufferSubDataARB(Low_GL_ARRAY_BUFFER_ARB, rangestart*3*sizeof(GLfloat), (rangeend-rangestart)*3*sizeof(GLfloat), state.impl->normal);
 #endif
 	}
 #ifdef DISPLAY_LISTS
-      glNormalPointer(GL_FLOAT, 0, state.impl->normal);
+      g_low->ogl->glNormalPointer(Low_GL_FLOAT, 0, state.impl->normal);
 #endif
     }
   if (u & UpdateTexture)
     {
 #ifdef VBOS
 
-      glBindBufferARB(GL_ARRAY_BUFFER_ARB, state.impl->id[2]); // texture
+      g_low->ogl->glBindBufferARB(Low_GL_ARRAY_BUFFER_ARB, state.impl->id[2]); // texture
 #endif
       if (!state.impl->initialized)
 	{
-	  state.impl->texture = new GLfloat[(rangeend-rangestart)*2];
+	  state.impl->texture = new Low_GLfloat[(rangeend-rangestart)*2];
 	  faces.UpdateTextureCoordList(rangestart, rangeend, state.impl->texture);
 #ifdef VBOS
-	  glBufferDataARB(GL_ARRAY_BUFFER_ARB, (rangeend-rangestart)*2*sizeof(GLfloat), state.impl->vertex, GL_STATIC_DRAW_ARB);
+	  g_low->ogl->glBufferDataARB(Low_GL_ARRAY_BUFFER_ARB, (rangeend-rangestart)*2*sizeof(GLfloat), state.impl->vertex, Low_GL_STATIC_DRAW_ARB);
 #endif
 	}
       else
@@ -2164,7 +2165,7 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 	  faces.UpdateTextureCoordList(rangestart, rangeend, state.impl->texture);
 #ifdef VBOS
 
-	  glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, rangestart*3*sizeof(GLfloat), (rangeend-rangestart)*3*sizeof(GLfloat), state.impl->texture);
+	  g_low->ogl->glBufferSubDataARB(Low_GL_ARRAY_BUFFER_ARB, rangestart*3*sizeof(GLfloat), (rangeend-rangestart)*3*sizeof(GLfloat), state.impl->texture);
 #endif
 	}
 #ifdef DISPLAY_LISTS
@@ -2175,16 +2176,16 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
     {
 #ifdef VBOS
 
-      glBindBufferARB(GL_ARRAY_BUFFER_ARB, state.impl->id[3]); // color
+      g_low->ogl->glBindBufferARB(Low_GL_ARRAY_BUFFER_ARB, state.impl->id[3]); // color
 #endif
       //faces.UpdateColorList(rangestart, rangeend, (char*)state.impl->color);
       if (!state.impl->initialized)
 	{
-	  state.impl->color = new GLbyte[(rangeend-rangestart)*4];
+	  state.impl->color = new Low_GLbyte[(rangeend-rangestart)*4];
 	  faces.UpdateColorList(rangestart, rangeend, (char*)state.impl->color);
 #ifdef VBOS
 
-	  glBufferDataARB(GL_ARRAY_BUFFER_ARB, (rangeend-rangestart)*4*sizeof(GLbyte), state.impl->color, GL_STATIC_DRAW_ARB);
+	  g_low->ogl->glBufferDataARB(Low_GL_ARRAY_BUFFER_ARB, (rangeend-rangestart)*4*sizeof(GLbyte), state.impl->color, Low_GL_STATIC_DRAW_ARB);
 #endif
 	}
       else
@@ -2192,11 +2193,11 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 	  faces.UpdateColorList(rangestart, rangeend, (char*)state.impl->color);
 #ifdef VBOS
 
-	  glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, rangestart*4*sizeof(GLbyte), (rangeend-rangestart)*4*sizeof(GLbyte), state.impl->color);
+	  g_low->ogl->glBufferSubDataARB(Low_GL_ARRAY_BUFFER_ARB, rangestart*4*sizeof(GLbyte), (rangeend-rangestart)*4*sizeof(GLbyte), state.impl->color);
 #endif
 	}
 #ifdef DISPLAY_LISTS
-      glColorPointer(4, GL_UNSIGNED_BYTE, 0, state.impl->color);
+      g_low->ogl->glColorPointer(4, Low_GL_UNSIGNED_BYTE, 0, state.impl->color);
 #endif
 
     }
@@ -2205,24 +2206,24 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
     {
 #ifdef VBOS
 
-      glBindBufferARB(GL_ARRAY_BUFFER_ARB, state.impl->id[4+state.impl->numobjects+ii]); // color
+      g_low->ogl->glBindBufferARB(Low_GL_ARRAY_BUFFER_ARB, state.impl->id[4+state.impl->numobjects+ii]); // color
 #endif
 
       if (!state.impl->initialized)
 	{
 	  if ((*i).is_int)
 	    {
-	      state.impl->attribsI[(*i).loc] = new GLshort[(rangeend-rangestart)];
+	      state.impl->attribsI[(*i).loc] = new Low_GLshort[(rangeend-rangestart)];
 	      faces.UpdateAttribI(rangestart, rangeend, state.impl->attribsI[(*i).loc], (*i).id);
 	    }
 	  else
 	    {
-	      state.impl->attribs[(*i).loc] = new GLfloat[(rangeend-rangestart)];
+	      state.impl->attribs[(*i).loc] = new Low_GLfloat[(rangeend-rangestart)];
 	      faces.UpdateAttrib(rangestart, rangeend, state.impl->attribs[(*i).loc], (*i).id);
 	    }
 #ifdef VBOS
 
-	  glBufferDataARB(GL_ARRAY_BUFFER_ARB, (rangeend-rangestart)*sizeof(GLfloat), state.impl->attribs[(*i).loc], GL_STATIC_DRAW_ARB);
+	  g_low->ogl->glBufferDataARB(Low_GL_ARRAY_BUFFER_ARB, (rangeend-rangestart)*sizeof(GLfloat), state.impl->attribs[(*i).loc], Low_GL_STATIC_DRAW_ARB);
 #endif
 
 	}
@@ -2238,18 +2239,18 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 	    }
 #ifdef VBOS
 
-	  glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, rangestart*sizeof(GLfloat), (rangeend-rangestart)*sizeof(GLfloat), state.impl->attribs[(*i).loc]);
+	  g_low->ogl->glBufferSubDataARB(Low_GL_ARRAY_BUFFER_ARB, rangestart*sizeof(GLfloat), (rangeend-rangestart)*sizeof(GLfloat), state.impl->attribs[(*i).loc]);
 #endif
 
 	}
 #ifdef DISPLAY_LISTS
       if ((*i).is_int)
 	{
-	  glVertexAttribPointer((*i).loc, 1, GL_SHORT, 0, 0, state.impl->attribsI[(*i).loc]);
+	  g_low->ogl->glVertexAttribPointer((*i).loc, 1, Low_GL_SHORT, 0, 0, state.impl->attribsI[(*i).loc]);
 	}
       else
 	{
-	  glVertexAttribPointer((*i).loc, 1, GL_FLOAT, 0, 0, state.impl->attribs[(*i).loc]);
+	  g_low->ogl->glVertexAttribPointer((*i).loc, 1, Low_GL_FLOAT, 0, 0, state.impl->attribs[(*i).loc]);
 	}
 #endif
 
@@ -2258,7 +2259,7 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
   if (u & UpdateIndex)
     {
 #ifdef VBOS
-      glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, state.impl->id[4+obj]); // index
+      g_low->ogl->glBindBufferARB(Low_GL_ELEMENT_ARRAY_BUFFER_ARB, state.impl->id[4+obj]); // index
 #endif
       if (!state.impl->initialized)
 	{
@@ -2270,7 +2271,7 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 	  faces.UpdateIndexList(rangestarti, rangeendi, state.impl->index[obj]);
 #ifdef VBOS
 
-	  glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, (rangeendi-rangestarti)*sizeof(GLshort)*3, state.impl->index[obj], GL_STATIC_DRAW_ARB);
+	  g_low->ogl->glBufferDataARB(Low_GL_ELEMENT_ARRAY_BUFFER_ARB, (rangeendi-rangestarti)*sizeof(GLshort)*3, state.impl->index[obj], Low_GL_STATIC_DRAW_ARB);
 #endif
 	}
       else
@@ -2287,11 +2288,11 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 
 	  if (b)
 	    {
-	      glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, (rangeendi-rangestarti)*sizeof(GLshort)*3, state.impl->index[obj], GL_STATIC_DRAW_ARB);
+	      g_low->ogl->glBufferDataARB(Low_GL_ELEMENT_ARRAY_BUFFER_ARB, (rangeendi-rangestarti)*sizeof(GLshort)*3, state.impl->index[obj], Low_GL_STATIC_DRAW_ARB);
 	    }
 	  else
 	    {
-	      glBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0 /*rangestart*sizeof(GLshort)*/, (rangeendi-rangestarti)*sizeof(GLshort)*3, state.impl->index[obj]);
+	      g_low->ogl->glBufferSubDataARB(Low_GL_ELEMENT_ARRAY_BUFFER_ARB, 0 /*rangestart*sizeof(GLshort)*/, (rangeendi-rangestarti)*sizeof(GLshort)*3, state.impl->index[obj]);
 	    }
 #endif
 	}
@@ -2299,8 +2300,8 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 
     }
 #ifdef DISPLAY_LISTS
-  glNewList(state.impl->displaylist[obj], GL_COMPILE);
-  glBegin( GL_TRIANGLES );
+  g_low->ogl->glNewList(state.impl->displaylist[obj], Low_GL_COMPILE);
+  g_low->ogl->glBegin( Low_GL_TRIANGLES );
   for(int i=0;i<rangeendi-rangestarti /*state.impl->indexsize*/;i+=2)
       {
 	int vertex1 = state.impl->index[obj][i*3];
@@ -2310,15 +2311,15 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 	  {
 	    if ((*ii).is_int)
 	      {
-		GLshort a = state.impl->attribsI[(*ii).loc][vertex1];
+		Low_GLshort a = state.impl->attribsI[(*ii).loc][vertex1];
 		//std::cout << "1:" << (*ii).loc << " " << vertex1 << " " << a << std::endl;
-		glVertexAttrib1s((*ii).loc,a);
+		g_low->ogl->glVertexAttrib1s((*ii).loc,a);
 	      }
 	    else
 	      {
-		GLfloat a = state.impl->attribs[(*ii).loc][vertex1];
+		Low_GLfloat a = state.impl->attribs[(*ii).loc][vertex1];
 		//std::cout << "1:" << (*ii).loc << " " << vertex1 << " " << a << std::endl;
-		glVertexAttrib1f((*ii).loc,a);
+		g_low->ogl->glVertexAttrib1f((*ii).loc,a);
 	      }
 	  }
 	if (u & UpdateColor)
@@ -2329,33 +2330,33 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 	    unsigned char a = state.impl->color[vertex1*4+3];
 	    //std::cout << std::hex << r << " " << g << " " << b << std::endl;
 
-	    glColor4ub(r,g,b,a);
+	    g_low->ogl->glColor4ub(r,g,b,a);
 	  }
 	if (u & UpdateTexture)
 	  {
 	    float tx = state.impl->texture[vertex1*2];
 	    float ty = state.impl->texture[vertex1*2+1];
 	    //std::cout << tx << " " << ty << std::endl;
-	    glTexCoord2f( tx, ty );
+	    g_low->ogl->glTexCoord2f( tx, ty );
 	  }
 
 	vertex1 *= 3;
-	GLfloat nx, ny, nz;
+	Low_GLfloat nx, ny, nz;
 	if (u & UpdateNormal)
 	  {
 	    //std::cout << i << " " << vertex1 << std::endl;
 	    nx = state.impl->normal[vertex1];
 	    ny = state.impl->normal[vertex1+1];
 	    nz = state.impl->normal[vertex1+2];
-	    glNormal3f(nx,ny,nz);
+	    g_low->ogl->glNormal3f(nx,ny,nz);
 	  }
-	GLfloat x,y,z;
+	Low_GLfloat x,y,z;
 	if (u & UpdateVertex)
 	  {
 	    x = state.impl->vertex[vertex1];
 	    y = state.impl->vertex[vertex1+1];
 	    z = state.impl->vertex[vertex1+2];
-	    glVertex3f(x,y,z);
+	    g_low->ogl->glVertex3f(x,y,z);
 	    //std::cout << "Vertex1: "<< vertex1 << " " << x << " " << y << " " << z << std::endl;
 	  }
 
@@ -2363,15 +2364,15 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 	  {
 	    if ((*ii).is_int)
 	      {
-		GLshort a = state.impl->attribsI[(*ii).loc][vertex2];
+		Low_GLshort a = state.impl->attribsI[(*ii).loc][vertex2];
 	    //std::cout << "2:" << (*ii).loc << " " << vertex2 << " " << a << std::endl;
-		glVertexAttrib1s((*ii).loc,a);
+		g_low->ogl->glVertexAttrib1s((*ii).loc,a);
 	      }
 	    else
 	      {
-		GLfloat a = state.impl->attribs[(*ii).loc][vertex2];
+		Low_GLfloat a = state.impl->attribs[(*ii).loc][vertex2];
 	    //std::cout << "2:" << (*ii).loc << " " << vertex2 << " " << a << std::endl;
-		glVertexAttrib1f((*ii).loc,a);
+		g_low->ogl->glVertexAttrib1f((*ii).loc,a);
 	      }
 	  }
 
@@ -2381,13 +2382,13 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 	    unsigned char g = state.impl->color[vertex2*4+1];
 	    unsigned char b = state.impl->color[vertex2*4+2];
 	    unsigned char a = state.impl->color[vertex2*4+3];
-	    glColor4ub(r,g,b,a);
+	    g_low->ogl->glColor4ub(r,g,b,a);
 	  }
 	if (u & UpdateTexture)
 	  {
 	    float tx = state.impl->texture[vertex2*2];
 	    float ty = state.impl->texture[vertex2*2+1];
-	    glTexCoord2f( tx, ty );
+	    g_low->ogl->glTexCoord2f( tx, ty );
 	  }
 
 	vertex2 *= 3;
@@ -2396,14 +2397,14 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 	    nx = state.impl->normal[vertex2];
 	    ny = state.impl->normal[vertex2+1];
 	    nz = state.impl->normal[vertex2+2];
-	    glNormal3f(nx,ny,nz);
+	    g_low->ogl->glNormal3f(nx,ny,nz);
 	  }
 	if (u & UpdateVertex)
 	  {
 	    x = state.impl->vertex[vertex2];
 	    y = state.impl->vertex[vertex2+1];
 	    z = state.impl->vertex[vertex2+2];
-	    glVertex3f(x,y,z);
+	    g_low->ogl->glVertex3f(x,y,z);
 	    //std::cout << "Vertex2: "<< vertex2 << " " << x << " " << y << " " << z << std::endl;
 	  }
 
@@ -2411,15 +2412,15 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 	  {
 	    if ((*ii).is_int)
 	      {
-		GLshort a = state.impl->attribsI[(*ii).loc][vertex3];
+		Low_GLshort a = state.impl->attribsI[(*ii).loc][vertex3];
 	    //std::cout << "3:" << (*ii).loc << " " << vertex3 << " " << a << std::endl;
-		glVertexAttrib1s((*ii).loc,a);
+		g_low->ogl->glVertexAttrib1s((*ii).loc,a);
 	      }
 	    else
 	      {
-		GLfloat a = state.impl->attribs[(*ii).loc][vertex3];
+		Low_GLfloat a = state.impl->attribs[(*ii).loc][vertex3];
 	    //std::cout << "3:" << (*ii).loc << " " << vertex3 << " " << a << std::endl;
-		glVertexAttrib1f((*ii).loc,a);
+		g_low->ogl->glVertexAttrib1f((*ii).loc,a);
 	      }
 	  }
 	if (u & UpdateColor)
@@ -2429,13 +2430,13 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 	    unsigned char b = state.impl->color[vertex3*4+2];
 	    unsigned char a = state.impl->color[vertex3*4+3];
 	    //std::cout << int(r) << " " << int(g) << " " << int(b) << std::endl;
-	    glColor4ub(r,g,b,a);
+	    g_low->ogl->glColor4ub(r,g,b,a);
 	  }
 	if (u & UpdateTexture)
 	  {
 	    float tx = state.impl->texture[vertex3*2];
 	    float ty = state.impl->texture[vertex3*2+1];
-	    glTexCoord2f( tx, ty );
+	    g_low->ogl->glTexCoord2f( tx, ty );
 	  }
 
 	vertex3 *= 3;
@@ -2444,19 +2445,19 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 	    nx = state.impl->normal[vertex3];
 	    ny = state.impl->normal[vertex3+1];
 	    nz = state.impl->normal[vertex3+2];
-	    glNormal3f(nx,ny,nz);
+	    g_low->ogl->glNormal3f(nx,ny,nz);
 	  }
 	if (u & UpdateVertex)
 	  {
 	    x = state.impl->vertex[vertex3];
 	    y = state.impl->vertex[vertex3+1];
 	    z = state.impl->vertex[vertex3+2];
-	    glVertex3f(x,y,z);
+	    g_low->ogl->glVertex3f(x,y,z);
 	    //std::cout << "Vertex3: "<< vertex3 << " " << x << " " << y << " " << z << std::endl;	
 	  }
 
       }
-    glEnd();
+    g_low->ogl->glEnd();
 #endif
 #ifdef VBOS
     //std::cout << "glDrawElements " << std::endl;
@@ -2465,18 +2466,18 @@ void UpdateVBO(const FaceCollectionVBO &faces, int obj, VBOState &state, VBOUpda
 #endif
 
 #ifdef DISPLAY_LISTS
-  glEndList();
+  g_low->ogl->glEndList();
 #endif
   if (u & UpdateVertex)
-    glDisableClientState(GL_VERTEX_ARRAY);
+    g_low->ogl->glDisableClientState(Low_GL_VERTEX_ARRAY);
   if (u & UpdateNormal)
-    glDisableClientState(GL_NORMAL_ARRAY);
+    g_low->ogl->glDisableClientState(Low_GL_NORMAL_ARRAY);
   if (u & UpdateColor)
-    glDisableClientState(GL_COLOR_ARRAY);
+    g_low->ogl->glDisableClientState(Low_GL_COLOR_ARRAY);
   //if (u & UpdateTexture)
   // glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   for(std::vector<Attrib>::const_iterator i = attribs.begin();i!=attribs.end();i++)
-    glDisableVertexAttribArray((*i).loc);
+    g_low->ogl->glDisableVertexAttribArray((*i).loc);
 
 
   state.impl->initialized = true;
@@ -2492,7 +2493,7 @@ void DrawVBO(int obj, VBOState &state, VBOUpdate u, const std::vector<Attrib> &a
 {
   //std::cout << "DrawVBO: obj=" << obj << std::endl;
 #ifdef DISPLAY_LISTS
-  glCallList(state.impl->displaylist[obj]);
+  g_low->ogl->glCallList(state.impl->displaylist[obj]);
 #endif
 #ifdef VBOS
 
@@ -2502,11 +2503,11 @@ void DrawVBO(int obj, VBOState &state, VBOUpdate u, const std::vector<Attrib> &a
   int rangeendi = state.impl->ranges[obj].endindexrange;
 
   if (u & UpdateVertex)
-    glEnableClientState(GL_VERTEX_ARRAY);
+    g_low->ogl->glEnableClientState(Low_GL_VERTEX_ARRAY);
   if (u & UpdateNormal)
-    glEnableClientState(GL_NORMAL_ARRAY);
+    g_low->ogl->glEnableClientState(Low_GL_NORMAL_ARRAY);
   if (u & UpdateColor)
-    glEnableClientState(GL_COLOR_ARRAY);
+    g_low->ogl->glEnableClientState(Low_GL_COLOR_ARRAY);
   //if (u & UpdateTexture)
   // glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   int size1 = state.impl->numattribs;
@@ -2515,13 +2516,13 @@ void DrawVBO(int obj, VBOState &state, VBOUpdate u, const std::vector<Attrib> &a
       std::vector<Attrib>::const_iterator ii = attribs.begin();
       for(int i=0;i<size1;i++,ii++)
 	{
-	  glEnableVertexAttribArrayARB((*ii).loc);
+	  g_low->ogl->glEnableVertexAttribArrayARB((*ii).loc);
 	}
     }
   if (u & UpdateNormal)
     {
-      glBindBufferARB(GL_ARRAY_BUFFER_ARB, state.impl->id[1]); // normal
-      glNormalPointer(GL_FLOAT, 0, 0/*state.impl->normal*/);
+      g_low->ogl->glBindBufferARB(Low_GL_ARRAY_BUFFER_ARB, state.impl->id[1]); // normal
+      g_low->ogl->glNormalPointer(Low_GL_FLOAT, 0, 0/*state.impl->normal*/);
     }
 
   //if (u & UpdateTexture)
@@ -2532,8 +2533,8 @@ void DrawVBO(int obj, VBOState &state, VBOUpdate u, const std::vector<Attrib> &a
 
   if (u & UpdateColor)
     {
-      glBindBufferARB(GL_ARRAY_BUFFER_ARB, state.impl->id[3]); // color
-      glColorPointer(4, GL_UNSIGNED_BYTE, 0, 0 /*state.impl->color*/);
+      g_low->ogl->glBindBufferARB(Low_GL_ARRAY_BUFFER_ARB, state.impl->id[3]); // color
+      g_low->ogl->glColorPointer(4, Low_GL_UNSIGNED_BYTE, 0, 0 /*state.impl->color*/);
     }
   int size = state.impl->numattribs;
   if (size)
@@ -2541,29 +2542,29 @@ void DrawVBO(int obj, VBOState &state, VBOUpdate u, const std::vector<Attrib> &a
       std::vector<Attrib>::const_iterator ii = attribs.begin();
       for(int i=0;i<size;i++,ii++)
 	{
-	  glBindBufferARB(GL_ARRAY_BUFFER_ARB, state.impl->id[4+state.impl->numobjects+i]); // color
-	  glVertexAttribPointer((*ii).loc, 1, GL_FLOAT, 0, 0, 0);
+	  g_low->ogl->glBindBufferARB(Low_GL_ARRAY_BUFFER_ARB, state.impl->id[4+state.impl->numobjects+i]); // color
+	  g_low->ogl->glVertexAttribPointer((*ii).loc, 1, Low_GL_FLOAT, 0, 0, 0);
 	}
     }
 
   if (u & UpdateVertex)
     {
-      glBindBufferARB(GL_ARRAY_BUFFER_ARB, state.impl->id[0]); // vertex
-      glVertexPointer(3, GL_FLOAT, 0, 0 /*state.impl->vertex*/); // 0 if ARB
+     g_low->ogl-> glBindBufferARB(Low_GL_ARRAY_BUFFER_ARB, state.impl->id[0]); // vertex
+      g_low->ogl->glVertexPointer(3, Low_GL_FLOAT, 0, 0 /*state.impl->vertex*/); // 0 if ARB
     }
 
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, state.impl->id[0]); // vertex
-  glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, state.impl->id[4+obj]); // index
+  g_low->ogl->glBindBufferARB(Low_GL_ARRAY_BUFFER_ARB, state.impl->id[0]); // vertex
+  g_low->ogl->glBindBufferARB(Low_GL_ELEMENT_ARRAY_BUFFER_ARB, state.impl->id[4+obj]); // index
 
-  glDrawRangeElements(GL_TRIANGLES, rangestart, rangeend, (rangeendi-rangestarti)*3, GL_UNSIGNED_SHORT, 0 /*state.impl->index*/);
+  g_low->ogl->glDrawRangeElements(Low_GL_TRIANGLES, rangestart, rangeend, (rangeendi-rangestarti)*3, Low_GL_UNSIGNED_SHORT, 0 /*state.impl->index*/);
 
   if (u & UpdateVertex)
-    glDisableClientState(GL_VERTEX_ARRAY);
+    g_low->ogl->glDisableClientState(Low_GL_VERTEX_ARRAY);
 
   if (u & UpdateNormal)
-    glDisableClientState(GL_NORMAL_ARRAY);
+    g_low->ogl->glDisableClientState(Low_GL_NORMAL_ARRAY);
   if (u & UpdateColor)
-    glDisableClientState(GL_COLOR_ARRAY);
+    g_low->ogl->glDisableClientState(Low_GL_COLOR_ARRAY);
   //if (u & UpdateTexture)
   // glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   int size3 = state.impl->numattribs;
@@ -2572,24 +2573,24 @@ void DrawVBO(int obj, VBOState &state, VBOUpdate u, const std::vector<Attrib> &a
       std::vector<Attrib>::const_iterator ii = attribs.begin();
       for(int i=0;i<size3;i++,ii++)
 	{
-	  glDisableVertexAttribArrayARB((*ii).loc);
+	  g_low->ogl->glDisableVertexAttribArrayARB((*ii).loc);
 	}
     }
 
 
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-  glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
+  g_low->ogl->glBindBufferARB(Low_GL_ARRAY_BUFFER_ARB, 0);
+  g_low->ogl->glBindBufferARB(Low_GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
 #endif
 }
 
 void MatrixVBOCmd::cmd()
 {
-  glPushMatrix();
+  g_low->ogl->glPushMatrix();
 #ifndef EMSCRIPTEN
-  glMultMatrixf(&m.matrix[0]);
+  g_low->ogl->glMultMatrixf(&m.matrix[0]);
 #endif
   c.cmd();    
-  glPopMatrix();
+  g_low->ogl->glPopMatrix();
 }
 
 SurfaceEffect::SurfaceEffect(Render *r)
@@ -2634,9 +2635,9 @@ void SurfaceEffect::Init()
 
 bool SurfaceEffect::Frame(float time)
 {
-  glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-  glEnable(GL_BLEND);
-  glDisable(GL_DEPTH_TEST);
+  g_low->ogl->glBlendFunc(Low_GL_SRC_ALPHA,Low_GL_ONE);
+  g_low->ogl->glEnable(Low_GL_BLEND);
+  g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
 
   WaterParameters params(time/20.0);
   shader.set_params(params);
@@ -2656,8 +2657,8 @@ bool SurfaceEffect::Frame(float time)
   RenderOpenGlObjects(coll, vbostate, UpdateVertexNormalIndex);
 
   //glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-  glDisable(GL_BLEND);
-  glEnable(GL_DEPTH_TEST);
+  g_low->ogl->glDisable(Low_GL_BLEND);
+  g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
 
   return false;
 }
@@ -2892,15 +2893,15 @@ ScopeMatrix::ScopeMatrix(Matrix m)
 		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
 		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
-  glPushMatrix();
+  g_low->ogl->glPushMatrix();
   //glIdentityMatrix();
 #ifndef EMSCRIPTEN
-  glMultMatrixf(&mat[0]);
+  g_low->ogl->glMultMatrixf(&mat[0]);
 #endif
 }
 ScopeMatrix::~ScopeMatrix()
 {
-  glPopMatrix();
+  g_low->ogl->glPopMatrix();
 }
 
 void SDLRender::SetTime(float time) { }
@@ -3072,10 +3073,10 @@ void ArrayRender::AllocTexture(int count)
 {
   int texcount = count;
   texture = new int[texcount];
-  g_low->ogl->glGenTextures(texcount, (GLuint*)&texture[0]);
+  g_low->ogl->glGenTextures(texcount, (Low_GLuint*)&texture[0]);
 #if 0
-  GLenum e = glGetError();
-  if (e!=GL_NO_ERROR)
+  GLenum e = g_low->ogl->glGetError();
+  if (e!=Low_GL_NO_ERROR)
     {
       std::cout << "ArrayRender::AllocTexture error!" << e << std::endl;
     }
@@ -3152,8 +3153,8 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
   //std::cout << "UpdateTexture " << num << std::endl;
   g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+num);
 #if 0
-  GLenum e = glGetError();
-  if (e!=GL_NO_ERROR)
+  GLenum e = g_low->ogl->glGetError();
+  if (e!=Low_GL_NO_ERROR)
     {
       std::cout << "ArrayRender::UpdateTexture1 error!" << e << std::endl;
     }
@@ -3351,7 +3352,7 @@ ArrayRender::~ArrayRender()
 {
   if (texture_count)
     {
-      g_low->ogl->glDeleteTextures(texture_count, (const GLuint*)&texture[0]);
+      g_low->ogl->glDeleteTextures(texture_count, (const Low_GLuint*)&texture[0]);
     }
   delete [] q_vertex_array;
   delete [] q_normal_array;
@@ -3655,49 +3656,49 @@ void ArrayRender::Render(bool normal, bool color, bool texcoord, int vertex_pos,
 
 #if 0
   // enabling
-  glEnableClientState(Low_GL_VERTEX_ARRAY);
-  glVertexPointer(3, GL_FLOAT, 0, vertex_array+vertex_pos*3);
+  g_low->ogl->glEnableClientState(Low_GL_VERTEX_ARRAY);
+  g_low->ogl->glVertexPointer(3, GL_FLOAT, 0, vertex_array+vertex_pos*3);
 
   if (normal)
     {
-      glEnableClientState(Low_GL_NORMAL_ARRAY);
-      glNormalPointer(Low_GL_FLOAT, 0, normal_array+vertex_pos*3);
+      g_low->ogl->glEnableClientState(Low_GL_NORMAL_ARRAY);
+      g_low->ogl->glNormalPointer(Low_GL_FLOAT, 0, normal_array+vertex_pos*3);
     }
   if (color)
     {
-      glEnableClientState(GL_COLOR_ARRAY);
-      glColorPointer(4, Low_GL_UNSIGNED_BYTE, 0, color_array+vertex_pos*4);
+      g_low->ogl->glEnableClientState(GL_COLOR_ARRAY);
+      g_low->ogl->glColorPointer(4, Low_GL_UNSIGNED_BYTE, 0, color_array+vertex_pos*4);
     }
   if (texcoord)
     {
-      glEnableClientState(Low_GL_TEXTURE_COORD_ARRAY);
-      glTexCoordPointer(2, Low_GL_FLOAT, 0, tex_coord_array+vertex_pos*2);
+      g_low->ogl->glEnableClientState(Low_GL_TEXTURE_COORD_ARRAY);
+      g_low->ogl->glTexCoordPointer(2, Low_GL_FLOAT, 0, tex_coord_array+vertex_pos*2);
     }
 
   // Render
   if (quads)
     {
-      glDrawArrays(Low_GL_QUADS, 0, vertex_size);
+      g_low->ogl->glDrawArrays(Low_GL_QUADS, 0, vertex_size);
     }
   else
     {
-      glDrawArrays(Low_GL_TRIANGLES, 0, vertex_size);
+      g_low->ogl->glDrawArrays(Low_GL_TRIANGLES, 0, vertex_size);
     }
 
   // disabling
   if (texcoord)
     {
-      glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      g_low->ogl->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     }
   if (color)
     {
-      glDisableClientState(GL_COLOR_ARRAY);
+      g_low->ogl->glDisableClientState(GL_COLOR_ARRAY);
     }
   if (normal)
     {
-      glDisableClientState(GL_NORMAL_ARRAY);
+      g_low->ogl->glDisableClientState(GL_NORMAL_ARRAY);
     }
-  glDisableClientState(GL_VERTEX_ARRAY);
+  g_low->ogl->glDisableClientState(GL_VERTEX_ARRAY);
 #endif
 }
 void HeightMapEffect(FaceStore &s, float time, float repeat_length);
@@ -3965,22 +3966,22 @@ void SDLArrayRender::Show()
   
   SDL_Event event;
   //glRotatef(speed*x, f.XRot(),f.YRot(),f.ZRot());
-  glColor3f(1.0,1.0,1.0);
+  g_low->ogl->glColor3f(1.0,1.0,1.0);
   SDL_ShowCursor(true);
 
   for(int i=0;;i++)
     {
-      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+      g_low->ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT );
 #ifndef EMSCRIPTEN
-      glTranslatef(0.0, 0.0, -500.0);
+      g_low->ogl->glTranslatef(0.0, 0.0, -500.0);
 #endif
-      glRotatef(2.0*3.14159/360.0*i, 0.0,1.0,0.0);
+      g_low->ogl->glRotatef(2.0*3.14159/360.0*i, 0.0,1.0,0.0);
 #ifndef EMSCRIPTEN
-      glTranslatef(0.0, -100.0, 0.0);
+      g_low->ogl->glTranslatef(0.0, -100.0, 0.0);
 #endif
       ExecuteFaceStore(rend, s, i%dyn.NumFrames());
 #ifndef EMSCRIPTEN
-      glLoadIdentity();
+      g_low->ogl->glLoadIdentity();
 #endif
       //SDL_GL_SwapBuffers();
     SDL_PollEvent(&event);
@@ -4010,7 +4011,7 @@ void TextureGeneration(FaceCollection &coll, FrameAnimPlugins &plugins)
 #if 0
 struct VBOObjects::Priv
 {
-  GLuint vboId;
+  Low_GLuint vboId;
   bool allocated;
 };
 
@@ -4206,9 +4207,9 @@ public:
     std::pair<char*, int> pospart = obj.BufferPosPart(type, obj_num, choose);
     std::pair<int,int> pos = obj.BufferPosWhole(type, obj_num);
 
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, obj.priv->vboId);
-    glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, pos.first, pos.second, pospart.first);
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+    g_low->ogl->glBindBufferARB(GL_ARRAY_BUFFER_ARB, obj.priv->vboId);
+    g_low->ogl->glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, pos.first, pos.second, pospart.first);
+    g_low->ogl->glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
   }
 private:
@@ -4265,47 +4266,47 @@ void VBOObjects::BlitWholeBufferToGPU()
   if (!priv->allocated)
     {
       //std::cout << glGenBuffersARB << std::endl;
-      glGenBuffersARB(1, &priv->vboId);
+      g_low->ogl->glGenBuffersARB(1, &priv->vboId);
       priv->allocated=true;
     }
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, priv->vboId);
-  glBufferDataARB(GL_ARRAY_BUFFER_ARB, wholebuffer_vertex_size+wholebuffer_normal_size+wholebuffer_color_size+wholebuffer_texcoord_size, wholebuffer, GL_DYNAMIC_DRAW_ARB);
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+  g_low->ogl->glBindBufferARB(Low_xGL_ARRAY_BUFFER_ARB, priv->vboId);
+  g_low->ogl->glBufferDataARB(Low_GL_ARRAY_BUFFER_ARB, wholebuffer_vertex_size+wholebuffer_normal_size+wholebuffer_color_size+wholebuffer_texcoord_size, wholebuffer, GL_DYNAMIC_DRAW_ARB);
+  g_low->ogl->glBindBufferARB(Low_GL_ARRAY_BUFFER_ARB, 0);
 }
 void VBOObjects::BlitGPUToScreen()
 {
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, priv->vboId);
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glVertexPointer(3, GL_FLOAT, 0, 0);
+  g_low->ogl->glBindBufferARB(Low_GL_ARRAY_BUFFER_ARB, priv->vboId);
+  g_low->ogl->glEnableClientState(Low_GL_VERTEX_ARRAY);
+  g_low->ogl->glVertexPointer(3, Low_GL_FLOAT, 0, 0);
   if (m_has_normal)
     {
-      glEnableClientState(GL_NORMAL_ARRAY);
-      glNormalPointer(GL_FLOAT, 0, (GLvoid*)wholebuffer_vertex_size);
+      g_low->ogl->glEnableClientState(Low_GL_NORMAL_ARRAY);
+      g_low->ogl->glNormalPointer(Low_GL_FLOAT, 0, (Low_GLvoid*)wholebuffer_vertex_size);
     }
   if (m_has_color)
     {
-      glEnableClientState(GL_COLOR_ARRAY);
-      glColorPointer(4, GL_UNSIGNED_BYTE, 0, (GLvoid*)(wholebuffer_vertex_size+wholebuffer_normal_size));
+      g_low->ogl->glEnableClientState(Low_GL_COLOR_ARRAY);
+      g_low->ogl->glColorPointer(4, Low_GL_UNSIGNED_BYTE, 0, (Low_GLvoid*)(wholebuffer_vertex_size+wholebuffer_normal_size));
     }
   if (m_has_texcoord)
     {
-      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-      glTexCoordPointer(2, GL_FLOAT, 0, (GLvoid*)(wholebuffer_vertex_size+wholebuffer_normal_size+wholebuffer_color_size));
+      g_low->ogl->glEnableClientState(Low_GL_TEXTURE_COORD_ARRAY);
+      g_low->ogl->glTexCoordPointer(2, Low_GL_FLOAT, 0, (Low_GLvoid*)(wholebuffer_vertex_size+wholebuffer_normal_size+wholebuffer_color_size));
     }
   
   if (m_quads)
     {
-      glDrawArrays(GL_QUADS, 0, wholebuffer_vertex_size/sizeof(VertexElem));
+      g_low->ogl->glDrawArrays(Low_GL_QUADS, 0, wholebuffer_vertex_size/sizeof(VertexElem));
     }
   else
     {
-      glDrawArrays(GL_TRIANGLES, 0, wholebuffer_vertex_size/sizeof(VertexElem));
+      g_low->ogl->glDrawArrays(Low_GL_TRIANGLES, 0, wholebuffer_vertex_size/sizeof(VertexElem));
     }
-  glDisableClientState(GL_VERTEX_ARRAY);
-  glDisableClientState(GL_NORMAL_ARRAY);
-  glDisableClientState(GL_COLOR_ARRAY);
-  glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+  g_low->ogl->glDisableClientState(Low_GL_VERTEX_ARRAY);
+  g_low->ogl->glDisableClientState(Low_GL_NORMAL_ARRAY);
+  g_low->ogl->glDisableClientState(Low_GL_COLOR_ARRAY);
+  g_low->ogl->glDisableClientState(Low_GL_TEXTURE_COORD_ARRAY);
+  g_low->ogl->glBindBufferARB(Low_GL_ARRAY_BUFFER_ARB, 0);
 }
 
 
@@ -4485,7 +4486,7 @@ void VBOObjects::AllocTexture(int count)
 {
   int texcount = count;
   texture = new int[texcount];
-  glGenTextures(texcount, (GLuint*)&texture[0]);
+  g_low->ogl->glGenTextures(texcount, (Low_GLuint*)&texture[0]);
 }
 void VBOObjects::UpdateTexture(MeshTextures &tex, int frame, int pos)
 {
@@ -4493,23 +4494,23 @@ void VBOObjects::UpdateTexture(MeshTextures &tex, int frame, int pos)
   BufferRef ref = tex.TextureBuf(frame-pos);
   int sizex = ref.width;
   int sizey = ref.height;
-  glBindTexture(GL_TEXTURE_2D, texture[frame]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sizex, sizey, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, texture[frame]);
+  g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, sizex, sizey, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, ref.buffer);
+    g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
+    g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
+    g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
 
 }
 void VBOObjects::EnableTexture(int frame)
 {
-  glBindTexture(GL_TEXTURE_2D, texture[frame]);
-  glEnable(GL_TEXTURE_2D);
+  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, texture[frame]);
+  g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 }
 void VBOObjects::DisableTexture()
 {
-  glDisable(GL_TEXTURE_2D);
+  g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
 }
 #endif
 
@@ -4739,50 +4740,50 @@ void RenderBuffers::SetupVertex(const Buffer<float> &buf, int pos)
 {
   vertex=true;
   // enabling
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glVertexPointer(3, GL_FLOAT, 0, buf.Array()+pos);
+  g_low->ogl->glEnableClientState(Low_GL_VERTEX_ARRAY);
+  g_low->ogl->glVertexPointer(3, Low_GL_FLOAT, 0, buf.Array()+pos);
 }
 void RenderBuffers::SetupAttrib(int id, const Buffer<float> &buf, int pos)
 {
   attrib_ids.push_back(id);
   g_low->ogl->glEnableVertexAttribArray(id);
-  g_low->ogl->glVertexAttribPointer(id, 1, GL_FLOAT, GL_FALSE, 0, buf.Array()+pos);  
+  g_low->ogl->glVertexAttribPointer(id, 1, Low_GL_FLOAT, Low_GL_FALSE, 0, buf.Array()+pos);  
 }
 
 void RenderBuffers::SetupNormal(const Buffer<float> &buf, int pos)
 {
   normal=true;
-  glEnableClientState(GL_NORMAL_ARRAY);
-  glNormalPointer(GL_FLOAT, 0, buf.Array()+pos);
+  g_low->ogl->glEnableClientState(Low_GL_NORMAL_ARRAY);
+  g_low->ogl->glNormalPointer(Low_GL_FLOAT, 0, buf.Array()+pos);
 }
 void RenderBuffers::SetupColor(const Buffer<unsigned int> &buf, int pos)
 {
   color=true;
-  glEnableClientState(GL_COLOR_ARRAY);
-  glColorPointer(4, GL_UNSIGNED_BYTE, 0, buf.Array()+pos);
+  g_low->ogl->glEnableClientState(Low_GL_COLOR_ARRAY);
+  g_low->ogl->glColorPointer(4, Low_GL_UNSIGNED_BYTE, 0, buf.Array()+pos);
 }
 void RenderBuffers::SetupTexCoord(const Buffer<float> &buf, int pos)
 {
   texcoord=true;
-  glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-  glTexCoordPointer(2, GL_FLOAT, 0, buf.Array()+pos);
+  g_low->ogl->glEnableClientState(Low_GL_TEXTURE_COORD_ARRAY);
+  g_low->ogl->glTexCoordPointer(2, Low_GL_FLOAT, 0, buf.Array()+pos);
 }
 void RenderBuffers::Render(bool quads, int start_elem, int vertex_size)
 {
   // Render
   if (quads)
     {
-      glDrawArrays(GL_QUADS, start_elem, vertex_size);
+      g_low->ogl->glDrawArrays(Low_GL_QUADS, start_elem, vertex_size);
     }
   else
     {
-      glDrawArrays(GL_TRIANGLES, start_elem, vertex_size);
+      g_low->ogl->glDrawArrays(Low_GL_TRIANGLES, start_elem, vertex_size);
     }
 }
 #if 0
 void RenderBuffers::RenderOne(int start_elem, int vertex_size)
 {
-  glDrawArrays(GL_POLYGON, start_elem, vertex_size);
+  g_low->ogl->glDrawArrays(Low_GL_POLYGON, start_elem, vertex_size);
 }
 #endif
 
@@ -4791,19 +4792,19 @@ void RenderBuffers::DisableAll()
   // disabling
   if (texcoord)
     {
-      glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      g_low->ogl->glDisableClientState(Low_GL_TEXTURE_COORD_ARRAY);
     }
   if (color)
     {
-      glDisableClientState(GL_COLOR_ARRAY);
+      g_low->ogl->glDisableClientState(Low_GL_COLOR_ARRAY);
     }
   if (normal)
     {
-      glDisableClientState(GL_NORMAL_ARRAY);
+      g_low->ogl->glDisableClientState(Low_GL_NORMAL_ARRAY);
     }
   if (vertex)
     {
-    glDisableClientState(GL_VERTEX_ARRAY);
+    g_low->ogl->glDisableClientState(Low_GL_VERTEX_ARRAY);
     }
   int s = attrib_ids.size();
   for(int i=0;i<s;i++)
