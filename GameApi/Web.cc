@@ -4,13 +4,15 @@
 #include "Graph.hh"
 #include "Effect.hh"
 #include "Equalizer.hh"
-#include <GL/glew.h>
-#include <SDL_opengl.h>
+//#include <GL/glew.h>
+//#include <SDL_opengl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "GameApi_low.hh"
 
 void SaveFrameAnim(FrameAnim &f, SDL_Surface *screen, std::string &output, float delta_time_between_frames, float total_time)
 {
+#if 0
   InitFrameAnim(f,screen);
   for(float t = 0.0;t<total_time;t+=delta_time_between_frames)
     {
@@ -18,11 +20,12 @@ void SaveFrameAnim(FrameAnim &f, SDL_Surface *screen, std::string &output, float
       //SDL_Surface *surf1 = SDL_DisplayFormat(screen);
       //SDL_Surface *surf2 = SDL_DisplayFormatAlpha(surf1);
       BufferRef ref = BufferRef::NewBuffer(1024,768);
-      glReadPixels(0,0,1024,768,GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, ref.buffer);
+      g_low->ogl->glReadPixels(0,0,1024,768,Low_GL_RGBA, Low_GL_UNSIGNED_INT_8_8_8_8, ref.buffer);
       BitmapFromBuffer bm(ref);
       PpmFile file("a.txt", bm, false);
       output += file.Contents();
     }
+#endif
 }
 
 void SaveFrameAnimToFile(FrameAnim &f, SDL_Surface *screen, std::string filename, float delta_time_between_frames, float total_time)

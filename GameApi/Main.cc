@@ -24,10 +24,12 @@
 //#include <GL3/gl3.h>
 //#define GLEW_STATIC
 #include <GL/glew.h>
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
+#if 0
+//#ifdef __APPLE__
+//#include <OpenGL/gl.h>
+//#else
+//#include <GL/gl.h>
+//#endif
 #endif
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -63,6 +65,8 @@
 #include "GameApi.hh"
 #include "KeyFrameEditor.hh"
 #include "Parser.hh"
+
+#include "GameApi_low.hh"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION

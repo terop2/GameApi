@@ -24,12 +24,13 @@
 #include "Graph.hh"
 #include "Event.hh"
 #define NO_SDL_GLEXT
-#include <GL/glew.h>
-#include <SDL_opengl.h>
+//#include <GL/glew.h>
+//#include <SDL_opengl.h>
 #include "Shader.hh"
 #include "Effect2.hh"
 #include "Font.hh"
 #include "VertexArray.hh"
+#include "GameApi_low.hh"
 
 void RenderVoxel(VolumeObject &orv, int size, float wholesize, HandleValue<std::pair<Vector, unsigned int> > &hv)
 {
@@ -106,7 +107,7 @@ bool VoxelEffect::Frame(float time)
   NormalParameters np(Point(0.0,0.0,0.0),0.1);
   shader.set_params(np);
 
-  glEnable(GL_TEXTURE_2D);
+  g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 
   // todo, first prevents anim
   if (first)
@@ -189,7 +190,7 @@ bool VoxelEffect::Frame(float time)
 #endif
       //    }
   hv.DrawVBO(vbostate, UpdateAll);
-  glDisable(GL_TEXTURE_2D);
+  g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
 
   return false;
 }
@@ -201,19 +202,19 @@ void FaceCollectionHandleValueDynamic::DrawVBO(VBOState &vbostate, VBOUpdate u)
     {
       Node n = vec.Index(i);
       //Matrix m = p.first;
-      glPushMatrix();
+      g_low->ogl->glPushMatrix();
       //float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
       //			m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
       //			m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
       //			m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
 #ifndef EMSCRIPTEN
 
-      glMultMatrixf(&n.mat[0]);
+      g_low->ogl->glMultMatrixf(&n.mat[0]);
 #endif
       unsigned int color = n.color;
-      glColor4ub(color, color>>8, color>>16, color>>24);
+      g_low->ogl->glColor4ub(color, color>>8, color>>16, color>>24);
       ::DrawVBO(vbostate, u);
-      glPopMatrix();
+      g_low->ogl->glPopMatrix();
     }
 }
 
@@ -259,8 +260,8 @@ void MapEffect::Init()
 }
 bool MapEffect::Frame(float time)
 {
-  glEnable(GL_TEXTURE_2D);
-  glColor4f(1.0,1.0,1.0,0.0);
+  g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+  g_low->ogl->glColor4f(1.0,1.0,1.0,0.0);
   shader.use();
 
   GlobalTextureParameters params3(Point(0,0,0), Vector(2400.0,0.0,0.0), Vector(0.0, 2400.0, 0.0), Vector(0.0, 0.0, 2400.0));
@@ -285,7 +286,7 @@ bool MapEffect::Frame(float time)
       WallsFromMap walls(mapfunc, colorfunc, wallmatrix, 1,1);
       walls.Gen();
     }
-  glPushMatrix();
+  g_low->ogl->glPushMatrix();
   Point array[] = { Point(2.0, -1.0, 2.0),
 		    Point(1.0, 1.0, 4.0),
 		    Point(1.0, -1.0, 8.0),
@@ -315,13 +316,13 @@ bool MapEffect::Frame(float time)
 		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
 #ifndef EMSCRIPTEN
-  glMultMatrixf(&mat[0]);
+  g_low->ogl->glMultMatrixf(&mat[0]);
 #endif
 
   hv.DrawVBO(vbostate, UpdateAll);
-  glDisable(GL_TEXTURE_2D);
+  g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
 
-  glPopMatrix();
+  g_low->ogl->glPopMatrix();
   return false;
 }
 
@@ -609,8 +610,8 @@ bool Effect3dEffect::Frame(float time)
 }
 Effect3dEffect::~Effect3dEffect()
 {
-  glDisable(GL_BLEND);
-  glEnable(GL_DEPTH_TEST);
+  g_low->ogl->glDisable(Low_GL_BLEND);
+  g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
   
 }
 
@@ -929,7 +930,7 @@ void RenderGrid(Bitmap<Pos> &bm, float x, float y, int sx, int sy, ArrayRender &
   rend.EnableTexture(0);
   int sizex = bm.SizeX();
   int sizey = bm.SizeY();
-  glPushMatrix();
+  g_low->ogl->glPushMatrix();
   Matrix m = Matrix::Translate(x, y, 0.0);
   float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
 		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
@@ -937,13 +938,13 @@ void RenderGrid(Bitmap<Pos> &bm, float x, float y, int sx, int sy, ArrayRender &
 		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
   
 #ifndef EMSCRIPTEN
-  glMultMatrixf(&mat[0]);
+  g_low->ogl->glMultMatrixf(&mat[0]);
 #endif
 
   for(int y=start_y;y<sizey&&y<start_y+size_y;y++)
     for(int x=start_x;x<sizex&&x<start_x+size_x;x++)
       {
-	glPushMatrix();
+	g_low->ogl->glPushMatrix();
 
 	Matrix m = Matrix::Translate(x*sx, y*sy, 0.0);
 	float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
@@ -952,14 +953,14 @@ void RenderGrid(Bitmap<Pos> &bm, float x, float y, int sx, int sy, ArrayRender &
 			m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
 
 #ifndef EMSCRIPTEN
-	glMultMatrixf(&mat[0]);
+	g_low->ogl->glMultMatrixf(&mat[0]);
 #endif
 
 	Pos p = bm.Map(x,y);
 	rend.Render(0, -1, -1, p.x+p.y*sizex, 0, rend.used_vertex_count[0]);
-	glPopMatrix();
+	g_low->ogl->glPopMatrix();
       }
-  glPopMatrix();
+  g_low->ogl->glPopMatrix();
   rend.DisableTexture();
 }
 
@@ -998,7 +999,7 @@ void GridEffect2::Init()
 bool GridEffect2::Frame(float time)
 {
   scr.Frame();
-  glPushMatrix();
+  g_low->ogl->glPushMatrix();
   Matrix m = Matrix::Scale(10.0, 10.0, 0.0)*Matrix::Translate(0.0,0.0,0.0);
   float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
 		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
@@ -1006,7 +1007,7 @@ bool GridEffect2::Frame(float time)
 		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
   
 #ifndef EMSCRIPTEN
-  glMultMatrixf(&mat[0]);
+  g_low->ogl->glMultMatrixf(&mat[0]);
 #endif
 
   //Pos p = { 1,0 };
@@ -1020,7 +1021,7 @@ bool GridEffect2::Frame(float time)
   RenderGrid(bm, -scr.PosX()-1024/2/10,-scr.PosY()-768/2/10, 10,11, rend,
 	     scr.PosX()/10-3,scr.PosY()/11-1,30,30);
 	     //scr.PosX()/10/10,scr.PosY()/11/10,1024/10/10+1,768/11/10+1);
-  glPopMatrix();
+  g_low->ogl->glPopMatrix();
   return false;
 }
  
@@ -1179,7 +1180,7 @@ void RenderSprite(const Sprite &s, int frame, Point2d pos1, Point2d pos2, Point2
 {
   //std::cout << "SpriteFrame: " << frame << std::endl;
   rend.EnableTexture(frame);
-  glPushMatrix();
+  g_low->ogl->glPushMatrix();
   Point2d p = s.Pos(frame);
 
   Matrix me = Matrix::Translate(pos1_inside.x+p.x, pos1_inside.y+p.y, z);
@@ -1207,10 +1208,10 @@ void RenderSprite(const Sprite &s, int frame, Point2d pos1, Point2d pos2, Point2
 		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
   
 #ifndef EMSCRIPTEN
-  glMultMatrixf(&mat[0]);
+  g_low->ogl->glMultMatrixf(&mat[0]);
 #endif
   rend.Render(frame, -1, -1, frame, 0, rend.used_vertex_count[0]);
-  glPopMatrix();
+  g_low->ogl->glPopMatrix();
   rend.DisableTexture();
 }
 #endif
@@ -1536,35 +1537,35 @@ Path2d ParsePath2d(std::string s, bool &success)
 
 
 FBO::FBO(int sx, int sy) :sx(sx), sy(sy) { 
-  glGenFrameBuffers(1, ids); 
-  glGenRenderBuffers(1, rbo);
-  glBindRenderbuffer(GL_RENDERBUFFER, rbo[0]);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA,
+  g_low->ogl->glGenFrameBuffers(1, ids); 
+  g_low->ogl->glGenRenderBuffers(1, rbo);
+  g_low->ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, rbo[0]);
+  g_low->ogl->glRenderbufferStorage(Low_GL_RENDERBUFFER, Low_GL_RGBA,
 			sx,sy);
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  g_low->ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, 0);
   
   ref = BufferRef::NewBuffer(sx,sy);
 }
 FBO::~FBO() { 
-  glDeleteRenderBuffers(1,rbo);
-  glDeleteFrameBuffers(1, ids); 
+  g_low->ogl->glDeleteRenderBuffers(1,rbo);
+  g_low->ogl->glDeleteFrameBuffers(1, ids); 
   FreeBuffer(ref);
 }
 void FBO::bind()
 {
-  glBindFrameBuffer(GL_FRAMEBUFFER, ids[0]);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-			    GL_RENDERBUFFER, rbo);
+  g_low->ogl->glBindFrameBuffer(Low_GL_FRAMEBUFFER, ids[0]);
+  g_low->ogl->glFramebufferRenderbuffer(Low_GL_FRAMEBUFFER, Low_GL_COLOR_ATTACHMENT0,
+			    Low_GL_RENDERBUFFER, rbo);
 }
 void FBO::unbind()
 {
-  glBindFrameBuffer(GL_FRAMEBUFFER, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-			    GL_RENDERBUFFER, 0);
+  g_low->ogl->glBindFrameBuffer(Low_GL_FRAMEBUFFER, 0);
+  g_low->ogl->glFramebufferRenderbuffer(Low_GL_FRAMEBUFFER, Low_GL_COLOR_ATTACHMENT0,
+			    Low_GL_RENDERBUFFER, 0);
 }
 void FBO::update()
 {
-  glReadPixels(0,0,sx,sy, G_RGBA, GL_UNSIGNED_INT_8_8_8_8, (void*)ref.buffer);
+  g_low->ogl->glReadPixels(0,0,sx,sy, Low_G_RGBA, Low_GL_UNSIGNED_INT_8_8_8_8, (void*)ref.buffer);
 }
 
 

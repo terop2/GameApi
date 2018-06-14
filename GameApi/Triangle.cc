@@ -1,10 +1,12 @@
 
 #include "Triangle.hh"
 #define NO_SDL_GLEXT
-#include <GL/glew.h>
+//#include <GL/glew.h>
 #include <SDL.h>
-#include <SDL_opengl.h>
+//#include <SDL_opengl.h>
 #include <SDL_image.h>
+
+#include "GameApi_low.hh"
 
 void TriangulateEffect::Init()
 {
@@ -29,8 +31,8 @@ void DecodahedronEffect::PreFrame(float fr)
 {
 #ifndef EMSCRIPTEN
 
-  glTranslatef(0.0, 0.0, -500.0);
-  glTranslatef(0.0, -100.0, 0.0);
+  g_low->ogl->glTranslatef(0.0, 0.0, -500.0);
+  g_low->ogl->glTranslatef(0.0, -100.0, 0.0);
 
 #endif
 }

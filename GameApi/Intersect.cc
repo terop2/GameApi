@@ -23,8 +23,9 @@
 #include "Intersect.hh"
 #include "Effect.hh"
 #define NO_SDL_GLEXT
-#include <GL/glew.h>
-#include <SDL_opengl.h>
+//#include <GL/glew.h>
+//#include <SDL_opengl.h>
+#include "GameApi_low.hh"
 
 Point IntersectionPoint(LinePlaneIntersection &c, Point line_p1, Point line_p2)
 {

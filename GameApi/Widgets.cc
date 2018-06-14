@@ -22,9 +22,10 @@
 //#define GL_GLEXT_PROTOTYPES
 #include "Widgets.hh"
 #define NO_SDL_GLEXT
-#include <GL/glew.h>
-#include <SDL_opengl.h>
+//#include <GL/glew.h>
+//#include <SDL_opengl.h>
 //#include <GL/glut.h>
+#include "GameApi_low.hh"
 
 bool RectFrameAnim::Frame(float time)
   {
@@ -33,7 +34,7 @@ bool RectFrameAnim::Frame(float time)
     center.y = (r.tl.y + r.br.y)/2;
     float scalex = r.br.x - r.tl.x;
     float scaley = r.br.y - r.tl.y;
-    glPushMatrix();
+    g_low->ogl->glPushMatrix();
     Matrix m = Matrix::Scale(scalex/screenx,scaley/screeny,scalex/screenx)*Matrix::Translate(center.x-screenx/2, center.y-screeny/2, 0.0);
     float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
 		      m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
@@ -42,22 +43,22 @@ bool RectFrameAnim::Frame(float time)
     
 #ifndef EMSCRIPTEN
 
-    glMultMatrixf(&mat[0]);
+    g_low->ogl->glMultMatrixf(&mat[0]);
 #endif
     obj.Frame(time);
-    glPopMatrix();
+    g_low->ogl->glPopMatrix();
     return false;
   }
 bool RotateFrameAnim::Frame(float time)
 {
-  glPushMatrix();
+  g_low->ogl->glPushMatrix();
 #ifndef EMSCRIPTEN
-  glTranslatef(0.0, 0.0, -500.0);
+  g_low->ogl->glTranslatef(0.0, 0.0, -500.0);
 #endif
   //glRotatef(time, next.XRot(),next.YRot(),next.ZRot());
   //glTranslatef(0.0, -100.0, 0.0);
   next.Frame(time);
-  glPopMatrix();
+  g_low->ogl->glPopMatrix();
   return false; 
 }
 
@@ -66,7 +67,7 @@ void TextureWidget::HandlePointerMove(Point2d p)
 #if 0
   std::cout << "Screen pos: " << p.x << " " << p.y << std::endl; 
   float arr[16];
-  glGetFloatv(GL_PROJECTION_MATRIX, &arr[0]);
+  g_low->ogl->glGetFloatv(Low_GL_PROJECTION_MATRIX, &arr[0]);
   Matrix m = { {arr[0], arr[4], arr[8], arr[12],
 		arr[1], arr[5], arr[9], arr[13],
 		arr[2], arr[6], arr[10], arr[14],
@@ -113,13 +114,13 @@ bool TextureWidget::Frame(float time)
 	  }
 	changed = false;
       }
-    glDisable(GL_LIGHTING);
-    glEnable(GL_TEXTURE_2D);
+    g_low->ogl->glDisable(Low_GL_LIGHTING);
+    g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
     
     SimpleTexCoords tex(rectangle, texture.Texture());
     // FIX RenderOpenGl(rectangle, tex);
-    glDisable(GL_TEXTURE_2D);
-    glEnable(GL_LIGHTING);
+    g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+    g_low->ogl->glEnable(Low_GL_LIGHTING);
     RenderOpenGlLines(outline);
     
     return false;

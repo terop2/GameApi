@@ -9,6 +9,7 @@ typedef void Low_GLvoid;
 typedef int Low_GLenum;
 typedef float Low_GLfloat;
 typedef unsigned int Low_GLsizei;
+typedef int Low_GLint;
 // old
 typedef char Low_GLbyte;
 typedef short Low_GLshort;
@@ -104,7 +105,18 @@ enum
     Low_GL_TEXTURE_WRAP_R,
     Low_GL_REPEAT,
     Low_GL_RGBA8,
-
+    Low_GL_MULTISAMPLE,
+    Low_GL_GEOMETRY_SHADER, // todo
+    Low_GL_VERTEX_SHADER,
+    Low_GL_FRAGMENT_SHADER,
+    Low_GL_COMPILE_STATUS,
+    Low_GL_LINES_ADJACENCY_EXT,
+    Low_GL_TRIANGLES_ADJACENCY_EXT,
+    Low_GL_LINE_STRIP,
+    Low_GL_GEOMETRY_INPUT_TYPE_EXT,
+    Low_GL_GEOMETRY_VERTICES_OUT_EXT,
+    Low_GL_NO_ERROR,
+    Low_GL_GEOMETRY_OUTPUT_TYPE_EXT,
     //
     //  OLD STUFF
     // 

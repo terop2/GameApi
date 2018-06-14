@@ -221,6 +221,19 @@ void map_enums(int &i)
   case Low_GL_TEXTURE_WRAP_R: i=GL_TEXTURE_WRAP_R; break;
   case Low_GL_REPEAT: i=GL_REPEAT; break;
   case Low_GL_RGBA8: i=GL_RGBA8; break;
+  case Low_GL_MULTISAMPLE: i=GL_MULTISAMPLE; break;
+  case  Low_GL_GEOMETRY_SHADER: i=GL_GEOMETRY_SHADER; break;
+  case   Low_GL_VERTEX_SHADER: i=GL_VERTEX_SHADER; break;
+  case   Low_GL_FRAGMENT_SHADER: i=GL_FRAGMENT_SHADER; break;
+  case   Low_GL_COMPILE_STATUS: i=GL_COMPILE_STATUS; break;
+  case   Low_GL_LINES_ADJACENCY_EXT: i=GL_LINES_ADJACENCY_EXT; break;
+  case   Low_GL_TRIANGLES_ADJACENCY_EXT: i=GL_TRIANGLES_ADJACENCY_EXT; break;
+  case   Low_GL_LINE_STRIP: i=GL_LINE_STRIP; break;
+  case   Low_GL_GEOMETRY_INPUT_TYPE_EXT: i=GL_GEOMETRY_INPUT_TYPE_EXT; break;
+  case   Low_GL_GEOMETRY_VERTICES_OUT_EXT: i=GL_GEOMETRY_VERTICES_OUT_EXT; break;
+  case   Low_GL_NO_ERROR: i=GL_NO_ERROR; break;
+  case   Low_GL_GEOMETRY_OUTPUT_TYPE_EXT: i=GL_GEOMETRY_OUTPUT_TYPE_EXT; break;
+
   default: break;
   };
   assert(i<Low_GL_ARRAY_BUFFER ||i>Low_GL_RGBA8);
@@ -233,7 +246,10 @@ public:
   virtual void init() { }
   virtual void cleanup() { }
 
-  virtual int glGetError() { return ::glGetError(); }
+  virtual int glGetError() { int i = ::glGetError(); 
+    if (i==GL_NO_ERROR) i=Low_GL_NO_ERROR;
+    return i;
+  }
   
   virtual void glColor4ub(int r, int g, int b, int a) { ::glColor4ub(r,g,b,a);    check_err();
  }

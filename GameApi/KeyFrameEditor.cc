@@ -6,10 +6,10 @@
 #include "Effect.hh"
 #include <gtkmm.h>
 #include <gtkmm/socket.h>
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <SDL/SDL.h>
-#include <SDL/SDL_opengl.h>
+//#include <GL/glew.h>
+//#include <GL/gl.h>
+//#include <SDL/SDL.h>
+//#include <SDL/SDL_opengl.h>
 
 class ScaleArea
 {

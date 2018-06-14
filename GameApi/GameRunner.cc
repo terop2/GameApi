@@ -7,6 +7,7 @@
 #include "GameRunner.hh"
 #include "GameApi.hh"
 
+#if 0
 #define NO_SDL_GLEXT
 #include <GL/glew.h>
 #ifdef __APPLE__
@@ -21,6 +22,8 @@
 #include <SDL/SDL.h> 
 #include <SDL/SDL_opengl.h>
 #endif
+#endif
+#include "GameApi_low.hh"
 
 extern SDL_Window *sdl_window;
 
@@ -36,7 +39,7 @@ void GameRunner::run()
 	RenderState(current_state);
 
 #ifndef EMSCRIPTEN
-	glLoadIdentity();
+	g_low->ogl->glLoadIdentity();
 #endif
 	SDL_GL_SwapWindow(sdl_window);
 	//SDL_GL_SwapBuffers();

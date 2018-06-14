@@ -25,11 +25,11 @@
 #include <string>
 #include <fstream>
 #define NO_SDL_GLEXT
-#include <GL/glew.h>
-#include <SDL_opengl.h>
+//#include <GL/glew.h>
+//#include <SDL_opengl.h>
 #include "Pieces.hh"
 #include "Effect.hh"
-
+#include "GameApi_low.hh"
 
 
 void error(std::string s) {
@@ -81,7 +81,7 @@ void Map::Render(float time)
 	  Cube(p, unit_dir, white, size100);
 	}
 #endif
-  glColor3f(1.0,0.0,0.0);
+  g_low->ogl->glColor3f(1.0,0.0,0.0);
   
 
 }

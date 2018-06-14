@@ -3,8 +3,10 @@
 
 #define NO_SDL_GLEXT
 #include <GL/glew.h>
-#include <SDL_opengl.h>
+//#include <SDL_opengl.h>
 //#include <GL/glut.h>
+
+#include "GameApi_low.hh"
 
 void StateBitmaps::Render(int framenum)
   {
@@ -17,9 +19,9 @@ void StateBitmaps::Render(int framenum)
 		      m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 		      m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
 #endif
-    glPushMatrix();
+    g_low->ogl->glPushMatrix();
 #ifndef EMSCRIPTEN
-    glTranslatef(0.0,0.0,0.0);
+    g_low->ogl->glTranslatef(0.0,0.0,0.0);
 #endif
     //glMultMatrixf(&mat[0]);
     //bool b = tex->NumTextures() != 0;
@@ -38,5 +40,5 @@ void StateBitmaps::Render(int framenum)
 	    row.rend->DisableTexture();
 	  }
       }
-    glPopMatrix();
+    g_low->ogl->glPopMatrix();
   }
