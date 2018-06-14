@@ -3566,15 +3566,15 @@ void ArrayRender::Render(int vertexframe, int normalframe, int colorframe, int t
   g_low->ogl->glEnableVertexAttribArray(3);
   g_low->ogl->glEnableVertexAttribArray(4);
   g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[0]);
-  g_low->ogl->glVertexAttribPointer(0,3, GL_FLOAT, GL_FALSE, 0,0);
+  g_low->ogl->glVertexAttribPointer(0,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
   g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[1]);
-  g_low->ogl->glVertexAttribPointer(1,3, GL_FLOAT, GL_FALSE, 0,0);
+  g_low->ogl->glVertexAttribPointer(1,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
   g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[2]);
-  g_low->ogl->glVertexAttribPointer(2,4, GL_UNSIGNED_BYTE, GL_FALSE, 0,0);
+  g_low->ogl->glVertexAttribPointer(2,4, Low_GL_UNSIGNED_BYTE, Low_GL_FALSE, 0,0);
   g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[3]);
-  g_low->ogl->glVertexAttribPointer(3,2, GL_FLOAT, GL_FALSE, 0,0);
+  g_low->ogl->glVertexAttribPointer(3,2, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
   g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[4]);
-  g_low->ogl->glVertexAttribPointer(4,3, GL_FLOAT, GL_FALSE, 0,0);
+  g_low->ogl->glVertexAttribPointer(4,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
 #endif
   g_low->ogl->glDrawArrays(Low_GL_TRIANGLES, 0, vertex_size*6/4);
 #ifndef VAO
