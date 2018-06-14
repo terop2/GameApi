@@ -200,7 +200,7 @@ public:
   virtual void glGetFloatv(int val, float *params)=0;
 
   // viewports
-  virtual void glViewport(int x, int y, int w, int h)=0;
+  virtual void glViewport(int x, int y, unsigned int w, unsigned int h)=0;
 
   // textures
   virtual void glGenTextures(int val, unsigned int *tex)=0;
@@ -235,7 +235,7 @@ public:
   virtual void glBindBuffer(int a, unsigned int data)=0;
   virtual void glBufferData(int a, int size, const void *ptr, int static_draw)=0;
   virtual void glBufferSubData(int a, int, int, const void*)=0;
-  virtual void glVertexAttribPointer(int, int, int gl_float, int boolean, int, const void *ptr)=0;
+  virtual void glVertexAttribPointer(int, int, int gl_float, int boolean, unsigned int, const void *ptr)=0;
   virtual void glVertexAttribIPointer(int, int, int gl_float, int boolean, const void *ptr)=0;
   virtual void glVertexAttribDivisor(int, int)=0;
   virtual void glGenVertexArrays(int i, unsigned int *arr)=0;

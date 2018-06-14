@@ -310,7 +310,7 @@ public:
  }
 
   // viewports
-  virtual void glViewport(int x, int y, int w, int h) { ::glViewport(x,y,w,h); }
+  virtual void glViewport(int x, int y, unsigned int w, unsigned int h) { ::glViewport(x,y,w,h); }
 
   // textures
   virtual void glGenTextures(int val, unsigned int *tex) { 
@@ -468,7 +468,7 @@ public:
 ::glBufferSubData(a,b,c,d);
     check_err();
   }
-  virtual void glVertexAttribPointer(int a, int b, int gl_float, int boolean, int c, const void *ptr) { 
+  virtual void glVertexAttribPointer(int a, int b, int gl_float, int boolean, unsigned int c, const void *ptr) { 
 #ifdef GLEW_HACK
 #define glVertexAttribPointer GLEW_GET_FUN(__glewVertexAttribPointer)
 #endif
@@ -570,6 +570,7 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #ifdef GLEW_HACK
 #define glBindFramebuffer GLEW_GET_FUN(__glewBindFramebuffer)
 #endif
+    map_enums(a);
 ::glBindFramebuffer(a,fbo_id); }
   virtual void glBindRenderbuffer(int a, int fbo_id) { 
 #ifdef GLEW_HACK
@@ -628,11 +629,11 @@ return ::glCreateShader(shader); }
 ::glDeleteShader(h); }
   
   // programs
-  virtual int glCreateProgram() { return 
+  virtual int glCreateProgram() {
 #ifdef GLEW_HACK
 #define glCreateProgram GLEW_GET_FUN(__glewCreateProgram)
 #endif
-      ::glCreateProgram(); }
+      return ::glCreateProgram(); }
   virtual void glDeleteProgram(int p) { 
 #ifdef GLEW_HACK
 #define glDeleteProgram GLEW_GET_FUN(__glewDeleteProgram)
@@ -679,6 +680,7 @@ return ::glCreateShader(shader); }
 #define glProgramParameteriEXT GLEW_GET_FUN(__glewProgramParameteriEXT)
 #endif
     map_enums(geom);
+    map_enums(inputtype);
 ::glProgramParameteriEXT(p,geom,inputtype); }
   
   // uniforms
@@ -732,6 +734,7 @@ virtual void glUniform1i(int loc, int val) {
 #ifdef GLEW_HACK
 #define glUniformMatrix4fv GLEW_GET_FUN(__glewUniformMatrix4fv)
 #endif
+    map_enums(boolean);
 ::glUniformMatrix4fv(loc,count,boolean,matrix); }
   virtual void glUniform3fv(int loc, int count, float *arr) { 
 #ifdef GLEW_HACK
@@ -772,7 +775,11 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
 #define glCheckFramebufferStatus GLEW_GET_FUN(__glewCheckFramebufferStatus)
 #endif
     map_enums(i);
-return ::glCheckFramebufferStatus(i); }
+    int val = ::glCheckFramebufferStatus(i); 
+    if (val==GL_FRAMEBUFFER_COMPLETE) val=Low_GL_FRAMEBUFFER_COMPLETE;
+    return val;
+
+      }
   void glFinish() { ::glFinish(); }
   void glMatrixLoadIdentityEXT(int i) { }
   void glMatrixMode(int i) { }

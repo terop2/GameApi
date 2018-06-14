@@ -295,7 +295,7 @@ Matrix Program::get_matrix_var(const std::string &name)
 void Program::set_var_matrix(const std::string &name, const std::vector<float> &v)
 {
   GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
-  g_low->ogl->glUniformMatrix4fv(loc, v.size()/16, GL_FALSE, &v[0]);
+  g_low->ogl->glUniformMatrix4fv(loc, v.size()/16, Low_GL_FALSE, &v[0]);
 
 #if 0
   int s = v.size()/16;
@@ -322,7 +322,7 @@ void Program::set_var(const std::string &name, Matrix m)
 		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
 
-  g_low->ogl->glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&mat[0]);
+  g_low->ogl->glUniformMatrix4fv(loc, 1, Low_GL_FALSE, (float*)&mat[0]);
   //int val = glGetError();
   //std::cout << "UniformMatrix: " << std::hex << val << std::endl;
 
