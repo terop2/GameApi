@@ -4,6 +4,111 @@
 #ifndef GAMEAPI_LOW_H
 #define GAMEAPI_LOW_H
 
+typedef unsigned int Low_GLuint;
+typedef void Low_GLvoid;
+typedef int Low_GLenum;
+typedef float Low_GLfloat;
+typedef unsigned int Low_GLsizei;
+enum
+  {
+    Low_GL_ARRAY_BUFFER=555, // glBindBuffer 1st arg, glBufferData 1st arg, glBufferSubData 1st arg
+    Low_GL_FLOAT, // glVertexAttribPointer 3rd arg
+    Low_GL_INT, // glVertexAttribIPointer 3rd arg
+    Low_GL_FALSE, // glVertexAttribPointer 4th arg
+    Low_GL_TRIANGLES, // glDrawArrays / glDrawArraysInstanced 1st arg
+    Low_GL_TRIANGLE_STRIP, // glDrawArrays 1st arg
+    Low_GL_UNSIGNED_BYTE, // glVertexAttribPointer 3rd arg, glReadPixels 6tth param
+    Low_GL_QUADS, // glDrawArrays
+    Low_GL_DEPTH_TEST, // glEnable / glDisable
+    Low_GL_STATIC_DRAW, // glBufferData 4th param
+    Low_GL_DYNAMIC_DRAW, // glBufferData 4th param
+    Low_GL_TEXTURE0, // glClientActiveTexture 1st param (+n)
+    Low_GL_TEXTURE1, // glClientActiveTexture 1st param (+n)
+    Low_GL_TEXTURE2, // glClientActiveTexture 1st param (+n)
+    Low_GL_TEXTURE3, // glClientActiveTexture 1st param (+n)
+    Low_GL_TEXTURE4, // glClientActiveTexture 1st param (+n)
+    Low_GL_TEXTURE5, // glClientActiveTexture 1st param (+n)
+    Low_GL_TEXTURE6, // glClientActiveTexture 1st param (+n)
+    Low_GL_TEXTURE7, // glClientActiveTexture 1st param (+n)
+    Low_GL_TEXTURE8, // glClientActiveTexture 1st param (+n)
+    Low_GL_TEXTURE9, // glClientActiveTexture 1st param (+n)
+    Low_GL_TEXTURE10, // glClientActiveTexture 1st param (+n)
+
+    Low_GL_TEXTURE_2D, // glBindTexture, glTexImage2D
+    Low_GL_TEXTURE_2D_ARRAY,
+    Low_GL_TEXTURE_CUBE_MAP,
+    Low_GL_LINEAR, // glTexParameteri 3th param
+    Low_GL_TEXTURE_MIN_FILTER, // glTexParameteri 2nd param
+    Low_GL_TEXTURE_MAG_FILTER, // glTexParameteri 2nd param
+    Low_GL_TEXTURE_WRAP_S, // glTexParameteri 2nd param
+    Low_GL_CLAMP_TO_EDGE, // glTexParameteri 3rd param
+    Low_GL_TEXTURE_WRAP_T, // glTexParamteri 2nd param
+    Low_GL_PERSPECTIVE_CORRECTION_HINT, // glHint 1st param
+    Low_GL_NICEST, // hlHint 2nd param
+    Low_GL_RED, // glTexImage2D 3rd param
+    Low_GL_RENDERBUFFER, // glBindRenderBuffer, glRenderbufferStorage, glFramebufferRenderbuffer
+    Low_GL_FRAMEBUFFER, // ..., glCheckFramebufferStatus
+    Low_GL_TRUE, // glDepthMask
+    Low_GL_TEXTURE_BINDING_2D, // glGetIntegerv
+    Low_GL_RGBA, // glGetTexImage 3rd param, glReadPixels 5th param
+    Low_GL_SCISSOR_TEST, // glEnable/glDisable
+    Low_GL_FRAMEBUFFER_COMPLETE, // glCheckFramebufferStatus return value
+    Low_GL_NEAREST, // glTexParameteri 3rd param
+    Low_GL_DEPTH_COMPONENT16, // glRenderbufferStorage 2nd param
+    Low_GL_DEPTH_ATTACHMENT, // glFramebufferRenderbuffer 2nd param
+    Low_GL_COLOR_ATTACHMENT0, // glFramebufferTexture2D 2nd param
+    Low_GL_VIEWPORT, // glGetIntegerv
+    Low_GL_SRC_ALPHA, // glBlendFunc 1st param
+    Low_GL_ONE_MINUS_SRC_ALPHA, // glBlendFunc 2nd param
+    Low_GL_ZERO,
+    Low_GL_ONE,
+    Low_GL_SRC_COLOR,
+    Low_GL_ONE_MINUS_SRC_COLOR,
+    Low_GL_DST_COLOR,
+    Low_GL_ONE_MINUS_DST_COLOR,
+    //GL_ONE_MINUS_SRC_ALPHA,
+    Low_GL_DST_ALPHA,
+    Low_GL_ONE_MINUS_DST_ALPHA,
+    Low_GL_CONSTANT_COLOR,
+    Low_GL_ONE_MINUS_CONSTANT_COLOR,
+    Low_GL_CONSTANT_ALPHA, // glBlendFunc 1st AND 2ND ARG
+    Low_GL_LIGHTING, // glDisable/glEnable
+    Low_GL_MODELVIEW, // glMatrixMode
+    Low_GL_TEXTURE_ENV, // glTexEnvi
+    Low_GL_BLEND, // glEnable
+    Low_GL_ALWAYS, // glStencilFunc
+    Low_GL_KEEP, // glStencilOp 1,2
+    Low_GL_REPLACE, // glStencilOp
+    Low_GL_NOTEQUAL, // glStencilFunc
+    Low_GL_FRONT_AND_BACK, // glPolygonMode 1st param
+    Low_GL_LINE,  // glPolygonMode 2nd param
+    Low_GL_FILL, // glPolygonMode 2nd param
+    Low_GL_STENCIL_TEST, // glDisable 1st
+    Low_GL_LEQUAL, // glDepthFunc
+    Low_GL_EQUAL,
+    //GL_ALWAYS,
+    Low_GL_LESS,
+    Low_GL_GREATER,
+    Low_GL_GEQUAL,
+    Low_GL_TEXTURE_ENV_MOVE,
+    Low_GL_LINE_SMOOTH,
+    Low_GL_LINES,
+    Low_GL_POINTS,
+    Low_GL_TEXTURE_ENV_MODE,
+    Low_GL_TEXTURE_WIDTH,
+    Low_GL_TEXTURE_HEIGHT,
+    Low_GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+    Low_GL_TEXTURE_WRAP_R,
+    Low_GL_REPEAT,
+    Low_GL_RGBA8,
+    
+  };
+enum {
+    Low_GL_COLOR_BUFFER_BIT=1, // glClear
+    Low_GL_DEPTH_BUFFER_BIT=2, // glClear
+    Low_GL_STENCIL_BUFFER_BIT=4, // glClear
+};
+
 #undef glActiveTexture
 #undef glClientActiveTexture
 #undef glTexStorage3d
@@ -61,6 +166,9 @@
 #undef glTexStorage3D
 #undef glTexSubImage3D
 #undef glGetAttribLocation
+#undef glDepthFunc
+#undef glDrawArrays
+#undef glTexImage2D
 
 #undef Mix_PlayChannel
 
@@ -78,6 +186,7 @@ public:
   virtual void glClearColor(float r, float g, float b, float a)=0;
   virtual void glClear(int bits)=0;
   virtual void glDepthMask(int a)=0;
+  virtual void glDepthFunc(int i)=0;
   virtual void glStencilMask(int a)=0;
   virtual void glStencilOp(int keep, int keep2, int repl)=0;
   virtual void glStencilFunc(int notequal, int, int)=0;
@@ -97,7 +206,7 @@ public:
   virtual void glGenTextures(int val, unsigned int *tex)=0;
   virtual void glDeleteTextures(int val, const unsigned int *tex)=0;
   virtual void glBindTexture(int ID, int tex)=0;
-  virtual void glTexImage2D(int ID, int, int,int,int, int, int, int, void *ptr)=0;
+  virtual void glTexImage2D(int ID, int, int,unsigned int,unsigned int, int, int, int, void *ptr)=0;
   virtual void glCopyTexImage2D(int ID, int,int,int,int, int,int, int ptr)=0;
   virtual void glTexParameteri(int ID, int,int)=0;
   virtual void glHint(int hint, int value)=0;
@@ -116,6 +225,10 @@ public:
   // scissor
   virtual void glScissor(float x, float y, float w, float h)=0;
 
+  // fbo
+  //virtual void glGenRenderbuffers(int i, unsigned int *ptr)=0;
+  virtual void glFramebufferTexture2D(int i, int atth, int tex2d, int tex, int ptr)=0;
+
   // vertex arrays
   virtual void glGenBuffers(int i, unsigned int *buffers)=0;
   virtual void glDeleteBuffers(int count, const unsigned int *buffers)=0;
@@ -130,15 +243,15 @@ public:
   virtual void glBindVertexArray(int vao)=0;
   virtual void glEnableVertexAttribArray(int a)=0;
   virtual void glDisableVertexAttribArray(int a)=0;
-  virtual void glDrawArraysInstanced(int tri, int, int, int)=0;
-  virtual void glDrawArrays(int tri, int, int)=0;
+  virtual void glDrawArraysInstanced(int tri, int, unsigned int, unsigned int)=0;
+  virtual void glDrawArrays(int tri, int, unsigned int)=0;
   
   // bitmaps
   virtual void glReadPixels(int x, int y, int w, int h, int rgba, int mode, void *ptr)=0;
   
   // fbo
   virtual void glGenFramebuffers(int i, unsigned int *fbo_id)=0;
-  virtual void glGenRenderBuffers(int i, unsigned int *rbo_id)=0;
+  virtual void glGenRenderbuffers(int i, unsigned int *rbo_id)=0;
   virtual void glDeleteRenderBuffers(int i, unsigned int *rbo)=0;
   virtual void glDeleteFrameBuffers(int i, unsigned int *fbo)=0;
   virtual void glBindFramebuffer(int a, int fbo_id)=0;
@@ -179,7 +292,10 @@ public:
   virtual void glUniformMatrix4fv(int loc, unsigned int count, int boolean, const float *matrix)=0;
   virtual void glUniform3fv(int loc, int count, float *arr)=0;
   virtual void glGetUniformfv(int p, int loc, float *arr)=0;
+  virtual void glGetIntegerv(int p, int *ptr)=0;
+  virtual int glCheckFramebufferStatus(int id)=0;
 
+  virtual void glFinish()=0;
 
   // Old
   virtual void glEnableClientState(int a)=0;
@@ -187,6 +303,10 @@ public:
   virtual void glPushMatrix()=0;
   virtual void glPopMatrix()=0;
   virtual void glMultMatrixf(float *mat)=0;
+  virtual void glMatrixLoadIdentityEXT(int i)=0;
+  virtual void glMatrixMode(int i)=0;
+  virtual void glLoadIdentity()=0;
+  virtual void glTranslatef(float, float, float)=0;
   
 };
 

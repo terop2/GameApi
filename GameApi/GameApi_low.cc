@@ -1,5 +1,7 @@
 
 #include "GameApi_low.hh"
+#include <cassert>
+#include <iostream>
 
 #define VIRTUAL_REALITY 1
 #define SDL2_USED  
@@ -60,6 +62,7 @@
 #undef glTexStorate3d
 #undef glTexSubImage3d
 #undef glDrawArraysInstanced
+#undef glDrawArrays
 #undef glGenFramebuffers
 #undef glBindFramebuffer
 #undef glBindRenderbuffer
@@ -100,7 +103,128 @@
 #undef glTexSubImage3D
 #undef glGetAttribLocation
 
+#undef glDepthFunc
+#undef glGenRenderbuffers
+#undef glFramebufferTexture2D
+#undef glGetIntergerv
+#undef glCheckFramebufferStatus
+#undef glFinish
+#undef glMatrixLoadIdentityEXT
+#undef glMatrixMode
+#undef glLoadIdentity
+#undef glTranslatef
+
+
 #undef Mix_PlayChannel
+
+void check_err()
+{
+#if 0  
+  GLenum e = 0;
+  while((e=glGetError())!=GL_NO_ERROR)
+    {
+      std::cout << "Opengl error: "<< std::hex << e << std::endl;
+    }
+#endif
+}
+
+void map_enums(int &i)
+{
+  switch(i) {
+  case Low_GL_ARRAY_BUFFER: i=GL_ARRAY_BUFFER; break;
+  case Low_GL_FLOAT: i=GL_FLOAT; break;
+  case Low_GL_INT: i=GL_INT; break;
+  case Low_GL_FALSE: i=GL_FALSE; break;
+  case Low_GL_TRIANGLES: i=GL_TRIANGLES; break; 
+  case Low_GL_TRIANGLE_STRIP: i=GL_TRIANGLE_STRIP; break;
+  case Low_GL_UNSIGNED_BYTE: i=GL_UNSIGNED_BYTE; break;
+  case   Low_GL_QUADS: i=GL_QUADS; break;
+  case   Low_GL_DEPTH_TEST: i=GL_DEPTH_TEST; break;
+  case   Low_GL_STATIC_DRAW: i=GL_STATIC_DRAW; break;
+  case   Low_GL_DYNAMIC_DRAW: i=GL_DYNAMIC_DRAW; break;
+  case   Low_GL_TEXTURE0: i=GL_TEXTURE0; break;
+  case   Low_GL_TEXTURE1: i=GL_TEXTURE1; break;
+  case   Low_GL_TEXTURE2: i=GL_TEXTURE2; break;
+  case   Low_GL_TEXTURE3: i=GL_TEXTURE3; break;
+  case   Low_GL_TEXTURE4: i=GL_TEXTURE4; break;
+  case   Low_GL_TEXTURE5: i=GL_TEXTURE5; break;
+  case   Low_GL_TEXTURE6: i=GL_TEXTURE6; break;
+  case   Low_GL_TEXTURE7: i=GL_TEXTURE7; break;
+  case   Low_GL_TEXTURE8: i=GL_TEXTURE8; break;
+  case   Low_GL_TEXTURE9: i=GL_TEXTURE9; break;
+  case   Low_GL_TEXTURE10: i=GL_TEXTURE10; break;
+
+  case    Low_GL_TEXTURE_2D: i=GL_TEXTURE_2D; break;
+  case    Low_GL_TEXTURE_2D_ARRAY: i=GL_TEXTURE_2D_ARRAY; break;
+  case    Low_GL_TEXTURE_CUBE_MAP: i=GL_TEXTURE_CUBE_MAP; break;
+  case    Low_GL_LINEAR: i=GL_LINEAR; break;
+  case    Low_GL_TEXTURE_MIN_FILTER: i=GL_TEXTURE_MIN_FILTER; break;
+  case    Low_GL_TEXTURE_MAG_FILTER: i=GL_TEXTURE_MAG_FILTER; break;
+  case    Low_GL_TEXTURE_WRAP_S: i=GL_TEXTURE_WRAP_S; break;
+  case    Low_GL_CLAMP_TO_EDGE: i=GL_CLAMP_TO_EDGE; break;
+  case    Low_GL_TEXTURE_WRAP_T: i=GL_TEXTURE_WRAP_T; break;
+  case    Low_GL_PERSPECTIVE_CORRECTION_HINT: i=GL_PERSPECTIVE_CORRECTION_HINT; break;
+  case    Low_GL_NICEST: i=GL_NICEST; break;
+  case    Low_GL_RED: i=GL_RED; break;
+  case    Low_GL_RENDERBUFFER: i=GL_RENDERBUFFER; break;
+  case    Low_GL_FRAMEBUFFER:  i=GL_FRAMEBUFFER; break;
+  case    Low_GL_TRUE: i=GL_TRUE; break;
+  case    Low_GL_TEXTURE_BINDING_2D:  i=GL_TEXTURE_BINDING_2D; break;
+  case    Low_GL_RGBA: i=GL_RGBA; break;
+  case    Low_GL_SCISSOR_TEST:  i=GL_SCISSOR_TEST; break;
+  case    Low_GL_FRAMEBUFFER_COMPLETE: i=GL_FRAMEBUFFER_COMPLETE; break;
+  case    Low_GL_NEAREST: i=GL_NEAREST; break;
+  case    Low_GL_DEPTH_COMPONENT16: i=GL_DEPTH_COMPONENT16; break;
+  case    Low_GL_DEPTH_ATTACHMENT:  i=GL_DEPTH_ATTACHMENT; break;
+  case    Low_GL_COLOR_ATTACHMENT0: i=GL_COLOR_ATTACHMENT0; break;
+  case    Low_GL_VIEWPORT:  i=GL_VIEWPORT; break;
+  case   Low_GL_SRC_ALPHA: i=GL_SRC_ALPHA; break;
+  case   Low_GL_ONE_MINUS_SRC_ALPHA: i=GL_ONE_MINUS_SRC_ALPHA; break;
+  case   Low_GL_ZERO: i=GL_ZERO; break;
+  case   Low_GL_ONE: i=GL_ONE; break;
+  case   Low_GL_SRC_COLOR: i=GL_SRC_COLOR; break;
+  case   Low_GL_ONE_MINUS_SRC_COLOR: i=GL_ONE_MINUS_SRC_COLOR; break;
+  case   Low_GL_DST_COLOR: i=GL_DST_COLOR; break;
+  case   Low_GL_ONE_MINUS_DST_COLOR: i=GL_ONE_MINUS_DST_COLOR; break;
+    //GL_ONE_MINUS_SRC_ALPHA,
+  case   Low_GL_DST_ALPHA: i=GL_DST_ALPHA; break;
+  case   Low_GL_ONE_MINUS_DST_ALPHA: i=GL_ONE_MINUS_DST_ALPHA; break;
+  case   Low_GL_CONSTANT_COLOR: i=GL_CONSTANT_COLOR; break;
+  case   Low_GL_ONE_MINUS_CONSTANT_COLOR: i=GL_ONE_MINUS_CONSTANT_COLOR; break;
+  case   Low_GL_CONSTANT_ALPHA:  i=GL_CONSTANT_ALPHA; break;
+  case   Low_GL_LIGHTING:  i=GL_LIGHTING; break;
+  case   Low_GL_MODELVIEW: i=GL_MODELVIEW; break;
+  case   Low_GL_TEXTURE_ENV: i=GL_TEXTURE_ENV; break;
+  case   Low_GL_BLEND:  i=GL_BLEND; break;
+  case Low_GL_ALWAYS:  i=GL_ALWAYS; break;
+  case Low_GL_KEEP:  i=GL_KEEP; break;
+  case Low_GL_REPLACE:  i=GL_REPLACE; break;
+  case Low_GL_NOTEQUAL:  i=GL_NOTEQUAL; break;
+  case Low_GL_FRONT_AND_BACK: i=GL_FRONT_AND_BACK; break;
+  case Low_GL_LINE:  i=GL_LINE; break;
+  case Low_GL_FILL:  i=GL_FILL; break;
+  case Low_GL_STENCIL_TEST: i=GL_STENCIL_TEST; break;
+  case Low_GL_LEQUAL:  i=GL_LEQUAL; break;
+  case Low_GL_EQUAL: i=GL_EQUAL; break;
+    //GL_ALWAYS,
+  case Low_GL_LESS: i=GL_LESS; break;
+  case Low_GL_GREATER: i=GL_GREATER; break; 
+  case Low_GL_GEQUAL: i= GL_GEQUAL; break;
+    //case Low_GL_TEXTURE_ENV_MOVE: i=GL_TEXTURE_ENV_MOVE; break;
+  case Low_GL_LINE_SMOOTH: i=GL_LINE_SMOOTH; break;
+  case Low_GL_LINES: i=GL_LINES; break;
+  case Low_GL_POINTS: i=GL_POINTS; break;
+  case Low_GL_TEXTURE_ENV_MODE: i=GL_TEXTURE_ENV_MODE; break;
+  case Low_GL_TEXTURE_WIDTH: i=GL_TEXTURE_WIDTH; break;
+  case Low_GL_TEXTURE_HEIGHT: i=GL_TEXTURE_HEIGHT; break;
+  case Low_GL_TEXTURE_CUBE_MAP_POSITIVE_X: i=GL_TEXTURE_CUBE_MAP_POSITIVE_X; break;
+  case Low_GL_TEXTURE_WRAP_R: i=GL_TEXTURE_WRAP_R; break;
+  case Low_GL_REPEAT: i=GL_REPEAT; break;
+  case Low_GL_RGBA8: i=GL_RGBA8; break;
+  default: break;
+  };
+  assert(i<Low_GL_ARRAY_BUFFER ||i>Low_GL_RGBA8);
+}
 
 
 class OpenglApi : public OpenglLowApi
@@ -111,68 +235,198 @@ public:
 
   virtual int glGetError() { return ::glGetError(); }
   
-  virtual void glColor4ub(int r, int g, int b, int a) { ::glColor4ub(r,g,b,a); }
-  virtual void glColor4f(float r, float g, float b, float a) { ::glColor4f(r,g,b,a); }
-  virtual void glClearColor(float r, float g, float b, float a) { ::glClearColor(r,g,b,a); }
-  virtual void glClear(int bits) { ::glClear(bits); }
-  virtual void glDepthMask(int a) { ::glDepthMask(a); }
-  virtual void glStencilMask(int a) { ::glStencilMask(a); }
-  virtual void glStencilOp(int keep, int keep2, int repl) { ::glStencilOp(keep,keep2, repl); }
-  virtual void glStencilFunc(int notequal, int a, int b) { ::glStencilFunc(notequal, a,b); }
-  virtual void glPolygonMode(int front_and_back, int gl_line) { return ::glPolygonMode(front_and_back,gl_line); }
-  virtual void glClearStencil(int val) { ::glClearStencil(val); }
-  virtual void glTexEnvi(int a, int mode, int rep) { ::glTexEnvi(a,mode,rep); }
+  virtual void glColor4ub(int r, int g, int b, int a) { ::glColor4ub(r,g,b,a);    check_err();
+ }
+  virtual void glColor4f(float r, float g, float b, float a) { ::glColor4f(r,g,b,a);    check_err();
+ }
+  virtual void glClearColor(float r, float g, float b, float a) { ::glClearColor(r,g,b,a);    check_err();
+ }
+  virtual void glClear(int bits) { 
+    GLenum e = 0;
+    if (bits & Low_GL_COLOR_BUFFER_BIT) e|=GL_COLOR_BUFFER_BIT;
+    if (bits & Low_GL_DEPTH_BUFFER_BIT) e|=GL_DEPTH_BUFFER_BIT;
+    if (bits & Low_GL_STENCIL_BUFFER_BIT) e|=GL_STENCIL_BUFFER_BIT;
+    ::glClear(e);    check_err();
+ }
+  virtual void glDepthMask(int a) { map_enums(a); ::glDepthMask(a);    check_err();
+ }
+  virtual void glStencilMask(int a) { map_enums(a); ::glStencilMask(a);    check_err();
+ }
+  virtual void glStencilOp(int keep, int keep2, int repl) {
+    map_enums(keep);
+    map_enums(keep2);
+    map_enums(repl);
+    ::glStencilOp(keep,keep2, repl); 
+    check_err();
+
+}
+  virtual void glStencilFunc(int notequal, int a, int b) {
+    map_enums(notequal);
+    map_enums(a);
+    map_enums(b);
+    ::glStencilFunc(notequal, a,b); 
+    check_err();
+
+}
+  virtual void glPolygonMode(int front_and_back, int gl_line) { 
+    map_enums(front_and_back);
+    map_enums(gl_line);
+    return ::glPolygonMode(front_and_back,gl_line); 
+
+}
+  virtual void glClearStencil(int val) { 
+    map_enums(val);
+    ::glClearStencil(val); 
+    check_err();
+
+}
+  virtual void glTexEnvi(int a, int mode, int rep) { 
+    map_enums(a);
+    map_enums(mode);
+    map_enums(rep);
+    ::glTexEnvi(a,mode,rep);
+    check_err();
+
+ }
 
   // attribs
-  virtual void glEnable(int val) { ::glEnable(val); }
-  virtual void glDisable(int val) { ::glDisable(val); }
-  virtual void glGetFloatv(int val, float *params) { ::glGetFloatv(val,params); }
+  virtual void glEnable(int val) { 
+    map_enums(val);
+    ::glEnable(val); 
+    check_err();
+
+}
+  virtual void glDisable(int val) { 
+    map_enums(val);
+    ::glDisable(val);
+    check_err();
+
+ }
+  virtual void glGetFloatv(int val, float *params) { 
+    map_enums(val);
+    ::glGetFloatv(val,params);
+    check_err();
+
+ }
 
   // viewports
   virtual void glViewport(int x, int y, int w, int h) { ::glViewport(x,y,w,h); }
 
   // textures
-  virtual void glGenTextures(int val, unsigned int *tex) { ::glGenTextures(val,tex); }
-  virtual void glDeleteTextures(int val, const unsigned int *tex) { ::glDeleteTextures(val,tex); }
-  virtual void glBindTexture(int ID, int tex) { ::glBindTexture(ID,tex); }
-  virtual void glTexImage2D(int ID, int a, int b,int c,int d, int e, int f, int g, void *ptr) { ::glTexImage2D(ID,a,b,c,d,e,f,g,ptr); }
-  virtual void glCopyTexImage2D(int ID, int a,int b,int c,int d, int e,int f, int ptr) { ::glCopyTexImage2D(ID,a,b,c,d,e,f,ptr); }
-  virtual void glTexParameteri(int ID, int a,int b) { ::glTexParameteri(ID,a,b); }
-  virtual void glHint(int hint, int value) { ::glHint(hint,value); }
+  virtual void glGenTextures(int val, unsigned int *tex) { 
+    ::glGenTextures(val,tex);
+    check_err();
+
+ }
+  virtual void glDeleteTextures(int val, const unsigned int *tex) { ::glDeleteTextures(val,tex); 
+    check_err();
+
+}
+  virtual void glBindTexture(int ID, int tex) { 
+    map_enums(ID);
+    ::glBindTexture(ID,tex); 
+    check_err();
+
+}
+  virtual void glTexImage2D(int ID, int a, int b,unsigned int c, unsigned int d, int e, int f, int g, void *ptr) {
+    map_enums(ID);
+    map_enums(b);
+    map_enums(f);
+    map_enums(g);
+    ::glTexImage2D(ID,a,b,c,d,e,f,g,ptr); 
+    check_err();
+
+}
+  virtual void glCopyTexImage2D(int ID, int a,int b,int c,int d, int e,int f, int ptr) { 
+    map_enums(ID);
+    map_enums(b);
+    ::glCopyTexImage2D(ID,a,b,c,d,e,f,ptr); 
+    check_err();
+}
+  virtual void glTexParameteri(int ID, int a,int b) {
+    map_enums(ID);
+    map_enums(a);
+    map_enums(b);
+    ::glTexParameteri(ID,a,b); 
+    check_err();
+}
+  virtual void glHint(int hint, int value) { 
+    map_enums(hint);
+    map_enums(value);
+    ::glHint(hint,value); 
+    check_err();
+
+}
   virtual void glActiveTexture(int a) { 
 #ifdef GLEW_HACK
 #define glActiveTexture GLEW_GET_FUN(__glewActiveTexture)
 #endif
+    map_enums(a);
     ::glActiveTexture(a); 
+    check_err();
   }
   virtual void glClientActiveTexture(int a) { 
 #ifdef GLEW_HACK
 #define glClientActiveTexture GLEW_GET_FUN(__glewClientActiveTexture)
 #endif
+    map_enums(a);
 ::glClientActiveTexture(a); 
+    check_err();
   }
   virtual void glTexStorage3D(int arr, int a, int flag, int w, int h, int layer_count) { 
 #ifdef GLEW_HACK
 #define glTexStorage3D GLEW_GET_FUN(__glewTexStorage3D)
 #endif
+    map_enums(arr);
+    map_enums(flag);
 ::glTexStorage3D(arr,a,flag,w,h,layer_count); 
+    check_err();
 }
   virtual void glTexSubImage3D(int arr, int a,int b,int c,int d,int e,int f, int g, int rgba, int unsig_byte, void *buffer) { 
 #ifdef GLEW_HACK
 #define glTexSubImage3D GLEW_GET_FUN(__glewTexSubImage3D)
 #endif
+    map_enums(arr);
+    map_enums(rgba);
+    map_enums(unsig_byte);
 ::glTexSubImage3D(arr,a,b,c,d,e,f,g,rgba,unsig_byte,buffer); 
+    check_err();
   }
-  virtual void glGetTexLevelParameteriv(int a, int b, int w, int *ptr) { ::glGetTexLevelParameteriv(a,b,w,ptr); }
-  virtual void glGetTexImage(int a, int b, int rgba, int unsign_byte, void *ptr) { ::glGetTexImage(a,b,rgba,unsign_byte,ptr); }
-  virtual void glReadBuffer(int a) { ::glReadBuffer(a); }
+  virtual void glGetTexLevelParameteriv(int a, int b, int w, int *ptr) { 
+    map_enums(a);
+    map_enums(w);
+    ::glGetTexLevelParameteriv(a,b,w,ptr); 
+    check_err();
+
+}
+  virtual void glGetTexImage(int a, int b, int rgba, int unsign_byte, void *ptr) { 
+    map_enums(a);
+    map_enums(rgba);
+    map_enums(unsign_byte);
+::glGetTexImage(a,b,rgba,unsign_byte,ptr); 
+    check_err();
+
+}
+  virtual void glReadBuffer(int a) { 
+    map_enums(a);
+    ::glReadBuffer(a); 
+    check_err();
+
+}
   
 
   // blend
-  virtual void glBlendFunc(int val, int val2) { ::glBlendFunc(val,val2); }
+  virtual void glBlendFunc(int val, int val2) { 
+    map_enums(val);
+    map_enums(val2);
+::glBlendFunc(val,val2); 
+    check_err();
+
+}
   
   // scissor
-  virtual void glScissor(float x, float y, float w, float h) { ::glScissor(x,y,w,h); }
+  virtual void glScissor(float x, float y, float w, float h) { 
+    ::glScissor(x,y,w,h); }
 
   // vertex arrays
   virtual void glGenBuffers(int i, unsigned int *buffers) { 
@@ -180,54 +434,71 @@ public:
 #define glGenBuffers GLEW_GET_FUN(__glewGenBuffers)
 #endif
 ::glGenBuffers(i,buffers); 
+    check_err();
   }
   virtual void glDeleteBuffers(int count, const unsigned int *buffers) { 
 #ifdef GLEW_HACK
 #define glDeleteBuffers GLEW_GET_FUN(__glewDeleteBuffers)
 #endif
 ::glDeleteBuffers(count,buffers); 
+    check_err();
   }
   virtual void glBindBuffer(int a, unsigned int data) { 
 #ifdef GLEW_HACK
 #define glBindBuffer GLEW_GET_FUN(__glewBindBuffer)
 #endif
+    map_enums(a);
 ::glBindBuffer(a,data); 
+    check_err();
   }
   virtual void glBufferData(int a, int size, const void *ptr, int static_draw) { 
 #ifdef GLEW_HACK
 #define glBufferData GLEW_GET_FUN(__glewBufferData)
 #endif
+    map_enums(a);
+    map_enums(static_draw);
     ::glBufferData(a,size,ptr,static_draw); 
+    check_err();
   }
   virtual void glBufferSubData(int a, int b, int c, const void* d) { 
 #ifdef GLEW_HACK
 #define glBufferSubData GLEW_GET_FUN(__glewBufferSubData)
 #endif
+    map_enums(a);
 ::glBufferSubData(a,b,c,d);
+    check_err();
   }
   virtual void glVertexAttribPointer(int a, int b, int gl_float, int boolean, int c, const void *ptr) { 
 #ifdef GLEW_HACK
 #define glVertexAttribPointer GLEW_GET_FUN(__glewVertexAttribPointer)
 #endif
+    map_enums(gl_float);
+    map_enums(boolean);
 ::glVertexAttribPointer(a,b,gl_float,boolean,c,ptr); 
+    check_err();
   }
 virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, const void *ptr) {
 #ifdef GLEW_HACK
 #define glVertexAttribIPointer GLEW_GET_FUN(__glewVertexAttribIPointer)
 #endif
+  map_enums(gl_float);
+  map_enums(boolean);
 ::glVertexAttribIPointer(a,b,gl_float,boolean,ptr); 
+    check_err();
 }
   virtual void glVertexAttribDivisor(int a, int b) { 
 #ifdef GLEW_HACK
 #define glVertexAttribDivisor GLEW_GET_FUN(__glewVertexAttribDivisor)
 #endif
     ::glVertexAttribDivisor(a,b); 
+    check_err();
   }
   virtual void glGenVertexArrays(int i, unsigned int *arr) { 
 #ifdef GLEW_HACK
 #define glGenVertexArrays GLEW_GET_FUN(__glewGenVertexArrays)
 #endif
     ::glGenVertexArrays(i,arr); 
+    check_err();
   }
   virtual void glDeleteVertexArrays(int count, unsigned int *vao) { 
 #ifdef GLEW_HACK
@@ -240,29 +511,47 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #define glBindVertexArray GLEW_GET_FUN(__glewBindVertexArray)
 #endif
 ::glBindVertexArray(vao); 
+    check_err();
   }
   virtual void glEnableVertexAttribArray(int a) { 
 #ifdef GLEW_HACK
 #define glEnableVertexAttribArray GLEW_GET_FUN(__glewEnableVertexAttribArray)
 #endif
 ::glEnableVertexAttribArray(a); 
+    check_err();
   }
   virtual void glDisableVertexAttribArray(int a) { 
 #ifdef GLEW_HACK
 #define glDisableVertexAttribArray GLEW_GET_FUN(__glewDisableVertexAttribArray)
 #endif
 ::glDisableVertexAttribArray(a); 
+    check_err();
   }
-  virtual void glDrawArraysInstanced(int tri, int a, int b, int c) { 
+  virtual void glDrawArraysInstanced(int tri, int a, unsigned int b, unsigned int c) { 
 #ifdef GLEW_HACK
 #define glDrawArraysInstanced GLEW_GET_FUN(__glewDrawArraysInstanced)
 #endif
+    map_enums(tri);
 ::glDrawArraysInstanced(tri,a,b,c); 
   }
-  virtual void glDrawArrays(int tri, int a, int b) { ::glDrawArrays(tri,a,b); }
-  
+  virtual void glDrawArrays(int tri, int a, unsigned int b) { 
+    //#ifdef GLEW_HACK
+    //#define glDrawArrays GLEW_GET_FUN(__glewDrawArraysEXT)
+    //#endif
+    map_enums(tri);
+    unsigned int tri2 = (unsigned int)tri;
+    ::glDrawArrays(tri2,a,b); 
+    check_err();
+}
+ 
   // bitmaps
-  virtual void glReadPixels(int x, int y, int w, int h, int rgba, int mode, void *ptr) { ::glReadPixels(x,y,w,h,rgba,mode,ptr); }
+  virtual void glReadPixels(int x, int y, int w, int h, int rgba, int mode, void *ptr) { 
+    map_enums(rgba);
+    map_enums(mode);
+::glReadPixels(x,y,w,h,rgba,mode,ptr); 
+    check_err();
+
+}
   
   // fbo
   virtual void glGenFramebuffers(int i, unsigned int *fbo_id) {
@@ -270,7 +559,11 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #define glGenFramebuffers GLEW_GET_FUN(__glewGenFramebuffers) 
 #endif
 ::glGenFramebuffers(i,fbo_id); }
-  virtual void glGenRenderBuffers(int i, unsigned int *rbo_id) { ::glGenRenderbuffers(i,rbo_id); }
+  virtual void glGenRenderbuffers(int i, unsigned int *rbo_id) { 
+#ifdef GLEW_HACK
+#define glGenRenderbuffers GLEW_GET_FUN(__glewGenRenderbuffers)
+#endif
+::glGenRenderbuffers(i,rbo_id); }
   virtual void glDeleteRenderBuffers(int i, unsigned int *rbo) { ::glDeleteRenderbuffers(i,rbo); }
   virtual void glDeleteFrameBuffers(int i, unsigned int *fbo) { ::glDeleteFramebuffers(i,fbo); }
   virtual void glBindFramebuffer(int a, int fbo_id) { 
@@ -282,16 +575,22 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #ifdef GLEW_HACK
 #define glBindRenderbuffer GLEW_GET_FUN(__glewBindRenderbuffer)
 #endif
+    map_enums(a);
 ::glBindRenderbuffer(a,fbo_id); }
   virtual void glRenderbufferStorage(int a, int d, int sx, int sy) { 
 #ifdef GLEW_HACK
 #define glRenderbufferStorage GLEW_GET_FUN(__glewRenderbufferStorage)
 #endif
+    map_enums(a);
+    map_enums(d);
 ::glRenderbufferStorage(a,d,sx,sy); }
   virtual void glFramebufferRenderbuffer(int a, int d, int r, unsigned int tex) { 
 #ifdef GLEW_HACK
 #define glFramebufferRenderbuffer GLEW_GET_FUN(__glewFramebufferRenderbuffer)
 #endif
+    map_enums(a);
+    map_enums(d);
+    map_enums(r);
 ::glFramebufferRenderbuffer(a,d,r,tex); }
   
   // shaders
@@ -299,6 +598,7 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #ifdef GLEW_HACK
 #define glCreateShader GLEW_GET_FUN(__glewCreateShader)
 #endif
+    map_enums(shader);
 return ::glCreateShader(shader); }
   virtual void glShaderSource(int h, int c, const char **strings, int *lengths) { 
 #ifdef GLEW_HACK
@@ -319,6 +619,7 @@ return ::glCreateShader(shader); }
 #ifdef GLEW_HACK
 #define glGetShaderiv GLEW_GET_FUN(__glewGetShaderiv)
 #endif
+    map_enums(gl_compile_status);
 ::glGetShaderiv(handle,gl_compile_status, ptr); }
   virtual void glDeleteShader(int h) { 
 #ifdef GLEW_HACK
@@ -377,6 +678,7 @@ return ::glCreateShader(shader); }
 #ifdef GLEW_HACK
 #define glProgramParameteriEXT GLEW_GET_FUN(__glewProgramParameteriEXT)
 #endif
+    map_enums(geom);
 ::glProgramParameteriEXT(p,geom,inputtype); }
   
   // uniforms
@@ -449,6 +751,33 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
   virtual void glPushMatrix() { ::glPushMatrix(); }
   virtual void glPopMatrix() { ::glPopMatrix(); }
   virtual void glMultMatrixf(float *mat) { ::glMultMatrixf(mat); }
+
+  // rest
+  void glDepthFunc(int i) { 
+    map_enums(i);
+    ::glDepthFunc(i); }
+  void glFramebufferTexture2D(int a, int b, int c, int d, int ptr) { 
+#ifdef GLEW_HACK
+#define glFramebufferTexture2D GLEW_GET_FUN(__glewFramebufferTexture2D)
+#endif
+    map_enums(a);
+    map_enums(b);
+    map_enums(c);
+::glFramebufferTexture2D(a,b,c,d,ptr); }
+  void glGetIntegerv(int i, int *ptr) { 
+    map_enums(i);
+    ::glGetIntegerv(i,ptr); }
+  int glCheckFramebufferStatus(int i) { 
+#ifdef GLEW_HACK
+#define glCheckFramebufferStatus GLEW_GET_FUN(__glewCheckFramebufferStatus)
+#endif
+    map_enums(i);
+return ::glCheckFramebufferStatus(i); }
+  void glFinish() { ::glFinish(); }
+  void glMatrixLoadIdentityEXT(int i) { }
+  void glMatrixMode(int i) { }
+  void glLoadIdentity() {  }
+  void glTranslatef(float,float,float) { }
 
 };
 LowApi *g_low;

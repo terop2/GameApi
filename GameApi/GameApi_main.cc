@@ -40,7 +40,7 @@ EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_heigh
   p->screen_width = screenx;
   p->screen_height = screeny;
   time = SDL_GetTicks();
-  glDisable(GL_DEPTH_TEST);
+  g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
 }
 EXPORT void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_height)
 {
@@ -70,9 +70,9 @@ EXPORT void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_heigh
   alpha_1(false);
 
 #if 0
-  glMatrixLoadIdentityEXT(GL_PROJECTION);
-  glMatrixLoadIdentityEXT(GL_MODELVIEW);
-  glMatrixOrthoEXT(GL_PROJECTION, 0, 800, 600, 0, -1, 1);
+  g_low->ogl->glMatrixLoadIdentityEXT(Low_GL_PROJECTION);
+  g_low->ogl->glMatrixLoadIdentityEXT(Low_GL_MODELVIEW);
+  g_low->ogl->glMatrixOrthoEXT(Low_GL_PROJECTION, 0, 800, 600, 0, -1, 1);
 #endif
   //glEnable(GL_MULTISAMPLE );
 
@@ -280,17 +280,19 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   std::string ss = "cubesampler";
   prog->set_var(ss,0);
   alpha_1(false);
-  glEnable(GL_DEPTH_TEST);
+  g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
   //glEnable(GL_MULTISAMPLE );
 }
 EXPORT void GameApi::MainLoopApi::nvidia_init()
 {
+#if 0
   if (GLEW_NV_path_rendering)
     {
-  glMatrixLoadIdentityEXT(GL_PROJECTION);
-  glMatrixLoadIdentityEXT(GL_MODELVIEW);
-  glMatrixOrthoEXT(GL_PROJECTION, 0, 800, 600, 0, -1, 1);
+  g_low->ogl->glMatrixLoadIdentityEXT(Low_GL_PROJECTION);
+  g_low->ogl->glMatrixLoadIdentityEXT(Low_GL_MODELVIEW);
+  g_low->ogl->glMatrixOrthoEXT(Low_GL_PROJECTION, 0, 800, 600, 0, -1, 1);
     }
+#endif
 }
 
 EXPORT void GameApi::MainLoopApi::set_corner(int x, int y, int screen_sx, int screen_sy)
@@ -345,15 +347,15 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
   if (b)
     {
       Program *prog = find_shader_program(e, sh);
-      glDisable(GL_LIGHTING);
-      glEnable(GL_DEPTH_TEST);
+      g_low->ogl->glDisable(Low_GL_LIGHTING);
+      g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
       Matrix m = Matrix::Perspective(80.0, (double)screenx/screeny, 10.1, 60000.0);
       Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
       prog->set_var("in_P", m);
       prog->set_var("in_T", m3);
       //glMultMatrixf(&mat[0]);
 #ifndef EMSCRIPTEN      
-      glMatrixMode( GL_MODELVIEW ); 
+      g_low->ogl->glMatrixMode( Low_GL_MODELVIEW ); 
 #endif
       //Matrix m2 = Matrix::Translate(0.0, 0.0, -500.0);
       Matrix m2 = Matrix::Identity();
@@ -371,8 +373,8 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
       //m = m * Matrix::Scale(1.0, -1.0, 0.0);
       //m = m*Matrix::Translate(-1, -1, 0.0);
       prog->set_var("in_P", m);
-      glDisable(GL_LIGHTING);
-      glDisable(GL_DEPTH_TEST);
+      g_low->ogl->glDisable(Low_GL_LIGHTING);
+      g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
       //glMatrixMode( GL_PROJECTION ); 
       //glLoadIdentity(); 
       //glOrtho(0, screenx, screeny,0,0,1);
@@ -390,11 +392,11 @@ extern std::string gameapi_seamless_url;
 EXPORT void GameApi::MainLoopApi::clear(unsigned int col)
 {
   //glClearColor(255,255,255,255);
-  glClearStencil(0);
+  g_low->ogl->glClearStencil(0);
   Color c(col);
-  glClearColor(c.rf(),c.gf(),c.bf(),c.af());
-  glStencilMask(~0);
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  g_low->ogl->glClearColor(c.rf(),c.gf(),c.bf(),c.af());
+  g_low->ogl->glStencilMask(~0);
+  g_low->ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
   //glLoadIdentity();
   //glTranslatef(0.375, 0.375, 0.0);
   //glTranslatef(0.0, 0.0, -260.0);
@@ -405,14 +407,14 @@ EXPORT void GameApi::MainLoopApi::clear(unsigned int col)
 }
 EXPORT void GameApi::MainLoopApi::clear_3d_transparent()
 {
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  g_low->ogl->glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  g_low->ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
 }
 EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
 {
   //glClearColor(255,255,255,255);
   
-  glClearStencil(0);
+  g_low->ogl->glClearStencil(0);
 
   int r = color & 0x00ff0000;
   int g = color & 0x0000ff00;
@@ -421,13 +423,13 @@ EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
   a>>=24;
   r>>=16;
   g>>=8;
-  glClearColor(r/256.0,g/256.0,b/256.0,a/256.0);
-  glStencilMask(~0);
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  g_low->ogl->glClearColor(r/256.0,g/256.0,b/256.0,a/256.0);
+  g_low->ogl->glStencilMask(~0);
+  g_low->ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
 #ifndef EMSCRIPTEN
-  glLoadIdentity();
-  glTranslatef(0.375, 0.375, 0.0);
-  glTranslatef(0.0, 0.0, -260.0);
+  g_low->ogl->glLoadIdentity();
+  g_low->ogl->glTranslatef(0.375, 0.375, 0.0);
+  g_low->ogl->glTranslatef(0.0, 0.0, -260.0);
 #endif
   //float speed = 1.0;
   //glRotatef(speed*time, 0.0,1.0,0.0);
@@ -440,23 +442,23 @@ EXPORT void GameApi::MainLoopApi::transparency(bool enabled)
   if (enabled)
     {
       //glBlendFunc(GL_ZERO, GL_SRC_COLOR); 
-     glDepthMask(GL_FALSE);
+     g_low->ogl->glDepthMask(Low_GL_FALSE);
     }
   else
     {
       //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-     glDepthMask(GL_TRUE);
+     g_low->ogl->glDepthMask(Low_GL_TRUE);
     }
 }
 EXPORT void GameApi::MainLoopApi::depth_test(bool enabled)
 {
   if (enabled)
     {
-      glEnable(GL_DEPTH_TEST);
+      g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
     }
   else
     {
-      glDisable(GL_DEPTH_TEST);
+      g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
     }
 }
 EXPORT void GameApi::MainLoopApi::alpha(bool enable)
@@ -467,20 +469,20 @@ void GameApi::MainLoopApi::alpha_1(bool enable)
 {
   if (enable)
     {
-      glEnable(GL_BLEND);
+      g_low->ogl->glEnable(Low_GL_BLEND);
       //glBlendFunc(GL_SRC_COLOR /*ONE_MINUS_SRC_COLOR*/, GL_DST_COLOR);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      g_low->ogl->glBlendFunc(Low_GL_SRC_ALPHA, Low_GL_ONE_MINUS_SRC_ALPHA);
 #ifndef EMSCRIPTEN
-      glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+      g_low->ogl->glTexEnvi(Low_GL_TEXTURE_ENV, Low_GL_TEXTURE_ENV_MODE, Low_GL_REPLACE);
 #endif
       //glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_INTERPOLATE); 
     }
   else
     {
-      glDisable(GL_BLEND);
+      g_low->ogl->glDisable(Low_GL_BLEND);
       //glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
 #ifndef EMSCRIPTEN
-      glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+      g_low->ogl->glTexEnvi(Low_GL_TEXTURE_ENV, Low_GL_TEXTURE_ENV_MODE, Low_GL_REPLACE);
 #endif
     }
 }
@@ -526,7 +528,7 @@ EXPORT GameApi::BM GameApi::MainLoopApi::screenshot()
 
   BufferRef ref = BufferRef::NewBuffer(w,h);
 
-  glReadPixels(0,0,w,h, GL_RGBA /*GL_BGRA*/, GL_UNSIGNED_BYTE, ref.buffer);
+  g_low->ogl->glReadPixels(0,0,w,h, Low_GL_RGBA /*GL_BGRA*/, Low_GL_UNSIGNED_BYTE, ref.buffer);
 
   for(int y=0;y<h;y++)
     for(int x=0;x<w;x++)
@@ -554,7 +556,7 @@ extern SDL_Window *sdl_window;
 
 EXPORT void GameApi::MainLoopApi::finish()
 {
-  glFinish();
+  g_low->ogl->glFinish();
 }
 EXPORT void GameApi::MainLoopApi::swapbuffers()
 {
@@ -562,7 +564,7 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
   int e = -1;
   MainLoopPriv *pp = (MainLoopPriv*)priv;
   int i = 0;
-  while((e=glGetError()) != 0) {
+  while((e=g_low->ogl->glGetError()) != 0) {
     i++;
     if (e!=0 && e != pp->last_error)
       {
@@ -642,29 +644,29 @@ GameApi::SP GameApi::MainLoopApi::screenspace()
 EXPORT void GameApi::MainLoopApi::outline_first()
 {
 #ifndef EMSCRIPTEN
-  glClearStencil(0);
-  glClear(GL_STENCIL_BUFFER_BIT);
-  glEnable(GL_STENCIL_TEST);
-  glStencilFunc(GL_ALWAYS, 1, -1);
-  glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-  glColor4f(1.0,1.0,1.0,1.0);
+  g_low->ogl->glClearStencil(0);
+  g_low->ogl->glClear(Low_GL_STENCIL_BUFFER_BIT);
+  g_low->ogl->glEnable(Low_GL_STENCIL_TEST);
+  g_low->ogl->glStencilFunc(Low_GL_ALWAYS, 1, -1);
+  g_low->ogl->glStencilOp(Low_GL_KEEP, Low_GL_KEEP, Low_GL_REPLACE);
+  g_low->ogl->glColor4f(1.0,1.0,1.0,1.0);
 #endif
 }
 EXPORT void GameApi::MainLoopApi::outline_second()
 {
 #ifndef EMSCRIPTEN
-  glStencilFunc(GL_NOTEQUAL, 1, -1);
-  glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-  glLineWidth(3);
-  glEnable(GL_LINE_SMOOTH);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  g_low->ogl->glStencilFunc(Low_GL_NOTEQUAL, 1, -1);
+  g_low->ogl->glStencilOp(Low_GL_KEEP, Low_GL_KEEP, Low_GL_REPLACE);
+  g_low->ogl->glLineWidth(3);
+  g_low->ogl->glEnable(Low_GL_LINE_SMOOTH);
+  g_low->ogl->glPolygonMode(Low_GL_FRONT_AND_BACK, Low_GL_LINE);
 #endif
 }
 EXPORT void GameApi::MainLoopApi::outline_third()
 {
 #ifndef EMSCRIPTEN
-  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-  glDisable(GL_STENCIL_TEST);
+  g_low->ogl->glPolygonMode(Low_GL_FRONT_AND_BACK, Low_GL_FILL);
+  g_low->ogl->glDisable(Low_GL_STENCIL_TEST);
   //glDisable(GL_DEPTH_TEST);
 #endif
 }
@@ -785,7 +787,7 @@ public:
 	  {
 	    vec[i]->execute(e);
 	  }
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	g_low->ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
 	
       firsttime = false;
       return;
@@ -1266,7 +1268,7 @@ int GameApi::MainLoopApi::get_screen_height()
 }
 void GameApi::MainLoopApi::set_viewport(int x, int y, int sx, int sy)
 {
-  glViewport(x,y,sx,sy);
+  g_low->ogl->glViewport(x,y,sx,sy);
 }
 
 EXPORT GameApi::ML GameApi::MainLoopApi::array_ml(std::vector<ML> vec)
@@ -1647,15 +1649,15 @@ public:
   DepthFunc(MainLoopItem *next, int i) : next(next),i(i) {}
   virtual void execute(MainLoopEnv &e) {
     switch(i) {
-    case 0: glDepthFunc(GL_LEQUAL); break;
-    case 1: glDepthFunc(GL_EQUAL); break;
-    case 2: glDepthFunc(GL_ALWAYS); break;
-    case 3: glDepthFunc(GL_LESS); break;
-    case 4: glDepthFunc(GL_GREATER); break;
-    case 5: glDepthFunc(GL_GEQUAL); break;
+    case 0: g_low->ogl->glDepthFunc(Low_GL_LEQUAL); break;
+    case 1: g_low->ogl->glDepthFunc(Low_GL_EQUAL); break;
+    case 2: g_low->ogl->glDepthFunc(Low_GL_ALWAYS); break;
+    case 3: g_low->ogl->glDepthFunc(Low_GL_LESS); break;
+    case 4: g_low->ogl->glDepthFunc(Low_GL_GREATER); break;
+    case 5: g_low->ogl->glDepthFunc(Low_GL_GEQUAL); break;
     };
     next->execute(e);
-    glDepthFunc(GL_LEQUAL);
+    g_low->ogl->glDepthFunc(Low_GL_LEQUAL);
   }
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);
@@ -1677,42 +1679,42 @@ class BlendFunc : public MainLoopItem
 public:
   BlendFunc(MainLoopItem *next, int i, int i2) : next(next),i(i),i2(i2) {}
   virtual void execute(MainLoopEnv &e) {
-    GLenum s = GL_SRC_COLOR;
-    GLenum d = GL_ONE_MINUS_SRC_COLOR;
+    Low_GLenum s = Low_GL_SRC_COLOR;
+    Low_GLenum d = Low_GL_ONE_MINUS_SRC_COLOR;
     switch(i) {
-    case 0: s=GL_ZERO; break;
-    case 1: s=GL_ONE; break;
-    case 2: s=GL_SRC_COLOR; break;
-    case 3: s=GL_ONE_MINUS_SRC_COLOR; break;
-    case 4: s=GL_DST_COLOR; break;
-    case 5: s=GL_ONE_MINUS_DST_COLOR; break;
-    case 6: s=GL_SRC_ALPHA; break;
-    case 7: s=GL_ONE_MINUS_SRC_ALPHA; break;
-    case 8: s=GL_DST_ALPHA; break;
-    case 9: s=GL_ONE_MINUS_DST_ALPHA; break;
-    case 10: s=GL_CONSTANT_COLOR; break;
-    case 11: s=GL_ONE_MINUS_CONSTANT_COLOR; break;
-    case 12: s=GL_CONSTANT_ALPHA; break;
+    case 0: s=Low_GL_ZERO; break;
+    case 1: s=Low_GL_ONE; break;
+    case 2: s=Low_GL_SRC_COLOR; break;
+    case 3: s=Low_GL_ONE_MINUS_SRC_COLOR; break;
+    case 4: s=Low_GL_DST_COLOR; break;
+    case 5: s=Low_GL_ONE_MINUS_DST_COLOR; break;
+    case 6: s=Low_GL_SRC_ALPHA; break;
+    case 7: s=Low_GL_ONE_MINUS_SRC_ALPHA; break;
+    case 8: s=Low_GL_DST_ALPHA; break;
+    case 9: s=Low_GL_ONE_MINUS_DST_ALPHA; break;
+    case 10: s=Low_GL_CONSTANT_COLOR; break;
+    case 11: s=Low_GL_ONE_MINUS_CONSTANT_COLOR; break;
+    case 12: s=Low_GL_CONSTANT_ALPHA; break;
     };
 
     switch(i2) {
-    case 0: d=GL_ZERO; break;
-    case 1: d=GL_ONE; break;
-    case 2: d=GL_SRC_COLOR; break;
-    case 3: d=GL_ONE_MINUS_SRC_COLOR; break;
-    case 4: d=GL_DST_COLOR; break;
-    case 5: d=GL_ONE_MINUS_DST_COLOR; break;
-    case 6: d=GL_SRC_ALPHA; break;
-    case 7: d=GL_ONE_MINUS_SRC_ALPHA; break;
-    case 8: d=GL_DST_ALPHA; break;
-    case 9: d=GL_ONE_MINUS_DST_ALPHA; break;
-    case 10: d=GL_CONSTANT_COLOR; break;
-    case 11: d=GL_ONE_MINUS_CONSTANT_COLOR; break;
-    case 12: d=GL_CONSTANT_ALPHA; break;
+    case 0: d=Low_GL_ZERO; break;
+    case 1: d=Low_GL_ONE; break;
+    case 2: d=Low_GL_SRC_COLOR; break;
+    case 3: d=Low_GL_ONE_MINUS_SRC_COLOR; break;
+    case 4: d=Low_GL_DST_COLOR; break;
+    case 5: d=Low_GL_ONE_MINUS_DST_COLOR; break;
+    case 6: d=Low_GL_SRC_ALPHA; break;
+    case 7: d=Low_GL_ONE_MINUS_SRC_ALPHA; break;
+    case 8: d=Low_GL_DST_ALPHA; break;
+    case 9: d=Low_GL_ONE_MINUS_DST_ALPHA; break;
+    case 10: d=Low_GL_CONSTANT_COLOR; break;
+    case 11: d=Low_GL_ONE_MINUS_CONSTANT_COLOR; break;
+    case 12: d=Low_GL_CONSTANT_ALPHA; break;
     };
-    glBlendFunc(s,d);
+    g_low->ogl->glBlendFunc(s,d);
     next->execute(e);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    g_low->ogl->glBlendFunc(Low_GL_SRC_ALPHA,Low_GL_ONE_MINUS_SRC_ALPHA);
   }
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);

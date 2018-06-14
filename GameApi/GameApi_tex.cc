@@ -88,14 +88,14 @@ GameApi::Q GameApi::TextureApi::get_tex_coord_1(TX tx, int id)
 }
 EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right, BM left, BM top, BM bottom, BM back, BM front)
 {
-  GLuint id;
+  Low_GLuint id;
   GameApi::TXID txid;
   g_low->ogl->glGenTextures(1, &id);
   txid.id = id;
 #ifndef EMSCRIPTEN
-  g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
+  g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-  g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
+  g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
 
   std::vector<BM> vec;
   vec.push_back(right);
@@ -125,28 +125,28 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right
       if (bm->SizeY() != sizey) { std::cout << "Warning: Cubemap textures need to be same size" << std::endl; }
 
 
-      g_low->ogl->glBindTexture(GL_TEXTURE_CUBE_MAP, id);
-      g_low->ogl->glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,0,GL_RGBA,bm->SizeX(),bm->SizeY(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+      g_low->ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, id);
+      g_low->ogl->glTexImage2D(Low_GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,0,Low_GL_RGBA,bm->SizeX(),bm->SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
     }
-  g_low->ogl->glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-  g_low->ogl->glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
-  g_low->ogl->glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
-  g_low->ogl->glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // GL_REPEAT
-  g_low->ogl->glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
-  g_low->ogl->glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE); 
+  g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE); // GL_REPEAT
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE); 
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_WRAP_R, Low_GL_CLAMP_TO_EDGE); 
 
   return txid;
 }
 EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev, std::vector<BM> vec)
 {
-  std::vector<GLuint> ids;
+  std::vector<Low_GLuint> ids;
   std::vector<GameApi::TXID> txidvec;
   ids.resize(vec.size());
   g_low->ogl->glGenTextures(vec.size(), &ids[0]);
 #ifndef EMSCRIPTEN
-  g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
+  g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-  g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
+  g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
   int s = vec.size();
   for(int i=0;i<s;i++)
     {
@@ -164,13 +164,13 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
       if (!(sy==1 ||sy==2||sy==4||sy==8||sy==16||sy==32||sy==64||sy==128||sy==256||sy==512||sy==1024||sy==2048||sy==4096||sy==8192||sy==16384))
 	power_of_two = false;
       
-      g_low->ogl->glBindTexture(GL_TEXTURE_2D, ids[i]);
-      g_low->ogl->glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,bm->SizeX(),bm->SizeY(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buf.Buffer().buffer);
-      g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
-      g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
-      g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, power_of_two?GL_REPEAT:GL_CLAMP_TO_EDGE); // GL_REPEAT
-      g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, power_of_two?GL_REPEAT:GL_CLAMP_TO_EDGE); // these cause power-of-two texture requirement in emscripten.
-      g_low->ogl->glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, ids[i]);
+      g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D,0,Low_GL_RGBA,bm->SizeX(),bm->SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+      g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
+      g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
+      g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE); // GL_REPEAT
+      g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE); // these cause power-of-two texture requirement in emscripten.
+      g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
       GameApi::TXID id2;
       id2.id = ids[i];
       txidvec.push_back(id2);
@@ -179,18 +179,18 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 }
 EXPORT GameApi::TXA GameApi::TextureApi::prepare_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy)
 {
-  GLuint id;
+  Low_GLuint id;
   g_low->ogl->glGenTextures(1, &id); 
 
   if (vec.size()==0) { GameApi::TXA i; i.id=id; return i; }
 
-  GLsizei width = sx;
-  GLsizei height = sy;
-  GLsizei layercount = vec.size();
+  Low_GLsizei width = sx;
+  Low_GLsizei height = sy;
+  Low_GLsizei layercount = vec.size();
 
-  g_low->ogl->glBindTexture(GL_TEXTURE_2D_ARRAY, id);
+  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, id);
 #ifndef EMSCRIPTEN
-  g_low->ogl->glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, width, height, layercount);
+  g_low->ogl->glTexStorage3D(Low_GL_TEXTURE_2D_ARRAY, 1, Low_GL_RGBA8, width, height, layercount);
 #endif
 
   int s = layercount;
@@ -202,22 +202,22 @@ EXPORT GameApi::TXA GameApi::TextureApi::prepare_arr(EveryApi &ev, std::vector<B
       BitmapHandle *handle = find_bitmap(e, bm2);
       ::Bitmap<Color> *b2 = find_color_bitmap(handle);
       
-      GLsizei twidth = b2->SizeX();
-      GLsizei theight = b2->SizeY();
+      Low_GLsizei twidth = b2->SizeX();
+      Low_GLsizei theight = b2->SizeY();
       assert(twidth==width);
       assert(theight==height);
 
       BufferFromBitmap buf(*b2);
       buf.Gen();
 #ifndef EMSCRIPTEN
-      g_low->ogl->glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+      g_low->ogl->glTexSubImage3D(Low_GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, width, height, 1, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
 #endif
     }
-  g_low->ogl->glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MIN_FILTER,GL_NEAREST);      
-  g_low->ogl->glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MAG_FILTER,GL_NEAREST);	
-  g_low->ogl->glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  g_low->ogl->glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  g_low->ogl->glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D_ARRAY,Low_GL_TEXTURE_MIN_FILTER,Low_GL_NEAREST);      
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D_ARRAY,Low_GL_TEXTURE_MAG_FILTER,Low_GL_NEAREST);	
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D_ARRAY,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D_ARRAY,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
+  g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
 
   GameApi::TXA i; 
   i.id=id; 
@@ -231,19 +231,19 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
   BufferFromBitmap buf(flip);
   buf.Gen();
 
-  GLuint id;
+  Low_GLuint id;
   g_low->ogl->glGenTextures(1, &id); 
 #ifndef EMSCRIPTEN
-  g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
+  g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-  g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
-  g_low->ogl->glBindTexture(GL_TEXTURE_2D, id);
-  g_low->ogl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bm.SizeX(),bm.SizeY(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buf.Buffer().buffer);
-  g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);      
-  g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);	
-  g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  g_low->ogl->glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+  g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
+  g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, bm.SizeX(),bm.SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_NEAREST);      
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_NEAREST);	
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
+  g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
   
   GameApi::TXID id2;
   id2.id = id;
@@ -252,34 +252,34 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
 
 EXPORT void GameApi::TextureApi::use(TXID tx, int i)
 {
-  g_low->ogl->glEnable(GL_TEXTURE_2D);
+  g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
-  g_low->ogl->glClientActiveTexture(GL_TEXTURE0+i);
+  g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
 #endif
-  g_low->ogl->glActiveTexture(GL_TEXTURE0+i);
-  g_low->ogl->glBindTexture(GL_TEXTURE_2D, tx.id);
+  g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
+  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, tx.id);
 }
 EXPORT void GameApi::TextureApi::use_many(std::vector<TXID> tx, int i)
 {
-  g_low->ogl->glEnable(GL_TEXTURE_2D);
+  g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
   int s = tx.size();
   for(int i=0;i<s;i++)
     {
-    g_low->ogl->glActiveTexture(GL_TEXTURE0+i);
+    g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
 #ifndef EMSCRIPTEN
-    g_low->ogl->glClientActiveTexture(GL_TEXTURE0+i);
+    g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
 #endif
-    g_low->ogl->glBindTexture(GL_TEXTURE_2D, tx[i].id);
+    g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, tx[i].id);
     }
-  g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
+  g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
 #ifndef EMSCRIPTEN
-  g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
+  g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
 
 }
 EXPORT void GameApi::TextureApi::unuse(TXID tx)
 {
-  g_low->ogl->glDisable(GL_TEXTURE_2D);
+  g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
 }
 
 class TextureID;
@@ -311,16 +311,16 @@ public:
     e.in_N = Matrix::Identity();
     txid->render(e);
     int id = txid->texture();
-    glBindTexture(GL_TEXTURE_2D, id);
+    glBindTexture(Low_GL_TEXTURE_2D, id);
   
 #ifndef EMSCRIPTEN
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+    glGetTexLevelParameteriv(Low_GL_TEXTURE_2D, 0, Low_GL_TEXTURE_WIDTH, &width);
+    glGetTexLevelParameteriv(Low_GL_TEXTURE_2D, 0, Low_GL_TEXTURE_HEIGHT, &height);
 #endif
     ref = BufferRef::NewBuffer(width, height);
 #ifndef EMSCRIPTEN
-  glReadBuffer( GL_COLOR_ATTACHMENT0 );
-  glGetTexImage( GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
+  glReadBuffer( Low_GL_COLOR_ATTACHMENT0 );
+  glGetTexImage( Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, ref.buffer);
 #endif
 
 
@@ -371,16 +371,16 @@ EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
   TextureID *txid = find_txid(e, tx);
   int id = txid->texture();
   
-  g_low->ogl->glBindTexture(GL_TEXTURE_2D, id);
+  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
   int width=256, height=256;
 #ifndef EMSCRIPTEN
-  g_low->ogl->glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
-  g_low->ogl->glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+  g_low->ogl->glGetTexLevelParameteriv(Low_GL_TEXTURE_2D, 0, Low_GL_TEXTURE_WIDTH, &width);
+  g_low->ogl->glGetTexLevelParameteriv(Low_GL_TEXTURE_2D, 0, Low_GL_TEXTURE_HEIGHT, &height);
 #endif
   BufferRef ref = BufferRef::NewBuffer(width, height);
 #ifndef EMSCRIPTEN
-  g_low->ogl->glReadBuffer( GL_COLOR_ATTACHMENT0 );
-  g_low->ogl->glGetTexImage( GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, ref.buffer);
+  g_low->ogl->glReadBuffer( Low_GL_COLOR_ATTACHMENT0 );
+  g_low->ogl->glGetTexImage( Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, ref.buffer);
 #endif
 
   int xx = ref.width;

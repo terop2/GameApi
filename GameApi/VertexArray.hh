@@ -198,7 +198,7 @@ Counts CalcCounts(FaceCollection *coll, int start, int end);
 class RenderVertexArray
 {
 public:
-  RenderVertexArray(LowApi *g_low, VertexArraySet &s) : g_low(g_low), s(s),nodelete(false) { }
+  RenderVertexArray(LowApi *g_low, VertexArraySet &s) : s(s),nodelete(false) { }
   void prepare(int id, bool isnull=false, int tri_count=-1, int quad_count=-1, int poly_count=-1);
   void update(int id);
   void update_tri(int id, int buffer_id, int start, int end);
@@ -211,7 +211,7 @@ public:
   void del();
   ~RenderVertexArray() { if (!nodelete) del(); }
 private:
-  LowApi *g_low;
+  //LowApi *g_low; // doesnt work because ctor is run before global variable is initialized
   VertexArraySet &s;
   unsigned int buffers[5];
   unsigned int vao[3];

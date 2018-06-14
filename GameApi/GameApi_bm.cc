@@ -2777,19 +2777,19 @@ EXPORT GameApi::TXID GameApi::FloatBitmapApi::to_texid(FB fb)
 	arr++;
       }
 
-  GLuint id;
+  Low_GLuint id;
   g_low->ogl->glGenTextures(1, &id); 
 #ifndef EMSCRIPTEN
-  g_low->ogl->glClientActiveTexture(GL_TEXTURE0+0);
+  g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-  g_low->ogl->glActiveTexture(GL_TEXTURE0+0);
-  g_low->ogl->glBindTexture(GL_TEXTURE_2D, id);
-  g_low->ogl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, sx,sy, 0, GL_RED, GL_FLOAT, array);
-  g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);      
-  g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
-  g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  g_low->ogl->glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  g_low->ogl->glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+  g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
+  g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RED, sx,sy, 0, Low_GL_RED, Low_GL_FLOAT, array);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
+  g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
   
   delete []array;
 

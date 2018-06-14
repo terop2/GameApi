@@ -748,9 +748,9 @@ EXPORT void GameApi::LinesApi::prepare_inst(LLA l, PTA instances)
 #ifdef VAO
   g_low->ogl->glBindVertexArray(array->vao[0]);
 #endif
-  g_low->ogl->glBindBuffer( GL_ARRAY_BUFFER, array->pos_buffer );
+  g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
 
-  g_low->ogl->glBufferData( GL_ARRAY_BUFFER, sizeof(Point) * size, positions, GL_DYNAMIC_DRAW);
+  g_low->ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Point) * size, positions, Low_GL_DYNAMIC_DRAW);
 
 }
 EXPORT void GameApi::LinesApi::render_inst(LLA l, PTA instances)
@@ -762,10 +762,10 @@ EXPORT void GameApi::LinesApi::render_inst(LLA l, PTA instances)
   float *positions = arr->array;
   int size = arr->numpoints;
   // INSTANCED RENDERING
-  g_low->ogl->glBindBuffer( GL_ARRAY_BUFFER, array->pos_buffer );
-  g_low->ogl->glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
+  g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
+  g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
 
-  g_low->ogl->glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  g_low->ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   g_low->ogl->glVertexAttribDivisor(5, 1);
   g_low->ogl->glEnableVertexAttribArray(5);
   // END OF INSTANCED RENDERING
@@ -773,20 +773,20 @@ EXPORT void GameApi::LinesApi::render_inst(LLA l, PTA instances)
   g_low->ogl->glBindVertexArray(array->vao[0]);
 #else
   g_low->ogl->glEnableVertexAttribArray(0);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, array->buffer);
-  g_low->ogl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer);
+  g_low->ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   g_low->ogl->glEnableVertexAttribArray(4);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, array->buffer2_1);
-  g_low->ogl->glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer2_1);
+  g_low->ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   g_low->ogl->glEnableVertexAttribArray(2);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, array->buffer2);
-  g_low->ogl->glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0,0);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer2);
+  g_low->ogl->glVertexAttribPointer(2, 4, Low_GL_UNSIGNED_BYTE, Low_GL_TRUE, 0,0);
 #endif
 
   // INSTANCED DRAWING
-  g_low->ogl->glBindBuffer( GL_ARRAY_BUFFER, array->pos_buffer );
-  g_low->ogl->glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
-  g_low->ogl->glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
+  g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
+  g_low->ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   g_low->ogl->glVertexAttribDivisor(5, 1);
   g_low->ogl->glEnableVertexAttribArray(5);
   // END INSTANCED
@@ -798,7 +798,7 @@ EXPORT void GameApi::LinesApi::render_inst(LLA l, PTA instances)
   g_low->ogl->glVertexAttribDivisor(4, 0);
 
 
-  g_low->ogl->glDrawArraysInstanced(GL_LINES, 0, array->numpoints, size);
+  g_low->ogl->glDrawArraysInstanced(Low_GL_LINES, 0, array->numpoints, size);
 #ifndef VAO
   g_low->ogl->glDisableVertexAttribArray(0);
   g_low->ogl->glDisableVertexAttribArray(4);
@@ -813,16 +813,16 @@ EXPORT void GameApi::LinesApi::render(LLA l)
   g_low->ogl->glBindVertexArray(array->vao[0]);
 #else
   g_low->ogl->glEnableVertexAttribArray(0);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, array->buffer);
-  g_low->ogl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer);
+  g_low->ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   g_low->ogl->glEnableVertexAttribArray(4);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, array->buffer2_1);
-  g_low->ogl->glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer2_1);
+  g_low->ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   g_low->ogl->glEnableVertexAttribArray(2);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, array->buffer2);
-  g_low->ogl->glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0,0);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer2);
+  g_low->ogl->glVertexAttribPointer(2, 4, Low_GL_UNSIGNED_BYTE, Low_GL_TRUE, 0,0);
 #endif
-  g_low->ogl->glDrawArrays(GL_LINES, 0, array->numpoints);
+  g_low->ogl->glDrawArrays(Low_GL_LINES, 0, array->numpoints);
 #ifndef VAO
   g_low->ogl->glDisableVertexAttribArray(0);
   g_low->ogl->glDisableVertexAttribArray(4);
@@ -839,16 +839,16 @@ void GameApi::LinesApi::render(float *array, int size)
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
   glGenBuffers(1, &buffer);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer);
-  glBufferData(GL_ARRAY_BUFFER, size*2*sizeof(float)*3, array, GL_STATIC_DRAW);
+  glBindBuffer(Low_GL_ARRAY_BUFFER, buffer);
+  glBufferData(Low_GL_ARRAY_BUFFER, size*2*sizeof(float)*3, array, Low_GL_STATIC_DRAW);
 
   glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glBindBuffer(Low_GL_ARRAY_BUFFER, buffer);
+  glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
 
 
   glBindVertexArray(vao);
-  glDrawArrays(GL_LINES, 0, size);
+  glDrawArrays(Low_GL_LINES, 0, size);
 
   glDeleteVertexArrays( 1, &vao );
   glDeleteBuffers( 1, &buffer);
@@ -876,12 +876,12 @@ float *GameApi::LinesApi::line_access(LLA lines, int line, bool b)
 void GameApi::LinesApi::update(LLA lines)
 {
   PointArray2 *arr = find_lines_array(e, lines);
-  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
-  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2_1);
-  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array2_1, GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
-  glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, GL_STATIC_DRAW);
+  glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
+  glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, Low_GL_STATIC_DRAW);
+  glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2_1);
+  glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array2_1, Low_GL_STATIC_DRAW);
+  glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2);
+  glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, Low_GL_STATIC_DRAW);
 }
 #endif
 class LI_Update : public MainLoopItem
@@ -1022,21 +1022,21 @@ EXPORT void GameApi::LinesApi::update(LLA la, LI l)
 #endif
   g_low->ogl->glGenBuffers(1, &arr->buffer);
   g_low->ogl->glGenBuffers(1, &arr->buffer2);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
-  g_low->ogl->glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2_1);
-  g_low->ogl->glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array2_1, GL_STATIC_DRAW);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
-  g_low->ogl->glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, GL_STATIC_DRAW);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
+  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, Low_GL_STATIC_DRAW);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2_1);
+  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array2_1, Low_GL_STATIC_DRAW);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2);
+  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, Low_GL_STATIC_DRAW);
 #ifdef VAO
   g_low->ogl->glEnableVertexAttribArray(0);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
-  g_low->ogl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2_1);
-  g_low->ogl->glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
+  g_low->ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2_1);
+  g_low->ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   g_low->ogl->glEnableVertexAttribArray(2);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
-  g_low->ogl->glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0,0);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2);
+  g_low->ogl->glVertexAttribPointer(2, 4, Low_GL_UNSIGNED_BYTE, Low_GL_TRUE, 0,0);
 #endif
   //glDisableVertexAttribArray(0);
   //glDisableVertexAttribArray(2);
@@ -1101,22 +1101,22 @@ EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
   g_low->ogl->glGenBuffers(1, &arr->buffer);
   g_low->ogl->glGenBuffers(1, &arr->buffer2_1);
   g_low->ogl->glGenBuffers(1, &arr->buffer2);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
-  g_low->ogl->glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, GL_STATIC_DRAW);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2_1);
-  g_low->ogl->glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array2_1, GL_STATIC_DRAW);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
-  g_low->ogl->glBufferData(GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, GL_STATIC_DRAW);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
+  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, Low_GL_STATIC_DRAW);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2_1);
+  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array2_1, Low_GL_STATIC_DRAW);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2);
+  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, Low_GL_STATIC_DRAW);
 #ifdef VAO
   g_low->ogl->glEnableVertexAttribArray(0);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, arr->buffer);
-  g_low->ogl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
+  g_low->ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   g_low->ogl->glEnableVertexAttribArray(4);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2_1);
-  g_low->ogl->glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2_1);
+  g_low->ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   g_low->ogl->glEnableVertexAttribArray(2);
-  g_low->ogl->glBindBuffer(GL_ARRAY_BUFFER, arr->buffer2);
-  g_low->ogl->glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0,0);
+  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2);
+  g_low->ogl->glVertexAttribPointer(2, 4, Low_GL_UNSIGNED_BYTE, Low_GL_TRUE, 0,0);
 #endif
   //glDisableVertexAttribArray(0);
   //glDisableVertexAttribArray(2);
