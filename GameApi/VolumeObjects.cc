@@ -23,11 +23,13 @@
 #include <cmath>
 #include <iostream>
 #define NO_SDL_GLEXT
-#include <GL/glew.h>
-#include <SDL_opengl.h>
+//#include <GL/glew.h>
+//#include <SDL_opengl.h>
 #include "Shader.hh"
 #include "Graph.hh"
 #include "Triangle.hh"
+
+#include "GameApi_low.hh"
 
 SphereVolume::SphereVolume(Point origo_, float radius_)
   : radius(radius_), radius_x_radius(radius_*radius_), origo(origo_)
@@ -150,12 +152,12 @@ VolumeEffect::VolumeEffect(Render *r)
 VolumeEffect::~VolumeEffect()
 {
   piece.unuse();
-  glDisable(GL_ALPHA_TEST);
+  //g_low->ogl->glDisable(Low_GL_ALPHA_TEST);
 }
 void VolumeEffect::Init()
 {
 #if 0
-  glEnable(GL_ALPHA_TEST);
+  //g_low->ogl->glEnable(Low_GL_ALPHA_TEST);
   Triangle tri(Point(0.0,0.0,0.0),
 	       Point(5.0,0.0,0.0),
 	       Point(2.5,100.0,0.0));
@@ -183,7 +185,7 @@ void VolumeEffect::Init()
 
 bool VolumeEffect::Frame(float time)
 {
-  glAlphaFunc(GL_LESS, 0.5);
+  //g_low->ogl->glAlphaFunc(Low_GL_LESS, 0.5);
 
   DiscardParameters params(time*time);
   piece.set_params(params);
@@ -195,7 +197,7 @@ bool VolumeEffect::Frame(float time)
   piece.set_params(pp);
   piece.use();
 
-  glColor4f(1.0,0.5,0.3,0.5);
+  g_low->ogl->glColor4f(1.0,0.5,0.3,0.5);
   DrawVBO(vbostate, UpdateVertexNormalIndex);
   return false;
 }

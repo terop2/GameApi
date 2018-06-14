@@ -20,8 +20,9 @@
 
 #include "Event.hh"
 #define NO_SDL_GLEXT
-#include <GL/glew.h>
-#include <SDL_opengl.h>
+//#include <GL/glew.h>
+//#include <SDL_opengl.h>
+#include "GameApi_low.hh"
 
 void DrawVBO(TimedMatrixPaths &paths, float time, VBOState &vbostate, VBOUpdate u)
 {
@@ -33,16 +34,16 @@ void DrawVBO(TimedMatrixPaths &paths, float time, VBOState &vbostate, VBOUpdate 
   for(int i=0;i<size;i++)
     {
       Matrix m = paths.Index(t, i);
-      glPushMatrix();
+      g_low->ogl->glPushMatrix();
       float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
 			m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
 			m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 			m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
 #ifndef EMSCRIPTEN
-      glMultMatrixf(&mat[0]);
+      g_low->ogl->glMultMatrixf(&mat[0]);
 #endif
       DrawVBO(vbostate, u);
-      glPopMatrix();      
+      g_low->ogl->glPopMatrix();      
     }
 }
 void DrawVBO(Array<int, PointCollection*> &arr, FloatArray &t, float time, VBOState &vbostate, VBOUpdate u, PieceShader &shader)

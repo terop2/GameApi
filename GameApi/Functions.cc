@@ -1,10 +1,11 @@
 #define NO_SDL_GLEXT
 #define _SCL_SECURE_NO_WARNINGS
-#include <SDL_opengl.h>
+//#include <SDL_opengl.h>
 
 #include "Functions.hh"
 #include "Effect.hh"
 #include "Equalizer.hh"
+#include "GameApi_low.hh"
 
 void cube(Matrix m, FaceStore &s)
 {

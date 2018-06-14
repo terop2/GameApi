@@ -21,31 +21,36 @@
 
 #include "Pieces.hh"
 #define NO_SDL_GLEXT
-#include <GL/glew.h>
-#include <SDL_opengl.h>
+//#include <GL/glew.h>
+//#include <SDL_opengl.h>
+#include "GameApi_low.hh"
 
 
 void PlainPiece(const Heights &h, const Color2 &c)
 {
-  glBegin( GL_QUADS );
-  glColor4f( c.r, c.g, c.b, c.t);
-  glVertex3f( 0.0, h.tl, 0.0);
-  glVertex3f( 100.0, h.tr, 0.0);
-  glVertex3f( 100.0, h.br, 100.0);
-  glVertex3f( 0.0, h.bl, 100.0);
-  glEnd();
+#if 0
+  g_low->ogl->glBegin( GL_QUADS );
+  g_low->ogl->glColor4f( c.r, c.g, c.b, c.t);
+  g_low->ogl->glVertex3f( 0.0, h.tl, 0.0);
+  g_low->ogl->glVertex3f( 100.0, h.tr, 0.0);
+  g_low->ogl->glVertex3f( 100.0, h.br, 100.0);
+  g_low->ogl->glVertex3f( 0.0, h.bl, 100.0);
+  g_low->ogl->glEnd();
+#endif
 }
 void glNormal3f_a(const Vector &v);
 void glVertex3f_a(const Point &p, const Point &center)
 {
+#if 0
   Vector v = p -center;
   //v.Normalize();
-  glNormal3f_a(v);
-  glVertex3f(p.x, p.y, p.z);
+  g_low->ogl->glNormal3f_a(v);
+  g_low->ogl->glVertex3f(p.x, p.y, p.z);
+#endif
 }
 void glNormal3f_a(const Vector &v)
 {
-  glNormal3f(v.dx, v.dy, v.dz);
+  g_low->ogl->glNormal3f(v.dx, v.dy, v.dz);
 }
 void Cube(const Point &center, const Dir &d, const Color2 &c, const Size2 &s)
 {
@@ -70,13 +75,13 @@ void Cube(const Point &center, const Dir &d, const Color2 &c, const Size2 &s)
   //Vector v7 = p7 - center;
   //Vector v8 = p8 - center;
 
-
-  glBegin( GL_QUADS );
-  glColor4f( c.r, c.g, c.b, c.t);
+#if 0
+  g_low->ogl->glBegin( GL_QUADS );
+  g_low->ogl->glColor4f( c.r, c.g, c.b, c.t);
   //glNormal3f_a( v_z );
-  glVertex3f_a( p1, center );
-  glVertex3f_a( p2, center  );
-  glVertex3f_a( p5, center  );
+  g_low->ogl->glVertex3f_a( p1, center );
+  g_low->ogl->glVertex3f_a( p2, center  );
+  g_low->ogl->glVertex3f_a( p5, center  );
   glVertex3f_a( p6, center  );
   glColor4f( c.r, c.g, c.b, c.t);
   //glNormal3f_a( -v_x );
@@ -109,7 +114,7 @@ void Cube(const Point &center, const Dir &d, const Color2 &c, const Size2 &s)
   glVertex3f_a( p4, center  );
   glVertex3f_a( p5, center  );
   glEnd();
-
+#endif
 }
 
 float TransformFloat(const float &f1, const float &f2,

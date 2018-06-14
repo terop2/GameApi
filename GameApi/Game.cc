@@ -1,8 +1,9 @@
 #include "Game.hh"
 #include "Widgets.hh"
 #define NO_SDL_GLEXT
-#include <GL/glew.h>
-#include <SDL_opengl.h>
+//#include <GL/glew.h>
+//#include <SDL_opengl.h>
+#include "GameApi_low.hh"
 
 #if 0
 

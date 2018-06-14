@@ -3,9 +3,9 @@
 
 #include "GameApi_h.hh"
 
-#include <GL/glew.h>
-#include <SDL_opengl.h>
-
+//#include <GL/glew.h>
+//#include <SDL_opengl.h>
+#include "GameApi_low.hh"
 
 
 
@@ -516,9 +516,9 @@ public:
     MainLoopEnv ee = e;
     Matrix old = e.in_T;
     ee.in_T = id_m;
-    glEnable( GL_MULTISAMPLE );
+    g_low->ogl->glEnable( Low_GL_MULTISAMPLE );
     item->execute(ee);
-    glDisable( GL_MULTISAMPLE );
+    g_low->ogl->glDisable( Low_GL_MULTISAMPLE );
 
     GameApi::M old_m = add_matrix2(env, old);
     ev.shader_api.set_var(sh_color,"in_T", old_m);
