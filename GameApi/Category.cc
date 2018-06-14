@@ -22,25 +22,26 @@
 #define NO_SDL_GLEXT
 #include "Category.hh"
 #include "VectorTools.hh"
-#include <GL/glew.h>
-#include <SDL.h>
-#include <SDL_opengl.h>
+//#include <GL/glew.h>
+//#include <SDL.h>
+//#include <SDL_opengl.h>
+#include "GameApi_low.hh"
 
 void RenderArrow::doit()
 {
-  glPushMatrix();
+  g_low->ogl->glPushMatrix();
   float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
 		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
 		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
 #ifndef EMSCRIPTEN
 
-  glMultMatrixf(&mat[0]);
+  g_low->ogl->glMultMatrixf(&mat[0]);
 #endif
-  glColor4ub(color, color>>8, color>>16, color>>24);
+  g_low->ogl->glColor4ub(color, color>>8, color>>16, color>>24);
   //std::cout << object << std::endl;
   ::DrawVBO(vbostate, UpdateAll); // missing object
-  glPopMatrix();
+  g_low->ogl->glPopMatrix();
 }
 
 void CategoryEffect::Init()
