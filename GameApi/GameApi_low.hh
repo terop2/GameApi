@@ -6,12 +6,12 @@
 
 typedef unsigned int Low_GLuint;
 typedef void Low_GLvoid;
-typedef int Low_GLenum;
+typedef unsigned int Low_GLenum;
 typedef float Low_GLfloat;
-typedef unsigned int Low_GLsizei;
+typedef int Low_GLsizei;
 typedef int Low_GLint;
 // old
-typedef char Low_GLbyte;
+typedef signed char Low_GLbyte;
 typedef short Low_GLshort;
 enum
   {
