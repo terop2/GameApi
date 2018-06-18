@@ -56,8 +56,26 @@ int FontInterfaceImpl::Map(long idx, int x, int y) const
   return global_glyph_data[key]->operator[](idx)->bitmap_data[x+y*ssx];
 }
 
-std::map<std::string, unsigned char *> loaded_maps;
-std::map<std::string, int> loaded_sizes;
+struct K { std::string filename, unsigned char *buffer; int size; };
+
+std::vector<K> loaded_vec;
+
+K find_loaded(std::string filename, bool &success) {
+  int s = loaded_vec.size();
+  for(int i=0;i<s;i++) {
+    K k = loaded_vec[i];
+    if (k.filename == filename) { success=true; return k; }
+  }
+  success=false;
+  K k;
+  k.filename="";
+  k.buffer=0;
+  k.size=0;
+  return k;
+}
+
+//std::map<std::string, unsigned char *> loaded_maps;
+//std::map<std::string, int> loaded_sizes;
 
 
 
@@ -82,8 +100,12 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
     global_glyph_data[key]->operator[](idx) = data;
   }
 
-  unsigned char *ptr2 = loaded_maps[ttf_filename];
-  int size = loaded_sizes[ttf_filename];
+  bool success;
+  K k = find_loaded(ttf_filename, success);
+
+  unsigned char *ptr2 = 0; //loaded_maps[ttf_filename];
+  int size = 0; //loaded_sizes[ttf_filename];
+  if (success) { ptr2 = k.buffer; size=k.size; }
   if (!ptr2) {
     //std::cout << "loading font: " << ttf_filename << std::endl;
 #ifndef EMSCRIPTEN
@@ -106,8 +128,13 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   ptr2 = new unsigned char[ptr->size()+1];
   std::copy(ptr->begin(), ptr->end(), ptr2);
   size = ptr->size();
-  loaded_maps[ttf_filename] = ptr2;
-  loaded_sizes[ttf_filename] = size;
+  //loaded_maps[ttf_filename] = ptr2;
+  //loaded_sizes[ttf_filename] = size;
+  K k;
+  k.filename = ttf_filename;
+  k.buffer = ptr2;
+  k.size = size;
+  loaded_vec.push_back(k);
   }
   data->lib = (FT_Library*)priv_;
   
