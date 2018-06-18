@@ -56,7 +56,7 @@ int FontInterfaceImpl::Map(long idx, int x, int y) const
   return global_glyph_data[key]->operator[](idx)->bitmap_data[x+y*ssx];
 }
 
-struct K { std::string filename, unsigned char *buffer; int size; };
+struct K { std::string filename; unsigned char *buffer; int size; };
 
 std::vector<K> loaded_vec;
 
