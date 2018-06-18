@@ -3223,11 +3223,11 @@ void ArrayRender::EnableTexture(int num)
   //std::cout << "EnableTexture " << num << std::endl;
   g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+num);
   g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, texture[num]);
-  g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+  //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 }
 void ArrayRender::DisableTexture()
 {
-  g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+  //g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
 }
 void ArrayRender::UpdateColors(Mesh &mesh, MeshColors &color, std::pair<int,int> p, int frame)
 {
