@@ -143,7 +143,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   loaded_vec.push_back(k);
   } else {
     unsigned char *ptr3 = new unsigned char[size+1];
-    std::copy(ptr2->begin(), ptr2->begin()+size, ptr3);
+    std::copy(ptr2, ptr2+size, ptr3);
     ptr2 = ptr3;
   }
   data->lib = (FT_Library*)priv_;
