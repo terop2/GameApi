@@ -83,7 +83,9 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
 {
   //std::cout << "try gen_glyph_data:" << idx << std::endl;
   //std::string key = glyph_key(ttf_filename,sx,sy);
+#ifndef EMSCRIPTEN
   pthread_mutex_lock(&mutex);
+#endif
   std::map<long, GlyphData*> *mymap = global_glyph_data[key];
   if (!mymap) {
     global_glyph_data[key] = new std::map<long,GlyphData*>();
@@ -91,7 +93,9 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   }
   GlyphData *data = mymap?mymap->operator[](idx):0; //glyph_data[idx];
   if (data) { 
+#ifndef EMSCRIPTEN
     pthread_mutex_unlock(&mutex);
+#endif
     return; }
   //std::cout << "gen_glyph_data:" << idx << std::endl;
 
@@ -117,7 +121,9 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   std::vector<unsigned char> *ptr = e.get_loaded_async_url(ttf_filename);
   if (!ptr) {
     std::cout << "async not ready yet, failing..." << std::endl;
+#ifndef EMSCRIPTEN
     pthread_mutex_unlock(&mutex);
+#endif
     exit(0);
   } else {
     //std::fstream ss(ss2.str().c_str(), std::ios_base::binary | std::ios_base::out);
@@ -147,8 +153,10 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
     {
     std::cout << "FT_New_Face ERROR: " << err << std::endl;
     std::cout << "Remember to recompile the code after changing envimpl size" << std::endl;
+#ifndef EMSCRIPTEN
     pthread_mutex_unlock(&mutex);
-    exit(0);
+#endif
+    //TODO exit(0);
     }
   FT_Set_Char_Size(data->face, sx*64,sy*64,100,100);
 
@@ -165,6 +173,8 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
       {
 	data->bitmap_data[ix+iy*data->sx] = (int)data->face->glyph->bitmap.buffer[ix+iy*data->face->glyph->bitmap.pitch];
       }
+#ifndef EMSCRIPTEN
     pthread_mutex_unlock(&mutex);
+#endif
 
 }
