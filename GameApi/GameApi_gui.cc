@@ -4271,6 +4271,8 @@ MACRO(GameApi::S)
 MACRO(GameApi::SBM)
 MACRO(GameApi::IBM)
 MACRO(GameApi::INP)
+MACRO(GameApi::MA)
+MACRO(GameApi::CG)
 #undef MACRO
 
 
@@ -8369,6 +8371,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "EveryApi&", "P", "int" },
 			 { "ev", "", "1000" },
 			 "LI", "lines_api", "random_mesh_quad_lines"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::lines_from_quads,
+			 "li_grid_from_quads",
+			 { "p", "sx", "sy" },
+			 { "P", "int", "int" },
+			 { "", "5", "5" },
+			 "LI", "lines_api", "lines_from_quads"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::border_from_bool_bitmap,
 			 "border_from_bool_bitmap",
 			 { "b", "start_x", "end_x", "start_y", "end_y", "z" },
@@ -8417,6 +8425,8 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "LLA", "LI" },
 			 { "", "" },
 			 "ML", "lines_api", "update_ml"));
+
+
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::import_ifc,
 			 "li_import_icf",
@@ -8509,6 +8519,30 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "C", "C", "PT" },
 			 { "", "", "" },
 			 "PA", "curve_api", "curve_product"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::curve_group_from_lines,
+			 "cg_from_lines",
+			 { "li" },
+			 { "LI" },
+			 { "" },
+			 "CG", "curve_api", "curve_group_from_lines"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::lines_from_curve_group,
+			 "lines_from_cg",
+			 { "curvegroup", "split" },
+			 { "CG", "int" },
+			 { "", "1" },
+			 "LI", "curve_api", "lines_from_curve_group"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::meshanim,
+			 "anim_from_mesh",
+			 { "vec", "start_time", "time_step" },
+			 { "[P]", "float", "float" },
+			 { "", "0.0", "10.0" },
+			 "MA", "polygon_api", "meshanim"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::curve_group_from_anim,
+			 "cg_from_anim",
+			 { "meshanim", "start_time", "end_time" },
+			 { "MA", "float", "float" },
+			 { "", "0.0", "100.0" },
+			 "CG", "polygon_api", "curve_group_from_anim"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::patch_sample,
 			 "pa_sample",
 			 { "patch", "sx", "sy" },

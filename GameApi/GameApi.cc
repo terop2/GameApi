@@ -1354,6 +1354,18 @@ private:
   int id;
 };
 
+MeshAnim *find_mesh_anim(GameApi::Env &e, GameApi::MA ma)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->mesh_anim[ma.id];
+}
+
+CurveGroup *find_curve_group(GameApi::Env &e, GameApi::CG cg)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->curve_group[cg.id];
+}
+
 InputForMoving *find_move_input(GameApi::Env &e, GameApi::INP im)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1729,6 +1741,26 @@ NDim<float,Point> *find_dim(GameApi::Env &e, GameApi::MV mv)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->dims[mv.id];
+}
+
+GameApi::MA add_mesh_anim(GameApi::Env &e, MeshAnim *ma)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->mesh_anim.push_back(ma);
+  GameApi::MA c;
+  c.id = env->mesh_anim.size()-1;
+  return c;
+
+}
+
+GameApi::CG add_curve_group(GameApi::Env &e, CurveGroup *cg)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->curve_group.push_back(cg);
+  GameApi::CG c;
+  c.id = env->curve_group.size()-1;
+  return c;
+
 }
 
 GameApi::INP add_move_input(GameApi::Env &e, InputForMoving *im)
@@ -9403,7 +9435,7 @@ void blocker_iter(void *arg)
 
     // swapbuffers
     env->ev->mainloop_api.swapbuffers();
-
+    g_low->ogl->glGetError();
 }
 extern int async_pending_count;
 int async_pending_count_previous=-1;
@@ -9550,6 +9582,7 @@ public:
     
     // swapbuffers
     env->ev->mainloop_api.swapbuffers();
+    g_low->ogl->glGetError();
     return -1;
   }
   virtual void Destroy()
@@ -13622,3 +13655,166 @@ GameApi::MT GameApi::MaterialsApi::noise(EveryApi &ev, int sx, int sy, int r, in
   return I4;
 }
 
+class LinesCurveGroup : public CurveGroup
+{
+public:
+  LinesCurveGroup(LineCollection *coll) : coll(coll) { }
+  void Prepare() { coll->Prepare(); }
+  int NumCurves() const { return coll->NumLines(); }
+  Point Pos(int num, float t) const
+  {
+    Point p1 = coll->LinePoint(num, 0);
+    Point p2 = coll->LinePoint(num, 1);
+    LineIn3d line(p1,p2);
+    return line.Index(t);
+  }
+  unsigned int Color(int num, float t) const
+  {
+    unsigned int c1 = coll->LineColor(num,0);
+    unsigned int c2 = coll->LineColor(num,1);
+    return Color::Interpolate(c1,c2,t);
+  }
+  int Shape(int num, float t) const { return 0; }
+private:
+  LineCollection *coll;
+};
+
+GameApi::CG GameApi::CurveApi::curve_group_from_lines(LI li)
+{
+  LineCollection *coll = find_line_array(e, li);
+  return add_curve_group(e, new LinesCurveGroup(coll));
+}
+
+class LinesFromQuads : public LineCollection
+{
+public:
+  LinesFromQuads(FaceCollection *coll, int sx, int sy) : coll(coll), sx(sx), sy(sy) { }
+  void Prepare() { coll->Prepare(); }
+  int NumLines() const { return coll->NumFaces()*(sx+sy+1); }
+  Point LinePoint(int line, int point) const
+  {
+    int s = coll->NumFaces();
+    int a1_r = line/s;
+    int a1 = line-a1_r*s;
+    int a2 = a1_r;
+    bool b = false;
+    if (a2>=sx) { b=true; a2-=sx; } 
+    float t = float(a2);
+    if (b) { t/=float(sy); } else { t/=float(sx); }
+
+    if (!b) {
+      if (point==0) {
+	Point p1 = coll->FacePoint(a1,0);
+	Point p2 = coll->FacePoint(a1,1);
+	LineIn3d line(p1,p2);
+	Point pp1 = line.Index(t);
+	return pp1;
+      } else {
+	Point p3 = coll->FacePoint(a1,2);
+	Point p4 = coll->FacePoint(a1,3%coll->NumPoints(a1));
+	LineIn3d line2(p4,p3);
+	Point pp2 = line2.Index(t);
+	return pp2; 
+      }
+    } else {
+      if (point==0) {
+	Point p1 = coll->FacePoint(a1,0);
+	Point p4 = coll->FacePoint(a1,3%coll->NumPoints(a1));
+	LineIn3d line(p1,p4);
+	Point pp1 = line.Index(t);
+	return pp1;
+      } else {
+	Point p2 = coll->FacePoint(a1,1);
+	Point p3 = coll->FacePoint(a1,2);
+	LineIn3d line2(p2,p3);
+	Point pp2 = line2.Index(t);
+	return pp2;
+      }
+    }
+  }
+  unsigned int LineColor(int line, int point) const { return 0xffffffff; }
+private:
+  FaceCollection *coll;
+  int sx;
+  int sy;
+};
+
+GameApi::LI GameApi::LinesApi::lines_from_quads(P p, int sx, int sy)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_line_array(e, new LinesFromQuads(coll,sx,sy));
+}
+
+class AnimCurveGroup : public CurveGroup
+{
+public:
+  AnimCurveGroup(MeshAnim *ma, float start_time, float end_time) : ma(ma), start_time(start_time), end_time(end_time) { }
+  void Prepare() { ma->Prepare(); numfaces = ma->NumFaces(); }
+  int NumCurves() const { return numfaces*ma->NumPoints(0); }
+  Point Pos(int num, float t) const
+  {
+    int s = ma->NumFaces();
+    int p = num/s;
+    int p0 = num - p*s;
+    return ma->Vertex(p0,p,(1.0-t)*start_time + t*end_time);
+  }
+  unsigned int Color(int num, float t) const
+  {
+    int s = ma->NumFaces();
+    int p = num/s;
+    int p0 = num - p*s;
+    return ma->Color(p0,p,(1.0-t)*start_time + t*end_time);
+  }
+  int Shape(int num, float t) const { return 0; }
+private:
+  MeshAnim *ma;
+  int numfaces;
+  float start_time, end_time;
+};
+GameApi::CG GameApi::PolygonApi::curve_group_from_anim(MA ma, float start_time, float end_time)
+{
+  MeshAnim *maa = find_mesh_anim(e, ma);
+  return add_curve_group(e, new AnimCurveGroup(maa, start_time, end_time));
+}
+
+class LineFromCurveGroup : public LineCollection
+{
+public:
+  LineFromCurveGroup(CurveGroup *cg, int split) : cg(cg), split(split) {}
+  void Prepare() { cg->Prepare(); }
+  int NumLines() const { return split*cg->NumCurves(); }
+  Point LinePoint(int line, int point) const
+  {
+    int k = line/split;
+    int k2 = line-k*split;
+    float t = float(k2)/float(split);
+    float t0 = float(1.0)/float(split);
+    switch(point) { 
+    case 0: return cg->Pos(k, t);
+    case 1: return cg->Pos(k, t+t0);
+    }
+    Point p(0.0,0.0,0.0);
+    return p;
+  }
+  unsigned int LineColor(int line, int point) const
+  {
+    int k = line/split;
+    int k2 = line-k*split;
+    float t = float(k2)/float(split);
+    float t0 = float(1.0)/float(split);
+    switch(point) {
+    case 0: return cg->Color(k,t);
+    case 1: return cg->Color(k,t+t0);
+      };
+    return 0xffffffff;
+  }
+private:
+  CurveGroup *cg;
+  int split;
+};
+
+GameApi::LI GameApi::CurveApi::lines_from_curve_group(CG curvegroup, int split)
+{
+  CurveGroup *cg = find_curve_group(e, curvegroup);
+  return add_line_array(e, new LineFromCurveGroup(cg, split));
+}

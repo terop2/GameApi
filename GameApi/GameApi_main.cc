@@ -347,7 +347,7 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
   if (b)
     {
       Program *prog = find_shader_program(e, sh);
-      g_low->ogl->glDisable(Low_GL_LIGHTING);
+      //g_low->ogl->glDisable(Low_GL_LIGHTING);
       g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
       Matrix m = Matrix::Perspective(80.0, (double)screenx/screeny, 10.1, 60000.0);
       Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
@@ -373,7 +373,7 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
       //m = m * Matrix::Scale(1.0, -1.0, 0.0);
       //m = m*Matrix::Translate(-1, -1, 0.0);
       prog->set_var("in_P", m);
-      g_low->ogl->glDisable(Low_GL_LIGHTING);
+      //g_low->ogl->glDisable(Low_GL_LIGHTING);
       g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
       //glMatrixMode( GL_PROJECTION ); 
       //glLoadIdentity(); 
