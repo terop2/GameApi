@@ -552,7 +552,7 @@ SDL_Surface *InitSDL(int scr_x, int scr_y, bool vblank, bool antialias)
 #ifndef EMSCRIPTEN
   glShadeModel(GL_SMOOTH);
 #endif
-  glEnable(GL_LIGHTING);
+  //glEnable(GL_LIGHTING);
 
   //glEnable(GL_POLYGON_SMOOTH);
   //glEnable(GL_CULL_FACE);

@@ -1030,3 +1030,204 @@ EXPORT GameApi::ARR GameApi::FontApi::bm_array_id(std::vector<BM> vec)
   arr->vec = vec2;
   return add_array(e, arr);
 }
+
+class LineSegmentGlyph : public Glyph
+{
+public:
+  LineSegmentGlyph(Glyph &next, bool left_side, float s_x, float e_x, float s_y, float e_y) : next(next), left_side(left_side), s_x(s_x), e_x(e_x), s_y(s_y), e_y(e_y) { }
+  virtual float Top() const { return next.Top(); }
+  virtual float SizeX() const { return next.SizeX(); }
+  virtual float SizeY() const { return next.SizeY(); }
+  virtual float Baseline() const { return next.Baseline(); }
+  virtual int NumSplits(float y) const
+  {
+    if (y>=s_y && y<=e_y) return 1+next.NumSplits(y);
+    return next.NumSplits(y);
+  }
+  virtual float Split(float y, int idx) const
+  {
+    if (y>=s_y && y<=e_y) {
+      if (idx==0) {
+	float yy = (y-s_y)/(e_y-s_y);
+	float xx = (1.0-yy)*s_x + yy*e_x;
+	return xx;
+      } else { return next.Split(y,idx-1); }
+    } else { return next.Split(y,idx); }
+  }
+  virtual int SplitType(float y, int idx) const
+  {
+    if (y>=s_y && y<=e_y) {
+      if (idx==0) return left_side?1:2;
+      return next.SplitType(y,idx-1);
+    }
+    return next.SplitType(y,idx);
+  }
+private:
+  Glyph &next;
+  bool left_side;
+  float s_x, e_x;
+  float s_y, e_y;
+};
+class CircleGlyph : public Glyph
+{
+public:
+  CircleGlyph(Glyph &next, bool filled, float center_x, float center_y, float radius) : next(next), filled(filled), center_x(center_x), center_y(center_y), radius(radius) { }
+  float Top() const { return next.Top(); }
+  float SizeX() const { return next.SizeX(); }
+  float SizeY() const { return next.SizeY(); }
+  float Baseline() const { return next.Baseline(); }
+  int NumSplits(float y) const
+  {
+    float yy = y-center_y;
+    if (fabs(yy)<radius) { return 4+next.NumSplits(y); }
+    return 2+next.NumSplits(y);
+  }
+  float Split(float y, int idx) const
+  {
+    float yy = y-center_y;
+    if (fabs(yy)<radius) {
+      if (idx==0||idx==1||idx==2||idx==3) {
+	float h = yy;
+	float x = sqrt(radius*radius-h*h);
+	if (idx==0) return 0.0;
+	if (idx==1) return center_x-x;
+	if (idx==2) return center_x+x;
+	if (idx==3) return SizeX();
+      } else { return next.Split(y,idx-4); }
+    } else { 
+      if (idx==0) return 0.0;
+      if (idx==1) return SizeX();
+      return next.Split(y,idx-2); 
+    }
+  }
+  int SplitType(float y, int idx) const
+  {
+    float yy = y-center_y;
+    if (fabs(yy)<radius) {
+      if (idx==0) { return filled?2:1; }
+      if (idx==1) { return filled?1:2; }
+      if (idx==2) { return filled?2:1; }
+      if (idx==3) { return filled?1:2; }
+      return next.SplitType(y,idx-4);
+    } else {
+      if (idx==0) { return filled?2:1; }
+      if (idx==1) { return filled?1:2; }
+      return next.SplitType(y,idx-2);
+    }
+  }
+private:
+  Glyph &next;
+  bool filled;
+  float center_x, center_y;
+  float radius;
+};
+class ScalingXGlyph : public Glyph
+{
+public:
+  ScalingXGlyph(Glyph &next, float start_x, float end_x,
+	       float target_x, float target_end_x)
+
+    : next(next), start_x(start_x), end_x(end_x),
+      target_x(target_x), target_end_x(target_end_x)
+  {
+  }
+  float Top() const { return next.Top(); }
+  float SizeX() const { return next.SizeX(); }
+  float SizeY() const { return next.SizeY(); }
+  float Baseline() const { return next.Baseline(); }
+  int NumSplits(float y) const
+  {
+    return next.NumSplits(y);
+  }
+  float Split(float y, int idx) const
+  {
+    float x = next.Split(y,idx);
+    x-=start_x;
+    x/=end_x-start_x;
+    x*=target_end_x-target_x;
+    x+=target_x;
+    return x;
+  }
+private:
+  Glyph &next;
+  float start_x, end_x;
+  float target_x, target_end_x;
+};
+
+
+class ScalingYGlyph : public Glyph
+{
+public:
+  ScalingYGlyph(Glyph &next, float start_y, float end_y,
+	       float target_y, float target_end_y)
+
+    : next(next), start_y(start_y), end_y(end_y),
+      target_y(target_y), target_end_y(target_end_y)
+  {
+  }
+  float Top() const { return next.Top(); }
+  float SizeX() const { return next.SizeX(); }
+  float SizeY() const { return next.SizeY(); }
+  float Baseline() const { return next.Baseline(); }
+  int NumSplits(float y) const
+  {
+    y-=target_y;
+    y/=target_end_y-target_y;
+    y*=end_y-start_y;
+    y+=start_y;
+    return next.NumSplits(y);
+  }
+  float Split(float y, int idx) const
+  {
+    y-=target_y;
+    y/=target_end_y-target_y;
+    y*=end_y-start_y;
+    y+=start_y;
+    float x = next.Split(y,idx);
+    return x;
+  }
+private:
+  Glyph &next;
+  float start_y, end_y;
+  float target_y, target_end_y;
+};
+
+class ClippingRectGlyph : public Glyph
+{
+public:
+  ClippingRectGlyph(Glyph &next, float start_x, float end_x, float start_y, float end_y) : next(next), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y) { }
+  float Top() const { return next.Top(); }
+  float SizeX() const { return next.SizeX(); }
+  float SizeY() const { return next.SizeY(); }
+  float Baseline() const { return next.Baseline(); }
+  int NumSplits(float y) const
+  {
+    if (y<start_y) return 0;
+    if (y>end_y) return 0;
+    int s = next.NumSplits(y);
+    int count = 0;
+    for(int i=0;i<s;i++) {
+      float x = next.Split(y,i);
+      if (x>=start_x && x<=end_x) count++;
+    }
+    return count;
+  }
+  float Split(float y, int idx) const
+  {
+    if (y<start_y) return 0.0;
+    if (y>end_y) return 0.0;
+    int s = next.NumSplits(y);
+    int count = -1;
+    for(int i=0;i<s;i++)
+      {
+	float x = next.Split(y,i);
+	if (x>=start_x && x<=end_x) count++;
+	if (idx==count) return x;
+      }
+    return 0.0;
+  }
+private:
+  Glyph &next;
+  float start_x, end_x;
+  float start_y, end_y;
+};

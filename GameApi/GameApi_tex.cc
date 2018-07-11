@@ -128,7 +128,7 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right
       g_low->ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, id);
       g_low->ogl->glTexImage2D(Low_GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,0,Low_GL_RGBA,bm->SizeX(),bm->SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
     }
-  g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
+  //g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE); // GL_REPEAT
@@ -170,7 +170,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
       g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
       g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE); // GL_REPEAT
       g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE); // these cause power-of-two texture requirement in emscripten.
-      g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
+      //g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
       GameApi::TXID id2;
       id2.id = ids[i];
       txidvec.push_back(id2);
@@ -217,7 +217,7 @@ EXPORT GameApi::TXA GameApi::TextureApi::prepare_arr(EveryApi &ev, std::vector<B
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D_ARRAY,Low_GL_TEXTURE_MAG_FILTER,Low_GL_NEAREST);	
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D_ARRAY,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D_ARRAY,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
-  g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
+  //g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
 
   GameApi::TXA i; 
   i.id=id; 
@@ -243,7 +243,7 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_NEAREST);	
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
-  g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
+  //g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
   
   GameApi::TXID id2;
   id2.id = id;
@@ -364,12 +364,21 @@ EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
 }
 #endif
 #if 1
+
+
 EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
 {
   //EnvImpl *env = ::EnvImpl::Environment(&e);
 
   TextureID *txid = find_txid(e, tx);
   int id = txid->texture();
+
+  MainLoopEnv e2;
+  e2.in_MV = Matrix::Identity();
+  e2.in_T = Matrix::Identity();
+  e2.in_N = Matrix::Identity();
+  txid->render(e2);
+
   
   g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
   int width=256, height=256;
@@ -382,6 +391,7 @@ EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
   g_low->ogl->glReadBuffer( Low_GL_COLOR_ATTACHMENT0 );
   g_low->ogl->glGetTexImage( Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, ref.buffer);
 #endif
+  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, 0);
 
   int xx = ref.width;
   int yy = ref.height;

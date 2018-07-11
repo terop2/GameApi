@@ -3506,16 +3506,16 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       s->free_memory();
     return add_vertex_array(e, s, arr2);
   }
-
+  
 #ifdef THREADS
 #ifdef EMSCRIPTEN
 #ifdef __EMSCRIPTEN_PTHREADS__
-  if (emscripten_has_threading_support()) {
+  //if (emscripten_has_threading_support()) {
 #else
-  if (0) {
+  //if (0) {
 #endif // END OF __EMSCRIPTEN_PTHREADS
 #endif // END OF EMSCRIPTEN
-
+    
 #ifndef BATCHING
   int num_threads = 4;
   FaceCollection *faces = find_facecoll(e, p);
@@ -3618,7 +3618,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 
 #ifdef EMSCRIPTEN
   return add_vertex_array(e, set, arr2);
-  } else {
+  //} else {
 #ifndef BATCHING
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
@@ -3665,7 +3665,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       s->free_memory();
     return add_vertex_array(e, s, arr2);
 #endif // BATCHING
-  }
+    //  }
 #else // EMSCRIPTEN
   return add_vertex_array(e, set, arr2);
 #endif // end of EMSCRIPTEN
@@ -3720,7 +3720,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 #endif // end of BATCHING
 #endif // end of THREADS
 }
-
+  
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array_attribs(GameApi::P p, bool keep, std::vector<int> attribs, std::vector<int> attribi)
 { 
 #ifdef THREADS
@@ -6239,7 +6239,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
   RenderVertexArray *rend = find_vertex_array_render(e, va);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   if (s->texture_many_ids.size()!=0) {
-    g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+    //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
     int ss = s->texture_many_ids.size();
     for(int i=0;i<ss;i++)
       {
@@ -6251,7 +6251,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       }
       rend->render(0);
 
-      g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
 
   } 
   else if (s->texture_id!=-1 && s->texture_id<SPECIAL_TEX_ID)
@@ -6280,7 +6280,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
     {
-      g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+      //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
       g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
@@ -6291,18 +6291,18 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       //arr.render(0);
       rend->render(0);
 
-      g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
     }
   else if (s->texture_id!=-1)
     {
-      g_low->ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
+      //g_low->ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
 #ifndef EMSCRIPTEN
       g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
       g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
       g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
       rend->render(0);
-      g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
     }
   else
     {
@@ -6325,7 +6325,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_dyn(VA va, DC dc, MainLoopE
   rend->update(1);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   if (s->texture_many_ids.size()!=0) {
-    g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+    //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
     int ss = s->texture_many_ids.size();
     for(int i=0;i<ss;i++)
       {
@@ -6337,7 +6337,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_dyn(VA va, DC dc, MainLoopE
       }
       rend->render(1);
 
-      g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
 
   } 
   else if (s->texture_id!=-1 && s->texture_id<SPECIAL_TEX_ID)
@@ -6350,7 +6350,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_dyn(VA va, DC dc, MainLoopE
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID_CUBEMAP && s->texture_id<SPECIAL_TEX_ID_CUBEMAP_END)
     {
-      g_low->ogl->glEnable(Low_GL_TEXTURE_CUBE_MAP);
+      //g_low->ogl->glEnable(Low_GL_TEXTURE_CUBE_MAP);
 #ifndef EMSCRIPTEN
       g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
@@ -6361,13 +6361,13 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_dyn(VA va, DC dc, MainLoopE
       //arr.render(0);
       rend->render(1);
 
-      g_low->ogl->glDisable(Low_GL_TEXTURE_CUBE_MAP);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_CUBE_MAP);
 
     }
 
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
     {
-      g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+      //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
       g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
@@ -6378,18 +6378,18 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_dyn(VA va, DC dc, MainLoopE
       //arr.render(0);
       rend->render(1);
 
-      g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
     }
   else if (s->texture_id!=-1)
     {
-      g_low->ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
+      //g_low->ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
 #ifndef EMSCRIPTEN
       g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
       g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
       g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
       rend->render(1);
-      g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
     }
   else
     {
@@ -6423,7 +6423,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
 
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   if (s->texture_many_ids.size()!=0) {
-    g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+    //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
     int ss = s->texture_many_ids.size();
     for(int i=0;i<ss;i++)
       {
@@ -6435,7 +6435,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       }
       rend->render(0);
 
-      g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
 
   } 
   else
@@ -6449,7 +6449,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID_CUBEMAP && s->texture_id<SPECIAL_TEX_ID_CUBEMAP_END)
     {
-      g_low->ogl->glEnable(Low_GL_TEXTURE_CUBE_MAP);
+      //g_low->ogl->glEnable(Low_GL_TEXTURE_CUBE_MAP);
 #ifndef EMSCRIPTEN
       g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
@@ -6460,12 +6460,12 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       //arr.render(0);
       rend->render(0);
 
-      g_low->ogl->glDisable(Low_GL_TEXTURE_CUBE_MAP);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_CUBE_MAP);
 
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
     {
-      g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+      //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
       g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
@@ -6476,18 +6476,18 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       //arr.render(0);
       rend->render(0);
 
-      g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
     }
   else if (s->texture_id!=-1)
     {
-      g_low->ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
+      //g_low->ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
 #ifndef EMSCRIPTEN
       g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
       g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
       g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
       rend->render(0);
-      g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
     }
   else
     {
@@ -6502,7 +6502,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
   PointArray3 *arr = find_point_array3(e, pta);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   if (s->texture_many_ids.size()!=0) {
-    g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+    //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
     int ss = s->texture_many_ids.size();
     for(int i=0;i<ss;i++)
       {
@@ -6519,7 +6519,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       show_num = std::min(arr->numpoints, show_num);
       rend->render_instanced(0, (Point*)arr->array, show_num);
 
-      g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
 
   } 
   else if (s->texture_id!=-1 && s->texture_id<SPECIAL_TEX_ID)
@@ -6537,7 +6537,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
     {
-      g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+      //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
       g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
@@ -6555,11 +6555,11 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       rend->render_instanced(0, (Point*)arr->array, show_num);
       //rend->render(0);
 
-      g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
     }
   else if (s->texture_id!=-1)
     {
-      g_low->ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
+      //g_low->ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
 #ifndef EMSCRIPTEN
       g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
@@ -6573,7 +6573,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       show_num = std::min(arr->numpoints, show_num);
 
       rend->render_instanced(0, (Point*)arr->array, show_num);
-      g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
     }
   else
     {
@@ -9785,7 +9785,7 @@ struct AccelNodeSpec
 {
   int x,y,z;
 };
-
+ 
 class GridAccel : public AccelStructure
 {
 public:
@@ -10618,28 +10618,133 @@ GameApi::BM GameApi::PolygonApi::texture_from_p(P p, int num)
   return bm2;
 }
 
- class NormalToTexCoord : public ForwardFaceCollection
- {
- public:
-   NormalToTexCoord(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
-   Point2d TexCoord(int face, int point) const {
-     Vector n = ForwardFaceCollection::PointNormal(face,point);
-     Point2d p;
-     p.x = n.dx;
-     p.y = n.dy;
-     return p;
-   }
-   float TexCoord3(int face, int point) const
-   {
-     Vector n = ForwardFaceCollection::PointNormal(face,point);
-     return n.dz;
-   }
- private:
-   FaceCollection *coll;
- };
+class NormalToTexCoord : public ForwardFaceCollection
+{
+public:
+  NormalToTexCoord(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  Point2d TexCoord(int face, int point) const {
+    Vector n = ForwardFaceCollection::PointNormal(face,point);
+    Point2d p;
+    p.x = n.dx;
+    p.y = n.dy;
+    return p;
+  }
+  float TexCoord3(int face, int point) const
+  {
+    Vector n = ForwardFaceCollection::PointNormal(face,point);
+    return n.dz;
+  }
+private:
+  FaceCollection *coll;
+};
+ 
+GameApi::P GameApi::PolygonApi::from_normal_to_texcoord(P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new NormalToTexCoord(coll),1);
+}
 
- GameApi::P GameApi::PolygonApi::from_normal_to_texcoord(P p)
- {
-   FaceCollection *coll = find_facecoll(e,p);
-   return add_polygon2(e, new NormalToTexCoord(coll),1);
- }
+class MeshAnimFromMeshes : public MeshAnim
+{
+public:
+  MeshAnimFromMeshes(std::vector<FaceCollection*> coll, float start_time, float time_step) : coll(coll), start_time_2(start_time), time_step(time_step) {}
+
+  virtual void Prepare()
+  {
+    int s = coll.size();
+    for(int i=0;i<s;i++) coll[i]->Prepare();
+  }
+  virtual int NumFaces() const { return coll[0]->NumFaces(); }
+  virtual int NumPoints(int face) const { return coll[0]->NumPoints(face); }
+  virtual float StartTime() const { return start_time_2; }
+  virtual float EndTime() const { return start_time_2+coll.size()*time_step; }
+  virtual Point Vertex(int face,int point, float time) const {
+    int n = Num(time);
+    int ss = coll.size();
+    if (n>=ss-1) { return coll[ss-1]->FacePoint(face,point); }
+    float p = Pos(time);
+    Point p1 = coll[n]->FacePoint(face,point);
+    Point p2 = coll[n+1]->FacePoint(face,point);
+    Point pp = Point::Interpolate(p1,p2,p);
+    return pp;
+  }
+  virtual unsigned int Color(int face,int point, float time) const
+  {
+    int n = Num(time);
+    int ss = coll.size();
+    if (n>=ss-1) { return coll[ss-1]->Color(face,point);}
+    float p = Pos(time);
+    unsigned int p1 = coll[n]->Color(face,point);
+    unsigned int p2 = coll[n+1]->Color(face,point);
+    unsigned int pp = Color::Interpolate(p1,p2,p);
+    return pp;
+
+  }
+  virtual Vector Normal(int face, int point, float time) const
+  {
+    int n = Num(time);
+    int ss = coll.size();
+    if (n>=ss-1) { return coll[ss-1]->PointNormal(face,point); }
+    float p = Pos(time);
+    Vector p1 = coll[n]->PointNormal(face,point);
+    Vector p2 = coll[n+1]->PointNormal(face,point);
+    Point pp = Point::Interpolate(Point(p1),Point(p2),p);
+    return Vector(pp);
+
+  }
+  virtual Point2d TexCoord(int face, int point, float time) const
+  {
+    int n = Num(time);
+    int ss = coll.size();
+    if (n>=ss-1) { return coll[ss-1]->TexCoord(face,point); }
+    float p = Pos(time);
+    Point2d p1 = coll[n]->TexCoord(face,point);
+    Point2d p2 = coll[n+1]->TexCoord(face,point);
+    Point pp = Point::Interpolate(Point(p1.x,p1.y,0.0),Point(p2.x,p2.y,0.0),p);
+    Point2d pp2 = { pp.x,pp.y };
+    return pp2;
+  }
+  virtual float TexCoord3(int face, int point, float time) const
+  {
+    int n = Num(time);
+    int ss = coll.size();
+    if (n>=ss-1) { return coll[ss-1]->TexCoord3(face,point); }
+    float p = Pos(time);
+    float p1 = coll[n]->TexCoord3(face,point);
+    float p2 = coll[n+1]->TexCoord3(face,point);
+    return (1.0-p)*p1+p*p2;
+  }
+
+  int Num(float time) const
+  {
+    float a = time-start_time_2;
+    a/=time_step;
+    return int(a);
+  }
+  float Pos(float time) const // returns [0.0 .. 1.0]
+  {
+    float a = time-start_time_2;
+    a-=Num(time)*time_step;
+    a/=time_step;
+    return a;
+  }
+private:
+  std::vector<FaceCollection*> coll;
+  float start_time_2;
+  float time_step;
+};
+
+GameApi::MA GameApi::PolygonApi::meshanim(std::vector<P> vec, 
+					   float start_time, 
+					   float time_step)
+{
+  int s = vec.size();
+  std::vector<FaceCollection*> res;
+  for(int i=0;i<s;i++)
+    {
+      FaceCollection *coll = find_facecoll(e,vec[i]);
+      res.push_back(coll);
+    }
+  return add_mesh_anim(e, new MeshAnimFromMeshes(res, start_time, time_step));
+}
+

@@ -1127,4 +1127,42 @@ public:
   virtual float ZPos() const=0;
 };
 
+class Glyph
+{
+public:
+  virtual float Top() const=0;
+  virtual float SizeX() const=0;
+  virtual float SizeY() const=0;
+  virtual float Baseline() const=0;
+  virtual int NumSplits(float y) const=0;
+  virtual float Split(float y, int idx) const=0;
+  virtual int SplitType(float y, int idx) const=0; // ret: 1=empty->filled, 2=filled->empty, 3=empty->empty, 4=filled->filled
+};
+
+class CurveGroup
+{
+public:
+  virtual void Prepare()=0;
+  virtual int NumCurves() const=0;
+  virtual Point Pos(int num, float t) const=0; // t=[0..1]
+  virtual unsigned int Color(int num, float t) const=0;
+  virtual int Shape(int num, float t) const=0;
+};
+
+class MeshAnim
+{
+public:
+  virtual void Prepare()=0;
+  virtual int NumFaces() const=0;
+  virtual int NumPoints(int face) const=0;
+  virtual float StartTime() const=0;
+  virtual float EndTime() const=0;
+  virtual Point Vertex(int face,int point, float time) const=0;
+  virtual unsigned int Color(int face,int point, float time) const=0;
+  virtual Vector Normal(int face, int point, float time) const=0;
+  virtual Point2d TexCoord(int face, int point, float time) const=0;
+  virtual float TexCoord3(int face, int point, float time) const=0;
+
+};
+
 #endif

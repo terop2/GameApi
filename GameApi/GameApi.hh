@@ -32,6 +32,7 @@ using std::placeholders::_9;
 #undef rad2
 
 
+  struct CG { int id; };
   struct INP { int id; };
   struct IBM { int id; };
   struct DS { int id; };
@@ -844,6 +845,7 @@ public:
   IMPORT C linear(std::vector<PT> vec);
   IMPORT C bezier(std::vector<PT> vec);
   
+
   IMPORT C scale(C curve, float mx, float my, float mz);
   IMPORT C trans(C curve, float dx, float dy, float dz);
   //C constantspeed(C curve, float speed);
@@ -861,7 +863,8 @@ public:
   
   IMPORT PTS sample(C input_curve, int num_samples);
   IMPORT LI to_lines(C curve, int num_lines);
-
+  IMPORT CG curve_group_from_lines(LI li);
+  IMPORT LI lines_from_curve_group(CG curvegroup, int split);
   // curve_pos
   IMPORT CPP xy_sum();
   IMPORT CPP xy_sum2(float xmult, float ymult, float zmult);
@@ -2104,6 +2107,9 @@ public:
   int poly_size(ARR arr);
   ARR poly_execute(EveryApi &ev, ARR arr, std::string gameapi_script);
   
+  CG curve_group_from_anim(MA ma, float start_time, float end_time);
+  MA meshanim(std::vector<P> vec, float start_time, float time_step);
+
   // normal functions
   IMPORT void print_stat(P p);
   IMPORT void print_data(P p);
@@ -3100,6 +3106,7 @@ public:
 			PT bTL, PT bTR, PT bBL, PT bBR,
 			PT fTL, PT fTR, PT fBL, PT fBR);
   IMPORT LI random_mesh_quad_lines(EveryApi &ev, P p, int count);
+  IMPORT LI lines_from_quads(P p, int sx, int sy);
 
   IMPORT LLA prepare(LI l);
   IMPORT void update(LLA la, LI l);

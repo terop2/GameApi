@@ -605,6 +605,8 @@ struct EnvImpl
   std::vector<DiskStore*> disk_store;
   std::vector<Bitmap<int>*> int_bitmaps;
   std::vector<InputForMoving*> move_input;
+  std::vector<CurveGroup*> curve_group;
+  std::vector<MeshAnim*> mesh_anim;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -912,7 +914,8 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
-
+GameApi::MA add_mesh_anim(GameApi::Env &e, MeshAnim *ma);
+GameApi::CG add_curve_group(GameApi::Env &e, CurveGroup *cg);
 GameApi::INP add_move_input(GameApi::Env &e, InputForMoving *im);
 GameApi::IBM add_int_bitmap(GameApi::Env &e, Bitmap<int> *bm);
 GameApi::DS add_disk_store(GameApi::Env &e, DiskStore *ds);
@@ -1043,6 +1046,8 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+MeshAnim *find_mesh_anim(GameApi::Env &e, GameApi::MA ma);
+CurveGroup *find_curve_group(GameApi::Env &e, GameApi::CG cg);
 InputForMoving *find_move_input(GameApi::Env &e, GameApi::INP im);
 Bitmap<int> *find_int_bitmap(GameApi::Env &e, GameApi::IBM bm);
 DiskStore *find_disk_store(GameApi::Env &e, GameApi::DS store);
