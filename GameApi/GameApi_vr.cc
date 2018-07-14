@@ -142,7 +142,7 @@ EXPORT void check_vr_compositor_init()
   if (!vr::VRCompositor()) {
     std::cout << "ERROR: VR compositor initialization failed!" << std::endl;
   }
-  if (hmd) {
+  if (hmd && vr::VRCompositor()) {
     vr::TrackedDevicePose_t pose[ vr::k_unMaxTrackedDeviceCount ];
     vr::VRCompositor()->WaitGetPoses(pose, vr::k_unMaxTrackedDeviceCount, NULL,0);
   }
