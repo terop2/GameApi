@@ -166,6 +166,106 @@ EXPORT GameApi::P GameApi::VoxelApi::render_boxes(VX v, float sx, float sy, floa
   return add_polygon2(e, new VoxelBoxes(vv, sx, sy, sz), 1);
 }
 
+class P_to_VX : public Voxel<int>
+{
+public:
+  P_to_VX(FaceCollection *coll, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int value) : coll(coll),sx(sx),sy(sy),sz(sz),bounds({start_x,end_x,start_y,end_y,start_z,end_z}), value(value) { }
+  void Prepare() { 
+    coll->Prepare();
+    p1.resize(sz);
+    p2.resize(sz);
+    p3.resize(sz);
+    p4.resize(sz);
+    for(int z=0;z<sz;z++) {
+      float zz = bounds.start_z + z*(bounds.end_z-bounds.start_z)/sz;
+      Plane pl(Point(bounds.start_x,bounds.start_y,zz), Vector(bounds.end_x-bounds.start_x,0.0,0.0), Vector(0.0,bounds.end_y-bounds.start_y,0.0));
+      int s = coll->NumFaces();
+      for(int i=0;i<s;i++) {
+	Point p1a = coll->FacePoint(i, 0);
+	Point p2a = coll->FacePoint(i, 1);
+	Point p3a = coll->FacePoint(i, 2);
+	Point p4a = coll->FacePoint(i, 3);
+
+	Point2d pp1,pp2;
+	Point2d pp3,pp4;
+	bool b = pl.TriangleIntersection(p1a,p2a,p3a, pp1,pp2);
+	bool b2 = pl.TriangleIntersection(p1a,p3a,p4a,pp3,pp4);
+	if (b) p1[z].push_back(pp1);
+	if (b) p2[z].push_back(pp2);
+	if (b2) p3[z].push_back(pp3);
+	if (b2) p4[z].push_back(pp4);
+      }
+    }
+  }
+  int SizeX() const { return sx; }
+  int SizeY() const { return sy; }
+  int SizeZ() const { return sz; }
+  int Map(int x, int y, int z) const
+  {
+    if(z<0||z>=sz) return -1;
+    BOX b = find_box(x,y,z);
+    float middle_z = (b.start_z+b.end_z)/2.0;
+
+    {
+    int s = p1[z].size();
+    for(int i=0;i<s;i++) {
+      Point2d p1a = p1[z][i];
+      Point2d p2a = p2[z][i];
+      LineProperties pl(Point(p1a.x,p1a.y,middle_z), Point(p2a.x,p2a.y,middle_z));
+      float tmin, tmax;
+      bool intersect = pl.BoxIntersection(b,tmin,tmax);
+      if (intersect && ((tmin>=0.0 && tmin<=1.0) ||(tmax>=0.0 && tmax<=1.0))) return value;
+    }
+    }
+    {
+    int s = p3[z].size();
+    for(int i=0;i<s;i++) {
+      Point2d p3a = p3[z][i];
+      Point2d p4a = p4[z][i];
+      LineProperties pl(Point(p3a.x,p3a.y,middle_z), Point(p4a.x,p4a.y,middle_z));
+      float tmin, tmax;
+      bool intersect = pl.BoxIntersection(b,tmin,tmax);
+      if (intersect && ((tmin>=0.0 && tmin<=1.0)||(tmax>=0.0&&tmax<=1.0))) return value;
+    }
+    }
+    return -1;
+  }
+  BOX find_box(int x, int y, int z) const
+  {
+    float xx = (float(x)-0.5)/sx;
+    float yy = (float(y)-0.5)/sy;
+    float zz = (float(z)-0.5)/sz;
+    float xxx = xx + 0.5/sx;
+    float yyy = yy + 0.5/sy;
+    float zzz = zz + 0.5/sz;
+#if 0
+    float xx = bounds.start_x + x*(bounds.end_x-bounds.start_x)/sx;
+    float yy = bounds.start_y + y*(bounds.end_y-bounds.start_y)/sy;
+    float zz = bounds.start_z + z*(bounds.end_z-bounds.start_z)/sz;
+    float xxx = xx + (bounds.end_x-bounds.start_x)/sx;
+    float yyy = yy + (bounds.end_y-bounds.start_y)/sy;
+    float zzz = zz + (bounds.end_z-bounds.start_z)/sz;
+#endif
+    BOX b = { xx,xxx,yy,yyy,zz,zzz };
+    return b;
+  }
+private:
+  FaceCollection *coll;
+  int sx,sy,sz;
+  BOX bounds;
+  std::vector<std::vector<Point2d> > p1;
+  std::vector<std::vector<Point2d> > p2;
+  std::vector<std::vector<Point2d> > p3;
+  std::vector<std::vector<Point2d> > p4;
+  int value;
+};
+
+EXPORT GameApi::VX GameApi::VoxelApi::convert_p_to_vx(P p, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int value)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_int_voxel(e, new P_to_VX(coll, sx,sy,sz, start_x,end_x, start_y,end_y, start_z,end_z,value));
+}
+
 #if 0
 EXPORT GameApi::BM GameApi::VoxelApi::sw_rays(O volume, VX colours, int sx, int sy, float vx, float vy, float vz, float z)
 {

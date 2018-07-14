@@ -13835,3 +13835,4 @@ GameApi::LI GameApi::CurveApi::lines_from_curve_group(CG curvegroup, int split)
   CurveGroup *cg = find_curve_group(e, curvegroup);
   return add_line_array(e, new LineFromCurveGroup(cg, split));
 }
+

@@ -27,6 +27,16 @@
 //#pragma warning(disable:4244)
 //#pragma warning(disable:4305)
 
+struct BOX { 
+  float start_x;
+  float end_x;
+  float start_y;
+  float end_y;
+  float start_z;
+  float end_z;
+};
+
+
 inline float Min(float a, float b)
 {
   return a < b ? a : b;
@@ -744,6 +754,7 @@ public:
   float Dist(Point p);
   bool TriangleIntersection(Point p1, Point p2, Point p3, float &r);
   bool QuadIntersection(Point p1, Point p2, Point p3, Point p4, float &r);
+  bool BoxIntersection(BOX &b, float &tmin, float &tmax);
   float LineCoords(Point p) const;
   Matrix translate_to_p1() const { return Matrix::Translate(p1.x,p1.y,p1.z); }
   Matrix translate_to_p2() const { return Matrix::Translate(p2.x,p2.y,p2.z); }
