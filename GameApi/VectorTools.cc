@@ -1090,12 +1090,74 @@ float Plane::Dist2(Point p)
   return dot;
   
 }
+float det2(float *arr)
+{
+  float a = arr[0];
+  float b = arr[1];
+  float c = arr[2];
+  float d = arr[3];
+  return a*d-b*c;
+}
+float det3(float *arr)
+{
+  float a = arr[0];
+  float b = arr[1];
+  float c = arr[2];
+  float d = arr[3];
+  float e = arr[4];
+  float f = arr[5];
+  float g = arr[6];
+  float h = arr[7];
+  float i = arr[8];
+  float d2a[] = { e,f,h,i };
+  float d2b[] = { d,f,g,i };
+  float d2c[] = { d,e,g,h };
+  return a*det2(d2a)-b*det2(d2b)+c*det2(d2c);
+}
+float det4(float *arr)
+{
+  float a = arr[0];
+  float b = arr[1];
+  float c = arr[2];
+  float d = arr[3];
+  float e = arr[4];
+  float f = arr[5];
+  float g = arr[6];
+  float h = arr[7];
+  float i = arr[8];
+  float j = arr[9];
+  float k = arr[10];
+  float l = arr[11];
+  float m = arr[12];
+  float n = arr[13];
+  float o = arr[14];
+  float p = arr[15];
+
+  float d3a[] = { f,g,h,j,k,l,n,o,p };
+  float d3b[] = { e,g,h,i,k,l,m,o,p };
+  float d3c[] = { e,f,h,i,j,l,m,n,p };
+  float d3d[] = { e,f,g,i,j,k,m,n,o };
+  return a*det3(d3a)-b*det3(d3b)+c*det3(d3c)-d*det3(d3d);
+}
+
+
 bool Plane::LineSegmentIntersection(Point p1, Point p2, Point2d &outP)
 {
-  float d1 = Dist2(p1); // TODO, these dists might not work ok for this algo.
-  float d2 = Dist2(p2);
-  if (d1*d2 > 0) { return false; }
-  float t = d1/(d1-d2);
+  float arr[] = { 1.0,1.0,1.0,1.0, 
+		  u_p.x,(u_p+u_x).x,(u_p+u_y).x, p1.x,
+		  u_p.y,(u_p+u_x).y,(u_p+u_y).y, p1.y,
+		  u_p.z,(u_p+u_x).z,(u_p+u_y).z, p1.z };
+  float arr2[]= { 1.0, 1.0, 1.0, 0.0,
+		  u_p.x, (u_p+u_x).x, (u_p+u_y).x, p2.x-p1.x,
+		  u_p.y, (u_p+u_x).y, (u_p+u_y).y, p2.y-p1.y,
+		  u_p.z, (u_p+u_x).z, (u_p+u_y).z, p2.z-p1.z };
+  float t = -det4(arr)/det4(arr2);
+  if (t<0.0 ||t>1.0) return false;
+
+  //float d1 = Dist2(p1); // TODO, these dists might not work ok for this algo.
+  //float d2 = Dist2(p2);
+  //if (d1*d2 > 0) { return false; }
+  //float t = d1/(d1-d2);
   Point p = p1+t*Vector(p2-p1);
   float coord_x = CoordsX(p);
   float coord_y = CoordsY(p);
@@ -1103,6 +1165,7 @@ bool Plane::LineSegmentIntersection(Point p1, Point p2, Point2d &outP)
   outP.y = coord_y;
   return true;
 }
+
 bool Plane::TriangleIntersection(Point p1, Point p2, Point p3, Point2d &res1, Point2d &res2)
 {
   std::vector<Point2d> vec;
@@ -1202,6 +1265,32 @@ bool LineProperties::QuadIntersection(Point a1, Point a2, Point a3, Point a4, fl
   if (b2) t=t2;
   if (b) t=t1;
   return b||b2;
+}
+bool LineProperties::BoxIntersection(BOX &b, float &tmin, float &tmax)
+{
+  Vector v1 = p2-p1;
+  tmin = -std::numeric_limits<float>::infinity(); //10000000.0;
+  tmax = std::numeric_limits<float>::infinity(); //10000000.0;
+  if (v1.dx!=0.0) {
+    float tx1 = (b.start_x-p1.x)/v1.dx;
+    float tx2 = (b.end_x -p1.x)/v1.dx;
+    tmin = std::max(tmin, std::min(tx1,tx2));
+    tmax = std::min(tmax, std::max(tx1,tx2));
+  }
+  if (v1.dy!=0.0) {
+    float ty1 = (b.start_y-p1.y)/v1.dy;
+    float ty2 = (b.end_y -p1.y)/v1.dy;
+    tmin = std::max(tmin, std::min(ty1,ty2));
+    tmax = std::min(tmax, std::max(ty1,ty2));
+  }
+  if (v1.dz!=0.0) {
+    float tz1 = (b.start_z-p1.z)/v1.dz;
+    float tz2 = (b.end_z -p1.z)/v1.dz;
+    tmin = std::max(tmin, std::min(tz1,tz2));
+    tmax = std::min(tmax, std::max(tz1,tz2));
+  }
+  return tmax>=tmin;
+
 }
 bool LineProperties::TriangleIntersection(Point v1, Point v2, Point v3, float &t2)
 {

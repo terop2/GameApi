@@ -32,6 +32,8 @@ struct QuadColor
   Color c1,c2,c3,c4;
 };
 
+
+
 template<class C>
 class SimpleShape
 { // these use scanline conversion
