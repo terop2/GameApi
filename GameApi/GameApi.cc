@@ -11460,7 +11460,7 @@ public:
 					       start_z(start_z), end_z(end_z),
 					       false_value(false_value), true_value(true_value) { 
     int ss = sx*sy*sz;
-    while (sx>10000 || sy>10000 ||sz>10000 || ss>1000000) { sx/=2; sy/=2; sz/=2; ss=sx*sy*sz; std::cout << "Warning: Voxel size too large (" << sx << "x" << sy << "x" << sz << ")" << std::endl; }
+    while (sx>600 || sy>600 ||sz>600 || ss>600*600*600) { sx/=2; sy/=2; sz/=2; ss=sx*sy*sz; std::cout << "Warning: Voxel size too large (" << sx << "x" << sy << "x" << sz << ")" << std::endl; }
 }
   void Prepare() {}
   virtual int SizeX() const { return sx; }
@@ -11637,7 +11637,24 @@ public:
 	    int val = vx->Map(i,j,k);
 	    if (val>=0 && val<count) {
 	      p.z = float(k)/sz*dz+start_z;
-	      pts[val].push_back(p);
+	      int val_mx = vx->Map(i-1,j,k);
+	      bool b_mx = val_mx>=0 && val_mx<count;
+	      if (!b_mx) { pts[val].push_back(p); continue; }
+	      int val_px = vx->Map(i+1,j,k);
+	      bool b_px = val_px>=0 && val_px<count;
+	      if (!b_px) { pts[val].push_back(p); continue; }
+	      int val_my = vx->Map(i,j-1,k);
+	      bool b_my = val_my>=0 && val_my<count;
+	      if (!b_my) { pts[val].push_back(p); continue; }
+	      int val_py = vx->Map(i,j+1,k);
+	      bool b_py = val_py>=0 && val_py<count;
+	      if (!b_py) { pts[val].push_back(p); continue; }
+	      int val_mz = vx->Map(i,j,k-1);
+	      bool b_mz = val_mz>=0 && val_mz<count;
+	      if (!b_mz) { pts[val].push_back(p); continue; }
+	      int val_pz = vx->Map(i,j,k+1);
+	      bool b_pz = val_pz>=0 && val_pz<count;
+	      if (!b_pz) { pts[val].push_back(p); continue; }
 	    }
 	  }
       }
