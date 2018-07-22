@@ -416,7 +416,7 @@ public:
 	ev.shader_api.set_var(sh, "in_T", m1);
 	ev.shader_api.set_var(sh, "in_N", m2);
 	ev.shader_api.set_var(sh, "time", e.time);
-    ev.shader_api.set_var(sh, "in_POS", 0.0f);
+    ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 
     api.render(l);
     ev.shader_api.unuse(sh);
@@ -455,7 +455,7 @@ public:
 	ev.shader_api.set_var(sh, "in_T", m1);
 	ev.shader_api.set_var(sh, "in_N", m2);
 	ev.shader_api.set_var(sh, "time", e.time);
-	ev.shader_api.set_var(sh, "in_POS", 0.0f);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 
 	if (firsttime)
 	  {

@@ -2241,6 +2241,7 @@ Matrix find_matrix(GameApi::Env &e, GameApi::M m)
 {
   Matrix mm;
   std::copy(&m.mat[0], &m.mat[0]+16, &mm.matrix[0]);
+  mm.is_identity=false;
   return mm;
 #if 0
   EnvImpl *ee = ::EnvImpl::Environment(&e);
@@ -6417,7 +6418,7 @@ public:
       ev.polygon_api.prepare_vertex_array_instanced(ev.shader_api, va, pta, sh);
       }
 
-    ev.shader_api.set_var(sh, "in_POS", 0.0f);
+    ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 
     int hide_n = -1;
     fade = false;
@@ -6586,7 +6587,7 @@ public:
       ev.polygon_api.prepare_vertex_array_instanced(ev.shader_api, va, pta, sh);
     }
 
-    ev.shader_api.set_var(sh, "in_POS", 0.0f);
+    ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 
     int hide_n = -1;
     if (fade)
@@ -6774,7 +6775,7 @@ public:
       ev.polygon_api.prepare_vertex_array_instanced(ev.shader_api, va, pta, sh);
     }
 
-    ev.shader_api.set_var(sh, "in_POS", 0.0f);
+    ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 
     int hide_n = -1;
     if (fade)
@@ -6950,7 +6951,7 @@ public:
       ev.polygon_api.prepare_vertex_array_instanced(ev.shader_api, va, pta, sh);
     }
 
-    ev.shader_api.set_var(sh, "in_POS", 0.0f);
+    ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 
     int hide_n = -1;
     if (fade)
@@ -7086,7 +7087,7 @@ public:
 	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_N", m2);
-	ev.shader_api.set_var(shader, "in_POS", 0.0f);
+	ev.shader_api.set_var(shader, "in_POS", e.in_POS);
 
 	sh = shader;
       }
