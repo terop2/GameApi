@@ -22,6 +22,7 @@
 #ifndef DEPS
 #include <GL/glew.h> 
 #ifdef __APPLE__
+#define GLEW_HACK
 #include <OpenGL/gl.h>
 #else
 #include <GL/gl.h>
