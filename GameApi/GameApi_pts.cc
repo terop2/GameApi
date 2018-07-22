@@ -217,13 +217,13 @@ public:
   {
     Point p1 = o1->Pos(i);
     Point p2 = o2->Pos(i);
-    return Point::Interpolate(p1,p2,1.0-pos);
+    return Point::Interpolate(p1,p2,pos);
   }
   unsigned int Color(int i) const
   { 
     unsigned int p1 = o1->Color(i);
     unsigned int p2 = o2->Color(i);
-    return Color::Interpolate(p1,p2,1.0-pos);
+    return Color::Interpolate(p1,p2,pos);
   }
 private:
   PointsApiPoints *o1, *o2;

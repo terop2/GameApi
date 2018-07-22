@@ -8543,6 +8543,18 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "[P]", "float", "float" },
 			 { "", "0.0", "10.0" },
 			 "MA", "polygon_api", "meshanim"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::meshanim_mesh,
+			 "mesh_from_anim",
+			 { "ma", "time" },
+			 { "MA", "float" },
+			 { "", "0.0" },
+			 "P", "polygon_api", "meshanim_mesh"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::anim,
+			 "anim_render",
+			 { "ev", "next", "anim", "start_time", "delta_time", "count" },
+			 { "EveryApi&", "ML", "MA", "float", "float", "int" },
+			 { "ev", "", "", "0.0", "10.0", "3" },
+			 "ML", "polygon_api", "anim"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::curve_group_from_anim,
 			 "cg_from_anim",
 			 { "meshanim", "start_time", "end_time" },

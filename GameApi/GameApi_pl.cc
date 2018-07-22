@@ -1,4 +1,4 @@
- 
+  
 #include "GameApi_h.hh"
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -4155,7 +4155,7 @@ public:
 	}
     if (firsttime) { firsttime = false; }
     ev.shader_api.use(sh);
-    ev.shader_api.set_var(sh, "in_POS", 0.0f);
+    ev.shader_api.set_var(sh, "in_POS", e.in_POS);
     api.render_vertex_array(va);
     ev.shader_api.unuse(sh);
   }
@@ -5877,7 +5877,7 @@ public:
 	ev.shader_api.set_var(sh, "in_T", m1);
 	ev.shader_api.set_var(sh, "in_N", m2);
 	ev.shader_api.set_var(sh, "time", e.time);
-	ev.shader_api.set_var(sh, "in_POS", 0.0f);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 
     next->execute(ee);
     ev.shader_api.unuse(sh);
@@ -5971,7 +5971,7 @@ public:
 	ev.shader_api.set_var(sh, "in_T", m1);
 	ev.shader_api.set_var(sh, "in_N", m2);
 	ev.shader_api.set_var(sh, "time", e.time);
-	ev.shader_api.set_var(sh, "in_POS", 0.0f);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 
     next->execute(ee);
     ev.shader_api.unuse(sh);
@@ -6065,7 +6065,7 @@ public:
 	ev.shader_api.set_var(sh, "in_T", m1);
 	ev.shader_api.set_var(sh, "in_N", m2);
 	ev.shader_api.set_var(sh, "time", e.time);
-	ev.shader_api.set_var(sh, "in_POS", 0.0f);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 
     next->execute(ee);
     if (sh.id!=-1)
@@ -10661,6 +10661,9 @@ public:
   virtual Point Vertex(int face,int point, float time) const {
     int n = Num(time);
     int ss = coll.size();
+    if (ss==0) return Point(0.0,0.0,0.0);
+    if (ss==1) { return coll[0]->FacePoint(face,point); }
+    if (n<0) {n=0; }
     if (n>=ss-1) { return coll[ss-1]->FacePoint(face,point); }
     float p = Pos(time);
     Point p1 = coll[n]->FacePoint(face,point);
@@ -10672,6 +10675,9 @@ public:
   {
     int n = Num(time);
     int ss = coll.size();
+    if (ss==0) return 0;
+    if (ss==1) { return coll[0]->Color(face,point); }
+    if (n<0) {n=0; }
     if (n>=ss-1) { return coll[ss-1]->Color(face,point);}
     float p = Pos(time);
     unsigned int p1 = coll[n]->Color(face,point);
@@ -10684,6 +10690,9 @@ public:
   {
     int n = Num(time);
     int ss = coll.size();
+    if (ss==0) return Vector(0.0,0.0,0.0);
+    if (ss==1) { return coll[0]->PointNormal(face,point); }
+    if (n<0) { n=0; }
     if (n>=ss-1) { return coll[ss-1]->PointNormal(face,point); }
     float p = Pos(time);
     Vector p1 = coll[n]->PointNormal(face,point);
@@ -10696,6 +10705,9 @@ public:
   {
     int n = Num(time);
     int ss = coll.size();
+    if (ss==0) { Point2d p; return p; }
+    if (ss==1) { return coll[0]->TexCoord(face,point); }
+    if (n<0) { n=0; }
     if (n>=ss-1) { return coll[ss-1]->TexCoord(face,point); }
     float p = Pos(time);
     Point2d p1 = coll[n]->TexCoord(face,point);
@@ -10708,6 +10720,9 @@ public:
   {
     int n = Num(time);
     int ss = coll.size();
+    if (ss==0) { return 0.0; }
+    if (ss==1) { return coll[0]->TexCoord3(face,point); }
+    if (n<0) { n=0; }
     if (n>=ss-1) { return coll[ss-1]->TexCoord3(face,point); }
     float p = Pos(time);
     float p1 = coll[n]->TexCoord3(face,point);
@@ -10748,3 +10763,223 @@ GameApi::MA GameApi::PolygonApi::meshanim(std::vector<P> vec,
   return add_mesh_anim(e, new MeshAnimFromMeshes(res, start_time, time_step));
 }
 
+class MeshFromMeshAnim : public FaceCollection
+{
+public:
+  MeshFromMeshAnim(MeshAnim *anim, float time) : anim(anim), time(time) { }
+  virtual void Prepare() { anim->Prepare(); }
+  virtual int NumFaces() const { return anim->NumFaces(); }
+  virtual int NumPoints(int face) const { return anim->NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return anim->Vertex(face,point,time);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return anim->Normal(face,point,time);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return 0.0;
+  }
+  virtual int AttribI(int face, int point, int id) const { return 0;}
+  virtual unsigned int Color(int face, int point) const
+  {
+    return anim->Color(face,point,time);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return anim->TexCoord(face,point,time);
+  }
+  virtual float TexCoord3(int face, int point) const { 
+    return anim->TexCoord3(face,point,time);
+  }
+
+private:
+  MeshAnim *anim;
+  float time;
+};
+GameApi::P GameApi::PolygonApi::meshanim_mesh(MA ma, float time)
+{
+  MeshAnim *anim = find_mesh_anim(e,ma);
+  return add_polygon2(e, new MeshFromMeshAnim(anim, time),1);
+}
+
+class MeshFromMeshAnim2 : public FaceCollection
+{
+public:
+  MeshFromMeshAnim2(MeshAnim *anim, float time1, float time2) : anim(anim), time1(time1), time2(time2) { }
+  virtual void Prepare() { anim->Prepare(); }
+  virtual int NumFaces() const { return anim->NumFaces(); }
+  virtual int NumPoints(int face) const { return anim->NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return anim->Vertex(face,point,time1);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return anim->Normal(face,point,time1);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return 0.0;
+  }
+  virtual int AttribI(int face, int point, int id) const { return 0;}
+  virtual unsigned int Color(int face, int point) const
+  {
+    return anim->Color(face,point,time1);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return anim->TexCoord(face,point,time1);
+  }
+  virtual float TexCoord3(int face, int point) const { 
+    return anim->TexCoord3(face,point,time1);
+  }
+
+
+
+  virtual Point EndFacePoint(int face, int point) const { return anim->Vertex(face,point,time2); }
+  virtual Vector EndPointNormal(int face, int point) const { return anim->Normal(face,point,time2); }
+  virtual float EndAttrib(int face, int point, int id) const { return 0.0; }
+  virtual int EndAttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int EndColor(int face, int point) const { return anim->Color(face,point,time2); }
+  virtual Point2d EndTexCoord(int face, int point) const { return anim->TexCoord(face,point,time2); }
+  virtual float EndTexCoord3(int face, int point) const { return anim->TexCoord3(face,point,time2); }
+
+  
+private:
+  MeshAnim *anim;
+  float time1, time2;
+};
+GameApi::P GameApi::PolygonApi::meshanim_mesh2(MA ma, float time1, float time2)
+{
+  MeshAnim *anim = find_mesh_anim(e,ma);
+  return add_polygon2(e, new MeshFromMeshAnim2(anim, time1,time2),1);
+}
+
+GameApi::ARR GameApi::PolygonApi::meshanim_anim_meshes(MA ma, float start_time, float delta_time, int count)
+{
+  int s = count;
+  std::vector<P> vec;
+  for(int i=0;i<s;i++)
+    {
+      GameApi::P p = meshanim_mesh2(ma, start_time+i*delta_time, start_time+(i+1)*delta_time);
+      vec.push_back(p);
+    }
+  ArrayType *array = new ArrayType;
+  array->type = 1;
+  int s2 = count;
+  for(int i=0;i<s2;i++)
+    {
+      array->vec.push_back(vec[i].id);
+    }
+  return add_array(e,array);
+}
+
+class ChooseTime : public MainLoopItem
+{
+public:
+  ChooseTime(MainLoopItem *next, std::vector<MainLoopItem*> render, float delta_time) : next(next), render(render), delta_time(delta_time) { firsttime=true;}
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime)
+      {
+	int s = render.size();
+	for(int i=0;i<s;i++)
+	  {
+	    render[i]->execute(e);
+	  }
+	firsttime = false;
+      }
+    
+    int s = render.size();
+    for(int i=0;i<s;i++)
+      {
+	MainLoopEnv ee = e;
+	float t = e.time - i*delta_time;
+	if (t>0.0 && t < delta_time)
+	  {
+	  ee.in_POS = t/delta_time;
+	  render[i]->execute(ee);
+	  }
+      }
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e) { return next->handle_event(e); }
+  virtual int shader_id() { return next->shader_id(); }
+
+private:
+  MainLoopItem *next;
+  std::vector<MainLoopItem*> render;
+  float delta_time;
+  bool firsttime;
+};
+
+GameApi::ML GameApi::PolygonApi::choose_time(ML next, std::vector<ML> vec, float delta_time)
+{
+  MainLoopItem *nxt = find_main_loop(e,next);
+  int s = vec.size();
+  std::vector<MainLoopItem*> v;
+  for(int i=0;i<s;i++)
+    {
+      MainLoopItem *item = find_main_loop(e, vec[i]);
+      v.push_back(item);
+    }
+  return add_main_loop(e, new ChooseTime(nxt, v, delta_time));
+}
+
+
+GameApi::ML GameApi::PolygonApi::anim(EveryApi &ev, ML next, MA anim, float start_time, float delta_time, int count)
+{
+  std::vector<P> vec;
+  int s = count;
+  for(int i=0;i<s;i++)
+    {
+      vec.push_back(meshanim_mesh2(anim, start_time+i*delta_time, start_time+(i+1)*delta_time));
+    }
+  std::vector<ML> vec2;
+  int s2 = vec.size();
+  for(int i=0;i<s2;i++)
+    {
+      vec2.push_back(render_vertex_array_ml2(ev, vec[i]));
+    }
+  ML ml = choose_time(next, vec2, delta_time);
+  return ml;
+}
+
+#if 0
+class RenderMeshAnim : public MainLoopItem
+{
+public:
+  RenderMeshAnim(MainLoopItem *next, MeshAnim *anim, float delta_time) : next(next), anim(anim), delta_time(delta_time) { firsttime = true; }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+      int s = int((anim->EndTime()-anim->StartTime())/delta_time);
+      for(int i=0;i<s;i++)
+	{
+	  vec.push_back(new MeshFromMeshAnim(anim,anim->StartTime()+i*delta_time));
+	}
+      firsttime = false;
+    }
+		    
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual int shader_id() { return next->shader_id(); }
+private:
+  bool firsttime;
+  MainLoopItem *next;
+  MeshAnim *anim;
+  float delta_time;
+  std::vector<FaceCollection*> vec;
+};
+
+GameApi::ML GameApi::PolygonApi::render_meshanim(MA ma, float delta_time)
+{
+}
+#endif

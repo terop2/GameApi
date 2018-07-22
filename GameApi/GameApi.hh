@@ -2109,7 +2109,12 @@ public:
   
   CG curve_group_from_anim(MA ma, float start_time, float end_time);
   MA meshanim(std::vector<P> vec, float start_time, float time_step);
-
+  P meshanim_mesh(MA ma, float time);
+  P meshanim_mesh2(MA ma, float time1, float time2);
+  ARR meshanim_anim_meshes(MA ma, float start_time, float delta_time, int count);
+  ML choose_time(ML next, std::vector<ML> vec, float delta_time);
+  ML anim(EveryApi &ev, ML next, MA anim, float start_time, float delta_time, int count);
+  
   // normal functions
   IMPORT void print_stat(P p);
   IMPORT void print_data(P p);

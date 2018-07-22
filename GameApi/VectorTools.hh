@@ -73,9 +73,9 @@ public:
   static Point Interpolate(const Point &aVec, const Point &aVec2, float aVal)
   {
     Point v;
-    v.x = aVec.x*aVal + aVec2.x*(1.0-aVal);
-    v.y = aVec.y*aVal + aVec2.y*(1.0-aVal);
-    v.z = aVec.z*aVal + aVec2.z*(1.0-aVal);
+    v.x = aVec.x*(1.0-aVal) + aVec2.x*(aVal);
+    v.y = aVec.y*(1.0-aVal) + aVec2.y*(aVal);
+    v.z = aVec.z*(1.0-aVal) + aVec2.z*(aVal);
     //v.s = aVec.s*aVal + aVec2.s*(1.0-aVal);
     return v;
   }

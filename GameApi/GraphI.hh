@@ -494,6 +494,8 @@ struct MainLoopEnv
   float time = 0.0;
   float delta_time = 0.0;
 
+  float in_POS = 0.0;
+  
   Matrix env;
   //std::string vertex_shader = "";
   //std::string fragment_shader = "";

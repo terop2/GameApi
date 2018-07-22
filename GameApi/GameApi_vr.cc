@@ -276,10 +276,12 @@ public:
 #ifndef EMSCRIPTEN
   Matrix ConvertMatrix( const vr::HmdMatrix34_t &pose)
   {
-    Matrix m = { pose.m[0][0], pose.m[0][1], pose.m[0][2], 0.0 /*pose.m[0][3]*/,
-		 pose.m[1][0], pose.m[1][1], pose.m[1][2], 0.0 /*pose.m[1][3]*/,
-		 pose.m[2][0], pose.m[2][1], pose.m[2][2], 0.0 /*pose.m[2][3]*/,
+    // 0.0 vaikuttaa sponzan 2 kerroksen pilareihin
+    Matrix m = { pose.m[0][0], pose.m[0][1], pose.m[0][2], /*0.0*/ pose.m[0][3],
+		 pose.m[1][0], pose.m[1][1], pose.m[1][2], /*0.0*/ pose.m[1][3],
+		 pose.m[2][0], pose.m[2][1], pose.m[2][2], /*0.0*/ pose.m[2][3],
 	         0.0, 0.0,0.0, 1.0f, false };
+    for(int i=0;i<16;i++) if (std::isnan(m.matrix[i])) m.matrix[i]=0.0;
     return m;
   }
 #endif
@@ -423,7 +425,7 @@ public:
     GameApi::M m = ev.mainloop_api.in_P(ev,true);
     GameApi::M m2 = ev.matrix_api.scale(1.0,0.5,1.0);
     GameApi::M m3 = ev.matrix_api.mult(m2,m);
-    Matrix mm = find_matrix(env, m3);
+    Matrix mm = find_matrix(env, m3); // m3
     return mm;
   }
   Matrix DefaultSceneTranslate(GameApi::EveryApi &ev)
@@ -453,6 +455,10 @@ public:
 	       mat.m[0][2], mat.m[1][2], mat.m[2][2], mat.m[3][2],
 	       mat.m[0][3], mat.m[1][3], mat.m[2][3], mat.m[3][3], false };
 
+
+  GameApi::M m2 = ev.matrix_api.scale(1.0,0.5,1.0);
+  Matrix mm = find_matrix(env,m2);
+  m = mm * m;
 
 #else
   if (!vr_vr_ready ||current_display==NULL||current_display==-1) { return DefaultProjection(ev); }
