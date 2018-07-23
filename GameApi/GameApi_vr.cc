@@ -475,6 +475,11 @@ public:
       for(int i=0;i<4;i++) m.matrix[i+j*4] = d.rightProjectionMatrix[j+i*4];
   }
   m.is_identity = false;
+
+  GameApi::M m2 = ev.matrix_api.scale(1.0,0.5,1.0);
+  Matrix mm = find_matrix(env,m2);
+  m = mm * m;
+
 #endif
 
   
