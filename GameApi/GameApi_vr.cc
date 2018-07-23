@@ -505,7 +505,7 @@ public:
 
     Matrix proj_matrix; Matrix pos_mat; Matrix scene_translate = Matrix::Identity();
     proj_matrix=GetHMDMatrixProjectionEye( eye, is_standard );
-    std::cout << "Projection matrix: " << proj_matrix << std::endl;
+    //std::cout << "Projection matrix: " << proj_matrix << std::endl;
     pos_mat= GetHMDMatrixPoseEye( eye, is_standard );
     Matrix proj_m = proj_matrix * scene_translate * pos_mat;
     GameApi::M proj = add_matrix2( env, proj_m );
