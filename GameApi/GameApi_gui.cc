@@ -5999,6 +5999,12 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "P", "int", "int", "int", "float", "float", "float", "float", "float", "float", "int" },
 			 { "", "100", "100", "100", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0", "0" },
 			 "VX", "voxel_api", "convert_p_to_vx"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::from_implicit,
+			 "vx_im",
+			 { "im", "sx", "sy", "sz", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "value" },
+			 { "IM", "int", "int", "int", "float", "float", "float", "float", "float", "float", "int" },
+			 { "", "100", "100", "100", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0", "0" },
+			 "VX", "voxel_api", "from_implicit"));
   return vec;
 }
 

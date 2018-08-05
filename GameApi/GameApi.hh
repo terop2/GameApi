@@ -2896,6 +2896,7 @@ public:
   IMPORT P voxel_static(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec);
   IMPORT VX voxel_landscape_from_fbm(FB bitmap, int height, int false_val, int true_val);
   IMPORT VX convert_p_to_vx(P p, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int value);
+  IMPORT VX from_implicit(IM i, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int value);
 private:
   Env &e;
 };

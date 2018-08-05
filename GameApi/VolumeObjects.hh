@@ -855,6 +855,7 @@ class Random
 public:
   Random() /*: seed1(555), seed2(999)*/ { }
   unsigned int next() { return rand(); /*seed1 += seed2; seed2 = seed1; return seed1 >> 16;*/ }
+  float next_float() { float v = float(next())/float(maximum()); return v; }
   unsigned int maximum() { return RAND_MAX; /*return 0xffff;*/ }
 private:
   //unsigned int seed1, seed2;
