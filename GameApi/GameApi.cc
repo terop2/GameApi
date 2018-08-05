@@ -13837,3 +13837,42 @@ GameApi::LI GameApi::CurveApi::lines_from_curve_group(CG curvegroup, int split)
   return add_line_array(e, new LineFromCurveGroup(cg, split));
 }
 
+class FromImplicitVoxel : public Voxel<int>
+{
+public:
+  FromImplicitVoxel(ImplicitFunction3d *im, int sx, int sy, int sz,
+		    float start_x, float end_x,
+		    float start_y, float end_y,
+		    float start_z, float end_z, int value) : im(im),sx(sx),sy(sy),sz(sz),
+						  start_x(start_x), end_x(end_x),
+start_y(start_y), end_y(end_y),
+							     start_z(start_z), end_z(end_z), value(value)
+  { }
+  virtual void Prepare() { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual int SizeZ() const { return sz; }
+  virtual int Map(int x, int y, int z) const
+  {
+    float xx = float(x)/float(sx)*(end_x-start_x)+start_x;
+    float yy = float(y)/float(sy)*(end_y-start_y)+start_y;
+    float zz = float(z)/float(sz)*(end_z-start_z)+start_z;
+    float low_val = im->f_l(xx,yy);
+    float high_val = im->f_u(xx,yy);
+    if (zz > low_val && zz < high_val) return value;
+    return -1;
+  }
+private:
+  ImplicitFunction3d *im;
+  int sx,sy,sz;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+  int value;
+};
+
+GameApi::VX GameApi::VoxelApi::from_implicit(IM i, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int value)
+{
+  ImplicitFunction3d *im = find_implicit(e,i);
+  return add_int_voxel(e, new FromImplicitVoxel(im, sx,sy,sz, start_x, end_x, start_y, end_y, start_z, end_z, value));
+}
