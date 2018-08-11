@@ -254,7 +254,22 @@ public:
   virtual void handle_event(MainLoopEvent &e)
   {
     if (initialized) { 
-      if (e.ch == key && e.type==0x300) {
+      int ch = e.ch;
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+    if (ch==26) ch='w';
+    if (ch==22) ch='s';
+    if (ch==4) ch='a';
+    if (ch==7) ch='d';
+    if (ch==82) ch='w';
+    if (ch==81) ch='s';
+    if (ch==80) ch='a';
+    if (ch==79) ch='d';
+#endif
+
+      if (ch == key && e.type==0x300) {
 	Mix_PlayChannel(-1,chunk, 0);
       }
     }
