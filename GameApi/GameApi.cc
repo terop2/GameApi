@@ -13876,3 +13876,4 @@ GameApi::VX GameApi::VoxelApi::from_implicit(IM i, int sx, int sy, int sz, float
   ImplicitFunction3d *im = find_implicit(e,i);
   return add_int_voxel(e, new FromImplicitVoxel(im, sx,sy,sz, start_x, end_x, start_y, end_y, start_z, end_z, value));
 }
+
