@@ -430,6 +430,7 @@ public:
   }
   Matrix DefaultSceneTranslate(GameApi::EveryApi &ev)
   {
+    return Matrix::Identity();
     GameApi::M m = ev.matrix_api.trans(0.0,0.0,-500.0);
     Matrix mm = find_matrix(env,m);
     return mm;
