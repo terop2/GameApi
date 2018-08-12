@@ -176,7 +176,12 @@ public:
   void execute(MainLoopEnv &e)
   {
     static int inside_it = false;
-    if (inside_it) { next->execute(e); return; }
+    if (inside_it) { 
+    g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+      next->execute(e); 
+    g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+      return; 
+    }
 
     inside_it = true;
     tl.x = e.screen_x;
