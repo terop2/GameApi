@@ -334,7 +334,7 @@ ML I3a=ev.move_api.move_ml(ev,I7,I2a,1,10.0);
  ML cho2 = ev.font_api.ml_chooser(std::vector<ML>{I7, I3a}, alt2);
 #endif
  //ML cho2_2d = 
- ML cho3=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
+ ML cho3=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,1080.0,1200.0); // 800,600
  return cho3;
  //RUN I8=ev.blocker_api.game_window2(ev,I7,false,false,0.0,100000.0);
  //return I8;
