@@ -175,6 +175,10 @@ public:
   }
   void execute(MainLoopEnv &e)
   {
+    static int inside_it = false;
+    if (inside_it) { next->execute(e); return; }
+
+    inside_it = true;
     tl.x = e.screen_x;
     tl.y = e.screen_y;
     br.x = e.screen_width;
@@ -203,6 +207,7 @@ public:
     g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
     ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
     g_low->ogl->glViewport(corner_x,screen_y-corner_y-rect_sy,rect_sx, rect_sy);
+    inside_it = false;
   }
 
 private:
