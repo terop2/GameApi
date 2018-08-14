@@ -249,6 +249,75 @@ EXPORT GameApi::ARR GameApi::FontApi::font_string_array(Ft font, std::string str
   val->vec = bms;
   return add_array(e, val);
 }
+class DynPoly : public MainLoopItem
+{
+public:
+  DynPoly(GameApi::Env &env, GameApi::EveryApi &ev, Fetcher<int> *fetch, std::vector<GameApi::P> vec, GameApi::MT mat) : env(env), ev(ev), fetch(fetch), vec(vec), mat(mat) {
+    firsttime = true;
+    sh.id = -1;
+  }
+  void first_time_calc(MainLoopEnv &e)
+  {
+    std::vector<GameApi::ML> va_vec;
+    int s = vec.size();
+    Material *mat2 = find_material(env, mat);
+    for(int i=0;i<s;i++)
+      {
+	int val = mat2->mat(vec[i].id);
+	GameApi::ML ml;
+	ml.id = val;
+	va_vec.push_back(ml);
+
+	MainLoopItem *item = find_main_loop(env,ml);
+	item->execute(e);
+
+      }
+    vas = va_vec;
+    sh.id = -1;
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+      first_time_calc(e);
+      firsttime = false;
+    }
+
+    //sh.id = e.sh_texture;
+    fetch->frame(e);
+    int idx = fetch->get();
+    int s = vas.size();
+    if (idx>=0 && idx<s) {
+      //ev.shader_api.use(sh);
+      //GameApi::M m = add_matrix2(ev.get_env(),e.in_MV);
+      ////GameApi::M m2 = ev.matrix_api.trans(x,y,0);
+      //GameApi::M mm = ev.matrix_api.mult(m,m2);
+      //ev.shader_api.set_var(sh, "in_MV", mm);
+      //ev.polygon_api.render_vertex_array(vas[idx]);
+      GameApi::ML ml = vas[idx];
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) { fetch->event(e); 
+    int idx = fetch->get();
+    int s = vas.size();
+    if (idx>=0 && idx<s) {
+      GameApi::ML ml = vas[idx];
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->handle_event(e);
+    }
+  }
+  virtual int shader_id() { return -1; }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  Fetcher<int> *fetch;
+  std::vector<GameApi::P> vec;
+  std::vector<GameApi::ML> vas;
+  GameApi::SH sh;
+  bool firsttime;
+  GameApi::MT mat;
+};
 class DynChar : public MainLoopItem
 {
 public:
@@ -367,6 +436,11 @@ EXPORT GameApi::ML GameApi::FontApi::dynamic_character(GameApi::EveryApi &ev, st
 {
   Fetcher<int> *fetch = find_int_fetcher(e, fetcher);
   return add_main_loop(e, new DynChar(ev, fetch, vec,x,y));
+}
+EXPORT GameApi::ML GameApi::FontApi::dynamic_polygon(GameApi::EveryApi &ev, std::vector<GameApi::P> vec, GameApi::MT material, GameApi::IF fetcher)
+{
+  Fetcher<int> *fetch = find_int_fetcher(e, fetcher);
+  return add_main_loop(e, new DynPoly(e,ev, fetch, vec, material));  
 }
 EXPORT GameApi::ML GameApi::FontApi::dynamic_string(GameApi::EveryApi &ev, GameApi::Ft font, std::string alternative_chars, GameApi::SF fetcher, int x, int y, int numchars)
 {
@@ -797,11 +871,12 @@ public:
   TimedIntFetcher(GameApi::EveryApi &ev, int start, int end, float start_time, float duration) : ev(ev), start(start), end(end), start_time(start_time), duration(duration)
   {
     firsttime = true;
+    time_origin = 0.0;
   }
   virtual void event(MainLoopEvent &e) { }
   virtual void frame(MainLoopEnv &e) {
     if (firsttime)
-      time_origin = e.time*10.0;
+      time_origin = 0.0; //e.time*10.0;
     firsttime = false;
     
     current_time = e.time*10.0;
