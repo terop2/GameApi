@@ -12636,10 +12636,21 @@ int find_str(std::string val, std::string repl)
 
 std::string replace_str(std::string val, std::string repl, std::string subst)
 {
+  std::string s = "";
+  int p = 0;
+  while(1) {
+    int pos = find_str(val,repl);
+    if (pos==-1) { s+=val.substr(p,val.size()-p); return s; }
+    s+=val.substr(p,pos-p);
+    s+=subst;
+    val[pos]='X'; // remove %N
+    p=pos+repl.size();
+  }
+
   while(1) {
   int pos = find_str(val, repl);
   if (pos==-1) return val;
-  val.replace(pos,pos+repl.size(),subst);
+  val.replace(pos,pos+repl.size()-1,subst);
   }
   return "ERROR";
 }
@@ -12739,8 +12750,70 @@ GameApi::P GameApi::MainLoopApi::load_P_script(EveryApi &ev, std::string url, st
   return add_polygon2(e, new P_script(e,ev,url, p1,p2,p3,p4,p5));
 }
 
-void ML_cb(void* data);
+std::vector<std::string> parse_sep(std::string s, char sep)
+{
+  int ss = s.size();
+  int pos = 0;
+  std::vector<std::string> vec;
+  for(int i=0;i<ss;i++)
+    {
+      if (s[i]==sep) {
+	std::string beg = s.substr(pos, i-pos);
+	vec.push_back(beg);
+	pos = i+1;
+      }
+    }
+  std::string beg = s.substr(pos,s.size()-pos);
+  vec.push_back(beg);
+  std::cout << "Parse sep: ";
+  int s2 = vec.size();
+  for(int i=0;i<s2;i++) std::cout << vec[i] << "::";
+  std::cout << std::endl;
+  return vec;
+}
 
+GameApi::ARR GameApi::MainLoopApi::load_P_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
+{
+  std::vector<std::string> p1vec = parse_sep(p1,'&');
+  std::vector<std::string> p2vec = parse_sep(p2,'&');
+  std::vector<std::string> p3vec = parse_sep(p3,'&');
+  std::vector<std::string> p4vec = parse_sep(p4,'&');
+  std::vector<std::string> p5vec = parse_sep(p5,'&');
+
+ ArrayType *array = new ArrayType;
+ array->type=2;
+ int s1 = p1vec.size();
+ int s2 = p2vec.size();
+ int s3 = p3vec.size();
+ int s4 = p4vec.size();
+ int s5 = p5vec.size();
+ int s12 = std::max(s1,s2);
+ int s123 = std::max(s12,s3);
+ int s1234 = std::max(s123,s4);
+ int s12345 = std::max(s1234, s5);
+ for(int i=0;i<s12345;i++)
+   {
+     std::string k1 = "";
+     if (i<s1) { k1 = p1vec[i]; }
+     std::string k2 = "";
+     if (i<s2) { k2 = p2vec[i]; }
+     std::string k3 = "";
+     if (i<s3) { k3 = p3vec[i]; }
+     std::string k4 = "";
+     if (i<s4) { k4 = p4vec[i]; }
+     std::string k5 = "";
+     if (i<s5) { k5 = p5vec[i]; }
+
+     FaceCollection *coll = new P_script(e,ev,url, k1,k2,k3,k4,k5);
+     GameApi::P coll_p = add_polygon2(e, coll);
+     array->vec.push_back(coll_p.id);
+   }
+ return add_array(e,array);
+}
+
+
+
+void ML_cb(void* data);
 
 
 class ML_script : public MainLoopItem
@@ -12842,6 +12915,48 @@ GameApi::ML GameApi::MainLoopApi::load_ML_script(EveryApi &ev, std::string url, 
 {
   return add_main_loop(e, new ML_script(e,ev,url,p1,p2,p3,p4,p5));
 }
+
+GameApi::ARR GameApi::MainLoopApi::load_ML_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
+{
+  std::vector<std::string> p1vec = parse_sep(p1,'&');
+  std::vector<std::string> p2vec = parse_sep(p2,'&');
+  std::vector<std::string> p3vec = parse_sep(p3,'&');
+  std::vector<std::string> p4vec = parse_sep(p4,'&');
+  std::vector<std::string> p5vec = parse_sep(p5,'&');
+
+ ArrayType *array = new ArrayType;
+ array->type=2;
+ int s1 = p1vec.size();
+ int s2 = p2vec.size();
+ int s3 = p3vec.size();
+ int s4 = p4vec.size();
+ int s5 = p5vec.size();
+ int s12 = std::max(s1,s2);
+ int s123 = std::max(s12,s3);
+ int s1234 = std::max(s123,s4);
+ int s12345 = std::max(s1234, s5);
+ for(int i=0;i<s12345;i++)
+   {
+     std::string k1 = "";
+     if (i<s1) { k1 = p1vec[i]; }
+     std::string k2 = "";
+     if (i<s2) { k2 = p2vec[i]; }
+     std::string k3 = "";
+     if (i<s3) { k3 = p3vec[i]; }
+     std::string k4 = "";
+     if (i<s4) { k4 = p4vec[i]; }
+     std::string k5 = "";
+     if (i<s5) { k5 = p5vec[i]; }
+
+     MainLoopItem *coll = new ML_script(e,ev,url, k1,k2,k3,k4,k5);
+     GameApi::ML coll_p = add_main_loop(e, coll);
+     array->vec.push_back(coll_p.id);
+   }
+ return add_array(e,array);
+}
+
+
+
 void BM_cb(void *data);
 
 class BM_script : public Bitmap<Color>
@@ -12861,11 +12976,13 @@ public:
 #endif
     std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
     std::string code(vec->begin(), vec->end());
+    //std::cout << "BM_scriptA: " << code << std::endl;
     code = replace_str(code, "%1", p1);
     code = replace_str(code, "%2", p2);
     code = replace_str(code, "%3", p3);
     code = replace_str(code, "%4", p4);
     code = replace_str(code, "%5", p5);
+    //std::cout << "BM_script: " << code << std::endl;
     GameApi::ExecuteEnv e2;
     std::pair<int, std::string> p = GameApi::execute_codegen(e,ev,code,e2);
     if (p.second=="BM") {
@@ -12935,6 +13052,48 @@ GameApi::BM GameApi::MainLoopApi::load_BM_script(EveryApi &ev, std::string url, 
   handle2->bm = bm;
   return add_bitmap(e, handle2);
 }
+
+GameApi::ARR GameApi::MainLoopApi::load_BM_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
+{
+  std::vector<std::string> p1vec = parse_sep(p1,'&');
+  std::vector<std::string> p2vec = parse_sep(p2,'&');
+  std::vector<std::string> p3vec = parse_sep(p3,'&');
+  std::vector<std::string> p4vec = parse_sep(p4,'&');
+  std::vector<std::string> p5vec = parse_sep(p5,'&');
+
+ ArrayType *array = new ArrayType;
+ array->type=2;
+ int s1 = p1vec.size();
+ int s2 = p2vec.size();
+ int s3 = p3vec.size();
+ int s4 = p4vec.size();
+ int s5 = p5vec.size();
+ int s12 = std::max(s1,s2);
+ int s123 = std::max(s12,s3);
+ int s1234 = std::max(s123,s4);
+ int s12345 = std::max(s1234, s5);
+ for(int i=0;i<s12345;i++)
+   {
+     std::string k1 = "";
+     if (i<s1) { k1 = p1vec[i]; }
+     std::string k2 = "";
+     if (i<s2) { k2 = p2vec[i]; }
+     std::string k3 = "";
+     if (i<s3) { k3 = p3vec[i]; }
+     std::string k4 = "";
+     if (i<s4) { k4 = p4vec[i]; }
+     std::string k5 = "";
+     if (i<s5) { k5 = p5vec[i]; }
+
+     Bitmap<Color> *coll = new BM_script(e,ev,url, k1,k2,k3,k4,k5);
+     BitmapColorHandle *handle2 = new BitmapColorHandle;
+     handle2->bm = coll;
+     GameApi::BM coll_p = add_bitmap(e, handle2);
+     array->vec.push_back(coll_p.id);
+   }
+ return add_array(e,array);
+}
+
 
 struct FileHeader
 {

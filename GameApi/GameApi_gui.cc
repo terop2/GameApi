@@ -501,6 +501,7 @@ public:
 	      {
 		label.push_back(ch);
 		changed = true;
+		break;
 	      }
 	  }
 	if ((ch==8 ||ch==42) && label.size()>0)
@@ -3184,7 +3185,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, 
 	}
       else 
 	{
-      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*\n";
+      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"¤%&?\n";
       W edit = string_editor(allowed, target.s, atlas_tiny, atlas_tiny_bm, x_gap);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
       return edit_2;
@@ -4666,8 +4667,11 @@ ASyncData async_data[] = {
   { "mainloop_api", "score_display", 2 },
   { "mainloop_api", "time_display", 2 },
   { "mainloop_api", "load_P_script", 1 },
+  { "mainloop_api", "load_P_script_array", 1 },
   { "mainloop_api", "load_ML_script", 1 },
+  { "mainloop_api", "load_ML_script_array", 1 },
   { "mainloop_api", "load_BM_script", 1 },
+  { "mainloop_api", "load_BM_script_array", 1 },
   { "polygon_api", "p_ds_url", 1 },
   { "bitmap_api", "intbitmap_loader", 0 },
   { "mainloop_api", "restart_screen", 2 },
@@ -6165,6 +6169,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "EveryApi&", "[BM]", "IF", "int", "int" },
 			 { "ev", "", "", "0","0" },
 			 "ML", "font_api", "dynamic_character"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::dynamic_polygon,
+			 "p_chooser",
+			 { "ev", "vec", "mat", "fetcher" },
+			 { "EveryApi&", "[P]", "MT", "IF" },
+			 { "ev", "", "", "" },
+			 "ML", "font_api", "dynamic_polygon"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::ml_chooser,
 			 "ml_chooser",
 			 { "vec", "fetcher" },
@@ -6776,12 +6786,36 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
 			 { "ev", "http://tpgames.org/blob_p.mp", "a", "b", "c", "d", "e" },
 			 "P", "mainloop_api", "load_P_script"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_ML_script,
 			 "ml_script",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
 			 { "ev", "http://tpgames.org/marble_cube_ml.mp", "a", "b", "c", "d", "e" },
 			 "ML", "mainloop_api", "load_ML_script"));
+
+
+
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_BM_script_array,
+			 "bm_script_arr",
+			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
+			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
+			 { "ev", "http://tpgames.org/tiiliseina_bm.mp", "a&a", "b&b", "c&c", "d&d", "e&e" },
+			 "[BM]", "mainloop_api", "load_BM_script_array"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_P_script_array,
+			 "p_script_arr",
+			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
+			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
+			 { "ev", "http://tpgames.org/blob_p.mp", "a&a", "b&b", "c&c", "d&d", "e&e" },
+			 "[P]", "mainloop_api", "load_P_script_array"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_ML_script_array,
+			 "ml_script_arr",
+			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
+			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
+			 { "ev", "http://tpgames.org/marble_cube_ml.mp", "a&a", "b&b", "c&c", "d&d", "e&e" },
+			 "[ML]", "mainloop_api", "load_ML_script_array"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::skybox,
 			 "skybox_ml",

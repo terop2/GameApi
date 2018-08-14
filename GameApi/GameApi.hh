@@ -385,8 +385,11 @@ public:
   ML keyboard_toggle(ML m1, ML m2, int key);
   ML touch_rotate(EveryApi &ev, ML ml, bool leftright, bool topdown, float x_speed, float y_speed);
   P load_P_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  ARR load_P_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   ML load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  ARR load_ML_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   BM load_BM_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  ARR load_BM_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   ML prepare_pts(ML ml, PTS pts);
   ML depthfunc(ML ml, int val); 
   ML blendfunc(ML ml, int val, int val2);
@@ -714,6 +717,7 @@ public:
   IMPORT SF score_string_fetcher(std::string id, std::string label, int numdigits); // use score_display instead.
   IMPORT IF char_fetcher_from_string(SF string_fetcher, std::string alternatives, int idx);
   IMPORT ML dynamic_character(EveryApi &ev, std::vector<BM> vec, IF fetcher, int x, int y);
+  IMPORT ML dynamic_polygon(EveryApi &ev, std::vector<P> vec, MT material, IF fetcher);
   IMPORT ML dynamic_string(EveryApi &ev, Ft font, std::string alternative_chars, SF fetcher, int x, int y, int numchars);
   IMPORT FI load_font(std::string ttf_filename, int sx, int sy);
   IMPORT GI choose_glyph_from_font(FI font, long idx);
