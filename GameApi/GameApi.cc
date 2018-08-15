@@ -12806,7 +12806,7 @@ GameApi::ARR GameApi::MainLoopApi::load_P_script_array(EveryApi &ev, std::string
      std::stringstream ss;
      ss << i;
      
-     FaceCollection *coll = new P_script(e,ev,url + "?i=" + ss.str(), k1,k2,k3,k4,k5);
+     FaceCollection *coll = new P_script(e,ev,url + "&i=" + ss.str(), k1,k2,k3,k4,k5);
      GameApi::P coll_p = add_polygon2(e, coll);
      array->vec.push_back(coll_p.id);
    }
