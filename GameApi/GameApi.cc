@@ -12952,6 +12952,7 @@ GameApi::ARR GameApi::MainLoopApi::load_ML_script_array(EveryApi &ev, std::strin
      std::string k5 = "";
      if (i<s5) { k5 = p5vec[i]; }
 
+     if (i!=0) { e.async_load_url(url,gameapi_homepageurl); }
      MainLoopItem *coll = new ML_script(e,ev,url, k1,k2,k3,k4,k5);
      GameApi::ML coll_p = add_main_loop(e, coll);
      array->vec.push_back(coll_p.id);
@@ -13088,7 +13089,7 @@ GameApi::ARR GameApi::MainLoopApi::load_BM_script_array(EveryApi &ev, std::strin
      if (i<s4) { k4 = p4vec[i]; }
      std::string k5 = "";
      if (i<s5) { k5 = p5vec[i]; }
-
+     if (i!=0) { e.async_load_url(url,gameapi_homepageurl); }
      Bitmap<Color> *coll = new BM_script(e,ev,url, k1,k2,k3,k4,k5);
      BitmapColorHandle *handle2 = new BitmapColorHandle;
      handle2->bm = coll;
