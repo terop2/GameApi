@@ -1222,6 +1222,46 @@ void GameApi::MainLoopApi::event_ml(ML ml, const Event &ee)
   MainLoopItem *item = find_main_loop(e, ml);
   item->handle_event(e2);
 }
+#if 0
+class TimingMainLoop : public MainLoopItem
+{
+public:
+  TimingMainLoop(std::vector<MainLoopItem*> vec, float duration) : vec(vec), duration(duration) { firsttime = true; }
+  void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+      int s = vec.size();
+      for(int i=0;i<s;i++)
+	{
+	  MainLoopEnv ee = e;
+	  vec[i]->execute(ee);
+	}
+    }
+    firsttime = false;
+    float t = e.time*10.0;
+    current_time = t;
+    float t2 = t/duration;
+    int t3 = int(t2);
+    if (t3<0||t3>=vec.size()) return;
+    MainLoopEnv ee = e;
+    vec[t3]->execute(ee);
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    float t = current_time;
+    float t2 = t/duration;
+    int t3 = int(t2);
+    if (t3<0||t2>=vec.size()) return;
+    vec[t3]->handle_event(e);
+  }
+
+private:
+  bool firsttime;
+  std::vector<MainLoopItem*> vec;
+  float duration;
+  float current_time;
+};
+#endif
 class ArrayMainLoop : public MainLoopItem
 {
 public:
@@ -1270,7 +1310,18 @@ void GameApi::MainLoopApi::set_viewport(int x, int y, int sx, int sy)
 {
   g_low->ogl->glViewport(x,y,sx,sy);
 }
-
+/*
+EXPORT GameApi::ML GameApi::MainLoopApi::timing_ml(std::vector<ML> vec, float duration)
+{
+  std::vector<MainLoopItem*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_main_loop(e,vec[i]));
+    }
+  return add_main_loop(e, new TimingMainLoop(vec2));
+}
+*/
 EXPORT GameApi::ML GameApi::MainLoopApi::array_ml(std::vector<ML> vec)
 {
   std::vector<MainLoopItem*> vec2;

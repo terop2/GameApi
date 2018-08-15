@@ -6193,6 +6193,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "EveryApi&", "int", "int", "float", "float" },
 			 { "ev", "0", "10", "0.0", "30.0" },
 			 "IF", "font_api", "timed_int_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::movement_int_fetcher,
+			 "if_move",
+			 { "count", "x_mult", "y_mult", "z_mult" },
+			 { "int", "float", "float", "float" },
+			 { "10", "0.1", "0.1", "0.1" },
+			 "IF", "font_api", "movement_int_fetcher"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::repeat_int_fetcher,
 			 "if_repeat",
 			 { "fetcher", "duration" },
@@ -6836,6 +6842,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "[ML]" },
 			 { "" },
 			 "ML", "mainloop_api", "array_ml"));
+  /*
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing_ml,
+			 "timing_ml",
+			 { "arr", "duration" },
+			 { "[ML]", "float" },
+			 { "", "10.0" },
+			 "ML", "mainloop_api", "timing_ml"));*/
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::seq_ml,
 			 "seq_ml",
 			 { "vec", "time" },
@@ -8579,7 +8592,7 @@ std::vector<GameApiItem*> linesapi_functions()
 			 "LI", "curve_api", "lines_from_curve_group"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::meshanim,
 			 "ma_p",
-			 { "vec", "start_time", "time_step" },
+			 { "vec", "start_time", "end_time"},
 			 { "[P]", "float", "float" },
 			 { "", "0.0", "10.0" },
 			 "MA", "polygon_api", "meshanim"));
@@ -8591,10 +8604,18 @@ std::vector<GameApiItem*> linesapi_functions()
 			 "P", "polygon_api", "meshanim_mesh"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::anim,
 			 "ma_render",
-			 { "ev", "next", "anim", "start_time", "delta_time", "count" },
+			 { "ev", "next", "anim", "start_time", "end_time", "count" },
 			 { "EveryApi&", "ML", "MA", "float", "float", "int" },
 			 { "ev", "", "", "0.0", "10.0", "3" },
 			 "ML", "polygon_api", "anim"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::anim_bind,
+			 "ma_bind",
+			 { "ev", "next", "anim", "material", "start_time", "end_time", "count" },
+			 { "EveryApi&", "ML", "MA", "MT", "float", "float", "int" },
+			 { "ev", "", "", "", "0.0", "10.0", "3" },
+			 "ML", "polygon_api", "anim_bind"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::curve_group_from_anim,
 			 "ma_to_cg",
 			 { "meshanim", "start_time", "end_time" },

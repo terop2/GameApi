@@ -489,6 +489,35 @@ EXPORT GameApi::ML GameApi::FontApi::dynamic_string(GameApi::EveryApi &ev, GameA
     }
   return ev.mainloop_api.array_ml(ml);
 }
+
+class MovementIntFetcher : public Fetcher<int>
+{
+public:
+  MovementIntFetcher(int count, float x_mult, float y_mult, float z_mult) : count(count), x_mult(x_mult), y_mult(y_mult), z_mult(z_mult) { val=0; }
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) {
+    Matrix m = e.in_MV;
+    float xx = m.matrix[3];
+    float yy = m.matrix[7];
+    float zz = m.matrix[11];
+    xx*=x_mult;
+    yy*=y_mult;
+    zz*=z_mult;
+    float sum = xx+yy+zz;
+    val = int(sum)%count;
+    if (val<0) val=-val;
+  }
+  virtual void set(int t) { }
+  virtual int get() const
+  {
+    return val;
+  }
+
+private:
+  int val;
+  int count;
+  float x_mult, y_mult, z_mult;
+};
 class ToggleButtonIntFetcher : public Fetcher<int>
 {
 public:
@@ -673,6 +702,10 @@ GameApi::IF GameApi::FontApi::score_fetcher(EveryApi &ev)
 GameApi::IF GameApi::FontApi::toggle_button_fetcher(float start_x, float end_x, float start_y, float end_y)
 {
   return add_int_fetcher(e, new ToggleButtonIntFetcher(start_x,end_x,start_y,end_y));
+}
+GameApi::IF GameApi::FontApi::movement_int_fetcher(int count, float x_mult, float y_mult, float z_mult)
+{
+  return add_int_fetcher(e, new MovementIntFetcher(count,x_mult,y_mult,z_mult));
 }
 class FloatToStringFetcher : public Fetcher<std::string>
 {

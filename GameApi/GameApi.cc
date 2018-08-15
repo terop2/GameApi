@@ -4418,7 +4418,7 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     float time = e.time;
-    float newtime = fmod(time, duration/10.0);
+    float newtime = fmod(time, duration);
     MainLoopEnv ee = e;
     ee.time = newtime;
     next->execute(ee);
@@ -4433,7 +4433,7 @@ private:
 EXPORT GameApi::ML GameApi::MovementNode::repeat_ml(EveryApi &ev, GameApi::ML ml, float duration)
 {
   MainLoopItem *item = find_main_loop(e, ml);
-  return add_main_loop(e, new RepeatML(item, duration));  
+  return add_main_loop(e, new RepeatML(item, duration/10.0));  
 }
 EXPORT GameApi::ML GameApi::MovementNode::move_ml(EveryApi &ev, GameApi::ML ml, GameApi::MN move, int clone_count, float time_delta)
 {
