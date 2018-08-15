@@ -12665,6 +12665,7 @@ public:
     async_pending_count++; async_taken = true;
 #endif
        std::cout << "async_pending_count inc (P_sctipr) " << async_pending_count << std::endl;
+       std::cout << "P_script url: " << url << std::endl;
   }
   void Prepare2() {
     std::string homepage = gameapi_homepageurl;
