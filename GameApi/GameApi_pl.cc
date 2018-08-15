@@ -10757,9 +10757,11 @@ private:
 };
 
 GameApi::MA GameApi::PolygonApi::meshanim(std::vector<P> vec, 
-					   float start_time, 
-					   float time_step)
+					  float start_time,
+					  float end_time)
 {
+  start_time/=10.0;
+  end_time/=10.0;
   int s = vec.size();
   std::vector<FaceCollection*> res;
   for(int i=0;i<s;i++)
@@ -10767,6 +10769,7 @@ GameApi::MA GameApi::PolygonApi::meshanim(std::vector<P> vec,
       FaceCollection *coll = find_facecoll(e,vec[i]);
       res.push_back(coll);
     }
+  float time_step = (end_time-start_time)/float(s);
   return add_mesh_anim(e, new MeshAnimFromMeshes(res, start_time, time_step));
 }
 
@@ -10905,7 +10908,7 @@ public:
       {
 	MainLoopEnv ee = e;
 	float t = e.time - i*delta_time;
-	if (t>0.0 && t < delta_time)
+	if (t>=0.0 && t < delta_time)
 	  {
 	  ee.in_POS = t/delta_time;
 	  render[i]->execute(ee);
@@ -10937,10 +10940,14 @@ GameApi::ML GameApi::PolygonApi::choose_time(ML next, std::vector<ML> vec, float
 }
 
 
-GameApi::ML GameApi::PolygonApi::anim(EveryApi &ev, ML next, MA anim, float start_time, float delta_time, int count)
+GameApi::ML GameApi::PolygonApi::anim(EveryApi &ev, ML next, MA anim, float start_time, float end_time, int count)
 {
+  start_time/=10.0;
+  end_time/=10.0;
+
   std::vector<P> vec;
   int s = count;
+  float delta_time = (end_time-start_time)/float(count);
   for(int i=0;i<s;i++)
     {
       vec.push_back(meshanim_mesh2(anim, start_time+i*delta_time, start_time+(i+1)*delta_time));
@@ -10954,6 +10961,33 @@ GameApi::ML GameApi::PolygonApi::anim(EveryApi &ev, ML next, MA anim, float star
   ML ml = choose_time(next, vec2, delta_time);
   return ml;
 }
+
+GameApi::ML GameApi::PolygonApi::anim_bind(EveryApi &ev, ML next, MA anim, MT material, float start_time, float end_time, int count)
+{
+  start_time/=10.0;
+  end_time/=10.0;
+
+  std::vector<P> vec;
+  int s = count;
+  float delta_time = (end_time-start_time)/float(count);
+  for(int i=0;i<s;i++)
+    {
+      vec.push_back(meshanim_mesh2(anim, start_time+i*delta_time, start_time+(i+1)*delta_time));
+    }
+  std::vector<ML> vec2;
+  int s2 = vec.size();
+  Material *mat = find_material(e, material);
+  for(int i=0;i<s2;i++)
+    {
+      int ml_id = mat->mat(vec[i].id);
+      GameApi::ML ml;
+      ml.id = ml_id;
+      vec2.push_back(ml /*render_vertex_array_ml2(ev, vec[i])*/);
+    }
+  ML ml = choose_time(next, vec2, delta_time);
+  return ml;
+}
+
 
 #if 0
 class RenderMeshAnim : public MainLoopItem
