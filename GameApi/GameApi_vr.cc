@@ -592,11 +592,13 @@ void requestPresentCallback(void *arg) {
       emscripten_vr_get_eye_parameters(current_display, VREyeRight, &right);
       
       //emscripten_set_canvas_element_size("#canvas", left.renderWidth + right.renderWidth, left.renderHeight);
-
+      static bool b = false;
+      if (!b)
       if (!emscripten_vr_set_display_render_loop_arg(current_display, &splitter_iter2, (void*)spl))
 	{
 	  std::cout << "FAIL: set_display render loop failed (in request present)" << std::endl;
 	} else {
+	b=true;
 	std::cout << "OK: set_display render loop success." << std::endl;
       }
     }
