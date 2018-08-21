@@ -9794,6 +9794,7 @@ EXPORT void GameApi::BlockerApi::run(BLK blk)
 Splitter *splitter_current = 0;
 void splitter_iter2(void *arg)
 {
+  if (!arg) { std::cout << "FAIL: Splitter_iter2 NULL" << std::endl; return; }
   Splitter *blk2 = (Splitter*)arg;
   int blocker_exit_code = blk2->Iter();
   if (blocker_exit_code!=-1) 
