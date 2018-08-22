@@ -9795,40 +9795,24 @@ Splitter *splitter_current = 0;
 void splitter_iter2(void *arg)
 {
   if (!arg) { std::cout << "FAIL: Splitter_iter2 NULL" << std::endl; return; }
-  std::cout << "1" << std::endl;
   Splitter *blk2 = (Splitter*)arg;
-  std::cout << "2" << std::endl;
   int blocker_exit_code = blk2->Iter();
-  std::cout << "3" << std::endl;
   if (blocker_exit_code!=-1) 
     {
-  std::cout << "4" << std::endl;
       Splitter *next = blk2->NextState(blocker_exit_code);
-  std::cout << "5" << std::endl;
       if (next) {
-  std::cout << "6" << std::endl;
 	blk2->EnvTransfer(next);
-  std::cout << "7" << std::endl;
       }
-  std::cout << "8" << std::endl;
       blk2->Destroy();
-  std::cout << "9" << std::endl;
       if (next) {
-  std::cout << "10" << std::endl;
 	next->Init();
-  std::cout << "11" << std::endl;
       }
 #ifdef EMSCRIPTEN
       // TODO, VR ISSUES
-  std::cout << "12" << std::endl;
       emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,1);
-  std::cout << "13" << std::endl;
 #else
-  std::cout << "14" << std::endl;
       splitter_current = next;
-  std::cout << "15" << std::endl;
 #endif
-  std::cout << "16" << std::endl;
     }
 }
 
