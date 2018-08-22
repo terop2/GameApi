@@ -221,7 +221,7 @@ public:
       // This one gets poses, and is important or else the display doesnt 
       // render.
       if (!emscripten_vr_display_presenting(current_display)) {
-	std::cout << "FAIL: expected display is not presenting." << std::endl;
+	//std::cout << "FAIL: expected display is not presenting." << std::endl;
       }
 
 
