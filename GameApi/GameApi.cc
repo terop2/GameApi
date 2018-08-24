@@ -4846,6 +4846,44 @@ private:
   GameApi::EveryApi &ev;
 };
 
+class FogMaterial : public MaterialForward
+{
+public:
+  FogMaterial(GameApi::EveryApi &ev, Material *next, float fog_dist) : ev(ev), next(next),fog_dist(fog_dist) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat(p.id);
+    ml = ev.polygon_api.fog_shader(ev, ml,fog_dist);
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst(p.id, pts.id);
+    ml = ev.polygon_api.fog_shader(ev, ml,fog_dist);
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(p.id, pta.id);
+    ml = ev.polygon_api.fog_shader(ev, ml,fog_dist);
+    return ml;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+    ml = ev.polygon_api.fog_shader(ev, ml, fog_dist);
+    return ml;
+  }
+private:
+  GameApi::EveryApi &ev;
+  Material *next;
+  float fog_dist;
+};
+
 class SkeletalMaterial : public MaterialForward
 {
 public:
@@ -6088,6 +6126,11 @@ EXPORT GameApi::MT GameApi::MaterialsApi::phong(EveryApi &ev, MT nxt, float ligh
   Material *mat = find_material(e, nxt);
   return add_material(e, new PhongMaterial(ev, mat, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow));
 }
+EXPORT GameApi::MT GameApi::MaterialsApi::fog(EveryApi &ev, MT nxt, float fog_dist)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new FogMaterial(ev, mat, fog_dist));
+}
 EXPORT GameApi::MT GameApi::MaterialsApi::dyn_lights(EveryApi &ev, MT nxt, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point)
 {
   Material *mat = find_material(e, nxt);
@@ -7321,6 +7364,11 @@ GameApi::US GameApi::UberShaderApi::v_phong(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("phong", next,"EX_NORMAL2 EX_LIGHTPOS2 LIGHTDIR IN_NORMAL"));
 }
+GameApi::US GameApi::UberShaderApi::v_fog(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("fog", next,"EX_POSITION IN_POSITION"));
+}
 GameApi::US GameApi::UberShaderApi::v_dyn_lights(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -7579,6 +7627,11 @@ GameApi::US GameApi::UberShaderApi::f_phong(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("phong", next,"EX_NORMAL2 EX_LIGHTPOS2 LEVELS"));
+}
+GameApi::US GameApi::UberShaderApi::f_fog(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("fog", next,"EX_POSITION"));
 }
 GameApi::US GameApi::UberShaderApi::f_dyn_lights(US us)
 {
