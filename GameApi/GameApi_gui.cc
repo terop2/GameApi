@@ -6599,9 +6599,9 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "MT", "materials_api", "phong"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::fog,
 			 "m_fog",
-			 { "ev", "nxt", "dist" },
-			 { "EveryApi&", "MT", "float" },
-			 { "ev", "", "300.0" },
+			 { "ev", "nxt", "dist", "dark_color", "light_color" },
+			 { "EveryApi&", "MT", "float", "unsigned int", "unsigned int" },
+			 { "ev", "", "300.0", "ff000000", "ffffffff" },
 			 "MT", "materials_api", "fog"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dyn_lights,
 			 "m_dyn_lights",
