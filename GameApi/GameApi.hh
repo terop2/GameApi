@@ -1264,7 +1264,7 @@ public:
   IMPORT MT texture_many2(EveryApi &ev, float mix);
   IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
   IMPORT MT phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
-  IMPORT MT fog(EveryApi &ev, MT nxt, float fog_dist);
+  IMPORT MT fog(EveryApi &ev, MT nxt, float fog_dist, unsigned int dark_color, unsigned int light_color);
   IMPORT MT dyn_lights(EveryApi &ev, MT nxt, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point);
   IMPORT MT snow(EveryApi &ev, MT nxt, unsigned int color1=0xffaaaaaa, unsigned int color2=0xffeeeeee, unsigned int color3=0xffffffff, float mix_val=0.5f);
   IMPORT MT shading1(EveryApi &ev, MT nxt, float mix_val, float mix_val2);
@@ -2406,7 +2406,7 @@ public:
   IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML sfo_sandbox_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
-  IMPORT ML fog_shader(EveryApi &ev, ML mainloop, float fog_dist);
+  IMPORT ML fog_shader(EveryApi &ev, ML mainloop, float fog_dist, unsigned int dark_color, unsigned int light_color);
   IMPORT ML dyn_lights_shader(EveryApi &ev, ML mainloop, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point);
   IMPORT ML shading_shader(EveryApi &ev, ML mainloop,
 			  unsigned int level1,

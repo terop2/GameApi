@@ -6000,7 +6000,7 @@ private:
 class FogShaderML : public MainLoopItem
 {
 public:
-  FogShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, float fog_dist) : env(env), ev(ev), next(next), fog_dist(fog_dist) 
+  FogShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, float fog_dist, unsigned int dark_color, unsigned int light_color) : env(env), ev(ev), next(next), fog_dist(fog_dist), dark_color(dark_color), light_color(light_color) 
   { 
     firsttime = true;
     sh.id = -1;
@@ -6052,6 +6052,10 @@ public:
 	ev.shader_api.use(sh);
 
 	ev.shader_api.set_var(sh, "fog_dist", fog_dist);
+	Color c(dark_color);
+	Color c2(light_color);
+	ev.shader_api.set_var(sh, "fog_dark", c.r/255.0,c.g/255.0,c.b/255.0,c.alpha/255.0);
+	ev.shader_api.set_var(sh, "fog_light", c2.r/255.0,c2.g/255.0,c2.b/255.0,c2.alpha/255.0);
 	//ev.shader_api.set_var(sh, "light_dir", light_dir.dx, light_dir.dy, light_dir.dz);
 	//ev.shader_api.set_var(sh, "level1_color",
 	//			      ((ambient&0xff0000)>>16)/255.0,
@@ -6086,6 +6090,8 @@ private:
   GameApi::SH sh;
   bool firsttime;
   float fog_dist;
+  unsigned int dark_color;
+  unsigned int light_color;
 };
 
 
@@ -6275,10 +6281,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::phong_shader(EveryApi &ev, ML mainloop, 
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new PhongShaderML(e, ev, item, Vector(light_dir_x, light_dir_y, light_dir_z),ambient, highlight,pow));
 }
-EXPORT GameApi::ML GameApi::PolygonApi::fog_shader(EveryApi &ev, ML mainloop, float fog_dist)
+EXPORT GameApi::ML GameApi::PolygonApi::fog_shader(EveryApi &ev, ML mainloop, float fog_dist, unsigned int dark_color, unsigned int light_color)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
-  return add_main_loop(e, new FogShaderML(e,ev,item, fog_dist));
+  return add_main_loop(e, new FogShaderML(e,ev,item, fog_dist, dark_color, light_color));
 }
 
 EXPORT GameApi::ML GameApi::PolygonApi::dyn_lights_shader(EveryApi &ev, ML mainloop, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point)
