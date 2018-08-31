@@ -4714,13 +4714,17 @@ void LoadUrls(const CodeGenLine &line, std::string homepage)
   InstallProgress(sum,url);
 
 
-  url = "load_url.php";
-
+  std::string url2 = "load_url.php";
   std::string urlend = "url=" + url + "&homepage=" + homepage;
+  url = "load_url.php?url=" + url;
 
-    char *buf2 = new char[url.size()+1];
-    std::copy(url.begin(), url.end(), buf2);
-    buf2[url.size()]=0;
+    char *buf2 = new char[url2.size()+1];
+    std::copy(url2.begin(), url2.end(), buf2);
+    buf2[url2.size()]=0;
+
+    char *buf3 = new char[url.size()+1];
+    std::copy(url.begin(), url.end(), buf3);
+    buf3[url.size()]=0;
     
     async_pending_count++;
     std::cout << "async_pending_count inc (LoadUrls) -->" << async_pending_count << std::endl;
@@ -4728,7 +4732,7 @@ void LoadUrls(const CodeGenLine &line, std::string homepage)
 
 
     //emscripten_async_wget_data(buf2, (void*)buf2 , &onload_cb, &onerror_cb);
-    emscripten_async_wget2_data(buf2, "POST", urlend.c_str(), (void*)buf2, 1, &onload_cb, &onerror_cb, &onprogress_cb);
+    emscripten_async_wget2_data(buf2, "POST", urlend.c_str(), (void*)buf3, 1, &onload_cb, &onerror_cb, &onprogress_cb);
 #endif
 }
 std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev, std::string text, int &error_line_num)
