@@ -10667,16 +10667,15 @@ std::string stripprefix(std::string s)
   int len = strlen("load_url.php?url=");
   return s.substr(len,s.size()-len);
 }
-void onload_async_cb(void *arg, void *data, unsigned int *datasize)
+void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datasize)
 {
-  if (!datasize) return;
 
-  if (*datasize==0) {
+  if (datasize==0) {
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
   }
   std::vector<unsigned char> buffer;
   unsigned char *dataptr = (unsigned char*)data;
-  for(int i=0;i<*datasize;i++) { buffer.push_back(dataptr[i]); }
+  for(int i=0;i<datasize;i++) { buffer.push_back(dataptr[i]); }
   
   char *url = (char*)arg;
   std::string url_str(url);
