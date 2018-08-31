@@ -4626,12 +4626,11 @@ void onerror_cb(void *arg, int, const char*)
 std::string stripprefix(std::string s);
 void ProgressBar(int num, int val, int max, std::string label);
 void onprogress_cb(void *, int, int) { }
-void onload_cb(void *arg, void *data, unsigned int *datasize)
+void onload_cb(unsigned int tmp, void *arg, void *data, unsigned int datasize)
 {
-  if (!datasize) return;
     std::vector<unsigned char> buffer;
     unsigned char *dataptr = (unsigned char*)data;
-    for(int i=0;i<*datasize;i++) { buffer.push_back(dataptr[i]); }
+    for(int i=0;i<datasize;i++) { buffer.push_back(dataptr[i]); }
 
     char *url = (char*)arg;
     std::string url_str(url);
