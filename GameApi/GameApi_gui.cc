@@ -4612,7 +4612,7 @@ std::string striphomepage(std::string url)
 
 std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
 int async_pending_count = 0;
-void onerror_cb(void *arg, int, const char*)
+void onerror_cb(unsigned int tmp, void *arg, int, const char*)
 {
   std::cout << "ERROR: onerror_cb" << std::endl; 
     char *url = (char*)arg;
