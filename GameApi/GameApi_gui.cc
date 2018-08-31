@@ -4612,7 +4612,7 @@ std::string striphomepage(std::string url)
 
 std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
 int async_pending_count = 0;
-void onerror_cb(void *arg)
+void onerror_cb(void *arg, int, const char*)
 {
   std::cout << "ERROR: onerror_cb" << std::endl; 
     char *url = (char*)arg;
@@ -4626,11 +4626,12 @@ void onerror_cb(void *arg)
 std::string stripprefix(std::string s);
 void ProgressBar(int num, int val, int max, std::string label);
 void onprogress_cb(void *, int, int) { }
-void onload_cb(void *arg, void *data, int datasize)
+void onload_cb(void *arg, void *data, unsigned int *datasize)
 {
+  if (!datasize) return;
     std::vector<unsigned char> buffer;
     unsigned char *dataptr = (unsigned char*)data;
-    for(int i=0;i<datasize;i++) { buffer.push_back(dataptr[i]); }
+    for(int i=0;i<*datasize;i++) { buffer.push_back(dataptr[i]); }
 
     char *url = (char*)arg;
     std::string url_str(url);
