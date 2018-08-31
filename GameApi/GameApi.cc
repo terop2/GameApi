@@ -10643,6 +10643,7 @@ ASyncCallback *rem_async_cb(std::string url)
 
 
 std::string striphomepage(std::string);
+void onprogress_async_cb(void *, int, int) { }
 void onerror_async_cb(void *arg)
 {
   std::cout << "ERROR: url loading error! " << std::endl;
@@ -10745,8 +10746,9 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   InstallProgress(sum,url);
 
 #ifdef EMSCRIPTEN
-    url = "load_url.php?url=" + url;
-    std::string url3 = url + "&homepage=" + homepage;
+  url = "load_url.php";
+  std::string urlend = "url=" + url;
+  std::string url3 = urlend + "&homepage=" + homepage;
 
     //std::cout << "url loading started! " << url << std::endl;
 
@@ -10769,14 +10771,15 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
       return; 
     }
-    char *buf2 = new char[url3.size()+1];
-    std::copy(url3.begin(), url3.end(), buf2);
-    buf2[url3.size()]=0;
+    char *buf2 = new char[url.size()+1];
+    std::copy(url.begin(), url.end(), buf2);
+    buf2[url.size()]=0;
     
     async_pending_count++;
     //    std::cout << "ASync pending inc (load_urls) -->" << async_pending_count << std::endl;
 
-    emscripten_async_wget_data(buf2, (void*)buf2 , &onload_async_cb, &onerror_async_cb);
+    //emscripten_async_wget_data(buf2, (void*)buf2 , &onload_async_cb, &onerror_async_cb);
+    emscripten_async_wget2_data(buf2, "POST", url3.c_str(), (void*)buf2, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
 #else
   { // progressbar
   int s = url.size();
