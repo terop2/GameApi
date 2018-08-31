@@ -10750,7 +10750,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   std::string urlend = "url=" + url;
   std::string url3 = urlend + "&homepage=" + homepage;
 
-  url = "load_url.php?url=" + url;
+  url = "load_url.php?url=" + url + "&homepage=" + homepage;
 
     //std::cout << "url loading started! " << url << std::endl;
 

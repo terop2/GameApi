@@ -4716,7 +4716,7 @@ void LoadUrls(const CodeGenLine &line, std::string homepage)
 
   std::string url2 = "load_url.php";
   std::string urlend = "url=" + url + "&homepage=" + homepage;
-  url = "load_url.php?url=" + url;
+  url = "load_url.php?url=" + url + "&homepage=" + homepage;
 
     char *buf2 = new char[url2.size()+1];
     std::copy(url2.begin(), url2.end(), buf2);
