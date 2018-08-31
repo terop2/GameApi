@@ -4625,6 +4625,7 @@ void onerror_cb(void *arg)
 }
 std::string stripprefix(std::string s);
 void ProgressBar(int num, int val, int max, std::string label);
+void onprogress_cb(void *, int, int) { }
 void onload_cb(void *arg, void *data, int datasize)
 {
     std::vector<unsigned char> buffer;
@@ -4713,7 +4714,9 @@ void LoadUrls(const CodeGenLine &line, std::string homepage)
   InstallProgress(sum,url);
 
 
-  url = "load_url.php?url=" + url + "&homepage=" + homepage;
+  url = "load_url.php";
+
+  std::string urlend = "url=" + url + "&homepage=" + homepage;
 
     char *buf2 = new char[url.size()+1];
     std::copy(url.begin(), url.end(), buf2);
@@ -4724,7 +4727,8 @@ void LoadUrls(const CodeGenLine &line, std::string homepage)
 
 
 
-    emscripten_async_wget_data(buf2, (void*)buf2 , &onload_cb, &onerror_cb);
+    //emscripten_async_wget_data(buf2, (void*)buf2 , &onload_cb, &onerror_cb);
+    emscripten_async_wget2_data(buf2, "POST", urlend.c_str(), (void*)buf2, 1, &onload_cb, &onerror_cb, &onprogress_cb);
 #endif
 }
 std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev, std::string text, int &error_line_num)
