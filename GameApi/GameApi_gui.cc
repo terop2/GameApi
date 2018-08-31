@@ -4625,7 +4625,7 @@ void onerror_cb(unsigned int tmp, void *arg, int, const char*)
 }
 std::string stripprefix(std::string s);
 void ProgressBar(int num, int val, int max, std::string label);
-void onprogress_cb(void *, int, int) { }
+void onprogress_cb(unsigned int tmp, void *, int, int) { }
 void onload_cb(unsigned int tmp, void *arg, void *data, unsigned int datasize)
 {
     std::vector<unsigned char> buffer;

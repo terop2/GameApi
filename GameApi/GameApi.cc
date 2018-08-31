@@ -10643,7 +10643,7 @@ ASyncCallback *rem_async_cb(std::string url)
 
 
 std::string striphomepage(std::string);
-void onprogress_async_cb(void *, int, int) { }
+void onprogress_async_cb(unsigned int tmp, void *, int, int) { }
 void onerror_async_cb(unsigned int tmp, void *arg, int, const char*)
 {
   std::cout << "ERROR: url loading error! " << std::endl;
