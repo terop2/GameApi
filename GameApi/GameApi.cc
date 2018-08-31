@@ -10644,7 +10644,7 @@ ASyncCallback *rem_async_cb(std::string url)
 
 std::string striphomepage(std::string);
 void onprogress_async_cb(void *, int, int) { }
-void onerror_async_cb(void *arg)
+void onerror_async_cb(void *arg, int, const char*)
 {
   std::cout << "ERROR: url loading error! " << std::endl;
     char *url = (char*)arg;
@@ -10667,15 +10667,16 @@ std::string stripprefix(std::string s)
   int len = strlen("load_url.php?url=");
   return s.substr(len,s.size()-len);
 }
-void onload_async_cb(void *arg, void *data, int datasize)
+void onload_async_cb(void *arg, void *data, unsigned int *datasize)
 {
+  if (!datasize) return;
 
-  if (datasize==0) {
+  if (*datasize==0) {
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
   }
   std::vector<unsigned char> buffer;
   unsigned char *dataptr = (unsigned char*)data;
-  for(int i=0;i<datasize;i++) { buffer.push_back(dataptr[i]); }
+  for(int i=0;i<*datasize;i++) { buffer.push_back(dataptr[i]); }
   
   char *url = (char*)arg;
   std::string url_str(url);
