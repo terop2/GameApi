@@ -4294,7 +4294,7 @@ public:
 
     if (shader.id!=-1)
       {
-	ev.shader_api.use(sh);
+	//ev.shader_api.use(sh);
 	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
@@ -4546,10 +4546,14 @@ public:
       u_f.id = e.us_fragment_shader;
     if (firsttime)
       {
-	if (u_v.id == 0)
+	if (u_v.id == 0) {
+	  std::cout << "RenderPTex2::V_Empty" << std::endl;
 	  u_v = ev.uber_api.v_empty();
-	if (u_f.id == 0)
+	}
+	if (u_f.id == 0) {
+	  std::cout << "RenderPTex2::F_Empty" << std::endl;
 	  u_f = ev.uber_api.f_empty(false);
+	}
       }
 
 #if 1
@@ -4558,9 +4562,12 @@ public:
 	sh.id = e.sh_texture;
 	if (firsttime)
 	  {
-	    if (e.us_vertex_shader==-1)
+	    if (e.us_vertex_shader==-1) {	
+	      std::cout << "RenderPTex2::V_Texture" << std::endl;
 	      u_v = ev.uber_api.v_texture(u_v);
+	    }
 	    if (e.us_fragment_shader==-1)
+	      std::cout << "RenderPTex2::F_Texture" << std::endl;
 	      u_f = ev.uber_api.f_texture(u_f);
 	  }
 	if (ev.polygon_api.is_array_texture(va))
@@ -4568,10 +4575,14 @@ public:
 	    sh.id = e.sh_array_texture;
 	      if (firsttime)
 	      {
-		if (e.us_vertex_shader==-1)
+		if (e.us_vertex_shader==-1) {
+		  std::cout << "RenderPTex2::V_Texture_Arr" << std::endl;
 		  u_v = ev.uber_api.v_texture_arr(u_v);
-		if (e.us_fragment_shader==-1)
+		}
+		if (e.us_fragment_shader==-1) {
+		  std::cout << "RenderPTex2::F_Texture_ARr" << std::endl;
 		  u_f = ev.uber_api.f_texture_arr(u_f);
+		}
 	      }
 	  }
       }
@@ -4582,12 +4593,16 @@ public:
 	  {
 	    if (e.us_vertex_shader==-1)
 	      {
+	      std::cout << "RenderPTex2::V_Colour" << std::endl;
 		u_v = ev.uber_api.v_colour(u_v);
+	      std::cout << "RenderPTex2::V_Light" << std::endl;
 		u_v = ev.uber_api.v_light(u_v);
 	      }
 	    if (e.us_fragment_shader==-1)
 	      {
+	      std::cout << "RenderPTex2::F_Colour" << std::endl;
 		u_f = ev.uber_api.f_colour(u_f);
+	      std::cout << "RenderPTex2::F_Light" << std::endl;
 		u_f = ev.uber_api.f_light(u_f);
 	      }
 	  }
@@ -4602,12 +4617,14 @@ public:
 	fragment.id = u_f.id; //e.us_fragment_shader;
 	if (e.sfo_id==-1)
 	  {
+	      std::cout << "RenderPTex2::Shadder" << std::endl;
 	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions);
 	  }
 	else
 	  {
 	    GameApi::SFO sfo;
 	    sfo.id = e.sfo_id;
+	      std::cout << "RenderPTex2::Shadder" << std::endl;
 	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
 	  }
 	ev.mainloop_api.init_3d(shader);
@@ -5010,34 +5027,40 @@ public:
   TextureManyShaderML(GameApi::EveryApi &ev, MainLoopItem *next, float mix) : ev(ev), next(next),mix(mix) 
   {
     firsttime = true;
+    sh.id=-1;
   }
   void handle_event(MainLoopEvent &e)
   {
+    next->handle_event(e);
   }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
-    if (firsttime) {
+    if (sh.id==-1) {
       firsttime = false;
     GameApi::US vertex;
     vertex.id = ee.us_vertex_shader;
     if (vertex.id==-1) { 
+      std::cout << "ManyTexture::V_Empty" << std::endl;
       GameApi::US a0 = ev.uber_api.v_empty();
       //GameApi::US a1 = ev.uber_api.v_colour(a0);
       ee.us_vertex_shader = a0.id;
     }
     vertex.id = ee.us_vertex_shader;
+      std::cout << "ManyTexture::V_ManyTexture" << std::endl;
     GameApi::US a2 = ev.uber_api.v_manytexture(vertex);
     ee.us_vertex_shader = a2.id;
 
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
+      std::cout << "ManyTexture::F_Empty" << std::endl;
       GameApi::US a0 = ev.uber_api.f_empty(false);
       //GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a0.id;
     }
     fragment.id = ee.us_fragment_shader;
+      std::cout << "ManyTexture::F_ManyTexture" << std::endl;
     GameApi::US a2f = ev.uber_api.f_manytexture(fragment);
     ee.us_fragment_shader = a2f.id;
     }
@@ -5054,7 +5077,7 @@ public:
     next->execute(ee);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return next->shader_id(); }
+  int shader_id() { if (sh.id!=-1) return sh.id; else return next->shader_id(); }
 
 private:
   GameApi::EveryApi &ev;
@@ -6095,6 +6118,115 @@ private:
 };
 
 
+class ShadowShaderML : public MainLoopItem
+{
+public:
+  ShadowShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, int tex_id, Point pos, unsigned int dark_color, float mix) : env(env), ev(ev), next(next), tex_id(tex_id), pos(pos), dark_color(dark_color), mix(mix) 
+  { 
+    firsttime = true;
+    sh.id = -1;
+  }
+  int shader_id() { if (sh.id != -1) return sh.id; return next->shader_id(); 
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+     if (sh.id==-1)
+      {
+	firsttime = false;
+#if 1
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      std::cout << "Shadow::V_Empty" << std::endl;
+
+      GameApi::US a0 = ev.uber_api.v_empty();
+      std::cout << "Shadow::V_Colour" << std::endl;
+      GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a1.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+      std::cout << "Shadow::V_Shadow" << std::endl;
+    vertex = ev.uber_api.v_shadow(vertex);
+    //GameApi::US a2 = ev.uber_api.v_passall(a4v);
+    ee.us_vertex_shader = vertex.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      std::cout << "Shadow::F_Empty" << std::endl;
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      std::cout << "Shadow::F_Colour" << std::endl;
+      GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a1.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+      std::cout << "Shadow::F_Shadow" << std::endl;
+    fragment = ev.uber_api.f_shadow(fragment);
+    ee.us_fragment_shader = fragment.id;
+#endif
+      }
+
+    int sh_id = next->shader_id();
+    sh.id = sh_id;
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	ev.shader_api.use(sh);
+
+	ev.shader_api.set_var(sh, "color_mix2", mix);
+	ev.shader_api.set_var(sh, "shadow_tex", float(tex_id));
+	ev.shader_api.set_var(sh, "shadow_center", pos.x, pos.y, pos.z); 
+	Color c(dark_color);
+	ev.shader_api.set_var(sh, "shadow_dark", c.r/255.0,c.g/255.0,c.b/255.0,c.alpha/255.0);
+	//ev.shader_api.set_var(sh, "light_dir", light_dir.dx, light_dir.dy, light_dir.dz);
+	//ev.shader_api.set_var(sh, "level1_color",
+	//			      ((ambient&0xff0000)>>16)/255.0,
+	//			      ((ambient&0xff00)>>8)/255.0,
+	//			      ((ambient&0xff))/255.0,
+	//			      ((ambient&0xff000000)>>24)/255.0);
+	//ev.shader_api.set_var(sh, "level2_color",
+	//			      ((highlight&0xff0000)>>16)/255.0,
+	//			  ((highlight&0xff00)>>8)/255.0,
+	//			      ((highlight&0xff))/255.0,
+	//			  ((highlight&0xff000000)>>24)/255.0);
+	//ev.shader_api.set_var(sh, "hilight", pow);
+      }
+
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	if (sh.id!=-1) {
+	  ev.shader_api.set_var(sh, "in_MV", m);
+	  ev.shader_api.set_var(sh, "in_T", m1);
+	  ev.shader_api.set_var(sh, "in_N", m2);
+	  ev.shader_api.set_var(sh, "time", e.time);
+	  ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+	  ev.shader_api.use(sh);
+	}
+    next->execute(ee);
+    if (sh.id!=-1) {
+      ev.shader_api.unuse(sh);
+    }
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  GameApi::SH sh;
+  bool firsttime;
+  int tex_id;
+  Point pos;
+  unsigned int dark_color;
+  float mix;
+};
+
+
 
 extern std::vector<float> dyn_points_global_x;
 extern std::vector<float> dyn_points_global_y;
@@ -6285,6 +6417,11 @@ EXPORT GameApi::ML GameApi::PolygonApi::fog_shader(EveryApi &ev, ML mainloop, fl
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new FogShaderML(e,ev,item, fog_dist, dark_color, light_color));
+}
+EXPORT GameApi::ML GameApi::PolygonApi::shadow_shader(EveryApi &ev, ML mainloop, int tex_num, float p_x, float p_y, float p_z, unsigned int dark_color, float mix)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new ShadowShaderML(e,ev,item,tex_num,Point(p_x,p_y,p_z), dark_color,mix));
 }
 
 EXPORT GameApi::ML GameApi::PolygonApi::dyn_lights_shader(EveryApi &ev, ML mainloop, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point)
@@ -10699,6 +10836,8 @@ public:
   virtual int SizeY() const { return ref.height; }
   virtual Color Map(int x, int y) const
   {
+    if (x<0||x>=ref.width) return Color(0);
+    if (y<0||y>=ref.height) return Color(0);
     unsigned int c = ref.buffer[x+y*ref.ydelta];
     return Color(c);
   }
@@ -11091,6 +11230,112 @@ GameApi::ML GameApi::PolygonApi::anim_bind(EveryApi &ev, ML next, MA anim, MT ma
     }
   ML ml = choose_time(next, vec2, delta_time);
   return ml;
+}
+
+class ShadowMap : public ForwardFaceCollection
+{
+public:
+  ShadowMap(FaceCollection *next, Point pos,int sx, int sy) : ForwardFaceCollection(*next), next(next), pos(pos),sx(sx),sy(sy) {}
+  virtual void Prepare() { next->Prepare(); }
+  virtual int NumFaces() const { return next->NumFaces(); }
+  virtual int NumPoints(int face) const { return next->NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const
+  {
+    Point p = next->FacePoint(face,point);
+    return calc(p);
+  }
+  Point calc(Point p) const {
+    p-=pos;
+    //p.x=-p.x;
+    //p.y=-p.y;
+    //p.z=-p.z;
+    //std::swap(p.x,p.y);
+    float r = sqrt(p.x*p.x+p.y*p.y+p.z*p.z);
+    float alfa = acos(p.z/r);
+    float beta = atan2(p.y,p.x);
+    beta+=3.14159;
+    alfa/=3.14159;
+    beta/=3.14159*2.0;
+    alfa*=2.0*512.0;
+    beta*=2.0*512.0;
+    alfa-=512.0;
+    beta-=512.0;
+    return Point(alfa,beta,0.0);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return next->PointNormal(face,point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return next->Attrib(face,point,id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return next->AttribI(face,point,id);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return next->Color(face,point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return next->TexCoord(face,point);
+  }
+  virtual float TexCoord3(int face, int point) const { return next->TexCoord3(face,point); }
+
+private:
+  FaceCollection *next;
+  Point pos;
+  int sx, sy;
+};
+
+GameApi::BM GameApi::PolygonApi::shadow_map(EveryApi &ev, P p, float p_x, float p_y, float p_z, int sx, int sy)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  FaceCollection *coll2 = new ShadowMap(coll, Point(p_x,p_y,p_z), sx,sy);
+  GameApi::P p2 = add_polygon2(e, coll2, 1);
+
+  SH I2=ev.shader_api.shader_choice(ev,0);
+  BM I3=ev.polygon_api.renderpolytobitmap(ev,p2,I2,0,0,0,sx,sy);
+  return I3;
+}
+
+class AddMeshTexture : public ForwardFaceCollection
+{
+public:
+  AddMeshTexture(FaceCollection *coll, Bitmap<::Color> *bm) : ForwardFaceCollection(*coll), coll(coll), bm(bm), bbm(*bm) { 
+    buf = BufferRef::NewBuffer(1,1);
+  }
+  
+  void Prepare() {
+    coll->Prepare();
+    bm->Prepare();
+    bbm.Gen();
+    buf = bbm.Buffer();
+  }
+  virtual int NumTextures() const { return coll->NumTextures()+1; }
+  virtual void GenTexture(int num) { 
+  }
+  virtual BufferRef TextureBuf(int num) const { if (num<coll->NumTextures()) return coll->TextureBuf(num);
+    
+    return buf;
+  }
+  virtual int FaceTexture(int face) const { return coll->FaceTexture(face); }
+
+private:
+  FaceCollection *coll;
+  Bitmap<::Color> *bm;
+  BufferRef buf;
+  BufferFromBitmap bbm;
+};
+
+GameApi::P GameApi::PolygonApi::texture_add(P p, BM bm)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  return add_polygon2(e, new AddMeshTexture(coll, b2),1);
 }
 
 

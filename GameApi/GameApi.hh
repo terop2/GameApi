@@ -1265,6 +1265,8 @@ public:
   IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
   IMPORT MT phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT MT fog(EveryApi &ev, MT nxt, float fog_dist, unsigned int dark_color, unsigned int light_color);
+  IMPORT MT shadow(EveryApi &ev, P p, std::vector<BM> vec, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2);
+  IMPORT MT shadow2(EveryApi &ev, P p, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2, int numtextures);
   IMPORT MT dyn_lights(EveryApi &ev, MT nxt, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point);
   IMPORT MT snow(EveryApi &ev, MT nxt, unsigned int color1=0xffaaaaaa, unsigned int color2=0xffeeeeee, unsigned int color3=0xffffffff, float mix_val=0.5f);
   IMPORT MT shading1(EveryApi &ev, MT nxt, float mix_val, float mix_val2);
@@ -2113,12 +2115,15 @@ public:
   P poly_index(ARR arr, int idx);
   int poly_size(ARR arr);
   ARR poly_execute(EveryApi &ev, ARR arr, std::string gameapi_script);
-  
+  P texture_add(P p, BM bm);
+
   CG curve_group_from_anim(MA ma, float start_time, float end_time);
   MA meshanim(std::vector<P> vec, float start_time, float end_time);
   P meshanim_mesh(MA ma, float time);
   P meshanim_mesh2(MA ma, float time1, float time2);
   ARR meshanim_anim_meshes(MA ma, float start_time, float delta_time, int count);
+
+  BM shadow_map(EveryApi &ev, P p, float p_x, float p_y, float p_z, int sx, int sy);
   ML choose_time(ML next, std::vector<ML> vec, float delta_time);
   ML anim(EveryApi &ev, ML next, MA anim, float start_time, float delta_time, int count);
   ML anim_bind(EveryApi &ev, ML next, MA anim, MT material, float start_time, float delta_time, int count);
@@ -2407,6 +2412,7 @@ public:
   IMPORT ML sfo_sandbox_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML fog_shader(EveryApi &ev, ML mainloop, float fog_dist, unsigned int dark_color, unsigned int light_color);
+  IMPORT ML shadow_shader(EveryApi &ev, ML mainloop, int tex_num, float p_x, float p_y, float p_z, unsigned int dark_color, float mix);
   IMPORT ML dyn_lights_shader(EveryApi &ev, ML mainloop, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point);
   IMPORT ML shading_shader(EveryApi &ev, ML mainloop,
 			  unsigned int level1,
@@ -3313,6 +3319,7 @@ public:
   US v_custom(US us, std::string v_funcname);
   US v_phong(US us);
   US v_fog(US us);
+  US v_shadow(US us);
   US v_dyn_lights(US us);
   US f_mesh_color(US us, SFO sfo); // this requires v_pass_position() in vertex shader
   US f_sandbox(US us, SFO sfo); // this requires texture coordinates
@@ -3322,6 +3329,7 @@ public:
   US f_specular(US us);
   US f_phong(US us);
   US f_fog(US us);
+  US f_shadow(US us);
   US f_dyn_lights(US us);
   US f_color_from_normals(US us);
   US f_color_from_id(US us, int id); // id = [0..9]

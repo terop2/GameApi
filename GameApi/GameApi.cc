@@ -4846,6 +4846,154 @@ private:
   GameApi::EveryApi &ev;
 };
 
+class ShadowMaterial : public MaterialForward
+{
+public:
+  ShadowMaterial(GameApi::EveryApi &ev, GameApi::P objs, std::vector<GameApi::BM> vec, Point pos, int sx, int sy, unsigned int dark_color, float mix, float mix2) : ev(ev), objs(objs), vec(vec), pos(pos), sx(sx), sy(sy), dark_color(dark_color), mix(mix), mix2(mix2) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::BM bm = ev.polygon_api.shadow_map(ev, objs, pos.x,pos.y,pos.z, sx,sy);
+    GameApi::BM bm2 = bm; //ev.bitmap_api.flip_y(bm);
+    std::vector<GameApi::BM> vec2 = vec;
+    vec2.push_back(bm2);
+    //GameApi::P I10=ev.polygon_api.or_elem(objs,p); 
+    GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,p,vec2);
+
+    GameApi::ML ml2 = ev.polygon_api.shadow_shader(ev, I17, vec2.size()-1, pos.x,pos.y,pos.z,dark_color,mix2);
+    GameApi::ML ml=ev.polygon_api.texture_many_shader(ev, ml2, mix);
+
+    GameApi::ML I17a=ev.polygon_api.render_vertex_array_ml2_texture(ev,objs,vec);
+
+    GameApi::ML mla=ev.polygon_api.texture_many_shader(ev, I17a, mix);
+
+    GameApi::ML arr = ev.mainloop_api.array_ml(std::vector<GameApi::ML>{mla,ml});
+    return arr;
+
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::BM bm = ev.polygon_api.shadow_map(ev, objs, pos.x,pos.y,pos.z, sx,sy);
+    std::vector<GameApi::BM> vec2 = vec;
+    vec2.push_back(bm);
+    //GameApi::P p2 = ev.polygon_api.or_elem(objs,p);
+    GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,p,pts,vec2);
+    GameApi::ML ml=ev.polygon_api.texture_many_shader(ev, I17,mix);
+
+    GameApi::ML I17a=ev.materials_api.render_instanced_ml_texture(ev,objs,pts,vec);
+    GameApi::ML mla=ev.polygon_api.texture_many_shader(ev, I17a,mix);
+
+    GameApi::ML ml2 = ev.polygon_api.shadow_shader(ev, ml, vec2.size()-1, pos.x,pos.y,pos.z,dark_color,mix2);
+    GameApi::ML arr = ev.mainloop_api.array_ml(std::vector<GameApi::ML>{mla,ml2});
+    return arr;
+
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    // TODO
+    GameApi::ML ml;
+    ml.id=0;
+    //ml.id = next->mat_inst2(p.id, pta.id);
+    return ml;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    // TODO
+    GameApi::ML ml;
+    ml.id=0;
+    //ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+    return ml;
+  }
+private:
+  GameApi::EveryApi &ev;
+  GameApi::P objs;
+  std::vector<GameApi::BM> vec;
+  Point pos;
+  int sx, sy;
+  unsigned int dark_color;
+  float mix;
+  float mix2;
+};
+
+class ShadowMaterial2 : public MaterialForward
+{
+public:
+  ShadowMaterial2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P objs, Point pos, int sx, int sy, unsigned int dark_color, float mix, float mix2, int numtextures) : e(e), ev(ev), objs(objs), pos(pos), sx(sx), sy(sy), dark_color(dark_color), mix(mix), mix2(mix2), numtextures(numtextures) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+
+    GameApi::BM bm = ev.polygon_api.shadow_map(ev, objs, pos.x,pos.y,pos.z, sx,sy);
+    GameApi::P p2 = ev.polygon_api.texture_add(p, bm);
+    //GameApi::BM bm2 = bm; //ev.bitmap_api.flip_y(bm);
+    //std::vector<GameApi::BM> vec2 = vec;
+    //vec2.push_back(bm2);
+    //GameApi::P I10=ev.polygon_api.or_elem(objs,p); 
+    GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture2(ev,p2);
+
+    FaceCollection *coll = find_facecoll(e, p2);
+    int count = coll->NumTextures();
+    if (numtextures>count) count=numtextures;
+    GameApi::ML ml2 = ev.polygon_api.shadow_shader(ev, I17, count-1, pos.x,pos.y,pos.z,dark_color,mix2);
+    GameApi::ML ml=ev.polygon_api.texture_many_shader(ev, ml2, mix);
+
+    GameApi::ML I17a=ev.polygon_api.render_vertex_array_ml2_texture2(ev,objs);
+
+    GameApi::ML mla=ev.polygon_api.texture_many_shader(ev, I17a, mix);
+
+    GameApi::ML arr = ev.mainloop_api.array_ml(std::vector<GameApi::ML>{mla,ml});
+    return arr;
+
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::BM bm = ev.polygon_api.shadow_map(ev, objs, pos.x,pos.y,pos.z, sx,sy);
+    GameApi::P p2 = ev.polygon_api.texture_add(p, bm);
+    //std::vector<GameApi::BM> vec2 = vec;
+    //vec2.push_back(bm);
+    //GameApi::P p2 = ev.polygon_api.or_elem(objs,p);
+    GameApi::ML I17=ev.materials_api.render_instanced_ml_texture2(ev,p,pts);
+    GameApi::ML ml=ev.polygon_api.texture_many_shader(ev, I17,mix);
+
+    GameApi::ML I17a=ev.materials_api.render_instanced_ml_texture2(ev,objs,pts);
+    GameApi::ML mla=ev.polygon_api.texture_many_shader(ev, I17a,mix);
+
+    FaceCollection *coll = find_facecoll(e, p2);
+    int count = coll->NumTextures();
+    if (numtextures>count) count=numtextures;
+    GameApi::ML ml2 = ev.polygon_api.shadow_shader(ev, ml, count-1, pos.x,pos.y,pos.z,dark_color,mix2);
+    GameApi::ML arr = ev.mainloop_api.array_ml(std::vector<GameApi::ML>{mla,ml2});
+    return arr;
+
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    // TODO
+    GameApi::ML ml;
+    ml.id=0;
+    //ml.id = next->mat_inst2(p.id, pta.id);
+    return ml;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    // TODO
+    GameApi::ML ml;
+    ml.id=0;
+    //ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+    return ml;
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  GameApi::P objs;
+  std::vector<GameApi::BM> vec;
+  Point pos;
+  int sx, sy;
+  unsigned int dark_color;
+  float mix;
+  float mix2;
+  int numtextures;
+};
+
+
 class FogMaterial : public MaterialForward
 {
 public:
@@ -6132,6 +6280,14 @@ EXPORT GameApi::MT GameApi::MaterialsApi::fog(EveryApi &ev, MT nxt, float fog_di
   Material *mat = find_material(e, nxt);
   return add_material(e, new FogMaterial(ev, mat, fog_dist, dark_color, light_color));
 }
+EXPORT GameApi::MT GameApi::MaterialsApi::shadow(EveryApi &ev, GameApi::P p, std::vector<BM> vec, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2)
+{
+  return add_material(e, new ShadowMaterial(ev, p, vec, Point(p_x,p_y,p_z),sx,sy , dark_color,mix,mix2));
+}
+EXPORT GameApi::MT GameApi::MaterialsApi::shadow2(EveryApi &ev, GameApi::P p, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2, int numtextures)
+{
+  return add_material(e, new ShadowMaterial2(e,ev, p, Point(p_x,p_y,p_z),sx,sy , dark_color,mix,mix2,numtextures));
+}
 EXPORT GameApi::MT GameApi::MaterialsApi::dyn_lights(EveryApi &ev, MT nxt, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point)
 {
   Material *mat = find_material(e, nxt);
@@ -7370,6 +7526,11 @@ GameApi::US GameApi::UberShaderApi::v_fog(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("fog", next,"EX_POSITION IN_POSITION"));
 }
+GameApi::US GameApi::UberShaderApi::v_shadow(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("shadow", next,"EX_POSITION IN_POSITION"));
+}
 GameApi::US GameApi::UberShaderApi::v_dyn_lights(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -7633,6 +7794,11 @@ GameApi::US GameApi::UberShaderApi::f_fog(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("fog", next,"EX_POSITION"));
+}
+GameApi::US GameApi::UberShaderApi::f_shadow(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("shadow", next,"EX_POSITION MANYTEXTURES COLOR_MIX"));
 }
 GameApi::US GameApi::UberShaderApi::f_dyn_lights(US us)
 {

@@ -6611,6 +6611,18 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "MT", "float", "unsigned int", "unsigned int" },
 			 { "ev", "", "300.0", "ff000000", "ffffffff" },
 			 "MT", "materials_api", "fog"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::shadow,
+			 "m_shadow",
+			 { "ev", "p", "vec", "p_x", "p_y", "p_z", "sx", "sy", "dark_color", "mix", "mix2" },
+			 { "EveryApi&", "P", "[BM]", "float", "float", "float", "int", "int", "unsigned int", "float", "float" },
+			 { "ev", "", "", "0.0", "0.0", "0.0", "512", "512", "ff000000", "1.0", "0.5" },
+			 "MT", "materials_api", "shadow"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::shadow2,
+			 "m_shadow2",
+			 { "ev", "p", "p_x", "p_y", "p_z", "sx", "sy", "dark_color", "mix", "mix2", "numtextures" },
+			 { "EveryApi&", "P", "float", "float", "float", "int", "int", "unsigned int", "float", "float", "int" },
+			 { "ev", "", "0.0", "0.0", "0.0", "512", "512", "ff000000", "1.0", "0.5", "0" },
+			 "MT", "materials_api", "shadow"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dyn_lights,
 			 "m_dyn_lights",
 			 { "ev", "nxt", "light_pos_x", "light_pos_y", "light_pos_z", "dist", "dyn_point" },
@@ -7649,6 +7661,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "float", "float", "float", "FB", "float", "float", "float", "float", "int", "int" },
 			 { "0.0", "0.0", "0.0", "", "200.0", "250.0", "0.0", "1.0", "30", "30" },
 			 "P", "polygon_api", "sphere_map"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::shadow_map,
+			 "shadow_map",
+			 { "ev", "p", "p_x", "p_y", "p_z", "sx", "sy" },
+			 { "EveryApi&", "P", "float", "float", "float", "int", "int" },
+			 { "ev", "", "0.0", "0.0", "0.0", "512", "512" },
+			 "BM", "polygon_api", "shadow_map"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::disc,
 			 "disc",
 			 { "ev", "numfaces", "center_x", "center_y", "center_z", "normal_x", "normal_y", "normal_z", "radius" },
