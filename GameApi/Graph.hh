@@ -2947,8 +2947,8 @@ public:
   int SizeY() const { return sy; }
   Color Map(int x, int y) const
   {
-    float area_x = c.SizeX()/sx;
-    float area_y = c.SizeY()/sy;
+    float area_x = float(c.SizeX())/sx;
+    float area_y = float(c.SizeY())/sy;
     float left = x*area_x;
     float top = y*area_y;
     left += 0.5*area_x;

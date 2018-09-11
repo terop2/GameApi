@@ -1,6 +1,21 @@
 
 #include "GameApi_h.hh"
 
+EXPORT GameApi::ShaderApi::ShaderApi(Env &e) : e(e)
+{
+  priv = (void*)new ShaderPriv2;
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  p->file = 0;
+  p->seq = 0;
+  p->count=0;
+}
+EXPORT GameApi::ShaderApi::~ShaderApi()
+{
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  delete p->file;
+  delete p->seq;
+  delete (ShaderPriv2*)priv;
+}
 
 EXPORT void GameApi::ShaderApi::load(std::string filename)
 {
@@ -50,7 +65,8 @@ void GameApi::ShaderApi::link_1(GameApi::SH shader)
 {
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
-  seq->link(shader.id);
+  if (seq)
+    seq->link(shader.id);
 }
 EXPORT GameApi::SH GameApi::ShaderApi::texture_shader()
 {
@@ -261,6 +277,7 @@ EXPORT GameApi::M GameApi::ShaderApi::get_matrix_var(GameApi::SH shader, std::st
 }
 EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float val)
 {
+  if (shader.id==-1) return;
   //std::cout << "Set var float" << std::endl;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
@@ -270,6 +287,7 @@ EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, fl
 
 EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float x, float y, float z)
 {
+  if (shader.id==-1) return;
   //std::cout << "Set var float" << std::endl;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
@@ -280,6 +298,7 @@ EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, fl
 
 EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float x, float y, float z, float k)
 {
+  if (shader.id==-1) return;
   //std::cout << "Set var float" << std::endl;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
@@ -290,6 +309,7 @@ EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, fl
 
 EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, int val)
 {
+  if (shader.id==-1) return;
   //std::cout << "Set var int" << std::endl;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
@@ -299,6 +319,7 @@ EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, in
 
 EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, M matrix)
 {
+  if (shader.id==-1) return;
   Matrix mat = find_matrix(e, matrix);
 
   ShaderPriv2 *p = (ShaderPriv2*)priv;
@@ -308,6 +329,7 @@ EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, M 
 }
 EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, const std::vector<PT> &m)
 {
+  if (shader.id==-1) return;
   std::vector<Point> v;
   int s=m.size();
   for(int i=0;i<s;i++)
@@ -321,6 +343,7 @@ EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, co
 }
 EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, const std::vector<M> &m, int num)
 {
+  if (shader.id==-1) return;
 
   std::vector<float> v;
   int s = m.size();

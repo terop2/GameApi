@@ -37,20 +37,6 @@ EXPORT GameApi::AnimApi::~AnimApi()
 {
   delete (AnimPriv*)priv;
 }
-EXPORT GameApi::ShaderApi::ShaderApi(Env &e) : e(e)
-{
-  priv = (void*)new ShaderPriv2;
-  ShaderPriv2 *p = (ShaderPriv2*)priv;
-  p->file = 0;
-  p->seq = 0;
-}
-EXPORT GameApi::ShaderApi::~ShaderApi()
-{
-  ShaderPriv2 *p = (ShaderPriv2*)priv;
-  delete p->file;
-  delete p->seq;
-  delete (ShaderPriv2*)priv;
-}
 
 class ColorMap : public Function<bool,Color>
 {

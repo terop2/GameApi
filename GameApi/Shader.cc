@@ -494,6 +494,7 @@ ShaderFile::ShaderFile()
 "uniform vec3 light_dir;\n"
 "#endif\n"
 "varying float fog_intensity;\n"
+"varying vec2 shadow_position;\n"
 "#template LIGHTPOS\n"
 "#ifdef LIGHTPOS\n"
 "uniform vec3 lightpos@;\n"
@@ -532,7 +533,7 @@ ShaderFile::ShaderFile()
 "       return i2;\n"
 "    }\n"
 "#ifdef INVERSE\n"
-"#endif"
+"#endif\n"
 "#ifdef IN_NORMAL\n"
 "#ifdef LIGHTDIR\n"
 "#ifdef EX_NORMAL2\n"
@@ -760,6 +761,27 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 "#endif\n"
+
+"uniform vec3 shadow_center;\n"
+"vec4 shadow(vec4 pos)\n"
+"{\n"
+"  vec4 pp = pos;\n"
+"#ifdef INST\n"
+"  pp = pp + vec4(in_InstPos,0.0);\n"
+"#endif\n"
+    //"   pp = in_MV*pp;\n"
+"   pp=pp-vec4(shadow_center,0.0);\n"
+"   float r = sqrt(pp.x*pp.x+pp.y*pp.y+pp.z*pp.z);\n"
+"   float alfa = acos(pp.z/r);\n"
+"   float beta = atan(pp.y,pp.x);\n"
+"   beta+=3.14159;\n"
+"   alfa/=3.14159;\n"
+"   beta/=3.14159*2.0;\n"
+"   shadow_position = vec2(alfa,beta);\n"
+"    return pos;\n"
+"}\n"
+
+
 "#ifdef EX_POSITION\n"
 "#ifdef IN_POSITION\n"
 "uniform float fog_dist;\n"
@@ -942,6 +964,37 @@ ShaderFile::ShaderFile()
     "}\n"
 "#endif\n"
 "#endif\n"
+"#endif\n"
+
+"#ifdef MANYTEXTURES\n"
+"varying vec2 shadow_position;\n"
+"uniform vec4 shadow_dark;\n"
+"uniform float shadow_tex;\n"
+"vec4 shadow(vec4 rgb)\n"
+"{\n"
+"   vec2 f = shadow_position;\n"
+"   vec4 tx = vec4(0.0,0.0,0.0,0.0);\n"
+"   if (shadow_tex<0.7) tx=texture2D(texsampler[0],f); else\n"
+"   if (shadow_tex<1.7) tx=texture2D(texsampler[1],f); else\n"
+"   if (shadow_tex<2.7) tx=texture2D(texsampler[2],f); else\n"
+"   if (shadow_tex<3.7) tx=texture2D(texsampler[3],f); else\n"
+"   if (shadow_tex<4.7) tx=texture2D(texsampler[4],f); else\n"
+"   if (shadow_tex<5.7) tx=texture2D(texsampler[5],f); else\n"
+"   if (shadow_tex<6.7) tx=texture2D(texsampler[6],f); else\n"
+"   if (shadow_tex<7.7) tx=texture2D(texsampler[7],f); else\n"
+"   if (shadow_tex<8.7) tx=texture2D(texsampler[8],f); else\n"
+"   if (shadow_tex<9.7) tx=texture2D(texsampler[9],f); else\n"
+"   if (shadow_tex<10.7) tx=texture2D(texsampler[10],f); else\n"
+"   if (shadow_tex<11.7) tx=texture2D(texsampler[11],f); else\n"
+"   if (shadow_tex<12.7) tx=texture2D(texsampler[12],f); else\n"
+"   if (shadow_tex<13.7) tx=texture2D(texsampler[13],f); else\n"
+"     tx=texture2D(texsampler[14],f);\n"
+"   float alpha = tx.r;\n"
+"   float visibility = 1.0;\n"
+"   if (alpha>0.5) visibility = 0.5;\n"
+"   rgb = shadow_dark+visibility*rgb;\n"
+"   return rgb;\n"
+"}\n"
 "#endif\n"
 "#ifdef EX_POSITION\n"
 "varying float fog_intensity;\n"
@@ -1437,6 +1490,7 @@ ShaderFile::ShaderFile()
 "uniform vec3 bone_pos[50];\n"
 "#endif\n"
 "out float fog_intensity;\n"
+"out vec2 shadow_position;\n"
     //"flat out vec4 ex_FlatColor;\n"
 "//M:\n"
 "//B:\n"
@@ -1464,6 +1518,27 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 "#endif\n"
+
+
+"uniform vec3 shadow_center;\n"
+"vec4 shadow(vec4 pos)\n"
+"{\n"
+"  vec4 pp = pos;\n"
+"#ifdef INST\n"
+"  pp = pp + vec4(in_InstPos,0.0);\n"
+"#endif\n"
+    //"   pp = in_MV*pp;\n"
+"   pp=pp-vec4(shadow_center,0.0);\n"
+"   float r = sqrt(pp.x*pp.x+pp.y*pp.y+pp.z*pp.z);\n"
+"   float alfa = acos(pp.z/r);\n"
+"   float beta = atan(pp.y,pp.x);\n"
+"   beta+=3.14159;\n"
+"   alfa/=3.14159;\n"
+"   beta/=3.14159*2.0;\n"
+"   shadow_position = vec2(alfa,beta);\n"
+"    return pos;\n"
+"}\n"
+
     "#ifdef EX_POSITION\n"
     "#ifdef IN_POSITION\n"
 
@@ -1801,7 +1876,7 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "uniform float time;\n"
 "#ifdef MANYTEXTURES\n"
-"uniform sampler2D texsampler[64];\n"
+"uniform sampler2D texsampler[15];\n"
 "#endif\n"
 "#ifdef CUBEMAPTEXTURES\n"
 "uniform samplerCube cubesampler;\n"
@@ -2099,6 +2174,39 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 "#endif\n"
+
+"#ifdef MANYTEXTURES\n"
+"in vec2 shadow_position;\n"
+"uniform vec4 shadow_dark;\n"
+"uniform float shadow_tex;\n"
+"vec4 shadow(vec4 rgb)\n"
+"{\n"
+"   vec2 f = shadow_position;\n"
+"   vec4 tx = vec4(0.0,0.0,0.0,0.0);\n"
+"   if (shadow_tex<0.7) tx=texture2D(texsampler[0],f); else\n"
+"   if (shadow_tex<1.7) tx=texture2D(texsampler[1],f); else\n"
+"   if (shadow_tex<2.7) tx=texture2D(texsampler[2],f); else\n"
+"   if (shadow_tex<3.7) tx=texture2D(texsampler[3],f); else\n"
+"   if (shadow_tex<4.7) tx=texture2D(texsampler[4],f); else\n"
+"   if (shadow_tex<5.7) tx=texture2D(texsampler[5],f); else\n"
+"   if (shadow_tex<6.7) tx=texture2D(texsampler[6],f); else\n"
+"   if (shadow_tex<7.7) tx=texture2D(texsampler[7],f); else\n"
+"   if (shadow_tex<8.7) tx=texture2D(texsampler[8],f); else\n"
+"   if (shadow_tex<9.7) tx=texture2D(texsampler[9],f); else\n"
+"   if (shadow_tex<10.7) tx=texture2D(texsampler[10],f); else\n"
+"   if (shadow_tex<11.7) tx=texture2D(texsampler[11],f); else\n"
+"   if (shadow_tex<12.7) tx=texture2D(texsampler[12],f); else\n"
+"   if (shadow_tex<13.7) tx=texture2D(texsampler[13],f); else\n"
+"     tx=texture2D(texsampler[14],f);\n"
+"   float alpha = tx.r;\n"
+"   float visibility = 1.0;\n"
+"   if (alpha>0.5) visibility = 0.5;\n"
+"   rgb = shadow_dark+visibility*rgb;\n"
+"   return rgb;\n"
+"}\n"
+"#endif\n"
+
+"#ifdef EX_POSITION\n"
 "in float fog_intensity;\n"
 "uniform vec4 fog_dark;\n"
 "uniform vec4 fog_light;\n"
@@ -2108,7 +2216,7 @@ ShaderFile::ShaderFile()
     //"   f = 1.0/exp(f*0.5);\n"
 "   return max(rgb,mix(fog_dark,fog_light,1.0-f));\n"
 "}\n"
-
+"#endif\n"
     "#ifdef EX_POSITION\n"
     	"uniform vec3 dyn_light_pos;\n"
          "uniform float dyn_light_dist;\n"
@@ -2653,7 +2761,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod, vertex_c, v_defines, false,v_shader);
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -2670,7 +2778,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       //std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader);
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);
@@ -2701,15 +2809,24 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
 }
 void ShaderSeq::link(int i)
 {
-  progs[i]->link();
+  if (progs[i])
+    progs[i]->link();
+  else
+    std::cout << "Error: progs[i] in ShaderSeq::link is 0" << std::endl;
 }
 void ShaderSeq::use(int i)
 {
-  progs[i]->use();
+  if (progs[i])
+    progs[i]->use();
+  else
+    std::cout << "Error: progs[i] in ShaderSeq::use is 0" << std::endl;
 }
 void ShaderSeq::unuse(int i)
 {
-  progs[i]->unuse();
+  if (progs[i])
+    progs[i]->unuse();
+  else
+    std::cout << "Error: progs[i] in ShaderSeq::unuse is 0" << std::endl;
 }
 Program *ShaderSeq::prog(int i)
 {
