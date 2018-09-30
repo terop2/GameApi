@@ -1538,3 +1538,20 @@ void SaveImage(BufferRef ref, std::string filename)
   ctx.stream = 0;
 }
 
+SDL_Window *sdl_framebuffer_window = 0;
+SDL_Surface *sdl_framebuffer = 0;
+
+SDL_Surface *init_sdl_surface_framebuffer(int scr_x, int scr_y)
+{
+#ifdef SDL2_USED
+  sdl_framebuffer_window = SDL_CreateWindow("Framebuffer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scr_x, scr_y, SDL_WINDOW_SHOWN);
+  sdl_framebuffer = SDL_GetWindowSurface(sdl_framebuffer_window);
+#endif
+  return sdl_framebuffer;
+}
+
+SDL_Surface *init_iot_surface_framebuffer(int scr_x, int scr_y)
+{
+  // TODO
+  // sdl_framebuffer = ... ;
+}

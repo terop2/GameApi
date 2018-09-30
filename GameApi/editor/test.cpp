@@ -1408,11 +1408,14 @@ void iter(void *arg)
 		  case 18:
 		    name = env->gui->blockerapi_functions_item_label(sel2-1);
 		    break;
-
+		  case 19:
+		    name = env->gui->framebuffermoduleapi_functions_item_label(sel2-1);
+		    break;
+		    
 		  default:
 		    {
 		      std::cout << "SEL: " << sel << std::endl;
-		      DllData &d = env->dlls[sel-19];
+		      DllData &d = env->dlls[sel-20];
 		      std::vector<Item*> funcs = (*d.functions)();
 		      Item *item = funcs[sel2-1];
 		      name = item->Name();
@@ -1815,7 +1818,9 @@ int main(int argc, char *argv[]) {
       items.push_back(gui.polygondistapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.waveformapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.blockerapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.framebuffermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
 
+      
 #ifdef WINDOWS
       int s = env.dlls.size();
       for(int ii=0;ii<s;ii++)

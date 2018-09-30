@@ -607,6 +607,8 @@ struct EnvImpl
   std::vector<InputForMoving*> move_input;
   std::vector<CurveGroup*> curve_group;
   std::vector<MeshAnim*> mesh_anim;
+  std::vector<FrameBufferLoop*> frame_loop;
+  std::vector<FrameBuffer*> frame_buffer;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -914,6 +916,8 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::FBU add_framebuffer(GameApi::Env &e, FrameBuffer *buf);
+GameApi::FML add_framemainloop(GameApi::Env &e, FrameBufferLoop *loop);
 GameApi::MA add_mesh_anim(GameApi::Env &e, MeshAnim *ma);
 GameApi::CG add_curve_group(GameApi::Env &e, CurveGroup *cg);
 GameApi::INP add_move_input(GameApi::Env &e, InputForMoving *im);
@@ -1046,6 +1050,8 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+FrameBuffer *find_framebuffer(GameApi::Env &e, GameApi::FBU fb);
+FrameBufferLoop *find_framemainloop(GameApi::Env &e, GameApi::FML fb);
 MeshAnim *find_mesh_anim(GameApi::Env &e, GameApi::MA ma);
 CurveGroup *find_curve_group(GameApi::Env &e, GameApi::CG cg);
 InputForMoving *find_move_input(GameApi::Env &e, GameApi::INP im);

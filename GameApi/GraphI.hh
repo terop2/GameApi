@@ -539,6 +539,70 @@ public:
   }
 };
 
+enum FrameBufferFormat
+  {
+    F_Mono1,
+    F_Mono8,
+    F_RGB565,
+    F_RGB888,
+    F_RGBA8888
+  };
+enum DrawBufferFormat
+  {
+    D_Mono1,
+    D_RGBA8888
+  };
+
+struct FrameLoopEvent
+{
+  int type;
+  int ch;
+  Point cursor_pos;
+  int button;
+};
+
+class SourceBitmap;
+
+class FrameBuffer
+{
+public:
+  virtual void Prepare()=0;
+  virtual void handle_event(FrameLoopEvent &e)=0;
+  virtual void frame()=0;
+  virtual void *Buffer() const=0;
+  virtual int Width() const=0;
+  virtual int Height() const =0;
+  virtual int Depth() const =0;
+  virtual FrameBufferFormat format() const=0;
+
+  virtual void draw_sprite(SourceBitmap *bm, int x, int y) =0;
+};
+
+
+struct DrawLoopEnv
+{
+  DrawBufferFormat format;
+  //void *drawbuffer;
+  //int drawbuffer_width;
+  //int drawbuffer_height;
+  //int drawbuffer_depth;
+  FrameBuffer *drawbuffer;
+
+  float time = 0.0;
+  float delta_time = 0.0;
+};
+
+
+
+class FrameBufferLoop
+{
+public:
+  virtual void Prepare()=0;
+  virtual void handle_event(FrameLoopEvent &e)=0;
+  virtual void frame(DrawLoopEnv &e)=0;
+};
+
+
 class ExprNode
 {
 public:
@@ -630,6 +694,7 @@ class Movement
 public:
   virtual void event(MainLoopEvent &e)=0;
   virtual void frame(MainLoopEnv &e)=0;
+  virtual void draw_frame(DrawLoopEnv &e)=0;
 
   virtual void set_matrix(Matrix m)=0;
   virtual Matrix get_whole_matrix(float time, float delta_time) const=0;
@@ -1168,5 +1233,7 @@ public:
   virtual float TexCoord3(int face, int point, float time) const=0;
 
 };
+
+
 
 #endif
