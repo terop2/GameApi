@@ -4274,6 +4274,8 @@ MACRO(GameApi::IBM)
 MACRO(GameApi::INP)
 MACRO(GameApi::MA)
 MACRO(GameApi::CG)
+MACRO(GameApi::FML)
+MACRO(GameApi::FBU)
 #undef MACRO
 
 
@@ -6294,6 +6296,7 @@ std::vector<GameApiItem*> fontapi_functions()
 std::vector<GameApiItem*> moveapi_functions();
 std::vector<GameApiItem*> polygonapi_functions();
 std::vector<GameApiItem*> shadermoduleapi_functions();
+std::vector<GameApiItem*> framebuffermoduleapi_functions();
 
 #ifdef SECOND_PART
 std::vector<GameApiItem*> moveapi_functions()
@@ -8182,6 +8185,29 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 "SH", "shader_api", "shader_choice"));
   return vec;
 }
+std::vector<GameApiItem*> framebuffermoduleapi_functions()
+{
+  std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_sprite_draw,
+			 "fr_sprite_draw",
+			 { "bm", "move", "x", "y", "fmt", "start_time" },
+			 { "BM", "MN", "int", "int", "int", "float" },
+			 { "", "", "0", "0", "1", "0.0" },
+			 "FML", "low_frame_api", "low_sprite_draw"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_framebuffer,
+			 "fr_framebuffer",
+			 { "mainloop", "format", "width", "height", "depth" },
+			 { "FML", "int", "int", "int", "int" },
+			 { "", "4", "800", "600", "0" },
+			 "FBU", "low_frame_api", "low_framebuffer"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_framebuffer_run,
+			 "fr_run",
+			 { "ev", "buffer", "mode", "scr_x", "scr_y" },
+			 { "EveryApi&", "FBU", "int", "int", "int" },
+			 { "ev", "", "0", "800", "600" },
+			 "RUN", "low_frame_api", "low_framebuffer_run"));
+  return vec;
+}
 std::vector<GameApiItem*> shadermoduleapi_functions()
 {
   std::vector<GameApiItem*> vec;
@@ -9669,7 +9695,8 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> vi = polydistfield_functions();
   std::vector<GameApiItem*> vj = waveform_functions();
   std::vector<GameApiItem*> vk = blocker_functions();
-
+  std::vector<GameApiItem*> vl = framebuffermoduleapi_functions();
+  
   std::vector<GameApiItem*> a1 = append_vectors(v1,v2);
   std::vector<GameApiItem*> a2 = append_vectors(v3,v4);
   std::vector<GameApiItem*> a3 = append_vectors(a1,a2);
@@ -9689,7 +9716,8 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> ah = append_vectors(ag, vi);
   std::vector<GameApiItem*> ai = append_vectors(ah, vj);
   std::vector<GameApiItem*> aj = append_vectors(ai, vk);
-  return aj;
+  std::vector<GameApiItem*> ak = append_vectors(aj, vl);
+  return ak;
 }
 EXPORT std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)
 {
@@ -9732,6 +9760,13 @@ EXPORT std::string GameApi::GuiApi::fontapi_functions_item_label(int i)
 EXPORT std::string GameApi::GuiApi::shadermoduleapi_functions_item_label(int i)
 {
   std::vector<GameApiItem*> funcs = shadermoduleapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+EXPORT std::string GameApi::GuiApi::framebuffermoduleapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = framebuffermoduleapi_functions();
   GameApiItem *item = funcs[i];
   std::string name = item->Name(0);
   return name;
@@ -9930,6 +9965,10 @@ EXPORT GameApi::W GameApi::GuiApi::colorvolumeapi_functions_list_item(FtA atlas1
 EXPORT GameApi::W GameApi::GuiApi::shadermoduleapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {
   return functions_widget(*this, "ShaderApi", shadermoduleapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+}
+EXPORT GameApi::W GameApi::GuiApi::framebuffermoduleapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
+{
+  return functions_widget(*this, "FrameBufferApi", framebuffermoduleapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
 EXPORT GameApi::W GameApi::GuiApi::linesapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {

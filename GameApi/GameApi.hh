@@ -32,6 +32,8 @@ using std::placeholders::_9;
 #undef rad2
 
 
+  struct FBU { int id; };
+  struct FML { int id; };
   struct CG { int id; };
   struct INP { int id; };
   struct IBM { int id; };
@@ -1644,6 +1646,7 @@ public:
   IMPORT W polygonapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   IMPORT W polygondistapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   IMPORT W shadermoduleapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W framebuffermoduleapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   IMPORT W linesapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   IMPORT W pointsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   IMPORT W pointapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
@@ -1667,6 +1670,7 @@ public:
   IMPORT std::string polygonapi_functions_item_label(int i);
   IMPORT std::string polygondistapi_functions_item_label(int i);
   IMPORT std::string shadermoduleapi_functions_item_label(int i);
+  IMPORT std::string framebuffermoduleapi_functions_item_label(int i);
   IMPORT std::string linesapi_functions_item_label(int i);
   IMPORT std::string pointsapi_functions_item_label(int i);
   IMPORT std::string pointapi_functions_item_label(int i);
@@ -3412,6 +3416,19 @@ private:
 };
 #endif
 
+class LowFrameBufferApi
+{
+public:
+  LowFrameBufferApi(Env &e) : e(e) { }
+  RUN low_framebuffer_run(EveryApi &ev, FBU buffer, int mode, int scr_x, int scr_y);
+  FBU low_framebuffer(FML mainloop, int format, int width, int height, int depth);
+  FML low_sprite_draw(BM bm, MN mn, int x, int y, int fmt, float start_time);
+private:
+  LowFrameBufferApi(const LowFrameBufferApi &);
+  void operator=(const LowFrameBufferApi&);
+  Env &e;
+};
+
 #ifdef F_FRAMEBUFFER_API
 class FrameBufferApi
 {
@@ -3502,7 +3519,7 @@ struct EveryApi
 {
 	EveryApi(Env &e)
 	  : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-	    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e), blocker_api(e), vertex_anim_api(e), newplane_api(e), surface_api(e),
+	    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e), blocker_api(e), vertex_anim_api(e), newplane_api(e), surface_api(e), low_frame_api(e),
 
 	    env(e)
   { }
@@ -3564,6 +3581,7 @@ struct EveryApi
   VertexAnimApi vertex_anim_api;
   NewPlaneApi newplane_api;
   SurfaceApi surface_api;
+  LowFrameBufferApi low_frame_api;
 private:
   Env &env;
   EveryApi(const EveryApi&);

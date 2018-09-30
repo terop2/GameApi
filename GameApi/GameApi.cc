@@ -1,4 +1,4 @@
-        
+       
 #define SDL2_USED  
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
@@ -12,7 +12,9 @@
 #include "GameApi_h.hh"
 #include "FreeType2.hh"
 
-#if 0
+#include <cstring>
+
+#if 01
 void *operator new( std::size_t count)
 {
   static int counter = 0;
@@ -407,6 +409,25 @@ GameApi::PN add_polynomial(GameApi::Env &e, std::vector<float> *pn)
   return im;
 
 }
+
+GameApi::FBU add_framebuffer(GameApi::Env &e, FrameBuffer *buf)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->frame_buffer.push_back(buf);
+  GameApi::FBU im;
+  im.id = env->frame_buffer.size()-1;
+  return im;
+
+}
+GameApi::FML add_framemainloop(GameApi::Env &e, FrameBufferLoop *loop)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->frame_loop.push_back(loop);
+  GameApi::FML im;
+  im.id = env->frame_loop.size()-1;
+  return im;
+}
+
 
 GameApi::DS add_disk_store(GameApi::Env &e, DiskStore *ds)
 {
@@ -1353,6 +1374,18 @@ public:
 private:
   int id;
 };
+
+FrameBuffer *find_framebuffer(GameApi::Env &e, GameApi::FBU fb)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->frame_buffer[fb.id];
+}
+
+FrameBufferLoop *find_framemainloop(GameApi::Env &e, GameApi::FML ml)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->frame_loop[ml.id];
+}
 
 MeshAnim *find_mesh_anim(GameApi::Env &e, GameApi::MA ma)
 {
@@ -2937,6 +2970,7 @@ public:
   EmptyMovement() : m_m(Matrix::Identity()) { }
   virtual void event(MainLoopEvent &e) { }
   virtual void frame(MainLoopEnv &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
 
   void set_matrix(Matrix m) { m_m = m; }
   Matrix get_whole_matrix(float time, float delta_time) const { return m_m; }
@@ -2993,6 +3027,7 @@ public:
   LevelMovement(Movement *m) : m(m) { }
   virtual void event(MainLoopEvent &e) { m->event(e); }
   virtual void frame(MainLoopEnv &e) { m->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { m->draw_frame(e); }
   void set_matrix(Matrix m) { m_m = m; }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
@@ -3016,6 +3051,7 @@ public:
       dx(dx), dy(dy), dz(dz) { }
   virtual void event(MainLoopEvent &e) { if (next) next->event(e); }
   virtual void frame(MainLoopEnv &e) { if (next) next->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { if (next) next->draw_frame(e); }
 
   void set_matrix(Matrix m) { }
   void set_pos(float ddx, float ddy, float ddz) { dx=ddx; dy=ddy; dz=ddz; }
@@ -3043,6 +3079,7 @@ public:
     : next(next){ }
   virtual void event(MainLoopEvent &e) { if (next) next->event(e); }
   virtual void frame(MainLoopEnv &e) { if (next) next->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { if (next) next->draw_frame(e); }
 
   void set_matrix(Matrix m) { }
   void set_pos(float ddx, float ddy, float ddz) { }
@@ -3081,6 +3118,7 @@ public:
   }
   virtual void event(MainLoopEvent &e) { next->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
   void set_matrix(Matrix m) { }
   void set_pos(float ddx, float ddy, float ddz) { }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -3117,6 +3155,7 @@ public:
   MN_Fetcher(Fetcher<Point> *pf) : pf(pf) {}
   virtual void event(MainLoopEvent &e) { pf->event(e); }
   virtual void frame(MainLoopEnv &e) { pf->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { std::cout << "MN_fetcher not supporting draw_frame" << std::endl; }
   virtual void set_matrix(Matrix m) { }
   virtual Matrix get_whole_matrix(float time, float delta_time) const
   {
@@ -3140,6 +3179,7 @@ public:
       sx(sx), sy(sy), sz(sz) { }
   virtual void event(MainLoopEvent &e) { next->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
   void set_matrix(Matrix m) { }
   void set_scale(float ssx, float ssy, float ssz) { sx=ssx; sy=ssy; sz=ssz; }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -3179,6 +3219,7 @@ public:
       v_x(v_x), v_y(v_y), v_z(v_z), angle(angle) { }
   virtual void event(MainLoopEvent &e) { next->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
 
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -3215,6 +3256,7 @@ public:
   }
   virtual void event(MainLoopEvent &e) { next->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
@@ -3235,6 +3277,7 @@ public:
   AnimEnable(Movement *next, float start_time, float end_time) : next(next), start_time(start_time), end_time(end_time) { }
   virtual void event(MainLoopEvent &e) { next->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
 
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -3254,6 +3297,7 @@ public:
   AnimDisable(Movement *next, float start_time, float end_time) : next(next), start_time(start_time), end_time(end_time) { }
   virtual void event(MainLoopEvent &e) { next->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
 
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -3277,6 +3321,10 @@ public:
   virtual void frame(MainLoopEnv &e) {
     int s = vec.size();
     for(int i=0;i<s;i++) vec[i]->frame(e);
+  }
+  virtual void draw_frame(DrawLoopEnv &e) {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->draw_frame(e);
   }
 
   void set_matrix(Matrix m) { }
@@ -3328,6 +3376,7 @@ public:
   TimeChangeMovement(Movement *nxt, float d_time) : nxt(nxt), d_time(d_time) { }
   virtual void event(MainLoopEvent &e) { nxt->event(e); }
   virtual void frame(MainLoopEnv &e) { nxt->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { nxt->draw_frame(e); }
 
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -3346,6 +3395,7 @@ public:
   MatrixMovement(Movement *next, Matrix m) : next(next), m(m) { }
   virtual void event(MainLoopEvent &e) { next->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
 
   void set_matrix(Matrix mm) { m = mm; }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -3365,6 +3415,7 @@ public:
   }
   virtual void event(MainLoopEvent &e) { next->event(e); event2->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); event2->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); event2->draw_frame(e); }
 
   void set_matrix(Matrix mm) { }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -3428,6 +3479,7 @@ public:
   TimeRepeatMovement(Movement *m, float start_time, float repeat_duration) : m(m), start_time(start_time), repeat_duration(repeat_duration) { }
   virtual void event(MainLoopEvent &e) { m->event(e); }
   virtual void frame(MainLoopEnv &e) { m->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { m->draw_frame(e); }
 
   void set_matrix(Matrix mm) { }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -10841,7 +10893,7 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
   }
   std::vector<unsigned char> buffer;
   unsigned char *dataptr = (unsigned char*)data;
-  for(int i=0;i<datasize;i++) { buffer.push_back(dataptr[i]); }
+  for(unsigned int i=0;i<datasize;i++) { buffer.push_back(dataptr[i]); }
   
   char *url = (char*)arg;
   std::string url_str(url);
@@ -14271,3 +14323,422 @@ GameApi::VX GameApi::VoxelApi::from_implicit(IM i, int sx, int sy, int sz, float
   return add_int_voxel(e, new FromImplicitVoxel(im, sx,sy,sz, start_x, end_x, start_y, end_y, start_z, end_z, value));
 }
 
+
+class SourceBitmap
+{
+public:
+  SourceBitmap(DrawBufferFormat fmt, int depth) : m_data(0), fmt(fmt), m_depth(depth) 
+  {
+  }
+  void set_data(void *data, int width, int height, int ydelta) {
+    m_data = data;
+    m_width=width;
+    m_height=height;
+    m_ydelta=ydelta;
+  }
+public:
+  void *m_data;
+  DrawBufferFormat fmt;
+  int m_width;
+  int m_height;
+  int m_ydelta;
+  int m_depth;
+};
+
+
+class LowFrameBuffer : public FrameBuffer
+{
+public:
+  LowFrameBuffer(FrameBufferLoop *loop, int format, int width, int height, int depth) : loop(loop),m_format(format), width(width), height(height), depth(depth) { firsttime = true;  }
+  virtual void Prepare()
+  {
+    loop->Prepare();
+    // 
+    FrameBufferFormat fmt = (FrameBufferFormat)m_format;
+    switch(fmt) {
+    case FrameBufferFormat::F_Mono1:
+      buffer = new unsigned char[width*height/8];
+      size = width*height/8;
+      break;
+    case FrameBufferFormat::F_Mono8:
+      buffer = new unsigned char[width*height];
+      size = width*height;
+      break;
+    case FrameBufferFormat::F_RGB565:
+      buffer = new unsigned short[width*height];
+      size=width*height*sizeof(unsigned short);
+      break;
+    case FrameBufferFormat::F_RGB888:
+      buffer = new unsigned short[width*height];
+      size=width*height*sizeof(unsigned short);
+      break;
+    case FrameBufferFormat::F_RGBA8888:
+      buffer = new unsigned int[width*height];
+      size=width*height*sizeof(unsigned int);
+      break;
+    }
+    firsttime = true;
+  }
+  virtual void handle_event(FrameLoopEvent &e)
+  {
+    loop->handle_event(e);
+  }
+  virtual void frame()
+  {
+    // clear the buffer
+    std::memset(buffer,0, size);
+    if (firsttime) {
+      auto p2 = std::chrono::system_clock::now();
+      auto dur_in_seconds = std::chrono::duration<double>(std::chrono::duration_cast<std::chrono::milliseconds>(p2.time_since_epoch()));
+      start_time = dur_in_seconds.count();
+      //start_time/=1000.0;
+      start_time_epoch = start_time;
+      firsttime = false;
+    }
+    DrawLoopEnv e;
+    e.format = D_RGBA8888;
+    e.drawbuffer = this;
+    //e.drawbuffer_width = width;
+    //e.drawbuffer_height = height;
+    //e.drawbuffer_depth = depth;
+    auto p3 = std::chrono::system_clock::now();
+    auto dur_in_seconds3 = std::chrono::duration<double>(std::chrono::duration_cast<std::chrono::milliseconds>(p3.time_since_epoch()));
+    double val = dur_in_seconds3.count();  
+    //val/=1000.0;
+    // std::cout << "FTime: " << val << " " << start_time_epoch << std::endl;
+    
+    //std::chrono::time_point p = std::chrono::high_resolution_clock::now();
+    e.time = float(val-start_time_epoch);
+    e.delta_time = float(val-start_time);
+    start_time = val;
+    loop->frame(e);
+
+    // TODO submit to iot platform
+  }
+  virtual void *Buffer() const { return buffer; }
+  virtual int Width() const { return width; }
+  virtual int Height() const { return height; }
+  virtual int Depth() const { return depth; }
+  virtual FrameBufferFormat format() const { return (FrameBufferFormat)m_format; }
+
+  virtual void draw_sprite(SourceBitmap *bm, int pos_x, int pos_y)
+  {
+    int sp_width=bm->m_width;
+    int sp_height = bm->m_height;
+    int sp_ydelta = bm->m_ydelta;
+    void *buf = bm->m_data;
+    switch(m_format) {
+    case FrameBufferFormat::F_Mono1:
+      switch(bm->fmt) {
+      case DrawBufferFormat::D_Mono1:
+	std::cout << "draw_sprite, mono1->mono1 not implemented" << std::endl;
+	break;
+
+      case DrawBufferFormat::D_RGBA8888:
+	std::cout << "draw_sprite, rgba8888->mono1 not implemented" << std::endl;
+	break;
+
+      };
+      break;
+    case FrameBufferFormat::F_Mono8:
+      switch(bm->fmt) {
+      case DrawBufferFormat::D_Mono1:
+	std::cout << "draw_sprite, mono1->mono8 not implemented" << std::endl;
+	break;
+
+      case DrawBufferFormat::D_RGBA8888:
+	std::cout << "draw_sprite, rgba8888->mono8 not implemented" << std::endl;
+	break;
+
+      };
+      break;
+    case FrameBufferFormat::F_RGB565:
+      switch(bm->fmt) {
+      case DrawBufferFormat::D_Mono1:
+	std::cout << "draw_sprite, mono1->rgb565 not implemented" << std::endl;
+	break;
+
+      case DrawBufferFormat::D_RGBA8888:
+	std::cout << "draw_sprite, rgba8888->rgb565 not implemented" << std::endl;
+	break;
+
+      };
+      break;
+    case FrameBufferFormat::F_RGB888:
+      switch(bm->fmt) {
+      case DrawBufferFormat::D_Mono1:
+	std::cout << "draw_sprite, mono1->rgb888 not implemented" << std::endl;
+	break;
+
+      case DrawBufferFormat::D_RGBA8888:
+	std::cout << "draw_sprite, rgba8888->rgb888 not implemented" << std::endl;
+	break;
+      };
+      break;
+    case FrameBufferFormat::F_RGBA8888:
+      switch(bm->fmt) {
+      case DrawBufferFormat::D_Mono1:
+	std::cout << "draw_sprite, mono1->rgba8888 not implemented" << std::endl;
+	break;
+      case DrawBufferFormat::D_RGBA8888:
+	int start_x = 0;
+	int start_y = 0;
+	if (pos_x<0) start_x=-pos_x;
+	if (pos_y<0) start_y=-pos_y;
+	int w = std::min(sp_width, width-pos_x);
+	int h = std::min(sp_height, height-pos_y);
+	for(int y=start_y;y<h;y++)
+	  for(int x=start_x;x<w;x++)
+	    {
+	      //std::cout << "(" << x << "," << y << ") " << buffer << " " << buf << std::endl;
+	      ((unsigned int*)buffer)[pos_x+x+(y+pos_y)*width] = ((unsigned int*)buf)[x+y*sp_ydelta];
+	    }
+	    };
+      break;
+    }
+
+  }
+private:
+  bool firsttime;
+  FrameBufferLoop *loop;
+  int m_format;
+  void *buffer;
+  int size;
+  int width;
+  int height;
+  int depth;
+  double start_time;
+  double start_time_epoch;
+};
+
+GameApi::FBU GameApi::LowFrameBufferApi::low_framebuffer(GameApi::FML ml, int format, int width, int height, int depth)
+{
+  FrameBufferLoop *loop = find_framemainloop(e,ml);
+  return add_framebuffer(e, new LowFrameBuffer(loop, format,width,height,depth));
+}
+
+void CopyFrameToSurface(FrameBuffer *buf, SDL_Surface *surf)
+{
+  SDL_LockSurface(surf);
+  int width = buf->Width();
+  int height = buf->Height();
+  //int depth = buf->Depth();
+  void *buffer = buf->Buffer();
+  FrameBufferFormat f = buf->format();
+  for(int y=0;y<height;y++)
+    for(int x=0;x<width;x++)
+      {
+	// GETPIXEL
+	unsigned int val = 0xffff00ff;
+#if 1
+	switch(f) {
+	case FrameBufferFormat::F_Mono1:
+	  {
+	  int byte = (y*width + x)/8;
+	  int bit = (y*width+x)&0x7;
+	  unsigned char v = *(((unsigned char*)buffer) + byte);
+	  v>>=bit;
+	  v&=1;
+	  val = v?0xff000000:0xffffffff;
+	  //std::cout << "F_Mono1 not supported\n" << std::endl;
+	  break;
+	  }
+	case FrameBufferFormat::F_Mono8:
+	  {
+	  int byte = y*width + x;
+	  unsigned char v = *(((unsigned char*)buffer) + byte);
+	  unsigned int vv = v;
+	  vv <<= 8;
+	  unsigned int vvv = v;
+	  vvv <<= 16;
+	  val = 0xff000000 + v + vv + vvv;
+	  //std::cout << "F_Mono8 not supported\n" << std::endl;
+	  break;
+	  }
+	case FrameBufferFormat::F_RGB565:
+	  //std::cout << "F_RGB565 not supported\n" << std::endl;
+	  {
+	  unsigned short *ptr = ((unsigned short*)buffer) + y*width+x;
+	  unsigned short v = *ptr;
+	  unsigned int r = v&0x001f;
+	  float rv = r/16.0;
+	  rv*=255;
+	  unsigned int g = v&(((4+2+1)+(8+4+2))*0x10);
+	  g>>=5;
+	  float gv = g/32.0;
+	  gv*=255;
+	  unsigned int b = v&(((8+4+2+1)+(8))*(1024));
+	  b>>=11;
+	  float bv = b/16.0;
+	  bv*=255;
+	  unsigned int rr = (unsigned int)rv;
+	  unsigned int gg = (unsigned int)gv;
+	  unsigned int bb = (unsigned int)bv;
+	  rr<<=16;
+	  gg<<=8;
+	  val=0xff000000 + rr+gg+bb;
+	  break;
+	  }
+	case FrameBufferFormat::F_RGB888:
+	  //std::cout << "F_RGB888 not supported\n" << std::endl;
+	  {
+	  unsigned int *b = ((unsigned int*)buffer) + y*width+x;
+	  val = *b;
+	  val |= 0xff000000;
+	  break;
+	  }
+	case FrameBufferFormat::F_RGBA8888:
+	  {
+	  unsigned int *b = ((unsigned int*) buffer) + y*width + x;
+	  val = *b;
+	  break;
+	  }
+	};
+#endif
+	
+	// PUTPIXEL
+	unsigned int *target_pixel = (unsigned int*)(((unsigned char*) surf->pixels) + y*surf->pitch + x*sizeof(*target_pixel));
+	*target_pixel = val;
+      }
+  SDL_UnlockSurface(surf);
+
+}
+
+void clear_sdl_surface(SDL_Surface *surf, int width, int height, unsigned int val)
+{
+#if 0
+  SDL_LockSurface(surf);
+  for(int y=0;y<height;y++)
+    for(int x=0;x<width;x++)
+      {
+	unsigned int *target_pixel = (unsigned int*)(((unsigned char*) surf->pixels) + y*surf->pitch + x*sizeof(*target_pixel));
+	*target_pixel = val;
+      }
+  SDL_UnlockSurface(surf);
+#endif
+}
+extern SDL_Window *sdl_framebuffer_window;
+
+SDL_Surface *init_sdl_surface_framebuffer(int width, int height);
+
+class FBU_run : public Splitter
+{
+public:
+  FBU_run(GameApi::EveryApi &ev, FrameBuffer *buf, int mode, int scr_x, int scr_y) : ev(ev), buf(buf), scr_x(scr_x), scr_y(scr_y) { exit=false;}
+  virtual void Init() {
+    surf = init_sdl_surface_framebuffer(scr_x, scr_y);
+    buf->Prepare();
+  }
+  virtual Splitter* NextState(int code) { return 0; }
+  virtual int Iter() {
+    //std::cout << "FBU_run::Iter" << std::endl;
+    // TODO clear the screen
+    clear_sdl_surface(surf,scr_x,scr_y,0xffffff00);
+    // TODO event loop.
+    // 
+    buf->frame();
+    CopyFrameToSurface(buf, surf);
+    SDL_UpdateWindowSurface(sdl_framebuffer_window);
+
+    GameApi::MainLoopApi::Event e;
+    while((e = ev.mainloop_api.get_event()).last==true)
+      {
+    	if (e.ch==27 && e.type==0x300) { exit=true; }
+     }
+
+    SDL_Delay(16);
+    if (exit) return 0;
+    return -1;
+  }
+  virtual void Destroy()
+  {
+    SDL_FreeSurface(surf);
+    SDL_DestroyWindow(sdl_framebuffer_window);
+    sdl_framebuffer_window = 0;
+  }
+private:
+  GameApi::EveryApi &ev;
+  FrameBuffer *buf;
+  SDL_Surface *surf;
+  int scr_x, scr_y;
+  bool exit;
+};
+
+GameApi::RUN GameApi::LowFrameBufferApi::low_framebuffer_run(EveryApi &ev, GameApi::FBU buf, int mode, int scr_x, int scr_y)
+{
+  FrameBuffer *buf2 = find_framebuffer(e, buf);
+  return add_splitter(e, new FBU_run(ev,buf2,mode,scr_x,scr_y));
+}
+
+
+void BufferRefToSourceBitmap(BufferRef ref, SourceBitmap &target, DrawBufferFormat fmt)
+{
+  unsigned int *buffer = ref.buffer;
+  unsigned int width = ref.width;
+  unsigned int height = ref.height;
+  unsigned int ydelta = ref.ydelta;
+  switch(fmt) {
+  case D_Mono1:
+    std::cout << "D_Mono1 not supported in BufferRefToSourceBitmap" << std::endl;
+    break;
+  case D_RGBA8888:
+    target.set_data(buffer, width, height, ydelta);
+    break;
+  default:
+    std::cout << "Default not supported in BufferRefToSourceBitmap" << std::endl;
+    break;
+  };
+}
+
+BufferRef BitmapToSourceBitmap(Bitmap<Color> &bm, SourceBitmap &target, DrawBufferFormat fmt)
+{
+  BufferFromBitmap buf(bm);
+  buf.Gen();
+  BufferRef buf2 = buf.Buffer();
+  BufferRefToSourceBitmap(buf2, target, fmt);
+  return buf2;
+}
+
+
+class SpriteDraw : public FrameBufferLoop
+{
+public:
+  SpriteDraw(Bitmap<Color> &bm, Movement *move, int x, int y, int fmt, float start_time) : bm(bm), move(move), x(x),y(y), src(fmt?D_RGBA8888:D_Mono1,0), fmt(fmt?D_RGBA8888:D_Mono1), start_time(start_time) { }
+  ~SpriteDraw() { BufferRef::FreeBuffer(buf2); }
+
+  virtual void Prepare()
+  {
+    bm.Prepare();
+    buf2 = BitmapToSourceBitmap(bm,src, fmt);
+  }
+  virtual void handle_event(FrameLoopEvent &e)
+  {
+  }
+  virtual void frame(DrawLoopEnv &e)
+  {
+    move->draw_frame(e);
+    Point p = {float(x),float(y),0.0};
+    //std::cout << "Time: " << e.time << " " << e.delta_time << std::endl;
+    Matrix m = move->get_whole_matrix(e.time*10.0, (e.delta_time*10.0));
+    Point p2 = p*m;
+    //std::cout << "Pos: " << p2 << std::endl;
+    e.drawbuffer->draw_sprite(&src, p2.x,p2.y);
+  }
+private:
+  Bitmap<Color> &bm;
+  Movement *move;
+  int x, y;
+  SourceBitmap src;
+  DrawBufferFormat fmt;
+  float start_time;
+  BufferRef buf2;
+};
+
+GameApi::FML GameApi::LowFrameBufferApi::low_sprite_draw(BM bm, MN mn, int x, int y, int fmt, float start_time)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  Movement *move = find_move(e, mn);
+  return add_framemainloop(e,new SpriteDraw(*b2, move,x,y,fmt,start_time));
+
+}

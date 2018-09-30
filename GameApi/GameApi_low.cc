@@ -821,6 +821,36 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
   void glTranslatef(float,float,float) { }
 
 };
+
+class SDLApi : public SDLLowApi
+{
+  virtual void init() { }
+  virtual void cleanup() {}
+  virtual void SDL_Init(int flags) { ::SDL_Init(flags); }
+  virtual void SDL_GL_SetAttribute(int flag, int val) { ::SDL_GL_SetAttribute((SDL_GLattr)flag,val); }
+  virtual void* SDL_GL_GetProcAddress(char *name) { return ::SDL_GL_GetProcAddress(name); }
+  virtual void SDL_Quit() { ::SDL_Quit(); }
+  virtual void SDL_ConvertSurface(void *surf, void *format, int val){ ::SDL_ConvertSurface((SDL_Surface*)surf,(SDL_PixelFormat*)format,val); }
+  virtual void SDL_FreeSurface(void *surf) { ::SDL_FreeSurface((SDL_Surface*)surf); }
+  virtual void SDL_LockSurface(void *surf) { ::SDL_LockSurface((SDL_Surface*)surf); }
+  virtual void SDL_UnlockSurface(void *surf) { ::SDL_UnlockSurface((SDL_Surface*)surf); }
+  virtual void SDL_ShowCursor(bool b) { ::SDL_ShowCursor(b); }
+  virtual void SDL_PollEvent(void *event) { ::SDL_PollEvent((SDL_Event*)event); }
+  virtual unsigned int SDL_GetTicks() { return ::SDL_GetTicks(); }
+  virtual void SDL_Delay(int ms) { ::SDL_Delay(ms); }
+  virtual void* SDL_CreateWindow(char *title, int x, int y, int width, int height, int flags2) { return ::SDL_CreateWindow(title,x,y,width,height,flags2); }
+  virtual void* SDL_GL_CreateContext(void *window) { return ::SDL_GL_CreateContext((SDL_Window*)window); }
+  //virtual void SDL_GL_SwapBuffers() { ::SDL_GL_SwapBuffers(); }
+  virtual void SDL_GL_SwapWindow(void *window) { ::SDL_GL_SwapWindow((SDL_Window*)window); }
+  virtual void SDL_SetWindowTitle(void *window, char *title) { ::SDL_SetWindowTitle((SDL_Window*)window, title); }
+  virtual void SDL_GetMouseState(int *x, int *y) { ::SDL_GetMouseState(x,y); }
+  virtual void* SDL_GetModState() { static ::SDL_Keymod mod; mod = ::SDL_GetModState(); return &mod; }
+  virtual void* SDL_JoystickOpen(int i) { return ::SDL_JoystickOpen(i); }
+  virtual unsigned int SDL_JoystickGetButton(void*joy, int i) { return ::SDL_JoystickGetButton((SDL_Joystick*)joy,i); }
+  virtual void* SDL_RWFromMem(void *buffer, int size) { return ::SDL_RWFromMem(buffer,size); }
+};
+
+
 LowApi *g_low;
  
 void initialize_low(int flags)
