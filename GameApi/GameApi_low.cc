@@ -822,6 +822,8 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
 
 };
 
+
+
 class SDLApi : public SDLLowApi
 {
   virtual void init() { }
@@ -830,21 +832,49 @@ class SDLApi : public SDLLowApi
   virtual void SDL_GL_SetAttribute(int flag, int val) { ::SDL_GL_SetAttribute((SDL_GLattr)flag,val); }
   virtual void* SDL_GL_GetProcAddress(char *name) { return ::SDL_GL_GetProcAddress(name); }
   virtual void SDL_Quit() { ::SDL_Quit(); }
-  virtual void SDL_ConvertSurface(void *surf, void *format, int val){ ::SDL_ConvertSurface((SDL_Surface*)surf,(SDL_PixelFormat*)format,val); }
-  virtual void SDL_FreeSurface(void *surf) { ::SDL_FreeSurface((SDL_Surface*)surf); }
-  virtual void SDL_LockSurface(void *surf) { ::SDL_LockSurface((SDL_Surface*)surf); }
-  virtual void SDL_UnlockSurface(void *surf) { ::SDL_UnlockSurface((SDL_Surface*)surf); }
+  virtual void SDL_ConvertSurface(Low_SDL_Surface *surf, void *format, int val){ ::SDL_ConvertSurface((SDL_Surface*)surf->ptr,(SDL_PixelFormat*)format,val); }
+  virtual void SDL_FreeSurface(Low_SDL_Surface *surf) { ::SDL_FreeSurface((SDL_Surface*)surf->ptr); }
+  virtual void SDL_LockSurface(Low_SDL_Surface *surf) { ::SDL_LockSurface((SDL_Surface*)surf->ptr); }
+  virtual void SDL_UnlockSurface(Low_SDL_Surface *surf) { ::SDL_UnlockSurface((SDL_Surface*)surf->ptr); }
   virtual void SDL_ShowCursor(bool b) { ::SDL_ShowCursor(b); }
   virtual void SDL_PollEvent(void *event) { ::SDL_PollEvent((SDL_Event*)event); }
   virtual unsigned int SDL_GetTicks() { return ::SDL_GetTicks(); }
   virtual void SDL_Delay(int ms) { ::SDL_Delay(ms); }
-  virtual void* SDL_CreateWindow(char *title, int x, int y, int width, int height, int flags2) { return ::SDL_CreateWindow(title,x,y,width,height,flags2); }
-  virtual void* SDL_GL_CreateContext(void *window) { return ::SDL_GL_CreateContext((SDL_Window*)window); }
+  virtual Low_SDL_Window* SDL_CreateWindow(const char *title, int x, int y, int width, int height, int flags2) { 
+    Low_SDL_Window *w = new Low_SDL_Window;
+    w->ptr = ::SDL_CreateWindow(title,x,y,width,height,flags2);
+    return w;
+  }
+  virtual Low_SDL_GLContext SDL_GL_CreateContext(Low_SDL_Window *window) { 
+    SDL_GLContext ctx = ::SDL_GL_CreateContext((SDL_Window*)window->ptr);
+    return ctx; 
+  }
+  virtual void SDL_UpdateWindowSurface(Low_SDL_Window *window)
+  {
+    ::SDL_UpdateWindowSurface((SDL_Window*)window->ptr);
+  }
+  virtual void SDL_DestroyWindow(Low_SDL_Window *window)
+  {
+    ::SDL_DestroyWindow((SDL_Window*)window->ptr);
+  }
+
+  virtual Low_SDL_Surface *SDL_GetWindowSurface(Low_SDL_Window *win)
+  {
+    SDL_Window *w = (SDL_Window*)win->ptr;
+    SDL_Surface *s = ::SDL_GetWindowSurface(w);
+    Low_SDL_Surface *ss = new Low_SDL_Surface;
+    ss->ptr = s;
+    ss->w = s->w;
+    ss->h = s->h;
+    ss->pixels = s->pixels;
+    ss->pitch = s->pitch;
+    return ss;
+  }
   //virtual void SDL_GL_SwapBuffers() { ::SDL_GL_SwapBuffers(); }
-  virtual void SDL_GL_SwapWindow(void *window) { ::SDL_GL_SwapWindow((SDL_Window*)window); }
-  virtual void SDL_SetWindowTitle(void *window, char *title) { ::SDL_SetWindowTitle((SDL_Window*)window, title); }
+  virtual void SDL_GL_SwapWindow(Low_SDL_Window *window) { ::SDL_GL_SwapWindow((SDL_Window*)window->ptr); }
+  virtual void SDL_SetWindowTitle(Low_SDL_Window *window, const char *title) { ::SDL_SetWindowTitle((SDL_Window*)window->ptr, title); }
   virtual void SDL_GetMouseState(int *x, int *y) { ::SDL_GetMouseState(x,y); }
-  virtual void* SDL_GetModState() { static ::SDL_Keymod mod; mod = ::SDL_GetModState(); return &mod; }
+  virtual unsigned int SDL_GetModState() { return (unsigned int)::SDL_GetModState(); }
   virtual void* SDL_JoystickOpen(int i) { return ::SDL_JoystickOpen(i); }
   virtual unsigned int SDL_JoystickGetButton(void*joy, int i) { return ::SDL_JoystickGetButton((SDL_Joystick*)joy,i); }
   virtual void* SDL_RWFromMem(void *buffer, int size) { return ::SDL_RWFromMem(buffer,size); }
@@ -857,6 +887,7 @@ void initialize_low(int flags)
 {
   LowApi *low = new LowApi;
   low->ogl = new OpenglApi;
+  low->sdl = new SDLApi;
 
   g_low = low;
 }

@@ -8194,17 +8194,23 @@ std::vector<GameApiItem*> framebuffermoduleapi_functions()
 			 { "BM", "MN", "int", "int", "int", "float" },
 			 { "", "", "0", "0", "1", "0.0" },
 			 "FML", "low_frame_api", "low_sprite_draw"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::array_fml,
+			 "array_fml",
+			 { "arr" },
+			 { "[FML]" },
+			 { "" },
+			 "FML", "mainloop_api", "array_fml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_framebuffer,
 			 "fr_framebuffer",
 			 { "mainloop", "format", "width", "height", "depth" },
 			 { "FML", "int", "int", "int", "int" },
-			 { "", "4", "800", "600", "0" },
+			 { "", "4", "128", "144", "0" },
 			 "FBU", "low_frame_api", "low_framebuffer"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_framebuffer_run,
 			 "fr_run",
 			 { "ev", "buffer", "mode", "scr_x", "scr_y" },
 			 { "EveryApi&", "FBU", "int", "int", "int" },
-			 { "ev", "", "0", "800", "600" },
+			 { "ev", "", "0", "128", "144" },
 			 "RUN", "low_frame_api", "low_framebuffer_run"));
   return vec;
 }

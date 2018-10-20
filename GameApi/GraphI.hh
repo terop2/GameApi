@@ -559,6 +559,7 @@ struct FrameLoopEvent
   int ch;
   Point cursor_pos;
   int button;
+  bool pin[9];
 };
 
 class SourceBitmap;

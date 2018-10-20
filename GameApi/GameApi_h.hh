@@ -14,6 +14,10 @@
 #define VAO 1
 #endif
 
+#ifdef IOT
+#define IOT_EVENTS
+#endif
+
 
 #include "GameApi.hh"
 #include <vector>
@@ -129,7 +133,7 @@ struct SurfPriv
 
 struct MainLoopPriv
 {
-  SDL_Surface *screen;
+  Low_SDL_Surface *screen;
   unsigned int time;
   unsigned int frame_time;
   unsigned int avg_time;

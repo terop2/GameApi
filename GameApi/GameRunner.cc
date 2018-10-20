@@ -25,7 +25,7 @@
 #endif
 #include "GameApi_low.hh"
 
-extern SDL_Window *sdl_window;
+extern Low_SDL_Window *sdl_window;
 
 void GameRunner::run()
 {
@@ -41,7 +41,7 @@ void GameRunner::run()
 #ifndef EMSCRIPTEN
 	g_low->ogl->glLoadIdentity();
 #endif
-	SDL_GL_SwapWindow(sdl_window);
+	g_low->sdl->SDL_GL_SwapWindow(sdl_window);
 	//SDL_GL_SwapBuffers();
 
 	SDL_Event event;

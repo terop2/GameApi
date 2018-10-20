@@ -41,7 +41,7 @@
 #include <fstream>
 #include <pthread.h>
 #include "EffectI.hh"
-
+#include "GameApi_low.hh"
 
 class BooleanOps
 {
@@ -9934,7 +9934,7 @@ void InitFrameAnim(FrameAnim &f, SDL_Surface *screen);
 void DisplayFrame(FrameAnim &f, SDL_Surface *screen, float time);
 void CleanupFrameAnim(FrameAnim &f, SDL_Surface *surf);
 SDL_Surface *InitSDL(int scr_x, int scr_y, bool vsync, bool antialias=false);
-SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vsync, bool antialias=false, bool resize=false);
+Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vsync, bool antialias=false, bool resize=false);
 
 
 #if 0
@@ -10057,7 +10057,7 @@ private:
   Array<int, float> &arr2;
 };
 
-BufferRef CopyFromSDLSurface(SDL_Surface *surf);
+BufferRef CopyFromSDLSurface(Low_SDL_Surface *surf);
 
 class Mesh
 {

@@ -14335,7 +14335,30 @@ public:
     m_width=width;
     m_height=height;
     m_ydelta=ydelta;
+    m_owned = false;
   }
+  void set_data_mono1(void *data, int width, int height, int ydelta) {
+    unsigned char *buf = new unsigned char[width*height/8];
+    std::memset(buf, 0, width*height/8);
+    m_data = buf;
+    m_width=width;
+    m_height=height;
+    m_ydelta =width/8;
+    for(int y=0;y<height;y++)
+      for(int x=0;x<width;x++)
+	{
+	  unsigned int color = ((unsigned int*)data)[x+y*ydelta];
+	  bool b = false;
+	  //if ((color & 0xff000000)>0x80000000) b=true;
+	  if ((color & 0x00ff0000)>0x00800000) b=true;
+	  if ((color & 0x0000ff00)>0x00008000) b=true;
+	  if ((color & 0x000000ff)>0x00000080) b=true;
+	  if (b)
+	    buf[x/8+y*m_ydelta] |= 1 << (7-(x%8));
+	}
+    m_owned = true;
+  }
+  ~SourceBitmap() { if (m_owned) delete[]((unsigned char*)m_data); }
 public:
   void *m_data;
   DrawBufferFormat fmt;
@@ -14343,6 +14366,7 @@ public:
   int m_height;
   int m_ydelta;
   int m_depth;
+  bool m_owned;
 };
 
 
@@ -14431,7 +14455,21 @@ public:
     case FrameBufferFormat::F_Mono1:
       switch(bm->fmt) {
       case DrawBufferFormat::D_Mono1:
-	std::cout << "draw_sprite, mono1->mono1 not implemented" << std::endl;
+	{
+	int start_x = 0;
+	int start_y = 0;
+	if (pos_x<0) start_x=-pos_x;
+	if (pos_y<0) start_y=-pos_y;
+	int w = std::min(sp_width, width-pos_x);
+	int h = std::min(sp_height, height-pos_y);
+	for(int y=start_y;y<h;y++)
+	  for(int x=start_x;x<w;x+=8)
+	    {
+	      ((unsigned char*)buffer)[(pos_x+x)/8+(y+pos_y)*width/8] = ((unsigned char*)buf)[x/8+y*sp_ydelta];
+
+	    }
+	}
+	//std::cout << "draw_sprite, mono1->mono1 not implemented" << std::endl;
 	break;
 
       case DrawBufferFormat::D_RGBA8888:
@@ -14478,9 +14516,32 @@ public:
     case FrameBufferFormat::F_RGBA8888:
       switch(bm->fmt) {
       case DrawBufferFormat::D_Mono1:
-	std::cout << "draw_sprite, mono1->rgba8888 not implemented" << std::endl;
+
+	{
+	int start_x = 0;
+	int start_y = 0;
+	if (pos_x<0) start_x=-pos_x;
+	if (pos_y<0) start_y=-pos_y;
+	int w = std::min(sp_width, width-pos_x);
+	int h = std::min(sp_height, height-pos_y);
+	for(int y=start_y;y<h;y++)
+	  for(int x=start_x;x<w;x++)
+	    {
+	      //std::cout << "(" << x << "," << y << ") " << buffer << " " << buf << std::endl;
+	      int pos = (x/8+y*sp_ydelta);
+	      int bit = x&0x7;
+	      unsigned char b = ((unsigned char*)buf)[pos];
+	      b>>=7-bit;
+	      b&=1;
+
+	      ((unsigned int*)buffer)[pos_x+x+(y+pos_y)*width] = b?0xffffffff:0xff000000;
+	    }
+	} 
+
+	//std::cout << "draw_sprite, mono1->rgba8888 not implemented" << std::endl;
 	break;
       case DrawBufferFormat::D_RGBA8888:
+	{
 	int start_x = 0;
 	int start_y = 0;
 	if (pos_x<0) start_x=-pos_x;
@@ -14493,7 +14554,9 @@ public:
 	      //std::cout << "(" << x << "," << y << ") " << buffer << " " << buf << std::endl;
 	      ((unsigned int*)buffer)[pos_x+x+(y+pos_y)*width] = ((unsigned int*)buf)[x+y*sp_ydelta];
 	    }
-	    };
+	}
+	break;
+      };
       break;
     }
 
@@ -14517,9 +14580,9 @@ GameApi::FBU GameApi::LowFrameBufferApi::low_framebuffer(GameApi::FML ml, int fo
   return add_framebuffer(e, new LowFrameBuffer(loop, format,width,height,depth));
 }
 
-void CopyFrameToSurface(FrameBuffer *buf, SDL_Surface *surf)
+void CopyFrameToSurface(FrameBuffer *buf, Low_SDL_Surface *surf)
 {
-  SDL_LockSurface(surf);
+  g_low->sdl->SDL_LockSurface(surf);
   int width = buf->Width();
   int height = buf->Height();
   //int depth = buf->Depth();
@@ -14537,9 +14600,9 @@ void CopyFrameToSurface(FrameBuffer *buf, SDL_Surface *surf)
 	  int byte = (y*width + x)/8;
 	  int bit = (y*width+x)&0x7;
 	  unsigned char v = *(((unsigned char*)buffer) + byte);
-	  v>>=bit;
+	  v>>=7-bit;
 	  v&=1;
-	  val = v?0xff000000:0xffffffff;
+	  val = v?0xffffffff:0xff000000;
 	  //std::cout << "F_Mono1 not supported\n" << std::endl;
 	  break;
 	  }
@@ -14600,11 +14663,11 @@ void CopyFrameToSurface(FrameBuffer *buf, SDL_Surface *surf)
 	unsigned int *target_pixel = (unsigned int*)(((unsigned char*) surf->pixels) + y*surf->pitch + x*sizeof(*target_pixel));
 	*target_pixel = val;
       }
-  SDL_UnlockSurface(surf);
+  g_low->sdl->SDL_UnlockSurface(surf);
 
 }
 
-void clear_sdl_surface(SDL_Surface *surf, int width, int height, unsigned int val)
+void clear_sdl_surface(Low_SDL_Surface *surf, int width, int height, unsigned int val)
 {
 #if 0
   SDL_LockSurface(surf);
@@ -14617,14 +14680,16 @@ void clear_sdl_surface(SDL_Surface *surf, int width, int height, unsigned int va
   SDL_UnlockSurface(surf);
 #endif
 }
-extern SDL_Window *sdl_framebuffer_window;
+extern Low_SDL_Window *sdl_framebuffer_window;
 
-SDL_Surface *init_sdl_surface_framebuffer(int width, int height);
+Low_SDL_Surface *init_sdl_surface_framebuffer(int width, int height);
 
+
+void get_iot_event(const GameApi::MainLoopApi::Event &e, bool *array);
 class FBU_run : public Splitter
 {
 public:
-  FBU_run(GameApi::EveryApi &ev, FrameBuffer *buf, int mode, int scr_x, int scr_y) : ev(ev), buf(buf), scr_x(scr_x), scr_y(scr_y) { exit=false;}
+  FBU_run(GameApi::Env &env, GameApi::EveryApi &ev, FrameBuffer *buf, int mode, int scr_x, int scr_y) : env(env), ev(ev), buf(buf), scr_x(scr_x), scr_y(scr_y) { exit=false;}
   virtual void Init() {
     surf = init_sdl_surface_framebuffer(scr_x, scr_y);
     buf->Prepare();
@@ -14638,28 +14703,38 @@ public:
     // 
     buf->frame();
     CopyFrameToSurface(buf, surf);
-    SDL_UpdateWindowSurface(sdl_framebuffer_window);
+    g_low->sdl->SDL_UpdateWindowSurface(sdl_framebuffer_window);
 
     GameApi::MainLoopApi::Event e;
     while((e = ev.mainloop_api.get_event()).last==true)
       {
     	if (e.ch==27 && e.type==0x300) { exit=true; }
+
+	FrameLoopEvent event;
+	event.type = e.type;
+	event.ch = e.ch;
+	event.cursor_pos = *find_point(env,e.cursor_pos);
+	event.button = e.button;
+	//event.pin = 
+	get_iot_event(e,&event.pin[0]);
+	buf->handle_event(event);
      }
 
-    SDL_Delay(16);
+    g_low->sdl->SDL_Delay(16);
     if (exit) return 0;
     return -1;
   }
   virtual void Destroy()
   {
-    SDL_FreeSurface(surf);
-    SDL_DestroyWindow(sdl_framebuffer_window);
+    g_low->sdl->SDL_FreeSurface(surf);
+    g_low->sdl->SDL_DestroyWindow(sdl_framebuffer_window);
     sdl_framebuffer_window = 0;
   }
 private:
+  GameApi::Env &env;
   GameApi::EveryApi &ev;
   FrameBuffer *buf;
-  SDL_Surface *surf;
+  Low_SDL_Surface *surf;
   int scr_x, scr_y;
   bool exit;
 };
@@ -14667,7 +14742,7 @@ private:
 GameApi::RUN GameApi::LowFrameBufferApi::low_framebuffer_run(EveryApi &ev, GameApi::FBU buf, int mode, int scr_x, int scr_y)
 {
   FrameBuffer *buf2 = find_framebuffer(e, buf);
-  return add_splitter(e, new FBU_run(ev,buf2,mode,scr_x,scr_y));
+  return add_splitter(e, new FBU_run(e,ev,buf2,mode,scr_x,scr_y));
 }
 
 
@@ -14679,7 +14754,8 @@ void BufferRefToSourceBitmap(BufferRef ref, SourceBitmap &target, DrawBufferForm
   unsigned int ydelta = ref.ydelta;
   switch(fmt) {
   case D_Mono1:
-    std::cout << "D_Mono1 not supported in BufferRefToSourceBitmap" << std::endl;
+    //std::cout << "D_Mono1 not supported in BufferRefToSourceBitmap" << std::endl;
+    target.set_data_mono1(buffer, width, height, ydelta);
     break;
   case D_RGBA8888:
     target.set_data(buffer, width, height, ydelta);
@@ -14741,4 +14817,39 @@ GameApi::FML GameApi::LowFrameBufferApi::low_sprite_draw(BM bm, MN mn, int x, in
   Movement *move = find_move(e, mn);
   return add_framemainloop(e,new SpriteDraw(*b2, move,x,y,fmt,start_time));
 
+}
+
+int last_io_pin = -1;
+bool iot_firsttime = true;
+
+void get_iot_event(const GameApi::MainLoopApi::Event &e, bool *array)
+{
+  static bool but[10];
+  if (iot_firsttime) {
+    for(int i=0;i<9;i++) but[i]=false;
+    iot_firsttime = false;
+  }
+  if (e.type==768 && e.ch>='0' && e.ch<='9') {
+    int num = e.ch-'1';
+    but[num] = true;
+  }
+  if (e.type==769 && e.ch>='0' && e.ch<='9') {
+    int num = e.ch-'1';
+    but[num] = false;
+  }
+
+#ifdef IOT_EVENTS
+  auto mIO = (sf::IOPin*)sf::pmap::myIO);
+  mIO->setEvent(sf::IOPinEvent::IN_Rising, [](auto pin, auto pol) {
+      if (pin>=0 && pin<=9)
+	but[pin] = true;
+    });
+  mIO->setEvent(sf::IOPinEvent::IN_Falling, [](auto pin, auto pol) {
+      if (pin>=0 && pin<=9)
+	but[pin] = false;
+    }
+#endif
+  for(int i=0;i<9;i++) {
+    array[i] = but[i];
+  }
 }

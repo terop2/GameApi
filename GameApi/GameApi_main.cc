@@ -22,7 +22,7 @@ EXPORT void GameApi::MainLoopApi::cursor_visible(bool enabled)
 {
   SDL_ShowCursor(enabled);
 }
-extern SDL_Window *sdl_window;
+extern Low_SDL_Window *sdl_window;
 
 EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_height, std::string window_title)
 {
@@ -35,7 +35,7 @@ EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_heigh
 #else
   p->screen = InitSDL(screenx,screeny,false);
 #endif
-  SDL_SetWindowTitle(sdl_window, window_title.c_str());
+  g_low->sdl->SDL_SetWindowTitle(sdl_window, window_title.c_str());
 
   p->screen_width = screenx;
   p->screen_height = screeny;
@@ -552,7 +552,7 @@ EXPORT GameApi::BM GameApi::MainLoopApi::screenshot()
   return add_color_bitmap2(e, bm);
 }
 
-extern SDL_Window *sdl_window;
+extern Low_SDL_Window *sdl_window;
 
 EXPORT void GameApi::MainLoopApi::finish()
 {
@@ -603,7 +603,7 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
   //MainLoopPriv *p = (MainLoopPriv*)priv;
   //glLoadIdentity();
 #ifdef SDL2_USED
-  SDL_GL_SwapWindow(sdl_window);
+  g_low->sdl->SDL_GL_SwapWindow(sdl_window);
 #else
   SDL_GL_SwapBuffers();
 #endif
@@ -623,7 +623,7 @@ GameApi::SP add_space(GameApi::Env &e, SpaceImpl i);
 GameApi::SP GameApi::MainLoopApi::screenspace()
 {
   MainLoopPriv *p = (MainLoopPriv*)priv;
-  SDL_Surface *surf = p->screen;
+  Low_SDL_Surface *surf = p->screen;
   int w = surf->w;
   int h = surf->h;
   SpaceImpl sp;
@@ -1296,6 +1296,49 @@ public:
 private:
   std::vector<MainLoopItem*> vec;
 };
+
+class FrameBufferArrayMainLoop : public FrameBufferLoop
+{
+public:
+  FrameBufferArrayMainLoop(std::vector<FrameBufferLoop*> vec) : vec(vec) { }
+  void Prepare() {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->Prepare();
+      }
+  }
+  void frame(DrawLoopEnv &e)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	DrawLoopEnv ee = e;
+	vec[i]->frame(ee);
+      }
+  }
+  void handle_event(FrameLoopEvent &e)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->handle_event(e);
+      }
+  }
+#if 0
+  int shader_id() { 
+    int s = vec.size();
+    for(int i=s-1;i>=0;i--)
+      {
+	if (vec[i]->shader_id()!=-1) return vec[i]->shader_id();
+      }
+    return -1; 
+  }
+#endif
+private:
+  std::vector<FrameBufferLoop*> vec;
+};
+
 int GameApi::MainLoopApi::get_screen_width()
 {
   MainLoopPriv *p = (MainLoopPriv*)priv;
@@ -1332,6 +1375,17 @@ EXPORT GameApi::ML GameApi::MainLoopApi::array_ml(std::vector<ML> vec)
       vec2.push_back(find_main_loop(e,vec[i]));
     }
   return add_main_loop(e, new ArrayMainLoop(vec2));
+}
+EXPORT GameApi::FML GameApi::MainLoopApi::array_fml(std::vector<FML> vec)
+{
+  std::vector<FrameBufferLoop*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      //std::cout << "array_ml id: " << vec[i].id << std::endl;
+      vec2.push_back(find_framemainloop(e,vec[i]));
+    }
+  return add_framemainloop(e, new FrameBufferArrayMainLoop(vec2));
 }
 void GameApi::MainLoopApi::save_logo(EveryApi &ev)
 {
