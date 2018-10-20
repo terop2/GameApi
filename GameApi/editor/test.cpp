@@ -891,6 +891,33 @@ void iter(void *arg)
 
 
 			} else
+			if (type=="FML")
+			  {
+			    FML ml;
+			    ml.id = id;
+			    
+			    FBU I6=env->ev->low_frame_api.low_framebuffer(ml,4,800,600,0);
+			    RUN blk=env->ev->low_frame_api.low_framebuffer_run(*env->ev,I6,0,800,600);
+			    
+
+			  env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
+			int sx = env->ev->mainloop_api.get_screen_sx();
+			int sy = env->ev->mainloop_api.get_screen_sy();
+			//env->ev->mainloop_api.set_screen_size(1200,900);
+			//env->ev->mainloop_api.set_viewport(0,0,1200,900);
+			env->ev->blocker_api.run2(*env->ev,blk);
+			    //env->env->free_to_counts(v);
+			    //env->ev->mainloop_api.set_screen_size(sx,sy);
+			    //env->ev->mainloop_api.set_viewport(0,0,sx,sy);
+			    env->display = env->gui->empty();
+			    env->display_close = env->gui->empty();
+			    env->codegen_button = env->gui->empty();
+			    env->collect_button = env->gui->empty();
+			    env->ev->shader_api.use(env->sh);
+			    display = false;
+
+			  } else
 		      if (type=="ML")
 			{
 			  ML ml;
@@ -944,7 +971,6 @@ void iter(void *arg)
 			    blk.id = id;
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			//std::vector<int> v = env->env->store_counts();
 			int sx = env->ev->mainloop_api.get_screen_sx();
 			int sy = env->ev->mainloop_api.get_screen_sy();
 			//env->ev->mainloop_api.set_screen_size(1200,900);

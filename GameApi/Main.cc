@@ -75,9 +75,9 @@
 
 //#pragma comment (lib, "glew32s.lib") 
 
-BufferRef CopyFromSDLSurface(SDL_Surface *surf);
+BufferRef CopyFromSDLSurface(Low_SDL_Surface *surf);
 
-SDL_Window *sdl_window;
+Low_SDL_Window *sdl_window;
 
 
 
@@ -130,7 +130,7 @@ void Timer::start()
     paused = false;
     
     //Get the current clock time
-    startTicks = SDL_GetTicks();    
+    //TODO    startTicks = SDL_GetTicks();    
 }
 
 void Timer::stop()
@@ -151,7 +151,7 @@ void Timer::pause()
         paused = true;
     
         //Calculate the paused ticks
-        pausedTicks = SDL_GetTicks() - startTicks;
+	//        pausedTicks = SDL_GetTicks() - startTicks;
     }
 }
 
@@ -164,7 +164,7 @@ void Timer::unpause()
         paused = false;
     
         //Reset the starting ticks
-        startTicks = SDL_GetTicks() - pausedTicks;
+	//        startTicks = SDL_GetTicks() - pausedTicks;
         
         //Reset the paused ticks
         pausedTicks = 0;
@@ -185,7 +185,7 @@ int Timer::get_ticks()
         else
         {
             //Return the current time minus the start time
-            return SDL_GetTicks() - startTicks;
+	  //            return SDL_GetTicks() - startTicks;
         }    
     }
     
@@ -377,45 +377,45 @@ c  for(int i=0;i<size1&&!exit2;i+=100)
 void initialize_low(int flags);
 
 IMPORT void check_vr_compositor_init();
-SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize)
+Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize)
 {
   initialize_low(0);
 
 #ifdef SDL2_USED
   int screenx = scr_x, screeny = scr_y;
 
-  SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK);
+  g_low->sdl->SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK);
 
 
-  SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
+  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1);
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4);
 
 #ifndef EMSCRIPTEN
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 #endif
   //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #ifdef VIRTUAL_REALITY
   check_vr_compositor_init();
 #endif  
   if (resize)
-    sdl_window = SDL_CreateWindow("Program", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scr_x, scr_y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE);
+    sdl_window = g_low->sdl->SDL_CreateWindow("Program", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scr_x, scr_y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE);
   else
-    sdl_window = SDL_CreateWindow("Program", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scr_x, scr_y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+    sdl_window = g_low->sdl->SDL_CreateWindow("Program", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scr_x, scr_y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
  
   
 
   SDL_GLContext context;
-  context = SDL_GL_CreateContext(sdl_window);
+  context = g_low->sdl->SDL_GL_CreateContext(sdl_window);
   if (!context) { 
     std::cout << "Could not create Opengl3.2 context" << std::endl; 
   }
@@ -439,17 +439,17 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool re
   if (vblank)
     {
       int (APIENTRY *SwapInterval)(int);
-      SwapInterval = (int(APIENTRY *)(int))SDL_GL_GetProcAddress("glXSwapInterval");
+      SwapInterval = (int(APIENTRY *)(int))g_low->sdl->SDL_GL_GetProcAddress("glXSwapInterval");
       if (!SwapInterval)
-	SwapInterval = (int(APIENTRY *)(int))SDL_GL_GetProcAddress("wglSwapIntervalEXT");
+	SwapInterval = (int(APIENTRY *)(int))g_low->sdl->SDL_GL_GetProcAddress("wglSwapIntervalEXT");
       if (!SwapInterval)
-	SwapInterval = (int(APIENTRY *)(int))SDL_GL_GetProcAddress("glXSwapIntervalEXT");
+	SwapInterval = (int(APIENTRY *)(int))g_low->sdl->SDL_GL_GetProcAddress("glXSwapIntervalEXT");
       if (!SwapInterval)
-	SwapInterval = (int(APIENTRY *)(int))SDL_GL_GetProcAddress("glXSwapIntervalSGI");
+	SwapInterval = (int(APIENTRY *)(int))g_low->sdl->SDL_GL_GetProcAddress("glXSwapIntervalSGI");
       if (!SwapInterval)
-	SwapInterval = (int(APIENTRY *)(int))SDL_GL_GetProcAddress("wglSwapInterval");
+	SwapInterval = (int(APIENTRY *)(int))g_low->sdl->SDL_GL_GetProcAddress("wglSwapInterval");
       if (!SwapInterval)
-	SwapInterval = (int(APIENTRY *)(int))SDL_GL_GetProcAddress("wglSwapIntervalSGI");
+	SwapInterval = (int(APIENTRY *)(int))g_low->sdl->SDL_GL_GetProcAddress("wglSwapIntervalSGI");
       // actual vsync activation
       if (SwapInterval)
 	SwapInterval(0);
@@ -458,11 +458,11 @@ SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool re
       //SDL_GL_SetSwapInterval(int interval);
     }
 #endif
-   glEnable(GL_DEPTH_TEST);
-  glDepthMask(GL_TRUE);
+   g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+  g_low->ogl->glDepthMask(Low_GL_TRUE);
 
-  glClearColor( 0, 0, 0, 0 );
-  glViewport(0,0,screenx, screeny);
+  g_low->ogl->glClearColor( 0, 0, 0, 0 );
+  g_low->ogl->glViewport(0,0,screenx, screeny);
 
 #endif
   return 0;
@@ -1538,19 +1538,19 @@ void SaveImage(BufferRef ref, std::string filename)
   ctx.stream = 0;
 }
 
-SDL_Window *sdl_framebuffer_window = 0;
-SDL_Surface *sdl_framebuffer = 0;
+Low_SDL_Window *sdl_framebuffer_window = 0;
+Low_SDL_Surface *sdl_framebuffer = 0;
 
-SDL_Surface *init_sdl_surface_framebuffer(int scr_x, int scr_y)
+Low_SDL_Surface *init_sdl_surface_framebuffer(int scr_x, int scr_y)
 {
 #ifdef SDL2_USED
-  sdl_framebuffer_window = SDL_CreateWindow("Framebuffer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scr_x, scr_y, SDL_WINDOW_SHOWN);
-  sdl_framebuffer = SDL_GetWindowSurface(sdl_framebuffer_window);
+  sdl_framebuffer_window = g_low->sdl->SDL_CreateWindow("Framebuffer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scr_x, scr_y, SDL_WINDOW_SHOWN);
+  sdl_framebuffer = g_low->sdl->SDL_GetWindowSurface(sdl_framebuffer_window);
 #endif
   return sdl_framebuffer;
 }
 
-SDL_Surface *init_iot_surface_framebuffer(int scr_x, int scr_y)
+Low_SDL_Surface *init_iot_surface_framebuffer(int scr_x, int scr_y)
 {
   // TODO
   // sdl_framebuffer = ... ;

@@ -5041,26 +5041,26 @@ public:
     GameApi::US vertex;
     vertex.id = ee.us_vertex_shader;
     if (vertex.id==-1) { 
-      std::cout << "ManyTexture::V_Empty" << std::endl;
+      // std::cout << "ManyTexture::V_Empty" << std::endl;
       GameApi::US a0 = ev.uber_api.v_empty();
       //GameApi::US a1 = ev.uber_api.v_colour(a0);
       ee.us_vertex_shader = a0.id;
     }
     vertex.id = ee.us_vertex_shader;
-      std::cout << "ManyTexture::V_ManyTexture" << std::endl;
+    //std::cout << "ManyTexture::V_ManyTexture" << std::endl;
     GameApi::US a2 = ev.uber_api.v_manytexture(vertex);
     ee.us_vertex_shader = a2.id;
 
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      std::cout << "ManyTexture::F_Empty" << std::endl;
+      //std::cout << "ManyTexture::F_Empty" << std::endl;
       GameApi::US a0 = ev.uber_api.f_empty(false);
       //GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a0.id;
     }
     fragment.id = ee.us_fragment_shader;
-      std::cout << "ManyTexture::F_ManyTexture" << std::endl;
+    //std::cout << "ManyTexture::F_ManyTexture" << std::endl;
     GameApi::US a2f = ev.uber_api.f_manytexture(fragment);
     ee.us_fragment_shader = a2f.id;
     }
@@ -6142,15 +6142,15 @@ public:
     GameApi::US vertex;
     vertex.id = ee.us_vertex_shader;
     if (vertex.id==-1) { 
-      std::cout << "Shadow::V_Empty" << std::endl;
+      // std::cout << "Shadow::V_Empty" << std::endl;
 
       GameApi::US a0 = ev.uber_api.v_empty();
-      std::cout << "Shadow::V_Colour" << std::endl;
+      //std::cout << "Shadow::V_Colour" << std::endl;
       GameApi::US a1 = ev.uber_api.v_colour(a0);
       ee.us_vertex_shader = a1.id;
     }
     vertex.id = ee.us_vertex_shader;
-      std::cout << "Shadow::V_Shadow" << std::endl;
+    //std::cout << "Shadow::V_Shadow" << std::endl;
     vertex = ev.uber_api.v_shadow(vertex);
     //GameApi::US a2 = ev.uber_api.v_passall(a4v);
     ee.us_vertex_shader = vertex.id;
@@ -6158,14 +6158,14 @@ public:
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
-      std::cout << "Shadow::F_Empty" << std::endl;
+      //std::cout << "Shadow::F_Empty" << std::endl;
       GameApi::US a0 = ev.uber_api.f_empty(false);
-      std::cout << "Shadow::F_Colour" << std::endl;
+      //std::cout << "Shadow::F_Colour" << std::endl;
       GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a1.id;
     }
     fragment.id = ee.us_fragment_shader;
-      std::cout << "Shadow::F_Shadow" << std::endl;
+    //std::cout << "Shadow::F_Shadow" << std::endl;
     fragment = ev.uber_api.f_shadow(fragment);
     ee.us_fragment_shader = fragment.id;
 #endif

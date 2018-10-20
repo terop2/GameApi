@@ -415,29 +415,40 @@ class ImageLoadLowApi
 
 };
 
+struct Low_SDL_Surface { void *ptr; int w; int h; void* pixels; int pitch; };
+struct Low_SDL_Window { void *ptr; };
+typedef void* Low_SDL_GLContext;
+typedef unsigned int Low_SDL_Keymod;
+typedef void* Low_SDL_Joystick;
+typedef void* Low_SDL_RWops;
+
 class SDLLowApi
 {
+public:
   virtual void init()=0;
   virtual void cleanup()=0;
   virtual void SDL_Init(int flags)=0;
   virtual void SDL_GL_SetAttribute(int flag, int val)=0;
   virtual void* SDL_GL_GetProcAddress(char *name)=0;
   virtual void SDL_Quit()=0;
-  virtual void SDL_ConvertSurface(void *surf, void *format, int val)=0;
-  virtual void SDL_FreeSurface(void *surf)=0;
-  virtual void SDL_LockSurface(void *surf)=0;
-  virtual void SDL_UnlockSurface(void *surf)=0;
+  virtual void SDL_ConvertSurface(Low_SDL_Surface *surf, void *format, int val)=0;
+  virtual void SDL_FreeSurface(Low_SDL_Surface *surf)=0;
+  virtual void SDL_LockSurface(Low_SDL_Surface *surf)=0;
+  virtual void SDL_UnlockSurface(Low_SDL_Surface *surf)=0;
   virtual void SDL_ShowCursor(bool b)=0;
   virtual void SDL_PollEvent(void *event)=0;
   virtual unsigned int SDL_GetTicks()=0;
   virtual void SDL_Delay(int ms)=0;
-  virtual void* SDL_CreateWindow(char *title, int flags, int width, int height, int flags2)=0;
-  virtual void* SDL_GL_CreateContext(void *window)=0;
-  virtual void SDL_GL_SwapBuffers()=0;
-  virtual void SDL_GL_SwapWindow(void *window)=0;
-  virtual void SDL_SetWindowTitle(void *window, char *title)=0;
+  virtual Low_SDL_Surface* SDL_GetWindowSurface(Low_SDL_Window *win)=0;
+  virtual Low_SDL_Window* SDL_CreateWindow(const char *title, int x, int y, int width, int height, int flags2)=0;
+  virtual Low_SDL_GLContext SDL_GL_CreateContext(Low_SDL_Window *window)=0;
+  //virtual void SDL_GL_SwapBuffers()=0;
+  virtual void SDL_GL_SwapWindow(Low_SDL_Window *window)=0;
+  virtual void SDL_UpdateWindowSurface(Low_SDL_Window *window)=0;
+  virtual void SDL_DestroyWindow(Low_SDL_Window *window)=0;
+  virtual void SDL_SetWindowTitle(Low_SDL_Window *window, const char *title)=0;
   virtual void SDL_GetMouseState(int *x, int *y)=0;
-  virtual void* SDL_GetModState()=0;
+  virtual unsigned int SDL_GetModState()=0;
   virtual void* SDL_JoystickOpen(int i)=0;
   virtual unsigned int SDL_JoystickGetButton(void*joy, int i)=0;
   virtual void* SDL_RWFromMem(void *buffer, int size)=0;

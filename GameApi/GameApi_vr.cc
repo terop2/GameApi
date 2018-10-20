@@ -346,6 +346,7 @@ public:
   PoseMovement(Movement *next, bool pose_in_screen) : next(next), pose_in_screen(pose_in_screen) { }
   virtual void event(MainLoopEvent &e) { if (next) next->event(e); }
   virtual void frame(MainLoopEnv &e) { if (next) next->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { if (next) next->draw_frame(e); }
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
