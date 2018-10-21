@@ -1,0 +1,17 @@
+P I14=ev.polygon_api.cube(-200,200,-300,300,-200,200);
+PT I15=ev.point_api.point(0.0,0.0,0.0);
+PT I16=ev.point_api.point(0,256,0);
+BM I17=ev.bitmap_api.gradient(I15,I16,ff222222,ff000000,256,256);
+BM I18=ev.bitmap_api.scale_bitmap(ev,I17,330,280);
+PT I19=ev.point_api.point(0.0,0.0,0.0);
+PT I20=ev.point_api.point(0,280,0);
+BM I21=ev.bitmap_api.gradient(I19,I20,ff888888,ffffffff,330,280);
+BB I22=ev.bool_bitmap_api.empty(30,25);
+BB I23=ev.bool_bitmap_api.rectangle(I22,3,3,13,13);
+BM I24=ev.bool_bitmap_api.to_bitmap(I23,255,255,255,255,0,0,0,0);
+BM I25=ev.bitmap_api.repeat_bitmap(I24,10,10);
+BM I26=ev.bitmap_api.border(I25,15,15,15,15);
+BB I27=ev.bool_bitmap_api.from_bitmaps_color(I26,255,255,255);
+BM I28=ev.bitmap_api.blitbitmap_bb(I18,I21,0,0,I27);
+MT I29=ev.materials_api.texture(ev,I28,1.0);
+ML I30=ev.materials_api.bind(I14,I29);

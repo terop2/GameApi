@@ -1,0 +1,13 @@
+PT I1=ev.point_api.point(0.0,0.0,0.0);
+P I2=ev.polygon_api.sphere(I1,30,30,30);
+P I3=ev.polygon_api.color(I2,ffffffff);
+PT I4=ev.point_api.point(0.0,0.0,0.0);
+P I5=ev.polygon_api.sphere(I4,60,30,30);
+P I6=ev.polygon_api.color(I5,40ffff00);
+PT I7=ev.point_api.point(0.0,0.0,0.0);
+P I8=ev.polygon_api.sphere(I7,80,30,30);
+P I9=ev.polygon_api.color(I8,20ffff00);
+PT I10=ev.point_api.point(0.0,0.0,0.0);
+P I11=ev.polygon_api.sphere(I10,100,30,30);
+P I12=ev.polygon_api.color(I11,10ffff00);
+P I13=ev.polygon_api.or_array2(std::vector<P>{I3,I6,I9,I12});
