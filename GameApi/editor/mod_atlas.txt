@@ -1,0 +1,16 @@
+test
+
+
+(107,258)chessboard uid21962 0 tile_sx:3130:false:-1 tile_sy:3130:false:-1 count_x:38:false:-1 count_y:38:false:-1 color_1:6666666666666666:false:-1 color_2:6666383838383838:false:-1
+(457,299)bm_2d uid21964 0 ev:6576:false:-1 ml:7569643231393639:false:-1 tl_x:302E30:false:-1 tl_y:302E30:false:-1 br_x:3830302E30:false:-1 br_y:3630302E30:false:-1
+(182,397)c_sample uid21965 0 curve:7569643231393637:false:-1 num_samples:3430:false:-1
+(43,427)c_circle_xy uid21967 0 center:7569643231393638:false:-1 r:333030:false:-1
+(71,561)point uid21968 0 x:302E30:false:-1 y:302E30:false:-1 z:302E30:false:-1
+(291,313)sp_render_fade uid21969 0 ev:6576:false:-1 bm:7569643231393632:false:-1 pts:7569643231393635:false:-1 start_x:2D3230:false:-1 end_x:3230:false:-1 start_y:2D3230:false:-1 end_y:3230:false:-1 z:30:false:-1 flip:66616C7365:false:-1 start_time:3130:false:-1 end_time:3430:false:-1
+(406,94)bm_atlas_x uid104 0 ev:6576:false:-1 orig:756964313035:false:-1 start_x:30:false:-1 end_x:3634:false:-1 start_y:30:false:-1 end_y:3634:false:-1 delta_x:3634:false:-1 count:39:false:-1
+(209,87)bm_url uid105 0 url:687474703A2F2F747067616D65732E6F72672F424F44595F736B656C65746F6E2E706E67:false:-1
+(567,141)bm_chooser uid106 0 ev:6576:false:-1 vec:756964313034:true:133590259 fetcher:756964313037:false:-1 x:30:false:-1 y:30:false:-1
+(411,198)if_timed uid107 0 ev:6576:false:-1 start:30:false:-1 end:38:false:-1 start_time:30:false:-1 end_time:3330:false:-1
+(660,310)mn_empty uid108 0
+(805,322)mn_scale uid109 0 next:756964313038:false:-1 sx:31:false:-1 sy:2D31:false:-1 sz:31:false:-1
+(861,180)move_ml uid110 0 ev:6576:false:-1 ml:756964313036:false:-1 mn:756964313039:false:-1 clone_count:31:false:-1 time_delta:31302E30:false:-1

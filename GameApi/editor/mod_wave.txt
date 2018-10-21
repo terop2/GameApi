@@ -1,0 +1,25 @@
+test
+
+
+(74,117)point uid309 0 x:302E30:false:-1 y:302E30:false:-1 z:302E30:false:-1
+(360,149)li_from_polygon uid310 0 poly:756964333131:false:-1
+(212,129)torus uid311 0 ev:6576:false:-1 numfaces1:3230:false:-1 numfaces2:3230:false:-1 center:756964333039:false:-1 radius1:3235302E30:false:-1 radius2:35302E30:false:-1
+(544,147)li_to_cone uid312 0 ev:6576:false:-1 li:756964333130:false:-1 size:33:false:-1 numfaces:3135:false:-1
+(536,276)m_snow uid313 0 ev:6576:false:-1 nxt:756964333134:false:-1 color1:6666616161616161:false:-1 color2:6666656565656565:false:-1 color3:6666666666666666:false:-1 mix_val:302E3935:false:-1
+(393,272)m_def uid314 0 ev:6576:false:-1
+(682,225)m_bind uid315 0 p:756964333132:false:-1 mat:756964333133:false:-1
+(237,425)sphere uid10446 0 center:7569643130343437:false:-1 radius:35:false:-1 numfaces1:3330:false:-1 numfaces2:3330:false:-1
+(106,410)point uid10447 0 x:302E30:false:-1 y:302E30:false:-1 z:302E30:false:-1
+(6,530)wv_sin uid10448 0 length:362E32:false:-1 freq:312E35:false:-1
+(54,698)wave_pts uid10454 0 wave:7569643130343438:false:-1 num_samples:3530:false:-1 pos_x:2D333030:false:-1 pos_y:2D333030:false:-1 pos_z:30:false:-1 u_x_x:313530:false:-1 u_x_y:30:false:-1 u_x_z:30:false:-1 u_y_x:30:false:-1 u_y_y:333030:false:-1 u_y_z:30:false:-1
+(415,459)m_bind_inst uid10455 0 p:7569643130343436:false:-1 pts:7569643130343634:false:-1 mat:7569643130343536:false:-1
+(266,849)m_snow uid10456 0 ev:6576:false:-1 nxt:7569643130343537:false:-1 color1:6666616161616161:false:-1 color2:6666656565656565:false:-1 color3:6666666666666666:false:-1 mix_val:302E3935:false:-1
+(145,841)m_def uid10457 0 ev:6576:false:-1
+(546,693)move_ml uid10458 0 ev:6576:false:-1 ml:7569643130343535:false:-1 mn:7569643130343631:false:-1 clone_count:31:false:-1 time_delta:31302E30:false:-1
+(542,853)anim_rotate uid10459 0 next:7569643130343630:false:-1 start_time:30:false:-1 end_time:3130303030:false:-1 p_x:30:false:-1 p_y:30:false:-1 p_z:30:false:-1 v_x:31:false:-1 v_y:30:false:-1 v_z:30:false:-1 angle:36323030:false:-1
+(400,853)mn_empty uid10460 0
+(696,858)mn_translate uid10461 0 next:7569643130343630:false:-1 dx:2D323030:false:-1 dy:30:false:-1 dz:30:false:-1
+(169,525)move_pts uid10462 0 obj:7569643130343534:false:-1 dx:30:false:-1 dy:333030:false:-1 dz:30:false:-1
+(691,688)blk_window uid10463 0 ev:6576:false:-1 ml:7569643130343538:false:-1 logo:66616C7365:false:-1 fpscounter:66616C7365:false:-1 start_time:302E30:false:-1 duration:3130303030302E30:false:-1
+(392,649)filter_pts uid10464 0 pts:7569643130343636:false:-1 comp:32:false:-1 val:30:false:-1
+(232,640)anim_rot_pts uid10466 0 pts:7569643130343632:false:-1 start_time:30:false:-1 end_time:3130303030:false:-1 v_x:31:false:-1 v_y:30:false:-1 v_z:30:false:-1 rotate_amount:393030:false:-1
