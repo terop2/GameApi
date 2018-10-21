@@ -137,6 +137,38 @@ void check_err(std::string name)
 #endif
 }
 
+void map_enums_sdl(unsigned int &i) {
+  switch(i) {
+  case Low_SDL_WINDOW_SHOWN: i=SDL_WINDOW_SHOWN; break;
+  case Low_SDL_WINDOW_OPENGL_SHOWN: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN; break;
+  case Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE; break;
+
+  };
+}
+void map_enums_sdl(int &i) {
+  switch(i) {
+  case Low_SDL_WINDOWPOS_CENTERED: i=SDL_WINDOWPOS_CENTERED; break;
+  case Low_SDL_WINDOW_SHOWN: i=SDL_WINDOW_SHOWN; break;
+  case Low_SDL_WINDOW_OPENGL_SHOWN: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN; break;
+  case Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE; break;
+  case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK; break;
+  case  Low_SDL_GL_CONTEXT_PROFILE_MASK: i=SDL_GL_CONTEXT_PROFILE_MASK; break;
+  case   Low_SDL_GL_CONTEXT_PROFILE_CORE: i=SDL_GL_CONTEXT_PROFILE_CORE; break;
+  case   Low_SDL_GL_CONTEXT_MINOR_VERSION: i=SDL_GL_CONTEXT_MINOR_VERSION; break; 
+  case   Low_SDL_GL_CONTEXT_MAJOR_VERSION: i=SDL_GL_CONTEXT_MAJOR_VERSION; break;
+  case   Low_SDL_GL_STENCIL_SIZE: i=SDL_GL_STENCIL_SIZE; break;
+  case   Low_SDL_GL_DOUBLEBUFFER: i=SDL_GL_DOUBLEBUFFER; break;
+  case   Low_SDL_GL_DEPTH_SIZE: i=SDL_GL_DEPTH_SIZE; break;
+  case   Low_SDL_GL_ALPHA_SIZE: i=SDL_GL_ALPHA_SIZE; break;
+  case   Low_SDL_GL_BLUE_SIZE: i=SDL_GL_BLUE_SIZE; break;
+  case   Low_SDL_GL_GREEN_SIZE: i=SDL_GL_GREEN_SIZE; break;
+  case   Low_SDL_GL_RED_SIZE: i=SDL_GL_RED_SIZE; break;
+  case Low_SDL_GL_MULTISAMPLEBUFFERS: i = SDL_GL_MULTISAMPLEBUFFERS; break;
+  case Low_SDL_ENABLE: i=SDL_ENABLE; break;
+  
+  };
+}
+
 void map_enums(int &i)
 {
   switch(i) {
@@ -828,8 +860,8 @@ class SDLApi : public SDLLowApi
 {
   virtual void init() { }
   virtual void cleanup() {}
-  virtual void SDL_Init(int flags) { ::SDL_Init(flags); }
-  virtual void SDL_GL_SetAttribute(int flag, int val) { ::SDL_GL_SetAttribute((SDL_GLattr)flag,val); }
+  virtual void SDL_Init(int flags) { map_enums_sdl(flags); ::SDL_Init(flags); }
+  virtual void SDL_GL_SetAttribute(int flag, int val) { map_enums_sdl(flag); map_enums_sdl(val); ::SDL_GL_SetAttribute((SDL_GLattr)flag,val); }
   virtual void* SDL_GL_GetProcAddress(char *name) { return ::SDL_GL_GetProcAddress(name); }
   virtual void SDL_Quit() { ::SDL_Quit(); }
   virtual void SDL_ConvertSurface(Low_SDL_Surface *surf, void *format, int val){ ::SDL_ConvertSurface((SDL_Surface*)surf->ptr,(SDL_PixelFormat*)format,val); }
@@ -837,25 +869,38 @@ class SDLApi : public SDLLowApi
   virtual void SDL_LockSurface(Low_SDL_Surface *surf) { ::SDL_LockSurface((SDL_Surface*)surf->ptr); }
   virtual void SDL_UnlockSurface(Low_SDL_Surface *surf) { ::SDL_UnlockSurface((SDL_Surface*)surf->ptr); }
   virtual void SDL_ShowCursor(bool b) { ::SDL_ShowCursor(b); }
-  virtual void SDL_PollEvent(void *event) { ::SDL_PollEvent((SDL_Event*)event); }
+  virtual int SDL_PollEvent(Low_SDL_Event *event) {
+    SDL_Event e;
+    int val = ::SDL_PollEvent((SDL_Event*)&e); 
+    event->type = e.type;
+    event->key.keysym.sym = e.key.keysym.sym;
+    event->wheel.y = e.wheel.y;
+    event->tfinger.x = e.tfinger.x;
+    event->tfinger.y = e.tfinger.y;
+    return val;
+  }
   virtual unsigned int SDL_GetTicks() { return ::SDL_GetTicks(); }
   virtual void SDL_Delay(int ms) { ::SDL_Delay(ms); }
-  virtual Low_SDL_Window* SDL_CreateWindow(const char *title, int x, int y, int width, int height, int flags2) { 
+  virtual Low_SDL_Window* SDL_CreateWindow(const char *title, int x, int y, int width, int height, unsigned int flags2) { 
+    map_enums_sdl(x);
+    map_enums_sdl(y);
+    map_enums_sdl(flags2);
+    std::cout << "Low_SDL_CreateWindow: " << x << " " << y << " " << flags2 << std::endl;
     Low_SDL_Window *w = new Low_SDL_Window;
     w->ptr = ::SDL_CreateWindow(title,x,y,width,height,flags2);
     return w;
   }
   virtual Low_SDL_GLContext SDL_GL_CreateContext(Low_SDL_Window *window) { 
-    SDL_GLContext ctx = ::SDL_GL_CreateContext((SDL_Window*)window->ptr);
+    SDL_GLContext ctx = ::SDL_GL_CreateContext((SDL_Window*)(window->ptr));
     return ctx; 
   }
   virtual void SDL_UpdateWindowSurface(Low_SDL_Window *window)
   {
-    ::SDL_UpdateWindowSurface((SDL_Window*)window->ptr);
+    ::SDL_UpdateWindowSurface((SDL_Window*)(window->ptr));
   }
   virtual void SDL_DestroyWindow(Low_SDL_Window *window)
   {
-    ::SDL_DestroyWindow((SDL_Window*)window->ptr);
+    ::SDL_DestroyWindow((SDL_Window*)(window->ptr));
   }
 
   virtual Low_SDL_Surface *SDL_GetWindowSurface(Low_SDL_Window *win)
@@ -873,10 +918,19 @@ class SDLApi : public SDLLowApi
   //virtual void SDL_GL_SwapBuffers() { ::SDL_GL_SwapBuffers(); }
   virtual void SDL_GL_SwapWindow(Low_SDL_Window *window) { ::SDL_GL_SwapWindow((SDL_Window*)window->ptr); }
   virtual void SDL_SetWindowTitle(Low_SDL_Window *window, const char *title) { ::SDL_SetWindowTitle((SDL_Window*)window->ptr, title); }
-  virtual void SDL_GetMouseState(int *x, int *y) { ::SDL_GetMouseState(x,y); }
+  virtual unsigned int SDL_GetMouseState(int *x, int *y) { return ::SDL_GetMouseState(x,y); }
   virtual unsigned int SDL_GetModState() { return (unsigned int)::SDL_GetModState(); }
-  virtual void* SDL_JoystickOpen(int i) { return ::SDL_JoystickOpen(i); }
-  virtual unsigned int SDL_JoystickGetButton(void*joy, int i) { return ::SDL_JoystickGetButton((SDL_Joystick*)joy,i); }
+  virtual Low_SDL_Joystick* SDL_JoystickOpen(int i) { 
+    static Low_SDL_Joystick data;
+    data.data = ::SDL_JoystickOpen(i); 
+    return &data; 
+  }
+  virtual void SDL_JoystickEventState(int i) 
+  {
+    map_enums_sdl(i);
+    ::SDL_JoystickEventState(i);
+  }
+  virtual unsigned int SDL_JoystickGetButton(Low_SDL_Joystick *joy, int i) { return ::SDL_JoystickGetButton((SDL_Joystick*)joy->data,i); }
   virtual void* SDL_RWFromMem(void *buffer, int size) { return ::SDL_RWFromMem(buffer,size); }
 };
 

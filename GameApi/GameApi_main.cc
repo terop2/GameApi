@@ -20,7 +20,7 @@ EXPORT GameApi::MainLoopApi::~MainLoopApi()
 }
 EXPORT void GameApi::MainLoopApi::cursor_visible(bool enabled)
 {
-  SDL_ShowCursor(enabled);
+  g_low->sdl->SDL_ShowCursor(enabled);
 }
 extern Low_SDL_Window *sdl_window;
 
@@ -39,7 +39,7 @@ EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_heigh
 
   p->screen_width = screenx;
   p->screen_height = screeny;
-  time = SDL_GetTicks();
+  time = g_low->sdl->SDL_GetTicks();
   g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
 }
 EXPORT void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_height)
@@ -85,7 +85,7 @@ EXPORT void GameApi::MainLoopApi::transfer_sdl_surface(MainLoopApi &orig)
 }
 EXPORT void GameApi::MainLoopApi::delay(int ms)
 {
-  SDL_Delay(ms);
+  g_low->sdl->SDL_Delay(ms);
 }
 EXPORT unsigned int GameApi::MainLoopApi::rand_max()
 {
@@ -209,7 +209,7 @@ EXPORT void GameApi::MainLoopApi::print_profile()
 EXPORT float GameApi::MainLoopApi::fpscounter(bool print)
 {
   MainLoopPriv *p = (MainLoopPriv*)priv;
-  unsigned int time = SDL_GetTicks();
+  unsigned int time = g_low->sdl->SDL_GetTicks();
   unsigned int delta_time = time - p->time;
   unsigned int f_time = time - p->frame_time;
   //p->time = time;
@@ -243,7 +243,7 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   p->screen = InitSDL(screenx,screeny,true);
 #endif
   //glColor4f(1.0,1.0,1.0, 0.5);
-  time = SDL_GetTicks();
+  time = g_low->sdl->SDL_GetTicks();
 #endif
   //glDisable(GL_LIGHTING);
   //glDisable(GL_DEPTH_TEST);
@@ -490,17 +490,17 @@ EXPORT void GameApi::MainLoopApi::antialias(bool enable)
 {
   if (enable)
     {
-      SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1);
+      g_low->sdl->SDL_GL_SetAttribute( Low_SDL_GL_MULTISAMPLEBUFFERS, 1);
     }
   else
     {
-      SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 0);
+      g_low->sdl->SDL_GL_SetAttribute( Low_SDL_GL_MULTISAMPLEBUFFERS, 0);
     }
 }
 
 EXPORT float GameApi::MainLoopApi::get_time()
 {
-  return SDL_GetTicks()-time;
+  return g_low->sdl->SDL_GetTicks()-time;
 }
 EXPORT float GameApi::MainLoopApi::get_delta_time()
 {
@@ -509,7 +509,7 @@ EXPORT float GameApi::MainLoopApi::get_delta_time()
 }
 EXPORT void GameApi::MainLoopApi::reset_time()
 {
-  time = SDL_GetTicks();
+  time = g_low->sdl->SDL_GetTicks();
 }
 EXPORT void GameApi::MainLoopApi::advance_time(float val)
 {
@@ -608,7 +608,7 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
   SDL_GL_SwapBuffers();
 #endif
 
-  unsigned int time = SDL_GetTicks();
+  unsigned int time = g_low->sdl->SDL_GetTicks();
   MainLoopPriv *p = (MainLoopPriv*)priv;
   p->frame_time = time;
   unsigned int delta = time - p->previous_frame_time;
@@ -695,32 +695,32 @@ EXPORT bool GameApi::MainLoopApi::ch_doubletap_detect(Event &e, int expire_timer
 }
 EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 {
-  SDL_Event event;
+  Low_SDL_Event event;
   Event e2;
-  int last = SDL_PollEvent(&event);
+  int last = g_low->sdl->SDL_PollEvent(&event);
   e2.last = last!=0;
   //MainLoopPriv *p = (MainLoopPriv*)priv;
   //e2.current_time = p->current_time;
   //e2.delta_time = p->delta_time;
   int x,y;
   int mouse_wheel_y = 0;
-  int val = SDL_GetMouseState(&x, &y);
+  int val = g_low->sdl->SDL_GetMouseState(&x, &y);
   e2.type = event.type;
   e2.ch = event.key.keysym.sym;
   if (event.type==256) { exit(0); }
   
 #ifndef __APPLE__
-  if (event.type==SDL_FINGERMOTION||event.type==SDL_FINGERDOWN||event.type==SDL_FINGERUP)
+  if (event.type==Low_SDL_FINGERMOTION||event.type==Low_SDL_FINGERDOWN||event.type==Low_SDL_FINGERUP)
     {
-      SDL_TouchFingerEvent *ptr = &event.tfinger;
+      Low_SDL_TouchFingerEvent *ptr = &event.tfinger;
       x = int(ptr->x * get_screen_width());
       y = int(ptr->y * get_screen_height());
     }
 #endif
 
-  if (event.type==SDL_MOUSEWHEEL)
+  if (event.type==Low_SDL_MOUSEWHEEL)
     {
-      SDL_MouseWheelEvent *ptr = &event.wheel;
+      Low_SDL_MouseWheelEvent *ptr = &event.wheel;
       mouse_wheel_y = ptr->y;
     }
 
@@ -742,18 +742,18 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   e2.button = -1;
 
 #ifdef __APPLE__
-  SDL_Keymod mod = SDL_GetModState();
-  if ((val & SDL_BUTTON(1))&&(mod & KMOD_CTRL)) { e2.button = 2; } else
+  SDL_Keymod mod = g_low->sdl->SDL_GetModState();
+  if ((val & Low_SDL_BUTTON(1))&&(mod & Low_KMOD_CTRL)) { e2.button = 2; } else
 #endif  	  
-  if (val & SDL_BUTTON(1)) { e2.button = 0; }
-  if (val & SDL_BUTTON(2)) { e2.button = 1; }
-  if (val & SDL_BUTTON(3)) { e2.button = 2; }
-  SDL_Joystick *joy1 = SDL_JoystickOpen(0);
-  SDL_JoystickEventState(SDL_ENABLE);
-  unsigned int but1 = SDL_JoystickGetButton(joy1, 0);  
-  unsigned int but2 = SDL_JoystickGetButton(joy1, 1);
-  unsigned int but3 = SDL_JoystickGetButton(joy1, 2);
-  unsigned int but4 = SDL_JoystickGetButton(joy1, 3);
+  if (val & Low_SDL_BUTTON(1)) { e2.button = 0; }
+  if (val & Low_SDL_BUTTON(2)) { e2.button = 1; }
+  if (val & Low_SDL_BUTTON(3)) { e2.button = 2; }
+  Low_SDL_Joystick *joy1 = g_low->sdl->SDL_JoystickOpen(0);
+  g_low->sdl->SDL_JoystickEventState(Low_SDL_ENABLE);
+  unsigned int but1 = g_low->sdl->SDL_JoystickGetButton(joy1, 0);  
+  unsigned int but2 = g_low->sdl->SDL_JoystickGetButton(joy1, 1);
+  unsigned int but3 = g_low->sdl->SDL_JoystickGetButton(joy1, 2);
+  unsigned int but4 = g_low->sdl->SDL_JoystickGetButton(joy1, 3);
   //std::cout << e.type << " " << e.ch << std::endl;
   e2.joy0_button0 = but1==1;
   e2.joy0_button1 = but2==1;
@@ -761,11 +761,11 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   e2.joy0_button3 = but4==1;
   e2.mouse_wheel_y = mouse_wheel_y;
 
-  SDL_Joystick *joy2 = SDL_JoystickOpen(1);
-  unsigned int a_but1 = SDL_JoystickGetButton(joy2, 0);  
-  unsigned int a_but2 = SDL_JoystickGetButton(joy2, 1);
-  unsigned int a_but3 = SDL_JoystickGetButton(joy2, 2);
-  unsigned int a_but4 = SDL_JoystickGetButton(joy2, 3);
+  Low_SDL_Joystick *joy2 = g_low->sdl->SDL_JoystickOpen(1);
+  unsigned int a_but1 = g_low->sdl->SDL_JoystickGetButton(joy2, 0);  
+  unsigned int a_but2 = g_low->sdl->SDL_JoystickGetButton(joy2, 1);
+  unsigned int a_but3 = g_low->sdl->SDL_JoystickGetButton(joy2, 2);
+  unsigned int a_but4 = g_low->sdl->SDL_JoystickGetButton(joy2, 3);
   //std::cout << a_but1 << " " << a_but2 << " " << a_but3 << " " << a_but4 << std::endl;
   e2.joy1_button0 = a_but1==1;
   e2.joy1_button1 = a_but2==1;

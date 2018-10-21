@@ -3962,6 +3962,7 @@ void SDLArrayRender::DestroyState(void *state)
 }
 void SDLArrayRender::Show()
 {
+#if 0
   PreCalcMesh(dyn, rend, s);
   
   SDL_Event event;
@@ -3987,7 +3988,7 @@ void SDLArrayRender::Show()
     SDL_PollEvent(&event);
     if (event.type==SDL_QUIT || (event.type==SDL_KEYDOWN && event.key.keysym.sym==27)) { SDL_Quit(); exit(0); }
     }
-
+#endif
 }
 
 void FrameAnim::RenderOpenGl(const FaceCollection &col) { render->RenderFaces(col); }

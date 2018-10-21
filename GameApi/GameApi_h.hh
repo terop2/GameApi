@@ -67,7 +67,7 @@
 //#endif
 
 #include "GameApi_low.hh"
-#include <SDL_mixer.h>
+//#include <SDL_mixer.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #endif

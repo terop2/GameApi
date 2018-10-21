@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include "GameApi_low.hh"
 
-void SaveFrameAnim(FrameAnim &f, SDL_Surface *screen, std::string &output, float delta_time_between_frames, float total_time)
+void SaveFrameAnim(FrameAnim &f, Low_SDL_Surface *screen, std::string &output, float delta_time_between_frames, float total_time)
 {
 #if 0
   InitFrameAnim(f,screen);
@@ -28,7 +28,7 @@ void SaveFrameAnim(FrameAnim &f, SDL_Surface *screen, std::string &output, float
 #endif
 }
 
-void SaveFrameAnimToFile(FrameAnim &f, SDL_Surface *screen, std::string filename, float delta_time_between_frames, float total_time)
+void SaveFrameAnimToFile(FrameAnim &f, Low_SDL_Surface *screen, std::string filename, float delta_time_between_frames, float total_time)
 {
   std::cout << "Saving to " << filename << std::endl;
   std::string s;
