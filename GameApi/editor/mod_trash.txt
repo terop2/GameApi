@@ -1,0 +1,168 @@
+test
+
+
+(333,235)vx_blit uid20695 0 object:7569643233323439:false:-1 sx:3530:false:-1 sy:3530:false:-1 sz:3530:false:-1 start_x:2D343030:false:-1 end_x:343030:false:-1 start_y:2D343030:false:-1 end_y:343030:false:-1 start_z:2D343030:false:-1 end_z:343030:false:-1 false_value:2D31:false:-1 true_value:30:false:-1
+(456,230)vx_inst uid20696 0 voxel:7569643230363935:false:-1 count:31:false:-1 start_x:2D343030:false:-1 end_x:343030:false:-1 start_y:2D343030:false:-1 end_y:343030:false:-1 start_z:2D343030:false:-1 end_z:343030:false:-1
+(625,219)vx_bind uid20697 0 ev:6576:false:-1 objs:5B75696432303730305D:false:-1 ptss:7569643230363936:false:-1 mt:7569643230363938:false:-1
+(491,364)m_phong uid20698 0 ev:6576:false:-1 nxt:7569643230363939:false:-1 light_dir_x:2D302E33:false:-1 light_dir_y:302E33:false:-1 light_dir_z:2D312E30:false:-1 ambient:6666666638383030:false:-1 highlight:6666363636363636:false:-1 pow:31352E30:false:-1
+(370,362)m_def uid20699 0 ev:6576:false:-1
+(459,96)cube uid20700 0 start_x:2D35:false:-1 end_x:35:false:-1 start_y:2D35:false:-1 end_y:35:false:-1 start_z:2D35:false:-1 end_z:35:false:-1
+(137,574)c_circle_xz uid20701 0 center:7569643230373033:false:-1 r:313030:false:-1
+(286,579)c_sample uid20702 0 curve:7569643230373031:false:-1 num_samples:3330:false:-1
+(24,573)point uid20703 0 x:302E30:false:-1 y:302E30:false:-1 z:302E30:false:-1
+(419,588)li_from_pts uid20704 0 pts1:7569643230373032:false:-1 dx:30:false:-1 dy:30:false:-1 dz:30:false:-1
+(573,632)li_product uid20706 0 li1:7569643230373037:false:-1 li2:7569643230373034:false:-1
+(452,702)li_points uid20707 0 arr:5B75696432303730382C75696432303730395D:false:-1
+(313,708)point uid20708 0 x:30:false:-1 y:30:false:-1 z:30:false:-1
+(315,823)point uid20709 0 x:30:false:-1 y:3530:false:-1 z:30:false:-1
+(165,1067)sphere uid20711 0 center:7569643230373132:false:-1 radius:333530:false:-1 numfaces1:3330:false:-1 numfaces2:3330:false:-1
+(38,1056)point uid20712 0 x:302E30:false:-1 y:302E30:false:-1 z:302E30:false:-1
+(283,1072)li_from_polygon uid20713 0 poly:7569643230373131:false:-1
+(481,1076)li_to_pts2 uid20715 0 li:7569643230373133:false:-1
+(364,1295)smooth_normals uid23235 0 orig:7569643230373131:false:-1
+(544,1299)color_from_normals uid23236 0 orig:7569643233323335:false:-1
+(104,1223)sphere uid23237 0 center:28302E302C302E302C302E3029:false:-1 radius:3130302E30:false:-1 numfaces1:3330:false:-1 numfaces2:3330:false:-1
+(288,1474)sphere uid23238 0 center:7569643230373132:false:-1 radius:3130302E30:false:-1 numfaces1:3330:false:-1 numfaces2:3330:false:-1
+(136,1647)sphere uid23239 0 center:7569643233323430:false:-1 radius:3130302E30:false:-1 numfaces1:3330:false:-1 numfaces2:3330:false:-1
+(5,1639)point uid23240 0 x:30:false:-1 y:313030:false:-1 z:30:false:-1
+(420,1602)p_or_elem uid23241 0 p1:7569643233323338:false:-1 p2:7569643233323435:false:-1
+(259,1657)color uid23245 0 orig:7569643233323339:false:-1 color:6666666666663030:false:-1
+(198,221)o_sphere uid23249 0 center:7569643233323530:false:-1 radius:333530:false:-1
+(74,218)point uid23250 0 x:302E30:false:-1 y:302E30:false:-1 z:302E30:false:-1
+(402,1878)fo_itg_render uid28542 0 obj:7569643238353433:false:-1 sx:383030:false:-1 sy:363030:false:-1 numsamples:33:false:-1
+(231,1865)fo_from_volume uid28543 0 o:7569643233323439:false:-1 false_val:302E30:false:-1 true_val:312E30:false:-1
+(558,1876)to_grayscale_color uid28544 0 fb:7569643238353432:false:-1 r:323535:false:-1 g:323535:false:-1 b:323535:false:-1 a:323535:false:-1 r2:30:false:-1 g2:30:false:-1 b2:30:false:-1 a2:30:false:-1
+(786,1875)m_texture_many uid28545 0 ev:6576:false:-1 vec:5B75696432383534345D:false:-1 mix:312E30:false:-1
+(820,1745)cube uid28546 0 start_x:2D333030:false:-1 end_x:333030:false:-1 start_y:2D333030:false:-1 end_y:333030:false:-1 start_z:2D333030:false:-1 end_z:333030:false:-1
+(957,1820)m_bind uid28547 0 p:7569643238353436:false:-1 mat:7569643238353435:false:-1
+(878,2005)vr_window uid28548 0 ev:6576:false:-1 ml:7569643238353437:false:-1 logo:66616C7365:false:-1 fpscounter:66616C7365:false:-1 start_time:302E30:false:-1 duration:3130303030302E30:false:-1 invert:74727565:false:-1 translate:74727565:false:-1
+(264,2281)cube uid3869 0 start_x:2D3130302E30:false:-1 end_x:3130302E30:false:-1 start_y:2D3130302E30:false:-1 end_y:3130302E30:false:-1 start_z:2D3130302E30:false:-1 end_z:3130302E30:false:-1
+(387,2278)p_render uid3870 0 ev:6576:false:-1 p:75696433383639:false:-1
+(523,2282)vr_window uid3871 0 ev:6576:false:-1 ml:75696433383730:false:-1 logo:66616C7365:false:-1 fpscounter:66616C7365:false:-1 start_time:302E30:false:-1 duration:3130303030302E30:false:-1 invert:74727565:false:-1 translate:74727565:false:-1
+(331,-945)sphere uid31068 0 center:7569643331303731:false:-1 radius:313030:false:-1 numfaces1:3330:false:-1 numfaces2:3330:false:-1
+(325,-831)cube uid31069 0 start_x:2D313030:false:-1 end_x:313030:false:-1 start_y:2D313030:false:-1 end_y:2D313530:false:-1 start_z:2D313030:false:-1 end_z:313030:false:-1
+(330,-719)cone uid31070 0 numfaces:3330:false:-1 p1:7569643331303732:false:-1 p2:7569643331303733:false:-1 radius1:313030:false:-1 radius2:313030:false:-1
+(188,-953)point uid31071 0 x:30:false:-1 y:30:false:-1 z:30:false:-1
+(159,-765)point uid31072 0 x:30:false:-1 y:2D313530:false:-1 z:30:false:-1
+(159,-651)point uid31073 0 x:30:false:-1 y:2D353030:false:-1 z:30:false:-1
+(480,-789)p_or_elem uid31074 0 p1:7569643331303639:false:-1 p2:7569643331303730:false:-1
+(632,-741)m_bind uid31076 0 p:7569643331303734:false:-1 mat:7569643331303739:false:-1
+(514,-658)m_phong uid31077 0 ev:6576:false:-1 nxt:7569643331303738:false:-1 light_dir_x:2D302E33:false:-1 light_dir_y:302E33:false:-1 light_dir_z:2D312E30:false:-1 ambient:6666666638383030:false:-1 highlight:6666363636363636:false:-1 pow:31352E30:false:-1
+(389,-593)m_def uid31078 0 ev:6576:false:-1
+(522,-553)m_snow uid31079 0 ev:6576:false:-1 nxt:7569643331303738:false:-1 color1:6666616161616161:false:-1 color2:6666656565656565:false:-1 color3:6666666666666666:false:-1 mix_val:302E3935:false:-1
+(461,-1125)m_bloom uid31080 0 ev:6576:false:-1 nxt:7569643331303831:false:-1 bm:75696436373832:false:-1 r_cut:302E37:false:-1 g_cut:302E37:false:-1 b_cut:302E37:false:-1 pixel_x:302E3035:false:-1 pixel_y:302E3035:false:-1
+(296,-1194)m_def uid31081 0 ev:6576:false:-1
+(700,-1107)m_bind uid31082 0 p:7569643331303835:false:-1 mat:7569643331303830:false:-1
+(291,-1078)new uid31084 0 sx:313030:false:-1 sy:313030:false:-1 color:6666666666666666:false:-1
+(577,-1224)quad_z uid31085 0 x1:2D363030:false:-1 x2:363030:false:-1 y1:343430:false:-1 y2:2D343430:false:-1 z:30:false:-1
+(648,-868)fbo_id uid31086 0 ev:6576:false:-1 mainloop:75696436373833:false:-1 sx:353132:false:-1 sy:353132:false:-1 translate:66616C7365:false:-1
+(448,-929)p_render uid31087 0 ev:6576:false:-1 p:7569643331303638:false:-1
+(793,-860)tx_to_bitmap uid31088 0 txid:7569643331303836:false:-1
+(801,-753)fbo_ml uid31089 0 ev:6576:false:-1 txid:7569643331303836:false:-1 start_x:302E30:false:-1 end_x:383030:false:-1 start_y:302E30:false:-1 end_y:363030:false:-1 z:302E30:false:-1
+(749,-603)array_ml uid6780 0 arr:5B75696433313037362C75696433313038375D:false:-1
+(279,-564)scale uid6781 0 orig:7569643331303734:false:-1 sx:302E3133:false:-1 sy:302E3133:false:-1 sz:302E3133:false:-1
+(948,-853)flip_y uid6782 0 orig:7569643331303838:false:-1
+(879,-550)move_ml uid6783 0 ev:6576:false:-1 ml:75696436373830:false:-1 mn:75696436373838:false:-1 clone_count:31:false:-1 time_delta:31302E30:false:-1
+(567,-430)mn_empty uid6784 0
+(709,-424)mn_translate uid6786 0 next:75696436373834:false:-1 dx:30:false:-1 dy:30:false:-1 dz:2D343030:false:-1
+(849,-415)anim_rotate uid6787 0 next:75696436373836:false:-1 start_time:30:false:-1 end_time:3130:false:-1 p_x:30:false:-1 p_y:30:false:-1 p_z:30:false:-1 v_x:30:false:-1 v_y:31:false:-1 v_z:30:false:-1 angle:362E3238333138:false:-1
+(991,-418)anim_repeat uid6788 0 next:75696436373837:false:-1 start_time:30:false:-1 repeat_duration:3130:false:-1
+(689,-1873)sphere uid6789 0 center:75696436373930:false:-1 radius:313030:false:-1 numfaces1:3330:false:-1 numfaces2:3330:false:-1
+(561,-1876)point uid6790 0 x:30:false:-1 y:30:false:-1 z:30:false:-1
+(859,-1779)shadow uid6791 0 orig:75696436373839:false:-1 pos:75696436373932:false:-1 u_x:75696436373933:false:-1 u_y:75696436373934:false:-1 light_vec:75696436373935:false:-1
+(655,-1756)point uid6792 0 x:30:false:-1 y:2D333030:false:-1 z:30:false:-1
+(650,-1646)vector uid6793 0 dx:313030:false:-1 dy:30:false:-1 dz:30:false:-1
+(652,-1538)vector uid6794 0 dx:30:false:-1 dy:30:false:-1 dz:313030:false:-1
+(656,-1428)vector uid6795 0 dx:3230:false:-1 dy:313030:false:-1 dz:30:false:-1
+(1112,-1773)p_or_elem uid6797 0 p1:75696436373839:false:-1 p2:75696436383039:false:-1
+(862,-1590)shadow uid6798 0 orig:75696436373839:false:-1 pos:75696436373932:false:-1 u_x:75696436373933:false:-1 u_y:75696436373934:false:-1 light_vec:75696436383030:false:-1
+(858,-1410)shadow uid6799 0 orig:75696436373839:false:-1 pos:75696436373932:false:-1 u_x:75696436373933:false:-1 u_y:75696436373934:false:-1 light_vec:75696436383031:false:-1
+(528,-1437)vector uid6800 0 dx:2D3230:false:-1 dy:313030:false:-1 dz:30:false:-1
+(401,-1437)vector uid6801 0 dx:30:false:-1 dy:313030:false:-1 dz:30:false:-1
+(976,-1715)color uid6803 0 orig:75696436373931:false:-1 color:3830383838383838:false:-1
+(989,-1561)color uid6804 0 orig:75696436373938:false:-1 color:3830383838383838:false:-1
+(990,-1418)color uid6805 0 orig:75696436373939:false:-1 color:3830616161616161:false:-1
+(1245,-1770)p_render uid6808 0 ev:6576:false:-1 p:75696436373937:false:-1
+(1097,-1592)p_or_array uid6809 0 vec:5B756964363830332C756964363830352C756964363830345D:false:-1
+(1375,-1721)move_ml uid6810 0 ev:6576:false:-1 ml:75696436383038:false:-1 mn:75696436383132:false:-1 clone_count:31:false:-1 time_delta:31302E30:false:-1
+(1317,-1551)mn_empty uid6811 0
+(1457,-1548)anim_rotate uid6812 0 next:75696436383131:false:-1 start_time:302E30:false:-1 end_time:3130302E30:false:-1 p_x:302E30:false:-1 p_y:302E30:false:-1 p_z:302E30:false:-1 v_x:302E30:false:-1 v_y:312E30:false:-1 v_z:302E30:false:-1 angle:362E3238333138:false:-1
+(383,-2527)li_grid_from_quads uid5808 0 p:75696437363534:false:-1 sx:35:false:-1 sy:35:false:-1
+(593,-2520)li_to_cone uid7649 0 ev:6576:false:-1 li:75696435383038:false:-1 size:31:false:-1 numfaces:34:false:-1
+(149,-2526)p_mtl uid7651 0 ev:6576:false:-1 obj_url:687474703A2F2F747067616D65732E6F72672F73706F6E7A612F73706F6E7A612E6F626A:false:-1 mtl_url:687474703A2F2F747067616D65732E6F72672F73706F6E7A612F73706F6E7A612E6D746C:false:-1 url_prefix:687474703A2F2F747067616D65732E6F72672F73706F6E7A61:false:-1 count:31:false:-1
+(722,-2521)p_render uid7652 0 ev:6576:false:-1 p:75696437363439:false:-1
+(848,-2517)quake_ml uid7653 0 ev:6576:false:-1 ml:75696437363532:false:-1 speed:32302E30:false:-1 rot_speed:302E3033:false:-1
+(270,-2467)scale uid7654 0 orig:75696437363531:false:-1 sx:35:false:-1 sy:35:false:-1 sz:35:false:-1
+(170,-170)sphere uid16449 0 center:7569643136343530:false:-1 radius:313030:false:-1 numfaces1:3135:false:-1 numfaces2:3135:false:-1
+(46,-166)point uid16450 0 x:302E30:false:-1 y:302E30:false:-1 z:302E30:false:-1
+(271,-64)translate uid16451 0 orig:7569643136343439:false:-1 dx:323030:false:-1 dy:30:false:-1 dz:30:false:-1
+(740,-3121)vx_bind uid10795 0 ev:6576:false:-1 objs:5B75696431303739382C75696431323633395D:false:-1 ptss:7569643130373937:false:-1 mt:75696433343737:false:-1
+(201,-3003)vx_blit uid10796 0 object:7569643130373939:false:-1 sx:353132:false:-1 sy:353132:false:-1 sz:353132:false:-1 start_x:2D343030:false:-1 end_x:343030:false:-1 start_y:2D343030:false:-1 end_y:343030:false:-1 start_z:2D343030:false:-1 end_z:343030:false:-1 false_value:2D31:false:-1 true_value:30:false:-1
+(488,-2969)vx_inst uid10797 0 voxel:7569643138303736:false:-1 count:32:false:-1 start_x:2D343030:false:-1 end_x:343030:false:-1 start_y:2D343030:false:-1 end_y:343030:false:-1 start_z:2D343030:false:-1 end_z:343030:false:-1
+(343,-3160)cube uid10798 0 start_x:2D3135:false:-1 end_x:3135:false:-1 start_y:2D3135:false:-1 end_y:3135:false:-1 start_z:2D3135:false:-1 end_z:3135:false:-1
+(86,-3016)o_sphere uid10799 0 center:7569643130383030:false:-1 radius:323530:false:-1
+(0,-2914)point uid10800 0 x:30:false:-1 y:30:false:-1 z:30:false:-1
+(439,-2833)m_def uid10801 0 ev:6576:false:-1
+(322,-2937)vx_or_elem uid12634 0 v1:7569643130373936:false:-1 v2:7569643132363335:false:-1 p_x:30:false:-1 p_y:30:false:-1 p_z:30:false:-1
+(196,-2874)vx_blit uid12635 0 object:7569643132363336:false:-1 sx:353132:false:-1 sy:353132:false:-1 sz:353132:false:-1 start_x:2D343030:false:-1 end_x:343030:false:-1 start_y:2D343030:false:-1 end_y:343030:false:-1 start_z:2D343030:false:-1 end_z:343030:false:-1 false_value:2D31:false:-1 true_value:31:false:-1
+(137,-2744)o_sphere uid12636 0 center:7569643132363337:false:-1 radius:323530:false:-1
+(20,-2741)point uid12637 0 x:313030:false:-1 y:30:false:-1 z:30:false:-1
+(346,-3055)cube uid12638 0 start_x:2D32:false:-1 end_x:32:false:-1 start_y:2D32:false:-1 end_y:32:false:-1 start_z:2D32:false:-1 end_z:32:false:-1
+(466,-3073)color uid12639 0 orig:7569643132363338:false:-1 color:6666666666663030:false:-1
+(818,-2982)quake_ml uid12640 0 ev:6576:false:-1 ml:7569643130373935:false:-1 speed:32302E30:false:-1 rot_speed:302E3033:false:-1
+(687,-2854)m_web uid12641 0 ev:6576:false:-1 nxt:7569643130383031:false:-1 mult:312E3033:false:-1 linewidth:302E35:false:-1 linecolor:6666303030303030:false:-1
+(315,-3729)sphere uid16949 0 center:7569643136393530:false:-1 radius:3130302E30:false:-1 numfaces1:3330:false:-1 numfaces2:3330:false:-1
+(182,-3729)point uid16950 0 x:302E30:false:-1 y:302E30:false:-1 z:302E30:false:-1
+(201,-3256)vx_p uid18076 0 p:75696433343738:false:-1 sx:323030:false:-1 sy:323030:false:-1 sz:323030:false:-1 start_x:2D363030:false:-1 end_x:363030:false:-1 start_y:2D363030:false:-1 end_y:363030:false:-1 start_z:2D363030:false:-1 end_z:363030:false:-1 value:30:false:-1
+(81,-3259)sphere uid18077 0 center:7569643130383030:false:-1 radius:333030:false:-1 numfaces1:3330:false:-1 numfaces2:3330:false:-1
+(83,-3385)cube uid21805 0 start_x:2D313030:false:-1 end_x:313030:false:-1 start_y:2D313030:false:-1 end_y:313030:false:-1 start_z:2D313030:false:-1 end_z:313030:false:-1
+(550,-2822)m_phong uid3477 0 ev:6576:false:-1 nxt:7569643130383031:false:-1 light_dir_x:2D302E33:false:-1 light_dir_y:302E33:false:-1 light_dir_z:2D312E30:false:-1 ambient:6666666638383030:false:-1 highlight:6666363636363636:false:-1 pow:31352E30:false:-1
+(102,-3154)torus uid3478 0 ev:6576:false:-1 numfaces1:3131:false:-1 numfaces2:3131:false:-1 center:7569643130383030:false:-1 radius1:333530:false:-1 radius2:313530:false:-1
+(233,-3413)p_script uid9790 0 ev:6576:false:-1 url:687474703A2F2F747067616D65732E6F72672F75666F5F702E6D70:false:-1 %1:61:false:-1 %2:62:false:-1 %3:63:false:-1 %4:64:false:-1 %5:65:false:-1
+(339,-3338)rotatey uid10547 0 orig:7569643138353935:false:-1 angle:312E3539:false:-1
+(485,-3313)rotatez uid10548 0 orig:7569643130353437:false:-1 angle:302E31:false:-1
+(115,-3494)p_mtl uid18594 0 ev:6576:false:-1 obj_url:687474703A2F2F747067616D65732E6F72672F776F6C662F576F6C662E6F626A:false:-1 mtl_url:687474703A2F2F747067616D65732E6F72672F776F6C662F576F6C662E6D746C:false:-1 url_prefix:687474703A2F2F747067616D65732E6F72672F776F6C66:false:-1 count:31:false:-1
+(235,-3517)scale uid18595 0 orig:7569643138353934:false:-1 sx:33:false:-1 sy:33:false:-1 sz:33:false:-1
+(104,-3943)p_url uid14139 0 ev:6576:false:-1 url:687474703A2F2F747067616D65732E6F72672F416C7563792E6F626A:false:-1 count:31:false:-1
+(244,-3925)vx_p uid14140 0 p:7569643135303633:false:-1 sx:3330:false:-1 sy:3330:false:-1 sz:3330:false:-1 start_x:2D333030:false:-1 end_x:333030:false:-1 start_y:2D333030:false:-1 end_y:333030:false:-1 start_z:2D333030:false:-1 end_z:333030:false:-1 value:30:false:-1
+(136,-3835)scale uid15063 0 orig:7569643134313339:false:-1 sx:32:false:-1 sy:32:false:-1 sz:32:false:-1
+(413,-3887)m_bind uid15064 0 p:7569643135303633:false:-1 mat:75696433343737:false:-1
+(945,-2975)run_window uid29905 0 ev:6576:false:-1 ml:7569643132363430:false:-1 logo:66616C7365:false:-1 fpscounter:66616C7365:false:-1 start_time:302E30:false:-1 duration:3130303030302E30:false:-1
+(200,-4386)sphere uid2929 0 center:75696432393330:false:-1 radius:3130302E30:false:-1 numfaces1:3330:false:-1 numfaces2:3330:false:-1
+(74,-4388)point uid2930 0 x:302E30:false:-1 y:302E30:false:-1 z:302E30:false:-1
+(80,-4267)point uid2931 0 x:323030:false:-1 y:30:false:-1 z:30:false:-1
+(205,-4263)sphere uid2932 0 center:75696432393331:false:-1 radius:3330:false:-1 numfaces1:3330:false:-1 numfaces2:3330:false:-1
+(434,-4450)p_render uid30508 0 ev:6576:false:-1 p:7569643330353039:false:-1
+(296,-4515)empty uid30509 0
+(336,-4313)ma_p uid27805 0 vec:5B756964323932392C756964323933322C756964323932395D:false:-1 start_time:302E30:false:-1 time_step:31302E30:false:-1
+(583,-4360)ma_render uid27806 0 ev:6576:false:-1 next:7569643330353038:false:-1 anim:7569643237383035:false:-1 start_time:302E30:false:-1 delta_time:31302E30:false:-1 count:33:false:-1
+(347,-5141)im_from_distance uid11081 0 fd:7569643134313837:false:-1 pos_x:30:false:-1 pos_y:30:false:-1 pos_z:30:false:-1 u_x:333030:false:-1 u_y:333030:false:-1 u_z:333030:false:-1 sx:323536:false:-1 sy:323536:false:-1
+(219,-5139)fd_sphere uid11082 0 center:7569643131303833:false:-1 radius:323530:false:-1
+(98,-5147)point uid11083 0 x:30:false:-1 y:333030:false:-1 z:30:false:-1
+(534,-5137)vx_im uid12449 0 im:7569643131303831:false:-1 sx:313030:false:-1 sy:313030:false:-1 sz:313030:false:-1 start_x:2D333030:false:-1 end_x:333030:false:-1 start_y:2D333030:false:-1 end_y:333030:false:-1 start_z:2D333030:false:-1 end_z:333030:false:-1 value:30:false:-1
+(764,-5133)vx_bind uid12450 0 ev:6576:false:-1 objs:5B75696431323435325D:false:-1 ptss:7569643132343531:false:-1 mt:7569643132343534:false:-1
+(611,-5016)vx_inst uid12451 0 voxel:7569643132343439:false:-1 count:31:false:-1 start_x:2D3230302E30:false:-1 end_x:3230302E30:false:-1 start_y:2D3230302E30:false:-1 end_y:3230302E30:false:-1 start_z:2D3230302E30:false:-1 end_z:3230302E30:false:-1
+(598,-5281)cube uid12452 0 start_x:2D35:false:-1 end_x:35:false:-1 start_y:2D35:false:-1 end_y:35:false:-1 start_z:2D35:false:-1 end_z:35:false:-1
+(573,-4882)m_def uid12453 0 ev:6576:false:-1
+(691,-4876)m_snow uid12454 0 ev:6576:false:-1 nxt:7569643132343533:false:-1 color1:6666616161616161:false:-1 color2:6666656565656565:false:-1 color3:6666666666666666:false:-1 mix_val:302E3935:false:-1
+(923,-5102)quake_ml uid14183 0 ev:6576:false:-1 ml:75696432323331:false:-1 speed:32302E30:false:-1 rot_speed:302E3033:false:-1
+(224,-5024)fd_sphere uid14184 0 center:7569643134313836:false:-1 radius:323030:false:-1
+(365,-5007)fd_blend uid14185 0 a1:7569643133393136:false:-1 a2:7569643134313834:false:-1 k:3630:false:-1
+(101,-5024)point uid14186 0 x:323530:false:-1 y:30:false:-1 z:30:false:-1
+(342,-4885)fd_trans uid14187 0 fd:7569643134313835:false:-1 dx:313230:false:-1 dy:30:false:-1 dz:30:false:-1
+(150,-5255)fd_round_cube uid13916 0 start_x:2D313030:false:-1 end_x:313030:false:-1 start_y:2D313030:false:-1 end_y:313030:false:-1 start_z:2D313030:false:-1 end_z:313030:false:-1 r:3430:false:-1
+(454,-4859)fd_rot_z uid13917 0 fd:7569643134313837:false:-1 angle:32:false:-1
+(898,-4985)move_ml uid2231 0 ev:6576:false:-1 ml:7569643132343530:false:-1 mn:75696432323333:false:-1 clone_count:31:false:-1 time_delta:31302E30:false:-1
+(842,-4828)mn_empty uid2232 0
+(966,-4823)mn_scale uid2233 0 next:75696432323332:false:-1 sx:3130:false:-1 sy:3130:false:-1 sz:3130:false:-1
+(157,-5998)cube uid10213 0 start_x:2D3130:false:-1 end_x:3130:false:-1 start_y:2D313030:false:-1 end_y:313030:false:-1 start_z:2D3130:false:-1 end_z:3130:false:-1
+(304,-5962)static_instancing uid10214 0 ev:6576:false:-1 obj:7569643130323133:false:-1 pos:7569643130323136:false:-1
+(174,-5847)c_circle_xz uid10215 0 center:7569643130323137:false:-1 r:353030:false:-1
+(312,-5830)c_sample uid10216 0 curve:7569643130323135:false:-1 num_samples:3330:false:-1
+(50,-5850)point uid10217 0 x:302E30:false:-1 y:302E30:false:-1 z:302E30:false:-1
+(502,-5958)log_coords uid10218 0 p:7569643130323232:false:-1 x_count:3230:false:-1 y_count:3230:false:-1 sx:3330:false:-1 sy:3330:false:-1 sz:3330:false:-1
+(174,-5732)c_circle_xz uid10219 0 center:7569643130323137:false:-1 r:3630:false:-1
+(319,-5719)c_sample uid10220 0 curve:7569643130323139:false:-1 num_samples:3130:false:-1
+(455,-5734)static_instancing uid10221 0 ev:6576:false:-1 obj:7569643130323133:false:-1 pos:7569643130323230:false:-1
+(641,-5798)p_or_elem uid10222 0 p1:7569643130323134:false:-1 p2:7569643130323233:false:-1
+(580,-5623)color_faces uid10223 0 orig:7569643130323231:false:-1 color_1:6666666666663030:false:-1 color_2:6666666666663030:false:-1 color_3:6666383838383030:false:-1 color_4:6666383838383030:false:-1
