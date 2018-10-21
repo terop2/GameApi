@@ -479,7 +479,12 @@ struct Low_SDL_Joystick
 {
   void *data;
 };
-typedef void* Low_SDL_RWops;
+//typedef void* Low_SDL_RWops;
+
+struct Low_SDL_RWops
+{
+  void *ptr;
+};
 
 class SDLLowApi
 {
@@ -511,7 +516,23 @@ public:
   virtual Low_SDL_Joystick* SDL_JoystickOpen(int i)=0;
   virtual void SDL_JoystickEventState(int i)=0;
   virtual unsigned int SDL_JoystickGetButton(Low_SDL_Joystick *joy, int i)=0;
-  virtual void* SDL_RWFromMem(void *buffer, int size)=0;
+  virtual Low_SDL_RWops* SDL_RWFromMem(void *buffer, int size)=0;
+};
+
+struct Low_Mix_Chunk
+{
+  void *ptr;
+};
+struct Low_Mix_Music
+{
+  void *ptr;
+};
+enum {
+  Low_MIX_NONE=0x5600,
+  Low_MIX_INIT_MP3,
+  Low_MIX_INIT_OGG,
+  Low_MIX_DEFAULT_FORMAT,
+  Low_AUDIO_U8
 };
 
 class SDLMixerLowApi
@@ -519,12 +540,15 @@ class SDLMixerLowApi
 public:
   virtual void init()=0;
   virtual void cleanup()=0;
-  virtual void* Mix_LoadWav_RW(void *buf, int s)=0;
+  virtual Low_Mix_Chunk* Mix_LoadWAV_RW(Low_SDL_RWops *buf, int s)=0;
   virtual int Mix_OpenAudio(int rate, int flags, int val, int hup)=0;
-  virtual int Mix_PlayChannel(int channel, void *mix_chunk, int val)=0;
+  virtual int Mix_PlayChannel(int channel, Low_Mix_Chunk *mix_chunk, int val)=0;
+  virtual Low_Mix_Chunk *Mix_QuickLoad_RAW(unsigned char *mem, int len)=0;
   virtual void Mix_Init(int flags)=0;
-  virtual void Mix_GetNumMusicDecoders()=0;
-  virtual void Mix_GetMusicDecider(int i)=0;
+  virtual Low_Mix_Music *Mix_LoadMUS(const char *filename)=0;
+  virtual void Mix_PlayMusic(Low_Mix_Music *mus, int val)=0;
+  virtual int Mix_GetNumMusicDecoders()=0;
+  virtual void Mix_GetMusicDecoder(int i)=0;
   virtual void Mix_AllocateChannels(int i)=0;
 };
 
@@ -544,6 +568,7 @@ struct LowApi
   ImageLoadLowApi *img;
   SDLLowApi *sdl;
   SDLImageLowApi *sdl_image;
+  SDLMixerLowApi *sdl_mixer;
   OpenVRLowApi *ovr;
   EmscriptenVRLowApi *ems_vr;
 };

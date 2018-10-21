@@ -1,6 +1,5 @@
 
 #include "GameApi_h.hh"
-#include <SDL_mixer.h>
 
 class EmptySamples : public Samples
 {
@@ -57,11 +56,11 @@ EXPORT GameApi::SM GameApi::SampleCollectionApi::add(SM orig, WV wave, int sampl
 }
 EXPORT void GameApi::SampleCollectionApi::init_audio()
 {
-  Mix_Init(0);
-  int err = Mix_OpenAudio(22050, AUDIO_U8, 4, 1024);
+  g_low->sdl_mixer->Mix_Init(0);
+  int err = g_low->sdl_mixer->Mix_OpenAudio(22050, Low_AUDIO_U8, 4, 1024);
   if (err==-1)
     {
-      std::cout << "Mix_OpenAudio error: " << Mix_GetError() << std::endl;
+      //std::cout << "Mix_OpenAudio error: " << Mix_GetError() << std::endl;
     }
 }
 EXPORT void GameApi::SampleCollectionApi::play_sample(int channel, WAV w, int id) {
@@ -80,10 +79,10 @@ void GameApi::SampleCollectionApi::play_sample_1(int channel, WAV w, int id)
   std::cout << "Play_Sample: " << i << std::endl;
   int err = 0;
   if (i!=s)
-    err = Mix_PlayChannel(channel, (Mix_Chunk*)wav->chunks[i], 0);
+    err = g_low->sdl_mixer->Mix_PlayChannel(channel, (Low_Mix_Chunk*)wav->chunks[i], 0);
   if (err == -1)
     {
-      std::cout << "Mix_PlayChannel error: " << Mix_GetError() << std::endl;
+      //std::cout << "Mix_PlayChannel error: " << Mix_GetError() << std::endl;
     }
 }
 
@@ -115,10 +114,10 @@ EXPORT GameApi::WAV GameApi::SampleCollectionApi::prepare(SM samples)
 	}
       //SDL_RWops *bf = SDL_RWFromMem((void*)buffer, 11*4+ss*2);
       //Mix_Chunk *sample2 = Mix_LoadWAV_RW(bf, 1);
-      Mix_Chunk *sample2 = Mix_QuickLoad_RAW(buffer, ss);
-      if (!sample2)
+      Low_Mix_Chunk *sample2 = g_low->sdl_mixer->Mix_QuickLoad_RAW(buffer, ss);
+      if (!sample2->ptr)
 	{
-	  std::cout << "Mix_QuickLoad_Raw error: " << Mix_GetError() << std::endl;
+	  //std::cout << "Mix_QuickLoad_Raw error: " << Mix_GetError() << std::endl;
 	}
       else
 	{

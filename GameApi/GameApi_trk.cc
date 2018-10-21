@@ -1,5 +1,4 @@
 #include "GameApi_h.hh"
-#include <SDL_mixer.h>
 
 class EmptyTracker : public Tracker
 {
@@ -188,32 +187,32 @@ EXPORT void GameApi::TrackerApi::play_song(EveryApi &ev, TBUF buf, WAV samples, 
 
 void GameApi::TrackerApi::play_mp3(std::string filename)
 {
-  Mix_Init(MIX_INIT_MP3);
-  Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
+  g_low->sdl_mixer->Mix_Init(Low_MIX_INIT_MP3);
+  g_low->sdl_mixer->Mix_OpenAudio(22050, Low_MIX_DEFAULT_FORMAT, 2, 4096);
 #ifndef EMSCRIPTEN
-  int c = Mix_GetNumMusicDecoders();
+  int c = g_low->sdl_mixer->Mix_GetNumMusicDecoders();
   for(int i=0;i<c;i++)
     {
-      Mix_GetMusicDecoder(i);
+      g_low->sdl_mixer->Mix_GetMusicDecoder(i);
     }
 #endif
-  Mix_Music *mus = Mix_LoadMUS(filename.c_str());
-  Mix_PlayMusic(mus, 1);
+  Low_Mix_Music *mus = g_low->sdl_mixer->Mix_LoadMUS(filename.c_str());
+  g_low->sdl_mixer->Mix_PlayMusic(mus, 1);
 }
 
 void GameApi::TrackerApi::play_ogg(std::string filename)
 {
-  Mix_Init(MIX_INIT_OGG);
-  Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
+  g_low->sdl_mixer->Mix_Init(Low_MIX_INIT_OGG);
+  g_low->sdl_mixer->Mix_OpenAudio(22050, Low_MIX_DEFAULT_FORMAT, 2, 4096);
 #ifndef EMSCRIPTEN
-  int c = Mix_GetNumMusicDecoders();
+  int c = g_low->sdl_mixer->Mix_GetNumMusicDecoders();
   for(int i=0;i<c;i++)
     {
-      Mix_GetMusicDecoder(i);
+      g_low->sdl_mixer->Mix_GetMusicDecoder(i);
     }
 #endif
-  Mix_Music *mus = Mix_LoadMUS(filename.c_str());
-  Mix_PlayMusic(mus, 1);
+  Low_Mix_Music *mus = g_low->sdl_mixer->Mix_LoadMUS(filename.c_str());
+  g_low->sdl_mixer->Mix_PlayMusic(mus, 1);
 }
 
 int music_initialized = 0;
@@ -223,16 +222,16 @@ class PlayWavViaKeypress : public MainLoopItem
 public:
   PlayWavViaKeypress(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, std::string url, std::string homepage, int key) : env(env), ev(ev), next(next), url(url), homepage(homepage), key(key) { firsttime=true; initialized=false; chunk = 0;
     if (!music_initialized) {
-      Mix_Init(0);
-      Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
+      g_low->sdl_mixer->Mix_Init(0);
+      g_low->sdl_mixer->Mix_OpenAudio(44100, Low_MIX_DEFAULT_FORMAT, 2, 4096);
 #ifndef EMSCRIPTEN
-      int c = Mix_GetNumMusicDecoders();
+      int c = g_low->sdl_mixer->Mix_GetNumMusicDecoders();
       for(int i=0;i<c;i++)
 	{
-	  Mix_GetMusicDecoder(i);
+	  g_low->sdl_mixer->Mix_GetMusicDecoder(i);
 	}
 #endif
-      Mix_AllocateChannels(16);
+      g_low->sdl_mixer->Mix_AllocateChannels(16);
       music_initialized=1;
     }
   }
@@ -244,7 +243,7 @@ public:
     env.async_load_url(url, homepage);
 #endif
     std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
-    chunk = Mix_LoadWAV_RW(SDL_RWFromMem(&vec->operator[](0), vec->size()),0);
+    chunk = g_low->sdl_mixer->Mix_LoadWAV_RW(g_low->sdl->SDL_RWFromMem(&vec->operator[](0), vec->size()),0);
     if (!chunk) {
       std::cout << "Invalid wav file/Mix_QuickLoad_WAV failed" << std::endl;
     }
@@ -271,7 +270,7 @@ public:
 #endif
 
       if (ch == key && e.type==0x300) {
-	Mix_PlayChannel(-1,chunk, 0);
+	g_low->sdl_mixer->Mix_PlayChannel(-1,chunk, 0);
       }
     }
     return next->handle_event(e);
@@ -286,7 +285,7 @@ private:
   int key;
   bool firsttime;
   bool initialized;
-  Mix_Chunk *chunk;
+  Low_Mix_Chunk *chunk;
 };
 
 extern std::string gameapi_homepageurl;
