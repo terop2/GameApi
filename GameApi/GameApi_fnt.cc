@@ -1068,9 +1068,9 @@ public:
   void set(std::string s) { }
   std::string get() const {
     if (firsttime)
-      start_time = SDL_GetTicks();
+      start_time = g_low->sdl->SDL_GetTicks();
     firsttime = false;
-    unsigned int time = SDL_GetTicks();
+    unsigned int time = g_low->sdl->SDL_GetTicks();
     unsigned int time_to_use = time - start_time;
     time_to_use /= 1000;
 

@@ -501,8 +501,8 @@ private:
   Bitmap<File*> &bm;
 };
 
-void SaveFrameAnim(FrameAnim &f, SDL_Surface *screen, std::string &output, float delta_time_between_frames, float total_time);
-void SaveFrameAnimToFile(FrameAnim &f, SDL_Surface *screen, std::string filename, float delta_time_between_frames, float total_time);
+void SaveFrameAnim(FrameAnim &f, Low_SDL_Surface *screen, std::string &output, float delta_time_between_frames, float total_time);
+void SaveFrameAnimToFile(FrameAnim &f, Low_SDL_Surface *screen, std::string filename, float delta_time_between_frames, float total_time);
 
 void CreateHtml();
 

@@ -457,7 +457,7 @@ struct ExpressionNode
 ExpressionTree<ExpressionNode> *create_expr_tree_node(CreationFunction *func);
 
 void ExecuteGtkmm(int argc, char **argv, ExpressionTree<ExpressionNode> *&tree);
-void ExecuteEffect(ExpressionTree<ExpressionNode> *tree, SDL_Surface *surf);
+void ExecuteEffect(ExpressionTree<ExpressionNode> *tree, Low_SDL_Surface *surf);
 FrameAnim *CreateFrameAnim(ExpressionTree<ExpressionNode> *tree, Render *r);
 
 std::string stringify(float x);

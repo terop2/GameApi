@@ -415,11 +415,70 @@ class ImageLoadLowApi
 
 };
 
+enum
+  {
+    Low_SDL_NONE = 0x5500,
+    Low_SDL_WINDOWPOS_CENTERED,
+    Low_SDL_WINDOW_SHOWN,
+    Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE,
+    Low_SDL_WINDOW_OPENGL_SHOWN,
+    Low_SDL_GL_CONTEXT_PROFILE_MASK,
+    Low_SDL_GL_CONTEXT_PROFILE_CORE,
+    Low_SDL_GL_CONTEXT_MINOR_VERSION,
+    Low_SDL_GL_CONTEXT_MAJOR_VERSION,
+    Low_SDL_GL_STENCIL_SIZE,
+    Low_SDL_GL_DOUBLEBUFFER,
+    Low_SDL_GL_DEPTH_SIZE,
+    Low_SDL_GL_ALPHA_SIZE,
+    Low_SDL_GL_BLUE_SIZE,
+    Low_SDL_GL_GREEN_SIZE,
+    Low_SDL_GL_RED_SIZE,
+    Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK,
+    Low_SDL_GL_MULTISAMPLEBUFFERS,
+    Low_SDL_ENABLE
+  };
+
+#define Low_SDL_FINGERDOWN 0x700
+#define Low_SDL_FINGERUP 0x701
+#define Low_SDL_FINGERMOTION 0x702
+#define Low_SDL_MOUSEWHEEL 0x403
+
+#define Low_SDL_BUTTON(x) (1 << ((x)-1))
+#define Low_KMOD_CTRL (0x40|0x80)
+
+struct Low_SDL_Event_KeySym
+{
+  int sym;
+};
+struct Low_SDL_Event_Key
+{
+  Low_SDL_Event_KeySym keysym;
+};
+struct Low_SDL_MouseWheelEvent
+{
+  float y;
+};
+struct Low_SDL_TouchFingerEvent
+{
+  float x;
+  float y;
+};
+struct Low_SDL_Event
+{
+  int type;
+  Low_SDL_Event_Key key;
+  Low_SDL_MouseWheelEvent wheel;
+  Low_SDL_TouchFingerEvent tfinger;
+};
+
 struct Low_SDL_Surface { void *ptr; int w; int h; void* pixels; int pitch; };
 struct Low_SDL_Window { void *ptr; };
 typedef void* Low_SDL_GLContext;
 typedef unsigned int Low_SDL_Keymod;
-typedef void* Low_SDL_Joystick;
+struct Low_SDL_Joystick
+{
+  void *data;
+};
 typedef void* Low_SDL_RWops;
 
 class SDLLowApi
@@ -436,21 +495,22 @@ public:
   virtual void SDL_LockSurface(Low_SDL_Surface *surf)=0;
   virtual void SDL_UnlockSurface(Low_SDL_Surface *surf)=0;
   virtual void SDL_ShowCursor(bool b)=0;
-  virtual void SDL_PollEvent(void *event)=0;
+  virtual int SDL_PollEvent(Low_SDL_Event *event)=0;
   virtual unsigned int SDL_GetTicks()=0;
   virtual void SDL_Delay(int ms)=0;
   virtual Low_SDL_Surface* SDL_GetWindowSurface(Low_SDL_Window *win)=0;
-  virtual Low_SDL_Window* SDL_CreateWindow(const char *title, int x, int y, int width, int height, int flags2)=0;
+  virtual Low_SDL_Window* SDL_CreateWindow(const char *title, int x, int y, int width, int height, unsigned int flags2)=0;
   virtual Low_SDL_GLContext SDL_GL_CreateContext(Low_SDL_Window *window)=0;
   //virtual void SDL_GL_SwapBuffers()=0;
   virtual void SDL_GL_SwapWindow(Low_SDL_Window *window)=0;
   virtual void SDL_UpdateWindowSurface(Low_SDL_Window *window)=0;
   virtual void SDL_DestroyWindow(Low_SDL_Window *window)=0;
   virtual void SDL_SetWindowTitle(Low_SDL_Window *window, const char *title)=0;
-  virtual void SDL_GetMouseState(int *x, int *y)=0;
+  virtual unsigned int SDL_GetMouseState(int *x, int *y)=0;
   virtual unsigned int SDL_GetModState()=0;
-  virtual void* SDL_JoystickOpen(int i)=0;
-  virtual unsigned int SDL_JoystickGetButton(void*joy, int i)=0;
+  virtual Low_SDL_Joystick* SDL_JoystickOpen(int i)=0;
+  virtual void SDL_JoystickEventState(int i)=0;
+  virtual unsigned int SDL_JoystickGetButton(Low_SDL_Joystick *joy, int i)=0;
   virtual void* SDL_RWFromMem(void *buffer, int size)=0;
 };
 

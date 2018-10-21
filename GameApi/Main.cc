@@ -31,9 +31,9 @@
 //#include <GL/gl.h>
 //#endif
 #endif
-#include <SDL.h>
-#include <SDL_opengl.h>
-#include <SDL_image.h>
+//#include <SDL.h>
+//#include <SDL_opengl.h>
+//#include <SDL_image.h>
 //#include <sys/soundcard.h>
 //#include <fcntl.h>
 //#include <sys/ioctl.h>
@@ -384,37 +384,37 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 #ifdef SDL2_USED
   int screenx = scr_x, screeny = scr_y;
 
-  g_low->sdl->SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK);
+  g_low->sdl->SDL_Init(Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK);
 
 
-  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_RED_SIZE, 8);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_GREEN_SIZE, 8);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_BLUE_SIZE, 8);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_ALPHA_SIZE, 8);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_DEPTH_SIZE, 24);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_DOUBLEBUFFER, 1);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_STENCIL_SIZE, 1);
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1);
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4);
 
 #ifndef EMSCRIPTEN
-  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
-  g_low->sdl->SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_PROFILE_MASK, Low_SDL_GL_CONTEXT_PROFILE_CORE);
 #endif
   //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #ifdef VIRTUAL_REALITY
   check_vr_compositor_init();
 #endif  
   if (resize)
-    sdl_window = g_low->sdl->SDL_CreateWindow("Program", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scr_x, scr_y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE);
+    sdl_window = g_low->sdl->SDL_CreateWindow("Program", Low_SDL_WINDOWPOS_CENTERED, Low_SDL_WINDOWPOS_CENTERED, scr_x, scr_y, Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE);
   else
-    sdl_window = g_low->sdl->SDL_CreateWindow("Program", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scr_x, scr_y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+    sdl_window = g_low->sdl->SDL_CreateWindow("Program", Low_SDL_WINDOWPOS_CENTERED, Low_SDL_WINDOWPOS_CENTERED, scr_x, scr_y, Low_SDL_WINDOW_OPENGL_SHOWN);
  
-  
+  std::cout << sdl_window << " " << sdl_window->ptr << std::endl;
 
-  SDL_GLContext context;
+  Low_SDL_GLContext context;
   context = g_low->sdl->SDL_GL_CreateContext(sdl_window);
   if (!context) { 
     std::cout << "Could not create Opengl3.2 context" << std::endl; 
@@ -468,9 +468,9 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   return 0;
 }
 
-SDL_Surface *InitSDL(int scr_x, int scr_y, bool vblank, bool antialias)
+Low_SDL_Surface *InitSDL(int scr_x, int scr_y, bool vblank, bool antialias)
 {
-  SDL_Surface *screen = 0;
+  Low_SDL_Surface *screen = 0;
 #ifndef SDL2_USED
   int screenx = scr_x, screeny = scr_y;
   //screenx = 1024;
@@ -814,7 +814,7 @@ int mainxxx(int argc, char *argv[])
   screeny = 768;
   InitSDL(screenx, screeny, true); // true = vsync
 
-  SDL_Surface *screen; // = SDL_GetVideoSurface();
+  Low_SDL_Surface *screen; // = SDL_GetVideoSurface();
 
 
   ShaderFile shader("./Shader.txt");
@@ -1101,6 +1101,7 @@ void Execute2(FrameAnim &f)
 }
 void Execute2(FrameAnim &f, EventSurface &surf)
 {
+#if 0
   SDL_Event event;
   SDL_Event prev;
 
@@ -1209,14 +1210,14 @@ void Execute2(FrameAnim &f, EventSurface &surf)
 
   f.Cleanup();
   lock1=false;
-
+#endif
 }
 //void ExecuteRend(FrameAnim &f, SDL_Surface *screen, Render *rend)
 //{
 //  rend->Execute(f,screen);
 //}
 
-void Execute(FrameAnim &f, SDL_Surface *screen)
+void Execute(FrameAnim &f, Low_SDL_Surface *screen)
 {
 #if 0
   SDL_Event event;
@@ -1295,16 +1296,16 @@ void Execute(FrameAnim &f, SDL_Surface *screen)
 #endif
 }
 
-void InitFrameAnim(FrameAnim &f, SDL_Surface *screen)
+void InitFrameAnim(FrameAnim &f, Low_SDL_Surface *screen)
 {
   f.Init();
   glColor3f(1.0,1.0,1.0);
 
 }
 
-void DisplayFrame(FrameAnim &f, SDL_Surface *screen, float time)
+void DisplayFrame(FrameAnim &f, Low_SDL_Surface *screen, float time)
 {
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+  g_low->ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT );
 
   //SawWaveform w;
   //FitWaveform fit(w, 150.0, 0.0, 150.0);
@@ -1313,20 +1314,20 @@ void DisplayFrame(FrameAnim &f, SDL_Surface *screen, float time)
 
   f.PreFrame(time/30.0);
 #ifndef EMSCRIPTEN
-  glTranslatef(0.0, 0.0, -500.0);
+  g_low->ogl->glTranslatef(0.0, 0.0, -500.0);
 #endif
   float speed = f.RotSpeed();
-  glRotatef(speed*time/30.0, f.XRot(),f.YRot(),f.ZRot());
+  g_low->ogl->glRotatef(speed*time/30.0, f.XRot(),f.YRot(),f.ZRot());
 #ifndef EMSCRIPTEN
-  glTranslatef(0.0, -100.0, 0.0);
+  g_low->ogl->glTranslatef(0.0, -100.0, 0.0);
 #endif
   f.Frame(time/30.0);
   f.PostFrame();
-  glLoadIdentity();
+  g_low->ogl->glLoadIdentity();
 
   //SDL_GL_SwapBuffers();
 }
-void CleanupFrameAnim(FrameAnim &f, SDL_Surface *surf)
+void CleanupFrameAnim(FrameAnim &f, Low_SDL_Surface *surf)
 {
   f.Cleanup();
 }
@@ -1462,7 +1463,7 @@ BufferRef LoadImage(std::string filename, bool &success)
   format.Amask = 0xff000000;
   //format.colorkey = 0;
   //format.alpha = 255;
-  SDL_Surface *surf2 = SDL_ConvertSurface(surf, &format, 0);
+  Low_SDL_Surface *surf2 = g_low->sdl->SDL_ConvertSurface(surf, &format, 0);
   BufferRef ref = CopyFromSDLSurface(surf2);
   SDL_FreeSurface(surf);  
 #endif
@@ -1470,17 +1471,17 @@ BufferRef LoadImage(std::string filename, bool &success)
   success = true;
   return ref;
 }
-BufferRef CopyFromSDLSurface(SDL_Surface *surf)
+BufferRef CopyFromSDLSurface(Low_SDL_Surface *surf)
 {
   //std::cout << "Copy Size: " << surf->w << " " << surf->h << std::endl;
   BufferRef buf = BufferRef::NewBuffer(surf->w, surf->h);
   //std::cout << buf.buffer << " " << buf.width << " " << buf.height << " " << buf.ydelta << std::endl;
-  SDL_LockSurface(surf);
+  g_low->sdl->SDL_LockSurface(surf);
   for(int y=0;y<surf->h;y++)
     for(int x=0;x<surf->w;x++)
       {
-	Uint32 *ptr = (Uint32*)surf->pixels;
-	int color = ptr[(surf->format->BytesPerPixel*x+y*surf->pitch)/sizeof(Uint32)];
+	unsigned int *ptr = (unsigned int*)surf->pixels;
+	int color = ptr[(/*surf->format->BytesPerPixel**/ x+y*surf->pitch)/sizeof(unsigned int)];
 	//std::cout << x << " " << y << " " << buf.ydelta << std::endl;
 #if 0
 	int r = (color & 0xff000000) >> 24 ;
@@ -1492,7 +1493,7 @@ BufferRef CopyFromSDLSurface(SDL_Surface *surf)
 #endif
 	buf.buffer[x+buf.ydelta*y] = color;
       }
-  SDL_UnlockSurface(surf);
+  g_low->sdl->SDL_UnlockSurface(surf);
   return buf;
 }
 struct savecontext 
@@ -1544,7 +1545,7 @@ Low_SDL_Surface *sdl_framebuffer = 0;
 Low_SDL_Surface *init_sdl_surface_framebuffer(int scr_x, int scr_y)
 {
 #ifdef SDL2_USED
-  sdl_framebuffer_window = g_low->sdl->SDL_CreateWindow("Framebuffer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scr_x, scr_y, SDL_WINDOW_SHOWN);
+  sdl_framebuffer_window = g_low->sdl->SDL_CreateWindow("Framebuffer", Low_SDL_WINDOWPOS_CENTERED, Low_SDL_WINDOWPOS_CENTERED, scr_x, scr_y, Low_SDL_WINDOW_SHOWN);
   sdl_framebuffer = g_low->sdl->SDL_GetWindowSurface(sdl_framebuffer_window);
 #endif
   return sdl_framebuffer;
@@ -1552,6 +1553,7 @@ Low_SDL_Surface *init_sdl_surface_framebuffer(int scr_x, int scr_y)
 
 Low_SDL_Surface *init_iot_surface_framebuffer(int scr_x, int scr_y)
 {
+  return 0;
   // TODO
   // sdl_framebuffer = ... ;
 }

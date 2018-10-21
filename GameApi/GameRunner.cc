@@ -43,10 +43,10 @@ void GameRunner::run()
 #endif
 	g_low->sdl->SDL_GL_SwapWindow(sdl_window);
 	//SDL_GL_SwapBuffers();
-
+#if 0
 	SDL_Event event;
 	SDL_PollEvent(&event);
-
+#endif
 	time+=30.0;
       }
 }

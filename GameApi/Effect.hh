@@ -29,7 +29,7 @@
 #include <iostream>
 #include "Pieces.hh"
 #ifndef DEPS
-#include <SDL.h>
+//#include <SDL.h>
 #endif
 #undef M_PI
 #include "Buffer.hh"
@@ -2413,7 +2413,7 @@ public:
   unsigned int texture;
 };
 
-void Execute(FrameAnim &f, SDL_Surface *screen);
+void Execute(FrameAnim &f, Low_SDL_Surface *screen);
 BufferRef LoadImage(std::string filename, bool &success);
 BufferRef LoadImageFromString(std::vector<unsigned char> buffer, bool &success);
 
@@ -9930,10 +9930,10 @@ public:
   bool Frame(float time);
 };
 
-void InitFrameAnim(FrameAnim &f, SDL_Surface *screen);
-void DisplayFrame(FrameAnim &f, SDL_Surface *screen, float time);
-void CleanupFrameAnim(FrameAnim &f, SDL_Surface *surf);
-SDL_Surface *InitSDL(int scr_x, int scr_y, bool vsync, bool antialias=false);
+void InitFrameAnim(FrameAnim &f, Low_SDL_Surface *screen);
+void DisplayFrame(FrameAnim &f, Low_SDL_Surface *screen, float time);
+void CleanupFrameAnim(FrameAnim &f, Low_SDL_Surface *surf);
+Low_SDL_Surface *InitSDL(int scr_x, int scr_y, bool vsync, bool antialias=false);
 Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vsync, bool antialias=false, bool resize=false);
 
 

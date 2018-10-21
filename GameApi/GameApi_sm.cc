@@ -1,5 +1,6 @@
 
 #include "GameApi_h.hh"
+#include <SDL_mixer.h>
 
 class EmptySamples : public Samples
 {

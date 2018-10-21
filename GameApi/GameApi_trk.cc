@@ -1,4 +1,5 @@
 #include "GameApi_h.hh"
+#include <SDL_mixer.h>
 
 class EmptyTracker : public Tracker
 {
