@@ -37,6 +37,8 @@
 #include <SDL/SDL_opengl.h>
 #endif
 #endif
+#include "GameApi_h.hh"
+#include <SDL_mixer.h>
 
 
 #ifdef WINDOWS
@@ -933,9 +935,79 @@ class SDLApi : public SDLLowApi
     ::SDL_JoystickEventState(i);
   }
   virtual unsigned int SDL_JoystickGetButton(Low_SDL_Joystick *joy, int i) { return ::SDL_JoystickGetButton((SDL_Joystick*)joy->data,i); }
-  virtual void* SDL_RWFromMem(void *buffer, int size) { return ::SDL_RWFromMem(buffer,size); }
+  virtual Low_SDL_RWops* SDL_RWFromMem(void *buffer, int size) { 
+    Low_SDL_RWops *ops = new Low_SDL_RWops;
+    ops->ptr = ::SDL_RWFromMem(buffer,size);
+    return ops; 
+  }
 };
 
+void map_enums_mix(int &i)
+{
+  switch(i) {
+  case Low_MIX_INIT_MP3: i=MIX_INIT_MP3; break;
+  case Low_MIX_INIT_OGG: i=MIX_INIT_OGG; break;
+  case Low_MIX_DEFAULT_FORMAT: i=MIX_DEFAULT_FORMAT; break;
+  case Low_AUDIO_U8: i=AUDIO_U8; break;
+  };
+}
+
+class SDLMixerApi : public SDLMixerLowApi
+{
+public:
+  virtual void init() { }
+  virtual void cleanup() { }
+  virtual Low_Mix_Chunk* Mix_LoadWAV_RW(Low_SDL_RWops *buf, int s)
+  {
+    Mix_Chunk *m = ::Mix_LoadWAV_RW((SDL_RWops*)buf->ptr,s);
+    Low_Mix_Chunk *c = new Low_Mix_Chunk;
+    c->ptr = m;
+    return c;
+  }
+
+  virtual int Mix_OpenAudio(int rate, int flags, int val, int hup)
+  {
+    map_enums_mix(flags);
+    return ::Mix_OpenAudio(rate,flags,val,hup);
+  }
+  virtual int Mix_PlayChannel(int channel, Low_Mix_Chunk *mix_chunk, int val)
+  {
+    return ::Mix_PlayChannelTimed(channel, (Mix_Chunk*)mix_chunk->ptr, val,-1);
+  }
+  virtual Low_Mix_Chunk *Mix_QuickLoad_RAW(unsigned char *mem, int len)
+  {
+    Low_Mix_Chunk *c = new Low_Mix_Chunk;
+    c->ptr = ::Mix_QuickLoad_RAW(mem,len);
+    return c;
+  }
+  virtual void Mix_Init(int flags)
+  {
+    map_enums_mix(flags);
+    ::Mix_Init(flags);
+  }
+  virtual Low_Mix_Music *Mix_LoadMUS(const char *filename)
+  {
+    Low_Mix_Music *m = new Low_Mix_Music;
+    m->ptr = ::Mix_LoadMUS(filename);
+    return m;
+  }
+  virtual void Mix_PlayMusic(Low_Mix_Music *mus, int val)
+  {
+    ::Mix_PlayMusic((Mix_Music*)mus->ptr, val);
+  }
+  virtual int Mix_GetNumMusicDecoders()
+  {
+    return ::Mix_GetNumMusicDecoders();
+  }
+  virtual void Mix_GetMusicDecoder(int i)
+  {
+    ::Mix_GetMusicDecoder(i);
+  }
+  virtual void Mix_AllocateChannels(int i)
+  {
+    ::Mix_AllocateChannels(i);
+  }
+};
 
 LowApi *g_low;
  
@@ -944,6 +1016,7 @@ void initialize_low(int flags)
   LowApi *low = new LowApi;
   low->ogl = new OpenglApi;
   low->sdl = new SDLApi;
+  low->sdl_mixer = new SDLMixerApi;
 
   g_low = low;
 }

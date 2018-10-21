@@ -16,11 +16,11 @@
 #include <GL/gl.h>
 #endif
 #ifdef SDL2_USED
-#include <SDL.h>
-#include <SDL_opengl.h>
+//#include <SDL.h>
+//#include <SDL_opengl.h>
 #else
-#include <SDL/SDL.h> 
-#include <SDL/SDL_opengl.h>
+//#include <SDL/SDL.h> 
+//#include <SDL/SDL_opengl.h>
 #endif
 #endif
 #include "GameApi_low.hh"
