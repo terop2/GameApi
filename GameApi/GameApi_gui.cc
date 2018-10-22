@@ -22,6 +22,14 @@
 #include <emscripten.h>
 #endif
 
+#ifdef ARM
+#ifdef FIRST_PART
+int strlen(const char *ptr) { const char *p = ptr; while(*p) { p++;  } return p-ptr;}
+#else
+int strlen(const char *);
+#endif
+#endif
+
 std::vector<GameApiItem*> all_functions();
 std::vector<GameApiItem*> polydistfield_functions();
 std::vector<GameApiItem*> waveform_functions();

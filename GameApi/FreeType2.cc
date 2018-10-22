@@ -1,5 +1,7 @@
 
 #include "GameApi_h.hh"
+#ifdef HAS_FREETYPE
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <string>
@@ -184,3 +186,4 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
 #endif
 
 }
+#endif

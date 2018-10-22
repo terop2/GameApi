@@ -7,7 +7,7 @@
 //#include <SDL_opengl.h>
 #include "GameApi_low.hh"
 
-
+#ifndef ARM
 
 #ifdef VIRTUAL_REALITY
 #ifndef EMSCRIPTEN
@@ -794,3 +794,4 @@ GameApi::IF GameApi::FontApi::hmd_state_fetcher()
 {
   return add_int_fetcher(e, new HMDStateIntFetcher());
 }
+#endif

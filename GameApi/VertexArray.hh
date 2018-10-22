@@ -352,6 +352,8 @@ private:
   const FaceCollection &coll;
   VertexArraySet &s;
 };
+
+#ifndef ARM
 class ThreadedPrepare;
 struct ThreadInfo
 {
@@ -491,6 +493,6 @@ private:
   std::vector<ThreadInfo *> ti;
   FaceCollection *faces;
 };
-
+#endif
 
 #endif

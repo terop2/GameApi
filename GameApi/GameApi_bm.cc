@@ -497,7 +497,7 @@ EXPORT GameApi::ML GameApi::BitmapApi::savebitmap_ml(EveryApi &ev, BM bm, std::s
 std::vector<unsigned char> load_from_url(std::string url)
 { // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
 
-
+#ifdef HAS_POPEN
 
 #ifdef WINDOWS
     std::string cmd = "..\\curl\\curl.exe -s -N --url " + url;
@@ -527,6 +527,9 @@ std::vector<unsigned char> load_from_url(std::string url)
     while(fread(&c,1,1,f)==1) { buffer.push_back(c); }
       }
     return buffer;
+#else
+    // no popen
+#endif
 }
 extern std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
 

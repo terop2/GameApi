@@ -1,5 +1,7 @@
 
 #include "GameApi_low.hh"
+
+#ifndef ARM
 #include <cassert>
 #include <iostream>
 #include <sstream>
@@ -1008,15 +1010,20 @@ public:
     ::Mix_AllocateChannels(i);
   }
 };
+#endif // ndef ARM
 
 LowApi *g_low;
  
 void initialize_low(int flags)
 {
+#ifndef ARM
   LowApi *low = new LowApi;
   low->ogl = new OpenglApi;
   low->sdl = new SDLApi;
   low->sdl_mixer = new SDLMixerApi;
-
+#else
+  LowApi *low; // TODO
+#endif
+  
   g_low = low;
 }

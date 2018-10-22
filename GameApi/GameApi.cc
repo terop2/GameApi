@@ -45,11 +45,15 @@ std::string color_funccall_to_string_with_replace(ShaderModule *mod, std::string
 EnvImpl::EnvImpl() : event_infos(new EmptySequencer2), mutex(PTHREAD_MUTEX_INITIALIZER)
 {
 #ifndef EMSCRIPTEN
+#ifdef HAS_FREETYPE
     FT_Init_FreeType(&lib);
     //std::cout << "Freetype init error: " << err << std::endl;
     //std::cout << &lib << std::endl;
+#endif
 #else
+#ifdef HAS_FREETYPE
     FT_Init_FreeType(&lib);
+#endif
 #endif 
     cursor_pos_point_id.id = -1;
     async_loader = new ASyncLoader;
@@ -275,8 +279,10 @@ EnvImpl::~EnvImpl()
       delete f.bm;
     }
 #ifndef EMSCRIPTEN
+#ifdef HAS_FREETYPE
   std::cout << "FREE FREETYPE!" << std::endl;
   FT_Done_FreeType(lib);
+#endif
 #endif
   int s1 = bm.size();
   for(int i1=0;i1<s1;i1++)
@@ -2674,14 +2680,19 @@ void *Thread_Call(void *data)
 {
   GameApi::RenderObject *o = (GameApi::RenderObject*)data;
   o->prepare();
+#ifndef ARM
   pthread_exit(NULL);
+#endif
   return 0;
 }
+#ifndef ARM
 pthread_t thread;
-
+#endif
 void GameApi::prepare(GameApi::RenderObject &o)
 {
+#ifndef ARM 
   pthread_create(&thread, NULL, Thread_Call, (void*)&o);
+#endif
 }
 
 GameApi::Pa GameApi::PolygonArrayApi::split_p(EveryApi &ev, P p, int max_chunk)
@@ -11271,9 +11282,12 @@ GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_g
 extern std::string gameapi_homepageurl;
 GameApi::FI GameApi::FontApi::load_font(std::string ttf_filename, int sx, int sy)
 {
+#ifdef HAS_FREETYPE
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   void *priv_ = (void*)&env->lib;
   return add_font_interface(e, new FontInterfaceImpl(e, priv_, ttf_filename, gameapi_homepageurl, sx,sy));
+#else
+#endif
 }
 
 class RotateCmds : public CmdExecute

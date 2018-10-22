@@ -3093,6 +3093,7 @@ void ArrayRender::UpdateAllTextures(MeshTextures &tex)
     }
 }
 #ifndef EMSCRIPTEN
+#ifndef ARM
 struct ThreadInfo_bitmap
 {
   pthread_t thread_id;
@@ -3146,6 +3147,7 @@ private:
   std::vector<BufferFromBitmap*> buffers;
   std::vector<ThreadInfo_bitmap*> ti;
 };
+#endif
 #endif
 
 void ArrayRender::UpdateTexture(MeshTextures &tex, int num)

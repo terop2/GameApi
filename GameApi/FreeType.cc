@@ -1,5 +1,7 @@
 
 #include "GameApi_h.hh"
+
+#ifdef HAS_FREETYPE
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <string>
@@ -249,3 +251,4 @@ int FontGlyphBitmap::Map(int x, int y) const
     return 0;
   return (int)priv->face->glyph->bitmap.buffer[x+y*priv->face->glyph->bitmap.pitch];
 }
+#endif

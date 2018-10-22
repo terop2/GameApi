@@ -3356,9 +3356,10 @@ void ProgressBar(int num, int val, int max, std::string label)
   }
   std::cout << "] (" << val1 << "/" << max1 << ") (" << val << "/" << max << ") " << num;
 }
+#ifdef THREADS
 extern ThreadInfo *ti_global;
+#endif
 extern int thread_counter;
-
 
 EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P p, bool keep)
 {
