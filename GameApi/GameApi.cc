@@ -14327,17 +14327,22 @@ GameApi::VX GameApi::VoxelApi::from_implicit(IM i, int sx, int sy, int sz, float
 class SourceBitmap
 {
 public:
-  SourceBitmap(DrawBufferFormat fmt, int depth) : m_data(0), fmt(fmt), m_depth(depth) 
+  SourceBitmap(DrawBufferFormat fmt, int depth) : m_data(0), fmt(fmt), m_depth(depth),m_owned(false),m_owned2(false)
   {
   }
   void set_data(void *data, int width, int height, int ydelta) {
-    m_data = data;
+    //std::cout << "set_data 1 " << std::endl;
+    unsigned int *buf = new unsigned int[width*height];
+    std::memset(buf, 0, width*height);
+    m_data = buf;
+    std::memcpy(buf, data, width*height*sizeof(unsigned int));
     m_width=width;
     m_height=height;
     m_ydelta=ydelta;
-    m_owned = false;
+    m_owned2 = true;
   }
   void set_data_mono1(void *data, int width, int height, int ydelta) {
+    //std::cout << "set_data 2 " << std::endl;
     unsigned char *buf = new unsigned char[width*height/8];
     std::memset(buf, 0, width*height/8);
     m_data = buf;
@@ -14358,7 +14363,10 @@ public:
 	}
     m_owned = true;
   }
-  ~SourceBitmap() { if (m_owned) delete[]((unsigned char*)m_data); }
+  ~SourceBitmap() { 
+    if (m_owned) delete[]((unsigned char*)m_data); 
+    if (m_owned2) delete[]((unsigned int*)m_data);
+  }
 public:
   void *m_data;
   DrawBufferFormat fmt;
@@ -14367,6 +14375,7 @@ public:
   int m_ydelta;
   int m_depth;
   bool m_owned;
+  bool m_owned2;
 };
 
 
@@ -14463,9 +14472,21 @@ public:
 	int w = std::min(sp_width, width-pos_x);
 	int h = std::min(sp_height, height-pos_y);
 	for(int y=start_y;y<h;y++)
-	  for(int x=start_x;x<w;x+=8)
+	  for(int x=start_x;x<w;x++)
 	    {
-	      ((unsigned char*)buffer)[(pos_x+x)/8+(y+pos_y)*width/8] = ((unsigned char*)buf)[x/8+y*sp_ydelta];
+	      int s_pos = (x/8+y*sp_ydelta);
+	      int t_pos = ((pos_x+x)/8+(y+pos_y)*(width));
+	      int s_bit = x&0x7;
+	      int t_bit = (x+pos_x)&0x7;
+	      unsigned char b = ((unsigned char*)buf)[s_pos];
+	      b>>=7-s_bit;
+	      b&=1;
+	      if (b) {
+		((unsigned char*)buffer)[t_pos]|=1<<(7-t_bit);
+	      } else {
+		((unsigned char*)buffer)[t_pos]&=~(1<<(7-t_bit));
+	      }
+	      //((unsigned char*)buffer)[(pos_x+x)/8+(y+pos_y)*width/8] = ((unsigned char*)buf)[x/8+y*sp_ydelta];
 
 	    }
 	}
@@ -14746,7 +14767,7 @@ GameApi::RUN GameApi::LowFrameBufferApi::low_framebuffer_run(EveryApi &ev, GameA
 }
 
 
-void BufferRefToSourceBitmap(BufferRef ref, SourceBitmap &target, DrawBufferFormat fmt)
+void BufferRefToSourceBitmap(BufferRef &ref, SourceBitmap &target, DrawBufferFormat fmt)
 {
   unsigned int *buffer = ref.buffer;
   unsigned int width = ref.width;
@@ -14766,32 +14787,36 @@ void BufferRefToSourceBitmap(BufferRef ref, SourceBitmap &target, DrawBufferForm
   };
 }
 
-BufferRef BitmapToSourceBitmap(Bitmap<Color> &bm, SourceBitmap &target, DrawBufferFormat fmt)
+void BitmapToSourceBitmap(Bitmap<Color> &bm, SourceBitmap &target, DrawBufferFormat fmt)
 {
+  //std::cout << "::" << bm.SizeX() << " " << bm.SizeY() << std::endl;
   BufferFromBitmap buf(bm);
   buf.Gen();
   BufferRef buf2 = buf.Buffer();
   BufferRefToSourceBitmap(buf2, target, fmt);
-  return buf2;
 }
 
 
 class SpriteDraw : public FrameBufferLoop
 {
 public:
-  SpriteDraw(Bitmap<Color> &bm, Movement *move, int x, int y, int fmt, float start_time) : bm(bm), move(move), x(x),y(y), src(fmt?D_RGBA8888:D_Mono1,0), fmt(fmt?D_RGBA8888:D_Mono1), start_time(start_time) { }
-  ~SpriteDraw() { BufferRef::FreeBuffer(buf2); }
+  SpriteDraw(Bitmap<Color> &bm, Movement *move, int x, int y, int fmt, float start_time) : bm(bm), move(move), x(x),y(y), src(fmt?D_RGBA8888:D_Mono1,0), fmt(fmt?D_RGBA8888:D_Mono1), start_time(start_time) { 
+    prepared=false;
+  }
+  ~SpriteDraw() { }
 
   virtual void Prepare()
   {
     bm.Prepare();
-    buf2 = BitmapToSourceBitmap(bm,src, fmt);
+    BitmapToSourceBitmap(bm,src, fmt);
+    prepared=true;
   }
   virtual void handle_event(FrameLoopEvent &e)
   {
   }
   virtual void frame(DrawLoopEnv &e)
   {
+    if (prepared) {
     move->draw_frame(e);
     Point p = {float(x),float(y),0.0};
     //std::cout << "Time: " << e.time << " " << e.delta_time << std::endl;
@@ -14799,6 +14824,7 @@ public:
     Point p2 = p*m;
     //std::cout << "Pos: " << p2 << std::endl;
     e.drawbuffer->draw_sprite(&src, p2.x,p2.y);
+    } else { std::cout << "frame before prepare in SpriteDraw" << std::endl; }
   }
 private:
   Bitmap<Color> &bm;
@@ -14807,7 +14833,7 @@ private:
   SourceBitmap src;
   DrawBufferFormat fmt;
   float start_time;
-  BufferRef buf2;
+  bool prepared;
 };
 
 GameApi::FML GameApi::LowFrameBufferApi::low_sprite_draw(BM bm, MN mn, int x, int y, int fmt, float start_time)
