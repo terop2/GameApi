@@ -376,6 +376,7 @@ void GameApi::PointsApi::update(GameApi::PTA pta)
 }
 
 
+#ifndef ARM
 
 struct ThreadInfo_pts
 {
@@ -459,7 +460,7 @@ private:
   std::vector<PointArray3*> sets;
   std::vector<ThreadInfo_pts*> ti;
 };
-
+#endif
 
 
 EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
@@ -768,6 +769,8 @@ EXPORT float GameApi::PointsApi::pos_z(PTS p, int index)
   return obj2->Pos(index).z;
 }
 
+#ifndef ARM
+
 void *thread_func_pts(void *data)
 {
   ThreadInfo_pts *ti = (ThreadInfo_pts*)data;
@@ -786,6 +789,7 @@ void *thread_func_pts(void *data)
   //  std::cout << "Thread finished" << jj << " " << ti->arr->numpoints << std::endl;
   return 0;
 }
+#endif
 class ColorPoints : public PointsApiPoints
 {
 public:

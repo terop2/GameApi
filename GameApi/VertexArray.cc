@@ -1841,6 +1841,8 @@ void RenderVertexArray2::render(int id, int attr1, int attr2, int attr3, int att
 Counts CalcCounts(FaceCollection *coll, int start, int end);
 Counts CalcOffsets(FaceCollection *coll, int start);
 void ProgressBar(int val, int max);
+
+#ifndef ARM
 ThreadInfo *ti_global;
 int thread_counter=0;
 
@@ -1879,7 +1881,8 @@ void *thread_func(void *data)
  #endif
   return 0;
 }
- 
+#endif
+
 Counts CalcCounts(FaceCollection *coll, int start, int end)
 {
   Counts c;

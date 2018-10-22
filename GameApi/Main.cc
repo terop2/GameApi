@@ -23,7 +23,9 @@
 //#define GL3_PROTOTYPES 1
 //#include <GL3/gl3.h>
 //#define GLEW_STATIC
+#ifndef ARM
 #include <GL/glew.h>
+#endif
 #if 0
 //#ifdef __APPLE__
 //#include <OpenGL/gl.h>
@@ -204,6 +206,7 @@ bool Timer::is_paused()
 }
 bool exit2 = false;
 //GLfloat light_position[] = { -1.0, 0.5, 6.0, 0.0 };
+#if 0
 GLfloat light_position[] = { 1.0, 1.0, 0.0, -200.0 };
 GLfloat light_position2[] = { -0.0, -200.0, 0.0, 0.0 };
 
@@ -211,6 +214,7 @@ GLfloat mat_ambient[] = { 0.0, 0.0, 0.0, 1.0 };
 GLfloat mat_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
 GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
 GLfloat mat_shininess[] = { 20.0 };
+#endif
 static bool lock1=false;
 //static bool lock2=false;
 //static bool exit_process=false;
@@ -420,6 +424,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     std::cout << "Could not create Opengl3.2 context" << std::endl; 
   }
 
+#ifndef ARM
   glewExperimental=true;
   GLenum err = glewInit();
   if (GLEW_OK != err)
@@ -429,6 +434,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
       //return 0;
     }
 
+#endif
   //std::cout << "Vendor: " << glGetString(GL_VENDOR)<< std::endl;
   //std::cout << "Renderer:" << glGetString(GL_RENDERER)<< std::endl;
   //std::cout << "Version:" << glGetString(GL_VERSION) << std::endl;
@@ -1298,8 +1304,8 @@ void Execute(FrameAnim &f, Low_SDL_Surface *screen)
 
 void InitFrameAnim(FrameAnim &f, Low_SDL_Surface *screen)
 {
-  f.Init();
-  glColor3f(1.0,1.0,1.0);
+  //f.Init();
+  //glColor3f(1.0,1.0,1.0);
 
 }
 

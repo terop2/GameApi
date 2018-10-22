@@ -43,6 +43,14 @@
 #include "EffectI.hh"
 #include "GameApi_low.hh"
 
+#ifdef ARM
+#define pthread_mutex_unlock __gthread_mutex_unlock
+#define pthread_mutex_lock __gthread_mutex_lock
+#define PTHREAD_MUTEX_INITIALIZER __GTHREAD_MUTEX_INIT
+#define pthread_mutex_t __gthread_mutex_t
+#endif
+
+
 class BooleanOps
 {
 public:

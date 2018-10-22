@@ -6,7 +6,9 @@
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
 #ifndef EMSCRIPTEN
+#ifndef ARM
 #define THREADS 1
+#endif
 #endif
 #define BATCHING 1
 
@@ -16,6 +18,18 @@
 
 #ifdef IOT
 #define IOT_EVENTS
+#endif
+
+#ifndef ARM
+#define HAS_FREETYPE 1
+#define HAS_POPEN 1
+#endif
+
+#ifdef ARM
+#define pthread_mutex_unlock __gthread_mutex_unlock
+#define pthread_mutex_lock __gthread_mutex_lock
+#define PTHREAD_MUTEX_INITIALIZER __GTHREAD_MUTEX_INIT
+#define pthread_mutex_t __gthread_mutex_t
 #endif
 
 
@@ -68,8 +82,10 @@
 
 #include "GameApi_low.hh"
 //#include <SDL_mixer.h>
+#ifdef HAS_FREETYPE
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#endif
 #endif
 
 #undef LoadImage
@@ -618,7 +634,9 @@ struct EnvImpl
   pthread_mutex_t mutex;
   void lock() { pthread_mutex_lock(&mutex); }
   void unlock() { pthread_mutex_unlock(&mutex); }
+#ifdef HAS_FREETYPE
   FT_Library lib;
+#endif
   std::vector<Font> fonts;
   static ::EnvImpl *Environment(GameApi::Env *e) { return (EnvImpl*)e->envimpl; }
   EXPORT void free_temp_memory()
