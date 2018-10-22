@@ -889,7 +889,7 @@ class SDLApi : public SDLLowApi
     map_enums_sdl(x);
     map_enums_sdl(y);
     map_enums_sdl(flags2);
-    std::cout << "Low_SDL_CreateWindow: " << x << " " << y << " " << flags2 << std::endl;
+    //std::cout << "Low_SDL_CreateWindow: " << x << " " << y << " " << flags2 << std::endl;
     Low_SDL_Window *w = new Low_SDL_Window;
     w->ptr = ::SDL_CreateWindow(title,x,y,width,height,flags2);
     return w;
