@@ -88,7 +88,7 @@ public:
   virtual void glFramebufferRenderbuffer(int a, int d, int r, unsigned int tex) { }
   
   // shaders
-  virtual unsigned int glCreateShader(int shader) { }
+  virtual unsigned int glCreateShader(int shader) { return 0; }
   virtual void glShaderSource(int h, int c, const char **strings, int *lengths) { }
   virtual void glCompileShader(int h) { }
   virtual void glGetShaderInfoLog(unsigned int h, int val, int *length, char *buf) { }
@@ -96,7 +96,7 @@ public:
   virtual void glDeleteShader(int h) { }
   
   // programs
-  virtual int glCreateProgram() { }
+  virtual int glCreateProgram() { return 0; }
   virtual void glDeleteProgram(int p) { }
  virtual  void glAttachShader(int p, int h) { } 
   virtual void glDetachShader(int p, int h) { }
@@ -108,8 +108,8 @@ public:
   virtual void glProgramParameteriEXT(int p, int geom, int inputtype) { }
   
   // uniforms
-  virtual int glGetUniformLocation(int p, const char *data) { }
-  virtual int glGetAttribLocation(int p, const char *data) { }
+  virtual int glGetUniformLocation(int p, const char *data) { return 0; }
+  virtual int glGetAttribLocation(int p, const char *data) { return 0; }
   virtual void glUniform1f(int loc, float val) { }
   virtual void glUniform1i(int loc, int val) { }
   virtual void glUniform2f(int loc, float val, float val2) { }
@@ -121,7 +121,7 @@ public:
   virtual void glUniform3fv(int loc, int count, float *arr) { }
   virtual void glGetUniformfv(int p, int loc, float *arr) { }
   virtual void glGetIntegerv(int p, int *ptr) { }
-  virtual int glCheckFramebufferStatus(int id) { }
+  virtual int glCheckFramebufferStatus(int id) { return 0; }
 
   virtual void glFinish() { }
 
@@ -191,7 +191,7 @@ class EmscriptenVRLowApiStub : public EmscriptenVRLowApi
   virtual void emscripten_vr_init(void (*)(void*), void*) { }
   virtual void emscripten_vr_submit_frame(int disp) { }
   virtual void emscripten_vr_get_frame_data(int disp, void *data) { }
-  virtual bool emscripten_vr_display_presenting(int disp) { }
+  virtual bool emscripten_vr_display_presenting(int disp) { return false; }
   virtual void emscripten_vr_set_display_render_loop_arg(int disp, void (*)(void*), void* data) { }
   virtual void emscripten_vr_exit_present(int disp) { }
   virtual void emscripten_vr_cancel_display_render_loop(int disp) { }
@@ -199,7 +199,7 @@ class EmscriptenVRLowApiStub : public EmscriptenVRLowApi
   virtual bool emscripten_vr_ready() { return false; }
   virtual int emscripten_vr_count_displays() { return 0; }
   virtual int emscripten_vr_get_display_handle(int i) { return 0; }
-  virtual char *emscripten_vr_get_display_name( int d ) { return "stub display" }
+  virtual char *emscripten_vr_get_display_name( int d ) { return const_cast<char*>("stub display");}
   virtual int emscripten_vr_get_display_capabilities( int d, void *caps ) { return 0; }
   virtual int emscripten_vr_display_connected( int d) {return 0; }
   virtual void emscripten_vr_get_eye_parameters(int d, int left, void *ptr) { }
@@ -225,26 +225,30 @@ class SDLLowApiStub : public SDLLowApi
   virtual void cleanup() { }
   virtual void SDL_Init(int flags) { }
   virtual void SDL_GL_SetAttribute(int flag, int val) { }
-  virtual void* SDL_GL_GetProcAddress(char *name) { }
+  virtual void* SDL_GL_GetProcAddress(char *name) { return 0; }
   virtual void SDL_Quit() { }
-  virtual void SDL_ConvertSurface(void *surf, void *format, int val) { }
-  virtual void SDL_FreeSurface(void *surf) { }
-  virtual void SDL_LockSurface(void *surf) { }
-  virtual void SDL_UnlockSurface(void *surf) { }
+  virtual void SDL_ConvertSurface(Low_SDL_Surface *surf, void *format, int val) { }
+  virtual void SDL_FreeSurface(Low_SDL_Surface *surf) { }
+  virtual void SDL_LockSurface(Low_SDL_Surface *surf) { }
+  virtual void SDL_UnlockSurface(Low_SDL_Surface *surf) { }
   virtual void SDL_ShowCursor(bool b) { }
-  virtual void SDL_PollEvent(void *event) { }
-  virtual unsigned int SDL_GetTicks() { }
+  virtual int SDL_PollEvent(Low_SDL_Event *event) { return 0; }
+  virtual unsigned int SDL_GetTicks() { return 0; }
   virtual void SDL_Delay(int ms) { }
-  virtual void* SDL_CreateWindow(char *title, int flags, int width, int height, int flags2) { }
-  virtual void* SDL_GL_CreateContext(void *window) { }
+  virtual Low_SDL_Surface* SDL_GetWindowSurface(Low_SDL_Window *win) { return 0; }
+  virtual Low_SDL_Window* SDL_CreateWindow(const char *title, int x, int y, int width, int height, unsigned int flags2) { return 0; }
+  virtual Low_SDL_GLContext SDL_GL_CreateContext(Low_SDL_Window *window) { Low_SDL_GLContext ctx; return ctx; }
   virtual void SDL_GL_SwapBuffers() { }
-  virtual void SDL_GL_SwapWindow(void *window) { }
-  virtual void SDL_SetWindowTitle(void *window, char *title) { }
-  virtual void SDL_GetMouseState(int *x, int *y) { }
-  virtual void* SDL_GetModState() { }
-  virtual void* SDL_JoystickOpen(int i) { }
-  virtual unsigned int SDL_JoystickGetButton(void*joy, int i) { }
-  virtual void* SDL_RWFromMem(void *buffer, int size) { }
+  virtual void SDL_GL_SwapWindow(Low_SDL_Window *window) { }
+  virtual void SDL_UpdateWindowSurface(Low_SDL_Window *window) { }
+  virtual void SDL_DestroyWindow(Low_SDL_Window *window) { }
+  virtual void SDL_SetWindowTitle(Low_SDL_Window *window, const char *title) { }
+  virtual unsigned int SDL_GetMouseState(int *x, int *y) { return 0; }
+  virtual unsigned int SDL_GetModState() { return 0; }
+  virtual Low_SDL_Joystick* SDL_JoystickOpen(int i) { return 0; }
+  virtual void SDL_JoystickEventState(int i) { }
+  virtual unsigned int SDL_JoystickGetButton(Low_SDL_Joystick *joy, int i) { return 0; }
+  virtual Low_SDL_RWops* SDL_RWFromMem(void *buffer, int size) { return 0; }
 };
 
 class SDLMixerLowApiStub : public SDLMixerLowApi
@@ -252,12 +256,16 @@ class SDLMixerLowApiStub : public SDLMixerLowApi
 public:
   virtual void init() { }
   virtual void cleanup() { }
-  virtual void* Mix_LoadWav_RW(void *buf, int s) { }
-  virtual int Mix_OpenAudio(int rate, int flags, int val, int hup) {}
-  virtual int Mix_PlayChannel(int channel, void *mix_chunk, int val) { }
+  virtual Low_Mix_Chunk* Mix_LoadWAV_RW(Low_SDL_RWops *buf, int s) { return 0; }
+  virtual int Mix_OpenAudio(int rate, int flags, int val, int hup) { return 0; }
+  virtual int Mix_PlayChannel(int channel, Low_Mix_Chunk *mix_chunk, int val) { return 0; }
+  virtual Low_Mix_Chunk *Mix_QuickLoad_RAW(unsigned char *mem, int len) { return 0; }
+
   virtual void Mix_Init(int flags) {}
-  virtual void Mix_GetNumMusicDecoders() { }
-  virtual void Mix_GetMusicDecider(int i) { }
+  virtual Low_Mix_Music *Mix_LoadMUS(const char *filename) { return 0; }
+  virtual void Mix_PlayMusic(Low_Mix_Music *mus, int val) { }
+  virtual int Mix_GetNumMusicDecoders() { return 0; }
+  virtual void Mix_GetMusicDecoder(int i) { }
   virtual void Mix_AllocateChannels(int i) { }
 };
 
@@ -266,3 +274,13 @@ class SDLImageLowApiStub : public SDLImageLowApi
   virtual void init() { }
   virtual void cleanup() { }
 };
+extern LowApi *g_low;
+
+void initialize_stub(int flags)
+{
+  LowApi *low = new LowApi;
+  low->ogl = new OpenglStub;
+  low->sdl = new SDLLowApiStub;
+  low->sdl_mixer = new SDLMixerLowApiStub;
+  g_low = low;
+}

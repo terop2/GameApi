@@ -1013,7 +1013,8 @@ public:
 #endif // ndef ARM
 
 LowApi *g_low;
- 
+
+void initialize_stub(int flags); 
 void initialize_low(int flags)
 {
 #ifndef ARM
@@ -1021,9 +1022,9 @@ void initialize_low(int flags)
   low->ogl = new OpenglApi;
   low->sdl = new SDLApi;
   low->sdl_mixer = new SDLMixerApi;
+  g_low = low;
 #else
-  LowApi *low; // TODO
+  initialize_stub(flags);
 #endif
   
-  g_low = low;
 }
