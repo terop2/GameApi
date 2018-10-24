@@ -8202,6 +8202,12 @@ std::vector<GameApiItem*> framebuffermoduleapi_functions()
 			 { "BM", "MN", "int", "int", "int", "float" },
 			 { "", "", "0", "0", "1", "0.0" },
 			 "FML", "low_frame_api", "low_sprite_draw"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_poly_draw,
+			 "fr_poly_draw",
+			 { "p" },
+			 { "P" },
+			 { "" },
+			 "FML", "low_frame_api", "low_poly_draw"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::array_fml,
 			 "array_fml",
 			 { "arr" },

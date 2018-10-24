@@ -14893,3 +14893,189 @@ void get_iot_event(const GameApi::MainLoopApi::Event &e, bool *array)
     array[i] = but[i];
   }
 }
+
+    void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, unsigned int *colours, int numtriangles, Matrix m, float *depth_buffer);
+
+class GouraudDraw : public FrameBufferLoop
+{
+public:
+  GouraudDraw(FaceCollection *coll) : coll(coll), size(0) { }
+  void Prepare() { 
+    coll->Prepare();
+    int s = coll->NumFaces();
+    size = s;
+    // THIS EATS WAY TOO MUCH MEMORY, BUT WE CAN'T DO ANYTHING SINCE
+    // WE DON'T HAVE GPU MEMORY AVAILABLE. NORMAL SOLUTION TO THIS PROBLEM
+    // IS BATCHING WHICH SPLITS THESE ARRAYS TO SMALL PIECES + TRANSFERS
+    // TO GPU MEMORY IN SMALL PIECES.
+    vertex_array = new Point[s*3];
+    color_array = new unsigned int[s*3];
+    for(int i=0;i<s;i++)
+      {
+	Point p1 = coll->FacePoint(i,0);
+	Point p2 = coll->FacePoint(i,1);
+	Point p3 = coll->FacePoint(i,2);
+	vertex_array[i*3+0] = p1;
+	vertex_array[i*3+1] = p2;
+	vertex_array[i*3+2] = p3;
+	unsigned int c1=coll->Color(i,0);
+	unsigned int c2=coll->Color(i,1);
+	unsigned int c3=coll->Color(i,2);
+	color_array[i*3+0] = c1;
+	color_array[i*3+1] = c2;
+	color_array[i*3+2] = c3;
+      }
+  }
+  void handle_event(FrameLoopEvent &e) {
+  }
+  void frame(DrawLoopEnv &e)
+  {
+    //Point ptr[]= { {5.0,5.0,0.0}, {100.0,50.0,0.0}, {50.0,100.0,0.0} };
+    //unsigned int color[] = { 0xffffffff, 0xff888888, 0xff000000 };
+    DrawGouraudTri(e.drawbuffer, e.format, vertex_array, color_array, size, Matrix::Scale(1.0,-1.0,1.0)*Matrix::Translate(400.0,300.0,0.0), 0);
+  }
+private:
+  FaceCollection *coll;
+  Point *vertex_array;
+  unsigned int *color_array;
+  int size;
+};
+
+GameApi::FML GameApi::LowFrameBufferApi::low_poly_draw(P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_framemainloop(e, new GouraudDraw(coll));
+}
+
+void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, unsigned int *colours, int numtriangles, Matrix m, float *depth_buffer)
+{
+  void *buffer = buf->Buffer();
+  unsigned int *buffer2 = (unsigned int*)buffer;
+  int width = buf->Width();
+  int height = buf->Height();
+  switch(format) {
+  case D_Mono1:
+    std::cout << "GouraudTri mono1 not implemented" << std::endl;
+    break;
+  case D_RGBA8888:
+    {
+      for(int p=0;p<numtriangles;p++) {
+	Point p1 = points[0];
+	Point p2 = points[1];
+	Point p3 = points[2];
+	unsigned int c1 = colours[0];
+	unsigned int c2 = colours[1];
+	unsigned int c3 = colours[2];
+	p1 = p1*m;
+	p2=p2*m;
+	p3=p3*m;
+	//std::cout << p1 << " " << p2 << " " << p3 << std::endl;
+	// now points are in correct position
+	if (p2.y<p1.y) { std::swap(p1,p2); std::swap(c1,c2); }
+	if (p3.y<p1.y) { std::swap(p1,p3); std::swap(c1,c3); }
+	if (p3.y<p2.y) { std::swap(p2,p3); std::swap(c2,c3); }
+
+	//if (p2.y-p1.y<2.5) p2.y=p1.y+2.0;
+	//if (p3.y-p2.y<2.5) p3.y=p2.y+2.0;
+
+
+	//std::cout << "T:" << p1 << " " << p2 << " " << p3 << std::endl;
+
+	// now points are in correct order
+	int y = int(p1.y)+1;
+	int ey = int(p2.y);
+	//std::cout << "y:" << y << " ey:" << ey << std::endl;
+	
+	float dy = p2.y-p1.y;
+	float ddy = p3.y-p1.y;
+	float dx = p2.x-p1.x;
+	float ddx = p3.x-p1.x;
+
+	//if (fabs(dy)<0.01) dy+=0.01;
+	//if (fabs(ddy)<0.01) ddy+=0.01;
+	//if (fabs(dx)<0.01) dx+=0.01;
+	//if (fabs(ddx)<0.01) ddx+=0.01;
+
+	//std::cout << "dy:" << dy << " ddy:" << ddy << std::endl;
+	//std::cout << "dx:" << dx << " ddx:" << ddx << std::endl;
+
+	dx/=dy;
+	ddx/=ddy;
+	//std::cout << "dx:" << dx << " ddx:" << ddx << std::endl;
+
+	dx*=(float(y)-p1.y);
+	ddx*=(float(y)-p1.y);
+
+	//std::cout << "dx:" << dx << " ddx:" << ddx << std::endl;
+
+	float xx = p1.x+dx;
+	float xxx = p1.x+ddx;
+
+	//std::cout << "xx:" << xx << " xxx:" << xxx << std::endl;
+
+	unsigned int cxx = dy>0.01?Color::Interpolate(c1,c2, (float(y)-p1.y)/dy):0xffffffff;
+	unsigned int cxxx = ddy>0.01?Color::Interpolate(c1,c3, (float(y)-p1.y)/ddy):0xffffffff;
+	float dxx = (p2.x-p1.x)/(p2.y-p1.y);
+	float dxxx = (p3.x-p1.x)/(p3.y-p1.y);
+	unsigned int dcxx = dy>0.01?Color::Interpolate(c1,c2,1.0/dy):0xffffffff;
+	unsigned int dcxxx = ddy>0.01?Color::Interpolate(c1,c3,1.0/ddy):0xffffffff;
+	bool b = false;
+	if (xxx<xx) { std::swap(xx,xxx); std::swap(cxx,cxxx); std::swap(dxx,dxxx); 
+	  std::swap(dcxx,dcxxx); b = true;
+	}
+	//std::cout << "xx:" << xx << " xxx:" << xxx << std::endl;
+
+	//std::cout << "dxx:" << dxx << " dxxx:" << dxxx << std::endl;
+
+	for(int yy = y; yy<=ey;yy++)
+	  {
+	    unsigned int cxx = (p2.y-p1.y>0.01)?Color::Interpolate(c1,c2, (float(yy)-p1.y)/(p2.y-p1.y)):0xffffffff;
+	    unsigned int cxxx = (p3.y-p1.y>0.01)?Color::Interpolate(c1,c3, (float(yy)-p1.y)/(p3.y-p1.y)):0xffffffff;
+	    if (b) { std::swap(cxx,cxxx); }
+	    unsigned int *bk = buffer2 + yy*width + int(xx) + 1;
+	    for(int k = xx;k<xxx;k++)
+	      {
+		unsigned int c = Color::Interpolate(cxx,cxxx, float(k-xx)/float(xxx-xx));
+		*bk = c;
+		bk++;
+	      }
+	    xx+=dxx;
+	    xxx+=dxxx;
+	    //cxx+=dcxx;
+	    //cxxx+=dcxxx;
+	  }
+	int eey = int(p3.y);
+	float d = (p2.x-p1.x)*(p3.y-p1.y)-(p2.y-p1.y)*(p3.x-p1.x);
+	if (d>0.0) {
+	  xxx = p2.x;
+	  dxxx = (p3.x-p2.x)/(p3.y-p2.y);
+	  //dcxxx = Color::Interpolate(c2,c3,1.0/(p3.y-p2.y));
+	} else {
+	  xx = p2.x;
+	  dxx = (p3.x-p2.x)/(p3.y-p2.y);
+	  //dcxx = Color::Interpolate(c2,c3,1.0/(p3.y-p2.y));
+	}
+	for(int yy=ey+1;yy<eey+1;yy++)
+	  {
+	    unsigned int cxx = p3.y-p2.y>0.01?Color::Interpolate(c2,c3, (float(yy)-p2.y)/(p3.y-p2.y)):0xffffffff;
+	    unsigned int cxxx = p3.y-p1.y>0.01?Color::Interpolate(c1,c3, (float(yy)-p1.y)/(p3.y-p1.y)):0xffffffff;
+	    if (b) { std::swap(cxx,cxxx); }
+	    unsigned int *bk = buffer2 + yy*width + int(xx) +1;
+	    for(int k=xx;k<xxx;k++)
+	      {
+		unsigned int c = Color::Interpolate(cxx,cxxx, float(k-xx)/float(xxx-xx));
+		*bk = c;
+		bk++;
+	      }
+	    xx+=dxx;
+	    xxx+=dxxx;
+	    //cxx+=dcxx;
+	    //cxxx+=dcxxx;
+	  }
+	points+=3;
+	colours+=3;
+      }
+    break;
+    }
+  };
+}
