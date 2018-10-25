@@ -1,5 +1,18 @@
 
 #include <thread>
+#include "GameApi.hh"
+
+#include "gen_code.cpp"
+
+const char g_url[] = "http://tpgames.org/";
+const char g_url2[] = "http://tpgames.org/aaa";
+const unsigned char g_ptr[] = "";
+const unsigned char g_ptr2[] = "";
+const unsigned char *g_arr[] = { g_ptr, g_ptr2 };
+const char *g_url[] = { g_url, g_url2 };
+const int g_arr_sizes[] = { sizeof(g_ptr)/sizeof(unsigned char),
+			    sizeof(g_ptr2)/sizeof(unsigned char) };
+const int g_arr_size = sizeof(arr)/sizeof(*arr);
 
 std::string code;
 
@@ -47,6 +60,15 @@ void gameapi_main()
 
   Env e;
   EveryApi ev(e);
+
+  int s = g_arr_size;
+  for(int i=0;i<s;i++)
+    {
+      const unsigned char *ptr = g_arr[i];
+      const int size = g_arr_sizes[i];
+      const char *url = g_url[i];
+      append_url_map(url, ptr, ptr+size);
+    }
   
   std::pair<int,std::string> blk = mainloop(e,ev);
 
@@ -55,8 +77,6 @@ void gameapi_main()
   ev.blocker_api.run2(ev,r);
 
 }
-
-
 
 void gameapi_init()
 {

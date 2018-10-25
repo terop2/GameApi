@@ -14392,6 +14392,15 @@ public:
   bool m_owned2;
 };
 
+void ClearDepthBuffer(float *arr, int width, int height)
+{
+  float val = std::numeric_limits<float>::max();
+  for(int y=0;y<height;y++)
+    for(int x=0;x<width;x++)
+      {
+	*arr++ = val;
+      }
+}
 
 class LowFrameBuffer : public FrameBuffer
 {
@@ -14400,6 +14409,8 @@ public:
   virtual void Prepare()
   {
     loop->Prepare();
+
+    depth_buffer = new float[width*height];
     // 
     FrameBufferFormat fmt = (FrameBufferFormat)m_format;
     switch(fmt) {
@@ -14434,6 +14445,7 @@ public:
   {
     // clear the buffer
     std::memset(buffer,0, size);
+    ClearDepthBuffer(depth_buffer, width, height);
     if (firsttime) {
       auto p2 = std::chrono::system_clock::now();
       auto dur_in_seconds = std::chrono::duration<double>(std::chrono::duration_cast<std::chrono::milliseconds>(p2.time_since_epoch()));
@@ -14445,6 +14457,7 @@ public:
     DrawLoopEnv e;
     e.format = D_RGBA8888;
     e.drawbuffer = this;
+    e.depth_buffer = depth_buffer;
     //e.drawbuffer_width = width;
     //e.drawbuffer_height = height;
     //e.drawbuffer_depth = depth;
@@ -14467,6 +14480,7 @@ public:
   virtual int Height() const { return height; }
   virtual int Depth() const { return depth; }
   virtual FrameBufferFormat format() const { return (FrameBufferFormat)m_format; }
+  virtual float *DepthBuffer() const { return depth_buffer; }
 
   virtual void draw_sprite(SourceBitmap *bm, int pos_x, int pos_y)
   {
@@ -14607,6 +14621,7 @@ private:
   int depth;
   double start_time;
   double start_time_epoch;
+  float *depth_buffer;
 };
 
 GameApi::FBU GameApi::LowFrameBufferApi::low_framebuffer(GameApi::FML ml, int format, int width, int height, int depth)
@@ -14755,7 +14770,7 @@ public:
 	buf->handle_event(event);
      }
 
-    g_low->sdl->SDL_Delay(16);
+    //g_low->sdl->SDL_Delay(16);
     if (exit) return 0;
     return -1;
   }
@@ -14899,7 +14914,7 @@ void get_iot_event(const GameApi::MainLoopApi::Event &e, bool *array)
 class GouraudDraw : public FrameBufferLoop
 {
 public:
-  GouraudDraw(FaceCollection *coll) : coll(coll), size(0) { }
+  GouraudDraw(FaceCollection *coll, Movement *move) : coll(coll), size(0), move(move) { }
   void Prepare() { 
     coll->Prepare();
     int s = coll->NumFaces();
@@ -14932,19 +14947,23 @@ public:
   {
     //Point ptr[]= { {5.0,5.0,0.0}, {100.0,50.0,0.0}, {50.0,100.0,0.0} };
     //unsigned int color[] = { 0xffffffff, 0xff888888, 0xff000000 };
-    DrawGouraudTri(e.drawbuffer, e.format, vertex_array, color_array, size, Matrix::Scale(1.0,-1.0,1.0)*Matrix::Translate(400.0,300.0,0.0), 0);
+    Matrix m = move->get_whole_matrix(e.time*10.0, (e.delta_time*10.0));
+
+    DrawGouraudTri(e.drawbuffer, e.format, vertex_array, color_array, size, m*Matrix::Scale(1.0,-1.0,1.0)*Matrix::Translate(400.0,300.0,0.0), e.depth_buffer);
   }
 private:
   FaceCollection *coll;
   Point *vertex_array;
   unsigned int *color_array;
   int size;
+  Movement *move;
 };
 
-GameApi::FML GameApi::LowFrameBufferApi::low_poly_draw(P p)
+GameApi::FML GameApi::LowFrameBufferApi::low_poly_draw(P p, MN mn)
 {
   FaceCollection *coll = find_facecoll(e,p);
-  return add_framemainloop(e, new GouraudDraw(coll));
+  Movement *move = find_move(e, mn);
+  return add_framemainloop(e, new GouraudDraw(coll,move));
 }
 
 void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, unsigned int *colours, int numtriangles, Matrix m, float *depth_buffer)
@@ -14990,7 +15009,9 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
 	float ddy = p3.y-p1.y;
 	float dx = p2.x-p1.x;
 	float ddx = p3.x-p1.x;
-
+	float dz = p2.z-p1.z;
+	float ddz = p3.z-p1.z;
+	
 	//if (fabs(dy)<0.01) dy+=0.01;
 	//if (fabs(ddy)<0.01) ddy+=0.01;
 	//if (fabs(dx)<0.01) dx+=0.01;
@@ -15011,17 +15032,24 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
 	float xx = p1.x+dx;
 	float xxx = p1.x+ddx;
 
+	float zz = p1.z+dz;
+	float zzz = p1.z+ddz;
 	//std::cout << "xx:" << xx << " xxx:" << xxx << std::endl;
 
 	unsigned int cxx = dy>0.01?Color::Interpolate(c1,c2, (float(y)-p1.y)/dy):0xffffffff;
 	unsigned int cxxx = ddy>0.01?Color::Interpolate(c1,c3, (float(y)-p1.y)/ddy):0xffffffff;
 	float dxx = (p2.x-p1.x)/(p2.y-p1.y);
 	float dxxx = (p3.x-p1.x)/(p3.y-p1.y);
+	float dzz = (p2.z-p1.z)/(p2.y-p1.y);
+	float dzzz = (p3.z-p1.z)/(p3.y-p1.y);
 	unsigned int dcxx = dy>0.01?Color::Interpolate(c1,c2,1.0/dy):0xffffffff;
 	unsigned int dcxxx = ddy>0.01?Color::Interpolate(c1,c3,1.0/ddy):0xffffffff;
 	bool b = false;
 	if (xxx<xx) { std::swap(xx,xxx); std::swap(cxx,cxxx); std::swap(dxx,dxxx); 
-	  std::swap(dcxx,dcxxx); b = true;
+	  std::swap(dcxx,dcxxx);
+	  std::swap(zz,zzz);
+	  std::swap(dzz,dzzz);
+	  b = true;
 	}
 	//std::cout << "xx:" << xx << " xxx:" << xxx << std::endl;
 
@@ -15033,14 +15061,23 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
 	    unsigned int cxxx = (p3.y-p1.y>0.01)?Color::Interpolate(c1,c3, (float(yy)-p1.y)/(p3.y-p1.y)):0xffffffff;
 	    if (b) { std::swap(cxx,cxxx); }
 	    unsigned int *bk = buffer2 + yy*width + int(xx) + 1;
+	    float *dk = depth_buffer + yy*width + int(xx)+1;
 	    for(int k = xx;k<xxx;k++)
 	      {
-		unsigned int c = Color::Interpolate(cxx,cxxx, float(k-xx)/float(xxx-xx));
-		*bk = c;
+		float r = float(k-xx)/float(xxx-xx);
+		float z = (1.0-r)*zz+r*zzz;
+		if (*dk >= z) {
+		  unsigned int c = Color::Interpolate(cxx,cxxx,r);
+		  *bk = c;
+		  *dk = z;
+		}
 		bk++;
+		dk++;
 	      }
 	    xx+=dxx;
 	    xxx+=dxxx;
+	    zz+=dzz;
+	    zzz+=dzzz;
 	    //cxx+=dcxx;
 	    //cxxx+=dcxxx;
 	  }
@@ -15048,11 +15085,15 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
 	float d = (p2.x-p1.x)*(p3.y-p1.y)-(p2.y-p1.y)*(p3.x-p1.x);
 	if (d>0.0) {
 	  xxx = p2.x;
+	  zzz = p2.z;
 	  dxxx = (p3.x-p2.x)/(p3.y-p2.y);
+	  dzzz = (p3.z-p2.z)/(p3.y-p2.y);
 	  //dcxxx = Color::Interpolate(c2,c3,1.0/(p3.y-p2.y));
 	} else {
 	  xx = p2.x;
+	  zz = p2.z;
 	  dxx = (p3.x-p2.x)/(p3.y-p2.y);
+	  dzz = (p3.z-p2.z)/(p3.y-p2.y);
 	  //dcxx = Color::Interpolate(c2,c3,1.0/(p3.y-p2.y));
 	}
 	for(int yy=ey+1;yy<eey+1;yy++)
@@ -15061,14 +15102,23 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
 	    unsigned int cxxx = p3.y-p1.y>0.01?Color::Interpolate(c1,c3, (float(yy)-p1.y)/(p3.y-p1.y)):0xffffffff;
 	    if (b) { std::swap(cxx,cxxx); }
 	    unsigned int *bk = buffer2 + yy*width + int(xx) +1;
+	    float *dk = depth_buffer + yy*width + int(xx)+1;
 	    for(int k=xx;k<xxx;k++)
 	      {
-		unsigned int c = Color::Interpolate(cxx,cxxx, float(k-xx)/float(xxx-xx));
-		*bk = c;
+		float r = float(k-xx)/float(xxx-xx);
+		float z = (1.0-r)*zz+r*zzz;
+		if (*dk >= z) {
+		  unsigned int c = Color::Interpolate(cxx,cxxx, r);
+		  *bk = c;
+		  *dk = z;
+		}
 		bk++;
+		dk++;
 	      }
 	    xx+=dxx;
 	    xxx+=dxxx;
+	    zz+=dzz;
+	    zzz+=dzzz;
 	    //cxx+=dcxx;
 	    //cxxx+=dcxxx;
 	  }

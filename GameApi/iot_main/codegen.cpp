@@ -1,7 +1,28 @@
 
+
+#include <iostream>
+#include <string>
 #include <cstdio>
+#include <vector>
+using namespace std;
 
+bool find(std::string s, std::string s2)
+{
+  int ss = s.size();
+  for(int i=0;i<ss;i++)
+    {
+      int sj = s2.size();
+      bool found = true;
+      for(int j=0;j<sj;j++)
+	{
+	  if (s[i+j]!=s2[j]) found=false;
+	}
+      if (found) { return true; }
+    }
+  return false;
+}
 
+void error(std::string s);
 std::string network(std::string url)
 {
 #ifdef WINDOWS
@@ -18,12 +39,17 @@ std::string network(std::string url)
   unsigned char c;
   std::vector<unsigned char> buffer;
   while(fread(&c,1,1,f)==1) { buffer.push_back(c); }
+  bool is404 = find(std::string(buffer.begin(), buffer.end()), "404 Not Found");
+  if (is404) error(std::string("404 not found: " + url));
+  std::cout << buffer.size() << std::endl;
+  if (buffer.size()==0) { error(std::string("url not found: ") + url); }
   return std::string(buffer.begin(),buffer.end());
 }
 
 void error(std::string s)
 {
   std::cout << "ERROR: " << s << std::endl;
+  std::cout << "Usage: --url <url> --prefix <prefix>" << std::endl;
   exit(0);
 }
 
@@ -35,7 +61,7 @@ std::vector<std::string> find_urls(std::string s)
     {
       if (s[i]=='h' && s[i+1]=='t' && s[i+2]=='t' && s[i+3]=='p')
 	{
-	  std::string chars="abcdefghijklmnopqrstuvwxyz0123456789/+?=%#£";
+	  std::string chars="abcdefghijklmnopqrstuvwxyz0123456789/+?=%#£:._";
 	  int end = i;
 	  for(int j=i;j<ss;j++)
 	    {
@@ -47,7 +73,7 @@ std::vector<std::string> find_urls(std::string s)
  		}
 	      if (!found) { end=j; break; }
 	    }
-	  std::string url = s.substr(i,end-i-1);
+	  std::string url = s.substr(i,end-i);
 	  vec.push_back(url);
 	}
     }
@@ -55,25 +81,66 @@ std::vector<std::string> find_urls(std::string s)
 
 }
 
+std::string s_table[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
+
+std::string stringify(std::string s)
+{
+  int ss = s.size();
+  std::string res;
+  res+="\"";
+  for(int i=0;i<ss;i++)
+    {
+      unsigned char c = s[i];
+      unsigned char c2 = c&0xf;
+      unsigned char c3 = (c&0xf0)>>4;
+      res+="\\x";
+      res+=s_table[c3];
+      res+=s_table[c2];
+      if (i%19==0) res+="\"\n\"";
+    }
+  res+="\"";
+  return res;
+}
 
 void output_file(std::string name, std::string file)
 {
-  std::string s = "std::string " << name << " = \n";
+  std::string s = "std::string " + name + " = \n";
   int ss = file.size();
 }
 
 int main(int argc, char *argv[])
 {
-  if (argv[1]!="--url") error("Should use --url parameter");
-  if (argc!=2) error("Number of parameters(argc) should be 2");
-  std::string url = argv[2];
+  std::string url = "";
+  std::string prefix = "tst";
+  if (argc<2) { error("Number of parameters"); }
+  for(int i=1;i<argc;i++) {
+    if (std::string(argv[i])=="--url") {
+      url = argv[i+1];
+      i++;
+    } else
+      if (std::string(argv[i])=="--prefix") {
+      prefix = argv[i+1];
+      i++;
+    } else
+      {
+	error("Invalid parameter " + std::string(argv[i]));
+      }
+  }
+  std::cout << "Loading " << url << " ";
   std::string file = network(url);
   std::vector<std::string> urls = find_urls(file);
   int s = urls.size();
   std::vector<std::string> files;
   for(int i=0;i<s;i++)
     {
-      files.push_back(network(urls[i]));
+      std::cout << "Loading " << urls[i] << " ";
+      std::string n = network(urls[i]);
+      files.push_back(n);
+    }
+  int sf = files.size();
+  for(int i=0;i<sf;i++)
+    {
+      std::cout << stringify(files[i]) << std::endl;
     }
   
 }
