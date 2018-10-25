@@ -3424,7 +3424,7 @@ public:
   RUN low_framebuffer_run(EveryApi &ev, FBU buffer, int mode, int scr_x, int scr_y);
   FBU low_framebuffer(FML mainloop, int format, int width, int height, int depth);
   FML low_sprite_draw(BM bm, MN mn, int x, int y, int fmt, float start_time);
-  FML low_poly_draw(P p);
+  FML low_poly_draw(P p,MN mn);
 private:
   LowFrameBufferApi(const LowFrameBufferApi &);
   void operator=(const LowFrameBufferApi&);
@@ -4631,7 +4631,7 @@ private:
     M m;
   };
 
-
+  void append_url_map(const char* url, const unsigned char* data, const unsigned char *data_end);
 
 }; // GameApi namespace
 

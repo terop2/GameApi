@@ -575,7 +575,7 @@ public:
   virtual int Height() const =0;
   virtual int Depth() const =0;
   virtual FrameBufferFormat format() const=0;
-
+  virtual float *DepthBuffer() const=0;
   virtual void draw_sprite(SourceBitmap *bm, int x, int y) =0;
 };
 
@@ -591,6 +591,8 @@ struct DrawLoopEnv
 
   float time = 0.0;
   float delta_time = 0.0;
+
+  float *depth_buffer;
 };
 
 

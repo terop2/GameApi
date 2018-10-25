@@ -494,8 +494,28 @@ EXPORT GameApi::ML GameApi::BitmapApi::savebitmap_ml(EveryApi &ev, BM bm, std::s
   return add_main_loop(e, new SaveBitmapML(ev, bm, filename, alpha, time));
 }
 
+std::vector<const unsigned char*> g_content;
+std::vector<const unsigned char*> g_content_end;
+std::vector<const char*> g_urls;
+
+void GameApi::append_url_map(const char* url,const unsigned char* data, const unsigned char *data_end)
+{
+  g_urls.push_back(url);
+  g_content.push_back(data);
+  g_content_end.push_back(data_end);
+}
+
 std::vector<unsigned char> load_from_url(std::string url)
 { // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
+  int u = g_urls.size();
+  for(int i=0;i<u;i++)
+    {
+      if (url==g_urls[i]) { 
+	std::vector<unsigned char> vec(g_content[i], g_content_end[i]);
+	return vec;
+      }
+    }
+  
 
 #ifdef HAS_POPEN
 
