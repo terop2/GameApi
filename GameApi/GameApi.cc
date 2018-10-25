@@ -14994,16 +14994,10 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
 	if (p3.y<p1.y) { std::swap(p1,p3); std::swap(c1,c3); }
 	if (p3.y<p2.y) { std::swap(p2,p3); std::swap(c2,c3); }
 
-	//if (p2.y-p1.y<2.5) p2.y=p1.y+2.0;
-	//if (p3.y-p2.y<2.5) p3.y=p2.y+2.0;
-
-
-	//std::cout << "T:" << p1 << " " << p2 << " " << p3 << std::endl;
 
 	// now points are in correct order
 	int y = int(p1.y)+1;
 	int ey = int(p2.y);
-	//std::cout << "y:" << y << " ey:" << ey << std::endl;
 	
 	float dy = p2.y-p1.y;
 	float ddy = p3.y-p1.y;
@@ -15012,29 +15006,19 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
 	float dz = p2.z-p1.z;
 	float ddz = p3.z-p1.z;
 	
-	//if (fabs(dy)<0.01) dy+=0.01;
-	//if (fabs(ddy)<0.01) ddy+=0.01;
-	//if (fabs(dx)<0.01) dx+=0.01;
-	//if (fabs(ddx)<0.01) ddx+=0.01;
-
-	//std::cout << "dy:" << dy << " ddy:" << ddy << std::endl;
-	//std::cout << "dx:" << dx << " ddx:" << ddx << std::endl;
 
 	dx/=dy;
 	ddx/=ddy;
-	//std::cout << "dx:" << dx << " ddx:" << ddx << std::endl;
 
 	dx*=(float(y)-p1.y);
 	ddx*=(float(y)-p1.y);
 
-	//std::cout << "dx:" << dx << " ddx:" << ddx << std::endl;
 
 	float xx = p1.x+dx;
 	float xxx = p1.x+ddx;
 
 	float zz = p1.z+dz;
 	float zzz = p1.z+ddz;
-	//std::cout << "xx:" << xx << " xxx:" << xxx << std::endl;
 
 	unsigned int cxx = dy>0.01?Color::Interpolate(c1,c2, (float(y)-p1.y)/dy):0xffffffff;
 	unsigned int cxxx = ddy>0.01?Color::Interpolate(c1,c3, (float(y)-p1.y)/ddy):0xffffffff;
@@ -15051,12 +15035,10 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
 	  std::swap(dzz,dzzz);
 	  b = true;
 	}
-	//std::cout << "xx:" << xx << " xxx:" << xxx << std::endl;
-
-	//std::cout << "dxx:" << dxx << " dxxx:" << dxxx << std::endl;
 
 	for(int yy = y; yy<=ey;yy++)
 	  {
+	    if (yy<0 || yy>=height) continue;
 	    unsigned int cxx = (p2.y-p1.y>0.01)?Color::Interpolate(c1,c2, (float(yy)-p1.y)/(p2.y-p1.y)):0xffffffff;
 	    unsigned int cxxx = (p3.y-p1.y>0.01)?Color::Interpolate(c1,c3, (float(yy)-p1.y)/(p3.y-p1.y)):0xffffffff;
 	    if (b) { std::swap(cxx,cxxx); }
@@ -15064,6 +15046,7 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
 	    float *dk = depth_buffer + yy*width + int(xx)+1;
 	    for(int k = xx;k<xxx;k++)
 	      {
+		if (k<0 || k>=width) continue;
 		float r = float(k-xx)/float(xxx-xx);
 		float z = (1.0-r)*zz+r*zzz;
 		if (*dk >= z) {
@@ -15078,8 +15061,6 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
 	    xxx+=dxxx;
 	    zz+=dzz;
 	    zzz+=dzzz;
-	    //cxx+=dcxx;
-	    //cxxx+=dcxxx;
 	  }
 	int eey = int(p3.y);
 	float d = (p2.x-p1.x)*(p3.y-p1.y)-(p2.y-p1.y)*(p3.x-p1.x);
@@ -15088,16 +15069,15 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
 	  zzz = p2.z;
 	  dxxx = (p3.x-p2.x)/(p3.y-p2.y);
 	  dzzz = (p3.z-p2.z)/(p3.y-p2.y);
-	  //dcxxx = Color::Interpolate(c2,c3,1.0/(p3.y-p2.y));
 	} else {
 	  xx = p2.x;
 	  zz = p2.z;
 	  dxx = (p3.x-p2.x)/(p3.y-p2.y);
 	  dzz = (p3.z-p2.z)/(p3.y-p2.y);
-	  //dcxx = Color::Interpolate(c2,c3,1.0/(p3.y-p2.y));
 	}
 	for(int yy=ey+1;yy<eey+1;yy++)
 	  {
+	    if (yy<0 || yy>=height) continue;
 	    unsigned int cxx = p3.y-p2.y>0.01?Color::Interpolate(c2,c3, (float(yy)-p2.y)/(p3.y-p2.y)):0xffffffff;
 	    unsigned int cxxx = p3.y-p1.y>0.01?Color::Interpolate(c1,c3, (float(yy)-p1.y)/(p3.y-p1.y)):0xffffffff;
 	    if (b) { std::swap(cxx,cxxx); }
@@ -15105,6 +15085,7 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
 	    float *dk = depth_buffer + yy*width + int(xx)+1;
 	    for(int k=xx;k<xxx;k++)
 	      {
+		if (k<0 || k>=width) continue;
 		float r = float(k-xx)/float(xxx-xx);
 		float z = (1.0-r)*zz+r*zzz;
 		if (*dk >= z) {
@@ -15119,8 +15100,6 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
 	    xxx+=dxxx;
 	    zz+=dzz;
 	    zzz+=dzzz;
-	    //cxx+=dcxx;
-	    //cxxx+=dcxxx;
 	  }
 	points+=3;
 	colours+=3;
