@@ -4,6 +4,8 @@
 #include <string>
 #include <cstdio>
 #include <vector>
+#include <sstream>
+#include <fstream>
 using namespace std;
 
 bool find(std::string s, std::string s2)
@@ -127,20 +129,61 @@ int main(int argc, char *argv[])
       }
   }
   std::cout << "Loading " << url << " ";
+  std::vector<std::string> files;
   std::string file = network(url);
+  files.push_back(file);
   std::vector<std::string> urls = find_urls(file);
   int s = urls.size();
-  std::vector<std::string> files;
   for(int i=0;i<s;i++)
     {
       std::cout << "Loading " << urls[i] << " ";
       std::string n = network(urls[i]);
       files.push_back(n);
     }
+  urls.insert(urls.begin(), &url, &url + 1);
+
+  std::ofstream out("gen_code.cpp");
   int sf = files.size();
   for(int i=0;i<sf;i++)
     {
-      std::cout << stringify(files[i]) << std::endl;
+      std::stringstream ss;
+      ss << i;
+      out << "unsigned char c_" + prefix + "_" + ss.str() + "[] = " << std::endl;
+      out << stringify(files[i]);
+      out << ";" << std::endl;
+      
+      out << "const char g_" + prefix + "_url_" + ss.str() + "[] = \"";
+      out << urls[i];
+      out << "\";" << std::endl;
     }
-  
+  out << "const unsigned char *g_arr_" << prefix << "[] = {";
+  for(int i=0;i<sf;i++)
+    {
+      std::stringstream ss;
+      ss << i;
+      out << "c_" + prefix + "_" + ss.str();
+      if (i!=sf-1) out << ",";
+    }
+  out << " };" << std::endl;
+  out << "const char *g_url_" << prefix << "[] = { ";
+  for(int i=0;i<sf;i++)
+    {
+      std::stringstream ss;
+      ss << i;
+      out << "g_" + prefix + "_url_" + ss.str();
+      if (i!=sf-1) out<<",";
+    }
+  out << "};" << std::endl;
+  out << "const int g_arr_sizes_" << prefix << "[] = { ";
+  for(int i=0;i<sf;i++)
+    {
+      std::stringstream ss;
+      ss << i;
+      out << "sizeof(c_" << prefix << "_" << ss.str() << ")/sizeof(unsigned char)";
+      if (i!=sf-1) out << ",";
+    }
+  out << "}; "<< std::endl;
+  out << "const int g_arr_size_" << prefix << " = sizeof(g_arr_" << prefix << ")/sizeof(*g_arr_" << prefix << ");" << std::endl;
+  out.close();
+
 }
