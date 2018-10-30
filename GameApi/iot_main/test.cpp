@@ -113,10 +113,21 @@ void gameapi_main()
 #endif
 
   std::pair<int,std::string> blk = mainloop(e,ev);
-
+  if (blk.second=="RUN") {
   RUN r;
   r.id = blk.first;
   ev.blocker_api.run2(ev,r);
+
+  } else if (blk.second=="OK") {
+    BLK b;
+    b.id = blk.first;
+    ev.blocker_api.run(b);
+
+  } else 
+    {
+      std::cout << "ERROR: internal error: " << blk.second << std::endl;
+    }
+
 
 }
 
