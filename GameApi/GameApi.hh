@@ -592,6 +592,7 @@ public:
         IMPORT BM world_from_bitmap(std::function<BM(int)> f, BM int_bm, int dx, int dy);
   IMPORT ARR cubemap(BM bm);
   IMPORT BM world_from_bitmap2(EveryApi &ev, std::vector<BM> v, std::string filename, std::string chars, int dx, int dy, int sx, int sy);
+  IMPORT BM world_from_bitmap3(EveryApi &ev, std::vector<BM> v, std::string url, std::string chars, int dx, int dy);
         IMPORT BM dup_x(BM orig);
 	IMPORT BM flip_x(BM orig);
 	IMPORT BM flip_y(BM orig);

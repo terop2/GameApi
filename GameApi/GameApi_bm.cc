@@ -512,10 +512,11 @@ std::vector<unsigned char> load_from_url(std::string url)
     {
       if (url==g_urls[i]) { 
 	std::vector<unsigned char> vec(g_content[i], g_content_end[i]);
+	std::cout << "load_from_url using memory: " << url << std::endl;
 	return vec;
       }
     }
-  
+  std::cout << "load_from_url using network: " << url << std::endl;
 
 #ifdef HAS_POPEN
 
@@ -1432,6 +1433,85 @@ EXPORT GameApi::BM GameApi::BitmapApi::world_from_bitmap(std::function<BM(int)> 
     }
   return current;
 }
+class WorldFromUrl : public Bitmap<Color>
+{
+public:
+  WorldFromUrl(GameApi::Env &e, GameApi::EveryApi &ev, std::vector<GameApi::BM> v, std::string url, std::string homepage, std::string chars, int dx, int dy) : e(e), ev(ev), v(v), url(url), homepage(homepage), chars(chars), dx(dx), dy(dy), ssx(1), ssy(1) { }
+  virtual int SizeX() const { return ssx*dx; }
+  virtual int SizeY() const { return ssy*dy; }
+  virtual Color Map(int x, int y) const
+  {
+    int xx = x/dx;
+    int yy = y/dy;
+    int xxx = x-xx*dx;
+    int yyy = y-yy*dy;
+    
+    int pos = mymap[xx+yy*ssx];
+    int ps = v.size();
+    GameApi::BM bm;
+    if (pos>=0 && pos<ps)
+      {
+	bm = v[pos];
+      }
+    else
+      {
+	bm = ev.bitmap_api.newbitmap(dx,dy,0xffffff00);
+      }
+    BitmapHandle *handle = find_bitmap(e, bm);
+    ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+    int sx = b2->SizeX();
+    int sy = b2->SizeY();
+    if (xxx>=0 && xxx<sx && yyy>=0 && yyy<sy) 
+      return b2->Map(xxx,yyy);
+    return Color(0xffffff00);
+  }
+  virtual void Prepare()
+  {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    std::string data(ptr->begin(), ptr->end());
+    std::stringstream ss(data);
+    ss >> ssx >> ssy;
+
+    int *array = new int[ssx*ssy];
+    for(int i=0;i<ssx*ssy;i++)
+      {
+	unsigned char c;
+	ss >> c;
+	int s = chars.size();
+	int val = 0;
+	for(int i=0;i<s;i++)
+	  {
+	    if (c==(unsigned char)chars[i]) val=i;
+	  }
+	array[i] = val;
+      }
+    mymap = array;
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  std::vector<GameApi::BM> v;
+  std::string url;
+  std::string homepage;
+  std::string chars;
+  int *mymap;
+  int dx,dy;
+  int ssx,ssy;
+};
+
+extern std::string gameapi_homepageurl;
+
+EXPORT GameApi::BM GameApi::BitmapApi::world_from_bitmap3(EveryApi &ev, std::vector<BM> v, std::string url, std::string chars, int dx, int dy)
+{
+  ::Bitmap<Color> *b = new WorldFromUrl(e,ev,v,url,gameapi_homepageurl, chars, dx,dy);
+  BitmapColorHandle *handle = new BitmapColorHandle;
+  handle->bm = b;
+  return add_bitmap(e, handle);
+}
+
 EXPORT GameApi::BM GameApi::FloatBitmapApi::subfloatbitmap(GameApi::EveryApi &ev, FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color)
 {
   //GameApi::EveryApi *ev = new GameApi::EveryApi(e);

@@ -4687,7 +4687,9 @@ ASyncData async_data[] = {
   { "bitmap_api", "intbitmap_loader", 0 },
   { "mainloop_api", "restart_screen", 2 },
   { "tracker_api", "play_wave_via_keypress", 2 },
-  { "mainloop_api", "playback_keypresses", 1 }
+  { "mainloop_api", "playback_keypresses", 1 },
+  { "bitmap_api", "world_from_bitmap3", 2 }
+  
   // Note, this is function name, not user interface name.
 };
 
@@ -9448,12 +9450,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "" },
 			 "BM", "bitmap_api", "memoize"));
   
-  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::world_from_bitmap2,
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::world_from_bitmap3,
 			 "bm_world_from_bitmap",
-			 { "ev", "v", "filename", "chars", "dx", "dy", "sx", "sy" },
-			 { "EveryApi&", "[BM]", "std::string", "std::string", "int", "int", "int", "int" },
-			 { "ev", "", "map.txt", ".01234567", "100", "100", "5", "5" },
-			 "BM", "bitmap_api", "world_from_bitmap2"));
+			 { "ev", "v", "url", "chars", "dx", "dy" },
+			 { "EveryApi&", "[BM]", "std::string", "std::string", "int", "int" },
+			 { "ev", "", "http://tpgames.org/map.txt", ".#", "100", "100" },
+			 "BM", "bitmap_api", "world_from_bitmap3"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::persistent_cache,
 			 "bm_persistent_cache",
