@@ -110,6 +110,14 @@ void output_file(std::string name, std::string file)
   int ss = file.size();
 }
 
+std::string replace_string(std::string s, std::string rep, std::string subst)
+{
+  int val = s.find(rep);
+  s.replace(s.begin()+val, s.begin()+val+rep.size(),subst);
+
+  return s;
+}
+
 int main(int argc, char *argv[])
 {
   std::string url = "";
@@ -118,6 +126,7 @@ int main(int argc, char *argv[])
   for(int i=1;i<argc;i++) {
     if (std::string(argv[i])=="--url") {
       url = argv[i+1];
+      url = replace_string(url, "mesh.php", "mesh_pre.php");
       i++;
     } else
       if (std::string(argv[i])=="--prefix") {
