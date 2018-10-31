@@ -14,7 +14,7 @@
 
 #include <cstring>
 
-#if 01
+#if 0
 void *operator new( std::size_t count)
 {
   static int counter = 0;
