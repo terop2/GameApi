@@ -233,7 +233,7 @@ public:
       right->render(e);
       static int ii=0;
       if (ii==0) { ii++;
-      std::cout << "vr submit_frame" << std::endl;
+	//std::cout << "vr submit_frame" << std::endl;
       }
       if (firsttime) {
 	ml = ev.blocker_api.vr_submit(ev,add_txid(env,left),add_txid(env,right));
@@ -259,7 +259,7 @@ public:
 	q2.x = q.x; q2.y = q.y; q2.z = q.z; q2.w = q.w;
 	static int i = 0;
 	if (i==0) { i++; 
-	  std::cout << "quarternion: " << q.x << " " << q.y << " " << q.z << " " << q.w << std::endl;
+	  //std::cout << "quarternion: " << q.x << " " << q.y << " " << q.z << " " << q.w << std::endl;
 	}
 	hmd_pose = Quarternion::QuarToMatrix(q2);
 	if (invert) {
@@ -677,8 +677,8 @@ void splitter_iter3(void *arg)
     VREyeParameters leftParam, rightParam;
     emscripten_vr_get_eye_parameters(current_display, VREyeLeft, &leftParam);
     emscripten_vr_get_eye_parameters(current_display, VREyeRight, &rightParam);
-        std::cout << "OK: Left eye: " << leftParam.offset.x << " " << leftParam.offset.y << " " << leftParam.offset.z << std::endl;
-    std::cout << "OK: Right eye: " << rightParam.offset.x << " " << rightParam.offset.y << " " << rightParam.offset.z << std::endl;
+    //std::cout << "OK: Left eye: " << leftParam.offset.x << " " << leftParam.offset.y << " " << leftParam.offset.z << std::endl;
+    //std::cout << "OK: Right eye: " << rightParam.offset.x << " " << rightParam.offset.y << " " << rightParam.offset.z << std::endl;
 
     //emscripten_vr_set_display_render_loop_arg(current_display, &splitter_iter2, (void*)spl);
 
