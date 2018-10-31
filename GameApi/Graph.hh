@@ -4383,7 +4383,7 @@ private:
   class Compare
   {
   public:
-    bool operator()(const Cube2 &c1, const Cube2 &c2)
+    bool operator()(const Cube2 &c1, const Cube2 &c2) const
     {
       if (c1.x != c2.x) return c1.x < c2.x;
       if (c1.y != c2.y) return c1.y < c2.y;
