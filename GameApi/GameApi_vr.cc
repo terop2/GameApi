@@ -734,6 +734,8 @@ public:
 
   virtual void event(MainLoopEvent &e) { fetcher->event(e); }
   virtual void frame(MainLoopEnv &e) { fetcher->frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { fetcher->draw_event(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { fetcher->draw_frame(e); }
   virtual void set(int t) { fetcher->set(t); }
   virtual int get() const
   {
@@ -773,6 +775,12 @@ public:
   {
   }
   virtual void frame(MainLoopEnv &e)
+  {
+  }
+  virtual void draw_event(FrameLoopEvent &e)
+  {
+  }
+  virtual void draw_frame(DrawLoopEnv &e)
   {
   }
   virtual void set(int t) { }
