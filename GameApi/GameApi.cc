@@ -14770,7 +14770,7 @@ public:
   }
   virtual Splitter* NextState(int code) { return 0; }
   virtual int Iter() {
-    std::cout << "Iter: " << async_pending_count << std::endl;
+    //std::cout << "Iter: " << async_pending_count << std::endl;
     if (async_pending_count>0) {
       return -1;
     } 
