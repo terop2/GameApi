@@ -14764,10 +14764,9 @@ void get_iot_event(const GameApi::MainLoopApi::Event &e, bool *array);
 class FBU_run : public Splitter
 {
 public:
-  FBU_run(GameApi::Env &env, GameApi::EveryApi &ev, FrameBuffer *buf, int mode, int scr_x, int scr_y) : env(env), ev(ev), buf(buf), scr_x(scr_x), scr_y(scr_y) { exit=false;}
+  FBU_run(GameApi::Env &env, GameApi::EveryApi &ev, FrameBuffer *buf, int mode, int scr_x, int scr_y) : env(env), ev(ev), buf(buf), scr_x(scr_x), scr_y(scr_y) { exit=false; firsttime = true; }
   virtual void Init() {
     surf = init_sdl_surface_framebuffer(scr_x, scr_y);
-    buf->Prepare();
   }
   virtual Splitter* NextState(int code) { return 0; }
   virtual int Iter() {
@@ -14775,6 +14774,10 @@ public:
     if (async_pending_count>0) {
       return -1;
     } 
+    if (firsttime) {
+      buf->Prepare();
+      firsttime = false;
+    }
     //std::cout << "FBU_run::Iter" << std::endl;
     // TODO clear the screen
     clear_sdl_surface(surf,scr_x,scr_y,0xffffff00);
@@ -14816,6 +14819,7 @@ private:
   Low_SDL_Surface *surf;
   int scr_x, scr_y;
   bool exit;
+  bool firsttime;
 };
 
 GameApi::RUN GameApi::LowFrameBufferApi::low_framebuffer_run(EveryApi &ev, GameApi::FBU buf, int mode, int scr_x, int scr_y)
