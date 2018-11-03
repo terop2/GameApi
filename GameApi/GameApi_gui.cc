@@ -4690,7 +4690,8 @@ ASyncData async_data[] = {
   { "mainloop_api", "playback_keypresses", 1 },
   { "bitmap_api", "world_from_bitmap3", 2 },
   //{ "bitmap_api", "chai_bm", 0 }
-  { "mainloop_api", "state_int_fetcher", 0 }
+  { "mainloop_api", "state_int_fetcher", 0 },
+  { "mainloop_Api", "state_speed_movement", 1 }
   // Note, this is function name, not user interface name.
 };
 
@@ -6370,6 +6371,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "", "false" },
 			 "MN", "move_api", "pose"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::state_speed_movement,
+			 "mn_statemachine",
+			 { "mn", "url", "states", "x_speeds", "y_speeds", "z_speeds" },
+			 { "MN", "std::string", "std::string", "std::string", "std::string", "std::string" },
+			 { "", "http://tpgames.org/move.sm", "s0,s1,s2,s3,s4", "0.0,-1.0,0.0,0.0,1.0", "0.0,0.0,-1.0,1.0,0.0", "0.0,0.0,0.0,0.0,0.0" },
+			 "MN", "mainloop_api", "state_speed_movement"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::scale_progress,
 			 "mn_scale_progress",
 			 { "next", "is_x", "is_y", "is_z" },

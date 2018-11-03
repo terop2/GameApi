@@ -344,7 +344,7 @@ public:
   virtual void handle_event(FrameLoopEvent &e)
   {
     fetch->draw_event(e);
-    //move->draw_event(e);
+    move->draw_event(e);
   }
   virtual void frame(DrawLoopEnv &e)
   {

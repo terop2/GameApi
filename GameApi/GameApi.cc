@@ -2982,6 +2982,7 @@ public:
   virtual void event(MainLoopEvent &e) { }
   virtual void frame(MainLoopEnv &e) { }
   virtual void draw_frame(DrawLoopEnv &e) { }
+  void draw_event(FrameLoopEvent &e) {}
 
   void set_matrix(Matrix m) { m_m = m; }
   Matrix get_whole_matrix(float time, float delta_time) const { return m_m; }
@@ -3039,6 +3040,7 @@ public:
   virtual void event(MainLoopEvent &e) { m->event(e); }
   virtual void frame(MainLoopEnv &e) { m->frame(e); }
   virtual void draw_frame(DrawLoopEnv &e) { m->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { m->draw_event(e); }
   void set_matrix(Matrix m) { m_m = m; }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
@@ -3063,6 +3065,7 @@ public:
   virtual void event(MainLoopEvent &e) { if (next) next->event(e); }
   virtual void frame(MainLoopEnv &e) { if (next) next->frame(e); }
   virtual void draw_frame(DrawLoopEnv &e) { if (next) next->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { if (next) next->draw_event(e); }
 
   void set_matrix(Matrix m) { }
   void set_pos(float ddx, float ddy, float ddz) { dx=ddx; dy=ddy; dz=ddz; }
@@ -3091,6 +3094,7 @@ public:
   virtual void event(MainLoopEvent &e) { if (next) next->event(e); }
   virtual void frame(MainLoopEnv &e) { if (next) next->frame(e); }
   virtual void draw_frame(DrawLoopEnv &e) { if (next) next->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { if (next) next->draw_event(e); }
 
   void set_matrix(Matrix m) { }
   void set_pos(float ddx, float ddy, float ddz) { }
@@ -3130,6 +3134,7 @@ public:
   virtual void event(MainLoopEvent &e) { next->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); }
   virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { next->draw_event(e); }
   void set_matrix(Matrix m) { }
   void set_pos(float ddx, float ddy, float ddz) { }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -3167,6 +3172,8 @@ public:
   virtual void event(MainLoopEvent &e) { pf->event(e); }
   virtual void frame(MainLoopEnv &e) { pf->frame(e); }
   virtual void draw_frame(DrawLoopEnv &e) { std::cout << "MN_fetcher not supporting draw_frame" << std::endl; }
+  virtual void draw_event(FrameLoopEvent &e) { std::cout << "MN_fetcher not supporting draw_event" << std::endl; }
+
   virtual void set_matrix(Matrix m) { }
   virtual Matrix get_whole_matrix(float time, float delta_time) const
   {
@@ -3191,6 +3198,7 @@ public:
   virtual void event(MainLoopEvent &e) { next->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); }
   virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { next->draw_event(e); }
   void set_matrix(Matrix m) { }
   void set_scale(float ssx, float ssy, float ssz) { sx=ssx; sy=ssy; sz=ssz; }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -3231,6 +3239,7 @@ public:
   virtual void event(MainLoopEvent &e) { next->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); }
   virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { next->draw_event(e); }
 
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -3268,6 +3277,7 @@ public:
   virtual void event(MainLoopEvent &e) { next->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); }
   virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { next->draw_event(e); }
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
@@ -3289,6 +3299,7 @@ public:
   virtual void event(MainLoopEvent &e) { next->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); }
   virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { next->draw_event(e); }
 
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -3309,6 +3320,7 @@ public:
   virtual void event(MainLoopEvent &e) { next->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); }
   virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { next->draw_event(e); }
 
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -3336,6 +3348,10 @@ public:
   virtual void draw_frame(DrawLoopEnv &e) {
     int s = vec.size();
     for(int i=0;i<s;i++) vec[i]->draw_frame(e);
+  }
+  virtual void draw_event(FrameLoopEvent &e) { 
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->draw_event(e);
   }
 
   void set_matrix(Matrix m) { }
@@ -3388,6 +3404,7 @@ public:
   virtual void event(MainLoopEvent &e) { nxt->event(e); }
   virtual void frame(MainLoopEnv &e) { nxt->frame(e); }
   virtual void draw_frame(DrawLoopEnv &e) { nxt->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { nxt->draw_event(e); }
 
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -3407,6 +3424,7 @@ public:
   virtual void event(MainLoopEvent &e) { next->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); }
   virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { next->draw_event(e); }
 
   void set_matrix(Matrix mm) { m = mm; }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -3427,6 +3445,7 @@ public:
   virtual void event(MainLoopEvent &e) { next->event(e); event2->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); event2->frame(e); }
   virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); event2->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { next->draw_event(e); event2->draw_event(e); }
 
   void set_matrix(Matrix mm) { }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -3491,6 +3510,7 @@ public:
   virtual void event(MainLoopEvent &e) { m->event(e); }
   virtual void frame(MainLoopEnv &e) { m->frame(e); }
   virtual void draw_frame(DrawLoopEnv &e) { m->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { m->draw_event(e); }
 
   void set_matrix(Matrix mm) { }
   Matrix get_whole_matrix(float time, float delta_time) const
@@ -14844,6 +14864,7 @@ public:
   }
   virtual void handle_event(FrameLoopEvent &e)
   {
+    move->draw_event(e);
   }
   virtual void frame(DrawLoopEnv &e)
   {
@@ -14944,6 +14965,7 @@ public:
       }
   }
   void handle_event(FrameLoopEvent &e) {
+    move->draw_event(e);
   }
   void frame(DrawLoopEnv &e)
   {
@@ -15539,4 +15561,93 @@ private:
 GameApi::IF GameApi::MainLoopApi::state_int_fetcher(std::string url, std::string states)
 {
   return add_int_fetcher(e, new StateIntFetcher(e, url, gameapi_homepageurl, states));
+}
+
+class StateMovement : public Movement
+{
+public:
+  StateMovement(GameApi::Env &e, Movement *next, std::string url, std::string homepage, std::string states, std::string x_speed, std::string y_speed, std::string z_speed) : e(e), next(next), impl(e,url,homepage), m_states(parse_sep(states,',')), m_x_speed(parse_sep(x_speed,',')), m_y_speed(parse_sep(y_speed,',')), m_z_speed(parse_sep(z_speed,',')) { 
+    firsttime = true;
+    pos_x=0.0;
+    pos_y=0.0;
+    pos_z=0.0;
+    sp_x=0.0;
+    sp_y=0.0;
+    sp_z=0.0;
+  }
+  void draw_event(FrameLoopEvent &e) { next->draw_event(e); impl.draw_event(e); }
+  void draw_frame(DrawLoopEnv &e) { 
+    next->draw_frame(e);
+    if (firsttime) { impl.Prepare(); firsttime=false; }
+    impl.draw_frame(e);
+    update_data();
+    pos_x+=sp_x*e.delta_time;
+    pos_y+=sp_y*e.delta_time;
+    pos_z+=sp_z*e.delta_time;
+
+  }
+  void event(MainLoopEvent &e) { next->event(e); impl.event(e); }
+  void frame(MainLoopEnv &e) { 
+    next->frame(e);
+    if (firsttime) { impl.Prepare(); firsttime=false; }
+    impl.frame(e); 
+    update_data();
+    pos_x+=sp_x*e.delta_time;
+    pos_y+=sp_y*e.delta_time;
+    pos_z+=sp_z*e.delta_time;
+  }
+  void set_matrix(Matrix i) { }
+  Matrix get_whole_matrix(float time, float delta_time) const {
+    return Matrix::Translate(pos_x,pos_y,pos_z)*next->get_whole_matrix(time,delta_time);
+  }
+  void update_data()
+  {
+    int s = m_states.size();
+    int pos = 0;
+    for(int i=0;i<s;i++)
+      {
+	std::string s2 = m_states[i];
+	int s3 = impl.num_flags();
+	for(int j=0;j<s3;j++)
+	  {
+	    std::string flag = impl.flag(j);
+	    //std::cout << "FlagCompare: '" << s2 << "' '" << flag << "'" << std::endl;
+	    if (s2==flag) { pos=i; }
+	  }
+      }
+    if (pos<0 || pos>=m_x_speed.size()) return;
+    if (pos<0 || pos>=m_y_speed.size()) return;
+    if (pos<0 || pos>=m_z_speed.size()) return;
+    std::string sx = m_x_speed[pos];
+    std::string sy = m_y_speed[pos];
+    std::string sz = m_z_speed[pos];
+    std::stringstream ss(sx);
+    ss >> sp_x;
+    sp_x*=100.0;
+    std::stringstream ss2(sy);
+    ss2 >> sp_y;
+    sp_y*=100.0;
+    std::stringstream ss3(sz);
+    ss3 >> sp_z;
+    sp_z*=100.0;
+
+  }
+private:
+  GameApi::Env &e;
+  Movement *next;
+  StateMachineImpl impl;
+  std::vector<std::string> m_states;
+  std::vector<std::string> m_x_speed;
+  std::vector<std::string> m_y_speed;
+  std::vector<std::string> m_z_speed;
+  float sp_x, sp_y, sp_z;
+  float pos_x, pos_y, pos_z;
+  bool firsttime;
+};
+
+
+GameApi::MN GameApi::MainLoopApi::state_speed_movement(MN mn, std::string url, std::string states, std::string x_speeds, std::string y_speeds, std::string z_speeds)
+{
+  Movement *next = find_move(e, mn);
+  return add_move(e, new StateMovement(e, next, url, gameapi_homepageurl, states, x_speeds, y_speeds, z_speeds));
 }

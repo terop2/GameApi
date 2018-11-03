@@ -415,6 +415,7 @@ public:
   ML score_adder(EveryApi &ev, ML ml, O o, MN transform, int enter_score, int leave_score, int dyn_point, float timeout);
   ML score_hidder(EveryApi &ev, ML ml, O o, int max_count);
   IF state_int_fetcher(std::string url, std::string states);
+  MN state_speed_movement(MN mn, std::string url, std::string states, std::string x_speeds, std::string y_speeds, std::string z_speeds);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);
