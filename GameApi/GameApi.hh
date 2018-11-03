@@ -414,6 +414,7 @@ public:
   ML move_in(EveryApi &ev, ML ml, INP in);
   ML score_adder(EveryApi &ev, ML ml, O o, MN transform, int enter_score, int leave_score, int dyn_point, float timeout);
   ML score_hidder(EveryApi &ev, ML ml, O o, int max_count);
+  IF state_int_fetcher(std::string url, std::string states);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);
@@ -561,7 +562,7 @@ public:
 	IMPORT BM newintbitmap(char *array, int sx, int sy, std::function<int(char)> f);
         IMPORT IBM intbitmap_loader(std::string url);
   IMPORT BM intbitmap_bm(IBM ibm);
-
+  IMPORT BM chai_bm(std::string url, int sx, int sy);
 	IMPORT BM newcolorbitmap(char *array, int sz, int sy, std::function<unsigned int(char)> f);
 	IMPORT BM newtilebitmap(int sx, int sy, int tile_sx, int tile_sy);
 	IMPORT BM loadbitmap(std::string filename);
@@ -722,6 +723,7 @@ public:
   IMPORT SF score_string_fetcher(std::string id, std::string label, int numdigits); // use score_display instead.
   IMPORT IF char_fetcher_from_string(SF string_fetcher, std::string alternatives, int idx);
   IMPORT ML dynamic_character(EveryApi &ev, std::vector<BM> vec, IF fetcher, int x, int y);
+  IMPORT FML dynamic_character_frame(EveryApi &ev, std::vector<BM> vec, IF fetcher, int x, int y, int fmt, MN mn);
   IMPORT ML dynamic_polygon(EveryApi &ev, std::vector<P> vec, MT material, IF fetcher);
   IMPORT ML dynamic_string(EveryApi &ev, Ft font, std::string alternative_chars, SF fetcher, int x, int y, int numchars);
   IMPORT FI load_font(std::string ttf_filename, int sx, int sy);
