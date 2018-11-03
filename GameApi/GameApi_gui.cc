@@ -3193,7 +3193,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, 
 	}
       else 
 	{
-      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"¤%&?\n";
+      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"¤%&?\n,";
       W edit = string_editor(allowed, target.s, atlas_tiny, atlas_tiny_bm, x_gap);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
       return edit_2;
@@ -4688,8 +4688,9 @@ ASyncData async_data[] = {
   { "mainloop_api", "restart_screen", 2 },
   { "tracker_api", "play_wave_via_keypress", 2 },
   { "mainloop_api", "playback_keypresses", 1 },
-  { "bitmap_api", "world_from_bitmap3", 2 }
-  
+  { "bitmap_api", "world_from_bitmap3", 2 },
+  //{ "bitmap_api", "chai_bm", 0 }
+  { "mainloop_api", "state_int_fetcher", 0 }
   // Note, this is function name, not user interface name.
 };
 
@@ -6232,6 +6233,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "int", "int", "int" },
 			 { "32", "1", "0" },
 			 "IF", "font_api", "keypress_int_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::state_int_fetcher,
+			 "if_statemachine",
+			 { "url", "states" },
+			 { "std::string", "std::string" },
+			 { "http://tpgames.org/move.sm", "s1,s2,s3,s4" },
+			 "IF", "mainloop_api", "state_int_fetcher"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::hmd_state_fetcher,
 			 "if_hmd",
 			 { },
@@ -6863,6 +6870,14 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "http://tpgames.org/marble_cube_ml.mp", "a&a", "b&b", "c&c", "d&d", "e&e" },
 			 "[ML]", "mainloop_api", "load_ML_script_array"));
 
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::chai_bm,
+			 "chai_bm",
+			 { "url", "sx", "sy" },
+			 { "std::string", "int", "int" },
+			 { "http://tpgames.org/test_bm.chai", "100", "100" },
+			 "BM", "bitmap_api", "chai_bm"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::skybox,
 			 "skybox_ml",
 			 { "ev", "land", "sky" },
@@ -8205,6 +8220,12 @@ std::vector<GameApiItem*> framebuffermoduleapi_functions()
 			 { "BM", "MN", "int", "int", "int", "float" },
 			 { "", "", "0", "0", "1", "0.0" },
 			 "FML", "low_frame_api", "low_sprite_draw"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::dynamic_character_frame,
+			 "fr_sprite_choose",
+			 { "ev", "vec", "fetcher", "x", "y", "fmt", "mn" },
+			 { "EveryApi&", "[BM]", "IF", "int", "int", "int", "MN" },
+			 { "ev", "", "", "0", "0", "1", "" },
+			 "FML", "font_api", "dynamic_character_frame"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_poly_draw,
 			 "fr_poly_draw",
 			 { "p", "mn" },

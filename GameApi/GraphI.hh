@@ -562,6 +562,27 @@ struct FrameLoopEvent
   bool pin[9];
 };
 
+class SourceBitmap
+{
+public:
+  SourceBitmap(DrawBufferFormat fmt, int depth);
+  SourceBitmap(const SourceBitmap &src);
+  void operator=(const SourceBitmap &src);
+  void set_data(void *data, int width, int height, int ydelta);
+  void set_data_mono1(void *data, int width, int height, int ydelta);
+  ~SourceBitmap();
+public:
+  void *m_data;
+  DrawBufferFormat fmt;
+  int m_width;
+  int m_height;
+  int m_ydelta;
+  int m_depth;
+  bool m_owned;
+  bool m_owned2;
+};
+
+
 class SourceBitmap;
 
 class FrameBuffer
@@ -907,6 +928,8 @@ class Fetcher
 public:
   virtual void event(MainLoopEvent &e)=0;
   virtual void frame(MainLoopEnv &e)=0;
+  virtual void draw_event(FrameLoopEvent &e)=0;
+  virtual void draw_frame(DrawLoopEnv &e)=0;
   virtual void set(T t)=0;
   virtual T get() const=0;
 };
@@ -1237,6 +1260,17 @@ public:
 
 };
 
-
+class IStateMachine
+{
+public:
+  virtual int num_flags() const=0;
+  virtual std::string flag(int val) const=0;
+  
+  virtual void Prepare()=0;
+  virtual void event(MainLoopEvent &e)=0;
+  virtual void frame(MainLoopEnv &e)=0;
+  virtual void draw_event(FrameLoopEvent &e)=0;
+  virtual void draw_frame(DrawLoopEnv &e)=0;
+};
 
 #endif

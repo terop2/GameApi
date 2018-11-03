@@ -13062,10 +13062,10 @@ std::vector<std::string> parse_sep(std::string s, char sep)
     }
   std::string beg = s.substr(pos,s.size()-pos);
   vec.push_back(beg);
-  std::cout << "Parse sep: ";
-  int s2 = vec.size();
-  for(int i=0;i<s2;i++) std::cout << vec[i] << "::";
-  std::cout << std::endl;
+  //std::cout << "Parse sep: ";
+  //int s2 = vec.size();
+  //for(int i=0;i<s2;i++) std::cout << vec[i] << "::";
+  //std::cout << std::endl;
   return vec;
 }
 
@@ -14338,13 +14338,23 @@ GameApi::VX GameApi::VoxelApi::from_implicit(IM i, int sx, int sy, int sz, float
 }
 
 
-class SourceBitmap
-{
-public:
-  SourceBitmap(DrawBufferFormat fmt, int depth) : m_data(0), fmt(fmt), m_depth(depth),m_owned(false),m_owned2(false)
+
+SourceBitmap::SourceBitmap(DrawBufferFormat fmt, int depth) : m_data(0), fmt(fmt), m_depth(depth),m_owned(false),m_owned2(false)
   {
   }
-  void set_data(void *data, int width, int height, int ydelta) {
+SourceBitmap::SourceBitmap(const SourceBitmap &src) : m_data(src.m_data), fmt(src.fmt), m_width(src.m_width), m_height(src.m_height), m_ydelta(src.m_ydelta), m_depth(src.m_depth), m_owned(false), m_owned2(false) { }
+void SourceBitmap::operator=(const SourceBitmap &src)
+{
+  m_data = src.m_data;
+  fmt = src.fmt;
+  m_width = src.m_width;
+  m_height = src.m_height;
+  m_ydelta = src.m_ydelta;
+  m_depth = src.m_depth;
+  m_owned = false;
+  m_owned2 = false;
+}
+  void SourceBitmap::set_data(void *data, int width, int height, int ydelta) {
     //std::cout << "set_data 1 " << std::endl;
     unsigned int *buf = new unsigned int[width*height];
     std::memset(buf, 0, width*height);
@@ -14355,7 +14365,7 @@ public:
     m_ydelta=ydelta;
     m_owned2 = true;
   }
-  void set_data_mono1(void *data, int width, int height, int ydelta) {
+  void SourceBitmap::set_data_mono1(void *data, int width, int height, int ydelta) {
     //std::cout << "set_data 2 " << std::endl;
     unsigned char *buf = new unsigned char[width*height/8];
     std::memset(buf, 0, width*height/8);
@@ -14377,20 +14387,12 @@ public:
 	}
     m_owned = true;
   }
-  ~SourceBitmap() { 
+  SourceBitmap::~SourceBitmap() { 
     if (m_owned) delete[]((unsigned char*)m_data); 
     if (m_owned2) delete[]((unsigned int*)m_data);
   }
-public:
-  void *m_data;
-  DrawBufferFormat fmt;
-  int m_width;
-  int m_height;
-  int m_ydelta;
-  int m_depth;
-  bool m_owned;
-  bool m_owned2;
-};
+
+
 
 void ClearDepthBuffer(float *arr, int width, int height)
 {
@@ -15107,4 +15109,434 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
     break;
     }
   };
+}
+
+#if 0
+bool operator<(ptw32_handle_t t1,ptw32_handle_t t2) { return t1.x<t2.x; }
+#define CHAISCRIPT_NO_THREADS
+#include <chaiscript/chaiscript.hpp>
+#include <chaiscript/language/chaiscript_common.hpp>
+
+class ChaiBitmap : public Bitmap<Color>
+{
+public:
+  ChaiBitmap(GameApi::Env &e, std::string url, std::string homepage, int sx, int sy) : e(e), url(url),homepage(homepage), sx(sx), sy(sy) { 
+    chai = new chaiscript::ChaiScript;
+    firsttime = true;
+  }
+  void Prepare() {
+    if (firsttime) {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    script = std::string(ptr->begin(), ptr->end());
+    try {
+      chai->eval(script);
+    } catch (chaiscript::exception::eval_error &ee) {
+      std::cout << ee.start_position.line << ":" << ee.reason << std::endl;
+      exit(0);
+    }
+    try {
+    chai->eval(R"(
+        bm_prepare();
+     )");
+    } catch (chaiscript::exception::eval_error &ee) {
+      std::cout << ee.start_position.line << ":" << ee.reason << std::endl;
+      exit(0);
+    }
+    try {
+      f = chai->eval<std::function<unsigned int (int,int)> >("bm_map");
+    } catch (chaiscript::exception::eval_error &ee) {
+      std::cout << ee.start_position.line << ":" << ee.reason << std::endl;
+      exit(0);
+    }
+    firsttime = false;
+    }
+  }
+  int SizeX() const { return sx; }
+  int SizeY() const { return sy; }
+  Color Map(int x, int y) const
+  {
+    //std::stringstream ss;
+    //ss << x << "," << y;
+    //unsigned int v;
+    //std::string s = std::string("bm_map(") + ss.str() + ");";
+    //std::cout << s << std::endl;
+    //try {
+    //  v = chai->eval<unsigned int>(s);
+    //} catch (chaiscript::exception::eval_error &ee) {
+    //  std::cout << ee.start_position.line << ":" << ee.reason << std::endl;
+    //  exit(0);
+    //}
+    unsigned int v = f(x,y);
+    return v;
+  }
+  ~ChaiBitmap() { delete chai; }
+private:
+  GameApi::Env &e;
+  std::string url;
+  std::string homepage;
+  int sx,sy;
+  chaiscript::ChaiScript *chai;
+  std::string script;
+  bool firsttime;
+  std::function<unsigned int (int,int)> f;
+};
+
+GameApi::BM GameApi::BitmapApi::chai_bm(std::string url, int sx, int sy)
+{
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = new ChaiBitmap(e,url,gameapi_homepageurl,sx,sy);
+  BM bm = add_bitmap(e, handle2);
+  return bm;
+}
+#endif
+
+
+//
+// EXAMPLE FILE:
+// a,b,c :: flags
+// k_1 :: A->B
+// k_2 :: B->C
+// k_1 = keyup 32
+// k_2 = timer 10
+// A := a,b,c
+// B := a,c
+// C := a,b
+// 
+
+struct ST_type {
+  std::vector<std::string> labels;
+  std::string right_type;
+  bool is_function;
+  std::string left_type;
+};
+std::string cut_spaces(std::string s)
+{
+  int len = 0;
+  int ss = s.size();
+  int i=0;
+  for(;i<ss;i++) { if (s[i]!=' '&&s[i]!='\n'&&s[i]!='\r') break; }
+  int j=ss-1;
+  int c=0;
+  for(;j>=0;j--,c++) { if (s[j]!=' '&&s[j]!='\n'&&s[j]!='\r') break; }
+  return s.substr(i,ss-i-c);
+}
+int find_substr1(std::string line, char char1)
+{
+  int s = line.size();
+  for(int i=0;i<s;i++) { if (line[i]==char1) return i; }
+  return -1;
+}
+int find_substr2(std::string line, char char1, char char2)
+{
+  int s = line.size()-1;
+  for(int i=0;i<s;i++)
+    {
+      int ch1 = line[i];
+      int ch2 = line[i+1];
+      if (ch1==char1 && ch2 == char2) { return i; }
+    }
+  return -1;
+}
+
+ST_type parse_type(std::string line, bool &success)
+{
+  int pos1 = find_substr2(line, ':', ':');
+  if (pos1==-1) { /*std::cout << "parse_type: pos1==-1" << std::endl;*/  success=false; return ST_type{}; }
+
+  int pos2 = find_substr2(line, '-', '>');
+
+  ST_type t;
+  t.is_function = pos2!=-1;
+
+  std::string lst = line.substr(0,pos1);
+  t.labels = parse_sep(lst, ',');
+
+  int sk = t.labels.size();
+  for(int i=0;i<sk;i++) { t.labels[i] = cut_spaces(t.labels[i]); }
+
+  int type1last = t.is_function?pos2:line.size()-1;
+  std::string type = line.substr(pos1+2, type1last-pos1-2);
+  type = cut_spaces(type);
+
+  if (t.is_function) t.left_type = type; else t.right_type = type;
+
+  if (t.is_function)
+    {
+      std::string type2 = line.substr(pos2+2, line.size()-1-pos2-2);
+      type2 = cut_spaces(type2);
+      t.right_type = type2;
+    }
+  //std::cout << "Type:" << t.is_function << " " << lst << " " << t.left_type << " " << t.right_type << std::endl;
+  success=true;
+  return t;
+}
+
+struct ST_event
+{
+  std::string label;
+  int event_type; // key=1, timer=2
+  int value;
+};
+
+ST_event parse_event(std::string line, bool &success)
+{
+  int pos0 = find_substr2(line, ':', '=');
+  if (pos0!=-1) { /*std::cout << "parse_event: pos0!=-1" << std::endl;*/ success=false; return ST_event{}; }
+
+  ST_event res;
+  int pos1 = find_substr1(line, '=');
+  if (pos1==-1) { /*std::cout << "parse_event: pos1==-1" << std::endl; */success=false; return ST_event{}; }
+  std::string label = line.substr(0,pos1);
+  res.label = cut_spaces(label);
+  std::string rest = line.substr(pos1+1, line.size()-pos1-1);
+  //std::cout << "parse_event, rest=" << rest << std::endl;
+  rest = cut_spaces(rest);
+  int pos2 = find_substr1(rest, ' ');
+  if (pos2==-1) { /*std::cout << "parse_event: pos2==-1" << std::endl;*/ success=false; return ST_event{}; }
+  std::string e = rest.substr(0,pos2);
+  //std::cout << "e=" << e << std::endl;
+  if (e=="keyup") { res.event_type = 1; }
+  if (e=="keydown") { res.event_type = 2; }
+  if (e=="timer") { res.event_type = 3; }
+  std::string v = rest.substr(pos2+1,rest.size()-pos2-1);
+  std::stringstream ss(v);
+  int val = -1; 
+  if (!(ss >> val)) { /*std::cout << "parse_event: ss>>val" << std::endl;*/ success=false; return ST_event{}; }
+  res.value = val;
+  success=true;
+  //std::cout << "Event data: " << res.label << " " << res.event_type << " " << res.value << std::endl;
+  return res;
+}
+struct ST_state
+{
+  std::string state_name;
+  std::vector<std::string> flags;
+  //  std::vector<std::string> positions;
+  //  std::vector<std::string> floats;
+};
+ST_state parse_state(std::string line, bool &success)
+{
+  int pos1 = find_substr2(line, ':', '=');
+  if (pos1==-1) { /*std::cout << "parse_state: pos1==-1" << std::endl;*/ success=false; return ST_state{}; }
+  std::string label = line.substr(0,pos1);
+  ST_state st;
+  st.state_name = cut_spaces(label);
+  
+  std::string rest = line.substr(pos1+2,line.size()-pos1-2);
+  rest = cut_spaces(rest);
+  std::vector<std::string> flags = parse_sep(rest, ',');
+  int s = flags.size();
+  for(int i=0;i<s;i++) flags[i]=cut_spaces(flags[i]);
+  st.flags = flags;
+  success = true;
+  //std::cout << "State:" << st.state_name << " " << rest << std::endl;
+  return st;
+}
+
+
+//class State {
+//public:
+//  virtual int NextState(int current_state, int key) =0;
+//};
+
+
+
+
+class StateMachineImpl : public IStateMachine
+{
+public:
+  StateMachineImpl(GameApi::Env &e, std::string url, std::string homepage) : e(e), url(url), homepage(homepage) { current_state = 0; }
+  void Prepare() {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    std::string script = std::string(ptr->begin(), ptr->end());
+
+    std::stringstream ss(script);
+    std::string line;
+    types = std::vector<ST_type>();
+    events = std::vector<ST_event>();
+    states = std::vector<ST_state>();
+    int linenum = 0;
+    while(std::getline(ss,line)) {
+      if (cut_spaces(line)=="") continue; // skip empty lines
+      bool success_t = false;
+      bool success_e = false;
+      bool success_s = false;
+      ST_type t = parse_type(line, success_t);
+      if (success_t) types.push_back(t);
+      ST_event e = parse_event(line, success_e);
+      if (success_e) events.push_back(e);
+      ST_state s = parse_state(line, success_s);
+      if (success_s) states.push_back(s);
+      if (!success_t && !success_e && !success_s) {
+	std::cout << "Error at line " << linenum << ":" << line << std::endl;
+      }
+      linenum++;
+    }
+  }
+  virtual void event(MainLoopEvent &ee)
+  {
+    int key = ee.ch;
+    //std::cout << "Event: " << key << std::endl;
+    int s = events.size();
+    for(int i=0;i<s;i++)
+      {
+	ST_event e = events[i];
+	if (ee.type==0x301 && e.event_type==1 && e.value==key) {
+	  event(e);
+	}
+	if (ee.type==0x300 && e.event_type==2 && e.value==key) {
+	  event(e);
+	}
+      }
+  }
+  virtual void frame(MainLoopEnv &e) { }
+  virtual void draw_event(FrameLoopEvent &ee)
+  {
+    int key = ee.ch;
+    //std::cout << "DrawEvent: " << key << std::endl;
+    int s = events.size();
+    for(int i=0;i<s;i++)
+      {
+	ST_event e = events[i];
+	//std::cout << ee.type << " " << e.event_type << " " << e.value << " " << key << std::endl;
+	if (ee.type==0x301 && e.event_type==1 && e.value==key) {
+	  event(e);
+	}
+	if (ee.type==0x300 && e.event_type==2 && e.value==key) {
+	  event(e);
+	}
+      }
+
+  }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+
+  virtual int num_flags() const { return states[current_state].flags.size(); }
+  //virtual int num_pos() const=0;
+  //virtual int num_floats() const=0;
+  virtual std::string flag(int val) const
+  {
+    int s = states[current_state].flags.size();
+    if (val>=0 && val<s)
+      return states[current_state].flags[val];
+    return "";
+  }
+
+  void event(const ST_event &e)
+  {
+    std::string event_name = e.label;
+    int pos = 0;
+    while(1) {
+      int t = find_type(pos,event_name);
+      //std::cout << "Found: " << t << std::endl;
+      if (t==-1) { /*std::cout << "Event name not found: " << event_name << std::endl;*/ break; }
+      pos = t+1;
+      if (types[t].is_function) {
+	std::string left_type = types[t].left_type;
+	if (states[current_state].state_name == left_type)
+	  {
+	    std::string right_type = types[t].right_type;
+	    int new_state = find_state(right_type);
+	    if (new_state == -1) {std::cout << "invalid state transition:" << event_name << "::" << left_type << "->" << right_type; continue; }
+	    set_state(new_state);
+	    
+	  }
+      }
+    }
+    
+  }
+  void set_state(int new_state)
+  {
+    //std::cout << "new state: " << new_state << " " << states[new_state].state_name << std::endl;
+    //int s = states[new_state].flags.size();
+    //for(int i=0;i<s;i++)
+    //  std::cout << "Flag:" << states[new_state].flags[i] << std::endl;
+    current_state = new_state;
+  }
+
+  int find_type(int pos, std::string name)
+  {
+    int s = types.size();
+    for(int i=pos;i<s;i++) {
+      int ss = types[i].labels.size();
+      for(int j=0;j<ss;j++)
+	{
+	  if (name==types[i].labels[j]) { return i; }
+	}
+    }
+    return -1;
+  }
+  int find_event(std::string name)
+  {
+    int s = events.size();
+    for(int i=0;i<s;i++)
+      {
+	if (events[i].label == name) { return i; }
+      }
+    return -1;
+  }
+  int find_state(std::string name)
+  {
+    int s = states.size();
+    for(int i=0;i<s;i++)
+      {
+	if (states[i].state_name == name) { return i; }
+      }
+    return -1;
+  }
+private:
+  GameApi::Env &e;
+  std::string url;
+  std::string homepage;
+  std::vector<ST_type> types;
+  std::vector<ST_event> events;
+  std::vector<ST_state> states;
+  int current_state;
+};
+
+class StateIntFetcher : public Fetcher<int>
+{
+public:
+  StateIntFetcher(GameApi::Env &e, std::string url, std::string homepage, std::string states) : impl(e,url,homepage), states(parse_sep(states,',')) { 
+    firsttime = true;
+  }
+  void draw_event(FrameLoopEvent &e) { impl.draw_event(e); }
+  void draw_frame(DrawLoopEnv &e) { 
+    if (firsttime) { impl.Prepare(); firsttime=false; }
+    impl.draw_frame(e); }
+  void event(MainLoopEvent &e) { impl.event(e); }
+  void frame(MainLoopEnv &e) { 
+    if (firsttime) { impl.Prepare(); firsttime=false; }
+    impl.frame(e); 
+  }
+  void set(int i) { }
+  int get() const {
+    int s = states.size();
+    for(int i=0;i<s;i++)
+      {
+	std::string s2 = states[i];
+	int s3 = impl.num_flags();
+	for(int j=0;j<s3;j++)
+	  {
+	    std::string flag = impl.flag(j);
+	    //std::cout << "FlagCompare: '" << s2 << "' '" << flag << "'" << std::endl;
+	    if (s2==flag) return i;
+	  }
+      }
+    return 0;
+  }
+private:
+  StateMachineImpl impl;
+  std::vector<std::string> states;
+  bool firsttime;
+};
+
+GameApi::IF GameApi::MainLoopApi::state_int_fetcher(std::string url, std::string states)
+{
+  return add_int_fetcher(e, new StateIntFetcher(e, url, gameapi_homepageurl, states));
 }

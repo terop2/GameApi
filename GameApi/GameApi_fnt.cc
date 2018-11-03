@@ -320,6 +320,59 @@ private:
   bool firsttime;
   GameApi::MT mat;
 };
+void BitmapToSourceBitmap(Bitmap<Color> &bm, SourceBitmap &target, DrawBufferFormat fmt);
+
+class DynChar_fb : public FrameBufferLoop
+{
+public:
+  DynChar_fb(GameApi::Env &e, GameApi::EveryApi &ev, Fetcher<int> *fetch, std::vector<GameApi::BM> vec, int x, int y, int fmt, Movement *move) : e(e), ev(ev), fetch(fetch), vec(vec), x(x), y(y), fmt(fmt?D_RGBA8888:D_Mono1), move(move) {
+  }
+  virtual void Prepare()
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	BitmapHandle *handle = find_bitmap(e, vec[i]);
+	::Bitmap<Color> *b2 = find_color_bitmap(handle);
+	b2->Prepare();
+	SourceBitmap src_bm(fmt,0);
+	src.push_back(src_bm);
+	BitmapToSourceBitmap(*b2, src[i], fmt);
+
+      }
+  }
+  virtual void handle_event(FrameLoopEvent &e)
+  {
+    fetch->draw_event(e);
+    //move->draw_event(e);
+  }
+  virtual void frame(DrawLoopEnv &e)
+  {
+    fetch->draw_frame(e);
+    move->draw_frame(e);
+    int idx = fetch->get();
+    int s = src.size();
+    if (idx>=0 && idx<s)
+      {
+	Point p = { float(x), float(y), 0.0 };
+	
+	Matrix m = move->get_whole_matrix(e.time*10.0, (e.delta_time*10.0));
+	Point p2 = p*m;
+	e.drawbuffer->draw_sprite(&src[idx], p2.x, p2.y);
+      }
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  Fetcher<int> *fetch;
+  std::vector<GameApi::BM> vec;
+  std::vector<SourceBitmap> src;
+  int x,y;
+  DrawBufferFormat fmt;
+  bool firsttime;
+  Movement *move;
+};
 class DynChar : public MainLoopItem
 {
 public:
@@ -439,6 +492,13 @@ EXPORT GameApi::ML GameApi::FontApi::dynamic_character(GameApi::EveryApi &ev, st
   Fetcher<int> *fetch = find_int_fetcher(e, fetcher);
   return add_main_loop(e, new DynChar(ev, fetch, vec,x,y));
 }
+EXPORT GameApi::FML GameApi::FontApi::dynamic_character_frame(GameApi::EveryApi &ev, std::vector<GameApi::BM> vec, GameApi::IF fetcher, int x, int y, int fmt, MN mn)
+{
+  Fetcher<int> *fetch = find_int_fetcher(e, fetcher);
+  Movement *move = find_move(e, mn);
+  return add_framemainloop(e, new DynChar_fb(e,ev,fetch, vec, x,y, fmt, move)); 
+}
+
 EXPORT GameApi::ML GameApi::FontApi::dynamic_polygon(GameApi::EveryApi &ev, std::vector<GameApi::P> vec, GameApi::MT material, GameApi::IF fetcher)
 {
   Fetcher<int> *fetch = find_int_fetcher(e, fetcher);
@@ -496,6 +556,8 @@ class MovementIntFetcher : public Fetcher<int>
 {
 public:
   MovementIntFetcher(int count, float x_mult, float y_mult, float z_mult) : count(count), x_mult(x_mult), y_mult(y_mult), z_mult(z_mult) { val=0; }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
   virtual void event(MainLoopEvent &e) { }
   virtual void frame(MainLoopEnv &e) {
     Matrix m = e.in_MV;
@@ -524,6 +586,9 @@ class ToggleButtonIntFetcher : public Fetcher<int>
 {
 public:
   ToggleButtonIntFetcher(float start_x, float end_x, float start_y, float end_y) : start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y) { toggle=false; }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+
   virtual void event(MainLoopEvent &e)
   {
     if (e.cursor_pos.x > start_x && e.cursor_pos.x < end_x)
@@ -548,6 +613,15 @@ class RepeatIntFetcher : public Fetcher<int>
 {
 public:
   RepeatIntFetcher(Fetcher<int> *fetch, float duration) : fetch(fetch), duration(duration) { }
+  virtual void draw_event(FrameLoopEvent &e) { 
+    fetch->draw_event(e);
+  }
+  virtual void draw_frame(DrawLoopEnv &e) { 
+    DrawLoopEnv ee = e;
+    ee.time = fmod(e.time, duration/10.0);
+    fetch->draw_frame(ee);
+  }
+
   virtual void event(MainLoopEvent &e) {
     fetch->event(e);
   }
@@ -569,6 +643,26 @@ public:
   KeyPressIntFetcher(int key, int key_down_value, int key_up_value) : key(key), key_down_value(key_down_value), key_up_value(key_up_value) {
     key_down = false;
   }
+  virtual void draw_event(FrameLoopEvent &e) { 
+    int ch = e.ch;
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+
+    if (e.type==0x300 && ch==key) {
+      key_down = true;
+    }
+    if (e.type==0x301 && ch==key) {
+      key_down = false;
+    }
+
+  }
+  virtual void draw_frame(DrawLoopEnv &e) { 
+
+  }
+
   virtual void event(MainLoopEvent &e) {
     int ch = e.ch;
 #ifdef EMSCRIPTEN
@@ -604,6 +698,8 @@ public:
 		     float a_1, float a_2, float a_3, float a_4, float a_5, float a_6, float a_7) : f(f), a_1(a_1), a_2(a_2), a_3(a_3), a_4(a_4), a_5(a_5), a_6(a_6), a_7(a_7) { }
   virtual void event(MainLoopEvent &e) { f->event(e); }
   virtual void frame(MainLoopEnv &e) { f->frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { f->draw_event(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { f->draw_frame(e); }
 
   void set(float t) { }
   float get() const {
@@ -629,6 +725,13 @@ class FPSFetcher : public Fetcher<float>
 {
 public:
   FPSFetcher(GameApi::EveryApi &ev) :ev(ev) { counter=0; fps=0.0; }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { 
+    counter++;
+    fps=ev.mainloop_api.fpscounter(false);
+    if (counter>10) { counter=0; fps2=fps; }
+  }
+
   virtual void event(MainLoopEvent &e) { }
   virtual void frame(MainLoopEnv &e) { 
     counter++;
@@ -657,6 +760,9 @@ class ScoreFetcher : public Fetcher<int>
 {
 public:
   ScoreFetcher(GameApi::EveryApi &ev) :ev(ev) { }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+
   virtual void event(MainLoopEvent &e) { }
   virtual void frame(MainLoopEnv &e) { 
   }
@@ -673,6 +779,9 @@ class TimeFetcher : public Fetcher<int>
 {
 public:
   TimeFetcher(GameApi::EveryApi &ev, float start_time) :ev(ev), start_time(start_time) { }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+
   virtual void event(MainLoopEvent &e)
   {
   }
@@ -713,6 +822,9 @@ class FloatToStringFetcher : public Fetcher<std::string>
 {
 public:
   FloatToStringFetcher(Fetcher<float> &ff) : ff(ff) { }
+  virtual void draw_event(FrameLoopEvent &e) { ff.draw_event(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { ff.draw_frame(e); }
+
   virtual void event(MainLoopEvent &e) { ff.event(e); }
   virtual void frame(MainLoopEnv &e) { ff.frame(e); }
 
@@ -739,6 +851,9 @@ class IntToStringFetcher : public Fetcher<std::string>
 {
 public:
   IntToStringFetcher(Fetcher<int> &ff) : ff(ff) { }
+  virtual void draw_event(FrameLoopEvent &e) { ff.draw_event(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { ff.draw_frame(e); }
+
   virtual void event(MainLoopEvent &e) { ff.event(e); }
   virtual void frame(MainLoopEnv &e) { ff.frame(e); }
 
@@ -766,6 +881,9 @@ class PointFetcherPart : public Fetcher<Point>
 {
 public:
   PointFetcherPart(Fetcher<Point> *pos, int component, Fetcher<float> *comp) : pos(pos), component(component), comp(comp) { }
+  virtual void draw_event(FrameLoopEvent &e) { pos->draw_event(e); comp->draw_event(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { pos->draw_frame(e); comp->draw_frame(e); }
+
   virtual void event(MainLoopEvent &e) { pos->event(e); comp->event(e); }
   virtual void frame(MainLoopEnv &e) { pos->frame(e); comp->frame(e); }
   virtual void set(Point t) { pos->set(t); }
@@ -788,6 +906,8 @@ class ConstantFetcher : public Fetcher<T>
 {
 public:
   ConstantFetcher(T t) : m_t(t) { }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
   virtual void event(MainLoopEvent &e) { }
   virtual void frame(MainLoopEnv &e) { }
   virtual void set(T t) { m_t = t; }
@@ -800,6 +920,9 @@ class MouseFetcher : public Fetcher<Point>
 {
 public:
   MouseFetcher() { }
+  virtual void draw_event(FrameLoopEvent &e) { m_t = e.cursor_pos; }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+
   virtual void event(MainLoopEvent &e) { m_t = e.cursor_pos; }
   virtual void frame(MainLoopEnv &e) { }
   virtual void set(Point t) { m_t = t; }
@@ -815,6 +938,8 @@ class XComp : public Fetcher<int>
 {
 public:
   XComp(Fetcher<Point> *pf, float start_x, float end_x, int num_steps) : pf(pf), start_x(start_x), end_x(end_x), num_steps(num_steps) { }
+  virtual void draw_event(FrameLoopEvent &e) { pf->draw_event(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { pf->draw_frame(e); }
   virtual void event(MainLoopEvent &e) { pf->event(e); }
   virtual void frame(MainLoopEnv &e) { pf->frame(e); }
   virtual void set(int t) { }
@@ -836,6 +961,8 @@ class YComp : public Fetcher<int>
 {
 public:
   YComp(Fetcher<Point> *pf, float start_y, float end_y, int num_steps) : pf(pf), start_y(start_y), end_y(end_y), num_steps(num_steps) { }
+  virtual void draw_event(FrameLoopEvent &e) { pf->draw_event(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { pf->draw_frame(e); }
   virtual void event(MainLoopEvent &e) { pf->event(e); }
   virtual void frame(MainLoopEnv &e) { pf->frame(e); }
   virtual void set(int t) { }
@@ -857,6 +984,8 @@ class ZComp : public Fetcher<int>
 {
 public:
   ZComp(Fetcher<Point> *pf, float start_z, float end_z, int num_steps) : pf(pf), start_z(start_z), end_z(end_z), num_steps(num_steps) { }
+  virtual void draw_event(FrameLoopEvent &e) { pf->draw_event(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { pf->draw_frame(e); }
   virtual void event(MainLoopEvent &e) { pf->event(e); }
   virtual void frame(MainLoopEnv &e) { pf->frame(e); }
   virtual void set(int t) { }
@@ -908,6 +1037,16 @@ public:
     firsttime = true;
     time_origin = 0.0;
   }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) {
+    if (firsttime)
+      time_origin = 0.0; //e.time*10.0;
+    firsttime = false;
+    
+    current_time = e.time*10.0;
+    current_time -= time_origin;
+
+  }
   virtual void event(MainLoopEvent &e) { }
   virtual void frame(MainLoopEnv &e) {
     if (firsttime)
@@ -945,6 +1084,8 @@ public:
   ChooseCharFetcher(Fetcher<std::string> *fetch, std::string alternatives, int index) : fetch(fetch), alternatives(alternatives), index(index) { }
   virtual void event(MainLoopEvent &e) { fetch->event(e); }
   virtual void frame(MainLoopEnv &e) { fetch->frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { fetch->draw_event(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { fetch->draw_frame(e); }
 
   void set(int i) { }
   int get() const
@@ -1037,6 +1178,8 @@ class ScoreStringFetcher : public Fetcher<std::string>
 {
 public:
   ScoreStringFetcher(std::string id, std::string label, int numdigits) : id(id), label(label), numdigits(numdigits) { }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
   virtual void event(MainLoopEvent &e) { }
   virtual void frame(MainLoopEnv &e) { }
 
@@ -1064,6 +1207,8 @@ public:
   TimeStringFetcher(GameApi::EveryApi &ev) { 
     firsttime = true;
   }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
   virtual void event(MainLoopEvent &e) { }
   virtual void frame(MainLoopEnv &e) { }
 
