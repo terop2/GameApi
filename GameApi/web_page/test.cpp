@@ -268,6 +268,7 @@ int main(int argc, char *argv[]) {
     }
 
   // initialize window
+#if 0
   set_status(2,6);
   ev.mainloop_api.init_window(w_width,w_height);
   set_status(3,6);
@@ -276,6 +277,7 @@ int main(int argc, char *argv[]) {
   ev.mainloop_api.set_seamless_url(seamless_url);
   ev.shader_api.load_default();
   set_status(4,6);
+#endif
 
   std::pair<int,std::string> blk = mainloop(e, ev);
   set_status(5,6);
