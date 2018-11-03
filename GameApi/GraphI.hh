@@ -1274,4 +1274,18 @@ public:
   virtual void draw_frame(DrawLoopEnv &e)=0;
 };
 
+template<class C>
+class BitmapCollection
+{
+public:
+  virtual int Size() const=0;
+  virtual int SizeX(int i) const=0;
+  virtual int SizeY(int i) const=0;
+  virtual C Map(int i, int x, int y) const=0;
+  virtual Point PosTL(int i) const=0;
+  virtual Point PosBR(int i) const=0;
+  virtual void Prepare()=0;
+  virtual ~BitmapCollection() { }
+};
+
 #endif

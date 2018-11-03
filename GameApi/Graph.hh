@@ -2190,6 +2190,35 @@ public:
   BufferRef buf;
 };
 
+class BufferFromBitmapCollection : public BufferRefReq
+{
+public:
+  BufferFromBitmapCollection(BitmapCollection<Color> &t, int i) : t(t),i(i)
+  {
+    buf = BufferRef::NewBuffer(1,1);
+    t.Prepare();    
+  }
+  ~BufferFromBitmapCollection() { delete [] buf.buffer; }
+  void Gen() const
+  {
+    BufferRef::FreeBuffer(buf);
+    int sx = t.SizeX(i);
+    int sy = t.SizeY(i);
+    buf = BufferRef::NewBuffer(sx, sy);
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++)
+	{
+	  unsigned int color = t.Map(i,x,y).Pixel();
+	  buf.buffer[x+y*buf.ydelta] = color;
+	}
+  }
+  BufferRef Buffer() const { return buf; }
+private:
+  BitmapCollection<Color> &t;
+  int i;
+  mutable BufferRef buf;
+
+};
 class BufferFromBitmap : public BufferRefReq
 {
 public:

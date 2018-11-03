@@ -14837,7 +14837,13 @@ void BufferRefToSourceBitmap(BufferRef &ref, SourceBitmap &target, DrawBufferFor
     break;
   };
 }
-
+void BitmapCollectionToSourceBitmap(BitmapCollection<Color> &bms, SourceBitmap &target, DrawBufferFormat fmt, int i)
+{
+  BufferFromBitmapCollection buf(bms,i);
+  buf.Gen();
+  BufferRef buf2 = buf.Buffer();
+  BufferRefToSourceBitmap(buf2, target, fmt);
+}
 void BitmapToSourceBitmap(Bitmap<Color> &bm, SourceBitmap &target, DrawBufferFormat fmt)
 {
   //std::cout << "::" << bm.SizeX() << " " << bm.SizeY() << std::endl;
@@ -14847,11 +14853,35 @@ void BitmapToSourceBitmap(Bitmap<Color> &bm, SourceBitmap &target, DrawBufferFor
   BufferRefToSourceBitmap(buf2, target, fmt);
 }
 
+struct PosC { std::string name; Point p; };
+std::vector<PosC> pos_vec;
+void add_posc(std::string name, Point p)
+{
+  int s = pos_vec.size();
+  for(int i=0;i<s;i++)
+    {
+      if (pos_vec[i].name==name) { pos_vec[i].p = p; return; }
+    }
+  PosC c;
+  c.name = name;
+  c.p = p;
+  pos_vec.push_back(c);
+}
+PosC find_posc(std::string name)
+{
+  int s = pos_vec.size();
+  for(int i=0;i<s;i++) {
+    if (pos_vec[i].name==name) return pos_vec[i];
+  }
+  PosC p = { "",{0.0,0.0,0.0} };
+  return p;
+}
+
 
 class SpriteDraw : public FrameBufferLoop
 {
 public:
-  SpriteDraw(Bitmap<Color> &bm, Movement *move, int x, int y, int fmt, float start_time) : bm(bm), move(move), x(x),y(y), src(fmt?D_RGBA8888:D_Mono1,0), fmt(fmt?D_RGBA8888:D_Mono1), start_time(start_time) { 
+  SpriteDraw(std::string name, Bitmap<Color> &bm, Movement *move, int x, int y, int fmt, float start_time) : name(name), bm(bm), move(move), x(x),y(y), src(fmt?D_RGBA8888:D_Mono1,0), fmt(fmt?D_RGBA8888:D_Mono1), start_time(start_time) { 
     prepared=false;
   }
   ~SpriteDraw() { }
@@ -14876,9 +14906,11 @@ public:
     Point p2 = p*m;
     //std::cout << "Pos: " << p2 << std::endl;
     e.drawbuffer->draw_sprite(&src, p2.x,p2.y);
+    add_posc(name, Point(p2.x,p2.y,0.0));
     } else { std::cout << "frame before prepare in SpriteDraw" << std::endl; }
   }
 private:
+  std::string name;
   Bitmap<Color> &bm;
   Movement *move;
   int x, y;
@@ -14888,12 +14920,12 @@ private:
   bool prepared;
 };
 
-GameApi::FML GameApi::LowFrameBufferApi::low_sprite_draw(BM bm, MN mn, int x, int y, int fmt, float start_time)
+GameApi::FML GameApi::LowFrameBufferApi::low_sprite_draw(std::string name, BM bm, MN mn, int x, int y, int fmt, float start_time)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   ::Bitmap<Color> *b2 = find_color_bitmap(handle);
   Movement *move = find_move(e, mn);
-  return add_framemainloop(e,new SpriteDraw(*b2, move,x,y,fmt,start_time));
+  return add_framemainloop(e,new SpriteDraw(name, *b2, move,x,y,fmt,start_time));
 
 }
 
@@ -14937,7 +14969,7 @@ void get_iot_event(const GameApi::MainLoopApi::Event &e, bool *array)
 class GouraudDraw : public FrameBufferLoop
 {
 public:
-  GouraudDraw(FaceCollection *coll, Movement *move) : coll(coll), size(0), move(move) { }
+  GouraudDraw(std::string name, FaceCollection *coll, Movement *move) : name(name), coll(coll), size(0), move(move) { }
   void Prepare() { 
     coll->Prepare();
     int s = coll->NumFaces();
@@ -14973,9 +15005,16 @@ public:
     //unsigned int color[] = { 0xffffffff, 0xff888888, 0xff000000 };
     Matrix m = move->get_whole_matrix(e.time*10.0, (e.delta_time*10.0));
 
-    DrawGouraudTri(e.drawbuffer, e.format, vertex_array, color_array, size, m*Matrix::Scale(1.0,-1.0,1.0)*Matrix::Translate(400.0,300.0,0.0), e.depth_buffer);
+    Matrix m2 = m*Matrix::Scale(1.0,-1.0,1.0)*Matrix::Translate(400.0,300.0,0.0);
+    DrawGouraudTri(e.drawbuffer, e.format, vertex_array, color_array, size,m2 , e.depth_buffer);
+
+    Point p(0.0,0.0,0.0);
+    Point p2 = p*m2;
+    add_posc(name,p2);
+    
   }
 private:
+  std::string name;
   FaceCollection *coll;
   Point *vertex_array;
   unsigned int *color_array;
@@ -14983,11 +15022,11 @@ private:
   Movement *move;
 };
 
-GameApi::FML GameApi::LowFrameBufferApi::low_poly_draw(P p, MN mn)
+GameApi::FML GameApi::LowFrameBufferApi::low_poly_draw(std::string name, P p, MN mn)
 {
   FaceCollection *coll = find_facecoll(e,p);
   Movement *move = find_move(e, mn);
-  return add_framemainloop(e, new GouraudDraw(coll,move));
+  return add_framemainloop(e, new GouraudDraw(name, coll,move));
 }
 
 void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, unsigned int *colours, int numtriangles, Matrix m, float *depth_buffer)
@@ -15650,4 +15689,163 @@ GameApi::MN GameApi::MainLoopApi::state_speed_movement(MN mn, std::string url, s
 {
   Movement *next = find_move(e, mn);
   return add_move(e, new StateMovement(e, next, url, gameapi_homepageurl, states, x_speeds, y_speeds, z_speeds));
+}
+
+struct BM_coll
+{
+  int num;
+  Point tl;
+  Point br;
+};
+
+BM_coll parse_bm_collection(std::string line, bool &success)
+{
+  std::stringstream ss(line);
+  char c,c2,c3,c4,c5;
+  BM_coll coll;
+  ss >> coll.num >> c;
+  if (c!=':') { std::cout << "A" << c << std::endl; success=false; return BM_coll{}; }
+  ss >> c2 >> coll.tl.x >> c3 >> coll.tl.y >> c4 >> coll.tl.z >> c5;
+  if (c2!='(') { std::cout << "B" << std::endl; success=false; return BM_coll{}; }
+  if (c3!=',') { std::cout << "C" << std::endl; success=false; return BM_coll{}; }
+  if (c4!=',') { std::cout << "D" << std::endl; success=false; return BM_coll{}; }
+  if (c5!=')') { std::cout << "E" << std::endl; success=false; return BM_coll{}; }
+  ss >> c2 >> coll.br.x >> c3 >> coll.br.y >> c4 >> coll.br.z >> c5;
+  if (c2!='(') { std::cout << "F" << std::endl; success=false; return BM_coll{}; }
+  if (c3!=',') { std::cout << "G" << std::endl; success=false; return BM_coll{}; }
+  if (c4!=',') { std::cout << "H" << std::endl; success=false; return BM_coll{}; }
+  if (c5!=')') { std::cout << "I" << std::endl; success=false; return BM_coll{}; }
+  //std::cout << coll.num << " " << coll.tl << " " << coll.br << std::endl;
+  success=true;
+  return coll;
+}
+
+class SpriteDraw2 : public FrameBufferLoop
+{
+public:
+  SpriteDraw2(std::string name, BitmapCollection<Color> &bms, Movement *move, int x, int y, int fmt, float start_time) : name(name), bms(bms), move(move), x(x), y(y), fmt(fmt?D_RGBA8888:D_Mono1), start_time(start_time) {
+    prepared=false;
+  }
+  ~SpriteDraw2() { }
+  virtual void Prepare()
+  {
+    bms.Prepare();
+    int s = bms.Size();
+    for(int i=0;i<s;i++)
+      {
+	SourceBitmap s(fmt?D_RGBA8888:D_Mono1,0);
+	src.push_back(s);
+	BitmapCollectionToSourceBitmap(bms,src[i], fmt, i);
+      }
+    prepared=true;
+  }
+  virtual void handle_event(FrameLoopEvent &e)
+  {
+    move->draw_event(e);
+  }
+  virtual void frame(DrawLoopEnv &e)
+  {
+    if (prepared) {
+      move->draw_frame(e);
+      int s = bms.Size();
+      for(int i=0;i<s;i++) {
+	Point tl = bms.PosTL(i);
+	//Point br = bms.PosBR(i);
+	Point p = { tl.x+float(x), tl.y+float(y), tl.z };
+	Matrix m = move->get_whole_matrix(e.time*10.0, (e.delta_time*10.0));
+	Point p2 = p*m;
+	e.drawbuffer->draw_sprite(&src[i], p2.x,p2.y);
+      }
+    }
+  }
+  
+private:
+  std::string name;
+  BitmapCollection<Color> &bms;
+  Movement *move;
+  int x, y;
+  std::vector<SourceBitmap> src;
+  DrawBufferFormat fmt;
+  float start_time;
+  bool prepared;
+};
+
+class BitmapColl : public BitmapCollection<Color>
+{
+public:
+  BitmapColl(GameApi::Env &e, std::string url, std::string homepage, std::vector<Bitmap<Color>*> vec) : e(e), url(url), homepage(homepage),vec(vec) {}
+  virtual void Prepare()
+  {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    std::string script = std::string(ptr->begin(), ptr->end());
+    mappings = std::vector<BM_coll>();
+    int linenum = 0;
+    std::string line;
+    std::stringstream ss(script);
+    while(std::getline(ss,line)) {
+      bool bm_success = false;
+      BM_coll c = parse_bm_collection(line,bm_success);
+      if (bm_success) mappings.push_back(c);
+      if (!bm_success) {
+	std::cout << "Error at line " << linenum << ":" << line << std::endl;
+      }
+      linenum++;
+    }
+  }
+  virtual Point PosTL(int i) const
+  {
+    return mappings[i].tl;
+  }							   
+  virtual Point PosBR(int i) const
+  {
+    return mappings[i].br;
+  }
+  virtual int Size() const { return mappings.size(); }
+  virtual int SizeX(int i) const {
+    int num = mappings[i].num;
+    if (num>=0 && num<vec.size())
+      return vec[num]->SizeX();
+    return 2;
+  }
+  
+  virtual int SizeY(int i) const {
+    int num = mappings[i].num;
+    if (num>=0 && num<vec.size())
+      return vec[num]->SizeY();
+    return 2;
+  }
+  virtual Color Map(int i, int x, int y) const {
+    int num = mappings[i].num;
+    if (num>=0 && num<vec.size())
+      return vec[num]->Map(x,y);
+    return Color(0xffffffff);
+  }
+
+private:
+  GameApi::Env &e;
+  std::string url;
+  std::string homepage;
+  std::vector<Bitmap<Color>*> vec;
+  std::vector<BM_coll> mappings;
+};
+
+GameApi::FML GameApi::LowFrameBufferApi::low_sprite_array(std::string name, std::string url, std::vector<BM> bms, MN mn, int x, int y, int fmt, float start_time)
+{
+  Movement *move = find_move(e,mn);
+  
+  std::vector<Bitmap<Color>*> vec;
+  int s = bms.size();
+  for(int i=0;i<s;i++)
+    {
+      BitmapHandle *handle = find_bitmap(e, bms[i]);
+      ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+      vec.push_back(b2);
+    }
+  
+  BitmapColl *coll = new BitmapColl(e,url, gameapi_homepageurl, vec);
+  SpriteDraw2 *spr = new SpriteDraw2(name, *coll, move, x,y, fmt, start_time);
+  return add_framemainloop(e, spr);
 }

@@ -4691,8 +4691,9 @@ ASyncData async_data[] = {
   { "bitmap_api", "world_from_bitmap3", 2 },
   //{ "bitmap_api", "chai_bm", 0 }
   { "mainloop_api", "state_int_fetcher", 0 },
-  { "mainloop_Api", "state_speed_movement", 1 }
+  { "mainloop_api", "state_speed_movement", 1 },
   // Note, this is function name, not user interface name.
+  { "low_frame_api", "low_sprite_array", 1 } 
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -8223,10 +8224,16 @@ std::vector<GameApiItem*> framebuffermoduleapi_functions()
   std::vector<GameApiItem*> vec;
   vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_sprite_draw,
 			 "fr_sprite_draw",
-			 { "bm", "move", "x", "y", "fmt", "start_time" },
-			 { "BM", "MN", "int", "int", "int", "float" },
-			 { "", "", "0", "0", "1", "0.0" },
+			 { "name", "bm", "move", "x", "y", "fmt", "start_time" },
+			 { "std::string", "BM", "MN", "int", "int", "int", "float" },
+			 { "s_tmp1", "", "", "0", "0", "1", "0.0" },
 			 "FML", "low_frame_api", "low_sprite_draw"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_sprite_array,
+			 "fr_sprite_array",
+			 { "name", "url", "bms", "mn", "x", "y", "fmt", "start_time" },
+			 { "std::string", "std::string", "[BM]", "MN", "int", "int", "int", "float" },
+			 { "a_tmp1", "http://tpgames.org/pos_lst.sp", "", "", "0", "0", "1", "0.0" },
+			 "FML", "low_frame_api", "low_sprite_array"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::dynamic_character_frame,
 			 "fr_sprite_choose",
 			 { "ev", "vec", "fetcher", "x", "y", "fmt", "mn" },
@@ -8235,9 +8242,9 @@ std::vector<GameApiItem*> framebuffermoduleapi_functions()
 			 "FML", "font_api", "dynamic_character_frame"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_poly_draw,
 			 "fr_poly_draw",
-			 { "p", "mn" },
-			 { "P", "MN" },
-			 { "", "" },
+			 { "name", "p", "mn" },
+			 { "std::string", "P", "MN" },
+			 { "p_tmp1", "", "" },
 			 "FML", "low_frame_api", "low_poly_draw"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::array_fml,
 			 "array_fml",
