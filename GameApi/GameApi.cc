@@ -12989,6 +12989,7 @@ public:
     e.async_load_url(url, homepage);
 #endif
     std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+    if (!vec) { std::cout << "async not ready!" << std::endl; return; }
     std::string code(vec->begin(), vec->end());
     code = replace_str(code, "%1", p1);
     code = replace_str(code, "%2", p2);
@@ -13152,6 +13153,7 @@ public:
       e.async_load_url(url, homepage);
 #endif
       std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+    if (!vec) { std::cout << "async not ready!" << std::endl; return; }
       std::string code(vec->begin(), vec->end());
       code = replace_str(code, "%1", p1);
       code = replace_str(code, "%2", p2);
@@ -13296,6 +13298,7 @@ public:
     e.async_load_url(url, homepage);
 #endif
     std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+    if (!vec) { std::cout << "async not ready!" << std::endl; return; }
     std::string code(vec->begin(), vec->end());
     //std::cout << "BM_scriptA: " << code << std::endl;
     code = replace_str(code, "%1", p1);
@@ -14768,9 +14771,10 @@ public:
   }
   virtual Splitter* NextState(int code) { return 0; }
   virtual int Iter() {
+    std::cout << "Iter: " << async_pending_count << std::endl;
     if (async_pending_count>0) {
       return -1;
-    }
+    } 
     //std::cout << "FBU_run::Iter" << std::endl;
     // TODO clear the screen
     clear_sdl_surface(surf,scr_x,scr_y,0xffffff00);
@@ -15194,6 +15198,7 @@ public:
     e.async_load_url(url, homepage);
 #endif
     std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
     script = std::string(ptr->begin(), ptr->end());
     try {
       chai->eval(script);
@@ -15418,6 +15423,7 @@ public:
     e.async_load_url(url, homepage);
 #endif
     std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
     std::string script = std::string(ptr->begin(), ptr->end());
 
     std::stringstream ss(script);
