@@ -15563,7 +15563,7 @@ private:
 class StateIntFetcher : public Fetcher<int>
 {
 public:
-  StateIntFetcher(GameApi::Env &e, std::string url, std::string homepage, std::string states) : impl(e,url,homepage), states(parse_sep(states,',')) { 
+  StateIntFetcher(GameApi::Env &e, std::string url, std::string homepage, std::string states) : impl(e,url,homepage), states(parse_sep(states,'&')) { 
     firsttime = true;
   }
   void draw_event(FrameLoopEvent &e) { impl.draw_event(e); }
@@ -15605,7 +15605,7 @@ GameApi::IF GameApi::MainLoopApi::state_int_fetcher(std::string url, std::string
 class StateMovement : public Movement
 {
 public:
-  StateMovement(GameApi::Env &e, Movement *next, std::string url, std::string homepage, std::string states, std::string x_speed, std::string y_speed, std::string z_speed) : e(e), next(next), impl(e,url,homepage), m_states(parse_sep(states,',')), m_x_speed(parse_sep(x_speed,',')), m_y_speed(parse_sep(y_speed,',')), m_z_speed(parse_sep(z_speed,',')) { 
+  StateMovement(GameApi::Env &e, Movement *next, std::string url, std::string homepage, std::string states, std::string x_speed, std::string y_speed, std::string z_speed) : e(e), next(next), impl(e,url,homepage), m_states(parse_sep(states,'&')), m_x_speed(parse_sep(x_speed,'&')), m_y_speed(parse_sep(y_speed,'&')), m_z_speed(parse_sep(z_speed,'&')) { 
     firsttime = true;
     pos_x=0.0;
     pos_y=0.0;

@@ -6239,7 +6239,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "if_statemachine",
 			 { "url", "states" },
 			 { "std::string", "std::string" },
-			 { "http://tpgames.org/move.sm", "s1,s2,s3,s4" },
+			 { "http://tpgames.org/move.sm", "s0&s1&s2&s3&s4" },
 			 "IF", "mainloop_api", "state_int_fetcher"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::hmd_state_fetcher,
 			 "if_hmd",
@@ -6376,7 +6376,7 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "mn_statemachine",
 			 { "mn", "url", "states", "x_speeds", "y_speeds", "z_speeds" },
 			 { "MN", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "", "http://tpgames.org/move.sm", "s0,s1,s2,s3,s4", "0.0,-1.0,0.0,0.0,1.0", "0.0,0.0,-1.0,1.0,0.0", "0.0,0.0,0.0,0.0,0.0" },
+			 { "", "http://tpgames.org/move.sm", "s0&s1&s2&s3&s4", "0.0&-1.0&0.0&0.0&1.0", "0.0&0.0&-1.0&1.0&0.0", "0.0&0.0&0.0&0.0&0.0" },
 			 "MN", "mainloop_api", "state_speed_movement"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::scale_progress,
 			 "mn_scale_progress",
