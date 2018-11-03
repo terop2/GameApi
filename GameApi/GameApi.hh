@@ -3427,8 +3427,9 @@ public:
   LowFrameBufferApi(Env &e) : e(e) { }
   RUN low_framebuffer_run(EveryApi &ev, FBU buffer, int mode, int scr_x, int scr_y);
   FBU low_framebuffer(FML mainloop, int format, int width, int height, int depth);
-  FML low_sprite_draw(BM bm, MN mn, int x, int y, int fmt, float start_time);
-  FML low_poly_draw(P p,MN mn);
+  FML low_sprite_draw(std::string name, BM bm, MN mn, int x, int y, int fmt, float start_time);
+  FML low_poly_draw(std::string name, P p,MN mn);
+  FML low_sprite_array(std::string name, std::string url, std::vector<BM> bms, MN mn, int x, int y, int fmt, float start_time);
 private:
   LowFrameBufferApi(const LowFrameBufferApi &);
   void operator=(const LowFrameBufferApi&);
