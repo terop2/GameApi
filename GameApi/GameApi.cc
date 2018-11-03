@@ -14768,6 +14768,9 @@ public:
   }
   virtual Splitter* NextState(int code) { return 0; }
   virtual int Iter() {
+    if (async_pending_count>0) {
+      return -1;
+    }
     //std::cout << "FBU_run::Iter" << std::endl;
     // TODO clear the screen
     clear_sdl_surface(surf,scr_x,scr_y,0xffffff00);
