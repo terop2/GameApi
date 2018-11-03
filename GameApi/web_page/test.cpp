@@ -272,9 +272,11 @@ int main(int argc, char *argv[]) {
   set_status(2,6);
   ev.mainloop_api.init_window(w_width,w_height);
   set_status(3,6);
+#endif
   ev.mainloop_api.set_screen_size(w_width, w_height);
   ev.mainloop_api.set_homepage_url(homepageurl);
   ev.mainloop_api.set_seamless_url(seamless_url);
+#if 0
   ev.shader_api.load_default();
   set_status(4,6);
 #endif
