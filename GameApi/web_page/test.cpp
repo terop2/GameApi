@@ -23,6 +23,21 @@ void onprogress(unsigned int, void*, int)
 {
 }
 
+bool find_string(std::string s, std::string s2)
+{
+  int ss=s.size()-s2.size();
+  int sk = s2.size();
+  for(int i=0;i<ss;i++)
+    {
+      bool found = true;
+      for(int j=0;j<sk;j++) {
+	if (s[i+j]!=s2[j]) found=false;
+      }
+      if (found) return true;
+    }
+  return false;
+}
+
 std::string hexify5(std::string s)
 {
   std::string res;
@@ -267,20 +282,23 @@ int main(int argc, char *argv[]) {
 	}
     }
 
+
   // initialize window
-#if 0
-  set_status(2,6);
-  ev.mainloop_api.init_window(w_width,w_height);
-  set_status(3,6);
-#endif
+  if (!find_string(code, "low_framebuffer_run"))
+    {
+      set_status(2,6);
+      ev.mainloop_api.init_window(w_width,w_height);
+      set_status(3,6);
+    }
   ev.mainloop_api.set_screen_size(w_width, w_height);
   ev.mainloop_api.set_homepage_url(homepageurl);
   ev.mainloop_api.set_seamless_url(seamless_url);
-#if 0
-  ev.shader_api.load_default();
-  set_status(4,6);
-#endif
 
+  if (!find_string(code, "low_framebuffer_run"))
+    {
+      ev.shader_api.load_default();
+      set_status(4,6);
+    }
   std::pair<int,std::string> blk = mainloop(e, ev);
   set_status(5,6);
   if (blk.second == "RUN") {
