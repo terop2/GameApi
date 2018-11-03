@@ -202,6 +202,8 @@ void set_status(int val, int val_max) {
 #endif
 }
 
+void initialize_low(int flags);
+
 int main(int argc, char *argv[]) {
   set_status(1,6);
   std::cout << "COMMANDLINE ARGS: " << std::endl;
@@ -289,6 +291,10 @@ int main(int argc, char *argv[]) {
       set_status(2,6);
       ev.mainloop_api.init_window(w_width,w_height);
       set_status(3,6);
+    }
+  else
+    {
+      initialize_low(0);
     }
   ev.mainloop_api.set_screen_size(w_width, w_height);
   ev.mainloop_api.set_homepage_url(homepageurl);
