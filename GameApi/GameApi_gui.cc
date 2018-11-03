@@ -4574,26 +4574,26 @@ CodeGenLine parse_codegen_line(std::string line)
 {
   CodeGenLine error = { "@", "@", "@", "@", { } };
   int first_space = find_char(line, 0, ' ');
-  if (first_space==-1) { std::cout << "parse_codegen_line: first space error" << std::endl; return error; }
+  if (first_space==-1) { std::cout << "parse_codegen_line: first space error: " << line << std::endl; return error; }
   std::string return_type = line.substr(0,first_space);
-  if (line[first_space+1]!='I') { std::cout << "parse_codegen_line: I error" << std::endl; return error; }
+  if (line[first_space+1]!='I') { std::cout << "parse_codegen_line: I error:"  << line << std::endl; return error; }
   int num_end_iterator = extend_until(line, first_space+2, "0123456789");
-  if (num_end_iterator==-1) { std::cout << "parse_codegen_line: 012345689" << std::endl; return error; }
+  if (num_end_iterator==-1) { std::cout << "parse_codegen_line: 012345689:"  << line<< std::endl; return error; }
   std::string num = line.substr(first_space+2, num_end_iterator-first_space-2);
-  if (line[num_end_iterator]!='=') { std::cout << "parse_codegen_line: '=' error" << std::endl; return error; }
-  if (line[num_end_iterator+1]!='e') { std::cout << "parse_codegen_line: 'e' error" << std::endl; return error; }
-  if (line[num_end_iterator+2]!='v') { std::cout << "parse_codegen_line: 'v' error" << std::endl; return error; }
-  if (line[num_end_iterator+3]!='.') { std::cout << "parse_codegen_line: '.' error" << std::endl; return error; }
+  if (line[num_end_iterator]!='=') { std::cout << "parse_codegen_line: '=' error:" << line << std::endl; return error; }
+  if (line[num_end_iterator+1]!='e') { std::cout << "parse_codegen_line: 'e' error:" << line << std::endl; return error; }
+  if (line[num_end_iterator+2]!='v') { std::cout << "parse_codegen_line: 'v' error:" << line << std::endl; return error; }
+  if (line[num_end_iterator+3]!='.') { std::cout << "parse_codegen_line: '.' error:"  << line<< std::endl; return error; }
   int end = find_char(line, num_end_iterator+4, '.');
-  if (end==-1) { std::cout << "parse_codegen_line2: '.' error" << std::endl; return error; }
+  if (end==-1) { std::cout << "parse_codegen_line2: '.' error:"  << line<< std::endl; return error; }
   std::string api_name = line.substr(num_end_iterator+4, end-num_end_iterator-4);
   int end2 = find_char(line,end+1,'(',false);
-  if (end2==-1) { std::cout << "parse_codegen_line2: '(' error" << std::endl; return error; }
+  if (end2==-1) { std::cout << "parse_codegen_line2: '(' error:"  << line<< std::endl; return error; }
   std::string func_name = line.substr(end+1, end2-end-1);
   std::vector<std::string> params;
   while(1) {
     int end3 = find_one(line, end2+1, "),");
-    if (end3==-1) { std::cout << "parse_codegen_line2: '),' error" << std::endl; return error; }
+    if (end3==-1) { std::cout << "parse_codegen_line2: '),' error:"  << line<< std::endl; return error; }
     if (end3==end2+1 && line[end3]==')') { break; } // empty array
     params.push_back(line.substr(end2+1, end3-end2-1));
     end2 = end3;
