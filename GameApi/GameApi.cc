@@ -15783,6 +15783,7 @@ public:
     e.async_load_url(url, homepage);
 #endif
     std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
     std::string script = std::string(ptr->begin(), ptr->end());
     mappings = std::vector<BM_coll>();
     int linenum = 0;
