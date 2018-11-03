@@ -718,6 +718,7 @@ class Movement
 public:
   virtual void event(MainLoopEvent &e)=0;
   virtual void frame(MainLoopEnv &e)=0;
+  virtual void draw_event(FrameLoopEvent &e)=0;
   virtual void draw_frame(DrawLoopEnv &e)=0;
 
   virtual void set_matrix(Matrix m)=0;
