@@ -139,6 +139,7 @@ void gameapi_init()
 
 int main()
 {
-  gameapi_init();
-  while(1);
+  gameapi_main();
+  //  gameapi_init();
+  //  while(1);
 }

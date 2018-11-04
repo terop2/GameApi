@@ -504,15 +504,23 @@ void GameApi::append_url_map(const char* url,const unsigned char* data, const un
   g_content.push_back(data);
   g_content_end.push_back(data_end);
 }
+std::string stripprefix(std::string s);
+std::string remove_load(std::string s)
+{
+  int ss = strlen("load_url.php?url=");
+  if (s.substr(0,ss)=="load_url.php?url=") return stripprefix(s);
+  return s;
+}
+
 
 std::vector<unsigned char> load_from_url(std::string url)
 { // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
   int u = g_urls.size();
   for(int i=0;i<u;i++)
     {
-      if (url==g_urls[i]) { 
+      if (remove_load(url)==g_urls[i]) { 
 	std::vector<unsigned char> vec(g_content[i], g_content_end[i]);
-	std::cout << "load_from_url using memory: " << url << std::endl;
+	std::cout << "load_from_url using memory: " << url << " " << vec.size() << std::endl;
 	return vec;
       }
     }

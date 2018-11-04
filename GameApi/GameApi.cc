@@ -10882,9 +10882,10 @@ ASyncCallback *rem_async_cb(std::string url)
   int i = 0;
   for(;i<s;i++)
     {
+      //std::cout << "rem_async_cb: " << url << " <=> " << load_url_callbacks[i].url << std::endl;
       if (load_url_callbacks[i].url==url) break;
     }
-  if (i==s) return 0;
+  if (i==s) { std::cout << "rem_async_cb failure!" << std::endl; return 0; }
   ASyncCallback *cb = load_url_callbacks[i].cb;
   load_url_callbacks.erase(load_url_callbacks.begin()+i);
   return cb;
@@ -10987,6 +10988,8 @@ void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
 }
 void ASyncLoader::load_urls(std::string url, std::string homepage)
   {
+    //std::cout << "ASyncLoader::load_urls:" << url << std::endl; 
+
   // progress bar
   int s = url.size();
   int sum=0;
@@ -11056,7 +11059,10 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
     if (cb) {
       //std::cout << "Load cb!" << url2 << std::endl;
+      //std::cout << "ASyncLoader::cb:" << url2 << std::endl; 
       (*cb->fptr)(cb->data);
+    } else {
+      std::cout << "ASyncLoadUrl::CB failed" << std::endl;
     }
 
   { // progressbar
