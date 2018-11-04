@@ -118,6 +118,12 @@ std::string replace_string(std::string s, std::string rep, std::string subst)
   return s;
 }
 
+bool is_deep_file(std::string url)
+{
+  bool b1 = find(url, ".mp");
+  return b1;
+}
+
 int main(int argc, char *argv[])
 {
   std::string url = "";
@@ -147,6 +153,12 @@ int main(int argc, char *argv[])
     {
       std::cout << "Loading " << urls[i] << " ";
       std::string n = network(urls[i]);
+      bool b = is_deep_file(urls[i]);
+      if (b) {
+	std::vector<std::string> u = find_urls(n);
+	int ss = u.size();
+	for(int j=0;j<ss;j++) { urls.push_back(u[j]); s++; }
+      }
       files.push_back(n);
     }
   urls.insert(urls.begin(), &url, &url + 1);
