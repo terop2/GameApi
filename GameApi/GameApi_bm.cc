@@ -507,7 +507,7 @@ void GameApi::append_url_map(const char* url,const unsigned char* data, const un
 std::string stripprefix(std::string s);
 std::string remove_load(std::string s)
 {
-  int ss = strlen("load_url.php?url=");
+  int ss = string("load_url.php?url=").size();
   if (s.substr(0,ss)=="load_url.php?url=") return stripprefix(s);
   return s;
 }
