@@ -805,6 +805,7 @@ public:
 	if (s.size()==0) s=mat[b_i].map_Kd;
 	dt->url = convert_slashes(url_prefix+"/"+s);
 	buffer.push_back(ref);
+	//std::cout << "set_callback: " << dt->url << std::endl;
 	e.async_load_callback(dt->url, &MTL_CB, (void*)dt);
 	e.async_load_url(dt->url, homepage);
 	flags.push_back(1);
@@ -822,6 +823,7 @@ public:
   }
   void Prepare2(std::string url, int i)
   {
+    //std::cout << "MTL:Prepare2: " << url << " " << i << std::endl;
       std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
       bool b = false;
       BufferRef img = LoadImageFromString(*vec,b);
@@ -846,10 +848,12 @@ public:
   }
   void Prepare()
   {
+    //std::cout << "MTL:Prepare()" << std::endl;
     if (current == empty) {
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
     e.async_load_url(mtl_url, homepage);
+    PrepareMTL();
 #endif
 
     std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);

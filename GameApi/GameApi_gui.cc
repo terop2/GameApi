@@ -4763,6 +4763,12 @@ std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev,
     {
       std::string line = text.substr(old_idx, idx-old_idx-1);
       //std::cout << "Line:" << line << std::endl;
+      if (line.size()<10) { 
+	line_num++;
+	old_idx = idx+1;
+	idx++;
+	continue; 
+      }
       CodeGenLine l = parse_codegen_line(line);
       CodeGenLineErrorCheck(l, funcs);
       if (l.return_type=="@") {
