@@ -14553,10 +14553,10 @@ void CopyFrameToSurface(FrameBuffer *buf, Low_SDL_Surface *surf)
 	  r>>=16;
 	  g>>=8;
 	  
-	  b<<=24;
+	  bb<<=24;
 	  g<<=16;
 	  r<<=8;
-	  val=a+r+g+b;
+	  val=a+r+g+bb;
 #endif
 
 	  break;
