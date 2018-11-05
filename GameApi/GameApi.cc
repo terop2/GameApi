@@ -14368,20 +14368,56 @@ GameApi::VX GameApi::VoxelApi::from_implicit(IM i, int sx, int sy, int sz, float
 
 
 
-SourceBitmap::SourceBitmap(DrawBufferFormat fmt, int depth) : m_data(0), fmt(fmt), m_depth(depth),m_owned(false),m_owned2(false)
+SourceBitmap::SourceBitmap(DrawBufferFormat fmt, int depth) : m_data(0), fmt(fmt), m_width(1), m_height(1), m_ydelta(1), m_depth(depth),m_owned(false),m_owned2(false) 
   {
   }
-SourceBitmap::SourceBitmap(const SourceBitmap &src) : m_data(src.m_data), fmt(src.fmt), m_width(src.m_width), m_height(src.m_height), m_ydelta(src.m_ydelta), m_depth(src.m_depth), m_owned(false), m_owned2(false) { }
-void SourceBitmap::operator=(const SourceBitmap &src)
-{
-  m_data = src.m_data;
-  fmt = src.fmt;
+SourceBitmap::SourceBitmap(const SourceBitmap &src)  
+{ 
+  if (src.m_owned && src.fmt==D_Mono1 && src.m_data) {
+    unsigned char *buf = (unsigned char*)src.m_data;
+    unsigned char *buf2 = new unsigned char[src.m_width*src.m_height/8];
+    std::memcpy(buf2,buf,src.m_width*src.m_height/8);
+    m_data = buf2;
+  }
+  if (src.m_owned2 && src.fmt==D_RGBA8888 && src.m_data) {
+    unsigned int *buf = (unsigned int*)src.m_data;
+    unsigned int *buf2 = new unsigned int[src.m_width*src.m_height];
+    std::memcpy(buf2,buf,src.m_width*src.m_height*sizeof(unsigned int));
+    m_data = buf2;
+  }
+  if (!src.m_owned && src.fmt==D_Mono1) { m_data = src.m_data; }
+  if (!src.m_owned2 && src.fmt==D_RGBA8888) { m_data=src.m_data; }
   m_width = src.m_width;
   m_height = src.m_height;
   m_ydelta = src.m_ydelta;
   m_depth = src.m_depth;
-  m_owned = false;
-  m_owned2 = false;
+  m_owned = src.m_owned;
+  m_owned2 = src.m_owned2;
+  fmt = src.fmt;
+}
+void SourceBitmap::operator=(const SourceBitmap &src)
+{
+  if (src.m_owned && src.fmt==D_Mono1 && src.m_data) {
+    unsigned char *buf = (unsigned char*)src.m_data;
+    unsigned char *buf2 = new unsigned char[src.m_width*src.m_height/8];
+    std::memcpy(buf2,buf,src.m_width*src.m_height/8);
+    m_data = buf2;
+  }
+  if (src.m_owned2 && src.fmt==D_RGBA8888 && src.m_data) {
+    unsigned int *buf = (unsigned int*)src.m_data;
+    unsigned int *buf2 = new unsigned int[src.m_width*src.m_height];
+    std::memcpy(buf2,buf,src.m_width*src.m_height*sizeof(unsigned int));
+    m_data = buf2;
+  }
+  if (!src.m_owned && src.fmt==D_Mono1) { m_data = src.m_data; }
+  if (!src.m_owned2 && src.fmt==D_RGBA8888) { m_data=src.m_data; }
+  m_width = src.m_width;
+  m_height = src.m_height;
+  m_ydelta = src.m_ydelta;
+  m_depth = src.m_depth;
+  m_owned = src.m_owned;
+  m_owned2 = src.m_owned2;
+  fmt = src.fmt;
 }
   void SourceBitmap::set_data(void *data, int width, int height, int ydelta) {
     //std::cout << "set_data 1 " << std::endl;
@@ -14391,7 +14427,7 @@ void SourceBitmap::operator=(const SourceBitmap &src)
     std::memcpy(buf, data, width*height*sizeof(unsigned int));
     m_width=width;
     m_height=height;
-    m_ydelta=ydelta;
+    m_ydelta=width;
     m_owned2 = true;
   }
   void SourceBitmap::set_data_mono1(void *data, int width, int height, int ydelta) {
@@ -14433,233 +14469,6 @@ void ClearDepthBuffer(float *arr, int width, int height)
       }
 }
 
-class LowFrameBuffer : public FrameBuffer
-{
-public:
-  LowFrameBuffer(FrameBufferLoop *loop, int format, int width, int height, int depth) : loop(loop),m_format(format), width(width), height(height), depth(depth) { firsttime = true;  }
-  virtual void Prepare()
-  {
-    loop->Prepare();
-
-    depth_buffer = new float[width*height];
-    // 
-    FrameBufferFormat fmt = (FrameBufferFormat)m_format;
-    switch(fmt) {
-    case FrameBufferFormat::F_Mono1:
-      buffer = new unsigned char[width*height/8];
-      size = width*height/8;
-      break;
-    case FrameBufferFormat::F_Mono8:
-      buffer = new unsigned char[width*height];
-      size = width*height;
-      break;
-    case FrameBufferFormat::F_RGB565:
-      buffer = new unsigned short[width*height];
-      size=width*height*sizeof(unsigned short);
-      break;
-    case FrameBufferFormat::F_RGB888:
-      buffer = new unsigned short[width*height];
-      size=width*height*sizeof(unsigned short);
-      break;
-    case FrameBufferFormat::F_RGBA8888:
-      buffer = new unsigned int[width*height];
-      size=width*height*sizeof(unsigned int);
-      break;
-    }
-    firsttime = true;
-  }
-  virtual void handle_event(FrameLoopEvent &e)
-  {
-    loop->handle_event(e);
-  }
-  virtual void frame()
-  {
-    // clear the buffer
-    std::memset(buffer,0, size);
-    ClearDepthBuffer(depth_buffer, width, height);
-    if (firsttime) {
-      auto p2 = std::chrono::system_clock::now();
-      auto dur_in_seconds = std::chrono::duration<double>(std::chrono::duration_cast<std::chrono::milliseconds>(p2.time_since_epoch()));
-      start_time = dur_in_seconds.count();
-      //start_time/=1000.0;
-      start_time_epoch = start_time;
-      firsttime = false;
-    }
-    DrawLoopEnv e;
-    e.format = D_RGBA8888;
-    e.drawbuffer = this;
-    e.depth_buffer = depth_buffer;
-    //e.drawbuffer_width = width;
-    //e.drawbuffer_height = height;
-    //e.drawbuffer_depth = depth;
-    auto p3 = std::chrono::system_clock::now();
-    auto dur_in_seconds3 = std::chrono::duration<double>(std::chrono::duration_cast<std::chrono::milliseconds>(p3.time_since_epoch()));
-    double val = dur_in_seconds3.count();  
-    //val/=1000.0;
-    // std::cout << "FTime: " << val << " " << start_time_epoch << std::endl;
-    
-    //std::chrono::time_point p = std::chrono::high_resolution_clock::now();
-    e.time = float(val-start_time_epoch);
-    e.delta_time = float(val-start_time);
-    start_time = val;
-    loop->frame(e);
-
-    // TODO submit to iot platform
-  }
-  virtual void *Buffer() const { return buffer; }
-  virtual int Width() const { return width; }
-  virtual int Height() const { return height; }
-  virtual int Depth() const { return depth; }
-  virtual FrameBufferFormat format() const { return (FrameBufferFormat)m_format; }
-  virtual float *DepthBuffer() const { return depth_buffer; }
-
-  virtual void draw_sprite(SourceBitmap *bm, int pos_x, int pos_y)
-  {
-    int sp_width=bm->m_width;
-    int sp_height = bm->m_height;
-    int sp_ydelta = bm->m_ydelta;
-    void *buf = bm->m_data;
-    switch(m_format) {
-    case FrameBufferFormat::F_Mono1:
-      switch(bm->fmt) {
-      case DrawBufferFormat::D_Mono1:
-	{
-	int start_x = 0;
-	int start_y = 0;
-	if (pos_x<0) start_x=-pos_x;
-	if (pos_y<0) start_y=-pos_y;
-	int w = std::min(sp_width, width-pos_x);
-	int h = std::min(sp_height, height-pos_y);
-	for(int y=start_y;y<h;y++)
-	  for(int x=start_x;x<w;x++)
-	    {
-	      int s_pos = (x/8+y*sp_ydelta);
-	      int t_pos = ((pos_x+x)/8+(y+pos_y)*(width));
-	      int s_bit = x&0x7;
-	      int t_bit = (x+pos_x)&0x7;
-	      unsigned char b = ((unsigned char*)buf)[s_pos];
-	      b>>=7-s_bit;
-	      b&=1;
-	      if (b) {
-		((unsigned char*)buffer)[t_pos]|=1<<(7-t_bit);
-	      } else {
-		((unsigned char*)buffer)[t_pos]&=~(1<<(7-t_bit));
-	      }
-	      //((unsigned char*)buffer)[(pos_x+x)/8+(y+pos_y)*width/8] = ((unsigned char*)buf)[x/8+y*sp_ydelta];
-
-	    }
-	}
-	//std::cout << "draw_sprite, mono1->mono1 not implemented" << std::endl;
-	break;
-
-      case DrawBufferFormat::D_RGBA8888:
-	std::cout << "draw_sprite, rgba8888->mono1 not implemented" << std::endl;
-	break;
-
-      };
-      break;
-    case FrameBufferFormat::F_Mono8:
-      switch(bm->fmt) {
-      case DrawBufferFormat::D_Mono1:
-	std::cout << "draw_sprite, mono1->mono8 not implemented" << std::endl;
-	break;
-
-      case DrawBufferFormat::D_RGBA8888:
-	std::cout << "draw_sprite, rgba8888->mono8 not implemented" << std::endl;
-	break;
-
-      };
-      break;
-    case FrameBufferFormat::F_RGB565:
-      switch(bm->fmt) {
-      case DrawBufferFormat::D_Mono1:
-	std::cout << "draw_sprite, mono1->rgb565 not implemented" << std::endl;
-	break;
-
-      case DrawBufferFormat::D_RGBA8888:
-	std::cout << "draw_sprite, rgba8888->rgb565 not implemented" << std::endl;
-	break;
-
-      };
-      break;
-    case FrameBufferFormat::F_RGB888:
-      switch(bm->fmt) {
-      case DrawBufferFormat::D_Mono1:
-	std::cout << "draw_sprite, mono1->rgb888 not implemented" << std::endl;
-	break;
-
-      case DrawBufferFormat::D_RGBA8888:
-	std::cout << "draw_sprite, rgba8888->rgb888 not implemented" << std::endl;
-	break;
-      };
-      break;
-    case FrameBufferFormat::F_RGBA8888:
-      switch(bm->fmt) {
-      case DrawBufferFormat::D_Mono1:
-
-	{
-	int start_x = 0;
-	int start_y = 0;
-	if (pos_x<0) start_x=-pos_x;
-	if (pos_y<0) start_y=-pos_y;
-	int w = std::min(sp_width, width-pos_x);
-	int h = std::min(sp_height, height-pos_y);
-	for(int y=start_y;y<h;y++)
-	  for(int x=start_x;x<w;x++)
-	    {
-	      //std::cout << "(" << x << "," << y << ") " << buffer << " " << buf << std::endl;
-	      int pos = (x/8+y*sp_ydelta);
-	      int bit = x&0x7;
-	      unsigned char b = ((unsigned char*)buf)[pos];
-	      b>>=7-bit;
-	      b&=1;
-
-	      ((unsigned int*)buffer)[pos_x+x+(y+pos_y)*width] = b?0xffffffff:0xff000000;
-	    }
-	} 
-
-	//std::cout << "draw_sprite, mono1->rgba8888 not implemented" << std::endl;
-	break;
-      case DrawBufferFormat::D_RGBA8888:
-	{
-	int start_x = 0;
-	int start_y = 0;
-	if (pos_x<0) start_x=-pos_x;
-	if (pos_y<0) start_y=-pos_y;
-	int w = std::min(sp_width, width-pos_x);
-	int h = std::min(sp_height, height-pos_y);
-	for(int y=start_y;y<h;y++)
-	  for(int x=start_x;x<w;x++)
-	    {
-	      //std::cout << "(" << x << "," << y << ") " << buffer << " " << buf << std::endl;
-	      ((unsigned int*)buffer)[pos_x+x+(y+pos_y)*width] = ((unsigned int*)buf)[x+y*sp_ydelta];
-	    }
-	}
-	break;
-      };
-      break;
-    }
-
-  }
-private:
-  bool firsttime;
-  FrameBufferLoop *loop;
-  int m_format;
-  void *buffer;
-  int size;
-  int width;
-  int height;
-  int depth;
-  double start_time;
-  double start_time_epoch;
-  float *depth_buffer;
-};
-
-GameApi::FBU GameApi::LowFrameBufferApi::low_framebuffer(GameApi::FML ml, int format, int width, int height, int depth)
-{
-  FrameBufferLoop *loop = find_framemainloop(e,ml);
-  return add_framebuffer(e, new LowFrameBuffer(loop, format,width,height,depth));
-}
 
 void CopyFrameToSurface(FrameBuffer *buf, Low_SDL_Surface *surf)
 {
@@ -15868,4 +15677,656 @@ GameApi::FML GameApi::LowFrameBufferApi::low_sprite_array(std::string name, std:
   BitmapColl *coll = new BitmapColl(e,url, gameapi_homepageurl, vec);
   SpriteDraw2 *spr = new SpriteDraw2(name, *coll, move, x,y, fmt, start_time);
   return add_framemainloop(e, spr);
+}
+
+class WorldImpl : public WorldBlocks
+{
+public:
+  WorldImpl(int sx, int sy, int cx, int cy, Point2d tl, Point2d br) : sx(sx), sy(sy), cx(cx), cy(cy), tl(tl), br(br) 
+  {
+    array = new int[sx*sy];
+    std::memset(array,0, sx*sy*sizeof(int));
+  }
+  ~WorldImpl() { delete[] array; }
+  
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual int Map(int x, int y) const
+  {
+    if (x>=0 && x<sx)
+      if (y>=0 && y<sy)
+	return array[x+y*sx];
+    return 0;
+  }
+
+  // block sizes
+  virtual int CellSizeX() const { return cx; }
+  virtual int CellSizeY() const { return cy; }
+  virtual void SetCellSize(int a_cx, int a_cy)
+  {
+    cx = a_cx;
+    cy = a_cy;
+  }
+  
+  // set elements
+  virtual void SetElem(int x, int y, int val)
+  {
+    if (x>=0 && x<sx)
+      if (y>=0 && y<sy)
+	array[x+y*sx] = val;
+  }
+  virtual void SetElemBlock(int *arr, int width, int height, int ydelta, int start_x, int start_y)
+  {
+    for(int y=0;y<height;y++)
+      for(int x=0;x<width;x++)
+	{
+	  if (x+start_x>=0 && x+start_x<sx)
+	    if (y+start_y>=0 && y+start_y<sy)
+	      array[(x+start_x)+(y+start_y)*sx] = arr[x+y*ydelta];
+	}
+  }
+  
+  // Position of the blocks in 2d space
+  virtual Point2d GetTL() const { return tl; }
+  virtual Point2d GetBR() const { return br; }
+  virtual void SetExtends(Point2d p1, Point2d p2)
+  {
+    tl=p1;
+    br=p2;
+  }
+  virtual std::pair<int,int> BlockPosition(Point2d pos) const
+  {
+    pos.x-=tl.x;
+    pos.y-=tl.y;
+    int px = pos.x;
+    int py = pos.y;
+    px/=cx;
+    py/=cy;
+    return std::make_pair(px,py);
+  }
+  virtual std::pair<int,int> CellPosition(Point2d pos) const
+  {
+    pos.x-=tl.x;
+    pos.y-=tl.y;
+    int px = pos.x;
+    int py = pos.y;
+    px = px % cx;
+    py = py & cy;
+    return std::make_pair(px,py);
+  }
+  virtual std::pair<float,float> CellPositionF(Point2d pos) const
+  {
+    pos.x-=tl.x;
+    pos.y-=tl.y;
+    pos.x=fmod(pos.x,float(cx));
+    pos.y=fmod(pos.y,float(cy));
+    return std::make_pair(pos.x,pos.y);
+  }
+  virtual std::pair<Point2d,Point2d> BlockToWorld(int x, int y) const
+  {
+    Point2d tla = { tl.x+x*cx, tl.y+y*cy };
+    Point2d bra = { tl.x+(x+1)*cx, tl.y+(y+1)*cy };
+    return std::make_pair(tla,bra);
+  }
+
+
+  // Position of the blocks in 3d space
+  virtual Point GetTL3d() const { }
+  virtual Point GetBR3d() const { }
+  virtual void SetExtends3d(Point tl, Point tr, Point bl, Point br) { }
+  virtual void SetMV3d(Matrix m) { }
+  virtual std::pair<int,int> BlockPosition3d(Point ray_start, Point ray_end) const { }
+  virtual std::pair<int,int> CellPosition3d(Point ray_start, Point ray_end) const { }
+  virtual std::pair<float,float> CellPositionF3d(Point ray_start, Point ray_end) const {}
+
+  // Reallocating space
+  virtual void ReserveSize(int n_sx, int n_sy)
+  {
+    int *newarray = new int[n_sx*n_sy];
+    int ssx = std::min(sx,n_sx);
+    int ssy = std::min(sy,n_sy);
+    for(int y=0;y<ssy;y++)
+      for(int x=0;x<ssx;x++)
+	{
+	  newarray[x+y*n_sx] = array[x+y*sx];
+	}
+    delete [] array;
+    array = newarray;
+    sx = n_sx;
+    sy = n_sy;
+  }
+private:
+  int *array;
+  int sx,sy,cx,cy;
+  Point2d tl,br;
+};
+WorldBlocks *g_world=0;
+WorldBlocks *GetWorld() { 
+  if (g_world) return g_world;
+  Point2d tl = { 0.0,0.0 };
+  Point2d br = { 100.0, 100.0 };
+  SetWorld(new WorldImpl(30,30,10,10,tl,br));
+  return g_world;
+}
+void SetWorld(WorldBlocks *w)
+{
+  delete g_world;
+  g_world = w;
+}
+
+class SpriteDraw3 : public FrameBufferLoop
+{
+public:
+  SpriteDraw3(std::vector<Bitmap<Color>*> vec, int screen_width, int screen_height, int fmt) : vec(vec), screen_width(screen_width), screen_height(screen_height), fmt(fmt?D_RGBA8888:D_Mono1) 
+  {
+    Point2d tl = { 0.0,0.0 };
+    Point2d br = { 100.0, 100.0 };
+    SetWorld(new WorldImpl(30,30,10,10,tl,br)); 
+  }
+  virtual void Prepare()
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->Prepare();
+    int cx = vec[0]->SizeX();
+    int cy = vec[0]->SizeY();
+    WorldBlocks *blk = GetWorld();
+    blk->SetCellSize(cx,cy);
+
+    for(int i=0;i<s;i++)
+      {
+	SourceBitmap s2(fmt?D_RGBA8888:D_Mono1,0);
+	src.push_back(s2);
+	BitmapToSourceBitmap(*vec[i],src[i], fmt);
+      }
+  }
+  virtual void handle_event(FrameLoopEvent &e)
+  {
+    // move->draw_event(e);
+  }
+  virtual void frame(DrawLoopEnv &e)
+  {
+    WorldBlocks *blk = GetWorld();
+    Point2d tl = { 0.0, 0.0 };
+    Point2d br = { float(screen_width), float(screen_height) };
+    std::pair<int,int> p = blk->BlockPosition(tl);
+    std::pair<int,int> p2 = blk->BlockPosition(br);
+    int start_x = p.first-1;
+    int start_y = p.second-1;
+    int end_x = p2.first+1;
+    int end_y = p2.second+1;
+    for(int y=start_y;y<end_y;y++)
+      for(int x=start_x;x<end_x;x++)
+	{
+	  int val = blk->Map(x,y);
+	  std::pair<Point2d, Point2d> p = blk->BlockToWorld(x,y);
+	  Point2d tl = p.first;
+	  int s = src.size();
+	  if (val>=0 && val<s)
+	    e.drawbuffer->draw_sprite(&src[val], tl.x, tl.y);
+	}
+  }
+private:
+  std::vector<Bitmap<Color>*> vec;
+  std::vector<SourceBitmap> src;
+  int screen_width, screen_height;
+  DrawBufferFormat fmt;
+};
+
+GameApi::FML GameApi::LowFrameBufferApi::low_render_world(std::vector<BM> blocks, int screen_width, int screen_height, int fmt)
+{
+  std::vector<Bitmap<Color>*> vec;
+  int s = blocks.size();
+  for(int i=0;i<s;i++)
+    {
+      BitmapHandle *handle = find_bitmap(e, blocks[i]);
+      ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+      vec.push_back(b2);
+    }
+  return add_framemainloop(e, new SpriteDraw3(vec, screen_width, screen_height, fmt));
+}
+
+
+class ScrollWorld : public FrameBufferLoop
+{
+public:
+  ScrollWorld(FrameBufferLoop *next, float speed_x, float speed_y, float p_x, float p_y, float left_offset, float right_offset, float height, float height2, int mode, int jump_frames) : next(next), speed_x(speed_x), speed_y(speed_y),p_x(p_x), p_y(p_y), pl_x(p_x-left_offset), pl_y(p_y+height), pr_x(p_x+right_offset), pr_y(p_y+height), pu_x(p_x), pu_y(p_y-height2), mode(mode), jump_frames(jump_frames) 
+  {
+    if (mode==0) {
+      gravity=true;
+    }
+    if (mode==1) {
+      gravity=false;
+    }
+    left=right=up=down=false;
+    jump_up = false;
+
+  }
+  virtual void Prepare() { 
+    next->Prepare(); 
+  }
+  virtual void handle_event(FrameLoopEvent &e) {
+    next->handle_event(e);
+
+    if (mode==0)
+      { // left&right + jump
+	if (e.type==0x301 && e.ch=='a') // left
+	  {
+	    left=true;
+	  }
+	if (e.type==0x300 && e.ch=='a') // left
+	  {
+	    left=false;
+	  }
+	if (e.type==0x301 && e.ch=='d') // right
+	  {
+	    right=true;
+	  }
+	if (e.type==0x300 && e.ch=='d') // right
+	  {
+	    right=false;
+	  }
+	if (e.type==0x301 && e.ch==' ' && !jump_up && !down) // jump start
+	  {
+	    jump_up = true;
+	    gravity = false;
+	    jump_frame=0;
+	  }
+	if (e.type==0x300 && e.ch==' ' && jump_up) // jump stop
+	  {
+	    jump_up=false;
+	    gravity=true;
+	  }
+      }
+
+    if (mode==1)
+      { // scroll
+    // keydown
+	if (e.type==0x301 && e.ch=='w') // up
+	  {
+	    up=true;
+	  }
+	if (e.type==0x301 && e.ch=='a') // left
+	  {
+	    left=true;
+	  }
+	if (e.type==0x301 && e.ch=='s') // down
+	  {
+	    down=true;
+	  }
+	if (e.type==0x301 && e.ch=='d') // right
+	  {
+	    right=true;
+	  }
+	// keyup
+	if (e.type==0x300 && e.ch=='w') // up
+	  {
+	    up=false;
+	  }
+	if (e.type==0x300 && e.ch=='a') // left
+	  {
+	    left=false;
+	  }
+	if (e.type==0x300 && e.ch=='s') // down
+	  {
+	    down=false;
+	  }
+	if (e.type==0x300 && e.ch=='d') // right
+	  {
+	    right=false;
+	  }
+      }
+  }
+  virtual void frame(DrawLoopEnv &e) {
+    WorldBlocks *blk = GetWorld();
+    Point2d p = { p_x,p_y };
+    Point2d pl = { pl_x, pl_y };
+    Point2d pr = { pr_x, pr_y };
+    Point2d pu = { pu_x, pu_y };
+    std::pair<int,int> pos = blk->BlockPosition(p);
+    std::pair<int,int> pos_l = blk->BlockPosition(pl);
+    std::pair<int,int> pos_r = blk->BlockPosition(pr);
+    std::pair<int,int> pos_u = blk->BlockPosition(pu);
+    
+    // gravity
+    if (gravity && blk->Map(pos.first,pos.second)==0) {
+      down=true;
+    }
+    
+    // move prevention
+    if (left && blk->Map(pos_l.first, pos_l.second)!=0) left=false;
+    if (right && blk->Map(pos_r.first, pos_r.second)!=0) right=false;
+    if (down && blk->Map(pos.first,pos.second)!=0) down=false;
+    if (up && blk->Map(pos_u.first, pos_u.second)!=0) up=false;
+   
+    // jumping
+    if (jump_up) {
+      up=true;
+      jump_frame++;
+      if (jump_frame>jump_frames) { jump_up=false; gravity=true; }
+    }
+
+    // actual movement
+    Point2d tl = blk->GetTL();
+    Point2d br = blk->GetBR();
+    if (down) { tl.y+=speed_y; br.y+=speed_y; }
+    if (up) { tl.y-=speed_y; br.y-=speed_y; }
+    if (right) { tl.x+=speed_x; br.x+=speed_x; }
+    if (left) { tl.x-=speed_x; br.x-=speed_x; }
+
+    blk->SetExtends(tl,br);
+
+    next->frame(e);
+  }
+  
+private:
+  FrameBufferLoop *next;
+  float speed_x;
+  float speed_y;
+  float p_x, p_y;
+  float pl_x, pl_y;
+  float pr_x, pr_y;
+  float pu_x, pu_y;
+  bool left,right,up,down;
+  bool jump_up, gravity;
+  int jump_frame;
+  int mode;
+  int jump_frames;
+};
+
+GameApi::FML GameApi::LowFrameBufferApi::low_scroll_world(GameApi::FML ml, float speed_x, float speed_y, float p_x, float p_y, float left_offset, float right_offset, float height, float height2, int mode, int jump_frames)
+{
+  FrameBufferLoop *loop = find_framemainloop(e, ml);
+  return add_framemainloop(e, new ScrollWorld(loop, speed_x, speed_y,p_x,p_y,left_offset, right_offset, height, height2, mode, jump_frames));
+}
+
+class BuildWorld : public FrameBufferLoop
+{
+public:
+  BuildWorld(GameApi::Env &e, FrameBufferLoop *next, std::string url, std::string homepageurl, std::string chars, int x, int y) : e(e), next(next), url(url), homepage(homepageurl), chars(chars), x(x), y(y), ssx(1), ssy(1) {}
+  virtual void Prepare()
+  {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
+    std::string data = std::string(ptr->begin(), ptr->end());
+
+    std::stringstream ss(data);
+    ss >> ssx >> ssy;
+
+    int *array = new int[ssx*ssy];
+    for(int i=0;i<ssx*ssy;i++)
+      {
+	unsigned char c;
+	ss >> c;
+	int s = chars.size();
+	int val = 0;
+	for(int j=0;j<s;j++)
+	  {
+	    if (c==(unsigned char)chars[j]) val=j;
+	  }
+	array[i] = val;
+      }
+    WorldBlocks *blk = GetWorld();
+    blk->ReserveSize(ssx+x,ssy+y);
+    blk->SetElemBlock(array, ssx, ssy, ssx, x,y);
+    delete []array;
+   
+    next->Prepare();
+  }
+  virtual void handle_event(FrameLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual void frame(DrawLoopEnv &e)
+  {
+    next->frame(e);
+  }
+
+private:
+  GameApi::Env &e;
+  FrameBufferLoop *next;
+  std::string url;
+  std::string homepage;
+  std::string chars;
+  int x;
+  int y;
+  int ssx;
+  int ssy;
+};
+
+GameApi::FML GameApi::LowFrameBufferApi::low_build_world(GameApi::FML ml, std::string url, std::string chars, int x, int y)
+{
+  FrameBufferLoop *loop = find_framemainloop(e, ml);
+  return add_framemainloop(e, new BuildWorld(e,loop, url, gameapi_homepageurl, chars, x,y));
+}
+
+class LowFrameBuffer : public FrameBuffer
+{
+public:
+  LowFrameBuffer(FrameBufferLoop *loop, int format, int width, int height, int depth) : loop(loop),m_format(format), width(width), height(height), depth(depth) { firsttime = true;  }
+  virtual void Prepare()
+  {
+
+    loop->Prepare();
+
+    depth_buffer = new float[width*height];
+    // 
+    FrameBufferFormat fmt = (FrameBufferFormat)m_format;
+    switch(fmt) {
+    case FrameBufferFormat::F_Mono1:
+      buffer = new unsigned char[width*height/8];
+      size = width*height/8;
+      break;
+    case FrameBufferFormat::F_Mono8:
+      buffer = new unsigned char[width*height];
+      size = width*height;
+      break;
+    case FrameBufferFormat::F_RGB565:
+      buffer = new unsigned short[width*height];
+      size=width*height*sizeof(unsigned short);
+      break;
+    case FrameBufferFormat::F_RGB888:
+      buffer = new unsigned short[width*height];
+      size=width*height*sizeof(unsigned short);
+      break;
+    case FrameBufferFormat::F_RGBA8888:
+      buffer = new unsigned int[width*height];
+      size=width*height*sizeof(unsigned int);
+      break;
+    }
+    firsttime = true;
+  }
+  virtual void handle_event(FrameLoopEvent &e)
+  {
+    loop->handle_event(e);
+  }
+  virtual void frame()
+  {
+    // clear the buffer
+    std::memset(buffer,0, size);
+    ClearDepthBuffer(depth_buffer, width, height);
+    if (firsttime) {
+      auto p2 = std::chrono::system_clock::now();
+      auto dur_in_seconds = std::chrono::duration<double>(std::chrono::duration_cast<std::chrono::milliseconds>(p2.time_since_epoch()));
+      start_time = dur_in_seconds.count();
+      //start_time/=1000.0;
+      start_time_epoch = start_time;
+      firsttime = false;
+    }
+    DrawLoopEnv e;
+    e.format = D_RGBA8888;
+    e.drawbuffer = this;
+    e.depth_buffer = depth_buffer;
+    //e.drawbuffer_width = width;
+    //e.drawbuffer_height = height;
+    //e.drawbuffer_depth = depth;
+    auto p3 = std::chrono::system_clock::now();
+    auto dur_in_seconds3 = std::chrono::duration<double>(std::chrono::duration_cast<std::chrono::milliseconds>(p3.time_since_epoch()));
+    double val = dur_in_seconds3.count();  
+    //val/=1000.0;
+    // std::cout << "FTime: " << val << " " << start_time_epoch << std::endl;
+    
+    //std::chrono::time_point p = std::chrono::high_resolution_clock::now();
+    e.time = float(val-start_time_epoch);
+    e.delta_time = float(val-start_time);
+    start_time = val;
+    loop->frame(e);
+
+    // TODO submit to iot platform
+  }
+  virtual void *Buffer() const { return buffer; }
+  virtual int Width() const { return width; }
+  virtual int Height() const { return height; }
+  virtual int Depth() const { return depth; }
+  virtual FrameBufferFormat format() const { return (FrameBufferFormat)m_format; }
+  virtual float *DepthBuffer() const { return depth_buffer; }
+
+  virtual void draw_sprite(SourceBitmap *bm, int pos_x, int pos_y)
+  {
+    int sp_width=bm->m_width;
+    int sp_height = bm->m_height;
+    int sp_ydelta = bm->m_ydelta;
+    void *buf = bm->m_data;
+    switch(m_format) {
+    case FrameBufferFormat::F_Mono1:
+      switch(bm->fmt) {
+      case DrawBufferFormat::D_Mono1:
+	{
+	int start_x = 0;
+	int start_y = 0;
+	if (pos_x<0) start_x=-pos_x;
+	if (pos_y<0) start_y=-pos_y;
+	int w = std::min(sp_width, width-pos_x);
+	int h = std::min(sp_height, height-pos_y);
+	for(int y=start_y;y<h;y++)
+	  for(int x=start_x;x<w;x++)
+	    {
+	      int s_pos = (x/8+y*sp_ydelta);
+	      int t_pos = ((pos_x+x)/8+(y+pos_y)*(width));
+	      int s_bit = x&0x7;
+	      int t_bit = (x+pos_x)&0x7;
+	      unsigned char b = ((unsigned char*)buf)[s_pos];
+	      b>>=7-s_bit;
+	      b&=1;
+	      if (b) {
+		((unsigned char*)buffer)[t_pos]|=1<<(7-t_bit);
+	      } else {
+		((unsigned char*)buffer)[t_pos]&=~(1<<(7-t_bit));
+	      }
+	      //((unsigned char*)buffer)[(pos_x+x)/8+(y+pos_y)*width/8] = ((unsigned char*)buf)[x/8+y*sp_ydelta];
+
+	    }
+	}
+	//std::cout << "draw_sprite, mono1->mono1 not implemented" << std::endl;
+	break;
+
+      case DrawBufferFormat::D_RGBA8888:
+	std::cout << "draw_sprite, rgba8888->mono1 not implemented" << std::endl;
+	break;
+
+      };
+      break;
+    case FrameBufferFormat::F_Mono8:
+      switch(bm->fmt) {
+      case DrawBufferFormat::D_Mono1:
+	std::cout << "draw_sprite, mono1->mono8 not implemented" << std::endl;
+	break;
+
+      case DrawBufferFormat::D_RGBA8888:
+	std::cout << "draw_sprite, rgba8888->mono8 not implemented" << std::endl;
+	break;
+
+      };
+      break;
+    case FrameBufferFormat::F_RGB565:
+      switch(bm->fmt) {
+      case DrawBufferFormat::D_Mono1:
+	std::cout << "draw_sprite, mono1->rgb565 not implemented" << std::endl;
+	break;
+
+      case DrawBufferFormat::D_RGBA8888:
+	std::cout << "draw_sprite, rgba8888->rgb565 not implemented" << std::endl;
+	break;
+
+      };
+      break;
+    case FrameBufferFormat::F_RGB888:
+      switch(bm->fmt) {
+      case DrawBufferFormat::D_Mono1:
+	std::cout << "draw_sprite, mono1->rgb888 not implemented" << std::endl;
+	break;
+
+      case DrawBufferFormat::D_RGBA8888:
+	std::cout << "draw_sprite, rgba8888->rgb888 not implemented" << std::endl;
+	break;
+      };
+      break;
+    case FrameBufferFormat::F_RGBA8888:
+      switch(bm->fmt) {
+      case DrawBufferFormat::D_Mono1:
+
+	{
+	int start_x = 0;
+	int start_y = 0;
+	if (pos_x<0) start_x=-pos_x;
+	if (pos_y<0) start_y=-pos_y;
+	int w = std::min(sp_width, width-pos_x);
+	int h = std::min(sp_height, height-pos_y);
+	for(int y=start_y;y<h;y++)
+	  for(int x=start_x;x<w;x++)
+	    {
+	      //std::cout << "(" << x << "," << y << ") " << buffer << " " << buf << std::endl;
+	      int pos = (x/8+y*sp_ydelta);
+	      int bit = x&0x7;
+	      unsigned char b = ((unsigned char*)buf)[pos];
+	      b>>=7-bit;
+	      b&=1;
+
+	      ((unsigned int*)buffer)[pos_x+x+(y+pos_y)*width] = b?0xffffffff:0xff000000;
+	    }
+	} 
+
+	//std::cout << "draw_sprite, mono1->rgba8888 not implemented" << std::endl;
+	break;
+      case DrawBufferFormat::D_RGBA8888:
+	{
+	int start_x = 0;
+	int start_y = 0;
+	if (pos_x<0) start_x=-pos_x;
+	if (pos_y<0) start_y=-pos_y;
+	int w = std::min(sp_width, width-pos_x);
+	int h = std::min(sp_height, height-pos_y);
+	for(int y=start_y;y<h;y++)
+	  for(int x=start_x;x<w;x++)
+	    {
+	      //std::cout << "(" << x << "," << y << ") " << buffer << " " << buf << std::endl;
+	      ((unsigned int*)buffer)[pos_x+x+(y+pos_y)*width] = ((unsigned int*)buf)[x+y*sp_ydelta];
+	    }
+	}
+	break;
+      };
+      break;
+    }
+
+  }
+private:
+  bool firsttime;
+  FrameBufferLoop *loop;
+  int m_format;
+  void *buffer;
+  int size;
+  int width;
+  int height;
+  int depth;
+  double start_time;
+  double start_time_epoch;
+  float *depth_buffer;
+};
+
+GameApi::FBU GameApi::LowFrameBufferApi::low_framebuffer(GameApi::FML ml, int format, int width, int height, int depth)
+{
+  FrameBufferLoop *loop = find_framemainloop(e,ml);
+  return add_framebuffer(e, new LowFrameBuffer(loop, format,width,height,depth));
 }
