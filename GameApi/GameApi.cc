@@ -14543,6 +14543,20 @@ void CopyFrameToSurface(FrameBuffer *buf, Low_SDL_Surface *surf)
 	case FrameBufferFormat::F_RGBA8888:
 	  {
 	  unsigned int *b = ((unsigned int*) buffer) + y*width + x;
+#ifdef EMSCRIPTEN
+	  unsigned int a = val&0xff000000;
+	  unsigned int r = val&0x00ff0000;
+	  unsigned int g = val&0x0000ff00;
+	  unsigned int b = val&0x000000ff;
+	  a>>=24;
+	  r>>=16;
+	  g>>=8;
+	  
+	  b<<=24;
+	  g<<=16;
+	  r<<=8;
+	  val=a+r+g+b;
+#endif
 	  val = *b;
 	  break;
 	  }
@@ -14616,8 +14630,10 @@ public:
 	get_iot_event(e,&event.pin[0]);
 	buf->handle_event(event);
      }
-
-    //g_low->sdl->SDL_Delay(16);
+#ifndef EMSCRIPTEN
+    // this tries to make emscripten port and win32 build run the same speed.
+    g_low->sdl->SDL_Delay(16);
+#endif
     if (exit) return 0;
     return -1;
   }
