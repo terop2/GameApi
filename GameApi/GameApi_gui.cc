@@ -8263,7 +8263,7 @@ std::vector<GameApiItem*> framebuffermoduleapi_functions()
 			 "fr_scroll_world",
 			 { "ml", "speed_x", "speed_y", "p_x", "p_y", "left_offset","right_offset", "height", "height2", "mode", "jump_frames" },
 			 { "FML", "float", "float", "float", "float", "float", "float", "float", "float", "int", "int" },
-			 { "", "1.0", "1.0", "100.0", "100.0", "10.0", "10.0", "5.0", "30.0", "0", "15" },
+			 { "", "1.0", "1.0", "400.0", "300.0", "10.0", "10.0", "5.0", "30.0", "0", "15" },
 			 "FML", "low_frame_api", "low_scroll_world"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_build_world,
 			 "fr_build_world",

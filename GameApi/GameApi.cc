@@ -15889,7 +15889,7 @@ GameApi::FML GameApi::LowFrameBufferApi::low_render_world(std::vector<BM> blocks
 class ScrollWorld : public FrameBufferLoop
 {
 public:
-  ScrollWorld(FrameBufferLoop *next, float speed_x, float speed_y, float p_x, float p_y, float left_offset, float right_offset, float height, float height2, int mode, int jump_frames) : next(next), speed_x(speed_x), speed_y(speed_y),p_x(p_x), p_y(p_y), pl_x(p_x-left_offset), pl_y(p_y+height), pr_x(p_x+right_offset), pr_y(p_y+height), pu_x(p_x), pu_y(p_y-height2), mode(mode), jump_frames(jump_frames) 
+  ScrollWorld(FrameBufferLoop *next, float speed_x, float speed_y, float p_x, float p_y, float left_offset, float right_offset, float height, float height2, int mode, int jump_frames) : next(next), speed_x(speed_x), speed_y(speed_y),p_x(p_x), p_y(p_y), pl_x(p_x-left_offset), pl_y(p_y-height), pr_x(p_x+right_offset), pr_y(p_y-height), pu_x(p_x), pu_y(p_y-height2), mode(mode), jump_frames(jump_frames) 
   {
     if (mode==0) {
       gravity=true;
@@ -15899,6 +15899,7 @@ public:
     }
     left=right=up=down=false;
     jump_up = false;
+    temp_up=temp_down=false;
 
   }
   virtual void Prepare() { 
@@ -15909,29 +15910,34 @@ public:
 
     if (mode==0)
       { // left&right + jump
-	if (e.type==0x301 && e.ch=='a') // left
+	if (e.type==0x300 && e.ch=='a') // left
 	  {
 	    left=true;
 	  }
-	if (e.type==0x300 && e.ch=='a') // left
+	if (e.type==0x301 && e.ch=='a') // left
 	  {
 	    left=false;
 	  }
-	if (e.type==0x301 && e.ch=='d') // right
+	if (e.type==0x300 && e.ch=='d') // right
 	  {
 	    right=true;
 	  }
-	if (e.type==0x300 && e.ch=='d') // right
+	if (e.type==0x301 && e.ch=='d') // right
 	  {
 	    right=false;
 	  }
-	if (e.type==0x301 && e.ch==' ' && !jump_up && !down) // jump start
-	  {
-	    jump_up = true;
-	    gravity = false;
-	    jump_frame=0;
-	  }
-	if (e.type==0x300 && e.ch==' ' && jump_up) // jump stop
+	WorldBlocks *blk = GetWorld();
+	Point2d p = { p_x,p_y };
+	std::pair<int,int> pos = blk->BlockPosition(p);
+	if (blk->Map(pos.first,pos.second)!=0) {
+	  if (e.type==0x300 && e.ch==' ' && !jump_up) // jump start
+	    {
+	      jump_up = true;
+	      gravity = false;
+	      jump_frame=0;
+	    }
+	}
+	if (e.type==0x301 && e.ch==' ') // jump stop
 	  {
 	    jump_up=false;
 	    gravity=true;
@@ -15941,36 +15947,36 @@ public:
     if (mode==1)
       { // scroll
     // keydown
-	if (e.type==0x301 && e.ch=='w') // up
+	if (e.type==0x300 && e.ch=='w') // up
 	  {
 	    up=true;
 	  }
-	if (e.type==0x301 && e.ch=='a') // left
+	if (e.type==0x300 && e.ch=='a') // left
 	  {
 	    left=true;
 	  }
-	if (e.type==0x301 && e.ch=='s') // down
+	if (e.type==0x300 && e.ch=='s') // down
 	  {
 	    down=true;
 	  }
-	if (e.type==0x301 && e.ch=='d') // right
+	if (e.type==0x300 && e.ch=='d') // right
 	  {
 	    right=true;
 	  }
 	// keyup
-	if (e.type==0x300 && e.ch=='w') // up
+	if (e.type==0x301 && e.ch=='w') // up
 	  {
 	    up=false;
 	  }
-	if (e.type==0x300 && e.ch=='a') // left
+	if (e.type==0x301 && e.ch=='a') // left
 	  {
 	    left=false;
 	  }
-	if (e.type==0x300 && e.ch=='s') // down
+	if (e.type==0x301 && e.ch=='s') // down
 	  {
 	    down=false;
 	  }
-	if (e.type==0x300 && e.ch=='d') // right
+	if (e.type==0x301 && e.ch=='d') // right
 	  {
 	    right=false;
 	  }
@@ -15989,29 +15995,35 @@ public:
     
     // gravity
     if (gravity && blk->Map(pos.first,pos.second)==0) {
-      down=true;
-    }
-    
+      temp_down=true;
+    } else { temp_down=false; }
+
     // move prevention
-    if (left && blk->Map(pos_l.first, pos_l.second)!=0) left=false;
-    if (right && blk->Map(pos_r.first, pos_r.second)!=0) right=false;
-    if (down && blk->Map(pos.first,pos.second)!=0) down=false;
-    if (up && blk->Map(pos_u.first, pos_u.second)!=0) up=false;
+    temp_not_left=false;
+    temp_not_right=false;
+    temp_not_up = false;
+    temp_not_down = false;
+    if (blk->Map(pos_l.first, pos_l.second)!=0) temp_not_left=true;
+    if (blk->Map(pos_r.first, pos_r.second)!=0) temp_not_right=true;
+    if (blk->Map(pos.first,pos.second)!=0) temp_not_down=true;
+    if (blk->Map(pos_u.first, pos_u.second)!=0) temp_not_up=true;
    
     // jumping
     if (jump_up) {
-      up=true;
+      temp_up=true;
       jump_frame++;
-      if (jump_frame>jump_frames) { jump_up=false; gravity=true; }
-    }
+      if (jump_frame>jump_frames) { temp_up=false; jump_up=false; gravity=true; }
+    } else { temp_up=false; }
+
+
 
     // actual movement
     Point2d tl = blk->GetTL();
     Point2d br = blk->GetBR();
-    if (down) { tl.y+=speed_y; br.y+=speed_y; }
-    if (up) { tl.y-=speed_y; br.y-=speed_y; }
-    if (right) { tl.x+=speed_x; br.x+=speed_x; }
-    if (left) { tl.x-=speed_x; br.x-=speed_x; }
+    if ((up||temp_up)&&!temp_not_up) { tl.y+=speed_y; br.y+=speed_y; } else
+    if ((down||temp_down)&&!temp_not_down) { tl.y-=speed_y; br.y-=speed_y; }
+    if (left&&!temp_not_left) { tl.x+=speed_x; br.x+=speed_x; } else
+    if (right&&!temp_not_right) { tl.x-=speed_x; br.x-=speed_x; }
 
     blk->SetExtends(tl,br);
 
@@ -16027,6 +16039,9 @@ private:
   float pr_x, pr_y;
   float pu_x, pu_y;
   bool left,right,up,down;
+  bool temp_up, temp_down;
+  bool temp_not_left, temp_not_right;
+  bool temp_not_up, temp_not_down;
   bool jump_up, gravity;
   int jump_frame;
   int mode;
@@ -16045,6 +16060,8 @@ public:
   BuildWorld(GameApi::Env &e, FrameBufferLoop *next, std::string url, std::string homepageurl, std::string chars, int x, int y) : e(e), next(next), url(url), homepage(homepageurl), chars(chars), x(x), y(y), ssx(1), ssy(1) {}
   virtual void Prepare()
   {
+    next->Prepare();
+
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
@@ -16069,11 +16086,12 @@ public:
 	array[i] = val;
       }
     WorldBlocks *blk = GetWorld();
-    blk->ReserveSize(ssx+x,ssy+y);
+    int sx = std::max(ssx+x,blk->SizeX());
+    int sy = std::max(ssy+y,blk->SizeY());
+    blk->ReserveSize(sx,sy);
     blk->SetElemBlock(array, ssx, ssy, ssx, x,y);
     delete []array;
    
-    next->Prepare();
   }
   virtual void handle_event(FrameLoopEvent &e)
   {
