@@ -1288,4 +1288,47 @@ public:
   virtual ~BitmapCollection() { }
 };
 
+class WorldBlocks
+{
+public:
+  virtual ~WorldBlocks() { }
+  // access elements (similar to Bitmap<int>)
+  virtual int SizeX() const=0;
+  virtual int SizeY() const=0;
+  virtual int Map(int x, int y) const=0;
+
+  // block sizes
+  virtual int CellSizeX() const=0;
+  virtual int CellSizeY() const=0;
+  virtual void SetCellSize(int cx, int cy)=0;
+  
+  // set elements
+  virtual void SetElem(int x, int y, int val)=0;
+  virtual void SetElemBlock(int *array, int width, int height, int ydelta, int start_x, int start_y)=0;
+  
+  // Position of the blocks in 2d space
+  virtual Point2d GetTL() const=0;
+  virtual Point2d GetBR() const=0;
+  virtual void SetExtends(Point2d p1, Point2d p2)=0;
+  virtual std::pair<int,int> BlockPosition(Point2d pos) const=0;
+  virtual std::pair<int,int> CellPosition(Point2d pos) const=0;
+  virtual std::pair<float,float> CellPositionF(Point2d pos) const=0;
+  virtual std::pair<Point2d,Point2d> BlockToWorld(int x, int y) const=0;
+
+  // Position of the blocks in 3d space
+  virtual Point GetTL3d() const=0;
+  virtual Point GetBR3d() const=0;
+  virtual void SetExtends3d(Point tl, Point tr, Point bl, Point br)=0;
+  virtual void SetMV3d(Matrix m)=0;
+  virtual std::pair<int,int> BlockPosition3d(Point ray_start, Point ray_end) const=0;
+  virtual std::pair<int,int> CellPosition3d(Point ray_start, Point ray_end) const=0;
+  virtual std::pair<float,float> CellPositionF3d(Point ray_start, Point ray_end) const=0;
+
+  // Reallocating space
+  virtual void ReserveSize(int sx, int sy)=0;  
+};
+
+WorldBlocks *GetWorld();
+void SetWorld(WorldBlocks *w);
+
 #endif

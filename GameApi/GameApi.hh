@@ -3430,6 +3430,9 @@ public:
   FML low_sprite_draw(std::string name, BM bm, MN mn, int x, int y, int fmt, float start_time);
   FML low_poly_draw(std::string name, P p,MN mn);
   FML low_sprite_array(std::string name, std::string url, std::vector<BM> bms, MN mn, int x, int y, int fmt, float start_time);
+  FML low_render_world(std::vector<BM> blocks, int screen_width, int screen_height, int fmt);
+  FML low_scroll_world(FML ml, float speed_x, float speed_y, float p_x, float p_y, float left_offset, float right_offset, float height, float height2, int mode, int jump_frames);
+  FML low_build_world(FML ml, std::string url, std::string chars,int x, int y);
 private:
   LowFrameBufferApi(const LowFrameBufferApi &);
   void operator=(const LowFrameBufferApi&);

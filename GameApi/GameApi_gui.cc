@@ -4693,7 +4693,8 @@ ASyncData async_data[] = {
   { "mainloop_api", "state_int_fetcher", 0 },
   { "mainloop_api", "state_speed_movement", 1 },
   // Note, this is function name, not user interface name.
-  { "low_frame_api", "low_sprite_array", 1 } 
+  { "low_frame_api", "low_sprite_array", 1 }, 
+  { "low_frame_api", "low_build_world", 1 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -8252,6 +8253,24 @@ std::vector<GameApiItem*> framebuffermoduleapi_functions()
 			 { "std::string", "P", "MN" },
 			 { "p_tmp1", "", "" },
 			 "FML", "low_frame_api", "low_poly_draw"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_render_world,
+			 "fr_world_draw",
+			 { "blocks", "screen_width", "screen_height", "fmt" },
+			 { "[BM]", "int", "int", "int" },
+			 { "", "800", "600", "1" },
+			 "FML", "low_frame_api", "low_render_world"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_scroll_world,
+			 "fr_scroll_world",
+			 { "ml", "speed_x", "speed_y", "p_x", "p_y", "left_offset","right_offset", "height", "height2", "mode", "jump_frames" },
+			 { "FML", "float", "float", "float", "float", "float", "float", "float", "float", "int", "int" },
+			 { "", "1.0", "1.0", "100.0", "100.0", "10.0", "10.0", "5.0", "30.0", "0", "15" },
+			 "FML", "low_frame_api", "low_scroll_world"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_build_world,
+			 "fr_build_world",
+			 { "ml", "url", "chars", "x", "y" },
+			 { "FML", "std::string", "std::string", "int", "int" },
+			 { "", "http://tpgames.org/map.txt", ".#", "0", "0" },
+			 "FML", "low_frame_api", "low_build_world"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::array_fml,
 			 "array_fml",
 			 { "arr" },
