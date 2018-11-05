@@ -15910,19 +15910,19 @@ public:
 
     if (mode==0)
       { // left&right + jump
-	if (e.type==0x300 && e.ch=='a') // left
+	if (e.type==0x300 && (e.ch=='a'||e.ch==4||e.ch==80)) // left
 	  {
 	    left=true;
 	  }
-	if (e.type==0x301 && e.ch=='a') // left
+	if (e.type==0x301 && (e.ch=='a'||e.ch==4||e.ch==80)) // left
 	  {
 	    left=false;
 	  }
-	if (e.type==0x300 && e.ch=='d') // right
+	if (e.type==0x300 && (e.ch=='d'||e.ch==7||e.ch==79)) // right
 	  {
 	    right=true;
 	  }
-	if (e.type==0x301 && e.ch=='d') // right
+	if (e.type==0x301 && (e.ch=='d'||e.ch==7||e.ch==79)) // right
 	  {
 	    right=false;
 	  }
@@ -15930,14 +15930,14 @@ public:
 	Point2d p = { p_x,p_y };
 	std::pair<int,int> pos = blk->BlockPosition(p);
 	if (blk->Map(pos.first,pos.second)!=0) {
-	  if (e.type==0x300 && (e.ch==' '||e.ch=='w') && !jump_up) // jump start
+	  if (e.type==0x300 && (e.ch==' '||e.ch=='w'||e.ch==26||e.ch==82) && !jump_up) // jump start
 	    {
 	      jump_up = true;
 	      gravity = false;
 	      jump_frame=0;
 	    }
 	}
-	if (e.type==0x301 && (e.ch==' '||e.ch=='w')) // jump stop
+	if (e.type==0x301 && (e.ch==' '||e.ch=='w'||e.ch==26||e.ch==82)) // jump stop
 	  {
 	    jump_up=false;
 	    gravity=true;
@@ -15947,36 +15947,36 @@ public:
     if (mode==1)
       { // scroll
     // keydown
-	if (e.type==0x300 && e.ch=='w') // up
+	if (e.type==0x300 && (e.ch=='w'||e.ch==26||e.ch==82)) // up
 	  {
 	    up=true;
 	  }
-	if (e.type==0x300 && e.ch=='a') // left
+	if (e.type==0x300 && (e.ch=='a'||e.ch==4||e.ch==80)) // left
 	  {
 	    left=true;
 	  }
-	if (e.type==0x300 && e.ch=='s') // down
+	if (e.type==0x300 && (e.ch=='s'||e.ch==22||e.ch==81)) // down
 	  {
 	    down=true;
 	  }
-	if (e.type==0x300 && e.ch=='d') // right
+	if (e.type==0x300 && (e.ch=='d'||e.ch==7||e.ch==79)) // right
 	  {
 	    right=true;
 	  }
 	// keyup
-	if (e.type==0x301 && e.ch=='w') // up
+	if (e.type==0x301 && (e.ch=='w'||e.ch==26||e.ch==82)) // up
 	  {
 	    up=false;
 	  }
-	if (e.type==0x301 && e.ch=='a') // left
+	if (e.type==0x301 && (e.ch=='a'||e.ch==4||e.ch==80)) // left
 	  {
 	    left=false;
 	  }
-	if (e.type==0x301 && e.ch=='s') // down
+	if (e.type==0x301 && (e.ch=='s'||e.ch==22||e.ch==81)) // down
 	  {
 	    down=false;
 	  }
-	if (e.type==0x301 && e.ch=='d') // right
+	if (e.type==0x301 && (e.ch=='d'||e.ch==7||e.ch==79)) // right
 	  {
 	    right=false;
 	  }
