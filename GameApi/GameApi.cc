@@ -15930,14 +15930,14 @@ public:
 	Point2d p = { p_x,p_y };
 	std::pair<int,int> pos = blk->BlockPosition(p);
 	if (blk->Map(pos.first,pos.second)!=0) {
-	  if (e.type==0x300 && e.ch==' ' && !jump_up) // jump start
+	  if (e.type==0x300 && (e.ch==' '||e.ch=='w') && !jump_up) // jump start
 	    {
 	      jump_up = true;
 	      gravity = false;
 	      jump_frame=0;
 	    }
 	}
-	if (e.type==0x301 && e.ch==' ') // jump stop
+	if (e.type==0x301 && (e.ch==' '||e.ch=='w')) // jump stop
 	  {
 	    jump_up=false;
 	    gravity=true;
@@ -16006,8 +16006,9 @@ public:
     if (blk->Map(pos_l.first, pos_l.second)!=0) temp_not_left=true;
     if (blk->Map(pos_r.first, pos_r.second)!=0) temp_not_right=true;
     if (blk->Map(pos.first,pos.second)!=0) temp_not_down=true;
-    if (blk->Map(pos_u.first, pos_u.second)!=0) temp_not_up=true;
-   
+    if (blk->Map(pos_u.first, pos_u.second)!=0) { temp_not_up=true;  }
+    if (temp_not_down && temp_not_up) { temp_not_left=true; temp_not_right=true; }
+
     // jumping
     if (jump_up) {
       temp_up=true;
