@@ -14543,11 +14543,12 @@ void CopyFrameToSurface(FrameBuffer *buf, Low_SDL_Surface *surf)
 	case FrameBufferFormat::F_RGBA8888:
 	  {
 	  unsigned int *b = ((unsigned int*) buffer) + y*width + x;
+	  val = *b;
 #ifdef EMSCRIPTEN
 	  unsigned int a = val&0xff000000;
 	  unsigned int r = val&0x00ff0000;
 	  unsigned int g = val&0x0000ff00;
-	  unsigned int b = val&0x000000ff;
+	  unsigned int bb = val&0x000000ff;
 	  a>>=24;
 	  r>>=16;
 	  g>>=8;
@@ -14557,7 +14558,7 @@ void CopyFrameToSurface(FrameBuffer *buf, Low_SDL_Surface *surf)
 	  r<<=8;
 	  val=a+r+g+b;
 #endif
-	  val = *b;
+
 	  break;
 	  }
 	};
