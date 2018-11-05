@@ -606,7 +606,7 @@ EXPORT GameApi::PT GameApi::SpriteApi::pixelpos(BM bm, int x, int y)
 
 EXPORT GameApi::ARR GameApi::SpriteApi::sprite_atlas_x(EveryApi &ev, BM orig, int start_x, int end_x, int start_y, int end_y, int delta_x, int count)
 {
-  ev.bitmap_api.prepare(orig);
+  //ev.bitmap_api.prepare(orig);
   int s=count;
   ArrayType *arr = new ArrayType;
   arr->type=1;
@@ -619,7 +619,7 @@ EXPORT GameApi::ARR GameApi::SpriteApi::sprite_atlas_x(EveryApi &ev, BM orig, in
 }
 EXPORT GameApi::ARR GameApi::SpriteApi::sprite_atlas_y(EveryApi &ev, BM orig, int start_x, int end_x, int start_y, int end_y, int delta_y, int count)
 {
-  ev.bitmap_api.prepare(orig);
+  //ev.bitmap_api.prepare(orig);
   int s=count;
   ArrayType *arr = new ArrayType;
   arr->type=1;
@@ -633,7 +633,7 @@ EXPORT GameApi::ARR GameApi::SpriteApi::sprite_atlas_y(EveryApi &ev, BM orig, in
 
 EXPORT GameApi::ARR GameApi::SpriteApi::sprite_atlas_xy(EveryApi &ev, BM orig, int start_x, int end_x, int start_y, int end_y, int delta_x, int delta_y, int count_x, int count_y)
 {
-  ev.bitmap_api.prepare(orig);
+  //ev.bitmap_api.prepare(orig);
   ArrayType *arr = new ArrayType;
   arr->type=1;
   for(int i=0;i<count_y;i++)
