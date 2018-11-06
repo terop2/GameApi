@@ -4694,7 +4694,8 @@ ASyncData async_data[] = {
   { "mainloop_api", "state_speed_movement", 1 },
   // Note, this is function name, not user interface name.
   { "low_frame_api", "low_sprite_array", 1 }, 
-  { "low_frame_api", "low_build_world", 1 }
+  { "low_frame_api", "low_build_world", 1 },
+  { "low_frame_api", "low_enemy_draw", 1 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -8271,6 +8272,12 @@ std::vector<GameApiItem*> framebuffermoduleapi_functions()
 			 { "FML", "std::string", "std::string", "int", "int" },
 			 { "", "http://tpgames.org/map.txt", ".#", "0", "0" },
 			 "FML", "low_frame_api", "low_build_world"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_enemy_draw,
+			 "fr_enemy_draw",
+			 { "bm", "url", "fmt", "speed" },
+			 { "BM", "std::string", "int", "float" },
+			 { "", "http://tpgames.org/enemy0.txt", "1", "0.03" },
+			 "FML", "low_frame_api", "low_enemy_draw"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::array_fml,
 			 "array_fml",
 			 { "arr" },
