@@ -15206,6 +15206,7 @@ ST_event parse_event(std::string line, bool &success)
   if (e=="keyup") { res.event_type = 1; }
   if (e=="keydown") { res.event_type = 2; }
   if (e=="timer") { res.event_type = 3; }
+  if (e=="frame") { res.event_type = 4; }
   std::string v = rest.substr(pos2+1,rest.size()-pos2-1);
   std::stringstream ss(v);
   int val = -1; 
@@ -15301,7 +15302,18 @@ public:
 	}
       }
   }
-  virtual void frame(MainLoopEnv &e) { }
+  virtual void frame(MainLoopEnv &e) 
+  {
+    current_frame++;
+    int s = events.size();
+    for(int i=0;i<s;i++)
+      {
+	ST_event e = events[i];
+	if (e.event_type==4 && (current_frame%e.value) ==0) {
+	  event(e);
+	}
+      }
+  }
   virtual void draw_event(FrameLoopEvent &ee)
   {
     int key = ee.ch;
@@ -15317,10 +15329,22 @@ public:
 	if (ee.type==0x300 && e.event_type==2 && e.value==key) {
 	  event(e);
 	}
+
       }
 
   }
-  virtual void draw_frame(DrawLoopEnv &e) { }
+  virtual void draw_frame(DrawLoopEnv &ee) { 
+    current_frame++;
+    int s = events.size();
+    for(int i=0;i<s;i++)
+      {
+	ST_event e = events[i];
+	if (e.event_type==4 && (current_frame%e.value) ==0) {
+	  event(e);
+	}
+      }
+
+  }
 
   virtual int num_flags() const { return states[current_state].flags.size(); }
   //virtual int num_pos() const=0;
@@ -15337,6 +15361,7 @@ public:
   {
     std::string event_name = e.label;
     int pos = 0;
+    int old_current_state = current_state;
     while(1) {
       int t = find_type(pos,event_name);
       //std::cout << "Found: " << t << std::endl;
@@ -15344,7 +15369,7 @@ public:
       pos = t+1;
       if (types[t].is_function) {
 	std::string left_type = types[t].left_type;
-	if (states[current_state].state_name == left_type)
+	if (states[old_current_state].state_name == left_type)
 	  {
 	    std::string right_type = types[t].right_type;
 	    int new_state = find_state(right_type);
@@ -15403,6 +15428,7 @@ private:
   std::vector<ST_event> events;
   std::vector<ST_state> states;
   int current_state;
+  int current_frame;
 };
 
 class StateIntFetcher : public Fetcher<int>
