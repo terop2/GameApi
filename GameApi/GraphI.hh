@@ -624,6 +624,7 @@ public:
   virtual void Prepare()=0;
   virtual void handle_event(FrameLoopEvent &e)=0;
   virtual void frame(DrawLoopEnv &e)=0;
+
 };
 
 
@@ -1326,6 +1327,15 @@ public:
 
   // Reallocating space
   virtual void ReserveSize(int sx, int sy)=0;  
+
+  // enemy positions
+  virtual void clear_enemies()=0;
+  virtual void add_enemy(float start_x, float end_x, float start_y, float end_y)=0;
+  virtual int num_enemies() const=0;
+  virtual float enemy_start_x(int e) const=0;
+  virtual float enemy_end_x(int e) const=0;
+  virtual float enemy_start_y(int e) const=0;
+  virtual float enemy_end_y(int e) const=0;
 };
 
 WorldBlocks *GetWorld();
