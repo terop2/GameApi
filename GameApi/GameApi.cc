@@ -15696,6 +15696,12 @@ GameApi::FML GameApi::LowFrameBufferApi::low_sprite_array(std::string name, std:
   return add_framemainloop(e, spr);
 }
 
+struct EData
+{
+  float start_x, end_x;
+  float start_y, end_y;
+  
+};
 class WorldImpl : public WorldBlocks
 {
 public:
@@ -15706,6 +15712,18 @@ public:
   }
   ~WorldImpl() { delete[] array; }
   
+  virtual void clear_enemies() { vec = std::vector<EData>(); }
+  virtual void add_enemy(float start_x, float end_x, float start_y, float end_y) { EData d; d.start_x = start_x; d.end_x = end_x; d.start_y=start_y; d.end_y=end_y; vec.push_back(d); 
+    if (vec.size()>1000) vec=std::vector<EData>();
+  }
+  virtual int num_enemies() const { return vec.size(); }
+  virtual float enemy_start_x(int e) const { return vec[e].start_x; }
+  virtual float enemy_end_x(int e) const { return vec[e].end_x; }
+  virtual float enemy_start_y(int e) const { return vec[e].start_y; }
+  virtual float enemy_end_y(int e) const { return vec[e].end_y; }
+
+
+
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
   virtual int Map(int x, int y) const
@@ -15816,6 +15834,7 @@ private:
   int *array;
   int sx,sy,cx,cy;
   Point2d tl,br;
+  std::vector<EData> vec;
 };
 WorldBlocks *g_world=0;
 WorldBlocks *GetWorld() { 
@@ -16334,12 +16353,23 @@ public:
 	if (pos_y<0) start_y=-pos_y;
 	int w = std::min(sp_width, width-pos_x);
 	int h = std::min(sp_height, height-pos_y);
-	for(int y=start_y;y<h;y++)
+	unsigned int *bufp = &((unsigned int*)buffer)[pos_x+start_x+(start_y+pos_y)*width];
+	unsigned int *cp = &((unsigned int*)buf)[start_x+start_y*sp_ydelta];
+	int delta_w = w-start_x;
+	for(int y=start_y;y<h;y++) {
 	  for(int x=start_x;x<w;x++)
 	    {
-	      //std::cout << "(" << x << "," << y << ") " << buffer << " " << buf << std::endl;
-	      ((unsigned int*)buffer)[pos_x+x+(y+pos_y)*width] = ((unsigned int*)buf)[x+y*sp_ydelta];
+	      unsigned int c = *cp;
+	      
+	      if (c>0x80000000) {
+		*bufp = c;
+	      }
+	      cp++;
+	      bufp++;
 	    }
+	  cp+=sp_ydelta-delta_w;
+	  bufp+=width-delta_w;
+	}
 	}
 	break;
       };
@@ -16434,6 +16464,10 @@ public:
 	float f = vec[i].pos;
 	float pp_x = (1.0-f)*(p1.first.x+shape->SizeX()/2.0) + f*(p2.second.x-shape->SizeX()/2.0)-shape->SizeX()/2.0;
 	float pp_y = ((1.0-f)*p1.second.y + f*p2.second.y)-shape->SizeY();
+
+	// this communicates with collision detection
+	// note the memory leakage if collision detection is not used.
+	blk->add_enemy(pp_x, pp_x+shape->SizeX(), pp_y, pp_y+shape->SizeY());
 	
 	if (vec[i].state==0) {
 	  f+=fabs(speed/vec[i].length);
@@ -16464,4 +16498,60 @@ GameApi::FML GameApi::LowFrameBufferApi::low_enemy_draw(BM bm, std::string url, 
   ::Bitmap<Color> *b2 = find_color_bitmap(handle);
 
   return add_framemainloop(e, new EnemyDraw(e, b2, url, gameapi_homepageurl, fmt, speed));
+}
+
+class LowCollision : public FrameBufferLoop
+{
+public:
+  LowCollision(FrameBufferLoop *next, float start_x, float end_x, float start_y, float end_y, int key) : next(next), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), key(key) { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void handle_event(FrameLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual void frame(DrawLoopEnv &e)
+  {
+    WorldBlocks *blk = GetWorld();
+    blk->clear_enemies();
+
+    // it is assumed that this frame() call will populate enemies array
+    // usually done by low_enemy_draw
+    next->frame(e);
+
+    int es = blk->num_enemies();
+    for(int i=0;i<es;i++) {
+      int s_x = blk->enemy_start_x(i);
+      int e_x = blk->enemy_end_x(i);
+      int s_y = blk->enemy_start_y(i);
+      int e_y = blk->enemy_end_y(i);
+      if (start_x < e_x &&
+	  end_x > s_x &&
+	  start_y < e_y &&
+	  end_y > s_y)
+	{ // collision
+	  FrameLoopEvent ee;
+	  ee.type = 0x300;
+	  ee.ch = key;
+	  ee.cursor_pos = Point(0.0,0.0,0.0);
+	  ee.button = -1;
+	  for(int i=0;i<9;i++) ee.pin[i]=false;
+	  next->handle_event(ee);
+	  ee.type=0x301;
+	  next->handle_event(ee);
+
+	  break;
+	}
+    }
+  }
+private:
+  FrameBufferLoop *next;
+  float start_x, end_x;
+  float start_y, end_y;
+  int key;
+};
+
+GameApi::FML GameApi::LowFrameBufferApi::low_collision(FML ml, float start_x, float end_x, float start_y, float end_y, int key)
+{ // sends key event if detects collision
+  FrameBufferLoop *loop = find_framemainloop(e, ml);
+  return add_framemainloop(e, new LowCollision(loop, start_x, end_x, start_y, end_y, key));
 }
