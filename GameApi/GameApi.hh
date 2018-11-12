@@ -3434,6 +3434,7 @@ public:
   FML low_scroll_world(FML ml, float speed_x, float speed_y, float p_x, float p_y, float left_offset, float right_offset, float height, float height2, int mode, int jump_frames);
   FML low_build_world(FML ml, std::string url, std::string chars,int x, int y);
   FML low_enemy_draw(BM bm, std::string url, int fmt, float speed);
+  FML low_enemy_draw2(std::vector<BM> bm, std::string url, int fmt, float speed, int time_delta, int time_duration);
   FML low_collision(FML ml, float start_x, float end_x, float start_y, float end_y, int key);
 private:
   LowFrameBufferApi(const LowFrameBufferApi &);

@@ -520,11 +520,11 @@ std::vector<unsigned char> load_from_url(std::string url)
     {
       if (remove_load(url)==g_urls[i]) { 
 	std::vector<unsigned char> vec(g_content[i], g_content_end[i]);
-	std::cout << "load_from_url using memory: " << url << " " << vec.size() << std::endl;
+	//std::cout << "load_from_url using memory: " << url << " " << vec.size() << std::endl;
 	return vec;
       }
     }
-  std::cout << "load_from_url using network: " << url << std::endl;
+  //  std::cout << "load_from_url using network: " << url << std::endl;
 
 #ifdef HAS_POPEN
 

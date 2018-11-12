@@ -194,7 +194,7 @@ public:
     std::stringstream ss;
     ss << sock.get_id();
     std::string s = std::string("SDL_WINDOWID=")+ss.str();
-    std::cout << s << std::endl;
+    //std::cout << s << std::endl;
     char *c = new char[1024];
     const char *cc = s.c_str();
     std::copy(cc, cc+s.length()+1, c);

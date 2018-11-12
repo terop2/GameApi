@@ -1326,11 +1326,13 @@ std::string WhiteSpace(std::string s)
 
 void DumpMem(const char *c, int size)
 {
+#if 0
   for(int i=0;i<size;i++)
     {
       std::cout << std::hex << (int)(c[i]) << std::dec;
     }
   std::cout << std::endl;
+#endif
 }
 
 void FontParseTestCases()
