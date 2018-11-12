@@ -67,17 +67,17 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
     int length=0;
     g_low->ogl->glGetShaderInfoLog(handle, 256, &length, &buf[0]);
     buf[length]=0;
-    std::cout << "InfoLog: " << buf << std::endl;
+    //std::cout << "InfoLog: " << buf << std::endl;
 
   }
   int i=0;
   g_low->ogl->glGetShaderiv(handle, Low_GL_COMPILE_STATUS, &i );
-  if (i == 1) { std::cout << shader.Name() << " OK" << std::endl; 
+  if (i == 1) { /*std::cout << shader.Name() << " OK" << std::endl;*/ 
     int len=0;
   char log[255];
   g_low->ogl->glGetShaderInfoLog(handle, 255, &len, log);
   log[len]=0;
-  std::cout << log << std::endl;
+  //std::cout << "Shader:" << shader.Name() << ":" << log << std::endl;
 
   }
   else
@@ -207,7 +207,7 @@ void Program::link()
   char log[255];
   g_low->ogl->glGetProgramInfoLog(priv->program, 255, &len, log);
   log[len]=0;
-  std::cout << log << std::endl;
+  //std::cout << log << std::endl;
 }
 void Program::use()
 {
@@ -2615,7 +2615,7 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 		  int num = call->index(0);
 		  std::string s = call->func_call();
 		  out+=s;
-		  std::cout << s << std::endl;
+		  //std::cout << s << std::endl;
 
 		  std::stringstream ss3;
 		  ss3 << num+1;
@@ -2665,7 +2665,7 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 		std::string s = call->func_call();
 		out+=s;
 
-		std::cout << "Fragment: " << s << std::endl;
+		//std::cout << "Fragment: " << s << std::endl;
 		std::stringstream ss3;
 		ss3 << num+1;
 
@@ -2791,7 +2791,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
     {
       std::string::iterator ii = std::find(i, g_format.end(), ':');
       std::string name(i, ii);
-      std::cout << "GName: " << name << std::endl;
+      //std::cout << "GName: " << name << std::endl;
       std::string shader = file.GeometryShader(name);
       //std::cout << "::" << shader << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(shader);

@@ -280,7 +280,7 @@ EnvImpl::~EnvImpl()
     }
 #ifndef EMSCRIPTEN
 #ifdef HAS_FREETYPE
-  std::cout << "FREE FREETYPE!" << std::endl;
+  //std::cout << "FREE FREETYPE!" << std::endl;
   FT_Done_FreeType(lib);
 #endif
 #endif
@@ -10885,7 +10885,7 @@ ASyncCallback *rem_async_cb(std::string url)
       //std::cout << "rem_async_cb: " << url << " <=> " << load_url_callbacks[i].url << std::endl;
       if (load_url_callbacks[i].url==url) break;
     }
-  if (i==s) { std::cout << "rem_async_cb failure!" << std::endl; return 0; }
+  if (i==s) { /*std::cout << "rem_async_cb failure!" << std::endl;*/ return 0; }
   ASyncCallback *cb = load_url_callbacks[i].cb;
   load_url_callbacks.erase(load_url_callbacks.begin()+i);
   return cb;
@@ -11062,7 +11062,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
       //std::cout << "ASyncLoader::cb:" << url2 << std::endl; 
       (*cb->fptr)(cb->data);
     } else {
-      std::cout << "ASyncLoadUrl::CB failed" << std::endl;
+      //std::cout << "ASyncLoadUrl::CB failed" << std::endl;
     }
 
   { // progressbar
@@ -16524,6 +16524,119 @@ GameApi::FML GameApi::LowFrameBufferApi::low_enemy_draw(BM bm, std::string url, 
   ::Bitmap<Color> *b2 = find_color_bitmap(handle);
 
   return add_framemainloop(e, new EnemyDraw(e, b2, url, gameapi_homepageurl, fmt, speed));
+}
+
+
+class EnemyDraw2 : public FrameBufferLoop
+{
+public:
+  EnemyDraw2(GameApi::Env &e, std::vector<Bitmap<Color>*> shape, std::string url, std::string homepage, int fmt, float speed, int time_delta, int time_duration) : e(e), shape(shape), url(url), homepage(homepage), fmt(fmt?D_RGBA8888:D_Mono1), speed(speed), time_delta(time_delta), time_duration(time_duration) { 
+    current_frame=0;
+  }
+  virtual void Prepare()
+  {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
+    std::string data = std::string(ptr->begin(), ptr->end());
+
+    std::stringstream ss(data);
+    int p_x=0;
+    int p_y=0;
+    char c;
+    int length=0;
+    float start_pos=0.0;
+    while(ss >> p_x >> p_y >> c >> length >> start_pos)
+      {
+	EnemyData dt;
+	dt.p_x = p_x;
+	dt.p_y = p_y;
+	dt.c = c;
+	dt.length = length;
+	dt.pos = start_pos;
+	dt.state = 0;
+	vec.push_back(dt);
+      }
+    int s = shape.size();
+    for(int i=0;i<s;i++)
+      {
+	shape[i]->Prepare();
+	SourceBitmap src2(fmt?D_RGBA8888:D_Mono1,0);
+	src.push_back(src2);
+	BitmapToSourceBitmap(*shape[i],src[i], fmt);
+      }
+  }
+  virtual void handle_event(FrameLoopEvent &e)
+  {
+  }
+  virtual void frame(DrawLoopEnv &e)
+  {
+    current_frame++;
+    WorldBlocks *blk = GetWorld();
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	int index = (i/time_delta + current_frame/time_duration)%src.size();
+	
+	int p_x = vec[i].p_x;
+	int p_y = vec[i].p_y;
+	int pe_x = p_x;
+	int pe_y = p_y;
+	char c = vec[i].c;
+	switch(c) {
+	case 'l': pe_x-=vec[i].length; break;
+	case 'r': pe_x+=vec[i].length; break;
+	case 'u': pe_y-=vec[i].length; break;
+	case 'd': pe_y+=vec[i].length; break;
+	};
+	std::pair<Point2d,Point2d> p1 = blk->BlockToWorld(p_x,p_y);
+	std::pair<Point2d,Point2d> p2 = blk->BlockToWorld(pe_x,pe_y);
+	float f = vec[i].pos;
+	float pp_x = (1.0-f)*(p1.first.x+shape[index]->SizeX()/2.0) + f*(p2.second.x-shape[index]->SizeX()/2.0)-shape[index]->SizeX()/2.0;
+	float pp_y = ((1.0-f)*p1.second.y + f*p2.second.y)-shape[index]->SizeY();
+
+	// this communicates with collision detection
+	// note the memory leakage if collision detection is not used.
+	blk->add_enemy(pp_x, pp_x+shape[index]->SizeX(), pp_y, pp_y+shape[index]->SizeY());
+	
+	if (vec[i].state==0) {
+	  f+=fabs(speed/vec[i].length);
+	  if (f>1.0) vec[i].state=1;
+	} else {
+	  f-=fabs(speed/vec[i].length);
+	  if (f<0.0) vec[i].state=0;
+	}	
+	vec[i].pos = f;
+	//std::cout << "F:" << f << std::endl;
+	e.drawbuffer->draw_sprite(&src[index], int(pp_x), int(pp_y));
+      }
+  }
+private:
+  GameApi::Env &e;
+  std::vector<Bitmap<Color> *> shape;
+  std::string url;
+  std::string homepage;
+  std::vector<SourceBitmap> src;
+  DrawBufferFormat fmt;
+  std::vector<EnemyData> vec;
+  float speed;
+  int time_delta, time_duration;
+  int current_frame;
+};
+
+GameApi::FML GameApi::LowFrameBufferApi::low_enemy_draw2(std::vector<BM> bm, std::string url, int fmt, float speed, int time_delta, int time_duration)
+{
+  std::vector<Bitmap<Color>*> vec;
+  int s = bm.size();
+  for(int i=0;i<s;i++){
+    BitmapHandle *handle = find_bitmap(e, bm[i]);
+    ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+    vec.push_back(b2);
+  }
+
+  return add_framemainloop(e, new EnemyDraw2(e, vec, url, gameapi_homepageurl, fmt, speed, time_delta, time_duration));
 }
 
 class LowCollision : public FrameBufferLoop

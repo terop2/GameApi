@@ -21,7 +21,7 @@ EXPORT GameApi::Ft GameApi::FontApi::newfont(std::string filename, int sx, int s
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   Font fnt; 
 #ifdef HAS_FREETYPE
-  std::cout << &env->lib << std::endl;
+  //std::cout << &env->lib << std::endl;
   fnt.bm = new FontGlyphBitmap(e, (void*)&env->lib,filename.c_str(), sx,sy);
 #endif
   env->fonts.push_back(fnt); 

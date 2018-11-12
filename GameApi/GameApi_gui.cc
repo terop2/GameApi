@@ -4083,7 +4083,7 @@ public:
     std::vector<T> vec;
     if (s.size()>0 && s[0]!='[')
       { // ARR version
-	std::cout << "Arr version" << s << std::endl;
+	//std::cout << "Arr version" << s << std::endl;
 	GameApi::ARR arr;
 	std::stringstream ss(s);
 	ss >> arr.id;
@@ -4695,7 +4695,8 @@ ASyncData async_data[] = {
   // Note, this is function name, not user interface name.
   { "low_frame_api", "low_sprite_array", 1 }, 
   { "low_frame_api", "low_build_world", 1 },
-  { "low_frame_api", "low_enemy_draw", 1 }
+  { "low_frame_api", "low_enemy_draw", 1 },
+  { "low_frame_api", "low_enemy_draw2", 1 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -8278,6 +8279,12 @@ std::vector<GameApiItem*> framebuffermoduleapi_functions()
 			 { "BM", "std::string", "int", "float" },
 			 { "", "http://tpgames.org/enemy0.txt", "1", "0.03" },
 			 "FML", "low_frame_api", "low_enemy_draw"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_enemy_draw2,
+			 "fr_enemy_draw2",
+			 { "bm", "url", "fmt", "speed", "time_delta", "time_duration" },
+			 { "[BM]", "std::string", "int", "float", "int", "int" },
+			 { "", "http://tpgames.org/enemy0.txt", "1", "0.03", "1", "8" },
+			 "FML", "low_frame_api", "low_enemy_draw2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::array_fml,
 			 "array_fml",
 			 { "arr" },

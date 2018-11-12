@@ -416,7 +416,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   else
     sdl_window = g_low->sdl->SDL_CreateWindow("Program", Low_SDL_WINDOWPOS_CENTERED, Low_SDL_WINDOWPOS_CENTERED, scr_x, scr_y, Low_SDL_WINDOW_OPENGL_SHOWN);
  
-  std::cout << sdl_window << " " << sdl_window->ptr << std::endl;
+  //std::cout << sdl_window << " " << sdl_window->ptr << std::endl;
 
   Low_SDL_GLContext context;
   context = g_low->sdl->SDL_GL_CreateContext(sdl_window);

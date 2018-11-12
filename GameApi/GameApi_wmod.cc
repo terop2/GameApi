@@ -1082,7 +1082,7 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 		      if (p[i]==',' || p[i]==']')
 			{
 			  std::string substr = p.substr(prev, i-prev);
-			  std::cout << "substr: " << substr << std::endl;
+			  //std::cout << "substr: " << substr << std::endl;
 			  if (substr.size()>3 && substr[0]=='u' && substr[1] == 'i' && substr[2] =='d')
 			    {
 			      int val = execute(ev, mod2, id, substr, exeenv, level-1);
