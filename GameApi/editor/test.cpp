@@ -159,7 +159,7 @@ void load_library(DllData &data, std::string lib_name)
       if (!type)
 	type = dlsym(handle, k_type_symbol[i] );
     }
-  std::cout << api << " " << func << " "<< num << " "<< disp << " "<< type << std::endl;
+  //std::cout << api << " " << func << " "<< num << " "<< disp << " "<< type << std::endl;
   
 #endif
   //std::cout << "ApiNameFar: " << api << std::endl;
@@ -286,7 +286,7 @@ void add_to_canvas(GuiApi &gui, W canvas, std::vector<W> items)
 }
 void connect_target(int x, int y, Envi *envi)
 {
-  std::cout << "Connect target!" << std::endl;
+  //std::cout << "Connect target!" << std::endl;
 
   int s = envi->connect_targets.size();
   for(int i=0;i<s;i++)
@@ -300,7 +300,7 @@ void connect_target(int x, int y, Envi *envi)
       if (x>=xx && x<xx+sx && y>=yy && y<yy+sy)
 	{
 	  std::string uidstring = envi->gui->get_id(wid);
-	  std::cout << "UID: " << uidstring << std::endl;
+	  //std::cout << "UID: " << uidstring << std::endl;
 
 	  std::stringstream ss(uidstring);
 	  std::string uid;
@@ -311,7 +311,7 @@ void connect_target(int x, int y, Envi *envi)
 	  std::string funcname = envi->ev->mod_api.get_funcname(envi->mod, 0, uid);
 	  std::vector<int> vec = envi->ev->mod_api.indexes_from_funcname(funcname);
 	  int real_index = vec[num];
-	  std::cout << "Real index: " << real_index << std::endl;
+	  //std::cout << "Real index: " << real_index << std::endl;
 	  bool is_array = false;
 	  bool is_array_return = false; // TODO
 	  bool b = envi->ev->mod_api.typecheck(envi->mod, 0, envi->connect_start_uid, uid, real_index, is_array, is_array_return);
@@ -569,7 +569,7 @@ void iter(void *arg)
 	    if (chosen2 == 0)
 	      {
 		/* code generation here */
-		std::cout << "CodeGen" << std::endl;
+		//std::cout << "CodeGen" << std::endl;
 		env->ev->mod_api.codegen_reset_counter();
 		std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, env->codegen_uid,1000);
 		std::cout << p.second << std::endl;
@@ -579,7 +579,7 @@ void iter(void *arg)
 	      {
 #if 0
 		/* collect here */
-		std::cout << "Collect" << std::endl;
+		//std::cout << "Collect" << std::endl;
 		GameApi::collect_counter(0);
 		CollectResult res = env->ev->mod_api.collect_nodes(*env->ev, env->mod, 0, env->codegen_uid,100);
 		// TODO.
@@ -595,7 +595,7 @@ void iter(void *arg)
 	    if (val==0)
 	      {
 		std::string uid = env->gui->get_id(w);
-		std::cout << "Delete" << i << ":" << uid << std::endl;
+		//std::cout << "Delete" << i << ":" << uid << std::endl;
 		env->ev->mod_api.delete_by_uid(env->mod, 0, uid);
 
 		int ss1 = env->connect_clicks.size();
@@ -796,7 +796,7 @@ void iter(void *arg)
 	  //int chosen = env->gui->chosen_item(w);
 	  //  if (chosen==0)
 		{
-		  std::cout << "CodeGen!" << std::endl;
+		  //std::cout << "CodeGen!" << std::endl;
 		  std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid,1000);
 		std::cout << p.second << std::endl;
 
@@ -1073,7 +1073,7 @@ void iter(void *arg)
 			P p;
 			p.id = id;
 			env->ev->polygon_api.print_stat(p);
-			std::cout << "ID: " << p.id << std::endl;
+			//std::cout << "ID: " << p.id << std::endl;
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
 			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->mem);
@@ -1284,7 +1284,7 @@ void iter(void *arg)
 	    int connected = env->gui->chosen_item(wid);
 	    if (connected==0)
 	      {
-		std::cout << "Connect_click" << std::endl;
+		//std::cout << "Connect_click" << std::endl;
 		std::string uid = env->gui->get_id(wid);
 		W canvas_item = env->gui->find_canvas_item(env->canvas, uid);
 		if (canvas_item.id==-1) continue;
@@ -1440,7 +1440,7 @@ void iter(void *arg)
 		    
 		  default:
 		    {
-		      std::cout << "SEL: " << sel << std::endl;
+		      //std::cout << "SEL: " << sel << std::endl;
 		      DllData &d = env->dlls[sel-20];
 		      std::vector<Item*> funcs = (*d.functions)();
 		      Item *item = funcs[sel2-1];
