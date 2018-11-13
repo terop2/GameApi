@@ -460,8 +460,8 @@ struct Low_SDL_MouseWheelEvent
 };
 struct Low_SDL_TouchFingerEvent
 {
-  float x;
-  float y;
+  float x = 0.0f;
+  float y = 0.0f;
 };
 struct Low_SDL_Event
 {

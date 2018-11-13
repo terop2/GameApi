@@ -15972,19 +15972,19 @@ public:
 
     if (mode==0)
       { // left&right + jump
-	if (e.type==0x300 && (e.ch=='a'||e.ch==4||e.ch==80)) // left
+	if (e.type==0x300 && (e.ch=='a'||e.ch==4||e.ch==80||e.ch==1073741904)) // left
 	  {
 	    left=true;
 	  }
-	if (e.type==0x301 && (e.ch=='a'||e.ch==4||e.ch==80)) // left
+	if (e.type==0x301 && (e.ch=='a'||e.ch==4||e.ch==80||e.ch==1073741904)) // left
 	  {
 	    left=false;
 	  }
-	if (e.type==0x300 && (e.ch=='d'||e.ch==7||e.ch==79)) // right
+	if (e.type==0x300 && (e.ch=='d'||e.ch==7||e.ch==79||e.ch==1073741903)) // right
 	  {
 	    right=true;
 	  }
-	if (e.type==0x301 && (e.ch=='d'||e.ch==7||e.ch==79)) // right
+	if (e.type==0x301 && (e.ch=='d'||e.ch==7||e.ch==79||e.ch==1073741903)) // right
 	  {
 	    right=false;
 	  }
@@ -15992,14 +15992,14 @@ public:
 	Point2d p = { p_x,p_y };
 	std::pair<int,int> pos = blk->BlockPosition(p);
 	if (blk->Map(pos.first,pos.second)!=0) {
-	  if (e.type==0x300 && (e.ch==' '||e.ch=='w'||e.ch==26||e.ch==82) && !jump_up) // jump start
+	  if (e.type==0x300 && (e.ch==' '||e.ch=='w'||e.ch==26||e.ch==82||e.ch==1073741906) && !jump_up) // jump start
 	    {
 	      jump_up = true;
 	      gravity = false;
 	      jump_frame=0;
 	    }
 	}
-	if (e.type==0x301 && (e.ch==' '||e.ch=='w'||e.ch==26||e.ch==82)) // jump stop
+	if (e.type==0x301 && (e.ch==' '||e.ch=='w'||e.ch==26||e.ch==82||e.ch==1073741906)) // jump stop
 	  {
 	    jump_up=false;
 	    gravity=true;
@@ -16009,36 +16009,36 @@ public:
     if (mode==1)
       { // scroll
     // keydown
-	if (e.type==0x300 && (e.ch=='w'||e.ch==26||e.ch==82)) // up
+	if (e.type==0x300 && (e.ch=='w'||e.ch==26||e.ch==82||e.ch==1073741906)) // up
 	  {
 	    up=true;
 	  }
-	if (e.type==0x300 && (e.ch=='a'||e.ch==4||e.ch==80)) // left
+	if (e.type==0x300 && (e.ch=='a'||e.ch==4||e.ch==80||e.ch==1073741904)) // left
 	  {
 	    left=true;
 	  }
-	if (e.type==0x300 && (e.ch=='s'||e.ch==22||e.ch==81)) // down
+	if (e.type==0x300 && (e.ch=='s'||e.ch==22||e.ch==81||e.ch==1073741905)) // down
 	  {
 	    down=true;
 	  }
-	if (e.type==0x300 && (e.ch=='d'||e.ch==7||e.ch==79)) // right
+	if (e.type==0x300 && (e.ch=='d'||e.ch==7||e.ch==79||e.ch==1073741903)) // right
 	  {
 	    right=true;
 	  }
 	// keyup
-	if (e.type==0x301 && (e.ch=='w'||e.ch==26||e.ch==82)) // up
+	if (e.type==0x301 && (e.ch=='w'||e.ch==26||e.ch==82||e.ch==1073741906)) // up
 	  {
 	    up=false;
 	  }
-	if (e.type==0x301 && (e.ch=='a'||e.ch==4||e.ch==80)) // left
+	if (e.type==0x301 && (e.ch=='a'||e.ch==4||e.ch==80||e.ch==1073741904)) // left
 	  {
 	    left=false;
 	  }
-	if (e.type==0x301 && (e.ch=='s'||e.ch==22||e.ch==81)) // down
+	if (e.type==0x301 && (e.ch=='s'||e.ch==22||e.ch==81||e.ch==1073741905)) // down
 	  {
 	    down=false;
 	  }
-	if (e.type==0x301 && (e.ch=='d'||e.ch==7||e.ch==79)) // right
+	if (e.type==0x301 && (e.ch=='d'||e.ch==7||e.ch==79||e.ch==1073741903)) // right
 	  {
 	    right=false;
 	  }
