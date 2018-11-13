@@ -713,8 +713,12 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   if (event.type==Low_SDL_FINGERMOTION||event.type==Low_SDL_FINGERDOWN||event.type==Low_SDL_FINGERUP)
     {
       Low_SDL_TouchFingerEvent *ptr = &event.tfinger;
-      x = int(ptr->x * get_screen_width());
-      y = int(ptr->y * get_screen_height());
+      float xx = ptr->x * get_screen_width();
+      float yy = ptr->y * get_screen_height();
+      if (!std::isnormal(xx)) xx=0.0f;
+      if (!std::isnormal(yy)) yy=0.0f;
+      x = int(xx);
+      y = int(yy); 
     }
 #endif
 
