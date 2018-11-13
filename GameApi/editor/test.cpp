@@ -796,7 +796,7 @@ void iter(void *arg)
 	  //int chosen = env->gui->chosen_item(w);
 	  //  if (chosen==0)
 		{
-		  //std::cout << "CodeGen!" << std::endl;
+		  std::cout << "CodeGen!" << std::endl;
 		  std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid,1000);
 		std::cout << p.second << std::endl;
 
