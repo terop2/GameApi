@@ -569,7 +569,7 @@ void iter(void *arg)
 	    if (chosen2 == 0)
 	      {
 		/* code generation here */
-		//std::cout << "CodeGen" << std::endl;
+		std::cout << "CodeGen" << std::endl;
 		env->ev->mod_api.codegen_reset_counter();
 		std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, env->codegen_uid,1000);
 		std::cout << p.second << std::endl;
