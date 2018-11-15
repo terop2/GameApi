@@ -1,0 +1,7 @@
+
+all:
+	g++ -DLINUX -std=c++11 codegen.cpp -o codegen.exe
+	g++ -DLINUX -I.. -L.. -std=c++11 test.cpp -lGameApi -lpthread -o test.exe
+
+exe:
+	(cd ..;cd editor; ../iot_main/test.exe)
