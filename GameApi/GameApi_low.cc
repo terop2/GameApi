@@ -47,6 +47,10 @@
 #define GLEW_HACK
 #endif
 
+#ifdef LINUX
+#define GLEW_HACK
+#endif
+
 #undef glBindAttribLocation
 #undef glActiveTexture
 #undef glClientActiveTexture
@@ -437,7 +441,8 @@ public:
 #endif
     map_enums(a);
     check_err("before glClientActiveTexture");
-::glClientActiveTexture(a); 
+
+    ::glClientActiveTexture(a); 
     check_err("glClientActiveTexture");
   }
   virtual void glTexStorage3D(int arr, int a, int flag, int w, int h, int layer_count) { 
@@ -446,7 +451,7 @@ public:
 #endif
     map_enums(arr);
     map_enums(flag);
-::glTexStorage3D(arr,a,flag,w,h,layer_count); 
+    ::glTexStorage3D(arr,a,flag,w,h,layer_count); 
     check_err("glTexStorage3D");
 }
   virtual void glTexSubImage3D(int arr, int a,int b,int c,int d,int e,int f, int g, int rgba, int unsig_byte, void *buffer) { 
@@ -456,7 +461,7 @@ public:
     map_enums(arr);
     map_enums(rgba);
     map_enums(unsig_byte);
-::glTexSubImage3D(arr,a,b,c,d,e,f,g,rgba,unsig_byte,buffer); 
+    ::glTexSubImage3D(arr,a,b,c,d,e,f,g,rgba,unsig_byte,buffer); 
     check_err("glTexSubImage3D");
   }
   virtual void glGetTexLevelParameteriv(int a, int b, int w, int *ptr) { 
@@ -760,65 +765,75 @@ return ::glCreateShader(shader); }
 #ifdef GLEW_HACK
 #define glGetUniformLocation GLEW_GET_FUN(__glewGetUniformLocation)
 #endif
-return ::glGetUniformLocation(p,data); }
+
+    return ::glGetUniformLocation(p,data); }
 virtual int glGetAttribLocation(int program, const char *data) {
 #ifdef GLEW_HACK
 #define glGetAttribLocation GLEW_GET_FUN(__glewGetAttribLocation)
 #endif
-return ::glGetAttribLocation(program, data);
+  return ::glGetAttribLocation(program, data);
 }
 virtual void glUniform1f(int loc, float val) { 
 #ifdef GLEW_HACK
 #define glUniform1f GLEW_GET_FUN(__glewUniform1f)
 #endif
-::glUniform1f(loc,val); }
+  ::glUniform1f(loc,val);
+}
 virtual void glUniform1i(int loc, int val) { 
 #ifdef GLEW_HACK
 #define glUniform1i GLEW_GET_FUN(__glewUniform1i)
 #endif
-::glUniform1i(loc,val); }
+  ::glUniform1i(loc,val);
+}
   virtual void glUniform2f(int loc, float val, float val2) { 
 #ifdef GLEW_HACK
 #define glUniform2f GLEW_GET_FUN(__glewUniform2f)
 #endif
-::glUniform2f(loc,val,val2); }
+    ::glUniform2f(loc,val,val2);
+  }
   virtual void glUniform3f(int loc, float val, float val2, float val3) { 
 #ifdef GLEW_HACK
 #define glUniform3f GLEW_GET_FUN(__glewUniform3f)
 #endif
-::glUniform3f(loc, val, val2, val3); }
+    ::glUniform3f(loc, val, val2, val3);
+  }
   virtual void glUniform4f(int loc, float val, float val2, float val3, float val4) { 
 #ifdef GLEW_HACK
 #define glUniform4f GLEW_GET_FUN(__glewUniform4f)
 #endif
-::glUniform4f(loc,val,val2,val3, val4); }
+    ::glUniform4f(loc,val,val2,val3, val4);
+  }
   virtual void glUniform1iv(int loc, int count, int *array) { 
 #ifdef GLEW_HACK
 #define glUniform1iv GLEW_GET_FUN(__glewUniform1iv)
 #endif
-::glUniform1iv(loc,count,array); }
+    ::glUniform1iv(loc,count,array);
+  }
   virtual void glUniform1fv(int loc, int count, float *array) { 
 #ifdef GLEW_HACK
 #define glUniform1fv GLEW_GET_FUN(__glewUniform1fv)
 #endif
-::glUniform1fv(loc,count,array); }
+    ::glUniform1fv(loc,count,array); }
   virtual void glUniformMatrix4fv(int loc, unsigned int count, int boolean, const float *matrix) { 
 #ifdef GLEW_HACK
 #define glUniformMatrix4fv GLEW_GET_FUN(__glewUniformMatrix4fv)
 #endif
     map_enums(boolean);
-::glUniformMatrix4fv(loc,count,boolean,matrix); }
+    ::glUniformMatrix4fv(loc,count,boolean,matrix);
+  }
   virtual void glUniform3fv(int loc, int count, float *arr) { 
 #ifdef GLEW_HACK
 #define glUniform3fv GLEW_GET_FUN(__glewUniform3fv)
 #endif
-::glUniform3fv(loc,count,arr); }
+    ::glUniform3fv(loc,count,arr);
+  }
   
 virtual void glGetUniformfv(int p, int loc, float *arr) {
 #ifdef GLEW_HACK
 #define glGetUniformfv GLEW_GET_FUN(__glewGetUniformfv)
 #endif
-  ::glGetUniformfv(p,loc,arr); }
+  ::glGetUniformfv(p,loc,arr);
+}
 
   // Old
   virtual void glEnableClientState(int a) { ::glEnableClientState(a); }
@@ -838,8 +853,9 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
     map_enums(a);
     map_enums(b);
     map_enums(c);
-::glFramebufferTexture2D(a,b,c,d,ptr); }
-  void glGetIntegerv(int i, int *ptr) { 
+    ::glFramebufferTexture2D(a,b,c,d,ptr); 
+}
+void glGetIntegerv(int i, int *ptr) { 
     map_enums(i);
     ::glGetIntegerv(i,ptr); }
   int glCheckFramebufferStatus(int i) { 

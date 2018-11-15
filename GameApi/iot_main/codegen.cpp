@@ -36,9 +36,14 @@ std::string network(std::string url)
 #ifdef __APPLE__
   FILE *f = popen(cmd.c_str(), "r");
 #else
+#ifdef LINUX
+  FILE *f = popen(cmd.c_str(), "r");
+#else
   FILE *f = popen(cmd.c_str(),"rb");
 #endif
-
+#endif
+  if (!f) {std::cout << "popen failed!" << std::endl; }
+  
   unsigned char c;
   std::vector<unsigned char> buffer;
   while(fread(&c,1,1,f)==1) { buffer.push_back(c); }

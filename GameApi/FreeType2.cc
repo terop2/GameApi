@@ -158,8 +158,8 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   if (err!=0)
     {
     std::cout << "FT_New_Face ERROR: " << err << std::endl;
-    std::cout << "ptr2: " << std::hex << (int)ptr2 << " size:" << std::dec << size << std::endl;
-    std::cout << ptr2 << std::endl;
+    //std::cout << "ptr2: " << std::hex << (int)ptr2 << " size:" << std::dec << size << std::endl;
+    //std::cout << ptr2 << std::endl;
     std::cout << "Remember to recompile the code after changing envimpl size" << std::endl;
 #ifndef EMSCRIPTEN
     pthread_mutex_unlock(&mutex);
