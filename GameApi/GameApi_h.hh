@@ -1,7 +1,8 @@
 #ifndef GAMEAPI_H_H
 #define GAMEAPI_H_H
-
+#ifndef LINUX
 #define VIRTUAL_REALITY 1
+#endif
 #define SDL2_USED  
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS

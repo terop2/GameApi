@@ -55,8 +55,8 @@ HFiles = $(patsubst %.cc,%.hh,$(CFiles))
 Subdirsx = $(patsubst %,%build,$(Subdirs))
 
 
-CCFLAGS = -std=c++11 -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DRASBERRY -lpthread -pthread
-CC2FLAGS = -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DRASBERRY -lpthread -pthread
+CCFLAGS = -std=c++14 -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DRASBERRY -DLINUX -lpthread -pthread
+CC2FLAGS = -std=c++14 -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DRASBERRY -DLINUX -lpthread -pthread
 #`pkg-config gtkmm-2.4 --cflags`
 
 
