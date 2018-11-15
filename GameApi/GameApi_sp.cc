@@ -356,8 +356,8 @@ EXPORT void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
-  if (!s || ((int)s)<0x100) { std::cout << "render_sprite_vertex_array ignored!" << std::endl; return; }
-  if (!rend || ((int)rend)<0x100){ std::cout << "render_sprite_vertex_array ignored!" << std::endl;  return; }
+  //if (!s || ((int)s)<0x100) { std::cout << "render_sprite_vertex_array ignored!" << std::endl; return; }
+  //if (!rend || ((int)rend)<0x100){ std::cout << "render_sprite_vertex_array ignored!" << std::endl;  return; }
   //SpritePriv &spriv = *(SpritePriv*)priv;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
 
