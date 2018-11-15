@@ -7,6 +7,10 @@ using namespace GameApi;
 
 #include "gen_code.cpp"
 
+#ifdef LINUX
+void check_vr_compositor_init() { }
+#endif
+
 #if 0
 const char g_url[] = "http://tpgames.org/";
 const char g_url2[] = "http://tpgames.org/aaa";
@@ -111,7 +115,17 @@ void gameapi_main()
   ev.mainloop_api.set_seamless_url(seamless_url);
   ev.shader_api.load_default();
 #endif
-
+#ifdef LINUX
+  std::string homepageurl = "http://tpgames.org/";
+  std::string seamless_url="";
+  int w_width = 800;
+  int w_height = 600;
+  ev.mainloop_api.init_window(w_width,w_height);
+  ev.mainloop_api.set_screen_size(w_width, w_height);
+  ev.mainloop_api.set_homepage_url(homepageurl);
+  ev.mainloop_api.set_seamless_url(seamless_url);
+  ev.shader_api.load_default();
+#endif
   std::pair<int,std::string> blk = mainloop(e,ev);
   if (blk.second=="RUN") {
   RUN r;
