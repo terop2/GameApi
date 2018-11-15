@@ -1958,6 +1958,10 @@ GameApi::IS add_anim(GameApi::Env &e, const AnimImpl &impl)
   //pt.type = 0;
   return pt;
 }
+Bitmap<Color> *find_bitmap2(GameApi::Env &e, GameApi::BM bm) {
+  BitmapHandle *h = find_bitmap(e,bm);
+  return find_color_bitmap(h);
+}
 
 BitmapHandle *find_bitmap(GameApi::Env &e, GameApi::BM b)
 {
@@ -16221,6 +16225,11 @@ public:
   }
   virtual void handle_event(FrameLoopEvent &e)
   {
+    auto p3 = std::chrono::system_clock::now();
+    auto dur_in_seconds3 = std::chrono::duration<double>(std::chrono::duration_cast<std::chrono::milliseconds>(p3.time_since_epoch()));
+    double val = dur_in_seconds3.count();  
+    e.time = float(val-start_time_epoch);
+
     loop->handle_event(e);
   }
   virtual void frame()
@@ -16532,9 +16541,12 @@ class EnemyDraw2 : public FrameBufferLoop
 public:
   EnemyDraw2(GameApi::Env &e, std::vector<Bitmap<Color>*> shape, std::string url, std::string homepage, int fmt, float speed, int time_delta, int time_duration) : e(e), shape(shape), url(url), homepage(homepage), fmt(fmt?D_RGBA8888:D_Mono1), speed(speed), time_delta(time_delta), time_duration(time_duration) { 
     current_frame=0;
+    firsttime = true;
   }
   virtual void Prepare()
   {
+    if (firsttime) {
+      firsttime = false;
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
@@ -16567,6 +16579,7 @@ public:
 	src.push_back(src2);
 	BitmapToSourceBitmap(*shape[i],src[i], fmt);
       }
+    }
   }
   virtual void handle_event(FrameLoopEvent &e)
   {
@@ -16624,6 +16637,7 @@ private:
   float speed;
   int time_delta, time_duration;
   int current_frame;
+  bool firsttime;
 };
 
 GameApi::FML GameApi::LowFrameBufferApi::low_enemy_draw2(std::vector<BM> bm, std::string url, int fmt, float speed, int time_delta, int time_duration)
@@ -16642,7 +16656,7 @@ GameApi::FML GameApi::LowFrameBufferApi::low_enemy_draw2(std::vector<BM> bm, std
 class LowCollision : public FrameBufferLoop
 {
 public:
-  LowCollision(FrameBufferLoop *next, float start_x, float end_x, float start_y, float end_y, int key) : next(next), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), key(key) { }
+  LowCollision(FrameBufferLoop *next, float start_x, float end_x, float start_y, float end_y, int key) : next(next), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), key(key) { keep=false; }
   virtual void Prepare() { next->Prepare(); }
   virtual void handle_event(FrameLoopEvent &e)
   {
@@ -16658,6 +16672,7 @@ public:
     next->frame(e);
 
     int es = blk->num_enemies();
+    bool collide=false;
     for(int i=0;i<es;i++) {
       int s_x = blk->enemy_start_x(i);
       int e_x = blk->enemy_end_x(i);
@@ -16666,31 +16681,134 @@ public:
       if (start_x < e_x &&
 	  end_x > s_x &&
 	  start_y < e_y &&
-	  end_y > s_y)
-	{ // collision
-	  FrameLoopEvent ee;
-	  ee.type = 0x300;
-	  ee.ch = key;
-	  ee.cursor_pos = Point(0.0,0.0,0.0);
-	  ee.button = -1;
-	  for(int i=0;i<9;i++) ee.pin[i]=false;
-	  next->handle_event(ee);
-	  ee.type=0x301;
-	  next->handle_event(ee);
-
-	  break;
-	}
+	  end_y > s_y) collide = true;
     }
+    if (!keep && collide)
+      { // collision
+	FrameLoopEvent ee;
+	ee.type = 0x300;
+	ee.ch = key;
+	ee.cursor_pos = Point(0.0,0.0,0.0);
+	ee.button = -1;
+	ee.time = e.time;
+	for(int i=0;i<9;i++) ee.pin[i]=false;
+	next->handle_event(ee);
+	ee.type=0x301;
+	next->handle_event(ee);
+	keep = true;
+      }
+    if (!collide) keep=false;
   }
 private:
   FrameBufferLoop *next;
   float start_x, end_x;
   float start_y, end_y;
   int key;
+  bool keep;
 };
 
 GameApi::FML GameApi::LowFrameBufferApi::low_collision(FML ml, float start_x, float end_x, float start_y, float end_y, int key)
 { // sends key event if detects collision
   FrameBufferLoop *loop = find_framemainloop(e, ml);
   return add_framemainloop(e, new LowCollision(loop, start_x, end_x, start_y, end_y, key));
+}
+
+
+class LowFrameBitmap : public Bitmap<Color>
+{
+public:
+  LowFrameBitmap(FrameBufferLoop *loop, int sx, int sy) : buf(loop,4,sx,sy,0),sx(sx),sy(sy) {}
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    unsigned int *b = (unsigned int*)buf.Buffer();
+    unsigned int c = b[x+y*buf.Width()];
+    return Color(c);
+  }
+  virtual void Prepare()
+  {
+    buf.Prepare();
+    buf.frame();
+  }
+private:
+  LowFrameBuffer buf;
+  int sx,sy;
+};
+
+GameApi::BM GameApi::LowFrameBufferApi::low_frame_bitmap(FML ml, int sx, int sy)
+{
+  FrameBufferLoop *loop = find_framemainloop(e, ml);
+  Bitmap<Color> *b = new LowFrameBitmap(loop, sx,sy);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm = add_bitmap(e, handle2);
+  return bm;
+}
+
+class LowKeyBMPrepare : public FrameBufferLoop
+{
+public:
+  LowKeyBMPrepare(FrameBufferLoop *loop, Bitmap<Color> *bm, int key, FrameBufferLoop *normal, float duration, FrameBufferLoop *next) : loop(loop), bm(bm),key(key),normal(normal),duration(duration), next(next)
+  {
+    time = 0.0;
+    state = 0;
+  }
+  virtual void Prepare() { normal->Prepare(); next->Prepare(); }
+  virtual void handle_event(FrameLoopEvent &e)
+  {
+    if (e.type==0x300 && e.ch==key) {
+      bm->Prepare();
+      loop->Prepare();
+      time = e.time;
+      state = 1;
+    }
+    switch(state) {
+    case 0: normal->handle_event(e); break;
+    case 1: loop->handle_event(e); break;
+    case 2: next->handle_event(e); break;
+    };
+
+  }
+  virtual void frame(DrawLoopEnv &e)
+  {
+    DrawLoopEnv ee = e;
+    ee.time = ee.time-time;
+
+    if (state==1 && ee.time*10.0>duration)
+      {
+	state=2;
+      }
+    switch(state) {
+    case 0: normal->frame(ee); break;
+    case 1: loop->frame(ee); break;
+    case 2: next->frame(ee); break;
+    };
+  }
+private:
+  FrameBufferLoop *loop;
+  Bitmap<Color> *bm;
+  float time;
+  int key;
+  FrameBufferLoop *normal;
+  float duration;
+  FrameBufferLoop *next;
+  int state;
+};
+
+GameApi::FML GameApi::LowFrameBufferApi::low_key_bm_prepare(FML ml, BM bm, int key, FML normal, float duration, FML next)
+{
+  FrameBufferLoop *loop = find_framemainloop(e, ml);
+  FrameBufferLoop *nxt = find_framemainloop(e, next);
+  FrameBufferLoop *n = find_framemainloop(e, normal);
+  Bitmap<Color> *b2 = find_bitmap2(e,bm);
+  return add_framemainloop(e, new LowKeyBMPrepare(loop, b2, key,n,duration,nxt));
+}
+
+GameApi::FML GameApi::LowFrameBufferApi::low_activate_snapshot(EveryApi &ev, FML ml, int key, MN move, float duration, FML next)
+{
+  BM I47=ev.low_frame_api.low_frame_bitmap(ml,800,600);
+  FML I50=ev.low_frame_api.low_sprite_draw("s_tmp1",I47,move,0,0,1,0.0);
+  FML I51=ev.low_frame_api.low_key_bm_prepare(I50, I47, key, ml,duration,next);
+  return I51;
 }

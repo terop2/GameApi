@@ -6262,6 +6262,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "IF", "float", "float", "float", "float", "float", "float", "float" },
 			 { "", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0" },
 			 "FF", "font_api", "choose_float_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::time_fetcher2,
+			 "ff_time",
+			 { "ev" },
+			 { "EveryApi&" },
+			 { "ev" },
+			 "FF", "font_api", "time_fetcher2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::point_fetcher_constant,
 			 "pf_constant",
 			 { "x", "y", "z" },
@@ -8291,6 +8297,24 @@ std::vector<GameApiItem*> framebuffermoduleapi_functions()
 			 { "[FML]" },
 			 { "" },
 			 "FML", "mainloop_api", "array_fml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_frame_bitmap,
+			 "fr_bitmap",
+			 { "ml", "sx", "sy" },
+			 { "FML", "int", "int" },
+			 { "", "800", "600" },
+			 "BM", "low_frame_api", "low_frame_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_collision,
+			 "fr_collision",
+			 { "ml", "start_x", "end_x", "start_y", "end_y", "key" },
+			 { "FML", "float", "float", "float", "float", "int" },
+			 { "", "100.0", "120.0", "100.0", "120.0", "32" },
+			 "FML", "low_frame_api", "low_collision"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_activate_snapshot,
+			 "fr_snapshot",
+			 { "ev", "ml", "key", "move", "duration", "next" },
+			 { "EveryApi&","FML", "int", "MN", "float", "FML" },
+			 { "ev", "", "32", "", "30.0", "" },
+			 "FML", "low_frame_api", "low_activate_snapshot"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_framebuffer,
 			 "fr_framebuffer",
 			 { "mainloop", "format", "width", "height", "depth" },

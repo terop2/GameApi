@@ -747,6 +747,7 @@ public:
   IMPORT PF mouse_fetcher();
   IMPORT FF choose_float_fetcher(IF int_fetcher, float a_1, float a_2, float a_3, float a_4, float a_5, float a_6, float a_7);
   IMPORT FF fps_fetcher(EveryApi &ev);
+  IMPORT FF time_fetcher2(EveryApi &ev);
   IMPORT IF score_fetcher(EveryApi &ev);
   IMPORT IF time_fetcher(EveryApi &ev, float start_time);
   IMPORT IF hmd_request_presenting(IF i);
@@ -3436,6 +3437,9 @@ public:
   FML low_enemy_draw(BM bm, std::string url, int fmt, float speed);
   FML low_enemy_draw2(std::vector<BM> bm, std::string url, int fmt, float speed, int time_delta, int time_duration);
   FML low_collision(FML ml, float start_x, float end_x, float start_y, float end_y, int key);
+  BM low_frame_bitmap(FML ml, int sx, int sy);
+  FML low_key_bm_prepare(FML ml, BM bm, int key,FML normal, float duration, FML next);
+  FML low_activate_snapshot(EveryApi &ev, FML ml, int key, MN move, float duration, FML next);
 private:
   LowFrameBufferApi(const LowFrameBufferApi &);
   void operator=(const LowFrameBufferApi&);

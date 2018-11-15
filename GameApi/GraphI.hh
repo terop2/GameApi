@@ -525,6 +525,7 @@ struct MainLoopEvent
   int ch;
   Point cursor_pos;
   int button;
+  //float time = 0.0;
 };
 
 class MainLoopItem
@@ -560,6 +561,7 @@ struct FrameLoopEvent
   Point cursor_pos;
   int button;
   bool pin[9];
+  float time = 0.0;
 };
 
 class SourceBitmap
