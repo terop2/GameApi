@@ -753,7 +753,28 @@ GameApi::FF GameApi::FontApi::fps_fetcher(EveryApi &ev)
 {
   return add_float_fetcher(e, new FPSFetcher(ev));
 }
-
+class TimeFetcher2 : public Fetcher<float>
+{
+public:
+  TimeFetcher2(GameApi::EveryApi &ev) : ev(ev) { }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { 
+    time = e.time;
+  }
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { time = e.time; }
+  void set(float t) { }
+  float get() const {
+    return time;
+  }
+private:
+  GameApi::EveryApi &ev;
+  float time;
+};
+GameApi::FF GameApi::FontApi::time_fetcher2(EveryApi &ev)
+{
+  return add_float_fetcher(e, new TimeFetcher2(ev));
+}
 extern int score;
 
 class ScoreFetcher : public Fetcher<int>

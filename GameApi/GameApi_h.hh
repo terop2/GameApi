@@ -1168,6 +1168,7 @@ SurfaceImpl *find_surface(GameApi::Env &e, GameApi::S f);
 SurfaceIn3d *find_surface2(GameApi::Env &e, GameApi::S f);
 AnimImpl find_anim(GameApi::Env &e, GameApi::IS i);
 Bitmap<Color> *find_color_bitmap(BitmapHandle *handle, int bbm_choose=-1);
+Bitmap<Color> *find_bitmap2(GameApi::Env &e, GameApi::BM bm);
 Bitmap<Pos> *find_pos_bitmap(BitmapHandle *handle, int bbm_choose=-1);
 Sprite *sprite_from_handle2(GameApi::Env &e, SpritePriv &env, BitmapHandle *handle, int bbm_choose);
 Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handle, int bbm_choose);
