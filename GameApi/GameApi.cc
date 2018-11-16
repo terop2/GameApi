@@ -14637,7 +14637,9 @@ public:
      }
 #ifndef EMSCRIPTEN
     // this tries to make emscripten port and win32 build run the same speed.
+#ifndef LINUX
     g_low->sdl->SDL_Delay(16);
+#endif
 #endif
     if (exit) return 0;
     return -1;
