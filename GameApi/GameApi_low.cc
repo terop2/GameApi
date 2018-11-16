@@ -882,7 +882,9 @@ class SDLApi : public SDLLowApi
 {
   virtual void init() { }
   virtual void cleanup() {}
-  virtual void SDL_Init(int flags) { map_enums_sdl(flags); ::SDL_Init(flags); }
+  virtual void SDL_Init(int flags) { map_enums_sdl(flags); ::SDL_Init(flags);
+    std::cout << "SDL_Init:" << SDL_GetError() << std::endl;
+  }
   virtual void SDL_GL_SetAttribute(int flag, int val) { map_enums_sdl(flag); map_enums_sdl(val); ::SDL_GL_SetAttribute((SDL_GLattr)flag,val); }
   virtual void* SDL_GL_GetProcAddress(char *name) { return ::SDL_GL_GetProcAddress(name); }
   virtual void SDL_Quit() { ::SDL_Quit(); }
@@ -929,6 +931,7 @@ class SDLApi : public SDLLowApi
   {
     SDL_Window *w = (SDL_Window*)win->ptr;
     SDL_Surface *s = ::SDL_GetWindowSurface(w);
+    if (!s) { std::cout << "Error at sdl_getwindowsurface:" << SDL_GetError() << std::endl; return 0; }
     Low_SDL_Surface *ss = new Low_SDL_Surface;
     ss->ptr = s;
     ss->w = s->w;
