@@ -1551,9 +1551,12 @@ Low_SDL_Surface *sdl_framebuffer = 0;
 Low_SDL_Surface *init_sdl_surface_framebuffer(int scr_x, int scr_y)
 {
 #ifdef SDL2_USED
+  g_low->sdl->SDL_Init(Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK);
+  //std::cout << "SDL_Init: " << g_low->sdl->SDL_GetError() << std::endl;
   sdl_framebuffer_window = g_low->sdl->SDL_CreateWindow("Framebuffer", Low_SDL_WINDOWPOS_CENTERED, Low_SDL_WINDOWPOS_CENTERED, scr_x, scr_y, Low_SDL_WINDOW_SHOWN);
   sdl_framebuffer = g_low->sdl->SDL_GetWindowSurface(sdl_framebuffer_window);
 #endif
+  if (!sdl_framebuffer) { std::cout << "sdl_framebuffer NULL" << std::endl; exit(0); }
   return sdl_framebuffer;
 }
 
