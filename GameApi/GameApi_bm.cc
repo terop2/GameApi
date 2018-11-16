@@ -3985,3 +3985,48 @@ GameApi::BM GameApi::BitmapApi::noise_vectors(int sx, int sy)
 
 }
 
+class BumpMap : public Bitmap<Color>
+{
+public:
+  BumpMap(Bitmap<float> &values, float h) : values(values),h(h) { }
+  void Prepare() { values.Prepare(); }
+  int SizeX() const { return values.SizeX(); }
+  int SizeY() const { return values.SizeY(); }
+  Color Map(int x, int y) const
+  {
+    float v_r = x+h/2>=SizeX()?values.Map(SizeX()-1,y):values.Map(x+h/2.0,y);
+    float v_l = x-h/2<0?values.Map(0,y):values.Map(x-h/2.0,y);
+    float v_t = y-h/2<0?values.Map(x,0):values.Map(x,y-h/2.0);
+    float v_b = y+h/2>=SizeY()?values.Map(x,SizeY()-1):values.Map(x,y+h/2.0);
+    float angle_x = atan((v_r-v_l)/h);
+    float angle_y = atan((v_b-v_t)/h);
+    Point p(0.0,1.0,0.0);
+    Matrix m_x = Matrix::ZRotation(angle_x);
+    Matrix m_z = Matrix::XRotation(angle_y);
+    Point res = p*m_x*m_z;
+    Vector v(res);
+    v/=v.Dist();
+    if (std::isnan(v.dx)) v.dx=0.0;
+    if (std::isnan(v.dy)) v.dy=0.0;
+    if (std::isnan(v.dz)) v.dz=0.0;
+    int r = v.dx*127.5+127.5;
+    int g = v.dy*127.5+127.5;
+    int b = v.dz*127.5+127.5;
+    r<<=16;
+    g<<=8;
+    return Color(0xff000000+r+g+b);
+  }
+private:
+  Bitmap<float> &values;
+  float h;
+};
+
+GameApi::BM GameApi::BitmapApi::bump_map(FB fb, float h)
+{
+  Bitmap<float> *f = find_float_bitmap(e,fb)->bitmap;
+  Bitmap<Color> *b = new BumpMap(*f,h);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm = add_bitmap(e, handle2);
+  return bm;
+}

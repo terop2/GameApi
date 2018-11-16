@@ -6025,6 +6025,101 @@ private:
   float pow;
 };
 
+class BumpPhongShaderML : public MainLoopItem
+{
+public:
+  BumpPhongShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir, unsigned int ambient, unsigned int highlight, float pow) : env(env), ev(ev), next(next), light_dir(light_dir), ambient(ambient), highlight(highlight), pow(pow) 
+  { 
+    firsttime = true;
+    sh.id = -1;
+  }
+  int shader_id() { if (sh.id != -1) return sh.id; return next->shader_id(); 
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+     if (firsttime)
+      {
+	firsttime = false;
+#if 1
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a1.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    vertex = ev.uber_api.v_bump_phong(vertex);
+    //GameApi::US a2 = ev.uber_api.v_passall(a4v);
+    ee.us_vertex_shader = vertex.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a1.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    if (ambient)
+      fragment = ev.uber_api.f_bump_phong(fragment);
+    ee.us_fragment_shader = fragment.id;
+#endif
+      }
+
+    int sh_id = next->shader_id();
+    sh.id = sh_id;
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	ev.shader_api.use(sh);
+
+
+	ev.shader_api.set_var(sh, "light_dir", light_dir.dx, light_dir.dy, light_dir.dz);
+	ev.shader_api.set_var(sh, "level1_color",
+			      ((ambient&0xff0000)>>16)/255.0,
+			      ((ambient&0xff00)>>8)/255.0,
+			      ((ambient&0xff))/255.0,
+			      ((ambient&0xff000000)>>24)/255.0);
+	ev.shader_api.set_var(sh, "level2_color",
+			      ((highlight&0xff0000)>>16)/255.0,
+			  ((highlight&0xff00)>>8)/255.0,
+			      ((highlight&0xff))/255.0,
+			  ((highlight&0xff000000)>>24)/255.0);
+	ev.shader_api.set_var(sh, "hilight", pow);
+      }
+
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "time", e.time);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+
+    next->execute(ee);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  Vector light_dir;
+  GameApi::SH sh;
+  bool firsttime;
+  unsigned int ambient;
+  unsigned int highlight;
+  float pow;
+};
+
+
 class FogShaderML : public MainLoopItem
 {
 public:
@@ -6417,6 +6512,11 @@ EXPORT GameApi::ML GameApi::PolygonApi::phong_shader(EveryApi &ev, ML mainloop, 
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new PhongShaderML(e, ev, item, Vector(light_dir_x, light_dir_y, light_dir_z),ambient, highlight,pow));
+}
+EXPORT GameApi::ML GameApi::PolygonApi::bump_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new BumpPhongShaderML(e, ev, item, Vector(light_dir_x, light_dir_y, light_dir_z),ambient, highlight,pow));
 }
 EXPORT GameApi::ML GameApi::PolygonApi::fog_shader(EveryApi &ev, ML mainloop, float fog_dist, unsigned int dark_color, unsigned int light_color)
 {
