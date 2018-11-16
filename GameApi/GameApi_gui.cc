@@ -6647,8 +6647,14 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "m_phong",
 			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow" },
 			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
-			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "15.0" },
+			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0" },
 			 "MT", "materials_api", "phong"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bump_phong,
+			 "m_bump_phong",
+			 { "ev", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow", "fb", "bump_width" },
+			 { "EveryApi&", "float", "float", "float", "unsigned int", "unsigned int", "float", "FB", "float" },
+			 { "ev", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0", "", "3.0" },
+			 "MT", "materials_api", "bump_phong"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::fog,
 			 "m_fog",
 			 { "ev", "nxt", "dist", "dark_color", "light_color" },
@@ -9541,6 +9547,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BM", "float", "float", "float", "float", "float" },
 			 { "", "0.5", "0.125", "0.125", "0.125", "0.125" },
 			 "BM", "bitmap_api", "simple_blur"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::bump_map,
+			 "bm_bumpmap",
+			 { "fb", "h" },
+			 { "FB", "float" },
+			 { "", "10.0" },
+			 "BM", "bitmap_api", "bump_map"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::memoize,
 			 "bm_memoize",
 			 { "bm" },

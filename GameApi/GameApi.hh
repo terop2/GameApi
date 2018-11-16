@@ -564,6 +564,7 @@ public:
         IMPORT IBM intbitmap_loader(std::string url);
   IMPORT BM intbitmap_bm(IBM ibm);
   IMPORT BM chai_bm(std::string url, int sx, int sy);
+  IMPORT BM bump_map(FB fb, float h);
 	IMPORT BM newcolorbitmap(char *array, int sz, int sy, std::function<unsigned int(char)> f);
 	IMPORT BM newtilebitmap(int sx, int sy, int tile_sx, int tile_sy);
 	IMPORT BM loadbitmap(std::string filename);
@@ -1272,6 +1273,7 @@ public:
   IMPORT MT texture_many2(EveryApi &ev, float mix);
   IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
   IMPORT MT phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
+  IMPORT MT bump_phong(EveryApi &ev, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, FB bm, float bump_width);
   IMPORT MT fog(EveryApi &ev, MT nxt, float fog_dist, unsigned int dark_color, unsigned int light_color);
   IMPORT MT shadow(EveryApi &ev, P p, std::vector<BM> vec, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2);
   IMPORT MT shadow2(EveryApi &ev, P p, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2, int numtextures);
@@ -2421,6 +2423,7 @@ public:
   IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML sfo_sandbox_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
+  IMPORT ML bump_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML fog_shader(EveryApi &ev, ML mainloop, float fog_dist, unsigned int dark_color, unsigned int light_color);
   IMPORT ML shadow_shader(EveryApi &ev, ML mainloop, int tex_num, float p_x, float p_y, float p_z, unsigned int dark_color, float mix);
   IMPORT ML dyn_lights_shader(EveryApi &ev, ML mainloop, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point);
@@ -3328,6 +3331,7 @@ public:
   US v_skeletal(US us);
   US v_custom(US us, std::string v_funcname);
   US v_phong(US us);
+  US v_bump_phong(US us);
   US v_fog(US us);
   US v_shadow(US us);
   US v_dyn_lights(US us);
@@ -3338,6 +3342,7 @@ public:
   US f_ambient(US us);
   US f_specular(US us);
   US f_phong(US us);
+  US f_bump_phong(US us);
   US f_fog(US us);
   US f_shadow(US us);
   US f_dyn_lights(US us);
