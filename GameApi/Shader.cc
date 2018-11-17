@@ -971,7 +971,7 @@ ShaderFile::ShaderFile()
 
 "uniform float hilight;\n"	  
 "float intensity(vec3 dir) {\n"
-" return 1.0-clamp(dot(dir,ex_LightPos2),0.0,1.0);\n"
+" return clamp(dot(dir,ex_LightPos2),0.0,1.0);\n"
 "}\n"
 "float intensity2(vec3 dir) {\n"
 " float i=intensity(dir); return pow(i,hilight);\n"
