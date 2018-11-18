@@ -152,6 +152,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
     {
       BitmapHandle *handle = find_bitmap(e, vec[i]);
       Bitmap<Color> *bm = find_color_bitmap(handle);
+      bm->Prepare();
       FlipColours flip(*bm);
       BufferFromBitmap buf(flip);
       buf.Gen();

@@ -1213,6 +1213,35 @@ private:
   float p4_x, p4_y;
 					   
 };
+class TexCoordPlane : public ForwardFaceCollection
+{
+public:
+  TexCoordPlane(FaceCollection *coll, float start_x, float end_x, float start_y, float end_y) : ForwardFaceCollection(*coll), coll(coll), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y) { }
+  Point2d TexCoord(int face, int point) const
+  {
+    Point p = coll->FacePoint(face,point);
+    p.x-=start_x;
+    p.x/=end_x-start_x;
+    p.y-=start_y;
+    p.y/=end_y-start_y;
+    Point2d pp;
+    pp.x = p.x;
+    pp.y = p.y;
+    return pp;
+  }  
+private:
+  FaceCollection *coll;
+  float start_x, end_x;
+  float start_y, end_y;
+};
+
+EXPORT GameApi::P GameApi::PolygonApi::texcoord_plane(P orig,
+						      float start_x, float end_x,
+						      float start_y, float end_y)
+{
+  FaceCollection *face = find_facecoll(e,orig);
+  return add_polygon(e, new TexCoordPlane(face, start_x, end_x, start_y, end_y),1);
+}
 EXPORT GameApi::P GameApi::PolygonApi::texcoord_manual(P orig,
 						float p1_x, float p1_y,
 						float p2_x, float p2_y,
@@ -8293,6 +8322,8 @@ public:
   TexCoordFromNormal(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
   Point2d TexCoord(int face, int point) const
   { 
+    // NOTE: this requires power-of-2 textures, or else it will fail because of
+    // clamp_to_edge.
     Vector n = coll->PointNormal(face,point);
     int nxt = point+2;
     nxt = nxt % coll->NumPoints(face);
@@ -10070,9 +10101,9 @@ public:
       int s2 = coll->NumPoints(i);
       for(int j=0;j<s2;j++) {
 	Point p = coll->FacePoint(i,j);
-	Point p1 = coll->FacePoint(i,(j+0)%s2);
-	Point p2 = coll->FacePoint(i,(j+1)%s2);
-	Point p3 = coll->FacePoint(i,(j+2)%s2);
+	Point p1 = coll->FacePoint(i,(j+1)%s2);
+	Point p2 = coll->FacePoint(i,(j+2)%s2);
+	Point p3 = coll->FacePoint(i,(j+3)%s2);
 	//Point p4 = coll->FacePoint(i,(j+3)%s2);
 	//float area = Vector::DotProduct(coll->PointNormal(i,j),Vector::CrossProduct(p1,p2) + Vector::CrossProduct(p2,p3) + Vector::CrossProduct(p3,p4))/2.0;
 	float a1 = Vector::Angle(p2-p1,p3-p1);
@@ -10080,16 +10111,18 @@ public:
 	//float a3 = Vector::Angle(p1-p3,p2-p3);
 	Data &v = mymap[key(p)];
 	Vector n = coll->PointNormal(i,j);
-	v.v+=n*a1;
+	if (std::isnormal(a1)) {
+	  v.v+=n*a1;
 	//v.v+=a2*n;
 	//v.v+=a3*n;
-	v.count++;
+	  v.count++;
+	}
       }
     }
   }
   std::tuple<int,int,int> key(Point p) const
   {
-    return std::make_tuple(int(p.x*1.0),int(p.y*1.0),int(p.z*1.0));
+    return std::make_tuple(int(p.x*100.0),int(p.y*100.0),int(p.z*100.0));
   }
   virtual Vector PointNormal(int face, int point) const
   {
@@ -10099,7 +10132,7 @@ public:
     if (v.count==0) v.count++;
     Vector vv = v.v/float(v.count);
     float dist = vv.Dist();
-    if (dist<0.01) { vv=Vector(1.0,0.0,0.0); dist=1.0; }
+    //if (dist<0.01) { vv=Vector(1.0,0.0,0.0); dist=1.0; }
     return (vv)/dist;
   }
 private:

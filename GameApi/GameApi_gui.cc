@@ -6653,7 +6653,7 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "m_bump_phong",
 			 { "ev", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow", "fb", "bump_width" },
 			 { "EveryApi&", "float", "float", "float", "unsigned int", "unsigned int", "float", "FB", "float" },
-			 { "ev", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0", "", "3.0" },
+			 { "ev", "-0.3", "0.3", "-1.0", "ffff8800", "ffffffff", "10.0", "", "5.0" },
 			 "MT", "materials_api", "bump_phong"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::fog,
 			 "m_fog",
@@ -8016,6 +8016,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "P", "float", "float", "float", "float", "float", "float", "float", "float" },
 			 { "", "0.0", "0.0", "1.0", "0.0", "1.0", "1.0", "0.0", "1.0" },
 			 "P", "polygon_api", "texcoord_manual"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texcoord_plane,
+			 "texcoord_plane",
+			 { "orig", "start_x", "end_x", "start_y", "end_y" },
+			 { "P", "float", "float", "float", "float" },
+			 { "", "-300.0", "300.0", "-300.0", "300.0" },
+			 "P", "polygon_api", "texcoord_plane"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::from_normal_to_texcoord,
 			 "texcoord_from_normal",
 			 { "p" },
@@ -9147,6 +9153,12 @@ std::vector<GameApiItem*> floatbitmapapi_functions()
 			 { "FB", "FB" },
 			 { "","" },
 			 "FB", "bitmap_api", "plus_fb"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::mul_fb,
+			 "mul_fb",
+			 { "f", "mul" },
+			 { "FB", "float" },
+			 { "", "1.0" },
+			 "FB", "bitmap_api", "mul_fb"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::dist,
 			 "bm_dist",
 			 { "sx", "sy", "p_x", "p_y" },

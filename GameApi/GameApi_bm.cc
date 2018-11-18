@@ -3851,7 +3851,23 @@ GameApi::FB GameApi::BitmapApi::plus_fb(FB f1, FB f2)
   return add_float_bitmap(e, new PlusFB(*fb1,*fb2));
 }
 
-
+class MulFB : public Bitmap<float>
+{
+public:
+  MulFB(Bitmap<float> *f, float mul) : f(f),mul(mul) {}
+  void Prepare() { f->Prepare(); }
+  int SizeX() const { return f->SizeX(); }
+  int SizeY() const { return f->SizeY(); }
+  float Map(int x, int y) const { return mul*f->Map(x,y); }
+private:
+  Bitmap<float> *f;
+  float mul;
+};
+GameApi::FB GameApi::BitmapApi::mul_fb(FB f, float mul)
+{
+  Bitmap<float> *fb1 = find_float_bitmap(e, f)->bitmap;
+  return add_float_bitmap(e, new MulFB(fb1, mul));
+};
 class SubBitmap2 : public Bitmap<Color>
 {
 public:
