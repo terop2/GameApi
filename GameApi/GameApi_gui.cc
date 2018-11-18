@@ -4696,7 +4696,8 @@ ASyncData async_data[] = {
   { "low_frame_api", "low_sprite_array", 1 }, 
   { "low_frame_api", "low_build_world", 1 },
   { "low_frame_api", "low_enemy_draw", 1 },
-  { "low_frame_api", "low_enemy_draw2", 1 }
+  { "low_frame_api", "low_enemy_draw2", 1 },
+  { "polygon_api", "stl_load", 0 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -7621,6 +7622,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "std::string" },
 			 { "ev", "http://tpgames.org/sponza.ds" },
 			 "P", "polygon_api", "p_ds_url"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::stl_load,
+			 "p_stl",
+			 { "url" },
+			 { "std::string" },
+			 { "http://tpgames.org/teapot.stl" },
+			 "P", "polygon_api", "stl_load"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::alt,
 			 "p_alt",
 			 { "vec", "index" },
