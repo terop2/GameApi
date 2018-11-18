@@ -648,6 +648,7 @@ public:
   IMPORT FB radial_fb(int sx, int sy, float x, float y, float r, float val_at_zero, float val_at_r);
   IMPORT FB sin_fb(FB gradient);
   IMPORT FB plus_fb(FB f1, FB f2);
+  IMPORT FB mul_fb(FB f, float mul);
 private:
   BitmapApi(const BitmapApi&);
   void operator=(const BitmapApi&);
@@ -2278,6 +2279,7 @@ public:
   IMPORT P texcoord_spherical2(EveryApi &ev, PT center, float r, P orig);
   IMPORT P texcoord_cylindar(P orig, float start_y, float end_y);
   IMPORT P texcoord_from_normal(P p);
+  IMPORT P texcoord_plane(P p, float start_x, float end_x, float start_y, float end_y);
   IMPORT P fix_texcoord(P p);
   IMPORT P color_cube(P orig,
 	       PT o, PT u_x, PT u_y, PT u_z,

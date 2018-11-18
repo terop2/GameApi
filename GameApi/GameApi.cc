@@ -5923,14 +5923,21 @@ class BumpPhongMaterial : public MaterialForward
 {
 public:
   BumpPhongMaterial(GameApi::EveryApi &ev, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, GameApi::FB bm_1, float bump_width) : ev(ev), light_dir_x(light_dir_x), light_dir_y(light_dir_y), light_dir_z(light_dir_z), ambient(ambient), highlight(highlight), pow(pow) {
-    GameApi::BM I17=ev.bitmap_api.bump_map(bm_1,bump_width);
-    bm.push_back(I17);
+    GameApi::FB bm_11 = ev.bitmap_api.mul_fb(bm_1,40.0);
+    GameApi::BM I17=ev.bitmap_api.bump_map(bm_11,bump_width);
+    GameApi::BM I18=ev.bitmap_api.flip_y(I17);
+    GameApi::BM I19=ev.bitmap_api.flip_x(I18);
+    GameApi::BM bm_2=ev.float_bitmap_api.to_grayscale_color(bm_1,255,255,255,255,0,0,0,0);
+    GameApi::BM bm_3=ev.bitmap_api.flip_y(bm_2);
+    GameApi::BM bm_4=ev.bitmap_api.flip_x(bm_3);
+    bm.push_back(I19);
+    bm.push_back(bm_4);
   }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
     GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
-    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
-    GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
+    GameApi::P p1 = ev.polygon_api.color(p00, 0xff000000);
     //GameApi::ML ml;
     GameApi::ML ml=ev.polygon_api.render_vertex_array_ml2_texture(ev,p1,bm);
     //ml.id = next->mat(p1.id);
@@ -5940,8 +5947,8 @@ public:
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
-    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
-    GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
+    GameApi::P p1 = ev.polygon_api.color(p00, 0xff000000);
     //GameApi::ML ml;
     GameApi::ML ml=ev.materials_api.render_instanced_ml_texture(ev,p1,pts,bm);
     //ml.id = next->mat_inst(p1.id, pts.id);
