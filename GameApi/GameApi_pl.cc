@@ -11511,4 +11511,193 @@ private:
 GameApi::ML GameApi::PolygonApi::render_meshanim(MA ma, float delta_time)
 {
 }
+
 #endif
+
+void convert_stl_to_binary(std::vector<unsigned char> *ptr)
+{
+  std::cout << "STL file in ascii, converting to binary" << std::endl;
+  std::vector<unsigned char> res;
+  for(int i=0;i<80;i++)
+    {
+      res.push_back(0);
+    }
+  res.push_back(0);
+  res.push_back(0);
+  res.push_back(0);
+  res.push_back(0);
+  std::string s(ptr->begin(),ptr->end());
+  std::stringstream ss(s);
+  std::string line;
+  int count =0;
+  int facetcount = 0;
+  int vertexcount=0;
+  int v_count=0;
+  while(std::getline(ss,line)) {
+    std::stringstream ss2(line);
+    std::string id;
+    ss2>>id;
+    if (id=="facet")
+      {
+	facetcount++;
+	count++;
+	//if (count%1==0) {std::cout << "f"; }
+	std::string n; 
+	float nx,ny,nz;
+	ss2>>n >> nx >> ny >> nz;
+	unsigned char *ptr = (unsigned char*)&nx;
+	res.push_back(ptr[0]);
+	res.push_back(ptr[1]);
+	res.push_back(ptr[2]);
+	res.push_back(ptr[3]);
+
+	ptr = (unsigned char*)&ny;
+	res.push_back(ptr[0]);
+	res.push_back(ptr[1]);
+	res.push_back(ptr[2]);
+	res.push_back(ptr[3]);
+
+	ptr = (unsigned char*)&nz;
+	res.push_back(ptr[0]);
+	res.push_back(ptr[1]);
+	res.push_back(ptr[2]);
+	res.push_back(ptr[3]);
+      }
+    if (id=="vertex") {
+      vertexcount++;
+      v_count++;
+      //if (v_count%1==0) {std::cout << "v"; }
+	float vx,vy,vz;
+	ss2 >> vx >> vy >> vz;
+	unsigned char *ptr = (unsigned char*)&vx;
+	res.push_back(ptr[0]);
+	res.push_back(ptr[1]);
+	res.push_back(ptr[2]);
+	res.push_back(ptr[3]);
+
+	ptr = (unsigned char*)&vy;
+	res.push_back(ptr[0]);
+	res.push_back(ptr[1]);
+	res.push_back(ptr[2]);
+	res.push_back(ptr[3]);
+
+	ptr = (unsigned char*)&vz;
+	res.push_back(ptr[0]);
+	res.push_back(ptr[1]);
+	res.push_back(ptr[2]);
+	res.push_back(ptr[3]);
+    }
+    if (id=="endfacet") {
+      if (vertexcount!=3 ||facetcount!=1) { std::cout << "STL(ascii) file format problem" << std::endl; }
+      //if (v_count%1==0) {std::cout << "v"; }
+	res.push_back(0);
+	res.push_back(0);
+	vertexcount=0;
+	facetcount=0;
+      
+    }
+  }
+  unsigned char *ptr2 = (unsigned char*)&count;
+  res[80]=ptr2[0];
+  res[81]=ptr2[1];
+  res[82]=ptr2[2];
+  res[83]=ptr2[3];
+  *ptr = res;
+    
+}
+
+class STLFaceCollection : public FaceCollection
+{
+public:
+  STLFaceCollection(GameApi::Env &e, std::string url, std::string homepage) : e(e), url(url),homepage(homepage) { m_ptr=0; }
+  void Prepare() {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
+    if (ptr->size()<5) return;
+    if (ptr->operator[](0)=='s' && ptr->operator[](1)=='o' && ptr->operator[](2)=='l' && ptr->operator[](3)=='i' && ptr->operator[](4)=='d')
+      {
+	convert_stl_to_binary(ptr);
+      }
+    m_ptr = ptr;
+  }
+  virtual int NumFaces() const { return get_int(80); }
+  virtual int NumPoints(int face) const { return 3; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int pos = 80+4+((3*4*4)+2)*face;
+    int pos1 = 4*3;
+    int num = point*4*3;
+    float v1_x = get_float(pos+pos1+num);
+    float v1_y = get_float(pos+pos1+num+4);
+    float v1_z = get_float(pos+pos1+num+8);
+    return Point(v1_x, v1_y, v1_z);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    int pos = 80+4+((3*4*4)+2)*face;
+    int pos0 = 0;
+    float vx = get_float(pos+pos0+0);
+    float vy = get_float(pos+pos0+4);
+    float vz = get_float(pos+pos0+8);
+    return Vector(vx,vy,vz);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const { return 0xffffffff; }
+  virtual Point2d TexCoord(int face, int point) const { 
+    Point2d p;
+    Point pp = FacePoint(face,point);
+    pp.x-=-600.0;
+    pp.x/=600.0-(-600.0);
+    pp.y-=-600.0;
+    pp.y/=600.0-(-600.0);
+    p.x=pp.x;
+    p.y=pp.y;
+    return p;
+  }
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
+
+  int get_int(int index) const {
+    if (!m_ptr) return 0;
+    if (index<0) return 0;
+    int s = m_ptr->size();
+    if (index+3>=s) return 0;
+    unsigned char c1 = m_ptr->operator[](index);
+    unsigned char c2 = m_ptr->operator[](index+1);
+    unsigned char c3 = m_ptr->operator[](index+2);
+    unsigned char c4 = m_ptr->operator[](index+3);
+    unsigned char arr[] = { c1,c2,c3,c4 };
+    int val = *(int*)arr;
+    return val;
+  }
+  float get_float(int index) const {
+    if (!m_ptr) return 0.0;
+    if (index<0) return 0.0;
+    int s = m_ptr->size();
+    if (index+3>=s) return 0.0;
+    unsigned char c1 = m_ptr->operator[](index);
+    unsigned char c2 = m_ptr->operator[](index+1);
+    unsigned char c3 = m_ptr->operator[](index+2);
+    unsigned char c4 = m_ptr->operator[](index+3);
+    unsigned char arr[] = { c1,c2,c3,c4 };
+    float val = *(float*)arr;
+    return val;
+  }
+private:
+  GameApi::Env &e;
+  std::string url;
+  std::string homepage;
+  std::vector<unsigned char> *m_ptr;
+};
+
+GameApi::P GameApi::PolygonApi::stl_load(std::string url)
+{
+  GameApi::P p = add_polygon2(e, new STLFaceCollection(e,url,gameapi_homepageurl),1);
+  print_data(p);
+  FaceCollection *coll = find_facecoll(e,p);
+  GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll), 1);
+  return resize_to_correct_size(p2);
+}

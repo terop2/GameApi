@@ -469,7 +469,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 
   g_low->ogl->glClearColor( 0, 0, 0, 0 );
   g_low->ogl->glViewport(0,0,screenx, screeny);
-
+  g_low->ogl->glDisable(Low_GL_CULL_FACE);
 #endif
   return 0;
 }

@@ -182,6 +182,7 @@ void map_enums_sdl(int &i) {
 void map_enums(int &i)
 {
   switch(i) {
+  case Low_GL_CULL_FACE: i=GL_CULL_FACE; break;
   case Low_GL_ARRAY_BUFFER: i=GL_ARRAY_BUFFER; break;
   case Low_GL_FLOAT: i=GL_FLOAT; break;
   case Low_GL_INT: i=GL_INT; break;
