@@ -2130,7 +2130,8 @@ public:
   ARR poly_execute(EveryApi &ev, ARR arr, std::string gameapi_script);
   P texture_add(P p, BM bm);
   P stl_load(std::string url);
-
+  P fix_vertex_order(P p);
+  
   CG curve_group_from_anim(MA ma, float start_time, float end_time);
   MA meshanim(std::vector<P> vec, float start_time, float end_time);
   P meshanim_mesh(MA ma, float time);

@@ -104,7 +104,7 @@ std::vector<int> find_png(std::string s)
 
 int go_backwards(std::string s, int pos)
 {
-  std::string chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/+?=%#£:._\\";
+  std::string chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/+?=%#£:._\\-";
   int ss = chars.size();
   for(;pos>=0;pos--)
     {
@@ -170,7 +170,7 @@ std::vector<std::string> find_urls(std::string s)
     {
       if (s[i]=='h' && s[i+1]=='t' && s[i+2]=='t' && s[i+3]=='p')
 	{
-	  std::string chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/+?=%#£:._";
+	  std::string chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/+?=%#£:._-";
 	  int end = i;
 	  for(int j=i;j<ss;j++)
 	    {

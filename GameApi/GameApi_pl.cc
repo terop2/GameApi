@@ -11701,3 +11701,50 @@ GameApi::P GameApi::PolygonApi::stl_load(std::string url)
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll), 1);
   return resize_to_correct_size(p2);
 }
+
+class FixVertexOrder : public ForwardFaceCollection
+{
+public:
+  FixVertexOrder(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  virtual void Prepare() { coll->Prepare(); }
+  virtual int NumFaces() const { return coll->NumFaces(); }
+  virtual int NumPoints(int face) const
+  {
+    return coll->NumPoints(face);
+  }
+  virtual Point FacePoint(int face, int point) const { return coll->FacePoint(face,map_point(face,point)); }
+  virtual Vector PointNormal(int face, int point) const { return coll->PointNormal(face,map_point(face,point)); }
+  virtual float Attrib(int face, int point, int id) const { return coll->Attrib(face,map_point(face,point),id); }
+  virtual int AttribI(int face, int point, int id) const { return coll->AttribI(face,map_point(face,point),id); }
+  virtual unsigned int Color(int face, int point) const { return coll->Color(face,map_point(face,point)); }
+  virtual Point2d TexCoord(int face, int point) const { return coll->TexCoord(face,map_point(face,point)); }
+  virtual float TexCoord3(int face, int point) const { return coll->TexCoord3(face,map_point(face,point)); }
+
+  int map_point(int face, int point) const
+  {
+    if (!is_clockwise(face)) return point;
+    return coll->NumPoints(face)-point-1;
+  }
+
+  bool is_clockwise(int face) const
+  {
+    int s = coll->NumPoints(face);
+    float val = 0.0;
+    for(int i=0;i<s;i++)
+      {
+	Point p1 = coll->FacePoint(face,i);
+	Point p2 = coll->FacePoint(face,(i+1)%s);
+	val += (p2.x-p1.x)*(p2.y+p1.y);
+	val += (p2.x-p1.x)*(p2.z+p1.z);
+	val += (p2.y-p1.y)*(p2.z+p1.z);
+      }
+    return val>0.0;
+  }
+private:
+  FaceCollection *coll;
+};
+GameApi::P GameApi::PolygonApi::fix_vertex_order(GameApi::P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new FixVertexOrder(coll),1);
+}

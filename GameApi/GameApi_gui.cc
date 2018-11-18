@@ -7799,6 +7799,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "P", "float", "float", "float", "float", "float", "float" },
 			 { "", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0" },
 			 "P", "polygon_api", "mesh_resize"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::fix_vertex_order,
+			 "fix_vertex_order",
+			 { "p" },
+			 { "P" },
+			 { "" },
+			 "P", "polygon_api", "fix_vertex_order"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::repeat_xy_p,
 			 "p_repeat_xy",
