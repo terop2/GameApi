@@ -892,9 +892,9 @@ public:
   virtual float TexCoord3(int face, int point) const { return current->TexCoord3(face,point); }
   virtual int NumTextures() const { return buffer.size(); }
   virtual void GenTexture(int num) {
-    int s = buffer.size();
-    if (num>=0 && num<s)
-      if (buffer[num].buffer==0) std::cout << "ERROR, p_mtl texture not ready!" << std::endl;
+    //int s = buffer.size();
+    //if (num>=0 && num<s)
+    //  if (buffer[num].buffer==0) std::cout << "ERROR, p_mtl texture not ready!" << std::endl;
   }
   virtual BufferRef TextureBuf(int num) const {
     int s = buffer.size();
@@ -4651,14 +4651,14 @@ public:
 	fragment.id = u_f.id; //e.us_fragment_shader;
 	if (e.sfo_id==-1)
 	  {
-	      std::cout << "RenderPTex2::Shadder" << std::endl;
+	    // std::cout << "RenderPTex2::Shadder" << std::endl;
 	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions);
 	  }
 	else
 	  {
 	    GameApi::SFO sfo;
 	    sfo.id = e.sfo_id;
-	      std::cout << "RenderPTex2::Shadder" << std::endl;
+	    //  std::cout << "RenderPTex2::Shadder" << std::endl;
 	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
 	  }
 	ev.mainloop_api.init_3d(shader);
@@ -11702,6 +11702,8 @@ GameApi::P GameApi::PolygonApi::stl_load(std::string url)
   return resize_to_correct_size(p2);
 }
 
+float det3(float *arr);
+
 class FixVertexOrder : public ForwardFaceCollection
 {
 public:
@@ -11729,15 +11731,20 @@ public:
   bool is_clockwise(int face) const
   {
     int s = coll->NumPoints(face);
-    float val = 0.0;
-    for(int i=0;i<s;i++)
-      {
-	Point p1 = coll->FacePoint(face,i);
-	Point p2 = coll->FacePoint(face,(i+1)%s);
-	val += (p2.x-p1.x)*(p2.y+p1.y);
-	val += (p2.x-p1.x)*(p2.z+p1.z);
-	val += (p2.y-p1.y)*(p2.z+p1.z);
-      }
+    Point p1 = coll->FacePoint(face,0);
+    Point p2 = coll->FacePoint(face,1%s);
+    Point p3 = coll->FacePoint(face,2%s);
+
+    p1.z-=400.0;
+    p2.z-=400.0;
+    p3.z-=400.0;
+
+
+    float arr[] = { p1.x,p1.y,p1.z,
+		    p2.x,p2.y,p2.z,
+		    p3.x,p3.y,p3.z };
+    float val = det3(arr);
+
     return val>0.0;
   }
 private:
