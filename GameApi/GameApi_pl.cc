@@ -837,8 +837,8 @@ public:
       {
 	e.async_load_callback(dt->url, &MTL_CB, (void*)dt);
 	e.async_load_url(dt->url, homepage);
-	flags.push_back(1);
       }
+	flags.push_back(1);
 #ifndef EMSCRIPTEN
 	//Prepare2(dt->url,b_i);
 #endif
