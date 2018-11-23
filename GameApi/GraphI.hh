@@ -1346,6 +1346,7 @@ void SetWorld(WorldBlocks *w);
 class HeavyOperation
 {
 public:
+  virtual ~HeavyOperation() {}
   virtual bool RequestPrepares() const=0;
   virtual void TriggerPrepares()=0;
   virtual int NumPrepares() const=0;
