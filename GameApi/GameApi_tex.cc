@@ -37,7 +37,9 @@ EXPORT GameApi::VA GameApi::TextureApi::bind_many(GameApi::VA va, std::vector<Ga
   VertexArraySet *ns = new VertexArraySet(*s);
   int s1 = vec.size();
   for(int i=0;i<s1;i++) {
-    ns->texture_many_ids.push_back(vec[i].id);
+    TextureID *id = find_txid(e,vec[i]);
+    int txid = id->texture();
+    ns->texture_many_ids.push_back(txid);
   }
   RenderVertexArray *arr = new RenderVertexArray(g_low,*ns);
   arr->prepare(0);
@@ -421,6 +423,15 @@ EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
 
 GameApi::TXID GameApi::TextureApi::bufferref_to_txid(GameApi::TXID old, const BufferRef &buf)
 {
+      int sx = buf.width;
+      int sy = buf.height;
+      bool power_of_two = true;
+      if (!(sx==1 ||sx==2||sx==4||sx==8||sx==16||sx==32||sx==64||sx==128||sx==256||sx==512||sx==1024||sx==2048||sx==4096||sx==8192||sx==16384))
+	power_of_two = false;
+      if (!(sy==1 ||sy==2||sy==4||sy==8||sy==16||sy==32||sy==64||sy==128||sy==256||sy==512||sy==1024||sy==2048||sy==4096||sy==8192||sy==16384))
+	power_of_two = false;
+
+
   //std::cout << "bufferref_to_txid:" << buf.width << "x" << buf.height << ":" << buf.buffer << std::endl;
   Low_GLuint id;
   if (old.id==-1 || old.id==0)
@@ -435,8 +446,8 @@ GameApi::TXID GameApi::TextureApi::bufferref_to_txid(GameApi::TXID old, const Bu
   g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, buf.width,buf.height, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.buffer);
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_NEAREST);      
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_NEAREST);
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE);
   //g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
   
   GameApi::TXID id2;

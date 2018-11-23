@@ -4927,7 +4927,7 @@ void LoadObjModelFaceCollection::check_invalidate2()
 	    ss >> tx >> ty >> tz;
 	    Point2d p = { tx, ty };
 	    texcoord_data.push_back(p);
-	    texcoord3_data.push_back(0.0);
+	    texcoord3_data.push_back(0.0); // TODO, oli 0.0
 	  } else if (word=="vt") { tex_count2++; }
 	if (word == "vn" && obj_count==obj_num)
 	  {
@@ -5146,6 +5146,7 @@ void LoadObjModelFaceCollection::check_invalidate2()
 	    int s3 = material_names_external.size();
 	    for(int i3=0;i3<s3;i3++)
 	      {
+		//std::cout << "Compare: " << material_names_external[i3] << "==" << mat_name << std::endl;
 		if (material_names_external[i3]==mat_name) return float(i3)+0.5;
 	      }
 	    return i;

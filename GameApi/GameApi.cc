@@ -17391,7 +17391,7 @@ public:
   {
 #ifdef THREAD_HEAVY
     if (ready) { return op->get_data(type); }
-    return 0;
+    return op->get_data(type);
 #else
     return op->get_data(type);
 #endif
@@ -17476,14 +17476,14 @@ private:
 class PngHeavy : public HeavyOperation
 {
 public:
-  PngHeavy(GameApi::EveryApi &ev, HeavyOperation *data) : ev(ev), data(data) { res_ref=BufferRef::NewBuffer(1,1);
+  PngHeavy(GameApi::EveryApi &ev, HeavyOperation *data, std::string url) : ev(ev), data(data),url(url) { res_ref=BufferRef::NewBuffer(1,1);
     ref=BufferRef::NewBuffer(1,1);
     id.id=-1; }
   virtual bool RequestPrepares() const { return data->RequestPrepares(); }
   virtual void TriggerPrepares() { data->TriggerPrepares(); }
   virtual int NumPrepares() const { return 0; }
   virtual void Prepare(int prepare) { }
-  virtual int NumSlots() const { return data->NumSlots()+2; }
+  virtual int NumSlots() const { return data->NumSlots()+3; }
   virtual void Slot(int slot)
   {
     int s = data->NumSlots();
@@ -17534,11 +17534,12 @@ public:
 	  b<<=16;
 	  g<<=8;
 	  val=a+r+g+b;
-	  val|=0x000000ff;
+	  val|=0xff000000;
 	  ref.buffer[x+y*ref.ydelta]=val;
 	}
       }
       res_ref = ref;
+      std::cout << "URL: " << url << " finishes" << std::endl;
     }
   }
   virtual void FinishSlots()
@@ -17563,6 +17564,7 @@ private:
   BufferRef ref;
   BufferRef res_ref;
   GameApi::TXID id;
+  std::string url;
 };
 
 class BitmapHeavy : public HeavyOperation
@@ -17678,10 +17680,10 @@ GameApi::H GameApi::BitmapApi::bitmap_heavy(BM bm, H timing)
   HeavyOperation *op = find_heavy(e, timing);
   return add_heavy(e, new BitmapHeavy(b2,op));
 }
-GameApi::H GameApi::BitmapApi::png_heavy(EveryApi &ev, H net)
+GameApi::H GameApi::BitmapApi::png_heavy(EveryApi &ev, H net, std::string url)
 {
   HeavyOperation *op = find_heavy(e, net);
-  return add_heavy(e, new PngHeavy(ev,op));
+  return add_heavy(e, new PngHeavy(ev,op,url));
 }
 GameApi::H GameApi::BitmapApi::array_heavy(std::vector<H> vec)
 {
@@ -17868,7 +17870,7 @@ GameApi::TXID GameApi::BitmapApi::dyn_fetch_bitmap(EveryApi &ev, std::string url
 {
   H timing = timing_heavy(300000);
   H net = network_heavy(url, gameapi_homepageurl, timing);
-  H png = png_heavy(ev,net);
+  H png = png_heavy(ev,net,url);
   H thr = thread_heavy(png);
   TXID id = txid_from_heavy(thr);
   return id;
