@@ -786,7 +786,7 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
     return vec;
 }
 
-int g_use_texid_material=false;
+int g_use_texid_material=0;
 
 class NetworkedFaceCollectionMTL2 : public FaceCollection
 {
