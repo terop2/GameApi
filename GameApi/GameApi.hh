@@ -12,6 +12,7 @@
 
 
 
+class BufferRef;
 class MainLoopEnv;
 
 namespace GameApi
@@ -31,7 +32,7 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
-
+  struct H { int id; };
   struct FBU { int id; };
   struct FML { int id; };
   struct CG { int id; };
@@ -511,6 +512,7 @@ public:
 	IMPORT Q get_tex_coord(TX tx, int id);
 	Q get_tex_coord_1(TX tx, int id);
 	IMPORT TXID prepare(TX tx);
+  IMPORT TXID bufferref_to_txid(TXID old, const BufferRef &buf);
   IMPORT std::vector<TXID> prepare_many(EveryApi &ev, std::vector<BM> vec);
   IMPORT TXID prepare_cubemap(EveryApi &ev, BM right, BM left, BM top, BM bottom, BM back, BM front);
 	IMPORT void use(TXID tx, int i = 0);
@@ -522,7 +524,7 @@ public:
 	IMPORT VA bind_arr(VA va, TXA tx);
         IMPORT TXA prepare_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
         IMPORT BM to_bitmap(TXID id);
-  IMPORT ML forward_to_txid(ML mainloop, TXID id);
+  IMPORT ML forward_to_txid(VA va, ML mainloop, TXID id);
 private:
   TextureApi(const TextureApi&);
   void operator=(const TextureApi&);
@@ -649,6 +651,18 @@ public:
   IMPORT FB sin_fb(FB gradient);
   IMPORT FB plus_fb(FB f1, FB f2);
   IMPORT FB mul_fb(FB f, float mul);
+  IMPORT TXID txid_from_heavy(H heavy);
+  IMPORT H bitmap_prepare_heavy(EveryApi &ev, H bitmap_gen, int scanlines_per_slot);
+  IMPORT H network_heavy(std::string url, std::string homepageurl, H timing_heavy);
+  IMPORT H bitmap_heavy(BM bm, H timing);
+  IMPORT H png_heavy(EveryApi &ev, H data);
+  IMPORT H mtl_heavy(EveryApi &ev, H net, std::string url_prefix);
+  IMPORT H array_heavy(std::vector<H> vec);
+  IMPORT H thread_heavy(H threaded);
+  IMPORT H timing_heavy(int num_frames);
+  IMPORT TXID dyn_fetch_bitmap(EveryApi& ev, std::string url);
+  IMPORT std::vector<TXID> dyn_fetch_mtl(EveryApi &ev, std::string mtl_url, ML ml2);
+  IMPORT ML txidarray_from_heavy(EveryApi &ev, H heavy, std::vector<TXID> *vec, ML ml, int start_range, int end_range);
 private:
   BitmapApi(const BitmapApi&);
   void operator=(const BitmapApi&);
@@ -1270,6 +1284,7 @@ public:
   IMPORT MT texture(EveryApi &ev, BM bm, float mix);
   IMPORT MT textureid(EveryApi &ev, TXID txid, float mix);
   IMPORT MT texture_many(EveryApi&ev, std::vector<BM> vec, float mix);
+  IMPORT MT many_texture_id_material(EveryApi &ev, std::string mtl_url, std::string url_prefix, float mix, int start_range, int end_range);
   IMPORT MT texture_cubemap(EveryApi&ev, std::vector<BM> vec, float mix, float mix2);
   IMPORT MT texture_many2(EveryApi &ev, float mix);
   IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
@@ -1304,6 +1319,7 @@ public:
   IMPORT ML render_instanced_ml(EveryApi &ev, P p, PTS pts);
   IMPORT ML render_instanced_ml_fade(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time);
   IMPORT ML render_instanced_ml_texture(EveryApi &ev, P p, PTS pts, std::vector<BM> vec);
+  IMPORT ML render_instanced_ml_texture_id(EveryApi &ev, P p, PTS pts, std::vector<TXID> *vec);
   IMPORT ML render_instanced_ml_cubemap(EveryApi &ev, P p, PTS pts, std::vector<BM> vec);
   IMPORT ML render_instanced_ml_texture2(EveryApi &ev, P p, PTS pts);
   IMPORT ML render_instanced_ml_fade_texture(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time, std::vector<BM> vec);
@@ -2131,6 +2147,8 @@ public:
   P texture_add(P p, BM bm);
   P stl_load(std::string url);
   P fix_vertex_order(P p);
+  P filter_invisible(P p, float size);
+  std::vector<TXID> mtl_parse(EveryApi&ev, std::vector<unsigned char> mtlfilecontents, std::string url_prefix);
   
   CG curve_group_from_anim(MA ma, float start_time, float end_time);
   MA meshanim(std::vector<P> vec, float start_time, float end_time);
@@ -2413,6 +2431,7 @@ public:
   IMPORT ML render_vertex_array_ml(EveryApi &ev, VA va);
   IMPORT ML render_vertex_array_ml2(EveryApi &ev, P va);
   IMPORT ML render_vertex_array_ml2_texture(EveryApi &ev, P va, std::vector<BM> vec);
+  IMPORT ML render_vertex_array_ml2_texture_id(EveryApi &ev, P va, std::vector<TXID> *vec);
   IMPORT ML render_vertex_array_ml2_cubemap(EveryApi &ev, P va, std::vector<BM> vec);
   IMPORT ML render_vertex_array_ml2_texture2(EveryApi &ev, P p);
   IMPORT SBM texture_sbm();

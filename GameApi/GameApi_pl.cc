@@ -760,6 +760,33 @@ extern int async_pending_count;
 
 std::string convert_slashes(std::string s);
 
+std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vector<unsigned char> mtlfilecontents, std::string url_prefix)
+{
+  std::vector<unsigned char> *ptr2 = &mtlfilecontents;
+  static int num=0;
+  num++;
+  std::stringstream a_ss2;
+    a_ss2 << "p_mtl_id_file" << num << ".mtl";
+    std::string a_filename = a_ss2.str();
+    std::fstream a_ss(a_filename.c_str(), std::ios_base::binary |std::ios_base::out);
+    int a_s = ptr2->size();
+    for(int a_i=0;a_i<a_s;a_i++) a_ss.put(ptr2->operator[](a_i));
+    a_ss.close();
+
+    std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(a_filename);
+    int b_s = mat.size();
+    std::vector<TXID> vec;
+    for(int b_i=0;b_i<b_s;b_i++)
+      {
+	std::string s = mat[b_i].map_Ka;
+	if (s.size()==0) s=mat[b_i].map_Kd;
+	std::string url = convert_slashes(url_prefix+"/"+s);
+	vec.push_back(ev.bitmap_api.dyn_fetch_bitmap(ev,url));
+      }
+    return vec;
+}
+
+int g_use_texid_material=false;
 
 class NetworkedFaceCollectionMTL2 : public FaceCollection
 {
@@ -768,7 +795,7 @@ public:
   {
     current = empty;
     filled = 0;
-    e.async_load_callback(mtl_url, &MTL2_CB, (void*)this);
+      e.async_load_callback(mtl_url, &MTL2_CB, (void*)this);
 #ifdef EMSCRIPTEN
     async_pending_count++;
 #endif
@@ -806,9 +833,12 @@ public:
 	dt->url = convert_slashes(url_prefix+"/"+s);
 	buffer.push_back(ref);
 	//std::cout << "set_callback: " << dt->url << std::endl;
+    if (!g_use_texid_material)
+      {
 	e.async_load_callback(dt->url, &MTL_CB, (void*)dt);
 	e.async_load_url(dt->url, homepage);
 	flags.push_back(1);
+      }
 #ifndef EMSCRIPTEN
 	//Prepare2(dt->url,b_i);
 #endif
@@ -853,7 +883,7 @@ public:
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
     e.async_load_url(mtl_url, homepage);
-    PrepareMTL();
+      PrepareMTL();
 #endif
 
     std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
@@ -929,8 +959,8 @@ void MTL_CB(void *data)
 }
 void MTL2_CB(void *data)
 {
-  NetworkedFaceCollectionMTL2 *dt = (NetworkedFaceCollectionMTL2*)data;
-  dt->PrepareMTL();
+    NetworkedFaceCollectionMTL2 *dt = (NetworkedFaceCollectionMTL2*)data;
+    dt->PrepareMTL();
 }
 
 class NetworkedFaceCollectionDS : public FaceCollection
@@ -4358,6 +4388,163 @@ private:
   std::vector<GameApi::BM> bm;
 };
 
+class RenderPTex_id : public MainLoopItem
+{
+public:
+  RenderPTex_id(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::PolygonApi &api, GameApi::P p, std::vector<GameApi::TXID> *bm) : env(env), ev(ev), api(api), p(p), bm(bm)
+  {
+    shader.id = -1;
+    firsttime = true;
+  }
+  int shader_id() { return shader.id; }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void execute(MainLoopEnv &e)
+  { 
+    if (firsttime)
+      {
+	va = ev.polygon_api.create_vertex_array(p, true);
+	std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev, bm);
+	va = ev.texture_api.bind_many(va, id);
+      }
+    // dynamically change the texture ids.
+    VertexArraySet *s = find_vertex_array(env, va);
+    s->texture_many_ids = std::vector<int>();
+    int sk = bm->size();
+    for(int i=0;i<sk;i++)
+      {
+	GameApi::TXID id = bm->operator[](i);
+	TextureID *iid = find_txid(env,id);
+	int tex = iid->texture();
+	s->texture_many_ids.push_back(tex);
+      }
+
+    GameApi::SH sh;
+    if (ev.polygon_api.is_texture(va))
+      {
+	sh.id = e.sh_texture;
+	if (ev.polygon_api.is_array_texture(va))
+	  {
+	    sh.id = e.sh_array_texture;
+	  }
+      }
+    else
+      {
+	sh.id = e.sh_color;
+      }
+
+    GameApi::US u_v;
+    GameApi::US u_f;
+    u_v.id = 0;
+    u_f.id = 0;
+    if (e.us_vertex_shader!=-1)
+      u_v.id = e.us_vertex_shader;
+    if (e.us_fragment_shader!=-1)
+      u_f.id = e.us_fragment_shader;
+    if (firsttime)
+      {
+	if (u_v.id == 0)
+	  u_v = ev.uber_api.v_empty();
+	if (u_f.id == 0)
+	  u_f = ev.uber_api.f_empty(false);
+      }
+
+#if 1
+    if (ev.polygon_api.is_texture(va))
+      {
+	sh.id = e.sh_texture;
+	if (firsttime)
+	  {
+	    if (e.us_vertex_shader==-1)
+	      u_v = ev.uber_api.v_texture(u_v);
+	    if (e.us_fragment_shader==-1)
+	      u_f = ev.uber_api.f_texture(u_f);
+	  }
+	if (ev.polygon_api.is_array_texture(va))
+	  {
+	    sh.id = e.sh_array_texture;
+	      if (firsttime)
+	      {
+		if (e.us_vertex_shader==-1)
+		  u_v = ev.uber_api.v_texture_arr(u_v);
+		if (e.us_fragment_shader==-1)
+		  u_f = ev.uber_api.f_texture_arr(u_f);
+	      }
+	  }
+      }
+    else
+      {
+	sh.id = e.sh_color;
+	if (firsttime)
+	  {
+	    if (e.us_vertex_shader==-1)
+	      {
+		u_v = ev.uber_api.v_colour(u_v);
+		u_v = ev.uber_api.v_light(u_v);
+	      }
+	    if (e.us_fragment_shader==-1)
+	      {
+		u_f = ev.uber_api.f_colour(u_f);
+		u_f = ev.uber_api.f_light(u_f);
+	      }
+	  }
+      }
+#endif
+
+    if (shader.id==-1 && e.us_vertex_shader!=-1 && e.us_fragment_shader!=-1)
+      {
+	GameApi::US vertex;
+	GameApi::US fragment;
+	vertex.id = u_v.id; //e.us_vertex_shader;
+	fragment.id = u_f.id; //e.us_fragment_shader;
+	if (e.sfo_id==-1)
+	  {
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions);
+	  }
+	else
+	  {
+	    GameApi::SFO sfo;
+	    sfo.id = e.sfo_id;
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
+	  }
+	ev.mainloop_api.init_3d(shader);
+	ev.mainloop_api.alpha(true); 
+
+      }
+
+    if (shader.id!=-1)
+      {
+	//ev.shader_api.use(sh);
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.use(shader);
+	ev.shader_api.set_var(shader, "in_MV", m);
+	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+
+	ev.shader_api.set_var(shader, "in_T", m1);
+	ev.shader_api.set_var(shader, "in_N", m2);
+	ev.shader_api.set_var(shader, "time", e.time);
+
+	sh = shader;
+      }
+    if (firsttime) { firsttime = false; }
+    ev.shader_api.use(sh);
+    api.render_vertex_array(va);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::PolygonApi &api;
+  bool firsttime;
+  GameApi::VA va;
+  GameApi::P p;
+  GameApi::SH shader;
+  std::vector<GameApi::TXID> *bm;
+};
+
 
 class RenderPTexCubemap : public MainLoopItem
 {
@@ -6588,6 +6775,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2(EveryApi &ev, P 
  EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2_texture(EveryApi &ev, P p, std::vector<BM> bm)
  {
    return add_main_loop(e, new RenderPTex(e, ev, *this, p, bm));
+ }
+EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2_texture_id(EveryApi &ev, P p, std::vector<TXID> *bm)
+ {
+   return add_main_loop(e, new RenderPTex_id(e, ev, *this, p, bm));
  }
  EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2_cubemap(EveryApi &ev, P p, std::vector<BM> bm)
  {
@@ -10974,8 +11165,10 @@ public:
   virtual int SizeY() const { return ref.height; }
   virtual Color Map(int x, int y) const
   {
-    if (x<0||x>=ref.width) return Color(0);
-    if (y<0||y>=ref.height) return Color(0);
+    int w = ref.width;
+    int h = ref.height;
+    if (x<0||x>=w) return Color(0);
+    if (y<0||y>=h) return Color(0);
     unsigned int c = ref.buffer[x+y*ref.ydelta];
     return Color(c);
   }
@@ -11650,10 +11843,10 @@ public:
   virtual Point2d TexCoord(int face, int point) const { 
     Point2d p;
     Point pp = FacePoint(face,point);
-    pp.x-=-600.0;
-    pp.x/=600.0-(-600.0);
-    pp.y-=-600.0;
-    pp.y/=600.0-(-600.0);
+    pp.x-=-300.0;
+    pp.x/=300.0-(-300.0);
+    pp.y-=-300.0;
+    pp.y/=300.0-(-300.0);
     p.x=pp.x;
     p.y=pp.y;
     return p;
@@ -11670,7 +11863,8 @@ public:
     unsigned char c3 = m_ptr->operator[](index+2);
     unsigned char c4 = m_ptr->operator[](index+3);
     unsigned char arr[] = { c1,c2,c3,c4 };
-    int val = *(int*)arr;
+    int *ptr = (int*)arr;
+    int val = *ptr;
     return val;
   }
   float get_float(int index) const {
@@ -11683,7 +11877,8 @@ public:
     unsigned char c3 = m_ptr->operator[](index+2);
     unsigned char c4 = m_ptr->operator[](index+3);
     unsigned char arr[] = { c1,c2,c3,c4 };
-    float val = *(float*)arr;
+    float *ptr = (float*)arr;
+    float val = *ptr;
     return val;
   }
 private:
@@ -11754,4 +11949,62 @@ GameApi::P GameApi::PolygonApi::fix_vertex_order(GameApi::P p)
 {
   FaceCollection *coll = find_facecoll(e,p);
   return add_polygon2(e, new FixVertexOrder(coll),1);
+}
+
+class FilterInvisible : public ForwardFaceCollection
+{
+public:
+  FilterInvisible(FaceCollection *coll, float size) : ForwardFaceCollection(*coll), coll(coll), size(size) { }
+  void Prepare()
+  {
+    coll->Prepare();
+    indices = std::vector<int>();
+    int s = coll->NumFaces();
+    for(int i=0;i<s;i++)
+      {
+	float dist=0.0;
+	int k = coll->NumPoints(i);
+	for(int j=0;j<k;j++) { dist=std::max(dist,(coll->FacePoint(i,j)-coll->FacePoint(i,(j+1)%k)).Dist() ); }
+	if (dist>size) {
+	  indices.push_back(i);
+	}
+      }
+  }
+  virtual int NumFaces() const { return indices.size(); }
+  virtual int NumPoints(int face) const { return coll->NumPoints(indices[face]); }
+  virtual Point FacePoint(int face, int point) const
+  { return coll->FacePoint(indices[face],point); }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return coll->PointNormal(indices[face],point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return coll->Attrib(indices[face],point,id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return coll->AttribI(indices[face],point,id);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return coll->Color(indices[face],point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return coll->TexCoord(indices[face],point);
+  }
+  virtual float TexCoord3(int face, int point) const {
+    return coll->TexCoord3(indices[face],point);
+  }
+private:
+  FaceCollection *coll;
+  std::vector<int> indices;
+  float size;
+};
+
+GameApi::P GameApi::PolygonApi::filter_invisible(GameApi::P p, float size)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new FilterInvisible(coll,size),1);
 }

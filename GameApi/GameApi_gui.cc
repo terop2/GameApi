@@ -4640,7 +4640,8 @@ void onload_cb(unsigned int tmp, void *arg, void *data, unsigned int datasize)
 {
     std::vector<unsigned char> buffer;
     unsigned char *dataptr = (unsigned char*)data;
-    for(int i=0;i<datasize;i++) { buffer.push_back(dataptr[i]); }
+    int dt = datasize;
+    for(int i=0;i<dt;i++) { buffer.push_back(dataptr[i]); }
 
     char *url = (char*)arg;
     std::string url_str(url);
@@ -6613,6 +6614,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "float" },
 			 { "ev", "0.5" },
 			 "MT", "materials_api", "texture_many2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::many_texture_id_material,
+			 "m_mtl_many",
+			 { "ev", "mtl_url", "url_prefix", "mix", "start_range", "end_range" },
+			 { "EveryApi&", "std::string", "std::string", "float", "int", "int" },
+			 { "ev", "http://tpgames.org/sponza/sponza.mtl", "http://tpgames.org/sponza", "1", "0", "15" },
+			 "MT", "materials_api", "many_texture_id_material"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_cubemap,
 			 "m_texture_cubemap",
 			 { "ev", "vec", "mix", "mix2" },
@@ -7805,7 +7812,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "P" },
 			 { "" },
 			 "P", "polygon_api", "fix_vertex_order"));
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::filter_invisible,
+			 "filter_invisible",
+			 { "p", "size" },
+			 { "P", "float" },
+			 { "", "1.0" },
+			 "P", "polygon_api", "filter_invisible"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::repeat_xy_p,
 			 "p_repeat_xy",
 			 { "ev", "p", "start_x", "start_y", "dx", "dy", "sx", "sy" },
@@ -9395,6 +9407,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "http://tpgames.org/gameapi_logo.png" },
 			 "BM", "bitmap_api", "loadbitmapfromurl"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::dyn_fetch_bitmap,
+			 "bm_fetch",
+			 { "ev", "url" },
+			 { "EveryApi&", "std::string" },
+			 { "ev", "http://tpgames.org/test.png" },
+			 "TXID", "bitmap_api", "dyn_fetch_bitmap"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::sprite_atlas_x,
 			 "bm_atlas_x",
 			 { "ev", "orig", "start_x", "end_x", "start_y", "end_y", "delta_x", "count" },

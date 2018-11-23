@@ -7,6 +7,7 @@
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
 #ifndef EMSCRIPTEN
+#define THREAD_HEAVY 1
 #ifndef ARM
 #define THREADS 1
 #endif
@@ -630,6 +631,7 @@ struct EnvImpl
   std::vector<MeshAnim*> mesh_anim;
   std::vector<FrameBufferLoop*> frame_loop;
   std::vector<FrameBuffer*> frame_buffer;
+  std::vector<HeavyOperation*> heavys;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -939,6 +941,7 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::H add_heavy(GameApi::Env &e, HeavyOperation *h);
 GameApi::FBU add_framebuffer(GameApi::Env &e, FrameBuffer *buf);
 GameApi::FML add_framemainloop(GameApi::Env &e, FrameBufferLoop *loop);
 GameApi::MA add_mesh_anim(GameApi::Env &e, MeshAnim *ma);
@@ -1073,6 +1076,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+HeavyOperation *find_heavy(GameApi::Env &e, GameApi::H h);
 FrameBuffer *find_framebuffer(GameApi::Env &e, GameApi::FBU fb);
 FrameBufferLoop *find_framemainloop(GameApi::Env &e, GameApi::FML fb);
 MeshAnim *find_mesh_anim(GameApi::Env &e, GameApi::MA ma);
