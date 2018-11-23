@@ -1343,4 +1343,24 @@ public:
 WorldBlocks *GetWorld();
 void SetWorld(WorldBlocks *w);
 
+class HeavyOperation
+{
+public:
+  virtual bool RequestPrepares() const=0;
+  virtual void TriggerPrepares()=0;
+  virtual int NumPrepares() const=0;
+  virtual void Prepare(int prepare)=0;
+  virtual int NumSlots() const=0;
+  virtual void Slot(int slot);
+  virtual void FinishSlots()=0;
+  virtual void* get_data(std::string type)=0;
+  virtual void set_usage_index(int slot)=0;
+  //virtual bool IsReadyForTriggerFrames() const=0;
+  //virtual void TriggerFrames()=0;
+  //virtual void handle_event(MainLoopEvent &e)=0;
+  //virtual void draw_event(FrameLoopEvent &e)=0;
+  //virtual void frame(MainLoopEnv &e)=0;
+  //virtual void draw_frame(DrawLoopEnv &e)=0;
+};
+
 #endif

@@ -1381,6 +1381,12 @@ private:
   int id;
 };
 
+HeavyOperation *find_heavy(GameApi::Env &e, GameApi::H h)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->heavys[h.id];
+}
+
 FrameBuffer *find_framebuffer(GameApi::Env &e, GameApi::FBU fb)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1780,6 +1786,16 @@ NDim<float,Point> *find_dim(GameApi::Env &e, GameApi::MV mv)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->dims[mv.id];
+}
+
+GameApi::H add_heavy(GameApi::Env &e, HeavyOperation *h)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->heavys.push_back(h);
+  GameApi::H c;
+  c.id = env->heavys.size()-1;
+  return c;
+
 }
 
 GameApi::MA add_mesh_anim(GameApi::Env &e, MeshAnim *ma)
@@ -5248,10 +5264,11 @@ private:
 class ForwardRenderToTextureId : public MainLoopItem
 {
 public:
-  ForwardRenderToTextureId(MainLoopItem *next, TextureID *id) : next(next), id(id) { }
+  ForwardRenderToTextureId(VertexArraySet *s, MainLoopItem *next, TextureID *id) : s(s), next(next), id(id) { }
   virtual void execute(MainLoopEnv &e)
   {
     id->render(e);
+    s->texture_id = SPECIAL_TEX_ID+id->texture();
     next->execute(e);
   }
   virtual void handle_event(MainLoopEvent &e)
@@ -5262,14 +5279,16 @@ public:
   virtual int shader_id() { return next->shader_id(); }
 
 private:
+  VertexArraySet *s;
   MainLoopItem *next;
   TextureID *id;
 };
-GameApi::ML GameApi::TextureApi::forward_to_txid(ML mainloop, TXID id)
+GameApi::ML GameApi::TextureApi::forward_to_txid(VA va, ML mainloop, TXID id)
 {
+  VertexArraySet *s = find_vertex_array(e, va);
   MainLoopItem *next = find_main_loop(e, mainloop);
   TextureID *txid = find_txid(e, id);
-  return add_main_loop(e, new ForwardRenderToTextureId(next, txid));
+  return add_main_loop(e, new ForwardRenderToTextureId(s,next, txid));
 }
 
 class TextureIDMaterial : public MaterialForward
@@ -5288,7 +5307,7 @@ public:
     GameApi::TXID I15 = txid;
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml(ev,I16);
-    GameApi::ML I17a = ev.texture_api.forward_to_txid(I17,I15);
+    GameApi::ML I17a = ev.texture_api.forward_to_txid(I16,I17,I15);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a, mix);
     return I18;
   }
@@ -5304,7 +5323,7 @@ public:
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
-    GameApi::ML I17a = ev.texture_api.forward_to_txid(I17,I15);
+    GameApi::ML I17a = ev.texture_api.forward_to_txid(I16,I17,I15);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a,mix);
     return I18;
   }
@@ -5320,7 +5339,7 @@ public:
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
-    GameApi::ML I17a = ev.texture_api.forward_to_txid(I17,I15);
+    GameApi::ML I17a = ev.texture_api.forward_to_txid(I16,I17,I15);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a,mix);
     return I18;
   }
@@ -5336,7 +5355,7 @@ public:
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml_fade(ev,I16,pta, flip, start_time, end_time);
-    GameApi::ML I17a = ev.texture_api.forward_to_txid(I17,I15);
+    GameApi::ML I17a = ev.texture_api.forward_to_txid(I16,I17,I15);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a,mix);
     return I18;
   }
@@ -5967,6 +5986,9 @@ public:
     GameApi::ML sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
     return sh;
 #endif
+    GameApi::ML ml;
+    ml.id=-1;
+    return ml;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
@@ -5979,6 +6001,9 @@ public:
     GameApi::ML sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
     return sh;
 #endif
+    GameApi::ML ml;
+    ml.id=-1;
+    return ml;
   }
 
 private:
@@ -6989,6 +7014,187 @@ private:
 };
 
 
+class RenderInstancedTex_id : public MainLoopItem
+{
+public:
+  RenderInstancedTex_id(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::TXID> *bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; }
+  int shader_id() { return shader.id; }
+  void handle_event(MainLoopEvent &e)
+  {
+    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    obj2->HandleEvent(e);
+  }
+  void execute(MainLoopEnv &e)
+  {
+    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    bool changed = obj2->Update(e);
+    // MainLoopEnv ee = e;
+    if (firsttime)
+      {
+	pta = ev.points_api.prepare(pts);
+	va = ev.polygon_api.create_vertex_array(p,true);
+	std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev,bm);
+	va = ev.texture_api.bind_many(va, id);
+      }
+    if (changed)
+      {
+	ev.points_api.update_from_data(pta, pts);
+      }
+    // dynamically change textures
+    VertexArraySet *s = find_vertex_array(env, va);
+    s->texture_many_ids = std::vector<int>();
+    int sk = bm->size();
+    for(int i=0;i<sk;i++)
+      {
+	GameApi::TXID id = bm->operator[](i);
+	TextureID *iid = find_txid(env,id);
+	int tex = iid->texture();
+
+	s->texture_many_ids.push_back(tex);
+      }
+    
+    GameApi::SH sh;
+    GameApi::US u_v;
+    GameApi::US u_f;
+    u_v.id = 0;
+    u_f.id = 0;
+    if (e.us_vertex_shader!=-1)
+      u_v.id = e.us_vertex_shader;
+    if (e.us_fragment_shader!=-1)
+      u_f.id = e.us_fragment_shader;
+    if (firsttime)
+      {
+	if (u_v.id == 0)
+	  u_v = ev.uber_api.v_empty();
+	if (u_f.id == 0)
+	  u_f = ev.uber_api.f_empty(true);
+      }
+#if 1
+    if (ev.polygon_api.is_texture(va))
+      {
+	sh.id = e.sh_texture;
+	if (firsttime)
+	  {
+	    if (e.us_vertex_shader==-1)
+	      u_v = ev.uber_api.v_texture(u_v);
+	    if (e.us_fragment_shader==-1)
+	      u_f = ev.uber_api.f_texture(u_f);
+	  }
+	if (ev.polygon_api.is_array_texture(va))
+	  {
+	    sh.id = e.sh_array_texture;
+	      if (firsttime)
+	      {
+		if (e.us_vertex_shader==-1)
+		  u_v = ev.uber_api.v_texture_arr(u_v);
+		if (e.us_fragment_shader==-1)
+		  u_f = ev.uber_api.f_texture_arr(u_f);
+	      }
+	  }
+      }
+    else
+      {
+	sh.id = e.sh_color;
+	if (firsttime)
+	  {
+	    if (e.us_vertex_shader==-1)
+	      {
+		u_v = ev.uber_api.v_colour(u_v);
+		u_v = ev.uber_api.v_light(u_v);
+	      }
+	    if (e.us_fragment_shader==-1)
+	      {
+		u_f = ev.uber_api.f_colour(u_f);
+		u_f = ev.uber_api.f_light(u_f);
+	      }
+	  }
+      }
+#endif
+    //std::cout << "RenderInstanced::Execute" << std::endl;
+    if (shader.id==-1)
+      {
+	//std::cout << "RenderInstanced::SHADER" << std::endl;
+	GameApi::US vertex;
+	GameApi::US fragment;
+	vertex.id = u_v.id; 
+	fragment.id = u_f.id; 
+	GameApi::US vertex2 = ev.uber_api.v_inst(vertex);
+	//GameApi::US fragment2 = ev.uber_api.f_inst(fragment);
+	if (e.sfo_id==-1)
+	  shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions);
+	else
+	  {
+	    GameApi::SFO sfo;
+	    sfo.id = e.sfo_id;
+	    shader=ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
+	  }
+	ev.mainloop_api.init_3d(shader);
+	ev.mainloop_api.alpha(true); 
+
+      }
+
+    if (shader.id!=-1)
+      {
+	//std::cout << "RenderInstanced::USESHADER" << std::endl;
+	ev.shader_api.use(sh);
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.use(shader);
+	ev.shader_api.set_var(shader, "in_MV", m);
+	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+	ev.shader_api.set_var(shader, "in_T", m1);
+	ev.shader_api.set_var(shader, "in_N", m2);
+
+	sh = shader;
+      }
+    ev.shader_api.use(sh);
+    if (firsttime || changed) {
+      firsttime = false;
+      //std::cout << "RenderInstanced::PREPARE" << std::endl;
+      ev.polygon_api.prepare_vertex_array_instanced(ev.shader_api, va, pta, sh);
+    }
+
+    ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+
+    int hide_n = -1;
+    if (fade)
+      {
+	int start_n = ev.points_api.NumPoints(pts);
+	int end_n = 0;
+	if (flip) { std::swap(start_n, end_n); } 
+
+	float time = e.time*10.0;
+	if (time < start_time) { hide_n = start_n; }
+	else if (time > end_time) { hide_n = end_n; }
+	else {
+	  float d = time - start_time;
+	  d/=end_time-start_time;
+	  d*=float(end_n-start_n);
+	  d+=float(start_n);
+	  hide_n = (int)d;
+	}
+      }
+
+    
+    ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::P p;
+  GameApi::PTS pts;
+  bool firsttime;
+  GameApi::VA va;
+  GameApi::PTA pta;
+  GameApi::SH shader;
+  bool fade, flip;
+  float start_time, end_time;
+  std::vector<GameApi::TXID> *bm;
+};
+
+
 class RenderInstancedCubemap : public MainLoopItem
 {
 public:
@@ -7503,6 +7709,10 @@ EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml(GameApi::EveryApi 
 EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_texture(GameApi::EveryApi &ev, P p, PTS pts, std::vector<BM> bm)
 {
   return add_main_loop(e, new RenderInstancedTex(e, ev, p,pts, false,false,0.0,0.0,bm));
+}
+EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_texture_id(GameApi::EveryApi &ev, P p, PTS pts, std::vector<TXID> *bm)
+{
+  return add_main_loop(e, new RenderInstancedTex_id(e, ev, p,pts, false,false,0.0,0.0,bm));
 }
 EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_cubemap(GameApi::EveryApi &ev, P p, PTS pts, std::vector<BM> bm)
 {
@@ -15210,7 +15420,7 @@ struct ST_type {
 };
 std::string cut_spaces(std::string s)
 {
-  int len = 0;
+  //int len = 0;
   int ss = s.size();
   int i=0;
   for(;i<ss;i++) { if (s[i]!=' '&&s[i]!='\n'&&s[i]!='\r') break; }
@@ -15616,9 +15826,12 @@ public:
 	    if (s2==flag) { pos=i; }
 	  }
       }
-    if (pos<0 || pos>=m_x_speed.size()) return;
-    if (pos<0 || pos>=m_y_speed.size()) return;
-    if (pos<0 || pos>=m_z_speed.size()) return;
+    int sxa = m_x_speed.size();
+    int sya = m_y_speed.size();
+    int sza = m_z_speed.size();
+    if (pos<0 || pos>=sxa) return;
+    if (pos<0 || pos>=sya) return;
+    if (pos<0 || pos>=sza) return;
     std::string sx = m_x_speed[pos];
     std::string sy = m_y_speed[pos];
     std::string sz = m_z_speed[pos];
@@ -15769,20 +15982,23 @@ public:
   virtual int Size() const { return mappings.size(); }
   virtual int SizeX(int i) const {
     int num = mappings[i].num;
-    if (num>=0 && num<vec.size())
+    int s = vec.size();
+    if (num>=0 && num<s)
       return vec[num]->SizeX();
     return 2;
   }
   
   virtual int SizeY(int i) const {
     int num = mappings[i].num;
-    if (num>=0 && num<vec.size())
+    int s = vec.size();
+    if (num>=0 && num<s)
       return vec[num]->SizeY();
     return 2;
   }
   virtual Color Map(int i, int x, int y) const {
     int num = mappings[i].num;
-    if (num>=0 && num<vec.size())
+    int s = vec.size();
+    if (num>=0 && num<s)
       return vec[num]->Map(x,y);
     return Color(0xffffffff);
   }
@@ -15923,13 +16139,13 @@ public:
 
 
   // Position of the blocks in 3d space
-  virtual Point GetTL3d() const { }
-  virtual Point GetBR3d() const { }
+  virtual Point GetTL3d() const { Point p; return p;  }
+  virtual Point GetBR3d() const { Point p; return p; }
   virtual void SetExtends3d(Point tl, Point tr, Point bl, Point br) { }
   virtual void SetMV3d(Matrix m) { }
-  virtual std::pair<int,int> BlockPosition3d(Point ray_start, Point ray_end) const { }
-  virtual std::pair<int,int> CellPosition3d(Point ray_start, Point ray_end) const { }
-  virtual std::pair<float,float> CellPositionF3d(Point ray_start, Point ray_end) const {}
+  virtual std::pair<int,int> BlockPosition3d(Point ray_start, Point ray_end) const { return std::make_pair(0,0); }
+  virtual std::pair<int,int> CellPosition3d(Point ray_start, Point ray_end) const { return std::make_pair(0,0); }
+  virtual std::pair<float,float> CellPositionF3d(Point ray_start, Point ray_end) const { return std::make_pair(0.0,0.0); }
 
   // Reallocating space
   virtual void ReserveSize(int n_sx, int n_sy)
@@ -16898,4 +17114,851 @@ GameApi::FML GameApi::LowFrameBufferApi::low_activate_snapshot(EveryApi &ev, FML
   FML I50=ev.low_frame_api.low_sprite_draw("s_tmp1",I47,move,0,0,1,0.0);
   FML I51=ev.low_frame_api.low_key_bm_prepare(I50, I47, key, ml,duration,next);
   return I51;
+}
+
+void nh_cb(void *obj);
+
+class NetworkHeavy : public HeavyOperation
+{
+public:
+  NetworkHeavy(GameApi::Env &e, std::string url, std::string homepageurl, HeavyOperation *timing) : e(e), url(url), homepage(homepageurl), timing(timing) { publish_ptr=0;
+    ptr = 0;
+    current_slot_num = 0;
+    std::cout << "NetworkHeavy:" << url << std::endl;
+  }
+  virtual bool RequestPrepares() const { return timing->RequestPrepares(); }
+  virtual void TriggerPrepares()
+  {
+    timing->TriggerPrepares();
+    ptr = 0;
+    current_slot_num = 0;
+  }
+  virtual int NumPrepares() const
+  {
+    return 0;
+  }
+  virtual void Prepare(int prepare)
+  {
+  }
+  virtual int NumSlots() const
+  {
+    return timing->NumSlots()+current_slot_num+1;
+  }
+  virtual void Slot(int slot)
+  {
+    int s = timing->NumSlots();
+    if (slot<s) { timing->Slot(slot); return; }
+    slot-=s;
+    std::cout << "NetworkHeavy: #" << slot << std::endl;
+    if (slot==0) {
+      // TODO, how to prevent async_pending_count to show logo
+      // start async network access
+#ifdef EMSCRIPTEN
+      e.async_load_callback(url, &nh_cb, this);
+
+      e.async_load_url(url, homepage);
+#endif
+#ifndef EMSCRIPTEN
+      Callback();
+#endif
+      
+    }
+#ifdef EMSCRIPTEN
+    if (!ptr)
+      current_slot_num++;
+#endif
+  }
+  virtual void FinishSlots()
+  {
+    timing->FinishSlots();
+  }
+
+  void Callback() {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    ptr = e.get_loaded_async_url(url);
+    publish_ptr = ptr;
+    if (!ptr) {std::cout << "Network heavy callback received 0" << std::endl; }
+  }
+
+  virtual void* get_data(std::string type)
+  {
+    if (type=="std::vector<unsigned char>" && publish_ptr) { return publish_ptr; }
+    return 0;
+  }
+  virtual void set_usage_index(int slot)
+  {
+  }
+private:
+  GameApi::Env &e;
+  std::string url;
+  std::string homepage;
+  HeavyOperation *timing;
+  int current_slot_num;
+  std::vector<unsigned char> *ptr;
+  std::vector<unsigned char> *publish_ptr;
+};
+
+void nh_cb(void *obj)
+{
+  NetworkHeavy *h = (NetworkHeavy*)obj;
+  h->Callback();
+}
+
+class BitmapPrepareHeavy : public HeavyOperation
+{
+public:
+  BitmapPrepareHeavy(GameApi::EveryApi &ev, HeavyOperation *bitmap_gen, int scanlines_per_slot) : ev(ev), bitmap_gen(bitmap_gen), scanlines(scanlines_per_slot) { ref=BufferRef::NewBuffer(1,1); bm=0; id.id=-1; }
+  void AllocMem() {
+    if (bm) {
+      BufferRef::FreeBuffer(ref);
+      ref = BufferRef::NewBuffer(bm->SizeX(),bm->SizeY());
+    }
+  }
+  virtual bool RequestPrepares() const { return bitmap_gen->RequestPrepares(); }
+  virtual void TriggerPrepares() {
+    bitmap_gen->TriggerPrepares();
+  }
+  virtual int NumPrepares() const
+  {
+    if (bm) 
+      return bm->SizeY();
+    return 0;
+  }
+  virtual void Prepare(int prepare)
+  {
+    if (bm) {
+      int s = bm->SizeX();
+      for(int i=0;i<s;i++)
+	{
+	  ref.buffer[i+ref.ydelta*prepare] = bm->Map(i,prepare).Pixel();
+	}
+    }
+  }
+  virtual int NumSlots() const {
+    return bitmap_gen->NumSlots()+NumPrepares()/scanlines;
+  }
+  virtual void Slot(int slot)
+  {
+    int s = bitmap_gen->NumSlots();
+    if (slot<s) return bitmap_gen->Slot(slot);
+    bm=(Bitmap<Color>*)bitmap_gen->get_data("Bitmap<Color>");
+    if (!bm) { std::cout << "BitmapPrepareHeavyOperation cannot find Bitmap<Color>::0" << std::endl; return; }
+    AllocMem();
+    slot-=s;
+    std::cout << "BitmapPrepareHeavy: #" << slot << std::endl;
+    int start_scanline = slot*scanlines;
+    int end_scanline = (slot+1)*scanlines-1;
+    if (range_start>start_scanline) { range_start = start_scanline; }
+    if (range_end<end_scanline) { range_end = end_scanline; }
+    int ss = end_scanline-start_scanline;
+    for(int i=0;i<ss;i++)
+      {
+	Prepare(start_scanline+i);
+      }
+  }
+
+  virtual void FinishSlots() { bitmap_gen->FinishSlots(); }
+  /*
+  virtual bool IsReadyForTriggerFrames() const
+  {
+    if (range_start==100000) return false;
+    if (range_end==-1) return false;
+    if (bm && range_end<bm.SizeY()) return false;
+    if (bm && range_start>0) return false;
+    return true;
+  }
+  virtual void TriggerFrames()
+  {
+    bitmap_gen->TriggerFrames();
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    bitmap_gen->handle_event(e);
+  }
+  virtual void draw_event(FrameLoopEvent &e)
+  {
+    bitmap_gen->draw_event(e);
+  }
+  virtual void frame(MainLoopEnv &e)
+  {
+    bitmap_gen->frame(e);
+  }
+  virtual void draw_frame(DrawLoopEnv &e)
+  {
+    bitmap_gen->draw_frame(e);
+  }
+  */
+  virtual void* get_data(std::string type)
+  {
+    if (type=="BufferRef") { return &ref; }
+    if (type=="TXID") {
+      // note, this call requires opengl.
+      id = ev.texture_api.bufferref_to_txid(id,ref);
+      return &id;
+    }
+    return 0;
+    //return bitmap_gen->get_data(type);
+  }
+  void set_usage_index(int slot) { }
+private:
+  GameApi::EveryApi &ev;
+  HeavyOperation *bitmap_gen;
+  Bitmap<Color> *bm;
+  BufferRef ref;
+  int scanlines;
+  int range_start = 100000;
+  int range_end = -1;
+  GameApi::TXID id;
+};
+
+
+#if 1
+class ThreadHeavy;
+void *thread_heavy_main(void* ptr);
+
+#ifdef THREAD_HEAVY
+//#include <thread>
+#endif
+
+
+class ThreadHeavy : public HeavyOperation
+{
+public:
+  ThreadHeavy(HeavyOperation *op) : op(op) { current_slot_num=0; ready=false; }
+  virtual bool RequestPrepares() const { return op->RequestPrepares(); }
+  virtual void TriggerPrepares() {
+#ifdef THREAD_HEAVY
+    ready=false;
+    current_slot_num=0;
+#endif
+  }
+  virtual int NumPrepares() const { return 0; }
+  virtual void Prepare(int prepare) { }
+  virtual int NumSlots() const {
+#ifdef THREAD_HEAVY
+    return current_slot_num+1;
+#else
+    return op->NumSlots();
+#endif
+  }
+  virtual void Slot(int slot)
+  {
+    std::cout << "Thread heavy slot:" << slot << std::endl;
+#ifdef THREAD_HEAVY
+    if (slot==0) {
+      //Callback();
+      //g_thread_heavy_ptr = this;
+#if 1
+      pthread_attr_t attr;
+    pthread_t thread_id;
+    
+    pthread_attr_init(&attr);
+    pthread_attr_setstacksize(&attr, 30000);
+    std::cout << "phread_create" << std::endl;
+    int val = pthread_create(&thread_id, &attr, &thread_heavy_main, (void*)this);
+    std::cout << "pthread_create_return: " << val << std::endl;
+    pthread_attr_destroy(&attr);
+#endif
+    //new std::thread(&thread_heavy_main);
+    }
+    if (!ready)
+      current_slot_num++;
+#else
+    op->Slot(slot);
+#endif
+  }
+  virtual void FinishSlots()
+  {
+    op->FinishSlots();
+  }
+  void Callback()
+  {
+    op->TriggerPrepares();
+    int s = op->NumSlots();
+    std::cout << "Callback num: " << s << std::endl;
+    for(int i=0;i<s;i++)
+      {
+	std::cout << "Callback slot: "<< i << "/" << s << std::endl;
+	op->Slot(i);
+	s = op->NumSlots();
+	std::cout << "newCallback num: " << s << std::endl;
+      }
+    ready=true;
+  }
+  virtual void* get_data(std::string type)
+  {
+#ifdef THREAD_HEAVY
+    if (ready) { return op->get_data(type); }
+    return 0;
+#else
+    return op->get_data(type);
+#endif
+  }
+  void set_usage_index(int slot) { }
+  
+private:
+  HeavyOperation *op;
+  int current_slot_num;
+  bool ready;
+};
+
+void* thread_heavy_main(void *ptr2)
+{
+  ThreadHeavy *ptr = (ThreadHeavy*)ptr2;
+  ptr->Callback();
+  return 0;
+}
+#endif
+
+class ArrayHeavy : public HeavyOperation
+{
+public:
+  ArrayHeavy(std::vector<HeavyOperation*> vec) : vec(vec) { }
+  virtual bool RequestPrepares() const { return vec[0]->RequestPrepares(); }
+  virtual void TriggerPrepares() {
+    vec[0]->TriggerPrepares();
+    current_i = -1;
+  }
+  virtual int NumPrepares() const
+  {
+    return 0;
+  }
+  virtual void Prepare(int prepare)
+  {
+  }
+  virtual int NumSlots() const {
+    int s = vec.size();
+    int count = 0;
+    for(int i=0;i<s;i++) count+=vec[i]->NumSlots();
+    return count;
+  }
+  virtual void Slot(int slot)
+  {
+    int s = vec.size();
+    int count = 0;
+    for(int i=0;i<s;i++)
+      {
+	int oldcount = count;
+	int s = vec[i]->NumSlots();
+	if (slot>=count && slot<count+s) { current_i = i; vec[i]->Slot(slot-oldcount); return; }
+	count+=s;
+      }
+    current_i = s;
+    current_slot = slot;
+  }
+  virtual void FinishSlots()
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->FinishSlots();
+  }
+  virtual void* get_data(std::string type)
+  {
+    if (type=="std::vector") {
+      res_vec=std::vector<void*>();
+      int s = current_i;
+      for(int i=0;i<s;i++) {
+	res_vec.push_back(vec[i]->get_data(type));
+      }
+      return &res_vec;
+    }
+    return 0;
+  }
+  void set_usage_index(int slot) { }
+private:
+  std::vector<HeavyOperation*> vec;
+  std::vector<void*> res_vec;
+  int current_slot;
+  int current_i;
+};
+
+class PngHeavy : public HeavyOperation
+{
+public:
+  PngHeavy(GameApi::EveryApi &ev, HeavyOperation *data) : ev(ev), data(data) { res_ref=BufferRef::NewBuffer(1,1);
+    ref=BufferRef::NewBuffer(1,1);
+    id.id=-1; }
+  virtual bool RequestPrepares() const { return data->RequestPrepares(); }
+  virtual void TriggerPrepares() { data->TriggerPrepares(); }
+  virtual int NumPrepares() const { return 0; }
+  virtual void Prepare(int prepare) { }
+  virtual int NumSlots() const { return data->NumSlots()+2; }
+  virtual void Slot(int slot)
+  {
+    int s = data->NumSlots();
+    if (slot<s) { data->Slot(slot); return; }
+    slot-=s;
+    std::cout << "PngHeavy: #" << slot << std::endl;
+    if (slot==0) {
+      // TODO, this slot might be too slow for frame loop
+      void *dt = data->get_data("std::vector<unsigned char>");
+      if (!dt) { std::cout << "PngHeavy got null pointer" << std::endl; return; }
+      std::vector<unsigned char> *ptr = (std::vector<unsigned char>*)dt;      
+      bool success=false;
+      BufferRef::FreeBuffer(ref);
+      ref = LoadImageFromString(*ptr,success);
+      if (success) { }
+      else std::cout << "PngHeavy failed to parse png!" << std::endl;
+    }
+    if (slot==1) {
+      // flip texture in y-direction
+      int sx = ref.width;
+      int sy = ref.height;
+      for(int y=0;y<sy/2;y++)
+	for(int x=0;x<sx;x++)
+	  {
+	    std::swap(ref.buffer[x+y*ref.ydelta],ref.buffer[x+(sy-y-1)*ref.ydelta]);
+	  }
+
+      res_ref = ref;
+    }
+    if (slot==2) {
+      // argb -> rgba conversion (not used)
+      int sx = ref.width;
+      int sy = ref.height;
+      for(int y=0;y<sy;y++) {
+	//std::cout << std::endl;
+	for(int x=0;x<sx;x++) {
+	  unsigned int val = ref.buffer[x+y*ref.ydelta];
+	  //std::cout <<" "<< std::hex << val;
+	  unsigned int a = val&0xff000000;
+	  unsigned int r = val&0x00ff0000;
+	  unsigned int g = val&0x0000ff00;
+	  unsigned int b = val&0x000000ff;
+	  a>>=24;
+	  r>>=16;
+	  g>>=8;
+	  
+	  a<<=24;
+	  b<<=16;
+	  g<<=8;
+	  val=a+r+g+b;
+	  val|=0x000000ff;
+	  ref.buffer[x+y*ref.ydelta]=val;
+	}
+      }
+      res_ref = ref;
+    }
+  }
+  virtual void FinishSlots()
+  {
+    data->FinishSlots();
+  }
+  virtual void* get_data(std::string type)
+  {
+    if (type=="BufferRef") return &res_ref;
+    if (type=="TXID") {
+      // note, this call requires opengl.
+      id = ev.texture_api.bufferref_to_txid(id,res_ref);
+      return &id;
+    }
+
+    return 0;
+  }
+  void set_usage_index(int slot) { }
+private:
+  GameApi::EveryApi &ev;
+  HeavyOperation *data;
+  BufferRef ref;
+  BufferRef res_ref;
+  GameApi::TXID id;
+};
+
+class BitmapHeavy : public HeavyOperation
+{
+public:
+  BitmapHeavy(Bitmap<Color> *bm, HeavyOperation *timing) : bm(bm),timing(timing) { }
+  virtual bool RequestPrepares() const { return timing->RequestPrepares(); }
+  virtual void TriggerPrepares() { timing->TriggerPrepares(); }
+  virtual int NumPrepares() const { return 0; }
+  virtual void Prepare(int prepare) { }
+  virtual int NumSlots() const { return 0; }
+  virtual void Slot(int slot) { }
+  virtual void FinishSlots()
+  {
+    timing->FinishSlots();
+  }
+  virtual void* get_data(std::string type)
+  {
+    if (type=="Bitmap<Color>") return bm;
+    return 0;
+  }
+  virtual void set_usage_index(int slot)
+  {
+  }
+
+private:
+  Bitmap<Color> *bm;
+  HeavyOperation *timing;
+};
+class TimingHeavy : public HeavyOperation
+{
+public:
+  TimingHeavy(int numframes) : numframes(numframes) { current_frame=0; }
+  virtual bool RequestPrepares() const {
+    current_frame++;
+    return current_frame>numframes;
+  }
+  virtual void TriggerPrepares() { current_frame=0;}
+  virtual int NumPrepares() const { return 0; }
+  virtual void Prepare(int prepare) { }
+  virtual int NumSlots() const { return 0; }
+  virtual void Slot(int slot) { }
+  virtual void FinishSlots() { }
+  virtual void* get_data(std::string type) { return 0; }
+  virtual void set_usage_index(int slot) { }
+private:
+  mutable int current_frame;
+  int numframes;
+};
+class MTLParseHeavy : public HeavyOperation
+{
+public:
+  MTLParseHeavy(GameApi::EveryApi &ev, HeavyOperation *mtl_data, std::string url_prefix) : ev(ev), mtl_data(mtl_data), url_prefix(url_prefix) { }
+  virtual bool RequestPrepares() const
+  {
+   return mtl_data->RequestPrepares();
+  }
+  virtual void TriggerPrepares()
+  {
+    mtl_data->TriggerPrepares();
+  }
+  virtual int NumPrepares() const { return 0; }
+  virtual void Prepare(int prepare) { }
+  virtual int NumSlots() const
+  {
+    return mtl_data->NumSlots() + 1;
+  }
+  virtual void Slot(int slot)
+  {
+    int s = mtl_data->NumSlots();
+    if (slot<s) { mtl_data->Slot(slot); return; }
+    slot-=s;
+    std::cout << "MTLHeavy #" << slot << std::endl;
+    if (slot==0) {
+      std::vector<unsigned char> *ptr = (std::vector<unsigned char>*)mtl_data->get_data("std::vector<unsigned char>");
+      if (!ptr) { std::cout << "MTLParseHeavy: got null pointer!" << std::endl; return; }
+      vec = ev.polygon_api.mtl_parse(ev, *ptr, url_prefix);
+    }
+  }
+  virtual void FinishSlots()
+  {
+    mtl_data->FinishSlots();
+  }
+  virtual void* get_data(std::string type)
+  {
+    if (type=="std::vector<TXID>") {
+      return &vec;
+    }
+    return 0;
+  }
+  virtual void set_usage_index(int slot) { }
+
+private:
+  GameApi::EveryApi &ev;
+  HeavyOperation *mtl_data;
+  std::vector<GameApi::TXID> vec;
+  std::string url_prefix;
+};
+GameApi::H GameApi::BitmapApi::mtl_heavy(GameApi::EveryApi &ev, H net, std::string url_prefix)
+{
+  HeavyOperation *op = find_heavy(e, net);
+  return add_heavy(e, new MTLParseHeavy(ev, op,url_prefix));
+}
+GameApi::H GameApi::BitmapApi::timing_heavy(int numframes)
+{
+  return add_heavy(e, new TimingHeavy(numframes));
+}
+GameApi::H GameApi::BitmapApi::bitmap_heavy(BM bm, H timing)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+
+  HeavyOperation *op = find_heavy(e, timing);
+  return add_heavy(e, new BitmapHeavy(b2,op));
+}
+GameApi::H GameApi::BitmapApi::png_heavy(EveryApi &ev, H net)
+{
+  HeavyOperation *op = find_heavy(e, net);
+  return add_heavy(e, new PngHeavy(ev,op));
+}
+GameApi::H GameApi::BitmapApi::array_heavy(std::vector<H> vec)
+{
+  int s = vec.size();
+  std::vector<HeavyOperation*> hev;
+  for(int i=0;i<s;i++)
+    {
+      hev.push_back(find_heavy(e, vec[i]));
+    }
+  return add_heavy(e, new ArrayHeavy(hev));
+}
+#if 1
+GameApi::H GameApi::BitmapApi::thread_heavy(H threaded)
+{
+  HeavyOperation *op = find_heavy(e, threaded);
+  return add_heavy(e, new ThreadHeavy(op));
+}
+#endif
+GameApi::H GameApi::BitmapApi::network_heavy(std::string url, std::string homepage, H timing)
+{
+  HeavyOperation *op = find_heavy(e,timing);
+  return add_heavy(e, new NetworkHeavy(e, url, homepage, op));
+}
+GameApi::H GameApi::BitmapApi::bitmap_prepare_heavy(EveryApi &ev, H bitmap_gen, int scanlines_per_slot)
+{
+  HeavyOperation *op = find_heavy(e,bitmap_gen);
+  return add_heavy(e, new BitmapPrepareHeavy(ev, op, scanlines_per_slot));
+}
+
+class HeavyTextureID : public TextureID
+{
+public:
+  HeavyTextureID(HeavyOperation *heavy) : heavy(heavy) { heavycount=0; id.id=-1; }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void render(MainLoopEnv &e) {
+    if (heavy->RequestPrepares()) { heavycount=0; heavy->TriggerPrepares(); }
+    int n = heavy->NumSlots();
+    if (heavycount>=n) return;
+    std::cout << "heavy: " << heavycount << " " << n << std::endl;
+    heavy->Slot(heavycount);
+    heavycount++;
+    //TODOif (heavycount>=n) { heavy->FinishSlots(); }
+    if (id.id!=-1&&id.id!=0)
+      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id.id);
+    g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+  }   
+ 
+  int texture() const
+  {
+    void* txid = heavy->get_data("TXID");
+    if (!txid) { std::cout << "HeavyTextureID got null pointer" << std::endl; return 0; }
+    id = *(GameApi::TXID*)txid;
+    return id.id;
+  }
+private:
+  HeavyOperation *heavy;
+  int heavycount;
+  mutable GameApi::TXID id;
+};
+
+
+class HeavyTextureIDArray : public TextureID
+{
+public:
+  HeavyTextureIDArray(HeavyOperation *heavy, int num) : heavy(heavy),num(num) { heavycount=0; id.id=-1; }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void render(MainLoopEnv &e) {
+    if (heavy->RequestPrepares()) { heavycount=0; heavy->TriggerPrepares(); }
+    int n = heavy->NumSlots();
+    if (heavycount>=n) return;
+    heavy->Slot(heavycount);
+    heavycount++;
+    if (heavycount>=n) { heavy->FinishSlots(); }
+    //if (id.id!=-1)
+    //  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id.id);
+    //g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+    
+  }
+  int texture() const
+  {
+    void* txid = heavy->get_data("std::vector<TXID>");
+    if (!txid) { std::cout << "HeavyTextureID got null pointer" << std::endl; return 0; }
+    std::vector<GameApi::TXID> *vec = (std::vector<GameApi::TXID>*)txid;
+    int s = vec->size();
+    if (num>=0 && num<s)
+      id = vec->operator[](num);
+    else
+      {
+	std::cout << "TextureIDArray index outside of array" << std::endl;
+      }
+    return id.id;
+  }
+private:
+  HeavyOperation *heavy;
+  int num;
+  int heavycount;
+  mutable GameApi::TXID id;
+};
+
+GameApi::TXID GameApi::BitmapApi::txid_from_heavy(H heavy)
+{
+  HeavyOperation *op = find_heavy(e, heavy);
+  return add_txid(e, new HeavyTextureID(op));
+}
+// note, modifies the txid vector afterwards
+
+class TXIDArrayMainLoop : public MainLoopItem
+{
+public:
+  TXIDArrayMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, HeavyOperation *op, std::vector<GameApi::TXID> *vec, MainLoopItem *next, int start_range, int end_range) : env(env), ev(ev), op(op), vec(vec),next(next), start_range(start_range), end_range(end_range) {
+    heavycount=0; 
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (op->RequestPrepares()) { heavycount=0; op->TriggerPrepares(); }
+    int n = op->NumSlots();
+    if (heavycount<n) {
+      std::cout << "NumSlots: " << heavycount << "/" << n << std::endl;
+      op->Slot(heavycount);
+      heavycount++;
+      if (heavycount>=n) { op->FinishSlots(); }
+    }
+    
+    void *txidarray = op->get_data("std::vector<TXID>");
+    if (txidarray) {
+      //std::cout << "Found txidarray" << std::endl;
+      std::vector<GameApi::TXID> *v = (std::vector<GameApi::TXID>*)txidarray;
+      std::vector<GameApi::TXID> vd;
+      for(int i=start_range;i<end_range;i++) {
+	int sk = v->size();
+	if (i>=0 && i<sk)
+	  vd.push_back(v->operator[](i));
+      }
+      *vec = vd;
+    }
+    int s=vec->size();
+    for(int i=0;i<s;i++)
+      {
+	//if (i<start_range||i>=end_range) continue;
+	GameApi::TXID id = vec->operator[](i);
+	TextureID *iid = find_txid(env,id);
+	iid->render(e);
+      }
+    //ev.texture_api.use_many(*vec,0);
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+   int s=vec->size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::TXID id = vec->operator[](i);
+	TextureID *iid = find_txid(env,id);
+	iid->handle_event(e);
+      }
+ 
+    next->handle_event(e);
+  }
+  virtual int shader_id() {
+    return next->shader_id();
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  HeavyOperation *op;
+  std::vector<GameApi::TXID> *vec;
+  MainLoopItem *next;
+  int heavycount;
+  int start_range, end_range;
+};
+// modifies std::vector on the fly, so need to have longer lifetime
+GameApi::ML GameApi::BitmapApi::txidarray_from_heavy(GameApi::EveryApi &ev, H heavy, std::vector<TXID> *vec, ML ml, int start_range, int end_range)
+{
+  HeavyOperation *op = find_heavy(e, heavy);
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new TXIDArrayMainLoop(e,ev,op, vec,item, start_range,end_range));
+}
+
+GameApi::TXID GameApi::BitmapApi::dyn_fetch_bitmap(EveryApi &ev, std::string url)
+{
+  H timing = timing_heavy(300000);
+  H net = network_heavy(url, gameapi_homepageurl, timing);
+  H png = png_heavy(ev,net);
+  H thr = thread_heavy(png);
+  TXID id = txid_from_heavy(thr);
+  return id;
+}
+
+std::vector<GameApi::TXID> GameApi::BitmapApi::dyn_fetch_mtl(EveryApi &ev, std::string mtl_url, ML ml2)
+{
+  return std::vector<GameApi::TXID>();
+}
+extern int g_use_texid_material;
+class ManyTextureIDMaterial : public MaterialForward
+{
+public:
+  ManyTextureIDMaterial(GameApi::EveryApi &ev, std::string mtl_url, std::string url_prefix,float mix, int start_range, int end_range) : ev(ev), mtl_url(mtl_url), url_prefix(url_prefix), mix(mix), start_range(start_range), end_range(end_range) {
+    g_use_texid_material = true;
+  }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
+    GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
+    GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net, url_prefix);
+    // this array gets modified all the time during gameplay
+    std::vector<GameApi::TXID> *txids = new std::vector<GameApi::TXID>;
+
+    GameApi::P I10=p;
+    GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture_id(ev,I10,txids);
+    GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17, mix);
+    GameApi::ML I19 = ev.bitmap_api.txidarray_from_heavy(ev,mtl, txids, I18, start_range, end_range);
+
+    return I19;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
+    GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
+    GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net,url_prefix);
+    // this array gets modified all the time during gameplay
+    std::vector<GameApi::TXID> *txids = new std::vector<GameApi::TXID>;
+
+    //GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_id(ev,p,pts,bm);
+    GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
+    GameApi::ML I19 = ev.bitmap_api.txidarray_from_heavy(ev,mtl, txids, I18, start_range, end_range);
+    return I19;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+#if 0
+    // NOT WORKING
+    GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
+    std::vector<GameApi::BM> I13=bm;
+    std::vector<GameApi::TXID> I15 = ev.texture_api.prepare_many(ev, I13);
+    GameApi::VA I16=ev.texture_api.bind_many(I12,I15);
+    GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
+    GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
+#endif
+    // END OF NOT WORKING
+    GameApi::ML I18;
+    I18.id = -1;
+    return I18;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+#if 0
+    GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    //GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
+    //std::vector<GameApi::BM> I13=bm;
+    //std::vector<GameApi::TXID> I15 = ev.texture_api.prepare_many(ev, I13);
+    //GameApi::VA I16=ev.texture_api.bind_many(I12,I15);
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    GameApi::ML I17=ev.materials_api.render_instanced_ml_fade_texture(ev,I10,pts, flip, start_time, end_time,bm);
+    GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
+#endif
+    GameApi::ML I18;
+    I18.id = -1;
+    return I18;
+  }
+
+private:
+  GameApi::EveryApi &ev;
+  std::vector<GameApi::TXID> *bm;
+  std::string mtl_url;
+  std::string url_prefix;
+  float mix;
+  int start_range, end_range;
+};
+GameApi::MT GameApi::MaterialsApi::many_texture_id_material(GameApi::EveryApi &ev, std::string mtl_url, std::string url_prefix, float mix, int start_range, int end_range)
+{
+  return add_material(e, new ManyTextureIDMaterial(ev,mtl_url, url_prefix, mix, start_range, end_range));
 }
