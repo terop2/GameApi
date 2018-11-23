@@ -17885,7 +17885,7 @@ class ManyTextureIDMaterial : public MaterialForward
 {
 public:
   ManyTextureIDMaterial(GameApi::EveryApi &ev, std::string mtl_url, std::string url_prefix,float mix, int start_range, int end_range) : ev(ev), mtl_url(mtl_url), url_prefix(url_prefix), mix(mix), start_range(start_range), end_range(end_range) {
-    g_use_texid_material = true;
+    g_use_texid_material = 1;
   }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
