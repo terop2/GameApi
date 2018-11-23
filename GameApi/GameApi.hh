@@ -655,7 +655,7 @@ public:
   IMPORT H bitmap_prepare_heavy(EveryApi &ev, H bitmap_gen, int scanlines_per_slot);
   IMPORT H network_heavy(std::string url, std::string homepageurl, H timing_heavy);
   IMPORT H bitmap_heavy(BM bm, H timing);
-  IMPORT H png_heavy(EveryApi &ev, H data);
+  IMPORT H png_heavy(EveryApi &ev, H data, std::string url);
   IMPORT H mtl_heavy(EveryApi &ev, H net, std::string url_prefix);
   IMPORT H array_heavy(std::vector<H> vec);
   IMPORT H thread_heavy(H threaded);
