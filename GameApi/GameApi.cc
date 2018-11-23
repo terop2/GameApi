@@ -9970,12 +9970,13 @@ struct Envi_2 {
   int screen_height=600;
 };
 extern int async_pending_count;
+bool async_is_done=false;
 extern std::string gameapi_seamless_url;
 void blocker_iter(void *arg)
 {
   Envi_2 *env = (Envi_2*)arg;
   //std::cout << "async: " << async_pending_count << std::endl;
-  if (async_pending_count > 0) { env->logo_shown = true; }
+  if (async_pending_count > 0 && !async_is_done) { env->logo_shown = true; }
   if (env->logo_shown)
     {
       bool b=false;
@@ -9989,6 +9990,7 @@ void blocker_iter(void *arg)
       }
       return;
     }
+  async_is_done = true;
     env->ev->mainloop_api.clear_3d(0xff000000);
 
     // handle esc event
@@ -10115,7 +10117,7 @@ public:
   {
     Envi_2 *env = (Envi_2*)&envi;
     //std::cout << "async: " << async_pending_count << std::endl;
-    if (async_pending_count > 0) { env->logo_shown = true; }
+    if (async_pending_count > 0 && !async_is_done) { env->logo_shown = true; }
     if (async_pending_count != async_pending_count_previous)
       {
 	std::cout << "ASync pending count=" << async_pending_count << std::endl;
@@ -10135,7 +10137,7 @@ public:
 	}
 	return -1;
       }
-
+    async_is_done = true;
     env->ev->mainloop_api.clear_3d(0xff000000);
     
     // handle esc event
@@ -14900,9 +14902,10 @@ public:
   virtual Splitter* NextState(int code) { return 0; }
   virtual int Iter() {
     //std::cout << "Iter: " << async_pending_count << std::endl;
-    if (async_pending_count>0) {
+    if (async_pending_count>0 && !async_is_done) {
       return -1;
     } 
+    async_is_done = true;
     if (firsttime) {
       buf->Prepare();
       firsttime = false;
