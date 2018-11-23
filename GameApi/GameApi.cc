@@ -17118,6 +17118,8 @@ GameApi::FML GameApi::LowFrameBufferApi::low_activate_snapshot(EveryApi &ev, FML
 
 void nh_cb(void *obj);
 
+HeavyOperation::~HeavyOperation() { }
+
 class NetworkHeavy : public HeavyOperation
 {
 public:
