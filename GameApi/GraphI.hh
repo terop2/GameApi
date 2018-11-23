@@ -1352,7 +1352,7 @@ public:
   virtual int NumPrepares() const=0;
   virtual void Prepare(int prepare)=0;
   virtual int NumSlots() const=0;
-  virtual void Slot(int slot);
+  virtual void Slot(int slot)=0;
   virtual void FinishSlots()=0;
   virtual void* get_data(std::string type)=0;
   virtual void set_usage_index(int slot)=0;
