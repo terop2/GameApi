@@ -52,7 +52,7 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   int scr_y_3 = screen_y;
   //static bool mv_mode = false;
   if (e.type==1025 && e.button ==0 && cursor.x>scr_x_1 && cursor.x<scr_x_2 && cursor.y>scr_y_1 && cursor.y<scr_y_2) {
-    data.mv_mode = true;
+    //data.mv_mode = true;
     //std::cout << "mv mode true" << std::endl;
   }
   if (e.type==1026 && e.button==-1) {
