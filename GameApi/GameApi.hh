@@ -337,6 +337,7 @@ public:
   IMPORT void display_seamless(EveryApi &ev);
   IMPORT ML debug_obj(EveryApi &ev);
   IMPORT ML restart_screen(EveryApi &ev, ML ml, std::string fontname);
+  IMPORT ML save_ds_ml(EveryApi &ev, std::string output_filename, P p);
   struct Event
   {
     int type;
@@ -660,7 +661,7 @@ public:
   IMPORT H array_heavy(std::vector<H> vec);
   IMPORT H thread_heavy(H threaded);
   IMPORT H timing_heavy(int num_frames);
-  IMPORT TXID dyn_fetch_bitmap(EveryApi& ev, std::string url);
+  IMPORT TXID dyn_fetch_bitmap(EveryApi& ev, std::string url, int time);
   IMPORT std::vector<TXID> dyn_fetch_mtl(EveryApi &ev, std::string mtl_url, ML ml2);
   IMPORT ML txidarray_from_heavy(EveryApi &ev, H heavy, std::vector<TXID> *vec, ML ml, int start_range, int end_range);
 private:

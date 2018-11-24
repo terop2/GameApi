@@ -7605,6 +7605,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "P", "std::string" },
 			 { "", "test.obj" },
 			 "ML", "polygon_api", "save_model_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::save_ds_ml,
+			 "save_ds",
+			 { "ev", "out_filename", "poly" },
+			 { "EveryApi&", "std::string", "P" },
+			 { "ev", "test.ds", "" },
+			 "ML", "mainloop_api", "save_ds_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_url,
 			 "p_url",
 			 { "ev", "url", "count" },
@@ -9409,9 +9415,9 @@ std::vector<GameApiItem*> bitmapapi_functions()
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::dyn_fetch_bitmap,
 			 "bm_fetch",
-			 { "ev", "url" },
-			 { "EveryApi&", "std::string" },
-			 { "ev", "http://tpgames.org/test.png" },
+			 { "ev", "url", "reload_frame" },
+			 { "EveryApi&", "std::string", "int" },
+			 { "ev", "http://tpgames.org/gameapi_logo.png", "300000" },
 			 "TXID", "bitmap_api", "dyn_fetch_bitmap"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::sprite_atlas_x,
 			 "bm_atlas_x",

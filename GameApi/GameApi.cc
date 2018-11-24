@@ -13783,6 +13783,33 @@ GameApi::DS GameApi::MainLoopApi::load_ds_from_mem(std::vector<unsigned char> ve
    return add_disk_store(e, new LoadDS(vec));
 }
 
+class SaveDSMain : public MainLoopItem
+{
+public:
+  SaveDSMain(GameApi::EveryApi &ev, std::string out_file, GameApi::P p) : ev(ev), out_file(out_file), p(p) { firsttime = true; }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+      std::cout << "Saving to " << out_file << std::endl;
+      GameApi::DS ds = ev.polygon_api.p_ds_inv(p);
+      ev.mainloop_api.save_ds(out_file, ds);
+      firsttime = false;
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual int shader_id() { return -1; }
+private:
+  GameApi::EveryApi &ev;
+  std::string out_file;
+  bool firsttime;
+  GameApi::P p;
+};
+
+GameApi::ML GameApi::MainLoopApi::save_ds_ml(GameApi::EveryApi &ev, std::string output_filename, P p)
+{
+  return add_main_loop(e, new SaveDSMain(ev,output_filename, p));
+}
+
 void GameApi::MainLoopApi::save_ds(std::string output_filename, DS ds)
 {
   std::ofstream ff(output_filename, std::ios::out | std::ios::binary);
@@ -17129,7 +17156,7 @@ public:
   NetworkHeavy(GameApi::Env &e, std::string url, std::string homepageurl, HeavyOperation *timing) : e(e), url(url), homepage(homepageurl), timing(timing) { publish_ptr=0;
     ptr = 0;
     current_slot_num = 0;
-    std::cout << "NetworkHeavy:" << url << std::endl;
+    //std::cout << "NetworkHeavy:" << url << std::endl;
   }
   virtual bool RequestPrepares() const { return timing->RequestPrepares(); }
   virtual void TriggerPrepares()
@@ -17154,7 +17181,7 @@ public:
     int s = timing->NumSlots();
     if (slot<s) { timing->Slot(slot); return; }
     slot-=s;
-    std::cout << "NetworkHeavy: #" << slot << std::endl;
+    //std::cout << "NetworkHeavy: #" << slot << std::endl;
     if (slot==0) {
       // TODO, how to prevent async_pending_count to show logo
       // start async network access
@@ -17252,7 +17279,7 @@ public:
     if (!bm) { std::cout << "BitmapPrepareHeavyOperation cannot find Bitmap<Color>::0" << std::endl; return; }
     AllocMem();
     slot-=s;
-    std::cout << "BitmapPrepareHeavy: #" << slot << std::endl;
+    //std::cout << "BitmapPrepareHeavy: #" << slot << std::endl;
     int start_scanline = slot*scanlines;
     int end_scanline = (slot+1)*scanlines-1;
     if (range_start>start_scanline) { range_start = start_scanline; }
@@ -17350,7 +17377,7 @@ public:
   }
   virtual void Slot(int slot)
   {
-    std::cout << "Thread heavy slot:" << slot << std::endl;
+    //std::cout << "Thread heavy slot:" << slot << std::endl;
 #ifdef THREAD_HEAVY
     if (slot==0) {
       //Callback();
@@ -17361,9 +17388,9 @@ public:
     
     pthread_attr_init(&attr);
     pthread_attr_setstacksize(&attr, 30000);
-    std::cout << "phread_create" << std::endl;
-    int val = pthread_create(&thread_id, &attr, &thread_heavy_main, (void*)this);
-    std::cout << "pthread_create_return: " << val << std::endl;
+    //std::cout << "phread_create" << std::endl;
+    pthread_create(&thread_id, &attr, &thread_heavy_main, (void*)this);
+    //std::cout << "pthread_create_return: " << val << std::endl;
     pthread_attr_destroy(&attr);
 #endif
     //new std::thread(&thread_heavy_main);
@@ -17382,13 +17409,13 @@ public:
   {
     op->TriggerPrepares();
     int s = op->NumSlots();
-    std::cout << "Callback num: " << s << std::endl;
+    //std::cout << "Callback num: " << s << std::endl;
     for(int i=0;i<s;i++)
       {
-	std::cout << "Callback slot: "<< i << "/" << s << std::endl;
+	//std::cout << "Callback slot: "<< i << "/" << s << std::endl;
 	op->Slot(i);
 	s = op->NumSlots();
-	std::cout << "newCallback num: " << s << std::endl;
+	//std::cout << "newCallback num: " << s << std::endl;
       }
     ready=true;
   }
@@ -17494,7 +17521,7 @@ public:
     int s = data->NumSlots();
     if (slot<s) { data->Slot(slot); return; }
     slot-=s;
-    std::cout << "PngHeavy: #" << slot << std::endl;
+    //std::cout << "PngHeavy: #" << slot << std::endl;
     if (slot==0) {
       // TODO, this slot might be too slow for frame loop
       void *dt = data->get_data("std::vector<unsigned char>");
@@ -17544,7 +17571,7 @@ public:
 	}
       }
       res_ref = ref;
-      std::cout << "URL: " << url << " finishes" << std::endl;
+      //std::cout << "URL: " << url << " finishes" << std::endl;
     }
   }
   virtual void FinishSlots()
@@ -17642,7 +17669,7 @@ public:
     int s = mtl_data->NumSlots();
     if (slot<s) { mtl_data->Slot(slot); return; }
     slot-=s;
-    std::cout << "MTLHeavy #" << slot << std::endl;
+    //std::cout << "MTLHeavy #" << slot << std::endl;
     if (slot==0) {
       std::vector<unsigned char> *ptr = (std::vector<unsigned char>*)mtl_data->get_data("std::vector<unsigned char>");
       if (!ptr) { std::cout << "MTLParseHeavy: got null pointer!" << std::endl; return; }
@@ -17729,7 +17756,7 @@ public:
     if (heavy->RequestPrepares()) { heavycount=0; heavy->TriggerPrepares(); }
     int n = heavy->NumSlots();
     if (heavycount>=n) return;
-    std::cout << "heavy: " << heavycount << " " << n << std::endl;
+    //std::cout << "heavy: " << heavycount << " " << n << std::endl;
     heavy->Slot(heavycount);
     heavycount++;
     //TODOif (heavycount>=n) { heavy->FinishSlots(); }
@@ -17810,7 +17837,7 @@ public:
     if (op->RequestPrepares()) { heavycount=0; op->TriggerPrepares(); }
     int n = op->NumSlots();
     if (heavycount<n) {
-      std::cout << "NumSlots: " << heavycount << "/" << n << std::endl;
+      //std::cout << "NumSlots: " << heavycount << "/" << n << std::endl;
       op->Slot(heavycount);
       heavycount++;
       if (heavycount>=n) { op->FinishSlots(); }
@@ -17871,9 +17898,9 @@ GameApi::ML GameApi::BitmapApi::txidarray_from_heavy(GameApi::EveryApi &ev, H he
   return add_main_loop(e, new TXIDArrayMainLoop(e,ev,op, vec,item, start_range,end_range));
 }
 
-GameApi::TXID GameApi::BitmapApi::dyn_fetch_bitmap(EveryApi &ev, std::string url)
+GameApi::TXID GameApi::BitmapApi::dyn_fetch_bitmap(EveryApi &ev, std::string url, int time)
 {
-  H timing = timing_heavy(300000);
+  H timing = timing_heavy(time);
   H net = network_heavy(url, gameapi_homepageurl, timing);
   H png = png_heavy(ev,net,url);
   H thr = thread_heavy(png);
