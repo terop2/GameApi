@@ -3660,11 +3660,14 @@ private:
 class KeyPrinter : public MainLoopItem
 {
 public:
-  KeyPrinter(MainLoopItem *next) : next(next) { }
+  KeyPrinter(GameApi::Env &e, MainLoopItem *next) : e(e), next(next) { }
   int shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &eve)
   {
-    std::cout << "type: " << eve.type << " char: " << eve.ch << " button: " << eve.button << std::endl;
+    Point pt = eve.cursor_pos;
+    std::cout << "type: " << eve.type << " char: " << eve.ch << " button: " << eve.button;
+    std::cout << " PT(" << pt.x << "," << pt.y << "," << pt.z << ")";
+    std::cout << std::endl;
     next->handle_event(eve);
   }
   void execute(MainLoopEnv &env)
@@ -3672,6 +3675,7 @@ public:
     next->execute(env);
    }
 private:
+  GameApi::Env &e;
   MainLoopItem *next;
 };
 
@@ -4512,7 +4516,7 @@ private:
 EXPORT GameApi::ML GameApi::MovementNode::key_printer_ml(GameApi::ML ml)
 {
   MainLoopItem *item = find_main_loop(e, ml);
-  return add_main_loop(e, new KeyPrinter(item));
+  return add_main_loop(e, new KeyPrinter(e,item));
 }
 class RepeatML : public MainLoopItem
 {
