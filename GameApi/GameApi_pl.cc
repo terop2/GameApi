@@ -781,7 +781,7 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
 	std::string s = mat[b_i].map_Ka;
 	if (s.size()==0) s=mat[b_i].map_Kd;
 	std::string url = convert_slashes(url_prefix+"/"+s);
-	vec.push_back(ev.bitmap_api.dyn_fetch_bitmap(ev,url));
+	vec.push_back(ev.bitmap_api.dyn_fetch_bitmap(ev,url,300000));
       }
     return vec;
 }
@@ -837,13 +837,14 @@ public:
       {
 	e.async_load_callback(dt->url, &MTL_CB, (void*)dt);
 	e.async_load_url(dt->url, homepage);
+	flags.push_back(1);
       }
-    //flags.push_back(1);
 #ifndef EMSCRIPTEN
 	//Prepare2(dt->url,b_i);
 #endif
 #ifdef EMSCRIPTEN
-    //	async_pending_count++;
+    if (!g_use_texid_material)
+    	async_pending_count++;
 #endif
       }
 #ifdef EMSCRIPTEN
@@ -11809,14 +11810,21 @@ public:
 #endif
     std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
     if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
-    if (ptr->size()<5) return;
+    if (ptr->size()<5) { std::cout << "STLFaceCollection: async not found!" << std::endl; return; }
     if (ptr->operator[](0)=='s' && ptr->operator[](1)=='o' && ptr->operator[](2)=='l' && ptr->operator[](3)=='i' && ptr->operator[](4)=='d')
       {
 	convert_stl_to_binary(ptr);
       }
+    if (ptr->operator[](0)=='<' && ptr->operator[](1)=='!' && ptr->operator[](2)=='D' && ptr->operator[](3)=='O' && ptr->operator[](4)=='C' && ptr->operator[](5)=='T') {
+      std::cout << "404 error at STLFaceCollcection / " << url << std::endl;
+      return;
+    }
     m_ptr = ptr;
   }
-  virtual int NumFaces() const { return get_int(80); }
+  virtual int NumFaces() const { 
+    int i = get_int(80);
+    if (i<0 || i>3000000) return 0;
+    return i; }
   virtual int NumPoints(int face) const { return 3; }
   virtual Point FacePoint(int face, int point) const
   {
