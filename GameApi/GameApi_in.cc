@@ -50,6 +50,16 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   int scr_y_1 = screen_y/3.0;
   int scr_y_2 = screen_y*2.0/3.0;
   int scr_y_3 = screen_y;
+  //static bool mv_mode = false;
+  if (e.type==1025 && e.button ==0 && cursor.x>scr_x_1 && cursor.x<scr_x_2 && cursor.y>scr_y_1 && cursor.y<scr_y_2) {
+    data.mv_mode = true;
+    //std::cout << "mv mode true" << std::endl;
+  }
+  if (e.type==1026 && e.button==-1) {
+    //std::cout << "mv mode false" << std::endl;
+
+    data.mv_mode = false; }
+  //data.mv_mode = mv_mode;
   
   if ((e.ch=='w'||e.ch==26||e.ch==82) && e.type==0x300) { data.forward = true; }
   if (e.type==1025 && e.button==0 && cursor.x>scr_x_1 && cursor.x<scr_x_2 && cursor.y>scr_y_0 && cursor.y<scr_y_1) data.forward=true;
@@ -87,6 +97,32 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   if (e.type==1025 && e.button==0 && cursor.x>scr_x_2 && cursor.x<scr_x_3 && cursor.y>scr_y_2 && cursor.y<scr_y_3) data.side_right=true;
   if (e.type==1026 && e.button==-1) data.side_right=false;
 
+
+  if (data.mv_mode && e.type==1024)
+    {
+      //std::cout << "mv mode 1024 event" << std::endl;
+    
+    if (data.old_pos_x>5.0) {
+      //std::cout << "mv mode pos.x>5.0" << std::endl;
+
+	Vector v = cursor-Point(data.old_pos_x,data.old_pos_y,0.0);
+	//if (fabs(v.dx)>0.01 || fabs(v.dy)>0.01)
+	  {
+	  }
+
+	  //std::cout << "mv mode v=" << v.dx << " " << v.dy << std::endl;
+	if (v.dx<-0.5) data.left=true;
+	if (v.dx>0.5) data.right=true;
+	if (v.dy<-0.5) data.forward = true;
+	if (v.dy>0.5) data.backward = true;
+      }
+      data.old_pos_x = cursor.x;
+      data.old_pos_y = cursor.y;
+      
+    }
+
+  //std::cout << data.left << " " << data.right << " " << data.backward << " " << data.forward << std::endl;
+  
   
 }
 void GameApi::InteractionApi::quake_movement_frame(EveryApi &ev, float &pos_x, float &pos_y, float &rot_y, Quake_data &data, float &speed_x, float &speed_y, float speed, float rot_speed)
@@ -102,4 +138,10 @@ void GameApi::InteractionApi::quake_movement_frame(EveryApi &ev, float &pos_x, f
 
   speed_x = speed*cos(rot_y+3.14159/2.0);
   speed_y = speed*sin(rot_y+3.14159/2.0);
+  if (data.mv_mode) {
+    data.left=false;
+    data.right=false;
+    data.forward=false;
+    data.backward=false;
+  }
 }
