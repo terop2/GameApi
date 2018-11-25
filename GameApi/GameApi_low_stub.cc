@@ -35,6 +35,7 @@ public:
   virtual void glDeleteTextures(int val, const unsigned int *tex) { }
   virtual void glBindTexture(int ID, int tex) { }
   virtual void glTexImage2D(int ID, int, int,unsigned int,unsigned int, int, int, int, void *ptr) { }
+  virtual void glTexSubImage2D(int ID, int, int,int, unsigned int,unsigned int, int, int, void *ptr) { }
   virtual void glCopyTexImage2D(int ID, int,int,int,int, int,int, int ptr) { }
   virtual void glTexParameteri(int ID, int,int) { }
   virtual void glHint(int hint, int value) { }

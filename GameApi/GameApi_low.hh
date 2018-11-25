@@ -195,7 +195,7 @@ enum {
 #undef glDepthFunc
 #undef glDrawArrays
 #undef glTexImage2D
-
+#undef glTexSubImage2D
 #undef Mix_PlayChannel
 
 
@@ -233,6 +233,7 @@ public:
   virtual void glDeleteTextures(int val, const unsigned int *tex)=0;
   virtual void glBindTexture(int ID, int tex)=0;
   virtual void glTexImage2D(int ID, int, int,unsigned int,unsigned int, int, int, int, void *ptr)=0;
+  virtual void glTexSubImage2D(int ID, int,int,int,unsigned int, unsigned int, int,int, void *ptr)=0;
   virtual void glCopyTexImage2D(int ID, int,int,int,int, int,int, int ptr)=0;
   virtual void glTexParameteri(int ID, int,int)=0;
   virtual void glHint(int hint, int value)=0;
