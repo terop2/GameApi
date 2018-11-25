@@ -434,8 +434,11 @@ GameApi::TXID GameApi::TextureApi::bufferref_to_txid(GameApi::TXID old, const Bu
 
   //std::cout << "bufferref_to_txid:" << buf.width << "x" << buf.height << ":" << buf.buffer << std::endl;
   Low_GLuint id;
-  if (old.id==-1 || old.id==0)
-    g_low->ogl->glGenTextures(1, &id); 
+  bool newbuffer = false;
+  if (old.id==-1 || old.id==0) {
+    g_low->ogl->glGenTextures(1, &id);
+    //newbuffer = true;
+  }
   else
     id=old.id;
 #ifndef EMSCRIPTEN
@@ -443,7 +446,13 @@ GameApi::TXID GameApi::TextureApi::bufferref_to_txid(GameApi::TXID old, const Bu
 #endif
   g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
   g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
-  g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, buf.width,buf.height, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.buffer);
+  //std::cout << "buf.width=" << buf.width << " " << "buf.height=" << buf.height << " " << (int)buf.buffer << std::endl;
+  //  if (newbuffer) {
+
+    g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, buf.width,buf.height, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.buffer);
+    // } else {
+    //   g_low->ogl->glTexSubImage2D(Low_GL_TEXTURE_2D, 0, 0,0, buf.width,buf.height, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.buffer);
+    // }
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_NEAREST);      
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_NEAREST);
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE);

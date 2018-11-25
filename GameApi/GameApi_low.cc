@@ -408,6 +408,14 @@ public:
     check_err("glTexImage2D");
 
 }
+  virtual void glTexSubImage2D(int ID, int a, int b,int bb, unsigned int c, unsigned int d, int e, int f, void *ptr) {
+    map_enums(ID);
+    map_enums(e);
+    map_enums(f);
+    ::glTexSubImage2D(ID,a,b,bb,c,d,e,f,ptr); 
+    check_err("glTexSubImage2D");
+
+}
   virtual void glCopyTexImage2D(int ID, int a,int b,int c,int d, int e,int f, int ptr) { 
     map_enums(ID);
     map_enums(b);

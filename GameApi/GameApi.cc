@@ -17189,10 +17189,15 @@ public:
     if (slot==0) {
       // TODO, how to prevent async_pending_count to show logo
       // start async network access
+      static int i = 0;
+      std::stringstream ss;
+      ss<<"?id=" << i;
+      str = ss.str();
+      i++;
 #ifdef EMSCRIPTEN
-      e.async_load_callback(url, &nh_cb, this);
+      e.async_load_callback(url + str, &nh_cb, this);
 
-      e.async_load_url(url, homepage);
+      e.async_load_url(url + str, homepage);
 #endif
 #ifndef EMSCRIPTEN
       Callback();
@@ -17211,9 +17216,9 @@ public:
 
   void Callback() {
 #ifndef EMSCRIPTEN
-    e.async_load_url(url, homepage);
+    e.async_load_url(url+str, homepage);
 #endif
-    ptr = e.get_loaded_async_url(url);
+    ptr = e.get_loaded_async_url(url+str);
     publish_ptr = ptr;
     if (!ptr) {std::cout << "Network heavy callback received 0" << std::endl; }
   }
@@ -17229,6 +17234,7 @@ public:
 private:
   GameApi::Env &e;
   std::string url;
+  std::string str;
   std::string homepage;
   HeavyOperation *timing;
   int current_slot_num;
@@ -17512,14 +17518,14 @@ private:
 class PngHeavy : public HeavyOperation
 {
 public:
-  PngHeavy(GameApi::EveryApi &ev, HeavyOperation *data, std::string url) : ev(ev), data(data),url(url) { res_ref=BufferRef::NewBuffer(1,1);
+  PngHeavy(GameApi::EveryApi &ev, HeavyOperation *data, std::string url, int ssx, int ssy) : ev(ev), data(data),url(url),ssx(ssx), ssy(ssy) { res_ref=BufferRef::NewBuffer(ssx,ssy);
     ref=BufferRef::NewBuffer(1,1);
     id.id=-1; }
   virtual bool RequestPrepares() const { return data->RequestPrepares(); }
   virtual void TriggerPrepares() { data->TriggerPrepares(); }
   virtual int NumPrepares() const { return 0; }
   virtual void Prepare(int prepare) { }
-  virtual int NumSlots() const { return data->NumSlots()+3; }
+  virtual int NumSlots() const { return data->NumSlots()+4; }
   virtual void Slot(int slot)
   {
     int s = data->NumSlots();
@@ -17547,7 +17553,6 @@ public:
 	    std::swap(ref.buffer[x+y*ref.ydelta],ref.buffer[x+(sy-y-1)*ref.ydelta]);
 	  }
 
-      res_ref = ref;
     }
     if (slot==2) {
       // argb -> rgba conversion (not used)
@@ -17574,9 +17579,27 @@ public:
 	  ref.buffer[x+y*ref.ydelta]=val;
 	}
       }
-      res_ref = ref;
       //std::cout << "URL: " << url << " finishes" << std::endl;
     }
+    if (slot==3) // resize
+      {
+      int sx = ref.width;
+      int sy = ref.height;
+
+	for(int y=0;y<ssy;y++)
+	  for(int x=0;x<ssx;x++)
+	    {
+	      float xx = float(sx)*x/ssx;
+	      float yy = float(sy)*y/ssy;
+	      int kx = int(xx);
+	      int ky = int(yy);
+	      unsigned int val = ref.buffer[kx+ky*ref.ydelta];
+	      res_ref.buffer[x+y*res_ref.ydelta] = val;
+	    }
+
+      id = ev.texture_api.bufferref_to_txid(id,res_ref);
+
+      }
   }
   virtual void FinishSlots()
   {
@@ -17587,7 +17610,35 @@ public:
     if (type=="BufferRef") return &res_ref;
     if (type=="TXID") {
       // note, this call requires opengl.
-      id = ev.texture_api.bufferref_to_txid(id,res_ref);
+      if (id.id==-1) { id = ev.texture_api.bufferref_to_txid(id,res_ref);
+	return &id; }
+
+
+      int sx = res_ref.width;
+      int sy = res_ref.height;
+      bool power_of_two = true;
+      if (!(sx==1 ||sx==2||sx==4||sx==8||sx==16||sx==32||sx==64||sx==128||sx==256||sx==512||sx==1024||sx==2048||sx==4096||sx==8192||sx==16384))
+	power_of_two = false;
+      if (!(sy==1 ||sy==2||sy==4||sy==8||sy==16||sy==32||sy==64||sy==128||sy==256||sy==512||sy==1024||sy==2048||sy==4096||sy==8192||sy==16384))
+	power_of_two = false;
+
+
+#ifndef EMSCRIPTEN
+  g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+#endif
+  g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id.id);
+  //g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, res_ref.width,res_ref.height, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, res_ref.buffer);
+
+       g_low->ogl->glTexSubImage2D(Low_GL_TEXTURE_2D, 0, 0,0, res_ref.width,res_ref.height, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, res_ref.buffer);
+
+
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_NEAREST);      
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_NEAREST);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE);
+  g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+
       return &id;
     }
 
@@ -17601,6 +17652,7 @@ private:
   BufferRef res_ref;
   GameApi::TXID id;
   std::string url;
+  int ssx,ssy;
 };
 
 class BitmapHeavy : public HeavyOperation
@@ -17719,7 +17771,7 @@ GameApi::H GameApi::BitmapApi::bitmap_heavy(BM bm, H timing)
 GameApi::H GameApi::BitmapApi::png_heavy(EveryApi &ev, H net, std::string url)
 {
   HeavyOperation *op = find_heavy(e, net);
-  return add_heavy(e, new PngHeavy(ev,op,url));
+  return add_heavy(e, new PngHeavy(ev,op,url,1024,1024));
 }
 GameApi::H GameApi::BitmapApi::array_heavy(std::vector<H> vec)
 {
