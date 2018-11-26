@@ -16311,6 +16311,19 @@ public:
   virtual void handle_event(FrameLoopEvent &e) {
     next->handle_event(e);
 
+    int screen_x = 800; //ev.mainloop_api.get_screen_width();
+    int screen_y = 600; //ev.mainloop_api.get_screen_height();
+    int scr_x_0 = 0.0;
+    int scr_x_1 = screen_x/3.0;
+    int scr_x_2 = screen_x*2.0/3.0;
+    int scr_x_3 = screen_x;
+    int scr_y_0 = 0.0;
+    int scr_y_1 = screen_y/3.0;
+    int scr_y_2 = screen_y*2.0/3.0;
+    int scr_y_3 = screen_y;
+
+    Point cursor = e.cursor_pos;
+    
     if (mode==0)
       { // left&right + jump
 	if (e.type==0x300 && (e.ch=='a'||e.ch==4||e.ch==80||e.ch==1073741904)) // left
@@ -16321,6 +16334,11 @@ public:
 	  {
 	    left=false;
 	  }
+  if (e.type==1025 && e.button==0 && cursor.x>scr_x_0 && cursor.x<scr_x_1 && cursor.y>scr_y_1 && cursor.y<scr_y_2) left=true;
+  if (e.type==1026 && e.button==-1 && cursor.x>scr_x_0 && cursor.x<scr_x_1 && cursor.y>scr_y_1 && cursor.y<scr_y_2) left=false;
+
+	
+
 	if (e.type==0x300 && (e.ch=='d'||e.ch==7||e.ch==79||e.ch==1073741903)) // right
 	  {
 	    right=true;
@@ -16329,6 +16347,10 @@ public:
 	  {
 	    right=false;
 	  }
+
+  if (e.type==1025 && e.button==0 && cursor.x>scr_x_2 && cursor.x<scr_x_3 && cursor.y>scr_y_1 && cursor.y<scr_y_2) right=true;
+  if (e.type==1026 && e.button==-1 && cursor.x>scr_x_2 && cursor.x<scr_x_3 && cursor.y>scr_y_1 && cursor.y<scr_y_2) right=false;
+
 	WorldBlocks *blk = GetWorld();
 	Point2d p = { p_x,p_y };
 	std::pair<int,int> pos = blk->BlockPosition(p);
@@ -16339,12 +16361,16 @@ public:
 	      gravity = false;
 	      jump_frame=0;
 	    }
+	  if (e.type==1025 && e.button==0 && cursor.x>scr_x_1 && cursor.x<scr_x_2 && cursor.y>scr_y_0 && cursor.y<scr_y_1 && !jump_up) { jump_up=true; gravity=false; jump_frame=0; }
+
 	}
 	if (e.type==0x301 && (e.ch==' '||e.ch=='w'||e.ch==26||e.ch==82||e.ch==1073741906)) // jump stop
 	  {
 	    jump_up=false;
 	    gravity=true;
 	  }
+	if (e.type==1026 && e.button==-1 && cursor.x>scr_x_1 && cursor.x<scr_x_2 && cursor.y>scr_y_0 && cursor.y<scr_y_1) { jump_up=false; gravity=true; }
+
       }
 
     if (mode==1)
