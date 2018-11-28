@@ -6,11 +6,11 @@
 #define SDL2_USED  
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
-#ifndef EMSCRIPTEN
 #define THREAD_HEAVY 1
 #ifndef ARM
 #define THREADS 1
 #endif
+#ifndef EMSCRIPTEN
 #endif
 #define BATCHING 1
 
