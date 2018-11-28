@@ -3582,7 +3582,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 #ifdef THREADS
 #ifdef EMSCRIPTEN
 #ifdef __EMSCRIPTEN_PTHREADS__
-  //if (emscripten_has_threading_support()) {
+  if (emscripten_has_threading_support()) {
 #else
   //if (0) {
 #endif // END OF __EMSCRIPTEN_PTHREADS
@@ -3690,7 +3690,9 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 
 #ifdef EMSCRIPTEN
   return add_vertex_array(e, set, arr2);
-  //} else {
+#ifdef __EMSCRIPTEN_PTHREADS__
+  } else {
+#endif
 #ifndef BATCHING
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
@@ -3737,7 +3739,9 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       s->free_memory();
     return add_vertex_array(e, s, arr2);
 #endif // BATCHING
-    //  }
+#ifdef __EMSCRIPTEN_PTHREADS__
+      }
+#endif
 #else // EMSCRIPTEN
   return add_vertex_array(e, set, arr2);
 #endif // end of EMSCRIPTEN
