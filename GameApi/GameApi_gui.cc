@@ -8370,18 +8370,18 @@ std::vector<GameApiItem*> framebuffermoduleapi_functions()
 			 { "EveryApi&","FML", "int", "MN", "float", "FML" },
 			 { "ev", "", "32", "", "30.0", "" },
 			 "FML", "low_frame_api", "low_activate_snapshot"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::qml_print,
-			 "fr_print_qml",
-			 { "url" },
-			 { "std::string" },
-			 { "http://tpgames.org/wearable.qml" },
-			 "FML", "low_frame_api", "qml_print"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::qml_create_node,
-			 "fr_create_qml",
-			 { "url" },
-			 { "std::string" },
-			 { "http://tpgames.org/wearable.qml" },
-			 "FML", "low_frame_api", "qml_create_node"));
+  //vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::qml_print,
+  //			 "fr_print_qml",
+  //			 { "url" },
+  //			 { "std::string" },
+  //			 { "http://tpgames.org/wearable.qml" },
+  //			 "FML", "low_frame_api", "qml_print"));
+  //vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::qml_create_node,
+  //			 "fr_create_qml",
+  //			 { "url" },
+  //			 { "std::string" },
+  //			 { "http://tpgames.org/wearable.qml" },
+  //			 "FML", "low_frame_api", "qml_create_node"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_framebuffer,
 			 "fr_framebuffer",
 			 { "mainloop", "format", "width", "height", "depth" },
