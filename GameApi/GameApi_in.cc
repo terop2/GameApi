@@ -62,13 +62,13 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   //data.mv_mode = mv_mode;
   
   if ((e.ch=='w'||e.ch==26||e.ch==82) && e.type==0x300) { data.forward = true; }
-  if (e.type==1025 && e.button==0 && cursor.x>scr_x_1 && cursor.x<scr_x_2 && cursor.y>scr_y_0 && cursor.y<scr_y_1) data.forward=true;
-  if (e.type==1026 && e.button==-1) data.forward=false;
+  if ((e.type==1025||e.type==1792) && e.button==0 && cursor.x>scr_x_1 && cursor.x<scr_x_2 && cursor.y>scr_y_0 && cursor.y<scr_y_1) data.forward=true;
+  if ((e.type==1026||e.type==1794) && e.button==-1) data.forward=false;
   if ((e.ch=='w'||e.ch==26||e.ch==82) && e.type==0x301) { data.forward = false; }
   if ((e.ch=='s'||e.ch==22||e.ch==81) && e.type==0x300) { data.backward = true; }
   if ((e.ch=='s'||e.ch==22||e.ch==81) && e.type==0x301) { data.backward = false; }
-  if (e.type==1025 && e.button==0 && cursor.x>scr_x_1 && cursor.x<scr_x_2 && cursor.y>scr_y_2 && cursor.y<scr_y_3) data.backward=true;
-  if (e.type==1026 && e.button==-1) data.backward=false;
+  if ((e.type==1025||e.type==1792) && e.button==0 && cursor.x>scr_x_1 && cursor.x<scr_x_2 && cursor.y>scr_y_2 && cursor.y<scr_y_3) data.backward=true;
+  if ((e.type==1026||e.type==1794) && e.button==-1) data.backward=false;
 
   if ((e.ch=='a'||e.ch==4||e.ch==80) && e.type==0x300) { data.left = true; }
   if ((e.ch=='a'||e.ch==4||e.ch==80) && e.type==0x301) { data.left = false; }
@@ -80,22 +80,22 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x300) { data.right = true; }
   if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x301) { data.right = false; }
 
-  if (e.type==1025 && e.button==0 && cursor.x>scr_x_2 && cursor.x<scr_x_3 && cursor.y>scr_y_1 && cursor.y<scr_y_2) data.right=true;
-  if (e.type==1026 && e.button==-1) data.right=false;
+  if ((e.type==1025||e.type==1792) && e.button==0 && cursor.x>scr_x_2 && cursor.x<scr_x_3 && cursor.y>scr_y_1 && cursor.y<scr_y_2) data.right=true;
+  if ((e.type==1026||e.type==1794) && e.button==-1) data.right=false;
 
   
   if ((e.ch=='z'||e.ch==29) && e.type==0x300) { data.side_left = true; }
   if ((e.ch=='z'||e.ch==29) && e.type==0x301) { data.side_left = false; }
 
-  if (e.type==1025 && e.button==0 && cursor.x>scr_x_0 && cursor.x<scr_x_1 && cursor.y>scr_y_2 && cursor.y<scr_y_3) data.side_left=true;
-  if (e.type==1026 && e.button==-1) data.side_left=false;
+  if ((e.type==1025||e.type==1792) && e.button==0 && cursor.x>scr_x_0 && cursor.x<scr_x_1 && cursor.y>scr_y_2 && cursor.y<scr_y_3) data.side_left=true;
+  if ((e.type==1026||e.type==1794) && e.button==-1) data.side_left=false;
 
 
   if ((e.ch=='x'||e.ch==27) && e.type==0x300) { data.side_right = true; }
   if ((e.ch=='x'||e.ch==27) && e.type==0x301) { data.side_right = false; }
 
-  if (e.type==1025 && e.button==0 && cursor.x>scr_x_2 && cursor.x<scr_x_3 && cursor.y>scr_y_2 && cursor.y<scr_y_3) data.side_right=true;
-  if (e.type==1026 && e.button==-1) data.side_right=false;
+  if ((e.type==1025||e.type==1792) && e.button==0 && cursor.x>scr_x_2 && cursor.x<scr_x_3 && cursor.y>scr_y_2 && cursor.y<scr_y_3) data.side_right=true;
+  if ((e.type==1026||e.type==1794) && e.button==-1) data.side_right=false;
 
 
   if (data.mv_mode && e.type==1024)
