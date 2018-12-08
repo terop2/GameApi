@@ -1,7 +1,7 @@
 
 #include "GameApi_h.hh"
 
-std::string strip_spaces(std::string s)
+std::string strip_spaces2(std::string s)
 {
   int start=0;
   while(s[start]==' '||s[start]=='\n') start++;
@@ -249,8 +249,8 @@ public:
   {
     return m_component_children.size();
   }
-  virtual std::string Name(int child_i) const { return strip_spaces(m_component_name[child_i]); }
-  virtual std::string Type(int child_i) const { return strip_spaces(m_component_type[child_i]); }
+  virtual std::string Name(int child_i) const { return strip_spaces2(m_component_name[child_i]); }
+  virtual std::string Type(int child_i) const { return strip_spaces2(m_component_type[child_i]); }
   virtual QMLData *Children(int child_i) const
   {
     return m_component_children[child_i];
