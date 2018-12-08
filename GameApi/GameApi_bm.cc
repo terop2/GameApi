@@ -284,7 +284,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::radial_gradient(int sx, int sy, PT pos, f
 
 EXPORT GameApi::BM GameApi::BitmapApi::newbitmap(int sx, int sy, unsigned int color)
 {
-  ::Bitmap<Color> *b = new ConstantBitmap<Color>(Color(color), sx,sy);
+  ::Bitmap<Color> *b = new ConstantBitmap_Color(Color(color), sx,sy);
   BitmapColorHandle *handle = new BitmapColorHandle;
   handle->bm = b;
   BM bm = add_bitmap(e, handle);
@@ -447,7 +447,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::mandelbrot2(bool julia,
 
 EXPORT GameApi::BM GameApi::BitmapApi::newtilebitmap(int sx, int sy, int tile_sx, int tile_sy)
 {
-  ::Bitmap<Color> *b = new ConstantBitmap<Color>(Color(0,0,0), sx,sy);
+  ::Bitmap<Color> *b = new ConstantBitmap_Color(Color(0,0,0), sx,sy);
   BitmapTileHandle *handle = new BitmapTileHandle;
   handle->bm = b;
   handle->tile_sx = sx;
@@ -1717,12 +1717,12 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::transform(BB orig, std::function<bool
 
 EXPORT GameApi::BB GameApi::BoolBitmapApi::empty(int sx, int sy)
 {
-  return add_bool_bitmap(e, new ConstantBitmap<bool>(false, sx,sy));
+  return add_bool_bitmap(e, new ConstantBitmap_bool(false, sx,sy));
 }
 
 EXPORT GameApi::FB GameApi::FloatBitmapApi::empty(int sx, int sy)
 {
-  return add_float_bitmap(e, new ConstantBitmap<float>(0.0, sx,sy));
+  return add_float_bitmap(e, new ConstantBitmap_float(0.0, sx,sy));
 }
 EXPORT GameApi::BB GameApi::BoolBitmapApi::from_bitmaps_color(BM bm, int r, int g, int b)
 {

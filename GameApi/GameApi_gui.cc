@@ -1271,6 +1271,12 @@ private:
 
 #ifndef EMSCRIPTEN
 //std::map<int, int> shared_sprites;
+//int find_shared_sprites(int key) {
+//  std::map<int,int>::iterator it = shared_sprites.find(key);
+//  if (it!=shared_sprites.end()) return (*it).second;
+//  return -1;
+//}
+#if 1
 struct A { int key; int value; };
 std::vector<A> shared_sprites;
 int find_shared_sprites(int key) {
@@ -1278,6 +1284,7 @@ int find_shared_sprites(int key) {
   for(int i=0;i<s;i++) { if (shared_sprites[i].key==key) return i; }
   return -1;
 }
+#endif
 class IconGuiWidgetShared : public GuiWidgetForward
 {
 public:
@@ -1307,6 +1314,8 @@ public:
 	    a.key = key;
 	    a.value = bm_va.id;
 	    shared_sprites.push_back(a);
+	    //std::cout << "shared_sprites " << shared_sprites.size() << " " << bm_va.id << std::endl; 
+	    //shared_sprites[key] = bm_va.id;
 	  }
 	} else {
 	  GameApi::BM scaled = ev.bitmap_api.scale_bitmap(ev,bm, 100,100);
@@ -1315,7 +1324,10 @@ public:
 	  a.key = key;
 	  a.value = bm_va.id;
 	  shared_sprites.push_back(a);
-	  //shared_sprites.push[key] = bm_va.id;
+	  // std::cout << "shared_sprites2 " << shared_sprites.size() << " " << bm_va.id << std::endl; 
+	  //shared_sprites[key] = bm_va.id;
+	  //shared_sprites[a.key] = a.value;
+	  // shared_sprites[key] = bm_va.id;
 	}
 	firsttime = false;
       }
@@ -8358,6 +8370,18 @@ std::vector<GameApiItem*> framebuffermoduleapi_functions()
 			 { "EveryApi&","FML", "int", "MN", "float", "FML" },
 			 { "ev", "", "32", "", "30.0", "" },
 			 "FML", "low_frame_api", "low_activate_snapshot"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::qml_print,
+			 "fr_print_qml",
+			 { "url" },
+			 { "std::string" },
+			 { "http://tpgames.org/wearable.qml" },
+			 "FML", "low_frame_api", "qml_print"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::qml_create_node,
+			 "fr_create_qml",
+			 { "url" },
+			 { "std::string" },
+			 { "http://tpgames.org/wearable.qml" },
+			 "FML", "low_frame_api", "qml_create_node"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_framebuffer,
 			 "fr_framebuffer",
 			 { "mainloop", "format", "width", "height", "depth" },

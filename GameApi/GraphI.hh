@@ -1364,8 +1364,31 @@ public:
   //virtual void draw_frame(DrawLoopEnv &e)=0;
 };
 
+class QMLLoop : public FrameBufferLoop
+{
+public:
+  virtual int NumChildren() const=0;
+  virtual QMLLoop *Children(int i) const=0;
+
+};
 
 
+class QMLData
+{
+public:
+  virtual void Prepare()=0;
+  virtual QMLData* Parent() const=0;
+  virtual std::string Type() const=0;
+  virtual int NumImports() const=0;
+  virtual std::string Import(int import_i) const=0;
+  virtual int NumAttribs() const=0;
+  virtual std::string AttrName(int attr_i) const=0;
+  virtual std::string AttrValue(int attr_i) const=0;
+  virtual int NumChildren() const=0;
+  virtual std::string Name(int child_i) const=0;
+  virtual std::string Type(int child_i) const=0;
+  virtual QMLData *Children(int child_i) const=0;
+};
 
 
 

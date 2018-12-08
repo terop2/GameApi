@@ -35,10 +35,10 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   Point *cursor_1 = find_point(ee,cursor_0);
   Point cursor = cursor_1?*cursor_1:Point(-1.0,-1.0,-1.0);
 
-  static Point cursor_old;
-  if (cursor.x>1.0 && cursor.y>1.0) cursor_old=cursor;
+  //static Point cursor_old;
+  //if (cursor.x>1.0 && cursor.y>1.0) cursor_old=cursor;
 
-  cursor = cursor_old;
+  //cursor = cursor_old;
   //std::cout << "Quake: " << cursor.x << "," << cursor.y << "," << cursor.z << "::" << e.type << " " << e.button << std::endl;
   int screen_x = ev.mainloop_api.get_screen_width();
   int screen_y = ev.mainloop_api.get_screen_height();
