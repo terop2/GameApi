@@ -73,8 +73,8 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   if ((e.ch=='a'||e.ch==4||e.ch==80) && e.type==0x300) { data.left = true; }
   if ((e.ch=='a'||e.ch==4||e.ch==80) && e.type==0x301) { data.left = false; }
 
-  if (e.type==1025 && e.button==0 && cursor.x>scr_x_0 && cursor.x<scr_x_1 && cursor.y>scr_y_1 && cursor.y<scr_y_2) data.left=true;
-  if (e.type==1026 && e.button==-1) data.left=false;
+  if ((e.type==1025 ||e.type==1792) && e.button==0 && cursor.x>scr_x_0 && cursor.x<scr_x_1 && cursor.y>scr_y_1 && cursor.y<scr_y_2) data.left=true;
+  if ((e.type==1026 ||e.type==1793) && e.button==-1) data.left=false;
 
 
   if ((e.ch=='d'||e.ch==7||e.ch==79) && e.type==0x300) { data.right = true; }
