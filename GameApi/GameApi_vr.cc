@@ -28,9 +28,12 @@
 #include <emscripten/html5.h>
 #endif
 
+bool g_use_vr = false;
 
 EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration, bool invert, bool translate)
 {
+  g_use_vr = true;
+
   int screen_w = ev.mainloop_api.get_screen_width();
   int screen_h = ev.mainloop_api.get_screen_height();
   screen_w-=100;
@@ -636,6 +639,8 @@ int touchCallback(int eventType, const EmscriptenMouseEvent* e, void *data)
 EM_BOOL clickCallback(int eventType, const EmscriptenMouseEvent* e, void *data)
 {
   if (!e ||eventType!=EMSCRIPTEN_EVENT_CLICK) return EM_FALSE;
+  long clientX = e->clientX;
+  long clientY = e->clientY;
   onClick(data);
   return EM_FALSE;
 }
@@ -649,6 +654,7 @@ void splitter_iter3(void *arg)
 
   if (current_display==0) {
     //if (!emscripten_vr_ready()) { return; }
+    if (!g_use_vr) { splitter_iter2((void*)spl); return; }
     if (!vr_vr_ready) { splitter_iter2((void*)spl); return; }
     
     int s = emscripten_vr_count_displays();
@@ -675,6 +681,7 @@ void splitter_iter3(void *arg)
       current_display=-1;
       return;
     }
+
 
     emscripten_set_click_callback("#canvas", a, true, clickCallback);
     emscripten_set_touchend_callback("#canvas", a, true, (em_touch_callback_func)&touchCallback);
