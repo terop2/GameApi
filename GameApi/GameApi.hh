@@ -309,12 +309,8 @@ public:
   IMPORT void delay(int ms);
   IMPORT unsigned int random();
   IMPORT unsigned int rand_max();
-  IMPORT PT random_point_3d(float start_x, float end_x,
-			 float start_y, float end_y,
-			 float start_z, float end_z);
-  IMPORT PT random_point_2d(float start_x, float end_x,
-			    float start_y, float end_y,
-			    float z);
+  IMPORT PT random_point_3d(float start_x, float end_x,float start_y, float end_y,float start_z, float end_z);
+  IMPORT PT random_point_2d(float start_x, float end_x,float start_y, float end_y,float z);
   IMPORT V random_dir_vector_2d_xy(float length); 
   IMPORT V random_dir_vector_2d_xz(float length); 
   IMPORT V random_dir_vector_3d(float length);
@@ -372,10 +368,7 @@ public:
   ML timed_tmp_seq_ml(ML curr, ML end, float start_time, float end_time, float show_duration, int key);
   ML collision_seq_ml(ML curr, ML end, std::string obj1, std::string obj2, float show_duration);
   ML collision_gen_key(ML curr, std::string obj1, std::string obj2, int key, float duration);
-  ML collision_detection(EveryApi &ev,
-			 float player_size,
-			 float enemy_size, 
-			 ML normal_game_screen, ML gameover_screen);
+  ML collision_detection(EveryApi &ev,float player_size,float enemy_size, ML normal_game_screen, ML gameover_screen);
 
   M in_MV(EveryApi &ev, bool is_3d);
   M in_T(EveryApi &ev, bool is_3d);
@@ -615,18 +608,8 @@ public:
   IMPORT ML savebitmap_ml(EveryApi &ev, BM bm, std::string filename, bool alpha, float time);
   IMPORT void save_png(BM bm, std::string filename);
   IMPORT ML save_png_ml(EveryApi &ev, BM bm, std::string filename);
-  IMPORT BM mandelbrot(bool julia,
-		       float start_x, float end_x, // [-2..1]
-		       float start_y, float end_y, // [-1,1]
-		       float xx, float yy, // [0,0]
-		       int sx, int sy,
-		       int count);
-  IMPORT BM mandelbrot2(bool julia,
-			float start_x, float end_x, // [-2..1]
-			float start_y, float end_y, // [-1,1]
-			float xx, float yy, // [0,0]
-			int sx, int sy,
-			int count);
+  IMPORT BM mandelbrot(bool julia,float start_x, float end_x, float start_y, float end_y, float xx, float yy, int sx, int sy,int count);
+  IMPORT BM mandelbrot2(bool julia,float start_x, float end_x, float start_y, float end_y, float xx, float yy, int sx, int sy,int count);
   IMPORT BM chessboard(int tile_sx, int tile_sy, int count_x, int count_y, unsigned int c1, unsigned int c2);
   IMPORT BM color_range(BM orig, unsigned int source_upper, unsigned int source_lower, unsigned int target_upper, unsigned int target_lower);
   IMPORT BM memoize(BM orig);
@@ -1064,9 +1047,7 @@ public:	IMPORT VolumeApi(Env &e);
         IMPORT O from_bool_bitmap(BB b, float dist);
 	IMPORT O link_areas(O o, PT p1, PT p2, float d);
 	IMPORT O sphere(PT center, float radius);
-	IMPORT O cube(float start_x, float end_x,
-	 float start_y, float end_y,
-	 float start_z, float end_z);
+	IMPORT O cube(float start_x, float end_x,float start_y, float end_y,float start_z, float end_z);
 	IMPORT O cone(PT p1, PT p2, float rad1, float rad2);
 	IMPORT O torus(PT center, PT u_x, PT u_y, float dist1, float dist2);
 
@@ -1090,45 +1071,22 @@ public:	IMPORT VolumeApi(Env &e);
 	IMPORT O max_op(O object1, O object2);
 	IMPORT O andnot_op(O object1, O object2);
 
-	IMPORT O mandelbulb(float n, float p_x, float p_y, float p_z,
-	       float c_x, float c_y, float c_z,
-	       float radius,
- 	       int iterations);
+	IMPORT O mandelbulb(float n, float p_x, float p_y, float p_z,float c_x, float c_y, float c_z,float radius,int iterations);
   IMPORT O mandelbrot_volume(bool julia, int count, float yy);
 
-	IMPORT BB plane(O o, int sx, int sy,
-	   PT u_p, V u_x, V u_y,
-	   float start_x, float end_x,
-	   float start_y, float end_y,
-	   float start_z, float end_z);
+	IMPORT BB plane(O o, int sx, int sy,PT u_p, V u_x, V u_y,float start_x, float end_x,float start_y, float end_y,float start_z, float end_z);
 
 	IMPORT BM render(O object, int sx, int sy, PT ray_0, PT ray_x, PT ray_y, PT ray_z);
   typedef std::function<P (float start_x, float end_x, 
 			float start_y, float end_y, 
 			float start_z, float end_z, 
 			unsigned int color)> fptrtype;
-  IMPORT P rendercubes(O object,
-		fptrtype fptr,
-		int size,
-		float wholesize); // marching cubes algo
-  IMPORT PTS instanced_positions(O object,
-				 int size,
-				 float wholesize);
+  IMPORT P rendercubes(O object,fptrtype fptr,int size,float wholesize); // marching cubes algo
+  IMPORT PTS instanced_positions(O object,int size,float wholesize);
 
-  IMPORT P rendercubes2(EveryApi &ev, O object,
-			fptrtype fptr,
-			int sx, int sy, int sz,
-			float world_x, float world_y, float world_z); // normal for loop algo
-  IMPORT P rendercubes3(O object,
-			int sx, int sy, int sz,
-			float start_x, float end_x,
-			float start_y, float end_y,
-			float start_z, float end_z);
-  IMPORT PTS instanced_positions(O object,
-				 int sx, int sy, int sz,
-				 float start_x, float end_x,
-				 float start_y, float end_y,
-				 float start_z, float end_z);
+  IMPORT P rendercubes2(EveryApi &ev, O object,fptrtype fptr,int sx, int sy, int sz,float world_x, float world_y, float world_z); // normal for loop algo
+  IMPORT P rendercubes3(O object,int sx, int sy, int sz,float start_x, float end_x,float start_y, float end_y,float start_z, float end_z);
+  IMPORT PTS instanced_positions(O object,int sx, int sy, int sz,float start_x, float end_x,float start_y, float end_y, float start_z, float end_z);
   IMPORT void find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level);
   // use RayTracingBitmap class in graph.hh
   // problem1: float values in O. (currently uses bool)
@@ -1154,21 +1112,12 @@ public:
   IMPORT SFO sphere(); // vec3 center, float radius
   IMPORT SFO sphere(PT center, float radius); // ()
   IMPORT SFO cube(); // vec3 tl, vec3 br
-  IMPORT SFO cube(float start_x, float end_x,
-	   float start_y, float end_y,
-	   float start_z, float end_z); // ()
-  IMPORT SFO rounded_cube(float start_x, float end_x,
-		   float start_y, float end_y,
-		   float start_z, float end_z,
-		   float r);
+  IMPORT SFO cube(float start_x, float end_x,float start_y, float end_y,float start_z, float end_z); // ()
+  IMPORT SFO rounded_cube(float start_x, float end_x,float start_y, float end_y,float start_z, float end_z,float r);
   IMPORT SFO texture(SFO obj);
-  IMPORT SFO texture_box(float start_x, float end_x,
-  			 float start_y, float end_y,
-  			 float start_z, float end_z);
+  IMPORT SFO texture_box(float start_x, float end_x,float start_y, float end_y,float start_z, float end_z);
   IMPORT SFO line(); // vec3 tl, vec3 br, float line_width1, float line_width2
-  IMPORT SFO line(float start_x, float start_y, float start_z,
-	   float end_x, float end_y, float end_z,
-	   float line_width1, float line_width2);
+  IMPORT SFO line(float start_x, float start_y, float start_z,float end_x, float end_y, float end_z,float line_width1, float line_width2);
   IMPORT SFO plane(PT center, V u_x, V u_y);
   IMPORT SFO torus(float radius_1, float radius_2);
   IMPORT SFO color(SFO obj, float r, float g, float b, float a);
@@ -1480,15 +1429,11 @@ public:
   IMPORT MN rotatez(MN next, float angle);
   IMPORT MN pose(MN next, bool pose_in_screen);
   IMPORT MN debug_translate(MN next);
-  IMPORT MN translate(MN next, float start_time, float end_time,
-	       float dx, float dy, float dz);
+  IMPORT MN translate(MN next, float start_time, float end_time,float dx, float dy, float dz);
   IMPORT MN scale_progress(MN next, bool is_x, bool is_y, bool is_z);
   IMPORT MN mn_fetcher(PF pf);
-  IMPORT MN scale(MN next, float start_time, float end_time,
-	   float sx, float sy, float sz);
-  IMPORT MN rotate(MN next, float start_time, float end_time,
-	    float p_x, float p_y, float p_z,
-	    float v_x, float v_y, float v_z, float angle);
+  IMPORT MN scale(MN next, float start_time, float end_time,float sx, float sy, float sz);
+  IMPORT MN rotate(MN next, float start_time, float end_time,float p_x, float p_y, float p_z,float v_x, float v_y, float v_z, float angle);
   IMPORT MN compress(MN next, float start_time, float end_time);
   IMPORT MN change_time(MN next, float d_time);
   IMPORT MN event_activate(MN next, MN event, float event_time, float duration);
@@ -1588,8 +1533,7 @@ public:
   IMPORT W shader_plane(SFO p, int sx, int sy, int screen_size_x, int screen_size_y);
   IMPORT W lines(LI p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
   IMPORT W pts(PTS p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
-  IMPORT W line(W target1, int delta_x, int delta_y,
-	 W target2, int delta2_x, int delta2_y, SH sh, SH old_sh);
+  IMPORT W line(W target1, int delta_x, int delta_y,W target2, int delta2_x, int delta2_y, SH sh, SH old_sh);
   IMPORT W gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int colot_1, unsigned int color_2);
   IMPORT W button(int sx, int sy, unsigned int color_1, unsigned int color_2);
   IMPORT W mouse_move(W widget, int area_x, int area_y, int area_width, int area_height);
@@ -1803,10 +1747,7 @@ public:
 	IMPORT FloatVolumeApi(Env &e) : e(e) { }
 	IMPORT FO function(std::function<float(float x, float y, float z)> f);
 	IMPORT FO from_volume(O o, float false_val, float true_val);
-	IMPORT FO from_float_bitmap(FB bm,
-		       float start_x, float end_x, 
-		       float start_y, float end_y, 
-		       float start_z, float end_z);
+	IMPORT FO from_float_bitmap(FB bm,float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
 	IMPORT FO distance();
 	IMPORT FO torusdistance(PT center, V u_x, V u_y, float radius);
 	IMPORT FO move(FO f1, float dx, float dy, float dz);
@@ -1886,13 +1827,8 @@ public:
 	IMPORT DistanceFloatVolumeApi(Env &e) : e(e) { }
 	IMPORT FD function(std::function<float(float x, float y, float z)> f);
 	IMPORT FD sphere(PT center, float radius);
-	IMPORT FD cube(float start_x, float end_x,
-	  float start_y, float end_y,
-	  float start_z, float end_z);
-  IMPORT FD round_cube(float start_x, float end_x,
-		       float start_y, float end_y,
-		       float start_z, float end_z,
-		       float r);
+	IMPORT FD cube(float start_x, float end_x,float start_y, float end_y,float start_z, float end_z);
+  IMPORT FD round_cube(float start_x, float end_x,float start_y, float end_y,float start_z, float end_z,float r);
   IMPORT FD torus(float radius_1, float radius_2);
   IMPORT FD cone(float c_x, float c_y);
   IMPORT FD plane(float n_x, float n_y, float n_z, float n_w);
@@ -2045,11 +1981,7 @@ class BooleanOps
 public:
   BooleanOps(Env &e) : e(e) { }
   IMPORT BO create_bo(P mesh, O bools, FD fd);
-  IMPORT BO cube(EveryApi &ev, 
-	  float start_x, float end_x,
-	  float start_y, float end_y,
-	  float start_z, float end_z,
-	  int split_x, int split_y);
+  IMPORT BO cube(EveryApi &ev, float start_x, float end_x,float start_y, float end_y,float start_z, float end_z,int split_x, int split_y);
   IMPORT BO sphere(EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2);
   //BO cone(int numfaces, PT p1, PT p2, float rad1, float rad2);
   //BO torus(int numfaces1, int numfaces2, PT center, V u_x, V u_y, float radius1, V uu_x, V uu_y, float radius2);
@@ -2072,13 +2004,8 @@ public:
   PolygonDistanceField(Env &e) : e(e) { }
   IMPORT PD empty(EveryApi &ev);
   IMPORT PD create_pd(P mesh, SFO distance_field);
-  IMPORT PD cube(EveryApi &ev, float start_x, float end_x,
-	  float start_y, float end_y,
-	  float start_z, float end_z);
-  IMPORT PD rounded_cube(EveryApi &ev, float start_x, float end_x,
-		  float start_y, float end_y,
-		  float start_z, float end_z,
-		  float radius);
+  IMPORT PD cube(EveryApi &ev, float start_x, float end_x,float start_y, float end_y,float start_z, float end_z);
+  IMPORT PD rounded_cube(EveryApi &ev, float start_x, float end_x,float start_y, float end_y,float start_z, float end_z,float radius);
   IMPORT PD sphere(EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2);
   IMPORT PD cone(EveryApi &ev, int numfaces, PT p1, PT p2, float rad1, float rad2);
   IMPORT PD or_array(EveryApi &ev, std::vector<PD> vec);
@@ -2200,15 +2127,9 @@ public:
   //IMPORT P line(PT p1, PT p2);
 	IMPORT P triangle(PT p1, PT p2, PT p3);
 	IMPORT P quad(PT p1, PT p2, PT p3, PT p4);
-	IMPORT P quad_x(float x,
-	   float y1, float y2,
-	   float z1, float z2);
-	IMPORT P quad_y(float x1, float x2,
-	   float y,
-	   float z1, float z2);
-	IMPORT P quad_z(float x1, float x2,
-	   float y1, float y2,
- 	   float z);
+  IMPORT P quad_x(float x,float y1, float y2,float z1, float z2);
+	IMPORT P quad_y(float x1, float x2,float y,float z1, float z2);
+	IMPORT P quad_z(float x1, float x2,float y1, float y2,float z);
         IMPORT P fullscreen_quad(EveryApi &ev);
   IMPORT P vr_fullscreen_quad(EveryApi &ev, bool is_right);
   IMPORT P tri_strip(PT *array, int size);
@@ -2224,10 +2145,7 @@ public:
 	 float start_y, float end_y,
 	 float start_z, float end_z);
 	IMPORT P cube(PT *p); // 8 points needed
-  IMPORT P rounded_cube(EveryApi &ev, float start_x, float end_x,
-			float start_y, float end_y,
-			float start_z, float end_z,
-			float round_radius);
+  IMPORT P rounded_cube(EveryApi &ev, float start_x, float end_x,float start_y, float end_y,float start_z, float end_z,float round_radius);
   IMPORT P repeat_xy_p(EveryApi &ev, P p, float start_x, float start_y, float dx, float dy, int sx, int sy);
   IMPORT P repeat_xz_p(EveryApi &ev, P p, float start_x, float start_z, float dx, float dz, int sx, int sz);
   IMPORT P repeat_yz_p(EveryApi &ev, P p, float start_y, float start_z, float dy, float dz, int sy, int sz);
@@ -2242,10 +2160,7 @@ public:
   IMPORT P color_map3_sph(BM bm, FB height, PT pos, V u_x, V u_y);
   IMPORT P color_map3_sph(BM bm, FB height, float sx, float sy, float z);
   IMPORT P color_map4(BM bm, FB height, float sx, float sy, float z);
-  IMPORT P cube_map(float start_x, float end_x,
-		    float stary_y, float end_y,
-		    float start_z, float end_z,
-		    BM bm_front, BM bm_back, BM bm_left, BM bm_right, BM bm_top, BM bm_bottom);
+  IMPORT P cube_map(float start_x, float end_x,float stary_y, float end_y,float start_z, float end_z,BM bm_front, BM bm_back, BM bm_left, BM bm_right, BM bm_top, BM bm_bottom);
 	IMPORT P sphere(PT center, float radius, int numfaces1, int numfaces2);
   IMPORT P sphere_map(float c_x, float c_y, float c_z, FB fb, float start_radius, float end_radius, float start_values, float end_values, int sx, int sy);
   IMPORT P plane_map(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float start_values, float end_values, FB fb, int sx, int sy);
@@ -2291,14 +2206,9 @@ public:
   IMPORT P min_color(P orig, P orig2);
   IMPORT P max_color(P orig, P orig2);
   IMPORT P color_lambert(P orig, unsigned int color, float light_dir_x, float light_dir_y, float light_dir_z, float pow, float intensity);
-  IMPORT P texcoord_cube(P orig,
-		  PT o, PT u_x, PT u_y, PT u_z,  // these are 3d
-		  PT tex_o, PT tex_x, PT tex_y, PT tex_z); // tex_* are 2d
+  IMPORT P texcoord_cube(P orig,PT o, PT u_x, PT u_y, PT u_z, PT tex_o, PT tex_x, PT tex_y, PT tex_z); // tex_* are 2d
   IMPORT P texcoord_default(P orig);
-  IMPORT P texcoord_manual(P orig, float p1_x, float p1_y,
-			   float p2_x, float p2_y,
-			   float p3_x, float p3_y,
-			   float p4_x, float p4_y);
+  IMPORT P texcoord_manual(P orig, float p1_x, float p1_y,float p2_x, float p2_y,float p3_x, float p3_y,float p4_x, float p4_y);
   IMPORT P texcoord_spherical(PT center, P orig);
   IMPORT P texcoord_spherical2(EveryApi &ev, PT center, float r, P orig);
   IMPORT P texcoord_cylindar(P orig, float start_y, float end_y);
@@ -2308,15 +2218,11 @@ public:
   IMPORT P color_cube(P orig,
 	       PT o, PT u_x, PT u_y, PT u_z,
 	       unsigned int color_o, unsigned int color_x, unsigned int color_y, unsigned int color_z);
-  IMPORT P color_faces(P orig,
-		unsigned int color_1, unsigned int color_2,
-		unsigned int color_3, unsigned int color_4);
+  IMPORT P color_faces(P orig,unsigned int color_1, unsigned int color_2,unsigned int color_3, unsigned int color_4);
   IMPORT P color_from_normals(P orig);
   IMPORT P color_alpha(P orig, unsigned int alpha);
   IMPORT P color_grayscale(P orig);
-  IMPORT P color_from_texcoord(P orig,
-			       unsigned int color_1, unsigned int color_2,
-			       unsigned int color_3, unsigned int color_4);
+  IMPORT P color_from_texcoord(P orig,unsigned int color_1, unsigned int color_2,unsigned int color_3, unsigned int color_4);
   IMPORT P color_range(P orig, unsigned int source_upper, unsigned int source_lower, unsigned int upper_range, unsigned int lower_range);
 
   IMPORT P texcoord_poly(P orig, int facenum, PT *array, int size);
@@ -2454,15 +2360,9 @@ public:
   IMPORT ML fog_shader(EveryApi &ev, ML mainloop, float fog_dist, unsigned int dark_color, unsigned int light_color);
   IMPORT ML shadow_shader(EveryApi &ev, ML mainloop, int tex_num, float p_x, float p_y, float p_z, unsigned int dark_color, float mix);
   IMPORT ML dyn_lights_shader(EveryApi &ev, ML mainloop, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point);
-  IMPORT ML shading_shader(EveryApi &ev, ML mainloop,
-			  unsigned int level1,
-			  unsigned int level2,
-			   unsigned int level3, float spec_size=5.0f, bool ambient=true, bool diffuse=true, bool specular=false);
-  IMPORT ML spotlight_shader(EveryApi &ev, ML mainloop,
-			     int light_color_id, MN move);
-  IMPORT ML ambient_shader(EveryApi &ev, ML mainloop,
-			   int ambient_color_id,
-			   float ambient_level);
+  IMPORT ML shading_shader(EveryApi &ev, ML mainloop,unsigned int level1,unsigned int level2,unsigned int level3, float spec_size=5.0f, bool ambient=true, bool diffuse=true, bool specular=false);
+  IMPORT ML spotlight_shader(EveryApi &ev, ML mainloop,int light_color_id, MN move);
+  IMPORT ML ambient_shader(EveryApi &ev, ML mainloop,int ambient_color_id,float ambient_level);
   IMPORT ML noise_shader(EveryApi &ev, ML mainloop);
   IMPORT ML custom_shader(EveryApi &ev, ML mainloop, std::string v_shader, std::string f_shader, std::string v_funcname, std::string f_funcname);
   IMPORT ML dither_shader(EveryApi &ev, ML mainloop);
@@ -2768,10 +2668,7 @@ public:
   IMPORT BB from_float_bitmap(FB float_bm, float range_start, float range_end);
   IMPORT BB from_bitmaps_color(BM bm, int r, int g, int b);
   IMPORT BB from_bitmaps_color_area(BM bm, std::function<bool(int r, int g, int b, int a)> f);
-  IMPORT BB from_bitmaps_color_area(BM bm, int r_start, int r_end,
-			            int g_start, int g_end, 
-			            int b_start, int b_end, 
-			            int a_start, int a_end);
+  IMPORT BB from_bitmaps_color_area(BM bm, int r_start, int r_end,int g_start, int g_end, int b_start, int b_end, int a_start, int a_end);
   IMPORT BB line(BB bg, float p_x, float p_y, float p2_x, float p2_y, float line_width1, float line_width2);
   IMPORT BB tri(BB orig, float p1_x, float p1_y, float p2_x, float p2_y, float p3_x, float p3_y);
 
@@ -2781,8 +2678,7 @@ public:
   IMPORT BB rectangle(BB bg, float x, float y, float width, float height); // for moving
   IMPORT BB sprite(BB bg, BB sprite, float x, float y, float size_multiplier_x, float size_multiplier_y);
   IMPORT BB polygon(BB bg, PT *points, int size);
-  IMPORT BB text(BB bg, int x, int y, const char *string, int size,
-		 BB *glyphs, int glyphcount, int(*fptr)(EveryApi &ev, char));
+  IMPORT BB text(BB bg, int x, int y, const char *string, int size,BB *glyphs, int glyphcount, int(*fptr)(EveryApi &ev, char));
   
   IMPORT BB part_circle(int sx, int sy, float x, float y, float start_angle, float end_angle, float start_rad, float end_rad);
   IMPORT BB sections(int sx, int sy, float x, float y, std::function<bool (float angle)> f);
@@ -2794,15 +2690,9 @@ public:
   IMPORT BB xor_bitmap(BB b1, BB flip_b2);
   IMPORT BM choose_bitmap(BB bools, BM true_bitmap, BM false_bitmap);
   
-  IMPORT BM to_bitmap(BB bools,
-		      int true_r, int true_g, int true_b, int true_a,
-		      int false_r, int false_g, int false_b, int false_a);
-  BM to_bitmap_1(BB bools,
-		 int true_r, int true_g, int true_b, int true_a,
-		 int false_r, int false_g, int false_b, int false_a);
-  IMPORT BM texture(BM bg,
-		    BB bools1, int l1, int t1,
-		    BM texturebitmap2, int l2, int t2);
+  IMPORT BM to_bitmap(BB bools,int true_r, int true_g, int true_b, int true_a,int false_r, int false_g, int false_b, int false_a);
+  BM to_bitmap_1(BB bools,int true_r, int true_g, int true_b, int true_a,int false_r, int false_g, int false_b, int false_a);
+  IMPORT BM texture(BM bg,BB bools1, int l1, int t1,BM texturebitmap2, int l2, int t2);
   IMPORT int size_x(BB bm);
   IMPORT int size_y(BB bm);
   IMPORT bool boolvalue(BB bb, int x, int y);
@@ -2841,9 +2731,7 @@ public: // values are [0.0..1.0]
   IMPORT FB space_fill(PT *array, float *array2, int size, int sx, int sy);
   
   IMPORT BM to_grayscale(FB fb);
-  IMPORT BM to_grayscale_color(FB fb,
-			       int r, int g, int b, int a,
-			       int r2, int g2, int b2, int a2);
+  IMPORT BM to_grayscale_color(FB fb,int r, int g, int b, int a,int r2, int g2, int b2, int a2);
   IMPORT BM to_color(FB r, FB g, FB b, FB a);
   IMPORT BM choose_bitmap(FB fb, BM bm1, BM bm2);
   IMPORT FB perlin_noise(FB grad_1, FB grad_2);
@@ -3051,9 +2939,7 @@ public:
   IMPORT ML collision_bind(EveryApi &ev, PTS bounding_box, std::string name);
   IMPORT ML collision_bind_inst(EveryApi &ev, PTS bounding_box, PTS inst_points, std::string name);
   IMPORT ML collision_collect(ML mainloop);
-  IMPORT PTS from_float_volume(FO float_volume, int numpoints, 
-			float start_x, float start_y, float start_z,
-			float end_x, float end_y, float end_z);
+  IMPORT PTS from_float_volume(FO float_volume, int numpoints, float start_x, float start_y, float start_z,float end_x, float end_y, float end_z);
   IMPORT PTS color_points(PTS p, unsigned int color);
   IMPORT PTS li_pts(LI li, float pos);
   IMPORT PTS li_pts2(LI li); 
@@ -3403,12 +3289,9 @@ public:
   IMPORT ~ShaderApi();
   IMPORT void load_default();
   IMPORT void load(std::string filename);
-  IMPORT SH get_shader(std::string v_format, std::string f_format, std::string g_format,
-		       std::string v_comb="", std::string f_comb="", bool trans=true, SFO module={-1} );
-  IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,
-			      std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, std::string v_defines="IN_NORMAL IN_COLOR IN_TEXCOORD IN_POSITION EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD");
-  IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,
-			      US v_comb, US f_comb, bool trans=true, SFO mod={-1}, std::string v_defines="", std::string f_defines="");
+  IMPORT SH get_shader(std::string v_format, std::string f_format, std::string g_format,std::string v_comb="", std::string f_comb="", bool trans=true, SFO module={-1} );
+  IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, std::string v_defines="IN_NORMAL IN_COLOR IN_TEXCOORD IN_POSITION EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD");
+  IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,US v_comb, US f_comb, bool trans=true, SFO mod={-1}, std::string v_defines="", std::string f_defines="");
   IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format, US v_comb, US f_comb, std::string v_shader, std::string f_shader, bool trans=true, SFO mod={-1}, std::string v_defines="", std::string f_defines="");
   SH get_shader_1(std::string v_format, std::string f_format, std::string g_format,
 		  std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, US v_c={-1}, US f_c={-1}, std::string v_defines="IN_NORMAL IN_COLOR IN_TEXCOORD IN_POSITION EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD EX_POSITION", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string v_shader="", std::string f_shader="");
@@ -3472,6 +3355,8 @@ public:
   BM low_frame_bitmap(FML ml, int sx, int sy);
   FML low_key_bm_prepare(FML ml, BM bm, int key,FML normal, float duration, FML next);
   FML low_activate_snapshot(EveryApi &ev, FML ml, int key, MN move, float duration, FML next);
+  FML qml_print(std::string url);
+  FML qml_create_node(std::string url);
 private:
   LowFrameBufferApi(const LowFrameBufferApi &);
   void operator=(const LowFrameBufferApi&);

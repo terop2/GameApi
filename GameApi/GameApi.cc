@@ -10153,15 +10153,15 @@ public:
 	if (e.ch==27 && e.type==0x300) { env->exit = true; return 0; }
 #endif
 	
-	GameApi::InteractionApi::quake_movement_event(*env->ev,e, env->pos_x, env->pos_y, env->rot_y,
-						      env->data, env->speed_x, env->speed_y,
-				   1.0, 1.0*3.14159*2.0/360.0);
+	//GameApi::InteractionApi::quake_movement_event(*env->ev,e, env->pos_x, env->pos_y, env->rot_y,
+	//					      env->data, env->speed_x, env->speed_y,
+	//			   1.0, 1.0*3.14159*2.0/360.0);
 	env->ev->mainloop_api.event_ml(env->mainloop, e);
 	
       }
-    GameApi::InteractionApi::quake_movement_frame(*env->ev, env->pos_x, env->pos_y, env->rot_y,
-						  env->data, env->speed_x, env->speed_y,
-						  1.0, 1.0*3.14159*2.0/360.0);
+    //GameApi::InteractionApi::quake_movement_frame(*env->ev, env->pos_x, env->pos_y, env->rot_y,
+    //						  env->data, env->speed_x, env->speed_y,
+    //						  1.0, 1.0*3.14159*2.0/360.0);
     
     GameApi::M mat = env->ev->matrix_api.identity();
     env->ev->shader_api.use(env->color_sh);
@@ -12454,7 +12454,9 @@ float quake_rot_y;
 class QuakeML : public MainLoopItem
 {
 public:
-  QuakeML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, float speed, float rot_speed) : env(env), ev(ev), next(next), speed(speed), rot_speed(rot_speed) { }
+  QuakeML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, float speed, float rot_speed) : env(env), ev(ev), next(next), speed(speed), rot_speed(rot_speed) { 
+    point.id=-1;
+  }
   virtual void execute(MainLoopEnv &e)
   {
     GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
@@ -12497,10 +12499,18 @@ public:
   }
   virtual void handle_event(MainLoopEvent &e)
   {
+    if (point.id==-1) {
+      point = add_point(env, 0.0,0.0,0.0);
+    }
+    Point *pt = find_point(env,point);
+    pt->x = e.cursor_pos.x;
+    pt->y = e.cursor_pos.y;
+    pt->z = e.cursor_pos.z;
     GameApi::MainLoopApi::Event ee;
     ee.type = e.type;
     ee.ch = e.ch;
     ee.button = e.button;
+    ee.cursor_pos = point;
     GameApi::InteractionApi::quake_movement_event(ev,ee,pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
     next->handle_event(e);
   }
@@ -12509,6 +12519,7 @@ public:
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
+  GameApi::PT point;
   MainLoopItem *next;
   float pos_x=0.0, pos_y=0.0, rot_y=0.0;
   GameApi::InteractionApi::Quake_data dt;
@@ -16334,9 +16345,10 @@ public:
 	  {
 	    left=false;
 	  }
-  if (e.type==1025 && e.button==0 && cursor.x>scr_x_0 && cursor.x<scr_x_1 && cursor.y>scr_y_1 && cursor.y<scr_y_2) left=true;
+#if 0
+	if (e.type==1025 && e.button==0 && cursor.x>scr_x_0 && cursor.x<scr_x_1 && cursor.y>scr_y_1 && cursor.y<scr_y_2) left=true;
   if (e.type==1026 && e.button==-1 && cursor.x>scr_x_0 && cursor.x<scr_x_1 && cursor.y>scr_y_1 && cursor.y<scr_y_2) left=false;
-
+#endif
 	
 
 	if (e.type==0x300 && (e.ch=='d'||e.ch==7||e.ch==79||e.ch==1073741903)) // right
@@ -16348,9 +16360,10 @@ public:
 	    right=false;
 	  }
 
-  if (e.type==1025 && e.button==0 && cursor.x>scr_x_2 && cursor.x<scr_x_3 && cursor.y>scr_y_1 && cursor.y<scr_y_2) right=true;
+#if 0
+	if (e.type==1025 && e.button==0 && cursor.x>scr_x_2 && cursor.x<scr_x_3 && cursor.y>scr_y_1 && cursor.y<scr_y_2) right=true;
   if (e.type==1026 && e.button==-1 && cursor.x>scr_x_2 && cursor.x<scr_x_3 && cursor.y>scr_y_1 && cursor.y<scr_y_2) right=false;
-
+#endif
 	WorldBlocks *blk = GetWorld();
 	Point2d p = { p_x,p_y };
 	std::pair<int,int> pos = blk->BlockPosition(p);
@@ -16361,16 +16374,19 @@ public:
 	      gravity = false;
 	      jump_frame=0;
 	    }
+#if 0
 	  if (e.type==1025 && e.button==0 && cursor.x>scr_x_1 && cursor.x<scr_x_2 && cursor.y>scr_y_0 && cursor.y<scr_y_1 && !jump_up) { jump_up=true; gravity=false; jump_frame=0; }
-
+#endif
+	  
 	}
 	if (e.type==0x301 && (e.ch==' '||e.ch=='w'||e.ch==26||e.ch==82||e.ch==1073741906)) // jump stop
 	  {
 	    jump_up=false;
 	    gravity=true;
 	  }
+#if 0
 	if (e.type==1026 && e.button==-1 && cursor.x>scr_x_1 && cursor.x<scr_x_2 && cursor.y>scr_y_0 && cursor.y<scr_y_1) { jump_up=false; gravity=true; }
-
+#endif
       }
 
     if (mode==1)

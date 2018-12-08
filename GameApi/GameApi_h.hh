@@ -23,7 +23,9 @@
 #endif
 
 #ifndef ARM
+#ifndef OUTPUT
 #define HAS_FREETYPE 1
+#endif
 #define HAS_POPEN 1
 #endif
 
