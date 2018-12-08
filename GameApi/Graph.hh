@@ -1552,6 +1552,59 @@ private:
   int x,y;
 };
 
+class ConstantBitmap_Color : public Bitmap<Color>
+{
+public:
+  ConstantBitmap(Color c, int x, int y) : c(c), x(x), y(y) { }
+  void Prepare() { }
+
+  int SizeX() const { return x; }
+  int SizeY() const { return y; }
+  Color Map(int , int ) const
+  {
+    return c;
+  }
+private:
+  Color c;
+  int x,y;
+};
+
+class ConstantBitmap_bool : public Bitmap<bool>
+{
+public:
+  ConstantBitmap(bool c, int x, int y) : c(c), x(x), y(y) { }
+  void Prepare() { }
+
+  int SizeX() const { return x; }
+  int SizeY() const { return y; }
+  bool Map(int , int ) const
+  {
+    return c;
+  }
+private:
+  bool c;
+  int x,y;
+};
+
+class ConstantBitmap_float : public Bitmap<float>
+{
+public:
+  ConstantBitmap(float c, int x, int y) : c(c), x(x), y(y) { }
+  void Prepare() { }
+
+  int SizeX() const { return x; }
+  int SizeY() const { return y; }
+  float Map(int , int ) const
+  {
+    return c;
+  }
+private:
+  float c;
+  int x,y;
+};
+
+
+
 template<class C>
 class BitmapRelation : public Bitmap<C>
 {
