@@ -1555,7 +1555,7 @@ private:
 class ConstantBitmap_Color : public Bitmap<Color>
 {
 public:
-  ConstantBitmap(Color c, int x, int y) : c(c), x(x), y(y) { }
+  ConstantBitmap_Color(Color c, int x, int y) : c(c), x(x), y(y) { }
   void Prepare() { }
 
   int SizeX() const { return x; }
@@ -1572,7 +1572,7 @@ private:
 class ConstantBitmap_bool : public Bitmap<bool>
 {
 public:
-  ConstantBitmap(bool c, int x, int y) : c(c), x(x), y(y) { }
+  ConstantBitmap_bool(bool c, int x, int y) : c(c), x(x), y(y) { }
   void Prepare() { }
 
   int SizeX() const { return x; }
@@ -1589,7 +1589,7 @@ private:
 class ConstantBitmap_float : public Bitmap<float>
 {
 public:
-  ConstantBitmap(float c, int x, int y) : c(c), x(x), y(y) { }
+  ConstantBitmap_float(float c, int x, int y) : c(c), x(x), y(y) { }
   void Prepare() { }
 
   int SizeX() const { return x; }
