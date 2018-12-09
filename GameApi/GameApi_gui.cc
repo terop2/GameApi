@@ -46,10 +46,33 @@ int strlen(const char *);
 #endif
 #endif
 
+std::string unique_id_apiitem();
 std::vector<GameApiItem*> all_functions();
 std::vector<GameApiItem*> polydistfield_functions();
 std::vector<GameApiItem*> waveform_functions();
 std::vector<GameApiItem*> blocker_functions();
+std::vector<GameApiItem*> textureapi_functions();
+std::vector<GameApiItem*> volumeapi_functions();
+std::vector<GameApiItem*> floatvolumeapi_functions();
+std::vector<GameApiItem*> colorvolumeapi_functions();
+std::vector<GameApiItem*> vectorapi_functions();
+std::vector<GameApiItem*> pointapi_functions();
+std::vector<GameApiItem*> fontapi_functions();
+std::vector<GameApiItem*> moveapi_functions();
+std::vector<GameApiItem*> polygonapi_functions();
+std::vector<GameApiItem*> shadermoduleapi_functions();
+std::vector<GameApiItem*> framebuffermoduleapi_functions();
+std::vector<GameApiItem*> textureapi_functions();
+std::vector<GameApiItem*> booleanopsapi_functions();
+std::vector<GameApiItem*> polygonapi_functions1();
+std::vector<GameApiItem*> polygonapi_functions2();
+std::vector<GameApiItem*> linesapi_functions();
+std::vector<GameApiItem*> pointsapi_functions();
+std::vector<GameApiItem*> floatbitmapapi_functions();
+std::vector<GameApiItem*> boolbitmapapi_functions();
+std::vector<GameApiItem*> bitmapapi_functions();
+
+
 
 
 class EmptyWidget : public GuiWidgetForward
@@ -2201,8 +2224,6 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, F
   W array_2 = margin(array, 1,1,1,1);
   return array_2;
 }
-#endif // SECTION_1
-#ifdef SECTION_2
 
 class MouseMoveWidget : public GuiWidgetForward
 {
@@ -2947,6 +2968,7 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &l
   return combine_move;
 }
 
+
 class RightAlignWidget : public GuiWidgetForward
 {
 public:
@@ -3327,6 +3349,8 @@ EXPORT GameApi::W GameApi::GuiApi::main_menu(std::vector<std::string> labels, Ft
 
   return w5;
 }
+#endif // SECTION_1
+#ifdef SECTION_2
 
 
 class ScrollBarY : public GuiWidgetForward
@@ -3999,7 +4023,6 @@ EXPORT void GameApi::GuiApi::set_id(W w, std::string id)
 }
 #endif
 #endif // SECTION_2
-#ifdef SECTION_3
 
 template<class T>
 class FromStreamClass
@@ -4170,6 +4193,7 @@ void set_empty(GameApi::EveryApi &ev, T &t) { t.id=0; }
 
 std::string empty_param(std::string s);
 #ifdef FIRST_PART
+#ifdef SECTION_3
 std::string empty_param(std::string s)
 {
   if (s.size()>1 && s[0]=='[')
@@ -4202,8 +4226,11 @@ MACRO3(WV,ev.waveform_api.empty(1.0))
   return "@";
 }
 #endif
+#endif
 
 #ifdef FIRST_PART
+#ifdef SECTION_3
+
 MACRO2(GameApi::BM,ev.bitmap_api.newbitmap(10,10,0x00000000))
 MACRO2(GameApi::FD,ev.dist_api.cube(0.0,0.0,0.0,0.0,0.0,0.0))
 MACRO2(GameApi::BO,ev.bool_api.cube(ev,0.0,0.0,0.0,0.0,0.0,0.0,1,1))
@@ -4224,6 +4251,7 @@ MACRO2(GameApi::MT,ev.materials_api.def(ev))
 MACRO2(GameApi::C,ev.curve_api.linear(std::vector<GameApi::PT>()))
 MACRO2(GameApi::PD,ev.polygon_dist_api.empty(ev))
 MACRO2(GameApi::WV,ev.waveform_api.empty(1.0))
+#endif
 #endif
 
 #define MACRO(lab) \
@@ -4400,12 +4428,16 @@ std::vector<GameApi::EditNode*> collectnodes(std::string name, std::vector<std::
 template<class T>
 int template_get_id(T t) { return t.id; }
 #ifdef FIRST_PART
+#ifdef SECTION_3
 int template_get_id(GameApi::ARR a) { return 0; }
+#endif
 #endif
 
 void funccall_1(std::vector<std::string> &s, GameApi::ExecuteEnv &e, std::vector<std::string> param_name);
 
 #ifdef FIRST_PART
+#ifdef SECTION_3
+
 void funccall_1(std::vector<std::string> &s, GameApi::ExecuteEnv &e, std::vector<std::string> param_name)
 {
   int s3 = s.size();
@@ -4426,6 +4458,7 @@ void funccall_1(std::vector<std::string> &s, GameApi::ExecuteEnv &e, std::vector
       
     }
 }
+#endif
 #endif
 template<class T, class RT, class... P>
 int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
@@ -4484,9 +4517,9 @@ int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api
 }
 
 
-std::string unique_id_apiitem();
 
 #ifdef FIRST_PART
+#ifdef SECTION_3
 int find_char(const std::string &line, int start_char, char ch, bool braces=true)
 {
   int s = line.size();
@@ -5078,12 +5111,13 @@ private:
   std::string text;
   GameApi::ExecuteEnv &e;
 };
-
+#endif // SECTION_1
 #endif
 std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_type, std::string return_type, std::string api_name, std::string func_name);
 
 
 #ifdef FIRST_PART
+#ifdef SECTION_1
 std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_type, std::string return_type, std::string api_name, std::string func_name)
 {
       std::string s;
@@ -5118,6 +5152,7 @@ std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<
     return std::make_pair(id, s);
 
 }
+#endif
 #endif
 template<class T, class RT, class... P>
 class ApiItem : public GameApiItem
@@ -5216,19 +5251,11 @@ GameApiItem* ApiItemF(T (GameApi::EveryApi::*api), RT (T::*fptr)(P...),
 {
   return new ApiItem<T,RT,P...>(api, fptr, name, param_name, param_type, param_default, return_type, api_name, func_name, symbols,comment);
 }
-std::vector<GameApiItem*> textureapi_functions();
-std::vector<GameApiItem*> volumeapi_functions();
-std::vector<GameApiItem*> floatvolumeapi_functions();
-std::vector<GameApiItem*> colorvolumeapi_functions();
-std::vector<GameApiItem*> vectorapi_functions();
-std::vector<GameApiItem*> pointapi_functions();
-std::vector<GameApiItem*> fontapi_functions();
-std::vector<GameApiItem*> textureapi_functions();
-std::vector<GameApiItem*> booleanopsapi_functions();
 
 std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::vector<GameApiItem*> vec2);
 
 #ifdef FIRST_PART
+#ifdef SECTION_1
 std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::vector<GameApiItem*> vec2)
 {
   int s = vec2.size();
@@ -6364,10 +6391,6 @@ std::vector<GameApiItem*> fontapi_functions()
 }
 #endif // SECTION_3
 #endif
-std::vector<GameApiItem*> moveapi_functions();
-std::vector<GameApiItem*> polygonapi_functions();
-std::vector<GameApiItem*> shadermoduleapi_functions();
-std::vector<GameApiItem*> framebuffermoduleapi_functions();
 
 
 #ifdef SECOND_PART
@@ -7612,8 +7635,6 @@ std::vector<GameApiItem*> polydistfield_functions()
 }
 #endif // SECTION_1
  
-std::vector<GameApiItem*> polygonapi_functions1();
-std::vector<GameApiItem*> polygonapi_functions2();
 #ifdef SECTION_2
 std::vector<GameApiItem*> polygonapi_functions()
 {
