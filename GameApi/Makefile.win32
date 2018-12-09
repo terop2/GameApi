@@ -30,7 +30,10 @@ CFiles=	Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
 	FreeType.cc FreeType2.cc VertexArray.cc StateChange.cc DistanceObject.cc GameRunner.cc \
 	GameApi_an.cc GameApi_bm.cc GameApi_co.cc GameApi_dr.cc GameApi_ev.cc \
 	GameApi_ex.cc GameApi_fbo.cc GameApi_f.cc GameApi_fn.cc \
-	GameApi_fnt.cc GameApi_gr.cc GameApi_gui_1.cc GameApi_gui_2.cc GameApi_gui_3.cc \
+	GameApi_fnt.cc GameApi_gr.cc \
+	GameApi_gui_1_1.cc GameApi_gui_2_1.cc GameApi_gui_3_1.cc \
+	GameApi_gui_1_2.cc GameApi_gui_2_2.cc GameApi_gui_3_2.cc \
+	GameApi_gui_1_3.cc GameApi_gui_2_3.cc GameApi_gui_3_3.cc \
 	GameApi_lay.cc \
 	GameApi_li.cc GameApi_main.cc GameApi_mx.cc GameApi_pc.cc \
 	GameApi_phy.cc GameApi_pla.cc GameApi_pl.cc GameApi_pt.cc \
@@ -95,9 +98,15 @@ default: glew.o libGameApi.dll
 
 touched: GameApi_gui.cc
 	touch GameApi_gui.cc
-	touch GameApi_gui_1.cc
-	touch GameApi_gui_2.cc
-	touch GameApi_gui_3.cc
+	touch GameApi_gui_1_1.cc
+	touch GameApi_gui_2_1.cc
+	touch GameApi_gui_3_1.cc
+	touch GameApi_gui_1_2.cc
+	touch GameApi_gui_2_2.cc
+	touch GameApi_gui_3_2.cc
+	touch GameApi_gui_1_3.cc
+	touch GameApi_gui_2_3.cc
+	touch GameApi_gui_3_3.cc
 
 all: libGameApi.so libGameApi.dll install main
 
