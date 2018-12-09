@@ -33,6 +33,12 @@
 
 #include "GameApi_low.hh"
 
+// this flag needs to be changes also from
+// 1) GameApi_h.hh
+// 2) Main.cc
+// 3) Shader.cc
+#define OPENGL_ES 1
+
 std::string funccall_to_string(ShaderModule *mod);
 std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string value);
 
@@ -429,6 +435,9 @@ ShaderFile::ShaderFile(std::string filename)
 }
 
 #ifdef EMSCRIPTEN
+#define OLD_SHADER 1
+#endif
+#ifdef OPENGL_ES
 #define OLD_SHADER 1
 #endif
 #ifdef RASBERRY
