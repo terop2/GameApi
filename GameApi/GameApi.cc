@@ -1,4 +1,4 @@
-       
+
 #define SDL2_USED  
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
@@ -13,6 +13,97 @@
 #include "FreeType2.hh"
 
 #include <cstring>
+
+#ifndef FIRST
+#ifndef SECOND
+#ifndef THIRD
+#define FIRST_PART 1
+#define SECOND_PART 1
+#define THIRD_PART 1
+#endif
+#endif
+#endif
+#ifdef FIRST
+#define FIRST_PART 1
+#endif
+#ifdef SECOND
+#define SECOND_PART 1
+#endif
+#ifdef THIRD
+#define THIRD_PART 1
+#endif
+
+void InstallProgress(int num,std::string label, int max=15);
+void ProgressBar(int num, int val, int max, std::string label);
+std::string funccall_to_string(ShaderModule *mod);
+std::string color_funccall_to_string(ShaderModule *mod);
+std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
+std::string color_funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
+extern std::string gameapi_homepageurl;
+extern int async_pending_count;
+extern bool async_is_done;
+extern float debug_pos_x, debug_pos_y, debug_pos_z;
+
+
+class MaterialForward : public Material
+{
+public:
+  GameApi::ML call(GameApi::P p) const
+  {
+    GameApi::ML ml;
+    ml.id = mat(p.id);
+    return ml;
+  }
+  GameApi::ML call_inst(GameApi::P p, GameApi::PTS pts)
+  {
+    GameApi::ML ml;
+    ml.id = mat_inst(p.id,pts.id);
+    return ml;
+  }
+  int mat(int p) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::ML ml = mat2(p2);
+    return ml.id;
+  }
+  int mat_inst(int p, int pts) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::PTS p3;
+    p3.id = pts;
+    GameApi::ML ml = mat2_inst(p2,p3);
+    return ml.id;
+  }
+  int mat_inst2(int p, int pta) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::PTA p3;
+    p3.id = pta;
+    GameApi::ML ml = mat2_inst2(p2,p3);
+    return ml.id;
+
+  }
+  int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::PTS p3;
+    p3.id = pts;
+    GameApi::ML ml = mat_inst_fade(p2,p3, flip, start_time, end_time);
+    return ml.id;
+
+  }
+  virtual GameApi::ML mat2(GameApi::P p) const=0;
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const=0;
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const=0;
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const=0;
+};
+
+
+#ifdef FIRST_PART
 
 #if 0
 void *operator new( std::size_t count)
@@ -37,10 +128,6 @@ int array_type_to_int(GameApi::BM b) { return E_BM; }
 int array_type_to_int(GameApi::P b) { return E_P; }
 
 
-std::string funccall_to_string(ShaderModule *mod);
-std::string color_funccall_to_string(ShaderModule *mod);
-std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
-std::string color_funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
 
 EnvImpl::EnvImpl() : event_infos(new EmptySequencer2), mutex(PTHREAD_MUTEX_INITIALIZER)
 {
@@ -363,7 +450,6 @@ EXPORT void GameApi::Env::free_temp_memory()
 
 }
 
-void InstallProgress(int num,std::string label, int max=15);
 EXPORT void GameApi::Env::async_load_url(std::string url, std::string homepage)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
@@ -375,7 +461,6 @@ EXPORT void GameApi::Env::async_load_callback(std::string url, void (*fptr)(void
   ::EnvImpl *env = (::EnvImpl*)envimpl;
   env->async_loader->set_callback(url, fptr, data);
 }
-void ProgressBar(int num, int val, int max, std::string label);
 EXPORT std::vector<unsigned char> *GameApi::Env::get_loaded_async_url(std::string url)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
@@ -3104,7 +3189,6 @@ private:
   float dx,dy,dz;
 };
 
-extern float debug_pos_x, debug_pos_y, debug_pos_z;
 
 class DebugTranslateMovement : public Movement
 {
@@ -3142,7 +3226,6 @@ EXPORT GameApi::MN GameApi::MovementNode::translate(MN next,
   return add_move(e, new TranslateMovement(nxt,start_time, end_time,
 					   dx,dy,dz));
 }
-extern int async_pending_count;
 int FindProgressVal();
 int FindProgressMax();
 class ScaleProgress : public Movement
@@ -4858,62 +4941,6 @@ GameApi::P GameApi::TreeApi::tree_p(EveryApi &ev, T tree, std::vector<P> vec, fl
   return execute_recurse(e, ev, vec, Matrix::Identity(), 0, tree2, time); 
 }
 
-class MaterialForward : public Material
-{
-public:
-  GameApi::ML call(GameApi::P p) const
-  {
-    GameApi::ML ml;
-    ml.id = mat(p.id);
-    return ml;
-  }
-  GameApi::ML call_inst(GameApi::P p, GameApi::PTS pts)
-  {
-    GameApi::ML ml;
-    ml.id = mat_inst(p.id,pts.id);
-    return ml;
-  }
-  int mat(int p) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::ML ml = mat2(p2);
-    return ml.id;
-  }
-  int mat_inst(int p, int pts) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTS p3;
-    p3.id = pts;
-    GameApi::ML ml = mat2_inst(p2,p3);
-    return ml.id;
-  }
-  int mat_inst2(int p, int pta) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTA p3;
-    p3.id = pta;
-    GameApi::ML ml = mat2_inst2(p2,p3);
-    return ml.id;
-
-  }
-  int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTS p3;
-    p3.id = pts;
-    GameApi::ML ml = mat_inst_fade(p2,p3, flip, start_time, end_time);
-    return ml.id;
-
-  }
-  virtual GameApi::ML mat2(GameApi::P p) const=0;
-  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const=0;
-  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const=0;
-  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const=0;
-};
 class DefaultMaterial : public MaterialForward
 {
 public:
@@ -6020,6 +6047,7 @@ private:
 };
 
 
+
 class DynLightsMaterial : public MaterialForward
 {
 public:
@@ -6404,7 +6432,8 @@ private:
   unsigned int color;
   float mix_val;
 };
-
+#endif
+#ifdef FIRST_PART
 EXPORT GameApi::MT GameApi::MaterialsApi::def(EveryApi &ev)
 {
   return add_material(e, new DefaultMaterial(ev));
@@ -6514,6 +6543,8 @@ EXPORT GameApi::MT GameApi::MaterialsApi::marble(EveryApi &ev, MT nxt, int count
   Material *mat = find_material(e, nxt);
   return add_material(e, new Marble(ev, mat, count, cubesize));
 }
+#endif // FIRST_PART
+#ifdef SECOND_PART
 
 #if 0
 EXPORT GameApi::ML GameApi::MaterialsApi::snow(EveryApi &ev, P p)
@@ -8712,7 +8743,7 @@ private:
 EXPORT GameApi::P GameApi::CurveApi::patch_sample(PA patch, int sx, int sy)
 {
   CurvePatch *p = find_patch(e, patch);
-  return add_polygon2(e, new PatchSample(*p, sx,sy));
+  return add_polygon2(e, new PatchSample(*p, sx,sy),1);
 }
 
 class Patch_X_Curve : public Curve<Point>
@@ -9973,7 +10004,6 @@ struct Envi_2 {
   int screen_width=800;
   int screen_height=600;
 };
-extern int async_pending_count;
 bool async_is_done=false;
 extern std::string gameapi_seamless_url;
 void blocker_iter(void *arg)
@@ -10592,7 +10622,7 @@ EXPORT GameApi::P GameApi::VertexAnimApi::change_pos(P p, P orig, PTT transform,
   FaceCollection *coll = find_facecoll(e, p);
   FaceCollection *orig2 = find_facecoll(e, orig);
   PointTransform *trans = find_point_transform(e, transform);
-  return add_polygon2(e, new ChangePos(*coll, *orig2, *trans, delta_time, different_pos));
+  return add_polygon2(e, new ChangePos(*coll, *orig2, *trans, delta_time, different_pos),1);
 }
 
 class CurveAccessor : public PointTransform
@@ -11610,7 +11640,6 @@ GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_g
 }
 
 
-extern std::string gameapi_homepageurl;
 GameApi::FI GameApi::FontApi::load_font(std::string ttf_filename, int sx, int sy)
 {
 #ifdef HAS_FREETYPE
@@ -11974,6 +12003,9 @@ GameApi::ML GameApi::MovementNode::enemy(ML prev)
   MainLoopItem *item = find_main_loop(e, prev);
   return add_main_loop(e, new Enemy(item));
 }
+#endif // SECOND_PART
+#ifdef THIRD_PART
+
 
 class PlayerPos : public MainLoopItem
 {
@@ -13387,7 +13419,7 @@ void P_cb(void *data)
 
 GameApi::P GameApi::MainLoopApi::load_P_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
-  return add_polygon2(e, new P_script(e,ev,url, p1,p2,p3,p4,p5));
+  return add_polygon2(e, new P_script(e,ev,url, p1,p2,p3,p4,p5),1);
 }
 
 std::vector<std::string> parse_sep(std::string s, char sep)
@@ -13448,7 +13480,7 @@ GameApi::ARR GameApi::MainLoopApi::load_P_script_array(EveryApi &ev, std::string
      
      if (i!=0) { e.async_load_url(url,gameapi_homepageurl); }
      FaceCollection *coll = new P_script(e,ev,url, k1,k2,k3,k4,k5);
-     GameApi::P coll_p = add_polygon2(e, coll);
+     GameApi::P coll_p = add_polygon2(e, coll,1);
      array->vec.push_back(coll_p.id);
    }
  return add_array(e,array);
@@ -18094,3 +18126,4 @@ GameApi::MT GameApi::MaterialsApi::many_texture_id_material(GameApi::EveryApi &e
 {
   return add_material(e, new ManyTextureIDMaterial(ev,mtl_url, url_prefix, mix, start_range, end_range));
 }
+#endif // THIRD_PART
