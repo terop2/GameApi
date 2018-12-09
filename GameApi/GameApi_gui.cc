@@ -18,6 +18,22 @@
 #endif
 #endif
 
+#ifdef RASP_PI_PART_1
+#define SECTION_1 1
+#else
+#ifdef RASP_PI_PART_2
+#define SECTION_2 1
+#else
+#ifdef RASP_PI_PART_3
+#define SECTION_3 1
+#else
+#define SECTION_1 1
+#define SECTION_2 1
+#define SECTION_3 1
+#endif
+#endif
+#endif
+
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif
@@ -44,6 +60,7 @@ public:
 
 
 #ifdef FIRST_PART
+#ifdef SECTION_1
 const float keypress_rot_speed = 6.0;
 
 
@@ -2062,6 +2079,7 @@ EXPORT GameApi::W GameApi::GuiApi::timed_visibility(W orig, W timed_widget, W in
 #endif
   return add_widget(e, new TimedWidget(ev, o, t, ii, start_duration, duration, dx));
 }
+
 EXPORT GameApi::W GameApi::GuiApi::empty()
 {
   return add_widget(e, new EmptyWidget(ev));
@@ -2183,7 +2201,8 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, F
   W array_2 = margin(array, 1,1,1,1);
   return array_2;
 }
-
+#endif // SECTION_1
+#ifdef SECTION_2
 
 class MouseMoveWidget : public GuiWidgetForward
 {
@@ -3979,6 +3998,8 @@ EXPORT void GameApi::GuiApi::set_id(W w, std::string id)
   ww->set_id(id);
 }
 #endif
+#endif // SECTION_2
+#ifdef SECTION_3
 
 template<class T>
 class FromStreamClass
@@ -6341,13 +6362,16 @@ std::vector<GameApiItem*> fontapi_functions()
   
   return vec;
 }
+#endif // SECTION_3
 #endif
 std::vector<GameApiItem*> moveapi_functions();
 std::vector<GameApiItem*> polygonapi_functions();
 std::vector<GameApiItem*> shadermoduleapi_functions();
 std::vector<GameApiItem*> framebuffermoduleapi_functions();
 
+
 #ifdef SECOND_PART
+#ifdef SECTION_1
 std::vector<GameApiItem*> moveapi_functions()
 {
   std::vector<GameApiItem*> vec;
@@ -6872,6 +6896,8 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "PTT", "vertex_anim_api", "scale_trans2"));
   return vec;
 }
+#endif // SECTION_1
+#ifdef SECTION_2
 std::vector<GameApiItem*> blocker_functions()
 {
 
@@ -7405,6 +7431,8 @@ std::vector<GameApiItem*> blocker_functions()
 #endif
   return vec;
 }
+#endif // SECTION_2
+#ifdef SECTION_3
 std::vector<GameApiItem*> waveform_functions()
 {
   std::vector<GameApiItem*> vec;
@@ -7507,6 +7535,9 @@ std::vector<GameApiItem*> waveform_functions()
 			 "WV", "waveform_api", "polynomial_wave"));
   return vec;
 }
+#endif // SECTION_3
+#ifdef SECTION_1
+ 
 std::vector<GameApiItem*> polydistfield_functions()
 {
   std::vector<GameApiItem*> vec;
@@ -7579,8 +7610,11 @@ std::vector<GameApiItem*> polydistfield_functions()
  
   return vec;
 }
+#endif // SECTION_1
+ 
 std::vector<GameApiItem*> polygonapi_functions1();
 std::vector<GameApiItem*> polygonapi_functions2();
+#ifdef SECTION_2
 std::vector<GameApiItem*> polygonapi_functions()
 {
   std::vector<GameApiItem*> i1 = polygonapi_functions1();
@@ -7892,6 +7926,8 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "P", "polygon_api", "static_instancing_with_color"));
   return vec;
 }
+#endif // SECTION_2
+#ifdef SECTION_3
 std::vector<GameApiItem*> polygonapi_functions2()
 {
   std::vector<GameApiItem*> vec;
@@ -8289,7 +8325,9 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 "SH", "shader_api", "shader_choice"));
   return vec;
 }
-std::vector<GameApiItem*> framebuffermoduleapi_functions()
+#endif // SECTION_3
+#ifdef SECTION_1
+ std::vector<GameApiItem*> framebuffermoduleapi_functions()
 {
   std::vector<GameApiItem*> vec;
   vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_sprite_draw,
@@ -8396,7 +8434,9 @@ std::vector<GameApiItem*> framebuffermoduleapi_functions()
 			 "RUN", "low_frame_api", "low_framebuffer_run"));
   return vec;
 }
-std::vector<GameApiItem*> shadermoduleapi_functions()
+#endif // SECTION_1
+#ifdef SECTION_2
+ std::vector<GameApiItem*> shadermoduleapi_functions()
 {
   std::vector<GameApiItem*> vec;
   vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, (GameApi::SFO (GameApi::ShaderModuleApi::*)(GameApi::PT,float))&GameApi::ShaderModuleApi::sphere,
@@ -8611,8 +8651,10 @@ std::vector<GameApiItem*> shadermoduleapi_functions()
   return vec;
 
 }
+#endif // SECTION_2
 #endif
 #ifdef THIRD_PART
+#ifdef SECTION_1
 std::vector<GameApiItem*> linesapi_functions()
 {
   std::vector<GameApiItem*> vec;
@@ -8901,7 +8943,9 @@ std::vector<GameApiItem*> linesapi_functions()
 
   return vec;
 }
-std::vector<GameApiItem*> pointsapi_functions()
+#endif // SECTION_1
+#ifdef SECTION_2
+ std::vector<GameApiItem*> pointsapi_functions()
 {
   std::vector<GameApiItem*> vec;
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::pt_array,
@@ -9123,7 +9167,9 @@ std::vector<GameApiItem*> pointsapi_functions()
 			 "LI", "polygon_api", "li_static_instancing_matrix"));
   return vec;
 }
-std::vector<GameApiItem*> floatbitmapapi_functions()
+#endif // SECTION_2
+#ifdef SECTION_3
+ std::vector<GameApiItem*> floatbitmapapi_functions()
 {
   std::vector<GameApiItem*> vec;
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::empty,
@@ -9295,7 +9341,9 @@ std::vector<GameApiItem*> floatbitmapapi_functions()
 
   return vec;
 }
-std::vector<GameApiItem*> boolbitmapapi_functions()
+#endif // SECTION_3
+#ifdef SECTION_1
+ std::vector<GameApiItem*> boolbitmapapi_functions()
 {
   std::vector<GameApiItem*> vec;
   vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::empty,
@@ -9402,7 +9450,9 @@ std::vector<GameApiItem*> boolbitmapapi_functions()
 			 "BB", "bool_bitmap_api", "black_white_dithering"));
   return vec;
 }
-
+#endif // SECTION_1
+#ifdef SECTION_2
+ 
 std::vector<GameApiItem*> bitmapapi_functions()
 {
   std::vector<GameApiItem*> vec;
@@ -9801,7 +9851,9 @@ std::vector<GameApiItem*> bitmapapi_functions()
   
   return vec;
 }
-
+#endif // SECTION_2
+#ifdef SECTION_3
+ 
 std::vector<GameApiItem*> booleanopsapi_functions()
 {
   std::vector<GameApiItem*> vec;
@@ -9925,6 +9977,8 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> ak = append_vectors(aj, vl);
   return ak;
 }
+#endif // SECTION_3
+#ifdef SECTION_1
 EXPORT std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)
 {
   std::vector<GameApiItem*> funcs = bitmapapi_functions();
@@ -10289,5 +10343,5 @@ std::string unique_id_apiitem()
   return std::string("I") + ss.str();
 }
 
-
+#endif // SECTION_1
 #endif
