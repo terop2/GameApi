@@ -37,7 +37,7 @@ CFiles= Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
         GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \
         GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
         GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc \
-	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc Main.cc GameApi_vr.cc GameApi_low.cc GameApi_qt.cc
+	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc Main.cc GameApi_vr.cc GameApi_low.cc
 
 
 CFiles2 = 
@@ -82,7 +82,7 @@ EMINC1 = /root/emscripten2/emsdk/emscripten/1.38.3/system/include/SDL
 EMINC2 = /root/emscripten2/emsdk/emscripten/1.38.3/system/include
 EMINC3 = /root/emscripten2/emsdk/emscripten/1.38.3/tests/freetype/include
 
-CCFLAGS = -g -g4 -O3 -Os -Oz -std=c++11 -Wall -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags --memory-init-file 0 -s NO_FILESYSTEM=1 -s DISABLE_EXCEPTION_CATCHING=1 -s USE_PTHREADS=1 -I$(EMINC1) -I$(EMINC2) -I$(EMINC3)
+CCFLAGS = -g -g4 -O3 -Os -Oz -std=c++11 -Wall -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags --memory-init-file 0 -s NO_FILESYSTEM=1 -s DISABLE_EXCEPTION_CATCHING=1 -I$(EMINC1) -I$(EMINC2) -I$(EMINC3)
 CC2FLAGS = -g -g4 -std=c++11 -Wall -O3 -Os -Oz -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) 
 #`pkg-config gtkmm-2.4 --cflags`
 
