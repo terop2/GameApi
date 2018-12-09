@@ -37,6 +37,11 @@
 #define pthread_mutex_t __gthread_mutex_t
 #endif
 
+// this flag needs to be changes also from
+// 1) GameApi_h.hh
+// 2) Main.cc
+// 3) Shader.cc
+#define OPENGL_ES 1
 
 #include "GameApi.hh"
 #include <vector>
