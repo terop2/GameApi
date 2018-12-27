@@ -21,6 +21,7 @@
 
 
 #include "VectorTools.hh"
+#include "Graph.hh"
 #include <cmath>
 #include <iostream>
 #include <ostream>
@@ -1505,4 +1506,59 @@ float AreaTools::TriArea(Point p1, Point p2, Point p3)
 float AreaTools::QuadArea(Point p1, Point p2, Point p3, Point p4)
 {
   return TriArea(p1,p2,p3) + TriArea(p1,p3,p4);
+}
+
+Line PlanePlaneIntersection(const Plane &p1, const Plane &p2)
+{
+    // Equation: x*u_x - x1*u_x2 + y*u_y - y1*u_y2 = -u_p + u_p2;
+  Vector u_x = p1.u_x;
+  Vector u_x2 = -p2.u_x;
+  Vector u_y = p1.u_y;
+  Vector u_y2 = -p2.u_y;
+  Point u_p = p1.u_p;
+  Point u_p2 = p2.u_p;
+
+  FloatPointBitmap u_xb(u_x);
+  FloatPointBitmap u_x2b(u_x2);
+  FloatPointBitmap u_yb(u_y);
+  FloatPointBitmap u_y2b(u_y2);
+  FloatPointBitmap u_pb(u_p);
+  FloatPointBitmap u_p2b(u_p2);
+
+  CombineBitmapX<float> u_x_cb(u_xb, u_x2b);
+  CombineBitmapX<float> u_y_cb(u_yb, u_y2b);
+  CombineBitmapX<float> u_p_cb(u_pb, u_p2b);
+
+  CombineBitmapX<float> u_xy_cb(u_x_cb, u_y_cb);
+  CombineBitmapX<float> u_xyp_cb(u_xy_cb, u_p_cb);
+  
+  NodeToOne n1(u_xyp_cb, 0);
+  NodeToOne n2(n1, 1);
+  NodeToOne n3(n2, 3);
+
+  NodeToZero a01(n3, 0,1); 
+  NodeToZero a02(a01, 0,2); 
+  NodeToZero a12(a02, 1,2); 
+  NodeToZero a10(a12, 1,0); 
+  NodeToZero a20(a10, 2,0); 
+  NodeToZero a21(a20, 2,1); 
+
+  for(int y=0;y<a21.SizeY();y++)
+    {
+    for(int x=0;x<a21.SizeX();x++)
+      {
+	std::cout << a21.Map(x,y) << " ";
+      }
+    std::cout << std::endl;
+    }
+
+  Point p(a21.Map(3,0), a21.Map(3,1), a21.Map(3,2));
+  Point u1(a21.Map(4,0), a21.Map(4,1), a21.Map(4,2));
+  Point u2(a21.Map(5,0), a21.Map(5,1), a21.Map(5,2));
+  Point u = u1+Vector(u2);
+  
+  Line l;
+  l.p = u;
+  l.dir = Vector(p);
+  return l;
 }
