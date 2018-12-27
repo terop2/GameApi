@@ -72,7 +72,7 @@ std::vector<GameApiItem*> floatbitmapapi_functions();
 std::vector<GameApiItem*> boolbitmapapi_functions();
 std::vector<GameApiItem*> bitmapapi_functions();
 
-
+extern int async_pending_count;
 
 
 class EmptyWidget : public GuiWidgetForward
@@ -4488,10 +4488,17 @@ int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api
   std::stringstream ss;
   int s2 = s.size();
 #ifndef EMSCRIPTEN
+#ifndef ANDROID
   for(int i=s2-1;i>=0;i--)
     {
       ss << s[i] << " ";
     }
+#else
+  for(int i=0;i<s2;i++)
+    {
+      ss << s[i] << " ";
+    }
+#endif
 #else
   for(int i=0;i<s2;i++)
     {
@@ -4676,18 +4683,9 @@ CodeGenLine parse_codegen_line(std::string line)
   return line2;
 }
 
-std::string striphomepage(std::string url)
-{ 
-  int s = url.size();
-  int i = 0;
-  for(;i<s-1;i++) if (url[i]=='&'&&url[i+1]=='h') break;
-  std::string res = url.substr(0,i);
-  std::cout << "Url without homepage: " << res << std::endl;
-  return res;
-}
+std::string striphomepage(std::string url);
 
 std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
-int async_pending_count = 0;
 void onerror_cb(unsigned int tmp, void *arg, int, const char*)
 {
   std::cout << "ERROR: onerror_cb" << std::endl; 

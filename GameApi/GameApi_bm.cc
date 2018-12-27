@@ -494,9 +494,9 @@ EXPORT GameApi::ML GameApi::BitmapApi::savebitmap_ml(EveryApi &ev, BM bm, std::s
   return add_main_loop(e, new SaveBitmapML(ev, bm, filename, alpha, time));
 }
 
-std::vector<const unsigned char*> g_content;
-std::vector<const unsigned char*> g_content_end;
-std::vector<const char*> g_urls;
+extern std::vector<const unsigned char*> g_content;
+extern std::vector<const unsigned char*> g_content_end;
+extern std::vector<const char*> g_urls;
 
 void GameApi::append_url_map(const char* url,const unsigned char* data, const unsigned char *data_end)
 {
@@ -505,61 +505,9 @@ void GameApi::append_url_map(const char* url,const unsigned char* data, const un
   g_content_end.push_back(data_end);
 }
 std::string stripprefix(std::string s);
-std::string remove_load(std::string s)
-{
-  int ss = std::string("load_url.php?url=").size();
-  if (s.substr(0,ss)=="load_url.php?url=") return stripprefix(s);
-  return s;
-}
+std::string remove_load(std::string s);
 
-
-std::vector<unsigned char> load_from_url(std::string url)
-{ // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
-  int u = g_urls.size();
-  for(int i=0;i<u;i++)
-    {
-      if (remove_load(url)==g_urls[i]) { 
-	std::vector<unsigned char> vec(g_content[i], g_content_end[i]);
-	//std::cout << "load_from_url using memory: " << url << " " << vec.size() << std::endl;
-	return vec;
-      }
-    }
-  //  std::cout << "load_from_url using network: " << url << std::endl;
-
-#ifdef HAS_POPEN
-
-#ifdef WINDOWS
-    std::string cmd = "..\\curl\\curl.exe -s -N --url " + url;
-#else
-    std::string cmd = "curl -s -N --url " + url;
-#endif
-#ifdef __APPLE__
-    FILE *f = popen(cmd.c_str(), "r");
-#else
-    FILE *f = popen(cmd.c_str(), "rb");
-#endif
-    //std::cout<< "FILE: " << std::hex<<(long)f <<std::endl; 
-    unsigned char c;
-    std::vector<unsigned char> buffer;
-    while(fread(&c,1,1,f)==1) { buffer.push_back(c); }
-    //std::cout << "::" << std::string(buffer.begin(),buffer.end()) << "::" << std::endl;
-    if (buffer.size()==0)
-      {
-#ifdef WINDOWS
-    std::string cmd = ".\\curl\\curl.exe -s -N --url " + url;
-#else
-    std::string cmd = "curl -s -N --url " + url;
-#endif
-    FILE *f = popen(cmd.c_str(), "rb");
-    unsigned char c;
-    //std::vector<unsigned char> buffer;
-    while(fread(&c,1,1,f)==1) { buffer.push_back(c); }
-      }
-    return buffer;
-#else
-    // no popen
-#endif
-}
+std::vector<unsigned char> load_from_url(std::string url);
 extern std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
 
 void stackTrace()

@@ -1,7 +1,7 @@
 
 all:
 	g++ -DWINDOWS -std=c++11 codegen.cpp -o codegen.exe
-	g++ -DWINDOWS -I.. -L.. -std=c++11 test.cpp -lGameApi -o test.exe
+	g++ -DWINDOWS -flto -I.. -L.. -std=c++11 test.cpp -lGameApi -o test.exe
 
 exe:
 	(cd ..;cd editor; ../iot_main/test.exe)

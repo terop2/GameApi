@@ -1114,7 +1114,7 @@ Fetcher<std::string> *find_string_fetcher(GameApi::Env &e, GameApi::SF s);
 Fetcher<int> *find_int_fetcher(GameApi::Env &e, GameApi::IF f);
 Fetcher<Point> *find_point_fetcher(GameApi::Env &e, GameApi::PF p);
 ArrayType *find_array(GameApi::Env &e, GameApi::ARR arr);
-CurvePos *find_curve_pos(GameApi::Env &e, GameApi::CP pos);
+CurvePos *find_curve_pos(GameApi::Env &e, GameApi::CPP pos);
 PointTransform *find_point_transform(GameApi::Env &e, GameApi::PTT pt);
 VertexAnimNode *find_vertex_anim(GameApi::Env &e, GameApi::KF kf);
 Blocker *find_blocker(GameApi::Env &e, GameApi::BLK blk);

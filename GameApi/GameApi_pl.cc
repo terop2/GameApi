@@ -6,6 +6,9 @@
 
 #include "GameApi_low.hh"
 
+void InstallProgress(int num, std::string label, int max=15);
+void ProgressBar(int num, int val, int max, std::string label);
+
 
 EXPORT GameApi::PolygonApi::PolygonApi(GameApi::Env &e) : e(e)
 {
@@ -3331,95 +3334,8 @@ EXPORT void GameApi::PolygonApi::delete_vertex_array(GameApi::VA va)
   GameApi::P p = empty();
   update_vertex_array(va,p);
 }
-struct ProgressI {
-  int num;
-  int value;
-};
-std::vector<ProgressI > progress_max;
-std::vector<ProgressI > progress_val;
 void ProgressBar(int num, int val, int max, std::string label);
 
-void InstallProgress(int num, std::string label, int max=15)
-{
-  //std::cout << "InstallProgress: '" << label << "'" << std::endl;
-  //std::cout << "IB: " << num << std::endl;
-  ProgressI p; p.num = num;
-  int s = progress_max.size();
-  int s2 = progress_val.size();
-  bool max_done = false;
-  bool val_done = false;
-  for(int i=0;i<std::min(s,s2);i++) {
-    if (progress_max[i].num==num) max_done=true;
-    if (progress_val[i].num==num) val_done=true;
-  }
-  if (!max_done)
-    progress_max.push_back(p);
-  if (!val_done)
-    progress_val.push_back(p);
-  ProgressBar(num,0,max,"installprogress");
-}
-int FindProgressVal()
-{
-  int s = progress_val.size();
-  int sum = 0;
-  for(int i=0;i<s;i++)
-    sum+=progress_val[i].value;
-  return sum;
-}
-int FindProgressMax()
-{
-  int s = progress_max.size();
-  int sum = 0;
-  for(int i=0;i<s;i++)
-    {
-      sum+=progress_max[i].value;
-    }
-  return sum;
-}
-void ProgressBar(int num, int val, int max, std::string label)
-{
-  //std::cout << "ProgressBar: '" << label << "'" << std::endl;
-
-  //std::cout << "PB: " << num << std::endl;
-  {
-  int s = progress_val.size();
-  for(int i=0;i<s;i++)
-    {
-      int num2 = progress_val[i].num;
-      if (num2==num) {
-	progress_val[i].value = val;
-      }
-    }
-  }
-
-  {
-  int s = progress_max.size();
-  for(int i=0;i<s;i++)
-    {
-      int num2 = progress_max[i].num;
-      if (num2==num) {
-	progress_max[i].value = max;
-      }
-    }
-  }
-
-  int val1 = FindProgressVal();
-  int max1 = FindProgressMax();
-  float v = float(val1)/float(max1);
-  v*=30.0;
-  int val2 = int(v);
-  float vv = 1.0;
-  vv*=30.0;
-  int max2 = int(vv);
-  std::cout << "\r[";
-  for(int i=0;i<val2;i++) {
-    std::cout << "#";
-  }
-  for(int i=val2;i<max2-1;i++) {
-    std::cout << "-";
-  }
-  std::cout << "] (" << val1 << "/" << max1 << ") (" << val << "/" << max << ") " << num;
-}
 #ifdef THREADS
 extern ThreadInfo *ti_global;
 #endif
@@ -11336,9 +11252,7 @@ private:
   float time_step;
 };
 
-GameApi::MA GameApi::PolygonApi::meshanim(std::vector<P> vec, 
-					  float start_time,
-					  float end_time)
+GameApi::MA GameApi::PolygonApi::meshanim(std::vector<P> vec, float start_time, float end_time)
 {
   start_time/=10.0;
   end_time/=10.0;
