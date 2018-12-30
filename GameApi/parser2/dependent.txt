@@ -79,7 +79,6 @@ polygon_api phong_shader shader_api unuse
 @ @ event_api ~EventApi
 @ @ polygon_api ~PolygonApi
 @ @ grid_api ~GridApi
-@ @ sprite_api ~SpriteApi
 @ @ mainloop_api ~MainLoopApi
 @ @ mainloop_api alpha_1
 @ @ bitmap_api newbitmap

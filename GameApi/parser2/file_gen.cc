@@ -398,7 +398,10 @@ int main(int argc, char *argv[])
   std::string res4;
   res4 += "#include \"Common2.hh\"\n";
 
-  ss << res << res2 << res3 << res4 << std::endl;
+  std::string res5;
+  res5 += "#include \"Common3.cc\"\n";
+
+  ss << res << res2 << res3 << res4 << res5 << std::endl;
   ss.close();
 }
 // todo std::string => quotes
