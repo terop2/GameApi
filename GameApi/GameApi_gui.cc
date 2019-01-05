@@ -4762,7 +4762,8 @@ ASyncData async_data[] = {
   { "low_frame_api", "low_build_world", 1 },
   { "low_frame_api", "low_enemy_draw", 1 },
   { "low_frame_api", "low_enemy_draw2", 1 },
-  { "polygon_api", "stl_load", 0 }
+  { "polygon_api", "stl_load", 0 },
+  { "font_api", "load_font_dump", 0 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -6250,6 +6251,18 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "FI", "std::string", "int", "int" },
 			 { "", "Hello", "5", "30" },
 			 "BM", "font_api", "draw_text_string"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::save_font_dump,
+			 "FI_save_dump",
+			 { "font", "chars", "filename" },
+			 { "FI", "std::string", "std::string" },
+			 { "", "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#¤%&/()=?+\\*^.,-<>|§½;:[]_ ", "font.txt" },
+			 "ML", "font_api", "save_font_dump"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::load_font_dump,
+			 "FI_load_dump",
+			 { "url" },
+			 { "std::string" },
+			 { "http://tpgames.org/font.txt" },
+			 "FI", "font_api", "load_font_dump"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::bm_array_id,
 			 "bm_array_id",
 			 { "vec" },
@@ -6726,6 +6739,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "MT", "float", "unsigned int", "unsigned int" },
 			 { "ev", "", "300.0", "ff000000", "ffffffff" },
 			 "MT", "materials_api", "fog"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::combine_materials,
+			 "m_or_elem",
+			 { "ev", "mat1", "mat2" },
+			 { "EveryApi&", "MT", "MT" },
+			 { "ev", "", "" },
+			 "MT", "materials_api", "combine_materials"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::shadow,
 			 "m_shadow",
 			 { "ev", "p", "vec", "p_x", "p_y", "p_z", "sx", "sy", "dark_color", "mix", "mix2" },
@@ -7407,6 +7426,18 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML","bool","bool", "float", "float" },
 			 { "ev", "","false","false", "0.0", "100000.0" },
 			 "RUN", "blocker_api", "game_window2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::small_window,
+			 "sml_window",
+			 { "ev", "ml", "x", "y", "sx", "sy" },
+			 { "EveryApi&", "ML", "int", "int", "int", "int" },
+			 { "ev", "", "100", "100", "320", "200" },
+			 "ML", "mainloop_api", "small_window"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::looking_glass,
+			 "run_looking_glass",
+			 { "ev", "ml" },
+			 { "EveryApi&", "ML" },
+			 { "ev", "" },
+			 "ML", "mainloop_api", "looking_glass"));
 #ifdef VIRTUAL_REALITY
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_window,
 			 "vr_window",
@@ -7871,6 +7902,24 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "P", "float", "float", "float" },
 			 { "", "1.0", "1.0", "1.0" },
 			 "P", "polygon_api", "scale","[S]"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::lod_choose,
+			 "lod_choose",
+			 { "vec", "name" },
+			 { "[P]", "std::string" },
+			 { "", "lod" },
+			 "P", "polygon_api", "lod_choose"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::lod_set,
+			 "lod_set",
+			 { "p", "name", "value" },
+			 { "P", "std::string", "int" },
+			 { "", "lod", "0" },
+			 "P", "polygon_api", "lod_set"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::lod_select,
+			 "lod_select",
+			 { "start_dist", "dist_step", "max_value" },
+			 { "float", "float", "int" },
+			 { "0.0", "300.0", "3" },
+			 "IF", "polygon_api", "lod_select"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::mesh_resize,
 			 "mesh_resize",
 			 { "p", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
@@ -8126,6 +8175,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "P" },
 			 { "" },
 			 "P", "polygon_api", "from_normal_to_texcoord"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texcoord_subarea,
+			 "texcoord_subarea",
+			 { "p", "start_x", "end_x", "start_y", "end_y" },
+			 { "P", "float", "float", "float", "float" },
+			 { "", "0.0", "0.5", "0.0", "0.5" },
+			 "P", "polygon_api", "texcoord_subarea"));
 #if 0
   // doesnt work since wrapping at edge of texture works wrong
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texcoord_from_normal,
