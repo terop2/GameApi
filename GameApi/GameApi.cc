@@ -8977,7 +8977,7 @@ class StringDisplayToBitmap : public Bitmap<int>
 {
 public:
   StringDisplayToBitmap(StringDisplay &sd, int def) : sd(sd),def(def) {}
-  void Prepare() { }
+  void Prepare() { sd.Prepare(); }
   int SizeX() const
   {
     int s = sd.Count();
@@ -9035,6 +9035,7 @@ class ChooseGlyphFromFont : public GlyphInterface
 {
 public:
   ChooseGlyphFromFont(FontInterface &fi, long idx) : fi(fi), idx(idx) { }
+  virtual void Prepare() { fi.Prepare(); }
   virtual int Top() const { return fi.Top(idx); }
   virtual int SizeX() const { return fi.SizeX(idx); }
   virtual int SizeY() const { return fi.SizeY(idx); }
@@ -9056,6 +9057,13 @@ class StringDisplayFromGlyphs : public StringDisplay
 {
 public:
   StringDisplayFromGlyphs(std::vector<GlyphInterface*> vec, std::string str, int x_gap, int empty_line_height) : vec(vec), x_gap(x_gap), str(str), empty_line_height(empty_line_height) { }
+  virtual void Prepare() { 
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->Prepare();
+      }
+  }
   virtual int Count() const { return vec.size(); }
   virtual int X(int c) const
   {
@@ -15680,4 +15688,321 @@ GameApi::MT GameApi::MaterialsApi::many_texture_id_material(GameApi::EveryApi &e
 {
   return add_material(e, new ManyTextureIDMaterial(ev,mtl_url, url_prefix, mix, start_range, end_range));
 }
+
+class CombineMaterials : public MaterialForward
+{
+public:
+  CombineMaterials(GameApi::EveryApi &ev, Material *mat1, Material *mat2a) : ev(ev), mat1(mat1), mat2a(mat2a) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    int ml1 = mat1->mat(p.id);
+    int ml2 = mat2a->mat(p.id);
+    GameApi::ML m1 = { ml1 };
+    GameApi::ML m2 = { ml2 };
+    GameApi::ML I11=ev.mainloop_api.depthfunc(m2,1);
+    GameApi::ML I12=ev.mainloop_api.blendfunc(I11,2,3);
+    GameApi::ML I13=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{m1,I12});
+    return I13;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    int ml1 = mat1->mat_inst(p.id,pts.id);
+    int ml2 = mat2a->mat_inst(p.id,pts.id);
+    GameApi::ML m1 = { ml1 };
+    GameApi::ML m2 = { ml2 };
+    GameApi::ML I11=ev.mainloop_api.depthfunc(m2,1);
+    GameApi::ML I12=ev.mainloop_api.blendfunc(I11,2,3);
+    GameApi::ML I13=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{m1,I12});
+    return I13;
+
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+
+    int ml1 = mat1->mat_inst2(p.id,pta.id);
+    int ml2 = mat2a->mat_inst2(p.id,pta.id);
+    GameApi::ML m1 = { ml1 };
+    GameApi::ML m2 = { ml2 };
+    GameApi::ML I11=ev.mainloop_api.depthfunc(m2,1);
+    GameApi::ML I12=ev.mainloop_api.blendfunc(I11,2,3);
+    GameApi::ML I13=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{m1,I12});
+    return I13;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    int ml1 = mat1->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
+    int ml2 = mat2a->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
+    GameApi::ML m1 = { ml1 };
+    GameApi::ML m2 = { ml2 };
+    GameApi::ML I11=ev.mainloop_api.depthfunc(m2,1);
+    GameApi::ML I12=ev.mainloop_api.blendfunc(I11,2,3);
+    GameApi::ML I13=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{m1,I12});
+    return I13;
+
+  }
+private:
+  GameApi::EveryApi &ev;
+  Material *mat1, *mat2a;
+};
+
+GameApi::MT GameApi::MaterialsApi::combine_materials(EveryApi &ev, MT mat1, MT mat2)
+{
+  Material *m1 = find_material(e,mat1);
+  Material *m2 = find_material(e,mat2);
+  return add_material(e, new CombineMaterials(ev,m1,m2));
+}
+
+class SmallWindow : public MainLoopItem
+{
+public:
+  SmallWindow(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *draw, int x, int y, int sx, int sy) : env(env), ev(ev), draw(draw), x(x), y(y), sx(sx), sy(sy) { 
+    firsttime = true;
+  }
+
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (1) {
+      screen_x = ev.mainloop_api.get_screen_sx();
+      screen_y = ev.mainloop_api.get_screen_sy();
+      corner_x = ev.mainloop_api.get_corner_x();
+      corner_y = ev.mainloop_api.get_corner_y();
+      rect_sx = ev.mainloop_api.get_screen_rect_sx();
+      rect_sy = ev.mainloop_api.get_screen_rect_sy();
+      firsttime = false;
+    }
+    GameApi::SH sh_color = { e.sh_color };
+    Program *prog = find_shader_program(env, sh_color);
+    prog->use(); // 80.0, 10.1, 60000.0
+    
+    Matrix m = Matrix::Perspective(120.0*double(sy)/double(sx), (double)sx/sy, 10.1, 60000.0);
+    //Matrix m = Matrix::Perspective2(-300.0, 300.0, -300.0, 300.0, 1.0, 610.0);
+    prog->set_var("in_P", m);
+    g_low->ogl->glViewport(corner_x+x,screen_y-corner_y-sy-y, sx, sy);
+    draw->execute(e);
+    g_low->ogl->glViewport(corner_x,screen_y-corner_y-rect_sy,rect_sx, rect_sy);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    draw->handle_event(e);
+  }
+  virtual int shader_id() { return draw->shader_id(); }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *draw;
+  int x;
+  int y;
+  int sx;
+  int sy;
+
+  int screen_x, screen_y;
+  int corner_x, corner_y;
+  int rect_sx, rect_sy;
+  bool firsttime;
+};
+
+GameApi::ML GameApi::MainLoopApi::small_window(EveryApi &ev, ML ml, int x, int y, int sx, int sy)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new SmallWindow(e,ev,item, x,y,sx,sy));
+}
+
+GameApi::ML part(GameApi::EveryApi &ev, GameApi::ML ml, float y_rot, float z_rot, int x, int y) {
+  GameApi::MN I1=ev.move_api.empty();
+  GameApi::MN I2=ev.move_api.rotatey(I1,y_rot);
+  GameApi::MN I3=ev.move_api.rotatex(I2,z_rot);
+  GameApi::ML I4=ev.move_api.move_ml(ev,ml,I3,1,10.0);
+  GameApi::ML I5=ev.mainloop_api.small_window(ev,I4,x*512,y*256,512,256);
+  return I5;
+}
+float part_y_rot(int x, int y)
+{
+  x-=2;
+  y-=4;
+  return y*3.14159*2.0/2.0/4.0/2.0;
+}
+float part_z_rot(int x, int y)
+{
+  x-=2;
+  y-=4;
+  return x*3.14159*2.0/2.0/8.0/2.0;
+}
+
+GameApi::ML part_line(GameApi::EveryApi &ev, GameApi::ML ml, int line)
+{
+  GameApi::ML ml_0_0 = part(ev,ml, part_y_rot(0,line), part_z_rot(0,line),0,line);
+  GameApi::ML ml_1_0 = part(ev,ml, part_y_rot(1,line), part_z_rot(1,line),1,line);
+  GameApi::ML ml_2_0 = part(ev,ml, part_y_rot(2,line), part_z_rot(2,line),2,line);
+  GameApi::ML ml_3_0 = part(ev,ml, part_y_rot(3,line), part_z_rot(3,line),3,line);
+  GameApi::ML I1=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{ml_0_0,ml_1_0,ml_2_0,ml_3_0});
+  return I1;
+}
+
+GameApi::ML GameApi::MainLoopApi::looking_glass(EveryApi &ev, ML ml)
+{
+  GameApi::ML l0 = part_line(ev,ml, 0);
+  GameApi::ML l1 = part_line(ev,ml, 1);
+  GameApi::ML l2 = part_line(ev,ml, 2);
+  GameApi::ML l3 = part_line(ev,ml, 3);
+  GameApi::ML l4 = part_line(ev,ml, 4);
+  GameApi::ML l5 = part_line(ev,ml, 5);
+  GameApi::ML l6 = part_line(ev,ml, 6);
+  GameApi::ML l7 = part_line(ev,ml, 7);
+  ML I1=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{l0,l1,l2,l3,l4,l5,l6,l7});
+  return I1;
+}
+
+
+class SaveFont : public MainLoopItem
+{
+public:
+  SaveFont(FontInterface *font, std::string chars, std::string filename) : font(font), chars(chars), filename(filename)  
+  {
+    firsttime = true;
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+      std::cout << "Saving font file to: " << filename << std::endl;
+      std::ofstream ss(filename.c_str());
+      ss << chars.size() << std::endl;
+      int s = chars.size();
+      for(int i=0;i<s;i++)
+	{
+	  long idx = chars[i];
+	  int top = font->Top(idx);
+	  int sx = font->SizeX(idx);
+	  int sy = font->SizeY(idx);
+	  ss << idx << " " << top << " " << sx << " " << sy << std::endl;
+	  for(int y=0;y<sy;y++)
+	    for(int x=0;x<sx;x++)
+	      {
+		int val = font->Map(idx,x,y);
+		ss << val << " ";
+	      }
+	  ss << std::endl;
+	}
+      ss.close();
+      firsttime = false;
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual int shader_id() { return -1; }
+private:
+  FontInterface *font;
+  std::string chars;
+  std::string filename;
+  bool firsttime;
+};
+
+GameApi::ML GameApi::FontApi::save_font_dump(FI font, std::string chars, std::string filename)
+{
+  FontInterface *fnt = find_font_interface(e,font);
+  return add_main_loop(e, new SaveFont(fnt, chars, filename));
+}
+
+class LoadFont : public FontInterface
+{
+public:
+  LoadFont(GameApi::Env &e, std::string url, std::string homepageurl) : e(e), url(url), homepageurl(homepageurl) { firsttime = true; }
+  virtual void Prepare() { 
+    if (firsttime) {
+      firsttime = false;
+#ifndef EMSCRIPTEN
+      e.async_load_url(url, homepageurl);
+#endif
+      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+      if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+      std::string s(vec->begin(), vec->end());
+      std::stringstream ss(s);
+      int count = -1;
+      long idx = -1;
+      int top = -1;
+      int sx = -1;
+      int sy = -1;
+      ss >> count;
+      //std::cout << "Loading font: ";
+      for(int i=0;i<count;i++)
+	{
+	  ss >> idx >> top >> sx >> sy;
+	  //std::cout << idx;
+	  int *ptr = new int[sx*sy];
+	  for(int y=0;y<sy;y++) {
+	    for(int x=0;x<sx;x++) {
+	    int val = 0;
+	    ss >> val;
+	    ptr[x+y*sx] = val;
+	    }
+	  }
+	  m_idx.push_back(idx);
+	  m_top.push_back(top);
+	  m_sx.push_back(sx);
+	  m_sy.push_back(sy);
+	  m_data.push_back(ptr);
+	}
+      //std::cout << std::endl;
+    }
+  }
+  virtual int Top(long idx) const { 
+    int index = find_index(idx);
+    if (index!=-1) {
+      return m_top[index];
+    }
+    return 0;
+  }
+  virtual int SizeX(long idx) const
+  {
+    int index = find_index(idx);
+    if (index!=-1) {
+      return m_sx[index];
+    }
+    return 0;
+  }
+  virtual int SizeY(long idx) const
+  {
+    int index = find_index(idx);
+    if (index!=-1) {
+      return m_sy[index];
+    }
+    return 0;
+  }
+  virtual int Map(long idx, int x, int y) const
+  {
+    int sx = SizeX(idx);
+    int sy = SizeY(idx);
+    int index = find_index(idx);
+    if (index==-1) return 0;
+    int *ptr = m_data[index];
+    if (x>=0&&x<sx)
+      if (y>=0&&y<sy)
+	return ptr[x+y*sx];
+    return 0;
+  }
+
+  int find_index(long idx) const
+  {
+    int s = m_idx.size();
+    for(int i=0;i<s;i++)
+      if (m_idx[i]==idx) return i;
+    return -1;
+  }
+
+private:
+  GameApi::Env &e;
+  std::string url;
+  std::string homepageurl;
+  std::vector<long> m_idx;
+  std::vector<int> m_top;
+  std::vector<int> m_sx;
+  std::vector<int> m_sy;
+  std::vector<int*> m_data;
+  bool firsttime;
+};
+
+GameApi::FI GameApi::FontApi::load_font_dump(std::string url)
+{
+  return add_font_interface(e, new LoadFont(e,url, gameapi_homepageurl));
+}
+
 #endif // THIRD_PART
