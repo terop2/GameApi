@@ -388,7 +388,7 @@ c  for(int i=0;i<size1&&!exit2;i+=100)
 void initialize_low(int flags);
 
 IMPORT void check_vr_compositor_init();
-Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize)
+Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize, bool vr_init)
 {
   initialize_low(0);
 
@@ -424,7 +424,9 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 #endif
   //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #ifdef VIRTUAL_REALITY
-  check_vr_compositor_init();
+  if (vr_init) {
+    check_vr_compositor_init();
+  }
 #endif  
   if (resize)
     sdl_window = g_low->sdl->SDL_CreateWindow("Program", Low_SDL_WINDOWPOS_CENTERED, Low_SDL_WINDOWPOS_CENTERED, scr_x, scr_y, Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE);

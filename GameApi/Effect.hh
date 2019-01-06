@@ -9942,7 +9942,7 @@ void InitFrameAnim(FrameAnim &f, Low_SDL_Surface *screen);
 void DisplayFrame(FrameAnim &f, Low_SDL_Surface *screen, float time);
 void CleanupFrameAnim(FrameAnim &f, Low_SDL_Surface *surf);
 Low_SDL_Surface *InitSDL(int scr_x, int scr_y, bool vsync, bool antialias=false);
-Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vsync, bool antialias=false, bool resize=false);
+Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vsync, bool antialias=false, bool resize=false, bool vr_init=false);
 
 
 #if 0
