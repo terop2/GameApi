@@ -1,4 +1,4 @@
-       
+
 #define SDL2_USED  
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
@@ -13,6 +13,97 @@
 #include "FreeType2.hh"
 
 #include <cstring>
+
+#ifndef FIRST
+#ifndef SECOND
+#ifndef THIRD
+#define FIRST_PART 1
+#define SECOND_PART 1
+#define THIRD_PART 1
+#endif
+#endif
+#endif
+#ifdef FIRST
+#define FIRST_PART 1
+#endif
+#ifdef SECOND
+#define SECOND_PART 1
+#endif
+#ifdef THIRD
+#define THIRD_PART 1
+#endif
+
+void InstallProgress(int num,std::string label, int max=15);
+void ProgressBar(int num, int val, int max, std::string label);
+std::string funccall_to_string(ShaderModule *mod);
+std::string color_funccall_to_string(ShaderModule *mod);
+std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
+std::string color_funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
+extern std::string gameapi_homepageurl;
+extern int async_pending_count;
+extern bool async_is_done;
+extern float debug_pos_x, debug_pos_y, debug_pos_z;
+
+
+class MaterialForward : public Material
+{
+public:
+  GameApi::ML call(GameApi::P p) const
+  {
+    GameApi::ML ml;
+    ml.id = mat(p.id);
+    return ml;
+  }
+  GameApi::ML call_inst(GameApi::P p, GameApi::PTS pts)
+  {
+    GameApi::ML ml;
+    ml.id = mat_inst(p.id,pts.id);
+    return ml;
+  }
+  int mat(int p) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::ML ml = mat2(p2);
+    return ml.id;
+  }
+  int mat_inst(int p, int pts) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::PTS p3;
+    p3.id = pts;
+    GameApi::ML ml = mat2_inst(p2,p3);
+    return ml.id;
+  }
+  int mat_inst2(int p, int pta) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::PTA p3;
+    p3.id = pta;
+    GameApi::ML ml = mat2_inst2(p2,p3);
+    return ml.id;
+
+  }
+  int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::PTS p3;
+    p3.id = pts;
+    GameApi::ML ml = mat_inst_fade(p2,p3, flip, start_time, end_time);
+    return ml.id;
+
+  }
+  virtual GameApi::ML mat2(GameApi::P p) const=0;
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const=0;
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const=0;
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const=0;
+};
+
+
+#ifdef FIRST_PART
 
 #if 0
 void *operator new( std::size_t count)
@@ -37,27 +128,7 @@ int array_type_to_int(GameApi::BM b) { return E_BM; }
 int array_type_to_int(GameApi::P b) { return E_P; }
 
 
-std::string funccall_to_string(ShaderModule *mod);
-std::string color_funccall_to_string(ShaderModule *mod);
-std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
-std::string color_funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
 
-EnvImpl::EnvImpl() : event_infos(new EmptySequencer2), mutex(PTHREAD_MUTEX_INITIALIZER)
-{
-#ifndef EMSCRIPTEN
-#ifdef HAS_FREETYPE
-    FT_Init_FreeType(&lib);
-    //std::cout << "Freetype init error: " << err << std::endl;
-    //std::cout << &lib << std::endl;
-#endif
-#else
-#ifdef HAS_FREETYPE
-    FT_Init_FreeType(&lib);
-#endif
-#endif 
-    cursor_pos_point_id.id = -1;
-    async_loader = new ASyncLoader;
-}
 
 GameApi::BM add_color_bitmap2(GameApi::Env &e, Bitmap<Color> *bm);
 
@@ -128,266 +199,6 @@ GameApi::PT add_point(GameApi::Env &e, float x, float y);
 GameApi::PT add_point(GameApi::Env &e, float x, float y, float z);
 
 
-EnvImpl::~EnvImpl()
-{
-  int tt4a = phys.size();
-  for(int ui4=0;ui4<tt4a;ui4++)
-    {
-      delete phys[ui4];
-    }
-
-  int tt3 = samples.size();
-  for(int iu3=0;iu3<tt3;iu3++)
-    {
-      delete samples[iu3];
-    }
-
-  int tt4 = trackers.size();
-  for(int iu4=0;iu4<tt4;iu4++)
-    {
-      delete trackers[iu4];
-    }
-
-  int tt1 = floats.size();
-  for(int iu1=0;iu1<tt1;iu1++)
-    {
-      delete floats[iu1];
-    }
-  int tt2 = float_array.size();
-  for(int iu2=0;iu2<tt2;iu2++)
-    {
-      delete float_array[iu2];
-    }
-
-  int sk6 = textures.size();
-  for(int ii6=0;ii6<sk6;ii6++)
-    {
-      TextureI *ptr = textures[ii6];
-      delete ptr;
-    }
-  int sk5 = pointsapi_points.size();
-  for(int ii5=0;ii5<sk5;ii5++)
-    {
-      PointsApiPoints *p = pointsapi_points[ii5];
-      delete p;
-    }
-  int sk4 = plane_points.size();
-  for(int ii4=0;ii4<sk4;ii4++)
-    {
-      PlanePoints2d *p = plane_points[ii4];
-      delete p;
-    }
-  int sk3 = continuous_bitmaps.size();
-  for(int ii3=0;ii3<sk3;ii3++)
-    {
-      ContinuousBitmap<Color> *p = continuous_bitmaps[ii3];
-      delete p;
-    }
-
-  int sk2 = vertex_array_render.size();
-  for(int ii2=0;ii2<sk2;ii2++)
-    {
-      RenderVertexArray *s = vertex_array_render[ii2];
-      delete s;
-    }
-
-  int sk1 = vertex_array.size();
-  for(int ii1=0;ii1<sk1;ii1++)
-    {
-      VertexArraySet *s = vertex_array[ii1];
-      delete s;
-    }
-
-
-  std::map<int, ArrayRender*>::iterator it = renders.begin();
-  for(;it!=renders.end();it++)
-    {
-      ArrayRender *rend = (*it).second;
-      delete rend;
-    }
-  std::map<int, ArrayRender*>::iterator it2 = renders2.begin();
-  for(;it2!=renders2.end();it2++)
-    {
-      ArrayRender *rend = (*it2).second;
-      delete rend;
-    }
-
-  int vv1 = volumes.size();
-  for(int i_v=0;i_v<vv1;i_v++)
-    {
-      delete volumes[i_v];
-    }
-  int vv2 = floatvolumes.size();
-  for(int i_vv2=0;i_vv2<vv2;i_vv2++)
-    {
-      delete floatvolumes[i_vv2];
-    }
-  int vv3 = pointarray.size();
-  for(int i_vv3=0;i_vv3<vv3;i_vv3++)
-    {
-      if (pointarray[i_vv3]!=0)
-	{
-	  delete [] pointarray[i_vv3]->array;
-	  delete [] pointarray[i_vv3]->color_array;
-	}
-      delete pointarray[i_vv3];
-    }
-  int vv3a = pointarray3.size();
-  for(int i_vv3a=0;i_vv3a<vv3a;i_vv3a++)
-    { 
-      if (pointarray3[i_vv3a]!=0)
-	{
-	  delete [] pointarray3[i_vv3a]->array;
-	  delete [] pointarray3[i_vv3a]->color;
-	}
-      delete pointarray3[i_vv3a];
-    }
-  int vv4 = linearray.size();
-  for(int i_vv4=0;i_vv4<vv4;i_vv4++)
-    {
-      delete linearray[i_vv4];
-    }
-  int vv5 = pointcollarray.size();
-  for(int i_vv5=0;i_vv5<vv5;i_vv5++)
-    {
-      delete pointcollarray[i_vv5];
-    }
-
-  int ss1 = bool_bm.size();
-  for(int i_1=0;i_1<ss1;i_1++)
-    {
-      BoolBitmap &bm = bool_bm[i_1];
-      delete bm.bitmap;
-    }
-  int ss1a = waveforms.size();
-  for(int i_1a=0;i_1a<ss1a;i_1a++)
-    {
-      Waveform *bm = waveforms[i_1a];
-      delete bm;
-    }
-  int ss2 = float_bm.size();
-  for(int i_2=0;i_2<ss2;i_2++)
-    {
-      FloatBitmap &bm = float_bm[i_2];
-      delete bm.bitmap;
-    }
-
-  int s0 = fonts.size();
-  for(int i0=0;i0<s0;i0++)
-    {
-      Font f = fonts[i0];
-      delete f.bm;
-    }
-#ifndef EMSCRIPTEN
-#ifdef HAS_FREETYPE
-  //std::cout << "FREE FREETYPE!" << std::endl;
-  FT_Done_FreeType(lib);
-#endif
-#endif
-  int s1 = bm.size();
-  for(int i1=0;i1<s1;i1++)
-    {
-      BitmapHandle *handle = bm[i1];
-      //std::cout << "EnvImpl destructor: " << handle << std::endl;
-      delete handle;
-    }
-  int s2 = anim.size();
-  for(int i2=0;i2<s2;i2++)
-    {
-      AnimImpl *impl = &anim[i2];
-      delete impl->wave_int;
-      delete impl->wave_point;
-      delete impl->wave_float;
-    }
-
-  int s3 = poly.size();
-  for(int i3=0;i3<s3;i3++)
-    {
-      FaceCollPolyHandle *handle = poly[i3];
-      delete handle;
-    }
-  int s4 = func.size();
-  for(int i4=0;i4<s4;i4++)
-    {
-      FunctionImpl f = func[i4];
-      delete f.func;
-    }
-  int s5 = surfaces.size();
-  for(int i5=0;i5<s5;i5++)
-    {
-      SurfaceImpl s = surfaces[i5];
-      delete s.surf;
-    }  
-  delete event_infos;
-
-#if 0
-  int s6 = matrix.size();
-  for(int i6=0;i6<s6;i6++)
-    {
-      MatrixInterface *i = matrix[i6];
-      delete i;
-    }
-#endif
-}
-
-GameApi::Env *Global_latest_env = 0;
-
-EXPORT GameApi::Env *GameApi::Env::Latest_Env()
-{
-  return Global_latest_env;
-}
-EXPORT GameApi::Env::Env()
-{
-  Global_latest_env = this;
-  envimpl = (void*)new ::EnvImpl;
-}
-EXPORT void GameApi::Env::free_memory()
-{ 
-  ::EnvImpl *env = (::EnvImpl*)envimpl;
- env->free_memory();
-}
-EXPORT std::vector<int> GameApi::Env::store_counts()
-{
-  ::EnvImpl *env = (::EnvImpl*)envimpl;
- return env->store_counts();
-}
-EXPORT void GameApi::Env::free_to_counts(std::vector<int> vec)
-{
-  ::EnvImpl *env = (::EnvImpl*)envimpl;
- env->free_to_counts(vec);
-}
-EXPORT void GameApi::Env::free_temp_memory()
-{
-  ::EnvImpl *env = (::EnvImpl*)envimpl;
- env->free_temp_memory();
-
-}
-
-void InstallProgress(int num,std::string label, int max=15);
-EXPORT void GameApi::Env::async_load_url(std::string url, std::string homepage)
-{
-  ::EnvImpl *env = (::EnvImpl*)envimpl;
-  env->async_loader->load_urls(url, homepage);
-
-}
-EXPORT void GameApi::Env::async_load_callback(std::string url, void (*fptr)(void*), void *data)
-{
-  ::EnvImpl *env = (::EnvImpl*)envimpl;
-  env->async_loader->set_callback(url, fptr, data);
-}
-void ProgressBar(int num, int val, int max, std::string label);
-EXPORT std::vector<unsigned char> *GameApi::Env::get_loaded_async_url(std::string url)
-{
-  ::EnvImpl *env = (::EnvImpl*)envimpl;
-
-  return env->async_loader->get_loaded_data(url);
-}
-
-EXPORT GameApi::Env::~Env()
-{
-  delete (::EnvImpl*)envimpl;
-}
-
 SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
 #define ARRMACRO2(arr,arr2) \
@@ -406,940 +217,7 @@ SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm);
 
 ARRMACRO2(GameApi::PAR,par)
 #undef ARRMACRO2
-GameApi::PN add_polynomial(GameApi::Env &e, std::vector<float> *pn)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->polynomials.push_back(pn);
-  GameApi::PN im;
-  im.id = env->polynomials.size()-1;
-  return im;
 
-}
-
-GameApi::FBU add_framebuffer(GameApi::Env &e, FrameBuffer *buf)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->frame_buffer.push_back(buf);
-  GameApi::FBU im;
-  im.id = env->frame_buffer.size()-1;
-  return im;
-
-}
-GameApi::FML add_framemainloop(GameApi::Env &e, FrameBufferLoop *loop)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->frame_loop.push_back(loop);
-  GameApi::FML im;
-  im.id = env->frame_loop.size()-1;
-  return im;
-}
-
-
-GameApi::DS add_disk_store(GameApi::Env &e, DiskStore *ds)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->disk_store.push_back(ds);
-  GameApi::DS im;
-  im.id = env->disk_store.size()-1;
-  return im;
-}
-GameApi::TXID add_txid(GameApi::Env &e, TextureID *txid)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  int id = txid->texture();
-  env->txids[id] = txid;
-  GameApi::TXID tx;
-  tx.id = id;
-  return tx;
-}
-
-GameApi::PA add_patch(GameApi::Env &e, CurvePatch *patch)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->curve_patches.push_back(patch);
-  GameApi::PA im;
-  im.id = env->curve_patches.size()-1;
-  return im;
-
-}
-GameApi::SD add_string_display(GameApi::Env &e, StringDisplay *sd)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->string_displays.push_back(sd);
-  GameApi::SD im;
-  im.id = env->string_displays.size()-1;
-  return im;
-}
-GameApi::GI add_glyph_interface(GameApi::Env &e, GlyphInterface *gi)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->glyph_interfaces.push_back(gi);
-  GameApi::GI im;
-  im.id = env->glyph_interfaces.size()-1;
-  return im;
-}
-GameApi::FI add_font_interface(GameApi::Env &e, FontInterface *fi)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->font_interfaces.push_back(fi);
-  GameApi::FI im;
-  im.id = env->font_interfaces.size()-1;
-  return im;
-}
-GameApi::FF add_float_fetcher(GameApi::Env &e, Fetcher<float> *f)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->float_fetchers.push_back(f);
-  GameApi::FF im;
-  im.id = env->float_fetchers.size()-1;
-  return im;
-}
-GameApi::PF add_point_fetcher(GameApi::Env &e, Fetcher<Point> *f)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->point_fetchers.push_back(f);
-  GameApi::PF im;
-  im.id = env->point_fetchers.size()-1;
-  return im;
-}
-GameApi::IF add_int_fetcher(GameApi::Env &e, Fetcher<int> *i)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->int_fetchers.push_back(i);
-  GameApi::IF im;
-  im.id = env->int_fetchers.size()-1;
-  return im;
-}
-GameApi::SF add_string_fetcher(GameApi::Env &e, Fetcher<std::string> *i)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->string_fetchers.push_back(i);
-  GameApi::SF im;
-  im.id = env->string_fetchers.size()-1;
-  return im;
-}
-GameApi::ARR add_array(GameApi::Env &e, ArrayType *type)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->arrays2.push_back(type);
-  GameApi::ARR im;
-  im.id = env->arrays2.size()-1;
-  return im;
-}
-GameApi::PTT add_point_transform(GameApi::Env &e, PointTransform *trans)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->point_transforms.push_back(trans);
-  GameApi::PTT im;
-  im.id = env->point_transforms.size()-1;
-  return im;
-}
-GameApi::KF add_vertex_anim(GameApi::Env &e, VertexAnimNode *node)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->vertex_anims.push_back(node);
-  GameApi::KF im;
-  im.id = env->vertex_anims.size()-1;
-  return im;
-}
-GameApi::CPP add_curve_pos(GameApi::Env &e, CurvePos *pos)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->curve_pos.push_back(pos);
-  GameApi::CPP im;
-  im.id = env->curve_pos.size()-1;
-  return im;
-}
-GameApi::BLK add_blocker(GameApi::Env &e, Blocker *blk)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->blockers.push_back(blk);
-  GameApi::BLK im;
-  im.id = env->blockers.size()-1;
-  return im;
-
-}
-GameApi::RUN add_splitter(GameApi::Env &e, Splitter *blk)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->splitters.push_back(blk);
-  GameApi::RUN im;
-  im.id = env->splitters.size()-1;
-  return im;
-
-}
-GameApi::CC add_color(GameApi::Env &e, ColorChange *cc)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->color_change.push_back(cc);
-  GameApi::CC im;
-  im.id = env->color_change.size()-1;
-  return im;
-
-}
-GameApi::PP add_plane_shape(GameApi::Env &e, PlaneShape *sh)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->plane_shapes.push_back(sh);
-  GameApi::PP im;
-  im.id = env->plane_shapes.size()-1;
-  return im;
-
-}
-GameApi::MX add_mixed(GameApi::Env &e, MixedI *m)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->mixed.push_back(m);
-  GameApi::MX im;
-  im.id = env->mixed.size()-1;
-  return im;
-}
-GameApi::SA add_skeletal(GameApi::Env &e, SkeletalNode *n)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->skeletals.push_back(n);
-  GameApi::SA im;
-  im.id = env->skeletals.size()-1;
-  return im;
-
-}
-GameApi::MC add_matrix_curve(GameApi::Env &e, Curve<Matrix> *m)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->matrix_curves.push_back(m);
-  GameApi::MC im;
-  im.id = env->matrix_curves.size()-1;
-  return im;
-
-}
-GameApi::MS add_matrix_array(GameApi::Env &e, MatrixArray *m)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->matrix_arrays.push_back(m);
-  GameApi::MS im;
-  im.id = env->matrix_arrays.size()-1;
-  return im;
-
-}
-GameApi::C add_curve(GameApi::Env &e, Curve<Point> *curve)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->curves.push_back(curve);
-  GameApi::C im;
-  im.id = env->curves.size()-1;
-  return im;
-}
-GameApi::US add_uber(GameApi::Env &e, ShaderCall *call)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->shadercalls.push_back(call);
-  GameApi::US im;
-  im.id = env->shadercalls.size()-1;
-  return im;
-}
-GameApi::MT add_material(GameApi::Env &e, Material *mat)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->materials.push_back(mat);
-  GameApi::MT im;
-  im.id = env->materials.size()-1;
-  return im;
-
-}
-GameApi::TL add_tree_level(GameApi::Env &e, TreeLevel *lvl)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->tree_levels.push_back(lvl);
-  GameApi::TL im;
-  im.id = env->tree_levels.size()-1;
-  return im;
-}
-GameApi::T add_tree(GameApi::Env &e, TreeStack *tre)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->trees.push_back(tre);
-  GameApi::T im;
-  im.id = env->trees.size()-1;
-  return im;
-
-}
-GameApi::IM add_implicit(GameApi::Env &e, ImplicitFunction3d *m)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->implicit.push_back(m);
-  GameApi::IM im;
-  im.id = env->implicit.size()-1;
-  return im;
-}
-GameApi::MN add_move(GameApi::Env &e, Movement *m)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->movement_array.push_back(m);
-  GameApi::MN a;
-  a.id = env->movement_array.size()-1;
-  return a;
-
-}
-GameApi::CP add_collision(GameApi::Env &e, Collision *c)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->collision_array.push_back(c);
-  GameApi::CP a;
-  a.id = env->collision_array.size()-1;
-  return a;
-}
-GameApi::TS add_tri_strip(GameApi::Env &e, TriStrip *n)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->tri_strip.push_back(n);
-  GameApi::TS a;
-  a.id = env->tri_strip.size()-1;
-  return a;
-
-}
-GameApi::PH add_physics(GameApi::Env &e, PhysicsNode *n)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->phys.push_back(n);
-  GameApi::PH a;
-  a.id = env->phys.size()-1;
-  return a;
-
-}
-GameApi::EX add_expr(GameApi::Env &e, ExprNode *n)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->exprs.push_back(n);
-  GameApi::EX a;
-  a.id = env->exprs.size()-1;
-  return a;
-}
-template<class T>
-GameApi::A<T> add_array(GameApi::Env &e, std::vector<T> *arr)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  std::vector<int> vec2;
-  int s = arr->size();
-  for(int i=0;i<s;i++)
-    {
-      T t = arr->operator[](i);
-      int val = t.id;
-      vec2.push_back(val);
-    }
-
-  env->arrays.push_back(new std::vector<int>(vec2));
-  GameApi::A<T> a;
-  a.id = env->arrays.size()-1;
-  return a;
-}
-GameApi::ML add_main_loop(GameApi::Env &e, MainLoopItem *item)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->main_loop.push_back(item);
-  GameApi::ML ml;
-  ml.id = env->main_loop.size()-1;
-  return ml;
-}
-GameApi::FtA add_font_atlas(GameApi::Env &e, FontAtlasInfo *info)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->font_atlas.push_back(info);
-  GameApi::FtA ft;
-  ft.id = env->font_atlas.size()-1;
-  return ft;
-}
-GameApi::W add_widget(GameApi::Env &e, GuiWidget *w)
-{
-  if (!w)
-    {
-      std::cout << "add_widget failed" << std::endl;
-      assert(0);
-    }
-
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->widgets.push_back(w);
-  GameApi::W wid;
-  wid.id = env->widgets.size()-1;
-  return wid;
-}
-GameApi::SFO add_shader_module(GameApi::Env &e, ShaderModule *vol)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->shader_module.push_back(vol);
-  GameApi::SFO sfo;
-  sfo.id = env->shader_module.size()-1;
-  return sfo;
-}
-GameApi::SM add_sample(GameApi::Env &e, Samples *s)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->samples.push_back(s);
-  GameApi::SM sm;
-  sm.id = env->samples.size()-1;
-  return sm;
-}
-GameApi::TRK add_tracker(GameApi::Env &e, Tracker *trk)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->trackers.push_back(trk);
-  GameApi::TRK sm;
-  sm.id = env->trackers.size()-1;
-  return sm;
-}
-GameApi::FBO add_fbo(GameApi::Env &e, Low_GLuint fbo_name, Low_GLuint texture, Low_GLuint depthbuffer, int sx, int sy)
-{
-  FBOPriv p;
-  p.fbo_name = fbo_name;
-  p.texture = texture;
-  p.depthbuffer = depthbuffer;
-  p.sx = sx;
-  p.sy = sy;
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->fbos.push_back(p);
-  GameApi::FBO f;
-  f.id = env->fbos.size()-1;
-  return f;
-}
-
-GameApi::F add_float(GameApi::Env &e, LazyValue<float> *val)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->floats.push_back(val);
-  GameApi::F f;
-  f.id = env->floats.size()-1;
-  return f;
-}
-GameApi::FA add_float_array(GameApi::Env &e, Array<int,float> *arr)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->float_array.push_back(arr);
-  GameApi::FA f;
-  f.id = env->float_array.size()-1;
-  return f;
-}
-GameApi::FD add_distance(GameApi::Env &e, DistanceRenderable *dist)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->distvolume.push_back(dist);
-  GameApi::FD fd;
-  fd.id = env->distvolume.size()-1;
-  return fd;
-}
-GameApi::SP add_space(GameApi::Env &e, SpaceImpl i)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->sp.push_back(i);
-  GameApi::SP sp;
-  sp.id = env->sp.size()-1;
-  //sp.type = 0;
-  return sp;
-}
-GameApi::S add_surface2(GameApi::Env &e, SurfaceIn3d *s)
-{
-  SurfaceImpl i;
-  i.surf = s;
-  return add_surface(e,i);
-}
-GameApi::S add_surface(GameApi::Env &e, SurfaceImpl i)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->surfaces.push_back(i);
-  GameApi::S s;
-  s.id = env->surfaces.size()-1;
-  //sp.type = 0;
-  return s;
-}
-
-GameApi::BM add_bitmap(GameApi::Env &e, BitmapHandle *handle)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->bm.push_back(handle);
-  GameApi::BM bm;
-  bm.id = env->bm.size()-1;
-
-  //std::cout << "add_bitmap: " << bm.id << std::endl;
-  //bm.type = 0;
-  handle->id = bm.id;
-  return bm;
-}
-
-GameApi::BM add_color_bitmap(GameApi::Env &e, Bitmap<Color> *bm)
-{
-  BitmapColorHandle *handle = new BitmapColorHandle;
-  handle->bm = bm;
-  GameApi::BitmapApi api(e);
-  return add_bitmap(e,handle);
-}
-GameApi::BM add_color_bitmap2(GameApi::Env &e, Bitmap<Color> *bm)
-{
-  BitmapColorHandle *handle = new BitmapColorHandle;
-  handle->bm = bm;
-  return add_bitmap(e,handle);
-}
-GameApi::BMA add_bitmap_array(GameApi::Env &e, BitmapArray2<Color> *arr)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->bm_array.push_back(arr);
-  GameApi::BMA bma;
-  bma.id = env->bm_array.size()-1;
-  return bma;
-}
-GameApi::BB add_bool_bitmap(GameApi::Env &e, Bitmap<bool> *bitmap)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  BoolBitmap handle;
-  handle.bitmap = bitmap;
-  env->bool_bm.push_back(handle);
-  GameApi::BB bm;
-  bm.id = env->bool_bm.size()-1;
-  //bm.type = 0;
-  return bm;
-}
-
-GameApi::LAY add_layout(GameApi::Env &e, Layout *l)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->layouts.push_back(l);
-  GameApi::LAY ll;
-  ll.id = env->layouts.size()-1;
-  return ll;
-}
-
-GameApi::WV add_waveform(GameApi::Env &e, Waveform *bitmap)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->waveforms.push_back(bitmap);
-  GameApi::WV bm;
-  bm.id = env->waveforms.size()-1;
-  //bm.type = 0;
-  return bm;
-}
-
-
-GameApi::TX add_texture(GameApi::Env &e, TextureI *i)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->textures.push_back(i);
-  GameApi::TX tx;
-  tx.id = env->textures.size()-1;
-  return tx;
-}
-GameApi::Q add_tex_quad(GameApi::Env &e, Point2d p1, Point2d p2)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  TexCoordQuad q;
-  q.p1 = p1;
-  q.p2 = p2;
-  env->tex_quads.push_back(q);
-  GameApi::Q qq;
-  qq.id = env->tex_quads.size()-1;
-  return qq;
-}
-
-GameApi::FB add_float_bitmap(GameApi::Env &e, Bitmap<float> *bitmap)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  FloatBitmap handle;
-  handle.bitmap = bitmap;
-  env->float_bm.push_back(handle);
-  GameApi::FB bm;
-  bm.id = env->float_bm.size()-1;
-  //bm.type = 0;
-  return bm;
-}
-
-GameApi::VA add_vertex_array(GameApi::Env &e, VertexArraySet *va, RenderVertexArray *arr)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->vertex_array.push_back(va);
-  env->vertex_array_render.push_back(arr);
-  GameApi::VA bm;
-  bm.id = env->vertex_array.size()-1;
-  return bm;
-}
-void add_update_widget(GameApi::Env &e, GameApi::W widget, GuiWidget *w)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  delete env->widgets[widget.id];
-  env->widgets[widget.id] = w;
-}
-void add_update_vertex_array(GameApi::Env &e, GameApi::VA va_h, VertexArraySet *va, RenderVertexArray *arr)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  delete env->vertex_array[va_h.id];
-  delete env->vertex_array_render[va_h.id];
-  env->vertex_array[va_h.id] = va;
-  env->vertex_array_render[va_h.id] = arr;
-}
-
-GameApi::CBM add_continuous_bitmap(GameApi::Env &e, ContinuousBitmap<Color> *bitmap)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->continuous_bitmaps.push_back(bitmap);
-  GameApi::CBM bm;
-  bm.id = env->continuous_bitmaps.size()-1;
-  return bm;
-}
-
-GameApi::F add_function(GameApi::Env &e, FunctionImpl &f)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->func.push_back(f);
-  GameApi::F func;
-  func.id = env->func.size()-1;
-  return func;
-  
-}
-GameApi::F add_function(GameApi::Env &e, Function<float,float> *f)
-{
-  FunctionImpl ff;
-  ff.func = f;
-  return add_function(e, ff);
-}
-GameApi::SA add_separate(GameApi::Env &e, Separate *sep)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->separates.push_back(sep);
-  GameApi::SA p;
-  p.id = env->separates.size()-1;
-  return p;
-}
-
-GameApi::PL add_plane(GameApi::Env &e, PlanePoints2d *sep)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->plane_points.push_back(sep);
-  GameApi::PL p;
-  p.id = env->plane_points.size()-1;
-  return p;
-}
-
-// takes ownership of PolyHandle*
-GameApi::P add_polygon(GameApi::Env &e, FaceCollPolyHandle *handle)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->poly.push_back(handle);
-  GameApi::P p;
-  p.id = env->poly.size()-1;
-
-  //std::cout << "add_polygon returning" << p.id << std::endl;
-  //bm.type = 0;
-  handle->id = p.id;
-  return p;
-}
-GameApi::OM add_move(GameApi::Env &e, Array<int, ObjectWithPos> *arr)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->object_move.push_back(arr);
-  GameApi::OM om;
-  om.id = env->object_move.size()-1;
-  return om;
-}
-
-GameApi::VAA add_move_array(GameApi::Env &e, std::vector<VertexArrayWithPos> *vec)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->object_move_vertex_array.push_back(vec);
-  GameApi::VAA om;
-  om.id = env->object_move_vertex_array.size()-1;
-  return om;
-}
-// takes ownership of FaceCollection*
-GameApi::P add_polygon(GameApi::Env &e, FaceCollection *coll, int size)
-{
-  FaceCollPolyHandle *h = new FaceCollPolyHandle;
-  h->coll = coll;
-  h->collowned = true;
-  h->collarray=0;
-  h->collarrayowned = false;
-  //h->size = size;
-  //GameApi::PolygonApi api(e);
-  return /*api.memoize(*/add_polygon(e,h)/*)*/;
-}
-GameApi::P add_polygon2(GameApi::Env &e, FaceCollection *coll, int size=1)
-{
-  FaceCollPolyHandle *h = new FaceCollPolyHandle;
-  h->coll = coll;
-  h->collowned = true;
-  h->collarray=0;
-  h->collarrayowned = false;
-  //h->size = size;
-  return add_polygon(e,h);
-}
-GameApi::M add_matrix2(GameApi::Env &e, Matrix mm)
-{
-  GameApi::M m;
-  std::copy(&mm.matrix[0], &mm.matrix[0]+16, &m.mat[0]);
-  return m;
-}
-GameApi::M add_matrix(GameApi::Env &e, MatrixInterface *i)
-{
-  GameApi::M m;
-  Matrix mm = i->get_matrix();
-  std::copy(&mm.matrix[0], &mm.matrix[0]+16, &m.mat[0]);
-  delete i;
-  return m;
-#if 0
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->matrix.push_back(i);
-  GameApi::M m;
-  m.id = env->matrix.size()-1;
-  return m;
-#endif
-}
-
-GameApi::LI add_line_array(GameApi::Env &e, LineCollection *array)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->linearray.push_back(array);
-  GameApi::LI pt;
-  pt.id = env->linearray.size()-1;
-  return pt;
-}
-GameApi::PTS add_points_api_points(GameApi::Env &e, PointsApiPoints *pts)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->pointsapi_points.push_back(pts);
-  GameApi::PTS ptsa;
-  ptsa.id = env->pointsapi_points.size()-1;
-  return ptsa;
-}
-GameApi::PTA add_point_array3(GameApi::Env &e, PointArray3 *array)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->pointarray3.push_back(array);
-  GameApi::PTA pt;
-  pt.id = env->pointarray3.size()-1;
-  return pt;
-}
-GameApi::FOA add_point_array(GameApi::Env &e, PointArray2 *array)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->pointarray.push_back(array);
-  GameApi::FOA pt;
-  pt.id = env->pointarray.size()-1;
-  return pt;
-}
-void add_update_lines_array(GameApi::Env &e, GameApi::LLA la, PointArray2 *array)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  PointArray2 *arr = env->pointarray[la.id];
-  g_low->ogl->glDeleteBuffers(1, &arr->buffer);
-  g_low->ogl->glDeleteBuffers(1, &arr->buffer2);
-#ifdef VAO
-  g_low->ogl->glDeleteVertexArrays( 1, arr->vao );
-#endif
-  delete [] env->pointarray[la.id]->array;
-  delete [] env->pointarray[la.id]->color_array;
-  delete env->pointarray[la.id];
-  env->pointarray[la.id] = array;
-}
-GameApi::LLA add_lines_array(GameApi::Env &e, PointArray2 *array)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->pointarray.push_back(array);
-  GameApi::LLA pt;
-  pt.id = env->pointarray.size()-1;
-  return pt;
-}
-GameApi::PC add_pointcoll_array(GameApi::Env &e, PointCollection *array)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->pointcollarray.push_back(array);
-  GameApi::PC pt;
-  pt.id = env->pointcollarray.size()-1;
-  return pt;
-}
-
-GameApi::PT add_point(GameApi::Env &e, float x, float y)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  Point p = Point(x,y,0.0);
-#ifndef EMSCRIPTEN
-  env->lock();
-#endif
-  env->pt.push_back(p);
-  GameApi::PT pt;
-  pt.id = env->pt.size()-1;
-#ifndef EMSCRIPTEN
-  env->unlock();
-#endif
-  //pt.type = 0;
-  return pt;
-}
-
-
-
-GameApi::TR add_timerange(GameApi::Env &e, int paths)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->timeranges.push_back(new TROArray(paths));
-  GameApi::TR tr;
-  tr.id = env->timeranges.size()-1;
-  return tr;
-}
-GameApi::TR add_timerange(GameApi::Env &e, TROArray *arr)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->timeranges.push_back(arr);
-  GameApi::TR tr;
-  tr.id = env->timeranges.size()-1;
-  return tr;
-}
-
-TROArray *find_timerange(GameApi::Env &e, GameApi::TR tr);
-
-GameApi::VV add_timerange_vertexarray(GameApi::Env &e, GameApi::TR tr)
-{
-  TROArray *arr = find_timerange(e, tr);
-  
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  VArray *varr = new VArray(*arr);
-  varr->copy2();
-  env->timerange_vertexarrays.push_back(varr);
-  GameApi::VV vv;
-  vv.id = env->timerange_vertexarrays.size()-1;
-  return vv;
-}
-
-GameApi::O add_volume(GameApi::Env &e, VolumeObject *o)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->volumes.push_back(o);
-  GameApi::O pt;
-  pt.id = env->volumes.size()-1;
-  return pt;
-}
-
-
-GameApi::FO add_float_volume(GameApi::Env &e, FloatVolumeObject *o)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->floatvolumes.push_back(o);
-  GameApi::FO pt;
-  pt.id = env->floatvolumes.size()-1;
-  return pt;
-}
-
-GameApi::COV add_color_volume(GameApi::Env &e, ColorVolumeObject *o)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->colorvolume.push_back(o);
-  GameApi::COV pt;
-  pt.id = env->colorvolume.size()-1;
-  return pt;
-}
-
-
-GameApi::VO add_vector_volume(GameApi::Env &e, VectorVolumeObject *o)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->vectorvolume.push_back(o);
-  GameApi::VO pt;
-  pt.id = env->vectorvolume.size()-1;
-  return pt;
-}
-
-GameApi::VX add_int_voxel(GameApi::Env &e, Voxel<int> *o)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->voxels2.push_back(o);
-  GameApi::VX pt;
-  pt.id = env->voxels2.size()-1;
-  return pt;
-}
-GameApi::VX add_voxel(GameApi::Env &e, Voxel<unsigned int> *o)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->voxels.push_back(o);
-  GameApi::VX pt;
-  pt.id = env->voxels.size()-1;
-  return pt;
-}
-
-
-GameApi::CO add_color(GameApi::Env &e, int r, int g, int b, int a)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  Color p = Color(r,g,b,a);
-  env->colors.push_back(p);
-  GameApi::CO pt;
-  pt.id = env->colors.size()-1;
-  //pt.type = 0;
-  return pt;
-}
-
-
-GameApi::E add_event(GameApi::Env &e, const EventInfo &info)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->deletes.push_back(std::shared_ptr<void>(env->event_infos));
-  SingleEvent *event = new SingleEvent(env->event_infos, info);
-  env->event_infos = event;
-
-  GameApi::E ee;
-  ee.id = event->CurrentEventNum();
-  return ee;
-}
-GameApi::L add_link(GameApi::Env &e, GameApi::E e1, GameApi::E e2, LinkInfo info)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->deletes.push_back(std::shared_ptr<void>(env->event_infos));
-  LinkageInfo linkage;
-  linkage.start_event = e1.id;
-  linkage.end_event = e2.id;
-  SingleLink *link = new SingleLink(env->event_infos, linkage, info);
-  env->event_infos = link;
-
-  GameApi::L ee;
-  ee.id = link->CurrentLinkNum();
-  return ee;  
-}
-GameApi::MV add_mv_point(GameApi::Env &e, float x, float y, float z)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->dims.push_back(new PointNDim(Point(x,y,z)));
-  GameApi::MV mv;
-  mv.id = env->dims.size()-1;
-  return mv;
-}
-NDim<float,Point> *find_dim(GameApi::Env &e, GameApi::MV mv);
-EventInfo find_event_info(GameApi::Env &e, GameApi::E ee);
-
-
-GameApi::MV add_line(GameApi::Env &e, GameApi::E start, GameApi::E end, 
-		     GameApi::MV start_mv, GameApi::MV end_mv, int start_choose, int end_choose)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  NDim<float,Point> *start_dim = find_dim(e,start_mv);
-  NDim<float,Point> *end_dim = find_dim(e, end_mv);
-  std::vector<float> count_start = start_dim->Count();
-  if (count_start.size()>2) { std::cout << "line() dimension error!" << std::endl; }
-  std::vector<float> count_end = end_dim->Count();
-  if (count_end.size()>2) { std::cout << "line() dimension error!" << std::endl; }
-  EventInfo ei1 = find_event_info(e, start);
-  EventInfo ei2 = find_event_info(e, end);
-  float delta = ei2.time - ei1.time;
-  env->dims.push_back(new NextNDim<float,Point>(*start_dim,*end_dim, delta));
-  GameApi::MV mv;
-  mv.id = env->dims.size()-1;
-  return mv;
-}
-
-
-GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->deletes.push_back(std::shared_ptr<void>(env->event_infos));
-  PosInfo pos;
-  pos.link_id = l.id;
-  pos.curve = env->dims[point.id];
-  SinglePos *spos = new SinglePos(env->event_infos, pos);
-  env->event_infos = spos;
-  GameApi::LL ee;
-  ee.id = spos->CurrentPosNum();
-  return ee;
-}
 class EnableLinkArray : public Array<int, bool>
 {
 public:
@@ -1371,1039 +249,7 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
 }
-class TexIDEmpty : public TextureID {
-public:
-  TexIDEmpty(int id) : id(id) { }
-  int texture() const { return id; }
-  virtual void handle_event(MainLoopEvent &e) { }
-  virtual void render(MainLoopEnv &e) { }
-private:
-  int id;
-};
 
-HeavyOperation *find_heavy(GameApi::Env &e, GameApi::H h)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->heavys[h.id];
-}
-
-FrameBuffer *find_framebuffer(GameApi::Env &e, GameApi::FBU fb)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->frame_buffer[fb.id];
-}
-
-FrameBufferLoop *find_framemainloop(GameApi::Env &e, GameApi::FML ml)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->frame_loop[ml.id];
-}
-
-MeshAnim *find_mesh_anim(GameApi::Env &e, GameApi::MA ma)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->mesh_anim[ma.id];
-}
-
-CurveGroup *find_curve_group(GameApi::Env &e, GameApi::CG cg)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->curve_group[cg.id];
-}
-
-InputForMoving *find_move_input(GameApi::Env &e, GameApi::INP im)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->move_input[im.id];
-}
-Bitmap<int> *find_int_bitmap(GameApi::Env &e, GameApi::IBM bm)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->int_bitmaps[bm.id];
-}
-
-DiskStore *find_disk_store(GameApi::Env &e, GameApi::DS ds)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->disk_store[ds.id];
-
-}
-ShaderBitmap *find_shader_bitmap(GameApi::Env &e, GameApi::SBM sbm)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->shaderbitmaps[sbm.id];
-}
-std::vector<float> *find_polynomial(GameApi::Env &e, GameApi::PN pn)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->polynomials[pn.id];
-}
-DynamicChange *find_dyn_change(GameApi::Env &e, GameApi::DC dc)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->dyn_change[dc.id];
-}
-ContinuousBitmap<float> *find_cont_float(GameApi::Env &e, GameApi::CFB bm)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->cont_floats[bm.id];
-
-}
-ContinuousBitmap<bool> *find_cont_bool(GameApi::Env &e, GameApi::CBB bm)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->cont_bools[bm.id];
-
-}
-ShaderI *find_shader(GameApi::Env &e, GameApi::SI si)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->shader_interface[si.id];
-}
-TextureID *find_txid(GameApi::Env &e, GameApi::TXID id)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  TextureID *txid = env->txids[id.id];
-  if (txid==0) {
-    GameApi::TXID id2 = add_txid(e, new TexIDEmpty(id.id));
-    txid = env->txids[id2.id];
-  }
-  return txid;
-}
-PointsInPlane *find_plane_points(GameApi::Env &e, GameApi::PLP pl)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->plane_points2[pl.id];
-}
-LinesInPlane *find_plane_lines(GameApi::Env &e, GameApi::PLL pl)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->plane_lines[pl.id];
-}
-FacesInPlane *find_plane_faces(GameApi::Env &e, GameApi::PLF pl)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->plane_faces[pl.id];  
-}
-PropertyArray *find_property_array(GameApi::Env &e, GameApi::PR pr)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->prop_array[pr.id];
-}
-Space3d *find_space_3d(GameApi::Env &e, GameApi::SP sp)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->space_3d[sp.id];
-}
-CurvePatch *find_patch(GameApi::Env &e, GameApi::PA patch)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->curve_patches[patch.id];
-}
-CmdExecute *find_cmds(GameApi::Env &e, GameApi::CMD cmds2)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->cmds[cmds2.id];
-}
-GlyphInterface *find_glyph_interface(GameApi::Env &e, GameApi::GI gi)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->glyph_interfaces[gi.id];
-}
-
-FontInterface *find_font_interface(GameApi::Env &e, GameApi::FI fi)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->font_interfaces[fi.id];
-}
-StringDisplay *find_string_display(GameApi::Env &e, GameApi::SD sd)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->string_displays[sd.id];
-}
-Fetcher<float> *find_float_fetcher(GameApi::Env &e, GameApi::FF f)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->float_fetchers[f.id];
-}
-Fetcher<Point> *find_point_fetcher(GameApi::Env &e, GameApi::PF f)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->point_fetchers[f.id];
-}
-Fetcher<int> *find_int_fetcher(GameApi::Env &e, GameApi::IF i)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->int_fetchers[i.id];
-}
-Fetcher<std::string> *find_string_fetcher(GameApi::Env &e, GameApi::SF s)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->string_fetchers[s.id];
-}
-ArrayType *find_array(GameApi::Env &e, GameApi::ARR arr)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->arrays2[arr.id];
-}
-CurvePos *find_curve_pos(GameApi::Env &e, GameApi::CPP cp)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->curve_pos[cp.id];
-}
-PointTransform *find_point_transform(GameApi::Env &e, GameApi::PTT ptt)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->point_transforms[ptt.id];
-}
-VertexAnimNode *find_vertex_anim(GameApi::Env &e, GameApi::KF kf)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->vertex_anims[kf.id];
-}
-Blocker *find_blocker(GameApi::Env &e, GameApi::BLK blk)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->blockers[blk.id];
-}
-Splitter *find_splitter(GameApi::Env &e, GameApi::RUN spl)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->splitters[spl.id];
-}
-PD_Impl find_polydistfield(GameApi::Env &e, GameApi::PD p)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->polydistfield[p.id];
-}
-ColorChange *find_color(GameApi::Env &e, GameApi::CC cc)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->color_change[cc.id];
-}
-MixedI *find_mixed(GameApi::Env &e, GameApi::MX m)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->mixed[m.id];
-}
-SkeletalNode *find_skeletal(GameApi::Env &e, GameApi::SA n)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->skeletals[n.id];
-
-}
-PlaneShape *find_plane_shape(GameApi::Env &e, GameApi::PP p)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->plane_shapes[p.id];
-
-}
-Curve<Matrix> *find_matrix_curve(GameApi::Env &e, GameApi::MC m)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->matrix_curves[m.id];
-}
-MatrixArray *find_matrix_array(GameApi::Env &e, GameApi::MS m)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->matrix_arrays[m.id];
-}
-Curve<Point> *find_curve(GameApi::Env &e, GameApi::C c)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->curves[c.id];
-}
-ShaderCall *find_uber(GameApi::Env &e, GameApi::US m)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->shadercalls[m.id];
-}
-Material *find_material(GameApi::Env &e, GameApi::MT m)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->materials[m.id];
-}
-TreeStack *find_tree(GameApi::Env &e, GameApi::T m)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->trees[m.id];
-}
-TreeLevel *find_tree_level(GameApi::Env &e, GameApi::TL m)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->tree_levels[m.id];
-}
-ImplicitFunction3d *find_implicit(GameApi::Env &e, GameApi::IM m)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->implicit[m.id];
-}
-Movement *find_move(GameApi::Env &e, GameApi::MN m)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->movement_array[m.id];  
-}
-Collision *find_collision(GameApi::Env &e, GameApi::CP p)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->collision_array[p.id];  
-}
-TriStrip *find_tri_strip(GameApi::Env &e, GameApi::TS p)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->tri_strip[p.id];  
-}
-PhysicsNode *find_physics(GameApi::Env &e, GameApi::PH p)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  //std::cout << "find_physics: " << p.id << std::endl;
-  return env->phys[p.id];  
-}
-ExprNode *find_expr(GameApi::Env &e, GameApi::EX n)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->exprs[n.id];  
-}
-template<class T>
-std::vector<T> find_array(GameApi::Env &e, GameApi::A<T> arr)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  std::vector<T> vec2;
-  std::vector<int> vec = env->arrays[arr.id];
-  int s = vec.size();
-  for(int i=0;i<s;i++)
-    {
-      T t;
-      t.id = vec[i];
-      vec2.push_back(t);
-    }
-  return vec2;
-}
-MainLoopItem *find_main_loop(GameApi::Env &e, GameApi::ML ml)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->main_loop[ml.id];
-}
-FontAtlasInfo *find_font_atlas(GameApi::Env &e, GameApi::FtA ft)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->font_atlas[ft.id];
-}
-ShaderModule *find_shader_module(GameApi::Env &e, GameApi::SFO sfo)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->shader_module[sfo.id];
-}
-GuiWidget *find_widget(GameApi::Env &e, GameApi::W w)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  int s = env->widgets.size();
-  if (w.id>=0 && w.id<s)
-    return env->widgets[w.id];
-  //std::cout << "find_widget failed!" << w.id << std::endl;
-  //assert(0);
-  return 0;
-}
-Samples* find_samples(GameApi::Env &e, GameApi::SM sm)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->samples[sm.id];
-}
-Tracker* find_tracker(GameApi::Env &e, GameApi::TRK trk)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->trackers[trk.id];
-}
-EventInfo find_event_info(GameApi::Env &e, GameApi::E ee)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->event_infos->Event(ee.id);
-}
-FBOPriv *find_fbo(GameApi::Env &e, GameApi::FBO f)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  if (f.id >=0 && f.id < (int)env->fbos.size())
-    return &env->fbos[f.id];
-  return 0;
-}
-LinkageInfo find_linkage(GameApi::Env &e, GameApi::L l)
-{
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->event_infos->Linkage(l.id);
-}
-DistanceRenderable *find_distance(GameApi::Env &e, GameApi::FD fd)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  if (fd.id >=0 && fd.id < (int)env->distvolume.size())
-    return env->distvolume[fd.id];
-  return 0;
-}
-LazyValue<float> *find_float(GameApi::Env &e, GameApi::F f)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  if (f.id >=0 && f.id < (int)env->floats.size())
-    return env->floats[f.id];
-  return 0;
-}
-Array<int, float> *find_float_array(GameApi::Env &e, GameApi::FA f)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  if (f.id >=0 && f.id < (int)env->float_array.size())
-    return env->float_array[f.id];
-  return 0;
-}
-TextureI *find_texture(GameApi::Env &e, GameApi::TX t)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  if (t.id >=0 && t.id < (int)env->textures.size())
-    return env->textures[t.id];
-  return 0;
-}
-TexCoordQuad find_tex_quad(GameApi::Env &e, GameApi::Q t)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  if (t.id >=0 && t.id < (int)env->tex_quads.size())
-    return env->tex_quads[t.id];
-  TexCoordQuad q;
-  Point2d ex = { 0.0, 0.0 };
-  q.p1 = ex;
-  q.p2 = ex;
-  return q;
-}
-
-
-LinkInfo find_link_info(GameApi::Env &e, GameApi::L l)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->event_infos->Links(l.id);
-}
-PosInfo find_pos_info(GameApi::Env &e, GameApi::LL l)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->event_infos->Positions(l.id);
-}
-NDim<float,Point> *find_dim(GameApi::Env &e, GameApi::MV mv)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->dims[mv.id];
-}
-
-GameApi::H add_heavy(GameApi::Env &e, HeavyOperation *h)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->heavys.push_back(h);
-  GameApi::H c;
-  c.id = env->heavys.size()-1;
-  return c;
-
-}
-
-GameApi::MA add_mesh_anim(GameApi::Env &e, MeshAnim *ma)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->mesh_anim.push_back(ma);
-  GameApi::MA c;
-  c.id = env->mesh_anim.size()-1;
-  return c;
-
-}
-
-GameApi::CG add_curve_group(GameApi::Env &e, CurveGroup *cg)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->curve_group.push_back(cg);
-  GameApi::CG c;
-  c.id = env->curve_group.size()-1;
-  return c;
-
-}
-
-GameApi::INP add_move_input(GameApi::Env &e, InputForMoving *im)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->move_input.push_back(im);
-  GameApi::INP c;
-  c.id = env->move_input.size()-1;
-  return c;
-}
-
-GameApi::IBM add_int_bitmap(GameApi::Env &e, Bitmap<int> *bm)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->int_bitmaps.push_back(bm);
-  GameApi::IBM c;
-  c.id = env->int_bitmaps.size()-1;
-  return c;
-
-}
-GameApi::SBM add_shader_bitmap(GameApi::Env &e, ShaderBitmap *sbm)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->shaderbitmaps.push_back(sbm);
-  GameApi::SBM c;
-  c.id = env->shaderbitmaps.size()-1;
-  return c;
-}
-GameApi::DC add_dyn_change(GameApi::Env &e, DynamicChange *dc)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->dyn_change.push_back(dc);
-  GameApi::DC c;
-  c.id = env->dyn_change.size()-1;
-  return c;
-}
-GameApi::CFB add_cont_float(GameApi::Env &e, ContinuousBitmap<float> *bm)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->cont_floats.push_back(bm);
-  GameApi::CFB c;
-  c.id = env->cont_floats.size()-1;
-  return c;
-
-}
-GameApi::CBB add_cont_bool(GameApi::Env &e, ContinuousBitmap<bool> *bm)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->cont_bools.push_back(bm);
-  GameApi::CBB c;
-  c.id = env->cont_bools.size()-1;
-  return c;
-
-}
-GameApi::SI add_shader(GameApi::Env &e, ShaderI *sid)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->shader_interface.push_back(sid);
-  GameApi::SI c;
-  c.id = env->shader_interface.size()-1;
-  return c;
-
-}
-GameApi::PT add_point(GameApi::Env &e, float x, float y, float z)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  Point p = Point(x,y,z);
-#ifndef EMSCRIPTEN
-  env->lock();
-#endif
-  env->pt.push_back(p);
-  GameApi::PT pt;
-  pt.id = env->pt.size()-1;
-  //pt.type = 0;
-#ifndef EMSCRIPTEN
-  env->unlock();
-#endif
-  return pt;
-}
-
-GameApi::V add_vector(GameApi::Env &e, float dx, float dy, float dz)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  Vector p = Vector(dx,dy,dz);
-  env->vectors.push_back(p);
-  GameApi::V pt;
-  pt.id = env->vectors.size()-1;
-  //pt.type = 0;
-  return pt;
-}
-GameApi::PLP add_plane_points(GameApi::Env &e, PointsInPlane *pl)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->plane_points2.push_back(pl);
-  GameApi::PLP c;
-  c.id = env->plane_points2.size()-1;
-  return c;
-}
-GameApi::PLL add_plane_lines(GameApi::Env &e, LinesInPlane *pl)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->plane_lines.push_back(pl);
-  GameApi::PLL c;
-  c.id = env->plane_lines.size()-1;
-  return c;
-}
-GameApi::PLF add_plane_faces(GameApi::Env &e, FacesInPlane *pl)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->plane_faces.push_back(pl);
-  GameApi::PLF c;
-  c.id = env->plane_faces.size()-1;
-  return c;
-}
-
-GameApi::PR add_property_array(GameApi::Env &e, PropertyArray *arr)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->prop_array.push_back(arr);
-  GameApi::PR c;
-  c.id = env->prop_array.size()-1;
-  return c;
-}
-GameApi::SP add_space_3d(GameApi::Env &e, Space3d *sp)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->space_3d.push_back(sp);
-  GameApi::SP c;
-  c.id = env->space_3d.size()-1;
-  return c;
-}
-
-GameApi::CMD add_cmds(GameApi::Env &e, CmdExecute *cmds2)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->cmds.push_back(cmds2);
-  GameApi::CMD c;
-  c.id = env->cmds.size()-1;
-  return c;
-
-}
-GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->cutters.push_back(cut);
-  GameApi::CT c;
-  c.id = env->cutters.size()-1;
-  return c;
-}
-GameApi::IS add_anim(GameApi::Env &e, const AnimImpl &impl)
-{
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->anim.push_back(impl);
-  GameApi::IS pt;
-  pt.id = env->anim.size()-1;
-  //pt.type = 0;
-  return pt;
-}
-Bitmap<Color> *find_bitmap2(GameApi::Env &e, GameApi::BM bm) {
-  BitmapHandle *h = find_bitmap(e,bm);
-  return find_color_bitmap(h);
-}
-
-BitmapHandle *find_bitmap(GameApi::Env &e, GameApi::BM b)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  BitmapHandle *handle = 0;
-
-  if (b.id >=0 && b.id < (int)ee->bm.size())
-    handle = ee->bm[b.id];
-  return handle;
-}
-
-ShaderPriv2 *find_shaderpriv(GameApi::Env &e, GameApi::SH sh)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  ShaderPriv2 *p = ee->shader_privs[sh.id];
-  return p;
-}
-Program *find_shader_program(GameApi::Env &e, GameApi::SH sh)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  
-  ShaderPriv2 *p = ee->shader_privs[sh.id];
-  ShaderSeq *seq = p->seq;
-  Program *prog = seq->prog(p->ids[sh.id]);
-  return prog;
-}
-BitmapArray2<Color> *find_bitmap_array(GameApi::Env &e, GameApi::BMA b)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  BitmapArray2<Color> *h = 0;
-  if (b.id>=0 && b.id<(int)ee->bm_array.size())
-    {
-      h = ee->bm_array[b.id];
-    }
-  return h;
-}
-BoolBitmap *find_bool_bitmap(GameApi::Env &e, GameApi::BB b)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  BoolBitmap *handle = 0;
-
-  if (b.id >=0 && b.id < (int)ee->bool_bm.size())
-    handle = &ee->bool_bm[b.id];
-  return handle;
-}
-
-Layout *find_layout(GameApi::Env &e, GameApi::LAY l)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  Layout *handle = 0;
-  if (l.id>=0 && l.id < (int)ee->layouts.size())
-    handle = ee->layouts[l.id];
-  return handle;
-}
-
-Waveform *find_waveform(GameApi::Env &e, GameApi::WV b)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  Waveform *handle = 0;
-
-  if (b.id >=0 && b.id < (int)ee->waveforms.size())
-    handle = ee->waveforms[b.id];
-  return handle;
-}
-
-
-ContinuousBitmap<Color> *find_continuous_bitmap(GameApi::Env &e, GameApi::CBM b)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  ContinuousBitmap<Color> *handle = 0;
-
-  if (b.id >=0 && b.id < (int)ee->continuous_bitmaps.size())
-    handle = ee->continuous_bitmaps[b.id];
-  return handle;
-}
-
-FloatBitmap *find_float_bitmap(GameApi::Env &e, GameApi::FB b)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  FloatBitmap *handle = 0;
-
-  if (b.id >=0 && b.id < (int)ee->float_bm.size())
-    handle = &ee->float_bm[b.id];
-  return handle;
-}
-
-Voxel<unsigned int> *find_voxel(GameApi::Env &e, GameApi::VX b)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  Voxel<unsigned int> *handle = 0;
-
-  if (b.id >=0 && b.id < (int)ee->voxels.size())
-    handle = ee->voxels[b.id];
-  return handle;
-}
-
-Voxel<int> *find_int_voxel(GameApi::Env &e, GameApi::VX b)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  Voxel<int> *handle = 0;
-
-  if (b.id >=0 && b.id < (int)ee->voxels2.size())
-    handle = ee->voxels2[b.id];
-  return handle;
-}
-
-
-Separate* find_separate(GameApi::Env &e, GameApi::SA p)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  Separate *sep = 0;
-  if (p.id >=0 && p.id<(int)ee->separates.size())
-    sep = ee->separates[p.id];
-  return sep;
-}
-
-PlaneData *find_plane_array(GameApi::Env &e, GameApi::PLA p)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  PlaneData *data = 0;
-  if (p.id>=0 && p.id<(int)ee->plane_array.size())
-    data = &ee->plane_array[p.id];
-  return data;
-}
-PlanePoints2d* find_plane(GameApi::Env &e, GameApi::PL p)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  PlanePoints2d *sep = 0;
-  if (p.id >=0 && p.id<(int)ee->plane_points.size())
-    sep = ee->plane_points[p.id];
-  return sep;
-}
-
-Array<int,ObjectWithPos> *find_move(GameApi::Env &e, GameApi::OM p)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  Array<int,ObjectWithPos> *handle = NULL;
-  if (p.id >=0 && p.id < (int)ee->object_move.size())
-    handle = ee->object_move[p.id];
-  return handle;
-}
-
-std::vector<VertexArrayWithPos> *find_move_array(GameApi::Env &e, GameApi::VAA p)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  std::vector<VertexArrayWithPos> *handle = NULL;
-  if (p.id >=0 && p.id < (int)ee->object_move_vertex_array.size())
-    handle = ee->object_move_vertex_array[p.id];
-  return handle;
-}
-
-FaceCollPolyHandle *find_poly(GameApi::Env &e, GameApi::P p)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  FaceCollPolyHandle *handle = 0;
-
-  if (p.id >=0 && p.id < (int)ee->poly.size())
-    handle = ee->poly[p.id];
-  //std::cout << "find_poly:" << handle << std::endl;
-  return handle;
-}
-RenderVertexArray *find_vertex_array_render(GameApi::Env &e, GameApi::VA p)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  RenderVertexArray *handle = 0;
-
-  if (p.id >=0 && p.id < (int)ee->vertex_array_render.size())
-    handle = ee->vertex_array_render[p.id];
-  return handle;
-}
-VertexArraySet *find_vertex_array(GameApi::Env &e, GameApi::VA p)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  VertexArraySet *handle = 0;
-
-  if (p.id >=0 && p.id < (int)ee->vertex_array.size())
-    handle = ee->vertex_array[p.id];
-  return handle;
-}
-
-
-FaceCollection *find_facecoll(GameApi::Env &e, GameApi::P p)
-{
-  FaceCollPolyHandle *hh = find_poly(e,p);
-  //FaceCollPolyHandle *hh = dynamic_cast<FaceCollPolyHandle*>(h);
-  if (hh->coll)
-    return hh->coll;
-  else
-    return 0;
-}
-FunctionImpl *find_function(GameApi::Env &e, GameApi::F f)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  FunctionImpl *handle = 0;
-
-  if (f.id >=0 && f.id < (int)ee->func.size())
-    handle = &ee->func[f.id];
-  return handle;
-}
-
-SurfaceIn3d *find_surface2(GameApi::Env &e, GameApi::S s)
-{
-  return find_surface(e,s)->surf;
-}
-SurfaceImpl *find_surface(GameApi::Env &e, GameApi::S f)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  SurfaceImpl *handle = 0;
-
-  if (f.id >=0 && f.id < (int)ee->surfaces.size())
-    handle = &ee->surfaces[f.id];
-  return handle;
-}
-
-
-
-AnimImpl find_anim(GameApi::Env &e, GameApi::IS i)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (i.id >=0 && i.id < (int)ee->anim.size())
-    {
-      return ee->anim[i.id];
-    }
-  std::cout << "find_anim: anim not found: " << i.id << std::endl;
-  AnimImpl ii;
-  ii.wave_int = 0;
-  ii.wave_point = 0;
-  ii.wave_float = 0;
-  return ii;
-}
-Bitmap<Color> *find_color_bitmap(BitmapHandle *handle, int bbm_choose)
-{
-
-  BitmapArrayHandle *ahandle = dynamic_cast<BitmapArrayHandle*>(handle);
-  if (ahandle)
-    {
-      if (bbm_choose != -1 && bbm_choose >=0 && bbm_choose < (int)ahandle->vec.size())
-	  handle = ahandle->vec[bbm_choose];
-    }
-
-   BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
-   BitmapTileHandle *chandle2 = dynamic_cast<BitmapTileHandle*>(handle);
-   if (!chandle && !chandle2) return 0;
-   if (chandle)
-     return chandle->bm;
-   return chandle2->bm;
-}
-Bitmap<Pos> *find_pos_bitmap(BitmapHandle *handle, int bbm_choose)
-{
-
-  BitmapArrayHandle *ahandle = dynamic_cast<BitmapArrayHandle*>(handle);
-  if (ahandle)
-    {
-      if (bbm_choose != -1 && bbm_choose >=0 && bbm_choose < (int)ahandle->vec.size())
-	  handle = ahandle->vec[bbm_choose];
-    }
-
-   BitmapPosHandle *chandle = dynamic_cast<BitmapPosHandle*>(handle);
-   if (!chandle) return 0;
-   return chandle->bm;
-}
-
-
-
-PointsApiPoints *find_pointsapi_points(GameApi::Env &e, GameApi::PTS ps)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (ps.id >=0 && ps.id < (int)ee->pointsapi_points.size())
-    return ee->pointsapi_points[ps.id];
-  return 0;
-}
-LineCollection *find_line_array(GameApi::Env &e, GameApi::LI li)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (li.id >=0 && li.id < (int)ee->linearray.size())
-    return ee->linearray[li.id];
-  return 0;
-}
-PointArray3 *find_point_array3(GameApi::Env &e, GameApi::PTA pa)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (pa.id >=0 && pa.id < (int)ee->pointarray3.size())
-    return ee->pointarray3[pa.id];
-  return 0;
-}
-PointArray2 *find_point_array(GameApi::Env &e, GameApi::FOA p)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (p.id >=0 && p.id < (int)ee->pointarray.size())
-    return ee->pointarray[p.id];
-  return 0;
-}
-
-PointArray2 *find_lines_array(GameApi::Env &e, GameApi::LLA p)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (p.id >=0 && p.id < (int)ee->pointarray.size())
-    return ee->pointarray[p.id];
-  return 0;
-}
-
-
-PointCollection *find_pointcoll_array(GameApi::Env &e, GameApi::PC p)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (p.id >=0 && p.id < (int)ee->pointcollarray.size())
-    return ee->pointcollarray[p.id];
-  return 0;
-}
-
-
-Point *find_point(GameApi::Env &e, GameApi::PT p)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (p.id >=0 && p.id < (int)ee->pt.size())
-    return &ee->pt[p.id];
-  return 0;
-}
-Matrix find_matrix(GameApi::Env &e, GameApi::M m)
-{
-  Matrix mm;
-  std::copy(&m.mat[0], &m.mat[0]+16, &mm.matrix[0]);
-  mm.is_identity=false;
-  return mm;
-#if 0
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (p.id >=0 && p.id < (int)ee->matrix.size())
-    return ee->matrix[p.id];
-  return 0;
-#endif
-}
-
-TROArray *find_timerange(GameApi::Env &e, GameApi::TR tr)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (tr.id >=0 && tr.id < (int)ee->timeranges.size())
-    return ee->timeranges[tr.id];
-  return 0;
-}
-VArray *find_timerange_vertexarray(GameApi::Env &e, GameApi::VV vv)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (vv.id >=0 && vv.id < (int)ee->timerange_vertexarrays.size())
-    return ee->timerange_vertexarrays[vv.id];
-  return 0;
-}
-
-VolumeObject *find_volume(GameApi::Env &e, GameApi::O o)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (o.id >=0 && o.id < (int)ee->volumes.size())
-    return ee->volumes[o.id];
-  return 0;
-}
-
-
-
-FloatVolumeObject *find_float_volume(GameApi::Env &e, GameApi::FO o)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (o.id >=0 && o.id < (int)ee->floatvolumes.size())
-    return ee->floatvolumes[o.id];
-  return 0;
-}
-
-ColorVolumeObject *find_color_volume(GameApi::Env &e, GameApi::COV o)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (o.id >=0 && o.id < (int)ee->colorvolume.size())
-    return ee->colorvolume[o.id];
-  return 0;
-}
-
-VectorVolumeObject *find_vector_volume(GameApi::Env &e, GameApi::VO o)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (o.id >=0 && o.id < (int)ee->vectorvolume.size())
-    return ee->vectorvolume[o.id];
-  return 0;
-}
-
-
-Color *find_color(GameApi::Env &e, GameApi::CO p)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (p.id >=0 && p.id < (int)ee->colors.size())
-    return &ee->colors[p.id];
-  return 0;
-}
-
-
-Vector *find_vector(GameApi::Env &e, GameApi::V p)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (p.id >=0 && p.id < (int)ee->vectors.size())
-    return &ee->vectors[p.id];
-  return 0;
-}
-
-
-SpaceImpl *find_space(GameApi::Env &e, GameApi::SP s)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (s.id >=0 && s.id < (int)ee->sp.size())
-    return &ee->sp[s.id];
-  return 0;
-}
-LineImpl *find_line(GameApi::Env &e, GameApi::LN l)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (l.id >=0 && l.id < (int)ee->ln.size())
-    return &ee->ln[l.id];
-  return 0;
-}
-SpritePosImpl *find_sprite_pos(GameApi::Env &e, GameApi::BM bm)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  if (bm.id >=0 && bm.id < (int)ee->spr_pos.size())
-    return &ee->spr_pos[bm.id];
-  return 0;
-}
-Cutter *find_cutter(GameApi::Env &e, GameApi::CT cut)
-{
-  EnvImpl *ee = ::EnvImpl::Environment(&e);
-  return ee->cutters[cut.id];
-}
 
 
 EXPORT GameApi::GridApi::GridApi(GameApi::Env &e) : e(e)
@@ -3104,7 +950,6 @@ private:
   float dx,dy,dz;
 };
 
-extern float debug_pos_x, debug_pos_y, debug_pos_z;
 
 class DebugTranslateMovement : public Movement
 {
@@ -3142,7 +987,6 @@ EXPORT GameApi::MN GameApi::MovementNode::translate(MN next,
   return add_move(e, new TranslateMovement(nxt,start_time, end_time,
 					   dx,dy,dz));
 }
-extern int async_pending_count;
 int FindProgressVal();
 int FindProgressMax();
 class ScaleProgress : public Movement
@@ -3277,9 +1121,7 @@ private:
   float v_x,v_y,v_z;
   float angle;
 };
-EXPORT GameApi::MN GameApi::MovementNode::rotate(MN next, float start_time, float end_time,
-					  float p_x, float p_y, float p_z,
-					  float v_x, float v_y, float v_z, float angle)
+EXPORT GameApi::MN GameApi::MovementNode::rotate(MN next, float start_time, float end_time, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, float angle)
 {
   Movement *nxt = find_move(e, next);
   return add_move(e, new RotateMovement(nxt, start_time, end_time,
@@ -4858,62 +2700,6 @@ GameApi::P GameApi::TreeApi::tree_p(EveryApi &ev, T tree, std::vector<P> vec, fl
   return execute_recurse(e, ev, vec, Matrix::Identity(), 0, tree2, time); 
 }
 
-class MaterialForward : public Material
-{
-public:
-  GameApi::ML call(GameApi::P p) const
-  {
-    GameApi::ML ml;
-    ml.id = mat(p.id);
-    return ml;
-  }
-  GameApi::ML call_inst(GameApi::P p, GameApi::PTS pts)
-  {
-    GameApi::ML ml;
-    ml.id = mat_inst(p.id,pts.id);
-    return ml;
-  }
-  int mat(int p) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::ML ml = mat2(p2);
-    return ml.id;
-  }
-  int mat_inst(int p, int pts) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTS p3;
-    p3.id = pts;
-    GameApi::ML ml = mat2_inst(p2,p3);
-    return ml.id;
-  }
-  int mat_inst2(int p, int pta) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTA p3;
-    p3.id = pta;
-    GameApi::ML ml = mat2_inst2(p2,p3);
-    return ml.id;
-
-  }
-  int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTS p3;
-    p3.id = pts;
-    GameApi::ML ml = mat_inst_fade(p2,p3, flip, start_time, end_time);
-    return ml.id;
-
-  }
-  virtual GameApi::ML mat2(GameApi::P p) const=0;
-  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const=0;
-  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const=0;
-  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const=0;
-};
 class DefaultMaterial : public MaterialForward
 {
 public:
@@ -6020,6 +3806,7 @@ private:
 };
 
 
+
 class DynLightsMaterial : public MaterialForward
 {
 public:
@@ -6404,7 +4191,8 @@ private:
   unsigned int color;
   float mix_val;
 };
-
+#endif
+#ifdef FIRST_PART
 EXPORT GameApi::MT GameApi::MaterialsApi::def(EveryApi &ev)
 {
   return add_material(e, new DefaultMaterial(ev));
@@ -6514,6 +4302,8 @@ EXPORT GameApi::MT GameApi::MaterialsApi::marble(EveryApi &ev, MT nxt, int count
   Material *mat = find_material(e, nxt);
   return add_material(e, new Marble(ev, mat, count, cubesize));
 }
+#endif // FIRST_PART
+#ifdef SECOND_PART
 
 #if 0
 EXPORT GameApi::ML GameApi::MaterialsApi::snow(EveryApi &ev, P p)
@@ -6652,7 +4442,10 @@ ML I11=ev.mainloop_api.array_ml(std::vector<ML>{I6,I10});
 EXPORT GameApi::ML GameApi::MaterialsApi::bind(P p, MT mat)
 {
   Material *mat2 = find_material(e, mat);
-  int val = mat2->mat(p.id);
+  int val = 0;
+  if (mat2) {
+    val = mat2->mat(p.id);
+  }
   GameApi::ML ml;
   ml.id = val;
   return ml;
@@ -6660,7 +4453,10 @@ EXPORT GameApi::ML GameApi::MaterialsApi::bind(P p, MT mat)
 EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst2(P p, PTA pta, MT mat)
 {
   Material *mat2 = find_material(e, mat);
-  int val = mat2->mat_inst2(p.id,pta.id);
+  int val = 0;
+  if (mat2) {
+    val = mat2->mat_inst2(p.id,pta.id);
+  }
   GameApi::ML ml;
   ml.id = val;
   return ml;
@@ -6668,7 +4464,10 @@ EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst2(P p, PTA pta, MT mat)
 EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst(P p, PTS pts, MT mat)
 {
   Material *mat2 = find_material(e, mat);
-  int val = mat2->mat_inst(p.id,pts.id);
+  int val = 0;
+  if (mat2) {
+    val = mat2->mat_inst(p.id,pts.id);
+  }
   GameApi::ML ml;
   ml.id = val;
   return ml;
@@ -6676,7 +4475,10 @@ EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst(P p, PTS pts, MT mat)
 EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst_fade(P p, PTS pts, MT mat, bool flip, float start_time, float end_time)
 {
   Material *mat2 = find_material(e, mat);
-  int val = mat2->mat_inst_fade(p.id,pts.id, flip, start_time, end_time);
+  int val = 0;
+  if (mat2) {
+    val = mat2->mat_inst_fade(p.id,pts.id, flip, start_time, end_time);
+  }
   GameApi::ML ml;
   ml.id = val;
   return ml;
@@ -8712,7 +6514,7 @@ private:
 EXPORT GameApi::P GameApi::CurveApi::patch_sample(PA patch, int sx, int sy)
 {
   CurvePatch *p = find_patch(e, patch);
-  return add_polygon2(e, new PatchSample(*p, sx,sy));
+  return add_polygon2(e, new PatchSample(*p, sx,sy),1);
 }
 
 class Patch_X_Curve : public Curve<Point>
@@ -9973,7 +7775,6 @@ struct Envi_2 {
   int screen_width=800;
   int screen_height=600;
 };
-extern int async_pending_count;
 bool async_is_done=false;
 extern std::string gameapi_seamless_url;
 void blocker_iter(void *arg)
@@ -10592,7 +8393,7 @@ EXPORT GameApi::P GameApi::VertexAnimApi::change_pos(P p, P orig, PTT transform,
   FaceCollection *coll = find_facecoll(e, p);
   FaceCollection *orig2 = find_facecoll(e, orig);
   PointTransform *trans = find_point_transform(e, transform);
-  return add_polygon2(e, new ChangePos(*coll, *orig2, *trans, delta_time, different_pos));
+  return add_polygon2(e, new ChangePos(*coll, *orig2, *trans, delta_time, different_pos),1);
 }
 
 class CurveAccessor : public PointTransform
@@ -11169,231 +8970,14 @@ EXPORT GameApi::KF GameApi::VertexAnimApi::repeat_keyframes(KF rep, int count)
   return add_vertex_anim(e, new RepeatVertexAnimNode(va,count));
 }
 
-std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
-struct ASyncCallback { void (*fptr)(void*); void *data; };
-struct ASyncCallback2 { std::string url; ASyncCallback *cb; };
-//std::map<std::string, ASyncCallback*> load_url_callbacks;
-std::vector<ASyncCallback2> load_url_callbacks;
-void add_async_cb(std::string url, ASyncCallback *cb)
-{
-  ASyncCallback2 cb2;
-  cb2.url = url;
-  cb2.cb = cb;
-  load_url_callbacks.push_back(cb2);
-}
-ASyncCallback *rem_async_cb(std::string url)
-{
-  int s = load_url_callbacks.size();
-  int i = 0;
-  for(;i<s;i++)
-    {
-      //std::cout << "rem_async_cb: " << url << " <=> " << load_url_callbacks[i].url << std::endl;
-      if (load_url_callbacks[i].url==url) break;
-    }
-  if (i==s) { /*std::cout << "rem_async_cb failure!" << std::endl;*/ return 0; }
-  ASyncCallback *cb = load_url_callbacks[i].cb;
-  load_url_callbacks.erase(load_url_callbacks.begin()+i);
-  return cb;
-}
 
-
-std::string striphomepage(std::string);
-void onprogress_async_cb(unsigned int tmp, void *, int, int) { }
-void onerror_async_cb(unsigned int tmp, void *arg, int, const char*)
-{
-  std::cout << "ERROR: url loading error! " << std::endl;
-    char *url = (char*)arg;
-    std::string url_str(url);
-  std::string url_only(striphomepage(url_str));
-    load_url_buffers_async[url_only] = (std::vector<unsigned char>*)-1;
-    async_pending_count--;
-    std::cout << "ASync pending dec (onerror_async_cb) -->" << async_pending_count << std::endl;
-    
-    ASyncCallback *cb = rem_async_cb(url_only); //load_url_callbacks[url_only];
-  if (cb) {
-    std::cout << "Load cb!" << url_only << std::endl;
-    (*cb->fptr)(cb->data);
-  }
-
-}
-std::string striphomepage(std::string);
-std::string stripprefix(std::string s)
-{
-  int len = strlen("load_url.php?url=");
-  return s.substr(len,s.size()-len);
-}
-void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datasize)
-{
-
-  if (datasize==0) {
-      std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
-  }
-  std::vector<unsigned char> buffer;
-  unsigned char *dataptr = (unsigned char*)data;
-  for(unsigned int i=0;i<datasize;i++) { buffer.push_back(dataptr[i]); }
-  
-  char *url = (char*)arg;
-  std::string url_str(url);
-  std::string url_only(striphomepage(url_str));
-
-  { // progressbar
-    std::string url_only2 = stripprefix(url_only);
-  int s = url_only2.size();
-  int sum=0;
-  for(int i=0;i<s;i++) sum+=int(url_only2[i]);
-  sum = sum % 1000;
-  ProgressBar(sum,7,15,url_only2);
-  }
-  
-  //std::cout << "url loading complete! " << url_str << std::endl;
-  load_url_buffers_async[url_only] = new std::vector<unsigned char>(buffer);
-  async_pending_count--;
-  //std::cout << "ASync pending dec (onload_async_cb) -->" << async_pending_count<< std::endl;
-  
-  //std::cout << "Async cb!" << url_only << std::endl;
-  ASyncCallback *cb = rem_async_cb(url_only); //load_url_callbacks[url_only];
-  if (cb) {
-    //std::cout << "Load cb!" << url_only << std::endl;
-    (*cb->fptr)(cb->data);
-  }
-
-  { // progressbar
-    std::string url_only2 = stripprefix(url_only);
-  int s = url_only2.size();
-  int sum=0;
-  for(int i=0;i<s;i++) sum+=int(url_only2[i]);
-  sum = sum % 1000;
-  ProgressBar(sum,15,15,url_only2);
-  }
-
-}
-
-std::vector<unsigned char> load_from_url(std::string url);
-
-void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
-{
-  // progress bar
-  int s = url.size();
-  int sum=0;
-  for(int i=0;i<s;i++) sum+=int(url[i]);
-  sum = sum % 1000;
-  InstallProgress(sum,url);
-
-
-  url = "load_url.php?url=" + url;
-  ASyncCallback* cb = new ASyncCallback;
-  cb->fptr = fptr;
-  cb->data = data;
-  //load_url_callbacks[url] = cb;
-  add_async_cb(url,cb);
-
-
-
-  //std::cout << "async set callback" << url << std::endl;
-}
-void ASyncLoader::load_urls(std::string url, std::string homepage)
-  {
-    //std::cout << "ASyncLoader::load_urls:" << url << std::endl; 
-
-  // progress bar
-  int s = url.size();
-  int sum=0;
-  for(int i=0;i<s;i++) sum+=int(url[i]);
-  sum = sum % 1000;
-  InstallProgress(sum,url);
-
-#ifdef EMSCRIPTEN
-  std::string url2 = "load_url.php";
-  std::string urlend = "url=" + url;
-  std::string url3 = urlend + "&homepage=" + homepage;
-
-  url = "load_url.php?url=" + url + "&homepage=" + homepage;
-
-    //std::cout << "url loading started! " << url << std::endl;
-
-    // if we have already loaded the same url, don't load again
-    if (load_url_buffers_async[url]) { 
-      ASyncCallback *cb = rem_async_cb(url); //load_url_callbacks[url];
-      if (cb) {
-	//std::cout << "Load cb!" << url << std::endl;
-	(*cb->fptr)(cb->data);
-      }
-
-      { // progressbar
-	std::string url_plain = stripprefix(url);
-	int s = url_plain.size();
-	int sum=0;
-	for(int i=0;i<s;i++) sum+=int(url_plain[i]);
-	sum = sum % 1000;
-	ProgressBar(sum,15,15,url_plain);
-      }
-
-      return; 
-    }
-    char *buf2 = new char[url2.size()+1];
-    std::copy(url2.begin(), url2.end(), buf2);
-    buf2[url2.size()]=0;
-
-    char *buf3 = new char[url.size()+1];
-    std::copy(url.begin(), url.end(), buf3);
-    buf3[url.size()]=0;
-    
-    async_pending_count++;
-    //    std::cout << "ASync pending inc (load_urls) -->" << async_pending_count << std::endl;
-
-    //emscripten_async_wget_data(buf2, (void*)buf2 , &onload_async_cb, &onerror_async_cb);
-    emscripten_async_wget2_data(buf2, "POST", url3.c_str(), (void*)buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
-#else
-  { // progressbar
-  int s = url.size();
-  int sum=0;
-  for(int i=0;i<s;i++) sum+=int(url[i]);
-  sum = sum % 1000;
-  ProgressBar(sum,7,15,url);
-  }
-
-
-    std::string url2 = "load_url.php?url=" + url ;
-    if (load_url_buffers_async[url2]) { return; }
-    std::vector<unsigned char> buf = load_from_url(url);
-    if (buf.size()==0) {
-      std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
-    }
-    load_url_buffers_async[url2] = new std::vector<unsigned char>(buf);
-    //std::cout << "Async cb!" << url2 << std::endl;
-    ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
-    if (cb) {
-      //std::cout << "Load cb!" << url2 << std::endl;
-      //std::cout << "ASyncLoader::cb:" << url2 << std::endl; 
-      (*cb->fptr)(cb->data);
-    } else {
-      //std::cout << "ASyncLoadUrl::CB failed" << std::endl;
-    }
-
-  { // progressbar
-  int s = url.size();
-  int sum=0;
-  for(int i=0;i<s;i++) sum+=int(url[i]);
-  sum = sum % 1000;
-  ProgressBar(sum,15,15,url);
-  }
-
-
-#endif
-  }
-std::vector<unsigned char> *ASyncLoader::get_loaded_data(std::string url) const
-  {
-    url = "load_url.php?url=" + url;
-    //std::cout << "url fetch " << url << std::endl;
-    return load_url_buffers_async[url];
-  }
 
 
 class StringDisplayToBitmap : public Bitmap<int>
 {
 public:
   StringDisplayToBitmap(StringDisplay &sd, int def) : sd(sd),def(def) {}
-  void Prepare() { }
+  void Prepare() { sd.Prepare(); }
   int SizeX() const
   {
     int s = sd.Count();
@@ -11451,6 +9035,7 @@ class ChooseGlyphFromFont : public GlyphInterface
 {
 public:
   ChooseGlyphFromFont(FontInterface &fi, long idx) : fi(fi), idx(idx) { }
+  virtual void Prepare() { fi.Prepare(); }
   virtual int Top() const { return fi.Top(idx); }
   virtual int SizeX() const { return fi.SizeX(idx); }
   virtual int SizeY() const { return fi.SizeY(idx); }
@@ -11472,6 +9057,13 @@ class StringDisplayFromGlyphs : public StringDisplay
 {
 public:
   StringDisplayFromGlyphs(std::vector<GlyphInterface*> vec, std::string str, int x_gap, int empty_line_height) : vec(vec), x_gap(x_gap), str(str), empty_line_height(empty_line_height) { }
+  virtual void Prepare() { 
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->Prepare();
+      }
+  }
   virtual int Count() const { return vec.size(); }
   virtual int X(int c) const
   {
@@ -11610,7 +9202,6 @@ GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_g
 }
 
 
-extern std::string gameapi_homepageurl;
 GameApi::FI GameApi::FontApi::load_font(std::string ttf_filename, int sx, int sy)
 {
 #ifdef HAS_FREETYPE
@@ -11974,6 +9565,9 @@ GameApi::ML GameApi::MovementNode::enemy(ML prev)
   MainLoopItem *item = find_main_loop(e, prev);
   return add_main_loop(e, new Enemy(item));
 }
+#endif // SECOND_PART
+#ifdef THIRD_PART
+
 
 class PlayerPos : public MainLoopItem
 {
@@ -13387,7 +10981,7 @@ void P_cb(void *data)
 
 GameApi::P GameApi::MainLoopApi::load_P_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
-  return add_polygon2(e, new P_script(e,ev,url, p1,p2,p3,p4,p5));
+  return add_polygon2(e, new P_script(e,ev,url, p1,p2,p3,p4,p5),1);
 }
 
 std::vector<std::string> parse_sep(std::string s, char sep)
@@ -13448,7 +11042,7 @@ GameApi::ARR GameApi::MainLoopApi::load_P_script_array(EveryApi &ev, std::string
      
      if (i!=0) { e.async_load_url(url,gameapi_homepageurl); }
      FaceCollection *coll = new P_script(e,ev,url, k1,k2,k3,k4,k5);
-     GameApi::P coll_p = add_polygon2(e, coll);
+     GameApi::P coll_p = add_polygon2(e, coll,1);
      array->vec.push_back(coll_p.id);
    }
  return add_array(e,array);
@@ -18094,3 +15688,321 @@ GameApi::MT GameApi::MaterialsApi::many_texture_id_material(GameApi::EveryApi &e
 {
   return add_material(e, new ManyTextureIDMaterial(ev,mtl_url, url_prefix, mix, start_range, end_range));
 }
+
+class CombineMaterials : public MaterialForward
+{
+public:
+  CombineMaterials(GameApi::EveryApi &ev, Material *mat1, Material *mat2a) : ev(ev), mat1(mat1), mat2a(mat2a) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    int ml1 = mat1->mat(p.id);
+    int ml2 = mat2a->mat(p.id);
+    GameApi::ML m1 = { ml1 };
+    GameApi::ML m2 = { ml2 };
+    GameApi::ML I11=ev.mainloop_api.depthfunc(m2,1);
+    GameApi::ML I12=ev.mainloop_api.blendfunc(I11,2,3);
+    GameApi::ML I13=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{m1,I12});
+    return I13;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    int ml1 = mat1->mat_inst(p.id,pts.id);
+    int ml2 = mat2a->mat_inst(p.id,pts.id);
+    GameApi::ML m1 = { ml1 };
+    GameApi::ML m2 = { ml2 };
+    GameApi::ML I11=ev.mainloop_api.depthfunc(m2,1);
+    GameApi::ML I12=ev.mainloop_api.blendfunc(I11,2,3);
+    GameApi::ML I13=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{m1,I12});
+    return I13;
+
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+
+    int ml1 = mat1->mat_inst2(p.id,pta.id);
+    int ml2 = mat2a->mat_inst2(p.id,pta.id);
+    GameApi::ML m1 = { ml1 };
+    GameApi::ML m2 = { ml2 };
+    GameApi::ML I11=ev.mainloop_api.depthfunc(m2,1);
+    GameApi::ML I12=ev.mainloop_api.blendfunc(I11,2,3);
+    GameApi::ML I13=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{m1,I12});
+    return I13;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    int ml1 = mat1->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
+    int ml2 = mat2a->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
+    GameApi::ML m1 = { ml1 };
+    GameApi::ML m2 = { ml2 };
+    GameApi::ML I11=ev.mainloop_api.depthfunc(m2,1);
+    GameApi::ML I12=ev.mainloop_api.blendfunc(I11,2,3);
+    GameApi::ML I13=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{m1,I12});
+    return I13;
+
+  }
+private:
+  GameApi::EveryApi &ev;
+  Material *mat1, *mat2a;
+};
+
+GameApi::MT GameApi::MaterialsApi::combine_materials(EveryApi &ev, MT mat1, MT mat2)
+{
+  Material *m1 = find_material(e,mat1);
+  Material *m2 = find_material(e,mat2);
+  return add_material(e, new CombineMaterials(ev,m1,m2));
+}
+
+class SmallWindow : public MainLoopItem
+{
+public:
+  SmallWindow(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *draw, int x, int y, int sx, int sy) : env(env), ev(ev), draw(draw), x(x), y(y), sx(sx), sy(sy) { 
+    firsttime = true;
+  }
+
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (1) {
+      screen_x = ev.mainloop_api.get_screen_sx();
+      screen_y = ev.mainloop_api.get_screen_sy();
+      corner_x = ev.mainloop_api.get_corner_x();
+      corner_y = ev.mainloop_api.get_corner_y();
+      rect_sx = ev.mainloop_api.get_screen_rect_sx();
+      rect_sy = ev.mainloop_api.get_screen_rect_sy();
+      firsttime = false;
+    }
+    GameApi::SH sh_color = { e.sh_color };
+    Program *prog = find_shader_program(env, sh_color);
+    prog->use(); // 80.0, 10.1, 60000.0
+    
+    Matrix m = Matrix::Perspective(120.0*double(sy)/double(sx), (double)sx/sy, 10.1, 60000.0);
+    //Matrix m = Matrix::Perspective2(-300.0, 300.0, -300.0, 300.0, 1.0, 610.0);
+    prog->set_var("in_P", m);
+    g_low->ogl->glViewport(corner_x+x,screen_y-corner_y-sy-y, sx, sy);
+    draw->execute(e);
+    g_low->ogl->glViewport(corner_x,screen_y-corner_y-rect_sy,rect_sx, rect_sy);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    draw->handle_event(e);
+  }
+  virtual int shader_id() { return draw->shader_id(); }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *draw;
+  int x;
+  int y;
+  int sx;
+  int sy;
+
+  int screen_x, screen_y;
+  int corner_x, corner_y;
+  int rect_sx, rect_sy;
+  bool firsttime;
+};
+
+GameApi::ML GameApi::MainLoopApi::small_window(EveryApi &ev, ML ml, int x, int y, int sx, int sy)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new SmallWindow(e,ev,item, x,y,sx,sy));
+}
+
+GameApi::ML part(GameApi::EveryApi &ev, GameApi::ML ml, float y_rot, float z_rot, int x, int y) {
+  GameApi::MN I1=ev.move_api.empty();
+  GameApi::MN I2=ev.move_api.rotatey(I1,y_rot);
+  GameApi::MN I3=ev.move_api.rotatex(I2,z_rot);
+  GameApi::ML I4=ev.move_api.move_ml(ev,ml,I3,1,10.0);
+  GameApi::ML I5=ev.mainloop_api.small_window(ev,I4,x*512,y*256,512,256);
+  return I5;
+}
+float part_y_rot(int x, int y)
+{
+  x-=2;
+  y-=4;
+  return y*3.14159*2.0/2.0/4.0/2.0;
+}
+float part_z_rot(int x, int y)
+{
+  x-=2;
+  y-=4;
+  return x*3.14159*2.0/2.0/8.0/2.0;
+}
+
+GameApi::ML part_line(GameApi::EveryApi &ev, GameApi::ML ml, int line)
+{
+  GameApi::ML ml_0_0 = part(ev,ml, part_y_rot(0,line), part_z_rot(0,line),0,line);
+  GameApi::ML ml_1_0 = part(ev,ml, part_y_rot(1,line), part_z_rot(1,line),1,line);
+  GameApi::ML ml_2_0 = part(ev,ml, part_y_rot(2,line), part_z_rot(2,line),2,line);
+  GameApi::ML ml_3_0 = part(ev,ml, part_y_rot(3,line), part_z_rot(3,line),3,line);
+  GameApi::ML I1=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{ml_0_0,ml_1_0,ml_2_0,ml_3_0});
+  return I1;
+}
+
+GameApi::ML GameApi::MainLoopApi::looking_glass(EveryApi &ev, ML ml)
+{
+  GameApi::ML l0 = part_line(ev,ml, 0);
+  GameApi::ML l1 = part_line(ev,ml, 1);
+  GameApi::ML l2 = part_line(ev,ml, 2);
+  GameApi::ML l3 = part_line(ev,ml, 3);
+  GameApi::ML l4 = part_line(ev,ml, 4);
+  GameApi::ML l5 = part_line(ev,ml, 5);
+  GameApi::ML l6 = part_line(ev,ml, 6);
+  GameApi::ML l7 = part_line(ev,ml, 7);
+  ML I1=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{l0,l1,l2,l3,l4,l5,l6,l7});
+  return I1;
+}
+
+
+class SaveFont : public MainLoopItem
+{
+public:
+  SaveFont(FontInterface *font, std::string chars, std::string filename) : font(font), chars(chars), filename(filename)  
+  {
+    firsttime = true;
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+      std::cout << "Saving font file to: " << filename << std::endl;
+      std::ofstream ss(filename.c_str());
+      ss << chars.size() << std::endl;
+      int s = chars.size();
+      for(int i=0;i<s;i++)
+	{
+	  long idx = chars[i];
+	  int top = font->Top(idx);
+	  int sx = font->SizeX(idx);
+	  int sy = font->SizeY(idx);
+	  ss << idx << " " << top << " " << sx << " " << sy << std::endl;
+	  for(int y=0;y<sy;y++)
+	    for(int x=0;x<sx;x++)
+	      {
+		int val = font->Map(idx,x,y);
+		ss << val << " ";
+	      }
+	  ss << std::endl;
+	}
+      ss.close();
+      firsttime = false;
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual int shader_id() { return -1; }
+private:
+  FontInterface *font;
+  std::string chars;
+  std::string filename;
+  bool firsttime;
+};
+
+GameApi::ML GameApi::FontApi::save_font_dump(FI font, std::string chars, std::string filename)
+{
+  FontInterface *fnt = find_font_interface(e,font);
+  return add_main_loop(e, new SaveFont(fnt, chars, filename));
+}
+
+class LoadFont : public FontInterface
+{
+public:
+  LoadFont(GameApi::Env &e, std::string url, std::string homepageurl) : e(e), url(url), homepageurl(homepageurl) { firsttime = true; }
+  virtual void Prepare() { 
+    if (firsttime) {
+      firsttime = false;
+#ifndef EMSCRIPTEN
+      e.async_load_url(url, homepageurl);
+#endif
+      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+      if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+      std::string s(vec->begin(), vec->end());
+      std::stringstream ss(s);
+      int count = -1;
+      long idx = -1;
+      int top = -1;
+      int sx = -1;
+      int sy = -1;
+      ss >> count;
+      //std::cout << "Loading font: ";
+      for(int i=0;i<count;i++)
+	{
+	  ss >> idx >> top >> sx >> sy;
+	  //std::cout << idx;
+	  int *ptr = new int[sx*sy];
+	  for(int y=0;y<sy;y++) {
+	    for(int x=0;x<sx;x++) {
+	    int val = 0;
+	    ss >> val;
+	    ptr[x+y*sx] = val;
+	    }
+	  }
+	  m_idx.push_back(idx);
+	  m_top.push_back(top);
+	  m_sx.push_back(sx);
+	  m_sy.push_back(sy);
+	  m_data.push_back(ptr);
+	}
+      //std::cout << std::endl;
+    }
+  }
+  virtual int Top(long idx) const { 
+    int index = find_index(idx);
+    if (index!=-1) {
+      return m_top[index];
+    }
+    return 0;
+  }
+  virtual int SizeX(long idx) const
+  {
+    int index = find_index(idx);
+    if (index!=-1) {
+      return m_sx[index];
+    }
+    return 0;
+  }
+  virtual int SizeY(long idx) const
+  {
+    int index = find_index(idx);
+    if (index!=-1) {
+      return m_sy[index];
+    }
+    return 0;
+  }
+  virtual int Map(long idx, int x, int y) const
+  {
+    int sx = SizeX(idx);
+    int sy = SizeY(idx);
+    int index = find_index(idx);
+    if (index==-1) return 0;
+    int *ptr = m_data[index];
+    if (x>=0&&x<sx)
+      if (y>=0&&y<sy)
+	return ptr[x+y*sx];
+    return 0;
+  }
+
+  int find_index(long idx) const
+  {
+    int s = m_idx.size();
+    for(int i=0;i<s;i++)
+      if (m_idx[i]==idx) return i;
+    return -1;
+  }
+
+private:
+  GameApi::Env &e;
+  std::string url;
+  std::string homepageurl;
+  std::vector<long> m_idx;
+  std::vector<int> m_top;
+  std::vector<int> m_sx;
+  std::vector<int> m_sy;
+  std::vector<int*> m_data;
+  bool firsttime;
+};
+
+GameApi::FI GameApi::FontApi::load_font_dump(std::string url)
+{
+  return add_font_interface(e, new LoadFont(e,url, gameapi_homepageurl));
+}
+
+#endif // THIRD_PART

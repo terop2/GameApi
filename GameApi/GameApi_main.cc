@@ -24,14 +24,14 @@ EXPORT void GameApi::MainLoopApi::cursor_visible(bool enabled)
 }
 extern Low_SDL_Window *sdl_window;
 
-EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_height, std::string window_title)
+EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_height, std::string window_title, bool vr_init)
 {
   set_corner(0,0,screen_width, screen_height);
   MainLoopPriv *p = (MainLoopPriv*)priv;
   int screenx = screen_width;
   int screeny = screen_height;
 #ifdef SDL2_USED
-  p->screen = InitSDL2(screenx,screeny,false);
+  p->screen = InitSDL2(screenx,screeny,false, false, false,vr_init);
 #else
   p->screen = InitSDL(screenx,screeny,false);
 #endif
@@ -233,31 +233,7 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
 {
   int screenx = screen_width;
   int screeny = screen_height;
-#if 0
-  MainLoopPriv *p = (MainLoopPriv*)priv;
-  int screenx = screen_width;
-  int screeny = screen_height;
-#ifdef SDL2_USED
-  p->screen = InitSDL2(screenx,screeny,true);
-#else
-  p->screen = InitSDL(screenx,screeny,true);
-#endif
-  //glColor4f(1.0,1.0,1.0, 0.5);
-  time = g_low->sdl->SDL_GetTicks();
-#endif
-  //glDisable(GL_LIGHTING);
-  //glDisable(GL_DEPTH_TEST);
-  //glMatrixMode( GL_PROJECTION ); 
-  // glLoadIdentity(); 
-  //glOrtho(0, screenx, screeny,0,0,1);
-  /*
-  Matrix m = Matrix::Perspective(80.0, (double)screenx/screeny, 99.1, 60000.0);
-  float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
-		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
-		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
-		    m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
-  glMultMatrixf(&mat[0]);
-  */
+
   Program *prog = find_shader_program(e, sh);
   prog->use(); // 80.0, 10.1, 60000.0
   Matrix m = Matrix::Perspective(90.0*double(screeny)/double(screenx), (double)screenx/screeny, 10.1, 60000.0);

@@ -33,6 +33,12 @@
 
 #include "GameApi_low.hh"
 
+// this flag needs to be changes also from
+// 1) GameApi_h.hh
+// 2) Main.cc
+// 3) Shader.cc
+#define OPENGL_ES 1
+
 std::string funccall_to_string(ShaderModule *mod);
 std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string value);
 
@@ -429,6 +435,9 @@ ShaderFile::ShaderFile(std::string filename)
 }
 
 #ifdef EMSCRIPTEN
+#define OLD_SHADER 1
+#endif
+#ifdef OPENGL_ES
 #define OLD_SHADER 1
 #endif
 #ifdef RASBERRY
@@ -3041,6 +3050,7 @@ ParseResult parse_fcall(std::string s)
   return res;
 }
 
+#if 0
 struct AnimStateI
 {
   AnimStateI(ShaderFile &f) : seq(f) { }
@@ -3048,14 +3058,19 @@ struct AnimStateI
   ShaderSeq seq;
   int s;
 };
+#endif
 
 AnimState::AnimState(ShaderFile &f)
 {
+#if 0
   priv = new AnimStateI(f);
+#endif
 }
 AnimState::~AnimState()
 {
+#if 0
   delete priv;
+#endif
 }
 
 void UpdateAnim(Anim &anim, AnimState &state, const std::vector<Attrib> &attribs)
@@ -3078,6 +3093,7 @@ void UpdateAnim(Anim &anim, AnimState &state, const std::vector<Attrib> &attribs
 
 void DrawAnim(float start, float end, AnimState &state, const std::vector<Attrib> &attribs)
 {
+#if 0
   state.priv->seq.use(state.priv->s);
   Program *prog = state.priv->seq.prog(state.priv->s);
   //std::cout << "Frame: ";
@@ -3099,4 +3115,41 @@ void DrawAnim(float start, float end, AnimState &state, const std::vector<Attrib
   DrawVBO(state.priv->vbostate, UpdateAll, attr);
 
   state.priv->seq.unuse(state.priv->s);
+#endif
+}
+
+std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val)
+{
+  std::string res = mod->FunctionName();
+  res+="(";
+  int s = mod->NumArgs();
+  for(int i=0;i<s;i++)
+    {
+      std::string argname = mod->ArgName(i);
+      std::string value = mod->ArgValue(i);
+      if (argname == name)
+	{
+	  value = val;
+	}
+      res += value;
+      if (i!=s-1)
+	res+=",";
+    }
+  res+=")";
+  return res;
+}
+
+std::string funccall_to_string(ShaderModule *mod)
+{
+  std::string res = mod->FunctionName();
+  res+="(";
+  int s = mod->NumArgs();
+  for(int i=0;i<s;i++)
+    {
+      res += mod->ArgValue(i);
+      if (i!=s-1)
+	res+=",";
+    }
+  res+=")";
+  return res;
 }

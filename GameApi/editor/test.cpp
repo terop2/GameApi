@@ -1668,6 +1668,12 @@ int main(int argc, char *argv[]) {
   std::string filename = "mod.txt";
   for(int i=1;i<argc;i++)
     {
+      if (std::string(argv[i])=="--mg")
+	{
+	  screen_x = 2560;
+	  screen_y = 1600;
+	}
+
       if (std::string(argv[i])=="--huge")
 	{
 	  screen_x = 1200;
