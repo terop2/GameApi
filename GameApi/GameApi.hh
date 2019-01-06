@@ -273,7 +273,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
-  IMPORT void init_window(int screen_width = 800, int screen_height=600, std::string window_title="GameApi");
+  IMPORT void init_window(int screen_width = 800, int screen_height=600, std::string window_title="GameApi", bool vr_init=false);
   IMPORT void init(SH sh, int screen_width = 800, int screen_height = 600);
   IMPORT void init_3d(SH sh, int screen_width = 800, int screen_heigth = 600);
   IMPORT void nvidia_init();
@@ -282,6 +282,8 @@ public:
   IMPORT void clear_3d_transparent();
   IMPORT void clear_3d(unsigned int col = 0xff000000);
   IMPORT void switch_to_3d(bool b, SH sh, int screen_width=800., int screen_height = 600);
+  IMPORT ML small_window(EveryApi &ev, ML ml, int x, int y, int sx, int sy);
+  IMPORT ML looking_glass(EveryApi &ev, ML ml);
   IMPORT void alpha(bool enabled);
   void alpha_1(bool enabled);
   IMPORT void depth_test(bool enabled);
@@ -728,6 +730,8 @@ public:
   IMPORT ML dynamic_polygon(EveryApi &ev, std::vector<P> vec, MT material, IF fetcher);
   IMPORT ML dynamic_string(EveryApi &ev, Ft font, std::string alternative_chars, SF fetcher, int x, int y, int numchars);
   IMPORT FI load_font(std::string ttf_filename, int sx, int sy);
+  IMPORT ML save_font_dump(FI font, std::string chars, std::string filename);
+  IMPORT FI load_font_dump(std::string url);
   IMPORT GI choose_glyph_from_font(FI font, long idx);
   IMPORT SD draw_text_string_sd(std::vector<GI> glyphs, std::string str, int gap_x, int empty_line_height);
   IMPORT BM string_display_to_bitmap(SD sd, int def);
@@ -1264,6 +1268,7 @@ public:
   IMPORT MT mesh_color_from_sfo(EveryApi &ev, SFO sfo, MT next);
 
   IMPORT MT sfo_sandbox(EveryApi &ev, SFO sfo, MT next);
+  IMPORT MT combine_materials(EveryApi &ev, MT mat1, MT mat2);
 
   IMPORT ML bind(P p, MT mat);
   IMPORT ML bind_inst(P p, PTS pts, MT mat);
@@ -2087,6 +2092,10 @@ public:
   P meshanim_mesh2(MA ma, float time1, float time2);
   ARR meshanim_anim_meshes(MA ma, float start_time, float delta_time, int count);
 
+  P lod_choose(std::vector<P> vec, std::string name);
+  P lod_set(P p, std::string name, int value);
+  IF lod_select(float start_dist, float dist_step, int max_value);
+
   BM shadow_map(EveryApi &ev, P p, float p_x, float p_y, float p_z, int sx, int sy);
   ML choose_time(ML next, std::vector<ML> vec, float delta_time);
   ML anim(EveryApi &ev, ML next, MA anim, float start_time, float delta_time, int count);
@@ -2214,6 +2223,7 @@ public:
   IMPORT P texcoord_cylindar(P orig, float start_y, float end_y);
   IMPORT P texcoord_from_normal(P p);
   IMPORT P texcoord_plane(P p, float start_x, float end_x, float start_y, float end_y);
+  IMPORT P texcoord_subarea(P p, float start_x, float end_x, float start_y, float end_y);
   IMPORT P fix_texcoord(P p);
   IMPORT P color_cube(P orig,
 	       PT o, PT u_x, PT u_y, PT u_z,

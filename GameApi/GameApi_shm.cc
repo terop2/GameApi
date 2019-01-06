@@ -53,20 +53,7 @@ std::string unique_id()
   ss << val;
   return ss.str();
 }
-std::string funccall_to_string(ShaderModule *mod)
-{
-  std::string res = mod->FunctionName();
-  res+="(";
-  int s = mod->NumArgs();
-  for(int i=0;i<s;i++)
-    {
-      res += mod->ArgValue(i);
-      if (i!=s-1)
-	res+=",";
-    }
-  res+=")";
-  return res;
-}
+std::string funccall_to_string(ShaderModule *mod);
 
 std::string color_funccall_to_string(ShaderModule *mod)
 {
@@ -84,27 +71,8 @@ std::string color_funccall_to_string(ShaderModule *mod)
 }
 
 
-std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val)
-{
-  std::string res = mod->FunctionName();
-  res+="(";
-  int s = mod->NumArgs();
-  for(int i=0;i<s;i++)
-    {
-      std::string argname = mod->ArgName(i);
-      std::string value = mod->ArgValue(i);
-      if (argname == name)
-	{
-	  value = val;
-	}
-      res += value;
-      if (i!=s-1)
-	res+=",";
-    }
-  res+=")";
-  return res;
-}
 
+std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
 
 std::string color_funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val)
 {

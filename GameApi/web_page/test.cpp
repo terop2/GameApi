@@ -288,8 +288,12 @@ int main(int argc, char *argv[]) {
   // initialize window
   if (!find_string(code, "low_framebuffer_run"))
     {
+      bool vr_init=true;
+      if (!find_string(code, "vr_window")) {
+	vr_init=false;
+      }
       set_status(2,6);
-      ev.mainloop_api.init_window(w_width,w_height);
+      ev.mainloop_api.init_window(w_width,w_height,"GameApi", vr_init);
       set_status(3,6);
     }
   else

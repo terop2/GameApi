@@ -105,44 +105,22 @@ EXPORT GameApi::SH GameApi::ShaderApi::colour_texture_shader()
 {
   return get_normal_shader_1("comb", "comb", "","colour:texture:light:light", "colour:texture:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX","","");
 }
-EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
-						  std::string f_format,
-						  std::string g_format,
-						  std::string v_comb,
-							 std::string f_comb, bool trans, SFO mod, std::string v_defines, std::string f_defines)
+EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format, std::string f_format,std::string g_format,std::string v_comb, std::string f_comb, bool trans, SFO mod, std::string v_defines, std::string f_defines)
 {
   GameApi::US us1 = { -1 };
   return get_normal_shader_1(v_format, f_format, g_format, v_comb, f_comb, trans,mod, us1,us1, v_defines, f_defines,"","");
 }
-EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
-							 std::string f_format,
-							 std::string g_format,
-							 US v_comb,
-							 US f_comb,
-							 bool trans, 
-							 SFO mod, std::string v_defines, std::string f_defines)
+EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format, std::string f_format, std::string g_format, US v_comb, US f_comb, bool trans, SFO mod, std::string v_defines, std::string f_defines)
 {
   return get_normal_shader_1(v_format, f_format, g_format, "", "", trans,mod, v_comb, f_comb,v_defines,f_defines,"","");
 }
 
-EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format,
-							 std::string f_format,
-							 std::string g_format,
-							 US v_comb,
-							 US f_comb,
-							 std::string v_shader,
-							 std::string f_shader,
-							 bool trans, 
-							 SFO mod, std::string v_defines, std::string f_defines)
+EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format, std::string f_format, std::string g_format, US v_comb, US f_comb, std::string v_shader, std::string f_shader, bool trans, SFO mod, std::string v_defines, std::string f_defines)
 {
   return get_normal_shader_1(v_format, f_format, g_format, "", "", trans,mod, v_comb, f_comb,v_defines,f_defines, v_shader, f_shader);
 }
 
-GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format,
-						  std::string f_format,
-						  std::string g_format,
-						  std::string v_comb,
-						    std::string f_comb, bool trans, SFO mod, US v_c, US f_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
+GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format, std::string f_format, std::string g_format,std::string v_comb, std::string f_comb, bool trans, SFO mod, US v_c, US f_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
 {
   SH sh = get_shader_1(v_format, f_format, g_format, v_comb, f_comb,trans,mod,v_c, f_c, v_defines, f_defines, v_shader, f_shader);
   //const int vertex_id = 7;
@@ -182,20 +160,12 @@ void combparse(std::string comb, std::vector<std::string> &vec)
     }
 }
 
-EXPORT GameApi::SH GameApi::ShaderApi::get_shader(std::string v_format,
-					std::string f_format,
-					   std::string g_format, 
-					   std::string v_comb,
-						  std::string f_comb, bool trans, SFO module)
+EXPORT GameApi::SH GameApi::ShaderApi::get_shader(std::string v_format, std::string f_format, std::string g_format, std::string v_comb,std::string f_comb, bool trans, SFO module)
 {
   return get_shader_1(v_format, f_format, g_format, v_comb, f_comb, trans, module);
 }
 
-GameApi::SH GameApi::ShaderApi::get_shader_1(std::string v_format,
-					std::string f_format,
-					   std::string g_format, 
-					   std::string v_comb,
-					     std::string f_comb, bool trans, SFO module, US v_c, US f_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
+GameApi::SH GameApi::ShaderApi::get_shader_1(std::string v_format, std::string f_format,std::string g_format, std::string v_comb, std::string f_comb, bool trans, SFO module, US v_c, US f_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
 {
   ShaderModule *mod = 0;
   if (module.id!=-1)

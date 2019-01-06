@@ -33,6 +33,13 @@
 //#include <GL/gl.h>
 //#endif
 #endif
+
+// this flag needs to be changes also from
+// 1) GameApi_h.hh
+// 2) Main.cc
+// 3) Shader.cc
+#define OPENGL_ES 1
+
 //#include <SDL.h>
 //#include <SDL_opengl.h>
 //#include <SDL_image.h>
@@ -381,7 +388,7 @@ c  for(int i=0;i<size1&&!exit2;i+=100)
 void initialize_low(int flags);
 
 IMPORT void check_vr_compositor_init();
-Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize)
+Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize, bool vr_init)
 {
   initialize_low(0);
 
@@ -402,14 +409,24 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4);
 
 #ifndef EMSCRIPTEN
+#ifndef OPENGL_ES
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_PROFILE_MASK, Low_SDL_GL_CONTEXT_PROFILE_CORE);
+#else 
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 0);
+
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_PROFILE_MASK, Low_SDL_GL_CONTEXT_PROFILE_ES);
+
+#endif
 #endif
   //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #ifdef VIRTUAL_REALITY
-  check_vr_compositor_init();
+  if (vr_init) {
+    check_vr_compositor_init();
+  }
 #endif  
   if (resize)
     sdl_window = g_low->sdl->SDL_CreateWindow("Program", Low_SDL_WINDOWPOS_CENTERED, Low_SDL_WINDOWPOS_CENTERED, scr_x, scr_y, Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE);

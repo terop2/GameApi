@@ -1021,6 +1021,7 @@ public:
 class GlyphInterface
 {
 public:
+  virtual void Prepare() { }
   virtual int Top() const=0; // needs to be fast
   virtual int SizeX() const=0;
   virtual int SizeY() const=0; // needs to be fast
@@ -1031,6 +1032,7 @@ public:
 class StringDisplay
 {
 public:
+  virtual void Prepare() { }
   virtual int Count() const=0;
   virtual int X(int c) const=0;
   virtual int Y(int c) const=0;

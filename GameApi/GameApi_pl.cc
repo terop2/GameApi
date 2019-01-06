@@ -6,6 +6,9 @@
 
 #include "GameApi_low.hh"
 
+void InstallProgress(int num, std::string label, int max=15);
+void ProgressBar(int num, int val, int max, std::string label);
+
 
 EXPORT GameApi::PolygonApi::PolygonApi(GameApi::Env &e) : e(e)
 {
@@ -3331,95 +3334,8 @@ EXPORT void GameApi::PolygonApi::delete_vertex_array(GameApi::VA va)
   GameApi::P p = empty();
   update_vertex_array(va,p);
 }
-struct ProgressI {
-  int num;
-  int value;
-};
-std::vector<ProgressI > progress_max;
-std::vector<ProgressI > progress_val;
 void ProgressBar(int num, int val, int max, std::string label);
 
-void InstallProgress(int num, std::string label, int max=15)
-{
-  //std::cout << "InstallProgress: '" << label << "'" << std::endl;
-  //std::cout << "IB: " << num << std::endl;
-  ProgressI p; p.num = num;
-  int s = progress_max.size();
-  int s2 = progress_val.size();
-  bool max_done = false;
-  bool val_done = false;
-  for(int i=0;i<std::min(s,s2);i++) {
-    if (progress_max[i].num==num) max_done=true;
-    if (progress_val[i].num==num) val_done=true;
-  }
-  if (!max_done)
-    progress_max.push_back(p);
-  if (!val_done)
-    progress_val.push_back(p);
-  ProgressBar(num,0,max,"installprogress");
-}
-int FindProgressVal()
-{
-  int s = progress_val.size();
-  int sum = 0;
-  for(int i=0;i<s;i++)
-    sum+=progress_val[i].value;
-  return sum;
-}
-int FindProgressMax()
-{
-  int s = progress_max.size();
-  int sum = 0;
-  for(int i=0;i<s;i++)
-    {
-      sum+=progress_max[i].value;
-    }
-  return sum;
-}
-void ProgressBar(int num, int val, int max, std::string label)
-{
-  //std::cout << "ProgressBar: '" << label << "'" << std::endl;
-
-  //std::cout << "PB: " << num << std::endl;
-  {
-  int s = progress_val.size();
-  for(int i=0;i<s;i++)
-    {
-      int num2 = progress_val[i].num;
-      if (num2==num) {
-	progress_val[i].value = val;
-      }
-    }
-  }
-
-  {
-  int s = progress_max.size();
-  for(int i=0;i<s;i++)
-    {
-      int num2 = progress_max[i].num;
-      if (num2==num) {
-	progress_max[i].value = max;
-      }
-    }
-  }
-
-  int val1 = FindProgressVal();
-  int max1 = FindProgressMax();
-  float v = float(val1)/float(max1);
-  v*=30.0;
-  int val2 = int(v);
-  float vv = 1.0;
-  vv*=30.0;
-  int max2 = int(vv);
-  std::cout << "\r[";
-  for(int i=0;i<val2;i++) {
-    std::cout << "#";
-  }
-  for(int i=val2;i<max2-1;i++) {
-    std::cout << "-";
-  }
-  std::cout << "] (" << val1 << "/" << max1 << ") (" << val << "/" << max << ") " << num;
-}
 #ifdef THREADS
 extern ThreadInfo *ti_global;
 #endif
@@ -11336,9 +11252,7 @@ private:
   float time_step;
 };
 
-GameApi::MA GameApi::PolygonApi::meshanim(std::vector<P> vec, 
-					  float start_time,
-					  float end_time)
+GameApi::MA GameApi::PolygonApi::meshanim(std::vector<P> vec, float start_time, float end_time)
 {
   start_time/=10.0;
   end_time/=10.0;
@@ -12019,4 +11933,294 @@ GameApi::P GameApi::PolygonApi::filter_invisible(GameApi::P p, float size)
 {
   FaceCollection *coll = find_facecoll(e,p);
   return add_polygon2(e, new FilterInvisible(coll,size),1);
+}
+
+
+struct DT { std::string name; int value; };
+std::vector<DT> g_lod;
+pthread_mutex_t *g_lod_mutex =0;
+
+void lod_lock()
+{
+  if (!g_lod_mutex) { g_lod_mutex=new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER); }
+  pthread_mutex_lock(g_lod_mutex);
+}
+void lod_unlock()
+{
+  pthread_mutex_unlock(g_lod_mutex);
+}
+
+class LodChoose : public ForwardFaceCollection
+{
+public:
+  LodChoose(std::vector<FaceCollection*> vec, std::string name) : ForwardFaceCollection(*vec[0]), vec(vec),name(name) { }
+  int find_val(std::string name) const
+  {
+    lod_lock();
+    int s = g_lod.size();
+    for(int i=0;i<s;i++) {
+      if (g_lod[i].name==name) {
+	int val = g_lod[i].value;
+	int sk = vec.size();
+	lod_unlock();
+	if (val>=0 && val<sk) { return val; }
+	return -1;
+      }
+    }
+    lod_unlock();
+    return -1;
+  }
+
+  virtual void Prepare()
+  {
+    int pos = find_val(name);
+    if (pos!=-1)
+      vec[pos]->Prepare();
+  }
+  virtual int NumFaces() const 
+  {
+    int pos = find_val(name);
+    if (pos!=-1)
+      return vec[pos]->NumFaces();
+    return 0;
+  }
+  virtual int NumPoints(int face) const
+  {
+    int pos = find_val(name);
+    if (pos!=-1)
+      return vec[pos]->NumPoints(face);
+    return 0;
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int pos = find_val(name);
+    if (pos!=-1)
+      return vec[pos]->FacePoint(face,point);
+    Point p{0.0,0.0,0.0};
+    return p;
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    int pos = find_val(name);
+    if (pos!=-1)
+      return vec[pos]->PointNormal(face,point);
+    Vector p{0.0,0.0,0.0};
+    return p;
+
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    int pos = find_val(name);
+    if (pos!=-1)
+      return vec[pos]->Attrib(face,point,id);
+    return 0.0;
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    int pos = find_val(name);
+    if (pos!=-1)
+      return vec[pos]->AttribI(face,point,id);
+    return 0;
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    int pos = find_val(name);
+    if (pos!=-1)
+      return vec[pos]->Color(face,point);
+    return 0x00000000;
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    int pos = find_val(name);
+    if (pos!=-1)
+      return vec[pos]->TexCoord(face,point);
+    Point2d p;
+    p.x = 0.0;
+    p.y = 0.0;
+    return p;
+  }
+  virtual float TexCoord3(int face, int point) const { 
+    int pos = find_val(name);
+    if (pos!=-1)
+      return vec[pos]->TexCoord3(face,point);
+    return 0.0;
+  }
+private:
+  std::vector<FaceCollection*> vec;
+  std::string name;
+};
+
+GameApi::P GameApi::PolygonApi::lod_choose(std::vector<P> vec, std::string name)
+{
+  std::vector<FaceCollection*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++) {
+    vec2.push_back(find_facecoll(e,vec[i]));
+  }
+  return add_polygon2(e, new LodChoose(vec2, name), 1);
+}
+
+class LodSet : public ForwardFaceCollection
+{
+public:
+  LodSet(FaceCollection *coll, std::string name, int val) : ForwardFaceCollection(*coll), coll(coll),name(name), val(val) { }
+  virtual void Prepare() { 
+    add_name(name,val);
+    coll->Prepare();
+    rem_name(name);
+  }
+  virtual int NumFaces() const 
+  {
+    add_name(name,val);
+    int v = coll->NumFaces();
+    rem_name(name);
+    return v;
+  }
+  virtual int NumPoints(int face) const
+  {
+    add_name(name,val);
+    int v = coll->NumPoints(face);
+    rem_name(name);
+    return v;
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    add_name(name,val);
+    Point v = coll->FacePoint(face,point);
+    rem_name(name);
+    return v;
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    add_name(name,val);
+    Vector v = coll->PointNormal(face,point);
+    rem_name(name);
+    return v;
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    add_name(name,val);
+    float v = coll->Attrib(face,point,id);
+    rem_name(name);
+    return v;
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    add_name(name,val);
+    int v = coll->AttribI(face,point,id);
+    rem_name(name);
+    return v;
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    add_name(name,val);
+    unsigned int v = coll->Color(face,point);
+    rem_name(name);
+    return v;
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    add_name(name,val);
+    Point2d v = coll->TexCoord(face,point);
+    rem_name(name);
+    return v;
+  }
+  virtual float TexCoord3(int face, int point) const { 
+    add_name(name,val);
+    float v = coll->TexCoord3(face,point);
+    rem_name(name);
+    return v;
+  }
+
+  void add_name(std::string name, int val) const {
+    lod_lock();
+    DT dt;
+    dt.name = name;
+    dt.value = val;
+    g_lod.push_back(dt);
+    lod_unlock();
+  }
+  void rem_name(std::string name) const {
+    lod_lock();
+    int s = g_lod.size();
+    for(int i=0;i<s;i++)
+      {
+	if (g_lod[i].name==name) {
+	  g_lod.erase(g_lod.begin()+i);
+	  lod_unlock();
+	  return;
+	}
+      }
+    lod_unlock();
+  }
+
+private:
+  FaceCollection *coll;
+  std::string name;
+  int val;
+};
+GameApi::P GameApi::PolygonApi::lod_set(P p, std::string name, int val)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new LodSet(coll, name, val),1);
+}
+
+class LodSelect : public Fetcher<int>
+{
+public:
+  LodSelect(float start_dist, float dist_step, int max_value) : start_dist(start_dist), dist_step(dist_step), max_value(max_value) {}
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { 
+    current_in_MV = e.in_MV;
+  }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+  virtual void set(int t) { }
+  virtual int get() const
+  {
+    Point p{0.0,0.0,0.0};
+    Point p2 = p*current_in_MV;
+    float z = p2.z;
+    if (z<start_dist) { return 0; }
+    if (z>start_dist+dist_step*max_value) { return max_value; }
+    int val = (z-start_dist)/dist_step;
+    return val;
+  }
+private:
+  float start_dist;
+  float dist_step;
+  int max_value;
+  Matrix current_in_MV;
+};
+GameApi::IF GameApi::PolygonApi::lod_select(float start_dist, float dist_step, int max_value)
+{
+  return add_int_fetcher(e, new LodSelect(start_dist, dist_step, max_value));
+}
+
+
+class TexCoord_subarea : public ForwardFaceCollection
+{
+public:
+  TexCoord_subarea(FaceCollection *coll, float start_x, float end_x, float start_y, float end_y) : ForwardFaceCollection(*coll), coll(coll), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y) { }
+public:
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    Point2d p = coll->TexCoord(face,point);
+    p.x *= (end_x-start_x);
+    p.y *= (end_y-start_y);
+    p.x += start_x;
+    p.y += start_y;
+    return p;
+  }
+private:
+  FaceCollection *coll;
+  float start_x, end_x;
+  float start_y, end_y;
+};
+
+GameApi::P GameApi::PolygonApi::texcoord_subarea(P p, float start_x, float end_x,
+						 float start_y, float end_y)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new TexCoord_subarea(coll, start_x, end_x, start_y, end_y),1);
 }
