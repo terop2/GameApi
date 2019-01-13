@@ -1,0 +1,8 @@
+
+all: sdl mini
+
+sdl:
+	g++ -g -DUSE_SDL -Ld:\cvs\SDL2-2.0.1\i686-w64-mingw32\bin -Id:\cvs\SDL2-2.0.1\i686-w64-mingw32\include\sdl2 -std=c++11 Parser.cc -lSDL2 -o parser_s.exe
+
+mini:
+	g++ -g -std=c++11 Parser.cc -o Parser_i.exe
