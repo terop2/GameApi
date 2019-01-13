@@ -41,16 +41,21 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
   screen_w-=10;
   screen_h-=10;
 
+  int fbo_x = 1080;
+  int fbo_y = 1200;
+  fbo_x = screen_w;
+  fbo_y = screen_h;
+
   // hmd=false
   ML I43 = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
-  TXID I44 = ev.fbo_api.fbo_ml(ev,I43,1080,1200,false);
+  TXID I44 = ev.fbo_api.fbo_ml(ev,I43,fbo_x,fbo_y,false);
   ML I66 = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,10.1,60000.0, false);
-  TXID I67 = ev.fbo_api.fbo_ml(ev,I66,1080,1200,false);
+  TXID I67 = ev.fbo_api.fbo_ml(ev,I66,fbo_x,fbo_y,false);
 
   ML I43a = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
-  TXID I44a = ev.fbo_api.fbo_ml(ev,I43a,1080,1200,false);
+  TXID I44a = ev.fbo_api.fbo_ml(ev,I43a,fbo_x,fbo_y,false);
   ML I66a = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,10.1,60000.0, false);
-  TXID I67a = ev.fbo_api.fbo_ml(ev,I66a,1080,1200,false);
+  TXID I67a = ev.fbo_api.fbo_ml(ev,I66a,fbo_x,fbo_y,false);
   ML res = ev.blocker_api.vr_submit_ml(ev,ml, I44,I67,invert,translate);
   ML I70a = ev.blocker_api.vr_submit(ev, I44a, I67a);
   ML res_I70a = ev.blocker_api.vr_submit_ml(ev,I70a, I44,I67,invert,translate);
@@ -61,14 +66,14 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
 
   // hmd=true
   ML I43_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
-  TXID I44_b = ev.fbo_api.fbo_ml(ev,I43_b,1080,1200,false);
+  TXID I44_b = ev.fbo_api.fbo_ml(ev,I43_b,fbo_x,fbo_y,false);
   ML I66_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,10.1,60000.0, false);
-  TXID I67_b = ev.fbo_api.fbo_ml(ev,I66_b,1080,1200,false);
+  TXID I67_b = ev.fbo_api.fbo_ml(ev,I66_b,fbo_x,fbo_y,false);
 
   //ML I43a_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
-  TXID I44a_b = ev.fbo_api.fbo_ml(ev,ml/*I43a_b*/,1080,1200,false);
+  TXID I44a_b = ev.fbo_api.fbo_ml(ev,ml/*I43a_b*/,fbo_x,fbo_y,false);
   // ML I66a_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,10.1,60000.0, false);
-  TXID I67a_b = ev.fbo_api.fbo_ml(ev,ml/*I66a_b*/,1080,1200,false);
+  TXID I67a_b = ev.fbo_api.fbo_ml(ev,ml/*I66a_b*/,fbo_x,fbo_y,false);
   ML res_b = ev.blocker_api.vr_submit_ml(ev,ml, I44_b,I67_b,invert,translate);
   ML I70a_b = ev.blocker_api.vr_submit(ev, I44a_b, I67a_b);
   ML res_I70a_b = ev.blocker_api.vr_submit_ml(ev,I70a_b, I44_b,I67_b,invert,translate);
