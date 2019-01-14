@@ -478,7 +478,8 @@ public:
   m = mm * m;
 
 #else
-  if (!vr_vr_ready ||current_display==NULL||current_display==-1) { return DefaultProjection(ev); }
+  // TODO, remove 1
+  if (1||!vr_vr_ready ||current_display==NULL||current_display==-1) { return DefaultProjection(ev); }
     VRFrameData d = g_d2;
     //VRFrameData d;
     int val = 1; //emscripten_vr_get_frame_data(current_display, &d);
