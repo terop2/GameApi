@@ -479,8 +479,7 @@ public:
   m = mm * m;
 
 #else
-  // TODO, remove 1
-  if (1||!vr_vr_ready ||current_display==NULL||current_display==-1) { return DefaultProjection(ev); }
+  if (!vr_vr_ready ||current_display==NULL||current_display==-1) { return DefaultProjection(ev); }
     VRFrameData d = g_d2;
     //VRFrameData d;
     int val = 1; //emscripten_vr_get_frame_data(current_display, &d);
@@ -521,7 +520,7 @@ public:
     sh_texture.id = e.sh_texture;
     sh_texture_2d.id = e.sh_texture_2d;
     sh_array_texture.id = e.sh_array_texture;
-    sh_id.id = shader_id();
+    //sh_id.id = shader_id();
     vertex.id = e.us_vertex_shader;
     fragment.id = e.us_fragment_shader;
 
@@ -533,9 +532,9 @@ public:
     GameApi::M proj = add_matrix2( env, proj_m );
     Matrix id_m = GetHMDMatrixSceneTranslateEye(eye, is_standard);
     GameApi::M id = add_matrix2( env, id_m );
-    if (sh_id.id!=-1) {
-      ev.shader_api.set_var(sh_id, "in_P", proj);
-    }
+    //if (sh_id.id!=-1) {
+    //  ev.shader_api.set_var(sh_id, "in_P", proj);
+    //}
     ev.shader_api.set_var(sh_color, "in_P", proj);
     ev.shader_api.set_var(sh_texture, "in_P", proj);
     ev.shader_api.set_var(sh_texture_2d, "in_P", proj);
@@ -543,9 +542,9 @@ public:
     ev.shader_api.set_var(vertex, "in_P", proj);
     ev.shader_api.set_var(fragment, "in_P", proj);
 
-    if (sh_id.id!=-1) {
-      ev.shader_api.set_var(sh_id, "in_T", id);
-    }
+    //if (sh_id.id!=-1) {
+    //  ev.shader_api.set_var(sh_id, "in_T", id);
+    // }
     ev.shader_api.set_var(sh_color, "in_T", id);
     ev.shader_api.set_var(sh_texture, "in_T", id);
     ev.shader_api.set_var(sh_texture_2d, "in_T", id);
@@ -556,15 +555,15 @@ public:
     MainLoopEnv ee = e;
     Matrix old = e.in_T;
     ee.in_T = id_m;
-    ee.in_P = proj_m;
+    //ee.in_P = proj_m;
     g_low->ogl->glEnable( Low_GL_MULTISAMPLE );
     item->execute(ee);
     g_low->ogl->glDisable( Low_GL_MULTISAMPLE );
 
     GameApi::M old_m = add_matrix2(env, old);
-    if (sh_id.id != -1) {
-      ev.shader_api.set_var(sh_id, "in_T", old_m);
-    }
+    //if (sh_id.id != -1) {
+    //  ev.shader_api.set_var(sh_id, "in_T", old_m);
+    // }
     ev.shader_api.set_var(sh_color,"in_T", old_m);
     ev.shader_api.set_var(sh_texture,"in_T", old_m);
     ev.shader_api.set_var(sh_array_texture,"in_T", old_m);
