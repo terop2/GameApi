@@ -1170,6 +1170,8 @@ GameApi::ML GameApi::MainLoopApi::seq_ml_score(ML ml1, ML ml2, int score)
 }
 void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH texture_2d, SH array_texture, M in_MV, M in_T, M in_N, int screen_size_x, int screen_size_y)
 {
+  int screenx = screen_size_x;
+  int screeny = screen_size_y;
   MainLoopItem *item = find_main_loop(e, ml);
   MainLoopEnv ek;
   ek.sh_color = color.id;
@@ -1184,6 +1186,7 @@ void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH texture_2d
   ek.in_MV = find_matrix(e, in_MV);
   ek.in_T = find_matrix(e, in_T);
   ek.in_N = find_matrix(e, in_N);
+  ek.in_P = Matrix::Perspective(90.0*double(screeny)/double(screenx), (double)screenx/screeny, 10.1, 60000.0);
   ek.time = get_time()/1000.0;
   ek.delta_time = get_delta_time();
   ek.screen_x = 0;

@@ -409,10 +409,10 @@ public:
     if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl; }
       if (!eye) {
 	for(int j=0;j<4;j++)
-	for(int i=0;i<4;i++) m.matrix[i+j*4] = d.leftViewMatrix[i+j*4];
+	for(int i=0;i<4;i++) m.matrix[i+j*4] = d.leftViewMatrix[j+i*4];
       } else {
 	for(int j=0;j<4;j++)
-	for(int i=0;i<4;i++) m.matrix[i+j*4] = d.rightViewMatrix[i+j*4];
+	for(int i=0;i<4;i++) m.matrix[i+j*4] = d.rightViewMatrix[j+i*4];
       }
       m.is_identity = false;
   }
@@ -553,6 +553,7 @@ public:
     MainLoopEnv ee = e;
     Matrix old = e.in_T;
     ee.in_T = id_m;
+    ee.in_P = proj_m;
     g_low->ogl->glEnable( Low_GL_MULTISAMPLE );
     item->execute(ee);
     g_low->ogl->glDisable( Low_GL_MULTISAMPLE );

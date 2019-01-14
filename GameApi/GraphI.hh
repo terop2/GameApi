@@ -505,6 +505,7 @@ struct MainLoopEnv
   Matrix in_MV;
   Matrix in_T;
   Matrix in_N;
+  Matrix in_P;
   int sfo_id=-1;
   int spotlight_id = 1;
   int screen_x = 0; // these are the main window sizes
