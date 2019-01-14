@@ -36,15 +36,18 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
 
   int screen_w = ev.mainloop_api.get_screen_width();
   int screen_h = ev.mainloop_api.get_screen_height();
-  screen_w-=100;
-  screen_h-=100;
-  screen_w-=10;
-  screen_h-=10;
 
   int fbo_x = 1080;
   int fbo_y = 1200;
   fbo_x = screen_w;
   fbo_y = screen_h;
+
+
+  screen_w-=100;
+  screen_h-=100;
+  screen_w-=10;
+  screen_h-=10;
+
 
   // hmd=false
   ML I43 = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
