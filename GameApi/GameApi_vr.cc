@@ -409,10 +409,10 @@ public:
     if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl; }
       if (!eye) {
 	for(int j=0;j<4;j++)
-	for(int i=0;i<4;i++) m.matrix[i+j*4] = d.leftViewMatrix[j+i*4];
+	for(int i=0;i<4;i++) m.matrix[i+j*4] = d.leftViewMatrix[i+j*4];
       } else {
 	for(int j=0;j<4;j++)
-	for(int i=0;i<4;i++) m.matrix[i+j*4] = d.rightViewMatrix[j+i*4];
+	for(int i=0;i<4;i++) m.matrix[i+j*4] = d.rightViewMatrix[i+j*4];
       }
       m.is_identity = false;
   }
@@ -486,10 +486,10 @@ public:
   Matrix m;
   if (!eye) {
     for(int j=0;j<4;j++)
-      for(int i=0;i<4;i++) m.matrix[i+j*4] = d.leftProjectionMatrix[j+i*4];
+      for(int i=0;i<4;i++) m.matrix[i+j*4] = d.leftProjectionMatrix[i+j*4];
   } else {
     for(int j=0;j<4;j++)
-      for(int i=0;i<4;i++) m.matrix[i+j*4] = d.rightProjectionMatrix[j+i*4];
+      for(int i=0;i<4;i++) m.matrix[i+j*4] = d.rightProjectionMatrix[i+j*4];
   }
   m.is_identity = false;
 
