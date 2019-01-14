@@ -417,7 +417,8 @@ public:
       m.is_identity = false;
   }
 #endif
-  
+  for(int i=0;i<16;i++) if (std::isnan(m.matrix[i])) m.matrix[i]=0.0;
+
   //std::cout << "Pose:" << std::endl;
   //for(int i=0;i<16;i++)
   //  std::cout << m.matrix[i] << ",";
@@ -493,6 +494,7 @@ public:
       for(int i=0;i<4;i++) m.matrix[i+j*4] = d.rightProjectionMatrix[j+i*4];
   }
   m.is_identity = false;
+  for(int i=0;i<16;i++) if (std::isnan(m.matrix[i])) m.matrix[i]=0.0;
 
   GameApi::M m2 = ev.matrix_api.scale(1.0,0.5,1.0);
   Matrix mm = find_matrix(env,m2);
