@@ -530,7 +530,7 @@ public:
     pos_mat= GetHMDMatrixPoseEye( eye, is_standard );
     Matrix proj_m = proj_matrix * scene_translate * pos_mat;
     GameApi::M proj = add_matrix2( env, proj_m );
-    Matrix id_m = GetHMDMatrixSceneTranslateEye(eye, is_standard);
+    Matrix id_m = pos_mat; //GetHMDMatrixSceneTranslateEye(eye, is_standard);
     GameApi::M id = add_matrix2( env, id_m );
     //if (sh_id.id!=-1) {
     //  ev.shader_api.set_var(sh_id, "in_P", proj);
