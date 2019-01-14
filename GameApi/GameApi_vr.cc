@@ -134,6 +134,8 @@ ML I26=ev.sprite_api.turn_to_2d(ev,I25,0.0,0.0,800.0,600.0);
 vr::IVRSystem *hmd = 0;
 #endif
 Matrix hmd_pose = Matrix::Identity();
+Matrix hmd_left_view_matrix = Matrix::Identity();
+Matrix hmd_right_view_matrix = Matrix::Identity();
 bool vr_pose_not_active=false;
 #ifdef EMSCRIPTEN
 VRDisplayHandle current_display= 0;
@@ -511,10 +513,12 @@ public:
   {
     GameApi::SH sh_color, sh_texture, sh_texture_2d, sh_array_texture;
     GameApi::SH vertex, fragment;
+    GameApi::SH sh_id;
     sh_color.id = e.sh_color;
     sh_texture.id = e.sh_texture;
     sh_texture_2d.id = e.sh_texture_2d;
     sh_array_texture.id = e.sh_array_texture;
+    sh_id.id = shader_id();
     vertex.id = e.us_vertex_shader;
     fragment.id = e.us_fragment_shader;
 
@@ -526,6 +530,9 @@ public:
     GameApi::M proj = add_matrix2( env, proj_m );
     Matrix id_m = GetHMDMatrixSceneTranslateEye(eye, is_standard);
     GameApi::M id = add_matrix2( env, id_m );
+    if (sh_id.id!=-1) {
+      ev.shader_api.set_var(sh_id, "in_P", proj);
+    }
     ev.shader_api.set_var(sh_color, "in_P", proj);
     ev.shader_api.set_var(sh_texture, "in_P", proj);
     ev.shader_api.set_var(sh_texture_2d, "in_P", proj);
@@ -533,6 +540,9 @@ public:
     ev.shader_api.set_var(vertex, "in_P", proj);
     ev.shader_api.set_var(fragment, "in_P", proj);
 
+    if (sh_id.id!=-1) {
+      ev.shader_api.set_var(sh_id, "in_T", id);
+    }
     ev.shader_api.set_var(sh_color, "in_T", id);
     ev.shader_api.set_var(sh_texture, "in_T", id);
     ev.shader_api.set_var(sh_texture_2d, "in_T", id);
@@ -548,6 +558,9 @@ public:
     g_low->ogl->glDisable( Low_GL_MULTISAMPLE );
 
     GameApi::M old_m = add_matrix2(env, old);
+    if (sh_id.id != -1) {
+      ev.shader_api.set_var(sh_id, "in_T", old_m);
+    }
     ev.shader_api.set_var(sh_color,"in_T", old_m);
     ev.shader_api.set_var(sh_texture,"in_T", old_m);
     ev.shader_api.set_var(sh_array_texture,"in_T", old_m);
