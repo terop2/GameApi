@@ -407,7 +407,7 @@ public:
     VRFrameData d = g_d2;
     int val = 1; //emscripten_vr_get_frame_data(current_display, &d);
     if (!val) { std::cout << "vr_get_frame_data invalid handle" << std::endl; }
-      if (eye) {
+      if (!eye) {
 	for(int j=0;j<4;j++)
 	for(int i=0;i<4;i++) m.matrix[i+j*4] = d.leftViewMatrix[j+i*4];
       } else {
@@ -485,7 +485,7 @@ public:
     int val = 1; //emscripten_vr_get_frame_data(current_display, &d);
   if (!val) { std::cout << "FAIL: vr_get_frame_data invalid handle" << std::endl; }
   Matrix m;
-  if (eye) {
+  if (!eye) {
     for(int j=0;j<4;j++)
       for(int i=0;i<4;i++) m.matrix[i+j*4] = d.leftProjectionMatrix[j+i*4];
   } else {
