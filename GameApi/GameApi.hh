@@ -2953,6 +2953,7 @@ public:
   IMPORT PTS color_points(PTS p, unsigned int color);
   IMPORT PTS li_pts(LI li, float pos);
   IMPORT PTS li_pts2(LI li); 
+  IMPORT PTS hemisphere_points(PT points, V normal, float r, int numpoints);
   IMPORT PTS pts_grid(BM bm, float start_x, float end_x, float start_y, float en_y, float z);
   IMPORT PTS pts_grid_bb(BB bb, float start_x, float end_x, float start_y, float en_y, float z);
   IMPORT PTS or_points(PTS p1, PTS p2);

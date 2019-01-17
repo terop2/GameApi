@@ -1692,3 +1692,51 @@ GameApi::PTS GameApi::PointsApi::sort_pts(PTS points)
   PointsApiPoints *obj2 = find_pointsapi_points(e, points);
   return add_points_api_points(e, new SortPTS(obj2));
 }
+
+class HemiSphere_points : public PointsApiPoints
+{
+public:
+  HemiSphere_points(Point p, Vector n, float r, int numpoints) : p(p), n(n), r(r), numpoints(numpoints) { }
+  void Prepare() {
+    vec=std::vector<Point>();
+    int s = numpoints;
+    for(int i=0;i<s;i++)
+      {
+	Random rr;
+	float xp = double(rr.next())/rr.maximum();
+	float yp = double(rr.next())/rr.maximum();
+	xp*=2.0*3.14159;
+	yp*=3.14159;
+	float angle = yp;
+	float angle2 = xp;
+	float x = r*sin(angle)*cos(angle2);
+        float y = r*sin(angle)*sin(angle2);
+	float z = r*cos(angle);
+	Point p = { x,y,z };
+	
+	float d = Vector::DotProduct(Vector(p),n);
+	if (d<0) { p.x=-p.x; p.y=-p.y; p.z=-p.z; }
+	
+	vec.push_back(p);
+      }
+  }
+  int NumPoints() const { return numpoints; }
+  Point Pos(int i) const {
+    if (i<0||i>=vec.size()) return Point(0.0,0.0,0.0);
+    return vec[i];
+  }
+  unsigned int Color(int i) const { return 0xffffffff; }
+private:
+  Point p;
+  Vector n;
+  float r;
+  int numpoints;
+  std::vector<Point> vec;
+};
+
+GameApi::PTS GameApi::PointsApi::hemisphere_points(PT points, V normal, float r, int numpoints)
+{
+  Point *pt = find_point(e,points);
+  Vector *vt = find_vector(e,normal);
+  return add_points_api_points(e, new HemiSphere_points(*pt,*vt,r,numpoints));
+}
