@@ -3994,3 +3994,4 @@ GameApi::BM GameApi::BitmapApi::bump_map(FB fb, float h)
   BM bm = add_bitmap(e, handle2);
   return bm;
 }
+

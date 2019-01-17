@@ -9094,6 +9094,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "PTS", "unsigned int" },
 			 { "", "ffffffff" },
 			 "PTS", "points_api", "color_points"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::hemisphere_points,
+			 "hemisphere_pts",
+			 { "points", "normal", "r", "numpoints" },
+			 { "PT", "V", "float", "int" },
+			 { "", "", "100.0", "100" },
+			 "PTS", "points_api", "hemisphere_points"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::wave_points,
 			 "wave_pts",
 			 { "wave", "num_samples", "pos_x", "pos_y", "pos_z",
