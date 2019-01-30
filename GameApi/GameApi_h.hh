@@ -61,7 +61,11 @@
 #include "Web.hh"
 #include "Effect2.hh"
 #include <iostream>
+#ifndef HAS_PTHREAD
+#define HAS_PTHREAD 1
 #include <pthread.h>
+#undef PTW32_LEVEL
+#endif
 #ifdef EMSCRIPTEN
 #include <emscripten/threading.h>
 #endif

@@ -5116,7 +5116,7 @@ std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<
 
 
 #ifdef FIRST_PART
-#ifdef SECTION_1
+#ifdef SECTION_2
 std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_type, std::string return_type, std::string api_name, std::string func_name)
 {
       std::string s;
@@ -5254,7 +5254,7 @@ GameApiItem* ApiItemF(T (GameApi::EveryApi::*api), RT (T::*fptr)(P...),
 std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::vector<GameApiItem*> vec2);
 
 #ifdef FIRST_PART
-#ifdef SECTION_1
+#ifdef SECTION_2
 std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::vector<GameApiItem*> vec2)
 {
   int s = vec2.size();
