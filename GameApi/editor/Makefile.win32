@@ -1,4 +1,4 @@
 
 all:
-	g++ -pg -DWINDOWS -g -Wl,--large-address-aware -g -std=c++11 test.cpp -L.. -I.. -lgmon -lGameDep -lGameApi -lDbgHelp
+	g++ -DWINDOWS -g -std=c++17 test.cpp -L.. -I.. -lgmon -lGameDep -lGameApi -lDbgHelp
 

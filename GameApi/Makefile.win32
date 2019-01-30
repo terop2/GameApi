@@ -75,28 +75,28 @@ HFiles_examples = $(patsubst %.cc,%.hh,$(CFiles_examples))
 GCHFiles_examples = $(patsubst %.cc,objs/%.hh.gch,$(CFiles_examples))
 GCH2Files_examples = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles_examples))
 
-LIBWIN = d:\cvs\SDL2-2.0.1\i686-w64-mingw32\bin
-LIB2WIN = d:\cvs\freetype\lib
+LIBWIN = d:\cvs\SDL2-2.0.1\x86_64-w64-mingw32\bin
+LIB2WIN = d:\cvs\freetype3
 LIB3WIN = d:\cvs\glew-1.10.0\bin\Release\Win32
 LIB4WIN = e:\cvs
-LIB5WIN = d:\cvs\SDL2_image-2.0.0\i686-w64-mingw32\lib
+LIB5WIN = d:\cvs\SDL2_image-2.0.0\x86_64-w64-mingw32\lib
 LIB6WIN = d:\cvs\glew-1.10.0\lib
-LIB7WIN = d:\cvs\pthread\pre-built.2\lib\x86
-LIB8WIN = d:\cvs\SDL2_mixer-2.0.0\i686-w64-mingw32\lib
+LIB7WIN = d:\cvs\pthread\pre-built.2\lib\x64
+LIB8WIN = d:\cvs\SDL2_mixer-2.0.0\x86_64-w64-mingw32\lib
 LIB9WIN = openvr
 #LIB10WIN = chai\ChaiScript-6.1.0
-INC1WIN = d:\cvs\SDL2-2.0.1\i686-w64-mingw32\include\sdl2
+INC1WIN = d:\cvs\SDL2-2.0.1\x86_64-w64-mingw32\include\sdl2
 INC2WIN = d:\cvs\glew-1.10.0/include
-INC3WIN = d:\cvs\SDL2_image-2.0.0/i686-w64-mingw32/include\sdl2
-INC4WIN = d:\cvs\SDL2-2.0.1/i686-w64-mingw32/include/SDL2
+INC3WIN = d:\cvs\SDL2_image-2.0.0/x86_64-w64-mingw32/include\sdl2
+INC4WIN = d:\cvs\SDL2-2.0.1/x86_64-w64-mingw32/include/SDL2
 INC5WIN = d:\cvs\freetype\include
 INC6WIN = d:\cvs\freetype\include\freetype2
 INC7WIN = d:\cvs\pthread\pre-built.2\include
-INC8WIN = d:\cvs\SDL2_mixer-2.0.0\i686-w64-mingw32/include/sdl2
+INC8WIN = d:\cvs\SDL2_mixer-2.0.0\x86_64-w64-mingw32/include/sdl2
 #INC10WIN = chai\ChaiScript-6.1.0\include
 
-CCFLAGS = -DWINDOWS -g -std=c++14 -Wall -O3 -I./objs -I/usr/include/freetype2 -pthread 
-CC2FLAGS = -DWINDOWS -g -std=c++14 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -I$(INC8WIN) -DGLEW_STATIC -pthread
+CCFLAGS = -DWINDOWS -g -std=c++17 -Wall -O3 -I./objs -I/usr/include/freetype2 -pthread -DHAVE_STRUCT_TIMESPEC
+CC2FLAGS = -DWINDOWS -g -std=c++17 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -I$(INC8WIN) -DGLEW_STATIC -pthread -DHAVE_STRUCT_TIMESPEC -U__STRICT_ANSI__ -ftrack-macro-expansion=0
 #`pkg-config gtkmm-2.4 --cflags`
 
 
@@ -120,24 +120,24 @@ examples: main
 
 main: $(GCHFiles_examples) $(OFiles_examples) Makefile GameApi.hh libGameApi.so
 	#@echo g++ main
-	@g++ -g $(OFiles_examples) -std=c++11 -o main -L. -lGameApi -lGL -lm -lstdc++
+	@g++ -g $(OFiles_examples) -std=c++17 -o main -L. -lGameApi -lGL -lm -lstdc++
 
 main.exe: $(GCHFiles_examples) $(O2Files_examples) Makefile GameApi.hh libGameApi.dll
 	#@echo mingw main.exe
 	@$(CCWIN) -g $(O2Files_examples) -o main.exe -L. -lGameApi -lopengl32 -lm -lstdc++
 
-libGameApi_dep.so: $(OFiles_dep) Makefile
+libGameApi_dep.so: $(O2Files_dep) Makefile
 	#@echo g++ libGameApi_dep.so
-	@g++ -shared -g $(OFiles_dep) -std=c++0x -o libGameApi_dep.so -lSDL2 -lGL -lSDL2_image -lGLEW -lstdc++
+	@g++ -shared -g $(OFiles_dep) -std=c++17 -o libGameApi_dep.so -lSDL2 -lGL -lSDL2_image -lGLEW -lstdc++
 
 libGameApi.so: $(OFiles) Makefile libGameApi_dep.so
 	#@echo g++ libGameApi.so
-	@g++ -shared -g $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lGLEW -lfreetype -lstdc++ 
+	@g++ -shared -g $(OFiles) -std=c++17 -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lGLEW -lfreetype -lstdc++ 
 #`pkg-config gtkmm-2.4 --libs` 
 
-libGameDep.dll: $(O2Files_dep) Makefile.win32
+libGameDep.dll: $(O2Files_dep) Makefile.win32 glew.o
 	#@echo mingw libGameDep.dll
-	@g++ -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files_dep) -DGLEW_STATIC glew.o -o libGameDep.dll -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -pthread -lopenvr_api 
+	@g++ -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files_dep) -DGLEW_STATIC glew.o -o libGameDep.dll -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -lopenvr_api 
 
 libGameApi.dll: $(O2Files) Makefile.win32 glew.o libGameDep.dll
 	#@echo mingw libGameApi.dll
@@ -180,7 +180,7 @@ $(D3Files): objs/%.d3: %.cc
 
 $(OFiles): objs/%.o : %.cc
 	#@echo g++ $< -o $@
-	@$(CC) -std=c++11 -g -c $(CCFLAGS) $< -o $@
+	@$(CC) -std=c++17 -g -c $(CCFLAGS) $< -o $@
 
 $(O2Files): objs/%.obj : %.cc
 	#@echo mingw $<
@@ -195,22 +195,22 @@ glew.o:
 
 
 $(OFiles_examples): objs/%.o : %.cc GameApi.hh
-	@$(CC) -std=c++0x -g -c -I. $(CCFLAGS) $< -o $@ 
+	@$(CC) -std=c++17 -g -c -I. $(CCFLAGS) $< -o $@ 
 
 $(O2Files_examples): objs/%.obj : %.cc GameApi.hh
 	#@echo mingw $<
-	@$(CCWIN) -std=c++0x -g -c -I. $(CC2FLAGS) $< -o $@ 
+	@$(CCWIN) -std=c++17 -g -c -I. $(CC2FLAGS) $< -o $@ 
 
 
 $(GCHFiles): objs/%.hh.gch : %.hh
-	@$(CC) $(CCFLAGS) -std=c++11 -g -x c++-header $< -o $@ 
+	@$(CC) $(CCFLAGS) -std=c++17 -g -x c++-header $< -o $@ 
 
 $(GCH2Files): objs/%.hh.gch2 : %.hh
 	#@echo mingw $<
 	@$(CCWIN) $(CC2FLAGS) -g -x c++-header $< -o $@ 
 
 $(GCHFiles_examples): objs/%.hh.gch : %.hh GameApi.hh
-	@$(CC) $(CCFLAGS) -std=c++0x -g -I. -x c++-header $< -o $@ 
+	@$(CC) $(CCFLAGS) -std=c++17 -g -I. -x c++-header $< -o $@ 
 
 clean:
 	@$(RM) -rf objs/*.o objs/*.obj objs/*.gch objs/*.gch2
