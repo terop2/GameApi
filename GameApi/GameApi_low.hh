@@ -494,6 +494,7 @@ struct Low_SDL_RWops
 class SDLLowApi
 {
 public:
+  virtual ~SDLLowApi();
   virtual void init()=0;
   virtual void cleanup()=0;
   virtual void SDL_Init(int flags)=0;
@@ -511,7 +512,7 @@ public:
   virtual Low_SDL_Surface* SDL_GetWindowSurface(Low_SDL_Window *win)=0;
   virtual Low_SDL_Window* SDL_CreateWindow(const char *title, int x, int y, int width, int height, unsigned int flags2)=0;
   virtual Low_SDL_GLContext SDL_GL_CreateContext(Low_SDL_Window *window)=0;
-  virtual int SDL_GL_MakeCurrent(Low_SDL_Window *window, Low_SDL_GLContext context);
+  virtual int SDL_GL_MakeCurrent(Low_SDL_Window *window, Low_SDL_GLContext context)=0;
   //virtual void SDL_GL_SwapBuffers()=0;
   virtual void SDL_GL_SwapWindow(Low_SDL_Window *window)=0;
   virtual void SDL_UpdateWindowSurface(Low_SDL_Window *window)=0;
