@@ -545,7 +545,7 @@ void iter(void *arg)
 	  }
 	if (env->ctrl && e.ch==115 && e.type==0x300)
 	  { // Save.
-	std::cout << "Saving..." << std::endl;
+	    std::cout << "Saving... " << env->filename << std::endl;
 	env->ev->mod_api.save(env->mod, env->filename);
 	
 	  }

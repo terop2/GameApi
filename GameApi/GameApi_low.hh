@@ -1,5 +1,5 @@
 
-// DO NOT PUT ANY INCLUDES HERE.
+// DO NOT PUT ANY INCLUDE HERE.
 
 #ifndef GAMEAPI_LOW_H
 #define GAMEAPI_LOW_H
@@ -439,6 +439,8 @@ enum
     Low_SDL_GL_MULTISAMPLEBUFFERS,
     Low_SDL_ENABLE,
     Low_SDL_GL_CONTEXT_PROFILE_ES,
+    Low_SDL_WINDOWPOS_CENTERED_DISPLAY,
+    Low_SDL_GL_SHARE_WITH_CURRENT_CONTEXT
   };
 
 #define Low_SDL_FINGERDOWN 0x700
@@ -509,6 +511,7 @@ public:
   virtual Low_SDL_Surface* SDL_GetWindowSurface(Low_SDL_Window *win)=0;
   virtual Low_SDL_Window* SDL_CreateWindow(const char *title, int x, int y, int width, int height, unsigned int flags2)=0;
   virtual Low_SDL_GLContext SDL_GL_CreateContext(Low_SDL_Window *window)=0;
+  virtual int SDL_GL_MakeCurrent(Low_SDL_Window *window, Low_SDL_GLContext context);
   //virtual void SDL_GL_SwapBuffers()=0;
   virtual void SDL_GL_SwapWindow(Low_SDL_Window *window)=0;
   virtual void SDL_UpdateWindowSurface(Low_SDL_Window *window)=0;
@@ -520,6 +523,7 @@ public:
   virtual void SDL_JoystickEventState(int i)=0;
   virtual unsigned int SDL_JoystickGetButton(Low_SDL_Joystick *joy, int i)=0;
   virtual Low_SDL_RWops* SDL_RWFromMem(void *buffer, int size)=0;
+  virtual void SDL_GL_DeleteContext(Low_SDL_GLContext ctx)=0;
 };
 
 struct Low_Mix_Chunk

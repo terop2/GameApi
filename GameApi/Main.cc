@@ -385,6 +385,8 @@ c  for(int i=0;i<size1&&!exit2;i+=100)
 #endif
 
 
+Low_SDL_GLContext g_context;
+
 void initialize_low(int flags);
 
 IMPORT void check_vr_compositor_init();
@@ -405,6 +407,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_DEPTH_SIZE, 24);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_DOUBLEBUFFER, 1);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_STENCIL_SIZE, 1);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1);
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4);
 
@@ -435,9 +438,8 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
  
   //std::cout << sdl_window << " " << sdl_window->ptr << std::endl;
 
-  Low_SDL_GLContext context;
-  context = g_low->sdl->SDL_GL_CreateContext(sdl_window);
-  if (!context) { 
+  g_context = g_low->sdl->SDL_GL_CreateContext(sdl_window);
+  if (!g_context) { 
     std::cout << "Could not create Opengl3.2 context" << std::endl; 
   }
 
@@ -1582,4 +1584,29 @@ Low_SDL_Surface *init_iot_surface_framebuffer(int scr_x, int scr_y)
   return 0;
   // TODO
   // sdl_framebuffer = ... ;
+}
+
+Low_SDL_Window *sdl_display2_window = 0;
+Low_SDL_Surface *sdl_display2_framebuffer = 0;
+Low_SDL_GLContext context_display2;
+
+
+Low_SDL_Surface *init_2nd_display(int scr_x, int scr_y)
+{
+  sdl_display2_window = g_low->sdl->SDL_CreateWindow("Framebuffer", Low_SDL_WINDOWPOS_CENTERED, Low_SDL_WINDOWPOS_CENTERED, scr_x, scr_y, Low_SDL_WINDOW_OPENGL_SHOWN);
+  //sdl_display2_framebuffer = g_low->sdl->SDL_GetWindowSurface(sdl_display2_window);
+  //context_display2 = g_low->sdl->SDL_GL_CreateContext(sdl_display2_window);
+  //    g_low->sdl->SDL_GL_MakeCurrent(sdl_window, NULL);
+  //    g_low->sdl->SDL_GL_MakeCurrent(sdl_display2_window, context_display2);
+
+  g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+  g_low->ogl->glDepthMask(Low_GL_TRUE);
+
+  g_low->ogl->glClearColor( 0, 0, 0, 0 );
+  g_low->ogl->glViewport(0,0,scr_x, scr_y);
+  g_low->ogl->glDisable(Low_GL_CULL_FACE);
+  //   g_low->sdl->SDL_GL_MakeCurrent(sdl_display2_window, NULL);
+  //    g_low->sdl->SDL_GL_MakeCurrent(sdl_window, g_context);
+
+  return 0;
 }
