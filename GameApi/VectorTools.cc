@@ -781,6 +781,44 @@ Color::Color(unsigned int color)
 {
   check();
 }
+unsigned int Color::Average(std::vector<unsigned int> vec)
+{
+  if (vec.size()==0) return 0x0;
+  float r=0.0;
+  float g=0.0;
+  float b=0.0;
+  float a=0.0;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      unsigned int aa = vec[i]&0xff000000;
+      unsigned int rr = vec[i]&0x00ff0000;
+      unsigned int gg = vec[i]&0x0000ff00;
+      unsigned int bb = vec[i]&0x000000ff;
+      aa>>=24;
+      rr>>=16;
+      gg>>=8;
+      bb>>=0;
+      
+      r+=rr;
+      g+=gg;
+      b+=bb;
+      a+=aa;
+    }
+  r/=s;
+  g/=s;
+  b/=s;
+  a/=s;
+  unsigned int rrr = (unsigned int)r;
+  unsigned int ggg = (unsigned int)g;
+  unsigned int bbb = (unsigned int)b;
+  unsigned int aaa = (unsigned int)a;
+  aaa<<=24;
+  rrr<<=16;
+  ggg<<=8;
+  bbb<<=0;
+  return aaa+rrr+ggg+bbb;
+}
 void Color::check()
 {
     bool bb = (r>255) ||(g>255)||(b>255)||(alpha>255)||(r<0)||(g<0)||(b<0)||(alpha<0);

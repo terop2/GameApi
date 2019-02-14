@@ -20,7 +20,7 @@
 
 
 #ifndef EFFECT_HH
-#define EFFECT_HH
+#define EFFECT_HH 1
 #include "VectorTools.hh"
 #include <vector>
 #include <map>
@@ -39,7 +39,12 @@
 #include <cassert>
 #include <memory>
 #include <fstream>
+#ifndef HAS_PTHREAD
+#define HAS_PTHREAD 1
 #include <pthread.h>
+#undef PTW32_LEVEL
+#undef PTW32_SCHED_LEVEL
+#endif
 #include "EffectI.hh"
 #include "GameApi_low.hh"
 

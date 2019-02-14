@@ -12262,3 +12262,76 @@ GameApi::P GameApi::PolygonApi::texcoord_subarea(P p, float start_x, float end_x
   FaceCollection *coll = find_facecoll(e,p);
   return add_polygon2(e, new TexCoord_subarea(coll, start_x, end_x, start_y, end_y),1);
 }
+
+class SkeletalDataFromFaceCollection : public SkeletalData
+{
+public:
+  SkeletalDataFromFaceCollection(FaceCollection *coll, SkeletalData *bones) : coll(coll), bones(bones) { }
+  void Prepare() { coll->Prepare(); }
+  int NumBones() const { return bones->NumBones(); }
+  Point Bone(int i, bool is_first) const { return bones->Bone(i,is_first); }
+  float BoneDeltaAngle(int i) const { return bones->BoneDeltaAngle(i); }
+  
+  float dist_from_bone(Point p, int bone) const
+  {
+      Point p1 = Bone(bone,false);
+      Point p2 = Bone(bone,true);
+      LineProperties pp(p1,p2);
+      return pp.Dist(p);
+  }
+  std::pair<int,int> split_pt(int pt) const
+  {
+    int s = coll->NumFaces();
+    int count = 0;
+    int oldcount = 0;
+    for(int i=0;i<s;i++) {
+      oldcount = count;
+      count+=coll->NumPoints(i);
+      if (count>=pt) { return std::make_pair(i,pt-oldcount); }
+    }
+    return std::make_pair(-1,-1);
+  }
+
+  int NumPoints() const {
+    int s = coll->NumFaces();
+    int count = 0;
+    for(int i=0;i<s;i++) count+=coll->NumPoints(i);
+    return count;
+  }
+  int PointAttachBone(int pt) const
+  {
+    std::pair<int,int> p = split_pt(pt);
+    Point p2 = coll->FacePoint(p.first, p.second);
+    int s = NumBones();
+    int min_value = 0;
+    float min_dist = 6666666.0;
+    for(int i=0;i<s;i++)
+      {
+	float d = dist_from_bone(p2, i);
+	if (d<min_dist) { min_dist = d; min_value=i; }
+      }
+    return min_value;
+  }
+  float DistFromBone(int pt) const
+  {
+    std::pair<int,int> p = split_pt(pt);
+    Point p2 = coll->FacePoint(p.first, p.second);
+    return dist_from_bone(p2,PointAttachBone(pt));
+  }
+  float PosAtBone(int pt) const
+  {
+    std::pair<int,int> p = split_pt(pt);
+    Point p2 = coll->FacePoint(p.first, p.second);
+    int pos = PointAttachBone(pt);
+    Point pp1 = Bone(pos,false);
+    Point pp2 = Bone(pos,true);
+    LineProperties prop(pp1,pp2);
+    return prop.LineCoords(p2);
+  }
+  float BoneAngle(int pt) const
+  {
+  }
+private:
+  FaceCollection *coll;
+  SkeletalData *bones;
+};
