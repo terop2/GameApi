@@ -156,6 +156,8 @@ void map_enums_sdl(unsigned int &i) {
 void map_enums_sdl(int &i) {
   switch(i) {
   case Low_SDL_WINDOWPOS_CENTERED: i=SDL_WINDOWPOS_CENTERED; break;
+  case Low_SDL_WINDOWPOS_CENTERED_DISPLAY: i=SDL_WINDOWPOS_CENTERED_DISPLAY(1); break;
+  case Low_SDL_GL_SHARE_WITH_CURRENT_CONTEXT: i=SDL_GL_SHARE_WITH_CURRENT_CONTEXT; break;
   case Low_SDL_WINDOW_SHOWN: i=SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE; break;
@@ -928,6 +930,11 @@ class SDLApi : public SDLLowApi
     SDL_GLContext ctx = ::SDL_GL_CreateContext((SDL_Window*)(window->ptr));
     return ctx; 
   }
+  virtual void SDL_GL_DeleteContext(Low_SDL_GLContext ctx)
+  {
+    SDL_GLContext ctx2 = (SDL_GLContext)ctx;
+    ::SDL_GL_DeleteContext(ctx2);
+  }
   virtual void SDL_UpdateWindowSurface(Low_SDL_Window *window)
   {
     ::SDL_UpdateWindowSurface((SDL_Window*)(window->ptr));
@@ -955,6 +962,11 @@ class SDLApi : public SDLLowApi
   virtual void SDL_SetWindowTitle(Low_SDL_Window *window, const char *title) { ::SDL_SetWindowTitle((SDL_Window*)window->ptr, title); }
   virtual unsigned int SDL_GetMouseState(int *x, int *y) { return ::SDL_GetMouseState(x,y); }
   virtual unsigned int SDL_GetModState() { return (unsigned int)::SDL_GetModState(); }
+  virtual int SDL_GL_MakeCurrent(Low_SDL_Window *window, Low_SDL_GLContext context)
+  {
+    SDL_GLContext ctx = (SDL_GLContext)context;
+    return ::SDL_GL_MakeCurrent((SDL_Window*)window->ptr, ctx);
+  }
   virtual Low_SDL_Joystick* SDL_JoystickOpen(int i) { 
     static Low_SDL_Joystick data;
     data.data = ::SDL_JoystickOpen(i); 

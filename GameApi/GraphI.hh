@@ -1394,6 +1394,21 @@ public:
 };
 
 
+class SkeletalData
+{
+public:
+  virtual void Prepare()=0;
 
+  virtual int NumBones() const=0;
+  virtual Point Bone(int i, bool is_first) const=0;
+  virtual float BoneDeltaAngle(int i) const=0;
+
+  // points are using cylindar coordinates
+  virtual int NumPoints() const=0;
+  virtual int PointAttachBone(int pt) const=0;
+  virtual float DistFromBone(int pt) const=0;
+  virtual float PosAtBone(int pt) const=0;
+  virtual float BoneAngle(int pt) const=0;
+};
 
 #endif

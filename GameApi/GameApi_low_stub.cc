@@ -239,6 +239,8 @@ class SDLLowApiStub : public SDLLowApi
   virtual Low_SDL_Surface* SDL_GetWindowSurface(Low_SDL_Window *win) { return 0; }
   virtual Low_SDL_Window* SDL_CreateWindow(const char *title, int x, int y, int width, int height, unsigned int flags2) { return 0; }
   virtual Low_SDL_GLContext SDL_GL_CreateContext(Low_SDL_Window *window) { Low_SDL_GLContext ctx; return ctx; }
+  virtual int SDL_GL_MakeCurrent(Low_SDL_Window *window, Low_SDL_GLContext context) { return 0; }
+
   virtual void SDL_GL_SwapBuffers() { }
   virtual void SDL_GL_SwapWindow(Low_SDL_Window *window) { }
   virtual void SDL_UpdateWindowSurface(Low_SDL_Window *window) { }
@@ -250,6 +252,7 @@ class SDLLowApiStub : public SDLLowApi
   virtual void SDL_JoystickEventState(int i) { }
   virtual unsigned int SDL_JoystickGetButton(Low_SDL_Joystick *joy, int i) { return 0; }
   virtual Low_SDL_RWops* SDL_RWFromMem(void *buffer, int size) { return 0; }
+  virtual void SDL_GL_DeleteContext(Low_SDL_GLContext ctx) { }
 };
 
 class SDLMixerLowApiStub : public SDLMixerLowApi

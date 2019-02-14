@@ -5116,7 +5116,7 @@ std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<
 
 
 #ifdef FIRST_PART
-#ifdef SECTION_1
+#ifdef SECTION_2
 std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_type, std::string return_type, std::string api_name, std::string func_name)
 {
       std::string s;
@@ -5254,7 +5254,7 @@ GameApiItem* ApiItemF(T (GameApi::EveryApi::*api), RT (T::*fptr)(P...),
 std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::vector<GameApiItem*> vec2);
 
 #ifdef FIRST_PART
-#ifdef SECTION_1
+#ifdef SECTION_2
 std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::vector<GameApiItem*> vec2)
 {
   int s = vec2.size();
@@ -7438,6 +7438,14 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML" },
 			 { "ev", "" },
 			 "ML", "mainloop_api", "looking_glass"));
+#if 1
+  vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_window_2nd_display,
+			 "looking_glass_window",
+			 { "ev", "ml", "logo", "fpscounter", "start_time", "duration" },
+			 { "EveryApi&", "ML", "bool", "bool", "float", "float" },
+			 { "ev", "", "false", "false", "0.0", "1000000.0" },
+			 "RUN", "blocker_api", "game_window_2nd_display"));
+#endif
 #ifdef VIRTUAL_REALITY
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_window,
 			 "vr_window",
@@ -9094,6 +9102,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "PTS", "unsigned int" },
 			 { "", "ffffffff" },
 			 "PTS", "points_api", "color_points"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::hemisphere_points,
+			 "hemisphere_pts",
+			 { "points", "normal", "r", "numpoints" },
+			 { "PT", "V", "float", "int" },
+			 { "", "", "100.0", "100" },
+			 "PTS", "points_api", "hemisphere_points"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::wave_points,
 			 "wave_pts",
 			 { "wave", "num_samples", "pos_x", "pos_y", "pos_z",

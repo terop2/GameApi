@@ -7,8 +7,12 @@
 #include "VectorTools.hh"
 #include "Effect.hh"
 //#include "GameApi_low.hh"
+#ifndef HAS_PTHREAD
+#define HAS_PTHREAD 1
 #include <pthread.h>
-
+#undef PTW32_LEVEL
+#undef PTW32_SCHED_LEVEL
+#endif
 struct LowApi;
 extern LowApi *g_low;
 

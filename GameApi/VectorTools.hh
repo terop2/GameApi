@@ -395,6 +395,7 @@ public:
     c.check();
     return c;
   }
+  static unsigned int Average(std::vector<unsigned int> vec);
   static unsigned short PixelConvert(unsigned int pixel)
   {
     //unsigned int r = pixel &0xff;

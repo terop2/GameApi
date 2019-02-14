@@ -7965,6 +7965,9 @@ public:
     //						  1.0, 1.0*3.14159*2.0/360.0);
     
     GameApi::M mat = env->ev->matrix_api.identity();
+    if (screen_width<600) {
+      mat = env->ev->matrix_api.scale(-1.0,-1.0,1.0);
+    }
     env->ev->shader_api.use(env->color_sh);
     env->ev->shader_api.set_var(env->color_sh, "in_MV", mat);
     //env->ev->shader_api.set_var(env->color_sh, "in_iMV", env->ev->matrix_api.transpose(env->ev->matrix_api.inverse(mat)));
@@ -16004,5 +16007,223 @@ GameApi::FI GameApi::FontApi::load_font_dump(std::string url)
 {
   return add_font_interface(e, new LoadFont(e,url, gameapi_homepageurl));
 }
+
+Low_SDL_Surface *init_2nd_display(int scr_x, int scr_y);
+
+
+extern Low_SDL_Window *sdl_display2_window;
+extern Low_SDL_Surface *sdl_display2_framebuffer;
+extern Low_SDL_GLContext context_display2;
+extern Low_SDL_GLContext g_context;
+extern Low_SDL_Window *sdl_window;
+
+class MainLoopSplitter_win32_and_emscripten_display2 : public Splitter
+{
+public:
+  MainLoopSplitter_win32_and_emscripten_display2(GameApi::ML code, bool logo, bool fpscounter, float start_time, float duration, int screen_width, int screen_height) : code(code), logo(logo), fpscounter(fpscounter), timeout(duration), start_time(start_time), screen_width(screen_width), screen_height(screen_height)
+  {
+  }
+  virtual void set_env(GameApi::Env *ei)
+  {
+    e = ei;
+  }
+  virtual void set_everyapi(GameApi::EveryApi *evi)
+  {
+    ev = evi;
+  }
+  virtual void Init()
+  {
+    surf=init_2nd_display(256, 160);
+    make_current(true);
+    score = 0;
+    hidden_score = 0;
+
+    Envi_2 &env = envi;
+    env.logo_shown = logo;
+    env.fpscounter = fpscounter;
+    env.timeout = start_time+timeout;
+    env.start_time = start_time;
+    env.screen_width = screen_width;
+    env.screen_height = screen_height;
+    env.ev = ev;
+    
+    GameApi::SH sh = env.ev->shader_api.colour_shader();
+    GameApi::SH sh2 = env.ev->shader_api.texture_shader();
+    GameApi::SH sh3 = env.ev->shader_api.texture_array_shader();
+    
+    // rest of the initializations
+    env.ev->mainloop_api.init_3d(sh);
+    env.ev->mainloop_api.init_3d(sh2);
+    env.ev->mainloop_api.init_3d(sh3);
+    env.ev->shader_api.use(sh);
+    
+    GameApi::ML ml = mainloop(*env.ev);
+    if (async_pending_count > 0) { env.logo_shown = true; }
+    
+    env.mainloop = ml;
+    
+    env.color_sh = sh;
+    env.texture_sh = sh2;
+    env.arr_texture_sh = sh3;
+    
+    env.ev->mainloop_api.reset_time();
+    if (env.logo_shown) {
+      if (gameapi_seamless_url == "") {
+	env.ev->mainloop_api.display_logo(*env.ev);
+      } else {
+	env.ev->mainloop_api.display_seamless(*env.ev);
+      }
+    } else {
+	env.ev->mainloop_api.advance_time(env.start_time/10.0*1000.0);
+    }
+     env.ev->mainloop_api.alpha(true);
+     g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+     GameApi::MainLoopApi::Event e;
+     while((e = env.ev->mainloop_api.get_event()).last==true)
+       {
+	 /* this eats all events from queue */
+       }
+    make_current(false);
+
+  }
+  virtual int Iter()
+  {
+    make_current(true);
+
+    Envi_2 *env = (Envi_2*)&envi;
+    //std::cout << "async: " << async_pending_count << std::endl;
+    if (async_pending_count > 0 && !async_is_done) { env->logo_shown = true; }
+    if (async_pending_count != async_pending_count_previous)
+      {
+	std::cout << "ASync pending count=" << async_pending_count << std::endl;
+	async_pending_count_previous = async_pending_count;
+      }
+    if (env->logo_shown)
+      {
+	bool b = false;
+	if (gameapi_seamless_url=="") {
+	  b = env->ev->mainloop_api.logo_iter();
+	} else {
+	  b = env->ev->mainloop_api.seamless_iter();
+	}
+	if (b && async_pending_count==0) { env->logo_shown = false;
+	  env->ev->mainloop_api.reset_time();
+	  env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
+	}
+	make_current(false);
+	return -1;
+      }
+    async_is_done = true;
+    env->ev->mainloop_api.clear_3d(0xff000000);
+    
+    // handle esc event
+    GameApi::MainLoopApi::Event e;
+    while((e = env->ev->mainloop_api.get_event()).last==true)
+      {
+	//std::cout << e.ch << " " << e.type << std::endl;
+#ifndef EMSCRIPTEN
+	if (e.ch==27 && e.type==0x300) { 
+	  env->exit = true; 
+	  make_current(false);
+	  return 0; 
+	}
+#endif
+	
+	//GameApi::InteractionApi::quake_movement_event(*env->ev,e, env->pos_x, env->pos_y, env->rot_y,
+	//					      env->data, env->speed_x, env->speed_y,
+	//			   1.0, 1.0*3.14159*2.0/360.0);
+	env->ev->mainloop_api.event_ml(env->mainloop, e);
+	
+      }
+    //GameApi::InteractionApi::quake_movement_frame(*env->ev, env->pos_x, env->pos_y, env->rot_y,
+    //						  env->data, env->speed_x, env->speed_y,
+    //						  1.0, 1.0*3.14159*2.0/360.0);
+    
+    GameApi::M mat = env->ev->matrix_api.identity();
+    env->ev->shader_api.use(env->color_sh);
+    env->ev->shader_api.set_var(env->color_sh, "in_MV", mat);
+    //env->ev->shader_api.set_var(env->color_sh, "in_iMV", env->ev->matrix_api.transpose(env->ev->matrix_api.inverse(mat)));
+    env->ev->shader_api.use(env->texture_sh);
+    env->ev->shader_api.set_var(env->texture_sh, "in_MV", mat);
+    //env->ev->shader_api.set_var(env->texture_sh, "in_iMV", env->ev->matrix_api.transpose(env->ev->matrix_api.inverse(mat)));
+    
+    env->ev->shader_api.use(env->arr_texture_sh);
+    env->ev->shader_api.set_var(env->arr_texture_sh, "in_MV", mat);
+    //env->ev->shader_api.set_var(env->arr_texture_sh, "in_iMV", env->ev->matrix_api.transpose(env->ev->matrix_api.inverse(mat)));
+    env->ev->shader_api.use(env->color_sh);
+    
+    GameApi::M in_MV = mat; //env->ev->mainloop_api.in_MV(*env->ev, true);
+    GameApi::M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
+    GameApi::M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
+    
+    env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+
+    if (env->fpscounter)
+      env->ev->mainloop_api.fpscounter();
+    if (env->ev->mainloop_api.get_time()/1000.0*10.0 > env->timeout)
+      {
+	env->exit = true;
+      }
+    
+    // swapbuffers
+    env->ev->mainloop_api.swapbuffers();
+    g_low->ogl->glGetError();
+    make_current(false);
+    return -1;
+  }
+  virtual void Destroy()
+  {
+    // this is needed for win32 build in editor
+    make_current(true);
+      g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+    make_current(false);
+
+    //g_low->sdl->SDL_FreeSurface(surf);
+    //g_low->sdl->SDL_GL_DeleteContext(context_display2);
+    g_low->sdl->SDL_DestroyWindow(sdl_display2_window);
+    sdl_display2_window = 0;
+    context_display2 = 0;
+
+
+  }
+  virtual Splitter* NextState(int code)
+  {
+    return 0;
+  }
+  GameApi::ML mainloop(GameApi::EveryApi &ev)
+  {
+    return code;
+  }
+  void make_current(bool is_display2)
+  {
+    if (is_display2) {
+      g_low->sdl->SDL_GL_MakeCurrent(sdl_window, NULL);
+      g_low->sdl->SDL_GL_MakeCurrent(sdl_display2_window, g_context);
+    } else {
+      g_low->sdl->SDL_GL_MakeCurrent(sdl_display2_window, NULL);
+      g_low->sdl->SDL_GL_MakeCurrent(sdl_window, g_context);
+    }
+  }
+
+
+private:
+  GameApi::ML code;
+  bool logo;
+  bool fpscounter;
+  float timeout;
+  float start_time;
+  int screen_width;
+  int screen_height;
+  Envi_2 envi;
+  Low_SDL_Surface *surf;
+};
+
+EXPORT GameApi::RUN GameApi::BlockerApi::game_window_2nd_display(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration)
+{
+  Splitter *spl = new MainLoopSplitter_win32_and_emscripten_display2(ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
+  return add_splitter(e, spl);
+}
+
+
 
 #endif // THIRD_PART
