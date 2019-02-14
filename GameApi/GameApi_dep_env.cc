@@ -1,6 +1,11 @@
 
 #include "GameApi_h.hh"
 
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
+
+
 extern int async_pending_count;
 EnvImpl::EnvImpl() : event_infos(new EmptySequencer2), mutex(PTHREAD_MUTEX_INITIALIZER)
 {
