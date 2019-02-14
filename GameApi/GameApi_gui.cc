@@ -7438,6 +7438,14 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML" },
 			 { "ev", "" },
 			 "ML", "mainloop_api", "looking_glass"));
+#if 1
+  vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_window_2nd_display,
+			 "looking_glass_window",
+			 { "ev", "ml", "logo", "fpscounter", "start_time", "duration" },
+			 { "EveryApi&", "ML", "bool", "bool", "float", "float" },
+			 { "ev", "", "false", "false", "0.0", "1000000.0" },
+			 "RUN", "blocker_api", "game_window_2nd_display"));
+#endif
 #ifdef VIRTUAL_REALITY
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_window,
 			 "vr_window",
