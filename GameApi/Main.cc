@@ -38,7 +38,7 @@
 // 1) GameApi_h.hh
 // 2) Main.cc
 // 3) Shader.cc
-#define OPENGL_ES 1
+//#define OPENGL_ES 1
 
 //#include <SDL.h>
 //#include <SDL_opengl.h>
@@ -1593,18 +1593,48 @@ Low_SDL_GLContext context_display2;
 
 Low_SDL_Surface *init_2nd_display(int scr_x, int scr_y)
 {
-  sdl_display2_window = g_low->sdl->SDL_CreateWindow("Framebuffer", Low_SDL_WINDOWPOS_CENTERED, Low_SDL_WINDOWPOS_CENTERED, scr_x, scr_y, Low_SDL_WINDOW_OPENGL_SHOWN);
+  g_low->sdl->SDL_Init(Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK);
+
+
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_RED_SIZE, 8);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_GREEN_SIZE, 8);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_BLUE_SIZE, 8);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_ALPHA_SIZE, 8);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_DEPTH_SIZE, 24);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_DOUBLEBUFFER, 1);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_STENCIL_SIZE, 1);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+  //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1);
+  //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4);
+
+#ifndef EMSCRIPTEN
+#ifndef OPENGL_ES
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 3);
+
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_PROFILE_MASK, Low_SDL_GL_CONTEXT_PROFILE_CORE);
+#else 
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 0);
+
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_PROFILE_MASK, Low_SDL_GL_CONTEXT_PROFILE_ES);
+
+#endif
+#endif
+
+
+  sdl_display2_window = g_low->sdl->SDL_CreateWindow("Framebuffer", Low_SDL_WINDOWPOS_CENTERED_DISPLAY, Low_SDL_WINDOWPOS_CENTERED_DISPLAY, scr_x, scr_y, Low_SDL_WINDOW_OPENGL_SHOWN);
   //sdl_display2_framebuffer = g_low->sdl->SDL_GetWindowSurface(sdl_display2_window);
   //context_display2 = g_low->sdl->SDL_GL_CreateContext(sdl_display2_window);
   //    g_low->sdl->SDL_GL_MakeCurrent(sdl_window, NULL);
   //    g_low->sdl->SDL_GL_MakeCurrent(sdl_display2_window, context_display2);
 
-  g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
-  g_low->ogl->glDepthMask(Low_GL_TRUE);
+  //g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+  //g_low->ogl->glDepthMask(Low_GL_TRUE);
 
-  g_low->ogl->glClearColor( 0, 0, 0, 0 );
-  g_low->ogl->glViewport(0,0,scr_x, scr_y);
-  g_low->ogl->glDisable(Low_GL_CULL_FACE);
+  //g_low->ogl->glClearColor( 0, 0, 0, 0 );
+  //g_low->ogl->glViewport(0,0,scr_x, scr_y);
+  //g_low->ogl->glDisable(Low_GL_CULL_FACE);
   //   g_low->sdl->SDL_GL_MakeCurrent(sdl_display2_window, NULL);
   //    g_low->sdl->SDL_GL_MakeCurrent(sdl_window, g_context);
 

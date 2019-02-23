@@ -15,6 +15,9 @@
 #endif
 #define BATCHING 1
 
+#define LOOKING_GLASS 1
+//#undef LOOKING_GLASS
+
 #ifndef EMSCRIPTEN
 #define VAO 1
 #endif
@@ -41,7 +44,7 @@
 // 1) GameApi_h.hh
 // 2) Main.cc
 // 3) Shader.cc
-#define OPENGL_ES 1
+//#define OPENGL_ES 1
 
 #include "GameApi.hh"
 #include <vector>

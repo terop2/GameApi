@@ -14,6 +14,11 @@
 
 #include <cstring>
 
+#ifdef LOOKING_GLASS
+#define HP_LOAD_LIBRARY
+#include <holoplay.h>
+#endif
+
 #ifndef FIRST
 #ifndef SECOND
 #ifndef THIRD
@@ -15811,51 +15816,156 @@ GameApi::ML GameApi::MainLoopApi::small_window(EveryApi &ev, ML ml, int x, int y
   return add_main_loop(e, new SmallWindow(e,ev,item, x,y,sx,sy));
 }
 
-GameApi::ML part(GameApi::EveryApi &ev, GameApi::ML ml, float y_rot, float z_rot, int x, int y) {
+GameApi::ML part(GameApi::EveryApi &ev, GameApi::ML ml, float x_trans, int x, int y) {
   GameApi::MN I1=ev.move_api.empty();
-  GameApi::MN I2=ev.move_api.rotatey(I1,y_rot);
-  GameApi::MN I3=ev.move_api.rotatex(I2,z_rot);
+  //GameApi::MN I2=ev.move_api.rotatey(I1,y_rot);
+  //GameApi::MN I3=ev.move_api.rotatex(I2,z_rot);
+  GameApi::MN I3 = ev.move_api.trans2(I1, x_trans,0.0,0.0);
   GameApi::ML I4=ev.move_api.move_ml(ev,ml,I3,1,10.0);
-  GameApi::ML I5=ev.mainloop_api.small_window(ev,I4,x*512,y*256,512,256);
-  return I5;
+  //GameApi::ML I5=ev.mainloop_api.small_window(ev,I4,0/*x*512*/,0/*y*256*/,512,256);
+  return I4;
+}
+float part_x_trans(int x, int y)
+{
+  int pos = x+y*5;
+  pos-=5*9/2;
+  return -pos*(150.0/5/9);
 }
 float part_y_rot(int x, int y)
 {
   x-=2;
   y-=4;
-  return y*3.14159*2.0/2.0/4.0/2.0;
+  return (x+y*5)*3.14159*2.0/5.0/9.0/90.0;
 }
 float part_z_rot(int x, int y)
 {
-  x-=2;
-  y-=4;
-  return x*3.14159*2.0/2.0/8.0/2.0;
+  return 0.0;
+  //x-=2;
+  //y-=4;
+  //return x*3.14159*2.0/2.0/8.0/2.0;
 }
 
-GameApi::ML part_line(GameApi::EveryApi &ev, GameApi::ML ml, int line)
+std::vector<GameApi::ML> part_line(GameApi::EveryApi &ev, GameApi::ML ml, int line)
 {
-  GameApi::ML ml_0_0 = part(ev,ml, part_y_rot(0,line), part_z_rot(0,line),0,line);
-  GameApi::ML ml_1_0 = part(ev,ml, part_y_rot(1,line), part_z_rot(1,line),1,line);
-  GameApi::ML ml_2_0 = part(ev,ml, part_y_rot(2,line), part_z_rot(2,line),2,line);
-  GameApi::ML ml_3_0 = part(ev,ml, part_y_rot(3,line), part_z_rot(3,line),3,line);
-  GameApi::ML I1=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{ml_0_0,ml_1_0,ml_2_0,ml_3_0});
-  return I1;
+  GameApi::ML ml_0_0 = part(ev,ml, part_x_trans(0,line),0,line);
+  GameApi::ML ml_1_0 = part(ev,ml, part_x_trans(1,line), 1,line);
+  GameApi::ML ml_2_0 = part(ev,ml, part_x_trans(2,line), 2,line);
+  GameApi::ML ml_3_0 = part(ev,ml, part_x_trans(3,line), 3,line);
+  GameApi::ML ml_4_0 = part(ev,ml,part_x_trans(4,line), 3,line);
+  //GameApi::ML I1=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{ml_0_0,ml_1_0,ml_2_0,ml_3_0});
+  std::vector<GameApi::ML> vec;
+  vec.push_back(ml_0_0);
+  vec.push_back(ml_1_0);
+  vec.push_back(ml_2_0);
+  vec.push_back(ml_3_0);
+  vec.push_back(ml_4_0);
+  return vec;
 }
-
-GameApi::ML GameApi::MainLoopApi::looking_glass(EveryApi &ev, ML ml)
+std::vector<GameApi::ML> append_vec(std::vector<GameApi::ML> vec, std::vector<GameApi::ML> vec2)
 {
-  GameApi::ML l0 = part_line(ev,ml, 0);
-  GameApi::ML l1 = part_line(ev,ml, 1);
-  GameApi::ML l2 = part_line(ev,ml, 2);
-  GameApi::ML l3 = part_line(ev,ml, 3);
-  GameApi::ML l4 = part_line(ev,ml, 4);
-  GameApi::ML l5 = part_line(ev,ml, 5);
-  GameApi::ML l6 = part_line(ev,ml, 6);
-  GameApi::ML l7 = part_line(ev,ml, 7);
-  ML I1=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{l0,l1,l2,l3,l4,l5,l6,l7});
-  return I1;
+  int s = vec2.size();
+  for(int i=0;i<s;i++) vec.push_back(vec2[i]);
+  return vec;
 }
 
+std::vector<GameApi::ML> looking_glass(GameApi::EveryApi &ev, GameApi::ML ml)
+{
+  std::vector<GameApi::ML> l0 = part_line(ev,ml, 0);
+  std::vector<GameApi::ML> l1 = part_line(ev,ml, 1);
+  std::vector<GameApi::ML> l2 = part_line(ev,ml, 2);
+  std::vector<GameApi::ML> l3 = part_line(ev,ml, 3);
+  std::vector<GameApi::ML> l4 = part_line(ev,ml, 4);
+  std::vector<GameApi::ML> l5 = part_line(ev,ml, 5);
+  std::vector<GameApi::ML> l6 = part_line(ev,ml, 6);
+  std::vector<GameApi::ML> l7 = part_line(ev,ml, 7);
+  std::vector<GameApi::ML> l8 = part_line(ev,ml, 8);
+
+  std::vector<GameApi::ML> K1 = append_vec(l0,l1);
+  std::vector<GameApi::ML> K2 = append_vec(K1,l2);
+  std::vector<GameApi::ML> K3 = append_vec(K2,l3);
+  std::vector<GameApi::ML> K4 = append_vec(K3,l4);
+  std::vector<GameApi::ML> K5 = append_vec(K4,l5);
+  std::vector<GameApi::ML> K6 = append_vec(K5,l6);
+  std::vector<GameApi::ML> K7 = append_vec(K6,l7);
+  std::vector<GameApi::ML> K8 = append_vec(K7,l8);
+  return K8;
+}
+
+std::vector<GameApi::TXID> looking_glass_txid(GameApi::EveryApi &ev, GameApi::ML ml)
+{
+  std::vector<GameApi::ML> I9 = looking_glass(ev, ml);
+  
+  //GameApi::ML I1=ev.mainloop_api.array_ml(I9);
+
+  std::vector<GameApi::TXID> vec;
+  int s = I9.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApi::TXID id = ev.fbo_api.fbo_ml(ev,I9[i],819,455,false);
+      vec.push_back(id);
+    }
+
+  return vec;
+}
+
+class LookingGlassSharedLibraryUse : public MainLoopItem
+{
+public:
+  LookingGlassSharedLibraryUse(GameApi::Env &e, std::vector<GameApi::TXID> id, int sx, int sy, int x, int y) : m_e(e), id(id), sx(sx), sy(sy), x(x), y(y) { firsttime = true;}
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+      firsttime = false; 
+#ifdef LOOKING_GLASS
+      hp_loadLibrary();
+      hp_initialize();
+    hp_setupQuiltSettings(1);
+#endif   
+      //  pixels = new unsigned char[sx*sy*x*y];
+    }
+#ifdef LOOKING_GLASS
+    g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MIN_FILTER, Low_GL_NEAREST);
+    g_low->ogl->glDisable(Low_GL_BLEND);
+
+
+    int s = id.size();
+    for(int i=0;i<s;i++) {
+      TextureID *txid = find_txid(m_e, id[i]);
+      txid->render(e);
+
+      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, txid->texture());
+      hp_copyViewToQuilt(i);
+      }
+    //g_low->ogl->glGetTexImage(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, pixels);
+    //g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, hp_quiltTexture);
+    // g_low->ogl->glTexSubImage2D(Low_GL_TEXTURE_2D, 0, 0,0, sx*x,sy*y, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, pixels);
+    //g_low->ogl->glCopyImageSubData(txid->texture(), Low_GL_TEXTURE_2D, 0,0,0,0, hp_quiltTexture, Low_GL_TEXTURE_2D, 0,0,0,0, 10, 6, 1); // TODO 10,6,1
+    hp_drawLightfield();
+    g_low->ogl->glEnable(Low_GL_BLEND);
+#endif
+  }
+  virtual void handle_event(MainLoopEvent &e) { 
+      TextureID *txid = find_txid(m_e, id[0]);
+      txid->handle_event(e);
+  }
+  virtual int shader_id() { return -1; }
+  virtual void destroy() {
+    hp_release();
+  }
+
+private:
+  GameApi::Env &m_e;
+  bool firsttime;
+  std::vector<GameApi::TXID> id;
+  int sx,sy,x,y;
+  unsigned char *pixels;
+};
+
+GameApi::ML GameApi::MainLoopApi::looking_glass_full(GameApi::EveryApi &ev, GameApi::ML ml, int sx, int sy, int x, int y)
+{
+  std::vector<GameApi::TXID> id = looking_glass_txid(ev,ml);
+  return add_main_loop(e, new LookingGlassSharedLibraryUse(e,id, sx,sy,x,y));
+}
 
 class SaveFont : public MainLoopItem
 {
@@ -16020,7 +16130,7 @@ extern Low_SDL_Window *sdl_window;
 class MainLoopSplitter_win32_and_emscripten_display2 : public Splitter
 {
 public:
-  MainLoopSplitter_win32_and_emscripten_display2(GameApi::ML code, bool logo, bool fpscounter, float start_time, float duration, int screen_width, int screen_height) : code(code), logo(logo), fpscounter(fpscounter), timeout(duration), start_time(start_time), screen_width(screen_width), screen_height(screen_height)
+  MainLoopSplitter_win32_and_emscripten_display2(GameApi::Env &env, GameApi::ML code, bool logo, bool fpscounter, float start_time, float duration, int screen_width, int screen_height) : env2(env), code(code), logo(logo), fpscounter(fpscounter), timeout(duration), start_time(start_time), screen_width(screen_width), screen_height(screen_height)
   {
   }
   virtual void set_env(GameApi::Env *ei)
@@ -16033,7 +16143,10 @@ public:
   }
   virtual void Init()
   {
-    surf=init_2nd_display(256, 160);
+    g_low->ogl->glGetIntegerv(Low_GL_VIEWPORT, viewport.viewport);
+    surf=init_2nd_display(2560, 1600);
+    g_low->ogl->glViewport(0,0,2560, 1600);
+
     make_current(true);
     score = 0;
     hidden_score = 0;
@@ -16123,6 +16236,9 @@ public:
 	//std::cout << e.ch << " " << e.type << std::endl;
 #ifndef EMSCRIPTEN
 	if (e.ch==27 && e.type==0x300) { 
+	  GameApi::ML ml = env->mainloop;
+	  MainLoopItem *item = find_main_loop(env2, ml);
+	  item->destroy();
 	  env->exit = true; 
 	  make_current(false);
 	  return 0; 
@@ -16166,13 +16282,17 @@ public:
       }
     
     // swapbuffers
-    env->ev->mainloop_api.swapbuffers();
+    //env->ev->mainloop_api.swapbuffers();
+    g_low->sdl->SDL_GL_SwapWindow(sdl_display2_window);
     g_low->ogl->glGetError();
     make_current(false);
     return -1;
   }
   virtual void Destroy()
   {
+    // restore viewport
+    g_low->ogl->glViewport(viewport.viewport[0],viewport.viewport[1],viewport.viewport[2],viewport.viewport[3]);
+
     // this is needed for win32 build in editor
     make_current(true);
       g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
@@ -16198,7 +16318,7 @@ public:
   {
     if (is_display2) {
       g_low->sdl->SDL_GL_MakeCurrent(sdl_window, NULL);
-      g_low->sdl->SDL_GL_MakeCurrent(sdl_display2_window, g_context);
+      g_low->sdl->SDL_GL_MakeCurrent(sdl_display2_window, g_context /*context_display2*/);
     } else {
       g_low->sdl->SDL_GL_MakeCurrent(sdl_display2_window, NULL);
       g_low->sdl->SDL_GL_MakeCurrent(sdl_window, g_context);
@@ -16207,6 +16327,7 @@ public:
 
 
 private:
+  GameApi::Env &env2;
   GameApi::ML code;
   bool logo;
   bool fpscounter;
@@ -16216,11 +16337,12 @@ private:
   int screen_height;
   Envi_2 envi;
   Low_SDL_Surface *surf;
+  GameApi::FrameBufferApi::vp viewport;
 };
 
 EXPORT GameApi::RUN GameApi::BlockerApi::game_window_2nd_display(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration)
 {
-  Splitter *spl = new MainLoopSplitter_win32_and_emscripten_display2(ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
+  Splitter *spl = new MainLoopSplitter_win32_and_emscripten_display2(e,ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
   return add_splitter(e, spl);
 }
 

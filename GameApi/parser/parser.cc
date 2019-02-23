@@ -71,6 +71,7 @@ public:
     std::string data1,data2;
     std::string sign;
     std::string class_name;
+    std::string prev_line;
     while(std::getline(ss,line,'\n')) {
       int ch = find(line, "class ");
       if (ch!=-1)
@@ -89,6 +90,9 @@ public:
 	//std::cout << line << std::endl;
 	count=0;
 	data1="";
+	if (find(prev_line,"template")!=-1) {
+	  data1+=prev_line+"\n";
+	}
 	data1+=line+"\n";
       } 
       int ch2 = find(line, apiname);
@@ -161,7 +165,11 @@ public:
 	      }
 	  }
 	}
+      prev_line=line;
     }
+
+    
+
   }
   void print(std::string funcname)
   {
@@ -187,7 +195,7 @@ public:
 		}
 	      }
 	    //std::cout << f.funcsignature << std::endl;
-	    std::cout << f.contents << std::endl;
+	    //std::cout << f.contents << std::endl;
 	  }
       }
   }
@@ -302,7 +310,8 @@ std::string apinames[] = {
   "BlockerApi","blocker_api",
   "VertexAnimApi","vertex_anim_api",
   "NewPlaneApi","newplane_api",
-  "SurfaceApi","surface_api"
+  "SurfaceApi","surface_api",
+  "LowFrameBufferApi", "low_frame_api"
 };
 
 std::string convertapiname(std::string apiname)

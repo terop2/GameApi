@@ -7432,12 +7432,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "int", "int", "int", "int" },
 			 { "ev", "", "100", "100", "320", "200" },
 			 "ML", "mainloop_api", "small_window"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::looking_glass,
-			 "run_looking_glass",
-			 { "ev", "ml" },
-			 { "EveryApi&", "ML" },
-			 { "ev", "" },
-			 "ML", "mainloop_api", "looking_glass"));
+  //vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::looking_glass,
+  //			 "run_looking_glass",
+  //			 { "ev", "ml" },
+  //			 { "EveryApi&", "ML" },
+  //			 { "ev", "" },
+  //			 "ML", "mainloop_api", "looking_glass"));
 #if 1
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_window_2nd_display,
 			 "looking_glass_window",
@@ -7446,6 +7446,18 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "", "false", "false", "0.0", "1000000.0" },
 			 "RUN", "blocker_api", "game_window_2nd_display"));
 #endif
+  //vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::looking_glass_lib,
+  //			 "looking_glass_lib",
+  //			 { "txid", "sx", "sy", "x", "y" },
+  //			 { "TXID", "int", "int", "int", "int" },
+  //			 { "", "512", "256", "4", "8" },
+  //			 "ML", "mainloop_api", "looking_glass_lib"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::looking_glass_full,
+			 "looking_glass_full",
+			 { "ev", "ml", "sx", "sy", "x", "y" },
+			 { "EveryApi&", "ML", "int", "int", "int", "int" },
+			 { "ev", "", "512", "256", "4", "8" },
+			 "ML", "mainloop_api", "looking_glass_full"));
 #ifdef VIRTUAL_REALITY
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_window,
 			 "vr_window",

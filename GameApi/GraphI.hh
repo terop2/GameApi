@@ -535,6 +535,7 @@ public:
   virtual void execute(MainLoopEnv &e)=0;
   virtual void handle_event(MainLoopEvent &e)=0;
   virtual int shader_id() { return -1; }
+  virtual void destroy() { }
   virtual void set_vars(std::map<std::string, std::string> vars) { }
   virtual std::map<std::string, std::string> get_vars() const {
     return std::map<std::string,std::string>();
