@@ -157,7 +157,9 @@ void map_enums_sdl(int &i) {
   switch(i) {
   case Low_SDL_WINDOWPOS_CENTERED: i=SDL_WINDOWPOS_CENTERED; break;
   case Low_SDL_WINDOWPOS_CENTERED_DISPLAY: i=SDL_WINDOWPOS_CENTERED_DISPLAY(1); break;
+#ifndef EMSCRIPTEN
   case Low_SDL_GL_SHARE_WITH_CURRENT_CONTEXT: i=SDL_GL_SHARE_WITH_CURRENT_CONTEXT; break;
+#endif
   case Low_SDL_WINDOW_SHOWN: i=SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE; break;
@@ -888,7 +890,7 @@ void glGetIntegerv(int i, int *ptr) {
 
 };
 
-
+SDLLowApi::~SDLLowApi() { }
 
 class SDLApi : public SDLLowApi
 {
