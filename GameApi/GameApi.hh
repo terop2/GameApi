@@ -284,7 +284,10 @@ public:
   IMPORT void clear_3d(unsigned int col = 0xff000000);
   IMPORT void switch_to_3d(bool b, SH sh, int screen_width=800., int screen_height = 600);
   IMPORT ML small_window(EveryApi &ev, ML ml, int x, int y, int sx, int sy);
-  IMPORT ML looking_glass(EveryApi &ev, ML ml);
+  //IMPORT ML looking_glass(EveryApi &ev, ML ml);
+  //IMPORT TXID looking_glass_txid(EveryApi &ev, ML ml);
+  //IMPORT ML looking_glass_lib(TXID id, int sx, int sy, int x, int y);
+  IMPORT ML looking_glass_full(EveryApi &ev, ML ml, int sx, int sy, int x, int y);
   IMPORT void alpha(bool enabled);
   void alpha_1(bool enabled);
   IMPORT void depth_test(bool enabled);

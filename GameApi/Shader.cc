@@ -37,7 +37,7 @@
 // 1) GameApi_h.hh
 // 2) Main.cc
 // 3) Shader.cc
-#define OPENGL_ES 1
+//#define OPENGL_ES 1
 
 std::string funccall_to_string(ShaderModule *mod);
 std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string value);
