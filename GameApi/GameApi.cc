@@ -15816,26 +15816,34 @@ GameApi::ML GameApi::MainLoopApi::small_window(EveryApi &ev, ML ml, int x, int y
   return add_main_loop(e, new SmallWindow(e,ev,item, x,y,sx,sy));
 }
 
-GameApi::ML part(GameApi::EveryApi &ev, GameApi::ML ml, float x_trans, int x, int y) {
+GameApi::ML part(GameApi::EveryApi &ev, GameApi::ML ml, float x_trans, float y_rot, int x, int y, int mode=0) {
   GameApi::MN I1=ev.move_api.empty();
   //GameApi::MN I2=ev.move_api.rotatey(I1,y_rot);
   //GameApi::MN I3=ev.move_api.rotatex(I2,z_rot);
-  GameApi::MN I3 = ev.move_api.trans2(I1, x_trans,0.0,0.0);
+  GameApi::MN I3;
+  if (mode==0) {
+    I3 = ev.move_api.trans2(I1, x_trans,0.0,0.0);
+  } else if (mode==2) {
+    I3 = ev.move_api.rotatey(I1, y_rot);
+    I3 = ev.move_api.trans2(I3, x_trans, 0.0,0.0);
+  } else {
+    I3 = ev.move_api.rotatey(I1, y_rot);
+  }
   GameApi::ML I4=ev.move_api.move_ml(ev,ml,I3,1,10.0);
   //GameApi::ML I5=ev.mainloop_api.small_window(ev,I4,0/*x*512*/,0/*y*256*/,512,256);
   return I4;
 }
-float part_x_trans(int x, int y)
+float part_x_trans(int x, int y, float amount=150.0)
 {
   int pos = x+y*5;
   pos-=5*9/2;
-  return -pos*(150.0/5/9);
+  return -pos*(amount/5/9);
 }
-float part_y_rot(int x, int y)
+float part_y_rot(int x, int y, float amount=150.0)
 {
-  x-=2;
-  y-=4;
-  return (x+y*5)*3.14159*2.0/5.0/9.0/90.0;
+  int pos = x+y*5;
+  pos-=5*9/2;
+  return (-pos)*amount/150.0/5/9*3.14159*2.0/8.0;
 }
 float part_z_rot(int x, int y)
 {
@@ -15845,13 +15853,13 @@ float part_z_rot(int x, int y)
   //return x*3.14159*2.0/2.0/8.0/2.0;
 }
 
-std::vector<GameApi::ML> part_line(GameApi::EveryApi &ev, GameApi::ML ml, int line)
+std::vector<GameApi::ML> part_line(GameApi::EveryApi &ev, GameApi::ML ml, int line, float amount=150.0, int mode=0)
 {
-  GameApi::ML ml_0_0 = part(ev,ml, part_x_trans(0,line),0,line);
-  GameApi::ML ml_1_0 = part(ev,ml, part_x_trans(1,line), 1,line);
-  GameApi::ML ml_2_0 = part(ev,ml, part_x_trans(2,line), 2,line);
-  GameApi::ML ml_3_0 = part(ev,ml, part_x_trans(3,line), 3,line);
-  GameApi::ML ml_4_0 = part(ev,ml,part_x_trans(4,line), 3,line);
+  GameApi::ML ml_0_0 = part(ev,ml, part_x_trans(0,line,amount),part_y_rot(0,line,amount),0,line,mode);
+  GameApi::ML ml_1_0 = part(ev,ml, part_x_trans(1,line,amount), part_y_rot(1,line,amount),1,line,mode);
+  GameApi::ML ml_2_0 = part(ev,ml, part_x_trans(2,line,amount), part_y_rot(2,line,amount),2,line,mode);
+  GameApi::ML ml_3_0 = part(ev,ml, part_x_trans(3,line,amount), part_y_rot(3,line,amount),3,line,mode);
+  GameApi::ML ml_4_0 = part(ev,ml,part_x_trans(4,line,amount), part_y_rot(4,line,amount),3,line,mode);
   //GameApi::ML I1=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{ml_0_0,ml_1_0,ml_2_0,ml_3_0});
   std::vector<GameApi::ML> vec;
   vec.push_back(ml_0_0);
@@ -15868,17 +15876,17 @@ std::vector<GameApi::ML> append_vec(std::vector<GameApi::ML> vec, std::vector<Ga
   return vec;
 }
 
-std::vector<GameApi::ML> looking_glass(GameApi::EveryApi &ev, GameApi::ML ml)
+std::vector<GameApi::ML> looking_glass(GameApi::EveryApi &ev, GameApi::ML ml, int amount, int mode)
 {
-  std::vector<GameApi::ML> l0 = part_line(ev,ml, 0);
-  std::vector<GameApi::ML> l1 = part_line(ev,ml, 1);
-  std::vector<GameApi::ML> l2 = part_line(ev,ml, 2);
-  std::vector<GameApi::ML> l3 = part_line(ev,ml, 3);
-  std::vector<GameApi::ML> l4 = part_line(ev,ml, 4);
-  std::vector<GameApi::ML> l5 = part_line(ev,ml, 5);
-  std::vector<GameApi::ML> l6 = part_line(ev,ml, 6);
-  std::vector<GameApi::ML> l7 = part_line(ev,ml, 7);
-  std::vector<GameApi::ML> l8 = part_line(ev,ml, 8);
+  std::vector<GameApi::ML> l0 = part_line(ev,ml, 0, amount,mode);
+  std::vector<GameApi::ML> l1 = part_line(ev,ml, 1, amount,mode);
+  std::vector<GameApi::ML> l2 = part_line(ev,ml, 2, amount,mode);
+  std::vector<GameApi::ML> l3 = part_line(ev,ml, 3, amount,mode);
+  std::vector<GameApi::ML> l4 = part_line(ev,ml, 4, amount,mode);
+  std::vector<GameApi::ML> l5 = part_line(ev,ml, 5, amount,mode);
+  std::vector<GameApi::ML> l6 = part_line(ev,ml, 6, amount,mode);
+  std::vector<GameApi::ML> l7 = part_line(ev,ml, 7, amount,mode);
+  std::vector<GameApi::ML> l8 = part_line(ev,ml, 8, amount,mode);
 
   std::vector<GameApi::ML> K1 = append_vec(l0,l1);
   std::vector<GameApi::ML> K2 = append_vec(K1,l2);
@@ -15891,9 +15899,9 @@ std::vector<GameApi::ML> looking_glass(GameApi::EveryApi &ev, GameApi::ML ml)
   return K8;
 }
 
-std::vector<GameApi::TXID> looking_glass_txid(GameApi::EveryApi &ev, GameApi::ML ml)
+std::vector<GameApi::TXID> looking_glass_txid(GameApi::EveryApi &ev, GameApi::ML ml, int sx=819, int sy=455, float amount=150.0, int mode=0)
 {
-  std::vector<GameApi::ML> I9 = looking_glass(ev, ml);
+  std::vector<GameApi::ML> I9 = looking_glass(ev, ml,amount,mode);
   
   //GameApi::ML I1=ev.mainloop_api.array_ml(I9);
 
@@ -15901,7 +15909,7 @@ std::vector<GameApi::TXID> looking_glass_txid(GameApi::EveryApi &ev, GameApi::ML
   int s = I9.size();
   for(int i=0;i<s;i++)
     {
-      GameApi::TXID id = ev.fbo_api.fbo_ml(ev,I9[i],819,455,false);
+      GameApi::TXID id = ev.fbo_api.fbo_ml(ev,I9[i],sx,sy,false);
       vec.push_back(id);
     }
 
@@ -15911,7 +15919,7 @@ std::vector<GameApi::TXID> looking_glass_txid(GameApi::EveryApi &ev, GameApi::ML
 class LookingGlassSharedLibraryUse : public MainLoopItem
 {
 public:
-  LookingGlassSharedLibraryUse(GameApi::Env &e, std::vector<GameApi::TXID> id, int sx, int sy, int x, int y) : m_e(e), id(id), sx(sx), sy(sy), x(x), y(y) { firsttime = true;}
+  LookingGlassSharedLibraryUse(GameApi::Env &e, std::vector<GameApi::TXID> id) : m_e(e), id(id) { firsttime = true;}
   virtual void execute(MainLoopEnv &e)
   {
     if (firsttime) {
@@ -15957,17 +15965,17 @@ private:
   GameApi::Env &m_e;
   bool firsttime;
   std::vector<GameApi::TXID> id;
-  int sx,sy,x,y;
+  //int sx,sy,x,y;
   unsigned char *pixels;
 };
 
-GameApi::ML GameApi::MainLoopApi::looking_glass_full(GameApi::EveryApi &ev, GameApi::ML ml, int sx, int sy, int x, int y)
+GameApi::ML GameApi::MainLoopApi::looking_glass_full(GameApi::EveryApi &ev, GameApi::ML ml, float amount, int mode)
 {
-  std::vector<GameApi::TXID> id = looking_glass_txid(ev,ml);
-  return add_main_loop(e, new LookingGlassSharedLibraryUse(e,id, sx,sy,x,y));
+  std::vector<GameApi::TXID> id = looking_glass_txid(ev,ml,819,455,amount,mode);
+  return add_main_loop(e, new LookingGlassSharedLibraryUse(e,id));
 }
 
-class SaveFont : public MainLoopItem
+class SaveFont : public MainLoopItem 
 {
 public:
   SaveFont(FontInterface *font, std::string chars, std::string filename) : font(font), chars(chars), filename(filename)  
