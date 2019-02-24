@@ -7454,9 +7454,9 @@ std::vector<GameApiItem*> blocker_functions()
   //			 "ML", "mainloop_api", "looking_glass_lib"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::looking_glass_full,
 			 "looking_glass_full",
-			 { "ev", "ml", "sx", "sy", "x", "y" },
-			 { "EveryApi&", "ML", "int", "int", "int", "int" },
-			 { "ev", "", "512", "256", "4", "8" },
+			 { "ev", "ml", "amount", "mode" },
+			 { "EveryApi&", "ML", "float", "int" },
+			 { "ev", "", "150.0", "0" },
 			 "ML", "mainloop_api", "looking_glass_full"));
 #ifdef VIRTUAL_REALITY
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_window,

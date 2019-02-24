@@ -287,7 +287,7 @@ public:
   //IMPORT ML looking_glass(EveryApi &ev, ML ml);
   //IMPORT TXID looking_glass_txid(EveryApi &ev, ML ml);
   //IMPORT ML looking_glass_lib(TXID id, int sx, int sy, int x, int y);
-  IMPORT ML looking_glass_full(EveryApi &ev, ML ml, int sx, int sy, int x, int y);
+  IMPORT ML looking_glass_full(EveryApi &ev, ML ml, float amount, int mode);
   IMPORT void alpha(bool enabled);
   void alpha_1(bool enabled);
   IMPORT void depth_test(bool enabled);
