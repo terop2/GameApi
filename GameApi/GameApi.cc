@@ -16237,6 +16237,7 @@ public:
     async_is_done = true;
     env->ev->mainloop_api.clear_3d(0xff000000);
     
+    make_current(false);
     // handle esc event
     GameApi::MainLoopApi::Event e;
     while((e = env->ev->mainloop_api.get_event()).last==true)
@@ -16259,6 +16260,8 @@ public:
 	env->ev->mainloop_api.event_ml(env->mainloop, e);
 	
       }
+    make_current(true);
+
     //GameApi::InteractionApi::quake_movement_frame(*env->ev, env->pos_x, env->pos_y, env->rot_y,
     //						  env->data, env->speed_x, env->speed_y,
     //						  1.0, 1.0*3.14159*2.0/360.0);
@@ -16354,6 +16357,43 @@ EXPORT GameApi::RUN GameApi::BlockerApi::game_window_2nd_display(GameApi::EveryA
   return add_splitter(e, spl);
 }
 
+class DragDropArea : public MainLoopItem
+{
+public:
+  DragDropArea(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *mainloop, GameApi::RUN (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, std::string filename)) : m_e(e), ev(ev), mainloop(mainloop), fptr(fptr) { }
+  virtual void execute(MainLoopEnv &e) { 
+    mainloop->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    mainloop->handle_event(e);
+    if (e.drag_drop_filename != "") {
+      std::cout << "DragDropArea::handle_event -- dragdrop event" << std::endl;
+      GameApi::RUN r = fptr(m_e,ev,e.drag_drop_filename);
+      Splitter *old = splitter_current;
+      if (r.id!=0)
+	ev.blocker_api.run2(ev,r);
+      splitter_current = old;
+      // eat all events
+      GameApi::MainLoopApi::Event e;
+      while((e = ev.mainloop_api.get_event()).last==true);
+    }
+  }
+  virtual int shader_id() { return mainloop->shader_id(); }
+  virtual void destroy() { mainloop->destroy(); }
+private:
+  GameApi::Env &m_e;
+  GameApi::EveryApi &ev;
+  MainLoopItem *mainloop;
+  GameApi::RUN (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, std::string filename);
+};
+
+
+EXPORT GameApi::ML GameApi::MainLoopApi::drag_drop_area(EveryApi &ev, ML mainloop, GameApi::RUN (*fptr)(Env &e, EveryApi &ev, std::string filename))
+{
+  MainLoopItem *ml = find_main_loop(e, mainloop);
+  return add_main_loop(e, new DragDropArea(e,ev,ml,fptr));
+}
 
 
 #endif // THIRD_PART

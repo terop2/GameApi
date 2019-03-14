@@ -284,6 +284,7 @@ public:
   IMPORT void clear_3d(unsigned int col = 0xff000000);
   IMPORT void switch_to_3d(bool b, SH sh, int screen_width=800., int screen_height = 600);
   IMPORT ML small_window(EveryApi &ev, ML ml, int x, int y, int sx, int sy);
+  IMPORT ML drag_drop_area(EveryApi &ev, ML mainloop, RUN (*fptr)(Env &e, EveryApi &ev, std::string filename));
   //IMPORT ML looking_glass(EveryApi &ev, ML ml);
   //IMPORT TXID looking_glass_txid(EveryApi &ev, ML ml);
   //IMPORT ML looking_glass_lib(TXID id, int sx, int sy, int x, int y);
@@ -357,6 +358,7 @@ public:
     bool joy1_button2;
     bool joy1_button3;
     bool last;
+    std::string drag_drop_filename;
   };
   struct DoubleTapState { DoubleTapState() : start_frame(0), in_between(false) { } int start_frame; bool in_between; };
   IMPORT bool ch_doubletap_detect(Event &e, int exprire_timer_count, int ch, DoubleTapState &state);

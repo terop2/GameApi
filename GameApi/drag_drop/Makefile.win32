@@ -1,0 +1,3 @@
+
+all:
+	g++ -DWINDOWS -I.. -L.. -std=c++11 test.cpp -lGameDep -lGameApi -o test.exe

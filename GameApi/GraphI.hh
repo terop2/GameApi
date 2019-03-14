@@ -527,6 +527,7 @@ struct MainLoopEvent
   Point cursor_pos;
   int button;
   //float time = 0.0;
+  std::string drag_drop_filename = "";
 };
 
 class MainLoopItem

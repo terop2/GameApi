@@ -684,7 +684,16 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   e2.type = event.type;
   e2.ch = event.key.keysym.sym;
   if (event.type==256) { exit(0); }
-  
+  std::string filename = "";
+  if (event.type==Low_SDL_DROPFILE)
+    {
+      std::cout << "get_event -- dragdrop event" << std::endl;
+
+      Low_SDL_DropEvent *ptr = &event.drop;
+      filename = ptr->file;
+    }
+  e2.drag_drop_filename = filename;
+
 #ifndef __APPLE__
   if (event.type==Low_SDL_FINGERMOTION||event.type==Low_SDL_FINGERDOWN||event.type==Low_SDL_FINGERUP)
     {
@@ -1202,6 +1211,7 @@ void GameApi::MainLoopApi::event_ml(ML ml, const Event &ee)
   e2.ch = ee.ch;
   e2.cursor_pos = *find_point(e,ee.cursor_pos);
   e2.button = ee.button;
+  e2.drag_drop_filename = ee.drag_drop_filename;
   MainLoopItem *item = find_main_loop(e, ml);
   item->handle_event(e2);
 }
@@ -1852,6 +1862,7 @@ struct Store {
   int ch;
   Point cursor_pos;
   int button;
+  std::string drag_drop_filename;
 };
 
 class RecordKeyPresses : public MainLoopItem
@@ -1874,6 +1885,7 @@ public:
     s.ch = e.ch;
     s.cursor_pos = e.cursor_pos;
     s.button = e.button;
+    s.drag_drop_filename = e.drag_drop_filename;
     vec.push_back(s);
     item->handle_event(e);    
   }
@@ -1928,6 +1940,7 @@ public:
 	ee.ch = s.ch;
 	ee.cursor_pos = s.cursor_pos;
 	ee.button = s.button;
+	ee.drag_drop_filename = s.drag_drop_filename;
 	item->handle_event(ee);
 	//std::cout << "Event: " << ee.ch << " " << ee.type << std::endl;
       }

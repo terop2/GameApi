@@ -128,6 +128,7 @@ enum
     Low_GL_SHORT,
     Low_GL_COMPILE,
     Low_GL_CULL_FACE
+   
   };
 enum {
     Low_GL_COLOR_BUFFER_BIT=1, // glClear
@@ -447,6 +448,7 @@ enum
 #define Low_SDL_FINGERUP 0x701
 #define Low_SDL_FINGERMOTION 0x702
 #define Low_SDL_MOUSEWHEEL 0x403
+#define Low_SDL_DROPFILE 0x1000
 
 #define Low_SDL_BUTTON(x) (1 << ((x)-1))
 #define Low_KMOD_CTRL (0x40|0x80)
@@ -463,6 +465,10 @@ struct Low_SDL_MouseWheelEvent
 {
   int y;
 };
+struct Low_SDL_DropEvent
+{
+  const char *file;
+};
 struct Low_SDL_TouchFingerEvent
 {
   float x = 0.0f;
@@ -474,6 +480,7 @@ struct Low_SDL_Event
   Low_SDL_Event_Key key;
   Low_SDL_MouseWheelEvent wheel;
   Low_SDL_TouchFingerEvent tfinger;
+  Low_SDL_DropEvent drop;
 };
 
 struct Low_SDL_Surface { void *ptr; int w; int h; void* pixels; int pitch; };
