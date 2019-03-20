@@ -915,8 +915,10 @@ class SDLApi : public SDLLowApi
     event->wheel.y = e.wheel.y;
     event->tfinger.x = e.tfinger.x;
     event->tfinger.y = e.tfinger.y;
+#ifndef EMSCRIPTEN
     if (e.type==SDL_DROPFILE)
       event->drop.file = e.drop.file;
+#endif
     return val;
   }
   virtual unsigned int SDL_GetTicks() { return ::SDL_GetTicks(); }
