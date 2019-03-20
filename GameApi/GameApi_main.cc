@@ -702,8 +702,8 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
       float yy = ptr->y * get_screen_height();
       if (!std::isnormal(xx)) xx=0.0f;
       if (!std::isnormal(yy)) yy=0.0f;
-      x = int(xx);
-      y = int(yy); 
+      x = get_screen_width()-int(xx);
+      y = get_screen_height()-int(yy); 
     }
 #endif
 
