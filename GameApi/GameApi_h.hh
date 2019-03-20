@@ -15,8 +15,10 @@
 #endif
 #define BATCHING 1
 
+#ifndef EMSCRIPTEN
 #define LOOKING_GLASS 1
 //#undef LOOKING_GLASS
+#endif
 
 #ifndef EMSCRIPTEN
 #define VAO 1
