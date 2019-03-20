@@ -15958,7 +15958,9 @@ public:
   }
   virtual int shader_id() { return -1; }
   virtual void destroy() {
+#ifdef LOOKING_GLASS
     hp_release();
+#endif
   }
 
 private:
