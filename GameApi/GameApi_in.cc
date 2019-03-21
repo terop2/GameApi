@@ -42,6 +42,13 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   //std::cout << "Quake: " << cursor.x << "," << cursor.y << "," << cursor.z << "::" << e.type << " " << e.button << std::endl;
   int screen_x = ev.mainloop_api.get_screen_width();
   int screen_y = ev.mainloop_api.get_screen_height();
+
+  if (screen_x<700) {
+    // android events are upsidedown.
+    cursor.x = screen_x - cursor.x;
+    cursor.y = screen_y - cursor.y;
+  }
+
   int scr_x_0 = 0.0;
   int scr_x_1 = screen_x/3.0;
   int scr_x_2 = screen_x*2.0/3.0;
@@ -62,7 +69,7 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   //data.mv_mode = mv_mode;
   
   if ((e.ch=='w'||e.ch==26||e.ch==82) && e.type==0x300) { data.forward = true; }
-  if ((e.type==1025||e.type==1792) && e.button==0 && cursor.x>scr_x_1 && cursor.x<scr_x_2 && cursor.y>scr_y_0 && cursor.y<scr_y_1) data.forward=true;
+    if ((e.type==1025||e.type==1792) && e.button==0 && cursor.x>scr_x_1 && cursor.x<scr_x_2 && cursor.y>scr_y_0 && cursor.y<scr_y_1) data.forward=true;
   if ((e.type==1026||e.type==1793) && e.button==-1) data.forward=false;
   if ((e.ch=='w'||e.ch==26||e.ch==82) && e.type==0x301) { data.forward = false; }
   if ((e.ch=='s'||e.ch==22||e.ch==81) && e.type==0x300) { data.backward = true; }
