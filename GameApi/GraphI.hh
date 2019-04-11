@@ -590,6 +590,17 @@ public:
 
 class SourceBitmap;
 
+struct Dot
+{
+  int x,y;
+  unsigned int color;
+};
+
+struct SourceDots
+{
+  std::vector<Dot> dots;
+};
+
 class FrameBuffer
 {
 public:
@@ -602,7 +613,10 @@ public:
   virtual int Depth() const =0;
   virtual FrameBufferFormat format() const=0;
   virtual float *DepthBuffer() const=0;
+  virtual void draw_rect(int pos_x, int pos_y, int sp_width, int sp_height, unsigned int color)=0;
+
   virtual void draw_sprite(SourceBitmap *bm, int x, int y) =0;
+  //virtual void draw_dots(SourceDots *dots, int x, int y)=0;
 };
 
 
@@ -1413,4 +1427,88 @@ public:
   virtual float BoneAngle(int pt) const=0;
 };
 
+class FrmWidget
+{
+public:
+  FrmWidget() : x(0), y(0), w(0), h(0) { }
+  virtual void Prepare()=0;
+  virtual void handle_event(FrameLoopEvent &e)=0;
+  virtual void frame(DrawLoopEnv &e)=0;
+public:
+  virtual void set_pos(int x_, int y_) { x=x_; y=y_; }
+  virtual void set_size(int w_, int h_) { w=w_; h=h_; }
+  virtual void set_label(std::string s) { /* override this in derived class */ }
+  int pos_x() const { return x; }
+  int pos_y() const { return y; }
+  int size_w() const { return w; }
+  int size_h() const { return h; }
+public:
+  int x,y;
+  int w,h;
+};
+struct PosDelta {
+  std::vector<int> l,t,W,H,r,b;
+};
+struct PosOption {
+  int l,t,W,H,r,b;
+};
+const int Pos_E = -16384;
+class FrmContainerWidget : public FrmWidget
+{
+public:
+  FrmContainerWidget(GameApi::Env &e, std::vector<FrmWidget*> wid, std::string url, std::string homepage) : e(e), wid(wid), url(url), homepage(homepage) { }
+  virtual void Prepare();
+  virtual void set_size(int w_, int h_); 
+    void print_vec(std::vector<int> v);
+    virtual void set_pos(int x_, int y_);
+
+  virtual void handle_event(FrameLoopEvent &e)
+  {
+    int s = std::min(std::min(wid.size(),pos.size()),option_num.size());
+    for(int i=0;i<s;i++) {
+      wid[i]->handle_event(e);
+    }
+
+  }
+  virtual void frame(DrawLoopEnv &e)
+  {
+    int s = std::min(std::min(wid.size(),pos.size()),option_num.size());
+    for(int i=0;i<s;i++) {
+      wid[i]->frame(e);
+    }
+  }
+  void set_option(int i, int l, int t, int W, int H, int r, int b) {
+    PosOption o;
+    o.l = l;
+    o.t = t;
+    o.W = W;
+    o.H = H;
+    o.r = r;
+    o.b = b;
+    option_num[i] = o;
+  }
+private:
+  GameApi::Env &e;
+  std::vector<FrmWidget*> wid;
+  std::vector<PosDelta> pos;
+  std::vector<PosOption> option_num;
+  std::string url;
+  std::string homepage;
+};
+
+class FrmRootWidget : public FrameBufferLoop
+{
+public:
+  FrmRootWidget(FrmWidget *w, int scrx, int scry) : w(w), scrx(scrx), scry(scry) { }
+  virtual void Prepare() {
+    w->Prepare();
+    w->set_pos(0,0);
+    w->set_size(scrx,scry);
+  }
+  virtual void handle_event(FrameLoopEvent &e) { w->handle_event(e); }
+  virtual void frame(DrawLoopEnv &e) { w->frame(e); }
+private:
+  FrmWidget *w;
+  int scrx, scry;
+};
 #endif

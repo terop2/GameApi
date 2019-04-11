@@ -649,6 +649,7 @@ struct EnvImpl
   std::vector<FrameBufferLoop*> frame_loop;
   std::vector<FrameBuffer*> frame_buffer;
   std::vector<HeavyOperation*> heavys;
+  std::vector<FrmWidget*> frm_widgets;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -958,6 +959,7 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::W add_frm_widget(GameApi::Env &e, FrmWidget *w);
 GameApi::H add_heavy(GameApi::Env &e, HeavyOperation *h);
 GameApi::FBU add_framebuffer(GameApi::Env &e, FrameBuffer *buf);
 GameApi::FML add_framemainloop(GameApi::Env &e, FrameBufferLoop *loop);
@@ -1093,6 +1095,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+FrmWidget *find_frm_widget(GameApi::Env &e, GameApi::W w);
 HeavyOperation *find_heavy(GameApi::Env &e, GameApi::H h);
 FrameBuffer *find_framebuffer(GameApi::Env &e, GameApi::FBU fb);
 FrameBufferLoop *find_framemainloop(GameApi::Env &e, GameApi::FML fb);

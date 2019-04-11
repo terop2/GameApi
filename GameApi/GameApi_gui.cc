@@ -6509,6 +6509,31 @@ std::vector<GameApiItem*> moveapi_functions()
 			     "0.0", "1.0", "0.0",
 			     "6.28318" },
 			 "MN", "move_api", "rotate"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::translate_wave,
+			 "wave_translate",
+			 { "next", "start_time", "end_time", "wave", "dx", "dy", "dz" },
+			 { "MN", "float", "float", "WV", "float", "float", "float" },
+			 { "", "0.0", "100.0", "", "0.0", "0.0", "0.0" },
+			 "MN", "move_api", "translate_wave"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::scale_wave,
+			 "wave_scale",
+			 { "next", "start_time", "end_time", "wave", "sx", "sy", "sz" },
+			 { "MN", "float", "float", "WV", "float", "float", "float" },
+			 { "", "0.0", "100.0", "", "1.0", "1.0", "1.0" },
+			 "MN", "move_api", "scale_wave"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::rotate_wave,
+			 "wave_rotate",
+			 { "next", "start_time", "end_time", "wave", "p_x", "p_y", "p_z",
+			     "v_x", "v_y", "v_z", "angle" },
+			 { "MN", "float", "float", "WV",
+			     "float", "float","float",
+			     "float", "float","float",
+			     "float" },
+			 { "", "0.0", "100.0", "",
+			     "0.0", "0.0", "0.0",
+			     "0.0", "1.0", "0.0",
+			     "6.28318" },
+			 "MN", "move_api", "rotate_wave"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::compress,
 			 "anim_compress",
 			 { "next", "start_time", "end_time" },
@@ -8526,6 +8551,31 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "FBU", "int", "int", "int" },
 			 { "ev", "", "0", "128", "144" },
 			 "RUN", "low_frame_api", "low_framebuffer_run"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::w_root,
+			 "w_root",
+			 { "ev", "wd" },
+			 { "EveryApi&", "W" },
+			 { "ev", "" },
+			 "FML", "low_frame_api", "w_root"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::w_layout,
+			 "w_layout",
+			 { "vec", "url" },
+			 { "[W]", "std::string" },
+			 { "", "http://tpgames.org/testlayout.lay" },
+			 "W", "low_frame_api", "w_layout"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::w_rect,
+			 "w_rect",
+			 { "color" },
+			 { "unsigned int" },
+			 { "ffffffff" },
+			 "W", "low_frame_api", "w_rect"));
+  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::w_bitmap,
+			 "w_bitmap",
+			 { "bm" },
+			 { "BM" },
+			 { "" },
+			 "W", "low_frame_api", "w_bitmap"));
   return vec;
 }
 #endif // SECTION_1
@@ -9166,6 +9216,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "EveryApi&", "P", "int" },
 			 { "ev", "", "300" },
 			 "PTS", "points_api", "random_mesh_quad_instancing"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::random_vol_object,
+			 "random_volume",
+			 { "o", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "numpoints" },
+			 { "O", "float", "float", "float", "float", "float", "float", "int" },
+			 { "", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0", "10000" },
+			 "PTS", "volume_api", "random_vol_object"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::pts_grid,
 			 "pts_grid",
 			 { "bm", "start_x", "end_x", "start_y", "end_y", "z" },
@@ -9548,6 +9604,24 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "FB" },
 			 { "" },
 			 "BB", "bool_bitmap_api", "black_white_dithering"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::create_ibm,
+			 "bb_ibm",
+			 { "vec" },
+			 { "[BB]" },
+			 { "" },
+			 "IBM", "bitmap_api", "create_ibm"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::choose_bool,
+			 "ibm_bb",
+			 { "bm", "val" },
+			 { "IBM", "int" },
+			 { "", "1" },
+			 "BB", "bitmap_api", "choose_bool"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::choose_ints,
+			 "ibm_bbs",
+			 { "bm", "count" },
+			 { "IBM", "int" },
+			 { "", "2" },
+			 "[BB]", "bitmap_api", "choose_ints"));
   return vec;
 }
 #endif // SECTION_1
@@ -9694,6 +9768,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BM", "BM", "float" },
 			 { "", "", "0.0" },
 			 "BM", "bitmap_api", "interpolate_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::color_bm,
+			 "bm_color",
+			 { "bm", "color" },
+			 { "BM", "unsigned int" },
+			 { "", "fff8844" },
+			 "BM", "bitmap_api", "color_bm"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::plus_bitmap,
 			 "bm_plus",

@@ -3995,3 +3995,126 @@ GameApi::BM GameApi::BitmapApi::bump_map(FB fb, float h)
   return bm;
 }
 
+class CreateIntBitmap : public Bitmap<int>
+{
+public:
+  CreateIntBitmap(std::vector<Bitmap<bool>*> vec) : vec(vec) { }
+  virtual int SizeX() const
+  {
+    int s = vec.size();
+    int m = 99999999;
+    for(int i=0;i<s;i++) if (vec[i]->SizeX()<m) m = vec[i]->SizeX();
+    return m;
+  }
+  virtual int SizeY() const
+  {
+    int s = vec.size();
+    int m = 99999999;
+    for(int i=0;i<s;i++) if (vec[i]->SizeY()<m) m = vec[i]->SizeY();
+    return m;
+  }
+  virtual int Map(int x, int y) const
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	if (vec[i]->Map(x,y)) return i;
+      }
+    return -1;
+  }
+  virtual void Prepare()
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->Prepare();
+      }
+  }
+private:
+  std::vector<Bitmap<bool>*> vec;
+};
+
+GameApi::IBM GameApi::BitmapApi::create_ibm(std::vector<BB> vec)
+{
+  int s = vec.size();
+  std::vector<Bitmap<bool>*> vec2;
+  for(int i=0;i<s;i++) {
+    vec2.push_back(find_bool_bitmap(e,vec[i])->bitmap );
+  }
+  return add_int_bitmap(e, new CreateIntBitmap(vec2));
+}
+
+class ChooseBM : public Bitmap<bool>
+{
+public:
+  ChooseBM(Bitmap<int> *bm, int val) : bm(bm), val(val) { }
+  virtual int SizeX() const { return bm->SizeX(); }
+  virtual int SizeY() const { return bm->SizeY(); }
+  virtual bool Map(int x, int y) const
+  {
+    return bm->Map(x,y)==val;
+  }
+  virtual void Prepare()
+  {
+    bm->Prepare();
+  }
+private:
+  Bitmap<int> *bm;
+  int val;
+};
+
+GameApi::BB GameApi::BitmapApi::choose_bool(IBM bm, int val)
+{
+  Bitmap<int> *bm2 = find_int_bitmap(e, bm);
+  return add_bool_bitmap(e, new ChooseBM(bm2,val));
+}
+
+GameApi::ARR GameApi::BitmapApi::choose_ints(IBM bm, int count)
+{
+  std::vector<int> bms;
+  for(int i=0;i<count;i++)
+    {
+      BB bb = choose_bool(bm, i);
+      bms.push_back(bb.id);
+    }
+  ArrayType *val = new ArrayType;
+  val->type = E_BM;
+  val->vec = bms;
+  return add_array(e, val);
+}
+
+
+class ColorBM : public Bitmap<Color>
+{
+public:
+  ColorBM(Bitmap<Color> &bm, unsigned int color) : bm(bm), color(color) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual Color Map(int x, int y) const
+  {
+    Color c = bm.Map(x,y);
+    unsigned int cc = c.Pixel();
+    unsigned int cc2 = Color::RangeChange(cc,
+					  0xffffffff, 0xff000000,
+					  color|0xff000000, 0xff000000
+					  );
+    return Color(cc2);
+  }
+  virtual void Prepare() { bm.Prepare(); }
+
+private:
+  Bitmap<Color> &bm;
+  unsigned int color;
+};
+
+GameApi::BM GameApi::BitmapApi::color_bm(BM bm, unsigned int color)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+
+  ::Bitmap<Color> *res = new ColorBM(*b2, color);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = res;
+  BM bm2 = add_bitmap(e, handle2);
+  return bm2;
+}

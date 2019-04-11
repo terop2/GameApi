@@ -1977,3 +1977,49 @@ GameApi::O GameApi::VolumeApi::instancing_volume(O o, PTS p)
   PointsApiPoints *points = find_pointsapi_points(e,p);
   return add_volume(e, new InstancingVolumeObject(obj,points));
 }
+
+class RandomVolObject : public PointsApiPoints
+{
+public:
+  RandomVolObject(VolumeObject *obj, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int numpoints) : obj(obj), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z), numpoints(numpoints) { }
+  virtual void Prepare() { 
+    Random r;
+    for(int i=0;i<numpoints;i++)
+      {
+	float xx = r.next_float();
+	float yy = r.next_float();
+	float zz = r.next_float();
+	xx*=(end_x-start_x);
+	yy*=(end_y-start_y);
+	zz*=(end_z-start_z);
+	xx+=start_x;
+	yy+=start_y;
+	zz+=start_z;
+	Point p(xx,yy,zz);
+	bool b = obj->Inside(p);
+	if (b) points.push_back(p);
+	else i--;
+      }
+  }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) { return false; }
+  virtual int NumPoints() const { return points.size(); }
+  virtual Point Pos(int i) const { if (i>=0&&i<points.size()) return points[i];
+    Point p(0.0,0.0,0.0);
+    return p;
+  }
+  virtual unsigned int Color(int i) const { return 0xffffffff; }
+private:
+  VolumeObject *obj;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+  int numpoints;
+  std::vector<Point> points;
+};
+
+GameApi::PTS GameApi::VolumeApi::random_vol_object(O o, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int numpoints)
+{
+  VolumeObject *obj = find_volume(e, o);
+  return add_points_api_points(e, new RandomVolObject(obj,start_x,end_x, start_y, end_y, start_z, end_z, numpoints));
+}
