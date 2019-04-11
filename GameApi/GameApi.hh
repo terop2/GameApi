@@ -566,6 +566,7 @@ public:
 	IMPORT BM transform(BM orig, std::function<unsigned int(int, int, unsigned int)> f);
 	IMPORT BM newintbitmap(char *array, int sx, int sy, std::function<int(char)> f);
         IMPORT IBM intbitmap_loader(std::string url);
+  IMPORT BM color_bm(BM bm, unsigned int color);
   IMPORT BM intbitmap_bm(IBM ibm);
   IMPORT BM chai_bm(std::string url, int sx, int sy);
   IMPORT BM bump_map(FB fb, float h);
@@ -655,6 +656,10 @@ public:
   IMPORT TXID dyn_fetch_bitmap(EveryApi& ev, std::string url, int time);
   IMPORT std::vector<TXID> dyn_fetch_mtl(EveryApi &ev, std::string mtl_url, ML ml2);
   IMPORT ML txidarray_from_heavy(EveryApi &ev, H heavy, std::vector<TXID> *vec, ML ml, int start_range, int end_range);
+
+  IBM create_ibm(std::vector<BB> vec);
+  BB choose_bool(IBM bm, int val);
+  ARR choose_ints(IBM bm, int count);
 private:
   BitmapApi(const BitmapApi&);
   void operator=(const BitmapApi&);
@@ -1053,6 +1058,7 @@ public:	IMPORT VolumeApi(Env &e);
 	IMPORT ~VolumeApi();
 	IMPORT O boolfunction(std::function<bool(float x, float y, float z)> f);
 	IMPORT O subvolume(std::function<float(float x, float y, float z)> f, float start_range, float end_range);
+  IMPORT PTS random_vol_object(O o, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int numpoints);
   IMPORT O from_polygon(P p, float x, float y, float z);  // point outside of shape.
         IMPORT O from_bool_bitmap(BB b, float dist);
 	IMPORT O link_areas(O o, PT p1, PT p2, float d);
@@ -1441,10 +1447,15 @@ public:
   IMPORT MN pose(MN next, bool pose_in_screen);
   IMPORT MN debug_translate(MN next);
   IMPORT MN translate(MN next, float start_time, float end_time,float dx, float dy, float dz);
+  IMPORT MN translate_wave(MN next, float start_time, float end_time, WV wave, float dx, float dy, float dz);
   IMPORT MN scale_progress(MN next, bool is_x, bool is_y, bool is_z);
   IMPORT MN mn_fetcher(PF pf);
   IMPORT MN scale(MN next, float start_time, float end_time,float sx, float sy, float sz);
+  IMPORT MN scale_wave(MN next, float start_time, float end_time,WV wave,float sx, float sy, float sz);
   IMPORT MN rotate(MN next, float start_time, float end_time,float p_x, float p_y, float p_z,float v_x, float v_y, float v_z, float angle);
+  IMPORT MN rotate_wave(MN next, float start_time, float end_time,WV wave,float p_x, float p_y, float p_z,float v_x, float v_y, float v_z, float angle);
+
+
   IMPORT MN compress(MN next, float start_time, float end_time);
   IMPORT MN change_time(MN next, float d_time);
   IMPORT MN event_activate(MN next, MN event, float event_time, float duration);
@@ -3374,6 +3385,11 @@ public:
   FML low_activate_snapshot(EveryApi &ev, FML ml, int key, MN move, float duration, FML next);
   FML qml_print(std::string url);
   FML qml_create_node(std::string url);
+  FML w_root(GameApi::EveryApi &ev, GameApi::W wd);
+  W w_layout(std::vector<W> vec, std::string url);
+  W w_rect(unsigned int color);
+  W w_bitmap(BM bm);
+  W w_text(EveryApi &ev, Ft font, std::string str, int x_gap, float baseline);
 private:
   LowFrameBufferApi(const LowFrameBufferApi &);
   void operator=(const LowFrameBufferApi&);

@@ -1,6 +1,16 @@
 
 #include "GameApi_h.hh"
 
+GameApi::W add_frm_widget(GameApi::Env &e, FrmWidget *w)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->frm_widgets.push_back(w);
+  GameApi::W im;
+  im.id = env->frm_widgets.size()-1;
+  return im;
+
+}
+
 GameApi::PN add_polynomial(GameApi::Env &e, std::vector<float> *pn)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -943,6 +953,14 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   ee.id = spos->CurrentPosNum();
   return ee;
 }
+
+FrmWidget *find_frm_widget(GameApi::Env &e, GameApi::W w)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->frm_widgets[w.id];
+
+}
+
 HeavyOperation *find_heavy(GameApi::Env &e, GameApi::H h)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);

@@ -955,6 +955,46 @@ private:
   float dx,dy,dz;
 };
 
+class TranslateWaveMovement : public Movement
+{
+public:
+  TranslateWaveMovement(Movement *next, float start_time, float end_time,
+			Waveform *wave,
+			float dx, float dy, float dz)
+    : next(next), start_time(start_time), end_time(end_time),wave(wave),
+      dx(dx), dy(dy), dz(dz) { }
+  virtual void event(MainLoopEvent &e) { if (next) next->event(e); }
+  virtual void frame(MainLoopEnv &e) { if (next) next->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { if (next) next->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { if (next) next->draw_event(e); }
+
+  void set_matrix(Matrix m) { }
+  void set_pos(float ddx, float ddy, float ddz) { dx=ddx; dy=ddy; dz=ddz; }
+  Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    if (time<start_time) { 
+      float l = 0.0f;
+      float value = wave->Index(l);
+      Matrix m=Matrix::Identity(); return Matrix::Translate(dx*value,dy*value,dz*value)*(next?next->get_whole_matrix(time, delta_time):m); }
+    if (time>=end_time) {
+      float l = wave->Length();
+      float value = wave->Index(l);
+      Matrix m=Matrix::Identity(); return Matrix::Translate(dx*value,dy*value,dz*value)*(next?next->get_whole_matrix(time,delta_time):m); }
+    float d = time - start_time;
+    //if (fabs(end_time-start_time)>0.01)
+      d/=(end_time-start_time);
+      float l = wave->Length()*d;
+      float value = wave->Index(l);
+    return Matrix::Translate(dx*value,dy*value,dz*value)*(next?next->get_whole_matrix(time, delta_time):Matrix::Identity());
+  }
+private:
+  Movement *next;
+  float start_time, end_time;
+  Waveform *wave;
+  float dx,dy,dz;
+};
+
+
 
 class DebugTranslateMovement : public Movement
 {
@@ -982,6 +1022,18 @@ EXPORT GameApi::MN GameApi::MovementNode::debug_translate(MN next)
 {
   Movement *nxt = find_move(e, next);
   return add_move(e, new DebugTranslateMovement(nxt));
+}
+
+EXPORT GameApi::MN GameApi::MovementNode::translate_wave(MN next,
+						    float start_time, float end_time,
+						    WV wave,
+						    float dx, float dy, float dz)
+{
+  Movement *nxt = find_move(e, next);
+  Waveform *m_wave = find_waveform(e, wave);
+  return add_move(e, new TranslateWaveMovement(nxt,start_time, end_time, m_wave,
+					   dx,dy,dz));
+
 }
 
 EXPORT GameApi::MN GameApi::MovementNode::translate(MN next, 
@@ -1087,6 +1139,66 @@ private:
   float sx,sy,sz;
 };
 
+class ScaleWaveMovement : public Movement
+{
+public:
+  ScaleWaveMovement(Movement *next, float start_time, float end_time, Waveform *wave,
+		    float sx, float sy, float sz)
+    : next(next), start_time(start_time), end_time(end_time), wave(wave),
+      sx(sx), sy(sy), sz(sz) { }
+  virtual void event(MainLoopEvent &e) { next->event(e); }
+  virtual void frame(MainLoopEnv &e) { next->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { next->draw_event(e); }
+  void set_matrix(Matrix m) { }
+  void set_scale(float ssx, float ssy, float ssz) { sx=ssx; sy=ssy; sz=ssz; }
+  Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    if (time<start_time) { 
+      float l = 0.0f;
+      float value = wave->Index(l);
+      float ssx = 1.0*(1.0-value) + sx*value;
+      float ssy = 1.0*(1.0-value) + sy*value;
+      float ssz = 1.0*(1.0-value) + sz*value;
+
+      return Matrix::Scale(ssx,ssy,ssz)*next->get_whole_matrix(time, delta_time); }
+    if (time>=end_time) { 
+      float l = wave->Length();
+      float value = wave->Index(l);
+      float ssx = 1.0*(1.0-value) + sx*value;
+      float ssy = 1.0*(1.0-value) + sy*value;
+      float ssz = 1.0*(1.0-value) + sz*value;
+
+      return Matrix::Scale(ssx,ssy,ssz)*next->get_whole_matrix(time, delta_time); }
+    float d = time - start_time;
+    d/=(end_time-start_time); // [0..1]
+    float l = d*wave->Length();
+    float value = wave->Index(l);
+    float ssx = (1.0-value)*1.0 + value*sx;
+    float ssy = (1.0-value)*1.0 + value*sy;
+    float ssz = (1.0-value)*1.0 + value*sz;
+    return Matrix::Scale(ssx,ssy,ssz)*next->get_whole_matrix(time, delta_time);
+  }
+private:
+  Movement *next;
+  float start_time, end_time;
+  Waveform *wave;
+  float sx,sy,sz;
+};
+
+
+EXPORT GameApi::MN GameApi::MovementNode::scale_wave(MN next,
+					 float start_time, float end_time,
+						     WV wave,
+					 float sx, float sy, float sz)
+{
+  Movement *nxt = find_move(e, next);
+  Waveform *m_wave = find_waveform(e, wave);
+  return add_move(e, new ScaleWaveMovement(nxt, start_time, end_time, m_wave,
+				       sx,sy,sz));
+}
+
+
 EXPORT GameApi::MN GameApi::MovementNode::scale(MN next,
 					 float start_time, float end_time,
 					 float sx, float sy, float sz)
@@ -1126,6 +1238,57 @@ private:
   float v_x,v_y,v_z;
   float angle;
 };
+
+class RotateWaveMovement : public Movement
+{
+public:
+public:
+  RotateWaveMovement(Movement *next, float start_time, float end_time, Waveform *wave,
+		 float p_x, float p_y, float p_z,
+		float v_x, float v_y, float v_z, float angle)
+    : next(next), start_time(start_time), end_time(end_time), wave(wave),
+      p_x(p_x), p_y(p_y), p_z(p_z),
+      v_x(v_x), v_y(v_y), v_z(v_z), angle(angle) { }
+  virtual void event(MainLoopEvent &e) { next->event(e); }
+  virtual void frame(MainLoopEnv &e) { next->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { next->draw_event(e); }
+
+  void set_matrix(Matrix m) { }
+  Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    if (time<start_time) { 
+      float l = 0.0f;
+      float value = wave->Index(l);
+      return Matrix::RotateAroundAxisPoint(Point(p_x,p_y,p_z),Vector(v_x,v_y,v_z), angle*value)*next->get_whole_matrix(time, delta_time); }
+    if (time>=end_time) { 
+      float l = wave->Length();
+      float value = wave->Index(l);
+      return Matrix::RotateAroundAxisPoint(Point(p_x,p_y,p_z),Vector(v_x,v_y,v_z), angle*value)*next->get_whole_matrix(time, delta_time); }
+    float d = time - start_time;
+    d/=(end_time-start_time); // [0..1]
+    float l = wave->Length()*d;
+    float value = wave->Index(l);
+    return Matrix::RotateAroundAxisPoint(Point(p_x,p_y,p_z),Vector(v_x,v_y,v_z), value*angle)*next->get_whole_matrix(time, delta_time);
+  }
+private:
+  Movement *next;
+  float start_time, end_time;
+  Waveform *wave;
+  float p_x,p_y,p_z;
+  float v_x,v_y,v_z;
+  float angle;
+};
+
+EXPORT GameApi::MN GameApi::MovementNode::rotate_wave(MN next, float start_time, float end_time, WV wave, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, float angle)
+{
+  Waveform *m_wave = find_waveform(e, wave);
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new RotateWaveMovement(nxt, start_time, end_time, m_wave,
+					p_x,p_y,p_z,v_x, v_y, v_z, angle));
+}
+
+
 EXPORT GameApi::MN GameApi::MovementNode::rotate(MN next, float start_time, float end_time, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, float angle)
 {
   Movement *nxt = find_move(e, next);
@@ -6384,7 +6547,7 @@ class SampleCurve : public PointsApiPoints
 {
 public:
   SampleCurve(Curve<Point> *c, int num_points) : c(c), num_points(num_points) { }
-  int NumPoints() const { return num_points; }
+  int NumPoints() const { return num_points+1; }
   Point Pos(int i) const
   {
     float val = float(i);
@@ -14254,6 +14417,38 @@ public:
   virtual FrameBufferFormat format() const { return (FrameBufferFormat)m_format; }
   virtual float *DepthBuffer() const { return depth_buffer; }
 
+  virtual void draw_rect(int pos_x, int pos_y, int sp_width, int sp_height, unsigned int color)
+  {
+    switch(m_format) {
+    case FrameBufferFormat::F_RGBA8888:
+      	{
+	int start_x = 0;
+	int start_y = 0;
+	if (pos_x<0) start_x=-pos_x;
+	if (pos_y<0) start_y=-pos_y;
+	int w = std::min(sp_width, width-pos_x);
+	int h = std::min(sp_height, height-pos_y);
+	unsigned int *bufp = &((unsigned int*)buffer)[pos_x+start_x+(start_y+pos_y)*width];
+	//unsigned int *cp = &((unsigned int*)buf)[start_x+start_y*sp_ydelta];
+	int delta_w = w-start_x;
+	for(int y=start_y;y<h;y++) {
+	  for(int x=start_x;x<w;x++)
+	    {
+	      unsigned int c = color;
+	      
+	      //if (c>0x80000000) {
+		*bufp = c;
+		//}
+	      //cp++;
+	      bufp++;
+	    }
+	  //cp+=sp_ydelta-delta_w;
+	  bufp+=width-delta_w;
+	}
+	}
+
+    }
+  }
   virtual void draw_sprite(SourceBitmap *bm, int pos_x, int pos_y)
   {
     int sp_width=bm->m_width;
@@ -16397,5 +16592,268 @@ EXPORT GameApi::ML GameApi::MainLoopApi::drag_drop_area(EveryApi &ev, ML mainloo
   return add_main_loop(e, new DragDropArea(e,ev,ml,fptr));
 }
 
+
+
+std::vector<PosDelta> parse_layout(std::string s)
+{
+  std::vector<PosDelta> pos;
+  std::stringstream ss(s);
+  std::string line;
+  while(std::getline(ss,line)) {
+    //std::cout << "parse_layout: line: " << line << std::endl;
+    std::vector<std::string> v = parse_sep(line, ',');
+    int s = v.size();
+    PosDelta d;
+    int numopts = 0;
+    for(int i=0;i<s;i++) {
+      std::string sk = cut_spaces(v[i]);
+      //std::cout << "parse_layout: elem: " << sk << std::endl;
+
+      std::vector<std::string> opt = parse_sep(sk, '/');
+      int s1 = opt.size();
+      std::vector<int> opt_vec;
+      for(int o=0;o<s1;o++) {
+	std::string sk = cut_spaces(opt[o]);
+	//std::cout << "parse_layout: opt: " << sk << std::endl;
+	int val = Pos_E;
+	std::stringstream ss2(sk);
+	if (ss2>>val)
+	  opt_vec.push_back(val);
+	else
+	  opt_vec.push_back(Pos_E);
+      }
+      if (i==0) d.l = opt_vec;
+      if (i==1) d.t = opt_vec;
+      if (i==2) d.W = opt_vec;
+      if (i==3) d.H = opt_vec;
+      if (i==4) d.r = opt_vec;
+      if (i==5) d.b = opt_vec;
+
+    }
+    pos.push_back(d);
+  }
+  return pos;
+}
+
+void FrmContainerWidget::Prepare()
+{
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
+    std::string code(ptr->begin(), ptr->end());
+    pos = parse_layout(code);
+    
+  int s = wid.size();
+  for(int i=0;i<s;i++) {
+    wid[i]->Prepare();
+  }
+  option_num.resize(wid.size());
+}
+
+GameApi::FML GameApi::LowFrameBufferApi::w_root(GameApi::EveryApi &ev, GameApi::W wd)
+{
+  int scrx = ev.mainloop_api.get_screen_width();
+  int scry = ev.mainloop_api.get_screen_height();
+  FrmWidget *w = find_frm_widget(e, wd);
+  return add_framemainloop(e, new FrmRootWidget(w, scrx, scry));
+}
+GameApi::W GameApi::LowFrameBufferApi::w_layout(std::vector<GameApi::W> vec, std::string url)
+{
+  std::vector<FrmWidget*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_frm_widget(e, vec[i]));
+    }
+  return add_frm_widget(e, new FrmContainerWidget(e,vec2, url, gameapi_homepageurl));
+}
+
+void FrmContainerWidget::set_pos(int x_, int y_) { 
+    FrmWidget::set_pos(x_,y_);
+    int s = std::min(wid.size(),pos.size());
+    for(int i=0;i<s;i++) {
+      int x = x_;
+      int y = y_;
+      PosDelta &p = pos[i];
+      PosOption &o = option_num[i];
+      if (p.l[o.l]!=Pos_E) x+=p.l[o.l];
+      else x+=w-p.r[o.r]-p.W[o.W];
+      if (p.t[o.t]!=Pos_E) y+=p.t[o.t];
+      else y+=h-p.b[o.b]-p.H[o.H];
+      wid[i]->set_pos(x,y);
+    }
+  }
+void FrmContainerWidget::print_vec(std::vector<int> v) {
+    int s = v.size();
+    for(int i=0;i<s;i++) { std::cout << v[i] << "/"; }
+  }
+void FrmContainerWidget::set_size(int w_, int h_) { 
+    FrmWidget::set_size(w_,h_);
+    set_pos(x,y);
+    int s = std::min(wid.size(),pos.size());
+    for(int i=0;i<s;i++) {
+      PosDelta &p = pos[i];
+      PosOption &o = option_num[i];
+
+#if 0
+      std::cout << "Layout: ";
+      print_vec(p.l);
+      std::cout << " ";
+      print_vec(p.t);
+      std::cout << " ";
+      print_vec(p.W);
+      std::cout << " ";
+      print_vec(p.H);
+      std::cout << " ";
+      print_vec(p.r);
+      std::cout << " ";
+      print_vec(p.b);
+      std::cout << std::endl;
+      std::cout << "Options:" << o.l << " " << o.t << " " << o.W << " " << o.H << " " << o.r << " " << o.b << std::endl;
+#endif
+
+      //int x = x_;
+      //int y = y_;
+      //if (p.l!=Pos_E) x+=p.l;
+      //else x+=w_-p.r-p.W;
+      //if (p.t!=Pos_E) y+=p.t;
+      //else y+=h_-p.b-p.H;
+      //wid[i]->set_pos(x,y);
+      int w = w_;
+      int h = h_;
+      if (p.l[o.l]!=Pos_E) w-=p.l[o.l];
+      else w-=w_-p.W[o.W]-p.r[o.r];
+      if (p.r[o.r]!=Pos_E) w-=p.r[o.r];
+      else w-=w_-p.l[o.l]-p.W[o.W];
+      if (p.t[o.t]!=Pos_E) h-=p.t[o.t];
+      else h-=h_-p.H[o.H]-p.b[o.b];
+      if (p.b[o.b]!=Pos_E) h-=p.b[o.b];
+      else h-=h_-p.H[o.H]-p.t[o.t];
+      wid[i]->set_size(w, h);
+    }
+  }
+
+
+class FrmRect : public FrmWidget
+{
+public:
+  FrmRect(unsigned int color) : color(color) { }
+  virtual void Prepare() { }
+  virtual void handle_event(FrameLoopEvent &e) { }
+  virtual void frame(DrawLoopEnv &e)
+  {
+#if 0
+    std::cout << x << " " << y << " " << w << " " << h << std::endl;
+#endif
+    e.drawbuffer->draw_rect(x,y,w,h,color);
+  }
+
+private:
+  unsigned int color;
+};
+
+GameApi::W GameApi::LowFrameBufferApi::w_rect(unsigned int color)
+{
+  return add_frm_widget(e, new FrmRect(color));
+}
+
+class FrmBitmap : public FrmWidget
+{
+public:
+  FrmBitmap(Bitmap<Color> &bm) : bm(bm), fmt(D_RGBA8888), sbm(fmt,0), buffer(0) { }
+  virtual void set_pos(int x_, int y_) { 
+    FrmWidget::set_pos(x_,y_);
+  }
+  virtual void set_size(int w_, int h_) { 
+    FrmWidget::set_size(w_,h_);
+    Prepare();
+  }
+
+  virtual void Prepare() 
+  { 
+    if (w<1 ||h<1) return;
+    delete [] buffer;
+    std::cout << "Bitmap size: " << w << "x" << h << std::endl;
+    buffer = new unsigned int[w*h];
+    int sp_w = bm.SizeX();
+    int sp_h = bm.SizeY();
+    for(int y=0;y<h;y++)
+      for(int x=0;x<w;x++) {
+	float xx = float(x)/w*sp_w;
+	float yy = float(y)/h*sp_h;
+	Color c = bm.Map(xx,yy);
+	unsigned int cc = c.Pixel();
+	buffer[x+y*w] = cc;
+      }
+    sbm.set_data(buffer, w,h,w);
+  }
+  virtual void handle_event(FrameLoopEvent &e) { }
+  virtual void frame(DrawLoopEnv &e)
+  {
+#if 0
+    std::cout << x << " " << y << " " << w << " " << h << std::endl;
+#endif
+    e.drawbuffer->draw_sprite(&sbm, x,y);
+  }
+
+private:
+  DrawBufferFormat fmt;
+  Bitmap<Color> &bm;
+  unsigned int *buffer;
+  SourceBitmap sbm;
+};
+
+GameApi::W GameApi::LowFrameBufferApi::w_bitmap(BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<Color> *bm2 = find_color_bitmap(handle);
+  return add_frm_widget(e, new FrmBitmap(*bm2));
+
+}
+
+class FrmText : public FrmWidget
+{
+public:
+  FrmText(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::Ft font, std::string str, int x_gap, float baseline_percentage) : env(env), ev(ev), font(font), str(str), x_gap(x_gap), baseline_percentage(baseline_percentage), fmt(D_RGBA8888), sbm(D_RGBA8888,0) { }
+  // BM GameApi::FontApi::font_string(Ft font, std::string str, int x_gap)
+  virtual void Prepare()
+  {
+    bm = ev.font_api.font_string(font, str, x_gap);
+    BitmapHandle *handle = find_bitmap(env, bm);
+    ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+    int bm_height = b2->SizeY()*baseline_percentage;
+    int area_height = h*baseline_percentage;
+    yy = y + area_height - bm_height;
+    xx = x;
+    BitmapToSourceBitmap(*b2, sbm, fmt);
+
+  }
+  virtual void set_label(std::string s) { str=s; Prepare(); }
+  virtual void handle_event(FrameLoopEvent &e)
+  {
+  }
+  virtual void frame(DrawLoopEnv &e)
+  {
+    e.drawbuffer->draw_sprite(&sbm, xx,yy);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::Ft font;
+  std::string str;
+  int x_gap;
+  float baseline_percentage;
+  GameApi::BM bm;
+  int xx,yy;
+  DrawBufferFormat fmt;
+  SourceBitmap sbm;
+};
+
+GameApi::W GameApi::LowFrameBufferApi::w_text(EveryApi &ev, Ft font, std::string str, int x_gap, float baseline)
+{
+  return add_frm_widget(e, new FrmText(e,ev,font,str,x_gap, baseline));
+}
 
 #endif // THIRD_PART
