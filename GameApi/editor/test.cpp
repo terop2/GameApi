@@ -1035,6 +1035,16 @@ void iter(void *arg)
 			env->gui->delete_widget(env->mem);
 			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 		      } 
+		    if (type=="WV")
+		      {
+			WV wv;
+			wv.id = id;
+			BM bm = env->ev->waveform_api.waveform_bitmap(wv,300,100,0x0, 0xffffffff);
+			//bm.id = id;
+			  env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+		      } 
 		    else if (type=="CBM")
 		      {
 			CBM cbm;
