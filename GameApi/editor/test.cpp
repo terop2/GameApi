@@ -1035,7 +1035,7 @@ void iter(void *arg)
 			env->gui->delete_widget(env->mem);
 			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 		      } 
-		    if (type=="WV")
+		    else if (type=="WV")
 		      {
 			WV wv;
 			wv.id = id;
