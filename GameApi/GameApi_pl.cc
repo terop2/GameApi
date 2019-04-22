@@ -11532,12 +11532,9 @@ public:
     Point p = next->FacePoint(face,point);
     return calc(p);
   }
-  Point calc(Point p) const {
+  Point calc(Point p) const 
+  {
     p-=pos;
-    //p.x=-p.x;
-    //p.y=-p.y;
-    //p.z=-p.z;
-    //std::swap(p.x,p.y);
     float r = sqrt(p.x*p.x+p.y*p.y+p.z*p.z);
     float alfa = acos(p.z/r);
     float beta = atan2(p.y,p.x);
@@ -11548,6 +11545,7 @@ public:
     beta*=2.0*512.0;
     alfa-=512.0;
     beta-=512.0;
+    //beta-=512.0;
     return Point(alfa,beta,0.0);
   }
   virtual Vector PointNormal(int face, int point) const
@@ -11587,6 +11585,124 @@ GameApi::BM GameApi::PolygonApi::shadow_map(EveryApi &ev, P p, float p_x, float 
   SH I2=ev.shader_api.shader_choice(ev,0);
   BM I3=ev.polygon_api.renderpolytobitmap(ev,p2,I2,0,0,0,sx,sy);
   return I3;
+}
+
+class ShadowMap2 : public Bitmap<bool>
+{
+public:
+  ShadowMap2(FaceCollection *objs, float p_x, float p_y, float p_z, int sx, int sy, FaceCollection *quad) : objs(objs), p_x(p_x), p_y(p_y), p_z(p_z), sx(sx), sy(sy), quad(quad) 
+  { 
+
+  }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual bool Map(int x, int y) const
+  {
+    float xx = float(x)/float(sx);
+    float yy = float(y)/float(sy);
+    Vector d_x = d41*(1.0-xx)+d32*xx;
+    Vector d_y = d21*(1.0-yy)+d34*yy;
+    Point pp = q1+d_x*yy + d_y*xx;
+    int s = objs->NumFaces();
+    Point pp2(p_x,p_y,p_z);
+    LineProperties lp(pp,pp2);
+    bool res = false;
+    for(int i=0;i<s;i++) {
+      Point p0 = objs->FacePoint(i,0);
+      Point p1 = objs->FacePoint(i,1);
+      Point p2 = objs->FacePoint(i,2);
+      Point p3 = objs->FacePoint(i,3);
+      float t=0.0;
+      if (lp.QuadIntersection(p0,p1,p2,p3,t)) { res=true; break; }
+    }
+    return res;
+  }
+  virtual void Prepare()
+  {
+    objs->Prepare();
+    quad->Prepare();
+    q1 = quad->FacePoint(0,0);
+    q2 = quad->FacePoint(0,1);
+    q3 = quad->FacePoint(0,2);
+    q4 = quad->FacePoint(0,3);
+    d21 = q2-q1;
+    d34 = q3-q4;
+    d32 = q3-q2;
+    d41 = q4-q1;
+  }
+private:
+  FaceCollection *objs;
+  float p_x, p_y, p_z;
+  Point q1,q2,q3,q4;
+  Vector d21,d34,d32,d41;
+  int sx, sy;
+  FaceCollection *quad;
+};
+
+ GameApi::BB GameApi::PolygonApi::shadow_map2(P p, float p_x, float p_y, float p_z, int sx, int sy, P quad)
+ {
+    FaceCollection *objs = find_facecoll(e, p);
+    FaceCollection *quad2 = find_facecoll(e,quad);
+    return add_bool_bitmap(e, new ShadowMap2(objs,p_x,p_y,p_z,sx,sy, quad2));
+  }
+
+class ShadowMap3 : public FaceCollection
+{
+public:
+  ShadowMap3(FaceCollection *objs, Point pos, int sx, int sy, FaceCollection *quad) : objs(objs), pos(pos), sx(sx), sy(sy), quad(quad) { }
+  virtual void Prepare() {objs->Prepare(); quad->Prepare(); }
+  virtual int NumFaces() const { return objs->NumFaces(); }
+  virtual int NumPoints(int face) const { return objs->NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const
+  {
+    Point p = objs->FacePoint(face,point);
+
+    Point q1 = quad->FacePoint(0,0);
+    Point q2 = quad->FacePoint(0,1);
+    Point q3 = quad->FacePoint(0,2);
+    Point q4 = quad->FacePoint(0,3);
+
+    Point pp(pos.x,pos.y,pos.z);
+
+    Plane pl(q1,q2-q1,q3-q1);
+    Point2d res;
+    Vector pp1 = pp-p;
+    Vector pp2 = pp1/pp1.Dist();
+    Vector pp3 = pp2*1000.0;
+    Point pp4 = Point(pp3);
+    bool b = pl.LineSegmentIntersection(p,pp4,res);
+    if (b) {
+      return Point(res.x*sx,res.y*sy,0.0);
+    }
+
+    return Point(0.0,0.0,0.0);
+  }
+  virtual Vector PointNormal(int face, int point) const { return objs->PointNormal(face,point); }
+  virtual float Attrib(int face, int point, int id) const { return objs->Attrib(face,point,id); }
+  virtual int AttribI(int face, int point, int id) const { return objs->AttribI(face,point,id); }
+  virtual unsigned int Color(int face, int point) const { return objs->Color(face,point); }
+  virtual Point2d TexCoord(int face, int point) const { return objs->TexCoord(face,point); }
+  virtual float TexCoord3(int face, int point) const { return objs->TexCoord3(face,point); }
+  
+private:
+  FaceCollection *objs;
+  Point pos;
+  int sx,sy;
+  FaceCollection *quad;
+};
+
+GameApi::BM GameApi::PolygonApi::shadow_map3(EveryApi &ev, P objs,float p_x, float p_y, float p_z, int sx, int sy, P quad)
+{
+  FaceCollection *f_objs = find_facecoll(e, objs);
+  FaceCollection *f_quad = find_facecoll(e, quad);
+  FaceCollection *res = f_objs; //new ShadowMap3(f_objs, Point(p_x,p_y,p_z), sx,sy, f_quad);
+  GameApi::P p = add_polygon2(e, res,1);
+  GameApi::MN mn = ev.move_api.empty();
+  GameApi::FML poly = ev.low_frame_api.low_poly_draw("aa", p, mn);
+  //GameApi::FBU fbu = ev.low_frame_api.low_framebuffer(poly, 4, sx,sy,0);
+  //GameApi::BM bm = ev.mainloop_api.framebuffer_bitmap(fbu);
+  GameApi::BM bm = ev.low_frame_api.low_frame_bitmap(poly, sx,sy);
+  return bm;
 }
 
 class AddMeshTexture : public ForwardFaceCollection

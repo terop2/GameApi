@@ -793,6 +793,8 @@ private:
   bool left,right;
 };
 
+extern bool g_is_quake;
+
 class MLGuiWidget : public GuiWidgetForward
 {
 public:
@@ -809,6 +811,7 @@ public:
     e.button = -1;
     left=false; right=false;
     keys_enabled=true;
+    g_is_quake = false;
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
@@ -844,7 +847,7 @@ public:
       }
 
 
-    if (keys_enabled){
+    if (keys_enabled && !g_is_quake){
     if (ch=='a' && type==0x300)
       {
 	left=true;
@@ -6397,6 +6400,24 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "", "0.0", "300.0", "8" },
 			 "IF", "font_api", "z_comp"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::tree_api, &GameApi::TreeApi::level,
+			 "tree_level",
+			 { "vec" },
+			 { "[MN]" },
+			 { "" },
+			 "TL", "tree_api", "level"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::tree_api, &GameApi::TreeApi::tree,
+			 "tree",
+			 { "vec" },
+			 { "[TL]" },
+			 { "" },
+			 "T", "tree_api", "tree"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::tree_api, &GameApi::TreeApi::tree_p,
+			 "tree_p",
+			 { "ev", "tree", "vec", "time" },
+			 { "EveryApi&", "T", "[P]", "float" },
+			 { "ev", "", "", "0.0" },
+			 "P", "tree_api", "tree_p"));
   
   return vec;
 }
@@ -6661,24 +6682,6 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "ev", "", "32", "300.0", "10.0" },
 			 "ML", "move_api", "jump_ml"));
 			 
-  vec.push_back(ApiItemF(&GameApi::EveryApi::tree_api, &GameApi::TreeApi::level,
-			 "tree_level",
-			 { "vec" },
-			 { "[MN]" },
-			 { "" },
-			 "TL", "tree_api", "level"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::tree_api, &GameApi::TreeApi::tree,
-			 "tree",
-			 { "vec" },
-			 { "[TL]" },
-			 { "" },
-			 "T", "tree_api", "tree"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::tree_api, &GameApi::TreeApi::tree_p,
-			 "tree_p",
-			 { "ev", "tree", "vec", "time" },
-			 { "EveryApi&", "T", "[P]", "float" },
-			 { "ev", "", "", "0.0" },
-			 "P", "tree_api", "tree_p"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::def,
 			 "m_def",
 			 { "ev" },
@@ -6781,7 +6784,7 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "ev", "p", "p_x", "p_y", "p_z", "sx", "sy", "dark_color", "mix", "mix2", "numtextures" },
 			 { "EveryApi&", "P", "float", "float", "float", "int", "int", "unsigned int", "float", "float", "int" },
 			 { "ev", "", "0.0", "0.0", "0.0", "512", "512", "ff000000", "1.0", "0.5", "0" },
-			 "MT", "materials_api", "shadow"));
+			 "MT", "materials_api", "shadow2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dyn_lights,
 			 "m_dyn_lights",
 			 { "ev", "nxt", "light_pos_x", "light_pos_y", "light_pos_z", "dist", "dyn_point" },
@@ -7298,6 +7301,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "float", "float" },
 			 { "ev", "", "20.0", "0.03" },
 			 "ML", "move_api", "quake_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::quake_ml2,
+			 "quake_ml2",
+			 { "ev", "ml", "speed", "rot_speed" },
+			 { "EveryApi&", "ML", "float", "float" },
+			 { "ev", "", "20.0", "0.03" },
+			 "ML", "move_api", "quake_ml2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::debug_obj, 
 			 "debug_obj",
 			 { "ev" },
@@ -7555,7 +7564,7 @@ std::vector<GameApiItem*> waveform_functions()
 			 "wv_gaussian",
 			 { "start_x", "end_x", "start_y", "end_y" },
 			 { "float", "float", "float", "float" },
-			 { "-100.0", "100.0", "-100.0", "100.0" },
+			 { "-100.0", "100.0", "-1.0", "1.0" },
 			 "WV", "waveform_api", "gaussian"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::sum,
 			 "wv_sum",
@@ -7886,6 +7895,18 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "P", "float", "float", "float", "int", "int" },
 			 { "ev", "", "0.0", "0.0", "0.0", "512", "512" },
 			 "BM", "polygon_api", "shadow_map"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::shadow_map2,
+			 "shadow_map2",
+			 { "p", "p_x", "p_y", "p_z", "sx", "sy", "quad" },
+			 { "P", "float", "float", "float", "int", "int", "P" },
+			 { "", "0.0", "-300.0", "0.0", "100", "100", "" },
+			 "BB", "polygon_api", "shadow_map2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::shadow_map3,
+			 "shadow_map3",
+			 { "ev", "objs", "p_x", "p_y", "p_z", "sx", "sy", "quad" },
+			 { "EveryApi&", "P", "float", "float", "float", "int", "int", "P" },
+			 { "ev", "", "0.0", "-300.0", "0.0", "100", "100", "" },
+			 "BM", "polygon_api", "shadow_map3"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::disc,
 			 "disc",
 			 { "ev", "numfaces", "center_x", "center_y", "center_z", "normal_x", "normal_y", "normal_z", "radius" },

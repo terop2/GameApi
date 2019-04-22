@@ -1647,6 +1647,12 @@ ShaderFile::ShaderFile()
 "    return pos;\n"
 "}\n"
 
+    /*
+"vec4 gi(vec4 pos)\n"
+"{\n"
+"   return pos;\n"
+"}\n"
+    */
     "#ifdef EX_POSITION\n"
     "#ifdef IN_POSITION\n"
 
@@ -2341,7 +2347,28 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 "#endif\n"
+    /*
+"uniform int num_pos;\n"
+"uniform vec3 obj_pos[100];\n"
+"uniform float obj_size[100];\n"
 
+"vec4 gi(vec4 rgb)\n"
+"{\n"
+"   vec4 frag_pos = ex_Position;\n"
+"   float Ka = 0.0;\n"
+"   for(int i=0;i<num_pos;i++) {\n"
+"     vec4 pos = obj_pos[i];\n"
+"     float size = obj_size[i];\n"
+"     pos-=frag_pos;\n"
+"     float d = sqrt(pos.x*pos.x+pos.y*pos.y+pos.z*pos.z);\n"
+"     float K = tan(asin(size/d));\n"
+"     float KK = K*K;\n"
+"     Ka+=KK;\n"
+"    }\n"
+"    Ka/=4.0*3.14159;\n"
+"    return clamp(rgb-vec4(Ka,Ka,Ka,0.0),vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));\n"
+"}\n";
+    */
 "#ifdef MANYTEXTURES\n"
 "in vec2 shadow_position;\n"
 "uniform vec4 shadow_dark;\n"

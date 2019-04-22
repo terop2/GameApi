@@ -10216,6 +10216,8 @@ ML I34=ev.move_api.comb_key_activate_ml(ev,I31,I33,k_119,k_97,s_1);
 float quake_pos_x, quake_pos_y;
 float quake_rot_y;
 
+bool g_is_quake = false;
+
 class QuakeML : public MainLoopItem
 {
 public:
@@ -10224,6 +10226,7 @@ public:
   }
   virtual void execute(MainLoopEnv &e)
   {
+    g_is_quake=true;
     GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
     quake_pos_x = pos_x;
     quake_pos_y = pos_y;
@@ -10297,6 +10300,96 @@ GameApi::ML GameApi::MovementNode::quake_ml(EveryApi &ev, ML ml,float speed, flo
   MainLoopItem *mml = find_main_loop(e,ml);
   return add_main_loop(e, new QuakeML(e,ev, mml, speed, rot_speed));
 }
+
+class QuakeML2 : public MainLoopItem
+{
+public:
+  QuakeML2(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, float speed, float rot_speed) : env(env), ev(ev), next(next), speed(speed), rot_speed(rot_speed) { 
+    point.id=-1;
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    g_is_quake=true;
+    GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
+    quake_pos_x = pos_x;
+    quake_pos_y = pos_y;
+    quake_rot_y = rot_y;
+    MainLoopEnv eee = e;
+    GameApi::M env_m = add_matrix2(env, e.in_MV);
+    GameApi::M rot_y2 = ev.matrix_api.yrot(rot_y);
+    GameApi::M trans = ev.matrix_api.trans(pos_x, 0.0, pos_y +400.0);
+    GameApi::M trans2 = ev.matrix_api.trans(0.0,0.0,-400.0);
+    GameApi::M scale = ev.matrix_api.scale(1.0,1.0,-1.0);
+    GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(trans,rot_y2),trans2),scale));
+
+    //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
+    GameApi::SH s1;
+    s1.id = e.sh_texture;
+    GameApi::SH s2;
+    s2.id = e.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = e.sh_color;
+
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", res);
+    ev.shader_api.set_var(s1, "in_T", ev.matrix_api.identity());
+    //ev.shader_api.set_var(s1, "in_iMV", mat2i);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", res);
+    ev.shader_api.set_var(s2, "in_T", ev.matrix_api.identity());
+    //ev.shader_api.set_var(s2, "in_iMV", mat2i);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", res);
+    ev.shader_api.set_var(s3, "in_T", ev.matrix_api.identity());
+    //ev.shader_api.set_var(s3, "in_iMV", mat2i);
+
+    
+    eee.in_MV = find_matrix(env, res); 
+    eee.env = find_matrix(env, res);
+
+    next->execute(eee);
+    ev.shader_api.unuse(s3);
+
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (point.id==-1) {
+      point = add_point(env, 0.0,0.0,0.0);
+    }
+    Point *pt = find_point(env,point);
+    pt->x = e.cursor_pos.x;
+    pt->y = e.cursor_pos.y;
+    pt->z = e.cursor_pos.z;
+    GameApi::MainLoopApi::Event ee;
+    ee.type = e.type;
+    ee.ch = e.ch;
+    ee.button = e.button;
+    ee.cursor_pos = point;
+    GameApi::InteractionApi::quake_movement_event(ev,ee,pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
+    next->handle_event(e);
+  }
+  virtual int shader_id() { return -1; }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::PT point;
+  MainLoopItem *next;
+  float pos_x=0.0, pos_y=0.0, rot_y=0.0;
+  GameApi::InteractionApi::Quake_data dt;
+  float speed_x=0.0, speed_y=0.0;
+  float speed, rot_speed;
+};
+
+GameApi::ML GameApi::MovementNode::quake_ml2(EveryApi &ev, ML ml,float speed, float rot_speed)
+{
+  GameApi::MN mn = ev.move_api.empty();
+  GameApi::MN scale = ev.move_api.scale2(mn, 1.0,1.0,-1.0);
+  GameApi::ML ml2 = ev.move_api.move_ml(ev,ml,scale, 1, 10.0);
+  MainLoopItem *mml = find_main_loop(e,ml2);
+  return add_main_loop(e, new QuakeML2(e,ev, mml, speed, rot_speed));
+}
+
 class LocalMove : public MainLoopItem
 {
 public:
@@ -12923,11 +13016,13 @@ void get_iot_event(const GameApi::MainLoopApi::Event &e, bool *array)
 class GouraudDraw : public FrameBufferLoop
 {
 public:
-  GouraudDraw(std::string name, FaceCollection *coll, Movement *move) : name(name), coll(coll), size(0), move(move) { }
+  GouraudDraw(std::string name, FaceCollection *coll, Movement *move) : name(name), coll(coll), size(0), move(move) { ss=0;}
   void Prepare() { 
     coll->Prepare();
     int s = coll->NumFaces();
     size = s;
+    ss = coll->NumPoints(0);
+
     // THIS EATS WAY TOO MUCH MEMORY, BUT WE CAN'T DO ANYTHING SINCE
     // WE DON'T HAVE GPU MEMORY AVAILABLE. NORMAL SOLUTION TO THIS PROBLEM
     // IS BATCHING WHICH SPLITS THESE ARRAYS TO SMALL PIECES + TRANSFERS
@@ -12949,6 +13044,25 @@ public:
 	color_array[i*3+1] = c2;
 	color_array[i*3+2] = c3;
       }
+    if (ss==4) {
+    vertex_array2 = new Point[s*3];
+    color_array2 = new unsigned int[s*3];
+    for(int i=0;i<s;i++)
+      {
+	Point p1 = coll->FacePoint(i,0);
+	Point p2 = coll->FacePoint(i,2);
+	Point p3 = coll->FacePoint(i,3);
+	vertex_array2[i*3+0] = p1;
+	vertex_array2[i*3+1] = p2;
+	vertex_array2[i*3+2] = p3;
+	unsigned int c1=coll->Color(i,0);
+	unsigned int c2=coll->Color(i,2);
+	unsigned int c3=coll->Color(i,3);
+	color_array2[i*3+0] = c1;
+	color_array2[i*3+1] = c2;
+	color_array2[i*3+2] = c3;
+      }
+    }
   }
   void handle_event(FrameLoopEvent &e) {
     move->draw_event(e);
@@ -12961,7 +13075,9 @@ public:
 
     Matrix m2 = m*Matrix::Scale(1.0,-1.0,1.0)*Matrix::Translate(400.0,300.0,0.0);
     DrawGouraudTri(e.drawbuffer, e.format, vertex_array, color_array, size,m2 , e.depth_buffer);
-
+    if (ss==4) {
+    DrawGouraudTri(e.drawbuffer, e.format, vertex_array2, color_array2, size,m2 , e.depth_buffer);
+    }
     Point p(0.0,0.0,0.0);
     Point p2 = p*m2;
     add_posc(name,p2);
@@ -12970,8 +13086,11 @@ public:
 private:
   std::string name;
   FaceCollection *coll;
+  int ss;
   Point *vertex_array;
   unsigned int *color_array;
+  Point *vertex_array2;
+  unsigned int *color_array2;
   int size;
   Movement *move;
 };
@@ -14329,6 +14448,32 @@ GameApi::FML GameApi::LowFrameBufferApi::low_build_world(GameApi::FML ml, std::s
 {
   FrameBufferLoop *loop = find_framemainloop(e, ml);
   return add_framemainloop(e, new BuildWorld(e,loop, url, gameapi_homepageurl, chars, x,y));
+}
+
+class FrameBufferBitmap : public Bitmap<Color>
+{
+public:
+  FrameBufferBitmap(FrameBuffer *buf) : buf(buf) { }
+  virtual int SizeX() const { return buf->Width(); }
+  virtual int SizeY() const { return buf->Height(); }
+  virtual Color Map(int x, int y) const
+  {
+    unsigned int color = *(((unsigned int*)buf->Buffer())+x+y*buf->Width());
+    return Color(color);
+  }
+  virtual void Prepare() { 
+    buf->Prepare();
+    buf->frame();
+  }
+
+private:
+  FrameBuffer *buf;
+};
+
+GameApi::BM GameApi::MainLoopApi::framebuffer_bitmap(FBU buf)
+{
+  FrameBuffer *fbuf = find_framebuffer(e, buf);
+  return add_color_bitmap(e, new FrameBufferBitmap(fbuf));
 }
 
 class LowFrameBuffer : public FrameBuffer
@@ -16855,5 +17000,91 @@ GameApi::W GameApi::LowFrameBufferApi::w_text(EveryApi &ev, Ft font, std::string
 {
   return add_frm_widget(e, new FrmText(e,ev,font,str,x_gap, baseline));
 }
+
+
+bool skin_start(std::string s, std::string &url, std::string &name) {
+  s = cut_spaces(s);
+  if (s.length()<3) return false;
+  if (s[0]!='[' || s[1]!='[') return false;
+  s = s.substr(2);
+  std::stringstream ss(s);
+  ss >> name >> url;
+  return true;
+}
+bool skin_end(std::string s) {
+  s = cut_spaces(s);
+  if (s.length()<2) return false;
+  if (s[0]==']' && s[1]==']') return true;
+  return false;
+}
+
+struct SkinData
+{
+  std::string name;
+  std::string url;
+  std::string contents;
+};
+
+std::vector<SkinData> g_skin_vec;
+
+void set_skin_data(std::vector<SkinData> vec)
+{
+  g_skin_vec = vec;
+
+  int s = vec.size();
+  for(int i=0;i<s;i++) {
+    const char *ptr = vec[i].contents.c_str();
+    const unsigned char *ptr2 = (unsigned char*)strdup(ptr);
+    const int size = vec[i].contents.size();
+    const char *url = vec[i].url.c_str();
+    GameApi::append_url_map(url, ptr2, ptr2+size);
+  }
+}
+
+class SkinDescription : public MainLoopItem
+{
+public:
+  SkinDescription(GameApi::Env &e, MainLoopItem *next, std::string url, std::string homepage) : e(e), next(next), url(url), homepage(homepage) {}
+  void Prepare() {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+    if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    std::string code(vec->begin(), vec->end());
+    std::stringstream ss(code);
+    std::string line;
+    bool mode=0;
+    std::string contents;
+    std::string url;
+    std::string name;
+
+    while(std::getline(ss,line)) {
+      if (skin_end(line)) {
+	mode = 0;
+	SkinData dt;
+	dt.name = name;
+	dt.url = url;
+	dt.contents = contents;
+	data.push_back(dt);
+	contents="";
+      }
+      if (mode==1) {
+	contents+=line+"\n";
+      }
+      if (skin_start(line, url, name)) {
+	mode = 1;
+      }
+    }
+    set_skin_data(data);
+  }
+private:
+  GameApi::Env &e;
+  MainLoopItem *next;
+  std::vector<SkinData> data;
+  std::string url;
+  std::string homepage;
+};
+
 
 #endif // THIRD_PART

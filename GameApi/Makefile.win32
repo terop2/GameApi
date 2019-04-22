@@ -102,7 +102,7 @@ CC2FLAGS = -DWINDOWS -g -std=c++17 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) 
 
 default: glew.o libGameApi.dll libGameDep.dll
 
-touched: GameApi_gui.cc
+touch_all: GameApi_gui.cc
 	touch GameApi_gui.cc
 	touch GameApi_gui_1_1.cc
 	touch GameApi_gui_2_1.cc
@@ -113,6 +113,54 @@ touched: GameApi_gui.cc
 	touch GameApi_gui_1_3.cc
 	touch GameApi_gui_2_3.cc
 	touch GameApi_gui_3_3.cc
+
+touch_polydistfield:
+	touch GameApi_gui_2_1.cc
+touch_waveform:
+	touch GameApi_gui_2_3.cc
+touch_blocker:
+	touch GameApi_gui_2_2.cc
+touch_mainloop:
+	touch GameApi_gui_2_2.cc
+touch_texture:
+	touch GameApi_gui_1_2.cc
+touch_volume:
+	touch GameApi_gui_1_2.cc
+touch_floatvolume:
+	touch GameApi_gui_1_2.cc
+touch_colorvolume:
+	touch GameApi_gui_1_2.cc
+touch_vector:
+	touch GameApi_gui_1_2.cc
+touch_point:
+	touch GameApi_gui_1_2.cc
+touch_font:
+	touch GameApi_gui_1_2.cc
+touch_move:
+	touch GameApi_gui_2_1.cc
+touch_polygon:
+	touch GameApi_gui_2_2.cc
+	touch GameApi_gui_2_3.cc
+touch_polygon1:
+	touch GameApi_gui_2_2.cc
+touch_polygon2:
+	touch GameApi_gui_2_3.cc
+touch_shadermodule:
+	touch GameApi_gui_2_2.cc
+touch_framebuffermodule:
+	touch GameApi_gui_2_1.cc
+touch_booleanops:
+	touch GameApi_gui_3_3.cc
+touch_lines:
+	touch GameApi_gui_3_1.cc
+touch_points:
+	touch GameApi_gui_3_2.cc
+touch_floatbitmap:
+	touch GameApi_gui_3_3.cc
+touch_boolbitmap:
+	touch GameApi_gui_3_1.cc
+touch_bitmap:
+	touch GameApi_gui_3_2.cc
 
 all: libGameApi.so libGameApi.dll install main
 
