@@ -283,6 +283,7 @@ public:
   IMPORT void clear_3d_transparent();
   IMPORT void clear_3d(unsigned int col = 0xff000000);
   IMPORT void switch_to_3d(bool b, SH sh, int screen_width=800., int screen_height = 600);
+  IMPORT BM framebuffer_bitmap(FBU framebuffer);
   IMPORT ML small_window(EveryApi &ev, ML ml, int x, int y, int sx, int sy);
   IMPORT ML drag_drop_area(EveryApi &ev, ML mainloop, RUN (*fptr)(Env &e, EveryApi &ev, std::string filename));
   //IMPORT ML looking_glass(EveryApi &ev, ML ml);
@@ -1485,6 +1486,7 @@ public:
   IMPORT ML key_event(EveryApi &ev, ML ml, MN mn, int type, int ch, int button, float duration);
   IMPORT ML wasd(EveryApi &ev, ML ml, MN w, MN a, MN s, MN d, float duration);
   IMPORT ML quake_ml(EveryApi &ev, ML ml, float speed, float rot_speed);
+  IMPORT ML quake_ml2(EveryApi &ev, ML ml, float speed, float rot_speed);
   IMPORT ML key_printer_ml(ML ml);
   IMPORT ML local_move(EveryApi &ev, ML inner_ml, PTS center_points);
   IMPORT CMD default_cmds(float dx, float dy, float dz);
@@ -2114,6 +2116,8 @@ public:
   IF lod_select(float start_dist, float dist_step, int max_value);
 
   BM shadow_map(EveryApi &ev, P p, float p_x, float p_y, float p_z, int sx, int sy);
+  BB shadow_map2(P p, float p_x, float p_y, float p_z, int sx, int sy, P quad);
+  BM shadow_map3(EveryApi &ev, P objs, float p_x, float p_Y, float p_z, int sx, int sy, P quad);
   ML choose_time(ML next, std::vector<ML> vec, float delta_time);
   ML anim(EveryApi &ev, ML next, MA anim, float start_time, float delta_time, int count);
   ML anim_bind(EveryApi &ev, ML next, MA anim, MT material, float start_time, float delta_time, int count);
