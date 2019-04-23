@@ -7307,6 +7307,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "float", "float" },
 			 { "ev", "", "20.0", "0.03" },
 			 "ML", "move_api", "quake_ml2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::quake_ml3,
+			 "fly_ml",
+			 { "ev", "ship", "world", "speed", "rot_speed", "p_x", "p_y", "p_z" },
+			 { "EveryApi&", "ML", "ML", "float", "float", "float", "float", "float" },
+			 { "ev", "", "", "20.0", "0.03", "0.0", "0.0", "0.0" },
+			 "ML", "move_api", "quake_ml3"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::debug_obj, 
 			 "debug_obj",
 			 { "ev" },
