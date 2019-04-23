@@ -1046,11 +1046,16 @@ public:
   }
   virtual int Mix_GetNumMusicDecoders()
   {
+#ifndef EMSCRIPTEN
     return ::Mix_GetNumMusicDecoders();
+#endif
+    return 0;
   }
   virtual void Mix_GetMusicDecoder(int i)
   {
+#ifndef EMSCRIPTEN
     ::Mix_GetMusicDecoder(i);
+#endif
   }
   virtual void Mix_AllocateChannels(int i)
   {
