@@ -219,11 +219,11 @@ void GameApi::TrackerApi::play_ogg(std::string filename)
   g_low->sdl_mixer->Mix_PlayMusic(mus, 1);
 #else
   std::ifstream ss(filename.c_str(), std::ios::binary|std::ios::in);
-  unsigned char ch;
+  char ch;
   std::vector<unsigned char> s;
-  while(ss.get(ch)) { s.push_back(ch); }
+  while(ss.get(ch)) { s.push_back((unsigned char)ch); }
   Low_SDL_RWops *ops = g_low->sdl->SDL_RWFromMem((void*)&s[0], s.size());
-  Low_Mix_Chunk *chunk = g_low->sdl_mixer->Mix_LoadWav_RW(ops, 0);
+  Low_Mix_Chunk *chunk = g_low->sdl_mixer->Mix_LoadWAV_RW(ops, 0);
   g_low->sdl_mixer->Mix_PlayChannel(-1, chunk, 0); 
 #endif
 }
