@@ -10396,6 +10396,122 @@ GameApi::ML GameApi::MovementNode::quake_ml2(EveryApi &ev, ML ml,float speed, fl
   return add_main_loop(e, new QuakeML2(e,ev, mml, speed, rot_speed));
 }
 
+class QuakeML3 : public MainLoopItem
+{
+public:
+  QuakeML3(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, MainLoopItem *next2, float speed, float rot_speed, Point p) : env(env), ev(ev), next(next), next2(next2), speed(speed), rot_speed(rot_speed),p(p) { 
+    point.id=-1;
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    g_is_quake=true;
+    GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
+    quake_pos_x = pos_x;
+    quake_pos_y = pos_y;
+    quake_rot_y = rot_y;
+    MainLoopEnv eee = e;
+    GameApi::M env_m = add_matrix2(env, e.in_MV);
+    GameApi::M rot_y2 = ev.matrix_api.yrot(rot_y);
+    GameApi::M trans_y2 = ev.matrix_api.trans(p.x,p.y,p.z);
+    GameApi::M res = ev.matrix_api.mult(rot_y2,trans_y2);
+    GameApi::M trans = ev.matrix_api.trans(pos_x, 0.0, pos_y +400.0);
+    GameApi::M trans2 = ev.matrix_api.trans(0.0,0.0,-400.0);
+    GameApi::M scale = ev.matrix_api.scale(1.0,1.0,-1.0);
+    GameApi::M res2 = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(trans,trans2),scale));
+
+    //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
+    GameApi::SH s1;
+    s1.id = e.sh_texture;
+    GameApi::SH s2;
+    s2.id = e.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = e.sh_color;
+
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", res);
+    ev.shader_api.set_var(s1, "in_T", ev.matrix_api.identity());
+    //ev.shader_api.set_var(s1, "in_iMV", mat2i);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", res);
+    ev.shader_api.set_var(s2, "in_T", ev.matrix_api.identity());
+    //ev.shader_api.set_var(s2, "in_iMV", mat2i);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", res);
+    ev.shader_api.set_var(s3, "in_T", ev.matrix_api.identity());
+    //ev.shader_api.set_var(s3, "in_iMV", mat2i);
+
+    
+    eee.in_MV = find_matrix(env, res); 
+    eee.env = find_matrix(env, res);
+
+    next->execute(eee);
+    ev.shader_api.unuse(s3);
+
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", res2);
+    ev.shader_api.set_var(s1, "in_T", ev.matrix_api.identity());
+    //ev.shader_api.set_var(s1, "in_iMV", mat2i);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", res2);
+    ev.shader_api.set_var(s2, "in_T", ev.matrix_api.identity());
+    //ev.shader_api.set_var(s2, "in_iMV", mat2i);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", res2);
+    ev.shader_api.set_var(s3, "in_T", ev.matrix_api.identity());
+    //ev.shader_api.set_var(s3, "in_iMV", mat2i);
+
+    
+    eee.in_MV = find_matrix(env, res2); 
+    eee.env = find_matrix(env, res2);
+
+    next2->execute(eee);
+    ev.shader_api.unuse(s3);
+
+
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (point.id==-1) {
+      point = add_point(env, 0.0,0.0,0.0);
+    }
+    Point *pt = find_point(env,point);
+    pt->x = e.cursor_pos.x;
+    pt->y = e.cursor_pos.y;
+    pt->z = e.cursor_pos.z;
+    GameApi::MainLoopApi::Event ee;
+    ee.type = e.type;
+    ee.ch = e.ch;
+    ee.button = e.button;
+    ee.cursor_pos = point;
+    GameApi::InteractionApi::quake_movement_event(ev,ee,pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
+    next->handle_event(e);
+  }
+  virtual int shader_id() { return -1; }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::PT point;
+  MainLoopItem *next;
+  MainLoopItem *next2;
+  float pos_x=0.0, pos_y=0.0, rot_y=0.0;
+  GameApi::InteractionApi::Quake_data dt;
+  float speed_x=0.0, speed_y=0.0;
+  float speed, rot_speed;
+  Point p;
+};
+
+GameApi::ML GameApi::MovementNode::quake_ml3(EveryApi &ev, ML ml,ML ml3,float speed, float rot_speed, float p_x, float p_y, float p_z)
+{
+  GameApi::MN mn = ev.move_api.empty();
+  GameApi::MN scale = ev.move_api.scale2(mn, 1.0,1.0,-1.0);
+  GameApi::ML ml2 = ev.move_api.move_ml(ev,ml3,scale, 1, 10.0);
+  MainLoopItem *mml = find_main_loop(e,ml2);
+  MainLoopItem *mml2 = find_main_loop(e,ml);
+  return add_main_loop(e, new QuakeML3(e,ev, mml2, mml, speed, rot_speed, Point(p_x,p_y,p_z)));
+}
+
+
 class LocalMove : public MainLoopItem
 {
 public:
