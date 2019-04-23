@@ -211,7 +211,7 @@ void GameApi::TrackerApi::play_ogg(std::string filename)
       g_low->sdl_mixer->Mix_GetMusicDecoder(i);
     }
 #endif
-  const char *ptr = new char[filename.size()+1];
+  char *ptr = new char[filename.size()+1];
   std::copy(filename.begin(), filename.end(), ptr);
   Low_Mix_Music *mus = g_low->sdl_mixer->Mix_LoadMUS(ptr);
   g_low->sdl_mixer->Mix_PlayMusic(mus, 1);
