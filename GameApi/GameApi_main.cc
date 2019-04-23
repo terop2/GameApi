@@ -1641,7 +1641,7 @@ public:
   {
 #ifdef EMSCRIPTEN
     // web browser wants music to start on click events.
-    if (e.button==0)
+    if (e.button==0||e.type==0x300)
 #endif
     if (firsttime) {
 #ifndef EMSCRIPTEN
