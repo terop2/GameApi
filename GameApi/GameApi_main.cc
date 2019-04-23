@@ -1644,11 +1644,11 @@ public:
       int s = ptr->size();
       for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
       ss.close();
-#ifndef EMSCRIPTEN
+      //#ifndef EMSCRIPTEN
       ev.tracker_api.play_ogg("song.ogg");
-#else
-      std::cout << "Warning: ogg playing disabled since it didn't work in emscripten." << std::endl;
-#endif
+      //#else
+	// std::cout << "Warning: ogg playing disabled since it didn't work in emscripten." << std::endl;
+      //#endif
       firsttime = false;
     }
     next->execute(e);
