@@ -1,6 +1,6 @@
 #include "GameApi_h.hh"
 #include <fstream>
-
+#include <ios>
 class EmptyTracker : public Tracker
 {
 public:
