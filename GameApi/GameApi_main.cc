@@ -1635,6 +1635,14 @@ public:
   }
   virtual void execute(MainLoopEnv &e)
   {
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+#ifdef EMSCRIPTEN
+    // web browser wants music to start on click events.
+    if (e.button==0)
+#endif
     if (firsttime) {
 #ifndef EMSCRIPTEN
   env.async_load_url(url, homepage);
@@ -1651,10 +1659,6 @@ public:
       //#endif
       firsttime = false;
     }
-    next->execute(e);
-  }
-  virtual void handle_event(MainLoopEvent &e)
-  {
     next->handle_event(e);
   }
   virtual int shader_id() { return next->shader_id(); }
