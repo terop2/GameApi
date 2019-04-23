@@ -6470,11 +6470,12 @@ public:
   {
     float div = fmod(p, Size());
     int pos = int(p);
-    if (pos>=0 && pos<vec.size()) {
+    if (pos<0 || pos>=vec.size()) {
+      pos = vec.size()-1;
+    }
     Curve<Point> *c = vec[pos];
     div*=c->Size();
     return c->Index(div);
-    } else { return Point(0.0,0.0,0.0); }
   }
   float Size() const {
     return float(vec.size());
