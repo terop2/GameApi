@@ -1456,6 +1456,15 @@ void GameApi::MainLoopApi::display_seamless(EveryApi &ev)
  frame_count = 0;
 
 }
+GameApi::ML GameApi::MainLoopApi::display_background(EveryApi &ev, ML ml)
+{
+  BM I1=ev.bitmap_api.newbitmap(100,100,0xff000000);
+  BM I2=ev.bitmap_api.scale_bitmap_fullscreen(ev,I1);
+  ML I3=ev.sprite_api.vertex_array_render(ev,I2);
+  ML I4=ev.sprite_api.turn_to_2d(ev,I3,0.0,0.0,800.0,600.0);
+  ML I5=ev.mainloop_api.array_ml(std::vector<ML>{I4,ml});
+ return I5;
+}
 void GameApi::MainLoopApi::display_logo(EveryApi &ev)
 {
 #ifdef EMSCRIPTEN
@@ -1505,6 +1514,7 @@ ML I23=ev.move_api.move_ml(ev,I19,I22,1,10);
 I26=ev.mainloop_api.array_ml(std::vector<ML>{I12,I23});
   }
   ML I17a = ev.mainloop_api.array_ml(std::vector<ML>{I17,I26});
+  I17a = ev.mainloop_api.display_background(ev,I17a);
 
  ML res = I17a;
 #else
@@ -1530,6 +1540,7 @@ MN I31=ev.move_api.empty();
 MN I32=ev.move_api.rotatey(I31,-1.59);
 MN I33=ev.move_api.rotate(I32,0,30,0,0,0,0,1,0,1.59);
 ML I34=ev.move_api.move_ml(ev,I30,I33);
+ I34 = ev.mainloop_api.display_background(ev,I34);
  ML res = I34;
 #endif
  SH color = ev.shader_api.colour_shader();  

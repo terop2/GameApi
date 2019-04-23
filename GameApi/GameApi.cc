@@ -8289,11 +8289,14 @@ private:
 
 EXPORT GameApi::BLK GameApi::BlockerApi::game_window(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration)
 {
+  ml = ev.mainloop_api.display_background(ev,ml);
+
   Blocker *blk = new MainLoopBlocker_win32_and_emscripten(e,ev,ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
   return add_blocker(e, blk);
 }
 EXPORT GameApi::RUN GameApi::BlockerApi::game_window2(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration)
 {
+  ml = ev.mainloop_api.display_background(ev,ml);
   Splitter *spl = new MainLoopSplitter_win32_and_emscripten(ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
   return add_splitter(e, spl);
 }
@@ -16695,6 +16698,7 @@ private:
 
 EXPORT GameApi::RUN GameApi::BlockerApi::game_window_2nd_display(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration)
 {
+
   Splitter *spl = new MainLoopSplitter_win32_and_emscripten_display2(e,ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
   return add_splitter(e, spl);
 }

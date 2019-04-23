@@ -284,6 +284,7 @@ public:
   IMPORT void clear_3d(unsigned int col = 0xff000000);
   IMPORT void switch_to_3d(bool b, SH sh, int screen_width=800., int screen_height = 600);
   IMPORT BM framebuffer_bitmap(FBU framebuffer);
+  IMPORT ML display_background(EveryApi &ev, ML ml);
   IMPORT ML small_window(EveryApi &ev, ML ml, int x, int y, int sx, int sy);
   IMPORT ML drag_drop_area(EveryApi &ev, ML mainloop, RUN (*fptr)(Env &e, EveryApi &ev, std::string filename));
   //IMPORT ML looking_glass(EveryApi &ev, ML ml);
