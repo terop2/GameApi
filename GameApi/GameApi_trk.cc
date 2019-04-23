@@ -218,7 +218,7 @@ void GameApi::TrackerApi::play_ogg(std::string filename)
   Low_Mix_Music *mus = g_low->sdl_mixer->Mix_LoadMUS(ptr);
   g_low->sdl_mixer->Mix_PlayMusic(mus, 1);
 #else
-  std::ifstream ss(filename.c_str(), ios::binary|ios::in);
+  std::ifstream ss(filename.c_str(), std::ios::binary|std::ios::in);
   unsigned char ch;
   std::vector<unsigned char> s;
   while(ss.get(ch)) { s.push_back(ch); }
