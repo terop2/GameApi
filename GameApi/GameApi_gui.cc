@@ -348,6 +348,8 @@ private:
   bool active;
 };
 
+std::string FloatExprEval(std::string s);
+
 template<class T>
 class Conv {
 public:
@@ -361,7 +363,13 @@ public:
   static void set(std::string &target, std::string s) { target = s; }
   static void get(const std::string &target, std::string &s) { s=target; }
 };
-
+template<>
+class Conv<float>
+{
+public:
+  static void set(float &target, std::string s) { s = FloatExprEval(s);  std::stringstream ss(s); ss >> target; }
+  static void get(const float &target, std::string &s) { std::stringstream ss; ss << target; s=ss.str(); }
+};
 template<class T>
 class MultilineEditor : public GuiWidgetForward
 {
@@ -2551,7 +2559,7 @@ EXPORT GameApi::W GameApi::GuiApi::multiline_string_editor(std::string allowed_c
 
 EXPORT GameApi::W GameApi::GuiApi::float_editor(float &target, FtA atlas, BM atlas_bm, int x_gap)
 {
-  std::string allowed_chars = "0123456789.-";
+  std::string allowed_chars = "0123456789.-+*/";
   W w = add_widget(e, new EditorGuiWidgetAtlas<float>(ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap));
   W w2 = highlight(w);
   return w2;
@@ -3095,6 +3103,8 @@ EXPORT GameApi::W GameApi::GuiApi::center_y(W item, int sy)
   GuiWidget *wid = find_widget(e, item);
   return add_widget(e, new CenterYWidget(ev, wid, sy));
 }
+std::string FloatExprEval(std::string s);
+
 EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string type, const std::string &source)
 {
 
@@ -3130,7 +3140,8 @@ EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string ty
     } else
   if (type=="float")
     {
-      std::stringstream ss(source);
+      std::string source2 = FloatExprEval(source);
+      std::stringstream ss(source2);
       ss >> target.f_value;
     } else
     if (type=="bool")
@@ -4050,6 +4061,38 @@ public:
   return t;
   }
 };
+
+std::string FloatExprEval(std::string s);
+int find_float_ch(std::string s, char ch);
+
+
+
+template<>
+class FromStreamClass<float>
+{
+public:
+  float from_stream(std::string s, GameApi::EveryApi &ev)
+  {
+    //std::cout << "Type using default: " << typeid(T).name() << std::endl;
+    bool neg = false;
+    if (s.size()>0 && s[0]=='-')
+      {
+	neg = true;
+	s = s.substr(1);
+      }
+    s=FloatExprEval(s);
+
+  float t;
+  std::stringstream is(s);
+  is >> t;
+  if (neg) t = -t;
+
+  //std::cout << "Default: " << t << std::endl;
+  return t;
+  }
+};
+
+
 template<>
 class FromStreamClass<std::string>
 {
@@ -4356,6 +4399,7 @@ template<typename T> T from_stream2(std::stringstream &is, GameApi::EveryApi &ev
   FromStreamClass<T> cls;
   std::string s;
   is >> s;
+  std::cout << "FromStreamClass: " << s << " " << typeid(T).name() << std::endl;
   return cls.from_stream(s,ev);
 }
 
@@ -4682,7 +4726,7 @@ CodeGenLine parse_codegen_line(std::string line)
   line2.func_name = func_name;
   line2.params = params;
 
-  //std::cout << "CodeGenLine: " << line2.api_name << " " << line2.func_name << " " << line2.params << std::endl;
+  std::cout << "CodeGenLine: " << line2.api_name << " " << line2.func_name << " " << line2.params << std::endl;
   return line2;
 }
 
@@ -5051,6 +5095,7 @@ int execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std::vector<CodeG
 	    }
     }
       
+      std::cout << "Execute: " << params << std::endl;
       int val = l.item->Execute(ee,ev, params, e);
       std::stringstream ss2;
       ss2 << val;
@@ -10551,4 +10596,104 @@ std::string unique_id_apiitem()
 }
 
 #endif // SECTION_1
+#endif
+
+#ifdef FIRST_PART
+#ifdef SECTION_3
+
+
+int find_float_ch(std::string s, char ch) {
+  int ss = s.size();
+  int level = 0;
+  for(int i=0;i<ss;i++)
+    {
+      if (s[i]=='(') level++;
+      if (s[i]==')') level--;
+      if (level==0 && s[i]==ch) return i;
+    }
+  return -1;
+}
+
+std::string FloatExprEval(std::string s)
+{
+  std::cout << "FloatExprEval: " << s << std::endl;
+  if (s.size()>0 && s[0]==' ') return FloatExprEval(s.substr(1,s.size()-1));
+  if (s.size()>0 && s[s.size()-1]==' ') return FloatExprEval(s.substr(0,s.size()-1));
+  if (s.size()>2 && s[0]=='(' && s[s.size()-1]==')')
+    {
+      return FloatExprEval(s.substr(1,s.size()-2));
+    }
+  int vala = find_float_ch(s, '+');
+  if (vala!=-1) {
+    std::string start = s.substr(0,vala);
+    std::string end = s.substr(vala+1);
+    std::string res1 = FloatExprEval(start);
+    std::string res2 = FloatExprEval(end);
+    std::stringstream ss(res1);
+    std::stringstream ss2(res2);
+    float val1=0.0, val2=0.0;
+    ss >> val1;
+    ss2 >> val2;
+    std::stringstream res;
+    res << val1+val2;
+    std::cout << "FloatExprEval(result): " << res.str() << std::endl;
+
+    return res.str();
+  }
+  int valb = find_float_ch(s, '-');
+  if (valb!=-1) {
+    std::string start = s.substr(0,valb);
+    std::string end = s.substr(valb+1);
+    std::string res1 = FloatExprEval(start);
+    std::string res2 = FloatExprEval(end);
+    std::stringstream ss(res1);
+    std::stringstream ss2(res2);
+    float val1=0.0, val2=0.0;
+    ss >> val1;
+    ss2 >> val2;
+    std::stringstream res;
+    res << val1-val2;
+    std::cout << "FloatExprEval(result): " << res.str() << std::endl;
+    return res.str();
+  }
+
+  int valc = find_float_ch(s, '*');
+  if (valc!=-1) {
+    std::string start = s.substr(0,valc);
+    std::string end = s.substr(valc+1);
+    std::string res1 = FloatExprEval(start);
+    std::string res2 = FloatExprEval(end);
+    std::stringstream ss(res1);
+    std::stringstream ss2(res2);
+    float val1=0.0, val2=0.0;
+    ss >> val1;
+    ss2 >> val2;
+    std::stringstream res;
+    res << val1*val2;
+    std::cout << "FloatExprEval(result): " << res.str() << std::endl;
+    return res.str();
+  }
+
+  int vald = find_float_ch(s, '/');
+  if (vald!=-1) {
+    std::string start = s.substr(0,vald);
+    std::string end = s.substr(vald+1);
+    std::string res1 = FloatExprEval(start);
+    std::string res2 = FloatExprEval(end);
+    std::stringstream ss(res1);
+    std::stringstream ss2(res2);
+    float val1=0.0, val2=0.0;
+    ss >> val1;
+    ss2 >> val2;
+    std::stringstream res;
+    res << val1/val2;
+    std::cout << "FloatExprEval(result): " << res.str() << std::endl;
+    return res.str();
+  }
+
+  std::cout << "FloatExprEval(result): " << s << std::endl;
+  return s;
+
+}
+#endif
 #endif
