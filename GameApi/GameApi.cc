@@ -8023,6 +8023,7 @@ int async_pending_count_previous=-1;
 
 extern int score;
 extern int hidden_score;
+extern std::vector<int> g_hide_container;
 
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
@@ -8088,6 +8089,8 @@ public:
        {
 	 /* this eats all events from queue */
        }
+     g_hide_container.clear();
+
   }
   virtual int Iter()
   {
@@ -10318,7 +10321,7 @@ public:
     g_is_quake=true;
     GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
     quake_pos_x = pos_x;
-    quake_pos_y = pos_y;
+    quake_pos_y = -pos_y;
     quake_rot_y = rot_y;
     MainLoopEnv eee = e;
     GameApi::M env_m = add_matrix2(env, e.in_MV);
@@ -10407,7 +10410,7 @@ public:
     g_is_quake=true;
     GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
     quake_pos_x = pos_x;
-    quake_pos_y = pos_y;
+    quake_pos_y = -pos_y;
     quake_rot_y = rot_y;
     MainLoopEnv eee = e;
     GameApi::M env_m = add_matrix2(env, e.in_MV);
@@ -12402,11 +12405,103 @@ private:
   float prev_time, prev_time2;
 };
 
+class ScoreAdder2 : public MainLoopItem
+{
+public:
+  ScoreAdder2(GameApi::EveryApi &ev,MainLoopItem *item, VolumeObject *obj, Movement *move, PointsApiPoints *pts, int enter_score, int leave_score, int dyn_point, float timeout, Fetcher<int> *fetcher) : ev(ev), item(item), obj(obj), move(move), pts(pts), enter_score(enter_score), leave_score(leave_score), dyn_point(dyn_point),timeout(timeout), fetcher(fetcher) {
+    prev_p = false;
+    prev_time = 0.0;
+    prev_time2 = 0.0;
+}
+
+  void enter_event(int i, float time) {
+    if (time>prev_time+timeout) {
+      prev_time = time;
+      score+=enter_score;
+      if (score<0) score=0;
+      if (score>99999) score=99999;
+      number_map["score"] = score;
+    }
+  }
+  void leave_event(int i, float time) {
+    if (time>prev_time2+timeout) {
+      prev_time2 = time;
+      score+=leave_score;
+      if (score<0) score=0;
+      if (score>99999) score=99999;
+      number_map["score"] = score;
+    }
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    Point p = Point(0, 0, 0); // z=-400
+    //Matrix m = Matrix::YRotation(-quake_rot_y);
+    //p = p * m;
+    //p.x*=1.2;
+    //p.y*=1.2;
+    //p.z*=1.2;
+    //Matrix m2 = Matrix::YRotation(-quake_rot_y);
+    //p = p * m2;
+    p.x-=quake_pos_x;
+    p.z-=quake_pos_y;
+
+
+    int s = dyn_points_global_x.size();
+    if (dyn_point>=0 && dyn_point<s)
+      {
+	p = Point(dyn_points_global_x[dyn_point],dyn_points_global_y[dyn_point],dyn_points_global_z[dyn_point]);
+      }
+    p = p * Matrix::Inverse(move->get_whole_matrix(e.time*10.0, ev.mainloop_api.get_delta_time()));
+
+	debug_pos_x = p.x;
+	debug_pos_y = p.y;
+	debug_pos_z = p.z;
+
+
+    int sk = pts->NumPoints();
+    for(int i=0;i<sk;i++) {
+      Point pp = p;
+      Point p2 = pts->Pos(i);
+      p2.x = -p2.x;
+      pp-=Vector(p2);
+	
+      bool b = obj->Inside(pp);
+      if (b) {
+
+	//std::cout << "ScoreAdder hit: " << i << " " << p << " " << pp << " " << pts->Pos(i) << std::endl;
+	fetcher->set(i);
+      }
+      if (b && b!=prev_p) { prev_p = b; enter_event(i,e.time*10.0); } else
+	if (!b && b!=prev_p) { prev_p = b; leave_event(i,e.time*10.0); }
+    }
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual int shader_id() { return item->shader_id(); }
+
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *item;
+  VolumeObject *obj;
+  Movement *move;
+  PointsApiPoints *pts;
+  int enter_score, leave_score;
+  int dyn_point;
+  float timeout;
+  bool prev_p;
+  float prev_time, prev_time2;
+  Fetcher<int> *fetcher;
+};
+
+
 float debug_pos_x=0.0, debug_pos_y=0.0, debug_pos_z=0.0;
 
 GameApi::ML GameApi::MainLoopApi::debug_obj(EveryApi &ev)
 {  
-  P p = ev.polygon_api.cube(-3.0,3.0, -3.0, 3.0, -3.0,3.0);
+  P p = ev.polygon_api.cube(-30.0,30.0, -30.0, 30.0, -30.0,30.0);
   MT mat0 = ev.materials_api.def(ev);
   MT mat = ev.materials_api.snow(ev,mat0,0xffaaaaaa, 0xffeeeeee, 0xffffffff, 0.95);
   ML ml1 = ev.materials_api.bind(p,mat);
@@ -12422,6 +12517,78 @@ GameApi::ML GameApi::MainLoopApi::score_adder(EveryApi &ev,ML ml, O o, MN transf
   VolumeObject *obj = find_volume(e, o);
   Movement *mv = find_move(e, transform);
   return add_main_loop(e, new ScoreAdder(ev,item, obj, mv, enter_score, leave_score, dyn_point,timeout));
+}
+
+GameApi::ML GameApi::MainLoopApi::score_adder2(EveryApi &ev,ML ml, O o, PTS points, MN transform, int enter_score, int leave_score, int dyn_point, float timeout, IF int_fetcher)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  VolumeObject *obj = find_volume(e, o);
+  Movement *mv = find_move(e, transform);
+  Fetcher<int> *fetcher = find_int_fetcher(e, int_fetcher);
+  PointsApiPoints *points2 = find_pointsapi_points(e, points);
+  return add_main_loop(e, new ScoreAdder2(ev,item, obj, mv, points2, enter_score, leave_score, dyn_point,timeout, fetcher));
+}
+
+std::vector<int> g_hide_container;
+
+class ScoreHidePTS : public PointsApiPoints
+{
+public:
+  ScoreHidePTS(PointsApiPoints *pts) : pts(pts) { }
+  virtual void Prepare() { pts->Prepare(); }
+  virtual void HandleEvent(MainLoopEvent &event) { 
+    pts->HandleEvent(event);
+  }
+  virtual bool Update(MainLoopEnv &e) {
+    if (g_hide_container.size()!=hidecount) {
+      hidecount = g_hide_container.size();
+      bool b = pts->Update(e);
+      return true; 
+    }
+    bool b = pts->Update(e);
+    return true;
+    return b;
+  }
+  virtual int NumPoints() const { return pts->NumPoints(); }
+  virtual Point Pos(int t) const
+  {
+    int s = g_hide_container.size();
+    for(int i=0;i<s;i++) {
+      if (g_hide_container[i]==t) { /*std::cout << "Hiding: " << i << " " << t << std::endl;*/ return Point(0.0,-444440.0,0.0); }
+    }
+    return pts->Pos(t);
+  }
+  virtual unsigned int Color(int i) const { return pts->Color(i); }
+private:
+  PointsApiPoints *pts;
+  int hidecount;
+};
+class ScoreSetHide : public Fetcher<int>
+{
+public:
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+  virtual void set(int t) { 
+    //std::cout << "ScoreSetHide: " << t << std::endl;
+    int s = g_hide_container.size();
+    for(int i=0;i<s;i++) {
+      if (g_hide_container[i]==t) return;
+    }
+    g_hide_container.push_back(t);
+  }
+  virtual int get() const { return 0; }
+
+};
+GameApi::PTS GameApi::MainLoopApi::score_hide_pts(PTS pts)
+{
+  PointsApiPoints *pts2 = find_pointsapi_points(e, pts);
+  return add_points_api_points(e, new ScoreHidePTS(pts2));
+}
+GameApi::IF GameApi::MainLoopApi::score_set_hide()
+{
+  return add_int_fetcher(e, new ScoreSetHide);
 }
 
 class ScoreHidder : public MainLoopItem
@@ -13789,17 +13956,18 @@ public:
   StateIntFetcher(GameApi::Env &e, std::string url, std::string homepage, std::string states) : impl(e,url,homepage), states(parse_sep(states,'&')) { 
     firsttime = true;
   }
-  void draw_event(FrameLoopEvent &e) { impl.draw_event(e); }
+  void draw_event(FrameLoopEvent &e) { if (!firsttime) impl.draw_event(e); }
   void draw_frame(DrawLoopEnv &e) { 
     if (firsttime) { impl.Prepare(); firsttime=false; }
     impl.draw_frame(e); }
-  void event(MainLoopEvent &e) { impl.event(e); }
+  void event(MainLoopEvent &e) { if (!firsttime) impl.event(e); }
   void frame(MainLoopEnv &e) { 
     if (firsttime) { impl.Prepare(); firsttime=false; }
     impl.frame(e); 
   }
   void set(int i) { }
   int get() const {
+    if (!firsttime) {
     int s = states.size();
     for(int i=0;i<s;i++)
       {
@@ -13812,6 +13980,7 @@ public:
 	    if (s2==flag) return i;
 	  }
       }
+    }
     return 0;
   }
 private:

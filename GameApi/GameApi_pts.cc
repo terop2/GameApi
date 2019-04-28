@@ -1049,6 +1049,9 @@ public:
 
   void Prepare()
   {
+    if (firsttime) 
+      {
+	firsttime = false;
     coll->Prepare();
     if (!points)
       points = new std::vector<Point>;
@@ -1096,7 +1099,7 @@ public:
 	    
 	  }
       }
-    
+      }
   }
 private:
   FaceCollection *coll;
