@@ -4399,7 +4399,7 @@ template<typename T> T from_stream2(std::stringstream &is, GameApi::EveryApi &ev
   FromStreamClass<T> cls;
   std::string s;
   is >> s;
-  std::cout << "FromStreamClass: " << s << " " << typeid(T).name() << std::endl;
+  //std::cout << "FromStreamClass: " << s << " " << typeid(T).name() << std::endl;
   return cls.from_stream(s,ev);
 }
 
@@ -5095,7 +5095,7 @@ int execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std::vector<CodeG
 	    }
     }
       
-      std::cout << "Execute: " << params << std::endl;
+      //std::cout << "Execute: " << params << std::endl;
       int val = l.item->Execute(ee,ev, params, e);
       std::stringstream ss2;
       ss2 << val;
@@ -6278,6 +6278,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "EveryApi&", "ML", "O", "MN", "int", "int", "int", "float" },
 			 { "ev", "", "", "", "1", "0", "-1", "5.0" },
 			 "ML", "mainloop_api", "score_adder"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::score_adder2,
+			 "score_adder2",
+			 { "ev", "ml", "o", "points", "mn", "enter_score", "leave_score", "dyn_point", "timeout", "fetcher" },
+			 { "EveryApi&", "ML", "O", "PTS", "MN", "int", "int", "int", "float", "IF" },
+			 { "ev", "", "", "", "", "1", "0", "-1", "5.0", "" },
+			 "ML", "mainloop_api", "score_adder2"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::score_hidder,
 			 "score_hidder",
@@ -7993,32 +7999,32 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "orig", "dx", "dy", "dz" },
 			 { "P", "float", "float", "float" },
 			 { "", "0.0", "0.0", "0.0" },
-			 "P", "polygon_api", "translate","[S]"));
+			 "P", "polygon_api", "translate"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rotatex,
 			 "rotatex",
 			 { "orig", "angle" },
 			 { "P", "float" },
 			 { "", "0.0" },
-			 "P", "polygon_api", "rotatex","[S]"));
+			 "P", "polygon_api", "rotatex"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rotatey,
 			 "rotatey",
 			 { "orig", "angle" },
 			 { "P", "float" },
 			 { "", "0.0" },
-			 "P", "polygon_api", "rotatey","[S]"));
+			 "P", "polygon_api", "rotatey"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rotatez,
 			 "rotatez",
 			 { "orig", "angle" },
 			 { "P", "float" },
 			 { "", "0.0" },
-			 "P", "polygon_api", "rotatez","[S]"));
+			 "P", "polygon_api", "rotatez"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::scale,
 			 "scale",
 			 { "orig", "sx", "sy", "sz" },
 			 { "P", "float", "float", "float" },
 			 { "", "1.0", "1.0", "1.0" },
-			 "P", "polygon_api", "scale","[S]"));
+			 "P", "polygon_api", "scale"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::lod_choose,
 			 "lod_choose",
 			 { "vec", "name" },
@@ -9194,6 +9200,18 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "PTS", "PTS", "float", "float", "float", "float" },
 			 { "", "", "0.0", "1.0", "10.0", "40.0" },
 			 "PTS", "points_api", "anim_mix"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::score_hide_pts,
+			 "score_hide_pts",
+			 { "pts" },
+			 { "PTS" },
+			 { "" },
+			 "PTS", "mainloop_api", "score_hide_pts"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::score_set_hide,
+			 "score_set_hide",
+			 { },
+			 { },
+			 { },
+			 "IF", "mainloop_api", "score_set_hide"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::sort_pts,
 			 "sort_pts",
 			 { "points" },
@@ -10616,7 +10634,7 @@ int find_float_ch(std::string s, char ch) {
 
 std::string FloatExprEval(std::string s)
 {
-  std::cout << "FloatExprEval: " << s << std::endl;
+  //std::cout << "FloatExprEval: " << s << std::endl;
   if (s.size()>0 && s[0]==' ') return FloatExprEval(s.substr(1,s.size()-1));
   if (s.size()>0 && s[s.size()-1]==' ') return FloatExprEval(s.substr(0,s.size()-1));
   if (s.size()>2 && s[0]=='(' && s[s.size()-1]==')')
@@ -10636,7 +10654,7 @@ std::string FloatExprEval(std::string s)
     ss2 >> val2;
     std::stringstream res;
     res << val1+val2;
-    std::cout << "FloatExprEval(result): " << res.str() << std::endl;
+    //std::cout << "FloatExprEval(result): " << res.str() << std::endl;
 
     return res.str();
   }
@@ -10653,7 +10671,7 @@ std::string FloatExprEval(std::string s)
     ss2 >> val2;
     std::stringstream res;
     res << val1-val2;
-    std::cout << "FloatExprEval(result): " << res.str() << std::endl;
+    //std::cout << "FloatExprEval(result): " << res.str() << std::endl;
     return res.str();
   }
 
@@ -10670,7 +10688,7 @@ std::string FloatExprEval(std::string s)
     ss2 >> val2;
     std::stringstream res;
     res << val1*val2;
-    std::cout << "FloatExprEval(result): " << res.str() << std::endl;
+    //std::cout << "FloatExprEval(result): " << res.str() << std::endl;
     return res.str();
   }
 
@@ -10687,11 +10705,11 @@ std::string FloatExprEval(std::string s)
     ss2 >> val2;
     std::stringstream res;
     res << val1/val2;
-    std::cout << "FloatExprEval(result): " << res.str() << std::endl;
+    //std::cout << "FloatExprEval(result): " << res.str() << std::endl;
     return res.str();
   }
 
-  std::cout << "FloatExprEval(result): " << s << std::endl;
+  //std::cout << "FloatExprEval(result): " << s << std::endl;
   return s;
 
 }

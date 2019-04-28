@@ -287,6 +287,8 @@ public:
   IMPORT ML display_background(EveryApi &ev, ML ml);
   IMPORT ML small_window(EveryApi &ev, ML ml, int x, int y, int sx, int sy);
   IMPORT ML drag_drop_area(EveryApi &ev, ML mainloop, RUN (*fptr)(Env &e, EveryApi &ev, std::string filename));
+  IMPORT PTS score_hide_pts(PTS pts);
+  IMPORT IF score_set_hide();
   //IMPORT ML looking_glass(EveryApi &ev, ML ml);
   //IMPORT TXID looking_glass_txid(EveryApi &ev, ML ml);
   //IMPORT ML looking_glass_lib(TXID id, int sx, int sy, int x, int y);
@@ -418,6 +420,7 @@ public:
   INP move_collision(IBM scene, float start_x, float end_x, float start_y, float end_y, float s_x, float m_x, float e_x, float s_y, float m_y, float e_y, float speed_up, float speed_down, float speed_left, float speed_right, float speed_gravity);
   ML move_in(EveryApi &ev, ML ml, INP in);
   ML score_adder(EveryApi &ev, ML ml, O o, MN transform, int enter_score, int leave_score, int dyn_point, float timeout);
+  ML score_adder2(EveryApi &ev, ML ml, O o,PTS points, MN transform, int enter_score, int leave_score, int dyn_point, float timeout, IF fetcher);
   ML score_hidder(EveryApi &ev, ML ml, O o, int max_count);
   IF state_int_fetcher(std::string url, std::string states);
   MN state_speed_movement(MN mn, std::string url, std::string states, std::string x_speeds, std::string y_speeds, std::string z_speeds);
