@@ -13813,6 +13813,7 @@ public:
     for(int i=0;i<s;i++)
       {
 	ST_event e = events[i];
+	std::cout << ee.type << " " << e.event_type << " " << e.value << " " << key << std::endl;
 	if (ee.type==0x301 && e.event_type==1 && e.value==key) {
 	  event(e);
 	}
@@ -13902,10 +13903,10 @@ public:
   }
   void set_state(int new_state)
   {
-    //std::cout << "new state: " << new_state << " " << states[new_state].state_name << std::endl;
-    //int s = states[new_state].flags.size();
-    //for(int i=0;i<s;i++)
-    //  std::cout << "Flag:" << states[new_state].flags[i] << std::endl;
+    std::cout << "new state: " << new_state << " " << states[new_state].state_name << std::endl;
+    int s = states[new_state].flags.size();
+    for(int i=0;i<s;i++)
+      std::cout << "Flag:" << states[new_state].flags[i] << std::endl;
     current_state = new_state;
   }
 
