@@ -13884,8 +13884,8 @@ public:
     int old_current_state = current_state;
     while(1) {
       int t = find_type(pos,event_name);
-      //std::cout << "Found: " << t << std::endl;
-      if (t==-1) { /*std::cout << "Event name not found: " << event_name << std::endl;*/ break; }
+      std::cout << "Found: " << event_name << " " << t << std::endl;
+      if (t==-1) { std::cout << "Event name not found: " << event_name << std::endl; break; }
       pos = t+1;
       if (types[t].is_function) {
 	std::string left_type = types[t].left_type;
