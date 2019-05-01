@@ -3839,6 +3839,45 @@ private:
   float mix_val;
 };
 
+class GIMaterial : public MaterialForward
+{
+public:
+  GIMaterial(GameApi::EveryApi &ev, Material *next, GameApi::PTS pts, float obj_size) : ev(ev), next(next), pts(pts), obj_size(obj_size) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat(p.id);
+    GameApi::ML sh = ev.polygon_api.gi_shader(ev, ml, pts, obj_size);
+    return sh;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts2) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst(p.id, pts2.id);
+    GameApi::ML sh = ev.polygon_api.gi_shader(ev, ml, pts, obj_size);
+    return sh;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(p.id, pta.id);
+    GameApi::ML sh = ev.polygon_api.gi_shader(ev, ml, pts, obj_size);
+    return sh;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts2, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p.id, pts2.id, flip, start_time, end_time);
+    GameApi::ML sh = ev.polygon_api.gi_shader(ev, ml, pts, obj_size);
+    return sh;
+  }
+private:
+  GameApi::EveryApi &ev;
+  Material *next;
+  GameApi::PTS pts;
+  float obj_size;
+};
+
 class PhongMaterial : public MaterialForward
 {
 public:
@@ -4417,6 +4456,11 @@ EXPORT GameApi::MT GameApi::MaterialsApi::phong(EveryApi &ev, MT nxt, float ligh
 {
   Material *mat = find_material(e, nxt);
   return add_material(e, new PhongMaterial(ev, mat, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow));
+}
+EXPORT GameApi::MT GameApi::MaterialsApi::gi(EveryApi &ev, MT nxt, PTS points, float obj_size)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new GIMaterial(ev, mat, points, obj_size));
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::bump_phong(EveryApi &ev, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, FB bm, float bump_width)
 {
@@ -5867,6 +5911,11 @@ GameApi::US GameApi::UberShaderApi::v_phong(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("phong", next,"EX_NORMAL2 EX_LIGHTPOS2 LIGHTDIR IN_NORMAL"));
 }
+GameApi::US GameApi::UberShaderApi::v_gi(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("gi", next,"IN_POSITION EX_POSITION"));
+}
 GameApi::US GameApi::UberShaderApi::v_bump_phong(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -6140,6 +6189,11 @@ GameApi::US GameApi::UberShaderApi::f_phong(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("phong", next,"EX_NORMAL2 EX_LIGHTPOS2 LEVELS"));
+}
+GameApi::US GameApi::UberShaderApi::f_gi(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("gi", next,"EX_POSITION"));
 }
 GameApi::US GameApi::UberShaderApi::f_bump_phong(US us)
 {

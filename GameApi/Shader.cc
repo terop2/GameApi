@@ -73,7 +73,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
     int length=0;
     g_low->ogl->glGetShaderInfoLog(handle, 256, &length, &buf[0]);
     buf[length]=0;
-    //std::cout << "InfoLog: " << buf << std::endl;
+    std::cout << "InfoLog: " << buf << std::endl;
 
   }
   int i=0;
@@ -83,7 +83,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   char log[255];
   g_low->ogl->glGetShaderInfoLog(handle, 255, &len, log);
   log[len]=0;
-  //std::cout << "Shader:" << shader.Name() << ":" << log << std::endl;
+  std::cout << "Shader:" << shader.Name() << ":" << log << std::endl;
 
   }
   else
@@ -213,7 +213,7 @@ void Program::link()
   char log[255];
   g_low->ogl->glGetProgramInfoLog(priv->program, 255, &len, log);
   log[len]=0;
-  //std::cout << log << std::endl;
+  std::cout << log << std::endl;
 }
 void Program::use()
 {
@@ -1646,13 +1646,17 @@ ShaderFile::ShaderFile()
 "   shadow_position = vec2(alfa,beta);\n"
 "    return pos;\n"
 "}\n"
+    "#ifdef EX_POSITION\n"
+    "#ifdef IN_POSITION\n"
 
-    /*
 "vec4 gi(vec4 pos)\n"
 "{\n"
+" ex_Position = in_Position;\n"
 "   return pos;\n"
 "}\n"
-    */
+"#endif\n"
+"#endif\n"    
+
     "#ifdef EX_POSITION\n"
     "#ifdef IN_POSITION\n"
 
@@ -2347,18 +2351,21 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 "#endif\n"
-    /*
+   
+"#ifdef EX_POSITION\n"
+    
 "uniform int num_pos;\n"
 "uniform vec3 obj_pos[100];\n"
-"uniform float obj_size[100];\n"
+"uniform float obj_size;\n"
 
 "vec4 gi(vec4 rgb)\n"
 "{\n"
-"   vec4 frag_pos = ex_Position;\n"
+    // " return rgb;\n" 
+"   vec3 frag_pos = ex_Position;\n"
 "   float Ka = 0.0;\n"
 "   for(int i=0;i<num_pos;i++) {\n"
-"     vec4 pos = obj_pos[i];\n"
-"     float size = obj_size[i];\n"
+"     vec3 pos = obj_pos[i];\n"
+"     float size = obj_size;\n"
 "     pos-=frag_pos;\n"
 "     float d = sqrt(pos.x*pos.x+pos.y*pos.y+pos.z*pos.z);\n"
 "     float K = tan(asin(size/d));\n"
@@ -2367,8 +2374,11 @@ ShaderFile::ShaderFile()
 "    }\n"
 "    Ka/=4.0*3.14159;\n"
 "    return clamp(rgb-vec4(Ka,Ka,Ka,0.0),vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));\n"
-"}\n";
-    */
+
+
+"}\n"
+"#endif\n"
+    
 "#ifdef MANYTEXTURES\n"
 "in vec2 shadow_position;\n"
 "uniform vec4 shadow_dark;\n"
@@ -2955,7 +2965,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod, vertex_c, v_defines, false,v_shader);
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -2972,7 +2982,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       //std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader);
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);
