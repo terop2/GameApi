@@ -1035,6 +1035,23 @@ GameApi::ML GameApi::PointsApi::movement_display(EveryApi &ev, ML ml, MN mn, int
   MainLoopItem *item = find_main_loop(e,ml);
   return add_main_loop(e, new MovementDisplay(e,ev, item, mn,count, sx,sy,sz,start_x,end_x,start_y,end_y,start_z,end_z));
 }
+struct Cont {
+  int count;
+  std::vector<Point> *points;
+  std::vector<unsigned int> *colours;
+};
+std::vector<Cont> g_meshquad_data;
+Cont *find_meshquad(int count)
+{
+  int s = g_meshquad_data.size();
+  for(int i=0;i<s;i++) {
+    Cont *c = &g_meshquad_data[i];
+    if (c->count == count) return c;
+  }
+  return 0;
+}
+
+
 class MeshQuad : public PointsApiPoints
 {
 public:
@@ -1049,6 +1066,12 @@ public:
 
   void Prepare()
   {
+    Cont *c = find_meshquad(count);
+    if (c) {
+      points = c->points;
+      color2 = c->colours;
+      return;
+    }
     if (firsttime) 
       {
 	firsttime = false;
@@ -1099,6 +1122,11 @@ public:
 	    
 	  }
       }
+    Cont c;
+    c.count = count;
+    c.points = points;
+    c.colours = color2;
+    g_meshquad_data.push_back(c);
       }
   }
 private:

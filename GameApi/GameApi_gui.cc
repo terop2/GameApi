@@ -6818,6 +6818,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "MT", "float", "unsigned int", "unsigned int" },
 			 { "ev", "", "300.0", "ff000000", "ffffffff" },
 			 "MT", "materials_api", "fog"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gi,
+			 "m_gi",
+			 { "ev", "nxt", "pts", "obj_size" },
+			 { "EveryApi&", "MT", "PTS", "float" },
+			 { "ev", "", "", "100.0" },
+			 "MT", "materials_api", "gi"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::combine_materials,
 			 "m_or_elem",
 			 { "ev", "mat1", "mat2" },
@@ -7302,6 +7308,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "P", "PTS", "MT" },
 			 { "", "", "" },
 			 "ML", "materials_api", "bind_inst"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::m_bind_inst_many,
+			 "m_bind_inst_many",
+			 { "ev", "vec", "mat", "pts" },
+			 { "EveryApi&", "[P]", "[MT]", "PTS" },
+			 { "ev", "", "", "" },
+			 "ML", "polygon_api", "m_bind_inst_many"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bind_inst_fade,
 			 "m_fade_inst",
 			 { "p", "pts", "mat", "flip", "start_time", "end_time" },
