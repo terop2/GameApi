@@ -42,12 +42,13 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   //std::cout << "Quake: " << cursor.x << "," << cursor.y << "," << cursor.z << "::" << e.type << " " << e.button << std::endl;
   int screen_x = ev.mainloop_api.get_screen_width();
   int screen_y = ev.mainloop_api.get_screen_height();
-
+#if 0
   if (screen_x<700) {
     // android events are upsidedown.
     cursor.x = screen_x - cursor.x;
     cursor.y = screen_y - cursor.y;
   }
+#endif
 
   int scr_x_0 = 0.0;
   int scr_x_1 = screen_x/3.0;
