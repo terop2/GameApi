@@ -11031,16 +11031,16 @@ public:
   int shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &e) 
   {
-    if ((e.type==1025 /*&& e.button==0*/) || e.type==Low_SDL_FINGERDOWN) {
+    if ((e.type==1025 && e.button==0) /*|| e.type==Low_SDL_FINGERDOWN*/) {
       mousedown=true;
       mousedown_pos = e.cursor_pos;
     }
-    if ((e.type==1026 /*&& e.button==-1*/) || e.type==Low_SDL_FINGERUP) {
+    if ((e.type==1026 && e.button==-1) /*|| e.type==Low_SDL_FINGERUP*/) {
       mousedown=false;
       fixed+=mouse_delta;
       mouse_delta=Vector(0.0,0.0,0.0);
     }
-    if ((e.type==1024||e.type==Low_SDL_FINGERMOTION) && mousedown)
+    if ((e.type==1024 /*||e.type==Low_SDL_FINGERMOTION*/) && mousedown)
       {
 	mouse_delta = e.cursor_pos - mousedown_pos;
         mousedown_pos = e.cursor_pos;
