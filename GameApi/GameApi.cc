@@ -10561,7 +10561,12 @@ private:
 GameApi::ML GameApi::MovementNode::quake_ml3(EveryApi &ev, ML ml,ML ml3,float speed, float rot_speed, float p_x, float p_y, float p_z)
 {
   GameApi::MN mn = ev.move_api.empty();
-  GameApi::MN scale = ev.move_api.scale2(mn, 1.0,1.0,-1.0);
+  float y_flip = 1.0;
+  if (ev.mainloop_api.get_screen_width() < 700)
+    {
+      y_flip = -1.0;
+    }
+  GameApi::MN scale = ev.move_api.scale2(mn, 1.0,y_flip,-1.0);
   GameApi::ML ml2 = ev.move_api.move_ml(ev,ml3,scale, 1, 10.0);
   MainLoopItem *mml = find_main_loop(e,ml2);
   MainLoopItem *mml2 = find_main_loop(e,ml);
