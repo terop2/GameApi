@@ -11049,8 +11049,14 @@ public:
   }
   void execute(MainLoopEnv &e)
   {
-    Matrix curr1 = Matrix::YRotation(mouse_delta.dx*x_speed);
-    Matrix curr2 = Matrix::XRotation(mouse_delta.dy*y_speed);
+    float spx = x_speed;
+    float spy = y_speed;
+    if (e.screen_width <700) { // test for mobile
+    spx = -spx;
+    spy = -spy;
+    }
+    Matrix curr1 = Matrix::YRotation(mouse_delta.dx*spx);
+    Matrix curr2 = Matrix::XRotation(mouse_delta.dy*spy);
     Matrix curr = curr1 * curr2;
     
     accumulated *= curr;
