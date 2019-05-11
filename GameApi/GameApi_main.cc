@@ -695,7 +695,7 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   e2.drag_drop_filename = filename;
 
 #ifndef __APPLE__
-  //#ifndef EMSCRIPTEN
+#ifndef EMSCRIPTEN
   if (event.type==Low_SDL_FINGERMOTION||event.type==Low_SDL_FINGERDOWN||event.type==Low_SDL_FINGERUP)
     {
       Low_SDL_TouchFingerEvent *ptr = &event.tfinger;
@@ -706,7 +706,7 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
       x = /*get_screen_width()-*/int(xx);
       y = /*get_screen_height()-*/int(yy); 
     }
-  //#endif
+#endif
 #endif
 
   if (event.type==Low_SDL_MOUSEWHEEL)
