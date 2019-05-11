@@ -10570,10 +10570,10 @@ GameApi::ML GameApi::MovementNode::quake_ml3(EveryApi &ev, ML ml,ML ml3,float sp
   GameApi::ML ml2 = ev.move_api.move_ml(ev,ml3,scale, 1, 10.0);
   MainLoopItem *mml = find_main_loop(e,ml2);
 
-  GameApi::MN scale3 = ev.move_api.scale2(mn, 1.0,y_flip,1.0);
-  GameApi::ML ml3 = ev.move_api.move_ml(ev,ml,scale3, 1, 10.0);
+  GameApi::MN scale4 = ev.move_api.scale2(mn, 1.0,y_flip,1.0);
+  GameApi::ML ml4 = ev.move_api.move_ml(ev,ml,scale3, 1, 10.0);
 
-  MainLoopItem *mml2 = find_main_loop(e,ml3);
+  MainLoopItem *mml2 = find_main_loop(e,ml4);
   return add_main_loop(e, new QuakeML3(e,ev, mml2, mml, speed, rot_speed, Point(p_x,p_y,p_z)));
 }
 
