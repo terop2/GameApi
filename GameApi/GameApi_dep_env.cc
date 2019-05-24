@@ -330,7 +330,7 @@ void onerror_async_cb(emscripten_fetch_t *fetch)
 #ifndef EMSCRIPTEN
   char *url = (char*)arg;
 #else
-  char *url = fetch->url;
+  const char *url = fetch->url;
 #endif
     std::string url_str(url);
   std::string url_only(striphomepage(url_str));
