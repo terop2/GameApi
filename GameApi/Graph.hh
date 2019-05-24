@@ -916,6 +916,11 @@ class MemoizeBitmap : public Bitmap<Color>
 public:
   MemoizeBitmap(Bitmap<Color> &bm) : bm(bm) 
   {
+    
+  }
+  void Prepare() { 
+    bm.Prepare();
+    
     int width = bm.SizeX();
     int height = bm.SizeY();
     buf = BufferRef::NewBuffer(width, height);
@@ -924,10 +929,7 @@ public:
 	{
 	  buf.buffer[i+j*buf.ydelta] = 0xfefefefe;
 	}
-    
-  }
-  void Prepare() { 
-    bm.Prepare();
+
   }
 
   ~MemoizeBitmap() { BufferRef::FreeBuffer(buf); }

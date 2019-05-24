@@ -1050,6 +1050,12 @@ Cont *find_meshquad(int count)
   }
   return 0;
 }
+int meshquad_calculate_id(FaceCollection *coll, int count)
+{
+  Point p = coll->FacePoint(0,0);
+  int val = int(p.x)+int(p.y)+int(p.z);
+  return coll->NumFaces()+ count + val;
+}
 
 
 class MeshQuad : public PointsApiPoints
@@ -1066,7 +1072,8 @@ public:
 
   void Prepare()
   {
-    Cont *c = find_meshquad(count);
+    int id = meshquad_calculate_id(coll, count);
+    Cont *c = find_meshquad(id);
     if (c) {
       points = c->points;
       color2 = c->colours;
@@ -1122,8 +1129,9 @@ public:
 	    
 	  }
       }
+    int id = meshquad_calculate_id(coll, count);
     Cont c;
-    c.count = count;
+    c.count = id;
     c.points = points;
     c.colours = color2;
     g_meshquad_data.push_back(c);

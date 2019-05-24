@@ -4810,7 +4810,8 @@ ASyncData async_data[] = {
   { "low_frame_api", "low_enemy_draw", 1 },
   { "low_frame_api", "low_enemy_draw2", 1 },
   { "polygon_api", "stl_load", 0 },
-  { "font_api", "load_font_dump", 0 }
+  { "font_api", "load_font_dump", 0 },
+  { "polygon_api", "load_scene", 1 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -7078,6 +7079,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "http://tpgames.org/test_bm.chai", "100", "100" },
 			 "BM", "bitmap_api", "chai_bm"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::load_scene,
+			 "scene_ml",
+			 { "ev", "url", "sx", "sy" },
+			 { "EveryApi&", "std::string", "int", "int" },
+			 { "ev", "http://tpgames.org/landscape.scn", "600", "600" },
+			 "ML", "polygon_api", "load_scene"));
+		     
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::skybox,
 			 "skybox_ml",
 			 { "ev", "land", "sky" },
@@ -9812,7 +9820,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "EveryApi&", "BM", "float", "float", "float", "int", "int", "int", "int", "int" },
 			 { "ev", "", "7.0", "0.5", "0.9", "0", "0", "0", "255", "5" },
 			 "BM", "bitmap_api", "add_shape_border"));
-			 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::choose_color,
+			 "bm_choose_color",
+			 { "bm", "c1", "c2" },
+			 { "BM", "unsigned int", "unsigned int" },
+			 { "", "ffffffff", "00888888" },
+			 "BB", "bitmap_api", "choose_color"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::subbitmap,
 			 "sub",
 			 { "orig", "x", "y", "width", "height" },
@@ -9883,6 +9896,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BM", "BM" },
 			 { "", "" },
 			 "BM", "bitmap_api", "plus_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::median_filter,
+			 "bm_medianfilter",
+			 { "bm", "sx", "sy" },
+			 { "BM", "int", "int" },
+			 { "", "1", "1" },
+			 "BM", "bitmap_api", "median_filter"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::repeat_bitmap,
 			 "repeat",
 			 { "orig1", "x_count", "y_xount" },

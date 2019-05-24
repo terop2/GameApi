@@ -43,6 +43,7 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   int screen_x = ev.mainloop_api.get_screen_width();
   int screen_y = ev.mainloop_api.get_screen_height();
 #if 0
+  // NOTE, sponza has left&right upsidedown, but shadowcity has them right(?)
   if (screen_x<700) {
     // android events are upsidedown.
     cursor.x = screen_x - cursor.x;

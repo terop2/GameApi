@@ -1,4 +1,4 @@
-
+ 
 #include "GameApi_h.hh"
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -4117,4 +4117,135 @@ GameApi::BM GameApi::BitmapApi::color_bm(BM bm, unsigned int color)
   handle2->bm = res;
   BM bm2 = add_bitmap(e, handle2);
   return bm2;
+}
+
+class CubeColorBool : public ColorBool
+{
+public:
+  CubeColorBool(unsigned int c1, unsigned int c2) : c1(c1), c2(c2) { 
+    a1 = c1 &0xff000000;
+    r1 = c1 &0xff0000;
+    g1 = c1 &0xff00;
+    b1 = c1 &0xff;
+
+    a2 = c2 &0xff000000;
+    r2 = c2 &0xff0000;
+    g2 = c2 &0xff00;
+    b2 = c2 &0xff;
+  }
+  bool is_included(unsigned int color) const
+  {
+    unsigned int a = color &0xff000000;
+    unsigned int r = color &0xff0000;
+    unsigned int g = color &0xff00;
+    unsigned int b = color &0xff;
+    if (a<a1 ||a>a2) return false;
+    if (r<r1 ||r>r2) return false;
+    if (g<g1 ||g>g2) return false;
+    if (b<b1 ||b>b2) return false;
+    return true;
+  }
+private:
+  unsigned int c1,c2;
+  unsigned int a1,a2;
+  unsigned int r1,r2;
+  unsigned int g1,g2;
+  unsigned int b1,b2;
+};
+
+class ChooseBitmapColours : public Bitmap<bool>
+{
+public:
+  ChooseBitmapColours(Bitmap<Color> &bm, ColorBool *bools) : bm(bm), bools(bools) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual bool Map(int x, int y) const
+  {
+    Color c = bm.Map(x,y);
+    unsigned int cc = c.Pixel();
+    return bools->is_included(cc);
+  }
+  virtual void Prepare() { bm.Prepare(); }
+
+private:
+  Bitmap<Color> &bm;
+  ColorBool *bools;
+};
+
+GameApi::BB GameApi::BitmapApi::choose_color(BM bm, unsigned int c1, unsigned int c2)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *bbm = find_color_bitmap(handle);
+  ColorBool *bools = new CubeColorBool(c1,c2);
+  return add_bool_bitmap(e, new ChooseBitmapColours(*bbm, bools));
+}
+
+
+std::vector<float> *g_median_float;
+
+bool MedianCompare(int x, int y)
+{
+  return g_median_float->operator[](x)<g_median_float->operator[](y);
+}
+
+class MedianFilter : public Bitmap<Color>
+{
+public:
+  MedianFilter(Bitmap<Color> &bm, int sx, int sy) : bm(bm),sx(sx),sy(sy) { }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  float value(unsigned int c) const
+  {
+    unsigned int r = c&0xff0000;
+    unsigned int g = c&0x00ff00;
+    unsigned int b = c&0x0000ff;
+    r>>=16;
+    g>>=8;
+    return (float(r)+float(g)+float(b))/3.0/256.0;
+  }
+
+  virtual Color Map(int x, int y) const
+  {
+    std::vector<float> c;
+    std::vector<int> xxx;
+    std::vector<int> yyy;
+    for(int yy=-sy;yy<=sy;yy++)
+      for(int xx=-sx;xx<=sx;xx++)
+	{
+	  unsigned int cc;
+	  if (x+xx>=0 && x+xx<bm.SizeX() && y+yy>=0 && y+yy<bm.SizeY())
+	    {
+	      cc = bm.Map(x+xx,y+yy).Pixel();
+	    }
+	  else 
+	    {
+	      cc=0x00000000;
+	    }
+	  c.push_back(value(cc));
+	  xxx.push_back(x+xx);
+	  yyy.push_back(y+yy);
+	}
+    std::vector<int> indexes;
+    int s = c.size();
+    if (!s) return Color(0x0);
+    for(int i=0;i<s;i++) indexes.push_back(i);
+    g_median_float = &c;
+    std::sort(indexes.begin(), indexes.end(), &MedianCompare);
+    int pos = s/2;
+    int xx = xxx[indexes[pos]];
+    int yy = yyy[indexes[pos]];
+    if (xx>=0 && xx<bm.SizeX() && yy>=0 && yy<bm.SizeY())
+      return bm.Map(xx,yy);
+    return Color(0x00000000);
+  }
+  virtual void Prepare() { bm.Prepare(); }
+private:
+  Bitmap<Color> &bm;
+  int sx,sy;
+};
+GameApi::BM GameApi::BitmapApi::median_filter(BM bm, int sx, int sy)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  return add_color_bitmap(e, new MedianFilter(*b2, sx,sy));
 }
