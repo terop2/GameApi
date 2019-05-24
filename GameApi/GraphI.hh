@@ -1511,4 +1511,11 @@ private:
   FrmWidget *w;
   int scrx, scry;
 };
+
+class ColorBool
+{
+public:
+  virtual bool is_included(unsigned int color) const=0;
+};
+
 #endif
