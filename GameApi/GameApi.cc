@@ -10470,7 +10470,7 @@ public:
     GameApi::M env_m = add_matrix2(env, e.in_MV);
     GameApi::M rot_y2 = ev.matrix_api.yrot(rot_y);
     GameApi::M trans_y2 = ev.matrix_api.trans(p.x,p.y,p.z);
-    GameApi::M res = ev.matrix_api.mult(rot_y2,trans_y2);
+    GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(rot_y2,trans_y2));
     GameApi::M trans = ev.matrix_api.trans(pos_x, 0.0, pos_y +400.0);
     GameApi::M trans2 = ev.matrix_api.trans(0.0,0.0,-400.0);
     GameApi::M scale = ev.matrix_api.scale(1.0,1.0,-1.0);
@@ -12570,6 +12570,7 @@ float debug_pos_x=0.0, debug_pos_y=0.0, debug_pos_z=0.0;
 
 GameApi::ML GameApi::MainLoopApi::debug_obj(EveryApi &ev)
 {  
+#if 0
   P p = ev.polygon_api.cube(-30.0,30.0, -30.0, 30.0, -30.0,30.0);
   MT mat0 = ev.materials_api.def(ev);
   MT mat = ev.materials_api.snow(ev,mat0,0xffaaaaaa, 0xffeeeeee, 0xffffffff, 0.95);
@@ -12577,6 +12578,11 @@ GameApi::ML GameApi::MainLoopApi::debug_obj(EveryApi &ev)
   MN mn2 = ev.move_api.empty();
   MN mn = ev.move_api.debug_translate(mn2);
   ML ml2 = ev.move_api.move_ml(ev,ml1,mn,1,10.0);
+#endif
+  P p = ev.polygon_api.empty();
+  MT mat0 = ev.materials_api.def(ev);
+  
+  ML ml2 = ev.materials_api.bind(p,mat0);
   return ml2;
 }
 
