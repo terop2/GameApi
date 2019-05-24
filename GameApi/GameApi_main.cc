@@ -1415,7 +1415,7 @@ bool GameApi::MainLoopApi::logo_iter()
   env->ev->mainloop_api.execute_ml(env->res, env->color, env->texture, env->texture_2d, env->arr,in_MV, in_T, in_N, get_screen_sx(), get_screen_sy());
   env->ev->mainloop_api.swapbuffers();
   frame_count++;
-  if (frame_count>100) {
+  if (frame_count>150) {
     return true;
   }
   return false;
