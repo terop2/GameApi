@@ -4,6 +4,7 @@
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
+#include <emscripten/fetch.h>
 #endif
 
 
@@ -319,10 +320,18 @@ ASyncCallback *rem_async_cb(std::string url)
 
 std::string striphomepage(std::string);
 void onprogress_async_cb(unsigned int tmp, void *, int, int) { }
+#ifndef EMSCRIPTEN
 void onerror_async_cb(unsigned int tmp, void *arg, int, const char*)
+#else
+void onerror_async_cb(emscripten_fetch_t *fetch)
+#endif
 {
   std::cout << "ERROR: url loading error! " << std::endl;
-    char *url = (char*)arg;
+#ifndef EMSCRIPTEN
+  char *url = (char*)arg;
+#else
+  char *url = fetch->url;
+#endif
     std::string url_str(url);
   std::string url_only(striphomepage(url_str));
     load_url_buffers_async[url_only] = (std::vector<unsigned char>*)-1;
@@ -342,17 +351,27 @@ std::string stripprefix(std::string s)
   int len = strlen("load_url.php?url=");
   return s.substr(len,s.size()-len);
 }
+#ifndef EMSCRIPTEN
 void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datasize)
+#else
+void onload_async_cb(emscripten_fetch_t *fetch)
+#endif
 {
-
+#ifndef EMSCRIPTEN
+  char *url = (char*)arg;
+  unsigned char *dataptr = (unsigned char*)data;
+#else
+  char *url = fetch->url;
+  unsigned char *dataptr = (unsigned char*)fetch->data;
+#endif
   if (datasize==0) {
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
   }
   std::vector<unsigned char> buffer;
-  unsigned char *dataptr = (unsigned char*)data;
+  //unsigned char *dataptr = (unsigned char*)data;
   for(unsigned int i=0;i<datasize;i++) { buffer.push_back(dataptr[i]); }
   
-  char *url = (char*)arg;
+  //char *url = (char*)arg;
   std::string url_str(url);
   std::string url_only(striphomepage(url_str));
 
@@ -463,7 +482,14 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     //    std::cout << "ASync pending inc (load_urls) -->" << async_pending_count << std::endl;
 
     //emscripten_async_wget_data(buf2, (void*)buf2 , &onload_async_cb, &onerror_async_cb);
-    emscripten_async_wget2_data(buf2, "POST", url3.c_str(), (void*)buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
+    //emscripten_async_wget2_data(buf2, "POST", url3.c_str(), (void*)buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
+    emscripten_fetch_attr_t attr;
+    emscripten_fetch_attr_init(&attr);
+    strcpy(attr.requestMethod, "POST");
+    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+    attr.onsuccess = &onload_async_cb;
+    attr.onerror = &onerror_async_cb;
+    emscripten_fetch(&attr,url3.c_str());
 #else
   { // progressbar
   int s = url.size();
