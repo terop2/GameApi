@@ -490,7 +490,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
     attr.onsuccess = &onload_async_cb;
     attr.onerror = &onerror_async_cb;
-    emscripten_fetch(&attr,url3.c_str());
+    emscripten_fetch(&attr,buf3);
 #else
   { // progressbar
   int s = url.size();
