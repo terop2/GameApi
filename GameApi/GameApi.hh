@@ -566,12 +566,14 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT BM median_filter(BM bm, int sx, int sy);
         IMPORT BM newbitmap(int sx, int sy, unsigned int color = 0x00000000);
 	IMPORT BM function(std::function<unsigned(int, int)> f, int sx, int sy);
 	IMPORT BM transform(BM orig, std::function<unsigned int(int, int, unsigned int)> f);
 	IMPORT BM newintbitmap(char *array, int sx, int sy, std::function<int(char)> f);
         IMPORT IBM intbitmap_loader(std::string url);
   IMPORT BM color_bm(BM bm, unsigned int color);
+  IMPORT BB choose_color(BM bm, unsigned int c1, unsigned int c2);
   IMPORT BM intbitmap_bm(IBM ibm);
   IMPORT BM chai_bm(std::string url, int sx, int sy);
   IMPORT BM bump_map(FB fb, float h);
@@ -2112,6 +2114,7 @@ public:
   std::vector<TXID> mtl_parse(EveryApi&ev, std::vector<unsigned char> mtlfilecontents, std::string url_prefix);
   
   ML m_bind_inst_many(EveryApi &ev, std::vector<P> vec, std::vector<MT> materials, PTS pts);
+  ML load_scene(EveryApi &ev, std::string url, int sx, int sy);
 
   CG curve_group_from_anim(MA ma, float start_time, float end_time);
   MA meshanim(std::vector<P> vec, float start_time, float end_time);
