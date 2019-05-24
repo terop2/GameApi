@@ -361,7 +361,7 @@ void onload_async_cb(emscripten_fetch_t *fetch)
   char *url = (char*)arg;
   unsigned char *dataptr = (unsigned char*)data;
 #else
-  char *url = fetch->url;
+  const char *url = fetch->url;
   unsigned char *dataptr = (unsigned char*)fetch->data;
   unsigned int datasize = fetch->numbytes;
 #endif
