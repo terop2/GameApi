@@ -3500,7 +3500,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 #ifdef __EMSCRIPTEN_PTHREADS__
   if (emscripten_has_threading_support()) {
 #else
-  //if (0) {
+  if (0) {
 #endif // END OF __EMSCRIPTEN_PTHREADS
 #endif // END OF EMSCRIPTEN
     
@@ -3606,9 +3606,9 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 
 #ifdef EMSCRIPTEN
   return add_vertex_array(e, set, arr2);
-#ifdef __EMSCRIPTEN_PTHREADS__
+  //#ifdef __EMSCRIPTEN_PTHREADS__
   } else {
-#endif
+    //#endif
 #ifndef BATCHING
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
@@ -3655,9 +3655,9 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       s->free_memory();
     return add_vertex_array(e, s, arr2);
 #endif // BATCHING
-#ifdef __EMSCRIPTEN_PTHREADS__
+    //#ifdef __EMSCRIPTEN_PTHREADS__
       }
-#endif
+  //#endif
 #else // EMSCRIPTEN
   return add_vertex_array(e, set, arr2);
 #endif // end of EMSCRIPTEN
@@ -12557,4 +12557,72 @@ GameApi::ML GameApi::PolygonApi::m_bind_inst_many(EveryApi &ev, std::vector<P> v
   }
   GameApi::ML ml = ev.mainloop_api.array_ml(vec2);
   return ml;
+}
+
+class SceneDesc : public MainLoopItem
+{
+public:
+  SceneDesc(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepage, int sx, int sz) : env(env), ev(ev), url(url), homepage(homepage),sx(sx),sz(sz) { firsttime = true; }
+  void Prepare() {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    std::string code(vec->begin(), vec->end());
+    std::stringstream ss(code);
+    std::string url2;
+    int pos_x=1;
+    int pos_y=1;
+    std::vector<GameApi::ML> vec2;
+    while(ss >> pos_x >> pos_y >> url2) {
+      GameApi::ML script = ev.mainloop_api.load_ML_script(ev, url2, "", "", "", "", "");
+      GameApi::MN def = ev.move_api.empty();
+      GameApi::MN mn = ev.move_api.trans2(def, pos_x*sx, 0.0, pos_y*sz);
+      GameApi::ML move = ev.move_api.move_ml(ev, script, mn, 1, 10.0);
+      vec2.push_back(move);
+    }
+    scene = ev.mainloop_api.array_ml(vec2);
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+      Prepare();
+      firsttime = false;
+    }
+    MainLoopItem *item = find_main_loop(env, scene);
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (firsttime) {
+      Prepare();
+      firsttime = false;
+    }
+    MainLoopItem *item = find_main_loop(env, scene);
+    item->handle_event(e);
+  }
+  virtual int shader_id() { 
+    if (firsttime) {
+      Prepare();
+      firsttime = false;
+    }
+    MainLoopItem *item = find_main_loop(env, scene);
+    return item->shader_id();
+  }
+
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string url;
+  std::string homepage;
+  GameApi::ML scene;
+  bool firsttime;
+  int sx,sz;
+};
+
+GameApi::ML GameApi::PolygonApi::load_scene(GameApi::EveryApi &ev, std::string url, int sx, int sy)
+{
+  return add_main_loop(e, new SceneDesc(e,ev,url, gameapi_homepageurl, sx,sy));
 }
