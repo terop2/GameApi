@@ -363,7 +363,7 @@ void onload_async_cb(emscripten_fetch_t *fetch)
 #else
   const char *url = fetch->url;
   unsigned char *dataptr = (unsigned char*)fetch->data;
-  unsigned int datasize = fetch->numbytes;
+  unsigned int datasize = fetch->numBytes;
 #endif
   if (datasize==0) {
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
