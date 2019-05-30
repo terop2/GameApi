@@ -10562,10 +10562,11 @@ GameApi::ML GameApi::MovementNode::quake_ml3(EveryApi &ev, ML ml,ML ml3,float sp
 {
   GameApi::MN mn = ev.move_api.empty();
   float y_flip = 1.0;
-  if (ev.mainloop_api.get_screen_width() < 700)
-    {
-      y_flip = -1.0;
-    }
+  // not needed since android changed again.
+  //if (ev.mainloop_api.get_screen_width() < 700)
+  //  {
+  //    y_flip = -1.0;
+  //  }
   GameApi::MN scale = ev.move_api.scale2(mn, 1.0,1.0,-1.0);
   GameApi::ML ml2 = ev.move_api.move_ml(ev,ml3,scale, 1, 10.0);
   MainLoopItem *mml = find_main_loop(e,ml2);
