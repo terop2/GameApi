@@ -4729,6 +4729,7 @@ public:
     obj2->HandleEvent(e);
   }
   void Prepare() {
+    if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     obj2->Prepare(); 
     pta = ev.points_api.prepare(pts);
@@ -16675,17 +16676,45 @@ std::vector<GameApi::ML> append_vec(std::vector<GameApi::ML> vec, std::vector<Ga
   return vec;
 }
 
+class FilterPrepares : public MainLoopItem
+{
+public:
+  FilterPrepares(MainLoopItem *item) : item(item) { firsttime = true;}
+  virtual void Prepare()
+  {
+    if (firsttime) { item->Prepare(); }
+    firsttime = false;
+  }
+  virtual void execute(MainLoopEnv &e) { 
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual int shader_id() { return item->shader_id(); }
+private:
+  MainLoopItem *item;
+  bool firsttime;
+};
+GameApi::ML filter_prepares(GameApi::Env &e, GameApi::ML ml)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new FilterPrepares(item));
+}
+
 std::vector<GameApi::ML> looking_glass(GameApi::EveryApi &ev, GameApi::ML ml, int amount, int mode)
 {
-  std::vector<GameApi::ML> l0 = part_line(ev,ml, 0, amount,mode);
-  std::vector<GameApi::ML> l1 = part_line(ev,ml, 1, amount,mode);
-  std::vector<GameApi::ML> l2 = part_line(ev,ml, 2, amount,mode);
-  std::vector<GameApi::ML> l3 = part_line(ev,ml, 3, amount,mode);
-  std::vector<GameApi::ML> l4 = part_line(ev,ml, 4, amount,mode);
-  std::vector<GameApi::ML> l5 = part_line(ev,ml, 5, amount,mode);
-  std::vector<GameApi::ML> l6 = part_line(ev,ml, 6, amount,mode);
-  std::vector<GameApi::ML> l7 = part_line(ev,ml, 7, amount,mode);
-  std::vector<GameApi::ML> l8 = part_line(ev,ml, 8, amount,mode);
+  GameApi::ML ml2 = filter_prepares(ev.get_env(), ml);
+  std::vector<GameApi::ML> l0 = part_line(ev,ml2, 0, amount,mode);
+  std::vector<GameApi::ML> l1 = part_line(ev,ml2, 1, amount,mode);
+  std::vector<GameApi::ML> l2 = part_line(ev,ml2, 2, amount,mode);
+  std::vector<GameApi::ML> l3 = part_line(ev,ml2, 3, amount,mode);
+  std::vector<GameApi::ML> l4 = part_line(ev,ml2, 4, amount,mode);
+  std::vector<GameApi::ML> l5 = part_line(ev,ml2, 5, amount,mode);
+  std::vector<GameApi::ML> l6 = part_line(ev,ml2, 6, amount,mode);
+  std::vector<GameApi::ML> l7 = part_line(ev,ml2, 7, amount,mode);
+  std::vector<GameApi::ML> l8 = part_line(ev,ml2, 8, amount,mode);
 
   std::vector<GameApi::ML> K1 = append_vec(l0,l1);
   std::vector<GameApi::ML> K2 = append_vec(K1,l2);
