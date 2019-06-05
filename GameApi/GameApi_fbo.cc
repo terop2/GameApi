@@ -117,10 +117,6 @@ public:
     item->handle_event(e);
   }
   void render(MainLoopEnv &e) {
-    if (firsttime) {
-      item->Prepare();
-      firsttime = false;
-    }
     int id=0;
     g_low->ogl->glGetIntegerv(Low_GL_TEXTURE_BINDING_2D, &id);
     g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
@@ -153,6 +149,11 @@ public:
       ee.in_MV = Matrix::Identity();
       ee.env = Matrix::Identity();
     }
+    if (firsttime) {
+      item->Prepare();
+      firsttime = false;
+    }
+
       item->execute(ee);
     ev.fbo_api.bind_screen(viewport);
     g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
