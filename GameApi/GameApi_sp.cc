@@ -173,6 +173,7 @@ public:
   {
     next->handle_event(e);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     static int inside_it = false;
@@ -238,6 +239,8 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     if (vec.size()==0) { return; }
@@ -317,6 +320,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { }
   void execute(MainLoopEnv &e)
   {
     if (firsttime)
@@ -424,6 +428,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { }
   void execute(MainLoopEnv &e)
   {
     api.update_vertex_array(va,bm);

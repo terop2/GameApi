@@ -2257,14 +2257,10 @@ public:
     return ev.point_api.point(0.0,0.0,0.0);
   }
 
-  virtual void execute(MainLoopEnv &e)
-  {
+  void Prepare() {
     using std::placeholders::_1;
     using std::placeholders::_2;
 
-    
-    if (firsttime)
-      {
 	GameApi::SFO render = ev.sh_api.render(sfo);
 	sh2 = ev.shader_api.get_normal_shader("screen", "screen", "", "", "", false, render);
 	int screen_x = ev.mainloop_api.get_screen_width();
@@ -2285,6 +2281,14 @@ public:
 	GameApi::P poly_1 = ev.polygon_api.normal_function(poly_0, std::bind(&SFOML::func, this, _1, _2, std::ref(ev)));
 	GameApi::P poly_2 = ev.polygon_api.texcoord_function(poly_1, std::bind(&SFOML::func2, this, _1, _2, std::ref(ev)));
 	va = ev.polygon_api.create_vertex_array(poly_2, true);
+
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+
+    
+    if (firsttime)
+      {
 	firsttime = false;
       }
 

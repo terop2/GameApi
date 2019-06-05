@@ -533,6 +533,7 @@ struct MainLoopEvent
 class MainLoopItem
 {
 public:
+  virtual void Prepare()=0;
   virtual void execute(MainLoopEnv &e)=0;
   virtual void handle_event(MainLoopEvent &e)=0;
   virtual int shader_id() { return -1; }

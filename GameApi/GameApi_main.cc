@@ -769,6 +769,10 @@ class SeqML : public MainLoopItem
 {
 public:
   SeqML(std::vector<MainLoopItem*> vec, float time) : vec(vec), time(time) { num2 = -1; firsttime = true; }
+  void Prepare() {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->Prepare();
+  }
   virtual void execute(MainLoopEnv &e)
   {
     if (firsttime)
@@ -826,6 +830,7 @@ public:
     vec.push_back(ml2);
     num2 = -1; firsttime = true;
   }
+  void Prepare() { vec[1]->Prepare(); vec[0]->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     if (firsttime)
@@ -880,6 +885,7 @@ public:
   {
     curr->handle_event(e);
   }
+  void Prepare() { curr->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     curr->execute(e);
@@ -943,6 +949,7 @@ public:
     old_collision_detected=false; 
     current_item = false; 
   }
+  void Prepare() { curr->Prepare(); end->Prepare(); }
   void handle_event(MainLoopEvent &e)
   {
     if (current_item) {
@@ -1023,6 +1030,7 @@ public:
     }
 	   
   }
+  void Prepare() { end->Prepare(); curr->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     #if 1
@@ -1083,6 +1091,7 @@ public:
     : ev(ev), player_size(player_size), enemy_size(enemy_size), normal_game_screen(normal_game_screen), gameover_screen(gameover_screen)
   {
   }
+  void Prepare() { normal_game_screen->Prepare(); gameover_screen->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     check_world(e);
@@ -1222,6 +1231,8 @@ class TimingMainLoop : public MainLoopItem
 {
 public:
   TimingMainLoop(std::vector<MainLoopItem*> vec, float duration) : vec(vec), duration(duration) { firsttime = true; }
+  void Prepare() {
+  }
   void execute(MainLoopEnv &e)
   {
     if (firsttime) {
@@ -1261,6 +1272,10 @@ class ArrayMainLoop : public MainLoopItem
 {
 public:
   ArrayMainLoop(std::vector<MainLoopItem*> vec) : vec(vec) { }
+  void Prepare() {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->Prepare();
+  }
   void execute(MainLoopEnv &e)
   {
     int s = vec.size();
@@ -1635,6 +1650,7 @@ public:
   SongML(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, MainLoopItem *next, std::string homepage) : env(env), ev(ev), url(url), next(next), homepage(homepage) {
     firsttime = true;
   }
+  void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     next->execute(e);
@@ -1701,6 +1717,7 @@ class KeyboardToggle : public MainLoopItem
 {
 public:
   KeyboardToggle(MainLoopItem *item, MainLoopItem *item2, int key) : key(key), item(item), item2(item2) { hold=false; toggle=false; firsttime=true; }
+  void Prepare() { item->Prepare(); item2->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     if (firsttime) { item->execute(e); item2->execute(e); firsttime=false; return; }
@@ -1732,11 +1749,12 @@ class PreparePTS : public MainLoopItem
 {
 public:
   PreparePTS(MainLoopItem *item, PointsApiPoints *points) : item(item), points(points), firsttime(true) {}
+  void Prepare() { item->Prepare(); points->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     if (firsttime) {
       firsttime = false;
-      points->Prepare();
+      //points->Prepare();
     }
     item->execute(e);
   }
@@ -1762,6 +1780,7 @@ class DepthFunc : public MainLoopItem
 {
 public:
   DepthFunc(MainLoopItem *next, int i) : next(next),i(i) {}
+  void Prepare() {next->Prepare(); }
   virtual void execute(MainLoopEnv &e) {
     switch(i) {
     case 0: g_low->ogl->glDepthFunc(Low_GL_LEQUAL); break;
@@ -1793,6 +1812,7 @@ class BlendFunc : public MainLoopItem
 {
 public:
   BlendFunc(MainLoopItem *next, int i, int i2) : next(next),i(i),i2(i2) {}
+  void Prepare() {next->Prepare(); }
   virtual void execute(MainLoopEnv &e) {
     Low_GLenum s = Low_GL_SRC_COLOR;
     Low_GLenum d = Low_GL_ONE_MINUS_SRC_COLOR;
@@ -1887,6 +1907,7 @@ class RecordKeyPresses : public MainLoopItem
 public:
   RecordKeyPresses(MainLoopItem *item, std::string output_filename) : item(item), output_filename(output_filename) { }
 
+  void Prepare() {item->Prepare(); }
   virtual void execute(MainLoopEnv &e) {
     time = e.time;
     item->execute(e);
@@ -1935,14 +1956,17 @@ class PlaybackKeyPresses : public MainLoopItem
 {
 public:
   PlaybackKeyPresses(GameApi::Env &ee, MainLoopItem *item, std::string url, std::string homepageurl) : ee(ee), item(item), url(url), homepageurl(homepageurl) { current_item = 0; firsttime = true; }
-  virtual void execute(MainLoopEnv &e) {
-    if (firsttime) {
+  void Prepare() {
 #ifndef EMSCRIPTEN
     ee.async_load_url(url, homepageurl);
 #endif
     std::vector<unsigned char> *vec = ee.get_loaded_async_url(url);
     std::string ss(vec->begin(), vec->end());
     load(ss);
+
+  }
+  virtual void execute(MainLoopEnv &e) {
+    if (firsttime) {
     firsttime = false;
     }
     time = e.time; item->execute(e);

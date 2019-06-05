@@ -399,6 +399,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() {}
   void execute(MainLoopEnv &e) {
     GameApi::SH sh;
     sh.id = e.sh_color;
@@ -439,6 +440,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { }
   void execute(MainLoopEnv &e) {
     GameApi::SH sh;
     sh.id = e.sh_color;
@@ -486,6 +488,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { }
   void execute(MainLoopEnv &e) {
     GameApi::SH sh;
     sh.id = e.sh_color;
@@ -561,6 +564,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { }
   void execute(MainLoopEnv &e) {
     GameApi::SH sh;
     sh.id = e.sh_color;
@@ -641,6 +645,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { }
   void execute(MainLoopEnv &e) {
     GameApi::SH sh;
     sh.id = e.sh_color;
@@ -888,6 +893,7 @@ class LI_Update : public MainLoopItem
 {
 public:
   LI_Update(GameApi::LinesApi &api, GameApi::LLA la, GameApi::LI li) : api(api), la(la), li(li) { }
+  void Prepare() {}
   void handle_event(MainLoopEvent &e)
   {
   }

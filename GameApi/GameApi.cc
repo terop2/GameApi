@@ -1610,6 +1610,7 @@ public:
 
     next->handle_event(env);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
     GameApi::SH s1;
@@ -1680,6 +1681,7 @@ public:
     std::cout << std::endl;
     next->handle_event(eve);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
     next->execute(env);
@@ -1706,6 +1708,7 @@ public:
 
   }
 
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
     GameApi::SH s1;
@@ -1799,6 +1802,7 @@ public:
     if (eve.type==0x301 && ch==backward) { move_backward=false; }
     next->handle_event(eve);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
     GameApi::SH s1;
@@ -1907,6 +1911,7 @@ public:
     Movement *move = find_move(e,mn);
     move->event(env);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
     Movement *move = find_move(e,mn);
@@ -1997,6 +2002,7 @@ public:
   {
     next->handle_event(env);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
     GameApi::SH s1;
@@ -2067,6 +2073,7 @@ public:
 
     next->handle_event(eve);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
     Movement *move = find_move(e, mn);
@@ -2180,6 +2187,7 @@ public:
 
     next->handle_event(eve);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
     Movement *move = find_move(e, mn);
@@ -2322,6 +2330,7 @@ public:
     
     next->handle_event(eve);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
     Movement *move = find_move(e, mn);
@@ -2445,6 +2454,7 @@ public:
 	next->handle_event(env);
       }
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
     float time = (ev.mainloop_api.get_time()-start_time)/100.0;
@@ -2481,6 +2491,10 @@ public:
 	next[i]->handle_event(env);
       }
   }
+  void Prepare() { 
+    int s = next.size();
+    for(int i=0;i<s;i++)
+    next[i]->Prepare(); }
   void execute(MainLoopEnv &env)
   {
     int s = std::min(next.size(), mn.size());
@@ -2532,6 +2546,7 @@ class RepeatML : public MainLoopItem
 {
 public:
   RepeatML(MainLoopItem *next, float duration) : next(next), duration(duration) { }
+  void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     float time = e.time;
@@ -2811,6 +2826,13 @@ public:
 	next[i]->handle_event(e);
       }
   }
+  void Prepare() {
+    int s = next.size();
+    for(int i=0;i<s;i++)
+      {
+	next[i]->Prepare();
+      }
+}
   void execute(MainLoopEnv &e)
   {
     execute_recurse(e, e.env, 0);
@@ -3223,6 +3245,7 @@ class ForwardRenderToTextureId : public MainLoopItem
 {
 public:
   ForwardRenderToTextureId(VertexArraySet *s, MainLoopItem *next, TextureID *id) : s(s), next(next), id(id) { }
+  void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     id->render(e);
@@ -4698,23 +4721,29 @@ EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst_fade(P p, PTS pts, MT mat, b
 class RenderInstanced : public MainLoopItem
 {
 public:
-  RenderInstanced(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; shader.id=-1; }
+  RenderInstanced(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; initialized=false; shader.id=-1; }
   int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     obj2->HandleEvent(e);
   }
+  void Prepare() {
+    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    obj2->Prepare(); 
+    pta = ev.points_api.prepare(pts);
+    va = ev.polygon_api.create_vertex_array(p,false);
+    initialized=true;
+  }
   void execute(MainLoopEnv &e)
   {
+    if (!initialized) { std::cout << "Prepare not called in RenderInstanced!" << std::endl; return; }
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
-    if (firsttime) { obj2->Prepare(); }
+    //if (firsttime) { obj2->Prepare(); }
     bool changed = obj2->Update(e);
     // MainLoopEnv ee = e;
     if (firsttime)
       {
-	pta = ev.points_api.prepare(pts);
-	va = ev.polygon_api.create_vertex_array(p,false);
       }
     if (changed)
       {
@@ -4860,18 +4889,26 @@ private:
   GameApi::SH shader;
   bool fade, flip;
   float start_time, end_time;
-
+  bool initialized;
 };
 
 class RenderInstancedTex : public MainLoopItem
 {
 public:
-  RenderInstancedTex(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; }
+  RenderInstancedTex(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; initialized=false; shader.id=-1; }
   int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     obj2->HandleEvent(e);
+  }
+  void Prepare() {
+    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    pta = ev.points_api.prepare(pts);
+    va = ev.polygon_api.create_vertex_array(p,true);
+    std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm);
+    va = ev.texture_api.bind_many(va, id);
+    initialized=true;
   }
   void execute(MainLoopEnv &e)
   {
@@ -4880,10 +4917,6 @@ public:
     // MainLoopEnv ee = e;
     if (firsttime)
       {
-	pta = ev.points_api.prepare(pts);
-	va = ev.polygon_api.create_vertex_array(p,true);
-	std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm);
-	va = ev.texture_api.bind_many(va, id);
       }
     if (changed)
       {
@@ -5029,6 +5062,7 @@ private:
   bool fade, flip;
   float start_time, end_time;
   std::vector<GameApi::BM> bm;
+  bool initialized;
 };
 
 
@@ -5042,6 +5076,14 @@ public:
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     obj2->HandleEvent(e);
   }
+  void Prepare() {
+    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    pta = ev.points_api.prepare(pts);
+    va = ev.polygon_api.create_vertex_array(p,true);
+    std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev,bm);
+    va = ev.texture_api.bind_many(va, id);
+    
+  }
   void execute(MainLoopEnv &e)
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
@@ -5049,10 +5091,6 @@ public:
     // MainLoopEnv ee = e;
     if (firsttime)
       {
-	pta = ev.points_api.prepare(pts);
-	va = ev.polygon_api.create_vertex_array(p,true);
-	std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev,bm);
-	va = ev.texture_api.bind_many(va, id);
       }
     if (changed)
       {
@@ -5223,13 +5261,8 @@ public:
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     obj2->HandleEvent(e);
   }
-  void execute(MainLoopEnv &e)
-  {
+  void Prepare() {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
-    bool changed = obj2->Update(e);
-    // MainLoopEnv ee = e;
-    if (firsttime)
-      {
 	pta = ev.points_api.prepare(pts);
 	va = ev.polygon_api.create_vertex_array(p,true);
 
@@ -5253,6 +5286,15 @@ public:
 	if (front.id==0) front=right;
 	GameApi::TXID id = ev.texture_api.prepare_cubemap(ev, right,left,top,bottom,back,front);
 	va = ev.texture_api.bind_cubemap(va, id);
+
+  }
+  void execute(MainLoopEnv &e)
+  {
+    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    bool changed = obj2->Update(e);
+    // MainLoopEnv ee = e;
+    if (firsttime)
+      {
       }
     if (changed)
       {
@@ -5412,6 +5454,20 @@ public:
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     obj2->HandleEvent(e);
   }
+  void Prepare() {
+    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    pta = ev.points_api.prepare(pts);
+    va = ev.polygon_api.create_vertex_array(p,true);
+    std::vector<GameApi::BM> bm;
+    int s = ev.polygon_api.p_num_textures(p);
+    for(int i=0;i<s;i++) {
+      ev.polygon_api.p_gen_texture(p,i);
+      bm.push_back(ev.polygon_api.p_texture(p,i));
+    }
+    std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm);
+    va = ev.texture_api.bind_many(va, id);
+    
+  }
   void execute(MainLoopEnv &e)
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
@@ -5419,16 +5475,6 @@ public:
     // MainLoopEnv ee = e;
     if (firsttime)
       {
-	pta = ev.points_api.prepare(pts);
-	va = ev.polygon_api.create_vertex_array(p,true);
-	std::vector<GameApi::BM> bm;
-	int s = ev.polygon_api.p_num_textures(p);
-	for(int i=0;i<s;i++) {
-	  ev.polygon_api.p_gen_texture(p,i);
-	  bm.push_back(ev.polygon_api.p_texture(p,i));
-	}
-	std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm);
-	va = ev.texture_api.bind_many(va, id);
       }
     if (changed)
       {
@@ -5584,6 +5630,8 @@ public:
   int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
+  }
+  void Prepare() {
   }
   void execute(MainLoopEnv &e)
   {
@@ -7953,7 +8001,7 @@ public:
     return this;
   }
   virtual void trigger()=0;
-
+  void Prepare() { }
   virtual void execute(MainLoopEnv &e)
   {
     current_time = e.time*10.0;
@@ -7999,6 +8047,7 @@ struct Envi_2 {
   float timeout = 100000.0f;
   int screen_width=800;
   int screen_height=600;
+  bool firsttime = true;
 };
 bool async_is_done=false;
 extern std::string gameapi_seamless_url;
@@ -8021,6 +8070,14 @@ void blocker_iter(void *arg)
       return;
     }
   async_is_done = true;
+
+    if (env->firsttime) {
+      MainLoopItem *item = find_main_loop(env->ev->get_env(),env->mainloop);
+      item->Prepare();
+      env->firsttime = false;
+    }
+
+
     env->ev->mainloop_api.clear_3d(0xff000000);
 
     // handle esc event
@@ -8084,6 +8141,7 @@ class MainLoopSplitter_win32_and_emscripten : public Splitter
 public:
   MainLoopSplitter_win32_and_emscripten(GameApi::ML code, bool logo, bool fpscounter, float start_time, float duration, int screen_width, int screen_height) : code(code), logo(logo), fpscounter(fpscounter), timeout(duration), start_time(start_time), screen_width(screen_width), screen_height(screen_height)
   {
+    firsttime = true;
   }
   virtual void set_env(GameApi::Env *ei)
   {
@@ -8171,6 +8229,13 @@ public:
 	return -1;
       }
     async_is_done = true;
+
+    if (firsttime) {
+      MainLoopItem *item = find_main_loop(env->ev->get_env(),code);
+      item->Prepare();
+      firsttime = false;
+    }
+
     env->ev->mainloop_api.clear_3d(0xff000000);
     
     // handle esc event
@@ -8249,6 +8314,7 @@ private:
   int screen_width;
   int screen_height;
   Envi_2 envi;
+  bool firsttime;
 };
 
 extern int score;
@@ -8994,6 +9060,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { }
   void execute(MainLoopEnv &e) 
   {
     if (ranges2.size()<1) { return; }
@@ -9752,6 +9819,7 @@ class Player : public MainLoopItem
 {
 public:
   Player(MainLoopItem *next) : next(next) { }
+  void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     check_world(e);
@@ -9773,6 +9841,7 @@ class Enemy : public MainLoopItem
 {
 public:
   Enemy(MainLoopItem *next) : next(next) { }
+  void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     check_world(e);
@@ -9807,6 +9876,7 @@ class PlayerPos : public MainLoopItem
 {
 public:
   PlayerPos(MainLoopItem *next, Point p) : next(next),p(p) { }
+  void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     check_world(e);
@@ -9846,18 +9916,22 @@ class EnemyPos : public MainLoopItem
 {
 public:
   EnemyPos(MainLoopItem *next, PointsApiPoints *pts) : next(next), pts(pts) { firsttime = true; }
+  void Prepare() { 
+    next->Prepare(); 
+
+  }
   virtual void execute(MainLoopEnv &e)
   {
     check_world(e);
     if (firsttime)
       {
-	int s = pts->NumPoints();
-	for(int i=0;i<s;i++)
-	  {
-	    Point pt = pts->Pos(i);
-	    EnemyPiece &p = get_enemy_piece(e, i);
-	    p.enemy_position = pt;
-	  }
+    int s = pts->NumPoints();
+    for(int i=0;i<s;i++)
+      {
+	Point pt = pts->Pos(i);
+	EnemyPiece &p = get_enemy_piece(e, i);
+	p.enemy_position = pt;
+      }
 	firsttime = false;
       }
     
@@ -10287,6 +10361,7 @@ public:
   QuakeML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, float speed, float rot_speed) : env(env), ev(ev), next(next), speed(speed), rot_speed(rot_speed) { 
     point.id=-1;
   }
+  void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     g_is_quake=true;
@@ -10370,6 +10445,7 @@ public:
   QuakeML2(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, float speed, float rot_speed) : env(env), ev(ev), next(next), speed(speed), rot_speed(rot_speed) { 
     point.id=-1;
   }
+  void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     g_is_quake=true;
@@ -10459,6 +10535,7 @@ public:
   QuakeML3(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, MainLoopItem *next2, float speed, float rot_speed, Point p) : env(env), ev(ev), next(next), next2(next2), speed(speed), rot_speed(rot_speed),p(p) { 
     point.id=-1;
   }
+  void Prepare() { next->Prepare(); next2->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     g_is_quake=true;
@@ -10583,6 +10660,7 @@ class LocalMove : public MainLoopItem
 {
 public:
   LocalMove(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *inner, PointsApiPoints *o) : env(env), ev(ev), inner(inner), o(o) { }
+  void Prepare() { inner->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     o->Update(e);
@@ -10947,6 +11025,7 @@ class Scale2dScreen : public MainLoopItem
 {
 public:
   Scale2dScreen(GameApi::EveryApi &ev, MainLoopItem *item, float sx, float sy) : ev(ev), item(item), sx(sx), sy(sy) {}
+  void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -11057,6 +11136,7 @@ public:
       }
     next->handle_event(e);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     float spx = x_speed;
@@ -11541,6 +11621,7 @@ public:
 	GameApi::ML pp;
 	pp.id = p.first;
 	main2 = find_main_loop(e,pp);
+	main2->Prepare();
 #ifdef EMSCRIPTEN
 	if (async_taken)
 	  async_pending_count--;
@@ -11562,6 +11643,7 @@ public:
        std::cout << "async_pending_count dec (ML_sctipr2) " << async_pending_count << std::endl;
 
   }
+  void Prepare() {}
   virtual void execute(MainLoopEnv &e3)
   {
     if (firsttime) {
@@ -11855,6 +11937,7 @@ class SaveDSMain : public MainLoopItem
 {
 public:
   SaveDSMain(GameApi::EveryApi &ev, std::string out_file, GameApi::P p) : ev(ev), out_file(out_file), p(p) { firsttime = true; }
+  void Prepare() { }
   virtual void execute(MainLoopEnv &e)
   {
     if (firsttime) {
@@ -12217,6 +12300,7 @@ class MoveIN : public MainLoopItem
 {
 public:
   MoveIN(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *item, InputForMoving *in) : e(e), ev(ev), item(item), in(in) { }
+  void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &env)
   {
     GameApi::M mat = ev.matrix_api.trans(in->XPos(), in->YPos(), in->ZPos());
@@ -12338,6 +12422,9 @@ public:
     start_time = ev.mainloop_api.get_time();
   }
 
+  void Prepare() {
+    next->Prepare();
+  }
   virtual void execute(MainLoopEnv &e)
   {
     if (!mn ||!next) return;
@@ -12427,6 +12514,7 @@ public:
       number_map["score"] = score;
     }
   }
+  void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     Point p = Point(0, 0, -400);
@@ -12502,6 +12590,7 @@ public:
       number_map["score"] = score;
     }
   }
+  void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     Point p = Point(0, 0, 0); // z=-400
@@ -12692,6 +12781,7 @@ public:
     item->handle_event(e);
   }
   virtual int shader_id() { return item->shader_id(); }
+  void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     Point p = Point(0, 0, -400);
@@ -16240,6 +16330,7 @@ public:
   TXIDArrayMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, HeavyOperation *op, std::vector<GameApi::TXID> *vec, MainLoopItem *next, int start_range, int end_range) : env(env), ev(ev), op(op), vec(vec),next(next), start_range(start_range), end_range(end_range) {
     heavycount=0; 
   }
+  void Prepare() { }
   virtual void execute(MainLoopEnv &e)
   {
     if (op->RequestPrepares()) { heavycount=0; op->TriggerPrepares(); }
@@ -16474,7 +16565,7 @@ public:
   SmallWindow(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *draw, int x, int y, int sx, int sy) : env(env), ev(ev), draw(draw), x(x), y(y), sx(sx), sy(sy) { 
     firsttime = true;
   }
-
+  void Prepare() { draw->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     if (1) {
@@ -16628,15 +16719,17 @@ class LookingGlassSharedLibraryUse : public MainLoopItem
 {
 public:
   LookingGlassSharedLibraryUse(GameApi::Env &e, std::vector<GameApi::TXID> id) : m_e(e), id(id) { firsttime = true;}
-  virtual void execute(MainLoopEnv &e)
-  {
-    if (firsttime) {
-      firsttime = false; 
+  void Prepare() {
 #ifdef LOOKING_GLASS
       hp_loadLibrary();
       hp_initialize();
     hp_setupQuiltSettings(1);
 #endif   
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+      firsttime = false; 
       //  pixels = new unsigned char[sx*sy*x*y];
     }
 #ifdef LOOKING_GLASS
@@ -16692,6 +16785,7 @@ public:
   {
     firsttime = true;
   }
+  void Prepare() { }
   virtual void execute(MainLoopEnv &e)
   {
     if (firsttime) {
@@ -16850,6 +16944,7 @@ class MainLoopSplitter_win32_and_emscripten_display2 : public Splitter
 public:
   MainLoopSplitter_win32_and_emscripten_display2(GameApi::Env &env, GameApi::ML code, bool logo, bool fpscounter, float start_time, float duration, int screen_width, int screen_height) : env2(env), code(code), logo(logo), fpscounter(fpscounter), timeout(duration), start_time(start_time), screen_width(screen_width), screen_height(screen_height)
   {
+    firsttime = true;
   }
   virtual void set_env(GameApi::Env *ei)
   {
@@ -16945,6 +17040,13 @@ public:
 	return -1;
       }
     async_is_done = true;
+
+    if (firsttime) {
+      MainLoopItem *item = find_main_loop(env->ev->get_env(),code);
+      item->Prepare();
+      firsttime = false;
+    }
+
     env->ev->mainloop_api.clear_3d(0xff000000);
     
     make_current(false);
@@ -17059,6 +17161,7 @@ private:
   Envi_2 envi;
   Low_SDL_Surface *surf;
   GameApi::FrameBufferApi::vp viewport;
+  bool firsttime;
 };
 
 EXPORT GameApi::RUN GameApi::BlockerApi::game_window_2nd_display(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration)
@@ -17072,6 +17175,7 @@ class DragDropArea : public MainLoopItem
 {
 public:
   DragDropArea(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *mainloop, GameApi::RUN (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, std::string filename)) : m_e(e), ev(ev), mainloop(mainloop), fptr(fptr) { }
+  void Prepare() { mainloop->Prepare(); }
   virtual void execute(MainLoopEnv &e) { 
     mainloop->execute(e);
   }

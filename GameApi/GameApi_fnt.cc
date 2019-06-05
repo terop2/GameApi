@@ -277,6 +277,8 @@ public:
     vas = va_vec;
     sh.id = -1;
   }
+  void Prepare() {
+  }
   virtual void execute(MainLoopEnv &e)
   {
     if (firsttime) {
@@ -392,10 +394,12 @@ public:
     vas = va_vec;
     sh.id = -1;
   }
+  void Prepare() {
+      first_time_calc();
+  }
   virtual void execute(MainLoopEnv &e)
   {
     if (firsttime) {
-      first_time_calc();
       firsttime = false;
     }
 
@@ -1152,6 +1156,10 @@ class MLChooser : public MainLoopItem
 {
 public:
   MLChooser(std::vector<MainLoopItem*> vec, Fetcher<int> &f) : vec(vec),f(f) { firsttime = true; }
+  void Prepare() {
+    int s = vec.size();
+    for(int i=0;i<s;i++) { vec[i]->Prepare(); }
+  }
   virtual void execute(MainLoopEnv &e)
   {
     if (!firsttime) {

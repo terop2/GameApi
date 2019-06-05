@@ -1076,11 +1076,13 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { 
+      std::cout << "Saving " << filename << std::endl;
+      api.save_model(poly, filename);
+  }
   void execute(MainLoopEnv &e)
   {
     if (firsttime) {
-      std::cout << "Saving " << filename << std::endl;
-      api.save_model(poly, filename);
       firsttime = false;
     }
   }
@@ -3304,6 +3306,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { }
   void execute(MainLoopEnv &e)
   {
     api.update_vertex_array(va,p,keep);
@@ -3890,6 +3893,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { }
   void execute(MainLoopEnv &e)
   { 
 
@@ -4030,6 +4034,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() {}
   void execute(MainLoopEnv &e)
   { 
     if (firsttime)
@@ -4178,6 +4183,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { }
   void execute(MainLoopEnv &e)
   { 
     if (firsttime)
@@ -4327,13 +4333,16 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() {
+	va = ev.polygon_api.create_vertex_array(p, true);
+	std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev, bm);
+	va = ev.texture_api.bind_many(va, id);
+
+  }
   void execute(MainLoopEnv &e)
   { 
     if (firsttime)
       {
-	va = ev.polygon_api.create_vertex_array(p, true);
-	std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev, bm);
-	va = ev.texture_api.bind_many(va, id);
       }
     // dynamically change the texture ids.
     VertexArraySet *s = find_vertex_array(env, va);
@@ -4487,10 +4496,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
-  void execute(MainLoopEnv &e)
-  { 
-    if (firsttime)
-      {
+  void Prepare() {
 	va = ev.polygon_api.create_vertex_array(p, true);
 	GameApi::BM right,left,top,bottom,back,front;
 	right.id = 0;
@@ -4512,6 +4518,12 @@ public:
 	if (front.id==0) front=right;
 	GameApi::TXID id = ev.texture_api.prepare_cubemap(ev, right,left,top,bottom,back,front);
 	va = ev.texture_api.bind_cubemap(va, id);
+
+  }
+  void execute(MainLoopEnv &e)
+  { 
+    if (firsttime)
+      {
       }
 
 
@@ -4655,10 +4667,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
-  void execute(MainLoopEnv &e)
-  { 
-    if (firsttime)
-      {
+  void Prepare() {
 	va = ev.polygon_api.create_vertex_array(p, true);
 
 	// This loop fetches the textures from P type
@@ -4671,6 +4680,12 @@ public:
 	
 	std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev, bm);
 	va = ev.texture_api.bind_many(va, id);
+
+  }
+  void execute(MainLoopEnv &e)
+  { 
+    if (firsttime)
+      {
       }
 
 
@@ -4830,12 +4845,14 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() {
+	va = ev.polygon_api.create_vertex_array(p,true);
+	ev.polygon_api.clone(va);
+  }
   void execute(MainLoopEnv &e)
   { 
     if (firsttime)
       {
-	va = ev.polygon_api.create_vertex_array(p,true);
-	ev.polygon_api.clone(va);
       }
 
     GameApi::SH sh;
@@ -4979,6 +4996,8 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() {
+  }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -5033,6 +5052,7 @@ public:
   {
     firsttime = true;
   }
+  void Prepare() { next->Prepare(); }
   void handle_event(MainLoopEvent &e)
   {
     next->handle_event(e);
@@ -5125,6 +5145,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -5189,6 +5210,7 @@ public:
   {
     next->handle_event(e);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -5254,6 +5276,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -5318,6 +5341,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -5382,6 +5406,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -5441,6 +5466,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -5499,6 +5525,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -5597,6 +5624,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -5675,6 +5703,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() {next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -5751,6 +5780,7 @@ public:
     firsttime = true;
   }
   int shader_id() { return next->shader_id(); }
+  void Prepare() { next->Prepare(); }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -5831,6 +5861,7 @@ public:
     firsttime = true;
   }
   int shader_id() { return next->shader_id(); }
+  void Prepare() { next->Prepare(); }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -5914,6 +5945,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -5998,6 +6030,7 @@ public:
   {
     next->handle_event(e);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -6108,6 +6141,7 @@ public:
   {
     next->handle_event(e);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -6198,6 +6232,7 @@ public:
   {
     next->handle_event(e);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -6294,6 +6329,7 @@ public:
   {
     next->handle_event(e);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -6391,6 +6427,7 @@ public:
   {
     next->handle_event(e);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -6491,6 +6528,7 @@ public:
   {
     next->handle_event(e);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -6607,6 +6645,7 @@ public:
   {
     next->handle_event(e);
   }
+  void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -9466,6 +9505,7 @@ class MainLoopPosition : public MainLoopItem
 {
 public:
   MainLoopPosition(MainLoopItem *next) : next(next) { }
+  void Prepare() {next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     int viewport[4];
@@ -11518,6 +11558,10 @@ class ChooseTime : public MainLoopItem
 {
 public:
   ChooseTime(MainLoopItem *next, std::vector<MainLoopItem*> render, float delta_time) : next(next), render(render), delta_time(delta_time) { firsttime=true;}
+  void Prepare() {  next->Prepare(); 
+    int s = render.size();
+    for(int i=0;i<s;i++) render[i]->Prepare();
+  }
   virtual void execute(MainLoopEnv &e)
   {
     if (firsttime)
@@ -12587,7 +12631,7 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     if (firsttime) {
-      Prepare();
+      //Prepare();
       firsttime = false;
     }
     MainLoopItem *item = find_main_loop(env, scene);
