@@ -4192,9 +4192,20 @@ void LoadObjModelFaceCollection::check_invalidate2()
 	      std::cout << "v" << std::flush;
 	    float x,y,z;
 	    ss >> x >> y >> z;
+	    float cr = 1.0, cg = 1.0, cb = 1.0;
+	    bool b1 = false;
+	    if (ss >> cr) b1=true;
+	    bool b2 = false;
+	    if (ss >> cg) b2=true;
+	    bool b3 = false;
+	    if (ss >> cb) b3=true;
 	    //std::cout << "Vertex:" << vertex_data.size() << " " << x << " " << y << " " << z << std::endl;
 	    Point p(x,y,z);
 	    vertex_data.push_back(p);
+	    if (b1&&b2&&b3) {
+	    ::Color vc(cr,cg,cb,1.0);
+	    color_data.push_back(vc.clamp().Pixel());
+	    }
 	  } else if (word =="v") { vertex_count2++; }
 	if (word == "vt" && obj_count==obj_num)
 	  {	
