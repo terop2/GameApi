@@ -820,6 +820,7 @@ public:
     left=false; right=false;
     keys_enabled=true;
     g_is_quake = false;
+    firsttime2=true;
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
@@ -883,8 +884,18 @@ public:
   }  
   void render()
   {
+
     if (is_visible())
       {
+
+    if (firsttime2) {
+      // firsttime
+      MainLoopItem *item = find_main_loop(env, p);
+      item->Prepare();
+      firsttime2 = false;
+    }
+
+
     if (left)
       {
 	rot_y+=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
@@ -947,7 +958,8 @@ public:
 	ev.mainloop_api.set_corner(c_x,c_y,c_sx,c_sy);
 	g_low->ogl->glViewport(0,0,screen_x, screen_y);
 	ev.shader_api.use(old_sh);
-      }
+      } 
+
       }
   }
 private:
@@ -967,6 +979,7 @@ private:
   int screen_x, screen_y;
   float rot_y;
   bool left,right;
+  bool firsttime2;
 };
 
 

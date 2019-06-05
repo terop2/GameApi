@@ -195,6 +195,7 @@ public:
   SubmitML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *item, TextureID *left, TextureID *right, bool invert, bool translate) :  env(env),ev(ev),item(item), left(left), right(right), invert(invert), translate(translate) {
     firsttime = true;
   }
+  void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     //if (firsttime) {
@@ -515,7 +516,7 @@ public:
   //std::cout << std::endl;
   return m;
 }
-
+  void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     GameApi::SH sh_color, sh_texture, sh_texture_2d, sh_array_texture;

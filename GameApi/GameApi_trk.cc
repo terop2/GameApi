@@ -248,10 +248,7 @@ public:
       music_initialized=1;
     }
   }
-
-  virtual void execute(MainLoopEnv &e)
-  {
-    if (firsttime) {
+  void Prepare() {
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
@@ -261,6 +258,11 @@ public:
       std::cout << "Invalid wav file/Mix_QuickLoad_WAV failed" << std::endl;
     }
     initialized = true;
+
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
     }
     next->execute(e);
   }

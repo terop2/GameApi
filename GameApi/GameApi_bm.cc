@@ -473,6 +473,7 @@ class SaveBitmapML : public MainLoopItem
 {
 public:
   SaveBitmapML(GameApi::EveryApi &ev, GameApi::BM bm, std::string filename, bool alpha, float time) : ev(ev), bm(bm), filename(filename), alpha(alpha), time(time) { }
+  void Prepare() { }
   virtual void execute(MainLoopEnv &e)
   {
     if (time > e.time*10.0 && time < e.time*10.0 + e.delta_time)
@@ -2768,6 +2769,7 @@ public:
       }
   }
   int shader_id() { return -1; }
+  void Prepare() { }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -3369,10 +3371,12 @@ public:
   SavePngML(GameApi::EveryApi &ev, GameApi::BM bm, std::string filename) : ev(ev), bm(bm), filename(filename) { 
     firsttime = true;
   }
+  void Prepare() {
+      ev.bitmap_api.save_png(bm,filename);
+  }
   virtual void execute(MainLoopEnv &e)
   {
     if (firsttime) { 
-      ev.bitmap_api.save_png(bm,filename);
       firsttime = false;
     }
   }

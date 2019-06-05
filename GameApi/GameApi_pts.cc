@@ -817,6 +817,7 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Prepare() { }
   void execute(MainLoopEnv &e)
   {
     GameApi::SH sh;
@@ -990,6 +991,7 @@ public:
   {
     prev_time.push_back(0.0);
   }
+  void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     float start_time = prev_time.front();
@@ -1372,6 +1374,7 @@ class CollisionBindInst : public MainLoopItem
 {
 public:
   CollisionBindInst(PointsApiPoints *pts, PointsApiPoints *pts2, std::string name) : pts(pts), pts2(pts2), name(name) {}
+  void Prepare() { }
   virtual void execute(MainLoopEnv &e)
   {
     check_world(e);
@@ -1412,6 +1415,7 @@ class CollisionBind : public MainLoopItem
 {
 public:
   CollisionBind(PointsApiPoints *pts, std::string name) : pts(pts),name(name) { }
+  void Prepare() { }
   virtual void execute(MainLoopEnv &e)
   {
     check_world(e);
@@ -1566,6 +1570,7 @@ class CollisionCollect : public MainLoopItem
 {
 public:
   CollisionCollect(MainLoopItem *next) : next(next) {}
+  void Prepare() {next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     check_world(e);
