@@ -2929,6 +2929,51 @@ private:
   GameApi::EveryApi &ev;
 };
 
+class ColourMaterial : public MaterialForward
+{
+public:
+  ColourMaterial(GameApi::EveryApi &ev, float mix) : ev(ev),mix(mix) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    //GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    //GameApi::ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    GameApi::PTS pts = ev.points_api.single_pts();
+    GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p,pts);
+    GameApi::ML mla=ev.polygon_api.colour_shader(ev, ml, mix);
+    return mla;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    //std::cout << "mat2_inst" << std::endl;
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    //GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    //GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    GameApi::ML ml = ev.materials_api.render_instanced_ml(ev, p, pts);
+    GameApi::ML mla=ev.polygon_api.colour_shader(ev, ml, mix);
+    return mla;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    //std::cout << "mat2_inst" << std::endl;
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    GameApi::ML mla=ev.polygon_api.colour_shader(ev, ml, mix);
+    return mla;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml = ev.materials_api.render_instanced_ml_fade(ev, p, pts, flip, start_time, end_time);
+    GameApi::ML mla=ev.polygon_api.colour_shader(ev, ml, mix);
+    return mla;
+  }
+
+private:
+  GameApi::EveryApi &ev;
+  float mix;
+};
+
+
 class ShadowMaterial : public MaterialForward
 {
 public:
@@ -3909,9 +3954,9 @@ public:
   {
     GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
     //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
-    GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     GameApi::ML ml;
-    ml.id = next->mat(p1.id);
+    ml.id = next->mat(p0.id);
     GameApi::ML sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
     return sh;
   }
@@ -3919,9 +3964,9 @@ public:
   {
     GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
     //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
-    GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     GameApi::ML ml;
-    ml.id = next->mat_inst(p1.id, pts.id);
+    ml.id = next->mat_inst(p0.id, pts.id);
     GameApi::ML sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
     return sh;
 
@@ -3930,9 +3975,9 @@ public:
   {
     GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
     //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
-    GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     GameApi::ML ml;
-    ml.id = next->mat_inst2(p1.id, pta.id);
+    ml.id = next->mat_inst2(p0.id, pta.id);
     GameApi::ML sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
     return sh;
 
@@ -3941,9 +3986,9 @@ public:
   {
     GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
     //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
-    GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     GameApi::ML ml;
-    ml.id = next->mat_inst_fade(p1.id, pts.id, flip, start_time, end_time);
+    ml.id = next->mat_inst_fade(p0.id, pts.id, flip, start_time, end_time);
     GameApi::ML sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
     return sh;
 
@@ -4455,6 +4500,10 @@ EXPORT GameApi::MT GameApi::MaterialsApi::textureid(EveryApi &ev, TXID txid, flo
 EXPORT GameApi::MT GameApi::MaterialsApi::texture_many(EveryApi &ev, std::vector<BM> vec, float mix)
 {
   return add_material(e, new ManyTextureMaterial(ev, vec,mix));
+}
+EXPORT GameApi::MT GameApi::MaterialsApi::colour_material(EveryApi &ev, float mix)
+{
+  return add_material(e, new ColourMaterial(ev,mix));
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::texture_cubemap(EveryApi &ev, std::vector<BM> vec, float mix, float mix2)
 {
@@ -5965,6 +6014,11 @@ GameApi::US GameApi::UberShaderApi::v_gi(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("gi", next,"IN_POSITION EX_POSITION"));
 }
+GameApi::US GameApi::UberShaderApi::v_colour_with_mix(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("colour_with_mix", next,"EX_COLOR IN_COLOR COLOR_MIX"));
+}
 GameApi::US GameApi::UberShaderApi::v_bump_phong(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -6244,6 +6298,13 @@ GameApi::US GameApi::UberShaderApi::f_gi(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("gi", next,"EX_POSITION"));
 }
+
+GameApi::US GameApi::UberShaderApi::f_colour_with_mix(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("colour_with_mix", next,"EX_COLOR COLOR_MIX"));
+}
+
 GameApi::US GameApi::UberShaderApi::f_bump_phong(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -12591,7 +12652,7 @@ public:
       number_map["score"] = score;
     }
   }
-  void Prepare() { item->Prepare(); }
+  void Prepare() { item->Prepare(); pts->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     Point p = Point(0, 0, 0); // z=-400
@@ -16747,7 +16808,7 @@ std::vector<GameApi::TXID> looking_glass_txid(GameApi::EveryApi &ev, GameApi::ML
 class LookingGlassSharedLibraryUse : public MainLoopItem
 {
 public:
-  LookingGlassSharedLibraryUse(GameApi::Env &e, std::vector<GameApi::TXID> id) : m_e(e), id(id) { firsttime = true;}
+  LookingGlassSharedLibraryUse(GameApi::Env &e, std::vector<GameApi::TXID> id, int start, int end) : m_e(e), id(id), start(start), end(end) { firsttime = true;}
   void Prepare() {
 #ifdef LOOKING_GLASS
       hp_loadLibrary();
@@ -16766,8 +16827,10 @@ public:
     g_low->ogl->glDisable(Low_GL_BLEND);
 
 
-    int s = id.size();
-    for(int i=0;i<s;i++) {
+    int sk = id.size();
+    int s = std::min(sk,end);
+    int st = std::max(0,start);
+    for(int i=st;i<s;i++) {
       TextureID *txid = find_txid(m_e, id[i]);
       txid->render(e);
 
@@ -16799,12 +16862,13 @@ private:
   std::vector<GameApi::TXID> id;
   //int sx,sy,x,y;
   unsigned char *pixels;
+  int start,end;
 };
 
-GameApi::ML GameApi::MainLoopApi::looking_glass_full(GameApi::EveryApi &ev, GameApi::ML ml, float amount, int mode)
+GameApi::ML GameApi::MainLoopApi::looking_glass_full(GameApi::EveryApi &ev, GameApi::ML ml, float amount, int mode, int start, int end)
 {
   std::vector<GameApi::TXID> id = looking_glass_txid(ev,ml,819,455,amount,mode);
-  return add_main_loop(e, new LookingGlassSharedLibraryUse(e,id));
+  return add_main_loop(e, new LookingGlassSharedLibraryUse(e,id,start,end));
 }
 
 class SaveFont : public MainLoopItem 

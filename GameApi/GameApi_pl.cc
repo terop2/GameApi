@@ -4334,15 +4334,16 @@ public:
   {
   }
   void Prepare() {
-	va = ev.polygon_api.create_vertex_array(p, true);
-	std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev, bm);
-	va = ev.texture_api.bind_many(va, id);
 
   }
   void execute(MainLoopEnv &e)
   { 
     if (firsttime)
       {
+	va = ev.polygon_api.create_vertex_array(p, true);
+	std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev, bm);
+	va = ev.texture_api.bind_many(va, id);
+
       }
     // dynamically change the texture ids.
     VertexArraySet *s = find_vertex_array(env, va);
@@ -6218,6 +6219,87 @@ private:
   GameApi::SH sh;
 };
 
+class ColourShaderML : public MainLoopItem
+{
+public:
+  ColourShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, float mix) : env(env), ev(ev), next(next), mix(mix) {
+    firsttime = true;
+    sh.id = -1;
+  }
+  int shader_id() { if (sh.id != -1) return sh.id; return next->shader_id(); 
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  void Prepare() { next->Prepare(); }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+     if (firsttime)
+      {
+	firsttime = false;
+#if 1
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      //GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    vertex = ev.uber_api.v_colour_with_mix(vertex);
+    //GameApi::US a2 = ev.uber_api.v_passall(a4v);
+    ee.us_vertex_shader = vertex.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      //GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    fragment = ev.uber_api.f_colour_with_mix(fragment);
+    ee.us_fragment_shader = fragment.id;
+#endif
+      }
+
+    int sh_id = next->shader_id();
+    sh.id = sh_id;
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	ev.shader_api.use(sh);
+
+
+	ev.shader_api.set_var(sh, "color_mix", mix);
+      }
+
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m3 = add_matrix2(env, e.in_P); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "in_P", m3);
+	ev.shader_api.set_var(sh, "time", e.time);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+
+    next->execute(ee);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  float mix;
+  bool firsttime;
+  GameApi::SH sh;
+};
+
 class PhongShaderML : public MainLoopItem
 {
 public:
@@ -6244,8 +6326,8 @@ public:
     vertex.id = ee.us_vertex_shader;
     if (vertex.id==-1) { 
       GameApi::US a0 = ev.uber_api.v_empty();
-      GameApi::US a1 = ev.uber_api.v_colour(a0);
-      ee.us_vertex_shader = a1.id;
+      //GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a0.id;
     }
     vertex.id = ee.us_vertex_shader;
     vertex = ev.uber_api.v_phong(vertex);
@@ -6256,8 +6338,8 @@ public:
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
       GameApi::US a0 = ev.uber_api.f_empty(false);
-      GameApi::US a1 = ev.uber_api.f_colour(a0);
-      ee.us_fragment_shader = a1.id;
+      //GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a0.id;
     }
     fragment.id = ee.us_fragment_shader;
     if (ambient)
@@ -6822,6 +6904,11 @@ EXPORT GameApi::ML GameApi::PolygonApi::gi_shader(EveryApi &ev, ML mainloop, PTS
   return add_main_loop(e, new GIShaderML(e, ev, item, pts, obj_size));
 
 }
+EXPORT GameApi::ML GameApi::PolygonApi::colour_shader(EveryApi &ev, ML mainloop, float mix)
+ {
+   MainLoopItem *item = find_main_loop(e, mainloop);
+   return add_main_loop(e, new ColourShaderML(e,ev,item,mix));
+ }
 EXPORT GameApi::ML GameApi::PolygonApi::bump_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);

@@ -6753,6 +6753,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&" },
 			 { "ev" },
 			 "MT", "materials_api", "def"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::colour_material,
+			 "m_colour",
+			 { "ev", "mix" },
+			 { "EveryApi&", "float" },
+			 { "ev", "0.5" },
+			 "MT", "materials_api", "colour_material"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture,
 			 "m_texture",
 			 { "ev", "bm", "mix" },
@@ -7578,9 +7584,9 @@ std::vector<GameApiItem*> blocker_functions()
   //			 "ML", "mainloop_api", "looking_glass_lib"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::looking_glass_full,
 			 "looking_glass_full",
-			 { "ev", "ml", "amount", "mode" },
-			 { "EveryApi&", "ML", "float", "int" },
-			 { "ev", "", "150.0", "0" },
+			 { "ev", "ml", "amount", "mode", "start", "end" },
+			 { "EveryApi&", "ML", "float", "int", "int", "int" },
+			 { "ev", "", "150.0", "0", "0", "45" },
 			 "ML", "mainloop_api", "looking_glass_full"));
 #ifdef VIRTUAL_REALITY
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_window,
