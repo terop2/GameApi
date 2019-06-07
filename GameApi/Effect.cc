@@ -4203,7 +4203,7 @@ void LoadObjModelFaceCollection::check_invalidate2()
 	    Point p(x,y,z);
 	    vertex_data.push_back(p);
 	    if (b1&&b2&&b3) {
-	    ::Color vc(cr,cg,cb,1.0);
+	    ::Color vc(cr,cg,cb,1.0f);
 	    color_data.push_back(vc.clamp().Pixel());
 	    }
 	  } else if (word =="v") { vertex_count2++; }
