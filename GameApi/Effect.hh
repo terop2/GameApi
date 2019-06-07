@@ -11047,7 +11047,7 @@ int filesize(std::string filename);
 class LoadObjModelFaceCollection : public SingleForwardBoxableFaceCollection
 {
 public:
-  LoadObjModelFaceCollection(std::string filename, int objcount, std::vector<std::string> material_names);
+  LoadObjModelFaceCollection(std::vector<unsigned char> file_data, int objcount, std::vector<std::string> material_names);
   void Prepare();
   void check_invalidate() const;
   void check_invalidate2();
@@ -11064,7 +11064,7 @@ public:
   virtual Point2d TexCoord(int face, int point) const;
   int Count(int face, int point) const;
 private:
-  std::string filename;
+  std::vector<unsigned char> file_data;
   std::vector<Point> vertex_data;
   std::vector<Point2d> texcoord_data;
   std::vector<float> texcoord3_data;
