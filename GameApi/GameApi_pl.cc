@@ -489,13 +489,23 @@ EXPORT GameApi::P GameApi::PolygonApi::empty()
 {
   return add_polygon(e,new EmptyBoxableFaceCollection, 1);
 }
-EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(std::string filename, int count)
+EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(std::string filename,  int count)
 {
+  std::ifstream data(filename.c_str());
+  std::vector<unsigned char> vec2;
+  char c;
+  while(data.get(c)) vec2.push_back(c);
+  return load_model_all_no_cache(vec2,count);
+}
+EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(std::vector<unsigned char> file_data, int count)
+{
+
+
   int s=count;
   std::vector<P> vec;
   for(int i=0;i<s;i++)
     {
-      GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(filename, i, std::vector<std::string>()), 1);
+      GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(file_data, i, std::vector<std::string>()), 1);
       vec.push_back(model);
     }
   GameApi::P obj = or_array2(vec);
@@ -506,11 +516,19 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(std::string filen
 
 EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(std::string filename, int count, std::vector<std::string> material_names)
 {
+  std::ifstream data(filename.c_str());
+  std::vector<unsigned char> vec2;
+  char c;
+  while(data.get(c)) vec2.push_back(c);
+  return load_model_all_no_cache_mtl(vec2,count,material_names);
+}
+EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(std::vector<unsigned char> file_data, int count, std::vector<std::string> material_names)
+{
   int s=count;
   std::vector<P> vec;
   for(int i=0;i<s;i++)
     {
-      GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(filename, i,material_names), 1);
+      GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(file_data, i,material_names), 1);
       vec.push_back(model);
     }
   GameApi::P obj = or_array2(vec);
@@ -522,11 +540,17 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(std::string f
 
 EXPORT GameApi::P GameApi::PolygonApi::load_model_all(std::string filename, int count)
 {
+  std::ifstream data(filename.c_str());
+  std::vector<unsigned char> vec2;
+  char c;
+  while(data.get(c)) vec2.push_back(c);
+
+
   int s=count;
   std::vector<P> vec;
   for(int i=0;i<s;i++)
     {
-      GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(filename, i, std::vector<std::string>()), 1);
+      GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(vec2, i, std::vector<std::string>()), 1);
       GameApi::P cache = file_cache(model, filename,i);
       vec.push_back(cache);
     }
@@ -642,14 +666,14 @@ public:
     }
     static int num=0;
     num++;
-    std::stringstream ss2;
-    ss2 << "p_url_file" << num << ".obj";
-    std::string filename = ss2.str();
-    std::fstream ss(filename.c_str(), std::ios_base::binary |std::ios_base::out);
-    int s = ptr->size();
-    for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
-    ss.close();
-    GameApi::P p = ev.polygon_api.load_model_all_no_cache(filename, count);
+    //std::stringstream ss2;
+    //ss2 << "p_url_file" << num << ".obj";
+    //std::string filename = ss2.str();
+    //std::fstream ss(filename.c_str(), std::ios_base::binary |std::ios_base::out);
+    //int s = ptr->size();
+    //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
+    //ss.close();
+    GameApi::P p = ev.polygon_api.load_model_all_no_cache(*ptr, count);
     FaceCollection *coll = find_facecoll(e, p);
     filled = coll;
     current = filled;
@@ -706,14 +730,14 @@ public:
     }
     static int num=0;
     num++;
-    std::stringstream ss2;
-    ss2 << "p_url_file" << num << ".obj";
-    std::string filename = ss2.str();
-    std::fstream ss(filename.c_str(), std::ios_base::binary |std::ios_base::out);
-    int s = ptr->size();
-    for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
-    ss.close();
-    GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(filename, count,material_names);
+    //std::stringstream ss2;
+    //ss2 << "p_url_file" << num << ".obj";
+    //std::string filename = ss2.str();
+    //std::fstream ss(filename.c_str(), std::ios_base::binary |std::ios_base::out);
+    //int s = ptr->size();
+    //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
+    //ss.close();
+    GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(*ptr, count,material_names);
     FaceCollection *coll = find_facecoll(e, p);
     filled = coll;
     current = filled;
@@ -1061,7 +1085,12 @@ EXPORT GameApi::P GameApi::PolygonApi::p_ds_url(EveryApi &ev, std::string url)
 
 EXPORT GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
 {
-  GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(filename, num, std::vector<std::string>()), 1);
+  std::ifstream data(filename.c_str());
+  std::vector<unsigned char> vec2;
+  char c;
+  while(data.get(c)) vec2.push_back(c);
+
+  GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(vec2, num, std::vector<std::string>()), 1);
   GameApi::P cache = file_cache(model, filename,num);
   GameApi::P resize = resize_to_correct_size(cache);
   return resize;
@@ -8553,7 +8582,12 @@ public:
 	  save.save(filename);
 	}
       std::cout << "Loading " << filename << std::endl;
-      res = new LoadObjModelFaceCollection(filename,0, std::vector<std::string>());
+      std::ifstream data(filename.c_str());
+      std::vector<unsigned char> vec2;
+      char c;
+      while(data.get(c)) vec2.push_back(c);
+      
+      res = new LoadObjModelFaceCollection(vec2,0, std::vector<std::string>());
       res->Prepare();
     }
   }

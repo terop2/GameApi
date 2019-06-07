@@ -4120,14 +4120,14 @@ Point ReflectFaceCollection::FacePoint(int face, int point) const
     return pp2;
 }
 
-LoadObjModelFaceCollection::LoadObjModelFaceCollection(std::string filename, int objcount, std::vector<std::string> material_names) : filename(filename), obj_num(objcount), material_names_external(material_names) 
+LoadObjModelFaceCollection::LoadObjModelFaceCollection(std::vector<unsigned char> file_data, int objcount, std::vector<std::string> material_names) : file_data(file_data), obj_num(objcount), material_names_external(material_names) 
   {
     firsttime = true;
   }
 void LoadObjModelFaceCollection::Prepare()
   {
     if (firsttime) {
-      std::cout << "Loading: " << filename << " " << obj_num << std::endl;
+      //std::cout << "Loading: " << filename << " " << obj_num << std::endl;
       check_invalidate();
       Load();
       firsttime = false;
@@ -4138,14 +4138,16 @@ void LoadObjModelFaceCollection::check_invalidate2()
   {
     static int filesize_store = -1;
     static int objcount = -1;
-    int val = filesize(filename);
+    int val = file_data.size(); //filesize(filename);
     if (filesize_store != val) { filesize_store = val; }
     if (objcount != obj_num) { objcount = obj_num; }
   }
 
   void LoadObjModelFaceCollection::Load() const { const_cast<LoadObjModelFaceCollection*>(this)->Load2(); }
   void LoadObjModelFaceCollection::Load2() {
-    std::ifstream file(filename.c_str());
+    //std::ifstream file(filename.c_str());
+    std::string s(file_data.begin(), file_data.end());
+    std::stringstream file(s);
     std::string line;
     int obj_count = 0;
     int vertex_count = 0;
