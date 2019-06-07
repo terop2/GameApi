@@ -292,7 +292,7 @@ public:
   //IMPORT ML looking_glass(EveryApi &ev, ML ml);
   //IMPORT TXID looking_glass_txid(EveryApi &ev, ML ml);
   //IMPORT ML looking_glass_lib(TXID id, int sx, int sy, int x, int y);
-  IMPORT ML looking_glass_full(EveryApi &ev, ML ml, float amount, int mode);
+  IMPORT ML looking_glass_full(EveryApi &ev, ML ml, float amount, int mode, int start, int end);
   IMPORT void alpha(bool enabled);
   void alpha_1(bool enabled);
   IMPORT void depth_test(bool enabled);
@@ -1260,6 +1260,7 @@ public:
   IMPORT MT texture(EveryApi &ev, BM bm, float mix);
   IMPORT MT textureid(EveryApi &ev, TXID txid, float mix);
   IMPORT MT texture_many(EveryApi&ev, std::vector<BM> vec, float mix);
+  IMPORT MT colour_material(EveryApi &ev, float mix);
   IMPORT MT many_texture_id_material(EveryApi &ev, std::string mtl_url, std::string url_prefix, float mix, int start_range, int end_range);
   IMPORT MT texture_cubemap(EveryApi&ev, std::vector<BM> vec, float mix, float mix2);
   IMPORT MT texture_many2(EveryApi &ev, float mix);
@@ -2398,6 +2399,7 @@ public:
   IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML sfo_sandbox_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
+  IMPORT ML colour_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML gi_shader(EveryApi &ev, ML mainloop, PTS points, float obj_size);
   IMPORT ML bump_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML fog_shader(EveryApi &ev, ML mainloop, float fog_dist, unsigned int dark_color, unsigned int light_color);
@@ -3293,6 +3295,7 @@ public:
   US v_shadow(US us);
   US v_dyn_lights(US us);
   US v_gi(US us);
+  US v_colour_with_mix(US us);
   US f_mesh_color(US us, SFO sfo); // this requires v_pass_position() in vertex shader
   US f_sandbox(US us, SFO sfo); // this requires texture coordinates
   US f_empty(bool transparent);
@@ -3322,6 +3325,7 @@ public:
   US f_choose_color(US us);
   US f_custom(US us, std::string f_funcname);
   US f_gi(US us);
+  US f_colour_with_mix(US us);
 private:
   Env &e;
 };
