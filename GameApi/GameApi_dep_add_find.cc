@@ -1,6 +1,16 @@
 
 #include "GameApi_h.hh"
 
+GameApi::AV add_voxel_array(GameApi::Env &e, VoxelArray *arr)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->voxel_array.push_back(arr);
+  GameApi::AV im;
+  im.id = env->voxel_array.size()-1;
+  return im;
+
+}
+
 GameApi::W add_frm_widget(GameApi::Env &e, FrmWidget *w)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -952,6 +962,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   GameApi::LL ee;
   ee.id = spos->CurrentPosNum();
   return ee;
+}
+
+VoxelArray *find_voxel_array(GameApi::Env &e, GameApi::AV a)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->voxel_array[a.id];
 }
 
 FrmWidget *find_frm_widget(GameApi::Env &e, GameApi::W w)

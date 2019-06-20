@@ -3532,113 +3532,113 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 #ifdef __EMSCRIPTEN_PTHREADS__
   if (emscripten_has_threading_support()) {
 #else
-  if (0) {
+    //if (0) {
 #endif // END OF __EMSCRIPTEN_PTHREADS
 #endif // END OF EMSCRIPTEN
     
 #ifndef BATCHING
-  int num_threads = 4;
-  FaceCollection *faces = find_facecoll(e, p);
-  faces->Prepare();
-  //std::cout << "FaceColl: " << faces << " " << faces->NumFaces() << std::endl; 
-  ThreadedPrepare prep(faces);  
-  int s = faces->NumFaces();   
-  //std::cout << "NumFaces: " << s << std::endl;
-  if (s<100) { num_threads=1; }
-  int delta_s = s/num_threads+1;
-  std::vector<int> vec;
-  //std::cout << "NumThreads2: " << num_threads << std::endl;
-  for(int i=0;i<num_threads;i++)
-    {  
-      int start_range = i*delta_s; 
-      int  end_range = (i+1)*delta_s;
-      if (end_range>s) { end_range = s; } 
-      if (i==num_threads-1) {end_range = s; }
-      vec.push_back(prep.push_thread(start_range, end_range));
+    int num_threads = 4;
+    FaceCollection *faces = find_facecoll(e, p);
+    faces->Prepare();
+    //std::cout << "FaceColl: " << faces << " " << faces->NumFaces() << std::endl; 
+    ThreadedPrepare prep(faces);  
+    int s = faces->NumFaces();   
+    //std::cout << "NumFaces: " << s << std::endl;
+    if (s<100) { num_threads=1; }
+    int delta_s = s/num_threads+1;
+    std::vector<int> vec;
+    //std::cout << "NumThreads2: " << num_threads << std::endl;
+    for(int i=0;i<num_threads;i++)
+      {  
+	int start_range = i*delta_s; 
+	int  end_range = (i+1)*delta_s;
+	if (end_range>s) { end_range = s; } 
+	if (i==num_threads-1) {end_range = s; }
+	vec.push_back(prep.push_thread(start_range, end_range));
     }
-  for(int i=0;i<num_threads;i++)
-    {
-      prep.join(vec[i]);
-    }
-  VertexArraySet *set = prep.collect();
-  RenderVertexArray *arr2 = new RenderVertexArray(g_low,*set);
-  arr2->prepare(0);
-  if (!keep)
-    {
-      set->free_memory();
-      //::EnvImpl *env = ::EnvImpl::Environment(&e);
-      //env->temp_deletes.push_back(std::shared_ptr<void>( arr2 ) );
-    }
+    for(int i=0;i<num_threads;i++)
+      {
+	prep.join(vec[i]);
+      }
+    VertexArraySet *set = prep.collect();
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low,*set);
+    arr2->prepare(0);
+    if (!keep)
+      {
+	set->free_memory();
+	//::EnvImpl *env = ::EnvImpl::Environment(&e);
+	//env->temp_deletes.push_back(std::shared_ptr<void>( arr2 ) );
+      }
 #else // BATCHING
-  int num_threads = 4;
-  FaceCollection *faces = find_facecoll(e, p);
-  faces->Prepare();
-
-  ThreadedPrepare prep(faces);  
-  int s = faces->NumFaces();   
-  //std::cout << "NumFaces: " << s << std::endl;
-  if (s<100) { num_threads=1; }
-  int delta_s = s/num_threads+1;
-  std::vector<int> vec;
-  //std::cout << "NumThreads2: " << num_threads << std::endl;
-  Counts ct = CalcCounts(faces, 0, faces->NumFaces());
-  VertexArraySet *set = new VertexArraySet;
-  RenderVertexArray *arr2 = new RenderVertexArray(g_low, *set);
-  arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));
-  pthread_mutex_t *mutex1 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
-  pthread_mutex_t *mutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
-  pthread_mutex_t *mutex3 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
-  thread_counter = 0;
-  pthread_mutex_lock(mutex3); // LOCK mutex3
-  pthread_mutex_lock(mutex2);
-  for(int i=0;i<num_threads;i++)
-    {  
-      int start_range = i*delta_s; 
-      int  end_range = (i+1)*delta_s;
-      if (end_range>s) { end_range = s; } 
-      if (i==num_threads-1) {end_range = s; }
-      vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
+    int num_threads = 4;
+    FaceCollection *faces = find_facecoll(e, p);
+    faces->Prepare();
+    
+    ThreadedPrepare prep(faces);  
+    int s = faces->NumFaces();   
+    //std::cout << "NumFaces: " << s << std::endl;
+    if (s<100) { num_threads=1; }
+    int delta_s = s/num_threads+1;
+    std::vector<int> vec;
+    //std::cout << "NumThreads2: " << num_threads << std::endl;
+    Counts ct = CalcCounts(faces, 0, faces->NumFaces());
+    VertexArraySet *set = new VertexArraySet;
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *set);
+    arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));
+    pthread_mutex_t *mutex1 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+    pthread_mutex_t *mutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+    pthread_mutex_t *mutex3 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+    thread_counter = 0;
+    pthread_mutex_lock(mutex3); // LOCK mutex3
+    pthread_mutex_lock(mutex2);
+    for(int i=0;i<num_threads;i++)
+      {  
+	int start_range = i*delta_s; 
+	int  end_range = (i+1)*delta_s;
+	if (end_range>s) { end_range = s; } 
+	if (i==num_threads-1) {end_range = s; }
+	vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
+      }
+    int progress = 0;
+    InstallProgress(1,"pthread");
+    while(1) {
+      pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
+      progress++;
+      ProgressBar(1,progress/num_threads,10,"pthread");
+      
+      // now ti_global is available
+      ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 0, ti_global->ct2_offsets.tri_count*3, ti_global->ct2_offsets.tri_count*3 + ti_global->ct2_counts.tri_count*3); 
+      ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 1, ti_global->ct2_offsets.quad_count*6, ti_global->ct2_offsets.quad_count*6 + ti_global->ct2_counts.quad_count*6);
+      ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 2, std::max(ti_global->ct2_offsets.poly_count-1,0), std::max(ti_global->ct2_offsets.poly_count-1,0) + (ti_global->ct2_offsets.poly_count?ti_global->ct2_counts.poly_count:ti_global->ct2_counts.poly_count-1));
+      ti_global = 0;
+      pthread_mutex_unlock(mutex2); // release other process
+      if (thread_counter==num_threads) break;
     }
-  int progress = 0;
-  InstallProgress(1,"pthread");
-  while(1) {
-    pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
-    progress++;
-    ProgressBar(1,progress/num_threads,10,"pthread");
-
-    // now ti_global is available
-    ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 0, ti_global->ct2_offsets.tri_count*3, ti_global->ct2_offsets.tri_count*3 + ti_global->ct2_counts.tri_count*3); 
-    ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 1, ti_global->ct2_offsets.quad_count*6, ti_global->ct2_offsets.quad_count*6 + ti_global->ct2_counts.quad_count*6);
-    ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 2, std::max(ti_global->ct2_offsets.poly_count-1,0), std::max(ti_global->ct2_offsets.poly_count-1,0) + (ti_global->ct2_offsets.poly_count?ti_global->ct2_counts.poly_count:ti_global->ct2_counts.poly_count-1));
-    ti_global = 0;
-    pthread_mutex_unlock(mutex2); // release other process
-    if (thread_counter==num_threads) break;
-  }
- 
-  for(int i=0;i<num_threads;i++)
-    {
-      prep.join(vec[i]);
-     }
-  pthread_mutex_destroy(mutex1);
-  pthread_mutex_destroy(mutex2);
-  pthread_mutex_destroy(mutex3);
-  //VertexArraySet *set = new VertexArraySet;
-  //RenderVertexArray *arr2 = new RenderVertexArray(*set);
-  //arr2->prepare(0);
-  if (!keep)
-    {
-      set->free_memory();
-      //::EnvImpl *env = ::EnvImpl::Environment(&e);
-      //env->temp_deletes.push_back(std::shared_ptr<void>( arr2 ) );
+    
+    for(int i=0;i<num_threads;i++)
+      {
+	prep.join(vec[i]);
+      }
+    pthread_mutex_destroy(mutex1);
+    pthread_mutex_destroy(mutex2);
+    pthread_mutex_destroy(mutex3);
+    //VertexArraySet *set = new VertexArraySet;
+    //RenderVertexArray *arr2 = new RenderVertexArray(*set);
+    //arr2->prepare(0);
+    if (!keep)
+      {
+	set->free_memory();
+	//::EnvImpl *env = ::EnvImpl::Environment(&e);
+	//env->temp_deletes.push_back(std::shared_ptr<void>( arr2 ) );
     }
-
-  
+    
+    
 #endif // BATCHING
 
-
+    
 #ifdef EMSCRIPTEN
-  return add_vertex_array(e, set, arr2);
-  //#ifdef __EMSCRIPTEN_PTHREADS__
+    return add_vertex_array(e, set, arr2);
+    //#ifdef __EMSCRIPTEN_PTHREADS__
   } else {
     //#endif
 #ifndef BATCHING
@@ -8955,6 +8955,24 @@ GameApi::P GameApi::PolygonApi::static_instancing(EveryApi &ev, P obj, PTS pos)
     }
   return or_array2(vec);
 }
+GameApi::P GameApi::PolygonApi::static_instancing_vertex_color(EveryApi &ev, P obj, PTS pos)
+{
+  PointsApiPoints *obj2 = find_pointsapi_points(e, pos);
+  obj2->Prepare();
+  int s = obj2->NumPoints();
+  std::vector<P> vec;
+  for(int i=0;i<s;i++)
+    {
+      Point pp = obj2->Pos(i);
+      P trans = translate(obj, pp.x,pp.y,pp.z);
+      unsigned int c = obj2->Color(i);
+      P color = PolygonApi::color(trans,c);
+      vec.push_back(color);
+    }
+  return or_array2(vec);
+}
+
+
 GameApi::P GameApi::PolygonApi::static_instancing_with_color(EveryApi &ev, P obj, BM bm, float start_x, float end_x, float start_y, float end_y, float z)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
@@ -11101,7 +11119,7 @@ void bind_accel(FaceCollection *coll, AccelStructure *accel) {
 
 }
 
-class AreaCache
+ class AreaCache
 {
 public:
   struct Area { int face; float area; };
@@ -11158,15 +11176,15 @@ private:
 };
 
  class ShadowColor;
-struct ShadowCB
+ struct ShadowCB
 {
   ShadowColor *m_this;
   int current;
 };
 
-void shadow_color_callback(void *ptr);
+ void shadow_color_callback(void *ptr);
 
-class ShadowColor : public ForwardFaceCollection
+ class ShadowColor : public ForwardFaceCollection
 {
 public:
   ShadowColor(FaceCollection *coll, int num, Vector light_dir) : ForwardFaceCollection(*coll), coll(coll),count(num), light_dir(light_dir), grid(0), cache(0) { 
@@ -11357,7 +11375,7 @@ private:
   GridAccel *grid;
   AreaCache *cache;
 };
-
+ 
  void shadow_color_callback(void *ptr)
  {
    ShadowCB *cb = (ShadowCB*)ptr;
@@ -12033,14 +12051,13 @@ private:
   float delta_time;
   std::vector<FaceCollection*> vec;
 };
-
 GameApi::ML GameApi::PolygonApi::render_meshanim(MA ma, float delta_time)
 {
 }
 
 #endif
 
-void convert_stl_to_binary(std::vector<unsigned char> *ptr)
+ void convert_stl_to_binary(std::vector<unsigned char> *ptr)
 {
   std::cout << "STL file in ascii, converting to binary" << std::endl;
   std::vector<unsigned char> res;
@@ -12343,7 +12360,7 @@ private:
   float size;
 };
 
-GameApi::P GameApi::PolygonApi::filter_invisible(GameApi::P p, float size)
+ GameApi::P GameApi::PolygonApi::filter_invisible(GameApi::P p, float size)
 {
   FaceCollection *coll = find_facecoll(e,p);
   return add_polygon2(e, new FilterInvisible(coll,size),1);
@@ -12364,7 +12381,7 @@ void lod_unlock()
   pthread_mutex_unlock(g_lod_mutex);
 }
 
-class LodChoose : public ForwardFaceCollection
+ class LodChoose : public ForwardFaceCollection
 {
 public:
   LodChoose(std::vector<FaceCollection*> vec, std::string name) : ForwardFaceCollection(*vec[0]), vec(vec),name(name) { }
@@ -12464,7 +12481,7 @@ private:
   std::string name;
 };
 
-GameApi::P GameApi::PolygonApi::lod_choose(std::vector<P> vec, std::string name)
+ GameApi::P GameApi::PolygonApi::lod_choose(std::vector<P> vec, std::string name)
 {
   std::vector<FaceCollection*> vec2;
   int s = vec.size();
@@ -12573,7 +12590,7 @@ private:
   std::string name;
   int val;
 };
-GameApi::P GameApi::PolygonApi::lod_set(P p, std::string name, int val)
+ GameApi::P GameApi::PolygonApi::lod_set(P p, std::string name, int val)
 {
   FaceCollection *coll = find_facecoll(e,p);
   return add_polygon2(e, new LodSet(coll, name, val),1);
@@ -12606,7 +12623,7 @@ private:
   int max_value;
   Matrix current_in_MV;
 };
-GameApi::IF GameApi::PolygonApi::lod_select(float start_dist, float dist_step, int max_value)
+ GameApi::IF GameApi::PolygonApi::lod_select(float start_dist, float dist_step, int max_value)
 {
   return add_int_fetcher(e, new LodSelect(start_dist, dist_step, max_value));
 }
@@ -12632,7 +12649,7 @@ private:
   float start_y, end_y;
 };
 
-GameApi::P GameApi::PolygonApi::texcoord_subarea(P p, float start_x, float end_x,
+ GameApi::P GameApi::PolygonApi::texcoord_subarea(P p, float start_x, float end_x,
 						 float start_y, float end_y)
 {
   FaceCollection *coll = find_facecoll(e,p);
@@ -12713,7 +12730,7 @@ private:
 };
 
 
-GameApi::ML GameApi::PolygonApi::m_bind_inst_many(EveryApi &ev, std::vector<P> vec, std::vector<MT> materials, PTS pts)
+ GameApi::ML GameApi::PolygonApi::m_bind_inst_many(EveryApi &ev, std::vector<P> vec, std::vector<MT> materials, PTS pts)
 {
   int s = std::min(vec.size(),materials.size());
   std::vector<ML> vec2;
@@ -12724,8 +12741,8 @@ GameApi::ML GameApi::PolygonApi::m_bind_inst_many(EveryApi &ev, std::vector<P> v
   return ml;
 }
 
-class SceneDesc : public MainLoopItem
-{
+ class SceneDesc : public MainLoopItem
+ {
 public:
   SceneDesc(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepage, int sx, int sz) : env(env), ev(ev), url(url), homepage(homepage),sx(sx),sz(sz) { firsttime = true; }
   void Prepare() {
@@ -12776,7 +12793,7 @@ public:
     return item->shader_id();
   }
 
-
+  
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
@@ -12786,8 +12803,170 @@ private:
   bool firsttime;
   int sx,sz;
 };
-
+ 
 GameApi::ML GameApi::PolygonApi::load_scene(GameApi::EveryApi &ev, std::string url, int sx, int sy)
 {
   return add_main_loop(e, new SceneDesc(e,ev,url, gameapi_homepageurl, sx,sy));
+}
+
+class PTSTOVoxel : public VoxelArray
+{
+public:
+  PTSTOVoxel(PointsApiPoints *points, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy, int sz) : points(points), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z), sx(sx),sy(sy),sz(sz) { }
+  void Prepare() { points->Prepare(); }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual int SizeZ() const { return sz; }
+  virtual int Size() const { return points->NumPoints(); }
+  virtual unsigned int Color(int i) const
+  {
+    return points->Color(i);
+  }
+  virtual int State(int i) const { return 0; }
+  virtual VoxelArray::Pos Map(int i) const
+  {
+    Point p = points->Pos(i);
+#if 0
+    p.x-=sx*(-start_x);
+    p.y-=sy*(-start_y);
+    p.z-=sz*(-start_z);
+    p.x/=sx;
+    p.y/=sy;
+    p.z/=sz;
+#endif
+    p.x-=start_x;
+    p.y-=start_y;
+    p.z-=start_z;
+    p.x/=(end_x-start_x);
+    p.y/=(end_y-start_y);
+    p.z/=(end_z-start_z);
+    p.x*=sx;
+    p.y*=sy;
+    p.z*=sz;
+
+    VoxelArray::Pos pp;
+    pp.x = (int)p.x;
+    pp.y = (int)p.y;
+    pp.z = (int)p.z;
+    return pp;
+  }
+private:
+  PointsApiPoints *points;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+  int sx,sy,sz;
+};
+
+GameApi::AV GameApi::PolygonApi::pts_to_voxel(PTS pts, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy, int sz)
+{
+  PointsApiPoints *points = find_pointsapi_points(e, pts);
+  return add_voxel_array(e, new PTSTOVoxel(points, start_x, end_x, start_y, end_y, start_z, end_z, sx,sy,sz));
+}
+
+class VoxelArrayToPTS : public PointsApiPoints
+{
+public:
+  VoxelArrayToPTS(VoxelArray *arr, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : arr(arr), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) { }
+  virtual void Prepare() { 
+    arr->Prepare(); 
+
+    sx = arr->SizeX();
+    sy = arr->SizeY();
+    sz = arr->SizeZ(); 
+  }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) { return false; }
+  virtual int NumPoints() const
+  {
+    return arr->Size();
+  }
+  virtual Point Pos(int i) const
+  {
+    VoxelArray::Pos p = arr->Map(i);
+    int x = p.x;
+    int y = p.y;
+    int z = p.z;
+    float px = start_x+float(x)/float(sx)*(end_x-start_x);
+    float py = start_y+float(y)/float(sy)*(end_y-start_y);
+    float pz = start_z+float(z)/float(sz)*(end_z-start_z);
+    return Point(px,py,pz);
+  }
+  virtual unsigned int Color(int i) const
+  {
+    unsigned int c = arr->Color(i);
+    return c;
+  }
+private:
+  VoxelArray *arr;
+  int start_x, end_x;
+  int start_y, end_y;
+  int start_z, end_z;
+  int sx,sy,sz;
+};
+
+GameApi::PTS GameApi::PolygonApi::voxelarray_to_pts(AV arr, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+{
+  VoxelArray *arr2 = find_voxel_array(e, arr);
+  return add_points_api_points(e, new VoxelArrayToPTS(arr2, start_x, end_x, start_y, end_y, start_z, end_z));
+}
+
+struct PosColor {
+  VoxelArray::Pos pos;
+  unsigned int color;
+};
+bool Compare_Voxel(const PosColor &c1, const PosColor &c2)
+{
+  if (c1.pos.x!=c2.pos.x) return c1.pos.x<c2.pos.x;
+  if (c1.pos.y!=c2.pos.y) return c1.pos.y<c2.pos.y;
+  return c1.pos.z<c2.pos.z;
+}
+bool Compare_Voxel_Eq(const PosColor &c1, const PosColor &c2)
+{
+  return c1.pos.x==c2.pos.x && c1.pos.y==c2.pos.y && c1.pos.z==c2.pos.z;
+}
+class AV_Unique : public VoxelArray
+{
+public:
+  AV_Unique(VoxelArray *arr) : arr(arr) { }
+  void Prepare() {
+    arr->Prepare();
+
+    int s = arr->Size();
+    for(int i=0;i<s;i++) {
+      VoxelArray::Pos p = arr->Map(i);
+      unsigned int c = arr->Color(i);
+      PosColor cc;
+      cc.pos = p;
+      cc.color = c;
+      vec.push_back(cc);
+    }
+    std::sort(vec.begin(), vec.end(), &Compare_Voxel);
+    auto last = std::unique(vec.begin(), vec.end(), &Compare_Voxel_Eq);
+    vec.erase(last, vec.end());
+  }
+  virtual int SizeX() const { return arr->SizeX(); }
+  virtual int SizeY() const { return arr->SizeY(); }
+  virtual int SizeZ() const { return arr->SizeZ(); }
+  virtual int Size() const
+  {
+    return vec.size();
+  }
+  
+  virtual VoxelArray::Pos Map(int i) const
+  {
+    return vec[i].pos;
+  }
+  virtual unsigned int Color(int i) const { return vec[i].color; }
+  virtual int State(int i) const { return 0; }
+
+private:
+  VoxelArray *arr;
+  std::vector<PosColor> vec;
+};
+
+GameApi::AV GameApi::PolygonApi::av_unique(AV arr)
+{
+  VoxelArray *va = find_voxel_array(e, arr);
+  return add_voxel_array(e, new AV_Unique(va));
 }

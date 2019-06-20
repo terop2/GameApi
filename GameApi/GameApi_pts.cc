@@ -1784,3 +1784,90 @@ GameApi::PTS GameApi::PointsApi::hemisphere_points(PT points, V normal, float r,
   Vector *vt = find_vector(e,normal);
   return add_points_api_points(e, new HemiSphere_points(*pt,*vt,r,numpoints));
 }
+
+class FaceCenterPoints2 : public PointsApiPoints
+{
+public:
+  FaceCenterPoints2(FaceCollection *coll) : coll(coll) { }
+  virtual void Prepare() { coll->Prepare(); }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) { return false; }
+  virtual int NumPoints() const
+  {
+    return coll->NumFaces();
+  }
+  virtual Point Pos(int i) const
+  {
+    int k = coll->NumPoints(i);
+    if (k==3)
+      { // triangle
+	Point p1 = coll->FacePoint(i,0);
+	Point p2 = coll->FacePoint(i,1);
+	Point p3 = coll->FacePoint(i,2);
+	Point p = p1+Vector(p2)+Vector(p3);
+	p.x/=3.0;
+	p.y/=3.0;
+	p.z/=3.0;
+	return p;
+      }
+    else if (k==4)
+      { // quad
+	Point p1 = coll->FacePoint(i,0);
+	Point p2 = coll->FacePoint(i,1);
+	Point p3 = coll->FacePoint(i,2);
+	Point p4 = coll->FacePoint(i,3);
+	Point p = p1+Vector(p2)+Vector(p3)+Vector(p4);
+	p.x/=4.0;
+	p.y/=4.0;
+	p.z/=4.0;
+	return p;
+
+      }
+    return Point(0.0,0.0,0.0);
+  }
+  virtual unsigned int Color(int i) const
+  {
+    int k = coll->NumPoints(i);
+    if (k==3)
+      { // triangle
+	unsigned int p1 = coll->Color(i,0);
+	unsigned int p2 = coll->Color(i,1);
+	unsigned int p3 = coll->Color(i,2);
+	::Color c1(p1);
+	::Color c2(p2);
+	::Color c3(p3);
+	c1*=1.0/3.0;
+	c2*=1.0/3.0;
+	c3*=1.0/3.0;
+	return (c1+c2+c3).Pixel();
+      }
+    else if (k==4)
+      { // quad
+
+	unsigned int p1 = coll->Color(i,0);
+	unsigned int p2 = coll->Color(i,1);
+	unsigned int p3 = coll->Color(i,2);
+	unsigned int p4 = coll->Color(i,3);
+	::Color c1(p1);
+	::Color c2(p2);
+	::Color c3(p3);
+	::Color c4(p4);
+	c1*=1.0/4.0;
+	c2*=1.0/4.0;
+	c3*=1.0/4.0;
+	c4*=1.0/4.0;
+	return (c1+c2+c3+c4).Pixel();
+
+      }
+    return 0x00;
+
+  }
+private:
+  FaceCollection *coll;
+};
+
+GameApi::PTS GameApi::PointsApi::polygon_face_center_points(P p)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  return add_points_api_points(e, new FaceCenterPoints2(coll));
+}

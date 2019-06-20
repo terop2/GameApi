@@ -4404,6 +4404,7 @@ MACRO(GameApi::MA)
 MACRO(GameApi::CG)
 MACRO(GameApi::FML)
 MACRO(GameApi::FBU)
+MACRO(GameApi::AV)
 #undef MACRO
 
 
@@ -6165,6 +6166,24 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "IM", "int", "int", "int", "float", "float", "float", "float", "float", "float", "int" },
 			 { "", "100", "100", "100", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0", "0" },
 			 "VX", "voxel_api", "from_implicit"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::pts_to_voxel,
+			 "av_from_pts",
+			 { "pts", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "sx", "sy", "sz" },
+			 { "PTS", "float", "float", "float", "float", "float", "float", "int", "int", "int" },
+			 { "", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0", "30", "30", "30" },
+			 "AV", "polygon_api", "pts_to_voxel"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::voxelarray_to_pts,
+			 "av_to_pts",
+			 { "att", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			 { "AV", "float", "float", "float", "float", "float", "float" },
+			 { "", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0" },
+			 "PTS", "polygon_api", "voxelarray_to_pts"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::av_unique,
+			 "av_unique",
+			 { "arr" },
+			 { "AV" },
+			 { "" },
+			 "AV", "polygon_api", "av_unique"));
   return vec;
 }
 
@@ -8148,6 +8167,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "P", "PTS" },
 			 { "ev", "", "" },
 			 "P", "polygon_api", "static_instancing"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::static_instancing_vertex_color,
+			 "inst_vertex_color",
+			 { "ev", "obj", "pos" },
+			 { "EveryApi&", "P", "PTS" },
+			 { "ev", "", "" },
+			 "P", "polygon_api", "static_instancing_vertex_color"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::static_instancing_with_color,
 			 "static_inst_color",
 			 { "ev", "obj", "bm", "start_x", "end_x", "start_y", "end_y", "z" },
@@ -9293,6 +9318,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "PTS", "unsigned int" },
 			 { "", "ffffffff" },
 			 "PTS", "points_api", "color_points"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::polygon_face_center_points,
+			 "face_center",
+			 { "p" },
+			 { "P" },
+			 { "" },
+			 "PTS", "points_api", "polygon_face_center_points"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::hemisphere_points,
 			 "hemisphere_pts",
 			 { "points", "normal", "r", "numpoints" },

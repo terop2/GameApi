@@ -32,6 +32,7 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct AV { int id; };
   struct H { int id; };
   struct FBU { int id; };
   struct FML { int id; };
@@ -2104,6 +2105,9 @@ public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
   // Array functions
+  PTS voxelarray_to_pts(AV arr, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
+  AV pts_to_voxel(PTS pts, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy, int sz);
+  AV av_unique(AV arr);
   ARR poly_array(std::vector<P> vec);
   P poly_index(ARR arr, int idx);
   int poly_size(ARR arr);
@@ -2239,6 +2243,7 @@ public:
 
   IMPORT P line_to_cone(EveryApi &ev, LI li, float size, int numfaces);
   IMPORT P static_instancing(EveryApi &ev, P obj, PTS pos);
+  IMPORT P static_instancing_vertex_color(EveryApi &ev, P obj, PTS pos);
   IMPORT P static_instancing_matrix(EveryApi &ev, P obj, MS matrix_array);
   IMPORT LI li_static_instancing_matrix(EveryApi &ev, LI obj, MS matrix_array);
   IMPORT P static_instancing_with_color(EveryApi &ev, P obj, BM bm, float start_x, float end_x, float start_y, float end_y, float z);
@@ -2978,6 +2983,8 @@ class PointsApi
 {
 public:
   PointsApi(Env &e) : e(e) { }
+  IMPORT PTS voxelarray_to_pts(AV arr);
+  IMPORT PTS polygon_face_center_points(P p);
   IMPORT PTS single_pts();
   IMPORT PTS pt_array(EveryApi &ev, std::vector<PT> vec);
   IMPORT PTS function(std::function<PT(int pointnum)> f, int numpoints);
