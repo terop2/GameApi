@@ -1519,4 +1519,19 @@ public:
   virtual bool is_included(unsigned int color) const=0;
 };
 
+class VoxelArray
+{
+public:
+  virtual void Prepare()=0;
+  virtual int SizeX() const=0;
+  virtual int SizeY() const=0;
+  virtual int SizeZ() const=0;
+  virtual int Size() const=0;
+  
+  struct Pos { int x; int y; int z; };
+  virtual Pos Map(int i) const=0;
+  virtual unsigned int Color(int i) const=0;
+  virtual int State(int i) const=0;
+};
+
 #endif
