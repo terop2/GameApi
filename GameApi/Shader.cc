@@ -39,6 +39,12 @@
 // 3) Shader.cc
 //#define OPENGL_ES 1
 
+#ifdef RASPI
+#define OPENGL_ES 1
+#endif
+
+
+
 std::string funccall_to_string(ShaderModule *mod);
 std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string value);
 

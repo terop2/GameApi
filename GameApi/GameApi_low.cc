@@ -22,12 +22,19 @@
 
 #define NO_SDL_GLEXT 
 #ifndef DEPS
+#ifndef RASPI
 #include <GL/glew.h> 
+#endif
 #ifdef __APPLE__
 #define GLEW_HACK
 #include <OpenGL/gl.h>
 #else
+#ifndef RASPI
 #include <GL/gl.h>
+#else
+#define USE_GLES2 1
+#include <GLES2/gl2.h>
+#endif
 #endif
 #endif
 #ifndef DEPS
@@ -212,7 +219,9 @@ void map_enums(int &i)
   case   Low_GL_TEXTURE10: i=GL_TEXTURE10; break;
 
   case    Low_GL_TEXTURE_2D: i=GL_TEXTURE_2D; break;
+#ifndef USE_GLES2
   case    Low_GL_TEXTURE_2D_ARRAY: i=GL_TEXTURE_2D_ARRAY; break;
+#endif
   case    Low_GL_TEXTURE_CUBE_MAP: i=GL_TEXTURE_CUBE_MAP; break;
   case    Low_GL_LINEAR: i=GL_LINEAR; break;
   case    Low_GL_TEXTURE_MIN_FILTER: i=GL_TEXTURE_MIN_FILTER; break;
@@ -279,17 +288,25 @@ void map_enums(int &i)
   case Low_GL_REPEAT: i=GL_REPEAT; break;
   case Low_GL_RGBA8: i=GL_RGBA8; break;
   case Low_GL_MULTISAMPLE: i=GL_MULTISAMPLE; break;
+#ifndef USE_GLES2
   case  Low_GL_GEOMETRY_SHADER: i=GL_GEOMETRY_SHADER; break;
+#endif
   case   Low_GL_VERTEX_SHADER: i=GL_VERTEX_SHADER; break;
   case   Low_GL_FRAGMENT_SHADER: i=GL_FRAGMENT_SHADER; break;
   case   Low_GL_COMPILE_STATUS: i=GL_COMPILE_STATUS; break;
+#ifndef USE_GLES2
   case   Low_GL_LINES_ADJACENCY_EXT: i=GL_LINES_ADJACENCY_EXT; break;
   case   Low_GL_TRIANGLES_ADJACENCY_EXT: i=GL_TRIANGLES_ADJACENCY_EXT; break;
+#endif
   case   Low_GL_LINE_STRIP: i=GL_LINE_STRIP; break;
+#ifndef USE_GLES2
   case   Low_GL_GEOMETRY_INPUT_TYPE_EXT: i=GL_GEOMETRY_INPUT_TYPE_EXT; break;
   case   Low_GL_GEOMETRY_VERTICES_OUT_EXT: i=GL_GEOMETRY_VERTICES_OUT_EXT; break;
+#endif
   case   Low_GL_NO_ERROR: i=GL_NO_ERROR; break;
+#ifndef USE_GLES2
   case   Low_GL_GEOMETRY_OUTPUT_TYPE_EXT: i=GL_GEOMETRY_OUTPUT_TYPE_EXT; break;
+#endif
 
   default: break;
   };
@@ -459,7 +476,8 @@ public:
     ::glClientActiveTexture(a); 
     check_err("glClientActiveTexture");
   }
-  virtual void glTexStorage3D(int arr, int a, int flag, int w, int h, int layer_count) { 
+  virtual void glTexStorage3D(int arr, int a, int flag, int w, int h, int layer_count) {
+#ifndef USE_GLES2    
 #ifdef GLEW_HACK
 #define glTexStorage3D GLEW_GET_FUN(__glewTexStorage3D)
 #endif
@@ -467,7 +485,8 @@ public:
     map_enums(flag);
     ::glTexStorage3D(arr,a,flag,w,h,layer_count); 
     check_err("glTexStorage3D");
-}
+ #endif
+  }
   virtual void glTexSubImage3D(int arr, int a,int b,int c,int d,int e,int f, int g, int rgba, int unsig_byte, void *buffer) { 
 #ifdef GLEW_HACK
 #define glTexSubImage3D GLEW_GET_FUN(__glewTexSubImage3D)
@@ -564,6 +583,7 @@ public:
     check_err("glVertexAttribPointer");
   }
 virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, const void *ptr) {
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glVertexAttribIPointer GLEW_GET_FUN(__glewVertexAttribIPointer)
 #endif
@@ -571,33 +591,42 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
   map_enums(boolean);
 ::glVertexAttribIPointer(a,b,gl_float,boolean,ptr); 
     check_err("glVertexAttribIPointer");
+#endif
 }
   virtual void glVertexAttribDivisor(int a, int b) { 
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glVertexAttribDivisor GLEW_GET_FUN(__glewVertexAttribDivisor)
 #endif
     ::glVertexAttribDivisor(a,b); 
     check_err("glVertexAttribDivisor");
+#endif
   }
   virtual void glGenVertexArrays(int i, unsigned int *arr) { 
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glGenVertexArrays GLEW_GET_FUN(__glewGenVertexArrays)
 #endif
     ::glGenVertexArrays(i,arr); 
     check_err("glGenVertexArrays");
+#endif
   }
   virtual void glDeleteVertexArrays(int count, unsigned int *vao) { 
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glDeleteVertexArrays GLEW_GET_FUN(__glewDeleteVertexArrays)
 #endif
-::glDeleteVertexArrays(count,vao); 
+::glDeleteVertexArrays(count,vao);
+#endif
   }
   virtual void glBindVertexArray(int vao) { 
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glBindVertexArray GLEW_GET_FUN(__glewBindVertexArray)
 #endif
 ::glBindVertexArray(vao); 
     check_err("glBindVertexArray");
+#endif
   }
   virtual void glEnableVertexAttribArray(int a) { 
 #ifdef GLEW_HACK
@@ -614,12 +643,14 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
     check_err("glDisableVertexAttribArray");
   }
   virtual void glDrawArraysInstanced(int tri, int a, unsigned int b, unsigned int c) { 
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glDrawArraysInstanced GLEW_GET_FUN(__glewDrawArraysInstanced)
 #endif
     map_enums(tri);
 ::glDrawArraysInstanced(tri,a,b,c); 
     check_err("glDrawArraysInstanced");
+#endif
   }
   virtual void glDrawArrays(int tri, int a, unsigned int b) { 
     //#ifdef GLEW_HACK
@@ -756,10 +787,13 @@ return ::glCreateShader(shader); }
 #endif
 ::glGetProgramInfoLog(p,num,len,buf); }
   virtual void glBindFragDataLocation(int p, int num, const char *data) { 
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glBindFragDataLocation GLEW_GET_FUN(__glewBindFragDataLocation)
 #endif
-::glBindFragDataLocation(p,num,data); }
+::glBindFragDataLocation(p,num,data);
+#endif
+  }
   virtual void glBindAttribLocation(int p, int num, const char *data) { 
 #ifdef GLEW_HACK
 #define glBindAttribLocation GLEW_GET_FUN(__glewBindAttribLocation)
@@ -767,12 +801,15 @@ return ::glCreateShader(shader); }
 ::glBindAttribLocation(p,num,data); 
   }
   virtual void glProgramParameteriEXT(int p, int geom, int inputtype) { 
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glProgramParameteriEXT GLEW_GET_FUN(__glewProgramParameteriEXT)
 #endif
     map_enums(geom);
     map_enums(inputtype);
-::glProgramParameteriEXT(p,geom,inputtype); }
+::glProgramParameteriEXT(p,geom,inputtype);
+#endif
+  }
   
   // uniforms
   virtual int glGetUniformLocation(int p, const char *data) { 
