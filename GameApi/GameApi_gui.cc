@@ -38,7 +38,7 @@
 #include <emscripten.h>
 #endif
 
-#ifdef ARM
+#if defined(ARM) || defined(RASPI) 
 #ifdef FIRST_PART
 int strlen(const char *ptr) { const char *p = ptr; while(*p) { p++;  } return p-ptr;}
 #else

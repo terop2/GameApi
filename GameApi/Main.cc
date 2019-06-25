@@ -24,7 +24,10 @@
 //#include <GL3/gl3.h>
 //#define GLEW_STATIC
 #ifndef ARM
+#ifndef RASPI
+#define USE_GLEW 1
 #include <GL/glew.h>
+#endif
 #endif
 #if 0
 //#ifdef __APPLE__
@@ -39,6 +42,11 @@
 // 2) Main.cc
 // 3) Shader.cc
 //#define OPENGL_ES 1
+#ifdef RASPI
+#define OPENGL_ES 1
+#endif
+
+
 
 //#include <SDL.h>
 //#include <SDL_opengl.h>
@@ -445,7 +453,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     std::cout << "Could not create Opengl3.2 context" << std::endl; 
   }
 
-#ifndef ARM
+#ifdef USE_GLEW
   glewExperimental=true;
   GLenum err = glewInit();
   if (GLEW_OK != err)
