@@ -19,6 +19,11 @@
 #define VAO 1
 #endif
 
+#ifndef RASPI
+#define USE_MIX 1
+#define USE_TEXTURE_READ 1
+#endif
+
 
 #define NO_SDL_GLEXT 
 #ifndef DEPS
@@ -359,10 +364,11 @@ public:
 
 }
   virtual void glPolygonMode(int front_and_back, int gl_line) { 
+#ifdef USE_TEXTURE_READ
     map_enums(front_and_back);
     map_enums(gl_line);
     return ::glPolygonMode(front_and_back,gl_line); 
-
+#endif
 }
   virtual void glClearStencil(int val) { 
     map_enums(val);
@@ -488,6 +494,7 @@ public:
  #endif
   }
   virtual void glTexSubImage3D(int arr, int a,int b,int c,int d,int e,int f, int g, int rgba, int unsig_byte, void *buffer) { 
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glTexSubImage3D GLEW_GET_FUN(__glewTexSubImage3D)
 #endif
@@ -496,27 +503,31 @@ public:
     map_enums(unsig_byte);
     ::glTexSubImage3D(arr,a,b,c,d,e,f,g,rgba,unsig_byte,buffer); 
     check_err("glTexSubImage3D");
+#endif
   }
   virtual void glGetTexLevelParameteriv(int a, int b, int w, int *ptr) { 
+#ifdef USE_TEXTURE_READ
     map_enums(a);
     map_enums(w);
     ::glGetTexLevelParameteriv(a,b,w,ptr); 
     check_err("glGetTexLevelParameteriv");
-
+#endif
 }
   virtual void glGetTexImage(int a, int b, int rgba, int unsign_byte, void *ptr) { 
+#ifdef USE_TEXTURE_READ
     map_enums(a);
     map_enums(rgba);
     map_enums(unsign_byte);
 ::glGetTexImage(a,b,rgba,unsign_byte,ptr); 
     check_err("glGetTexImage");
-
+#endif
 }
   virtual void glReadBuffer(int a) { 
+#ifdef USE_TEXTURE_READ
     map_enums(a);
     ::glReadBuffer(a); 
     check_err("glReadBuffer");
-
+#endif
 }
   
 
@@ -1031,10 +1042,12 @@ class SDLApi : public SDLLowApi
 void map_enums_mix(int &i)
 {
   switch(i) {
+#ifdef USE_MIX    
   case Low_MIX_INIT_MP3: i=MIX_INIT_MP3; break;
   case Low_MIX_INIT_OGG: i=MIX_INIT_OGG; break;
   case Low_MIX_DEFAULT_FORMAT: i=MIX_DEFAULT_FORMAT; break;
   case Low_AUDIO_U8: i=AUDIO_U8; break;
+#endif
   };
 }
 
@@ -1045,58 +1058,78 @@ public:
   virtual void cleanup() { }
   virtual Low_Mix_Chunk* Mix_LoadWAV_RW(Low_SDL_RWops *buf, int s)
   {
+#ifdef USE_MIX
     Mix_Chunk *m = ::Mix_LoadWAV_RW((SDL_RWops*)buf->ptr,s);
     Low_Mix_Chunk *c = new Low_Mix_Chunk;
     c->ptr = m;
     return c;
+#endif
   }
 
   virtual int Mix_OpenAudio(int rate, int flags, int val, int hup)
   {
+#ifdef USE_MIX
     map_enums_mix(flags);
     return ::Mix_OpenAudio(rate,flags,val,hup);
+#endif
   }
   virtual int Mix_PlayChannel(int channel, Low_Mix_Chunk *mix_chunk, int val)
   {
+#ifdef USE_MIX
     return ::Mix_PlayChannelTimed(channel, (Mix_Chunk*)mix_chunk->ptr, val,-1);
+#endif
   }
   virtual Low_Mix_Chunk *Mix_QuickLoad_RAW(unsigned char *mem, int len)
   {
+#ifdef USE_MIX
     Low_Mix_Chunk *c = new Low_Mix_Chunk;
     c->ptr = ::Mix_QuickLoad_RAW(mem,len);
     return c;
+#endif
   }
   virtual void Mix_Init(int flags)
   {
+#ifdef USE_MIX
     map_enums_mix(flags);
     ::Mix_Init(flags);
+#endif
   }
   virtual Low_Mix_Music *Mix_LoadMUS(const char *filename)
   {
+#ifdef USE_MIX
     Low_Mix_Music *m = new Low_Mix_Music;
     m->ptr = ::Mix_LoadMUS(filename);
     return m;
+#endif
   }
   virtual void Mix_PlayMusic(Low_Mix_Music *mus, int val)
   {
+#ifdef USE_MIX
     ::Mix_PlayMusic((Mix_Music*)mus->ptr, val);
+#endif
   }
   virtual int Mix_GetNumMusicDecoders()
   {
+#ifdef USE_MIX
 #ifndef EMSCRIPTEN
     return ::Mix_GetNumMusicDecoders();
+#endif
 #endif
     return 0;
   }
   virtual void Mix_GetMusicDecoder(int i)
   {
+#ifdef USE_MIX
 #ifndef EMSCRIPTEN
     ::Mix_GetMusicDecoder(i);
+#endif
 #endif
   }
   virtual void Mix_AllocateChannels(int i)
   {
+#ifdef USE_MIX
     ::Mix_AllocateChannels(i);
+#endif
   }
 };
 #endif // ndef ARM

@@ -251,4 +251,26 @@ int FontGlyphBitmap::Map(int x, int y) const
     return 0;
   return (int)priv->face->glyph->bitmap.buffer[x+y*priv->face->glyph->bitmap.pitch];
 }
+#else
+void FontGlyphBitmap::load_glyph_outline(long idx, float sx, float sy)
+{
+}
+void FontGlyphBitmap::load_glyph(long idx)
+{
+}
+int FontGlyphBitmap::bitmap_top(long idx) const
+{
+  return 0;
+}
+int FontGlyphBitmap::SizeX() const { return 0; }
+int FontGlyphBitmap::SizeY() const { return 0; }
+int FontGlyphBitmap::Map(int x, int y) const { return 0; }
+
+int FontGlyphBitmap::NumLines() const { return 0; }
+Point FontGlyphBitmap::LinePoint(int line, int point) const
+  {
+    return Point(0.0,0.0,0.0);
+  }
+FontGlyphBitmap::~FontGlyphBitmap() {}
+
 #endif
