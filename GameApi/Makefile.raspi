@@ -1,0 +1,106 @@
+# 
+# Copyright (C) 2009 Tero Pulkkinen
+# Released under LGPL License.
+#
+# This file is part of Polygon.
+#
+# Polygon is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Polygon is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+CFiles=	Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
+	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
+	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc \
+	Widgets.cc Category.cc Plane.cc Coordinates.cc Triangle.cc Game.cc \
+	Editor.cc Web.cc Functions.cc ShaderExpr.cc Font.cc FontEditor.cc \
+	GameApi.cc GameApiTest.cc Games.cc HierarchyObject.cc Physics.cc \
+        GameApiTest2.cc State.cc Serialize.cc KeyFrameEditor.cc Parser.cc \
+	FreeType.cc FreeType2.cc VertexArray.cc StateChange.cc DistanceObject.cc GameRunner.cc \
+	GameApi_an.cc GameApi_bm.cc GameApi_co.cc GameApi_dr.cc GameApi_ev.cc \
+	GameApi_ex.cc GameApi_fbo.cc GameApi_f.cc GameApi_fn.cc \
+	GameApi_fnt.cc GameApi_gr.cc GameApi_gui_1.cc GameApi_gui_2.cc GameApi_gui_3.cc \
+        GameApi_lay.cc \
+	GameApi_li.cc GameApi_main.cc GameApi_mx.cc GameApi_pc.cc \
+	GameApi_phy.cc GameApi_pla.cc GameApi_pl.cc GameApi_pt.cc \
+	GameApi_pts.cc GameApi_sh.cc GameApi_shm.cc GameApi_sm.cc \
+        GameApi_spa.cc GameApi_sp.cc GameApi_st.cc GameApi_su.cc \
+        GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \
+        GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
+        GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc \
+	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc Main.cc GameApi_vr.cc GameApi_low.cc GameApi_low_stub.cc  GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_qt.cc GameApi_low_egl.cc
+
+CFiles2 = 
+
+Subdirs = 
+#module1
+
+OFiles = $(patsubst %.cc,objs/%.o,$(CFiles) $(CFiles2))
+O2Files = $(patsubst %.cc,objs/%.obj,$(CFiles) $(CFiles2))
+DFiles = $(patsubst %.cc,objs/%.d,$(CFiles) $(CFiles2)) 
+D2Files = $(patsubst %.cc,objs/%.d2,$(CFiles) $(CFiles2)) 
+HFiles = $(patsubst %.cc,%.hh,$(CFiles))
+#GCHFiles = $(patsubst %.cc,objs/%.hh.gch,$(CFiles))
+#GCH2Files = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles))
+Subdirsx = $(patsubst %,%build,$(Subdirs))
+
+
+CCFLAGS = -std=c++11 -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DRASPI -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mcpu=cortex-m4 -mthumb -Os -I/root/raspi/vc/vc/include
+CC2FLAGS = -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DRASPI -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mcpu=cortex-m4 -mthumb -Os -I/root/raspi/vc/vc/include
+#`pkg-config gtkmm-2.4 --cflags`
+
+
+default: libGameApi.so
+
+
+libGameApi.so: $(OFiles) Makefile.iot
+	@echo g++ libGameApi.so
+	@arm-linux-gnueabihf-g++ -shared -g $(OFiles) -std=c++0x -o libGameApi.so -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mcpu=cortex-m4 -mthumb -Os
+	@arm-linux-gnueabihf-strip libGameApi.so
+
+#-lSDL2 -lGL -lSDL2_image -lSDL2_mixer -lGLEW -lfreetype -lstdc++ 
+#`pkg-config gtkmm-2.4 --libs` 
+
+subdirs: $(Subdirs)
+
+$(Subdirs):
+	$(MAKE) -C $@
+
+.PHONY: subdirs $(Subdirs)
+
+ctags: TAGS
+
+TAGS: $(CFiles)
+	etags -o TAGS -l c++ $(CFiles)
+
+CC = arm-linux-gnueabihf-g++
+CCWIN = arm-linux-gnueabihf-g++
+
+$(DFiles): objs/%.d: %.cc
+	@arm-linux-gnueabihf-gcc -M $(CCFLAGS) $< \
+	|sed 's,\($*\)\.o[ :]*,objs/\1.o $@ : ,g' > $@
+
+
+$(OFiles): objs/%.o : %.cc
+	@echo g++ $< -o $@
+	@$(CC) -std=c++0x -g -c $(CCFLAGS) $< -o $@
+
+
+
+clean:
+	@rm -rf objs/*.o objs/*.obj objs/*.d objs/*.d2 objs/*.gch objs/*.gch2
+	@rm main
+	@echo Clean.
+
+
+-include $(DFiles)

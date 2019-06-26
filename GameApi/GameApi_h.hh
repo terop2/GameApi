@@ -1,7 +1,9 @@
 #ifndef GAMEAPI_H_H
 #define GAMEAPI_H_H
 #ifndef LINUX
+#ifndef RASPI
 #define VIRTUAL_REALITY 1
+#endif
 #endif
 #define SDL2_USED  
 #define GAME_API_DEF
@@ -15,9 +17,11 @@
 #endif
 #define BATCHING 1
 
+#ifndef RASPI
 #ifndef EMSCRIPTEN
 #define LOOKING_GLASS 1
 //#undef LOOKING_GLASS
+#endif
 #endif
 
 #ifndef EMSCRIPTEN
@@ -28,11 +32,17 @@
 #define IOT_EVENTS
 #endif
 
+#ifndef RASPI
 #ifndef ARM
 #ifndef OUTPUT
 #define HAS_FREETYPE 1
 #endif
 #define HAS_POPEN 1
+#endif
+#endif
+
+#ifndef RASPI
+#define USE_GLEW 1
 #endif
 
 #ifdef ARM
@@ -47,6 +57,11 @@
 // 2) Main.cc
 // 3) Shader.cc
 //#define OPENGL_ES 1
+
+#ifdef RASPI
+//#define OPENGL_ES 1
+#endif
+
 
 #include "GameApi.hh"
 #include <vector>

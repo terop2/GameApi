@@ -19,15 +19,27 @@
 #define VAO 1
 #endif
 
+#ifndef RASPI
+#define USE_MIX 1
+#define USE_TEXTURE_READ 1
+#endif
+
 
 #define NO_SDL_GLEXT 
 #ifndef DEPS
+#ifndef RASPI
 #include <GL/glew.h> 
+#endif
 #ifdef __APPLE__
 #define GLEW_HACK
 #include <OpenGL/gl.h>
 #else
+#ifndef RASPI
 #include <GL/gl.h>
+#else
+#define USE_GLES2 1
+#include <GLES2/gl2.h>
+#endif
 #endif
 #endif
 #ifndef DEPS
@@ -212,7 +224,9 @@ void map_enums(int &i)
   case   Low_GL_TEXTURE10: i=GL_TEXTURE10; break;
 
   case    Low_GL_TEXTURE_2D: i=GL_TEXTURE_2D; break;
+#ifndef USE_GLES2
   case    Low_GL_TEXTURE_2D_ARRAY: i=GL_TEXTURE_2D_ARRAY; break;
+#endif
   case    Low_GL_TEXTURE_CUBE_MAP: i=GL_TEXTURE_CUBE_MAP; break;
   case    Low_GL_LINEAR: i=GL_LINEAR; break;
   case    Low_GL_TEXTURE_MIN_FILTER: i=GL_TEXTURE_MIN_FILTER; break;
@@ -279,17 +293,25 @@ void map_enums(int &i)
   case Low_GL_REPEAT: i=GL_REPEAT; break;
   case Low_GL_RGBA8: i=GL_RGBA8; break;
   case Low_GL_MULTISAMPLE: i=GL_MULTISAMPLE; break;
+#ifndef USE_GLES2
   case  Low_GL_GEOMETRY_SHADER: i=GL_GEOMETRY_SHADER; break;
+#endif
   case   Low_GL_VERTEX_SHADER: i=GL_VERTEX_SHADER; break;
   case   Low_GL_FRAGMENT_SHADER: i=GL_FRAGMENT_SHADER; break;
   case   Low_GL_COMPILE_STATUS: i=GL_COMPILE_STATUS; break;
+#ifndef USE_GLES2
   case   Low_GL_LINES_ADJACENCY_EXT: i=GL_LINES_ADJACENCY_EXT; break;
   case   Low_GL_TRIANGLES_ADJACENCY_EXT: i=GL_TRIANGLES_ADJACENCY_EXT; break;
+#endif
   case   Low_GL_LINE_STRIP: i=GL_LINE_STRIP; break;
+#ifndef USE_GLES2
   case   Low_GL_GEOMETRY_INPUT_TYPE_EXT: i=GL_GEOMETRY_INPUT_TYPE_EXT; break;
   case   Low_GL_GEOMETRY_VERTICES_OUT_EXT: i=GL_GEOMETRY_VERTICES_OUT_EXT; break;
+#endif
   case   Low_GL_NO_ERROR: i=GL_NO_ERROR; break;
+#ifndef USE_GLES2
   case   Low_GL_GEOMETRY_OUTPUT_TYPE_EXT: i=GL_GEOMETRY_OUTPUT_TYPE_EXT; break;
+#endif
 
   default: break;
   };
@@ -342,10 +364,11 @@ public:
 
 }
   virtual void glPolygonMode(int front_and_back, int gl_line) { 
+#ifdef USE_TEXTURE_READ
     map_enums(front_and_back);
     map_enums(gl_line);
     return ::glPolygonMode(front_and_back,gl_line); 
-
+#endif
 }
   virtual void glClearStencil(int val) { 
     map_enums(val);
@@ -459,7 +482,8 @@ public:
     ::glClientActiveTexture(a); 
     check_err("glClientActiveTexture");
   }
-  virtual void glTexStorage3D(int arr, int a, int flag, int w, int h, int layer_count) { 
+  virtual void glTexStorage3D(int arr, int a, int flag, int w, int h, int layer_count) {
+#ifndef USE_GLES2    
 #ifdef GLEW_HACK
 #define glTexStorage3D GLEW_GET_FUN(__glewTexStorage3D)
 #endif
@@ -467,8 +491,10 @@ public:
     map_enums(flag);
     ::glTexStorage3D(arr,a,flag,w,h,layer_count); 
     check_err("glTexStorage3D");
-}
+ #endif
+  }
   virtual void glTexSubImage3D(int arr, int a,int b,int c,int d,int e,int f, int g, int rgba, int unsig_byte, void *buffer) { 
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glTexSubImage3D GLEW_GET_FUN(__glewTexSubImage3D)
 #endif
@@ -477,27 +503,31 @@ public:
     map_enums(unsig_byte);
     ::glTexSubImage3D(arr,a,b,c,d,e,f,g,rgba,unsig_byte,buffer); 
     check_err("glTexSubImage3D");
+#endif
   }
   virtual void glGetTexLevelParameteriv(int a, int b, int w, int *ptr) { 
+#ifdef USE_TEXTURE_READ
     map_enums(a);
     map_enums(w);
     ::glGetTexLevelParameteriv(a,b,w,ptr); 
     check_err("glGetTexLevelParameteriv");
-
+#endif
 }
   virtual void glGetTexImage(int a, int b, int rgba, int unsign_byte, void *ptr) { 
+#ifdef USE_TEXTURE_READ
     map_enums(a);
     map_enums(rgba);
     map_enums(unsign_byte);
 ::glGetTexImage(a,b,rgba,unsign_byte,ptr); 
     check_err("glGetTexImage");
-
+#endif
 }
   virtual void glReadBuffer(int a) { 
+#ifdef USE_TEXTURE_READ
     map_enums(a);
     ::glReadBuffer(a); 
     check_err("glReadBuffer");
-
+#endif
 }
   
 
@@ -564,6 +594,7 @@ public:
     check_err("glVertexAttribPointer");
   }
 virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, const void *ptr) {
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glVertexAttribIPointer GLEW_GET_FUN(__glewVertexAttribIPointer)
 #endif
@@ -571,33 +602,42 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
   map_enums(boolean);
 ::glVertexAttribIPointer(a,b,gl_float,boolean,ptr); 
     check_err("glVertexAttribIPointer");
+#endif
 }
   virtual void glVertexAttribDivisor(int a, int b) { 
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glVertexAttribDivisor GLEW_GET_FUN(__glewVertexAttribDivisor)
 #endif
     ::glVertexAttribDivisor(a,b); 
     check_err("glVertexAttribDivisor");
+#endif
   }
   virtual void glGenVertexArrays(int i, unsigned int *arr) { 
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glGenVertexArrays GLEW_GET_FUN(__glewGenVertexArrays)
 #endif
     ::glGenVertexArrays(i,arr); 
     check_err("glGenVertexArrays");
+#endif
   }
   virtual void glDeleteVertexArrays(int count, unsigned int *vao) { 
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glDeleteVertexArrays GLEW_GET_FUN(__glewDeleteVertexArrays)
 #endif
-::glDeleteVertexArrays(count,vao); 
+::glDeleteVertexArrays(count,vao);
+#endif
   }
   virtual void glBindVertexArray(int vao) { 
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glBindVertexArray GLEW_GET_FUN(__glewBindVertexArray)
 #endif
 ::glBindVertexArray(vao); 
     check_err("glBindVertexArray");
+#endif
   }
   virtual void glEnableVertexAttribArray(int a) { 
 #ifdef GLEW_HACK
@@ -614,12 +654,14 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
     check_err("glDisableVertexAttribArray");
   }
   virtual void glDrawArraysInstanced(int tri, int a, unsigned int b, unsigned int c) { 
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glDrawArraysInstanced GLEW_GET_FUN(__glewDrawArraysInstanced)
 #endif
     map_enums(tri);
 ::glDrawArraysInstanced(tri,a,b,c); 
     check_err("glDrawArraysInstanced");
+#endif
   }
   virtual void glDrawArrays(int tri, int a, unsigned int b) { 
     //#ifdef GLEW_HACK
@@ -756,10 +798,13 @@ return ::glCreateShader(shader); }
 #endif
 ::glGetProgramInfoLog(p,num,len,buf); }
   virtual void glBindFragDataLocation(int p, int num, const char *data) { 
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glBindFragDataLocation GLEW_GET_FUN(__glewBindFragDataLocation)
 #endif
-::glBindFragDataLocation(p,num,data); }
+::glBindFragDataLocation(p,num,data);
+#endif
+  }
   virtual void glBindAttribLocation(int p, int num, const char *data) { 
 #ifdef GLEW_HACK
 #define glBindAttribLocation GLEW_GET_FUN(__glewBindAttribLocation)
@@ -767,12 +812,15 @@ return ::glCreateShader(shader); }
 ::glBindAttribLocation(p,num,data); 
   }
   virtual void glProgramParameteriEXT(int p, int geom, int inputtype) { 
+#ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glProgramParameteriEXT GLEW_GET_FUN(__glewProgramParameteriEXT)
 #endif
     map_enums(geom);
     map_enums(inputtype);
-::glProgramParameteriEXT(p,geom,inputtype); }
+::glProgramParameteriEXT(p,geom,inputtype);
+#endif
+  }
   
   // uniforms
   virtual int glGetUniformLocation(int p, const char *data) { 
@@ -994,10 +1042,12 @@ class SDLApi : public SDLLowApi
 void map_enums_mix(int &i)
 {
   switch(i) {
+#ifdef USE_MIX    
   case Low_MIX_INIT_MP3: i=MIX_INIT_MP3; break;
   case Low_MIX_INIT_OGG: i=MIX_INIT_OGG; break;
   case Low_MIX_DEFAULT_FORMAT: i=MIX_DEFAULT_FORMAT; break;
   case Low_AUDIO_U8: i=AUDIO_U8; break;
+#endif
   };
 }
 
@@ -1008,58 +1058,78 @@ public:
   virtual void cleanup() { }
   virtual Low_Mix_Chunk* Mix_LoadWAV_RW(Low_SDL_RWops *buf, int s)
   {
+#ifdef USE_MIX
     Mix_Chunk *m = ::Mix_LoadWAV_RW((SDL_RWops*)buf->ptr,s);
     Low_Mix_Chunk *c = new Low_Mix_Chunk;
     c->ptr = m;
     return c;
+#endif
   }
 
   virtual int Mix_OpenAudio(int rate, int flags, int val, int hup)
   {
+#ifdef USE_MIX
     map_enums_mix(flags);
     return ::Mix_OpenAudio(rate,flags,val,hup);
+#endif
   }
   virtual int Mix_PlayChannel(int channel, Low_Mix_Chunk *mix_chunk, int val)
   {
+#ifdef USE_MIX
     return ::Mix_PlayChannelTimed(channel, (Mix_Chunk*)mix_chunk->ptr, val,-1);
+#endif
   }
   virtual Low_Mix_Chunk *Mix_QuickLoad_RAW(unsigned char *mem, int len)
   {
+#ifdef USE_MIX
     Low_Mix_Chunk *c = new Low_Mix_Chunk;
     c->ptr = ::Mix_QuickLoad_RAW(mem,len);
     return c;
+#endif
   }
   virtual void Mix_Init(int flags)
   {
+#ifdef USE_MIX
     map_enums_mix(flags);
     ::Mix_Init(flags);
+#endif
   }
   virtual Low_Mix_Music *Mix_LoadMUS(const char *filename)
   {
+#ifdef USE_MIX
     Low_Mix_Music *m = new Low_Mix_Music;
     m->ptr = ::Mix_LoadMUS(filename);
     return m;
+#endif
   }
   virtual void Mix_PlayMusic(Low_Mix_Music *mus, int val)
   {
+#ifdef USE_MIX
     ::Mix_PlayMusic((Mix_Music*)mus->ptr, val);
+#endif
   }
   virtual int Mix_GetNumMusicDecoders()
   {
+#ifdef USE_MIX
 #ifndef EMSCRIPTEN
     return ::Mix_GetNumMusicDecoders();
+#endif
 #endif
     return 0;
   }
   virtual void Mix_GetMusicDecoder(int i)
   {
+#ifdef USE_MIX
 #ifndef EMSCRIPTEN
     ::Mix_GetMusicDecoder(i);
+#endif
 #endif
   }
   virtual void Mix_AllocateChannels(int i)
   {
+#ifdef USE_MIX
     ::Mix_AllocateChannels(i);
+#endif
   }
 };
 #endif // ndef ARM
