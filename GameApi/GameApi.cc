@@ -8148,7 +8148,7 @@ void blocker_iter(void *arg)
       {
 	//std::cout << e.ch << " " << e.type << std::endl;
 #ifndef EMSCRIPTEN
-	if (e.ch==27 && e.type==0x300) { env->exit = true; }
+	if (e.ch==27 && e.type==0x300) { std::cout << "ESC pressed!" << std::endl; env->exit = true; }
 #endif
 
 	GameApi::InteractionApi::quake_movement_event(*env->ev,e, env->pos_x, env->pos_y, env->rot_y,
@@ -8184,7 +8184,8 @@ void blocker_iter(void *arg)
 	  env->ev->mainloop_api.fpscounter();
 	if (env->ev->mainloop_api.get_time()/1000.0*10.0 > env->timeout)
 	  {
-	    env->exit = true;
+	    std::cout << "Timeout, existing..." << std::endl;
+	    //env->exit = true;
 	  }
 
     // swapbuffers
@@ -8306,7 +8307,7 @@ public:
       {
 	//std::cout << e.ch << " " << e.type << std::endl;
 #ifndef EMSCRIPTEN
-	if (e.ch==27 && e.type==0x300) { env->exit = true; return 0; }
+	if (e.ch==27 && e.type==0x300) { std::cout << "Esc pressed2!" << std::endl; env->exit = true; return 0; }
 #endif
 	
 	//GameApi::InteractionApi::quake_movement_event(*env->ev,e, env->pos_x, env->pos_y, env->rot_y,
@@ -8345,7 +8346,8 @@ public:
       env->ev->mainloop_api.fpscounter();
     if (env->ev->mainloop_api.get_time()/1000.0*10.0 > env->timeout)
       {
-	env->exit = true;
+	//env->exit = true;
+	std::cout << "Timeout2, exiting.." << std::endl;
       }
     
     // swapbuffers
@@ -8454,7 +8456,8 @@ public:
     }
 #else
       emscripten_set_main_loop_arg(blocker_iter, (void*)&env, 0,1);
-#endif 
+#endif
+      std::cout << "Mainloop existing.." << std::endl;
       g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
   }
   private:
@@ -13339,7 +13342,7 @@ public:
     GameApi::MainLoopApi::Event e;
     while((e = ev.mainloop_api.get_event()).last==true)
       {
-    	if (e.ch==27 && e.type==0x300) { exit=true; }
+    	if (e.ch==27 && e.type==0x300) { std::cout << "ESC pressed3" << std::endl; exit=true; }
 
 	FrameLoopEvent event;
 	event.type = e.type;
@@ -17154,6 +17157,7 @@ public:
 	  MainLoopItem *item = find_main_loop(env2, ml);
 	  item->destroy();
 	  env->exit = true; 
+	  std::cout << "Esc pressed4" << std::endl;
 	  make_current(false);
 	  return 0; 
 	}
@@ -17194,6 +17198,7 @@ public:
       env->ev->mainloop_api.fpscounter();
     if (env->ev->mainloop_api.get_time()/1000.0*10.0 > env->timeout)
       {
+	std::cout << "Timeout3, exiting" << std::endl;
 	env->exit = true;
       }
     

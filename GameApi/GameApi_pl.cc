@@ -1529,7 +1529,12 @@ EXPORT GameApi::P GameApi::PolygonApi::torus(int numfaces1, int numfaces2, PT ce
   Vector *u_y1 = find_vector(e, u_y);
   Vector *uu_x1 = find_vector(e, uu_x);
   Vector *uu_y1 = find_vector(e, uu_y);
-  FaceCollection *coll = new TorusElem(numfaces1, numfaces2, *cent, *u_x1, *u_y1, radius1, *uu_x1, *uu_y1, radius2);
+  Point m_cent = cent?*cent:Point(0.0,0.0,0.0);
+  Vector m_u_x1 = u_x1?*u_x1:Vector(1.0,0.0,0.0);
+  Vector m_u_y1 = u_y1?*u_y1:Vector(0.0,1.0,0.0);
+  Vector m_uu_x1 = uu_x1?*uu_x1:Vector(0.0,0.0,1.0);
+  Vector m_uu_y1 = uu_y1?*uu_y1:Vector(0.0,-1.0,0.0);
+  FaceCollection *coll = new TorusElem(numfaces1, numfaces2, m_cent, m_u_x1, m_u_y1, radius1, m_uu_x1, m_uu_y1, radius2);
   return add_polygon(e, coll, 1); 
 }
 EXPORT GameApi::P GameApi::PolygonApi::cone(int numfaces, PT p1, PT p2, float rad1, float rad2)
