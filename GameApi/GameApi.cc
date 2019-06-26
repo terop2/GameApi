@@ -17653,4 +17653,252 @@ private:
 };
 
 
+
+bool is_inside_extends(Point p, Extends e)
+{
+  if (p.x<e.start_x || p.x>e.end_x) return false;
+  if (p.y<e.start_y || p.y>e.end_y) return false;
+  if (p.z<e.start_z || p.z>e.end_z) return false;
+  return true;
+}
+
+class QuadTreeImpl : public QuadTree
+{
+public:
+  QuadTreeImpl() { }
+  virtual int RootType() const { return 0; }
+  virtual Extends RootExtends() const { return g_root_extends; }
+  virtual QuadNode *Root() const { return g_root; }
+  virtual int NumChildren(QuadNode *n) const { return n->child.size(); }
+  virtual QuadNode *Child(int i, QuadNode *n) const { return n->child[i]; }
+  virtual Extends ChildExtends(int i, QuadNode *n) const { return n->child_extends[i]; }
+  virtual int ChildType(int i, QuadNode *n) const { return 0; }
+  virtual QuadNode *Parent(QuadNode *n) const { return n->parent; }
+public:
+  QuadNode *g_root = 0;
+  Extends g_root_extends;
+};
+
+class PolygonQuadNode : public QuadNode, public FaceCollection
+{
+public:
+  PolygonQuadNode(QuadTree *tree, QuadNode *parent, Extends e)
+  {
+    QuadNode::parent = parent;
+    if (parent) {
+      parent->child.push_back(this);
+      parent->child_extends.push_back(e);
+    } else {
+      QuadTreeImpl *impl = (QuadTreeImpl*)tree;
+      impl->g_root = this;
+      impl->g_root_extends = e;
+    }
+  }
+  int push_vertex(Vertex v)
+  {
+    m_vertices.push_back(v.p);
+    m_normals.push_back(v.n);
+    m_colours.push_back(v.c);
+    m_texcoord.push_back(v.tx);
+    m_texcoord3.push_back(v.tx3);
+    return m_vertices.size()-1;
+  }
+  int push_face(std::vector<int> face_vertices)
+  {
+    int s = face_vertices.size();
+    m_face_vertex_counts.push_back(s);
+    for(int i=0;i<s;i++) {
+      m_faces.push_back(face_vertices[i]);
+    }
+  }
+
+  virtual void Prepare() { }
+  virtual int NumFaces() const { return m_face_vertex_counts.size(); }
+  virtual int NumPoints(int face) const { return m_face_vertex_counts[face]; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int v = Vertex(face,point);
+    return m_vertices[v];
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    int v = Vertex(face,point);
+    return m_normals[v];
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    int v = Vertex(face,point);
+    return m_colours[v];
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    int v = Vertex(face,point);
+    return m_texcoord[v];
+
+  }
+  virtual float TexCoord3(int face, int point) const { 
+    int v = Vertex(face,point);
+    return m_texcoord3[v];
+  }
+
+  int Vertex(int face, int point) const {
+    int s = m_face_vertex_counts.size();
+    int count = 0;
+    for(int i=0;i<face;i++)
+      {
+	count+=m_face_vertex_counts[i];
+      }
+    return count+point;
+  }
+
+public:
+  std::vector<Point> m_vertices;
+  std::vector<Vector> m_normals;
+  std::vector<unsigned int> m_colours;
+  std::vector<Point2d> m_texcoord;
+  std::vector<float> m_texcoord3;
+  std::vector<int> m_face_vertex_counts;
+  std::vector<int> m_faces;
+};
+
+
+void QuadTree::push_tri(Vertex v1, Vertex v2, Vertex v3)
+  {
+    QuadNode *r = Root();
+    Extends e = RootExtends();
+    bool b = is_inside_extends(v1.p,e) && is_inside_extends(v2.p,e) && is_inside_extends(v3.p,e);
+    if (!b) { std::cout << "Triangle outside of extends. skipping." << std::endl; return; }
+    while(b) {
+      int s = r->child.size();
+      for(int i=0;i<s;i++) {
+	QuadNode *n = r->child[i];
+	Extends e = r->child_extends[i];
+	bool b2 = is_inside_extends(v1.p,e) && is_inside_extends(v2.p,e) && is_inside_extends(v3.p,e);
+	if (!b2) { b=false; continue; }
+	r = n;
+	b=true;
+	break;
+      }
+    }
+    // here r is the node chosen for this triangle
+    PolygonQuadNode *rr = static_cast<PolygonQuadNode*>(r);
+    int c1 = rr->push_vertex(v1);
+    int c2 = rr->push_vertex(v2);
+    int c3 = rr->push_vertex(v3);
+    std::vector<int> f;
+    f.push_back(c1);
+    f.push_back(c2);
+    f.push_back(c3);
+    rr->push_face(f);
+  }
+  void QuadTree::push_quad(Vertex v1, Vertex v2, Vertex v3, Vertex v4)
+  {
+    QuadNode *r = Root();
+    Extends e = RootExtends();
+    bool b = is_inside_extends(v1.p,e) && is_inside_extends(v2.p,e) && is_inside_extends(v3.p,e) && is_inside_extends(v4.p,e);
+    if (!b) { std::cout << "Quad outside of extends. skipping." << std::endl; return; }
+    while(b) {
+      int s = r->child.size();
+      for(int i=0;i<s;i++) {
+	QuadNode *n = r->child[i];
+	Extends e = r->child_extends[i];
+	bool b2 = is_inside_extends(v1.p,e) && is_inside_extends(v2.p,e) && is_inside_extends(v3.p,e);
+	if (!b2) { b=false; continue; }
+	r = n;
+	b=true;
+	break;
+      }
+    }
+    // here r is the node chosen for this triangle
+    PolygonQuadNode *rr = static_cast<PolygonQuadNode*>(r);
+    int c1 = rr->push_vertex(v1);
+    int c2 = rr->push_vertex(v2);
+    int c3 = rr->push_vertex(v3);
+    int c4 = rr->push_vertex(v4);
+    std::vector<int> f;
+    f.push_back(c1);
+    f.push_back(c2);
+    f.push_back(c3);
+    f.push_back(c4);
+    rr->push_face(f);
+  }
+  void QuadTree::push_poly(std::vector<Vertex> vec)
+  {
+    int sk = vec.size();
+    QuadNode *r = Root();
+    Extends e = RootExtends();
+    bool b = true;
+    for(int i=0;i<sk;i++) {
+      b= b & is_inside_extends(vec[i].p,e);
+    }
+    if (!b) { std::cout << "Poly outside of extends. skipping." << std::endl; return; }
+    while(b) {
+      int s = r->child.size();
+      for(int i=0;i<s;i++) {
+	QuadNode *n = r->child[i];
+	Extends e = r->child_extends[i];
+
+	bool b2 = true;
+	for(int k=0;k<sk;k++) {
+	  b2= b2 & is_inside_extends(vec[k].p,e);
+	}
+	if (!b2) { b=false; continue; }
+	r = n;
+	b = true;
+	break;
+      }
+    }
+    // here r is the node chosen for this triangle
+    PolygonQuadNode *rr = static_cast<PolygonQuadNode*>(r);
+    std::vector<int> f;
+    for(int i=0;i<sk;i++)
+      f.push_back( rr->push_vertex( vec[i] ) );
+    rr->push_face(f);
+  }
+
+
+class QuadTreeEntry : public MainLoopItem
+{
+public:
+  QuadTreeEntry(QuadTree *tree, FaceCollection *coll) : tree(tree), coll(coll) { }
+  virtual void Prepare()
+  {
+    coll->Prepare();
+    
+    int s = coll->NumFaces();
+    for(int i=0;i<s;i++) 
+      {
+	int p = coll->NumPoints(i);
+	std::vector<Vertex> vec;
+	for(int j=0;j<s;j++) {
+	  Vertex v;
+	  v.p = coll->FacePoint(i,j);
+	  v.n = coll->PointNormal(i,j);
+	  v.c = coll->Color(i,j);
+	  v.tx = coll->TexCoord(i,j);
+	  v.tx3 = coll->TexCoord3(i,j);
+	  vec.push_back(v);
+	}
+	tree->push_poly(vec);
+      }
+  }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual int shader_id() { return -1; }
+private:
+  QuadTree *tree;
+  FaceCollection *coll;
+};
+
+QuadTree *g_tree = new QuadTreeImpl;
+
+GameApi::ML GameApi::PolygonApi::quad_tree(P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_main_loop(e, new QuadTreeEntry(g_tree, coll));
+}
+
+
 #endif // THIRD_PART

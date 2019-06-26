@@ -1534,4 +1534,50 @@ public:
   virtual int State(int i) const=0;
 };
 
+struct Vertex
+{
+  Point p;
+  Vector n;
+  unsigned int c;
+  Point2d tx;
+  float tx3;
+};
+
+struct Extends
+{
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+};
+
+
+class QuadNode
+{
+public:
+  QuadNode *parent;
+  std::vector<QuadNode*> child;
+  std::vector<Extends> child_extends;
+};
+
+
+class QuadTree
+{
+public:
+  virtual int RootType() const=0;
+  virtual Extends RootExtends() const=0;
+  virtual QuadNode *Root() const=0;
+  virtual int NumChildren(QuadNode *n) const=0;
+  virtual QuadNode *Child(int i, QuadNode *n) const=0;
+  virtual Extends ChildExtends(int i, QuadNode *n) const=0;
+  virtual int ChildType(int i, QuadNode *n) const=0;
+  virtual QuadNode *Parent(QuadNode *n) const { return n->parent; }
+public:
+  void push_tri(Vertex v1, Vertex v2, Vertex v3);
+  void push_quad(Vertex v1, Vertex v2, Vertex v3, Vertex v4);
+  void push_poly(std::vector<Vertex> vec);
+};
+
+
+bool is_inside_extends(Point p, Extends e);
+
 #endif
