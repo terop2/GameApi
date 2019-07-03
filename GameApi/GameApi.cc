@@ -1070,7 +1070,7 @@ public:
     //float val1 = 1.0-(async_pending_count/max_async_pending);
     //if (val1<0.1) val1=0.1;
     //if (val1>1.0) val1=1.0;
-    time+=0.03;
+    const_cast<ScaleProgress*>(this)->time+=0.03;
     float val2 = float(FindProgressVal())/float(FindProgressMax());
     val2+=time;
     if (val2<0.1) val2=0.1;
