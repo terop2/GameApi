@@ -1071,7 +1071,7 @@ public:
     //if (val1<0.1) val1=0.1;
     //if (val1>1.0) val1=1.0;
     const_cast<ScaleProgress*>(this)->time+=0.003;
-    float val2 = float(FindProgressVal())/float(FindProgressMax());
+    float val2 = float(FindProgressVal())/float(FindProgressMax()+0.003*600);
     val2+=time;
     if (val2<0.1) val2=0.1;
     if (val2>1.0) val2=1.0;
