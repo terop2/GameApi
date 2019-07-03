@@ -1070,12 +1070,15 @@ public:
     //float val1 = 1.0-(async_pending_count/max_async_pending);
     //if (val1<0.1) val1=0.1;
     //if (val1>1.0) val1=1.0;
+    time+=0.03;
     float val2 = float(FindProgressVal())/float(FindProgressMax());
+    val2+=time;
     if (val2<0.1) val2=0.1;
     if (val2>1.0) val2=1.0;
     return val2;
   }
 private:
+  float time=0.0;
   Movement *next;
   mutable int max_async_pending;
   bool is_x, is_y, is_z;
