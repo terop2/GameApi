@@ -8282,7 +8282,7 @@ public:
   {
     Envi_2 *env = (Envi_2*)&envi;
     //std::cout << "async: " << async_pending_count << std::endl;
-    if (async_pending_count > 0 && !async_is_done) { env->logo_shown = true; }
+    if ((async_pending_count > 0 && !async_is_done)||no_draw_count>0) { env->logo_shown = true; }
     if (async_pending_count != async_pending_count_previous)
       {
 	std::cout << "ASync pending count=" << async_pending_count << std::endl;
