@@ -139,7 +139,7 @@ private:
   std::string name;
 };
 
-
+#if 0
 class Vertex : public Point3Shader
 {
 public:
@@ -157,6 +157,8 @@ public:
 private:
   FaceCollection *coll;
 };
+
+#endif
 
 class UniformFloat : public FloatShader
 {

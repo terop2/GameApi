@@ -3,6 +3,7 @@
 
 int ShaderExpr::unique=0;
 
+#if 0
 void testshader()
 {
   float val;
@@ -25,3 +26,4 @@ void testshader()
     }
   std::cout << "Expr: " << mix.Expr("gl_Position.xyz") << "@" << std::endl;
 }
+#endif

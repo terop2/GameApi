@@ -284,6 +284,10 @@ public:
   IMPORT void clear_3d_transparent();
   IMPORT void clear_3d(unsigned int col = 0xff000000);
   IMPORT void switch_to_3d(bool b, SH sh, int screen_width=800., int screen_height = 600);
+  IMPORT ML activate_item(ML ml, ML def);
+  IMPORT ML activate_array(std::vector<ML> vec);
+  IMPORT ARR activate_arr_arr(std::vector<ML> arr);
+  IMPORT ML slow_activate_item(ML ml,int i);
   IMPORT BM framebuffer_bitmap(FBU framebuffer);
   IMPORT ML display_background(EveryApi &ev, ML ml);
   IMPORT ML small_window(EveryApi &ev, ML ml, int x, int y, int sx, int sy);
