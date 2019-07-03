@@ -17974,7 +17974,7 @@ public:
   }
   virtual void execute(MainLoopEnv &e)
   {
-    if (activated_num==int(vec.size())) {
+    if (activated_num==int(vec.size()) && time>30) {
       int s = vec.size();
       for(int i=0;i<s;i++) {
 	MainLoopEnv ee = e;
@@ -17982,7 +17982,8 @@ public:
       }
     }
     if (activated_num<int(vec.size())) activated_num++;
-    if (no_draw && activated_num==int(vec.size())) { no_draw_count--; no_draw=false; }
+    if (no_draw && activated_num==int(vec.size())) time++;
+    if (no_draw && activated_num==int(vec.size())&&time>30) { no_draw_count--; no_draw=false; }
   }
   virtual void handle_event(MainLoopEvent &e)
   {
@@ -18005,6 +18006,7 @@ private:
   int activated_num=-1;
   int done_num=-1;
   bool no_draw=false;
+  int time=0;
 };
 
 GameApi::ML GameApi::MainLoopApi::activate_item(ML ml, ML def2)
