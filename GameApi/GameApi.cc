@@ -8296,7 +8296,7 @@ public:
 	} else {
 	  b = env->ev->mainloop_api.seamless_iter();
 	}
-	if (b && async_pending_count==0) { env->logo_shown = false;
+	if (b && async_pending_count==0 && no_draw_count==0) { env->logo_shown = false;
 	  env->ev->mainloop_api.reset_time();
 	  env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
 	}
@@ -17963,13 +17963,14 @@ extern int no_draw_count;
 class SlowActivateArray : public MainLoopItem
 {
 public:
-  SlowActivateArray(std::vector<MainLoopItem*> vec) : vec(vec) { }
+  SlowActivateArray(std::vector<MainLoopItem*> vec) : vec(vec) { 
+    no_draw_count++;
+    no_draw=true;
+  }
   virtual void Prepare() {
     InstallProgress(vec.size(), "progress", 15);
     int s = vec.size();
     for(int i=0;i<s;i++) vec[i]->Prepare();
-    no_draw_count++;
-    no_draw=true;
   }
   virtual void execute(MainLoopEnv &e)
   {
@@ -17997,7 +17998,7 @@ public:
 	  vec[j]->handle_event(ev);
       }
     done_num = activated_num;
-    ProgressBar(vec.size(), done_num, 15, "progress");
+    ProgressBar(vec.size(), int(float(done_num)/vec.size()*15), 15, "progress");
   }
 private:
   std::vector<MainLoopItem*> vec;
