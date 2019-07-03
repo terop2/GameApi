@@ -17966,9 +17966,9 @@ public:
   SlowActivateArray(std::vector<MainLoopItem*> vec) : vec(vec) { 
     no_draw_count++;
     no_draw=true;
+    InstallProgress(vec.size(), "progress", 15);
   }
   virtual void Prepare() {
-    InstallProgress(vec.size(), "progress", 15);
     int s = vec.size();
     for(int i=0;i<s;i++) vec[i]->Prepare();
   }
