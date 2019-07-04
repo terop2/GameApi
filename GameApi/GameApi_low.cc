@@ -1148,14 +1148,14 @@ LowApi *g_low;
 void initialize_stub(int flags); 
 void initialize_low(int flags)
 {
-#ifndef ARM
+  //#ifndef ARM
   LowApi *low = new LowApi;
   low->ogl = new OpenglApi;
   low->sdl = new SDLApi;
   low->sdl_mixer = new SDLMixerApi;
   g_low = low;
-#else
-  initialize_stub(flags);
-#endif
+  //#else
+  //  initialize_stub(flags);
+  //#endif
   
 }
