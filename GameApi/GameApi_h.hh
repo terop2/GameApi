@@ -59,7 +59,7 @@
 //#define OPENGL_ES 1
 
 #ifdef RASPI
-//#define OPENGL_ES 1
+#define OPENGL_ES 1
 #endif
 
 

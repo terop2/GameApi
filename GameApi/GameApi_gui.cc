@@ -4546,20 +4546,23 @@ int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api
     }
 #endif
 
+#ifdef EMSCRIPTEN
+#define ORDER 1
+#endif
+#ifdef ANDROID
+#define ORDER 1
+#endif
+#ifdef RASPI
+#define ORDER 1
+#endif
+  
   std::stringstream ss;
   int s2 = s.size();
-#ifndef EMSCRIPTEN
-#ifndef ANDROID
+#ifndef ORDER
   for(int i=s2-1;i>=0;i--)
     {
       ss << s[i] << " ";
     }
-#else
-  for(int i=0;i<s2;i++)
-    {
-      ss << s[i] << " ";
-    }
-#endif
 #else
   for(int i=0;i<s2;i++)
     {

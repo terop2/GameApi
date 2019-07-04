@@ -1896,8 +1896,8 @@ public:
     : next(next), x(x), y(y), width(width), height(height)
   {
   }
-  virtual int SizeX() const { return next->SizeX(); }
-  virtual int SizeY() const { return next->SizeY(); }
+  virtual int SizeX() const { if (next) return next->SizeX(); return 1; }
+  virtual int SizeY() const { if (next) return next->SizeY(); return 1; }
   virtual bool Map(int xx, int yy) const
   {
     bool res = true;
@@ -1905,10 +1905,10 @@ public:
   if (xx>=x+width) res=false;
   if (yy<y) res=false;
   if (yy>=y+height) res=false;
-  if (res==false) return next->Map(xx,yy);
+  if (res==false&&next) return next->Map(xx,yy);
   return true;
   }
-  virtual void Prepare() { next->Prepare(); }
+  virtual void Prepare() { if (next) next->Prepare(); }
 private:
   Bitmap<bool> *next;
   float x,y,width,height;
@@ -1916,7 +1916,7 @@ private:
 EXPORT GameApi::BB GameApi::BoolBitmapApi::rectangle(BB bg, float x, float y, float width, float height)
 {
   BoolBitmap *handle3 = find_bool_bitmap(e,bg);
-  Bitmap<bool> *bm = handle3->bitmap;
+  Bitmap<bool> *bm = handle3?handle3->bitmap:0;
   return add_bool_bitmap(e, new RectBitmap44(bm, x,y,width,height));
 #if 0
   
