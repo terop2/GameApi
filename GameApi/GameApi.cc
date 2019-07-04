@@ -4926,6 +4926,7 @@ public:
 
     
     ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
+    ev.shader_api.print_log(sh);
     ev.shader_api.unuse(sh);
   }
 private:
@@ -5098,6 +5099,8 @@ public:
 
     
     ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
+    ev.shader_api.print_log(sh);
+
     ev.shader_api.unuse(sh);
   }
 private:
@@ -5284,6 +5287,7 @@ public:
 
     
     ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
+    ev.shader_api.print_log(sh);
     ev.shader_api.unuse(sh);
   }
 private:
@@ -5656,6 +5660,7 @@ public:
 
     
     ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
+    ev.shader_api.print_log(sh);
     ev.shader_api.unuse(sh);
   }
 private:
@@ -5803,6 +5808,7 @@ public:
       }
     
     ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
+    ev.shader_api.print_log(sh);
     ev.shader_api.unuse(sh);
   }
 private:
@@ -8184,7 +8190,7 @@ void blocker_iter(void *arg)
 	  env->ev->mainloop_api.fpscounter();
 	if (env->ev->mainloop_api.get_time()/1000.0*10.0 > env->timeout)
 	  {
-	    std::cout << "Timeout, existing..." << std::endl;
+	    //std::cout << "Timeout, existing..." << std::endl;
 	    //env->exit = true;
 	  }
 

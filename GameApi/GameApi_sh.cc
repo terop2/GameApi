@@ -61,6 +61,14 @@ EXPORT void GameApi::ShaderApi::link(GameApi::SH shader)
 {
   link_1(shader);
 }
+EXPORT void GameApi::ShaderApi::print_log(GameApi::SH shader)
+{
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  ShaderSeq *seq = p->seq;
+  if (seq)
+    seq->print_log(shader.id);
+
+}
 void GameApi::ShaderApi::link_1(GameApi::SH shader)
 {
   ShaderPriv2 *p = (ShaderPriv2*)priv;

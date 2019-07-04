@@ -40,7 +40,7 @@
 //#define OPENGL_ES 1
 
 #ifdef RASPI
-//#define OPENGL_ES 1
+#define OPENGL_ES 1
 #endif
 
 
@@ -104,6 +104,13 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   priv = new ShaderPriv;
   priv->handle = handle;
   priv->shader = &shader;
+}
+void Shader::print_log() const
+{
+      int len=0;
+      char buf[255];
+      g_low->ogl->glGetShaderInfoLog(priv->handle, 255, &len, buf);
+      std::cout << " ShaInfoLog: " << buf << std::endl;
 }
 Shader::~Shader()
 {
@@ -219,7 +226,16 @@ void Program::link()
   char log[255];
   g_low->ogl->glGetProgramInfoLog(priv->program, 255, &len, log);
   log[len]=0;
-  std::cout << log << std::endl;
+  std::cout << "ProgInfoLog:" << log << std::endl;
+
+}
+void Program::print_log()
+{
+  int s = priv->shaders.size();
+  for(int i=0;i<s;i++) {
+    const Shader *sh = priv->shaders[i];
+    sh->print_log();
+  }
 }
 void Program::use()
 {
@@ -3090,6 +3106,11 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
   //p->GeomTypes(5,2); 
   //p->GeomOutputVertices(100000);
   return id;
+}
+void ShaderSeq::print_log(int i)
+{
+  if (progs[i])
+    progs[i]->print_log();
 }
 void ShaderSeq::link(int i)
 {

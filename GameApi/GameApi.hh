@@ -3364,6 +3364,7 @@ public:
   IMPORT SH shader_choice(EveryApi &ev, int i);
   IMPORT void link(SH shader);
   IMPORT void use(SH shader);
+  IMPORT void print_log(SH shader);
   void link_1(SH shader);
   void use_1(SH shader);
   IMPORT void unuse(SH shader);
