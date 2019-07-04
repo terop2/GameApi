@@ -6981,10 +6981,13 @@ EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml(EveryApi &ev, VA 
 }
 EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2(EveryApi &ev, P p)
 {
+#ifdef HAS_INSTANCING
     GameApi::PTS pts = ev.points_api.single_pts();
     GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p,pts);
     return ml;
-    // return add_main_loop(e, new RenderP(e, ev, *this, p));
+#else
+     return add_main_loop(e, new RenderP(e, ev, *this, p));
+#endif
 }
  EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2_texture(EveryApi &ev, P p, std::vector<BM> bm)
  {
