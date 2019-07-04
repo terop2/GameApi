@@ -661,6 +661,8 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
     map_enums(tri);
 ::glDrawArraysInstanced(tri,a,b,c); 
     check_err("glDrawArraysInstanced");
+#else
+    glDrawArrays(tri,a,b);
 #endif
   }
   virtual void glDrawArrays(int tri, int a, unsigned int b) { 
