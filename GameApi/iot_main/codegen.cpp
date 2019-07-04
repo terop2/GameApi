@@ -265,6 +265,7 @@ int main(int argc, char *argv[])
   std::cout << "Loading " << url << " ";
   std::vector<std::string> files;
   std::string file = network(url);
+  std::cout << file << std::endl;
   files.push_back(file);
   std::vector<std::string> urls = find_urls(file);
   std::sort(urls.begin(), urls.end());
