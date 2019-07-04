@@ -1,7 +1,9 @@
 
 all:
 	g++ -DLINUX -std=c++11 codegen.cpp -o codegen.exe
-	arm-linux-gnueabihf-g++ -DLINUX -I.. -L.. -L/root/raspi/vc/vc/lib -L/root/raspi/sdl2/SDL2-2.0.9/build/.libs -Wl,-rpath /root/raspi/vc/vc/lib -std=c++11 test.cpp -lGameApi -lpthread -lGLESv2 -lSDL2 -o test.exe
+	arm-linux-gnueabihf-g++ -g -DLINUX -DRASPI -I.. -L.. -L/root/raspi/GL/usr/lib/arm-linux-gnueabihf -L/root/raspi/GL/lib/arm-linux-gnueabihf -L/root/raspi/sdl2/SDL2-2.0.9/build/.libs -Wl,-rpath /root/raspi/GL/lib/arm-linux-gnueabihf -Wl,-rpath /root/raspi/GL/usr/lib/arm-linux-gnueabihf  -std=c++11 -Wl,--copy-dt-needed-entries test.cpp -lGameApi -lpthread -lGL -lGLEW  -lSDL2  -o test.exe
+
+# -Wl,--dynamic-linker /root/raspi/GL/lib/arm-linux-gnueabihf/ld-linux.so.3
 
 exe:
 	(cd ..;cd editor; ../iot_main/test.exe)

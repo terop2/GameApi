@@ -55,10 +55,10 @@ HFiles = $(patsubst %.cc,%.hh,$(CFiles))
 Subdirsx = $(patsubst %,%build,$(Subdirs))
 
 
-CCFLAGS = -std=c++11 -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DRASPI -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mcpu=cortex-m4 -mthumb -Os -I/root/raspi/vc/vc/include
-CC2FLAGS = -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DRASPI -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mcpu=cortex-m4 -mthumb -Os -I/root/raspi/vc/vc/include
+CCFLAGS = -g -std=c++11 -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DRASPI -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mcpu=cortex-m4 -mthumb -Os -I/root/raspi/GL/usr/include
+CC2FLAGS = -g -std=c++11 -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DRASPI  -I/root/raspi/GL/usr/include
 #`pkg-config gtkmm-2.4 --cflags`
-
+# -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mcpu=cortex-m4 -mthumb -Os
 
 default: libGameApi.so
 

@@ -11,6 +11,17 @@ using namespace GameApi;
 void check_vr_compositor_init() { }
 #endif
 
+#ifdef RASPI
+
+__asm__(".symver __fdelt_chk,__fdelt_chk@GLIBC_2.15");
+extern "C" unsigned long int __fdelt_chk(unsigned long int d) { return d; }
+
+__asm__(".symver clock_gettime,clock_gettime@GLIBC_2.17");
+extern "C"
+int clock_gettime(clockid_t, timespec*) { return 0; }
+
+#endif
+
 #if 0
 const char g_url[] = "http://tpgames.org/";
 const char g_url2[] = "http://tpgames.org/aaa";
