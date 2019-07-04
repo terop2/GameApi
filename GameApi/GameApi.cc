@@ -1070,12 +1070,16 @@ public:
     //float val1 = 1.0-(async_pending_count/max_async_pending);
     //if (val1<0.1) val1=0.1;
     //if (val1>1.0) val1=1.0;
-    float val2 = float(FindProgressVal())/float(FindProgressMax());
+    const_cast<ScaleProgress*>(this)->time+=1.0;
+    float val2 = float(FindProgressVal())/float(FindProgressMax()+171.0);
+    val2+=time/float(FindProgressMax()+171.0);
+    //std::cout << "Time:" << time << std::endl;
     if (val2<0.1) val2=0.1;
     if (val2>1.0) val2=1.0;
     return val2;
   }
 private:
+  float time=0.0;
   Movement *next;
   mutable int max_async_pending;
   bool is_x, is_y, is_z;
@@ -4770,7 +4774,7 @@ EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst_fade(P p, PTS pts, MT mat, b
 class RenderInstanced : public MainLoopItem
 {
 public:
-  RenderInstanced(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; initialized=false; shader.id=-1; }
+  RenderInstanced(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1; }
   int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
@@ -4946,7 +4950,7 @@ private:
 class RenderInstancedTex : public MainLoopItem
 {
 public:
-  RenderInstancedTex(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; initialized=false; shader.id=-1; }
+  RenderInstancedTex(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
   int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
@@ -4954,6 +4958,7 @@ public:
     obj2->HandleEvent(e);
   }
   void Prepare() {
+    if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     pta = ev.points_api.prepare(pts);
     va = ev.polygon_api.create_vertex_array(p,true);
@@ -4963,6 +4968,7 @@ public:
   }
   void execute(MainLoopEnv &e)
   {
+    if (!initialized) { std::cout << "Prepare not called in RenderInstanced!" << std::endl; return; }
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     bool changed = obj2->Update(e);
     // MainLoopEnv ee = e;
@@ -4991,7 +4997,7 @@ public:
 	  u_f = ev.uber_api.f_empty(true);
       }
 #if 1
-    if (ev.polygon_api.is_texture(va))
+    if (va.id!=-1 && ev.polygon_api.is_texture(va))
       {
 	sh.id = e.sh_texture;
 	if (firsttime)
@@ -5071,9 +5077,11 @@ public:
       }
     ev.shader_api.use(sh);
     if (firsttime || changed) {
-      firsttime = false;
       //std::cout << "RenderInstanced::PREPARE" << std::endl;
-      ev.polygon_api.prepare_vertex_array_instanced(ev.shader_api, va, pta, sh);
+      if (va.id!=-1) {
+	ev.polygon_api.prepare_vertex_array_instanced(ev.shader_api, va, pta, sh); 
+	firsttime = false;
+      }
     }
 
     ev.shader_api.set_var(sh, "in_POS", e.in_POS);
@@ -5098,6 +5106,7 @@ public:
       }
 
     
+    if (va.id!=-1)
     ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
     ev.shader_api.print_log(sh);
 
@@ -5122,7 +5131,7 @@ private:
 class RenderInstancedTex_id : public MainLoopItem
 {
 public:
-  RenderInstancedTex_id(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::TXID> *bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; }
+  RenderInstancedTex_id(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::TXID> *bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; initialized=false; }
   int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
@@ -5130,15 +5139,18 @@ public:
     obj2->HandleEvent(e);
   }
   void Prepare() {
+    if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     pta = ev.points_api.prepare(pts);
     va = ev.polygon_api.create_vertex_array(p,true);
     std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev,bm);
     va = ev.texture_api.bind_many(va, id);
-    
+    initialized=true;
   }
   void execute(MainLoopEnv &e)
   {
+    if (!initialized) { std::cout << "Prepare not called in RenderInstanced!" << std::endl; return; }
+
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     bool changed = obj2->Update(e);
     // MainLoopEnv ee = e;
@@ -5302,6 +5314,7 @@ private:
   bool fade, flip;
   float start_time, end_time;
   std::vector<GameApi::TXID> *bm;
+  bool initialized;
 };
 
 
@@ -8201,9 +8214,12 @@ void blocker_iter(void *arg)
 extern int async_pending_count;
 int async_pending_count_previous=-1;
 
+int no_draw_count=0;
+
 extern int score;
 extern int hidden_score;
 extern std::vector<int> g_hide_container;
+
 
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
@@ -8277,7 +8293,7 @@ public:
   {
     Envi_2 *env = (Envi_2*)&envi;
     //std::cout << "async: " << async_pending_count << std::endl;
-    if (async_pending_count > 0 && !async_is_done) { env->logo_shown = true; }
+    if ((async_pending_count > 0 && !async_is_done)||no_draw_count>0) { env->logo_shown = true; }
     if (async_pending_count != async_pending_count_previous)
       {
 	std::cout << "ASync pending count=" << async_pending_count << std::endl;
@@ -8287,25 +8303,31 @@ public:
       {
 	bool b = false;
 	if (gameapi_seamless_url=="") {
+	  std::cout << "Logo iter" << std::endl;
 	  b = env->ev->mainloop_api.logo_iter();
+	  std::cout << "End of Logo iter" << std::endl;
 	} else {
 	  b = env->ev->mainloop_api.seamless_iter();
 	}
-	if (b && async_pending_count==0) { env->logo_shown = false;
+	if (b && async_pending_count==0 && no_draw_count==0) { env->logo_shown = false;
 	  env->ev->mainloop_api.reset_time();
 	  env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
 	}
-	return -1;
+	if (async_pending_count==0 && no_draw_count>0) { /* pass through */}
+	else
+	  return -1;
       }
     async_is_done = true;
 
     if (firsttime) {
       MainLoopItem *item = find_main_loop(env->ev->get_env(),code);
+      std::cout << "Splitter/Prepare:" << std::endl;
       item->Prepare();
+      std::cout << "Splitter/End of Prepare:" << std::endl;
       firsttime = false;
     }
-
-    env->ev->mainloop_api.clear_3d(0xff000000);
+    if (no_draw_count==0)
+      env->ev->mainloop_api.clear_3d(0xff000000);
     
     // handle esc event
     GameApi::MainLoopApi::Event e;
@@ -8319,7 +8341,9 @@ public:
 	//GameApi::InteractionApi::quake_movement_event(*env->ev,e, env->pos_x, env->pos_y, env->rot_y,
 	//					      env->data, env->speed_x, env->speed_y,
 	//			   1.0, 1.0*3.14159*2.0/360.0);
+	std::cout << "Splitter/Event:" << std::endl;
 	env->ev->mainloop_api.event_ml(env->mainloop, e);
+	std::cout << "Splitter/End of Event:" << std::endl;
 	
       }
     //GameApi::InteractionApi::quake_movement_frame(*env->ev, env->pos_x, env->pos_y, env->rot_y,
@@ -8346,7 +8370,9 @@ public:
     GameApi::M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
     GameApi::M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
     
+	std::cout << "Splitter/execute_ml" << std::endl;
     env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+	std::cout << "Splitter/end of execute_ml" << std::endl;
 
     if (env->fpscounter)
       env->ev->mainloop_api.fpscounter();
@@ -10690,6 +10716,7 @@ public:
     ee.cursor_pos = point;
     GameApi::InteractionApi::quake_movement_event(ev,ee,pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
     next->handle_event(e);
+    next2->handle_event(e);
   }
   virtual int shader_id() { return -1; }
 
@@ -17663,5 +17690,417 @@ private:
   std::string homepage;
 };
 
+
+
+bool is_inside_extends(Point p, Extends e)
+{
+  if (p.x<e.start_x || p.x>e.end_x) return false;
+  if (p.y<e.start_y || p.y>e.end_y) return false;
+  if (p.z<e.start_z || p.z>e.end_z) return false;
+  return true;
+}
+
+class QuadTreeImpl : public QuadTree
+{
+public:
+  QuadTreeImpl() { }
+  virtual int RootType() const { return 0; }
+  virtual Extends RootExtends() const { return g_root_extends; }
+  virtual QuadNode *Root() const { return g_root; }
+  virtual int NumChildren(QuadNode *n) const { return n->child.size(); }
+  virtual QuadNode *Child(int i, QuadNode *n) const { return n->child[i]; }
+  virtual Extends ChildExtends(int i, QuadNode *n) const { return n->child_extends[i]; }
+  virtual int ChildType(int i, QuadNode *n) const { return 0; }
+  virtual QuadNode *Parent(QuadNode *n) const { return n->parent; }
+public:
+  QuadNode *g_root = 0;
+  Extends g_root_extends;
+};
+
+class PolygonQuadNode : public QuadNode, public FaceCollection
+{
+public:
+  PolygonQuadNode(QuadTree *tree, QuadNode *parent, Extends e)
+  {
+    QuadNode::parent = parent;
+    if (parent) {
+      parent->child.push_back(this);
+      parent->child_extends.push_back(e);
+    } else {
+      QuadTreeImpl *impl = (QuadTreeImpl*)tree;
+      impl->g_root = this;
+      impl->g_root_extends = e;
+    }
+  }
+  int push_vertex(Vertex v)
+  {
+    m_vertices.push_back(v.p);
+    m_normals.push_back(v.n);
+    m_colours.push_back(v.c);
+    m_texcoord.push_back(v.tx);
+    m_texcoord3.push_back(v.tx3);
+    return m_vertices.size()-1;
+  }
+  int push_face(std::vector<int> face_vertices)
+  {
+    int s = face_vertices.size();
+    m_face_vertex_counts.push_back(s);
+    for(int i=0;i<s;i++) {
+      m_faces.push_back(face_vertices[i]);
+    }
+  }
+
+  virtual void Prepare() { }
+  virtual int NumFaces() const { return m_face_vertex_counts.size(); }
+  virtual int NumPoints(int face) const { return m_face_vertex_counts[face]; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int v = Vertex(face,point);
+    return m_vertices[v];
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    int v = Vertex(face,point);
+    return m_normals[v];
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    int v = Vertex(face,point);
+    return m_colours[v];
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    int v = Vertex(face,point);
+    return m_texcoord[v];
+
+  }
+  virtual float TexCoord3(int face, int point) const { 
+    int v = Vertex(face,point);
+    return m_texcoord3[v];
+  }
+
+  int Vertex(int face, int point) const {
+    int s = m_face_vertex_counts.size();
+    int count = 0;
+    for(int i=0;i<face;i++)
+      {
+	count+=m_face_vertex_counts[i];
+      }
+    return count+point;
+  }
+
+public:
+  std::vector<Point> m_vertices;
+  std::vector<Vector> m_normals;
+  std::vector<unsigned int> m_colours;
+  std::vector<Point2d> m_texcoord;
+  std::vector<float> m_texcoord3;
+  std::vector<int> m_face_vertex_counts;
+  std::vector<int> m_faces;
+};
+
+
+void QuadTree::push_tri(Vertex v1, Vertex v2, Vertex v3)
+  {
+    QuadNode *r = Root();
+    Extends e = RootExtends();
+    bool b = is_inside_extends(v1.p,e) && is_inside_extends(v2.p,e) && is_inside_extends(v3.p,e);
+    if (!b) { std::cout << "Triangle outside of extends. skipping." << std::endl; return; }
+    while(b) {
+      int s = r->child.size();
+      for(int i=0;i<s;i++) {
+	QuadNode *n = r->child[i];
+	Extends e = r->child_extends[i];
+	bool b2 = is_inside_extends(v1.p,e) && is_inside_extends(v2.p,e) && is_inside_extends(v3.p,e);
+	if (!b2) { b=false; continue; }
+	r = n;
+	b=true;
+	break;
+      }
+    }
+    // here r is the node chosen for this triangle
+    PolygonQuadNode *rr = static_cast<PolygonQuadNode*>(r);
+    int c1 = rr->push_vertex(v1);
+    int c2 = rr->push_vertex(v2);
+    int c3 = rr->push_vertex(v3);
+    std::vector<int> f;
+    f.push_back(c1);
+    f.push_back(c2);
+    f.push_back(c3);
+    rr->push_face(f);
+  }
+  void QuadTree::push_quad(Vertex v1, Vertex v2, Vertex v3, Vertex v4)
+  {
+    QuadNode *r = Root();
+    Extends e = RootExtends();
+    bool b = is_inside_extends(v1.p,e) && is_inside_extends(v2.p,e) && is_inside_extends(v3.p,e) && is_inside_extends(v4.p,e);
+    if (!b) { std::cout << "Quad outside of extends. skipping." << std::endl; return; }
+    while(b) {
+      int s = r->child.size();
+      for(int i=0;i<s;i++) {
+	QuadNode *n = r->child[i];
+	Extends e = r->child_extends[i];
+	bool b2 = is_inside_extends(v1.p,e) && is_inside_extends(v2.p,e) && is_inside_extends(v3.p,e);
+	if (!b2) { b=false; continue; }
+	r = n;
+	b=true;
+	break;
+      }
+    }
+    // here r is the node chosen for this triangle
+    PolygonQuadNode *rr = static_cast<PolygonQuadNode*>(r);
+    int c1 = rr->push_vertex(v1);
+    int c2 = rr->push_vertex(v2);
+    int c3 = rr->push_vertex(v3);
+    int c4 = rr->push_vertex(v4);
+    std::vector<int> f;
+    f.push_back(c1);
+    f.push_back(c2);
+    f.push_back(c3);
+    f.push_back(c4);
+    rr->push_face(f);
+  }
+  void QuadTree::push_poly(std::vector<Vertex> vec)
+  {
+    int sk = vec.size();
+    QuadNode *r = Root();
+    Extends e = RootExtends();
+    bool b = true;
+    for(int i=0;i<sk;i++) {
+      b= b & is_inside_extends(vec[i].p,e);
+    }
+    if (!b) { std::cout << "Poly outside of extends. skipping." << std::endl; return; }
+    while(b) {
+      int s = r->child.size();
+      for(int i=0;i<s;i++) {
+	QuadNode *n = r->child[i];
+	Extends e = r->child_extends[i];
+
+	bool b2 = true;
+	for(int k=0;k<sk;k++) {
+	  b2= b2 & is_inside_extends(vec[k].p,e);
+	}
+	if (!b2) { b=false; continue; }
+	r = n;
+	b = true;
+	break;
+      }
+    }
+    // here r is the node chosen for this triangle
+    PolygonQuadNode *rr = static_cast<PolygonQuadNode*>(r);
+    std::vector<int> f;
+    for(int i=0;i<sk;i++)
+      f.push_back( rr->push_vertex( vec[i] ) );
+    rr->push_face(f);
+  }
+
+
+class QuadTreeEntry : public MainLoopItem
+{
+public:
+  QuadTreeEntry(QuadTree *tree, FaceCollection *coll) : tree(tree), coll(coll) { }
+  virtual void Prepare()
+  {
+    coll->Prepare();
+    
+    int s = coll->NumFaces();
+    for(int i=0;i<s;i++) 
+      {
+	int p = coll->NumPoints(i);
+	std::vector<Vertex> vec;
+	for(int j=0;j<s;j++) {
+	  Vertex v;
+	  v.p = coll->FacePoint(i,j);
+	  v.n = coll->PointNormal(i,j);
+	  v.c = coll->Color(i,j);
+	  v.tx = coll->TexCoord(i,j);
+	  v.tx3 = coll->TexCoord3(i,j);
+	  vec.push_back(v);
+	}
+	tree->push_poly(vec);
+      }
+  }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual int shader_id() { return -1; }
+private:
+  QuadTree *tree;
+  FaceCollection *coll;
+};
+
+QuadTree *g_tree = new QuadTreeImpl;
+
+GameApi::ML GameApi::PolygonApi::quad_tree(P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_main_loop(e, new QuadTreeEntry(g_tree, coll));
+}
+
+class ActivateMainLoopItem : public MainLoopItem
+{
+public:
+  ActivateMainLoopItem(MainLoopItem *next, int time, MainLoopItem *def) : next(next),time(time),def(def) { }
+  virtual void Prepare() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (is_activated) {
+      is_activated=false;
+      next->Prepare();
+      is_finished=true;
+    }
+    if (is_finished)
+      next->execute(e);
+    else
+      def->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (e.ch=='*' && e.type==0x777 && !is_activated && !is_finished) {
+      std::cout << "Activated!" << std::endl;
+      is_activated=true;
+    }
+    if (is_finished) {
+      next->handle_event(e);
+    } else {
+      def->handle_event(e);
+    }
+  }
+  virtual int shader_id() { return next->shader_id(); }
+public:
+  MainLoopItem *next;
+  bool is_activated=false;
+  bool is_finished=false;
+  int time;
+  MainLoopItem *def;
+};
+
+
+extern int no_draw_count;
+
+class SlowActivateArray : public MainLoopItem
+{
+public:
+  SlowActivateArray(std::vector<MainLoopItem*> vec) : vec(vec) { 
+    no_draw_count++;
+    no_draw=true;
+    InstallProgress(vec.size(), "progress", 15);
+  }
+  virtual void Prepare() {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (activated_num==int(vec.size()) && time>30) {
+      int s = vec.size();
+      for(int i=0;i<s;i++) {
+	MainLoopEnv ee = e;
+	vec[i]->execute(ee);
+      }
+    }
+    if (activated_num<int(vec.size())) activated_num++;
+    if (no_draw && activated_num==int(vec.size())) time++;
+    if (no_draw && activated_num==int(vec.size())&&time>30) { no_draw_count--; no_draw=false; }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->handle_event(e);
+
+    for(int j=done_num;j<=activated_num;j++)
+      {
+	MainLoopEvent ev = e;
+	ev.type=0x777;
+	ev.ch='*';
+	if (j>=0 && j<int(vec.size()))
+	  vec[j]->handle_event(ev);
+      }
+    done_num = activated_num;
+    ProgressBar(vec.size(), int(float(done_num)/vec.size()*15), 15, "progress");
+  }
+private:
+  std::vector<MainLoopItem*> vec;
+  int activated_num=-1;
+  int done_num=-1;
+  bool no_draw=false;
+  int time=0;
+};
+
+GameApi::ML GameApi::MainLoopApi::activate_item(ML ml, ML def2)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  MainLoopItem *def = find_main_loop(e, def2);
+  return add_main_loop(e, new ActivateMainLoopItem(item,60,def));
+}
+GameApi::ML GameApi::MainLoopApi::activate_array(std::vector<ML> vec)
+{
+  int s = vec.size();
+  std::vector<MainLoopItem*> vec2;
+  for(int i=0;i<s;i++)
+    {
+      GameApi::ML ml = vec[i];
+      ml = activate_item(ml,vec[0]);
+      vec2.push_back(find_main_loop(e, ml));
+    }
+  return add_main_loop(e, new SlowActivateArray(vec2));
+}
+
+class SlowActivateItem : public MainLoopItem
+{
+public:
+  SlowActivateItem(MainLoopItem *item, int i) : item(item),i(i) { 
+    activated=false;
+    committed=false;
+  }
+  virtual void Prepare() { 
+    item->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e) { 
+    item->execute(e);
+    activated=true;
+  }
+  virtual void handle_event(MainLoopEvent &e) 
+  {
+    time++;
+    if (time>i*60) activated=true;
+    item->handle_event(e);
+    if (activated && !committed) {
+      MainLoopEvent ee = e;
+      ee.type=0x777;
+      ee.ch='*';
+      item->handle_event(ee);
+      committed=true;
+    }
+  }
+private:
+  MainLoopItem *item;
+  bool activated;
+  bool committed;
+  int time=0;
+  int i;
+};
+
+GameApi::ML GameApi::MainLoopApi::slow_activate_item(ML ml, int i)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new SlowActivateItem(item,i));
+}
+
+GameApi::ARR GameApi::MainLoopApi::activate_arr_arr(std::vector<ML> arr)
+{
+
+  ArrayType *array = new ArrayType;
+  array->type = 2;
+  int s = arr.size();
+  for(int i=0;i<s;i++) {
+    GameApi::ML ml = arr[i];
+    ml=activate_item(ml,arr[0]);
+    ml=slow_activate_item(ml,i);
+    array->vec.push_back(ml.id);
+  }
+  return add_array(e,array);
+}
 
 #endif // THIRD_PART

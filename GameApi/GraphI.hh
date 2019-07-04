@@ -1534,4 +1534,111 @@ public:
   virtual int State(int i) const=0;
 };
 
+struct Vertex
+{
+  Point p;
+  Vector n;
+  unsigned int c;
+  Point2d tx;
+  float tx3;
+};
+
+struct Extends
+{
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+};
+
+
+class QuadNode
+{
+public:
+  QuadNode *parent;
+  std::vector<QuadNode*> child;
+  std::vector<Extends> child_extends;
+};
+
+
+class QuadTree
+{
+public:
+  virtual int RootType() const=0;
+  virtual Extends RootExtends() const=0;
+  virtual QuadNode *Root() const=0;
+  virtual int NumChildren(QuadNode *n) const=0;
+  virtual QuadNode *Child(int i, QuadNode *n) const=0;
+  virtual Extends ChildExtends(int i, QuadNode *n) const=0;
+  virtual int ChildType(int i, QuadNode *n) const=0;
+  virtual QuadNode *Parent(QuadNode *n) const { return n->parent; }
+public:
+  void push_tri(Vertex v1, Vertex v2, Vertex v3);
+  void push_quad(Vertex v1, Vertex v2, Vertex v3, Vertex v4);
+  void push_poly(std::vector<Vertex> vec);
+};
+
+bool is_inside_extends(Point p, Extends e);
+
+struct Prop3d
+{
+  Prop3d *parent;
+
+  bool has_extends;
+  bool has_focus;
+  bool has_content_color;
+  bool has_border_enabled;
+  bool has_border_width;
+  bool has_border_color;
+  bool has_content_darkness;
+  bool has_red_multiplier;
+  bool has_green_multiplier;
+  bool has_blue_multiplier;
+  bool has_red_adder;
+  bool has_green_added;
+  bool has_blue_adder;
+  bool has_alpha_channel;
+  bool has_corner_radius;
+  bool has_text_color;
+  bool has_text_z_coord;
+  bool has_font_name;
+  bool has_font_size;
+  bool has_background_color;
+
+  Extends extends;
+  bool focus;
+  unsigned int content_color;
+  bool border_enabled;
+  float border_width;
+  unsigned int border_color;
+  float content_darkness; // 0.0 .. 1.0
+  float red_multiplier;
+  float green_multiplier;
+  float blue_multiplier;
+  float red_adder;
+  float green_adder;
+  float blue_adder;
+  float alpha_channel;
+  float corner_radius;
+  unsigned int text_color;
+  bool text_z_coord;
+  std::string font_name;
+  float font_size;
+  unsigned int background_color;
+  
+};
+
+class Object3d
+{
+public:
+  virtual int current_state() const=0;
+  virtual Prop3d &prop(int state)=0;
+    
+  virtual void Prepare()=0;
+  virtual void execute(MainLoopEnv &e)=0;
+  virtual void handle_event(MainLoopEvent &e)=0;
+  virtual int shader_id() { return -1; }
+  virtual void destroy() { }
+};
+
+
 #endif

@@ -7146,6 +7146,18 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "[ML]" },
 			 { "" },
 			 "ML", "mainloop_api", "array_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::activate_array,
+			 "activate_array_ml",
+			 { "arr" },
+			 { "[ML]" },
+			 { "" },
+			 "ML", "mainloop_api", "activate_array"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::activate_arr_arr,
+			 "ac_arr_ml",
+			 { "arr" },
+			 { "[ML]" },
+			 { "" },
+			 "[ML]", "mainloop_api", "activate_arr_arr"));
   /*
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing_ml,
 			 "timing_ml",
