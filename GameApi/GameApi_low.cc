@@ -199,6 +199,9 @@ void map_enums_sdl(int &i) {
 void map_enums(int &i)
 {
   switch(i) {
+  case Low_GL_VENDOR: i=GL_VENDOR; break;
+  case Low_GL_RENDERER: i=GL_RENDERER; break;
+  case Low_GL_VERSION: i=GL_VERSION; break;
   case Low_GL_CULL_FACE: i=GL_CULL_FACE; break;
   case Low_GL_ARRAY_BUFFER: i=GL_ARRAY_BUFFER; break;
   case Low_GL_FLOAT: i=GL_FLOAT; break;
@@ -933,6 +936,10 @@ void glGetIntegerv(int i, int *ptr) {
 
       }
   void glFinish() { ::glFinish(); }
+  const unsigned char *glGetString( int name ) { 
+    map_enums(name);
+    return ::glGetString(name); }
+
   void glMatrixLoadIdentityEXT(int i) { }
   void glMatrixMode(int i) { }
   void glLoadIdentity() {  }

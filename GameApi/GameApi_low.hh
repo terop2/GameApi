@@ -127,7 +127,10 @@ enum
     Low_GL_POLYGON,
     Low_GL_SHORT,
     Low_GL_COMPILE,
-    Low_GL_CULL_FACE
+    Low_GL_CULL_FACE,
+    Low_GL_VENDOR,
+    Low_GL_RENDERER,
+    Low_GL_VERSION
    
   };
 enum {
@@ -324,6 +327,9 @@ public:
   virtual int glCheckFramebufferStatus(int id)=0;
 
   virtual void glFinish()=0;
+
+  virtual const unsigned char *glGetString( int name )=0;
+
 
   // Old
   virtual void glEnableClientState(int a)=0;
