@@ -464,9 +464,9 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     }
 
 #endif
-  std::cout << "Vendor: " << glGetString(GL_VENDOR)<< std::endl;
-  std::cout << "Renderer:" << glGetString(GL_RENDERER)<< std::endl;
-  std::cout << "Version:" << glGetString(GL_VERSION) << std::endl;
+  std::cout << "Vendor: " << g_low->ogl->glGetString(Low_GL_VENDOR)<< std::endl;
+  std::cout << "Renderer:" << g_low->ogl->glGetString(Low_GL_RENDERER)<< std::endl;
+  std::cout << "Version:" << g_low->ogl->glGetString(Low_GL_VERSION) << std::endl;
   
 
   vblank = true;
