@@ -127,7 +127,7 @@ public:
   virtual int glCheckFramebufferStatus(int id) { return 0; }
 
   virtual void glFinish() { }
-
+  virtual const unsigned char *glGetString( int name ) { return 0; }
   // Old
   virtual void glEnableClientState(int a) { }
   virtual void glLineWidth(float i) { }
