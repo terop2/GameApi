@@ -142,6 +142,8 @@ public:
   virtual void glVertexPointer(int,int,int,void*) { }
   virtual void glNormalPointer(int,int,void*) { }
   virtual void glRotatef(float,float,float,float) {}
+  virtual const unsigned char *glGetString( int name ) { return ""; }
+
   //virtual void glEnableClientState(int) { }
   //virtual void glDisableClientState(int) { }
   virtual void glColor3f(float,float,float) { }
