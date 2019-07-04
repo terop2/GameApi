@@ -2900,10 +2900,13 @@ public:
   DefaultMaterial(GameApi::EveryApi &ev) : ev(ev) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-    //GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
-    //GameApi::ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+#ifndef HAS_INSTANCING
+    GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+#else
     GameApi::PTS pts = ev.points_api.single_pts();
     GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p,pts);
+#endif
     return ml;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
