@@ -27,9 +27,9 @@
 
 #define NO_SDL_GLEXT 
 #ifndef DEPS
-#ifndef RASPI
+//#ifndef RASPI
 #include <GL/glew.h> 
-#endif
+//#endif
 #ifdef __APPLE__
 #define GLEW_HACK
 #include <OpenGL/gl.h>
@@ -37,8 +37,11 @@
 #ifndef RASPI
 #include <GL/gl.h>
 #else
-#define USE_GLES2 1
-#include <GLES2/gl2.h>
+//#define USE_GLES2 1
+//#include <GLES2/gl2.h>
+#include <GL/gl.h>
+#define GLEW_HACK
+//#include <GL/glext.h>
 #endif
 #endif
 #endif

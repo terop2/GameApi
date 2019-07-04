@@ -24,10 +24,10 @@
 //#include <GL3/gl3.h>
 //#define GLEW_STATIC
 #ifndef ARM
-#ifndef RASPI
+//#ifndef RASPI
 #define USE_GLEW 1
 #include <GL/glew.h>
-#endif
+//#endif
 #endif
 #if 0
 //#ifdef __APPLE__
@@ -43,7 +43,7 @@
 // 3) Shader.cc
 //#define OPENGL_ES 1
 #ifdef RASPI
-#define OPENGL_ES 1
+//#define OPENGL_ES 1
 #endif
 
 

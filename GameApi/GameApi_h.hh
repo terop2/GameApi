@@ -45,9 +45,9 @@
 #endif
 #endif
 
-#ifndef RASPI
+//#ifndef RASPI
 #define USE_GLEW 1
-#endif
+//#endif
 
 #ifdef ARM
 #define pthread_mutex_unlock __gthread_mutex_unlock
@@ -63,7 +63,7 @@
 //#define OPENGL_ES 1
 
 #ifdef RASPI
-#define OPENGL_ES 1
+//#define OPENGL_ES 1
 #endif
 
 
