@@ -28,6 +28,10 @@
 #define VAO 1
 #endif
 
+#ifndef RASPI
+#define HAS_INSTANCING 1
+#endif
+
 #ifdef IOT
 #define IOT_EVENTS
 #endif
