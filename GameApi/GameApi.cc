@@ -8330,7 +8330,7 @@ public:
       firsttime = false;
     }
     if (no_draw_count==0)
-      env->ev->mainloop_api.clear_3d(0xff000000);
+      env->ev->mainloop_api.clear_3d(0xff0000ff);
     
     // handle esc event
     GameApi::MainLoopApi::Event e;
