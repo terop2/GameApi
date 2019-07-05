@@ -702,12 +702,14 @@ public:
   }
   Bitmap<Color> *get_bm() const
   {
+    if (bm_cache) return bm_cache;
     int num = bitmap_find_data(id);
     if (num==-1) { const_cast<BitmapPrepareCache*>(this)->Prepare(); num=bitmap_find_data(id); }
     GameApi::BM bm2;
     bm2.id = num;
     BitmapHandle *handle = find_bitmap(e, bm2);
     Bitmap<Color> *bbm = find_color_bitmap(handle);
+    bm_cache=bbm;
     return bbm;
   }
   virtual int SizeX() const { return get_bm()->SizeX(); }
@@ -720,6 +722,7 @@ private:
   GameApi::Env &e;
   std::string id;
   Bitmap<Color> *bm;
+  mutable Bitmap<Color> *bm_cache=0;
 };
 
 EXPORT GameApi::BM GameApi::BitmapApi::loadbitmapfromurl(std::string url)
