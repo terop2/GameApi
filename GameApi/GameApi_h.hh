@@ -32,6 +32,10 @@
 #define HAS_INSTANCING 1
 #endif
 
+//#ifndef RASPI
+#define HAS_MATRIX_INVERSE 1
+//#endif
+
 #ifdef IOT
 #define IOT_EVENTS
 #endif
@@ -63,7 +67,7 @@
 //#define OPENGL_ES 1
 
 #ifdef RASPI
-//#define OPENGL_ES 1
+#define OPENGL_ES 1
 #endif
 
 
