@@ -4165,10 +4165,13 @@ void LoadObjModelFaceCollection::check_invalidate2()
     int obj_base_n = 0;
     //int obj_base_c = 0;
     int mtl_material = -1;
+    std::string word;
+    std::stringstream ss;
     while(std::getline(file, line))
       {
-	std::string word;
-	std::stringstream ss(line);
+	ss.str(line);
+	ss.clear();
+	//ss << line;
 	ss>>word;
 	if (word == "usemtl")
 	  {

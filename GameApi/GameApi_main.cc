@@ -1422,6 +1422,7 @@ LogoEnv *logo_env = 0;
 bool GameApi::MainLoopApi::logo_iter()
 {
   LogoEnv *env = logo_env;
+  if (!env) return false;
   /*GameApi::MainLoopApi::Event event =*/ env->ev->mainloop_api.get_event();
   env->ev->mainloop_api.clear_3d();
   M in_MV = env->ev->mainloop_api.in_MV(*env->ev, true);

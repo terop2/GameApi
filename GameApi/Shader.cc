@@ -107,10 +107,12 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
 }
 void Shader::print_log() const
 {
+#if 0
       int len=0;
       char buf[255];
       g_low->ogl->glGetShaderInfoLog(priv->handle, 255, &len, buf);
       std::cout << " ShaInfoLog: " << buf << std::endl;
+#endif
 }
 Shader::~Shader()
 {
