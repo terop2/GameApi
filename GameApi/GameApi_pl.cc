@@ -589,11 +589,13 @@ public:
   }
   FaceCollection *get_coll() const
   {
+    if (coll_cache) return coll_cache;
     int num = find_data(id);
     if (num==-1) {const_cast<PrepareCache*>(this)->Prepare(); num=find_data(id); }
     GameApi::P p;
     p.id = num;
     FaceCollection *coll = find_facecoll(e, p);
+    coll_cache = coll;
     return coll;
   }
 
@@ -641,6 +643,7 @@ private:
   GameApi::Env &e;
   std::string id;
   FaceCollection *coll;
+  mutable FaceCollection *coll_cache=0;
 };
 
 

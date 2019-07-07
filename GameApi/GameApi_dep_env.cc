@@ -533,7 +533,7 @@ struct ProgressI {
 
 std::vector<ProgressI > progress_max;
 std::vector<ProgressI > progress_val;
-
+std::vector<std::string> progress_label;
 void InstallProgress(int num, std::string label, int max=15)
 {
   //std::cout << "InstallProgress: '" << label << "'" << std::endl;
@@ -551,6 +551,8 @@ void InstallProgress(int num, std::string label, int max=15)
     progress_max.push_back(p);
   if (!val_done)
     progress_val.push_back(p);
+  if (!max_done)
+    progress_label.push_back(label);
   ProgressBar(num,0,max,"installprogress");
 }
 
@@ -614,7 +616,7 @@ void ProgressBar(int num, int val, int max, std::string label)
   for(int i=val2;i<max2-1;i++) {
     std::cout << "-";
   }
-  std::cout << "] (" << val1 << "/" << max1 << ") (" << val << "/" << max << ") " << num;
+  std::cout << "] (" << val1 << "/" << max1 << ") (" << val << "/" << max << ") " << num << " " << label;
 }
 
 int async_pending_count = 0;
@@ -670,6 +672,11 @@ std::vector<unsigned char> load_from_url(std::string url)
     unsigned char c;
     std::vector<unsigned char> buffer;
     while(fread(&c,1,1,f)==1) { buffer.push_back(c); }
+    //fseek(f, 0, SEEK_END);
+    //long pos = ftell(f);
+    //fseek(f, 0, SEEK_SET);
+    //buffer.resize(pos);
+    //fread(&buffer[0], 1, pos, f);
     //std::cout << "::" << std::string(buffer.begin(),buffer.end()) << "::" << std::endl;
     if (buffer.size()==0)
       {

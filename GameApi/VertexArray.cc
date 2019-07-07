@@ -1921,3 +1921,63 @@ Counts CalcOffsets(FaceCollection *coll, int start)
   return c;
 }
 
+void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vector<int> attribs, std::vector<int> attribsi)
+  {
+    //std::cout << "Copy: " << start_range << " " << end_range << std::endl;
+    //int ss = coll.NumFaces();
+    //std::cout << "NumFaces: " << ss << std::endl;
+    for(int i=start_range;i<end_range;i++)
+      {
+	//std::cout << "F" << i << std::endl;
+	//if ((i-start_range)%1000==0) { std::cout << "Face: " << i << std::endl; }
+	int w = coll.NumPoints(i);
+	//std::cout << i << " " << w << std::endl;
+	for(int j=0;j<w;j++)
+	  {
+	    //std::cout << "FP!"  << i << std::endl;
+	    p[j] = coll.FacePoint(i,j);
+	    //std::cout << "EFP!" << i << std::endl;
+	    p2[j] = coll.EndFacePoint(i,j);
+	    //std::cout << "PN!" << i << std::endl;
+	    v[j] = coll.PointNormal(i,j);
+
+#if 0
+	    for (int k=0;k<(int)attribs.size();k++)
+	      {
+		a[k][j] = coll.Attrib(i,j,attribs[k]);
+	      }
+
+	    for (int k=0;k<(int)attribsi.size();k++)
+	      {
+		ai[k][j] = coll.AttribI(i,j,attribsi[k]);
+	      }
+#endif
+	    //std::cout << "COL!" << i << std::endl;
+	    c[j] = coll.Color(i,j);
+	    //std::cout << "Tex!" << i << std::endl;
+	    Point2d p = coll.TexCoord(i,j);
+	    float p2 = coll.TexCoord3(i,j);
+	    tex[j] = Point(p.x,p.y,p2);
+	    //std::cout << "VA: " << tex[j] << std::endl;
+	  }
+	//std::cout << "push_p!" << i << std::endl;
+	s.push_poly(0, w, &p[0]);
+	//  std::cout << "push_p2!" << i << std::endl;
+	s.push_poly2(0, w, &p2[0]);
+	//  std::cout << "push_n!" << i << std::endl
+	s.push_normal(0, w, &v[0]);
+
+#if 0
+	for (int k=0;k<(int)attribs.size();k++)
+	  s.push_attrib(0, attribs[k], w, &a[k][0]);
+	for (int k=0;k<(int)attribsi.size();k++)
+	  s.push_attribi(0, attribsi[k], w, &ai[k][0]);
+#endif
+	//  std::cout << "push_c!" << std::endl;
+	s.push_color(0, w, &c[0]);
+	//  std::cout << "push_texcoord!" << std::endl;
+	s.push_texcoord(0, w, &tex[0]);
+
+      }
+    //std::cout << "Copy returns" << std::endl;
+  }
