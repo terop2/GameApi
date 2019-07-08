@@ -3,7 +3,7 @@ all:
 	@echo "choose either grow, lowmem, both or pthreads_grow"
 
 grow:
-	(cd ..;em++ -s ASSERTIONS=2 --use-preload-cache -s WASM=1 -g -g4 --bind -std=c++11 -O2 web_page/test.cpp libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_FREETYPE=1 -s DEMANGLE_SUPPORT=1 -s ALLOW_MEMORY_GROWTH=1 -L. -Lobs -I. -o web_page/web_page.html --preload-file web_page/logo.ppm --memory-init-file 0 -s DISABLE_EXCEPTION_CATCHING=1 -s "BINARYEN_TRAP_MODE='clamp'" --preload-file web_page/FreeSans.ttf)
+	(cd ..;em++ -s FETCH=1 -s ASSERTIONS=2 --use-preload-cache -s WASM=1 -g -g4 --bind -std=c++11 -O2 web_page/test.cpp libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_MIXER=1 -s USE_FREETYPE=1 -s DEMANGLE_SUPPORT=1 -s ALLOW_MEMORY_GROWTH=1 -L. -Lobs -I. -o web_page/web_page.html --preload-file web_page/logo.ppm --memory-init-file 0 -s DISABLE_EXCEPTION_CATCHING=1 -s "BINARYEN_TRAP_MODE='clamp'" --preload-file web_page/FreeSans.ttf -s ERROR_ON_UNDEFINED_SYMBOLS=0)
 	 cp web_page.wasm web_page_lowmem.wasm
 	 cp web_page.data web_page_lowmem.data
 	 cp web_page.js web_page_lowmem.js
@@ -12,7 +12,7 @@ grow:
 
 
 lowmem:
-	(cd ..;em++ -s ASSERTIONS=2 --use-preload-cache -s WASM=1 -g -g4 --bind -std=c++11 -O2 web_page/test.cpp libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_FREETYPE=1 -s DEMANGLE_SUPPORT=1 -s TOTAL_MEMORY=320Mb -L. -Lobs -I. -o web_page/web_page.html --preload-file web_page/logo.ppm --memory-init-file 0 -s DISABLE_EXCEPTION_CATCHING=1 -s "BINARYEN_TRAP_MODE='clamp'" --preload-file web_page/FreeSans.ttf)
+	(cd ..;em++ -s ASSERTIONS=2 --use-preload-cache -s WASM=1 -g -g4 --bind -std=c++11 -O2 web_page/test.cpp libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_MIXER=1 -s USE_FREETYPE=1 -s DEMANGLE_SUPPORT=1 -s TOTAL_MEMORY=320Mb -L. -Lobs -I. -o web_page/web_page.html --preload-file web_page/logo.ppm --memory-init-file 0 -s DISABLE_EXCEPTION_CATCHING=1 -s "BINARYEN_TRAP_MODE='clamp'" --preload-file web_page/FreeSans.ttf -s ERROR_ON_UNDEFINED_SYMBOLS=0)
 	 cp web_page.wasm web_page_lowmem.wasm
 	 cp web_page.data web_page_lowmem.data
 	 cp web_page.js web_page_lowmem.js
@@ -20,18 +20,19 @@ lowmem:
 	 cp web_page.html.mem web_page_lowmem.html.mem
 
 both:
-	(cd ..;em++ -s ASSERTIONS=2 --use-preload-cache -s WASM=1 -g -g4 --bind -std=c++11 -O2 web_page/test.cpp libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_FREETYPE=1 -s DEMANGLE_SUPPORT=1 -s ALLOW_MEMORY_GROWTH=1 -L. -Lobs -I. -o web_page/web_page.html --preload-file web_page/logo.ppm --memory-init-file 0 -s DISABLE_EXCEPTION_CATCHING=1 -s "BINARYEN_TRAP_MODE='clamp'" --preload-file web_page/FreeSans.ttf)
-	(cd ..;em++ -s ASSERTIONS=2 --use-preload-cache -s WASM=1 -g -g4 --bind -std=c++11 -O2 web_page/test.cpp libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_FREETYPE=1 -s DEMANGLE_SUPPORT=1 -s TOTAL_MEMORY=320Mb -L. -Lobs -I. -o web_page/web_page_lowmem.html --preload-file web_page/logo.ppm --memory-init-file 0 -s DISABLE_EXCEPTION_CATCHING=1 -s "BINARYEN_TRAP_MODE='clamp'" --preload-file web_page/FreeSans.ttf)
+	(cd ..;em++ -s ASSERTIONS=2 --use-preload-cache -s WASM=1 -g -g4 --bind -std=c++11 -O2 web_page/test.cpp libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_MIXER=1 -s USE_FREETYPE=1 -s DEMANGLE_SUPPORT=1 -s ALLOW_MEMORY_GROWTH=1 -L. -Lobs -I. -o web_page/web_page.html --preload-file web_page/logo.ppm --memory-init-file 0 -s DISABLE_EXCEPTION_CATCHING=1 -s "BINARYEN_TRAP_MODE='clamp'" --preload-file web_page/FreeSans.ttf -s ERROR_ON_UNDEFINED_SYMBOLS=0)
+	(cd ..;em++ -s ASSERTIONS=2 --use-preload-cache -s WASM=1 -g -g4 --bind -std=c++11 -O2 web_page/test.cpp libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_MIXER=1 -s USE_FREETYPE=1 -s DEMANGLE_SUPPORT=1 -s TOTAL_MEMORY=320Mb -L. -Lobs -I. -o web_page/web_page_lowmem.html --preload-file web_page/logo.ppm --memory-init-file 0 -s DISABLE_EXCEPTION_CATCHING=1 -s "BINARYEN_TRAP_MODE='clamp'" --preload-file web_page/FreeSans.ttf -s ERROR_ON_UNDEFINED_SYMBOLS=0  -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4)
 
 
-pthreads_grow:
-	(cd ..;em++ -s ASSERTIONS=2 --use-preload-cache -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s WASM_MEM_MAX=1500Mb -s WASM=1 -g -g4 --bind -std=c++11 -O2 web_page/test.cpp libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_FREETYPE=1 -s DEMANGLE_SUPPORT=1 -s ALLOW_MEMORY_GROWTH=1 -L. -Lobs -I. -o web_page/web_page.html --preload-file web_page/logo.ppm --memory-init-file 0 -s DISABLE_EXCEPTION_CATCHING=1 -s "BINARYEN_TRAP_MODE='clamp'" --preload-file web_page/FreeSans.ttf)
+pthreads_fixed:
+	(cd ..;em++ -s ASSERTIONS=2 --use-preload-cache -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=700Mb  -s WASM=1 -g -g4 --bind -std=c++11 -O2 web_page/test.cpp libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_MIXER=1 -s USE_FREETYPE=1 -s DEMANGLE_SUPPORT=1 -L. -Lobs -I. -o web_page/web_page.html --preload-file web_page/logo.ppm --memory-init-file 0 -s DISABLE_EXCEPTION_CATCHING=1 -s "BINARYEN_TRAP_MODE='clamp'" --preload-file web_page/FreeSans.ttf -s ERROR_ON_UNDEFINED_SYMBOLS=0)
 	 cp web_page.wasm web_page_lowmem.wasm
 	 cp web_page.data web_page_lowmem.data
 	 cp web_page.js web_page_lowmem.js
 	 cp web_page.html web_page_lowmem.html
 	 cp web_page.html.mem web_page_lowmem.html.mem
+#	 cp web_page.worker2.js web_page.worker.js
+	 cp web_page.worker.js web_page_lowmem.worker.js
 
-
-#
-#(cd ..;em++ -s ASSERTIONS=2 --use-preload-cache -s WASM=1 -g -g4 --bind -std=c++11 -O2 web_page/test.cpp libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_FREETYPE=1 -s DEMANGLE_SUPPORT=1 -s TOTAL_MEMORY=320Mb -L. -Lobs -I. -o web_page/web_page_lowmem.html --preload-file web_page/logo.ppm --memory-init-file 0 -s DISABLE_EXCEPTION_CATCHING=1 -s "BINARYEN_TRAP_MODE='clamp'" --preload-file web_page/FreeSans.ttf)
+# -s PROXY_TO_PTHREAD=1  -s WASM_MEM_MAX=4800Mb 
+#(cd ..;em++ -s ASSERTIONS=2 --use-preload-cache -s WASM=1 -g -g4 --bind -std=c++11 -O2 web_page/test.cpp libGameApi.bc -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_MIXER=1 -s USE_FREETYPE=1 -s DEMANGLE_SUPPORT=1 -s TOTAL_MEMORY=320Mb -L. -Lobs -I. -o web_page/web_page_lowmem.html --preload-file web_page/logo.ppm --memory-init-file 0 -s DISABLE_EXCEPTION_CATCHING=1 -s "BINARYEN_TRAP_MODE='clamp'" --preload-file web_page/FreeSans.ttf -s ERROR_ON_UNDEFINED_SYMBOLS=0)

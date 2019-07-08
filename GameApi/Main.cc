@@ -29,6 +29,11 @@
 #include <GL/glew.h>
 //#endif
 #endif
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#include <emscripten/html5.h>
+#endif
+
 #if 0
 //#ifdef __APPLE__
 //#include <OpenGL/gl.h>
@@ -402,6 +407,15 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 {
   initialize_low(0);
 
+#ifdef EMSCRIPTEN
+  EmscriptenWebGLContextAttributes attr;
+  emscripten_webgl_init_context_attributes(&attr);
+  attr.majorVersion = 2; attr.minorVersion = 0;
+  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(0, &attr);
+  emscripten_webgl_make_context_current(ctx);
+#endif
+  
+  
 #ifdef SDL2_USED
   int screenx = scr_x, screeny = scr_y;
 

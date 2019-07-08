@@ -387,7 +387,9 @@ public:
   virtual void emscripten_async_call(void (*)(void*), void *data, int val)=0;
   virtual void emscripten_set_click_callback(char *c, int a, bool true_, void (*)())=0;
   virtual void emscripten_set_touchend_callback(char *c, int a, bool true_, void (*)())=0;
-
+  virtual void emscripten_webgl_init_context_attributes(void* attr)=0;
+  virtual void *emscripten_webgl_create_context(int i, void *attr)=0;
+  virtual void emscripten_webgl_make_context_current(void *ctx)=0;
 };
 class EmscriptenVRLowApi
 {
