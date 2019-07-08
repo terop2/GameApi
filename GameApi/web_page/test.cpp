@@ -83,7 +83,24 @@ struct Envi {
 };
 
 std::string code=
-  "PT I1=ev.point_api.point(0.0,0.0,0.0);\n"
+"BM I1=ev.bitmap_api.chessboard(20,20,8,8,ffffffff,ff880088);\n"
+"FB I2=ev.float_bitmap_api.from_green(I1);\n"
+"S I3=ev.polygon_api.s_spherical(0,0,0,I2,300,310,0,1);\n"
+"BM I4=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/map.jpg);\n"
+"BM I5=ev.bitmap_api.rot90(I4);\n"
+"S I6=ev.surface_api.texture(I3,I5);\n"
+				      "P I7=ev.polygon_api.s_sample(I6,200,200);\n"
+				      "MT I8=ev.materials_api.def(ev);\n"
+				      "MT I9=ev.materials_api.web(ev,I8,1.03,2.0,ff000000);\n"
+				      "ML I10=ev.materials_api.bind(I7,I9);\n"
+				      "MN I11=ev.move_api.empty();\n"
+				      "MN I12=ev.move_api.rotatex(I11,3.141);\n"
+				      "MN I13=ev.move_api.rotate(I12,0,10000,0,0,0,0,0,1,628);\n"
+				      "MN I14=ev.move_api.rotatex(I13,2.5);\n"
+				      "ML I15=ev.move_api.move_ml(ev,I10,I14,1,10.0);\n"
+				      "ML I16=ev.mainloop_api.touch_rotate(ev,I15,true,true,0.01,0.01);\n"
+				      "RUN I17=ev.blocker_api.game_window2(ev,I16,false,false,0.0,100000.0);\n"
+  /*  "PT I1=ev.point_api.point(0.0,0.0,0.0);\n"
   "P I2=ev.polygon_api.torus2(ev,7,9,I1,250,100);\n"
   "MT I3=ev.materials_api.def(ev);\n"
   "MT I4=ev.materials_api.snow(ev,I3);\n"
@@ -138,7 +155,9 @@ std::string code=
   "MN I53=ev.move_api.translate(I52,0,100,-10000,0,0);\n"
   "MN I54=ev.move_api.time_repeat(I53,0.0,100.0);\n"
   "ML I55=ev.move_api.move_ml(ev,I50,I54);\n"
-  "ML I56=ev.mainloop_api.array_ml(std::vector<ML>{I24,I55});\n";
+  "ML I56=ev.mainloop_api.array_ml(std::vector<ML>{I24,I55});\n"
+  */
+;
 
 std::string homepageurl = "";
 
@@ -195,16 +214,22 @@ bool check_count(std::vector<std::string> cmd_args, int current_arg, int count)
 }
 
 void set_status(int val, int val_max) {
-#ifdef EMSCRIPTEN
-  EM_ASM_({
-      Module.setStatus('Running...(' + $0 + '/' + $1 + ')');
-    },val,val_max);
-#endif
+  //#ifdef EMSCRIPTEN
+  //  EM_ASM_({
+  //      Module.setStatus('Running...(' + $0 + '/' + $1 + ')');
+  //    },val,val_max);
+  //#endif
 }
 
 void initialize_low(int flags);
 
+int call_count=0;
+
+#if 1
 int main(int argc, char *argv[]) {
+  call_count++;
+  std::cout << "CALL COUNT" << call_count << std::endl;
+  if (call_count>1) return 0;
   set_status(1,6);
   std::cout << "COMMANDLINE ARGS: " << std::endl;
   int s = argc;
@@ -323,3 +348,5 @@ int main(int argc, char *argv[]) {
     std::cout << "ERROR: internal error" << std::endl;
   }
 }
+#endif
+
