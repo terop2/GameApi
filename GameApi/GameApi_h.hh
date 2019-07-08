@@ -9,12 +9,12 @@
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
 
-#ifndef EMSCRIPTEN
+//#ifndef EMSCRIPTEN
 #define THREAD_HEAVY 1
 #ifndef ARM
 #define THREADS 1
 #endif
-#endif
+//#endif
 #define BATCHING 1
 
 #ifndef RASPI
