@@ -2926,63 +2926,6 @@ void SDLRender::DestroyState(void *state)
 }
 
 
-#ifndef EMSCRIPTEN
-#ifndef ARM
-struct ThreadInfo_bitmap
-{
-  pthread_t thread_id;
-  int start_x, end_x;
-  int start_y, end_y;
-  BufferFromBitmap *buffer;
-};
-void *thread_func_bitmap(void* data);
-void *thread_func_bitmap(void *data)
-{
-  ThreadInfo_bitmap *ti = (ThreadInfo_bitmap*)data;
-  ti->buffer->Gen(ti->start_x, ti->end_x, ti->start_y, ti->end_y);
-  return 0;
-}
-class ThreadedUpdateTexture
-{
-public:
-  int push_thread(BufferFromBitmap* bm, int start_x, int end_x, int start_y, int end_y)
-  {
-    //std::cout << "Starting thread" << std::endl;
-    buffers.push_back(bm);
-    ThreadInfo_bitmap *info = new ThreadInfo_bitmap;
-    info->buffer = bm;
-    info->start_x = start_x;
-    info->start_y = start_y;
-    info->end_x = end_x;
-    info->end_y = end_y;
-    ti.push_back(info);
-    
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setstacksize(&attr, 3000000);
-    pthread_create(&info->thread_id, &attr, &thread_func_bitmap, (void*)info);
-    pthread_attr_destroy(&attr);
-    return buffers.size()-1;
-  }
-  void join(int id)
-  {
-    void *res;
-    pthread_join(ti[id]->thread_id, &res);
-  }
-  ~ThreadedUpdateTexture() {
-    int s = ti.size();
-    for(int i=0;i<s;i++)
-      {
-	delete ti[i];
-      }
-
-  }
-private:
-  std::vector<BufferFromBitmap*> buffers;
-  std::vector<ThreadInfo_bitmap*> ti;
-};
-#endif
-#endif
 
 void HeightMapEffect(FaceStore &s, float time, float repeat_length);
 
