@@ -10,7 +10,8 @@
 #define _SCL_SECURE_NO_WARNINGS
 
 //#ifndef EMSCRIPTEN
-#define THREAD_HEAVY 1
+// Threadheavy + dynloadsponza doesnt work property.
+//#define THREAD_HEAVY 1
 #ifndef ARM
 #define THREADS 1
 #endif
