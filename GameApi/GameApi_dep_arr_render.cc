@@ -170,6 +170,7 @@ void ArrayRender::UpdateAllTextures(MeshTextures &tex)
 
 //#ifndef EMSCRIPTEN
 #ifndef ARM
+#ifdef THREADS
 void *thread_func_bitmap(void* data);
 void *thread_func_bitmap(void *data)
 {
@@ -212,7 +213,7 @@ ThreadedUpdateTexture::~ThreadedUpdateTexture() {
   }
 
 #endif
-//#endif
+#endif
 
 
 void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
@@ -231,7 +232,7 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
   BitmapFromBuffer buf(ref);
   FlipColours flip(buf);
   BufferFromBitmap buf2(flip);
-#if 0
+#ifndef THREADS
   buf2.Gen();
 #else
   buf2.GenPrepare();
