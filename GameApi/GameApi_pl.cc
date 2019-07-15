@@ -12004,7 +12004,40 @@ public:
   void Prepare() {
     coll->Prepare();
     bm->Prepare();
-    bbm.Gen();
+
+
+#ifndef THREADS
+  bbm.Gen();
+#else
+  bbm.GenPrepare();
+
+  int numthreads = 4;
+  ThreadedUpdateTexture threads;
+  int sx = bm->SizeX();
+  int sy = bm->SizeY();
+  int dsy = sy/numthreads + 1;
+  std::vector<int> ids;
+  for(int i=0;i<numthreads;i++)
+    {
+      int start_x = 0;
+      int end_x = sx;
+      int start_y = i*dsy;
+      int end_y = (i+1)*dsy;
+      if (start_y>sy) { start_y = sy; }
+      if (end_y>sy) end_y = sy;
+      
+      if (end_y-start_y > 0)
+	ids.push_back(threads.push_thread(&bbm, start_x, end_x, start_y, end_y));
+    }
+  int ss = ids.size();
+  for(int i=0;i<ss;i++)
+    {
+      threads.join(ids[i]);
+    }
+#endif
+
+  //  bbm.Gen();
+    
     buf = bbm.Buffer();
   }
   virtual int NumTextures() const { return coll->NumTextures()+1; }

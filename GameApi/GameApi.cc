@@ -13554,7 +13554,37 @@ void BitmapToSourceBitmap(Bitmap<Color> &bm, SourceBitmap &target, DrawBufferFor
 {
   //std::cout << "::" << bm.SizeX() << " " << bm.SizeY() << std::endl;
   BufferFromBitmap buf(bm);
+  //buf.Gen();
+#ifndef THREADS
   buf.Gen();
+#else
+  buf.GenPrepare();
+
+  int numthreads = 4;
+  ThreadedUpdateTexture threads;
+  int sx = bm.SizeX();
+  int sy = bm.SizeY();
+  int dsy = sy/numthreads + 1;
+  std::vector<int> ids;
+  for(int i=0;i<numthreads;i++)
+    {
+      int start_x = 0;
+      int end_x = sx;
+      int start_y = i*dsy;
+      int end_y = (i+1)*dsy;
+      if (start_y>sy) { start_y = sy; }
+      if (end_y>sy) end_y = sy;
+      
+      if (end_y-start_y > 0)
+	ids.push_back(threads.push_thread(&buf, start_x, end_x, start_y, end_y));
+    }
+  int ss = ids.size();
+  for(int i=0;i<ss;i++)
+    {
+      threads.join(ids[i]);
+    }
+#endif
+
   BufferRef buf2 = buf.Buffer();
   BufferRefToSourceBitmap(buf2, target, fmt);
 }
