@@ -117,8 +117,38 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right
       Bitmap<Color> *bm = find_color_bitmap(handle);
       FlipColours flip(*bm);
       BufferFromBitmap buf(flip);
-      buf.Gen();
+      //      buf.Gen();
+#ifndef THREADS
+  buf.Gen();
+#else
+  buf.GenPrepare();
 
+  int numthreads = 4;
+  ThreadedUpdateTexture threads;
+  int sx = flip.SizeX();
+  int sy = flip.SizeY();
+  int dsy = sy/numthreads + 1;
+  std::vector<int> ids;
+  for(int i=0;i<numthreads;i++)
+    {
+      int start_x = 0;
+      int end_x = sx;
+      int start_y = i*dsy;
+      int end_y = (i+1)*dsy;
+      if (start_y>sy) { start_y = sy; }
+      if (end_y>sy) end_y = sy;
+      
+      if (end_y-start_y > 0)
+	ids.push_back(threads.push_thread(&buf, start_x, end_x, start_y, end_y));
+    }
+  int ss = ids.size();
+  for(int i=0;i<ss;i++)
+    {
+      threads.join(ids[i]);
+    }
+#endif
+
+      
       if (sizex==-1) sizex=bm->SizeX();
       if (sizey==-1) sizey=bm->SizeY();
       if (sizex!=sizey) {std::cout << "Warning: Cubemap textures dimensions need to be the same" << std::endl; }
@@ -157,7 +187,38 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
       bm->Prepare();
       FlipColours flip(*bm);
       BufferFromBitmap buf(flip);
-      buf.Gen();
+#ifndef THREADS
+  buf.Gen();
+#else
+  buf.GenPrepare();
+
+  int numthreads = 4;
+  ThreadedUpdateTexture threads;
+  int ssx = flip.SizeX();
+  int ssy = flip.SizeY();
+  int dsy = ssy/numthreads + 1;
+  std::vector<int> ids2;
+  for(int i=0;i<numthreads;i++)
+    {
+      int start_x = 0;
+      int end_x = ssx;
+      int start_y = i*dsy;
+      int end_y = (i+1)*dsy;
+      if (start_y>ssy) { start_y = ssy; }
+      if (end_y>ssy) end_y = ssy;
+      
+      if (end_y-start_y > 0)
+	ids2.push_back(threads.push_thread(&buf, start_x, end_x, start_y, end_y));
+    }
+  int ss = ids2.size();
+  for(int i=0;i<ss;i++)
+    {
+      threads.join(ids2[i]);
+    }
+#endif
+
+      
+  //      buf.Gen();
 
       int sx = bm->SizeX();
       int sy = bm->SizeY();
@@ -232,8 +293,39 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
   TextureIBitmap bm(*tex);
   FlipColours flip(bm);
   BufferFromBitmap buf(flip);
-  buf.Gen();
+  //  buf.Gen();
 
+#ifndef THREADS
+  buf.Gen();
+#else
+  buf.GenPrepare();
+
+  int numthreads = 4;
+  ThreadedUpdateTexture threads;
+  int sx = flip.SizeX();
+  int sy = flip.SizeY();
+  int dsy = sy/numthreads + 1;
+  std::vector<int> ids;
+  for(int i=0;i<numthreads;i++)
+    {
+      int start_x = 0;
+      int end_x = sx;
+      int start_y = i*dsy;
+      int end_y = (i+1)*dsy;
+      if (start_y>sy) { start_y = sy; }
+      if (end_y>sy) end_y = sy;
+      
+      if (end_y-start_y > 0)
+	ids.push_back(threads.push_thread(&buf, start_x, end_x, start_y, end_y));
+    }
+  int ss = ids.size();
+  for(int i=0;i<ss;i++)
+    {
+      threads.join(ids[i]);
+    }
+#endif
+
+  
   Low_GLuint id;
   g_low->ogl->glGenTextures(1, &id); 
 #ifndef EMSCRIPTEN
