@@ -1,0 +1,12 @@
+cd meshpage.org
+cd localhost
+put web_page.data
+put web_page.js
+put web_page.wasm
+put web_page.html.mem
+put pthread-main.js
+put web_page_lowmem.data
+put web_page_lowmem.js
+put web_page_lowmem.wasm
+put web_page_lowmem.html.mem
+
