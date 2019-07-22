@@ -842,3 +842,9 @@ GameApi::IF GameApi::FontApi::hmd_state_fetcher()
   return add_int_fetcher(e, new HMDStateIntFetcher());
 }
 #endif
+
+#ifndef VIRTUAL_REALITY
+void check_vr_compositor_init()
+{
+}
+#endif

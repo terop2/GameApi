@@ -201,7 +201,8 @@ enum {
 #undef glTexImage2D
 #undef glTexSubImage2D
 #undef Mix_PlayChannel
-
+#undef emscripten_set_touchend_callback
+#undef emscripten_set_click_callback
 
 class OpenglLowApi
 {
@@ -540,6 +541,7 @@ public:
   virtual unsigned int SDL_JoystickGetButton(Low_SDL_Joystick *joy, int i)=0;
   virtual Low_SDL_RWops* SDL_RWFromMem(void *buffer, int size)=0;
   virtual void SDL_GL_DeleteContext(Low_SDL_GLContext ctx)=0;
+  virtual const char *SDL_GetError()=0;
 };
 
 struct Low_Mix_Chunk
