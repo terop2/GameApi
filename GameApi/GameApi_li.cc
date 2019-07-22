@@ -1395,10 +1395,11 @@ class Fur2 : public LineCollection
 {
 public:
   Fur2(PointsApiPoints *pts, Point center, float dist) : pts(pts), center(center), dist(dist) { }
-  void Prepare() { pts->Prepare(); }
-  virtual int NumLines() const { return pts->NumPoints(); }
+  void Prepare() { if (pts) pts->Prepare(); }
+  virtual int NumLines() const { if (pts) return pts->NumPoints(); else return 0; }
   virtual Point LinePoint(int line, int point) const
   {
+    if (!pts) { return Point(0.0,0.0,0.0); }
     if (point==0) { return pts->Pos(line); }
     Point p = pts->Pos(line);
     Vector dir = p - center;
@@ -1407,6 +1408,7 @@ public:
     return p + dir;
   }
   virtual unsigned int LineColor(int line, int point) const {
+    if (!pts) return 0x0;
     return pts->Color(line);
   }
   

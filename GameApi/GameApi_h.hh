@@ -20,8 +20,10 @@
 
 #ifndef RASPI
 #ifndef EMSCRIPTEN
+#ifndef LINUX
 #define LOOKING_GLASS 1
 //#undef LOOKING_GLASS
+#endif
 #endif
 #endif
 
@@ -69,6 +71,10 @@
 
 #ifdef RASPI
 #define OPENGL_ES 1
+#endif
+
+#ifdef LINUX
+//#define OPENGL_ES 1
 #endif
 
 

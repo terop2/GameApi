@@ -226,6 +226,7 @@ class SDLLowApiEGL : public SDLLowApi
 {
   virtual void init() { }
   virtual void cleanup() { }
+  virtual const char* SDL_GetError() { }
   virtual void SDL_Init(int flags) { }
   virtual void SDL_GL_SetAttribute(int flag, int val) { }
   virtual void* SDL_GL_GetProcAddress(char *name) { return 0; }
