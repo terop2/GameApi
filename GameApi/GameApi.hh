@@ -2117,6 +2117,8 @@ public:
   P poly_index(ARR arr, int idx);
   int poly_size(ARR arr);
   ARR poly_execute(EveryApi &ev, ARR arr, std::string gameapi_script);
+  P normal_darkness(P p, float dark);
+  P gradient_color(P p, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, unsigned int start_color, unsigned int end_color);
   P texture_add(P p, BM bm);
   P stl_load(std::string url);
   P fix_vertex_order(P p);
@@ -2411,6 +2413,7 @@ public:
   IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML sfo_sandbox_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
+  //IMPORT ML ao_shader(EveryApi &ev, ML mainloop, float radius, int kernelsize, int noisesize);
   IMPORT ML colour_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML gi_shader(EveryApi &ev, ML mainloop, PTS points, float obj_size);
   IMPORT ML bump_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);

@@ -6434,6 +6434,138 @@ private:
   float pow;
 };
 
+/*
+class AOShaderML : public MainLoopItem
+{
+public:
+  AOShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, float radius, int kernelsize, int noisesize) : env(env), ev(ev), next(next), radius(radius), kernelsize(kernelsize), noisesize(noisesize)
+  { 
+    firsttime = true;
+    sh.id = -1;
+  }
+  int shader_id() { if (sh.id != -1) return sh.id; return next->shader_id(); 
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  void Prepare() { next->Prepare(); }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+     if (firsttime)
+      {
+	firsttime = false;
+#if 1
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      //GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    vertex = ev.uber_api.v_ao(vertex);
+    //GameApi::US a2 = ev.uber_api.v_passall(a4v);
+    ee.us_vertex_shader = vertex.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      //GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    if (ambient)
+      fragment = ev.uber_api.f_ao(fragment);
+    ee.us_fragment_shader = fragment.id;
+#endif
+      }
+
+    int sh_id = next->shader_id();
+    sh.id = sh_id;
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	ev.shader_api.use(sh);
+
+
+	ev.shader_api.set_var(sh, "radius", radius);
+	ev.shader_api.set_var(sh, "kernelsize", kernelsize);
+	ev.shader_api.set_var(sh, "noisesize", noisesize);
+
+	int s2 = noisesize;
+	for(int i=0;i<s2;i++)
+	  {
+	  float x = double(r.next())/r.maximum();
+	  x*=2.0;
+	  x-=1.0;
+	  float y = double(r.next())/r.maximum();
+	  y*=2.0;
+	  y-=1.0;
+
+	  Vector v = { x,y,0.0f };
+	  v/=v.Dist();
+	  ev.shader_api.set_var(sh, (std::string("noise[") + NumI(i) + "]").c_str(), v.dx,v.dy,v.dz);
+	  }
+	  
+
+	int s = kernelsize;
+	for(int i=0;i<s;i++) {
+	  Point p;
+	  Random r;
+	  float x = double(r.next())/r.maximum();
+	  x*=2.0;
+	  x-=1.0;
+	  float y = double(r.next())/r.maximum();
+	  y*=2.0;
+	  y-=1.0;
+	  float z = double(r.next())/r.maximum();
+	  p.x = x;
+	  p.y = y;
+	  p.z = z;
+	  Vector v = p;
+	  v/=v.Dist();
+	  float r = double(r.next())/r.maximum();
+	  v*=r;
+
+	  float scale = float(i)/float(kernelsize);
+	  float k = scale*scale;
+	  float ip = (1.0-k)*0.1f + k*1.0f;
+	  v*=ip;
+	  
+	  ev.shader_api.set_var(sh, (std::string("kernel[") + NumI(i) + "]").c_str(), v.dx,v.dy,v.dz);
+	}
+      }
+
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m3 = add_matrix2(env, e.in_P); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "in_P", m3);
+	ev.shader_api.set_var(sh, "time", e.time);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+
+    next->execute(ee);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  GameApi::SH sh;
+  bool firsttime;
+  float radius;
+  int kernelsize;
+  int noisesize;
+};
+*/
+
 class BumpPhongShaderML : public MainLoopItem
 {
 public:
@@ -6934,6 +7066,11 @@ EXPORT GameApi::ML GameApi::PolygonApi::phong_shader(EveryApi &ev, ML mainloop, 
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new PhongShaderML(e, ev, item, Vector(light_dir_x, light_dir_y, light_dir_z),ambient, highlight,pow));
 }
+//EXPORT GameApi::ML GameApi::PolygonApi::ao_shader(EveryApi &ev, ML mainloop, float radius, int kernelsize, int noisesize)
+//{
+//  MainLoopItem *item = find_main_loop(e, mainloop);
+//  return add_main_loop(e, new AOShaderML(e,ev, item, radius, kernelsize, noisesize));
+//}
 EXPORT GameApi::ML GameApi::PolygonApi::gi_shader(EveryApi &ev, ML mainloop, PTS points, float obj_size)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
@@ -9093,6 +9230,11 @@ GameApi::P GameApi::PolygonApi::spherical_normals(P p, float p_x, float p_y, flo
   return add_polygon2(e, new SphNormals(coll, Point(p_x,p_y,p_z)),1);
 }
 
+std::string NumI(int val) {
+  std::stringstream ss;
+  ss << val;
+  return ss.str();
+}
 std::string Num(float val) {
   std::stringstream ss;
   ss << val;
@@ -13014,3 +13156,68 @@ GameApi::AV GameApi::PolygonApi::av_unique(AV arr)
   VoxelArray *va = find_voxel_array(e, arr);
   return add_voxel_array(e, new AV_Unique(va));
 }
+
+class NormalDarkness : public ForwardFaceCollection
+{
+public:
+  NormalDarkness(FaceCollection *coll, float dark) : ForwardFaceCollection(*coll), coll(coll),dark(dark) { }
+  virtual unsigned int Color(int face, int point) const
+  {
+    Vector n = coll->PointNormal(face,point);
+    n/=n.Dist();
+    float val;
+    if (n.dy>0.0) {
+      float val2 = dark*n.dy;
+      if (val2>1.0) val2=1.0;
+      if (val2<0.0) val2=0.0;
+      val = 1.0 - val2;
+    } else {
+	val = 1.0;
+    }
+    ::Color c(coll->Color(face,point));
+    c.r*=val;
+    c.g*=val;
+    c.b*=val;
+    return c.Pixel();
+  }
+
+private:
+  FaceCollection *coll;
+  float dark;
+};
+
+GameApi::P GameApi::PolygonApi::normal_darkness(P p, float dark)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new NormalDarkness(coll, dark),1);
+}
+
+
+class GradientColor : public ForwardFaceCollection
+{
+public:
+  GradientColor(FaceCollection *coll, Point pt, Vector v, unsigned int start_color, unsigned int end_color) : ForwardFaceCollection(*coll), coll(coll), pt(pt), v(v), start_color(start_color), end_color(end_color) { }
+  virtual unsigned int Color(int face, int point) const
+  {
+    Point p = coll->FacePoint(face,point);
+    p-=Vector(pt);
+    float val = Vector::DotProduct(Vector(p), v);
+    val /= v.Dist()*v.Dist();
+    if (val<0.0) val=0.0;
+    if (val>1.0) val=1.0;
+    return Color::Interpolate(start_color, end_color, val);
+  }
+private:
+  FaceCollection *coll;
+  Point pt;
+  Vector v;
+  unsigned int start_color, end_color;
+};
+
+ GameApi::P GameApi::PolygonApi::gradient_color(P p, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, unsigned int start_color, unsigned int end_color)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new GradientColor(coll, Point(p_x,p_y,p_z), Vector(v_x,v_y,v_z), start_color, end_color),1);
+}
+
+
