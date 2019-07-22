@@ -16,6 +16,10 @@
 #include <iostream>
 using namespace GameApi;
 
+#ifdef LINUX
+extern "C" void _udev_device_get_action() { }
+#endif
+
 
 std::string hexify2(std::string s)
 {

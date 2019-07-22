@@ -28,14 +28,18 @@
 #define NO_SDL_GLEXT 
 #ifndef DEPS
 //#ifndef RASPI
+//#ifndef LINUX
 #include <GL/glew.h> 
+//#endif
 //#endif
 #ifdef __APPLE__
 #define GLEW_HACK
 #include <OpenGL/gl.h>
 #else
 #ifndef RASPI
+//#ifndef LINUX
 #include <GL/gl.h>
+//#endif
 #else
 //#define USE_GLES2 1
 //#include <GLES2/gl2.h>
@@ -178,7 +182,11 @@ void map_enums_sdl(int &i) {
   case Low_SDL_WINDOW_SHOWN: i=SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE; break;
+#ifdef LINUX
+  case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE; break;
+#else
   case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK; break;
+#endif
 #ifndef EMSCRIPTEN
   case  Low_SDL_GL_CONTEXT_PROFILE_MASK: i=SDL_GL_CONTEXT_PROFILE_MASK; break;
   case   Low_SDL_GL_CONTEXT_PROFILE_CORE: i=SDL_GL_CONTEXT_PROFILE_CORE; break;
@@ -956,6 +964,7 @@ class SDLApi : public SDLLowApi
 {
   virtual void init() { }
   virtual void cleanup() {}
+  virtual const char* SDL_GetError() { return ::SDL_GetError(); }
   virtual void SDL_Init(int flags) { map_enums_sdl(flags); ::SDL_Init(flags);
     std::cout << "SDL_Init:" << SDL_GetError() << std::endl;
   }

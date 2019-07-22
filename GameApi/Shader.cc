@@ -43,6 +43,9 @@
 #define OPENGL_ES 1
 #endif
 
+#ifdef LINUX
+//#define OPENGL_ES 1
+#endif
 
 
 std::string funccall_to_string(ShaderModule *mod);
