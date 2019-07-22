@@ -6595,6 +6595,7 @@ public:
     pp.x = r*cos(p);
     pp.y = r*sin(p);
     pp.z = 0.0;
+    pp+=Vector(center);
     return pp;
   }
 private:
@@ -6613,6 +6614,7 @@ public:
     pp.x = r*cos(p);
     pp.y = 0.0;
     pp.z = r*sin(p);
+    pp+=Vector(center);
     return pp;
   }
 private:
