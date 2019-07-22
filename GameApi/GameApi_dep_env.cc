@@ -627,7 +627,7 @@ std::string striphomepage(std::string url)
   int i = 0;
   for(;i<s-1;i++) if (url[i]=='&'&&url[i+1]=='h') break;
   std::string res = url.substr(0,i);
-  std::cout << "Url without homepage: " << res << std::endl;
+  //std::cout << "Url without homepage: " << res << std::endl;
   return res;
 }
 

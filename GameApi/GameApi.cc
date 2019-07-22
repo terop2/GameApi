@@ -2616,17 +2616,18 @@ class RepeatML : public MainLoopItem
 {
 public:
   RepeatML(MainLoopItem *next, float duration) : next(next), duration(duration) { }
-  void Prepare() { next->Prepare(); }
+  void Prepare() { if (next) next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     float time = e.time;
     float newtime = fmod(time, duration);
     MainLoopEnv ee = e;
     ee.time = newtime;
+    if (next)
     next->execute(ee);
   }
-  virtual void handle_event(MainLoopEvent &e) { return next->handle_event(e); }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual void handle_event(MainLoopEvent &e) { if (next) next->handle_event(e); }
+  virtual int shader_id() { if (next) return next->shader_id(); else return -1; }
 private:
   MainLoopItem *next;
   float duration;
@@ -9483,7 +9484,7 @@ class StringDisplayToBitmap : public Bitmap<int>
 {
 public:
   StringDisplayToBitmap(StringDisplay &sd, int def) : sd(sd),def(def) {}
-  void Prepare() { sd.Prepare(); }
+  void Prepare() { StringDisplay *ssd = &sd; if (ssd) sd.Prepare(); }
   int SizeX() const
   {
     int s = sd.Count();
@@ -9715,6 +9716,10 @@ GameApi::FI GameApi::FontApi::load_font(std::string ttf_filename, int sx, int sy
   void *priv_ = (void*)&env->lib;
   return add_font_interface(e, new FontInterfaceImpl(e, priv_, ttf_filename, gameapi_homepageurl, sx,sy));
 #else
+  std::cout << "WARNING: FREETYPE LIBRARY MISSING!" << std::endl;
+  GameApi::FI fi;
+  fi.id = 0;
+  return fi;
 #endif
 }
 

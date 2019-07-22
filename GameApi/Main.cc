@@ -24,10 +24,12 @@
 //#include <GL3/gl3.h>
 //#define GLEW_STATIC
 #ifndef ARM
+#ifndef LINUX
 //#ifndef RASPI
 #define USE_GLEW 1
 #include <GL/glew.h>
 //#endif
+#endif
 #endif
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -51,6 +53,9 @@
 #define OPENGL_ES 1
 #endif
 
+#ifdef LINUX
+//#define OPENGL_ES 1
+#endif
 
 
 //#include <SDL.h>
@@ -421,6 +426,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 
   g_low->sdl->SDL_Init(Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK);
 
+    std::cout << g_low->sdl->SDL_GetError() << std::endl;
 
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_RED_SIZE, 8);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_GREEN_SIZE, 8);
@@ -430,7 +436,9 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_DOUBLEBUFFER, 1);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_STENCIL_SIZE, 1);
 #ifndef EMSCRIPTEN
+#ifndef LINUX
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+#endif
 #endif
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1);
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4);
@@ -460,11 +468,14 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   else
     sdl_window = g_low->sdl->SDL_CreateWindow("Program", Low_SDL_WINDOWPOS_CENTERED, Low_SDL_WINDOWPOS_CENTERED, scr_x, scr_y, Low_SDL_WINDOW_OPENGL_SHOWN);
  
+    std::cout << g_low->sdl->SDL_GetError() << std::endl;
+
   //std::cout << sdl_window << " " << sdl_window->ptr << std::endl;
 
   g_context = g_low->sdl->SDL_GL_CreateContext(sdl_window);
   if (!g_context) { 
     std::cout << "Could not create Opengl3.2 context" << std::endl; 
+    std::cout << g_low->sdl->SDL_GetError() << std::endl;
   }
 
 #ifdef USE_GLEW

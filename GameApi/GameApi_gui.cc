@@ -4774,7 +4774,7 @@ void onload_cb(unsigned int tmp, void *arg, void *data, unsigned int datasize)
     char *url = (char*)arg;
     std::string url_str(url);
     std::string url_only(striphomepage(url_str));
-    std::cout << "url loading complete! " << url_only << std::endl;
+    //std::cout << "url loading complete! " << url_only << std::endl;
     
     load_url_buffers[url_only] = new std::vector<unsigned char>(buffer);
     async_pending_count--;
