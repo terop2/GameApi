@@ -4422,3 +4422,47 @@ void LoadObjModelFaceCollection::check_invalidate2()
       }
     return counts[face]+point;
   }
+
+
+void OutlineFaces::Prepare()
+  {
+    c.Prepare();
+    int faces = c.NumFaces();
+    int cc = 0;
+    for(int i=0;i<faces;i++)
+      {
+	int num = c.NumPoints(i);
+	int oldc = cc;
+	for(int j=0;j<num;j++)
+	  {
+	    counts.push_back(i);
+	    counts2.push_back(oldc);
+	    cc++;
+	  }
+      }
+  }
+  int OutlineFaces::NumLines() const
+  {
+    int num = c.NumFaces();
+    int count = 0;
+    for(int i=0;i<num;i++)
+      count += c.NumPoints(i);
+    return count;
+  }
+  Point OutlineFaces::LinePoint(int line, int point) const
+  {
+    //int num = c.NumFaces();
+    int count = 0;
+    int i=0;
+    //for(;i<num;i++)
+    //  {
+    //  count += c.NumPoints(i);
+    //  if (count >= line) break;
+    //  }
+    i = counts[line];
+    count = counts2[line] + c.NumPoints(i);
+    int p = count - line + point;
+    int pp = p % c.NumPoints(i);
+    return Point(1.03*Vector(c.FacePoint(i, pp)));
+    
+  }

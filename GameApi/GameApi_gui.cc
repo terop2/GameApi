@@ -8098,6 +8098,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "P", "float", "float", "float" },
 			 { "", "1.0", "1.0", "1.0" },
 			 "P", "polygon_api", "scale"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::p_towards_normal,
+			 "towards_notmal",
+			 { "p", "amount" },
+			 { "P", "float" },
+			 { "", "0.5" },
+			 "P", "lines_api", "p_toward_normal"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::lod_choose,
 			 "lod_choose",
 			 { "vec", "name" },
@@ -9013,6 +9019,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "P" },
 			 { "" },
 			 "LI", "lines_api", "from_polygon"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::li_bevel,
+			 "li_bevel",
+			 { "li", "p", "mix" },
+			 { "LI", "P", "float" },
+			 { "", "", "0.5" },
+			 "LI", "lines_api", "li_bevel"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::fur,
 			 "li_fur",
 			 { "pts", "center", "dist" },

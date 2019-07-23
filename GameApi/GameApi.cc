@@ -4693,11 +4693,12 @@ public:
   {
     g_low->ogl->glLineWidth(linewidth);
     GameApi::P I2=p;
-    GameApi::LI I3=ev.lines_api.from_polygon(I2);
+    GameApi::P I2a = ev.lines_api.p_towards_normal(I2, val);
+    GameApi::LI I3=ev.lines_api.from_polygon(I2a);
     GameApi::LI I4=ev.lines_api.change_color(I3,color);
-    GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
+    //GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
     //GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_ml2(ev,I5);
+    GameApi::ML I6=ev.lines_api.render_ml2(ev,I4);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
@@ -4713,11 +4714,12 @@ public:
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
-    GameApi::LI I3=ev.lines_api.from_polygon(I2);
+    GameApi::P I2a = ev.lines_api.p_towards_normal(I2, val);
+    GameApi::LI I3=ev.lines_api.from_polygon(I2a);
     GameApi::LI I4=ev.lines_api.change_color(I3,color);
-    GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
+    //GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
     //GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_inst_ml3(ev,I5,pts);
+    GameApi::ML I6=ev.lines_api.render_inst_ml3(ev,I4,pts);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
@@ -4734,11 +4736,12 @@ public:
     g_low->ogl->glLineWidth(linewidth);
     
     GameApi::P I2=p;
-    GameApi::LI I3=ev.lines_api.from_polygon(I2);
+    GameApi::P I2a = ev.lines_api.p_towards_normal(I2, val);
+    GameApi::LI I3=ev.lines_api.from_polygon(I2a);
     GameApi::LI I4=ev.lines_api.change_color(I3,color);
-    GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
+    //GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
     //GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I5,pta);
+    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I4,pta);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
@@ -4754,12 +4757,13 @@ public:
     GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
-    GameApi::LI I3=ev.lines_api.from_polygon(I2);
+    GameApi::P I2a = ev.lines_api.p_towards_normal(I2, val);
+    GameApi::LI I3=ev.lines_api.from_polygon(I2a);
     GameApi::LI I4=ev.lines_api.change_color(I3,color);
-    GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
+    //GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
 
     //GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I5,pta);
+    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I4,pta);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
