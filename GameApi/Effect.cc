@@ -4463,6 +4463,6 @@ void OutlineFaces::Prepare()
     count = counts2[line] + c.NumPoints(i);
     int p = count - line + point;
     int pp = p % c.NumPoints(i);
-    return Point(1.03*Vector(c.FacePoint(i, pp)));
+    return Point(1.00*Vector(c.FacePoint(i, pp)));
     
   }
