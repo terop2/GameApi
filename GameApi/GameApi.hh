@@ -3083,6 +3083,8 @@ public:
   IMPORT LI line_pos_mult(float val, LI li);
   IMPORT LI point_array(std::vector<PT> vec);
   IMPORT LI li_or_array(std::vector<LI> vec);
+  IMPORT LI li_bevel(LI li, P p, float mix);
+  IMPORT P p_towards_normal(P p, float amount);
   IMPORT LI li_matrix(LI lines, M matrix);
   IMPORT LI color_function(LI lines, std::function<unsigned int(int linenum, bool id)> f);
   IMPORT LI change_color(LI li, unsigned int color);

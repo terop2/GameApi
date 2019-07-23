@@ -319,7 +319,7 @@ EXPORT GameApi::LI GameApi::LinesApi::from_polygon(GameApi::P poly)
 {
   FaceCollection *poly2 = find_facecoll(e, poly);
   return add_line_array(e, new OutlineFaces(*poly2));
-}
+} 
 class BorderFromBoolBitmap : public LineCollection
 {
 public:
@@ -1824,4 +1824,84 @@ GameApi::LI GameApi::LinesApi::li_or_elem(LI li1, LI li2)
   LineCollection *lines1 = find_line_array(e, li1);
   LineCollection *lines2 = find_line_array(e, li2);
   return add_line_array(e, new LIOrElem(lines1,lines2));
+}
+
+class Bevel : public LineCollection
+{
+public:
+  Bevel(LineCollection *lines, FaceCollection *faces, float mix) : lines(lines), faces(faces), mix(mix) { }
+  void Prepare() { lines->Prepare(); faces->Prepare(); }
+  int NumLines() const { if (lines) return lines->NumLines(); return 0; }
+  Point LinePoint(int line, int point) const { if (lines) return lines->LinePoint(line,point); return Point(0.0,0.0,0.0); }
+  unsigned int LineColor(int line, int point) const {
+    Point p1 = lines->LinePoint(line,point);
+    Point p2 = Point(0.9708737864*Vector(p1));
+    int count = 0;
+    int r = 0;
+    int g = 0;
+    int b = 0;
+    int s = faces->NumFaces();
+    for(int i=0;i<s;i++) {
+      int s2 = faces->NumPoints(i);
+      for(int j=0;j<s2;j++) {
+	Vector v = faces->FacePoint(i,j)-p2;
+	if (v.Dist()<1.00) {
+	  count++;
+	  unsigned int cc = faces->Color(i,j);
+	  Color cc2(cc);
+	  r+=cc2.r;
+	  g+=cc2.g;
+	  b+=cc2.b;
+	}
+      }
+    }
+    if (count>0) {
+      r/=count;
+      g/=count;
+      b/=count;
+    }
+    unsigned int col = Color(r,g,b).Pixel();
+    unsigned int col2 = lines->LineColor(line,point);
+    return Color::Interpolate(col,col2,mix);
+  }
+
+private:
+  LineCollection *lines;
+  FaceCollection *faces;
+  float mix;
+};
+
+GameApi::LI GameApi::LinesApi::li_bevel(LI li, P p, float mix)
+{
+  LineCollection *lines = find_line_array(e,li);
+  FaceCollection *faces = find_facecoll(e,p);
+  return add_line_array(e, new Bevel(lines, faces, mix));
+}
+
+class TowardsNormal : public ForwardFaceCollection
+{
+public:
+  TowardsNormal(FaceCollection *coll, float amount) : ForwardFaceCollection(*coll), coll(coll), amount(amount) { }
+  Point FacePoint(int face, int point) const
+  {
+    Vector v = coll->PointNormal(face,point);
+    v/=v.Dist();
+    Point p = coll->FacePoint(face,point);
+    float d = p.Dist();
+    d-=350.0;
+    d/=(1200.0-350.0);
+    if (d<0.0) d=0.0;
+    if (d>1.0) d=1.0;
+    float amount2 = (1.0-d)*3.0 + d*3.0; // was 40.0
+    return coll->FacePoint(face,point)+amount*amount2*v;
+  }
+private:
+  FaceCollection *coll;
+  float amount;
+};
+
+GameApi::P GameApi::LinesApi::p_towards_normal(P p, float amount)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new TowardsNormal(coll,amount),1);
 }
