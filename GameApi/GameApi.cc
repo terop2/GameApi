@@ -3011,6 +3011,79 @@ private:
   GameApi::EveryApi &ev;
 };
 
+class BevelMaterial : public MaterialForward
+{
+public:
+  BevelMaterial(GameApi::EveryApi &ev, Material *next, float dir=-1.5) : ev(ev), next(next), dir(dir){ }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+
+    GameApi::P I8=ev.polygon_api.recalculate_normals(p);
+    GameApi::P I9=ev.lines_api.p_towards_normal(I8,-1.5);
+    GameApi::LI I10=ev.lines_api.from_polygon(I9);
+    GameApi::LLA I11=ev.lines_api.prepare(I10);
+    GameApi::ML I12=ev.lines_api.render_ml(ev,I11);
+
+    GameApi::ML I13;
+    I13.id = next->mat(p.id);
+    GameApi::ML I11a=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{I12,I13});
+
+    return I11a;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+
+    GameApi::P I8=ev.polygon_api.recalculate_normals(p);
+    GameApi::P I9=ev.lines_api.p_towards_normal(I8,-1.5);
+    GameApi::LI I10=ev.lines_api.from_polygon(I9);
+    //GameApi::LLA I11=ev.lines_api.prepare(I10);
+    GameApi::ML I12=ev.lines_api.render_inst_ml3(ev,I10,pts);
+
+    GameApi::ML I13;
+    I13.id = next->mat_inst(p.id,pts.id);
+    GameApi::ML I11a=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{I12,I13});
+
+    return I11a;
+
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+
+    GameApi::P I8=ev.polygon_api.recalculate_normals(p);
+    GameApi::P I9=ev.lines_api.p_towards_normal(I8,-1.5);
+    GameApi::LI I10=ev.lines_api.from_polygon(I9);
+    // GameApi::LLA I11=ev.lines_api.prepare(I10);
+    GameApi::ML I12=ev.lines_api.render_inst_ml2(ev,I10,pta);
+
+    GameApi::ML I13;
+    I13.id = next->mat_inst2(p.id,pta.id);
+    GameApi::ML I11a=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{I12,I13});
+
+    return I11a;
+
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+
+    GameApi::PTA pta = ev.points_api.prepare(pts);
+
+    GameApi::P I8=ev.polygon_api.recalculate_normals(p);
+    GameApi::P I9=ev.lines_api.p_towards_normal(I8,-1.5);
+    GameApi::LI I10=ev.lines_api.from_polygon(I9);
+    //GameApi::LLA I11=ev.lines_api.prepare(I10);
+    GameApi::ML I12=ev.lines_api.render_inst_ml2(ev,I10,pta);
+
+    GameApi::ML I13;
+    I13.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
+    GameApi::ML I11a=ev.mainloop_api.array_ml(std::vector<GameApi::ML>{I12,I13});
+
+    return I11a;
+  }
+private:
+  GameApi::EveryApi &ev;
+  Material *next;
+  float dir;
+};
 class ColourMaterial : public MaterialForward
 {
 public:
@@ -4787,6 +4860,11 @@ EXPORT GameApi::MT GameApi::MaterialsApi::web(EveryApi &ev, MT nxt, float val, f
   return add_material(e, new WebMaterial(ev,mat,val,linewidth,color));
 }
 
+EXPORT GameApi::MT GameApi::MaterialsApi::bevel(EveryApi &ev, MT nxt, float dir)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new BevelMaterial(ev,mat,dir));
+}
 
 #if 0
 EXPORT GameApi::ML GameApi::MaterialsApi::web(EveryApi &ev, P p)

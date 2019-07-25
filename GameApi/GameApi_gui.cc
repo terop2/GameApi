@@ -6944,6 +6944,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "MT", "float", "float","unsigned int" },
 			 { "ev", "", "1.03", "2.0","ff000000" },
 			 "MT", "materials_api", "web"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bevel,
+			 "m_bevel",
+			 { "ev", "nxt", "dir" },
+			 { "EveryApi&", "MT", "float" },
+			 { "ev", "", "-1.5" },
+			 "MT", "materials_api", "bevel"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dist_field_mesh,
 			 "m_dist_field",
 			 { "ev", "sfo", "mt" },
@@ -8103,7 +8109,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "p", "amount" },
 			 { "P", "float" },
 			 { "", "0.5" },
-			 "P", "lines_api", "p_toward_normal"));
+			 "P", "lines_api", "p_towards_normal"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::lod_choose,
 			 "lod_choose",
 			 { "vec", "name" },
