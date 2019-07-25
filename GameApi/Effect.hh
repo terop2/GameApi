@@ -4422,7 +4422,7 @@ public:
   void Prepare();
   int NumLines() const;
   Point LinePoint(int line, int point) const;
-
+  unsigned int LineColor(int line, int point) const;
 private:
   FaceCollection &c;
   std::vector<int> counts;

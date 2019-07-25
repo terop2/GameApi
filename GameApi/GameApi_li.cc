@@ -1835,7 +1835,7 @@ public:
   Point LinePoint(int line, int point) const { if (lines) return lines->LinePoint(line,point); return Point(0.0,0.0,0.0); }
   unsigned int LineColor(int line, int point) const {
     Point p1 = lines->LinePoint(line,point);
-    Point p2 = Point(0.9708737864*Vector(p1));
+    //Point p2 = Point(0.9708737864*Vector(p1));
     int count = 0;
     int r = 0;
     int g = 0;
@@ -1844,8 +1844,8 @@ public:
     for(int i=0;i<s;i++) {
       int s2 = faces->NumPoints(i);
       for(int j=0;j<s2;j++) {
-	Vector v = faces->FacePoint(i,j)-p2;
-	if (v.Dist()<1.00) {
+	Vector v = faces->FacePoint(i,j)-p1;
+	if (v.Dist()<10.00) {
 	  count++;
 	  unsigned int cc = faces->Color(i,j);
 	  Color cc2(cc);
