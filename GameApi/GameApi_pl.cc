@@ -6086,10 +6086,10 @@ public:
     vertex.id = ee.us_vertex_shader;
     GameApi::US a2v = ev.uber_api.v_ambient(vertex);
     GameApi::US a3v = ev.uber_api.v_diffuse(a2v);
-    GameApi::US a4v = ev.uber_api.v_specular(a3v);
+    //GameApi::US a4v = ev.uber_api.v_specular(a3v);
 
     //GameApi::US a2 = ev.uber_api.v_passall(a4v);
-    ee.us_vertex_shader = a4v.id;
+    ee.us_vertex_shader = a3v.id;
 
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
