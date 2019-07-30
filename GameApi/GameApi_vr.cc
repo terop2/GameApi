@@ -125,7 +125,7 @@ MN I24=ev.move_api.trans2(I23,screen_w,screen_h,0);
 ML I25=ev.move_api.move_ml(ev,I22,I24,1,10.0);
 ML I26=ev.sprite_api.turn_to_2d(ev,I25,0.0,0.0,800.0,600.0);
 
- ML arr = ev.mainloop_api.array_ml(std::vector<ML>{cho_b,I26});
+ ML arr = ev.mainloop_api.array_ml(ev,std::vector<ML>{cho_b,I26});
 
   //#ifdef EMSCRIPTEN  
   //std::vector<ML> vec = std::vector<ML>{I70,res};
@@ -343,7 +343,7 @@ ML I3=ev.materials_api.bind(I1,I2);
 P I4=ev.polygon_api.vr_fullscreen_quad(ev,true);
  MT I5=ev.materials_api.textureid(ev,right,1.0);
 ML I6=ev.materials_api.bind(I4,I5);
-ML I7=ev.mainloop_api.array_ml(std::vector<ML>{I3,I6});
+ ML I7=ev.mainloop_api.array_ml(ev,std::vector<ML>{I3,I6});
 //---
 #if 0
  MN I1a=ev.move_api.empty();

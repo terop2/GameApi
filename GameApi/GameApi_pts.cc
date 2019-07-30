@@ -1449,7 +1449,7 @@ GameApi::ML GameApi::PointsApi::collision_bind(EveryApi &ev,PTS bounding_box, st
   GameApi::P I2=ev.polygon_api.sphere(I1,5,8,8);
   GameApi::ML I3=ev.materials_api.render_instanced_ml(ev,I2,bounding_box);
 #endif
-  GameApi::ML res = ev.mainloop_api.array_ml({ml
+  GameApi::ML res = ev.mainloop_api.array_ml(ev,{ml
 #ifndef EMSCRIPTEN
 	,I3
 #endif
@@ -1469,7 +1469,7 @@ GameApi::ML GameApi::PointsApi::collision_bind_inst(EveryApi &ev, PTS bounding_b
   GameApi::P I2a=ev.polygon_api.static_instancing(ev,I2,bounding_box);
   GameApi::ML I3=ev.materials_api.render_instanced_ml(ev,I2a,inst_points);
 #endif
-  GameApi::ML res = ev.mainloop_api.array_ml({ml
+  GameApi::ML res = ev.mainloop_api.array_ml(ev,{ml
 #ifndef EMSCRIPTEN
 	,I3
 #endif

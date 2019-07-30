@@ -553,7 +553,7 @@ EXPORT GameApi::ML GameApi::FontApi::dynamic_string(GameApi::EveryApi &ev, GameA
       char_fetch = char_fetcher_from_string(fetcher, alternative_chars, i);
       ml.push_back(dynamic_character(ev, chars, char_fetch, x+xmax*i,y));
     }
-  return ev.mainloop_api.array_ml(ml);
+  return ev.mainloop_api.array_ml(ev,ml);
 }
 
 class MovementIntFetcher : public Fetcher<int>
