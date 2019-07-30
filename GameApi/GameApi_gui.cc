@@ -7148,9 +7148,9 @@ std::vector<GameApiItem*> blocker_functions()
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::array_ml,
 			 "array_ml",
-			 { "arr" },
-			 { "[ML]" },
-			 { "" },
+			 { "ev", "arr" },
+			 { "EveryApi&", "[ML]" },
+			 { "ev", "" },
 			 "ML", "mainloop_api", "array_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::activate_array,
 			 "activate_array_ml",

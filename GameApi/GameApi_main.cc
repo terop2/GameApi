@@ -1271,7 +1271,7 @@ private:
 class ArrayMainLoop : public MainLoopItem
 {
 public:
-  ArrayMainLoop(std::vector<MainLoopItem*> vec) : vec(vec) { }
+  ArrayMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<MainLoopItem*> vec) : env(env), ev(ev), vec(vec) { }
   void Prepare() {
     int s = vec.size();
     for(int i=0;i<s;i++) vec[i]->Prepare();
@@ -1282,6 +1282,15 @@ public:
     for(int i=0;i<s;i++)
       {
 	MainLoopEnv ee = e;
+
+	// here's a block needed to distribute in_MV to different cases.
+	int id = vec[i]->shader_id();
+	if (id!=-1) {
+	  GameApi::SH sh;
+	  sh.id = id;
+	  GameApi::M m = add_matrix2( env, e.in_MV);
+	  ev.shader_api.set_var(sh, "in_MV", m);
+	}
 	vec[i]->execute(ee);
       }
   }
@@ -1304,6 +1313,8 @@ public:
   }
 #endif
 private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
   std::vector<MainLoopItem*> vec;
 };
 
@@ -1375,7 +1386,7 @@ EXPORT GameApi::ML GameApi::MainLoopApi::timing_ml(std::vector<ML> vec, float du
   return add_main_loop(e, new TimingMainLoop(vec2));
 }
 */
-EXPORT GameApi::ML GameApi::MainLoopApi::array_ml(std::vector<ML> vec)
+EXPORT GameApi::ML GameApi::MainLoopApi::array_ml(GameApi::EveryApi &ev, std::vector<ML> vec)
 {
   std::vector<MainLoopItem*> vec2;
   int s = vec.size();
@@ -1384,7 +1395,7 @@ EXPORT GameApi::ML GameApi::MainLoopApi::array_ml(std::vector<ML> vec)
       //std::cout << "array_ml id: " << vec[i].id << std::endl;
       vec2.push_back(find_main_loop(e,vec[i]));
     }
-  return add_main_loop(e, new ArrayMainLoop(vec2));
+  return add_main_loop(e, new ArrayMainLoop(e,ev,vec2));
 }
 EXPORT GameApi::FML GameApi::MainLoopApi::array_fml(std::vector<FML> vec)
 {
@@ -1480,7 +1491,7 @@ GameApi::ML GameApi::MainLoopApi::display_background(EveryApi &ev, ML ml)
   BM I2=ev.bitmap_api.scale_bitmap_fullscreen(ev,I1);
   ML I3=ev.sprite_api.vertex_array_render(ev,I2);
   ML I4=ev.sprite_api.turn_to_2d(ev,I3,0.0,0.0,800.0,600.0);
-  ML I5=ev.mainloop_api.array_ml(std::vector<ML>{I4,ml});
+  ML I5=ev.mainloop_api.array_ml(ev,std::vector<ML>{I4,ml});
  return I5;
 }
 void GameApi::MainLoopApi::display_logo(EveryApi &ev)
@@ -1529,9 +1540,9 @@ MN I20=ev.move_api.empty();
 MN I21=ev.move_api.scale2(I20,5,5,1);
 MN I22=ev.move_api.trans2(I21,-230,-300,0);
 ML I23=ev.move_api.move_ml(ev,I19,I22,1,10);
-I26=ev.mainloop_api.array_ml(std::vector<ML>{I12,I23});
+ I26=ev.mainloop_api.array_ml(ev,std::vector<ML>{I12,I23});
   }
-  ML I17a = ev.mainloop_api.array_ml(std::vector<ML>{I17,I26});
+  ML I17a = ev.mainloop_api.array_ml(ev,std::vector<ML>{I17,I26});
   I17a = ev.mainloop_api.display_background(ev,I17a);
 
  ML res = I17a;
@@ -1888,7 +1899,7 @@ GameApi::ML GameApi::MainLoopApi::restart_screen(EveryApi &ev, ML ml, std::strin
   MN I16=ev.move_api.trans2(I15,150,300,0);
   ML I17=ev.move_api.move_ml(ev,I14,I16,1,10.0);
   ML I18=ev.sprite_api.turn_to_2d(ev,I17,0.0,0.0,800.0,600.0);
-  ML I19=ev.mainloop_api.array_ml(std::vector<ML>{I18,ml});
+  ML I19=ev.mainloop_api.array_ml(ev,std::vector<ML>{I18,ml});
   return I19;
 }
 

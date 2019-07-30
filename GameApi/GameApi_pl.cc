@@ -6060,6 +6060,7 @@ public:
 		unsigned int level1, unsigned int level2, unsigned int level3, float spec_size, bool ambient, bool diffuse, bool specular) : env(env), ev(ev), next(next), light_dir(light_dir), level1(level1), level2(level2), level3(level3), spec_size(spec_size), ambient(ambient), diffuse(diffuse), specular(specular) 
   { 
     firsttime = true;
+    initialized=false;
     sh.id = -1;
   }
   int shader_id() { if (sh.id != -1) return sh.id; return next->shader_id(); 
@@ -6068,9 +6069,10 @@ public:
   {
     next->handle_event(e);
   }
-  void Prepare() { next->Prepare(); }
+  void Prepare() { next->Prepare(); initialized=true; }
   void execute(MainLoopEnv &e)
   {
+    if (!initialized) return;
     MainLoopEnv ee = e;
      if (firsttime)
       {
@@ -6086,10 +6088,10 @@ public:
     vertex.id = ee.us_vertex_shader;
     GameApi::US a2v = ev.uber_api.v_ambient(vertex);
     GameApi::US a3v = ev.uber_api.v_diffuse(a2v);
-    //GameApi::US a4v = ev.uber_api.v_specular(a3v);
+    GameApi::US a4v = ev.uber_api.v_specular(a3v);
 
     //GameApi::US a2 = ev.uber_api.v_passall(a4v);
-    ee.us_vertex_shader = a3v.id;
+    ee.us_vertex_shader = a4v.id;
 
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
@@ -6100,7 +6102,7 @@ public:
     }
     fragment.id = ee.us_fragment_shader;
     if (ambient)
-      fragment = ev.uber_api.f_ambient(fragment);
+       fragment = ev.uber_api.f_ambient(fragment);
     if (diffuse)
       fragment = ev.uber_api.f_diffuse(fragment);
     if (specular)
@@ -6135,6 +6137,7 @@ public:
 			      ((level3&0xff00)>>8)/255.0,
 			      ((level3&0xff))/255.0,
 			      ((level3&0xff000000)>>24)/255.0);
+
       }
 
 	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
@@ -6142,7 +6145,7 @@ public:
 	GameApi::M m3 = add_matrix2(env, e.in_P); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	ev.shader_api.set_var(sh, "in_MV", m);
-	ev.shader_api.set_var(sh, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+	//ev.shader_api.set_var(sh, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 
 	ev.shader_api.set_var(sh, "in_T", m1);
 	ev.shader_api.set_var(sh, "in_P", m3);
@@ -6163,6 +6166,7 @@ private:
   bool firsttime;
   float spec_size;
   bool ambient, diffuse, specular;
+  bool initialized;
 };
 
 
@@ -6951,7 +6955,7 @@ public:
 	GameApi::M m3 = add_matrix2(env, e.in_P); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	ev.shader_api.set_var(sh, "in_MV", m);
-	ev.shader_api.set_var(sh, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+	//ev.shader_api.set_var(sh, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 
 	ev.shader_api.set_var(sh, "in_T", m1);
 	ev.shader_api.set_var(sh, "in_P", m3);
@@ -12923,7 +12927,7 @@ private:
   for(int i=0;i<s;i++) {
     vec2.push_back(ev.materials_api.bind_inst(vec[i], pts, materials[i]));
   }
-  GameApi::ML ml = ev.mainloop_api.array_ml(vec2);
+  GameApi::ML ml = ev.mainloop_api.array_ml(ev,vec2);
   return ml;
 }
 
@@ -12950,7 +12954,7 @@ public:
       GameApi::ML move = ev.move_api.move_ml(ev, script, mn, 1, 10.0);
       vec2.push_back(move);
     }
-    scene = ev.mainloop_api.array_ml(vec2);
+    scene = ev.mainloop_api.array_ml(ev,vec2);
   }
   virtual void execute(MainLoopEnv &e)
   {
