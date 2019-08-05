@@ -754,6 +754,7 @@ public:
   Vector PerpendicularVector(float angle, float length);
   float Dist(Point p);
   bool TriangleIntersection(Point p1, Point p2, Point p3, float &r);
+  bool TriangleIntersection(Point v1, Point v2, Point v3, float &u, float &v, float &t);
   bool QuadIntersection(Point p1, Point p2, Point p3, Point p4, float &r);
   bool BoxIntersection(BOX &b, float &tmin, float &tmax);
   float LineCoords(Point p) const;
@@ -843,6 +844,13 @@ struct Point2d
     res.y = p.y + p2.y;
     return res;
   }
+  //friend Vector2d operator-(const Point2d &p1, const Point2d &p2)
+  //{
+  //  Vector2d v;
+  //  v.x = p1.x-p2.x;
+  //  v.y = p1.y-p2.y;
+  //  return v;
+  //}
   friend Point2d operator+(const Point2d &p, const Vector2d &p2);
   friend Point2d operator*(float x, const Point2d &p)
   {
@@ -939,6 +947,7 @@ inline Point2d operator+(const Point2d &p, const Vector2d &p2)
   return res;
 }
 
+
 class TriangleProperties
 {
 public:
@@ -990,6 +999,12 @@ public:
     float c = side_length_3_1();
     return a*b*c/sqrt((a+b+c)*(b+c-a)*(c+a-b)*(a+b-c));
   }
+  static Point uv_to_bary(float u, float v)
+  { // use this with TriangleIntersection
+    Point p(u,v,1.0-u-v);
+    return p;
+  }
+  
   Point barycentric_to_point(Point bary) const
   {
     Point pp = Point(Vector(p1)*bary.x + Vector(p2)*bary.y + Vector(p3)*bary.z);
