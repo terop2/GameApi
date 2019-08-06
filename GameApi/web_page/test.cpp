@@ -225,6 +225,8 @@ void initialize_low(int flags);
 
 int call_count=0;
 
+extern bool g_transparent;
+
 #if 1
 int main(int argc, char *argv[]) {
   call_count++;
@@ -248,6 +250,10 @@ int main(int argc, char *argv[]) {
   int current_arg = 1; // start after the current filename
   while(cmd_args.size()-current_arg > 0)
     {
+      if (check_count(cmd_args, current_arg, 2) && cmd_args[current_arg]=="--transparent") {
+	if (std::string(cmd_args[current_arg+1])=="1") g_transparent = true;
+	current_arg+=2;
+      } else
       if (check_count(cmd_args, current_arg, 2) && cmd_args[current_arg]=="--seamless")
 	{
 	  seamless_url = cmd_args[current_arg+1];
