@@ -1331,6 +1331,27 @@ bool LineProperties::BoxIntersection(BOX &b, float &tmin, float &tmax)
   return tmax>=tmin;
 
 }
+bool LineProperties::TriangleIntersection(Point v1, Point v2, Point v3, float &u, float &v, float &t)
+{
+  Vector O = p1;
+  Vector D = p2-p1;
+  Vector e1 = v2-v1;
+  Vector e2 = v3-v1;
+  Vector P = Vector::CrossProduct(D, e2);
+  float det = Vector::DotProduct(e1, P);
+  if (det > -0.00001 && det < 0.00001) return false;
+  float inv_det = 1.f / det;
+  Vector T = O-v1;
+  u = Vector::DotProduct(T,P)*inv_det;
+  if (u<0.f || u>1.f) return false;
+  Vector Q = Vector::CrossProduct(T,e1);
+  v = Vector::DotProduct(D,Q)*inv_det;
+  if (v<0.f || u+v>1.f) return false;
+  t = Vector::DotProduct(e2,Q)*inv_det;
+  //if (t>0.00001) {
+    //*ipoint = t;
+    return true;
+}
 bool LineProperties::TriangleIntersection(Point v1, Point v2, Point v3, float &t2)
 {
 #if 0

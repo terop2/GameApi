@@ -1059,6 +1059,7 @@ ShaderFile::ShaderFile()
 "#ifdef EX_LIGHTPOS2\n"
 "#ifdef LEVELS\n"
 "#ifdef EX_TEXCOORD\n"
+"#ifdef BUMPPHONG\n"
 
     //"uniform float hilight;\n"	  
     //"float intensity(vec3 dir) {\n"
@@ -1096,6 +1097,7 @@ ShaderFile::ShaderFile()
     "     c=clamp(c,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
     "    return vec4(c,rgb.a);\n"
     "}\n"
+"#endif\n"
 "#endif\n"
 "#endif\n"
 "#endif\n"
@@ -2402,6 +2404,7 @@ ShaderFile::ShaderFile()
 "#ifdef EX_LIGHTPOS2\n"
 "#ifdef LEVELS\n"
 "#ifdef EX_TEXCOORD\n"
+"#ifdef BUMPPHONG\n"
 
     //"uniform float hilight;\n"	  
     //"float intensity(vec3 dir) {\n"
@@ -2441,6 +2444,7 @@ ShaderFile::ShaderFile()
     "     c=clamp(c,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
     "    return vec4(c,rgb.a);\n"
     "}\n"
+"#endif\n"
 "#endif\n"
 "#endif\n"
 "#endif\n"
