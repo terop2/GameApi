@@ -3067,7 +3067,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod, vertex_c, v_defines, false,v_shader);
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -3084,7 +3084,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       //std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader);
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);
