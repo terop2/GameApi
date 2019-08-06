@@ -1289,6 +1289,7 @@ public:
 	  GameApi::SH sh;
 	  sh.id = id;
 	  GameApi::M m = add_matrix2( env, e.in_MV);
+	  ev.shader_api.use(sh);
 	  ev.shader_api.set_var(sh, "in_MV", m);
 	}
 	vec[i]->execute(ee);
@@ -1485,14 +1486,20 @@ void GameApi::MainLoopApi::display_seamless(EveryApi &ev)
  frame_count = 0;
 
 }
+bool g_transparent = false;
+extern bool g_transparent;
 GameApi::ML GameApi::MainLoopApi::display_background(EveryApi &ev, ML ml)
 {
-  BM I1=ev.bitmap_api.newbitmap(100,100,0xff000000);
-  BM I2=ev.bitmap_api.scale_bitmap_fullscreen(ev,I1);
-  ML I3=ev.sprite_api.vertex_array_render(ev,I2);
-  ML I4=ev.sprite_api.turn_to_2d(ev,I3,0.0,0.0,800.0,600.0);
-  ML I5=ev.mainloop_api.array_ml(ev,std::vector<ML>{I4,ml});
- return I5;
+  if (g_transparent) { 
+    return ml;
+  } else {
+    BM I1=ev.bitmap_api.newbitmap(100,100,0xff000000);
+    BM I2=ev.bitmap_api.scale_bitmap_fullscreen(ev,I1);
+    ML I3=ev.sprite_api.vertex_array_render(ev,I2);
+    ML I4=ev.sprite_api.turn_to_2d(ev,I3,0.0,0.0,800.0,600.0);
+    ML I5=ev.mainloop_api.array_ml(ev,std::vector<ML>{I4,ml});
+    return I5;
+  }
 }
 void GameApi::MainLoopApi::display_logo(EveryApi &ev)
 {

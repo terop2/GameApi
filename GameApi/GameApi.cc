@@ -8386,7 +8386,7 @@ void blocker_iter(void *arg)
 
     GameApi::M mat = env->ev->matrix_api.identity();
         if (env->screen_width<600) {
-      mat = env->ev->matrix_api.scale(-1.0,-1.0,1.0);
+	    mat = env->ev->matrix_api.scale(-1.0,-1.0,1.0);
     }
 
 	env->ev->shader_api.use(env->color_sh);
@@ -10744,7 +10744,15 @@ private:
 
 GameApi::ML GameApi::MovementNode::quake_ml(EveryApi &ev, ML ml,float speed, float rot_speed)
 {
-  MainLoopItem *mml = find_main_loop(e,ml);
+  float y_flip = 1.0;
+  if (ev.mainloop_api.get_screen_width() < 600) {
+    y_flip = -1.0;
+  }
+  GameApi::MN mn = ev.move_api.empty();
+  GameApi::MN scale4 = ev.move_api.scale2(mn, 1.0,y_flip,1.0);
+  GameApi::ML ml4 = ev.move_api.move_ml(ev,ml,scale4, 1, 10.0);
+
+  MainLoopItem *mml = find_main_loop(e,ml4);
   return add_main_loop(e, new QuakeML(e,ev, mml, speed, rot_speed));
 }
 
@@ -10758,7 +10766,11 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     g_is_quake=true;
-    GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
+    if (ev.mainloop_api.get_screen_width()<700) {
+    GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, -rot_speed);
+    } else {
+          GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
+    }
     quake_pos_x = pos_x;
     quake_pos_y = -pos_y;
     quake_rot_y = rot_y;
@@ -11451,10 +11463,10 @@ public:
   {
     float spx = x_speed;
     float spy = y_speed;
-    //if (e.screen_width <700) { // test for mobile
-    //spx = -spx;
-    //spy = -spy;
-    //}
+    if (e.screen_width <700) { // test for mobile
+      //spx = -spx;
+      //spy = -spy;
+    }
     Matrix curr1 = Matrix::YRotation(mouse_delta.dx*spx);
     Matrix curr2 = Matrix::XRotation(mouse_delta.dy*spy);
     Matrix curr = curr1 * curr2;
