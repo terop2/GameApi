@@ -4829,8 +4829,8 @@ ASyncData async_data[] = {
   { "polygon_api", "stl_load", 0 },
   { "font_api", "load_font_dump", 0 },
   { "polygon_api", "load_scene", 1 },
-  { "polygon_api", "gltf_load", 1 }
-  
+  { "polygon_api", "gltf_load", 1 },
+  { "polygon_api", "gltf_load_bitmap", 2 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -8069,6 +8069,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "int", "int", "PT", "float", "float" },
 			 { "ev", "20", "20", "", "250.0", "50.0" },
 			 "P", "polygon_api", "torus2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::bar_chart,
+			 "bar_chart",
+			 { "ev", "url", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "per" },
+			 { "EveryApi&", "std::string", "float", "float", "float", "float", "float", "float", "float" },
+			 { "ev", "http://tpgames.org/test_bar.txt", "-300.0", "300.0", "-300.0", "300.0", "0.0", "40.0", "80.0" },
+			 "P", "polygon_api", "bar_chart"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::or_elem,
 			 "p_or_elem",
 			 { "p1", "p2" },
@@ -9880,6 +9886,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "EveryApi&", "std::string", "int" },
 			 { "ev", "http://tpgames.org/gameapi_logo.png", "300000" },
 			 "TXID", "bitmap_api", "dyn_fetch_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::gltf_load_bitmap,
+			 "bm_gltf",
+			 { "ev", "base_url", "url", "image_index" },
+			 { "EveryApi&", "std::string", "std::string", "int" },
+			 { "ev", "http://tpgames.org/", "http://tpgames.org/DamagedHelmet.glb", "0" },
+			 "BM", "polygon_api", "gltf_load_bitmap"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::sprite_atlas_x,
 			 "bm_atlas_x",
 			 { "ev", "orig", "start_x", "end_x", "start_y", "end_y", "delta_x", "count" },
