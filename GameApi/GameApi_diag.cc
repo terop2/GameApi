@@ -14,6 +14,7 @@ public:
     env.async_load_url(url, homepage);
 #endif
     std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    if (!vec) return;
     std::string str(vec->begin(),vec->end());
     std::stringstream ss(str);
     float val=0.0;
@@ -103,5 +104,9 @@ private:
 
 GameApi::P GameApi::PolygonApi::bar_chart( GameApi::EveryApi &ev, std::string url, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per )
 {
+#ifdef EMSCRIPTEN
+  return add_polygon2(e, new BarChart(e, ev, url, gameapi_homepageurl, start_x, end_x, start_y, end_y, start_z, end_z, per/100.0), 1);
+#else
   return add_polygon2(e, new BarChart(e, ev, url, gameapi_homepageurl, start_x, end_x, end_y, start_y, start_z, end_z, per/100.0), 1);
+#endif
 }
