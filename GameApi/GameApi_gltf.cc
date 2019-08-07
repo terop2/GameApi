@@ -30,9 +30,9 @@ public:
       &WriteWholeFile,
       (void*)this
     };
-    tiny.SetFsCallbacks(fs);
-    tiny.SetImageLoader(&LoadImageData, this);
-    tiny.SetImageWriter(&WriteImageData, this);
+    //tiny.SetFsCallbacks(fs);
+    //tiny.SetImageLoader(&LoadImageData, this);
+    //tiny.SetImageWriter(&WriteImageData, this);
   }
   void Prepare() {
 
@@ -66,6 +66,7 @@ bool FileExists(const std::string &abs_filename, void *ptr)
 {
   LoadGltf *data = (LoadGltf*)ptr;
   std::cout << "FileExists " << abs_filename << std::endl;
+  return false;
 }
 std::string ExpandFilePath(const std::string &str, void *ptr)
 {
@@ -77,51 +78,67 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
 {
   LoadGltf *data = (LoadGltf*)ptr;
   std::cout << "ReadWholeFile " << filepath << std::endl;
+  return false;
 }
 bool WriteWholeFile(std::string *err, const std::string &filepath, const std::vector<unsigned char> &contents, void *ptr)
 {
   LoadGltf *data = (LoadGltf*)ptr;
   std::cout << "WriteWholeFile" << filepath << std::endl;
+  return false;
 }
 bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err, std::string *warn, int req_width, int req_height, const unsigned char *bytes, int size, void *ptr)
 {
   LoadGltf *data = (LoadGltf*)ptr;
   std::cout << "LoadImageData " << req_width << " " << req_height << " " << size << std::endl;
+  return false;
 }
 bool WriteImageData(const std::string *basepath, const std::string *filename, tinygltf::Image *image, bool b, void *ptr)
 {
   LoadGltf *data = (LoadGltf*)ptr;
   std::cout << "WriteImageData " << *basepath << " " << *filename << std::endl;
+  return false;
 }
 
 class GLTFImage : public Bitmap<Color>
 {
 public:
-  GLTFImage(LoadGltf *load, tinygltf::Image *img) : load(load), img(img) { 
+  GLTFImage(LoadGltf *load, int image_index) : load(load), image_index(image_index) { 
   }
-  virtual int SizeX() const { return img->width; }
-  virtual int SizeY() const { return img->height; }
+  virtual void Prepare()
+  {
+    load->Prepare();
+    img = 0;
+    if (image_index>=0 && image_index<load->model.images.size())
+      img = &load->model.images[image_index];
+  }
+
+  virtual int SizeX() const { if (img) return img->width; return 0; }
+  virtual int SizeY() const { if (img) return img->height; return 0; }
   virtual Color Map(int x, int y) const
   {
+    if (!img) return Color(0x0);
     unsigned char *ptr = &img->image[0];
     int offset = (x*img->component + y*img->width*img->component)*(img->bits/8);
-    if (img->component==4 && img->bits==8) {
-      unsigned int c0 = *(unsigned int*)(ptr+offset);
-      unsigned int cr = c0 & 0xff;
-      unsigned int cg = c0 & 0xff00;
-      unsigned int cb = c0 & 0xff0000;
-      unsigned int ca = c0 & 0xff000000;
-      cg>>=8;
-      cb>>=16;
-      ca>>=24;
-      
-      ca<<=24;
-      cr<<=16;
-      cg<<=8;
-      cb<<=0;
-      return Color(ca+cr+cg+cb);
+    if ((img->component==4 ||img->component==3)&& img->bits==8) {
+
+
+      unsigned int val = *(unsigned int*)(ptr+offset);
+
+
+	unsigned int a = val &0xff000000;
+	unsigned int r = val &0xff0000;
+	unsigned int g = val &0x00ff00;
+	unsigned int b = val &0x0000ff;
+	r>>=16;
+	g>>=8;
+
+	b<<=16;
+	g<<=8;
+	val = a+r+g+b; 
+
+	return Color(val);
     }
-    if (img->component==4 && img->bits==16) {
+    if ((img->component==4 ||img->component==3)&& img->bits==16) {
       unsigned short *c0 = (unsigned short*)(ptr+offset);
       unsigned short r = c0[0];
       unsigned short g = c0[1];
@@ -131,24 +148,27 @@ public:
       g>>=8;
       b>>=8;
       a>>=8;
+      unsigned int aa = a;
       unsigned int rr = r;
       unsigned int gg = g;
       unsigned int bb = b;
-      unsigned int aa = a;
-      aa<<=24;
-      rr<<=16;
-      gg<<=8;
-      return Color(rr+gg+bb+aa);
+
+	rr>>=16;
+	gg>>=8;
+
+	bb<<=16;
+	gg<<=8;
+	unsigned int val = aa+rr+gg+bb; 
+
+      return Color(val);
     }
     std::cout << "GLTF Image format not regognized" << std::endl;
     return Color(0x0);
   }
-  virtual void Prepare()
-  {
-  }
 private:
   LoadGltf *load;
   tinygltf::Image *img;
+  int image_index;
 };
 
 class GLTFFaceCollection : public FaceCollection
@@ -541,6 +561,26 @@ private:
   int mesh_index;
   int prim_index;
 };
+
+GameApi::BM GameApi::PolygonApi::gltf_load_bitmap( GameApi::EveryApi &ev, std::string base_url, std::string url, int image_index )
+{
+  bool is_binary=false;
+  if (url.size()>3) {
+    std::string sub = url.substr(url.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+
+  LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  GLTFImage *img = new GLTFImage( load, image_index );
+
+  ::Bitmap<Color> *b = img;
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm = add_bitmap(e, handle2);
+  BM bm2 = ev.bitmap_api.flip_y(bm);
+  return bm2;
+
+}
 
 GameApi::P GameApi::PolygonApi::gltf_load( std::string base_url, std::string url, int mesh_index, int prim_index )
 {

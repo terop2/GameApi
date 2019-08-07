@@ -4535,6 +4535,12 @@ public:
   {
   }
   void Prepare() {
+
+  }
+  void execute(MainLoopEnv &e)
+  { 
+    if (firsttime)
+      {
 	va = ev.polygon_api.create_vertex_array(p, true);
 	GameApi::BM right,left,top,bottom,back,front;
 	right.id = 0;
@@ -4557,11 +4563,6 @@ public:
 	GameApi::TXID id = ev.texture_api.prepare_cubemap(ev, right,left,top,bottom,back,front);
 	va = ev.texture_api.bind_cubemap(va, id);
 
-  }
-  void execute(MainLoopEnv &e)
-  { 
-    if (firsttime)
-      {
       }
 
 
@@ -5324,8 +5325,8 @@ public:
     vertex.id = ee.us_vertex_shader;
     if (vertex.id==-1) { 
       GameApi::US a0 = ev.uber_api.v_empty();
-      //GameApi::US a1 = ev.uber_api.v_colour(a0);
-      ee.us_vertex_shader = a0.id;
+      GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a1.id;
     }
     vertex.id = ee.us_vertex_shader;
     GameApi::US a2 = ev.uber_api.v_cubemaptexture(vertex);
@@ -5335,8 +5336,8 @@ public:
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
       GameApi::US a0 = ev.uber_api.f_empty(false);
-      //GameApi::US a1 = ev.uber_api.f_colour(a0);
-      ee.us_fragment_shader = a0.id;
+      GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a1.id;
     }
     fragment.id = ee.us_fragment_shader;
     GameApi::US a2f = ev.uber_api.f_cubemaptexture(fragment);
@@ -5352,6 +5353,7 @@ public:
 	ev.shader_api.use(sh);
 	ev.shader_api.set_var(sh, "color_mix", mix);
 	ev.shader_api.set_var(sh, "color_mix2", mix2);
+	//	ev.shader_api.set_var(sh, "cubesampler", 0);
       }
     next->execute(ee);
     ev.shader_api.unuse(sh);
@@ -7199,7 +7201,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID_CUBEMAP && s->texture_id<SPECIAL_TEX_ID_CUBEMAP_END)
     {
-      g_low->ogl->glEnable(Low_GL_TEXTURE_CUBE_MAP);
+      //g_low->ogl->glEnable(Low_GL_TEXTURE_CUBE_MAP);
 #ifndef EMSCRIPTEN
       g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
@@ -7210,7 +7212,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       //arr.render(0);
       rend->render(0);
 
-      g_low->ogl->glDisable(Low_GL_TEXTURE_CUBE_MAP);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_CUBE_MAP);
 
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)

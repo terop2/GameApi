@@ -159,4 +159,3 @@ P I158=ev.polygon_api.or_elem(I145,I157);
 MT I159=ev.materials_api.def(ev);
 MT I160=ev.materials_api.snow(ev,I159,ffaaaaaa,ffeeeeee,ffffffff,0.95);
 ML I161=ev.materials_api.bind(I158,I160);
-ML I162=ev.polygon_api.light_shader(ev,I161);

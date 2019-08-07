@@ -5508,6 +5508,15 @@ public:
     obj2->HandleEvent(e);
   }
   void Prepare() {
+
+  }
+  void execute(MainLoopEnv &e)
+  {
+    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    bool changed = obj2->Update(e);
+    // MainLoopEnv ee = e;
+    if (firsttime)
+      {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
 	pta = ev.points_api.prepare(pts);
 	va = ev.polygon_api.create_vertex_array(p,true);
@@ -5533,14 +5542,6 @@ public:
 	GameApi::TXID id = ev.texture_api.prepare_cubemap(ev, right,left,top,bottom,back,front);
 	va = ev.texture_api.bind_cubemap(va, id);
 
-  }
-  void execute(MainLoopEnv &e)
-  {
-    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
-    bool changed = obj2->Update(e);
-    // MainLoopEnv ee = e;
-    if (firsttime)
-      {
       }
     if (changed)
       {
