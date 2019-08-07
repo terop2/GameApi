@@ -4828,7 +4828,9 @@ ASyncData async_data[] = {
   { "low_frame_api", "low_enemy_draw2", 1 },
   { "polygon_api", "stl_load", 0 },
   { "font_api", "load_font_dump", 0 },
-  { "polygon_api", "load_scene", 1 }
+  { "polygon_api", "load_scene", 1 },
+  { "polygon_api", "gltf_load", 1 }
+  
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -7927,6 +7929,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "std::string" },
 			 { "http://tpgames.org/teapot.stl" },
 			 "P", "polygon_api", "stl_load"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::gltf_load,
+			 "p_gltf",
+			 { "base_url", "url", "mesh_index", "prim_index" },
+			 { "std::string", "std::string", "int", "int" },
+			 { "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "0" },
+			 "P", "polygon_api", "gltf_load"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::alt,
 			 "p_alt",
 			 { "vec", "index" },
