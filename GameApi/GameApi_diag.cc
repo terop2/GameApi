@@ -105,3 +105,64 @@ GameApi::P GameApi::PolygonApi::bar_chart( GameApi::EveryApi &ev, std::string ur
 {
   return add_polygon2(e, new BarChart(e, ev, url, gameapi_homepageurl, start_x, end_x, end_y, start_y, start_z, end_z, per/100.0), 1);
 }
+
+class PieChart : public LineCollection
+{
+public:
+  PieChart(Point center, float start_angle, float end_angle, float radius, int numsteps) : center(center), start_angle(start_angle), end_angle(end_angle), radius(radius), numsteps(numsteps) { }
+  virtual void Prepare() { 
+    Point p1 = center + Vector(radius*cos(start_angle), radius*sin(start_angle), 0.0);
+    Point p2 = center + Vector(radius*cos(end_angle), radius*sin(end_angle), 0.0);
+    vec.clear();
+    vec.push_back(p2);
+    vec.push_back(center);
+    vec.push_back(p1);
+    for(int i=0;i<numsteps;i++) {
+      float angle = float(i)/float(numsteps)*(end_angle-start_angle) + start_angle;
+      Point PX = center + Vector(radius*cos(angle), radius*sin(angle), 0.0);
+      vec.push_back(PX);
+    }
+  }
+  virtual int NumLines() const { return vec.size(); }
+  virtual Point LinePoint(int line, int point) const {
+    int pos = line + point;
+    int size = vec.size();
+    pos = pos % (size-1);
+    return vec[pos];
+  }
+  virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; }
+
+private:
+  Point center;
+  float start_angle, end_angle;
+  float radius;
+  int numsteps;
+  std::vector<Point> vec;
+};
+
+GameApi::LI GameApi::PolygonApi::li_piechart(float c_x, float c_y, float c_z, float start_angle, float end_angle, float radius, int numsteps)
+{
+  return add_line_array(e, new PieChart(Point(c_x, c_y, c_z), start_angle, end_angle, radius, numsteps));
+}
+
+GameApi::P GameApi::PolygonApi::p_piechart(EveryApi &ev, float c_x, float c_y, float start_angle, float end_angle, float radius, int numsteps, float start_z, float end_z)
+{
+  LI li1 = li_piechart(c_x,c_y,start_z, start_angle, end_angle, radius, numsteps);
+  LI li2 = li_piechart(c_x,c_y,end_z, start_angle, end_angle, radius, numsteps);
+
+  PTS pts1 = ev.points_api.li_pts2(li1);
+  PTS pts2 = ev.points_api.li_pts2(li2);
+  
+  P p1 = ev.polygon_api.polygon3(pts1);
+  P p2 = ev.polygon_api.polygon3(pts2);
+
+  PT pt1 = ev.point_api.point(0.0,0.0,0.0);
+  PT pt2 = ev.point_api.point(0.0,0.0,end_z-start_z);
+
+  LI span = ev.lines_api.point_array(std::vector<PT>{pt1,pt2});
+  
+  P p_span = ev.lines_api.line_product(li1, span);
+  
+  P res = ev.polygon_api.or_array2(std::vector<P>{p1,p_span,p2});
+  return res;
+}
