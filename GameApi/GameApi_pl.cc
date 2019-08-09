@@ -3259,6 +3259,7 @@ EXPORT GameApi::P GameApi::PolygonApi::polygon3(PTS points)
 {
   PointsApiPoints *p = find_pointsapi_points(e, points);
   PolygonElem *coll = new PolygonElem;
+  p->Prepare();
   int sz = p->NumPoints();
   for(int i=0;i<sz;i++)
     {

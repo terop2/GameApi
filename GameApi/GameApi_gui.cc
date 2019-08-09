@@ -8075,6 +8075,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "std::string", "float", "float", "float", "float", "float", "float", "float" },
 			 { "ev", "http://tpgames.org/test_bar.txt", "-300.0", "300.0", "-300.0", "300.0", "0.0", "40.0", "80.0" },
 			 "P", "polygon_api", "bar_chart"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_piechart,
+			 "pie_chart",
+			 { "ev", "c_x", "c_y", "start_angle", "end_angle", "radius", "numsteps", "start_z", "end_z" },
+			 { "EveryApi&", "float", "float", "float", "float", "float", "int", "float", "float" },
+			 { "ev", "0.0", "0.0", "1.0", "3.0", "100.0", "30", "0.0", "30.0" },
+			 "P", "polygon_api", "p_piechart"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::or_elem,
 			 "p_or_elem",
 			 { "p1", "p2" },
