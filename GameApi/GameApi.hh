@@ -1288,7 +1288,7 @@ public:
   IMPORT MT brashmetal(EveryApi &ev, MT nxt, int count, bool web);
   IMPORT MT marble(EveryApi &ev, MT nxt, int count, float cubesize);
   IMPORT MT web(EveryApi &ev, MT nxt, float val=1.01, float linewidth=2.0, unsigned int color=0xff000000); // TODO: add line width property
-  IMPORT MT bevel(EveryApi &ev, MT nxt, float dir);
+  IMPORT MT bevel(EveryApi &ev, MT nxt, float dir, float linewidth);
   IMPORT MT bloom(EveryApi &ev, MT nxt, BM bm, float r_cut, float g_cut, float b_cut, float pixel_x, float pixel_y);
   IMPORT MT dist_field_mesh(EveryApi &ev, SFO sfo, MT next);
 

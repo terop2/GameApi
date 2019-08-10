@@ -3027,12 +3027,13 @@ private:
 class BevelMaterial : public MaterialForward
 {
 public:
-  BevelMaterial(GameApi::EveryApi &ev, Material *next, float dir=-1.5) : ev(ev), next(next), dir(dir){ }
+  BevelMaterial(GameApi::EveryApi &ev, Material *next, float dir=-1.5, float linewidth=2.0) : ev(ev), next(next), dir(dir), linewidth(linewidth){ }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+    g_low->ogl->glLineWidth(linewidth);
 
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
-    GameApi::P I9=ev.lines_api.p_towards_normal(I8,-1.5);
+    GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
     GameApi::LI I10=ev.lines_api.from_polygon(I9);
     GameApi::LLA I11=ev.lines_api.prepare(I10);
     GameApi::ML I12=ev.lines_api.render_ml(ev,I11);
@@ -3045,9 +3046,10 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
+    g_low->ogl->glLineWidth(linewidth);
 
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
-    GameApi::P I9=ev.lines_api.p_towards_normal(I8,-1.5);
+    GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
     GameApi::LI I10=ev.lines_api.from_polygon(I9);
     //GameApi::LLA I11=ev.lines_api.prepare(I10);
     GameApi::ML I12=ev.lines_api.render_inst_ml3(ev,I10,pts);
@@ -3061,9 +3063,10 @@ public:
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
+    g_low->ogl->glLineWidth(linewidth);
 
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
-    GameApi::P I9=ev.lines_api.p_towards_normal(I8,-1.5);
+    GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
     GameApi::LI I10=ev.lines_api.from_polygon(I9);
     // GameApi::LLA I11=ev.lines_api.prepare(I10);
     GameApi::ML I12=ev.lines_api.render_inst_ml2(ev,I10,pta);
@@ -3077,11 +3080,12 @@ public:
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
+    g_low->ogl->glLineWidth(linewidth);
 
     GameApi::PTA pta = ev.points_api.prepare(pts);
 
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
-    GameApi::P I9=ev.lines_api.p_towards_normal(I8,-1.5);
+    GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
     GameApi::LI I10=ev.lines_api.from_polygon(I9);
     //GameApi::LLA I11=ev.lines_api.prepare(I10);
     GameApi::ML I12=ev.lines_api.render_inst_ml2(ev,I10,pta);
@@ -3096,6 +3100,7 @@ private:
   GameApi::EveryApi &ev;
   Material *next;
   float dir;
+  float linewidth;
 };
 class ColourMaterial : public MaterialForward
 {
@@ -4779,7 +4784,8 @@ public:
   {
     g_low->ogl->glLineWidth(linewidth);
     GameApi::P I2=p;
-    GameApi::P I2a = ev.lines_api.p_towards_normal(I2, val);
+    GameApi::P I2b = ev.polygon_api.recalculate_normals(I2);
+    GameApi::P I2a = ev.lines_api.p_towards_normal(I2b, val);
     GameApi::LI I3=ev.lines_api.from_polygon(I2a);
     GameApi::LI I4=ev.lines_api.change_color(I3,color);
     //GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
@@ -4800,7 +4806,8 @@ public:
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
-    GameApi::P I2a = ev.lines_api.p_towards_normal(I2, val);
+    GameApi::P I2b = ev.polygon_api.recalculate_normals(I2);
+    GameApi::P I2a = ev.lines_api.p_towards_normal(I2b, val);
     GameApi::LI I3=ev.lines_api.from_polygon(I2a);
     GameApi::LI I4=ev.lines_api.change_color(I3,color);
     //GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
@@ -4822,7 +4829,8 @@ public:
     g_low->ogl->glLineWidth(linewidth);
     
     GameApi::P I2=p;
-    GameApi::P I2a = ev.lines_api.p_towards_normal(I2, val);
+    GameApi::P I2b = ev.polygon_api.recalculate_normals(I2);
+    GameApi::P I2a = ev.lines_api.p_towards_normal(I2b, val);
     GameApi::LI I3=ev.lines_api.from_polygon(I2a);
     GameApi::LI I4=ev.lines_api.change_color(I3,color);
     //GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
@@ -4843,7 +4851,8 @@ public:
     GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
-    GameApi::P I2a = ev.lines_api.p_towards_normal(I2, val);
+    GameApi::P I2b = ev.polygon_api.recalculate_normals(I2);
+    GameApi::P I2a = ev.lines_api.p_towards_normal(I2b, val);
     GameApi::LI I3=ev.lines_api.from_polygon(I2a);
     GameApi::LI I4=ev.lines_api.change_color(I3,color);
     //GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
@@ -4873,10 +4882,10 @@ EXPORT GameApi::MT GameApi::MaterialsApi::web(EveryApi &ev, MT nxt, float val, f
   return add_material(e, new WebMaterial(ev,mat,val,linewidth,color));
 }
 
-EXPORT GameApi::MT GameApi::MaterialsApi::bevel(EveryApi &ev, MT nxt, float dir)
+EXPORT GameApi::MT GameApi::MaterialsApi::bevel(EveryApi &ev, MT nxt, float dir, float linewidth)
 {
   Material *mat = find_material(e, nxt);
-  return add_material(e, new BevelMaterial(ev,mat,dir));
+  return add_material(e, new BevelMaterial(ev,mat,dir, linewidth));
 }
 
 #if 0
