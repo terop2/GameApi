@@ -122,7 +122,7 @@ public:
     vec.push_back(p2);
     vec.push_back(center);
     vec.push_back(p1);
-    for(int i=0;i<numsteps;i++) {
+    for(int i=0;i<numsteps+1;i++) {
       float angle = float(i)/float(numsteps)*(end_angle-start_angle) + start_angle;
       Point PX = center + Vector(radius*cos(angle), radius*sin(angle), 0.0);
       vec.push_back(PX);

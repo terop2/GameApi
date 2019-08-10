@@ -6949,9 +6949,9 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "MT", "materials_api", "web"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bevel,
 			 "m_bevel",
-			 { "ev", "nxt", "dir" },
-			 { "EveryApi&", "MT", "float" },
-			 { "ev", "", "-1.5" },
+			 { "ev", "nxt", "dir", "linewidth" },
+			 { "EveryApi&", "MT", "float", "float" },
+			 { "ev", "", "-1.5", "2.0" },
 			 "MT", "materials_api", "bevel"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dist_field_mesh,
 			 "m_dist_field",
