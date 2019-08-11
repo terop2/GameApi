@@ -1288,7 +1288,7 @@ public:
   IMPORT MT brashmetal(EveryApi &ev, MT nxt, int count, bool web);
   IMPORT MT marble(EveryApi &ev, MT nxt, int count, float cubesize);
   IMPORT MT web(EveryApi &ev, MT nxt, float val=1.01, float linewidth=2.0, unsigned int color=0xff000000); // TODO: add line width property
-  IMPORT MT bevel(EveryApi &ev, MT nxt, float dir);
+  IMPORT MT bevel(EveryApi &ev, MT nxt, float dir, float linewidth);
   IMPORT MT bloom(EveryApi &ev, MT nxt, BM bm, float r_cut, float g_cut, float b_cut, float pixel_x, float pixel_y);
   IMPORT MT dist_field_mesh(EveryApi &ev, SFO sfo, MT next);
 
@@ -2122,6 +2122,8 @@ public:
   P gltf_load( std::string base_url, std::string url, int mesh_index, int prim_index );
   BM gltf_load_bitmap( GameApi::EveryApi &ev, std::string base_url, std::string url, int image_index );
   P bar_chart( GameApi::EveryApi &ev, std::string url, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per );
+  LI li_piechart(float c_x, float c_y, float c_z, float start_angle, float end_angle, float radius, int numsteps);
+  P p_piechart(EveryApi &ev, float c_x, float c_y, float start_angle, float end_angle, float radius, int numsteps, float start_z, float end_z);
   P gradient_color(P p, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, unsigned int start_color, unsigned int end_color);
   P texture_add(P p, BM bm);
   P stl_load(std::string url);
