@@ -18358,4 +18358,39 @@ GameApi::ARR GameApi::MainLoopApi::activate_arr_arr(std::vector<ML> arr)
   return add_array(e,array);
 }
 
+
+std::vector<int> g_active_triggers(25);
+std::vector<bool> g_toggle_buttons(25);
+std::vector<int> g_integers(25);
+std::vector<float> g_floats(25);
+std::vector<std::string> g_strings(25);
+
+EMSCRIPTEN_KEEPALIVE  extern "C" void activate_trigger(int num)
+{
+  std::cout << "TRIGGER " << num << std::endl;
+  if (num>=0 && num<25) { g_active_triggers[num]=true; }
+}
+EMSCRIPTEN_KEEPALIVE extern "C" void set_toggle_button(int num, bool value)
+{
+  std::cout << "TOGGLE " << num << " " << value << std::endl;
+  if (num>=0 && num<25) { g_toggle_buttons[num]=value; }
+}
+EMSCRIPTEN_KEEPALIVE extern "C" void set_integer(int num, int value)
+{
+  std::cout << "INTEGER " << num << " " << value << std::endl;
+  if (num>=0 && num<25) { g_integers[num]=value; }
+}
+EMSCRIPTEN_KEEPALIVE extern "C" void set_float(int num, float value)
+{
+  std::cout << "FLOAT " << num << " " << value << std::endl;
+  if (num>=0 && num<25) { g_floats[num]=value; }
+}
+EMSCRIPTEN_KEEPALIVE extern "C" void set_string(int num, const char *value)
+{
+  std::cout << "STRING " << num << " " << value << std::endl;
+
+  std::string s(value);
+  if (num>=0 && num<25) { g_strings[num]=s; }
+}
+
 #endif // THIRD_PART
