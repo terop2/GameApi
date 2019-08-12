@@ -18374,27 +18374,33 @@ std::vector<int> g_integers(25);
 std::vector<float> g_floats(25);
 std::vector<std::string> g_strings(25);
 
-EMSCRIPTEN_KEEPALIVE  extern "C" void activate_trigger(int num)
+#ifdef EMSCRIPTEN
+#define KP EMSCRIPTEN_KEEPALIVE
+#else
+#define KP
+#endif
+
+KP  extern "C" void activate_trigger(int num)
 {
   std::cout << "TRIGGER " << num << std::endl;
   if (num>=0 && num<25) { g_active_triggers[num]=true; }
 }
-EMSCRIPTEN_KEEPALIVE extern "C" void set_toggle_button(int num, bool value)
+KP extern "C" void set_toggle_button(int num, bool value)
 {
   std::cout << "TOGGLE " << num << " " << value << std::endl;
   if (num>=0 && num<25) { g_toggle_buttons[num]=value; }
 }
-EMSCRIPTEN_KEEPALIVE extern "C" void set_integer(int num, int value)
+KP extern "C" void set_integer(int num, int value)
 {
   std::cout << "INTEGER " << num << " " << value << std::endl;
   if (num>=0 && num<25) { g_integers[num]=value; }
 }
-EMSCRIPTEN_KEEPALIVE extern "C" void set_float(int num, float value)
+KP extern "C" void set_float(int num, float value)
 {
   std::cout << "FLOAT " << num << " " << value << std::endl;
   if (num>=0 && num<25) { g_floats[num]=value; }
 }
-EMSCRIPTEN_KEEPALIVE extern "C" void set_string(int num, const char *value)
+KP extern "C" void set_string(int num, const char *value)
 {
   std::cout << "STRING " << num << " " << value << std::endl;
 

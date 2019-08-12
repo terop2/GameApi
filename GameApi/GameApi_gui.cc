@@ -4831,7 +4831,8 @@ ASyncData async_data[] = {
   { "polygon_api", "load_scene", 1 },
   { "polygon_api", "gltf_load", 1 },
   { "polygon_api", "gltf_load_bitmap", 2 },
-  { "polygon_api", "bar_chart", 1 }
+  { "polygon_api", "bar_chart", 1 },
+  { "polygon_api", "bar_chart2", 1 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -8076,6 +8077,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "std::string", "float", "float", "float", "float", "float", "float", "float" },
 			 { "ev", "http://tpgames.org/test_bar.txt", "-300.0", "300.0", "-300.0", "300.0", "0.0", "40.0", "80.0" },
 			 "P", "polygon_api", "bar_chart"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::bar_chart2,
+			 "bar_chart2",
+			 { "ev", "url", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "per", "per2" },
+			 { "EveryApi&", "std::string", "float", "float", "float", "float", "float", "float", "float", "float" },
+			 { "ev", "http://tpgames.org/test_bar2.txt", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0", "80.0", "80.0" },
+			 "P", "polygon_api", "bar_chart2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_piechart,
 			 "pie_chart",
 			 { "ev", "c_x", "c_y", "start_angle", "end_angle", "radius", "numsteps", "start_z", "end_z" },
