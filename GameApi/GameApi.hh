@@ -2122,6 +2122,7 @@ public:
   P gltf_load( std::string base_url, std::string url, int mesh_index, int prim_index );
   BM gltf_load_bitmap( GameApi::EveryApi &ev, std::string base_url, std::string url, int image_index );
   P bar_chart( GameApi::EveryApi &ev, std::string url, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per );
+  P bar_chart2( GameApi::EveryApi &ev, std::string url, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per, float per2 );
   LI li_piechart(float c_x, float c_y, float c_z, float start_angle, float end_angle, float radius, int numsteps);
   P p_piechart(EveryApi &ev, float c_x, float c_y, float start_angle, float end_angle, float radius, int numsteps, float start_z, float end_z);
   P gradient_color(P p, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, unsigned int start_color, unsigned int end_color);

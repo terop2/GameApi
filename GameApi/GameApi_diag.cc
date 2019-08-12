@@ -102,10 +102,127 @@ private:
   GameApi::P result;
 };
 
+class BarChart2 : public FaceCollection
+{
+public:
+  BarChart2(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepage, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per_x, float per_y) : env(env), ev(ev), url(url), homepage(homepage), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z), per_x(per_x), per_y(per_y) {
+    result.id = -1;
+  } 
+  void Prepare() {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    if (!vec) return;
+    std::string str(vec->begin(),vec->end());
+    std::stringstream ss(str);
+    float val = 0.0;
+    data.clear();
+    std::string line;
+    int i =0;
+    while(std::getline(ss,line)) {
+      std::cout << "Line: " << line << std::endl;
+      data.push_back(std::vector<float>());
+      std::stringstream ss2(line);
+      while(ss2>>val) {
+	std::cout << "Value: " << val << std::endl;
+	data[i].push_back(val);
+      }
+      i++;
+    }
+    render_vec.clear();
+    int s = data.size();
+    std::cout << "s: " << s << std::endl;
+    for(int i=0;i<s;i++) {
+      int s2 = data[i].size();
+      std::cout << "s2: " << s2 << std::endl;
+      for(int j=0;j<s2;j++) {
+	float val = data[i][j];
+	float s_x = j*(end_x-start_x)/s2 + start_x;
+	float e_x = s_x + per_x*(end_x-start_x)/s2;
+	float s_y = (1.0-val)*(end_y-start_y) + start_y;
+	float e_y = end_y;
+	float s_z = i*(end_z-start_z)/s + start_z;
+	float e_z = s_z + per_y*(end_z-start_z)/s;
+	GameApi::P cube = ev.polygon_api.cube(s_x,e_x,
+					      s_y,e_y,
+					      s_z,e_z);
+	render_vec.push_back(cube);
+      }
+    }
+    result = ev.polygon_api.or_array2(render_vec);
+    FaceCollection *coll = find_facecoll(env,result);
+    coll->Prepare();
+  }
+  virtual int NumFaces() const 
+  {
+    if (result.id==-1) return 0;
+    FaceCollection *coll = find_facecoll(env, result);
+    return coll->NumFaces();
+  }
+  virtual int NumPoints(int face) const
+  {
+    if (result.id==-1) return 0;
+    FaceCollection *coll = find_facecoll(env, result);
+    return coll->NumPoints(face);
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    if (result.id==-1) return Point(0.0,0.0,0.0);
+    FaceCollection *coll = find_facecoll(env, result);
+    return coll->FacePoint(face,point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    if (result.id==-1) return Vector(0.0,0.0,0.0);
+    FaceCollection *coll = find_facecoll(env, result);
+    return coll->PointNormal(face,point);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    if (result.id==-1) return 0xffffffff;
+    FaceCollection *coll = find_facecoll(env, result);
+    return coll->Color(face,point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    if (result.id==-1) { Point2d p; p.x =0.0; p.y=0.0; return p; }
+    FaceCollection *coll = find_facecoll(env, result);
+    return coll->TexCoord(face,point);
+
+  }
+  virtual float TexCoord3(int face, int point) const { 
+    if (result.id==-1) return 0.0;
+    FaceCollection *coll = find_facecoll(env, result);
+    return coll->TexCoord3(face,point);
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string url;
+  std::string homepage;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+  float per_x, per_y;
+  std::vector<std::vector<float> > data;
+  std::vector<GameApi::P> render_vec;
+  GameApi::P result;
+};
+
 GameApi::P GameApi::PolygonApi::bar_chart( GameApi::EveryApi &ev, std::string url, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per )
 {
   return add_polygon2(e, new BarChart(e, ev, url, gameapi_homepageurl, start_x, end_x, end_y, start_y, start_z, end_z, per/100.0), 1);
 }
+
+GameApi::P GameApi::PolygonApi::bar_chart2( GameApi::EveryApi &ev, std::string url, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per, float per2 )
+{
+  return add_polygon2(e, new BarChart2(e, ev, url, gameapi_homepageurl, start_x, end_x, end_y, start_y, start_z, end_z, per/100.0, per2/100.0), 1);
+}
+
 
 class PieChart : public LineCollection
 {
