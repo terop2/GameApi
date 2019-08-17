@@ -1354,7 +1354,7 @@ bool LineProperties::TriangleIntersection(Point v1, Point v2, Point v3, float &u
 }
 bool LineProperties::TriangleIntersection(Point v1, Point v2, Point v3, float &t2)
 {
-#if 0
+#if 1
   Vector O = p1;
   Vector D = p2-p1;
   Vector e1 = v2-v1;
@@ -1370,6 +1370,7 @@ bool LineProperties::TriangleIntersection(Point v1, Point v2, Point v3, float &t
   float v = Vector::DotProduct(D,Q)*inv_det;
   if (v<0.f || u+v>1.f) return false;
   float t = Vector::DotProduct(e2,Q)*inv_det;
+  t2 = t;
   //if (t>0.00001) {
     //*ipoint = t;
     return true;
@@ -1412,6 +1413,8 @@ bool LineProperties::TriangleIntersection(Point v1, Point v2, Point v3, float &t
     t2 = t;
     return true;
 #endif
+
+#if 0
     Vector v0v1 = v2-v1;
     Vector v0v2 = v3-v1;
     Vector N = Vector::CrossProduct(v0v1,v0v2);
@@ -1443,7 +1446,7 @@ bool LineProperties::TriangleIntersection(Point v1, Point v2, Point v3, float &t
     if (Vector::DotProduct(N,C)<0.0) return false;
     
     return true;
-
+#endif
 }
 
 bool TriangleProperties::is_inside_circum_sphere(Point p) const

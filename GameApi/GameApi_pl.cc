@@ -13221,10 +13221,61 @@ private:
   unsigned int start_color, end_color;
 };
 
- GameApi::P GameApi::PolygonApi::gradient_color(P p, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, unsigned int start_color, unsigned int end_color)
+GameApi::P GameApi::PolygonApi::gradient_color(P p, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, unsigned int start_color, unsigned int end_color)
 {
   FaceCollection *coll = find_facecoll(e,p);
   return add_polygon2(e, new GradientColor(coll, Point(p_x,p_y,p_z), Vector(v_x,v_y,v_z), start_color, end_color),1);
 }
 
 
+class LinesFaceCollection : public FaceCollection
+{
+public:
+  LinesFaceCollection(LineCollection *li, float width) : li(li), width(width) { }
+  virtual void Prepare() { li->Prepare(); }
+  virtual int NumFaces() const { return li->NumLines(); }
+  virtual int NumPoints(int face) const 
+  {
+    return 4;
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    Point p1 = li->LinePoint(face,0);
+    Point p2 = li->LinePoint(face,1);
+    Vector v=p2-p1;
+    Vector v2=v;
+    std::swap(v.dx,v.dy);
+    v/=v.Dist();
+    v*=width/2.0;
+    v2/=v2.Dist();
+    v2*=width/2.0;
+    if (point==0) return p1-v2-v;
+    if (point==1) return p1-v2+v;
+    if (point==2) return p2+v2+v;
+    if (point==3) return p2+v2-v;
+    return Point(0.0,0.0,0.0);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return Vector(0.0,0.0,-1.0);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    if (point==0||point==1) return li->LineColor(face,0);
+    return li->LineColor(face,1);
+  }
+  virtual Point2d TexCoord(int face, int point) const { Point2d p; p.x=0.0; p.y=0.0; return p; }
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
+
+private:
+  LineCollection *li;
+  float width;
+};
+
+GameApi::P GameApi::PolygonApi::li_polygon(LI li, float width)
+{
+  LineCollection *coll = find_line_array(e, li);
+  return add_polygon2(e, new LinesFaceCollection(coll, width),1);
+}

@@ -577,6 +577,7 @@ public:
 	IMPORT BM transform(BM orig, std::function<unsigned int(int, int, unsigned int)> f);
 	IMPORT BM newintbitmap(char *array, int sx, int sy, std::function<int(char)> f);
         IMPORT IBM intbitmap_loader(std::string url);
+  IMPORT BM calculate_baked_light(P p, P p2, BM texture, int count, float light_pos_x, float light_pos_y, float light_pos_z, float shadow_darkness, float softness);
   IMPORT BM color_bm(BM bm, unsigned int color);
   IMPORT BB choose_color(BM bm, unsigned int c1, unsigned int c2);
   IMPORT BM intbitmap_bm(IBM ibm);
@@ -2125,6 +2126,8 @@ public:
   P bar_chart2( GameApi::EveryApi &ev, std::string url, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per, float per2 );
   LI li_piechart(float c_x, float c_y, float c_z, float start_angle, float end_angle, float radius, int numsteps);
   P p_piechart(EveryApi &ev, float c_x, float c_y, float start_angle, float end_angle, float radius, int numsteps, float start_z, float end_z);
+  ML piechart_full(EveryApi &ev, float c_x, float c_y, std::string url, float radius, int numsteps, float start_z, float end_z);
+  P li_polygon(LI li, float width);
   P gradient_color(P p, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, unsigned int start_color, unsigned int end_color);
   P texture_add(P p, BM bm);
   P stl_load(std::string url);
