@@ -4832,7 +4832,8 @@ ASyncData async_data[] = {
   { "polygon_api", "gltf_load", 1 },
   { "polygon_api", "gltf_load_bitmap", 2 },
   { "polygon_api", "bar_chart", 1 },
-  { "polygon_api", "bar_chart2", 1 }
+  { "polygon_api", "bar_chart2", 1 },
+  { "polygon_api", "piechart_full", 4 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -7137,6 +7138,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "http://tpgames.org/landscape.scn", "600", "600" },
 			 "ML", "polygon_api", "load_scene"));
 		     
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::piechart_full,
+			 "piechart_ml",
+			 { "ev", "c_x", "c_y", "url", "radius", "numsteps", "start_z", "end_z" },
+			 { "EveryApi&", "float", "float", "std::string", "float", "int", "float", "float" },
+			 { "ev", "0.0", "0.0", "http://tpgames.org/piechart_full.txt", "350.0", "30", "0.0", "40.0" },
+			 "ML", "polygon_api", "piechart_full"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::skybox,
 			 "skybox_ml",
 			 { "ev", "land", "sky" },
@@ -9053,6 +9060,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "P" },
 			 { "" },
 			 "LI", "lines_api", "from_polygon"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::li_polygon,
+			 "li_polygon",
+			 { "li", "width" },
+			 { "LI", "float" },
+			 { "", "2.0" },
+			 "P", "polygon_api", "li_polygon"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::li_bevel,
 			 "li_bevel",
 			 { "li", "p", "mix" },
@@ -10100,6 +10113,13 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BM", "float", "float", "float", "float", "float" },
 			 { "", "0.5", "0.125", "0.125", "0.125", "0.125" },
 			 "BM", "bitmap_api", "simple_blur"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::calculate_baked_light,
+			 "baked_shadow",
+			 { "texture_p", "scene_p", "texture", "count", "light_pos_x", "light_pos_y", "light_pos_z", "shadow_darkness", "softness" },
+			 { "P", "P", "BM", "int", "float", "float", "float", "float", "float" },
+			 { "", "", "", "10000", "-300.0", "300.0", "-300.0", "0.2", "50.0" },
+			 "BM", "bitmap_api", "calculate_baked_light"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::bump_map,
 			 "bm_bumpmap",
 			 { "fb", "h" },

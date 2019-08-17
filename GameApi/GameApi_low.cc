@@ -202,6 +202,7 @@ void map_enums_sdl(int &i) {
   case   Low_SDL_GL_GREEN_SIZE: i=SDL_GL_GREEN_SIZE; break;
   case   Low_SDL_GL_RED_SIZE: i=SDL_GL_RED_SIZE; break;
   case Low_SDL_GL_MULTISAMPLEBUFFERS: i = SDL_GL_MULTISAMPLEBUFFERS; break;
+  case Low_SDL_GL_MULTISAMPLESAMPLES: i = SDL_GL_MULTISAMPLESAMPLES; break;
   case Low_SDL_ENABLE: i=SDL_ENABLE; break;
     //  case Low_SDL_DROPFILE: i=SDL_DROPFILE; break;
   };

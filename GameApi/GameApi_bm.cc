@@ -4256,3 +4256,188 @@ GameApi::BM GameApi::BitmapApi::median_filter(BM bm, int sx, int sy)
   ::Bitmap<Color> *b2 = find_color_bitmap(handle);
   return add_color_bitmap(e, new MedianFilter(*b2, sx,sy));
 }
+
+class CalcLight : public Bitmap<Color>
+{
+public:
+  CalcLight(FaceCollection *coll, FaceCollection *coll2, Bitmap<Color> *texture, int count, Point light_pos, float shadow_darkness, float softness) : coll(coll), coll2(coll2), texture(texture), count(count), light_pos(light_pos), shadow_darkness(shadow_darkness), softness(softness) { firsttime = true; }
+  virtual void Prepare()
+  {
+    if (firsttime) {
+      firsttime=false;
+    coll->Prepare();
+    coll2->Prepare();
+    texture->Prepare();
+    
+    // decide size
+    sx = texture->SizeX();
+    sy = texture->SizeY();
+    shadow = new char[sx*sy];
+    done = new bool[sx*sy];
+
+    // clear texture
+    char *sh = shadow;
+    bool *dn = done;
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++)
+	{
+	  *sh = 0;
+	  sh++;
+	  *dn = false;
+	  dn++;
+	}
+    // calculate light
+    Random r;
+    for(int i=0;i<count;i++) {
+      int s = coll->NumFaces();
+      float xp = double(r.next())/r.maximum();
+      float yp = double(r.next())/r.maximum();
+      float zp = double(r.next())/r.maximum();
+      xp*=2.0;
+      yp*=2.0;
+      xp-=1.0;
+      yp-=1.0;
+      zp*=float(s);
+      int zpi = int(zp);
+      if (zpi<0) zpi=0;
+      if (zpi>=s) zpi=s-1;
+      int num = coll->NumPoints(zpi);
+      if (num!=4 && num!=3) { std::cout << "Error Quad: " << num << std::endl; }
+      if (num==4) {
+	Point pp1 = coll->FacePoint(zpi,0);
+	Point pp2 = coll->FacePoint(zpi,1);
+	Point pp3 = coll->FacePoint(zpi,2);
+	Point pp4 = coll->FacePoint(zpi,3);
+	Point2d p1 = coll->TexCoord(zpi, 0);
+	Point2d p2 = coll->TexCoord(zpi, 1);
+	Point2d p3 = coll->TexCoord(zpi, 2);
+	Point2d p4 = coll->TexCoord(zpi, 3);
+	Point pp = 1.0/4.0*((1.0f-xp)*(1.0f-yp)*Vector(pp1) + (1.0f+xp)*(1.0f-yp)*Vector(pp2) + (1.0f+xp)*(1.0f+yp)*Vector(pp3) + (1.0f-xp)*(1.0f+yp)*Vector(pp4));
+
+	Point2d p = 1.0/4.0*((1.0f-xp)*(1.0f-yp)*p1 + (1.0f+xp)*(1.0f-yp)*p2 + (1.0f+xp)*(1.0f+yp)*p3 + (1.0f-xp)*(1.0f+yp)*p4);
+	if (std::isnan(p.x)||std::isnan(p.y)) continue;
+	if (std::isnan(pp.x)||std::isnan(pp.y)||std::isnan(pp.z)) continue;
+	int x = p.x*sx;
+	int y = p.y*sy;
+	if (x<0||x>=sx) continue;
+	if (y<0||y>=sy) continue;
+	if (done[x+y*sx]==false) {
+	  int count = 0;
+	  if (is_nearest(light_pos+Vector(softness,0.0,0.0), pp,zpi)) count++;
+	  if (is_nearest(light_pos+Vector(-softness,0.0,0.0), pp,zpi)) count++;
+	  if (is_nearest(light_pos+Vector(0.0,0.0,softness), pp,zpi)) count++;
+	  if (is_nearest(light_pos+Vector(0.0,0.0,-softness), pp,zpi)) count++;
+	  if (is_nearest(light_pos, pp,zpi)) count+=4;
+	  shadow[x+y*sx] = count;
+
+	      //shadow[x+y*sx] = true;
+	}
+	done[x+y*sx]=true;
+      } else if (num==3) {
+	Point pp1 = coll->FacePoint(zpi,0);
+	Point pp2 = coll->FacePoint(zpi,1);
+	Point pp3 = coll->FacePoint(zpi,2);
+
+	Point2d p1 = coll->TexCoord(zpi,0);
+	Point2d p2 = coll->TexCoord(zpi,1);
+	Point2d p3 = coll->TexCoord(zpi,2);
+	float r1 = double(r.next())/r.maximum();
+	float r2 = double(r.next())/r.maximum();
+	Point pp = Point((1.0-sqrt(r1))*Vector(pp1) + (sqrt(r1)*(1.0-r2))*Vector(pp2) + (r2*sqrt(r1))*Vector(pp3));
+	Point2d p = ((1.0-sqrt(r1))*p1 + (sqrt(r1)*(1.0-r2))*p2 + (r2*sqrt(r1))*p3);
+	if (std::isnan(p.x)||std::isnan(p.y)) continue;
+	if (std::isnan(pp.x)||std::isnan(pp.y)||std::isnan(pp.z)) continue;
+	int x = p.x*sx;
+	int y = p.y*sy;
+	if (x<0||x>=sx) continue;
+	if (y<0||y>=sy) continue;
+
+	if (done[x+y*sx]==false ) {
+	  int count = 0;
+	  if (is_nearest(light_pos+Vector(softness,0.0,0.0), pp,zpi)) count++;
+	  if (is_nearest(light_pos+Vector(-softness,0.0,0.0), pp,zpi)) count++;
+	  if (is_nearest(light_pos+Vector(0.0,0.0,softness), pp,zpi)) count++;
+	  if (is_nearest(light_pos+Vector(0.0,0.0,-softness), pp,zpi)) count++;
+	  if (is_nearest(light_pos, pp,zpi)) count+=4;
+	  shadow[x+y*sx] = count;
+	}
+	done[x+y*sx]=true;
+      }
+    }
+    }
+  }
+
+  bool is_nearest(Point light_pos, Point pp, int zpi) const
+  {
+    int rr = 100000.0;
+    int zp = -1;
+    int s = coll2->NumFaces();
+    for(int i=0;i<s;i++) {
+      int p = coll2->NumPoints(i);
+      if (p==3) {
+	Point p1 = coll2->FacePoint(i,0);
+	Point p2 = coll2->FacePoint(i,1);
+	Point p3 = coll2->FacePoint(i,2);
+	LineProperties lp(light_pos,pp);
+	float r = 0.0;
+	bool b = lp.TriangleIntersection(p1,p2,p3,r);
+	if (b) return true;
+      } else if (p==4)
+	{
+	Point p1 = coll2->FacePoint(i,0);
+	Point p2 = coll2->FacePoint(i,1);
+	Point p3 = coll2->FacePoint(i,2);
+	Point p4 = coll2->FacePoint(i,3);
+	LineProperties lp(light_pos,pp);
+	float r = 0.0;
+	bool b = lp.QuadIntersection(p1,p2,p3,p4,r);
+	if (b) return true;
+	}
+    }
+    return false;
+  }
+
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    int count = shadow[x+y*sx];
+    if (!shadow[x+y*sx]) return texture->Map(x,y);
+    Color c = texture->Map(x,y);
+    float depth = (8.0-count)/8.0; // [0..1]
+    depth*=(1.0-shadow_darkness);
+    depth+=shadow_darkness;
+    c.r = c.r*depth;
+    c.g = c.g*depth;
+    c.b = c.b*depth;
+    return c;
+  }
+
+private:
+  FaceCollection *coll;
+  FaceCollection *coll2;
+  Bitmap<Color> *texture;
+  int sx;
+  int sy;
+  char *shadow;
+  bool *done;
+  int count;
+  Point light_pos;
+  float shadow_darkness;
+  float softness;
+  bool firsttime;
+};
+
+GameApi::BM GameApi::BitmapApi::calculate_baked_light(P p, P p2, BM texture, int count, float light_pos_x, float light_pos_y, float light_pos_z, float shadow_darkness, float softness)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  FaceCollection *coll2 = find_facecoll(e,p2);
+  BitmapHandle *handle = find_bitmap(e, texture);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  Bitmap<Color> *b = new CalcLight(coll, coll2, b2, count, Point(light_pos_x, light_pos_y, light_pos_z), shadow_darkness, softness);
+
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm = add_bitmap(e, handle2);
+  return bm;
+}
