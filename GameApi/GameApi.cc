@@ -1044,6 +1044,7 @@ EXPORT GameApi::MN GameApi::MovementNode::translate(MN next,
   return add_move(e, new TranslateMovement(nxt,start_time, end_time,
 					   dx,dy,dz));
 }
+int g_shows_hundred=0;
 int FindProgressVal();
 int FindProgressMax();
 class ScaleProgress : public Movement
@@ -1076,6 +1077,7 @@ public:
     //std::cout << "Time:" << time << std::endl;
     if (val2<0.1) val2=0.1;
     if (val2>1.0) val2=1.0;
+    if (val2>0.99) g_shows_hundred=1;
     return val2;
   }
 private:
@@ -8436,6 +8438,7 @@ int no_draw_count=0;
 
 extern int score;
 extern int hidden_score;
+extern int g_shows_hundred;
 extern std::vector<int> g_hide_container;
 
 
@@ -8510,6 +8513,8 @@ public:
   virtual int Iter()
   {
     Envi_2 *env = (Envi_2*)&envi;
+
+
     //std::cout << "async: " << async_pending_count << std::endl;
     if ((async_pending_count > 0 && !async_is_done)||no_draw_count>0) { env->logo_shown = true; }
     if (async_pending_count != async_pending_count_previous)
@@ -8531,6 +8536,7 @@ public:
 	  env->ev->mainloop_api.reset_time();
 	  env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
 	}
+	//if (g_shows_hundred) { env->logo_shown=false; }
 	if (async_pending_count==0 && no_draw_count>0) { /* pass through */}
 	else
 	  return -1;
@@ -8544,6 +8550,8 @@ public:
       //std::cout << "Splitter/End of Prepare:" << std::endl;
       firsttime = false;
     }
+
+    
     if (no_draw_count==0)
       env->ev->mainloop_api.clear_3d(0xff000000);
     

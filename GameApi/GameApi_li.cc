@@ -758,6 +758,8 @@ EXPORT void GameApi::LinesApi::prepare_inst(LLA l, PTA instances)
   g_low->ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Point) * size, positions, Low_GL_DYNAMIC_DRAW);
 
 }
+std::map<int,bool> g_render_inst_map;
+
 EXPORT void GameApi::LinesApi::render_inst(LLA l, PTA instances)
 {
   PointArray3 *arr = find_point_array3(e, instances);
@@ -766,10 +768,11 @@ EXPORT void GameApi::LinesApi::render_inst(LLA l, PTA instances)
 
   float *positions = arr->array;
   int size = arr->numpoints;
-  // INSTANCED RENDERING
+  //ss INSTANCED RENDERING
   g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
-  g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
-
+  if (g_render_inst_map[instances.id]==false) {
+    g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
+  }
   g_low->ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   g_low->ogl->glVertexAttribDivisor(5, 1);
   g_low->ogl->glEnableVertexAttribArray(5);
@@ -790,7 +793,9 @@ EXPORT void GameApi::LinesApi::render_inst(LLA l, PTA instances)
 
   // INSTANCED DRAWING
   g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
-  g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
+  if (g_render_inst_map[instances.id]==false) {
+    g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
+  }
   g_low->ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   g_low->ogl->glVertexAttribDivisor(5, 1);
   g_low->ogl->glEnableVertexAttribArray(5);
@@ -809,6 +814,8 @@ EXPORT void GameApi::LinesApi::render_inst(LLA l, PTA instances)
   g_low->ogl->glDisableVertexAttribArray(4);
   g_low->ogl->glDisableVertexAttribArray(2);
 #endif
+    g_render_inst_map[instances.id]=true;
+
 }
 EXPORT void GameApi::LinesApi::render(LLA l)
 {
