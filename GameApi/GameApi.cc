@@ -8427,7 +8427,7 @@ void blocker_iter(void *arg)
 
     // swapbuffers
     env->ev->mainloop_api.swapbuffers();
-    g_low->ogl->glGetError();
+    //    g_low->ogl->glGetError();
 }
 extern int async_pending_count;
 int async_pending_count_previous=-1;
@@ -8602,7 +8602,7 @@ public:
     
     // swapbuffers
     env->ev->mainloop_api.swapbuffers();
-    g_low->ogl->glGetError();
+    //xsg_low->ogl->glGetError();
     return -1;
   }
   virtual void Destroy()
@@ -16324,7 +16324,15 @@ class PngHeavy : public HeavyOperation
 public:
   PngHeavy(GameApi::EveryApi &ev, HeavyOperation *data, std::string url, int ssx, int ssy) : ev(ev), data(data),url(url),ssx(ssx), ssy(ssy) { res_ref=BufferRef::NewBuffer(ssx,ssy);
     ref=BufferRef::NewBuffer(1,1);
-    id.id=-1; }
+
+    // show white while loading
+    for(int y=0;y<ssy;y++)
+      for(int x=0;x<ssx;x++)
+	res_ref.buffer[x+y*res_ref.ydelta] = 0xffffffff;
+	
+    id.id=-1;
+    changed=true;
+  }
   virtual bool RequestPrepares() const { return data->RequestPrepares(); }
   virtual void TriggerPrepares() { data->TriggerPrepares(); }
   virtual int NumPrepares() const { return 0; }
@@ -16346,6 +16354,7 @@ public:
       ref = LoadImageFromString(*ptr,success);
       if (success) { }
       else std::cout << "PngHeavy failed to parse png!" << std::endl;
+      //changed=true;
     }
     if (slot==1) {
       // flip texture in y-direction
@@ -16356,6 +16365,7 @@ public:
 	  {
 	    std::swap(ref.buffer[x+y*ref.ydelta],ref.buffer[x+(sy-y-1)*ref.ydelta]);
 	  }
+      //changed=true;
 
     }
     if (slot==2) {
@@ -16384,6 +16394,7 @@ public:
 	}
       }
       //std::cout << "URL: " << url << " finishes" << std::endl;
+      //changed=true;
     }
     if (slot==3) // resize
       {
@@ -16402,7 +16413,7 @@ public:
 	    }
 
       id = ev.texture_api.bufferref_to_txid(id,res_ref);
-
+      changed=true;
       }
   }
   virtual void FinishSlots()
@@ -16416,7 +16427,6 @@ public:
       // note, this call requires opengl.
       if (id.id==-1) { id = ev.texture_api.bufferref_to_txid(id,res_ref);
 	return &id; }
-
 
       int sx = res_ref.width;
       int sy = res_ref.height;
@@ -16433,8 +16443,11 @@ public:
   g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
   g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id.id);
   //g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, res_ref.width,res_ref.height, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, res_ref.buffer);
+      if (changed) {
+	changed=false;
 
        g_low->ogl->glTexSubImage2D(Low_GL_TEXTURE_2D, 0, 0,0, res_ref.width,res_ref.height, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, res_ref.buffer);
+      }
 
 
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_NEAREST);      
@@ -16442,7 +16455,6 @@ public:
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE);
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE);
   g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
-
       return &id;
     }
 
@@ -16457,6 +16469,7 @@ private:
   GameApi::TXID id;
   std::string url;
   int ssx,ssy;
+  bool changed;
 };
 
 class BitmapHeavy : public HeavyOperation
@@ -17502,7 +17515,7 @@ public:
     // swapbuffers
     //env->ev->mainloop_api.swapbuffers();
     g_low->sdl->SDL_GL_SwapWindow(sdl_display2_window);
-    g_low->ogl->glGetError();
+    //g_low->ogl->glGetError();
     make_current(false);
     return -1;
   }
