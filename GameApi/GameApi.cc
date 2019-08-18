@@ -11721,10 +11721,43 @@ GameApi::ML GameApi::MainLoopApi::fps_display(EveryApi &ev, ML ml, std::string f
   SF I46=ev.font_api.float_to_string_fetcher(I45);
   IF I47=ev.font_api.char_fetcher_from_string(I46,"0123456789",1);
   ML I48=ev.font_api.dynamic_character(ev,std::vector<BM>{I26,I28,I30,I32,I34,I36,I38,I40,I42,I44},I47,0,0);
+
+  FI K1=ev.font_api.load_font(font,30,30);
+  BM K2=ev.font_api.draw_text_string(K1,"0",5,30);
+  FI K3=ev.font_api.load_font(font,30,30);
+  BM K4=ev.font_api.draw_text_string(K3,"1",5,30);
+  FI K5=ev.font_api.load_font(font,30,30);
+  BM K6=ev.font_api.draw_text_string(K5,"2",5,30);
+  FI K7=ev.font_api.load_font(font,30,30);
+  BM K8=ev.font_api.draw_text_string(K7,"3",5,30);
+  FI K9=ev.font_api.load_font(font,30,30);
+  BM K10=ev.font_api.draw_text_string(K9,"4",5,30);
+  FI K11=ev.font_api.load_font(font,30,30);
+  BM K12=ev.font_api.draw_text_string(K11,"5",5,30);
+  FI K13=ev.font_api.load_font(font,30,30);
+  BM K14=ev.font_api.draw_text_string(K13,"6",5,30);
+  FI K15=ev.font_api.load_font(font,30,30);
+  BM K16=ev.font_api.draw_text_string(K15,"7",5,30);
+  FI K17=ev.font_api.load_font(font,30,30);
+  BM K18=ev.font_api.draw_text_string(K17,"8",5,30);
+  FI K19=ev.font_api.load_font(font,30,30);
+  BM K20=ev.font_api.draw_text_string(K19,"9",5,30);
+  FF K21=ev.font_api.fps_fetcher(ev);
+  SF K22=ev.font_api.float_to_string_fetcher(K21);
+  IF K23=ev.font_api.char_fetcher_from_string(K22,"0123456789",2);
+  ML K24=ev.font_api.dynamic_character(ev,std::vector<BM>{K2,K4,K6,K8,K10,K12,K14,K16,K18,K20},K23,0,0);
+
+
   MN I49=ev.move_api.empty();
-  MN I50=ev.move_api.trans2(I49,35,0,0);
+  MN I50=ev.move_api.trans2(I49,35,0,10);
   ML I51=ev.move_api.move_ml(ev,I48,I50,1,10.0);
-  ML I52=ev.mainloop_api.array_ml(ev,std::vector<ML>{I24,I51});
+
+  MN K49=ev.move_api.empty();
+  MN K50=ev.move_api.trans2(K49,35*2,0,10);
+  ML K51=ev.move_api.move_ml(ev,K24,K50,1,10.0);
+
+
+  ML I52=ev.mainloop_api.array_ml(ev,std::vector<ML>{I24,I51,K51});
   ML I53=ev.sprite_api.turn_to_2d(ev,I52,0.0,0.0,800.0,600.0);
   ML I54=ev.mainloop_api.array_ml(ev,std::vector<ML>{ml,I53});
   return I54;
