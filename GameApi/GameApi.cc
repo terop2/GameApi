@@ -8514,7 +8514,7 @@ public:
     if ((async_pending_count > 0 && !async_is_done)||no_draw_count>0) { env->logo_shown = true; }
     if (async_pending_count != async_pending_count_previous)
       {
-	std::cout << "ASync pending count=" << async_pending_count << std::endl;
+	//std::cout << "ASync pending count=" << async_pending_count << std::endl;
 	async_pending_count_previous = async_pending_count;
       }
     if (env->logo_shown)
@@ -8553,7 +8553,7 @@ public:
       {
 	//std::cout << e.ch << " " << e.type << std::endl;
 #ifndef EMSCRIPTEN
-	if (e.ch==27 && e.type==0x300) { std::cout << "Esc pressed2!" << std::endl; env->exit = true; return 0; }
+	if (e.ch==27 && e.type==0x300) { /*std::cout << "Esc pressed2!" << std::endl;*/ env->exit = true; return 0; }
 #endif
 	
 	//GameApi::InteractionApi::quake_movement_event(*env->ev,e, env->pos_x, env->pos_y, env->rot_y,
@@ -17414,7 +17414,7 @@ public:
     if (async_pending_count > 0 && !async_is_done) { env->logo_shown = true; }
     if (async_pending_count != async_pending_count_previous)
       {
-	std::cout << "ASync pending count=" << async_pending_count << std::endl;
+	//std::cout << "ASync pending count=" << async_pending_count << std::endl;
 	async_pending_count_previous = async_pending_count;
       }
     if (env->logo_shown)
@@ -17454,7 +17454,7 @@ public:
 	  MainLoopItem *item = find_main_loop(env2, ml);
 	  item->destroy();
 	  env->exit = true; 
-	  std::cout << "Esc pressed4" << std::endl;
+	  //std::cout << "Esc pressed4" << std::endl;
 	  make_current(false);
 	  return 0; 
 	}

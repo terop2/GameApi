@@ -4743,7 +4743,7 @@ CodeGenLine parse_codegen_line(std::string line)
   line2.func_name = func_name;
   line2.params = params;
 
-  std::cout << "CodeGenLine: " << line2.api_name << " " << line2.func_name << " " << line2.params << std::endl;
+  //std::cout << "CodeGenLine: " << line2.api_name << " " << line2.func_name << " " << line2.params << std::endl;
   return line2;
 }
 
