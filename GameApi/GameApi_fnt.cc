@@ -859,8 +859,8 @@ public:
     float v = ff.get();
     int v2 = (int)v;
     if (v2<0) v2=0;
-    if (v2>99) v2=99;
-    ss << std::setfill('0') << std::setw(2) << v2;
+    if (v2>999) v2=999;
+    ss << std::setfill('0') << std::setw(3) << v2;
     return ss.str();
   }
 private:
