@@ -188,7 +188,7 @@ std::vector<DllData> load_dlls(std::string filename)
   std::string s;
   while(ss >> s)
     {
-      std::cout << "Loading library: " << s << std::endl;
+      //std::cout << "Loading library: " << s << std::endl;
       DllData d;
       load_library(d, s);
       vec.push_back(d);

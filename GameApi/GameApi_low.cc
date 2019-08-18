@@ -967,7 +967,7 @@ class SDLApi : public SDLLowApi
   virtual void cleanup() {}
   virtual const char* SDL_GetError() { return ::SDL_GetError(); }
   virtual void SDL_Init(int flags) { map_enums_sdl(flags); ::SDL_Init(flags);
-    std::cout << "SDL_Init:" << SDL_GetError() << std::endl;
+    //std::cout << "SDL_Init:" << SDL_GetError() << std::endl;
   }
   virtual void SDL_GL_SetAttribute(int flag, int val) { map_enums_sdl(flag); map_enums_sdl(val); ::SDL_GL_SetAttribute((SDL_GLattr)flag,val); }
   virtual void* SDL_GL_GetProcAddress(char *name) { return ::SDL_GL_GetProcAddress(name); }
