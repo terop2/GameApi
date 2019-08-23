@@ -19,36 +19,6 @@
 #include <holoplay.h>
 #endif
 
-#ifndef FIRST
-#ifndef SECOND
-#ifndef THIRD
-#define FIRST_PART 1
-#define SECOND_PART 1
-#define THIRD_PART 1
-#endif
-#endif
-#endif
-#ifdef FIRST
-#define FIRST_PART 1
-#endif
-#ifdef SECOND
-#define SECOND_PART 1
-#endif
-#ifdef THIRD
-#define THIRD_PART 1
-#endif
-
-void InstallProgress(int num,std::string label, int max=15);
-void ProgressBar(int num, int val, int max, std::string label);
-std::string funccall_to_string(ShaderModule *mod);
-std::string color_funccall_to_string(ShaderModule *mod);
-std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
-std::string color_funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
-extern std::string gameapi_homepageurl;
-extern int async_pending_count;
-extern bool async_is_done;
-extern float debug_pos_x, debug_pos_y, debug_pos_z;
-
 
 class MaterialForward : public Material
 {
@@ -106,6 +76,39 @@ public:
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const=0;
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const=0;
 };
+
+
+#ifndef FIRST
+#ifndef SECOND
+#ifndef THIRD
+#define FIRST_PART 1
+#define SECOND_PART 1
+#define THIRD_PART 1
+#endif
+#endif
+#endif
+#ifdef FIRST
+#define FIRST_PART 1
+#endif
+#ifdef SECOND
+#define SECOND_PART 1
+#endif
+#ifdef THIRD
+#define THIRD_PART 1
+#endif
+
+void InstallProgress(int num,std::string label, int max=15);
+void ProgressBar(int num, int val, int max, std::string label);
+std::string funccall_to_string(ShaderModule *mod);
+std::string color_funccall_to_string(ShaderModule *mod);
+std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
+std::string color_funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
+extern std::string gameapi_homepageurl;
+extern int async_pending_count;
+extern bool async_is_done;
+extern float debug_pos_x, debug_pos_y, debug_pos_z;
+
+
 
 
 #ifdef FIRST_PART
@@ -6247,6 +6250,11 @@ GameApi::US GameApi::UberShaderApi::v_gi(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("gi", next,"IN_POSITION EX_POSITION"));
 }
+GameApi::US GameApi::UberShaderApi::v_gltf(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("gltf", next,"GLTF IN_COLOR EX_COLOR IN_TEXCOORD EX_TEXCOORD IN_NORMAL EX_NORMAL IN_POSITION EX_POSITION"));
+}
 GameApi::US GameApi::UberShaderApi::v_colour_with_mix(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -6531,7 +6539,37 @@ GameApi::US GameApi::UberShaderApi::f_gi(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("gi", next,"EX_POSITION"));
 }
-
+GameApi::US GameApi::UberShaderApi::f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4)
+{
+  ShaderCall *next = find_uber(e, us);
+  std::string s;
+  if (tex0||tex1||tex2||tex3||tex4)
+    s+=" ";
+  if (tex0) {
+    s+="GLTF_TEX0";
+    if (tex1||tex2||tex3||tex4)
+      s+=" ";
+  }
+  if (tex1) {
+    s+="GLTF_TEX1";
+    if (tex2||tex3||tex4)
+      s+=" ";
+  }
+  if (tex2) {
+    s+="GLTF_TEX2";
+    if (tex3||tex4)
+      s+=" ";
+  }
+  if (tex3) {
+    s+="GLTF_TEX3";
+    if (tex4)
+      s+=" ";
+  }
+  if (tex4) {
+    s+="GLTF_TEX4";
+  }
+  return add_uber(e, new F_ShaderCallFunction("gltf", next,"EX_POSITION EX_NORMAL EX_COLOR EX_TEXCOORD GLTF" + s));
+}
 GameApi::US GameApi::UberShaderApi::f_colour_with_mix(US us)
 {
   ShaderCall *next = find_uber(e, us);

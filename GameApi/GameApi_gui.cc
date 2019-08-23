@@ -4831,6 +4831,7 @@ ASyncData async_data[] = {
   { "polygon_api", "load_scene", 1 },
   { "polygon_api", "gltf_load", 1 },
   { "polygon_api", "gltf_load_bitmap", 2 },
+  { "materials_api", "gltf_material", 2 },
   { "polygon_api", "bar_chart", 1 },
   { "polygon_api", "bar_chart2", 1 },
   { "polygon_api", "piechart_full", 4 }
@@ -6853,6 +6854,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
 			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0" },
 			 "MT", "materials_api", "phong"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material,
+			 "m_gltf",
+			 { "ev", "base_url", "url", "material_id", "mix" },
+			 { "EveryApi&", "std::string", "std::string", "int", "float" }, 
+			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "1.0" },
+			 "MT", "materials_api", "gltf_material"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bump_phong,
 			 "m_bump_phong",
 			 { "ev", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow", "fb", "bump_width" },

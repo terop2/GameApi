@@ -8,7 +8,7 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//y
+//
 // Polygon is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -1011,6 +1011,36 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 "#endif\n"
+"#ifdef IN_TEXCOORD\n"
+"#ifdef EX_TEXCOORD\n"
+"#ifdef IN_COLOR\n"
+"#ifdef EX_COLOR\n"
+"#ifdef EX_POSITION\n"
+"#ifdef IN_POSITION\n"
+"#ifdef EX_NORMAL\n"
+"#ifdef IN_NORMAL\n"
+"vec4 gltf(vec4 pos)\n"
+"{\n"
+"   ex_Position = in_Position;\n"
+"#ifdef INST\n"
+"  ex_Position = in_Position + in_InstPos;\n"
+"#endif\n"
+    "    ex_Normal = normalize(mat3(in_iMV)*in_Normal);\n"
+
+    //    "   ex_Normal = in_Normal;\n"
+"   ex_Color = in_Color;\n"
+"   ex_TexCoord = in_TexCoord;\n"
+"   return pos;\n"
+"}\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+
     "//T:\n"
 "void main(void)\n"
 "{\n"
@@ -1110,6 +1140,9 @@ ShaderFile::ShaderFile()
 "}\n"
 "#endif\n"
 "#ifdef MANYTEXTURES\n"
+"uniform sampler2D texsampler[15];\n"
+"#endif\n"
+"#ifdef GLTF\n"
 "uniform sampler2D texsampler[15];\n"
 "#endif\n"
 "#ifdef BUMPPHONG\n"
@@ -1556,6 +1589,57 @@ ShaderFile::ShaderFile()
 "  return mix(rgb, texture2D(texsampler[13],ex_TexCoord.xy), color_mix);\n"
 "  if (ex_TexCoord.z<14.7)\n"
 "  return mix(rgb, texture2D(texsampler[14],ex_TexCoord.xy), color_mix);\n"
+"}\n"
+"#endif\n"
+"#endif\n"
+"#ifdef EX_COLOR\n"
+"#ifdef EX_TEXCOORD\n"
+"uniform float u_RoughnessFactor;\n"
+"uniform float u_MetallicFactor;\n"
+"uniform float u_BaseColorFactor;\n"
+"vec4 getVertexColor()\n"
+"{\n"
+"  return ex_Color;\n"
+"}\n"
+"const float GAMMA=2.2;\n"
+"const float INV_GAMMA = 1.0/GAMMA;\n"
+"vec3 LINEARtoSRGB(vec3 color)\n"
+"{\n"
+" return pow(color, vec3(INV_GAMMA));\n"
+"}\n"
+"vec4 SRGBtoLINEAR(vec4 srgbIn)\n"
+"{\n"
+"  return vec4(pow(srgbIn.xyz,vec3(GAMMA)), srgbIn.w);\n"
+"}\n"
+"vec4 gltf(vec4 rgb)\n"
+"{\n"
+"float perceptualRoughness=0.0;\n"
+"float metallic=0.0;\n"
+"vec4 baseColor=vec4(0.0,0.0,0.0,1.0);\n"
+"vec3 diffuseColor=vec3(0);\n"
+"vec3 specularColor=vec3(0.0);\n"
+"vec3 f0 =vec3(0.04);\n"
+"#ifdef GLTF_TEX1\n"
+"  vec4 mrSample = texture2D(texsampler[1],ex_TexCoord.xy);\n"
+"  perceptualRoughness = mrSample.g * u_RoughnessFactor;\n"
+"  metallic = mrSample.b * u_MetallicFactor;\n"
+"#endif\n"
+"#ifndef GLTF_TEX1\n"
+"  metallic = u_MetallicFactor;\n"
+"  perceptualRoughness = u_RoughnessFactor;\n"
+"#endif\n"
+"#ifdef GLTF_TEX0\n"
+"  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n"
+"#endif\n"
+"#ifndef GLTF_TEX0\n"
+"  baseColor = u_BaseColorFactor;\n"
+"#endif\n"
+"  baseColor *= getVertexColor();\n"
+"  diffuseColor = baseColor.rgb * (vec3(1.0)-f0) * (1.0-metallic);\n"
+"  specularColor = mix(f0, baseColor.rgb, metallic);\n"
+
+"  baseColor.a = 1.0;\n"
+"  return vec4(LINEARtoSRGB(baseColor.rgb),baseColor.a);\n"
 "}\n"
 "#endif\n"
 "#endif\n"
@@ -2129,6 +2213,34 @@ ShaderFile::ShaderFile()
 "{\n"
 "   return pos;\n"
 "}\n"
+"#ifdef IN_TEXCOORD\n"
+"#ifdef EX_TEXCOORD\n"
+"#ifdef IN_COLOR\n"
+"#ifdef EX_COLOR\n"
+"#ifdef EX_POSITION\n"
+"#ifdef IN_POSITION\n"
+"#ifdef EX_NORMAL\n"
+"#ifdef IN_NORMAL\n"
+
+"vec4 gltf(vec4 pos)\n"
+"{\n"
+    "   ex_Position = in_Position;\n"
+"#ifdef INST\n"
+"  ex_Position = in_Position + in_InstPos;\n"
+"#endif\n"
+"  ex_Normal = normalize(mat3(transpose(inverse(in_MV)))*in_Normal);\n"
+"   ex_Color = in_Color;\n"
+"   ex_TexCoord = in_TexCoord;\n"
+"   return pos;\n"
+"}\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
 "//T:\n"
 "void main(void)\n"
 "{\n"
@@ -2203,6 +2315,9 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "uniform float time;\n"
 "#ifdef MANYTEXTURES\n"
+"uniform sampler2D texsampler[15];\n"
+"#endif\n"
+"#ifdef GLTF\n"
 "uniform sampler2D texsampler[15];\n"
 "#endif\n"
 "#ifdef BUMPPHONG\n"
@@ -2662,6 +2777,168 @@ ShaderFile::ShaderFile()
 "}\n"
 "#endif\n"
 "#endif\n"
+"#ifdef EX_COLOR\n"
+"#ifdef EX_TEXCOORD\n"
+"#ifdef EX_NORMAL\n"
+"#ifdef EX_POSITION\n"
+"uniform float u_RoughnessFactor;\n"
+"uniform float u_MetallicFactor;\n"
+"uniform vec4 u_BaseColorFactor;\n"
+"uniform float u_OcculsionStrength;\n" 
+    "uniform float u_EmissiveFactor;\n"
+"vec4 getVertexColor()\n"
+"{\n"
+"  return ex_Color;\n"
+"}\n"
+"const float GAMMA=2.2;\n"
+"const float INV_GAMMA = 1.0/GAMMA;\n"
+"vec3 LINEARtoSRGB(vec3 color)\n"
+"{\n"
+" return pow(color, vec3(INV_GAMMA));\n"
+"}\n"
+"vec4 SRGBtoLINEAR(vec4 srgbIn)\n"
+"{\n"
+"  return vec4(pow(srgbIn.xyz,vec3(GAMMA)), srgbIn.w);\n"
+"}\n"
+"struct MaterialInfo {\n"
+"  float perceptualRoughness;\n"
+"  vec3 reflectance0;\n"
+"  float alphaRoughness;\n"
+"  vec3 diffuseColor;\n"
+"  vec3 reflectance90;\n"
+"  vec3 specularColor;\n"
+"};\n"
+"struct AngularInfo {\n"
+"  float NdotL;\n"
+"  float NdotV;\n"
+"  float NdotH;\n"
+"  float LdotH;\n"
+"  float VdotH;\n"
+"  vec3 padding;\n"
+"};\n"
+"vec3 getNormal() {\n"
+"   return ex_Normal;\n"
+"}\n"
+"AngularInfo getAngularInfo( vec3 pointToLight, vec3 normal, vec3 view) {\n"
+"  vec3 n = normalize(normal);\n"
+"  vec3 v = normalize(view); \n"
+"  vec3 l = normalize(pointToLight); \n"
+"  vec3 h = normalize(l+v);\n"
+"  float NdotL = clamp(dot(n,l), 0.0, 1.0);\n"
+"  float NdotV = clamp(dot(n,v), 0.0, 1.0);\n"
+"  float NdotH = clamp(dot(n,h), 0.0, 1.0);\n"
+"  float LdotH = clamp(dot(l,h), 0.0, 1.0);\n"
+"  float VdotH = clamp(dot(v,h), 0.0, 1.0);\n"
+"  return AngularInfo(\n"
+"     NdotL, NdotV, NdotH, LdotH, VdotH, vec3(0,0,0) );\n"
+"}\n"
+"vec3 diffuse(MaterialInfo info) {\n"
+"  return info.diffuseColor / 3.14159265;\n"
+"}\n"
+"vec3 specularReflection(MaterialInfo info, AngularInfo ainfo) {\n"
+"  return info.reflectance0 + (info.reflectance90 - info.reflectance0) * pow(clamp(1.0-ainfo.VdotH,0.0,1.0),5.0);\n"
+"}\n"
+"float visibilityOcclusion(MaterialInfo info, AngularInfo ainfo) {\n"
+"  float NdotL = ainfo.NdotL;\n"
+"  float NdotV = ainfo.NdotV;\n"
+"  float alphaSq = info.alphaRoughness * info.alphaRoughness;\n"
+"  float GGXV = NdotL * sqrt(NdotV * NdotV * (1.0-alphaSq) + alphaSq);\n"
+"  float GGXL = NdotV * sqrt(NdotL * NdotL * (1.0-alphaSq) + alphaSq);\n"
+"  float GGX = GGXV + GGXL;\n"
+"  if (GGX > 0.0) { return 0.5 / GGX; }\n"
+"  return 0.0;\n"
+"}\n"
+"float micro(MaterialInfo info, AngularInfo ainfo) {\n"
+"  float alphaSq = info.alphaRoughness * info.alphaRoughness;\n"
+"  float f = (ainfo.NdotH * alphaSq - ainfo.NdotH) * ainfo.NdotH + 1.0;\n"
+"  return alphaSq / (3.14159265 * f * f);\n"
+"}\n"
+"vec3 getPointShade(vec3 pointToLight, MaterialInfo info, vec3 normal, vec3 view) { \n"
+"  AngularInfo ainfo = getAngularInfo(pointToLight, normal, view);\n"
+    "  if (ainfo.NdotL > 0.0 || ainfo.NdotV > 0.0) {\n"
+"    vec3 F = specularReflection(info, ainfo);\n"
+"    float Vis = visibilityOcclusion(info, ainfo);\n"
+"    float D = micro(info, ainfo);\n"
+"    vec3 diffuseContrib = (1.0-F) * diffuse(info);\n"
+"    vec3 specContrib = F * Vis * D;\n"
+"    return ainfo.NdotL * (diffuseContrib + specContrib);\n"
+    "  }\n"
+    "  return vec3(0.0,0.0,0.0);\n"
+"}\n"
+"vec4 gltf(vec4 rgb)\n"
+"{\n"
+"float perceptualRoughness=0.0;\n"
+"float metallic=0.0;\n"
+"vec4 baseColor=vec4(0.0,0.0,0.0,1.0);\n"
+"vec3 diffuseColor=vec3(0);\n"
+"vec3 specularColor=vec3(0.0);\n"
+"vec3 f0 =vec3(0.04);\n"
+"#ifdef GLTF_TEX1\n"
+"  vec4 mrSample = texture2D(texsampler[1],ex_TexCoord.xy);\n"
+"  perceptualRoughness = mrSample.g * u_RoughnessFactor;\n"
+"  metallic = mrSample.b * u_MetallicFactor;\n"
+"#endif\n"
+    "#ifndef GLTF_TEX1\n"
+    "  metallic = u_MetallicFactor;\n"
+    "  perceptualRoughness = u_RoughnessFactor;\n"
+    "#endif\n"
+"#ifdef GLTF_TEX0\n"
+"  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n"
+"#endif\n"
+    "#ifndef GLTF_TEX0\n"
+    "  baseColor = u_BaseColorFactor;\n"
+    "#endif\n"
+    "  baseColor *= getVertexColor();\n"
+"  diffuseColor = baseColor.rgb * (vec3(1.0)-f0) * (1.0-metallic);\n"
+"  specularColor = mix(f0, baseColor.rgb, metallic);\n"
+
+"  baseColor.a = 1.0;\n"
+    // use next one if material is unlit
+   //"  return vec4(LINEARtoSRGB(baseColor.rgb),baseColor.a);\n"
+
+"  perceptualRoughness = clamp(perceptualRoughness, 0.0, 1.0);\n"
+"  metallic = clamp(metallic, 0.0, 1.0);\n"
+""
+"  float alphaRoughness = perceptualRoughness * perceptualRoughness;\n"
+"  float reflectance = max(max(specularColor.r, specularColor.g), specularColor.b);\n"
+"  vec3 specularEnvironmentR0 = specularColor.rgb;\n"
+"  vec3 specularEnvironmentR90 = vec3(clamp(reflectance * 50.0, 0.0, 1.0));\n"
+    "  MaterialInfo materialInfo = MaterialInfo(\n"
+    "    perceptualRoughness,\n"
+    "    specularEnvironmentR0,\n"
+    "    alphaRoughness,\n"
+    "    diffuseColor,\n"
+    "    specularEnvironmentR90,\n"
+    "    specularColor\n"
+    "    );\n"
+"    vec3 color = vec3(0.0,0.0,0.0);\n"
+    "    vec3 normal = getNormal();\n"
+    "    vec3 view = vec3(0.0,0.0,1.0);\n"
+
+"  color = getPointShade(vec3(-30.0,-30.0,30.0)-ex_Position/100.0, materialInfo, normal, view);\n"
+
+    // TODO LIGHTS
+"   float ao=1.0;\n"
+"#ifdef GLTF_TEX3\n"
+"   ao = texture2D(texsampler[3], ex_TexCoord.xy).r;\n"
+"   color = mix(color, color*ao, u_OcculsionStrength);\n"
+"#endif\n"
+"   vec3 emissive = vec3(0);\n"
+"#ifdef GLTF_TEX4\n"
+"   emissive = SRGBtoLINEAR(texture2D(texsampler[4], ex_TexCoord.xy)).rgb * u_EmissiveFactor;\n"
+"   color += emissive;\n"
+"#endif\n"
+    //"   return vec4(metallic,metallic,metallic,1.0);\n"
+    //"   return vec4(vec3(perceptualRoughness),1.0);\n"
+    //"   return vec4(vec3(ao),1.0);\n"
+    //"   return vec4(vec3(LINEARtoSRGB(emissive),1.0);\n"
+    //"   return vec4(vec3(baseColor.a),1.0);\n"
+    "   return vec4(LINEARtoSRGB(color), baseColor.a);\n"
+"}\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
 "vec4 empty(vec4 rgb)\n"
 "{\n"
 "   return rgb;\n"
@@ -2999,6 +3276,32 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 	  }
 	  continue;
 	}
+      if (ww.substr(0,8)=="#ifndef ")
+	{
+	  std::stringstream ss(ww.substr(8));
+	  std::string s;
+	  ss >> s;
+
+	  std::string strings= defines;
+	  if (call)
+	    strings += " " + call->define_strings();
+	  std::stringstream ss2(strings);
+	  std::string s2;
+	  bool b = false;
+	  while(ss2>>s2)
+	    {
+	      if (s2==s)
+		{
+		  b = true;
+		  break;
+		}
+	    }
+	  current_bools.push_back(b);
+	  if (b) {
+	    current_define.push_back(s);
+	  }
+	  continue;
+	}
       if (ww.substr(0,6)=="#endif")
 	{
 	  if (current_bools.size()>0)
@@ -3184,7 +3487,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod, vertex_c, v_defines, false,v_shader);
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -3201,7 +3504,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       //std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader);
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

@@ -1271,6 +1271,7 @@ public:
   IMPORT MT texture_cubemap(EveryApi&ev, std::vector<BM> vec, float mix, float mix2);
   IMPORT MT texture_many2(EveryApi &ev, float mix);
   IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
+  IMPORT MT gltf_material( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix );
   IMPORT MT phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT MT gi(EveryApi &ev, MT nxt, PTS points, float obj_size);
   IMPORT MT bump_phong(EveryApi &ev, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, FB bm, float bump_width);
@@ -2447,8 +2448,9 @@ public:
   IMPORT ML texture_cubemap_shader(EveryApi &ev, ML mainloop, float mix, float mix2);
   IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML skeletal_shader(EveryApi &ev, ML mainloop, std::vector<SA> vec);
+  IMPORT ML gltf_shader(EveryApi &ev, ML mainloop, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, float roughness, float metallic, float basecolor0, float basecolor1, float basecolor2, float basecolor3, float occul, float emiss);
   IMPORT void explode(VA va, PT pos, float dist);
-  //IMPORT int access_point_count(VA va, bool triangle);
+  //IMPORT int accexss_point_count(VA va, bool triangle);
   //IMPORT float *access_points(VA va, bool triangle, int face, int point);
   //IMPORT float *access_color(VA va, bool triangle, int face, int point);
   //IMPORT float *access_normals(VA va, bool triangle, int face, int point);
@@ -3324,6 +3326,7 @@ public:
   US v_shadow(US us);
   US v_dyn_lights(US us);
   US v_gi(US us);
+  US v_gltf(US us);
   US v_colour_with_mix(US us);
   US f_mesh_color(US us, SFO sfo); // this requires v_pass_position() in vertex shader
   US f_sandbox(US us, SFO sfo); // this requires texture coordinates
@@ -3355,6 +3358,7 @@ public:
   US f_custom(US us, std::string f_funcname);
   US f_gi(US us);
   US f_colour_with_mix(US us);
+  US f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4);
 private:
   Env &e;
 };
