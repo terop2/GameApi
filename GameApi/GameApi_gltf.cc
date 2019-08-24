@@ -65,6 +65,47 @@ public:
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const=0;
 };
 
+extern std::vector<std::pair<std::string,int> > bitmap_prepare_cache_data;
+int bitmap_find_data(std::string data);
+
+class BitmapPrepareCache : public Bitmap<Color>
+{
+public:
+  BitmapPrepareCache(GameApi::Env &e, std::string id, Bitmap<Color> *bm) : e(e), id(id), bm(bm) { }
+  void Prepare()
+  {
+    if (bitmap_find_data(id)!=-1) {
+      return;
+    }
+    bm->Prepare();
+    GameApi::BM num = add_color_bitmap2(e, bm);
+    bitmap_prepare_cache_data.push_back(std::make_pair(id,num.id));
+  }
+  Bitmap<Color> *get_bm() const
+  {
+    if (bm_cache) return bm_cache;
+    int num = bitmap_find_data(id);
+    if (num==-1) { const_cast<BitmapPrepareCache*>(this)->Prepare(); num=bitmap_find_data(id); }
+    GameApi::BM bm2;
+    bm2.id = num;
+    BitmapHandle *handle = find_bitmap(e, bm2);
+    Bitmap<Color> *bbm = find_color_bitmap(handle);
+    bm_cache=bbm;
+    return bbm;
+  }
+  virtual int SizeX() const { return get_bm()->SizeX(); }
+  virtual int SizeY() const { return get_bm()->SizeY(); }
+  virtual Color Map(int x, int y) const
+  {
+    return get_bm()->Map(x,y);
+  }
+private:
+  GameApi::Env &e;
+  std::string id;
+  Bitmap<Color> *bm;
+  mutable Bitmap<Color> *bm_cache=0;
+};
+
 
 bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err, std::string *warn, int req_width, int req_height, const unsigned char *bytes, int size, void *ptr);
 bool WriteImageData(const std::string *basepath, const std::string *filename, tinygltf::Image *image, bool b, void *ptr);
@@ -662,7 +703,14 @@ GameApi::BM GameApi::PolygonApi::gltf_load_bitmap( GameApi::EveryApi &ev, std::s
   LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   GLTFImage *img = new GLTFImage( load, image_index );
 
-  ::Bitmap<Color> *b = img;
+  Bitmap<Color> *img2 = new MemoizeBitmap(*img);
+
+  std::stringstream ss;
+  ss << image_index;
+
+  Bitmap<Color> *bbm = new BitmapPrepareCache(e, url + ss.str(), img2);
+
+  ::Bitmap<Color> *b = bbm;
   BitmapColorHandle *handle2 = new BitmapColorHandle;
   handle2->bm = b;
   BM bm = add_bitmap(e, handle2);
@@ -678,19 +726,39 @@ GameApi::BM gltf_load_bitmap2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf 
 
   GLTFImage *img = new GLTFImage( load, image_index );
 
-  ::Bitmap<Color> *b = img;
+  Bitmap<Color> *img2 = new MemoizeBitmap(*img);
+
+  std::stringstream ss;
+  ss << image_index;
+
+  Bitmap<Color> *bbm = new BitmapPrepareCache(e, load->url + ss.str(), img2);
+
+  ::Bitmap<Color> *b = bbm;
   BitmapColorHandle *handle2 = new BitmapColorHandle;
   handle2->bm = b;
   GameApi::BM bm = add_bitmap(e, handle2);
   GameApi::BM bm2 = ev.bitmap_api.flip_y(bm);
   return bm2;
 }
-GameApi::P gltf_load2( GameApi::Env &e, LoadGltf *load, int mesh_index, int prim_index )
+std::map<std::string, bool> g_gltf_cache;
+GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_index, int prim_index )
 {
   FaceCollection *faces = new GLTFFaceCollection( load, mesh_index, prim_index );
-  return add_polygon2(e, faces,1);
+  GameApi::P p = add_polygon2(e, faces,1);
+  GameApi::P p2 = ev.polygon_api.file_cache(p, load->url, prim_index+mesh_index*50);
+  std::stringstream ss;
+  ss << load->url;
+  ss << prim_index + mesh_index*50;
+  bool b = g_gltf_cache[ss.str()];
+  if (b) {
+    // seems the caching messes up normals in the model? 
+    p2 = ev.polygon_api.flip_normals(p2);
+  } else {
+    g_gltf_cache[ss.str()] = true;
+  }
+ return p2;
 } 
-GameApi::P GameApi::PolygonApi::gltf_load( std::string base_url, std::string url, int mesh_index, int prim_index )
+GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index )
 {
   bool is_binary=false;
   if (url.size()>3) {
@@ -700,7 +768,20 @@ GameApi::P GameApi::PolygonApi::gltf_load( std::string base_url, std::string url
 
   LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   FaceCollection *faces = new GLTFFaceCollection( load, mesh_index, prim_index );
-  return add_polygon2(e, faces,1);
+  P p = add_polygon2(e, faces,1);
+  GameApi::P p2 = ev.polygon_api.file_cache(p, load->url, prim_index+mesh_index*50);
+  std::stringstream ss;
+  ss << load->url;
+  ss << prim_index + mesh_index*50;
+  bool b = g_gltf_cache[ss.str()];
+  if (b) {
+    // seems the caching messes up normals in the model? 
+    p2 = ev.polygon_api.flip_normals(p2);
+  } else {
+    g_gltf_cache[ss.str()] = true;
+  }
+
+  return p2;
 }
 
 class GLTF_Material2 : public MaterialForward

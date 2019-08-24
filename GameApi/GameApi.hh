@@ -2122,7 +2122,7 @@ public:
   int poly_size(ARR arr);
   ARR poly_execute(EveryApi &ev, ARR arr, std::string gameapi_script);
   P normal_darkness(P p, float dark);
-  P gltf_load( std::string base_url, std::string url, int mesh_index, int prim_index );
+  P gltf_load( EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index );
   BM gltf_load_bitmap( GameApi::EveryApi &ev, std::string base_url, std::string url, int image_index );
   P bar_chart( GameApi::EveryApi &ev, std::string url, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per );
   P bar_chart2( GameApi::EveryApi &ev, std::string url, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per, float per2 );

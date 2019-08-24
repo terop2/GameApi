@@ -4829,7 +4829,7 @@ ASyncData async_data[] = {
   { "polygon_api", "stl_load", 0 },
   { "font_api", "load_font_dump", 0 },
   { "polygon_api", "load_scene", 1 },
-  { "polygon_api", "gltf_load", 1 },
+  { "polygon_api", "gltf_load", 2 },
   { "polygon_api", "gltf_load_bitmap", 2 },
   { "materials_api", "gltf_material", 2 },
   { "polygon_api", "bar_chart", 1 },
@@ -7953,9 +7953,9 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "P", "polygon_api", "stl_load"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::gltf_load,
 			 "p_gltf",
-			 { "base_url", "url", "mesh_index", "prim_index" },
-			 { "std::string", "std::string", "int", "int" },
-			 { "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "0" },
+			 { "ev", "base_url", "url", "mesh_index", "prim_index" },
+			 { "EveryApi&", "std::string", "std::string", "int", "int" },
+			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "0" },
 			 "P", "polygon_api", "gltf_load"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::alt,
 			 "p_alt",
