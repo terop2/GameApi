@@ -5363,6 +5363,7 @@ public:
 	ev.shader_api.set_var(sh, "u_BaseColorFactor", basecolorfactor0,basecolorfactor1,basecolorfactor2, basecolorfactor3);
 	ev.shader_api.set_var(sh, "u_OcculsionStrength", occul_strength);
 	ev.shader_api.set_var(sh, "u_EmissiveFactor", emiss_factor);
+	ev.shader_api.set_var(sh, "u_NormalScale", 1.0f);
 	//std::cout << roughnessfactor << " " << metallicfactor << " " << basecolorfactor0 << " " << basecolorfactor1 << " " << basecolorfactor2 << " " << basecolorfactor3 << " " << occul_strength << " " << emiss_factor << std::endl;
       }
     next->execute(ee);
