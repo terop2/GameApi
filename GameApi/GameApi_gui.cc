@@ -6860,6 +6860,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "std::string", "std::string", "int", "float" }, 
 			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "1.0" },
 			 "MT", "materials_api", "gltf_material"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material3,
+			 "m_material",
+			 { "ev", "roughness", "metallic", "base_r", "base_g", "base_b", "base_a", "mix" },
+			 { "EveryApi&", "float", "float", "float", "float", "float", "float", "float" },
+			 { "ev", "0.5", "0.8", "1.0", "1.0", "1.0", "1.0", "1.0" },
+			 "MT", "materials_api", "gltf_material3"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bump_phong,
 			 "m_bump_phong",
 			 { "ev", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow", "fb", "bump_width" },

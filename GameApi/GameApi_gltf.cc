@@ -403,6 +403,12 @@ public:
 	int stride = indices_bv->byteStride;
 
 	switch(indices_acc->componentType) {
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+	  if (stride==0) stride=sizeof(unsigned char);
+	  break;
+	case TINYGLTF_COMPONENT_TYPE_BYTE:
+	  if (stride==0) stride=sizeof(char);
+	  break;
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
 	    if (stride==0) stride=sizeof(unsigned short); // 3 = num of indices in a ttiangle
 	    break;
@@ -428,6 +434,18 @@ public:
 	int index = 0;
 	switch(indices_acc->componentType)
 	  {
+	  case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+	    {
+	      unsigned char *ptr4 = (unsigned char*)ptr3;
+	      index = *ptr4;
+	      break;
+	    }
+	  case TINYGLTF_COMPONENT_TYPE_BYTE:
+	    {
+	      char *ptr4 = (char*)ptr3;
+	      index = *ptr4;
+	      break;
+	    }
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
 	  {
 	  unsigned short *ptr4 = (unsigned short*)ptr3;
@@ -500,7 +518,7 @@ public:
 	if (stride2==0) stride2 = 3*sizeof(float); // 3 = num of components in (x,y,z)
 	float *pos_ptr2 = (float*)(pos_ptr + normal_bv->byteOffset + index*stride2 + normal_acc->byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << pos_ptr2[0] << "," << pos_ptr2[1] << "," << pos_ptr2[2] << std::endl;
-	return Vector(pos_ptr2[0], pos_ptr2[1], pos_ptr2[2]);
+	return -Vector(pos_ptr2[0], pos_ptr2[1], pos_ptr2[2]);
       } else {
 	// TODO, check that this branch works
 	unsigned char *pos_ptr = &normal_buf->data[0];
@@ -510,7 +528,7 @@ public:
 	int comp = face*3+point;
 	unsigned char *pos_ptr3 = pos_ptr2 + normal_acc->byteOffset + comp*stride;
 	float *pos_ptr4 = (float*)pos_ptr3; // 3 = num of components in (x,y,z)
-	return Vector(pos_ptr4[0], pos_ptr4[1], pos_ptr4[2]);
+	return -Vector(pos_ptr4[0], pos_ptr4[1], pos_ptr4[2]);
       }
     }
     } else {
@@ -556,6 +574,7 @@ public:
   }
   virtual Point2d TexCoord(int face, int point) const { 
     Point p = tex(face,point);
+    //std::cout << "TexCoord: " << p.x << " " << p.y << std::endl;
     Point2d pp; pp.x=p.x; pp.y=p.y; return pp; 
   }
   virtual float TexCoord3(int face, int point) const { 
@@ -573,20 +592,20 @@ public:
 
 	unsigned char *pos_ptr = &texcoord_buf->data[0];
 	int stride2 = texcoord_bv->byteStride;
-	if (stride2==0) stride2 = 3*sizeof(float); // 3 = num of components in (x,y,z)
+	if (stride2==0) stride2 = 2*sizeof(float); // 3 = num of components in (x,y,z)
 	float *pos_ptr2 = (float*)(pos_ptr + texcoord_bv->byteOffset + index*stride2 + texcoord_acc->byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << pos_ptr2[0] << "," << pos_ptr2[1] << "," << pos_ptr2[2] << std::endl;
-	return Point(pos_ptr2[0], pos_ptr2[1], pos_ptr2[2]);
+	return Point(pos_ptr2[0], pos_ptr2[1], 0.0 /*pos_ptr2[2]*/);
       } else {
 	// todo, check that this branch works
 	unsigned char *pos_ptr = &texcoord_buf->data[0];
 	unsigned char *pos_ptr2 = pos_ptr + texcoord_bv->byteOffset;
 	int stride = texcoord_bv->byteStride;
-	if (stride==0) stride=3*sizeof(float);
+	if (stride==0) stride=2*sizeof(float);
 	int comp = face*3+point;
 	unsigned char *pos_ptr3 = pos_ptr2 + texcoord_acc->byteOffset + comp*stride;
 	float *pos_ptr4 = (float*)pos_ptr3; // 3 = num of components in (x,y,z)
-	return Point(pos_ptr4[0], pos_ptr4[1], pos_ptr4[2]);
+	return Point(pos_ptr4[0], pos_ptr4[1], 0.0 /*pos_ptr4[2]*/);
       }
     }
     } else {
@@ -684,6 +703,49 @@ GameApi::P GameApi::PolygonApi::gltf_load( std::string base_url, std::string url
   return add_polygon2(e, faces,1);
 }
 
+class GLTF_Material2 : public MaterialForward
+{
+public:
+  GLTF_Material2(GameApi::Env &e, GameApi::EveryApi &ev, float mix, float roughness, float metallic, float basecolor_r, float basecolor_g, float basecolor_b, float basecolor_a, float occul_strength) : e(e), ev(ev), mix(mix), roughness(roughness), metallic(metallic), base_r(basecolor_r), base_g(basecolor_g), base_b(basecolor_b), base_a(basecolor_a), occul(occul_strength) { }
+
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    std::vector<GameApi::BM> bm;
+
+    GameApi::P I10=p; 
+    GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm);
+    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, false, false, false, false, false, roughness, metallic, base_r,base_g,base_b,base_a, occul, 1.0); // todo base color
+    return I18;
+
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    std::vector<GameApi::BM> bm;
+
+    GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,p,pts,bm);
+    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, false, false, false, false, false, roughness, metallic, base_r,base_g,base_b,base_a, occul, 1.0); 
+    return I18;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    //GameApi::ML I13;
+    //I13.id = next->mat_inst2(p.id,pta.id);
+    std::cout << "ERROR gltf::mat2inst2" << std::endl;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    //GameApi::ML I13;
+    //I13.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
+    std::cout << "ERROR gltf::mat_inst_fade" << std::endl;
+
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  float mix;
+  float roughness, metallic, base_r, base_g, base_b, base_a, occul;
+};
+
 class GLTF_Material : public MaterialForward
 {
 public:
@@ -773,6 +835,10 @@ GameApi::MT gltf_material2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *lo
     Material *mat = new GLTF_Material(e,ev, load, material_id, mix);
   return add_material(e, mat);
   }
+GameApi::MT GameApi::MaterialsApi::gltf_material3( GameApi::EveryApi &ev, float roughness, float metallic, float base_r, float base_g, float base_b, float base_a, float mix)
+{
+  return add_material(e, new GLTF_Material2(e,ev, mix, roughness, metallic, base_r, base_g, base_b, base_a,1.0));
+}
 
 GameApi::MT GameApi::MaterialsApi::gltf_material( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix )
   {
