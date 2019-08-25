@@ -966,6 +966,10 @@ class SDLApi : public SDLLowApi
   virtual void init() { }
   virtual void cleanup() {}
   virtual const char* SDL_GetError() { return ::SDL_GetError(); }
+  virtual void SDL_SetWindowSize(Low_SDL_Window *window, int w, int h)
+  {
+    ::SDL_SetWindowSize((SDL_Window*)(window->ptr), w,h);
+  }
   virtual void SDL_Init(int flags) { map_enums_sdl(flags); ::SDL_Init(flags);
     //std::cout << "SDL_Init:" << SDL_GetError() << std::endl;
   }
@@ -989,6 +993,12 @@ class SDLApi : public SDLLowApi
     if (e.type==SDL_DROPFILE)
       event->drop.file = e.drop.file;
 #endif
+    if (e.type==SDL_WINDOWEVENT)
+      {
+	event->window.event = e.window.event;
+	event->window.data1 = e.window.data1;
+	event->window.data2 = e.window.data2;
+      }
     return val;
   }
   virtual unsigned int SDL_GetTicks() { return ::SDL_GetTicks(); }

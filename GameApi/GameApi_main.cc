@@ -31,7 +31,7 @@ EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_heigh
   int screenx = screen_width;
   int screeny = screen_height;
 #ifdef SDL2_USED
-  p->screen = InitSDL2(screenx,screeny,false, false, false,vr_init);
+  p->screen = InitSDL2(screenx,screeny,false, false, true,vr_init);
 #else
   p->screen = InitSDL(screenx,screeny,false);
 #endif
@@ -669,6 +669,9 @@ EXPORT bool GameApi::MainLoopApi::ch_doubletap_detect(Event &e, int expire_timer
     }
   return doubletap;
 }
+int g_event_screen_x = -1;
+int g_event_screen_y = -1;
+extern Low_SDL_Window *sdl_window;
 EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 {
   Low_SDL_Event event;
@@ -708,6 +711,14 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
     }
 #endif
 #endif
+  if (event.type==Low_SDL_WINDOWEVENT) {
+    if (event.window.event == 5) { 
+      g_event_screen_x = event.window.data1;
+      g_event_screen_y = event.window.data2;
+      g_low->sdl->SDL_SetWindowSize(sdl_window,g_event_screen_x, g_event_screen_y);
+      g_low->ogl->glViewport(0,0,g_event_screen_x, g_event_screen_y);
+    }
+  }
 
   if (event.type==Low_SDL_MOUSEWHEEL)
     {
@@ -727,8 +738,17 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
     {
       id = env->cursor_pos_point_id.id;
     }
-  env->pt[id].x = x;
-  env->pt[id].y = y;
+  float scale_x = 1.0;
+  float scale_y = 1.0;
+  if (g_event_screen_y != -1) {
+    scale_x = float(get_screen_width())/float(g_event_screen_x);
+    scale_y = float(get_screen_height())/float(g_event_screen_y);
+    
+    //delta = get_screen_height()-g_event_screen_y;
+  }
+
+  env->pt[id].x = x*scale_x;
+  env->pt[id].y = y*scale_y;
   e2.cursor_pos.id = id;
   e2.button = -1;
 

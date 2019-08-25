@@ -459,6 +459,7 @@ enum
 #define Low_SDL_FINGERMOTION 0x702
 #define Low_SDL_MOUSEWHEEL 0x403
 #define Low_SDL_DROPFILE 0x1000
+#define Low_SDL_WINDOWEVENT 0x200
 
 #define Low_SDL_BUTTON(x) (1 << ((x)-1))
 #define Low_KMOD_CTRL (0x40|0x80)
@@ -484,6 +485,12 @@ struct Low_SDL_TouchFingerEvent
   float x = 0.0f;
   float y = 0.0f;
 };
+struct Low_SDL_WindowEvent
+{
+  int event;
+  int data1, data2;
+};
+
 struct Low_SDL_Event
 {
   int type;
@@ -491,6 +498,7 @@ struct Low_SDL_Event
   Low_SDL_MouseWheelEvent wheel;
   Low_SDL_TouchFingerEvent tfinger;
   Low_SDL_DropEvent drop;
+  Low_SDL_WindowEvent window;
 };
 
 struct Low_SDL_Surface { void *ptr; int w; int h; void* pixels; int pitch; };
@@ -543,6 +551,7 @@ public:
   virtual Low_SDL_RWops* SDL_RWFromMem(void *buffer, int size)=0;
   virtual void SDL_GL_DeleteContext(Low_SDL_GLContext ctx)=0;
   virtual const char *SDL_GetError()=0;
+  virtual void SDL_SetWindowSize(Low_SDL_Window *window, int w, int h)=0;
 };
 
 struct Low_Mix_Chunk
