@@ -257,6 +257,7 @@ class SDLLowApiStub : public SDLLowApi
   virtual unsigned int SDL_JoystickGetButton(Low_SDL_Joystick *joy, int i) { return 0; }
   virtual Low_SDL_RWops* SDL_RWFromMem(void *buffer, int size) { return 0; }
   virtual void SDL_GL_DeleteContext(Low_SDL_GLContext ctx) { }
+  virtual void SDL_SetWindowSize(Low_SDL_Window *window, int w, int h) { }
 };
 
 class SDLMixerLowApiStub : public SDLMixerLowApi

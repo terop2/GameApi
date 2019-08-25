@@ -932,3 +932,55 @@ GameApi::MT GameApi::MaterialsApi::gltf_material( EveryApi &ev, std::string base
   Material *mat = new GLTF_Material(e,ev, load, material_id,mix);
   return add_material(e, mat);
 } 
+
+GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id)
+{
+  if (mesh_id>=0 && mesh_id<load->model.meshes.size()) {
+    int s = load->model.meshes[mesh_id].primitives.size();
+    std::vector<GameApi::ML> mls;
+    for(int i=0;i<s;i++) {
+      GameApi::P p = gltf_load2(e, ev, load, mesh_id, i);
+      int mat = load->model.meshes[mesh_id].primitives[i].material;
+      GameApi::MT mat2 = gltf_material2(e, ev, load, mat, 1.0);
+      GameApi::ML ml = ev.materials_api.bind(p,mat2);
+      mls.push_back(ml);
+    }
+    return ev.mainloop_api.array_ml(ev, mls);
+  } else {
+    GameApi::P empty = ev.polygon_api.empty();
+    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
+    return ml;
+  }
+}
+GameApi::ML GameApi::MainLoopApi::gltf_mesh( GameApi::EveryApi &ev, std::string base_url, std::string url, int mesh_id )
+{
+  bool is_binary=false;
+  if (url.size()>3) {
+    std::string sub = url.substr(url.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+  LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  load->Prepare();
+  return gltf_mesh2(e,ev,load, mesh_id);
+}
+GameApi::ML gltf_mesh_all2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load )
+{
+  int s = load->model.meshes.size();
+  std::vector<GameApi::ML> mls;
+  for(int i=0;i<s;i++) {
+    GameApi::ML ml = gltf_mesh2( e, ev, load, i );
+    mls.push_back(ml);
+  }
+  return ev.mainloop_api.array_ml(ev, mls);
+}
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, std::string base_url, std::string url )
+{
+  bool is_binary=false;
+  if (url.size()>3) {
+    std::string sub = url.substr(url.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+  LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  load->Prepare();
+  return gltf_mesh_all2( e, ev, load );
+}

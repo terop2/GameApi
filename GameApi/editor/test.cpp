@@ -20,6 +20,8 @@ using namespace GameApi;
 extern "C" void _udev_device_get_action() { }
 #endif
 
+extern int g_event_screen_x;
+extern int g_event_screen_y;
 
 std::string hexify2(std::string s)
 {
@@ -522,6 +524,20 @@ void iter(void *arg)
     while((e=env->ev->mainloop_api.get_event()).last)
       {
 	if (e.type==256) { exit(0); }
+	if (e.type==0x200) {
+	    int sx = g_event_screen_x;
+	    int sy = g_event_screen_y;
+	    if (sx!=-1 && sy != -1) {
+	    W w = env->canvas_area;
+	    //GuiWidget *ww = find_widget(*env->env, w);
+	    //Vector2d sz = { sx-140,sy-30 };
+	    //ww->set_size(sz);
+	    //env->gui->set_size(w, sx-140, sy-30);
+	    //env->gui->set_pos(w, 140, 30);
+	    //env->gui->set_pos(env->scrollbar_x, 140, sy-20);
+
+	    }
+	}
 	//std::cout << e.type << " " << e.ch << " " << e.button << std::endl;
 	//if (e.type==1024 && e.button==-1) continue;
 	//if (e.type==0x300)

@@ -3654,6 +3654,8 @@ private:
   unsigned int true_color, false_color;
   float time;
 };
+extern int g_event_screen_y;
+extern int g_event_screen_x;
 class ScrollAreaWidget : public GuiWidgetForward
 {
 public:
@@ -3707,7 +3709,13 @@ public:
     if (is_visible())
       {
     g_low->ogl->glEnable(Low_GL_SCISSOR_TEST);
-    g_low->ogl->glScissor(pos.x, screen_y-pos.y-size.dy, size.dx, size.dy);
+    if (g_event_screen_y!=-1) {
+      float scale_x = float(g_event_screen_x)/float(ev.mainloop_api.get_screen_width());
+      float scale_y = float(g_event_screen_y)/float(ev.mainloop_api.get_screen_height());
+      g_low->ogl->glScissor(pos.x*scale_x, g_event_screen_y-pos.y*scale_y-size.dy*scale_y, size.dx*scale_x, size.dy*scale_y);
+    } else {
+      g_low->ogl->glScissor(pos.x, screen_y-pos.y-size.dy, size.dx, size.dy);
+    }
     vec[0]->render();
     g_low->ogl->glDisable(Low_GL_SCISSOR_TEST);
       }
@@ -4834,7 +4842,9 @@ ASyncData async_data[] = {
   { "materials_api", "gltf_material", 2 },
   { "polygon_api", "bar_chart", 1 },
   { "polygon_api", "bar_chart2", 1 },
-  { "polygon_api", "piechart_full", 4 }
+  { "polygon_api", "piechart_full", 4 },
+  { "mainloop_api", "gltf_mesh", 2 },
+  { "mainloop_api", "gltf_mesh_all", 2 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -7106,6 +7116,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "http://tpgames.org/blob_p.mp", "a", "b", "c", "d", "e" },
 			 "P", "mainloop_api", "load_P_script"));
 
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_ML_script,
 			 "ml_script",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
@@ -7144,6 +7155,18 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "http://tpgames.org/test_bm.chai", "100", "100" },
 			 "BM", "bitmap_api", "chai_bm"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh,
+			 "ml_gltf",
+			 { "ev", "base_url", "url", "mesh_id" },
+			 { "EveryApi&", "std::string", "std::string", "int" }, 
+			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0" },
+			 "ML", "mainloop_api", "gltf_mesh"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all,
+			 "ml_gltf_all",
+			 { "ev", "base_url", "url" },
+			 { "EveryApi&", "std::string", "std::string" },
+			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb" },
+			 "ML", "mainloop_api", "gltf_mesh_all"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::load_scene,
 			 "scene_ml",
 			 { "ev", "url", "sx", "sy" },
