@@ -715,6 +715,8 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
     if (event.window.event == 5) { 
       g_event_screen_x = event.window.data1;
       g_event_screen_y = event.window.data2;
+      if (g_event_screen_x<320) g_event_screen_x = 320;
+      if (g_event_screen_y<200) g_event_screen_y = 200;
       g_low->sdl->SDL_SetWindowSize(sdl_window,g_event_screen_x, g_event_screen_y);
       g_low->ogl->glViewport(0,0,g_event_screen_x, g_event_screen_y);
     }
@@ -1525,6 +1527,7 @@ GameApi::ML GameApi::MainLoopApi::display_background(EveryApi &ev, ML ml)
   if (g_transparent) { 
     return ml;
   } else {
+
     BM I1=ev.bitmap_api.newbitmap(100,100,0xff000000);
     BM I2=ev.bitmap_api.scale_bitmap_fullscreen(ev,I1);
     ML I3=ev.sprite_api.vertex_array_render(ev,I2);
