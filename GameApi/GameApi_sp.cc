@@ -164,6 +164,9 @@ EXPORT GameApi::SpriteApi::SpriteApi(GameApi::Env &e) : e(e)
 {
   priv = (void*) new SpritePriv;
 }
+
+extern int g_event_screen_x;
+extern int g_event_screen_y;
 class TurnTo2d : public MainLoopItem
 {
 public:
@@ -196,10 +199,19 @@ public:
     rect_sx = ev.mainloop_api.get_screen_rect_sx();
     rect_sy = ev.mainloop_api.get_screen_rect_sy();
 
+
+  	float scale_x = 1.0;
+	float scale_y = 1.0;
+	if (g_event_screen_y!=-1) {
+	  scale_x = float(g_event_screen_x)/float(screen_x);
+	  scale_y = float(g_event_screen_y)/float(screen_y);
+	}
+
+
     GameApi::SH sh = { e.sh_texture_2d };
     ev.shader_api.use(sh);
     ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-    g_low->ogl->glViewport(corner_x+tl.x,screen_y-corner_y-(br.y-tl.y), br.x-tl.x, br.y-tl.y);
+    g_low->ogl->glViewport((corner_x+tl.x)*scale_x,(screen_y-corner_y-(br.y-tl.y))*scale_y, (br.x-tl.x)*scale_x, (br.y-tl.y)*scale_y);
 
     g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
     //int old_sh = e.sh_texture;
@@ -212,7 +224,7 @@ public:
     //e.sh_texture = old_sh;
     g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
     ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
-    g_low->ogl->glViewport(corner_x,screen_y-corner_y-rect_sy,rect_sx, rect_sy);
+    g_low->ogl->glViewport(corner_x*scale_x,(screen_y-corner_y-rect_sy)*scale_y,rect_sx*scale_x, rect_sy*scale_y);
     inside_it = false;
   }
 

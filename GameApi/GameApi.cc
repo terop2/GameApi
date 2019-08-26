@@ -8802,8 +8802,11 @@ EXPORT GameApi::BLK GameApi::BlockerApi::game_window(GameApi::EveryApi &ev, ML m
 }
 EXPORT GameApi::RUN GameApi::BlockerApi::game_window2(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration)
 {
+  float screen_x = ev.mainloop_api.get_screen_sx();
+  float screen_y = ev.mainloop_api.get_screen_sy();
+
   ml = ev.mainloop_api.display_background(ev,ml);
-  Splitter *spl = new MainLoopSplitter_win32_and_emscripten(ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
+  Splitter *spl = new MainLoopSplitter_win32_and_emscripten(ml,logo, fpscounter, start_time, duration, screen_x, screen_y);
   return add_splitter(e, spl);
 }
 
