@@ -552,6 +552,7 @@ public:
   virtual void SDL_GL_DeleteContext(Low_SDL_GLContext ctx)=0;
   virtual const char *SDL_GetError()=0;
   virtual void SDL_SetWindowSize(Low_SDL_Window *window, int w, int h)=0;
+  virtual char *SDL_GetClipboardText()=0;
 };
 
 struct Low_Mix_Chunk

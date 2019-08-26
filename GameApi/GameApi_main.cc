@@ -1208,10 +1208,22 @@ GameApi::ML GameApi::MainLoopApi::seq_ml_score(ML ml1, ML ml2, int score)
   MainLoopItem *main2 = find_main_loop(e,ml2);
   return add_main_loop(e, new SeqMLScore(main1,main2, score));
 }
+extern int g_event_screen_x;
+extern int g_event_screen_y;
 void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH texture_2d, SH array_texture, M in_MV, M in_T, M in_N, int screen_size_x, int screen_size_y)
 {
   int screenx = screen_size_x;
   int screeny = screen_size_y;
+
+  //float scale_x = 1.0;
+  //float scale_y = 1.0;
+  //	if (g_event_screen_y!=-1) {
+  //	  scale_x = float(g_event_screen_x)/float(screenx);
+  //	  scale_y = float(g_event_screen_y)/float(screeny);
+  //	}
+  ////	screenx=screenx*scale_x;
+  //	screeny=screeny*scale_y;
+
   MainLoopItem *item = find_main_loop(e, ml);
   MainLoopEnv ek;
   ek.sh_color = color.id;

@@ -38,6 +38,9 @@
 #include <emscripten.h>
 #endif
 
+extern int g_event_screen_x;
+extern int g_event_screen_y;
+
 #if defined(ARM) || defined(RASPI) 
 #ifdef FIRST_PART
 int strlen(const char *ptr) { const char *p = ptr; while(*p) { p++;  } return p-ptr;}
@@ -516,8 +519,10 @@ public:
 	active = false;
       }
     //std::cout << type << " " << ch << std::endl;
-    if (type==768 && (ch==1073742049||ch==1073742053)) { shift=true; std::cout << "Shift1" << std::endl; }
-    if (type==769 && (ch==1073742049||ch==1073742053)) { shift=false; std::cout << "Shift2" << std::endl; }
+    if (type==768 && (ch==1073742049||ch==1073742053)) { shift=true; }
+    if (type==769 && (ch==1073742049||ch==1073742053)) { shift=false; }
+    if (type==768 && (ch==1073742048||ch==1073742052)) { ctrl = true; }
+    if (type==769 && (ch==1073742048||ch==1073742052)) { ctrl = false; }
 
     if (firsttime)
       {
@@ -532,6 +537,24 @@ public:
     if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
 #endif
     if (ch==13) { ch='\n'; }
+    if (active && ctrl && type==768 && ch==118) // ctrl-v
+      {
+	char *buf = g_low->sdl->SDL_GetClipboardText();
+	std::string buf2 = buf;
+	int s = buf2.size();
+	std::string buf3;
+	for(int i=0;i<s;i++) {
+	  int s2 = allowed_chars.size();
+	  bool insert = false;
+	  for(int j=0;j<s2;j++) {
+	    if (allowed_chars[j]==buf2[i]) { insert=true; break; }
+	  }
+	  if (insert) buf3.push_back(buf2[i]);
+	}
+			     
+	label = buf3;
+	changed=true;
+      }
     if (shift) { 
 #ifdef EMSCRIPTEN
       const char *chars1 = "";
@@ -548,7 +571,7 @@ public:
       if (ch==45) ch='_';
       //ch = std::toupper(ch); 
     }
-    if (active && type==768)
+    if (active && type==768 && !changed)
       {
 	int s = allowed_chars.size();
 	for(int i=0;i<s;i++)
@@ -620,6 +643,7 @@ private:
   bool active;
   int x_gap;
   bool shift;
+  bool ctrl;
 };
 
 
@@ -685,14 +709,20 @@ public:
       {
 	Point2d pos = get_pos();
 	Vector2d sz = get_size();
-	g_low->ogl->glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
+	float scale_x = 1.0;
+	float scale_y = 1.0;
+	if (g_event_screen_y!=-1) {
+	  scale_x = float(g_event_screen_x)/float(screen_x);
+	  scale_y = float(g_event_screen_y)/float(screen_y);
+	}
+	g_low->ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
 	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
 	obj.render();
 	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-	g_low->ogl->glViewport(0,0,screen_x, screen_y);
+	g_low->ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
 	ev.shader_api.use(old_sh);
       }
     }
@@ -774,7 +804,13 @@ public:
       {
 	Point2d pos = get_pos();
 	Vector2d sz = get_size();
-	g_low->ogl->glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
+	float scale_x = 1.0;
+	float scale_y = 1.0;
+	if (g_event_screen_y!=-1) {
+	  scale_x = float(g_event_screen_x)/float(screen_x);
+	  scale_y = float(g_event_screen_y)/float(screen_y);
+	}
+	g_low->ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
 	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
@@ -783,7 +819,7 @@ public:
 	ev.polygon_api.render_vertex_array(p);
 	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-	g_low->ogl->glViewport(0,0,screen_x, screen_y);
+	g_low->ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
 	ev.shader_api.use(old_sh);
       }
       }
@@ -912,7 +948,13 @@ public:
       {
 	Point2d pos = get_pos();
 	Vector2d sz = get_size();
-	g_low->ogl->glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
+	float scale_x = 1.0;
+	float scale_y = 1.0;
+	if (g_event_screen_y!=-1) {
+	  scale_x = float(g_event_screen_x)/float(screen_x);
+	  scale_y = float(g_event_screen_y)/float(screen_y);
+	}
+	g_low->ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	int c_x = ev.mainloop_api.get_corner_x();
 	int c_y = ev.mainloop_api.get_corner_y();
 	int c_sx = ev.mainloop_api.get_screen_rect_sx();
@@ -956,7 +998,7 @@ public:
 	ev.shader_api.use(sh_2d);
 	ev.mainloop_api.switch_to_3d(false, sh_2d, screen_x, screen_y);
 	ev.mainloop_api.set_corner(c_x,c_y,c_sx,c_sy);
-	g_low->ogl->glViewport(0,0,screen_x, screen_y);
+	g_low->ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
 	ev.shader_api.use(old_sh);
       } 
 
@@ -1171,7 +1213,15 @@ public:
       {
 	Point2d pos = get_pos();
 	Vector2d sz = get_size();
-	g_low->ogl->glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
+
+	float scale_x = 1.0;
+	float scale_y = 1.0;
+	if (g_event_screen_y!=-1) {
+	  scale_x = float(g_event_screen_x)/float(screen_x);
+	  scale_y = float(g_event_screen_y)/float(screen_y);
+	}
+
+	g_low->ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
 	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
@@ -1180,7 +1230,7 @@ public:
 	obj.render();
 	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-	g_low->ogl->glViewport(0,0,screen_x, screen_y);
+	  g_low->ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
 	ev.shader_api.use(old_sh);
       }
       }
@@ -1260,14 +1310,21 @@ public:
       {
 	Point2d pos = get_pos();
 	Vector2d sz = get_size();
-	g_low->ogl->glViewport(pos.x, screen_y-pos.y-sz.dy, sz.dx, sz.dy);
+	float scale_x = 1.0;
+	float scale_y = 1.0;
+	if (g_event_screen_y!=-1) {
+	  scale_x = float(g_event_screen_x)/float(screen_x);
+	  scale_y = float(g_event_screen_y)/float(screen_y);
+	}
+
+	g_low->ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
 	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
 	obj.render();
 	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-	g_low->ogl->glViewport(0,0,screen_x, screen_y);
+	g_low->ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
 	ev.shader_api.use(old_sh);
       }
       }
@@ -2655,7 +2712,15 @@ EXPORT GameApi::W GameApi::GuiApi::copy_paste_dialog(SH sh, W &close_button,FI f
 
 EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button, W &mem)
 {
-  W bm_1 = poly(p, sh, 800,600, screen_size_x,screen_size_y);
+  int w = 800;
+  int h = 600;
+  if (g_event_screen_y!=-1) {
+    float scale_x = float(g_event_screen_x)/float(screen_size_x);
+    float scale_y = float(g_event_screen_y)/float(screen_size_y);
+    w*=scale_x;
+    h*=scale_y;
+  }
+  W bm_1 = poly(p, sh, w,h, screen_size_x,screen_size_y);
   mem = bm_1;
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
@@ -2703,7 +2768,16 @@ EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x,
 
 EXPORT GameApi::W GameApi::GuiApi::va_dialog(VA p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button)
 {
-  W bm_1 = va(p, sh, 800,600, screen_size_x,screen_size_y);
+  int w = 800;
+  int h = 600;
+  if (g_event_screen_y!=-1) {
+    float scale_x = float(g_event_screen_x)/float(screen_size_x);
+    float scale_y = float(g_event_screen_y)/float(screen_size_y);
+    w*=scale_x;
+    h*=scale_y;
+  }
+
+  W bm_1 = va(p, sh, w,h, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
   W bm_4 = layer(bm_3, bm_2);
@@ -2736,7 +2810,17 @@ EXPORT GameApi::W GameApi::GuiApi::va_dialog(VA p, SH sh, int screen_size_x, int
 
 EXPORT GameApi::W GameApi::GuiApi::ml_dialog(ML p, SH sh, SH sh2, SH sh_2d, SH sh_arr, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button)
 {
-  W bm_1 = ml(p, sh, sh2, sh_2d, sh_arr, 800,600, screen_size_x,screen_size_y);
+  int w = 800;
+  int h = 600;
+  if (g_event_screen_y!=-1) {
+    float scale_x = float(g_event_screen_x)/float(screen_size_x);
+    float scale_y = float(g_event_screen_y)/float(screen_size_y);
+    w*=scale_x;
+    h*=scale_y;
+  }
+
+
+  W bm_1 = ml(p, sh, sh2, sh_2d, sh_arr, w,h, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
   W bm_4 = layer(bm_3, bm_2);
@@ -2772,7 +2856,17 @@ EXPORT GameApi::W GameApi::GuiApi::ml_dialog(ML p, SH sh, SH sh2, SH sh_2d, SH s
 
 EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atlas, BM atlas_bm, int screen_x, int screen_y, W &codegen_button, W &collect_button)
 {
-  W bm_1 = shader_plane(p, 800,600*600/800, screen_x, screen_y);
+  int w = 800;
+  int h = 600;
+  if (g_event_screen_y!=-1) {
+    float scale_x = float(g_event_screen_x)/float(screen_x);
+    float scale_y = float(g_event_screen_y)/float(screen_y);
+    w*=scale_x;
+    h*=scale_y;
+  }
+
+
+  W bm_1 = shader_plane(p, w,h*h/w, screen_x, screen_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
   W bm_4 = layer(bm_3, bm_2);
@@ -2806,7 +2900,16 @@ EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atl
 
 EXPORT GameApi::W GameApi::GuiApi::lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W& collect_button)
 {
-  W bm_1 = lines(p, sh, 800,600, screen_size_x,screen_size_y);
+  int w = 800;
+  int h = 600;
+  if (g_event_screen_y!=-1) {
+    float scale_x = float(g_event_screen_x)/float(screen_size_x);
+    float scale_y = float(g_event_screen_y)/float(screen_size_y);
+    w*=scale_x;
+    h*=scale_y;
+  }
+
+  W bm_1 = lines(p, sh, w,h, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
   W bm_4 = layer(bm_3, bm_2);
@@ -2839,7 +2942,16 @@ EXPORT GameApi::W GameApi::GuiApi::lines_dialog(LI p, SH sh, int screen_size_x, 
 
 EXPORT GameApi::W GameApi::GuiApi::pts_dialog(PTS p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button)
 {
-  W bm_1 = pts(p, sh, 800,600, screen_size_x,screen_size_y);
+  int w = 800;
+  int h = 600;
+  if (g_event_screen_y!=-1) {
+    float scale_x = float(g_event_screen_x)/float(screen_size_x);
+    float scale_y = float(g_event_screen_y)/float(screen_size_y);
+    w*=scale_x;
+    h*=scale_y;
+  }
+
+  W bm_1 = pts(p, sh, w,h, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
   W bm_4 = layer(bm_3, bm_2);
