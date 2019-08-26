@@ -8479,7 +8479,8 @@ extern int hidden_score;
 extern int g_shows_hundred;
 extern std::vector<int> g_hide_container;
 
-
+extern int g_event_screen_x;
+extern int g_event_screen_y;
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
 public:
@@ -8653,6 +8654,13 @@ public:
   }
   virtual void Destroy()
   {
+	float scale_x = 1.0;
+	float scale_y = 1.0;
+	if (g_event_screen_y!=-1) {
+	  scale_x = float(g_event_screen_x)/float(screen_width);
+	  scale_y = float(g_event_screen_y)/float(screen_height);
+	}
+	g_low->ogl->glViewport(0,0,screen_width*scale_x, screen_height*scale_y);
     // this is needed for win32 build in editor
       g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
   }
@@ -8679,6 +8687,9 @@ private:
 
 extern int score;
 extern int hidden_score;
+
+extern int g_event_screen_x;
+extern int g_event_screen_y;
 
 class MainLoopBlocker_win32_and_emscripten : public Blocker
 {
@@ -8753,6 +8764,14 @@ public:
 #else
       emscripten_set_main_loop_arg(blocker_iter, (void*)&env, 0,1);
 #endif
+      	float scale_x = 1.0;
+	float scale_y = 1.0;
+	if (g_event_screen_y!=-1) {
+	  scale_x = float(g_event_screen_x)/float(screen_width);
+	  scale_y = float(g_event_screen_y)/float(screen_height);
+	}
+	g_low->ogl->glViewport(0,0,screen_width*scale_x, screen_height*scale_y);
+
       std::cout << "Mainloop existing.." << std::endl;
       g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
   }

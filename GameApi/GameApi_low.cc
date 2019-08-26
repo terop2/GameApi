@@ -970,6 +970,9 @@ class SDLApi : public SDLLowApi
   {
     ::SDL_SetWindowSize((SDL_Window*)(window->ptr), w,h);
   }
+  virtual char *SDL_GetClipboardText() {
+    return ::SDL_GetClipboardText();
+  }
   virtual void SDL_Init(int flags) { map_enums_sdl(flags); ::SDL_Init(flags);
     //std::cout << "SDL_Init:" << SDL_GetError() << std::endl;
   }

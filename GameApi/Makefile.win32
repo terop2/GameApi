@@ -113,6 +113,8 @@ touch_all: GameApi_gui.cc
 	touch GameApi_gui_2_3.cc
 	touch GameApi_gui_3_3.cc
 
+touch_gui:
+	touch GameApi_gui_1_1.cc
 touch_polydistfield:
 	touch GameApi_gui_2_1.cc
 touch_waveform:
