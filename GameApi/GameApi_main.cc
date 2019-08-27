@@ -31,7 +31,11 @@ EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_heigh
   int screenx = screen_width;
   int screeny = screen_height;
 #ifdef SDL2_USED
+#ifndef EMSCRIPTEN
   p->screen = InitSDL2(screenx,screeny,false, false, true,vr_init);
+#else
+  p->screen = InitSDL2(screenx,screeny,false, false, false,vr_init);
+#endif
 #else
   p->screen = InitSDL(screenx,screeny,false);
 #endif
@@ -711,6 +715,8 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
     }
 #endif
 #endif
+
+#ifndef EMSCRIPTEN
   if (event.type==Low_SDL_WINDOWEVENT) {
     if (event.window.event == 5) { 
       g_event_screen_x = event.window.data1;
@@ -721,7 +727,8 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
       g_low->ogl->glViewport(0,0,g_event_screen_x, g_event_screen_y);
     }
   }
-
+#endif
+  
   if (event.type==Low_SDL_MOUSEWHEEL)
     {
       Low_SDL_MouseWheelEvent *ptr = &event.wheel;

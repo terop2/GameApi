@@ -226,6 +226,8 @@ void initialize_low(int flags);
 int call_count=0;
 
 extern bool g_transparent;
+extern int g_event_screen_x;
+extern int g_event_screen_y;
 
 #if 1
 int main(int argc, char *argv[]) {
@@ -326,6 +328,8 @@ int main(int argc, char *argv[]) {
       set_status(2,6);
       ev.mainloop_api.init_window(w_width,w_height,"GameApi", vr_init);
       set_status(3,6);
+      g_event_screen_x = -1;
+      g_event_screen_y = -1;
     }
   else
     {
