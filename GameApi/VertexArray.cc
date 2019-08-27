@@ -1352,6 +1352,7 @@ void RenderVertexArray::prepare_instanced(int id, Point *positions, int size)
   g_low->ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Point) * size, positions, Low_GL_DYNAMIC_DRAW);
 
 }
+std::map<Point*,bool> g_inst_map;
 void RenderVertexArray::render_instanced(int id, Point *positions, int size)
 {
 #ifdef VAO
@@ -1360,8 +1361,10 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
 
   // INSTANCED DRAWING
   g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
-  g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
-
+  if (g_inst_map[positions]==false) {
+    g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
+  }
+    
   g_low->ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   g_low->ogl->glVertexAttribDivisor(5, 1);
   g_low->ogl->glEnableVertexAttribArray(5);
@@ -1417,7 +1420,9 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
 
   // INSTANCED DRAWING
   g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
+  if (g_inst_map[positions]==false) {
   g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
+  }
   g_low->ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   g_low->ogl->glVertexAttribDivisor(5, 1);
   g_low->ogl->glEnableVertexAttribArray(5);
@@ -1470,7 +1475,9 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
 
   // INSTANCED DRAWING
   g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
+  if (g_inst_map[positions]==false) {
   g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
+  }
   g_low->ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   g_low->ogl->glVertexAttribDivisor(5, 1);
   g_low->ogl->glEnableVertexAttribArray(5);
@@ -1522,6 +1529,7 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
     g_low->ogl->glBindVertexArray(0);
 #endif
     g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
+    g_inst_map[positions]=true;
 
 
 }
