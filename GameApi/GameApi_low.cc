@@ -973,6 +973,10 @@ class SDLApi : public SDLLowApi
   virtual char *SDL_GetClipboardText() {
     return ::SDL_GetClipboardText();
   }
+  virtual int SDL_SetClipboardText(const char *text)
+  {
+    return ::SDL_SetClipboardText(text);
+  }
   virtual void SDL_Init(int flags) { map_enums_sdl(flags); ::SDL_Init(flags);
     //std::cout << "SDL_Init:" << SDL_GetError() << std::endl;
   }

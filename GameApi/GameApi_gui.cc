@@ -555,6 +555,9 @@ public:
 	label = buf3;
 	changed=true;
       }
+    if (active && ctrl && type==768 && ch==99) {
+      g_low->sdl->SDL_SetClipboardText(label.c_str());
+    }
     if (shift) { 
 #ifdef EMSCRIPTEN
       const char *chars1 = "";

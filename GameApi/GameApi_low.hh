@@ -553,6 +553,7 @@ public:
   virtual const char *SDL_GetError()=0;
   virtual void SDL_SetWindowSize(Low_SDL_Window *window, int w, int h)=0;
   virtual char *SDL_GetClipboardText()=0;
+  virtual int SDL_SetClipboardText(const char *text)=0;
 };
 
 struct Low_Mix_Chunk
