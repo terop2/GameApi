@@ -3924,15 +3924,34 @@ GameApi::ARR GameApi::BitmapApi::cubemap(BM bm)
 class NoiseVectors : public Bitmap<Color>
 {
 public:
-  NoiseVectors(int sx, int sy) : sx(sx), sy(sy) {}
+  NoiseVectors(int sx, int sy) : sx(sx), sy(sy) {
+    if (sx<=0) sx=1;
+    if (sy<=0) sy=1;
+    xp_arr = new float[sx*sy];
+    yp_arr = new float[sx*sy];
+    for(int i=0;i<sx*sy;i++) xp_arr[i]=-60000.0;
+    for(int i=0;i<sx*sy;i++) yp_arr[i]=-60000.0;
+  }
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   
   Color Map(int mx, int my) const
   {
+    if (mx<0||mx>=sx) return Color(0.0,0.0,0.0);
+    if (my<0||my>=sy) return Color(0.0,0.0,0.0);
     Random r;
-    float xp = double(r.next())/r.maximum();
-    float yp = double(r.next())/r.maximum();
+    float xp = xp_arr[mx+my*sx];
+    float yp = yp_arr[mx+my*sx];
+    if (xp<-50000.0)
+      {
+	xp = double(r.next())/r.maximum();
+	xp_arr[mx+my*sx]=xp;
+      }
+    if (yp<-50000.0) 
+      {
+	yp = double(r.next())/r.maximum();
+	yp_arr[mx+my*sy]=yp;
+      }
     xp*=3.14159;
     yp*=3.14159*2.0;
     float x = 127*sin(xp)*cos(yp);
@@ -3944,6 +3963,8 @@ public:
   void Prepare() { }
 private:
   int sx,sy;
+  float *xp_arr;
+  float *yp_arr;
 };
 
 GameApi::BM GameApi::BitmapApi::noise_vectors(int sx, int sy)
