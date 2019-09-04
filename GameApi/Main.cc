@@ -437,6 +437,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_STENCIL_SIZE, 1);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_MULTISAMPLEBUFFERS, 1);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_MULTISAMPLESAMPLES, 32);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_FLAGS, Low_SDL_GL_CONTEXT_DEBUG_FLAG);
 #ifndef EMSCRIPTEN
 #ifndef LINUX
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
