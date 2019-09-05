@@ -27,9 +27,9 @@
 #endif
 #endif
 
-#ifndef EMSCRIPTEN
+//#ifndef EMSCRIPTEN
 #define VAO 1
-#endif
+//#endif
 
 #ifndef RASPI
 #define HAS_INSTANCING 1
