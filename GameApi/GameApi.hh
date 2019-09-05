@@ -527,13 +527,13 @@ public:
 	Q get_tex_coord_1(TX tx, int id);
 	IMPORT TXID prepare(TX tx);
   IMPORT TXID bufferref_to_txid(TXID old, const BufferRef &buf);
-  IMPORT std::vector<TXID> prepare_many(EveryApi &ev, std::vector<BM> vec);
+  IMPORT std::vector<TXID> prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types=std::vector<int>());
   IMPORT TXID prepare_cubemap(EveryApi &ev, BM right, BM left, BM top, BM bottom, BM back, BM front);
 	IMPORT void use(TXID tx, int i = 0);
   IMPORT void use_many(std::vector<TXID> vec, int i=0);
 	IMPORT void unuse(TXID tx);
 	IMPORT VA bind(VA va, TXID tx);
-        IMPORT VA bind_many(VA va, std::vector<TXID> tx);
+  IMPORT VA bind_many(VA va, std::vector<TXID> tx, std::vector<int> types=std::vector<int>());
         IMPORT VA bind_cubemap(VA va, TXID id);
 	IMPORT VA bind_arr(VA va, TXA tx);
         IMPORT TXA prepare_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
@@ -1274,6 +1274,7 @@ public:
   IMPORT MT texture_many2(EveryApi &ev, float mix);
   IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
   IMPORT MT gltf_material( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix );
+  IMPORT MT gltf_material_env( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix, BM diffuse_env, BM specular_env, BM bfrd);
   IMPORT MT gltf_material3( EveryApi &ev, float roughness, float metallic, float base_r, float base_g, float base_b, float base_a, float mix);
   IMPORT MT phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT MT gi(EveryApi &ev, MT nxt, PTS points, float obj_size);
@@ -1308,7 +1309,7 @@ public:
   IMPORT ML bind_inst_fade(P p, PTS pts, MT mat, bool flip, float start_time, float end_time);
   IMPORT ML render_instanced_ml(EveryApi &ev, P p, PTS pts);
   IMPORT ML render_instanced_ml_fade(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time);
-  IMPORT ML render_instanced_ml_texture(EveryApi &ev, P p, PTS pts, std::vector<BM> vec);
+  IMPORT ML render_instanced_ml_texture(EveryApi &ev, P p, PTS pts, std::vector<BM> vec, std::vector<int> types=std::vector<int>());
   IMPORT ML render_instanced_ml_texture_id(EveryApi &ev, P p, PTS pts, std::vector<TXID> *vec);
   IMPORT ML render_instanced_ml_cubemap(EveryApi &ev, P p, PTS pts, std::vector<BM> vec);
   IMPORT ML render_instanced_ml_texture2(EveryApi &ev, P p, PTS pts);
@@ -2283,6 +2284,7 @@ public:
   IMPORT P texcoord_spherical2(EveryApi &ev, PT center, float r, P orig);
   IMPORT P texcoord_cylindar(P orig, float start_y, float end_y);
   IMPORT P texcoord_from_normal(P p);
+  IMPORT P texcoord_from_normal2(P p);
   IMPORT P texcoord_plane(P p, float start_x, float end_x, float start_y, float end_y);
   IMPORT P texcoord_subarea(P p, float start_x, float end_x, float start_y, float end_y);
   IMPORT P fix_texcoord(P p);
@@ -2411,7 +2413,7 @@ public:
   IMPORT void render_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh, int hide_n = -1); // fast
   IMPORT ML render_vertex_array_ml(EveryApi &ev, VA va);
   IMPORT ML render_vertex_array_ml2(EveryApi &ev, P va);
-  IMPORT ML render_vertex_array_ml2_texture(EveryApi &ev, P va, std::vector<BM> vec);
+  IMPORT ML render_vertex_array_ml2_texture(EveryApi &ev, P va, std::vector<BM> vec, std::vector<int> types=std::vector<int>());
   IMPORT ML render_vertex_array_ml2_texture_id(EveryApi &ev, P va, std::vector<TXID> *vec);
   IMPORT ML render_vertex_array_ml2_cubemap(EveryApi &ev, P va, std::vector<BM> vec);
   IMPORT ML render_vertex_array_ml2_texture2(EveryApi &ev, P p);
@@ -2451,7 +2453,7 @@ public:
   IMPORT ML texture_cubemap_shader(EveryApi &ev, ML mainloop, float mix, float mix2);
   IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML skeletal_shader(EveryApi &ev, ML mainloop, std::vector<SA> vec);
-  IMPORT ML gltf_shader(EveryApi &ev, ML mainloop, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, float roughness, float metallic, float basecolor0, float basecolor1, float basecolor2, float basecolor3, float occul, float emiss);
+  IMPORT ML gltf_shader(EveryApi &ev, ML mainloop, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, float roughness, float metallic, float basecolor0, float basecolor1, float basecolor2, float basecolor3, float occul, float emiss);
   IMPORT void explode(VA va, PT pos, float dist);
   //IMPORT int accexss_point_count(VA va, bool triangle);
   //IMPORT float *access_points(VA va, bool triangle, int face, int point);
@@ -3361,7 +3363,7 @@ public:
   US f_custom(US us, std::string f_funcname);
   US f_gi(US us);
   US f_colour_with_mix(US us);
-  US f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4);
+  US f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7);
 private:
   Env &e;
 };

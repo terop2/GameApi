@@ -8169,7 +8169,7 @@ public:
     p-=center;
     Vector vv = p;
     //Vector center = Vector(box.matrix[3], box.matrix[7], box.matrix[11]);
-    return -vv; /*-center*/;
+    return vv; /*-center*/;
   }
 private:
   //Matrix box;

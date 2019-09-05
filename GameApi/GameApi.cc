@@ -5062,12 +5062,12 @@ public:
 	    if (e.us_vertex_shader==-1)
 	      {
 		u_v = ev.uber_api.v_colour(u_v);
-		u_v = ev.uber_api.v_light(u_v);
+		//u_v = ev.uber_api.v_light(u_v);
 	      }
 	    if (e.us_fragment_shader==-1)
 	      {
 		u_f = ev.uber_api.f_colour(u_f);
-		u_f = ev.uber_api.f_light(u_f);
+		//u_f = ev.uber_api.f_light(u_f);
 	      }
 	  }
       }
@@ -5163,7 +5163,7 @@ private:
 class RenderInstancedTex : public MainLoopItem
 {
 public:
-  RenderInstancedTex(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
+  RenderInstancedTex(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
   int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
@@ -5175,8 +5175,8 @@ public:
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     pta = ev.points_api.prepare(pts);
     va = ev.polygon_api.create_vertex_array(p,true);
-    std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm);
-    va = ev.texture_api.bind_many(va, id);
+    std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm,types);
+    va = ev.texture_api.bind_many(va, id, types);
     initialized=true;
   }
   void execute(MainLoopEnv &e)
@@ -5240,12 +5240,12 @@ public:
 	    if (e.us_vertex_shader==-1)
 	      {
 		u_v = ev.uber_api.v_colour(u_v);
-		u_v = ev.uber_api.v_light(u_v);
+		//u_v = ev.uber_api.v_light(u_v);
 	      }
 	    if (e.us_fragment_shader==-1)
 	      {
 		u_f = ev.uber_api.f_colour(u_f);
-		u_f = ev.uber_api.f_light(u_f);
+		//u_f = ev.uber_api.f_light(u_f);
 	      }
 	  }
       }
@@ -5339,6 +5339,7 @@ private:
   bool fade, flip;
   float start_time, end_time;
   std::vector<GameApi::BM> bm;
+  std::vector<int> types;
   bool initialized;
 };
 
@@ -5436,12 +5437,12 @@ public:
 	    if (e.us_vertex_shader==-1)
 	      {
 		u_v = ev.uber_api.v_colour(u_v);
-		u_v = ev.uber_api.v_light(u_v);
+		//u_v = ev.uber_api.v_light(u_v);
 	      }
 	    if (e.us_fragment_shader==-1)
 	      {
 		u_f = ev.uber_api.f_colour(u_f);
-		u_f = ev.uber_api.f_light(u_f);
+		//u_f = ev.uber_api.f_light(u_f);
 	      }
 	  }
       }
@@ -5633,12 +5634,12 @@ public:
 	    if (e.us_vertex_shader==-1)
 	      {
 		u_v = ev.uber_api.v_colour(u_v);
-		u_v = ev.uber_api.v_light(u_v);
+		//u_v = ev.uber_api.v_light(u_v);
 	      }
 	    if (e.us_fragment_shader==-1)
 	      {
 		u_f = ev.uber_api.f_colour(u_f);
-		u_f = ev.uber_api.f_light(u_f);
+		//u_f = ev.uber_api.f_light(u_f);
 	      }
 	  }
       }
@@ -5815,12 +5816,12 @@ public:
 	    if (e.us_vertex_shader==-1)
 	      {
 		u_v = ev.uber_api.v_colour(u_v);
-		u_v = ev.uber_api.v_light(u_v);
+		//u_v = ev.uber_api.v_light(u_v);
 	      }
 	    if (e.us_fragment_shader==-1)
 	      {
 		u_f = ev.uber_api.f_colour(u_f);
-		u_f = ev.uber_api.f_light(u_f);
+		//u_f = ev.uber_api.f_light(u_f);
 	      }
 	  }
       }
@@ -6074,9 +6075,9 @@ EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml(GameApi::EveryApi 
   return ml2;
 #endif
 }
-EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_texture(GameApi::EveryApi &ev, P p, PTS pts, std::vector<BM> bm)
+EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_texture(GameApi::EveryApi &ev, P p, PTS pts, std::vector<BM> bm, std::vector<int> types)
 {
-  return add_main_loop(e, new RenderInstancedTex(e, ev, p,pts, false,false,0.0,0.0,bm));
+  return add_main_loop(e, new RenderInstancedTex(e, ev, p,pts, false,false,0.0,0.0,bm, types));
 }
 EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_texture_id(GameApi::EveryApi &ev, P p, PTS pts, std::vector<TXID> *bm)
 {
@@ -6105,7 +6106,7 @@ EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_fade(GameApi::Ever
 }
 EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_fade_texture(GameApi::EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time, std::vector<BM> bm)
 {
-  return add_main_loop(e, new RenderInstancedTex(e, ev, p,pts, true,flip,start_time,end_time,bm));  
+  return add_main_loop(e, new RenderInstancedTex(e, ev, p,pts, true,flip,start_time,end_time,bm,std::vector<int>()));  
 }
 
 
@@ -6563,34 +6564,47 @@ GameApi::US GameApi::UberShaderApi::f_gi(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("gi", next,"EX_POSITION"));
 }
-GameApi::US GameApi::UberShaderApi::f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4)
+GameApi::US GameApi::UberShaderApi::f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7)
 {
   ShaderCall *next = find_uber(e, us);
   std::string s;
-  if (tex0||tex1||tex2||tex3||tex4)
+  if (tex0||tex1||tex2||tex3||tex4||tex5||tex6||tex7)
     s+=" ";
   if (tex0) {
     s+="GLTF_TEX0";
-    if (tex1||tex2||tex3||tex4)
+    if (tex1||tex2||tex3||tex4||tex5||tex6||tex7)
       s+=" ";
   }
   if (tex1) {
     s+="GLTF_TEX1";
-    if (tex2||tex3||tex4)
+    if (tex2||tex3||tex4||tex5||tex6||tex7)
       s+=" ";
   }
   if (tex2) {
     s+="GLTF_TEX2";
-    if (tex3||tex4)
+    if (tex3||tex4||tex5||tex6||tex7)
       s+=" ";
   }
   if (tex3) {
     s+="GLTF_TEX3";
-    if (tex4)
+    if (tex4||tex5||tex6||tex7)
       s+=" ";
   }
   if (tex4) {
     s+="GLTF_TEX4";
+    if (tex5||tex6||tex7)
+      s+=" ";
+  }
+  if (tex5) {
+    s+="GLTF_TEX5";
+    if (tex6||tex7) s+=" ";
+  }
+  if (tex6) {
+    s+="GLTF_TEX6";
+    if (tex7) s+=" ";
+  }
+  if (tex7) {
+    s+="GLTF_TEX7";
   }
   return add_uber(e, new F_ShaderCallFunction("gltf", next,"EX_POSITION EX_NORMAL EX_COLOR EX_TEXCOORD GLTF" + s));
 }
@@ -9539,12 +9553,12 @@ public:
 	    if (e.us_vertex_shader==-1)
 	      {
 		u_v = ev.uber_api.v_colour(u_v);
-		u_v = ev.uber_api.v_light(u_v);
+		//u_v = ev.uber_api.v_light(u_v);
 	      }
 	    if (e.us_fragment_shader==-1)
 	      {
 		u_f = ev.uber_api.f_colour(u_f);
-		u_f = ev.uber_api.f_light(u_f);
+		//u_f = ev.uber_api.f_light(u_f);
 	      }
 	  }
       }

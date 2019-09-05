@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <iostream>
 #include <ios>
+#include <vector>
 
 struct Class {
   std::string classname;

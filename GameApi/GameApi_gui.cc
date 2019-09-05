@@ -4955,6 +4955,7 @@ ASyncData async_data[] = {
   { "polygon_api", "gltf_load", 2 },
   { "polygon_api", "gltf_load_bitmap", 2 },
   { "materials_api", "gltf_material", 2 },
+  { "materials_api", "gltf_material_env", 2 },
   { "polygon_api", "bar_chart", 1 },
   { "polygon_api", "bar_chart2", 1 },
   { "polygon_api", "piechart_full", 4 },
@@ -6985,6 +6986,13 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "std::string", "std::string", "int", "float" }, 
 			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "1.0" },
 			 "MT", "materials_api", "gltf_material"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material_env,
+			 "m_gltf_env",
+			 { "ev", "base_url", "url", "material_id", "mix", "diffuse", "specular", "bfrd" },
+			 { "EveryApi&", "std::string", "std::string", "int", "float", "BM", "BM", "BM" }, 
+			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "1.0", "", "", "" },
+			 "MT", "materials_api", "gltf_material_env"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material3,
 			 "m_material",
 			 { "ev", "roughness", "metallic", "base_r", "base_g", "base_b", "base_a", "mix" },

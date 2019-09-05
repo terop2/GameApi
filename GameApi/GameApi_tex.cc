@@ -31,14 +31,19 @@ EXPORT GameApi::VA GameApi::TextureApi::bind_cubemap(GameApi::VA va, GameApi::TX
   arr->prepare(0);
   return add_vertex_array(e, ns, arr);
 }
-EXPORT GameApi::VA GameApi::TextureApi::bind_many(GameApi::VA va, std::vector<GameApi::TXID> vec)
+EXPORT GameApi::VA GameApi::TextureApi::bind_many(GameApi::VA va, std::vector<GameApi::TXID> vec, std::vector<int> types)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   VertexArraySet *ns = new VertexArraySet(*s);
   int s1 = vec.size();
   for(int i=0;i<s1;i++) {
+    int type = 0;
+    if (i>=0 && i<types.size()) {
+      type = types[i];
+    }
     TextureID *id = find_txid(e,vec[i]);
     int txid = id->texture();
+    if (type==1) txid+=SPECIAL_TEX_ID_CUBEMAP;
     ns->texture_many_ids.push_back(txid);
   }
   RenderVertexArray *arr = new RenderVertexArray(g_low,*ns);
@@ -169,21 +174,134 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right
 
   return txid;
 }
-EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev, std::vector<BM> vec)
+EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types)
 {
   std::vector<Low_GLuint> ids;
   std::vector<GameApi::TXID> txidvec;
   ids.resize(vec.size());
   g_low->ogl->glGenTextures(vec.size(), &ids[0]);
-#ifndef EMSCRIPTEN
-  g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
-#endif
-  g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
   int s = vec.size();
   for(int i=0;i<s;i++)
     {
+      std::cout << "I=" << i << std::endl;
+#ifndef EMSCRIPTEN
+  g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
+#endif
+  g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
+
+      int type = 0;
+      int s3 = types.size();
+      if (i>=0 && i<s3) {
+	type = types[i];
+      }
+      std::cout << "type=" << type << std::endl;
+
+      if (type==1) {
+	  g_low->ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, ids[i]);
+
+	int sizex=-1;
+	int sizey=-1;
+	ARR arr = ev.bitmap_api.cubemap(vec[i]);
+	ArrayType *array = find_array(e, arr);
+	std::vector<int> vec2 = array->vec;	
+	int sj = vec2.size();
+	for(int j=0;j<sj;j++) {
+      std::cout << "J=" << j << std::endl;
+
+	  BM bmj;
+	  bmj.id = vec2[j];
+	  //BM bmj2 = ev.bitmap_api.scale_bitmap(ev, bmj, 128,128);
+	  BitmapHandle *handle = find_bitmap(e, bmj);
+	  if (!handle) {
+	    continue; }
+	  Bitmap<Color> *bm = find_color_bitmap(handle);
+	  if (!bm) {
+	    continue; }
+	  bm->Prepare();
+
+
+      if (sizex==-1) sizex=bm->SizeX();
+      if (sizey==-1) sizey=bm->SizeY();
+      if (sizex!=sizey) {std::cout << "Warning: Cubemap textures dimensions need to be the same" << std::endl; }
+
+      if (bm->SizeX() != sizex) { std::cout << "Warning: Cubemap textures need to be same size" << std::endl; }
+      if (bm->SizeY() != sizey) { std::cout << "Warning: Cubemap textures need to be same size" << std::endl; }
+
+	  FlipColours flip(*bm);
+	  BufferFromBitmap buf(flip);
+#ifndef THREADS
+	  buf.Gen();
+#else
+	  buf.GenPrepare();
+  
+	  int numthreads = 4;
+	  ThreadedUpdateTexture threads;
+	  int ssx = flip.SizeX();
+	  int ssy = flip.SizeY();
+	  int dsy = ssy/numthreads + 1;
+	  std::vector<int> ids2;
+	  for(int k=0;k<numthreads;k++)
+	    {
+	      int start_x = 0;
+	      int end_x = ssx;
+	      int start_y = k*dsy;
+	      int end_y = (k+1)*dsy;
+	      if (start_y>ssy) { start_y = ssy; }
+	      if (end_y>ssy) end_y = ssy;
+	      
+	      if (end_y-start_y > 0)
+		ids2.push_back(threads.push_thread(&buf, start_x, end_x, start_y, end_y));
+	    }
+	  int ss = ids2.size();
+	  for(int t=0;t<ss;t++)
+	    {
+	      threads.join(ids2[t]);
+	    }
+#endif
+
+	  
+	  //      buf.Gen();
+	  
+	  int sx = bm->SizeX();
+	  int sy = bm->SizeY();
+	  bool power_of_two = true;
+	  if (!(sx==1 ||sx==2||sx==4||sx==8||sx==16||sx==32||sx==64||sx==128||sx==256||sx==512||sx==1024||sx==2048||sx==4096||sx==8192||sx==16384))
+	    power_of_two = false;
+	  if (!(sy==1 ||sy==2||sy==4||sy==8||sy==16||sy==32||sy==64||sy==128||sy==256||sy==512||sy==1024||sy==2048||sy==4096||sy==8192||sy==16384))
+	    power_of_two = false;
+	  if (!power_of_two) std::cout << "Warning: cubemaps not power of two size" << std::endl;
+	  std::cout << "Size:" << bm->SizeX() << " " << bm->SizeY() << std::endl;
+	  g_low->ogl->glTexImage2D(Low_GL_TEXTURE_CUBE_MAP_POSITIVE_X+j,0,Low_GL_RGBA,bm->SizeX(),bm->SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+
+	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
+	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
+	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE); // GL_REPEAT
+	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE); 
+	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_WRAP_R, Low_GL_CLAMP_TO_EDGE); 
+
+      std::cout << "ids[i]=" << ids[i] << std::endl;
+
+	}
+
+	
+      }
+
+      if (type==0) {
       BitmapHandle *handle = find_bitmap(e, vec[i]);
+      if (!handle) {
+	GameApi::TXID id2;
+	id2.id = ids[i];
+	txidvec.push_back(id2);
+
+	continue;
+      }
       Bitmap<Color> *bm = find_color_bitmap(handle);
+      if (!bm) {
+	GameApi::TXID id2;
+	id2.id = ids[i];
+	txidvec.push_back(id2);
+	continue;
+      }
       bm->Prepare();
       FlipColours flip(*bm);
       BufferFromBitmap buf(flip);
@@ -228,17 +346,20 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
       if (!(sy==1 ||sy==2||sy==4||sy==8||sy==16||sy==32||sy==64||sy==128||sy==256||sy==512||sy==1024||sy==2048||sy==4096||sy==8192||sy==16384))
 	power_of_two = false;
       
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, ids[i]);
-      g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D,0,Low_GL_RGBA,bm->SizeX(),bm->SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
-      g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
-      g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
-      g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE); // GL_REPEAT
-      g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE); // these cause power-of-two texture requirement in emscripten.
+	g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, ids[i]);
+	g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D,0,Low_GL_RGBA,bm->SizeX(),bm->SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
+	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
+	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE); // GL_REPEAT
+	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE); // these cause power-of-two texture requirement in emscripten.
+
+      }
       //g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
       GameApi::TXID id2;
       id2.id = ids[i];
       txidvec.push_back(id2);
     }
+  assert(txidvec.size()==vec.size());
   return txidvec;
 }
 EXPORT GameApi::TXA GameApi::TextureApi::prepare_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy)

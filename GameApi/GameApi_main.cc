@@ -67,6 +67,8 @@ EXPORT void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_heigh
     std::stringstream ss2; ss2 << i;
     std::string ss = "texsampler[" + ss2.str() + "]";
     prog->set_var(ss, i);
+    std::string ss3 = "texsampler_cube[" + ss2.str() + "]";
+    prog->set_var(ss3,i);
   }
   std::string ss = "cubesampler";
   prog->set_var(ss, 0);
