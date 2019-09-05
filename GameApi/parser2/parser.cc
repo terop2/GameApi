@@ -31,6 +31,7 @@ class Parser
 public:
   Parser(std::string apiname) : apiname(apiname) { }
   std::string trim(std::string s) {
+    if (s.size()==0) return s;
     int i1=0;
     while(s[i1]==' ') i1++;
     int i2=s.length()-1;
@@ -82,10 +83,21 @@ public:
     std::string sign;
     std::string class_name;
     std::string prev_line;
+    int comment_level = 0;
+    int flag_level = 0;
     std::vector<std::pair<std::string,std::string> > dep;
     bool is_api = false;
     while(std::getline(ss,line,'\n')) {
       is_api=false;
+      //int ch_b = find(line, "//");
+      //if (ch_b==0||ch_b==1) continue;
+      //int ch_c = find(line, "#if 0");
+      //if (ch_c!=-1) { comment_level++; }
+      //int ch_c2 = find(line, "#if");
+      //if (ch_c2!=-1) { flag_level++; }
+      //int ch_d = find(line, "#endif");
+      //if (ch_d!=-1) { if (flag_level==1) comment_level--; flag_level--; }
+      //if (comment_level>0) continue;
       int ch = find(line, "class ");
       if (ch!=-1 && type==-1)
       {
@@ -119,7 +131,7 @@ public:
 	std::string line2 = line.substr(ch_a+3);
 	int ch_a2 = find_ch(line2, '.');
 	int ch_a3 = find_ch(line2, '(');
-	if (ch_a2!=-1 && ch_a3!=-1) {
+	if (ch_a2!=-1 && ch_a3!=-1 && line2.size()>ch_a2+1) {
 	  std::string api = line2.substr(0,ch_a2);
 	  std::string func = line2.substr(ch_a2+1,ch_a3-ch_a2-1);
 	  dep.push_back(std::make_pair(api,func));
@@ -337,7 +349,7 @@ std::string filenames[]= {
   "GameApi_vbo.cc","GameApi_ve.cc","GameApi_vo.cc","GameApi_wmod.cc",
   "GameApi_wv.cc","GameApi_vx.cc","GameApi_cut.cc","GameApi_in.cc",
   "GameApi_imp.cc","GameApi_plane.cc","GameApi_integrator.cc" ,
-  "GameApi_diag.cc", "GameApi_gltf.cc"
+  "GameApi_diag.cc", "GameApi_gltf.cc", "GameApi_vo.hh"
 };
 
 

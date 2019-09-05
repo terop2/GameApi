@@ -272,6 +272,7 @@ std::string get_last_line(std::string lines)
 std::string find_label(std::string line)
 {
   int pos = find_ch(line,'=');
+  if (pos==-1) return line;
   return line.substr(4,pos-4);
 }
 std::string remove_chars(std::string contents, char ch)

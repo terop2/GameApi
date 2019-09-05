@@ -37,6 +37,11 @@
 @ @ polygon_api render_vertex_array
 @ @ mainloop_api blendfunc
 @ @ mainloop_api depthfunc
+@ @ font_api load_font
+@ @ font_api draw_text_string
+@ @ blocker_api game_window2
+@ @ blocker_api run2
+@ @ polygon_api torus
 blocker_api run2
 blocker_api game_window2 shader_api colour_shader
 blocker_api game_window2 shader_api texture_shader
