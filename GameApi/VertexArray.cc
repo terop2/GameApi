@@ -1897,6 +1897,7 @@ Counts CalcCounts(FaceCollection *coll, int start, int end)
   c.tri_count = 0;
   c.quad_count = 0;
   c.poly_count = 0;
+  if (!coll) return c;
   int s = coll->NumFaces();
   if (start<0) start=0;
   if (end>s) end=s;
@@ -1916,6 +1917,7 @@ Counts CalcOffsets(FaceCollection *coll, int start)
   c.tri_count = 0;
   c.quad_count = 0;
   c.poly_count = 0;
+  if (!coll) return c;
   int s = coll->NumFaces();
   if (start<0) start=0;
   if (start>s) start=s;

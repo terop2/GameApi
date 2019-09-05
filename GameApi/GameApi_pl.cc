@@ -7251,10 +7251,7 @@ EXPORT GameApi::ML GameApi::PolygonApi::dyn_lights_shader(EveryApi &ev, ML mainl
 }
 
 
-EXPORT GameApi::ML GameApi::PolygonApi::shading_shader(EveryApi &ev, ML mainloop,
-						      unsigned int level1,
-						      unsigned int level2,
-						       unsigned int level3, float spec_size, bool ambient, bool diffuse, bool specular)
+EXPORT GameApi::ML GameApi::PolygonApi::shading_shader(EveryApi &ev, ML mainloop, unsigned int level1, unsigned int level2, unsigned int level3, float spec_size, bool ambient, bool diffuse, bool specular)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
   Vector light_dir(1.0,1.0,1.0);

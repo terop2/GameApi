@@ -4791,19 +4791,6 @@ EXPORT GameApi::MT GameApi::MaterialsApi::marble(EveryApi &ev, MT nxt, int count
 #endif // FIRST_PART
 #ifdef SECOND_PART
 
-#if 0
-EXPORT GameApi::ML GameApi::MaterialsApi::snow(EveryApi &ev, P p)
-{
-  P p0 = ev.polygon_api.recalculate_normals(p);
-  P p1 = ev.polygon_api.color_from_normals(p0);
-  P p2 = ev.polygon_api.color_grayscale(p1);
-  P p3 = ev.polygon_api.mix_color(p1,p2,0.5);
-  VA va = ev.polygon_api.create_vertex_array(p3,false);
-  ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
-  ML sh = ev.polygon_api.shading_shader(ev, ml, 0xffaaaaaa, 0xffeeeeee, 0xffffffff);
-  return sh;
-}
-#endif
 
 class WebMaterial : public MaterialForward
 {

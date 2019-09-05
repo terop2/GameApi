@@ -3,6 +3,24 @@
 #include "GameApi_h.hh"
 
 
+class HV : public HandleValue<std::pair<Vector,unsigned int> >
+{
+public:
+  HV(std::vector<float> &points, std::vector<unsigned int> &colors) : points(points), colors(colors) { }
+  void Handle(std::pair<Vector,unsigned int> p)
+  {
+    points.push_back(p.first.dx);
+    points.push_back(p.first.dy);
+    points.push_back(p.first.dz);
+    colors.push_back(p.second);
+  }
+private:
+  std::vector<float> &points;
+  std::vector<unsigned int> &colors;
+};
+
+
+
 struct CacheItem
 {
 public:
@@ -16,6 +34,7 @@ extern Splitter *splitter_current;
 std::string cache_id(std::string filename, int obj_count);
 bool invalidate(CacheItem *item, std::string filename, int obj_count);
 void splitter_iter2(void *arg);
+void blocker_iter(void *arg);
 
 int FindProgressVal();
 int FindProgressMax();

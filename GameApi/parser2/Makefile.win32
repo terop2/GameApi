@@ -6,7 +6,7 @@ all:
 	@echo Usage: make compile
 
 dir = ../
-files = $(dir)VectorTools.cc $(dir)Shader.cc $(dir)Main.cc
+files = $(dir)VectorTools.cc $(dir)Shader.cc $(dir)Main.cc $(dir)VertexArray.cc
 	
 compile:
 	g++ -L.. -I.. -Id:\cvs\glew-1.10.0/include -DWINDOWS -DOUTPUT -std=c++11 output.cpp -o output.exe -lGameDep $(files)

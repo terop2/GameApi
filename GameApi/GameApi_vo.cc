@@ -581,11 +581,7 @@ EXPORT GameApi::P GameApi::VolumeApi::rendercubes2(EveryApi &ev, O o, fptrtype f
 }
 
 
-EXPORT GameApi::PTS GameApi::VolumeApi::instanced_positions(O object,
-							    int sx, int sy, int sz,
-							    float start_x, float end_x,
-							    float start_y, float end_y,
-							    float start_z, float end_z)
+EXPORT GameApi::PTS GameApi::VolumeApi::instanced_positions(O object, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y,float start_z, float end_z)
 {
   VolumeObject *volume = find_volume(e,object);
   int ssx = sx;
