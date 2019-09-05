@@ -841,7 +841,9 @@ public:
     int s = vec.size();
     if (num2>=0 && num2<s) {
       return vec[num2]->shader_id();
-    } else { return -1; }
+    } else { 
+      return -1; 
+    }
   }
 private:
   std::vector<MainLoopItem*> vec;
@@ -894,7 +896,9 @@ public:
     int s = vec.size();
     if (num2>=0 && num2<s) {
       return vec[num2]->shader_id();
-    } else { return -1; }
+    } else { 
+      return -1; 
+    }
   }
 private:
   std::vector<MainLoopItem*> vec;

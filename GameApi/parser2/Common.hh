@@ -1,6 +1,41 @@
 #include <string>
+#include <vector>
 #include "GameApi_h.hh"
 
+
+struct CacheItem
+{
+public:
+  std::string filename;
+  GameApi::P obj;  
+  int filesize;
+  int obj_count;
+};
+class Splitter;
+extern Splitter *splitter_current;
+std::string cache_id(std::string filename, int obj_count);
+bool invalidate(CacheItem *item, std::string filename, int obj_count);
+void splitter_iter2(void *arg);
+
+int FindProgressVal();
+int FindProgressMax();
+extern int g_shows_hundred;
+
+extern int hidden_score;
+
+extern int score;
+extern bool g_transparent;
+void ProgressBar(int num, int val, int max, std::string label);
+void InstallProgress(int num, std::string label, int max=15);
+unsigned int swap_color(unsigned int c);
+std::vector<unsigned char> load_from_url(std::string url);
+extern std::vector<std::pair<std::string,int> > prepare_cache_data;
+int find_data(std::string id);
+extern int thread_counter;
+extern ThreadInfo *ti_global;
+extern std::vector<int> g_hide_container;
+extern int no_draw_count;
+extern int g_event_screen_x, g_event_screen_y;
 extern int score;
 extern int hidden_score;
 extern int async_pending_count;

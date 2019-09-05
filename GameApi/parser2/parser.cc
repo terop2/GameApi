@@ -4,16 +4,19 @@
 #include <algorithm>
 #include <iostream>
 #include <ios>
+#include <vector>
 
 struct Class {
   std::string classname;
   std::string contents;
+  std::vector<std::pair<std::string,std::string> > dep;
 };
 
 struct Function {
   std::string funcsignature;
   std::string contents;
   std::vector<std::string> link;
+  std::vector<std::pair<std::string,std::string> > dep;
 };
 
 int find_ch(std::string s, char ch)
@@ -79,9 +82,12 @@ public:
     std::string sign;
     std::string class_name;
     std::string prev_line;
+    std::vector<std::pair<std::string,std::string> > dep;
+    bool is_api = false;
     while(std::getline(ss,line,'\n')) {
+      is_api=false;
       int ch = find(line, "class ");
-      if (ch!=-1)
+      if (ch!=-1 && type==-1)
       {
 	type=1;
 	std::string label = ch+6<line.size()?line.substr(ch+6):"";
@@ -90,6 +96,12 @@ public:
 	std::string classname = label.substr(0,pos);
 	classname = trim(classname);
 	class_name = classname;
+
+	if (count!=0) {
+	  //std::cout << "//Level error near: " << class_name << std::endl;
+	}
+
+
 	//if (classname=="MainLoopBlocker_win32_and_emscripten")
 	  {
 	    //std::cout << "CLASSNAME: " << classname << std::endl;
@@ -102,8 +114,19 @@ public:
 	}
 	data1+=line+"\n";
       } 
+      int ch_a = find(line, "ev.");
+      if (ch_a!=-1) {
+	std::string line2 = line.substr(ch_a+3);
+	int ch_a2 = find_ch(line2, '.');
+	int ch_a3 = find_ch(line2, '(');
+	if (ch_a2!=-1 && ch_a3!=-1) {
+	  std::string api = line2.substr(0,ch_a2);
+	  std::string func = line2.substr(ch_a2+1,ch_a3-ch_a2-1);
+	  dep.push_back(std::make_pair(api,func));
+	}
+      }
       int ch2 = find(line, apiname);
-      if (ch2!=-1 && apiname!="")
+      if (ch2!=-1 && apiname!="" && type==-1)
 	{
 	  int ch4 = find(line,"(");
 	  if (ch4!=-1) {
@@ -114,6 +137,7 @@ public:
 	  link=std::vector<std::string>();
 	data2="";
 	  data2+=line+"\n";
+	  is_api = true;
 	  }
 	}
       int ch3 = find(line, "new ");
@@ -124,7 +148,7 @@ public:
 	  int pos = find_one_of(label, chars);
 	  std::string classname = label.substr(0,pos);
 	  link.push_back(classname);
-	  //std::cout << "LINKCLASSNAME: " << classname << std::endl;
+	  // std::cout << "LINKCLASSNAME: " << classname << std::endl;
 	}
       int ch4 = find(line, "{");
       if (ch4!=-1)
@@ -132,7 +156,7 @@ public:
 	  count++;
 	  //std::cout << "{" << count << std::endl;
 	}
-      if (count>=1) {
+      if (count>=1&& !is_api) {
 	//std::cout << "L:" << line << std::endl;
 	data1+=line+"\n";
 	data2+=line+"\n";
@@ -142,32 +166,36 @@ public:
 	{
 	  //std::cout << count << "}" << std::endl;
 	  count--;
+	  if (count<0) count=0;
 	  //std::cout << "I:" << count << ":" << type << ":" << line << std::endl;
 	  if (count==0) {
 	    if (type==1)
 	      {
-		//std::cout << "Add class: " << class_name << " :: " << data1 << std::endl;
+		//std::cout << "Add class: " << class_name << std::endl;
 		Class cls;
 		cls.classname = class_name;
 		cls.contents = data1;
+		cls.dep = dep;
 		classes.push_back(cls);
 		sign="";
 		data1="";
 		type=-1;
 		link=std::vector<std::string>();
-
+		dep=std::vector<std::pair<std::string,std::string> >();
 	      }
 	    if (type==2)
 	      {
-		//std::cout << "Add function: " << sign << " :: " << data2 << std::endl;
+		//std::cout << "Add function: " << sign << std::endl;
 		Function f;
 		f.funcsignature = sign;
 		f.contents = data2;
 		f.link = link;
+		f.dep = dep;
 		functions.push_back(f);
 		sign="";
 		data2="";
 		link=std::vector<std::string>();
+		dep=std::vector<std::pair<std::string,std::string> >();
 		type=-1;
 	      }
 	  }
@@ -177,6 +205,50 @@ public:
 
     
 
+  }
+  void print_func_dep(std::string funcname)
+  {
+    int s = functions.size();
+    for(int i=0;i<s;i++) {
+      Function f = functions[i];
+      int pos = find(f.funcsignature, "::" + funcname+"(");
+      if (pos!=-1) {
+		    std::vector<std::pair<std::string,std::string> > vec = f.dep;
+		    int st = vec.size();
+		    for(int i=0;i<st;i++) {
+		      std::cout << vec[i].first << " " << vec[i].second << std::endl;
+		    }
+
+      }
+    }
+  }
+  void print_class_dep(std::string funcname)
+  {
+    //std::cout << "Trying funcname: " << funcname << std::endl;
+    int s = functions.size();
+    for(int i=0;i<s;i++) {
+      Function f = functions[i];
+      int pos = find(f.funcsignature, "::" + funcname+"(");
+      if (pos!=-1) {
+	//std::cout << "Func Found" << funcname << std::endl;
+	    std::vector<std::string> link = f.link;
+	    int ss = classes.size();
+	    for(int j=0;j<ss;j++)
+	      {
+		int ss1 = link.size();
+		for(int k=0;k<ss1;k++) {
+		  if (classes[j].classname==link[k]) {
+		    //std::cout << "Link Found" << link[k] << std::endl;
+		    std::vector<std::pair<std::string,std::string> > vec = classes[j].dep;
+		    int st = vec.size();
+		    for(int i=0;i<st;i++) {
+		      std::cout << vec[i].first << " " << vec[i].second << std::endl;
+		    }
+		  }
+		}
+	      }
+      }
+    }
   }
   void print(std::string funcname)
   {
@@ -264,7 +336,9 @@ std::string filenames[]= {
   "GameApi_tex.cc","GameApi_tr.cc","GameApi_trk.cc","GameApi_tx.cc", 
   "GameApi_vbo.cc","GameApi_ve.cc","GameApi_vo.cc","GameApi_wmod.cc",
   "GameApi_wv.cc","GameApi_vx.cc","GameApi_cut.cc","GameApi_in.cc",
-  "GameApi_imp.cc","GameApi_plane.cc","GameApi_integrator.cc" };
+  "GameApi_imp.cc","GameApi_plane.cc","GameApi_integrator.cc" ,
+  "GameApi_diag.cc", "GameApi_gltf.cc"
+};
 
 
 std::string apinames[] = {
@@ -357,6 +431,22 @@ int main(int argc, char *argv[])
       }
     exit(0);
   }
+  if (argc==4 && std::string(argv[1])=="--dep") {
+    std::string apiname = convertapiname(argv[2]);
+    std::string funcname = argv[3];
+    Parser p(apiname);
+    int s = sizeof(filenames)/sizeof(filenames[0]);
+    for(int i=0;i<s;i++)
+    {
+      std::string filename = filenames[i];
+      p.parse(std::string("../") + filename);
+    }
+  
+    p.print_func_dep(funcname);
+    p.print_class_dep(funcname);
+    exit(0);
+  }
+
   if (argc!=3) { std::cout << argv[0] << " ApiName funcname" << std::endl; exit(0); }
   std::string apiname = convertapiname(argv[1]);
   std::string funcname = argv[2];
@@ -366,6 +456,8 @@ int main(int argc, char *argv[])
   for(int i=0;i<s;i++)
     {
       std::string filename = filenames[i];
+      //      std::cout << "Filename: " << filename << std::endl;
+
       p.parse(std::string("../") + filename);
     }
   

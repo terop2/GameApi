@@ -1996,16 +1996,12 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::andnot_bitmap(BB b1, BB b2)
   Bitmap<bool> *bm2 = find_bool_bitmap(e, b2)->bitmap;
   return add_bool_bitmap(e, new AndNotBitmap(*bm1,*bm2));
 }
-EXPORT GameApi::BM GameApi::BoolBitmapApi::to_bitmap(BB bools,
-					      int true_r, int true_g, int true_b, int true_a,
-					      int false_r, int false_g, int false_b, int false_a)
+EXPORT GameApi::BM GameApi::BoolBitmapApi::to_bitmap(BB bools, int true_r, int true_g, int true_b, int true_a, int false_r, int false_g, int false_b, int false_a)
 {
   return to_bitmap_1(bools, true_r, true_g, true_b, true_a,
 		     false_r, false_g, false_b, false_a);
 }
-GameApi::BM GameApi::BoolBitmapApi::to_bitmap_1(BB bools,
-					      int true_r, int true_g, int true_b, int true_a,
-					      int false_r, int false_g, int false_b, int false_a)
+GameApi::BM GameApi::BoolBitmapApi::to_bitmap_1(BB bools, int true_r, int true_g, int true_b, int true_a, int false_r, int false_g, int false_b, int false_a)
 {
   Bitmap<bool> *bm1 = find_bool_bitmap(e, bools)->bitmap;
   return add_color_bitmap2(e, new ChooseTBitmap<Color>(*bm1, Color(false_r, false_g, false_b, false_a), Color(true_r, true_g, true_b, true_a)));
