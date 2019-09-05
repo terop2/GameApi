@@ -312,6 +312,29 @@ void usage() {
     std::cout << "./file_gen.exe --" << std::endl;
     exit(0);
 }
+
+std::string get_dep(std::string classname, std::string funcname)
+{
+  FILE *f = popen((std::string("parser.exe --dep ") + classname + " " + funcname).c_str(), "r");
+  std::string res;
+  do {
+    int c = fgetc(f);
+    if (feof(f)) break;
+    if (c!='\r') res+=c;
+  } while(1);
+  return res;
+}
+std::vector<std::pair<std::string, std::string> > get_deps(std::string classname, std::string funcname)
+{
+  std::string contents = get_dep(classname, funcname);
+  std::stringstream ss(contents);
+  std::string apiname2;
+  std::string funcname2;
+  std::vector<std::pair<std::string,std::string> > vec;
+  while(ss >> apiname2 >> funcname2) { vec.push_back(std::make_pair(apiname2,funcname2)); }
+  return vec;
+}
+
 int main(int argc, char *argv[])
 {
   if (argc<2) usage();
@@ -327,7 +350,7 @@ int main(int argc, char *argv[])
   }
   std::string contents;
   if (!use_existing) {
-    url = replace_string(url, "mesh.php", "mesh_pre.php");
+    url = replace_string(url, "mesh_display", "mesh_pre.php");
     contents = network(url);
     std::ofstream ss("contents.txt");
     ss << contents;
@@ -341,6 +364,7 @@ int main(int argc, char *argv[])
   //std::cout << contents << std::endl;
   std::vector<std::pair<std::string,std::string> > vec = parse_file(contents);
 
+
   std::ifstream sk("dependent.txt");
   std::string sc,sf;
   std::string p1b,p2b;
@@ -352,10 +376,31 @@ int main(int argc, char *argv[])
     if (is_in_list(vec,sc,sf)) {
       std::cout << " -> " << add_spaces(p1b,15,0) << "::" << add_spaces(p2b,0,15) << std::endl;
       vec.push_back(std::make_pair(p1b,p2b)); 
+
+
     } else {
       std::cout << "(skipped)" << std::endl;
     }
   }
+
+  int st = vec.size();
+  for(int i=0;i<st;i++) {
+    std::string p1b = vec[i].first;
+    std::string p2b = vec[i].second;
+      std::vector<std::pair<std::string,std::string> > vec2 = get_deps(p1b,p2b);
+      int s = vec2.size();
+      for(int i=0;i<s;i++) {
+	if (!is_in_list(vec, vec2[i].first, vec2[i].second)) {
+	  std::cout << "--> " << add_spaces(vec2[i].first, 15,0) << "::" << add_spaces(vec2[i].second,0,15) << std::endl;
+	  vec.push_back(vec2[i]);
+	  st=vec.size();
+	} else {
+	  std::cout << "(skipped) " << add_spaces(vec2[i].first, 15,0) << "::" << add_spaces(vec2[i].second,0,15) << std::endl;
+	}
+      }
+
+  }
+
 
   std::sort(vec.begin(),vec.end());
   std::vector<std::pair<std::string,std::string> >::iterator it = std::unique(vec.begin(),vec.end());

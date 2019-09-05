@@ -1313,11 +1313,7 @@ EXPORT GameApi::P GameApi::PolygonApi::texcoord_plane(P orig,
   FaceCollection *face = find_facecoll(e,orig);
   return add_polygon(e, new TexCoordPlane(face, start_x, end_x, start_y, end_y),1);
 }
-EXPORT GameApi::P GameApi::PolygonApi::texcoord_manual(P orig,
-						float p1_x, float p1_y,
-						float p2_x, float p2_y,
-						float p3_x, float p3_y,
-						float p4_x, float p4_y)
+EXPORT GameApi::P GameApi::PolygonApi::texcoord_manual(P orig, float p1_x, float p1_y, float p2_x, float p2_y, float p3_x, float p3_y, float p4_x, float p4_y)
 {
   FaceCollection *face = find_facecoll(e, orig);
   
@@ -1481,9 +1477,7 @@ EXPORT GameApi::P GameApi::PolygonApi::rounded_cube(EveryApi &ev, float start_x,
   return arr;
 }
 
-EXPORT GameApi::P GameApi::PolygonApi::cube(float start_x, float end_x,
-				  float start_y, float end_y,
-				  float start_z, float end_z)
+EXPORT GameApi::P GameApi::PolygonApi::cube(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
 {
   Point p111(start_x, start_y, start_z);
   Point p112(start_x, start_y, end_z);
@@ -3700,7 +3694,11 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     return add_vertex_array(e, s, arr2);
 #endif // BATCHING
     //#ifdef __EMSCRIPTEN_PTHREADS__
+#ifdef THREADS
       }
+#else
+  }
+#endif
   //#endif
 #else // EMSCRIPTEN
   return add_vertex_array(e, set, arr2);
@@ -3894,13 +3892,17 @@ public:
   Point2d TexCoord(int face, int point) const
   {
     if (point==0) {
-      Point2d p0 = { 0.0, 0.0 }; return p0; }
+      Point2d p0 = { 0.0, 0.0 }; return p0; 
+    }
     if (point==1) {
-      Point2d p1 = { 1.0, 0.0 }; return p1; }
+      Point2d p1 = { 1.0, 0.0 }; return p1; 
+    }
     if (point==2) {
-      Point2d p2 = { 1.0, 1.0 }; return p2; }
+      Point2d p2 = { 1.0, 1.0 }; return p2; 
+    }
     if (point==3) {
-      Point2d p3 = { 0.0, 1.0 }; return p3; }
+      Point2d p3 = { 0.0, 1.0 }; return p3; 
+    }
     Point2d p4;
     return p4;
     
