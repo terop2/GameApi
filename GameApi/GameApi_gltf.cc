@@ -795,7 +795,7 @@ public:
 
     GameApi::P I10=p; 
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm);
-    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, false, false, false, false, false, roughness, metallic, base_r,base_g,base_b,base_a, occul, 1.0); // todo base color
+    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, false, false, false, false, false, false, false, false, roughness, metallic, base_r,base_g,base_b,base_a, occul, 1.0); // todo base color
     return I18;
 
   }
@@ -804,7 +804,7 @@ public:
     std::vector<GameApi::BM> bm;
 
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,p,pts,bm);
-    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, false, false, false, false, false, roughness, metallic, base_r,base_g,base_b,base_a, occul, 1.0); 
+    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, false, false, false, false, false, false, false, false, roughness, metallic, base_r,base_g,base_b,base_a, occul, 1.0); 
     return I18;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
@@ -873,7 +873,7 @@ public:
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm);
     tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
     tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
-    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0); // todo base color
+    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0); // todo base color
     return I18;
 
   }
@@ -887,7 +887,7 @@ public:
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,p,pts,bm);
     tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
     tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
-    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
+    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
     return I18;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
@@ -911,6 +911,118 @@ private:
   float mix;
 };
 
+
+class GLTF_Material_env : public MaterialForward
+{
+public:
+  GLTF_Material_env(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int material_id, float mix, GameApi::BM diffuse_env, GameApi::BM specular_env, GameApi::BM brfd) : e(e), ev(ev),  load(load), material_id(material_id),mix(mix), diffuse_env(diffuse_env), specular_env(specular_env), bfrd(bfrd) { 
+    // TODO, HOW TO CALL PREPARE?
+    load->Prepare();
+  }
+  int num_textures() const {
+    return 8; // (1=base color, 2=metallicroughness), 3=normal, 4=occulsion, 5=emissive, 6=env_bm
+  }
+  GameApi::BM texture(int i) const {
+    if (material_id<0 || material_id>=load->model.materials.size()) {
+      return ev.bitmap_api.newbitmap(1,1,0xffffffff);
+    }
+    switch(i) {
+    case 0: return gltf_load_bitmap2(e,ev, load, load->model.materials[material_id].pbrMetallicRoughness.baseColorTexture.index);
+    case 1: return gltf_load_bitmap2(e,ev, load, load->model.materials[material_id].pbrMetallicRoughness.metallicRoughnessTexture.index);
+    case 2: return gltf_load_bitmap2(e,ev,load, load->model.materials[material_id].normalTexture.index);
+    case 3: return gltf_load_bitmap2(e,ev,load, load->model.materials[material_id].occlusionTexture.index);
+    case 4: return gltf_load_bitmap2(e,ev,load, load->model.materials[material_id].emissiveTexture.index);
+    case 5: return diffuse_env;
+    case 6: return specular_env;
+    case 7: return bfrd;
+    default:
+      std::cout << "ERROR: gltf_meterial::texture" << std::endl;
+    };
+  }
+  bool has_texture(int i) const {
+    switch(i) {
+    case 0: return load->model.materials[material_id].pbrMetallicRoughness.baseColorTexture.index!=-1;
+    case 1: return load->model.materials[material_id].pbrMetallicRoughness.metallicRoughnessTexture.index!=-1;
+    case 2: return load->model.materials[material_id].normalTexture.index!=-1;
+    case 3: return load->model.materials[material_id].occlusionTexture.index!=-1;
+    case 4: return load->model.materials[material_id].emissiveTexture.index!=-1;
+    case 5: return true;
+    case 6: return true;
+    case 7: return true;
+    default: return false;
+    };
+  }
+  int type(int i) const
+  {
+    switch(i) { 
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+      return 0; // sampler2D
+    case 5:
+    case 6:
+      return 1; // samplerCube
+    case 7:
+      return 0; // sampler2D
+    default:
+      return 0;
+    };
+  }
+
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    std::vector<GameApi::BM> bm;
+    std::vector<int> types;
+    int s = num_textures();
+    for(int i=0;i<s;i++) { bm.push_back(texture(i)); types.push_back(type(i)); }
+    //GameApi::ML I13;
+    //I13.id = next->mat(p.id);
+    GameApi::P I10=p; 
+    GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm,types);
+    tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
+    tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
+    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0); // todo base color
+    return I18;
+
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    std::vector<GameApi::BM> bm;
+    std::vector<int> types;
+    int s = num_textures();
+    for(int i=0;i<s;i++) { bm.push_back(texture(i)); types.push_back(type(i)); }
+    //GameApi::ML I13;
+    //I13.id = next->mat_inst(p.id,pts.id);
+    GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,p,pts,bm,types);
+    tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
+    tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
+    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
+    return I18;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    //GameApi::ML I13;
+    //I13.id = next->mat_inst2(p.id,pta.id);
+    std::cout << "ERROR gltf::mat2inst2" << std::endl;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    //GameApi::ML I13;
+    //I13.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
+    std::cout << "ERROR gltf::mat_inst_fade" << std::endl;
+
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  LoadGltf *load;
+  int material_id;
+  float mix;
+  GameApi::BM diffuse_env, specular_env, bfrd;
+};
+
 GameApi::MT gltf_material2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int material_id, float mix )
   {
     Material *mat = new GLTF_Material(e,ev, load, material_id, mix);
@@ -932,6 +1044,19 @@ GameApi::MT GameApi::MaterialsApi::gltf_material( EveryApi &ev, std::string base
   Material *mat = new GLTF_Material(e,ev, load, material_id,mix);
   return add_material(e, mat);
 } 
+
+GameApi::MT GameApi::MaterialsApi::gltf_material_env( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix, BM diffuse_env, BM specular_env, BM bfrd )
+{
+  bool is_binary=false;
+  if (url.size()>3) {
+    std::string sub = url.substr(url.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+  LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  Material *mat = new GLTF_Material_env(e,ev, load, material_id,mix, diffuse_env, specular_env, bfrd);
+  return add_material(e, mat);
+
+}
 
 GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id)
 {

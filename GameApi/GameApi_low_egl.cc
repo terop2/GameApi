@@ -256,7 +256,9 @@ class SDLLowApiEGL : public SDLLowApi
   virtual unsigned int SDL_JoystickGetButton(Low_SDL_Joystick *joy, int i) { return 0; }
   virtual Low_SDL_RWops* SDL_RWFromMem(void *buffer, int size) { return 0; }
   virtual void SDL_GL_DeleteContext(Low_SDL_GLContext ctx) { }
-
+  virtual void SDL_SetWindowSize(Low_SDL_Window *, int w, int h) { }
+  virtual char *SDL_GetClipboardText() { return ""; }
+  virtual int SDL_SetClipboardText(const char *) { return 0; }
 };
 
 class SDLMixerLowApiEGL : public SDLMixerLowApi
