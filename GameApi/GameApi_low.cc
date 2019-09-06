@@ -153,7 +153,7 @@ std::string to_str(int val)
   return ss.str();
 }
 
-void check_err(std::string name)
+void check_err(const char *name)
 {
 #if 0  
   GLenum e = 0;
@@ -418,9 +418,9 @@ public:
 }
   virtual void glDisable(int val) { 
     map_enums(val);
-    check_err("before glDisable" + to_str(val));
+    //check_err("before glDisable" + to_str(val));
     ::glDisable(val);
-    check_err("glDisable" + to_str(val));
+    //check_err("glDisable" + to_str(val));
 
  }
   virtual void glGetFloatv(int val, float *params) { 
