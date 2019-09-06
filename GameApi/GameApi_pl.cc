@@ -5268,7 +5268,6 @@ public:
   {
     MainLoopEnv ee = e;
     if (sh.id==-1) {
-      firsttime = false;
     GameApi::US vertex;
     vertex.id = ee.us_vertex_shader;
     if (vertex.id==-1) { 
@@ -5305,6 +5304,7 @@ public:
 	ev.shader_api.use(sh);
 	ev.shader_api.set_var(sh, "color_mix", mix);
       }
+    if (firsttime) firsttime = false;
     next->execute(ee);
     ev.shader_api.unuse(sh);
   }
@@ -5335,7 +5335,6 @@ public:
   {
     MainLoopEnv ee = e;
     if (sh.id==-1) {
-      firsttime = false;
     GameApi::US vertex;
     vertex.id = ee.us_vertex_shader;
     if (vertex.id==-1) { 
@@ -5396,9 +5395,10 @@ public:
 	ev.shader_api.set_var(sh, "texsampler_cube[5]", 5);
 	ev.shader_api.set_var(sh, "texsampler_cube[6]", 6);
 	ev.shader_api.set_var(sh, "texsampler[7]", 7);
-
 	//std::cout << roughnessfactor << " " << metallicfactor << " " << basecolorfactor0 << " " << basecolorfactor1 << " " << basecolorfactor2 << " " << basecolorfactor3 << " " << occul_strength << " " << emiss_factor << std::endl;
       }
+    if (firsttime) firsttime = false;
+
     next->execute(ee);
     ev.shader_api.unuse(sh);
   }
