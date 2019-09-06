@@ -1358,6 +1358,7 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
 #ifdef VAO
   g_low->ogl->glBindVertexArray(vao[0]);
 #endif
+    if (tri_count && size) {
 
   // INSTANCED DRAWING
   g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
@@ -1400,10 +1401,8 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
     g_low->ogl->glEnableVertexAttribArray(4);
 #endif
 
-    if (tri_count && size) {
       g_low->ogl->glDrawArraysInstanced(Low_GL_TRIANGLES, 0, tri_count, size);
       //std::cout << "InstancingTRI: " << tri_count << " " << size << std::endl;
-    }
 
 #if 1
     g_low->ogl->glDisableVertexAttribArray(0);
@@ -1413,10 +1412,12 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
     g_low->ogl->glDisableVertexAttribArray(4);
     g_low->ogl->glDisableVertexAttribArray(5);
 #endif  
+    }
 
 #ifdef VAO
   g_low->ogl->glBindVertexArray(vao[1]);
 #endif
+    if (quad_count && size) {
 
   // INSTANCED DRAWING
   g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
@@ -1456,10 +1457,8 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
     g_low->ogl->glEnableVertexAttribArray(3);
     g_low->ogl->glEnableVertexAttribArray(4);
 #endif
-    if (quad_count && size) {
       g_low->ogl->glDrawArraysInstanced(Low_GL_TRIANGLES, 0, quad_count, size);
       //std::cout << "InstancingQUAD: " << quad_count << " " << size << std::endl;
-    }
 #if 1
     g_low->ogl->glDisableVertexAttribArray(0);
     g_low->ogl->glDisableVertexAttribArray(1);
@@ -1468,10 +1467,12 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
     g_low->ogl->glDisableVertexAttribArray(4);
     g_low->ogl->glDisableVertexAttribArray(5);
 #endif
+    }
 
 #ifdef VAO
   g_low->ogl->glBindVertexArray(vao[2]);
 #endif
+    if (poly_count && size) {
 
   // INSTANCED DRAWING
   g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
@@ -1511,10 +1512,8 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
     g_low->ogl->glEnableVertexAttribArray(3);
     g_low->ogl->glEnableVertexAttribArray(4);
 #endif
-    if (poly_count && size) {
       g_low->ogl->glDrawArraysInstanced(Low_GL_TRIANGLE_STRIP, 0, poly_count, size);
       //std::cout << "InstancingQUAD: " << quad_count << " " << size << std::endl;
-    }
 
 #if 1
     g_low->ogl->glDisableVertexAttribArray(0);
@@ -1524,6 +1523,7 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
     g_low->ogl->glDisableVertexAttribArray(4);
     g_low->ogl->glDisableVertexAttribArray(5);
 #endif
+    }
 
 #ifdef VAO
     g_low->ogl->glBindVertexArray(0);
@@ -1542,7 +1542,8 @@ void RenderVertexArray::render(int id)
   g_low->ogl->glBindVertexArray(vao[0]);
 #endif
     int counter = 6;
-
+    if (tri_count > 0)
+      {
 #ifndef VAO
     g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[0]);
     g_low->ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
@@ -1606,7 +1607,6 @@ void RenderVertexArray::render(int id)
     }
 
 #endif
-    if (tri_count > 0)
       g_low->ogl->glDrawArrays(Low_GL_TRIANGLES, 0, tri_count);
 #if 1
     g_low->ogl->glDisableVertexAttribArray(0);
@@ -1636,10 +1636,12 @@ void RenderVertexArray::render(int id)
 
 
 #endif
+      }
 #ifdef VAO
   g_low->ogl->glBindVertexArray(vao[1]);
 #endif
-
+    if (quad_count >0)
+      {
 #ifndef VAO
     g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[0]);
     g_low->ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
@@ -1681,7 +1683,6 @@ void RenderVertexArray::render(int id)
     }
 
 #endif
-    if (quad_count >0)
       g_low->ogl->glDrawArrays(Low_GL_TRIANGLES, 0, quad_count);
 #if 1
     g_low->ogl->glDisableVertexAttribArray(0);
@@ -1710,10 +1711,11 @@ void RenderVertexArray::render(int id)
     }
 
 #endif
-
+      }
 #ifdef VAO
   g_low->ogl->glBindVertexArray(vao[2]);
 #endif
+  if (poly_count > 0) {
 
 #ifndef VAO
     g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[0]);
@@ -1736,7 +1738,6 @@ void RenderVertexArray::render(int id)
     g_low->ogl->glEnableVertexAttribArray(3);
     g_low->ogl->glEnableVertexAttribArray(4);
 #endif
-    if (poly_count > 0)
       g_low->ogl->glDrawArrays(Low_GL_TRIANGLE_STRIP, 0, poly_count);
 #if 1
     g_low->ogl->glDisableVertexAttribArray(0);
@@ -1745,7 +1746,7 @@ void RenderVertexArray::render(int id)
     g_low->ogl->glDisableVertexAttribArray(3);
     g_low->ogl->glDisableVertexAttribArray(4);
 #endif
-
+  }
 
 #ifdef VAO
     g_low->ogl->glBindVertexArray(0);
