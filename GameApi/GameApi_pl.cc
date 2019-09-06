@@ -6526,7 +6526,6 @@ public:
 	//GameApi::SH sh;
 	ev.shader_api.use(sh);
 
-	if (firsttime) {
 	ev.shader_api.set_var(sh, "light_dir", light_dir.dx, light_dir.dy, light_dir.dz);
 	ev.shader_api.set_var(sh, "level1_color",
 			      ((ambient&0xff0000)>>16)/255.0,
@@ -6539,7 +6538,6 @@ public:
 			      ((highlight&0xff))/255.0,
 			  ((highlight&0xff000000)>>24)/255.0);
 	ev.shader_api.set_var(sh, "hilight", pow);
-	}
       }
 
 #ifndef NO_MV
