@@ -295,6 +295,12 @@ public:
     
     mode = prim->mode;
 
+    //int material = prim->material;
+    //tinygltf::Material *mat = 0;
+    //if (material!=-1)
+    //  mat = &load->model.materials[material];
+
+
     // find indices
     indices_index = prim->indices;
     position_index = -1;
@@ -309,6 +315,17 @@ public:
       texcoord_index = prim->attributes["TEXCOORD_0"];
     if (prim->attributes.find("COLOR_0") != prim->attributes.end())
       color_index = prim->attributes["COLOR_0"];
+
+    //if (mat) {
+    //  int index = mat->pbrMetallicRoughness.metallicRoughnessTexture.texCoord;
+    //  int index_b = mat->pbrMetallicRoughness.baseColorTexture.texCoord;
+    //  int index_n = mat->normalTexture.texCoord;
+    //  int index_o = mat->occlusionTexture.texCoord;
+    //  int index_e = mat->emissiveTexture.texCoord;
+    //  if (index!=-1)
+    //	texcoord_index = index_b;
+    //}
+
 
     // find Accessors
     indices_acc = 0;
@@ -714,8 +731,9 @@ GameApi::BM GameApi::PolygonApi::gltf_load_bitmap( GameApi::EveryApi &ev, std::s
   BitmapColorHandle *handle2 = new BitmapColorHandle;
   handle2->bm = b;
   BM bm = add_bitmap(e, handle2);
-  BM bm2 = ev.bitmap_api.flip_y(bm);
-  return bm2;
+  //BM bm2 = ev.bitmap_api.flip_y(bm);
+  //BM bm3 = ev.bitmap_api.flip_x(bm);
+  return bm;
 
 }
 GameApi::BM gltf_load_bitmap2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int image_index)
@@ -737,8 +755,9 @@ GameApi::BM gltf_load_bitmap2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf 
   BitmapColorHandle *handle2 = new BitmapColorHandle;
   handle2->bm = b;
   GameApi::BM bm = add_bitmap(e, handle2);
-  GameApi::BM bm2 = ev.bitmap_api.flip_y(bm);
-  return bm2;
+  //GameApi::BM bm2 = ev.bitmap_api.flip_y(bm);
+  //GameApi::BM bm3 = ev.bitmap_api.flip_x(bm);
+  return bm;
 }
 std::map<std::string, bool> g_gltf_cache;
 GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_index, int prim_index )
