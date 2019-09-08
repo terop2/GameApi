@@ -503,6 +503,7 @@ public:
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
     shift=false;
+    ctrl=false;
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
@@ -4171,6 +4172,20 @@ EXPORT void GameApi::GuiApi::set_id(W w, std::string id)
   GuiWidget *ww = find_widget(e, w);
   ww->set_id(id);
 }
+int to_int(std::string s) {
+  std::stringstream ss(s);
+  int a;
+  ss >> a;
+  return a;
+}
+float to_float(std::string s)
+{
+  std::stringstream ss(s);
+  float a;
+  ss >> a;
+  return a;
+}
+
 #endif
 #endif // SECTION_2
 
@@ -4178,10 +4193,13 @@ template<class T>
 class FromStreamClass
 {
 public:
-  T from_stream(std::string s, GameApi::EveryApi &ev)
+  T from_stream(std::stringstream &ss, GameApi::EveryApi &ev)
   {
     //std::cout << "Type using default: " << typeid(T).name() << std::endl;
     bool neg = false;
+    std::string s;
+    ss >> s;
+
     if (s.size()>0 && s[0]=='-')
       {
 	neg = true;
@@ -4202,14 +4220,18 @@ std::string FloatExprEval(std::string s);
 int find_float_ch(std::string s, char ch);
 
 
+float to_float(std::string s);
 
 template<>
 class FromStreamClass<float>
 {
 public:
-  float from_stream(std::string s, GameApi::EveryApi &ev)
+  float from_stream(std::stringstream &ss, GameApi::EveryApi &ev)
   {
     //std::cout << "Type using default: " << typeid(T).name() << std::endl;
+
+    std::string s;
+    ss >> s;
     bool neg = false;
     if (s.size()>0 && s[0]=='-')
       {
@@ -4219,8 +4241,8 @@ public:
     s=FloatExprEval(s);
 
   float t;
-  std::stringstream is(s);
-  is >> t;
+  //std::stringstream is(s);
+  t = to_float(s);
   if (neg) t = -t;
 
   //std::cout << "Default: " << t << std::endl;
@@ -4233,8 +4255,10 @@ template<>
 class FromStreamClass<std::string>
 {
 public:
-  std::string from_stream(std::string s, GameApi::EveryApi &ev)
+  std::string from_stream(std::stringstream &ss, GameApi::EveryApi &ev)
   {
+    std::string s;
+    ss >> s;
     return s;
   }
 };
@@ -4242,8 +4266,10 @@ template<>
 class FromStreamClass<GameApi::EveryApi &>
 {
 public:
-  GameApi::EveryApi &from_stream(std::string s, GameApi::EveryApi &ev)
+  GameApi::EveryApi &from_stream(std::stringstream &ss, GameApi::EveryApi &ev)
   {
+    std::string s;
+    ss >> s;
     return ev;
   }
 };
@@ -4252,8 +4278,10 @@ template<>
 class FromStreamClass<bool>
 {
 public:
-  bool from_stream(std::string s, GameApi::EveryApi &ev)
+  bool from_stream(std::stringstream &ss, GameApi::EveryApi &ev)
   {
+    std::string s;
+    ss >> s;
   if (s=="false") return false;
   if (s=="true") return true;
   if (s=="1") return true;
@@ -4261,18 +4289,20 @@ public:
   }
 };
 
+
+
 template<>
 class FromStreamClass<unsigned int>
 {
 public:
-  unsigned int from_stream(std::string s, GameApi::EveryApi &ev)
+  unsigned int from_stream(std::stringstream &ss, GameApi::EveryApi &ev)
   {
   unsigned int bm;
   //char c;
   //is >> c;
   //is >> c;
-  std::stringstream is(s);
-  is >> std::hex >> bm >> std::dec;
+  //std::stringstream is(s);
+  ss >> std::hex >> bm >> std::dec;
   return bm;
   }
 };
@@ -4281,8 +4311,10 @@ template<>
 class FromStreamClass<std::vector<std::string>>
 {
 public:
-  std::vector<std::string> from_stream(std::string s, GameApi::EveryApi &ev)
+  std::vector<std::string> from_stream(std::stringstream &sk, GameApi::EveryApi &ev)
   {
+    std::string s;
+    sk >> s;
     std::vector<std::string> vec;
     if (s.size()<2)
       {
@@ -4301,7 +4333,8 @@ public:
 	if (s[i]==',' || s[i]==']')
 	  {
 	    std::string substr = s.substr(prev, i-prev);
-	    std::string t = cls.from_stream(substr, ev);
+	    std::stringstream sk1(substr);
+	    std::string t = cls.from_stream(sk1, ev);
 	    vec.push_back(t);
 	    prev=i+1;
 	    if (s[i]==']') { break; }
@@ -4315,8 +4348,11 @@ template<class T>
 class FromStreamClass<std::vector<T>>
 {
 public:
-  std::vector<T> from_stream(std::string s, GameApi::EveryApi &ev)
+  std::vector<T> from_stream(std::stringstream &sk, GameApi::EveryApi &ev)
   {
+    std::string s;
+    sk >> s;
+
     //std::cout << "Vector:" << s << std::endl;
     std::vector<T> vec;
     if (s.size()>0 && s[0]!='[')
@@ -4352,7 +4388,8 @@ public:
 	if (s[i]==',' || s[i]==']')
 	  {
 	    std::string substr = s.substr(prev, i-prev);
-	    T t = cls.from_stream(substr, ev);
+	    std::stringstream sk1(substr);
+	    T t = cls.from_stream(sk1, ev);
 	    vec.push_back(t);
 	    prev=i+1;
 	    if (s[i]==']') { break; }
@@ -4436,20 +4473,22 @@ MACRO2(GameApi::WV,ev.waveform_api.empty(1.0))
 #endif
 #endif
 
+int to_int(std::string s);
 #define MACRO(lab) \
 template<> \
 class FromStreamClass<lab> \
 { \
 public:\
-  lab from_stream(std::string s, GameApi::EveryApi &ev)\
+  lab from_stream(std::stringstream &ss, GameApi::EveryApi &ev)\
   {\
   lab bm;\
+  std::string s;\
+  ss >> s;\
   if (s=="@") {\
         set_empty(ev,bm);\
       return bm;\
   }\
-  std::stringstream is(s);\
-  is >> bm.id;\
+  bm.id = to_int(s);\
   return bm;\
   }\
 };
@@ -4534,10 +4573,10 @@ MACRO(GameApi::AV)
 template<typename T> T from_stream2(std::stringstream &is, GameApi::EveryApi &ev)
 {
   FromStreamClass<T> cls;
-  std::string s;
-  is >> s;
+  //std::string s;
+  //is >> s;
   //std::cout << "FromStreamClass: " << s << " " << typeid(T).name() << std::endl;
-  return cls.from_stream(s,ev);
+  return cls.from_stream(is,ev);
 }
 
 class GameApiEditNode_float_coord : public GameApi::EditNode
@@ -8267,6 +8306,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "[P]" },
 			 { "" },
 			 "P", "polygon_api", "or_array2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::mix_mesh,
+			 "p_mix",
+			 { "p", "pts", "val" },
+			 { "P", "PTS", "float" },
+			 { "", "", "0.5" },
+			 "P", "polygon_api", "mix_mesh"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::translate,
 			 "translate",
 			 { "orig", "dx", "dy", "dz" },

@@ -2120,6 +2120,7 @@ public:
   AV pts_to_voxel(PTS pts, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy, int sz);
   AV av_unique(AV arr);
   ML quad_tree(P p);
+  P mix_mesh(P p, PTS points, float val);
   ARR poly_array(std::vector<P> vec);
   P poly_index(ARR arr, int idx);
   int poly_size(ARR arr);
