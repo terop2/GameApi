@@ -8765,10 +8765,10 @@ GameApi::P GameApi::PolygonApi::file_cache(P model, std::string filename, int ob
   static std::map<std::string, CacheItem*> cache_map;
   CacheItem *item = cache_map[cache_id(filename,obj_count)];
   if (item && !invalidate(item,filename,obj_count)) {
-    std::cout << "From Cache" << std::endl;
+    //std::cout << "From Cache" << std::endl;
     return item->obj;
   }
-  std::cout << "From File" << std::endl;
+  //std::cout << "From File" << std::endl;
   CacheItem *item2 = new CacheItem;
   item2->filename = filename;
   item2->obj = memoize(prepare_cut(model));
@@ -8834,7 +8834,7 @@ private:
   }
   void print_bounding_box()
   {
-    std::cout << start_x << " " << end_x << " " << start_y << " " << end_y << " " << start_z << " " << end_z << std::endl;
+    //std::cout << start_x << " " << end_x << " " << start_y << " " << end_y << " " << start_z << " " << end_z << std::endl;
   }
   void calc_center()
   {
@@ -8855,12 +8855,13 @@ private:
     float val = std::max(std::max(size_x, size_y), size_z);
     float val2 = 1.0/val;
     val2*= 400.0;
+    m_scale = val2;
     Matrix m2 = Matrix::Scale(val2, val2, val2);
     Matrix mm = m * m2;
     m_m= mm;
   }
 
-private:
+public:
   FaceCollection *coll;
   float start_x, start_y, start_z;
   float end_x, end_y, end_z;
@@ -8868,7 +8869,18 @@ private:
   float center_x, center_y, center_z;
   float size_x, size_y, size_z;
   Matrix m_m;
+
+  float m_scale;
 };
+std::pair<float,Point> find_mesh_scale(FaceCollection *coll)
+{
+  ResizeFaceCollection *coll2 = new ResizeFaceCollection(coll);
+  coll2->Prepare();
+  return std::make_pair(coll2->m_scale, Point(-coll2->center_x, -coll2->center_y, -coll2->center_z));
+}
+
+
+
 GameApi::P GameApi::PolygonApi::resize_to_correct_size(P model)
 {
   FaceCollection *coll = find_facecoll(e, model);

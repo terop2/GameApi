@@ -183,7 +183,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
   int s = vec.size();
   for(int i=0;i<s;i++)
     {
-      std::cout << "I=" << i << std::endl;
+      //std::cout << "I=" << i << std::endl;
 #ifndef EMSCRIPTEN
   g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
 #endif
@@ -194,7 +194,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
       if (i>=0 && i<s3) {
 	type = types[i];
       }
-      std::cout << "type=" << type << std::endl;
+      //std::cout << "type=" << type << std::endl;
 
       if (type==1) {
 	  g_low->ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, ids[i]);
@@ -206,7 +206,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 	std::vector<int> vec2 = array->vec;	
 	int sj = vec2.size();
 	for(int j=0;j<sj;j++) {
-      std::cout << "J=" << j << std::endl;
+	  //std::cout << "J=" << j << std::endl;
 
 	  BM bmj;
 	  bmj.id = vec2[j];
@@ -270,7 +270,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 	  if (!(sy==1 ||sy==2||sy==4||sy==8||sy==16||sy==32||sy==64||sy==128||sy==256||sy==512||sy==1024||sy==2048||sy==4096||sy==8192||sy==16384))
 	    power_of_two = false;
 	  if (!power_of_two) std::cout << "Warning: cubemaps not power of two size" << std::endl;
-	  std::cout << "Size:" << bm->SizeX() << " " << bm->SizeY() << std::endl;
+	  //std::cout << "Size:" << bm->SizeX() << " " << bm->SizeY() << std::endl;
 	  g_low->ogl->glTexImage2D(Low_GL_TEXTURE_CUBE_MAP_POSITIVE_X+j,0,Low_GL_RGBA,bm->SizeX(),bm->SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
 
 	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
@@ -279,7 +279,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE); 
 	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_WRAP_R, Low_GL_CLAMP_TO_EDGE); 
 
-      std::cout << "ids[i]=" << ids[i] << std::endl;
+	//std::cout << "ids[i]=" << ids[i] << std::endl;
 
 	}
 
