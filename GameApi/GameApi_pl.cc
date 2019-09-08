@@ -13461,3 +13461,35 @@ GameApi::P GameApi::PolygonApi::li_polygon(LI li, float width)
   LineCollection *coll = find_line_array(e, li);
   return add_polygon2(e, new LinesFaceCollection(coll, width),1);
 }
+
+class MixMesh : public ForwardFaceCollection
+{
+public:
+  MixMesh(FaceCollection *coll, PointsApiPoints *pts, float val) : ForwardFaceCollection(*coll), coll(coll), pts(pts), val(val) { }
+  virtual Point FacePoint(int face, int point) const
+  {
+    Point p = coll->FacePoint(face,point);
+    int s = pts->NumPoints();
+    float dist = 3000000.0;
+    Point p3(0.0,0.0,0.0);
+    for(int i=0;i<s;i++) {
+      Point p2 = pts->Pos(i);
+      Vector v = p2-p;
+      float dist2 = sqrt(v.dx*v.dx+v.dy*v.dy+v.dz*v.dz);
+      if (dist2<dist) { p3 = p2; dist = dist2; }
+    }
+    return Point::Interpolate(p,p3,val);
+  }  
+private:
+  FaceCollection *coll;
+  PointsApiPoints *pts;
+  float val;
+};
+
+
+GameApi::P GameApi::PolygonApi::mix_mesh(P p, PTS points, float val)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  PointsApiPoints *pts = find_pointsapi_points(e, points);
+  return add_polygon2(e, new MixMesh(coll, pts, val), 1);
+}
