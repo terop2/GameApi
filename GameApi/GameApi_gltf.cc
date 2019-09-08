@@ -775,6 +775,7 @@ GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, i
   } else {
     g_gltf_cache[ss.str()] = true;
   }
+  //GameApi::P p3 = ev.polygon_api.resize_to_correct_size(p2);
  return p2;
 } 
 GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index )
@@ -800,7 +801,8 @@ GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, std::string ba
     g_gltf_cache[ss.str()] = true;
   }
 
-  return p2;
+  GameApi::P p3 = ev.polygon_api.resize_to_correct_size(p2);
+  return p3;
 }
 
 class GLTF_Material2 : public MaterialForward
@@ -1076,6 +1078,22 @@ GameApi::MT GameApi::MaterialsApi::gltf_material_env( EveryApi &ev, std::string 
   return add_material(e, mat);
 
 }
+std::pair<float,Point> find_mesh_scale(FaceCollection *coll);
+
+
+GameApi::ML scale_to_gltf_size(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::ML ml)
+{
+      FaceCollection *coll = find_facecoll(e,p);
+      std::pair<float,Point> dim = find_mesh_scale(coll);
+
+    GameApi::MN I4=ev.move_api.empty();
+    GameApi::MN I5=ev.move_api.trans2(I4,dim.second.x,dim.second.y,dim.second.z);
+    GameApi::MN I6=ev.move_api.scale2(I5,dim.first,dim.first,dim.first);
+    GameApi::ML I7=ev.move_api.move_ml(ev,ml,I6,1,10.0);
+
+    return I7;
+}
+
 
 GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id)
 {
@@ -1089,7 +1107,8 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
       GameApi::ML ml = ev.materials_api.bind(p,mat2);
       mls.push_back(ml);
     }
-    return ev.mainloop_api.array_ml(ev, mls);
+    GameApi::ML ml = ev.mainloop_api.array_ml(ev, mls);
+    return ml;
   } else {
     GameApi::P empty = ev.polygon_api.empty();
     GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
@@ -1105,7 +1124,10 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh( GameApi::EveryApi &ev, std::string 
   }
   LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   load->Prepare();
-  return gltf_mesh2(e,ev,load, mesh_id);
+  GameApi::P mesh = gltf_load2(e,ev, load, 0,0);
+
+  GameApi::ML ml = gltf_mesh2(e,ev,load, mesh_id);
+  return scale_to_gltf_size(e,ev,mesh,ml);
 }
 GameApi::ML gltf_mesh_all2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load )
 {
@@ -1126,5 +1148,8 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, std::str
   }
   LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   load->Prepare();
-  return gltf_mesh_all2( e, ev, load );
+  GameApi::P mesh = gltf_load2(e,ev, load, 0,0);
+
+  GameApi::ML ml = gltf_mesh_all2( e, ev, load );
+  return scale_to_gltf_size(e,ev,mesh,ml);
 }
