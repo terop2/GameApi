@@ -6153,7 +6153,7 @@ public:
 	Point p2 = p * m;
 	std::stringstream ss;
 	ss << e.spotlight_id;
-	ev.shader_api.set_var(sh, "lightpos" + ss.str(), p2.x,p2.y,p2.z);
+	ev.shader_api.set_var(sh, ("lightpos" + ss.str()).c_str(), p2.x,p2.y,p2.z);
     }
 #ifndef NO_MV
     GameApi::M m = add_matrix2( env, e.in_MV );
@@ -6358,7 +6358,7 @@ public:
 	  Point p = pts->Pos(i);
 	  std::stringstream ss;
 	  ss << "obj_pos[" << i << "]";
-	  ev.shader_api.set_var(sh, ss.str(), p.x, p.y, p.z);	  
+	  ev.shader_api.set_var(sh, ss.str().c_str(), p.x, p.y, p.z);	  
 	}
 
 	ev.shader_api.set_var(sh, "obj_size", obj_size);
@@ -8765,10 +8765,10 @@ GameApi::P GameApi::PolygonApi::file_cache(P model, std::string filename, int ob
   static std::map<std::string, CacheItem*> cache_map;
   CacheItem *item = cache_map[cache_id(filename,obj_count)];
   if (item && !invalidate(item,filename,obj_count)) {
-    std::cout << "From Cache" << std::endl;
+    //std::cout << "From Cache" << std::endl;
     return item->obj;
   }
-  std::cout << "From File" << std::endl;
+  //std::cout << "From File" << std::endl;
   CacheItem *item2 = new CacheItem;
   item2->filename = filename;
   item2->obj = memoize(prepare_cut(model));
@@ -8834,7 +8834,7 @@ private:
   }
   void print_bounding_box()
   {
-    std::cout << start_x << " " << end_x << " " << start_y << " " << end_y << " " << start_z << " " << end_z << std::endl;
+    //std::cout << start_x << " " << end_x << " " << start_y << " " << end_y << " " << start_z << " " << end_z << std::endl;
   }
   void calc_center()
   {
@@ -8855,12 +8855,13 @@ private:
     float val = std::max(std::max(size_x, size_y), size_z);
     float val2 = 1.0/val;
     val2*= 400.0;
+    m_scale = val2;
     Matrix m2 = Matrix::Scale(val2, val2, val2);
     Matrix mm = m * m2;
     m_m= mm;
   }
 
-private:
+public:
   FaceCollection *coll;
   float start_x, start_y, start_z;
   float end_x, end_y, end_z;
@@ -8868,7 +8869,18 @@ private:
   float center_x, center_y, center_z;
   float size_x, size_y, size_z;
   Matrix m_m;
+
+  float m_scale;
 };
+std::pair<float,Point> find_mesh_scale(FaceCollection *coll)
+{
+  ResizeFaceCollection *coll2 = new ResizeFaceCollection(coll);
+  coll2->Prepare();
+  return std::make_pair(coll2->m_scale, Point(-coll2->center_x, -coll2->center_y, -coll2->center_z));
+}
+
+
+
 GameApi::P GameApi::PolygonApi::resize_to_correct_size(P model)
 {
   FaceCollection *coll = find_facecoll(e, model);
@@ -13460,4 +13472,36 @@ GameApi::P GameApi::PolygonApi::li_polygon(LI li, float width)
 {
   LineCollection *coll = find_line_array(e, li);
   return add_polygon2(e, new LinesFaceCollection(coll, width),1);
+}
+
+class MixMesh : public ForwardFaceCollection
+{
+public:
+  MixMesh(FaceCollection *coll, PointsApiPoints *pts, float val) : ForwardFaceCollection(*coll), coll(coll), pts(pts), val(val) { }
+  virtual Point FacePoint(int face, int point) const
+  {
+    Point p = coll->FacePoint(face,point);
+    int s = pts->NumPoints();
+    float dist = 3000000.0;
+    Point p3(0.0,0.0,0.0);
+    for(int i=0;i<s;i++) {
+      Point p2 = pts->Pos(i);
+      Vector v = p2-p;
+      float dist2 = sqrt(v.dx*v.dx+v.dy*v.dy+v.dz*v.dz);
+      if (dist2<dist) { p3 = p2; dist = dist2; }
+    }
+    return Point::Interpolate(p,p3,val);
+  }  
+private:
+  FaceCollection *coll;
+  PointsApiPoints *pts;
+  float val;
+};
+
+
+GameApi::P GameApi::PolygonApi::mix_mesh(P p, PTS points, float val)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  PointsApiPoints *pts = find_pointsapi_points(e, points);
+  return add_polygon2(e, new MixMesh(coll, pts, val), 1);
 }

@@ -503,6 +503,7 @@ public:
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
     shift=false;
+    ctrl=false;
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
@@ -4171,6 +4172,20 @@ EXPORT void GameApi::GuiApi::set_id(W w, std::string id)
   GuiWidget *ww = find_widget(e, w);
   ww->set_id(id);
 }
+int to_int(std::string s) {
+  std::stringstream ss(s);
+  int a;
+  ss >> a;
+  return a;
+}
+float to_float(std::string s)
+{
+  std::stringstream ss(s);
+  float a;
+  ss >> a;
+  return a;
+}
+
 #endif
 #endif // SECTION_2
 
@@ -4178,10 +4193,13 @@ template<class T>
 class FromStreamClass
 {
 public:
-  T from_stream(std::string s, GameApi::EveryApi &ev)
+  T from_stream(std::stringstream &ss, GameApi::EveryApi &ev)
   {
     //std::cout << "Type using default: " << typeid(T).name() << std::endl;
     bool neg = false;
+    std::string s;
+    ss >> s;
+
     if (s.size()>0 && s[0]=='-')
       {
 	neg = true;
@@ -4202,14 +4220,18 @@ std::string FloatExprEval(std::string s);
 int find_float_ch(std::string s, char ch);
 
 
+float to_float(std::string s);
 
 template<>
 class FromStreamClass<float>
 {
 public:
-  float from_stream(std::string s, GameApi::EveryApi &ev)
+  float from_stream(std::stringstream &ss, GameApi::EveryApi &ev)
   {
     //std::cout << "Type using default: " << typeid(T).name() << std::endl;
+
+    std::string s;
+    ss >> s;
     bool neg = false;
     if (s.size()>0 && s[0]=='-')
       {
@@ -4219,8 +4241,8 @@ public:
     s=FloatExprEval(s);
 
   float t;
-  std::stringstream is(s);
-  is >> t;
+  //std::stringstream is(s);
+  t = to_float(s);
   if (neg) t = -t;
 
   //std::cout << "Default: " << t << std::endl;
@@ -4233,8 +4255,10 @@ template<>
 class FromStreamClass<std::string>
 {
 public:
-  std::string from_stream(std::string s, GameApi::EveryApi &ev)
+  std::string from_stream(std::stringstream &ss, GameApi::EveryApi &ev)
   {
+    std::string s;
+    ss >> s;
     return s;
   }
 };
@@ -4242,8 +4266,10 @@ template<>
 class FromStreamClass<GameApi::EveryApi &>
 {
 public:
-  GameApi::EveryApi &from_stream(std::string s, GameApi::EveryApi &ev)
+  GameApi::EveryApi &from_stream(std::stringstream &ss, GameApi::EveryApi &ev)
   {
+    std::string s;
+    ss >> s;
     return ev;
   }
 };
@@ -4252,8 +4278,10 @@ template<>
 class FromStreamClass<bool>
 {
 public:
-  bool from_stream(std::string s, GameApi::EveryApi &ev)
+  bool from_stream(std::stringstream &ss, GameApi::EveryApi &ev)
   {
+    std::string s;
+    ss >> s;
   if (s=="false") return false;
   if (s=="true") return true;
   if (s=="1") return true;
@@ -4261,18 +4289,20 @@ public:
   }
 };
 
+
+
 template<>
 class FromStreamClass<unsigned int>
 {
 public:
-  unsigned int from_stream(std::string s, GameApi::EveryApi &ev)
+  unsigned int from_stream(std::stringstream &ss, GameApi::EveryApi &ev)
   {
   unsigned int bm;
   //char c;
   //is >> c;
   //is >> c;
-  std::stringstream is(s);
-  is >> std::hex >> bm >> std::dec;
+  //std::stringstream is(s);
+  ss >> std::hex >> bm >> std::dec;
   return bm;
   }
 };
@@ -4281,8 +4311,10 @@ template<>
 class FromStreamClass<std::vector<std::string>>
 {
 public:
-  std::vector<std::string> from_stream(std::string s, GameApi::EveryApi &ev)
+  std::vector<std::string> from_stream(std::stringstream &sk, GameApi::EveryApi &ev)
   {
+    std::string s;
+    sk >> s;
     std::vector<std::string> vec;
     if (s.size()<2)
       {
@@ -4301,7 +4333,8 @@ public:
 	if (s[i]==',' || s[i]==']')
 	  {
 	    std::string substr = s.substr(prev, i-prev);
-	    std::string t = cls.from_stream(substr, ev);
+	    std::stringstream sk1(substr);
+	    std::string t = cls.from_stream(sk1, ev);
 	    vec.push_back(t);
 	    prev=i+1;
 	    if (s[i]==']') { break; }
@@ -4315,8 +4348,11 @@ template<class T>
 class FromStreamClass<std::vector<T>>
 {
 public:
-  std::vector<T> from_stream(std::string s, GameApi::EveryApi &ev)
+  std::vector<T> from_stream(std::stringstream &sk, GameApi::EveryApi &ev)
   {
+    std::string s;
+    sk >> s;
+
     //std::cout << "Vector:" << s << std::endl;
     std::vector<T> vec;
     if (s.size()>0 && s[0]!='[')
@@ -4352,7 +4388,8 @@ public:
 	if (s[i]==',' || s[i]==']')
 	  {
 	    std::string substr = s.substr(prev, i-prev);
-	    T t = cls.from_stream(substr, ev);
+	    std::stringstream sk1(substr);
+	    T t = cls.from_stream(sk1, ev);
 	    vec.push_back(t);
 	    prev=i+1;
 	    if (s[i]==']') { break; }
@@ -4436,20 +4473,22 @@ MACRO2(GameApi::WV,ev.waveform_api.empty(1.0))
 #endif
 #endif
 
+int to_int(std::string s);
 #define MACRO(lab) \
 template<> \
 class FromStreamClass<lab> \
 { \
 public:\
-  lab from_stream(std::string s, GameApi::EveryApi &ev)\
+  lab from_stream(std::stringstream &ss, GameApi::EveryApi &ev)\
   {\
   lab bm;\
+  std::string s;\
+  ss >> s;\
   if (s=="@") {\
         set_empty(ev,bm);\
       return bm;\
   }\
-  std::stringstream is(s);\
-  is >> bm.id;\
+  bm.id = to_int(s);\
   return bm;\
   }\
 };
@@ -4534,10 +4573,10 @@ MACRO(GameApi::AV)
 template<typename T> T from_stream2(std::stringstream &is, GameApi::EveryApi &ev)
 {
   FromStreamClass<T> cls;
-  std::string s;
-  is >> s;
+  //std::string s;
+  //is >> s;
   //std::cout << "FromStreamClass: " << s << " " << typeid(T).name() << std::endl;
-  return cls.from_stream(s,ev);
+  return cls.from_stream(is,ev);
 }
 
 class GameApiEditNode_float_coord : public GameApi::EditNode
@@ -6901,218 +6940,6 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "ev", "", "32", "300.0", "10.0" },
 			 "ML", "move_api", "jump_ml"));
 			 
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::def,
-			 "m_def",
-			 { "ev" },
-			 { "EveryApi&" },
-			 { "ev" },
-			 "MT", "materials_api", "def"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::colour_material,
-			 "m_colour",
-			 { "ev", "mix" },
-			 { "EveryApi&", "float" },
-			 { "ev", "0.5" },
-			 "MT", "materials_api", "colour_material"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture,
-			 "m_texture",
-			 { "ev", "bm", "mix" },
-			 { "EveryApi&", "BM","float" },
-			 { "ev", "","1.0" },
-			 "MT", "materials_api", "texture"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::textureid,
-			 "m_texture_id",
-			 { "ev", "txid", "mix" },
-			 { "EveryApi&", "TXID", "float" },
-			 { "ev", "", "1.0" },
-			 "MT", "materials_api", "textureid"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_many,
-			 "m_texture_many",
-			 { "ev", "vec", "mix" },
-			 { "EveryApi&", "[BM]", "float" },
-			 { "ev", "", "1.0" },
-			 "MT", "materials_api", "texture_many"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_many2,
-			 "m_texture_many_p",
-			 { "ev", "mix" },
-			 { "EveryApi&", "float" },
-			 { "ev", "0.5" },
-			 "MT", "materials_api", "texture_many2"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::many_texture_id_material,
-			 "m_mtl_many",
-			 { "ev", "mtl_url", "url_prefix", "mix", "start_range", "end_range" },
-			 { "EveryApi&", "std::string", "std::string", "float", "int", "int" },
-			 { "ev", "http://tpgames.org/sponza/sponza.mtl", "http://tpgames.org/sponza", "1", "0", "15" },
-			 "MT", "materials_api", "many_texture_id_material"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_cubemap,
-			 "m_texture_cubemap",
-			 { "ev", "vec", "mix", "mix2" },
-			 { "EveryApi&", "[BM]", "float","float" },
-			 { "ev", "", "1.0", "1.0" },
-			 "MT", "materials_api", "texture_cubemap"));
-
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_arr,
-			 "m_texture_arr",
-			 { "ev", "vec", "sx", "sy", "mix" },
-			 { "EveryApi&", "[BM]", "int", "int", "float" },
-			 { "ev", "", "256", "256", "1.0" },
-			 "MT", "materials_api", "texture_arr"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::skeletal,
-			 "m_skeletal",
-			 { "ev" },
-			 { "EveryApi&" },
-			 { "ev" },
-			 "MT", "materials_api", "skeletal"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::shading1,
-			 "m_shading1",
-			 { "ev", "nxt", "mix_val1", "mix_val2" },
-			 { "EveryApi&", "MT", "float", "float" },
-			 { "ev", "", "0.95", "0.5" },
-			 "MT", "materials_api", "shading1"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::shading2,
-			 "m_shading2",
-			 { "ev", "nxt", "color1", "color2", "color3" },
-			 { "EveryApi&", "MT", "unsigned int", "unsigned int", "unsigned int" },
-			 { "ev", "", "ffaaaaaa", "ffeeeeee", "ffffffff" },
-			 "MT", "materials_api", "shading2"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::phong,
-			 "m_phong",
-			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow" },
-			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
-			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0" },
-			 "MT", "materials_api", "phong"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material,
-			 "m_gltf",
-			 { "ev", "base_url", "url", "material_id", "mix" },
-			 { "EveryApi&", "std::string", "std::string", "int", "float" }, 
-			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "1.0" },
-			 "MT", "materials_api", "gltf_material"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material_env,
-			 "m_gltf_env",
-			 { "ev", "base_url", "url", "material_id", "mix", "diffuse", "specular", "bfrd" },
-			 { "EveryApi&", "std::string", "std::string", "int", "float", "BM", "BM", "BM" }, 
-			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "1.0", "", "", "" },
-			 "MT", "materials_api", "gltf_material_env"));
-
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material3,
-			 "m_material",
-			 { "ev", "roughness", "metallic", "base_r", "base_g", "base_b", "base_a", "mix" },
-			 { "EveryApi&", "float", "float", "float", "float", "float", "float", "float" },
-			 { "ev", "0.5", "0.8", "1.0", "1.0", "1.0", "1.0", "1.0" },
-			 "MT", "materials_api", "gltf_material3"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bump_phong,
-			 "m_bump_phong",
-			 { "ev", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow", "fb", "bump_width" },
-			 { "EveryApi&", "float", "float", "float", "unsigned int", "unsigned int", "float", "FB", "float" },
-			 { "ev", "-0.3", "0.3", "-1.0", "ffff8800", "ffffffff", "10.0", "", "5.0" },
-			 "MT", "materials_api", "bump_phong"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::fog,
-			 "m_fog",
-			 { "ev", "nxt", "dist", "dark_color", "light_color" },
-			 { "EveryApi&", "MT", "float", "unsigned int", "unsigned int" },
-			 { "ev", "", "300.0", "ff000000", "ffffffff" },
-			 "MT", "materials_api", "fog"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gi,
-			 "m_gi",
-			 { "ev", "nxt", "pts", "obj_size" },
-			 { "EveryApi&", "MT", "PTS", "float" },
-			 { "ev", "", "", "100.0" },
-			 "MT", "materials_api", "gi"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::combine_materials,
-			 "m_or_elem",
-			 { "ev", "mat1", "mat2" },
-			 { "EveryApi&", "MT", "MT" },
-			 { "ev", "", "" },
-			 "MT", "materials_api", "combine_materials"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::shadow,
-			 "m_shadow",
-			 { "ev", "p", "vec", "p_x", "p_y", "p_z", "sx", "sy", "dark_color", "mix", "mix2" },
-			 { "EveryApi&", "P", "[BM]", "float", "float", "float", "int", "int", "unsigned int", "float", "float" },
-			 { "ev", "", "", "0.0", "0.0", "0.0", "512", "512", "ff000000", "1.0", "0.5" },
-			 "MT", "materials_api", "shadow"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::shadow2,
-			 "m_shadow2",
-			 { "ev", "p", "p_x", "p_y", "p_z", "sx", "sy", "dark_color", "mix", "mix2", "numtextures" },
-			 { "EveryApi&", "P", "float", "float", "float", "int", "int", "unsigned int", "float", "float", "int" },
-			 { "ev", "", "0.0", "0.0", "0.0", "512", "512", "ff000000", "1.0", "0.5", "0" },
-			 "MT", "materials_api", "shadow2"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dyn_lights,
-			 "m_dyn_lights",
-			 { "ev", "nxt", "light_pos_x", "light_pos_y", "light_pos_z", "dist", "dyn_point" },
-			 { "EveryApi&", "MT", "float", "float", "float", "float", "int" },
-			 { "ev", "", "0.0", "0.0", "0.0", "500.0", "-1" },
-			 "MT", "materials_api", "dyn_lights"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::snow,
-			 "m_snow",
-			 { "ev", "nxt", "color1", "color2", "color3", "mix_val" },
-			 { "EveryApi&", "MT", "unsigned int", "unsigned int", "unsigned int", "float" },
-			 { "ev", "", "ffaaaaaa", "ffeeeeee", "ffffffff", "0.95" },
-			 "MT", "materials_api", "snow"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::flat,
-			 "m_flat",
-			 { "ev", "nxt", "color1", "color2", "color3"  },
-			 { "EveryApi&", "MT", "unsigned int", "unsigned int", "unsigned int" },
-			 { "ev", "", "ff8888ff", "ffff4422", "ffffffff" },
-			 "MT", "materials_api", "flat"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::fur,
-			 "m_fur",
-			 { "ev", "nxt", "center", "dist", "max_angle", "count", "size", "cone_numfaces" },
-			 { "EveryApi&", "MT", "PT", "float", "float", "int", "float", "int" },
-			 { "ev", "", "", "60.0", "1.59", "1500", "2.0", "4" },
-			 "MT", "materials_api", "fur"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::noise,
-			 "m_noise",
-			 { "ev", "sx", "sy", "r", "g", "b", "a", "r2", "g2", "b2", "a2", "mix" },
-			 { "EveryApi&", "int", "int", "int", "int", "int", "int", "int", "int", "int", "int", "float" },
-			 { "ev", "1024", "1024", "255", "255", "255", "255", "0", "0", "0", "255", "0.5" },
-			 "MT", "materials_api", "noise"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bloom,
-			 "m_bloom",
-			 { "ev", "nxt", "bm","r_cut", "g_cut", "b_cut", "pixel_x", "pixel_y" },
-			 { "EveryApi&", "MT", "BM", "float", "float", "float", "float", "float" },
-			 { "ev", "", "", "0.7", "0.7", "0.7", "0.01", "0.01" },
-			 "MT", "materials_api", "bloom"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::choose_color,
-			 "m_choose_color",
-			 { "ev", "nxt", "color", "mix_val" },
-			 { "EveryApi&", "MT", "unsigned int", "float" },
-			 { "ev", "", "ffff8844", "0.5" },
-			 "MT", "materials_api", "choose_color"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::brashmetal,
-			 "m_brashmetal",
-			 { "ev", "nxt", "count", "web" },
-			 { "EveryApi&", "MT", "int", "bool" },
-			 { "ev", "", "80000", "true" },
-			 "MT", "materials_api", "brashmetal"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::marble,
-			 "m_marble",
-			 { "ev", "nxt", "count", "cubesize" },
-			 { "EveryApi&", "MT", "int", "float" },
-			 { "ev", "", "300", "10" },
-			 "MT", "materials_api", "marble"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::web,
-			 "m_web",
-			 { "ev", "nxt", "mult", "linewidth", "linecolor" },
-			 { "EveryApi&", "MT", "float", "float","unsigned int" },
-			 { "ev", "", "1.03", "2.0","ff000000" },
-			 "MT", "materials_api", "web"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bevel,
-			 "m_bevel",
-			 { "ev", "nxt", "dir", "linewidth" },
-			 { "EveryApi&", "MT", "float", "float" },
-			 { "ev", "", "-1.5", "2.0" },
-			 "MT", "materials_api", "bevel"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dist_field_mesh,
-			 "m_dist_field",
-			 { "ev", "sfo", "mt" },
-			 { "EveryApi&", "SFO", "MT" },
-			 { "ev", "","" },
-			 "MT", "materials_api", "dist_field_mesh","[B]","Loses animations from SFO"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::mesh_color_from_sfo,
-			 "m_dist_field_color",
-			 { "ev", "sfo", "mt" },
-			 { "EveryApi&", "SFO", "MT" },
-			 { "ev", "", "" },
-			 "MT", "materials_api", "mesh_color_from_sfo"));
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::sfo_sandbox,
 			 "m_sandbox",
@@ -8267,6 +8094,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "[P]" },
 			 { "" },
 			 "P", "polygon_api", "or_array2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::mix_mesh,
+			 "p_mix",
+			 { "p", "pts", "val" },
+			 { "P", "PTS", "float" },
+			 { "", "", "0.5" },
+			 "P", "polygon_api", "mix_mesh"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::translate,
 			 "translate",
 			 { "orig", "dx", "dy", "dz" },
@@ -8958,6 +8791,7 @@ std::vector<GameApiItem*> polygonapi_functions2()
  std::vector<GameApiItem*> shadermoduleapi_functions()
 {
   std::vector<GameApiItem*> vec;
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, (GameApi::SFO (GameApi::ShaderModuleApi::*)(GameApi::PT,float))&GameApi::ShaderModuleApi::sphere,
 			 "sh_sphere",
 			 { "center", "radius" },
@@ -9122,6 +8956,222 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "SFO" },
 			 { "" },
 			 "SFO", "sh_api", "v_render"));
+#endif
+
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::def,
+			 "m_def",
+			 { "ev" },
+			 { "EveryApi&" },
+			 { "ev" },
+			 "MT", "materials_api", "def"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::colour_material,
+			 "m_colour",
+			 { "ev", "mix" },
+			 { "EveryApi&", "float" },
+			 { "ev", "0.5" },
+			 "MT", "materials_api", "colour_material"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture,
+			 "m_texture",
+			 { "ev", "bm", "mix" },
+			 { "EveryApi&", "BM","float" },
+			 { "ev", "","1.0" },
+			 "MT", "materials_api", "texture"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::textureid,
+			 "m_texture_id",
+			 { "ev", "txid", "mix" },
+			 { "EveryApi&", "TXID", "float" },
+			 { "ev", "", "1.0" },
+			 "MT", "materials_api", "textureid"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_many,
+			 "m_texture_many",
+			 { "ev", "vec", "mix" },
+			 { "EveryApi&", "[BM]", "float" },
+			 { "ev", "", "1.0" },
+			 "MT", "materials_api", "texture_many"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_many2,
+			 "m_texture_many_p",
+			 { "ev", "mix" },
+			 { "EveryApi&", "float" },
+			 { "ev", "0.5" },
+			 "MT", "materials_api", "texture_many2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::many_texture_id_material,
+			 "m_mtl_many",
+			 { "ev", "mtl_url", "url_prefix", "mix", "start_range", "end_range" },
+			 { "EveryApi&", "std::string", "std::string", "float", "int", "int" },
+			 { "ev", "http://tpgames.org/sponza/sponza.mtl", "http://tpgames.org/sponza", "1", "0", "15" },
+			 "MT", "materials_api", "many_texture_id_material"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_cubemap,
+			 "m_texture_cubemap",
+			 { "ev", "vec", "mix", "mix2" },
+			 { "EveryApi&", "[BM]", "float","float" },
+			 { "ev", "", "1.0", "1.0" },
+			 "MT", "materials_api", "texture_cubemap"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_arr,
+			 "m_texture_arr",
+			 { "ev", "vec", "sx", "sy", "mix" },
+			 { "EveryApi&", "[BM]", "int", "int", "float" },
+			 { "ev", "", "256", "256", "1.0" },
+			 "MT", "materials_api", "texture_arr"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::skeletal,
+			 "m_skeletal",
+			 { "ev" },
+			 { "EveryApi&" },
+			 { "ev" },
+			 "MT", "materials_api", "skeletal"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::shading1,
+			 "m_shading1",
+			 { "ev", "nxt", "mix_val1", "mix_val2" },
+			 { "EveryApi&", "MT", "float", "float" },
+			 { "ev", "", "0.95", "0.5" },
+			 "MT", "materials_api", "shading1"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::shading2,
+			 "m_shading2",
+			 { "ev", "nxt", "color1", "color2", "color3" },
+			 { "EveryApi&", "MT", "unsigned int", "unsigned int", "unsigned int" },
+			 { "ev", "", "ffaaaaaa", "ffeeeeee", "ffffffff" },
+			 "MT", "materials_api", "shading2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::phong,
+			 "m_phong",
+			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow" },
+			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
+			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0" },
+			 "MT", "materials_api", "phong"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material,
+			 "m_gltf",
+			 { "ev", "base_url", "url", "material_id", "mix" },
+			 { "EveryApi&", "std::string", "std::string", "int", "float" }, 
+			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "1.0" },
+			 "MT", "materials_api", "gltf_material"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material_env,
+			 "m_gltf_env",
+			 { "ev", "base_url", "url", "material_id", "mix", "diffuse", "specular", "bfrd" },
+			 { "EveryApi&", "std::string", "std::string", "int", "float", "BM", "BM", "BM" }, 
+			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "1.0", "", "", "" },
+			 "MT", "materials_api", "gltf_material_env"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material3,
+			 "m_material",
+			 { "ev", "roughness", "metallic", "base_r", "base_g", "base_b", "base_a", "mix" },
+			 { "EveryApi&", "float", "float", "float", "float", "float", "float", "float" },
+			 { "ev", "0.5", "0.8", "1.0", "1.0", "1.0", "1.0", "1.0" },
+			 "MT", "materials_api", "gltf_material3"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bump_phong,
+			 "m_bump_phong",
+			 { "ev", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow", "fb", "bump_width" },
+			 { "EveryApi&", "float", "float", "float", "unsigned int", "unsigned int", "float", "FB", "float" },
+			 { "ev", "-0.3", "0.3", "-1.0", "ffff8800", "ffffffff", "10.0", "", "5.0" },
+			 "MT", "materials_api", "bump_phong"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::fog,
+			 "m_fog",
+			 { "ev", "nxt", "dist", "dark_color", "light_color" },
+			 { "EveryApi&", "MT", "float", "unsigned int", "unsigned int" },
+			 { "ev", "", "300.0", "ff000000", "ffffffff" },
+			 "MT", "materials_api", "fog"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gi,
+			 "m_gi",
+			 { "ev", "nxt", "pts", "obj_size" },
+			 { "EveryApi&", "MT", "PTS", "float" },
+			 { "ev", "", "", "100.0" },
+			 "MT", "materials_api", "gi"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::combine_materials,
+			 "m_or_elem",
+			 { "ev", "mat1", "mat2" },
+			 { "EveryApi&", "MT", "MT" },
+			 { "ev", "", "" },
+			 "MT", "materials_api", "combine_materials"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::shadow,
+			 "m_shadow",
+			 { "ev", "p", "vec", "p_x", "p_y", "p_z", "sx", "sy", "dark_color", "mix", "mix2" },
+			 { "EveryApi&", "P", "[BM]", "float", "float", "float", "int", "int", "unsigned int", "float", "float" },
+			 { "ev", "", "", "0.0", "0.0", "0.0", "512", "512", "ff000000", "1.0", "0.5" },
+			 "MT", "materials_api", "shadow"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::shadow2,
+			 "m_shadow2",
+			 { "ev", "p", "p_x", "p_y", "p_z", "sx", "sy", "dark_color", "mix", "mix2", "numtextures" },
+			 { "EveryApi&", "P", "float", "float", "float", "int", "int", "unsigned int", "float", "float", "int" },
+			 { "ev", "", "0.0", "0.0", "0.0", "512", "512", "ff000000", "1.0", "0.5", "0" },
+			 "MT", "materials_api", "shadow2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dyn_lights,
+			 "m_dyn_lights",
+			 { "ev", "nxt", "light_pos_x", "light_pos_y", "light_pos_z", "dist", "dyn_point" },
+			 { "EveryApi&", "MT", "float", "float", "float", "float", "int" },
+			 { "ev", "", "0.0", "0.0", "0.0", "500.0", "-1" },
+			 "MT", "materials_api", "dyn_lights"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::snow,
+			 "m_snow",
+			 { "ev", "nxt", "color1", "color2", "color3", "mix_val" },
+			 { "EveryApi&", "MT", "unsigned int", "unsigned int", "unsigned int", "float" },
+			 { "ev", "", "ffaaaaaa", "ffeeeeee", "ffffffff", "0.95" },
+			 "MT", "materials_api", "snow"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::flat,
+			 "m_flat",
+			 { "ev", "nxt", "color1", "color2", "color3"  },
+			 { "EveryApi&", "MT", "unsigned int", "unsigned int", "unsigned int" },
+			 { "ev", "", "ff8888ff", "ffff4422", "ffffffff" },
+			 "MT", "materials_api", "flat"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::fur,
+			 "m_fur",
+			 { "ev", "nxt", "center", "dist", "max_angle", "count", "size", "cone_numfaces" },
+			 { "EveryApi&", "MT", "PT", "float", "float", "int", "float", "int" },
+			 { "ev", "", "", "60.0", "1.59", "1500", "2.0", "4" },
+			 "MT", "materials_api", "fur"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::noise,
+			 "m_noise",
+			 { "ev", "sx", "sy", "r", "g", "b", "a", "r2", "g2", "b2", "a2", "mix" },
+			 { "EveryApi&", "int", "int", "int", "int", "int", "int", "int", "int", "int", "int", "float" },
+			 { "ev", "1024", "1024", "255", "255", "255", "255", "0", "0", "0", "255", "0.5" },
+			 "MT", "materials_api", "noise"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bloom,
+			 "m_bloom",
+			 { "ev", "nxt", "bm","r_cut", "g_cut", "b_cut", "pixel_x", "pixel_y" },
+			 { "EveryApi&", "MT", "BM", "float", "float", "float", "float", "float" },
+			 { "ev", "", "", "0.7", "0.7", "0.7", "0.01", "0.01" },
+			 "MT", "materials_api", "bloom"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::choose_color,
+			 "m_choose_color",
+			 { "ev", "nxt", "color", "mix_val" },
+			 { "EveryApi&", "MT", "unsigned int", "float" },
+			 { "ev", "", "ffff8844", "0.5" },
+			 "MT", "materials_api", "choose_color"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::brashmetal,
+			 "m_brashmetal",
+			 { "ev", "nxt", "count", "web" },
+			 { "EveryApi&", "MT", "int", "bool" },
+			 { "ev", "", "80000", "true" },
+			 "MT", "materials_api", "brashmetal"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::marble,
+			 "m_marble",
+			 { "ev", "nxt", "count", "cubesize" },
+			 { "EveryApi&", "MT", "int", "float" },
+			 { "ev", "", "300", "10" },
+			 "MT", "materials_api", "marble"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::web,
+			 "m_web",
+			 { "ev", "nxt", "mult", "linewidth", "linecolor" },
+			 { "EveryApi&", "MT", "float", "float","unsigned int" },
+			 { "ev", "", "1.03", "2.0","ff000000" },
+			 "MT", "materials_api", "web"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bevel,
+			 "m_bevel",
+			 { "ev", "nxt", "dir", "linewidth" },
+			 { "EveryApi&", "MT", "float", "float" },
+			 { "ev", "", "-1.5", "2.0" },
+			 "MT", "materials_api", "bevel"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dist_field_mesh,
+			 "m_dist_field",
+			 { "ev", "sfo", "mt" },
+			 { "EveryApi&", "SFO", "MT" },
+			 { "ev", "","" },
+			 "MT", "materials_api", "dist_field_mesh","[B]","Loses animations from SFO"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::mesh_color_from_sfo,
+			 "m_dist_field_color",
+			 { "ev", "sfo", "mt" },
+			 { "EveryApi&", "SFO", "MT" },
+			 { "ev", "", "" },
+			 "MT", "materials_api", "mesh_color_from_sfo"));
+
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texture_sbm,
 			 "sbm_many_texture",
@@ -10833,7 +10883,7 @@ EXPORT GameApi::W GameApi::GuiApi::colorvolumeapi_functions_list_item(FtA atlas1
 
 EXPORT GameApi::W GameApi::GuiApi::shadermoduleapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {
-  return functions_widget(*this, "ShaderApi", shadermoduleapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+  return functions_widget(*this, "MaterialsrApi", shadermoduleapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
 EXPORT GameApi::W GameApi::GuiApi::framebuffermoduleapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {

@@ -2120,6 +2120,7 @@ public:
   AV pts_to_voxel(PTS pts, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy, int sz);
   AV av_unique(AV arr);
   ML quad_tree(P p);
+  P mix_mesh(P p, PTS points, float val);
   ARR poly_array(std::vector<P> vec);
   P poly_index(ARR arr, int idx);
   int poly_size(ARR arr);
@@ -3408,13 +3409,13 @@ public:
   IMPORT void bind_attrib(GameApi::SH shader, int num, std::string name);
   void bind_attrib_1(GameApi::SH shader, int num, std::string name);
   IMPORT void bind_frag(GameApi::SH shader, int attachment_num, std::string name);
-  IMPORT void set_var(GameApi::SH shader, std::string name, float val);
-  IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z);
-  IMPORT void set_var(GameApi::SH shader, std::string name, float x, float y, float z, float k);
-  IMPORT void set_var(GameApi::SH shader, std::string name, int val);
-  IMPORT void set_var(GameApi::SH shader, std::string name, M matrix);
-  IMPORT void set_var(GameApi::SH shader, std::string name, const std::vector<M> &m, int num);
-  IMPORT void set_var(GameApi::SH shader, std::string name, const std::vector<PT> &v);
+  IMPORT void set_var(GameApi::SH shader, const char * name, float val);
+  IMPORT void set_var(GameApi::SH shader, const char * name, float x, float y, float z);
+  IMPORT void set_var(GameApi::SH shader, const char *name, float x, float y, float z, float k);
+  IMPORT void set_var(GameApi::SH shader, const char * name, int val);
+  IMPORT void set_var(GameApi::SH shader, const char * name, M matrix);
+  IMPORT void set_var(GameApi::SH shader, const char * name, const std::vector<M> &m, int num);
+  IMPORT void set_var(GameApi::SH shader, const char * name, const std::vector<PT> &v);
   IMPORT M get_matrix_var(GameApi::SH shader, std::string name);
 private:
   ShaderApi(const ShaderApi&);
@@ -3893,7 +3894,7 @@ private:
     }
     void set_var(std::string name, float r, float g, float b, float a)
     {
-      shader_api.set_var(sh, name, r,g,b,a);
+      shader_api.set_var(sh, name.c_str(), r,g,b,a);
     }
   private:
     float pos_x, pos_y;
@@ -3988,7 +3989,7 @@ private:
     }
     void set_var(std::string name, float r, float g, float b, float a)
     {
-      shader_api.set_var(sh, name, r,g,b,a);
+      shader_api.set_var(sh, name.c_str(), r,g,b,a);
     }
   private:
     BitmapApi &bmapi;
@@ -4173,7 +4174,7 @@ private:
 #endif
     void set_var(std::string name, float r, float g, float b, float a)
     {
-      shapi.set_var(sh, name, r,g,b,a);
+      shapi.set_var(sh, name.c_str(), r,g,b,a);
     }
   private:
     void setup_m() {
@@ -4343,12 +4344,12 @@ private:
 	  for(int i=0;i<s;i++)
 	    {
 	      Var &vv = v[i];
-	      shapi.set_var(sh, vv.name, vv.r, vv.g, vv.b, vv.a);
+	      shapi.set_var(sh, vv.name.c_str(), vv.r, vv.g, vv.b, vv.a);
 	      //std::cout << i << ":" << vv.name << " " << vv.r << " " << vv.g << " " << vv.b <<" " << vv.a << std::endl;
 	      if (outline_bitmap[x+y*m_sx])
 		{
 		  shapi.use(m_sh3);
-		  shapi.set_var(m_sh3, vv.name, vv.r, vv.g, vv.b, vv.a);
+		  shapi.set_var(m_sh3, vv.name.c_str(), vv.r, vv.g, vv.b, vv.a);
 		  shapi.use(sh);
 		}
 
@@ -4454,7 +4455,7 @@ private:
     }
     void set_var(std::string name, float r, float g, float b, float a)
     {
-      shapi.set_var(sh, name, r,g,b,a);
+      shapi.set_var(sh, name.c_str(), r,g,b,a);
     }
     struct Var
     {
@@ -4574,7 +4575,7 @@ private:
     void set_rotation_matrix2(M m) { }
     void set_var(std::string name, float r, float g, float b, float a)
     {
-      shapi.set_var(sh, name, r,g,b,a);
+      shapi.set_var(sh, name.c_str(), r,g,b,a);
     }
   private:
     void setup_m() {
@@ -4637,7 +4638,7 @@ private:
     }
     void set_var(std::string name, float r, float g, float b, float a)
     {
-      shapi.set_var(sh, name, r,g,b,a);
+      shapi.set_var(sh, name.c_str(), r,g,b,a);
     }
   private:
     void setup_m() {
