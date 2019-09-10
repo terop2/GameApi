@@ -254,10 +254,77 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   prog->set_var("color_mix", 0.5f); 
   prog->set_var("time",0.0f);
   int s = 64;
+  const char *arr[] = { 
+"texsampler[0]",
+"texsampler[1]",
+"texsampler[2]",
+"texsampler[3]",
+"texsampler[4]",
+"texsampler[5]",
+"texsampler[6]",
+"texsampler[7]",
+"texsampler[8]",
+"texsampler[9]",
+"texsampler[10]",
+"texsampler[11]",
+"texsampler[12]",
+"texsampler[13]",
+"texsampler[14]",
+"texsampler[15]",
+"texsampler[16]",
+"texsampler[17]",
+"texsampler[18]",
+"texsampler[19]",
+"texsampler[20]",
+"texsampler[21]",
+"texsampler[22]",
+"texsampler[23]",
+"texsampler[24]",
+"texsampler[25]",
+"texsampler[26]",
+"texsampler[27]",
+"texsampler[28]",
+"texsampler[29]",
+"texsampler[30]",
+"texsampler[31]",
+"texsampler[32]",
+"texsampler[33]",
+"texsampler[34]",
+"texsampler[35]",
+"texsampler[36]",
+"texsampler[37]",
+"texsampler[38]",
+"texsampler[39]",
+"texsampler[40]",
+"texsampler[41]",
+"texsampler[42]",
+"texsampler[43]",
+"texsampler[44]",
+"texsampler[45]",
+"texsampler[46]",
+"texsampler[47]",
+"texsampler[48]",
+"texsampler[49]",
+"texsampler[50]",
+"texsampler[51]",
+"texsampler[52]",
+"texsampler[53]",
+"texsampler[54]",
+"texsampler[55]",
+"texsampler[56]",
+"texsampler[57]",
+"texsampler[58]",
+"texsampler[59]",
+"texsampler[60]",
+"texsampler[61]",
+"texsampler[62]",
+"texsampler[63]",
+"texsampler[64]"
+  };
   for(int i=0;i<s;i++) {
-    std::stringstream ss2; ss2 << i;
-    std::string ss = "texsampler[" + ss2.str() + "]";
-    prog->set_var(ss.c_str(), i);
+    //std::stringstream ss2; ss2 << i;
+    //std::string ss = "texsampler[" + ss2.str() + "]";
+    prog->set_var(arr[i] /*ss.c_str()*/, i);
   }
   std::string ss = "cubesampler";
   prog->set_var(ss.c_str(),0);
