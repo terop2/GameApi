@@ -86,20 +86,20 @@ public: // geometry shader specific
   void GeomOutputVertices(int i);
 public: // uniform variable
   int get_loc(std::string name);
-  void set_var(const std::string &name, float val);
+  void set_var(const char *name, float val);
   void set_var(int name, float val);
-  void set_var(const std::string &name, float val1, float val2);
-  void set_var(const std::string &name, const Point &p);
-  void set_var(const std::string &name, const Vector &p);
-  void set_var(const std::string &name, const Color &c);
-  void set_var(const std::string &name, float val1, float val2, float val3, float val4);
+  void set_var(const char *name, float val1, float val2);
+  void set_var(const char *name, const Point &p);
+  void set_var(const char *name, const Vector &p);
+  void set_var(const char *name, const Color &c);
+  void set_var(const char *name, float val1, float val2, float val3, float val4);
   void set_var(int name, float val1, float val2, float val3, float val4);
-  void set_var(const std::string &name, Matrix m);
-  void set_var(const std::string &name, float *array, int count);
-  void set_var(const std::string &name, int *array, int count);
-  void set_var(const std::string &name, int val);
-  void set_var_matrix(const std::string &name, const std::vector<float> &v);
-  void set_var(const std::string &name, const std::vector<Point> &v);
+  void set_var(const char *name, Matrix m);
+  void set_var(const char *name, float *array, int count);
+  void set_var(const char *name, int *array, int count);
+  void set_var(const char *name, int val);
+  void set_var_matrix(const char *name, const std::vector<float> &v);
+  void set_var(const char *name, const std::vector<Point> &v);
   Matrix get_matrix_var(const std::string &name);
   void bind_attrib(int num, std::string name);
   void bind_frag(int num, std::string name);
@@ -108,7 +108,7 @@ public: // uniform variable
   void attr_loc(std::string s, int index);
 public:
   ProgramPriv *priv;
-  std::map<std::string, int> locs;
+  std::map<const char *, int> locs;
 };
 
 class TestVertexShader : public ShaderSpec
@@ -1391,8 +1391,8 @@ public:
   void Link(std::string s2d, std::string r, std::string c1) { c2d=s2d; rr = r; cc = c1; }
   void SetParameters(Program &p) const
   {
-    p.set_var("r" + rr, r);
-    p.set_var("c" + cc, c);
+    //p.set_var("r" + rr, r);
+    //p.set_var("c" + cc, c);
   }
   std::string Shader() const
   {
@@ -1423,9 +1423,9 @@ public:
   void Link(std::string s2d, std::string s3d, std::string pl) { c2d=s2d; c3d=s3d; pll = pl; }
   void SetParameters(Program &p) const
   {
-    p.set_var("plane_u_p" + pll, plane.u_p);
-    p.set_var("plane_u_x" + pll, plane.u_x);
-    p.set_var("plane_u_y" + pll, plane.u_y);
+    //p.set_var("plane_u_p" + pll, plane.u_p);
+    //p.set_var("plane_u_x" + pll, plane.u_x);
+    //p.set_var("plane_u_y" + pll, plane.u_y);
   }
   std::string Shader() const
   {

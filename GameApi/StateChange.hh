@@ -183,8 +183,8 @@ public:
 	    }
 	  float deltatime = time - p->start_time;
 	  float range = deltatime / p->duration;
-	  prog->set_var(std::string("range"), range);
-	  prog->set_var(std::string("center"), Point(fptr(i, std::string("center_x")), fptr(i, std::string("center_y")), fptr(i, std::string("center_z"))));
+	  prog->set_var("range", range);
+	  prog->set_var("center", Point(fptr(i, std::string("center_x")), fptr(i, std::string("center_y")), fptr(i, std::string("center_z"))));
 	  RenderVertexArray2 rend(*p->s1, *p->s2);
 	  rend.render(0, id1b.loc, id2b.loc, id3b.loc, id4b.loc,
 		      id1a.loc, id2a.loc, id3a.loc, id4a.loc);

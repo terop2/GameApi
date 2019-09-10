@@ -2082,11 +2082,11 @@ public:
     //std::cout << color_num2 << " " << c2 << std::endl;
 
     ev.shader_api.use(s1);
-    ev.shader_api.set_var(s1, color_num2, c2.rf(),c2.gf(), c2.bf(), c2.af());
+    ev.shader_api.set_var(s1, color_num2.c_str(), c2.rf(),c2.gf(), c2.bf(), c2.af());
     ev.shader_api.use(s2);
-    ev.shader_api.set_var(s2, color_num2, c2.rf(),c2.gf(), c2.bf(), c2.af());
+    ev.shader_api.set_var(s2, color_num2.c_str(), c2.rf(),c2.gf(), c2.bf(), c2.af());
     ev.shader_api.use(s3);
-    ev.shader_api.set_var(s3, color_num2, c2.rf(),c2.gf(), c2.bf(), c2.af());
+    ev.shader_api.set_var(s3, color_num2.c_str(), c2.rf(),c2.gf(), c2.bf(), c2.af());
 
     next->execute(env);
     ev.shader_api.unuse(s3);
