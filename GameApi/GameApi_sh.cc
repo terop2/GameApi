@@ -46,7 +46,7 @@ void GameApi::ShaderApi::set_default_projection_1(SH shader, std::string name)
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
-  prog->set_var(name, m);  
+  prog->set_var(name.c_str(), m);  
 }
 EXPORT void GameApi::ShaderApi::set_y_rotation(SH shader, std::string name, float angle)
 {
@@ -55,7 +55,7 @@ EXPORT void GameApi::ShaderApi::set_y_rotation(SH shader, std::string name, floa
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
-  prog->set_var(name, m);  
+  prog->set_var(name.c_str(), m);  
 }
 EXPORT void GameApi::ShaderApi::link(GameApi::SH shader)
 {
@@ -253,7 +253,7 @@ EXPORT GameApi::M GameApi::ShaderApi::get_matrix_var(GameApi::SH shader, std::st
   return add_matrix(e, new SimpleMatrix(m));
 
 }
-EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float val)
+EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, float val)
 {
   if (shader.id==-1) return;
   //std::cout << "Set var float" << std::endl;
@@ -263,7 +263,7 @@ EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, fl
   prog->set_var(name, val);
 }
 
-EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float x, float y, float z)
+EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, float x, float y, float z)
 {
   if (shader.id==-1) return;
   //std::cout << "Set var float" << std::endl;
@@ -274,7 +274,7 @@ EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, fl
   prog->set_var(name, px);
 }
 
-EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, float x, float y, float z, float k)
+EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, float x, float y, float z, float k)
 {
   if (shader.id==-1) return;
   //std::cout << "Set var float" << std::endl;
@@ -285,7 +285,7 @@ EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, fl
 }
 
 
-EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, int val)
+EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, int val)
 {
   if (shader.id==-1) return;
   //std::cout << "Set var int" << std::endl;
@@ -295,7 +295,7 @@ EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, in
   prog->set_var(name, val);
 }
 
-EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, M matrix)
+EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, M matrix)
 {
   if (shader.id==-1) return;
   Matrix mat = find_matrix(e, matrix);
@@ -305,7 +305,7 @@ EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, M 
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->set_var(name, mat);
 }
-EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, const std::vector<PT> &m)
+EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, const std::vector<PT> &m)
 {
   if (shader.id==-1) return;
   std::vector<Point> v;
@@ -319,7 +319,7 @@ EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, co
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->set_var(name, v);
 }
-EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, std::string name, const std::vector<M> &m, int num)
+EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, const std::vector<M> &m, int num)
 {
   if (shader.id==-1) return;
 

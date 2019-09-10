@@ -66,12 +66,12 @@ EXPORT void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_heigh
   for(int i=0;i<s;i++) {
     std::stringstream ss2; ss2 << i;
     std::string ss = "texsampler[" + ss2.str() + "]";
-    prog->set_var(ss, i);
+    prog->set_var(ss.c_str(), i);
     std::string ss3 = "texsampler_cube[" + ss2.str() + "]";
-    prog->set_var(ss3,i);
+    prog->set_var(ss3.c_str(),i);
   }
   std::string ss = "cubesampler";
-  prog->set_var(ss, 0);
+  prog->set_var(ss.c_str(), 0);
 
   alpha_1(false);
 
@@ -257,10 +257,10 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   for(int i=0;i<s;i++) {
     std::stringstream ss2; ss2 << i;
     std::string ss = "texsampler[" + ss2.str() + "]";
-    prog->set_var(ss, i);
+    prog->set_var(ss.c_str(), i);
   }
   std::string ss = "cubesampler";
-  prog->set_var(ss,0);
+  prog->set_var(ss.c_str(),0);
   alpha_1(false);
   g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
   //glEnable(GL_MULTISAMPLE );
