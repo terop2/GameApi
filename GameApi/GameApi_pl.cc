@@ -6153,7 +6153,7 @@ public:
 	Point p2 = p * m;
 	std::stringstream ss;
 	ss << e.spotlight_id;
-	ev.shader_api.set_var(sh, "lightpos" + ss.str(), p2.x,p2.y,p2.z);
+	ev.shader_api.set_var(sh, ("lightpos" + ss.str()).c_str(), p2.x,p2.y,p2.z);
     }
 #ifndef NO_MV
     GameApi::M m = add_matrix2( env, e.in_MV );
@@ -6358,7 +6358,7 @@ public:
 	  Point p = pts->Pos(i);
 	  std::stringstream ss;
 	  ss << "obj_pos[" << i << "]";
-	  ev.shader_api.set_var(sh, ss.str(), p.x, p.y, p.z);	  
+	  ev.shader_api.set_var(sh, ss.str().c_str(), p.x, p.y, p.z);	  
 	}
 
 	ev.shader_api.set_var(sh, "obj_size", obj_size);
