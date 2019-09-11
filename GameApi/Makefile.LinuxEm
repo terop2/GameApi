@@ -49,6 +49,8 @@ Subdirs =
 
 OFiles = $(patsubst %.cc,objs/%.bc,$(CFiles))
 O2Files = $(patsubst %.cc,objs/%.bc,$(CFiles2))
+OFiles_nothreads = $(patsubst %.cc,objs/nothreads/%.bc,$(CFiles))
+O2Files_nothreads = $(patsubst %.cc,objs/nothreads/%.bc,$(CFiles2))
 DFiles = $(patsubst %.cc,objs/%.d,$(CFiles)) 
 D2Files = $(patsubst %.cc,objs/%.d2,$(CFiles2)) 
 HFiles = $(patsubst %.cc,%.hh,$(CFiles))
@@ -90,6 +92,8 @@ CC2FLAGS = -g -g4 -std=c++11 -Wall -O3 -Os -Oz -DGLEW_STATIC -I$(EMINC1) -I$(EMI
 
 def: $(O2Files) libGameApi.bc
 
+nothreads: $(O2Files_nothreads) libGameApi_nothreads.bc
+
 default: glew.o libGameApi.dll main.exe
 
 all: libGameApi.so libGameApi.dll install main
@@ -107,6 +111,11 @@ main.exe: $(O2Files_examples) Makefile GameApi.hh libGameApi.dll
 libGameApi.bc: $(O2Files) $(OFiles) Makefile
 	echo em++ libGameApi.bc
 	em++ $(OFiles) $(O2Files) -o libGameApi.bc
+
+libGameApi_nothreads.bc: $(O2Files_nothreads) $(OFiles_nothreads) Makefile
+	echo em++ libGameApi.bc
+	em++ $(OFiles_nothreads) $(O2Files_nothreads) -o libGameApi_nothreads.bc
+
 
 libGameApi.so: $(OFiles) Makefile
 	@echo g++ libGameApi.so
@@ -152,6 +161,16 @@ $(OFiles): objs/%.bc : %.cc
 $(O2Files): objs/%.bc : %.cc
 	@echo mingw $<
 	$(CCWIN) -c $(CCFLAGS) $< -o $@
+
+
+$(OFiles_nothreads): objs/nothreads/%.bc : %.cc
+	@echo em++ $< -o $@
+	@$(CCWIN) -DNO_THREADS -c $(CCFLAGS) $< -o $@
+
+$(O2Files_nothreads): objs/nothreads/%.bc : %.cc
+	@echo mingw $<
+	$(CCWIN) -DNO_THREADS -c $(CCFLAGS) $< -o $@
+
 
 glew.o:
 	$(CCWIN) -c $(CC2FLAGS) d:\cvs\glew-1.10.0\src\glew.c -o glew.o
