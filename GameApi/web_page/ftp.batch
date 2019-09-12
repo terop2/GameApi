@@ -11,3 +11,10 @@ put web_page_lowmem.data
 put web_page_lowmem.js
 put web_page_lowmem.wasm
 put web_page_lowmem.html.mem
+put web_page_nothreads.html
+put web_page_nothreads.data
+put web_page_nothreads.js
+put web_page_nothreads.wasm
+put web_page_lowmem_nothreads.data
+put web_page_lowmem_nothreads.js
+put web_page_lowmem_nothreads.wasm
