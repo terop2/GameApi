@@ -19,6 +19,13 @@
 #include <holoplay.h>
 #endif
 
+
+bool is_mobile(GameApi::EveryApi &ev)
+{
+  return ev.mainloop_api.get_screen_width() < 700;
+}
+
+
 //#define NO_MV 1
 
 class MaterialForward : public Material
@@ -3059,7 +3066,12 @@ public:
   BevelMaterial(GameApi::EveryApi &ev, Material *next, float dir=-1.5, float linewidth=2.0) : ev(ev), next(next), dir(dir), linewidth(linewidth){ }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-    g_low->ogl->glLineWidth(linewidth);
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+
+    g_low->ogl->glLineWidth(linewidth*mult);
 
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
     GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
@@ -3075,7 +3087,11 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
-    g_low->ogl->glLineWidth(linewidth);
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+    g_low->ogl->glLineWidth(linewidth*mult);
 
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
     GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
@@ -3092,7 +3108,11 @@ public:
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
-    g_low->ogl->glLineWidth(linewidth);
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+    g_low->ogl->glLineWidth(linewidth*mult);
 
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
     GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
@@ -3109,7 +3129,11 @@ public:
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
-    g_low->ogl->glLineWidth(linewidth);
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+    g_low->ogl->glLineWidth(linewidth*mult);
 
     GameApi::PTA pta = ev.points_api.prepare(pts);
 
@@ -4798,7 +4822,12 @@ public:
   WebMaterial(GameApi::EveryApi &ev, Material *next, float val, float linewidth, unsigned int color) : ev(ev),next(next),val(val),linewidth(linewidth),color(color) {}
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-    g_low->ogl->glLineWidth(linewidth);
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+    
+    g_low->ogl->glLineWidth(linewidth*mult);
     GameApi::P I2=p;
     GameApi::P I2b = ev.polygon_api.recalculate_normals(I2);
     GameApi::P I2a = ev.lines_api.p_towards_normal(I2b, val);
@@ -4818,7 +4847,12 @@ public:
 
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
-    g_low->ogl->glLineWidth(linewidth);
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+
+    g_low->ogl->glLineWidth(linewidth*mult);
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
@@ -4842,7 +4876,12 @@ public:
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
     //GameApi::PTA pta = ev.points_api.prepare(pts);
-    g_low->ogl->glLineWidth(linewidth);
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+
+    g_low->ogl->glLineWidth(linewidth*mult);
     
     GameApi::P I2=p;
     GameApi::P I2b = ev.polygon_api.recalculate_normals(I2);
@@ -4863,7 +4902,12 @@ public:
 
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
-    g_low->ogl->glLineWidth(linewidth);
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+
+    g_low->ogl->glLineWidth(linewidth*mult);
     GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
