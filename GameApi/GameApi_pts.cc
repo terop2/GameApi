@@ -650,6 +650,11 @@ EXPORT void GameApi::PointsApi::render(GameApi::PTA array)
   g_low->ogl->glDisableVertexAttribArray(4);
 #endif
   
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(0);
+#endif
+
+
 }
 
 
@@ -879,6 +884,10 @@ public:
   g_low->ogl->glDisableVertexAttribArray(2);
   g_low->ogl->glDisableVertexAttribArray(4);
 #endif
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(0);
+#endif
+
   ev.shader_api.unuse(sh);
   }
   int shader_id() { return -1; }
