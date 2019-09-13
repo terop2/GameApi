@@ -1074,6 +1074,7 @@ public:
 
   void Prepare()
   {
+    coll->Prepare();
     int id = meshquad_calculate_id(coll, count);
     Cont *c = find_meshquad(id);
     if (c) {
@@ -1084,7 +1085,6 @@ public:
     if (firsttime) 
       {
 	firsttime = false;
-    coll->Prepare();
     if (!points)
       points = new std::vector<Point>;
     if (!color2)

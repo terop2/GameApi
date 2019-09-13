@@ -840,6 +840,10 @@ EXPORT void GameApi::LinesApi::render(LLA l)
   g_low->ogl->glDisableVertexAttribArray(4);
   g_low->ogl->glDisableVertexAttribArray(2);
 #endif
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(0);
+#endif
+
 }
 
 #if 0
@@ -1133,7 +1137,9 @@ EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
 #endif
   //glDisableVertexAttribArray(0);
   //glDisableVertexAttribArray(2);
-
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(0);
+#endif
   return add_lines_array(e, arr);
 }
 class FromPoints2 : public LineCollection
