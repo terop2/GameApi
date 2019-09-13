@@ -757,6 +757,10 @@ EXPORT void GameApi::LinesApi::prepare_inst(LLA l, PTA instances)
 
   g_low->ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Point) * size, positions, Low_GL_DYNAMIC_DRAW);
 
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(0);
+#endif
+
 }
 std::map<int,bool> g_render_inst_map;
 
@@ -814,6 +818,11 @@ EXPORT void GameApi::LinesApi::render_inst(LLA l, PTA instances)
   g_low->ogl->glDisableVertexAttribArray(4);
   g_low->ogl->glDisableVertexAttribArray(2);
 #endif
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(0);
+#endif
+
+
     g_render_inst_map[instances.id]=true;
 
 }
@@ -1055,6 +1064,12 @@ EXPORT void GameApi::LinesApi::update(LLA la, LI l)
   g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2);
   g_low->ogl->glVertexAttribPointer(2, 4, Low_GL_UNSIGNED_BYTE, Low_GL_TRUE, 0,0);
 #endif
+
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(0);
+#endif
+
+
   //glDisableVertexAttribArray(0);
   //glDisableVertexAttribArray(2);
 

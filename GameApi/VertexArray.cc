@@ -774,6 +774,10 @@ void RenderVertexArray::update_tri(int id, int buffer_id, int start, int end)
   } break;
 
 }
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(0);
+#endif
+
 }
 void RenderVertexArray::update(int id)
 { 
@@ -831,6 +835,9 @@ void RenderVertexArray::update(int id)
   g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[4]);
   g_low->ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, s.poly_count_f(id)*sizeof(float)*3, s.poly_polys2(id));
 
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(0);
+#endif
 
 }
 void RenderVertexArray::update_buffers(RenderVertexArray_bufferids ids)
@@ -1350,6 +1357,11 @@ void RenderVertexArray::prepare_instanced(int id, Point *positions, int size)
 
   g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
   g_low->ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Point) * size, positions, Low_GL_DYNAMIC_DRAW);
+
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(0);
+#endif
+
 
 }
 std::map<Point*,bool> g_inst_map;
