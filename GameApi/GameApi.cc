@@ -8505,7 +8505,7 @@ void blocker_iter(void *arg)
 
     GameApi::M mat = env->ev->matrix_api.identity();
         if (env->screen_width<600) {
-	    mat = env->ev->matrix_api.scale(-1.0,-1.0,1.0);
+	  //mat = env->ev->matrix_api.scale(-1.0,-1.0,1.0);
     }
 
 #ifndef NO_MV
@@ -8688,7 +8688,7 @@ public:
     
     GameApi::M mat = env->ev->matrix_api.identity();
     if (screen_width<600) {
-      mat = env->ev->matrix_api.scale(-1.0,-1.0,1.0);
+      //mat = env->ev->matrix_api.scale(-1.0,-1.0,1.0);
     }
 #ifndef NO_MV
     env->ev->shader_api.use(env->color_sh);
