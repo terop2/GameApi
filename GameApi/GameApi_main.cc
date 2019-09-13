@@ -1607,7 +1607,6 @@ public:
 	MainLoopEnv ee = e;
 
 	// here's a block needed to distribute in_MV to different cases.
-#ifndef NO_MV
 	int id = vec[i]->shader_id();
 	if (id!=-1) {
 	  GameApi::SH sh;
@@ -1616,7 +1615,6 @@ public:
 	  ev.shader_api.use(sh);
 	  ev.shader_api.set_var(sh, "in_MV", m);
 	}
-#endif
 	vec[i]->execute(ee);
       }
   }
