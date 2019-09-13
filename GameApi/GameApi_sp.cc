@@ -210,7 +210,7 @@ public:
 
     GameApi::SH sh = { e.sh_texture_2d };
     ev.shader_api.use(sh);
-    ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
+    //ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
     g_low->ogl->glViewport((corner_x+tl.x)*scale_x,(screen_y-corner_y-(br.y-tl.y))*scale_y, (br.x-tl.x)*scale_x, (br.y-tl.y)*scale_y);
 
     g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
@@ -223,7 +223,8 @@ public:
     next->execute(ee);
     //e.sh_texture = old_sh;
     g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
-    ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
+
+    //ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
     g_low->ogl->glViewport(corner_x*scale_x,(screen_y-corner_y-rect_sy)*scale_y,rect_sx*scale_x, rect_sy*scale_y);
     inside_it = false;
   }
