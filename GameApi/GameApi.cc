@@ -3561,7 +3561,8 @@ public:
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml(ev,I16);
     GameApi::ML I17a = ev.texture_api.forward_to_txid(I16,I17,I15);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a, mix);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
@@ -3577,7 +3578,8 @@ public:
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
     GameApi::ML I17a = ev.texture_api.forward_to_txid(I16,I17,I15);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a,mix);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
@@ -3593,7 +3595,8 @@ public:
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
     GameApi::ML I17a = ev.texture_api.forward_to_txid(I16,I17,I15);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a,mix);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
@@ -3609,7 +3612,8 @@ public:
     GameApi::ML I17=ev.materials_api.render_instanced2_ml_fade(ev,I16,pta, flip, start_time, end_time);
     GameApi::ML I17a = ev.texture_api.forward_to_txid(I16,I17,I15);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a,mix);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
 private:
   GameApi::EveryApi &ev;
@@ -3632,7 +3636,8 @@ public:
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml(ev,I16);
     GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17, mix);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
@@ -3646,7 +3651,8 @@ public:
     GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
     GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17,mix);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
@@ -3660,7 +3666,8 @@ public:
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
     GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17,mix);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
@@ -3674,7 +3681,8 @@ public:
     GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml_fade(ev,I16,pta, flip, start_time, end_time);
     GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17,mix);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
 
 private:
@@ -3693,14 +3701,16 @@ public:
     GameApi::P I10=p; 
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17, mix);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     //GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,p,pts,bm);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
@@ -3714,7 +3724,8 @@ public:
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
     // END OF NOT WORKING
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
@@ -3727,7 +3738,8 @@ public:
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_fade_texture(ev,I10,pts, flip, start_time, end_time,bm);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
 
 private:
@@ -3745,14 +3757,16 @@ public:
     GameApi::P I10=p; 
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_cubemap(ev,I10,bm);
     GameApi::ML I18=ev.polygon_api.texture_cubemap_shader(ev, I17, mix,mix2);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     //GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_cubemap(ev,p,pts,bm);
     GameApi::ML I18=ev.polygon_api.texture_cubemap_shader(ev, I17,mix,mix2);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
@@ -3766,7 +3780,8 @@ public:
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
     // END OF NOT WORKING
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
@@ -3779,7 +3794,8 @@ public:
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_fade_texture(ev,I10,pts, flip, start_time, end_time,bm);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
 
 private:
@@ -3799,14 +3815,16 @@ public:
     GameApi::P I10=p; 
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture2(ev,I10);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17, mix);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     //GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture2(ev,p,pts);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
-    return I18;
+     GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+   return I19;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
@@ -4252,7 +4270,8 @@ public:
     GameApi::ML ml=ev.polygon_api.render_vertex_array_ml2_texture(ev,p1,bm);
     //ml.id = next->mat(p1.id);
     GameApi::ML sh = ev.polygon_api.bump_phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
-    return sh;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,sh);
+    return I19;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
@@ -4263,7 +4282,8 @@ public:
     GameApi::ML ml=ev.materials_api.render_instanced_ml_texture(ev,p1,pts,bm);
     //ml.id = next->mat_inst(p1.id, pts.id);
     GameApi::ML sh = ev.polygon_api.bump_phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
-    return sh;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,sh);
+    return I19;
 
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
@@ -10897,9 +10917,9 @@ private:
 GameApi::ML GameApi::MovementNode::quake_ml(EveryApi &ev, ML ml,float speed, float rot_speed)
 {
   float y_flip = 1.0;
-  if (ev.mainloop_api.get_screen_width() < 600) {
-    y_flip = -1.0;
-  }
+  //if (ev.mainloop_api.get_screen_width() < 600) {
+  //  y_flip = -1.0;
+  //}
   GameApi::MN mn = ev.move_api.empty();
   GameApi::MN scale4 = ev.move_api.scale2(mn, 1.0,y_flip,1.0);
   GameApi::ML ml4 = ev.move_api.move_ml(ev,ml,scale4, 1, 10.0);
@@ -10918,11 +10938,11 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     g_is_quake=true;
-    if (ev.mainloop_api.get_screen_width()<700) {
-    GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, -rot_speed);
-    } else {
+    //if (ev.mainloop_api.get_screen_width()<700) {
+    //GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, -rot_speed);
+    //} else {
           GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
-    }
+	  //}
     quake_pos_x = pos_x;
     quake_pos_y = -pos_y;
     quake_rot_y = rot_y;
@@ -18561,6 +18581,37 @@ GameApi::ARR GameApi::MainLoopApi::activate_arr_arr(std::vector<ML> arr)
   return add_array(e,array);
 }
 
+class FlipIfMobile : public MainLoopItem
+{
+public:
+  FlipIfMobile(GameApi::EveryApi &ev, MainLoopItem *item) : ev(ev), item(item) { }
+  virtual void Prepare() { item->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    Matrix m = e.in_MV;
+    if (is_mobile(ev)) {
+      m = m*Matrix::Scale(-1.0,-1.0,1.0);
+    }
+    ee.in_MV = m;
+    
+    item->execute(ee);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual int shader_id() { return item->shader_id(); }
+
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *item;
+};
+GameApi::ML GameApi::MainLoopApi::flip_scene_if_mobile(GameApi::EveryApi &ev, ML ml)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new FlipIfMobile(ev,item));
+}
 
 std::vector<int> g_active_triggers(25);
 std::vector<bool> g_toggle_buttons(25);
@@ -18603,3 +18654,4 @@ KP extern "C" void set_string(int num, const char *value)
 }
 
 #endif // THIRD_PART
+
