@@ -6,6 +6,8 @@
 #include <emscripten.h>
 #endif
 
+
+
 EXPORT GameApi::MainLoopApi::MainLoopApi(Env &e) : frame(0.0), time(0.0), e(e)  
 {
   priv = (void*)new MainLoopPriv;
