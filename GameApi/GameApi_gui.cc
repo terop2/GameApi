@@ -4999,7 +4999,9 @@ ASyncData async_data[] = {
   { "polygon_api", "bar_chart2", 1 },
   { "polygon_api", "piechart_full", 4 },
   { "mainloop_api", "gltf_mesh", 2 },
-  { "mainloop_api", "gltf_mesh_all", 2 }
+  { "mainloop_api", "gltf_mesh_all", 2 },
+  { "mainloop_api", "gltf_node", 2 },
+  { "mainloop_api", "gltf_scene", 2 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -7111,6 +7113,18 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "std::string", "std::string", "int" }, 
 			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0" },
 			 "ML", "mainloop_api", "gltf_mesh"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_node,
+			 "ml_gltf_node",
+			 { "ev", "base_url", "url", "node_id" },
+			 { "EveryApi&", "std::string", "std::string", "int" },
+			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0" },
+			 "ML", "mainloop_api", "gltf_node"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene,
+			 "ml_gltf_scene",
+			 { "ev", "base_url", "url", "scene_id" },
+			 { "EveryApi&", "std::string", "std::string", "int" },
+			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0" },
+			 "ML", "mainloop_api", "gltf_scene"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all,
 			 "ml_gltf_all",
 			 { "ev", "base_url", "url" },
