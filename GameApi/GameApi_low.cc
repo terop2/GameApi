@@ -337,7 +337,9 @@ void map_enums(int &i)
 
   default: break;
   };
-  assert(i<Low_GL_ARRAY_BUFFER ||i>Low_GL_RGBA8);
+  // this assert is broken since the values are already in opengl ones,
+  // which are arbitrary values, instead of nice enum
+  //assert(i<Low_GL_ARRAY_BUFFER ||i>Low_GL_VERSION);
 }
 
 
