@@ -8,6 +8,26 @@
 extern std::string gameapi_homepageurl;
 
 
+class MatrixMovement : public Movement
+{
+public:
+  MatrixMovement(Movement *next, Matrix m) : next(next), m(m) { }
+  virtual void event(MainLoopEvent &e) { next->event(e); }
+  virtual void frame(MainLoopEnv &e) { next->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { next->draw_event(e); }
+
+  void set_matrix(Matrix mm) { m = mm; }
+  Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    return next->get_whole_matrix(time, delta_time)*m;
+  }
+private:
+  Movement *next;
+  Matrix m;
+};
+
+
 class MaterialForward : public Material
 {
 public:
@@ -936,7 +956,7 @@ private:
 class GLTF_Material_env : public MaterialForward
 {
 public:
-  GLTF_Material_env(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int material_id, float mix, GameApi::BM diffuse_env, GameApi::BM specular_env, GameApi::BM brfd) : e(e), ev(ev),  load(load), material_id(material_id),mix(mix), diffuse_env(diffuse_env), specular_env(specular_env), bfrd(bfrd) { 
+  GLTF_Material_env(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int material_id, float mix, GameApi::BM diffuse_env, GameApi::BM specular_env, GameApi::BM brfd) : e(e), ev(ev),  load(load), material_id(material_id),mix(mix), diffuse_env(diffuse_env), specular_env(specular_env), bfrd(brfd) { 
     // TODO, HOW TO CALL PREPARE?
     load->Prepare();
   }
@@ -1094,6 +1114,98 @@ GameApi::ML scale_to_gltf_size(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::
     return I7;
 }
 
+GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id);
+
+GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int node_id )
+{
+  int s2 = load->model.nodes.size();
+  if (!(node_id>=0 && node_id<s2))
+    {
+    GameApi::P empty = ev.polygon_api.empty();
+    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
+    return ml;
+    }
+  tinygltf::Node *node = &load->model.nodes[node_id];
+
+  // Load mesh
+  int mesh_id = node->mesh;
+  GameApi::ML mesh;
+  mesh.id = -1;
+  if (mesh_id!=-1) {
+    mesh = gltf_mesh2( e, ev, load, mesh_id );
+  }
+
+  // todo cameras
+
+  // recurse children
+  int s = node->children.size();
+  std::vector<GameApi::ML> vec;
+  for(int i=0;i<s;i++) {
+    int child_id = node->children[i];
+    if (child_id!=-1) {
+      GameApi::ML ml = gltf_node2( e, ev, load, child_id );
+      vec.push_back(ml);
+    }
+  }
+  if (mesh.id != -1)
+    vec.push_back( mesh );
+  GameApi::ML array = ev.mainloop_api.array_ml(ev, vec);
+
+  GameApi::MN mv = ev.move_api.empty();
+  if (node->translation.size()==3) {
+    double m_x = node->translation[0];
+    double m_y = node->translation[1];
+    double m_z = node->translation[2];
+    mv = ev.move_api.trans2(mv, m_x, m_y, m_z);
+  }
+  if (node->rotation.size()==4) {
+    double r_x = node->rotation[0];
+    double r_y = node->rotation[1];
+    double r_z = node->rotation[2];
+    double r_w = node->rotation[3];
+    Quarternion q = { r_x, r_y, r_z, r_w };
+    Matrix m = Quarternion::QuarToMatrix(q);
+    Movement *orig = find_move(e, mv);
+    Movement *mv2 = new MatrixMovement(orig, m);
+    mv = add_move(e, mv2);
+  }
+  if (node->scale.size()==3) {
+    double s_x = node->scale[0];
+    double s_y = node->scale[1];
+    double s_z = node->scale[2];
+    mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
+  }
+  if (node->matrix.size()==16) {
+    double *arr = &node->matrix[0];
+    Matrix m;
+    for(int i=0;i<16;i++) m.matrix[i] = (float)arr[i];
+    Movement *orig = find_move(e, mv);
+    Movement *mv2 = new MatrixMovement(orig, m);
+    mv = add_move(e, mv2);    
+  }
+  GameApi::ML ret = ev.move_api.move_ml(ev, array, mv, 1, 10.0 );
+  return ret;
+}
+
+GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int scene_id )
+{
+  int s2 = load->model.scenes.size();
+  if (!(scene_id>=0 && scene_id<s2))
+    {
+    GameApi::P empty = ev.polygon_api.empty();
+    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
+    return ml;
+    }
+  tinygltf::Scene *scene = &load->model.scenes[scene_id];
+  int s = scene->nodes.size();
+  std::vector<GameApi::ML> vec;
+  for(int i=0;i<s;i++) {
+    GameApi::ML ml = gltf_node2( e, ev, load, scene->nodes[i] );
+    vec.push_back(ml);
+  }
+  return ev.mainloop_api.array_ml(ev, vec);
+}
+
 
 GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id)
 {
@@ -1129,6 +1241,37 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh( GameApi::EveryApi &ev, std::string 
   GameApi::ML ml = gltf_mesh2(e,ev,load, mesh_id);
   return scale_to_gltf_size(e,ev,mesh,ml);
 }
+GameApi::ML GameApi::MainLoopApi::gltf_node( GameApi::EveryApi &ev, std::string base_url, std::string url, int node_id )
+{
+  bool is_binary=false;
+  if (url.size()>3) {
+    std::string sub = url.substr(url.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+  LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  load->Prepare();
+  GameApi::P mesh = gltf_load2(e,ev, load, 0,0);
+  GameApi::ML ml = gltf_node2(e,ev,load,node_id);
+  return scale_to_gltf_size(e,ev,mesh,ml);
+  //return ml;
+}
+
+GameApi::ML GameApi::MainLoopApi::gltf_scene( GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id )
+{
+  bool is_binary=false;
+  if (url.size()>3) {
+    std::string sub = url.substr(url.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+  LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  load->Prepare();
+  GameApi::P mesh = gltf_load2(e,ev, load, 0,0);
+  GameApi::ML ml = gltf_scene2(e,ev,load,scene_id);
+  return scale_to_gltf_size(e,ev,mesh,ml);
+  //return ml;
+}
+
+
 GameApi::ML gltf_mesh_all2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load )
 {
   int s = load->model.meshes.size();
@@ -1153,3 +1296,4 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, std::str
   GameApi::ML ml = gltf_mesh_all2( e, ev, load );
   return scale_to_gltf_size(e,ev,mesh,ml);
 }
+
