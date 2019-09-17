@@ -214,7 +214,7 @@ public:
   void set_no_delete(bool b) { nodelete=b; }
   void del();
   ~RenderVertexArray() { if (!nodelete) del(); }
-private:
+public:
   //LowApi *g_low; // doesnt work because ctor is run before global variable is initialized
   VertexArraySet &s;
   unsigned int buffers[5];

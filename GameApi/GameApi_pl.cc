@@ -7298,6 +7298,16 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
+#ifdef VAO
+  if (rend->tri_count>0)
+    g_low->ogl->glBindVertexArray(rend->vao[0]);
+  else
+  if (rend->quad_count>0)
+    g_low->ogl->glBindVertexArray(rend->vao[1]);
+  else
+  if (rend->poly_count>0)
+    g_low->ogl->glBindVertexArray(rend->vao[2]);
+#endif
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   if (s->texture_many_ids.size()!=0) {
     //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
@@ -7382,6 +7392,9 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       //arr.render(0);
       rend->render(0);
     }
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(0);
+#endif
 }
 EXPORT void GameApi::PolygonApi::clone(VA va)
 {
