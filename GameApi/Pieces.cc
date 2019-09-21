@@ -54,17 +54,17 @@ void glNormal3f_a(const Vector &v)
 }
 void Cube(const Point &center, const Dir &d, const Color2 &c, const Size2 &s)
 {
-  Point p1 = center + d.u_z*s.z/2 - d.u_x*s.x/2 - d.u_y*s.y/2;
-  Vector v_x = d.u_x*s.x;
-  Vector v_y = d.u_y*s.y;
-  Vector v_z = d.u_z*s.z;
-  Point p2 = p1 + v_x;
-  Point p3 = p2 - v_z;
-  Point p4 = p3 + v_y;
-  Point p5 = p2 + v_y;
-  Point p6 = p1 + v_y;
-  Point p7 = p6 - v_z;
-  Point p8 = p1 - v_z;
+  //Point p1 = center + d.u_z*s.z/2 - d.u_x*s.x/2 - d.u_y*s.y/2;
+  //Vector v_x = d.u_x*s.x;
+  //Vector v_y = d.u_y*s.y;
+  //Vector v_z = d.u_z*s.z;
+  //Point p2 = p1 + v_x;
+  //Point p3 = p2 - v_z;
+  //Point p4 = p3 + v_y;
+  //Point p5 = p2 + v_y;
+  //Point p6 = p1 + v_y;
+  //Point p7 = p6 - v_z;
+  //Point p8 = p1 - v_z;
 
   //Vector v1 = p1 - center;
   //Vector v2 = p2 - center;

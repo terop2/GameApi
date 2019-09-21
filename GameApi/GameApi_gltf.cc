@@ -161,13 +161,13 @@ public:
 #endif
     std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
     std::string str(vec->begin(),vec->end());
-    bool b = false;
+    //bool b = false;
     std::string err;
     std::string warn;
     if (!is_binary) {
-      b = tiny.LoadASCIIFromString(&model, &err, &warn, str.c_str(), str.size(), base_url, tinygltf::REQUIRE_ALL);
+      tiny.LoadASCIIFromString(&model, &err, &warn, str.c_str(), str.size(), base_url, tinygltf::REQUIRE_ALL);
     } else {
-      b = tiny.LoadBinaryFromMemory(&model, &err, &warn, &vec->operator[](0), vec->size(), base_url, tinygltf::REQUIRE_ALL); 
+      tiny.LoadBinaryFromMemory(&model, &err, &warn, &vec->operator[](0), vec->size(), base_url, tinygltf::REQUIRE_ALL); 
     }
     if (!warn.empty()) { std::cout << "WARN: " << warn << std::endl; }
     if (!err.empty()) { std::cout << "ERROR: " << err << std::endl; }
@@ -184,20 +184,20 @@ public:
 
 bool FileExists(const std::string &abs_filename, void *ptr)
 {
-  LoadGltf *data = (LoadGltf*)ptr;
+  //LoadGltf *data = (LoadGltf*)ptr;
   std::cout << "FileExists " << abs_filename << std::endl;
   return true;
 }
 std::string ExpandFilePath(const std::string &str, void *ptr)
 {
-  LoadGltf *data = (LoadGltf*)ptr;
+  //LoadGltf *data = (LoadGltf*)ptr;
   std::cout << "ExpandFilePath " << str << std::endl;
   return str;
 }
 
 bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std::string &filepath, void *ptr)
 {
-  LoadGltf *data = (LoadGltf*)ptr;
+  //LoadGltf *data = (LoadGltf*)ptr;
   std::cout << "ReadWholeFile " << filepath << std::endl;
   std::string url = filepath;
 #ifndef EMSCRIPTEN
@@ -210,19 +210,19 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
 }
 bool WriteWholeFile(std::string *err, const std::string &filepath, const std::vector<unsigned char> &contents, void *ptr)
 {
-  LoadGltf *data = (LoadGltf*)ptr;
+  //LoadGltf *data = (LoadGltf*)ptr;
   std::cout << "WriteWholeFile" << filepath << std::endl;
   return false;
 }
 bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err, std::string *warn, int req_width, int req_height, const unsigned char *bytes, int size, void *ptr)
 {
-  LoadGltf *data = (LoadGltf*)ptr;
+  //LoadGltf *data = (LoadGltf*)ptr;
   std::cout << "LoadImageData " << req_width << " " << req_height << " " << size << std::endl;
   return false;
 }
 bool WriteImageData(const std::string *basepath, const std::string *filename, tinygltf::Image *image, bool b, void *ptr)
 {
-  LoadGltf *data = (LoadGltf*)ptr;
+  //LoadGltf *data = (LoadGltf*)ptr;
   std::cout << "WriteImageData " << *basepath << " " << *filename << std::endl;
   return false;
 }
@@ -236,7 +236,7 @@ public:
   {
     load->Prepare();
     img = 0;
-    if (image_index>=0 && image_index<load->model.images.size())
+    if (image_index>=0 && image_index<int(load->model.images.size()))
       img = &load->model.images[image_index];
   }
 
@@ -307,7 +307,8 @@ public:
   virtual void Prepare() { 
     load->Prepare();
 
-    if (mesh_index>=0 && mesh_index<load->model.meshes.size() && prim_index>=0 && prim_index<load->model.meshes[mesh_index].primitives.size())
+    
+    if (mesh_index>=0 && mesh_index<int(load->model.meshes.size()) && prim_index>=0 && prim_index<int(load->model.meshes[mesh_index].primitives.size()))
       prim = &load->model.meshes[mesh_index].primitives[prim_index];
     else
       return;
@@ -732,7 +733,7 @@ GameApi::BM GameApi::PolygonApi::gltf_load_bitmap( GameApi::EveryApi &ev, std::s
     return ev.bitmap_api.newbitmap(1,1, 0xffffffff);
   }
   bool is_binary=false;
-  if (url.size()>3) {
+  if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
@@ -801,7 +802,7 @@ GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, i
 GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index )
 {
   bool is_binary=false;
-  if (url.size()>3) {
+  if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
@@ -837,7 +838,8 @@ public:
     GameApi::P I10=p; 
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm);
     GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, false, false, false, false, false, false, false, false, roughness, metallic, base_r,base_g,base_b,base_a, occul, 1.0); // todo base color
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
 
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
@@ -846,19 +848,26 @@ public:
 
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,p,pts,bm);
     GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, false, false, false, false, false, false, false, false, roughness, metallic, base_r,base_g,base_b,base_a, occul, 1.0); 
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
     //GameApi::ML I13;
     //I13.id = next->mat_inst2(p.id,pta.id);
     std::cout << "ERROR gltf::mat2inst2" << std::endl;
+    GameApi::ML ml;
+    ml.id=-1;
+    return ml;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
     //GameApi::ML I13;
     //I13.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
     std::cout << "ERROR gltf::mat_inst_fade" << std::endl;
+    GameApi::ML ml;
+    ml.id=-1;
+    return ml;
 
   }
 private:
@@ -879,7 +888,7 @@ public:
     return 5; // (1=base color, 2=metallicroughness), 3=normal, 4=occulsion, 5=emissive
   }
   GameApi::BM texture(int i) const {
-    if (material_id<0 || material_id>=load->model.materials.size()) {
+    if (material_id<0 || material_id>=int(load->model.materials.size())) {
       return ev.bitmap_api.newbitmap(1,1,0xffffffff);
     }
     switch(i) {
@@ -890,6 +899,7 @@ public:
     case 4: return gltf_load_bitmap2(e,ev,load, load->model.materials[material_id].emissiveTexture.index);
     default:
       std::cout << "ERROR: gltf_meterial::texture" << std::endl;
+      GameApi::BM bm; bm.id=-1; return bm;
     };
   }
   bool has_texture(int i) const {
@@ -915,7 +925,8 @@ public:
     tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
     tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
     GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0); // todo base color
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
 
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
@@ -929,19 +940,26 @@ public:
     tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
     tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
     GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
     //GameApi::ML I13;
     //I13.id = next->mat_inst2(p.id,pta.id);
     std::cout << "ERROR gltf::mat2inst2" << std::endl;
+    GameApi::ML ml;
+    ml.id=-1;
+    return ml;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
     //GameApi::ML I13;
     //I13.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
     std::cout << "ERROR gltf::mat_inst_fade" << std::endl;
+    GameApi::ML ml;
+    ml.id=-1;
+    return ml;
 
   }
 private:
@@ -964,7 +982,7 @@ public:
     return 8; // (1=base color, 2=metallicroughness), 3=normal, 4=occulsion, 5=emissive, 6=env_bm
   }
   GameApi::BM texture(int i) const {
-    if (material_id<0 || material_id>=load->model.materials.size()) {
+    if (material_id<0 || material_id>=int(load->model.materials.size())) {
       return ev.bitmap_api.newbitmap(1,1,0xffffffff);
     }
     switch(i) {
@@ -978,6 +996,7 @@ public:
     case 7: return bfrd;
     default:
       std::cout << "ERROR: gltf_meterial::texture" << std::endl;
+      GameApi::BM bm; bm.id=-1; return bm;
     };
   }
   bool has_texture(int i) const {
@@ -1025,7 +1044,8 @@ public:
     tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
     tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
     GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0); // todo base color
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
 
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
@@ -1040,19 +1060,26 @@ public:
     tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
     tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
     GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
-    return I18;
+    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I19;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
     //GameApi::ML I13;
     //I13.id = next->mat_inst2(p.id,pta.id);
     std::cout << "ERROR gltf::mat2inst2" << std::endl;
+    GameApi::ML ml;
+    ml.id=-1;
+    return ml;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
     //GameApi::ML I13;
     //I13.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
     std::cout << "ERROR gltf::mat_inst_fade" << std::endl;
+    GameApi::ML ml;
+    ml.id=-1;
+    return ml;
 
   }
 private:
@@ -1077,7 +1104,7 @@ GameApi::MT GameApi::MaterialsApi::gltf_material3( GameApi::EveryApi &ev, float 
 GameApi::MT GameApi::MaterialsApi::gltf_material( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix )
   {
   bool is_binary=false;
-  if (url.size()>3) {
+  if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
@@ -1089,7 +1116,7 @@ GameApi::MT GameApi::MaterialsApi::gltf_material( EveryApi &ev, std::string base
 GameApi::MT GameApi::MaterialsApi::gltf_material_env( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix, BM diffuse_env, BM specular_env, BM bfrd )
 {
   bool is_binary=false;
-  if (url.size()>3) {
+  if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
@@ -1152,30 +1179,30 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
   GameApi::ML array = ev.mainloop_api.array_ml(ev, vec);
 
   GameApi::MN mv = ev.move_api.empty();
-  if (node->translation.size()==3) {
+  if (int(node->translation.size())==3) {
     double m_x = node->translation[0];
     double m_y = node->translation[1];
     double m_z = node->translation[2];
     mv = ev.move_api.trans2(mv, m_x, m_y, m_z);
   }
-  if (node->rotation.size()==4) {
+  if (int(node->rotation.size())==4) {
     double r_x = node->rotation[0];
     double r_y = node->rotation[1];
     double r_z = node->rotation[2];
     double r_w = node->rotation[3];
-    Quarternion q = { r_x, r_y, r_z, r_w };
+    Quarternion q = { float(r_x), float(r_y), float(r_z), float(r_w) };
     Matrix m = Quarternion::QuarToMatrix(q);
     Movement *orig = find_move(e, mv);
     Movement *mv2 = new MatrixMovement(orig, m);
     mv = add_move(e, mv2);
   }
-  if (node->scale.size()==3) {
+  if (int(node->scale.size())==3) {
     double s_x = node->scale[0];
     double s_y = node->scale[1];
     double s_z = node->scale[2];
     mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
   }
-  if (node->matrix.size()==16) {
+  if (int(node->matrix.size())==16) {
     double *arr = &node->matrix[0];
     Matrix m;
     for(int i=0;i<16;i++) m.matrix[i] = (float)arr[i];
@@ -1209,7 +1236,7 @@ GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load,
 
 GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id)
 {
-  if (mesh_id>=0 && mesh_id<load->model.meshes.size()) {
+  if (mesh_id>=0 && mesh_id<int(load->model.meshes.size())) {
     int s = load->model.meshes[mesh_id].primitives.size();
     std::vector<GameApi::ML> mls;
     for(int i=0;i<s;i++) {
@@ -1230,7 +1257,7 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
 GameApi::ML GameApi::MainLoopApi::gltf_mesh( GameApi::EveryApi &ev, std::string base_url, std::string url, int mesh_id )
 {
   bool is_binary=false;
-  if (url.size()>3) {
+  if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
@@ -1244,7 +1271,7 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh( GameApi::EveryApi &ev, std::string 
 GameApi::ML GameApi::MainLoopApi::gltf_node( GameApi::EveryApi &ev, std::string base_url, std::string url, int node_id )
 {
   bool is_binary=false;
-  if (url.size()>3) {
+  if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
@@ -1259,7 +1286,7 @@ GameApi::ML GameApi::MainLoopApi::gltf_node( GameApi::EveryApi &ev, std::string 
 GameApi::ML GameApi::MainLoopApi::gltf_scene( GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id )
 {
   bool is_binary=false;
-  if (url.size()>3) {
+  if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
@@ -1285,7 +1312,7 @@ GameApi::ML gltf_mesh_all2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *lo
 GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, std::string base_url, std::string url )
 {
   bool is_binary=false;
-  if (url.size()>3) {
+  if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }

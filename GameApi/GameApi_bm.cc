@@ -3819,6 +3819,77 @@ GameApi::FB GameApi::BitmapApi::mul_fb(FB f, float mul)
   Bitmap<float> *fb1 = find_float_bitmap(e, f)->bitmap;
   return add_float_bitmap(e, new MulFB(fb1, mul));
 };
+class CubeMapBitmap : public Bitmap<Color>
+{
+public:
+  CubeMapBitmap(Bitmap<Color> &left, Bitmap<Color> &top, Bitmap<Color> &middle, Bitmap<Color> &right, Bitmap<Color> &back, Bitmap<Color> &down) : left(left), top(top), middle(middle), right(right), back(back), down(down) { }
+  void Prepare() { left.Prepare(); top.Prepare(); middle.Prepare(); right.Prepare(); back.Prepare(); down.Prepare(); }
+  int SizeX() const { return left.SizeX()+middle.SizeX()+right.SizeX()+back.SizeX(); }
+  int SizeY() const { return top.SizeY()+middle.SizeY()+down.SizeY(); }
+  Color Map(int x, int y) const {
+    if (y>=0 && y<top.SizeY()) { // top
+      if (x>=left.SizeX() && x<left.SizeX()+top.SizeX()) {
+	// top
+	return top.Map(x-left.SizeX(), y);
+      }
+    }
+
+    if (y>=top.SizeY()&&y<top.SizeY()+middle.SizeY()) {
+      if (x>=0 && x<left.SizeX()) {
+	// left
+	return left.Map(x,y-top.SizeY());
+      }
+      if (x>=left.SizeX() && x<left.SizeX()+middle.SizeX())
+	{ // middle
+	  return middle.Map(x-left.SizeX(), y-top.SizeY());
+	}
+      if (x>=left.SizeX()+middle.SizeX() && x<left.SizeX()+middle.SizeX()+right.SizeX()) { // right
+	return right.Map(x-left.SizeX()-middle.SizeX(), y-top.SizeY());
+      }
+      if (x>=left.SizeX()+middle.SizeX()+right.SizeX()) {
+	// back
+	return back.Map(x-left.SizeX()-middle.SizeX()-right.SizeX(), y-top.SizeY());
+      }
+    }
+    if (y>=top.SizeY()+middle.SizeY()) {
+      if (x>=left.SizeX() && x<left.SizeX()+middle.SizeX()) {
+	// down
+	return down.Map(x-left.SizeX(),y-top.SizeX()-middle.SizeY());
+      }
+    }
+    return Color(0x0);
+  }
+
+private:
+  Bitmap<Color> &left, &top, &middle, &right, &back, &down;
+};
+
+GameApi::BM GameApi::BitmapApi::bm_cubemap(EveryApi &ev, BM left, BM top, BM middle, BM right, BM back, BM down, int sx, int sy)
+{
+  BM l = scale_bitmap(ev, left, sx,sy);
+  BM t = scale_bitmap(ev, top, sx, sy);
+  BM m = scale_bitmap(ev, middle, sx,sy);
+  BM r = scale_bitmap(ev, right, sx, sy);
+  BM b = scale_bitmap(ev, back, sx,sy);
+  BM d = scale_bitmap(ev, down, sx,sy);
+  
+  BitmapHandle *handle_l = find_bitmap(e, l);
+  ::Bitmap<Color> *b2_l = find_color_bitmap(handle_l);
+  BitmapHandle *handle_t = find_bitmap(e, t);
+  ::Bitmap<Color> *b2_t = find_color_bitmap(handle_t);
+  BitmapHandle *handle_m = find_bitmap(e, m);
+  ::Bitmap<Color> *b2_m = find_color_bitmap(handle_m);
+  BitmapHandle *handle_r = find_bitmap(e, r);
+  ::Bitmap<Color> *b2_r = find_color_bitmap(handle_r);
+  BitmapHandle *handle_b = find_bitmap(e, b);
+  ::Bitmap<Color> *b2_b = find_color_bitmap(handle_b);
+  BitmapHandle *handle_d = find_bitmap(e, d);
+  ::Bitmap<Color> *b2_d = find_color_bitmap(handle_d);
+
+  Bitmap<Color> *res = new CubeMapBitmap(*b2_l, *b2_t, *b2_m, *b2_r, *b2_b, *b2_d);
+  return add_color_bitmap(e, res);
+}
+
 class SubBitmap2 : public Bitmap<Color>
 {
 public:
@@ -4386,8 +4457,8 @@ public:
 
   bool is_nearest(Point light_pos, Point pp, int zpi) const
   {
-    int rr = 100000.0;
-    int zp = -1;
+    //int rr = 100000.0;
+    //int zp = -1;
     int s = coll2->NumFaces();
     for(int i=0;i<s;i++) {
       int p = coll2->NumPoints(i);

@@ -695,6 +695,98 @@ private:
   bool key_down;
 };
 
+
+class FaceFetcher : public Fetcher<FaceID>
+{
+public:
+  FaceFetcher(FaceCollection *coll, int facenum) : coll(coll), facenum(facenum)
+  {
+    firsttime = true;
+    u=0.0;
+    v=0.0;
+  }
+  virtual void event(MainLoopEvent &e) {
+    Point pos = e.cursor_pos;
+    if (facenum>=0 && facenum<coll->NumFaces()) {
+      Point p1 = coll->FacePoint(facenum,0);
+      Point p2 = coll->FacePoint(facenum,1);
+      Point p3 = coll->FacePoint(facenum,2);
+      Point p4 = coll->FacePoint(facenum,3);
+      
+      Matrix m = in_P * in_T * in_MV;
+      
+      p1 = p1 * m;
+      p2 = p2 * m;
+      p3 = p3 * m;
+      p4 = p4 * m;
+      Vector2d d_1 = { pos.x - p1.x, pos.y - p1.y };
+      Vector2d d_2 = { pos.x - p2.x, pos.y - p2.y };
+      //Vector2d d_3 = { pos.x - p3.x, pos.y - p3.y };
+      Vector2d d_4 = { pos.x - p4.x, pos.y - p4.y };
+
+      Vector2d d12 = { p2.x-p1.x, p2.y-p1.y };
+      Vector2d d14 = { p4.x-p1.x, p4.y-p1.y };
+      Vector2d d43 = { p4.x-p3.x, p4.y-p3.y };
+      Vector2d d23 = { p2.x-p3.x, p2.y-p3.y };
+
+      float dot_12p = Vector2d::DotProduct( d12, d_1 );
+      float dot_14p = Vector2d::DotProduct( d14, d_1 );
+      float dot_43p = Vector2d::DotProduct( d43, d_4 );
+      float dot_23p = Vector2d::DotProduct( d23, d_2 );
+      dot_12p /= d12.Dist()*d12.Dist();
+      dot_14p /= d14.Dist()*d14.Dist();
+      dot_43p /= d43.Dist()*d43.Dist();
+      dot_23p /= d23.Dist()*d23.Dist();
+
+      float pos_x = (1.0-dot_14p)*dot_12p + dot_14p*dot_43p;
+      float pos_y = (1.0-dot_12p)*dot_14p + dot_12p*dot_23p;
+
+      v = (1.0-pos_x)*dot_14p + pos_x*dot_23p;
+      u = (1.0-pos_y)*dot_12p + pos_y*dot_43p;
+      std::cout << "UV: " << u << " " << v << std::endl;
+    }
+    
+  }
+  virtual void frame(MainLoopEnv &e) { 
+    if (firsttime) {
+      coll->Prepare();
+      firsttime = false;
+    }
+    in_MV = e.in_MV;
+    in_T = e.in_T;
+    in_P = e.in_P;
+  }
+  virtual void draw_event(FrameLoopEvent &e) {
+  }
+  virtual void draw_frame(DrawLoopEnv &e) { 
+  }
+
+  void set(FaceID t) { }
+  FaceID get() const {
+    FaceID f;
+    f.u = u;
+    f.v = v;
+    f.facenum = facenum;
+    return f;
+  }
+private:
+  FaceCollection *coll;
+  Matrix in_MV;
+  Matrix in_T;
+  Matrix in_P;
+  bool firsttime;
+  int facenum;
+  float u,v;
+  bool hit;
+};
+GameApi::UV GameApi::MainLoopApi::face_fetcher(P p, int facenum)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  return add_uv(e, new FaceFetcher(coll, facenum));
+}
+
+
+
 class ChooseFloatFetcher : public Fetcher<float>
 {
 public:

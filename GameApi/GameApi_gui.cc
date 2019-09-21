@@ -4567,6 +4567,7 @@ MACRO(GameApi::CG)
 MACRO(GameApi::FML)
 MACRO(GameApi::FBU)
 MACRO(GameApi::AV)
+MACRO(GameApi::UV)
 #undef MACRO
 
 
@@ -5467,7 +5468,7 @@ public:
 #endif
   }
 private:
-  T (GameApi::EveryApi::*api);
+  T GameApi::EveryApi::*api;
   RT (T::*fptr)(P...);
   std::string name;
   std::vector<std::string> param_name;
@@ -6592,6 +6593,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { },
 			 { },
 			 "IF", "font_api", "hmd_state_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::face_fetcher,
+			 "uv_face",
+			 { "p", "facenum" },
+			 { "P", "int" },
+			 { "", "0" },
+			 "UV", "mainloop_api", "face_fetcher"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::choose_float_fetcher,
 			 "ff_choose",
 			 { "int_fetcher", "a_0", "a_1", "a_2", "a_3", "a_4", "a_5", "a_6" },
@@ -10166,6 +10173,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			   { "BM" },
 			   { "" },
 			   "[BM]", "bitmap_api", "cubemap"));
+    vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::bm_cubemap,
+			   "bm_invcubemap",
+			   { "ev", "left", "top", "middle", "right", "back", "down", "sx", "sy" },
+			   { "EveryApi&", "BM", "BM", "BM", "BM", "BM", "BM", "int", "int" },
+			   { "ev", "", "", "", "", "", "", "256", "256" },
+			   "BM", "bitmap_api", "bm_cubemap"));
 
     vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::fix_edges,
 			   "edge_fix",
