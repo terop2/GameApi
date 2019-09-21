@@ -2782,6 +2782,8 @@ public:
   Point2d Index(int i) const
   {
     Point2d p;
+    p.x = 0.0;
+    p.y = 0.0;
     return p;
   }
 private:

@@ -1,6 +1,15 @@
 
 #include "GameApi_h.hh"
 
+GameApi::UV add_uv(GameApi::Env &e, Fetcher<FaceID> *f)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->uv.push_back(f);
+  GameApi::UV im;
+  im.id = env->uv.size()-1;
+  return im;
+
+}
 GameApi::AV add_voxel_array(GameApi::Env &e, VoxelArray *arr)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -962,6 +971,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   GameApi::LL ee;
   ee.id = spos->CurrentPosNum();
   return ee;
+}
+
+Fetcher<FaceID> *find_uv(GameApi::Env &e, GameApi::UV u)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->uv[u.id];
 }
 
 VoxelArray *find_voxel_array(GameApi::Env &e, GameApi::AV a)

@@ -519,6 +519,11 @@ struct MainLoopEnv
   ContentCollection *avail_content =0;
 };
 
+struct FaceID
+{
+  int facenum;
+  float u,v;
+};
 
 struct MainLoopEvent
 {

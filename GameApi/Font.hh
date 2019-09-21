@@ -365,12 +365,12 @@ private:
 private:
   void Parse(std::string s, bool &success)
   {
-    std::cout << "Font Parse data: '" << s << "'" << std::endl;
-    //fd = p.ParseStruct<FontData>(s,success);
-    std::cout << "Advance: " << fd.advance << std::endl;
-    std::cout << "tl: " << fd.tl.x << " " << fd.tl.y << std::endl;
-    std::cout << "br: " << fd.br.x << " " << fd.br.y << std::endl;
-    std::cout << "vec:" << fd.vec << std::endl;
+    //std::cout << "Font Parse data: '" << s << "'" << std::endl;
+    fd = p.ParseStruct<FontData>(s,success);
+    //std::cout << "Advance: " << fd.advance << std::endl;
+    //std::cout << "tl: " << fd.tl.x << " " << fd.tl.y << std::endl;
+    //std::cout << "br: " << fd.br.x << " " << fd.br.y << std::endl;
+    //std::cout << "vec:" << fd.vec << std::endl;
   }
 
 };

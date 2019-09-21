@@ -118,8 +118,8 @@ void gameapi_main()
 #ifdef WINDOWS
   std::string homepageurl = "http://tpgames.org/";
   std::string seamless_url="";
-  int w_width = 800*1.8; // ;1920;
-  int w_height = 600*1.8; // 1080;
+  int w_width = 698; //800; //800*1.8; // ;1920;
+  int w_height = 480; //600; //600*1.8; // 1080;
   ev.mainloop_api.init_window(w_width,w_height);
   ev.mainloop_api.set_screen_size(w_width, w_height);
   ev.mainloop_api.set_homepage_url(homepageurl);

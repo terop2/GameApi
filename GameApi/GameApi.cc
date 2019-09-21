@@ -1630,10 +1630,10 @@ public:
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
-    GameApi::SH s1;
-    s1.id = env.sh_texture;
-    GameApi::SH s2;
-    s2.id = env.sh_array_texture;
+    //GameApi::SH s1;
+    //s1.id = env.sh_texture;
+    //GameApi::SH s2;
+    //s2.id = env.sh_array_texture;
     GameApi::SH s3;
     s3.id = env.sh_color;
     
@@ -1738,10 +1738,10 @@ public:
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
-    GameApi::SH s1;
-    s1.id = env.sh_texture;
-    GameApi::SH s2;
-    s2.id = env.sh_array_texture;
+    //GameApi::SH s1;
+    //s1.id = env.sh_texture;
+    //GameApi::SH s2;
+    //s2.id = env.sh_array_texture;
     GameApi::SH s3;
     s3.id = env.sh_color;
 
@@ -1843,10 +1843,10 @@ public:
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
-    GameApi::SH s1;
-    s1.id = env.sh_texture;
-    GameApi::SH s2;
-    s2.id = env.sh_array_texture;
+    //GameApi::SH s1;
+    //s1.id = env.sh_texture;
+    //GameApi::SH s2;
+    //s2.id = env.sh_array_texture;
     GameApi::SH s3;
     s3.id = env.sh_color;
 
@@ -1976,16 +1976,16 @@ public:
     firsttime = false;
     for(int i=0;i<clone_count;i++)
       {
-    GameApi::SH s1;
-    s1.id = env.sh_texture;
-    GameApi::SH s11;
-    s11.id = env.sh_texture_2d;
-    GameApi::SH s2;
-    s2.id = env.sh_array_texture;
+	//GameApi::SH s1;
+	//s1.id = env.sh_texture;
+	//GameApi::SH s11;
+	//s11.id = env.sh_texture_2d;
+	//GameApi::SH s2;
+	//s2.id = env.sh_array_texture;
     GameApi::SH s3;
     s3.id = env.sh_color;
-    GameApi::SH s4;
-    s4.id = next->shader_id();
+    //GameApi::SH s4;
+    //s4.id = next->shader_id();
 		    
     float time = (env.time*1000.0-start_time)/100.0+i*time_delta;
     GameApi::M mat = ev.move_api.get_matrix(mn, time, ev.mainloop_api.get_delta_time());
@@ -2153,10 +2153,10 @@ public:
     move->frame(env);
 
 
-    GameApi::SH s1;
-    s1.id = env.sh_texture;
-    GameApi::SH s2;
-    s2.id = env.sh_array_texture;
+    //GameApi::SH s1;
+    //s1.id = env.sh_texture;
+    //GameApi::SH s2;
+    //s2.id = env.sh_array_texture;
     GameApi::SH s3;
     s3.id = env.sh_color;
     GameApi::M mat,m2,mat2;
@@ -2432,10 +2432,10 @@ public:
     move->frame(env);
 
 
-    GameApi::SH s1;
-    s1.id = env.sh_texture;
-    GameApi::SH s2;
-    s2.id = env.sh_array_texture;
+    //GameApi::SH s1;
+    //s1.id = env.sh_texture;
+    //GameApi::SH s2;
+    //s2.id = env.sh_array_texture;
     GameApi::SH s3;
     s3.id = env.sh_color;
     GameApi::M mat,m2,mat2;
@@ -2605,10 +2605,10 @@ public:
     int s = std::min(next.size(), mn.size());
     for(int i=0;i<s;i++)
       {
-	GameApi::SH s1;
-	s1.id = env.sh_texture;
-	GameApi::SH s2;
-	s2.id = env.sh_array_texture;
+	//GameApi::SH s1;
+	//s1.id = env.sh_texture;
+	//GameApi::SH s2;
+	//s2.id = env.sh_array_texture;
 	GameApi::SH s3;
 	s3.id = env.sh_color;
 	float time = (ev.mainloop_api.get_time()-start_time)/100.0;
@@ -2891,10 +2891,10 @@ public:
   void execute_one(MainLoopEnv &env, Matrix m, int level)
   {
 	  GameApi::M m2 = add_matrix2(e, m);
-	  GameApi::SH s1;
-	  s1.id = env.sh_texture;
-	  GameApi::SH s2;
-	  s2.id = env.sh_array_texture;
+	  //GameApi::SH s1;
+	  //s1.id = env.sh_texture;
+	  //GameApi::SH s2;
+	  //s2.id = env.sh_array_texture;
 	  GameApi::SH s3;
 	  s3.id = env.sh_color;
 	  //GameApi::M mat = ev.move_api.get_matrix(mn, time);
@@ -4193,10 +4193,16 @@ private:
 class PhongMaterial : public MaterialForward
 {
 public:
-  PhongMaterial(GameApi::EveryApi &ev, Material *next, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow) : ev(ev), next(next), light_dir_x(light_dir_x), light_dir_y(light_dir_y), light_dir_z(light_dir_z), ambient(ambient), highlight(highlight), pow(pow) { }
+  PhongMaterial(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow) : env(env), ev(ev), next(next), light_dir_x(light_dir_x), light_dir_y(light_dir_y), light_dir_z(light_dir_z), ambient(ambient), highlight(highlight), pow(pow) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01)
+      p0 = ev.polygon_api.recalculate_normals(p);
     //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
     //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     GameApi::ML ml;
@@ -4206,7 +4212,15 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
-    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01)
+      p0 = ev.polygon_api.recalculate_normals(p);
+
+    //GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
     //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
     //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     GameApi::ML ml;
@@ -4217,7 +4231,15 @@ public:
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
-    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01)
+      p0 = ev.polygon_api.recalculate_normals(p);
+
+    //GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
     //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
     //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     GameApi::ML ml;
@@ -4228,7 +4250,14 @@ public:
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
-    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01)
+      p0 = ev.polygon_api.recalculate_normals(p);
+    //    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
     //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
     //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     GameApi::ML ml;
@@ -4239,6 +4268,7 @@ public:
   }
 
 private:
+  GameApi::Env &env;
   GameApi::EveryApi &ev;
   Material *next;
   float light_dir_x, light_dir_y, light_dir_z;
@@ -4773,7 +4803,7 @@ EXPORT GameApi::MT GameApi::MaterialsApi::snow(EveryApi &ev, MT nxt, unsigned in
 EXPORT GameApi::MT GameApi::MaterialsApi::phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
 {
   Material *mat = find_material(e, nxt);
-  return add_material(e, new PhongMaterial(ev, mat, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow));
+  return add_material(e, new PhongMaterial(e, ev, mat, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow));
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::gi(EveryApi &ev, MT nxt, PTS points, float obj_size)
 {
@@ -5223,7 +5253,7 @@ public:
   }
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
-    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     pta = ev.points_api.prepare(pts);
     va = ev.polygon_api.create_vertex_array(p,true);
     std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm,types);
@@ -5407,7 +5437,7 @@ public:
   }
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
-    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     pta = ev.points_api.prepare(pts);
     va = ev.polygon_api.create_vertex_array(p,true);
     std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev,bm);
@@ -5607,7 +5637,7 @@ public:
     // MainLoopEnv ee = e;
     if (firsttime)
       {
-    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+	//PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
 	pta = ev.points_api.prepare(pts);
 	va = ev.polygon_api.create_vertex_array(p,true);
 
@@ -5794,7 +5824,7 @@ public:
     obj2->HandleEvent(e);
   }
   void Prepare() {
-    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     pta = ev.points_api.prepare(pts);
     va = ev.polygon_api.create_vertex_array(p,true);
     std::vector<GameApi::BM> bm;
@@ -6657,7 +6687,7 @@ GameApi::US GameApi::UberShaderApi::f_gltf(US us, bool tex0, bool tex1, bool tex
   if (tex7) {
     s+="GLTF_TEX7";
   }
-  return add_uber(e, new F_ShaderCallFunction("gltf", next,"EX_POSITION EX_NORMAL EX_COLOR EX_TEXCOORD GLTF" + s));
+  return add_uber(e, new F_ShaderCallFunction("gltf", next,"EX_POSITION EX_NORMAL EX_COLOR EX_TEXCOORD COLOR_MIX GLTF" + s));
 }
 GameApi::US GameApi::UberShaderApi::f_colour_with_mix(US us)
 {
@@ -6996,7 +7026,7 @@ public:
   {
     float div = fmod(p, Size());
     int pos = int(p);
-    if (pos<0 || pos>=vec.size()) {
+    if (pos<0 || pos>=int(vec.size())) {
       pos = vec.size()-1;
     }
     Curve<Point> *c = vec[pos];
@@ -10858,10 +10888,10 @@ public:
     GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(trans,rot_y2),trans2),scale));
 
     //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
-    GameApi::SH s1;
-    s1.id = e.sh_texture;
-    GameApi::SH s2;
-    s2.id = e.sh_array_texture;
+    //GameApi::SH s1;
+    //s1.id = e.sh_texture;
+    //GameApi::SH s2;
+    //s2.id = e.sh_array_texture;
     GameApi::SH s3;
     s3.id = e.sh_color;
 
@@ -10955,10 +10985,10 @@ public:
     GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(trans,rot_y2),trans2),scale));
 
     //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
-    GameApi::SH s1;
-    s1.id = e.sh_texture;
-    GameApi::SH s2;
-    s2.id = e.sh_array_texture;
+    //GameApi::SH s1;
+    //s1.id = e.sh_texture;
+    //GameApi::SH s2;
+    //s2.id = e.sh_array_texture;
     GameApi::SH s3;
     s3.id = e.sh_color;
 
@@ -11048,10 +11078,10 @@ public:
     GameApi::M res2 = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(trans,trans2),scale));
 
     //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
-    GameApi::SH s1;
-    s1.id = e.sh_texture;
-    GameApi::SH s2;
-    s2.id = e.sh_array_texture;
+    //GameApi::SH s1;
+    //s1.id = e.sh_texture;
+    //GameApi::SH s2;
+    //s2.id = e.sh_array_texture;
     GameApi::SH s3;
     s3.id = e.sh_color;
 
@@ -11169,12 +11199,12 @@ public:
 	GameApi::M m2 = add_matrix2(env, e.in_MV);
 	MainLoopEnv ee = e;
 
-	GameApi::SH s1;
-	s1.id = e.sh_texture;
-	GameApi::SH s11;
-	s11.id = e.sh_texture_2d;
-	GameApi::SH s2;
-	s2.id = e.sh_array_texture;
+	//GameApi::SH s1;
+	//s1.id = e.sh_texture;
+	//GameApi::SH s11;
+	//s11.id = e.sh_texture_2d;
+	//GameApi::SH s2;
+	//s2.id = e.sh_array_texture;
 	GameApi::SH s3;
 	s3.id = e.sh_color;
 	
@@ -13236,14 +13266,14 @@ public:
     pts->HandleEvent(event);
   }
   virtual bool Update(MainLoopEnv &e) {
-    if (g_hide_container.size()!=hidecount) {
+    if (int(g_hide_container.size())!=hidecount) {
       hidecount = g_hide_container.size();
-      bool b = pts->Update(e);
+      pts->Update(e);
       return true; 
     }
-    bool b = pts->Update(e);
+    pts->Update(e);
     return true;
-    return b;
+    //return b;
   }
   virtual int NumPoints() const { return pts->NumPoints(); }
   virtual Point Pos(int t) const
@@ -18226,6 +18256,7 @@ public:
     for(int i=0;i<s;i++) {
       m_faces.push_back(face_vertices[i]);
     }
+    return 0;
   }
 
   virtual void Prepare() { }
@@ -18260,7 +18291,7 @@ public:
   }
 
   int Vertex(int face, int point) const {
-    int s = m_face_vertex_counts.size();
+    //int s = m_face_vertex_counts.size();
     int count = 0;
     for(int i=0;i<face;i++)
       {
@@ -18388,7 +18419,7 @@ public:
       {
 	int p = coll->NumPoints(i);
 	std::vector<Vertex> vec;
-	for(int j=0;j<s;j++) {
+	for(int j=0;j<p;j++) {
 	  Vertex v;
 	  v.p = coll->FacePoint(i,j);
 	  v.n = coll->PointNormal(i,j);
@@ -18589,11 +18620,11 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
-    Matrix m = e.in_MV;
+    Matrix m = e.in_P;
     if (is_mobile(ev)) {
-      m = m*Matrix::Scale(-1.0,-1.0,1.0);
+      m = m*Matrix::Scale(-1.0f,-1.0f,1.0f);
     }
-    ee.in_MV = m;
+    ee.in_P = m;
     
     item->execute(ee);
   }

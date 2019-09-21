@@ -32,6 +32,7 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct UV { int id; };
   struct AV { int id; };
   struct H { int id; };
   struct FBU { int id; };
@@ -325,6 +326,8 @@ public:
   IMPORT ML fps_display(EveryApi &ev, ML ml, std::string font);
   IMPORT ML score_display(EveryApi &ev, ML ml, std::string font);
   IMPORT ML time_display(EveryApi &ev, ML ml, std::string font, float start_time);
+
+  IMPORT UV face_fetcher(P p, int facenum);
   IMPORT void profile(std::string label, bool start);
   IMPORT void print_profile();
   IMPORT void delay(int ms);
@@ -617,6 +620,7 @@ public:
   IMPORT BM scale_bitmap_fullscreen(EveryApi &ev, BM orig);
         IMPORT BM world_from_bitmap(std::function<BM(int)> f, BM int_bm, int dx, int dy);
   IMPORT ARR cubemap(BM bm);
+  IMPORT BM bm_cubemap(EveryApi &ev, BM left, BM top, BM middle, BM right, BM back, BM down, int sx, int sy);
   IMPORT BM world_from_bitmap2(EveryApi &ev, std::vector<BM> v, std::string filename, std::string chars, int dx, int dy, int sx, int sy);
   IMPORT BM world_from_bitmap3(EveryApi &ev, std::vector<BM> v, std::string url, std::string chars, int dx, int dy);
         IMPORT BM dup_x(BM orig);

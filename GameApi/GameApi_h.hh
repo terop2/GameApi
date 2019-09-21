@@ -683,6 +683,7 @@ struct EnvImpl
   std::vector<HeavyOperation*> heavys;
   std::vector<FrmWidget*> frm_widgets;
   std::vector<VoxelArray*> voxel_array;
+  std::vector<Fetcher<FaceID>*> uv;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -992,6 +993,7 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::UV add_uv(GameApi::Env &e, Fetcher<FaceID> *f);
 GameApi::AV add_voxel_array(GameApi::Env &e, VoxelArray *arr);
 GameApi::W add_frm_widget(GameApi::Env &e, FrmWidget *w);
 GameApi::H add_heavy(GameApi::Env &e, HeavyOperation *h);
@@ -1129,6 +1131,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+Fetcher<FaceID> *find_uv(GameApi::Env &e, GameApi::UV u);
 VoxelArray *find_voxel_array(GameApi::Env &e, GameApi::AV a);
 FrmWidget *find_frm_widget(GameApi::Env &e, GameApi::W w);
 HeavyOperation *find_heavy(GameApi::Env &e, GameApi::H h);
