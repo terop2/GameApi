@@ -84,8 +84,8 @@ EMINC1 = /home/terop/emscripten/emsdk/emscripten/1.38.31/system/include/SDL
 EMINC2 = /home/terop/emscripten/emsdk/emscripten/1.38.31/system/include
 EMINC3 = /home/terop/emscripten/emsdk/emscripten/1.38.31/tests/freetype/include
 
-CCFLAGS = -g -g4 -O3 -Os -Oz -std=c++11 -Wall -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags --memory-init-file 0 -s NO_FILESYSTEM=1 -s DISABLE_EXCEPTION_CATCHING=1  -I$(EMINC1) -I$(EMINC2) -I$(EMINC3)
-CC2FLAGS = -g -g4 -std=c++11 -Wall -O3 -Os -Oz -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) 
+CCFLAGS = -DEMSCRIPTEN -g -g4 -O3 -Os -Oz -std=c++11 -Wall -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags --memory-init-file 0 -s NO_FILESYSTEM=1 -s DISABLE_EXCEPTION_CATCHING=1  -I$(EMINC1) -I$(EMINC2) -I$(EMINC3)
+CC2FLAGS = -DEMSCRIPTEN -g -g4 -std=c++11 -Wall -O3 -Os -Oz -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) 
 # -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s WASM_MEM_MAX=1500Mb
 #`pkg-config gtkmm-2.4 --cflags`
 
@@ -196,6 +196,7 @@ $(O2Files_examples): objs/%.bc : %.cc GameApi.hh
 
 clean:
 	@$(RM) -rf objs/*.bc objs/*.bc objs/*.gch objs/*.gch2
+	@$(RM) -rf objs/nothreads/*.bc objs/nothreads/*.bc objs/nothreads/*.gch objs/nothreads/*.gch2
 	@$(RM) main
 	@echo Clean.
 
