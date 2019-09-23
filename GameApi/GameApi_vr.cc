@@ -420,7 +420,7 @@ public:
 	for(int j=0;j<4;j++)
 	for(int i=0;i<4;i++) m.matrix[i+j*4] = d.rightViewMatrix[j+i*4];
       }
-      m.is_identity = false;
+      // m.is_identity = false;
   }
 #endif
   for(int i=0;i<16;i++) if (std::isnan(m.matrix[i])) m.matrix[i]=0.0;
@@ -498,7 +498,7 @@ public:
     for(int j=0;j<4;j++)
       for(int i=0;i<4;i++) m.matrix[i+j*4] = d.rightProjectionMatrix[j+i*4];
   }
-  m.is_identity = false;
+  // m.is_identity = false;
   for(int i=0;i<16;i++) if (std::isnan(m.matrix[i])) m.matrix[i]=0.0;
 
   GameApi::M m2 = ev.matrix_api.scale(1.0,0.5,1.0);
