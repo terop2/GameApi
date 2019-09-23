@@ -39,7 +39,6 @@ public:
 };
 
 
-#if 0
 class Parser {
 public:
   Parser() : currentptr(0), size(0) { }
@@ -84,6 +83,7 @@ private:
 };
 
 
+
 class FontCharacter
 {
 public:
@@ -109,7 +109,6 @@ public:
   virtual float BaseLine() const=0; // from TL to Baseline
   virtual float Height() const=0;
 };
-
 
 class FontCharacterModifiable
 {
@@ -375,5 +374,4 @@ private:
 
 };
 
-#endif
 #endif
