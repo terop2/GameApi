@@ -9817,6 +9817,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "EveryApi&", "LI", "MS" },
 			 { "ev", "", "" },
 			 "LI", "polygon_api", "li_static_instancing_matrix"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::tree_api, &GameApi::TreeApi::tree_ms,
+			 "ms_tree",
+			 { "ev", "tree", "time" },
+			 { "EveryApi&", "T", "float" },
+			 { "ev", "", "0.0" },
+			 "MS", "tree_api", "tree_ms"));
   return vec;
 }
 #endif // SECTION_2

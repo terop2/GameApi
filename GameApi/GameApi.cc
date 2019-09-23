@@ -3028,6 +3028,50 @@ GameApi::P execute_recurse(GameApi::Env &e, GameApi::EveryApi &ev, const std::ve
     }
   return ev.polygon_api.or_array2(vec);
 }
+class MS_array : public MatrixArray
+{
+public:
+  MS_array(std::vector<Matrix> mat) : mat(mat) { }
+  virtual int Size() const { return mat.size(); }
+  virtual Matrix Index(int i) const
+  {
+    return mat[i];
+  }
+private:
+  std::vector<Matrix> mat;
+};
+GameApi::MS ms_array(GameApi::Env &e, std::vector<Matrix> vec)
+{
+  return add_matrix_array(e, new MS_array(vec));
+}
+
+GameApi::MS execute_recurse_matrix(GameApi::Env &e, GameApi::EveryApi &ev, Matrix mm, int current_level, TreeStack *tree2, float time)
+{
+  Matrix m = mm;
+  if (current_level>=tree2->num_levels()-1) { std::vector<Matrix> vec; vec.push_back(m); return ms_array(e,vec); }
+  TreeLevel *lvl = tree2->get_level(current_level);
+  int s2 = lvl->num_childs();
+  std::vector<Matrix> vec;
+  vec.push_back(m);
+  for(int j=0;j<s2;j++)
+    {
+      Matrix mk = lvl->get_child(j,time);
+      Matrix m2 = mk*mm;
+      GameApi::MS res = execute_recurse_matrix(e,ev,m2, current_level+1, tree2, time);
+      MatrixArray *mat = find_matrix_array(e,res);
+      int s = mat->Size();
+      for(int i=0;i<s;i++) {
+	vec.push_back(mat->Index(i));
+      }
+    }
+      return ms_array(e,vec);
+}
+
+GameApi::MS GameApi::TreeApi::tree_ms(EveryApi &ev, T tree, float time)
+{
+  TreeStack *tree2 = find_tree(e, tree);
+  return execute_recurse_matrix(e,ev, Matrix::Identity(), 0, tree2, time);
+}
 
 GameApi::P GameApi::TreeApi::tree_p(EveryApi &ev, T tree, std::vector<P> vec, float time)
 {
