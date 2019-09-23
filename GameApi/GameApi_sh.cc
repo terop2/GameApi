@@ -139,6 +139,7 @@ GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format, std::s
   bind_attrib_1(sh, 4, "in_Position2");
   bind_attrib_1(sh, 5, "in_InstPos");
   bind_attrib_1(sh, 6, "bone_id");
+  bind_attrib_1(sh, 7, "in_InstMat");
   link_1(sh);
   use_1(sh);
   set_default_projection_1(sh, "in_P");

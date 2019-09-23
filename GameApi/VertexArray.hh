@@ -182,6 +182,7 @@ struct RenderVertexArray_bufferids
   unsigned int buffers2[5];
   unsigned int buffers3[5];
   unsigned int pos_buffer;
+  unsigned int pos_buffer_matrix;
   std::vector<unsigned int> attrib_buffer;
   std::vector<unsigned int> attrib_buffer2;
   std::vector<unsigned int> attrib_buffer3;
@@ -208,7 +209,9 @@ public:
   void update_tri(int id, int buffer_id, int start, int end);
   void render(int id);
   void prepare_instanced(int id, Point *positions, int size);
+  void prepare_instanced_matrix(int id, Matrix *positions, int size);
   void render_instanced(int id, Point *positions, int size);
+  void render_instanced_matrix(int id, Matrix *positions, int size);
   void update_buffers(RenderVertexArray_bufferids ids);
   void fetch_buffers(RenderVertexArray_bufferids &ids);
   void set_no_delete(bool b) { nodelete=b; }
@@ -225,6 +228,7 @@ public:
   int quad_count;
   int poly_count;
   unsigned int pos_buffer;
+  unsigned int pos_buffer_matrix;
   std::vector<unsigned int> attrib_buffer;
   std::vector<unsigned int> attrib_buffer2;
   std::vector<unsigned int> attrib_buffer3;

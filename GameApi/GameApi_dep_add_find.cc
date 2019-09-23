@@ -744,6 +744,14 @@ GameApi::PTA add_point_array3(GameApi::Env &e, PointArray3 *array)
   pt.id = env->pointarray3.size()-1;
   return pt;
 }
+GameApi::MSA add_matrix_array3(GameApi::Env &e, MatrixArray3 *array)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->matrixarray3.push_back(array);
+  GameApi::MSA pt;
+  pt.id = env->matrixarray3.size()-1;
+  return pt;
+}
 GameApi::FOA add_point_array(GameApi::Env &e, PointArray2 *array)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1887,6 +1895,13 @@ PointArray3 *find_point_array3(GameApi::Env &e, GameApi::PTA pa)
     return ee->pointarray3[pa.id];
   return 0;
 }
+MatrixArray3 *find_matrix_array3(GameApi::Env &e, GameApi::MSA pa)
+{
+  EnvImpl *ee = ::EnvImpl::Environment(&e);
+  if (pa.id >=0 && pa.id < (int)ee->matrixarray3.size())
+    return ee->matrixarray3[pa.id];
+  return 0;
+}
 PointArray2 *find_point_array(GameApi::Env &e, GameApi::FOA p)
 {
   EnvImpl *ee = ::EnvImpl::Environment(&e);
@@ -1924,7 +1939,7 @@ Matrix find_matrix(GameApi::Env &e, GameApi::M m)
 {
   Matrix mm;
   std::copy(&m.mat[0], &m.mat[0]+16, &mm.matrix[0]);
-  mm.is_identity=false;
+  //mm.is_identity=false;
   return mm;
 #if 0
   EnvImpl *ee = ::EnvImpl::Environment(&e);

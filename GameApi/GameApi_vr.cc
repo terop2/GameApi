@@ -300,7 +300,7 @@ public:
     Matrix m = { pose.m[0][0], pose.m[0][1], pose.m[0][2], /*0.0*/ pose.m[0][3],
 		 pose.m[1][0], pose.m[1][1], pose.m[1][2], /*0.0*/ pose.m[1][3],
 		 pose.m[2][0], pose.m[2][1], pose.m[2][2], /*0.0*/ pose.m[2][3],
-	         0.0, 0.0,0.0, 1.0f, false };
+	         0.0, 0.0,0.0, 1.0f};
     for(int i=0;i<16;i++) if (std::isnan(m.matrix[i])) m.matrix[i]=0.0;
     return m;
   }
@@ -405,7 +405,7 @@ public:
   Matrix m = { mat.m[0][0], mat.m[1][0], mat.m[2][0], 0.0,
 	       mat.m[0][1], mat.m[1][1], mat.m[2][1], 0.0,
 	       mat.m[0][2], mat.m[1][2], mat.m[2][2], 0.0,
-	       mat.m[0][3], mat.m[1][3], mat.m[2][3], 1.0, false };
+	       mat.m[0][3], mat.m[1][3], mat.m[2][3], 1.0 };
 
 #else
   Matrix m = Matrix::Identity();
@@ -477,7 +477,7 @@ public:
   Matrix m = { mat.m[0][0], mat.m[1][0], mat.m[2][0], mat.m[3][0],
 	       mat.m[0][1], mat.m[1][1], mat.m[2][1], mat.m[3][1],
 	       mat.m[0][2], mat.m[1][2], mat.m[2][2], mat.m[3][2],
-	       mat.m[0][3], mat.m[1][3], mat.m[2][3], mat.m[3][3], false };
+	       mat.m[0][3], mat.m[1][3], mat.m[2][3], mat.m[3][3] };
 
 
   GameApi::M m2 = ev.matrix_api.scale(1.0,0.5,1.0);

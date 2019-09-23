@@ -312,6 +312,11 @@ int GameApi::PointsApi::num_points(PTA pta)
   PointArray3 *arr = find_point_array3(e, pta);
   return arr->numpoints;
 }
+int GameApi::PointsApi::num_points(MSA pta)
+{
+  MatrixArray3 *arr = find_matrix_array3(e, pta);
+  return arr->numpoints;
+}
 float *GameApi::PointsApi::point_access(GameApi::PTA pta, int pointnum)
 {
   PointArray3 *arr = find_point_array3(e, pta);
@@ -345,6 +350,29 @@ unsigned int swap_color(unsigned int c)
   return ca+cr+cg+cb;
 }
 
+void GameApi::PointsApi::update_from_data(GameApi::MSA pta, GameApi::MS p)
+{
+  MatrixArray *pts = find_matrix_array(e, p);
+  int numpoints = pts->Size();
+  
+  MatrixArray3 *arr = find_matrix_array3(e, pta);
+  float *array = arr->array;
+  unsigned int *color = arr->color;
+  for(int i=0;i<numpoints;i++) 
+    {
+      Matrix m = pts->Index(i);
+      float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
+			m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
+			m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
+			m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
+      
+      unsigned int c = pts->Color(i);
+      for(int j=0;j<16;j++)
+	array[i*16+j] = m.matrix[j];
+      color[i]=swap_color(c);
+    }
+  // todo, update vertex array?
+}
 void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p)
 {
   PointsApiPoints *pts = find_pointsapi_points(e, p);
@@ -462,6 +490,33 @@ private:
 };
 #endif
 
+EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p)
+{
+  MatrixArray *arr2 = find_matrix_array(e, p);
+  arr2->Prepare();
+  int num = arr2->Size();
+  float *array = new float[num*16];
+  unsigned int *color = new unsigned int[num];
+  for(int i=0;i<num;i++) {
+    Matrix m = arr2->Index(i);
+    float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
+		      m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
+		      m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
+		      m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
+
+    unsigned int c = arr2->Color(i);
+    for(int j=0;j<16;j++) {
+      array[i*16+j] = m.matrix[j];
+    }
+    color[i] = swap_color(c);
+  }
+  // note, this isnt done like pts, i.e. its not sent to gpu buffers.
+  MatrixArray3 *arr = new MatrixArray3;
+  arr->array = array;
+  arr->color = color;
+  arr->numpoints = num;
+  return add_matrix_array3(e,arr);
+}
 
 EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
 {
@@ -757,6 +812,11 @@ EXPORT int GameApi::PointsApi::NumPoints(PTS p)
 {
   PointsApiPoints *obj2 = find_pointsapi_points(e, p);
   return obj2->NumPoints();
+}
+EXPORT int GameApi::PointsApi::NumPoints(MS p)
+{
+  MatrixArray *obj2 = find_matrix_array(e, p);
+  return obj2->Size();
 }
 EXPORT float GameApi::PointsApi::pos_x(PTS p, int index)
 {

@@ -235,7 +235,7 @@ Matrix Matrix::Zero()
 	       0.0, 0.0, 0.0, 0.0,
 	       0.0, 0.0, 0.0, 0.0,
 	       0.0, 0.0, 0.0, 1.0 } };
-  r.is_identity = false;
+  //r.is_identity = false;
   return r;
 }
 
@@ -245,7 +245,7 @@ Matrix Matrix::Identity()
 	       0.0, 1.0, 0.0, 0.0,
 	       0.0, 0.0, 1.0, 0.0,
 	       0.0, 0.0, 0.0, 1.0 } };
-  r.is_identity = true;
+  //r.is_identity = true;
   return r;
 }
 
@@ -278,7 +278,7 @@ Matrix Matrix::YRotation(float rot)
   Matrix r = { {cos_r, 0.0, sin_r, 0.0,
 	       0.0, 1.0, 0.0, 0.0,
 	       -sin_r, 0.0, cos_r, 0.0,
-	       0.0, 0.0, 0.0, 1.0}, false };
+	       0.0, 0.0, 0.0, 1.0} };
   return r;
 }
 
@@ -289,7 +289,7 @@ Matrix Matrix::ZRotation(float rot)
   Matrix r = { { cos_r, -sin_r, 0.0, 0.0,
 	       sin_r, cos_r, 0.0, 0.0,
 	       0.0, 0.0, 1.0, 0.0,
-	       0.0, 0.0, 0.0, 1.0} , false };
+	       0.0, 0.0, 0.0, 1.0} };
   return r;
 }
 Matrix Matrix::Translate(float x, float y, float z)
@@ -297,7 +297,7 @@ Matrix Matrix::Translate(float x, float y, float z)
   Matrix r = { { 1.0, 0.0, 0.0, x,
 	       0.0, 1.0, 0.0, y,
 	       0.0, 0.0, 1.0, z,
-	       0.0, 0.0, 0.0, 1.0}, false };
+	       0.0, 0.0, 0.0, 1.0} };
   return r;
 }
 
@@ -306,7 +306,7 @@ Matrix Matrix::Scale(float x, float y, float z)
   Matrix r = { {x, 0.0, 0.0, 0.0,
 	       0.0, y, 0.0, 0.0,
 	       0.0, 0.0, z, 0.0,
-	       0.0, 0.0, 0.0, 1.0}, false };
+	       0.0, 0.0, 0.0, 1.0} };
   return r;
 }
 
@@ -315,7 +315,7 @@ Matrix Matrix::ProjectionTrans(float z_min)
   Matrix r = { {1.0, 0.0, 0.0, 0.0,
 	       0.0, 1.0, 0.0, 0.0,
 	       0.0, 0.0, float(1.0/(1.0+z_min)), float(-z_min/(1.0+z_min)),
-	       0.0, 0.0, -1.0, 0.0}, false };
+	       0.0, 0.0, -1.0, 0.0} };
   return r;
 }
 
@@ -326,7 +326,7 @@ Matrix Matrix::PerspectiveProjection(float dist)
   Matrix r = { {1.0, 0.0, 0.0, 0.0,
 	       0.0, 1.0, 0.0, 0.0,
 	       0.0, 0.0, 0.0/*(B+F)/(B-F)*/, 0.0/*-2.0*B*F/(B-F)*/,
-	       0.0, 0.0, float(1.0/dist), 1.0}, false };
+	       0.0, 0.0, float(1.0/dist), 1.0} };
   return r;
 }
 
@@ -349,7 +349,7 @@ Matrix Matrix::Perspective2(float l, float r,
   Matrix m = { { c00, 0.0, c20, 0.0,
 		 0.0, c11, c21, 0.0,
 		 0.0, 0.0, c22, c32,
-		 0.0, 0.0, c23, 0.0 }, false };
+		 0.0, 0.0, c23, 0.0 } };
   return m;
 }
 
@@ -361,7 +361,7 @@ Matrix Matrix::Perspective(float fovy, float aspect, float near, float far)
   Matrix r = { {f/aspect, 0.0, 0.0, 0.0,
   	0.0, f, 0.0, 0.0,
   	0.0, 0.0, ff, fff,
-  	0.0, 0.0, -1.0, 0.0 }, false };
+  	0.0, 0.0, -1.0, 0.0 } };
 
   //Matrix r = { {f/aspect, 0.0, 0.0, 0.0,
   //		0.0, f, 0.0, 0.0,
@@ -379,7 +379,7 @@ Matrix Matrix::Ortho(float left, float right, float bottom, float top, float nea
   Matrix m = { { 2.0f/(right-left), 0.0f, 0.0f, -t_x,
 		 0.0f, 2.0f/(top-bottom), 0.0f, -t_y,
 		 0.0f, 0.0f, -2.0f/(far-near),-t_z,
-		 0.0f, 0.0f, 0.0f, 1.0f }, false };
+		 0.0f, 0.0f, 0.0f, 1.0f } };
   return m;
 }
 
@@ -396,7 +396,7 @@ Matrix Matrix::SphericalToCartesian(SphericalPoint p)
   Matrix rr = { {sinalfa*cosbeta, r*cosalfa*cosbeta, -r*sinalfa*sinbeta, 0,
 	       sinalfa*sinbeta, r*cosalfa*sinbeta, r*sinalfa*cosbeta, 0,
 	       cosalfa, -r*sinalfa, 0.0, 0.0,
-	       0.0,0.0,0.0,1.0}, false };
+	       0.0,0.0,0.0,1.0} };
   return rr;
 }
 
@@ -411,7 +411,7 @@ Matrix Matrix::CartesianToSpherical(Point p)
   Matrix rr = { {x/r, y/r, z/r, 0,
 	       x*z/r/sqrt_x_x_y_y, y*z/r/sqrt_x_x_y_y, -(x_x_y_y)/r/sqrt_x_x_y_y, 0
 	       -y/sqrt_x_x_y_y, x/sqrt_x_x_y_y, 0.0, 0.0,
-	       0, 0, 0, 1.0}, false };
+	       0, 0, 0, 1.0} };
   return rr;
 }
 

@@ -301,7 +301,7 @@ public:
   friend std::ostream &operator<<(std::ostream &o, const Matrix &m);
 public:
   float matrix[16];
-  bool is_identity;
+  //bool is_identity;
 };
 
 struct Point2d;
@@ -765,6 +765,22 @@ public:
     Vector v = p2-p1;
     float angle = atan2(v.dy,v.dx);
     return Matrix::ZRotation(angle);
+  }
+  Matrix rotate_from_p1_in_3d() const
+  {
+    Vector v = p2-p1;
+    float alfa = atan2(v.dy,v.dx);
+    if (fabs(v.dx)<0.001) { if (v.dy<0.0f) alfa=-3.14159f/2.0; else alfa=3.14159f/2.0; }
+    float beta = acos(v.dz/sqrt(v.dx*v.dx+v.dy*v.dy+v.dz*v.dz));
+    //if (std::isnan(alfa)) alfa=0.0f;
+    //if (std::isnan(beta)) beta=0.0f;
+    Matrix m = Matrix::YRotation(beta) * Matrix::ZRotation(alfa);
+    return m;
+  }
+  Matrix rotate_to_initial_pos() const
+  {
+    Matrix m = Matrix::Scale(-1.0,1.0,1.0)*Matrix::ZRotation(-3.14159256/2.0)*Matrix::XRotation(3.14159256/2.0);
+    return m;
   }
   Matrix scale_length_in_2d() const
   {

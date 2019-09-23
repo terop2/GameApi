@@ -477,6 +477,16 @@ struct PointArray3
   Low_GLuint vao[1];
 };
 
+struct MatrixArray3
+{
+  float *array;
+  unsigned int *color;
+  int numpoints;
+  Low_GLuint buffer[2];
+  Low_GLuint vao[1];
+};
+
+
 struct PlaneData
 {
   std::vector<float> array;
@@ -684,6 +694,7 @@ struct EnvImpl
   std::vector<FrmWidget*> frm_widgets;
   std::vector<VoxelArray*> voxel_array;
   std::vector<Fetcher<FaceID>*> uv;
+  std::vector<MatrixArray3*> matrixarray3;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1101,6 +1112,7 @@ GameApi::M add_matrix(GameApi::Env &e, MatrixInterface *i);
 GameApi::LI add_line_array(GameApi::Env &e, LineCollection *array);
 GameApi::PTS add_points_api_points(GameApi::Env &e, PointsApiPoints *pts);
 GameApi::PTA add_point_array3(GameApi::Env &e, PointArray3 *array);
+GameApi::MSA add_matrix_array3(GameApi::Env &e, MatrixArray3 *array);
 GameApi::FOA add_point_array(GameApi::Env &e, PointArray2 *array);
 void add_update_lines_array(GameApi::Env &e, GameApi::LLA la, PointArray2 *array);
 GameApi::LLA add_lines_array(GameApi::Env &e, PointArray2 *array);
@@ -1238,6 +1250,7 @@ Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handl
 PointsApiPoints *find_pointsapi_points(GameApi::Env &e, GameApi::PTS ps);
 LineCollection *find_line_array(GameApi::Env &e, GameApi::LI li);
 PointArray3 *find_point_array3(GameApi::Env &e, GameApi::PTA pa);
+MatrixArray3 *find_matrix_array3(GameApi::Env &e, GameApi::MSA pa);
 PointArray2 *find_point_array(GameApi::Env &e, GameApi::FOA p);
 PointArray2 *find_lines_array(GameApi::Env &e, GameApi::LLA p);
 PointCollection *find_pointcoll_array(GameApi::Env &e, GameApi::PC p);
