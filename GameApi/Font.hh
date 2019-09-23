@@ -39,7 +39,7 @@ public:
 };
 
 
-
+#if 0
 class Parser {
 public:
   Parser() : currentptr(0), size(0) { }
@@ -375,5 +375,5 @@ private:
 
 };
 
-
+#endif
 #endif

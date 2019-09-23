@@ -7490,6 +7490,15 @@ EXPORT void GameApi::PolygonApi::prepare_vertex_array_instanced(ShaderApi &shapi
   PointArray3 *arr = find_point_array3(e, pta);
   rend->prepare_instanced(0, (Point*)arr->array, arr->numpoints);
 }
+
+EXPORT void GameApi::PolygonApi::prepare_vertex_array_instanced_matrix(ShaderApi &shapi, VA va, MSA pta, SH sh)
+{
+  //VertexArraySet *s = find_vertex_array(e, va);
+  RenderVertexArray *rend = find_vertex_array_render(e, va);
+  MatrixArray3 *arr = find_matrix_array3(e, pta);
+  rend->prepare_instanced_matrix(0, (Matrix*)arr->array, arr->numpoints);
+}
+
 EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi, VA va, PTA pta, SH sh, int hide_n)
 {
 #if 0
@@ -7682,6 +7691,203 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       show_num = std::min(arr->numpoints, show_num);
 
       rend->render_instanced(0, (Point*)arr->array, show_num);
+      //rend->render(0);
+    }
+#endif
+}
+
+EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi &shapi, VA va, MSA pta, SH sh, int hide_n)
+{
+#if 0
+  VertexArraySet *s = find_vertex_array(e, va);
+  RenderVertexArray *rend = find_vertex_array_render(e, va);
+  MatrixArray3 *arr = find_point_array3(e, pta);
+
+  
+  int ss = arr->numpoints;
+  for(int i=0;i<ss;i++)
+    {
+      float x = arr->array[i*3];
+      float y = arr->array[i*3+1];
+      float z = arr->array[i*3+2];
+      shapi.set_var(sh, "in_InstPos", x,y,z);
+
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  if (s->texture_many_ids.size()!=0) {
+    //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+    int ss = s->texture_many_ids.size();
+    for(int i=0;i<ss;i++)
+      {
+	g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
+#ifndef EMSCRIPTEN
+        g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
+#endif
+	g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_many_ids[i]);
+      }
+      rend->render(0);
+
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+
+  } 
+  else
+  if (s->texture_id!=-1 && s->texture_id<SPECIAL_TEX_ID)
+    {
+      TextureEnable(*env->renders[s->texture_id], 0, true);
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(0);
+      TextureEnable(*env->renders[s->texture_id], 0, false);
+    }
+  else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID_CUBEMAP && s->texture_id<SPECIAL_TEX_ID_CUBEMAP_END)
+    {
+      //g_low->ogl->glEnable(Low_GL_TEXTURE_CUBE_MAP);
+#ifndef EMSCRIPTEN
+      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+#endif
+      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
+
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(0);
+
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_CUBE_MAP);
+
+    }
+  else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
+    {
+      //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+#ifndef EMSCRIPTEN
+      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+#endif
+      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(0);
+
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+    }
+  else if (s->texture_id!=-1)
+    {
+      //g_low->ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
+#ifndef EMSCRIPTEN
+      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+#endif
+      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
+      rend->render(0);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
+    }
+  else
+    {
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      rend->render(0);
+    }
+    }
+#else
+  VertexArraySet *s = find_vertex_array(e, va);
+  RenderVertexArray *rend = find_vertex_array_render(e, va);
+  MatrixArray3 *arr = find_matrix_array3(e, pta);
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  if (s->texture_many_ids.size()!=0) {
+    //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+    int ss = s->texture_many_ids.size();
+    for(int i=0;i<ss;i++)
+      {
+	int txid = s->texture_many_ids[i];
+	if (txid>=SPECIAL_TEX_ID_CUBEMAP && txid<SPECIAL_TEX_ID_CUBEMAP_END)
+	  {
+#ifndef EMSCRIPTEN
+      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
+#endif
+      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
+      g_low->ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, txid-SPECIAL_TEX_ID_CUBEMAP);
+
+	  } else {
+	g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
+#ifndef EMSCRIPTEN
+        g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
+#endif
+	g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_many_ids[i]);
+	}
+      }
+      int hide_num = 0;
+      if (hide_n != -1) { hide_num = hide_n; }
+      int show_num = arr->numpoints-hide_num;
+      show_num = std::max(0,show_num);
+      show_num = std::min(arr->numpoints, show_num);
+      rend->render_instanced_matrix(0, (Matrix*)arr->array, show_num);
+
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+
+  } 
+  else if (s->texture_id!=-1 && s->texture_id<SPECIAL_TEX_ID)
+    {
+      TextureEnable(*env->renders[s->texture_id], 0, true);
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      int hide_num = 0;
+      if (hide_n != -1) { hide_num = hide_n; }
+      int show_num = arr->numpoints-hide_num;
+      show_num = std::max(0,show_num);
+      show_num = std::min(arr->numpoints, show_num);
+      rend->render_instanced_matrix(0, (Matrix*)arr->array, show_num);
+      TextureEnable(*env->renders[s->texture_id], 0, false);
+    }
+  else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
+    {
+      //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+#ifndef EMSCRIPTEN
+      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+#endif
+      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      int hide_num = 0;
+      if (hide_n != -1) { hide_num = hide_n; }
+      int show_num = arr->numpoints-hide_num;
+      show_num = std::max(0,show_num);
+      show_num = std::min(arr->numpoints, show_num);
+
+      rend->render_instanced_matrix(0, (Matrix*)arr->array, show_num);
+      //rend->render(0);
+
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+    }
+  else if (s->texture_id!=-1)
+    {
+      //g_low->ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
+#ifndef EMSCRIPTEN
+      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+#endif
+      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
+
+      int hide_num = 0;
+      if (hide_n != -1) { hide_num = hide_n; }
+      int show_num = arr->numpoints-hide_num;
+      show_num = std::max(0,show_num);
+      show_num = std::min(arr->numpoints, show_num);
+
+      rend->render_instanced_matrix(0, (Matrix*)arr->array, show_num);
+      //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
+    }
+  else
+    {
+      //RenderVertexArray arr(*s);
+      //arr.render(0);
+      int hide_num = 0;
+      if (hide_n != -1) { hide_num = hide_n; }
+      int show_num = arr->numpoints-hide_num;
+      show_num = std::max(0,show_num);
+      show_num = std::min(arr->numpoints, show_num);
+
+      rend->render_instanced_matrix(0, (Matrix*)arr->array, show_num);
       //rend->render(0);
     }
 #endif

@@ -1281,6 +1281,7 @@ void DumpMem(const char *c, int size)
 #endif
 }
 
+#if 0
 void FontParseTestCases()
 {
   std::ifstream str("./fonts/font.txt");
@@ -1304,6 +1305,7 @@ void FontParseTestCases()
       std::cout << "}" << std::endl;
     }
 }
+#endif
 
 void Loop::visit(Visitor &v)
 {

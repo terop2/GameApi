@@ -812,6 +812,7 @@ class Material
 public:
   virtual int mat(int p) const=0; 
   virtual int mat_inst(int p, int pts) const=0;
+  virtual int mat_inst_matrix(int p, int ms) const=0;
   virtual int mat_inst2(int p, int pta) const=0;
   virtual int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const=0;
 };
@@ -827,8 +828,12 @@ public:
 class MatrixArray
 {
 public:
+  virtual void Prepare() { }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) { return false; }
   virtual int Size() const=0;
   virtual Matrix Index(int i) const=0;
+  virtual unsigned int Color(int i) const { return 0xffffffff; }
 };
 
 class PlaneShape

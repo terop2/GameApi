@@ -6771,6 +6771,14 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "ML", "PTS" },
 			 { "ev", "", "" },
 			 "ML", "move_api", "local_move"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::local_move_matrix,
+			 "local_move_mat",
+			 { "ev", "inner_ml", "matrices" },
+			 { "EveryApi&", "ML", "MS" },
+			 { "ev", "", "" },
+			 "ML", "move_api", "local_move_matrix"));
+
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::translate,
 			 "anim_translate",
@@ -7393,6 +7401,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "P", "PTS", "MT" },
 			 { "", "", "" },
 			 "ML", "materials_api", "bind_inst"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bind_inst_matrix,
+			 "m_bind_inst_mat",
+			 { "p", "ms", "mat" },
+			 { "P", "MS", "MT" },
+			 { "", "", "" },
+			 "ML", "materials_api", "bind_inst_matrix"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::m_bind_inst_many,
 			 "m_bind_inst_many",
 			 { "ev", "vec", "mat", "pts" },
@@ -9785,6 +9799,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "LI" },
 			 { "" },
 			 "MS", "matrices_api", "from_lines_2d"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::from_lines_3d,
+			 "ms_from_lines_3d",
+			 { "li" },
+			 { "LI" },
+			 { "" },
+			 "MS", "matrices_api", "from_lines_3d"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::static_instancing_matrix,
 			 "ms_static_inst",
 			 { "ev", "obj", "matrices" },

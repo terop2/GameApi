@@ -1760,7 +1760,7 @@ Matrix AnimBox::Index(int box) const
   Matrix m;
   for(int i=0;i<16;i++)
     m.matrix[i]=TransformFloat(cc.matrix[i], cc2.matrix[i], 0.0, length, time);
-  m.is_identity=false;
+  //m.is_identity=false;
 
   //Box b;
   // b.center = TransformPoint(cc.center, cc2.center, 0.0, length, time);
@@ -4451,6 +4451,8 @@ void OutlineFaces::Prepare()
   }
   Point OutlineFaces::LinePoint(int line, int point) const
   {
+    if (line<0 ||line>=counts.size()) return Point(0.0,0.0,0.0);
+    if (line<0 ||line>=counts2.size()) return Point(0.0,0.0,0.0);
     //int num = c.NumFaces();
     int count = 0;
     int i=0;

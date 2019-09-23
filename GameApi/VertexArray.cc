@@ -28,8 +28,8 @@ void VertexArraySet::print_stat(int id)
       m_set[id] = new Polys;
       p = m_set[id];  
     }
-  std::cout << "tri_polys: " << p->tri_polys.size() << std::endl;
-  std::cout << "quad_polys: " << p->quad_polys.size() << std::endl;
+  //std::cout << "tri_polys: " << p->tri_polys.size() << std::endl;
+  //std::cout << "quad_polys: " << p->quad_polys.size() << std::endl;
 
 }
 void VertexArraySet::explode(int id, Point pt, float dist)
@@ -847,6 +847,7 @@ void RenderVertexArray::update_buffers(RenderVertexArray_bufferids ids)
   int ss = 3;
   for(int i=0;i<ss;i++) { vao[i]=ids.vao[i]; }
   pos_buffer=ids.pos_buffer;
+  pos_buffer_matrix = ids.pos_buffer_matrix;
   //int a1 = ids.attrib_buffer.size();
   // todo, attrib & attribi buffers
 
@@ -904,6 +905,7 @@ void RenderVertexArray::fetch_buffers(RenderVertexArray_bufferids &ids)
   int ss = 3;
   for(int i=0;i<ss;i++) { ids.vao[i]=vao[i]; }
   ids.pos_buffer=pos_buffer;
+  ids.pos_buffer_matrix = pos_buffer_matrix;
 
   int a1 = attrib_buffer.size();
   if (a1>0)
@@ -974,6 +976,7 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
   g_low->ogl->glGenBuffers(1,&buffers[3]);
   g_low->ogl->glGenBuffers(1,&buffers[4]);
   g_low->ogl->glGenBuffers(1, &pos_buffer);
+  g_low->ogl->glGenBuffers(1, &pos_buffer_matrix);
   VertexArraySet::Polys *p = s.m_set[id];
   { // attrib buffers
   int ss = p->tri_attribs.size();
@@ -1244,7 +1247,7 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
   for(int i=0;i<ss;i++)
     {
       g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, attribi_buffer2[i]);
-      std::cout << "Counter: " << counter << std::endl;
+      //std::cout << "Counter: " << counter << std::endl;
 #ifndef EMSCRIPTEN
       g_low->ogl->glVertexAttribIPointer(counter, 1, Low_GL_INT, 0,0);
 #endif
@@ -1314,13 +1317,14 @@ void RenderVertexArray::del()
 #ifdef VAO
   g_low->ogl->glDeleteVertexArrays(3, &vao[0]);
 #endif
-  std::cout << "Del" << std::endl;
+  //std::cout << "Del" << std::endl;
   g_low->ogl->glDeleteBuffers(1,&buffers[0]);
   g_low->ogl->glDeleteBuffers(1,&buffers[1]);
   g_low->ogl->glDeleteBuffers(1,&buffers[2]);
   g_low->ogl->glDeleteBuffers(1,&buffers[3]);
   g_low->ogl->glDeleteBuffers(1,&buffers[4]);
   g_low->ogl->glDeleteBuffers(1,&pos_buffer);
+  g_low->ogl->glDeleteBuffers(1,&pos_buffer_matrix);
 
   g_low->ogl->glDeleteBuffers(1,&buffers2[0]);
   g_low->ogl->glDeleteBuffers(1,&buffers2[1]);
@@ -1333,6 +1337,36 @@ void RenderVertexArray::del()
   g_low->ogl->glDeleteBuffers(1,&buffers3[2]);
   g_low->ogl->glDeleteBuffers(1,&buffers3[3]);
   g_low->ogl->glDeleteBuffers(1,&buffers3[4]);
+}
+void RenderVertexArray::prepare_instanced_matrix(int id, Matrix *positions, int size)
+{
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(vao[0]);
+#endif
+  g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer_matrix );
+
+  g_low->ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Matrix) * size, positions, Low_GL_DYNAMIC_DRAW);
+
+
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(vao[1]);
+#endif
+
+  g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer_matrix );
+  g_low->ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Matrix) * size, positions, Low_GL_DYNAMIC_DRAW);
+
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(vao[2]);
+#endif
+
+  g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer_matrix );
+  g_low->ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Matrix) * size, positions, Low_GL_DYNAMIC_DRAW);
+
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(0);
+#endif
+
+
 }
 void RenderVertexArray::prepare_instanced(int id, Point *positions, int size)
 {
@@ -1365,6 +1399,226 @@ void RenderVertexArray::prepare_instanced(int id, Point *positions, int size)
 
 }
 std::map<Point*,bool> g_inst_map;
+std::map<Matrix*,bool> g_inst_map_matrix;
+void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int size)
+{
+  //std::cout << "render_instanced_matrix: " << size << std::endl;
+
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(vao[0]);
+#endif
+    if (tri_count && size) {
+
+  // INSTANCED DRAWING
+  g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer_matrix );
+  if (g_inst_map_matrix[positions]==false) {
+    g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Matrix) * size, positions);
+  }
+    
+  g_low->ogl->glVertexAttribPointer(7, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, 0);
+  g_low->ogl->glVertexAttribPointer(8, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*4));
+  g_low->ogl->glVertexAttribPointer(9, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*8));
+  g_low->ogl->glVertexAttribPointer(10, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*12));
+  g_low->ogl->glVertexAttribDivisor(7, 1);
+  g_low->ogl->glVertexAttribDivisor(8, 1);
+  g_low->ogl->glVertexAttribDivisor(9, 1);
+  g_low->ogl->glVertexAttribDivisor(10, 1);
+  g_low->ogl->glEnableVertexAttribArray(7);
+  g_low->ogl->glEnableVertexAttribArray(8);
+  g_low->ogl->glEnableVertexAttribArray(9);
+  g_low->ogl->glEnableVertexAttribArray(10);
+
+  // END INSTANCED
+
+  g_low->ogl->glVertexAttribDivisor(0, 0);
+  g_low->ogl->glVertexAttribDivisor(1, 0);
+  g_low->ogl->glVertexAttribDivisor(2, 0);
+  g_low->ogl->glVertexAttribDivisor(3, 0);
+  g_low->ogl->glVertexAttribDivisor(4, 0);
+
+
+#ifndef VAO
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[0]);
+    g_low->ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[1]);
+    g_low->ogl->glVertexAttribPointer(1, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[2]);
+    g_low->ogl->glVertexAttribPointer(2, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[3]);
+    g_low->ogl->glVertexAttribPointer(3, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[4]);
+    g_low->ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
+#endif
+
+#if 1
+    g_low->ogl->glEnableVertexAttribArray(0);
+    g_low->ogl->glEnableVertexAttribArray(1);
+    g_low->ogl->glEnableVertexAttribArray(2);
+    g_low->ogl->glEnableVertexAttribArray(3);
+    g_low->ogl->glEnableVertexAttribArray(4);
+#endif
+
+      g_low->ogl->glDrawArraysInstanced(Low_GL_TRIANGLES, 0, tri_count, size);
+      //std::cout << "InstancingTRI: " << tri_count << " " << size << std::endl;
+
+#if 1
+    g_low->ogl->glDisableVertexAttribArray(0);
+    g_low->ogl->glDisableVertexAttribArray(1);
+    g_low->ogl->glDisableVertexAttribArray(2);
+    g_low->ogl->glDisableVertexAttribArray(3);
+    g_low->ogl->glDisableVertexAttribArray(4);
+    g_low->ogl->glDisableVertexAttribArray(7);
+    g_low->ogl->glDisableVertexAttribArray(8);
+    g_low->ogl->glDisableVertexAttribArray(9);
+    g_low->ogl->glDisableVertexAttribArray(10);
+#endif  
+    }
+
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(vao[1]);
+#endif
+    if (quad_count && size) {
+
+  // INSTANCED DRAWING
+  g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer_matrix );
+  if (g_inst_map_matrix[positions]==false) {
+  g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Matrix) * size, positions);
+  }
+				    g_low->ogl->glVertexAttribPointer(7, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, 0);
+				    g_low->ogl->glVertexAttribPointer(8, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*4));
+  g_low->ogl->glVertexAttribPointer(9, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*8));
+  g_low->ogl->glVertexAttribPointer(10, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*12));
+  g_low->ogl->glVertexAttribDivisor(7, 1);
+  g_low->ogl->glVertexAttribDivisor(8, 1);
+  g_low->ogl->glVertexAttribDivisor(9, 1);
+  g_low->ogl->glVertexAttribDivisor(10, 1);
+  g_low->ogl->glEnableVertexAttribArray(7);
+  g_low->ogl->glEnableVertexAttribArray(8);
+  g_low->ogl->glEnableVertexAttribArray(9);
+  g_low->ogl->glEnableVertexAttribArray(10);
+  // END INSTANCED
+
+  g_low->ogl->glVertexAttribDivisor(0, 0);
+  g_low->ogl->glVertexAttribDivisor(1, 0);
+  g_low->ogl->glVertexAttribDivisor(2, 0);
+  g_low->ogl->glVertexAttribDivisor(3, 0);
+  g_low->ogl->glVertexAttribDivisor(4, 0);
+
+
+#ifndef VAO
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[0]);
+    g_low->ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[1]);
+    g_low->ogl->glVertexAttribPointer(1, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[2]);
+    g_low->ogl->glVertexAttribPointer(2, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[3]);
+    g_low->ogl->glVertexAttribPointer(3, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[4]);
+    g_low->ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
+#endif
+
+#if 1
+    g_low->ogl->glEnableVertexAttribArray(0);
+    g_low->ogl->glEnableVertexAttribArray(1);
+    g_low->ogl->glEnableVertexAttribArray(2);
+    g_low->ogl->glEnableVertexAttribArray(3);
+    g_low->ogl->glEnableVertexAttribArray(4);
+#endif
+      g_low->ogl->glDrawArraysInstanced(Low_GL_TRIANGLES, 0, quad_count, size);
+      //std::cout << "InstancingQUAD: " << quad_count << " " << size << std::endl;
+#if 1
+    g_low->ogl->glDisableVertexAttribArray(0);
+    g_low->ogl->glDisableVertexAttribArray(1);
+    g_low->ogl->glDisableVertexAttribArray(2);
+    g_low->ogl->glDisableVertexAttribArray(3);
+    g_low->ogl->glDisableVertexAttribArray(4);
+    g_low->ogl->glDisableVertexAttribArray(7);
+    g_low->ogl->glDisableVertexAttribArray(8);
+    g_low->ogl->glDisableVertexAttribArray(9);
+    g_low->ogl->glDisableVertexAttribArray(10);
+#endif
+    }
+
+#ifdef VAO
+  g_low->ogl->glBindVertexArray(vao[2]);
+#endif
+    if (poly_count && size) {
+
+  // INSTANCED DRAWING
+  g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer_matrix );
+  if (g_inst_map_matrix[positions]==false) {
+  g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Matrix) * size, positions);
+  }
+				    g_low->ogl->glVertexAttribPointer(7, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, 0);
+				    g_low->ogl->glVertexAttribPointer(8, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*4));
+  g_low->ogl->glVertexAttribPointer(9, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*8));
+  g_low->ogl->glVertexAttribPointer(10, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*12));
+  g_low->ogl->glVertexAttribDivisor(7, 1);
+  g_low->ogl->glVertexAttribDivisor(8, 1);
+  g_low->ogl->glVertexAttribDivisor(9, 1);
+  g_low->ogl->glVertexAttribDivisor(10, 1);
+  g_low->ogl->glEnableVertexAttribArray(7);
+  g_low->ogl->glEnableVertexAttribArray(8);
+  g_low->ogl->glEnableVertexAttribArray(9);
+  g_low->ogl->glEnableVertexAttribArray(10);
+  // END INSTANCED
+
+  g_low->ogl->glVertexAttribDivisor(0, 0);
+  g_low->ogl->glVertexAttribDivisor(1, 0);
+  g_low->ogl->glVertexAttribDivisor(2, 0);
+  g_low->ogl->glVertexAttribDivisor(3, 0);
+  g_low->ogl->glVertexAttribDivisor(4, 0);
+
+
+#ifndef VAO
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[0]);
+    g_low->ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[1]);
+    g_low->ogl->glVertexAttribPointer(1, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[2]);
+    g_low->ogl->glVertexAttribPointer(2, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[3]);
+    g_low->ogl->glVertexAttribPointer(3, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[4]);
+    g_low->ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
+#endif
+
+#if 1
+    g_low->ogl->glEnableVertexAttribArray(0);
+    g_low->ogl->glEnableVertexAttribArray(1);
+    g_low->ogl->glEnableVertexAttribArray(2);
+    g_low->ogl->glEnableVertexAttribArray(3);
+    g_low->ogl->glEnableVertexAttribArray(4);
+#endif
+      g_low->ogl->glDrawArraysInstanced(Low_GL_TRIANGLE_STRIP, 0, poly_count, size);
+      //std::cout << "InstancingQUAD: " << quad_count << " " << size << std::endl;
+
+#if 1
+    g_low->ogl->glDisableVertexAttribArray(0);
+    g_low->ogl->glDisableVertexAttribArray(1);
+    g_low->ogl->glDisableVertexAttribArray(2);
+    g_low->ogl->glDisableVertexAttribArray(3);
+    g_low->ogl->glDisableVertexAttribArray(4);
+    g_low->ogl->glDisableVertexAttribArray(7);
+    g_low->ogl->glDisableVertexAttribArray(8);
+    g_low->ogl->glDisableVertexAttribArray(9);
+    g_low->ogl->glDisableVertexAttribArray(10);
+#endif
+    }
+
+#ifdef VAO
+    g_low->ogl->glBindVertexArray(0);
+#endif
+    g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
+    g_inst_map_matrix[positions]=true;
+
+
+
+}
 void RenderVertexArray::render_instanced(int id, Point *positions, int size)
 {
 #ifdef VAO

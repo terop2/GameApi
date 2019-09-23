@@ -158,6 +158,7 @@ using std::placeholders::_9;
   struct FD { int id; };
   struct VO { int id; };
   struct PTS { int id; };
+  struct MSA { int id; };
   struct PTA { int id; };
   struct RD { int id; };
   struct FBO { int id; };
@@ -1312,16 +1313,26 @@ public:
 
   IMPORT ML bind(P p, MT mat);
   IMPORT ML bind_inst(P p, PTS pts, MT mat);
+  IMPORT ML bind_inst_matrix(P p, MS ms, MT mat);
   IMPORT ML bind_inst2(P p, PTA pta, MT mat);
   IMPORT ML bind_inst_fade(P p, PTS pts, MT mat, bool flip, float start_time, float end_time);
   IMPORT ML render_instanced_ml(EveryApi &ev, P p, PTS pts);
+  IMPORT ML render_instanced_ml_matrix(EveryApi &ev, P p, MS pts);
   IMPORT ML render_instanced_ml_fade(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time);
   IMPORT ML render_instanced_ml_texture(EveryApi &ev, P p, PTS pts, std::vector<BM> vec, std::vector<int> types=std::vector<int>());
   IMPORT ML render_instanced_ml_texture_id(EveryApi &ev, P p, PTS pts, std::vector<TXID> *vec);
   IMPORT ML render_instanced_ml_cubemap(EveryApi &ev, P p, PTS pts, std::vector<BM> vec);
   IMPORT ML render_instanced_ml_texture2(EveryApi &ev, P p, PTS pts);
+  //--
+  IMPORT ML render_instanced_ml_texture_matrix(EveryApi &ev, P p, MS pts, std::vector<BM> vec, std::vector<int> types=std::vector<int>());
+  IMPORT ML render_instanced_ml_texture_id_matrix(EveryApi &ev, P p, MS pts, std::vector<TXID> *vec);
+  IMPORT ML render_instanced_ml_cubemap_matrix(EveryApi &ev, P p, MS pts, std::vector<BM> vec);
+  IMPORT ML render_instanced_ml_texture2_matrix(EveryApi &ev, P p, MS pts);
+  //--
+
   IMPORT ML render_instanced_ml_fade_texture(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time, std::vector<BM> vec);
   IMPORT ML render_instanced2_ml(EveryApi &ev, VA va, PTA pta);
+  IMPORT ML render_instanced2_ml_matrix(EveryApi &ev, VA va, MSA pta);
   IMPORT ML render_instanced2_ml_fade(EveryApi &ev, VA va, PTA pta, bool flip, float start_time, float end_time);
   //ML snow(EveryApi &ev, P p);
   //ML web(EveryApi &ev, P p);
@@ -1517,6 +1528,7 @@ public:
   IMPORT ML quake_ml3(EveryApi &ev, ML ml, ML ml2, float speed, float rot_speed, float p_x, float p_y, float p_z);
   IMPORT ML key_printer_ml(ML ml);
   IMPORT ML local_move(EveryApi &ev, ML inner_ml, PTS center_points);
+  IMPORT ML local_move_matrix(EveryApi &ev, ML inner_ml, MS center_points);
   IMPORT CMD default_cmds(float dx, float dy, float dz);
   IMPORT CMD cmd_repeat(CMD cmds, std::string repeat, float dx, float dy, float dz);
   IMPORT CMD cmd_rotate(CMD cmds, float v_x, float v_y, float v_z, float angle, float delta_angle);
@@ -2090,6 +2102,7 @@ public:
   void delete_vertex_array(EveryApi &ev, Va va);
   void render_vertex_array(EveryApi &ev, Va p);
   void prepare_vertex_array_instanced(EveryApi &ev, ShaderApi &sha, Va va, PTA pta, SH sh);
+  void prepare_vertex_array_instanced_matrix(EveryApi &ev, ShaderApi &sha, Va va, MSA pta, SH sh);
   void render_vertex_array_instanced(EveryApi &ev, ShaderApi &sha, Va va, PTA pta, SH sh);
 private:
   Env &e;
@@ -2419,6 +2432,8 @@ public:
   IMPORT void render_vertex_array_dyn(VA va, DC dc, MainLoopEnv &e);
   IMPORT void prepare_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh);
   IMPORT void render_vertex_array_instanced(ShaderApi &ev, VA va, PTA pta, SH sh, int hide_n = -1); // fast
+  IMPORT void prepare_vertex_array_instanced_matrix(ShaderApi &ev, VA va, MSA pta, SH sh);
+  IMPORT void render_vertex_array_instanced_matrix(ShaderApi &ev, VA va, MSA pta, SH sh, int hide_n = -1); // fast
   IMPORT ML render_vertex_array_ml(EveryApi &ev, VA va);
   IMPORT ML render_vertex_array_ml2(EveryApi &ev, P va);
   IMPORT ML render_vertex_array_ml2_texture(EveryApi &ev, P va, std::vector<BM> vec, std::vector<int> types=std::vector<int>());
@@ -3006,6 +3021,9 @@ public:
   IMPORT MS ms_random_rot(float px, float py, float pz, int count);
   IMPORT MS mult_array(MS m1, MS m2);
   IMPORT MS from_lines_2d(LI li);
+  IMPORT MS from_lines_3d(LI li);
+  IMPORT MSA prepare(MS p);
+
 private:
   Env &e;
 };
@@ -3068,10 +3086,12 @@ public:
 
   IMPORT PTA prepare(PTS p);
   IMPORT int num_points(PTA pta);
+  IMPORT int num_points(MSA pta);
   float *point_access(PTA pta, int pointnum); // use ptr[0], ptr[1] and ptr[2] to access the x,y,z coordinate
   IMPORT void set_point(PTA pta, int pointnum, float x, float y, float z);
   //unsigned int *color_access(PTA pta, int pointnum);
   void update_from_data(PTA array, PTS p);
+  void update_from_data(MSA array, MS p);
   void update(PTA array);
   IMPORT void render(PTA array);
   IMPORT ML render_ml(EveryApi &ev, PTA array);
@@ -3084,6 +3104,7 @@ public:
   IMPORT ML movement_display(EveryApi &ev, ML ml, MN mn, int count, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
   
   IMPORT int NumPoints(PTS p);
+  IMPORT int NumPoints(MS p);
   IMPORT float pos_x(PTS p, int index);
   IMPORT float pos_y(PTS p, int index);
   IMPORT float pos_z(PTS p, int index);
@@ -3156,11 +3177,14 @@ public:
 	IMPORT void render(LLA array);
   IMPORT void prepare_inst(LLA array, PTA instances);
   IMPORT void render_inst(LLA array, PTA instances);
+  IMPORT void prepare_inst_matrix(LLA array, MSA instances);
+  IMPORT void render_inst_matrix(LLA array, MSA instances);
   IMPORT ML render_ml(EveryApi &ev, LLA array);
   IMPORT ML render_ml2(EveryApi &ev, LI array);
   IMPORT ML render_inst_ml(EveryApi &ev, LLA array, PTA pta);
   IMPORT ML render_inst_ml2(EveryApi &ev, LI array, PTA pta);
   IMPORT ML render_inst_ml3(EveryApi &ev, LI array, PTS pts);
+  IMPORT ML render_inst_ml3_matrix(EveryApi &ev, LI array, MS pts);
   IMPORT LI import_ifc(EveryApi &ev, std::string url);
 private:
   LinesApi(const LinesApi&);
@@ -3316,6 +3340,7 @@ public:
   US v_ambient(US us);
   US v_specular(US us);
   US v_inst(US us);
+  US v_inst_matrix(US us);
   US v_passall(US us);
   US v_pass_position(US us);
   US v_point_light(US us);
