@@ -1261,6 +1261,7 @@ public:
   T tree(std::vector<TL> vec);
   ML tree_ml(EveryApi &ev, T tree, std::vector<ML> vec);
   P tree_p(EveryApi &ev, T tree, std::vector<P> vec, float time);
+  MS tree_ms(EveryApi &ev, T tree, float time);
 private:
   Env &e;
 };
