@@ -201,6 +201,19 @@ public:
   tinygltf::Model model;
 };
 
+void call_prepare(void *ptr) {
+  LoadGltf *load = (LoadGltf*)ptr;
+  load->Prepare();
+}
+
+struct PrepareCB
+{
+  void (*fptr)(void*);
+  void *ptr;
+};
+
+extern std::vector<PrepareCB> g_prepare_callbacks;
+
 bool FileExists(const std::string &abs_filename, void *ptr)
 {
   //LoadGltf *data = (LoadGltf*)ptr;
@@ -906,12 +919,12 @@ private:
   float roughness, metallic, base_r, base_g, base_b, base_a, occul;
 };
 
+
+
 class GLTF_Material : public MaterialForward
 {
 public:
   GLTF_Material(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int material_id, float mix) : e(e), ev(ev),  load(load), material_id(material_id),mix(mix) { 
-    // TODO, HOW TO CALL PREPARE?
-    load->Prepare();
   }
   int num_textures() const {
     return 5; // (1=base color, 2=metallicroughness), 3=normal, 4=occulsion, 5=emissive
@@ -944,6 +957,7 @@ public:
 
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+    load->Prepare();
     std::vector<GameApi::BM> bm;
     int s = num_textures();
     for(int i=0;i<s;i++) bm.push_back(texture(i));
@@ -960,6 +974,7 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
+    load->Prepare();
     std::vector<GameApi::BM> bm;
     int s = num_textures();
     for(int i=0;i<s;i++) bm.push_back(texture(i));
@@ -974,6 +989,7 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
+    load->Prepare();
     std::vector<GameApi::BM> bm;
     int s = num_textures();
     for(int i=0;i<s;i++) bm.push_back(texture(i));
@@ -1019,7 +1035,7 @@ class GLTF_Material_env : public MaterialForward
 public:
   GLTF_Material_env(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int material_id, float mix, GameApi::BM diffuse_env, GameApi::BM specular_env, GameApi::BM brfd) : e(e), ev(ev),  load(load), material_id(material_id),mix(mix), diffuse_env(diffuse_env), specular_env(specular_env), bfrd(brfd) { 
     // TODO, HOW TO CALL PREPARE?
-    load->Prepare();
+    
   }
   int num_textures() const {
     return 8; // (1=base color, 2=metallicroughness), 3=normal, 4=occulsion, 5=emissive, 6=env_bm
@@ -1076,6 +1092,7 @@ public:
 
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+    load->Prepare();
     std::vector<GameApi::BM> bm;
     std::vector<int> types;
     int s = num_textures();
@@ -1093,6 +1110,7 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
+    load->Prepare();
     std::vector<GameApi::BM> bm;
     std::vector<int> types;
     int s = num_textures();
@@ -1108,6 +1126,7 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
+    load->Prepare();
     std::vector<GameApi::BM> bm;
     std::vector<int> types;
     int s = num_textures();
