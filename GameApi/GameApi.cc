@@ -5433,9 +5433,222 @@ ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
 
 #endif
 
+class Bind : public MainLoopItem
+{
+public:
+  Bind(GameApi::Env &env, Material *mat, GameApi::P p) : env(env), mat(mat),p(p) { ml.id = -1; }
+  void find_ml() {
+    if (ml.id==-1) {
+      ml.id = mat->mat(p.id);
+    }
+  }
+  virtual void Prepare()
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->handle_event(e);
+  }
+    
+  virtual int shader_id() { 
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    return item->shader_id();
+  }
+private:
+  GameApi::Env &env;
+  Material *mat;
+  GameApi::P p;
+  GameApi::ML ml;
+};
+
+class BindInst2 : public MainLoopItem
+{
+public:
+  BindInst2(GameApi::Env &env, Material *mat, GameApi::P p, GameApi::PTA pta) : env(env), mat(mat),p(p),pta(pta) { ml.id = -1; }
+  void find_ml() {
+    if (ml.id==-1) {
+      ml.id = mat->mat_inst2(p.id,pta.id);
+    }
+  }
+  virtual void Prepare()
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->handle_event(e);
+  }
+    
+  virtual int shader_id() { 
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    return item->shader_id();
+  }
+private:
+  GameApi::Env &env;
+  Material *mat;
+  GameApi::P p;
+  GameApi::PTA pta;
+  GameApi::ML ml;
+};
+
+class BindInstMatrix : public MainLoopItem
+{
+public:
+  BindInstMatrix(GameApi::Env &env, Material *mat, GameApi::P p, GameApi::MS ms) : env(env), mat(mat),p(p),ms(ms) { ml.id = -1; }
+  void find_ml() {
+    if (ml.id==-1) {
+      ml.id = mat->mat_inst_matrix(p.id,ms.id);
+    }
+  }
+  virtual void Prepare()
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->handle_event(e);
+  }
+    
+  virtual int shader_id() { 
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    return item->shader_id();
+  }
+private:
+  GameApi::Env &env;
+  Material *mat;
+  GameApi::P p;
+  GameApi::MS ms;
+  GameApi::ML ml;
+};
+
+
+class BindInst : public MainLoopItem
+{
+public:
+  BindInst(GameApi::Env &env, Material *mat, GameApi::P p, GameApi::PTS pts) : env(env), mat(mat),p(p),pts(pts) { ml.id = -1; }
+  void find_ml() {
+    if (ml.id==-1) {
+      ml.id = mat->mat_inst(p.id,pts.id);
+    }
+  }
+  virtual void Prepare()
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->handle_event(e);
+  }
+    
+  virtual int shader_id() { 
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    return item->shader_id();
+  }
+private:
+  GameApi::Env &env;
+  Material *mat;
+  GameApi::P p;
+  GameApi::PTS pts;
+  GameApi::ML ml;
+};
+
+class BindInstFade : public MainLoopItem
+{
+public:
+  BindInstFade(GameApi::Env &env, Material *mat, GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) : env(env), mat(mat),p(p),pts(pts),flip(flip), start_time(start_time), end_time(end_time) { ml.id = -1; }
+  void find_ml() {
+    if (ml.id==-1) {
+      ml.id = mat->mat_inst_fade(p.id,pts.id,flip,start_time, end_time);
+    }
+  }
+  virtual void Prepare()
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->handle_event(e);
+  }
+    
+  virtual int shader_id() { 
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    return item->shader_id();
+  }
+private:
+  GameApi::Env &env;
+  Material *mat;
+  GameApi::P p;
+  GameApi::PTS pts;
+  GameApi::ML ml;
+  bool flip;
+  float start_time;
+  float end_time;
+};
+
+
+
+
 EXPORT GameApi::ML GameApi::MaterialsApi::bind(P p, MT mat)
 {
   Material *mat2 = find_material(e, mat);
+  return add_main_loop(e, new Bind(e,mat2, p));
+#if 0
   int val = 0;
   if (mat2) {
     val = mat2->mat(p.id);
@@ -5443,10 +5656,13 @@ EXPORT GameApi::ML GameApi::MaterialsApi::bind(P p, MT mat)
   GameApi::ML ml;
   ml.id = val;
   return ml;
+#endif
 }
 EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst2(P p, PTA pta, MT mat)
 {
   Material *mat2 = find_material(e, mat);
+  return add_main_loop(e, new BindInst2(e,mat2, p,pta));
+#if 0
   int val = 0;
   if (mat2) {
     val = mat2->mat_inst2(p.id,pta.id);
@@ -5454,10 +5670,13 @@ EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst2(P p, PTA pta, MT mat)
   GameApi::ML ml;
   ml.id = val;
   return ml;
+#endif
 }
 EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst_matrix(P p, MS pos, MT mat)
 {
   Material *mat2 = find_material(e, mat);
+  return add_main_loop(e, new BindInstMatrix(e,mat2, p, pos));
+#if 0
   int val = 0;
   if (mat2) {
     val = mat2->mat_inst_matrix(p.id, pos.id);
@@ -5465,10 +5684,13 @@ EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst_matrix(P p, MS pos, MT mat)
   GameApi::ML ml;
   ml.id = val;
   return ml;
+#endif
 }
 EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst(P p, PTS pts, MT mat)
 {
   Material *mat2 = find_material(e, mat);
+  return add_main_loop(e, new BindInst(e,mat2, p, pts));
+#if 0
   int val = 0;
   if (mat2) {
     val = mat2->mat_inst(p.id,pts.id);
@@ -5476,10 +5698,13 @@ EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst(P p, PTS pts, MT mat)
   GameApi::ML ml;
   ml.id = val;
   return ml;
+#endif
 }
 EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst_fade(P p, PTS pts, MT mat, bool flip, float start_time, float end_time)
 {
   Material *mat2 = find_material(e, mat);
+  return add_main_loop(e, new BindInstFade(e,mat2, p, pts,flip,start_time,end_time));
+#if 0
   int val = 0;
   if (mat2) {
     val = mat2->mat_inst_fade(p.id,pts.id, flip, start_time, end_time);
@@ -5487,6 +5712,7 @@ EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst_fade(P p, PTS pts, MT mat, b
   GameApi::ML ml;
   ml.id = val;
   return ml;
+#endif
 }
 class RenderInstanced : public MainLoopItem
 {
@@ -10118,6 +10344,15 @@ struct Envi_2 {
   bool firsttime = true;
 };
 bool async_is_done=false;
+
+
+struct PrepareCB
+{
+  void (*fptr)(void*);
+  void *ptr;
+};
+std::vector<PrepareCB> g_prepare_callbacks;
+
 extern std::string gameapi_seamless_url;
 void blocker_iter(void *arg)
 {
@@ -10142,6 +10377,15 @@ void blocker_iter(void *arg)
     if (env->firsttime) {
       MainLoopItem *item = find_main_loop(env->ev->get_env(),env->mainloop);
       item->Prepare();
+
+      int s = g_prepare_callbacks.size();
+      for(int i=0;i<s;i++) {
+	void (*fptr)(void*) = g_prepare_callbacks[i].fptr;
+	void *ptr = g_prepare_callbacks[i].ptr;
+	fptr(ptr);
+      }
+      g_prepare_callbacks = std::vector<PrepareCB>();
+
       env->firsttime = false;
     }
 
@@ -10213,6 +10457,7 @@ extern int score;
 extern int hidden_score;
 extern int g_shows_hundred;
 extern std::vector<int> g_hide_container;
+
 
 extern int g_event_screen_x;
 extern int g_event_screen_y;
@@ -10321,6 +10566,15 @@ public:
       MainLoopItem *item = find_main_loop(env->ev->get_env(),code);
       //std::cout << "Splitter/Prepare:" << std::endl;
       item->Prepare();
+
+      int s = g_prepare_callbacks.size();
+      for(int i=0;i<s;i++) {
+	void (*fptr)(void*) = g_prepare_callbacks[i].fptr;
+	void *ptr = g_prepare_callbacks[i].ptr;
+	fptr(ptr);
+      }
+      g_prepare_callbacks = std::vector<PrepareCB>();
+
       //std::cout << "Splitter/End of Prepare:" << std::endl;
       firsttime = false;
     }
@@ -11602,7 +11856,7 @@ private:
 
 GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_gap, int empty_line_height)
 {
-  std::cout << "draw_text_string: " << str << std::endl;
+  // std::cout << "draw_text_string: " << str << std::endl;
   int s = str.size();
   std::vector<GI> glyphs;
   for(int i=0;i<s;i++)
