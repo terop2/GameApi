@@ -5366,7 +5366,7 @@ public:
 	ev.shader_api.set_var(sh, "u_NormalScale", 1.0f);
 
 	// remove texsamplers so that cubesampler would work
-#if 0
+#if 1
 	ev.shader_api.set_var(sh, "texsampler_cube[0]", 0);
 	ev.shader_api.set_var(sh, "texsampler_cube[1]", 0);
 	ev.shader_api.set_var(sh, "texsampler_cube[2]", 0);
