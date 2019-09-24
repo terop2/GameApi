@@ -5367,14 +5367,14 @@ public:
 
 	// remove texsamplers so that cubesampler would work
 #if 1
-	ev.shader_api.set_var(sh, "texsampler_cube[0]", 7);
-	ev.shader_api.set_var(sh, "texsampler_cube[1]", 7);
-	ev.shader_api.set_var(sh, "texsampler_cube[2]", 7);
-	ev.shader_api.set_var(sh, "texsampler_cube[3]", 7);
-	ev.shader_api.set_var(sh, "texsampler_cube[4]", 7);
-	ev.shader_api.set_var(sh, "texsampler[5]", 7);
-	ev.shader_api.set_var(sh, "texsampler[6]", 7);
-	ev.shader_api.set_var(sh, "texsampler_cube[7]", 7);
+	ev.shader_api.set_var(sh, "texsampler_cube[0]", 9);
+	ev.shader_api.set_var(sh, "texsampler_cube[1]", 9);
+	ev.shader_api.set_var(sh, "texsampler_cube[2]", 9);
+	ev.shader_api.set_var(sh, "texsampler_cube[3]", 9);
+	ev.shader_api.set_var(sh, "texsampler_cube[4]", 9);
+	ev.shader_api.set_var(sh, "texsampler[5]", 9);
+	ev.shader_api.set_var(sh, "texsampler[6]", 9);
+	ev.shader_api.set_var(sh, "texsampler_cube[7]", 9);
 #endif
 	int count = 0;
 	if (tex0) ev.shader_api.set_var(sh, "texsampler[0]", count);
