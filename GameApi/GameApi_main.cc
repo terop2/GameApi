@@ -65,7 +65,7 @@ EXPORT void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_heigh
   prog->set_var("in_POS", 0.0f);
   prog->set_var("color_mix", 0.5f);
   prog->set_var("time", 0.0f);
-  int s = 64;
+  int s = 8;
   const char *arr[] = { 
 "texsampler[0]",
 "texsampler[1]",
