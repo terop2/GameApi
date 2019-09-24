@@ -5366,6 +5366,7 @@ public:
 	ev.shader_api.set_var(sh, "u_NormalScale", 1.0f);
 
 	// remove texsamplers so that cubesampler would work
+#if 0
 	ev.shader_api.set_var(sh, "texsampler_cube[0]", 0);
 	ev.shader_api.set_var(sh, "texsampler_cube[1]", 0);
 	ev.shader_api.set_var(sh, "texsampler_cube[2]", 0);
@@ -5374,22 +5375,23 @@ public:
 	ev.shader_api.set_var(sh, "texsampler[5]", 0);
 	ev.shader_api.set_var(sh, "texsampler[6]", 0);
 	ev.shader_api.set_var(sh, "texsampler_cube[7]", 0);
+#endif
 	int count = 0;
-	ev.shader_api.set_var(sh, "texsampler[0]", count);
+	if (tex0) ev.shader_api.set_var(sh, "texsampler[0]", count);
 	if (tex0) count++;
-	ev.shader_api.set_var(sh, "texsampler[1]", count);
+	if (tex1) ev.shader_api.set_var(sh, "texsampler[1]", count);
 	if (tex1) count++;
-	ev.shader_api.set_var(sh, "texsampler[2]", count);
+	if (tex2) ev.shader_api.set_var(sh, "texsampler[2]", count);
 	if (tex2) count++;
-	ev.shader_api.set_var(sh, "texsampler[3]", count);
+	if (tex3) ev.shader_api.set_var(sh, "texsampler[3]", count);
 	if (tex3) count++;
-	ev.shader_api.set_var(sh, "texsampler[4]", count);
+	if (tex4) ev.shader_api.set_var(sh, "texsampler[4]", count);
 	if (tex4) count++;
-	ev.shader_api.set_var(sh, "texsampler_cube[5]", count);
+	if (tex5) ev.shader_api.set_var(sh, "texsampler_cube[5]", count);
 	if (tex5) count++;
-	ev.shader_api.set_var(sh, "texsampler_cube[6]", count);
+	if (tex6) ev.shader_api.set_var(sh, "texsampler_cube[6]", count);
 	if (tex6) count++;
-	ev.shader_api.set_var(sh, "texsampler[7]", count);
+	if (tex7) ev.shader_api.set_var(sh, "texsampler[7]", count);
 	//std::cout << roughnessfactor << " " << metallicfactor << " " << basecolorfactor0 << " " << basecolorfactor1 << " " << basecolorfactor2 << " " << basecolorfactor3 << " " << occul_strength << " " << emiss_factor << std::endl;
       }
     if (firsttime) firsttime = false;
