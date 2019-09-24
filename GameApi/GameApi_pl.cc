@@ -5372,9 +5372,18 @@ public:
 	ev.shader_api.set_var(sh, "texsampler_cube[2]", 9);
 	ev.shader_api.set_var(sh, "texsampler_cube[3]", 9);
 	ev.shader_api.set_var(sh, "texsampler_cube[4]", 9);
-	ev.shader_api.set_var(sh, "texsampler[5]", 9);
-	ev.shader_api.set_var(sh, "texsampler[6]", 9);
+	ev.shader_api.set_var(sh, "texsampler_cube[5]", 9);
+	ev.shader_api.set_var(sh, "texsampler_cube[6]", 9);
 	ev.shader_api.set_var(sh, "texsampler_cube[7]", 9);
+	ev.shader_api.set_var(sh, "texsampler[0]", 10);
+	ev.shader_api.set_var(sh, "texsampler[1]", 10);
+	ev.shader_api.set_var(sh, "texsampler[2]", 10);
+	ev.shader_api.set_var(sh, "texsampler[3]", 10);
+	ev.shader_api.set_var(sh, "texsampler[4]", 10);
+	ev.shader_api.set_var(sh, "texsampler[5]", 10);
+	ev.shader_api.set_var(sh, "texsampler[6]", 10);
+	ev.shader_api.set_var(sh, "texsampler[7]", 10);
+
 #endif
 	int count = 0;
 	if (tex0) ev.shader_api.set_var(sh, "texsampler[0]", count);
