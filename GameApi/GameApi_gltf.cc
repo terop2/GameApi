@@ -926,6 +926,29 @@ class GLTF_Material : public MaterialForward
 public:
   GLTF_Material(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int material_id, float mix) : e(e), ev(ev),  load(load), material_id(material_id),mix(mix) { 
   }
+  int num_indexes() const {
+    int s = 5;
+    int count = 0;
+    for(int i=0;i<s;i++) {
+      if (has_texture(i)) count++;
+    }
+    return count;
+  }
+  int map_index(int j) const
+  {
+    int s = 5;
+    int count = 0;
+    int last_tex = 0;
+    for(int i=0;i<s;i++) {
+      if (has_texture(i)) last_tex=i;
+      if (has_texture(i) && count==j)
+	return i;
+      if (has_texture(i)) count++;
+    }
+    return last_tex;
+  }
+
+
   int num_textures() const {
     return 5; // (1=base color, 2=metallicroughness), 3=normal, 4=occulsion, 5=emissive
   }
@@ -959,13 +982,16 @@ public:
   {
     load->Prepare();
     std::vector<GameApi::BM> bm;
-    int s = num_textures();
-    for(int i=0;i<s;i++) bm.push_back(texture(i));
+    int s = num_indexes();
+    for(int i=0;i<s;i++) {
+      int j = map_index(i);
+      bm.push_back(texture(j));
+    }
     //GameApi::ML I13;
     //I13.id = next->mat(p.id);
     GameApi::P I10=p; 
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm);
-    tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
+     tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
     tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
     GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0); // todo base color
     GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
@@ -976,8 +1002,11 @@ public:
   {
     load->Prepare();
     std::vector<GameApi::BM> bm;
-    int s = num_textures();
-    for(int i=0;i<s;i++) bm.push_back(texture(i));
+    int s = num_indexes();
+    for(int i=0;i<s;i++) {
+      int j = map_index(i);
+      bm.push_back(texture(i));
+    }
     //GameApi::ML I13;
     //I13.id = next->mat_inst(p.id,pts.id);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,p,pts,bm);
@@ -991,8 +1020,11 @@ public:
   {
     load->Prepare();
     std::vector<GameApi::BM> bm;
-    int s = num_textures();
-    for(int i=0;i<s;i++) bm.push_back(texture(i));
+    int s = num_indexes();
+    for(int i=0;i<s;i++) {
+      int j = map_index(i);
+      bm.push_back(texture(j));
+    }
     //GameApi::ML I13;
     //I13.id = next->mat_inst(p.id,pts.id);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_matrix(ev,p,ms,bm);
@@ -1037,6 +1069,28 @@ public:
     // TODO, HOW TO CALL PREPARE?
     
   }
+  int num_indexes() const {
+    int s = 8;
+    int count = 0;
+    for(int i=0;i<s;i++) {
+      if (has_texture(i)) count++;
+    }
+    return count;
+  }
+  int map_index(int j) const
+  {
+    int s = 8;
+    int count = 0;
+    int last_tex = 0;
+    for(int i=0;i<s;i++) {
+      if (has_texture(i)) last_tex=i;
+      if (has_texture(i) && count==j)
+	return i;
+      if (has_texture(i)) count++;
+    }
+    return last_tex;
+  }
+
   int num_textures() const {
     return 8; // (1=base color, 2=metallicroughness), 3=normal, 4=occulsion, 5=emissive, 6=env_bm
   }
@@ -1095,8 +1149,11 @@ public:
     load->Prepare();
     std::vector<GameApi::BM> bm;
     std::vector<int> types;
-    int s = num_textures();
-    for(int i=0;i<s;i++) { bm.push_back(texture(i)); types.push_back(type(i)); }
+    int s = num_indexes();
+    for(int i=0;i<s;i++) { 
+      int j = map_index(i);
+      bm.push_back(texture(j)); types.push_back(type(j)); 
+    }
     //GameApi::ML I13;
     //I13.id = next->mat(p.id);
     GameApi::P I10=p; 
@@ -1113,8 +1170,10 @@ public:
     load->Prepare();
     std::vector<GameApi::BM> bm;
     std::vector<int> types;
-    int s = num_textures();
-    for(int i=0;i<s;i++) { bm.push_back(texture(i)); types.push_back(type(i)); }
+    int s = num_indexes();
+    for(int i=0;i<s;i++) { 
+      int j = map_index(i);
+      bm.push_back(texture(j)); types.push_back(type(j)); }
     //GameApi::ML I13;
     //I13.id = next->mat_inst(p.id,pts.id);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,p,pts,bm,types);
@@ -1129,8 +1188,10 @@ public:
     load->Prepare();
     std::vector<GameApi::BM> bm;
     std::vector<int> types;
-    int s = num_textures();
-    for(int i=0;i<s;i++) { bm.push_back(texture(i)); types.push_back(type(i)); }
+    int s = num_indexes();
+    for(int i=0;i<s;i++) {
+      int j = map_index(i);
+      bm.push_back(texture(j)); types.push_back(type(j)); }
     //GameApi::ML I13;
     //I13.id = next->mat_inst(p.id,pts.id);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_matrix(ev,p,ms,bm,types);

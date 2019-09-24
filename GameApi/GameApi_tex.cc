@@ -184,10 +184,6 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
   for(int i=0;i<s;i++)
     {
       //std::cout << "I=" << i << std::endl;
-#ifndef EMSCRIPTEN
-  g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
-#endif
-  g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
 
       int type = 0;
       int s3 = types.size();
@@ -195,7 +191,13 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 	type = types[i];
       }
       //std::cout << "type=" << type << std::endl;
-
+      if (type!=-1) {
+#ifndef EMSCRIPTEN
+  g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
+#endif
+  g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
+      }
+  
       if (type==1) {
 	  g_low->ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, ids[i]);
 
