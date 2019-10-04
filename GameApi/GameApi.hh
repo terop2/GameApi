@@ -2426,6 +2426,7 @@ public:
   IMPORT void update_vertex_array_no_memory(VA va, P p);
   IMPORT ML update_vertex_array_ml(VA va, P p, bool keep=false);
   IMPORT VA create_vertex_array(P p, bool keep=false); // slow
+  IMPORT void create_vertex_array_hw(VA va);
   IMPORT void delete_vertex_array(VA arr);
   IMPORT VA create_vertex_array_attribs(P p, bool keep,std::vector<int> attribs, std::vector<int> attribi); // slow
   IMPORT void render_vertex_array(VA va); // fast

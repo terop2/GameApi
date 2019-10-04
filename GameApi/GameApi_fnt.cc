@@ -395,11 +395,11 @@ public:
     sh.id = -1;
   }
   void Prepare() {
-      first_time_calc();
   }
   virtual void execute(MainLoopEnv &e)
   {
     if (firsttime) {
+      first_time_calc();
       firsttime = false;
     }
 
