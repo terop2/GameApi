@@ -3516,6 +3516,12 @@ EXPORT void GameApi::PolygonApi::explode(VA va, PT pos, float dist)
   s->explode(0, *pt, dist);
 }
 
+EXPORT void GameApi::PolygonApi::create_vertex_array_hw(GameApi::VA va)
+{
+  RenderVertexArray *rend = find_vertex_array_render(e, va);
+  VertexArraySet *set = find_vertex_array(e, va);
+  //rend->prepare(0);
+}
 
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 { 
@@ -3527,7 +3533,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     arr.reserve(0);
     arr.copy(0,faces->NumFaces());  
     RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
-    arr2->prepare(0); 
+    arr2->prepare(0);
     if (!keep)
       s->free_memory();
     return add_vertex_array(e, s, arr2);
@@ -3938,7 +3944,10 @@ public:
   }
   void Prepare() { }
   void execute(MainLoopEnv &e)
-  { 
+  {
+    if (firsttime) {
+      ev.polygon_api.create_vertex_array_hw(va);
+    }
 
     GameApi::SH sh;
     if (ev.polygon_api.is_texture(va))
@@ -4076,12 +4085,14 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
-  void Prepare() {}
+  void Prepare() {
+	va = ev.polygon_api.create_vertex_array(p,false);
+  }
   void execute(MainLoopEnv &e)
   { 
     if (firsttime)
       {
-	va = ev.polygon_api.create_vertex_array(p,false);
+	ev.polygon_api.create_vertex_array_hw(va);
       }
 
     GameApi::SH sh;
@@ -4225,12 +4236,14 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
-  void Prepare() { }
+  void Prepare() {
+	va = ev.polygon_api.create_vertex_array(p, true);
+  }
   void execute(MainLoopEnv &e)
   { 
     if (firsttime)
       {
-	va = ev.polygon_api.create_vertex_array(p, true);
+	ev.polygon_api.create_vertex_array_hw(va);
 	std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev, bm, types);
 	va = ev.texture_api.bind_many(va, id, types);
       }
@@ -4376,13 +4389,13 @@ public:
   {
   }
   void Prepare() {
-
+	va = ev.polygon_api.create_vertex_array(p, true);
   }
   void execute(MainLoopEnv &e)
   { 
     if (firsttime)
       {
-	va = ev.polygon_api.create_vertex_array(p, true);
+	ev.polygon_api.create_vertex_array_hw(va);
 	std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev, bm);
 	va = ev.texture_api.bind_many(va, id);
 
@@ -4539,13 +4552,14 @@ public:
   {
   }
   void Prepare() {
+	va = ev.polygon_api.create_vertex_array(p, true);
 
   }
   void execute(MainLoopEnv &e)
   { 
     if (firsttime)
       {
-	va = ev.polygon_api.create_vertex_array(p, true);
+	ev.polygon_api.create_vertex_array_hw(va);
 	GameApi::BM right,left,top,bottom,back,front;
 	right.id = 0;
 	left.id = 0;
@@ -4712,7 +4726,12 @@ public:
   }
   void Prepare() {
 	va = ev.polygon_api.create_vertex_array(p, true);
-
+  }
+  void execute(MainLoopEnv &e)
+  { 
+    if (firsttime)
+      {
+	ev.polygon_api.create_vertex_array_hw(va);
 	// This loop fetches the textures from P type
 	std::vector<GameApi::BM> bm;
 	int s = ev.polygon_api.p_num_textures(p);
@@ -4724,11 +4743,6 @@ public:
 	std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev, bm);
 	va = ev.texture_api.bind_many(va, id);
 
-  }
-  void execute(MainLoopEnv &e)
-  { 
-    if (firsttime)
-      {
       }
 
 
@@ -4895,6 +4909,7 @@ public:
   { 
     if (firsttime)
       {
+	ev.polygon_api.create_vertex_array_hw(va);
       }
 
     GameApi::SH sh;
