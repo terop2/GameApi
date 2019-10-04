@@ -3136,9 +3136,8 @@ public:
     if (is_mobile(ev)) {
       mult = 0.2;
     }
-
     g_low->ogl->glLineWidth(linewidth*mult);
-
+    
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
     GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
     GameApi::LI I10=ev.lines_api.from_polygon(I9);
@@ -3158,7 +3157,7 @@ public:
       mult = 0.2;
     }
     g_low->ogl->glLineWidth(linewidth*mult);
-
+    
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
     GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
     GameApi::LI I10=ev.lines_api.from_polygon(I9);
@@ -3179,7 +3178,7 @@ public:
       mult = 0.2;
     }
     g_low->ogl->glLineWidth(linewidth*mult);
-
+    
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
     GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
     GameApi::LI I10=ev.lines_api.from_polygon(I9);
@@ -3200,7 +3199,7 @@ public:
       mult = 0.2;
     }
     g_low->ogl->glLineWidth(linewidth*mult);
-
+    
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
     GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
     GameApi::LI I10=ev.lines_api.from_polygon(I9);
@@ -3221,7 +3220,7 @@ public:
       mult = 0.2;
     }
     g_low->ogl->glLineWidth(linewidth*mult);
-
+    
     GameApi::PTA pta = ev.points_api.prepare(pts);
 
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
@@ -5263,7 +5262,6 @@ public:
     if (is_mobile(ev)) {
       mult = 0.2;
     }
-    
     g_low->ogl->glLineWidth(linewidth*mult);
     GameApi::P I2=p;
     GameApi::P I2b = ev.polygon_api.recalculate_normals(I2);
@@ -5436,7 +5434,7 @@ ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
 class Bind : public MainLoopItem
 {
 public:
-  Bind(GameApi::Env &env, Material *mat, GameApi::P p) : env(env), mat(mat),p(p) { ml.id = -1; }
+  Bind(GameApi::Env &env, Material *mat, GameApi::P p) : env(env), mat(mat),p(p) { ml.id = -1; firsttime = true; }
   void find_ml() {
     if (ml.id==-1) {
       ml.id = mat->mat(p.id);
@@ -5444,12 +5442,16 @@ public:
   }
   virtual void Prepare()
   {
-    find_ml();
-    MainLoopItem *item = find_main_loop(env,ml);
-    item->Prepare();
   }
   virtual void execute(MainLoopEnv &e)
   {
+    if (firsttime) {
+      find_ml();
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->Prepare();
+      firsttime = false;
+    }
+    
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
     item->execute(e);
@@ -5471,12 +5473,13 @@ private:
   Material *mat;
   GameApi::P p;
   GameApi::ML ml;
+  bool firsttime;
 };
 
 class BindInst2 : public MainLoopItem
 {
 public:
-  BindInst2(GameApi::Env &env, Material *mat, GameApi::P p, GameApi::PTA pta) : env(env), mat(mat),p(p),pta(pta) { ml.id = -1; }
+  BindInst2(GameApi::Env &env, Material *mat, GameApi::P p, GameApi::PTA pta) : env(env), mat(mat),p(p),pta(pta) { ml.id = -1; firsttime = false; }
   void find_ml() {
     if (ml.id==-1) {
       ml.id = mat->mat_inst2(p.id,pta.id);
@@ -5484,12 +5487,15 @@ public:
   }
   virtual void Prepare()
   {
-    find_ml();
-    MainLoopItem *item = find_main_loop(env,ml);
-    item->Prepare();
   }
   virtual void execute(MainLoopEnv &e)
   {
+    if (firsttime) {
+      find_ml();
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->Prepare();
+      firsttime = false;
+    }
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
     item->execute(e);
@@ -5512,12 +5518,13 @@ private:
   GameApi::P p;
   GameApi::PTA pta;
   GameApi::ML ml;
+  bool firsttime;
 };
 
 class BindInstMatrix : public MainLoopItem
 {
 public:
-  BindInstMatrix(GameApi::Env &env, Material *mat, GameApi::P p, GameApi::MS ms) : env(env), mat(mat),p(p),ms(ms) { ml.id = -1; }
+  BindInstMatrix(GameApi::Env &env, Material *mat, GameApi::P p, GameApi::MS ms) : env(env), mat(mat),p(p),ms(ms) { ml.id = -1; firsttime = true; }
   void find_ml() {
     if (ml.id==-1) {
       ml.id = mat->mat_inst_matrix(p.id,ms.id);
@@ -5525,12 +5532,15 @@ public:
   }
   virtual void Prepare()
   {
-    find_ml();
-    MainLoopItem *item = find_main_loop(env,ml);
-    item->Prepare();
   }
   virtual void execute(MainLoopEnv &e)
   {
+    if (firsttime) {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare();
+    firsttime = false;
+    }
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
     item->execute(e);
@@ -5553,13 +5563,14 @@ private:
   GameApi::P p;
   GameApi::MS ms;
   GameApi::ML ml;
+  bool firsttime;
 };
 
 
 class BindInst : public MainLoopItem
 {
 public:
-  BindInst(GameApi::Env &env, Material *mat, GameApi::P p, GameApi::PTS pts) : env(env), mat(mat),p(p),pts(pts) { ml.id = -1; }
+  BindInst(GameApi::Env &env, Material *mat, GameApi::P p, GameApi::PTS pts) : env(env), mat(mat),p(p),pts(pts) { ml.id = -1; firsttime = true; }
   void find_ml() {
     if (ml.id==-1) {
       ml.id = mat->mat_inst(p.id,pts.id);
@@ -5567,12 +5578,15 @@ public:
   }
   virtual void Prepare()
   {
-    find_ml();
-    MainLoopItem *item = find_main_loop(env,ml);
-    item->Prepare();
   }
   virtual void execute(MainLoopEnv &e)
   {
+    if (firsttime) {
+      find_ml();
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->Prepare();
+      firsttime = false;
+    }
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
     item->execute(e);
@@ -5595,12 +5609,13 @@ private:
   GameApi::P p;
   GameApi::PTS pts;
   GameApi::ML ml;
+  bool firsttime;
 };
 
 class BindInstFade : public MainLoopItem
 {
 public:
-  BindInstFade(GameApi::Env &env, Material *mat, GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) : env(env), mat(mat),p(p),pts(pts),flip(flip), start_time(start_time), end_time(end_time) { ml.id = -1; }
+  BindInstFade(GameApi::Env &env, Material *mat, GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) : env(env), mat(mat),p(p),pts(pts),flip(flip), start_time(start_time), end_time(end_time) { ml.id = -1; firsttime = true; }
   void find_ml() {
     if (ml.id==-1) {
       ml.id = mat->mat_inst_fade(p.id,pts.id,flip,start_time, end_time);
@@ -5608,12 +5623,15 @@ public:
   }
   virtual void Prepare()
   {
-    find_ml();
-    MainLoopItem *item = find_main_loop(env,ml);
-    item->Prepare();
   }
   virtual void execute(MainLoopEnv &e)
   {
+    if (firsttime) {
+      find_ml();
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->Prepare();
+      firsttime = false;
+    }
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
     item->execute(e);
@@ -5639,6 +5657,7 @@ private:
   bool flip;
   float start_time;
   float end_time;
+  bool firsttime;
 };
 
 
@@ -5726,9 +5745,6 @@ public:
   }
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
-    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
-    obj2->Prepare(); 
-    pta = ev.points_api.prepare(pts);
     va = ev.polygon_api.create_vertex_array(p,false);
     initialized=true;
   }
@@ -5741,6 +5757,10 @@ public:
     // MainLoopEnv ee = e;
     if (firsttime)
       {
+    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    obj2->Prepare(); 
+    pta = ev.points_api.prepare(pts);
+    ev.polygon_api.create_vertex_array_hw(va);
       }
     if (changed)
       {
@@ -5904,9 +5924,6 @@ public:
   }
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
-    MatrixArray *obj2 = find_matrix_array(env, pts);
-    obj2->Prepare(); 
-    pta = ev.matrices_api.prepare(pts);
     va = ev.polygon_api.create_vertex_array(p,false);
     initialized=true;
   }
@@ -5919,6 +5936,10 @@ public:
     // MainLoopEnv ee = e;
     if (firsttime)
       {
+    MatrixArray *obj2 = find_matrix_array(env, pts);
+    obj2->Prepare(); 
+    pta = ev.matrices_api.prepare(pts);
+    ev.polygon_api.create_vertex_array_hw(va);
       }
     if (changed)
       {
@@ -6083,10 +6104,7 @@ public:
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
     //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
-    pta = ev.points_api.prepare(pts);
     va = ev.polygon_api.create_vertex_array(p,true);
-    std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm,types);
-    va = ev.texture_api.bind_many(va, id, types);
     initialized=true;
   }
   void execute(MainLoopEnv &e)
@@ -6097,6 +6115,11 @@ public:
     // MainLoopEnv ee = e;
     if (firsttime)
       {
+    pta = ev.points_api.prepare(pts);
+    ev.polygon_api.create_vertex_array_hw(va);
+    std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm,types);
+    va = ev.texture_api.bind_many(va, id, types);
+
       }
     if (changed)
       {
@@ -6267,10 +6290,7 @@ public:
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
     //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
-    pta = ev.matrices_api.prepare(pts);
     va = ev.polygon_api.create_vertex_array(p,true);
-    std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm,types);
-    va = ev.texture_api.bind_many(va, id, types);
     initialized=true;
   }
   void execute(MainLoopEnv &e)
@@ -6281,6 +6301,10 @@ public:
     // MainLoopEnv ee = e;
     if (firsttime)
       {
+    pta = ev.matrices_api.prepare(pts);
+    ev.polygon_api.create_vertex_array_hw(va);
+    std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm,types);
+    va = ev.texture_api.bind_many(va, id, types);
       }
     if (changed)
       {
@@ -6450,11 +6474,8 @@ public:
   }
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
-    //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
-    pta = ev.points_api.prepare(pts);
     va = ev.polygon_api.create_vertex_array(p,true);
-    std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev,bm);
-    va = ev.texture_api.bind_many(va, id);
+    //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     initialized=true;
   }
   void execute(MainLoopEnv &e)
@@ -6466,6 +6487,10 @@ public:
     // MainLoopEnv ee = e;
     if (firsttime)
       {
+    pta = ev.points_api.prepare(pts);
+    ev.polygon_api.create_vertex_array_hw(va);
+    std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev,bm);
+    va = ev.texture_api.bind_many(va, id);
       }
     if (changed)
       {
@@ -6641,11 +6666,8 @@ public:
   }
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
-    //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
-    pta = ev.matrices_api.prepare(pts);
     va = ev.polygon_api.create_vertex_array(p,true);
-    std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev,bm);
-    va = ev.texture_api.bind_many(va, id);
+    //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     initialized=true;
   }
   void execute(MainLoopEnv &e)
@@ -6657,6 +6679,10 @@ public:
     // MainLoopEnv ee = e;
     if (firsttime)
       {
+    pta = ev.matrices_api.prepare(pts);
+    ev.polygon_api.create_vertex_array_hw(va);
+    std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev,bm);
+    va = ev.texture_api.bind_many(va, id);
       }
     if (changed)
       {
@@ -6832,6 +6858,7 @@ public:
     obj2->HandleEvent(e);
   }
   void Prepare() {
+	va = ev.polygon_api.create_vertex_array(p,true);
 
   }
   void execute(MainLoopEnv &e)
@@ -6843,8 +6870,7 @@ public:
       {
 	//PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
 	pta = ev.points_api.prepare(pts);
-	va = ev.polygon_api.create_vertex_array(p,true);
-
+	ev.polygon_api.create_vertex_array_hw(va);
 	GameApi::BM right,left,top,bottom,back,front;
 	right.id = 0;
 	left.id = 0;
@@ -7027,6 +7053,7 @@ public:
     obj2->HandleEvent(e);
   }
   void Prepare() {
+	va = ev.polygon_api.create_vertex_array(p,true);
 
   }
   void execute(MainLoopEnv &e)
@@ -7038,8 +7065,8 @@ public:
       {
 	//PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
 	pta = ev.matrices_api.prepare(pts);
-	va = ev.polygon_api.create_vertex_array(p,true);
-
+	ev.polygon_api.create_vertex_array_hw(va);
+	
 	GameApi::BM right,left,top,bottom,back,front;
 	right.id = 0;
 	left.id = 0;
@@ -7224,16 +7251,7 @@ public:
   }
   void Prepare() {
     //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
-    pta = ev.points_api.prepare(pts);
     va = ev.polygon_api.create_vertex_array(p,true);
-    std::vector<GameApi::BM> bm;
-    int s = ev.polygon_api.p_num_textures(p);
-    for(int i=0;i<s;i++) {
-      ev.polygon_api.p_gen_texture(p,i);
-      bm.push_back(ev.polygon_api.p_texture(p,i));
-    }
-    std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm);
-    va = ev.texture_api.bind_many(va, id);
     
   }
   void execute(MainLoopEnv &e)
@@ -7243,6 +7261,17 @@ public:
     // MainLoopEnv ee = e;
     if (firsttime)
       {
+    pta = ev.points_api.prepare(pts);
+    ev.polygon_api.create_vertex_array_hw(va);
+    std::vector<GameApi::BM> bm;
+    int s = ev.polygon_api.p_num_textures(p);
+    for(int i=0;i<s;i++) {
+      ev.polygon_api.p_gen_texture(p,i);
+      bm.push_back(ev.polygon_api.p_texture(p,i));
+    }
+    std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm);
+    va = ev.texture_api.bind_many(va, id);
+
       }
     if (changed)
       {
@@ -7405,16 +7434,7 @@ public:
   }
   void Prepare() {
     //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
-    pta = ev.matrices_api.prepare(pts);
     va = ev.polygon_api.create_vertex_array(p,true);
-    std::vector<GameApi::BM> bm;
-    int s = ev.polygon_api.p_num_textures(p);
-    for(int i=0;i<s;i++) {
-      ev.polygon_api.p_gen_texture(p,i);
-      bm.push_back(ev.polygon_api.p_texture(p,i));
-    }
-    std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm);
-    va = ev.texture_api.bind_many(va, id);
     
   }
   void execute(MainLoopEnv &e)
@@ -7424,6 +7444,16 @@ public:
     // MainLoopEnv ee = e;
     if (firsttime)
       {
+    pta = ev.matrices_api.prepare(pts);
+    ev.polygon_api.create_vertex_array_hw(va);
+    std::vector<GameApi::BM> bm;
+    int s = ev.polygon_api.p_num_textures(p);
+    for(int i=0;i<s;i++) {
+      ev.polygon_api.p_gen_texture(p,i);
+      bm.push_back(ev.polygon_api.p_texture(p,i));
+    }
+    std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm);
+    va = ev.texture_api.bind_many(va, id);
       }
     if (changed)
       {
@@ -7588,6 +7618,9 @@ public:
   }
   void execute(MainLoopEnv &e)
   {
+    if (firsttime) {
+      ev.polygon_api.create_vertex_array_hw(va);
+    }
     GameApi::SH sh;
     GameApi::US u_v;
     GameApi::US u_f;
@@ -7736,6 +7769,9 @@ public:
   }
   void execute(MainLoopEnv &e)
   {
+    if (firsttime) {
+      ev.polygon_api.create_vertex_array_hw(va);
+    }
     GameApi::SH sh;
     GameApi::US u_v;
     GameApi::US u_f;
@@ -10458,6 +10494,18 @@ extern int hidden_score;
 extern int g_shows_hundred;
 extern std::vector<int> g_hide_container;
 
+bool g_prepare_done=false;
+
+void *prepare_cb(void *ptr)
+{
+  MainLoopItem *item = (MainLoopItem*)ptr;
+  item->Prepare();
+  g_prepare_done = true;
+  return 0;
+}
+
+pthread_t g_thread_id;
+
 
 extern int g_event_screen_x;
 extern int g_event_screen_y;
@@ -10527,7 +10575,11 @@ public:
 	 /* this eats all events from queue */
        }
      g_hide_container.clear();
-
+     g_prepare_done = false;
+     firsttime2 = true;
+     //#ifdef THREADS
+     // InstallProgress(333,"prepare",100);
+     //#endif
   }
   virtual int Iter()
   {
@@ -10552,8 +10604,6 @@ public:
 	  b = env->ev->mainloop_api.seamless_iter();
 	}
 	if (b && async_pending_count==0 && no_draw_count==0) { env->logo_shown = false;
-	  env->ev->mainloop_api.reset_time();
-	  env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
 	}
 	//if (g_shows_hundred) { env->logo_shown=false; }
 	if (async_pending_count==0 && no_draw_count>0) { /* pass through */}
@@ -10563,10 +10613,21 @@ public:
     async_is_done = true;
 
     if (firsttime) {
+      //#ifndef THREADS
       MainLoopItem *item = find_main_loop(env->ev->get_env(),code);
       //std::cout << "Splitter/Prepare:" << std::endl;
       item->Prepare();
-
+      g_prepare_done = true;
+      //#else
+      //progress=0;
+      //g_prepare_done = false;
+      //MainLoopItem *item = find_main_loop(env->ev->get_env(),code);
+      //pthread_attr_t attr;
+      //pthread_attr_init(&attr);
+      //pthread_attr_setstacksize(&attr, 3000000);
+      //pthread_create(&g_thread_id, &attr, &prepare_cb, (void*)item);
+      //#endif
+#if 0      
       int s = g_prepare_callbacks.size();
       for(int i=0;i<s;i++) {
 	void (*fptr)(void*) = g_prepare_callbacks[i].fptr;
@@ -10574,11 +10635,29 @@ public:
 	fptr(ptr);
       }
       g_prepare_callbacks = std::vector<PrepareCB>();
-
+#endif
       //std::cout << "Splitter/End of Prepare:" << std::endl;
       firsttime = false;
     }
-
+    if (!g_prepare_done) {
+      int num = progress /100;
+      ProgressBar(333, progress++, num*100+100, "prepare");
+      bool b = false;
+      if (gameapi_seamless_url=="") {
+	  //std::cout << "Logo iter" << std::endl;
+	  b = env->ev->mainloop_api.logo_iter();
+	  //std::cout << "End of Logo iter" << std::endl;
+	} else {
+	  b = env->ev->mainloop_api.seamless_iter();
+	}
+    }
+			
+    if (!g_prepare_done) return -1;
+    if (firsttime2) {
+      env->ev->mainloop_api.reset_time();
+      env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
+      firsttime2 = false;
+    }
     
     if (no_draw_count==0)
       env->ev->mainloop_api.clear_3d(0xff000000);
@@ -10596,7 +10675,8 @@ public:
 	//					      env->data, env->speed_x, env->speed_y,
 	//			   1.0, 1.0*3.14159*2.0/360.0);
 	//std::cout << "Splitter/Event:" << std::endl;
-	env->ev->mainloop_api.event_ml(env->mainloop, e);
+	if (g_prepare_done)
+	  env->ev->mainloop_api.event_ml(env->mainloop, e);
 	//std::cout << "Splitter/End of Event:" << std::endl;
 	
       }
@@ -10627,7 +10707,8 @@ public:
     GameApi::M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
     
     //std::cout << "Splitter/execute_ml" << std::endl;
-    env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+    if (g_prepare_done)
+      env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
     //std::cout << "Splitter/end of execute_ml" << std::endl;
 
     if (env->fpscounter)
@@ -10674,7 +10755,9 @@ private:
   int screen_height;
   Envi_2 envi;
   bool firsttime;
-};
+  bool firsttime2;
+  int progress;
+  };
 
 extern int score;
 extern int hidden_score;
