@@ -604,12 +604,12 @@ GameApi::Pa GameApi::PolygonArrayApi::split_p(EveryApi &ev, P p, int max_chunk)
   std::cout << "split_p" << std::endl;
   while(num > max_chunk)
     { 
-      std::cout << "Range: " << start << " " << max_chunk << std::endl;
+      //std::cout << "Range: " << start << " " << max_chunk << std::endl;
       vec.push_back(ev.polygon_api.split_p(p, start, start+max_chunk));
       start += max_chunk;
       num -= max_chunk;
     }
-  std::cout << "LastRange: " << start << " " << num << std::endl;
+  //std::cout << "LastRange: " << start << " " << num << std::endl;
   vec.push_back(ev.polygon_api.split_p(p, start, start+num));
   Pa_Impl impl;
   impl.vec = vec;
@@ -2128,6 +2128,8 @@ private:
 
 std::map<int,Matrix> g_key_activate_collect;
 
+extern bool g_restart_ongoing;
+
 class KeyActivateML : public MainLoopItem
 {
 public:
@@ -2145,6 +2147,13 @@ public:
   int shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &eve)
   {
+    if (g_restart_ongoing) {
+        collect = ev.matrix_api.identity();
+	anim_ongoing = false;
+	key_pressed = false;
+    }
+
+
     Movement *move = find_move(e, mn);
     move->event(eve);
 
@@ -2397,6 +2406,19 @@ public:
   int shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &eve)
   {
+
+    if (g_restart_ongoing) {
+      start_time = 0.0; //ev.mainloop_api.get_time();
+      start_time2 = 0.0;
+      anim_pos = 0.0;
+      collect = ev.matrix_api.identity();
+      anim_ongoing = false;
+      anim_ongoing2 = false;
+      key_pressed = false;
+      key_canceled=false;
+      start_anim_chain = false;
+    }
+
     Movement *move = find_move(e, mn);
     move->event(eve);
 
@@ -20782,10 +20804,10 @@ public:
       if (e.time>20.0 && time>=e.time && time<e.time+e.delta_time)
 	{ 
 	  float y = p2.y;
-	  std::cout << "Range check: y=" << y << " time=" << e.time << std::endl;
+	  //std::cout << "Range check: y=" << y << " time=" << e.time << std::endl;
 	  float range_start = m_range_start[k];
 	  float range_end = m_range_end[k];
-	  std::cout << "Range:" << range_start << " " << range_end << std::endl;
+	  //std::cout << "Range:" << range_start << " " << range_end << std::endl;
 	  if (y>=range_start && y<range_end) {
 	    /* ok */
 	  } else {
