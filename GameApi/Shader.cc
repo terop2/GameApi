@@ -1865,7 +1865,7 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#ifdef EX_COLOR\n"
 "#ifdef COLOR_MIX\n"
-"vec4 colour_wih_mix(vec4 rgb)\n"
+"vec4 colour_with_mix(vec4 rgb)\n"
 "{\n"
 "  return mix(rgb, ex_Color, color_mix);    \n"
 "}\n"
