@@ -286,6 +286,8 @@ public:
   IMPORT void clear_3d_transparent();
   IMPORT void clear_3d(unsigned int col = 0xff000000);
   IMPORT void switch_to_3d(bool b, SH sh, int screen_width=800., int screen_height = 600);
+  IMPORT ML restart_game(EveryApi &ev, ML ml, int key);
+  IMPORT ML matrix_range_check(EveryApi &ev, ML ml, ML ml2, std::string url); // this uses restart_game.
   IMPORT ML gltf_mesh( EveryApi &ev, std::string base_url, std::string url, int mesh_id );
   IMPORT ML gltf_mesh_all( EveryApi &ev, std::string base_url, std::string url );
   IMPORT ML gltf_node( EveryApi &ev, std::string base_url, std::string url, int node_id );

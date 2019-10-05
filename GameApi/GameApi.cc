@@ -2126,6 +2126,8 @@ private:
 };
 
 
+std::map<int,Matrix> g_key_activate_collect;
+
 class KeyActivateML : public MainLoopItem
 {
 public:
@@ -2189,7 +2191,7 @@ public:
       if (anim_pos > duration-env.delta_time) {
 	anim_ongoing = false;
 	collect = ev.matrix_api.mult(collect, ev.move_api.get_matrix(mn, duration, env.delta_time));
-	
+	g_key_activate_collect[key] = find_matrix(e,collect);
 	if (key_pressed) { // repeat animation if key is being pressed down when anim stops
 	  anim_ongoing = true; start_time = ev.mainloop_api.get_time(); anim_pos = 0.0; 
 	}
@@ -20692,6 +20694,129 @@ GameApi::ML GameApi::MainLoopApi::flip_scene_if_mobile(GameApi::EveryApi &ev, ML
 {
   MainLoopItem *item = find_main_loop(e,ml);
   return add_main_loop(e, new FlipIfMobile(ev,item));
+}
+
+bool g_restart_ongoing = false;
+
+class Restart : public MainLoopItem
+{
+public:
+  Restart(GameApi::EveryApi &ev, MainLoopItem *item, int key) : ev(ev), item(item), key(key) { }
+  virtual void Prepare() { item->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (e.type==768 && e.ch==key) { 
+      ev.mainloop_api.reset_time();
+      //ev,mainloop_api.advance_time(env->start_time/10.0*1000.0);
+      g_restart_ongoing = true;
+    }
+    item->handle_event(e);
+    if (e.type==768 && e.ch==key) { 
+      g_restart_ongoing = false;
+    }
+  }
+  virtual int shader_id() { return item->shader_id(); }
+
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *item;
+  int key;
+};
+GameApi::ML GameApi::MainLoopApi::restart_game(GameApi::EveryApi &ev, GameApi::ML ml, int key)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new Restart(ev,item, key));
+}
+
+extern bool g_restart_ongoing;
+
+class RangeCheckMatrix : public MainLoopItem
+{
+public:
+  RangeCheckMatrix(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *ml, std::string url, std::string homepage, MainLoopItem *ml2) : env(env), ev(ev), ml(ml), ml2(ml2), url(url), homepage(homepage) { active = ml; }
+  void Prepare() {
+#ifndef EMSCRIPTEN
+      env.async_load_url(url, homepage);
+#endif
+      std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+      if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+      std::string s(vec->begin(), vec->end());
+      std::stringstream ss(s);
+      float time, range_start, range_end;
+      while(ss >> time >> range_start >> range_end) {
+	m_time.push_back(time);
+	m_range_start.push_back(range_start);
+	m_range_end.push_back(range_end);
+      }
+      ml->Prepare();
+      ml2->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    std::map<int,Matrix>::iterator i = g_key_activate_collect.begin();
+    Matrix m = Matrix::Identity();
+    for(;i!=g_key_activate_collect.end();i++)
+      {
+	std::pair<int,Matrix> p = *i;
+	m = m * p.second;
+      }
+    Point p(0.0,0.0,0.0);
+    Point p2 = p*m;
+    
+    int s = m_time.size();
+    //std::cout << "Range check: size=" << s << std::endl;
+    for(int k=0;k<s;k++) {
+      float time = m_time[k];
+      //std::cout << "Range check: time=" << e.time << " " << e.delta_time << std::endl;
+      if (e.time>20.0 && time>=e.time && time<e.time+e.delta_time)
+	{ 
+	  float y = p2.y;
+	  std::cout << "Range check: y=" << y << " time=" << e.time << std::endl;
+	  float range_start = m_range_start[k];
+	  float range_end = m_range_end[k];
+	  std::cout << "Range:" << range_start << " " << range_end << std::endl;
+	  if (y>=range_start && y<range_end) {
+	    /* ok */
+	  } else {
+	    /* fail, collision */
+	    active = ml2;
+	  }
+	}
+    }
+
+    active->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (g_restart_ongoing) {
+      active = ml;
+    }
+    active->handle_event(e);
+  }
+  virtual int shader_id() { return active->shader_id(); }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *ml;
+  MainLoopItem *ml2;
+  MainLoopItem *active;
+  std::string url;
+  std::string homepage;
+  std::vector<float> m_time;
+  std::vector<float> m_range_start;
+  std::vector<float> m_range_end;
+};
+
+GameApi::ML GameApi::MainLoopApi::matrix_range_check(GameApi::EveryApi &ev, ML ml, ML ml2, std::string url)
+{
+  MainLoopItem *item1 = find_main_loop(e, ml);
+  MainLoopItem *item2 = find_main_loop(e, ml2);
+  return add_main_loop(e, new RangeCheckMatrix(e, ev, item1, url, gameapi_homepageurl, item2));
 }
 
 std::vector<int> g_active_triggers(25);
