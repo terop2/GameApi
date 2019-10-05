@@ -20709,13 +20709,20 @@ public:
   }
   virtual void handle_event(MainLoopEvent &e)
   {
-    if (e.type==768 && e.ch==key) { 
+    int ch = e.ch;
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+
+    if (e.type==768 && ch==key) { 
       ev.mainloop_api.reset_time();
       //ev,mainloop_api.advance_time(env->start_time/10.0*1000.0);
       g_restart_ongoing = true;
     }
     item->handle_event(e);
-    if (e.type==768 && e.ch==key) { 
+    if (e.type==768 && ch==key) { 
       g_restart_ongoing = false;
     }
   }
