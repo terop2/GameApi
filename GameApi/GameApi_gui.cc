@@ -5002,7 +5002,8 @@ ASyncData async_data[] = {
   { "mainloop_api", "gltf_mesh", 2 },
   { "mainloop_api", "gltf_mesh_all", 2 },
   { "mainloop_api", "gltf_node", 2 },
-  { "mainloop_api", "gltf_scene", 2 }
+  { "mainloop_api", "gltf_scene", 2 },
+  { "mainloop_api", "matrix_range_check", 3 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -7550,6 +7551,18 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "std::string", "float" },
 			 { "ev", "", "http://tpgames.org/Chunkfive.otf", "1000.0" },
 			 "ML", "mainloop_api", "time_display"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::matrix_range_check,
+			 "matrix_range_check",
+			 { "ev", "ml", "ml2", "url" },
+			 { "EveryApi&", "ML", "ML", "std::string" },
+			 { "ev", "", "", "http://tpgames.org/test_data.txt" },
+			 "ML", "mainloop_api", "matrix_range_check"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::restart_game,
+			 "restart_key",
+			 { "ev", "ml", "key" },
+			 { "EveryApi&", "ML", "int" },
+			 { "ev", "", "114" },
+			 "ML", "mainloop_api", "restart_game"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::restart_screen,
 			 "restart_screen",
 			 { "ev", "ml", "fontname" },
