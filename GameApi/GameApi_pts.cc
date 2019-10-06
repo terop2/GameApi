@@ -1957,6 +1957,7 @@ public:
       in_MV[i]=Matrix::Identity();
     }
     lock=false;
+    changed=false;
     current_time = 0.0;
   }
 
@@ -1974,6 +1975,7 @@ public:
       for(int i=0;i<max_count;i++) arr[i]=Point(-20000.0,0.0,0.0);
       lock=false;
       current_time = 0.0;
+      changed=true;
     }
 
     int ch = event.ch;
@@ -2010,6 +2012,7 @@ public:
       if ((arr[i]-px).Dist()>dist) { arr[i]=Point(-20000.0,0.0,0.0); }
   }
     }
+    if (changed) { changed=false; return true; }
     return update; 
   }
   virtual int NumPoints() const { return max_count; }
@@ -2036,6 +2039,7 @@ private:
   //Matrix *inverse;
   Matrix inv;
   Matrix mv;
+  bool changed;
 };
 
 GameApi::PTS GameApi::PointsApi::bullet(int key, float vx, float vy, float vz, float px, float py, float pz,float dist, int max_count, float repeat_time)
