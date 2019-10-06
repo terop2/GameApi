@@ -1940,3 +1940,105 @@ GameApi::PTS GameApi::PointsApi::polygon_face_center_points(P p)
   FaceCollection *coll = find_facecoll(e, p);
   return add_points_api_points(e, new FaceCenterPoints2(coll));
 }
+
+extern bool g_restart_ongoing;
+
+class Bullet : public PointsApiPoints
+{
+public:
+  Bullet(int key, float vx, float vy, float vz, Point px, float dist, int max_count, float repeat_time) : key(key), pt(vx,vy,vz), px(px), dist(dist), max_count(max_count), repeat_time(repeat_time) 
+  { 
+    arr = new Point[max_count];
+    //inverse = new Matrix[max_count];
+    in_MV = new Matrix[max_count];
+    for(int i=0;i<max_count;i++) {
+      arr[i]=Point(-20000.0,0.0,0.0);
+      //inverse[i]=Matrix::Identity();
+      in_MV[i]=Matrix::Identity();
+    }
+    lock=false;
+    current_time = 0.0;
+  }
+
+  int find_free() const
+  {
+    for(int i=0;i<max_count;i++) {
+      if (arr[i].x<-10000.0) return i;
+    }
+    return -1;
+  }
+  
+  virtual void Prepare() { }
+  virtual void HandleEvent(MainLoopEvent &event) { 
+    if (g_restart_ongoing) {
+      for(int i=0;i<max_count;i++) arr[i]=Point(-20000.0,0.0,0.0);
+      lock=false;
+      current_time = 0.0;
+    }
+
+    int ch = event.ch;
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) { ch='0'; }
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+    if (event.type==768 && ch==key && lock==false)
+      {
+        lock=true;
+        int val = find_free();
+        if (val!=-1) { arr[val]=px; in_MV[val]=mv; }
+      }
+    if (event.type==769 && ch==key) lock=false;
+  }
+  virtual bool Update(MainLoopEnv &e) { 
+    inv = Matrix::Inverse(e.in_MV);
+    mv = e.in_MV;
+
+    if (lock) {
+      current_time+=e.delta_time;
+      if (current_time > repeat_time && repeat_time>0.01) {
+	int val = find_free();
+	if (val!=-1) { arr[val]=px; in_MV[val]=mv; current_time = 0.0; }
+      }
+    }
+
+    bool update = false;
+    for(int i=0;i<max_count;i++) {
+      if (arr[i].x>=-10000.0) { 
+
+      arr[i]+=pt*e.delta_time; update=true; 
+      if ((arr[i]-px).Dist()>dist) { arr[i]=Point(-20000.0,0.0,0.0); }
+  }
+    }
+    return update; 
+  }
+  virtual int NumPoints() const { return max_count; }
+  virtual Point Pos(int i) const
+  {
+    return arr[i] * in_MV[i] * inv;
+  }
+  virtual unsigned int Color(int i) const
+  {
+    return 0xffffffff;
+  }
+
+private:
+  int key;
+  Vector pt;
+  Point px;
+  float dist;
+  int max_count;
+  Point *arr;
+  bool lock;
+  float current_time;
+  float repeat_time;
+  Matrix *in_MV;
+  //Matrix *inverse;
+  Matrix inv;
+  Matrix mv;
+};
+
+GameApi::PTS GameApi::PointsApi::bullet(int key, float vx, float vy, float vz, float px, float py, float pz,float dist, int max_count, float repeat_time)
+{
+  return add_points_api_points(e, new Bullet(key,vx,vy,vz,Point(px,py,pz),dist,max_count,repeat_time/100.0));
+}

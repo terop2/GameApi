@@ -865,7 +865,7 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
 #else
   SDL_GL_SwapBuffers();
 #endif
-
+#if 1
   unsigned int time = g_low->sdl->SDL_GetTicks();
   MainLoopPriv *p = (MainLoopPriv*)priv;
   p->frame_time = time;
@@ -874,6 +874,10 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
   p->current_time = float(time)/100.0;
 
   p->previous_frame_time = time;
+#endif
+
+  
+  
   //SDL_Flip(surf);
   frame++;
 }

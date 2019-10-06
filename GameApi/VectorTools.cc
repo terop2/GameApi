@@ -674,6 +674,7 @@ Matrix Matrix::Inverse(const Matrix &m)
 		 C12/A, C22/A, C32/A, C42/A,
 		 C13/A, C23/A, C33/A, C43/A,
 		 C14/A, C24/A, C34/A, C44/A } };
+  //return Matrix::Transpose(inv);
   return inv;
 }
 
