@@ -3038,6 +3038,7 @@ class PointsApi
 {
 public:
   PointsApi(Env &e) : e(e) { }
+  IMPORT PTS bullet(int key, float vx, float vy, float vz, float px, float py, float pz, float dist, int max_count, float repeat_time);
   IMPORT PTS voxelarray_to_pts(AV arr);
   IMPORT PTS polygon_face_center_points(P p);
   IMPORT PTS single_pts();

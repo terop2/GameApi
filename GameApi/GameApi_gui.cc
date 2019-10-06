@@ -9601,6 +9601,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "PTS", "float", "float", "float" },
 			 { "", "0.0", "0.0", "0.0" },
 			 "PTS", "points_api", "move"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::bullet,
+			 "bullet_pts",
+			 { "key", "vx", "vy", "vz", "px", "py", "pz", "dist", "max_count", "repeat_time" },
+			 { "int", "float", "float", "float", "float", "float", "float", "float", "int", "float" },
+			 { "32", "30.0", "0.0", "0.0", "0.0", "0.0", "0.0", "600.0", "15", "200.0" },
+			 "PTS", "points_api", "bullet"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::anim_mix,
 			 "anim_mix_pts",
 			 { "obj1", "obj2", "start_val", "end_val", "start_time", "end_time" },
