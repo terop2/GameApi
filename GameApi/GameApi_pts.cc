@@ -2046,3 +2046,4 @@ GameApi::PTS GameApi::PointsApi::bullet(int key, float vx, float vy, float vz, f
 {
   return add_points_api_points(e, new Bullet(key,vx,vy,vz,Point(px,py,pz),dist,max_count,repeat_time/100.0));
 }
+

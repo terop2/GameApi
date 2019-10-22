@@ -6373,43 +6373,61 @@ public:
     return count; 
   }
   virtual int NumPoints(int face) const 
-  { 
+  {
+    int s = faces_num.size();
+    if (face<0 || face>s-1) return 0;
     return vec[faces_num[face]]->NumPoints(faces_cache[face]);
   }
   virtual Point FacePoint(int face, int point) const
   {
+    int s = faces_num.size();
+    if (face<0 || face>s-1) return Point(0.0,0.0,0.0);
     return vec[faces_num[face]]->FacePoint(faces_cache[face], point);
   }
   virtual Point EndFacePoint(int face, int point) const
   {
+    int s = faces_num.size();
+    if (face<0 || face>s-1) return Point(0.0,0.0,0.0);
     return vec[faces_num[face]]->EndFacePoint(faces_cache[face], point);
   }
 
   virtual unsigned int Color(int face, int point) const
   {
+    int s = faces_num.size();
+    if (face<0 || face>s-1) return 0xffffffff;
     return vec[faces_num[face]]->Color(faces_cache[face],point);
   }
 
   virtual Point2d TexCoord(int face, int point) const
   {
+    int s = faces_num.size();
+    if (face<0 || face>s-1) { Point2d p; p.x=0.0; p.y=0.0; return p; }
     return vec[faces_num[face]]->TexCoord(faces_cache[face],point);
   }
   virtual float TexCoord3(int face, int point) const
   {
+    int s = faces_num.size();
+    if (face<0 || face>s-1) { return 0.0; }
     return vec[faces_num[face]]->TexCoord3(faces_cache[face],point);
   }
 
 
   virtual Vector PointNormal(int face, int point) const
   {
+    int s = faces_num.size();
+    if (face<0 || face>s-1) { return Vector(0.0,0.0,0.0); }
     return vec[faces_num[face]]->PointNormal(faces_cache[face], point);
   }
   float Attrib(int face, int point, int id) const 
   {
+    int s = faces_num.size();
+    if (face<0 || face>s-1) { return 0.0; }
     return vec[faces_num[face]]->Attrib(faces_cache[face], point, id);
   }
   int AttribI(int face, int point, int id) const 
   {
+    int s = faces_num.size();
+    if (face<0 || face>s-1) { return 0; }
     if (id==AttrPart)
       {
 	return faces_num[face];
@@ -10954,7 +10972,12 @@ public:
 	for(int j=0;j<ss;j++)
 	  {
 	    Point p = coll->FacePoint(i,j);
-	    file << "v " << p.x << " " << p.y << " " << p.z << std::endl;
+	    unsigned int p2 = coll->Color(i,j);
+	    Color c(p2);
+	    if (std::isnan(p.x)) p.x=0.0;
+	    if (std::isnan(p.y)) p.y=0.0;
+	    if (std::isnan(p.z)) p.z=0.0;
+	    file << "v " << p.x << " " << p.y << " " << p.z << " " << c.r << " " << c.g << " " << c.b << std::endl;
 	  }
       }
     for(int i=0;i<s;i++)
@@ -10963,6 +10986,9 @@ public:
 	for(int j=0;j<ss;j++)
 	  {
 	    Vector p = coll->PointNormal(i,j);
+	    if (std::isnan(p.dx)) p.dx=0.0;
+	    if (std::isnan(p.dy)) p.dy=0.0;
+	    if (std::isnan(p.dz)) p.dz=0.0;
 	    file << "vn " << p.dx << " " << p.dy << " " << p.dz << std::endl;
 	  }
       }
@@ -10973,9 +10999,14 @@ public:
 	  {
 	    Point2d p = coll->TexCoord(i,j);
 	    float p2 = coll->TexCoord3(i,j);
+	    if (std::isnan(p.x)) p.x=0.0;
+	    if (std::isnan(p.y)) p.y=0.0;
+	    if (std::isnan(p2)) p2=0.0;
+
 	    file << "vt " << p.x << " " << p.y << " " << p2 << std::endl;
 	  }
       }
+#if 0
     for(int i=0;i<s;i++)
       {
 	int ss = coll->NumPoints(i);
@@ -10983,9 +11014,11 @@ public:
 	  {
 	    unsigned int p = coll->Color(i,j);
 	    Color c(p);
+
 	    file << "vc " << c.r << " " << c.g << " " << c.b << " " << c.alpha << std::endl;
 	  }
       }
+#endif
     int counter =1;
     for(int i=0;i<s;i++)
       {
