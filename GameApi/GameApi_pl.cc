@@ -1840,7 +1840,11 @@ EXPORT GameApi::P GameApi::PolygonApi::color_grayscale(P orig)
 class QuadsToTris2 : public ForwardFaceCollection
 {
 public:
-  QuadsToTris2(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { Iterate(); }
+  QuadsToTris2(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  void Prepare() {
+    coll->Prepare();
+    Iterate();
+  }
   void Iterate()
   {
     int counter = 0;
