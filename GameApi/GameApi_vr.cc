@@ -764,7 +764,6 @@ void vr_run2(Splitter *spl2)
 
 
 
-#endif
 
 class HMDRequestPresentingCallback : public Fetcher<int>
 {
@@ -841,6 +840,7 @@ GameApi::IF GameApi::FontApi::hmd_state_fetcher()
 {
   return add_int_fetcher(e, new HMDStateIntFetcher());
 }
+#endif
 #endif
 
 #ifndef VIRTUAL_REALITY
