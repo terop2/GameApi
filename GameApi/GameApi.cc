@@ -1601,6 +1601,74 @@ EXPORT GameApi::MN GameApi::MovementNode::change_time(MN next, float d_time)
   Movement *nxt = find_move(e, next);
   return add_move(e, new TimeChangeMovement(nxt, d_time));  
 }
+class InterpolateMatrix : public Movement
+{
+public:
+  InterpolateMatrix(Movement *n1, Movement *n2, float start_time, float end_time, float start_value, float end_value) : n1(n1), n2(n2), f(f), start_time(start_time), end_time(end_time), start_value(start_value), end_value(end_value) { }
+  virtual void event(MainLoopEvent &e) { 
+    n1->event(e);
+    n2->event(e);
+  }
+  virtual void frame(MainLoopEnv &e) { 
+    n1->frame(e);
+    n2->frame(e);
+  }
+  virtual void draw_event(FrameLoopEvent &e) { 
+    n1->draw_event(e);
+    n2->draw_event(e);
+  }
+  virtual void draw_frame(DrawLoopEnv &e) { 
+    n1->draw_frame(e);
+    n2->draw_frame(e);
+  }
+
+  virtual void set_matrix(Matrix m) { }
+  float interpolate(float v1, float v2, float mix) const {
+    return v1*(1.0-mix)+v2*mix;
+  }
+
+  virtual Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    Matrix m1 = n1->get_whole_matrix(time,delta_time);
+    Matrix m2 = n2->get_whole_matrix(time,delta_time);
+    float pos = time - start_time;
+    pos/=(end_time-start_time);
+    if (pos<0.0) pos=0.0;
+    if (pos>1.0) pos=1.0;
+    pos*=(end_value-start_value);
+    pos+=start_value;
+    float mix = pos;
+    Quarternion q1 = Quarternion::MatrixToQuar(m1);
+    Quarternion q2 = Quarternion::MatrixToQuar(m2);
+    Vector t1 = m1.get_translate();
+    Vector t2 = m2.get_translate();
+    Vector t3 = { interpolate(t1.dx,t2.dx,mix),
+		  interpolate(t1.dy,t2.dy,mix),
+		  interpolate(t1.dz,t2.dz,mix) };
+
+    Quarternion q3 = { interpolate(q1.x,q2.x,mix),
+		       interpolate(q1.y,q2.y,mix),
+		       interpolate(q1.z,q2.z,mix),
+		       interpolate(q1.w,q2.w,mix) };
+    
+    Matrix m3 = Quarternion::QuarToMatrix(q3);
+    m3.set_translate(t3);
+    return m3;
+  }
+private:
+  Movement *n1, *n2;
+  Fetcher<float> &f;
+  float start_time, end_time;
+  float start_value, end_value;
+};
+
+EXPORT GameApi::MN GameApi::MovementNode::interpolate(MN n1, MN n2, float start_time, float end_time, float start_value, float end_value)
+{
+  Movement *m1 = find_move(e,n1);
+  Movement *m2 = find_move(e,n2);
+  return add_move(e, new InterpolateMatrix(m1,m2, start_time, end_time, start_value, end_value));
+}
+
 void GameApi::MovementNode::set_matrix(MN n, M m)
 {
   Movement *nn = find_move(e, n);

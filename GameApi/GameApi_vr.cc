@@ -847,4 +847,8 @@ GameApi::IF GameApi::FontApi::hmd_state_fetcher()
 void check_vr_compositor_init()
 {
 }
+EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration, bool invert, bool translate)
+{
+  return game_window2(ev,ml,logo,fpscounter,start_time,duration);
+}
 #endif

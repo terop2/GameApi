@@ -17,7 +17,9 @@
 // You should have received a copy of the GNU Library General Public License
 // along with Polygon.  If not, see <http://www.gnu.org/licenses/>.
 //
-#define VIRTUAL_REALITY 1
+
+// this is also in GameApi_h.hh
+//#define VIRTUAL_REALITY 1
 #define SDL2_USED
 #define NO_SDL_GLEXT
 //#define GL3_PROTOTYPES 1
