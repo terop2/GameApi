@@ -6740,14 +6740,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "MN", "float" },
 			 { "", "0.0" },
 			 "MN", "move_api", "rotatez"));
-#ifdef VIRTUAL_REALITY
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::pose,
 			 "mn_hmd_pose",
 			 { "next", "pose_in_screen" },
 			 { "MN", "bool" },
 			 { "", "false" },
 			 "MN", "move_api", "pose"));
-#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::state_speed_movement,
 			 "mn_statemachine",
 			 { "mn", "url", "states", "x_speeds", "y_speeds", "z_speeds" },

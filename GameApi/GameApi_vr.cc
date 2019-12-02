@@ -851,4 +851,8 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
 {
   return game_window2(ev,ml,logo,fpscounter,start_time,duration);
 }
+EXPORT GameApi::MN GameApi::MovementNode::pose(MN next, bool pose_in_screen)
+{
+  return next;
+}
 #endif
