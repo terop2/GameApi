@@ -1479,6 +1479,7 @@ class MovementNode
 {
 public:
   MovementNode(Env &e) : e(e) {}
+  IMPORT MN interpolate(MN n1, MN n2, float start_time, float end_time, float start_value, float end_value);
   IMPORT MN empty();
   IMPORT MN level(MN next);
   IMPORT MN trans2(MN next, float dx, float dy, float dz);

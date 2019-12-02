@@ -6766,6 +6766,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "PF" },
 			 { "" },
 			 "MN", "move_api", "mn_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::interpolate,
+			 "mn_interpolate",
+			 { "n1", "n2", "start_time", "end_time", "start_value", "end_value" },
+			 { "MN", "MN", "float", "float", "float", "float" },
+			 { "", "", "0.0", "30.0", "0.0", "1.0" },
+			 "MN", "move_api", "interpolate"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::local_move,
 			 "local_move",
 			 { "ev", "inner_ml", "center_points" },

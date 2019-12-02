@@ -299,6 +299,19 @@ public:
   static Matrix Interpolate(const Matrix &m1, const Matrix &m2, float t); // t = [0.0..1.0]
   static AxisAngle FindAxisAngle(const Matrix &m);
   friend std::ostream &operator<<(std::ostream &o, const Matrix &m);
+  Vector get_translate() const
+  {
+    Vector v;
+    v.dx = matrix[3];
+    v.dy = matrix[4*1+3];
+    v.dz = matrix[4*2+3];
+    return v;
+  }
+  void set_translate(Vector v) {
+    matrix[3] = v.dx;
+    matrix[4*1+3] = v.dy;
+    matrix[4*2+3] = v.dz;
+  }
 public:
   float matrix[16];
   //bool is_identity;
