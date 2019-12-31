@@ -5691,6 +5691,79 @@ private:
   bool firsttime;
 };
 
+class FadeShaderML : public MainLoopItem
+{
+public:
+  FadeShaderML(GameApi::EveryApi &ev, MainLoopItem *next, float start_time, float end_time, float start_time2, float end_time2) : ev(ev), next(next), start_time(start_time), end_time(end_time), start_time2(start_time2), end_time2(end_time2) 
+  {
+    //sh = ev.shader_api.get_normal_shader("comb", "comb", "", "colour:snoise:light", "colour:snoise:light");
+    //ev.mainloop_api.init_3d(sh);
+    //ev.mainloop_api.alpha(true); 
+    firsttime = true;
+    sh.id=0;
+  }
+ 
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void Prepare() { next->Prepare(); }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    if (firsttime)
+      {
+	firsttime = false;
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a1.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    GameApi::US a2 = ev.uber_api.v_fade(vertex);
+    ee.us_vertex_shader = a2.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a1.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    GameApi::US a2f = ev.uber_api.f_fade(fragment);
+    ee.us_fragment_shader = a2f.id;
+
+
+
+      }
+    sh.id = next->shader_id();
+
+    if (sh.id!=-1) {
+	ev.shader_api.use(sh);
+      ev.shader_api.set_var(sh, "time_begin_start", start_time);
+      ev.shader_api.set_var(sh, "time_begin_end", end_time);
+      ev.shader_api.set_var(sh, "time_end_start", start_time2);
+      ev.shader_api.set_var(sh, "time_end_end", end_time2);
+      ev.shader_api.set_var(sh, "time", e.time);
+    }
+			    
+		    
+    next->execute(ee);
+  }
+  int shader_id() { return next->shader_id(); }
+
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  GameApi::SH sh;
+  bool firsttime;
+  float start_time, end_time;
+  float start_time2, end_time2;
+};
+
+
 class SkeletalShader : public MainLoopItem
 {
 public:
@@ -7203,6 +7276,11 @@ EXPORT GameApi::ML GameApi::PolygonApi::toon_shader(EveryApi &ev, ML mainloop)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new ToonShaderML(ev, item));
+}
+EXPORT GameApi::ML GameApi::PolygonApi::fade_shader(EveryApi &ev, ML mainloop, float start_time, float end_time, float start_time2, float end_time2)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new FadeShaderML(ev, item, start_time, end_time, start_time2, end_time2));
 }
  EXPORT GameApi::ML GameApi::PolygonApi::dist_field_mesh_shader(EveryApi &ev, ML mainloop, SFO sfo)
 {
