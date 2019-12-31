@@ -855,4 +855,28 @@ EXPORT GameApi::MN GameApi::MovementNode::pose(MN next, bool pose_in_screen)
 {
   return next;
 }
+GameApi::IF GameApi::FontApi::hmd_state_fetcher()
+{
+GameApi::IF i;
+i.id=0;
+return i;
+}
+EXPORT GameApi::ML GameApi::MainLoopApi::setup_hmd_projection(EveryApi &ev, ML ml2, bool eye, bool is_standard, float nnear, float nfar, bool translate)
+{
+GameApi::ML ml;
+ml.id=0;
+return ml;
+}
+EXPORT GameApi::ML GameApi::BlockerApi::vr_submit_ml(EveryApi &ev, ML ml2, TXID left, TXID right, bool invert, bool translate)
+{
+GameApi::ML ml;
+ml.id=0;
+return ml;
+}
+EXPORT GameApi::ML GameApi::BlockerApi::vr_submit(EveryApi &ev, TXID left, TXID right)
+{
+GameApi::ML ml;
+ml.id=0;
+return ml;
+}
 #endif

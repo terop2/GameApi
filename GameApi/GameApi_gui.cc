@@ -9127,6 +9127,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "MT", "PTS", "float" },
 			 { "ev", "", "", "100.0" },
 			 "MT", "materials_api", "gi"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::fade,
+			 "m_fade",
+			 { "ev", "next", "start_time", "end_time", "start_time2", "end_time2" },
+			 { "EveryApi&", "MT", "float", "float", "float", "float" },
+			 { "ev", "", "0.0", "10.0", "30.0", "40.0" },
+			 "MT", "materials_api", "fade"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::combine_materials,
 			 "m_or_elem",
 			 { "ev", "mat1", "mat2" },
