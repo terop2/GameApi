@@ -352,7 +352,10 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
       
 	g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, ids[i]);
 	g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D,0,Low_GL_RGBA,bm->SizeX(),bm->SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
-	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
+	  if (mipmaps)
+	    g_low->ogl->glGenerateMipmap(Low_GL_TEXTURE_2D);
+
+	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,mipmaps?Low_GL_LINEAR_MIPMAP_LINEAR:Low_GL_LINEAR);      
 	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
 	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE); // GL_REPEAT
 	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE); // these cause power-of-two texture requirement in emscripten.
@@ -459,6 +462,7 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
   g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
   g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
   g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, bm.SizeX(),bm.SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_NEAREST);      
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_NEAREST);	
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
