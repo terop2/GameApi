@@ -122,6 +122,7 @@ enum
     Low_GL_GEOMETRY_VERTICES_OUT_EXT,
     Low_GL_NO_ERROR,
     Low_GL_GEOMETRY_OUTPUT_TYPE_EXT,
+    Low_GL_LINEAR_MIPMAP_LINEAR, // glTexParameteri 3th param
     //
     //  OLD STUFF
     // 
@@ -135,7 +136,7 @@ enum
     Low_GL_CULL_FACE,
     Low_GL_VENDOR,
     Low_GL_RENDERER,
-    Low_GL_VERSION
+    Low_GL_VERSION,
    
   };
 enum {
@@ -208,6 +209,7 @@ enum {
 #undef Mix_PlayChannel
 #undef emscripten_set_touchend_callback
 #undef emscripten_set_click_callback
+#undef glGenerateMipmap
 
 class OpenglLowApi
 {
@@ -335,7 +337,7 @@ public:
   virtual void glFinish()=0;
 
   virtual const unsigned char *glGetString( int name )=0;
-
+  virtual void glGenerateMipmap(int p)=0;
 
   // Old
   virtual void glEnableClientState(int a)=0;

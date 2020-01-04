@@ -159,6 +159,7 @@ public:
   virtual void glNewList(int i, int k) { }
   virtual int glGenLists(int) { return 0; }
   virtual void glDeleteLists(int,int) {}
+  virtual void glGenerateMipmap(int) { }
 
 };
 class FontLowApiEGL : public FontLowApi

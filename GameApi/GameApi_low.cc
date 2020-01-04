@@ -131,6 +131,7 @@
 #undef glTexStorage3D
 #undef glTexSubImage3D
 #undef glGetAttribLocation
+#undef glGenerateMipmap
 
 #undef glDepthFunc
 #undef glGenRenderbuffers
@@ -246,6 +247,7 @@ void map_enums(int &i)
 #endif
   case    Low_GL_TEXTURE_CUBE_MAP: i=GL_TEXTURE_CUBE_MAP; break;
   case    Low_GL_LINEAR: i=GL_LINEAR; break;
+  case    Low_GL_LINEAR_MIPMAP_LINEAR: i=GL_LINEAR_MIPMAP_LINEAR; break;
   case    Low_GL_TEXTURE_MIN_FILTER: i=GL_TEXTURE_MIN_FILTER; break;
   case    Low_GL_TEXTURE_MAG_FILTER: i=GL_TEXTURE_MAG_FILTER; break;
   case    Low_GL_TEXTURE_WRAP_S: i=GL_TEXTURE_WRAP_S; break;
@@ -922,6 +924,15 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
 #endif
   ::glGetUniformfv(p,loc,arr);
 }
+
+  virtual void glGenerateMipmap(int p) {
+#ifdef GLEW_HACK
+#define glGenerateMipmap GLEW_GET_FUN(__glewGenerateMipmap)
+#endif
+  map_enums(p);
+  ::glGenerateMipmap(p);
+  }
+
 
   // Old
   virtual void glEnableClientState(int a) { ::glEnableClientState(a); }
