@@ -4248,7 +4248,7 @@ public:
     if (firsttime)
       {
 	ev.polygon_api.create_vertex_array_hw(va);
-	std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev, bm, types);
+	std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev, bm, types,false);
 	va = ev.texture_api.bind_many(va, id, types);
       }
 
