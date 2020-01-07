@@ -26,12 +26,12 @@
 //#include <GL3/gl3.h>
 //#define GLEW_STATIC
 #ifndef ARM
-#ifndef LINUX
+//#ifndef LINUX
 //#ifndef RASPI
 #define USE_GLEW 1
 #include <GL/glew.h>
 //#endif
-#endif
+//#endif
 #endif
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -437,9 +437,11 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_DEPTH_SIZE, 24);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_DOUBLEBUFFER, 1);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_STENCIL_SIZE, 1);
+#ifndef LINUX
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_MULTISAMPLEBUFFERS, 1);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_MULTISAMPLESAMPLES, 32);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_FLAGS, Low_SDL_GL_CONTEXT_DEBUG_FLAG);
+#endif
 #ifndef EMSCRIPTEN
 #ifndef LINUX
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
@@ -473,7 +475,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   else
     sdl_window = g_low->sdl->SDL_CreateWindow("Program", Low_SDL_WINDOWPOS_CENTERED, Low_SDL_WINDOWPOS_CENTERED, scr_x, scr_y, Low_SDL_WINDOW_OPENGL_SHOWN);
  
-    std::cout << g_low->sdl->SDL_GetError() << std::endl;
+  std::cout << g_low->sdl->SDL_GetError() << std::endl;
 
   //std::cout << sdl_window << " " << sdl_window->ptr << std::endl;
 
