@@ -666,7 +666,11 @@ std::vector<unsigned char> load_from_url(std::string url)
 #ifdef __APPLE__
     FILE *f = popen(cmd.c_str(), "r");
 #else
+#ifdef LINUX
+    FILE *f = popen(cmd.c_str(), "r");
+#else    
     FILE *f = popen(cmd.c_str(), "rb");
+#endif
 #endif
     //std::cout<< "FILE: " << std::hex<<(long)f <<std::endl; 
     unsigned char c;

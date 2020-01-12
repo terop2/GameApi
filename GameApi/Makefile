@@ -19,7 +19,7 @@
 #
 
 
-CFiles=	GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
+CFiles=	GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
 	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc \
 	Widgets.cc Category.cc Plane.cc Coordinates.cc Triangle.cc Game.cc \
@@ -38,7 +38,7 @@ CFiles=	GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
         GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \
         GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
         GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc \
-	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc Main.cc GameApi_vr.cc GameApi_low.cc  GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc 
+	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc Main.cc GameApi_vr.cc GameApi_low.cc GameApi_qt.cc GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc 
 
 CFiles2 = 
 
