@@ -8635,6 +8635,7 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "ev", "", "", "0.0", "0.0", "0.0", "800", "600" },
 			 "BM", "polygon_api", "renderpolytobitmap"));
 
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::shading_shader,
 			 "p_shading",
 			 { "ev", "mainloop", "level1", "level2", "level3", "spec_size", "ambient", "diffuse", "specular" },
@@ -8695,6 +8696,7 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "ML", "float", "float", "float", "float" },
 			 { "ev", "", "0.02", "1.5", "17", "9" },
 			 "ML", "polygon_api", "wave_shader"));
+#endif
 			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::shader_api, &GameApi::ShaderApi::shader_choice,
 			 "shader",
@@ -10965,7 +10967,7 @@ EXPORT GameApi::W GameApi::GuiApi::colorvolumeapi_functions_list_item(FtA atlas1
 
 EXPORT GameApi::W GameApi::GuiApi::shadermoduleapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {
-  return functions_widget(*this, "MaterialsrApi", shadermoduleapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+  return functions_widget(*this, "MaterialsApi", shadermoduleapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
 EXPORT GameApi::W GameApi::GuiApi::framebuffermoduleapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {
