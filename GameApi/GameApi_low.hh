@@ -470,6 +470,8 @@ enum
 #define Low_SDL_DROPFILE 0x1000
 #define Low_SDL_WINDOWEVENT 0x200
 
+#define Low_SDL_WINDOWEVENT_EXPOSED 3
+
 #define Low_SDL_BUTTON(x) (1 << ((x)-1))
 #define Low_KMOD_CTRL (0x40|0x80)
 
