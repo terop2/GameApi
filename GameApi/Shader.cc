@@ -854,6 +854,10 @@ ShaderFile::ShaderFile()
 "  return pos2;\n"
 "}\n"
 "#endif\n"
+"vec4 fade(vec4 pos)\n"
+"{\n"
+"   return pos;\n"
+"}\n"
 "#ifdef EX_NORMAL\n"
 "#ifdef IN_NORMAL\n"
 "vec4 toon(vec4 pos)\n"
@@ -1559,6 +1563,25 @@ ShaderFile::ShaderFile()
 "{\n"
 "  return rgb;\n"
 "}\n"
+"uniform float time_begin_start;\n"
+"uniform float time_begin_end;\n"
+"uniform float time_end_start;\n"
+"uniform float time_end_end;\n"
+"vec4 fade(vec4 rgb)\n"
+"{\n"
+"   float val = 1.0;\n"
+"   if (time<time_begin_start) { val = 0.0; }\n"
+"   if (time>=time_begin_start && time<time_begin_end) {\n"
+"     val = (time-time_begin_start)/(time_begin_end-time_begin_start);\n"
+"    }\n"
+"   if (time>=time_end_start && time<time_end_end) {\n"
+"     val = (time-time_end_start)/(time_end_end-time_end_start);\n"
+"     val = 1.0-val;\n"
+"   }\n"
+"   if (time>=time_end_end) { val=0.0; }\n"
+"   rgb.a = rgb.a*val;\n"
+"   return rgb;\n"
+"}\n"
 "#ifdef EX_NORMAL\n"
 "vec4 toon(vec4 rgb)\n"
 "{\n"
@@ -2109,6 +2132,11 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 "#endif\n"
+
+"vec4 fade(vec4 pos)\n"
+"{\n"
+"   return pos;\n"
+"}\n"
 
 
 "uniform vec3 shadow_center;\n"
@@ -2775,6 +2803,25 @@ ShaderFile::ShaderFile()
 "vec4 wave(vec4 rgb)\n"
 "{\n"
 "  return rgb;\n"
+"}\n"
+"uniform float time_begin_start;\n"
+"uniform float time_begin_end;\n"
+"uniform float time_end_start;\n"
+"uniform float time_end_end;\n"
+"vec4 fade(vec4 rgb)\n"
+"{\n"
+"   float val = 1.0;\n"
+"   if (time<time_begin_start) { val = 0.0; }\n"
+"   if (time>=time_begin_start && time<time_begin_end) {\n"
+"     val = (time-time_begin_start)/(time_begin_end-time_begin_start);\n"
+"    }\n"
+"   if (time>=time_end_start && time<time_end_end) {\n"
+"     val = (time-time_end_start)/(time_end_end-time_end_start);\n"
+"     val = 1.0-val;\n"
+"   }\n"
+"   if (time>=time_end_end) { val=0.0; }\n"
+"   rgb.a = rgb.a*val;\n"
+"   return rgb;\n"
 "}\n"
 "#ifdef EX_NORMAL\n"
 "vec4 toon(vec4 rgb)\n"
@@ -3674,10 +3721,12 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 		int num = call->index(0);
 		std::string s = call->func_call();
 		out+=s;
-
+		int num2 = num + 1;
+		std::string s2 = call->func_call2(num2);
+		out+=s2;
 		//std::cout << "Fragment: " << s << std::endl;
 		std::stringstream ss3;
-		ss3 << num+1;
+		ss3 << num2;
 
 #ifdef OLD_SHADER
 		if (is_fbo)
@@ -3771,7 +3820,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod, vertex_c, v_defines, false,v_shader);
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -3788,7 +3837,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       //std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader);
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss);
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

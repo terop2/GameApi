@@ -2,7 +2,8 @@
 #define GAMEAPI_H_H
 #ifndef LINUX
 #ifndef RASPI
-#define VIRTUAL_REALITY 1
+// this is also in Main.cc
+//#define VIRTUAL_REALITY 1
 #endif
 #endif
 #define SDL2_USED  

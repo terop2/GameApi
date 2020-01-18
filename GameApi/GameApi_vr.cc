@@ -764,7 +764,6 @@ void vr_run2(Splitter *spl2)
 
 
 
-#endif
 
 class HMDRequestPresentingCallback : public Fetcher<int>
 {
@@ -842,9 +841,42 @@ GameApi::IF GameApi::FontApi::hmd_state_fetcher()
   return add_int_fetcher(e, new HMDStateIntFetcher());
 }
 #endif
+#endif
 
 #ifndef VIRTUAL_REALITY
 void check_vr_compositor_init()
 {
+}
+EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration, bool invert, bool translate)
+{
+  return game_window2(ev,ml,logo,fpscounter,start_time,duration);
+}
+EXPORT GameApi::MN GameApi::MovementNode::pose(MN next, bool pose_in_screen)
+{
+  return next;
+}
+GameApi::IF GameApi::FontApi::hmd_state_fetcher()
+{
+GameApi::IF i;
+i.id=0;
+return i;
+}
+EXPORT GameApi::ML GameApi::MainLoopApi::setup_hmd_projection(EveryApi &ev, ML ml2, bool eye, bool is_standard, float nnear, float nfar, bool translate)
+{
+GameApi::ML ml;
+ml.id=0;
+return ml;
+}
+EXPORT GameApi::ML GameApi::BlockerApi::vr_submit_ml(EveryApi &ev, ML ml2, TXID left, TXID right, bool invert, bool translate)
+{
+GameApi::ML ml;
+ml.id=0;
+return ml;
+}
+EXPORT GameApi::ML GameApi::BlockerApi::vr_submit(EveryApi &ev, TXID left, TXID right)
+{
+GameApi::ML ml;
+ml.id=0;
+return ml;
 }
 #endif

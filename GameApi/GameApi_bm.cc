@@ -4529,3 +4529,4 @@ GameApi::BM GameApi::BitmapApi::calculate_baked_light(P p, P p2, BM texture, int
   BM bm = add_bitmap(e, handle2);
   return bm;
 }
+

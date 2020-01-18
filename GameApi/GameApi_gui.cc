@@ -6740,14 +6740,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "MN", "float" },
 			 { "", "0.0" },
 			 "MN", "move_api", "rotatez"));
-#ifdef VIRTUAL_REALITY
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::pose,
 			 "mn_hmd_pose",
 			 { "next", "pose_in_screen" },
 			 { "MN", "bool" },
 			 { "", "false" },
 			 "MN", "move_api", "pose"));
-#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::state_speed_movement,
 			 "mn_statemachine",
 			 { "mn", "url", "states", "x_speeds", "y_speeds", "z_speeds" },
@@ -6766,6 +6764,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "PF" },
 			 { "" },
 			 "MN", "move_api", "mn_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::interpolate,
+			 "mn_interpolate",
+			 { "n1", "n2", "start_time", "end_time", "start_value", "end_value" },
+			 { "MN", "MN", "float", "float", "float", "float" },
+			 { "", "", "0.0", "30.0", "0.0", "1.0" },
+			 "MN", "move_api", "interpolate"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::local_move,
 			 "local_move",
 			 { "ev", "inner_ml", "center_points" },
@@ -7673,13 +7677,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "float", "int", "int", "int" },
 			 { "ev", "", "150.0", "0", "0", "45" },
 			 "ML", "mainloop_api", "looking_glass_full"));
-#ifdef VIRTUAL_REALITY
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_window,
 			 "vr_window",
 			 { "ev", "ml", "logo", "fpscounter", "start_time", "duration", "invert", "translate" },
 			 { "EveryApi&", "ML", "bool", "bool", "float", "float", "bool", "bool" },
 			 { "ev", "", "false", "false", "0.0", "100000.0", "true", "true" },
 			 "RUN", "blocker_api", "vr_window"));
+#ifdef VIRTUAL_REALITY
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_submit,
 			 "vr_submit",
 			 { "ev", "left_eye", "right_eye" },
@@ -8631,6 +8635,7 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "ev", "", "", "0.0", "0.0", "0.0", "800", "600" },
 			 "BM", "polygon_api", "renderpolytobitmap"));
 
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::shading_shader,
 			 "p_shading",
 			 { "ev", "mainloop", "level1", "level2", "level3", "spec_size", "ambient", "diffuse", "specular" },
@@ -8691,6 +8696,7 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "ML", "float", "float", "float", "float" },
 			 { "ev", "", "0.02", "1.5", "17", "9" },
 			 "ML", "polygon_api", "wave_shader"));
+#endif
 			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::shader_api, &GameApi::ShaderApi::shader_choice,
 			 "shader",
@@ -9123,6 +9129,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "MT", "PTS", "float" },
 			 { "ev", "", "", "100.0" },
 			 "MT", "materials_api", "gi"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::fade,
+			 "m_fade",
+			 { "ev", "next", "start_time", "end_time", "start_time2", "end_time2" },
+			 { "EveryApi&", "MT", "float", "float", "float", "float" },
+			 { "ev", "", "0.0", "10.0", "30.0", "40.0" },
+			 "MT", "materials_api", "fade"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::combine_materials,
 			 "m_or_elem",
 			 { "ev", "mat1", "mat2" },
@@ -10955,7 +10967,7 @@ EXPORT GameApi::W GameApi::GuiApi::colorvolumeapi_functions_list_item(FtA atlas1
 
 EXPORT GameApi::W GameApi::GuiApi::shadermoduleapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {
-  return functions_widget(*this, "MaterialsrApi", shadermoduleapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+  return functions_widget(*this, "MaterialsApi", shadermoduleapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
 EXPORT GameApi::W GameApi::GuiApi::framebuffermoduleapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {

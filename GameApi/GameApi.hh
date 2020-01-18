@@ -536,7 +536,7 @@ public:
 	Q get_tex_coord_1(TX tx, int id);
 	IMPORT TXID prepare(TX tx);
   IMPORT TXID bufferref_to_txid(TXID old, const BufferRef &buf);
-  IMPORT std::vector<TXID> prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types=std::vector<int>());
+  IMPORT std::vector<TXID> prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types=std::vector<int>(),bool mipmaps=true);
   IMPORT TXID prepare_cubemap(EveryApi &ev, BM right, BM left, BM top, BM bottom, BM back, BM front);
 	IMPORT void use(TXID tx, int i = 0);
   IMPORT void use_many(std::vector<TXID> vec, int i=0);
@@ -1314,6 +1314,8 @@ public:
   IMPORT MT sfo_sandbox(EveryApi &ev, SFO sfo, MT next);
   IMPORT MT combine_materials(EveryApi &ev, MT mat1, MT mat2);
 
+  IMPORT MT fade(EveryApi &ev, MT next, float start_time, float end_time, float start_time2, float end_time2);
+
   IMPORT ML bind(P p, MT mat);
   IMPORT ML bind_inst(P p, PTS pts, MT mat);
   IMPORT ML bind_inst_matrix(P p, MS ms, MT mat);
@@ -1479,6 +1481,7 @@ class MovementNode
 {
 public:
   MovementNode(Env &e) : e(e) {}
+  IMPORT MN interpolate(MN n1, MN n2, float start_time, float end_time, float start_value, float end_value);
   IMPORT MN empty();
   IMPORT MN level(MN next);
   IMPORT MN trans2(MN next, float dx, float dy, float dz);
@@ -2475,6 +2478,7 @@ public:
   IMPORT ML bloom1_shader(EveryApi &ev, ML mainloop, float r_val, float g_val, float b_val);
   IMPORT ML wave_shader(EveryApi &ev, ML mainloop, float radius, float t_mult, float x_mult, float y_mult);
   IMPORT ML toon_shader(EveryApi &ev, ML mainloop);  
+  IMPORT ML fade_shader(EveryApi &ev, ML mainloop, float start_time, float end_time, float start_time2, float end_time2);
   IMPORT ML texture_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML texture_many_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML texture_cubemap_shader(EveryApi &ev, ML mainloop, float mix, float mix2);
@@ -3371,6 +3375,7 @@ public:
   US v_gi(US us);
   US v_gltf(US us);
   US v_colour_with_mix(US us);
+  US v_fade(US us);
   US f_mesh_color(US us, SFO sfo); // this requires v_pass_position() in vertex shader
   US f_sandbox(US us, SFO sfo); // this requires texture coordinates
   US f_empty(bool transparent);
@@ -3402,6 +3407,8 @@ public:
   US f_gi(US us);
   US f_colour_with_mix(US us);
   US f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7);
+  US f_fade(US us);
+  US f_flip(US us, US us2);
 private:
   Env &e;
 };
