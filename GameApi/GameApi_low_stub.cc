@@ -125,7 +125,7 @@ public:
   virtual int glCheckFramebufferStatus(int id) { return 0; }
 
   virtual void glFinish() { }
-
+  virtual void glGenerateMipmap(int) { }
   // Old
   virtual void glEnableClientState(int a) { }
   virtual void glLineWidth(float i) { }

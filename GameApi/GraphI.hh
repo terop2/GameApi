@@ -822,6 +822,7 @@ class ShaderCall
 public:
   virtual int index(int base) const=0;
   virtual std::string func_call() const=0;
+  virtual std::string func_call2(int &index) const=0;
   virtual std::string define_strings() const=0;
 };
 

@@ -1601,6 +1601,74 @@ EXPORT GameApi::MN GameApi::MovementNode::change_time(MN next, float d_time)
   Movement *nxt = find_move(e, next);
   return add_move(e, new TimeChangeMovement(nxt, d_time));  
 }
+class InterpolateMatrix : public Movement
+{
+public:
+  InterpolateMatrix(Movement *n1, Movement *n2, float start_time, float end_time, float start_value, float end_value) : n1(n1), n2(n2), f(f), start_time(start_time), end_time(end_time), start_value(start_value), end_value(end_value) { }
+  virtual void event(MainLoopEvent &e) { 
+    n1->event(e);
+    n2->event(e);
+  }
+  virtual void frame(MainLoopEnv &e) { 
+    n1->frame(e);
+    n2->frame(e);
+  }
+  virtual void draw_event(FrameLoopEvent &e) { 
+    n1->draw_event(e);
+    n2->draw_event(e);
+  }
+  virtual void draw_frame(DrawLoopEnv &e) { 
+    n1->draw_frame(e);
+    n2->draw_frame(e);
+  }
+
+  virtual void set_matrix(Matrix m) { }
+  float interpolate(float v1, float v2, float mix) const {
+    return v1*(1.0-mix)+v2*mix;
+  }
+
+  virtual Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    Matrix m1 = n1->get_whole_matrix(time,delta_time);
+    Matrix m2 = n2->get_whole_matrix(time,delta_time);
+    float pos = time - start_time;
+    pos/=(end_time-start_time);
+    if (pos<0.0) pos=0.0;
+    if (pos>1.0) pos=1.0;
+    pos*=(end_value-start_value);
+    pos+=start_value;
+    float mix = pos;
+    Quarternion q1 = Quarternion::MatrixToQuar(m1);
+    Quarternion q2 = Quarternion::MatrixToQuar(m2);
+    Vector t1 = m1.get_translate();
+    Vector t2 = m2.get_translate();
+    Vector t3 = { interpolate(t1.dx,t2.dx,mix),
+		  interpolate(t1.dy,t2.dy,mix),
+		  interpolate(t1.dz,t2.dz,mix) };
+
+    Quarternion q3 = { interpolate(q1.x,q2.x,mix),
+		       interpolate(q1.y,q2.y,mix),
+		       interpolate(q1.z,q2.z,mix),
+		       interpolate(q1.w,q2.w,mix) };
+    
+    Matrix m3 = Quarternion::QuarToMatrix(q3);
+    m3.set_translate(t3);
+    return m3;
+  }
+private:
+  Movement *n1, *n2;
+  Fetcher<float> &f;
+  float start_time, end_time;
+  float start_value, end_value;
+};
+
+EXPORT GameApi::MN GameApi::MovementNode::interpolate(MN n1, MN n2, float start_time, float end_time, float start_value, float end_value)
+{
+  Movement *m1 = find_move(e,n1);
+  Movement *m2 = find_move(e,n2);
+  return add_move(e, new InterpolateMatrix(m1,m2, start_time, end_time, start_value, end_value));
+}
+
 void GameApi::MovementNode::set_matrix(MN n, M m)
 {
   Movement *nn = find_move(e, n);
@@ -3825,6 +3893,54 @@ private:
   float mix;
 };
 
+class FadeMaterial : public MaterialForward
+{
+public:
+  FadeMaterial(GameApi::EveryApi &ev, Material *next, float start_time, float end_time, float start_time2, float end_time2) : ev(ev), next(next), start_time(start_time), end_time(end_time), start_time2(start_time2), end_time2(end_time2)  { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+
+    GameApi::ML I13;
+    I13.id = next->mat(p.id);
+    I13 = ev.polygon_api.fade_shader(ev,I13, start_time, end_time, start_time2, end_time2);
+    return I13;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::ML I13;
+    I13.id = next->mat_inst(p.id,pts.id);
+    I13 = ev.polygon_api.fade_shader(ev,I13, start_time, end_time, start_time2, end_time2);
+    return I13;
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    GameApi::ML I13;
+    I13.id = next->mat_inst_matrix(p.id,ms.id);
+    I13 = ev.polygon_api.fade_shader(ev,I13, start_time, end_time, start_time2, end_time2);
+    return I13;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::ML I13;
+    I13.id = next->mat_inst2(p.id,pta.id);
+    I13 = ev.polygon_api.fade_shader(ev,I13, start_time, end_time, start_time2, end_time2);
+    return I13;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML I13;
+    I13.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
+    I13 = ev.polygon_api.fade_shader(ev,I13, start_time, end_time, start_time2, end_time2);
+    return I13;
+  }
+private:
+  GameApi::EveryApi &ev;
+  Material *next;
+  float start_time, end_time;
+  float start_time2, end_time2;
+};
+
+
 class TextureMaterial : public MaterialForward
 {
 public:
@@ -5182,6 +5298,11 @@ EXPORT GameApi::MT GameApi::MaterialsApi::texture(EveryApi &ev, BM bm, float mix
 EXPORT GameApi::MT GameApi::MaterialsApi::textureid(EveryApi &ev, TXID txid, float mix)
 {
   return add_material(e, new TextureIDMaterial(ev, txid,mix));
+}
+EXPORT GameApi::MT GameApi::MaterialsApi::fade(EveryApi &ev, MT nxt, float start_time, float end_time, float start_time2, float end_time2)
+{
+  Material *next = find_material(e, nxt);
+  return add_material(e, new FadeMaterial(ev, next, start_time, end_time, start_time2, end_time2));
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::texture_many(EveryApi &ev, std::vector<BM> vec, float mix)
 {
@@ -8061,6 +8182,9 @@ public:
     out+=");\n";
     return out;
   }
+  std::string func_call2(int &index) const {
+    return "";
+  }
   std::string define_strings() const { 
     std::string s1 = defines;
     std::string s2 = next->define_strings();
@@ -8100,6 +8224,53 @@ public:
     out+=");\n";
     return out;
   }
+  std::string func_call2(int &index) const {
+    return next->func_call2(index);
+  }
+  std::string define_strings() const { 
+    std::string s1 = defines;
+    std::string s2 = next->define_strings();
+    std::string m = (s1=="" ||s2=="") ? "" : " ";
+    return s1 + m + s2; 
+  }
+private:
+  std::string funcname;
+  ShaderCall *next;
+  mutable int id;
+  std::string defines;
+};
+class F_ShaderCallFunctionFlip : public ShaderCall
+{
+public:
+  F_ShaderCallFunctionFlip(std::string funcname, ShaderCall *next, std::string defines) : funcname(funcname), next(next),defines(defines) { }
+  int index(int base) const {
+    id = next->index(base);
+    return id;
+  }
+  std::string func_call() const
+  {
+    std::string out;
+    out+=next->func_call();
+    return out;
+  }
+  std::string func_call2(int &index) const {
+    std::string out;
+    out+=next->func_call2(index);
+    std::stringstream ss;
+    int i = index;
+    ss << i+1;
+    std::stringstream ss2;
+    ss2 << i;
+    out+="vec4 rgb";
+    out+=ss.str();
+    out+=" = ";
+    out+=funcname;
+    out+="(rgb";
+    out+=ss2.str();
+    out+=");\n";
+    index++;
+    return out;
+  }
   std::string define_strings() const { 
     std::string s1 = defines;
     std::string s2 = next->define_strings();
@@ -8117,6 +8288,7 @@ class EmptyV : public ShaderCall
 public:
   EmptyV() : id(-1) { }
   int index(int base) const { id = base; return base; }
+  std::string func_call2(int &index) const { return ""; }
   std::string func_call() const
   {
     std::string out;
@@ -8136,6 +8308,7 @@ class EmptyF : public ShaderCall
 public:
   EmptyF(bool transparent) : transparent(transparent) { id = -1; }
   int index(int base) const { id = base; return base; }
+  std::string func_call2(int &index) const { return ""; }
   std::string func_call() const
   {
     std::string out;
@@ -8200,6 +8373,11 @@ GameApi::US GameApi::UberShaderApi::v_gltf(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("gltf", next,"GLTF IN_COLOR EX_COLOR IN_TEXCOORD EX_TEXCOORD IN_NORMAL EX_NORMAL IN_POSITION EX_POSITION"));
+}
+GameApi::US GameApi::UberShaderApi::v_fade(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("fade", next,""));
 }
 GameApi::US GameApi::UberShaderApi::v_colour_with_mix(US us)
 {
@@ -8327,6 +8505,7 @@ public:
     id = next->index(base)+1;
     return id;
   }
+  std::string func_call2(int &index) const { return ""; }
   std::string func_call() const
   {
     std::string out;
@@ -8363,6 +8542,7 @@ public:
     id = next->index(base)+1;
     return id;
   }
+  std::string func_call2(int &index) const { return ""; }
   std::string func_call() const
   {
     std::string out;
@@ -8405,6 +8585,7 @@ public:
     id = next->index(base)+1;
     return id;
   }
+  std::string func_call2(int &index) const { return ""; }
   std::string func_call() const
   {
     std::string out;
@@ -8484,6 +8665,14 @@ GameApi::US GameApi::UberShaderApi::f_gi(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("gi", next,"EX_POSITION"));
+}
+GameApi::US GameApi::UberShaderApi::f_fade(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunctionFlip("fade", next,""));
+}
+GameApi::US GameApi::UberShaderApi::f_flip(US us, US us2)
+{
 }
 GameApi::US GameApi::UberShaderApi::f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7)
 {
