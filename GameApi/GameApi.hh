@@ -601,6 +601,8 @@ public:
 	IMPORT BM loadtilebitmap(std::string filename, int tile_sx, int tile_sy);
 	IMPORT BM loadposbitmap(std::string filename);
 	IMPORT BM findtile(BM tile_bitmap, int x, int y);
+  IMPORT BM compose_x(BM bm1, BM bm2);
+  IMPORT BM compose_y(BM bm1, BM bm2);
   IMPORT BM border(BM, int left ,int right ,int top ,int bottom);
   IMPORT BM add_shape_border(EveryApi &ev, BM bm, float dist_field_size, float start_range, float end_range, int r, int g, int b, int a, int border_size);
 	BM subbitmap(BM orig, int x, int y, int width, int height);
@@ -772,6 +774,7 @@ public:
   IMPORT SD draw_text_string_sd(std::vector<GI> glyphs, std::string str, int gap_x, int empty_line_height);
   IMPORT BM string_display_to_bitmap(SD sd, int def);
   IMPORT BM draw_text_string(FI font, std::string str, int x_gap, int empty_line_height);
+  IMPORT BM draw_text_large(EveryApi &ev, FI font, std::string url, int x_gap, int empty_line_height, int baseline_separation);
   IMPORT ML dynamic_character2(EveryApi &ev, std::vector<GI> vec, std::string alternatives, IF fetcher, int x, int y);
   IMPORT IF timed_int_fetcher(EveryApi &ev, int start, int end, float start_time, float end_time);
   IMPORT IF movement_int_fetcher(int count, float x_mult, float y_mult, float z_mult);

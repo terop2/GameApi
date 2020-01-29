@@ -5003,7 +5003,8 @@ ASyncData async_data[] = {
   { "mainloop_api", "gltf_mesh_all", 2 },
   { "mainloop_api", "gltf_node", 2 },
   { "mainloop_api", "gltf_scene", 2 },
-  { "mainloop_api", "matrix_range_check", 3 }
+  { "mainloop_api", "matrix_range_check", 3 },
+  { "font_api", "draw_text_large", 2 }
 };
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
@@ -6516,6 +6517,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "FI", "std::string", "int", "int" },
 			 { "", "Hello", "5", "30" },
 			 "BM", "font_api", "draw_text_string"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::draw_text_large,
+			 "FI_largetext",
+			 { "ev", "font", "texturl", "x_gap", "line_height", "baseline_separation" },
+			 { "EveryApi&", "FI", "std::string", "int", "int", "int" },
+			 { "ev", "", "http://tpgames.org/text_test.txt", "5", "30", "-1" },
+			 "BM", "font_api", "draw_text_large"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::save_font_dump,
 			 "FI_save_dump",
 			 { "font", "chars", "filename" },
@@ -10281,6 +10288,18 @@ std::vector<GameApiItem*> bitmapapi_functions()
   //			 { "BM", "int", "int", "int", "int" },
   //			 { "", "2", "2", "2", "2" },
   //			 "BM", "bitmap_api", "growbitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::compose_x,
+			 "compose_x",
+			 { "bm1", "bm2" },
+			 { "BM", "BM" },
+			 { "", "" },
+			 "BM", "bitmap_api", "compose_x"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::compose_y,
+			 "compose_y",
+			 { "bm1", "bm2" },
+			 { "BM", "BM" },
+			 { "", "" },
+			 "BM", "bitmap_api", "compose_y"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, (GameApi::BM (GameApi::BitmapApi::*)(GameApi::BM,GameApi::BM,int,int))&GameApi::BitmapApi::blitbitmap,
 			 "blit",
 			 { "bg", "orig", "x", "y" },

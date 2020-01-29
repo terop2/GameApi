@@ -1044,6 +1044,7 @@ public:
   virtual int Top(long idx) const=0;
   virtual int SizeX(long idx) const=0;
   virtual int SizeY(long idx) const=0;
+  virtual int AdvanceX(long idx) const=0;
   virtual int Map(long idx, int x, int y) const=0;
 };
 
@@ -1054,6 +1055,7 @@ public:
   virtual int Top() const=0; // needs to be fast
   virtual int SizeX() const=0;
   virtual int SizeY() const=0; // needs to be fast
+  virtual int AdvanceX() const=0;
   virtual int Map(int x, int y) const=0;
 };
 

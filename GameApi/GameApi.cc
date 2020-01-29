@@ -12010,6 +12010,7 @@ public:
   virtual int Top() const { return fi.Top(idx); }
   virtual int SizeX() const { return fi.SizeX(idx); }
   virtual int SizeY() const { return fi.SizeY(idx); }
+  virtual int AdvanceX() const { return fi.AdvanceX(idx); }
   virtual int Map(int x, int y) const
   {
     return fi.Map(idx,x,y);
@@ -12044,7 +12045,7 @@ public:
       {
 	if (i==c) { return x; }
 	GlyphInterface *gi = vec[i];
-	x+=gi->SizeX();
+	x+=gi->AdvanceX();
 	x+=x_gap;
 	if (str[i]=='\n') x=0;
       }
@@ -12172,6 +12173,154 @@ GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_g
   return bm;
 }
 
+class LargeTextBitmap : public Bitmap<Color>
+{
+public:
+  LargeTextBitmap(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::FI font, std::string url, std::string homepage, int x_gap, int empty_line_height, int baseline_separation) : env(env), ev(ev), font(font), url(url), homepage(homepage), x_gap(x_gap), empty_line_height(empty_line_height), baseline_separation(baseline_separation) { }
+  void Prepare() {
+#ifndef EMSCRIPTEN
+      env.async_load_url(url, homepage);
+#endif
+      std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+      if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+      std::string s(vec->begin(), vec->end());
+
+      std::stringstream ss(s);
+      std::string line;
+      bms = std::vector<GameApi::BM>();
+      while(std::getline(ss,line)) {
+	line = line.substr(0,line.size()-1);
+	GameApi::BM bm = ev.font_api.draw_text_string(font, line, x_gap, empty_line_height);
+	if (baseline_separation<1) baseline_separation=ev.bitmap_api.size_y(bm);
+	bms.push_back(bm);
+      }
+  }
+  int SizeX() const {
+    int s=bms.size();
+    int size = 0;
+    for(int i=0;i<s;i++) {
+      GameApi::BM bm = bms[i];
+      size = std::max(size,ev.bitmap_api.size_x(bm));
+    }
+    return size;
+  }
+  int SizeY() const {
+    if (bms.size()<1) return 0;
+    GameApi::BM bm = bms[0];
+    int size = ev.bitmap_api.size_y(bm);
+    return size + (bms.size()-1)*baseline_separation;
+  }
+  Color Map(int x, int y) const {
+    int s=bms.size();
+    for(int i=0;i<s;i++) {
+      int start_y = i*baseline_separation;
+      int end_y = i*baseline_separation+ev.bitmap_api.size_y(bms[i]);
+      if (x>=0 && x<ev.bitmap_api.size_x(bms[i]) && y>=start_y && y<end_y) {
+	unsigned int c = ev.bitmap_api.colorvalue(bms[i],x,y-start_y); 
+	if (c&0xff000000 == 0x0) { continue; }
+	return c;
+      }
+    }
+    return 0x0;
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::FI font;
+  std::string url, homepage;
+  int x_gap;
+  int empty_line_height;
+  int baseline_separation;
+  std::vector<GameApi::BM> bms;
+};
+GameApi::BM GameApi::FontApi::draw_text_large(EveryApi &ev, FI font, std::string url, int x_gap, int empty_line_height, int baseline_separation)
+{
+  Bitmap<Color> *bm = new LargeTextBitmap(e, ev, font, url, gameapi_homepageurl, x_gap, empty_line_height, baseline_separation);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = bm;
+  return add_bitmap(e, handle2);
+}
+
+class ComposeXBitmap : public Bitmap<Color>
+{
+public:
+  ComposeXBitmap(Bitmap<Color> &bm, Bitmap<Color> &bm2) : bm(bm), bm2(bm2) { }
+  virtual int SizeX() const { return bm.SizeX()+bm2.SizeX(); }
+  virtual int SizeY() const { return std::max(bm.SizeY(),bm2.SizeY()); }
+  virtual Color Map(int x, int y) const
+  {
+    if (x>=0 && x<bm.SizeX())
+      if (y>=0 && y<bm.SizeY())
+	return bm.Map(x,y);
+    if (x>=bm.SizeX() && x<bm.SizeX()+bm2.SizeX())
+      if (y>=0 && y<bm2.SizeY())
+	return bm2.Map(x-bm.SizeX(),y);
+    return 0x0;
+  }
+  virtual void Prepare()
+  {
+    bm.Prepare();
+    bm2.Prepare();
+  }
+
+private:
+  Bitmap<Color> &bm;
+  Bitmap<Color> &bm2;
+};
+
+class ComposeYBitmap : public Bitmap<Color>
+{
+public:
+  ComposeYBitmap(Bitmap<Color> &bm, Bitmap<Color> &bm2) : bm(bm), bm2(bm2) { }
+  virtual int SizeX() const { return std::max(bm.SizeX(),bm2.SizeX()); }
+  virtual int SizeY() const { return bm.SizeY()+bm2.SizeY(); }
+  virtual Color Map(int x, int y) const
+  {
+    if (x>=0 && x<bm.SizeX())
+      if (y>=0 && y<bm.SizeY())
+	return bm.Map(x,y);
+    if (x>=0 && x<bm2.SizeX())
+    if (y>=bm.SizeY() && y<bm.SizeY()+bm2.SizeY())
+      return bm2.Map(x,y-bm.SizeY());
+    return 0x0;
+  }
+  virtual void Prepare()
+  {
+    bm.Prepare();
+    bm2.Prepare();
+  }
+
+private:
+  Bitmap<Color> &bm;
+  Bitmap<Color> &bm2;
+};
+
+GameApi::BM GameApi::BitmapApi::compose_x(BM bm1, BM bm2)
+{
+  BitmapHandle *b1 = find_bitmap(e, bm1);
+  ::Bitmap<Color> *bbm1 = find_color_bitmap(b1);
+  BitmapHandle *b2 = find_bitmap(e, bm2);
+  ::Bitmap<Color> *bbm2 = find_color_bitmap(b2);
+
+  Bitmap<Color> *bm = new ComposeXBitmap(*bbm1,*bbm2);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = bm;
+  return add_bitmap(e, handle2);
+  
+}
+GameApi::BM GameApi::BitmapApi::compose_y(BM bm1, BM bm2)
+{
+  BitmapHandle *b1 = find_bitmap(e, bm1);
+  ::Bitmap<Color> *bbm1 = find_color_bitmap(b1);
+  BitmapHandle *b2 = find_bitmap(e, bm2);
+  ::Bitmap<Color> *bbm2 = find_color_bitmap(b2);
+
+  Bitmap<Color> *bm = new ComposeYBitmap(*bbm1,*bbm2);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = bm;
+  return add_bitmap(e, handle2);
+
+}
 
 GameApi::FI GameApi::FontApi::load_font(std::string ttf_filename, int sx, int sy)
 {
@@ -19697,7 +19846,8 @@ public:
 	  int top = font->Top(idx);
 	  int sx = font->SizeX(idx);
 	  int sy = font->SizeY(idx);
-	  ss << idx << " " << top << " " << sx << " " << sy << std::endl;
+	  int advance_x = font->AdvanceX(idx);
+	  ss << idx << " " << top << " " << sx << " " << sy << " " << advance_x << std::endl;
 	  for(int y=0;y<sy;y++)
 	    for(int x=0;x<sx;x++)
 	      {
@@ -19744,11 +19894,12 @@ public:
       int top = -1;
       int sx = -1;
       int sy = -1;
+      int advance_x=-1;
       ss >> count;
       //std::cout << "Loading font: ";
       for(int i=0;i<count;i++)
 	{
-	  ss >> idx >> top >> sx >> sy;
+	  ss >> idx >> top >> sx >> sy >> advance_x;
 	  //std::cout << idx;
 	  int *ptr = new int[sx*sy];
 	  for(int y=0;y<sy;y++) {
@@ -19763,6 +19914,7 @@ public:
 	  m_sx.push_back(sx);
 	  m_sy.push_back(sy);
 	  m_data.push_back(ptr);
+	  m_advance_x.push_back(advance_x);
 	}
       //std::cout << std::endl;
     }
@@ -19787,6 +19939,14 @@ public:
     int index = find_index(idx);
     if (index!=-1) {
       return m_sy[index];
+    }
+    return 0;
+  }
+  virtual int AdvanceX(long idx) const 
+  {
+    int index = find_index(idx);
+    if (index!=-1) {
+      return m_advance_x[index];
     }
     return 0;
   }
@@ -19820,6 +19980,7 @@ private:
   std::vector<int> m_sx;
   std::vector<int> m_sy;
   std::vector<int*> m_data;
+  std::vector<int> m_advance_x;
   bool firsttime;
 };
 
