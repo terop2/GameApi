@@ -12,7 +12,7 @@ public:
   virtual int SizeX(long idx) const;
   virtual int SizeY(long idx) const;
   virtual int Map(long idx, int x, int y) const;
-
+  virtual int AdvanceX(long idx) const;
   void gen_glyph_data(long idx);
 private:
   GameApi::Env &e;

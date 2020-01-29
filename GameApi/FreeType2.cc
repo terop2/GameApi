@@ -13,6 +13,7 @@ struct GlyphData
 {
   int top;
   int sx,sy;
+  int advance_x;
   int *bitmap_data=0;
 
   FT_Library *lib=0;
@@ -48,6 +49,10 @@ int FontInterfaceImpl::SizeX(long idx) const {
 int FontInterfaceImpl::SizeY(long idx) const {
   const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
   return global_glyph_data[key]->operator[](idx)->sy;
+}
+int FontInterfaceImpl::AdvanceX(long idx) const {
+  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
+  return global_glyph_data[key]->operator[](idx)->advance_x;
 }
 int FontInterfaceImpl::Map(long idx, int x, int y) const
 {
@@ -175,6 +180,8 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   data->top = -data->face->glyph->bitmap_top;
   data->sx = data->face->glyph->bitmap.width;
   data->sy = data->face->glyph->bitmap.rows;
+  data->advance_x = data->face->glyph->advance.x >> 6;
+  //std::cout << "Glyph:" << idx << " " << data->sx << " " << data->sy << " " << data->top << std::endl;
   data->bitmap_data = new int[data->sx*data->sy];
   for(int iy=0;iy<data->sy;iy++)
     for(int ix=0;ix<data->sx;ix++)

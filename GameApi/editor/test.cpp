@@ -1739,7 +1739,7 @@ int main(int argc, char *argv[]) {
   WM mod = ev.mod_api.load(filename);
 
   // initialize window
-  ev.mainloop_api.init_window(screen_x,screen_y,"GameApi Builder");
+  ev.mainloop_api.init_window(screen_x,screen_y,"GameApi Builder -- meshpage.org");
 
   int font_scale = 2;
 
