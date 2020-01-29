@@ -1005,10 +1005,17 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
       g_event_screen_y = event.window.data2;
       if (g_event_screen_x<320) g_event_screen_x = 320;
       if (g_event_screen_y<200) g_event_screen_y = 200;
-      g_low->sdl->SDL_SetWindowSize(sdl_window,g_event_screen_x, g_event_screen_y);
-      g_low->ogl->glViewport(0,0,g_event_screen_x, g_event_screen_y);
+#ifndef LINUX
+           g_low->sdl->SDL_SetWindowSize(sdl_window,g_event_screen_x, g_event_screen_y);
+#endif
+           g_low->ogl->glViewport(0,0,g_event_screen_x, g_event_screen_y);
     }
   }
+  //if (event.type == Low_SDL_WINDOWEVENT
+  //    && event.window.event == Low_SDL_WINDOWEVENT_EXPOSED)
+  //{
+  //  swapbuffers();
+  //}
 #endif
   
   if (event.type==Low_SDL_MOUSEWHEEL)
