@@ -32,8 +32,11 @@
 #include "VertexArray.hh"
 #include "GameApi_low.hh"
 
+#ifndef ARM
+#ifndef NO_THREADS
 #define THREADS 1
-
+#endif
+#endif
 void RenderVoxel(VolumeObject &orv, int size, float wholesize, HandleValue<std::pair<Vector, unsigned int> > &hv)
 {
   float step = wholesize/size;
