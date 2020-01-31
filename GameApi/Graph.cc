@@ -1036,7 +1036,7 @@ public:
       vec.push_back(info);
       pthread_attr_t attr;
       pthread_attr_init(&attr);
-      pthread_attr_setstacksize(&attr, 3000);
+      pthread_attr_setstacksize(&attr, 300000);
       pthread_create(&info->thread_id, &attr, &thread_func_sprite, (void*)info);
       pthread_attr_destroy(&attr);
     }
