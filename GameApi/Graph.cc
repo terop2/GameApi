@@ -32,6 +32,8 @@
 #include "VertexArray.hh"
 #include "GameApi_low.hh"
 
+#define THREADS 1
+
 void RenderVoxel(VolumeObject &orv, int size, float wholesize, HandleValue<std::pair<Vector, unsigned int> > &hv)
 {
   float step = wholesize/size;
@@ -971,6 +973,29 @@ bool GridEffect2::Frame(float time)
   return false;
 }
  
+struct ThreadInfo_sprite
+{
+  pthread_t thread_id;
+  const Sprite *s;
+  BufferRef *ref;
+  int start_y;
+  int end_y;
+  int sx;
+  int num;
+};
+
+
+void *thread_func_sprite(void *data)
+{
+  ThreadInfo_sprite *ti = (ThreadInfo_sprite*)data;
+  for(int y=ti->start_y;y<ti->end_y;y++)
+    for(int x=0;x<ti->sx;x++)
+	{
+	  ti->ref[ti->num].buffer[x+y*ti->ref[ti->num].ydelta] = ti->s->Pixel(ti->num, x, y).Pixel();
+	}
+  return 0;
+}
+
 class SpriteTexture : public MeshTextures
 {
 public:
@@ -997,12 +1022,38 @@ public:
     int sx = s.XSize(num);
     int sy = s.YSize(num);
     ref[num] = BufferRef::NewBuffer(sx, sy);
+#ifdef THREADS
+    int numthreads = 4;
+    std::vector<ThreadInfo_sprite*> vec;
+    for(int t=0;t<numthreads;t++) {
+      ThreadInfo_sprite *info = new ThreadInfo_sprite;
+      info->s = &s;
+      info->ref = ref;
+      info->start_y = sy*t/numthreads;
+      info->end_y = sy*(t+1)/numthreads;
+      info->sx = sx;
+      info->num = num;
+      vec.push_back(info);
+      pthread_attr_t attr;
+      pthread_attr_init(&attr);
+      pthread_attr_setstacksize(&attr, 3000);
+      pthread_create(&info->thread_id, &attr, &thread_func_sprite, (void*)info);
+      pthread_attr_destroy(&attr);
+    }
+    for(int t=0;t<numthreads;t++) {
+      ThreadInfo_sprite *info = vec[t];
+      void *res;
+      pthread_join(info->thread_id, &res);
+      delete info;
+    }
 
-    for(int y=0;y<sy;y++)
-      for(int x=0;x<sx;x++)
+#else
+  for(int y=0;y<sy;y++)
+    for(int x=0;x<sx;x++)
 	{
 	  ref[num].buffer[x+y*ref[num].ydelta] = s.Pixel(num, x, y).Pixel();
 	}
+#endif
   }
   BufferRef TextureBuf(int num) const 
   {

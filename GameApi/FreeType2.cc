@@ -96,7 +96,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   //std::cout << "try gen_glyph_data:" << idx << std::endl;
   //std::string key = glyph_key(ttf_filename,sx,sy);
 #ifndef EMSCRIPTEN
-  pthread_mutex_lock(&mutex);
+  //pthread_mutex_lock(&mutex);
 #endif
   std::map<long, GlyphData*> *mymap = data2;
   if (!mymap) { mymap = global_glyph_data[key]; }
@@ -108,7 +108,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   GlyphData *data = mymap?mymap->operator[](idx):0; //glyph_data[idx];
   if (data) { 
 #ifndef EMSCRIPTEN
-    pthread_mutex_unlock(&mutex);
+    //pthread_mutex_unlock(&mutex);
 #endif
     return; }
   //std::cout << "gen_glyph_data:" << idx << std::endl;
@@ -136,7 +136,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   if (!ptr) {
     std::cout << "async not ready yet, failing..." << std::endl;
 #ifndef EMSCRIPTEN
-    pthread_mutex_unlock(&mutex);
+    //pthread_mutex_unlock(&mutex);
 #endif
     exit(0);
   } else {
@@ -174,7 +174,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
     //std::cout << ptr2 << std::endl;
     std::cout << "Remember to recompile the code after changing envimpl size" << std::endl;
 #ifndef EMSCRIPTEN
-    pthread_mutex_unlock(&mutex);
+    //pthread_mutex_unlock(&mutex);
 #endif
     //TODO exit(0);
     }
@@ -196,7 +196,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
 	data->bitmap_data[ix+iy*data->sx] = (int)data->face->glyph->bitmap.buffer[ix+iy*data->face->glyph->bitmap.pitch];
       }
 #ifndef EMSCRIPTEN
-    pthread_mutex_unlock(&mutex);
+  //pthread_mutex_unlock(&mutex);
 #endif
 
 }
