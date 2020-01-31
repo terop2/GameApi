@@ -1025,12 +1025,16 @@ public:
 #ifdef THREADS
     int numthreads = 4;
     std::vector<ThreadInfo_sprite*> vec;
+    int dsy = sy/numthreads + 1;
     for(int t=0;t<numthreads;t++) {
       ThreadInfo_sprite *info = new ThreadInfo_sprite;
       info->s = &s;
       info->ref = ref;
-      info->start_y = sy*t/numthreads;
-      info->end_y = sy*(t+1)/numthreads;
+      info->start_y = t*dsy;
+      info->end_y = (t+1)*dsy;
+      if (info->start_y>sy) { info->start_y=sy; }
+      if (info->end_y>sy) { info->end_y = sy; }
+      if (info->end_y-info->start_y<1) { delete info; continue; }
       info->sx = sx;
       info->num = num;
       vec.push_back(info);
@@ -1040,7 +1044,8 @@ public:
       pthread_create(&info->thread_id, &attr, &thread_func_sprite, (void*)info);
       pthread_attr_destroy(&attr);
     }
-    for(int t=0;t<numthreads;t++) {
+    int s = vec.size();
+    for(int t=0;t<s;t++) {
       ThreadInfo_sprite *info = vec[t];
       void *res;
       pthread_join(info->thread_id, &res);
