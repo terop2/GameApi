@@ -40,19 +40,23 @@ std::map<std::string,std::map<long,GlyphData*>*> global_glyph_data;
 
 int FontInterfaceImpl::Top(long idx) const {
   const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
-  return global_glyph_data[key]->operator[](idx)->top;
+  if (!data2) data2=global_glyph_data[key];
+  return data2->operator[](idx)->top;
 }
 int FontInterfaceImpl::SizeX(long idx) const {
   const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
-  return global_glyph_data[key]->operator[](idx)->sx;
+  if (!data2) data2=global_glyph_data[key];
+  return data2->operator[](idx)->sx;
 }
 int FontInterfaceImpl::SizeY(long idx) const {
   const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
-  return global_glyph_data[key]->operator[](idx)->sy;
+  if (!data2) data2=global_glyph_data[key];
+  return data2->operator[](idx)->sy;
 }
 int FontInterfaceImpl::AdvanceX(long idx) const {
   const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
-  return global_glyph_data[key]->operator[](idx)->advance_x;
+  if (!data2) data2=global_glyph_data[key];
+  return data2->operator[](idx)->advance_x;
 }
 int FontInterfaceImpl::Map(long idx, int x, int y) const
 {
@@ -60,7 +64,8 @@ int FontInterfaceImpl::Map(long idx, int x, int y) const
     return 0;
   const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
   int ssx = SizeX(idx);
-  return global_glyph_data[key]->operator[](idx)->bitmap_data[x+y*ssx];
+  if (!data2) data2=global_glyph_data[key];
+  return data2->operator[](idx)->bitmap_data[x+y*ssx];
 }
 
 struct K { std::string filename; unsigned char *buffer; int size; };
@@ -93,10 +98,12 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
 #ifndef EMSCRIPTEN
   pthread_mutex_lock(&mutex);
 #endif
-  std::map<long, GlyphData*> *mymap = global_glyph_data[key];
+  std::map<long, GlyphData*> *mymap = data2;
+  if (!mymap) { mymap = global_glyph_data[key]; }
   if (!mymap) {
     global_glyph_data[key] = new std::map<long,GlyphData*>();
     mymap = global_glyph_data[key];
+    data2 = mymap;
   }
   GlyphData *data = mymap?mymap->operator[](idx):0; //glyph_data[idx];
   if (data) { 

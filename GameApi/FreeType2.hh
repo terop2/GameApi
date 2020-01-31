@@ -26,4 +26,5 @@ private:
   long old_idx;
   mutable pthread_mutex_t mutex;
   std::string key;
+  mutable std::map<long, GlyphData*> *data2=0;
 };
