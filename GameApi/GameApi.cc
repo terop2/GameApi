@@ -20875,7 +20875,7 @@ class ActivateMainLoopItem : public MainLoopItem
 {
 public:
   ActivateMainLoopItem(MainLoopItem *next, int time, MainLoopItem *def) : next(next),time(time),def(def) { }
-  virtual void Prepare() { }
+  virtual void Prepare() { def->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     if (is_activated) {
@@ -20891,7 +20891,7 @@ public:
   virtual void handle_event(MainLoopEvent &e)
   {
     if (e.ch=='*' && e.type==0x777 && !is_activated && !is_finished) {
-      std::cout << "Activated!" << std::endl;
+      //std::cout << "Activated!" << std::endl;
       is_activated=true;
     }
     if (is_finished) {
@@ -20918,7 +20918,7 @@ public:
   SlowActivateArray(std::vector<MainLoopItem*> vec) : vec(vec) { 
     no_draw_count++;
     no_draw=true;
-    InstallProgress(vec.size(), "progress", 15);
+    //InstallProgress(vec.size(), "progress", 15);
   }
   virtual void Prepare() {
     int s = vec.size();
@@ -20951,7 +20951,7 @@ public:
 	  vec[j]->handle_event(ev);
       }
     done_num = activated_num;
-    ProgressBar(vec.size(), int(float(done_num)/vec.size()*15), 15, "progress");
+    //ProgressBar(vec.size(), int(float(done_num)/vec.size()*15), 15, "progress");
   }
 private:
   std::vector<MainLoopItem*> vec;

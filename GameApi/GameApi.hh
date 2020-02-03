@@ -10,6 +10,10 @@
 #include <map>
 #include <iostream>
 
+int add_block();
+void set_current_block(int id);
+int get_current_block();
+void clear_block(int id);
 
 
 class BufferRef;

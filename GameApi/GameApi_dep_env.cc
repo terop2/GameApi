@@ -31,6 +31,7 @@ EnvImpl::EnvImpl() : event_infos(new EmptySequencer2), mutex(PTHREAD_MUTEX_INITI
 
 EnvImpl::~EnvImpl()
 {
+#if 0
   int tt4a = phys.size();
   for(int ui4=0;ui4<tt4a;ui4++)
     {
@@ -228,6 +229,7 @@ EnvImpl::~EnvImpl()
       MatrixInterface *i = matrix[i6];
       delete i;
     }
+#endif
 #endif
 }
 

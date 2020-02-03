@@ -845,8 +845,14 @@ void iter(void *arg)
 		//std::cout << "Execute for uid: " << uid << std::endl;
 		env->env->free_temp_memory();
 		    // Execute
+
+		static int g_id = -1;
+		if (g_id!=-1) clear_block(g_id);
+		g_id = add_block();
+		set_current_block(g_id);
 		    GameApi::ExecuteEnv exeenv;
 		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000);
+		    set_current_block(-1);
 		    if (id==-1) {
 		      std::cout << "Execute failed!" << std::endl;
 		      break;
