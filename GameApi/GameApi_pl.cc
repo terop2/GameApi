@@ -553,8 +553,11 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all(std::string filename, int 
   std::vector<P> vec;
   for(int i=0;i<s;i++)
     {
+      int c = get_current_block();
+      set_current_block(-1);
       GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(vec2, i, std::vector<std::string>()), 1);
       GameApi::P cache = file_cache(model, filename,i);
+      set_current_block(c);
       vec.push_back(cache);
     }
   GameApi::P obj = or_array2(vec);
@@ -1053,39 +1056,52 @@ private:
 extern std::string gameapi_homepageurl;
 EXPORT GameApi::P GameApi::PolygonApi::p_url(EveryApi &ev, std::string url, int count)
 {
+  int c = get_current_block();
+  set_current_block(-1);
   P p = empty();
   FaceCollection *emp = find_facecoll(e, p);
   GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollection(e,ev, emp, url, gameapi_homepageurl, count),1); 
   FaceCollection *coll = find_facecoll(e,p1);
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll),1);
+  set_current_block(c);
   return p2;
 }
 EXPORT GameApi::P GameApi::PolygonApi::p_url_mtl(EveryApi &ev, std::string url, int count, std::vector<std::string> material_names)
 {
+  int c = get_current_block();
+  set_current_block(-1);
   P p = empty();
   FaceCollection *emp = find_facecoll(e, p);
   GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL(e,ev, emp, url, gameapi_homepageurl, count,material_names),1); 
   FaceCollection *coll = find_facecoll(e,p1);
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll),1);
+  set_current_block(c);
   return p2;
 }
 EXPORT GameApi::P GameApi::PolygonApi::p_mtl(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count)
 {
+  int c = get_current_block();
+  set_current_block(-1);
   P p = empty();
   FaceCollection *emp = find_facecoll(e, p);
   GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL2(e,ev, emp, obj_url, gameapi_homepageurl, count,mtl_url,prefix),1); 
   FaceCollection *coll = find_facecoll(e,p1);
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,obj_url,coll),1);
+  set_current_block(c);
   return p2;
 }
 
 EXPORT GameApi::P GameApi::PolygonApi::p_ds_url(EveryApi &ev, std::string url)
 {
+  int c = get_current_block();
+  set_current_block(-1);
   P p = empty();
   FaceCollection *emp = find_facecoll(e,p);
   GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionDS(e,ev,emp,url,gameapi_homepageurl),1);
   FaceCollection *coll = find_facecoll(e,p1);
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll),1);
+  set_current_block(c);
+
   return p2;
 }
 
@@ -1096,9 +1112,13 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
   char c;
   while(data.get(c)) vec2.push_back(c);
 
+  int c2 = get_current_block();
+  set_current_block(-1);
+
   GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(vec2, num, std::vector<std::string>()), 1);
   GameApi::P cache = file_cache(model, filename,num);
   GameApi::P resize = resize_to_correct_size(cache);
+  set_current_block(c2);
   return resize;
 } 
 class SaveModel : public MainLoopItem
@@ -3379,9 +3399,13 @@ EXPORT void GameApi::PolygonApi::delete_vertex_array(GameApi::VA va)
 void ProgressBar(int num, int val, int max, std::string label);
 
 #ifdef THREADS
-extern ThreadInfo *ti_global;
+extern ThreadInfo volatile *ti_global;
 #endif
-extern int thread_counter;
+extern volatile int thread_counter;
+
+extern volatile bool g_lock1;
+extern volatile bool g_lock2;
+extern volatile bool g_lock3;
 
 EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P p, bool keep)
 {
@@ -3453,8 +3477,11 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
   pthread_mutex_t *mutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
   pthread_mutex_t *mutex3 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
   thread_counter = 0;
-  pthread_mutex_lock(mutex3); // LOCK mutex3
-  pthread_mutex_lock(mutex2);
+  g_lock1 = false;
+  g_lock3 = true;
+  g_lock2 = true;
+  //pthread_mutex_lock(mutex3); // LOCK mutex3
+  //pthread_mutex_lock(mutex2);
   for(int i=0;i<num_threads;i++)
     {  
       int start_range = i*delta_s; 
@@ -3466,16 +3493,26 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
   int progress = 0;
   InstallProgress(0,"pthread");
   while(1) {
-    pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
+    //std::cout << "lock3 wait" << std::endl;
+    while(g_lock3==true) { }
+    g_lock3 = true;
+    //std::cout << "Lock3 wait end" << std::endl;
+    //pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
     progress++;
     ProgressBar(0,progress/num_threads,10,"pthread");
 
     // now ti_global is available
-    ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 0, ti_global->ct2_offsets.tri_count*3, ti_global->ct2_offsets.tri_count*3 + ti_global->ct2_counts.tri_count*3); 
-    ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 1, ti_global->ct2_offsets.quad_count*6, ti_global->ct2_offsets.quad_count*6 + ti_global->ct2_counts.quad_count*6);
-    ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 2, std::max(ti_global->ct2_offsets.poly_count-1,0), std::max(ti_global->ct2_offsets.poly_count-1,0) + (ti_global->ct2_offsets.poly_count?ti_global->ct2_counts.poly_count:ti_global->ct2_counts.poly_count-1));
+    ThreadInfo volatile *ti_global2 = ti_global;
+    if (ti_global2) {
+      //std::cout << "transfer" << std::endl;
+    ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 0, ti_global2->ct2_offsets.tri_count*3, ti_global2->ct2_offsets.tri_count*3 + ti_global2->ct2_counts.tri_count*3); 
+    ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 1, ti_global2->ct2_offsets.quad_count*6, ti_global2->ct2_offsets.quad_count*6 + ti_global2->ct2_counts.quad_count*6);
+    ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 2, std::max(ti_global2->ct2_offsets.poly_count-1,0), std::max(ti_global2->ct2_offsets.poly_count-1,0) + (ti_global2->ct2_offsets.poly_count?ti_global2->ct2_counts.poly_count:ti_global2->ct2_counts.poly_count-1));
+    }
     ti_global = 0;
-    pthread_mutex_unlock(mutex2); // release other process
+    //std::cout << "lock 2 release" << std::endl;
+    g_lock2 = false;
+    //pthread_mutex_unlock(mutex2); // release other process
     if (thread_counter==num_threads) break;
   }
  
@@ -3605,8 +3642,11 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     pthread_mutex_t *mutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
     pthread_mutex_t *mutex3 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
     thread_counter = 0;
-    pthread_mutex_lock(mutex3); // LOCK mutex3
-    pthread_mutex_lock(mutex2);
+    g_lock1 = false;
+    g_lock2 = true;
+    g_lock3 = true;
+    //pthread_mutex_lock(mutex3); // LOCK mutex3
+    //pthread_mutex_lock(mutex2);
     for(int i=0;i<num_threads;i++)
       {  
 	int start_range = i*delta_s; 
@@ -3618,16 +3658,26 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     int progress = 0;
     InstallProgress(1,"pthread");
     while(1) {
-      pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
+      //std::cout << "wait 3" << std::endl;
+      while(g_lock3==true);
+      g_lock3 = true;
+      //std::cout << "wait 3 end" << std::endl;
+      //pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
       progress++;
       ProgressBar(1,progress/num_threads,10,"pthread");
       
       // now ti_global is available
-      ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 0, ti_global->ct2_offsets.tri_count*3, ti_global->ct2_offsets.tri_count*3 + ti_global->ct2_counts.tri_count*3); 
-      ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 1, ti_global->ct2_offsets.quad_count*6, ti_global->ct2_offsets.quad_count*6 + ti_global->ct2_counts.quad_count*6);
-      ti_global->prep->transfer_to_gpu_mem(ti_global->set, *ti_global->r, 0, 2, std::max(ti_global->ct2_offsets.poly_count-1,0), std::max(ti_global->ct2_offsets.poly_count-1,0) + (ti_global->ct2_offsets.poly_count?ti_global->ct2_counts.poly_count:ti_global->ct2_counts.poly_count-1));
+      ThreadInfo volatile *ti_global2 = ti_global;
+      if (ti_global2) {
+	//std::cout << "transfer"<< std::endl;
+      ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 0, ti_global2->ct2_offsets.tri_count*3, ti_global2->ct2_offsets.tri_count*3 + ti_global2->ct2_counts.tri_count*3); 
+      ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 1, ti_global2->ct2_offsets.quad_count*6, ti_global2->ct2_offsets.quad_count*6 + ti_global2->ct2_counts.quad_count*6);
+      ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 2, std::max(ti_global2->ct2_offsets.poly_count-1,0), std::max(ti_global2->ct2_offsets.poly_count-1,0) + (ti_global2->ct2_offsets.poly_count?ti_global2->ct2_counts.poly_count:ti_global2->ct2_counts.poly_count-1));
+      }
       ti_global = 0;
-      pthread_mutex_unlock(mutex2); // release other process
+      //std::cout << "rel 2" << std::endl;
+      g_lock2 = false;
+      //pthread_mutex_unlock(mutex2); // release other process
       if (thread_counter==num_threads) break;
     }
     

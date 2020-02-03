@@ -2116,10 +2116,12 @@ void RenderVertexArray2::render(int id, int attr1, int attr2, int attr3, int att
 Counts CalcCounts(FaceCollection *coll, int start, int end);
 Counts CalcOffsets(FaceCollection *coll, int start);
 void ProgressBar(int val, int max);
+volatile bool g_lock1=false, g_lock2=false, g_lock3=false;
 
 #ifndef ARM
-ThreadInfo *ti_global;
-int thread_counter=0;
+ThreadInfo volatile *ti_global;
+volatile int thread_counter=0;
+
 
 void *thread_func(void *data)
 {
@@ -2129,7 +2131,7 @@ void *thread_func(void *data)
   return 0;
 #else
   ThreadInfo *ti = (ThreadInfo*)data;
-  int s = 10;
+  int s = 1;
   int delta_s = (ti->end_range - ti->start_range)/s + 1;
   for(int i=0;i<s;i++)
     {
@@ -2144,12 +2146,30 @@ void *thread_func(void *data)
       ti->va->copy(start_range, end_range,ti->attrib, ti->attribi);
       ti->ct2_counts = ct2_counts;
       ti->ct2_offsets = ct2_offsets;
+      //std::cout << "wait 1" << std::endl;
       pthread_mutex_lock(ti->mutex1); // LOCK mutex1
+      //std::cout << "wait 1 end" << std::endl;
+      //std::cout << "Lock1 wait" << std::endl;
+      //while(g_lock1==true);
+      //g_lock1 = true;
+      //std::cout << "Lock1 wait end" << std::endl;
       // set data
       ti_global = ti;
       if (i==s-1) thread_counter++;
-      pthread_mutex_unlock(ti->mutex3); // unlock mutex3
-      pthread_mutex_lock(ti->mutex2); // WAIT FOR mutex2 to open
+      //std::cout << "lock 3 release" << std::endl;
+      g_lock3 = false;
+      //pthread_mutex_unlock(ti->mutex3); // unlock mutex3
+      //std::cout << "Lock2 wait" << std::endl;
+      //std::cout << "wait 2" << std::endl;
+      //std::cout << "lock 2 wait" << std::endl;
+     while(g_lock2==true);
+      g_lock2 = true;
+      //std::cout << "lock 2 wait end" << std::endl;
+      //std::cout << "wait 2 end" << std::endl;
+      //std::cout << "Lock2 wait end" << std::endl;
+      //pthread_mutex_lock(ti->mutex2); // WAIT FOR mutex2 to open
+      g_lock1 = false;
+      //std::cout << "scope 1 rel" << std::endl;
       pthread_mutex_unlock(ti->mutex1); // release scope mutex1 
       ti->set->free_reserve(0);
     }
