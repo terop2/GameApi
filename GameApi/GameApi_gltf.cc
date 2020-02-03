@@ -815,9 +815,12 @@ GameApi::BM gltf_load_bitmap2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf 
 std::map<std::string, bool> g_gltf_cache;
 GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_index, int prim_index )
 {
+  int c = get_current_block();
+  set_current_block(-1);
   FaceCollection *faces = new GLTFFaceCollection( load, mesh_index, prim_index );
   GameApi::P p = add_polygon2(e, faces,1);
   GameApi::P p2 = ev.polygon_api.file_cache(p, load->url, prim_index+mesh_index*50);
+  set_current_block(c);
   std::stringstream ss;
   ss << load->url;
   ss << prim_index + mesh_index*50;
@@ -840,9 +843,12 @@ GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, std::string ba
   }
 
   LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  int c = get_current_block();
+  set_current_block(-1);
   FaceCollection *faces = new GLTFFaceCollection( load, mesh_index, prim_index );
   P p = add_polygon2(e, faces,1);
   GameApi::P p2 = ev.polygon_api.file_cache(p, load->url, prim_index+mesh_index*50);
+  set_current_block(c);
   std::stringstream ss;
   ss << load->url;
   ss << prim_index + mesh_index*50;

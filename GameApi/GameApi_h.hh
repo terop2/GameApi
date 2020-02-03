@@ -150,6 +150,10 @@
 #define SPECIAL_TEX_ID_CUBEMAP 800000
 #define SPECIAL_TEX_ID_CUBEMAP_END 900000
 
+int add_block();
+void set_current_block(int id);
+void clear_block(int id);
+
 void *operator new( std::size_t count);
 void operator delete(void* ptr) noexcept;
 
@@ -722,6 +726,7 @@ struct EnvImpl
   }
   EXPORT void free_to_counts(std::vector<int> vec)
   {
+#if 0
       int sk2 = vertex_array_render.size();
       int start0=vec[0];
    for(int ii2=start0;ii2<sk2;ii2++)
@@ -753,10 +758,11 @@ struct EnvImpl
       ArrayRender *rend = (*it2).second;
       delete rend;
     }
-  
+#endif  
   }
   EXPORT void free_memory()
   {
+#if 0
     deletes.resize(0);
     deletes.shrink_to_fit();
   int sk6 = textures.size();
@@ -968,7 +974,7 @@ struct EnvImpl
 #endif
   delete event_infos;
   event_infos = 0;
-
+#endif
   }
   EnvImpl();
   ~EnvImpl();
