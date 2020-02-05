@@ -262,6 +262,8 @@ private:
   int sx,sy;
   int numsamples;
 };
+// TODO, this doesnt seem to work with threading because
+// it deletes the object it uses too early
 GameApi::FB GameApi::FloatVolumeApi::integrate_render(FO obj, int sx, int sy, int numsamples)
 {
   FloatVolumeObject *ff = find_float_volume(e, obj);
