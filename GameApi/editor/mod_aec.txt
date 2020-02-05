@@ -104,7 +104,7 @@ test
 (599,1757)rot_y_ml uid8443 0 ev:6576:false:-1 ml:7569643130373635:false:-1 key_forward:313030:false:-1 key_backward:3937:false:-1 speed:302E3031:false:-1 start_y:2D3130302E30:false:-1 end_y:3130302E30:false:-1
 (359,1653)m_bind uid10765 0 p:75696436333433:false:-1 mat:7569643130373637:false:-1
 (84,1690)m_def uid10766 0 ev:6576:false:-1
-(212,1695)m_snow uid10767 0 ev:6576:false:-1 nxt:7569643130373638:false:-1 color1:6666616161616161:false:-1 color2:6666656565656565:false:-1 color3:6666666666666666:false:-1 mix_val:302E3935:false:-1
+(212,1695)m_snow uid10767 0 ev:6576:false:-1 nxt:7569643130373636:false:-1 color1:6666616161616161:false:-1 color2:6666656565656565:false:-1 color3:6666666666666666:false:-1 mix_val:302E3935:false:-1
 (320,1791)m_web uid10768 0 ev:6576:false:-1 nxt:7569643130373636:false:-1
 (165,2150)cube uid6053 0 start_x:2D3130:false:-1 end_x:3130:false:-1 start_y:2D313030:false:-1 end_y:313530:false:-1 start_z:2D3130:false:-1 end_z:3130:false:-1
 (454,2321)key_activate_ml uid6054 0 ev:6576:false:-1 ml:7569643233363438:false:-1 mn:75696436303538:false:-1 key:313139:false:-1 duration:32:false:-1
@@ -150,7 +150,7 @@ test
 (277,993)p_render uid27374 0 ev:6576:false:-1 p:7569643132323935:false:-1
 (31,1298)chessboard uid24820 0 tile_sx:3130:false:-1 tile_sy:3130:false:-1 count_x:38:false:-1 count_y:38:false:-1 color_1:6666383834343232:false:-1 color_2:6666383838383838:false:-1
 (161,1293)m_texture uid24821 0 ev:6576:false:-1 bm:7569643234383230:false:-1 mix:312E30:false:-1
-(414,1212)m_bind uid24822 0 p:7569643332323832:false:-1 mat:7569643234383233:false:-1
+(414,1212)m_bind uid24822 0 p:7569643332323832:false:-1 mat:7569643234383231:false:-1
 (136,1171)m_web uid24823 0 ev:6576:false:-1 nxt:7569643234383231:false:-1
 (194,3835)mandelbrot uid7780 0 is_julia:66616C7365:false:-1 start_x:2D322E30:false:-1 end_x:312E30:false:-1 start_y:2D312E30:false:-1 end_y:312E30:false:-1 xx:302E30:false:-1 yy:302E30:false:-1 sx:323536:false:-1 sy:323536:false:-1 count:3634:false:-1
 (341,3839)m_texture uid7782 0 ev:6576:false:-1 bm:75696437373830:false:-1 mix:312E30:false:-1
