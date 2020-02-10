@@ -2221,7 +2221,7 @@ EXPORT GameApi::W GameApi::GuiApi::find_canvas_item(W canvas, std::string id)
   GuiWidget *w = find_widget(e, canvas);
   if (!w) {
     {
-      std::cout << "ERROR: find_canvas_item failed to find canvas!" << std::endl;
+      // std::cout << "ERROR: find_canvas_item failed to find canvas!" << std::endl;
       GameApi::W wx;
       wx.id = -1;
       return wx;
@@ -2235,7 +2235,7 @@ EXPORT GameApi::W GameApi::GuiApi::find_canvas_item(W canvas, std::string id)
   GuiWidget *item = ww->find_widget(id);
   if (!item)
     {
-      std::cout << "ERROR: find_canvas_item failed to find widget from canvas!" << std::endl;
+      // std::cout << "ERROR: find_canvas_item failed to find widget from canvas!" << std::endl;
       GameApi::W wx;
       wx.id = -1;
       return wx;
@@ -2247,7 +2247,7 @@ EXPORT GameApi::W GameApi::GuiApi::find_canvas_item(W canvas, std::string id)
       GuiWidget *w = env->widgets[i];
       if (w==item) { GameApi::W w; w.id = i; return w; }
     }
-  std::cout << "ERROR: find_canvas_item failed to find widget!" << std::endl;
+  //std::cout << "ERROR: find_canvas_item failed to find widget!" << std::endl;
   GameApi::W wx;
   wx.id = -1;
   return wx;
@@ -5855,12 +5855,15 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "FO", "float" },
 			 { "", "0.1" },
 			 "VO", "vector_volume_api", "normal2"));
+#if 0
+  // doesnt work with threads
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::integrate_render,
 			 "fo_itg_render",
 			 { "obj", "sx", "sy", "numsamples" },
 			 { "FO", "int", "int", "int" },
 			 { "", "800", "600", "3" },
 			 "FB", "float_volume_api", "integrate_render"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::vector_volume_api, &GameApi::VectorVolumeApi::setup_normal,
 			 "setup_normal",
 			 { "orig", "v" },

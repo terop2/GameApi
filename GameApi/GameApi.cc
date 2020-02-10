@@ -601,7 +601,7 @@ GameApi::Pa GameApi::PolygonArrayApi::split_p(EveryApi &ev, P p, int max_chunk)
   std::vector<P> vec;
   int num = f->NumFaces();
   int start = 0;
-  std::cout << "split_p" << std::endl;
+  //std::cout << "split_p" << std::endl;
   while(num > max_chunk)
     { 
       //std::cout << "Range: " << start << " " << max_chunk << std::endl;
@@ -14545,7 +14545,7 @@ public:
 #ifdef EMSCRIPTEN
        async_pending_count++; async_taken=true;
 #endif
-       std::cout << "async_pending_count inc (ML_sctipr) " << async_pending_count << std::endl;
+       //std::cout << "async_pending_count inc (ML_sctipr) " << async_pending_count << std::endl;
   }
   void Prepare2() {
     std::string homepage = gameapi_homepageurl;
@@ -14571,7 +14571,7 @@ public:
 	if (async_taken)
 	  async_pending_count--;
 #endif
-	std::cout << "async_pending_count dec (ML_sctipr) " << async_pending_count << std::endl;
+	//std::cout << "async_pending_count dec (ML_sctipr) " << async_pending_count << std::endl;
 	async_taken = false;
 	//main2->execute(e3);
 	//firsttime = false;
@@ -14585,7 +14585,7 @@ public:
       async_pending_count--;
 #endif
       async_taken = false;
-       std::cout << "async_pending_count dec (ML_sctipr2) " << async_pending_count << std::endl;
+      //std::cout << "async_pending_count dec (ML_sctipr2) " << async_pending_count << std::endl;
 
   }
   void Prepare() {}
@@ -14594,7 +14594,7 @@ public:
     if (firsttime) {
       if (!main2) {
 #ifdef EMSCRIPTEN
-      std::cout << "ML_script: script not ready at Prepare()" << std::endl;
+	//std::cout << "ML_script: script not ready at Prepare()" << std::endl;
 #endif
       Prepare2();
       }
@@ -14629,7 +14629,7 @@ private:
 
 void ML_cb(void *data)
 {
-  std::cout << "ML_cb" << std::endl;
+  //std::cout << "ML_cb" << std::endl;
   ML_script *script = (ML_script*)data;
   script->Prepare2();
 }

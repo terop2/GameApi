@@ -322,6 +322,10 @@ EXPORT void GameApi::SpriteApi::spritepos(BM bm, float x, float y)
   i->y = y;
 }
 
+void ProgressBar(int num, int val, int max, std::string label);
+void InstallProgress(int num, std::string label, int max=15);
+
+
 class RenderVertexArray4 : public MainLoopItem
 {
 public:
@@ -342,7 +346,9 @@ public:
 	// requires some time before rendering can happen
 	// this can be done only after url loading finished
 	// url loading happens while frames are being updated.
+	//InstallProgress(222,"bitmap",1);
 	va = ev.sprite_api.create_vertex_array(bm);
+	//ProgressBar(222,1,1,"bitmap");
 	firsttime = false;
       }
 

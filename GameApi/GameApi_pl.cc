@@ -3491,7 +3491,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
       vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
     }
   int progress = 0;
-  InstallProgress(0,"pthread");
+  InstallProgress(0,"send to gpu mem",10);
   while(1) {
     //std::cout << "lock3 wait" << std::endl;
     while(g_lock3==true) { }
@@ -3499,7 +3499,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
     //std::cout << "Lock3 wait end" << std::endl;
     //pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
     progress++;
-    ProgressBar(0,progress/num_threads,10,"pthread");
+    ProgressBar(0,progress*10/num_threads,10,"send to gpu mem");
 
     // now ti_global is available
     ThreadInfo volatile *ti_global2 = ti_global;
@@ -3656,7 +3656,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 	vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
       }
     int progress = 0;
-    InstallProgress(1,"pthread");
+    InstallProgress(1,"send to gpu mem",10);
     while(1) {
       //std::cout << "wait 3" << std::endl;
       while(g_lock3==true);
@@ -3664,7 +3664,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       //std::cout << "wait 3 end" << std::endl;
       //pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
       progress++;
-      ProgressBar(1,progress/num_threads,10,"pthread");
+      ProgressBar(1,progress*10/num_threads,10,"send to gpu mem");
       
       // now ti_global is available
       ThreadInfo volatile *ti_global2 = ti_global;

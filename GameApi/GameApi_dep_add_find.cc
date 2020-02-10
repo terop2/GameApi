@@ -2,13 +2,49 @@
 #include "GameApi_h.hh"
 #include <memory>
 
+
+void InstallProgress(int num, std::string label, int max);
+void ProgressBar(int num, int val, int max, std::string label);
+
 struct Block
 {
   std::vector<std::shared_ptr<void> > vec;
+  ~Block()
+  {
+    int s = vec.size();
+    InstallProgress(667, "Cleanup", s);
+    for(int i=0;i<s;i++)
+      {
+	if (i%100==0) {
+	  ProgressBar(667,i,s,"Cleanup");
+	}
+      vec[i].reset();
+      }
+    ProgressBar(667,s,s,"Cleanup");
+    vec.clear();
+  }
+
 };
 
 std::vector<Block*> g_blocks;
-std::vector<std::shared_ptr<void> > g_rest;
+struct Rest {
+  std::vector<std::shared_ptr<void> > g_rest;
+  ~Rest()
+  {
+    int s = g_rest.size();
+    InstallProgress(666, "Cleanup", s);
+    for(int i=0;i<s;i++)
+      {
+	if (i%1000==0) {
+	  ProgressBar(666,i,s,"Cleanup");
+	}
+      g_rest[i].reset();
+      }
+    ProgressBar(666,s,s,"Cleanup");
+    g_rest.clear();
+  }
+};
+Rest g_rest;
 int g_current_block=-1;
 int add_block()
 {
@@ -33,7 +69,7 @@ void add_b(std::shared_ptr<void> ptr)
   if (g_current_block!=-1)
     g_blocks[g_current_block]->vec.push_back(ptr);
   else
-    g_rest.push_back(ptr); // these will never be released
+    g_rest.g_rest.push_back(ptr); // these will never be released
 }
 
 GameApi::UV add_uv(GameApi::Env &e, Fetcher<FaceID> *f)
@@ -688,7 +724,13 @@ GameApi::VA add_vertex_array(GameApi::Env &e, VertexArraySet *va, RenderVertexAr
 void add_update_widget(GameApi::Env &e, GameApi::W widget, GuiWidget *w)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
-  delete env->widgets[widget.id];
+  //int s = g_rest.g_rest.size();
+  //for(int i=0;i<s;i++) {
+  //  if (g_rest.g_rest[i].get()==env->widgets[widget.id]) {
+  //    g_rest.g_rest[i].reset();
+  //  }
+  //}
+  //delete env->widgets[widget.id];
   env->widgets[widget.id] = w;
 }
 void add_update_vertex_array(GameApi::Env &e, GameApi::VA va_h, VertexArraySet *va, RenderVertexArray *arr)

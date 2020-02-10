@@ -976,6 +976,9 @@ bool GridEffect2::Frame(float time)
   return false;
 }
  
+void ProgressBar(int num, int val, int max, std::string label);
+void InstallProgress(int num, std::string label, int max=15);
+
 struct ThreadInfo_sprite
 {
   pthread_t thread_id;
@@ -987,6 +990,8 @@ struct ThreadInfo_sprite
   int num;
 };
 
+int g_sprite_count=0;
+int g_sprite_count2 = 0;
 
 void *thread_func_sprite(void *data)
 {
@@ -996,6 +1001,15 @@ void *thread_func_sprite(void *data)
 	{
 	  ti->ref[ti->num].buffer[x+y*ti->ref[ti->num].ydelta] = ti->s->Pixel(ti->num, x, y).Pixel();
 	}
+#if 0
+  g_sprite_count++;
+    std::string s = "bitmap#";
+    std::stringstream ss;
+    ss << g_sprite_count2;
+    s+=ss.str();
+
+  ProgressBar(434, g_sprite_count, 4, s);
+#endif
   return 0;
 }
 
@@ -1027,6 +1041,8 @@ public:
     ref[num] = BufferRef::NewBuffer(sx, sy);
 #ifdef THREADS
     int numthreads = 4;
+    g_sprite_count=0;
+    //InstallProgress(434, "bitmap", 4);
     std::vector<ThreadInfo_sprite*> vec;
     int dsy = sy/numthreads + 1;
     for(int t=0;t<numthreads;t++) {
@@ -1052,6 +1068,7 @@ public:
       ThreadInfo_sprite *info = vec[t];
       void *res;
       pthread_join(info->thread_id, &res);
+      //ProgressBar(434, t, 4, "bitmap");
       delete info;
     }
 

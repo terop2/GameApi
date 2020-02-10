@@ -40,6 +40,10 @@
 #include "GameApi_low.hh"
 
 
+void ProgressBar(int num, int val, int max, std::string label);
+void InstallProgress(int num, std::string label, int max=15);
+
+
 std::ostream &operator<<(std::ostream &o, const ObjectData &od)
 {
   o << "(" << od.matrix << " : " << od.object << ")";
@@ -4090,6 +4094,11 @@ void LoadObjModelFaceCollection::check_invalidate2()
   void LoadObjModelFaceCollection::Load2() {
     //std::ifstream file(filename.c_str());
     std::string s(file_data.begin(), file_data.end());
+
+    int total_line_count=0;
+    int s4 = s.size();
+    for(int i=0;i<s4;i++) { if (s[i]=='\n') total_line_count++; }
+
     std::stringstream file(s);
     std::string line;
     int obj_count = 0;
@@ -4110,8 +4119,14 @@ void LoadObjModelFaceCollection::check_invalidate2()
     int mtl_material = -1;
     std::string word;
     std::stringstream ss;
+    int curr_line = 0;
+    InstallProgress(193,"Parsing .obj file", total_line_count);
     while(std::getline(file, line))
       {
+	curr_line++;
+	if (curr_line%1000==0) {
+	  ProgressBar(193,curr_line,total_line_count,"Parsing .obj file");
+	}
 	ss.str(line);
 	ss.clear();
 	//ss << line;
@@ -4136,8 +4151,8 @@ void LoadObjModelFaceCollection::check_invalidate2()
 	  {
 	    //std::cout << "v" << std::flush;
 	    vertex_count++;
-	    if (vertex_count % 1000==0) 
-	      std::cout << "v" << std::flush;
+	    //if (vertex_count % 1000==0) 
+	    //  std::cout << "v" << std::flush;
 	    float x,y,z;
 	    ss >> x >> y >> z;
 	    float cr = 1.0, cg = 1.0, cb = 1.0;
@@ -4160,8 +4175,8 @@ void LoadObjModelFaceCollection::check_invalidate2()
 	    //std::cout << "vt" << std::flush;
 
 	    tex_count++;
-	    if (tex_count %1000 == 0)
-	      std::cout << "t" << std::flush;
+	    //if (tex_count %1000 == 0)
+	    //  std::cout << "t" << std::flush;
 	    //std::cout << "Texture:" << texcoord_data.size() << std::endl;
 	    float tx,ty,tz;
 	    ss >> tx >> ty >> tz;
@@ -4173,8 +4188,8 @@ void LoadObjModelFaceCollection::check_invalidate2()
 	  {
 	    //std::cout << "vn" << std::flush;
 	    normal_count++;
-	    if (normal_count %1000 == 0)
-	      std::cout << "n" << std::flush;
+	    //if (normal_count %1000 == 0)
+	    //  std::cout << "n" << std::flush;
 
 	    //std::cout << "Normal:" << normal_data.size() << std::endl;
 
@@ -4187,8 +4202,8 @@ void LoadObjModelFaceCollection::check_invalidate2()
 	  {
 	    //std::cout << "vc" << std::flush;
 	    color_count++;
-	    if (color_count %1000 == 0)
-	      std::cout << "c" << std::flush;
+	    //if (color_count %1000 == 0)
+	    //  std::cout << "c" << std::flush;
 
 	    //std::cout << "Normal:" << normal_data.size() << std::endl;
 
@@ -4201,8 +4216,8 @@ void LoadObjModelFaceCollection::check_invalidate2()
 	  {
 	    //std::cout << "f" << std::flush;
 	    face_count++;
-	    if (face_count % 1000 == 0)
-	      std::cout << "f" << std::flush;
+	    //if (face_count % 1000 == 0)
+	    //  std::cout << "f" << std::flush;
 
 	    int v_index, t_index, n_index;
 	    int count = 0;
