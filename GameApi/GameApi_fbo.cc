@@ -77,7 +77,7 @@ EXPORT bool GameApi::FrameBufferApi::fbo_status(FBO buffer)
   FBOPriv *priv = find_fbo(e, buffer);
   g_low->ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, priv->fbo_name);
   int val = g_low->ogl->glCheckFramebufferStatus(Low_GL_FRAMEBUFFER);
-  std::cout << "CheckFrameBuffer: " << val << "== " << Low_GL_FRAMEBUFFER_COMPLETE << std::endl;
+  //std::cout << "CheckFrameBuffer: " << val << "== " << Low_GL_FRAMEBUFFER_COMPLETE << std::endl;
   g_low->ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, 0);
   return val == Low_GL_FRAMEBUFFER_COMPLETE;
 }

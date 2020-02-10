@@ -581,6 +581,8 @@ void ProgressBar(int num, int val, int max, std::string label)
   //std::cout << "ProgressBar: '" << label << "'" << std::endl;
 
   //std::cout << "PB: " << num << std::endl;
+  int val_index = -1;
+  int max_index = -1;
   {
   int s = progress_val.size();
   for(int i=0;i<s;i++)
@@ -588,6 +590,7 @@ void ProgressBar(int num, int val, int max, std::string label)
       int num2 = progress_val[i].num;
       if (num2==num) {
 	progress_val[i].value = val;
+	val_index=i;
       }
     }
   }
@@ -599,26 +602,36 @@ void ProgressBar(int num, int val, int max, std::string label)
       int num2 = progress_max[i].num;
       if (num2==num) {
 	progress_max[i].value = max;
+	max_index=i;
       }
     }
   }
 
-  int val1 = FindProgressVal();
-  int max1 = FindProgressMax();
+  int val1 = progress_val[val_index].value; //FindProgressVal();
+  int max1 = progress_max[max_index].value; //FindProgressMax();
   float v = float(val1)/float(max1);
   v*=30.0;
   int val2 = int(v);
+  if (val2<0) val2=0;
   float vv = 1.0;
   vv*=30.0;
   int max2 = int(vv);
-  std::cout << "\r[";
+  static std::string old_label = "";
+  if (label!="installprogress") {
+
+  if (old_label != label) { old_label = label; std::cout << std::endl << "["; }
+  else
+    std::cout << "\r[";
   for(int i=0;i<val2;i++) {
     std::cout << "#";
   }
-  for(int i=val2;i<max2-1;i++) {
+  for(int i=val2;i<max2;i++) {
     std::cout << "-";
   }
-  std::cout << "] (" << val1 << "/" << max1 << ") (" << val << "/" << max << ") " << num << " " << label;
+  std::cout << "] "
+    //<< val1 << "/" << max1 << ") (" << val << "/" << max << ") " << num << " " 
+	    << label;
+  }
 }
 
 int async_pending_count = 0;

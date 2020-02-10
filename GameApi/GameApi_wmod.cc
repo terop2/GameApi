@@ -1508,6 +1508,10 @@ EXPORT void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W
   
 }
 
+void ProgressBar(int num, int val, int max, std::string label);
+void InstallProgress(int num, std::string label, int max=15);
+
+
 EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p, std::vector<W> &params, std::vector<W> &display_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1521,9 +1525,10 @@ EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, i
       W w = { 0 };
       connect_clicks.push_back(w);
     }
-
+  InstallProgress(898, "create boxes", s);
   for(int i=0;i<s;i++)
     {
+      ProgressBar(898, i, s, "create boxes");
       GameApiLine *line = &func->lines[i];
       int ss = functions.size();
       int j = 0;
