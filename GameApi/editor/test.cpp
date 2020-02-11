@@ -444,7 +444,7 @@ std::ostream &operator<<(std::ostream &o, const std::vector<T> &vec)
     }
   return o;
 }
-
+void FinishProgress();
 void iter(void *arg)
 {
   Envi *env = (Envi*)arg;
@@ -512,7 +512,7 @@ void iter(void *arg)
     //env->ev->mainloop_api.fpscounter();
     // swapbuffers
     env->ev->mainloop_api.swapbuffers();
-
+    FinishProgress();
 	bool properties_button = false;
 	bool codegen_button = false;
 	bool display_button = false;
@@ -1671,6 +1671,7 @@ void print_stack_trace()
 #endif
 }
 
+extern std::string g_original_title;
 
 void terminate_handler()
 {
@@ -1745,6 +1746,7 @@ int main(int argc, char *argv[]) {
   WM mod = ev.mod_api.load(filename);
 
   // initialize window
+  g_original_title = "GameApi Builder -- meshpage.org";
   ev.mainloop_api.init_window(screen_x,screen_y,"GameApi Builder -- meshpage.org");
 
   int font_scale = 2;

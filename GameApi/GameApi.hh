@@ -491,7 +491,7 @@ public:
 	IMPORT void spritepos(BM bm, float x, float y);
 	IMPORT void preparesprite(BM bm, int bbm_choose = -1);
 
-	IMPORT VA create_vertex_array(BM bm);
+  IMPORT VA create_vertex_array(BM bm, bool progress=false);
   IMPORT void clear_arrays(VA va);
         IMPORT void delete_vertex_array(VA va);
         IMPORT void update_vertex_array(VA va, BM bm);

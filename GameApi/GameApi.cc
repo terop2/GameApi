@@ -10601,6 +10601,7 @@ struct PrepareCB
   void *ptr;
 };
 std::vector<PrepareCB> g_prepare_callbacks;
+void FinishProgress();
 
 extern std::string gameapi_seamless_url;
 void blocker_iter(void *arg)
@@ -10639,6 +10640,7 @@ void blocker_iter(void *arg)
     }
 
 
+    FinishProgress();
     env->ev->mainloop_api.clear_3d(0xff000000);
 
     // handle esc event
@@ -10719,7 +10721,6 @@ void *prepare_cb(void *ptr)
 
 pthread_t g_thread_id;
 
-
 extern int g_event_screen_x;
 extern int g_event_screen_y;
 class MainLoopSplitter_win32_and_emscripten : public Splitter
@@ -10796,6 +10797,7 @@ public:
   }
   virtual int Iter()
   {
+    FinishProgress();
     Envi_2 *env = (Envi_2*)&envi;
 
 
@@ -14380,8 +14382,8 @@ public:
 #ifdef EMSCRIPTEN
     async_pending_count++; async_taken = true;
 #endif
-       std::cout << "async_pending_count inc (P_sctipr) " << async_pending_count << std::endl;
-       std::cout << "P_script url: " << url << std::endl;
+    //std::cout << "async_pending_count inc (P_sctipr) " << async_pending_count << std::endl;
+    // std::cout << "P_script url: " << url << std::endl;
   }
   void Prepare2() {
     std::string homepage = gameapi_homepageurl;
@@ -14408,7 +14410,7 @@ public:
       	async_pending_count--;
 #endif
       async_taken=false;
-       std::cout << "async_pending_count inc (P_sctipt) " << async_pending_count << std::endl;
+      //std::cout << "async_pending_count inc (P_sctipt) " << async_pending_count << std::endl;
 
       return;
     }
@@ -14417,7 +14419,7 @@ public:
       async_pending_count--;
 #endif
     async_taken = false;
-       std::cout << "async_pending_count inc (P_sctipt2) " << async_pending_count << std::endl;
+    //std::cout << "async_pending_count inc (P_sctipt2) " << async_pending_count << std::endl;
     
   }
   void Prepare() { 
@@ -14457,7 +14459,7 @@ private:
 
 void P_cb(void *data)
 {
-  std::cout << "P_cb" << std::endl;
+  //std::cout << "P_cb" << std::endl;
   P_script *script = (P_script*)data;
   script->Prepare2();
 }
@@ -14764,7 +14766,7 @@ private:
 
 void BM_cb(void *data)
 {
-  std::cout << "BM_cb" << std::endl;
+  //std::cout << "BM_cb" << std::endl;
 
   BM_script *script = (BM_script*)data;
   script->Prepare2();

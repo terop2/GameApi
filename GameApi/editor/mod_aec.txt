@@ -12,9 +12,8 @@ test
 (987,275)bm_render uid7056 0 ev:6576:false:-1 bm:75696437303532:false:-1
 (1119,254)bm_2d uid7058 0 ev:6576:false:-1 ml:75696437303536:false:-1 tl_x:302E30:false:-1 tl_y:302E30:false:-1 br_x:3830302E30:false:-1 br_y:3630302E30:false:-1
 (1081,438)m_bind_inst uid10629 0 p:75696437303531:false:-1 pts:75696437303439:false:-1 mat:7569643130363332:false:-1
-(1097,627)m_web uid10630 0 ev:6576:false:-1 nxt:7569643130363331:false:-1
 (964,656)m_def uid10631 0 ev:6576:false:-1
-(1219,675)m_snow uid10632 0 ev:6576:false:-1 nxt:7569643130363330:false:-1 color1:6666616161616161:false:-1 color2:6666656565656565:false:-1 color3:6666666666666666:false:-1 mix_val:302E3935:false:-1
+(1219,675)m_snow uid10632 0 ev:6576:false:-1 nxt:7569643233313036:false:-1 color1:6666616161616161:false:-1 color2:6666656565656565:false:-1 color3:6666666666666666:false:-1 mix_val:302E3935:false:-1
 (1265,374)array_ml uid10633 0 arr:5B756964373035382C75696431303632395D:false:-1
 (1268,536)mn_empty uid10634 0
 (1401,539)mn_translate uid10635 0 next:7569643130363334:false:-1 dx:2D31303030:false:-1 dy:30:false:-1 dz:30:false:-1
@@ -190,3 +189,4 @@ test
 (333,4555)blit uid24611 0 bg:7569643234363038:false:-1 orig:7569643234363039:false:-1 x:30:false:-1 y:30:false:-1
 (109,4036)emptybool uid24612 0 sx:343030:false:-1 sy:343030:false:-1
 (251,4081)bb_sprite uid24613 0 bg:7569643234363132:false:-1 sprite:7569643139363435:false:-1 x:3530:false:-1 y:3530:false:-1 mult_x:31:false:-1 mult_y:31:false:-1
+(1083,751)m_web uid23106 0 ev:6576:false:-1 nxt:7569643130363331:false:-1 mult:312E3033:false:-1 linewidth:322E30:false:-1 linecolor:6666303030303030:false:-1
