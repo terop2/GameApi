@@ -79,6 +79,10 @@ EXPORT GameApi::Q GameApi::TextureApi::get_tex_coord(TX tx, int id)
 {
   return get_tex_coord_1(tx,id);
 }
+
+void ProgressBar(int num, int val, int max, std::string label);
+void InstallProgress(int num, std::string label, int max=15);
+
 GameApi::Q GameApi::TextureApi::get_tex_coord_1(TX tx, int id)
 {
   TextureI *tex = find_texture(e,tx);
@@ -116,6 +120,7 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right
   int sizex=-1;
   int sizey=-1;
   int s = vec.size();
+  InstallProgress(767, "cubetexture", s*4);
   for(int i=0;i<s;i++)
     {
       BitmapHandle *handle = find_bitmap(e, vec[i]);
@@ -125,6 +130,7 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right
       //      buf.Gen();
 #ifndef THREADS
   buf.Gen();
+  ProgressBar(767, i*4, s*4, "cubetexture");
 #else
   buf.GenPrepare();
 
@@ -150,6 +156,7 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right
   for(int k=0;k<ss;k++)
     {
       threads.join(ids[k]);
+      ProgressBar(767, i*4+k, s*4, "cubetexture");
     }
 #endif
 
@@ -181,6 +188,8 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
   ids.resize(vec.size());
   g_low->ogl->glGenTextures(vec.size(), &ids[0]);
   int s = vec.size();
+  InstallProgress(768, "texturemany", s*4);
+
   for(int i=0;i<s;i++)
     {
       //std::cout << "I=" << i << std::endl;
@@ -233,6 +242,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 	  BufferFromBitmap buf(flip);
 #ifndef THREADS
 	  buf.Gen();
+	  ProgressBar(768, i*4+4,s*4, "texturemany"); 
 #else
 	  buf.GenPrepare();
   
@@ -258,6 +268,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 	  for(int t=0;t<ss;t++)
 	    {
 	      threads.join(ids2[t]);
+	      ProgressBar(768, i*4+t,s*4, "texturemany"); 
 	    }
 #endif
 
@@ -311,6 +322,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
       BufferFromBitmap buf(flip);
 #ifndef THREADS
   buf.Gen();
+  ProgressBar(768, i*4+4,s*4, "texturemany"); 
 #else
   buf.GenPrepare();
 
@@ -333,9 +345,12 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 	ids2.push_back(threads.push_thread(&buf, start_x, end_x, start_y, end_y));
     }
   int ss = ids2.size();
+  int ii = i;
   for(int i=0;i<ss;i++)
     {
       threads.join(ids2[i]);
+      ProgressBar(768, ii*4+i,s*4, "texturemany"); 
+
     }
 #endif
 
@@ -360,12 +375,12 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE); // GL_REPEAT
 	g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE); // these cause power-of-two texture requirement in emscripten.
 
-      }
+    }
       //g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
       GameApi::TXID id2;
       id2.id = ids[i];
       txidvec.push_back(id2);
-    }
+      }
   assert(txidvec.size()==vec.size());
   return txidvec;
 }
@@ -422,9 +437,10 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
   FlipColours flip(bm);
   BufferFromBitmap buf(flip);
   //  buf.Gen();
-
+  InstallProgress(555,"texture",4);
 #ifndef THREADS
   buf.Gen();
+  ProgressBar(555,4,4,"texture");
 #else
   buf.GenPrepare();
 
@@ -450,6 +466,7 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
   for(int i=0;i<ss;i++)
     {
       threads.join(ids[i]);
+  ProgressBar(555,i,4,"texture");
     }
 #endif
 

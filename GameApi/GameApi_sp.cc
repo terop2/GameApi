@@ -347,7 +347,7 @@ public:
 	// this can be done only after url loading finished
 	// url loading happens while frames are being updated.
 	//InstallProgress(222,"bitmap",1);
-	va = ev.sprite_api.create_vertex_array(bm);
+	va = ev.sprite_api.create_vertex_array(bm,true);
 	//ProgressBar(222,1,1,"bitmap");
 	firsttime = false;
       }
@@ -477,7 +477,7 @@ EXPORT void GameApi::SpriteApi::update_vertex_array(VA va, BM bm)
   VertexArraySet *s = new VertexArraySet;
   s->set_bm_id(bm.id);
   PrepareSpriteToVA(*sprite, *s);
-  TexturePrepare(*sprite, *env->renders2[bm.id]);
+  TexturePrepare(*sprite, *env->renders2[bm.id], true);
   s->texture_id = bm.id;
   RenderVertexArray *arr = new RenderVertexArray(g_low, *s); 
   arr->prepare(0);
@@ -490,7 +490,7 @@ EXPORT GameApi::ML GameApi::SpriteApi::vertex_array_render(EveryApi &ev, BM bm)
   GameApi::ML ml = render_sprite_vertex_array_ml(ev, bm);
   return ml;
 }
-EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
+EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm, bool progress)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   SpritePriv &spriv = *(SpritePriv*)priv;
@@ -501,7 +501,7 @@ EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm)
   VertexArraySet *s = new VertexArraySet;
   s->set_bm_id(bm.id);
   PrepareSpriteToVA(*sprite, *s);
-  TexturePrepare(*sprite, *env->renders2[bm.id]);
+  TexturePrepare(*sprite, *env->renders2[bm.id],progress);
   s->texture_id = bm.id;
   RenderVertexArray *arr = new RenderVertexArray(g_low, *s); 
   arr->prepare(0);

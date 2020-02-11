@@ -1016,7 +1016,7 @@ void *thread_func_sprite(void *data)
 class SpriteTexture : public MeshTextures
 {
 public:
-  SpriteTexture(const Sprite &s) : s(s) 
+  SpriteTexture(const Sprite &s, bool progress) : s(s), progress(progress) 
   { 
     int ss = NumTextures();
     ref = new BufferRef[ss];
@@ -1042,7 +1042,8 @@ public:
 #ifdef THREADS
     int numthreads = 4;
     g_sprite_count=0;
-    //InstallProgress(434, "bitmap", 4);
+    if (progress)
+      InstallProgress(434, "bitmap", 4);
     std::vector<ThreadInfo_sprite*> vec;
     int dsy = sy/numthreads + 1;
     for(int t=0;t<numthreads;t++) {
@@ -1068,7 +1069,8 @@ public:
       ThreadInfo_sprite *info = vec[t];
       void *res;
       pthread_join(info->thread_id, &res);
-      //ProgressBar(434, t, 4, "bitmap");
+      if (progress)
+	ProgressBar(434, t, 4, "bitmap");
       delete info;
     }
 
@@ -1088,15 +1090,16 @@ private:
   const Sprite &s;
   mutable BufferRef *ref;
   mutable int currentnum;
+  bool progress;
 };
 
-void TexturePrepare(const Sprite &s, ArrayRender &rend)
+void TexturePrepare(const Sprite &s, ArrayRender &rend, bool progress)
 {
   int frames = s.NumFrames();
   if (!frames) { std::cout << "TexturePrepare !frames" << std::endl; return; }
   rend.AllocTexture(frames);
   rend.Alloc(2,6, frames,1,1,frames);
-  SpriteTexture ss(s);
+  SpriteTexture ss(s,progress);
   for(int i=0;i<frames;i++)
     {
       rend.UpdateTexture(ss, i);
@@ -1117,7 +1120,7 @@ void PrepareSprite(const Sprite &s, ArrayRender &rend)
   if (!frames) { std::cout << "PrepareSprite !frames" << std::endl; return; }
   rend.AllocTexture(frames);
   rend.Alloc(2, 6, frames, 1, 1, frames);
-  SpriteTexture ss(s);
+  SpriteTexture ss(s,true);
   for(int i=0;i<frames;i++)
     {
       rend.UpdateTexture(ss, i);

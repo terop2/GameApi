@@ -531,8 +531,15 @@ std::vector<unsigned char> *ASyncLoader::get_loaded_data(std::string url) const
 struct ProgressI {
   int num;
   int value;
+  int ticks;
 };
+void SetTicks(int num, int ticks);
 
+
+std::string g_original_title;
+Low_SDL_Window *sdl_window;
+int g_last_tick=0;
+bool g_has_title=false;
 std::vector<ProgressI > progress_max;
 std::vector<ProgressI > progress_val;
 std::vector<std::string> progress_label;
@@ -541,6 +548,8 @@ void InstallProgress(int num, std::string label, int max=15)
   //std::cout << "InstallProgress: '" << label << "'" << std::endl;
   //std::cout << "IB: " << num << std::endl;
   ProgressI p; p.num = num;
+  p.ticks = g_low->sdl->SDL_GetTicks();
+  g_last_tick = p.ticks;
   int s = progress_max.size();
   int s2 = progress_val.size();
   bool max_done = false;
@@ -555,7 +564,17 @@ void InstallProgress(int num, std::string label, int max=15)
     progress_val.push_back(p);
   if (!max_done)
     progress_label.push_back(label);
+  SetTicks(num, p.ticks);
   ProgressBar(num,0,max,"installprogress");
+}
+
+void SetTicks(int num, int ticks) {
+  int s = progress_val.size();
+  for(int i=0;i<s;i++) {
+    if (progress_val[i].num == num) {
+      progress_val[i].ticks = ticks;
+    }
+  }
 }
 
 int FindProgressVal()
@@ -575,6 +594,18 @@ int FindProgressMax()
       sum+=progress_max[i].value;
     }
   return sum;
+}
+void FinishProgress()
+{
+  if (g_has_title) {
+  int tick = g_low->sdl->SDL_GetTicks();
+  int delta = tick-g_last_tick;
+  if (delta>2000 && g_has_title) {
+    std::string l = g_original_title;
+    g_low->sdl->SDL_SetWindowTitle(sdl_window, l.c_str());
+    g_has_title = false;
+  }
+  }
 }
 void ProgressBar(int num, int val, int max, std::string label)
 {
@@ -609,6 +640,10 @@ void ProgressBar(int num, int val, int max, std::string label)
 
   int val1 = progress_val[val_index].value; //FindProgressVal();
   int max1 = progress_max[max_index].value; //FindProgressMax();
+  int ticks1 = progress_val[val_index].ticks;
+  int ticks2 = g_low->sdl->SDL_GetTicks();
+  g_last_tick = ticks2;
+  int ticks = ticks2-ticks1;
   float v = float(val1)/float(max1);
   v*=30.0;
   int val2 = int(v);
@@ -617,20 +652,24 @@ void ProgressBar(int num, int val, int max, std::string label)
   vv*=30.0;
   int max2 = int(vv);
   static std::string old_label = "";
-  if (label!="installprogress") {
+  if (label!="installprogress" && ticks>40) {
 
-  if (old_label != label) { old_label = label; std::cout << std::endl << "["; }
+    std::stringstream stream;
+  if (old_label != label) { old_label = label; stream << std::endl << "["; }
   else
-    std::cout << "\r[";
+    stream << "[";
   for(int i=0;i<val2;i++) {
-    std::cout << "#";
+    stream << "#";
   }
   for(int i=val2;i<max2;i++) {
-    std::cout << "-";
+    stream << "-";
   }
-  std::cout << "] "
+  stream << "] "
     //<< val1 << "/" << max1 << ") (" << val << "/" << max << ") " << num << " " 
-	    << label;
+	    << ticks << " " << label ;
+  std::string l = g_original_title + "                           " + stream.str();
+  g_low->sdl->SDL_SetWindowTitle(sdl_window, l.c_str());
+  g_has_title = true;
   }
 }
 

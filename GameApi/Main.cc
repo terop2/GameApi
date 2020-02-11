@@ -106,7 +106,7 @@
 
 BufferRef CopyFromSDLSurface(Low_SDL_Surface *surf);
 
-Low_SDL_Window *sdl_window;
+extern Low_SDL_Window *sdl_window;
 
 
 
