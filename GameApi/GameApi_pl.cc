@@ -3583,7 +3583,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 #ifdef THREADS
 #ifdef EMSCRIPTEN
 #ifdef __EMSCRIPTEN_PTHREADS__
-  if (emscripten_has_threading_support()) {
+  if (1) {
 #else
     if (1) {
 #endif // END OF __EMSCRIPTEN_PTHREADS
