@@ -645,11 +645,11 @@ void ProgressBar(int num, int val, int max, std::string label)
   g_last_tick = ticks2;
   int ticks = ticks2-ticks1;
   float v = float(val1)/float(max1);
-  v*=30.0;
+  v*=15.0;
   int val2 = int(v);
   if (val2<0) val2=0;
   float vv = 1.0;
-  vv*=30.0;
+  vv*=15.0;
   int max2 = int(vv);
   static std::string old_label = "";
   if (label!="installprogress" && ticks>40) {
@@ -664,6 +664,13 @@ void ProgressBar(int num, int val, int max, std::string label)
   for(int i=val2;i<max2;i++) {
     stream << "-";
   }
+  int s = label.size();
+  int pos = -1;
+  for(int i=0;i<s;i++) {
+    if (label[i]=='/') pos=i;
+  }
+  if (pos!=-1) label = label.substr(pos);
+
   stream << "] "
     //<< val1 << "/" << max1 << ") (" << val << "/" << max << ") " << num << " " 
 	    << ticks << " " << label ;
