@@ -19,6 +19,19 @@
 
 #endif
 
+#ifndef EMSCRIPTEN
+vr::IVRSystem *hmd = 0;
+#endif
+
+EXPORT void    check_vr_overlay_init()
+{
+#ifndef EMSCRIPTEN
+  vr::EVRInitError aError = vr::VRInitError_None;
+  hmd = vr::VR_Init( &aError, vr::VRApplication_Overlay );
+  std::cout << "VR_Init errorcode: " << aError << std::endl;
+  std::cout << "hmd = " << hmd << std::endl;
+#endif
+}
 
 
 #if 0
@@ -49,7 +62,7 @@ public:
   WebCamBufferRef(int num) : num(num), done(false) { }
   BufferRef Buffer() const { 
     vr::EVRTrackedCameraFrameType frametype = vr::VRTrackedCameraFrameType_Distorted;
-    if (!done) {
+    if (!done && vr::VRTrackedCamera()) {
       vr::TrackedDeviceIndex_t idx = num;
       vr::VRTrackedCamera()->AcquireVideoStreamingService( idx, &camerahandle );
       unsigned int width=1, height=1;
@@ -58,7 +71,8 @@ public:
       done = true;
     }
     vr::CameraVideoStreamFrameHeader_t frameheader;
-    vr::VRTrackedCamera()->GetVideoStreamFrameBuffer( camerahandle, frametype, buf.buffer, framebuffersize, &frameheader, sizeof(frameheader) );
+    if (vr::VRTrackedCamera()) 
+      vr::VRTrackedCamera()->GetVideoStreamFrameBuffer( camerahandle, frametype, buf.buffer, framebuffersize, &frameheader, sizeof(frameheader) );
     
     // TODO, DO WE NEED TO SWAP THE BYTES IN ANY WAY?
   
@@ -131,14 +145,17 @@ public:
     vr::EVRTrackedCameraFrameType frametype = vr::VRTrackedCameraFrameType_Distorted;
     vr::CameraVideoStreamFrameHeader_t frameheader;
     vr::TrackedDeviceIndex_t idx = num;
-  if (!done) {
+    if (!done && vr::VRTrackedCamera()) {
       vr::VRTrackedCamera()->AcquireVideoStreamingService( idx, &camerahandle );
       done = true;
   }
-    vr::VRTrackedCamera()->GetVideoStreamTextureGL( camerahandle, frametype, &gl_id, &frameheader, sizeof(frameheader) );
-    id.id = gl_id;
-    g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id.id);
-    g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+    if (vr::VRTrackedCamera())
+      vr::VRTrackedCamera()->GetVideoStreamTextureGL( camerahandle, frametype, &gl_id, &frameheader, sizeof(frameheader) );
+    if (gl_id!=-1) {
+      id.id = gl_id;
+      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id.id);
+      g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+    }
   }
   int texture() const
   {
@@ -146,7 +163,7 @@ public:
   }
 private:
   int num;
-  unsigned int gl_id;
+  unsigned int gl_id = -1;
   vr::TrackedCameraHandle_t camerahandle;
   bool done;
   mutable GameApi::TXID id;
@@ -163,7 +180,7 @@ public:
   VR_Overlay(GameApi::Env &env, GameApi::TXID id, std::string key, std::string name) : env(env), id(id), key(key), name(name) { done=false; done2=false;}
   virtual void Prepare()
   {
-    if (!done) {
+    if (!done && vr::VROverlay()) {
       vr::VROverlay()->CreateOverlay( key.c_str(), name.c_str(), &overlay);
       done = true;
     }
@@ -177,11 +194,13 @@ public:
     int tex = iid->texture();
     if (old_id!=tex && tex!=-1 && tex!=0) {
       vr::Texture_t texture = { (void*)tex, vr::TextureType_OpenGL, vr::ColorSpace_Auto };
-      vr::VROverlay()->SetOverlayTexture(overlay, &texture);
+      if (vr::VROverlay())
+	vr::VROverlay()->SetOverlayTexture(overlay, &texture);
       old_id = tex;
     }
     if (!done2) {
-      vr::VROverlay()->ShowOverlay(overlay);
+      if (vr::VROverlay())
+	vr::VROverlay()->ShowOverlay(overlay);
       done2 = true;
     }
 

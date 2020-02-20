@@ -20,6 +20,7 @@
 
 // this is also in GameApi_h.hh
 //#define VIRTUAL_REALITY 1
+#define VIRTUAL_REALITY_OVERLAY 1
 #define SDL2_USED
 #define NO_SDL_GLEXT
 //#define GL3_PROTOTYPES 1
@@ -410,6 +411,8 @@ Low_SDL_GLContext g_context;
 void initialize_low(int flags);
 
 IMPORT void check_vr_compositor_init();
+IMPORT void    check_vr_overlay_init();
+
 Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize, bool vr_init)
 {
   initialize_low(0);
@@ -470,6 +473,12 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     check_vr_compositor_init();
   }
 #endif  
+#ifdef VIRTUAL_REALITY_OVERLAY
+  //if (vr_init) {
+    check_vr_overlay_init();
+    //}
+#endif
+
   if (resize)
     sdl_window = g_low->sdl->SDL_CreateWindow("Program", Low_SDL_WINDOWPOS_CENTERED, Low_SDL_WINDOWPOS_CENTERED, scr_x, scr_y, Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE);
   else
