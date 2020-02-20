@@ -4,6 +4,9 @@
 #ifndef RASPI
 // this is also in Main.cc
 //#define VIRTUAL_REALITY 1
+#ifndef EMSCRIPTEN
+#define VIRTUAL_REALITY_OVERLAY 1
+#endif
 #endif
 #endif
 #define SDL2_USED  

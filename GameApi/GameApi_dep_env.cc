@@ -602,7 +602,9 @@ void FinishProgress()
   int delta = tick-g_last_tick;
   if (delta>2000 && g_has_title) {
     std::string l = g_original_title;
+#ifndef EMSCRIPTEN
     g_low->sdl->SDL_SetWindowTitle(sdl_window, l.c_str());
+#endif
     g_has_title = false;
   }
   }
@@ -675,7 +677,9 @@ void ProgressBar(int num, int val, int max, std::string label)
     //<< val1 << "/" << max1 << ") (" << val << "/" << max << ") " << num << " " 
 	    << ticks << " " << label ;
   std::string l = g_original_title + "                           " + stream.str();
+#ifndef EMSCRIPTEN
   g_low->sdl->SDL_SetWindowTitle(sdl_window, l.c_str());
+#endif
   g_has_title = true;
   }
 }

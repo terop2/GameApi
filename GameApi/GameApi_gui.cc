@@ -7713,6 +7713,20 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "", "false", "true", "10.1", "60000.0", "true" },
 			 "ML", "mainloop_api", "setup_hmd_projection"));
 #endif
+#ifdef VIRTUAL_REALITY_OVERLAY
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::webcam_txid,
+			 "vr_webcam",
+			 { "num" },
+			 { "int" },
+			 { "0" },
+			 "TXID", "texture_api", "webcam_txid"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::vr_overlay,
+			 "vr_overlay",
+			 { "txid", "key", "name" },
+			 { "TXID", "std::string", "std::string" },
+			 { "", "a", "testi" },
+			 "ML", "texture_api", "vr_overlay"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::run_seq,
 			 "run_seq",
 			 { "ev", "vec" },

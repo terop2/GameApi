@@ -1705,7 +1705,13 @@ int main(int argc, char *argv[]) {
 #endif
   int screen_x = 1200;
   int screen_y = 900;
+#ifdef WINDOWS
+  std::string drive = getenv("systemdrive");
+  std::string path = getenv("homepath");
+  std::string filename = drive+path+"\\mod.txt";
+#else
   std::string filename = "mod.txt";
+#endif
   for(int i=1;i<argc;i++)
     {
       if (std::string(argv[i])=="--mg")
