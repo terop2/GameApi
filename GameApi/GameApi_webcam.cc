@@ -19,6 +19,12 @@
 
 #endif
 
+#ifndef VIRTUAL_REALITY_OVERLAY
+EXPORT void    check_vr_overlay_init()
+{
+}
+#else
+
 #ifndef EMSCRIPTEN
 vr::IVRSystem *hmd = 0;
 #endif
@@ -227,3 +233,5 @@ GameApi::ML GameApi::TextureApi::vr_overlay(GameApi::TXID id, std::string key, s
 }
 
 // TODO: ML->RUN that uses openvr's PollEvent().
+
+#endif
