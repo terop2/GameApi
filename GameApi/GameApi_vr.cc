@@ -28,6 +28,7 @@
 #include <emscripten/html5.h>
 #endif
 
+
 bool g_use_vr = false;
 
 EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration, bool invert, bool translate)
