@@ -95,7 +95,7 @@
 </Component>
 <Directory Id='curldir' Name='curl'>
 <Component Id='CurlExecutable' Guid='79581D3E-A778-4897-B679-093F7FDB9CB6'>
-<File Id='curl' Name='curl.exe' DiskId='1' Source='curl.exe' KeyPath='no'>
+<File Id='curl' Name='curl.exe' DiskId='1' Source='curl/curl.exe' KeyPath='no'>
 </File>
 </Component>
 </Directory>
@@ -121,6 +121,7 @@
 
 <Feature Id='Complete' Level='1'>
     <ComponentRef Id='MainExecutable' />
+    <ComponentRef Id='CurlExecutable' />
     <ComponentRef Id='ProgramMenuDir' />
 </Feature>
 
