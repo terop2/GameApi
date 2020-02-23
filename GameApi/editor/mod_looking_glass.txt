@@ -198,7 +198,7 @@ test
 (328,5446)m_bind uid19962 0 p:7569643139393634:false:-1 mat:7569643139393631:false:-1
 (93,5911)m_def uid19963 0 ev:6576:false:-1
 (37,5305)p_script uid19964 0 ev:6576:false:-1 url:687474703A2F2F747067616D65732E6F72672F6D6172626C655F637562655F702E6D70:false:-1 %1:61:false:-1 %2:62:false:-1 %3:63:false:-1 %4:64:false:-1 %5:65:false:-1
-(301,5800)mn_translate uid19965 0 next:7569643137333332:false:-1 dx:30:false:-1 dy:30:false:-1 dz:313030:false:-1
+(301,5800)mn_translate uid19965 0 next:7569643137333332:false:-1 dx:30:false:-1 dy:30:false:-1 dz:2D323030:false:-1
 (900,527)looking_glass_window uid19927 0 ev:6576:false:-1 ml:7569643134393531:false:-1 logo:66616C7365:false:-1 fpscounter:66616C7365:false:-1 start_time:302E30:false:-1 duration:313030303030302E30:false:-1
 (698,5761)fbo_id uid21991 0 ev:6576:false:-1 mainloop:7569643238333432:false:-1 sx:2D31:false:-1 sy:2D31:false:-1 translate:66616C7365:false:-1
 (952,246)looking_glass_window uid16923 0 ev:6576:false:-1 ml:75696432303034:false:-1 logo:66616C7365:false:-1 fpscounter:66616C7365:false:-1 start_time:302E30:false:-1 duration:313030303030302E30:false:-1

@@ -7720,6 +7720,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "int" },
 			 { "0" },
 			 "TXID", "texture_api", "webcam_txid"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::webcam_txid_slow,
+			 "vr_webcam_slow",
+			 { "ev", "num" },
+			 { "EveryApi&", "int" },
+			 { "ev", "0" },
+			 "TXID", "texture_api", "webcam_txid_slow"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::vr_overlay,
 			 "vr_overlay",
 			 { "txid", "key", "name" },
