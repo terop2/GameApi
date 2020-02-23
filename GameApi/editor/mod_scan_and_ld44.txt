@@ -217,7 +217,7 @@ test
 (632,-4319)scale uid21787 0 orig:7569643231373836:false:-1 sx:3130:false:-1 sy:3130:false:-1 sz:3130:false:-1
 (861,-1579)run_window uid19518 0 ev:6576:false:-1 ml:7569643238383939:false:-1 logo:66616C7365:false:-1 fpscounter:66616C7365:false:-1 start_time:302E30:false:-1 duration:3130303030302E30:false:-1
 (217,-5187)p_stl uid22153 0 url:687474703A2F2F747067616D65732E6F72672F6C6561662E73746C:false:-1
-(355,-5149)m_bind uid22154 0 p:7569643232313533:false:-1 mat:7569643232313536:false:-1
+(355,-5149)m_bind uid22154 0 p:7569643232313533:false:-1 mat:756964383436:false:-1
 (110,-5033)m_def uid22155 0 ev:6576:false:-1
 (235,-5027)m_phong uid22156 0 ev:6576:false:-1 nxt:7569643232313535:false:-1 light_dir_x:2D302E33:false:-1 light_dir_y:302E33:false:-1 light_dir_z:2D312E30:false:-1 ambient:6666666638383030:false:-1 highlight:6666363636363636:false:-1 pow:352E30:false:-1
 (494,-5106)move_ml uid22157 0 ev:6576:false:-1 ml:7569643232313534:false:-1 mn:7569643132303936:false:-1 clone_count:31:false:-1 time_delta:31302E30:false:-1
@@ -228,7 +228,7 @@ test
 (254,-5403)p_mtl uid31219 0 ev:6576:false:-1 obj_url:687474703A2F2F747067616D65732E6F72672F6C6561665F75762F6C6561665F75762E6F626A:false:-1 mtl_url:687474703A2F2F747067616D65732E6F72672F6C6561665F75762F6C6561665F75762E6D746C:false:-1 url_prefix:687474703A2F2F747067616D65732E6F72672F6C6561665F75762F:false:-1 count:33:false:-1
 (194,-5295)m_texture_many_p uid31220 0 ev:6576:false:-1 mix:302E35:false:-1
 (388,-5351)m_bind uid31221 0 p:7569643331323139:false:-1 mat:7569643331323230:false:-1
-(752,-5466)p_render uid3019 0 ev:6576:false:-1 p:7569643331323138:false:-1
+(546,-5604)p_render uid3019 0 ev:6576:false:-1 p:75696432323630:false:-1
 (499,-5488)color_from_normals uid7669 0 orig:7569643331323138:false:-1
 (806,-5099)looking_glass_window uid30048 0 ev:6576:false:-1 ml:7569643330303439:false:-1 logo:66616C7365:false:-1 fpscounter:66616C7365:false:-1 start_time:30:false:-1 duration:31652B3036:false:-1
 (612,-5099)looking_glass_full uid30049 0 ev:6576:false:-1 ml:7569643232313537:false:-1 amount:313530:false:-1 mode:30:false:-1
@@ -236,3 +236,7 @@ test
 (85,-5479)cube uid5287 0 start_x:2D3130302E30:false:-1 end_x:3130302E30:false:-1 start_y:2D3130302E30:false:-1 end_y:3130302E30:false:-1 start_z:2D3130302E30:false:-1 end_z:3130302E30:false:-1
 (814,-4916)anim_rotate uid12096 0 next:75696431363835:false:-1 start_time:30:false:-1 end_time:3130303030:false:-1 p_x:30:false:-1 p_y:30:false:-1 p_z:30:false:-1 v_x:30:false:-1 v_y:31:false:-1 v_z:30:false:-1 angle:3632:false:-1
 (176,-6283)p_ds_url uid5456 0 ev:6576:false:-1 url:687474703A2F2F747067616D65732E6F72672F6C6561662E6473:false:-1
+(229,-4916)m_colour uid846 0 ev:6576:false:-1 mix:302E35:false:-1
+(372,-5602)scale uid2260 0 orig:7569643331323138:false:-1 sx:33:false:-1 sy:33:false:-1 sz:33:false:-1
+(793,-5585)run_window uid2261 0 ev:6576:false:-1 ml:75696432323632:false:-1 logo:66616C7365:false:-1 fpscounter:66616C7365:false:-1 start_time:302E30:false:-1 duration:3130303030302E30:false:-1
+(672,-5616)rot_y_ml uid2262 0 ev:6576:false:-1 ml:75696433303139:false:-1 key_forward:313030:false:-1 key_backward:3937:false:-1 speed:302E3031:false:-1 start_y:2D3130302E30:false:-1 end_y:3130302E30:false:-1

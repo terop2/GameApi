@@ -29,6 +29,17 @@ struct Block
 std::vector<Block*> g_blocks;
 struct Rest {
   std::vector<std::shared_ptr<void> > g_rest;
+  void delete_item_from_rest(void *ptr)
+  {
+    int s = g_rest.size();
+    for(int i=0;i<s;i++) {
+      void *ptr2 = g_rest[i].get();
+      if (ptr==ptr2) {
+	g_rest[i].reset();
+      }
+    }
+    
+  }
   ~Rest()
   {
     int s = g_rest.size();
@@ -54,6 +65,26 @@ int add_block()
 void set_current_block(int id)
 {
   g_current_block = id;
+}
+void delete_item_from_block(void *ptr, Block *blk)
+{
+  int s = blk->vec.size();
+  for(int i=0;i<s;i++) {
+    void *ptr2 = blk->vec[i].get();
+    if (ptr==ptr2) {
+      blk->vec[i].reset();
+    }
+  }
+}
+void delete_item(void *ptr)
+{
+  int ks = g_blocks.size();
+  for(int i=0;i<ks;i++) {
+    Block *blk = g_blocks[i];
+    if (blk)
+    delete_item_from_block(ptr, blk);
+  }
+  g_rest.delete_item_from_rest(ptr);
 }
 int get_current_block()
 {
@@ -731,13 +762,16 @@ void add_update_widget(GameApi::Env &e, GameApi::W widget, GuiWidget *w)
   //  }
   //}
   //delete env->widgets[widget.id];
+  delete_item(env->widgets[widget.id]);
   env->widgets[widget.id] = w;
 }
 void add_update_vertex_array(GameApi::Env &e, GameApi::VA va_h, VertexArraySet *va, RenderVertexArray *arr)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
-  delete env->vertex_array[va_h.id];
-  delete env->vertex_array_render[va_h.id];
+  delete_item(env->vertex_array[va_h.id]);
+  delete_item(env->vertex_array_render[va_h.id]);
+  //delete env->vertex_array[va_h.id];
+  //delete env->vertex_array_render[va_h.id];
   env->vertex_array[va_h.id] = va;
   env->vertex_array_render[va_h.id] = arr;
 }
@@ -924,7 +958,7 @@ void add_update_lines_array(GameApi::Env &e, GameApi::LLA la, PointArray2 *array
 #endif
   delete [] env->pointarray[la.id]->array;
   delete [] env->pointarray[la.id]->color_array;
-  delete env->pointarray[la.id];
+  delete_item( env->pointarray[la.id] );
   env->pointarray[la.id] = array;
 }
 GameApi::LLA add_lines_array(GameApi::Env &e, PointArray2 *array)
