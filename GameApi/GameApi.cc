@@ -19321,7 +19321,7 @@ public:
   TXIDArrayMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, HeavyOperation *op, std::vector<GameApi::TXID> *vec, MainLoopItem *next, int start_range, int end_range) : env(env), ev(ev), op(op), vec(vec),next(next), start_range(start_range), end_range(end_range) {
     heavycount=0; 
   }
-  void Prepare() { }
+  void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     if (op->RequestPrepares()) { heavycount=0; op->TriggerPrepares(); }

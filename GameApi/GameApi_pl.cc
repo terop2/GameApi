@@ -4285,6 +4285,7 @@ public:
   {
     shader.id = -1;
     firsttime = true;
+    va.id=0;
   }
   int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
@@ -4297,6 +4298,10 @@ public:
   { 
     if (firsttime)
       {
+	if (va.id==0) {
+	  va = ev.polygon_api.create_vertex_array(p, true);
+	  std::cout << "Warning: RenderPTex Prepare() not called!" << std::endl;
+	}
 	ev.polygon_api.create_vertex_array_hw(va);
 	std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev, bm, types,false);
 	va = ev.texture_api.bind_many(va, id, types);
@@ -4437,6 +4442,7 @@ public:
   {
     shader.id = -1;
     firsttime = true;
+    va.id=0;
   }
   int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
@@ -4449,6 +4455,10 @@ public:
   { 
     if (firsttime)
       {
+	if (va.id==0) {
+	  va = ev.polygon_api.create_vertex_array(p, true);
+	  std::cout << "Warning: RenderPTex_id Prepare() not called!" << std::endl;
+	}
 	ev.polygon_api.create_vertex_array_hw(va);
 	std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev, bm);
 	va = ev.texture_api.bind_many(va, id);
@@ -4600,6 +4610,7 @@ public:
   {
     shader.id = -1;
     firsttime = true;
+    va.id=0;
   }
   int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
@@ -4613,6 +4624,11 @@ public:
   { 
     if (firsttime)
       {
+	if (va.id==0) {
+	  va = ev.polygon_api.create_vertex_array(p, true);
+	  std::cout << "Warning: RenderPTexCubemap Prepare() not called!" << std::endl;
+	}
+
 	ev.polygon_api.create_vertex_array_hw(va);
 	GameApi::BM right,left,top,bottom,back,front;
 	right.id = 0;
@@ -4773,6 +4789,7 @@ public:
   {
     shader.id = -1;
     firsttime = true;
+    va.id=0;
   }
   int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
@@ -4785,6 +4802,11 @@ public:
   { 
     if (firsttime)
       {
+	if (va.id==0) {
+	  va = ev.polygon_api.create_vertex_array(p, true);
+	  std::cout << "Warning: RenderPTex2 Prepare() not called!" << std::endl;
+	}
+
 	ev.polygon_api.create_vertex_array_hw(va);
 	// This loop fetches the textures from P type
 	std::vector<GameApi::BM> bm;
