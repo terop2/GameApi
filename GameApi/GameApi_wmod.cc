@@ -1182,7 +1182,7 @@ EXPORT bool GameApi::WModApi::typecheck(WM mod2, int id, std::string uid1, std::
 
 	}
     }
-  std::cout << "TypeCheck: " << type1 << " " << type2 << std::endl;
+  //std::cout << "TypeCheck: " << type1 << " " << type2 << std::endl;
   return type1==type2;
 
 }

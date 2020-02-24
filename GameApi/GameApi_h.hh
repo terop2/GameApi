@@ -715,8 +715,8 @@ struct EnvImpl
   static ::EnvImpl *Environment(GameApi::Env *e) { return (EnvImpl*)e->envimpl; }
   EXPORT void free_temp_memory()
   {
-    temp_deletes.resize(0);
-    temp_deletes.shrink_to_fit();
+    //temp_deletes.resize(0);
+    //temp_deletes.shrink_to_fit();
   }
   EXPORT std::vector<int> store_counts() const
   {
@@ -998,7 +998,7 @@ struct FaceCollPolyHandle : public PolyHandle
   bool collarrayowned;
   //int size;
   
-  ~FaceCollPolyHandle() { if (collowned) delete coll; if (collarrayowned) delete [] collarray; }
+  ~FaceCollPolyHandle() { }
 
 };
 #endif

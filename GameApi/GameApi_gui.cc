@@ -662,7 +662,7 @@ public:
     rot_y = 0.0;
     left=false; right=false;
   }
-  ~PolyGuiWidget() { std::cout << "PolyGuiWidget destructor" << std::endl; }
+  ~PolyGuiWidget() { /*std::cout << "PolyGuiWidget destructor" << std::endl;*/ }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
 #ifdef EMSCRIPTEN
