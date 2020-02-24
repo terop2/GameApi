@@ -20,7 +20,7 @@
 
 // this is also in GameApi_h.hh
 //#define VIRTUAL_REALITY 1
-#define VIRTUAL_REALITY_OVERLAY 1
+//#define VIRTUAL_REALITY_OVERLAY 1
 #define SDL2_USED
 #define NO_SDL_GLEXT
 //#define GL3_PROTOTYPES 1
