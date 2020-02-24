@@ -24,7 +24,7 @@ struct FaceCollPolyHandle
   //int size;
   bool padding1;
   bool padding2;
-  ~FaceCollPolyHandle() { if (collowned) delete coll; if (collarrayowned) delete collarray; }
+  ~FaceCollPolyHandle() { /*if (collowned) delete coll; if (collarrayowned) delete collarray;*/ }
 
 };
 

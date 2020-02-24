@@ -76,8 +76,8 @@ void GameApi::PolygonApi::print_stat(P p)
   if (!coll) { std::cout << "INVALID FACECOLLECTION at print_stat" << std::endl;  return; }
   int faces = coll->NumFaces();
   int points = faces>0 ? coll->NumPoints(0) : 0;
-  std::cout << "Faces: " << faces << std::endl;
-  std::cout << "Points: " << points << std::endl;
+  //std::cout << "Faces: " << faces << std::endl;
+  //std::cout << "Points: " << points << std::endl;
 
 }
 
@@ -590,7 +590,10 @@ public:
 	return;
       }
     coll->Prepare();
+    int c = get_current_block();
+    set_current_block(-2); // dont take ownership of this
     GameApi::P num = add_polygon2(e, coll,1);
+    set_current_block(c);
     prepare_cache_data.push_back(std::make_pair(id,num.id));
   }
   FaceCollection *get_coll() const

@@ -852,7 +852,7 @@ void iter(void *arg)
 		set_current_block(g_id);
 		    GameApi::ExecuteEnv exeenv;
 		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000);
-		    set_current_block(-1);
+		    set_current_block(-2);
 		    if (id==-1) {
 		      std::cout << "Execute failed!" << std::endl;
 		      break;
@@ -1685,6 +1685,7 @@ void print_counters();
 int main(int argc, char *argv[]) {
   //clear_counters();
   //SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T) -1, (SIZE_T)-1);
+  set_current_block(-2);
 
   std::set_terminate(&terminate_handler);
   srand(time(NULL));
