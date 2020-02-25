@@ -1,1 +1,2 @@
+set HOME=c:\users\gigantti\
 set PATH=d:\cvs\mingw3\mingw64\bin;c:\program files (x86)\llvm\bin;D:\cvs\mingw3\mingw64\x86_64-w64-mingw32\bin;d:\cvs\sdl2-2.0.1\x86_64-w64-mingw32\bin;d:\cvs\SDL2_image-2.0.0\x86_64-w64-mingw32\bin;D:\cvs\SDL2_mixer-2.0.0\x86_64-w64-mingw32\bin;d:\cvs\gameapi-code\GameApi\GameApi;%PATH%;c:\Program Files\Git\bin;c:\Program Files\Git\bin\cmd;c:\Program Files (x86)\Git\bin;c:\Program Files (x86)\Git\bin\cmd;c:\Program Files\CMake\bin;d:\cvs\emacs\bin;d:\cvs\gnumake\bin

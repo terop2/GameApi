@@ -508,6 +508,8 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
       //std::cout << "ASyncLoadUrl::CB failed" << std::endl;
     }
 
+#if BROKEN
+    // REASON, ProgressBar cannot be called from other threads.
   { // progressbar
   int s = url.size();
   int sum=0;
@@ -515,6 +517,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   sum = sum % 1000;
   ProgressBar(sum,15,15,url);
   }
+#endif
 
 
 #endif
@@ -741,6 +744,8 @@ std::vector<unsigned char> load_from_url(std::string url)
     unsigned char c;
     std::vector<unsigned char> buffer;
     while(fread(&c,1,1,f)==1) { buffer.push_back(c); }
+    fclose(f);
+
     //fseek(f, 0, SEEK_END);
     //long pos = ftell(f);
     //fseek(f, 0, SEEK_SET);
@@ -757,11 +762,14 @@ std::vector<unsigned char> load_from_url(std::string url)
     FILE *f = popen(cmd.c_str(), "rb");
     unsigned char c;
     //std::vector<unsigned char> buffer;
+
     while(fread(&c,1,1,f)==1) { buffer.push_back(c); }
+    fclose(f);
       }
     return buffer;
 #else
     // no popen
 #endif
+    return buffer;
 }
 

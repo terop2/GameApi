@@ -6609,6 +6609,8 @@ public:
   Color Map(int x, int y) const
   {
     float val = (float)bm.Map(x,y);
+    if (val<value1) val=value1;
+    if (val>value2) val=value2;
     val -= float(value1);
     val /= float(value2-value1);
     //float f = float(val-value1)/(value2-value1);
