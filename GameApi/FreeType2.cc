@@ -96,8 +96,9 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   //std::cout << "try gen_glyph_data:" << idx << std::endl;
   //std::string key = glyph_key(ttf_filename,sx,sy);
 #ifndef EMSCRIPTEN
-  //pthread_mutex_lock(&mutex);
+  pthread_mutex_lock(&mutex);
 #endif
+
   std::map<long, GlyphData*> *mymap = data2;
   if (!mymap) { mymap = global_glyph_data[key]; }
   if (!mymap) {
@@ -108,7 +109,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   GlyphData *data = mymap?mymap->operator[](idx):0; //glyph_data[idx];
   if (data) { 
 #ifndef EMSCRIPTEN
-    //pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&mutex);
 #endif
     return; }
   //std::cout << "gen_glyph_data:" << idx << std::endl;
@@ -127,8 +128,10 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   if (!ptr2) {
     //std::cout << "loading font: " << ttf_filename << std::endl;
 #ifndef EMSCRIPTEN
+    //std::cout << "async: " << ttf_filename << " " << homepage << std::endl;
   e.async_load_url(ttf_filename, homepage);
 #endif
+
   std::stringstream ss2;
   ss2 << "font" << idx << ".ttf";
 
@@ -136,7 +139,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   if (!ptr) {
     std::cout << "async not ready yet, failing..." << std::endl;
 #ifndef EMSCRIPTEN
-    //pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&mutex);
 #endif
     exit(0);
   } else {
@@ -145,6 +148,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
     //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
     //ss.close();
   }
+
   ptr2 = new unsigned char[ptr->size()+1];
   std::copy(ptr->begin(), ptr->end(), ptr2);
   size = ptr->size();
@@ -155,13 +159,14 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   k.buffer = ptr2;
   k.size = size;
   loaded_vec.push_back(k);
+
   } else {
     unsigned char *ptr3 = new unsigned char[size+1];
     std::copy(ptr2, ptr2+size, ptr3);
     ptr2 = ptr3;
+
   }
   data->lib = (FT_Library*)priv_;
-  
   int err = FT_New_Memory_Face( *data->lib,
 				ptr2 /*"font.ttf"*/,
 			        size,
@@ -174,9 +179,9 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
     //std::cout << ptr2 << std::endl;
     std::cout << "Remember to recompile the code after changing envimpl size" << std::endl;
 #ifndef EMSCRIPTEN
-    //pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&mutex);
 #endif
-    //TODO exit(0);
+    exit(0);
     }
   FT_Set_Char_Size(data->face, sx*64,sy*64,100,100);
 
@@ -189,14 +194,19 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   data->sy = data->face->glyph->bitmap.rows;
   data->advance_x = data->face->glyph->advance.x >> 6;
   //std::cout << "Glyph:" << idx << " " << data->sx << " " << data->sy << " " << data->top << std::endl;
-  data->bitmap_data = new int[data->sx*data->sy];
+  int ssx = data->sx;
+  int ssy = data->sy;
+  if (ssx<1) ssx=1;
+  if (ssy<1) ssy=1;
+  data->bitmap_data = new int[ssx*ssy];
   for(int iy=0;iy<data->sy;iy++)
     for(int ix=0;ix<data->sx;ix++)
       {
 	data->bitmap_data[ix+iy*data->sx] = (int)data->face->glyph->bitmap.buffer[ix+iy*data->face->glyph->bitmap.pitch];
       }
+
 #ifndef EMSCRIPTEN
-  //pthread_mutex_unlock(&mutex);
+  pthread_mutex_unlock(&mutex);
 #endif
 
 }
