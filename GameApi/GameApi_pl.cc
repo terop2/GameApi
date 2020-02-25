@@ -13031,11 +13031,16 @@ private:
 
 GameApi::P GameApi::PolygonApi::stl_load(std::string url)
 {
+  int c = get_current_block();
+  set_current_block(-1);
+
   GameApi::P p = add_polygon2(e, new STLFaceCollection(e,url,gameapi_homepageurl),1);
   print_data(p);
   FaceCollection *coll = find_facecoll(e,p);
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll), 1);
-  return resize_to_correct_size(p2);
+  GameApi::P p3 = resize_to_correct_size(p2);
+  set_current_block(c);
+  return p3;
 }
 
 float det3(float *arr);
