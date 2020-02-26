@@ -18,7 +18,7 @@ test
 (307,829)cube uid21303 0 start_x:2D343030:false:-1 end_x:343230:false:-1 start_y:2D343030:false:-1 end_y:343230:false:-1 start_z:3130:false:-1 end_z:3230:false:-1
 (467,855)m_bind uid21305 0 p:7569643231333033:false:-1 mat:7569643231333037:false:-1
 (634,766)array_ml uid21306 0 arr:5B75696432313330302C75696432313330355D:false:-1
-(163,813)m_phong uid21307 0 ev:6576:false:-1 nxt:7569643230383239:false:-1 light_dir_x:2D302E33:false:-1 light_dir_y:302E33:false:-1 light_dir_z:2D312E30:false:-1 ambient:6666666638383030:false:-1 highlight:6666363636363636:false:-1 pow:31352E30:false:-1
+(163,813)m_phong uid21307 0 ev:6576:false:-1 nxt:7569643131303333:false:-1 light_dir_x:2D302E33:false:-1 light_dir_y:302E33:false:-1 light_dir_z:2D312E30:false:-1 ambient:6666666638383030:false:-1 highlight:6666363636363636:false:-1 pow:31352E30:false:-1
 (128,991)mn_empty uid21308 0
 (283,984)mn_rotatey uid21309 0 next:7569643231333038:false:-1 angle:2D312E3539:false:-1
 (426,982)mn_translate uid21310 0 next:7569643231333039:false:-1 dx:2D363030:false:-1 dy:30:false:-1 dz:30:false:-1
@@ -236,7 +236,7 @@ test
 (617,-209)vx_inst uid942 0 voxel:756964393431:false:-1 count:31:false:-1 start_x:2D343030:false:-1 end_x:343030:false:-1 start_y:2D343030:false:-1 end_y:343030:false:-1 start_z:2D343030:false:-1 end_z:343030:false:-1
 (779,-183)vx_bind uid943 0 ev:6576:false:-1 objs:5B7569643933305D:false:-1 ptss:756964393432:false:-1 mt:756964393435:false:-1
 (368,-79)m_def uid944 0 ev:6576:false:-1
-(659,-66)m_phong uid945 0 ev:6576:false:-1 nxt:7569643230383336:false:-1 light_dir_x:2D302E33:false:-1 light_dir_y:302E33:false:-1 light_dir_z:2D312E30:false:-1 ambient:6666666638383030:false:-1 highlight:6666363636363636:false:-1 pow:31352E30:false:-1
+(659,-66)m_phong uid945 0 ev:6576:false:-1 nxt:7569643130383633:false:-1 light_dir_x:2D302E33:false:-1 light_dir_y:302E33:false:-1 light_dir_z:2D312E30:false:-1 ambient:6666666638383030:false:-1 highlight:6666363636363636:false:-1 pow:31352E30:false:-1
 (243,-949)cube uid946 0 start_x:2D333030:false:-1 end_x:333030:false:-1 start_y:333230:false:-1 end_y:333330:false:-1 start_z:2D3130:false:-1 end_z:3130:false:-1
 (246,-833)cube uid947 0 start_x:2D3130:false:-1 end_x:3130:false:-1 start_y:333230:false:-1 end_y:333330:false:-1 start_z:2D333030:false:-1 end_z:333030:false:-1
 (376,-887)p_or_elem uid948 0 p1:756964393436:false:-1 p2:756964393437:false:-1
@@ -247,8 +247,6 @@ test
 (842,-621)array_ml uid953 0 arr:5B7569643935302C7569643934335D:false:-1
 (543,-584)mn_translate uid954 0 next:756964393531:false:-1 dx:30:false:-1 dy:2D313230:false:-1 dz:30:false:-1
 (261,8688)rounded_cube uid955 0 ev:6576:false:-1 start_x:2D3130302E30:false:-1 end_x:3130302E30:false:-1 start_y:2D3130302E30:false:-1 end_y:3130302E30:false:-1 start_z:2D3130302E30:false:-1 end_z:3130302E30:false:-1 r_radius:32302E30:false:-1
-(82,732)m_fog uid20829 0 ev:6576:false:-1 nxt:7569643231333032:false:-1 dist:333030:false:-1
-(502,-43)m_fog uid20836 0 ev:6576:false:-1 nxt:756964393434:false:-1 dist:3330302E30:false:-1
 (801,1865)run_window uid15621 0 ev:6576:false:-1 ml:7569643139363932:false:-1 logo:66616C7365:false:-1 fpscounter:66616C7365:false:-1 start_time:302E30:false:-1 duration:3130303030302E30:false:-1
 (230,2285)splitquads uid19789 0 p:7569643139373035:false:-1 x_count:313530:false:-1 y_count:313530:false:-1
 (500,2436)m_phong uid19790 0 ev:6576:false:-1 nxt:7569643237363139:false:-1 light_dir_x:2D302E33:false:-1 light_dir_y:302E33:false:-1 light_dir_z:2D312E30:false:-1 ambient:6666666638383030:false:-1 highlight:6666363636363636:false:-1 pow:31352E30:false:-1
@@ -259,3 +257,5 @@ test
 (364,4942)m_fog uid27622 0 ev:6576:false:-1 nxt:7569643234363239:false:-1 dist:3330302E30:false:-1 dark_color:6666303030303030:false:-1 light_color:6666666666666666:false:-1
 (718,6030)m_fog uid27623 0 ev:6576:false:-1 nxt:7569643234363534:false:-1 dist:3330302E30:false:-1 dark_color:6666303030303030:false:-1 light_color:6666666666666666:false:-1
 (436,6475)m_fog uid27624 0 ev:6576:false:-1 nxt:7569643234363636:false:-1 dist:3330302E30:false:-1 dark_color:6666303030303030:false:-1 light_color:6666666666666666:false:-1
+(533,-48)m_fog uid10863 0 ev:6576:false:-1 nxt:756964393434:false:-1 dist:3330302E30:false:-1 dark_color:6666303030303030:false:-1 light_color:6666666666666666:false:-1
+(66,713)m_fog uid11033 0 ev:6576:false:-1 nxt:7569643231333032:false:-1 dist:3330302E30:false:-1 dark_color:6666303030303030:false:-1 light_color:6666666666666666:false:-1

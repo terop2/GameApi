@@ -14,6 +14,7 @@
 #endif
 #include <fstream>
 #include <iostream>
+#include <pthread.h>
 using namespace GameApi;
 
 #ifdef LINUX
@@ -1682,10 +1683,17 @@ void terminate_handler()
 }
 void clear_counters();
 void print_counters();
+extern pthread_t g_main_thread;
 int main(int argc, char *argv[]) {
   //clear_counters();
   //SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T) -1, (SIZE_T)-1);
+
+  //pid_t pid = getpid();
+  //std::cout << "pid: " << (long)pid << std::endl;
+
   set_current_block(-2);
+
+  g_main_thread = pthread_self();
 
   std::set_terminate(&terminate_handler);
   srand(time(NULL));

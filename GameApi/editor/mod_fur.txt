@@ -71,7 +71,7 @@ test
 (100,-1240)point uid13782 0 x:302E30:false:-1 y:302E30:false:-1 z:302E30:false:-1
 (413,-1161)and_not_bo uid13783 0 ev:6576:false:-1 obj:7569643133373738:false:-1 not_obj:7569643133373739:false:-1
 (567,-1062)and_not_bo uid13784 0 ev:6576:false:-1 obj:7569643133373833:false:-1 not_obj:7569643133373830:false:-1
-(720,-1050)to_poly uid13785 0 obj:7569643133373834:false:-1
+(720,-1050)to_poly uid13785 0 obj:7569643133373833:false:-1
 (850,-1042)scale uid13786 0 orig:7569643133373835:false:-1 sx:322E35:false:-1 sy:322E35:false:-1 sz:322E35:false:-1
 (977,-1038)rotatex uid13787 0 orig:7569643133373836:false:-1 angle:302E33:false:-1
 (1062,-915)m_snow uid14902 0 ev:6576:false:-1 nxt:7569643134393033:false:-1 color1:6666666637373333:false:-1 color2:6666383833333232:false:-1 color3:6666666638383131:false:-1 mix_val:302E35:false:-1
