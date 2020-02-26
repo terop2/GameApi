@@ -15,7 +15,7 @@ test
 (390,637)bm_render uid7453 0 ev:6576:false:-1 bm:75696437343534:false:-1
 (237,646)bm_fullscreen uid7454 0 ev:6576:false:-1 orig:75696433393331:false:-1
 (176,758)bm_2d uid7456 0 ev:6576:false:-1 ml:75696437343533:false:-1 tl_x:302E30:false:-1 tl_y:302E30:false:-1 br_x:3830302E30:false:-1 br_y:3630302E30:false:-1
-(801,567)run_window uid7459 0 ev:6576:false:-1 ml:7569643130303939:false:-1 logo:66616C7365:false:-1 fpscounter:66616C7365:false:-1 start_time:30:false:-1 duration:333030:false:-1
+(801,567)run_window uid7459 0 ev:6576:false:-1 ml:7569643130303939:false:-1 logo:66616C7365:false:-1 fpscounter:66616C7365:false:-1 start_time:30:false:-1 duration:3330303030:false:-1
 (724,696)run_window uid7460 0 ev:6576:false:-1 ml:75696434333736:false:-1 logo:66616C7365:false:-1 fpscounter:66616C7365:false:-1 start_time:30:false:-1 duration:333030:false:-1
 (770,846)run_window uid7463 0 ev:6576:false:-1 ml:75696437343634:false:-1 logo:66616C7365:false:-1 fpscounter:66616C7365:false:-1 start_time:30:false:-1 duration:333030:false:-1
 (643,924)bm_2d uid7464 0 ev:6576:false:-1 ml:75696437343635:false:-1 tl_x:30:false:-1 tl_y:30:false:-1 br_x:383030:false:-1 br_y:363030:false:-1

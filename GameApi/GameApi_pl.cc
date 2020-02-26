@@ -731,9 +731,11 @@ public:
   void Prepare()
   {
     if (current == empty) {
+      std::cout << "A" << std::endl;
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
+      std::cout << "B" << std::endl;
 
     std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
     if (!ptr) {
@@ -806,7 +808,14 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
   num++;
   std::stringstream a_ss2;
     a_ss2 << "p_mtl_id_file" << num << ".mtl";
-    std::string a_filename = a_ss2.str();
+    std::string start="";
+#ifdef WINDOWS
+  std::string drive = getenv("systemdrive");
+  std::string path = getenv("homepath");
+  start=drive+path+"\\";
+#endif
+    std::string a_filename = start+a_ss2.str();
+    //std::cout << "Saving: " << a_filename << std::endl;
     std::fstream a_ss(a_filename.c_str(), std::ios_base::binary |std::ios_base::out);
     int a_s = ptr2->size();
     for(int a_i=0;a_i<a_s;a_i++) a_ss.put(ptr2->operator[](a_i));
@@ -838,9 +847,11 @@ public:
 #ifdef EMSCRIPTEN
     async_pending_count++;
 #endif
+    done_mtl=false;
   }
   void PrepareMTL()
   {
+    if (done_mtl) return;
     std::vector<unsigned char> *ptr2 = e.get_loaded_async_url(mtl_url);
     if (!ptr2) {
       std::cout << "p_mtl .mtl async not ready yet, failing..." << std::endl;
@@ -851,7 +862,15 @@ public:
 
     std::stringstream a_ss2;
     a_ss2 << "p_mtl_file" << num << ".mtl";
-    std::string a_filename = a_ss2.str();
+    std::string start="";
+#ifdef WINDOWS
+  std::string drive = getenv("systemdrive");
+  std::string path = getenv("homepath");
+  start=drive+path+"\\";
+#endif
+   
+  std::string a_filename = start+a_ss2.str();
+  //std::cout << "Saving: " << a_filename << std::endl;
     std::fstream a_ss(a_filename.c_str(), std::ios_base::binary |std::ios_base::out);
     int a_s = ptr2->size();
     for(int a_i=0;a_i<a_s;a_i++) a_ss.put(ptr2->operator[](a_i));
@@ -889,7 +908,7 @@ public:
 #ifdef EMSCRIPTEN
     async_pending_count--;
 #endif
-    
+    done_mtl=true;
   }
   void Prepare2(std::string url, int i)
   {
@@ -921,9 +940,13 @@ public:
     //std::cout << "MTL:Prepare()" << std::endl;
     if (current == empty) {
 #ifndef EMSCRIPTEN
+      //std::cout << "AA" << std::endl;
     e.async_load_url(url, homepage);
+    //std::cout << "BB" << std::endl;
     e.async_load_url(mtl_url, homepage);
+    //std::cout << "CC" << std::endl;
       PrepareMTL();
+      //std::cout << "DD" << std::endl;
 #endif
 
     std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
@@ -935,7 +958,14 @@ public:
     num++;
     std::stringstream ss2;
     ss2 << "p_mtl_file" << num << ".obj";
-    std::string filename = ss2.str();
+    std::string start="";
+#ifdef WINDOWS
+  std::string drive = getenv("systemdrive");
+  std::string path = getenv("homepath");
+  start=drive+path+"\\";
+#endif
+    std::string filename = start+ss2.str();
+    //std::cout << "Saving: " << filename << std::endl;
     std::fstream ss(filename.c_str(), std::ios_base::binary |std::ios_base::out);
     int s = ptr->size();
     for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
@@ -990,6 +1020,7 @@ private:
   std::vector<BufferRef> buffer;
   std::vector<std::string> material_names;
   std::vector<int> flags;
+  bool done_mtl;
 };
 
 void MTL_CB(void *data)

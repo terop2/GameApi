@@ -6,6 +6,7 @@
 #include <emscripten.h>
 #endif
 
+
 #ifdef RASPI
 inline int strlen(const char *ptr) { const char *p = ptr; while(*p) { p++;  } return p-ptr;}
 #endif
@@ -419,6 +420,13 @@ void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
 
   //std::cout << "async set callback" << url << std::endl;
 }
+
+#ifdef WINDOWS
+#ifdef THREADS
+pthread_t g_main_thread;
+#endif
+#endif
+
 void ASyncLoader::load_urls(std::string url, std::string homepage)
   {
     //std::cout << "ASyncLoader::load_urls:" << url << std::endl; 
@@ -487,13 +495,14 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
-  ProgressBar(sum,7,15,url);
+  ProgressBar(sum,0,15,url);
   }
-
 
     std::string url2 = "load_url.php?url=" + url ;
     if (load_url_buffers_async[url2]) { return; }
+    //std::cout << "Loading url: " << url <<std::endl;
     std::vector<unsigned char> buf = load_from_url(url);
+    //std::cout << "Loading url finished: " << url <<std::endl;
     if (buf.size()==0) {
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
     }
@@ -508,8 +517,10 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
       //std::cout << "ASyncLoadUrl::CB failed" << std::endl;
     }
 
-#if BROKEN
+      {
+
     // REASON, ProgressBar cannot be called from other threads.
+#if 1
   { // progressbar
   int s = url.size();
   int sum=0;
@@ -518,6 +529,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   ProgressBar(sum,15,15,url);
   }
 #endif
+      }
 
 
 #endif
@@ -551,8 +563,8 @@ void InstallProgress(int num, std::string label, int max=15)
   //std::cout << "InstallProgress: '" << label << "'" << std::endl;
   //std::cout << "IB: " << num << std::endl;
   ProgressI p; p.num = num;
-  p.ticks = g_low->sdl->SDL_GetTicks();
-  g_last_tick = p.ticks;
+  //p.ticks = g_low->sdl->SDL_GetTicks();
+  //g_last_tick = p.ticks;
   int s = progress_max.size();
   int s2 = progress_val.size();
   bool max_done = false;
@@ -569,6 +581,11 @@ void InstallProgress(int num, std::string label, int max=15)
     progress_label.push_back(label);
   SetTicks(num, p.ticks);
   ProgressBar(num,0,max,"installprogress");
+#ifndef EMSCRIPTEN
+    // g_low->sdl->SDL_SetWindowTitle(sdl_window, l.c_str());
+  // std::cout << std::endl;
+#endif
+
 }
 
 void SetTicks(int num, int ticks) {
@@ -601,15 +618,16 @@ int FindProgressMax()
 void FinishProgress()
 {
   if (g_has_title) {
-  int tick = g_low->sdl->SDL_GetTicks();
-  int delta = tick-g_last_tick;
-  if (delta>2000 && g_has_title) {
-    std::string l = g_original_title;
+	//int tick = g_low->sdl->SDL_GetTicks();
+	//int delta = tick-g_last_tick;
+	//if (delta>2000 && g_has_title) {
+	//std::string l = g_original_title;
 #ifndef EMSCRIPTEN
-    g_low->sdl->SDL_SetWindowTitle(sdl_window, l.c_str());
+    // g_low->sdl->SDL_SetWindowTitle(sdl_window, l.c_str());
+    //std::cout << std::endl;
 #endif
     g_has_title = false;
-  }
+    //}
   }
 }
 void ProgressBar(int num, int val, int max, std::string label)
@@ -619,6 +637,7 @@ void ProgressBar(int num, int val, int max, std::string label)
   //std::cout << "PB: " << num << std::endl;
   int val_index = -1;
   int max_index = -1;
+  //std::cout << "P1" << std::endl;
   {
   int s = progress_val.size();
   for(int i=0;i<s;i++)
@@ -630,6 +649,7 @@ void ProgressBar(int num, int val, int max, std::string label)
       }
     }
   }
+  //std::cout << "P2" << std::endl;
 
   {
   int s = progress_max.size();
@@ -642,27 +662,31 @@ void ProgressBar(int num, int val, int max, std::string label)
       }
     }
   }
+  //std::cout << "P3" << std::endl;
 
-  int val1 = progress_val[val_index].value; //FindProgressVal();
-  int max1 = progress_max[max_index].value; //FindProgressMax();
-  int ticks1 = progress_val[val_index].ticks;
-  int ticks2 = g_low->sdl->SDL_GetTicks();
-  g_last_tick = ticks2;
-  int ticks = ticks2-ticks1;
+  int val1 = val_index!=-1?progress_val[val_index].value:0; //FindProgressVal();
+  int max1 = max_index!=-1?progress_max[max_index].value:1; //FindProgressMax();
+  //int ticks1 = progress_val[val_index].ticks;
+  //int ticks2 = g_low->sdl->SDL_GetTicks();
+  //g_last_tick = ticks2;
+  //int ticks = ticks2-ticks1;
   float v = float(val1)/float(max1);
   v*=15.0;
   int val2 = int(v);
   if (val2<0) val2=0;
+  if (val2>15) val2=15;
   float vv = 1.0;
   vv*=15.0;
   int max2 = int(vv);
+  if (max2<1) max2=1;
+  if (max2>15) max2=15;
   static std::string old_label = "";
-  if (label!="installprogress" && ticks>40) {
+  if (label!="installprogress" /*&& (ticks>40||val==max)*/) {
 
     std::stringstream stream;
-  if (old_label != label) { old_label = label; stream << std::endl << "["; }
+    if (old_label != label) { old_label = label; stream << std::endl << "["; }
   else
-    stream << "[";
+    stream << "\r";
   for(int i=0;i<val2;i++) {
     stream << "#";
   }
@@ -678,13 +702,17 @@ void ProgressBar(int num, int val, int max, std::string label)
 
   stream << "] "
     //<< val1 << "/" << max1 << ") (" << val << "/" << max << ") " << num << " " 
-	    << ticks << " " << label ;
-  std::string l = g_original_title + "                           " + stream.str();
+	    << " " << label ;
+  std::string l = stream.str();
 #ifndef EMSCRIPTEN
-  g_low->sdl->SDL_SetWindowTitle(sdl_window, l.c_str());
+	{
+	  std::cout << l.c_str() << std::flush;
+	  //g_low->sdl->SDL_SetWindowTitle(sdl_window, l.c_str());
+	}
 #endif
   g_has_title = true;
   }
+  //std::cout << "P4" << std::endl;
 }
 
 int async_pending_count = 0;
@@ -710,6 +738,11 @@ std::string remove_load(std::string s)
   return s;
 }
 
+bool file_exists(std::string filename)
+{
+  std::ifstream f(filename.c_str());
+  return f.good();
+}
 
 std::vector<unsigned char> load_from_url(std::string url)
 { // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
@@ -723,6 +756,7 @@ std::vector<unsigned char> load_from_url(std::string url)
       }
     }
   //  std::cout << "load_from_url using network: " << url << std::endl;
+    std::vector<unsigned char> buffer;
 
 #ifdef HAS_POPEN
 
@@ -731,6 +765,8 @@ std::vector<unsigned char> load_from_url(std::string url)
 #else
     std::string cmd = "curl -s -N --url " + url;
 #endif
+    if (file_exists(cmd)) {
+
 #ifdef __APPLE__
     FILE *f = popen(cmd.c_str(), "r");
 #else
@@ -742,10 +778,10 @@ std::vector<unsigned char> load_from_url(std::string url)
 #endif
     //std::cout<< "FILE: " << std::hex<<(long)f <<std::endl; 
     unsigned char c;
-    std::vector<unsigned char> buffer;
     while(fread(&c,1,1,f)==1) { buffer.push_back(c); }
-    fclose(f);
+    pclose(f);
 
+    }
     //fseek(f, 0, SEEK_END);
     //long pos = ftell(f);
     //fseek(f, 0, SEEK_SET);
@@ -764,7 +800,7 @@ std::vector<unsigned char> load_from_url(std::string url)
     //std::vector<unsigned char> buffer;
 
     while(fread(&c,1,1,f)==1) { buffer.push_back(c); }
-    fclose(f);
+    pclose(f);
       }
     return buffer;
 #else
