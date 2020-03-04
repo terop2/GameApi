@@ -196,7 +196,7 @@ public:
   bool Update(MainLoopEnv &e) {
     float time = e.time*10.0;
     float current_time = time;
-
+    m_time = current_time;
     float t = current_time;
     pos = 0.0;
     if (t<start_time) pos = start_val;
@@ -212,7 +212,9 @@ public:
     o2->Update(e);
     return true;
   }
-  int NumPoints() const { return std::min(o1->NumPoints(), o2->NumPoints()); }
+  int NumPoints() const { 
+    if (m_time<start_time ||m_time>=end_time) return 0;
+    return std::min(o1->NumPoints(), o2->NumPoints()); }
   Point Pos(int i) const
   {
     Point p1 = o1->Pos(i);
@@ -230,6 +232,7 @@ private:
   float start_val, end_val;
   float start_time, end_time;
   float pos;
+  float m_time;
 };
 EXPORT GameApi::PTS GameApi::PointsApi::anim_mix(GameApi::PTS obj1, GameApi::PTS obj2, float start_val, float end_val, float start_time, float end_time)
 {
@@ -378,7 +381,19 @@ void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p)
   PointsApiPoints *pts = find_pointsapi_points(e, p);
   int numpoints = pts->NumPoints();
 
+
   PointArray3 *arr = find_point_array3(e, pta);
+
+  if (numpoints>arr->numpoints) {
+    float *array = arr->array;
+    unsigned int *color = arr->color;
+    delete [] array;
+    delete [] color;
+    arr->array = new float[numpoints*3];
+    arr->color = new unsigned int[numpoints];
+  }
+  arr->numpoints = numpoints;
+
   float *array = arr->array;
   unsigned int *color = arr->color;
   for(int i=0;i<numpoints;i++)
@@ -398,9 +413,11 @@ void GameApi::PointsApi::update(GameApi::PTA pta)
 {
   PointArray3 *arr = find_point_array3(e, pta);
   g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer[0]);
-  g_low->ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, arr->numpoints*sizeof(float)*3, arr->array);
+  if (arr->numpoints>0)
+    g_low->ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, arr->numpoints*sizeof(float)*3, arr->array);
   g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer[1]);
-  g_low->ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, arr->numpoints*sizeof(unsigned int), arr->color);
+  if (arr->numpoints>0)
+    g_low->ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, arr->numpoints*sizeof(unsigned int), arr->color);
 }
 
 

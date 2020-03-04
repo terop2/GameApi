@@ -672,7 +672,7 @@ void ProgressBar(int num, int val, int max, std::string label)
   //int ticks = ticks2-ticks1;
   float v = float(val1)/float(max1);
   v*=15.0;
-  int val2 = int(v);
+  int val2 = int(v)+1;
   if (val2<0) val2=0;
   if (val2>15) val2=15;
   float vv = 1.0;
@@ -686,7 +686,7 @@ void ProgressBar(int num, int val, int max, std::string label)
     std::stringstream stream;
     if (old_label != label) { old_label = label; stream << std::endl << "["; }
   else
-    stream << "\r";
+    stream << "\r[";
   for(int i=0;i<val2;i++) {
     stream << "#";
   }
@@ -757,16 +757,19 @@ std::vector<unsigned char> load_from_url(std::string url)
     }
   //  std::cout << "load_from_url using network: " << url << std::endl;
     std::vector<unsigned char> buffer;
-
+    bool succ=false;
 #ifdef HAS_POPEN
 
 #ifdef WINDOWS
     std::string cmd = "..\\curl\\curl.exe -s -N --url " + url;
+    std::string cmd2  = "..\\curl\\curl.exe";
+    succ = file_exists(cmd2);
+  
 #else
     std::string cmd = "curl -s -N --url " + url;
+    succ = true;
 #endif
-    if (file_exists(cmd)) {
-
+    if (succ) {
 #ifdef __APPLE__
     FILE *f = popen(cmd.c_str(), "r");
 #else
