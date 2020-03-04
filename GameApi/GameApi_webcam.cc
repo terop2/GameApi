@@ -210,15 +210,23 @@ GameApi::TXID GameApi::TextureApi::webcam_txid(int num)
 class VR_Overlay : public MainLoopItem
 {
 public:
-  VR_Overlay(GameApi::Env &env, GameApi::TXID id, std::string key, std::string name) : env(env), id(id), key(key), name(name) { done=false; done2=false;}
+  VR_Overlay(GameApi::Env &env, GameApi::TXID id, std::string key, std::string name, int sx, int sy) : env(env), id(id), key(key), name(name),sx(sx),sy(sy) { done=false; done2=false;}
   virtual void Prepare()
   {
     if (!done && vr::VROverlay()) {
       vr::VROverlayError err;
-      err = vr::VROverlay()->CreateOverlay( key.c_str(), name.c_str(), &overlay);
+      err = vr::VROverlay()->CreateDashboardOverlay( key.c_str(), name.c_str(), &overlay, &overlay);
       std::cout << "Overlay error: " << err << std::endl;
 
       vr::VROverlay()->SetOverlayWidthInMeters( overlay, 1.5f );
+      vr::VRTextureBounds_t bounds = { 0.0, 0.0, 1.0, 1.0 };
+      vr::VROverlay()->SetOverlayTextureBounds( overlay, &bounds );
+      vr::VROverlay()->SetOverlayInputMethod( overlay, vr::VROverlayInputMethod_Mouse );
+      vr::HmdVector2_t win = {
+	(float)sx,
+	(float)sy
+      };
+      vr::VROverlay()->SetOverlayMouseScale( overlay, &win );
       done = true;
     }
   }
@@ -236,8 +244,8 @@ public:
       old_id = tex;
     }
     if (!done2) {
-      if (vr::VROverlay())
-	vr::VROverlay()->ShowOverlay(overlay);
+      //if (vr::VROverlay())
+      //	vr::VROverlay()->ShowOverlay(overlay);
       done2 = true;
     }
 
@@ -256,11 +264,12 @@ private:
   int old_id=-1;
   vr::VROverlayHandle_t overlay;
   std::string key, name;
+  int sx,sy;
 };
 
-GameApi::ML GameApi::TextureApi::vr_overlay(GameApi::TXID id, std::string key, std::string name)
+GameApi::ML GameApi::TextureApi::vr_overlay(GameApi::TXID id, std::string key, std::string name, int sx, int sy)
 {
-  return add_main_loop(e, new VR_Overlay(e,id, key, name));
+  return add_main_loop(e, new VR_Overlay(e,id, key, name,sx,sy));
 }
 
 // TODO: ML->RUN that uses openvr's PollEvent().

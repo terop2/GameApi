@@ -1860,6 +1860,7 @@ ShaderFile::ShaderFile()
     "    vec3 normal = getNormal();\n"
     "    vec3 view = vec3(0.0,0.0,1.0);\n"
 
+    // 0.0, 0.0, 400.0
     "  color = getPointShade(vec3(0.0,0.0,400.0) /*+ex_Position/100.0*/, materialInfo, normal, view);\n"
 
 "#ifdef GLTF_TEX5\n"
@@ -3270,6 +3271,7 @@ ShaderFile::ShaderFile()
     "    vec3 normal = getNormal();\n"
     "    vec3 view = vec3(0.0,0.0,1.0);\n"
 
+    // 0.0, 0.0,400.0
     "  color = getPointShade(vec3(0.0,0.0,400.0) /*+ex_Position/100.0*/, materialInfo, normal, view);\n"
 
 "#ifdef GLTF_TEX5\n"

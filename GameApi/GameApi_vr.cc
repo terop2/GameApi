@@ -856,11 +856,20 @@ EXPORT GameApi::MN GameApi::MovementNode::pose(MN next, bool pose_in_screen)
 {
   return next;
 }
+class ZeroIntFetcher : public Fetcher<int>
+{
+public:
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+  virtual void set(int t) { }
+  virtual int get() const { return 0; }
+
+};
 GameApi::IF GameApi::FontApi::hmd_state_fetcher()
 {
-GameApi::IF i;
-i.id=0;
-return i;
+  return add_int_fetcher(e,new ZeroIntFetcher);
 }
 EXPORT GameApi::ML GameApi::MainLoopApi::setup_hmd_projection(EveryApi &ev, ML ml2, bool eye, bool is_standard, float nnear, float nfar, bool translate)
 {
