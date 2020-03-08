@@ -1778,8 +1778,12 @@ int main(int argc, char *argv[]) {
   Ft font2 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 10*font_scale,13*font_scale); // 10,13
   Ft font3 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 30*font_scale,30*font_scale); // 30,30
 
-
-  std::ifstream ss("atlas0.txt");
+  std::string fname = "atlas0.txt";
+  if (file_exists("/usr/share/atlas0.txt")) {
+    fname = "/usr/share/atlas0.txt";
+  }
+    
+  std::ifstream ss(fname.c_str());
   char c;
   bool flag = false;
   if (ss.get(c))
@@ -1831,13 +1835,13 @@ int main(int argc, char *argv[]) {
   std::string a_atlas_bm1;
   std::string a_atlas_bm2;
   
-  if (file_exists("/usr/local/share/atlas0.txt")) {
-    a_atlas0 = "/usr/local/share/atlas0.txt";
-    a_atlas1 = "/usr/local/share/atlas1.txt";
-    a_atlas2 = "/usr/local/share/atlas2.txt";
-    a_atlas_bm0 = "/usr/local/share/atlas_bm0.ppm";
-    a_atlas_bm1 = "/usr/local/share/atlas_bm1.ppm";
-    a_atlas_bm2 = "/usr/local/share/atlas_bm2.ppm";
+  if (file_exists("/usr/share/atlas0.txt")) {
+    a_atlas0 = "/usr/share/atlas0.txt";
+    a_atlas1 = "/usr/share/atlas1.txt";
+    a_atlas2 = "/usr/share/atlas2.txt";
+    a_atlas_bm0 = "/usr/share/atlas_bm0.ppm";
+    a_atlas_bm1 = "/usr/share/atlas_bm1.ppm";
+    a_atlas_bm2 = "/usr/share/atlas_bm2.ppm";
   } else {
     a_atlas0 = "atlas0.txt";
     a_atlas1 = "atlas1.txt";
