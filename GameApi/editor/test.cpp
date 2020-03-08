@@ -1683,7 +1683,7 @@ void terminate_handler()
 }
 void clear_counters();
 void print_counters();
-extern pthread_t g_main_thread;
+//extern pthread_t g_main_thread;
 int main(int argc, char *argv[]) {
   //clear_counters();
   //SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T) -1, (SIZE_T)-1);
@@ -1693,7 +1693,7 @@ int main(int argc, char *argv[]) {
 
   set_current_block(-2);
 
-  g_main_thread = pthread_self();
+  //g_main_thread = pthread_self();
 
   std::set_terminate(&terminate_handler);
   srand(time(NULL));
