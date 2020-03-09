@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+if [[ $1 ]]; then
 mkdir -p gameapi-builder_1.0-$1
 mkdir -p gameapi-builder_1.0-$1/usr
 mkdir -p gameapi-builder_1.0-$1/usr/bin
@@ -16,3 +17,7 @@ cp atlas_bm0.ppm gameapi-builder_1.0-$1/usr/share/atlas_bm0.ppm
 cp atlas_bm1.ppm gameapi-builder_1.0-$1/usr/share/atlas_bm1.ppm
 cp atlas_bm2.ppm gameapi-builder_1.0-$1/usr/share/atlas_bm2.ppm
 cat control |sed s/25/$1/g >gameapi-builder_1.0-$1/DEBIAN/control
+fi
+if [[ ! $1 ]]; then
+    echo "./copy_files_to_deb.sh 25"
+fi
