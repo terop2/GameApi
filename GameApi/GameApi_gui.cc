@@ -1377,6 +1377,7 @@ public:
       {
 	Point2d p = get_pos();
 	ev.shader_api.use(sh);
+	ev.shader_api.set_var(sh, "color_mix", 1.0f);
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5,p.y+0.5,0.0));
 	ev.sprite_api.render_sprite_vertex_array(bm_va);
       }
