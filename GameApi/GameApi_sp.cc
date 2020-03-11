@@ -356,6 +356,7 @@ public:
     sh.id = e.sh_texture;
     ev.shader_api.use(sh);
     //std::cout << e.in_MV << std::endl;
+    ev.shader_api.set_var(sh, "color_mix", 1.0f);
     ev.shader_api.set_var(sh, "in_MV", add_matrix2(ee,e.in_MV));
     sp.render_sprite_vertex_array(va);
   }
