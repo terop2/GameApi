@@ -814,6 +814,13 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
   std::string path = getenv("homepath");
   start=drive+path+"\\";
 #endif
+#ifdef LINUX
+  std::string home = getenv("HOME");
+  start = home + "/.gameapi_builder";
+  std::string cmd = "mkdir -p " + start;
+  system(cmd.c_str());
+  start+="/";
+#endif
     std::string a_filename = start+a_ss2.str();
     //std::cout << "Saving: " << a_filename << std::endl;
     std::fstream a_ss(a_filename.c_str(), std::ios_base::binary |std::ios_base::out);
@@ -867,6 +874,13 @@ public:
   std::string drive = getenv("systemdrive");
   std::string path = getenv("homepath");
   start=drive+path+"\\";
+#endif
+#ifdef LINUX
+  std::string home = getenv("HOME");
+  start = home + "/.gameapi_builder";
+  std::string cmd = "mkdir -p " + start;
+  system(cmd.c_str());
+  start+="/";
 #endif
    
   std::string a_filename = start+a_ss2.str();
@@ -964,7 +978,15 @@ public:
   std::string path = getenv("homepath");
   start=drive+path+"\\";
 #endif
-    std::string filename = start+ss2.str();
+#ifdef LINUX
+  std::string home = getenv("HOME");
+  start = home + "/.gameapi_builder";
+  std::string cmd = "mkdir -p " + start;
+  system(cmd.c_str());
+  start+="/";
+#endif
+
+  std::string filename = start+ss2.str();
     //std::cout << "Saving: " << filename << std::endl;
     std::fstream ss(filename.c_str(), std::ios_base::binary |std::ios_base::out);
     int s = ptr->size();

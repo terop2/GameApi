@@ -1683,6 +1683,7 @@ void terminate_handler()
 }
 void clear_counters();
 void print_counters();
+bool file_exists(std::string s);
 //extern pthread_t g_main_thread;
 int main(int argc, char *argv[]) {
   //clear_counters();
@@ -1777,8 +1778,12 @@ int main(int argc, char *argv[]) {
   Ft font2 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 10*font_scale,13*font_scale); // 10,13
   Ft font3 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 30*font_scale,30*font_scale); // 30,30
 
-
-  std::ifstream ss("atlas0.txt");
+  std::string fname = "atlas0.txt";
+  if (file_exists("/usr/share/atlas0.txt")) {
+    fname = "/usr/share/atlas0.txt";
+  }
+    
+  std::ifstream ss(fname.c_str());
   char c;
   bool flag = false;
   if (ss.get(c))
@@ -1822,13 +1827,44 @@ int main(int argc, char *argv[]) {
 	}
     }
 
-
-  FtA atlas = ev.font_api.load_atlas("atlas0.txt");
-  FtA atlas2 = ev.font_api.load_atlas("atlas1.txt");
-  FtA atlas3 = ev.font_api.load_atlas("atlas2.txt");
-  BM atlas_bm = ev.bitmap_api.loadbitmap("atlas_bm0.ppm");
-  BM atlas_bm2 = ev.bitmap_api.loadbitmap("atlas_bm1.ppm");
-  BM atlas_bm3 = ev.bitmap_api.loadbitmap("atlas_bm2.ppm");
+#ifdef LINUX
+  std::string a_atlas0;
+  std::string a_atlas1;
+  std::string a_atlas2;
+  std::string a_atlas_bm0;
+  std::string a_atlas_bm1;
+  std::string a_atlas_bm2;
+  
+  if (file_exists("/usr/share/atlas0.txt")) {
+    a_atlas0 = "/usr/share/atlas0.txt";
+    a_atlas1 = "/usr/share/atlas1.txt";
+    a_atlas2 = "/usr/share/atlas2.txt";
+    a_atlas_bm0 = "/usr/share/atlas_bm0.ppm";
+    a_atlas_bm1 = "/usr/share/atlas_bm1.ppm";
+    a_atlas_bm2 = "/usr/share/atlas_bm2.ppm";
+  } else {
+    a_atlas0 = "atlas0.txt";
+    a_atlas1 = "atlas1.txt";
+    a_atlas2 = "atlas2.txt";
+    a_atlas_bm0 = "atlas_bm0.ppm";
+    a_atlas_bm1 = "atlas_bm1.ppm";
+    a_atlas_bm2 = "atlas_bm2.ppm";
+  }
+#else
+  std::string a_atlas0 = "atlas0.txt";
+  std::string a_atlas1 = "atlas1.txt";
+  std::string a_atlas2 = "atlas2.txt";
+  std::string a_atlas_bm0 = "atlas_bm0.ppm";
+  std::string a_atlas_bm1 = "atlas_bm1.ppm";
+  std::string a_atlas_bm2 = "atlas_bm2.ppm";
+#endif
+  
+  FtA atlas = ev.font_api.load_atlas(a_atlas0.c_str());
+  FtA atlas2 = ev.font_api.load_atlas(a_atlas1.c_str());
+  FtA atlas3 = ev.font_api.load_atlas(a_atlas2.c_str());
+  BM atlas_bm = ev.bitmap_api.loadbitmap(a_atlas_bm0.c_str());
+  BM atlas_bm2 = ev.bitmap_api.loadbitmap(a_atlas_bm1.c_str());
+  BM atlas_bm3 = ev.bitmap_api.loadbitmap(a_atlas_bm2.c_str());
 
 #if 0
   FB atlas_bm_b = ev.float_bitmap_api.from_red(atlas_bm_a);
