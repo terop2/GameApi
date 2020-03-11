@@ -1557,7 +1557,7 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "vec4 light(vec4 rgb)\n"
 "{\n"
-"  return clamp(vec4(1.5*rgb.rgb,rgb.a), vec4(0.0,0.0,0.0,0.0), vec4(1.0,1.0,1.0,1.0));\n"
+"  return clamp(vec4(1.0*rgb.rgb,rgb.a), vec4(0.0,0.0,0.0,0.0), vec4(1.0,1.0,1.0,1.0));\n"
 "}\n"
 "vec4 wave(vec4 rgb)\n"
 "{\n"
@@ -2830,7 +2830,7 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "vec4 light(vec4 rgb)\n"
 "{\n"
-"  return clamp(vec4(1.5*rgb.rgb,rgb.a), vec4(0.0,0.0,0.0,0.0), vec4(1.0,1.0,1.0,1.0));\n"
+"  return clamp(vec4(1.0*rgb.rgb,rgb.a), vec4(0.0,0.0,0.0,0.0), vec4(1.0,1.0,1.0,1.0));\n"
 "}\n"
 "vec4 wave(vec4 rgb)\n"
 "{\n"
@@ -3805,14 +3805,17 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 	      ss3 << s;
 	      
 #ifdef OLD_SHADER
-	      if (is_fbo)
+	      if (is_fbo) {
 		out += "gl_FragData[0] = rgb";
-	      else
-		out+="gl_FragColor = rgb";
-#else
-	      out+="out_Color = rgb";
-#endif
 	      out+= ss3.str();
+	      }
+	      else {
+		out+="gl_FragColor = rgb";
+	      out+= ss3.str();
+	      }
+#else
+	      out+="out_Color = rgb" + ss3.str() + "";
+#endif
 	      out+=";\n";
 		}
 	    }

@@ -356,9 +356,11 @@ public:
     return i;
   }
   
-  virtual void glColor4ub(int r, int g, int b, int a) { ::glColor4ub(r,g,b,a);    check_err("glColor4ub");
+  virtual void glColor4ub(int r, int g, int b, int a) { 
+    //::glColor4ub(r,g,b,a);    check_err("glColor4ub");
  }
-  virtual void glColor4f(float r, float g, float b, float a) { ::glColor4f(r,g,b,a);    check_err("glColor4f");
+  virtual void glColor4f(float r, float g, float b, float a) { 
+    //::glColor4f(r,g,b,a);    check_err("glColor4f");
  }
   virtual void glClearColor(float r, float g, float b, float a) { ::glClearColor(r,g,b,a);    check_err("glClearColor");
  }
@@ -393,7 +395,7 @@ public:
 #ifdef USE_TEXTURE_READ
     map_enums(front_and_back);
     map_enums(gl_line);
-    return ::glPolygonMode(front_and_back,gl_line); 
+    //return ::glPolygonMode(front_and_back,gl_line); 
 #endif
 }
   virtual void glClearStencil(int val) { 
@@ -407,7 +409,7 @@ public:
     map_enums(mode);
     map_enums(rep);
     check_err("before glTexEnvi");
-    ::glTexEnvi(a,mode,rep);
+    //::glTexEnvi(a,mode,rep);
     check_err("glTexEnvi");
 
  }
@@ -505,7 +507,7 @@ public:
     map_enums(a);
     check_err("before glClientActiveTexture");
 
-    ::glClientActiveTexture(a); 
+    //::glClientActiveTexture(a); 
     check_err("glClientActiveTexture");
   }
   virtual void glTexStorage3D(int arr, int a, int flag, int w, int h, int layer_count) {
@@ -515,7 +517,7 @@ public:
 #endif
     map_enums(arr);
     map_enums(flag);
-    ::glTexStorage3D(arr,a,flag,w,h,layer_count); 
+    //::glTexStorage3D(arr,a,flag,w,h,layer_count); 
     check_err("glTexStorage3D");
  #endif
   }
@@ -527,7 +529,7 @@ public:
     map_enums(arr);
     map_enums(rgba);
     map_enums(unsig_byte);
-    ::glTexSubImage3D(arr,a,b,c,d,e,f,g,rgba,unsig_byte,buffer); 
+    //::glTexSubImage3D(arr,a,b,c,d,e,f,g,rgba,unsig_byte,buffer); 
     check_err("glTexSubImage3D");
 #endif
   }
@@ -535,7 +537,7 @@ public:
 #ifdef USE_TEXTURE_READ
     map_enums(a);
     map_enums(w);
-    ::glGetTexLevelParameteriv(a,b,w,ptr); 
+    //::glGetTexLevelParameteriv(a,b,w,ptr); 
     check_err("glGetTexLevelParameteriv");
 #endif
 }
@@ -544,14 +546,14 @@ public:
     map_enums(a);
     map_enums(rgba);
     map_enums(unsign_byte);
-::glGetTexImage(a,b,rgba,unsign_byte,ptr); 
+    //::glGetTexImage(a,b,rgba,unsign_byte,ptr); 
     check_err("glGetTexImage");
 #endif
 }
   virtual void glReadBuffer(int a) { 
 #ifdef USE_TEXTURE_READ
     map_enums(a);
-    ::glReadBuffer(a); 
+    //::glReadBuffer(a); 
     check_err("glReadBuffer");
 #endif
 }
@@ -626,7 +628,7 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #endif
   map_enums(gl_float);
   map_enums(boolean);
-::glVertexAttribIPointer(a,b,gl_float,boolean,ptr); 
+  //::glVertexAttribIPointer(a,b,gl_float,boolean,ptr); 
     check_err("glVertexAttribIPointer");
 #endif
 }
@@ -830,7 +832,7 @@ return ::glCreateShader(shader); }
 #ifdef GLEW_HACK
 #define glBindFragDataLocation GLEW_GET_FUN(__glewBindFragDataLocation)
 #endif
-::glBindFragDataLocation(p,num,data);
+    //::glBindFragDataLocation(p,num,data);
 #endif
   }
   virtual void glBindAttribLocation(int p, int num, const char *data) { 
@@ -846,7 +848,7 @@ return ::glCreateShader(shader); }
 #endif
     map_enums(geom);
     map_enums(inputtype);
-::glProgramParameteriEXT(p,geom,inputtype);
+    //::glProgramParameteriEXT(p,geom,inputtype);
 #endif
   }
   
@@ -935,11 +937,11 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
 
 
   // Old
-  virtual void glEnableClientState(int a) { ::glEnableClientState(a); }
+  virtual void glEnableClientState(int a) { /*::glEnableClientState(a);*/ }
   virtual void glLineWidth(float i) { ::glLineWidth(i); }
-  virtual void glPushMatrix() { ::glPushMatrix(); }
-  virtual void glPopMatrix() { ::glPopMatrix(); }
-  virtual void glMultMatrixf(float *mat) { ::glMultMatrixf(mat); }
+  virtual void glPushMatrix() { /*::glPushMatrix();*/ }
+  virtual void glPopMatrix() { /*::glPopMatrix();*/ }
+  virtual void glMultMatrixf(float *mat) { /*::glMultMatrixf(mat);*/ }
 
   // rest
   void glDepthFunc(int i) { 
