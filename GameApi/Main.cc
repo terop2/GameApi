@@ -408,6 +408,8 @@ c  for(int i=0;i<size1&&!exit2;i+=100)
 
 Low_SDL_GLContext g_context;
 
+std::string g_gpu_vendor;
+
 void initialize_low(int flags);
 
 IMPORT void check_vr_compositor_init();
@@ -505,6 +507,8 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     }
 
 #endif
+  const unsigned char *ptr = g_low->ogl->glGetString(Low_GL_VENDOR);
+  g_gpu_vendor = std::string(ptr,ptr+4);
   std::cout << "Vendor: " << g_low->ogl->glGetString(Low_GL_VENDOR)<< std::endl;
   std::cout << "Renderer:" << g_low->ogl->glGetString(Low_GL_RENDERER)<< std::endl;
   std::cout << "Version:" << g_low->ogl->glGetString(Low_GL_VERSION) << std::endl;

@@ -76,9 +76,14 @@ void GameApi::ShaderApi::link_1(GameApi::SH shader)
   if (seq)
     seq->link(shader.id);
 }
+extern std::string g_gpu_vendor;
 EXPORT GameApi::SH GameApi::ShaderApi::texture_shader()
 {
-  return get_normal_shader_1("comb", "comb", "", "texture:light:light", "texture:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX","","");
+  if (g_gpu_vendor.substr(0,4)=="NVID") {
+  return get_normal_shader_1("comb", "comb", "", "texture", "texture", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX","","");
+  } else {
+  return get_normal_shader_1("comb", "comb", "", "texture", "texture", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX","","");
+  }
 }
 EXPORT GameApi::SH GameApi::ShaderApi::texture_array_shader()
 {

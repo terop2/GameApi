@@ -211,11 +211,17 @@ class VR_Overlay : public MainLoopItem
 {
 public:
   VR_Overlay(GameApi::Env &env, GameApi::TXID id, std::string key, std::string name, int sx, int sy) : env(env), id(id), key(key), name(name),sx(sx),sy(sy) { done=false; done2=false;}
+  ~VR_Overlay() {
+    if (vr::VROverlay())
+      vr::VROverlay()->DestroyOverlay( overlay );
+    if (vr::VROverlay())
+      vr::VROverlay()->DestroyOverlay( overlay2 );
+  }
   virtual void Prepare()
   {
     if (!done && vr::VROverlay()) {
       vr::VROverlayError err;
-      err = vr::VROverlay()->CreateDashboardOverlay( key.c_str(), name.c_str(), &overlay, &overlay);
+      err = vr::VROverlay()->CreateDashboardOverlay( key.c_str(), name.c_str(), &overlay, &overlay2);
       std::cout << "Overlay error: " << err << std::endl;
 
       vr::VROverlay()->SetOverlayWidthInMeters( overlay, 1.5f );
@@ -237,10 +243,15 @@ public:
     iid->render(e);
 
     int tex = iid->texture();
-    if (old_id!=tex && tex!=-1 && tex!=0) {
+    //if (old_id!=tex && tex!=-1 && tex!=0) {
+    {
+      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, tex);
+
       vr::Texture_t texture = { (void*)(uintptr_t)tex, vr::TextureType_OpenGL, vr::ColorSpace_Auto };
       if (vr::VROverlay())
 	vr::VROverlay()->SetOverlayTexture(overlay, &texture);
+      //if (vr::VROverlay())
+      //	vr::VROverlay()->SetOverlayTexture(overlay, &texture);
       old_id = tex;
     }
     if (!done2) {
@@ -248,7 +259,8 @@ public:
       //	vr::VROverlay()->ShowOverlay(overlay);
       done2 = true;
     }
-
+    vr::VREvent_t event;
+    while ( vr::VROverlay()->PollNextOverlayEvent( overlay, &event, sizeof(event) ) ) { }
   }
   virtual void handle_event(MainLoopEvent &e)
   {
@@ -263,6 +275,7 @@ private:
   GameApi::TXID id;
   int old_id=-1;
   vr::VROverlayHandle_t overlay;
+  vr::VROverlayHandle_t overlay2;
   std::string key, name;
   int sx,sy;
 };

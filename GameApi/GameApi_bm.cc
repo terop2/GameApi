@@ -4411,11 +4411,11 @@ public:
 	if (y<0||y>=sy) continue;
 	if (done[x+y*sx]==false) {
 	  int count = 0;
-	  if (is_nearest(light_pos+Vector(softness,0.0,0.0), pp,zpi)) count++;
-	  if (is_nearest(light_pos+Vector(-softness,0.0,0.0), pp,zpi)) count++;
-	  if (is_nearest(light_pos+Vector(0.0,0.0,softness), pp,zpi)) count++;
-	  if (is_nearest(light_pos+Vector(0.0,0.0,-softness), pp,zpi)) count++;
-	  if (is_nearest(light_pos, pp,zpi)) count+=4;
+	  //if (is_nearest(light_pos+Vector(softness,0.0,0.0), pp,zpi)) count++;
+	  //if (is_nearest(light_pos+Vector(-softness,0.0,0.0), pp,zpi)) count++;
+	  //if (is_nearest(light_pos+Vector(0.0,0.0,softness), pp,zpi)) count++;
+	  //if (is_nearest(light_pos+Vector(0.0,0.0,-softness), pp,zpi)) count++;
+	  if (!is_nearest(light_pos, pp,zpi)) count+=4;
 	  shadow[x+y*sx] = count;
 
 	      //shadow[x+y*sx] = true;
@@ -4442,11 +4442,11 @@ public:
 
 	if (done[x+y*sx]==false ) {
 	  int count = 0;
-	  if (is_nearest(light_pos+Vector(softness,0.0,0.0), pp,zpi)) count++;
-	  if (is_nearest(light_pos+Vector(-softness,0.0,0.0), pp,zpi)) count++;
-	  if (is_nearest(light_pos+Vector(0.0,0.0,softness), pp,zpi)) count++;
-	  if (is_nearest(light_pos+Vector(0.0,0.0,-softness), pp,zpi)) count++;
-	  if (is_nearest(light_pos, pp,zpi)) count+=4;
+	  //if (is_nearest(light_pos+Vector(softness,0.0,0.0), pp,zpi)) count++;
+	  //if (is_nearest(light_pos+Vector(-softness,0.0,0.0), pp,zpi)) count++;
+	  //if (is_nearest(light_pos+Vector(0.0,0.0,softness), pp,zpi)) count++;
+	  //if (is_nearest(light_pos+Vector(0.0,0.0,-softness), pp,zpi)) count++;
+	  if (!is_nearest(light_pos, pp,zpi)) count+=4;
 	  shadow[x+y*sx] = count;
 	}
 	done[x+y*sx]=true;
@@ -4457,8 +4457,8 @@ public:
 
   bool is_nearest(Point light_pos, Point pp, int zpi) const
   {
-    //int rr = 100000.0;
-    //int zp = -1;
+    float rr = 100000.0;
+    int zp = -1;
     int s = coll2->NumFaces();
     for(int i=0;i<s;i++) {
       int p = coll2->NumPoints(i);
@@ -4469,7 +4469,8 @@ public:
 	LineProperties lp(light_pos,pp);
 	float r = 0.0;
 	bool b = lp.TriangleIntersection(p1,p2,p3,r);
-	if (b) return true;
+	//std::cout << r << std::endl;
+	if (b) { if (r>0.0 && r<0.98) return false; }
       } else if (p==4)
 	{
 	Point p1 = coll2->FacePoint(i,0);
@@ -4479,10 +4480,11 @@ public:
 	LineProperties lp(light_pos,pp);
 	float r = 0.0;
 	bool b = lp.QuadIntersection(p1,p2,p3,p4,r);
-	if (b) return true;
+	//std::cout << r << std::endl;
+	if (b) { if (r>0.0 && r<0.98) return false; }
 	}
     }
-    return false;
+    return true;
   }
 
   virtual int SizeX() const { return sx; }
@@ -4492,7 +4494,7 @@ public:
     int count = shadow[x+y*sx];
     if (!shadow[x+y*sx]) return texture->Map(x,y);
     Color c = texture->Map(x,y);
-    float depth = (8.0-count)/8.0; // [0..1]
+    float depth = (count)/8.0; // [0..1]
     depth*=(1.0-shadow_darkness);
     depth+=shadow_darkness;
     c.r = c.r*depth;
