@@ -1684,6 +1684,17 @@ ShaderFile::ShaderFile()
 "}\n"
 "#endif\n"
 "#endif\n"
+"const float GAMMA=2.2;\n"
+"const float INV_GAMMA = 1.0/GAMMA;\n"
+"vec3 LINEARtoSRGB(vec3 color)\n"
+"{\n"
+" return pow(color, vec3(INV_GAMMA));\n"
+"}\n"
+"vec4 SRGBtoLINEAR(vec4 srgbIn)\n"
+"{\n"
+"  return vec4(pow(srgbIn.xyz,vec3(GAMMA)), srgbIn.w);\n"
+"}\n"
+
 "#ifdef EX_COLOR\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef EX_NORMAL\n"
@@ -1698,16 +1709,6 @@ ShaderFile::ShaderFile()
 "vec4 getVertexColor()\n"
 "{\n"
 "  return ex_Color;\n"
-"}\n"
-"const float GAMMA=2.2;\n"
-"const float INV_GAMMA = 1.0/GAMMA;\n"
-"vec3 LINEARtoSRGB(vec3 color)\n"
-"{\n"
-" return pow(color, vec3(INV_GAMMA));\n"
-"}\n"
-"vec4 SRGBtoLINEAR(vec4 srgbIn)\n"
-"{\n"
-"  return vec4(pow(srgbIn.xyz,vec3(GAMMA)), srgbIn.w);\n"
 "}\n"
 "struct MaterialInfo {\n"
 "  float perceptualRoughness;\n"
@@ -3095,6 +3096,17 @@ ShaderFile::ShaderFile()
 "}\n"
 "#endif\n"
 "#endif\n"
+"const float GAMMA=2.2;\n"
+"const float INV_GAMMA = 1.0/GAMMA;\n"
+"vec3 LINEARtoSRGB(vec3 color)\n"
+"{\n"
+" return pow(color, vec3(INV_GAMMA));\n"
+"}\n"
+"vec4 SRGBtoLINEAR(vec4 srgbIn)\n"
+"{\n"
+"  return vec4(pow(srgbIn.xyz,vec3(GAMMA)), srgbIn.w);\n"
+"}\n"
+
 "#ifdef EX_COLOR\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef EX_NORMAL\n"
@@ -3109,16 +3121,6 @@ ShaderFile::ShaderFile()
 "vec4 getVertexColor()\n"
 "{\n"
 "  return ex_Color;\n"
-"}\n"
-"const float GAMMA=2.2;\n"
-"const float INV_GAMMA = 1.0/GAMMA;\n"
-"vec3 LINEARtoSRGB(vec3 color)\n"
-"{\n"
-" return pow(color, vec3(INV_GAMMA));\n"
-"}\n"
-"vec4 SRGBtoLINEAR(vec4 srgbIn)\n"
-"{\n"
-"  return vec4(pow(srgbIn.xyz,vec3(GAMMA)), srgbIn.w);\n"
 "}\n"
 "struct MaterialInfo {\n"
 "  float perceptualRoughness;\n"
@@ -3521,6 +3523,8 @@ std::vector<std::string> replace_c_template_unique_ids(std::string defines, std:
     }
   return ids;
 }
+extern std::string g_gpu_vendor;
+
 std::string replace_c(std::string s, std::vector<std::string> comb, bool is_fragment, bool is_fbo, bool is_transparent, ShaderModule *mod, ShaderCall *call, std::string defines, bool is_get_pixel, std::string shader)
 {
   int unique_id = 0;
@@ -3814,7 +3818,11 @@ std::string replace_c(std::string s, std::vector<std::string> comb, bool is_frag
 	      out+= ss3.str();
 	      }
 #else
-	      out+="out_Color = rgb" + ss3.str() + "";
+	      if (g_gpu_vendor!="NVID") {
+		out+="out_Color = rgb" + ss3.str() + "";
+	      } else {
+		out+="out_Color = SRGBtoLINEAR(rgb" + ss3.str() + ")";
+	      }
 #endif
 	      out+=";\n";
 		}

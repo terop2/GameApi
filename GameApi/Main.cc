@@ -408,7 +408,7 @@ c  for(int i=0;i<size1&&!exit2;i+=100)
 
 Low_SDL_GLContext g_context;
 
-std::string g_gpu_vendor;
+extern std::string g_gpu_vendor;
 
 void initialize_low(int flags);
 
