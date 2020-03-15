@@ -2775,7 +2775,9 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     float time = e.time;
-    float newtime = fmod(time, duration);
+    float newtime = time;
+    newtime-=delta;
+    if (newtime>duration) { delta+=duration; newtime-=duration; }
     MainLoopEnv ee = e;
     ee.time = newtime;
     if (next)
@@ -2786,7 +2788,7 @@ public:
 private:
   MainLoopItem *next;
   float duration;
-
+  float delta=0;
 };
 EXPORT GameApi::ML GameApi::MovementNode::repeat_ml(EveryApi &ev, GameApi::ML ml, float duration)
 {
