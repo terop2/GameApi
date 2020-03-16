@@ -44,7 +44,7 @@ CFiles=	GameApi_webcam.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc Effec
         GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
         GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc \
 	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc GameApi_vr.cc \
- 	GameApi_qt.cc GameApi_low_egl.cc
+ 	GameApi_qt.cc GameApi_low_egl.cc escapi.cc
 
 
 CFiles2 = Main.cc
@@ -94,8 +94,8 @@ INC7WIN = d:\cvs\pthread\pre-built.2\include
 INC8WIN = d:\cvs\SDL2_mixer-2.0.0\x86_64-w64-mingw32/include/sdl2
 #INC10WIN = chai\ChaiScript-6.1.0\include
 
-CCFLAGS = -DWINDOWS -g -std=c++17 -Wall -O3 -I./objs -I/usr/include/freetype2 -pthread -DHAVE_STRUCT_TIMESPEC -fno-var-tracking-assignments
-CC2FLAGS = -DWINDOWS -g -std=c++17 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -I$(INC8WIN) -DGLEW_STATIC -pthread -DHAVE_STRUCT_TIMESPEC -U__STRICT_ANSI__ -ftrack-macro-expansion=0 -Iholoplay -Lholoplay -fno-var-tracking-assignments
+CCFLAGS = -DWINDOWS -g -std=c++17 -Wall -O3 -I./objs -I/usr/include/freetype2 -pthread -DHAVE_STRUCT_TIMESPEC -fno-var-tracking-assignments -Iescapi
+CC2FLAGS = -DWINDOWS -g -std=c++17 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -I$(INC8WIN) -DGLEW_STATIC -pthread -DHAVE_STRUCT_TIMESPEC -U__STRICT_ANSI__ -ftrack-macro-expansion=0 -Iholoplay -Lholoplay -fno-var-tracking-assignments -Iescapi
 #`pkg-config gtkmm-2.4 --cflags`
 
 
