@@ -542,6 +542,7 @@ public:
   IMPORT TXID bufferref_to_txid(TXID old, const BufferRef &buf);
   IMPORT TXID webcam_txid(int num);
   IMPORT TXID webcam_txid_slow(EveryApi &ev, int num);
+  IMPORT TXID webcam_txid_win(EveryApi &ev, int sx, int sy, int num);
   IMPORT ML vr_overlay(TXID id, std::string key, std::string name, int sx, int sy);
   IMPORT std::vector<TXID> prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types=std::vector<int>(),bool mipmaps=true);
   IMPORT TXID prepare_cubemap(EveryApi &ev, BM right, BM left, BM top, BM bottom, BM back, BM front);
