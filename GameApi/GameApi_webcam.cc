@@ -294,6 +294,8 @@ GameApi::ML GameApi::TextureApi::vr_overlay(GameApi::TXID id, std::string key, s
 
 #endif
 
+#ifndef EMSCRIPTEN
+
 #include "escapi/escapi.h"
 
 class ESCCapture : public BufferRefReq
@@ -372,3 +374,4 @@ GameApi::TXID GameApi::TextureApi::webcam_txid_win(EveryApi &ev, int sx, int sy,
   WebCamBufferRefTexID *id = new WebCamBufferRefTexID(ev, *buf2);
   return add_txid(e,id);
 }
+#endif
