@@ -1850,6 +1850,8 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
   //VA I12=ev.polygon_api.create_vertex_array(I11,true);
   //ML I13=ev.polygon_api.render_vertex_array_ml(ev,I12);
   //VA va = ev.sprite_api.create_vertex_array(I7a);
+  ML I17;
+  {
   ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, I7a);
 MT I3=ev.materials_api.texture(ev,I7a,1.0);
 MT I4=ev.materials_api.fade(ev,I3,0,5,3000,4000);
@@ -1860,7 +1862,8 @@ MN I8=ev.move_api.trans2(I7,-800,400,0);
 MN I9=ev.move_api.rotatey(I8,-1.59);
 MN I10=ev.move_api.rotate(I9,0,0.001,0,0,0,0,1,0,1.59);
 MN I11=ev.move_api.trans2(I10,-800,-1400,0);
-ML I17=ev.move_api.move_ml(ev,I5,I11,1,10.0);
+I17=ev.move_api.move_ml(ev,I5,I11,1,10.0);
+  }
   /*
   MN I14=ev.move_api.empty();
   MN I14a=ev.move_api.scale2(I14, 4,4,4);
