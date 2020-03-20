@@ -1851,7 +1851,7 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
   //ML I13=ev.polygon_api.render_vertex_array_ml(ev,I12);
   //VA va = ev.sprite_api.create_vertex_array(I7a);
   ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, I7a);
-MT I3=ev.materials_api.texture(ev,I17a,1.0);
+MT I3=ev.materials_api.texture(ev,I7a,1.0);
 MT I4=ev.materials_api.fade(ev,I3,0,5,3000,4000);
 ML I5=ev.materials_api.bind(I1,I4);
 MN I6=ev.move_api.empty();
