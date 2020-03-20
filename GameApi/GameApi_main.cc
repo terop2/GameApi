@@ -1851,6 +1851,17 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
   //ML I13=ev.polygon_api.render_vertex_array_ml(ev,I12);
   //VA va = ev.sprite_api.create_vertex_array(I7a);
   ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, I7a);
+MT I3=ev.materials_api.texture(ev,I17a,1.0);
+MT I4=ev.materials_api.fade(ev,I3,0,5,3000,4000);
+ML I5=ev.materials_api.bind(I1,I4);
+MN I6=ev.move_api.empty();
+MN I7=ev.move_api.scale2(I6,4,4,4);
+MN I8=ev.move_api.trans2(I7,-800,400,0);
+MN I9=ev.move_api.rotatey(I8,-1.59);
+MN I10=ev.move_api.rotate(I9,0,0.001,0,0,0,0,1,0,1.59);
+MN I11=ev.move_api.trans2(I10,-800,-1400,0);
+ML I17=ev.move_api.move_ml(ev,I5,I11,1,10.0);
+  /*
   MN I14=ev.move_api.empty();
   MN I14a=ev.move_api.scale2(I14, 4,4,4);
   MN I14b=ev.move_api.trans2(I14a,-800,400,0);
@@ -1858,7 +1869,7 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
   MN I16=ev.move_api.rotate(I15,0,30,0,0,0,0,1,0,1.59);
   MN I16a=ev.move_api.trans2(I16, -800,-1400,0);
   ML I17=ev.move_api.move_ml(ev,I13,I16a);
-
+  */
   ML I26;
   { // PROGRESS BAR
 BB I1=ev.bool_bitmap_api.empty(92,12);

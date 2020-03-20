@@ -19,6 +19,27 @@
 
 #endif
 
+
+class WebCamBufferRefTexID : public TextureID
+{
+public:
+  WebCamBufferRefTexID(GameApi::EveryApi &ev, BufferRefReq &seq) : ev(ev), seq(seq) { id.id=0; }
+  void handle_event(MainLoopEvent &e) {
+  }
+  void render(MainLoopEnv &e) {
+  }
+  int texture() const
+  {
+    id = ev.texture_api.bufferref_to_txid(id, seq.Buffer());
+    return id.id;
+  }
+private:
+  GameApi::EveryApi &ev;
+  BufferRefReq &seq;
+  mutable GameApi::TXID id;
+};
+
+
 #ifndef VIRTUAL_REALITY_OVERLAY
 EXPORT void    check_vr_overlay_init()
 {
@@ -133,24 +154,6 @@ private:
 
 
 
-class WebCamBufferRefTexID : public TextureID
-{
-public:
-  WebCamBufferRefTexID(GameApi::EveryApi &ev, BufferRefReq &seq) : ev(ev), seq(seq) { id.id=0; }
-  void handle_event(MainLoopEvent &e) {
-  }
-  void render(MainLoopEnv &e) {
-  }
-  int texture() const
-  {
-    id = ev.texture_api.bufferref_to_txid(id, seq.Buffer());
-    return id.id;
-  }
-private:
-  GameApi::EveryApi &ev;
-  BufferRefReq &seq;
-  mutable GameApi::TXID id;
-};
 
 GameApi::TXID GameApi::TextureApi::webcam_txid_slow(EveryApi &ev, int num)
 {
@@ -287,4 +290,85 @@ GameApi::ML GameApi::TextureApi::vr_overlay(GameApi::TXID id, std::string key, s
 
 // TODO: ML->RUN that uses openvr's PollEvent().
 
+
+
 #endif
+
+#include "escapi/escapi.h"
+
+class ESCCapture : public BufferRefReq
+{
+public:
+  ESCCapture(int sx, int sy, int num) : num(num) {
+    ref = BufferRef::NewBuffer(sx,sy);
+    params.mTargetBuf = (int*)ref.buffer;
+    params.mWidth = sx;
+    params.mHeight = sy;
+
+    count = setupESCAPI();
+    init_done = false;
+  }
+  ~ESCCapture() { if (init_done) deinitCapture(num); BufferRef::FreeBuffer(ref); }
+  void Gen() const { }
+  BufferRef Buffer() const { 
+    if (num>=0 && num<count) {
+      if (!init_done) {
+	initCapture(num, &params);
+	init_done = true;
+      }
+      doCapture(num);
+      while(isCaptureDone(num)!=1) { }
+      return ref;
+    } else {
+      return ref;
+    }
+  }
+private:
+  mutable BufferRef ref;
+  mutable SimpleCapParams params;
+  int count;
+  int num;
+  mutable bool init_done;
+};
+
+class BufferRefFlip : public BufferRefReq
+{
+public:
+  BufferRefFlip(BufferRefReq &seq) : seq(seq) { }
+  void Gen() const { }
+  BufferRef Buffer() const {
+    BufferRef ref = seq.Buffer();
+    // do some oeprations here
+    int sx = ref.width;
+    int sy = ref.height;
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++)
+	{
+	  unsigned int color = ref.buffer[x+y*ref.ydelta];
+	  unsigned char *ptr = (unsigned char*)&color;
+	  unsigned char b = ptr[0];
+	  unsigned char g = ptr[1];
+	  unsigned char r = ptr[2];
+	  unsigned char a = ptr[3];
+	  ptr[0]=r;
+	  ptr[1]=g;
+	  ptr[2]=b;
+	  ptr[3]=a;
+	  ref.buffer[x+y*ref.ydelta] = color; 
+	  }
+    // ...
+
+    return ref;
+  }
+private:
+  BufferRefReq &seq;
+};
+
+
+GameApi::TXID GameApi::TextureApi::webcam_txid_win(EveryApi &ev, int sx, int sy, int num)
+{
+  ESCCapture *buf = new ESCCapture(sx,sy,num);
+  BufferRefFlip *buf2 = new BufferRefFlip(*buf);
+  WebCamBufferRefTexID *id = new WebCamBufferRefTexID(ev, *buf2);
+  return add_txid(e,id);
+}
