@@ -432,11 +432,19 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     //std::cout << "ASyncLoader::load_urls:" << url << std::endl; 
 
   // progress bar
+    {
+    std::string url2 = "load_url.php?url=" + url ;
   int s = url.size();
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
+  if (load_url_buffers_async[url2]) { 
+    InstallProgress(sum,url + " (cached)",15);
+  } else {
   InstallProgress(sum,url,15);
+
+  }
+    }
 
 #ifdef EMSCRIPTEN
   std::string url2 = "load_url.php";
@@ -491,15 +499,29 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 #endif
 #else
   { // progressbar
+    std::string url2 = "load_url.php?url=" + url ;
   int s = url.size();
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
-  ProgressBar(sum,0,15,url);
+  if (load_url_buffers_async[url2]) { 
+    ProgressBar(sum,0,15,url+" (cached)");
+  } else {
+    ProgressBar(sum,0,15,url);
+  }
   }
 
     std::string url2 = "load_url.php?url=" + url ;
-    if (load_url_buffers_async[url2]) { return; }
+    if (load_url_buffers_async[url2]) { 
+      { // progressbar
+	int s = url.size();
+	int sum=0;
+	for(int i=0;i<s;i++) sum+=int(url[i]);
+	sum = sum % 1000;
+	ProgressBar(sum,15,15,url + " (cached)");
+      }
+
+      return; }
     //std::cout << "Loading url: " << url <<std::endl;
     std::vector<unsigned char> buf = load_from_url(url);
     //std::cout << "Loading url finished: " << url <<std::endl;
@@ -560,6 +582,7 @@ std::vector<ProgressI > progress_val;
 std::vector<std::string> progress_label;
 void InstallProgress(int num, std::string label, int max=15)
 {
+  //std::cout << "InstallProgress: " << num << " " << label << " " << max << std::endl;
   //std::cout << "InstallProgress: '" << label << "'" << std::endl;
   //std::cout << "IB: " << num << std::endl;
   ProgressI p; p.num = num;
@@ -632,6 +655,7 @@ void FinishProgress()
 }
 void ProgressBar(int num, int val, int max, std::string label)
 {
+  //std::cout << "Progress: " << num << " " << val << " " << label << " " << max << std::endl;
   //std::cout << "ProgressBar: '" << label << "'" << std::endl;
 
   //std::cout << "PB: " << num << std::endl;
