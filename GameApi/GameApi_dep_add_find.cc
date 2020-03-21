@@ -11,20 +11,18 @@ struct Block
   std::vector<std::shared_ptr<void> > vec;
   ~Block()
   {
-    static int ii = 0;
-    ii++;
     int s = vec.size();
     if (s)
-      InstallProgress(667+ii, "Cleanup", s);
+      InstallProgress(667, "Cleanup", 15);
     for(int i=0;i<s;i++)
       {
 	if (i%10==0) {
-	  ProgressBar(667+ii,i,s,"Cleanup");
+	  ProgressBar(667,i*15/s,15,"Cleanup");
 	}
       vec[i].reset();
       }
     if (s)
-      ProgressBar(667+ii,s-1,s,"Cleanup");
+      ProgressBar(667,15,15,"Cleanup");
     std::cout << std::flush;
     vec.clear();
   }

@@ -1043,7 +1043,7 @@ public:
     int numthreads = 4;
     g_sprite_count=0;
     if (progress)
-      InstallProgress(434, "bitmap", 4);
+      InstallProgress(434, "bitmap", 15);
     std::vector<ThreadInfo_sprite*> vec;
     int dsy = sy/numthreads + 1;
     for(int t=0;t<numthreads;t++) {
@@ -1070,9 +1070,11 @@ public:
       void *res;
       pthread_join(info->thread_id, &res);
       if (progress)
-	ProgressBar(434, t, 4, "bitmap");
+	ProgressBar(434, t*15/s, 15, "bitmap");
       delete info;
     }
+    if (progress)
+      ProgressBar(434, 15, 15, "bitmap");
 
 #else
   for(int y=0;y<sy;y++)
