@@ -24,6 +24,10 @@ extern "C" void _udev_device_get_action() { }
 extern int g_event_screen_x;
 extern int g_event_screen_y;
 
+void InstallProgress(int num, std::string label, int max=15);
+void ProgressBar(int num, int val, int max, std::string label);
+
+
 std::string hexify2(std::string s)
 {
   std::string res;
@@ -1691,7 +1695,8 @@ int main(int argc, char *argv[]) {
 
   //pid_t pid = getpid();
   //std::cout << "pid: " << (long)pid << std::endl;
-
+  InstallProgress(888,"init",10);
+  //ProgressBar(888,0,10,"init");
   set_current_block(-2);
 
   //g_main_thread = pthread_self();
@@ -1767,6 +1772,7 @@ int main(int argc, char *argv[]) {
 
   int font_scale = 2;
 
+  ProgressBar(888,0,5,"init");
   // shader initialization
   ev.shader_api.load_default();
   SH sh = ev.shader_api.texture_shader();
@@ -1918,6 +1924,7 @@ int main(int argc, char *argv[]) {
   //vec3.push_back("newbitmap");
   //W test1 = gui.list_item_opened(100,"Bi tmapApi", font, vec3, font);
   //gui.set_pos(test1, 400,400);
+  ProgressBar(888,1,5,"init");
   env.list_tooltips = gui.empty();
   std::vector<W> items;
   for(int i=0;i<1;i++)
@@ -1926,12 +1933,17 @@ int main(int argc, char *argv[]) {
       items.push_back(gui.boolbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.floatbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.polygonapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+
+  ProgressBar(888,2,5,"init");
+
       items.push_back(gui.shadermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.linesapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.pointsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.moveapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.pointapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.vectorapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+
+  ProgressBar(888,3,5,"init");
 
       items.push_back(gui.volumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.floatvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
@@ -1944,6 +1956,7 @@ int main(int argc, char *argv[]) {
       items.push_back(gui.blockerapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.framebuffermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
 
+  ProgressBar(888,4,5,"init");
       
 #ifdef WINDOWS
       int s = env.dlls.size();
@@ -1989,10 +2002,14 @@ int main(int argc, char *argv[]) {
   //gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), 150,100);
   //for(int i=0;i<200;i++)
   //  gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), i*30, i*30);
+  ProgressBar(888,5,5,"init");
   ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets, env.display_clicks, env.edit_clicks, env.delete_key, env.codegen_button_vec, env.popup_open);
 
+  //ProgressBar(888,7,10,"init");
   ev.mod_api.insert_links(ev, gui, mod, 0, env.connect_links, canvas, env.connect_targets, sh2, sh);
+  //ProgressBar(888,8,10,"init");
   add_to_canvas(gui, canvas, env.connect_links);
+  //ProgressBar(888,9,10,"init");
 
 
   W canvas_area = gui.scroll_area(canvas, screen2_x, screen2_y-20, screen_y);
@@ -2064,6 +2081,7 @@ int main(int argc, char *argv[]) {
 
   //print_counters();
   //ev.mainloop_api.display_logo(ev);
+  //ProgressBar(888,10,10,"init");
 
 #ifndef EMSCRIPTEN
   while(1) {

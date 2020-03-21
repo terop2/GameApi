@@ -11,16 +11,21 @@ struct Block
   std::vector<std::shared_ptr<void> > vec;
   ~Block()
   {
+    static int ii = 0;
+    ii++;
     int s = vec.size();
-    InstallProgress(667, "Cleanup", s);
+    if (s)
+      InstallProgress(667+ii, "Cleanup", s);
     for(int i=0;i<s;i++)
       {
-	if (i%100==0) {
-	  ProgressBar(667,i,s,"Cleanup");
+	if (i%10==0) {
+	  ProgressBar(667+ii,i,s,"Cleanup");
 	}
       vec[i].reset();
       }
-    ProgressBar(667,s,s,"Cleanup");
+    if (s)
+      ProgressBar(667+ii,s-1,s,"Cleanup");
+    std::cout << std::flush;
     vec.clear();
   }
 
@@ -43,15 +48,16 @@ struct Rest {
   ~Rest()
   {
     int s = g_rest.size();
-    InstallProgress(666, "Cleanup", s);
+    InstallProgress(666, "cleanup", 15);
     for(int i=0;i<s;i++)
       {
-	if (i%1000==0) {
-	  ProgressBar(666,i,s,"Cleanup");
+	if (i%10==0) {
+	  ProgressBar(666,i*15/s,15,"cleanup");
 	}
       g_rest[i].reset();
       }
-    ProgressBar(666,s,s,"Cleanup");
+    ProgressBar(666,15,15,"cleanup");
+    std::cout << std::flush;
     g_rest.clear();
   }
 };

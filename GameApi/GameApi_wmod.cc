@@ -533,14 +533,20 @@ EXPORT std::vector<std::string> GameApi::WModApi::types_from_function(WM mod2, i
   std::vector<std::string> types2 = filter_unnecessary_types(types);
   return types2;
 }
+
+void InstallProgress(int num, std::string label, int max);
+void ProgressBar(int num, int val, int max, std::string label);
+
 EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh)
 {
+  InstallProgress(868,"insert_links", 15);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
   GameApiFunction *func = &mod->funcs[id];
   int s = func->lines.size();
   for(int i=0;i<s;i++)
     {
+      ProgressBar(868, i*15/s, 15, "insert_links");
       GameApiLine &line = func->lines[i];
       int ss = line.params.size();
       for(int ii=0;ii<ss;ii++)
@@ -1509,7 +1515,7 @@ EXPORT void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W
 }
 
 void ProgressBar(int num, int val, int max, std::string label);
-void InstallProgress(int num, std::string label, int max=15);
+void InstallProgress(int num, std::string label, int max);
 
 
 EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p, std::vector<W> &params, std::vector<W> &display_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open)
