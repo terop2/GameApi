@@ -94,7 +94,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   g_low->ogl->glGetShaderInfoLog(handle, 255, &len, log);
   log[len]=0;
   if (len>0)
-    std::cout << log << std::endl;
+    std::cout << std::endl << log << std::endl;
 
   }
   else
@@ -234,7 +234,7 @@ void Program::link()
   g_low->ogl->glGetProgramInfoLog(priv->program, 255, &len, log);
   log[len]=0;
   if (len>0)
-    std::cout << log << std::endl;
+    std::cout << std::endl << log << std::endl;
 
 }
 void Program::print_log()

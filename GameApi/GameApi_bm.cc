@@ -518,6 +518,8 @@ void stackTrace()
 #endif
 }
 void ProgressBar(int num, int val, int max, std::string label);
+void InstallProgress(int num, std::string label, int max=15);
+
 class LoadBitmapFromUrl : public Bitmap<Color>
 {
 public:
@@ -585,6 +587,14 @@ public:
   }
   virtual void Prepare() {
 #ifndef EMSCRIPTEN
+  { // progressbar
+  int s = url.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url[i]);
+  sum = sum % 1000;
+  InstallProgress(sum,url,15);
+  }
+
     std::vector<unsigned char> data = load_from_url(url);
 
     bool b = false;
@@ -599,6 +609,14 @@ public:
       //std::cout << "ERROR: File not found: " << filename << std::endl;
     }
     cbm = new BitmapFromBuffer(img);
+  { // progressbar
+  int s = url.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url[i]);
+  sum = sum % 1000;
+  ProgressBar(sum,15,15,url);
+  }
+
 #else
     std::string url2 = "load_url.php?url=" + url;
 
@@ -693,7 +711,10 @@ public:
   BitmapPrepareCache(GameApi::Env &e, std::string id, Bitmap<Color> *bm) : e(e), id(id), bm(bm) { }
   void Prepare()
   {
+
     if (bitmap_find_data(id)!=-1) {
+
+
       return;
     }
     bm->Prepare();

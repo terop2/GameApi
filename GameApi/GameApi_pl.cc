@@ -586,6 +586,24 @@ public:
     //std::cout << "PrepareCache: " << id << std::endl;
     if (find_data(id)!=-1)
       {
+
+      std::string url = id;
+  { // progressbar
+  int s = url.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url[i]);
+  sum = sum % 1000;
+  InstallProgress(sum,url + " (cached)",15);
+  }
+
+  { // progressbar
+  int s = url.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url[i]);
+  sum = sum % 1000;
+  ProgressBar(sum,15,15,url + " (cached)");
+  }
+
 	//std::cout << "PrepareCache: SKIPPED!" << std::endl;
 	return;
       }
