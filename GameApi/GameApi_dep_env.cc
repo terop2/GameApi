@@ -688,6 +688,9 @@ void ProgressBar(int num, int val, int max, std::string label)
   }
   //std::cout << "P3" << std::endl;
 
+  if (val_index==-1) std::cout << "ProgressError(val): num=" << num << std::endl;
+  if (max_index==-1) std::cout << "ProgressError(max): num=" << num << std::endl;
+
   int val1 = val_index!=-1?progress_val[val_index].value:0; //FindProgressVal();
   int max1 = max_index!=-1?progress_max[max_index].value:1; //FindProgressMax();
   //int ticks1 = progress_val[val_index].ticks;
@@ -720,7 +723,7 @@ void ProgressBar(int num, int val, int max, std::string label)
   int s = label.size();
   int pos = -1;
   for(int i=0;i<s;i++) {
-    if (label[i]=='/') pos=i;
+    if (label[i]=='/') pos=i+1;
   }
   if (pos!=-1) label = label.substr(pos);
 

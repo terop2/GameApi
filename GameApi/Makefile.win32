@@ -186,11 +186,11 @@ libGameApi.so: $(OFiles) Makefile libGameApi_dep.so
 
 libGameDep.dll: $(O2Files_dep) Makefile.win32 glew.o
 	#@echo mingw libGameDep.dll
-	@g++ -std=c++17 -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files_dep) -DGLEW_STATIC glew.o -o libGameDep.dll -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -lopenvr_api
+	@g++ -std=c++17 -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files_dep) -DGLEW_STATIC glew.o -o libGameDep.dll -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -Lopenvr -lopenvr_api
 
 libGameApi.dll: $(O2Files) Makefile.win32 glew.o libGameDep.dll
 	#@echo mingw libGameApi.dll
-	@g++ -L. -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files) -DGLEW_STATIC -o libGameApi.dll -lGameDep holoplay/HoloPlayAPI.lib -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -pthread -lopenvr_api 
+	@g++ -L. -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files) -DGLEW_STATIC -o libGameApi.dll -lGameDep holoplay/HoloPlayAPI.lib -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -pthread -Lopenvr -lopenvr_api 
 #-lchaiscript_stdlib-6.1.0
 
 #	@strip libGameApi.dll
@@ -262,7 +262,7 @@ $(GCHFiles_examples): objs/%.hh.gch : %.hh GameApi.hh
 	@$(CC) $(CCFLAGS) -std=c++17 -g -I. -x c++-header $< -o $@ 
 
 clean:
-	@$(RM) -rf objs/*.o objs/*.obj objs/*.gch objs/*.gch2
+	@$(RM) -rf objs/*.o objs/*.obj objs/*.gch objs/*.gch2 glew.o
 	@$(RM) main
 	@echo Clean.
 
