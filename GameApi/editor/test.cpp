@@ -961,6 +961,22 @@ void iter(void *arg)
 			env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 
 			} else
+		      if (type=="MT")
+			{
+			  MT mat;
+			  mat.id = id;
+			  PT I1=env->ev->point_api.point(0.0,0.0,0.0);
+			  P I2=env->ev->polygon_api.sphere(I1,350,30,30);
+			  MT I4=mat;
+			  ML I5=env->ev->materials_api.bind(I2,I4);
+
+			  ML ml;
+			  ml.id = I5.id;
+			  env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
+			env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+
+			} else
 			if (type=="KF")
 			  {
 			    KF kf;
