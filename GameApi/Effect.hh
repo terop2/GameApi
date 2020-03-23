@@ -7694,7 +7694,7 @@ public:
     if (i==normal.end())
       {
 	Vector p;
-	p=(normal[fp]=c.FacePoint(face, point));
+	p=(normal[fp]=c.PointNormal(face, point));
 	pthread_mutex_unlock(&mutex);
 	return p;
       }
@@ -8790,7 +8790,7 @@ public:
     Point p1 = FacePoint(face, 0);
     Point p2 = FacePoint(face, 1);
     Point p3 = FacePoint(face, 2);
-    return -Vector::CrossProduct(p2-p1,p3-p1);
+    return Vector::CrossProduct(p2-p1,p3-p1);
   }
   virtual unsigned int Color(int face, int point) const { return 0xffffffff; }
   virtual Point2d TexCoord(int face, int point) const
