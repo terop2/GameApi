@@ -3083,7 +3083,7 @@ public:
     Point p1 = FacePoint(face, 0);
     Point p2 = FacePoint(face, 1);
     Point p3 = FacePoint(face, 2);
-    Vector v = -Vector::CrossProduct(p2-p1,p3-p1);
+    Vector v = Vector::CrossProduct(p2-p1,p3-p1);
     return v / v.Dist();
   }
 };
