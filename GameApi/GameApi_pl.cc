@@ -1,4 +1,4 @@
-   
+    
 #include "GameApi_h.hh"
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
