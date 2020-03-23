@@ -12262,8 +12262,8 @@ public:
   Point2d TexCoord(int face, int point) const {
     Vector n = ForwardFaceCollection::PointNormal(face,point);
     Point2d p;
-    p.x = n.dx;
-    p.y = n.dy;
+    p.x = -n.dx;
+    p.y = -n.dy;
     return p;
   }
   float TexCoord3(int face, int point) const
