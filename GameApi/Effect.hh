@@ -710,7 +710,7 @@ public:
   }
 private:
   Function<N,N> &succ;
-  int count;
+  mutable int count;
 };
 
 template<class N>
