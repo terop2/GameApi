@@ -14048,7 +14048,7 @@ public:
     }
     if ((e.type==1024 /*||e.type==Low_SDL_FINGERMOTION*/) && mousedown)
       {
-	mouse_delta = e.cursor_pos - mousedown_pos;
+	mouse_delta += e.cursor_pos - mousedown_pos;
         mousedown_pos = e.cursor_pos;
       }
     next->handle_event(e);
