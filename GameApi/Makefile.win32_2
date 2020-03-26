@@ -1,0 +1,320 @@
+# 
+# Copyright (C) 2009 Tero Pulkkinen
+# Released under LGPL License.
+#
+# This file is part of Polygon.
+#
+# Polygon is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Polygon is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+CFiles_dep= VectorTools.cc Buffer.cc  GameApi_low.cc GameApi_low_stub.cc GameApi_dep_add_find.cc GameApi_dep_env.cc Shader.cc VertexArray.cc  GameApi_dep_arr_render.cc
+
+CFiles=	GameApi_webcam.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc Effect.cc \
+	Intersect.cc Bitmap.cc Effect2.cc  VolumeObjects.cc \
+	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc \
+	Widgets.cc Category.cc Plane.cc Coordinates.cc Triangle.cc Game.cc \
+	Editor.cc Web.cc Functions.cc ShaderExpr.cc Font.cc FontEditor.cc \
+	GameApi.cc GameApiTest.cc Games.cc HierarchyObject.cc Physics.cc \
+        GameApiTest2.cc State.cc Serialize.cc KeyFrameEditor.cc Parser.cc \
+	FreeType.cc FreeType2.cc StateChange.cc DistanceObject.cc GameRunner.cc \
+	GameApi_an.cc GameApi_bm.cc GameApi_co.cc GameApi_dr.cc GameApi_ev.cc \
+	GameApi_ex.cc GameApi_fbo.cc GameApi_f.cc GameApi_fn.cc \
+	GameApi_fnt.cc GameApi_gr.cc \
+	GameApi_gui_1_1.cc GameApi_gui_2_1.cc GameApi_gui_3_1.cc \
+	GameApi_gui_1_2.cc GameApi_gui_2_2.cc GameApi_gui_3_2.cc \
+	GameApi_gui_1_3.cc GameApi_gui_2_3.cc GameApi_gui_3_3.cc \
+	GameApi_lay.cc \
+	GameApi_li.cc GameApi_main.cc GameApi_mx.cc GameApi_pc.cc \
+	GameApi_phy.cc GameApi_pla.cc GameApi_pl.cc GameApi_pt.cc \
+	GameApi_pts.cc GameApi_sh.cc GameApi_shm.cc GameApi_sm.cc \
+        GameApi_spa.cc GameApi_sp.cc GameApi_st.cc GameApi_su.cc \
+        GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \
+        GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
+        GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc \
+	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc GameApi_vr.cc \
+ 	GameApi_qt.cc GameApi_low_egl.cc escapi.cc
+
+
+CFiles2 = Main.cc
+
+CFiles_examples = GameApiTest3.cc GameApiTest4.cc GameApiWorld.cc GameApiTest5.cc GameApiTest6.cc GameApiTest7.cc GameApiTest8.cc GameApiTest9.cc GameApiTestA.cc
+CFiles2_examples = ExampleMain.cc
+Subdirs = 
+#module1
+
+OFiles = $(patsubst %.cc,objs/%.o,$(CFiles) $(CFiles2))
+O2Files = $(patsubst %.cc,objs/%.obj,$(CFiles) $(CFiles2))
+OFiles_dep = $(patsubst %.cc,objs/%.o,$(CFiles_dep))
+O2Files_dep = $(patsubst %.cc,objs/%.obj,$(CFiles_dep))
+DFiles = $(patsubst %.cc,objs/%.d,$(CFiles) $(CFiles2)) 
+D2Files = $(patsubst %.cc,objs/%.d2,$(CFiles) $(CFiles2)) 
+D3Files = $(patsubst %.cc,objs/%.d3,$(CFiles_dep))
+HFiles = $(patsubst %.cc,%.hh,$(CFiles))
+GCHFiles = $(patsubst %.cc,objs/%.hh.gch,$(CFiles))
+GCH2Files = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles))
+Subdirsx = $(patsubst %,%build,$(Subdirs))
+
+OFiles_examples = $(patsubst %.cc,objs/%.o,$(CFiles_examples) $(CFiles2_examples))
+O2Files_examples = $(patsubst %.cc,objs/%.obj,$(CFiles_examples) $(CFiles2_examples))
+DFiles_examples = $(patsubst %.cc,objs/%.d,$(CFiles_examples) $(CFiles2_examples)) 
+D2Files_examples = $(patsubst %.cc,objs/%.d2,$(CFiles_examples) $(CFiles2_examples)) 
+HFiles_examples = $(patsubst %.cc,%.hh,$(CFiles_examples))
+GCHFiles_examples = $(patsubst %.cc,objs/%.hh.gch,$(CFiles_examples))
+GCH2Files_examples = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles_examples))
+
+LIBWIN = D:\cvs\gameapi_libs\sdl\SDL2-2.0.12\x86_64-w64-mingw32\bin
+LIB2WIN = editor
+LIB3WIN = d:\cvs\gameapi_libs\glew\glew-2.1.0\bin\Release\Win32
+LIB4WIN = e:\cvs
+LIB5WIN = d:\cvs\SDL2_image-2.0.0\x86_64-w64-mingw32\lib
+LIB6WIN = d:\cvs\glew-1.10.0\lib
+LIB7WIN = d:\cvs\pthread\pre-built.2\lib\x64
+LIB8WIN = D:\cvs\gameapi_libs\sdl\SDL2_mixer-2.0.4\x86_64-w64-mingw32\lib
+LIB9WIN = openvr
+#LIB10WIN = chai\ChaiScript-6.1.0
+INC1WIN = D:\cvs\gameapi_libs\sdl\SDL2-2.0.12\x86_64-w64-mingw32\include\sdl2
+INC2WIN = d:\cvs\gameapi_libs\glew\glew-2.1.0\include
+INC3WIN = d:\cvs\SDL2_image-2.0.0/x86_64-w64-mingw32/include\sdl2
+INC4WIN = D:\cvs\gameapi_libs\sdl\SDL2-2.0.12\x86_64-w64-mingw32\include\sdl2
+INC5WIN = d:\cvs\gameapi_libs\freetype\include
+INC6WIN = d:\cvs\gameapi_libs\freetype\include\freetype2
+INC7WIN = d:\cvs\pthread\pre-built.2\include
+INC8WIN = D:\cvs\gameapi_libs\sdl\SDL2_mixer-2.0.4\x86_64-w64-mingw32\include\SDL2
+#INC10WIN = chai\ChaiScript-6.1.0\include
+
+CCFLAGS = -DWINDOWS -g -std=c++17 -Wall -O3 -I./objs -I/usr/include/freetype2 -pthread -DHAVE_STRUCT_TIMESPEC -fno-var-tracking-assignments -Iescapi
+CC2FLAGS = -DWINDOWS -g -std=c++17 -Wall -O3 -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -I$(INC8WIN) -DGLEW_STATIC -pthread -DHAVE_STRUCT_TIMESPEC -U__STRICT_ANSI__ -ftrack-macro-expansion=0 -Iholoplay -Lholoplay -fno-var-tracking-assignments -Iescapi
+#`pkg-config gtkmm-2.4 --cflags`
+
+
+default: glew.o libGameApi.dll libGameDep.dll
+
+touch_all: GameApi_gui.cc
+	touch GameApi_gui.cc
+	touch GameApi_gui_1_1.cc
+	touch GameApi_gui_2_1.cc
+	touch GameApi_gui_3_1.cc
+	touch GameApi_gui_1_2.cc
+	touch GameApi_gui_2_2.cc
+	touch GameApi_gui_3_2.cc
+	touch GameApi_gui_1_3.cc
+	touch GameApi_gui_2_3.cc
+	touch GameApi_gui_3_3.cc
+
+touch_gui:
+	touch GameApi_gui_1_1.cc
+touch_polydistfield:
+	touch GameApi_gui_2_1.cc
+touch_waveform:
+	touch GameApi_gui_2_3.cc
+touch_blocker:
+	touch GameApi_gui_2_2.cc
+touch_mainloop:
+	touch GameApi_gui_2_2.cc
+touch_texture:
+	touch GameApi_gui_1_2.cc
+touch_volume:
+	touch GameApi_gui_1_2.cc
+touch_floatvolume:
+	touch GameApi_gui_1_2.cc
+touch_colorvolume:
+	touch GameApi_gui_1_2.cc
+touch_vector:
+	touch GameApi_gui_1_2.cc
+touch_point:
+	touch GameApi_gui_1_2.cc
+touch_font:
+	touch GameApi_gui_1_2.cc
+touch_move:
+	touch GameApi_gui_2_1.cc
+touch_polygon:
+	touch GameApi_gui_2_2.cc
+	touch GameApi_gui_2_3.cc
+touch_polygon1:
+	touch GameApi_gui_2_2.cc
+touch_polygon2:
+	touch GameApi_gui_2_3.cc
+touch_shadermodule:
+	touch GameApi_gui_2_2.cc
+touch_framebuffermodule:
+	touch GameApi_gui_2_1.cc
+touch_booleanops:
+	touch GameApi_gui_3_3.cc
+touch_lines:
+	touch GameApi_gui_3_1.cc
+touch_points:
+	touch GameApi_gui_3_2.cc
+touch_floatbitmap:
+	touch GameApi_gui_3_3.cc
+touch_boolbitmap:
+	touch GameApi_gui_3_1.cc
+touch_bitmap:
+	touch GameApi_gui_3_2.cc
+
+all: libGameApi.so libGameApi.dll install main
+
+examples: main
+
+main: $(GCHFiles_examples) $(OFiles_examples) Makefile GameApi.hh libGameApi.so
+	#@echo g++ main
+	@g++ -g $(OFiles_examples) -std=c++17 -o main -L. -lGameApi -lGL -lm -lstdc++
+
+main.exe: $(GCHFiles_examples) $(O2Files_examples) Makefile GameApi.hh libGameApi.dll
+	#@echo mingw main.exe
+	@$(CCWIN) -g $(O2Files_examples) -o main.exe -L. -lGameApi -lopengl32 -lm -lstdc++ 
+
+libGameApi_dep.so: $(O2Files_dep) Makefile
+	#@echo g++ libGameApi_dep.so
+	@g++ -shared -g $(OFiles_dep) -std=c++17 -o libGameApi_dep.so -lSDL2 -lGL -lGLEW -lstdc++
+
+libGameApi.so: $(OFiles) Makefile libGameApi_dep.so
+	#@echo g++ libGameApi.so
+	@g++ -shared -g $(OFiles) -std=c++17 -o libGameApi.so -lSDL2 -lGL -lGLEW -lfreetype-6 -lstdc++ 
+#`pkg-config gtkmm-2.4 --libs` 
+
+libGameDep.dll: $(O2Files_dep) Makefile.win32 glew.o
+	#@echo mingw libGameDep.dll
+	@g++ -std=c++17 -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files_dep) -DGLEW_STATIC glew.o -o libGameDep.dll -lSDL2 -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -Lopenvr -lopenvr_api
+
+libGameApi.dll: $(O2Files) Makefile.win32 glew.o libGameDep.dll
+	#@echo mingw libGameApi.dll
+	@g++ -L. -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files) -DGLEW_STATIC -o libGameApi.dll -lGameDep holoplay/HoloPlayAPI.lib -lSDL2 -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -pthread -Lopenvr -lopenvr_api 
+#-lchaiscript_stdlib-6.1.0
+
+#	@strip libGameApi.dll
+
+subdirs: $(Subdirs)
+
+$(Subdirs):
+	$(MAKE) -C $@
+
+.PHONY: subdirs $(Subdirs)
+
+ctags: TAGS
+
+TAGS: $(CFiles)
+	etags -o TAGS -l c++ $(CFiles)
+
+CC = g++
+CCWIN = g++
+RM = "rm.exe"
+SED = "sed.exe"
+
+$(DFiles): objs/%.d: %.cc
+	#@echo Deps $< -o $@
+	@gcc -M -DDEPS $(CCFLAGS) $(CC2FLAGS) $< \
+	|$(SED) 's,\($*\)\.o[ :]*,objs/\1.o $@ : ,g' > $@
+
+$(D2Files): objs/%.d2: %.cc    
+	#@echo Deps $< -o $@
+	@$(CCWIN) -DDEPS -M $(CCFLAGS) $(CC2FLAGS) $< \
+	|$(SED) 's,\($*\)\.obj[ :]*,objs/\1.obj $@ : ,g' > $@
+
+$(D3Files): objs/%.d3: %.cc    
+	#@echo Deps $< -o $@
+	@$(CCWIN) -DDEPS -M $(CCFLAGS) $(CC2FLAGS) $< \
+	|$(SED) 's,\($*\)\.obj[ :]*,objs/\1.obj $@ : ,g' > $@
+
+$(OFiles): objs/%.o : %.cc
+	#@echo g++ $< -o $@
+	@$(CC) -std=c++17 -g -c $(CCFLAGS) $< -o $@
+
+$(O2Files): objs/%.obj : %.cc
+	#@echo mingw $<
+	@$(CCWIN) -g -c $(CC2FLAGS) $< -o $@
+
+$(O2Files_dep): objs/%.obj : %.cc
+	#@echo mingw $<
+	@$(CCWIN) -g -c $(CC2FLAGS) $< -o $@
+
+glew.o:
+	$(CCWIN) -g -c $(CC2FLAGS) d:\cvs\gameapi_libs\glew\glew-2.1.0\src\glew.c -o glew.o
+
+
+$(OFiles_examples): objs/%.o : %.cc GameApi.hh
+	@$(CC) -std=c++17 -g -c -I. $(CCFLAGS) $< -o $@ 
+
+$(O2Files_examples): objs/%.obj : %.cc GameApi.hh
+	#@echo mingw $<
+	@$(CCWIN) -std=c++17 -g -c -I. $(CC2FLAGS) $< -o $@ 
+
+
+$(GCHFiles): objs/%.hh.gch : %.hh
+	@$(CC) $(CCFLAGS) -std=c++17 -g -x c++-header $< -o $@ 
+
+$(GCH2Files): objs/%.hh.gch2 : %.hh
+	#@echo mingw $<
+	@$(CCWIN) $(CC2FLAGS) -g -x c++-header $< -o $@ 
+
+$(GCHFiles_examples): objs/%.hh.gch : %.hh GameApi.hh
+	@$(CC) $(CCFLAGS) -std=c++17 -g -I. -x c++-header $< -o $@ 
+
+clean:
+	@$(RM) -rf objs/*.o objs/*.obj objs/*.gch objs/*.gch2 glew.o
+	@$(RM) main
+	@echo Clean.
+
+cleandeps:
+	@$(RM) -rf objs/*.d objs/*.d2
+	@echo Cleandeps.
+
+logs:
+	make.bat 1> foo.err 2>&1
+
+profile:
+	$(RM) profile.txt
+	gprof ./main ./gmon.out >profile.txt
+
+
+make_sourcedist:
+	rm -f GameApi.tar.gz
+	rm -rf GameApi
+	mkdir GameApi
+	cp *.cc *.hh GameApi/
+	cp Makefile GameApi/
+	cp Makefile_bindist GameApi/
+	cp COPYING.LESSER GameApi/
+	cp README.INSTALL GameApi/
+	mkdir GameApi/objs
+	tar czvf GameApi.tar.gz GameApi
+	rm -rf GameApi
+
+make_binarydist:
+	rm -f GameApi-binary.tar.gz
+	rm -rf GameApiBinary
+	mkdir GameApiBinary
+	cp libGameApi.so GameApiBinary/
+	cp GameApi.hh GameApiBinary/
+	cp COPYING.LESSER GameApiBinary/
+	cp README.INSTALL GameApiBinary/
+	cp Makefile_bindist GameApiBinary/Makefile
+	tar czvf GameApi-binary.tar.gz GameApiBinary
+	rm -rf GameApiBinary
+
+install:
+	make -f Makefile_bindist install
+
+
+make_commit:
+	git commit -a
+
+make_push:
+	git push ~/cvs/demo-git-push/demo3d.git master
+
+#-include $(DFiles)
+-include $(D2Files)
+-include $(D3Files)
+#-include $(DFiles_examples)
+#-include $(D2Files_examples)

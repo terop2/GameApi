@@ -1191,6 +1191,7 @@ void iter(void *arg)
 		    else 
 		      {
 			display = false;
+#if 0
 			int s = env->dlls.size();
 			bool success = false;
 			for(int i=0;i<s;i++)
@@ -1207,6 +1208,7 @@ void iter(void *arg)
 			if (!success) {
 			  std::cout << "Type not found" << type << std::endl;
 			}
+#endif
 		      }
 		    if (display)
 		      {
@@ -1730,9 +1732,9 @@ int main(int argc, char *argv[]) {
   env.env = e2;
 
 #ifdef WINDOWS
-  env.dlls = load_dlls("DllList.txt");
+  //env.dlls = load_dlls("DllList.txt");
 #else
-  env.dlls = load_dlls("DllList_linux.txt");
+  //env.dlls = load_dlls("DllList_linux.txt");
 #endif
   int screen_x = 1200;
   int screen_y = 900;
@@ -1975,6 +1977,7 @@ int main(int argc, char *argv[]) {
   ProgressBar(888,4,5,"init");
       
 #ifdef WINDOWS
+#if 0
       int s = env.dlls.size();
       for(int ii=0;ii<s;ii++)
 	{
@@ -1991,6 +1994,7 @@ int main(int argc, char *argv[]) {
 	  W w = functions_widget(gui, apiname, vec, atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips);
 	  items.push_back(w);
 	}
+#endif
 #endif
     }
   W array = gui.array_y(&items[0], items.size(), 5);
