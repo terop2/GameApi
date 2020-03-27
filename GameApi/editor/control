@@ -3,7 +3,7 @@ Version: 1.0-25
 Section: base
 Priority: optional
 Architecture: amd64
-Depends: libsdl2-2.0-0 (>= 2.0.8), libfreetype6 (>= 2.8.1), libsdl2-mixer-2.0-0 (>= 2.0.2), libsdl2-image-2.0-0 (>= 2.0.3), libglew2.1 (>= 2.1.0)
+Depends: libsdl2-2.0-0 (>= 2.0.8), libfreetype6 (>= 2.8.1), libsdl2-mixer-2.0-0 (>= 2.0.2), libsdl2-image-2.0-0 (>= 2.0.3), libglew2.1 (>= 2.1.0), curl (>= 7.65.3)
 Maintainer: Tero Pulkkinen <terop@kotiposti.net>
 Description: GameApi Builder v25
  GameApi Builder is 3d modelling software
