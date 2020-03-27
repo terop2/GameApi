@@ -791,12 +791,47 @@ std::vector<unsigned char> load_from_url(std::string url)
     std::string cmd = "..\\curl\\curl.exe -s -N --url " + url;
     std::string cmd2  = "..\\curl\\curl.exe";
     succ = file_exists(cmd2);
-  
+    std::string cmdsize = "..\\curl\\curl.exe -sI --url " + url;
 #else
     std::string cmd = "curl -s -N --url " + url;
+    std::string cmdsize = "curl -sI --url " + url;
     succ = true;
 #endif
+    int num = 100000;
     if (succ) {
+
+#ifdef __APPLE__
+    FILE *f2 = popen(cmdsize.c_str(), "r");
+#else
+#ifdef LINUX
+    FILE *f2 = popen(cmdsize.c_str(), "r");
+#else    
+    FILE *f2 = popen(cmdsize.c_str(), "rb");
+#endif
+#endif
+    std::vector<unsigned char> vec2;
+    unsigned char c2;
+    while(fread(&c2,1,1,f2)==1) {
+      vec2.push_back(c2);
+    }
+    std::string s(vec2.begin(),vec2.end());
+    //std::cout << "Headers:" << s << std::endl;
+    std::stringstream ss(s);
+    std::string line;
+    while(std::getline(ss,line)) {
+      //std::cout << "Line: " << line << std::endl;
+      //if (line.size()>15)
+	//std::cout << "Substr: " << line.substr(0,15) << std::endl;
+      if (line.size()>15 && line.substr(0,15)=="Content-Length:") {
+	std::stringstream ss2(line);
+	std::string dummy;
+	ss2 >> dummy >> num;
+	//std::cout << "Got num: " << num << std::endl;
+      }
+    }
+    //    std::cout << "Content-Length: " << num << std::endl;
+
+
 #ifdef __APPLE__
     FILE *f = popen(cmd.c_str(), "r");
 #else
@@ -808,7 +843,17 @@ std::vector<unsigned char> load_from_url(std::string url)
 #endif
     //std::cout<< "FILE: " << std::hex<<(long)f <<std::endl; 
     unsigned char c;
-    while(fread(&c,1,1,f)==1) { buffer.push_back(c); }
+    int i = 0;
+    while(fread(&c,1,1,f)==1) {
+      i++;
+      if (i%(num/15)==0) {
+	int s = url.size();
+	int sum=0;
+	for(int i=0;i<s;i++) sum+=int(url[i]);
+	sum = sum % 1000;
+	ProgressBar(sum,i*15/num,15,url);
+      }
+      buffer.push_back(c); }
     pclose(f);
 
     }
@@ -828,8 +873,18 @@ std::vector<unsigned char> load_from_url(std::string url)
     FILE *f = popen(cmd.c_str(), "rb");
     unsigned char c;
     //std::vector<unsigned char> buffer;
+    int i = 0;
+    while(fread(&c,1,1,f)==1) {
+            i++;
+	    if (i%(num/15)==0) {
+	int s = url.size();
+	int sum=0;
+	for(int i=0;i<s;i++) sum+=int(url[i]);
+	sum = sum % 1000;
+	ProgressBar(sum,i*15/num,15,url);
+      }
 
-    while(fread(&c,1,1,f)==1) { buffer.push_back(c); }
+      buffer.push_back(c); }
     pclose(f);
       }
     return buffer;
