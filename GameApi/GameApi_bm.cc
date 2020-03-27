@@ -4438,8 +4438,13 @@ public:
 	  //if (is_nearest(light_pos+Vector(0.0,0.0,-softness), pp,zpi)) count++;
 	  if (!is_nearest(light_pos, pp,zpi)) count+=4;
 	  shadow[x+y*sx] = count;
-
-	      //shadow[x+y*sx] = true;
+	  if (x>0 && x<sx-1 && y>0 && y<sy-1) {
+	  shadow[(x+1)+y*sx] = count;
+	  shadow[x+(y+1)*sx] = count;
+	  shadow[(x-1)+y*sx] = count;
+	  shadow[x+(y-1)*sx] = count;
+	  }
+	  //shadow[x+y*sx] = true;
 	}
 	done[x+y*sx]=true;
       } else if (num==3) {
@@ -4469,6 +4474,12 @@ public:
 	  //if (is_nearest(light_pos+Vector(0.0,0.0,-softness), pp,zpi)) count++;
 	  if (!is_nearest(light_pos, pp,zpi)) count+=4;
 	  shadow[x+y*sx] = count;
+	  if (x>0 && x<sx-1 && y>0 && y<sy-1) {
+	  shadow[(x+1)+y*sx] = count;
+	  shadow[x+(y+1)*sx] = count;
+	  shadow[(x-1)+y*sx] = count;
+	  shadow[x+(y-1)*sx] = count;
+	  }
 	}
 	done[x+y*sx]=true;
       }
