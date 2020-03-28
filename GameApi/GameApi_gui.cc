@@ -4956,12 +4956,6 @@ void onload_cb(unsigned int tmp, void *arg, void *data, unsigned int datasize)
   }
 
 }
-struct ASyncData
-{
-  std::string api_name;
-  std::string func_name;
-  int param_num;
-};
 ASyncData async_data[] = { 
   { "font_api", "newfont", 0 },
   { "font_api", "load_font", 0 },
@@ -5010,7 +5004,8 @@ ASyncData async_data[] = {
   { "mainloop_api", "matrix_range_check", 3 },
   { "font_api", "draw_text_large", 2 }
 };
-
+ASyncData *g_async_ptr = &async_data[0];
+int g_async_count = sizeof(async_data)/sizeof(ASyncData);
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
 {
   int s = sizeof(async_data)/sizeof(ASyncData);

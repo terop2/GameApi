@@ -347,6 +347,14 @@ struct GameApiParam
 namespace GameApi {
 class EditNode;
 };
+struct ASyncData
+{
+  std::string api_name;
+  std::string func_name;
+  int param_num;
+};
+
+
 class GameApiItem
 {
 public:
@@ -971,6 +979,7 @@ class ASyncLoader
 {
 public:
   void load_urls(std::string url, std::string homepage);
+  void load_all_urls(std::vector<std::string> urls, std::string homepage);
   std::vector<unsigned char> *get_loaded_data(std::string url) const;
   void set_callback(std::string url, void (*fptr)(void*), void *data);
 };

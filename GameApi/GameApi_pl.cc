@@ -912,6 +912,7 @@ public:
 
     BufferRef ref; ref.buffer=0;
     int b_s = mat.size();
+    std::vector<std::string> urls;
     for(int b_i=0;b_i<b_s;b_i++)
       {
 	material_names.push_back(mat[b_i].material_name);
@@ -926,7 +927,11 @@ public:
     if (!g_use_texid_material)
       {
 	e.async_load_callback(dt->url, &MTL_CB, (void*)dt);
+#ifdef EMSCRIPTEN
 	e.async_load_url(dt->url, homepage);
+#else
+	urls.push_back(dt->url);
+#endif
 	flags.push_back(1);
       }
 #ifndef EMSCRIPTEN
@@ -937,6 +942,15 @@ public:
     	async_pending_count++;
 #endif
       }
+#ifndef EMSCRIPTEN
+        e.async_load_all_urls(urls, homepage);
+
+	//     int s = urls.size();
+	//for(int i=0;i<s;i++)
+	// {
+	//	e.async_load_url(urls[i],homepage);
+	//}
+#endif
 #ifdef EMSCRIPTEN
     async_pending_count--;
 #endif

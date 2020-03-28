@@ -14,6 +14,7 @@
 #endif
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 #include <pthread.h>
 using namespace GameApi;
 
@@ -23,6 +24,7 @@ extern "C" void _udev_device_get_action() { }
 
 extern int g_event_screen_x;
 extern int g_event_screen_y;
+extern std::string gameapi_homepageurl;
 
 void InstallProgress(int num, std::string label, int max=15);
 void ProgressBar(int num, int val, int max, std::string label);
@@ -449,6 +451,17 @@ std::ostream &operator<<(std::ostream &o, const std::vector<T> &vec)
     }
   return o;
 }
+
+struct ASyncData
+{
+  std::string api_name;
+  std::string func_name;
+  int param_num;
+};
+
+extern ASyncData *g_async_ptr;
+extern int g_async_count;
+
 void FinishProgress();
 void iter(void *arg)
 {
@@ -856,6 +869,18 @@ void iter(void *arg)
 		g_id = add_block();
 		set_current_block(g_id);
 		    GameApi::ExecuteEnv exeenv;
+		    std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count);
+		    std::cout << "URLS:" << ids.second << std::endl;
+		    std::vector<std::string> urls = ids.second;
+		    std::sort(urls.begin(),urls.end());
+		    std::unique(urls.begin(),urls.end());
+		    env->env->async_load_all_urls(urls, gameapi_homepageurl);
+		    //int s = urls.size();
+		    //for(int i=0;i<s;i++)
+		    //  {
+		    //	env->env->async_load_url(urls[i], gameapi_homepageurl);
+		    // }
+		    
 		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000);
 		    set_current_block(-2);
 		    if (id==-1) {
