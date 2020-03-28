@@ -16,6 +16,8 @@ int get_current_block();
 void clear_block(int id);
 
 
+
+class ASyncData;
 class BufferRef;
 class MainLoopEnv;
 
@@ -235,6 +237,7 @@ public:
   IMPORT void free_to_counts(std::vector<int> vec);
   IMPORT void free_temp_memory();
   IMPORT void async_load_url(std::string url, std::string homepage);
+  IMPORT void async_load_all_urls(std::vector<std::string> urls, std::string homepage);
   IMPORT void async_load_callback(std::string url, void (*fptr)(void*), void *data);
   IMPORT std::vector<unsigned char> *get_loaded_async_url(std::string url);
   IMPORT ~Env();
@@ -1809,6 +1812,7 @@ public:
   IMPORT void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh);
 
   IMPORT int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level);
+  IMPORT std::pair<int,std::vector<std::string> > collect_urls(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, ASyncData *arr, int arr_size);
   
 
   IMPORT CollectResult collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);
