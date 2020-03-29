@@ -846,8 +846,8 @@ void ProgressBar(int num, int val, int max, std::string label)
   }
   //std::cout << "P3" << std::endl;
 
-  if (val_index==-1) std::cout << "ProgressError(val): num=" << num << std::endl;
-  if (max_index==-1) std::cout << "ProgressError(max): num=" << num << std::endl;
+  //if (val_index==-1) std::cout << "ProgressError(val): num=" << num << std::endl;
+  //if (max_index==-1) std::cout << "ProgressError(max): num=" << num << std::endl;
 
   int val1 = val_index!=-1?progress_val[val_index].value:0; //FindProgressVal();
   int max1 = max_index!=-1?progress_max[max_index].value:1; //FindProgressMax();
