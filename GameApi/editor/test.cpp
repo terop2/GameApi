@@ -484,7 +484,7 @@ void iter(void *arg)
     
     //env->gui->render(env->txt2);
     env->gui->render(env->line);
-    env->gui->render(env->txt);
+    //env->gui->render(env->txt);
     env->gui->render(env->scroll_area);
     //env->gui->render(env->wave);
     //env->gui->render(env->gameapi);
@@ -507,11 +507,11 @@ void iter(void *arg)
 	env->ev->shader_api.use(env->sh);
 	env->gui->render(env->connect_widget);
       }
-    if (env->opened_menu_num != -1)
-      {
+    //if (env->opened_menu_num != -1)
+    //  {
 	//std::cout << env->opened_menu_num << std::endl;
-	env->gui->render(env->menus[env->opened_menu_num]);
-      }
+    //	env->gui->render(env->menus[env->opened_menu_num]);
+    //  }
     //int s5 = env->connect_links.size();
     //for(int i5 = 0;i5<s5;i5++)
     //  {
@@ -1307,7 +1307,7 @@ void iter(void *arg)
 	  }
 	
 	env->gui->update(env->line, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	env->gui->update(env->txt, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	//env->gui->update(env->txt, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	if (env->display_visible)
 	  {
 	    env->gui->update(env->display, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
@@ -1572,24 +1572,24 @@ void iter(void *arg)
 	  }
 	
 
-	int selected_item = env->gui->chosen_item(env->txt);
-	int selected_item2 = -1;
-	if (selected_item != -1)
-	  {
-	    env->opened_menu_num = selected_item;
-	  }
-	if (env->opened_menu_num != -1)
-	  {
-	    env->gui->update(env->menus[env->opened_menu_num], e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	    if (e.button == -1) { env->state=1; }
-	    if (e.button==0 && e.type==1025 && env->state==1)
-	      {
-		selected_item2 = env->gui->chosen_item(env->menus[env->opened_menu_num]);
-		env->opened_menu_num = -1;
-		env->state = 0;
-		//std::cout << selected_item2 << std::endl;
-	      }
-	  }
+	//int selected_item = env->gui->chosen_item(env->txt);
+	//int selected_item2 = -1;
+	//if (selected_item != -1)
+	//  {
+	//    env->opened_menu_num = selected_item;
+	//  }
+	//if (env->opened_menu_num != -1)
+	//  {
+	//    env->gui->update(env->menus[env->opened_menu_num], e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	//    if (e.button == -1) { env->state=1; }
+	//    if (e.button==0 && e.type==1025 && env->state==1)
+	//      {
+	//	selected_item2 = env->gui->chosen_item(env->menus[env->opened_menu_num]);
+	//	env->opened_menu_num = -1;
+	//	env->state = 0;
+	//	//std::cout << selected_item2 << std::endl;
+	//      }
+	//  }
       }
     //float param_x = env->gui->dynamic_param(env->txt2, 0);
     //env->gui->set_dynamic_param(env->scroll_area, 1, 0.0 /* param_x */);
@@ -1944,7 +1944,7 @@ int main(int argc, char *argv[]) {
   //W txt_3 = gui.layer(txt_1, txt_2);
   //W arr[] = { txt_1, txt_2 };
   //W txt = gui.array_x(arr, 2, 2);
-
+#if 0
   std::vector<std::string> vec;
   vec.push_back("Edit");
   vec.push_back("File");
@@ -1960,7 +1960,7 @@ int main(int argc, char *argv[]) {
       W txt_2 = gui.menu(txt,i, vec2, atlas, atlas_bm);
       menus.push_back(txt_2);
     }
-			 
+#endif			 
 
 
 
@@ -2030,7 +2030,7 @@ int main(int argc, char *argv[]) {
   //W txt2 = gui.scrollbar_y(20, screen_y-30, gui.size_y(array));
   //gui.set_pos(txt2, gui.size_x(scroll_area), 30);
 
-  gui.set_pos(scroll_area, 0.0, 30.0);
+  gui.set_pos(scroll_area, 0.0, 0.0);
   gui.set_size(scroll_area, 140.0, screen_y);
   //W wave = gui.waveform(f, 0.0, 3.14159*2.0, -1.5, 1.5, 200, 100, 0xffffffff, 0x00000000);
 
@@ -2059,13 +2059,13 @@ int main(int argc, char *argv[]) {
   //ProgressBar(888,9,10,"init");
 
 
-  W canvas_area = gui.scroll_area(canvas, screen2_x, screen2_y-20, screen_y);
+  W canvas_area = gui.scroll_area(canvas, screen2_x, screen2_y, screen_y);
   //W scrollbar_y = gui.scrollbar_y(20, screen2_y-20, sy);
   W scrollbar_x = gui.scrollbar_x(screen2_x-20, 20, sx); 
 
   W line = gui.rectangle(0.0, 4.0, 20.0, screen_y, 0xffffffff);
-  gui.set_pos(line, 140-5, 20);
-  gui.set_pos(canvas_area, 140, 30);
+  gui.set_pos(line, 140-5, 0);
+  gui.set_pos(canvas_area, 140, 0);
   gui.set_pos(scrollbar_x, 140, screen_y-20);
   //gui.set_pos(scrollbar_y, screen_x-20, 30);
   
@@ -2077,7 +2077,7 @@ int main(int argc, char *argv[]) {
   env.line = line;
   env.gui = &gui;
   env.ev = &ev;
-  env.txt = txt;
+  //env.txt = txt;
   //env.txt2 = txt2;
   env.font = font;
   env.font3 = font3;
@@ -2104,7 +2104,7 @@ int main(int argc, char *argv[]) {
   env.scrollbar_x = scrollbar_x;
   //env.gameapi = gameapi_2;
   env.scroll_area = scroll_area;
-  env.menus = menus;
+  //env.menus = menus;
   env.opened_menu_num = -1;
   env.connect_ongoing = false;
   env.connect_ongoing2 = false;

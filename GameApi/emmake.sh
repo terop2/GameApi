@@ -1,5 +1,6 @@
 #!/bin/bash
-/home/terop/emscripten/emsdk/emsdk_env.sh
+source /home/terop/emscripten/emsdk/emsdk_env.sh
+source /home/terop/cvs/emscripten/emsdk/emsdk_env.sh
 source set_paths_emlinux.sh
 make -j 8 -f Makefile.LinuxEm
 make -j 8 -f Makefile.LinuxEm nothreads

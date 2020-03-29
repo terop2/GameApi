@@ -546,7 +546,8 @@ EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, i
   int s = func->lines.size();
   for(int i=0;i<s;i++)
     {
-      ProgressBar(868, i*15/s, 15, "insert_links");
+      if (i % (s/15) == 0)
+	ProgressBar(868, i*15/s, 15, "insert_links");
       GameApiLine &line = func->lines[i];
       int ss = line.params.size();
       for(int ii=0;ii<ss;ii++)
@@ -1687,7 +1688,8 @@ EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, i
   InstallProgress(898, "create boxes", s);
   for(int i=0;i<s;i++)
     {
-      ProgressBar(898, i, s, "create boxes");
+      if (i % (s/15)==0)
+	ProgressBar(898, i*15/s, 15, "create boxes");
       GameApiLine *line = &func->lines[i];
       int ss = functions.size();
       int j = 0;
