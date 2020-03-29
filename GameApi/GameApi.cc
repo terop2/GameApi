@@ -18587,6 +18587,7 @@ public:
     current_slot_num = 0;
     //std::cout << "NetworkHeavy:" << url << std::endl;
   }
+  ~NetworkHeavy() { e.async_rem_callback(url); }
   virtual bool RequestPrepares() const { return timing->RequestPrepares(); }
   virtual void TriggerPrepares()
   {
