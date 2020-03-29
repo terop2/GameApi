@@ -520,6 +520,54 @@ void stackTrace()
 void ProgressBar(int num, int val, int max, std::string label);
 void InstallProgress(int num, std::string label, int max=15);
 
+extern std::string gameapi_homepageurl;
+
+class LoadBitmapFromUrl : public Bitmap<Color>
+{
+public:
+  LoadBitmapFromUrl(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url),homepage(homepage) { }
+
+  virtual int SizeX() const {
+    if (!cbm) { return 100; }
+    return cbm->SizeX(); }
+  virtual int SizeY() const {
+    if (!cbm) { return 100; } 
+    return cbm->SizeY(); }
+  virtual Color Map(int x, int y) const { 
+    if (!cbm) { return Color(0xffffffff); }
+    return cbm->Map(x,y); }
+  void Prepare()
+  {
+#ifndef EMSCRIPTEN
+      env.async_load_url(url, homepage);
+#endif
+      std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+      if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+      std::string s(vec->begin(), vec->end());
+
+      bool b = false;
+      img = LoadImageFromString(*vec, b);
+      
+    if (b==false) {
+      img = BufferRef::NewBuffer(10,10);
+      for(int x=0;x<10;x++)
+	for(int y=0;y<10;y++)
+	  {
+	    img.buffer[x+y*img.ydelta] = ((x+y)&1)==1 ? 0xffffffff : 0xff000000;
+	  }
+      //std::cout << "ERROR: File not found: " << filename << std::endl;
+    }
+    cbm = new BitmapFromBuffer(img);    
+  }
+private:
+  GameApi::Env &env;
+  std::string url;
+  std::string homepage;
+  BufferRef img;
+  Bitmap<Color> *cbm=0;
+  bool load_finished = false;  
+};
+#if 0
 class LoadBitmapFromUrl : public Bitmap<Color>
 {
 public:
@@ -636,7 +684,7 @@ private:
   bool load_finished = false;
 };
 
-
+#endif
 
 class LoadBitmapBitmap : public Bitmap<Color>
 {
@@ -748,7 +796,7 @@ private:
 
 EXPORT GameApi::BM GameApi::BitmapApi::loadbitmapfromurl(std::string url)
 {
-  Bitmap<Color> *bm = new LoadBitmapFromUrl(url);
+  Bitmap<Color> *bm = new LoadBitmapFromUrl(e,url,gameapi_homepageurl);
   Bitmap<Color> *bbm = new BitmapPrepareCache(e, url, bm);
   BitmapColorHandle *handle = new BitmapColorHandle;
   handle->bm = bbm;

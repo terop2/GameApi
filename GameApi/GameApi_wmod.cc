@@ -1261,6 +1261,7 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 	    {
 	      GameApiItem *item = vec[k];
 	      std::string name = item->Name(0);
+	      std::string fname = item->FuncName(0);
 	      if (name == line->module_name)
 		{
 		  int s = arr_size;
@@ -1268,7 +1269,7 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 		    {
 		      ASyncData *ptr = &arr[i];
 		      //std::cout << "ASYNCDATA: " << name << " " << ptr->func_name << std::endl;
-		      if (name==ptr->func_name) {
+		      if (fname==ptr->func_name) {
 			res.push_back(params[ptr->param_num]);
 		      }
 		    }
