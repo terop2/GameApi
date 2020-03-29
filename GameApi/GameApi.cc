@@ -14387,6 +14387,7 @@ public:
     //std::cout << "async_pending_count inc (P_sctipr) " << async_pending_count << std::endl;
     // std::cout << "P_script url: " << url << std::endl;
   }
+  ~P_script() { e.async_rem_callback(url); }
   void Prepare2() {
     std::string homepage = gameapi_homepageurl;
 #ifndef EMSCRIPTEN
@@ -14551,6 +14552,7 @@ public:
 #endif
        //std::cout << "async_pending_count inc (ML_sctipr) " << async_pending_count << std::endl;
   }
+  ~ML_script() { e.async_rem_callback(url); }
   void Prepare2() {
     std::string homepage = gameapi_homepageurl;
 #ifndef EMSCRIPTEN
@@ -14698,6 +14700,7 @@ public:
     async_pending_count++; async_taken = true;
 #endif
   }
+  ~BM_script() { e.async_rem_callback(url); }
   void Prepare2() {
     std::string homepage = gameapi_homepageurl;
 #ifndef EMSCRIPTEN

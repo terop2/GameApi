@@ -982,6 +982,7 @@ public:
   void load_all_urls(std::vector<std::string> urls, std::string homepage);
   std::vector<unsigned char> *get_loaded_data(std::string url) const;
   void set_callback(std::string url, void (*fptr)(void*), void *data);
+  void rem_callback(std::string url);
 };
 
 template<class T>

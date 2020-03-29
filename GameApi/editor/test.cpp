@@ -864,10 +864,6 @@ void iter(void *arg)
 		env->env->free_temp_memory();
 		    // Execute
 
-		static int g_id = -1;
-		if (g_id!=-1) clear_block(g_id);
-		g_id = add_block();
-		set_current_block(g_id);
 		    GameApi::ExecuteEnv exeenv;
 		    std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count);
 		    //std::cout << "URLS:" << ids.second << std::endl;
@@ -880,6 +876,12 @@ void iter(void *arg)
 		    //  {
 		    //	env->env->async_load_url(urls[i], gameapi_homepageurl);
 		    // }
+
+		static int g_id = -1;
+		if (g_id!=-1) clear_block(g_id);
+		g_id = add_block();
+		set_current_block(g_id);
+
 		    
 		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000);
 		    set_current_block(-2);

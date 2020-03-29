@@ -766,7 +766,10 @@ public:
       return;
     }
     bm->Prepare();
+        int c = get_current_block();
+    set_current_block(-2); // dont take ownership of this
     GameApi::BM num = add_color_bitmap2(e, bm);
+        set_current_block(c);
     bitmap_prepare_cache_data.push_back(std::make_pair(id,num.id));
   }
   Bitmap<Color> *get_bm() const
@@ -796,11 +799,14 @@ private:
 
 EXPORT GameApi::BM GameApi::BitmapApi::loadbitmapfromurl(std::string url)
 {
+  int c = get_current_block();
+  set_current_block(-1);
   Bitmap<Color> *bm = new LoadBitmapFromUrl(e,url,gameapi_homepageurl);
   Bitmap<Color> *bbm = new BitmapPrepareCache(e, url, bm);
   BitmapColorHandle *handle = new BitmapColorHandle;
   handle->bm = bbm;
   BM bm2 = add_bitmap(e, handle);
+  set_current_block(c);
   return bm2;
 }
 EXPORT GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
