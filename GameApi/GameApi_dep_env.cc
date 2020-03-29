@@ -290,6 +290,11 @@ EXPORT void GameApi::Env::async_load_callback(std::string url, void (*fptr)(void
   ::EnvImpl *env = (::EnvImpl*)envimpl;
   env->async_loader->set_callback(url, fptr, data);
 }
+EXPORT void GameApi::Env::async_rem_callback(std::string url)
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  env->async_loader->rem_callback(url);
+}
 EXPORT std::vector<unsigned char> *GameApi::Env::get_loaded_async_url(std::string url)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
@@ -407,7 +412,10 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
 
 std::vector<unsigned char> load_from_url(std::string url);
 
-
+void ASyncLoader::rem_callback(std::string url)
+{
+  rem_async_cb(url);
+}
 void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
 {
   // progress bar
@@ -471,6 +479,38 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
 #ifndef EMSCRIPTEN
   int s = urls.size();
 
+
+  std::vector<std::string> urls2;
+  for (int e=0;e<s;e++)
+    {
+      std::string url = urls[e];
+      std::string url2 = "load_url.php?url=" + url ;
+      if (load_url_buffers_async[url2])
+	{
+      ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
+      if (cb) {
+	//std::cout << "Load cb!" << url2 << std::endl;
+	//std::cout << "ASyncLoader::cb:" << url2 << std::endl; 
+	(*cb->fptr)(cb->data);
+      } else {
+	//std::cout << "ASyncLoadUrl::CB failed" << std::endl;
+      }
+
+	}
+      else
+	{
+	  urls2.push_back(url);
+	}
+    }
+  urls=urls2;
+  s = urls.size();
+  if (!s)
+    {
+	InstallProgress(444,"loading assets (cached)",15);
+	ProgressBar(444,15,15,"loading assets (cached)");
+
+    }
+  
   int total_size = 0;
   std::vector<int> sizes;
   for(int d=0;d<s;d++)

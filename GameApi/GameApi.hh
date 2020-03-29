@@ -239,6 +239,7 @@ public:
   IMPORT void async_load_url(std::string url, std::string homepage);
   IMPORT void async_load_all_urls(std::vector<std::string> urls, std::string homepage);
   IMPORT void async_load_callback(std::string url, void (*fptr)(void*), void *data);
+  IMPORT void async_rem_callback(std::string url);
   IMPORT std::vector<unsigned char> *get_loaded_async_url(std::string url);
   IMPORT ~Env();
   IMPORT static Env *Latest_Env();
