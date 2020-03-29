@@ -549,7 +549,7 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
       std::string url2 = "load_url.php?url=" + url ;
       while (!load_url_buffers_async[url2])
 	{
-	  if (g_current_size > last_size+10000)
+	  if (g_current_size > last_size+(total_size/15))
 	  {
 	    int s = url.size();
 	    int sum=0;
@@ -571,13 +571,13 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
       }
       current_size+=sizes[j];
 
-      {
-      int s = url.size();
-      int sum=0;
-      for(int i=0;i<s;i++) sum+=int(url[i]);
-      sum = sum % 1000;
-      ProgressBar(444,current_size*15/total_size,15,"loading assets");
-      }
+      //{
+      //int s = url.size();
+      //int sum=0;
+      //for(int i=0;i<s;i++) sum+=int(url[i]);
+      //sum = sum % 1000;
+      //ProgressBar(444,current_size*15/total_size,15,"loading assets");
+      //}
       
     }
 
