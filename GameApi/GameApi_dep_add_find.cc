@@ -23,7 +23,7 @@ struct Block
       }
     if (s)
       ProgressBar(667,15,15,"Cleanup");
-    std::cout << std::flush;
+    std::cout << std::endl;
     vec.clear();
   }
 
@@ -55,7 +55,7 @@ struct Rest {
       g_rest[i].reset();
       }
     ProgressBar(666,15,15,"cleanup");
-    std::cout << std::flush;
+    std::cout << std::endl;
     g_rest.clear();
   }
 };
