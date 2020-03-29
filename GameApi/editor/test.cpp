@@ -2063,7 +2063,7 @@ int main(int argc, char *argv[]) {
   //W scrollbar_y = gui.scrollbar_y(20, screen2_y-20, sy);
   W scrollbar_x = gui.scrollbar_x(screen2_x-20, 20, sx); 
 
-  W line = gui.rectangle(0.0, 4.0, 20.0, screen_y, 0xffffffff);
+  W line = gui.rectangle(0.0, 4.0, 0.0, screen_y, 0xffffffff);
   gui.set_pos(line, 140-5, 0);
   gui.set_pos(canvas_area, 140, 0);
   gui.set_pos(scrollbar_x, 140, screen_y-20);
