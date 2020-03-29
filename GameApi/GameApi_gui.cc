@@ -5423,7 +5423,11 @@ public:
   int Execute(GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)
   {
     if (params.size()!=param_name.size()) {
-      std::cout << "Error: param vectors different size: " << ApiName(0) << "::" << FuncName(0) << std::endl;
+	if (ApiName(0)=="mainloop_api" && FuncName(0)=="array_ml") {
+	  params.insert(params.begin(),"ev");
+	} else {
+	  std::cout << "Error: param vectors different size: " << ApiName(0) << "::" << FuncName(0) << std::endl;
+	}
     }
     return funccall(ee, ev, api, fptr, params, e, param_name, return_type); 
   }
