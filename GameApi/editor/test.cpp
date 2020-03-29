@@ -870,7 +870,7 @@ void iter(void *arg)
 		set_current_block(g_id);
 		    GameApi::ExecuteEnv exeenv;
 		    std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count);
-		    std::cout << "URLS:" << ids.second << std::endl;
+		    //std::cout << "URLS:" << ids.second << std::endl;
 		    std::vector<std::string> urls = ids.second;
 		    std::sort(urls.begin(),urls.end());
 		    std::unique(urls.begin(),urls.end());

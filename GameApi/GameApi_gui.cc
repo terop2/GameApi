@@ -5002,7 +5002,8 @@ ASyncData async_data[] = {
   { "mainloop_api", "gltf_node", 2 },
   { "mainloop_api", "gltf_scene", 2 },
   { "mainloop_api", "matrix_range_check", 3 },
-  { "font_api", "draw_text_large", 2 }
+  { "font_api", "draw_text_large", 2 },
+  { "bitmap_api", "loadbitmapfromurl", 0}
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
@@ -5024,8 +5025,8 @@ void InstallProgress(int num, std::string label, int max=15);
 
 void LoadUrls(const CodeGenLine &line, std::string homepage)
 {
-  if (line.api_name!="bitmap_api" || line.func_name!="loadbitmapfromurl")
-    return;
+  //if (line.api_name!="bitmap_api" || line.func_name!="loadbitmapfromurl")
+  //  return;
 #ifdef EMSCRIPTEN
   
   std::string url = line.params[0];
