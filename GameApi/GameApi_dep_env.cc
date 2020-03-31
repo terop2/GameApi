@@ -357,6 +357,7 @@ void onerror_async_cb(unsigned int tmp, void *arg, int, const char*)
   }
 
 }
+void dummy_cb(void*) { }
 std::string striphomepage(std::string);
 std::string stripprefix(std::string s)
 {
@@ -398,7 +399,12 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
     //std::cout << "Load cb!" << url_only << std::endl;
     (*cb->fptr)(cb->data);
   }
-
+  if (tmp!=333) {
+    std::string url_store = stripprefix(url_only);
+    //std::cout << "Store:" << url_store << std::endl;
+    emscripten_idb_async_store("gameapi", url_store.c_str(), &load_url_buffers_async[url_only]->operator[](0), load_url_buffers_async[url_only]->size(), 0, &dummy_cb, &dummy_cb);
+  }
+  
   { // progressbar
     std::string url_only2 = stripprefix(url_only);
   int s = url_only2.size();
@@ -585,10 +591,45 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
   g_progress_already_done = false;
 
 }
+struct LoadData {
+  std::string url;
+  std::string url3;
+  char *buf2;
+  char *buf3;
+};
+
+void idb_onload_async_cb(void *ptr, void* data, int datasize)
+{
+  onload_async_cb(333,ptr,data,datasize);
+}
+void idb_onerror_async_cb(void *ptr)
+{
+  onerror_async_cb(0,ptr,0,"");
+}
+
+void idb_exists(void *arg, int exists)
+{
+  LoadData *ld = (LoadData*)arg;
+  //std::cout << "Exists: " << exists << std::endl;
+  if (exists) {
+    //std::cout << "Loading from idb" << ld->url << std::endl;
+    emscripten_idb_async_load("gameapi", ld->url.c_str(), (void*)ld->buf3, &idb_onload_async_cb, &idb_onerror_async_cb);
+  } else {
+    //std::cout << "Loading from wget" << ld->url << std::endl;
+    emscripten_async_wget2_data(ld->buf2, "POST", ld->url3.c_str(), (void*)ld->buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
+  }
+}
+void idb_error(void *arg)
+{
+  LoadData *ld = (LoadData*)arg;
+  onerror_async_cb(0,(void*)ld->buf3,0,"");
+}
 void ASyncLoader::load_urls(std::string url, std::string homepage)
   {
     //std::cout << "ASyncLoader::load_urls:" << url << std::endl; 
 
+    std::string oldurl = url;
+    
   // progress bar
     {
     std::string url2 = "load_url.php?url=" + url ;
@@ -644,7 +685,15 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     //    std::cout << "ASync pending inc (load_urls) -->" << async_pending_count << std::endl;
 
     //emscripten_async_wget_data(buf2, (void*)buf2 , &onload_async_cb, &onerror_async_cb);
-    emscripten_async_wget2_data(buf2, "POST", url3.c_str(), (void*)buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
+    
+    LoadData *ld = new LoadData;
+    ld->buf2 = buf2;
+    ld->buf3 = buf3;
+    ld->url = oldurl;
+    ld->url3 = url3;
+    emscripten_idb_async_exists("gameapi", oldurl.c_str(), (void*)ld, &idb_exists, &idb_error);
+    //emscripten_async_wget2_data(buf2, "POST", url3.c_str(), (void*)buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
+    
 #if 0
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
