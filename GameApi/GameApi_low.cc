@@ -240,6 +240,16 @@ void map_enums(int &i)
   case   Low_GL_TEXTURE8: i=GL_TEXTURE8; break;
   case   Low_GL_TEXTURE9: i=GL_TEXTURE9; break;
   case   Low_GL_TEXTURE10: i=GL_TEXTURE10; break;
+  case   Low_GL_TEXTURE11: i=GL_TEXTURE11; break;
+  case   Low_GL_TEXTURE12: i=GL_TEXTURE12; break;
+  case   Low_GL_TEXTURE13: i=GL_TEXTURE13; break;
+  case   Low_GL_TEXTURE14: i=GL_TEXTURE14; break;
+  case   Low_GL_TEXTURE15: i=GL_TEXTURE15; break;
+  case   Low_GL_TEXTURE16: i=GL_TEXTURE16; break;
+  case   Low_GL_TEXTURE17: i=GL_TEXTURE17; break;
+  case   Low_GL_TEXTURE18: i=GL_TEXTURE18; break;
+  case   Low_GL_TEXTURE19: i=GL_TEXTURE19; break;
+  case   Low_GL_TEXTURE20: i=GL_TEXTURE20; break;
 
   case    Low_GL_TEXTURE_2D: i=GL_TEXTURE_2D; break;
 #ifndef USE_GLES2

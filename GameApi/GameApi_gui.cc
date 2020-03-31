@@ -4956,6 +4956,7 @@ void onload_cb(unsigned int tmp, void *arg, void *data, unsigned int datasize)
   }
 
 }
+
 ASyncData async_data[] = { 
   { "font_api", "newfont", 0 },
   { "font_api", "load_font", 0 },
@@ -5025,8 +5026,10 @@ void InstallProgress(int num, std::string label, int max=15);
 
 void LoadUrls(const CodeGenLine &line, std::string homepage)
 {
+  return;
   //if (line.api_name!="bitmap_api" || line.func_name!="loadbitmapfromurl")
   //  return;
+#if 0
 #ifdef EMSCRIPTEN
   
   std::string url = line.params[0];
@@ -5055,10 +5058,15 @@ void LoadUrls(const CodeGenLine &line, std::string homepage)
     async_pending_count++;
     std::cout << "async_pending_count inc (LoadUrls) -->" << async_pending_count << std::endl;
 
-
-
+    LoadData *ld = new LoadData;
+    ld->buf2 = buf2;
+    ld->buf3 = buf3;
+    ld->url = oldurl;
+    ld->url3 = url3;
+    emscripten_idb_async_exists("gameapi", oldurl.c_str(), (void*)ld, &idb_exists2, &idb_error2);
     //emscripten_async_wget_data(buf2, (void*)buf2 , &onload_cb, &onerror_cb);
     emscripten_async_wget2_data(buf2, "POST", urlend.c_str(), (void*)buf3, 1, &onload_cb, &onerror_cb, &onprogress_cb);
+#endif
 #endif
 }
 std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev, std::string text, int &error_line_num)
