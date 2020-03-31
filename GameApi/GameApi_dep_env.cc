@@ -399,12 +399,13 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
     //std::cout << "Load cb!" << url_only << std::endl;
     (*cb->fptr)(cb->data);
   }
+#ifdef EMSCRIPTEN
   if (tmp!=333) {
     std::string url_store = stripprefix(url_only);
     //std::cout << "Store:" << url_store << std::endl;
     emscripten_idb_async_store("gameapi", url_store.c_str(), &load_url_buffers_async[url_only]->operator[](0), load_url_buffers_async[url_only]->size(), 0, &dummy_cb, &dummy_cb);
   }
-  
+#endif
   { // progressbar
     std::string url_only2 = stripprefix(url_only);
   int s = url_only2.size();
@@ -609,6 +610,7 @@ void idb_onerror_async_cb(void *ptr)
 
 void idb_exists(void *arg, int exists)
 {
+#ifdef EMSCRIPTEN
   LoadData *ld = (LoadData*)arg;
   //std::cout << "Exists: " << exists << std::endl;
   if (exists) {
@@ -618,6 +620,7 @@ void idb_exists(void *arg, int exists)
     //std::cout << "Loading from wget" << ld->url << std::endl;
     emscripten_async_wget2_data(ld->buf2, "POST", ld->url3.c_str(), (void*)ld->buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
   }
+#endif
 }
 void idb_error(void *arg)
 {
