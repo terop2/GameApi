@@ -6784,7 +6784,7 @@ public:
 	//GameApi::SH sh;
 	ev.shader_api.use(sh);
 
-#ifdef LINUX
+#if 0
 	// to fix bug in phong and bump phong in linux nvidia drivers.
 	ev.shader_api.set_var(sh, "light_dir", light_dir.dx, light_dir.dy, 18000.0 /*light_dir.dz*/);
 #else
@@ -7020,7 +7020,7 @@ public:
 	//GameApi::SH sh;
 	ev.shader_api.use(sh);
 
-#ifdef LINUX
+#if 0
 	// to fix bug in phong and bumpphong in nvidia gfx drivers in linux
 	ev.shader_api.set_var(sh, "light_dir", light_dir.dx, light_dir.dy, 18000.0 /*light_dir.dz*/);
 #else
