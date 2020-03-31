@@ -508,7 +508,9 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 
 #endif
   const unsigned char *ptr = g_low->ogl->glGetString(Low_GL_VENDOR);
+  if (strlen((const char*)ptr)>4) {
   g_gpu_vendor = std::string(ptr,ptr+4);
+  }
   std::cout << "Vendor: " << g_low->ogl->glGetString(Low_GL_VENDOR)<< std::endl;
   std::cout << "Renderer:" << g_low->ogl->glGetString(Low_GL_RENDERER)<< std::endl;
   std::cout << "Version:" << g_low->ogl->glGetString(Low_GL_VERSION) << std::endl;
