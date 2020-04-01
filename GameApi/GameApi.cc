@@ -1073,6 +1073,7 @@ EXPORT GameApi::MN GameApi::MovementNode::translate(MN next,
 					   dx,dy,dz));
 }
 int g_shows_hundred=0;
+extern int g_logo_shown;
 int FindProgressVal();
 int FindProgressMax();
 class ScaleProgress : public Movement
@@ -1100,11 +1101,13 @@ public:
     //if (val1<0.1) val1=0.1;
     //if (val1>1.0) val1=1.0;
     const_cast<ScaleProgress*>(this)->time+=1.0;
-    float val2 = float(FindProgressVal())/float(FindProgressMax()+171.0);
-    val2+=time/float(FindProgressMax()+171.0);
+    // if you change the numbers, change logo_iter too
+    float val2 = float(FindProgressVal())/float(FindProgressMax() +101.0);
+    val2+=time/float(FindProgressMax() +101.0);
     //std::cout << "Time:" << time << std::endl;
     if (val2<0.1) val2=0.1;
     if (val2>1.0) val2=1.0;
+    if (g_logo_shown>=1) val2=1.0;
     if (val2>0.99) g_shows_hundred=1;
     return val2;
   }
@@ -10723,6 +10726,8 @@ void *prepare_cb(void *ptr)
 
 pthread_t g_thread_id;
 
+int g_logo_shown = 0;
+
 extern int g_event_screen_x;
 extern int g_event_screen_y;
 class MainLoopSplitter_win32_and_emscripten : public Splitter
@@ -10796,6 +10801,7 @@ public:
      //#ifdef THREADS
      // InstallProgress(333,"prepare",100);
      //#endif
+     g_logo_shown = 0;
   }
   virtual int Iter()
   {
@@ -10813,13 +10819,18 @@ public:
     if (env->logo_shown)
       {
 	bool b = false;
+
+	if (async_pending_count==0 && no_draw_count==0) { g_logo_shown ++;
+	}
+
+
 	if (gameapi_seamless_url=="") {
-	  //std::cout << "Logo iter" << std::endl;
+	  logo_frame_count++;
 	  b = env->ev->mainloop_api.logo_iter();
-	  //std::cout << "End of Logo iter" << std::endl;
 	} else {
 	  b = env->ev->mainloop_api.seamless_iter();
 	}
+	// b &&
 	if (b && async_pending_count==0 && no_draw_count==0) { env->logo_shown = false;
 	}
 	//if (g_shows_hundred) { env->logo_shown=false; }
@@ -10830,32 +10841,14 @@ public:
     async_is_done = true;
 
     if (firsttime) {
-      //#ifndef THREADS
       MainLoopItem *item = find_main_loop(env->ev->get_env(),code);
-      //std::cout << "Splitter/Prepare:" << std::endl;
       item->Prepare();
+
       g_prepare_done = true;
-      //#else
-      //progress=0;
-      //g_prepare_done = false;
-      //MainLoopItem *item = find_main_loop(env->ev->get_env(),code);
-      //pthread_attr_t attr;
-      //pthread_attr_init(&attr);
-      //pthread_attr_setstacksize(&attr, 3000000);
-      //pthread_create(&g_thread_id, &attr, &prepare_cb, (void*)item);
-      //#endif
-#if 0      
-      int s = g_prepare_callbacks.size();
-      for(int i=0;i<s;i++) {
-	void (*fptr)(void*) = g_prepare_callbacks[i].fptr;
-	void *ptr = g_prepare_callbacks[i].ptr;
-	fptr(ptr);
-      }
-      g_prepare_callbacks = std::vector<PrepareCB>();
-#endif
-      //std::cout << "Splitter/End of Prepare:" << std::endl;
+
       firsttime = false;
     }
+
     if (!g_prepare_done) {
       int num = progress /100;
       ProgressBar(333, progress++, num*100+100, "prepare");
@@ -10870,6 +10863,7 @@ public:
     }
 			
     if (!g_prepare_done) return -1;
+
     if (firsttime2) {
       env->ev->mainloop_api.reset_time();
       env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
@@ -10888,18 +10882,10 @@ public:
 	if (e.ch==27 && e.type==0x300) { /*std::cout << "Esc pressed2!" << std::endl;*/ env->exit = true; return 0; }
 #endif
 	
-	//GameApi::InteractionApi::quake_movement_event(*env->ev,e, env->pos_x, env->pos_y, env->rot_y,
-	//					      env->data, env->speed_x, env->speed_y,
-	//			   1.0, 1.0*3.14159*2.0/360.0);
-	//std::cout << "Splitter/Event:" << std::endl;
 	if (g_prepare_done)
 	  env->ev->mainloop_api.event_ml(env->mainloop, e);
-	//std::cout << "Splitter/End of Event:" << std::endl;
 	
       }
-    //GameApi::InteractionApi::quake_movement_frame(*env->ev, env->pos_x, env->pos_y, env->rot_y,
-    //						  env->data, env->speed_x, env->speed_y,
-    //						  1.0, 1.0*3.14159*2.0/360.0);
     
     GameApi::M mat = env->ev->matrix_api.identity();
     if (screen_width<600) {
@@ -10933,10 +10919,11 @@ public:
     if (env->ev->mainloop_api.get_time()/1000.0*10.0 > env->timeout)
       {
 	//env->exit = true;
-	std::cout << "Timeout2, exiting.." << std::endl;
+	//std::cout << "Timeout2, exiting.." << std::endl;
       }
     
     // swapbuffers
+    //std::cout << "swapbuffers" << std::endl;
     env->ev->mainloop_api.swapbuffers();
     //xsg_low->ogl->glGetError();
     return -1;
@@ -10974,7 +10961,8 @@ private:
   bool firsttime;
   bool firsttime2;
   int progress;
-  };
+  int logo_frame_count=0;
+};
 
 extern int score;
 extern int hidden_score;
@@ -12221,7 +12209,7 @@ public:
       int end_y = i*baseline_separation+ev.bitmap_api.size_y(bms[i]);
       if (x>=0 && x<ev.bitmap_api.size_x(bms[i]) && y>=start_y && y<end_y) {
 	unsigned int c = ev.bitmap_api.colorvalue(bms[i],x,y-start_y); 
-	if (c&0xff000000 == 0x0) { continue; }
+	if ((c&0xff000000) == 0x0) { continue; }
 	return c;
       }
     }

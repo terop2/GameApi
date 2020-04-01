@@ -7202,6 +7202,12 @@ public:
     Point p = next->EndFacePoint(face,point);
     return p*m;  
   }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Matrix m2 = Matrix::KeepRotation(m);
+    Vector v = next->PointNormal(face,point);
+    return v*m2;
+  }
 private:
   FaceCollection *next;
   Matrix m;
