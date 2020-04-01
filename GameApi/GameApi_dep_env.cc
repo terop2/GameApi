@@ -1111,7 +1111,7 @@ std::vector<unsigned char> load_from_url(std::string url)
     while(fread(&c,1,1,f)==1) {
       i++;
       g_current_size++;
-      if (!g_progress_already_done && i%(num/15)==0) {
+      if (!g_progress_already_done && num/15>0 && i%(num/15)==0) {
 	int s = url.size();
 	int sum=0;
 	for(int i=0;i<s;i++) sum+=int(url[i]);
@@ -1142,7 +1142,7 @@ std::vector<unsigned char> load_from_url(std::string url)
     while(fread(&c,1,1,f)==1) {
       i++;
       g_current_size++;
-      if (!g_progress_already_done && i%(num/15)==0) {
+      if (!g_progress_already_done && num/15>0 && i%(num/15)==0) {
 	int s = url.size();
 	int sum=0;
 	for(int i=0;i<s;i++) sum+=int(url[i]);
