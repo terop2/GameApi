@@ -816,6 +816,7 @@ struct CBData {
 
 
 extern int async_pending_count;
+extern std::string gameapi_homepageurl;
 
 std::string convert_slashes(std::string s);
 
@@ -849,13 +850,21 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
     std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(a_filename);
     int b_s = mat.size();
     std::vector<TXID> vec;
+    std::vector<std::string> vec2;
     for(int b_i=0;b_i<b_s;b_i++)
       {
 	std::string s = mat[b_i].map_Ka;
 	if (s.size()==0) s=mat[b_i].map_Kd;
+	//static int ii = 0;
+	//std::stringstream ss;
+	//ss << ii; ii++;
+	//std::cout << "mtl_parse: " << url_prefix << "/" << s << "?id=" << ss.str()<< std::endl;
 	std::string url = convert_slashes(url_prefix+"/"+s);
+	vec2.push_back(url);
 	vec.push_back(ev.bitmap_api.dyn_fetch_bitmap(ev,url,300000));
       }
+    GameApi::Env &env = ev.get_env();
+    env.async_load_all_urls(vec2, gameapi_homepageurl);
     return vec;
 }
 
