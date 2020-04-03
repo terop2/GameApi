@@ -479,13 +479,23 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
   g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
   g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
   g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, bm.SizeX(),bm.SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
-  
-  //if (mipmaps&&power_of_two)
-  //  g_low->ogl->glGenerateMipmap(Low_GL_TEXTURE_2D);
+
+  int ssx = bm.SizeX();
+  int ssy = bm.SizeY();
+  bool mipmaps = true;
+  bool power_of_two = true;
+      if (!(ssx==1 ||ssx==2||ssx==4||ssx==8||ssx==16||ssx==32||ssx==64||ssx==128||ssx==256||ssx==512||ssx==1024||ssx==2048||ssx==4096||ssx==8192||ssx==16384))
+	power_of_two = false;
+      if (!(ssy==1 ||ssy==2||ssy==4||ssy==8||ssy==16||ssy==32||ssy==64||ssy==128||ssy==256||ssy==512||ssy==1024||ssy==2048||ssy==4096||ssy==8192||ssy==16384))
+	power_of_two = false;
 
   
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_NEAREST);      
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_NEAREST);	
+  if (mipmaps&&power_of_two)
+    g_low->ogl->glGenerateMipmap(Low_GL_TEXTURE_2D);
+
+  
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,mipmaps&&power_of_two?Low_GL_LINEAR_MIPMAP_LINEAR:Low_GL_LINEAR);      
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
   //g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);

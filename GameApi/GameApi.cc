@@ -18605,7 +18605,7 @@ public:
       // start async network access
       static int i = 0;
       std::stringstream ss;
-      ss<<"?id=" << i;
+      //ss<<"?id=" << i;
       str = ss.str();
       i++;
 #ifdef EMSCRIPTEN
@@ -18629,6 +18629,7 @@ public:
   }
 
   void Callback() {
+    //std::cout << "Callback:" << url+str << std::endl;
 #ifndef EMSCRIPTEN
     e.async_load_url(url+str, homepage);
 #endif
