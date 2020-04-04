@@ -21199,6 +21199,77 @@ GameApi::ML GameApi::MainLoopApi::matrix_range_check(GameApi::EveryApi &ev, ML m
   return add_main_loop(e, new RangeCheckMatrix(e, ev, item1, url, gameapi_homepageurl, item2));
 }
 
+struct CodeGenValues
+{
+  GameApi::WM mod2;
+  int id;
+  std::string line_uid;
+  int level;
+};
+
+
+CodeGenValues g_codegen_values;
+void set_codegen_values(GameApi::WM mod2, int id, std::string line_uid, int level)
+{
+  g_codegen_values.mod2 = mod2;
+  g_codegen_values.id = id;
+  g_codegen_values.line_uid = line_uid;
+  g_codegen_values.level = level;
+
+  std::cout << "set_codegen:" << g_codegen_values.mod2.id << " " << g_codegen_values.id << " " << g_codegen_values.line_uid << " " << g_codegen_values.level << std::endl;
+
+}
+std::string do_codegen(GameApi::EveryApi &ev)
+{
+  std::cout << "do_codegen:" << g_codegen_values.mod2.id << " " << g_codegen_values.id << " " << g_codegen_values.line_uid << " " << g_codegen_values.level << std::endl;
+  std::pair<std::string,std::string> p = ev.mod_api.codegen(ev, g_codegen_values.mod2, g_codegen_values.id, g_codegen_values.line_uid, g_codegen_values.level); 
+  std::cout << "do_codegen:" << p.first << " " << p.second << std::endl;
+  return p.second;
+}
+
+std::string g_emscripten_frame_1(std::string code, std::string homepage) {
+  return "<embed width=\"830\" height=\"650\" src=\"https://meshpage.org/builder_display.php?code=" + code + "&homepage=" + homepage + "\"/>";
+}
+
+
+class EmscriptenFrame : public Html
+{
+public:
+  EmscriptenFrame(std::string codegen, std::string homepage) : codegen(codegen), homepage(homepage) { }
+  virtual void Prepare() { }
+  virtual std::string html_file() const
+  {
+    return "<html>" + g_emscripten_frame_1(codegen,homepage) + "</html>";
+  }
+private:
+  std::string codegen;
+  std::string homepage;
+};
+std::string find_html2(GameApi::HML ml, GameApi::Env &env)
+{
+  Html *hml = find_html(env,ml);
+  hml->Prepare();
+  return hml->html_file();
+}
+
+GameApi::HML GameApi::MainLoopApi::emscripten_frame(EveryApi &ev, RUN r, std::string homepage)
+{
+  std::string gen = do_codegen(ev);
+  std::stringstream ss(gen);
+  std::string line;
+  bool output = true;
+  std::string output_str;
+  while(std::getline(ss,line)) {
+    std::stringstream ss2(line);
+    std::string s;
+    ss2 >> s;
+    if (s=="RUN" || output)
+      output_str+=line+"@";
+    if (s=="RUN") output=false;
+  }
+  return add_html(e, new EmscriptenFrame(output_str,homepage));
+}
+
 std::vector<int> g_active_triggers(25);
 std::vector<bool> g_toggle_buttons(25);
 std::vector<int> g_integers(25);

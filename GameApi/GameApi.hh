@@ -38,6 +38,7 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
+  struct HML { int id; };
   struct UV { int id; };
   struct AV { int id; };
   struct H { int id; };
@@ -285,6 +286,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT HML emscripten_frame(EveryApi &ev, RUN r, std::string homepage);
   IMPORT void init_window(int screen_width = 800, int screen_height=600, std::string window_title="GameApi", bool vr_init=false);
   IMPORT void init(SH sh, int screen_width = 800, int screen_height = 600);
   IMPORT void init_3d(SH sh, int screen_width = 800, int screen_heigth = 600);

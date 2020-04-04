@@ -130,6 +130,17 @@ GameApi::AV add_voxel_array(GameApi::Env &e, VoxelArray *arr)
 
 }
 
+GameApi::HML add_html(GameApi::Env &e, Html *file)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->html.push_back(file);
+  if (g_current_block != -2)
+  add_b(std::shared_ptr<void>(file));
+  GameApi::HML im;
+  im.id = env->html.size()-1;
+  return im;
+}
+
 GameApi::W add_frm_widget(GameApi::Env &e, FrmWidget *w)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1259,6 +1270,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   GameApi::LL ee;
   ee.id = spos->CurrentPosNum();
   return ee;
+}
+
+Html *find_html(GameApi::Env &e, GameApi::HML u)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->html[u.id];
 }
 
 Fetcher<FaceID> *find_uv(GameApi::Env &e, GameApi::UV u)

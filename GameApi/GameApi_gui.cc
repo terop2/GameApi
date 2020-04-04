@@ -7667,6 +7667,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML","bool","bool", "float", "float" },
 			 { "ev", "","false","false", "0.0", "100000.0" },
 			 "RUN", "blocker_api", "game_window2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame,
+			 "html_window",
+			 { "ev", "r", "homepage" },
+			 { "EveryApi&", "RUN", "std::string" },
+			 { "ev", "", "http://tpgames.org/" },
+			 "HML", "mainloop_api", "emscripten_frame"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::small_window,
 			 "sml_window",
 			 { "ev", "ml", "x", "y", "sx", "sy" },
@@ -7755,14 +7761,14 @@ std::vector<GameApiItem*> blocker_functions()
 			 "TXID", "texture_api", "webcam_txid_win"));
 #endif
 #endif
-
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::run_seq,
 			 "run_seq",
 			 { "ev", "vec" },
 			 { "EveryApi&", "[RUN]" },
 			 { "ev", "" },
 			 "RUN", "blocker_api", "run_seq"));
-  
+#endif  
 #if 0
   // doesnt work in emscripten
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_seq,
