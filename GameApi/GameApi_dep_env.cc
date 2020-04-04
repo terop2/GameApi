@@ -445,6 +445,25 @@ void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
   //std::cout << "async set callback" << url << std::endl;
 }
 
+void *process2(void *ptr)
+{
+  std::string *str = (std::string*)ptr;
+  pthread_detach(pthread_self());
+  system(str->c_str());
+  pthread_exit(0);
+}
+
+void pthread_system(std::string str)
+{
+  std::string *ss = new std::string(str);
+  pthread_t thread_id;
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+  pthread_attr_setstacksize(&attr, 300000);
+  pthread_create(&thread_id, &attr, &process2, (void*)ss);
+}
+
+
 #ifdef WINDOWS
 #ifdef THREADS
 pthread_t g_main_thread;

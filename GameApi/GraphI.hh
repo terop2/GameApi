@@ -1664,4 +1664,11 @@ public:
 };
 
 
+class Html
+{
+public:
+  virtual void Prepare()=0;
+  virtual std::string html_file() const=0;
+};
+
 #endif

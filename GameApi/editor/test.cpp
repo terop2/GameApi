@@ -28,7 +28,10 @@ extern std::string gameapi_homepageurl;
 
 void InstallProgress(int num, std::string label, int max=15);
 void ProgressBar(int num, int val, int max, std::string label);
-
+void set_codegen_values(GameApi::WM mod2, int id, std::string line_uid, int level);
+void pthread_system(std::string str);
+std::string find_html2(GameApi::HML ml, GameApi::Env &env);
+std::vector<unsigned char> load_from_url(std::string url);
 
 std::string hexify2(std::string s)
 {
@@ -882,6 +885,7 @@ void iter(void *arg)
 		g_id = add_block();
 		set_current_block(g_id);
 
+		    set_codegen_values(env->mod,0,uid,1000);
 		    
 		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000);
 		    set_current_block(-2);
@@ -893,6 +897,9 @@ void iter(void *arg)
 
 		    // display dialog
 		    std::string type = env->ev->mod_api.return_type(env->mod, 0, uid);
+
+
+		    
 		    
 		    bool display = true;
 		    if (type=="BO")
@@ -1111,7 +1118,36 @@ void iter(void *arg)
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
 			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
-		      } 
+		      }
+		    else if (type=="HML")
+		      {
+			display = false;
+			HML ml;
+			ml.id = id;
+			env->ev->mod_api.codegen_reset_counter();
+
+			std::string htmlfile = find_html2(ml,*env->env);
+#ifdef WINDOWS
+			std::string drive = getenv("systemdrive");
+			std::string path = getenv("homepath");
+			std::string prefix = drive + path + "\\";
+			
+			std::ofstream f((prefix + "tst.html").c_str());
+			f << htmlfile;
+			f.close();
+
+			pthread_system((std::string("start ") + prefix + "tst.html").c_str());
+#else
+			std::string home = getenv("HOME");
+			std::string prefix = home + "/";
+			
+			std::ofstream f((prefix + "tst.html").c_str());
+			f << htmlfile;
+			f.close();
+
+			pthread_system((std::string("chromium ") + prefix + "tst.html").c_str());
+#endif
+		      }
 		    else if (type=="WV")
 		      {
 			WV wv;
