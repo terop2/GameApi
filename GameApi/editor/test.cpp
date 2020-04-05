@@ -867,13 +867,16 @@ void iter(void *arg)
 		env->env->free_temp_memory();
 		    // Execute
 
+		    std::string type2 = env->ev->mod_api.return_type(env->mod, 0, uid);
 		    GameApi::ExecuteEnv exeenv;
+		    if (type2 != "HML") {
 		    std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count);
 		    //std::cout << "URLS:" << ids.second << std::endl;
 		    std::vector<std::string> urls = ids.second;
 		    std::sort(urls.begin(),urls.end());
 		    std::unique(urls.begin(),urls.end());
 		    env->env->async_load_all_urls(urls, gameapi_homepageurl);
+		    }
 		    //int s = urls.size();
 		    //for(int i=0;i<s;i++)
 		    //  {

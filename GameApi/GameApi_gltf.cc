@@ -217,20 +217,20 @@ extern std::vector<PrepareCB> g_prepare_callbacks;
 bool FileExists(const std::string &abs_filename, void *ptr)
 {
   //LoadGltf *data = (LoadGltf*)ptr;
-  std::cout << "FileExists " << abs_filename << std::endl;
+  //std::cout << "FileExists " << abs_filename << std::endl;
   return true;
 }
 std::string ExpandFilePath(const std::string &str, void *ptr)
 {
   //LoadGltf *data = (LoadGltf*)ptr;
-  std::cout << "ExpandFilePath " << str << std::endl;
+  //std::cout << "ExpandFilePath " << str << std::endl;
   return str;
 }
 
 bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std::string &filepath, void *ptr)
 {
   //LoadGltf *data = (LoadGltf*)ptr;
-  std::cout << "ReadWholeFile " << filepath << std::endl;
+  //std::cout << "ReadWholeFile " << filepath << std::endl;
   std::string url = filepath;
 #ifndef EMSCRIPTEN
     g_e->async_load_url(url, gameapi_homepageurl);
@@ -243,19 +243,19 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
 bool WriteWholeFile(std::string *err, const std::string &filepath, const std::vector<unsigned char> &contents, void *ptr)
 {
   //LoadGltf *data = (LoadGltf*)ptr;
-  std::cout << "WriteWholeFile" << filepath << std::endl;
+  //std::cout << "WriteWholeFile" << filepath << std::endl;
   return false;
 }
 bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err, std::string *warn, int req_width, int req_height, const unsigned char *bytes, int size, void *ptr)
 {
   //LoadGltf *data = (LoadGltf*)ptr;
-  std::cout << "LoadImageData " << req_width << " " << req_height << " " << size << std::endl;
+  //std::cout << "LoadImageData " << req_width << " " << req_height << " " << size << std::endl;
   return false;
 }
 bool WriteImageData(const std::string *basepath, const std::string *filename, tinygltf::Image *image, bool b, void *ptr)
 {
   //LoadGltf *data = (LoadGltf*)ptr;
-  std::cout << "WriteImageData " << *basepath << " " << *filename << std::endl;
+  //std::cout << "WriteImageData " << *basepath << " " << *filename << std::endl;
   return false;
 }
 
