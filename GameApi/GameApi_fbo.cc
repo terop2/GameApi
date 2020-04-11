@@ -30,16 +30,23 @@ EXPORT GameApi::FBO GameApi::FrameBufferApi::create_fbo(int sx, int sy)
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
   g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
 
+  Low_GLuint depth_texture2;
   Low_GLuint depth_texture;
-  g_low->ogl->glGenRenderbuffers(1, &depth_texture);
-  g_low->ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, depth_texture);
-  g_low->ogl->glRenderbufferStorage(Low_GL_RENDERBUFFER, Low_GL_DEPTH_COMPONENT16, sx, sy);
-  g_low->ogl->glFramebufferRenderbuffer(Low_GL_FRAMEBUFFER, Low_GL_DEPTH_ATTACHMENT, Low_GL_RENDERBUFFER, depth_texture);
+  g_low->ogl->glGenTextures(1, &depth_texture2);
+  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, depth_texture2);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MIN_FILTER, Low_GL_NEAREST);
+  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MAG_FILTER, Low_GL_NEAREST);
+  g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_DEPTH_COMPONENT, sx,sy, 0, Low_GL_DEPTH_COMPONENT, Low_GL_FLOAT,0);
+  //g_low->ogl->glGenRenderbuffers(1, &depth_texture);
+  //g_low->ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, depth_texture2);
+  // g_low->ogl->glRenderbufferStorage(Low_GL_RENDERBUFFER, Low_GL_DEPTH_COMPONENT16, sx, sy);
+  //g_low->ogl->glFramebufferRenderbuffer(Low_GL_FRAMEBUFFER, Low_GL_DEPTH_ATTACHMENT, Low_GL_RENDERBUFFER, depth_texture);
 
+  g_low->ogl->glFramebufferTexture2D(Low_GL_FRAMEBUFFER, Low_GL_DEPTH_ATTACHMENT, Low_GL_TEXTURE_2D, depth_texture2, 0);
   g_low->ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, 0);
   g_low->ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, 0);
 
-  return add_fbo(e, fbo_name, texture, depth_texture, sx,sy);
+  return add_fbo(e, fbo_name, texture, depth_texture2, sx,sy);
 }
 EXPORT void GameApi::FrameBufferApi::config_fbo(FBO buffer)
 {
@@ -47,6 +54,7 @@ EXPORT void GameApi::FrameBufferApi::config_fbo(FBO buffer)
   
   g_low->ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, priv->fbo_name);
   g_low->ogl->glFramebufferTexture2D(Low_GL_FRAMEBUFFER, Low_GL_COLOR_ATTACHMENT0, Low_GL_TEXTURE_2D, priv->texture, 0);
+  g_low->ogl->glFramebufferTexture2D(Low_GL_FRAMEBUFFER, Low_GL_DEPTH_ATTACHMENT, Low_GL_TEXTURE_2D, priv->depthbuffer,0);
   
   //GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
   //glDrawBuffers(1, DrawBuffers);
@@ -102,14 +110,17 @@ EXPORT GameApi::BM GameApi::FrameBufferApi::fbo_to_bitmap(EveryApi &ev, FBO buff
 class FBOTextureID : public TextureID
 {
 public:
-  FBOTextureID(GameApi::EveryApi &ev, MainLoopItem *item, int sx, int sy, bool translate) : ev(ev), item(item), sx(sx), sy(sy),translate(translate)
+  FBOTextureID(GameApi::EveryApi &ev, MainLoopItem *item, int sx, int sy, bool translate, bool is_depth) : ev(ev), item(item), sx(sx), sy(sy),translate(translate), is_depth(is_depth)
   {
     if (sx == -1) { sx=ev.mainloop_api.get_screen_width(); }
     if (sy == -1) { sy=ev.mainloop_api.get_screen_height(); }
     fbo = ev.fbo_api.create_fbo(sx,sy);
     ev.fbo_api.config_fbo(fbo);
-    id = ev.fbo_api.tex_id(fbo);
-
+    if (is_depth) {
+      id = ev.fbo_api.depth_id(fbo);
+    } else {
+      id = ev.fbo_api.tex_id(fbo);
+    }
     firsttime = true;
   }
   void handle_event(MainLoopEvent &e)
@@ -117,8 +128,8 @@ public:
     item->handle_event(e);
   }
   void render(MainLoopEnv &e) {
-    int id=0;
-    g_low->ogl->glGetIntegerv(Low_GL_TEXTURE_BINDING_2D, &id);
+    int id2=0;
+    g_low->ogl->glGetIntegerv(Low_GL_TEXTURE_BINDING_2D, &id2);
     g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
     GameApi::FrameBufferApi::vp viewport = ev.fbo_api.bind_fbo(fbo);
     g_low->ogl->glClearColor(0.0,0.0,0.0,0.0);
@@ -156,7 +167,7 @@ public:
 
       item->execute(ee);
     ev.fbo_api.bind_screen(viewport);
-    g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
+    g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id2);
     g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
 		  
   }
@@ -173,11 +184,17 @@ private:
   int sx,sy;
   bool firsttime;
   bool translate;
+  bool is_depth;
 };
 GameApi::TXID GameApi::FrameBufferApi::fbo_ml(EveryApi &ev, GameApi::ML mainloop, int sx, int sy, bool translate)
 {
   MainLoopItem *ml = find_main_loop(e, mainloop);
-  return add_txid(e, new FBOTextureID(ev,ml,sx,sy, translate));
+  return add_txid(e, new FBOTextureID(ev,ml,sx,sy, translate, false));
+}
+GameApi::TXID GameApi::FrameBufferApi::depth_ml(EveryApi &ev, GameApi::ML mainloop, int sx, int sy, bool translate)
+{
+  MainLoopItem *ml = find_main_loop(e, mainloop);
+  return add_txid(e, new FBOTextureID(ev,ml,sx,sy, translate, true));
 }
 class FBOML : public MainLoopItem
 {

@@ -39,7 +39,7 @@ test
 (753,1199)vr_window uid28500 0 ev:6576:false:-1 ml:7569643236313330:false:-1 logo:66616C7365:false:-1 fpscounter:66616C7365:false:-1 start_time:302E30:false:-1 duration:3130303030302E30:false:-1 invert:74727565:false:-1 translate:74727565:false:-1
 (405,-62)m_bump_phong uid7873 0 ev:6576:false:-1 light_dir_x:2D302E33:false:-1 light_dir_y:302E33:false:-1 light_dir_z:2D31:false:-1 ambient:6666666638383030:false:-1 highlight:6666363636363636:false:-1 pow:313530:false:-1 fb:75696437383734:false:-1 bump_width:31:false:-1
 (275,-74)from_red uid7874 0 color_bm:75696437383735:false:-1
-(110,-53)chessboard uid7875 0 tile_sx:3130:false:-1 tile_sy:3130:false:-1 count_x:38:false:-1 count_y:38:false:-1 color_1:6666666666666666:false:-1 color_2:6666383838383838:false:-1
+(109,-53)chessboard uid7875 0 tile_sx:3130:false:-1 tile_sy:3130:false:-1 count_x:38:false:-1 count_y:38:false:-1 color_1:6666666666666666:false:-1 color_2:6666383838383838:false:-1
 (614,-67)m_snow uid14560 0 ev:6576:false:-1 nxt:75696437383733:false:-1 color1:6666616161616161:false:-1 color2:6666656565656565:false:-1 color3:6666666666666666:false:-1 mix_val:302E3935:false:-1
 (692,117)m_fog uid14561 0 ev:6576:false:-1 nxt:7569643134393434:false:-1 dist:333030:false:-1 dark_color:6666303030303030:false:-1 light_color:6666383834343232:false:-1
 (793,557)mn_hmd_pose uid1584 0 next:7569643134393533:false:-1 pose_in_screen:66616C7365:false:-1
@@ -53,3 +53,4 @@ test
 (357,499)m_phong uid1411184168 0 ev:6576:false:-1 nxt:75696431343131313834313635:false:-1 light_dir_x:2D302E33:false:-1 light_dir_y:302E33:false:-1 light_dir_z:2D31:false:-1 ambient:6666666638383434:false:-1 highlight:6666363636363636:false:-1 pow:32:false:-1
 (455,64)m_bind uid234641859 0 p:75696431343131313834313631:false:-1 mat:7569643134393434:false:-1
 (598,279)array_ml uid234641860 0 ev:6576:false:-1 arr:5B7569643233343634313835392C75696431343934322C75696431343934335D:false:-1
+(1069,270)html_window uid1896895273 0 ev:6576:false:-1 r:7569643134393439:false:-1 homepage:687474703A2F2F747067616D65732E6F72672F:false:-1

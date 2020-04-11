@@ -133,6 +133,7 @@ enum
     Low_GL_NO_ERROR,
     Low_GL_GEOMETRY_OUTPUT_TYPE_EXT,
     Low_GL_LINEAR_MIPMAP_LINEAR, // glTexParameteri 3th param
+    Low_GL_DEPTH_COMPONENT,
     //
     //  OLD STUFF
     // 

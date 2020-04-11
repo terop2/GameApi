@@ -3535,6 +3535,7 @@ public:
   IMPORT bool fbo_status(FBO buffer);
   IMPORT BM fbo_to_bitmap(EveryApi &ev, FBO buffer);
   IMPORT TXID fbo_ml(EveryApi &ev, ML mainloop, int sx, int sy, bool translate);
+  IMPORT TXID depth_ml(EveryApi &ev, ML mainloop, int sx, int sy, bool translate);
   IMPORT ML fbo_ml_blit(EveryApi &ev, TXID id, float start_x, float end_x, float start_y, float end_y, float z);
 private:
   FrameBufferApi(const FrameBufferApi &);

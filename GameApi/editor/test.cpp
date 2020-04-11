@@ -1142,8 +1142,10 @@ void iter(void *arg)
 			pthread_system((std::string("start ") + prefix + "tst.html").c_str());
 #else
 			std::string home = getenv("HOME");
-			std::string prefix = home + "/";
+			std::string prefix = home + "/_gameapi_builder";
+			system((std::string("mkdir -p ") + prefix).c_str());
 			
+			prefix+="/";
 			std::ofstream f((prefix + "tst.html").c_str());
 			f << htmlfile;
 			f.close();
@@ -1772,6 +1774,8 @@ void terminate_handler()
 void clear_counters();
 void print_counters();
 bool file_exists(std::string s);
+
+extern bool g_vr_enable;
 //extern pthread_t g_main_thread;
 int main(int argc, char *argv[]) {
   //clear_counters();
@@ -1834,9 +1838,14 @@ int main(int argc, char *argv[]) {
 	  screen_x = 800;
 	  screen_y = 600;
 	}
+      if (std::string(argv[i])=="--vr")
+	{
+	  g_vr_enable = true;
+	}
       if (std::string(argv[i])=="--file")
 	{
 	  filename = std::string(argv[i+1]);
+	  i++;
 	}
     }
   std::ifstream stream(filename.c_str());

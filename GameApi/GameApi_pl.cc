@@ -3384,6 +3384,8 @@ EXPORT GameApi::P GameApi::PolygonApi::polygon3(PTS points)
       Point pp = p->Pos(i);
       coll->push_back(pp);
     }
+  if (sz!=0)
+    coll->push_back(p->Pos(0));
   FaceCollPolyHandle *handle = new FaceCollPolyHandle;
   handle->coll = coll;
   handle->collowned = false;

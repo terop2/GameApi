@@ -7,6 +7,21 @@
 //#include <SDL_opengl.h>
 #include "GameApi_low.hh"
 
+
+bool g_vr_enable = false;
+class ZeroIntFetcher : public Fetcher<int>
+{
+public:
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+  virtual void set(int t) { }
+  virtual int get() const { return 0; }
+
+};
+
+
 #ifndef ARM
 
 #ifdef VIRTUAL_REALITY
@@ -29,10 +44,14 @@
 #endif
 
 
+
+
+
 bool g_use_vr = false;
 
 EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration, bool invert, bool translate)
 {
+  if (!g_vr_enable) { return game_window2(ev,ml,logo,fpscounter,start_time,duration); }
   //invert=false;
 
   g_use_vr = true;
@@ -330,6 +349,11 @@ private:
 };
 EXPORT GameApi::ML GameApi::BlockerApi::vr_submit_ml(EveryApi &ev, ML ml, TXID left, TXID right, bool invert, bool translate)
 {
+  if (!g_vr_enable) {
+    GameApi::ML ml;
+    ml.id = 0;
+    return ml;
+  }
   MainLoopItem *item = find_main_loop(e, ml);
   TextureID *left_eye = find_txid(e, left);
   TextureID *right_eye = find_txid(e, right);
@@ -337,7 +361,12 @@ EXPORT GameApi::ML GameApi::BlockerApi::vr_submit_ml(EveryApi &ev, ML ml, TXID l
 }
 EXPORT GameApi::ML GameApi::BlockerApi::vr_submit(EveryApi &ev, TXID left, TXID right)
 {
-
+  if (!g_vr_enable) {
+    GameApi::ML ml;
+    ml.id = 0;
+    return ml;
+  }
+  
 P I1=ev.polygon_api.vr_fullscreen_quad(ev,false);
 MT I2=ev.materials_api.textureid(ev,left,1.0);
 ML I3=ev.materials_api.bind(I1,I2);
@@ -387,6 +416,7 @@ private:
 };
 EXPORT GameApi::MN GameApi::MovementNode::pose(MN next, bool pose_in_screen)
 {
+  if (!g_vr_enable) return next;
   Movement *nxt = find_move(e, next);
   return add_move(e, new PoseMovement(nxt,pose_in_screen));
 }
@@ -596,6 +626,11 @@ private:
 
 EXPORT GameApi::ML GameApi::MainLoopApi::setup_hmd_projection(EveryApi &ev, ML ml, bool eye, bool is_standard, float nnear, float nfar, bool translate)
 {
+  if (!g_vr_enable) {
+    GameApi::ML ml;
+    ml.id=0;
+    return ml;
+  }
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new HMDProjection(e,ev,item, eye, is_standard, nnear,nfar, translate));
 }
@@ -839,6 +874,7 @@ public:
 
 GameApi::IF GameApi::FontApi::hmd_state_fetcher()
 {
+  if (!g_vr_enable) return add_int_fetcher(e, new ZeroIntFetcher);
   return add_int_fetcher(e, new HMDStateIntFetcher());
 }
 #endif
@@ -856,17 +892,6 @@ EXPORT GameApi::MN GameApi::MovementNode::pose(MN next, bool pose_in_screen)
 {
   return next;
 }
-class ZeroIntFetcher : public Fetcher<int>
-{
-public:
-  virtual void event(MainLoopEvent &e) { }
-  virtual void frame(MainLoopEnv &e) { }
-  virtual void draw_event(FrameLoopEvent &e) { }
-  virtual void draw_frame(DrawLoopEnv &e) { }
-  virtual void set(int t) { }
-  virtual int get() const { return 0; }
-
-};
 GameApi::IF GameApi::FontApi::hmd_state_fetcher()
 {
   return add_int_fetcher(e,new ZeroIntFetcher);
@@ -889,4 +914,6 @@ GameApi::ML ml;
 ml.id=0;
 return ml;
 }
+
+
 #endif

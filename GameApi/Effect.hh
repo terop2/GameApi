@@ -6795,7 +6795,7 @@ public:
   DiskElem(int numfaces, float disk_pos) :  numfaces(numfaces), disk_pos(disk_pos) { }
   void Prepare() { }
   virtual void SetBox(Matrix b) { /*box = b;*/ }
-  virtual int NumFaces() const { return numfaces; }
+  virtual int NumFaces() const { return numfaces+1; }
   virtual int NumPoints(int face) const { return 3; }
   virtual Point FacePoint(int face, int point) const;
 

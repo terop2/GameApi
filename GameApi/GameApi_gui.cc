@@ -5590,6 +5590,12 @@ std::vector<GameApiItem*> textureapi_functions()
 			 { "EveryApi&", "ML", "int", "int", "bool" },
 			 { "ev", "", "-1", "-1", "false" },
 			 "TXID", "fbo_api", "fbo_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::fbo_api, &GameApi::FrameBufferApi::depth_ml,
+			 "depth_id",
+			 { "ev", "mainloop", "sx", "sy", "translate" },
+			 { "EveryApi&", "ML", "int", "int", "bool" },
+			 { "ev", "", "-1", "-1", "false" },
+			 "TXID", "fbo_api", "depth_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::position_based_on_screen,
 			 "fbo_pos",
 			 { "obj" },
