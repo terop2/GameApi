@@ -3,7 +3,9 @@
 #ifndef LINUX
 #ifndef RASPI
 // this is also in Main.cc
+#ifndef EMSCRIPTEN
 #define VIRTUAL_REALITY 1
+#endif
 #ifndef EMSCRIPTEN
 //#define VIRTUAL_REALITY_OVERLAY 1
 #endif

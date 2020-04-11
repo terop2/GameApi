@@ -20,7 +20,9 @@
 
 // this is also in GameApi_h.hh
 #ifndef LINUX
+#ifndef EMSCRIPTEN
 #define VIRTUAL_REALITY 1
+#endif
 #endif
 //#define VIRTUAL_REALITY_OVERLAY 1
 #define SDL2_USED
