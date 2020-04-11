@@ -225,6 +225,7 @@ void map_enums(int &i)
   case Low_GL_TRIANGLES: i=GL_TRIANGLES; break; 
   case Low_GL_TRIANGLE_STRIP: i=GL_TRIANGLE_STRIP; break;
   case Low_GL_UNSIGNED_BYTE: i=GL_UNSIGNED_BYTE; break;
+  case Low_GL_UNSIGNED_INT: i=GL_UNSIGNED_INT; break;
   case   Low_GL_QUADS: i=GL_QUADS; break;
   case   Low_GL_DEPTH_TEST: i=GL_DEPTH_TEST; break;
   case   Low_GL_STATIC_DRAW: i=GL_STATIC_DRAW; break;
