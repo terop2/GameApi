@@ -105,6 +105,8 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
+
+extern bool g_vr_enable;
 //#pragma comment (lib, "glew32s.lib") 
 
 BufferRef CopyFromSDLSurface(Low_SDL_Surface *surf);
