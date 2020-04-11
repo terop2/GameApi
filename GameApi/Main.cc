@@ -19,7 +19,9 @@
 //
 
 // this is also in GameApi_h.hh
-//#define VIRTUAL_REALITY 1
+#ifndef LINUX
+#define VIRTUAL_REALITY 1
+#endif
 //#define VIRTUAL_REALITY_OVERLAY 1
 #define SDL2_USED
 #define NO_SDL_GLEXT
@@ -471,7 +473,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 #endif
   //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #ifdef VIRTUAL_REALITY
-  if (vr_init) {
+  if (vr_init||g_vr_enable) {
     check_vr_compositor_init();
   }
 #endif  

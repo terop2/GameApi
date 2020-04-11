@@ -92,6 +92,10 @@ $(OFiles): objs/%.o : %.cc
 	@echo g++ $< -o $@
 	@$(CC) -std=c++0x -g -c $(CCFLAGS) $< -o $@
 
+touch_all:
+	touch GameApi_gui_1.cc
+	touch GameApi_gui_2.cc
+	touch GameApi_gui_3.cc
 
 
 clean:
