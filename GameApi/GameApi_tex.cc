@@ -183,6 +183,8 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right
 }
 EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types, bool mipmaps)
 {
+  //mipmaps = false;
+
   std::vector<Low_GLuint> ids;
   std::vector<GameApi::TXID> txidvec;
   ids.resize(vec.size());

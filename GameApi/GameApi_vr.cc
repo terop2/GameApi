@@ -72,14 +72,14 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
 
 
   // hmd=false
-  ML I43 = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
+  ML I43 = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,3.1,1000.0,false);
   TXID I44 = ev.fbo_api.fbo_ml(ev,I43,fbo_x,fbo_y,false);
-  ML I66 = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,10.1,60000.0, false);
+  ML I66 = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,3.1,1000.0, false);
   TXID I67 = ev.fbo_api.fbo_ml(ev,I66,fbo_x,fbo_y,false);
 
-  ML I43a = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
+  ML I43a = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,3.1,1000.0,false);
   TXID I44a = ev.fbo_api.fbo_ml(ev,I43a,fbo_x,fbo_y,false);
-  ML I66a = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,10.1,60000.0, false);
+  ML I66a = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,3.1,1000.0, false);
   TXID I67a = ev.fbo_api.fbo_ml(ev,I66a,fbo_x,fbo_y,false);
   ML res = ev.blocker_api.vr_submit_ml(ev,ml, I44,I67,invert,translate);
   ML I70a = ev.blocker_api.vr_submit(ev, I44a, I67a);
@@ -90,9 +90,9 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
   // ML cho = ev.font_api.ml_chooser(std::vector<ML>{res,I70a},alt);
 
   // hmd=true
-  ML I43_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
+  ML I43_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,3.1,1000.0,false);
   TXID I44_b = ev.fbo_api.fbo_ml(ev,I43_b,fbo_x,fbo_y,false);
-  ML I66_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,10.1,60000.0, false);
+  ML I66_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,3.1,1000.0, false);
   TXID I67_b = ev.fbo_api.fbo_ml(ev,I66_b,fbo_x,fbo_y,false);
 
   //ML I43a_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
@@ -317,9 +317,9 @@ public:
   Matrix ConvertMatrix( const vr::HmdMatrix34_t &pose)
   {
     // 0.0 vaikuttaa sponzan 2 kerroksen pilareihin
-    Matrix m = { pose.m[0][0], pose.m[0][1], pose.m[0][2], /*0.0*/ pose.m[0][3],
-		 pose.m[1][0], pose.m[1][1], pose.m[1][2], /*0.0*/ pose.m[1][3],
-		 pose.m[2][0], pose.m[2][1], pose.m[2][2], /*0.0*/ pose.m[2][3],
+    Matrix m = { pose.m[0][0], pose.m[0][1], pose.m[0][2], pose.m[0][3],
+		 pose.m[1][0], pose.m[1][1], pose.m[1][2], pose.m[1][3],
+		 pose.m[2][0], pose.m[2][1], pose.m[2][2], pose.m[2][3],
 	         0.0, 0.0,0.0, 1.0f};
     for(int i=0;i<16;i++) if (std::isnan(m.matrix[i])) m.matrix[i]=0.0;
     return m;
@@ -565,18 +565,25 @@ public:
     proj_matrix=GetHMDMatrixProjectionEye( eye, is_standard );
     //std::cout << "Projection matrix: " << proj_matrix << std::endl;
     pos_mat= GetHMDMatrixPoseEye( eye, is_standard );
-    Matrix proj_m = proj_matrix * scene_translate * pos_mat;
+    Matrix proj_m = proj_matrix *  scene_translate * pos_mat;
     GameApi::M proj = add_matrix2( env, proj_m );
-    Matrix id_m = pos_mat; //GetHMDMatrixSceneTranslateEye(eye, is_standard);
+    Matrix id_m = GetHMDMatrixSceneTranslateEye(eye, is_standard); // pos_mat
     GameApi::M id = add_matrix2( env, id_m );
     //if (sh_id.id!=-1) {
     //  ev.shader_api.set_var(sh_id, "in_P", proj);
     //}
+    ev.shader_api.use(sh_color);
     ev.shader_api.set_var(sh_color, "in_P", proj);
+    ev.shader_api.use(sh_texture);
     ev.shader_api.set_var(sh_texture, "in_P", proj);
+    ev.shader_api.use(sh_texture_2d);
     ev.shader_api.set_var(sh_texture_2d, "in_P", proj);
+    ev.shader_api.use(sh_array_texture);
     ev.shader_api.set_var(sh_array_texture, "in_P", proj);
+    ev.shader_api.use(vertex);
+
     ev.shader_api.set_var(vertex, "in_P", proj);
+    ev.shader_api.use(fragment);
     ev.shader_api.set_var(fragment, "in_P", proj);
 
     //if (sh_id.id!=-1) {
@@ -591,8 +598,8 @@ public:
 
     MainLoopEnv ee = e;
     Matrix old = e.in_T;
-    ee.in_T = id_m;
-    //ee.in_P = proj_m;
+    ee.in_T = id_m; //Matrix::Identity(); //Matrix::Scale(-1,1,1);//id_m;
+    ee.in_P = /*ee.in_P */ proj_m;
     g_low->ogl->glEnable( Low_GL_MULTISAMPLE );
     item->execute(ee);
     g_low->ogl->glDisable( Low_GL_MULTISAMPLE );
