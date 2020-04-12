@@ -4696,8 +4696,8 @@ void funccall_1(std::vector<std::string> &s, GameApi::ExecuteEnv &e, std::vector
 #endif
 #endif
 template<class T, class RT, class... P>
-int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
-	     RT (T::*fptr)(P...), std::vector<std::string> s, GameApi::ExecuteEnv &e, std::vector<std::string> param_name, std::string return_type)
+int funccall(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
+	     RT (T::*fptr)(P...), std::vector<std::string> s, GameApi::ExecuteEnv &e, const std::vector<std::string> &param_name, const std::string &return_type)
 {
   funccall_1(s,e,param_name);
 #if 0
@@ -4730,7 +4730,7 @@ int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api
 #define ORDER 1
 #endif
   
-  std::stringstream ss;
+  //std::stringstream ss;
   int s2 = s.size();
 #ifndef ORDER
   for(int i=s2-1;i>=0;i--)
@@ -4745,9 +4745,9 @@ int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api
 #endif
   //std::cout << "FuncCall: " << ss.str() << std::endl;
 
-  std::stringstream ss2(ss.str());
+  //std::stringstream ss2(ss.str());
   T *ptr = &(ev.*api);
-  RT val = (ptr->*fptr)(from_stream2<P>(ss2,ev)...);
+  RT val = (ptr->*fptr)(from_stream2<P>(ss,ev)...);
 
 #if 0
   if (return_type.size()>2 && return_type[0]=='[' && return_type[return_type.size()-1]==']')
@@ -5305,7 +5305,8 @@ int execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std::vector<CodeG
     }
       
       //std::cout << "Execute: " << params << std::endl;
-      int val = l.item->Execute(ee,ev, params, e);
+      std::stringstream sk3;
+      int val = l.item->Execute(sk3, ee,ev, params, e);
       std::stringstream ss2;
       ss2 << val;
       res_vec.push_back(ss2.str());
@@ -5435,7 +5436,7 @@ public:
   std::string FuncName(int i) const { return func_name; }
   std::string Symbols() const { return symbols; }
   std::string Comment() const { return comment; }
-  int Execute(GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)
+  int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)
   {
     if (params.size()!=param_name.size()) {
 	if (ApiName(0)=="mainloop_api" && FuncName(0)=="array_ml") {
@@ -5444,7 +5445,7 @@ public:
 	  std::cout << "Error: param vectors different size: " << ApiName(0) << "::" << FuncName(0) << std::endl;
 	}
     }
-    return funccall(ee, ev, api, fptr, params, e, param_name, return_type); 
+    return funccall(ss,ee, ev, api, fptr, params, e, param_name, return_type); 
   }
 #if 0
   std::vector<GameApi::EditNode*> CollectNodes(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)

@@ -1124,7 +1124,8 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 	      if (name == line->module_name)
 		{
 		  //std::cout << "Execute: " << name << std::endl;
-		  int val = item->Execute(e, ev, params, exeenv);
+		  std::stringstream ss;
+		  int val = item->Execute(ss,e, ev, params, exeenv);
 		  item->EndEnv(exeenv);
 		  //std::cout << "Execute " << name << " returns " << val << std::endl;
 		  return val;
@@ -1685,7 +1686,7 @@ EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, i
       W w = { 0 };
       connect_clicks.push_back(w);
     }
-  InstallProgress(898, "create boxes", s);
+  InstallProgress(898, "create boxes", 15);
   for(int i=0;i<s;i++)
     {
       if (s/15>0 && i % (s/15)==0)
