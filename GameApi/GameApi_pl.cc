@@ -2995,9 +2995,10 @@ void GameApi::PolygonApi::renderpoly(P p, int choose, float x, float y, float z)
   PolyPriv *pp = (PolyPriv*)priv;
   ArrayRender *r = pp->rend[p.id];
   if (!r) { std::cout << "To use renderpoly() you should first call preparepoly(do not put it to frame loop)" << std::endl; return; }
-  g_low->ogl->glPushMatrix();
+  OpenglLowApi *ogl = g_low->ogl;
+  ogl->glPushMatrix();
 #ifndef EMSCRIPTEN
-  g_low->ogl->glTranslatef(x,y,z);
+  ogl->glTranslatef(x,y,z);
 #endif
   //std::cout << "renderpoly: " << r->used_vertex_count << std::endl;
 
@@ -3016,7 +3017,7 @@ void GameApi::PolygonApi::renderpoly(P p, int choose, float x, float y, float z)
       r->DisableTexture();
     }
 #endif
- g_low->ogl->glPopMatrix();
+ ogl->glPopMatrix();
 }
 
 class CountsFaceCollection : public ForwardFaceCollection
@@ -7593,15 +7594,17 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
+  OpenglLowApi *ogl = g_low->ogl;
+
 #ifdef VAO
   if (rend->tri_count>0)
-    g_low->ogl->glBindVertexArray(rend->vao[0]);
+    ogl->glBindVertexArray(rend->vao[0]);
   else
   if (rend->quad_count>0)
-    g_low->ogl->glBindVertexArray(rend->vao[1]);
+    ogl->glBindVertexArray(rend->vao[1]);
   else
   if (rend->poly_count>0)
-    g_low->ogl->glBindVertexArray(rend->vao[2]);
+    ogl->glBindVertexArray(rend->vao[2]);
 #endif
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   if (s->texture_many_ids.size()!=0) {
@@ -7613,17 +7616,17 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
 	if (texid>=SPECIAL_TEX_ID_CUBEMAP && texid<SPECIAL_TEX_ID_CUBEMAP_END)
 	  {
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, texid-SPECIAL_TEX_ID_CUBEMAP);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+i);
+      ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, texid-SPECIAL_TEX_ID_CUBEMAP);
 	  } else {
 
-	g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
+	ogl->glActiveTexture(Low_GL_TEXTURE0+i);
 #ifndef EMSCRIPTEN
-        g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
+        ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
 #endif
-	g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_many_ids[i]);
+	ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_many_ids[i]);
 	}
       }
       rend->render(0);
@@ -7643,10 +7646,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
     {
       //g_low->ogl->glEnable(Low_GL_TEXTURE_CUBE_MAP);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
@@ -7659,10 +7662,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
     {
       //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
@@ -7674,10 +7677,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
     {
       //g_low->ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
       rend->render(0);
       //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
     }
@@ -7688,7 +7691,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       rend->render(0);
     }
 #ifdef VAO
-  g_low->ogl->glBindVertexArray(0);
+  ogl->glBindVertexArray(0);
 #endif
 }
 EXPORT void GameApi::PolygonApi::clone(VA va)
@@ -7698,6 +7701,8 @@ EXPORT void GameApi::PolygonApi::clone(VA va)
 }
 EXPORT void GameApi::PolygonApi::render_vertex_array_dyn(VA va, DC dc, MainLoopEnv &ee)
 {
+  OpenglLowApi *ogl = g_low->ogl;
+
   DynamicChange *ddc = find_dyn_change(e, dc);
   VertexArraySet *s = find_vertex_array(e, va);
   s->apply_change(ddc, 0, 1, ee);
@@ -7709,11 +7714,11 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_dyn(VA va, DC dc, MainLoopE
     int ss = s->texture_many_ids.size();
     for(int i=0;i<ss;i++)
       {
-	g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
+	ogl->glActiveTexture(Low_GL_TEXTURE0+i);
 #ifndef EMSCRIPTEN
-        g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
+        ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
 #endif
-	g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_many_ids[i]);
+	ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_many_ids[i]);
       }
       rend->render(1);
 
@@ -7732,10 +7737,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_dyn(VA va, DC dc, MainLoopE
     {
       //g_low->ogl->glEnable(Low_GL_TEXTURE_CUBE_MAP);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
@@ -7749,10 +7754,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_dyn(VA va, DC dc, MainLoopE
     {
       //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
@@ -7764,10 +7769,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_dyn(VA va, DC dc, MainLoopE
     {
       //g_low->ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
       rend->render(1);
       //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
     }
@@ -7796,6 +7801,7 @@ EXPORT void GameApi::PolygonApi::prepare_vertex_array_instanced_matrix(ShaderApi
 
 EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi, VA va, PTA pta, SH sh, int hide_n)
 {
+  OpenglLowApi *ogl = g_low->ogl;
 #if 0
   VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
@@ -7816,11 +7822,11 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
     int ss = s->texture_many_ids.size();
     for(int i=0;i<ss;i++)
       {
-	g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
+	ogl->glActiveTexture(Low_GL_TEXTURE0+i);
 #ifndef EMSCRIPTEN
-        g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
+        ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
 #endif
-	g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_many_ids[i]);
+	ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_many_ids[i]);
       }
       rend->render(0);
 
@@ -7840,10 +7846,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
     {
       //g_low->ogl->glEnable(Low_GL_TEXTURE_CUBE_MAP);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
@@ -7856,10 +7862,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
     {
       //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
@@ -7871,10 +7877,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
     {
       //g_low->ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
       rend->render(0);
       //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
     }
@@ -7899,17 +7905,17 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
 	if (txid>=SPECIAL_TEX_ID_CUBEMAP && txid<SPECIAL_TEX_ID_CUBEMAP_END)
 	  {
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, txid-SPECIAL_TEX_ID_CUBEMAP);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+i);
+      ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, txid-SPECIAL_TEX_ID_CUBEMAP);
 
 	  } else {
-	g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
+	ogl->glActiveTexture(Low_GL_TEXTURE0+i);
 #ifndef EMSCRIPTEN
-        g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
+        ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
 #endif
-	g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_many_ids[i]);
+	ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_many_ids[i]);
 	}
       }
       int hide_num = 0;
@@ -7939,10 +7945,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
     {
       //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
@@ -7961,10 +7967,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
     {
       //g_low->ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
 
       int hide_num = 0;
       if (hide_n != -1) { hide_num = hide_n; }
@@ -7993,6 +7999,8 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
 
 EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi &shapi, VA va, MSA pta, SH sh, int hide_n)
 {
+    OpenglLowApi *ogl = g_low->ogl;
+
 #if 0
   VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
@@ -8013,11 +8021,11 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
     int ss = s->texture_many_ids.size();
     for(int i=0;i<ss;i++)
       {
-	g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
+	ogl->glActiveTexture(Low_GL_TEXTURE0+i);
 #ifndef EMSCRIPTEN
-        g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
+        ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
 #endif
-	g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_many_ids[i]);
+	ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_many_ids[i]);
       }
       rend->render(0);
 
@@ -8037,10 +8045,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
     {
       //g_low->ogl->glEnable(Low_GL_TEXTURE_CUBE_MAP);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, s->texture_id-SPECIAL_TEX_ID_CUBEMAP);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
@@ -8053,10 +8061,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
     {
       //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
@@ -8068,10 +8076,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
     {
       //g_low->ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
       rend->render(0);
       //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
     }
@@ -8096,17 +8104,17 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
 	if (txid>=SPECIAL_TEX_ID_CUBEMAP && txid<SPECIAL_TEX_ID_CUBEMAP_END)
 	  {
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, txid-SPECIAL_TEX_ID_CUBEMAP);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+i);
+      ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, txid-SPECIAL_TEX_ID_CUBEMAP);
 
 	  } else {
-	g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+i);
+	ogl->glActiveTexture(Low_GL_TEXTURE0+i);
 #ifndef EMSCRIPTEN
-        g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
+        ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
 #endif
-	g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_many_ids[i]);
+	ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_many_ids[i]);
 	}
       }
       int hide_num = 0;
@@ -8136,10 +8144,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
     {
       //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
 
       //RenderVertexArray arr(*s);
       //arr.render(0);
@@ -8158,10 +8166,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
     {
       //g_low->ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
 
       int hide_num = 0;
       if (hide_n != -1) { hide_num = hide_n; }
@@ -9185,6 +9193,8 @@ EXPORT GameApi::P GameApi::PolygonApi::and_not_elem(EveryApi &ev, P p1, P p_not,
 }
 GameApi::BM GameApi::PolygonApi::renderpolytobitmap(EveryApi &ev, P p, SH sh, float x, float y, float z, int sx, int sy)
 {
+  OpenglLowApi *ogl = g_low->ogl;
+
   GameApi::PolygonObj obj(ev, p, sh);
   obj.set_pos(x,y,z);
   obj.prepare();
@@ -9195,25 +9205,25 @@ GameApi::BM GameApi::PolygonApi::renderpolytobitmap(EveryApi &ev, P p, SH sh, fl
   //glViewport(pos.x, screen_height-pos.y-sz.dy, sz.dx, sz.dy);
   //ev.shader_api.use(sh);
   //ev.mainloop_api.switch_to_3d(true, sh, screen_width, screen_height);
-  g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+  ogl->glEnable(Low_GL_DEPTH_TEST);
  
  FBO fbo = ev.fbo_api.create_fbo(sx,sy);
   ev.fbo_api.config_fbo(fbo);
   GameApi::FrameBufferApi::vp viewport = ev.fbo_api.bind_fbo(fbo);
 
-  g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
-  g_low->ogl->glDisable(Low_GL_BLEND);
+  ogl->glEnable(Low_GL_DEPTH_TEST);
+  ogl->glDisable(Low_GL_BLEND);
   //glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
   //		       GL_ONE, GL_ONE);
   ev.mainloop_api.clear_3d(0x00000000);
   obj.render();
-  g_low->ogl->glEnable(Low_GL_BLEND);
+  ogl->glEnable(Low_GL_BLEND);
   while(!ev.fbo_api.fbo_status(fbo));
   //BM bm = ev.mainloop_api.screenshot();
   ev.fbo_api.bind_screen(viewport);
   //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+  ogl->glDisable(Low_GL_DEPTH_TEST);
   //ev.mainloop_api.switch_to_3d(false, sh, screen_width, screen_height);
 
   //return ev.fbo_api.fbo_to_bitmap(ev, fbo);
@@ -10503,8 +10513,9 @@ public:
   void Prepare() {next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
+    OpenglLowApi *ogl = g_low->ogl;
     int viewport[4];
-    g_low->ogl->glGetIntegerv(Low_GL_VIEWPORT, viewport);
+    ogl->glGetIntegerv(Low_GL_VIEWPORT, viewport);
     
     MainLoopEnv ee = e;
     ee.in_MV = e.in_MV * Matrix::Translate(viewport[0], viewport[1], 0.0);

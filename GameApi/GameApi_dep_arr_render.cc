@@ -146,11 +146,12 @@ void ArrayRender::UpdateTexCoord(Mesh &mesh, MeshTexCoords &coord, std::pair<int
 }
 void ArrayRender::AllocTexture(int count)
 {
+  OpenglLowApi *ogl = g_low->ogl;
   int texcount = count;
   texture = new int[texcount];
-  g_low->ogl->glGenTextures(texcount, (Low_GLuint*)&texture[0]);
+  ogl->glGenTextures(texcount, (Low_GLuint*)&texture[0]);
 #if 0
-  GLenum e = g_low->ogl->glGetError();
+  GLenum e = ogl->glGetError();
   if (e!=Low_GL_NO_ERROR)
     {
       std::cout << "ArrayRender::AllocTexture error!" << e << std::endl;
@@ -218,10 +219,12 @@ ThreadedUpdateTexture::~ThreadedUpdateTexture() {
 
 void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
 {
+  OpenglLowApi *ogl = g_low->ogl;
+
   //std::cout << "UpdateTexture " << num << std::endl;
-  g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+num);
+  ogl->glActiveTexture(Low_GL_TEXTURE0+num);
 #if 0
-  GLenum e = g_low->ogl->glGetError();
+  GLenum e = ogl->glGetError();
   if (e!=Low_GL_NO_ERROR)
     {
       std::cout << "ArrayRender::UpdateTexture1 error!" << e << std::endl;
@@ -266,12 +269,12 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
   BufferRef ref2 = buf2.Buffer(); 
   int sizex = ref2.width;
   int sizey = ref2.height;
-  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, texture[num]);
+  ogl->glBindTexture(Low_GL_TEXTURE_2D, texture[num]);
   //for(int i=0;i<sizex;i++)
   //  {
   //    std::cout << std::hex << ref2.buffer[i+5*ref2.ydelta] << std::dec << std::endl;
   //  }
-  g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, sizex, sizey, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, ref2.buffer);
+  ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, sizex, sizey, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, ref2.buffer);
 #if 0
   GLenum e2 = glGetError();
   if (e2!=GL_NO_ERROR)
@@ -279,23 +282,24 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
       std::cout << "ArrayRender::UpdateTexture2 error!" << e2 << std::endl;
     }
 #endif
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
-  //g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
+  //ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
   
 }
 void ArrayRender::EnableTexture(int num)
 {
+  OpenglLowApi *ogl = g_low->ogl;
   //std::cout << "EnableTexture " << num << std::endl;
-  g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+num);
-  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, texture[num]);
-  //g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+  ogl->glActiveTexture(Low_GL_TEXTURE0+num);
+  ogl->glBindTexture(Low_GL_TEXTURE_2D, texture[num]);
+  //ogl->glEnable(Low_GL_TEXTURE_2D);
 }
 void ArrayRender::DisableTexture()
 {
-  //g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+  //ogl->glDisable(Low_GL_TEXTURE_2D);
 }
 void ArrayRender::UpdateColors(Mesh &mesh, MeshColors &color, std::pair<int,int> p, int frame)
 {
@@ -418,9 +422,10 @@ void ArrayRender::Alloc(int numfaces, int numvertices)
 }
 ArrayRender::~ArrayRender()
 {
+  OpenglLowApi *ogl = g_low->ogl;
   if (texture_count)
     {
-      g_low->ogl->glDeleteTextures(texture_count, (const Low_GLuint*)&texture[0]);
+      ogl->glDeleteTextures(texture_count, (const Low_GLuint*)&texture[0]);
     }
   delete [] q_vertex_array;
   delete [] q_normal_array;
@@ -583,39 +588,40 @@ void ArrayRender::Prepare()
       q_tex_coord_array[i*2+1] = tex_coord_array[i*2+1];
     }
     }
+  OpenglLowApi *ogl = g_low->ogl;
 
 #ifdef VAO
-  g_low->ogl->glGenVertexArrays(1,vao);
-  g_low->ogl->glBindVertexArray(vao[0]);
+  ogl->glGenVertexArrays(1,vao);
+  ogl->glBindVertexArray(vao[0]);
 #endif
-  g_low->ogl->glGenBuffers(5, &buffer[0]);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[0]);
-  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_vertex_array, Low_GL_STATIC_DRAW);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[1]);
-  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_normal_array, Low_GL_STATIC_DRAW);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[2]);
-  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, q_num_vertices*sizeof(unsigned char)*4, q_color_array, Low_GL_STATIC_DRAW);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[3]);
-  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*2, q_tex_coord_array, Low_GL_STATIC_DRAW);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[4]);
-  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_vertex_array, Low_GL_STATIC_DRAW);
+  ogl->glGenBuffers(5, &buffer[0]);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[0]);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_vertex_array, Low_GL_STATIC_DRAW);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[1]);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_normal_array, Low_GL_STATIC_DRAW);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[2]);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, q_num_vertices*sizeof(unsigned char)*4, q_color_array, Low_GL_STATIC_DRAW);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[3]);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*2, q_tex_coord_array, Low_GL_STATIC_DRAW);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[4]);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_vertex_array, Low_GL_STATIC_DRAW);
 
 #ifdef VAO
-  g_low->ogl->glEnableVertexAttribArray(0);
-  g_low->ogl->glEnableVertexAttribArray(1);
-  g_low->ogl->glEnableVertexAttribArray(2);
-  g_low->ogl->glEnableVertexAttribArray(3);
-  g_low->ogl->glEnableVertexAttribArray(4);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[0]);
-  g_low->ogl->glVertexAttribPointer(0,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[1]);
-  g_low->ogl->glVertexAttribPointer(1,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[2]);
-  g_low->ogl->glVertexAttribPointer(2,4, Low_GL_UNSIGNED_BYTE, Low_GL_FALSE, 0,0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[3]);
-  g_low->ogl->glVertexAttribPointer(3,2, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[4]);
-  g_low->ogl->glVertexAttribPointer(4,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
+  ogl->glEnableVertexAttribArray(0);
+  ogl->glEnableVertexAttribArray(1);
+  ogl->glEnableVertexAttribArray(2);
+  ogl->glEnableVertexAttribArray(3);
+  ogl->glEnableVertexAttribArray(4);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[0]);
+  ogl->glVertexAttribPointer(0,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[1]);
+  ogl->glVertexAttribPointer(1,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[2]);
+  ogl->glVertexAttribPointer(2,4, Low_GL_UNSIGNED_BYTE, Low_GL_FALSE, 0,0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[3]);
+  ogl->glVertexAttribPointer(3,2, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[4]);
+  ogl->glVertexAttribPointer(4,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
 #endif
   delete [] q_vertex_array; q_vertex_array=0;
   delete [] q_normal_array; q_normal_array=0;
@@ -625,32 +631,33 @@ void ArrayRender::Prepare()
 }
 void ArrayRender::Render(int vertexframe, int normalframe, int colorframe, int texcoordframe, int vertex_pos, int vertex_size)
 {
+  OpenglLowApi *ogl = g_low->ogl;
 #ifdef VAO
-  g_low->ogl->glBindVertexArray(vao[0]);
+  ogl->glBindVertexArray(vao[0]);
 #else
-  g_low->ogl->glEnableVertexAttribArray(0);
-  g_low->ogl->glEnableVertexAttribArray(1);
-  g_low->ogl->glEnableVertexAttribArray(2);
-  g_low->ogl->glEnableVertexAttribArray(3);
-  g_low->ogl->glEnableVertexAttribArray(4);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[0]);
-  g_low->ogl->glVertexAttribPointer(0,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[1]);
-  g_low->ogl->glVertexAttribPointer(1,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[2]);
-  g_low->ogl->glVertexAttribPointer(2,4, Low_GL_UNSIGNED_BYTE, Low_GL_FALSE, 0,0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[3]);
-  g_low->ogl->glVertexAttribPointer(3,2, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[4]);
-  g_low->ogl->glVertexAttribPointer(4,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
+  ogl->glEnableVertexAttribArray(0);
+  ogl->glEnableVertexAttribArray(1);
+  ogl->glEnableVertexAttribArray(2);
+  ogl->glEnableVertexAttribArray(3);
+  ogl->glEnableVertexAttribArray(4);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[0]);
+  ogl->glVertexAttribPointer(0,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[1]);
+  ogl->glVertexAttribPointer(1,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[2]);
+  ogl->glVertexAttribPointer(2,4, Low_GL_UNSIGNED_BYTE, Low_GL_FALSE, 0,0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[3]);
+  ogl->glVertexAttribPointer(3,2, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[4]);
+  ogl->glVertexAttribPointer(4,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
 #endif
-  g_low->ogl->glDrawArrays(Low_GL_TRIANGLES, 0, vertex_size*6/4);
+  ogl->glDrawArrays(Low_GL_TRIANGLES, 0, vertex_size*6/4);
 #ifndef VAO
-  g_low->ogl->glDisableVertexAttribArray(0);
-  g_low->ogl->glDisableVertexAttribArray(1);
-  g_low->ogl->glDisableVertexAttribArray(2);
-  g_low->ogl->glDisableVertexAttribArray(3);
-  g_low->ogl->glDisableVertexAttribArray(4);
+  ogl->glDisableVertexAttribArray(0);
+  ogl->glDisableVertexAttribArray(1);
+  ogl->glDisableVertexAttribArray(2);
+  ogl->glDisableVertexAttribArray(3);
+  ogl->glDisableVertexAttribArray(4);
 #endif
 
 #if 0
@@ -704,68 +711,69 @@ void ArrayRender::Render(int vertexframe, int normalframe, int colorframe, int t
 
 void ArrayRender::Render(bool normal, bool color, bool texcoord, int vertex_pos, int vertex_size)
 {
-  g_low->ogl->glEnableVertexAttribArray(0);
-  g_low->ogl->glEnableVertexAttribArray(1);
-  g_low->ogl->glEnableVertexAttribArray(2);
-  g_low->ogl->glEnableVertexAttribArray(3);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[0]);
-  g_low->ogl->glVertexAttribPointer(0,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[1]);
-  g_low->ogl->glVertexAttribPointer(1,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[2]);
-  g_low->ogl->glVertexAttribPointer(2,4, Low_GL_UNSIGNED_BYTE, Low_GL_FALSE, 0,0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[3]);
-  g_low->ogl->glVertexAttribPointer(3,2, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
-  g_low->ogl->glDrawArrays(Low_GL_TRIANGLES, 0, q_num_vertices);
-  g_low->ogl->glDisableVertexAttribArray(0);
-  g_low->ogl->glDisableVertexAttribArray(1);
-  g_low->ogl->glDisableVertexAttribArray(2);
-  g_low->ogl->glDisableVertexAttribArray(3);
+  OpenglLowApi *ogl = g_low->ogl;
+  ogl->glEnableVertexAttribArray(0);
+  ogl->glEnableVertexAttribArray(1);
+  ogl->glEnableVertexAttribArray(2);
+  ogl->glEnableVertexAttribArray(3);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[0]);
+  ogl->glVertexAttribPointer(0,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[1]);
+  ogl->glVertexAttribPointer(1,3, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[2]);
+  ogl->glVertexAttribPointer(2,4, Low_GL_UNSIGNED_BYTE, Low_GL_FALSE, 0,0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[3]);
+  ogl->glVertexAttribPointer(3,2, Low_GL_FLOAT, Low_GL_FALSE, 0,0);
+  ogl->glDrawArrays(Low_GL_TRIANGLES, 0, q_num_vertices);
+  ogl->glDisableVertexAttribArray(0);
+  ogl->glDisableVertexAttribArray(1);
+  ogl->glDisableVertexAttribArray(2);
+  ogl->glDisableVertexAttribArray(3);
 
 #if 0
   // enabling
-  g_low->ogl->glEnableClientState(Low_GL_VERTEX_ARRAY);
-  g_low->ogl->glVertexPointer(3, GL_FLOAT, 0, vertex_array+vertex_pos*3);
+  ogl->glEnableClientState(Low_GL_VERTEX_ARRAY);
+  ogl->glVertexPointer(3, GL_FLOAT, 0, vertex_array+vertex_pos*3);
 
   if (normal)
     {
-      g_low->ogl->glEnableClientState(Low_GL_NORMAL_ARRAY);
-      g_low->ogl->glNormalPointer(Low_GL_FLOAT, 0, normal_array+vertex_pos*3);
+      ogl->glEnableClientState(Low_GL_NORMAL_ARRAY);
+      ogl->glNormalPointer(Low_GL_FLOAT, 0, normal_array+vertex_pos*3);
     }
   if (color)
     {
-      g_low->ogl->glEnableClientState(GL_COLOR_ARRAY);
-      g_low->ogl->glColorPointer(4, Low_GL_UNSIGNED_BYTE, 0, color_array+vertex_pos*4);
+      ogl->glEnableClientState(GL_COLOR_ARRAY);
+      ogl->glColorPointer(4, Low_GL_UNSIGNED_BYTE, 0, color_array+vertex_pos*4);
     }
   if (texcoord)
     {
-      g_low->ogl->glEnableClientState(Low_GL_TEXTURE_COORD_ARRAY);
-      g_low->ogl->glTexCoordPointer(2, Low_GL_FLOAT, 0, tex_coord_array+vertex_pos*2);
+      ogl->glEnableClientState(Low_GL_TEXTURE_COORD_ARRAY);
+      ogl->glTexCoordPointer(2, Low_GL_FLOAT, 0, tex_coord_array+vertex_pos*2);
     }
 
   // Render
   if (quads)
     {
-      g_low->ogl->glDrawArrays(Low_GL_QUADS, 0, vertex_size);
+      ogl->glDrawArrays(Low_GL_QUADS, 0, vertex_size);
     }
   else
     {
-      g_low->ogl->glDrawArrays(Low_GL_TRIANGLES, 0, vertex_size);
+      ogl->glDrawArrays(Low_GL_TRIANGLES, 0, vertex_size);
     }
 
   // disabling
   if (texcoord)
     {
-      g_low->ogl->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      ogl->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     }
   if (color)
     {
-      g_low->ogl->glDisableClientState(GL_COLOR_ARRAY);
+      ogl->glDisableClientState(GL_COLOR_ARRAY);
     }
   if (normal)
     {
-      g_low->ogl->glDisableClientState(GL_NORMAL_ARRAY);
+      ogl->glDisableClientState(GL_NORMAL_ARRAY);
     }
-  g_low->ogl->glDisableClientState(GL_VERTEX_ARRAY);
+  ogl->glDisableClientState(GL_VERTEX_ARRAY);
 #endif
 }

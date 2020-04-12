@@ -698,6 +698,8 @@ public:
   }  
   void render()
   {
+    OpenglLowApi *ogl = g_low->ogl;
+
     if (is_visible()) {
     if (left)
       {
@@ -719,14 +721,14 @@ public:
 	  scale_x = float(g_event_screen_x)/float(screen_x);
 	  scale_y = float(g_event_screen_y)/float(screen_y);
 	}
-	g_low->ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
+	ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
-	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+	ogl->glEnable(Low_GL_DEPTH_TEST);
 	obj.render();
-	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+	ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-	g_low->ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
+	ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
 	ev.shader_api.use(old_sh);
       }
     }
@@ -790,6 +792,7 @@ public:
   }  
   void render()
   {
+    OpenglLowApi *ogl = g_low->ogl;
     if (is_visible())
       {
     if (left)
@@ -814,16 +817,16 @@ public:
 	  scale_x = float(g_event_screen_x)/float(screen_x);
 	  scale_y = float(g_event_screen_y)/float(screen_y);
 	}
-	g_low->ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
+	ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
 	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
 	//obj.render();
 	ev.shader_api.set_var(sh, "in_MV", mat);
 	ev.polygon_api.render_vertex_array(p);
-	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+	ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-	g_low->ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
+	ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
 	ev.shader_api.use(old_sh);
       }
       }
@@ -924,6 +927,7 @@ public:
   }  
   void render()
   {
+    OpenglLowApi *ogl = g_low->ogl;
 
     if (is_visible())
       {
@@ -958,7 +962,7 @@ public:
 	  scale_x = float(g_event_screen_x)/float(screen_x);
 	  scale_y = float(g_event_screen_y)/float(screen_y);
 	}
-	g_low->ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
+	ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	int c_x = ev.mainloop_api.get_corner_x();
 	int c_y = ev.mainloop_api.get_corner_y();
 	int c_sx = ev.mainloop_api.get_screen_rect_sx();
@@ -1002,7 +1006,7 @@ public:
 	ev.shader_api.use(sh_2d);
 	ev.mainloop_api.switch_to_3d(false, sh_2d, screen_x, screen_y);
 	ev.mainloop_api.set_corner(c_x,c_y,c_sx,c_sy);
-	g_low->ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
+	ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
 	ev.shader_api.use(old_sh);
       } 
 
@@ -1201,6 +1205,7 @@ public:
   }  
   void render()
   {
+    OpenglLowApi *ogl = g_low->ogl;
     if (is_visible())
       {
     if (left)
@@ -1225,16 +1230,16 @@ public:
 	  scale_y = float(g_event_screen_y)/float(screen_y);
 	}
 
-	g_low->ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
+	ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
-	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+	ogl->glEnable(Low_GL_DEPTH_TEST);
 	//glPointSize(5.0);
 	//ev.mainloop_api.clear_3d();
 	obj.render();
-	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+	ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-	  g_low->ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
+	  ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
 	ev.shader_api.use(old_sh);
       }
       }
@@ -1298,6 +1303,7 @@ public:
   }  
   void render()
   {
+    OpenglLowApi *ogl = g_low->ogl;
     if (is_visible())
       {
     if (left)
@@ -1321,14 +1327,14 @@ public:
 	  scale_y = float(g_event_screen_y)/float(screen_y);
 	}
 
-	g_low->ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
+	ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
-	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+	ogl->glEnable(Low_GL_DEPTH_TEST);
 	obj.render();
-	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+	ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-	g_low->ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
+	ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
 	ev.shader_api.use(old_sh);
       }
       }
@@ -3826,18 +3832,19 @@ public:
   }
   void render()
   {
+    OpenglLowApi *ogl = g_low->ogl;
     if (is_visible())
       {
-    g_low->ogl->glEnable(Low_GL_SCISSOR_TEST);
+    ogl->glEnable(Low_GL_SCISSOR_TEST);
     if (g_event_screen_y!=-1) {
       float scale_x = float(g_event_screen_x)/float(ev.mainloop_api.get_screen_width());
       float scale_y = float(g_event_screen_y)/float(ev.mainloop_api.get_screen_height());
-      g_low->ogl->glScissor(pos.x*scale_x, g_event_screen_y-pos.y*scale_y-size.dy*scale_y, size.dx*scale_x, size.dy*scale_y);
+      ogl->glScissor(pos.x*scale_x, g_event_screen_y-pos.y*scale_y-size.dy*scale_y, size.dx*scale_x, size.dy*scale_y);
     } else {
-      g_low->ogl->glScissor(pos.x, screen_y-pos.y-size.dy, size.dx, size.dy);
+      ogl->glScissor(pos.x, screen_y-pos.y-size.dy, size.dx, size.dy);
     }
     vec[0]->render();
-    g_low->ogl->glDisable(Low_GL_SCISSOR_TEST);
+    ogl->glDisable(Low_GL_SCISSOR_TEST);
       }
   }
 
@@ -7674,7 +7681,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "","false","false", "0.0", "100000.0" },
 			 "RUN", "blocker_api", "game_window2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame,
-			 "html_window",
+			 "html_window", 
 			 { "ev", "r", "homepage" },
 			 { "EveryApi&", "RUN", "std::string" },
 			 { "ev", "", "http://tpgames.org/" },

@@ -179,11 +179,12 @@ public:
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
+    OpenglLowApi *ogl = g_low->ogl;
     static int inside_it = false;
     if (inside_it) { 
-    g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+    ogl->glDisable(Low_GL_DEPTH_TEST);
       next->execute(e); 
-    g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+    ogl->glEnable(Low_GL_DEPTH_TEST);
       return; 
     }
 
@@ -211,9 +212,9 @@ public:
     GameApi::SH sh = { e.sh_texture_2d };
     ev.shader_api.use(sh);
     ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-    g_low->ogl->glViewport((corner_x+tl.x)*scale_x,(screen_y-corner_y-(br.y-tl.y))*scale_y, (br.x-tl.x)*scale_x, (br.y-tl.y)*scale_y);
+    ogl->glViewport((corner_x+tl.x)*scale_x,(screen_y-corner_y-(br.y-tl.y))*scale_y, (br.x-tl.x)*scale_x, (br.y-tl.y)*scale_y);
 
-    g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+    ogl->glDisable(Low_GL_DEPTH_TEST);
     //int old_sh = e.sh_texture;
     MainLoopEnv ee = e;
     ee.sh_texture = e.sh_texture_2d;
@@ -222,10 +223,10 @@ public:
     ee.is_2d = true;
     next->execute(ee);
     //e.sh_texture = old_sh;
-    g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+    ogl->glEnable(Low_GL_DEPTH_TEST);
 
     ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
-    g_low->ogl->glViewport(corner_x*scale_x,(screen_y-corner_y-rect_sy)*scale_y,rect_sx*scale_x, rect_sy*scale_y);
+    ogl->glViewport(corner_x*scale_x,(screen_y-corner_y-rect_sy)*scale_y,rect_sx*scale_x, rect_sy*scale_y);
     inside_it = false;
   }
 
@@ -378,6 +379,8 @@ EXPORT GameApi::ML GameApi::SpriteApi::render_sprite_vertex_array_ml(EveryApi &e
 
 EXPORT void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
 {
+    OpenglLowApi *ogl = g_low->ogl;
+
   VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
   //if (!s || ((int)s)<0x100) { std::cout << "render_sprite_vertex_array ignored!" << std::endl; return; }
@@ -395,18 +398,18 @@ EXPORT void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
     }
   else if(s->texture_id!=-1)
     {
-      g_low->ogl->glEnable(Low_GL_TEXTURE_2D);
+      ogl->glEnable(Low_GL_TEXTURE_2D);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-      g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
+      ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+      ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
 
       rend->render(0);
       //      RenderVertexArray arr(*s);
       //arr.render(0);
 
-      g_low->ogl->glDisable(Low_GL_TEXTURE_2D);
+      ogl->glDisable(Low_GL_TEXTURE_2D);
     }
   else
     {
