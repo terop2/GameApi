@@ -656,6 +656,7 @@ EXPORT GameApi::FOA GameApi::FloatVolumeApi::prepare(GameApi::FO object,
 					      float start_x, float start_y, float start_z,
 					      float end_x, float end_y, float end_z)
 {
+  OpenglLowApi *ogl = g_low->ogl;
   FloatVolumeObject *fo = find_float_volume(e, object);
   float *array = new float[numpoints*3];
   int index = 0;
@@ -681,21 +682,22 @@ EXPORT GameApi::FOA GameApi::FloatVolumeApi::prepare(GameApi::FO object,
   PointArray2 *arr = new PointArray2;
   arr->array = array;
   arr->numpoints = index;
-  g_low->ogl->glGenBuffers(1, &arr->buffer);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
-  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, Low_GL_STATIC_DRAW);
+  ogl->glGenBuffers(1, &arr->buffer);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, Low_GL_STATIC_DRAW);
 
   return add_point_array(e, arr);
 }
 
 EXPORT void GameApi::FloatVolumeApi::render(FOA array)
 {
+  OpenglLowApi *ogl = g_low->ogl;
   PointArray2 *arr = find_point_array(e, array);
-  g_low->ogl->glEnableVertexAttribArray(0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
-  g_low->ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
-  g_low->ogl->glDrawArrays(Low_GL_POINTS, 0, arr->numpoints);
-  g_low->ogl->glDisableVertexAttribArray(0);
+  ogl->glEnableVertexAttribArray(0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
+  ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+  ogl->glDrawArrays(Low_GL_POINTS, 0, arr->numpoints);
+  ogl->glDisableVertexAttribArray(0);
 }
 
 class SubVolumeObject : public VolumeObject

@@ -550,6 +550,9 @@ GameApi::VAA GameApi::ObjectMoveApi::prepare_all(OM orig)
 }
 void GameApi::ObjectMoveApi::render_all(GameApi::VAA va)
 {
+  OpenglLowApi *ogl = g_low->ogl;
+
+  
   PolygonApi poly(e);
   std::vector<VertexArrayWithPos> *vec = find_move_array(e, va);
   int s = vec->size();
@@ -558,16 +561,16 @@ void GameApi::ObjectMoveApi::render_all(GameApi::VAA va)
       VertexArrayWithPos p = (*vec)[i];
       Matrix mm = find_matrix(e, p.m);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glPushMatrix();
+      ogl->glPushMatrix();
       float mat[16] = { mm.matrix[0], mm.matrix[4], mm.matrix[8], mm.matrix[12],
 			mm.matrix[1], mm.matrix[5], mm.matrix[9], mm.matrix[13],
 			mm.matrix[2], mm.matrix[6], mm.matrix[10], mm.matrix[14],
 			mm.matrix[3], mm.matrix[7], mm.matrix[11], mm.matrix[15] };
       
-      g_low->ogl->glMultMatrixf(&mat[0]);
+      ogl->glMultMatrixf(&mat[0]);
 
       poly.render_vertex_array(p.va);
-      g_low->ogl->glPopMatrix();
+      ogl->glPopMatrix();
 #endif
     }
 }
@@ -3229,11 +3232,12 @@ public:
   BevelMaterial(GameApi::EveryApi &ev, Material *next, float dir=-1.5, float linewidth=2.0) : ev(ev), next(next), dir(dir), linewidth(linewidth){ }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+  OpenglLowApi *ogl = g_low->ogl;
     float mult = 1.0;
     if (is_mobile(ev)) {
       mult = 0.2;
     }
-    g_low->ogl->glLineWidth(linewidth*mult);
+    ogl->glLineWidth(linewidth*mult);
     
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
     GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
@@ -3249,11 +3253,12 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
+  OpenglLowApi *ogl = g_low->ogl;
     float mult = 1.0;
     if (is_mobile(ev)) {
       mult = 0.2;
     }
-    g_low->ogl->glLineWidth(linewidth*mult);
+    ogl->glLineWidth(linewidth*mult);
     
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
     GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
@@ -3270,11 +3275,13 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
+  OpenglLowApi *ogl = g_low->ogl;
+
     float mult = 1.0;
     if (is_mobile(ev)) {
       mult = 0.2;
     }
-    g_low->ogl->glLineWidth(linewidth*mult);
+    ogl->glLineWidth(linewidth*mult);
     
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
     GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
@@ -3291,11 +3298,13 @@ public:
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
+  OpenglLowApi *ogl = g_low->ogl;
+
     float mult = 1.0;
     if (is_mobile(ev)) {
       mult = 0.2;
     }
-    g_low->ogl->glLineWidth(linewidth*mult);
+    ogl->glLineWidth(linewidth*mult);
     
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
     GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
@@ -3312,11 +3321,13 @@ public:
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
+  OpenglLowApi *ogl = g_low->ogl;
+
     float mult = 1.0;
     if (is_mobile(ev)) {
       mult = 0.2;
     }
-    g_low->ogl->glLineWidth(linewidth*mult);
+    ogl->glLineWidth(linewidth*mult);
     
     GameApi::PTA pta = ev.points_api.prepare(pts);
 
@@ -5408,11 +5419,13 @@ public:
   WebMaterial(GameApi::EveryApi &ev, Material *next, float val, float linewidth, unsigned int color) : ev(ev),next(next),val(val),linewidth(linewidth),color(color) {}
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+  OpenglLowApi *ogl = g_low->ogl;
+
     float mult = 1.0;
     if (is_mobile(ev)) {
       mult = 0.2;
     }
-    g_low->ogl->glLineWidth(linewidth*mult);
+    ogl->glLineWidth(linewidth*mult);
     GameApi::P I2=p;
     GameApi::P I2b = ev.polygon_api.recalculate_normals(I2);
     GameApi::P I2a = ev.lines_api.p_towards_normal(I2b, val);
@@ -5432,12 +5445,14 @@ public:
 
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
+  OpenglLowApi *ogl = g_low->ogl;
+
     float mult = 1.0;
     if (is_mobile(ev)) {
       mult = 0.2;
     }
 
-    g_low->ogl->glLineWidth(linewidth*mult);
+    ogl->glLineWidth(linewidth*mult);
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
@@ -5459,12 +5474,14 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
+  OpenglLowApi *ogl = g_low->ogl;
+
     float mult = 1.0;
     if (is_mobile(ev)) {
       mult = 0.2;
     }
 
-    g_low->ogl->glLineWidth(linewidth*mult);
+    ogl->glLineWidth(linewidth*mult);
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
@@ -5487,13 +5504,15 @@ public:
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
+  OpenglLowApi *ogl = g_low->ogl;
+
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     float mult = 1.0;
     if (is_mobile(ev)) {
       mult = 0.2;
     }
 
-    g_low->ogl->glLineWidth(linewidth*mult);
+    ogl->glLineWidth(linewidth*mult);
     
     GameApi::P I2=p;
     GameApi::P I2b = ev.polygon_api.recalculate_normals(I2);
@@ -5514,12 +5533,14 @@ public:
 
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
+  OpenglLowApi *ogl = g_low->ogl;
+
     float mult = 1.0;
     if (is_mobile(ev)) {
       mult = 0.2;
     }
 
-    g_low->ogl->glLineWidth(linewidth*mult);
+    ogl->glLineWidth(linewidth*mult);
     GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
@@ -10702,7 +10723,7 @@ void blocker_iter(void *arg)
 
     // swapbuffers
     env->ev->mainloop_api.swapbuffers();
-    //    g_low->ogl->glGetError();
+    //    ogl->glGetError();
 }
 extern int async_pending_count;
 int async_pending_count_previous=-1;
@@ -10747,6 +10768,8 @@ public:
   }
   virtual void Init()
   {
+  OpenglLowApi *ogl = g_low->ogl;
+
     score = 0;
     hidden_score = 0;
 
@@ -10789,7 +10812,7 @@ public:
 	env.ev->mainloop_api.advance_time(env.start_time/10.0*1000.0);
     }
      env.ev->mainloop_api.alpha(true);
-     g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+     ogl->glEnable(Low_GL_DEPTH_TEST);
      GameApi::MainLoopApi::Event e;
      while((e = env.ev->mainloop_api.get_event()).last==true)
        {
@@ -10925,20 +10948,22 @@ public:
     // swapbuffers
     //std::cout << "swapbuffers" << std::endl;
     env->ev->mainloop_api.swapbuffers();
-    //xsg_low->ogl->glGetError();
+    //xsogl->glGetError();
     return -1;
   }
   virtual void Destroy()
   {
-	float scale_x = 1.0;
+  OpenglLowApi *ogl = g_low->ogl;
+
+    float scale_x = 1.0;
 	float scale_y = 1.0;
 	if (g_event_screen_y!=-1) {
 	  scale_x = float(g_event_screen_x)/float(screen_width);
 	  scale_y = float(g_event_screen_y)/float(screen_height);
 	}
-	g_low->ogl->glViewport(0,0,screen_width*scale_x, screen_height*scale_y);
+	ogl->glViewport(0,0,screen_width*scale_x, screen_height*scale_y);
     // this is needed for win32 build in editor
-      g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+      ogl->glDisable(Low_GL_DEPTH_TEST);
   }
   virtual Splitter* NextState(int code)
   {
@@ -10982,6 +11007,7 @@ public:
   }
   void Execute()
   {
+  OpenglLowApi *ogl = g_low->ogl;
     
     Envi_2 env;
 
@@ -11028,7 +11054,7 @@ public:
 	ev.mainloop_api.advance_time(env.start_time/10.0*1000.0);
     }
      ev.mainloop_api.alpha(true);
-     g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+     ogl->glEnable(Low_GL_DEPTH_TEST);
     GameApi::MainLoopApi::Event e;
     while((e = env.ev->mainloop_api.get_event()).last==true)
       {
@@ -11049,10 +11075,10 @@ public:
 	  scale_x = float(g_event_screen_x)/float(screen_width);
 	  scale_y = float(g_event_screen_y)/float(screen_height);
 	}
-	g_low->ogl->glViewport(0,0,screen_width*scale_x, screen_height*scale_y);
+	ogl->glViewport(0,0,screen_width*scale_x, screen_height*scale_y);
 
       std::cout << "Mainloop existing.." << std::endl;
-      g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+      ogl->glDisable(Low_GL_DEPTH_TEST);
   }
   private:
   
@@ -19033,6 +19059,8 @@ public:
   }
   virtual void* get_data(std::string type)
   {
+  OpenglLowApi *ogl = g_low->ogl;
+
     if (type=="BufferRef") return &res_ref;
     if (type=="TXID") {
       // note, this call requires opengl.
@@ -19050,26 +19078,26 @@ public:
 
 
 #ifndef EMSCRIPTEN
-  g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+  ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-  g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id.id);
-  //g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, res_ref.width,res_ref.height, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, res_ref.buffer);
+  ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+  ogl->glBindTexture(Low_GL_TEXTURE_2D, id.id);
+  //ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, res_ref.width,res_ref.height, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, res_ref.buffer);
       if (changed) {
 	changed=false;
 
-	g_low->ogl->glTexSubImage2D(Low_GL_TEXTURE_2D, 0, 0,0, res_ref.width,res_ref.height, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, res_ref.buffer);
+	ogl->glTexSubImage2D(Low_GL_TEXTURE_2D, 0, 0,0, res_ref.width,res_ref.height, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, res_ref.buffer);
 	if (mipmaps&&power_of_two)
-	  g_low->ogl->glGenerateMipmap(Low_GL_TEXTURE_2D);
+	  ogl->glGenerateMipmap(Low_GL_TEXTURE_2D);
 
       }
 
 
-      g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,mipmaps&&power_of_two?Low_GL_LINEAR_MIPMAP_LINEAR:Low_GL_NEAREST);      
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE);
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE);
-  g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+      ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,mipmaps&&power_of_two?Low_GL_LINEAR_MIPMAP_LINEAR:Low_GL_NEAREST);      
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE);
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE);
+  ogl->glEnable(Low_GL_DEPTH_TEST);
       return &id;
     }
 
@@ -19241,6 +19269,8 @@ public:
   {
   }
   void render(MainLoopEnv &e) {
+  OpenglLowApi *ogl = g_low->ogl;
+
     if (heavy->RequestPrepares()) { heavycount=0; heavy->TriggerPrepares(); }
     int n = heavy->NumSlots();
     if (heavycount>=n) return;
@@ -19249,8 +19279,8 @@ public:
     heavycount++;
     //TODOif (heavycount>=n) { heavy->FinishSlots(); }
     if (id.id!=-1&&id.id!=0)
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id.id);
-    g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+      ogl->glBindTexture(Low_GL_TEXTURE_2D, id.id);
+    ogl->glDisable(Low_GL_DEPTH_TEST);
   }   
  
   int texture() const
@@ -19282,8 +19312,8 @@ public:
     heavycount++;
     if (heavycount>=n) { heavy->FinishSlots(); }
     //if (id.id!=-1)
-    //  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id.id);
-    //g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+    //  ogl->glBindTexture(Low_GL_TEXTURE_2D, id.id);
+    //ogl->glDisable(Low_GL_DEPTH_TEST);
     
   }
   int texture() const
@@ -19585,6 +19615,8 @@ public:
   void Prepare() { draw->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
+  OpenglLowApi *ogl = g_low->ogl;
+
     if (1) {
       screen_x = ev.mainloop_api.get_screen_sx();
       screen_y = ev.mainloop_api.get_screen_sy();
@@ -19601,9 +19633,9 @@ public:
     Matrix m = Matrix::Perspective(120.0*double(sy)/double(sx), (double)sx/sy, 10.1, 60000.0);
     //Matrix m = Matrix::Perspective2(-300.0, 300.0, -300.0, 300.0, 1.0, 610.0);
     prog->set_var("in_P", m);
-    g_low->ogl->glViewport(corner_x+x,screen_y-corner_y-sy-y, sx, sy);
+    ogl->glViewport(corner_x+x,screen_y-corner_y-sy-y, sx, sy);
     draw->execute(e);
-    g_low->ogl->glViewport(corner_x,screen_y-corner_y-rect_sy,rect_sx, rect_sy);
+    ogl->glViewport(corner_x,screen_y-corner_y-rect_sy,rect_sx, rect_sy);
   }
   virtual void handle_event(MainLoopEvent &e)
   {
@@ -19773,13 +19805,15 @@ public:
   }
   virtual void execute(MainLoopEnv &e)
   {
+  OpenglLowApi *ogl = g_low->ogl;
+
     if (firsttime) {
       firsttime = false; 
       //  pixels = new unsigned char[sx*sy*x*y];
     }
 #ifdef LOOKING_GLASS
-    g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MIN_FILTER, Low_GL_NEAREST);
-    g_low->ogl->glDisable(Low_GL_BLEND);
+    ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MIN_FILTER, Low_GL_NEAREST);
+    ogl->glDisable(Low_GL_BLEND);
 
 
     int sk = id.size();
@@ -19789,15 +19823,15 @@ public:
       TextureID *txid = find_txid(m_e, id[i]);
       txid->render(e);
 
-      g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, txid->texture());
+      ogl->glBindTexture(Low_GL_TEXTURE_2D, txid->texture());
       hp_copyViewToQuilt(i);
       }
-    //g_low->ogl->glGetTexImage(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, pixels);
-    //g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, hp_quiltTexture);
-    // g_low->ogl->glTexSubImage2D(Low_GL_TEXTURE_2D, 0, 0,0, sx*x,sy*y, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, pixels);
-    //g_low->ogl->glCopyImageSubData(txid->texture(), Low_GL_TEXTURE_2D, 0,0,0,0, hp_quiltTexture, Low_GL_TEXTURE_2D, 0,0,0,0, 10, 6, 1); // TODO 10,6,1
+    //ogl->glGetTexImage(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, pixels);
+    //ogl->glBindTexture(Low_GL_TEXTURE_2D, hp_quiltTexture);
+    // ogl->glTexSubImage2D(Low_GL_TEXTURE_2D, 0, 0,0, sx*x,sy*y, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, pixels);
+    //ogl->glCopyImageSubData(txid->texture(), Low_GL_TEXTURE_2D, 0,0,0,0, hp_quiltTexture, Low_GL_TEXTURE_2D, 0,0,0,0, 10, 6, 1); // TODO 10,6,1
     hp_drawLightfield();
-    g_low->ogl->glEnable(Low_GL_BLEND);
+    ogl->glEnable(Low_GL_BLEND);
 #endif
   }
   virtual void handle_event(MainLoopEvent &e) { 
@@ -20016,9 +20050,10 @@ public:
   }
   virtual void Init()
   {
-    g_low->ogl->glGetIntegerv(Low_GL_VIEWPORT, viewport.viewport);
+  OpenglLowApi *ogl = g_low->ogl;
+    ogl->glGetIntegerv(Low_GL_VIEWPORT, viewport.viewport);
     surf=init_2nd_display(2560, 1600);
-    g_low->ogl->glViewport(0,0,2560, 1600);
+    ogl->glViewport(0,0,2560, 1600);
 
     make_current(true);
     score = 0;
@@ -20063,7 +20098,7 @@ public:
 	env.ev->mainloop_api.advance_time(env.start_time/10.0*1000.0);
     }
      env.ev->mainloop_api.alpha(true);
-     g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+     ogl->glEnable(Low_GL_DEPTH_TEST);
      GameApi::MainLoopApi::Event e;
      while((e = env.ev->mainloop_api.get_event()).last==true)
        {
@@ -20171,18 +20206,19 @@ public:
     // swapbuffers
     //env->ev->mainloop_api.swapbuffers();
     g_low->sdl->SDL_GL_SwapWindow(sdl_display2_window);
-    //g_low->ogl->glGetError();
+    //ogl->glGetError();
     make_current(false);
     return -1;
   }
   virtual void Destroy()
   {
+  OpenglLowApi *ogl = g_low->ogl;
     // restore viewport
-    g_low->ogl->glViewport(viewport.viewport[0],viewport.viewport[1],viewport.viewport[2],viewport.viewport[3]);
+    ogl->glViewport(viewport.viewport[0],viewport.viewport[1],viewport.viewport[2],viewport.viewport[3]);
 
     // this is needed for win32 build in editor
     make_current(true);
-      g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+      ogl->glDisable(Low_GL_DEPTH_TEST);
     make_current(false);
 
     //g_low->sdl->SDL_FreeSurface(surf);
