@@ -8190,6 +8190,7 @@ public:
     id = next->index(base)+1; 
     return id;
   }
+  std::string func_name() const { return funcname; }
   std::string func_call() const
   {
     std::string out;
@@ -8232,6 +8233,7 @@ public:
     id = next->index(base)+1;
     return id;
   }
+  std::string func_name() const { return funcname; }
   std::string func_call() const
   {
     std::string out;
@@ -8273,6 +8275,8 @@ public:
     id = next->index(base);
     return id;
   }
+  virtual std::string func_name() const { return funcname; }
+
   std::string func_call() const
   {
     std::string out;
@@ -8314,6 +8318,8 @@ class EmptyV : public ShaderCall
 public:
   EmptyV() : id(-1) { }
   int index(int base) const { id = base; return base; }
+  virtual std::string func_name() const { return "EmptyV"; }
+
   std::string func_call2(int &index) const { return ""; }
   std::string func_call() const
   {
@@ -8334,6 +8340,8 @@ class EmptyF : public ShaderCall
 public:
   EmptyF(bool transparent) : transparent(transparent) { id = -1; }
   int index(int base) const { id = base; return base; }
+  virtual std::string func_name() const { return "emptyF"; }
+
   std::string func_call2(int &index) const { return ""; }
   std::string func_call() const
   {
@@ -8527,6 +8535,8 @@ class V_DistFieldMesh : public ShaderCall
 {
 public:
   V_DistFieldMesh(ShaderCall *next, ShaderModule *mod) : next(next), mod(mod) { }
+  virtual std::string func_name() const { return "V_DistFieldMesh"; }
+
   int index(int base) const {
     id = next->index(base)+1;
     return id;
@@ -8568,6 +8578,7 @@ public:
     id = next->index(base)+1;
     return id;
   }
+  virtual std::string func_name() const { return "F_MeshColor"; }
   std::string func_call2(int &index) const { return ""; }
   std::string func_call() const
   {
@@ -8611,6 +8622,8 @@ public:
     id = next->index(base)+1;
     return id;
   }
+  virtual std::string func_name() const { return ""; }
+
   std::string func_call2(int &index) const { return ""; }
   std::string func_call() const
   {
@@ -20105,7 +20118,8 @@ public:
 	 /* this eats all events from queue */
        }
     make_current(false);
-
+    firsttime2 = true;
+    firsttime3 = true;
   }
   virtual int Iter()
   {
@@ -20119,6 +20133,17 @@ public:
 	//std::cout << "ASync pending count=" << async_pending_count << std::endl;
 	async_pending_count_previous = async_pending_count;
       }
+    if (firsttime3) {
+      // this is done before prepare() to load all shaders.
+    GameApi::M mat = env->ev->matrix_api.identity();
+    GameApi::M in_MV = mat; //env->ev->mainloop_api.in_MV(*env->ev, true);
+    GameApi::M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
+    GameApi::M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
+
+      env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+      firsttime3 = false;
+    }
+
     if (env->logo_shown)
       {
 	bool b = false;
@@ -20192,9 +20217,13 @@ public:
     GameApi::M in_MV = mat; //env->ev->mainloop_api.in_MV(*env->ev, true);
     GameApi::M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
     GameApi::M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
-    
-    env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
 
+    if (firsttime2) {
+    
+    firsttime2 = false;
+    } else {
+          env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+    }
     if (env->fpscounter)
       env->ev->mainloop_api.fpscounter();
     if (env->ev->mainloop_api.get_time()/1000.0*10.0 > env->timeout)
@@ -20262,6 +20291,8 @@ private:
   Low_SDL_Surface *surf;
   GameApi::FrameBufferApi::vp viewport;
   bool firsttime;
+  bool firsttime2;
+  bool firsttime3;
 };
 
 EXPORT GameApi::RUN GameApi::BlockerApi::game_window_2nd_display(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration)

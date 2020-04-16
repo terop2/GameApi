@@ -255,9 +255,11 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
       if (start_y>sy) { start_y = sy; }
       if (end_y>sy) end_y = sy;
       
-      if (end_y-start_y > 0)
+      if (end_y-start_y > 0) {
+	//std::cout << "Thread:" << start_x << ".." << end_x << ", " << start_y << ".." << end_y << std::endl;
 	ids.push_back(threads.push_thread(&buf2, start_x, end_x, start_y, end_y));
-    }
+      }
+      }
   int ss = ids.size();
   for(int i=0;i<ss;i++)
     {
