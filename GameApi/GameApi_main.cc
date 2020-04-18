@@ -1138,12 +1138,12 @@ public:
       vec[num2]->handle_event(e);
     }
   }
-  virtual int shader_id() {
+  virtual std::vector<int> shader_id() {
     int s = vec.size();
     if (num2>=0 && num2<s) {
       return vec[num2]->shader_id();
     } else { 
-      return -1; 
+      return std::vector<int>(); 
     }
   }
 private:
@@ -1193,12 +1193,12 @@ public:
       vec[num2]->handle_event(e);
     }
   }
-  virtual int shader_id() {
+  virtual std::vector<int> shader_id() {
     int s = vec.size();
     if (num2>=0 && num2<s) {
       return vec[num2]->shader_id();
     } else { 
-      return -1; 
+      return std::vector<int>(); 
     }
   }
 private:
@@ -1397,7 +1397,7 @@ public:
     }
     old_key_pressed = key_pressed;
   }
-  int shader_id() {
+  std::vector<int> shader_id() {
     if (current_item) {
       return end->shader_id();
     } else {
@@ -1460,7 +1460,7 @@ public:
     if (state==0) { normal_game_screen->handle_event(e); }
     else { gameover_screen->handle_event(e); }
   }
-  virtual int shader_id() {
+  virtual std::vector<int> shader_id() {
     if (state==0) { return normal_game_screen->shader_id(); }
     else { return gameover_screen->shader_id(); }
   }
@@ -1633,13 +1633,17 @@ public:
 
 #ifndef NO_MV
 	// here's a block needed to distribute in_MV to different cases.
-	int id = vec[i]->shader_id();
-	if (id!=-1) {
-	  GameApi::SH sh;
-	  sh.id = id;
-	  GameApi::M m = add_matrix2( env, e.in_MV);
-	  ev.shader_api.use(sh);
-	  ev.shader_api.set_var(sh, "in_MV", m);
+	std::vector<int> ids = vec[i]->shader_id();
+	int s = ids.size();
+	for(int i=0;i<s;i++) {
+	  int id = ids[i];
+	  if (id!=-1) {
+	    GameApi::SH sh;
+	    sh.id = id;
+	    GameApi::M m = add_matrix2( env, e.in_MV);
+	    ev.shader_api.use(sh);
+	    ev.shader_api.set_var(sh, "in_MV", m);
+	  }
 	}
 #endif
 	vec[i]->execute(ee);
@@ -1653,16 +1657,21 @@ public:
 	vec[i]->handle_event(e);
       }
   }
-#if 0
-  int shader_id() { 
+  std::vector<int> shader_id() { 
     int s = vec.size();
-    for(int i=s-1;i>=0;i--)
+    std::vector<int> res;
+    for(int i=0;i<s;i++)
       {
-	if (vec[i]->shader_id()!=-1) return vec[i]->shader_id();
+	std::vector<int> v = vec[i]->shader_id();
+	int ss = v.size();
+	for(int j=0;j<ss;j++)
+	  {
+	    res.push_back(v[j]);
+	  }
+	//if (vec[i]->shader_id()!=-1) return vec[i]->shader_id();
       }
-    return -1; 
+    return res; 
   }
-#endif
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
@@ -1698,7 +1707,7 @@ public:
       }
   }
 #if 0
-  int shader_id() { 
+  std::vector<int> shader_id() { 
     int s = vec.size();
     for(int i=s-1;i>=0;i--)
       {
@@ -2065,7 +2074,7 @@ public:
     }
     next->handle_event(e);
   }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
@@ -2115,7 +2124,7 @@ public:
     if (e.type==0x301 && e.ch==key) { hold=false; }
     if (!toggle) { item->handle_event(e); } else { item2->handle_event(e); } 
   }
-  virtual int shader_id() { if (!toggle) return item->shader_id(); else return item2->shader_id(); }
+  virtual std::vector<int> shader_id() { if (!toggle) return item->shader_id(); else return item2->shader_id(); }
 
 private:
   int key;
@@ -2148,7 +2157,7 @@ public:
   {
     item->handle_event(e);
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
 
 private:
   MainLoopItem *item;
@@ -2183,7 +2192,7 @@ public:
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);
   }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
 private:
   MainLoopItem *next;
   int i;
@@ -2242,7 +2251,7 @@ public:
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);
   }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
 private:
   MainLoopItem *next;
   int i,i2;
@@ -2315,7 +2324,7 @@ public:
     vec.push_back(s);
     item->handle_event(e);    
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
 
   void save() {
     std::ofstream ss(output_filename.c_str());
@@ -2381,7 +2390,7 @@ public:
     // TODO, is this call needed?
     //item->handle_event(e);
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
 
   void load(std::string contents) {
     std::stringstream ss(contents);

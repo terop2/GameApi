@@ -1238,7 +1238,7 @@ public:
       firsttime = false;
     }
   }
-  int shader_id() { return -1; }
+  std::vector<int> shader_id() { return std::vector<int>(); }
 
 private:
   GameApi::PolygonApi &api;
@@ -3470,7 +3470,7 @@ public:
   {
     api.update_vertex_array(va,p,keep);
   }
-  int shader_id() { return -1; }
+  std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   GameApi::PolygonApi &api;
   GameApi::VA va;
@@ -4092,7 +4092,7 @@ public:
     shader.id = -1;
     firsttime = true;
   }
-  int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -4235,7 +4235,8 @@ public:
     shader.id = -1;
     firsttime = true;
   }
-  int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //  int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -4387,7 +4388,8 @@ public:
     firsttime = true;
     va.id=0;
   }
-  int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -4544,7 +4546,8 @@ public:
     firsttime = true;
     va.id=0;
   }
-  int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -4712,7 +4715,8 @@ public:
     firsttime = true;
     va.id=0;
   }
-  int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -4891,7 +4895,8 @@ public:
     firsttime = true;
     va.id=0;
   }
-  int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -5073,7 +5078,8 @@ public:
     shader.id = -1;
     firsttime = true;
   }
-  int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //  int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -5268,7 +5274,8 @@ public:
 
     next->execute(ee);
   }
-  int shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
+  //int shader_id() { return next->shader_id(); }
 
 private:
   GameApi::EveryApi &ev;
@@ -5340,22 +5347,23 @@ public:
       ee.f_shader_funcnames.push_back(f_funcname);
       }
 
-    int sh_id = next->shader_id();
+    std::vector<int> sh_ids = next->shader_id();
     //std::cout << "sh_id" << sh_id << std::endl;
-    if (sh_id!=-1)
-      {
-	//GameApi::SH sh;
-	sh.id = sh_id;
-	ev.shader_api.use(sh);
-
-
+    int sh2 = sh_ids.size();
+    for(int i=0;i<sh2;i++) {
+      int sh_id = sh_ids[i];
+      if (sh_id!=-1)
+	{
+	  //GameApi::SH sh;
+	  sh.id = sh_id;
+	  ev.shader_api.use(sh);
+	  ev.shader_api.set_var(sh, "time",float(e.time*10.0));
       }
-    ev.shader_api.set_var(sh, "time",float(e.time*10.0));
-
+    }
 
     next->execute(ee);
   }
-  int shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
 
 private:
   GameApi::EveryApi &ev;
@@ -5406,19 +5414,23 @@ public:
     ee.us_fragment_shader = a2f.id;
     }
 
-    int sh_id = next->shader_id();
+    std::vector<int> sh_ids = next->shader_id();
     //std::cout << "sh_id" << sh_id << std::endl;
-    if (sh_id!=-1)
+    int s = sh_ids.size();
+    for(int i=0;i<s;i++) {
+      int sh_id = sh_ids[i];
+      if (sh_id!=-1)
       {
 	//GameApi::SH sh;
 	sh.id = sh_id;
 	ev.shader_api.use(sh);
 	ev.shader_api.set_var(sh, "color_mix", mix);
       }
+    }
     next->execute(ee);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
 
 private:
   GameApi::EveryApi &ev;
@@ -5474,20 +5486,24 @@ public:
     ee.us_fragment_shader = a2f.id;
     }
 
-    int sh_id = next->shader_id();
+    std::vector<int> sh_ids = next->shader_id();
+    int s = sh_ids.size();
+    for(int i=0;i<s;i++) {
+      int sh_id = sh_ids[i];
     //std::cout << "sh_id" << sh_id << std::endl;
-    if (sh_id!=-1)
-      {
-	//GameApi::SH sh;
-	sh.id = sh_id;
-	ev.shader_api.use(sh);
-	ev.shader_api.set_var(sh, "color_mix", mix);
-      }
-    if (firsttime) firsttime = false;
+      if (sh_id!=-1)
+	{
+	  //GameApi::SH sh;
+	  sh.id = sh_id;
+	  ev.shader_api.use(sh);
+	  ev.shader_api.set_var(sh, "color_mix", mix);
+	}
+    }
+      if (firsttime) firsttime = false;
     next->execute(ee);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { if (sh.id!=-1) return sh.id; else return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
 
 private:
   GameApi::EveryApi &ev;
@@ -5541,9 +5557,12 @@ public:
     ee.us_fragment_shader = a2f.id;
     }
 
-    int sh_id = next->shader_id();
+    std::vector<int> sh_ids = next->shader_id();
+    int s = sh_ids.size();
+    for(int i=0;i<s;i++) {
+      int sh_id = sh_ids[i];
     //std::cout << "sh_id" << sh_id << std::endl;
-    if (sh_id!=-1)
+      if (sh_id!=-1)
       {
 	//GameApi::SH sh;
 	sh.id = sh_id;
@@ -5594,12 +5613,13 @@ public:
 	if (tex7) ev.shader_api.set_var(sh, "texsampler[7]", count);
 	//std::cout << roughnessfactor << " " << metallicfactor << " " << basecolorfactor0 << " " << basecolorfactor1 << " " << basecolorfactor2 << " " << basecolorfactor3 << " " << occul_strength << " " << emiss_factor << std::endl;
       }
+    }
     if (firsttime) firsttime = false;
 
     next->execute(ee);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { if (sh.id!=-1) return sh.id; else return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
 
 private:
   GameApi::EveryApi &ev;
@@ -5653,8 +5673,11 @@ public:
     ee.us_fragment_shader = a2f.id;
     }
 
-    int sh_id = next->shader_id();
-    //std::cout << "sh_id" << sh_id << std::endl;
+    std::vector<int> sh_ids = next->shader_id();
+    int s = sh_ids.size();
+    for(int i=0;i<s;i++) {
+      int sh_id = sh_ids[i];
+      //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
 	//GameApi::SH sh;
@@ -5664,10 +5687,11 @@ public:
 	ev.shader_api.set_var(sh, "color_mix2", mix2);
 	//	ev.shader_api.set_var(sh, "cubesampler", 0);
       }
+    }
     next->execute(ee);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
 
 private:
   GameApi::EveryApi &ev;
@@ -5718,8 +5742,11 @@ public:
     GameApi::US a2f = ev.uber_api.f_texture_arr(fragment);
     ee.us_fragment_shader = a2f.id;
     }
-    int sh_id = next->shader_id();
-    //std::cout << "sh_id" << sh_id << std::endl;
+    std::vector<int> sh_ids = next->shader_id();
+    int s = sh_ids.size();
+    for(int i=0;i<s;i++) {
+      int sh_id = sh_ids[i];
+      //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
 	//GameApi::SH sh;
@@ -5727,11 +5754,11 @@ public:
 	ev.shader_api.use(sh);
 	ev.shader_api.set_var(sh, "color_mix", mix);
       }
-
+    }
     next->execute(ee);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
 
 private:
   GameApi::EveryApi &ev;
@@ -5793,7 +5820,7 @@ public:
     }
     next->execute(ee);
   }
-  int shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
 
 private:
   GameApi::EveryApi &ev;
@@ -5854,7 +5881,7 @@ public:
       }
     next->execute(ee);
   }
-  int shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
 
 private:
   GameApi::EveryApi &ev;
@@ -5910,7 +5937,10 @@ public:
 
 
       }
-    sh.id = next->shader_id();
+    std::vector<int> sh_ids = next->shader_id();
+    int s = sh_ids.size();
+    for(int i=0;i<s;i++) {
+      sh.id = sh_ids[i];
 
     if (sh.id!=-1) {
 	ev.shader_api.use(sh);
@@ -5920,11 +5950,11 @@ public:
       ev.shader_api.set_var(sh, "time_end_end", end_time2);
       ev.shader_api.set_var(sh, "time", e.time);
     }
-			    
+    }
 		    
     next->execute(ee);
   }
-  int shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
 
 private:
   GameApi::EveryApi &ev;
@@ -5943,7 +5973,7 @@ public:
   {
     firsttime = true;
   }
-  int shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -5978,37 +6008,12 @@ public:
     fragment.id = ee.us_fragment_shader;
       }
 
-    int sh_id = next->shader_id();
-    //std::cout << "sh_id" << sh_id << std::endl;
-    if (sh_id!=-1)
-      {
-	//GameApi::SH sh;
-	sh.id = sh_id;
-	ev.shader_api.use(sh);
-
-
-      }
-#ifndef NO_MV
-    
-    GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
-    GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
-    GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
-   GameApi::M m3 = add_matrix2(env, e.in_P);
-    ev.shader_api.use(sh);
-    ev.shader_api.set_var(sh, "in_MV", m);
-    //ev.shader_api.set_var(sh, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
-
-    ev.shader_api.set_var(sh, "in_T", m1);
-    ev.shader_api.set_var(sh, "in_P", m3);
-    ev.shader_api.set_var(sh, "in_N", m2);
-#endif
-    float time = ee.time;
-    ev.shader_api.set_var(sh, "time", time);
-    std::vector<GameApi::M> vec1;
-    std::vector<GameApi::PT> vec2;
-    int s = vec.size();
-    for(int i=0;i<s;i++)
-      {
+      float time = ee.time;
+      std::vector<GameApi::M> vec1;
+      std::vector<GameApi::PT> vec2;
+      int s = vec.size();
+      for(int i=0;i<s;i++)
+	{
 	//std::cout << time << std::endl;
 	Matrix mm = vec[i]->mat(time);
 	//std::cout << mm << std::endl;
@@ -6020,9 +6025,39 @@ public:
 	vec2.push_back(pt); 
       }
 
+    
+    std::vector<int> sh_ids = next->shader_id();
+    int s4 = sh_ids.size();
+    for(int k=0;k<s4;k++) {
+      int sh_id = sh_ids[k];
+      //std::cout << "sh_id" << sh_id << std::endl;
+      if (sh_id!=-1)
+	{
+	  //GameApi::SH sh;
+	  sh.id = sh_id;
+	  ev.shader_api.use(sh);
+	  
+	  
+	}
+#ifndef NO_MV
+    
+      GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+      GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+      GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+      GameApi::M m3 = add_matrix2(env, e.in_P);
+      ev.shader_api.use(sh);
+      ev.shader_api.set_var(sh, "in_MV", m);
+      //ev.shader_api.set_var(sh, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+      
+      ev.shader_api.set_var(sh, "in_T", m1);
+      ev.shader_api.set_var(sh, "in_P", m3);
+      ev.shader_api.set_var(sh, "in_N", m2);
+#endif
+      ev.shader_api.set_var(sh, "time", time);
+
     ev.shader_api.set_var(sh, "bones", vec1,50);
     ev.shader_api.set_var(sh, "bone_pos", vec2);
-
+    }
     next->execute(ee);
     ev.shader_api.unuse(sh);
 
@@ -6044,7 +6079,7 @@ public:
   {
     firsttime = true;
   }
-  int shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -6079,7 +6114,11 @@ public:
     fragment.id = ee.us_fragment_shader;
       }
 
-    int sh_id = next->shader_id();
+    std::vector<int> sh_ids = next->shader_id();
+    int s = sh_ids.size();
+    for(int i=0;i<s;i++) {
+      int sh_id = sh_ids[i];
+
     //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
@@ -6105,7 +6144,7 @@ public:
 #endif
     float time = ee.time;
     ev.shader_api.set_var(sh, "time", time);
-    
+    }
     next->execute(ee);
 
   }
@@ -6127,7 +6166,7 @@ public:
   {
     firsttime = true;
   }
-  int shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -6164,7 +6203,10 @@ public:
     ee.us_fragment_shader = a2f.id;
       }
 
-    int sh_id = next->shader_id();
+    std::vector<int> sh_ids = next->shader_id();
+    int s = sh_ids.size();
+    for(int i=0;i<s;i++) {
+      int sh_id = sh_ids[i];
     //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
@@ -6188,6 +6230,7 @@ public:
 #endif
     float time = ee.time;
     ev.shader_api.set_var(sh, "time", time);
+    }
     
     next->execute(ee);
 
@@ -6209,7 +6252,7 @@ public:
   {
     firsttime = true;
   }
-  int shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
   void Prepare() { next->Prepare(); }
   void handle_event(MainLoopEvent &e)
   {
@@ -6246,7 +6289,10 @@ public:
     ee.us_fragment_shader = a2f.id;
       }
 
-    int sh_id = next->shader_id();
+    std::vector<int> sh_ids = next->shader_id();
+    int s = sh_ids.size();
+    for(int i=0;i<s;i++) {
+      int sh_id = sh_ids[i];
     //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
@@ -6270,7 +6316,7 @@ public:
 #endif
     float time = ee.time;
     ev.shader_api.set_var(sh, "time", time);
-    
+    }
     next->execute(ee);
 
   }
@@ -6292,7 +6338,7 @@ public:
   {
     firsttime = true;
   }
-  int shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
   void Prepare() { next->Prepare(); }
   void handle_event(MainLoopEvent &e)
   {
@@ -6326,9 +6372,12 @@ public:
     ee.us_fragment_shader = a2f.id;
       }
 
-    int sh_id = next->shader_id();
+    std::vector<int> sh_ids = next->shader_id();
+    int s = sh_ids.size();
+    for(int i=0;i<s;i++) {
     //std::cout << "sh_id" << sh_id << std::endl;
-    if (sh_id!=-1)
+      int sh_id = sh_ids[i];
+      if (sh_id!=-1)
       {
 	//GameApi::SH sh;
 	sh.id = sh_id;
@@ -6354,6 +6403,8 @@ public:
     ev.shader_api.set_var(sh, "color_choice", cc.rf(), cc.gf(), cc.bf(), cc.af());
     ev.shader_api.set_var(sh, "mix_val", mix_val);
 
+    }
+    
     next->execute(ee);
     ev.shader_api.unuse(sh);
   }
@@ -6375,7 +6426,7 @@ public:
   {
     firsttime = true;
   }
-  int shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -6411,12 +6462,15 @@ public:
 	GameApi::US a3f = ev.uber_api.f_point_light(fragment);
 	ee.us_fragment_shader = a3f.id;
       }
-    int sh_id = next->shader_id();
-    if (sh_id != -1)
+    std::vector<int> sh_ids = next->shader_id();
+    int s=sh_ids.size();
+    for(int i=0;i<s;i++) {
+      int sh_id = sh_ids[i];
+      if (sh_id != -1)
+	{
+	  sh.id = sh_id;
+	}
       {
-	sh.id = sh_id;
-      }
-    {
 	ev.shader_api.use(sh);
 	Point p(0.0,0.0,0.0);
 	Matrix m = change->get_whole_matrix(e.time*10.0, e.delta_time);
@@ -6436,6 +6490,7 @@ public:
     ev.shader_api.set_var( sh, "in_N", m2);
     ev.shader_api.set_var( sh, "time", e.time);
 #endif
+    }
     ee.spotlight_id = e.spotlight_id+1;
     next->execute(ee);
     ev.shader_api.unuse(sh);
@@ -6460,7 +6515,7 @@ public:
     initialized=false;
     sh.id = -1;
   }
-  int shader_id() { if (sh.id != -1) return sh.id; return next->shader_id(); 
+  std::vector<int> shader_id() { if (sh.id != -1) return std::vector<int>{sh.id}; return next->shader_id(); 
   }
   void handle_event(MainLoopEvent &e)
   {
@@ -6508,8 +6563,11 @@ public:
 #endif
       }
 
-    int sh_id = next->shader_id();
-    sh.id = sh_id;
+     std::vector<int> sh_ids = next->shader_id();
+     int s = sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+     sh.id = sh_id;
     //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
@@ -6551,7 +6609,8 @@ public:
 	ev.shader_api.set_var(sh, "time", e.time);
 	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 #endif
-    next->execute(ee);
+     }
+	next->execute(ee);
     ev.shader_api.unuse(sh);
   }
 private:
@@ -6575,8 +6634,8 @@ public:
     firsttime = true;
     sh.id = -1;
   }
-  int shader_id() { if (sh.id != -1) return sh.id; return next->shader_id(); 
-  }
+  std::vector<int> shader_id() { return next->shader_id(); } 
+  
   void handle_event(MainLoopEvent &e)
   {
     next->handle_event(e);
@@ -6614,8 +6673,11 @@ public:
 #endif
       }
 
-    int sh_id = next->shader_id();
-    sh.id = sh_id;
+     std::vector<int> sh_ids = next->shader_id();
+     int s = sh_ids.size();
+     for(int k=0;k<s;k++) {
+       int sh_id = sh_ids[k];
+     sh.id = sh_id;
     //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
@@ -6646,6 +6708,7 @@ public:
 	ev.shader_api.set_var(sh, "time", e.time);
 	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 #endif
+     }
     next->execute(ee);
     ev.shader_api.unuse(sh);
   }
@@ -6666,7 +6729,7 @@ public:
     firsttime = true;
     sh.id = -1;
   }
-  int shader_id() { if (sh.id != -1) return sh.id; return next->shader_id(); 
+  std::vector<int> shader_id() { next->shader_id(); 
   }
   void handle_event(MainLoopEvent &e)
   {
@@ -6705,8 +6768,11 @@ public:
 #endif
       }
 
-    int sh_id = next->shader_id();
-    sh.id = sh_id;
+     std::vector<int> sh_ids = next->shader_id();
+     int s = sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+     sh.id = sh_id;
     //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
@@ -6729,7 +6795,8 @@ public:
 	ev.shader_api.set_var(sh, "time", e.time);
 	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 #endif
-    next->execute(ee);
+     }
+	next->execute(ee);
     ev.shader_api.unuse(sh);
   }
 private:
@@ -6749,7 +6816,7 @@ public:
     firsttime = true;
     sh.id = -1;
   }
-  int shader_id() { if (sh.id != -1) return sh.id; return next->shader_id(); 
+  std::vector<int> shader_id() { return next->shader_id(); 
   }
   void handle_event(MainLoopEvent &e)
   {
@@ -6788,8 +6855,11 @@ public:
 #endif
       }
 
-    int sh_id = next->shader_id();
-    sh.id = sh_id;
+     std::vector<int> sh_ids = next->shader_id();
+     int s=sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+     sh.id = sh_id;
     //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
@@ -6827,6 +6897,7 @@ public:
 	ev.shader_api.set_var(sh, "time", e.time);
 	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 #endif
+     }
 	if (firsttime) 	firsttime = false;
 
     next->execute(ee);
@@ -6843,6 +6914,96 @@ private:
   unsigned int highlight;
   float pow;
 };
+
+class GlobeShaderML : public MainLoopItem
+{
+public:
+  GlobeShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, float globe_r) : env(env), ev(ev), next(next), globe_r(globe_r)
+  { 
+    firsttime = true;
+    sh.id = -1;
+  }
+  std::vector<int> shader_id() { return next->shader_id(); 
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  void Prepare() { next->Prepare(); }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+     if (firsttime)
+      {
+#if 1
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      //GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    vertex = ev.uber_api.v_globe(vertex);
+    //GameApi::US a2 = ev.uber_api.v_passall(a4v);
+    ee.us_vertex_shader = vertex.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      //GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    //if (ambient)
+    //  fragment = ev.uber_api.f_phong(fragment);
+    ee.us_fragment_shader = fragment.id;
+#endif
+      }
+
+     std::vector<int> sh_ids = next->shader_id();
+     int s=sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+       sh.id = sh_id;
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	ev.shader_api.use(sh);
+
+	ev.shader_api.set_var(sh, "globe_mult", globe_r);
+      }
+
+#ifndef NO_MV
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m3 = add_matrix2(env, e.in_P); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "in_P", m3);
+	ev.shader_api.set_var(sh, "time", e.time);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+#endif
+     }
+	if (firsttime) 	firsttime = false;
+
+    next->execute(ee);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  Vector light_dir;
+  GameApi::SH sh;
+  bool firsttime;
+  float globe_r;
+};
+
 
 /*
 class AOShaderML : public MainLoopItem
@@ -6984,7 +7145,7 @@ public:
     firsttime = true;
     sh.id = -1;
   }
-  int shader_id() { if (sh.id != -1) return sh.id; return next->shader_id(); 
+  std::vector<int> shader_id() { next->shader_id(); 
   }
   void handle_event(MainLoopEvent &e)
   {
@@ -7024,8 +7185,11 @@ public:
 #endif
       }
 
-    int sh_id = next->shader_id();
-    sh.id = sh_id;
+     std::vector<int> sh_ids = next->shader_id();
+     int s = sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+     sh.id = sh_id;
     //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
@@ -7063,7 +7227,8 @@ public:
 	ev.shader_api.set_var(sh, "time", e.time);
 	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 #endif
-    next->execute(ee);
+     }
+	next->execute(ee);
     ev.shader_api.unuse(sh);
   }
 private:
@@ -7087,7 +7252,7 @@ public:
     firsttime = true;
     sh.id = -1;
   }
-  int shader_id() { if (sh.id != -1) return sh.id; return next->shader_id(); 
+  std::vector<int> shader_id() { return next->shader_id(); 
   }
   void handle_event(MainLoopEvent &e)
   {
@@ -7126,8 +7291,12 @@ public:
 #endif
       }
 
-    int sh_id = next->shader_id();
-    sh.id = sh_id;
+     std::vector<int> sh_ids = next->shader_id();
+     int s = sh_ids.size();
+     for(int i=0;i<s;i++)
+       {
+	 int sh_id = sh_ids[i];
+     sh.id = sh_id;
     //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
@@ -7165,7 +7334,8 @@ public:
 	ev.shader_api.set_var(sh, "time", e.time);
 	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 #endif
-    next->execute(ee);
+       }
+	next->execute(ee);
     ev.shader_api.unuse(sh);
   }
 private:
@@ -7189,7 +7359,7 @@ public:
     firsttime = true;
     sh.id = -1;
   }
-  int shader_id() { if (sh.id != -1) return sh.id; return next->shader_id(); 
+  std::vector<int> shader_id() { return next->shader_id(); 
   }
   void handle_event(MainLoopEvent &e)
   {
@@ -7235,8 +7405,11 @@ public:
 #endif
       }
 
-    int sh_id = next->shader_id();
-    sh.id = sh_id;
+     std::vector<int> sh_ids = next->shader_id();
+     int s = sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+     sh.id = sh_id;
     //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
@@ -7277,6 +7450,7 @@ public:
 	  ev.shader_api.use(sh);
 	}
 #endif
+     }
 	next->execute(ee);
     if (sh.id!=-1) {
       ev.shader_api.unuse(sh);
@@ -7308,7 +7482,7 @@ public:
     firsttime = true;
     sh.id = -1;
   }
-  int shader_id() { if (sh.id != -1) return sh.id; return next->shader_id(); 
+  std::vector<int> shader_id() { return next->shader_id(); 
   }
   void handle_event(MainLoopEvent &e)
   {
@@ -7347,8 +7521,11 @@ public:
 #endif
       }
 
-    int sh_id = next->shader_id();
-    sh.id = sh_id;
+     std::vector<int> sh_ids = next->shader_id();
+     int s = sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+       sh.id = sh_id;
     //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
@@ -7378,7 +7555,8 @@ public:
 	ev.shader_api.set_var(sh, "time", e.time);
 	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 #endif
-    next->execute(ee);
+     }
+	next->execute(ee);
     if (sh.id!=-1)
       ev.shader_api.unuse(sh);
   }
@@ -7495,6 +7673,13 @@ EXPORT GameApi::ML GameApi::PolygonApi::phong_shader(EveryApi &ev, ML mainloop, 
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new PhongShaderML(e, ev, item, Vector(light_dir_x, light_dir_y, light_dir_z),ambient, highlight,pow));
 }
+
+EXPORT GameApi::ML GameApi::PolygonApi::globe_shader(EveryApi &ev, ML mainloop, float globe_r)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new GlobeShaderML(e, ev, item, globe_r));
+}
+
 //EXPORT GameApi::ML GameApi::PolygonApi::ao_shader(EveryApi &ev, ML mainloop, float radius, int kernelsize, int noisesize)
 //{
 //  MainLoopItem *item = find_main_loop(e, mainloop);
@@ -10526,7 +10711,7 @@ public:
   {
     next->handle_event(e);
   }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
 private:
   MainLoopItem *next;
 };
@@ -12594,7 +12779,7 @@ public:
     next->execute(e);
   }
   virtual void handle_event(MainLoopEvent &e) { return next->handle_event(e); }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
 
 private:
   MainLoopItem *next;
@@ -12943,7 +13128,7 @@ public:
   {
     next->handle_event(e);
   }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
 private:
   bool firsttime;
   MainLoopItem *next;
@@ -13689,7 +13874,7 @@ public:
     MainLoopItem *item = find_main_loop(env, scene);
     item->handle_event(e);
   }
-  virtual int shader_id() { 
+   virtual std::vector<int> shader_id() { 
     if (firsttime) {
       Prepare();
       firsttime = false;

@@ -57,7 +57,7 @@ struct Rest {
       g_rest[i].reset();
       }
     //ProgressBar(666,15,15,"cleanup");
-    //std::cout << std::endl;
+    std::cout << std::endl;
     g_rest.clear();
   }
 };
