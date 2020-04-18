@@ -7579,6 +7579,24 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "", "http://tpgames.org/Chunkfive.otf" },
 			 "ML", "mainloop_api", "fps_display"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::parse_areatype,
+			 "areatype",
+			 { "ev", "url", "heightmap", "top_texture", "side_texture" },
+			 { "EveryApi&", "std::string", "FB", "BM", "BM" },
+			 { "ev", "https://tpgames.org/areatype.txt", "", "", "" },
+			 "ML", "mainloop_api", "parse_areatype"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::create_landscape,
+			 "landscape",
+			 { "ev", "url" },
+			 { "EveryApi&", "std::string" },
+			 { "ev", "https://tpgames.org/landscape.txt" },
+			 "ML", "mainloop_api", "create_landscape"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::globe_shader,
+			 "globe_shader",
+			 { "ev", "mainloop", "globe_r" },
+			 { "EveryApi&", "ML", "float" },
+			 { "ev", "", "1300.0" },
+			 "ML", "polygon_api", "globe_shader"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::score_display,
 			 "score_display",
 			 { "ev", "ml", "font" },

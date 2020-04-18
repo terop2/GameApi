@@ -286,6 +286,8 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT ML parse_areatype(EveryApi &ev, std::string url, GameApi::FB heightmap, GameApi::BM top_texture, GameApi::BM side_texture);
+  IMPORT ML create_landscape(EveryApi &ev, std::string url);
   IMPORT HML emscripten_frame(EveryApi &ev, RUN r, std::string homepage);
   IMPORT void init_window(int screen_width = 800, int screen_height=600, std::string window_title="GameApi", bool vr_init=false);
   IMPORT void init(SH sh, int screen_width = 800, int screen_height = 600);
@@ -2477,6 +2479,7 @@ public:
   IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML sfo_sandbox_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
+  IMPORT ML globe_shader(EveryApi &ev, ML mainloop, float globe_r);
   //IMPORT ML ao_shader(EveryApi &ev, ML mainloop, float radius, int kernelsize, int noisesize);
   IMPORT ML colour_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML gi_shader(EveryApi &ev, ML mainloop, PTS points, float obj_size);
@@ -3361,6 +3364,7 @@ class UberShaderApi
 public:
   UberShaderApi(Env &e) : e(e) {}
   US v_empty();
+  US v_globe(US us);
   US v_color_from_normals(US us);
   US v_recalc_normal(US us);
   US v_diffuse(US us);

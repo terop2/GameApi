@@ -263,7 +263,7 @@ public:
   {
     id->handle_event(e);
   }
-  virtual int shader_id() { return -1; }  
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }  
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;

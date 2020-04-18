@@ -361,7 +361,7 @@ public:
     ev.shader_api.set_var(sh, "in_MV", add_matrix2(ee,e.in_MV));
     sp.render_sprite_vertex_array(va);
   }
-  int shader_id() { return -1; }
+  std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   GameApi::Env &ee;
   GameApi::EveryApi &ev;
@@ -456,7 +456,7 @@ public:
   {
     api.update_vertex_array(va,bm);
   }
-  int shader_id() { return -1; }
+  std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   GameApi::SpriteApi &api;
   GameApi::VA va;

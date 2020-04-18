@@ -422,7 +422,8 @@ public:
     api.render(l);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return shader.id; }
+  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //int shader_id() { return shader.id; }
 
 private:
   GameApi::Env &env;
@@ -468,7 +469,8 @@ public:
     api.render(l2);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return shader.id; }
+  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //int shader_id() { return shader.id; }
 
 private:
   GameApi::Env &env;
@@ -545,7 +547,8 @@ public:
     api.render_inst(l,pta);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //int shader_id() { return -1; }
 
 private:
   GameApi::Env &env;
@@ -623,7 +626,8 @@ public:
     api.render_inst(l,pta);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //int shader_id() { return -1; }
 
 private:
   GameApi::Env &env;
@@ -706,7 +710,8 @@ public:
     api.render_inst(l,pta);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //int shader_id() { return -1; }
 
 private:
   GameApi::Env &env;
@@ -789,7 +794,8 @@ public:
     api.render_inst_matrix(l,pta);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //int shader_id() { return -1; }
 
 private:
   GameApi::Env &env;
@@ -1120,7 +1126,8 @@ public:
   {
   }
   void execute(MainLoopEnv &e) { api.update(la,li); }
-  int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+
 
 private:
   GameApi::LinesApi &api;

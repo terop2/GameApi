@@ -1708,7 +1708,9 @@ public:
     //std::cout << "COMPARE true" << std::endl;
     return true;
   }
-  int shader_id() { return next->shader_id(); }
+  //int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+
   void handle_event(MainLoopEvent &env)
   {
     bool b = compare(env);
@@ -1790,7 +1792,8 @@ class KeyPrinter : public MainLoopItem
 {
 public:
   KeyPrinter(GameApi::Env &e, MainLoopItem *next) : e(e), next(next) { }
-  int shader_id() { return next->shader_id(); }
+  //int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &eve)
   {
     Point pt = eve.cursor_pos;
@@ -1813,7 +1816,8 @@ class JumpML : public MainLoopItem
 {
 public:
   JumpML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, int key_jump, float height, float jump_duration) : e(e), ev(ev), next(next), key_jump(key_jump), height(height), jump_duration(jump_duration) { pos=0.0; jump_position=0.0; jump_going_up = false; jump_going_down=false; }
-  int shader_id() { return next->shader_id(); }
+  // int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &eve)
   {
     int ch = eve.ch;
@@ -1914,7 +1918,8 @@ public:
     pos = 0.0;
     angle=0.0;
   }
-  int shader_id() { return next->shader_id(); }
+  //int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &eve)
   {
     int ch = eve.ch;
@@ -2043,7 +2048,8 @@ public:
   void reset_time() {
     start_time = ev.mainloop_api.get_time();
   }
-  int shader_id() { return next->shader_id(); }
+  //int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &env)
   {
     next->handle_event(env);
@@ -2161,7 +2167,8 @@ public:
   void reset_time() {
     start_time = ev.mainloop_api.get_time();
   }
-  int shader_id() { return next->shader_id(); }
+  /// int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &env)
   {
     next->handle_event(env);
@@ -2218,7 +2225,8 @@ public:
   void reset_time() {
     start_time = ev.mainloop_api.get_time();
   }
-  int shader_id() { return next->shader_id(); }
+  //int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &eve)
   {
     if (g_restart_ongoing) {
@@ -2347,7 +2355,8 @@ public:
   void reset_time() {
     start_time = ev.mainloop_api.get_time();
   }
-  int shader_id() { return next->shader_id(); }
+  //int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &eve)
   {
     Movement *move = find_move(e, mn);
@@ -2477,7 +2486,8 @@ public:
   void reset_time() {
     start_time = ev.mainloop_api.get_time();
   }
-  int shader_id() { return next->shader_id(); }
+  //int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &eve)
   {
 
@@ -2665,7 +2675,8 @@ public:
   void reset_time() {
     start_time = ev.mainloop_api.get_time();
   }
-  int shader_id() { return next->shader_id(); }
+  //int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &env)
   {
     float time = (ev.mainloop_api.get_time()-start_time)/100.0;
@@ -2702,7 +2713,19 @@ public:
   void reset_time() {
     start_time = ev.mainloop_api.get_time();
   }
-  int shader_id() { return next[0]->shader_id(); }
+  //int shader_id() { return next[0]->shader_id(); }
+  virtual std::vector<int> shader_id() {
+    int s = std::min(next.size(),mn.size());
+    std::vector<int> vec;
+    for(int i=0;i<s;i++) {
+      std::vector<int> v = next[i]->shader_id();
+      int ss = v.size();
+      for(int j=0;j<ss;j++) {
+	vec.push_back(v[j]);
+      }
+    }
+    return vec;
+    }
   void handle_event(MainLoopEvent &env)
   {
     int s = std::min(next.size(), mn.size());
@@ -2790,7 +2813,7 @@ public:
     next->execute(ee);
   }
   virtual void handle_event(MainLoopEvent &e) { if (next) next->handle_event(e); }
-  virtual int shader_id() { if (next) return next->shader_id(); else return -1; }
+  virtual std::vector<int> shader_id() { if (next) return next->shader_id(); else return std::vector<int>(); }
 private:
   MainLoopItem *next;
   float duration;
@@ -3004,7 +3027,7 @@ public:
   {
     start_time = 0.0; //ev.mainloop_api.get_time();
   }
-  int shader_id() { return -1; }
+  std::vector<int> shader_id() { return std::vector<int>(); }
   void execute_one(MainLoopEnv &env, Matrix m, int level)
   {
 	  GameApi::M m2 = add_matrix2(e, m);
@@ -3798,7 +3821,8 @@ public:
     id->handle_event(e);
     next->handle_event(e);
   }
-  virtual int shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
+  //virtual int shader_id() { return next->shader_id(); }
 
 private:
   VertexArraySet *s;
@@ -5634,7 +5658,7 @@ public:
     item->handle_event(e);
   }
     
-  virtual int shader_id() { 
+  virtual std::vector<int> shader_id() { 
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
     return item->shader_id();
@@ -5678,7 +5702,7 @@ public:
     item->handle_event(e);
   }
     
-  virtual int shader_id() { 
+  virtual std::vector<int> shader_id() { 
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
     return item->shader_id();
@@ -5723,7 +5747,7 @@ public:
     item->handle_event(e);
   }
     
-  virtual int shader_id() { 
+  virtual std::vector<int> shader_id() { 
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
     return item->shader_id();
@@ -5769,7 +5793,7 @@ public:
     item->handle_event(e);
   }
     
-  virtual int shader_id() { 
+  virtual std::vector<int> shader_id() { 
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
     return item->shader_id();
@@ -5814,7 +5838,7 @@ public:
     item->handle_event(e);
   }
     
-  virtual int shader_id() { 
+  virtual std::vector<int> shader_id() { 
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
     return item->shader_id();
@@ -5908,7 +5932,7 @@ class RenderInstanced : public MainLoopItem
 {
 public:
   RenderInstanced(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1; }
-  int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
@@ -6087,7 +6111,7 @@ class RenderInstanced_matrix : public MainLoopItem
 {
 public:
   RenderInstanced_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1; }
-  int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
     MatrixArray *obj2 = find_matrix_array(env, pts);
@@ -6266,7 +6290,7 @@ class RenderInstancedTex : public MainLoopItem
 {
 public:
   RenderInstancedTex(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
-  int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
@@ -6452,7 +6476,7 @@ class RenderInstancedTex_matrix : public MainLoopItem
 {
 public:
   RenderInstancedTex_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
-  int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
     MatrixArray *obj2 = find_matrix_array(env, pts);
@@ -6637,7 +6661,8 @@ class RenderInstancedTex_id : public MainLoopItem
 {
 public:
   RenderInstancedTex_id(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::TXID> *bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; initialized=false; }
-  int shader_id() { return shader.id; }
+  //int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
@@ -6829,7 +6854,8 @@ class RenderInstancedTex_id_matrix : public MainLoopItem
 {
 public:
   RenderInstancedTex_id_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::TXID> *bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; initialized=false; }
-  int shader_id() { return shader.id; }
+  //int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
     MatrixArray *obj2 = find_matrix_array(env, pts);
@@ -7022,7 +7048,8 @@ class RenderInstancedCubemap : public MainLoopItem
 {
 public:
   RenderInstancedCubemap(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; }
-  int shader_id() { return shader.id; }
+  //int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
@@ -7217,7 +7244,8 @@ class RenderInstancedCubemap_matrix : public MainLoopItem
 {
 public:
   RenderInstancedCubemap_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; }
-  int shader_id() { return shader.id; }
+  //int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
     MatrixArray *obj2 = find_matrix_array(env, pts);
@@ -7414,7 +7442,8 @@ class RenderInstancedTex2 : public MainLoopItem
 {
 public:
   RenderInstancedTex2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; shader.id=-1; }
-  int shader_id() { return shader.id; }
+  //int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
@@ -7597,7 +7626,8 @@ class RenderInstancedTex2_matrix : public MainLoopItem
 {
 public:
   RenderInstancedTex2_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; shader.id=-1; }
-  int shader_id() { return shader.id; }
+  //int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
     MatrixArray *obj2 = find_matrix_array(env, pts);
@@ -7781,7 +7811,8 @@ class RenderInstanced2 : public MainLoopItem
 {
 public:
   RenderInstanced2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::VA va, GameApi::PTA pta, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), va(va), pta(pta), fade(fade), flip(flip), start_time(start_time), end_time(end_time) { firsttime = true; shader.id=-1; }
-  int shader_id() { return shader.id; }
+  //int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -7932,7 +7963,8 @@ class RenderInstanced2_matrix : public MainLoopItem
 {
 public:
   RenderInstanced2_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::VA va, GameApi::MSA pta, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), va(va), pta(pta), fade(fade), flip(flip), start_time(start_time), end_time(end_time) { firsttime = true; shader.id=-1; }
-  int shader_id() { return shader.id; }
+  //int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -8363,6 +8395,11 @@ private:
 GameApi::US GameApi::UberShaderApi::v_empty()
 {
   return add_uber(e, new EmptyV());
+}
+GameApi::US GameApi::UberShaderApi::v_globe(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("globe", next, "EX_POSITION IN_POSITION"));
 }
 GameApi::US GameApi::UberShaderApi::v_color_from_normals(US us)
 {
@@ -10593,9 +10630,9 @@ public:
   {
     if (next_item) { next_item->handle_event(e); }
   }
-  virtual int shader_id() { 
+  virtual std::vector<int> shader_id() { 
     if (next_item) { return next_item->shader_id(); }
-    return -1;
+    return std::vector<int>();
   }
 private:
   Action *next;
@@ -11757,7 +11794,8 @@ public:
     li_ranges2 = vas2;
 
   }
-  int shader_id() { return shader.id; }
+  //int shader_id() { return shader.id; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -12684,7 +12722,7 @@ public:
   {
     next->handle_event(e);
   }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
 
 private:
   MainLoopItem *next;
@@ -12706,7 +12744,7 @@ public:
   {
     next->handle_event(e);
   }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
 
 private:
   MainLoopItem *next;
@@ -12741,7 +12779,8 @@ public:
   {
     next->handle_event(e);
   }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+  //virtual int shader_id() { return next->shader_id(); }
 
 private:
   MainLoopItem *next;
@@ -12795,7 +12834,8 @@ public:
   {
     next->handle_event(e);
   }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+  //virtual int shader_id() { return next->shader_id(); }
 
 private:
   MainLoopItem *next;
@@ -13275,7 +13315,8 @@ public:
     GameApi::InteractionApi::quake_movement_event(ev,ee,pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
     next->handle_event(e);
   }
-  virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+  //virtual int shader_id() { return -1; }
 
 private:
   GameApi::Env &env;
@@ -13375,7 +13416,8 @@ public:
     GameApi::InteractionApi::quake_movement_event(ev,ee,pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
     next->handle_event(e);
   }
-  virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+  //virtual int shader_id() { return -1; }
 
 private:
   GameApi::Env &env;
@@ -13491,7 +13533,14 @@ public:
     next->handle_event(e);
     next2->handle_event(e);
   }
-  virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() {
+    std::vector<int> vec(next->shader_id());
+    std::vector<int> vec2(next2->shader_id());
+    int s = vec2.size();
+    for(int i=0;i<s;i++) vec.push_back(vec2[i]);
+    return vec;
+  }
+  //virtual int shader_id() { return -1; }
 
 private:
   GameApi::Env &env;
@@ -13579,7 +13628,7 @@ public:
   {
     inner->handle_event(e);
   }
-  virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return inner->shader_id(); }
 
 private:
   GameApi::Env &env;
@@ -13648,7 +13697,7 @@ public:
   {
     inner->handle_event(e);
   }
-  virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return inner->shader_id(); }
 
 private:
   GameApi::Env &env;
@@ -13988,7 +14037,7 @@ public:
   {
     item->handle_event(e);
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
 private:
   GameApi::EveryApi &ev;
   MainLoopItem *item;
@@ -14061,7 +14110,7 @@ public:
     if (!topdown) y_speed=0.0;
     accumulated=Matrix::Identity();
   }
-  int shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &e) 
   {
     if ((e.type==1025 && e.button==0) /*|| e.type==Low_SDL_FINGERDOWN*/) {
@@ -14643,11 +14692,11 @@ public:
       main2->handle_event(e);
     }
   }
-  virtual int shader_id() { 
+  virtual std::vector<int> shader_id() { 
     if (main2) {
       return main2->shader_id();
     }
-    return -1;
+    return std::vector<int>();
   }
 
 private:
@@ -14927,7 +14976,7 @@ public:
     }
   }
   virtual void handle_event(MainLoopEvent &e) { }
-  virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   GameApi::EveryApi &ev;
   std::string out_file;
@@ -15323,7 +15372,7 @@ public:
     item->handle_event(e);
     in->handle_event(e);
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
 
 private:
   GameApi::Env &e;
@@ -15442,7 +15491,7 @@ public:
     next->handle_event(e);
     mn->event(e);
   }
-  virtual int shader_id() { return next?next->shader_id():-1; }
+  virtual std::vector<int> shader_id() { return next?next->shader_id():std::vector<int>(); }
 
 private:
   GameApi::Env &ee;
@@ -15529,7 +15578,7 @@ public:
   {
     item->handle_event(e);
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
 
 private:
   GameApi::EveryApi &ev;
@@ -15619,7 +15668,7 @@ public:
   {
     item->handle_event(e);
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
 
 private:
   GameApi::EveryApi &ev;
@@ -15760,7 +15809,7 @@ public:
   {
     item->handle_event(e);
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
   void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -19410,7 +19459,7 @@ public:
  
     next->handle_event(e);
   }
-  virtual int shader_id() {
+  virtual std::vector<int> shader_id() {
     return next->shader_id();
   }
 private:
@@ -19654,7 +19703,7 @@ public:
   {
     draw->handle_event(e);
   }
-  virtual int shader_id() { return draw->shader_id(); }
+  virtual std::vector<int> shader_id() { return draw->shader_id(); }
 
 private:
   GameApi::Env &env;
@@ -19753,7 +19802,7 @@ public:
   {
     item->handle_event(e);
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
 private:
   MainLoopItem *item;
   bool firsttime;
@@ -19851,7 +19900,7 @@ public:
       TextureID *txid = find_txid(m_e, id[0]);
       txid->handle_event(e);
   }
-  virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
   virtual void destroy() {
 #ifdef LOOKING_GLASS
     hp_release();
@@ -19909,7 +19958,7 @@ public:
     }
   }
   virtual void handle_event(MainLoopEvent &e) { }
-  virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   FontInterface *font;
   std::string chars;
@@ -20325,7 +20374,7 @@ public:
       while((e = ev.mainloop_api.get_event()).last==true);
     }
   }
-  virtual int shader_id() { return mainloop->shader_id(); }
+  virtual std::vector<int> shader_id() { return mainloop->shader_id(); }
   virtual void destroy() { mainloop->destroy(); }
 private:
   GameApi::Env &m_e;
@@ -20925,7 +20974,7 @@ public:
   }
   virtual void execute(MainLoopEnv &e) { }
   virtual void handle_event(MainLoopEvent &e) { }
-  virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   QuadTree *tree;
   FaceCollection *coll;
@@ -20968,7 +21017,7 @@ public:
       def->handle_event(e);
     }
   }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
 public:
   MainLoopItem *next;
   bool is_activated=false;
@@ -21124,7 +21173,8 @@ public:
   {
     item->handle_event(e);
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
+  //virtual int shader_id() { return item->shader_id(); }
 
 private:
   GameApi::EveryApi &ev;
@@ -21166,7 +21216,8 @@ public:
       g_restart_ongoing = false;
     }
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
+  //virtual int shader_id() { return item->shader_id(); }
 
 private:
   GameApi::EveryApi &ev;
@@ -21244,7 +21295,8 @@ public:
     }
     active->handle_event(e);
   }
-  virtual int shader_id() { return active->shader_id(); }
+  virtual std::vector<int> shader_id() { return active->shader_id(); }
+  //virtual int shader_id() { return active->shader_id(); }
 
 private:
   GameApi::Env &env;
@@ -21379,3 +21431,380 @@ KP extern "C" void set_string(int num, const char *value)
 
 #endif // THIRD_PART
 
+std::vector<V_Voxel_Type_Array*> g_voxel_types;
+std::vector<V_Object_Pos> g_object_pos;
+std::vector<V_Object_Type_Array*> g_object_types;
+std::vector<V_Wall_Array*> g_walls;
+std::vector<V_Area_Type> g_area_type_array;
+std::vector<V_Area_Pos> g_areas;
+
+int find_area_type_by_name(std::string name)
+{
+  int s = g_area_type_array.size();
+  for(int i=0;i<s;i++)
+    {
+      V_Area_Type *type = &g_area_type_array[i];
+      if (type->name == name) return i;
+    }
+  return -1;
+}
+
+int create_area_type(std::string name) { V_Area_Type t; t.name = name; g_area_type_array.push_back(t); return g_area_type_array.size()-1; }
+void set_area_type_dim(int id, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+{
+  V_Area_Type &ref = g_area_type_array[id]; 
+  ref.start_x = start_x;
+  ref.end_x = end_x;
+  ref.start_y = start_y;
+  ref.end_y = end_y;
+  ref.start_z = start_z;
+  ref.end_z = end_z;
+}
+void set_area_type_ground_heightmap(int id, GameApi::FB fb)
+{
+  V_Area_Type &ref = g_area_type_array[id];
+  ref.ground_heightmap = fb.id;
+}
+void set_area_type_handle(int id, float pos_x, float pos_y, float pos_z)
+{
+  V_Area_Type &ref = g_area_type_array[id];
+  ref.pos_x = pos_x;
+  ref.pos_y = pos_y;
+  ref.pos_z = pos_z;
+}
+enum texture_type { ETop, ELeft, EFront };
+void set_area_type_texture(int id, texture_type type, GameApi::BM bm, float start_x, float end_x, float start_y, float end_y)
+{
+  V_Area_Type &ref = g_area_type_array[id];
+  switch(type) {
+  case ETop:
+    ref.top_texture = bm.id;
+    ref.top_start_x = start_x;
+    ref.top_end_x = end_x;
+    ref.top_start_z = start_y;
+    ref.top_end_z = end_y;
+    break;
+  case ELeft:
+    ref.left_texture = bm.id;
+    ref.left_start_y = start_x;
+    ref.left_end_y = end_x;
+    ref.left_start_z = start_y;
+    ref.left_end_z = end_y;
+    break;
+
+  case EFront:
+    ref.front_texture = bm.id;
+    ref.front_start_x = start_x;
+    ref.front_end_x = end_x;
+    ref.front_start_y = start_y;
+    ref.front_end_y = end_y;
+    break;
+
+  };
+}
+
+float find_area_y(GameApi::Env &e, int area, float pos_x, float pos_z)
+{
+  int s = g_areas[area].vec.size();
+  for(int i=0;i<s;i++)
+    {
+      int area_type = g_areas[area].vec[i].area_type;
+      Point pos = g_areas[area].pos[i];
+      V_Area_Type &type = g_area_type_array[area_type];
+      float m_pos_x=pos_x-pos.x;
+      float m_pos_z=pos_z-pos.z;
+      float x = (m_pos_x-type.start_x)/(type.end_x-type.start_x);
+      float z = (m_pos_z-type.start_z)/(type.end_z-type.start_z);
+      if (x<0.0 || x>1.0) continue;
+      if (z<0.0 || z>1.0) continue;
+      GameApi::FB fb;
+      fb.id = type.ground_heightmap;
+      FloatBitmap *fb_1 = find_float_bitmap(e, fb);
+      Bitmap<float> *fb_2 = fb_1->bitmap;
+      int sx = fb_2->SizeX();
+      int sy = fb_2->SizeY();
+      float pix = fb_2->Map(x*sx,z*sy);
+      pix*=(type.end_y-type.start_y);
+      pix+=type.start_y;
+      pix+=pos.y;
+      return pix;
+    }
+  return 0.0;
+}
+
+float find_area_y(GameApi::Env &e, float pos_x, float pos_z)
+{
+  int s = g_areas.size();
+  for(int i=0;i<s;i++)
+    {
+      float y = find_area_y(e, i, pos_x, pos_z);
+      if (fabs(y)<0.001) continue;
+      return y;
+    }
+  return 0.0;
+}
+
+GameApi::ML create_landscape2(GameApi::Env &e, GameApi::EveryApi &ev, const V_Area_Type &area)
+{
+  GameApi::FB fb;
+  fb.id = area.ground_heightmap;
+  if (fb.id==-1) { GameApi::ML ml; ml.id =0; return ml;  }
+  FloatBitmap *fb_1 = find_float_bitmap(e, fb);
+  if (!fb_1) {GameApi::ML ml; ml.id =0; return ml; }
+
+  Bitmap<float> *fb_2 = fb_1->bitmap;
+  if (!fb_2) { GameApi::ML ml; ml.id =0; return ml;}
+
+  fb_2->Prepare();
+  int sx = fb_2->SizeX();
+  int sy = fb_2->SizeY();
+  std::vector<GameApi::P> top, left,front;
+  for(int y=0;y<sy;y++)
+    for(int x=0;x<sx;x++)
+      {
+	float y1 = area.start_y + fb_2->Map(x,y)*(area.end_y-area.start_y);
+	float x1 = area.start_x + x*(area.end_x-area.start_x)/sx;
+	float z1 = area.start_z + y*(area.end_z-area.start_z)/sy;
+	float x2 = x1 + (area.end_x-area.start_x)/sx;
+        float z2 = z1 + (area.end_z-area.start_z)/sy;
+	
+	GameApi::P top_quad = ev.polygon_api.quad_y(x1,x2,y1,z1,z2);
+
+	{
+	float p1_x = area.top_start_x + x*(area.top_end_x-area.top_start_x)/sx;
+	float p1_y = area.top_start_z + y*(area.top_end_z-area.top_start_z)/sy;
+
+	float p2_x = area.top_start_x + (x+1)*(area.top_end_x-area.top_start_x)/sx;
+	float p2_y = area.top_start_z + y*(area.top_end_z-area.top_start_z)/sy;
+
+	float p3_x = area.top_start_x + (x+1)*(area.top_end_x-area.top_start_x)/sx;
+	float p3_y = area.top_start_z + (y+1)*(area.top_end_z-area.top_start_z)/sy;
+
+	float p4_x = area.top_start_x + (x)*(area.top_end_x-area.top_start_x)/sx;
+	float p4_y = area.top_start_z + (y+1)*(area.top_end_z-area.top_start_z)/sy;
+
+	top_quad = ev.polygon_api.texcoord_manual(top_quad, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, p4_x,p4_y);
+	}
+	top.push_back(top_quad);
+
+	float t_y = x>0?fb_2->Map(x-1,y):fb_2->Map(x,y);
+	float m_y = area.start_y + t_y*(area.end_y-area.start_y);
+	GameApi::P left_quad = ev.polygon_api.quad_x(x1, m_y, y1, z1,z2);
+
+
+	{
+	  float p1_x = area.left_start_y + x*(area.left_end_y-area.left_start_y)/sx;
+	  float p1_y = area.left_start_z + y*(area.left_end_z-area.left_start_z)/sy;
+
+	  float p2_x = area.left_start_y + (x+1)*(area.left_end_y-area.left_start_y)/sx;
+	  float p2_y = area.left_start_z + y*(area.left_end_z-area.left_start_z)/sy;
+	  
+	  float p3_x = area.left_start_y + (x+1)*(area.left_end_y-area.left_start_y)/sx;
+	  float p3_y = area.left_start_z + (y+1)*(area.left_end_z-area.left_start_z)/sy;
+	  
+	  float p4_x = area.left_start_y + (x)*(area.left_end_y-area.left_start_y)/sx;
+	  float p4_y = area.left_start_z + (y+1)*(area.left_end_z-area.left_start_z)/sy;
+	  
+	  left_quad = ev.polygon_api.texcoord_manual(left_quad, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, p4_x,p4_y);
+	}
+	left.push_back(left_quad);
+
+
+	
+	float t_y2 = y>0?fb_2->Map(x,y-1):fb_2->Map(x,y);
+	float p_y = area.start_y + t_y2*(area.end_y-area.start_y);
+	GameApi::P front_quad = ev.polygon_api.quad_z(x1,x2, p_y, y1, z1);
+
+
+	{
+	  float p1_x = area.front_start_x + x*(area.front_end_x-area.front_start_x)/sx;
+	  float p1_y = area.front_start_y + y*(area.front_end_y-area.front_start_y)/sy;
+
+	  float p2_x = area.front_start_x + (x+1)*(area.front_end_x-area.front_start_x)/sx;
+	  float p2_y = area.front_start_y + y*(area.front_end_y-area.front_start_y)/sy;
+	  
+	  float p3_x = area.front_start_x + (x+1)*(area.front_end_x-area.front_start_x)/sx;
+	  float p3_y = area.front_start_y + (y+1)*(area.front_end_y-area.front_start_y)/sy;
+	  
+	  float p4_x = area.front_start_x + (x)*(area.front_end_x-area.front_start_x)/sx;
+	  float p4_y = area.front_start_y + (y+1)*(area.front_end_y-area.front_start_y)/sy;
+	  
+	  front_quad = ev.polygon_api.texcoord_manual(front_quad, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, p4_x,p4_y);
+	}
+	front.push_back(front_quad);	
+      }
+
+  GameApi::P top_elem = ev.polygon_api.or_array2(top);
+  GameApi::P left_elem = ev.polygon_api.or_array2(left);
+  GameApi::P front_elem = ev.polygon_api.or_array2(front);
+  GameApi::BM top_bm, left_bm, front_bm;
+  top_bm.id = area.top_texture;
+  left_bm.id = area.left_texture;
+  front_bm.id = area.front_texture;
+  GameApi::MT top_tx = ev.materials_api.texture(ev, top_bm, 0.3);
+  GameApi::MT left_tx = ev.materials_api.texture(ev, left_bm, 0.3);
+  GameApi::MT front_tx = ev.materials_api.texture(ev, front_bm, 0.3);
+  GameApi::MT top_ph = ev.materials_api.phong(ev,top_tx,1.0,1.0,1.0, 0xff884422, 0xffffffff, 5.0);
+  GameApi::MT left_ph = ev.materials_api.phong(ev,left_tx,1.0,1.0,1.0, 0xff884422, 0xffffffff, 5.0);
+  GameApi::MT front_ph = ev.materials_api.phong(ev,front_tx,1.0,1.0,1.0, 0xff884422, 0xffffffff, 5.0);
+  GameApi::ML top_ml = ev.materials_api.bind(top_elem, top_ph);
+  GameApi::ML left_ml = ev.materials_api.bind(left_elem, left_ph);
+  GameApi::ML front_ml = ev.materials_api.bind(front_elem, front_ph);
+  std::vector<GameApi::ML> arr;
+  arr.push_back(top_ml);
+  arr.push_back(left_ml);
+  arr.push_back(front_ml);
+  GameApi::ML all = ev.mainloop_api.array_ml(ev, arr);
+  return all;
+}
+
+class AreaTypeParser : public MainLoopItem
+{
+public:
+  AreaTypeParser(GameApi::Env &env, std::string url, std::string homepage, GameApi::FB heightmap, GameApi::BM top_texture, GameApi::BM side_texture) : env(env), url(url), homepage(homepage), heightmap(heightmap), top_texture(top_texture), side_texture(side_texture) { }
+  ~AreaTypeParser()
+  {
+    g_area_type_array.clear();
+  }
+  void Prepare()
+  {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    std::string s(vec->begin(), vec->end());
+    std::stringstream ss(s);
+    std::string name;
+    ss >> name;
+    id = create_area_type(name);
+    float start_x, end_x, start_y, end_y, start_z, end_z;
+    ss >> start_x >> end_x >> start_y >> end_y >> start_z >> end_z;
+    set_area_type_dim(id, start_x, end_x, start_y, end_y, start_z, end_z);
+    float pos_x, pos_y, pos_z;
+    ss >> pos_x >> pos_y >> pos_z;
+    set_area_type_handle(id, pos_x, pos_y, pos_z);
+    ss >> start_x >> end_x >> start_y >> end_y;
+    set_area_type_texture(id, ETop, top_texture, start_x, end_x, start_y, end_y);
+    ss >> start_x >> end_x >> start_y >> end_y;
+    set_area_type_texture(id, ELeft, side_texture, start_x, end_x, start_y, end_y);
+    ss >> start_x >> end_x >> start_y >> end_y;
+    set_area_type_texture(id, EFront, side_texture, start_x, end_x, start_y, end_y);
+    set_area_type_ground_heightmap(id, heightmap);
+  }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+  //virtual int shader_id() { return -1; }
+
+private:
+  GameApi::Env &env;
+  std::string url;
+  std::string homepage;
+  GameApi::FB heightmap;
+  GameApi::BM top_texture;
+  GameApi::BM side_texture;
+  int id;
+};
+
+GameApi::ML GameApi::MainLoopApi::parse_areatype(GameApi::EveryApi &ev, std::string url, GameApi::FB heightmap, GameApi::BM top_texture, GameApi::BM side_texture)
+{
+  MainLoopItem *item = new AreaTypeParser(e, url, gameapi_homepageurl, heightmap, top_texture, side_texture);
+  GameApi::ML ml1 = add_main_loop(e, item);
+  return ml1;
+}
+
+class CreateLandscape : public MainLoopItem
+{
+public:
+  CreateLandscape(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepage) : env(env), ev(ev), url(url), homepage(homepage) {
+  }
+  ~CreateLandscape() { g_areas.clear(); }
+  void Prepare() {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    std::string s3(vec->begin(), vec->end());
+    std::stringstream ss(s3);
+
+    std::string line; 
+    V_Area_Pos area;
+    while(std::getline(ss,line)) {
+      std::stringstream ss2(line);
+      std::string name;
+      float x,y,z;
+      ss2 >> name >> x >> y >> z;
+      V_Area a;
+      a.area_type = find_area_type_by_name(name);
+      area.vec.push_back(a);
+      Point p(x,y,z);
+      area.pos.push_back(p);
+    }
+    g_areas.push_back(area);
+    areas.push_back(area);
+    
+    int s = g_area_type_array.size();
+    for(int id=0;id<s;id++) {
+      V_Area_Type &ref = g_area_type_array[id];
+      GameApi::ML ml_item = create_landscape2(env, ev, ref);
+      ml.push_back( ml_item );
+      MainLoopItem *item_item = find_main_loop(env, ml_item);
+      item_item->Prepare();
+      item.push_back(item_item);
+    }
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    int s = areas.size();
+    for(int i=0;i<s;i++) {
+      V_Area_Pos &a = areas[i];
+      int s2 = a.vec.size();
+      for(int j=0;j<s2;j++) {
+	V_Area a2 = a.vec[j];
+	int index = a2.area_type;
+	//std::cout << "Index: " << index << std::endl;
+	if (index!=-1) {
+	  MainLoopItem *item_item = item[index];
+	  MainLoopEnv ee = e;
+	  Point p = a.pos[j];
+	  ee.in_MV = Matrix::Translate(p.x,p.y,p.z) * e.in_MV;
+	  item_item->execute(ee);
+	}
+      }
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+  }
+  virtual std::vector<int> shader_id() {
+    std::vector<int> vec;
+    int s = item.size();
+    for(int i=0;i<s;i++)
+      {
+	MainLoopItem *ii = item[i];
+	std::vector<int> v = ii->shader_id();
+	int sk = v.size();
+	for(int j=0;j<sk;j++) vec.push_back(v[j]);
+      }
+    return vec; }
+  //virtual int shader_id() {
+  //  return -1;
+  // }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string url;
+  std::string homepage;
+  std::vector<GameApi::ML> ml;
+  std::vector<MainLoopItem *> item;
+  std::vector<V_Area_Pos> areas;
+};
+
+GameApi::ML GameApi::MainLoopApi::create_landscape(GameApi::EveryApi &ev, std::string url)
+{
+  MainLoopItem *item = new CreateLandscape(e, ev,url, gameapi_homepageurl);
+  return add_main_loop(e, item);
+}

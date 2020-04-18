@@ -482,7 +482,7 @@ public:
       }
   }
   virtual void handle_event(MainLoopEvent &e) { }
-  virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   GameApi::EveryApi &ev;
   GameApi::BM bm;
@@ -2842,7 +2842,8 @@ public:
 	vec2.push_back(sp.create_vertex_array(vec[i]));
       }
   }
-  int shader_id() { return -1; }
+  //int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
   void Prepare() { }
   void handle_event(MainLoopEvent &e)
   {
@@ -3457,7 +3458,8 @@ public:
     }
   }
   virtual void handle_event(MainLoopEvent &e) { }
-  virtual int shader_id() { return -1; }
+  //virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   GameApi::EveryApi &ev;
   GameApi::BM bm;

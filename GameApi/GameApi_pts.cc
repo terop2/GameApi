@@ -974,7 +974,7 @@ public:
 
   ev.shader_api.unuse(sh);
   }
-  int shader_id() { return -1; }
+  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
@@ -1111,7 +1111,7 @@ public:
   {
     item->handle_event(e);
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
 
 private:
   GameApi::Env &env;
@@ -1528,7 +1528,7 @@ public:
   virtual void handle_event(MainLoopEvent &e)
   {
   }
-  virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   PointsApiPoints *pts;
   std::string name;
@@ -1698,7 +1698,7 @@ public:
   {
     next->handle_event(e);
   }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
 private:
   MainLoopItem *next;
 };
