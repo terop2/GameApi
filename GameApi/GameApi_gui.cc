@@ -7132,7 +7132,18 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "http://tpgames.org/marble_cube_ml.mp", "a", "b", "c", "d", "e" },
 			 "ML", "mainloop_api", "load_ML_script"));
 
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_MN_script,
+			 "mn_script",
+			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
+			 { "EveryApi&", "std::string", "std::string","std::string","std::string","std::string","std::string" },
+			 { "ev", "http://tpgames.org/test_mn.mp", "a", "b", "c","d", "e" },
+			 "MN", "mainloop_api", "load_MN_script"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_MT_script,
+			 "mt_script",
+			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
+			 { "EveryApi&", "std::string", "std::string","std::string","std::string","std::string","std::string" },
+			 { "ev", "http://tpgames.org/test_mt.mp", "a", "b", "c", "d", "e" },
+			 "MT", "mainloop_api", "load_MT_script"));
 
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_BM_script_array,
@@ -8781,14 +8792,20 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "ML", "float", "float", "float" },
 			 { "ev", "", "0.5", "0.5", "0.5" },
 			 "ML", "polygon_api", "bloom1_shader"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::wave_shader,
 			 "p_wave",
 			 { "ev", "mainloop", "radius", "t_mult", "x_mult", "y_mult" },
 			 { "EveryApi&", "ML", "float", "float", "float", "float" },
 			 { "ev", "", "0.02", "1.5", "17", "9" },
 			 "ML", "polygon_api", "wave_shader"));
-#endif
-			 
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::fog_shader,
+			 "p_fog",
+			 { "ev", "mainloop", "fog_dist", "dark_color", "light_color" },
+			 { "EveryApi&", "ML", "float", "unsigned int", "unsigned int" },
+			 { "ev", "", "300.0", "ff000000", "ffffffff" },
+			 "ML", "polygon_api", "fog_shader"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::shader_api, &GameApi::ShaderApi::shader_choice,
 			 "shader",
 			 { "ev", "choose" },
