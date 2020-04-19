@@ -596,7 +596,7 @@ void iter(void *arg)
 	
 	//std::cout << e.ch << std::endl;
 #ifndef EMSCRIPTEN
-	if (e.ch==27 && e.type==0x300) { exit(0); }
+	//if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif
 	if (e.type != 0x300 && e.type != 0x301)
 	  {

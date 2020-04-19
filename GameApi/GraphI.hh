@@ -1692,10 +1692,10 @@ struct V_Voxel_Type_Array
 struct V_Object
 {
   int obj_type; // index to g_object_types
-  bool is_pos;
+  //bool is_pos;
   float x,y,z;
-  bool is_matrix;
-  Matrix m;
+  //bool is_matrix;
+  //Matrix m;
 };
 struct V_Object_Pos
 {
@@ -1705,14 +1705,13 @@ struct V_Object_Pos
 
 struct V_Object_Type
 {
-  std::string type_name;
-  float sx,sy,sz;
-  float dx,dy,dz;
-  
   int /*GameApi::P*/ obj;
+  int /*GameAPi::MN*/ move;
+  int /*GameAPi::MT*/ mat;
 };
 struct V_Object_Type_Array
 {
+  std::string type_name;
   std::vector<V_Object_Type> vec;
 };
 

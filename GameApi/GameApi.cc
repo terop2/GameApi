@@ -13343,6 +13343,9 @@ GameApi::ML GameApi::MovementNode::quake_ml(EveryApi &ev, ML ml,float speed, flo
   return add_main_loop(e, new QuakeML(e,ev, mml, speed, rot_speed));
 }
 
+
+float find_area_y(GameApi::Env &e, float pos_x, float pos_z);
+
 class QuakeML2 : public MainLoopItem
 {
 public:
@@ -13361,11 +13364,18 @@ public:
     quake_pos_x = pos_x;
     quake_pos_y = -pos_y;
     quake_rot_y = rot_y;
+    int ydelta = find_area_y(env, quake_pos_x, -quake_pos_y+400.0);
+
+    if (ydelta > current_y) { current_y+=fabs(speed); if (current_y>ydelta) current_y=ydelta; } else
+      if (ydelta < current_y) { current_y-=fabs(speed); if (current_y<ydelta) current_y=ydelta; }
+    
+
+    
     MainLoopEnv eee = e;
     GameApi::M env_m = add_matrix2(env, e.in_MV);
     GameApi::M rot_y2 = ev.matrix_api.yrot(rot_y);
     GameApi::M trans = ev.matrix_api.trans(pos_x, 0.0, pos_y +400.0);
-    GameApi::M trans2 = ev.matrix_api.trans(0.0,0.0,-400.0);
+    GameApi::M trans2 = ev.matrix_api.trans(0.0,current_y,-400.0);
     GameApi::M scale = ev.matrix_api.scale(1.0,1.0,-1.0);
     GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(trans,rot_y2),trans2),scale));
 
@@ -13428,6 +13438,7 @@ private:
   GameApi::InteractionApi::Quake_data dt;
   float speed_x=0.0, speed_y=0.0;
   float speed, rot_speed;
+  float current_y=0.0;
 };
 
 GameApi::ML GameApi::MovementNode::quake_ml2(EveryApi &ev, ML ml,float speed, float rot_speed)
@@ -14616,6 +14627,8 @@ GameApi::ARR GameApi::MainLoopApi::load_P_script_array(EveryApi &ev, std::string
 
 
 void ML_cb(void* data);
+void MN_cb(void* data);
+void MT_cb(void* data);
 
 
 class ML_script : public MainLoopItem
@@ -14709,6 +14722,203 @@ private:
   bool async_taken;
 };
 
+class MN_script : public Movement
+{
+public:
+  MN_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url),p1(p1), p2(p2), p3(p3), p4(p4), p5(p5) , main2(0) { firsttime = true; 
+       e.async_load_callback(url, &MN_cb, this); 
+#ifdef EMSCRIPTEN
+       async_pending_count++; async_taken=true;
+#endif
+       //std::cout << "async_pending_count inc (ML_sctipr) " << async_pending_count << std::endl;
+  }
+  ~MN_script() { e.async_rem_callback(url); }
+  void Prepare2() {
+    std::string homepage = gameapi_homepageurl;
+#ifndef EMSCRIPTEN
+      e.async_load_url(url, homepage);
+#endif
+      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+    if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+      std::string code(vec->begin(), vec->end());
+      code = replace_str(code, "%1", p1);
+      code = replace_str(code, "%2", p2);
+      code = replace_str(code, "%3", p3);
+      code = replace_str(code, "%4", p4);
+      code = replace_str(code, "%5", p5);
+      GameApi::ExecuteEnv e2;
+      std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
+      if (p.second=="MN") {
+	GameApi::MN pp;
+	pp.id = p.first;
+	main2 = find_move(e,pp);
+	//main2->Prepare();
+#ifdef EMSCRIPTEN
+	if (async_taken)
+	  async_pending_count--;
+#endif
+	//std::cout << "async_pending_count dec (ML_sctipr) " << async_pending_count << std::endl;
+	async_taken = false;
+	//main2->execute(e3);
+	//firsttime = false;
+	return;
+      }
+      //GameApi::P pp;
+      //pp.id = -1;
+      main2 = 0;
+#ifdef EMSCRIPTEN
+      if (async_taken)
+      async_pending_count--;
+#endif
+      async_taken = false;
+      //std::cout << "async_pending_count dec (ML_sctipr2) " << async_pending_count << std::endl;
+
+  }
+  virtual void event(MainLoopEvent &e)
+  {
+    if (main2) { main2->event(e); }
+  }
+    
+  virtual void frame(MainLoopEnv &e)
+  {
+    if (main2) { main2->frame(e); }
+  }
+  virtual void draw_event(FrameLoopEvent &e)
+  {
+    if (main2) { main2->draw_event(e); }
+  }
+  virtual void draw_frame(DrawLoopEnv &e)
+  {
+    if (main2) { main2->draw_frame(e); }
+  }
+
+  virtual void set_matrix(Matrix m)
+  {
+    if (main2) { main2->set_matrix(m); }
+  }
+  virtual Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    if (main2) { return main2->get_whole_matrix(time,delta_time); }
+    return Matrix::Identity();
+  }
+
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  std::string url;
+  std::string p1,p2,p3,p4,p5;
+  bool firsttime;
+  //MainLoopItem *main2;
+  Movement *main2;
+  bool async_taken;
+};
+
+class MT_script : public Material
+{
+public:
+  MT_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url),p1(p1), p2(p2), p3(p3), p4(p4), p5(p5) , main2(0) { firsttime = true; 
+       e.async_load_callback(url, &MN_cb, this); 
+#ifdef EMSCRIPTEN
+       async_pending_count++; async_taken=true;
+#endif
+       //std::cout << "async_pending_count inc (ML_sctipr) " << async_pending_count << std::endl;
+  }
+  ~MT_script() { e.async_rem_callback(url); }
+  void Prepare2() {
+    std::string homepage = gameapi_homepageurl;
+#ifndef EMSCRIPTEN
+      e.async_load_url(url, homepage);
+#endif
+      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+    if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+      std::string code(vec->begin(), vec->end());
+      code = replace_str(code, "%1", p1);
+      code = replace_str(code, "%2", p2);
+      code = replace_str(code, "%3", p3);
+      code = replace_str(code, "%4", p4);
+      code = replace_str(code, "%5", p5);
+      GameApi::ExecuteEnv e2;
+      std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
+      if (p.second=="MT") {
+	GameApi::MT pp;
+	pp.id = p.first;
+	main2 = find_material(e,pp);
+	//main2->Prepare();
+#ifdef EMSCRIPTEN
+	if (async_taken)
+	  async_pending_count--;
+#endif
+	//std::cout << "async_pending_count dec (ML_sctipr) " << async_pending_count << std::endl;
+	async_taken = false;
+	//main2->execute(e3);
+	//firsttime = false;
+	return;
+      }
+      //GameApi::P pp;
+      //pp.id = -1;
+      main2 = 0;
+#ifdef EMSCRIPTEN
+      if (async_taken)
+      async_pending_count--;
+#endif
+      async_taken = false;
+      //std::cout << "async_pending_count dec (ML_sctipr2) " << async_pending_count << std::endl;
+
+  }
+
+  virtual int mat(int p) const
+  {
+    if (main2) return main2->mat(p);
+    return 0;
+  }
+  virtual int mat_inst(int p, int pts) const
+  {
+    if (main2) return main2->mat_inst(p,pts); 
+    return 0;
+  }
+  virtual int mat_inst_matrix(int p, int ms) const
+  {
+    if (main2) return main2->mat_inst_matrix(p,ms);
+    return 0;
+  }
+  virtual int mat_inst2(int p, int pta) const
+  {
+    if (main2) return main2->mat_inst2(p,pta);
+    return 0;
+  }
+  virtual int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const
+  {
+    if (main2) return main2->mat_inst_fade(p,pts,flip,start_time,end_time);
+    return 0;
+  }
+
+
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  std::string url;
+  std::string p1,p2,p3,p4,p5;
+  bool firsttime;
+  //MainLoopItem *main2;
+  Material *main2;
+  bool async_taken;
+};
+
+
+void MT_cb(void *data)
+{
+  MT_script *script = (MT_script*)data;
+  script->Prepare2();
+}
+
+void MN_cb(void *data)
+{
+  MN_script *script = (MN_script*)data;
+  script->Prepare2();
+}
+
 void ML_cb(void *data)
 {
   //std::cout << "ML_cb" << std::endl;
@@ -14720,6 +14930,14 @@ void ML_cb(void *data)
 GameApi::ML GameApi::MainLoopApi::load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
   return add_main_loop(e, new ML_script(e,ev,url,p1,p2,p3,p4,p5));
+}
+GameApi::MN GameApi::MainLoopApi::load_MN_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
+{
+  return add_move(e, new MN_script(e,ev,url,p1,p2,p3,p4,p5));
+}
+GameApi::MT GameApi::MainLoopApi::load_MT_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
+{
+  return add_material(e, new MT_script(e,ev,url,p1,p2,p3,p4,p5));
 }
 
 GameApi::ARR GameApi::MainLoopApi::load_ML_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
@@ -21017,7 +21235,7 @@ public:
       def->handle_event(e);
     }
   }
-  virtual std::vector<int> shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { if (is_finished) return next->shader_id(); else return def->shader_id(); }
 public:
   MainLoopItem *next;
   bool is_activated=false;
@@ -21070,6 +21288,23 @@ public:
     done_num = activated_num;
     //ProgressBar(vec.size(), int(float(done_num)/vec.size()*15), 15, "progress");
   }
+  virtual std::vector<int> shader_id() {
+    std::vector<int> res;
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	MainLoopItem *item = vec[i];
+	std::vector<int> ii = item->shader_id();
+	int ss = ii.size();
+	for(int k=0;k<ss;k++)
+	  {
+	    res.push_back(ii[k]);
+	  }
+	  
+      }
+    return res;
+  }
+
 private:
   std::vector<MainLoopItem*> vec;
   int activated_num=-1;
@@ -21124,6 +21359,8 @@ public:
       committed=true;
     }
   }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
+
 private:
   MainLoopItem *item;
   bool activated;
@@ -21448,6 +21685,33 @@ int find_area_type_by_name(std::string name)
     }
   return -1;
 }
+int find_obj_type(std::string name)
+{
+  int s = g_object_types.size();
+  for(int i=0;i<s;i++) {
+    V_Object_Type_Array *t = g_object_types[i];
+    if (name==t->type_name) {
+      return i;
+    }
+  }
+  return -1;
+}
+int create_obj_type(std::string name)
+{
+  V_Object_Type_Array *t = new V_Object_Type_Array;
+  t->type_name = name;
+  g_object_types.push_back(t);
+  return g_object_types.size()-1;
+}
+void bind_obj_type(int type, GameApi::P obj, GameApi::MN move, GameApi::MT mat)
+{
+  V_Object_Type_Array *t = g_object_types[type];
+  V_Object_Type tt;
+  tt.obj = obj.id;
+  tt.move = move.id;
+  tt.mat = mat.id;
+  t->vec.push_back(tt);
+}
 
 int create_area_type(std::string name) { V_Area_Type t; t.name = name; g_area_type_array.push_back(t); return g_area_type_array.size()-1; }
 void set_area_type_dim(int id, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
@@ -21517,6 +21781,7 @@ float find_area_y(GameApi::Env &e, int area, float pos_x, float pos_z)
       float z = (m_pos_z-type.start_z)/(type.end_z-type.start_z);
       if (x<0.0 || x>1.0) continue;
       if (z<0.0 || z>1.0) continue;
+      x = 1.0-x;
       GameApi::FB fb;
       fb.id = type.ground_heightmap;
       FloatBitmap *fb_1 = find_float_bitmap(e, fb);
@@ -21524,8 +21789,8 @@ float find_area_y(GameApi::Env &e, int area, float pos_x, float pos_z)
       int sx = fb_2->SizeX();
       int sy = fb_2->SizeY();
       float pix = fb_2->Map(x*sx,z*sy);
-      pix*=(type.end_y-type.start_y);
-      pix+=type.start_y;
+      pix*=(type.start_y-type.end_y);
+      pix+=type.end_y;
       pix+=pos.y;
       return pix;
     }
@@ -21808,3 +22073,54 @@ GameApi::ML GameApi::MainLoopApi::create_landscape(GameApi::EveryApi &ev, std::s
   MainLoopItem *item = new CreateLandscape(e, ev,url, gameapi_homepageurl);
   return add_main_loop(e, item);
 }
+
+GameApi::ML GameApi::MainLoopApi::bind_obj_type(std::string name, GameApi::P obj, GameApi::MN move, GameApi::MT mat)
+{
+  int i = find_obj_type(name);
+  if (i==-1) { i=create_obj_type(name); }
+  ::bind_obj_type(i, obj, move, mat);
+}
+
+class ReadObjPos : public MainLoopItem
+{
+public:
+  ReadObjPos(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url), homepage(homepage) { }
+  void Prepare() {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    std::string s3(vec->begin(), vec->end());
+    std::stringstream ss(s3);
+
+    V_Object_Pos pos;
+    
+    bool firsttime = true;
+    std::string line;
+    while(std::getline(ss,line)) {
+      if (line.size()>3 && line[0]=='/' && line[1]=='/' && line[2]==' ') {
+	if (!firsttime)
+	  g_object_pos.push_back(pos);
+	firsttime = false;
+	pos.pos_name = line.substr(3);
+	pos.pos.clear();
+      } else {
+	std::stringstream ss2(line);
+	std::string type_name;
+	float x,y,z;
+	V_Object obj;
+	ss2 >> type_name >> x >> y >> z;
+	obj.obj_type = find_obj_type(type_name);
+	obj.x = x;
+	obj.y = y;
+	obj.z = z;
+	pos.pos.push_back(obj);
+      }
+    }
+    g_object_pos.push_back(pos);
+  }
+private:
+  GameApi::Env &env;
+  std::string url, homepage;
+};
