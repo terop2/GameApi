@@ -14781,6 +14781,7 @@ public:
     
   virtual void frame(MainLoopEnv &e)
   {
+    if (!main2 && firsttime) { Prepare2(); firsttime=false; }
     if (main2) { main2->frame(e); }
   }
   virtual void draw_event(FrameLoopEvent &e)
@@ -14869,26 +14870,31 @@ public:
 
   virtual int mat(int p) const
   {
+    if (!main2 && firsttime) { const_cast<MT_script*>(this)->Prepare2(); firsttime=false; }
     if (main2) return main2->mat(p);
     return 0;
   }
   virtual int mat_inst(int p, int pts) const
   {
+    if (!main2 && firsttime) { const_cast<MT_script*>(this)->Prepare2(); firsttime=false; }
     if (main2) return main2->mat_inst(p,pts); 
     return 0;
   }
   virtual int mat_inst_matrix(int p, int ms) const
   {
+    if (!main2 && firsttime) { const_cast<MT_script*>(this)->Prepare2(); firsttime=false; }
     if (main2) return main2->mat_inst_matrix(p,ms);
     return 0;
   }
   virtual int mat_inst2(int p, int pta) const
   {
+    if (!main2 && firsttime) { const_cast<MT_script*>(this)->Prepare2(); firsttime=false; }
     if (main2) return main2->mat_inst2(p,pta);
     return 0;
   }
   virtual int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const
   {
+    if (!main2 && firsttime) { const_cast<MT_script*>(this)->Prepare2(); firsttime=false; }
     if (main2) return main2->mat_inst_fade(p,pts,flip,start_time,end_time);
     return 0;
   }
@@ -14900,7 +14906,7 @@ private:
   GameApi::EveryApi &ev;
   std::string url;
   std::string p1,p2,p3,p4,p5;
-  bool firsttime;
+  mutable bool firsttime;
   //MainLoopItem *main2;
   Material *main2;
   bool async_taken;
@@ -21687,6 +21693,7 @@ int find_area_type_by_name(std::string name)
 }
 int find_obj_type(std::string name)
 {
+  std::cout << "find_obj_type:" << name << std::endl;
   int s = g_object_types.size();
   for(int i=0;i<s;i++) {
     V_Object_Type_Array *t = g_object_types[i];
@@ -21698,22 +21705,33 @@ int find_obj_type(std::string name)
 }
 int create_obj_type(std::string name)
 {
+  std::cout << "create_obj_type:" << name << std::endl;
   V_Object_Type_Array *t = new V_Object_Type_Array;
   t->type_name = name;
   g_object_types.push_back(t);
   return g_object_types.size()-1;
 }
-void bind_obj_type(int type, GameApi::P obj, GameApi::MN move, GameApi::MT mat)
+void bind_obj_type(int type, GameApi::P obj, GameApi::MN move, GameApi::MT mat, float radius)
 {
   V_Object_Type_Array *t = g_object_types[type];
   V_Object_Type tt;
   tt.obj = obj.id;
   tt.move = move.id;
   tt.mat = mat.id;
+  tt.radius = radius;
   t->vec.push_back(tt);
 }
 
-int create_area_type(std::string name) { V_Area_Type t; t.name = name; g_area_type_array.push_back(t); return g_area_type_array.size()-1; }
+int create_area_type(std::string name) {
+  V_Area_Type t;
+  t.name = name;
+  t.obj_type = -1;
+  t.obj_pos = -1;
+  t.wall=-1;
+  t.voxel_types = -1;
+  g_area_type_array.push_back(t);
+  return g_area_type_array.size()-1;
+}
 void set_area_type_dim(int id, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
 {
   V_Area_Type &ref = g_area_type_array[id]; 
@@ -21723,6 +21741,32 @@ void set_area_type_dim(int id, float start_x, float end_x, float start_y, float 
   ref.end_y = end_y;
   ref.start_z = start_z;
   ref.end_z = end_z;
+}
+void set_area_type_obj(int id, std::string obj_type_name, std::string obj_pos_name)
+{
+  int s = g_object_types.size();
+  int i;
+  for(i=0;i<s;i++) {
+    V_Object_Type_Array *arr = g_object_types[i];
+    std::cout << "Compare:" << arr->type_name << "==" << obj_type_name << std::endl;
+    if (arr->type_name == obj_type_name) { break; }
+  }
+  int s2 = g_object_pos.size();
+  int j;
+  for(j=0;j<s2;j++) {
+    V_Object_Pos *pos = &g_object_pos[j];
+    std::cout << "Compare:" << pos->pos_name << "==" << obj_pos_name << std::endl;
+    if (pos->pos_name == obj_pos_name) { break; }
+   
+  }
+  if (i==s||j==s2) {
+    if (i==s)
+      i = create_obj_type(obj_type_name);
+    //std::cout << "Not found!" << obj_type_name << " " << i << " " << obj_pos_name << " " << j << std::endl;
+  }
+  V_Area_Type &ref = g_area_type_array[id]; 
+  ref.obj_type = i;
+  ref.obj_pos = j;
 }
 void set_area_type_ground_heightmap(int id, GameApi::FB fb)
 {
@@ -21956,6 +22000,11 @@ public:
     ss >> start_x >> end_x >> start_y >> end_y;
     set_area_type_texture(id, EFront, side_texture, start_x, end_x, start_y, end_y);
     set_area_type_ground_heightmap(id, heightmap);
+
+    std::string obj_type_name;
+    std::string obj_pos_name;
+    ss >> obj_type_name >> obj_pos_name;
+    set_area_type_obj(id, obj_type_name, obj_pos_name);
   }
   virtual void execute(MainLoopEnv &e) { }
   virtual void handle_event(MainLoopEvent &e) { }
@@ -22021,8 +22070,8 @@ public:
     }
   }
   virtual void execute(MainLoopEnv &e)
-  {
-    int s = areas.size();
+  { 
+   int s = areas.size();
     for(int i=0;i<s;i++) {
       V_Area_Pos &a = areas[i];
       int s2 = a.vec.size();
@@ -22074,17 +22123,37 @@ GameApi::ML GameApi::MainLoopApi::create_landscape(GameApi::EveryApi &ev, std::s
   return add_main_loop(e, item);
 }
 
-GameApi::ML GameApi::MainLoopApi::bind_obj_type(std::string name, GameApi::P obj, GameApi::MN move, GameApi::MT mat)
+class BindObjType : public MainLoopItem
 {
-  int i = find_obj_type(name);
-  if (i==-1) { i=create_obj_type(name); }
-  ::bind_obj_type(i, obj, move, mat);
+public:
+  BindObjType(std::string name, GameApi::P obj, GameApi::MN move, GameApi::MT mat, float radius) : name(name), obj(obj), move(move), mat(mat),radius(radius) { }
+  ~BindObjType() { g_object_types.clear(); }
+  void Prepare() {
+    int i = find_obj_type(name);
+    if (i==-1) { i=create_obj_type(name); }
+    ::bind_obj_type(i, obj, move, mat,radius);
+  }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+private:
+  std::string name;
+  GameApi::P obj;
+  GameApi::MN move;
+  GameApi::MT mat;
+  float radius;
+};
+
+GameApi::ML GameApi::MainLoopApi::bind_obj_type(std::string name, GameApi::P obj, GameApi::MN move, GameApi::MT mat, float radius)
+{
+  return add_main_loop(e,new BindObjType(name,obj,move,mat,radius));
 }
 
 class ReadObjPos : public MainLoopItem
 {
 public:
   ReadObjPos(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url), homepage(homepage) { }
+  ~ReadObjPos() { g_object_pos.clear(); }
   void Prepare() {
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
@@ -22108,19 +22177,230 @@ public:
       } else {
 	std::stringstream ss2(line);
 	std::string type_name;
-	float x,y,z;
+	float x,y,z, radius;
 	V_Object obj;
-	ss2 >> type_name >> x >> y >> z;
+	ss2 >> type_name >> x >> y >> z >> radius;
 	obj.obj_type = find_obj_type(type_name);
+	if (obj.obj_type==-1) obj.obj_type=create_obj_type(type_name);
 	obj.x = x;
 	obj.y = y;
 	obj.z = z;
+	obj.radius = radius;
 	pos.pos.push_back(obj);
       }
     }
     g_object_pos.push_back(pos);
   }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+
 private:
   GameApi::Env &env;
   std::string url, homepage;
 };
+
+GameApi::ML GameApi::MainLoopApi::read_obj_pos(std::string url)
+{
+  return add_main_loop(e, new ReadObjPos(e, url, gameapi_homepageurl));
+}
+
+class BindObjType2 : public MainLoopItem
+{
+public:
+  BindObjType2(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string homepage) : e(e), ev(ev), url(url), homepage(homepage) {
+    e.async_load_callback(url, &bind_cb, this);
+#ifdef EMSCRIPTEN
+    async_pending_count++; async_taken = true;
+#endif
+    firsttime = true;
+  }
+  ~BindObjType2() { e.async_rem_callback(url); }
+  void Prepare2() {
+#ifndef EMSCRIPTEN
+      e.async_load_url(url, homepage);
+#endif
+      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+      if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+      std::string code(vec->begin(), vec->end());
+      std::stringstream ss2(code);
+      std::string line2;
+      std::vector<std::string> urls;
+      while(std::getline(ss2,line2)) {
+	std::stringstream ss2(line2);
+	std::string name, p, mn, mt;
+	float radius;
+	ss2 >> name >> p >> mn >> mt >> radius;
+	urls.push_back(p);
+	urls.push_back(mn);
+	urls.push_back(mt);
+      }
+      //std::sort(urls.begin(),urls.end());
+      //std::unique(urls.begin(),urls.end());
+
+      std::stringstream ss(code);
+      std::string line;
+      while(std::getline(ss,line)) {
+	std::stringstream ss2(line);
+	std::string name, p, mn, mt;
+	float radius;
+	ss2 >> name >> p >> mn >> mt >> radius;
+	GameApi::P pp = ev.mainloop_api.load_P_script(ev, p, "","","","","");
+	GameApi::MN mnn = ev.mainloop_api.load_MN_script(ev,mn,"","","","","");
+	GameApi::MT mtt = ev.mainloop_api.load_MT_script(ev,mt,"","","","","");
+	GameApi::ML ml = ev.mainloop_api.bind_obj_type(name, pp, mnn, mtt,radius);
+	mls.push_back(ml);
+      }
+      e.async_load_all_urls(urls,gameapi_homepageurl);
+
+      firsttime = false;
+  }
+  virtual void Prepare() {
+    // apparently this is needed so that works in builder too
+    if (firsttime) Prepare2();
+    int s = mls.size();
+    for(int i=0;i<s;i++) {
+      GameApi::ML ml = mls[i];
+      MainLoopItem *item = find_main_loop(e,ml);
+      item->Prepare();
+    }
+  }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+
+  static void bind_cb(void *data) {
+    BindObjType2 *t = (BindObjType2*)data;
+    t->Prepare2();
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  std::string url;
+  std::string homepage;
+  std::vector<GameApi::ML> mls;
+  bool firsttime;
+};
+GameApi::ML GameApi::MainLoopApi::bind_obj_type(GameApi::EveryApi &ev, std::string url)
+{
+  return add_main_loop(e, new BindObjType2(e,ev,url,gameapi_homepageurl));
+}
+
+
+GameApi::ML create_objects(GameApi::Env &e, GameApi::EveryApi &ev, const V_Area_Type &area, float pos_x, float pos_y, float pos_z, int area_id)
+{
+  int obj_type = area.obj_type;
+  int obj_pos = area.obj_pos;
+
+  V_Object_Type_Array *arr = g_object_types[obj_type];
+  V_Object_Pos *pos = &g_object_pos[obj_pos];
+
+  
+  
+  std::vector<GameApi::ML> vec;
+  int s2 = pos->pos.size();
+  for(int k=0;k<s2;k++)
+    {
+      V_Object *obj = &pos->pos[k];
+      float x = obj->x;
+      float y = obj->y;
+      float z = obj->z;
+      float target_radius = obj->radius;
+
+      x*=(area.end_x-area.start_x);
+      x+=area.start_x;
+      y*=(area.end_y-area.start_y);
+      y+=area.start_y;
+      z*=(area.end_z-area.start_z);
+      z+=area.start_z;
+
+      x-=area.pos_x;
+      y-=area.pos_y;
+      z-=area.pos_z;
+      
+      int obj_type = obj->obj_type;
+  
+  int s = arr->vec.size();
+  if (obj_type<0 || obj_type>=s) continue;
+  //for(int i=0;i<s;i++) {
+    int i=obj_type;
+    V_Object_Type *t = &arr->vec[i];
+    GameApi::P p;
+    p.id = t->obj;
+    GameApi::MN mn;
+    mn.id = t->move;
+    GameApi::MT mt;
+    mt.id = t->mat;
+    float radius = t->radius;
+    GameApi::ML ml = ev.materials_api.bind(p,mt);
+    GameApi::MN mn1 = ev.move_api.scale2(mn,target_radius/radius,target_radius/radius,target_radius/radius); 
+    int yy = find_area_y(e, area_id,pos_x+x,pos_z+z);
+    GameApi::MN mn2 = ev.move_api.trans2(mn1, pos_x+x, pos_y+y-yy, pos_z+z);
+    GameApi::ML ml2 = ev.move_api.move_ml(ev,ml, mn2, 1,10.0);
+    vec.push_back(ml2);
+  }
+  return ev.mainloop_api.array_ml(ev, vec);
+}
+
+GameApi::ML create_all_objects(GameApi::Env &e, GameApi::EveryApi &ev, int area_id)
+{
+  V_Area_Pos *pos = &g_areas[area_id];
+  if (!pos) { std::cout << "create_all_objects failed" << std::endl; GameApi::ML ml; ml.id = 0; return ml; }
+  int s = pos->vec.size();
+  std::cout << "create_all_objects: count=" << s << std::endl;
+  std::vector<GameApi::ML> vec;
+  for(int i=0;i<s;i++) {
+    V_Area *area = &pos->vec[i];
+    Point p = pos->pos[i];
+    int area_type = area->area_type;
+    V_Area_Type *area_t = &g_area_type_array[area_type];
+    p+=Vector(area_t->pos_x, area_t->pos_y, area_t->pos_z);
+    GameApi::ML ml = create_objects(e,ev,*area_t,p.x,p.y,p.z,area_id);
+    vec.push_back(ml);
+  }
+  return ev.mainloop_api.array_ml(ev, vec);
+}
+
+class CreateAllObject : public MainLoopItem
+{
+public:
+  CreateAllObject(GameApi::Env &e, GameApi::EveryApi &ev, int area_id) : env(e), ev(ev), area_id(area_id) {
+    ml.id = -1;
+  }
+  void Prepare() {
+    ml = create_all_objects(env,ev,area_id);
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->handle_event(e);
+    }
+    }
+  virtual std::vector<int> shader_id() {
+    if (ml.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,ml);
+    return item->shader_id();
+    } else return std::vector<int>();
+  }
+private:
+  GameApi::Env &env; 
+  GameApi::EveryApi &ev;
+  GameApi::ML ml;
+  int area_id;
+};
+
+GameApi::ML GameApi::MainLoopApi::create_objs(EveryApi &ev, int area_id)
+{
+  return add_main_loop(e, new CreateAllObject(e,ev,area_id));
+  //return create_all_objects(e,ev,area_id);
+}

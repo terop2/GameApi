@@ -286,9 +286,12 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
-  IMPORT ML bind_obj_type(std::string name, GameApi::P obj, GameApi::MN move, GameApi::MT mat);
+  IMPORT ML bind_obj_type(std::string name, GameApi::P obj, GameApi::MN move, GameApi::MT mat, float radius);
+  IMPORT ML bind_obj_type(GameApi::EveryApi &ev, std::string url);
+  IMPORT ML read_obj_pos(std::string url);
   IMPORT ML parse_areatype(EveryApi &ev, std::string url, GameApi::FB heightmap, GameApi::BM top_texture, GameApi::BM side_texture);
   IMPORT ML create_landscape(EveryApi &ev, std::string url);
+  IMPORT ML create_objs(EveryApi &ev, int area_id);
   IMPORT HML emscripten_frame(EveryApi &ev, RUN r, std::string homepage);
   IMPORT void init_window(int screen_width = 800, int screen_height=600, std::string window_title="GameApi", bool vr_init=false);
   IMPORT void init(SH sh, int screen_width = 800, int screen_height = 600);

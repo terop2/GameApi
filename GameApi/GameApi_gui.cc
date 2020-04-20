@@ -4978,6 +4978,8 @@ ASyncData async_data[] = {
   { "mainloop_api", "load_P_script", 1 },
   { "mainloop_api", "load_P_script_array", 1 },
   { "mainloop_api", "load_ML_script", 1 },
+  { "mainloop_api", "load_MN_script", 1 },
+  { "mainloop_api", "load_MT_script", 1 },
   { "mainloop_api", "load_ML_script_array", 1 },
   { "mainloop_api", "load_BM_script", 1 },
   { "mainloop_api", "load_BM_script_array", 1 },
@@ -5011,7 +5013,11 @@ ASyncData async_data[] = {
   { "mainloop_api", "gltf_scene", 2 },
   { "mainloop_api", "matrix_range_check", 3 },
   { "font_api", "draw_text_large", 2 },
-  { "bitmap_api", "loadbitmapfromurl", 0}
+  { "bitmap_api", "loadbitmapfromurl", 0},
+  { "mainloop_api", "parse_areatype", 1},
+  { "mainloop_api", "create_landscape", 1},
+  { "mainloop_api", "bind_obj_type", 1},
+  { "mainloop_api", "read_obj_pos", 0}
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
@@ -7591,22 +7597,40 @@ std::vector<GameApiItem*> blocker_functions()
 			 "ML", "mainloop_api", "fps_display"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::parse_areatype,
-			 "areatype",
+			 "w_areatype",
 			 { "ev", "url", "heightmap", "top_texture", "side_texture" },
 			 { "EveryApi&", "std::string", "FB", "BM", "BM" },
 			 { "ev", "https://tpgames.org/areatype.txt", "", "", "" },
 			 "ML", "mainloop_api", "parse_areatype"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::create_landscape,
-			 "landscape",
+			 "w_landscape",
 			 { "ev", "url" },
 			 { "EveryApi&", "std::string" },
 			 { "ev", "https://tpgames.org/landscape.txt" },
 			 "ML", "mainloop_api", "create_landscape"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, (GameApi::ML (GameApi::MainLoopApi::*)(GameApi::EveryApi&,std::string))&GameApi::MainLoopApi::bind_obj_type,
+			 "w_objtype",
+			 { "ev", "url" },
+			 { "EveryApi&", "std::string" },
+			 { "ev", "https://tpgames.org/objtype.txt" },
+			 "ML", "mainloop_api", "bind_obj_type"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::read_obj_pos,
+			 "w_objpos",
+			 { "url" },
+			 { "std::string" },
+			 { "https://tpgames.org/objpos.txt" },
+			 "ML", "mainloop_api", "read_obj_pos"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::create_objs,
+			 "w_objs",
+			 { "ev", "area_id" },
+			 { "EveryApi&", "int" },
+			 { "ev", "0" },
+			 "ML", "mainloop_api", "create_objs"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::globe_shader,
 			 "globe_shader",
 			 { "ev", "mainloop", "globe_r" },
 			 { "EveryApi&", "ML", "float" },
-			 { "ev", "", "1300.0" },
+			 { "ev", "", "1.0" },
 			 "ML", "polygon_api", "globe_shader"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::score_display,
 			 "score_display",
