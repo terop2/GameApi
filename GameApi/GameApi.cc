@@ -22253,6 +22253,17 @@ public:
       }
       e.async_load_all_urls(urls,gameapi_homepageurl);
 
+      int sd = urls.size();
+      for(int i=0;i<sd;i++)
+	{
+	  e.async_load_url(urls[i],gameapi_homepageurl);
+	}
+      
+#ifdef EMSCRIPTEN
+      if (async_taken) async_pending_count--;
+#endif
+      async_taken = false;
+      
       firsttime = false;
   }
   virtual void Prepare() {
@@ -22280,6 +22291,7 @@ private:
   std::string homepage;
   std::vector<GameApi::ML> mls;
   bool firsttime;
+  bool async_taken;
 };
 GameApi::ML GameApi::MainLoopApi::bind_obj_type(GameApi::EveryApi &ev, std::string url)
 {
@@ -22292,7 +22304,7 @@ GameApi::ML create_objects(GameApi::Env &e, GameApi::EveryApi &ev, const V_Area_
   int obj_type = area.obj_type;
   int obj_pos = area.obj_pos;
 
-  V_Object_Type_Array *arr = g_object_types[obj_type];
+  //V_Object_Type_Array *arr = g_object_types[obj_type];
   V_Object_Pos *pos = &g_object_pos[obj_pos];
 
   
@@ -22318,12 +22330,14 @@ GameApi::ML create_objects(GameApi::Env &e, GameApi::EveryApi &ev, const V_Area_
       y-=area.pos_y;
       z-=area.pos_z;
       
-      int obj_type = obj->obj_type;
-  
+      //int obj_type = obj->obj_type;
+      V_Object_Type_Array *arr = g_object_types[obj_type];
   int s = arr->vec.size();
-  if (obj_type<0 || obj_type>=s) continue;
+  for(int i=0;i<s;i++) {
+    //std::cout << "create_objects:" << obj_type << " " << s << std::endl;
+  //if (obj_type<0 || obj_type>=s) continue;
   //for(int i=0;i<s;i++) {
-    int i=obj_type;
+  //int i=obj_type;
     V_Object_Type *t = &arr->vec[i];
     GameApi::P p;
     p.id = t->obj;
@@ -22338,6 +22352,7 @@ GameApi::ML create_objects(GameApi::Env &e, GameApi::EveryApi &ev, const V_Area_
     GameApi::MN mn2 = ev.move_api.trans2(mn1, pos_x+x, pos_y+y-yy, pos_z+z);
     GameApi::ML ml2 = ev.move_api.move_ml(ev,ml, mn2, 1,10.0);
     vec.push_back(ml2);
+  }
   }
   return ev.mainloop_api.array_ml(ev, vec);
 }
