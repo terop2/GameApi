@@ -1696,6 +1696,7 @@ struct V_Object
   float x,y,z;
   //bool is_matrix;
   //Matrix m;
+  float radius;
 };
 struct V_Object_Pos
 {
@@ -1708,6 +1709,7 @@ struct V_Object_Type
   int /*GameApi::P*/ obj;
   int /*GameAPi::MN*/ move;
   int /*GameAPi::MT*/ mat;
+  float radius;
 };
 struct V_Object_Type_Array
 {
@@ -1733,7 +1735,7 @@ struct V_Wall_Array
 struct V_Area_Type
 {
   std::string name;
-  int voxel_types; // index to g_voxel_types
+  int voxel_types=-1; // index to g_voxel_types
   // dimensions
   float start_x, start_y, start_z;
   float end_x, end_y, end_z;
@@ -1777,10 +1779,10 @@ struct V_Area_Type
   //float back_end_y;
 
   // walls
-  int wall; // index to g_walls
+  int wall=-1; // index to g_walls
 
-  int obj_type;
-  int obj_pos;
+  int obj_type=-1;
+  int obj_pos=-1;
 };
 
 
