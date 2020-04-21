@@ -373,6 +373,7 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
   unsigned char *dataptr = (unsigned char*)data;
   if (datasize==0) {
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
+      std::cout << url << std::endl;
   }
   std::vector<unsigned char> buffer;
   //unsigned char *dataptr = (unsigned char*)data;
@@ -651,6 +652,7 @@ void idb_error(void *arg)
 }
 void ASyncLoader::load_urls(std::string url, std::string homepage)
   {
+    if (url=="") return;
     //std::cout << "ASyncLoader::load_urls:" << url << std::endl; 
 
     std::string oldurl = url;
