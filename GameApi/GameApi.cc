@@ -22232,12 +22232,15 @@ public:
 	std::string name, p, mn, mt;
 	float radius;
 	ss2 >> name >> p >> mn >> mt >> radius;
+	if (p!="")
 	urls.push_back(p);
+	if (mn!="")
 	urls.push_back(mn);
+	if (mt!="")
 	urls.push_back(mt);
       }
-      std::sort(urls.begin(),urls.end());
-      std::unique(urls.begin(),urls.end());
+      //std::sort(urls.begin(),urls.end());
+      //std::unique(urls.begin(),urls.end());
 
       std::stringstream ss(code);
       std::string line;
@@ -22246,11 +22249,13 @@ public:
 	std::string name, p, mn, mt;
 	float radius;
 	ss2 >> name >> p >> mn >> mt >> radius;
+	if (p!="" && mn !="" && mt !="") {
 	GameApi::P pp = ev.mainloop_api.load_P_script(ev, p, "","","","","");
 	GameApi::MN mnn = ev.mainloop_api.load_MN_script(ev,mn,"","","","","");
 	GameApi::MT mtt = ev.mainloop_api.load_MT_script(ev,mt,"","","","","");
 	GameApi::ML ml = ev.mainloop_api.bind_obj_type(name, pp, mnn, mtt,radius);
 	mls.push_back(ml);
+	}
       }
       e.async_load_all_urls(urls,gameapi_homepageurl);
 

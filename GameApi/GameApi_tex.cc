@@ -369,6 +369,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 	power_of_two = false;
       if (!(sy==1 ||sy==2||sy==4||sy==8||sy==16||sy==32||sy==64||sy==128||sy==256||sy==512||sy==1024||sy==2048||sy==4096||sy==8192||sy==16384))
 	power_of_two = false;
+      if (!power_of_two) { std::cout << "Warning: texture not in power_of_two, mipmapping is disabled" << std::endl; }
       
 	ogl->glBindTexture(Low_GL_TEXTURE_2D, ids[i]);
 	ogl->glTexImage2D(Low_GL_TEXTURE_2D,0,Low_GL_RGBA,bm->SizeX(),bm->SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
@@ -495,7 +496,7 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
 	power_of_two = false;
       if (!(ssy==1 ||ssy==2||ssy==4||ssy==8||ssy==16||ssy==32||ssy==64||ssy==128||ssy==256||ssy==512||ssy==1024||ssy==2048||ssy==4096||ssy==8192||ssy==16384))
 	power_of_two = false;
-
+      if (!power_of_two) { std::cout << "Warning: texture not power of two, mipmapping is disabled" << std::endl; }
   
   if (mipmaps&&power_of_two)
     ogl->glGenerateMipmap(Low_GL_TEXTURE_2D);
@@ -696,7 +697,7 @@ GameApi::TXID GameApi::TextureApi::bufferref_to_txid(GameApi::TXID old, const Bu
 	power_of_two = false;
       if (!(sy==1 ||sy==2||sy==4||sy==8||sy==16||sy==32||sy==64||sy==128||sy==256||sy==512||sy==1024||sy==2048||sy==4096||sy==8192||sy==16384))
 	power_of_two = false;
-
+      if (!power_of_two) { std::cout << "Warning: textures not power_of_two, mipmapping disabled" << std::endl; }
 
   //std::cout << "bufferref_to_txid:" << buf.width << "x" << buf.height << ":" << buf.buffer << std::endl;
   Low_GLuint id;
