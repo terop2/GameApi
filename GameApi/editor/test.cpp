@@ -878,8 +878,8 @@ void iter(void *arg)
 
 		    //std::cout << "URLS:" << ids.second << std::endl;
 		    std::vector<std::string> urls = ids.second;
-		    //std::sort(urls.begin(),urls.end());
-		    //std::unique(urls.begin(),urls.end());
+		    std::sort(urls.begin(),urls.end());
+		    std::unique(urls.begin(),urls.end());
 		    env->env->async_load_all_urls(urls, gameapi_homepageurl);
 		    }
 		    //int s = urls.size();
