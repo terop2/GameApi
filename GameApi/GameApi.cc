@@ -22236,8 +22236,8 @@ public:
 	urls.push_back(mn);
 	urls.push_back(mt);
       }
-      //std::sort(urls.begin(),urls.end());
-      //std::unique(urls.begin(),urls.end());
+      std::sort(urls.begin(),urls.end());
+      std::unique(urls.begin(),urls.end());
 
       std::stringstream ss(code);
       std::string line;
