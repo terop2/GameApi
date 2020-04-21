@@ -6,6 +6,9 @@
 #include <emscripten.h>
 #endif
 
+#define idb_disabled 1
+//#define idb_disabled 0
+
 int load_size_from_url(std::string url);
 
 
@@ -632,7 +635,7 @@ void idb_exists(void *arg, int exists)
 #ifdef EMSCRIPTEN
   LoadData *ld = (LoadData*)arg;
   //std::cout << "Exists: " << exists << std::endl;
-  if (exists) {
+  if (exists && !idb_disabled) {
     //std::cout << "Loading from idb" << ld->url << std::endl;
     emscripten_idb_async_load("gameapi", ld->url.c_str(), (void*)ld->buf3, &idb_onload_async_cb, &idb_onerror_async_cb);
   } else {

@@ -21813,6 +21813,7 @@ void set_area_type_texture(int id, texture_type type, GameApi::BM bm, float star
 
 float find_area_y(GameApi::Env &e, int area, float pos_x, float pos_z)
 {
+  pos_x = - pos_x;
   int s = g_areas[area].vec.size();
   for(int i=0;i<s;i++)
     {
@@ -21825,7 +21826,7 @@ float find_area_y(GameApi::Env &e, int area, float pos_x, float pos_z)
       float z = (m_pos_z-type.start_z)/(type.end_z-type.start_z);
       if (x<0.0 || x>1.0) continue;
       if (z<0.0 || z>1.0) continue;
-      x = 1.0-x;
+      //x = 1.0-x;
       GameApi::FB fb;
       fb.id = type.ground_heightmap;
       FloatBitmap *fb_1 = find_float_bitmap(e, fb);
@@ -22348,7 +22349,7 @@ GameApi::ML create_objects(GameApi::Env &e, GameApi::EveryApi &ev, const V_Area_
     float radius = t->radius;
     GameApi::ML ml = ev.materials_api.bind(p,mt);
     GameApi::MN mn1 = ev.move_api.scale2(mn,target_radius/radius,target_radius/radius,target_radius/radius); 
-    int yy = find_area_y(e, area_id,pos_x+x,pos_z+z);
+    int yy = find_area_y(e, area_id,-(pos_x+x),pos_z+z);
     GameApi::MN mn2 = ev.move_api.trans2(mn1, pos_x+x, pos_y+y-yy, pos_z+z);
     GameApi::ML ml2 = ev.move_api.move_ml(ev,ml, mn2, 1,10.0);
     vec.push_back(ml2);
