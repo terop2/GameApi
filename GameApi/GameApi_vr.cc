@@ -9,6 +9,8 @@
 
 
 bool g_vr_enable = false;
+int g_vr_device_id = 0;
+
 class ZeroIntFetcher : public Fetcher<int>
 {
 public:
@@ -418,7 +420,12 @@ EXPORT GameApi::MN GameApi::MovementNode::pose(MN next, bool pose_in_screen)
 {
   if (!g_vr_enable) return next;
   Movement *nxt = find_move(e, next);
-  return add_move(e, new PoseMovement(nxt,pose_in_screen));
+  GameApi::MN move = add_move(e, new PoseMovement(nxt,pose_in_screen));
+  if (g_vr_device_id==1) // vive
+    {
+      move=rotatey(move,1.59);
+    }
+  return move;
 }
 
 class HMDProjection : public MainLoopItem
