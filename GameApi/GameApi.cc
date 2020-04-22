@@ -22077,9 +22077,9 @@ GameApi::ML create_landscape2(GameApi::Env &e, GameApi::EveryApi &ev, const V_Ar
   GameApi::MT top_tx = ev.materials_api.texture(ev, top_bm, 0.3);
   GameApi::MT left_tx = ev.materials_api.texture(ev, left_bm, 0.3);
   GameApi::MT front_tx = ev.materials_api.texture(ev, front_bm, 0.3);
-  GameApi::MT top_ph = ev.materials_api.phong(ev,top_tx,0.0,0.0,1.0, 0xff884422, 0xffffffff, 150.0);
-  GameApi::MT left_ph = ev.materials_api.phong(ev,left_tx,0.0,0.0,1.0, 0xff884422, 0xffffffff, 150.0);
-  GameApi::MT front_ph = ev.materials_api.phong(ev,front_tx,0.0,0.0,1.0, 0xff884422, 0xffffffff, 150.0);
+  GameApi::MT top_ph = ev.materials_api.phong(ev,top_tx,0.0,0.0,-1.0, 0xff884422, 0xffffffff, 150.0);
+  GameApi::MT left_ph = ev.materials_api.phong(ev,left_tx,0.0,0.0,-1.0, 0xff884422, 0xffffffff, 150.0);
+  GameApi::MT front_ph = ev.materials_api.phong(ev,front_tx,0.0,0.0,-1.0, 0xff884422, 0xffffffff, 150.0);
   GameApi::ML top_ml = ev.materials_api.bind(top_elem, top_ph);
   GameApi::ML left_ml = ev.materials_api.bind(left_elem, left_ph);
   GameApi::ML front_ml = ev.materials_api.bind(front_elem, front_ph);
