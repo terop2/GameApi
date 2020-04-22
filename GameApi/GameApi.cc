@@ -4760,6 +4760,112 @@ private:
 };
 
 
+class EdgeMaterial : public MaterialForward
+{
+public:
+  EdgeMaterial(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, float edge_width, float edge_color) : env(env), ev(ev), next(next), edge_width(edge_width), edge_color(edge_color) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01)
+      p0 = ev.polygon_api.recalculate_normals(p);
+    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
+    //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    GameApi::ML ml;
+    ml.id = next->mat(p0.id);
+    GameApi::ML sh = ev.polygon_api.edge_shader(ev, ml, edge_width, edge_color);
+    return sh;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01)
+      p0 = ev.polygon_api.recalculate_normals(p);
+
+    //GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
+    //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    GameApi::ML ml;
+    ml.id = next->mat_inst(p0.id, pts.id);
+    GameApi::ML sh = ev.polygon_api.edge_shader(ev, ml, edge_width, edge_color);
+    return sh;
+
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01)
+      p0 = ev.polygon_api.recalculate_normals(p);
+
+    //GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
+    //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    GameApi::ML ml;
+    ml.id = next->mat_inst_matrix(p0.id, ms.id);
+    GameApi::ML sh = ev.polygon_api.edge_shader(ev, ml, edge_width, edge_color);
+    return sh;
+
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01)
+      p0 = ev.polygon_api.recalculate_normals(p);
+
+    //GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
+    //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(p0.id, pta.id);
+    GameApi::ML sh = ev.polygon_api.edge_shader(ev, ml, edge_width, edge_color);
+    return sh;
+
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01)
+      p0 = ev.polygon_api.recalculate_normals(p);
+    //    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
+    //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p0.id, pts.id, flip, start_time, end_time);
+    GameApi::ML sh = ev.polygon_api.edge_shader(ev, ml, edge_width, edge_color);
+    return sh;
+
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  Material *next;
+  float edge_width;
+  unsigned int edge_color;
+};
+
+
+
 class BumpPhongMaterial : public MaterialForward
 {
 public:
@@ -5371,10 +5477,16 @@ EXPORT GameApi::MT GameApi::MaterialsApi::snow(EveryApi &ev, MT nxt, unsigned in
   Material *mat = find_material(e, nxt);
   return add_material(e, new SnowMaterial(ev, mat, color1, color2, color3, mix_val));
 }
+
 EXPORT GameApi::MT GameApi::MaterialsApi::phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
 {
   Material *mat = find_material(e, nxt);
   return add_material(e, new PhongMaterial(e, ev, mat, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow));
+}
+EXPORT GameApi::MT GameApi::MaterialsApi::edge(EveryApi &ev, MT nxt, float edge_width, unsigned int edge_color)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new EdgeMaterial(e,ev,mat, edge_width, edge_color));
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::gi(EveryApi &ev, MT nxt, PTS points, float obj_size)
 {
@@ -8396,6 +8508,12 @@ GameApi::US GameApi::UberShaderApi::v_empty()
 {
   return add_uber(e, new EmptyV());
 }
+GameApi::US GameApi::UberShaderApi::v_edge(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("edge", next, "EX_NORMAL2 IN_NORMAL"));
+
+}
 GameApi::US GameApi::UberShaderApi::v_globe(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -8702,6 +8820,11 @@ GameApi::US GameApi::UberShaderApi::v_dist_field_mesh(US us, SFO sfo)
   ShaderCall *next = find_uber(e,us);
   ShaderModule *mod = find_shader_module(e, sfo);
   return add_uber(e, new V_DistFieldMesh(next,mod));
+}
+GameApi::US GameApi::UberShaderApi::f_edge(US us)
+{
+  ShaderCall *next = find_uber(e,us);
+  return add_uber(e, new F_ShaderCallFunction("edge", next,"EX_NORMAL2"));
 }
 GameApi::US GameApi::UberShaderApi::f_mesh_color(US us, SFO sfo)
 {
@@ -21954,9 +22077,9 @@ GameApi::ML create_landscape2(GameApi::Env &e, GameApi::EveryApi &ev, const V_Ar
   GameApi::MT top_tx = ev.materials_api.texture(ev, top_bm, 0.3);
   GameApi::MT left_tx = ev.materials_api.texture(ev, left_bm, 0.3);
   GameApi::MT front_tx = ev.materials_api.texture(ev, front_bm, 0.3);
-  GameApi::MT top_ph = ev.materials_api.phong(ev,top_tx,1.0,1.0,1.0, 0xff884422, 0xffffffff, 5.0);
-  GameApi::MT left_ph = ev.materials_api.phong(ev,left_tx,1.0,1.0,1.0, 0xff884422, 0xffffffff, 5.0);
-  GameApi::MT front_ph = ev.materials_api.phong(ev,front_tx,1.0,1.0,1.0, 0xff884422, 0xffffffff, 5.0);
+  GameApi::MT top_ph = ev.materials_api.phong(ev,top_tx,0.0,0.0,1.0, 0xff884422, 0xffffffff, 150.0);
+  GameApi::MT left_ph = ev.materials_api.phong(ev,left_tx,0.0,0.0,1.0, 0xff884422, 0xffffffff, 150.0);
+  GameApi::MT front_ph = ev.materials_api.phong(ev,front_tx,0.0,0.0,1.0, 0xff884422, 0xffffffff, 150.0);
   GameApi::ML top_ml = ev.materials_api.bind(top_elem, top_ph);
   GameApi::ML left_ml = ev.materials_api.bind(left_elem, left_ph);
   GameApi::ML front_ml = ev.materials_api.bind(front_elem, front_ph);
