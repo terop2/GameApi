@@ -9224,6 +9224,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
 			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0" },
 			 "MT", "materials_api", "phong"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::edge,
+			 "m_edge",
+			 { "ev", "nxt", "edge_width", "edge_color" },
+			 { "EveryApi&", "MT", "float", "unsigned int" },
+			 { "ev", "", "3.0", "ffffffff" },
+			 "MT", "materials_api", "edge"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material,
 			 "m_gltf",
 			 { "ev", "base_url", "url", "material_id", "mix" },
