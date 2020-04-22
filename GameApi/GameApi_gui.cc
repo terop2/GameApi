@@ -698,6 +698,8 @@ public:
   }  
   void render()
   {
+    OpenglLowApi *ogl = g_low->ogl;
+
     if (is_visible()) {
     if (left)
       {
@@ -719,14 +721,14 @@ public:
 	  scale_x = float(g_event_screen_x)/float(screen_x);
 	  scale_y = float(g_event_screen_y)/float(screen_y);
 	}
-	g_low->ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
+	ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
-	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+	ogl->glEnable(Low_GL_DEPTH_TEST);
 	obj.render();
-	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+	ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-	g_low->ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
+	ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
 	ev.shader_api.use(old_sh);
       }
     }
@@ -790,6 +792,7 @@ public:
   }  
   void render()
   {
+    OpenglLowApi *ogl = g_low->ogl;
     if (is_visible())
       {
     if (left)
@@ -814,16 +817,16 @@ public:
 	  scale_x = float(g_event_screen_x)/float(screen_x);
 	  scale_y = float(g_event_screen_y)/float(screen_y);
 	}
-	g_low->ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
+	ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
 	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
 	//obj.render();
 	ev.shader_api.set_var(sh, "in_MV", mat);
 	ev.polygon_api.render_vertex_array(p);
-	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+	ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-	g_low->ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
+	ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
 	ev.shader_api.use(old_sh);
       }
       }
@@ -924,6 +927,7 @@ public:
   }  
   void render()
   {
+    OpenglLowApi *ogl = g_low->ogl;
 
     if (is_visible())
       {
@@ -958,7 +962,7 @@ public:
 	  scale_x = float(g_event_screen_x)/float(screen_x);
 	  scale_y = float(g_event_screen_y)/float(screen_y);
 	}
-	g_low->ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
+	ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	int c_x = ev.mainloop_api.get_corner_x();
 	int c_y = ev.mainloop_api.get_corner_y();
 	int c_sx = ev.mainloop_api.get_screen_rect_sx();
@@ -1002,7 +1006,7 @@ public:
 	ev.shader_api.use(sh_2d);
 	ev.mainloop_api.switch_to_3d(false, sh_2d, screen_x, screen_y);
 	ev.mainloop_api.set_corner(c_x,c_y,c_sx,c_sy);
-	g_low->ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
+	ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
 	ev.shader_api.use(old_sh);
       } 
 
@@ -1201,6 +1205,7 @@ public:
   }  
   void render()
   {
+    OpenglLowApi *ogl = g_low->ogl;
     if (is_visible())
       {
     if (left)
@@ -1225,16 +1230,16 @@ public:
 	  scale_y = float(g_event_screen_y)/float(screen_y);
 	}
 
-	g_low->ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
+	ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
-	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+	ogl->glEnable(Low_GL_DEPTH_TEST);
 	//glPointSize(5.0);
 	//ev.mainloop_api.clear_3d();
 	obj.render();
-	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+	ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-	  g_low->ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
+	  ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
 	ev.shader_api.use(old_sh);
       }
       }
@@ -1298,6 +1303,7 @@ public:
   }  
   void render()
   {
+    OpenglLowApi *ogl = g_low->ogl;
     if (is_visible())
       {
     if (left)
@@ -1321,14 +1327,14 @@ public:
 	  scale_y = float(g_event_screen_y)/float(screen_y);
 	}
 
-	g_low->ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
+	ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
-	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+	ogl->glEnable(Low_GL_DEPTH_TEST);
 	obj.render();
-	g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+	ogl->glDisable(Low_GL_DEPTH_TEST);
 	ev.mainloop_api.switch_to_3d(false, sh, screen_x, screen_y);
-	g_low->ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
+	ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
 	ev.shader_api.use(old_sh);
       }
       }
@@ -3826,18 +3832,19 @@ public:
   }
   void render()
   {
+    OpenglLowApi *ogl = g_low->ogl;
     if (is_visible())
       {
-    g_low->ogl->glEnable(Low_GL_SCISSOR_TEST);
+    ogl->glEnable(Low_GL_SCISSOR_TEST);
     if (g_event_screen_y!=-1) {
       float scale_x = float(g_event_screen_x)/float(ev.mainloop_api.get_screen_width());
       float scale_y = float(g_event_screen_y)/float(ev.mainloop_api.get_screen_height());
-      g_low->ogl->glScissor(pos.x*scale_x, g_event_screen_y-pos.y*scale_y-size.dy*scale_y, size.dx*scale_x, size.dy*scale_y);
+      ogl->glScissor(pos.x*scale_x, g_event_screen_y-pos.y*scale_y-size.dy*scale_y, size.dx*scale_x, size.dy*scale_y);
     } else {
-      g_low->ogl->glScissor(pos.x, screen_y-pos.y-size.dy, size.dx, size.dy);
+      ogl->glScissor(pos.x, screen_y-pos.y-size.dy, size.dx, size.dy);
     }
     vec[0]->render();
-    g_low->ogl->glDisable(Low_GL_SCISSOR_TEST);
+    ogl->glDisable(Low_GL_SCISSOR_TEST);
       }
   }
 
@@ -4689,8 +4696,8 @@ void funccall_1(std::vector<std::string> &s, GameApi::ExecuteEnv &e, std::vector
 #endif
 #endif
 template<class T, class RT, class... P>
-int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
-	     RT (T::*fptr)(P...), std::vector<std::string> s, GameApi::ExecuteEnv &e, std::vector<std::string> param_name, std::string return_type)
+int funccall(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
+	     RT (T::*fptr)(P...), std::vector<std::string> s, GameApi::ExecuteEnv &e, const std::vector<std::string> &param_name, const std::string &return_type)
 {
   funccall_1(s,e,param_name);
 #if 0
@@ -4723,7 +4730,7 @@ int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api
 #define ORDER 1
 #endif
   
-  std::stringstream ss;
+  //std::stringstream ss;
   int s2 = s.size();
 #ifndef ORDER
   for(int i=s2-1;i>=0;i--)
@@ -4738,9 +4745,9 @@ int funccall(GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api
 #endif
   //std::cout << "FuncCall: " << ss.str() << std::endl;
 
-  std::stringstream ss2(ss.str());
+  //std::stringstream ss2(ss.str());
   T *ptr = &(ev.*api);
-  RT val = (ptr->*fptr)(from_stream2<P>(ss2,ev)...);
+  RT val = (ptr->*fptr)(from_stream2<P>(ss,ev)...);
 
 #if 0
   if (return_type.size()>2 && return_type[0]=='[' && return_type[return_type.size()-1]==']')
@@ -4971,6 +4978,8 @@ ASyncData async_data[] = {
   { "mainloop_api", "load_P_script", 1 },
   { "mainloop_api", "load_P_script_array", 1 },
   { "mainloop_api", "load_ML_script", 1 },
+  { "mainloop_api", "load_MN_script", 1 },
+  { "mainloop_api", "load_MT_script", 1 },
   { "mainloop_api", "load_ML_script_array", 1 },
   { "mainloop_api", "load_BM_script", 1 },
   { "mainloop_api", "load_BM_script_array", 1 },
@@ -5004,7 +5013,11 @@ ASyncData async_data[] = {
   { "mainloop_api", "gltf_scene", 2 },
   { "mainloop_api", "matrix_range_check", 3 },
   { "font_api", "draw_text_large", 2 },
-  { "bitmap_api", "loadbitmapfromurl", 0}
+  { "bitmap_api", "loadbitmapfromurl", 0},
+  { "mainloop_api", "parse_areatype", 1},
+  { "mainloop_api", "create_landscape", 1},
+  { "mainloop_api", "bind_obj_type", 1},
+  { "mainloop_api", "read_obj_pos", 0}
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
@@ -5298,7 +5311,8 @@ int execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std::vector<CodeG
     }
       
       //std::cout << "Execute: " << params << std::endl;
-      int val = l.item->Execute(ee,ev, params, e);
+      std::stringstream sk3;
+      int val = l.item->Execute(sk3, ee,ev, params, e);
       std::stringstream ss2;
       ss2 << val;
       res_vec.push_back(ss2.str());
@@ -5428,7 +5442,7 @@ public:
   std::string FuncName(int i) const { return func_name; }
   std::string Symbols() const { return symbols; }
   std::string Comment() const { return comment; }
-  int Execute(GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)
+  int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)
   {
     if (params.size()!=param_name.size()) {
 	if (ApiName(0)=="mainloop_api" && FuncName(0)=="array_ml") {
@@ -5437,7 +5451,7 @@ public:
 	  std::cout << "Error: param vectors different size: " << ApiName(0) << "::" << FuncName(0) << std::endl;
 	}
     }
-    return funccall(ee, ev, api, fptr, params, e, param_name, return_type); 
+    return funccall(ss,ee, ev, api, fptr, params, e, param_name, return_type); 
   }
 #if 0
   std::vector<GameApi::EditNode*> CollectNodes(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)
@@ -7124,7 +7138,18 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "http://tpgames.org/marble_cube_ml.mp", "a", "b", "c", "d", "e" },
 			 "ML", "mainloop_api", "load_ML_script"));
 
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_MN_script,
+			 "mn_script",
+			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
+			 { "EveryApi&", "std::string", "std::string","std::string","std::string","std::string","std::string" },
+			 { "ev", "http://tpgames.org/test_mn.mp", "a", "b", "c","d", "e" },
+			 "MN", "mainloop_api", "load_MN_script"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_MT_script,
+			 "mt_script",
+			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
+			 { "EveryApi&", "std::string", "std::string","std::string","std::string","std::string","std::string" },
+			 { "ev", "http://tpgames.org/test_mt.mp", "a", "b", "c", "d", "e" },
+			 "MT", "mainloop_api", "load_MT_script"));
 
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_BM_script_array,
@@ -7571,6 +7596,42 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "", "http://tpgames.org/Chunkfive.otf" },
 			 "ML", "mainloop_api", "fps_display"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::parse_areatype,
+			 "w_areatype",
+			 { "ev", "url", "heightmap", "top_texture", "side_texture" },
+			 { "EveryApi&", "std::string", "FB", "BM", "BM" },
+			 { "ev", "https://tpgames.org/areatype.txt", "", "", "" },
+			 "ML", "mainloop_api", "parse_areatype"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::create_landscape,
+			 "w_landscape",
+			 { "ev", "url" },
+			 { "EveryApi&", "std::string" },
+			 { "ev", "https://tpgames.org/landscape.txt" },
+			 "ML", "mainloop_api", "create_landscape"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, (GameApi::ML (GameApi::MainLoopApi::*)(GameApi::EveryApi&,std::string))&GameApi::MainLoopApi::bind_obj_type,
+			 "w_objtype",
+			 { "ev", "url" },
+			 { "EveryApi&", "std::string" },
+			 { "ev", "https://tpgames.org/objtype.txt" },
+			 "ML", "mainloop_api", "bind_obj_type"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::read_obj_pos,
+			 "w_objpos",
+			 { "url" },
+			 { "std::string" },
+			 { "https://tpgames.org/objpos.txt" },
+			 "ML", "mainloop_api", "read_obj_pos"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::create_objs,
+			 "w_objs",
+			 { "ev", "area_id" },
+			 { "EveryApi&", "int" },
+			 { "ev", "0" },
+			 "ML", "mainloop_api", "create_objs"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::globe_shader,
+			 "globe_shader",
+			 { "ev", "mainloop", "globe_r" },
+			 { "EveryApi&", "ML", "float" },
+			 { "ev", "", "1.0" },
+			 "ML", "polygon_api", "globe_shader"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::score_display,
 			 "score_display",
 			 { "ev", "ml", "font" },
@@ -7674,7 +7735,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "","false","false", "0.0", "100000.0" },
 			 "RUN", "blocker_api", "game_window2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame,
-			 "html_window",
+			 "html_window", 
 			 { "ev", "r", "homepage" },
 			 { "EveryApi&", "RUN", "std::string" },
 			 { "ev", "", "http://tpgames.org/" },
@@ -8755,14 +8816,20 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "ML", "float", "float", "float" },
 			 { "ev", "", "0.5", "0.5", "0.5" },
 			 "ML", "polygon_api", "bloom1_shader"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::wave_shader,
 			 "p_wave",
 			 { "ev", "mainloop", "radius", "t_mult", "x_mult", "y_mult" },
 			 { "EveryApi&", "ML", "float", "float", "float", "float" },
 			 { "ev", "", "0.02", "1.5", "17", "9" },
 			 "ML", "polygon_api", "wave_shader"));
-#endif
-			 
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::fog_shader,
+			 "p_fog",
+			 { "ev", "mainloop", "fog_dist", "dark_color", "light_color" },
+			 { "EveryApi&", "ML", "float", "unsigned int", "unsigned int" },
+			 { "ev", "", "300.0", "ff000000", "ffffffff" },
+			 "ML", "polygon_api", "fog_shader"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::shader_api, &GameApi::ShaderApi::shader_choice,
 			 "shader",
 			 { "ev", "choose" },
@@ -9157,6 +9224,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
 			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0" },
 			 "MT", "materials_api", "phong"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::edge,
+			 "m_edge",
+			 { "ev", "nxt", "edge_width", "edge_color" },
+			 { "EveryApi&", "MT", "float", "unsigned int" },
+			 { "ev", "", "3.0", "ffffffff" },
+			 "MT", "materials_api", "edge"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material,
 			 "m_gltf",
 			 { "ev", "base_url", "url", "material_id", "mix" },

@@ -49,12 +49,13 @@ public:
 class SingletonShaderSpec : public ShaderSpec
 {
 public:
-  SingletonShaderSpec(std::string s) : s(s) { }
-  std::string Name() const { return ""; }
+  SingletonShaderSpec(std::string s, std::string name) : s(s), name(name) { }
+  std::string Name() const { return name; }
   int Count() const { return 1; }
   std::string Source(int i) const { return s; }
 private:
   std::string s;
+  std::string name;
 };
 
 struct ShaderPriv;

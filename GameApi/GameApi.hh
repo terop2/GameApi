@@ -286,6 +286,12 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT ML bind_obj_type(std::string name, GameApi::P obj, GameApi::MN move, GameApi::MT mat, float radius);
+  IMPORT ML bind_obj_type(GameApi::EveryApi &ev, std::string url);
+  IMPORT ML read_obj_pos(std::string url);
+  IMPORT ML parse_areatype(EveryApi &ev, std::string url, GameApi::FB heightmap, GameApi::BM top_texture, GameApi::BM side_texture);
+  IMPORT ML create_landscape(EveryApi &ev, std::string url);
+  IMPORT ML create_objs(EveryApi &ev, int area_id);
   IMPORT HML emscripten_frame(EveryApi &ev, RUN r, std::string homepage);
   IMPORT void init_window(int screen_width = 800, int screen_height=600, std::string window_title="GameApi", bool vr_init=false);
   IMPORT void init(SH sh, int screen_width = 800, int screen_height = 600);
@@ -424,6 +430,9 @@ public:
   P load_P_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   ARR load_P_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   ML load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  MN load_MN_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  MT load_MT_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+
   ARR load_ML_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   BM load_BM_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   ARR load_BM_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
@@ -1305,6 +1314,7 @@ public:
   IMPORT MT gltf_material_env( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix, BM diffuse_env, BM specular_env, BM bfrd);
   IMPORT MT gltf_material3( EveryApi &ev, float roughness, float metallic, float base_r, float base_g, float base_b, float base_a, float mix);
   IMPORT MT phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
+  IMPORT MT edge(EveryApi &ev, MT nxt, float edge_width, unsigned int edge_color);
   IMPORT MT gi(EveryApi &ev, MT nxt, PTS points, float obj_size);
   IMPORT MT bump_phong(EveryApi &ev, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, FB bm, float bump_width);
   IMPORT MT fog(EveryApi &ev, MT nxt, float fog_dist, unsigned int dark_color, unsigned int light_color);
@@ -2478,6 +2488,8 @@ public:
   IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML sfo_sandbox_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
+  IMPORT ML edge_shader(EveryApi &ev, ML mainloop, float edge_width, unsigned int edge_color);
+  IMPORT ML globe_shader(EveryApi &ev, ML mainloop, float globe_r);
   //IMPORT ML ao_shader(EveryApi &ev, ML mainloop, float radius, int kernelsize, int noisesize);
   IMPORT ML colour_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML gi_shader(EveryApi &ev, ML mainloop, PTS points, float obj_size);
@@ -3362,6 +3374,8 @@ class UberShaderApi
 public:
   UberShaderApi(Env &e) : e(e) {}
   US v_empty();
+  US v_edge(US us);
+  US v_globe(US us);
   US v_color_from_normals(US us);
   US v_recalc_normal(US us);
   US v_diffuse(US us);
@@ -3395,6 +3409,7 @@ public:
   US v_gltf(US us);
   US v_colour_with_mix(US us);
   US v_fade(US us);
+  US f_edge(US us);
   US f_mesh_color(US us, SFO sfo); // this requires v_pass_position() in vertex shader
   US f_sandbox(US us, SFO sfo); // this requires texture coordinates
   US f_empty(bool transparent);

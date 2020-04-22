@@ -333,7 +333,7 @@ public:
     right->handle_event(e);
     item->handle_event(e);
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
@@ -557,6 +557,8 @@ public:
   void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
+    OpenglLowApi *ogl = g_low->ogl;
+    
     GameApi::SH sh_color, sh_texture, sh_texture_2d, sh_array_texture;
     GameApi::SH vertex, fragment;
     GameApi::SH sh_id;
@@ -607,9 +609,9 @@ public:
     Matrix old = e.in_T;
     ee.in_T = id_m; //Matrix::Identity(); //Matrix::Scale(-1,1,1);//id_m;
     ee.in_P = /*ee.in_P */ proj_m;
-    g_low->ogl->glEnable( Low_GL_MULTISAMPLE );
+    ogl->glEnable( Low_GL_MULTISAMPLE );
     item->execute(ee);
-    g_low->ogl->glDisable( Low_GL_MULTISAMPLE );
+    ogl->glDisable( Low_GL_MULTISAMPLE );
 
     GameApi::M old_m = add_matrix2(env, old);
     //if (sh_id.id != -1) {
@@ -626,7 +628,7 @@ public:
   {
     item->handle_event(e);
   }
-  virtual int shader_id() { return item->shader_id(); }
+virtual std::vector<int> shader_id() { return item->shader_id(); }
 
 private:
   GameApi::Env &env;

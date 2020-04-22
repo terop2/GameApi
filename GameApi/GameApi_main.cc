@@ -42,12 +42,13 @@ EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_heigh
 #else
   p->screen = InitSDL(screenx,screeny,false);
 #endif
+  OpenglLowApi *ogl = g_low->ogl;
   g_low->sdl->SDL_SetWindowTitle(sdl_window, window_title.c_str());
 
   p->screen_width = screenx;
   p->screen_height = screeny;
   time = g_low->sdl->SDL_GetTicks();
-  g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+  ogl->glDisable(Low_GL_DEPTH_TEST);
 }
 EXPORT void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_height)
 {
@@ -214,12 +215,6 @@ EXPORT void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_heigh
 
   alpha_1(false);
 
-#if 0
-  g_low->ogl->glMatrixLoadIdentityEXT(Low_GL_PROJECTION);
-  g_low->ogl->glMatrixLoadIdentityEXT(Low_GL_MODELVIEW);
-  g_low->ogl->glMatrixOrthoEXT(Low_GL_PROJECTION, 0, 800, 600, 0, -1, 1);
-#endif
-  //glEnable(GL_MULTISAMPLE );
 
 }
 EXPORT void GameApi::MainLoopApi::transfer_sdl_surface(MainLoopApi &orig)
@@ -376,6 +371,8 @@ EXPORT float GameApi::MainLoopApi::fpscounter(bool print)
 
 EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_height)
 {
+  OpenglLowApi *ogl = g_low->ogl;
+  
   int screenx = screen_width;
   int screeny = screen_height;
 
@@ -538,17 +535,18 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   std::string ss = "cubesampler";
   prog->set_var(ss.c_str(),0);
   alpha_1(false);
-  g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+  ogl->glEnable(Low_GL_DEPTH_TEST);
   //glEnable(GL_MULTISAMPLE );
 }
 EXPORT void GameApi::MainLoopApi::nvidia_init()
 {
 #if 0
+  OpenglLowApi *ogl = g_low->ogl;
   if (GLEW_NV_path_rendering)
     {
-  g_low->ogl->glMatrixLoadIdentityEXT(Low_GL_PROJECTION);
-  g_low->ogl->glMatrixLoadIdentityEXT(Low_GL_MODELVIEW);
-  g_low->ogl->glMatrixOrthoEXT(Low_GL_PROJECTION, 0, 800, 600, 0, -1, 1);
+  ogl->glMatrixLoadIdentityEXT(Low_GL_PROJECTION);
+  ogl->glMatrixLoadIdentityEXT(Low_GL_MODELVIEW);
+  ogl->glMatrixOrthoEXT(Low_GL_PROJECTION, 0, 800, 600, 0, -1, 1);
     }
 #endif
 }
@@ -600,20 +598,21 @@ EXPORT int GameApi::MainLoopApi::get_screen_sy()
 
 EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int screeny)
 {
+  OpenglLowApi *ogl = g_low->ogl;
   //int screenx = 800;
   //int screeny = 600;
   if (b)
     {
       Program *prog = find_shader_program(e, sh);
       //g_low->ogl->glDisable(Low_GL_LIGHTING);
-      g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+      ogl->glEnable(Low_GL_DEPTH_TEST);
       Matrix m = Matrix::Perspective(80.0, (double)screenx/screeny, 10.1, 60000.0);
       Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
       prog->set_var("in_P", m);
       prog->set_var("in_T", m3);
       //glMultMatrixf(&mat[0]);
 #ifndef EMSCRIPTEN      
-      g_low->ogl->glMatrixMode( Low_GL_MODELVIEW ); 
+      ogl->glMatrixMode( Low_GL_MODELVIEW ); 
 #endif
       //Matrix m2 = Matrix::Translate(0.0, 0.0, -500.0);
       Matrix m2 = Matrix::Identity();
@@ -632,7 +631,7 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
       //m = m*Matrix::Translate(-1, -1, 0.0);
       prog->set_var("in_P", m);
       //g_low->ogl->glDisable(Low_GL_LIGHTING);
-      g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+      ogl->glDisable(Low_GL_DEPTH_TEST);
       //glMatrixMode( GL_PROJECTION ); 
       //glLoadIdentity(); 
       //glOrtho(0, screenx, screeny,0,0,1);
@@ -649,12 +648,13 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
 extern std::string gameapi_seamless_url;
 EXPORT void GameApi::MainLoopApi::clear(unsigned int col)
 {
+  OpenglLowApi *ogl = g_low->ogl;
   //glClearColor(255,255,255,255);
-  g_low->ogl->glClearStencil(0);
+  ogl->glClearStencil(0);
   Color c(col);
-  g_low->ogl->glClearColor(c.rf(),c.gf(),c.bf(),c.af());
-  g_low->ogl->glStencilMask(~0);
-  g_low->ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
+  ogl->glClearColor(c.rf(),c.gf(),c.bf(),c.af());
+  ogl->glStencilMask(~0);
+  ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
   //glLoadIdentity();
   //glTranslatef(0.375, 0.375, 0.0);
   //glTranslatef(0.0, 0.0, -260.0);
@@ -665,14 +665,16 @@ EXPORT void GameApi::MainLoopApi::clear(unsigned int col)
 }
 EXPORT void GameApi::MainLoopApi::clear_3d_transparent()
 {
-  g_low->ogl->glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-  g_low->ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
+  OpenglLowApi *ogl = g_low->ogl;
+  ogl->glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
 }
 EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
 {
   //glClearColor(255,255,255,255);
+  OpenglLowApi *ogl = g_low->ogl;
   
-  g_low->ogl->glClearStencil(0);
+  ogl->glClearStencil(0);
 
   int r = color & 0x00ff0000;
   int g = color & 0x0000ff00;
@@ -681,13 +683,13 @@ EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
   a>>=24;
   r>>=16;
   g>>=8;
-  g_low->ogl->glClearColor(r/256.0,g/256.0,b/256.0,a/256.0);
-  g_low->ogl->glStencilMask(~0);
-  g_low->ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
+  ogl->glClearColor(r/256.0,g/256.0,b/256.0,a/256.0);
+  ogl->glStencilMask(~0);
+  ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
 #ifndef EMSCRIPTEN
-  g_low->ogl->glLoadIdentity();
-  g_low->ogl->glTranslatef(0.375, 0.375, 0.0);
-  g_low->ogl->glTranslatef(0.0, 0.0, -260.0);
+  ogl->glLoadIdentity();
+  ogl->glTranslatef(0.375, 0.375, 0.0);
+  ogl->glTranslatef(0.0, 0.0, -260.0);
 #endif
   //float speed = 1.0;
   //glRotatef(speed*time, 0.0,1.0,0.0);
@@ -697,26 +699,29 @@ EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
 
 EXPORT void GameApi::MainLoopApi::transparency(bool enabled)
 {
+  OpenglLowApi *ogl = g_low->ogl;
+
   if (enabled)
     {
       //glBlendFunc(GL_ZERO, GL_SRC_COLOR); 
-     g_low->ogl->glDepthMask(Low_GL_FALSE);
+     ogl->glDepthMask(Low_GL_FALSE);
     }
   else
     {
       //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-     g_low->ogl->glDepthMask(Low_GL_TRUE);
+     ogl->glDepthMask(Low_GL_TRUE);
     }
 }
 EXPORT void GameApi::MainLoopApi::depth_test(bool enabled)
 {
+  OpenglLowApi *ogl = g_low->ogl;
   if (enabled)
     {
-      g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+      ogl->glEnable(Low_GL_DEPTH_TEST);
     }
   else
     {
-      g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+      ogl->glDisable(Low_GL_DEPTH_TEST);
     }
 }
 EXPORT void GameApi::MainLoopApi::alpha(bool enable)
@@ -725,22 +730,23 @@ EXPORT void GameApi::MainLoopApi::alpha(bool enable)
 }
 void GameApi::MainLoopApi::alpha_1(bool enable)
 {
+  OpenglLowApi *ogl = g_low->ogl;
   if (enable)
     {
-      g_low->ogl->glEnable(Low_GL_BLEND);
+      ogl->glEnable(Low_GL_BLEND);
       //glBlendFunc(GL_SRC_COLOR /*ONE_MINUS_SRC_COLOR*/, GL_DST_COLOR);
-      g_low->ogl->glBlendFunc(Low_GL_SRC_ALPHA, Low_GL_ONE_MINUS_SRC_ALPHA);
+      ogl->glBlendFunc(Low_GL_SRC_ALPHA, Low_GL_ONE_MINUS_SRC_ALPHA);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glTexEnvi(Low_GL_TEXTURE_ENV, Low_GL_TEXTURE_ENV_MODE, Low_GL_REPLACE);
+      ogl->glTexEnvi(Low_GL_TEXTURE_ENV, Low_GL_TEXTURE_ENV_MODE, Low_GL_REPLACE);
 #endif
       //glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_INTERPOLATE); 
     }
   else
     {
-      g_low->ogl->glDisable(Low_GL_BLEND);
+      ogl->glDisable(Low_GL_BLEND);
       //glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
 #ifndef EMSCRIPTEN
-      g_low->ogl->glTexEnvi(Low_GL_TEXTURE_ENV, Low_GL_TEXTURE_ENV_MODE, Low_GL_REPLACE);
+      ogl->glTexEnvi(Low_GL_TEXTURE_ENV, Low_GL_TEXTURE_ENV_MODE, Low_GL_REPLACE);
 #endif
     }
 }
@@ -779,6 +785,7 @@ EXPORT int GameApi::MainLoopApi::get_framenum()
 }
 EXPORT GameApi::BM GameApi::MainLoopApi::screenshot()
 {
+  OpenglLowApi *ogl = g_low->ogl;
   MainLoopPriv *p = (MainLoopPriv*)priv;
   //SDL_Surface *surf = p->screen;
   int w = p->screen_width; //surf->w;
@@ -786,7 +793,7 @@ EXPORT GameApi::BM GameApi::MainLoopApi::screenshot()
 
   BufferRef ref = BufferRef::NewBuffer(w,h);
 
-  g_low->ogl->glReadPixels(0,0,w,h, Low_GL_RGBA /*GL_BGRA*/, Low_GL_UNSIGNED_BYTE, ref.buffer);
+  ogl->glReadPixels(0,0,w,h, Low_GL_RGBA /*GL_BGRA*/, Low_GL_UNSIGNED_BYTE, ref.buffer);
 
   for(int y=0;y<h;y++)
     for(int x=0;x<w;x++)
@@ -814,15 +821,17 @@ extern Low_SDL_Window *sdl_window;
 
 EXPORT void GameApi::MainLoopApi::finish()
 {
-  g_low->ogl->glFinish();
+  OpenglLowApi *ogl = g_low->ogl;
+  ogl->glFinish();
 }
 EXPORT void GameApi::MainLoopApi::swapbuffers()
 {
 #if 0
+  OpenglLowApi *ogl = g_low->ogl;
   int e = -1;
   MainLoopPriv *pp = (MainLoopPriv*)priv;
   int i = 0;
-  while((e=g_low->ogl->glGetError()) != 0) {
+  while((e=ogl->glGetError()) != 0) {
     i++;
     if (e!=0 && e != pp->last_error)
       {
@@ -848,10 +857,10 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
   if (GLEW_NVX_gpu_memory_info ) // seems I don't have extension available
     {
       int readint = -1;
-      glGetIntegerv(GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &readint );
+      ogl->glGetIntegerv(GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &readint );
 
       int readgpuint = -1;
-      glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &readgpuint);
+      ogl->glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &readgpuint);
       std::cout << "MEMORY AVAILABLE: " << readint * 1024 << std::endl;
       std::cout << "GPU MEMORY AVAILABLE: " << readgpuint * 1024 << std::endl;
     }
@@ -905,30 +914,33 @@ GameApi::SP GameApi::MainLoopApi::screenspace()
 }
 EXPORT void GameApi::MainLoopApi::outline_first()
 {
+  OpenglLowApi *ogl = g_low->ogl;
 #ifndef EMSCRIPTEN
-  g_low->ogl->glClearStencil(0);
-  g_low->ogl->glClear(Low_GL_STENCIL_BUFFER_BIT);
-  g_low->ogl->glEnable(Low_GL_STENCIL_TEST);
-  g_low->ogl->glStencilFunc(Low_GL_ALWAYS, 1, -1);
-  g_low->ogl->glStencilOp(Low_GL_KEEP, Low_GL_KEEP, Low_GL_REPLACE);
-  g_low->ogl->glColor4f(1.0,1.0,1.0,1.0);
+  ogl->glClearStencil(0);
+  ogl->glClear(Low_GL_STENCIL_BUFFER_BIT);
+  ogl->glEnable(Low_GL_STENCIL_TEST);
+  ogl->glStencilFunc(Low_GL_ALWAYS, 1, -1);
+  ogl->glStencilOp(Low_GL_KEEP, Low_GL_KEEP, Low_GL_REPLACE);
+  ogl->glColor4f(1.0,1.0,1.0,1.0);
 #endif
 }
 EXPORT void GameApi::MainLoopApi::outline_second()
 {
+  OpenglLowApi *ogl = g_low->ogl;
 #ifndef EMSCRIPTEN
-  g_low->ogl->glStencilFunc(Low_GL_NOTEQUAL, 1, -1);
-  g_low->ogl->glStencilOp(Low_GL_KEEP, Low_GL_KEEP, Low_GL_REPLACE);
-  g_low->ogl->glLineWidth(3);
-  g_low->ogl->glEnable(Low_GL_LINE_SMOOTH);
-  g_low->ogl->glPolygonMode(Low_GL_FRONT_AND_BACK, Low_GL_LINE);
+  ogl->glStencilFunc(Low_GL_NOTEQUAL, 1, -1);
+  ogl->glStencilOp(Low_GL_KEEP, Low_GL_KEEP, Low_GL_REPLACE);
+  ogl->glLineWidth(3);
+  ogl->glEnable(Low_GL_LINE_SMOOTH);
+  ogl->glPolygonMode(Low_GL_FRONT_AND_BACK, Low_GL_LINE);
 #endif
 }
 EXPORT void GameApi::MainLoopApi::outline_third()
 {
+  OpenglLowApi *ogl = g_low->ogl;
 #ifndef EMSCRIPTEN
-  g_low->ogl->glPolygonMode(Low_GL_FRONT_AND_BACK, Low_GL_FILL);
-  g_low->ogl->glDisable(Low_GL_STENCIL_TEST);
+  ogl->glPolygonMode(Low_GL_FRONT_AND_BACK, Low_GL_FILL);
+  ogl->glDisable(Low_GL_STENCIL_TEST);
   //glDisable(GL_DEPTH_TEST);
 #endif
 }
@@ -960,6 +972,7 @@ int g_event_screen_y = -1;
 extern Low_SDL_Window *sdl_window;
 EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 {
+  OpenglLowApi *ogl = g_low->ogl;
   Low_SDL_Event event;
   Event e2;
   int last = g_low->sdl->SDL_PollEvent(&event);
@@ -1008,7 +1021,7 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 #ifndef LINUX
            g_low->sdl->SDL_SetWindowSize(sdl_window,g_event_screen_x, g_event_screen_y);
 #endif
-           g_low->ogl->glViewport(0,0,g_event_screen_x, g_event_screen_y);
+           ogl->glViewport(0,0,g_event_screen_x, g_event_screen_y);
     }
   }
   //if (event.type == Low_SDL_WINDOWEVENT
@@ -1093,6 +1106,7 @@ public:
   }
   virtual void execute(MainLoopEnv &e)
   {
+  OpenglLowApi *ogl = g_low->ogl;
     if (firsttime)
       {
 	int s = vec.size();
@@ -1100,7 +1114,7 @@ public:
 	  {
 	    vec[i]->execute(e);
 	  }
-	g_low->ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
+	ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
 	
       firsttime = false;
       return;
@@ -1124,12 +1138,12 @@ public:
       vec[num2]->handle_event(e);
     }
   }
-  virtual int shader_id() {
+  virtual std::vector<int> shader_id() {
     int s = vec.size();
     if (num2>=0 && num2<s) {
       return vec[num2]->shader_id();
     } else { 
-      return -1; 
+      return std::vector<int>(); 
     }
   }
 private:
@@ -1179,12 +1193,12 @@ public:
       vec[num2]->handle_event(e);
     }
   }
-  virtual int shader_id() {
+  virtual std::vector<int> shader_id() {
     int s = vec.size();
     if (num2>=0 && num2<s) {
       return vec[num2]->shader_id();
     } else { 
-      return -1; 
+      return std::vector<int>(); 
     }
   }
 private:
@@ -1383,7 +1397,7 @@ public:
     }
     old_key_pressed = key_pressed;
   }
-  int shader_id() {
+  std::vector<int> shader_id() {
     if (current_item) {
       return end->shader_id();
     } else {
@@ -1446,7 +1460,7 @@ public:
     if (state==0) { normal_game_screen->handle_event(e); }
     else { gameover_screen->handle_event(e); }
   }
-  virtual int shader_id() {
+  virtual std::vector<int> shader_id() {
     if (state==0) { return normal_game_screen->shader_id(); }
     else { return gameover_screen->shader_id(); }
   }
@@ -1619,13 +1633,17 @@ public:
 
 #ifndef NO_MV
 	// here's a block needed to distribute in_MV to different cases.
-	int id = vec[i]->shader_id();
-	if (id!=-1) {
-	  GameApi::SH sh;
-	  sh.id = id;
-	  GameApi::M m = add_matrix2( env, e.in_MV);
-	  ev.shader_api.use(sh);
-	  ev.shader_api.set_var(sh, "in_MV", m);
+	std::vector<int> ids = vec[i]->shader_id();
+	int s = ids.size();
+	for(int i=0;i<s;i++) {
+	  int id = ids[i];
+	  if (id!=-1) {
+	    GameApi::SH sh;
+	    sh.id = id;
+	    GameApi::M m = add_matrix2( env, e.in_MV);
+	    ev.shader_api.use(sh);
+	    ev.shader_api.set_var(sh, "in_MV", m);
+	  }
 	}
 #endif
 	vec[i]->execute(ee);
@@ -1639,16 +1657,21 @@ public:
 	vec[i]->handle_event(e);
       }
   }
-#if 0
-  int shader_id() { 
+  std::vector<int> shader_id() { 
     int s = vec.size();
-    for(int i=s-1;i>=0;i--)
+    std::vector<int> res;
+    for(int i=0;i<s;i++)
       {
-	if (vec[i]->shader_id()!=-1) return vec[i]->shader_id();
+	std::vector<int> v = vec[i]->shader_id();
+	int ss = v.size();
+	for(int j=0;j<ss;j++)
+	  {
+	    res.push_back(v[j]);
+	  }
+	//if (vec[i]->shader_id()!=-1) return vec[i]->shader_id();
       }
-    return -1; 
+    return res; 
   }
-#endif
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
@@ -1684,7 +1707,7 @@ public:
       }
   }
 #if 0
-  int shader_id() { 
+  std::vector<int> shader_id() { 
     int s = vec.size();
     for(int i=s-1;i>=0;i--)
       {
@@ -1709,7 +1732,8 @@ int GameApi::MainLoopApi::get_screen_height()
 }
 void GameApi::MainLoopApi::set_viewport(int x, int y, int sx, int sy)
 {
-  g_low->ogl->glViewport(x,y,sx,sy);
+  OpenglLowApi *ogl = g_low->ogl;
+  ogl->glViewport(x,y,sx,sy);
 }
 /*
 EXPORT GameApi::ML GameApi::MainLoopApi::timing_ml(std::vector<ML> vec, float duration)
@@ -2050,7 +2074,7 @@ public:
     }
     next->handle_event(e);
   }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
@@ -2100,7 +2124,7 @@ public:
     if (e.type==0x301 && e.ch==key) { hold=false; }
     if (!toggle) { item->handle_event(e); } else { item2->handle_event(e); } 
   }
-  virtual int shader_id() { if (!toggle) return item->shader_id(); else return item2->shader_id(); }
+  virtual std::vector<int> shader_id() { if (!toggle) return item->shader_id(); else return item2->shader_id(); }
 
 private:
   int key;
@@ -2133,7 +2157,7 @@ public:
   {
     item->handle_event(e);
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
 
 private:
   MainLoopItem *item;
@@ -2153,21 +2177,22 @@ public:
   DepthFunc(MainLoopItem *next, int i) : next(next),i(i) {}
   void Prepare() {next->Prepare(); }
   virtual void execute(MainLoopEnv &e) {
+  OpenglLowApi *ogl = g_low->ogl;
     switch(i) {
-    case 0: g_low->ogl->glDepthFunc(Low_GL_LEQUAL); break;
-    case 1: g_low->ogl->glDepthFunc(Low_GL_EQUAL); break;
-    case 2: g_low->ogl->glDepthFunc(Low_GL_ALWAYS); break;
-    case 3: g_low->ogl->glDepthFunc(Low_GL_LESS); break;
-    case 4: g_low->ogl->glDepthFunc(Low_GL_GREATER); break;
-    case 5: g_low->ogl->glDepthFunc(Low_GL_GEQUAL); break;
+    case 0: ogl->glDepthFunc(Low_GL_LEQUAL); break;
+    case 1: ogl->glDepthFunc(Low_GL_EQUAL); break;
+    case 2: ogl->glDepthFunc(Low_GL_ALWAYS); break;
+    case 3: ogl->glDepthFunc(Low_GL_LESS); break;
+    case 4: ogl->glDepthFunc(Low_GL_GREATER); break;
+    case 5: ogl->glDepthFunc(Low_GL_GEQUAL); break;
     };
     next->execute(e);
-    g_low->ogl->glDepthFunc(Low_GL_LEQUAL);
+    ogl->glDepthFunc(Low_GL_LEQUAL);
   }
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);
   }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
 private:
   MainLoopItem *next;
   int i;
@@ -2185,6 +2210,7 @@ public:
   BlendFunc(MainLoopItem *next, int i, int i2) : next(next),i(i),i2(i2) {}
   void Prepare() {next->Prepare(); }
   virtual void execute(MainLoopEnv &e) {
+  OpenglLowApi *ogl = g_low->ogl;
     Low_GLenum s = Low_GL_SRC_COLOR;
     Low_GLenum d = Low_GL_ONE_MINUS_SRC_COLOR;
     switch(i) {
@@ -2218,14 +2244,14 @@ public:
     case 11: d=Low_GL_ONE_MINUS_CONSTANT_COLOR; break;
     case 12: d=Low_GL_CONSTANT_ALPHA; break;
     };
-    g_low->ogl->glBlendFunc(s,d);
+    ogl->glBlendFunc(s,d);
     next->execute(e);
-    g_low->ogl->glBlendFunc(Low_GL_SRC_ALPHA,Low_GL_ONE_MINUS_SRC_ALPHA);
+    ogl->glBlendFunc(Low_GL_SRC_ALPHA,Low_GL_ONE_MINUS_SRC_ALPHA);
   }
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);
   }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
 private:
   MainLoopItem *next;
   int i,i2;
@@ -2298,7 +2324,7 @@ public:
     vec.push_back(s);
     item->handle_event(e);    
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
 
   void save() {
     std::ofstream ss(output_filename.c_str());
@@ -2364,7 +2390,7 @@ public:
     // TODO, is this call needed?
     //item->handle_event(e);
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
 
   void load(std::string contents) {
     std::stringstream ss(contents);

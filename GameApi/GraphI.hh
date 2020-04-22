@@ -369,7 +369,7 @@ public:
   virtual std::string FuncName(int i) const=0;
   virtual std::string Symbols() const=0;
   virtual std::string Comment() const=0;
-  virtual int Execute(GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)=0;
+  virtual int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)=0;
   //virtual std::vector<GameApi::EditNode*> CollectNodes(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)=0;
   virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)=0;
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) { }
@@ -546,10 +546,11 @@ struct MainLoopEvent
 class MainLoopItem
 {
 public:
+  virtual ~MainLoopItem() { }
   virtual void Prepare()=0;
   virtual void execute(MainLoopEnv &e)=0;
   virtual void handle_event(MainLoopEvent &e)=0;
-  virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
   virtual void destroy() { }
   virtual void set_vars(std::map<std::string, std::string> vars) { }
   virtual std::map<std::string, std::string> get_vars() const {
@@ -832,6 +833,7 @@ public:
   virtual std::string func_call() const=0;
   virtual std::string func_call2(int &index) const=0;
   virtual std::string define_strings() const=0;
+  virtual std::string func_name() const=0;
 };
 
 class MatrixArray
@@ -1670,5 +1672,136 @@ public:
   virtual void Prepare()=0;
   virtual std::string html_file() const=0;
 };
+
+
+struct V_Voxel
+{
+  unsigned char type;
+};
+
+struct V_Voxel_Type
+{
+  std::string voxel_name;
+  int /*GameApi::P*/ obj;
+};
+struct V_Voxel_Type_Array
+{
+  std::vector<V_Voxel_Type> vec;
+};
+
+struct V_Object
+{
+  int obj_type; // index to g_object_types
+  //bool is_pos;
+  float x,y,z;
+  //bool is_matrix;
+  //Matrix m;
+  float radius;
+};
+struct V_Object_Pos
+{
+  std::string pos_name;
+  std::vector<V_Object> pos;
+};
+
+struct V_Object_Type
+{
+  int /*GameApi::P*/ obj;
+  int /*GameAPi::MN*/ move;
+  int /*GameAPi::MT*/ mat;
+  float radius;
+};
+struct V_Object_Type_Array
+{
+  std::string type_name;
+  std::vector<V_Object_Type> vec;
+};
+
+
+struct V_Wall
+{
+  int start_x, end_x;
+  int start_y, end_y;
+  int start_z, end_z;
+};
+struct V_Wall_Array
+{
+  std::string name;
+  std::vector<V_Wall> vec;
+};
+
+
+
+struct V_Area_Type
+{
+  std::string name;
+  int voxel_types=-1; // index to g_voxel_types
+  // dimensions
+  float start_x, start_y, start_z;
+  float end_x, end_y, end_z;
+  // handle
+  float pos_x, pos_y, pos_z; // between start_x..end_x, start_y..end_y, start_z..end_z
+  // number of voxels
+  int size_x, size_y, size_z;
+  V_Voxel *voxels;
+  // heightmap
+  int /*GameApi::FB*/ ground_heightmap = -1;
+
+  // textures
+  int /*GameApi::BM*/ top_texture = -1;
+  float top_start_x;
+  float top_end_x;
+  float top_start_z;
+  float top_end_z;
+
+  int /*GameApi::BM*/ left_texture = -1;
+  float left_start_y;
+  float left_end_y;
+  float left_start_z;
+  float left_end_z;
+
+  //int /*GameApi::BM*/ right_texture;
+  //float right_start_y;
+  //float right_end_y;
+  //float right_start_z;
+  //float right_end_z;
+  
+  int /*GameApi::BM*/ front_texture = -1;
+  float front_start_x;
+  float front_end_x;
+  float front_start_y;
+  float front_end_y;
+
+  //int /*GameApi::BM*/ back_texture;
+  //float back_start_x;
+  //float back_end_x;
+  //float back_start_y;
+  //float back_end_y;
+
+  // walls
+  int wall=-1; // index to g_walls
+
+  int obj_type=-1;
+  int obj_pos=-1;
+};
+
+
+struct V_Area
+{
+  int area_type; 
+};
+struct V_Area_Pos
+{
+  std::vector<V_Area> vec;
+  std::vector<Point> pos;
+};
+
+extern std::vector<V_Voxel_Type_Array*> g_voxel_types;
+extern std::vector<V_Object_Pos> g_object_pos;
+extern std::vector<V_Object_Type_Array*> g_object_types;
+extern std::vector<V_Wall_Array*> g_walls;
+extern std::vector<V_Area_Type> g_area_type_array;
+extern std::vector<V_Area_Pos> g_areas;
+
 
 #endif

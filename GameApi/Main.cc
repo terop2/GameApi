@@ -513,13 +513,15 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     }
 
 #endif
-  const unsigned char *ptr = g_low->ogl->glGetString(Low_GL_VENDOR);
+  OpenglLowApi *ogl = g_low->ogl;
+
+  const unsigned char *ptr = ogl->glGetString(Low_GL_VENDOR);
   if (strlen((const char*)ptr)>4) {
   g_gpu_vendor = std::string(ptr,ptr+4);
   }
-  std::cout << "Vendor: " << g_low->ogl->glGetString(Low_GL_VENDOR)<< std::endl;
-  std::cout << "Renderer:" << g_low->ogl->glGetString(Low_GL_RENDERER)<< std::endl;
-  std::cout << "Version:" << g_low->ogl->glGetString(Low_GL_VERSION) << std::endl;
+  std::cout << "Vendor: " << ogl->glGetString(Low_GL_VENDOR)<< std::endl;
+  std::cout << "Renderer:" << ogl->glGetString(Low_GL_RENDERER)<< std::endl;
+  std::cout << "Version:" << ogl->glGetString(Low_GL_VERSION) << std::endl;
   
 
   vblank = true;
@@ -546,12 +548,12 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
       //SDL_GL_SetSwapInterval(int interval);
     }
 #endif
-   g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
-  g_low->ogl->glDepthMask(Low_GL_TRUE);
+   ogl->glEnable(Low_GL_DEPTH_TEST);
+  ogl->glDepthMask(Low_GL_TRUE);
 
-  g_low->ogl->glClearColor( 0, 0, 0, 0 );
-  g_low->ogl->glViewport(0,0,screenx, screeny);
-  g_low->ogl->glDisable(Low_GL_CULL_FACE);
+  ogl->glClearColor( 0, 0, 0, 0 );
+  ogl->glViewport(0,0,screenx, screeny);
+  ogl->glDisable(Low_GL_CULL_FACE);
 #endif
   return 0;
 }
@@ -1393,7 +1395,8 @@ void InitFrameAnim(FrameAnim &f, Low_SDL_Surface *screen)
 
 void DisplayFrame(FrameAnim &f, Low_SDL_Surface *screen, float time)
 {
-  g_low->ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT );
+  OpenglLowApi *ogl = g_low->ogl;
+  ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT );
 
   //SawWaveform w;
   //FitWaveform fit(w, 150.0, 0.0, 150.0);
@@ -1402,16 +1405,16 @@ void DisplayFrame(FrameAnim &f, Low_SDL_Surface *screen, float time)
 
   f.PreFrame(time/30.0);
 #ifndef EMSCRIPTEN
-  g_low->ogl->glTranslatef(0.0, 0.0, -500.0);
+  ogl->glTranslatef(0.0, 0.0, -500.0);
 #endif
   float speed = f.RotSpeed();
-  g_low->ogl->glRotatef(speed*time/30.0, f.XRot(),f.YRot(),f.ZRot());
+  ogl->glRotatef(speed*time/30.0, f.XRot(),f.YRot(),f.ZRot());
 #ifndef EMSCRIPTEN
-  g_low->ogl->glTranslatef(0.0, -100.0, 0.0);
+  ogl->glTranslatef(0.0, -100.0, 0.0);
 #endif
   f.Frame(time/30.0);
   f.PostFrame();
-  g_low->ogl->glLoadIdentity();
+  ogl->glLoadIdentity();
 
   //SDL_GL_SwapBuffers();
 }
