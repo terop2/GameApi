@@ -1671,6 +1671,35 @@ EXPORT void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W
 void ProgressBar(int num, int val, int max, std::string label);
 void InstallProgress(int num, std::string label, int max);
 
+EXPORT std::string GameApi::WModApi::dump_functions()
+{
+  static std::vector<GameApiItem*> functions = all_functions();
+
+  std::stringstream ss;
+  int s = functions.size();
+  for(int i=0;i<s;i++)
+    {
+      std::string name = functions[i]->Name(0);
+      ss << name << std::endl;
+      /*
+      std::string rettype = functions[i]->ReturnType(0);
+      std::string apiname = functions[i]->ApiName(0);
+      std::string funcname = functions[i]->FuncName(0);
+
+      ss << name << ": " << rettype << " " << apiname << "::" << funcname;
+      int pcount = functions[i]->ParamCount(0);
+      ss << "(";
+      for(int j=0;j<pcount;j++) {
+	if (j!=0) ss<< ", ";
+	std::string paramname = functions[i]->ParamName(0,j);
+	std::string paramtype = functions[i]->ParamType(0,j);
+	std::string paramdefault = functions[i]->ParamDefault(0,j);
+	ss << paramtype << " " << paramname << " = " << paramdefault;
+      }
+      ss << ");" << std::endl;*/
+    }
+  return ss.str();
+}
 
 EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p, std::vector<W> &params, std::vector<W> &display_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open)
 {
