@@ -1795,6 +1795,7 @@ class WModApi
 {
 public:
   WModApi(Env &e) : e(e) { }
+  IMPORT std::string dump_functions();
   IMPORT WM load(std::string filename);
   IMPORT void save(WM mod, std::string ilename);
   IMPORT void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open);

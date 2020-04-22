@@ -8511,7 +8511,7 @@ GameApi::US GameApi::UberShaderApi::v_empty()
 GameApi::US GameApi::UberShaderApi::v_edge(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("edge", next, "EX_NORMAL2 IN_NORMAL"));
+  return add_uber(e, new V_ShaderCallFunction("edge", next, "EX_NORMAL2 IN_NORMAL EX_POSITION IN_POSITION"));
 
 }
 GameApi::US GameApi::UberShaderApi::v_globe(US us)
@@ -8824,7 +8824,7 @@ GameApi::US GameApi::UberShaderApi::v_dist_field_mesh(US us, SFO sfo)
 GameApi::US GameApi::UberShaderApi::f_edge(US us)
 {
   ShaderCall *next = find_uber(e,us);
-  return add_uber(e, new F_ShaderCallFunction("edge", next,"EX_NORMAL2"));
+  return add_uber(e, new F_ShaderCallFunction("edge", next,"EX_NORMAL2 EX_POSITION"));
 }
 GameApi::US GameApi::UberShaderApi::f_mesh_color(US us, SFO sfo)
 {

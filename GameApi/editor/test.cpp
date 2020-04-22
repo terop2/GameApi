@@ -1782,6 +1782,7 @@ void print_counters();
 bool file_exists(std::string s);
 
 extern bool g_vr_enable;
+extern int g_vr_device_id;
 //extern pthread_t g_main_thread;
 int main(int argc, char *argv[]) {
   //clear_counters();
@@ -1823,6 +1824,12 @@ int main(int argc, char *argv[]) {
 #endif
   for(int i=1;i<argc;i++)
     {
+      if (std::string(argv[i])=="--dump")
+	{
+	  std::string s = ev.mod_api.dump_functions();
+	  std::cout << s << std::endl;
+	  return 0;
+	}
       if (std::string(argv[i])=="--mg")
 	{
 	  screen_x = 2560;
@@ -1847,6 +1854,13 @@ int main(int argc, char *argv[]) {
       if (std::string(argv[i])=="--vr")
 	{
 	  g_vr_enable = true;
+	  std::string device_id = std::string(argv[i+1]);
+	  g_vr_device_id = 0;
+	  if (device_id=="vive") { g_vr_device_id = 1; }
+	  if (device_id=="oculus") { g_vr_device_id=2; }
+
+	  if (g_vr_device_id==0) g_vr_device_id = 1; else i++;
+
 	}
       if (std::string(argv[i])=="--file")
 	{
