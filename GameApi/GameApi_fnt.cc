@@ -311,7 +311,7 @@ public:
       item->handle_event(e);
     }
   }
-  virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
@@ -417,7 +417,7 @@ public:
     }
   }
   virtual void handle_event(MainLoopEvent &e) { fetch->event(e); }
-  virtual int shader_id() { return sh.id; }
+  virtual std::vector<int> shader_id() { return std::vector<int>{sh.id}; }
 
 private:
   GameApi::EveryApi &ev;
@@ -471,7 +471,8 @@ public:
   }
 
   virtual void handle_event(MainLoopEvent &e) { }
-  virtual int shader_id() { return sh.id; }
+  virtual std::vector<int> shader_id() { return std::vector<int>{sh.id}; }
+  //virtual int shader_id() { return sh.id; }
 
 private:
   GameApi::EveryApi &ev;
@@ -1272,11 +1273,11 @@ public:
     int s = vec.size();
     if (val>=0 && val<s) vec[val]->handle_event(e);
   }
-  virtual int shader_id() {
+  virtual std::vector<int> shader_id() {
     int val = f.get();
     int s = vec.size();
     if (val>=0 && val<s) return vec[val]->shader_id();
-    return -1;
+    return std::vector<int>();
   }
 private:
   std::vector<MainLoopItem*> vec;

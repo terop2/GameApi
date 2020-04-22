@@ -482,7 +482,7 @@ public:
       }
   }
   virtual void handle_event(MainLoopEvent &e) { }
-  virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   GameApi::EveryApi &ev;
   GameApi::BM bm;
@@ -2842,7 +2842,8 @@ public:
 	vec2.push_back(sp.create_vertex_array(vec[i]));
       }
   }
-  int shader_id() { return -1; }
+  //int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
   void Prepare() { }
   void handle_event(MainLoopEvent &e)
   {
@@ -2886,6 +2887,8 @@ EXPORT GameApi::ML GameApi::SpriteApi::bitmap_anim_ml(EveryApi &ev, std::vector<
 
 EXPORT GameApi::TXID GameApi::FloatBitmapApi::to_texid(FB fb)
 {
+  OpenglLowApi *ogl = g_low->ogl;
+
   Bitmap<float> *ffb = find_float_bitmap(e, fb)->bitmap;
   int sx = ffb->SizeX();
   int sy = ffb->SizeY();
@@ -2899,18 +2902,18 @@ EXPORT GameApi::TXID GameApi::FloatBitmapApi::to_texid(FB fb)
       }
 
   Low_GLuint id;
-  g_low->ogl->glGenTextures(1, &id); 
+  ogl->glGenTextures(1, &id); 
 #ifndef EMSCRIPTEN
-  g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+  ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-  g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
-  g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RED, sx,sy, 0, Low_GL_RED, Low_GL_FLOAT, array);
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
-  //g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
+  ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+  ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
+  ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RED, sx,sy, 0, Low_GL_RED, Low_GL_FLOAT, array);
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
+  //ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
   
   delete []array;
 
@@ -3455,7 +3458,8 @@ public:
     }
   }
   virtual void handle_event(MainLoopEvent &e) { }
-  virtual int shader_id() { return -1; }
+  //virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   GameApi::EveryApi &ev;
   GameApi::BM bm;

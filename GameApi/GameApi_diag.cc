@@ -407,14 +407,14 @@ public:
       item->handle_event(e);
     }
   }
-  virtual int shader_id() {
+  virtual std::vector<int> shader_id() {
     if (result.id!=-1) {
     MainLoopItem *item = find_main_loop(env, result);
     if (item) 
       return item->shader_id();
     else
-      return -1;
-    } else { return -1; }
+      return std::vector<int>();
+    } else { return std::vector<int>(); }
   }
 private:
   GameApi::Env &env;

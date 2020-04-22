@@ -27,7 +27,7 @@
 #include "VectorTools.hh"
 #include <vector>
 #include <algorithm>
-#include "Effect.hh"
+#include "Effect.hh" 
 #include <fstream>
 #include "GraphI.hh"
 
@@ -51,6 +51,10 @@
 std::string funccall_to_string(ShaderModule *mod);
 std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string value);
 
+void InstallProgress(int num, std::string label, int max);
+void ProgressBar(int num, int val, int max, std::string label);
+
+
 struct ShaderPriv
 {
   Low_GLuint handle;
@@ -61,9 +65,12 @@ struct ShaderPriv
 
 Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
 {
+  //InstallProgress(111, shader.Name().c_str(), 15);
+  //ProgressBar(111,0,15,shader.Name().c_str());
   int count = shader.Count();
   bool b = vertex;
   Low_GLuint handle = g_low->ogl->glCreateShader(geom?Low_GL_GEOMETRY_SHADER:(b?Low_GL_VERTEX_SHADER:Low_GL_FRAGMENT_SHADER));
+  //ProgressBar(111,5,15,shader.Name().c_str());
   std::vector<std::string> vec;
   const char **strings = new const char *[count];
   int *lengths = new int[count];
@@ -74,8 +81,11 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
      lengths[i] = vec[i].size();
     }
   g_low->ogl->glShaderSource(handle, count, strings, lengths);
+  //ProgressBar(111,10,15,shader.Name().c_str());
   g_low->ogl->glCompileShader(handle);
   int val = g_low->ogl->glGetError();
+  //ProgressBar(111,15,15,shader.Name().c_str());
+
   if (val!=Low_GL_NO_ERROR) {
     //std::cout << "glCompileShader ERROR: " << val << std::endl;
     char buf[256];
@@ -778,6 +788,19 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#ifdef IN_POSITION\n"
 "#ifdef EX_POSITION\n"
+"uniform float globe_mult;\n"
+"vec4 globe(vec4 pos)\n"
+"{\n"
+"    vec4 pos2 = in_T*in_MV*pos;\n"
+"    float d = length(pos2.xz);\n"
+    "    float y = globe_mult*d;\n"
+        "    y/=2.0;\n"
+"    return pos + vec4(0.0,y,0.0,0.0);\n"
+"}\n"
+"#endif\n"
+"#endif\n"
+"#ifdef IN_POSITION\n"
+"#ifdef EX_POSITION\n"
 "vec4 passpos(vec4 pos)\n"
 "{\n"
 "  ex_Position = in_Position;\n"
@@ -943,14 +966,25 @@ ShaderFile::ShaderFile()
 "{\n"
 "    vec3 n = normalize(mat3(in_iMV)*in_Normal);\n"
 "    ex_Normal2 = n;\n"
-    "    ex_LightPos2 = normalize( vec3(in_T * in_MV * vec4(light_dir,1.0)) );\n" //normalize(vec3(mat3(in_T*in_MV)*light_dir)));\n"
+    "    ex_LightPos2 = normalize( vec3(/*in_T * in_MV */ vec4(light_dir,1.0)) );\n" //normalize(vec3(mat3(in_T*in_MV)*light_dir)));\n"
 "    return pos;\n"
 "}\n"
 "#endif\n"
 "#endif\n"
 "#endif\n"
 "#endif\n"
-
+"#ifdef EX_NORMAL2\n"
+"#ifdef IN_NORMAL\n"
+"vec4 edge(vec4 pos)\n"
+"{\n"
+    "    vec3 n = normalize(mat3(in_iMV)*in_Normal);\n"
+    //"    vec3 n = normalize(mat3(in_iMV)*vec3(in_MV*vec4(in_Normal,1.0)));\n"
+"    ex_Normal2 = n;\n"
+"    return pos;\n"
+"}\n"    
+"#endif\n"
+"#endif\n"
+    
 "#ifdef IN_NORMAL\n"
 "#ifdef LIGHTDIR\n"
 "#ifdef EX_NORMAL2\n"
@@ -1219,7 +1253,7 @@ ShaderFile::ShaderFile()
 "#ifdef LEVELS\n"
 
 "float intensity(vec3 dir) {\n"
-" return clamp(dot(-dir,ex_LightPos2),0.0,1.0);\n"
+" return clamp(dot(normalize(dir),normalize(ex_LightPos2)),0.0,1.0);\n"
 "}\n"
 "float intensity2(vec3 dir) {\n"
 " float i=intensity(dir); return pow(i,hilight);\n"
@@ -1243,6 +1277,21 @@ ShaderFile::ShaderFile()
     "}\n"
 "#endif\n"
 "#endif\n"
+"#endif\n"
+    "#ifdef EX_NORMAL2\n"
+"uniform float edge_width;\n"
+"uniform vec4 edge_color;\n"
+"vec4 edge(vec4 rgb)\n"
+"{\n"
+"    vec3 view = vec3(0.0,0.0,-4000.0);\n"
+"    vec3 n = ex_Normal2;\n"
+"    float d = 1.0-dot(normalize(view),normalize(n));\n"
+    //"    float val = smoothstep(edge_width-0.01,edge_width+0.01,d);\n"
+"    vec4 color = rgb;\n"
+    //"    if (val>0.5) { }\n"
+    " color = d*edge_color;\n"
+"    return color;\n"
+"}\n"
 "#endif\n"
 "#ifdef EX_NORMAL2\n"
 "#ifdef EX_LIGHTPOS2\n"
@@ -2056,6 +2105,7 @@ ShaderFile::ShaderFile()
 "#version 330\n"
 #endif
 "precision highp float;\n"
+    //   "uniform float globe_r;\n"
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
@@ -2140,12 +2190,37 @@ ShaderFile::ShaderFile()
     //"    vec3 n = normalize(mat3(in_iMV)*in_Normal);\n"
     "   vec3 n = normalize(mat3(transpose(inverse(in_MV)))*in_Normal);\n"
     "    ex_Normal2 = n;\n"
-    "    ex_LightPos2 = normalize( vec3(in_T *in_MV *vec4(light_dir,1.0)) );\n"
+    "    ex_LightPos2 = normalize( vec3( /*in_T *in_MV */ vec4(light_dir,1.0)) );\n"
     //normalize(mat3(in_T)*vec3(pos)); //vec3(inverse(in_MV)*vec4(in_Position,1.0)));\n"
 "    return pos;\n"
 "}\n"
 "#endif\n"
 "#endif\n"
+"#endif\n"
+"#endif\n"
+"#ifdef EX_NORMAL2\n"
+"#ifdef IN_NORMAL\n"
+"vec4 edge(vec4 pos)\n"
+"{\n"
+    "    vec3 n = inverse(mat3(in_P))*mat3(in_iMV)*in_Normal;\n"
+"    ex_Normal2 = n;\n"
+"    return pos;\n"
+"}\n"    
+"#endif\n"
+"#endif\n"
+
+"#ifdef IN_POSITION\n"
+"#ifdef EX_POSITION\n"
+"uniform float globe_mult;\n"
+
+"vec4 globe(vec4 pos)\n"
+"{\n"
+"    vec4 pos2 = in_T*in_MV*pos;\n"
+"    float d = length(pos2.xz);\n"
+    "    float y = globe_mult*d;\n"
+        "    y/=2.0;\n"
+"    return pos + vec4(0.0,y,0.0,0.0);\n"
+"}\n"
 "#endif\n"
 "#endif\n"
 
@@ -2924,7 +2999,7 @@ ShaderFile::ShaderFile()
 "#ifdef LEVELS\n"
 
 "float intensity(vec3 dir) {\n"
-" float n = clamp(dot(dir,-ex_LightPos2),0.0,1.0);\n"
+" float n = clamp(dot(normalize(dir),normalize(ex_LightPos2)),0.0,1.0);\n"
 " return n;\n"
 "}\n"
 "float intensity2(vec3 dir) {\n"
@@ -2951,6 +3026,22 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 
+    "#ifdef EX_NORMAL2\n"
+"uniform float edge_width;\n"
+"uniform vec4 edge_color;\n"
+"vec4 edge(vec4 rgb)\n"
+"{\n"
+"    vec3 view = vec3(0.0,0.0,-1.0);\n"
+"    vec3 n = ex_Normal2;\n"
+"    float d = 1.0-dot(view,n);\n"
+"    float val = smoothstep(edge_width-0.01,edge_width+0.01,d);\n"
+"    vec4 color = rgb;\n"
+"    if (val>0.5) color = val*edge_color;\n"
+"    return color;\n"
+"}\n"
+"#endif\n"
+
+    
 "#ifdef EX_NORMAL2\n"
 "#ifdef EX_LIGHTPOS2\n"
 "#ifdef LEVELS\n"
@@ -3872,7 +3963,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       
       //std::cout << "::" << ss << "::" << std::endl;
       //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
-      ShaderSpec *spec = new SingletonShaderSpec(ss);
+      ShaderSpec *spec = new SingletonShaderSpec(ss,vertex_c?vertex_c->func_name():"unknown");
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
       p->push_back(*sha1);
@@ -3889,7 +3980,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader);
       //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
-      ShaderSpec *spec = new SingletonShaderSpec(ss);
+      ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);
       if (ii!=f_format.end())
@@ -3904,7 +3995,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       //std::cout << "GName: " << name << std::endl;
       std::string shader = file.GeometryShader(name);
       //std::cout << "::" << shader << "::" << std::endl;
-      ShaderSpec *spec = new SingletonShaderSpec(shader);
+      ShaderSpec *spec = new SingletonShaderSpec(shader,g_format);
       Shader *sha2 = new Shader(*spec, false, true);
       p->push_back(*sha2);
       if (ii!=g_format.end())

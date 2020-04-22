@@ -46,15 +46,17 @@ struct Rest {
   ~Rest()
   {
     int s = g_rest.size();
-    InstallProgress(666, "cleanup", 15);
+    // doesnt work because global destructors have already been ran
+    // and installprogress uses global variables.
+    //InstallProgress(666, "cleanup", 15);
     for(int i=0;i<s;i++)
       {
-	if (i%10==0) {
-	  ProgressBar(666,i*15/s,15,"cleanup");
-	}
+	//if (i%10==0) {
+	//  ProgressBar(666,i*15/s,15,"cleanup");
+	//}
       g_rest[i].reset();
       }
-    ProgressBar(666,15,15,"cleanup");
+    //ProgressBar(666,15,15,"cleanup");
     std::cout << std::endl;
     g_rest.clear();
   }

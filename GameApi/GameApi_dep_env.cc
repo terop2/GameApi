@@ -6,6 +6,9 @@
 #include <emscripten.h>
 #endif
 
+#define idb_disabled 1
+//#define idb_disabled 0
+
 int load_size_from_url(std::string url);
 
 
@@ -370,6 +373,7 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
   unsigned char *dataptr = (unsigned char*)data;
   if (datasize==0) {
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
+      std::cout << url << std::endl;
   }
   std::vector<unsigned char> buffer;
   //unsigned char *dataptr = (unsigned char*)data;
@@ -632,7 +636,7 @@ void idb_exists(void *arg, int exists)
 #ifdef EMSCRIPTEN
   LoadData *ld = (LoadData*)arg;
   //std::cout << "Exists: " << exists << std::endl;
-  if (exists) {
+  if (exists && !idb_disabled) {
     //std::cout << "Loading from idb" << ld->url << std::endl;
     emscripten_idb_async_load("gameapi", ld->url.c_str(), (void*)ld->buf3, &idb_onload_async_cb, &idb_onerror_async_cb);
   } else {
@@ -648,6 +652,7 @@ void idb_error(void *arg)
 }
 void ASyncLoader::load_urls(std::string url, std::string homepage)
   {
+    if (url=="") return;
     //std::cout << "ASyncLoader::load_urls:" << url << std::endl; 
 
     std::string oldurl = url;

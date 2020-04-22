@@ -596,7 +596,7 @@ void iter(void *arg)
 	
 	//std::cout << e.ch << std::endl;
 #ifndef EMSCRIPTEN
-	if (e.ch==27 && e.type==0x300) { exit(0); }
+	//if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif
 	if (e.type != 0x300 && e.type != 0x301)
 	  {
@@ -866,11 +866,16 @@ void iter(void *arg)
 		//std::cout << "Execute for uid: " << uid << std::endl;
 		env->env->free_temp_memory();
 		    // Execute
-
+		//InstallProgress(933, "Execute", 15);
+		//ProgressBar(933, 0,15, "Execute");
+		
 		    std::string type2 = env->ev->mod_api.return_type(env->mod, 0, uid);
+		    //ProgressBar(933, 7,15, "Execute");
 		    GameApi::ExecuteEnv exeenv;
 		    if (type2 != "HML") {
 		    std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count);
+		    //ProgressBar(933, 15,15, "Execute");
+
 		    //std::cout << "URLS:" << ids.second << std::endl;
 		    std::vector<std::string> urls = ids.second;
 		    std::sort(urls.begin(),urls.end());
@@ -892,6 +897,7 @@ void iter(void *arg)
 		    
 		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000);
 		    set_current_block(-2);
+
 		    if (id==-1) {
 		      std::cout << "Execute failed!" << std::endl;
 		      break;

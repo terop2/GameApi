@@ -2307,7 +2307,7 @@ public:
   virtual void handle_event(MainLoopEvent &e)
   {
   }
-  virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   GameApi::EveryApi &ev;
   GameApi::SFO sfo;
