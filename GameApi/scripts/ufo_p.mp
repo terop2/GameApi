@@ -18,3 +18,4 @@ P I17=ev.polygon_api.or_elem(I10,I16);
 P I18=ev.polygon_api.disc(ev,30,0,50,0,0,-1,0,150);
 P I19=ev.polygon_api.disc(ev,30,0,-50,0,0,1,0,150);
 P I20=ev.polygon_api.or_array2(std::vector<P>{I17,I18,I19});
+P I21=ev.polygon_api.recalculate_normals(I20);
