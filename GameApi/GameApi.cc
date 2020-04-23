@@ -4526,10 +4526,15 @@ private:
 class SnowMaterial : public MaterialForward
 {
 public:
-  SnowMaterial(GameApi::EveryApi &ev, Material *next, unsigned int color1, unsigned int color2, unsigned int color3, float mix_val) : ev(ev), next(next), color1(color1), color2(color2), color3(color3), mix_val(mix_val) { }
+  SnowMaterial(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, unsigned int color1, unsigned int color2, unsigned int color3, float mix_val) : env(env), ev(ev), next(next), color1(color1), color2(color2), color3(color3), mix_val(mix_val) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+    
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01) p0 = ev.polygon_api.recalculate_normals(p0);
     GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
     GameApi::P p2 = ev.polygon_api.color_grayscale(p1);
     GameApi::P p3 = ev.polygon_api.mix_color(p1,p2,mix_val);
@@ -4541,7 +4546,13 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
-    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01) p0 = ev.polygon_api.recalculate_normals(p0);
+
+    //GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
     GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
     GameApi::P p2 = ev.polygon_api.color_grayscale(p1);
     GameApi::P p3 = ev.polygon_api.mix_color(p1,p2,mix_val);
@@ -4556,7 +4567,13 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
-    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01) p0 = ev.polygon_api.recalculate_normals(p0);
+
+    //GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
     GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
     GameApi::P p2 = ev.polygon_api.color_grayscale(p1);
     GameApi::P p3 = ev.polygon_api.mix_color(p1,p2,mix_val);
@@ -4572,7 +4589,13 @@ public:
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
-    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01) p0 = ev.polygon_api.recalculate_normals(p0);
+
+    //GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
     GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
     GameApi::P p2 = ev.polygon_api.color_grayscale(p1);
     GameApi::P p3 = ev.polygon_api.mix_color(p1,p2,mix_val);
@@ -4587,7 +4610,13 @@ public:
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
-    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01) p0 = ev.polygon_api.recalculate_normals(p0);
+
+    //GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
     GameApi::P p1 = ev.polygon_api.color_from_normals(p0);
     GameApi::P p2 = ev.polygon_api.color_grayscale(p1);
     GameApi::P p3 = ev.polygon_api.mix_color(p1,p2,mix_val);
@@ -4602,6 +4631,7 @@ public:
   }
 
 private:
+  GameApi::Env &env;
   GameApi::EveryApi &ev;
   Material *next;
   unsigned int color1, color2, color3;
@@ -5475,7 +5505,7 @@ EXPORT GameApi::MT GameApi::MaterialsApi::texture_arr(EveryApi &ev, std::vector<
 EXPORT GameApi::MT GameApi::MaterialsApi::snow(EveryApi &ev, MT nxt, unsigned int color1, unsigned int color2, unsigned int color3, float mix_val)
 {
   Material *mat = find_material(e, nxt);
-  return add_material(e, new SnowMaterial(ev, mat, color1, color2, color3, mix_val));
+  return add_material(e, new SnowMaterial(e,ev, mat, color1, color2, color3, mix_val));
 }
 
 EXPORT GameApi::MT GameApi::MaterialsApi::phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
