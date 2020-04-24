@@ -1,0 +1,5 @@
+if(EXISTS "D:/cvs/gameapi-code/GameApi/GameApi/chai/ChaiScript-6.1.0/compiled_tests_tests-b858cb2.cmake")
+  include("D:/cvs/gameapi-code/GameApi/GameApi/chai/ChaiScript-6.1.0/compiled_tests_tests-b858cb2.cmake")
+else()
+  add_test(compiled_tests_NOT_BUILT-b858cb2 compiled_tests_NOT_BUILT-b858cb2)
+endif()

@@ -1,0 +1,3 @@
+"C:\Program Files\CMake\bin\cmake.exe" -E remove -f CMakeFiles\static_chaiscript_test.dir/objects.a
+C:\PROGRA~2\MINGW-~1\I686-4~1.2-P\mingw32\bin\ar.exe cr CMakeFiles\static_chaiscript_test.dir/objects.a @CMakeFiles\static_chaiscript_test.dir\objects1.rsp
+C:\PROGRA~2\MINGW-~1\I686-4~1.2-P\mingw32\bin\G__~1.EXE     -std=c++14 -Wl,--whole-archive CMakeFiles\static_chaiscript_test.dir/objects.a -Wl,--no-whole-archive  -o static_chaiscript_test.exe -Wl,--out-implib,libstatic_chaiscript_test.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\static_chaiscript_test.dir\linklibs.rsp
