@@ -39,7 +39,7 @@ public:
 private:
   float r;
 };
-EXPORT GameApi::IM GameApi::ImplicitApi::sphere(float r)
+EXPORT GameApi::IM GameApi::ImplicitApi::im_sphere(float r)
 {
   return add_implicit(e, new SphereImplicitFunction(r));
 }
@@ -121,7 +121,7 @@ private:
   ImplicitFunction3d *next;
   float dx,dy,dz;
 };
-EXPORT GameApi::IM GameApi::ImplicitApi::translate(IM obj, float dx, float dy, float dz)
+EXPORT GameApi::IM GameApi::ImplicitApi::im_translate(IM obj, float dx, float dy, float dz)
 {
   ImplicitFunction3d *imp = find_implicit(e, obj);
   return add_implicit(e, new TranslateImplicitFunction3d(imp, dx,dy,dz));
