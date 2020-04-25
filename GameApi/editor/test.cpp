@@ -959,7 +959,7 @@ void iter(void *arg)
 			  //O I17=ev.volume_api.mandelbrot_volume(false,64,0.0);
 			  //VX I18=ev.voxel_api.blit_voxel(I17,30,30,30,-200,200,-200,200,-200,200,-1,2);
 			  ARR I19=ev.voxel_api.voxel_instancing(vx,3,-300,300,-300,300,-300,300);
-			  MT I20=ev.materials_api.def(ev);
+			  MT I20=ev.materials_api.m_def(ev);
 			  ML I21=ev.voxel_api.voxel_bind(ev,std::vector<P>{I12,I14,I16},arr_to_pts_arr(ev,I19),I20);
 			  ML ml = I21;
 			  env->env->free_temp_memory();

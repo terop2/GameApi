@@ -38,154 +38,162 @@ using std::placeholders::_9;
 #undef rad1
 #undef rad2
 
-  struct HML { int id; };
-  struct UV { int id; };
-  struct AV { int id; };
-  struct H { int id; };
-  struct FBU { int id; };
-  struct FML { int id; };
-  struct CG { int id; };
-  struct INP { int id; };
-  struct IBM { int id; };
-  struct DS { int id; };
-  struct SBM { int id; };
-  struct PN { int id; };
-  struct DC { int id; };
-  struct CBB { int id; };
-  struct CFB { int id; };
-  struct SI { int id; };
-  struct PLP { int id; };
-  struct PLL { int id; };
-  struct PLF { int id; };
-  struct PR { int id; };
-  struct CMD { int id; };
-  struct FI { int id; };
-  struct SD { int id; };
-  struct GI { int id; };
-  struct FF { int id; };
-  struct IF { int id; };
-  struct PF { int id; };
-  struct SF { int id; };
-  struct ARR { int id; };
-  struct PAR { int id; }; // P array
-  struct CPP { int id; };
-  struct PTT { int id; }; 
-  struct KF { int id; };
-  struct BLK { int id; };
-  struct RUN { int id; };
-  struct EV { int id; };
-  struct AC { int id; };
-  struct MX { int id; };
-  struct Pa { int id; };
-  struct Va { int id; };
-  struct AS { int id; };
-  struct MC { int id; };
-  struct MS { int id; };
-  struct US { int id; };
-  struct MT { int id; };
-  struct TL { int id; };
-  //struct T { int id; };
-  struct MN { int id; };
-  struct CP { int id; };
-  struct DR { int id; };
-  struct OM { int id; };
-  struct FO { int id; };
-  struct WV { int id; }; // waveform
-  struct BM { int id; }; // bitmap
-  struct BMA { int id; }; // bitmap array
-  struct VBM { int id; }; // vector bitmap
-  struct BB { int id; }; // bool bitmap
-  struct FB { int id; }; // float bitmap
-  struct CBM { int id; }; // continuousbitmap
-  struct SP { int id; }; // space
-  struct SA { int id; }; // separate
-  struct PT { int id; }; // point
-  struct V { int id; }; // vector
-  struct M { float mat[16]; }; // matrix
-  struct LN { int id; }; // timeline
-  struct RM { int id; }; // room
-  struct IS { int id; }; // timed int sequence
-  struct O { int id; }; // 3d object via volumes
-  struct P { int id; }; // 3d object via polygons
-  struct OO { int id; };
-  struct PP { int id; };
-  struct PA { int id; }; // path in 3d space
-  struct LA { int id; }; // loop in 3d space
-  struct TN { int id; }; // tree node
-  struct SH { int id; }; // shader
-  struct C { int id; }; // curve
-  struct CO { int id; }; // color
-  struct F { int id; }; // function or float
-  struct FA { int id; }; // float array
-  struct Ft { int id; }; // font
-  struct VF { int id; }; // vectorfield
-  struct PPT { int id; }; // physics point
-  struct PSP { int id; }; // physics space
-  struct MA { int id; };
-  //struct M { int id; };
-  struct S { int id; }; // surface
-  struct Vb { int id; }; // vbo object
-  //struct L { int id; }; // lighting
-  struct T { int id; }; // time
-  struct E { int id; }; // event
-  struct L { int id; }; // link
-  struct LAY { int id; }; // layout
-  struct MP { int id; }; // mouse plane
-  struct MV { int id; }; // movement
-  struct LL { int id; }; // linkage
-  struct ME { int id; }; // memory
-  struct ST { int id; }; // state
-  struct TY { int id; }; // type
-  struct PS { int id; }; // powerset
-  struct ID { int id; }; // id
-  struct Str { int id; }; // string
-  struct Fi { int id; }; // file
-  struct Op { int id; }; // file operation
-  struct D { int id; }; // directory
-  struct Ht { int id; }; // html
-  struct BF { int id; };
-  struct VA { int id; }; // vertex array
-  struct VAA { int id; }; // vertex array array
-  struct VX { int id; }; // voxel
-  struct PL { int id; }; // plane
-  struct PLA { int id; }; // planearray
-  struct TX { int id; }; // texture
-  struct TXID { int id; }; // texture id
-  struct TXA { int id; }; // texture array id
-  struct TR { int id; }; // time range
-  struct VV { int id; }; // time range vertex array
-  struct Q { int id; }; // quad texture coordinates
-  struct DO { int id; };
-  struct PC { int id; };
-  struct SV { int id; };
-  struct FOA { int id; };
-  struct COV { int id; };
-  struct LI { int id; };
-  struct LLA { int id; };
-  struct FD { int id; };
-  struct VO { int id; };
-  struct PTS { int id; };
-  struct MSA { int id; };
-  struct PTA { int id; };
-  struct RD { int id; };
-  struct FBO { int id; };
-  struct SM { int id; };
-  struct TRK { int id; };
-  struct WAV { int id; };
-  struct TBUF { int id; };
-  struct SFO { int id; };
-  struct W { int id; };
-  struct WM { int id; };
-  struct FtA { int id; };
-  struct ML { int id; };
+
+#define MAC(name) \
+  struct name { int id;\
+  name(const name &i) : id(i.id) { } \
+  name() : id(-1) { } \
+  name(int i) : id(i) { }\
+  name* clone() const { return new name(id); }\
+  };
+  MAC(HML)
+  MAC(UV)
+  MAC(AV)
+  MAC(H)
+  MAC(FBU)
+  MAC(FML)
+  MAC(CG)
+  MAC(INP)
+  MAC(IBM)
+  MAC(DS)
+  MAC(SBM)
+  MAC(PN)
+  MAC(DC)
+  MAC(CBB)
+  MAC(CFB)
+  MAC(SI)
+  MAC(PLP)
+  MAC(PLL)
+  MAC(PLF)
+  MAC(PR)
+  MAC(CMD)
+  MAC(FI)
+  MAC(SD)
+  MAC(GI)
+  MAC(FF)
+  MAC(IF)
+  MAC(PF)
+  MAC(SF)
+  MAC(ARR)
+  MAC(PAR)
+  MAC(CPP)
+  MAC(PTT)
+  MAC(KF)
+    MAC(BLK)
+  MAC(RUN)
+  MAC(EV)
+  MAC(AC)
+  MAC(MX)
+  MAC(Pa)
+  MAC(Va)
+  MAC(AS)
+  MAC(MC)
+  MAC(MS)
+  MAC(US)
+  MAC(MT)
+  MAC(TL)
+  MAC(MN)
+  MAC(CP)
+  MAC(DR)
+  MAC(OM)
+  MAC(FO)
+  MAC(WV)
+  MAC(BM)
+  MAC(BMA)
+  MAC(VBM)
+  MAC(BB)
+  MAC(FB)
+  MAC(CBM)
+  MAC(SP)
+  MAC(SA)
+  MAC(PT)
+  MAC(V)
+  struct M { float mat[16]; M(const M &ii) { for(int i=0;i<16;i++) mat[i]=ii.mat[i]; }  M() { }}; // matrix
+  MAC(LN)
+  MAC(RM)
+  MAC(IS)
+  MAC(O)
+  MAC(P)
+  MAC(OO)
+  MAC(PP)
+  MAC(PA)
+  MAC(LA)
+  MAC(TN)
+  MAC(SH)
+  MAC(C)
+  MAC(CO)
+  MAC(F)
+  MAC(FA)
+  MAC(Ft)
+  MAC(VF)
+  MAC(PPT)
+  MAC(PSP)
+  MAC(MA)
+  MAC(S)
+  MAC(Vb)
+  MAC(T)
+  MAC(E)
+  MAC(L)
+  MAC(LAY)
+  MAC(MP)
+  MAC(MV)
+  MAC(LL)
+  MAC(ME)
+  MAC(ST)
+  MAC(TY)
+  MAC(PS)
+  MAC(ID)
+  MAC(Str)
+  MAC(Fi)
+  MAC(Op)
+  MAC(D)
+  MAC(Ht)
+  MAC(BF)
+  MAC(VA)
+  MAC(VAA)
+  MAC(VX)
+  MAC(PL)
+  MAC(PLA)
+  MAC(TX)
+  MAC(TXID)
+  MAC(TXA)
+  MAC(TR)
+  MAC(VV)
+  MAC(Q)
+  MAC(DO)
+  MAC(PC)
+  MAC(SV)
+  MAC(FOA)
+  MAC(COV)
+  MAC(LI)
+  MAC(LLA)
+  MAC(FD)
+  MAC(VO)
+  MAC(PTS)
+  MAC(MSA)
+  MAC(PTA)
+  MAC(RD)
+  MAC(FBO)
+  MAC(SM)
+  MAC(TRK)
+  MAC(WAV)
+  MAC(TBUF)
+  MAC(SFO)
+  MAC(W)
+  MAC(WM)
+  MAC(FtA)
+  MAC(ML)
+
   template<class T>
   struct A { int id; };
-  struct EX { int id; };
-  struct PH { int id; };
-  struct TS { int id; };
-  struct CT { int id; };
-  struct CC { int id; };
-  struct IM { int id; };
+  MAC(EX)
+  MAC(PH)
+  MAC(TS)
+  MAC(CT)
+  MAC(CC)
+  MAC(IM)
+#undef MAC
+  
   //template<class T>
   //struct E { int id; };
   //struct A { int id; };
@@ -286,6 +294,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT ML chai_mainloop(EveryApi &ev, std::string url);
   IMPORT ML bind_obj_type(std::string name, GameApi::P obj, GameApi::MN move, GameApi::MT mat, float radius);
   IMPORT ML bind_obj_type(GameApi::EveryApi &ev, std::string url);
   IMPORT ML read_obj_pos(std::string url);
@@ -1086,9 +1095,9 @@ class ImplicitApi
 {
 public:
   ImplicitApi(Env &e) : e(e) { }
-  IMPORT IM sphere(float r);
+  IMPORT IM im_sphere(float r);
   IMPORT IM blob(float c, float c_x, float c_y, float cc_x, float cc_y);
-  IMPORT IM translate(IM obj, float dx, float dy, float dz);
+  IMPORT IM im_translate(IM obj, float dx, float dy, float dz);
   IMPORT IM from_distance(FD fd, float pos_x, float pos_y, float pos_z, float u_x, float u_y, float u_z, float sx, float sy);
   IMPORT IM from_distance_cyl(FD fd, float pos_x, float pos_y, float pos_z, float u_x, float u_y, float u_z, float sx, float sy);
   IMPORT IM from_distance_sph(FD fd, float pos_x, float pos_y, float pos_z, float u_x, float u_y, float u_z, float sx, float sy);
@@ -1113,10 +1122,10 @@ public:	IMPORT VolumeApi(Env &e);
   IMPORT O from_polygon(P p, float x, float y, float z);  // point outside of shape.
         IMPORT O from_bool_bitmap(BB b, float dist);
 	IMPORT O link_areas(O o, PT p1, PT p2, float d);
-	IMPORT O sphere(PT center, float radius);
-	IMPORT O cube(float start_x, float end_x,float start_y, float end_y,float start_z, float end_z);
-	IMPORT O cone(PT p1, PT p2, float rad1, float rad2);
-	IMPORT O torus(PT center, PT u_x, PT u_y, float dist1, float dist2);
+	IMPORT O o_sphere(PT center, float radius);
+	IMPORT O o_cube(float start_x, float end_x,float start_y, float end_y,float start_z, float end_z);
+	IMPORT O o_cone(PT p1, PT p2, float rad1, float rad2);
+	IMPORT O o_torus(PT center, PT u_x, PT u_y, float dist1, float dist2);
 
   IMPORT O instancing_volume(O o, PTS p);
 	IMPORT O colour(O object, unsigned int col);
@@ -1300,7 +1309,7 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
-  IMPORT MT def(EveryApi &ev);
+  IMPORT MT m_def(EveryApi &ev);
   IMPORT MT skeletal(EveryApi &ev);
   IMPORT MT texture(EveryApi &ev, BM bm, float mix);
   IMPORT MT textureid(EveryApi &ev, TXID txid, float mix);
@@ -1390,7 +1399,7 @@ class PhysicsApi
 public:
   PhysicsApi(Env &e) : e(e) { }
   struct PHI { PH phy; int id; };
-  PH empty();
+  PH phy_empty();
   PHI anchor_point(PH phy, PT pos);
   PH anchor_point2(PH phy, PT pos) { PHI pp = anchor_point(phy,pos); return pp.phy; }
   PH ext_force(PH phy, int point, V dir);
@@ -1509,7 +1518,7 @@ class MovementNode
 public:
   MovementNode(Env &e) : e(e) {}
   IMPORT MN interpolate(MN n1, MN n2, float start_time, float end_time, float start_value, float end_value);
-  IMPORT MN empty();
+  IMPORT MN mn_empty();
   IMPORT MN level(MN next);
   IMPORT MN trans2(MN next, float dx, float dy, float dz);
   IMPORT MN scale2(MN next, float sx, float sy, float sz);
@@ -1925,27 +1934,27 @@ class DistanceFloatVolumeApi
 public:
 	IMPORT DistanceFloatVolumeApi(Env &e) : e(e) { }
 	IMPORT FD function(std::function<float(float x, float y, float z)> f);
-	IMPORT FD sphere(PT center, float radius);
-	IMPORT FD cube(float start_x, float end_x,float start_y, float end_y,float start_z, float end_z);
-  IMPORT FD round_cube(float start_x, float end_x,float start_y, float end_y,float start_z, float end_z,float r);
-  IMPORT FD torus(float radius_1, float radius_2);
-  IMPORT FD cone(float c_x, float c_y);
-  IMPORT FD plane(float n_x, float n_y, float n_z, float n_w);
-  IMPORT FD hex_prism(float h_x, float h_y);
-  IMPORT FD tri_prism(float h_x, float h_y);
-  IMPORT FD triangle(PT a, PT b, PT c);
-  IMPORT FD quad(PT a, PT b, PT c, PT d);
-	IMPORT FD line(PT start, PT end, float dist);
-  IMPORT FD color(FD fd, float r, float g, float b, float a);
-  IMPORT FD rot_x(FD fd, float angle);
-  IMPORT FD rot_y(FD fd, float angle);
-  IMPORT FD rot_z(FD fd, float angle);
-  IMPORT FD trans(FD fd, float dx, float dy, float dz);
+	IMPORT FD fd_sphere(PT center, float radius);
+	IMPORT FD fd_cube(float start_x, float end_x,float start_y, float end_y,float start_z, float end_z);
+  IMPORT FD fd_round_cube(float start_x, float end_x,float start_y, float end_y,float start_z, float end_z,float r);
+  IMPORT FD fd_torus(float radius_1, float radius_2);
+  IMPORT FD fd_cone(float c_x, float c_y);
+  IMPORT FD fd_plane(float n_x, float n_y, float n_z, float n_w);
+  IMPORT FD fd_hex_prism(float h_x, float h_y);
+  IMPORT FD fd_tri_prism(float h_x, float h_y);
+  IMPORT FD fd_triangle(PT a, PT b, PT c);
+  IMPORT FD fd_quad(PT a, PT b, PT c, PT d);
+	IMPORT FD fd_line(PT start, PT end, float dist);
+  IMPORT FD fd_color(FD fd, float r, float g, float b, float a);
+  IMPORT FD fd_rot_x(FD fd, float angle);
+  IMPORT FD fd_rot_y(FD fd, float angle);
+  IMPORT FD fd_rot_z(FD fd, float angle);
+  IMPORT FD fd_trans(FD fd, float dx, float dy, float dz);
 
-	IMPORT FD min(FD a1, FD a2);
-        IMPORT FD max(FD a1, FD a2);
-	IMPORT FD and_not(FD a1, FD a2);
-  IMPORT FD blend(FD a1, FD a2, float k);
+	IMPORT FD fd_min(FD a1, FD a2);
+        IMPORT FD fd_max(FD a1, FD a2);
+  IMPORT FD fd_and_not(FD a1, FD a2);
+  IMPORT FD fd_blend(FD a1, FD a2, float k);
   IMPORT FD recalculate_normals(FD fd);
   IMPORT FD ambient_occulsion(FD fd, float d, float i);
   IMPORT P distance_poly(EveryApi &ev, FD fd, 
@@ -2080,13 +2089,13 @@ class BooleanOps
 public:
   BooleanOps(Env &e) : e(e) { }
   IMPORT BO create_bo(P mesh, O bools, FD fd);
-  IMPORT BO cube(EveryApi &ev, float start_x, float end_x,float start_y, float end_y,float start_z, float end_z,int split_x, int split_y);
-  IMPORT BO sphere(EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2);
+  IMPORT BO cube_bo(EveryApi &ev, float start_x, float end_x,float start_y, float end_y,float start_z, float end_z,int split_x, int split_y);
+  IMPORT BO sphere_bo(EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2);
   //BO cone(int numfaces, PT p1, PT p2, float rad1, float rad2);
   //BO torus(int numfaces1, int numfaces2, PT center, V u_x, V u_y, float radius1, V uu_x, V uu_y, float radius2);
-  IMPORT BO or_elem(EveryApi &ev, BO obj, BO obj2);
-  IMPORT BO and_not(EveryApi &ev, BO obj, BO not_obj);
-  IMPORT BO intersect(EveryApi &ev, BO obj, BO obj2);
+  IMPORT BO or_elem_bo(EveryApi &ev, BO obj, BO obj2);
+  IMPORT BO and_not_bo(EveryApi &ev, BO obj, BO not_obj);
+  IMPORT BO intersect_bo(EveryApi &ev, BO obj, BO obj2);
   IMPORT P to_polygon(BO obj);
   IMPORT O to_volume(BO obj);
   IMPORT FD to_dist(BO obj);
@@ -2103,17 +2112,17 @@ public:
   PolygonDistanceField(Env &e) : e(e) { }
   IMPORT PD empty(EveryApi &ev);
   IMPORT PD create_pd(P mesh, SFO distance_field);
-  IMPORT PD cube(EveryApi &ev, float start_x, float end_x,float start_y, float end_y,float start_z, float end_z);
-  IMPORT PD rounded_cube(EveryApi &ev, float start_x, float end_x,float start_y, float end_y,float start_z, float end_z,float radius);
-  IMPORT PD sphere(EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2);
-  IMPORT PD cone(EveryApi &ev, int numfaces, PT p1, PT p2, float rad1, float rad2);
-  IMPORT PD or_array(EveryApi &ev, std::vector<PD> vec);
-  IMPORT PD translate(EveryApi &ev, PD orig, float dx, float dy, float dz);
-  IMPORT PD rotatex(EveryApi &ev, PD orig, float angle);
-  IMPORT PD rotatey(EveryApi &ev, PD orig, float angle);
-  IMPORT PD rotatez(EveryApi &ev, PD orig, float angle);
-  IMPORT PD scale(EveryApi &ev, PD orig, float sx, float sy, float sz);
-  IMPORT PD color_from_normal(EveryApi &ev, PD obj);
+  IMPORT PD cube_pd(EveryApi &ev, float start_x, float end_x,float start_y, float end_y,float start_z, float end_z);
+  IMPORT PD rounded_cube_pd(EveryApi &ev, float start_x, float end_x,float start_y, float end_y,float start_z, float end_z,float radius);
+  IMPORT PD sphere_pd(EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2);
+  IMPORT PD cone_pd(EveryApi &ev, int numfaces, PT p1, PT p2, float rad1, float rad2);
+  IMPORT PD or_array_pd(EveryApi &ev, std::vector<PD> vec);
+  IMPORT PD translate_pd(EveryApi &ev, PD orig, float dx, float dy, float dz);
+  IMPORT PD rotatex_pd(EveryApi &ev, PD orig, float angle);
+  IMPORT PD rotatey_pd(EveryApi &ev, PD orig, float angle);
+  IMPORT PD rotatez_pd(EveryApi &ev, PD orig, float angle);
+  IMPORT PD scale_pd(EveryApi &ev, PD orig, float sx, float sy, float sz);
+  IMPORT PD color_from_normal_pd(EveryApi &ev, PD obj);
   IMPORT PD ambient_occulsion_sfo(EveryApi &ev, PD obj, float d, float i);
   IMPORT PD colormod_from_position(EveryApi &ev, PD obj, float px, float py, float pz, float sx, float sy, float sz);
   IMPORT MT mesh_color_from_sfo(EveryApi &ev, PD orig, MT next);
@@ -2221,7 +2230,7 @@ public:
   IMPORT void print_data(P p);
   IMPORT void print_data2(P p);
   IMPORT void print_stat(VA p);
-	IMPORT P empty();
+	IMPORT P p_empty();
         IMPORT P load_model(std::string filename, int obj_num);
   IMPORT P load_model_all(std::string filename, int count);
   IMPORT P load_model_all_no_cache(std::string filename, int count);
@@ -2599,7 +2608,7 @@ class WaveformApi
 { // [0..length] -> [-1..1]
 public: 
 	IMPORT WaveformApi(Env &e) : e(e) { }
-	IMPORT WV empty(float length);
+	IMPORT WV wv_empty(float length);
 	IMPORT WV function(std::function<float(float)> f, float length, float min_value, float max_value);
 	IMPORT WV sinwave(float length, float freq);
   IMPORT WV gaussian(float start_x, float end_x, float start_y, float end_y);
@@ -2800,7 +2809,7 @@ class BoolBitmapApi
 public:
   IMPORT BoolBitmapApi(Env &e);
   IMPORT ~BoolBitmapApi();
-  IMPORT BB empty(int sx, int sy);
+  IMPORT BB bb_empty(int sx, int sy);
   BB function(std::function<bool(int, int)> f, int sx, int sy);
   IMPORT BB transform(BB orig, std::function<bool(int, int, bool)> f);
   IMPORT O to_volume(BB b, float dist);
@@ -2850,7 +2859,7 @@ class FloatBitmapApi
 public: // values are [0.0..1.0]
   IMPORT FloatBitmapApi(Env &e);
   IMPORT ~FloatBitmapApi();
-  IMPORT FB empty(int sx, int sy);
+  IMPORT FB fb_empty(int sx, int sy);
   IMPORT FB function(std::function<float(int, int)> f, int sx, int sy);
   IMPORT FB newfloatbitmap(char *array, int sx, int sy, std::function<float(char)> f);
   IMPORT FB from_bool_bitmap(BB bm, int csx, int csy);
@@ -2930,7 +2939,7 @@ class ContinuousBitmapApi
 { // RxR->RGB
 public:
   IMPORT ContinuousBitmapApi(Env &e);
-  IMPORT CBM empty(float x, float y);
+  IMPORT CBM cbm_empty(float x, float y);
   CBM constant(unsigned int color, float x, float y);
   IMPORT CBM function(std::function<unsigned int(float, float)> f, float sx, float sy);
   IMPORT BM sample(CBM c_bitmap, int sx, int sy);

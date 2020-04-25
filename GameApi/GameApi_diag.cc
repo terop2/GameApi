@@ -377,7 +377,7 @@ public:
       float val = data[i];
       GameApi::P pie = ev.polygon_api.p_piechart(ev, c_x, c_y, angle, angle+val*2.0*3.14159, radius, numsteps, start_z, end_z);
 
-      GameApi::MT I2=ev.materials_api.def(ev);
+      GameApi::MT I2=ev.materials_api.m_def(ev);
       GameApi::MT I3=ev.materials_api.phong(ev,I2,-0.3,0.3,-1.0,color[i],0xff666666,5.0);
       //GameApi::MT I4=ev.materials_api.bevel(ev,I3,1.2,2);
       GameApi::ML I5=ev.materials_api.bind(pie,I3);

@@ -65,7 +65,7 @@ EXPORT GameApi::P GameApi::WaveformApi::waveform_rotated_polygon(WV wave, float 
 }
 
 
-EXPORT GameApi::WV GameApi::WaveformApi::empty(float length)
+EXPORT GameApi::WV GameApi::WaveformApi::wv_empty(float length)
 {
   return add_waveform(e, new ZeroWaveform(length, -1.0,1.0));
 }
