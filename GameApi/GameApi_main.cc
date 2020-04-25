@@ -1900,7 +1900,7 @@ I17=ev.move_api.move_ml(ev,I5,I11,1,10.0);
   */
   ML I26;
   { // PROGRESS BAR
-BB I1=ev.bool_bitmap_api.empty(92,12);
+BB I1=ev.bool_bitmap_api.bb_empty(92,12);
 BB I2=ev.bool_bitmap_api.rectangle(I1,0,0,92,12);
 BM I3=ev.bool_bitmap_api.to_bitmap(I2,255,255,255,255,0,0,0,0);
 ML I4=ev.sprite_api.vertex_array_render(ev,I3);
