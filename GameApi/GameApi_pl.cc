@@ -225,7 +225,7 @@ int index_from_string(char c, std::string s)
 
 EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(EveryApi &ev, std::vector<P> pieces, std::string filename, std::string chars, float dx, float dz, int ssx, int ssy)
 {
-  if (pieces.size()==0) return empty();
+  if (pieces.size()==0) return p_empty();
   char *array = new char[ssx*ssy];
   std::ifstream ss(filename.c_str());
   for(int i=0;i<ssx*ssy;i++)
@@ -488,7 +488,7 @@ EXPORT GameApi::P GameApi::PolygonApi::unit_to_flex(P orig,
 }
 
 
-EXPORT GameApi::P GameApi::PolygonApi::empty()
+EXPORT GameApi::P GameApi::PolygonApi::p_empty()
 {
   return add_polygon(e,new EmptyBoxableFaceCollection, 1);
 }
@@ -1155,7 +1155,7 @@ EXPORT GameApi::P GameApi::PolygonApi::p_url(EveryApi &ev, std::string url, int 
 {
   int c = get_current_block();
   set_current_block(-1);
-  P p = empty();
+  P p = p_empty();
   FaceCollection *emp = find_facecoll(e, p);
   GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollection(e,ev, emp, url, gameapi_homepageurl, count),1); 
   FaceCollection *coll = find_facecoll(e,p1);
@@ -1167,7 +1167,7 @@ EXPORT GameApi::P GameApi::PolygonApi::p_url_mtl(EveryApi &ev, std::string url, 
 {
   int c = get_current_block();
   set_current_block(-1);
-  P p = empty();
+  P p = p_empty();
   FaceCollection *emp = find_facecoll(e, p);
   GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL(e,ev, emp, url, gameapi_homepageurl, count,material_names),1); 
   FaceCollection *coll = find_facecoll(e,p1);
@@ -1179,7 +1179,7 @@ EXPORT GameApi::P GameApi::PolygonApi::p_mtl(EveryApi &ev, std::string obj_url, 
 {
   int c = get_current_block();
   set_current_block(-1);
-  P p = empty();
+  P p = p_empty();
   FaceCollection *emp = find_facecoll(e, p);
   GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL2(e,ev, emp, obj_url, gameapi_homepageurl, count,mtl_url,prefix),1); 
   FaceCollection *coll = find_facecoll(e,p1);
@@ -1192,7 +1192,7 @@ EXPORT GameApi::P GameApi::PolygonApi::p_ds_url(EveryApi &ev, std::string url)
 {
   int c = get_current_block();
   set_current_block(-1);
-  P p = empty();
+  P p = p_empty();
   FaceCollection *emp = find_facecoll(e,p);
   GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionDS(e,ev,emp,url,gameapi_homepageurl),1);
   FaceCollection *coll = find_facecoll(e,p1);
@@ -1728,7 +1728,7 @@ EXPORT GameApi::P GameApi::PolygonApi::or_array2(std::vector<P> vec)
 {
   if (vec.size()>0)
     return or_array(&vec[0],vec.size());
-  return empty();
+  return p_empty();
 }
 EXPORT GameApi::P GameApi::PolygonApi::or_array(P *p1, int size)
 {
@@ -3493,7 +3493,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array_no_memory(GameApi::VA va, G
 }
 EXPORT void GameApi::PolygonApi::delete_vertex_array(GameApi::VA va)
 {
-  GameApi::P p = empty();
+  GameApi::P p = p_empty();
   update_vertex_array(va,p);
 }
 void ProgressBar(int num, int val, int max, std::string label);
@@ -9256,9 +9256,9 @@ EXPORT GameApi::P GameApi::PolygonApi::cube_map(EveryApi &ev, float start_x, flo
 #endif
 EXPORT GameApi::P GameApi::PolygonApi::alt(std::vector<P> v, int index)
 {
-  if (v.size()==0) return empty();
+  if (v.size()==0) return p_empty();
   int s = v.size();
-  if (index<0 ||index>=s) return empty();
+  if (index<0 ||index>=s) return p_empty();
   return v[index];
 }
 class SubPolyChange : public FaceCollection
@@ -9368,7 +9368,7 @@ public:
   TexCoordSpherical2(GameApi::Env &e, GameApi::EveryApi &ev, Point center, float r, FaceCollection *coll) : ForwardFaceCollection(*coll), e(e), ev(ev), center(center), r(r), coll(coll) 
   {
     GameApi::PT center2 = ev.point_api.point(center.x, center.y, center.z);
-    fd = ev.dist_api.sphere(center2, r);
+    fd = ev.dist_api.fd_sphere(center2, r);
   }
   Point2d TexCoord(int face, int point) const
   {
@@ -10175,7 +10175,7 @@ GameApi::P GameApi::PolygonApi::poly_index(ARR arr, int idx)
       return p;
     }
   std::cout << "Array index error!" << std::endl;
-  GameApi::P p = empty();
+  GameApi::P p = p_empty();
   return p;
 }
 
@@ -13126,7 +13126,7 @@ GameApi::BM GameApi::PolygonApi::shadow_map3(EveryApi &ev, P objs,float p_x, flo
   FaceCollection *f_quad = find_facecoll(e, quad);
   FaceCollection *res = f_objs; //new ShadowMap3(f_objs, Point(p_x,p_y,p_z), sx,sy, f_quad);
   GameApi::P p = add_polygon2(e, res,1);
-  GameApi::MN mn = ev.move_api.empty();
+  GameApi::MN mn = ev.move_api.mn_empty();
   GameApi::FML poly = ev.low_frame_api.low_poly_draw("aa", p, mn);
   //GameApi::FBU fbu = ev.low_frame_api.low_framebuffer(poly, 4, sx,sy,0);
   //GameApi::BM bm = ev.mainloop_api.framebuffer_bitmap(fbu);
@@ -13948,7 +13948,7 @@ public:
     std::vector<GameApi::ML> vec2;
     while(ss >> pos_x >> pos_y >> url2) {
       GameApi::ML script = ev.mainloop_api.load_ML_script(ev, url2, "", "", "", "", "");
-      GameApi::MN def = ev.move_api.empty();
+      GameApi::MN def = ev.move_api.mn_empty();
       GameApi::MN mn = ev.move_api.trans2(def, pos_x*sx, 0.0, pos_y*sz);
       GameApi::ML move = ev.move_api.move_ml(ev, script, mn, 1, 10.0);
       vec2.push_back(move);

@@ -58,18 +58,18 @@ EXPORT GameApi::O GameApi::VolumeApi::move(O obj, float dx, float dy, float dz)
 EXPORT GameApi::VolumeApi::VolumeApi(Env &e) : e(e) { }
 EXPORT GameApi::VolumeApi::~VolumeApi() { }
 
-EXPORT GameApi::O GameApi::VolumeApi::sphere(PT center, float radius)
+EXPORT GameApi::O GameApi::VolumeApi::o_sphere(PT center, float radius)
 {
   Point *p = find_point(e, center);
   return add_volume(e, new SphereVolume(*p, radius));
 }
-EXPORT GameApi::O GameApi::VolumeApi::cone(PT p1, PT p2, float rad1, float rad2)
+EXPORT GameApi::O GameApi::VolumeApi::o_cone(PT p1, PT p2, float rad1, float rad2)
 {
   Point *pp1 = find_point(e, p1);
   Point *pp2 = find_point(e, p2);
   return add_volume(e, new ConeVolume(*pp1, *pp2-*pp1, rad1, rad2));
 }
-EXPORT GameApi::O GameApi::VolumeApi::cube(float start_x, float end_x,
+EXPORT GameApi::O GameApi::VolumeApi::o_cube(float start_x, float end_x,
 				    float start_y, float end_y,
 				    float start_z, float end_z)
 {
@@ -81,7 +81,7 @@ EXPORT GameApi::O GameApi::VolumeApi::cube(float start_x, float end_x,
 				      start_z, end_z));
 }
 
-EXPORT GameApi::O GameApi::VolumeApi::torus(PT center, PT u_x, PT u_y, float dist1, float dist2)
+EXPORT GameApi::O GameApi::VolumeApi::o_torus(PT center, PT u_x, PT u_y, float dist1, float dist2)
 {
   Point *centerp = find_point(e, center);
   Point *u_xp = find_point(e, u_x);
@@ -1363,7 +1363,7 @@ private:
   float dist;
 };
 
-EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::sphere(PT center, float radius)
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_sphere(PT center, float radius)
 {
   Point *cent = find_point(e, center);
   return add_distance(e, new SphereDistanceRenderable(*cent, radius));
@@ -1396,11 +1396,11 @@ private:
   float start_z, end_z;
 };
 
-EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::cube(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_cube(float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
 {
   return add_distance(e, new CubeDistanceRenderable(start_x, end_x, start_y, end_y, start_z, end_z));
 }
-EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::line(PT start, PT end, float dist)
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_line(PT start, PT end, float dist)
 {
   Point *st = find_point(e, start);
   Point *en = find_point(e, end);
@@ -1635,7 +1635,7 @@ EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::ambient_occulsion(FD fd, flo
   DistanceRenderable *dist = find_distance(e, fd);
   return add_distance(e, new AmbientOcculsionDistance(dist, d,i));
 }
-EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::color(FD fd, float r, float g, float b, float a)
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_color(FD fd, float r, float g, float b, float a)
 {
   DistanceRenderable *dist = find_distance(e, fd);
   return add_distance(e, new ColorDistance(dist,r,g,b,a));
@@ -1662,26 +1662,26 @@ private:
   DistanceRenderable *rend;
   Matrix m;
 };
-EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::rot_x(FD fd, float angle)
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_rot_x(FD fd, float angle)
 {
   DistanceRenderable *rend = find_distance(e, fd);
   return add_distance(e, new MatrixDistance(rend, Matrix::XRotation(angle)));
 }
-EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::rot_y(FD fd, float angle)
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_rot_y(FD fd, float angle)
 {
   DistanceRenderable *rend = find_distance(e, fd);
   return add_distance(e, new MatrixDistance(rend, Matrix::YRotation(angle)));
 }
-EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::rot_z(FD fd, float angle)
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_rot_z(FD fd, float angle)
 {
   DistanceRenderable *rend = find_distance(e, fd);
   return add_distance(e, new MatrixDistance(rend, Matrix::ZRotation(angle)));
 }
-EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::torus(float r_1, float r_2)
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_torus(float r_1, float r_2)
 {
   return add_distance(e, new TorusDistance(r_1,r_2));
 }
-EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::round_cube(float start_x, float end_x,
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_round_cube(float start_x, float end_x,
 							float start_y, float end_y,
 							float start_z, float end_z, float r)
 {
@@ -1690,14 +1690,14 @@ EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::round_cube(float start_x, fl
   return add_distance(e, new RoundCubeDistance(start, end, r));
 }
 
-EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::min(FD fd1, FD fd2)
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_min(FD fd1, FD fd2)
 {
   DistanceRenderable *ff1 = find_distance(e, fd1);
   DistanceRenderable *ff2 = find_distance(e, fd2);
   return add_distance(e, new MinDistance2(*ff1, *ff2));
 }
 
-EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::max(FD fd1, FD fd2)
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_max(FD fd1, FD fd2)
 {
   DistanceRenderable *ff1 = find_distance(e, fd1);
   DistanceRenderable *ff2 = find_distance(e, fd2);
@@ -1705,7 +1705,7 @@ EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::max(FD fd1, FD fd2)
 }
 
 
-EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::and_not(FD fd1, FD fd2)
+EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_and_not(FD fd1, FD fd2)
 {
   DistanceRenderable *ff1 = find_distance(e, fd1);
   DistanceRenderable *ff2 = find_distance(e, fd2);
@@ -1799,7 +1799,7 @@ EXPORT GameApi::P GameApi::VectorVolumeApi::setup_normal(P orig, VO v)
   VectorVolumeObject *s = find_vector_volume(e, v);
   return add_polygon2(e, new NormalVectorVolumeFaceColl(coll, s),1);
 }
-GameApi::FD GameApi::DistanceFloatVolumeApi::trans(FD fd, float dx, float dy, float dz)
+GameApi::FD GameApi::DistanceFloatVolumeApi::fd_trans(FD fd, float dx, float dy, float dz)
 {
   DistanceRenderable *rend = find_distance(e, fd);
   return add_distance(e, new MatrixDistance(rend, Matrix::Translate(dx,dy,dz)));
@@ -1856,7 +1856,7 @@ private:
   DistanceRenderable *rend2;
   float k;
 };
-GameApi::FD GameApi::DistanceFloatVolumeApi::blend(FD a1, FD a2, float k)
+GameApi::FD GameApi::DistanceFloatVolumeApi::fd_blend(FD a1, FD a2, float k)
 {
   DistanceRenderable *rend1 = find_distance(e, a1);
   DistanceRenderable *rend2 = find_distance(e, a2);
