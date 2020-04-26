@@ -1335,7 +1335,7 @@ GameApi::ML scale_to_gltf_size(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::
       FaceCollection *coll = find_facecoll(e,p);
       std::pair<float,Point> dim = find_mesh_scale(coll);
 
-    GameApi::MN I4=ev.move_api.empty();
+    GameApi::MN I4=ev.move_api.mn_empty();
     GameApi::MN I5=ev.move_api.trans2(I4,dim.second.x,dim.second.y,dim.second.z);
     GameApi::MN I6=ev.move_api.scale2(I5,dim.first,dim.first,dim.first);
     GameApi::ML I7=ev.move_api.move_ml(ev,ml,I6,1,10.0);
@@ -1350,7 +1350,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
   int s2 = load->model.nodes.size();
   if (!(node_id>=0 && node_id<s2))
     {
-    GameApi::P empty = ev.polygon_api.empty();
+    GameApi::P empty = ev.polygon_api.p_empty();
     GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
     return ml;
     }
@@ -1380,7 +1380,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
     vec.push_back( mesh );
   GameApi::ML array = ev.mainloop_api.array_ml(ev, vec);
 
-  GameApi::MN mv = ev.move_api.empty();
+  GameApi::MN mv = ev.move_api.mn_empty();
   if (int(node->translation.size())==3) {
     double m_x = node->translation[0];
     double m_y = node->translation[1];
@@ -1421,7 +1421,7 @@ GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load,
   int s2 = load->model.scenes.size();
   if (!(scene_id>=0 && scene_id<s2))
     {
-    GameApi::P empty = ev.polygon_api.empty();
+    GameApi::P empty = ev.polygon_api.p_empty();
     GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
     return ml;
     }
@@ -1451,7 +1451,7 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
     GameApi::ML ml = ev.mainloop_api.array_ml(ev, mls);
     return ml;
   } else {
-    GameApi::P empty = ev.polygon_api.empty();
+    GameApi::P empty = ev.polygon_api.p_empty();
     GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
     return ml;
   }

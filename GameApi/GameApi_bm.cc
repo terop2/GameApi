@@ -1711,7 +1711,7 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::tri(BB orig, float p1_x, float p1_y, 
 }
 EXPORT GameApi::BB GameApi::BoolBitmapApi::rings(int sx, int sy, float center_x_start, float center_y_start, float center_x_end, float center_y_end, float start_radius, float end_radius, float start_thickness, float end_thickness, int numrings)
 {
-  BB bg = empty(sx,sy);
+  BB bg = bb_empty(sx,sy);
   int s = numrings;
   float delta_val = 1.0/numrings;
   for(int i=0;i<s;i++)
@@ -1742,12 +1742,12 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::transform(BB orig, std::function<bool
   return add_bool_bitmap(e, trans);
 }
 
-EXPORT GameApi::BB GameApi::BoolBitmapApi::empty(int sx, int sy)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::bb_empty(int sx, int sy)
 {
   return add_bool_bitmap(e, new ConstantBitmap_bool(false, sx,sy));
 }
 
-EXPORT GameApi::FB GameApi::FloatBitmapApi::empty(int sx, int sy)
+EXPORT GameApi::FB GameApi::FloatBitmapApi::fb_empty(int sx, int sy)
 {
   return add_float_bitmap(e, new ConstantBitmap_float(0.0, sx,sy));
 }
@@ -2603,7 +2603,7 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::polygon(BB bg2, PT *points, int size)
 
 EXPORT GameApi::ContinuousBitmapApi::ContinuousBitmapApi(Env &e) : e(e) { }
 
-EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::empty(float x, float y)
+EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::cbm_empty(float x, float y)
 {
   return constant(0x00000000, x, y);
 }

@@ -17,7 +17,7 @@ public:
 
 };
 
-GameApi::PH GameApi::PhysicsApi::empty()
+GameApi::PH GameApi::PhysicsApi::phy_empty()
 {
   return add_physics(e, new EmptyPhysics);
 }
