@@ -4622,3 +4622,40 @@ GameApi::BM GameApi::BitmapApi::calculate_baked_light(P p, P p2, BM texture, int
   return bm;
 }
 
+class ScaleToSize : public Bitmap<Color>
+{
+public:
+  ScaleToSize(Bitmap<Color> &bm, int sz) : bm(bm), sz(sz) { }
+  virtual int SizeX() const { return bm.SizeX()*factor; }
+  virtual int SizeY() const { return bm.SizeY()*factor; }
+  virtual Color Map(int x, int y) const
+  {
+    x/=factor;
+    y/=factor;
+    return bm.Map(x,y);
+  }
+  virtual void Prepare()
+  {
+    bm.Prepare();
+    int sxx = bm.SizeX();
+    int syy = bm.SizeY();
+    int mm = std::max(sxx,syy);
+    factor = float(sz)/float(mm);
+  }
+private:
+  Bitmap<Color> &bm;
+  float factor;
+  int sz;
+};
+
+GameApi::BM GameApi::BitmapApi::scale_to_size(BM bm, int sz)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  Bitmap<Color> *b = new ScaleToSize(*b2,sz);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm2 = add_bitmap(e, handle2);
+  return bm2;
+
+}

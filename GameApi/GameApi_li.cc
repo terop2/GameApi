@@ -4,6 +4,8 @@
 #include "GameApi_low.hh"
 
 unsigned int swap_color(unsigned int c);
+bool is_mobile(GameApi::EveryApi &ev);
+
 
 class ColorLineCollection : public LineCollection
 {
@@ -395,7 +397,7 @@ EXPORT GameApi::LI GameApi::LinesApi::border_from_bool_bitmap(GameApi::BB b, flo
 class LI_Render : public MainLoopItem
 {
 public:
-  LI_Render(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LLA l) : env(e), ev(ev), api(api), l(l) { shader.id = -1;}
+  LI_Render(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LLA l, float lineWidth) : env(e), ev(ev), api(api), l(l), linewidth(lineWidth) { shader.id = -1;}
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -418,6 +420,15 @@ public:
 	ev.shader_api.set_var(sh, "in_N", m2);
 	ev.shader_api.set_var(sh, "time", e.time);
     ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+  OpenglLowApi *ogl = g_low->ogl;
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+    if (is_platform_linux())
+      ogl->glLineWidth(linewidth*mult/2);
+    else
+      ogl->glLineWidth(linewidth*mult);
 
     api.render(l);
     ev.shader_api.unuse(sh);
@@ -431,13 +442,14 @@ private:
   GameApi::LinesApi &api;
   GameApi::LLA l;
   GameApi::SH shader;
+  float linewidth;
 };
 
 
 class LI_Render2 : public MainLoopItem
 {
 public:
-  LI_Render2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l) : env(e), ev(ev), api(api), l(l) {firsttime=true; shader.id=-1; }
+  LI_Render2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l, float linewidth) : env(e), ev(ev), api(api), l(l),linewidth(linewidth) {firsttime=true; shader.id=-1; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -465,6 +477,15 @@ public:
 	    l2 = ev.lines_api.prepare(l);
 	    firsttime = false;
 	  }
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+  OpenglLowApi *ogl = g_low->ogl;
+    if (is_platform_linux())
+      ogl->glLineWidth(linewidth*mult/2);
+    else
+      ogl->glLineWidth(linewidth*mult);
 	
     api.render(l2);
     ev.shader_api.unuse(sh);
@@ -480,13 +501,14 @@ private:
   GameApi::LLA l2;
   bool firsttime;
   GameApi::SH shader;
+  float linewidth;
 };
 
 
 class LI_Render_Inst : public MainLoopItem
 {
 public:
-  LI_Render_Inst(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LLA l, GameApi::PTA pta) : env(env), ev(ev), api(api), l(l),pta(pta) { firsttime=true; }
+  LI_Render_Inst(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LLA l, GameApi::PTA pta, float linewidth) : env(env), ev(ev), api(api), l(l),pta(pta),linewidth(linewidth) { firsttime=true; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -544,6 +566,16 @@ public:
 	api.prepare_inst(l,pta);
 	firsttime=false;
       }
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+  OpenglLowApi *ogl = g_low->ogl;
+    if (is_platform_linux())
+      ogl->glLineWidth(linewidth*mult/2);
+    else
+      ogl->glLineWidth(linewidth*mult);
+
     api.render_inst(l,pta);
     ev.shader_api.unuse(sh);
   }
@@ -558,12 +590,13 @@ private:
   GameApi::PTA pta;
   bool firsttime;
   GameApi::SH shader;
+  float linewidth;
 };
 
 class LI_Render_Inst2 : public MainLoopItem
 {
 public:
-  LI_Render_Inst2(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l0, GameApi::PTA pta) : env(env), ev(ev), api(api), l0(l0),pta(pta) { firsttime=true; }
+  LI_Render_Inst2(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l0, GameApi::PTA pta, float linewidth) : env(env), ev(ev), api(api), l0(l0),pta(pta),linewidth(linewidth) { firsttime=true; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -623,6 +656,16 @@ public:
 	api.prepare_inst(l,pta);
 	firsttime=false;
       }
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+  OpenglLowApi *ogl = g_low->ogl;
+    if (is_platform_linux())
+      ogl->glLineWidth(linewidth*mult/2);
+    else
+      ogl->glLineWidth(linewidth*mult);
+
     api.render_inst(l,pta);
     ev.shader_api.unuse(sh);
   }
@@ -638,6 +681,7 @@ private:
   GameApi::PTA pta;
   bool firsttime;
   GameApi::SH shader;
+  float linewidth;
 };
 
 
@@ -645,7 +689,7 @@ private:
 class LI_Render_Inst3 : public MainLoopItem
 {
 public:
-  LI_Render_Inst3(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l0, GameApi::PTS pts) : env(env), ev(ev), api(api), l0(l0),pts(pts) { firsttime=true; }
+  LI_Render_Inst3(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l0, GameApi::PTS pts, float linewidth) : env(env), ev(ev), api(api), l0(l0),pts(pts),linewidth(linewidth) { firsttime=true; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -707,6 +751,17 @@ public:
 	api.prepare_inst(l,pta);
 	firsttime=false;
       }
+
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+  OpenglLowApi *ogl = g_low->ogl;
+    if (is_platform_linux())
+      ogl->glLineWidth(linewidth*mult/2);
+    else
+      ogl->glLineWidth(linewidth*mult);
+
     api.render_inst(l,pta);
     ev.shader_api.unuse(sh);
   }
@@ -723,13 +778,14 @@ private:
   GameApi::PTA pta;
   bool firsttime;
   GameApi::SH shader;
+  float linewidth;
 };
 
 
 class LI_Render_Inst3_matrix : public MainLoopItem
 {
 public:
-  LI_Render_Inst3_matrix(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l0, GameApi::MS pts) : env(env), ev(ev), api(api), l0(l0),pts(pts) { firsttime=true; }
+  LI_Render_Inst3_matrix(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l0, GameApi::MS pts, float linewidth) : env(env), ev(ev), api(api), l0(l0),pts(pts),linewidth(linewidth) { firsttime=true; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -791,6 +847,17 @@ public:
 	api.prepare_inst_matrix(l,pta);
 	firsttime=false;
       }
+
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+  OpenglLowApi *ogl = g_low->ogl;
+    if (is_platform_linux())
+      ogl->glLineWidth(linewidth*mult/2);
+    else
+      ogl->glLineWidth(linewidth*mult);
+
     api.render_inst_matrix(l,pta);
     ev.shader_api.unuse(sh);
   }
@@ -807,33 +874,34 @@ private:
   GameApi::MSA pta;
   bool firsttime;
   GameApi::SH shader;
+  float linewidth;
 };
 
 
 
-EXPORT GameApi::ML GameApi::LinesApi::render_ml(EveryApi &ev, LLA l)
+EXPORT GameApi::ML GameApi::LinesApi::render_ml(EveryApi &ev, LLA l, float linewidth)
 {
-  return add_main_loop(e, new LI_Render(e, ev, *this, l));
+  return add_main_loop(e, new LI_Render(e, ev, *this, l,linewidth));
 }
-EXPORT GameApi::ML GameApi::LinesApi::render_ml2(EveryApi &ev, LI l)
+EXPORT GameApi::ML GameApi::LinesApi::render_ml2(EveryApi &ev, LI l,float linewidth)
 {
-  return add_main_loop(e, new LI_Render2(e, ev, *this, l));
+  return add_main_loop(e, new LI_Render2(e, ev, *this, l,linewidth));
 }
-EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml(EveryApi &ev, LLA l, PTA pta)
+EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml(EveryApi &ev, LLA l, PTA pta, float linewidth)
 {
-  return add_main_loop(e, new LI_Render_Inst(e, ev, *this, l, pta));
+  return add_main_loop(e, new LI_Render_Inst(e, ev, *this, l, pta, linewidth));
 }
-EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml2(EveryApi &ev, LI l, PTA pta)
+EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml2(EveryApi &ev, LI l, PTA pta, float linewidth)
 {
-  return add_main_loop(e, new LI_Render_Inst2(e, ev, *this, l, pta));
+  return add_main_loop(e, new LI_Render_Inst2(e, ev, *this, l, pta, linewidth));
 }
-EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml3(EveryApi &ev, LI l, PTS pts)
+EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml3(EveryApi &ev, LI l, PTS pts, float linewidth)
 {
-  return add_main_loop(e, new LI_Render_Inst3(e, ev, *this, l, pts));
+  return add_main_loop(e, new LI_Render_Inst3(e, ev, *this, l, pts, linewidth));
 }
-EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml3_matrix(EveryApi &ev, LI l, MS pts)
+EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml3_matrix(EveryApi &ev, LI l, MS pts, float linewidth)
 {
-  return add_main_loop(e, new LI_Render_Inst3_matrix(e, ev, *this, l, pts));
+  return add_main_loop(e, new LI_Render_Inst3_matrix(e, ev, *this, l, pts, linewidth));
 }
 
 EXPORT void GameApi::LinesApi::prepare_inst(LLA l, PTA instances)

@@ -1096,7 +1096,7 @@ public:
     GameApi::M mat2 = ev.move_api.get_matrix(mn, e_time, ev.mainloop_api.get_delta_time());
     GameApi::LI li = ev.points_api.matrix2_display(ev, mat, mat2,sx,sy,sz,start_x,end_x,start_y,end_y,start_z,end_z);
     GameApi::LLA lip = ev.lines_api.prepare(li);
-    GameApi::ML ml = ev.lines_api.render_ml(ev,lip);
+    GameApi::ML ml = ev.lines_api.render_ml(ev,lip,1.0);
     MainLoopItem *item2 = find_main_loop(env, ml);
     item2->execute(e);
     
@@ -1379,7 +1379,7 @@ GameApi::ML GameApi::PointsApi::pts_render(EveryApi &ev, PTS pts)
 {
   LI I3=ev.points_api.li_from_pts(pts,1,1,1);
   LLA I4=ev.lines_api.prepare(I3);
-  ML I5=ev.lines_api.render_ml(ev,I4);
+  ML I5=ev.lines_api.render_ml(ev,I4,1.0);
   return I5;
 }
 

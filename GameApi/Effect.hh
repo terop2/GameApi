@@ -6693,10 +6693,13 @@ public:
   virtual Point FacePoint(int face, int point) const;
   virtual Vector PointNormal(int face, int point) const
   {
-    Vector v = FacePoint(face, point);
-    //Vector center = Vector(box.matrix[3], box.matrix[7], box.matrix[11]);
-    //v.Normalize();
-    return v; /*-center;*/
+    Point pp1 = FacePoint(face,0);
+    Point pp2 = FacePoint(face,1);
+    Point pp3 = FacePoint(face,2);
+    Vector u_x = pp2-pp1;
+    Vector u_y = pp3-pp1;
+    Vector v = Vector::CrossProduct(u_x, u_y); 
+    return v/v.Dist();
   }
   virtual unsigned int Color(int face, int point) const
   {
@@ -8254,6 +8257,15 @@ public:
 
   virtual Vector PointNormal(int face, int point) const
   {
+    Point pp1 = FacePoint(face,0);
+    Point pp2 = FacePoint(face,1);
+    Point pp3 = FacePoint(face,2);
+    Vector u_x = pp2-pp1;
+    Vector u_y = pp3-pp1;
+    Vector v = Vector::CrossProduct(u_x, u_y); 
+    return v/v.Dist();
+
+    /*    
     Point p;
     switch(point)
       {
@@ -8263,6 +8275,7 @@ public:
     Vector v = FacePoint(face, point);
     Vector center = p;
     return v-center;
+    */
   }
 private:
   //Matrix box;
