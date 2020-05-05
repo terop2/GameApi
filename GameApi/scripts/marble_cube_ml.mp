@@ -8,5 +8,5 @@ MS I7=ev.matrices_api.from_points(I6);
 MS I8=ev.matrices_api.mult_array(I2,I7); 
 P I9=ev.polygon_api.static_instancing_matrix(ev,I1,I8); 
 MT I10=ev.materials_api.m_def(ev); 
-MT I11=ev.materials_api.snow(ev,I10,ffaaaaaa,ffeeeeee,ffffffff,0.5); 
+MT I11=ev.materials_api.snow(ev,I10,ffaaaaaa,ffeeeeee,ffffffff,1.0); 
 ML I12=ev.materials_api.bind(I9,I11); 
