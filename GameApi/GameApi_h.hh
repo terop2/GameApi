@@ -208,6 +208,13 @@ struct SurfPriv
 {
 };
 
+bool is_platform_linux();
+bool is_platform_android();
+bool is_platform_win32();
+bool is_platform_mac();
+bool is_platform_chrome();
+bool is_platform_firefox();
+
 struct MainLoopPriv
 {
   Low_SDL_Surface *screen;

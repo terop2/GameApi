@@ -228,6 +228,7 @@ int call_count=0;
 extern bool g_transparent;
 extern int g_event_screen_x;
 extern int g_event_screen_y;
+extern std::string g_platform;
 
 #if 1
 int main(int argc, char *argv[]) {
@@ -306,6 +307,12 @@ int main(int argc, char *argv[]) {
 	  std::cout << "Generating Logo" << std::endl;
 	  ev.mainloop_api.save_logo(ev);
 	  exit(0);
+	} else
+	if (check_count(cmd_args, current_arg, 2) && cmd_args[current_arg]=="--platform")
+	  {
+	    std::cout << "Using platform:" << cmd_args[current_arg+1] << std::endl;
+	    g_platform = cmd_args[current_arg+1];
+	  current_arg+=2;
 	} else
 	{
 	  std::cout << "Invalid commandline args" << std::endl;

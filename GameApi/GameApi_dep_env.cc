@@ -347,9 +347,11 @@ void onerror_async_cb(unsigned int tmp, void *arg, int, const char*)
   std::cout << "ERROR: url loading error! " << std::endl;
   if (!arg) return;
   char *url = (char*)arg;
+  std::cout << url << std::endl;
     std::string url_str(url);
   std::string url_only(striphomepage(url_str));
-    load_url_buffers_async[url_only] = (std::vector<unsigned char>*)-1;
+  load_url_buffers_async.erase(url_only);
+  //load_url_buffers_async[url_only] = (std::vector<unsigned char>*)-1;
     async_pending_count--;
     std::cout << "ASync pending dec (onerror_async_cb) -->" << async_pending_count << std::endl;
     
@@ -393,6 +395,7 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
   }
   
   //std::cout << "url loading complete! " << url_str << std::endl;
+  // THIS WAS url_only, but seems to have not worked.
   load_url_buffers_async[url_only] = new std::vector<unsigned char>(buffer);
   async_pending_count--;
   //std::cout << "ASync pending dec (onload_async_cb) -->" << async_pending_count<< std::endl;
@@ -676,13 +679,15 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   std::string url2 = "load_url.php";
   std::string urlend = "url=" + url;
   std::string url3 = urlend + "&homepage=" + homepage;
-
+  std::string url_only = "load_url.php?url=" + url;
   url = "load_url.php?url=" + url + "&homepage=" + homepage;
 
     //std::cout << "url loading started! " << url << std::endl;
 
+  std::cout << "URL:" << url << std::endl;
     // if we have already loaded the same url, don't load again
-    if (load_url_buffers_async[url]) { 
+  if (/*load_url_buffers_async[url] ||*/load_url_buffers_async[url_only]) {
+      std::cout << "URL FROM CACHE" << std::endl;
       ASyncCallback *cb = rem_async_cb(url); //load_url_callbacks[url];
       if (cb) {
 	//std::cout << "Load cb!" << url << std::endl;
@@ -700,6 +705,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
       return; 
     }
+      std::cout << "URL LOADED REALLY..." << std::endl;
     char *buf2 = new char[url2.size()+1];
     std::copy(url2.begin(), url2.end(), buf2);
     buf2[url2.size()]=0;

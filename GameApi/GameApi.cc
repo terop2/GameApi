@@ -1105,8 +1105,8 @@ public:
     //if (val1>1.0) val1=1.0;
     const_cast<ScaleProgress*>(this)->time+=1.0;
     // if you change the numbers, change logo_iter too
-    float val2 = float(FindProgressVal())/float(FindProgressMax() +101.0);
-    val2+=time/float(FindProgressMax() +101.0);
+    float val2 = float(FindProgressVal())/float(FindProgressMax() +2.0);
+    val2+=time/float(FindProgressMax() +2.0);
     //std::cout << "Time:" << time << std::endl;
     if (val2<0.1) val2=0.1;
     if (val2>1.0) val2=1.0;
@@ -3260,13 +3260,15 @@ public:
     if (is_mobile(ev)) {
       mult = 0.2;
     }
+    if (is_platform_linux())
+      mult /= 2.0;
     ogl->glLineWidth(linewidth*mult);
-    
+
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
     GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
     GameApi::LI I10=ev.lines_api.from_polygon(I9);
     GameApi::LLA I11=ev.lines_api.prepare(I10);
-    GameApi::ML I12=ev.lines_api.render_ml(ev,I11);
+    GameApi::ML I12=ev.lines_api.render_ml(ev,I11,linewidth*mult);
 
     GameApi::ML I13;
     I13.id = next->mat(p.id);
@@ -3281,13 +3283,15 @@ public:
     if (is_mobile(ev)) {
       mult = 0.2;
     }
+    if (is_platform_linux()) 
+      mult /= 2.0;
     ogl->glLineWidth(linewidth*mult);
-    
+      
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
     GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
     GameApi::LI I10=ev.lines_api.from_polygon(I9);
     //GameApi::LLA I11=ev.lines_api.prepare(I10);
-    GameApi::ML I12=ev.lines_api.render_inst_ml3(ev,I10,pts);
+    GameApi::ML I12=ev.lines_api.render_inst_ml3(ev,I10,pts,linewidth*mult);
 
     GameApi::ML I13;
     I13.id = next->mat_inst(p.id,pts.id);
@@ -3304,13 +3308,16 @@ public:
     if (is_mobile(ev)) {
       mult = 0.2;
     }
+    if (is_platform_linux()) 
+      mult /= 2.0;
     ogl->glLineWidth(linewidth*mult);
+
     
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
     GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
     GameApi::LI I10=ev.lines_api.from_polygon(I9);
     //GameApi::LLA I11=ev.lines_api.prepare(I10);
-    GameApi::ML I12=ev.lines_api.render_inst_ml3_matrix(ev,I10,ms);
+    GameApi::ML I12=ev.lines_api.render_inst_ml3_matrix(ev,I10,ms,linewidth*mult);
 
     GameApi::ML I13;
     I13.id = next->mat_inst_matrix(p.id,ms.id);
@@ -3327,13 +3334,16 @@ public:
     if (is_mobile(ev)) {
       mult = 0.2;
     }
+    if (is_platform_linux()) 
+      mult /= 2.0;
     ogl->glLineWidth(linewidth*mult);
+
     
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
     GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
     GameApi::LI I10=ev.lines_api.from_polygon(I9);
     // GameApi::LLA I11=ev.lines_api.prepare(I10);
-    GameApi::ML I12=ev.lines_api.render_inst_ml2(ev,I10,pta);
+    GameApi::ML I12=ev.lines_api.render_inst_ml2(ev,I10,pta,linewidth*mult);
 
     GameApi::ML I13;
     I13.id = next->mat_inst2(p.id,pta.id);
@@ -3350,7 +3360,10 @@ public:
     if (is_mobile(ev)) {
       mult = 0.2;
     }
+    if (is_platform_linux()) 
+      mult /= 2.0;
     ogl->glLineWidth(linewidth*mult);
+
     
     GameApi::PTA pta = ev.points_api.prepare(pts);
 
@@ -3358,7 +3371,7 @@ public:
     GameApi::P I9=ev.lines_api.p_towards_normal(I8,dir);
     GameApi::LI I10=ev.lines_api.from_polygon(I9);
     //GameApi::LLA I11=ev.lines_api.prepare(I10);
-    GameApi::ML I12=ev.lines_api.render_inst_ml2(ev,I10,pta);
+    GameApi::ML I12=ev.lines_api.render_inst_ml2(ev,I10,pta, linewidth*mult);
 
     GameApi::ML I13;
     I13.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
@@ -4899,7 +4912,7 @@ private:
 class BumpPhongMaterial : public MaterialForward
 {
 public:
-  BumpPhongMaterial(GameApi::EveryApi &ev, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, GameApi::FB bm_1, float bump_width) : ev(ev), light_dir_x(light_dir_x), light_dir_y(light_dir_y), light_dir_z(light_dir_z), ambient(ambient), highlight(highlight), pow(pow) {
+  BumpPhongMaterial(GameApi::Env &env, GameApi::EveryApi &ev, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, GameApi::FB bm_1, float bump_width) : env(env), ev(ev), light_dir_x(light_dir_x), light_dir_y(light_dir_y), light_dir_z(light_dir_z), ambient(ambient), highlight(highlight), pow(pow) {
     GameApi::FB bm_11 = ev.bitmap_api.mul_fb(bm_1,40.0);
     GameApi::BM I17=ev.bitmap_api.bump_map(bm_11,bump_width);
     GameApi::BM I18=ev.bitmap_api.flip_y(I17);
@@ -4912,9 +4925,15 @@ public:
   }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
-    GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
-    GameApi::P p1 = ev.polygon_api.color(p00, 0xff000000);
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01) {
+      p0 = ev.polygon_api.recalculate_normals(p);
+      //p0 = ev.polygon_api.smooth_normals2(p0);
+    }
+    GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     //GameApi::ML ml;
     GameApi::ML ml=ev.polygon_api.render_vertex_array_ml2_texture(ev,p1,bm);
     //ml.id = next->mat(p1.id);
@@ -4924,9 +4943,15 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
-    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
-    GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
-    GameApi::P p1 = ev.polygon_api.color(p00, 0xff000000);
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01) {
+      p0 = ev.polygon_api.recalculate_normals(p);
+      //p0 = ev.polygon_api.smooth_normals2(p0);
+    }
+    GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     //GameApi::ML ml;
     GameApi::ML ml=ev.materials_api.render_instanced_ml_texture(ev,p1,pts,bm);
     //ml.id = next->mat_inst(p1.id, pts.id);
@@ -4937,9 +4962,17 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
-    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
-    GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
-    GameApi::P p1 = ev.polygon_api.color(p00, 0xff000000);
+
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01) {
+      p0 = ev.polygon_api.recalculate_normals(p);
+      //p0 = ev.polygon_api.smooth_normals2(p0);
+    }
+
+    GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     //GameApi::ML ml;
     GameApi::ML ml=ev.materials_api.render_instanced_ml_texture_matrix(ev,p1,ms,bm);
     //ml.id = next->mat_inst(p1.id, pts.id);
@@ -4979,6 +5012,7 @@ public:
   }
 
 private:
+  GameApi::Env &env;
   GameApi::EveryApi &ev;
   Material *next;
   float light_dir_x, light_dir_y, light_dir_z;
@@ -5525,7 +5559,7 @@ EXPORT GameApi::MT GameApi::MaterialsApi::gi(EveryApi &ev, MT nxt, PTS points, f
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::bump_phong(EveryApi &ev, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, FB bm, float bump_width)
 {
-  return add_material(e, new BumpPhongMaterial(ev, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow,bm, bump_width));
+  return add_material(e, new BumpPhongMaterial(e,ev, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow,bm, bump_width));
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::fog(EveryApi &ev, MT nxt, float fog_dist, unsigned int dark_color, unsigned int light_color)
 {
@@ -5591,7 +5625,10 @@ public:
     if (is_mobile(ev)) {
       mult = 0.2;
     }
+    if (is_platform_linux())
+      mult /= 2.0;
     ogl->glLineWidth(linewidth*mult);
+      
     GameApi::P I2=p;
     GameApi::P I2b = ev.polygon_api.recalculate_normals(I2);
     GameApi::P I2a = ev.lines_api.p_towards_normal(I2b, val);
@@ -5599,7 +5636,7 @@ public:
     GameApi::LI I4=ev.lines_api.change_color(I3,color);
     //GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
     //GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_ml2(ev,I4);
+    GameApi::ML I6=ev.lines_api.render_ml2(ev,I4,linewidth*mult);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
@@ -5618,7 +5655,10 @@ public:
       mult = 0.2;
     }
 
+    if (is_platform_linux())
+      mult/=2.0;
     ogl->glLineWidth(linewidth*mult);
+
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
@@ -5628,7 +5668,7 @@ public:
     GameApi::LI I4=ev.lines_api.change_color(I3,color);
     //GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
     //GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_inst_ml3(ev,I4,pts);
+    GameApi::ML I6=ev.lines_api.render_inst_ml3(ev,I4,pts, linewidth*mult);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
@@ -5646,8 +5686,10 @@ public:
     if (is_mobile(ev)) {
       mult = 0.2;
     }
-
+    if (is_platform_linux())
+      mult /= 2.0;
     ogl->glLineWidth(linewidth*mult);
+
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
@@ -5657,7 +5699,7 @@ public:
     GameApi::LI I4=ev.lines_api.change_color(I3,color);
     //GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
     //GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_inst_ml3_matrix(ev,I4,ms);
+    GameApi::ML I6=ev.lines_api.render_inst_ml3_matrix(ev,I4,ms,linewidth*mult);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
@@ -5678,8 +5720,10 @@ public:
       mult = 0.2;
     }
 
+    if (is_platform_linux())
+      mult/=2.0;
     ogl->glLineWidth(linewidth*mult);
-    
+
     GameApi::P I2=p;
     GameApi::P I2b = ev.polygon_api.recalculate_normals(I2);
     GameApi::P I2a = ev.lines_api.p_towards_normal(I2b, val);
@@ -5687,7 +5731,7 @@ public:
     GameApi::LI I4=ev.lines_api.change_color(I3,color);
     //GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
     //GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I4,pta);
+    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I4,pta,linewidth*mult);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
@@ -5705,8 +5749,11 @@ public:
     if (is_mobile(ev)) {
       mult = 0.2;
     }
-
+    if (is_platform_linux())
+      mult /= 2.0;
+    
     ogl->glLineWidth(linewidth*mult);
+
     GameApi::PTA pta = ev.points_api.prepare(pts);
     
     GameApi::P I2=p;
@@ -5717,7 +5764,7 @@ public:
     //GameApi::LI I5=ev.lines_api.line_pos_mult(val,I4);
 
     //GameApi::LLA I5=ev.lines_api.prepare(I4);
-    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I4,pta);
+    GameApi::ML I6=ev.lines_api.render_inst_ml2(ev,I4,pta,linewidth*mult);
     GameApi::P I8=p; 
     //VA I9=ev.polygon_api.create_vertex_array(I8,true);
     //ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
@@ -11419,8 +11466,10 @@ void splitter_iter2(void *arg)
 #ifdef VIRTUAL_REALITY
 void vr_run2(Splitter *spl2);
 #endif
+extern GameApi::EveryApi *g_everyapi;
 EXPORT void GameApi::BlockerApi::run2(EveryApi &ev, RUN spl)
 {
+  g_everyapi = &ev;
   Splitter *spl2 = find_splitter(e, spl);
   spl2->e = &e;
   spl2->ev = &ev;
@@ -22213,6 +22262,40 @@ std::vector<std::string> g_strings(25);
 #define KP
 #endif
 
+std::string g_new_script = "";
+GameApi::EveryApi *g_everyapi = 0;
+
+KP extern "C" void set_new_script(const char *script2)
+{
+#ifdef EMSCRIPTEN
+  std::string script(script2);
+  if (!g_everyapi) return;
+  std::cout << "NEW SCRIPT" << std::endl;
+  std::cout << script << std::endl;
+  g_new_script = script;
+  static int g_id = -1;
+  if (g_id!=-1) clear_block(g_id);
+  g_id = add_block();
+  set_current_block(g_id);
+  GameApi::ExecuteEnv e;
+  std::pair<int,std::string> blk = GameApi::execute_codegen(g_everyapi->get_env(), *g_everyapi, script, e);
+  set_current_block(-2);
+  if (blk.second=="RUN") {
+    GameApi::RUN r;
+    r.id = blk.first;
+    emscripten_cancel_main_loop();
+    g_everyapi->blocker_api.run2(*g_everyapi, r);
+  } else if (blk.second=="OK") {
+    GameApi::BLK b;
+    b.id = blk.first;
+    g_everyapi->blocker_api.run(b);
+    std::cout << "ERROR: BLOCKERAPI::run does not set g_everyapi" << std::endl;
+  } else {
+    std::cout << "ERROR: internal error" << std::endl;
+  }
+#endif
+}
+
 KP  extern "C" void activate_trigger(int num)
 {
   std::cout << "TRIGGER " << num << std::endl;
@@ -22236,7 +22319,10 @@ KP extern "C" void set_float(int num, float value)
 KP extern "C" void set_string(int num, const char *value)
 {
   std::cout << "STRING " << num << " " << value << std::endl;
-
+  if (num==0) {
+    set_new_script(value);      
+  }
+  
   std::string s(value);
   if (num>=0 && num<25) { g_strings[num]=s; }
 }
@@ -22993,4 +23079,47 @@ GameApi::ML GameApi::MainLoopApi::create_objs(EveryApi &ev, int area_id)
 {
   return add_main_loop(e, new CreateAllObject(e,ev,area_id));
   //return create_all_objects(e,ev,area_id);
+}
+
+std::string g_platform;
+
+bool is_platform_linux()
+{
+#ifdef LINUX
+  return true;
+#endif
+  int val = find_str(g_platform,"Linux");
+  return val!=-1;
+}
+bool is_platform_android()
+{
+  int val = find_str(g_platform,"Android");
+  return val!=-1;
+}
+bool is_platform_win32()
+{
+#ifdef WINDOWS
+  return true;
+#endif
+  int val = find_str(g_platform,"Windows");
+  return val!=-1;
+}
+bool is_platform_mac()
+{
+#ifdef __APPLE__
+  return true;
+#endif
+  int val = find_str(g_platform,"Macintosh");
+  return val!=-1;
+}
+bool is_platform_chrome()
+{
+  int val = find_str(g_platform,"Chrome");
+  int val2 = find_str(g_platform,"Chromium");
+  return val!=-1 || val2!=-1;
+}
+bool is_platform_firefox()
+{
+  int val = find_str(g_platform,"Firefox");
+  return val!=-1;
 }

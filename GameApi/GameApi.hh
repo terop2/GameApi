@@ -614,6 +614,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT BM scale_to_size(BM bm, int sz);
   IMPORT BM median_filter(BM bm, int sx, int sy);
         IMPORT BM newbitmap(int sx, int sy, unsigned int color = 0x00000000);
 	IMPORT BM function(std::function<unsigned(int, int)> f, int sx, int sy);
@@ -2179,6 +2180,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  P bitmapsized_quad(BM bm);
   // Array functions
   PTS voxelarray_to_pts(AV arr, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
   AV pts_to_voxel(PTS pts, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy, int sz);
@@ -3228,12 +3230,12 @@ public:
   IMPORT void render_inst(LLA array, PTA instances);
   IMPORT void prepare_inst_matrix(LLA array, MSA instances);
   IMPORT void render_inst_matrix(LLA array, MSA instances);
-  IMPORT ML render_ml(EveryApi &ev, LLA array);
-  IMPORT ML render_ml2(EveryApi &ev, LI array);
-  IMPORT ML render_inst_ml(EveryApi &ev, LLA array, PTA pta);
-  IMPORT ML render_inst_ml2(EveryApi &ev, LI array, PTA pta);
-  IMPORT ML render_inst_ml3(EveryApi &ev, LI array, PTS pts);
-  IMPORT ML render_inst_ml3_matrix(EveryApi &ev, LI array, MS pts);
+  IMPORT ML render_ml(EveryApi &ev, LLA array, float linewidth);
+  IMPORT ML render_ml2(EveryApi &ev, LI array, float linewidth);
+  IMPORT ML render_inst_ml(EveryApi &ev, LLA array, PTA pta, float linewidth);
+  IMPORT ML render_inst_ml2(EveryApi &ev, LI array, PTA pta, float linewidth);
+  IMPORT ML render_inst_ml3(EveryApi &ev, LI array, PTS pts, float linewidth);
+  IMPORT ML render_inst_ml3_matrix(EveryApi &ev, LI array, MS pts, float linewidth);
   IMPORT LI import_ifc(EveryApi &ev, std::string url);
 private:
   LinesApi(const LinesApi&);
