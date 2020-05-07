@@ -7447,9 +7447,9 @@ std::vector<GameApiItem*> blocker_functions()
 			 "LLA", "lines_api", "prepare"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::render_ml,
 			 "li_render",
-			 { "ev", "lla" },
-			 { "EveryApi&", "LLA" },
-			 { "ev", "" },
+			 { "ev", "lla", "linewidth" },
+			 { "EveryApi&", "LLA", "float" },
+			 { "ev", "", "1.0" },
 			 "ML", "lines_api", "render_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::sfo_to_ml,
 			 "sfo_render",
@@ -8187,6 +8187,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&" },
 			 { "ev" },
 			 "P", "polygon_api", "fullscreen_quad"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::bitmapsized_quad,
+			 "quad_bmsize",
+			 { "bm" },
+			 { "BM" },
+			 { "" },
+			 "P", "polygon_api", "bitmapsized_quad"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::vr_fullscreen_quad,
 			 "vr_fullscreen_quad",
 			 { "ev", "is_right_eye" },
@@ -10482,6 +10488,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "EveryApi&", "BM", "int", "int" },
 			 { "ev", "", "800", "600" },
 			 "BM", "bitmap_api", "scale_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::scale_to_size,
+			 "bm_scale2",
+			 { "bm", "sz" },
+			 { "BM", "int" },
+			 { "", "400" },
+			 "BM", "bitmap_api", "scale_to_size"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::scale_bitmap_fullscreen,
 			 "bm_fullscreen",
 			 { "ev", "orig" },

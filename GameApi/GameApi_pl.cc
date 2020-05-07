@@ -873,14 +873,23 @@ int g_use_texid_material=0;
 class NetworkedFaceCollectionMTL2 : public FaceCollection
 {
 public:
-  NetworkedFaceCollectionMTL2(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string obj_url, std::string homepage, int count, std::string mtl_url, std::string url_prefix) : e(e), ev(ev), url(obj_url), homepage(homepage), mtl_url(mtl_url), url_prefix(url_prefix), count(count), empty(empty)
+  ~NetworkedFaceCollectionMTL2() {
+    int s = buffer.size();
+    for(int i=0;i<s;i++)
+      {
+	BufferRef::FreeBuffer(buffer[i]);
+      }
+  }
+  NetworkedFaceCollectionMTL2(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string obj_url, std::string homepage, int count, std::string mtl_url, std::string url_prefix, bool cached) : e(e), ev(ev), url(obj_url), homepage(homepage), mtl_url(mtl_url), url_prefix(url_prefix), count(count), empty(empty)
   {
     current = empty;
     filled = 0;
+    if (!cached) {
       e.async_load_callback(mtl_url, &MTL2_CB, (void*)this);
 #ifdef EMSCRIPTEN
     async_pending_count++;
 #endif
+    }
     done_mtl=false;
   }
   void PrepareMTL()
@@ -981,7 +990,7 @@ public:
 	    std::swap(img.buffer[x+y*img.ydelta],img.buffer[x+(sy-y-1)*img.ydelta]);
 	  }
 
-
+      BufferRef::FreeBuffer(buffer[i]);
       buffer[i] = img;
       //std::cout << "p_mtl prepare2 " << url << " " << i << std::endl;
 
@@ -1067,7 +1076,7 @@ public:
     return ref;
   }
   virtual int FaceTexture(int face) const { return current->FaceTexture(face); }
-
+ 
 private:
   GameApi::Env &e;
   GameApi::EveryApi &ev;
@@ -1180,8 +1189,9 @@ EXPORT GameApi::P GameApi::PolygonApi::p_mtl(EveryApi &ev, std::string obj_url, 
   int c = get_current_block();
   set_current_block(-1);
   P p = p_empty();
+  bool cached = find_data(obj_url)!=-1;
   FaceCollection *emp = find_facecoll(e, p);
-  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL2(e,ev, emp, obj_url, gameapi_homepageurl, count,mtl_url,prefix),1); 
+  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL2(e,ev, emp, obj_url, gameapi_homepageurl, count,mtl_url,prefix,cached),1); 
   FaceCollection *coll = find_facecoll(e,p1);
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,obj_url,coll),1);
   set_current_block(c);
@@ -1504,6 +1514,78 @@ EXPORT GameApi::P GameApi::PolygonApi::fullscreen_quad(EveryApi &ev)
   int sx = 800-40; //ev.mainloop_api.get_screen_sx();
   int sy = 600-40; //ev.mainloop_api.get_screen_sy();
   return quad_z(-sx,sx, -sy, sy, 0.0);
+}
+
+class BitmapSizedQuad : public FaceCollection
+{
+public:
+  BitmapSizedQuad(GameApi::Env &e, GameApi::PolygonApi *pl, Bitmap<::Color> *bm) : e(e), pl(pl), bm(bm) { }
+
+  virtual void Prepare()
+  {
+    bm->Prepare();
+    int sx = bm->SizeX();
+    int sy = bm->SizeY();
+    sx/=2;
+    sy/=2;
+    p = pl->quad_z(-sx,sx,-sy,sy,0.0);
+  }
+  virtual int NumFaces() const
+  {
+    FaceCollection *coll = find_facecoll(e,p);
+    return coll->NumFaces();
+  }
+  virtual int NumPoints(int face) const
+  {
+    FaceCollection *coll = find_facecoll(e,p);
+    return coll->NumPoints(face);
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    FaceCollection *coll = find_facecoll(e,p);
+    return coll->FacePoint(face,point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    FaceCollection *coll = find_facecoll(e,p);
+    return coll->PointNormal(face,point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    FaceCollection *coll = find_facecoll(e,p);
+    return coll->Attrib(face,point,id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    FaceCollection *coll = find_facecoll(e,p);
+    return coll->AttribI(face,point,id);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    FaceCollection *coll = find_facecoll(e,p);
+    return coll->Color(face,point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    FaceCollection *coll = find_facecoll(e,p);
+    return coll->TexCoord(face,point);
+  }
+  virtual float TexCoord3(int face, int point) const {
+    FaceCollection *coll = find_facecoll(e,p);
+    return coll->TexCoord3(face,point);
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::PolygonApi *pl;
+  Bitmap<::Color> *bm;
+  GameApi::P p;
+};
+EXPORT GameApi::P GameApi::PolygonApi::bitmapsized_quad(BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  return add_polygon2(e, new BitmapSizedQuad(e,this,b2),1);
 }
 EXPORT GameApi::P GameApi::PolygonApi::vr_fullscreen_quad(EveryApi &ev, bool is_right)
 {
@@ -4923,7 +5005,7 @@ public:
 	
 	std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev, bm);
 	va = ev.texture_api.bind_many(va, id);
-
+	
       }
 
 
@@ -6729,7 +6811,7 @@ public:
     firsttime = true;
     sh.id = -1;
   }
-  std::vector<int> shader_id() { next->shader_id(); 
+  std::vector<int> shader_id() { return next->shader_id(); 
   }
   void handle_event(MainLoopEvent &e)
   {
@@ -7240,7 +7322,7 @@ public:
     firsttime = true;
     sh.id = -1;
   }
-  std::vector<int> shader_id() { next->shader_id(); 
+  std::vector<int> shader_id() { return next->shader_id(); 
   }
   void handle_event(MainLoopEvent &e)
   {
@@ -13912,6 +13994,7 @@ public:
   }
   float BoneAngle(int pt) const
   {
+    return 0.0;
   }
 private:
   FaceCollection *coll;
