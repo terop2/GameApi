@@ -156,3 +156,4 @@ P I155=ev.polygon_api.scale(I154,1,-1,1);
 P I156=ev.polygon_api.translate(I155,0,350,0);
 P I157=ev.polygon_api.color_faces(I156,0xffffffff,0xffffffff,0xff888888,0xff888888);
 P I158=ev.polygon_api.or_elem(I145,I157);
+P I159=ev.polygon_api.smooth_normals2(I158);

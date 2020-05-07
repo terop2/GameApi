@@ -290,7 +290,7 @@ public:
     }
     return next->handle_event(e);
   }
-  virtual int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;

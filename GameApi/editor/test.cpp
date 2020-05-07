@@ -14,6 +14,7 @@
 #endif
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 #include <pthread.h>
 using namespace GameApi;
 
@@ -23,10 +24,14 @@ extern "C" void _udev_device_get_action() { }
 
 extern int g_event_screen_x;
 extern int g_event_screen_y;
+extern std::string gameapi_homepageurl;
 
 void InstallProgress(int num, std::string label, int max=15);
 void ProgressBar(int num, int val, int max, std::string label);
-
+void set_codegen_values(GameApi::WM mod2, int id, std::string line_uid, int level);
+void pthread_system(std::string str);
+std::string find_html2(GameApi::HML ml, GameApi::Env &env);
+std::vector<unsigned char> load_from_url(std::string url);
 
 std::string hexify2(std::string s)
 {
@@ -449,6 +454,17 @@ std::ostream &operator<<(std::ostream &o, const std::vector<T> &vec)
     }
   return o;
 }
+
+struct ASyncData
+{
+  std::string api_name;
+  std::string func_name;
+  int param_num;
+};
+
+extern ASyncData *g_async_ptr;
+extern int g_async_count;
+
 void FinishProgress();
 void iter(void *arg)
 {
@@ -471,7 +487,7 @@ void iter(void *arg)
     
     //env->gui->render(env->txt2);
     env->gui->render(env->line);
-    env->gui->render(env->txt);
+    //env->gui->render(env->txt);
     env->gui->render(env->scroll_area);
     //env->gui->render(env->wave);
     //env->gui->render(env->gameapi);
@@ -494,11 +510,11 @@ void iter(void *arg)
 	env->ev->shader_api.use(env->sh);
 	env->gui->render(env->connect_widget);
       }
-    if (env->opened_menu_num != -1)
-      {
+    //if (env->opened_menu_num != -1)
+    //  {
 	//std::cout << env->opened_menu_num << std::endl;
-	env->gui->render(env->menus[env->opened_menu_num]);
-      }
+    //	env->gui->render(env->menus[env->opened_menu_num]);
+    //  }
     //int s5 = env->connect_links.size();
     //for(int i5 = 0;i5<s5;i5++)
     //  {
@@ -580,7 +596,7 @@ void iter(void *arg)
 	
 	//std::cout << e.ch << std::endl;
 #ifndef EMSCRIPTEN
-	if (e.ch==27 && e.type==0x300) { exit(0); }
+	//if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif
 	if (e.type != 0x300 && e.type != 0x301)
 	  {
@@ -850,14 +866,38 @@ void iter(void *arg)
 		//std::cout << "Execute for uid: " << uid << std::endl;
 		env->env->free_temp_memory();
 		    // Execute
+		//InstallProgress(933, "Execute", 15);
+		//ProgressBar(933, 0,15, "Execute");
+		
+		    std::string type2 = env->ev->mod_api.return_type(env->mod, 0, uid);
+		    //ProgressBar(933, 7,15, "Execute");
+		    GameApi::ExecuteEnv exeenv;
+		    if (type2 != "HML") {
+		    std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count);
+		    //ProgressBar(933, 15,15, "Execute");
+
+		    //std::cout << "URLS:" << ids.second << std::endl;
+		    std::vector<std::string> urls = ids.second;
+		    std::sort(urls.begin(),urls.end());
+		    std::unique(urls.begin(),urls.end());
+		    env->env->async_load_all_urls(urls, gameapi_homepageurl);
+		    }
+		    //int s = urls.size();
+		    //for(int i=0;i<s;i++)
+		    //  {
+		    //	env->env->async_load_url(urls[i], gameapi_homepageurl);
+		    // }
 
 		static int g_id = -1;
 		if (g_id!=-1) clear_block(g_id);
 		g_id = add_block();
 		set_current_block(g_id);
-		    GameApi::ExecuteEnv exeenv;
+
+		    set_codegen_values(env->mod,0,uid,1000);
+		    
 		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000);
 		    set_current_block(-2);
+
 		    if (id==-1) {
 		      std::cout << "Execute failed!" << std::endl;
 		      break;
@@ -866,6 +906,9 @@ void iter(void *arg)
 
 		    // display dialog
 		    std::string type = env->ev->mod_api.return_type(env->mod, 0, uid);
+
+
+		    
 		    
 		    bool display = true;
 		    if (type=="BO")
@@ -916,7 +959,7 @@ void iter(void *arg)
 			  //O I17=ev.volume_api.mandelbrot_volume(false,64,0.0);
 			  //VX I18=ev.voxel_api.blit_voxel(I17,30,30,30,-200,200,-200,200,-200,200,-1,2);
 			  ARR I19=ev.voxel_api.voxel_instancing(vx,3,-300,300,-300,300,-300,300);
-			  MT I20=ev.materials_api.def(ev);
+			  MT I20=ev.materials_api.m_def(ev);
 			  ML I21=ev.voxel_api.voxel_bind(ev,std::vector<P>{I12,I14,I16},arr_to_pts_arr(ev,I19),I20);
 			  ML ml = I21;
 			  env->env->free_temp_memory();
@@ -1084,7 +1127,38 @@ void iter(void *arg)
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
 			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
-		      } 
+		      }
+		    else if (type=="HML")
+		      {
+			display = false;
+			HML ml;
+			ml.id = id;
+			env->ev->mod_api.codegen_reset_counter();
+
+			std::string htmlfile = find_html2(ml,*env->env);
+#ifdef WINDOWS
+			std::string drive = getenv("systemdrive");
+			std::string path = getenv("homepath");
+			std::string prefix = drive + path + "\\";
+			
+			std::ofstream f((prefix + "tst.html").c_str());
+			f << htmlfile;
+			f.close();
+
+			pthread_system((std::string("start ") + prefix + "tst.html").c_str());
+#else
+			std::string home = getenv("HOME");
+			std::string prefix = home + "/_gameapi_builder";
+			system((std::string("mkdir -p ") + prefix).c_str());
+			
+			prefix+="/";
+			std::ofstream f((prefix + "tst.html").c_str());
+			f << htmlfile;
+			f.close();
+
+			pthread_system((std::string("chromium ") + prefix + "tst.html").c_str());
+#endif
+		      }
 		    else if (type=="WV")
 		      {
 			WV wv;
@@ -1280,7 +1354,7 @@ void iter(void *arg)
 	  }
 	
 	env->gui->update(env->line, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	env->gui->update(env->txt, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	//env->gui->update(env->txt, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	if (env->display_visible)
 	  {
 	    env->gui->update(env->display, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
@@ -1545,24 +1619,24 @@ void iter(void *arg)
 	  }
 	
 
-	int selected_item = env->gui->chosen_item(env->txt);
-	int selected_item2 = -1;
-	if (selected_item != -1)
-	  {
-	    env->opened_menu_num = selected_item;
-	  }
-	if (env->opened_menu_num != -1)
-	  {
-	    env->gui->update(env->menus[env->opened_menu_num], e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	    if (e.button == -1) { env->state=1; }
-	    if (e.button==0 && e.type==1025 && env->state==1)
-	      {
-		selected_item2 = env->gui->chosen_item(env->menus[env->opened_menu_num]);
-		env->opened_menu_num = -1;
-		env->state = 0;
-		//std::cout << selected_item2 << std::endl;
-	      }
-	  }
+	//int selected_item = env->gui->chosen_item(env->txt);
+	//int selected_item2 = -1;
+	//if (selected_item != -1)
+	//  {
+	//    env->opened_menu_num = selected_item;
+	//  }
+	//if (env->opened_menu_num != -1)
+	//  {
+	//    env->gui->update(env->menus[env->opened_menu_num], e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	//    if (e.button == -1) { env->state=1; }
+	//    if (e.button==0 && e.type==1025 && env->state==1)
+	//      {
+	//	selected_item2 = env->gui->chosen_item(env->menus[env->opened_menu_num]);
+	//	env->opened_menu_num = -1;
+	//	env->state = 0;
+	//	//std::cout << selected_item2 << std::endl;
+	//      }
+	//  }
       }
     //float param_x = env->gui->dynamic_param(env->txt2, 0);
     //env->gui->set_dynamic_param(env->scroll_area, 1, 0.0 /* param_x */);
@@ -1706,6 +1780,9 @@ void terminate_handler()
 void clear_counters();
 void print_counters();
 bool file_exists(std::string s);
+
+extern bool g_vr_enable;
+extern int g_vr_device_id;
 //extern pthread_t g_main_thread;
 int main(int argc, char *argv[]) {
   //clear_counters();
@@ -1747,6 +1824,12 @@ int main(int argc, char *argv[]) {
 #endif
   for(int i=1;i<argc;i++)
     {
+      if (std::string(argv[i])=="--dump")
+	{
+	  std::string s = ev.mod_api.dump_functions();
+	  std::cout << s << std::endl;
+	  return 0;
+	}
       if (std::string(argv[i])=="--mg")
 	{
 	  screen_x = 2560;
@@ -1768,9 +1851,21 @@ int main(int argc, char *argv[]) {
 	  screen_x = 800;
 	  screen_y = 600;
 	}
+      if (std::string(argv[i])=="--vr")
+	{
+	  g_vr_enable = true;
+	  std::string device_id = std::string(argv[i+1]);
+	  g_vr_device_id = 0;
+	  if (device_id=="vive") { g_vr_device_id = 1; }
+	  if (device_id=="oculus") { g_vr_device_id=2; }
+
+	  if (g_vr_device_id==0) g_vr_device_id = 1; else i++;
+
+	}
       if (std::string(argv[i])=="--file")
 	{
 	  filename = std::string(argv[i+1]);
+	  i++;
 	}
     }
   std::ifstream stream(filename.c_str());
@@ -1917,7 +2012,7 @@ int main(int argc, char *argv[]) {
   //W txt_3 = gui.layer(txt_1, txt_2);
   //W arr[] = { txt_1, txt_2 };
   //W txt = gui.array_x(arr, 2, 2);
-
+#if 0
   std::vector<std::string> vec;
   vec.push_back("Edit");
   vec.push_back("File");
@@ -1933,7 +2028,7 @@ int main(int argc, char *argv[]) {
       W txt_2 = gui.menu(txt,i, vec2, atlas, atlas_bm);
       menus.push_back(txt_2);
     }
-			 
+#endif			 
 
 
 
@@ -2003,7 +2098,7 @@ int main(int argc, char *argv[]) {
   //W txt2 = gui.scrollbar_y(20, screen_y-30, gui.size_y(array));
   //gui.set_pos(txt2, gui.size_x(scroll_area), 30);
 
-  gui.set_pos(scroll_area, 0.0, 30.0);
+  gui.set_pos(scroll_area, 0.0, 0.0);
   gui.set_size(scroll_area, 140.0, screen_y);
   //W wave = gui.waveform(f, 0.0, 3.14159*2.0, -1.5, 1.5, 200, 100, 0xffffffff, 0x00000000);
 
@@ -2032,13 +2127,13 @@ int main(int argc, char *argv[]) {
   //ProgressBar(888,9,10,"init");
 
 
-  W canvas_area = gui.scroll_area(canvas, screen2_x, screen2_y-20, screen_y);
+  W canvas_area = gui.scroll_area(canvas, screen2_x, screen2_y, screen_y);
   //W scrollbar_y = gui.scrollbar_y(20, screen2_y-20, sy);
   W scrollbar_x = gui.scrollbar_x(screen2_x-20, 20, sx); 
 
-  W line = gui.rectangle(0.0, 4.0, 20.0, screen_y, 0xffffffff);
-  gui.set_pos(line, 140-5, 20);
-  gui.set_pos(canvas_area, 140, 30);
+  W line = gui.rectangle(0.0, 4.0, 0.0, screen_y, 0xffffffff);
+  gui.set_pos(line, 140-5, 0);
+  gui.set_pos(canvas_area, 140, 0);
   gui.set_pos(scrollbar_x, 140, screen_y-20);
   //gui.set_pos(scrollbar_y, screen_x-20, 30);
   
@@ -2050,7 +2145,7 @@ int main(int argc, char *argv[]) {
   env.line = line;
   env.gui = &gui;
   env.ev = &ev;
-  env.txt = txt;
+  //env.txt = txt;
   //env.txt2 = txt2;
   env.font = font;
   env.font3 = font3;
@@ -2077,7 +2172,7 @@ int main(int argc, char *argv[]) {
   env.scrollbar_x = scrollbar_x;
   //env.gameapi = gameapi_2;
   env.scroll_area = scroll_area;
-  env.menus = menus;
+  //env.menus = menus;
   env.opened_menu_num = -1;
   env.connect_ongoing = false;
   env.connect_ongoing2 = false;

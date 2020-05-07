@@ -225,6 +225,7 @@ void map_enums(int &i)
   case Low_GL_TRIANGLES: i=GL_TRIANGLES; break; 
   case Low_GL_TRIANGLE_STRIP: i=GL_TRIANGLE_STRIP; break;
   case Low_GL_UNSIGNED_BYTE: i=GL_UNSIGNED_BYTE; break;
+  case Low_GL_UNSIGNED_INT: i=GL_UNSIGNED_INT; break;
   case   Low_GL_QUADS: i=GL_QUADS; break;
   case   Low_GL_DEPTH_TEST: i=GL_DEPTH_TEST; break;
   case   Low_GL_STATIC_DRAW: i=GL_STATIC_DRAW; break;
@@ -240,6 +241,16 @@ void map_enums(int &i)
   case   Low_GL_TEXTURE8: i=GL_TEXTURE8; break;
   case   Low_GL_TEXTURE9: i=GL_TEXTURE9; break;
   case   Low_GL_TEXTURE10: i=GL_TEXTURE10; break;
+  case   Low_GL_TEXTURE11: i=GL_TEXTURE11; break;
+  case   Low_GL_TEXTURE12: i=GL_TEXTURE12; break;
+  case   Low_GL_TEXTURE13: i=GL_TEXTURE13; break;
+  case   Low_GL_TEXTURE14: i=GL_TEXTURE14; break;
+  case   Low_GL_TEXTURE15: i=GL_TEXTURE15; break;
+  case   Low_GL_TEXTURE16: i=GL_TEXTURE16; break;
+  case   Low_GL_TEXTURE17: i=GL_TEXTURE17; break;
+  case   Low_GL_TEXTURE18: i=GL_TEXTURE18; break;
+  case   Low_GL_TEXTURE19: i=GL_TEXTURE19; break;
+  case   Low_GL_TEXTURE20: i=GL_TEXTURE20; break;
 
   case    Low_GL_TEXTURE_2D: i=GL_TEXTURE_2D; break;
 #ifndef USE_GLES2
@@ -265,6 +276,7 @@ void map_enums(int &i)
   case    Low_GL_FRAMEBUFFER_COMPLETE: i=GL_FRAMEBUFFER_COMPLETE; break;
   case    Low_GL_NEAREST: i=GL_NEAREST; break;
   case    Low_GL_DEPTH_COMPONENT16: i=GL_DEPTH_COMPONENT16; break;
+  case Low_GL_DEPTH_COMPONENT: i=GL_DEPTH_COMPONENT; break;
   case    Low_GL_DEPTH_ATTACHMENT:  i=GL_DEPTH_ATTACHMENT; break;
   case    Low_GL_COLOR_ATTACHMENT0: i=GL_COLOR_ATTACHMENT0; break;
   case    Low_GL_VIEWPORT:  i=GL_VIEWPORT; break;

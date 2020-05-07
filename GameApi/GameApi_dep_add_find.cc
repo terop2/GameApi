@@ -23,7 +23,7 @@ struct Block
       }
     if (s)
       ProgressBar(667,15,15,"Cleanup");
-    std::cout << std::flush;
+    std::cout << std::endl;
     vec.clear();
   }
 
@@ -46,16 +46,18 @@ struct Rest {
   ~Rest()
   {
     int s = g_rest.size();
-    InstallProgress(666, "cleanup", 15);
+    // doesnt work because global destructors have already been ran
+    // and installprogress uses global variables.
+    //InstallProgress(666, "cleanup", 15);
     for(int i=0;i<s;i++)
       {
-	if (i%10==0) {
-	  ProgressBar(666,i*15/s,15,"cleanup");
-	}
+	//if (i%10==0) {
+	//  ProgressBar(666,i*15/s,15,"cleanup");
+	//}
       g_rest[i].reset();
       }
-    ProgressBar(666,15,15,"cleanup");
-    std::cout << std::flush;
+    //ProgressBar(666,15,15,"cleanup");
+    std::cout << std::endl;
     g_rest.clear();
   }
 };
@@ -128,6 +130,17 @@ GameApi::AV add_voxel_array(GameApi::Env &e, VoxelArray *arr)
   im.id = env->voxel_array.size()-1;
   return im;
 
+}
+
+GameApi::HML add_html(GameApi::Env &e, Html *file)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->html.push_back(file);
+  if (g_current_block != -2)
+  add_b(std::shared_ptr<void>(file));
+  GameApi::HML im;
+  im.id = env->html.size()-1;
+  return im;
 }
 
 GameApi::W add_frm_widget(GameApi::Env &e, FrmWidget *w)
@@ -1259,6 +1272,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   GameApi::LL ee;
   ee.id = spos->CurrentPosNum();
   return ee;
+}
+
+Html *find_html(GameApi::Env &e, GameApi::HML u)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->html[u.id];
 }
 
 Fetcher<FaceID> *find_uv(GameApi::Env &e, GameApi::UV u)

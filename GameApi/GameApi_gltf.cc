@@ -217,20 +217,20 @@ extern std::vector<PrepareCB> g_prepare_callbacks;
 bool FileExists(const std::string &abs_filename, void *ptr)
 {
   //LoadGltf *data = (LoadGltf*)ptr;
-  std::cout << "FileExists " << abs_filename << std::endl;
+  //std::cout << "FileExists " << abs_filename << std::endl;
   return true;
 }
 std::string ExpandFilePath(const std::string &str, void *ptr)
 {
   //LoadGltf *data = (LoadGltf*)ptr;
-  std::cout << "ExpandFilePath " << str << std::endl;
+  //std::cout << "ExpandFilePath " << str << std::endl;
   return str;
 }
 
 bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std::string &filepath, void *ptr)
 {
   //LoadGltf *data = (LoadGltf*)ptr;
-  std::cout << "ReadWholeFile " << filepath << std::endl;
+  //std::cout << "ReadWholeFile " << filepath << std::endl;
   std::string url = filepath;
 #ifndef EMSCRIPTEN
     g_e->async_load_url(url, gameapi_homepageurl);
@@ -243,19 +243,19 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
 bool WriteWholeFile(std::string *err, const std::string &filepath, const std::vector<unsigned char> &contents, void *ptr)
 {
   //LoadGltf *data = (LoadGltf*)ptr;
-  std::cout << "WriteWholeFile" << filepath << std::endl;
+  //std::cout << "WriteWholeFile" << filepath << std::endl;
   return false;
 }
 bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err, std::string *warn, int req_width, int req_height, const unsigned char *bytes, int size, void *ptr)
 {
   //LoadGltf *data = (LoadGltf*)ptr;
-  std::cout << "LoadImageData " << req_width << " " << req_height << " " << size << std::endl;
+  //std::cout << "LoadImageData " << req_width << " " << req_height << " " << size << std::endl;
   return false;
 }
 bool WriteImageData(const std::string *basepath, const std::string *filename, tinygltf::Image *image, bool b, void *ptr)
 {
   //LoadGltf *data = (LoadGltf*)ptr;
-  std::cout << "WriteImageData " << *basepath << " " << *filename << std::endl;
+  //std::cout << "WriteImageData " << *basepath << " " << *filename << std::endl;
   return false;
 }
 
@@ -980,6 +980,10 @@ public:
     };
   }
   bool has_texture(int i) const {
+    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+      return false;
+    }
+
     switch(i) {
     case 0: return load->model.materials[material_id].pbrMetallicRoughness.baseColorTexture.index!=-1;
     case 1: return load->model.materials[material_id].pbrMetallicRoughness.metallicRoughnessTexture.index!=-1;
@@ -1005,9 +1009,14 @@ public:
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
 
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm);
-     tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
-    tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
-    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0); // todo base color
+    GameApi::ML I18;
+    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+      I18 = I17;
+    } else {
+      tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
+      tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
+      I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0); // todo base color
+    }
     GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I19;
 
@@ -1026,9 +1035,15 @@ public:
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
 
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,I10,pts,bm);
+    GameApi::ML I18;
+    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+      I18 = I17;
+    } else {
+
     tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
     tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
-    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
+    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
+    }
     GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I19;
   }
@@ -1045,9 +1060,15 @@ public:
     //I13.id = next->mat_inst(p.id,pts.id);
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_matrix(ev,I10,ms,bm);
+    GameApi::ML I18;
+    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+      I18 = I17;
+    } else {
+
     tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
     tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
-    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
+    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
+    }
     GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I19;
   }
@@ -1130,6 +1151,10 @@ public:
     };
   }
   bool has_texture(int i) const {
+    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+      return false;
+    }
+
     switch(i) {
     case 0: return load->model.materials[material_id].pbrMetallicRoughness.baseColorTexture.index!=-1;
     case 1: return load->model.materials[material_id].pbrMetallicRoughness.metallicRoughnessTexture.index!=-1;
@@ -1176,9 +1201,15 @@ public:
     //GameApi::P I10=p; 
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm,types);
+    GameApi::ML I18;
+    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+      I18 = I17;
+    } else {
+
     tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
     tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
-    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0); // todo base color
+    I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0); // todo base color
+    }
     GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I19;
 
@@ -1196,9 +1227,15 @@ public:
     //I13.id = next->mat_inst(p.id,pts.id);
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,I10,pts,bm,types);
+    GameApi::ML I18;
+    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+      I18 = I17;
+    } else {
+
     tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
     tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
-    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
+    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
+    }
     GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I19;
   }
@@ -1215,9 +1252,15 @@ public:
     //I13.id = next->mat_inst(p.id,pts.id);
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_matrix(ev,I10,ms,bm,types);
+    GameApi::ML I18;
+    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+      I18 = I17;
+    } else {
+
     tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
     tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
-    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
+    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
+    }
     GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I19;
 
@@ -1292,7 +1335,7 @@ GameApi::ML scale_to_gltf_size(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::
       FaceCollection *coll = find_facecoll(e,p);
       std::pair<float,Point> dim = find_mesh_scale(coll);
 
-    GameApi::MN I4=ev.move_api.empty();
+    GameApi::MN I4=ev.move_api.mn_empty();
     GameApi::MN I5=ev.move_api.trans2(I4,dim.second.x,dim.second.y,dim.second.z);
     GameApi::MN I6=ev.move_api.scale2(I5,dim.first,dim.first,dim.first);
     GameApi::ML I7=ev.move_api.move_ml(ev,ml,I6,1,10.0);
@@ -1307,7 +1350,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
   int s2 = load->model.nodes.size();
   if (!(node_id>=0 && node_id<s2))
     {
-    GameApi::P empty = ev.polygon_api.empty();
+    GameApi::P empty = ev.polygon_api.p_empty();
     GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
     return ml;
     }
@@ -1337,7 +1380,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
     vec.push_back( mesh );
   GameApi::ML array = ev.mainloop_api.array_ml(ev, vec);
 
-  GameApi::MN mv = ev.move_api.empty();
+  GameApi::MN mv = ev.move_api.mn_empty();
   if (int(node->translation.size())==3) {
     double m_x = node->translation[0];
     double m_y = node->translation[1];
@@ -1378,7 +1421,7 @@ GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load,
   int s2 = load->model.scenes.size();
   if (!(scene_id>=0 && scene_id<s2))
     {
-    GameApi::P empty = ev.polygon_api.empty();
+    GameApi::P empty = ev.polygon_api.p_empty();
     GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
     return ml;
     }
@@ -1408,7 +1451,7 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
     GameApi::ML ml = ev.mainloop_api.array_ml(ev, mls);
     return ml;
   } else {
-    GameApi::P empty = ev.polygon_api.empty();
+    GameApi::P empty = ev.polygon_api.p_empty();
     GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
     return ml;
   }

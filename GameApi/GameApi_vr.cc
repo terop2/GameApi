@@ -7,6 +7,23 @@
 //#include <SDL_opengl.h>
 #include "GameApi_low.hh"
 
+
+bool g_vr_enable = false;
+int g_vr_device_id = 0;
+
+class ZeroIntFetcher : public Fetcher<int>
+{
+public:
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+  virtual void set(int t) { }
+  virtual int get() const { return 0; }
+
+};
+
+
 #ifndef ARM
 
 #ifdef VIRTUAL_REALITY
@@ -29,10 +46,14 @@
 #endif
 
 
+
+
+
 bool g_use_vr = false;
 
 EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration, bool invert, bool translate)
 {
+  if (!g_vr_enable) { return game_window2(ev,ml,logo,fpscounter,start_time,duration); }
   //invert=false;
 
   g_use_vr = true;
@@ -53,14 +74,14 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
 
 
   // hmd=false
-  ML I43 = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
+  ML I43 = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,3.1,1000.0,false);
   TXID I44 = ev.fbo_api.fbo_ml(ev,I43,fbo_x,fbo_y,false);
-  ML I66 = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,10.1,60000.0, false);
+  ML I66 = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,3.1,1000.0, false);
   TXID I67 = ev.fbo_api.fbo_ml(ev,I66,fbo_x,fbo_y,false);
 
-  ML I43a = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
+  ML I43a = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,3.1,1000.0,false);
   TXID I44a = ev.fbo_api.fbo_ml(ev,I43a,fbo_x,fbo_y,false);
-  ML I66a = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,10.1,60000.0, false);
+  ML I66a = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,3.1,1000.0, false);
   TXID I67a = ev.fbo_api.fbo_ml(ev,I66a,fbo_x,fbo_y,false);
   ML res = ev.blocker_api.vr_submit_ml(ev,ml, I44,I67,invert,translate);
   ML I70a = ev.blocker_api.vr_submit(ev, I44a, I67a);
@@ -71,9 +92,9 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
   // ML cho = ev.font_api.ml_chooser(std::vector<ML>{res,I70a},alt);
 
   // hmd=true
-  ML I43_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
+  ML I43_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,3.1,1000.0,false);
   TXID I44_b = ev.fbo_api.fbo_ml(ev,I43_b,fbo_x,fbo_y,false);
-  ML I66_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,10.1,60000.0, false);
+  ML I66_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,3.1,1000.0, false);
   TXID I67_b = ev.fbo_api.fbo_ml(ev,I66_b,fbo_x,fbo_y,false);
 
   //ML I43a_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
@@ -298,9 +319,9 @@ public:
   Matrix ConvertMatrix( const vr::HmdMatrix34_t &pose)
   {
     // 0.0 vaikuttaa sponzan 2 kerroksen pilareihin
-    Matrix m = { pose.m[0][0], pose.m[0][1], pose.m[0][2], /*0.0*/ pose.m[0][3],
-		 pose.m[1][0], pose.m[1][1], pose.m[1][2], /*0.0*/ pose.m[1][3],
-		 pose.m[2][0], pose.m[2][1], pose.m[2][2], /*0.0*/ pose.m[2][3],
+    Matrix m = { pose.m[0][0], pose.m[0][1], pose.m[0][2], pose.m[0][3],
+		 pose.m[1][0], pose.m[1][1], pose.m[1][2], pose.m[1][3],
+		 pose.m[2][0], pose.m[2][1], pose.m[2][2], pose.m[2][3],
 	         0.0, 0.0,0.0, 1.0f};
     for(int i=0;i<16;i++) if (std::isnan(m.matrix[i])) m.matrix[i]=0.0;
     return m;
@@ -312,7 +333,7 @@ public:
     right->handle_event(e);
     item->handle_event(e);
   }
-  virtual int shader_id() { return item->shader_id(); }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
@@ -330,6 +351,11 @@ private:
 };
 EXPORT GameApi::ML GameApi::BlockerApi::vr_submit_ml(EveryApi &ev, ML ml, TXID left, TXID right, bool invert, bool translate)
 {
+  if (!g_vr_enable) {
+    GameApi::ML ml;
+    ml.id = 0;
+    return ml;
+  }
   MainLoopItem *item = find_main_loop(e, ml);
   TextureID *left_eye = find_txid(e, left);
   TextureID *right_eye = find_txid(e, right);
@@ -337,7 +363,12 @@ EXPORT GameApi::ML GameApi::BlockerApi::vr_submit_ml(EveryApi &ev, ML ml, TXID l
 }
 EXPORT GameApi::ML GameApi::BlockerApi::vr_submit(EveryApi &ev, TXID left, TXID right)
 {
-
+  if (!g_vr_enable) {
+    GameApi::ML ml;
+    ml.id = 0;
+    return ml;
+  }
+  
 P I1=ev.polygon_api.vr_fullscreen_quad(ev,false);
 MT I2=ev.materials_api.textureid(ev,left,1.0);
 ML I3=ev.materials_api.bind(I1,I2);
@@ -387,8 +418,14 @@ private:
 };
 EXPORT GameApi::MN GameApi::MovementNode::pose(MN next, bool pose_in_screen)
 {
+  if (!g_vr_enable) return next;
   Movement *nxt = find_move(e, next);
-  return add_move(e, new PoseMovement(nxt,pose_in_screen));
+  GameApi::MN move = add_move(e, new PoseMovement(nxt,pose_in_screen));
+  if (g_vr_device_id==1) // vive
+    {
+      move=rotatey(move,1.59);
+    }
+  return move;
 }
 
 class HMDProjection : public MainLoopItem
@@ -520,6 +557,8 @@ public:
   void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
+    OpenglLowApi *ogl = g_low->ogl;
+    
     GameApi::SH sh_color, sh_texture, sh_texture_2d, sh_array_texture;
     GameApi::SH vertex, fragment;
     GameApi::SH sh_id;
@@ -535,18 +574,25 @@ public:
     proj_matrix=GetHMDMatrixProjectionEye( eye, is_standard );
     //std::cout << "Projection matrix: " << proj_matrix << std::endl;
     pos_mat= GetHMDMatrixPoseEye( eye, is_standard );
-    Matrix proj_m = proj_matrix * scene_translate * pos_mat;
+    Matrix proj_m = proj_matrix *  scene_translate * pos_mat;
     GameApi::M proj = add_matrix2( env, proj_m );
-    Matrix id_m = pos_mat; //GetHMDMatrixSceneTranslateEye(eye, is_standard);
+    Matrix id_m = GetHMDMatrixSceneTranslateEye(eye, is_standard); // pos_mat
     GameApi::M id = add_matrix2( env, id_m );
     //if (sh_id.id!=-1) {
     //  ev.shader_api.set_var(sh_id, "in_P", proj);
     //}
+    ev.shader_api.use(sh_color);
     ev.shader_api.set_var(sh_color, "in_P", proj);
+    ev.shader_api.use(sh_texture);
     ev.shader_api.set_var(sh_texture, "in_P", proj);
+    ev.shader_api.use(sh_texture_2d);
     ev.shader_api.set_var(sh_texture_2d, "in_P", proj);
+    ev.shader_api.use(sh_array_texture);
     ev.shader_api.set_var(sh_array_texture, "in_P", proj);
+    ev.shader_api.use(vertex);
+
     ev.shader_api.set_var(vertex, "in_P", proj);
+    ev.shader_api.use(fragment);
     ev.shader_api.set_var(fragment, "in_P", proj);
 
     //if (sh_id.id!=-1) {
@@ -561,11 +607,11 @@ public:
 
     MainLoopEnv ee = e;
     Matrix old = e.in_T;
-    ee.in_T = id_m;
-    //ee.in_P = proj_m;
-    g_low->ogl->glEnable( Low_GL_MULTISAMPLE );
+    ee.in_T = id_m; //Matrix::Identity(); //Matrix::Scale(-1,1,1);//id_m;
+    ee.in_P = /*ee.in_P */ proj_m;
+    ogl->glEnable( Low_GL_MULTISAMPLE );
     item->execute(ee);
-    g_low->ogl->glDisable( Low_GL_MULTISAMPLE );
+    ogl->glDisable( Low_GL_MULTISAMPLE );
 
     GameApi::M old_m = add_matrix2(env, old);
     //if (sh_id.id != -1) {
@@ -582,7 +628,7 @@ public:
   {
     item->handle_event(e);
   }
-  virtual int shader_id() { return item->shader_id(); }
+virtual std::vector<int> shader_id() { return item->shader_id(); }
 
 private:
   GameApi::Env &env;
@@ -596,6 +642,11 @@ private:
 
 EXPORT GameApi::ML GameApi::MainLoopApi::setup_hmd_projection(EveryApi &ev, ML ml, bool eye, bool is_standard, float nnear, float nfar, bool translate)
 {
+  if (!g_vr_enable) {
+    GameApi::ML ml;
+    ml.id=0;
+    return ml;
+  }
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new HMDProjection(e,ev,item, eye, is_standard, nnear,nfar, translate));
 }
@@ -839,6 +890,7 @@ public:
 
 GameApi::IF GameApi::FontApi::hmd_state_fetcher()
 {
+  if (!g_vr_enable) return add_int_fetcher(e, new ZeroIntFetcher);
   return add_int_fetcher(e, new HMDStateIntFetcher());
 }
 #endif
@@ -856,17 +908,6 @@ EXPORT GameApi::MN GameApi::MovementNode::pose(MN next, bool pose_in_screen)
 {
   return next;
 }
-class ZeroIntFetcher : public Fetcher<int>
-{
-public:
-  virtual void event(MainLoopEvent &e) { }
-  virtual void frame(MainLoopEnv &e) { }
-  virtual void draw_event(FrameLoopEvent &e) { }
-  virtual void draw_frame(DrawLoopEnv &e) { }
-  virtual void set(int t) { }
-  virtual int get() const { return 0; }
-
-};
 GameApi::IF GameApi::FontApi::hmd_state_fetcher()
 {
   return add_int_fetcher(e,new ZeroIntFetcher);
@@ -889,4 +930,6 @@ GameApi::ML ml;
 ml.id=0;
 return ml;
 }
+
+
 #endif
