@@ -1672,34 +1672,116 @@ EXPORT void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W
 void ProgressBar(int num, int val, int max, std::string label);
 void InstallProgress(int num, std::string label, int max);
 
+std::string json_string(std::string data)
+{
+  std::stringstream ss;
+  ss << " \"";
+  int s = data.size();
+  for(int i=0;i<s;i++) {
+    if (data[i]=='\\') ss << "\\";
+    if (data[i]=='\"') ss << "\\";
+    ss << data[i];
+  }
+  ss << "\" ";
+  return ss.str();
+}
+std::string json_array(std::vector<std::string> vec)
+{
+  std::stringstream ss;
+  ss << "[";
+  int s = vec.size();
+  for(int i=0;i<s;i++) {
+    ss << vec[i];
+    if (i!=s-1) ss << ",";
+  }
+  ss << "]";
+  return ss.str();
+}
+std::string json_number(int i)
+{
+  std::stringstream ss;
+  ss << i;
+  return ss.str();
+}
+struct NameValue
+{
+  std::string name;
+  std::string value;
+};
+std::string json_object(std::vector<NameValue> vec)
+{
+  std::stringstream ss;
+  ss << "{ ";
+  int s = vec.size();
+  for(int i=0;i<s;i++) {
+    ss << vec[i].name << " :" << vec[i].value;
+    if (i!=s-1) ss << ",";
+  }
+  ss << "}";
+  return ss.str();
+}
+
 EXPORT std::string GameApi::WModApi::dump_functions()
 {
   static std::vector<GameApiItem*> functions = all_functions();
 
-  std::stringstream ss;
   int s = functions.size();
+  std::vector<NameValue> vec2;
   for(int i=0;i<s;i++)
     {
       std::string name = functions[i]->Name(0);
-      ss << name << std::endl;
-      /*
+      //ss << name << std::endl;
       std::string rettype = functions[i]->ReturnType(0);
       std::string apiname = functions[i]->ApiName(0);
       std::string funcname = functions[i]->FuncName(0);
 
-      ss << name << ": " << rettype << " " << apiname << "::" << funcname;
+      std::string json_name = json_string(name);
+      std::string json_rettype = json_string(rettype);
+      std::string json_apiname = json_string(apiname);
+      std::string json_funcname = json_string(funcname);
+      
+      std::vector<std::string> vec;
+      vec.push_back(json_name);
+      vec.push_back(json_rettype);
+      vec.push_back(json_apiname);
+      vec.push_back(json_funcname);
+      
+      //ss << name << ": " << rettype << " " << apiname << "::" << funcname;
       int pcount = functions[i]->ParamCount(0);
-      ss << "(";
+      std::string json_pcount = json_number(pcount);
+
+      vec.push_back(json_pcount);
+      
+      //ss << "(";
       for(int j=0;j<pcount;j++) {
-	if (j!=0) ss<< ", ";
+	//if (j!=0) ss<< ", ";
 	std::string paramname = functions[i]->ParamName(0,j);
 	std::string paramtype = functions[i]->ParamType(0,j);
 	std::string paramdefault = functions[i]->ParamDefault(0,j);
-	ss << paramtype << " " << paramname << " = " << paramdefault;
+
+	std::string json_paramname = json_string(paramname);
+	std::string json_paramtype = json_string(paramtype);
+	std::string json_paramdefault = json_string(paramdefault);
+
+	vec.push_back(json_paramname);
+	vec.push_back(json_paramtype);
+	vec.push_back(json_paramdefault);
+	
+	//ss << paramtype << " " << paramname << " = " << paramdefault;
       }
-      ss << ");" << std::endl;*/
+
+      std::string array = json_array(vec);
+
+      NameValue nv;
+      nv.name = json_string(name);
+      nv.value = array;
+      vec2.push_back(nv);
+      
+      //ss << ");" << std::endl;
+      //ss << "]";
+      
     }
-  return ss.str();
+  return json_object(vec2);
 }
 
 EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p, std::vector<W> &params, std::vector<W> &display_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open)

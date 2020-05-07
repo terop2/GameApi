@@ -34,6 +34,7 @@ EXPORT GameApi::VA GameApi::TextureApi::bind_cubemap(GameApi::VA va, GameApi::TX
 EXPORT GameApi::VA GameApi::TextureApi::bind_many(GameApi::VA va, std::vector<GameApi::TXID> vec, std::vector<int> types)
 {
   VertexArraySet *s = find_vertex_array(e, va);
+  //RenderVertexArray *arr = find_vertex_array_render(e,va);
   VertexArraySet *ns = new VertexArraySet(*s);
   int s1 = vec.size();
   for(int i=0;i<s1;i++) {
@@ -48,6 +49,7 @@ EXPORT GameApi::VA GameApi::TextureApi::bind_many(GameApi::VA va, std::vector<Ga
   }
   RenderVertexArray *arr = new RenderVertexArray(g_low,*ns);
   arr->prepare(0);
+  s->free_memory(); // experimental (move semantics s->ns)
   return add_vertex_array(e, ns, arr);
 }
 EXPORT GameApi::VA GameApi::TextureApi::bind_arr(GameApi::VA va, GameApi::TXA tx)
