@@ -55,8 +55,8 @@ HFiles = $(patsubst %.cc,%.hh,$(CFiles))
 Subdirsx = $(patsubst %,%build,$(Subdirs))
 
 
-CCFLAGS = -std=c++14 -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DRASBERRY -DLINUX -lpthread -pthread
-CC2FLAGS = -std=c++14 -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DRASBERRY -DLINUX -lpthread -pthread
+CCFLAGS = -std=c++14 -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments
+CC2FLAGS = -std=c++14 -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DLINUX -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments
 #`pkg-config gtkmm-2.4 --cflags`
 
 
@@ -92,6 +92,10 @@ $(OFiles): objs/%.o : %.cc
 	@echo g++ $< -o $@
 	@$(CC) -std=c++0x -g -c $(CCFLAGS) $< -o $@
 
+touch_all:
+	touch GameApi_gui_1.cc
+	touch GameApi_gui_2.cc
+	touch GameApi_gui_3.cc
 
 
 clean:
@@ -100,4 +104,4 @@ clean:
 	@echo Clean.
 
 
--include $(DFiles)
+#-include $(DFiles)

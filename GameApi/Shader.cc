@@ -27,7 +27,7 @@
 #include "VectorTools.hh"
 #include <vector>
 #include <algorithm>
-#include "Effect.hh"
+#include "Effect.hh" 
 #include <fstream>
 #include "GraphI.hh"
 
@@ -51,6 +51,10 @@
 std::string funccall_to_string(ShaderModule *mod);
 std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string value);
 
+void InstallProgress(int num, std::string label, int max);
+void ProgressBar(int num, int val, int max, std::string label);
+
+
 struct ShaderPriv
 {
   Low_GLuint handle;
@@ -61,9 +65,12 @@ struct ShaderPriv
 
 Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
 {
+  //InstallProgress(111, shader.Name().c_str(), 15);
+  //ProgressBar(111,0,15,shader.Name().c_str());
   int count = shader.Count();
   bool b = vertex;
   Low_GLuint handle = g_low->ogl->glCreateShader(geom?Low_GL_GEOMETRY_SHADER:(b?Low_GL_VERTEX_SHADER:Low_GL_FRAGMENT_SHADER));
+  //ProgressBar(111,5,15,shader.Name().c_str());
   std::vector<std::string> vec;
   const char **strings = new const char *[count];
   int *lengths = new int[count];
@@ -74,8 +81,11 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
      lengths[i] = vec[i].size();
     }
   g_low->ogl->glShaderSource(handle, count, strings, lengths);
+  //ProgressBar(111,10,15,shader.Name().c_str());
   g_low->ogl->glCompileShader(handle);
   int val = g_low->ogl->glGetError();
+  //ProgressBar(111,15,15,shader.Name().c_str());
+
   if (val!=Low_GL_NO_ERROR) {
     //std::cout << "glCompileShader ERROR: " << val << std::endl;
     char buf[256];
@@ -592,7 +602,7 @@ ShaderFile::ShaderFile()
 "//V: comb\n"
 "#version 100\n"
     // NOTE: ADDING MORE uniform or attribute or varying varibles does not work, and gives black screen
-"precision mediump float;\n"
+"precision highp float;\n"
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
@@ -692,9 +702,8 @@ ShaderFile::ShaderFile()
 "#ifdef EX_LIGHTPOS2\n"
 "vec4 diffuse(vec4 pos)\n"
 "{\n"
-    //  "    ex_Normal2 = normalize(vec3(in_T * in_MV * vec4(in_Normal,0.0)));\n"
    "    ex_Normal2 = normalize(mat3(in_iMV)*in_Normal);\n"
-"    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
+    "    ex_LightPos2 = normalize(vec3(0.0,0.0,-1.0));\n"
 "    return pos;\n"
 "}\n"
 "#endif\n"
@@ -774,6 +783,19 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 "#endif\n"
+"#endif\n"
+"#endif\n"
+"#ifdef IN_POSITION\n"
+"#ifdef EX_POSITION\n"
+"uniform float globe_mult;\n"
+"vec4 globe(vec4 pos)\n"
+"{\n"
+"    vec4 pos2 = in_T*in_MV*pos;\n"
+"    float d = length(pos2.xz);\n"
+    "    float y = globe_mult*d;\n"
+        "    y/=2.0;\n"
+"    return pos + vec4(0.0,y,0.0,0.0);\n"
+"}\n"
 "#endif\n"
 "#endif\n"
 "#ifdef IN_POSITION\n"
@@ -941,16 +963,34 @@ ShaderFile::ShaderFile()
 "#ifdef EX_LIGHTPOS2\n"
 "vec4 phong(vec4 pos)\n"
 "{\n"
-"    vec3 n = normalize(mat3(in_iMV)*in_Normal);\n"
+"    vec3 n = normalize(mat3(in_iMV)*in_Normal);\n"    
 "    ex_Normal2 = n;\n"
-    "    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n" //normalize(vec3(mat3(in_T*in_MV)*light_dir)));\n"
+    "    ex_LightPos2 = normalize(vec3(0.0,0.0,-1.0));\n"
 "    return pos;\n"
 "}\n"
 "#endif\n"
 "#endif\n"
 "#endif\n"
 "#endif\n"
-
+"#ifdef EX_NORMAL2\n"
+"#ifdef IN_NORMAL\n"
+"#ifdef IN_POSITION\n"
+"#ifdef EX_POSITION\n"
+"varying vec3 eye;\n"
+"vec4 edge(vec4 pos)\n"
+"{\n"
+    "    vec3 n = normalize(mat3(in_iMV)*in_Normal);\n"
+    //"    vec3 n = normalize(mat3(in_iMV)*vec3(in_MV*vec4(in_Normal,1.0)));\n"
+"    ex_Normal2 = n;\n"
+"    ex_Position = in_Position;\n"
+    //"    eye = normalize(vec3(in_MV*vec4(in_Position,0.0)) * -1.0 + vec3(inverse(in_P)*vec4(0,0,-1,0.0)));\n"
+"    return pos;\n"
+"}\n"    
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+    
 "#ifdef IN_NORMAL\n"
 "#ifdef LIGHTDIR\n"
 "#ifdef EX_NORMAL2\n"
@@ -960,7 +1000,7 @@ ShaderFile::ShaderFile()
 "vec4 bump_phong(vec4 pos)\n"
 "{\n"
 "    ex_Normal2 = normalize(mat3(in_iMV)*in_Normal);\n"
-"    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
+    "    ex_LightPos2 = normalize(vec3(0.0,0.0,-1.0));\n" //normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
 "  ex_TexCoord = in_TexCoord;\n"
 "    return pos;\n"
 "}\n"
@@ -1110,7 +1150,7 @@ ShaderFile::ShaderFile()
 "#extension GL_OES_standard_derivatives : enable\n"
 "#extension GL_NV_shadow_samplers_cube : enable\n"
 "#endif\n"
-"precision mediump float;\n"
+"precision highp float;\n"
 "uniform float time;\n"
 "varying vec4 ex_Color;\n"
     //"flat varying vec4 ex_FlatColor;\n"
@@ -1153,7 +1193,9 @@ ShaderFile::ShaderFile()
  "uniform vec4 level2_color;\n"
  "uniform vec4 level3_color;\n"
 "#endif\n"
-"uniform sampler2D tex;\n"
+"uniform float hilight;\n"	  
+
+    "uniform sampler2D tex;\n"
 #ifndef EMSCRIPTEN
 #ifndef __APPLE__
 "#ifdef TEXTURE_ARRAY\n"
@@ -1206,7 +1248,7 @@ ShaderFile::ShaderFile()
 "{\n"
 "    vec3 normal_cam = ex_Normal2;\n"
 "    vec3 light_dir_cam = ex_LightPos2;\n"
-"    float theta = clamp( abs(dot( normal_cam, light_dir_cam )), 0.0,1.0) ;\n"
+"    float theta = clamp(dot( normalize(-normal_cam), normalize(light_dir_cam) ), 0.0,1.0) ;\n"
 "    return clamp(rgb + level1_color*theta,vec4(0.0,0.0,0.0,0.0), vec4(1.0,1.0,1.0,1.0));\n"
 "}\n"
 "#endif\n"
@@ -1216,9 +1258,8 @@ ShaderFile::ShaderFile()
 "#ifdef EX_LIGHTPOS2\n"
 "#ifdef LEVELS\n"
 
-"uniform float hilight;\n"	  
 "float intensity(vec3 dir) {\n"
-" return dot(-dir,ex_LightPos2);\n"
+" return clamp(dot(normalize(-dir),normalize(ex_LightPos2)),0.0,1.0);\n"
 "}\n"
 "float intensity2(vec3 dir) {\n"
 " float i=intensity(dir); return pow(i,hilight);\n"
@@ -1231,11 +1272,9 @@ ShaderFile::ShaderFile()
 "vec4 phong(vec4 rgb)\n"
     "{\n"
     "    vec3 c = vec3(0.0,0.0,0.0);\n"
-    "    vec3 normal = ex_Normal2;\n" //normalmixp(ex_Normal2,vec3(0.01,1.0,0.01));\n"  
+    "    vec3 normal = ex_Normal2;\n"
     "    c+=intensity(normal)*level1_color.rgb;\n"
     "    c+=intensity2(normal)*level2_color.rgb;\n"
-    // "    c=sqrt(c);\n"
-    //"    c=(rgb.rgb/2.0+c/2.0);\n"
     "     c+=rgb.rgb;\n"
     "     c=clamp(c,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
     "    return vec4(c,rgb.a);\n"
@@ -1243,6 +1282,26 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 "#endif\n"
+
+    "#ifdef EX_NORMAL2\n"
+"#ifdef EX_POSITION\n"
+"uniform float edge_width;\n"
+"uniform vec4 edge_color;\n"
+"varying vec3 eye;\n"
+"vec4 edge(vec4 rgb)\n"
+"{\n"
+    "    vec3 view = eye;\n" //-ex_Position + vec3(0.0,0.0,-4000.0);\n"
+"    vec3 n = ex_Normal2;\n"
+"    float d = 1.0-dot(normalize(view),normalize(n));\n"
+    //"    float val = smoothstep(edge_width-0.01,edge_width+0.01,d);\n"
+"    vec4 color = rgb;\n"
+    //"    if (val>0.5) { }\n"
+    " color = d*edge_color;\n"
+"    return color;\n"
+"}\n"
+"#endif\n"
+"#endif\n"
+
 "#ifdef EX_NORMAL2\n"
 "#ifdef EX_LIGHTPOS2\n"
 "#ifdef LEVELS\n"
@@ -1257,7 +1316,7 @@ ShaderFile::ShaderFile()
     //" float i=intensity(dir); return pow(i,hilight);\n"
     //"}\n"
 "float intensitya(vec3 dir) {\n"
-" float n = dot(-dir,ex_LightPos2);\n"
+" float n = dot(normalize(-dir),normalize(ex_LightPos2));\n"
 " return n;\n"
 "}\n"
 "float intensity2a(vec3 dir) {\n"
@@ -1280,7 +1339,7 @@ ShaderFile::ShaderFile()
     "    vec3 normal=normalmix(n,n2);\n"
     "    c+=intensitya(normal)*level1_color.rgb;\n"
     "    c+=intensity2a(normal)*level2_color.rgb;\n"
-    "    c=sqrt(c);\n"
+    //"    c=sqrt(c);\n"
     "    c+=rgb.rgb;\n"
     "     c=clamp(c,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
     "    return vec4(c,rgb.a);\n"
@@ -1938,7 +1997,7 @@ ShaderFile::ShaderFile()
 "}\n"
 "//V: screen\n"
 "#version 100\n"
-"precision mediump float;\n"
+"precision highp float;\n"
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
@@ -1954,7 +2013,7 @@ ShaderFile::ShaderFile()
 "}\n"
 "//F: screen\n"
 "#version 100\n"
-"precision mediump float;\n"
+"precision highp float;\n"
 "varying vec2 XY;\n"
 "uniform float time;\n"
 "uniform float time2;\n"
@@ -2001,7 +2060,7 @@ ShaderFile::ShaderFile()
 "}\n"
 "//F: colour\n"
 "#version 100\n"
-"precision mediump float;\n"
+"precision highp float;\n"
 "varying vec3 ex_Color;\n"
 "//T:\n"
 "void main(void)\n"
@@ -2011,7 +2070,7 @@ ShaderFile::ShaderFile()
 "\n"
 "//F: empty\n"
 "#version 100\n"
-"precision mediump float;\n" 
+"precision highp float;\n" 
 "varying vec3 ex_Color;\n"
 "//T:\n"
 "void main(void)\n"
@@ -2037,7 +2096,7 @@ ShaderFile::ShaderFile()
 "}\n"
 "//F: texture\n"
 "#version 100\n"
-"//precision mediump float;\n"
+"//precision highp float;\n"
 "uniform sampler2D tex;\n"
 "attribute vec3 ex_TexCoord;\n"
     //" vec4 out_Color;\n"
@@ -2054,6 +2113,8 @@ ShaderFile::ShaderFile()
 #else
 "#version 330\n"
 #endif
+"precision highp float;\n"
+    //   "uniform float globe_r;\n"
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
@@ -2135,14 +2196,46 @@ ShaderFile::ShaderFile()
 "#ifdef EX_LIGHTPOS2\n"
 "vec4 phong(vec4 pos)\n"
 "{\n"
-"   vec3 n = normalize(mat3(transpose(inverse(in_MV)))*in_Normal);\n"
+    "   vec3 n = normalize(mat3(transpose(inverse(in_MV)))*in_Normal);\n"    
     "    ex_Normal2 = n;\n"
-    "    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
-    //normalize(mat3(in_T)*vec3(pos)); //vec3(inverse(in_MV)*vec4(in_Position,1.0)));\n"
+    "    ex_LightPos2 = normalize(vec3(0.0,0.0,-1.0));\n"
 "    return pos;\n"
 "}\n"
 "#endif\n"
 "#endif\n"
+"#endif\n"
+"#endif\n"
+"#ifdef EX_NORMAL2\n"
+"#ifdef IN_NORMAL\n"
+"#ifdef IN_POSITION\n"
+"#ifdef EX_POSITION\n"
+"out vec3 eye;\n"
+"vec4 edge(vec4 pos)\n"
+"{\n"
+    "   vec3 n = normalize(mat3(transpose(inverse(in_MV)))*in_Normal);\n"   
+    // "    vec3 n = normalize(mat3(inverse(in_MV))*in_Normal);\n"
+"    ex_Normal2 = n;\n"
+"    ex_Position = in_Position;\n"
+    //"    eye = normalize(vec3(in_MV*vec4(in_Position,0.0)) * -1.0 + vec3(inverse(in_P)*vec4(0,0,-1,0.0)));\n"
+"    return pos;\n"
+"}\n"    
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+
+"#ifdef IN_POSITION\n"
+"#ifdef EX_POSITION\n"
+"uniform float globe_mult;\n"
+
+"vec4 globe(vec4 pos)\n"
+"{\n"
+"    vec4 pos2 = in_T*in_MV*pos;\n"
+"    float d = length(pos2.xz);\n"
+    "    float y = globe_mult*d;\n"
+        "    y/=2.0;\n"
+"    return pos + vec4(0.0,y,0.0,0.0);\n"
+"}\n"
 "#endif\n"
 "#endif\n"
 
@@ -2155,7 +2248,7 @@ ShaderFile::ShaderFile()
 "vec4 bump_phong(vec4 pos)\n"
 "{\n"
 "    ex_Normal2 = normalize(mat3(transpose(inverse(in_MV)))*in_Normal);\n"
-"    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
+    "    ex_LightPos2 = normalize(vec3(0.0,0.0,-1.0));\n" //normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
 "     ex_TexCoord = in_TexCoord;\n"
     "    return pos;\n"
 "}\n"
@@ -2257,9 +2350,8 @@ ShaderFile::ShaderFile()
 "vec4 diffuse(vec4 pos)\n"
 "{\n"
 
-    //    "    ex_Normal2 = normalize(vec3(in_T * in_MV * vec4(in_Normal,0.0)));\n"
 "    ex_Normal2 =normalize(mat3(transpose(inverse(in_MV)))*in_Normal);\n"
-"    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
+    "    ex_LightPos2 = normalize(vec3(0.0,0.0,-1.0));\n"
 "    return pos;\n"
 "}\n"
 "#endif\n"
@@ -2554,7 +2646,7 @@ ShaderFile::ShaderFile()
 "#ifdef TEXTURE_ARRAY\n"
 "#extension GL_EXT_texture_array : enable\n"
 "#endif\n"
-"precision mediump float;\n"
+"precision highp float;\n"
 "in vec4 ex_Color;\n"
     //"flat in vec4 ex_FlatColor;\n"
 "out vec4 out_Color;\n"
@@ -2608,6 +2700,8 @@ ShaderFile::ShaderFile()
 "uniform vec4 level2_color;\n"
 "uniform vec4 level3_color;\n"
 "#endif\n"
+"uniform float hilight;\n"	  
+    
 "uniform float time;\n"
 "#ifdef MANYTEXTURES\n"
 "uniform sampler2D texsampler[15];\n"
@@ -2645,7 +2739,7 @@ ShaderFile::ShaderFile()
 "{\n"
 "    vec3 normal_cam = ex_Normal2;\n"
 "    vec3 light_dir_cam = ex_LightPos2;\n"
-"    float theta = clamp( abs(dot( normal_cam, light_dir_cam )) , 0.0,1.0);\n"
+"    float theta = clamp(dot(  normalize(-normal_cam), normalize(light_dir_cam) ) , 0.0,1.0);\n"
 "    return clamp(rgb + level1_color*theta,vec4(0.0,0.0,0.0,0.0), vec4(1.0,1.0,1.0,1.0));\n"
 "}\n"
 "#endif\n"
@@ -2918,9 +3012,8 @@ ShaderFile::ShaderFile()
 "#ifdef EX_LIGHTPOS2\n"
 "#ifdef LEVELS\n"
 
-"uniform float hilight;\n"	  
 "float intensity(vec3 dir) {\n"
-" float n = dot(-dir,ex_LightPos2);\n"
+" float n = clamp(dot(normalize(-dir),normalize(ex_LightPos2)),0.0,1.0);\n"
 " return n;\n"
 "}\n"
 "float intensity2(vec3 dir) {\n"
@@ -2935,10 +3028,9 @@ ShaderFile::ShaderFile()
 "vec4 phong(vec4 rgb)\n"
     "{\n"
     "    vec3 c = vec3(0.0,0.0,0.0);\n"
-    "    vec3 normal = ex_Normal2;\n" //normalmixp(ex_Normal2,vec3(0.0,1.0,0.0));\n"  
+    "    vec3 normal = ex_Normal2;\n" 
     "    c+=intensity(normal)*level1_color.rgb;\n"
     "    c+=intensity2(normal)*level2_color.rgb;\n"
-    "     c=sqrt(c);\n"
     "    c+=rgb.rgb;\n"
     "     c=clamp(c,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
     "    return vec4(c,rgb.a);\n"
@@ -2947,6 +3039,25 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 
+    "#ifdef EX_NORMAL2\n"
+"#ifdef EX_POSITION\n"
+"uniform float edge_width;\n"
+"uniform vec4 edge_color;\n"
+"in vec3 eye;\n"
+"vec4 edge(vec4 rgb)\n"
+"{\n"
+    "    vec3 view = vec3(0.0,0.0,-400.0);\n"
+"    vec3 n = ex_Normal2;\n"
+"    float d = 1.0-dot(normalize(view),normalize(n));\n"
+"    float val = smoothstep(edge_width-0.01,edge_width+0.01,d);\n"
+"    vec4 color = rgb;\n"
+"   color = val*edge_color;\n"
+"    return color;\n"
+"}\n"
+"#endif\n"
+"#endif\n"
+
+    
 "#ifdef EX_NORMAL2\n"
 "#ifdef EX_LIGHTPOS2\n"
 "#ifdef LEVELS\n"
@@ -2961,7 +3072,7 @@ ShaderFile::ShaderFile()
 // " float i=intensity(dir); return pow(i,hilight);\n"
 // "}\n"
 "float intensityb(vec3 dir) {\n"
-" return dot(-dir,ex_LightPos2);\n"
+" return dot(normalize(-dir),normalize(ex_LightPos2));\n"
 "}\n"
 "float intensity2b(vec3 dir) {\n"
 " float i=intensityb(dir); return pow(i,hilight);\n"
@@ -2986,7 +3097,7 @@ ShaderFile::ShaderFile()
     //"     c+=0.2*texture2D(texsampler[1],ex_TexCoord.xy).rgb;\n"
     "    c+=intensityb(normal)*level1_color.rgb;\n"
     "    c+=intensity2b(normal)*level2_color.rgb;\n"
-    "     c=sqrt(c);\n"
+    //"     c=sqrt(c);\n"
     "     c+=rgb.rgb;\n"
     "     c=clamp(c,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
     "    return vec4(c,rgb.a);\n"
@@ -3379,7 +3490,7 @@ ShaderFile::ShaderFile()
 "\n"
 "//F: empty\n"
 "#version 330\n"
-"precision mediump float;\n"
+"precision highp float;\n"
 "out vec4 out_Color;\n"
 "//T:\n"
 "void main(void)\n"
@@ -3405,7 +3516,7 @@ ShaderFile::ShaderFile()
 "}\n"
 "//F: colour\n"
 "#version 330\n"
-"//precision mediump float;\n"
+"//precision highp float;\n"
 "in vec3 ex_Color;\n"
 "out vec4 out_Color;\n"
 "//T:\n"
@@ -3432,7 +3543,7 @@ ShaderFile::ShaderFile()
 "}\n"
 "//F: texture\n"
 "#version 330\n"
-"//precision mediump float;\n"
+"//precision highp float;\n"
 "uniform sampler2D texture;\n"
 "in vec3 ex_TexCoord;\n"
 "out vec4 out_Color;\n"
@@ -3868,7 +3979,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       
       //std::cout << "::" << ss << "::" << std::endl;
       //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
-      ShaderSpec *spec = new SingletonShaderSpec(ss);
+      ShaderSpec *spec = new SingletonShaderSpec(ss,vertex_c?vertex_c->func_name():"unknown");
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
       p->push_back(*sha1);
@@ -3885,7 +3996,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader);
       //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
-      ShaderSpec *spec = new SingletonShaderSpec(ss);
+      ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);
       if (ii!=f_format.end())
@@ -3900,7 +4011,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       //std::cout << "GName: " << name << std::endl;
       std::string shader = file.GeometryShader(name);
       //std::cout << "::" << shader << "::" << std::endl;
-      ShaderSpec *spec = new SingletonShaderSpec(shader);
+      ShaderSpec *spec = new SingletonShaderSpec(shader,g_format);
       Shader *sha2 = new Shader(*spec, false, true);
       p->push_back(*sha2);
       if (ii!=g_format.end())

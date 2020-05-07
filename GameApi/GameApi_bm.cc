@@ -482,7 +482,7 @@ public:
       }
   }
   virtual void handle_event(MainLoopEvent &e) { }
-  virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   GameApi::EveryApi &ev;
   GameApi::BM bm;
@@ -520,6 +520,54 @@ void stackTrace()
 void ProgressBar(int num, int val, int max, std::string label);
 void InstallProgress(int num, std::string label, int max=15);
 
+extern std::string gameapi_homepageurl;
+
+class LoadBitmapFromUrl : public Bitmap<Color>
+{
+public:
+  LoadBitmapFromUrl(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url),homepage(homepage) { }
+
+  virtual int SizeX() const {
+    if (!cbm) { return 100; }
+    return cbm->SizeX(); }
+  virtual int SizeY() const {
+    if (!cbm) { return 100; } 
+    return cbm->SizeY(); }
+  virtual Color Map(int x, int y) const { 
+    if (!cbm) { return Color(0xffffffff); }
+    return cbm->Map(x,y); }
+  void Prepare()
+  {
+#ifndef EMSCRIPTEN
+      env.async_load_url(url, homepage);
+#endif
+      std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+      if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+      std::string s(vec->begin(), vec->end());
+
+      bool b = false;
+      img = LoadImageFromString(*vec, b);
+      
+    if (b==false) {
+      img = BufferRef::NewBuffer(10,10);
+      for(int x=0;x<10;x++)
+	for(int y=0;y<10;y++)
+	  {
+	    img.buffer[x+y*img.ydelta] = ((x+y)&1)==1 ? 0xffffffff : 0xff000000;
+	  }
+      //std::cout << "ERROR: File not found: " << filename << std::endl;
+    }
+    cbm = new BitmapFromBuffer(img);    
+  }
+private:
+  GameApi::Env &env;
+  std::string url;
+  std::string homepage;
+  BufferRef img;
+  Bitmap<Color> *cbm=0;
+  bool load_finished = false;  
+};
+#if 0
 class LoadBitmapFromUrl : public Bitmap<Color>
 {
 public:
@@ -636,7 +684,7 @@ private:
   bool load_finished = false;
 };
 
-
+#endif
 
 class LoadBitmapBitmap : public Bitmap<Color>
 {
@@ -718,7 +766,10 @@ public:
       return;
     }
     bm->Prepare();
+        int c = get_current_block();
+    set_current_block(-2); // dont take ownership of this
     GameApi::BM num = add_color_bitmap2(e, bm);
+        set_current_block(c);
     bitmap_prepare_cache_data.push_back(std::make_pair(id,num.id));
   }
   Bitmap<Color> *get_bm() const
@@ -748,11 +799,14 @@ private:
 
 EXPORT GameApi::BM GameApi::BitmapApi::loadbitmapfromurl(std::string url)
 {
-  Bitmap<Color> *bm = new LoadBitmapFromUrl(url);
+  int c = get_current_block();
+  set_current_block(-1);
+  Bitmap<Color> *bm = new LoadBitmapFromUrl(e,url,gameapi_homepageurl);
   Bitmap<Color> *bbm = new BitmapPrepareCache(e, url, bm);
   BitmapColorHandle *handle = new BitmapColorHandle;
   handle->bm = bbm;
   BM bm2 = add_bitmap(e, handle);
+  set_current_block(c);
   return bm2;
 }
 EXPORT GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
@@ -1657,7 +1711,7 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::tri(BB orig, float p1_x, float p1_y, 
 }
 EXPORT GameApi::BB GameApi::BoolBitmapApi::rings(int sx, int sy, float center_x_start, float center_y_start, float center_x_end, float center_y_end, float start_radius, float end_radius, float start_thickness, float end_thickness, int numrings)
 {
-  BB bg = empty(sx,sy);
+  BB bg = bb_empty(sx,sy);
   int s = numrings;
   float delta_val = 1.0/numrings;
   for(int i=0;i<s;i++)
@@ -1688,12 +1742,12 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::transform(BB orig, std::function<bool
   return add_bool_bitmap(e, trans);
 }
 
-EXPORT GameApi::BB GameApi::BoolBitmapApi::empty(int sx, int sy)
+EXPORT GameApi::BB GameApi::BoolBitmapApi::bb_empty(int sx, int sy)
 {
   return add_bool_bitmap(e, new ConstantBitmap_bool(false, sx,sy));
 }
 
-EXPORT GameApi::FB GameApi::FloatBitmapApi::empty(int sx, int sy)
+EXPORT GameApi::FB GameApi::FloatBitmapApi::fb_empty(int sx, int sy)
 {
   return add_float_bitmap(e, new ConstantBitmap_float(0.0, sx,sy));
 }
@@ -2549,7 +2603,7 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::polygon(BB bg2, PT *points, int size)
 
 EXPORT GameApi::ContinuousBitmapApi::ContinuousBitmapApi(Env &e) : e(e) { }
 
-EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::empty(float x, float y)
+EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::cbm_empty(float x, float y)
 {
   return constant(0x00000000, x, y);
 }
@@ -2788,7 +2842,8 @@ public:
 	vec2.push_back(sp.create_vertex_array(vec[i]));
       }
   }
-  int shader_id() { return -1; }
+  //int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
   void Prepare() { }
   void handle_event(MainLoopEvent &e)
   {
@@ -2832,6 +2887,8 @@ EXPORT GameApi::ML GameApi::SpriteApi::bitmap_anim_ml(EveryApi &ev, std::vector<
 
 EXPORT GameApi::TXID GameApi::FloatBitmapApi::to_texid(FB fb)
 {
+  OpenglLowApi *ogl = g_low->ogl;
+
   Bitmap<float> *ffb = find_float_bitmap(e, fb)->bitmap;
   int sx = ffb->SizeX();
   int sy = ffb->SizeY();
@@ -2845,18 +2902,18 @@ EXPORT GameApi::TXID GameApi::FloatBitmapApi::to_texid(FB fb)
       }
 
   Low_GLuint id;
-  g_low->ogl->glGenTextures(1, &id); 
+  ogl->glGenTextures(1, &id); 
 #ifndef EMSCRIPTEN
-  g_low->ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+  ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
-  g_low->ogl->glActiveTexture(Low_GL_TEXTURE0+0);
-  g_low->ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
-  g_low->ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RED, sx,sy, 0, Low_GL_RED, Low_GL_FLOAT, array);
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
-  g_low->ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
-  //g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
+  ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+  ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
+  ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RED, sx,sy, 0, Low_GL_RED, Low_GL_FLOAT, array);
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
+  //ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
   
   delete []array;
 
@@ -3401,7 +3458,8 @@ public:
     }
   }
   virtual void handle_event(MainLoopEvent &e) { }
-  virtual int shader_id() { return -1; }
+  //virtual int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   GameApi::EveryApi &ev;
   GameApi::BM bm;
@@ -4438,8 +4496,13 @@ public:
 	  //if (is_nearest(light_pos+Vector(0.0,0.0,-softness), pp,zpi)) count++;
 	  if (!is_nearest(light_pos, pp,zpi)) count+=4;
 	  shadow[x+y*sx] = count;
-
-	      //shadow[x+y*sx] = true;
+	  if (x>0 && x<sx-1 && y>0 && y<sy-1) {
+	  shadow[(x+1)+y*sx] = count;
+	  shadow[x+(y+1)*sx] = count;
+	  shadow[(x-1)+y*sx] = count;
+	  shadow[x+(y-1)*sx] = count;
+	  }
+	  //shadow[x+y*sx] = true;
 	}
 	done[x+y*sx]=true;
       } else if (num==3) {
@@ -4469,6 +4532,12 @@ public:
 	  //if (is_nearest(light_pos+Vector(0.0,0.0,-softness), pp,zpi)) count++;
 	  if (!is_nearest(light_pos, pp,zpi)) count+=4;
 	  shadow[x+y*sx] = count;
+	  if (x>0 && x<sx-1 && y>0 && y<sy-1) {
+	  shadow[(x+1)+y*sx] = count;
+	  shadow[x+(y+1)*sx] = count;
+	  shadow[(x-1)+y*sx] = count;
+	  shadow[x+(y-1)*sx] = count;
+	  }
 	}
 	done[x+y*sx]=true;
       }
@@ -4553,3 +4622,40 @@ GameApi::BM GameApi::BitmapApi::calculate_baked_light(P p, P p2, BM texture, int
   return bm;
 }
 
+class ScaleToSize : public Bitmap<Color>
+{
+public:
+  ScaleToSize(Bitmap<Color> &bm, int sz) : bm(bm), sz(sz) { }
+  virtual int SizeX() const { return bm.SizeX()*factor; }
+  virtual int SizeY() const { return bm.SizeY()*factor; }
+  virtual Color Map(int x, int y) const
+  {
+    x/=factor;
+    y/=factor;
+    return bm.Map(x,y);
+  }
+  virtual void Prepare()
+  {
+    bm.Prepare();
+    int sxx = bm.SizeX();
+    int syy = bm.SizeY();
+    int mm = std::max(sxx,syy);
+    factor = float(sz)/float(mm);
+  }
+private:
+  Bitmap<Color> &bm;
+  float factor;
+  int sz;
+};
+
+GameApi::BM GameApi::BitmapApi::scale_to_size(BM bm, int sz)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  Bitmap<Color> *b = new ScaleToSize(*b2,sz);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm2 = add_bitmap(e, handle2);
+  return bm2;
+
+}

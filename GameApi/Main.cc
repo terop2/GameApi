@@ -19,7 +19,11 @@
 //
 
 // this is also in GameApi_h.hh
-//#define VIRTUAL_REALITY 1
+#ifndef LINUX
+#ifndef EMSCRIPTEN
+#define VIRTUAL_REALITY 1
+#endif
+#endif
 //#define VIRTUAL_REALITY_OVERLAY 1
 #define SDL2_USED
 #define NO_SDL_GLEXT
@@ -103,6 +107,8 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
+
+extern bool g_vr_enable;
 //#pragma comment (lib, "glew32s.lib") 
 
 BufferRef CopyFromSDLSurface(Low_SDL_Surface *surf);
@@ -423,7 +429,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   EmscriptenWebGLContextAttributes attr;
   emscripten_webgl_init_context_attributes(&attr);
   attr.majorVersion = 2; attr.minorVersion = 0;
-  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(0, &attr);
+  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context("canvas0", &attr);
   emscripten_webgl_make_context_current(ctx);
 #endif
   
@@ -471,7 +477,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 #endif
   //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #ifdef VIRTUAL_REALITY
-  if (vr_init) {
+  if (vr_init||g_vr_enable) {
     check_vr_compositor_init();
   }
 #endif  
@@ -507,11 +513,15 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     }
 
 #endif
-  const unsigned char *ptr = g_low->ogl->glGetString(Low_GL_VENDOR);
+  OpenglLowApi *ogl = g_low->ogl;
+
+  const unsigned char *ptr = ogl->glGetString(Low_GL_VENDOR);
+  if (strlen((const char*)ptr)>4) {
   g_gpu_vendor = std::string(ptr,ptr+4);
-  std::cout << "Vendor: " << g_low->ogl->glGetString(Low_GL_VENDOR)<< std::endl;
-  std::cout << "Renderer:" << g_low->ogl->glGetString(Low_GL_RENDERER)<< std::endl;
-  std::cout << "Version:" << g_low->ogl->glGetString(Low_GL_VERSION) << std::endl;
+  }
+  std::cout << "Vendor: " << ogl->glGetString(Low_GL_VENDOR)<< std::endl;
+  std::cout << "Renderer:" << ogl->glGetString(Low_GL_RENDERER)<< std::endl;
+  std::cout << "Version:" << ogl->glGetString(Low_GL_VERSION) << std::endl;
   
 
   vblank = true;
@@ -538,12 +548,12 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
       //SDL_GL_SetSwapInterval(int interval);
     }
 #endif
-   g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
-  g_low->ogl->glDepthMask(Low_GL_TRUE);
+   ogl->glEnable(Low_GL_DEPTH_TEST);
+  ogl->glDepthMask(Low_GL_TRUE);
 
-  g_low->ogl->glClearColor( 0, 0, 0, 0 );
-  g_low->ogl->glViewport(0,0,screenx, screeny);
-  g_low->ogl->glDisable(Low_GL_CULL_FACE);
+  ogl->glClearColor( 0, 0, 0, 0 );
+  ogl->glViewport(0,0,screenx, screeny);
+  ogl->glDisable(Low_GL_CULL_FACE);
 #endif
   return 0;
 }
@@ -1385,7 +1395,8 @@ void InitFrameAnim(FrameAnim &f, Low_SDL_Surface *screen)
 
 void DisplayFrame(FrameAnim &f, Low_SDL_Surface *screen, float time)
 {
-  g_low->ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT );
+  OpenglLowApi *ogl = g_low->ogl;
+  ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT );
 
   //SawWaveform w;
   //FitWaveform fit(w, 150.0, 0.0, 150.0);
@@ -1394,16 +1405,16 @@ void DisplayFrame(FrameAnim &f, Low_SDL_Surface *screen, float time)
 
   f.PreFrame(time/30.0);
 #ifndef EMSCRIPTEN
-  g_low->ogl->glTranslatef(0.0, 0.0, -500.0);
+  ogl->glTranslatef(0.0, 0.0, -500.0);
 #endif
   float speed = f.RotSpeed();
-  g_low->ogl->glRotatef(speed*time/30.0, f.XRot(),f.YRot(),f.ZRot());
+  ogl->glRotatef(speed*time/30.0, f.XRot(),f.YRot(),f.ZRot());
 #ifndef EMSCRIPTEN
-  g_low->ogl->glTranslatef(0.0, -100.0, 0.0);
+  ogl->glTranslatef(0.0, -100.0, 0.0);
 #endif
   f.Frame(time/30.0);
   f.PostFrame();
-  g_low->ogl->glLoadIdentity();
+  ogl->glLoadIdentity();
 
   //SDL_GL_SwapBuffers();
 }

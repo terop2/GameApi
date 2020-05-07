@@ -546,7 +546,8 @@ EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, i
   int s = func->lines.size();
   for(int i=0;i<s;i++)
     {
-      ProgressBar(868, i*15/s, 15, "insert_links");
+      if (s/15>0 && i % (s/15) == 0)
+	ProgressBar(868, i*15/s, 15, "insert_links");
       GameApiLine &line = func->lines[i];
       int ss = line.params.size();
       for(int ii=0;ii<ss;ii++)
@@ -1123,7 +1124,8 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 	      if (name == line->module_name)
 		{
 		  //std::cout << "Execute: " << name << std::endl;
-		  int val = item->Execute(e, ev, params, exeenv);
+		  std::stringstream ss;
+		  int val = item->Execute(ss,e, ev, params, exeenv);
 		  item->EndEnv(exeenv);
 		  //std::cout << "Execute " << name << " returns " << val << std::endl;
 		  return val;
@@ -1134,6 +1136,159 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
   std::cout << "EXECUTE FAILED! " << std::endl;
   return -1;
 }
+
+std::vector<std::string> combine_vec(std::vector<std::string> v1, std::vector<std::string> v2)
+{
+  std::vector<std::string> vec(v1.begin(),v1.end());
+  int s = v2.size();
+  for(int i=0;i<s;i++) vec.push_back(v2[i]);
+  return vec;
+}
+
+EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, ASyncData *arr, int arr_size)
+{
+  static std::vector<GameApiItem*> vec = all_functions();
+
+  std::vector<std::string> res;
+  
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+  
+  int s = func->lines.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiLine *line = &func->lines[i];
+      if (line->uid == line_uid)
+	{
+	  // CREATE ENVIRONMENT
+	  int sd1 = vec.size();
+	  for(int k=0;k<sd1;k++)
+	    {
+	      GameApiItem *item = vec[k];
+	      std::string name = item->Name(0);
+	      if (name == line->module_name)
+		{
+		  //item->BeginEnv(exeenv, line->params);
+		  break;
+		}
+	    }
+
+
+
+	  // COLLECT PARAMS & RECURSE
+	  int ss = line->params.size();
+	  level-=ss;
+	  std::vector<std::string> params;
+	  for(int ii=0;ii<ss;ii++)
+	    {
+	      GameApiParam *param = &line->params[ii];
+	      std::string p = param->value;
+	      if (level<=0)
+		{ // Stopping recursion
+		  int sd = vec.size();
+		  for(int k=0;k<sd;k++)
+		    {
+		      GameApiItem *item = vec[k];
+		      std::string name = item->Name(0);
+		      if (name == line->module_name)
+			{
+			  if (p.size()>0 && p[0]=='[')
+			    p="[]";
+			  else
+			    p = "@";
+			  break;
+			}
+		    }
+		}
+	      if (p.size()==0)
+		{
+		  std::cout << "EXECUTE FAILED at param!" << std::endl;
+		  return std::make_pair(-1,res);
+		}
+	      if (p.size()>3 && p[0]=='u' && p[1] == 'i' && p[2] =='d')
+		{
+		  std::pair<int,std::vector<std::string> > vals = collect_urls(ev, mod2, id, p, exeenv, level-1,arr,arr_size);
+		  int val = vals.first;
+		  std::vector<std::string> urls = vals.second;
+		  res = combine_vec(res, urls);
+		  //if (val==-1) return std::make_pair(-1,res);
+		  std::stringstream sw;
+		  sw << val;
+		  p = sw.str();
+		  //std::cout << "Num From UID: " << p << std::endl;
+		}
+	      // ARRAYTODO: HOW TO HANDLE ARRAY RETURN VALUES
+	      if (p.size()>1 && p[0]=='[' && p[p.size()-1]==']')
+		{
+		  int prev = 1;
+		  std::string ss = "[";
+		  int sz = p.size();
+		  for(int i=1;i<sz;i++)
+		    {
+		      if (p[i]==',' || p[i]==']')
+			{
+			  std::string substr = p.substr(prev, i-prev);
+			  //std::cout << "substr: " << substr << std::endl;
+			  if (substr.size()>3 && substr[0]=='u' && substr[1] == 'i' && substr[2] =='d')
+			    {
+			      std::pair<int,std::vector<std::string> > vals = collect_urls(ev, mod2, id, substr, exeenv, level-1,arr,arr_size);
+			      int val = vals.first;
+			      res = combine_vec(res,vals.second);
+			      //if (val==-1) return std::make_pair(-1,res);
+			      std::stringstream sw;
+			      sw << val;
+			      substr = sw.str();
+			    }
+			  prev = i+1;
+			  ss+=substr;
+			  if (i!=sz-1) { ss+=","; }
+			}
+
+		    }
+		  ss+="]";
+		  //std::cout << "Param: " << ss << std::endl;
+		  params.push_back(ss);
+		}
+	      else
+		{
+		  //std::cout << "Param: " << p << std::endl;
+
+		  params.push_back(p);
+		}
+	    }
+	  // EXECUTE
+	  int sd = vec.size();
+	  for(int k=0;k<sd;k++)
+	    {
+	      GameApiItem *item = vec[k];
+	      std::string name = item->Name(0);
+	      std::string fname = item->FuncName(0);
+	      if (name == line->module_name)
+		{
+		  int s = arr_size;
+		  for(int i=0;i<s;i++)
+		    {
+		      ASyncData *ptr = &arr[i];
+		      //std::cout << "ASYNCDATA: " << name << " " << ptr->func_name << std::endl;
+		      if (fname==ptr->func_name) {
+			res.push_back(params[ptr->param_num]);
+		      }
+		    }
+		  
+		  //std::cout << "Execute: " << name << std::endl;
+		  //int val = item->Execute(e, ev, params, exeenv);
+		  //item->EndEnv(exeenv);
+		  //std::cout << "Execute " << name << " returns " << val << std::endl;
+		  return std::make_pair(-1,res);
+		}
+	    }
+	}
+    }
+  std::cout << "COLLECTURLS FAILED! " << std::endl;
+  return std::make_pair(-1,res);
+}
+
 EXPORT bool GameApi::WModApi::typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, bool &is_array, bool &is_array_return)
 {
   is_array=false;
@@ -1517,6 +1672,117 @@ EXPORT void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W
 void ProgressBar(int num, int val, int max, std::string label);
 void InstallProgress(int num, std::string label, int max);
 
+std::string json_string(std::string data)
+{
+  std::stringstream ss;
+  ss << " \"";
+  int s = data.size();
+  for(int i=0;i<s;i++) {
+    if (data[i]=='\\') ss << "\\";
+    if (data[i]=='\"') ss << "\\";
+    ss << data[i];
+  }
+  ss << "\" ";
+  return ss.str();
+}
+std::string json_array(std::vector<std::string> vec)
+{
+  std::stringstream ss;
+  ss << "[";
+  int s = vec.size();
+  for(int i=0;i<s;i++) {
+    ss << vec[i];
+    if (i!=s-1) ss << ",";
+  }
+  ss << "]";
+  return ss.str();
+}
+std::string json_number(int i)
+{
+  std::stringstream ss;
+  ss << i;
+  return ss.str();
+}
+struct NameValue
+{
+  std::string name;
+  std::string value;
+};
+std::string json_object(std::vector<NameValue> vec)
+{
+  std::stringstream ss;
+  ss << "{ ";
+  int s = vec.size();
+  for(int i=0;i<s;i++) {
+    ss << vec[i].name << " :" << vec[i].value;
+    if (i!=s-1) ss << ",";
+  }
+  ss << "}";
+  return ss.str();
+}
+
+EXPORT std::string GameApi::WModApi::dump_functions()
+{
+  static std::vector<GameApiItem*> functions = all_functions();
+
+  int s = functions.size();
+  std::vector<NameValue> vec2;
+  for(int i=0;i<s;i++)
+    {
+      std::string name = functions[i]->Name(0);
+      //ss << name << std::endl;
+      std::string rettype = functions[i]->ReturnType(0);
+      std::string apiname = functions[i]->ApiName(0);
+      std::string funcname = functions[i]->FuncName(0);
+
+      std::string json_name = json_string(name);
+      std::string json_rettype = json_string(rettype);
+      std::string json_apiname = json_string(apiname);
+      std::string json_funcname = json_string(funcname);
+      
+      std::vector<std::string> vec;
+      vec.push_back(json_name);
+      vec.push_back(json_rettype);
+      vec.push_back(json_apiname);
+      vec.push_back(json_funcname);
+      
+      //ss << name << ": " << rettype << " " << apiname << "::" << funcname;
+      int pcount = functions[i]->ParamCount(0);
+      std::string json_pcount = json_number(pcount);
+
+      vec.push_back(json_pcount);
+      
+      //ss << "(";
+      for(int j=0;j<pcount;j++) {
+	//if (j!=0) ss<< ", ";
+	std::string paramname = functions[i]->ParamName(0,j);
+	std::string paramtype = functions[i]->ParamType(0,j);
+	std::string paramdefault = functions[i]->ParamDefault(0,j);
+
+	std::string json_paramname = json_string(paramname);
+	std::string json_paramtype = json_string(paramtype);
+	std::string json_paramdefault = json_string(paramdefault);
+
+	vec.push_back(json_paramname);
+	vec.push_back(json_paramtype);
+	vec.push_back(json_paramdefault);
+	
+	//ss << paramtype << " " << paramname << " = " << paramdefault;
+      }
+
+      std::string array = json_array(vec);
+
+      NameValue nv;
+      nv.name = json_string(name);
+      nv.value = array;
+      vec2.push_back(nv);
+      
+      //ss << ");" << std::endl;
+      //ss << "]";
+      
+    }
+  return json_object(vec2);
+}
 
 EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p, std::vector<W> &params, std::vector<W> &display_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open)
 {
@@ -1531,10 +1797,11 @@ EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, i
       W w = { 0 };
       connect_clicks.push_back(w);
     }
-  InstallProgress(898, "create boxes", s);
+  InstallProgress(898, "create boxes", 15);
   for(int i=0;i<s;i++)
     {
-      ProgressBar(898, i, s, "create boxes");
+      if (s/15>0 && i % (s/15)==0)
+	ProgressBar(898, i*15/s, 15, "create boxes");
       GameApiLine *line = &func->lines[i];
       int ss = functions.size();
       int j = 0;

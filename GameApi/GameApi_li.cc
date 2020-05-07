@@ -4,6 +4,8 @@
 #include "GameApi_low.hh"
 
 unsigned int swap_color(unsigned int c);
+bool is_mobile(GameApi::EveryApi &ev);
+
 
 class ColorLineCollection : public LineCollection
 {
@@ -395,7 +397,7 @@ EXPORT GameApi::LI GameApi::LinesApi::border_from_bool_bitmap(GameApi::BB b, flo
 class LI_Render : public MainLoopItem
 {
 public:
-  LI_Render(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LLA l) : env(e), ev(ev), api(api), l(l) { shader.id = -1;}
+  LI_Render(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LLA l, float lineWidth) : env(e), ev(ev), api(api), l(l), linewidth(lineWidth) { shader.id = -1;}
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -418,11 +420,21 @@ public:
 	ev.shader_api.set_var(sh, "in_N", m2);
 	ev.shader_api.set_var(sh, "time", e.time);
     ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+  OpenglLowApi *ogl = g_low->ogl;
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+    if (is_platform_linux())
+      ogl->glLineWidth(linewidth*mult/2);
+    else
+      ogl->glLineWidth(linewidth*mult);
 
     api.render(l);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return shader.id; }
+  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //int shader_id() { return shader.id; }
 
 private:
   GameApi::Env &env;
@@ -430,13 +442,14 @@ private:
   GameApi::LinesApi &api;
   GameApi::LLA l;
   GameApi::SH shader;
+  float linewidth;
 };
 
 
 class LI_Render2 : public MainLoopItem
 {
 public:
-  LI_Render2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l) : env(e), ev(ev), api(api), l(l) {firsttime=true; shader.id=-1; }
+  LI_Render2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l, float linewidth) : env(e), ev(ev), api(api), l(l),linewidth(linewidth) {firsttime=true; shader.id=-1; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -464,11 +477,21 @@ public:
 	    l2 = ev.lines_api.prepare(l);
 	    firsttime = false;
 	  }
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+  OpenglLowApi *ogl = g_low->ogl;
+    if (is_platform_linux())
+      ogl->glLineWidth(linewidth*mult/2);
+    else
+      ogl->glLineWidth(linewidth*mult);
 	
     api.render(l2);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return shader.id; }
+  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //int shader_id() { return shader.id; }
 
 private:
   GameApi::Env &env;
@@ -478,13 +501,14 @@ private:
   GameApi::LLA l2;
   bool firsttime;
   GameApi::SH shader;
+  float linewidth;
 };
 
 
 class LI_Render_Inst : public MainLoopItem
 {
 public:
-  LI_Render_Inst(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LLA l, GameApi::PTA pta) : env(env), ev(ev), api(api), l(l),pta(pta) { firsttime=true; }
+  LI_Render_Inst(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LLA l, GameApi::PTA pta, float linewidth) : env(env), ev(ev), api(api), l(l),pta(pta),linewidth(linewidth) { firsttime=true; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -542,10 +566,21 @@ public:
 	api.prepare_inst(l,pta);
 	firsttime=false;
       }
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+  OpenglLowApi *ogl = g_low->ogl;
+    if (is_platform_linux())
+      ogl->glLineWidth(linewidth*mult/2);
+    else
+      ogl->glLineWidth(linewidth*mult);
+
     api.render_inst(l,pta);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //int shader_id() { return -1; }
 
 private:
   GameApi::Env &env;
@@ -555,12 +590,13 @@ private:
   GameApi::PTA pta;
   bool firsttime;
   GameApi::SH shader;
+  float linewidth;
 };
 
 class LI_Render_Inst2 : public MainLoopItem
 {
 public:
-  LI_Render_Inst2(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l0, GameApi::PTA pta) : env(env), ev(ev), api(api), l0(l0),pta(pta) { firsttime=true; }
+  LI_Render_Inst2(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l0, GameApi::PTA pta, float linewidth) : env(env), ev(ev), api(api), l0(l0),pta(pta),linewidth(linewidth) { firsttime=true; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -620,10 +656,21 @@ public:
 	api.prepare_inst(l,pta);
 	firsttime=false;
       }
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+  OpenglLowApi *ogl = g_low->ogl;
+    if (is_platform_linux())
+      ogl->glLineWidth(linewidth*mult/2);
+    else
+      ogl->glLineWidth(linewidth*mult);
+
     api.render_inst(l,pta);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //int shader_id() { return -1; }
 
 private:
   GameApi::Env &env;
@@ -634,6 +681,7 @@ private:
   GameApi::PTA pta;
   bool firsttime;
   GameApi::SH shader;
+  float linewidth;
 };
 
 
@@ -641,7 +689,7 @@ private:
 class LI_Render_Inst3 : public MainLoopItem
 {
 public:
-  LI_Render_Inst3(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l0, GameApi::PTS pts) : env(env), ev(ev), api(api), l0(l0),pts(pts) { firsttime=true; }
+  LI_Render_Inst3(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l0, GameApi::PTS pts, float linewidth) : env(env), ev(ev), api(api), l0(l0),pts(pts),linewidth(linewidth) { firsttime=true; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -703,10 +751,22 @@ public:
 	api.prepare_inst(l,pta);
 	firsttime=false;
       }
+
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+  OpenglLowApi *ogl = g_low->ogl;
+    if (is_platform_linux())
+      ogl->glLineWidth(linewidth*mult/2);
+    else
+      ogl->glLineWidth(linewidth*mult);
+
     api.render_inst(l,pta);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //int shader_id() { return -1; }
 
 private:
   GameApi::Env &env;
@@ -718,13 +778,14 @@ private:
   GameApi::PTA pta;
   bool firsttime;
   GameApi::SH shader;
+  float linewidth;
 };
 
 
 class LI_Render_Inst3_matrix : public MainLoopItem
 {
 public:
-  LI_Render_Inst3_matrix(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l0, GameApi::MS pts) : env(env), ev(ev), api(api), l0(l0),pts(pts) { firsttime=true; }
+  LI_Render_Inst3_matrix(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LinesApi &api, GameApi::LI l0, GameApi::MS pts, float linewidth) : env(env), ev(ev), api(api), l0(l0),pts(pts),linewidth(linewidth) { firsttime=true; }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -786,10 +847,22 @@ public:
 	api.prepare_inst_matrix(l,pta);
 	firsttime=false;
       }
+
+    float mult = 1.0;
+    if (is_mobile(ev)) {
+      mult = 0.2;
+    }
+  OpenglLowApi *ogl = g_low->ogl;
+    if (is_platform_linux())
+      ogl->glLineWidth(linewidth*mult/2);
+    else
+      ogl->glLineWidth(linewidth*mult);
+
     api.render_inst_matrix(l,pta);
     ev.shader_api.unuse(sh);
   }
-  int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  //int shader_id() { return -1; }
 
 private:
   GameApi::Env &env;
@@ -801,37 +874,40 @@ private:
   GameApi::MSA pta;
   bool firsttime;
   GameApi::SH shader;
+  float linewidth;
 };
 
 
 
-EXPORT GameApi::ML GameApi::LinesApi::render_ml(EveryApi &ev, LLA l)
+EXPORT GameApi::ML GameApi::LinesApi::render_ml(EveryApi &ev, LLA l, float linewidth)
 {
-  return add_main_loop(e, new LI_Render(e, ev, *this, l));
+  return add_main_loop(e, new LI_Render(e, ev, *this, l,linewidth));
 }
-EXPORT GameApi::ML GameApi::LinesApi::render_ml2(EveryApi &ev, LI l)
+EXPORT GameApi::ML GameApi::LinesApi::render_ml2(EveryApi &ev, LI l,float linewidth)
 {
-  return add_main_loop(e, new LI_Render2(e, ev, *this, l));
+  return add_main_loop(e, new LI_Render2(e, ev, *this, l,linewidth));
 }
-EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml(EveryApi &ev, LLA l, PTA pta)
+EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml(EveryApi &ev, LLA l, PTA pta, float linewidth)
 {
-  return add_main_loop(e, new LI_Render_Inst(e, ev, *this, l, pta));
+  return add_main_loop(e, new LI_Render_Inst(e, ev, *this, l, pta, linewidth));
 }
-EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml2(EveryApi &ev, LI l, PTA pta)
+EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml2(EveryApi &ev, LI l, PTA pta, float linewidth)
 {
-  return add_main_loop(e, new LI_Render_Inst2(e, ev, *this, l, pta));
+  return add_main_loop(e, new LI_Render_Inst2(e, ev, *this, l, pta, linewidth));
 }
-EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml3(EveryApi &ev, LI l, PTS pts)
+EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml3(EveryApi &ev, LI l, PTS pts, float linewidth)
 {
-  return add_main_loop(e, new LI_Render_Inst3(e, ev, *this, l, pts));
+  return add_main_loop(e, new LI_Render_Inst3(e, ev, *this, l, pts, linewidth));
 }
-EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml3_matrix(EveryApi &ev, LI l, MS pts)
+EXPORT GameApi::ML GameApi::LinesApi::render_inst_ml3_matrix(EveryApi &ev, LI l, MS pts, float linewidth)
 {
-  return add_main_loop(e, new LI_Render_Inst3_matrix(e, ev, *this, l, pts));
+  return add_main_loop(e, new LI_Render_Inst3_matrix(e, ev, *this, l, pts, linewidth));
 }
 
 EXPORT void GameApi::LinesApi::prepare_inst(LLA l, PTA instances)
 {
+  OpenglLowApi *ogl = g_low->ogl;
+
   PointArray2 *array = find_lines_array(e,l);
   PointArray3 *arr = find_point_array3(e, instances);
 
@@ -839,20 +915,22 @@ EXPORT void GameApi::LinesApi::prepare_inst(LLA l, PTA instances)
   int size = arr->numpoints;
 
 #ifdef VAO
-  g_low->ogl->glBindVertexArray(array->vao[0]);
+  ogl->glBindVertexArray(array->vao[0]);
 #endif
-  g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
+  ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
 
-  g_low->ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Point) * size, positions, Low_GL_DYNAMIC_DRAW);
+  ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Point) * size, positions, Low_GL_DYNAMIC_DRAW);
 
 #ifdef VAO
-  g_low->ogl->glBindVertexArray(0);
+  ogl->glBindVertexArray(0);
 #endif
 
 }
 
 EXPORT void GameApi::LinesApi::prepare_inst_matrix(LLA l, MSA instances)
 {
+  OpenglLowApi *ogl = g_low->ogl;
+
   PointArray2 *array = find_lines_array(e,l);
   MatrixArray3 *arr = find_matrix_array3(e, instances);
 
@@ -860,14 +938,14 @@ EXPORT void GameApi::LinesApi::prepare_inst_matrix(LLA l, MSA instances)
   int size = arr->numpoints;
 
 #ifdef VAO
-  g_low->ogl->glBindVertexArray(array->vao[0]);
+  ogl->glBindVertexArray(array->vao[0]);
 #endif
-  g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
+  ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
 
-  g_low->ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Matrix) * size, positions, Low_GL_DYNAMIC_DRAW);
+  ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Matrix) * size, positions, Low_GL_DYNAMIC_DRAW);
 
 #ifdef VAO
-  g_low->ogl->glBindVertexArray(0);
+  ogl->glBindVertexArray(0);
 #endif
 
 }
@@ -876,6 +954,8 @@ std::map<int,bool> g_render_inst_map;
 
 EXPORT void GameApi::LinesApi::render_inst(LLA l, PTA instances)
 {
+  OpenglLowApi *ogl = g_low->ogl;
+
   PointArray3 *arr = find_point_array3(e, instances);
   PointArray2 *array = find_lines_array(e,l);
   //glEnableClientState(GL_VERTEX_ARRAY);
@@ -883,53 +963,53 @@ EXPORT void GameApi::LinesApi::render_inst(LLA l, PTA instances)
   float *positions = arr->array;
   int size = arr->numpoints;
   //ss INSTANCED RENDERING
-  g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
+  ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
   if (g_render_inst_map[instances.id]==false) {
-    g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
   }
-  g_low->ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
-  g_low->ogl->glVertexAttribDivisor(5, 1);
-  g_low->ogl->glEnableVertexAttribArray(5);
+  ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+  ogl->glVertexAttribDivisor(5, 1);
+  ogl->glEnableVertexAttribArray(5);
   // END OF INSTANCED RENDERING
 #ifdef VAO
-  g_low->ogl->glBindVertexArray(array->vao[0]);
+  ogl->glBindVertexArray(array->vao[0]);
 #else
-  g_low->ogl->glEnableVertexAttribArray(0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer);
-  g_low->ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
-  g_low->ogl->glEnableVertexAttribArray(4);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer2_1);
-  g_low->ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
-  g_low->ogl->glEnableVertexAttribArray(2);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer2);
-  g_low->ogl->glVertexAttribPointer(2, 4, Low_GL_UNSIGNED_BYTE, Low_GL_TRUE, 0,0);
+  ogl->glEnableVertexAttribArray(0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer);
+  ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+  ogl->glEnableVertexAttribArray(4);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer2_1);
+  ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+  ogl->glEnableVertexAttribArray(2);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer2);
+  ogl->glVertexAttribPointer(2, 4, Low_GL_UNSIGNED_BYTE, Low_GL_TRUE, 0,0);
 #endif
 
   // INSTANCED DRAWING
-  g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
+  ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
   if (g_render_inst_map[instances.id]==false) {
-    g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
   }
-  g_low->ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
-  g_low->ogl->glVertexAttribDivisor(5, 1);
-  g_low->ogl->glEnableVertexAttribArray(5);
+  ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+  ogl->glVertexAttribDivisor(5, 1);
+  ogl->glEnableVertexAttribArray(5);
   // END INSTANCED
 
-  g_low->ogl->glVertexAttribDivisor(0, 0);
-  g_low->ogl->glVertexAttribDivisor(1, 0);
-  g_low->ogl->glVertexAttribDivisor(2, 0);
-  g_low->ogl->glVertexAttribDivisor(3, 0);
-  g_low->ogl->glVertexAttribDivisor(4, 0);
+  ogl->glVertexAttribDivisor(0, 0);
+  ogl->glVertexAttribDivisor(1, 0);
+  ogl->glVertexAttribDivisor(2, 0);
+  ogl->glVertexAttribDivisor(3, 0);
+  ogl->glVertexAttribDivisor(4, 0);
 
 
-  g_low->ogl->glDrawArraysInstanced(Low_GL_LINES, 0, array->numpoints, size);
+  ogl->glDrawArraysInstanced(Low_GL_LINES, 0, array->numpoints, size);
 #ifndef VAO
-  g_low->ogl->glDisableVertexAttribArray(0);
-  g_low->ogl->glDisableVertexAttribArray(4);
-  g_low->ogl->glDisableVertexAttribArray(2);
+  ogl->glDisableVertexAttribArray(0);
+  ogl->glDisableVertexAttribArray(4);
+  ogl->glDisableVertexAttribArray(2);
 #endif
 #ifdef VAO
-  g_low->ogl->glBindVertexArray(0);
+  ogl->glBindVertexArray(0);
 #endif
 
 
@@ -939,6 +1019,8 @@ EXPORT void GameApi::LinesApi::render_inst(LLA l, PTA instances)
 
 EXPORT void GameApi::LinesApi::render_inst_matrix(LLA l, MSA instances)
 {
+  OpenglLowApi *ogl = g_low->ogl;
+
   MatrixArray3 *arr = find_matrix_array3(e, instances);
   PointArray2 *array = find_lines_array(e,l);
   //glEnableClientState(GL_VERTEX_ARRAY);
@@ -946,71 +1028,71 @@ EXPORT void GameApi::LinesApi::render_inst_matrix(LLA l, MSA instances)
   float *positions = arr->array;
   int size = arr->numpoints;
   //ss INSTANCED RENDERING
-  g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
+  ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
   if (g_render_inst_map[instances.id]==false) {
-    g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Matrix) * size, positions);
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Matrix) * size, positions);
   }
-  g_low->ogl->glVertexAttribPointer(7, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, 0);
-  g_low->ogl->glVertexAttribPointer(8, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*4));
-  g_low->ogl->glVertexAttribPointer(9, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*8));
-  g_low->ogl->glVertexAttribPointer(10, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*12));
-  g_low->ogl->glVertexAttribDivisor(7, 1);
-  g_low->ogl->glVertexAttribDivisor(8, 1);
-  g_low->ogl->glVertexAttribDivisor(9, 1);
-  g_low->ogl->glVertexAttribDivisor(10, 1);
-  g_low->ogl->glEnableVertexAttribArray(7);
-  g_low->ogl->glEnableVertexAttribArray(8);
-  g_low->ogl->glEnableVertexAttribArray(9);
-  g_low->ogl->glEnableVertexAttribArray(10);
+  ogl->glVertexAttribPointer(7, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, 0);
+  ogl->glVertexAttribPointer(8, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*4));
+  ogl->glVertexAttribPointer(9, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*8));
+  ogl->glVertexAttribPointer(10, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*12));
+  ogl->glVertexAttribDivisor(7, 1);
+  ogl->glVertexAttribDivisor(8, 1);
+  ogl->glVertexAttribDivisor(9, 1);
+  ogl->glVertexAttribDivisor(10, 1);
+  ogl->glEnableVertexAttribArray(7);
+  ogl->glEnableVertexAttribArray(8);
+  ogl->glEnableVertexAttribArray(9);
+  ogl->glEnableVertexAttribArray(10);
   // END OF INSTANCED RENDERING
 #ifdef VAO
-  g_low->ogl->glBindVertexArray(array->vao[0]);
+  ogl->glBindVertexArray(array->vao[0]);
 #else
-  g_low->ogl->glEnableVertexAttribArray(0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer);
-  g_low->ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
-  g_low->ogl->glEnableVertexAttribArray(4);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer2_1);
-  g_low->ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
-  g_low->ogl->glEnableVertexAttribArray(2);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer2);
-  g_low->ogl->glVertexAttribPointer(2, 4, Low_GL_UNSIGNED_BYTE, Low_GL_TRUE, 0,0);
+  ogl->glEnableVertexAttribArray(0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer);
+  ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+  ogl->glEnableVertexAttribArray(4);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer2_1);
+  ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+  ogl->glEnableVertexAttribArray(2);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer2);
+  ogl->glVertexAttribPointer(2, 4, Low_GL_UNSIGNED_BYTE, Low_GL_TRUE, 0,0);
 #endif
 
   // INSTANCED DRAWING
-  g_low->ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
+  ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, array->pos_buffer );
   if (g_render_inst_map[instances.id]==false) {
-    g_low->ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Matrix) * size, positions);
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Matrix) * size, positions);
   }
-  g_low->ogl->glVertexAttribPointer(7, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, 0);
-  g_low->ogl->glVertexAttribPointer(8, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*4));
-  g_low->ogl->glVertexAttribPointer(9, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*8));
-  g_low->ogl->glVertexAttribPointer(10, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*12));
-  g_low->ogl->glVertexAttribDivisor(7, 1);
-  g_low->ogl->glVertexAttribDivisor(8, 1);
-  g_low->ogl->glVertexAttribDivisor(9, 1);
-  g_low->ogl->glVertexAttribDivisor(10, 1);
-  g_low->ogl->glEnableVertexAttribArray(7);
-  g_low->ogl->glEnableVertexAttribArray(8);
-  g_low->ogl->glEnableVertexAttribArray(9);
-  g_low->ogl->glEnableVertexAttribArray(10);
+  ogl->glVertexAttribPointer(7, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, 0);
+  ogl->glVertexAttribPointer(8, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*4));
+  ogl->glVertexAttribPointer(9, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*8));
+  ogl->glVertexAttribPointer(10, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*12));
+  ogl->glVertexAttribDivisor(7, 1);
+  ogl->glVertexAttribDivisor(8, 1);
+  ogl->glVertexAttribDivisor(9, 1);
+  ogl->glVertexAttribDivisor(10, 1);
+  ogl->glEnableVertexAttribArray(7);
+  ogl->glEnableVertexAttribArray(8);
+  ogl->glEnableVertexAttribArray(9);
+  ogl->glEnableVertexAttribArray(10);
   // END INSTANCED
 
-  g_low->ogl->glVertexAttribDivisor(0, 0);
-  g_low->ogl->glVertexAttribDivisor(1, 0);
-  g_low->ogl->glVertexAttribDivisor(2, 0);
-  g_low->ogl->glVertexAttribDivisor(3, 0);
-  g_low->ogl->glVertexAttribDivisor(4, 0);
+  ogl->glVertexAttribDivisor(0, 0);
+  ogl->glVertexAttribDivisor(1, 0);
+  ogl->glVertexAttribDivisor(2, 0);
+  ogl->glVertexAttribDivisor(3, 0);
+  ogl->glVertexAttribDivisor(4, 0);
 
 
-  g_low->ogl->glDrawArraysInstanced(Low_GL_LINES, 0, array->numpoints, size);
+  ogl->glDrawArraysInstanced(Low_GL_LINES, 0, array->numpoints, size);
 #ifndef VAO
-  g_low->ogl->glDisableVertexAttribArray(0);
-  g_low->ogl->glDisableVertexAttribArray(4);
-  g_low->ogl->glDisableVertexAttribArray(2);
+  ogl->glDisableVertexAttribArray(0);
+  ogl->glDisableVertexAttribArray(4);
+  ogl->glDisableVertexAttribArray(2);
 #endif
 #ifdef VAO
-  g_low->ogl->glBindVertexArray(0);
+  ogl->glBindVertexArray(0);
 #endif
 
 
@@ -1020,29 +1102,31 @@ EXPORT void GameApi::LinesApi::render_inst_matrix(LLA l, MSA instances)
 
 EXPORT void GameApi::LinesApi::render(LLA l)
 {
+  OpenglLowApi *ogl = g_low->ogl;
+
   PointArray2 *array = find_lines_array(e,l);
   //glEnableClientState(GL_VERTEX_ARRAY);
 #ifdef VAO
-  g_low->ogl->glBindVertexArray(array->vao[0]);
+  ogl->glBindVertexArray(array->vao[0]);
 #else
-  g_low->ogl->glEnableVertexAttribArray(0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer);
-  g_low->ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
-  g_low->ogl->glEnableVertexAttribArray(4);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer2_1);
-  g_low->ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
-  g_low->ogl->glEnableVertexAttribArray(2);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer2);
-  g_low->ogl->glVertexAttribPointer(2, 4, Low_GL_UNSIGNED_BYTE, Low_GL_TRUE, 0,0);
+  ogl->glEnableVertexAttribArray(0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer);
+  ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+  ogl->glEnableVertexAttribArray(4);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer2_1);
+  ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+  ogl->glEnableVertexAttribArray(2);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, array->buffer2);
+  ogl->glVertexAttribPointer(2, 4, Low_GL_UNSIGNED_BYTE, Low_GL_TRUE, 0,0);
 #endif
-  g_low->ogl->glDrawArrays(Low_GL_LINES, 0, array->numpoints);
+  ogl->glDrawArrays(Low_GL_LINES, 0, array->numpoints);
 #ifndef VAO
-  g_low->ogl->glDisableVertexAttribArray(0);
-  g_low->ogl->glDisableVertexAttribArray(4);
-  g_low->ogl->glDisableVertexAttribArray(2);
+  ogl->glDisableVertexAttribArray(0);
+  ogl->glDisableVertexAttribArray(4);
+  ogl->glDisableVertexAttribArray(2);
 #endif
 #ifdef VAO
-  g_low->ogl->glBindVertexArray(0);
+  ogl->glBindVertexArray(0);
 #endif
 
 }
@@ -1110,7 +1194,8 @@ public:
   {
   }
   void execute(MainLoopEnv &e) { api.update(la,li); }
-  int shader_id() { return -1; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+
 
 private:
   GameApi::LinesApi &api;
@@ -1190,6 +1275,8 @@ EXPORT GameApi::PTS GameApi::LinesApi::pts_line_anim2(LI lines, std::function<fl
 
 EXPORT void GameApi::LinesApi::update(LLA la, LI l)
 {
+  OpenglLowApi *ogl = g_low->ogl;
+
   LineCollection *coll = find_line_array(e, l);
   int count = coll->NumLines();
   float *array = 0;
@@ -1235,30 +1322,30 @@ EXPORT void GameApi::LinesApi::update(LLA la, LI l)
   arr->color_array = color_array;
   arr->numpoints = count*2;
 #ifdef VAO
-  g_low->ogl->glGenVertexArrays(1, arr->vao);
-  g_low->ogl->glBindVertexArray(arr->vao[0]);
+  ogl->glGenVertexArrays(1, arr->vao);
+  ogl->glBindVertexArray(arr->vao[0]);
 #endif
-  g_low->ogl->glGenBuffers(1, &arr->buffer);
-  g_low->ogl->glGenBuffers(1, &arr->buffer2);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
-  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, Low_GL_STATIC_DRAW);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2_1);
-  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array2_1, Low_GL_STATIC_DRAW);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2);
-  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, Low_GL_STATIC_DRAW);
+  ogl->glGenBuffers(1, &arr->buffer);
+  ogl->glGenBuffers(1, &arr->buffer2);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, Low_GL_STATIC_DRAW);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2_1);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array2_1, Low_GL_STATIC_DRAW);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, Low_GL_STATIC_DRAW);
 #ifdef VAO
-  g_low->ogl->glEnableVertexAttribArray(0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
-  g_low->ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2_1);
-  g_low->ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
-  g_low->ogl->glEnableVertexAttribArray(2);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2);
-  g_low->ogl->glVertexAttribPointer(2, 4, Low_GL_UNSIGNED_BYTE, Low_GL_TRUE, 0,0);
+  ogl->glEnableVertexAttribArray(0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
+  ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2_1);
+  ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+  ogl->glEnableVertexAttribArray(2);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2);
+  ogl->glVertexAttribPointer(2, 4, Low_GL_UNSIGNED_BYTE, Low_GL_TRUE, 0,0);
 #endif
 
 #ifdef VAO
-  g_low->ogl->glBindVertexArray(0);
+  ogl->glBindVertexArray(0);
 #endif
 
 
@@ -1270,6 +1357,8 @@ EXPORT void GameApi::LinesApi::update(LLA la, LI l)
 }
 EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
 {
+  OpenglLowApi *ogl = g_low->ogl;
+
   LineCollection *coll = find_line_array(e, l);
   coll->Prepare();
   int count = coll->NumLines();
@@ -1316,36 +1405,36 @@ EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
   arr->color_array = color_array;
   arr->numpoints = count*2;
 #ifdef VAO
-  g_low->ogl->glGenVertexArrays(1, arr->vao);
-  g_low->ogl->glBindVertexArray(arr->vao[0]);
+  ogl->glGenVertexArrays(1, arr->vao);
+  ogl->glBindVertexArray(arr->vao[0]);
   // INSTANCED RENDERING
-  g_low->ogl->glGenBuffers(1, &arr->pos_buffer);
+  ogl->glGenBuffers(1, &arr->pos_buffer);
   // END OF INSTANCED RENDERING
 #endif
-  g_low->ogl->glGenBuffers(1, &arr->buffer);
-  g_low->ogl->glGenBuffers(1, &arr->buffer2_1);
-  g_low->ogl->glGenBuffers(1, &arr->buffer2);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
-  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, Low_GL_STATIC_DRAW);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2_1);
-  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array2_1, Low_GL_STATIC_DRAW);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2);
-  g_low->ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, Low_GL_STATIC_DRAW);
+  ogl->glGenBuffers(1, &arr->buffer);
+  ogl->glGenBuffers(1, &arr->buffer2_1);
+  ogl->glGenBuffers(1, &arr->buffer2);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, Low_GL_STATIC_DRAW);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2_1);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array2_1, Low_GL_STATIC_DRAW);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color_array, Low_GL_STATIC_DRAW);
 #ifdef VAO
-  g_low->ogl->glEnableVertexAttribArray(0);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
-  g_low->ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
-  g_low->ogl->glEnableVertexAttribArray(4);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2_1);
-  g_low->ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
-  g_low->ogl->glEnableVertexAttribArray(2);
-  g_low->ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2);
-  g_low->ogl->glVertexAttribPointer(2, 4, Low_GL_UNSIGNED_BYTE, Low_GL_TRUE, 0,0);
+  ogl->glEnableVertexAttribArray(0);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer);
+  ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+  ogl->glEnableVertexAttribArray(4);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2_1);
+  ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+  ogl->glEnableVertexAttribArray(2);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer2);
+  ogl->glVertexAttribPointer(2, 4, Low_GL_UNSIGNED_BYTE, Low_GL_TRUE, 0,0);
 #endif
   //glDisableVertexAttribArray(0);
   //glDisableVertexAttribArray(2);
 #ifdef VAO
-  g_low->ogl->glBindVertexArray(0);
+  ogl->glBindVertexArray(0);
 #endif
   return add_lines_array(e, arr);
 }
