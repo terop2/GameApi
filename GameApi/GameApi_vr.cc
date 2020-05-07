@@ -120,29 +120,29 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
  
   
 
-BB I1=ev.bool_bitmap_api.empty(100,100);
+BB I1=ev.bool_bitmap_api.bb_empty(100,100);
 BB I2=ev.bool_bitmap_api.rectangle(I1,0,0,2,100);
 BB I3=ev.bool_bitmap_api.rectangle(I2,0,0,100,2);
 BB I4=ev.bool_bitmap_api.rectangle(I3,98,0,2,100);
 BB I5=ev.bool_bitmap_api.rectangle(I4,0,98,100,2);
-BB I6=ev.bool_bitmap_api.empty(100,100);
+BB I6=ev.bool_bitmap_api.bb_empty(100,100);
 BB I7=ev.bool_bitmap_api.tri(I6,23,20,36,60,10,40);
-BB I8=ev.bool_bitmap_api.empty(100,100);
+BB I8=ev.bool_bitmap_api.bb_empty(100,100);
 BB I9=ev.bool_bitmap_api.tri(I8,23,20,49,40,36,60);
 BB I10=ev.bool_bitmap_api.or_bitmap(I7,I9);
-BB I11=ev.bool_bitmap_api.empty(100,100);
+BB I11=ev.bool_bitmap_api.bb_empty(100,100);
 BB I12=ev.bool_bitmap_api.tri(I11,75,20,62,60,49,40);
-BB I13=ev.bool_bitmap_api.empty(100,100);
+BB I13=ev.bool_bitmap_api.bb_empty(100,100);
 BB I14=ev.bool_bitmap_api.tri(I13,75,20,88,40,61,60);
 BB I15=ev.bool_bitmap_api.or_bitmap(I12,I14);
 BB I16=ev.bool_bitmap_api.or_bitmap(I10,I15);
-BB I17=ev.bool_bitmap_api.empty(100,100);
+BB I17=ev.bool_bitmap_api.bb_empty(100,100);
 BB I18=ev.bool_bitmap_api.tri(I17,23,20,76,20,49,41);
 BB I19=ev.bool_bitmap_api.or_bitmap(I16,I18);
 BB I20=ev.bool_bitmap_api.sprite(I5,I19,0,10,1,1);
 BM I21=ev.bool_bitmap_api.to_bitmap(I20,255,255,255,255,0,0,0,0);
 ML I22=ev.sprite_api.vertex_array_render(ev,I21);
-MN I23=ev.move_api.empty();
+MN I23=ev.move_api.mn_empty();
 MN I24=ev.move_api.trans2(I23,screen_w,screen_h,0);
 ML I25=ev.move_api.move_ml(ev,I22,I24,1,10.0);
 ML I26=ev.sprite_api.turn_to_2d(ev,I25,0.0,0.0,800.0,600.0);
