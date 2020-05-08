@@ -30,7 +30,7 @@ void InstallProgress(int num, std::string label, int max=15);
 void ProgressBar(int num, int val, int max, std::string label);
 void set_codegen_values(GameApi::WM mod2, int id, std::string line_uid, int level);
 void pthread_system(std::string str);
-std::string find_html2(GameApi::HML ml, GameApi::Env &env);
+IMPORT std::string find_html2(GameApi::HML ml, GameApi::Env &env);
 std::vector<unsigned char> load_from_url(std::string url);
 
 std::string hexify2(std::string s)
@@ -892,8 +892,9 @@ void iter(void *arg)
 		if (g_id!=-1) clear_block(g_id);
 		g_id = add_block();
 		set_current_block(g_id);
-
+#if 0
 		    set_codegen_values(env->mod,0,uid,1000);
+#endif 
 		    
 		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000);
 		    set_current_block(-2);
@@ -1130,6 +1131,7 @@ void iter(void *arg)
 		      }
 		    else if (type=="HML")
 		      {
+#if 0
 			display = false;
 			HML ml;
 			ml.id = id;
@@ -1157,6 +1159,7 @@ void iter(void *arg)
 			f.close();
 
 			pthread_system((std::string("chromium ") + prefix + "tst.html").c_str());
+#endif
 #endif
 		      }
 		    else if (type=="WV")
@@ -1860,7 +1863,9 @@ int main(int argc, char *argv[]) {
 	  if (device_id=="oculus") { g_vr_device_id=2; }
 
 	  if (g_vr_device_id==0) g_vr_device_id = 1; else i++;
-
+	  std::string devices[] = { "None", "Vive", "Oculus" };
+	  std::cout << "Choosing:" << devices[g_vr_device_id] << std::endl;
+	  
 	}
       if (std::string(argv[i])=="--file")
 	{

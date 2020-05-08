@@ -512,15 +512,15 @@ public:
   if (!hmd) { return DefaultProjection(ev); }
   vr::Hmd_Eye nEye = eye ? vr::Eye_Left : vr::Eye_Right;
   vr::HmdMatrix44_t mat = hmd->GetProjectionMatrix( nEye, m_fNearClip, m_fFarClip );
-  Matrix m = { mat.m[0][0], mat.m[1][0], mat.m[2][0], mat.m[3][0],
-	       mat.m[0][1], mat.m[1][1], mat.m[2][1], mat.m[3][1],
-	       mat.m[0][2], mat.m[1][2], mat.m[2][2], mat.m[3][2],
-	       mat.m[0][3], mat.m[1][3], mat.m[2][3], mat.m[3][3] };
+  Matrix m = { mat.m[0][0], mat.m[0][1], mat.m[0][2], mat.m[0][3],
+	       mat.m[1][0], mat.m[1][1], mat.m[1][2], mat.m[1][3],
+	       mat.m[2][0], mat.m[2][1], mat.m[2][2], mat.m[2][3],
+	       mat.m[3][0], mat.m[3][1], mat.m[3][2], mat.m[3][3] };
 
 
-  GameApi::M m2 = ev.matrix_api.scale(1.0,0.5,1.0);
-  Matrix mm = find_matrix(env,m2);
-  m = mm * m;
+  //GameApi::M m2 = ev.matrix_api.scale(1.0,0.5,1.0);
+  //Matrix mm = find_matrix(env,m2);
+  //m = mm * m;
 
 #else
   if (!vr_vr_ready ||current_display==NULL||current_display==-1) { return DefaultProjection(ev); }
