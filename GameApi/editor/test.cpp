@@ -1822,6 +1822,7 @@ int main(int argc, char *argv[]) {
   std::string drive = getenv("systemdrive");
   std::string path = getenv("homepath");
   std::string filename = drive+path+"\\mod.txt";
+  std::cout << "Loading:" << filename << std::endl;
 #else
   std::string filename = "mod.txt";
 #endif
