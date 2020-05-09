@@ -109,7 +109,7 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
   // ML I66a_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,10.1,60000.0, false);
   TXID I67a_b = ev.fbo_api.fbo_ml(ev,ml/*I66a_b*/,fbo_x,fbo_y,false);
   ML res_b = ev.blocker_api.vr_submit_ml(ev,ml,I67_b, I44_b,invert,translate);
-  ML I70a_b = ev.blocker_api.vr_submit(ev, I44a_b, I67a_b); // I44a_b,I67a_b
+  ML I70a_b = ev.blocker_api.vr_submit(ev, I67a_b, I44a_b); // I44a_b,I67a_b
   ML res_I70a_b = ev.blocker_api.vr_submit_ml(ev,I70a_b, I67_b, I44_b,invert,translate);
 
   // hmd=true outputs res_b, res_I70a_b
