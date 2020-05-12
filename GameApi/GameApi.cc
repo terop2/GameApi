@@ -3202,6 +3202,49 @@ GameApi::P GameApi::TreeApi::tree_p(EveryApi &ev, T tree, std::vector<P> vec, fl
   return execute_recurse(e, ev, vec, Matrix::Identity(), 0, tree2, time); 
 }
 
+class RepeatMS : public MatrixArray
+{
+public:
+  RepeatMS(GameApi::EveryApi &ev,Movement *move, int val) : ev(ev), move(move), val(val) {
+    cache_matrix = Matrix::Identity();
+    cache_num = -1;
+  }
+  virtual void Prepare() { }
+  virtual void HandleEvent(MainLoopEvent &event) {
+    move->event(event);
+  }
+  virtual bool Update(MainLoopEnv &e) {
+    move->frame(e);
+    used_matrix = move->get_whole_matrix(e.time*10.0,ev.mainloop_api.get_delta_time());
+    cache_matrix=Matrix::Identity(); cache_num = -1;
+    return false;
+  }
+  virtual int Size() const { return val; }
+  virtual Matrix Index(int i) const
+  {
+    if (i<cache_num) { cache_matrix=Matrix::Identity(); cache_num = -1; }
+    
+    Matrix m = cache_matrix;
+    for(int ii=cache_num;ii<i;ii++) m = m * used_matrix;
+    cache_matrix = m; cache_num = i;
+    return m;
+  }
+  virtual unsigned int Color(int i) const { return 0xffffffff; }
+private:
+  GameApi::EveryApi &ev;
+  Movement *move;
+  int val;
+  Matrix used_matrix;
+  mutable Matrix cache_matrix;
+  mutable int cache_num;
+};
+
+GameApi::MS GameApi::MatricesApi::repeat_ms(EveryApi &ev,MN mn, int val)
+{
+  Movement *move = find_move(e,mn);
+  return add_matrix_array(e, new RepeatMS(ev,move,val));
+}
+
 class DefaultMaterial : public MaterialForward
 {
 public:
@@ -19505,7 +19548,7 @@ public:
     current_slot_num = 0;
     //std::cout << "NetworkHeavy:" << url << std::endl;
   }
-  ~NetworkHeavy() { e.async_rem_callback(url); }
+  ~NetworkHeavy() { e.async_rem_callback(url+str); }
   virtual bool RequestPrepares() const { return timing->RequestPrepares(); }
   virtual void TriggerPrepares()
   {
@@ -19535,7 +19578,11 @@ public:
       // start async network access
       static int i = 0;
       std::stringstream ss;
+#ifdef EMSCRIPTEN
+      // TODO, WHY IS THIS NEEDED? IT KILLS CACHING QUITE BADLY.
+      // BUT DOESNT SEEM TO WORK WITHOUT IT
       //ss<<"?id=" << i;
+#endif
       str = ss.str();
       i++;
 #ifdef EMSCRIPTEN
@@ -19719,10 +19766,22 @@ public:
 #ifdef THREAD_HEAVY
     ready=false;
     current_slot_num=0;
+#else
+    op->TriggerPrepares();
 #endif
   }
-  virtual int NumPrepares() const { return 0; }
-  virtual void Prepare(int prepare) { }
+  virtual int NumPrepares() const {
+#ifdef THREAD_HEAVY
+    return 0;
+#else
+    return op->NumPrepares();
+#endif
+  }
+  virtual void Prepare(int prepare) {
+#ifndef THREAD_HEAVY
+    op->Prepare(prepare);
+#endif
+  }
   virtual int NumSlots() const {
 #ifdef THREAD_HEAVY
     return current_slot_num+1;
@@ -19863,7 +19922,7 @@ private:
 class PngHeavy : public HeavyOperation
 {
 public:
-  PngHeavy(GameApi::EveryApi &ev, HeavyOperation *data, std::string url, int ssx, int ssy) : ev(ev), data(data),url(url),ssx(ssx), ssy(ssy) { res_ref=BufferRef::NewBuffer(ssx,ssy);
+  PngHeavy(GameApi::EveryApi &ev, HeavyOperation *data, std::string url, int ssx, int ssy, int texture_unit) : ev(ev), data(data),url(url),ssx(ssx), ssy(ssy),texture_unit(texture_unit) { res_ref=BufferRef::NewBuffer(ssx,ssy);
     ref=BufferRef::NewBuffer(1,1);
 
     // show white while loading
@@ -19873,6 +19932,10 @@ public:
 	
     id.id=-1;
     changed=true;
+  }
+  ~PngHeavy() {
+    BufferRef::FreeBuffer(res_ref);
+    BufferRef::FreeBuffer(ref);
   }
   virtual bool RequestPrepares() const { return data->RequestPrepares(); }
   virtual void TriggerPrepares() { data->TriggerPrepares(); }
@@ -19982,9 +20045,9 @@ public:
 
 
 #ifndef EMSCRIPTEN
-  ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+  ogl->glClientActiveTexture(Low_GL_TEXTURE0+texture_unit);
 #endif
-  ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+  ogl->glActiveTexture(Low_GL_TEXTURE0+texture_unit);
   ogl->glBindTexture(Low_GL_TEXTURE_2D, id.id);
   //ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, res_ref.width,res_ref.height, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, res_ref.buffer);
       if (changed) {
@@ -20017,6 +20080,7 @@ private:
   std::string url;
   int ssx,ssy;
   bool changed;
+  int texture_unit;
 };
 
 class BitmapHeavy : public HeavyOperation
@@ -20069,7 +20133,7 @@ private:
 class MTLParseHeavy : public HeavyOperation
 {
 public:
-  MTLParseHeavy(GameApi::EveryApi &ev, HeavyOperation *mtl_data, std::string url_prefix) : ev(ev), mtl_data(mtl_data), url_prefix(url_prefix) { }
+  MTLParseHeavy(GameApi::EveryApi &ev, HeavyOperation *mtl_data, std::string url_prefix, int texture_unit_delta) : ev(ev), mtl_data(mtl_data), url_prefix(url_prefix), delta(texture_unit_delta) { }
   virtual bool RequestPrepares() const
   {
    return mtl_data->RequestPrepares();
@@ -20093,7 +20157,7 @@ public:
     if (slot==0) {
       std::vector<unsigned char> *ptr = (std::vector<unsigned char>*)mtl_data->get_data("std::vector<unsigned char>");
       if (!ptr) { std::cout << "MTLParseHeavy: got null pointer!" << std::endl; return; }
-      vec = ev.polygon_api.mtl_parse(ev, *ptr, url_prefix);
+      vec = ev.polygon_api.mtl_parse(ev, *ptr, url_prefix, delta);
     }
   }
   virtual void FinishSlots()
@@ -20114,11 +20178,12 @@ private:
   HeavyOperation *mtl_data;
   std::vector<GameApi::TXID> vec;
   std::string url_prefix;
+  int delta;
 };
-GameApi::H GameApi::BitmapApi::mtl_heavy(GameApi::EveryApi &ev, H net, std::string url_prefix)
+GameApi::H GameApi::BitmapApi::mtl_heavy(GameApi::EveryApi &ev, H net, std::string url_prefix, int texture_unit_delta)
 {
   HeavyOperation *op = find_heavy(e, net);
-  return add_heavy(e, new MTLParseHeavy(ev, op,url_prefix));
+  return add_heavy(e, new MTLParseHeavy(ev, op,url_prefix,texture_unit_delta));
 }
 GameApi::H GameApi::BitmapApi::timing_heavy(int numframes)
 {
@@ -20132,10 +20197,10 @@ GameApi::H GameApi::BitmapApi::bitmap_heavy(BM bm, H timing)
   HeavyOperation *op = find_heavy(e, timing);
   return add_heavy(e, new BitmapHeavy(b2,op));
 }
-GameApi::H GameApi::BitmapApi::png_heavy(EveryApi &ev, H net, std::string url)
+GameApi::H GameApi::BitmapApi::png_heavy(EveryApi &ev, H net, std::string url, int texture_unit)
 {
   HeavyOperation *op = find_heavy(e, net);
-  return add_heavy(e, new PngHeavy(ev,op,url,1024,1024));
+  return add_heavy(e, new PngHeavy(ev,op,url,1024,1024, texture_unit));
 }
 GameApi::H GameApi::BitmapApi::array_heavy(std::vector<H> vec)
 {
@@ -20321,13 +20386,13 @@ GameApi::ML GameApi::BitmapApi::txidarray_from_heavy(GameApi::EveryApi &ev, H he
   return add_main_loop(e, new TXIDArrayMainLoop(e,ev,op, vec,item, start_range,end_range));
 }
 
-GameApi::TXID GameApi::BitmapApi::dyn_fetch_bitmap(EveryApi &ev, std::string url, int time)
+GameApi::TXID GameApi::BitmapApi::dyn_fetch_bitmap(EveryApi &ev, std::string url, int time, int texture_unit)
 {
   H timing = timing_heavy(time);
   H net = network_heavy(url, gameapi_homepageurl, timing);
-  H png = png_heavy(ev,net,url);
-  H thr = thread_heavy(png);
-  TXID id = txid_from_heavy(thr);
+  H png = png_heavy(ev,net,url,texture_unit);
+  //H thr = thread_heavy(png);
+  TXID id = txid_from_heavy(png);
   return id;
 }
 
@@ -20346,7 +20411,7 @@ public:
   {
     GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
     GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
-    GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net, url_prefix);
+    GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net, url_prefix,start_range);
     // this array gets modified all the time during gameplay
     std::vector<GameApi::TXID> *txids = new std::vector<GameApi::TXID>;
 
@@ -20361,7 +20426,7 @@ public:
   {
     GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
     GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
-    GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net,url_prefix);
+    GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net,url_prefix, start_range);
     // this array gets modified all the time during gameplay
     std::vector<GameApi::TXID> *txids = new std::vector<GameApi::TXID>;
 
@@ -20375,7 +20440,7 @@ public:
   {
     GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
     GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
-    GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net,url_prefix);
+    GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net,url_prefix,start_range);
     // this array gets modified all the time during gameplay
     std::vector<GameApi::TXID> *txids = new std::vector<GameApi::TXID>;
 
@@ -22269,7 +22334,7 @@ KP extern "C" void set_new_script(const char *script2)
 {
 #ifdef EMSCRIPTEN
   std::string script(script2);
-  if (!g_everyapi) return;
+  if (!g_everyapi) { std::cout << "NO g_everyapi" << std::endl; return; }
   std::cout << "NEW SCRIPT" << std::endl;
   std::cout << script << std::endl;
   g_new_script = script;
@@ -22280,6 +22345,7 @@ KP extern "C" void set_new_script(const char *script2)
   GameApi::ExecuteEnv e;
   std::pair<int,std::string> blk = GameApi::execute_codegen(g_everyapi->get_env(), *g_everyapi, script, e);
   set_current_block(-2);
+  std::cout << "blk.second==" << blk.second << std::endl;
   if (blk.second=="RUN") {
     GameApi::RUN r;
     r.id = blk.first;
@@ -22288,6 +22354,7 @@ KP extern "C" void set_new_script(const char *script2)
   } else if (blk.second=="OK") {
     GameApi::BLK b;
     b.id = blk.first;
+    emscripten_cancel_main_loop();
     g_everyapi->blocker_api.run(b);
     std::cout << "ERROR: BLOCKERAPI::run does not set g_everyapi" << std::endl;
   } else {
@@ -22326,6 +22393,7 @@ KP extern "C" void set_string(int num, const char *value)
   std::string s(value);
   if (num>=0 && num<25) { g_strings[num]=s; }
 }
+
 
 #endif // THIRD_PART
 

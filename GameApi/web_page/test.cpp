@@ -230,6 +230,8 @@ extern int g_event_screen_x;
 extern int g_event_screen_y;
 extern std::string g_platform;
 
+extern GameApi::EveryApi *g_everyapi;
+
 #if 1
 int main(int argc, char *argv[]) {
   call_count++;
@@ -247,6 +249,8 @@ int main(int argc, char *argv[]) {
   Env e;
   EveryApi ev(e);
 
+  g_everyapi = &ev;
+  
   int w_width = 800;
   int w_height = 600;
   std::string seamless_url="";

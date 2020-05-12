@@ -9982,6 +9982,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "MS", "MS" },
 			 { "","" },
 			 "MS", "matrices_api", "mult_array"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::repeat_ms,
+			 "ms_repeat",
+			 { "ev", "mn", "count" },
+			 { "EveryApi&", "MN", "int" },
+			 { "ev", "", "10" },
+			 "MS", "matrices_api", "repeat_ms"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::ms_random_rot,
 			 "ms_random_rot",
 			 { "px", "py", "pz", "count" },

@@ -820,7 +820,7 @@ extern std::string gameapi_homepageurl;
 
 std::string convert_slashes(std::string s);
 
-std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vector<unsigned char> mtlfilecontents, std::string url_prefix)
+std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vector<unsigned char> mtlfilecontents, std::string url_prefix, int delta)
 {
   std::vector<unsigned char> *ptr2 = &mtlfilecontents;
   static int num=0;
@@ -848,6 +848,7 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
     a_ss.close();
 
     std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(a_filename);
+    GameApi::Env &env = ev.get_env();
     int b_s = mat.size();
     std::vector<TXID> vec;
     std::vector<std::string> vec2;
@@ -861,9 +862,8 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
 	//std::cout << "mtl_parse: " << url_prefix << "/" << s << "?id=" << ss.str()<< std::endl;
 	std::string url = convert_slashes(url_prefix+"/"+s);
 	vec2.push_back(url);
-	vec.push_back(ev.bitmap_api.dyn_fetch_bitmap(ev,url,300000));
+	vec.push_back(ev.bitmap_api.dyn_fetch_bitmap(ev,url,300000,b_i-delta));
       }
-    GameApi::Env &env = ev.get_env();
     env.async_load_all_urls(vec2, gameapi_homepageurl);
     return vec;
 }
@@ -877,9 +877,9 @@ public:
     int s = buffer.size();
     for(int i=0;i<s;i++)
       {
-	BufferRef::FreeBuffer(buffer[i]);
+  	BufferRef::FreeBuffer(buffer[i]);
       }
-  }
+   }
   NetworkedFaceCollectionMTL2(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string obj_url, std::string homepage, int count, std::string mtl_url, std::string url_prefix, bool cached) : e(e), ev(ev), url(obj_url), homepage(homepage), mtl_url(mtl_url), url_prefix(url_prefix), count(count), empty(empty)
   {
     current = empty;
@@ -1189,11 +1189,12 @@ EXPORT GameApi::P GameApi::PolygonApi::p_mtl(EveryApi &ev, std::string obj_url, 
   int c = get_current_block();
   set_current_block(-1);
   P p = p_empty();
-  bool cached = find_data(obj_url)!=-1;
+  std::string key = obj_url + mtl_url + prefix;
+  bool cached = find_data(key)!=-1;
   FaceCollection *emp = find_facecoll(e, p);
   GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL2(e,ev, emp, obj_url, gameapi_homepageurl, count,mtl_url,prefix,cached),1); 
   FaceCollection *coll = find_facecoll(e,p1);
-  GameApi::P p2 = add_polygon2(e, new PrepareCache(e,obj_url,coll),1);
+  GameApi::P p2 = add_polygon2(e, new PrepareCache(e,key,coll),1);
   set_current_block(c);
   return p2;
 }

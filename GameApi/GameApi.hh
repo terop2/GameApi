@@ -708,12 +708,12 @@ public:
   IMPORT H bitmap_prepare_heavy(EveryApi &ev, H bitmap_gen, int scanlines_per_slot);
   IMPORT H network_heavy(std::string url, std::string homepageurl, H timing_heavy);
   IMPORT H bitmap_heavy(BM bm, H timing);
-  IMPORT H png_heavy(EveryApi &ev, H data, std::string url);
-  IMPORT H mtl_heavy(EveryApi &ev, H net, std::string url_prefix);
+  IMPORT H png_heavy(EveryApi &ev, H data, std::string url, int texture_unit);
+  IMPORT H mtl_heavy(EveryApi &ev, H net, std::string url_prefix, int texture_unit_delta);
   IMPORT H array_heavy(std::vector<H> vec);
   IMPORT H thread_heavy(H threaded);
   IMPORT H timing_heavy(int num_frames);
-  IMPORT TXID dyn_fetch_bitmap(EveryApi& ev, std::string url, int time);
+  IMPORT TXID dyn_fetch_bitmap(EveryApi& ev, std::string url, int time, int texture_unit);
   IMPORT std::vector<TXID> dyn_fetch_mtl(EveryApi &ev, std::string mtl_url, ML ml2);
   IMPORT ML txidarray_from_heavy(EveryApi &ev, H heavy, std::vector<TXID> *vec, ML ml, int start_range, int end_range);
 
@@ -2205,7 +2205,7 @@ public:
   P stl_load(std::string url);
   P fix_vertex_order(P p);
   P filter_invisible(P p, float size);
-  std::vector<TXID> mtl_parse(EveryApi&ev, std::vector<unsigned char> mtlfilecontents, std::string url_prefix);
+  std::vector<TXID> mtl_parse(EveryApi&ev, std::vector<unsigned char> mtlfilecontents, std::string url_prefix, int delta=0);
   
   ML m_bind_inst_many(EveryApi &ev, std::vector<P> vec, std::vector<MT> materials, PTS pts);
   ML load_scene(EveryApi &ev, std::string url, int sx, int sy);
@@ -3067,6 +3067,7 @@ public:
   IMPORT MS from_points(PTS pts);
   IMPORT MS mult(MS m, M mat);
   IMPORT MS mult(M mat, MS m);
+  IMPORT MS repeat_ms(EveryApi &ev, MN mn, int val);
   IMPORT MS subarray(MS m, int start, int count);
   IMPORT MS ms_random_rot(float px, float py, float pz, int count);
   IMPORT MS mult_array(MS m1, MS m2);

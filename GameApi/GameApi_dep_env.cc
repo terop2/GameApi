@@ -342,10 +342,11 @@ ASyncCallback *rem_async_cb(std::string url)
 
 std::string striphomepage(std::string);
 void onprogress_async_cb(unsigned int tmp, void *, int, int) { }
-void onerror_async_cb(unsigned int tmp, void *arg, int, const char*)
+void onerror_async_cb(unsigned int tmp, void *arg, int, const char*str)
 {
   std::cout << "ERROR: url loading error! " << std::endl;
   if (!arg) return;
+  std::cout << str << std::endl;
   char *url = (char*)arg;
   std::cout << url << std::endl;
     std::string url_str(url);
@@ -631,7 +632,8 @@ void idb_onload_async_cb(void *ptr, void* data, int datasize)
 }
 void idb_onerror_async_cb(void *ptr)
 {
-  onerror_async_cb(0,ptr,0,"");
+
+    onerror_async_cb(0,ptr,0,"");
 }
 
 void idb_exists(void *arg, int exists)
@@ -650,8 +652,14 @@ void idb_exists(void *arg, int exists)
 }
 void idb_error(void *arg)
 {
+  std::cout << "indexdb error branch, loading wget data again..." << std::endl;
+#ifdef EMSCRIPTEN
   LoadData *ld = (LoadData*)arg;
-  onerror_async_cb(0,(void*)ld->buf3,0,"");
+    emscripten_async_wget2_data(ld->buf2, "POST", ld->url3.c_str(), (void*)ld->buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
+#else
+  LoadData *ld = (LoadData*)arg;
+    onerror_async_cb(0,(void*)ld->buf3,0,"");
+#endif
 }
 void ASyncLoader::load_urls(std::string url, std::string homepage)
   {
@@ -688,10 +696,20 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     // if we have already loaded the same url, don't load again
   if (/*load_url_buffers_async[url] ||*/load_url_buffers_async[url_only]) {
       std::cout << "URL FROM CACHE" << std::endl;
-      ASyncCallback *cb = rem_async_cb(url); //load_url_callbacks[url];
+      ASyncCallback *cb = rem_async_cb(oldurl); //load_url_callbacks[url];
       if (cb) {
 	//std::cout << "Load cb!" << url << std::endl;
 	(*cb->fptr)(cb->data);
+      }
+      ASyncCallback *cb2 = rem_async_cb(url); //load_url_callbacks[url];
+      if (cb2) {
+	//std::cout << "Load cb!" << url << std::endl;
+	(*cb2->fptr)(cb2->data);
+      }
+      ASyncCallback *cb3 = rem_async_cb(url_only); //load_url_callbacks[url];
+      if (cb3) {
+	//std::cout << "Load cb!" << url << std::endl;
+	(*cb3->fptr)(cb3->data);
       }
 
       { // progressbar
