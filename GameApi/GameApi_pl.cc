@@ -1590,8 +1590,10 @@ EXPORT GameApi::P GameApi::PolygonApi::bitmapsized_quad(BM bm)
 }
 EXPORT GameApi::P GameApi::PolygonApi::vr_fullscreen_quad(EveryApi &ev, bool is_right)
 {
-  int sx = 800-40; //ev.mainloop_api.get_screen_sx();
-  int sy = 600-40; //ev.mainloop_api.get_screen_sy();
+  //int sx = 800-40; //ev.mainloop_api.get_screen_sx();
+  //int sy = 600-40; //ev.mainloop_api.get_screen_sy();
+  int sx = ev.mainloop_api.get_screen_width();
+  int sy = ev.mainloop_api.get_screen_height();
 #ifdef EMSCRIPTEN
  if (!is_right)
    return quad_z(-sx,0, -sy/2.0, sy/2.0, 0.0);

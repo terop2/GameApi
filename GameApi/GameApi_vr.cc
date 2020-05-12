@@ -73,37 +73,44 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
   screen_h-=10;
 
 
+  // 3.1, 1000.0
+  
   // hmd=false
-  ML I43 = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,3.1,1000.0,false);
+  // right eye, eye=false
+  ML I43 = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
   TXID I44 = ev.fbo_api.fbo_ml(ev,I43,fbo_x,fbo_y,false);
-  ML I66 = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,3.1,1000.0, false);
+  // left eye, eye=true
+  ML I66 = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,10.1,60000.0, false);
   TXID I67 = ev.fbo_api.fbo_ml(ev,I66,fbo_x,fbo_y,false);
 
-  ML I43a = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,3.1,1000.0,false);
+  ML I43a = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
   TXID I44a = ev.fbo_api.fbo_ml(ev,I43a,fbo_x,fbo_y,false);
-  ML I66a = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,3.1,1000.0, false);
+  ML I66a = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,10.1,60000.0, false);
   TXID I67a = ev.fbo_api.fbo_ml(ev,I66a,fbo_x,fbo_y,false);
-  ML res = ev.blocker_api.vr_submit_ml(ev,ml, I44,I67,invert,translate);
-  ML I70a = ev.blocker_api.vr_submit(ev, I44a, I67a);
-  ML res_I70a = ev.blocker_api.vr_submit_ml(ev,I70a, I44,I67,invert,translate);
+  ML res = ev.blocker_api.vr_submit_ml(ev,ml, I67,I44,invert,translate);
+  ML I70a = ev.blocker_api.vr_submit(ev, I67a,I44a );
+  ML res_I70a = ev.blocker_api.vr_submit_ml(ev,I70a, I67, I44,invert,translate);
   // hmd=false outputs: res, res_I170a
 
   //IF alt = ev.font_api.toggle_button_fetcher(screen_w,screen_w+100,screen_h,screen_h+100);
   // ML cho = ev.font_api.ml_chooser(std::vector<ML>{res,I70a},alt);
 
   // hmd=true
-  ML I43_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,3.1,1000.0,false);
+
+  // RIGHT EYE eye=false
+  ML I43_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,60.1,60000.0,false);
   TXID I44_b = ev.fbo_api.fbo_ml(ev,I43_b,fbo_x,fbo_y,false);
-  ML I66_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,3.1,1000.0, false);
+  // LEFT EYE eye=true
+  ML I66_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,10.1,60000.0, false);
   TXID I67_b = ev.fbo_api.fbo_ml(ev,I66_b,fbo_x,fbo_y,false);
 
   //ML I43a_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
   TXID I44a_b = ev.fbo_api.fbo_ml(ev,ml/*I43a_b*/,fbo_x,fbo_y,false);
   // ML I66a_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,10.1,60000.0, false);
   TXID I67a_b = ev.fbo_api.fbo_ml(ev,ml/*I66a_b*/,fbo_x,fbo_y,false);
-  ML res_b = ev.blocker_api.vr_submit_ml(ev,ml, I44_b,I67_b,invert,translate);
-  ML I70a_b = ev.blocker_api.vr_submit(ev, I44a_b, I67a_b);
-  ML res_I70a_b = ev.blocker_api.vr_submit_ml(ev,I70a_b, I44_b,I67_b,invert,translate);
+  ML res_b = ev.blocker_api.vr_submit_ml(ev,ml,I67_b, I44_b,invert,translate);
+  ML I70a_b = ev.blocker_api.vr_submit(ev, I67a_b, I44a_b); // I44a_b,I67a_b
+  ML res_I70a_b = ev.blocker_api.vr_submit_ml(ev,I70a_b, I67_b, I44_b,invert,translate);
 
   // hmd=true outputs res_b, res_I70a_b
 
@@ -120,29 +127,29 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
  
   
 
-BB I1=ev.bool_bitmap_api.empty(100,100);
+BB I1=ev.bool_bitmap_api.bb_empty(100,100);
 BB I2=ev.bool_bitmap_api.rectangle(I1,0,0,2,100);
 BB I3=ev.bool_bitmap_api.rectangle(I2,0,0,100,2);
 BB I4=ev.bool_bitmap_api.rectangle(I3,98,0,2,100);
 BB I5=ev.bool_bitmap_api.rectangle(I4,0,98,100,2);
-BB I6=ev.bool_bitmap_api.empty(100,100);
+BB I6=ev.bool_bitmap_api.bb_empty(100,100);
 BB I7=ev.bool_bitmap_api.tri(I6,23,20,36,60,10,40);
-BB I8=ev.bool_bitmap_api.empty(100,100);
+BB I8=ev.bool_bitmap_api.bb_empty(100,100);
 BB I9=ev.bool_bitmap_api.tri(I8,23,20,49,40,36,60);
 BB I10=ev.bool_bitmap_api.or_bitmap(I7,I9);
-BB I11=ev.bool_bitmap_api.empty(100,100);
+BB I11=ev.bool_bitmap_api.bb_empty(100,100);
 BB I12=ev.bool_bitmap_api.tri(I11,75,20,62,60,49,40);
-BB I13=ev.bool_bitmap_api.empty(100,100);
+BB I13=ev.bool_bitmap_api.bb_empty(100,100);
 BB I14=ev.bool_bitmap_api.tri(I13,75,20,88,40,61,60);
 BB I15=ev.bool_bitmap_api.or_bitmap(I12,I14);
 BB I16=ev.bool_bitmap_api.or_bitmap(I10,I15);
-BB I17=ev.bool_bitmap_api.empty(100,100);
+BB I17=ev.bool_bitmap_api.bb_empty(100,100);
 BB I18=ev.bool_bitmap_api.tri(I17,23,20,76,20,49,41);
 BB I19=ev.bool_bitmap_api.or_bitmap(I16,I18);
 BB I20=ev.bool_bitmap_api.sprite(I5,I19,0,10,1,1);
 BM I21=ev.bool_bitmap_api.to_bitmap(I20,255,255,255,255,0,0,0,0);
 ML I22=ev.sprite_api.vertex_array_render(ev,I21);
-MN I23=ev.move_api.empty();
+MN I23=ev.move_api.mn_empty();
 MN I24=ev.move_api.trans2(I23,screen_w,screen_h,0);
 ML I25=ev.move_api.move_ml(ev,I22,I24,1,10.0);
 ML I26=ev.sprite_api.turn_to_2d(ev,I25,0.0,0.0,800.0,600.0);
@@ -378,7 +385,7 @@ ML I6=ev.materials_api.bind(I4,I5);
  ML I7=ev.mainloop_api.array_ml(ev,std::vector<ML>{I3,I6});
 //---
 #if 0
- MN I1a=ev.move_api.empty();
+ MN I1a=ev.move_api.mn_empty();
 MN I2a=ev.move_api.trans2(I1a,0,0,-1200);
 ML I3a=ev.move_api.move_ml(ev,I7,I2a,1,10.0);
 //---
@@ -440,10 +447,19 @@ public:
   if (!hmd || is_std) { return Matrix::Identity(); }
   vr::Hmd_Eye nEye = eye ? vr::Eye_Left : vr::Eye_Right;
   vr::HmdMatrix34_t mat = hmd->GetEyeToHeadTransform( nEye );
-  Matrix m = { mat.m[0][0], mat.m[1][0], mat.m[2][0], 0.0,
-	       mat.m[0][1], mat.m[1][1], mat.m[2][1], 0.0,
-	       mat.m[0][2], mat.m[1][2], mat.m[2][2], 0.0,
-	       mat.m[0][3], mat.m[1][3], mat.m[2][3], 1.0 };
+  Matrix m = { mat.m[0][0], mat.m[0][1], mat.m[0][2], mat.m[0][3],
+	       mat.m[1][0], mat.m[1][1], mat.m[1][2], mat.m[1][3],
+	       mat.m[2][0], mat.m[2][1], mat.m[2][2], mat.m[2][3],
+	       0.0, 0.0, 0.0, 1.0 };
+
+  //m.matrix[3]*=300.0*300.0;
+  // m.matrix[7]*=300.0*300.0;
+  //m.matrix[11]*=300.0*300.0;
+  //std::cout << "MATRIX:" << std::endl;
+  //std::cout << m.matrix[0] << " " << m.matrix[1] << " " << m.matrix[2] << " " << m.matrix[3] << std::endl;
+  //std::cout << m.matrix[4] << " " << m.matrix[5] << " " << m.matrix[6] << " " << m.matrix[7] << std::endl;
+  // std::cout << m.matrix[8] << " " << m.matrix[9] << " " << m.matrix[10] << " " << m.matrix[11] << std::endl;
+  //std::cout << m.matrix[12] << " " << m.matrix[13] << " " << m.matrix[14] << " " << m.matrix[15] << std::endl;
 
 #else
   Matrix m = Matrix::Identity();
@@ -512,11 +528,16 @@ public:
   if (!hmd) { return DefaultProjection(ev); }
   vr::Hmd_Eye nEye = eye ? vr::Eye_Left : vr::Eye_Right;
   vr::HmdMatrix44_t mat = hmd->GetProjectionMatrix( nEye, m_fNearClip, m_fFarClip );
-  Matrix m = { mat.m[0][0], mat.m[1][0], mat.m[2][0], mat.m[3][0],
-	       mat.m[0][1], mat.m[1][1], mat.m[2][1], mat.m[3][1],
-	       mat.m[0][2], mat.m[1][2], mat.m[2][2], mat.m[3][2],
-	       mat.m[0][3], mat.m[1][3], mat.m[2][3], mat.m[3][3] };
+  Matrix m = { mat.m[0][0], mat.m[0][1], mat.m[0][2], mat.m[0][3],
+	       mat.m[1][0], mat.m[1][1], mat.m[1][2], mat.m[1][3],
+	       mat.m[2][0], mat.m[2][1], mat.m[2][2], mat.m[2][3],
+	       mat.m[3][0], mat.m[3][1], mat.m[3][2], mat.m[3][3] };
 
+  //std::cout << "MATRIX:" << std::endl;
+  //std::cout << m.matrix[0] << " " << m.matrix[1] << " " << m.matrix[2] << " " << m.matrix[3] << std::endl;
+  //std::cout << m.matrix[4] << " " << m.matrix[5] << " " << m.matrix[6] << " " << m.matrix[7] << std::endl;
+  //std::cout << m.matrix[8] << " " << m.matrix[9] << " " << m.matrix[10] << " " << m.matrix[11] << std::endl;
+  //std::cout << m.matrix[12] << " " << m.matrix[13] << " " << m.matrix[14] << " " << m.matrix[15] << std::endl;
 
   GameApi::M m2 = ev.matrix_api.scale(1.0,0.5,1.0);
   Matrix mm = find_matrix(env,m2);
