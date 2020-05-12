@@ -22292,9 +22292,11 @@ private:
 };
 std::string find_html2(GameApi::HML ml, GameApi::Env &env)
 {
+#if 0
   Html *hml = find_html(env,ml);
   hml->Prepare();
   return hml->html_file();
+#endif
 }
 
 GameApi::HML GameApi::MainLoopApi::emscripten_frame(EveryApi &ev, RUN r, std::string homepage)

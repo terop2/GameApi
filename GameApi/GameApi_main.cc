@@ -378,7 +378,7 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
 
   Program *prog = find_shader_program(e, sh);
   prog->use(); // 80.0, 10.1, 60000.0
-  Matrix m = Matrix::Perspective(90.0*double(screeny)/double(screenx), (double)screenx/screeny, 10.1, 60000.0);
+  Matrix m = Matrix::Perspective(90.0*double(screeny)/double(screenx), (double)screenx/screeny, 10.1, 60000.0); // 10.1 60000.0
   //Matrix m = Matrix::Perspective2(-300.0, 300.0, -300.0, 300.0, 1.0, 610.0);
   prog->set_var("in_P", m);
   Matrix m2 = Matrix::Identity();
@@ -606,7 +606,9 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
       Program *prog = find_shader_program(e, sh);
       //g_low->ogl->glDisable(Low_GL_LIGHTING);
       ogl->glEnable(Low_GL_DEPTH_TEST);
-      Matrix m = Matrix::Perspective(80.0, (double)screenx/screeny, 10.1, 60000.0);
+      // 10.1, 60000.0
+      Matrix m = Matrix::Perspective(80.0, (double)screenx/screeny, 10.1,
+				     60000.0);
       Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
       prog->set_var("in_P", m);
       prog->set_var("in_T", m3);
@@ -1554,7 +1556,7 @@ void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH texture_2d
   ek.in_MV = find_matrix(e, in_MV);
   ek.in_T = find_matrix(e, in_T);
   ek.in_N = find_matrix(e, in_N);
-  ek.in_P = Matrix::Perspective(90.0*double(screeny)/double(screenx), (double)screenx/screeny, 10.1, 60000.0);
+  ek.in_P = Matrix::Perspective(90.0*double(screeny)/double(screenx), (double)screenx/screeny, 10.1, 60000.0); // 10.1, 60000.0
   ek.time = get_time()/1000.0;
   ek.delta_time = get_delta_time();
   ek.screen_x = 0;
