@@ -5017,7 +5017,8 @@ ASyncData async_data[] = {
   { "mainloop_api", "parse_areatype", 1},
   { "mainloop_api", "create_landscape", 1},
   { "mainloop_api", "bind_obj_type", 1},
-  { "mainloop_api", "read_obj_pos", 0}
+  { "mainloop_api", "read_obj_pos", 0},
+  { "polygon_api", "mesh_anim", 6}
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
@@ -6672,6 +6673,18 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "EveryApi&" },
 			 { "ev" },
 			 "FF", "font_api", "time_fetcher2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::time_range_fetcher,
+			 "ff_range",
+			 { "start_time", "end_time", "before_start", "start_value", "end_value", "after_end", "repeat" },
+			 { "float", "float", "float" ,"float", "float", "float","float" },
+			 { "0.0", "30.0", "-1000.0", "0.0", "1.0", "-1000.0", "10000.0" },
+			 "FF", "font_api", "time_range_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::time_range_fetcher_key,
+			 "ff_key_range",
+			 { "key", "start_time", "end_time", "before_start", "start_value", "end_value", "after_end", "repeat" },
+			 { "int", "float", "float", "float" ,"float", "float", "float", "float" },
+			 { "32", "0.0", "30.0", "-1000.0", "0.0", "1.0", "-1000.0", "10000.0" },
+			 "FF", "font_api", "time_range_fetcher_key"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::point_fetcher_constant,
 			 "pf_constant",
 			 { "x", "y", "z" },
@@ -6844,7 +6857,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "ev", "", "" },
 			 "ML", "move_api", "local_move_matrix"));
 
-  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::mesh_anim,
+			 "mesh_anim",
+			 { "ev", "faces", "move", "materials", "inst", "states", "url" },
+			 { "EveryApi&", "[P]", "[MN]", "[MT]", "[MS]", "[IF]", "std::string" },
+			 { "ev", "", "", "", "", "","https://tpgames.org/gameapi_anim.mp" },
+			 "ML", "polygon_api", "mesh_anim"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::translate,
 			 "anim_translate",
 			 { "next", "start_time", "end_time", "dx", "dy", "dz" },
@@ -7495,6 +7513,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "[P]", "[MT]", "PTS" },
 			 { "ev", "", "", "" },
 			 "ML", "polygon_api", "m_bind_inst_many"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::mesh_anim_display_inst,
+			 "m_bind_anim",
+			 { "ev", "mesh", "val", "move", "mat", "inst", "repeat_time" },
+			 { "EveryApi&", "P", "FF", "MN", "MT", "MS", "float" },
+			 { "ev", "", "", "", "", "", "10000.0" },
+			 "ML", "polygon_api", "mesh_anim_display_inst"));
+			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bind_inst_fade,
 			 "m_fade_inst",
 			 { "p", "pts", "mat", "flip", "start_time", "end_time" },
@@ -9401,7 +9426,36 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "SFO", "MT" },
 			 { "ev", "", "" },
 			 "MT", "materials_api", "mesh_color_from_sfo"));
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::material_extractor_p,
+			 "ext_p",
+			 { "p", "start_index", "end_index" },
+			 { "P", "int", "int" },
+			 { "", "0", "32" },
+			 "[P]", "polygon_api", "material_extractor_p"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::material_extractor_bm,
+			 "ext_bm",
+			 { "p", "start_index", "end_index" },
+			 { "P", "int","int" },
+			 { "", "0","32" },
+			 "[BM]", "polygon_api", "material_extractor_bm"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::material_extractor_mt,
+			 "ext_mt",
+			 { "ev", "p", "mix", "start_index", "end_index" },
+			 { "EveryApi&", "P", "float", "int","int" },
+			 { "ev", "", "1.0", "0", "32" },
+			 "[MT]", "polygon_api", "material_extractor_mt"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::material_index,
+			 "mat_idx",
+			 { "ev", "vec", "index" },
+			 { "EveryApi&", "[MT]", "int" },
+			 { "ev", "", "0" },
+			 "MT", "polygon_api", "material_index"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::material_arr,
+			 "mat_arr",
+			 { "vec", "start_range", "end_range" },
+			 { "[MT]", "int", "int" },
+			 { "", "0", "32" },
+			 "[MT]", "polygon_api", "material_arr"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texture_sbm,
 			 "sbm_many_texture",

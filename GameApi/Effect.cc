@@ -4143,16 +4143,25 @@ void LoadObjModelFaceCollection::check_invalidate2()
     if (objcount != obj_num) { objcount = obj_num; }
   }
 
+int my_getline(const std::vector<unsigned char> &vec, int index, std::string &line)
+{
+  int s = vec.size();
+  for(int i=index;i<s;i++) {
+    if (vec[i]=='\n') { line=std::string(&vec[index],&vec[i]); return i+1; }
+  }
+  return -1;
+}
+
   void LoadObjModelFaceCollection::Load() const { const_cast<LoadObjModelFaceCollection*>(this)->Load2(); }
   void LoadObjModelFaceCollection::Load2() {
     //std::ifstream file(filename.c_str());
-    std::string s(file_data.begin(), file_data.end());
+    //std::string s(file_data.begin(), file_data.end());
 
     int total_line_count=0;
-    int s4 = s.size();
-    for(int i=0;i<s4;i++) { if (s[i]=='\n') total_line_count++; }
+    int s4 = file_data.size();
+    for(int i=0;i<s4;i++) { if (file_data[i]=='\n') total_line_count++; }
 
-    std::stringstream file(s);
+    //std::stringstream file(s);
     std::string line;
     int obj_count = 0;
     int vertex_count = 0;
@@ -4174,7 +4183,8 @@ void LoadObjModelFaceCollection::check_invalidate2()
     std::stringstream ss;
     int curr_line = 0;
     InstallProgress(193,"Parsing .obj file", 15);
-    while(std::getline(file, line))
+    int index = 0;
+    while((index = my_getline(file_data, index, line))!=-1)
       {
 	curr_line++;
 	if (total_line_count>0 && curr_line%(total_line_count/15)==0) {
@@ -4390,6 +4400,8 @@ void LoadObjModelFaceCollection::check_invalidate2()
       {
 	color_data.push_back(0xffffffff);
       }
+    // remove file from memory
+    file_data.clear();
   }
   int LoadObjModelFaceCollection::NumFaces() const {
     return face_counts.size()<=0 ? 1 : face_counts.size(); }

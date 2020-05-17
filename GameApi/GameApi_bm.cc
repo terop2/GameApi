@@ -511,8 +511,29 @@ std::string remove_load(std::string s);
 std::vector<unsigned char> load_from_url(std::string url);
 extern std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
 
+#ifdef LINUX
+#include <execinfo.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#endif
+
 void stackTrace()
 {
+#ifdef LINUX
+#define BT_BUF_SIZE 100
+  int j,nptrs;
+  void *buffer[BT_BUF_SIZE];
+  char **strings;
+  nptrs = backtrace(buffer,BT_BUF_SIZE);
+  printf("backtrace returned %d addresses\n",nptrs);
+  strings = backtrace_symbols(buffer,nptrs);
+  for(j=0;j<nptrs;j++) {
+    printf("%s\n", strings[j]);
+  }
+  free(strings);
+#endif
+  
 #ifdef EMSCRIPTEN
   emscripten_run_script("stackTrace()");
 #endif

@@ -824,6 +824,10 @@ public:
   IMPORT FF choose_float_fetcher(IF int_fetcher, float a_1, float a_2, float a_3, float a_4, float a_5, float a_6, float a_7);
   IMPORT FF fps_fetcher(EveryApi &ev);
   IMPORT FF time_fetcher2(EveryApi &ev);
+  IMPORT FF time_range_fetcher(float start_time, float end_time, float before_start, float start_value, float end_value, float after_end, float repeat);
+  IMPORT FF time_range_fetcher_key(int key, float start_time, float end_time, float before_start, float start_value, float end_value, float after_end, float repeat);
+  IMPORT FF time_range_fetcher_state(int state, IF states, float start_time, float end_time, float before_start, float start_value, float end_value, float after_end, float repeat);
+  IMPORT FF time_range_fetcher_state_key(int state, int key, IF if_state, float start_time, float end_time, float before_start, float start_value, float end_value, float after_end, float repeat);
   IMPORT IF score_fetcher(EveryApi &ev);
   IMPORT IF time_fetcher(EveryApi &ev, float start_time);
   IMPORT IF hmd_request_presenting(IF i);
@@ -1310,6 +1314,7 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
+  IMPORT ARR material_pack_1(EveryApi &ev);
   IMPORT MT m_def(EveryApi &ev);
   IMPORT MT skeletal(EveryApi &ev);
   IMPORT MT texture(EveryApi &ev, BM bm, float mix);
@@ -2194,6 +2199,15 @@ public:
   P normal_darkness(P p, float dark);
   P gltf_load( EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index );
   BM gltf_load_bitmap( GameApi::EveryApi &ev, std::string base_url, std::string url, int image_index );
+  ARR material_extractor_p(P p, int start_index, int end_index);
+  ARR material_extractor_bm(P p, int start_index, int end_index);
+  ARR material_extractor_mt(EveryApi &ev, P p, float mix, int start_index, int end_index);
+  MT material_index(EveryApi &ev, std::vector<MT> vec, int index);
+  ARR material_arr(std::vector<MT> vec, int start_range, int end_range);
+  ML mesh_anim_display_inst(EveryApi &ev, P p, FF val, MN move, MT mat, MS inst);
+  ML mesh_anim_display_inst2(EveryApi &ev, P p, FF val, MN mn, MT mat, PTS inst);
+  ML mesh_anim(EveryApi &ev, std::vector<P> vec, std::vector<MN> move, std::vector<MT> mat, std::vector<MS> inst, std::vector<IF> states, std::string url);
+  P mesh_elem(P start, P end);
   P bar_chart( GameApi::EveryApi &ev, std::string url, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per );
   P bar_chart2( GameApi::EveryApi &ev, std::string url, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per, float per2 );
   LI li_piechart(float c_x, float c_y, float c_z, float start_angle, float end_angle, float radius, int numsteps);

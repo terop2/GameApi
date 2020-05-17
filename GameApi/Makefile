@@ -55,8 +55,8 @@ HFiles = $(patsubst %.cc,%.hh,$(CFiles))
 Subdirsx = $(patsubst %,%build,$(Subdirs))
 
 
-CCFLAGS = -std=c++14 -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments
-CC2FLAGS = -std=c++14 -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DLINUX -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments
+CCFLAGS = -std=c++14 -fPIC -Wall -O3 -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic
+CC2FLAGS = -std=c++14 -Wall -O3 -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DLINUX -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic
 #`pkg-config gtkmm-2.4 --cflags`
 
 
@@ -65,7 +65,7 @@ default: libGameApi.so
 
 libGameApi.so: $(OFiles) Makefile
 	@echo g++ libGameApi.so
-	@g++ -shared -g $(OFiles) -std=c++0x -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.1 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++
+	@g++ -rdynamic -shared -g $(OFiles) -std=c++0x -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.1 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++
 #`pkg-config gtkmm-2.4 --libs` 
 
 subdirs: $(Subdirs)

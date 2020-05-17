@@ -1043,6 +1043,9 @@ class SDLApi : public SDLLowApi
     return val;
   }
   virtual unsigned int SDL_GetTicks() { return ::SDL_GetTicks(); }
+  virtual unsigned long long SDL_GetPerformanceCounter() { return ::SDL_GetPerformanceCounter(); }
+  virtual unsigned long long SDL_GetPerformanceFrequency() { return ::SDL_GetPerformanceFrequency(); }
+
   virtual void SDL_Delay(int ms) { ::SDL_Delay(ms); }
   virtual Low_SDL_Window* SDL_CreateWindow(const char *title, int x, int y, int width, int height, unsigned int flags2) { 
     map_enums_sdl(x);

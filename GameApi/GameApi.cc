@@ -138,7 +138,9 @@ extern float debug_pos_x, debug_pos_y, debug_pos_z;
 
 #ifdef FIRST_PART
 
-#if 0
+void stackTrace();
+
+#if 1
 void *operator new( std::size_t count)
 {
   static int counter = 0;
@@ -148,6 +150,7 @@ void *operator new( std::size_t count)
   }
   if (count >1000000) {
     std::printf("global op new called, size= %zu\n", count);
+    stackTrace();
   }
   return malloc(count);
 }
@@ -23192,4 +23195,24 @@ bool is_platform_firefox()
 {
   int val = find_str(g_platform,"Firefox");
   return val!=-1;
+}
+
+GameApi::ARR GameApi::MaterialsApi::material_pack_1(GameApi::EveryApi &ev)
+{
+  ArrayType *array = new ArrayType;
+  array->type = 44;
+  { // default material
+  MT I1=ev.materials_api.m_def(ev);
+  MT I2=ev.materials_api.phong(ev,I1,-0.3,0.3,-1.0,0xffff8800,0xff666666,5.0);
+  array->vec.push_back(I2.id);
+  }
+  { // gold
+    MT I3=ev.materials_api.m_def(ev);
+    MT I4=ev.materials_api.phong(ev,I3,-0.3,0.3,-1,0xff996515,0xffffff00,15);
+    array->vec.push_back(I4.id);
+
+  }
+  
+  return add_array(e,array);
+  
 }

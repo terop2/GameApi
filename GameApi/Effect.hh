@@ -6326,6 +6326,8 @@ public:
     int f = 0;
     int k = 0;
     int s = NumFaces();
+    faces_cache.clear();
+      faces_num.clear();
     faces_cache.reserve(s);
     faces_num.reserve(s);
     //int faces = NumFaces();
