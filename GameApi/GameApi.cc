@@ -140,7 +140,7 @@ extern float debug_pos_x, debug_pos_y, debug_pos_z;
 
 void stackTrace();
 
-#if 1
+#if 0
 void *operator new( std::size_t count)
 {
   static int counter = 0;
