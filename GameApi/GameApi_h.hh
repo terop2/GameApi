@@ -159,8 +159,10 @@ int add_block();
 void set_current_block(int id);
 void clear_block(int id);
 
+#if 0
 void *operator new( std::size_t count);
 void operator delete(void* ptr) noexcept;
+#endif
 
 std::string unique_id();
 
