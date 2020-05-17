@@ -11419,7 +11419,8 @@ GameApi::BM GameApi::PolygonApi::p_texture(P p, int i)
   BM bm2 = add_bitmap(e, handle2);
   return bm2;
 }
- 
+
+
  class FaceCollectionSplitter : public FaceCollection
  {
  public:
@@ -11439,34 +11440,51 @@ GameApi::BM GameApi::PolygonApi::p_texture(P p, int i)
    virtual int NumFaces() const { return facenums.size(); }
    virtual int NumPoints(int face) const
    {
-     return coll->NumPoints(facenums[face]);
+     if (face>=0 && face<facenums.size())
+       return coll->NumPoints(facenums[face]);
+     else return 1;
    }
    virtual Point FacePoint(int face, int point) const
    {
+     if (face>=0 && face<facenums.size())
      return coll->FacePoint(facenums[face],point);
+     else return Point(0.0,0.0,0.0);
    }
    virtual Vector PointNormal(int face, int point) const
    {
+     if (face>=0 && face<facenums.size())
      return coll->PointNormal(facenums[face],point);
+     else return Vector(0.0,0.0,0.0);
    }
    virtual float Attrib(int face, int point, int id) const
    {
-     return coll->Attrib(facenums[face],point,id);
+     if (face>=0 && face<facenums.size())
+       return coll->Attrib(facenums[face],point,id);
+     else return 0.0;
    }
    virtual int AttribI(int face, int point, int id) const
    {
-     return coll->AttribI(facenums[face],point,id);
+     if (face>=0 && face<facenums.size())
+       return coll->AttribI(facenums[face],point,id);
+     else
+       return 0;
    }
    virtual unsigned int Color(int face, int point) const
    {
-     return coll->Color(facenums[face],point);
+     if (face>=0 && face<facenums.size())
+       return coll->Color(facenums[face],point);
+     else return 0x0;
    }
    virtual Point2d TexCoord(int face, int point) const
    {
+     if (face>=0 && face<facenums.size())
      return coll->TexCoord(facenums[face],point);
+     else { Point2d p; p.x=0.0; p.y=0.0; return p; }
    }
    virtual float TexCoord3(int face, int point) const { 
+     if (face>=0 && face<facenums.size())
      return coll->TexCoord3(facenums[face],point)-start_index;
+     else return 0.0;
    }
 
 
@@ -11476,18 +11494,112 @@ GameApi::BM GameApi::PolygonApi::p_texture(P p, int i)
     return coll->TextureBuf(start_index + num);
   }
   virtual int FaceTexture(int face) const {
+    if (face>=0 && face<facenums.size())
+
     return coll->FaceTexture(facenums[face]) -start_index;
+    else return 0;
   }
  private:
    FaceCollection *coll;
    int start_index, end_index;
    std::vector<int> facenums;
  };
+
  GameApi::P GameApi::PolygonApi::texture_splitter(P p, int start_index, int end_index)
  {
    FaceCollection *coll = find_facecoll(e, p);
    return add_polygon2(e, new FaceCollectionSplitter(coll, start_index, end_index),1);
  }
+
+GameApi::MT GameApi::PolygonApi::material_index(GameApi::EveryApi &ev, std::vector<MT> vec, int index)
+{
+  if (vec.size()==0) return ev.materials_api.m_def(ev);
+  if (index>=0 && index<vec.size())
+    return vec[index];
+  else
+    return ev.materials_api.m_def(ev);
+}
+GameApi::ARR GameApi::PolygonApi::material_arr(std::vector<MT> vec, int start_range, int end_range)
+{
+  ArrayType *array = new ArrayType;
+  array->type = 5;
+  start_range = std::max(0,start_range);
+  int s = vec.size();
+  end_range = std::min(s,end_range);
+  for(int i=start_range;i<end_range;i++)
+    {
+      array->vec.push_back(vec[i].id);
+    }
+  return add_array(e,array);
+}
+
+
+GameApi::ARR GameApi::PolygonApi::material_extractor_p(P p, int start_index, int end_index)
+{
+  ArrayType *array = new ArrayType;
+  array->type = 3;
+  for(int i=start_index;i<end_index;i++)
+    {
+      GameApi::P p2 = texture_splitter(p,i,i+1);
+      array->vec.push_back(p2.id);
+    }
+  
+  return add_array(e,array);
+}
+class ExtractorBitmap : public Bitmap<Color>
+{
+public:
+  ExtractorBitmap(FaceCollection *coll, int i, int start_index) : coll(coll), i(i), start_index(start_index) { bm=0; }
+  virtual int SizeX() const { if (bm) return bm->SizeX(); else return 1; }
+  virtual int SizeY() const { if (bm) return bm->SizeY(); else return 1; }
+  virtual Color Map(int x, int y) const { if (bm) return bm->Map(x,y); else return Color(0x0); }
+  virtual void Prepare()
+  {
+    if (i==start_index)
+      coll->Prepare();
+    if (i>=coll->NumTextures()) return;
+    BufferRef ref = coll->TextureBuf(i);
+    BitmapFromBuffer *buf = new BitmapFromBuffer(ref);
+    bm = buf;
+  }
+  ~ExtractorBitmap() { delete bm; }
+private:
+  FaceCollection *coll;
+  int i;
+  int start_index;
+  Bitmap<Color> *bm;
+};
+
+GameApi::ARR GameApi::PolygonApi::material_extractor_bm(P p, int start_index, int end_index)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  std::vector<GameApi::BM> bms;
+  ArrayType *array = new ArrayType;
+  array->type = 4;
+  for(int i=start_index;i<end_index;i++) {
+    Bitmap<Color> *bitmap = new ExtractorBitmap(coll, i, start_index);
+    BitmapColorHandle *handle2 = new BitmapColorHandle;
+    handle2->bm = bitmap;
+    BM bm = add_bitmap(e, handle2);
+    array->vec.push_back(bm.id);
+  }
+  return add_array(e,array);
+}
+GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P p, float mix, int start_index, int end_index)
+{
+  ARR arr = material_extractor_bm(p,start_index, end_index);
+  ArrayType *array2 = find_array(e,arr);
+  ArrayType *array = new ArrayType;
+  array->type = 4;
+  int s = array2->vec.size();
+  for(int i=0;i<s;i++) {
+    int val = array2->vec[i];
+    GameApi::BM bm;
+    bm.id = val;
+    array->vec.push_back(ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},mix).id);
+  }
+  return add_array(e,array);
+}
 
 class TextureStorage : public ForwardFaceCollection
 {
@@ -14392,4 +14504,469 @@ GameApi::P GameApi::PolygonApi::mix_mesh(P p, PTS points, float val)
   FaceCollection *coll = find_facecoll(e, p);
   PointsApiPoints *pts = find_pointsapi_points(e, points);
   return add_polygon2(e, new MixMesh(coll, pts, val), 1);
+}
+
+struct Anim_Struct
+{
+  int key; // key event to start this sequence, or -1
+  int state; // state or -1
+  float start_time;
+  float end_time;
+  float repeat;
+  GameApi::P pair;
+  GameApi::MN move;
+  GameApi::MT material;
+  GameApi::MS inst;
+  GameApi::IF var;
+};
+
+class MeshAnimCore : public MainLoopItem
+{
+public:
+  MeshAnimCore(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<Anim_Struct> vec) : env(env), ev(ev), vec(vec) { }
+  virtual void Prepare()
+  {
+    int s = vec.size();
+    int current_key = -1;
+    int current_state = -1;
+    for(int i=0;i<s;i++) {
+      GameApi::P p = vec[i].pair;
+      GameApi::FF val;
+      if (vec[i].state == -1 && current_state==-1) {
+	if (vec[i].key == -1 && current_key==-1) {
+	  val = ev.font_api.time_range_fetcher(vec[i].start_time, vec[i].end_time, -10000.0, 0.0, 1.0, -100000.0, vec[i].repeat);
+	}
+	else {
+	  if (vec[i].key!=-1)
+	    current_key = vec[i].key;
+	  val = ev.font_api.time_range_fetcher_key(current_key,vec[i].start_time, vec[i].end_time, -10000.0,0.0,1.0,-10000.0, vec[i].repeat);
+	}
+      } else { // state
+	if (vec[i].state!=-1)
+	  current_state = vec[i].state;
+
+	if (vec[i].key==-1 && current_key==-1) {
+	  val = ev.font_api.time_range_fetcher_state(current_state, vec[i].var, vec[i].start_time, vec[i].end_time, -10000.0,0.0,1.0,-10000.0, vec[i].repeat);
+	} else {
+	  if (vec[i].key!=-1)
+	    current_key = vec[i].key;
+	  val = ev.font_api.time_range_fetcher_state_key(current_state, current_key, vec[i].var, vec[i].start_time, vec[i].end_time, -10000.0, 0.0, 1.0, -10000.0, vec[i].repeat);
+	}
+      }
+      GameApi::MN mn = vec[i].move;
+      GameApi::MT mat = vec[i].material;
+      GameApi::MS inst = vec[i].inst;
+      GameApi::ML ml = ev.polygon_api.mesh_anim_display_inst(ev,p,val,mn,mat,inst);
+      mls.push_back(ml);
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->Prepare();
+    }
+  }
+  virtual void execute(MainLoopEnv &e) {
+    int s = mls.size();
+    for(int i=0;i<s;i++) {
+      GameApi::ML ml = mls[i];
+      MainLoopItem *item = find_main_loop(env,ml);      
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    int s = mls.size();
+    for(int i=0;i<s;i++) {
+      GameApi::ML ml = mls[i];
+      MainLoopItem *item = find_main_loop(env,ml);      
+      item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    std::vector<int> vec;
+    int s = mls.size();
+    for(int i=0;i<s;i++) {
+      GameApi::ML ml = mls[i];
+      MainLoopItem *item = find_main_loop(env,ml);
+      std::vector<int> ids = item->shader_id();
+      int ss = ids.size();
+      for(int j=0;j<ss;j++) vec.push_back(ids[j]);
+    }
+    return vec;
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::vector<Anim_Struct> vec;
+  std::vector<GameApi::ML> mls;
+};
+
+GameApi::ML mesh_anim(GameApi::Env &e, GameApi::EveryApi &ev, std::vector<Anim_Struct> vec2)
+{
+  return add_main_loop(e, new MeshAnimCore(e,ev,vec2));
+}
+
+class MeshAnimFromUrl : public MainLoopItem
+{
+public:
+  MeshAnimFromUrl(GameApi::Env &env,
+		  GameApi::EveryApi &ev,
+		  std::vector<GameApi::P> faces,
+		  std::vector<GameApi::MN> move,
+		  std::vector<GameApi::MT> materials,
+		  std::vector<GameApi::MS> instantiates,
+		  std::vector<GameApi::IF> states,
+		  std::string url, std::string homepage)
+    : env(env), ev(ev), faces(faces), move(move), materials(materials), instantiates(instantiates), states(states), url(url), homepage(homepage) {
+    ml.id = -1;
+    current_states.id = -1;
+  }
+  
+  virtual void Prepare()
+  {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    std::string s3(vec->begin(), vec->end());
+    std::stringstream ss(s3);
+    int line_num = 0;
+    std::string line;
+    while(std::getline(ss,line)) {
+      line_num++;
+      std::stringstream ss2(line);
+      std::string word;
+      ss2 >> word;
+      std::string tmp,tmp2,tmp3;
+      if (word=="var") {
+	ss2>>tmp;
+	statesnames.push_back(tmp);
+      }
+      if (word=="mesh") {
+	ss2>> tmp;
+	facenames.push_back(tmp);
+      }
+      if (word=="move") {
+	ss2 >> tmp;
+	movenames.push_back(tmp);
+      }
+      if (word=="material") {
+	ss2 >> tmp;
+	materialnames.push_back(tmp);
+      }
+      if (word=="inst") {
+	ss2 >> tmp;
+	instnames.push_back(tmp);
+      }
+      if (word=="pair") {
+	ss2 >> tmp;
+	ss2 >> tmp2;
+	ss2 >> tmp3;
+	GameApi::P p1,p2;
+	p1.id = -1;
+	p2.id = -1;
+	int s = std::min(facenames.size(),faces.size());
+	for(int i=0;i<s;i++) {
+	  if (tmp2 == facenames[i]) p1 = faces[i];
+	  if (tmp3 == facenames[i]) p2 = faces[i];
+	}
+	if (p1.id==-1||p2.id==-1) std::cout << "Warning: pair " << tmp << " " << tmp2 << " " << tmp3 << " not found in line " << line_num << std::endl;
+	pairnames.push_back(tmp);
+	pairs.push_back(std::make_pair(p1,p2));
+      }
+      if (word=="state") {
+	ss2 >> tmp;
+	std::string statesname;
+	ss2 >> statesname;
+	int statenum;
+	ss2 >> statenum;
+	float repeattime;
+	ss2 >> repeattime;
+	current_states.id = -1;
+	current_repeattime = repeattime;
+	
+	  int psa = std::min(statesnames.size(),states.size());
+	  for(int i=0;i<psa;i++) {
+	    std::string sname = statesnames[i];
+	    if (statesname==sname) current_states = states[i];
+	  }
+	  state = statenum;
+	
+	current_time=0.0;
+      }
+      if (word=="key") {
+	ss2 >> tmp;
+	std::stringstream ss3(tmp);
+	ss3 >> key;
+
+	float repeattime;
+	ss2 >> repeattime;
+	current_repeattime = repeattime;
+	current_time = 0.0;
+      }
+      if (word=="slot") {
+	float duration = 10.0;
+
+	GameApi::P pair;
+	GameApi::MN mv;
+	GameApi::MT mat;
+	GameApi::MS inst;
+	ss2 >> duration;
+	std::string name;
+	while(ss2 >> name) {
+	  int ps = std::min(pairnames.size(),pairs.size());
+	  for(int i=0;i<ps;i++) {
+	    std::string pname = pairnames[i];
+	    if (name == pname) pair = ev.polygon_api.mesh_elem(pairs[i].first,pairs[i].second);
+	  }
+	  int psa = std::min(facenames.size(),faces.size());
+	  for(int i=0;i<psa;i++) {
+	    std::string fname = facenames[i];
+	    if (name==fname) pair = faces[i];
+	  }
+	  int ps2 = std::min(movenames.size(),move.size());
+	  for(int i=0;i<ps2;i++) {
+	    std::string mname = movenames[i];
+	    if (name==mname) mv=move[i];
+	  }
+	  int ps3 = std::min(materialnames.size(),materials.size());
+	  for(int i=0;i<ps3;i++) {
+	    std::string matname = materialnames[i];
+	    if (name==matname) mat=materials[i];
+	  }
+	  int ps4 = std::min(instnames.size(),instantiates.size());
+	  for(int i=0;i<ps4;i++) {
+	    std::string iname = instnames[i];
+	    if (name==iname) inst=instantiates[i];
+	  }
+	}
+	
+	Anim_Struct str;
+	str.key = key;
+	str.state = state;
+	str.start_time = current_time;
+	str.end_time = current_time + duration;
+	str.pair = pair;
+	str.move = mv;
+	str.material = mat;
+	str.inst = inst;
+	str.var = current_states;
+	str.repeat = current_repeattime;
+	current_time += duration;
+	animations.push_back(str);
+	key = -1;
+      }
+    }
+    ml = mesh_anim(env,ev,animations);
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->handle_event(e);
+    }
+  }
+  
+  virtual std::vector<int> shader_id() {
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      return item->shader_id();
+    } else return std::vector<int>();
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::vector<GameApi::P> faces;
+  std::vector<GameApi::MN> move;
+  std::vector<GameApi::MT> materials;
+  std::vector<GameApi::MS> instantiates;
+  std::vector<GameApi::IF> states;
+  std::vector<std::pair<GameApi::P,GameApi::P> > pairs;
+  std::vector<Anim_Struct> animations;
+  std::vector<std::string> facenames;
+  std::vector<std::string> movenames;
+  std::vector<std::string> materialnames;
+  std::vector<std::string> instnames;
+  std::vector<std::string> pairnames;
+  std::vector<std::string> statesnames;
+  int key=-1;
+  int state=-1;
+  GameApi::IF current_states;
+  float current_repeattime=1000000;
+  float current_time = 0.0;
+  std::string url, homepage;
+  GameApi::ML ml;
+};
+
+GameApi::ML GameApi::PolygonApi::mesh_anim(GameApi::EveryApi &ev,
+					   std::vector<GameApi::P> vec,
+					   std::vector<GameApi::MN> move,
+					   std::vector<GameApi::MT> materials,
+					   std::vector<GameApi::MS> inst,
+					   std::vector<GameApi::IF> states,
+					   std::string url)
+{
+  return add_main_loop(e, new MeshAnimFromUrl(e, ev, vec, move, materials, inst, states,url, gameapi_homepageurl));
+}
+// note, needs to have equal amount of vertices. p_script is good way to generate these
+
+class MeshElem : public FaceCollection
+{
+public:
+  MeshElem(FaceCollection *face1, FaceCollection *face2) : face1(face1), face2(face2) { }
+  virtual void Prepare() { face1->Prepare(); face2->Prepare(); }
+  virtual int NumFaces() const { return std::min(face1->NumFaces(),face2->NumFaces()); }
+  virtual int NumPoints(int face) const { return std::min(face1->NumPoints(face),face2->NumPoints(face)); }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return face1->FacePoint(face,point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return face1->PointNormal(face,point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return face1->Attrib(face,point,id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+    {
+      return face1->AttribI(face,point,id);
+    }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return face1->Color(face,point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return face1->TexCoord(face,point);
+  }
+  virtual float TexCoord3(int face, int point) const {
+    return face1->TexCoord3(face,point);
+  }
+
+  virtual Point EndFacePoint(int face, int point) const { return face2->FacePoint(face, point); }
+  virtual Vector EndPointNormal(int face, int point) const { return face2->PointNormal(face,point); }
+  virtual float EndAttrib(int face, int point, int id) const { return face2->Attrib(face, point, id); }
+  virtual int EndAttribI(int face, int point, int id) const { return face2->AttribI(face,point,id); }
+  virtual unsigned int EndColor(int face, int point) const { return face2->Color(face,point); }
+  virtual Point2d EndTexCoord(int face, int point) const { return face2->TexCoord(face,point); }
+  virtual float EndTexCoord3(int face, int point) const { return face2->TexCoord3(face,point); }
+
+private:
+  FaceCollection *face1;
+  FaceCollection *face2;
+};
+GameApi::P GameApi::PolygonApi::mesh_elem(P start, P end)
+{
+  FaceCollection *face1 = find_facecoll(e,start);
+  FaceCollection *face2 = find_facecoll(e,end);
+  return add_polygon2(e, new MeshElem(face1,face2),1);
+}
+
+class MeshAnimDisplayInst : public MainLoopItem
+{
+public:
+  MeshAnimDisplayInst(GameApi::Env &env,GameApi::EveryApi &ev, FaceCollection *coll,
+		      Fetcher<float> *fetch,
+		      Movement *move,
+		      Material *mat,
+		      MatrixArray *inst) : env(env), ev(ev), coll(coll), fetch(fetch), move(move), mat(mat), inst(inst) { mainloopitem = 0; }
+  virtual void Prepare()
+  {
+    if (!prepare_done) {
+      coll->Prepare();
+      GameApi::P p = add_polygon2(env, coll, 1);
+      GameApi::MS ms = add_matrix_array(env, inst);
+      GameApi::ML ml;
+      ml.id = mat->mat_inst_matrix(p.id, ms.id);
+      mainloopitem = find_main_loop(env,ml);
+      mainloopitem->Prepare();
+      // std::cout << "Mainloopitem = " << mainloopitem << std::endl;
+      prepare_done = true;
+    }
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    //ee.time = fmod(e.time, repeat_time/10.0);
+    fetch->frame(ee);
+    float mix_val = fetch->get(); // mix value to be used in animation
+    //std::cout << "mix_val=" << mix_val << std::endl;
+    // TODO, do we need *10.0 for delta_time?
+    if (mix_val>=0.0f && mix_val<=1.0f) {
+      if (move) 
+      move->frame(ee);
+      Matrix m = Matrix::Identity();
+      if (move)
+	m = move->get_whole_matrix(e.time*10.0,ev.mainloop_api.get_delta_time());
+      //std::cout << m << std::endl;
+      MainLoopEnv ee = e;
+      ee.in_MV = e.in_MV * m;
+      ee.in_POS = mix_val;
+      //std::cout << mainloopitem << std::endl;
+      if (mainloopitem) {
+	std::vector<int> vec = mainloopitem->shader_id();
+	int s = vec.size();
+	for(int i=0;i<s;i++)
+	  {
+	    int sh_id = vec[i];
+	    GameApi::SH sh;
+	    sh.id = sh_id;
+	    ev.shader_api.set_var(sh, "in_POS", mix_val);
+	  }
+	mainloopitem->execute(ee);
+      }
+    }
+    
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    fetch->event(e);
+    //float mix_val = fetch->get(); // mix value to be used in animation
+    if (move)
+      move->event(e);
+    if (mainloopitem)
+      mainloopitem->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() {
+    if (mainloopitem)
+      return mainloopitem->shader_id();
+    else return std::vector<int>();
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  FaceCollection *coll;
+  Fetcher<float> *fetch;
+  Movement *move;
+  Material *mat;
+  MatrixArray *inst;
+  MainLoopItem *mainloopitem;
+  bool prepare_done = false;
+};
+
+// use ff_range and ff_key_range with this.
+GameApi::ML GameApi::PolygonApi::mesh_anim_display_inst(GameApi::EveryApi &ev, P mesh_elem, FF val, MN mn, MT mat,MS inst)
+{
+  FaceCollection *coll = find_facecoll(e, mesh_elem);
+  Fetcher<float> *fetcher = find_float_fetcher(e, val);
+  Movement *move = find_move(e, mn);
+  Material *material = find_material(e, mat);
+  MatrixArray *instantiate = find_matrix_array(e, inst);
+  //Fetcher<int> *states2 = find_int_fetcher(e,states);
+  return add_main_loop(e, new MeshAnimDisplayInst(e,ev, coll, fetcher, move, material, instantiate));
+}
+GameApi::ML GameApi::PolygonApi::mesh_anim_display_inst2(GameApi::EveryApi &ev, P mesh_elem, FF val, MN mn, MT mat, PTS inst)
+{
+  MS ms = ev.matrices_api.from_points(inst);
+  return mesh_anim_display_inst(ev,mesh_elem,val,mn,mat,ms);
 }

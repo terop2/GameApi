@@ -850,6 +850,212 @@ GameApi::FF GameApi::FontApi::fps_fetcher(EveryApi &ev)
 {
   return add_float_fetcher(e, new FPSFetcher(ev));
 }
+
+class TimeRangeFetcher : public Fetcher<float>
+{
+public:
+  TimeRangeFetcher(float start_time, float end_time, float before_start, float start_value, float end_value, float after_end,float repeat) : start_time(start_time), end_time(end_time), before_start(before_start), start_value(start_value), end_value(end_value), after_end(after_end),repeat(repeat) { }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { } 
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { time = e.time*10.0; }
+  void set(float t) { }
+  float get() const {
+    float t = time - start_time;
+    if (t>=0)
+      t = fmod(t,repeat);
+
+    t/=(end_time-start_time);
+    if (t<0.0f) t=before_start;
+    else if (t>1.0f) t=after_end;
+    else {
+      t*=(end_value-start_value);
+      t+=start_value;
+    }
+    return t;
+  }
+private:
+  float time;
+  float start_time, end_time;
+  float before_start, start_value, end_value, after_end;
+  float repeat;
+};
+
+class TimeRangeFetcherKey : public Fetcher<float>
+{
+public:
+  TimeRangeFetcherKey(int key, float start_time, float end_time, float before_start, float start_value, float end_value, float after_end, float repeat) : key(key), start_time(start_time), end_time(end_time), before_start(before_start), start_value(start_value), end_value(end_value), after_end(after_end),repeat(repeat) {
+    keyclick_time = 10000000.0;
+  }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+  virtual void event(MainLoopEvent &e) {
+    if (e.type==768 && e.ch==key && !keydown) {
+      keyclick_time = time;
+      keydown = true;
+    }
+    if (e.type==769 && e.ch==key) {
+      keyclick_time = 10000000.0;
+      keydown = false;
+    }
+  }
+  virtual void frame(MainLoopEnv &e) { time = e.time*10.0; }
+  void set(float t) { }
+  float get() const {
+    //std::cout << "time=" << time << ", keyclick_time=" << keyclick_time << ", start_time=" << start_time << std::endl;
+    float t = time - keyclick_time - start_time;
+    if (t>=0)
+      t=fmod(t,repeat);
+    t/=(end_time-start_time);
+    if (t<0.0f) t=before_start;
+    else if (t>1.0f) t=after_end;
+    else {
+      t*=(end_value-start_value);
+      t+=start_value;
+    }
+    return t;
+  }
+private:
+  int key;
+  float time;
+  float keyclick_time;
+  float start_time, end_time;
+  float before_start, start_value, end_value, after_end;
+  float repeat;
+  bool keydown = false;
+};
+
+class TimeRangeFetcherState : public Fetcher<float>
+{
+public:
+  TimeRangeFetcherState(int state, Fetcher<int> *fetcher, float start_time, float end_time, float before_start, float start_value, float end_value, float after_end, float repeat) : state(state), fetcher(fetcher), start_time(start_time), end_time(end_time), before_start(before_start), start_value(start_value), end_value(end_value), after_end(after_end),repeat(repeat) {
+    keyclick_time = 10000000.0;
+  }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+  virtual void event(MainLoopEvent &e) {
+    fetcher->event(e);
+    int val = fetcher->get();
+    if (val==state && !keydown) {
+      keyclick_time = time;
+      keydown = true;
+    }
+    if (val!=state) {
+      keyclick_time = 10000000.0;
+      keydown = false;
+    }
+  }
+  virtual void frame(MainLoopEnv &e) {
+    fetcher->frame(e); 
+   time = e.time*10.0;
+  }
+  void set(float t) { }
+  float get() const {
+    //std::cout << "time=" << time << ", keyclick_time=" << keyclick_time << ", start_time=" << start_time << std::endl;
+    float t = time - keyclick_time - start_time;
+    if (t>=0)
+      t = fmod(t,repeat);
+    t/=(end_time-start_time);
+    if (t<0.0f) t=before_start;
+    else if (t>1.0f) t=after_end;
+    else {
+      t*=(end_value-start_value);
+      t+=start_value;
+    }
+    return t;
+  }
+private:
+  int state;
+  Fetcher<int> *fetcher;
+  float time;
+  float keyclick_time;
+  float start_time, end_time;
+  float before_start, start_value, end_value, after_end;
+  float repeat;
+  bool keydown = false;
+};
+
+class TimeRangeFetcherStateKey : public Fetcher<float>
+{
+public:
+  TimeRangeFetcherStateKey(int state, int key, Fetcher<int> *fetcher, float start_time, float end_time, float before_start, float start_value, float end_value, float after_end, float repeat) : state(state), key(key), fetcher(fetcher), start_time(start_time), end_time(end_time), before_start(before_start), start_value(start_value), end_value(end_value), after_end(after_end),repeat(repeat) {
+    keyclick_time = 10000000.0;
+  }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+  virtual void event(MainLoopEvent &e) {
+    fetcher->event(e);
+    int val = fetcher->get();
+    if (val==state && !keydown && e.type==768 && e.ch==key) {
+      keyclick_time = time;
+      keydown = true;
+    }
+
+    if (e.type==769 && e.ch==key) {
+      keyclick_time = 10000000.0;
+      keydown = false;
+    }
+    
+    if (val!=state) {
+      keyclick_time = 10000000.0;
+      keydown = false;
+    }
+    
+
+    
+  }
+  virtual void frame(MainLoopEnv &e) {
+    fetcher->frame(e);
+    time = e.time*10.0;
+  }
+  void set(float t) { }
+  float get() const {
+    //std::cout << "time=" << time << ", keyclick_time=" << keyclick_time << ", start_time=" << start_time << std::endl;
+    float t = time - keyclick_time - start_time;
+    if (t>=0)
+      t = fmod(t,repeat);
+    t/=(end_time-start_time);
+    if (t<0.0f) t=before_start;
+    else if (t>1.0f) t=after_end;
+    else {
+      t*=(end_value-start_value);
+      t+=start_value;
+    }
+    return t;
+  }
+private:
+  int state;
+  int key;
+  Fetcher<int> *fetcher;
+  float time;
+  float keyclick_time;
+  float start_time, end_time;
+  float before_start, start_value, end_value, after_end;
+  float repeat;
+  bool keydown = false;
+};
+
+
+
+  
+GameApi::FF GameApi::FontApi::time_range_fetcher(float start_time, float end_time, float before_start, float start_value, float end_value, float after_end, float repeat)
+{
+  return add_float_fetcher(e, new TimeRangeFetcher(start_time, end_time, before_start, start_value, end_value, after_end,repeat));
+}
+  GameApi::FF GameApi::FontApi::time_range_fetcher_key(int key, float start_time, float end_time, float before_start, float start_value, float end_value, float after_end, float repeat)
+  {
+    return add_float_fetcher(e, new TimeRangeFetcherKey(key, start_time, end_time, before_start, start_value, end_value, after_end,repeat));
+  }
+GameApi::FF GameApi::FontApi::time_range_fetcher_state(int state, IF if_state, float start_time, float end_time, float before_start, float start_value, float end_value, float after_end, float repeat)
+{
+  Fetcher<int> *fetcher = find_int_fetcher(e, if_state);
+  return add_float_fetcher(e, new TimeRangeFetcherState(state, fetcher, start_time, end_time, before_start, start_value, end_value, after_end,repeat));
+}
+GameApi::FF GameApi::FontApi::time_range_fetcher_state_key(int state, int key, IF if_state, float start_time, float end_time, float before_start, float start_value, float end_value, float after_end, float repeat)
+{
+  Fetcher<int> *fetcher = find_int_fetcher(e, if_state);
+  return add_float_fetcher(e, new TimeRangeFetcherStateKey(state,key,fetcher,start_time,end_time,before_start,start_value, end_value, after_end,repeat));
+}
 class TimeFetcher2 : public Fetcher<float>
 {
 public:

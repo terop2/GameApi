@@ -373,6 +373,7 @@ std::string stripprefix(std::string s)
 void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datasize)
 {
   char *url = (char*)arg;
+
   unsigned char *dataptr = (unsigned char*)data;
   if (datasize==0) {
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
@@ -403,9 +404,10 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
   
   //std::cout << "Async cb!" << url_only << std::endl;
   ASyncCallback *cb = rem_async_cb(url_only); //load_url_callbacks[url_only];
-  if (cb) {
+  while (cb) {
     //std::cout << "Load cb!" << url_only << std::endl;
     (*cb->fptr)(cb->data);
+    cb = rem_async_cb(url_only); //load_url_callbacks[url_only];
   }
 #ifdef EMSCRIPTEN
   if (tmp!=333) {
@@ -661,12 +663,22 @@ void idb_error(void *arg)
     onerror_async_cb(0,(void*)ld->buf3,0,"");
 #endif
 }
+std::vector<std::string> g_currently_loading;
+
 void ASyncLoader::load_urls(std::string url, std::string homepage)
   {
     if (url=="") return;
     //std::cout << "ASyncLoader::load_urls:" << url << std::endl; 
 
     std::string oldurl = url;
+
+    //int s = g_currently_loading.size();
+    //for(int i=0;i<s;i++) {
+    //  if (g_currently_loading[i]==oldurl) {
+    //	return;
+    //  }
+    // }
+
     
   // progress bar
     {
@@ -724,6 +736,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
       return; 
     }
       std::cout << "URL LOADED REALLY..." << std::endl;
+      //g_currently_loading.push_back(oldurl);
     char *buf2 = new char[url2.size()+1];
     std::copy(url2.begin(), url2.end(), buf2);
     buf2[url2.size()]=0;
@@ -1183,7 +1196,11 @@ std::vector<unsigned char> load_from_url(std::string url)
 #else
     std::string cmd = "curl -s -N --url " + url;
 #endif
+#ifdef LINUX
+    FILE *f = popen(cmd.c_str(), "r");
+#else
     FILE *f = popen(cmd.c_str(), "rb");
+#endif
     unsigned char c;
     //std::vector<unsigned char> buffer;
     int i = 0;

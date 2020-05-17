@@ -349,7 +349,9 @@ EXPORT void GameApi::MainLoopApi::print_profile()
 EXPORT float GameApi::MainLoopApi::fpscounter(bool print)
 {
   MainLoopPriv *p = (MainLoopPriv*)priv;
-  unsigned int time = g_low->sdl->SDL_GetTicks();
+    unsigned long long time = g_low->sdl->SDL_GetPerformanceCounter();
+    time = time*1000/g_low->sdl->SDL_GetPerformanceFrequency();
+    //unsigned int time = g_low->sdl->SDL_GetTicks();
   unsigned int delta_time = time - p->time;
   unsigned int f_time = time - p->frame_time;
   //p->time = time;
@@ -876,7 +878,7 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
 #else
   SDL_GL_SwapBuffers();
 #endif
-#if 1
+#if 0
   unsigned int time = g_low->sdl->SDL_GetTicks();
   MainLoopPriv *p = (MainLoopPriv*)priv;
   p->frame_time = time;
@@ -886,7 +888,17 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
 
   p->previous_frame_time = time;
 #endif
-
+#if 1
+  unsigned long long time = g_low->sdl->SDL_GetPerformanceCounter();
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  p->frame_time = time*1000/g_low->sdl->SDL_GetPerformanceFrequency();
+  unsigned int delta = time - p->previous_frame_time;
+  p->delta_time = float(delta*1000/g_low->sdl->SDL_GetPerformanceFrequency())/100.0*5.0;
+  p->current_time = float(time*1000/g_low->sdl->SDL_GetPerformanceFrequency())/100.0*5.0;
+  p->previous_frame_time = time;
+                    
+#endif
+  
   
   
   //SDL_Flip(surf);

@@ -556,6 +556,8 @@ public:
   virtual void SDL_ShowCursor(bool b)=0;
   virtual int SDL_PollEvent(Low_SDL_Event *event)=0;
   virtual unsigned int SDL_GetTicks()=0;
+  virtual unsigned long long SDL_GetPerformanceCounter()=0;
+  virtual unsigned long long SDL_GetPerformanceFrequency()=0;
   virtual void SDL_Delay(int ms)=0;
   virtual Low_SDL_Surface* SDL_GetWindowSurface(Low_SDL_Window *win)=0;
   virtual Low_SDL_Window* SDL_CreateWindow(const char *title, int x, int y, int width, int height, unsigned int flags2)=0;
