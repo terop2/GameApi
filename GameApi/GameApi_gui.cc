@@ -5090,7 +5090,7 @@ std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev,
   int line_num = 0;
   error_line_num = 0;
   std::vector<CodeGenLine> vec;
-  std::vector<GameApiItem*> funcs = all_functions();
+  static std::vector<GameApiItem*> funcs = all_functions();
   std::string homepage = ev.mainloop_api.get_homepage_url();
   while((idx=find_char(text, idx, '\n'))!= -1)
     {
@@ -5345,7 +5345,8 @@ std::pair<int,std::string> GameApi::execute_codegen(GameApi::Env &env, GameApi::
   bool err2 = false;
   add_params_linkage(vec,vecvec,err2, envmap);
   if (err2) { return std::make_pair(0, std::string("Error at params_linkage")); }
-  link_api_items(vec, all_functions());
+  static std::vector<GameApiItem*> functions = all_functions();
+  link_api_items(vec, functions);
   int val = execute_api(env, ev, vec, vecvec, vec.size()-1, e);
   CodeGenLine last = vec[vec.size()-1];
   if (last.return_type=="BLK") return std::make_pair(val,"OK");
@@ -11312,7 +11313,7 @@ std::vector<std::pair<std::string,std::string> > GameApi::GuiApi::get_functions_
 {
   std::vector<std::pair<std::string,std::string> > vec;
 
-  std::vector<GameApiItem*> funcs = all_functions();
+  static std::vector<GameApiItem*> funcs = all_functions();
   int s = funcs.size();
   for(int i=0;i<s;i++)
     {

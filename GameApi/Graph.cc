@@ -1158,6 +1158,7 @@ void PrepareSpriteToVA(const Sprite &s, VertexArraySet &vas)
   
   MeshFaceCollection coll(trimesh, tricoords ,0);
   FaceCollectionVertexArray2 va(coll, vas);
+  va.reserve(0);
   va.copy(0,coll.NumFaces());
 }
 

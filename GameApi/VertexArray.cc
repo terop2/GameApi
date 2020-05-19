@@ -2143,6 +2143,7 @@ void *thread_func(void *data)
 {
 #ifndef BATCHING
   ThreadInfo *ti = (ThreadInfo*)data;
+  //ti->va->reserve(0);
   ti->va->copy(ti->start_range, ti->end_range,ti->attrib, ti->attribi);
   return 0;
 #else
@@ -2159,6 +2160,7 @@ void *thread_func(void *data)
       if (i==s-1) end_range = ti->end_range;
       Counts ct2_counts = CalcCounts(ti->faces, start_range, end_range);
       Counts ct2_offsets = CalcOffsets(ti->faces, start_range);
+      //ti->va->reserve(0);
       ti->va->copy(start_range, end_range,ti->attrib, ti->attribi);
       ti->ct2_counts = ct2_counts;
       ti->ct2_offsets = ct2_offsets;
