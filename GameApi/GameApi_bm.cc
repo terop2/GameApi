@@ -981,7 +981,7 @@ GameApi::BM GameApi::BitmapApi::subbitmap(GameApi::BM orig, int x, int y, int wi
 {
   BitmapHandle *handle = find_bitmap(e, orig);
   BitmapHandle *handle2 = subbitmap_h(handle, x,y,width,height);
-  BM bm = add_bitmap(e, handle2);
+  BM bm = add_bitmap3(e, handle2);
   return bm;
 
 }

@@ -147,6 +147,7 @@ void *operator new( std::size_t count)
   counter++;
   if (counter % 10000==0) {
     std::printf("Large number of allocs: %d\n", counter);
+    stackTrace();
   }
   if (count >1000000) {
     std::printf("global op new called, size= %zu\n", count);

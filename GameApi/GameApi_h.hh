@@ -1109,6 +1109,7 @@ GameApi::SP add_space(GameApi::Env &e, SpaceImpl i);
 GameApi::S add_surface(GameApi::Env &e, SurfaceImpl i);
 GameApi::S add_surface2(GameApi::Env &e, SurfaceIn3d *s);
 GameApi::BM add_bitmap(GameApi::Env &e, BitmapHandle *handle);
+GameApi::BM add_bitmap3(GameApi::Env &e, BitmapHandle *handle); // deletes
 GameApi::BM add_color_bitmap(GameApi::Env &e, Bitmap<Color> *bm);
 GameApi::BM add_color_bitmap2(GameApi::Env &e, Bitmap<Color> *bm);
 GameApi::BMA add_bitmap_array(GameApi::Env &e, BitmapArray2<Color> *arr);

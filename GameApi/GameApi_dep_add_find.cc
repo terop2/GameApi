@@ -691,6 +691,26 @@ GameApi::S add_surface(GameApi::Env &e, SurfaceImpl i)
   return s;
 }
 
+GameApi::BM add_bitmap3(GameApi::Env &e, BitmapHandle *handle)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->bm.push_back(handle);
+  GameApi::BM bm;
+  bm.id = env->bm.size()-1;
+
+  Bitmap<Color> *bm2 = ((BitmapColorHandle*)handle)->bm;
+  
+  if (g_current_block != -2)
+  add_b(std::shared_ptr<void>(bm2));
+
+  
+  //std::cout << "add_bitmap: " << bm.id << std::endl;
+  //bm.type = 0;
+  handle->id = bm.id;
+  return bm;
+
+}
+
 GameApi::BM add_bitmap(GameApi::Env &e, BitmapHandle *handle)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);

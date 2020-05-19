@@ -6939,7 +6939,6 @@ public:
     ee.us_fragment_shader = fragment.id;
 #endif
       }
-
      std::vector<int> sh_ids = next->shader_id();
      int s=sh_ids.size();
      for(int i=0;i<s;i++) {
@@ -6998,6 +6997,7 @@ private:
   unsigned int ambient;
   unsigned int highlight;
   float pow;
+  
 };
 
 
@@ -7364,8 +7364,7 @@ public:
     ee.us_fragment_shader = fragment.id;
 #endif
       }
-
-     std::vector<int> sh_ids = next->shader_id();
+  std::vector<int> sh_ids = next->shader_id();
      int s = sh_ids.size();
      for(int i=0;i<s;i++) {
        int sh_id = sh_ids[i];
