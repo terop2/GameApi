@@ -2185,6 +2185,10 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  ARR block_divide(P p, float pos_x, float pos_z, int sx, int sz, float delta_x, float delta_z);
+  ARR block_render(GameApi::EveryApi &ev, std::vector<P> vec, MT mat);
+  ARR block_render2(GameApi::EveryApi &ev, std::vector<P> vec, std::vector<MT> mat);
+  ML block_draw(std::vector<ML> vec, float pos_x, float pos_z, int sx, int sz, float delta_x, float delta_z, int view);
   P bitmapsized_quad(BM bm);
   // Array functions
   PTS voxelarray_to_pts(AV arr, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);

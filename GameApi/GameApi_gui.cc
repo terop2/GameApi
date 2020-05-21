@@ -7527,6 +7527,30 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "P", "PTS", "MT", "bool", "float", "float" },
 			 { "", "", "", "false", "10.0", "40.0" },
 			 "ML", "materials_api", "bind_inst_fade"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::block_divide,
+			 "b_divide",
+			 { "p", "pos_x", "pos_z", "sx", "sz", "delta_x", "delta_z" },
+			 { "P", "float", "float", "int", "int", "float", "float" },
+			 { "", "-3000.0", "-3000.0", "60", "60", "100.0", "100.0" },
+			 "[P]", "polygon_api", "block_divide"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::block_render,
+			 "b_bind",
+			 { "ev", "vec", "mat" },
+			 { "EveryApi&", "[P]", "MT" },
+			 { "ev", "", "" },
+			 "[ML]",  "polygon_api", "block_render"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::block_render2,
+			 "b_bind2",
+			 { "ev", "vec", "mats" },
+			 { "EveryApi&", "[P]", "[MT]" },
+			 { "ev", "", "" },
+			 "[ML]", "polygon_api", "block_render2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::block_draw,
+			 "b_draw",
+			 { "vec", "pos_x", "pos_z", "sx", "sz", "delta_x", "delta_z", "view" },
+			 { "[ML]", "float", "float", "int", "int", "float", "float", "int" },
+			 { "", "-3000.0", "-3000.0", "60", "60", "100.0", "100.0" },
+			 "ML", "polygon_api", "block_draw"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::rot_x_ml,
 			 "rot_x_ml",

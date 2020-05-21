@@ -84,8 +84,8 @@ EMINC1 = /home/terop/emscripten/emsdk/emscripten/1.38.31/system/include/SDL
 EMINC2 = /home/terop/emscripten/emsdk/emscripten/1.38.31/system/include
 EMINC3 = /home/terop/emscripten/emsdk/emscripten/1.38.31/tests/freetype/include
 
-CCFLAGS = -s USE_FREETYPE=1 -DEMSCRIPTEN -g -g4 -O3 -Os -Oz -std=c++17 -Wall -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags --memory-init-file 0 -s NO_FILESYSTEM=1 -s DISABLE_EXCEPTION_CATCHING=1  -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include
-CC2FLAGS = -s USE_FREETYPE=1 -DEMSCRIPTEN -g -g4 -std=c++17 -Wall -O3 -Os -Oz -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include 
+CCFLAGS = -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -g -g4 -O3 -Os -Oz -std=c++17 -Wall -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags --memory-init-file 0 -s NO_FILESYSTEM=1 -s DISABLE_EXCEPTION_CATCHING=1  -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include
+CC2FLAGS = -fomit-frame-pointer -flto -s USE_FREETYPE=1 -DEMSCRIPTEN -g -g4 -std=c++17 -Wall -O3 -Os -Oz -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include 
 # -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s WASM_MEM_MAX=1500Mb
 #`pkg-config gtkmm-2.4 --cflags`
 
