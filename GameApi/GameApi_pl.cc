@@ -14969,3 +14969,368 @@ GameApi::ML GameApi::PolygonApi::mesh_anim_display_inst2(GameApi::EveryApi &ev, 
   MS ms = ev.matrices_api.from_points(inst);
   return mesh_anim_display_inst(ev,mesh_elem,val,mn,mat,ms);
 }
+
+
+#if 0
+class SplitQuads : public FaceCollection
+{
+public:
+  SplitQuads(FaceCollection *coll, float normal_multiply) : coll(coll), normal_multiply(normal_multiply) { }
+  virtual void Prepare() { coll->Prepare(); }
+  virtual int NumFaces() const
+  {
+    return 4*coll->NumFaces();
+  }
+  virtual int NumPoints(int face) const=0;
+  virtual Point FacePoint(int face, int point) const=0;
+  virtual Vector PointNormal(int face, int point) const=0;
+  virtual float Attrib(int face, int point, int id) const=0;
+  virtual int AttribI(int face, int point, int id) const=0;
+  virtual unsigned int Color(int face, int point) const=0;
+  virtual Point2d TexCoord(int face, int point) const=0;
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
+
+
+  int face(int f) const
+  {
+    return f/4;
+  }
+  int part(int f) const
+  {
+    return f%4;
+  }
+  int get_point(int part, int point) const
+  {
+    switch(part) {
+    case 0:
+      switch(point) {
+      case 0: return 0;
+      case 1: return 1;
+      case 2: return 4;
+      case 3: return 3;
+      };
+    case 1:
+      switch(point) {
+      case 0: return 1;
+      case 1: return 2;
+      case 2: return 5;
+      case 3: return 4;
+      };
+    case 2:
+      switch(point) {
+      case 0: return 3;
+      case 1: return 4;
+      case 2: return 7;
+      case 3: return 6;
+      };
+    case 3:
+      switch(point) {
+      case 0: return 4;
+      case 1: return 5;
+      case 2: return 8;
+      case 3: return 7;
+      };
+    };
+    return -1;
+  }
+  Point get_point(int face, int i) const
+  {
+    
+    switch(i) {
+    case 0:
+      {
+      Point p1 = coll->FacePoint(face,0);
+      return p1;
+      }
+    case 1:
+      {
+      Point p1 = coll->FacePoint(face,0);
+      Point p2 = coll->FacePoint(face,1);
+      return Point::Interpolate(p1,p2,0.5);
+      }
+    case 2:
+      {
+      Point p2 = coll->FacePoint(face,1);
+      return p2;
+      }
+    case 3: 
+      {
+      Point p1 = coll->FacePoint(face,0);
+      Point p3 = coll->FacePoint(face,2);
+      return Point::Interpolate(p1,p3,0.5);
+      }
+    case 4:
+      {
+      Point p1 = coll->FacePoint(face,0);
+      Point p2 = coll->FacePoint(face,1);
+      Point p3 = coll->FacePoint(face,2);
+      Point p4 = coll->FacePoint(face,3);
+      return Point::Interpolate(Point::Interpolate(p1,p2,0.5),Point::Interpolate(p4,p3,0.5),0.5);
+      }
+    case 5:
+      {
+	Point p2 = coll->FacePoint(face,1);
+	Point p3 = coll->FacePoint(face,2);
+	return Point::Interpolate(p2,p3,0.5);
+      }
+    case 6: 
+      {
+      Point p4 = coll->FacePoint(face,3);
+      return p4;
+      }
+    case 7:
+      {
+      Point p3 = coll->FacePoint(face,2);
+      Point p4 = coll->FacePoint(face,3);
+      return Point::Interpolate(p3,p4,0.5);
+      }
+    case 8:
+      {
+	Point p3 = coll->FacePoint(face,2);
+	return p3;
+      }
+    
+    };
+    return Point(0.0,0.0,0.0);
+  }
+  
+private:
+  FaceCollection *coll;
+  float normal_multiply;
+};
+#endif
+
+
+class Block : public FaceCollection
+{
+public:
+  Block(FaceCollection *coll, float pos_x, float pos_z, int x, int z, float delta_x, float delta_z) : coll(coll), pos_x(pos_x), pos_z(pos_z), x(x),z(z), delta_x(delta_x),delta_z(delta_z) { }
+  virtual void Prepare()
+  {
+    coll->Prepare();
+    if (face_index.size()==0) {
+      int s = coll->NumFaces();
+      float start_x = pos_x + x*delta_x;
+      float start_z = pos_z + z*delta_z;
+      float end_x = pos_x + (x+1)*delta_x;
+      float end_z = pos_z + (z+1)*delta_z;
+      for(int i=0;i<s;i++) {
+	Point p = pos(i);
+	if (p.x>=start_x && p.x<end_x)
+	  if (p.z>=start_z && p.z<end_z)
+	    face_index.push_back(i);
+      }
+    }
+  }
+  Point pos(int i) const
+  {
+    Point p1 = coll->FacePoint(i,0);
+    Point p2 = coll->FacePoint(i,1);
+    Point p3 = coll->FacePoint(i,2);
+    Point p4 = coll->FacePoint(i,3%coll->NumPoints(i));
+    float xx = (p1.x+p2.x+p3.x+p4.x)/4.0;
+    float yy = (p1.y+p2.y+p3.y+p4.y)/4.0;
+    float zz = (p1.z+p2.z+p3.z+p4.z)/4.0;
+    return Point(xx,yy,zz);
+  }
+  virtual int NumFaces() const { return face_index.size(); }
+  virtual int NumPoints(int face) const {
+    int s = face_index.size();
+    if (face>=0 && face<s)
+      return coll->NumPoints(face_index[face]);
+    else return 1;
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int s = face_index.size();
+    if (face>=0 && face<s)
+      return coll->FacePoint(face_index[face],point);
+    else return Point(0.0,0.0,0.0);
+  }
+   
+  virtual Vector PointNormal(int face, int point) const
+  {
+    int s = face_index.size();
+    if (face>=0 && face<s)
+      return coll->PointNormal(face_index[face],point);
+    else return Vector(0.0,0.0,1.0);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    int s = face_index.size();
+    if (face>=0 && face<s)
+      return coll->Attrib(face_index[face],point,id);
+    else return 0.0;
+  }
+  virtual int AttribI(int face, int point, int id) const
+  { 
+    int s = face_index.size();
+    if (face>=0 && face<s)
+      return coll->AttribI(face_index[face],point,id);
+    else return 0;
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    int s = face_index.size();
+    if (face>=0 && face<s)
+    return coll->Color(face_index[face],point);
+    else return 0x00;
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    int s = face_index.size();
+    if (face>=0 && face<s)
+    return coll->TexCoord(face_index[face],point);
+    else { Point2d p; p.x =0.0; p.y =0.0; return p; }
+  }
+  virtual float TexCoord3(int face, int point) const {
+    int s = face_index.size();
+
+    if (face>=0 && face<s)
+      return coll->TexCoord3(face_index[face],point);
+    else return 0.0;
+  }
+private:
+  FaceCollection *coll;
+  float pos_x, pos_z;
+  int x,z;
+  float delta_x, delta_z;
+  std::vector<int> face_index;
+};
+
+GameApi::ARR GameApi::PolygonApi::block_divide(P p, float pos_x, float pos_z, int sx, int sz, float delta_x, float delta_z)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  ArrayType *array = new ArrayType;
+  array->type = 1;
+  
+  for(int j=0;j<sz;j++) {
+    for(int i=0;i<sx;i++) {
+      
+      GameApi::P elem = add_polygon2(e,new Block(coll, pos_x,pos_z, i,j, delta_x, delta_z),1);
+      array->vec.push_back(elem.id);
+    }
+  }
+  return add_array(e,array);
+}
+
+GameApi::ARR GameApi::PolygonApi::block_render(GameApi::EveryApi &ev, std::vector<P> vec, MT mat)
+{
+  ArrayType *array = new ArrayType;
+  array->type = 1;
+  int s = vec.size();
+  for(int i=0;i<s;i++) {
+    GameApi::P p = vec[i];
+    GameApi::ML ml = ev.materials_api.bind(p,mat);
+    array->vec.push_back(ml.id);
+  }
+  return add_array(e,array);
+}
+
+GameApi::ARR GameApi::PolygonApi::block_render2(GameApi::EveryApi &ev, std::vector<P> vec, std::vector<MT> mat)
+{
+  ArrayType *array = new ArrayType;
+  array->type = 1;
+  int s = std::min(vec.size(),mat.size());
+  for(int i=0;i<s;i++) {
+    GameApi::P p = vec[i];
+    GameApi::ML ml = ev.materials_api.bind(p,mat[i]);
+    array->vec.push_back(ml.id);
+  }
+  return add_array(e,array);
+
+}
+
+extern float quake_pos_x;
+extern float quake_pos_y;
+class BlockDraw : public MainLoopItem
+{
+public:
+  BlockDraw(std::vector<MainLoopItem*> items, float pos_x, float pos_z, int sx, int sz, float delta_x, float delta_z, int view) : items(items), pos_x(pos_x), pos_z(pos_z), sx(sx),sz(sz),delta_x(delta_x), delta_z(delta_z), view(view) { }
+  virtual void Prepare()
+  {
+    int s = items.size();
+    for(int i=0;i<s;i++) items[i]->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    float cursor_pos_x = quake_pos_x;
+    float cursor_pos_y = -quake_pos_y+400.0;
+
+    cursor_pos_x = -cursor_pos_x;
+    
+    cursor_pos_x -= pos_x;
+    cursor_pos_y -= pos_z;
+    
+    cursor_pos_x /= delta_x;
+    cursor_pos_y /= delta_z;
+
+    int p_x = int(cursor_pos_x);
+    int p_z = int(cursor_pos_y);
+    //std::cout << "P:" << p_x << " " <<p_z << std::endl;
+    
+    for(int j=p_z-view;j<p_z+view;j++)
+      for(int i=p_x-view;i<p_x+view;i++)
+	{
+	  int ii = i+sx*j;
+	  if (i>=0 && i<sx) {
+	    if (j>=0 && j<sz) {
+	      items[ii]->execute(e);
+	    }
+	  }
+	}
+
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    int s = items.size();
+    for(int i=0;i<s;i++) items[i]->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() {
+
+    std::vector<int> vec;
+    float cursor_pos_x = quake_pos_x;
+    float cursor_pos_y = -quake_pos_y+400.0;
+
+    cursor_pos_x = -cursor_pos_x;
+    
+    cursor_pos_x -= pos_x;
+    cursor_pos_y -= pos_z;
+
+
+    cursor_pos_x /= delta_x;
+    cursor_pos_y /= delta_z;
+
+    int p_x = int(cursor_pos_x);
+    int p_z = int(cursor_pos_y);
+    
+    for(int j=p_z-view;j<p_z+view;j++)
+      for(int i=p_x-view;i<p_x+view;i++)
+	{
+	  int ii = i+sx*j;
+	  if (i>=0 && i<sx)
+	    if (j>=0 && j<sz) {
+	      std::vector<int> vec2 = items[ii]->shader_id();
+	      int s = vec2.size();
+	      for(int g=0;g<s;g++) vec.push_back(vec2[g]);
+	    }
+	}
+    return vec;
+   }
+private:
+  std::vector<MainLoopItem*> items;
+  float pos_x, pos_z;
+  int sx,sz;
+  float delta_x,delta_z;
+  int view;
+};
+
+GameApi::ML GameApi::PolygonApi::block_draw(std::vector<ML> vec, float pos_x, float pos_z, int sx, int sz, float delta_x, float delta_z, int view)
+{
+  std::vector<MainLoopItem*> items;
+  int s = vec.size();
+  for(int i=0;i<s;i++) {
+    items.push_back(find_main_loop(e,vec[i]));
+  }
+  return add_main_loop(e, new BlockDraw(items, pos_x, pos_z, sx,sz,delta_x,delta_z, view));
+}

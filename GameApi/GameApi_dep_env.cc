@@ -1071,7 +1071,10 @@ int load_size_from_url(std::string url)
 #endif
     std::vector<unsigned char> vec2;
     unsigned char c2;
+    int ii = 0;
     while(fread(&c2,1,1,f2)==1) {
+      ii++;
+      if (ii%256==0) vec2.reserve(vec2.size()+256);
       vec2.push_back(c2);
     }
     std::string s(vec2.begin(),vec2.end());

@@ -878,6 +878,10 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
 #else
   SDL_GL_SwapBuffers();
 #endif
+  //#ifdef EMSCRIPTEN
+  // emscripten_webgl_commit_frame();
+  //#endif
+				  
 #if 1
   unsigned int time = g_low->sdl->SDL_GetTicks();
   MainLoopPriv *p = (MainLoopPriv*)priv;
