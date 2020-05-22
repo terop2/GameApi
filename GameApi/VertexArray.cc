@@ -141,6 +141,8 @@ void VertexArraySet::push_poly(int id, int num, Point *points)
       m_set[id] = new Polys;
       p = m_set[id];
     }
+  if (num < 3) return;
+  else
   if (num == 3)
     {
       p->tri_polys.push_back(points[0]);
@@ -169,7 +171,8 @@ void VertexArraySet::push_poly(int id, int num, Point *points)
 	  p->poly_polys.push_back(points[i]);
 	  p->poly_polys.push_back(points[j]);
 	}
-      p->poly_polys.push_back(p->poly_polys[p->poly_polys.size()-1]);
+      if (p->poly_polys.size()!=0)
+	p->poly_polys.push_back(p->poly_polys[p->poly_polys.size()-1]);
     }
 }
 
@@ -181,6 +184,8 @@ void VertexArraySet::push_poly2(int id, int num, Point *points)
       m_set[id] = new Polys;
       p = m_set[id];
     }
+  if (num<3) return;
+  else
   if (num == 3)
     {
       p->tri_polys2.push_back(points[0]);
@@ -210,7 +215,8 @@ void VertexArraySet::push_poly2(int id, int num, Point *points)
 	  p->poly_polys2.push_back(points[i]);
 	  p->poly_polys2.push_back(points[j]);
 	}
-      p->poly_polys2.push_back(p->poly_polys2[p->poly_polys2.size()-1]);
+      if (p->poly_polys2.size()!=0)
+	p->poly_polys2.push_back(p->poly_polys2[p->poly_polys2.size()-1]);
 
     }
 }
@@ -225,6 +231,9 @@ void VertexArraySet::push_normal(int id, int num, Vector *points)
       m_set[id] = new Polys;
       p = m_set[id];
     }
+  if (num<3)
+    return;
+  else
   if (num == 3)
     {
       p->tri_normals.push_back(points[0]);
@@ -268,6 +277,8 @@ void VertexArraySet::push_attrib(int id, int attrib_id, int num, float *points)
       m_set[id] = new Polys;
       p = m_set[id];
     }
+  if (num<3) return;
+  else
   if (num == 3)
     {
       p->tri_attribs[attrib_id].push_back(points[0]);
@@ -310,6 +321,8 @@ void VertexArraySet::push_attribi(int id, int attrib_id, int num, int *points)
       m_set[id] = new Polys;
       p = m_set[id];
     }
+  if (num<3) return;
+  else
   if (num == 3)
     {
       p->tri_attribsi[attrib_id].push_back(points[0]);
@@ -371,6 +384,8 @@ void VertexArraySet::push_color(int id, int num, unsigned int *points)
       m_set[id] = new Polys;
       p = m_set[id];
     }
+  if (num<3) return;
+  else
   if (num == 3)
     {
       split_color(p->tri_color, points[0]);
@@ -413,6 +428,8 @@ void VertexArraySet::push_texcoord(int id, int num, Point *points)
       m_set[id] = new Polys;
       p = m_set[id];
     }
+  if (num<3) return;
+  else
   if (num == 3)
     {
       p->tri_texcoord.push_back(points[0]);

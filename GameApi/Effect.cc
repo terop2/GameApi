@@ -4120,7 +4120,10 @@ Point ReflectFaceCollection::FacePoint(int face, int point) const
     return pp2;
 }
 
-LoadObjModelFaceCollection::LoadObjModelFaceCollection(std::vector<unsigned char> file_data, int objcount, std::vector<std::string> material_names) : file_data(file_data), obj_num(objcount), material_names_external(material_names) 
+
+
+
+LoadObjModelFaceCollection::LoadObjModelFaceCollection(LoadStream * file_data, int objcount, std::vector<std::string> material_names) : file_data(file_data), obj_num(objcount), material_names_external(material_names) 
   {
     firsttime = true;
   }
@@ -4136,20 +4139,25 @@ void LoadObjModelFaceCollection::Prepare()
 void LoadObjModelFaceCollection::check_invalidate() const { const_cast<LoadObjModelFaceCollection*>(this)->check_invalidate2(); }
 void LoadObjModelFaceCollection::check_invalidate2()
   {
-    static int filesize_store = -1;
-    static int objcount = -1;
-    int val = file_data.size(); //filesize(filename);
-    if (filesize_store != val) { filesize_store = val; }
-    if (objcount != obj_num) { objcount = obj_num; }
+    // static int filesize_store = -1;
+    // static int objcount = -1;
+    //int val = file_data.size(); //filesize(filename);
+    //if (filesize_store != val) { filesize_store = val; }
+    //if (objcount != obj_num) { objcount = obj_num; }
   }
 
-int my_getline(const std::vector<unsigned char> &vec, int index, std::string &line)
+int my_getline(LoadStream *stream, int index, std::string &line)
 {
-  int s = vec.size();
-  for(int i=index;i<s;i++) {
-    if (vec[i]=='\n') { line=std::string(&vec[index],&vec[i]); return i+1; }
-  }
-  return -1;
+  //int s = vec.size();
+  //for(int i=index;i<s;i++) {
+  //  if (vec[i]=='\n') { line=std::string(&vec[index],&vec[i]); return i+1; }
+  // }
+  //return -1;
+  std::vector<unsigned char> vec;
+  bool b = stream->get_line(vec);
+  if (!b) return -1;
+  line = std::string(vec.begin(),vec.end());
+  return 0;
 }
 
   void LoadObjModelFaceCollection::Load() const { const_cast<LoadObjModelFaceCollection*>(this)->Load2(); }
@@ -4157,9 +4165,9 @@ int my_getline(const std::vector<unsigned char> &vec, int index, std::string &li
     //std::ifstream file(filename.c_str());
     //std::string s(file_data.begin(), file_data.end());
 
-    int total_line_count=0;
-    int s4 = file_data.size();
-    for(int i=0;i<s4;i++) { if (file_data[i]=='\n') total_line_count++; }
+    //int total_line_count=0;
+    //int s4 = file_data.size();
+    //for(int i=0;i<s4;i++) { if (file_data[i]=='\n') total_line_count++; }
 
     //std::stringstream file(s);
     std::string line;
@@ -4187,9 +4195,9 @@ int my_getline(const std::vector<unsigned char> &vec, int index, std::string &li
     while((index = my_getline(file_data, index, line))!=-1)
       {
 	curr_line++;
-	if (total_line_count>0 && curr_line%(total_line_count/15)==0) {
-	  ProgressBar(193,curr_line*15/total_line_count,15,"Parsing .obj file");
-	}
+	//if (total_line_count>0 && curr_line%(total_line_count/15)==0) {
+	//  ProgressBar(193,curr_line*15/total_line_count,15,"Parsing .obj file");
+	//}
 	ss.str(line);
 	ss.clear();
 	//ss << line;
@@ -4401,7 +4409,7 @@ int my_getline(const std::vector<unsigned char> &vec, int index, std::string &li
 	color_data.push_back(0xffffffff);
       }
     // remove file from memory
-    file_data.clear();
+    //file_data.clear();
   }
   int LoadObjModelFaceCollection::NumFaces() const {
     return face_counts.size()<=0 ? 1 : face_counts.size(); }

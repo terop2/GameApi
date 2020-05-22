@@ -1809,4 +1809,30 @@ extern std::vector<V_Area_Type> g_area_type_array;
 extern std::vector<V_Area_Pos> g_areas;
 
 
+struct Rect5
+{
+  float x,y;
+  float sx,sy;
+};
+
+class RectangleArray
+{
+public:
+  virtual void Prepare() =0;
+  virtual int NumRects() const=0;
+  virtual Rect5 GetRect(int i) const=0;
+  virtual int Type(int i) const=0;
+};
+
+
+class LoadStream
+{
+public:
+  virtual void Prepare()=0;
+  virtual LoadStream *Clone()=0;
+  virtual bool get_ch(unsigned char &ch)=0;
+  virtual bool get_line(std::vector<unsigned char> &line)=0;
+  virtual bool get_file(std::vector<unsigned char> &file)=0;
+};
+
 #endif

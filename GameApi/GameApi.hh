@@ -20,6 +20,7 @@ void clear_block(int id);
 class ASyncData;
 class BufferRef;
 class MainLoopEnv;
+class LoadStream;
 
 namespace GameApi
 {
@@ -2254,9 +2255,9 @@ public:
         IMPORT P load_model(std::string filename, int obj_num);
   IMPORT P load_model_all(std::string filename, int count);
   IMPORT P load_model_all_no_cache(std::string filename, int count);
-  IMPORT P load_model_all_no_cache(std::vector<unsigned char> file_data, int count);
+  IMPORT P load_model_all_no_cache(LoadStream * file_data, int count);
   IMPORT P load_model_all_no_cache_mtl(std::string filename, int count, std::vector<std::string> material_names);
-  IMPORT P load_model_all_no_cache_mtl(std::vector<unsigned char> file_data, int count, std::vector<std::string> material_names);
+  IMPORT P load_model_all_no_cache_mtl(LoadStream * file_data, int count, std::vector<std::string> material_names);
   IMPORT P p_url(EveryApi &ev, std::string url, int count);
   IMPORT P p_mtl(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count);
   IMPORT P p_url_mtl(EveryApi &ev, std::string url, int count, std::vector<std::string> material_names);
