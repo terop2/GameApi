@@ -1071,10 +1071,7 @@ int load_size_from_url(std::string url)
 #endif
     std::vector<unsigned char> vec2;
     unsigned char c2;
-    int ii = 0;
     while(fread(&c2,1,1,f2)==1) {
-      ii++;
-      if (ii%256==0) vec2.reserve(vec2.size()+256);
       vec2.push_back(c2);
     }
     std::string s(vec2.begin(),vec2.end());
@@ -1094,6 +1091,154 @@ int load_size_from_url(std::string url)
     }
     }
     return num;
+}
+
+class LoadUrlStream : public LoadStream
+{
+public:
+  LoadUrlStream(std::string url) : url(url),f(0) { }
+  ~LoadUrlStream() {
+#ifdef HAS_POPEN
+    if (f) { pclose(f); }
+#endif
+  }
+  virtual LoadStream *Clone()
+  {
+    return new LoadUrlStream(url);
+  }
+
+  
+  virtual void Prepare()
+  {
+    bool succ = false;
+#ifdef HAS_POPEN
+
+#ifdef WINDOWS
+    std::string cmd = "..\\curl\\curl.exe -s -N --url " + url;
+    std::string cmd2  = "..\\curl\\curl.exe";
+    succ = file_exists(cmd2);
+    std::string cmdsize = "..\\curl\\curl.exe -sI --url " + url;
+#else
+    std::string cmd = "curl -s -N --url " + url;
+    std::string cmdsize = "curl -sI --url " + url;
+    succ = true;
+#endif
+
+#ifdef __APPLE__
+    f = popen(cmd.c_str(), "r");
+#else
+#ifdef LINUX
+    f = popen(cmd.c_str(), "r");
+#else    
+    f = popen(cmd.c_str(), "rb");
+#endif
+#endif
+
+    
+#endif
+
+    if (!f) { std::cout << "popen failed" << std::endl;
+      std::cout << errno << std::endl;
+      std::cout << url << std::endl;
+    }
+  }
+  virtual bool get_ch(unsigned char &ch)
+  {
+#ifdef HAS_POPEN
+    if (f) {
+      return fread(&ch,1,1,f)==1;
+    } else return false;
+#else
+    return false;
+#endif
+  }
+  virtual bool get_line(std::vector<unsigned char> &line)
+  {
+#ifdef HAS_POPEN
+    if (f) {
+      char *buf_line = NULL;
+      size_t size = 0;
+      ssize_t sz = getline(&buf_line,&size, f);
+      if (!buf_line) return false;
+      if (sz==-1) return false;
+      line.clear();
+      line=std::vector<unsigned char>(buf_line,buf_line+sz);
+      free(buf_line);
+      return sz>0;
+    } else return false;
+#else
+    return false;
+#endif
+  }
+  virtual bool get_file(std::vector<unsigned char> &file)
+  {
+#ifdef HAS_POPEN
+    if (f) {
+      file.clear();
+      unsigned char c2;
+      while(fread(&c2,1,1,f)==1) {
+	file.push_back(c2);
+      }
+      return true;
+    } else return false;
+#else
+    return false;
+#endif
+  }
+private:
+  std::string url;
+  FILE *f;
+};
+
+class LoadStream2 : public LoadStream
+{
+public:
+  LoadStream2(std::vector<unsigned char> vec) : vec(vec) { }
+  virtual LoadStream *Clone()
+  {
+    return new LoadStream2(vec);
+  }
+  virtual void Prepare() {
+    pos = vec.begin();
+  }
+  virtual bool get_ch(unsigned char &ch)
+  {
+    if (pos!=vec.end()) {
+      ch = *pos;
+      pos++;
+      return true;
+    } else { return false; }
+  }
+  virtual bool get_line(std::vector<unsigned char> &line)
+  {
+    if (pos==vec.end()) return false;
+    line.clear();
+    char ch = 0;
+    while(ch!='\n' && pos!=vec.end()) { ch=*pos; pos++; line.push_back(ch); }
+    std::cout << "LINE: " << std::string(line.begin(),line.end()) << std::endl;
+    return true;
+  }
+  virtual bool get_file(std::vector<unsigned char> &file)
+  {
+    file = vec;
+    return true;
+  }
+private:
+  std::vector<unsigned char>::iterator pos;
+  std::vector<unsigned char> vec;
+};
+
+LoadStream *load_from_url_stream(std::string url)
+{
+  LoadStream *stream = new LoadUrlStream(url);
+    stream->Prepare();  
+  return stream;
+}
+LoadStream *load_from_vector(std::vector<unsigned char> vec)
+{
+  LoadStream *stream = new LoadStream2(vec);
+  stream->Prepare();
+  return stream;
 }
 
 std::vector<unsigned char> load_from_url(std::string url)
@@ -1140,6 +1285,7 @@ std::vector<unsigned char> load_from_url(std::string url)
     std::vector<unsigned char> vec2;
     unsigned char c2;
     while(fread(&c2,1,1,f2)==1) {
+      
       vec2.push_back(c2);
     }
     std::string s(vec2.begin(),vec2.end());
@@ -1157,7 +1303,7 @@ std::vector<unsigned char> load_from_url(std::string url)
 	//std::cout << "Got num: " << num << std::endl;
       }
     }
-    //    std::cout << "Content-Length: " << num << std::endl;
+    std::cout << "Content-Length: " << num << std::endl;
 
 
 #ifdef __APPLE__
@@ -1169,9 +1315,18 @@ std::vector<unsigned char> load_from_url(std::string url)
     FILE *f = popen(cmd.c_str(), "rb");
 #endif
 #endif
+    if (!f) { std::cout << "popen failed#2" << std::endl;
+      std::cout << errno << std::endl;
+      std::cout << url << std::endl;
+      return std::vector<unsigned char>();
+    }
+
+
     //std::cout<< "FILE: " << std::hex<<(long)f <<std::endl; 
     unsigned char c;
     int i = 0;
+    if (num>0)
+      buffer.reserve(num);
     while(fread(&c,1,1,f)==1) {
       i++;
       g_current_size++;

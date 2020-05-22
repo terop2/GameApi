@@ -7,10 +7,454 @@
 #include "GameApi_low.hh"
 
 
+
+
+
+
 #define NO_MV 1
 
 void InstallProgress(int num, std::string label, int max=15);
 void ProgressBar(int num, int val, int max, std::string label);
+
+
+int my_getline(LoadStream *stream, int index, std::string &line);
+
+class ObjFileParser
+{
+public:
+  ObjFileParser(LoadStream *file_data, int objcount, std::vector<std::string> material_names) : file_data(file_data), obj_num(objcount), material_names_external(material_names) {
+    firsttime = true;
+  }
+  void Prepare() {
+    if (firsttime) {
+      //std::cout << "Loading: " << filename << " " << obj_num << std::endl;
+      //check_invalidate();
+      Load2();
+      firsttime = false;
+    }
+  }
+
+  void Load2() {
+    //std::ifstream file(filename.c_str());
+    //std::string s(file_data.begin(), file_data.end());
+
+    //int total_line_count=0;
+    //int s4 = file_data.size();
+    //for(int i=0;i<s4;i++) { if (file_data[i]=='\n') total_line_count++; }
+
+    //std::stringstream file(s);
+    std::string line;
+    int obj_count = 0;
+    int vertex_count = 0;
+    int vertex_count2 = 0;
+    int face_count=0;
+    int normal_count =0;
+    int normal_count2 = 0;
+    int color_count = 0;
+    int color_count2 = 0;
+    int tex_count = 0;
+    int tex_count2 = 0;
+
+    int obj_base_v = 0;
+    int obj_base_t = 0;
+    int obj_base_n = 0;
+    int obj_face_count = 0;
+    //int obj_base_c = 0;
+    int mtl_material = -1;
+    std::string word;
+    std::stringstream ss;
+    int curr_line = 0;
+    InstallProgress(193,"Parsing .obj file", 15);
+    int index = 0;
+    while((index = my_getline(file_data, index, line))!=-1)
+      {
+	curr_line++;
+	//if (total_line_count>0 && curr_line%(total_line_count/15)==0) {
+	//  ProgressBar(193,curr_line*15/total_line_count,15,"Parsing .obj file");
+	//}
+	ss.str(line);
+	ss.clear();
+	//ss << line;
+	ss>>word;
+	if (word == "usemtl")
+	  {
+	    std::string material_name;
+	    ss >> material_name;
+	    material_names_internal.push_back(material_name);
+	    mtl_material++;
+	  }
+	if (word == "o")
+	  {
+	    obj_vertex_start.push_back(obj_base_v);
+	    obj_vertex_end.push_back(vertex_count2);
+	    obj_normal_start.push_back(obj_base_n);
+	    obj_normal_end.push_back(normal_count2);
+	    obj_tex_start.push_back(obj_base_t);
+	    obj_tex_end.push_back(tex_count2);
+	    obj_face_counts_start.push_back(obj_face_count);
+	    obj_face_counts_end.push_back(face_counts.size());
+	    
+	    //std::cout << "o" << std::flush;
+	    obj_count++;
+	    obj_base_v = vertex_count2;
+	    obj_base_n = normal_count2;
+	    obj_base_t = tex_count2;
+
+	    obj_face_count = face_counts.size();
+	    //obj_base_c = color_count2;
+	  }
+	if (word == "v")
+	  {
+	    //std::cout << "v" << std::flush;
+	    vertex_count++;
+	    //if (vertex_count % 1000==0) 
+	    //  std::cout << "v" << std::flush;
+	    float x,y,z;
+	    ss >> x >> y >> z;
+	    float cr = 1.0, cg = 1.0, cb = 1.0;
+	    bool b1 = false;
+	    if (ss >> cr) b1=true;
+	    bool b2 = false;
+	    if (ss >> cg) b2=true;
+	    bool b3 = false;
+	    if (ss >> cb) b3=true;
+	    //std::cout << "Vertex:" << vertex_data.size() << " " << x << " " << y << " " << z << std::endl;
+	    Point p(x,y,z);
+	    vertex_data.push_back(p);
+	    if (b1&&b2&&b3) {
+	    ::Color vc(cr,cg,cb,1.0f);
+	    color_data.push_back(vc.clamp().Pixel());
+	    }
+	  } else if (word =="v") { vertex_count2++; }
+	if (word == "vt")
+	  {	
+	    //std::cout << "vt" << std::flush;
+
+	    tex_count++;
+	    //if (tex_count %1000 == 0)
+	    //  std::cout << "t" << std::flush;
+	    //std::cout << "Texture:" << texcoord_data.size() << std::endl;
+	    float tx,ty,tz;
+	    ss >> tx >> ty >> tz;
+	    Point2d p = { tx, ty };
+	    texcoord_data.push_back(p);
+	    texcoord3_data.push_back(0.0); // TODO, oli 0.0
+	  } else if (word=="vt") { tex_count2++; }
+	if (word == "vn")
+	  {
+	    //std::cout << "vn" << std::flush;
+	    normal_count++;
+	    //if (normal_count %1000 == 0)
+	    //  std::cout << "n" << std::flush;
+
+	    //std::cout << "Normal:" << normal_data.size() << std::endl;
+
+	    float nx, ny, nz;
+	    ss >> nx >> ny >> nz;
+	    Vector v(nx,ny,nz);
+	    normal_data.push_back(v);
+	  } else if (word=="vn") { normal_count2++; }
+	if (word == "vc")
+	  {
+	    //std::cout << "vc" << std::flush;
+	    color_count++;
+	    //if (color_count %1000 == 0)
+	    //  std::cout << "c" << std::flush;
+
+	    //std::cout << "Normal:" << normal_data.size() << std::endl;
+
+	    int nr, ng, nb, na;
+	    ss >> nr >> ng >> nb >> na;
+	    ::Color vc(nr,ng,nb,na);
+	    color_data.push_back(vc.clamp().Pixel());
+	  } else if (word=="vc") { color_count2++; }
+	if (word == "f")
+	  {
+	    //std::cout << "f" << std::flush;
+	    face_count++;
+	    //if (face_count % 1000 == 0)
+	    //  std::cout << "f" << std::flush;
+
+	    int v_index, t_index, n_index;
+	    int count = 0;
+	    char c;
+	    bool t_bool = texcoord_data.size()!=0;
+	    bool n_bool = normal_data.size()!=0;
+	    
+	    //std::cout << "Face:" << face_counts.size() << std::endl;
+	    if (t_bool && n_bool) {
+	      while(ss>>v_index>> c >>t_index>> c >>n_index)
+		{
+		  //std::cout << "1" << std::flush;
+	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
+	    if (t_index<0) t_index = texcoord_data.size()+t_index+1;
+	    if (n_index<0) n_index = normal_data.size()+n_index+1;
+	    //v_index -= obj_base_v;
+	    //t_index -= obj_base_t;
+	    //n_index -= obj_base_n;
+	    vertex_index.push_back(v_index -1);
+	    texture_index.push_back(t_index-1);
+	    if (int(texcoord3_data.size())>t_index-1)
+	      texcoord3_data[t_index-1]=mtl_material+0.3;
+	    normal_index.push_back(n_index-1);
+		  //std::cout << "Index: " << v_index << " " << t_index << " " << n_index << std::endl;
+		  count++;
+		}
+	    }
+	    if (t_bool && !n_bool)
+	      {
+		while(ss>>v_index>> c >>t_index)
+		  {
+		    //std::cout << "2" << std::flush;
+	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
+	    if (t_index<0) t_index = texcoord_data.size()+t_index+1;
+	    //if (n_index<0) n_index = -n_index;
+	    //v_index -= obj_base_v;
+	    //t_index -= obj_base_t;
+	    vertex_index.push_back(v_index-1);
+	    texture_index.push_back(t_index-1);
+	    if (int(texcoord3_data.size())>t_index-1)
+	      texcoord3_data[t_index-1]=mtl_material+0.3;
+	    normal_index.push_back(0);
+		    //std::cout << "Index: " << v_index << " " << t_index << " " << n_index << std::endl;
+		    count++;
+		  }
+	      }
+	    if (!t_bool && n_bool)
+	      {
+
+		while(ss>>v_index>> c>> c >>n_index)
+		  {
+		    //std::cout << "3" << std::flush;
+	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
+	    //if (t_index<0) t_index = -t_index;
+	    if (n_index<0) n_index = normal_data.size()+n_index+1;
+	    //v_index -= obj_base_v;
+	    //n_index -= obj_base_n;
+
+	    vertex_index.push_back(v_index-1);
+	    texture_index.push_back(0);
+	    if (int(texcoord3_data.size())>0)
+	      texcoord3_data[0]=mtl_material+0.3;
+	    normal_index.push_back(n_index-1);
+		    //std::cout << "Index: " << v_index << " " << t_index << " " << n_index << std::endl;
+		    count++;
+		  }
+	      }
+	    if (!t_bool && !n_bool) {
+	      while(ss>>v_index)
+		{
+		  //std::cout << "4" << std::flush;
+	    if (v_index<0) v_index = vertex_data.size()+v_index+1;
+
+	    //v_index -= obj_base_v;
+
+	    //if (t_index<0) t_index = -t_index;
+	    //if (n_index<0) n_index = -n_index;
+
+	    vertex_index.push_back(v_index-1);
+		  texture_index.push_back(0);
+		  if (int(texcoord3_data.size())>0)
+		    texcoord3_data[0]=mtl_material+0.3;
+
+		  normal_index.push_back(0);
+		  //std::cout << "Index: " << v_index << " " << t_index << " " << n_index << std::endl;
+		  count++;
+		}
+	    }
+
+	    face_counts.push_back(count);
+	  }
+      }
+    if (texcoord_data.size()==0) 
+      {
+	Point2d p;
+	p.x = 0.0;
+	p.y = 0.0;
+	texcoord_data.push_back(p);
+      }
+    if (texcoord3_data.size()==0) 
+      {
+	texcoord3_data.push_back(0.0);
+      }
+    if (normal_data.size()==0)
+      {
+	Point p(0.0,0.0,0.0);
+	normal_data.push_back(p);
+      }
+    if (vertex_data.size()==0)
+      {
+	Point p(0.0,0.0,0.0);
+	vertex_data.push_back(p);
+	vertex_data.push_back(p);
+	vertex_data.push_back(p);
+      }
+    if (color_data.size()==0)
+      {
+	color_data.push_back(0xffffffff);
+      }
+
+    obj_vertex_start.push_back(obj_base_v);
+    obj_vertex_end.push_back(vertex_count2);
+    obj_normal_start.push_back(obj_base_n);
+    obj_normal_end.push_back(normal_count2);
+    obj_tex_start.push_back(obj_base_t);
+    obj_tex_end.push_back(tex_count2);
+    obj_face_counts_start.push_back(obj_face_count);
+    obj_face_counts_end.push_back(face_counts.size());
+
+    // remove file from memory
+    //file_data.clear();
+  }
+
+public:
+  LoadStream *file_data;
+  std::vector<Point> vertex_data;
+  std::vector<Point2d> texcoord_data;
+  std::vector<float> texcoord3_data;
+  std::vector<Vector> normal_data;
+  std::vector<unsigned int> color_data;
+  std::vector<int> vertex_index;
+  std::vector<int> texture_index;
+  std::vector<int> normal_index;
+  std::vector<int> face_counts;
+  int obj_num;
+  mutable std::vector<int> counts;
+  mutable bool firsttime;
+  std::vector<std::string> material_names_external;
+  std::vector<std::string> material_names_internal;  
+
+  std::vector<int> obj_vertex_start;
+  std::vector<int> obj_vertex_end;
+  std::vector<int> obj_normal_start;
+  std::vector<int> obj_normal_end;
+  std::vector<int> obj_tex_start;
+  std::vector<int> obj_tex_end;
+  std::vector<int> obj_face_counts_start;
+  std::vector<int> obj_face_counts_end;
+};
+
+class ObjFileFaceCollection : public FaceCollection
+{
+public:
+  ObjFileFaceCollection(ObjFileParser &parser, int obj_num) : parser(parser), obj_num(obj_num) { }
+  void Prepare() { parser.Prepare(); }
+  
+  int NumFaces() const {
+    int s = std::min(parser.obj_face_counts_end.size(),parser.obj_face_counts_start.size());
+    if (obj_num>=s) return 0;
+    return parser.obj_face_counts_end[obj_num]-parser.obj_face_counts_start[obj_num];
+    //return parser.face_counts.size()<=0 ? 1 : parser.face_counts.size();
+  }
+  int NumPoints(int face) const {
+    int s = std::min(parser.obj_face_counts_end.size(),parser.obj_face_counts_start.size());
+    if (obj_num>=s) return 1;
+    if (parser.face_counts.size()<=0) return 3;
+    return parser.face_counts[face + parser.obj_face_counts_start[obj_num]];
+    //return parser.face_counts.size()<=0 ? 3 : parser.face_counts[face];
+  }
+  Point FacePoint(int face, int point) const
+  {
+    int c = Count(face,point);
+    if (c>=0 && c<(int)parser.vertex_index.size())
+      {
+	int index = parser.vertex_index[c];
+	if (index>=0 && index<(int)parser.vertex_data.size())
+	  return parser.vertex_data[index];
+      }
+    Point p(0.0,0.0,0.0);
+    return p;
+  }
+  Vector PointNormal(int face, int point) const
+  {
+    int c = Count(face,point);
+    if (c>=0 && c<(int)parser.normal_index.size())
+      {
+	int index = parser.normal_index[c];
+	if (index>=0 && index<(int)parser.normal_data.size())
+	  {
+	    return parser.normal_data[index];
+	  }
+      }
+    Vector v(0.0,0.0,0.0);
+    return v;
+  }
+  float Attrib(int face, int point, int id) const {
+    return 0.0; 
+  }
+  int AttribI(int face, int point, int id) const {
+    return 0; }
+  unsigned int Color(int face, int point) const { 
+    int c = Count(face,point);
+    if (c>=0 && c<(int)parser.vertex_index.size())
+      {
+	int index = parser.vertex_index[c];
+	if (index>=0 && index<(int)parser.color_data.size())
+	  return parser.color_data[index];
+      }
+    unsigned int p = 0xffffffff;
+    //Point p(0.0,0.0,0.0);
+    return p;
+  }
+  float TexCoord3(int face, int point) const
+  {
+    int c = Count(face,point);
+    if (c>=0 && c<(int)parser.texture_index.size())
+      {
+	int index = parser.texture_index[c];
+	if (index>=0 && index<(int)parser.texcoord3_data.size())
+	  {
+	    float i = parser.texcoord3_data[index];
+	    int ii = int(i);
+	    std::string mat_name = "";
+	    int s2 = parser.material_names_internal.size();
+	    if (ii>=0 && ii<s2) mat_name = parser.material_names_internal[ii];
+	    int s3 = parser.material_names_external.size();
+	    for(int i3=0;i3<s3;i3++)
+	      {
+		//std::cout << "Compare: " << material_names_external[i3] << "==" << mat_name << std::endl;
+		if (parser.material_names_external[i3]==mat_name) return float(i3)+0.5;
+	      }
+	    return i;
+	  }
+      }
+    return 0.0;
+  }
+  Point2d TexCoord(int face, int point) const
+  {
+    int c = Count(face,point);
+    if (c>=0 && c<(int)parser.texture_index.size())
+      {
+	int index = parser.texture_index[c];
+	if (index>=0 && index<(int)parser.texcoord_data.size())
+	  {
+	    return parser.texcoord_data[index];
+	  }
+      }
+    Point2d p = { 0.0, 0.0 };
+    return p;
+  }
+
+  int Count(int face, int point) const {
+    int s = parser.face_counts.size();
+    if (counts.size()>0) { return counts[face+parser.obj_face_counts_start[obj_num]]+point; }
+    //if (s>0) { return face_counts[0]*face+point; }
+    int c = 0;
+    counts.push_back(c);
+    for(int i=0;i<s;i++)
+      {
+	c+=parser.face_counts[i];
+	counts.push_back(c);
+      }
+    return counts[face+parser.obj_face_counts_start[obj_num]]+point;
+  }
+
+private:
+  ObjFileParser &parser;
+  int obj_num;
+  mutable std::vector<int> counts;
+
+};
 
 
 EXPORT GameApi::PolygonApi::PolygonApi(GameApi::Env &e) : e(e)
@@ -492,23 +936,31 @@ EXPORT GameApi::P GameApi::PolygonApi::p_empty()
 {
   return add_polygon(e,new EmptyBoxableFaceCollection, 1);
 }
+LoadStream *load_from_vector(std::vector<unsigned char> vec);
+
 EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(std::string filename,  int count)
 {
   std::ifstream data(filename.c_str());
   std::vector<unsigned char> vec2;
   char c;
   while(data.get(c)) vec2.push_back(c);
-  return load_model_all_no_cache(vec2,count);
+  LoadStream *stream = load_from_vector(vec2);
+  return load_model_all_no_cache(stream,count);
 }
-EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(std::vector<unsigned char> file_data, int count)
+EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(LoadStream *file_data, int count)
 {
 
 
   int s=count;
   std::vector<P> vec;
+  LoadStream *file = file_data->Clone();
+  file->Prepare();
+  ObjFileParser *parser = new ObjFileParser(file, -1, std::vector<std::string>());
   for(int i=0;i<s;i++)
     {
-      GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(file_data, i, std::vector<std::string>()), 1);
+
+      GameApi::P model = add_polygon2(e, new ObjFileFaceCollection(*parser, i),1);
+      //GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(file, i, std::vector<std::string>()), 1);
       vec.push_back(model);
     }
   GameApi::P obj = or_array2(vec);
@@ -523,15 +975,22 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(std::string f
   std::vector<unsigned char> vec2;
   char c;
   while(data.get(c)) vec2.push_back(c);
-  return load_model_all_no_cache_mtl(vec2,count,material_names);
+  LoadStream *stream = load_from_vector(vec2);
+  return load_model_all_no_cache_mtl(stream,count,material_names);
 }
-EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(std::vector<unsigned char> file_data, int count, std::vector<std::string> material_names)
+EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(LoadStream *file_data, int count, std::vector<std::string> material_names)
 {
   int s=count;
   std::vector<P> vec;
+
+  LoadStream *stream = file_data->Clone();
+  stream->Prepare();
+  ObjFileParser *parser = new ObjFileParser(stream, -1, material_names);
   for(int i=0;i<s;i++)
     {
-      GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(file_data, i,material_names), 1);
+      GameApi::P model = add_polygon2(e, new ObjFileFaceCollection(*parser, i),1);
+
+      //    GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(stream, i,material_names), 1);
       vec.push_back(model);
     }
   GameApi::P obj = or_array2(vec);
@@ -540,6 +999,7 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(std::vector<u
 
 }
 
+LoadStream *load_from_vector(std::vector<unsigned char> vec);
 
 EXPORT GameApi::P GameApi::PolygonApi::load_model_all(std::string filename, int count)
 {
@@ -548,6 +1008,8 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all(std::string filename, int 
   char c;
   while(data.get(c)) vec2.push_back(c);
 
+  LoadStream *stream = load_from_vector(vec2);
+  ObjFileParser *parser = new ObjFileParser(stream, -1, std::vector<std::string>());
 
   int s=count;
   std::vector<P> vec;
@@ -555,7 +1017,8 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all(std::string filename, int 
     {
       int c = get_current_block();
       set_current_block(-1);
-      GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(vec2, i, std::vector<std::string>()), 1);
+        GameApi::P model = add_polygon2(e, new ObjFileFaceCollection(*parser, i),1);
+	//GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(stream, i, std::vector<std::string>()), 1);
       GameApi::P cache = file_cache(model, filename,i);
       set_current_block(c);
       vec.push_back(cache);
@@ -673,7 +1136,7 @@ private:
   mutable FaceCollection *coll_cache=0;
 };
 
-
+LoadStream *load_from_url_stream(std::string url);
 class NetworkedFaceCollection : public FaceCollection
 {
 public:
@@ -685,6 +1148,9 @@ public:
   void Prepare()
   {
     if (current == empty) {
+#ifdef HAS_POPEN
+      LoadStream *stream = load_from_url_stream(url);
+#else
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
@@ -703,7 +1169,9 @@ public:
     //int s = ptr->size();
     //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
     //ss.close();
-    GameApi::P p = ev.polygon_api.load_model_all_no_cache(*ptr, count);
+    LoadStream *stream = load_from_vector(*ptr);
+#endif
+    GameApi::P p = ev.polygon_api.load_model_all_no_cache(stream, count);
     FaceCollection *coll = find_facecoll(e, p);
     filled = coll;
     current = filled;
@@ -749,6 +1217,12 @@ public:
   void Prepare()
   {
     if (current == empty) {
+
+#ifdef HAS_POPEN
+      std::cout << "load_from_url" << url << std::endl;
+      LoadStream *stream = load_from_url_stream(url);
+#else
+      
       std::cout << "A" << std::endl;
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
@@ -769,7 +1243,9 @@ public:
     //int s = ptr->size();
     //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
     //ss.close();
-    GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(*ptr, count,material_names);
+    LoadStream *stream = load_from_vector(*ptr);
+#endif
+    GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(stream, count,material_names);
     FaceCollection *coll = find_facecoll(e, p);
     filled = coll;
     current = filled;
@@ -1003,6 +1479,15 @@ public:
   {
     //std::cout << "MTL:Prepare()" << std::endl;
     if (current == empty) {
+#ifdef HAS_POPEN
+      LoadStream *stream = load_from_url_stream(url);
+
+#ifndef EMSCRIPTEN
+    e.async_load_url(mtl_url, homepage);
+      PrepareMTL();
+#endif
+
+#else
 #ifndef EMSCRIPTEN
       //std::cout << "AA" << std::endl;
     e.async_load_url(url, homepage);
@@ -1042,8 +1527,10 @@ public:
     int s = ptr->size();
     for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
     ss.close();
-
-    GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(filename, count,material_names);
+    LoadStream *stream = load_from_vector(*ptr);
+#endif
+    
+    GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(stream, count,material_names);
     FaceCollection *coll = find_facecoll(e, p);
     filled = coll;
     current = filled;
@@ -1213,6 +1700,8 @@ EXPORT GameApi::P GameApi::PolygonApi::p_ds_url(EveryApi &ev, std::string url)
   return p2;
 }
 
+LoadStream *load_from_vector(std::vector<unsigned char> vec);
+
 EXPORT GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
 {
   std::ifstream data(filename.c_str());
@@ -1220,10 +1709,16 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
   char c;
   while(data.get(c)) vec2.push_back(c);
 
+  LoadStream *stream = load_from_vector(vec2);
+  
   int c2 = get_current_block();
   set_current_block(-1);
 
-  GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(vec2, num, std::vector<std::string>()), 1);
+  ObjFileParser *parser = new ObjFileParser(stream, -1, std::vector<std::string>());
+  
+  GameApi::P model = add_polygon2(e, new ObjFileFaceCollection(*parser, num),1);
+  
+      //GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(stream, num, std::vector<std::string>()), 1);
   GameApi::P cache = file_cache(model, filename,num);
   GameApi::P resize = resize_to_correct_size(cache);
   set_current_block(c2);
@@ -9790,8 +10285,13 @@ public:
       std::vector<unsigned char> vec2;
       char c;
       while(data.get(c)) vec2.push_back(c);
-      
-      res = new LoadObjModelFaceCollection(vec2,0, std::vector<std::string>());
+
+      LoadStream *stream = load_from_vector(vec2);
+
+      ObjFileParser *parser = new ObjFileParser(stream, -1, std::vector<std::string>());
+
+      res = new ObjFileFaceCollection(*parser,0);
+      //res = new LoadObjModelFaceCollection(stream,0, std::vector<std::string>());
       res->Prepare();
     }
   }
@@ -15334,3 +15834,128 @@ GameApi::ML GameApi::PolygonApi::block_draw(std::vector<ML> vec, float pos_x, fl
   }
   return add_main_loop(e, new BlockDraw(items, pos_x, pos_z, sx,sz,delta_x,delta_z, view));
 }
+
+
+#if 0
+
+class RectanglePoly : public FaceCollection
+{
+public:
+  RectanglePoly(RectangleArray &arr) : arr(arr) {}
+  virtual void Prepare()=0;
+  virtual int NumFaces() const = 0;
+  virtual int NumPoints(int face) const=0;
+  virtual Point FacePoint(int face, int point) const=0;
+  virtual Vector PointNormal(int face, int point) const=0;
+  virtual float Attrib(int face, int point, int id) const=0;
+  virtual int AttribI(int face, int point, int id) const=0;
+  virtual unsigned int Color(int face, int point) const=0;
+  virtual Point2d TexCoord(int face, int point) const=0;
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
+
+private:
+  RectangleArray &arr;
+};
+
+struct RectCorner
+{
+  Point p;
+  bool left_or_right;
+  bool top_or_bottom;
+  bool invert = false;
+};
+
+bool Compare_x(const RectCorner &x1, const RectCorner &x2)
+{
+  return x1.p.x<x2.p.x;
+}
+bool Compare_y(const RectCorner &y1, const RectCorner &y2)
+{
+  return y1.p.y<y2.p.y;
+}
+
+class RectangleBooleanOps : public RectangleArray
+{
+public:
+  RectangleBooleanOps(RectangleArray &arr) : arr(arr) { }
+  virtual void Prepare()
+  {
+    arr.Prepare();
+    if (x_corners.size()==0 && y_corners.size()==0) {
+
+    int s = arr.NumRects();
+    for(int i=0;i<s;i++) {
+      Rect r = arr.GetRect(i);
+      RectCorner x_c_1;
+      x_c_1.p = Point(r.x,r.y); // tl
+      x_c_1.left_or_right = false;
+      x_c_1.top_or_bottom = false;
+      RectCorner x_c_2;
+      x_c_2.p = Point(r.x+r.sx,r.y); // tr
+      x_c_2.left_or_right = true;
+      x_c_2.top_or_bottom = false;
+      RectCorner x_c_3;
+      x_c_3.p = Point(r.x,r.y+r.sy); // bl
+      x_c_3.left_or_right = false;
+      x_c_3.top_or_bottom = true;
+      RectCorner x_c_4;
+      x_c_4.p = Point(r.x+r.sx,r.y+r.sy); // br
+      x_c_4.left_or_right = true;
+      x_c_4.top_or_bottom = true;
+
+      bool invert = arr.Type(i);
+      if (invert) {
+	x_c_1.invert = true;
+	x_c_2.invert = true;
+	x_c_3.invert = true;
+	x_c_4.invert = true;
+      }
+      
+      x_corners.push_back(x_c_1);
+      x_corners.push_back(x_c_2);
+      x_corners.push_back(x_c_3);
+      x_corners.push_back(x_c_4);
+
+      y_corners.push_back(x_c_1);
+      y_corners.push_back(x_c_2);
+      y_corners.push_back(x_c_3);
+      y_corners.push_back(x_c_4);
+    }
+    std::sort(x_corners.begin(),x_corners.end(),&Compare_x);
+    std::sort(y_corners.begin(),y_corners.end(),&Compare_y);
+    }
+  }
+  virtual int NumRects() const { return (x_corners.size()-1)*(y_corners.size()-1); }
+  virtual Rect GetRect(int i) const
+  {
+    int sx = x_corners.size();
+    
+    int xx = i/sx;
+    int yy = i-xx*sx;
+
+    float start_x = x_corners[xx].p.x;
+    float start_y = y_corners[yy].p.y;
+    float end_x = x_corners[xx+1].p.x;
+    float end_y = y_corners[yy+1].p.y;
+    Rect r;
+    r.x = start_x;
+    r.y = start_y;
+    r.sx = (end_x-start_x);
+    r.sy = (end_y-start_y);
+
+    
+    
+    return r;
+  }
+  virtual int Type(int i) const
+  {
+    
+  }
+
+private:
+  RectangleArray &arr;
+  std::vector<RectCorner> x_corners;
+  std::vector<RectCorner> y_corners;
+
+};
+#endif
