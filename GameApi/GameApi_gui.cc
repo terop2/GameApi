@@ -4968,9 +4968,13 @@ ASyncData async_data[] = {
   { "font_api", "newfont", 0 },
   { "font_api", "load_font", 0 },
   { "mainloop_api", "load_song", 2 },
-  //{ "polygon_api", "p_url", 1 },
+#ifndef HAS_POPEN
+  { "polygon_api", "p_url", 1 },
+#endif
   { "polygon_api", "p_url_mtl", 1 },
-  //{ "polygon_api", "p_mtl", 1 },
+#ifndef HAS_POPEN
+  { "polygon_api", "p_mtl", 1 },
+#endif
   { "polygon_api", "p_mtl", 2 },
   { "mainloop_api", "fps_display", 2 },
   { "mainloop_api", "score_display", 2 },
@@ -8158,6 +8162,18 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "std::string", "std::string", "std::string", "int" },
 			 { "ev", "http://tpgames.org/sponza/sponza.obj", "http://tpgames.org/sponza/sponza.mtl", "http://tpgames.org/sponza", "1" },
 			 "P", "polygon_api", "p_mtl"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl_d,
+			 "p_mtl_d",
+			 { "p" },
+			 { "P" },
+			 { "" },
+			 "[BM]", "polygon_api", "p_mtl_d"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl_bump,
+			 "p_mtl_bump",
+			 { "p" },
+			 { "P" },
+			 { "" },
+			 "[BM]", "polygon_api", "p_mtl_bump"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_url_mtl,
 			 "p_url_mtl",
 			 { "ev", "url", "count", "material_names" },
