@@ -56,7 +56,9 @@
 #ifndef OUTPUT
 #define HAS_FREETYPE 1
 #endif
+#ifndef EMSCRIPTEN
 #define HAS_POPEN 1
+#endif
 #endif
 #endif
 

@@ -1044,6 +1044,7 @@ class PrepareCache : public FaceCollection
 {
 public:
   PrepareCache(GameApi::Env &e, std::string id, FaceCollection *coll) : e(e), id(id), coll(coll) {}
+  FaceCollection *get_coll2() const { return get_coll(); }
   void Prepare()
   {
     //std::cout << "PrepareCache: " << id << std::endl;
@@ -1288,6 +1289,8 @@ struct CBData {
   NetworkedFaceCollectionMTL2 *t;
   int i;
   std::string url;
+  std::string d_url;
+  std::string bump_url;
 };
 
 
@@ -1328,16 +1331,25 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
     int b_s = mat.size();
     std::vector<TXID> vec;
     std::vector<std::string> vec2;
+    std::vector<std::string> vec3; // d
+    std::vector<std::string> vec4; // bump
     for(int b_i=0;b_i<b_s;b_i++)
       {
 	std::string s = mat[b_i].map_Ka;
 	if (s.size()==0) s=mat[b_i].map_Kd;
+
+	std::string s2 = mat[b_i].map_d;
+	std::string s3 = mat[b_i].map_bump;
 	//static int ii = 0;
 	//std::stringstream ss;
 	//ss << ii; ii++;
 	//std::cout << "mtl_parse: " << url_prefix << "/" << s << "?id=" << ss.str()<< std::endl;
 	std::string url = convert_slashes(url_prefix+"/"+s);
+	std::string url2 = convert_slashes(url_prefix+"/"+s2);
+	std::string url3 = convert_slashes(url_prefix+"/"+s3);
 	vec2.push_back(url);
+	vec3.push_back(url2); // d
+	vec4.push_back(url3); // bump
 	vec.push_back(ev.bitmap_api.dyn_fetch_bitmap(ev,url,300000,b_i-delta));
       }
     env.async_load_all_urls(vec2, gameapi_homepageurl);
@@ -1345,6 +1357,10 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
 }
 
 int g_use_texid_material=0;
+
+void MTL_d_CB(void *data);
+void MTL_bump_CB(void *data);
+
 
 class NetworkedFaceCollectionMTL2 : public FaceCollection
 {
@@ -1356,7 +1372,7 @@ public:
   	BufferRef::FreeBuffer(buffer[i]);
       }
    }
-  NetworkedFaceCollectionMTL2(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string obj_url, std::string homepage, int count, std::string mtl_url, std::string url_prefix, bool cached) : e(e), ev(ev), url(obj_url), homepage(homepage), mtl_url(mtl_url), url_prefix(url_prefix), count(count), empty(empty)
+  NetworkedFaceCollectionMTL2(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string obj_url, std::string homepage, int count, std::string mtl_url, std::string url_prefix, bool cached, bool load_d, bool load_bump) : e(e), ev(ev), url(obj_url), homepage(homepage), mtl_url(mtl_url), url_prefix(url_prefix), count(count), empty(empty),load_d(load_d), load_bump(load_bump)
   {
     current = empty;
     filled = 0;
@@ -1407,6 +1423,8 @@ public:
     BufferRef ref; ref.buffer=0;
     int b_s = mat.size();
     std::vector<std::string> urls;
+    std::vector<std::string> urls2;
+    std::vector<std::string> urls3;
     for(int b_i=0;b_i<b_s;b_i++)
       {
 	material_names.push_back(mat[b_i].material_name);
@@ -1415,8 +1433,19 @@ public:
 	dt->i = b_i;
 	std::string s = mat[b_i].map_Ka;
 	if (s.size()==0) s=mat[b_i].map_Kd;
+
+	std::string s2 = mat[b_i].map_d;
+	std::string s3 = mat[b_i].map_bump;
+	
+	
 	dt->url = convert_slashes(url_prefix+"/"+s);
+	std::string url2 = convert_slashes(url_prefix+"/"+s2);
+	dt->d_url = url2;
+	std::string url3 = convert_slashes(url_prefix+"/"+s3);
+	dt->bump_url = url3;
 	buffer.push_back(ref);
+	d_buffer.push_back(ref);
+	bump_buffer.push_back(ref);
 	//std::cout << "set_callback: " << dt->url << std::endl;
     if (!g_use_texid_material)
       {
@@ -1427,6 +1456,22 @@ public:
 	urls.push_back(dt->url);
 #endif
 	flags.push_back(1);
+
+	if (load_d && s2!="") {
+	  e.async_load_callback(url2, &MTL_d_CB, (void*)dt);
+#ifdef EMSCRIPTEN
+	e.async_load_url(url2, homepage);
+#endif
+	d_flags.push_back(1);
+	}
+	
+	if (load_bump && s3!="") {
+	  e.async_load_callback(url3, &MTL_bump_CB, (void*)dt);
+#ifdef EMSCRIPTEN
+	e.async_load_url(url3, homepage);
+#endif
+	bump_flags.push_back(1);
+	}
       }
 #ifndef EMSCRIPTEN
 	//Prepare2(dt->url,b_i);
@@ -1475,6 +1520,59 @@ public:
 #endif
 
   }
+  void PrepareD(std::string url, int i)
+  {
+    //std::cout << "MTL:Prepare2: " << url << " " << i << std::endl;
+      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+      bool b = false;
+      BufferRef img = LoadImageFromString(*vec,b);
+      
+      // flip texture in y-direction
+      int sx = img.width;
+      int sy = img.height;
+      for(int y=0;y<sy/2;y++)
+	for(int x=0;x<sx;x++)
+	  {
+	    std::swap(img.buffer[x+y*img.ydelta],img.buffer[x+(sy-y-1)*img.ydelta]);
+	  }
+
+      BufferRef::FreeBuffer(buffer[i]);
+      d_buffer[i] = img;
+      //std::cout << "p_mtl prepare2 " << url << " " << i << std::endl;
+
+#ifdef EMSCRIPTEN
+      if (d_flags[i]==1) { async_pending_count--; d_flags[i]=0; }
+#endif
+
+  }
+
+  void PrepareBump(std::string url, int i)
+  {
+    //std::cout << "MTL:Prepare2: " << url << " " << i << std::endl;
+      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+      bool b = false;
+      BufferRef img = LoadImageFromString(*vec,b);
+      
+      // flip texture in y-direction
+      int sx = img.width;
+      int sy = img.height;
+      for(int y=0;y<sy/2;y++)
+	for(int x=0;x<sx;x++)
+	  {
+	    std::swap(img.buffer[x+y*img.ydelta],img.buffer[x+(sy-y-1)*img.ydelta]);
+	  }
+
+      BufferRef::FreeBuffer(bump_buffer[i]);
+      bump_buffer[i] = img;
+      //std::cout << "p_mtl prepare2 " << url << " " << i << std::endl;
+
+#ifdef EMSCRIPTEN
+      if (bump_flags[i]==1) { async_pending_count--; bump_flags[i]=0; }
+#endif
+
+  }
+
+  
   void Prepare()
   {
     //std::cout << "MTL:Prepare()" << std::endl;
@@ -1564,7 +1662,7 @@ public:
   }
   virtual int FaceTexture(int face) const { return current->FaceTexture(face); }
  
-private:
+public:
   GameApi::Env &e;
   GameApi::EveryApi &ev;
   std::string url;
@@ -1577,9 +1675,17 @@ private:
   FaceCollection *current;
   bool async_taken;
   std::vector<BufferRef> buffer;
+  std::vector<BufferRef> d_buffer;
+  std::vector<BufferRef> bump_buffer;
   std::vector<std::string> material_names;
   std::vector<int> flags;
+  std::vector<int> d_flags;
+  std::vector<int> bump_flags;
   bool done_mtl;
+
+  std::vector<std::string> d_url;
+  std::vector<std::string> bump_url;
+  bool load_d, load_bump;
 };
 
 void MTL_CB(void *data)
@@ -1587,11 +1693,94 @@ void MTL_CB(void *data)
   CBData *dt = (CBData*)data;
   dt->t->Prepare2(dt->url, dt->i);
 }
+void MTL_d_CB(void *data)
+{
+  CBData *dt = (CBData*)data;
+  dt->t->PrepareD(dt->d_url,dt->i);
+}
+void MTL_bump_CB(void *data)
+{
+  CBData *dt = (CBData*)data;
+  dt->t->PrepareBump(dt->bump_url,dt->i);
+}
+
+
 void MTL2_CB(void *data)
 {
     NetworkedFaceCollectionMTL2 *dt = (NetworkedFaceCollectionMTL2*)data;
     dt->PrepareMTL();
 }
+
+GameApi::ARR GameApi::PolygonApi::p_mtl_d(P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+#ifndef EMSCRIPTEN
+  PrepareCache *coll2 = dynamic_cast<PrepareCache*>(coll);
+#else
+  PrepareCache *coll2 = static_cast<PrepareCache*>(coll);
+#endif
+
+  FaceCollection *coll3 = coll2->get_coll2();
+  
+
+
+#ifndef EMSCRIPTEN
+  NetworkedFaceCollectionMTL2 *coll4 = dynamic_cast<NetworkedFaceCollectionMTL2*>(coll3);
+#else
+  NetworkedFaceCollectionMTL2 *coll4 = static_cast<NetworkedFaceCollectionMTL2*>(coll3);
+#endif
+  if (!coll4) std::cout << "ERROR: dynamic_cast failed in p_mtl_d()" << std::endl;
+  std::vector<BufferRef> d_buf = coll4->d_buffer;
+  int s = d_buf.size();
+  ArrayType *array = new ArrayType;
+  array->type=0;
+  for(int i=0;i<s;i++) {
+    BitmapFromBuffer *bm2 = new BitmapFromBuffer(d_buf[i]);
+    BitmapColorHandle *handle2 = new BitmapColorHandle;
+    handle2->bm = bm2;
+    BM bm = add_bitmap(e, handle2);
+    array->vec.push_back(bm.id);
+  }
+  return add_array(e,array);
+}
+
+GameApi::ARR GameApi::PolygonApi::p_mtl_bump(P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+
+
+#ifndef EMSCRIPTEN
+  PrepareCache *coll2 = dynamic_cast<PrepareCache*>(coll);
+#else
+  PrepareCache *coll2 = static_cast<PrepareCache*>(coll);
+#endif
+
+  FaceCollection *coll3 = coll2->get_coll2();
+  
+
+
+#ifndef EMSCRIPTEN
+  NetworkedFaceCollectionMTL2 *coll4 = dynamic_cast<NetworkedFaceCollectionMTL2*>(coll3);
+#else
+  NetworkedFaceCollectionMTL2 *coll4 = static_cast<NetworkedFaceCollectionMTL2*>(coll3);
+#endif
+
+  if (!coll4) std::cout << "ERROR: dynamic_cast failed in p_mtl_d()" << std::endl;
+  std::vector<BufferRef> bump_buf = coll4->bump_buffer;
+  int s = bump_buf.size();
+  ArrayType *array = new ArrayType;
+  array->type=0;
+  for(int i=0;i<s;i++) {
+    BitmapFromBuffer *bm2 = new BitmapFromBuffer(bump_buf[i]);
+    BitmapColorHandle *handle2 = new BitmapColorHandle;
+    handle2->bm = bm2;
+    BM bm = add_bitmap(e, handle2);
+    array->vec.push_back(bm.id);
+  }
+  return add_array(e,array);
+}
+
+
 
 class NetworkedFaceCollectionDS : public FaceCollection
 {
@@ -1679,7 +1868,7 @@ EXPORT GameApi::P GameApi::PolygonApi::p_mtl(EveryApi &ev, std::string obj_url, 
   std::string key = obj_url + mtl_url + prefix;
   bool cached = find_data(key)!=-1;
   FaceCollection *emp = find_facecoll(e, p);
-  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL2(e,ev, emp, obj_url, gameapi_homepageurl, count,mtl_url,prefix,cached),1); 
+  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL2(e,ev, emp, obj_url, gameapi_homepageurl, count,mtl_url,prefix,cached,true,true),1); 
   FaceCollection *coll = find_facecoll(e,p1);
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,key,coll),1);
   set_current_block(c);
@@ -12087,15 +12276,63 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_bm(P p, int start_index, in
 GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P p, float mix, int start_index, int end_index)
 {
   ARR arr = material_extractor_bm(p,start_index, end_index);
+  ARR arr2 = p_mtl_bump(p);
+  ARR arr3 = p_mtl_d(p);
   ArrayType *array2 = find_array(e,arr);
+  ArrayType *array3 = find_array(e,arr2);
+  ArrayType *array4 = find_array(e,arr3);
   ArrayType *array = new ArrayType;
   array->type = 4;
   int s = array2->vec.size();
   for(int i=0;i<s;i++) {
     int val = array2->vec[i];
+    int val2 = i>=0&&i<array3->vec.size() ? array3->vec[i] : -1;
+    int val3 = i>=0&&i<array4->vec.size() ? array4->vec[i] : -1;
     GameApi::BM bm;
     bm.id = val;
-    array->vec.push_back(ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},mix).id);
+    if ((val2==-1 || val2 == 0) && (val3==-1 || val3==0)) {
+      // only textures
+      GameApi::MT mt1 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},mix);
+      array->vec.push_back(mt1.id);
+    } else if (val3==-1 || val3==0) {
+      // textures and bump
+      GameApi::BM bm2;
+      bm2.id = val2;
+      GameApi::MT mt1 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm2},mix);
+      GameApi::MT mt2 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},1.0-mix);
+      GameApi::MT or_mt = ev.materials_api.combine_materials(ev,mt1,mt2);
+      array->vec.push_back(or_mt.id);
+    } else if (val2==-1 || val2==0) {
+      // textures and d
+      GameApi::BM bm2;
+      bm2.id = val3;
+      GameApi::MT mt1 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm2},mix);
+      GameApi::MT mt2 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},1.0-mix);
+      GameApi::MT or_mt = ev.materials_api.combine_materials(ev,mt1,mt2);
+      array->vec.push_back(or_mt.id);
+    }
+    else {
+      // textures, d and bump
+      GameApi::BM bm2;
+      bm2.id = val2;
+      GameApi::BM bm3;
+      bm3.id = val3;
+      GameApi::MT mt1 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm3},mix);
+      GameApi::MT mt2 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm2},1.0-mix);
+      GameApi::MT mt3 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},0.5);
+      GameApi::MT or_mt = ev.materials_api.combine_materials(ev,mt1,mt2);
+      GameApi::MT or_mt2 = ev.materials_api.combine_materials(ev,or_mt,mt3);
+      array->vec.push_back(or_mt2.id);
+
+      /*
+      GameApi::BM bm2;
+      bm2.id = val2;
+      GameApi::FB fb = ev.float_bitmap_api.from_red(bm2);
+      GameApi::MT mt2 = ev.materials_api.bump_phong(ev,-0.3,0.3,-1,0xffff8800,0xffffffff,10,fb,5);
+      GameApi::MT mt1 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},mix);
+      GameApi::MT or_mt = ev.materials_api.combine_materials(ev,mt1,mt2);
+      array->vec.push_back(or_mt.id);*/
+    }
   }
   return add_array(e,array);
 }

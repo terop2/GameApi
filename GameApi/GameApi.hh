@@ -2260,6 +2260,8 @@ public:
   IMPORT P load_model_all_no_cache_mtl(LoadStream * file_data, int count, std::vector<std::string> material_names);
   IMPORT P p_url(EveryApi &ev, std::string url, int count);
   IMPORT P p_mtl(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count);
+  IMPORT ARR p_mtl_d(P p);
+  IMPORT ARR p_mtl_bump(P p);
   IMPORT P p_url_mtl(EveryApi &ev, std::string url, int count, std::vector<std::string> material_names);
   IMPORT P p_ds(EveryApi &ev, std::vector<unsigned char> vec);
   IMPORT P p_ds_url(EveryApi &ev, std::string url);

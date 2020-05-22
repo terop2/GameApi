@@ -1215,7 +1215,7 @@ public:
     line.clear();
     char ch = 0;
     while(ch!='\n' && pos!=vec.end()) { ch=*pos; pos++; line.push_back(ch); }
-    std::cout << "LINE: " << std::string(line.begin(),line.end()) << std::endl;
+    //std::cout << "LINE: " << std::string(line.begin(),line.end()) << std::endl;
     return true;
   }
   virtual bool get_file(std::vector<unsigned char> &file)
