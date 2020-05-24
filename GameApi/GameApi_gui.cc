@@ -7553,7 +7553,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "b_draw",
 			 { "vec", "pos_x", "pos_z", "sx", "sz", "delta_x", "delta_z", "view" },
 			 { "[ML]", "float", "float", "int", "int", "float", "float", "int" },
-			 { "", "-3000.0", "-3000.0", "60", "60", "100.0", "100.0" },
+			 { "", "-3000.0", "-3000.0", "60", "60", "100.0", "100.0", "10" },
 			 "ML", "polygon_api", "block_draw"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::rot_x_ml,
@@ -7667,6 +7667,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ML" },
 			 { "" },
 			 "ML", "move_api", "key_printer_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::print_stats,
+			 "mesh_stats",
+			 { "p" },
+			 { "P" },
+			 { "" },
+			 "ML", "mainloop_api", "print_stats"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::fps_display,
 			 "fps_display",
 			 { "ev", "ml", "font" },

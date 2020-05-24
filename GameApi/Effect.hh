@@ -2993,6 +2993,10 @@ public:
   virtual unsigned int Color(int face, int point) const { return coll.Color(face,point); }
   virtual Point2d TexCoord(int face, int point) const { return coll.TexCoord(face,point); }
   virtual float TexCoord3(int face, int point) const { return coll.TexCoord3(face,point); }
+
+  virtual int NumObjects() const { return coll.NumObjects(); }
+  virtual std::pair<int,int> GetObject(int o) const { return coll.GetObject(o); }
+  
   virtual int NumTextures() const { return coll.NumTextures(); }
   virtual void GenTexture(int num) { coll.GenTexture(num); }
   virtual BufferRef TextureBuf(int num) const { return coll.TextureBuf(num); }
@@ -3021,6 +3025,10 @@ public:
   virtual void GenTexture(int num) { coll.GenTexture(num); }
   virtual BufferRef TextureBuf(int num) const { return coll.TextureBuf(num); }
   virtual int FaceTexture(int face) const { return coll.FaceTexture(face); }
+
+  virtual int NumObjects() const { return coll.NumObjects(); }
+  virtual std::pair<int,int> GetObject(int o) const { return coll.GetObject(o); }
+
 private:
   FaceCollection &coll;
 };
@@ -6208,6 +6216,7 @@ public:
     coll1->Prepare();
     coll2->Prepare();
     s = coll1->NumFaces();
+    s1 = coll2->NumFaces();
     s2 = coll1->NumTextures();
   }
   int get_index(int face) const
@@ -6227,6 +6236,13 @@ public:
   FaceCollection *get_elem2(int face) const {
     if (face<s2) return coll1;
     return coll2;
+  }
+  virtual int NumObjects() const { return 2; }
+  virtual std::pair<int,int> GetObjects(int o) const
+  {
+    if (o==0) return std::make_pair(0,s);
+    if (o==1) return std::make_pair(s,s+s1);
+    return std::make_pair(-1,-1);
   }
   virtual int NumFaces() const { return coll1->NumFaces()+coll2->NumFaces(); }
   virtual int NumPoints(int face) const
@@ -6301,6 +6317,7 @@ private:
   FaceCollection *coll1;
   FaceCollection *coll2;
   int s;
+  int s1;
   int s2;
 };
 
@@ -6366,6 +6383,17 @@ public:
     for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
       (*i)->Prepare();
     update_faces_cache();
+  }
+  virtual int NumObjects() const { return vec.size(); }
+  virtual std::pair<int,int> GetObject(int o) const
+  {
+    int s = vec.size();
+    if (o>=s) return std::make_pair(-1,-1);
+    int count = 0;
+    for(int i=0;i<o;i++) {
+      count+=vec[i]->NumFaces();
+    }
+    return std::make_pair(count,count+vec[o]->NumFaces());
   }
   virtual int NumFaces() const 
   { 

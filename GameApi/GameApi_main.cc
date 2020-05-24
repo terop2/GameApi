@@ -1581,6 +1581,28 @@ void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH texture_2d
   ek.screen_height = screen_size_y;
   item->execute(ek);
 }
+class PrintStats : public MainLoopItem
+{
+public:
+  PrintStats(FaceCollection *coll) : coll(coll) { }
+  void Prepare() {
+    coll->Prepare();
+    std::cout << "Model statistics:" << std::endl;
+    std::cout << "NumFaces()=" << coll->NumFaces() << std::endl;
+  }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+private:
+  FaceCollection *coll;
+};
+
+GameApi::ML GameApi::MainLoopApi::print_stats(P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_main_loop(e,new PrintStats(coll));
+}
+
 void GameApi::MainLoopApi::event_ml(ML ml, const Event &ee)
 {
   MainLoopEvent e2;

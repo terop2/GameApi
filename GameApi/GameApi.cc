@@ -10927,8 +10927,20 @@ std::vector<PrepareCB> g_prepare_callbacks;
 void FinishProgress();
 
 extern std::string gameapi_seamless_url;
+extern bool g_execute_callback;
+extern void (*g_mainloop_callback)(void *ptr);
+extern void *g_mainloop_ptr;
+
 void blocker_iter(void *arg)
 {
+
+    if (g_execute_callback)
+      {
+	g_execute_callback = false;
+	g_mainloop_callback(g_mainloop_ptr);       
+	return;
+      }
+
   Envi_2 *env = (Envi_2*)arg;
   //std::cout << "async: " << async_pending_count << std::endl;
   if (async_pending_count > 0 && !async_is_done) { env->logo_shown = true; }
@@ -11048,6 +11060,7 @@ int g_logo_shown = 0;
 
 extern int g_event_screen_x;
 extern int g_event_screen_y;
+
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
 public:
@@ -11125,6 +11138,13 @@ public:
   }
   virtual int Iter()
   {
+    if (g_execute_callback)
+      {
+	g_execute_callback = false;
+	g_mainloop_callback(g_mainloop_ptr);       
+      }
+
+    
     FinishProgress();
     Envi_2 *env = (Envi_2*)&envi;
 
@@ -11292,6 +11312,11 @@ extern int hidden_score;
 extern int g_event_screen_x;
 extern int g_event_screen_y;
 
+extern bool g_execute_callback;
+extern void (*g_mainloop_callback)(void *ptr);
+extern void *g_mainloop_ptr;
+
+
 class MainLoopBlocker_win32_and_emscripten : public Blocker
 {
 public:
@@ -11304,6 +11329,9 @@ public:
   }
   void Execute()
   {
+
+
+    
   OpenglLowApi *ogl = g_low->ogl;
     
     Envi_2 env;
@@ -15394,7 +15422,7 @@ struct FileBlock
 class LoadDS : public DiskStore
 {
 public:
-  LoadDS(std::vector<unsigned char> file) : vec(file), valid(false) { }
+  LoadDS(const std::vector<unsigned char> &file) : vec(file), valid(false) { }
   void Prepare() {
     header = (FileHeader*)&vec[0];
     blocks = (FileBlock*)&vec[sizeof(FileHeader)];
@@ -15408,7 +15436,7 @@ public:
   int BlockSizeInBytes(int block) const { return blocks[block].block_size_in_bytes; }
   unsigned char *Block(int block) const { return wholefile + blocks[block].block_offset_from_beginning_of_file; }
 private:
-  std::vector<unsigned char> vec;
+  const std::vector<unsigned char> &vec;
   FileHeader *header;
   FileBlock *blocks;
   unsigned char *wholefile;
@@ -15429,7 +15457,7 @@ GameApi::DS GameApi::MainLoopApi::load_ds_from_disk(std::string filename)
   std::vector<unsigned char> vec(str.begin(),str.end());
   return add_disk_store(e, new LoadDS(vec));
 }
-GameApi::DS GameApi::MainLoopApi::load_ds_from_mem(std::vector<unsigned char> vec)
+GameApi::DS GameApi::MainLoopApi::load_ds_from_mem(const std::vector<unsigned char> &vec)
 {
    return add_disk_store(e, new LoadDS(vec));
 }
@@ -22333,11 +22361,21 @@ std::vector<std::string> g_strings(25);
 #define KP
 #endif
 
+bool g_execute_callback = false;
+void (*g_mainloop_callback)(void *ptr);
+void *g_mainloop_ptr = 0;
+
+struct R_CB {
+  char *script2;
+};
+
+
 std::string g_new_script = "";
 GameApi::EveryApi *g_everyapi = 0;
 
-KP extern "C" void set_new_script(const char *script2)
+void run_callback(void *ptr)
 {
+  char *script2 = (char*)ptr;
 #ifdef EMSCRIPTEN
   std::string script(script2);
   if (!g_everyapi) { std::cout << "NO g_everyapi" << std::endl; return; }
@@ -22351,22 +22389,40 @@ KP extern "C" void set_new_script(const char *script2)
   GameApi::ExecuteEnv e;
   std::pair<int,std::string> blk = GameApi::execute_codegen(g_everyapi->get_env(), *g_everyapi, script, e);
   set_current_block(-2);
-  std::cout << "blk.second==" << blk.second << std::endl;
+  //std::cout << "blk.second==" << blk.second << std::endl;
   if (blk.second=="RUN") {
     GameApi::RUN r;
     r.id = blk.first;
+    //g_mainloop_ptr = cb;
+    //g_mainloop_callback = &run_callback;
+    //g_execute_callback = true;
     emscripten_cancel_main_loop();
     g_everyapi->blocker_api.run2(*g_everyapi, r);
+    //emscripten_cancel_main_loop();
+    //g_everyapi->blocker_api.run2(*g_everyapi, r);
   } else if (blk.second=="OK") {
     GameApi::BLK b;
     b.id = blk.first;
+    //g_mainloop_ptr = cb;
+    //g_mainloop_callback = &run_callback;
+    //g_execute_callback = true;
     emscripten_cancel_main_loop();
     g_everyapi->blocker_api.run(b);
+    //emscripten_cancel_main_loop();
+    //g_everyapi->blocker_api.run(b);
     std::cout << "ERROR: BLOCKERAPI::run does not set g_everyapi" << std::endl;
   } else {
     std::cout << "ERROR: internal error" << std::endl;
   }
 #endif
+}
+
+KP extern "C" void set_new_script(const char *script2)
+{
+  g_mainloop_ptr = (void*)script2;
+    g_mainloop_callback = &run_callback;
+    g_execute_callback = true;
+  
 }
 
 KP  extern "C" void activate_trigger(int num)
