@@ -546,12 +546,16 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
 	ProgressBar(444,15,15,"loading assets (cached)");
 
     }
+  //int sk = s;
+  //for(int u=0;u<sk;u+=10) { 
+  int u=0;
   
   int total_size = 0;
   std::vector<int> sizes;
+  //s=std::min(10,s-u);
   for(int d=0;d<s;d++)
     {
-      std::string url = urls[d];
+      std::string url = urls[u+d];
       int sz = load_size_from_url(url);
       sizes.push_back(sz);
       total_size+=sz;
@@ -566,7 +570,7 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
     }
 
   for(int i=0;i<s;i++) {
-    std::string url = urls[i];
+    std::string url = urls[u+i];
 
     ProcessData *processdata = new ProcessData;
     processdata->url = url;
@@ -581,7 +585,7 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
   for(int j=0;j<s;j++)
     {
       void *res;
-      std::string url = urls[j];
+      std::string url = urls[u+j];
       std::string url2 = "load_url.php?url=" + url ;
       while (!load_url_buffers_async[url2])
 	{
@@ -589,7 +593,7 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
 	  {
 	    int s = url.size();
 	    int sum=0;
-	    for(int i=0;i<s;i++) sum+=int(url[i]);
+	    for(int i=0;i<s;i++) sum+=int(url[u+i]);
 	    sum = sum % 1000;
 	    ProgressBar(444,g_current_size*15/total_size,15,"loading assets");
 	  last_size=g_current_size;
@@ -605,8 +609,10 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
       } else {
 	//std::cout << "ASyncLoadUrl::CB failed" << std::endl;
       }
-      current_size+=sizes[j];
+      current_size+=sizes[u+j];
 
+      
+      
       //{
       //int s = url.size();
       //int sum=0;
@@ -616,6 +622,7 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
       //}
       
     }
+  //  }
 
 #endif
   g_progress_already_done = false;
@@ -1074,6 +1081,7 @@ int load_size_from_url(std::string url)
     while(fread(&c2,1,1,f2)==1) {
       vec2.push_back(c2);
     }
+    pclose(f2);
     std::string s(vec2.begin(),vec2.end());
     //std::cout << "Headers:" << s << std::endl;
     std::stringstream ss(s);
@@ -1288,6 +1296,7 @@ std::vector<unsigned char> load_from_url(std::string url)
       
       vec2.push_back(c2);
     }
+    pclose(f2);
     std::string s(vec2.begin(),vec2.end());
     //std::cout << "Headers:" << s << std::endl;
     std::stringstream ss(s);

@@ -295,6 +295,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT ML print_stats(P p);
   IMPORT ML chai_mainloop(EveryApi &ev, std::string url);
   IMPORT ML bind_obj_type(std::string name, GameApi::P obj, GameApi::MN move, GameApi::MT mat, float radius);
   IMPORT ML bind_obj_type(GameApi::EveryApi &ev, std::string url);
@@ -453,7 +454,7 @@ public:
   ML playback_keypresses(ML ml, std::string input_url);
   ML setup_hmd_projection(EveryApi &ev, ML ml, bool eye, bool is_standard, float n, float f, bool translate);
   
-  DS load_ds_from_mem(std::vector<unsigned char> vec);
+  DS load_ds_from_mem(const std::vector<unsigned char> &vec);
   DS load_ds_from_disk(std::string filename);
   void save_ds(std::string output_filename, DS ds);
 
@@ -2263,7 +2264,7 @@ public:
   IMPORT ARR p_mtl_d(P p);
   IMPORT ARR p_mtl_bump(P p);
   IMPORT P p_url_mtl(EveryApi &ev, std::string url, int count, std::vector<std::string> material_names);
-  IMPORT P p_ds(EveryApi &ev, std::vector<unsigned char> vec);
+  IMPORT P p_ds(EveryApi &ev, const std::vector<unsigned char> &vec);
   IMPORT P p_ds_url(EveryApi &ev, std::string url);
   IMPORT DS p_ds_inv(P model);
   IMPORT P file_cache(P model, std::string filename, int obj_num);
@@ -2274,6 +2275,7 @@ public:
   IMPORT P mesh_resize(P p, float start_x, float end_x, float start_y, float end_Y, float start_z, float end_z);
   
   IMPORT P texture_splitter(P p, int start_index, int end_index);
+  IMPORT P texture_splitter2(P p, int num);
   IMPORT P replace_texture(P p, BM bm, int num);
   IMPORT P texture_storage(P p, int texture_sx, int texture_sy);
   IMPORT P light_transport(P p, int num, float light_dir_x, float light_dir_y, float light_dir_z);
