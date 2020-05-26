@@ -1837,7 +1837,7 @@ GameApi::ARR GameApi::PolygonApi::p_mtl_d(P p)
   NetworkedFaceCollectionMTL2 *coll4 = static_cast<NetworkedFaceCollectionMTL2*>(coll3);
 #endif
   if (!coll4) {
-    std::cout << "ERROR: dynamic_cast failed in p_mtl_d()" << std::endl;
+    //std::cout << "ERROR: dynamic_cast failed in p_mtl_d()" << std::endl;
     ArrayType *array = new ArrayType;
     array->type=0;
     return add_array(e,array);
@@ -1879,7 +1879,7 @@ GameApi::ARR GameApi::PolygonApi::p_mtl_bump(P p)
 #endif
 
   if (!coll4) {
-    std::cout << "ERROR: dynamic_cast failed in p_mtl_d()" << std::endl;
+    //std::cout << "ERROR: dynamic_cast failed in p_mtl_d()" << std::endl;
     ArrayType *array = new ArrayType;
     array->type=0;
     return add_array(e,array);
@@ -1937,6 +1937,9 @@ public:
   virtual unsigned int Color(int face, int point) const { return current->Color(face,point); }
   virtual Point2d TexCoord(int face, int point) const { return current->TexCoord(face,point); }
   virtual float TexCoord3(int face, int point) const { return current->TexCoord3(face,point); }
+  virtual int NumObjects() const { return current->NumObjects(); }
+  virtual std::pair<int,int> GetObject(int o) const { return current->GetObject(o); }
+  
   virtual int NumTextures() const { return current->NumTextures(); }
   virtual void GenTexture(int num) { current->GenTexture(num); }
   virtual BufferRef TextureBuf(int num) const { return current->TextureBuf(num); }
@@ -11898,6 +11901,19 @@ GameApi::P GameApi::PolygonApi::curve_to_poly(C c, float start_x, float end_x, f
 struct DSVertexHeader
 {
   int numfaces;
+  int numobjects;
+  int reserved_1=-1;
+  int reserved_2=-1;
+  int reserved_3=-1;
+  int reserved_4=-1;
+  int reserved_5=-1;
+};
+struct PP
+{
+  int first;
+  int second;
+  int reserved_1=-1;
+  int reserved_2=-1;
 };
 
 class DSFaceCollection : public FaceCollection
@@ -11966,6 +11982,24 @@ public:
     int pos = vertex_index(face,point);
     return array[pos];
   }
+  int NumObjects() const {
+    if (!ready) return 0;
+    int num = find_block(6); // header
+    unsigned char *ptr = ds->Block(num);
+    DSVertexHeader *head = (DSVertexHeader*)ptr;
+    //std::cout << "NUMOBJECTS:" << head->numobjects << std::endl;
+    return head->numobjects;
+
+  }
+  std::pair<int,int> GetObject(int o) const {
+    if (!ready) return std::make_pair(0,0);
+    int num = find_block(10);
+    unsigned char *ptr = ds->Block(num);
+    PP *array = (PP*)ptr;
+    PP obj = array[o]; 
+    //std::cout << "DSPAIR:" << obj.first << " " << obj.second << std::endl;
+    return std::make_pair(obj.first,obj.second);
+  }
   int find_block(int id) const
   {
     int s = ds->NumBlocks();
@@ -11981,6 +12015,7 @@ public:
     int *array = (int*)ptr;
     return array[face]+point;
   }
+  
 private:
   DiskStore *ds;
   bool ready;
@@ -11993,6 +12028,7 @@ GameApi::P GameApi::PolygonApi::p_ds(EveryApi &ev, const std::vector<unsigned ch
   return add_polygon2(e, new DSFaceCollection(dds),1);
 }
 
+
 class DiskStoreCollection : public DiskStore
 {
 public:
@@ -12001,6 +12037,8 @@ public:
     coll->Prepare();
     int s = coll->NumFaces();
     header.numfaces=s;
+    int s3 = coll->NumObjects();
+    header.numobjects = s3;
     int accum = 0;
     for(int i=0;i<s;i++) {
       int ss = coll->NumPoints(i);
@@ -12024,9 +12062,18 @@ public:
 	  texcoord3.push_back(tx3);
 	}
       }
+    int s2 = coll->NumObjects();
+    for(int k=0;k<s2;k++)
+      {
+	std::pair<int,int> p = coll->GetObject(k);
+	PP p2;
+	p2.first = p.first;
+	p2.second = p.second;
+	obj.push_back(p2);
+      }
   }
   int Type() const { return 0; }
-  int NumBlocks() const { return 8; }
+  int NumBlocks() const { return 9; }
   int BlockType(int block) const {
     switch(block) {
     case 0: return 6; // vertexheader
@@ -12037,6 +12084,7 @@ public:
     case 5: return 1; // color
     case 6: return 2; // texcoord
     case 7: return 9; // texcoord3
+    case 8: return 10; // objects
     };
     return -1;
   }
@@ -12051,6 +12099,7 @@ public:
     case 5: return color.size()*sizeof(unsigned int);
     case 6: return texcoord.size()*sizeof(Point2d);
     case 7: return texcoord3.size()*sizeof(float);
+    case 8: return obj.size()*sizeof(PP);
     };
     return -1;
   }
@@ -12065,6 +12114,7 @@ public:
     case 5: return (unsigned char*)&color[0];
     case 6: return (unsigned char*)&texcoord[0];
     case 7: return (unsigned char*)&texcoord3[0];
+    case 8: return (unsigned char*)&obj[0];
     };
     return 0;
   }
@@ -12078,6 +12128,7 @@ private:
   std::vector<unsigned int> color;
   std::vector<Point2d> texcoord;
   std::vector<float> texcoord3;
+  std::vector<PP> obj;
 };
 
 GameApi::DS GameApi::PolygonApi::p_ds_inv(GameApi::P p)
@@ -12364,7 +12415,7 @@ public:
 	  float mat = coll->TexCoord3(p.first,0);
 	  //std::cout << "TEXCOORD0:" << mat << "==" << val << std::endl;
 	  if (int(mat)==val) {
-	    std::cout << "PAIR:" << p.first << " " << p.second << std::endl;
+	    //std::cout << "PAIR:" << p.first << " " << p.second << std::endl;
 	    objs.push_back(p);
 	  }
 	}

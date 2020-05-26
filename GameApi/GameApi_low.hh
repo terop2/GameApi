@@ -135,6 +135,7 @@ enum
     Low_GL_LINEAR_MIPMAP_LINEAR, // glTexParameteri 3th param
     Low_GL_DEPTH_COMPONENT,
     Low_GL_UNSIGNED_INT,
+    Low_GL_ALPHA_TEST,
     //
     //  OLD STUFF
     // 
@@ -215,6 +216,7 @@ enum {
 #undef glTexSubImage3D
 #undef glGetAttribLocation
 #undef glDepthFunc
+#undef glAlphaFunc
 #undef glDrawArrays
 #undef glTexImage2D
 #undef glTexSubImage2D
@@ -237,6 +239,7 @@ public:
   virtual void glClear(int bits)=0;
   virtual void glDepthMask(int a)=0;
   virtual void glDepthFunc(int i)=0;
+  virtual void glAlphaFunc(int i, float val)=0;
   virtual void glStencilMask(int a)=0;
   virtual void glStencilOp(int keep, int keep2, int repl)=0;
   virtual void glStencilFunc(int notequal, int, int)=0;

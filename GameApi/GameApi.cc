@@ -5531,6 +5531,20 @@ EXPORT GameApi::MT GameApi::MaterialsApi::m_def(EveryApi &ev)
 {
   return add_material(e, new DefaultMaterial(ev));
 }
+EXPORT GameApi::ARR GameApi::MaterialsApi::m_apply_phong(EveryApi &ev, std::vector<MT> vec, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
+{
+  int s = vec.size();
+  ArrayType *array = new ArrayType;
+  array->type = 2;
+
+  for(int i=0;i<s;i++) {
+    GameApi::MT mat = ev.polygon_api.material_index(ev,vec,i);
+    GameApi::MT mat2 = ev.materials_api.phong(ev,mat,light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
+    array->vec.push_back(mat2.id);
+  }
+  return add_array(e,array);
+}
+
 EXPORT GameApi::MT GameApi::MaterialsApi::skeletal(EveryApi &ev)
 {
   return add_material(e, new SkeletalMaterial(ev));
