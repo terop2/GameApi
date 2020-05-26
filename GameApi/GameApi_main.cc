@@ -538,6 +538,9 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   prog->set_var(ss.c_str(),0);
   alpha_1(false);
   ogl->glEnable(Low_GL_DEPTH_TEST);
+
+  ogl->glAlphaFunc(Low_GL_LESS, 0.5);
+  ogl->glEnable(Low_GL_ALPHA_TEST);
   //glEnable(GL_MULTISAMPLE );
 }
 EXPORT void GameApi::MainLoopApi::nvidia_init()

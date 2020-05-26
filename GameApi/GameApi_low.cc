@@ -228,6 +228,7 @@ void map_enums(int &i)
   case Low_GL_UNSIGNED_INT: i=GL_UNSIGNED_INT; break;
   case   Low_GL_QUADS: i=GL_QUADS; break;
   case   Low_GL_DEPTH_TEST: i=GL_DEPTH_TEST; break;
+  case Low_GL_ALPHA_TEST: i=GL_ALPHA_TEST; break;
   case   Low_GL_STATIC_DRAW: i=GL_STATIC_DRAW; break;
   case   Low_GL_DYNAMIC_DRAW: i=GL_DYNAMIC_DRAW; break;
   case   Low_GL_TEXTURE0: i=GL_TEXTURE0; break;
@@ -959,6 +960,10 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
   void glDepthFunc(int i) { 
     map_enums(i);
     ::glDepthFunc(i); }
+  void glAlphaFunc(int i, float val) {
+    map_enums(i);
+    ::glAlphaFunc(i,val);
+  }
   void glFramebufferTexture2D(int a, int b, int c, int d, int ptr) { 
 #ifdef GLEW_HACK
 #define glFramebufferTexture2D GLEW_GET_FUN(__glewFramebufferTexture2D)

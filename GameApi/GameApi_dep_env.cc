@@ -1312,7 +1312,7 @@ std::vector<unsigned char> load_from_url(std::string url)
 	//std::cout << "Got num: " << num << std::endl;
       }
     }
-    std::cout << "Content-Length: " << num << std::endl;
+    //std::cout << "Content-Length: " << num << std::endl;
 
 
 #ifdef __APPLE__
