@@ -15,6 +15,7 @@ public:
   virtual void glClear(int bits) { }
   virtual void glDepthMask(int a) { }
   virtual void glDepthFunc(int i) { }
+  virtual void glAlphaFunc(int i, float val) { }
   virtual void glStencilMask(int a) { }
   virtual void glStencilOp(int keep, int keep2, int repl) { }
   virtual void glStencilFunc(int notequal, int, int) { }
@@ -241,6 +242,9 @@ class SDLLowApiStub : public SDLLowApi
   virtual void SDL_ShowCursor(bool b) { }
   virtual int SDL_PollEvent(Low_SDL_Event *event) { return 0; }
   virtual unsigned int SDL_GetTicks() { return 0; }
+  virtual unsigned long long SDL_GetPerformanceCounter() { return 0; }
+  virtual unsigned long long SDL_GetPerformanceFrequency() { return 0; }
+
   virtual void SDL_Delay(int ms) { }
   virtual Low_SDL_Surface* SDL_GetWindowSurface(Low_SDL_Window *win) { return 0; }
   virtual Low_SDL_Window* SDL_CreateWindow(const char *title, int x, int y, int width, int height, unsigned int flags2) { return 0; }
