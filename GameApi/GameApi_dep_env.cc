@@ -1118,6 +1118,10 @@ public:
   
   virtual void Prepare()
   {
+    size = load_size_from_url(url);
+
+    InstallProgress(333, "stream load..", 15);
+    
     bool succ = false;
 #ifdef HAS_POPEN
 
@@ -1160,6 +1164,36 @@ public:
     return false;
 #endif
   }
+#ifdef WINDOWS
+  ssize_t getline(char** line, size_t*sz, FILE *f)
+  {
+    //std::cout << "getline" << std::endl;
+    std::vector<unsigned char> vec;
+    unsigned char ch='a';
+    int i = 0;
+    bool succ = false;
+    while((succ = get_ch(ch))&&ch!='\n') {
+	  vec.push_back(ch);
+	  i++;
+	  currentpos++;
+	  if (size/15>0 && currentpos % (size/15)==0) {
+	    ProgressBar(333,currentpos*15/size,15,"stream load..");
+			
+	  }
+    }
+    
+    //std::cout << "getline end " << i << std::endl;
+    *line =(char*) malloc(vec.size()+1);
+    std::copy(vec.begin(),vec.end(),*line);
+    (*line)[i]=0;
+    if (!succ) {
+      *sz=-1;
+    } else {
+      *sz = i;
+    }
+    return *sz;
+  }
+#endif
   virtual bool get_line(std::vector<unsigned char> &line)
   {
 #ifdef HAS_POPEN
@@ -1196,6 +1230,8 @@ public:
 private:
   std::string url;
   FILE *f;
+  int size=0;
+  int currentpos=0;
 };
 
 class LoadStream2 : public LoadStream
