@@ -1778,7 +1778,7 @@ GameApi::LI GameApi::LinesApi::random_mesh_quad_lines(EveryApi &ev, P p, int cou
       if (zpi<0) zpi = 0;
       if (zpi>=coll->NumFaces()) zpi = coll->NumFaces()-1;
       int num = coll->NumPoints(zpi);
-      if (num != 4 && num != 3) { std::cout << "Error quad: " << num << std::endl; }
+      if (num != 4 && num != 3) { /*std::cout << "Error quad: " << num << std::endl;*/ }
       if (num==4) {
 	Point p1 = coll->FacePoint(zpi, 0);
 	Point p2 = coll->FacePoint(zpi, 1);

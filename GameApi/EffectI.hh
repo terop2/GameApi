@@ -62,8 +62,11 @@ public:
   virtual Point2d TexCoord(int face, int point) const=0;
   virtual float TexCoord3(int face, int point) const { return 0.0; }
   
-  virtual int NumObjects() const { return 1; }
-  virtual std::pair<int,int> GetObject(int o) const { return std::make_pair(0,NumFaces()); }
+  virtual int NumObjects() const {
+    //std::cout << "Warning: FaceCollection::NumObjects() called" << std::endl;
+    return 1; }
+  virtual std::pair<int,int> GetObject(int o) const {
+    return std::make_pair(0,NumFaces()); }
   
   virtual Point EndFacePoint(int face, int point) const { return FacePoint(face, point); }
   virtual Vector EndPointNormal(int face, int point) const { return PointNormal(face,point); }

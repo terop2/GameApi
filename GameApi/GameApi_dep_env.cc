@@ -310,7 +310,7 @@ EXPORT GameApi::Env::~Env()
   delete (::EnvImpl*)envimpl;
 }
 std::string remove_load(std::string s);
-std::vector<unsigned char> load_from_url(std::string url);
+std::vector<unsigned char> *load_from_url(std::string url);
 std::string striphomepage(std::string url);
 std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
 struct ASyncCallback { void (*fptr)(void*); void *data; };
@@ -427,7 +427,7 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
 
 }
 
-std::vector<unsigned char> load_from_url(std::string url);
+std::vector<unsigned char> *load_from_url(std::string url);
 
 void ASyncLoader::rem_callback(std::string url)
 {
@@ -491,9 +491,9 @@ void* process(void *ptr)
   ProcessData *dt = (ProcessData*)ptr;
   std::string url = dt->url;
   pthread_detach(pthread_self());
-  std::vector<unsigned char> buf = load_from_url(url);
+  std::vector<unsigned char> *buf = load_from_url(url);
   std::string url2 = "load_url.php?url=" + url ;
-  load_url_buffers_async[url2] = new std::vector<unsigned char>(buf);  
+  load_url_buffers_async[url2] = buf; //new std::vector<unsigned char>(buf);  
   pthread_exit(0);
 }
 
@@ -711,10 +711,10 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
     //std::cout << "url loading started! " << url << std::endl;
 
-  std::cout << "URL:" << url << std::endl;
+  //std::cout << "URL:" << url << std::endl;
     // if we have already loaded the same url, don't load again
   if (/*load_url_buffers_async[url] ||*/load_url_buffers_async[url_only]) {
-      std::cout << "URL FROM CACHE" << std::endl;
+    //std::cout << "URL FROM CACHE" << std::endl;
       ASyncCallback *cb = rem_async_cb(oldurl); //load_url_callbacks[url];
       if (cb) {
 	//std::cout << "Load cb!" << url << std::endl;
@@ -742,7 +742,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
       return; 
     }
-      std::cout << "URL LOADED REALLY..." << std::endl;
+  //std::cout << "URL LOADED REALLY..." << std::endl;
       //g_currently_loading.push_back(oldurl);
     char *buf2 = new char[url2.size()+1];
     std::copy(url2.begin(), url2.end(), buf2);
@@ -801,12 +801,12 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
       return; }
     //std::cout << "Loading url: " << url <<std::endl;
-    std::vector<unsigned char> buf = load_from_url(url);
+    std::vector<unsigned char> *buf = load_from_url(url);
     //std::cout << "Loading url finished: " << url <<std::endl;
-    if (buf.size()==0) {
+    if (buf->size()==0) {
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
     }
-    load_url_buffers_async[url2] = new std::vector<unsigned char>(buf);
+    load_url_buffers_async[url2] = buf; //new std::vector<unsigned char>(buf);
     //std::cout << "Async cb!" << url2 << std::endl;
     ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
     if (cb) {
@@ -1199,12 +1199,19 @@ public:
 #ifdef HAS_POPEN
     if (f) {
       char *buf_line = NULL;
-      size_t size = 0;
-      ssize_t sz = getline(&buf_line,&size, f);
+      size_t size2 = 0;
+      ssize_t sz = getline(&buf_line,&size2, f);
       if (!buf_line) return false;
       if (sz==-1) return false;
       line.clear();
       line=std::vector<unsigned char>(buf_line,buf_line+sz);
+      for(int i=0;i<sz;i++) {
+	currentpos++;
+      	  if (size/15>0 && currentpos % (size/15)==0) {
+	    ProgressBar(333,currentpos*15/size,15,"stream load..");
+	  }
+      }
+      
       free(buf_line);
       return sz>0;
     } else return false;
@@ -1285,22 +1292,22 @@ LoadStream *load_from_vector(std::vector<unsigned char> vec)
   return stream;
 }
 
-std::vector<unsigned char> load_from_url(std::string url)
+std::vector<unsigned char> *load_from_url(std::string url)
 { // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
-  if (url.size()==0) return std::vector<unsigned char>();
+  if (url.size()==0) return new std::vector<unsigned char>();
   //std::cout << "load_from_url: @" << url << "@" << std::endl;
 
   int u = g_urls.size();
   for(int i=0;i<u;i++)
     {
       if (remove_load(url)==g_urls[i]) { 
-	std::vector<unsigned char> vec(g_content[i], g_content_end[i]);
+	std::vector<unsigned char> *vec = new std::vector<unsigned char>(g_content[i], g_content_end[i]);
 	//std::cout << "load_from_url using memory: " << url << " " << vec.size() << std::endl;
 	return vec;
       }
     }
   //  std::cout << "load_from_url using network: " << url << std::endl;
-    std::vector<unsigned char> buffer;
+  std::vector<unsigned char> *buffer = new std::vector<unsigned char>;
     bool succ=false;
 #ifdef HAS_POPEN
 
@@ -1363,7 +1370,7 @@ std::vector<unsigned char> load_from_url(std::string url)
     if (!f) { std::cout << "popen failed#2" << std::endl;
       std::cout << errno << std::endl;
       std::cout << url << std::endl;
-      return std::vector<unsigned char>();
+      return new std::vector<unsigned char>();
     }
 
 
@@ -1371,7 +1378,7 @@ std::vector<unsigned char> load_from_url(std::string url)
     unsigned char c;
     int i = 0;
     if (num>0)
-      buffer.reserve(num);
+      buffer->reserve(num);
     while(fread(&c,1,1,f)==1) {
       i++;
       g_current_size++;
@@ -1382,7 +1389,7 @@ std::vector<unsigned char> load_from_url(std::string url)
 	sum = sum % 1000;
 	ProgressBar(sum,i*15/num,15,url);
       }
-      buffer.push_back(c); }
+      buffer->push_back(c); }
     pclose(f);
 
     }
@@ -1392,7 +1399,7 @@ std::vector<unsigned char> load_from_url(std::string url)
     //buffer.resize(pos);
     //fread(&buffer[0], 1, pos, f);
     //std::cout << "::" << std::string(buffer.begin(),buffer.end()) << "::" << std::endl;
-    if (buffer.size()==0)
+    if (buffer->size()==0)
       {
 #ifdef WINDOWS
     std::string cmd = ".\\curl\\curl.exe -s -N --url " + url;
@@ -1417,7 +1424,7 @@ std::vector<unsigned char> load_from_url(std::string url)
 	sum = sum % 1000;
 	ProgressBar(sum,i*15/num,15,url);
       }
-      buffer.push_back(c); }
+      buffer->push_back(c); }
     pclose(f);
       }
     return buffer;
@@ -1427,3 +1434,39 @@ std::vector<unsigned char> load_from_url(std::string url)
     return buffer;
 }
 
+
+#if 0
+struct Req
+{
+  std::string url;
+  std::string params;
+  void (*fptr)(std::string);
+};
+
+void web_request_onload(unsigned handle, void *arg, void *buffer, unsigned size)
+{
+  unsigned char *buf = (unsigned char*) buffer;
+  std::string buf2(buf,buf+size);
+  Req *r = (Req*)arg;
+  r->fptr(buf2);
+}
+void web_request_onerror(unsigned handle, void *arg, int http_error, const char *status)
+{
+  std::cout << "[" << http_error << "]:" << status << std::endl;
+}
+void web_request_onprogress(unsigned handle, void *arg, int numbytes, int size)
+{
+}
+void web_request(std::string url, std::string params, void (*fptr)(std::string))
+{
+  Req *r = new Req;
+  r->url = url;
+  r->params = params;
+  r->fptr = fptr;
+#ifdef EMSCRIPTEN
+  emscripten_async_wget2_data(url.c_str(), "POST", params.c_str(), (void*)r, false, &web_request_onload, &web_request_onerror, &web_request_onprogress);
+#else
+  
+#endif
+}
+#endif

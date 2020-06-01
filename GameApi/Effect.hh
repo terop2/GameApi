@@ -6218,6 +6218,8 @@ public:
     s = coll1->NumFaces();
     s1 = coll2->NumFaces();
     s2 = coll1->NumTextures();
+    oo1 = coll1->NumObjects();
+    oo2 = coll2->NumObjects();
   }
   int get_index(int face) const
   {
@@ -6237,14 +6239,19 @@ public:
     if (face<s2) return coll1;
     return coll2;
   }
-  virtual int NumObjects() const { return 2; }
-  virtual std::pair<int,int> GetObjects(int o) const
+  virtual int NumObjects() const { return oo1+oo2; }
+  virtual std::pair<int,int> GetObject(int o) const
   {
-    if (o==0) return std::make_pair(0,s);
-    if (o==1) return std::make_pair(s,s+s1);
-    return std::make_pair(-1,-1);
+    if (o<oo1) return coll1->GetObject(o);
+    std::pair<int,int> p = coll2->GetObject(o-oo1);
+    p.first+=s;
+    p.second+=s;
+    return p;
+    //if (o==0) return std::make_pair(0,s);
+    //if (o==1) return std::make_pair(s,s+s1);
+    //return std::make_pair(-1,-1);
   }
-  virtual int NumFaces() const { return coll1->NumFaces()+coll2->NumFaces(); }
+  virtual int NumFaces() const { return s+s1; /*coll1->NumFaces()+coll2->NumFaces();*/ }
   virtual int NumPoints(int face) const
   {
     return get_elem(face)->NumPoints(get_index(face));
@@ -6319,6 +6326,8 @@ private:
   int s;
   int s1;
   int s2;
+  int oo1;
+  int oo2;
 };
 
 template<class T>

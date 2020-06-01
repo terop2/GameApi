@@ -25,6 +25,10 @@ bool is_mobile(GameApi::EveryApi &ev)
   return ev.mainloop_api.get_screen_width() < 700;
 }
 
+class Envi_2;
+
+extern Splitter *g_new_splitter;
+extern Envi_2 *g_new_blocker_env;
 
 #define NO_MV 1
 
@@ -10945,6 +10949,9 @@ extern bool g_execute_callback;
 extern void (*g_mainloop_callback)(void *ptr);
 extern void *g_mainloop_ptr;
 
+void splitter_iter2(void *arg);
+
+
 void blocker_iter(void *arg)
 {
 
@@ -10956,6 +10963,12 @@ void blocker_iter(void *arg)
       }
 
   Envi_2 *env = (Envi_2*)arg;
+  if (g_new_blocker_env) { env = g_new_blocker_env; }
+  if (g_new_splitter) {
+    splitter_iter2(0);
+    return;
+  }
+  
   //std::cout << "async: " << async_pending_count << std::endl;
   if (async_pending_count > 0 && !async_is_done) { env->logo_shown = true; }
   if (env->logo_shown)
@@ -11155,7 +11168,8 @@ public:
     if (g_execute_callback)
       {
 	g_execute_callback = false;
-	g_mainloop_callback(g_mainloop_ptr);       
+	g_mainloop_callback(g_mainloop_ptr);
+	return -1;
       }
 
     
@@ -11329,7 +11343,8 @@ extern int g_event_screen_y;
 extern bool g_execute_callback;
 extern void (*g_mainloop_callback)(void *ptr);
 extern void *g_mainloop_ptr;
-
+extern Envi_2 *g_pending_blocker_env;
+extern bool g_new_blocker_block;
 
 class MainLoopBlocker_win32_and_emscripten : public Blocker
 {
@@ -11348,14 +11363,14 @@ public:
     
   OpenglLowApi *ogl = g_low->ogl;
     
-    Envi_2 env;
+    Envi_2 *env = new Envi_2;
 
-    env.logo_shown = logo;
-    env.fpscounter = fpscounter;
-    env.timeout = start_time+timeout;
-    env.start_time = start_time;
-    env.screen_width = screen_width;
-    env.screen_height = screen_height;
+    env->logo_shown = logo;
+    env->fpscounter = fpscounter;
+    env->timeout = start_time+timeout;
+    env->start_time = start_time;
+    env->screen_width = screen_width;
+    env->screen_height = screen_height;
 
     GameApi::SH sh = ev.shader_api.colour_shader();
     GameApi::SH sh2 = ev.shader_api.texture_shader();
@@ -11368,20 +11383,20 @@ public:
     ev.shader_api.use(sh);
     
     GameApi::ML ml = mainloop(ev);
-    if (async_pending_count > 0) { env.logo_shown = true; }
+    if (async_pending_count > 0) { env->logo_shown = true; }
 
     //GameApi::MN mn0 = ev.move_api.empty();
     //GameApi::MN mn = ev.move_api.trans2(mn0, 0.0, 0.0, -400.0);
     //GameApi::ML ml2 = ev.move_api.move_ml(ev, ml, mn);
-    env.mainloop = ml;
+    env->mainloop = ml;
     
-    env.ev = &ev;
-    env.color_sh = sh;
-    env.texture_sh = sh2;
-    env.arr_texture_sh = sh3;
+    env->ev = &ev;
+    env->color_sh = sh;
+    env->texture_sh = sh2;
+    env->arr_texture_sh = sh3;
     
     ev.mainloop_api.reset_time();
-    if (env.logo_shown) {
+    if (env->logo_shown) {
       if (gameapi_seamless_url=="") {
 	ev.mainloop_api.display_logo(ev);
       } else {
@@ -11390,23 +11405,26 @@ public:
     } 
     else 
       {
-	ev.mainloop_api.advance_time(env.start_time/10.0*1000.0);
+	ev.mainloop_api.advance_time(env->start_time/10.0*1000.0);
     }
      ev.mainloop_api.alpha(true);
      ogl->glEnable(Low_GL_DEPTH_TEST);
     GameApi::MainLoopApi::Event e;
-    while((e = env.ev->mainloop_api.get_event()).last==true)
+    while((e = env->ev->mainloop_api.get_event()).last==true)
       {
 	/* this eats all events from queue */
       }
 
 #ifndef EMSCRIPTEN
-    while(!env.exit) {
-      blocker_iter(&env);
+    while(!env->exit) {
+      blocker_iter(env);
       //ev.mainloop_api.delay(10);
     }
 #else
-      emscripten_set_main_loop_arg(blocker_iter, (void*)&env, 0,1);
+    if (!g_new_blocker_block)
+      emscripten_set_main_loop_arg(blocker_iter, (void*)env, 0,1);
+    else
+      g_pending_blocker_env = env;
 #endif
       	float scale_x = 1.0;
 	float scale_y = 1.0;
@@ -11530,8 +11548,15 @@ EXPORT void GameApi::BlockerApi::run(BLK blk)
 Splitter *splitter_current = 0;
 void splitter_iter2(void *arg)
 {
-  if (!arg) { std::cout << "FAIL: Splitter_iter2 NULL" << std::endl; return; }
+  //if (!arg) { std::cout << "FAIL: Splitter_iter2 NULL" << std::endl; return; }
   Splitter *blk2 = (Splitter*)arg;
+
+  if (g_new_splitter) blk2 = g_new_splitter;
+  if (g_new_blocker_env) {
+    blocker_iter((void*)g_new_blocker_env);
+    return;
+  }
+  
   int blocker_exit_code = blk2->Iter();
   if (blocker_exit_code!=-1) 
     {
@@ -22157,6 +22182,38 @@ GameApi::ML GameApi::MainLoopApi::flip_scene_if_mobile(GameApi::EveryApi &ev, ML
   MainLoopItem *item = find_main_loop(e,ml);
   return add_main_loop(e, new FlipIfMobile(ev,item));
 }
+class FlipXIfMobile : public MainLoopItem
+{
+public:
+  FlipXIfMobile(GameApi::EveryApi &ev, MainLoopItem *item) : ev(ev), item(item) { }
+  virtual void Prepare() { item->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    Matrix m = e.in_P;
+    if (is_mobile(ev)) {
+      m = m*Matrix::Scale(-1.0f,1.0f,1.0f);
+    }
+    ee.in_P = m;
+    
+    item->execute(ee);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
+  //virtual int shader_id() { return item->shader_id(); }
+
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *item;
+};
+GameApi::ML GameApi::MainLoopApi::flip_scene_x_if_mobile(GameApi::EveryApi &ev, ML ml)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new FlipXIfMobile(ev,item));
+}
 
 bool g_restart_ongoing = false;
 
@@ -22387,44 +22444,64 @@ struct R_CB {
 std::string g_new_script = "";
 GameApi::EveryApi *g_everyapi = 0;
 
+Splitter *g_new_splitter = 0;
+Envi_2 *g_new_blocker_env = 0;
+Envi_2 *g_pending_blocker_env = 0;
+bool g_new_blocker_block = false;
 void run_callback(void *ptr)
 {
-  char *script2 = (char*)ptr;
+  const char *script2 = (const char*)ptr;
 #ifdef EMSCRIPTEN
   std::string script(script2);
   if (!g_everyapi) { std::cout << "NO g_everyapi" << std::endl; return; }
-  std::cout << "NEW SCRIPT" << std::endl;
-  std::cout << script << std::endl;
+  //std::cout << "NEW SCRIPT" << std::endl;
+  //std::cout << script << std::endl;
   g_new_script = script;
   static int g_id = -1;
   if (g_id!=-1) clear_block(g_id);
-  g_id = add_block();
-  set_current_block(g_id);
+  //g_id = add_block();
+  //set_current_block(g_id);
   GameApi::ExecuteEnv e;
   std::pair<int,std::string> blk = GameApi::execute_codegen(g_everyapi->get_env(), *g_everyapi, script, e);
-  set_current_block(-2);
+  //set_current_block(-2);
   //std::cout << "blk.second==" << blk.second << std::endl;
   if (blk.second=="RUN") {
     GameApi::RUN r;
     r.id = blk.first;
+
+    Splitter *spl = find_splitter(g_everyapi->get_env(),r);
+    spl->e = &g_everyapi->get_env();
+    spl->ev = g_everyapi;
+    spl->Init();
+    splitter_current = spl;
+    g_new_splitter = spl;
+    g_new_blocker_env = 0;
+    //g_new_blocker = 0;
     //g_mainloop_ptr = cb;
     //g_mainloop_callback = &run_callback;
     //g_execute_callback = true;
-    emscripten_cancel_main_loop();
-    g_everyapi->blocker_api.run2(*g_everyapi, r);
+    //emscripten_cancel_main_loop();
+    //g_everyapi->blocker_api.run2(*g_everyapi, r);
     //emscripten_cancel_main_loop();
     //g_everyapi->blocker_api.run2(*g_everyapi, r);
   } else if (blk.second=="OK") {
     GameApi::BLK b;
     b.id = blk.first;
+
+    Blocker *blk2 = find_blocker(g_everyapi->get_env(),b);
+    g_new_blocker_block=true;
+    blk2->Execute();
+    g_new_blocker_block=false;
+    g_new_blocker_env = g_pending_blocker_env;
+    g_new_splitter = 0;
     //g_mainloop_ptr = cb;
     //g_mainloop_callback = &run_callback;
     //g_execute_callback = true;
-    emscripten_cancel_main_loop();
-    g_everyapi->blocker_api.run(b);
     //emscripten_cancel_main_loop();
     //g_everyapi->blocker_api.run(b);
-    std::cout << "ERROR: BLOCKERAPI::run does not set g_everyapi" << std::endl;
+    //emscripten_cancel_main_loop();
+    //g_everyapi->blocker_api.run(b);
+    //std::cout << "ERROR: BLOCKERAPI::run does not set g_everyapi" << std::endl;
   } else {
     std::cout << "ERROR: internal error" << std::endl;
   }
@@ -22433,6 +22510,7 @@ void run_callback(void *ptr)
 
 KP extern "C" void set_new_script(const char *script2)
 {
+  std::cout << "set_new_script" << std::endl;
   g_mainloop_ptr = (void*)script2;
     g_mainloop_callback = &run_callback;
     g_execute_callback = true;
