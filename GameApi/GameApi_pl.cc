@@ -90,6 +90,7 @@ public:
 	    ss >> material_name;
 	    material_names_internal.push_back(material_name);
 	    mtl_material++;
+
 	    
 	    //obj_vertex_start.push_back(mat_base_v);
 	    // obj_vertex_end.push_back(vertex_count2);
@@ -1027,22 +1028,37 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(std::string f
 EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(LoadStream *file_data, int count, std::vector<std::string> material_names)
 {
   int s=count;
-  std::vector<P> vec;
-
-  LoadStream *stream = file_data->Clone();
-  stream->Prepare();
-  ObjFileParser *parser = new ObjFileParser(stream, -1, material_names);
-  for(int i=0;i<s;i++)
-    {
-      GameApi::P model = add_polygon2(e, new ObjFileFaceCollection(*parser, i),1);
-
-      //    GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(stream, i,material_names), 1);
-      vec.push_back(model);
-    }
-  GameApi::P obj = or_array2(vec);
-  GameApi::P resize = resize_to_correct_size(obj);
-  return resize;
-
+  if (s>700) {
+    // This is slower version, but works with less memory,
+    // if count is bigger than 500, the slower version is used.
+    P vec = p_empty();
+    
+    LoadStream *stream = file_data->Clone();
+    stream->Prepare();
+    ObjFileParser *parser = new ObjFileParser(stream, -1, material_names);
+    for(int i=0;i<s;i++)
+      {
+	GameApi::P model = add_polygon2(e, new ObjFileFaceCollection(*parser, i),1);
+	vec = or_elem(vec,model);
+      }
+    GameApi::P obj = vec; //or_array2(vec);
+    GameApi::P resize = resize_to_correct_size(obj);
+    return resize;
+  } else {
+    // This eats more memory, but works faster.
+    std::vector<P> vec;
+    LoadStream *stream = file_data->Clone();
+    stream->Prepare();
+    ObjFileParser *parser = new ObjFileParser(stream, -1, material_names);
+    for(int i=0;i<s;i++)
+      {
+	GameApi::P model = add_polygon2(e, new ObjFileFaceCollection(*parser, i),1);	
+	vec.push_back(model);
+      }
+    GameApi::P obj = or_array2(vec);
+    GameApi::P resize = resize_to_correct_size(obj);
+    return resize;      
+  }
 }
 
 LoadStream *load_from_vector(std::vector<unsigned char> vec);
@@ -4484,7 +4500,11 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
   InstallProgress(0,"send to gpu mem",10);
   while(1) {
     //std::cout << "lock3 wait" << std::endl;
-    while(g_lock3==true) { }
+    while(g_lock3==true) {
+#ifdef EMSCRIPTEN
+      // emscripten_sleep(100);
+#endif
+    }
     g_lock3 = true;
     //std::cout << "Lock3 wait end" << std::endl;
     //pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
@@ -4649,7 +4669,11 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     InstallProgress(1,"send to gpu mem",10);
     while(1) {
       //std::cout << "wait 3" << std::endl;
-      while(g_lock3==true);
+      while(g_lock3==true) {
+#ifdef EMSCRIPTEN
+	//emscripten_sleep(100);
+#endif
+      }
       g_lock3 = true;
       //std::cout << "wait 3 end" << std::endl;
       //pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
@@ -10496,8 +10520,10 @@ private:
     end_y =  std::numeric_limits<float>::min();
     end_z =  std::numeric_limits<float>::min();
 
-    int s = coll->NumFaces();
-    for(int i=0;i<s;i++)
+    int s = std::min(coll->NumFaces(),1000);
+    int step = (coll->NumFaces()/s)+1;
+    int faces = coll->NumFaces();
+    for(int i=0;i<faces;i+=step)
       {
 	int p = coll->NumPoints(i);
 	for(int j=0;j<p;j++)
@@ -12040,14 +12066,25 @@ public:
     int s3 = coll->NumObjects();
     header.numobjects = s3;
     int accum = 0;
+    InstallProgress(111,"Fetch points", 15);
+    pointcounts.reserve(s);
+    vertexindex.reserve(s);
     for(int i=0;i<s;i++) {
+      if (s/15>0 && i%(s/15)==0) ProgressBar(111,i*15/s,15,"Fetch points"); 
       int ss = coll->NumPoints(i);
       pointcounts.push_back(ss);
       vertexindex.push_back(accum);
       accum +=ss;
     }
+    InstallProgress(112,"Fetch vertex arrays", 15);
+    vertex.reserve(s*coll->NumPoints(0));
+    normal.reserve(s*coll->NumPoints(0));
+    color.reserve(s*coll->NumPoints(0));
+    texcoord.reserve(s*coll->NumPoints(0));
+    texcoord3.reserve(s*coll->NumPoints(0));
     for(int i=0;i<s;i++)
       {
+      if (s/15>0 && i%(s/15)==0) ProgressBar(112,i*15/s,15,"Fetch vertex arrays"); 
 	int ss = coll->NumPoints(i);
 	for(int j=0;j<ss;j++) {
 	  Point p = coll->FacePoint(i,j);
@@ -12063,8 +12100,10 @@ public:
 	}
       }
     int s2 = coll->NumObjects();
+    InstallProgress(113,"Fetch objects", 15);
     for(int k=0;k<s2;k++)
       {
+	if (s2/15>0 && k%(s2/15)==0) ProgressBar(113,k*15/s2,15,"Fetch objects"); 
 	std::pair<int,int> p = coll->GetObject(k);
 	PP p2;
 	p2.first = p.first;

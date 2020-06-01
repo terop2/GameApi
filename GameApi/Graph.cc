@@ -1044,6 +1044,9 @@ public:
     BufferRef::FreeBuffer(ref[num]);
     int sx = s.XSize(num);
     int sy = s.YSize(num);
+    // std::cout << "SpriteTexture::GenTexture(" << sx << "," << sy << ")" << std::endl;
+    if (sx<1 ||sy<1) { std::cout << "ERROR: SpriteTexture::GenTexture, too small bitmap ("<< sx << "," << sy << ")" << std::endl; sx=1; sy=1; }
+    if (sx>10000 || sy>10000) { std::cout << "ERROR: SpriteTexture::GenTexture, too large bitmap ("<< sx << "," << sy << ")" << std::endl; sx=1; sy=1; }
     ref[num] = BufferRef::NewBuffer(sx, sy);
 #ifdef THREADS
     int numthreads = 4;

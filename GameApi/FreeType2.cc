@@ -141,7 +141,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
 #ifndef EMSCRIPTEN
     pthread_mutex_unlock(&mutex);
 #endif
-    exit(0);
+    return; 
   } else {
     //std::fstream ss(ss2.str().c_str(), std::ios_base::binary | std::ios_base::out);
     //int s = ptr->size();
@@ -181,7 +181,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
 #ifndef EMSCRIPTEN
     pthread_mutex_unlock(&mutex);
 #endif
-    exit(0);
+    return; //exit(0);
     }
   FT_Set_Char_Size(data->face, sx*64,sy*64,100,100);
 

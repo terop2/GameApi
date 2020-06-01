@@ -508,7 +508,7 @@ void GameApi::append_url_map(const char* url,const unsigned char* data, const un
 std::string stripprefix(std::string s);
 std::string remove_load(std::string s);
 
-std::vector<unsigned char> load_from_url(std::string url);
+std::vector<unsigned char> *load_from_url(std::string url);
 extern std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
 
 #ifdef LINUX
@@ -664,10 +664,11 @@ public:
   InstallProgress(sum,url,15);
   }
 
-    std::vector<unsigned char> data = load_from_url(url);
+    std::vector<unsigned char> *data = load_from_url(url);
 
     bool b = false;
-    img = LoadImageFromString(data, b);
+    img = LoadImageFromString(*data, b);
+    delete data;
     if (b==false) {
       img = BufferRef::NewBuffer(10,10);
       for(int x=0;x<10;x++)

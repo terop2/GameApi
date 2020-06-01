@@ -539,8 +539,8 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   alpha_1(false);
   ogl->glEnable(Low_GL_DEPTH_TEST);
 
-  ogl->glAlphaFunc(Low_GL_LESS, 0.5);
-  ogl->glEnable(Low_GL_ALPHA_TEST);
+  //ogl->glAlphaFunc(Low_GL_LESS, 0.5);
+  //ogl->glEnable(Low_GL_ALPHA_TEST);
   //glEnable(GL_MULTISAMPLE );
 }
 EXPORT void GameApi::MainLoopApi::nvidia_init()
@@ -1592,6 +1592,13 @@ public:
     coll->Prepare();
     std::cout << "Model statistics:" << std::endl;
     std::cout << "NumFaces()=" << coll->NumFaces() << std::endl;
+
+    std::cout << "NumObjects()=" << coll->NumObjects() << std::endl;
+    int s = coll->NumObjects();
+    for(int i=0;i<s;i++) {
+      std::pair<int,int> p = coll->GetObject(i);
+      std::cout << "Obj #" << i << ":" << p.first << ".." << p.second << std::endl;
+    }
   }
   virtual void execute(MainLoopEnv &e) { }
   virtual void handle_event(MainLoopEvent &e) { }
@@ -1998,6 +2005,7 @@ ML I34=ev.move_api.move_ml(ev,I30,I33);
  I34 = ev.mainloop_api.display_background(ev,I34);
  ML res = I34;
 #endif
+ ML res2 = ev.mainloop_api.flip_scene_x_if_mobile(ev,res);
  SH color = ev.shader_api.colour_shader();  
  SH texture = ev.shader_api.texture_shader();
  SH texture_2d = texture;
@@ -2012,7 +2020,7 @@ ML I34=ev.move_api.move_ml(ev,I30,I33);
  ev.mainloop_api.init_3d(arr);
  LogoEnv *env = new LogoEnv;
  env->ev = &ev;
- env->res = res;
+ env->res = res2;
  env->color = color;
  env->texture = texture;
  env->texture_2d = texture_2d;

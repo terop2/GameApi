@@ -1684,9 +1684,11 @@ public:
   int SizeY() const { return times_y*bm.SizeY(); }
   C Map(int x, int y) const
   {
-    int xx = x % bm.SizeX();
-    int yy = y % bm.SizeY();
-    return bm.Map(xx,yy);
+    if (bm.SizeX()>1 && bm.SizeY()>1) {
+      int xx = x % bm.SizeX();
+      int yy = y % bm.SizeY();
+      return bm.Map(xx,yy);
+    } else return C();
   }
 private:
   Bitmap<C> &bm;
