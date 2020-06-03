@@ -717,6 +717,7 @@ struct EnvImpl
   std::vector<Fetcher<FaceID>*> uv;
   std::vector<MatrixArray3*> matrixarray3;
   std::vector<Html*> html;
+  std::vector<DynMainLoop*> dyn;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1028,6 +1029,7 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::D add_dyn(GameApi::Env &e, DynMainLoop *d);
 GameApi::HML add_html(GameApi::Env &e, Html *ml);
 GameApi::UV add_uv(GameApi::Env &e, Fetcher<FaceID> *f);
 GameApi::AV add_voxel_array(GameApi::Env &e, VoxelArray *arr);
@@ -1169,6 +1171,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+DynMainLoop *find_dyn(GameApi::Env &e, GameApi::D d);
 Html *find_html(GameApi::Env &e, GameApi::HML u);
 Fetcher<FaceID> *find_uv(GameApi::Env &e, GameApi::UV u);
 VoxelArray *find_voxel_array(GameApi::Env &e, GameApi::AV a);

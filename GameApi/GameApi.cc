@@ -1075,6 +1075,64 @@ EXPORT GameApi::MN GameApi::MovementNode::translate_wave(MN next,
 
 }
 
+class StaticPlayerStrings : public PlayerStrings
+{
+public:
+  StaticPlayerStrings() { }
+  int NumPlayers() const { return 3; }
+  std::string Player_ID(int i) const {
+    if (i==0) return "jack";
+    if (i==1) return "mikko";
+    if (i==2) return "tero";
+  }
+  std::string Player_Prop(int i) const
+  {
+    if (i==0) return "pos 0.0 0.0 0.0";
+    if (i==1) return "pos 100.0 0.0 100.0";
+    if (i==2) return "pos -100.0 0.0 -100.0";
+  }
+};
+
+class DisplayPlayer : public Movement
+{
+public:
+  DisplayPlayer(PlayerStrings &str, int num) : str(str), num(num) {}
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+
+  virtual void set_matrix(Matrix m) { }
+  virtual Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    std::string s = str.Player_Prop(num);
+    std::stringstream ss(s);
+    std::string word;
+    while(ss>>word) {
+      if (word=="pos") {
+	ss >> pos_x >> pos_y >> pos_z;
+      }
+      if (word=="rot") {
+	ss >> rot_y;
+      }
+    }
+    Matrix m = Matrix::Translate(pos_x,pos_y,pos_z);
+    Matrix m2 = Matrix::YRotation(rot_y);
+    return m2 * m;
+  }
+
+private:
+  PlayerStrings &str;
+  int num;
+  mutable float pos_x, pos_y, pos_z;
+  mutable float rot_y;
+};
+
+
+
+
+
+
 EXPORT GameApi::MN GameApi::MovementNode::translate(MN next, 
 					     float start_time, float end_time,
 					     float dx, float dy, float dz)
@@ -23365,3 +23423,4 @@ GameApi::ARR GameApi::MaterialsApi::material_pack_1(GameApi::EveryApi &ev)
   return add_array(e,array);
   
 }
+

@@ -1835,4 +1835,19 @@ public:
   virtual bool get_file(std::vector<unsigned char> &file)=0;
 };
 
+class PlayerStrings
+{
+public:
+  virtual int NumPlayers() const=0;
+  virtual std::string Player_ID(int i) const=0;
+  virtual std::string Player_Prop(int i) const=0;
+};
+
+class DynMainLoop
+{
+public:
+  virtual int num() const=0;
+  virtual MainLoopItem *get_mainloop(int i) const=0;
+};
+
 #endif

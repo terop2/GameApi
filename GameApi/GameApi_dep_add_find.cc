@@ -1294,6 +1294,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   return ee;
 }
 
+DynMainLoop *find_dyn(GameApi::Env &e, GameApi::D d)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->dyn[d.id];
+}
+
 Html *find_html(GameApi::Env &e, GameApi::HML u)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1736,6 +1742,15 @@ NDim<float,Point> *find_dim(GameApi::Env &e, GameApi::MV mv)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->dims[mv.id];
+}
+
+GameApi::D add_dyn(GameApi::Env &e, DynMainLoop *d2)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->dyn.push_back(d2);
+  GameApi::D c;
+  c.id = env->dyn.size()-1;
+  return c;
 }
 
 GameApi::H add_heavy(GameApi::Env &e, HeavyOperation *h)
