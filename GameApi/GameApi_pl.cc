@@ -10521,7 +10521,7 @@ private:
     end_z =  std::numeric_limits<float>::min();
 
     int s = std::min(coll->NumFaces(),1000);
-    int step = (coll->NumFaces()/s)+1;
+    int step = coll->NumFaces()/s;
     int faces = coll->NumFaces();
     for(int i=0;i<faces;i+=step)
       {

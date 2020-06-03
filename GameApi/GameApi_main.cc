@@ -2462,8 +2462,56 @@ private:
   std::vector<Store> vec;
   int current_item;
 };
-  GameApi::ML GameApi::MainLoopApi::playback_keypresses(ML ml, std::string url)
+GameApi::ML GameApi::MainLoopApi::playback_keypresses(ML ml, std::string url)
 {
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new PlaybackKeyPresses(e,item, url, gameapi_homepageurl));
+}
+
+class DynamicMainLoop : public MainLoopItem
+{
+public:
+  DynamicMainLoop(DynMainLoop *d) : d(d) { }
+  virtual void Prepare() {
+    int s = d->num();
+    for(int i=0;i<s;i++) {
+      MainLoopItem *item = d->get_mainloop(i);
+      item->Prepare();
+    }
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    int s = d->num();
+    for(int i=0;i<s;i++) {
+      MainLoopItem *item = d->get_mainloop(i);
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    int s = d->num();
+    for(int i=0;i<s;i++) {
+      MainLoopItem *item = d->get_mainloop(i);
+      item->handle_event(e);
+    }
+  }
+
+  virtual std::vector<int> shader_id() {
+    int s = d->num();
+    std::vector<int> vec;
+    for(int i=0;i<s;i++) {
+      MainLoopItem *item = d->get_mainloop(i);
+      std::vector<int> id = item->shader_id();
+      std::copy(id.begin(),id.end(),std::back_inserter(vec));
+    }
+    return vec;
+  }
+private:
+  DynMainLoop *d;
+};
+
+GameApi::ML GameApi::MainLoopApi::dyn(D d)
+{
+  DynMainLoop *d2 = find_dyn(e,d);
+  return add_main_loop(e,new DynamicMainLoop(d2));
 }

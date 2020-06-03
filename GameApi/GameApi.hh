@@ -295,6 +295,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT ML dyn(D d);
   IMPORT ML print_stats(P p);
   IMPORT ML chai_mainloop(EveryApi &ev, std::string url);
   IMPORT ML bind_obj_type(std::string name, GameApi::P obj, GameApi::MN move, GameApi::MT mat, float radius);
