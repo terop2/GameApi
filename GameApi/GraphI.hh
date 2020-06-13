@@ -544,6 +544,29 @@ struct MainLoopEvent
   int ch;
   Point cursor_pos;
   int button;
+
+    bool joy0_button0;
+    bool joy0_button1;
+    bool joy0_button2;
+    bool joy0_button3;
+
+    bool joy1_button0;
+    bool joy1_button1;
+    bool joy1_button2;
+    bool joy1_button3;
+
+  int joy0_current_axis;
+  int joy0_axis0;
+  int joy0_axis1;
+  int joy1_current_axis;
+  int joy1_axis0;
+  int joy1_axis1;
+
+  int joy0_ball0;
+  int joy0_ball1;
+  int joy1_ball0;
+  int joy1_ball1;
+  
   //float time = 0.0;
   std::string drag_drop_filename = "";
 };
@@ -1849,5 +1872,6 @@ public:
   virtual int num() const=0;
   virtual MainLoopItem *get_mainloop(int i) const=0;
 };
+
 
 #endif

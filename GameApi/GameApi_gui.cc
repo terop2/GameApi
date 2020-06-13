@@ -871,13 +871,46 @@ public:
       {
 	ev.mainloop_api.reset_time();
       }
-    if (type==0x300 || type==0x301)
+    if (type==0x300 || type==0x301 ||type==Low_SDL_JOYAXISMOTION || type==Low_SDL_JOYBALLMOTION)
       {
+
 	//std::cout << "update: " << type << " " << ch << " " << button << std::endl;
 	e.type = type;
 	e.ch = ch;
 	e.button = button;
 	e.cursor_pos = ev.point_api.point(mouse.x,mouse.y,0.0);
+
+	// TODO, JOYSTICK AXIS AND BALL EVENTS? (needs changes to widget? :)
+	
+	static Low_SDL_Joystick *joy1 = g_low->sdl->SDL_JoystickOpen(0);
+	unsigned int but1 = g_low->sdl->SDL_JoystickGetButton(joy1, 0);  
+	unsigned int but2 = g_low->sdl->SDL_JoystickGetButton(joy1, 1);
+	unsigned int but3 = g_low->sdl->SDL_JoystickGetButton(joy1, 2);
+	unsigned int but4 = g_low->sdl->SDL_JoystickGetButton(joy1, 3);
+	e.joy0_button0 = but1==1;
+	e.joy0_button1 = but2==1;
+	e.joy0_button2 = but3==1;
+	e.joy0_button3 = but4==1;
+
+	// TODO
+	e.joy1_button0 = false;
+	e.joy1_button1 = false;
+	e.joy1_button2 = false;
+	e.joy1_button3 = false;
+	
+	e.joy0_current_axis = -1;
+	e.joy0_axis0 = 0;
+	e.joy0_axis1 = 0;
+	e.joy1_current_axis = -1;
+	e.joy1_axis0 = 0;
+	e.joy1_axis1 = 0;
+	
+
+	e.joy0_ball0 = 0;
+	e.joy0_ball1 = 0;
+	e.joy1_ball0 = 0;
+	e.joy1_ball1 = 0;
+	// END OF TODO
       }
     if (!firsttime)
       {
@@ -5022,7 +5055,8 @@ ASyncData async_data[] = {
   { "mainloop_api", "create_landscape", 1},
   { "mainloop_api", "bind_obj_type", 1},
   { "mainloop_api", "read_obj_pos", 0},
-  { "polygon_api", "mesh_anim", 6}
+  { "polygon_api", "mesh_anim", 6},
+  { "materials_api", "many_texture_id_material", 1}
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
@@ -6618,6 +6652,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "[ML]", "IF" },
 			 { "", "" },
 			 "ML", "font_api", "ml_chooser"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::quake_area_fetcher,
+			 "if_qarea",
+			 { "start_x", "end_x", "start_z", "end_z" },
+			 { "float", "float", "float", "float" },
+			 { "0.0", "100.0", "0.0", "100.0" },
+			 "IF", "font_api", "quake_area_fetcher"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::toggle_button_fetcher,
 			 "if_toggle",
 			 { "start_x", "end_x", "start_y", "end_y" },
@@ -7593,6 +7633,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "float", "float" },
 			 { "ev", "", "8.0", "1.0" },
 			 "ML", "move_api", "all_cursor_keys"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::grid_ml,
+			 "grid_ml",
+			 { "ev", "next", "map", "y", "pos_x", "pos_z", "x_vec_x", "x_vec_z", "z_vec_x", "z_vec_z", "start_x", "start_z", "frame_inc" },
+			 { "EveryApi&", "ML", "IBM", "float", "float", "float", "float", "float", "float", "float", "int", "int", "float" },
+			 { "ev", "", "", "-120", "0.0", "0.0", "100.0", "0.0", "0.0", "100.0", "0", "0", "0.2" },
+			 "ML", "bitmap_api", "grid_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::quake_ml,
 			 "quake_ml",
 			 { "ev", "ml", "speed", "rot_speed" },
@@ -7635,6 +7681,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "MN", "int", "int", "float" },
 			 { "ev", "", "", "32", "32", "10.0" },
 			 "ML", "move_api", "comb_key_activate_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::joystick_to_wasd,
+			 "joystick_to_wasd",
+			 { "ml" },
+			 { "ML" },
+			 { "" },
+			 "ML", "mainloop_api", "joystick_to_wasd"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::keyboard_toggle,
 			 "key_toggle",
 			 { "ml1", "ml2", "key" },
@@ -7668,11 +7720,17 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "" },
 			 "ML", "move_api", "key_printer_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::print_stats,
-			 "mesh_stats",
+			 "mesh_stats_ml",
 			 { "p" },
 			 { "P" },
 			 { "" },
 			 "ML", "mainloop_api", "print_stats"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::joystick_printer,
+			 "joy_printer_ml",
+			 { "ml" },
+			 { "ML" },
+			 { "" },
+			 "ML", "mainloop_api", "joystick_printer"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::fps_display,
 			 "fps_display",
 			 { "ev", "ml", "font" },
@@ -8411,6 +8469,13 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "P", "float", "float", "float" },
 			 { "", "1.0", "1.0", "1.0" },
 			 "P", "polygon_api", "scale"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::substitute,
+			 "subst",
+			 { "p1", "p2", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "normal" },
+			 { "P", "P", "float", "float", "float", "float", "float", "float", "float" },
+			 { "", "", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0", "30.0" },
+			 "P", "polygon_api", "substitute"));
+			
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::p_towards_normal,
 			 "towards_notmal",
 			 { "p", "amount" },
@@ -10292,6 +10357,7 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "std::string" },
 			 { "http://tpgames.org/examplemap.txt" },
 			 "IBM", "bitmap_api", "intbitmap_loader"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::intbitmap_bm,
 			 "ibm_to_bm",
 			 { "ibm" },

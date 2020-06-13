@@ -228,6 +228,9 @@ class SDLLowApiEGL : public SDLLowApi
 {
   virtual void init() { }
   virtual void cleanup() { }
+  virtual void SDL_SetHint(const char *flag, const char *str) { }
+  virtual int SDL_NumJoysticks() { return 0; }
+
   virtual const char* SDL_GetError() { }
   virtual void SDL_Init(int flags) { }
   virtual void SDL_GL_SetAttribute(int flag, int val) { }

@@ -484,6 +484,10 @@ enum
 #define Low_SDL_MOUSEWHEEL 0x403
 #define Low_SDL_DROPFILE 0x1000
 #define Low_SDL_WINDOWEVENT 0x200
+#define Low_SDL_JOYAXISMOTION 0x600
+#define Low_SDL_JOYBALLMOTION 0x601
+#define Low_SDL_JOYBUTTONDOWN 0x603
+#define Low_SDL_JOYBUTTONUP 0x604
 
 #define Low_SDL_WINDOWEVENT_EXPOSED 3
 
@@ -517,6 +521,22 @@ struct Low_SDL_WindowEvent
   int data1, data2;
 };
 
+struct Low_SDL_JoyBall
+{
+  int ball;
+  int xrel;
+  int yrel;
+};
+struct Low_SDL_JoyAxis
+{
+  int value;
+  int axis;
+};
+struct Low_SDL_JoyButton
+{
+  int button;
+};
+
 struct Low_SDL_Event
 {
   int type;
@@ -525,6 +545,9 @@ struct Low_SDL_Event
   Low_SDL_TouchFingerEvent tfinger;
   Low_SDL_DropEvent drop;
   Low_SDL_WindowEvent window;
+  Low_SDL_JoyBall jball;
+  Low_SDL_JoyAxis jaxis;
+  Low_SDL_JoyButton jbutton;
 };
 
 struct Low_SDL_Surface { void *ptr; int w; int h; void* pixels; int pitch; };
@@ -550,6 +573,7 @@ public:
   virtual void cleanup()=0;
   virtual void SDL_Init(int flags)=0;
   virtual void SDL_GL_SetAttribute(int flag, int val)=0;
+  virtual void SDL_SetHint(const char *flag, const char *str)=0;
   virtual void* SDL_GL_GetProcAddress(char *name)=0;
   virtual void SDL_Quit()=0;
   virtual void SDL_ConvertSurface(Low_SDL_Surface *surf, void *format, int val)=0;
@@ -573,6 +597,7 @@ public:
   virtual void SDL_SetWindowTitle(Low_SDL_Window *window, const char *title)=0;
   virtual unsigned int SDL_GetMouseState(int *x, int *y)=0;
   virtual unsigned int SDL_GetModState()=0;
+  virtual int SDL_NumJoysticks()=0;
   virtual Low_SDL_Joystick* SDL_JoystickOpen(int i)=0;
   virtual void SDL_JoystickEventState(int i)=0;
   virtual unsigned int SDL_JoystickGetButton(Low_SDL_Joystick *joy, int i)=0;

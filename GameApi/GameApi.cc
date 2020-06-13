@@ -4812,6 +4812,7 @@ public:
   PhongMaterial(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow) : env(env), ev(ev), next(next), light_dir_x(light_dir_x), light_dir_y(light_dir_y), light_dir_z(light_dir_z), ambient(ambient), highlight(highlight), pow(pow) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+    //std::cout << "PhongMaterial mat2" << std::endl;
     FaceCollection *coll = find_facecoll(env,p);
     coll->Prepare();
     Vector v = coll->PointNormal(0,0);
@@ -4828,6 +4829,7 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
+    //std::cout << "PhongMaterial inst" << std::endl;
     FaceCollection *coll = find_facecoll(env,p);
     coll->Prepare();
     Vector v = coll->PointNormal(0,0);
@@ -4847,6 +4849,7 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
+    //std::cout << "PhongMaterial instmatrix" << std::endl;
     FaceCollection *coll = find_facecoll(env,p);
     coll->Prepare();
     Vector v = coll->PointNormal(0,0);
@@ -4866,6 +4869,7 @@ public:
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
+    //std::cout << "PhongMaterial inst2" << std::endl;
     FaceCollection *coll = find_facecoll(env,p);
     coll->Prepare();
     Vector v = coll->PointNormal(0,0);
@@ -4885,6 +4889,7 @@ public:
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
+    //std::cout << "PhongMaterial fade" << std::endl;
     FaceCollection *coll = find_facecoll(env,p);
     coll->Prepare();
     Vector v = coll->PointNormal(0,0);
@@ -14844,8 +14849,8 @@ public:
     e.async_load_callback(url, &P_cb, this);
 #ifdef EMSCRIPTEN
     async_pending_count++; async_taken = true;
-#endif
     //std::cout << "async_pending_count inc (P_sctipr) " << async_pending_count << std::endl;
+#endif
     // std::cout << "P_script url: " << url << std::endl;
   }
   ~P_script() { e.async_rem_callback(url); }
@@ -14872,15 +14877,16 @@ public:
 #ifdef EMSCRIPTEN
       if (async_taken)
       	async_pending_count--;
+      //std::cout << "async_pending_count inc (P_sctipt) " << async_pending_count << std::endl;
 #endif
       async_taken=false;
-      //std::cout << "async_pending_count inc (P_sctipt) " << async_pending_count << std::endl;
 
       return;
     }
 #ifdef EMSCRIPTEN
     if (async_taken)
       async_pending_count--;
+    //std::cout << "async_pending_count inc (P_sctipt) " << async_pending_count << std::endl;
 #endif
     async_taken = false;
     //std::cout << "async_pending_count inc (P_sctipt2) " << async_pending_count << std::endl;
@@ -15012,8 +15018,8 @@ public:
        e.async_load_callback(url, &ML_cb, this); 
 #ifdef EMSCRIPTEN
        async_pending_count++; async_taken=true;
-#endif
        //std::cout << "async_pending_count inc (ML_sctipr) " << async_pending_count << std::endl;
+#endif
   }
   ~ML_script() { e.async_rem_callback(url); }
   void Prepare2() {
@@ -15039,8 +15045,8 @@ public:
 #ifdef EMSCRIPTEN
 	if (async_taken)
 	  async_pending_count--;
-#endif
 	//std::cout << "async_pending_count dec (ML_sctipr) " << async_pending_count << std::endl;
+#endif
 	async_taken = false;
 	//main2->execute(e3);
 	//firsttime = false;
@@ -15052,6 +15058,7 @@ public:
 #ifdef EMSCRIPTEN
       if (async_taken)
       async_pending_count--;
+      //std::cout << "async_pending_count dec (ML_sctipr) " << async_pending_count << std::endl;
 #endif
       async_taken = false;
       //std::cout << "async_pending_count dec (ML_sctipr2) " << async_pending_count << std::endl;
@@ -19675,7 +19682,7 @@ public:
   NetworkHeavy(GameApi::Env &e, std::string url, std::string homepageurl, HeavyOperation *timing) : e(e), url(url), homepage(homepageurl), timing(timing) { publish_ptr=0;
     ptr = 0;
     current_slot_num = 0;
-    //std::cout << "NetworkHeavy:" << url << std::endl;
+    std::cout << "NetworkHeavy:" << url << std::endl;
   }
   ~NetworkHeavy() { e.async_rem_callback(url+str); }
   virtual bool RequestPrepares() const { return timing->RequestPrepares(); }
@@ -19735,7 +19742,7 @@ public:
   }
 
   void Callback() {
-    //std::cout << "Callback:" << url+str << std::endl;
+    std::cout << "Callback:" << url+str << std::endl;
 #ifndef EMSCRIPTEN
     e.async_load_url(url+str, homepage);
 #endif
@@ -20534,10 +20541,12 @@ class ManyTextureIDMaterial : public MaterialForward
 {
 public:
   ManyTextureIDMaterial(GameApi::EveryApi &ev, std::string mtl_url, std::string url_prefix,float mix, int start_range, int end_range) : ev(ev), mtl_url(mtl_url), url_prefix(url_prefix), mix(mix), start_range(start_range), end_range(end_range) {
+    std::cout << "ManyTextureIDMaterial ctor" << std::endl;
     g_use_texid_material = 1;
   }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+    std::cout << "ManyTextureIDMaterial" << std::endl;
     GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
     GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
     GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net, url_prefix,start_range);
@@ -20553,6 +20562,7 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
+    std::cout << "ManyTextureIDMaterial" << std::endl;
     GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
     GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
     GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net,url_prefix, start_range);
@@ -20567,6 +20577,7 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
+    std::cout << "ManyTextureIDMaterial" << std::endl;
     GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
     GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
     GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net,url_prefix,start_range);
@@ -23423,4 +23434,6 @@ GameApi::ARR GameApi::MaterialsApi::material_pack_1(GameApi::EveryApi &ev)
   return add_array(e,array);
   
 }
+
+
 

@@ -614,6 +614,35 @@ private:
   float start_y, end_y;
   bool toggle;
 };
+
+extern int quake_pos_x;
+extern int quake_pos_y;
+class QuakeAreaFetcher : public Fetcher<int>
+{
+public:
+  QuakeAreaFetcher(float start_x, float end_x, float start_z, float end_z) : start_x(start_x), end_x(end_x), start_z(start_z), end_z(end_z) { }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { }
+  virtual void set(int t) { }
+  virtual int get() const {
+    if (-quake_pos_x>=start_x && -quake_pos_x<end_x)
+      if(-quake_pos_y+400.0>=start_z && -quake_pos_y+400.0<end_z)
+	return 1;
+    return 0;
+  }
+
+private:
+  float start_x, end_x;
+  float start_z, end_z;
+};
+GameApi::IF GameApi::FontApi::quake_area_fetcher(float start_x, float end_x, float start_z, float end_z)
+{
+  return add_int_fetcher(e,new QuakeAreaFetcher(start_x, end_x, start_z,end_z));
+}
+
+
 class RepeatIntFetcher : public Fetcher<int>
 {
 public:

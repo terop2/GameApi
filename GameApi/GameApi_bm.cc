@@ -4681,3 +4681,109 @@ GameApi::BM GameApi::BitmapApi::scale_to_size(BM bm, int sz)
   return bm2;
 
 }
+
+class GridML : public MainLoopItem
+{
+public:
+  GridML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Bitmap<int> &map, float y, float pox_x, float pos_z, float x_vec_x, float x_vec_z, float z_vec_x, float z_vec_z, int start_x, int start_z, float frame_inc) : env(env), ev(ev), next(next), map(map), y(y), pos_x(pos_x), pos_z(pos_z), x_vec_x(x_vec_x), x_vec_z(x_vec_z), z_vec_x(z_vec_x), z_vec_z(z_vec_z), start_x(start_x), start_z(start_z), frame_inc(frame_inc) {
+    curr_x=start_x;
+    curr_z=start_z;
+    next_x=start_x;
+    next_z=start_z;
+    loc = 1.0;
+  }
+  virtual void Prepare() { map.Prepare(); next->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (loc<1.0) loc+=frame_inc*e.delta_time;
+    
+    if (loc>=1.0) loc=1.0;
+
+    float curr_p_x = pos_x + curr_x*x_vec_x + curr_x*x_vec_z;
+    float curr_p_y = y;
+    float curr_p_z = pos_z + curr_z*z_vec_x + curr_z*z_vec_z;
+
+    float next_p_x = pos_x + next_x*x_vec_x + next_x*x_vec_z;
+    float next_p_y = y;
+    float next_p_z = pos_z + next_z*z_vec_x + next_z*z_vec_z;
+
+    Point curr_p(curr_p_x, curr_p_y, curr_p_z);
+    Point next_p(next_p_x, next_p_y, next_p_z);
+
+    Point middle = Point::Interpolate(curr_p, next_p, loc);
+
+    Point res = middle;
+    
+    MainLoopEnv ee = e;
+    GameApi::M env_m = add_matrix2(env, e.in_MV);
+    GameApi::M trans = ev.matrix_api.trans(res.x,res.y,res.z);
+    GameApi::M res2 = ev.matrix_api.mult(env_m, trans);
+    ee.in_MV = find_matrix(env,res2);
+    ee.env = find_matrix(env,res2);
+    
+    next->execute(ee);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (e.type==768 && e.ch=='w' && loc>0.99) {
+      curr_x = next_x;
+      curr_z = next_z;
+      loc=0.0;
+      next_z++;
+      if (next_z>=map.SizeY() || !access(next_x,next_z)) next_z--;
+    }
+    if (e.type==768 && e.ch=='s' && loc>0.99) {
+      curr_x = next_x;
+      curr_z = next_z;
+      loc=0.0;
+      next_z--;
+      if (next_z<0 || !access(next_x,next_z)) next_z++;
+    }
+    if (e.type==768 && e.ch=='a' && loc>0.99) {
+      curr_x = next_x;
+      curr_z = next_z;
+      loc=0.0;
+      next_x++;
+      if (next_x>map.SizeX() || !access(next_x,next_z)) next_x--;
+    }
+    if(e.type==768 && e.ch=='d' && loc>0.99) {
+      curr_x = next_x;
+      curr_z = next_z;
+      loc=0.0;
+      next_x--;
+      if (next_z<0 || !access(next_x,next_z)) next_x++;
+    }
+    next->handle_event(e);
+  }
+  bool access(int x, int z)
+  {
+    if (map.Map(x,z)==0) return true;
+    return false;
+  }
+  virtual std::vector<int> shader_id() {
+    return next->shader_id();
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  Bitmap<int> &map;
+  float y;
+  float pos_x, pos_z;
+  float x_vec_x, x_vec_z;
+  float z_vec_x, z_vec_z;
+  int start_x, start_z;
+  float frame_inc;
+  
+  // internal
+  int curr_x, curr_z;
+  int next_x, next_z;
+  float loc;
+};
+
+GameApi::ML GameApi::BitmapApi::grid_ml(EveryApi &ev, ML next, IBM map, float y, float pos_x, float pos_z, float x_vec_x, float x_vec_z, float z_vec_x, float z_vec_z, int start_x, int start_z, float frame_inc)
+{
+  MainLoopItem *next_m = find_main_loop(e,next);
+  Bitmap<int> *bm = find_int_bitmap(e,map);
+  return add_main_loop(e, new GridML(e,ev,next_m, *bm, y, pos_x, pos_z, x_vec_x, x_vec_z, z_vec_z, z_vec_z, start_x, start_z, frame_inc));
+}

@@ -167,6 +167,7 @@ void check_err(const char *name)
 
 void map_enums_sdl(unsigned int &i) {
   switch(i) {
+
   case Low_SDL_WINDOW_SHOWN: i=SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE; break;
@@ -184,7 +185,7 @@ void map_enums_sdl(int &i) {
   case Low_SDL_WINDOW_OPENGL_SHOWN: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE; break;
 #ifdef LINUX
-  case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE; break;
+  case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK; break;
 #else
   case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK; break;
 #endif
@@ -1005,6 +1006,12 @@ class SDLApi : public SDLLowApi
   virtual void init() { }
   virtual void cleanup() {}
   virtual const char* SDL_GetError() { return ::SDL_GetError(); }
+  virtual int SDL_NumJoysticks() { return ::SDL_NumJoysticks(); }
+  virtual void SDL_SetHint(const char *flag, const char *str)
+  {
+    ::SDL_SetHint(flag,str);
+  }
+
   virtual void SDL_SetWindowSize(Low_SDL_Window *window, int w, int h)
   {
     ::SDL_SetWindowSize((SDL_Window*)(window->ptr), w,h);
@@ -1045,6 +1052,19 @@ class SDLApi : public SDLLowApi
 	event->window.data1 = e.window.data1;
 	event->window.data2 = e.window.data2;
       }
+    if (e.type==SDL_JOYAXISMOTION) {
+        event->jaxis.value = e.jaxis.value;
+	event->jaxis.axis = e.jaxis.axis;
+    }
+    if (e.type==SDL_JOYBALLMOTION) {
+      event->jball.ball = e.jball.ball;
+      event->jball.xrel = e.jball.xrel;
+      event->jball.yrel = e.jball.yrel;
+    }
+    if (e.type==SDL_JOYBUTTONDOWN || e.type==SDL_JOYBUTTONUP) {
+      event->jbutton.button = e.jbutton.button;
+    }
+
     return val;
   }
   virtual unsigned int SDL_GetTicks() { return ::SDL_GetTicks(); }
@@ -1103,9 +1123,9 @@ class SDLApi : public SDLLowApi
     return ::SDL_GL_MakeCurrent((SDL_Window*)window->ptr, ctx);
   }
   virtual Low_SDL_Joystick* SDL_JoystickOpen(int i) { 
-    static Low_SDL_Joystick data;
-    data.data = ::SDL_JoystickOpen(i); 
-    return &data; 
+    Low_SDL_Joystick *data = new Low_SDL_Joystick;
+    data->data = ::SDL_JoystickOpen(i); 
+    return data; 
   }
   virtual void SDL_JoystickEventState(int i) 
   {

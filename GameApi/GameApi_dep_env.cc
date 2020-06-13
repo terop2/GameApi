@@ -290,11 +290,13 @@ EXPORT void GameApi::Env::async_load_all_urls(std::vector<std::string> urls, std
 }
 EXPORT void GameApi::Env::async_load_callback(std::string url, void (*fptr)(void*), void *data)
 {
+  //std::cout << "async_load_callback: " << url << std::endl;
   ::EnvImpl *env = (::EnvImpl*)envimpl;
   env->async_loader->set_callback(url, fptr, data);
 }
 EXPORT void GameApi::Env::async_rem_callback(std::string url)
 {
+  //std::cout << "async_load_rem_callback: " << url << std::endl;
   ::EnvImpl *env = (::EnvImpl*)envimpl;
   env->async_loader->rem_callback(url);
 }
@@ -319,6 +321,7 @@ struct ASyncCallback2 { std::string url; ASyncCallback *cb; };
 std::vector<ASyncCallback2> load_url_callbacks;
 void add_async_cb(std::string url, ASyncCallback *cb)
 {
+  //std::cout << "add_async_cb:" << url << std::endl;
   ASyncCallback2 cb2;
   cb2.url = url;
   cb2.cb = cb;
@@ -326,6 +329,7 @@ void add_async_cb(std::string url, ASyncCallback *cb)
 }
 ASyncCallback *rem_async_cb(std::string url)
 {
+  //std::cout << "rem_async_cb:" << url << std::endl;
   int s = load_url_callbacks.size();
   int i = 0;
   for(;i<s;i++)
@@ -354,7 +358,7 @@ void onerror_async_cb(unsigned int tmp, void *arg, int, const char*str)
   load_url_buffers_async.erase(url_only);
   //load_url_buffers_async[url_only] = (std::vector<unsigned char>*)-1;
     async_pending_count--;
-    std::cout << "ASync pending dec (onerror_async_cb) -->" << async_pending_count << std::endl;
+    //std::cout << "ASync pending dec (onerror_async_cb) -->" << async_pending_count << std::endl;
     
     ASyncCallback *cb = rem_async_cb(url_only); //load_url_callbacks[url_only];
   if (cb) {
@@ -373,6 +377,7 @@ std::string stripprefix(std::string s)
 void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datasize)
 {
   char *url = (char*)arg;
+  //std::cout << "onload_async_cb: " << url << std::endl;
 
   unsigned char *dataptr = (unsigned char*)data;
   if (datasize==0) {
@@ -409,6 +414,25 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
     (*cb->fptr)(cb->data);
     cb = rem_async_cb(url_only); //load_url_callbacks[url_only];
   }
+  ASyncCallback *cb2 = rem_async_cb(url);
+  while(cb2) {
+    (*cb2->fptr)(cb2->data);
+    cb2 = rem_async_cb(url); //load_url_callbacks[url_only];
+  }
+    std::string url2 = stripprefix(url_only);
+  ASyncCallback *cb3 = rem_async_cb(url2);
+  while(cb3) {
+    (*cb3->fptr)(cb3->data);
+    cb3 = rem_async_cb(url2); //load_url_callbacks[url_only];
+  }
+
+  std::string url3 = striphomepage(url2);
+  ASyncCallback *cb4 = rem_async_cb(url3);
+  while(cb4) {
+    (*cb4->fptr)(cb4->data);
+    cb4 = rem_async_cb(url3); //load_url_callbacks[url_only];
+  }
+  
 #ifdef EMSCRIPTEN
   if (tmp!=333) {
     std::string url_store = stripprefix(url_only);
@@ -674,6 +698,7 @@ std::vector<std::string> g_currently_loading;
 
 void ASyncLoader::load_urls(std::string url, std::string homepage)
   {
+    //std::cout << "load_urls:" << url << std::endl;
     if (url=="") return;
     //std::cout << "ASyncLoader::load_urls:" << url << std::endl; 
 
@@ -753,7 +778,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     buf3[url.size()]=0;
     
     async_pending_count++;
-    //    std::cout << "ASync pending inc (load_urls) -->" << async_pending_count << std::endl;
+    //std::cout << "ASync pending inc (load_urls) -->" << async_pending_count << std::endl;
 
     //emscripten_async_wget_data(buf2, (void*)buf2 , &onload_async_cb, &onerror_async_cb);
     
@@ -762,8 +787,8 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     ld->buf3 = buf3;
     ld->url = oldurl;
     ld->url3 = url3;
-    emscripten_idb_async_exists("gameapi", oldurl.c_str(), (void*)ld, &idb_exists, &idb_error);
-    //emscripten_async_wget2_data(buf2, "POST", url3.c_str(), (void*)buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
+    //emscripten_idb_async_exists("gameapi", oldurl.c_str(), (void*)ld, &idb_exists, &idb_error);
+    emscripten_async_wget2_data(buf2, "POST", url3.c_str(), (void*)buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
     
 #if 0
     emscripten_fetch_attr_t attr;

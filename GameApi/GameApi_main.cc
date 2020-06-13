@@ -771,7 +771,9 @@ EXPORT void GameApi::MainLoopApi::antialias(bool enable)
 
 EXPORT float GameApi::MainLoopApi::get_time()
 {
-  return g_low->sdl->SDL_GetTicks()-time;
+  MainLoopPriv *pp = (MainLoopPriv*)priv;
+  return pp->frame_time-time;
+  //return g_low->sdl->SDL_GetTicks()-time;
 }
 EXPORT float GameApi::MainLoopApi::get_delta_time()
 {
@@ -890,6 +892,7 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
   MainLoopPriv *p = (MainLoopPriv*)priv;
   p->frame_time = time;
   unsigned int delta = time - p->previous_frame_time;
+  //std::cout << "delta:" << delta << std::endl;
   p->delta_time = float(delta)/100.0;
   p->current_time = float(time)/100.0;
 
@@ -1057,7 +1060,26 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
       Low_SDL_MouseWheelEvent *ptr = &event.wheel;
       mouse_wheel_y = ptr->y;
     }
-
+  if (event.type==Low_SDL_JOYAXISMOTION) {
+    //if ((event.jaxis.value < -3200) || (event.jaxis.value>3200)) {
+      if (event.jaxis.axis == 0) e2.joy0_axis0 = event.jaxis.value;
+      if (event.jaxis.axis == 1) e2.joy0_axis1 = event.jaxis.value;
+      e2.joy0_current_axis = event.jaxis.axis;
+      //} else {
+      //  event.type=-1;
+      // }
+  }
+  if (event.type==Low_SDL_JOYBALLMOTION) {
+    if (event.jball.ball==0) {
+      e2.joy0_ball0 += event.jball.xrel;
+      e2.joy0_ball1 += event.jball.yrel;
+    }
+    if (event.jball.ball==1) {
+      e2.joy1_ball0 += event.jball.xrel;
+      e2.joy1_ball1 += event.jball.yrel;
+    }
+  }
+  
     
   int id = 0;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1091,20 +1113,30 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   if (val & Low_SDL_BUTTON(1)) { e2.button = 0; }
   if (val & Low_SDL_BUTTON(2)) { e2.button = 1; }
   if (val & Low_SDL_BUTTON(3)) { e2.button = 2; }
-  Low_SDL_Joystick *joy1 = g_low->sdl->SDL_JoystickOpen(0);
-  g_low->sdl->SDL_JoystickEventState(Low_SDL_ENABLE);
+  static Low_SDL_Joystick *joy1 = g_low->sdl->SDL_JoystickOpen(0);
+  //std::cout << "Joystick0:" << joy1 << std::endl;
   unsigned int but1 = g_low->sdl->SDL_JoystickGetButton(joy1, 0);  
   unsigned int but2 = g_low->sdl->SDL_JoystickGetButton(joy1, 1);
   unsigned int but3 = g_low->sdl->SDL_JoystickGetButton(joy1, 2);
   unsigned int but4 = g_low->sdl->SDL_JoystickGetButton(joy1, 3);
   //std::cout << e.type << " " << e.ch << std::endl;
+  //std::cout << "Joystick buttons:" << but1 << " " << but2 << " " << but3 << " " << but4 << std::endl;
   e2.joy0_button0 = but1==1;
   e2.joy0_button1 = but2==1;
   e2.joy0_button2 = but3==1;
   e2.joy0_button3 = but4==1;
   e2.mouse_wheel_y = mouse_wheel_y;
 
-  Low_SDL_Joystick *joy2 = g_low->sdl->SDL_JoystickOpen(1);
+  static Low_SDL_Joystick *joy2 = g_low->sdl->SDL_JoystickOpen(1);
+  //std::cout << "Joystick1:" << joy2 << std::endl;
+
+  static bool firsttime = true;
+  if (firsttime) {
+    firsttime = false;
+    g_low->sdl->SDL_JoystickEventState(Low_SDL_ENABLE);
+  }
+
+  
   unsigned int a_but1 = g_low->sdl->SDL_JoystickGetButton(joy2, 0);  
   unsigned int a_but2 = g_low->sdl->SDL_JoystickGetButton(joy2, 1);
   unsigned int a_but3 = g_low->sdl->SDL_JoystickGetButton(joy2, 2);
@@ -1528,6 +1560,31 @@ GameApi::ML GameApi::MainLoopApi::collision_detection(EveryApi &ev,
 						 enemy_size,
 						 game_screen, gameover));
 }
+class JoyPrinter : public MainLoopItem
+{
+public:
+  JoyPrinter(MainLoopItem *item) : item(item) { }
+  virtual void Prepare() { item->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    std::cout << "Joy0: (" << (e.joy0_button0?"true":"false") << "," << (e.joy0_button1?"true":"false") << "," << (e.joy0_button2?"true":"false") << "," << (e.joy0_button3?"true":"false") << "): " << e.joy0_axis0 << " " << e.joy0_axis1 << "::" << e.joy0_ball0 << " " << e.joy0_ball1 << std::endl;
+    std::cout << "Joy1: (" << e.joy1_button0 << "," << e.joy1_button1 << "," << e.joy1_button2 << "," << e.joy1_button3 << "): " << e.joy1_axis0 << " " << e.joy1_axis1 << "::" << e.joy1_ball0 << " " << e.joy1_ball1 << std::endl;
+
+  }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+private:
+  MainLoopItem *item;
+};
+
+GameApi::ML GameApi::MainLoopApi::joystick_printer(ML ml)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new JoyPrinter(item));
+}
 GameApi::ML GameApi::MainLoopApi::seq_ml(std::vector<ML> vec, float time)
 {
   int s = vec.size();
@@ -1621,6 +1678,26 @@ void GameApi::MainLoopApi::event_ml(ML ml, const Event &ee)
   e2.cursor_pos = *find_point(e,ee.cursor_pos);
   e2.button = ee.button;
   e2.drag_drop_filename = ee.drag_drop_filename;
+  e2.joy0_button0 = ee.joy0_button0;
+  e2.joy0_button1 = ee.joy0_button1;
+  e2.joy0_button2 = ee.joy0_button2;
+  e2.joy0_button3 = ee.joy0_button3;
+  e2.joy1_button0 = ee.joy1_button0;
+  e2.joy1_button1 = ee.joy1_button1;
+  e2.joy1_button2 = ee.joy1_button2;
+  e2.joy1_button3 = ee.joy1_button3;
+  e2.joy0_current_axis = ee.joy0_current_axis;
+  e2.joy0_axis0 = ee.joy0_axis0;
+  e2.joy0_axis1 = ee.joy0_axis1;
+  e2.joy1_current_axis = ee.joy1_current_axis;
+  e2.joy1_axis0 = ee.joy1_axis0;
+  e2.joy1_axis1 = ee.joy1_axis1;
+
+  e2.joy0_ball0 = ee.joy0_ball0;
+  e2.joy0_ball1 = ee.joy0_ball1;
+  e2.joy1_ball0 = ee.joy1_ball0;
+  e2.joy1_ball1 = ee.joy1_ball1;
+  
   MainLoopItem *item = find_main_loop(e, ml);
   item->handle_event(e2);
 }
@@ -2514,4 +2591,100 @@ GameApi::ML GameApi::MainLoopApi::dyn(D d)
 {
   DynMainLoop *d2 = find_dyn(e,d);
   return add_main_loop(e,new DynamicMainLoop(d2));
+}
+
+class JoystickToWasd : public MainLoopItem
+{
+public:
+  JoystickToWasd(MainLoopItem *item) : item(item) {
+
+    button_state[0] = false;
+    button_state[1] = false;
+    button_state[2] = false;
+    button_state[3] = false;
+  }
+  virtual void Prepare() { item->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    MainLoopEvent ee = e;
+    if (e.type==Low_SDL_JOYAXISMOTION) {
+    if (e.joy0_current_axis==0 && e.joy0_axis0 < 0 && button_state[0]==false) { // keydown 'a'
+      button_state[0]=true;
+
+      ee.type=768;
+      ee.ch='a';
+    item->handle_event(ee);
+    } else
+    if (e.joy0_current_axis==0 && e.joy0_axis0 >= 0 && button_state[0]==true) { // keyup 'a'
+      button_state[0]=false;
+
+      ee.type=769;
+      ee.ch='a';
+    item->handle_event(ee);
+    }
+
+    if (e.joy0_current_axis==0 && e.joy0_axis0 > 0 && button_state[1]==false) { // keydown 'd'
+      button_state[1]=true;
+
+      ee.type=768;
+      ee.ch='d';
+    item->handle_event(ee);
+    } else
+    if (e.joy0_current_axis==0 && e.joy0_axis0 <= 0 && button_state[1]==true) { // keyup 'd'
+      button_state[1]=false;
+
+      ee.type=769;
+      ee.ch='d';
+    item->handle_event(ee);
+    }
+
+    if (e.joy0_current_axis==1 && e.joy0_axis1 > 0 && button_state[2]==false) { // keydown 's'
+      button_state[2]=true;
+
+      ee.type=768;
+      ee.ch='s';
+    item->handle_event(ee);
+    } else
+    if (e.joy0_current_axis==1 && e.joy0_axis1 <= 0 && button_state[2]==true) { // keyup 's'
+      button_state[2]=false;
+
+      ee.type=769;
+      ee.ch='s';
+    item->handle_event(ee);
+    }
+
+    if (e.joy0_current_axis==1 && e.joy0_axis1 < 0 && button_state[3]==false) { // keydown 'w'
+      button_state[3]=true;
+
+      ee.type=768;
+      ee.ch='w';
+    item->handle_event(ee);
+    } else
+    if (e.joy0_current_axis==1 && e.joy0_axis1 >= 0 && button_state[3]==true) { // keyup 'w'
+      button_state[3]=false;
+
+      ee.type=769;
+      ee.ch='w';
+    item->handle_event(ee);
+    }
+    }
+    
+    item->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() {
+    return item->shader_id();
+  }
+private:
+  MainLoopItem *item;
+  bool button_state[4];
+};
+
+GameApi::ML GameApi::MainLoopApi::joystick_to_wasd(ML ml)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new JoystickToWasd(item));
 }
