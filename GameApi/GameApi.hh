@@ -295,6 +295,8 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT ML joystick_to_wasd(ML ml);
+  IMPORT ML joystick_printer(ML ml);
   IMPORT ML dyn(D d);
   IMPORT ML print_stats(P p);
   IMPORT ML chai_mainloop(EveryApi &ev, std::string url);
@@ -406,6 +408,20 @@ public:
     bool joy1_button1;
     bool joy1_button2;
     bool joy1_button3;
+
+    int joy0_current_axis=0;
+    int joy0_axis0 =0;
+    int joy0_axis1 =0;
+    int joy1_current_axis=0;
+    int joy1_axis0 =0;
+    int joy1_axis1 =0;
+
+    int joy0_ball0 = 0;
+    int joy0_ball1 = 0;
+    int joy1_ball0 = 0;
+    int joy1_ball1 = 0;
+    
+    
     bool last;
     std::string drag_drop_filename;
   };
@@ -618,6 +634,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT ML grid_ml(EveryApi &ev, ML next, IBM map, float y, float pos_x, float pos_z, float x_vec_x, float x_vec_z, float z_vec_x, float z_vec_z, int start_x, int start_z, float frame_inc);
   IMPORT BM scale_to_size(BM bm, int sz);
   IMPORT BM median_filter(BM bm, int sx, int sy);
         IMPORT BM newbitmap(int sx, int sy, unsigned int color = 0x00000000);
@@ -782,6 +799,7 @@ class FontApi
 public:
   IMPORT FontApi(Env &e);
   IMPORT ~FontApi();
+  IMPORT IF quake_area_fetcher(float start_x, float end_x, float start_z, float end_z);
   IMPORT Ft newfont(std::string filename, int sx, int sy);
   IMPORT BM glyph(Ft font, long idx);
   IMPORT LI glyph_outline(Ft font, long idx, float sx, float sy);
@@ -2190,6 +2208,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  P substitute(P p1, P p2, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float normal);
   ARR block_divide(P p, float pos_x, float pos_z, int sx, int sz, float delta_x, float delta_z);
   ARR block_render(GameApi::EveryApi &ev, std::vector<P> vec, MT mat);
   ARR block_render2(GameApi::EveryApi &ev, std::vector<P> vec, std::vector<MT> mat);

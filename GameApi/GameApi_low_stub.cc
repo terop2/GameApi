@@ -227,6 +227,8 @@ class SDLLowApiStub : public SDLLowApi
 {
   virtual void init() { }
   virtual void cleanup() { }
+  virtual void SDL_SetHint(const char *flag, const char *str) { }
+  virtual int SDL_NumJoysticks() { return 0; }
   virtual const char* SDL_GetError() {}
   virtual char *SDL_GetClipboardText() { return ""; }
   virtual int SDL_SetClipboardText(const char *) { return -1; }

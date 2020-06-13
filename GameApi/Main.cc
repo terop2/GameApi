@@ -443,10 +443,13 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 #ifdef SDL2_USED
   int screenx = scr_x, screeny = scr_y;
 
+
+  g_low->sdl->SDL_SetHint("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS","1");
   g_low->sdl->SDL_Init(Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK);
 
     std::cout << g_low->sdl->SDL_GetError() << std::endl;
-
+    std::cout << "NumJoysticks:"  << g_low->sdl->SDL_NumJoysticks() << std::endl;
+    
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_RED_SIZE, 8);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_GREEN_SIZE, 8);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_BLUE_SIZE, 8);

@@ -1423,7 +1423,7 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
 	//static int ii = 0;
 	//std::stringstream ss;
 	//ss << ii; ii++;
-	//std::cout << "mtl_parse: " << url_prefix << "/" << s << "?id=" << ss.str()<< std::endl;
+	std::cout << "mtl_parse: " << url_prefix << "/" << s << std::endl;
 	std::string url = convert_slashes(url_prefix+"/"+s);
 	std::string url2 = convert_slashes(url_prefix+"/"+s2);
 	std::string url3 = convert_slashes(url_prefix+"/"+s3);
@@ -1471,6 +1471,7 @@ public:
       e.async_load_callback(mtl_url, &MTL2_CB, (void*)this);
 #ifdef EMSCRIPTEN
     async_pending_count++;
+    //std::cout << "NetworkedFaceCollectionMTL2 asyncpending++" << std::endl;
 #endif
     }
     done_mtl=false;
@@ -1570,16 +1571,21 @@ public:
 #ifdef EMSCRIPTEN
     if (!g_use_texid_material)
     	async_pending_count++;
+    //std::cout << "NetworkedFaceCollectionMTL2 asyncpending++" << std::endl;
 #endif
 
+    if (!g_use_texid_material)
 	if (load_d && s2!="") {
-    #ifdef EMSCRIPTEN
+#ifdef EMSCRIPTEN
     async_pending_count++;
+    //std::cout << "NetworkedFaceCollectionMTL2 asyncpending++" << std::endl;
 #endif
 	}
+    if (!g_use_texid_material)
 	if (load_bump && s3!="") {
 #ifdef EMSCRIPTEN
     async_pending_count++;
+    //std::cout << "NetworkedFaceCollectionMTL2 asyncpending++" << std::endl;
 #endif
 	}
       }
@@ -1595,6 +1601,7 @@ public:
 #endif
 #ifdef EMSCRIPTEN
     async_pending_count--;
+    //std::cout << "NetworkedFaceCollectionMTL2 asyncpending--" << std::endl;
 #endif
     done_mtl=true;
   }
@@ -1620,6 +1627,7 @@ public:
 
 #ifdef EMSCRIPTEN
       if (flags[i]==1) { async_pending_count--; flags[i]=0; }
+      //std::cout << "NetworkedFaceCollectionMTL2(flags) asyncpending--" << std::endl;
 #endif
 
   }
@@ -1645,6 +1653,7 @@ public:
 
 #ifdef EMSCRIPTEN
       if (d_flags[i]==1) { async_pending_count--; d_flags[i]=0; }
+      //std::cout << "NetworkedFaceCollectionMTL2(d_flags) asyncpending--" << std::endl;
 #endif
 
   }
@@ -1671,6 +1680,8 @@ public:
 
 #ifdef EMSCRIPTEN
       if (bump_flags[i]==1) { async_pending_count--; bump_flags[i]=0; }
+      //std::cout << "NetworkedFaceCollectionMTL2(bump_flags) asyncpending--" << std::endl;
+
 #endif
 
   }
@@ -16387,6 +16398,101 @@ GameApi::ML GameApi::PolygonApi::block_draw(std::vector<ML> vec, float pos_x, fl
   }
   return add_main_loop(e, new BlockDraw(items, pos_x, pos_z, sx,sz,delta_x,delta_z, view));
 }
+
+
+
+class SubstituteQuadWithMesh : public FaceCollection
+{
+public:
+  SubstituteQuadWithMesh(FaceCollection *coll1, FaceCollection *coll2, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float normal) : coll1(coll1), coll2(coll2), start_x(start_x), end_x(end_x), start_y(start_y),end_y(end_y),start_z(start_z),end_z(end_z),normal(normal) { }
+  virtual void Prepare() { coll1->Prepare(); coll2->Prepare(); }
+  virtual int NumFaces() const
+  {
+    return coll1->NumFaces() * coll2->NumFaces();
+  }
+  virtual int NumPoints(int face) const
+  {
+    int f = face % coll2->NumFaces();
+    return coll2->NumPoints(f);
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int f2 = face / coll2->NumFaces();
+    int f = face % coll2->NumFaces();
+    Point p = coll2->FacePoint(f,point);
+
+    // start from cube [start_x..end_x,start_y..end_y, start_z..end_z]
+    p.x-=start_x;
+    p.x/=(end_x-start_x);
+    p.y-=start_y;
+    p.y/=(end_y-start_y);
+    p.z-=start_z;
+    p.z/=(end_z-start_z);
+    // now it's cube [0..1,0..1,0..1]
+
+    Point pp0 = coll1->FacePoint(f2,0);
+    Point pp1 = coll1->FacePoint(f2,1);
+    Point pp2 = coll1->FacePoint(f2,2);
+    Point pp3 = coll1->FacePoint(f2,3);
+
+    Vector n0 = coll1->PointNormal(f2,0);
+    Vector n1 = coll1->PointNormal(f2,1);
+    Vector n2 = coll1->PointNormal(f2,2);
+    Vector n3 = coll1->PointNormal(f2,3);
+
+    Point pk0 = pp0 + n0*p.z*normal;
+    Point pk1 = pp1 + n1*p.z*normal;
+    Point pk2 = pp2 + n2*p.z*normal;
+    Point pk3 = pp3 + n3*p.z*normal;
+
+    Vector dx_01 = pk1-pk0;
+    Vector dx_32 = pk2-pk3;
+    //Vector dy_03 = pk3-pk0;
+    //Vector dy_12 = pk3-pk1;
+
+    Point px0 = pk0 + dx_01*p.x;
+    Point px1 = pk3 + dx_32*p.x;
+    Vector vx = px1-px0;
+    Point res = px0 + vx*p.y;
+    return res;
+  }
+  virtual Vector PointNormal(int face, int point) const { Vector v{0.0,0.0,0.0}; return v; }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    int f = face % coll2->NumFaces();
+    unsigned int p = coll2->Color(f,point);
+    return p;
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    int f = face % coll2->NumFaces();
+    Point2d p = coll2->TexCoord(f,point);
+    return p;
+  }
+  virtual float TexCoord3(int face, int point) const {
+    int f = face % coll2->NumFaces();
+    float p = coll2->TexCoord3(f,point);
+    return p;
+  }
+
+private:
+  FaceCollection *coll1, *coll2;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+  float normal;
+};
+
+
+GameApi::P GameApi::PolygonApi::substitute(P p1, P p2, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float normal)
+{
+  FaceCollection *coll1 = find_facecoll(e,p1);
+  FaceCollection *coll2 = find_facecoll(e,p2);
+  return add_polygon2(e, new SubstituteQuadWithMesh(coll1,coll2,start_x,end_x,start_y,end_y,start_z,end_z,normal),1);
+}
+
 
 
 #if 0
