@@ -806,6 +806,28 @@ private:
 };
 
 
+struct PoseLine {
+  PoseLine(Point p1, Point p2, Point p) {
+    LineProperties l(p1,p2);
+    dist = l.Dist(p);
+    span_pos = l.LineCoords(p);
+    angle = 0.0; // TODO
+  }
+  Point get_point(Point p1, Point p2) const
+  {
+    LineProperties l(p1,p2);
+    Point p = l.MiddlePoint(span_pos);
+    Vector v = l.PerpendicularVector(angle,dist);
+    return p+v;
+  }
+public:
+  float span_pos;
+  float dist;
+  float angle;
+};
+
+
+
 #if 1
 
 class SphereProperties2
