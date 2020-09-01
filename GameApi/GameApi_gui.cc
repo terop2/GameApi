@@ -901,9 +901,15 @@ public:
 	e.joy0_current_axis = -1;
 	e.joy0_axis0 = 0;
 	e.joy0_axis1 = 0;
+	e.joy0_axis2 = 0;
+	e.joy0_axis3 = 0;
+	e.joy0_axis4 = 0;
 	e.joy1_current_axis = -1;
 	e.joy1_axis0 = 0;
 	e.joy1_axis1 = 0;
+	e.joy1_axis2 = 0;
+	e.joy1_axis3 = 0;
+	e.joy1_axis4 = 0;
 	
 
 	e.joy0_ball0 = 0;
@@ -4612,6 +4618,9 @@ MACRO(GameApi::FML)
 MACRO(GameApi::FBU)
 MACRO(GameApi::AV)
 MACRO(GameApi::UV)
+MACRO(GameApi::FFi)
+MACRO(GameApi::VFi)
+MACRO(GameApi::FA)
 #undef MACRO
 
 
@@ -5056,7 +5065,9 @@ ASyncData async_data[] = {
   { "mainloop_api", "bind_obj_type", 1},
   { "mainloop_api", "read_obj_pos", 0},
   { "polygon_api", "mesh_anim", 6},
-  { "materials_api", "many_texture_id_material", 1}
+  { "materials_api", "many_texture_id_material", 1},
+  { "bitmap_api", "script_bitmap", 0}
+
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
@@ -5686,6 +5697,12 @@ std::vector<GameApiItem*> textureapi_functions()
 std::vector<GameApiItem*> volumeapi_functions()
 {
   std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::volumeprojection,
+			 "o_vrender",
+			 { "o", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "sx", "sy", "numsamples" },
+			 { "O", "float", "float", "float", "float", "float", "float", "int", "int", "int" },
+			 { "", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0", "256", "256", "20" },
+			 "BB", "volume_api", "volumeprojection"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::from_bool_bitmap,
 			 "o_from_bool_bitmap",
 			 { "b", "dist" },
@@ -7657,6 +7674,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "ML", "float", "float", "float", "float", "float" },
 			 { "ev", "", "", "20.0", "0.03", "0.0", "0.0", "0.0" },
 			 "ML", "move_api", "quake_ml3"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::isometric,
+			 "isometric_ml",
+			 { "ml", "y_angle", "x_angle", "translate" },
+			 { "ML", "float", "float", "float" },
+			 { "", "0.5236", "0.5236", "-1400.0" },
+			 "ML", "mainloop_api", "isometric"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::debug_obj, 
 			 "debug_obj",
 			 { "ev" },
@@ -8897,6 +8920,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "[P]", "std::string", "std::string", "float", "float", "int", "int" },
 			 { "ev", "", "map.txt", ".0123456789", "100.0", "100.0", "5", "5" },
 			 "P", "polygon_api", "world_from_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::p_world_from_bitmap,
+			 "p_world_from_bitmap",
+			 { "ev", "vec", "world", "pos_x", "pos_y", "pos_z", "dx", "dz", "y" },
+			 { "EveryApi&", "[P]", "IBM", "float", "float", "float", "float", "float", "float" },
+			 { "ev", "", "", "0.0", "0.0", "0.0", "100.0", "100.0", "-150.0" },
+			 "P", "bitmap_api", "p_world_from_bitmap"));
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::from_points,
 			 "from_points",
@@ -9756,6 +9785,7 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "", "" },
 			 "ML", "lines_api", "update_ml"));
 
+  
 
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::import_ifc,
@@ -10103,6 +10133,30 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "PTS" },
 			 { "" },
 			 "PTS", "points_api", "memoize_pts"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::iterate_points,
+			 "pts_field",
+			 { "points", "field", "speed" },
+			 { "PTS", "VFi", "FA" },
+			 { "", "", "" },
+			 "PTS", "points_api", "iterate_points"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::pressure_gradient,
+			 "pressure_gradient",
+			 { "pressure" },
+			 { "FFi" },
+			 { "" },
+			 "VFi", "points_api", "pressure_gradient"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::matrix_field,
+			 "mat_field",
+			 { "start", "end" },
+			 { "MN", "MN" },
+			 { "", "" },
+			 "VFi", "points_api", "matrix_field"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::random_speeds,
+			 "rand_array",
+			 { "start", "end", "num" },
+			 { "float", "float", "int" },
+			 { "0.5", "5.0", "300" },
+			 "FA", "points_api", "random_speeds"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::collision_points,
 			 "pts_bounding_box",
 			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
@@ -10518,6 +10572,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "int", "int", "unsigned int" },
 			 { "100", "100", "00000000" },
 			 "BM", "bitmap_api", "newbitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::script_bitmap,
+			 "bm_expr",
+			 { "url", "sx", "sy" },
+			 { "std::string", "int", "int" },
+			 { "https://tpgames.org/example_expr_e.mp", "100", "100" },
+			 "BM", "bitmap_api", "script_bitmap"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::loadbitmap,
 			 "load",
 			 { "filename" },

@@ -1064,6 +1064,9 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
     //if ((event.jaxis.value < -3200) || (event.jaxis.value>3200)) {
       if (event.jaxis.axis == 0) e2.joy0_axis0 = event.jaxis.value;
       if (event.jaxis.axis == 1) e2.joy0_axis1 = event.jaxis.value;
+      if (event.jaxis.axis == 2) e2.joy0_axis2 = event.jaxis.value;
+      if (event.jaxis.axis == 3) e2.joy0_axis3 = event.jaxis.value;
+      if (event.jaxis.axis == 4) e2.joy0_axis4 = event.jaxis.value;
       e2.joy0_current_axis = event.jaxis.axis;
       //} else {
       //  event.type=-1;
@@ -1571,7 +1574,7 @@ public:
   }
   virtual void handle_event(MainLoopEvent &e)
   {
-    std::cout << "Joy0: (" << (e.joy0_button0?"true":"false") << "," << (e.joy0_button1?"true":"false") << "," << (e.joy0_button2?"true":"false") << "," << (e.joy0_button3?"true":"false") << "): " << e.joy0_axis0 << " " << e.joy0_axis1 << "::" << e.joy0_ball0 << " " << e.joy0_ball1 << std::endl;
+    std::cout << "Joy0: (" << (e.joy0_button0?"true":"false") << "," << (e.joy0_button1?"true":"false") << "," << (e.joy0_button2?"true":"false") << "," << (e.joy0_button3?"true":"false") << "): " << e.joy0_axis0 << " " << e.joy0_axis1 << " " << e.joy0_axis2 << " " << e.joy0_axis3<< " " << e.joy0_axis4 << "::" << e.joy0_ball0 << " " << e.joy0_ball1 << std::endl;
     std::cout << "Joy1: (" << e.joy1_button0 << "," << e.joy1_button1 << "," << e.joy1_button2 << "," << e.joy1_button3 << "): " << e.joy1_axis0 << " " << e.joy1_axis1 << "::" << e.joy1_ball0 << " " << e.joy1_ball1 << std::endl;
 
   }
@@ -1689,9 +1692,15 @@ void GameApi::MainLoopApi::event_ml(ML ml, const Event &ee)
   e2.joy0_current_axis = ee.joy0_current_axis;
   e2.joy0_axis0 = ee.joy0_axis0;
   e2.joy0_axis1 = ee.joy0_axis1;
+  e2.joy0_axis2 = ee.joy0_axis2;
+  e2.joy0_axis3 = ee.joy0_axis3;
+  e2.joy0_axis4 = ee.joy0_axis4;
   e2.joy1_current_axis = ee.joy1_current_axis;
   e2.joy1_axis0 = ee.joy1_axis0;
   e2.joy1_axis1 = ee.joy1_axis1;
+  e2.joy1_axis2 = ee.joy1_axis2;
+  e2.joy1_axis3 = ee.joy1_axis3;
+  e2.joy1_axis4 = ee.joy1_axis4;
 
   e2.joy0_ball0 = ee.joy0_ball0;
   e2.joy0_ball1 = ee.joy0_ball1;
