@@ -1294,6 +1294,22 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   return ee;
 }
 
+FloatField *find_float_field(GameApi::Env &e, GameApi::FFi field)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->ffi[field.id];
+}
+VelocityField *find_velocity_field(GameApi::Env &e, GameApi::VFi field)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->vfi[field.id];
+}
+FloatArray2 *find_float_array2(GameApi::Env &e, GameApi::FA arr)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->farray[arr.id];
+}
+
 DynMainLoop *find_dyn(GameApi::Env &e, GameApi::D d)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1743,6 +1759,33 @@ NDim<float,Point> *find_dim(GameApi::Env &e, GameApi::MV mv)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->dims[mv.id];
 }
+
+GameApi::FFi add_float_field(GameApi::Env &e, FloatField *field)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->ffi.push_back(field);
+  GameApi::FFi c;
+  c.id = env->ffi.size()-1;
+  return c;
+}
+
+GameApi::VFi add_velocity_field(GameApi::Env &e, VelocityField *field)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->vfi.push_back(field);
+  GameApi::VFi c;
+  c.id = env->vfi.size()-1;
+  return c;
+}
+GameApi::FA add_float_array2(GameApi::Env &e, FloatArray2 *arr)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->farray.push_back(arr);
+  GameApi::FA c;
+  c.id = env->farray.size()-1;
+  return c;
+}
+
 
 GameApi::D add_dyn(GameApi::Env &e, DynMainLoop *d2)
 {

@@ -177,7 +177,7 @@ public:
       item->execute(ee);
     ev.fbo_api.bind_screen(viewport);
     ogl->glBindTexture(Low_GL_TEXTURE_2D, id2);
-    ogl->glDisable(Low_GL_DEPTH_TEST);
+    //ogl->glDisable(Low_GL_DEPTH_TEST);
 		  
   }
   int texture() const

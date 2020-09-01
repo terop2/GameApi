@@ -558,9 +558,15 @@ struct MainLoopEvent
   int joy0_current_axis;
   int joy0_axis0;
   int joy0_axis1;
+  int joy0_axis2;
+  int joy0_axis3;
+  int joy0_axis4;
   int joy1_current_axis;
   int joy1_axis0;
   int joy1_axis1;
+  int joy1_axis2;
+  int joy1_axis3;
+  int joy1_axis4;
 
   int joy0_ball0;
   int joy0_ball1;
@@ -1899,4 +1905,23 @@ public:
   virtual std::pair<int,int> trans(int t) const=0;  
 };
 #endif
+
+class FloatArray2
+{
+public:
+  virtual int Num() const=0;
+  virtual float Map(int i) const=0;
+};
+class FloatField
+{
+public:
+  virtual float Map(Point p) const=0;
+};
+
+class VelocityField
+{
+public:
+  virtual Vector Map(Point p) const=0;
+};
+
 #endif
