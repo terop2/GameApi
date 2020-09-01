@@ -193,6 +193,8 @@ using std::placeholders::_9;
   MAC(CT)
   MAC(CC)
   MAC(IM)
+  MAC(FFi)
+  MAC(VFi)
 #undef MAC
   
   //template<class T>
@@ -295,6 +297,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT ML isometric(ML ml, float y_angle, float x_angle, float translate);
   IMPORT ML joystick_to_wasd(ML ml);
   IMPORT ML joystick_printer(ML ml);
   IMPORT ML dyn(D d);
@@ -412,9 +415,15 @@ public:
     int joy0_current_axis=0;
     int joy0_axis0 =0;
     int joy0_axis1 =0;
+    int joy0_axis2 =0;
+    int joy0_axis3 =0;
+    int joy0_axis4 =0;
     int joy1_current_axis=0;
     int joy1_axis0 =0;
     int joy1_axis1 =0;
+    int joy1_axis2 =0;
+    int joy1_axis3 =0;
+    int joy1_axis4 =0;
 
     int joy0_ball0 = 0;
     int joy0_ball1 = 0;
@@ -634,7 +643,9 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT BM script_bitmap(std::string url, int sx, int sy);
   IMPORT ML grid_ml(EveryApi &ev, ML next, IBM map, float y, float pos_x, float pos_z, float x_vec_x, float x_vec_z, float z_vec_x, float z_vec_z, int start_x, int start_z, float frame_inc);
+  IMPORT P p_world_from_bitmap(EveryApi &ev, std::vector<P> vec, IBM world, float pos_x, float pos_y, float pos_z, float dx, float dz, float y);
   IMPORT BM scale_to_size(BM bm, int sz);
   IMPORT BM median_filter(BM bm, int sx, int sy);
         IMPORT BM newbitmap(int sx, int sy, unsigned int color = 0x00000000);
@@ -1143,7 +1154,8 @@ class VolumeApi
 {
 public:	IMPORT VolumeApi(Env &e);
 	IMPORT ~VolumeApi();
-	IMPORT O boolfunction(std::function<bool(float x, float y, float z)> f);
+  IMPORT BB volumeprojection(O o, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy, int numsamples);
+  IMPORT O boolfunction(std::function<bool(float x, float y, float z)> f);
 	IMPORT O subvolume(std::function<float(float x, float y, float z)> f, float start_range, float end_range);
   IMPORT PTS random_vol_object(O o, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int numpoints);
   IMPORT O from_polygon(P p, float x, float y, float z);  // point outside of shape.
@@ -3130,6 +3142,10 @@ class PointsApi
 {
 public:
   PointsApi(Env &e) : e(e) { }
+  IMPORT PTS iterate_points(PTS points, VFi field, FA speed);
+  IMPORT VFi pressure_gradient(FFi pressure);
+  IMPORT VFi matrix_field(MN start, MN end);
+  IMPORT FA random_speeds(float start_speed, float end_speed, int num);
   IMPORT PTS bullet(int key, float vx, float vy, float vz, float px, float py, float pz, float dist, int max_count, float repeat_time);
   IMPORT PTS voxelarray_to_pts(AV arr);
   IMPORT PTS polygon_face_center_points(P p);

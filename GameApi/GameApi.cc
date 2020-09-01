@@ -3370,7 +3370,7 @@ public:
       mult = 0.2;
     }
     if (is_platform_linux())
-      mult /= 2.0;
+      mult /= 4.0;
     ogl->glLineWidth(linewidth*mult);
 
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
@@ -3393,7 +3393,7 @@ public:
       mult = 0.2;
     }
     if (is_platform_linux()) 
-      mult /= 2.0;
+      mult /= 4.0;
     ogl->glLineWidth(linewidth*mult);
       
     GameApi::P I8=ev.polygon_api.recalculate_normals(p);
@@ -3418,7 +3418,7 @@ public:
       mult = 0.2;
     }
     if (is_platform_linux()) 
-      mult /= 2.0;
+      mult /= 4.0;
     ogl->glLineWidth(linewidth*mult);
 
     
@@ -3444,7 +3444,7 @@ public:
       mult = 0.2;
     }
     if (is_platform_linux()) 
-      mult /= 2.0;
+      mult /= 4.0;
     ogl->glLineWidth(linewidth*mult);
 
     
@@ -3470,7 +3470,7 @@ public:
       mult = 0.2;
     }
     if (is_platform_linux()) 
-      mult /= 2.0;
+      mult /= 4.0;
     ogl->glLineWidth(linewidth*mult);
 
     
@@ -5754,7 +5754,7 @@ public:
       mult = 0.2;
     }
     if (is_platform_linux())
-      mult /= 2.0;
+      mult /= 4.0;
     ogl->glLineWidth(linewidth*mult);
       
     GameApi::P I2=p;
@@ -5784,7 +5784,7 @@ public:
     }
 
     if (is_platform_linux())
-      mult/=2.0;
+      mult/=4.0;
     ogl->glLineWidth(linewidth*mult);
 
     //GameApi::PTA pta = ev.points_api.prepare(pts);
@@ -5815,7 +5815,7 @@ public:
       mult = 0.2;
     }
     if (is_platform_linux())
-      mult /= 2.0;
+      mult /= 4.0;
     ogl->glLineWidth(linewidth*mult);
 
     //GameApi::PTA pta = ev.points_api.prepare(pts);
@@ -5849,7 +5849,7 @@ public:
     }
 
     if (is_platform_linux())
-      mult/=2.0;
+      mult/=4.0;
     ogl->glLineWidth(linewidth*mult);
 
     GameApi::P I2=p;
@@ -5878,7 +5878,7 @@ public:
       mult = 0.2;
     }
     if (is_platform_linux())
-      mult /= 2.0;
+      mult /= 4.0;
     
     ogl->glLineWidth(linewidth*mult);
 
@@ -12637,7 +12637,7 @@ public:
       std::string line;
       bms = std::vector<GameApi::BM>();
       while(std::getline(ss,line)) {
-	line = line.substr(0,line.size()-1);
+	line = line.substr(0,line.size());
 	GameApi::BM bm = ev.font_api.draw_text_string(font, line, x_gap, empty_line_height);
 	if (baseline_separation<1) baseline_separation=ev.bitmap_api.size_y(bm);
 	bms.push_back(bm);
@@ -23437,3 +23437,72 @@ GameApi::ARR GameApi::MaterialsApi::material_pack_1(GameApi::EveryApi &ev)
 
 
 
+class IsometricView : public MainLoopItem
+{
+public:
+  IsometricView(MainLoopItem *item, float y_angle, float x_angle, float translate) : item(item), y_angle(y_angle), x_angle(x_angle),translate(translate) { }
+  virtual void Prepare() { item->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    
+    ee.in_T = Matrix::YRotation(y_angle)*Matrix::XRotation(x_angle)*Matrix::Translate(0.0,0.0,translate);
+    item->execute(ee);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() {
+    return item->shader_id();
+  }
+private:
+  MainLoopItem *item;
+  float y_angle, x_angle,translate;
+};
+GameApi::ML GameApi::MainLoopApi::isometric(ML ml, float y_angle, float x_angle, float translate)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new IsometricView(item,y_angle,x_angle, translate));
+}
+
+
+class VolProjection : public Bitmap<bool>
+{
+public:
+  VolProjection(VolumeObject *obj, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy, int numsamples) : obj(obj), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z), sx(sx),sy(sy), numsamples(numsamples) {}
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual bool Map(int x, int y) const
+  {
+    float xx = float(x)/float(sx);
+    float yy = float(y)/float(sy);
+    float px = start_x+xx*(end_x-start_x);
+    float py = start_y+yy*(end_y-start_y);
+    float dz = end_z-start_z;
+    for(int i=0;i<numsamples;i++)
+      {
+	float zz = double(r.next())/r.maximum();
+	float pz = start_z+zz*dz;
+	Point p(px,py,pz);
+	bool b = obj->Inside(p);
+	if (b) return true;
+      }
+    return false;
+  }
+  virtual void Prepare() { }
+private:
+  VolumeObject *obj;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+  int sx,sy;
+  int numsamples;
+  mutable Random r;
+};
+
+GameApi::BB GameApi::VolumeApi::volumeprojection(O o, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy, int numsamples)
+{
+  VolumeObject *obj = find_volume(e,o);
+  return add_bool_bitmap(e, new VolProjection(obj,start_x, end_x, start_y, end_y, start_z, end_z, sx,sy,numsamples));
+}
