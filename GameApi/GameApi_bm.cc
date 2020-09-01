@@ -4685,7 +4685,7 @@ GameApi::BM GameApi::BitmapApi::scale_to_size(BM bm, int sz)
 class GridML : public MainLoopItem
 {
 public:
-  GridML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Bitmap<int> &map, float y, float pox_x, float pos_z, float x_vec_x, float x_vec_z, float z_vec_x, float z_vec_z, int start_x, int start_z, float frame_inc) : env(env), ev(ev), next(next), map(map), y(y), pos_x(pos_x), pos_z(pos_z), x_vec_x(x_vec_x), x_vec_z(x_vec_z), z_vec_x(z_vec_x), z_vec_z(z_vec_z), start_x(start_x), start_z(start_z), frame_inc(frame_inc) {
+  GridML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Bitmap<int> &map, float y, float pos_x, float pos_z, float x_vec_x, float x_vec_z, float z_vec_x, float z_vec_z, int start_x, int start_z, float frame_inc) : env(env), ev(ev), next(next), map(map), y(y), pos_x(pos_x), pos_z(pos_z), x_vec_x(x_vec_x), x_vec_z(x_vec_z), z_vec_x(z_vec_x), z_vec_z(z_vec_z), start_x(start_x), start_z(start_z), frame_inc(frame_inc) {
     curr_x=start_x;
     curr_z=start_z;
     next_x=start_x;
@@ -4696,6 +4696,18 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     if (loc<1.0) loc+=frame_inc*e.delta_time;
+    else if (flag==true) {
+      flag = false;
+      MainLoopEvent ee = ee_store;
+      ee.type=769;
+      ee.ch=0;
+      if (curr_x<next_x) ee.ch='d';
+      if (curr_x>next_x) ee.ch='a';
+      if (curr_z<next_z) ee.ch='s';
+      if (curr_z>next_z) ee.ch='w';
+      if (ee.ch!=0)
+	next->handle_event(ee);
+    }
     
     if (loc>=1.0) loc=1.0;
 
@@ -4725,38 +4737,60 @@ public:
   }
   virtual void handle_event(MainLoopEvent &e)
   {
-    if (e.type==768 && e.ch=='w' && loc>0.99) {
+    bool filter_out = false;
+    if (e.ch=='w'||e.ch==26||e.ch==82||
+	e.ch=='a'||e.ch==4||e.ch==80||
+	e.ch=='s'||e.ch==22||e.ch==81||
+	e.ch=='d'||e.ch==7||e.ch==79)
+      filter_out = true;
+    
+    if (e.type==768 && (e.ch=='w'||e.ch==26||e.ch==82) && loc>0.99) {
       curr_x = next_x;
       curr_z = next_z;
       loc=0.0;
       next_z++;
       if (next_z>=map.SizeY() || !access(next_x,next_z)) next_z--;
+      ee_store = e;
+      filter_out=false;
+      flag=true;
     }
-    if (e.type==768 && e.ch=='s' && loc>0.99) {
+    if (e.type==768 && (e.ch=='s'||e.ch==22||e.ch==81) && loc>0.99) {
       curr_x = next_x;
       curr_z = next_z;
       loc=0.0;
       next_z--;
       if (next_z<0 || !access(next_x,next_z)) next_z++;
+      ee_store = e;
+      filter_out=false;
+      flag=true;
     }
-    if (e.type==768 && e.ch=='a' && loc>0.99) {
+    if (e.type==768 && (e.ch=='a'||e.ch==4||e.ch==80) && loc>0.99) {
       curr_x = next_x;
       curr_z = next_z;
       loc=0.0;
       next_x++;
       if (next_x>map.SizeX() || !access(next_x,next_z)) next_x--;
+      ee_store = e;
+      filter_out=false;
+      flag=true;
     }
-    if(e.type==768 && e.ch=='d' && loc>0.99) {
+    if(e.type==768 && (e.ch=='d'||e.ch==7||e.ch==79) && loc>0.99) {
       curr_x = next_x;
       curr_z = next_z;
       loc=0.0;
       next_x--;
       if (next_z<0 || !access(next_x,next_z)) next_x++;
+      ee_store = e;
+      filter_out=false;
+      flag=true;
     }
-    next->handle_event(e);
+    if (!filter_out)
+      next->handle_event(e);
   }
   bool access(int x, int z)
   {
+    if (x<0||x>=map.SizeX()) return false;
+    if (z<0||z>=map.SizeY()) return false;
     if (map.Map(x,z)==0) return true;
     return false;
   }
@@ -4779,6 +4813,8 @@ private:
   int curr_x, curr_z;
   int next_x, next_z;
   float loc;
+  MainLoopEvent ee_store;
+  bool flag = false;
 };
 
 GameApi::ML GameApi::BitmapApi::grid_ml(EveryApi &ev, ML next, IBM map, float y, float pos_x, float pos_z, float x_vec_x, float x_vec_z, float z_vec_x, float z_vec_z, int start_x, int start_z, float frame_inc)
@@ -4786,4 +4822,503 @@ GameApi::ML GameApi::BitmapApi::grid_ml(EveryApi &ev, ML next, IBM map, float y,
   MainLoopItem *next_m = find_main_loop(e,next);
   Bitmap<int> *bm = find_int_bitmap(e,map);
   return add_main_loop(e, new GridML(e,ev,next_m, *bm, y, pos_x, pos_z, x_vec_x, x_vec_z, z_vec_z, z_vec_z, start_x, start_z, frame_inc));
+}
+
+
+class PWorld : public FaceCollection
+{
+public:
+  PWorld(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<GameApi::P> vec, GameApi::IBM world, float pos_x, float pos_y, float pos_z, float dx, float dz, float y)
+    : env(env), ev(ev), vec(vec), world(world), pos_x(pos_x), pos_y(pos_y), pos_z(pos_z), dx(dx), dz(dz), y(y) 
+  {
+    res.id = -1;
+  }
+  void Prepare() {
+    Bitmap<int> *bm = find_int_bitmap(env, world);
+    bm->Prepare();
+    int sx = bm->SizeX();
+    int sy = bm->SizeY();
+    std::vector<GameApi::P> pieces;
+    for(int z=0;z<sy;z++) {
+      for(int x=0;x<sx;x++) {
+	int piece = bm->Map(x,z);
+	int s = vec.size();
+	if (piece<0 || piece>=s) continue;
+	GameApi::P trans = ev.polygon_api.translate(vec[piece], pos_x+dx*x, pos_y + y, pos_z+dz*z);
+	pieces.push_back(trans);
+      }
+    }
+    res = ev.polygon_api.or_array2(pieces);
+    FaceCollection *coll = find_facecoll(env,res);
+    coll->Prepare();
+  }
+  virtual int NumFaces() const {
+    if (res.id!=-1) {
+      FaceCollection *coll = find_facecoll(env,res);
+      return coll->NumFaces();
+    } else return 1;
+  }
+  virtual int NumPoints(int face) const
+  {
+    if (res.id!=-1) {
+        FaceCollection *coll = find_facecoll(env,res);
+	return coll->NumPoints(face);
+    } else return 1;
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    if (res.id!=-1) {
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->FacePoint(face,point);
+    } else { return Point(0.0,0.0,0.0); }
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    if (res.id!=-1) {
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->PointNormal(face,point);
+    } else { return Vector(0.0,0.0,0.0); }
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    if (res.id!=-1) {
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->Attrib(face,point,id);
+    } else { return 0.0; }
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    if (res.id!=-1) {
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->AttribI(face,point,id);
+    } else { return 0; }
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    if (res.id!=-1) {
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->Color(face,point);
+    } else { return 0xffffffff; }
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    if (res.id!=-1) {
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->TexCoord(face,point);
+    } else { Point2d p; p.x = 0.0; p.y = 0.0; return p; }
+  }
+  virtual float TexCoord3(int face, int point) const {
+    if (res.id!=-1) {
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->TexCoord3(face,point);
+    } else {
+      return 0.0;
+    }
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::vector<GameApi::P> vec;
+  GameApi::IBM world;
+  float pos_x, pos_y, pos_z;
+  float dx,dz;
+  float y;
+  GameApi::P res;
+};
+
+GameApi::P GameApi::BitmapApi::p_world_from_bitmap(GameApi::EveryApi &ev, std::vector<P> vec, IBM world, float pos_x, float pos_y, float pos_z, float dx, float dz, float y)
+{
+  return add_polygon2(e, new PWorld(e,ev,vec,world,pos_x,pos_y,pos_z,dx,dz,y),1);
+}
+
+
+int cmd_find_ch(std::string expr, char find_ch)
+{
+  int s = expr.size();
+  int level = 0;
+  for(int i=0;i<s;i++) {
+    char ch = expr[i];
+    if (ch=='(') level++;
+    if (ch==')') level--;
+    if (level==0 && ch==find_ch) return i;
+  }
+  return -1;
+}
+
+bool cmd_is_number(std::string expr)
+{
+  int s = expr.size();
+  for(int i=0;i<s;i++) {
+    char ch = expr[i];
+    if ((ch>='0'&&ch<='9')||ch=='.') continue;
+    return false;
+  }
+  return true;
+}
+
+std::string cmd_stripspaces(std::string expr)
+{
+  int i = 0;
+  for(;i<expr.size();i++)
+    {
+      if (expr[i]==' '||expr[i]=='\n'||expr[i]=='\r') continue;
+      break;
+    }
+  int j=0;
+  for(;j<expr.size();j++)
+    {
+      if (expr[expr.size()-j-1]==' '||expr[expr.size()-j-1]=='\n'||
+	  expr[expr.size()-j-1]=='\r') continue;
+      break;
+    }
+  return expr.substr(i,expr.size()-j-i);
+}
+
+bool is_cmd_unary(std::string label, std::string expr)
+{
+  std::string prefix = expr.substr(0,label.size());
+  if (prefix!=label) return false;
+  if (expr.size()<label.size()+1) return false;
+  char ch = expr[label.size()];
+  char ch2 = expr[expr.size()-1];
+  if (ch=='(' && ch2==')') {
+    return true;
+    
+  }
+  return false;
+}
+
+
+enum {
+      E_Less = 1,
+      E_Greater,
+      E_Empty,
+      E_Number,
+      E_X,
+      E_Y,
+      E_Plus,
+      E_Minus,
+      E_Mul,
+      E_Div,
+      E_Mod,
+      E_Sin,
+      E_Cos,
+      E_Tan
+};
+
+
+void ParseCmds(std::string expr, std::vector<int> &cmdbuf, std::vector<float> &parambuf)
+{
+  expr = cmd_stripspaces(expr);
+  if (expr=="") { cmdbuf.push_back(E_Empty); return; }
+  if (cmd_is_number(expr)) { // number
+    cmdbuf.push_back(E_Number);
+    std::stringstream ss(expr);
+    float val;
+    ss >> val;
+    parambuf.push_back(val);
+    return;
+  }
+  if (expr=="x" || expr=="X") {
+    cmdbuf.push_back(E_X); // X
+    return;
+  }
+  if (expr=="y" || expr=="Y") {
+    cmdbuf.push_back(E_Y);
+    return;
+  }
+  
+  int pos0 = cmd_find_ch(expr, '<');
+  if (pos0!=-1) {
+    std::string s1 = expr.substr(0,pos0);
+    std::string s2 = expr.substr(pos0+1);
+    ParseCmds(s1,cmdbuf,parambuf);
+    ParseCmds(s2,cmdbuf,parambuf);
+    cmdbuf.push_back(E_Less); // operator<
+    return;
+  }
+  int pos0a = cmd_find_ch(expr, '>');
+  if (pos0a!=-1) {
+    std::string s1 = expr.substr(0,pos0a);
+    std::string s2 = expr.substr(pos0a+1);
+    ParseCmds(s1,cmdbuf,parambuf);
+    ParseCmds(s2,cmdbuf,parambuf);
+    cmdbuf.push_back(E_Greater); // operator<
+    return;
+  }
+
+  
+  int pos1 = cmd_find_ch(expr, '+');
+  if (pos1!=-1) {
+    std::string s1 = expr.substr(0,pos1);
+    std::string s2 = expr.substr(pos1+1);
+    ParseCmds(s1,cmdbuf,parambuf);
+    ParseCmds(s2,cmdbuf,parambuf);
+    cmdbuf.push_back(E_Plus); // operator+
+    return;
+  }
+  int pos1a = cmd_find_ch(expr, '-');
+  if (pos1a!=-1) {
+    std::string s1 = expr.substr(0,pos1a);
+    std::string s2 = expr.substr(pos1a+1);
+    ParseCmds(s1,cmdbuf,parambuf);
+    ParseCmds(s2,cmdbuf,parambuf);
+    cmdbuf.push_back(E_Minus); // operator-
+    return;
+  }
+  
+  int pos2 = cmd_find_ch(expr, '*');
+  if (pos2!=-1) {
+    std::string s1 = expr.substr(0,pos2);
+    std::string s2 = expr.substr(pos2+1);
+    ParseCmds(s1,cmdbuf,parambuf);
+    ParseCmds(s2,cmdbuf,parambuf);
+    cmdbuf.push_back(E_Mul); // operator*
+    return;
+  }
+  
+  int pos2a = cmd_find_ch(expr, '/');
+  if (pos2a!=-1) {
+    std::string s1 = expr.substr(0,pos2a);
+    std::string s2 = expr.substr(pos2a+1);
+    ParseCmds(s1,cmdbuf,parambuf);
+    ParseCmds(s2,cmdbuf,parambuf);
+    cmdbuf.push_back(E_Div); // operator*
+    return;
+  }
+
+  int pos2b = cmd_find_ch(expr, '%');
+  if (pos2b!=-1) {
+    std::string s1 = expr.substr(0,pos2b);
+    std::string s2 = expr.substr(pos2b+1);
+    ParseCmds(s1,cmdbuf,parambuf);
+    ParseCmds(s2,cmdbuf,parambuf);
+    cmdbuf.push_back(E_Mod); // operator%
+    return;
+  }
+
+  bool b0 = is_cmd_unary("sin", expr);
+  if (b0) {
+    std::string sub = expr.substr(3+2,expr.size()-3-2-1);
+    std::cout << "Sub:" << sub << std::endl;
+    ParseCmds(sub,cmdbuf,parambuf);
+    cmdbuf.push_back(E_Sin);
+    return;
+  }
+  bool b1 = is_cmd_unary("cos", expr);
+  if (b1) {
+    std::string sub = expr.substr(3+2,expr.size()-3-2-1);
+    std::cout << "Sub:" << sub << std::endl;
+    ParseCmds(sub,cmdbuf,parambuf);
+    cmdbuf.push_back(E_Cos);
+    return;
+  }
+  bool b2 = is_cmd_unary("tan", expr);
+  if (b2) {
+    std::string sub = expr.substr(3+2,expr.size()-3-2-1);
+    std::cout << "Sub:" << sub << std::endl;
+    ParseCmds(sub,cmdbuf,parambuf);
+    cmdbuf.push_back(E_Tan);
+    return;
+  }
+  
+  
+  if (expr.size()>2 && expr[0]=='(' && expr[expr.size()-1]==')') {
+    std::string sub = expr.substr(1,expr.size()-2);
+    ParseCmds(sub,cmdbuf,parambuf);
+    return;
+  }
+
+  
+  std::cout << "PARSE ERROR at expression:\n\"" << expr << "\"\n";
+  
+}
+float executebufs(const std::vector<int> &cmdbuf, const std::vector<float> &parambuf, float X, float Y)
+{
+  int paramcursor = 0;
+  std::vector<float> values;
+  int s = cmdbuf.size();
+  float res = 0.0;
+  for(int i=0;i<s;i++) {
+    int cmd = cmdbuf[i];
+    switch(cmd) {
+    case E_Less: // operator<()
+      {
+      float val1 = values.back();
+      values.pop_back();
+      float val2 = values.back();
+      values.pop_back();
+      //std::cout << val1 << "<" << val2 << std::endl;
+      if (val2<val1) {
+	//std::cout << "Value(<):" << 1.0 << std::endl;
+	values.push_back(1.0);
+      } else {
+	//std::cout << "Value(<):" << 0.0 << std::endl;
+	values.push_back(0.0);
+      }
+      }
+      break;
+    case E_Greater: // operator>()
+      {
+      float val1 = values.back();
+      values.pop_back();
+      float val2 = values.back();
+      values.pop_back();
+      //std::cout << val1 << ">" << val2 << std::endl;
+      if (val2>val1) {
+	//std::cout << "Value(>):" << 1.0 << std::endl;
+	values.push_back(1.0);
+      } else {
+	//std::cout << "Value(>):" << 0.0 << std::endl;
+	values.push_back(0.0);
+      }
+      }
+      break;
+    case E_Plus: // operator+()
+      {
+      float val1 = values.back();
+      values.pop_back();
+      float val2 = values.back();
+      values.pop_back();
+      values.push_back(val1+val2);
+      //std::cout << "Value(+):" << val1+val2 << std::endl;
+      break;
+      }
+    case E_Mul: // operator*()
+      {
+      float val1 = values.back();
+      values.pop_back();
+      float val2 = values.back();
+      values.pop_back();
+      values.push_back(val1*val2);
+      //std::cout << "Value(*):" << val1*val2 << std::endl;
+      break;
+      }
+    case E_Minus: // operator-()
+      {
+      float val1 = values.back();
+      values.pop_back();
+      float val2 = values.back();
+      values.pop_back();
+      values.push_back(val2-val1);
+      //std::cout << "Value(-):" << val2-val1 << std::endl;
+      break;
+      }
+    case E_Div: // operator/()
+      {
+      float val1 = values.back();
+      values.pop_back();
+      float val2 = values.back();
+      values.pop_back();
+      values.push_back(val2/val1);
+      //std::cout << "Value(/):" << val2/val1 << std::endl;
+      break;
+      }
+    case E_Mod: // operator/()
+      {
+      float val1 = values.back();
+      values.pop_back();
+      float val2 = values.back();
+      values.pop_back();
+      values.push_back(fmod(val2,val1));
+      //std::cout << "Value(/):" << val2/val1 << std::endl;
+      break;
+      }
+    case E_Sin:
+      {
+      float val = values.back();
+      values.pop_back();
+      values.push_back(std::sin(val));
+      break;
+      }
+    case E_Cos:
+      {
+      float val = values.back();
+      values.pop_back();
+      values.push_back(std::cos(val));
+      break;
+      }
+    case E_Tan:
+      {
+      float val = values.back();
+      values.pop_back();
+      values.push_back(std::tan(val));
+      break;
+      }
+    case E_X: // X
+      values.push_back(X);
+      //std::cout << "Value(X):" << X << std::endl;
+      break;
+    case E_Y: // Y
+      values.push_back(Y);
+      //std::cout << "Value(Y):" << Y << std::endl;
+      break;
+    case E_Number: // number
+      {
+	float val = parambuf[paramcursor];
+	paramcursor++;
+	values.push_back(val);
+	//std::cout << "Value(num):" << val << std::endl;
+	break;
+      }
+    case E_Empty:
+      values.push_back(0.0);
+      //std::cout << "Value(0.0):" << 0.0 << std::endl;
+      break;
+    };
+  }
+  res = values.back();
+  //std::cout << "res:" << res << std::endl;
+  return res;
+}
+
+class ScriptBitmap : public Bitmap<Color>
+{
+public:
+  ScriptBitmap(GameApi::Env &e, std::string url, std::string homepage, int sx, int sy) : e(e), url(url), homepage(homepage),sx(sx),sy(sy) { }
+  virtual void Prepare()
+  {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    std::string s(ptr->begin(),ptr->end());
+    std::stringstream ss(s);
+    std::string line;
+    int linenum = 0;
+    while(std::getline(ss,line)) {
+      ParseCmds(line,cmd_buf[linenum],param_buf[linenum]);
+      linenum++;
+      if (linenum>=4) return;
+    }
+  }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    float xx = float(x)/float(sx);
+    float yy = float(y)/float(sy);
+    float r = executebufs(cmd_buf[0],param_buf[0],xx,yy);
+    float g = executebufs(cmd_buf[1],param_buf[1],xx,yy);
+    float b = executebufs(cmd_buf[2],param_buf[2],xx,yy);
+    float a = executebufs(cmd_buf[3],param_buf[3],xx,yy);
+    //std::cout << r << " " << g << " " << b << " " << a << std::endl;
+    return Color(r,g,b,a);
+  }
+private:
+  GameApi::Env &e;
+  int sx,sy;
+  std::string url,homepage;
+  std::vector<int> cmd_buf[4];
+  std::vector<float> param_buf[4];
+};
+
+GameApi::BM GameApi::BitmapApi::script_bitmap(std::string url, int sx, int sy)
+{
+  Bitmap<Color> *b = new ScriptBitmap(e,url,gameapi_homepageurl,sx,sy);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm = add_bitmap(e, handle2);
+  return bm;
 }

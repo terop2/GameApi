@@ -1396,7 +1396,7 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
   std::string home = getenv("HOME");
   start = home + "/.gameapi_builder";
   std::string cmd = "mkdir -p " + start;
-  system(cmd.c_str());
+  int val = system(cmd.c_str());
   start+="/";
 #endif
     std::string a_filename = start+a_ss2.str();
@@ -1499,7 +1499,7 @@ public:
   std::string home = getenv("HOME");
   start = home + "/.gameapi_builder";
   std::string cmd = "mkdir -p " + start;
-  system(cmd.c_str());
+  int val = system(cmd.c_str());
   start+="/";
 #endif
    
@@ -1528,6 +1528,7 @@ public:
 
 	std::string s2 = mat[b_i].map_d;
 	std::string s3 = mat[b_i].map_bump;
+
 	
 	
 	dt->url = convert_slashes(url_prefix+"/"+s);
@@ -1538,9 +1539,15 @@ public:
 	buffer.push_back(ref);
 	d_buffer.push_back(ref);
 	bump_buffer.push_back(ref);
+
+	if (s=="") {
+	  Prepare2_color(b_i, mat[b_i]);
+	}
+
 	//std::cout << "set_callback: " << dt->url << std::endl;
     if (!g_use_texid_material)
       {
+	if (s!="") {
 	e.async_load_callback(dt->url, &MTL_CB, (void*)dt);
 #ifdef EMSCRIPTEN
 	e.async_load_url(dt->url, homepage);
@@ -1549,6 +1556,8 @@ public:
 #endif
 	flags.push_back(1);
 
+	}
+	
 	if (load_d && s2!="") {
 	  e.async_load_callback(url2, &MTL_d_CB, (void*)dt);
 #ifdef EMSCRIPTEN
@@ -1605,6 +1614,22 @@ public:
 #endif
     done_mtl=true;
   }
+  void Prepare2_color(int i, GameApi::MaterialDef &def)
+  {
+    //std::cout << "i=" << i << std::endl;
+    BufferRef img = BufferRef::NewBuffer(2,2);
+      int sx = img.width;
+      int sy = img.height;
+      ::Color cc(def.Kd_x,def.Kd_y,def.Kd_z,1.0f);
+      unsigned int color = cc.Pixel();
+      for(int y=0;y<sy;y++)
+	for(int x=0;x<sx;x++)
+	  {
+	    img.buffer[x+y*img.ydelta] = color; 
+	  }
+      BufferRef::FreeBuffer(buffer[i]);
+      buffer[i] = img;
+  }
   void Prepare2(std::string url, int i)
   {
     //std::cout << "MTL:Prepare2: " << url << " " << i << std::endl;
@@ -1631,6 +1656,7 @@ public:
 #endif
 
   }
+
   void PrepareD(std::string url, int i)
   {
     //std::cout << "MTL:Prepare2: " << url << " " << i << std::endl;
@@ -1743,7 +1769,7 @@ public:
   std::string home = getenv("HOME");
   start = home + "/.gameapi_builder";
   std::string cmd = "mkdir -p " + start;
-  system(cmd.c_str());
+  int val = system(cmd.c_str());
   start+="/";
 #endif
 

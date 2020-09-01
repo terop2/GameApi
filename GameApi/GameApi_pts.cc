@@ -2071,3 +2071,140 @@ GameApi::PTS GameApi::PointsApi::bullet(int key, float vx, float vy, float vz, f
   return add_points_api_points(e, new Bullet(key,vx,vy,vz,Point(px,py,pz),dist,max_count,repeat_time/100.0));
 }
 
+
+class IteratePoints : public PointsApiPoints
+{
+public:
+  IteratePoints(PointsApiPoints *pts, FloatArray2 *speed, VelocityField *field) : pts(pts), speed(speed), field(field) { cache = 0; numpoints =0;}
+  virtual void Prepare() {
+    pts->Prepare();
+    numpoints = std::min(pts->NumPoints(),speed->Num());
+    if (numpoints) 
+      cache = new Point[numpoints];
+    else
+      cache = 0;
+    for(int i=0;i<numpoints;i++)
+      cache[i]=pts->Pos(i);
+  }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) {
+    if (cache) {
+      int s = numpoints;
+      for(int i=0;i<s;i++) {
+	Point p = cache[i];
+	Vector v = field->Map(p);
+	//std::cout << "IteratePoints:" << cache[i] << "::" << speed->Map(i) << "::" << v << std::endl;
+	cache[i] = cache[i] + speed->Map(i) * v;
+      }
+    }
+    return true;
+  }
+  virtual int NumPoints() const { return numpoints; }
+  virtual Point Pos(int i) const {
+    if (cache && i>=0 && i<numpoints)
+      return cache[i];
+    else
+      {
+	Point p = { 0.0, 0.0, 0.0 };
+	return p;
+      }
+  }
+  virtual unsigned int Color(int i) const
+  {
+    return 0xffffffff;
+  }
+private:
+  PointsApiPoints *pts;
+  VelocityField *field;
+  FloatArray2 *speed;
+  Point *cache;
+  int numpoints;
+};
+
+GameApi::PTS GameApi::PointsApi::iterate_points(PTS points, VFi field, FA speed)
+{
+  FloatArray2 *fa = find_float_array2(e, speed);
+  PointsApiPoints *pts = find_pointsapi_points(e,points);
+  VelocityField *vfi = find_velocity_field(e,field);
+  return add_points_api_points(e, new IteratePoints(pts,fa,vfi));
+}
+class RandomSpeeds : public FloatArray2
+{
+public:
+  RandomSpeeds(float start_speed, float end_speed, int num) : start_speed(start_speed), end_speed(end_speed), num(num) {
+
+    array = new float[num];
+    for(int i=0;i<num;i++) {
+    Random r;
+    float xp = double(r.next())/r.maximum();
+    //std::cout << "RandomSpeeds:" << xp << std::endl;
+    array[i]=start_speed + xp*(end_speed-start_speed);
+    }
+  }
+  int Num() const { return num; }
+  float Map(int i) const
+  {
+    if (i>=0 && i<num)
+      return array[i];
+    else
+      return 0.0;
+  }
+private:
+  float start_speed, end_speed;
+  int num;
+  float *array;
+};
+GameApi::FA GameApi::PointsApi::random_speeds(float start_speed, float end_speed, int num)
+{
+  return add_float_array2(e, new RandomSpeeds(start_speed,end_speed,num));
+}
+
+class PressureGradient : public VelocityField
+{
+public:
+  PressureGradient(FloatField *pressure) : pressure(pressure) { }
+
+  Vector Map(Point p) const
+  {
+    float delta = 0.01;
+    Point p_x = p + Vector(delta,0.0,0.0);
+    Point p_y = p + Vector(0.0,delta,0.0);
+    Point p_z = p + Vector(0.0,0.0,delta);
+    float f = pressure->Map(p);
+    float f_x = pressure->Map(p_x);
+    float f_y = pressure->Map(p_y);
+    float f_z = pressure->Map(p_z);
+    return Vector((f_x-f)/delta,(f_y-f)/delta,(f_z-f)/delta);
+  }
+private:
+  FloatField *pressure;
+};
+
+GameApi::VFi GameApi::PointsApi::pressure_gradient(FFi pressure)
+{
+  FloatField *field = find_float_field(e,pressure);
+  return add_velocity_field(e, new PressureGradient(field));
+}
+
+class MatrixField : public VelocityField
+{
+public:
+  MatrixField(Movement *start, Movement *end) : start(start),end(end) { }
+  Vector Map(Point p) const {
+    Matrix m_start = start->get_whole_matrix(0.0, 1.0);
+    Matrix m_end = end->get_whole_matrix(0.0,1.0);
+    Point p_start = p * m_start;
+    Point p_end = p * m_end;
+    return p_end-p_start;
+  }
+private:
+  Movement *start;
+  Movement *end;
+};
+
+GameApi::VFi GameApi::PointsApi::matrix_field(MN start, MN end)
+{
+  Movement *st = find_move(e,start);
+  Movement *en = find_move(e,end);
+  return add_velocity_field(e, new MatrixField(st,en));
+}
