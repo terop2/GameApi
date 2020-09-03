@@ -1016,7 +1016,8 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
       std::cout << "get_event -- dragdrop event" << std::endl;
 
       Low_SDL_DropEvent *ptr = &event.drop;
-      filename = ptr->file;
+      if (ptr && ptr->file)
+	filename = ptr->file;
     }
   e2.drag_drop_filename = filename;
 

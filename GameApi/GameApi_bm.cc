@@ -1345,7 +1345,9 @@ public:
   virtual int SizeY() const { return bm.SizeX(); }
   virtual Color Map(int x, int y) const
   {
-    return bm.Map(y,x);
+    int yy = x;
+    int xx = SizeY()-y-1;
+    return bm.Map(xx,yy);
   }
 private:
   Bitmap<Color> &bm;
