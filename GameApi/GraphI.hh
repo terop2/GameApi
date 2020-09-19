@@ -1879,6 +1879,32 @@ public:
   virtual MainLoopItem *get_mainloop(int i) const=0;
 };
 
+#if 0
+class SkeletalAnimMap
+{
+public:
+  // initial pose
+  virtual int NumPoints() const=0;
+  virtual Vector GetPoint(int p) const=0;
+  virtual int Parent(int p) const=0; // -1 = no parent
+  virtual float Angle(int p) const=0;
+
+  // mesh coordinates relative to pose
+  virtual int FacePoint_PointNum(int face, int point) const=0;
+  virtual float SpanPos(int face, int point) const=0;
+  virtual float Dist(int face, int point) const=0;
+  virtual float Angle(int face, int point) const=0;
+
+  // animation frames
+  virtual int NumKeyFrames() const=0;
+  virtual Vector GetPoint(int k, int p) const=0;
+  virtual float Angle(int k, int p) const=0;
+  
+  // keyframe mapping
+  virtual int NumKeyFrameTransitions() const=0;
+  virtual std::pair<int,int> trans(int t) const=0;  
+};
+#endif
 
 class FloatArray2
 {

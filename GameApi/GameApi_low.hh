@@ -508,7 +508,7 @@ struct Low_SDL_MouseWheelEvent
 };
 struct Low_SDL_DropEvent
 {
-  const char *file;
+  const char *file=0;
 };
 struct Low_SDL_TouchFingerEvent
 {
