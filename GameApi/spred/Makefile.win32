@@ -1,3 +1,6 @@
 
 all:
-	g++ -std=c++11 test.cpp -L.. -I.. -lGameApi
+	g++ -std=c++11 test.cpp -L.. -I.. -lGameApi -lGameDep
+
+exe:
+	a.exe
