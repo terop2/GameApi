@@ -903,6 +903,34 @@ EXPORT GameApi::MN GameApi::MovementNode::mn_empty()
 {
   return add_move(e, new EmptyMovement);
 }
+class InterpolateMovement : public Movement
+{
+public:
+  InterpolateMovement(Movement *mn1, Movement *mn2, Fetcher<float> *fetch) : mn1(mn1), mn2(mn2), fetch(fetch) { }
+  virtual void event(MainLoopEvent &e) { mn1->event(e); mn2->event(e); fetch->event(e); }
+  virtual void frame(MainLoopEnv &e) { mn1->frame(e); mn2->frame(e); fetch->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { mn1->draw_frame(e); mn2->draw_frame(e); fetch->draw_frame(e); }
+  void draw_event(FrameLoopEvent &e) { mn1->draw_event(e); mn2->draw_event(e); fetch->draw_event(e); }
+
+  void set_matrix(Matrix m) { }
+  Matrix get_whole_matrix(float time, float delta_time) const {
+    return Matrix::Interpolate(mn1->get_whole_matrix(time,delta_time),
+			       mn2->get_whole_matrix(time,delta_time),
+			       fetch->get());
+  }
+private:
+  Movement *mn1, *mn2;
+  Fetcher<float> *fetch;
+};
+
+EXPORT GameApi::MN GameApi::MovementNode::mn_interpolate(MN mn1, MN mn2, FF value)
+{
+  Movement *mn1_a = find_move(e,mn1);
+  Movement *mn2_a = find_move(e,mn2);
+  Fetcher<float> *fetch = find_float_fetcher(e,value);
+  return add_move(e, new InterpolateMovement(mn1_a,mn2_a,fetch));
+}
+
 class ColorStart : public ColorChange
 {
 public:
@@ -17724,6 +17752,74 @@ void register_chai_types(GameApi::EveryApi *ev, chaiscript::ChaiScript *chai)
 
 }
 
+void register_chai_types2(GameApi::EveryApi *ev, chaiscript::ChaiScript *chai)
+{
+    chai->add(chaiscript::user_type<MainLoopEnv>(), "MainLoopEnv");  
+    chai->add(chaiscript::user_type<MainLoopEvent>(), "MainLoopEvent");  
+}
+
+class ChaiML : public MainLoopItem
+{
+public:
+  ChaiML(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string homepage, MainLoopItem *next) : env(e), ev(ev), url(url), homepage(homepage), next(next) {
+  }
+  virtual void Prepare() {
+    register_chai_types2(&ev, &chai);
+
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *ptr = env.get_loaded_async_url(url);
+    if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
+    std::string script = std::string(ptr->begin(), ptr->end());
+    try {
+      chai.eval(script.c_str());
+    } catch(chaiscript::exception::eval_error &ee) {
+      std::cout << ee.start_position.line << ":" << ee.reason << std::endl;
+      std::cout << ee.pretty_print();
+    }
+
+    try {
+      auto prep = chai.eval<std::function<void()> >("prepare");
+      prep();
+    } catch(chaiscript::exception::eval_error &ee) {
+      std::cout << ee.start_position.line << ":" << ee.reason << std::endl;
+      std::cout << ee.pretty_print();
+    }
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    try {
+      auto exe = chai.eval<std::function<void(MainLoopEnv&)> >("execute");
+      exe(e);
+    } catch(chaiscript::exception::eval_error &ee) {
+      std::cout << ee.start_position.line << ":" << ee.reason << std::endl;
+      std::cout << ee.pretty_print();
+    }
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    try {
+      auto he = chai.eval<std::function<void(MainLoopEvent&)> >("handle_event");
+      he(e);
+    } catch(chaiscript::exception::eval_error &ee) {
+      std::cout << ee.start_position.line << ":" << ee.reason << std::endl;
+      std::cout << ee.pretty_print();
+    }
+    next->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() {
+    return next->shader_id();
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string url, homepage;
+  chaiscript::ChaiScript chai;
+  MainLoopItem *next;
+};
+
 class ChaiMainLoop : public MainLoopItem
 {
 public:
@@ -17781,6 +17877,12 @@ private:
   std::string url, homepage;
   GameApi::ML mainloop;
 };
+GameApi::ML GameApi::MainLoopApi::chai_mainloop2(GameApi::EveryApi &ev, std::string url, GameApi::ML ml)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new ChaiML(e,ev,url,gameapi_homepageurl,item));
+}
+
 GameApi::ML GameApi::MainLoopApi::chai_mainloop(GameApi::EveryApi &ev, std::string url)
 {
   return add_main_loop(e, new ChaiMainLoop(e,ev,url,gameapi_homepageurl));

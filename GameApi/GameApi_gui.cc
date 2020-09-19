@@ -5066,8 +5066,8 @@ ASyncData async_data[] = {
   { "mainloop_api", "read_obj_pos", 0},
   { "polygon_api", "mesh_anim", 6},
   { "materials_api", "many_texture_id_material", 1},
-  { "bitmap_api", "script_bitmap", 0}
-
+  { "bitmap_api", "script_bitmap", 0},
+  { "points_api", "ply_pts", 0 }
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
@@ -6899,6 +6899,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "PF" },
 			 { "" },
 			 "MN", "move_api", "mn_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::mn_interpolate,
+			 "mn_slope",
+			 { "n1", "n2", "fetcher" },
+			 { "MN", "MN", "FF" },
+			 { "", "", "" },
+			 "MN", "move_api", "mn_interpolate"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::interpolate,
 			 "mn_interpolate",
 			 { "n1", "n2", "start_time", "end_time", "start_value", "end_value" },
@@ -9961,6 +9967,12 @@ std::vector<GameApiItem*> linesapi_functions()
  std::vector<GameApiItem*> pointsapi_functions()
 {
   std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::ply_pts,
+			 "pts_ply",
+			 { "url" },
+			 { "std::string" },
+			 { "http://tpgames.org/test.ply" },
+			 "PTS", "points_api", "ply_pts"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::pt_array,
 			 "pt_array",
 			 { "ev", "vec" },

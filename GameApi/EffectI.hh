@@ -102,6 +102,22 @@ public:
 #endif
 };
 
+// Face interpolation
+Point FaceCollection_FacePoint(FaceCollection *coll, int face, float u, float v);
+Vector FaceCollection_Normal(FaceCollection *coll, int face, float u, float v);
+Point2d FaceCollection_TexCoord(FaceCollection *coll, int face, float u, float v);
+float FaceCollection_TexCoord3(FaceCollection *coll, int face, float u, float v);
+unsigned int FaceCollection_Color(FaceCollection *coll, int face, float u, float v);
+
+// face intersection
+std::tuple<int,Point,float,float> FaceCollection_IntersectFace(FaceCollection *coll, Point start_pos, Vector ray_dir);
+
+// face area related functions
+float FaceCollection_CalculateFaceArea(FaceCollection *coll, int face);
+std::tuple<int,float,float> FaceCollection_PickRandomPoint_areasensitive(FaceCollection *coll);
+
+
+
 class LineCollection
 {
 public:

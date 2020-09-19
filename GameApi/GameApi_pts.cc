@@ -2208,3 +2208,305 @@ GameApi::VFi GameApi::PointsApi::matrix_field(MN start, MN end)
   Movement *en = find_move(e,end);
   return add_velocity_field(e, new MatrixField(st,en));
 }
+
+class PlyLoader
+{
+public:
+  PlyLoader(GameApi::Env &e, std::string url, std::string homepage) : e(e), url(url), homepage(homepage) { }
+  void Prepare()
+  {
+#ifndef EMSCRIPTEN
+      e.async_load_url(url, homepage);
+#endif
+      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+      if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+      std::string code(vec->begin(), vec->end());
+      std::stringstream ss2(code);
+      std::string line;
+      std::string current_section="";
+      while(std::getline(ss2,line)) {
+	std::stringstream ss(line);
+	std::string key;
+	ss >> key;
+	if (key=="ply") continue;
+	if (key=="format") {
+	  std::string format;
+	  ss >> format;
+	  if (format!="ascii") { std::cout << "Only ascii ply files supported!" << std::endl; return; }
+	}
+	if (key=="comment") continue;
+	if (key=="element") {
+	  std::string name;
+	  int count;
+	  ss >> name >> count;
+	  sections.push_back(name);
+	  sections_count.push_back(count);
+	  current_section = name;
+	  properties[current_section] = new std::vector<std::string>;
+	  properties_type1[current_section] = new std::vector<std::string>;
+	  properties_type2[current_section] = new std::vector<std::string>;
+	  properties_is_list[current_section] = new std::vector<bool>;
+	  floats[current_section] = new std::map<std::string,std::vector<float>*>;
+	  ints[current_section] = new std::map<std::string,std::vector<int>*>;
+	  int_lists[current_section] = new std::map<std::string,std::vector<std::vector<int>*>*>;
+	  float_lists[current_section] = new std::map<std::string,std::vector<std::vector<float>*>*>;
+	  continue;
+	}
+	if (key=="property") {
+	  std::string type1="";
+	  std::string type2="";
+	  std::string name;
+	  bool is_list = false;
+	  ss >> type1;
+	  if (type1=="list") {
+	    ss >> type1 >> type2;
+	    is_list = true;
+	  } else {
+	    if (type1=="char" || type1=="uchar" || type1=="short" || type1=="ushort" || type1=="int" || type1=="uint")
+	      {
+		type2="int";
+	      } else {
+	        if (type1=="float" || type1=="double") { type2="float"; }
+	      }
+	  }
+	  ss >> name;
+	  if (!is_list && type2=="float") {
+	    (*floats[current_section])[name] = new std::vector<float>;
+	  }
+	  if (!is_list && type2=="int") {
+	    (*ints[current_section])[name] = new std::vector<int>;
+	  }
+	  if (is_list && (type2=="float"||type2=="double")) {
+	    (*float_lists[current_section])[name] = new std::vector<std::vector<float>*>;
+	  } else {
+	    (*int_lists[current_section])[name] = new std::vector<std::vector<int>*>;
+	  }
+	  
+	  properties[current_section]->push_back(name);
+	  properties_type1[current_section]->push_back(type1);
+	  properties_type2[current_section]->push_back(type2);
+	  properties_is_list[current_section]->push_back(is_list);
+	}
+	if (key=="end_header")
+	  {
+	    break;
+	  }
+      }
+      int curr_sec=0;
+      int current_line=0;
+      int target_line=sections_count[curr_sec];
+      if (sections.size()>0)
+	current_section = sections[0];
+      while(std::getline(ss2,line)) {
+	std::stringstream ss(line);
+	std::vector<std::string>* prop_vec = properties[current_section];
+	std::vector<std::string>* type1_vec = properties_type1[current_section];
+	std::vector<std::string>* type2_vec = properties_type2[current_section];
+	std::vector<bool>* is_list_vec = properties_is_list[current_section];
+	int s = prop_vec->size();
+	for(int i=0;i<s;i++) {
+	  std::string prop_name = (*prop_vec)[i];
+	  std::string type1 = (*type1_vec)[i];
+	  std::string type2 = (*type2_vec)[i];
+	  bool is_list = (*is_list_vec)[i];
+	  if (!is_list) {
+	    /* is_list=false */
+	    if (type2=="float") {
+	      float value = 0.0;
+	      if (ss >> value) {
+		(*floats[current_section])[prop_name]->push_back(value);
+	      } else {
+		std::cout << ".ply file broken, not enough data in " << prop_name << std::endl;
+	      }
+	    }
+	    if (type2=="int") {
+	      int value = 0;
+	      if (ss >> value) {
+		(*ints[current_section])[prop_name]->push_back(value);
+	      } else {
+		std::cout << ".ply file broken, not enough data in " << prop_name << std::endl;
+	      }
+	    }
+	  } else
+	    {
+	      /* is_list=true */
+	      int count = 0;
+	      ss >> count;
+	      if (type2=="float"||type2=="double") {
+		std::vector<float> *vec = new std::vector<float>;
+		(*float_lists[current_section])[prop_name]->push_back(vec);
+	      for(int i=0;i<count;i++) {
+		if (type2=="float"||type2=="double") {
+		  float value=0;
+		  if (ss >> value)
+		    vec->push_back(value);
+		  else
+		    {
+		      std::cout << ".ply file broken/not enough data in a list" << std::endl;
+		    }
+		} else
+		  {
+		    std::cout << "int lists are not supported in .ply loader" << std::endl;
+		    return;
+		  }
+
+	      }
+	      } else {
+		std::vector<int> *vec = new std::vector<int>;
+		(*int_lists[current_section])[prop_name]->push_back(vec);
+		for(int i=0;i<count;i++) {
+		  if (type2=="char"||type2=="uchar"||type2=="short"||type2=="ushort"||type2=="int"||type2=="uint") {
+		    int value=0;
+		    if (ss >> value)
+		      vec->push_back(value);
+		    else
+		      {
+			std::cout << ".ply file broken/not enough data in a list" << std::endl;
+		      }
+		  } else
+		    {
+		      std::cout << "Float lists are not supported in .ply loader" << std::endl;
+		      return;
+		    }
+		}
+	      }
+	    }
+	}
+	current_line++;
+	if (current_line == target_line) {
+	  curr_sec++;
+	  current_line = 0;
+	  if (curr_sec<sections_count.size()) {
+	    target_line = sections_count[curr_sec];
+	    current_section=sections[curr_sec];
+	  }
+	  else
+	    break;
+	}
+      }
+  }
+      
+public:
+  GameApi::Env &e;
+  std::string url, homepage;
+  std::vector<std::string> sections;
+  std::vector<int> sections_count;
+  mutable std::map<std::string, std::vector<std::string>*> properties;
+  mutable std::map<std::string, std::vector<std::string>*> properties_type1;
+  mutable std::map<std::string, std::vector<std::string>*> properties_type2;
+  mutable std::map<std::string, std::vector<bool>*> properties_is_list;
+  mutable std::map<std::string,std::map<std::string,std::vector<float>* >*> floats;
+  mutable std::map<std::string,std::map<std::string,std::vector<int>* >*> ints;
+  mutable std::map<std::string, std::map<std::string,std::vector<std::vector<float>*>*>*> float_lists;
+  mutable std::map<std::string, std::map<std::string,std::vector<std::vector<int>*>*>*> int_lists;
+};
+
+class PlyPTS : public PointsApiPoints
+{
+public:
+  PlyPTS(GameApi::Env &e, std::string url, std::string homepage) : load(e,url,homepage) { }
+
+  virtual void Prepare() { load.Prepare(); }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) { return false; }
+  virtual int NumPoints() const
+  {
+    std::map<std::string,std::vector<float>*> *mymap = load.floats["vertex"];
+    if (!mymap) return 0;
+    std::vector<float>* xvec = mymap->operator[]("x");
+    if (!xvec) return 0;
+    return xvec->size();
+  }
+  virtual Point Pos(int i) const
+  {
+    std::map<std::string,std::vector<float>*> *mymap = load.floats["vertex"];
+    if (!mymap) return Point(0.0,0.0,0.0);
+    std::vector<float>* xvec = mymap->operator[]("x");
+    std::vector<float>* yvec = mymap->operator[]("y");
+    std::vector<float>* zvec = mymap->operator[]("z");
+    if (!xvec||!yvec||!zvec) return Point(0.0,0.0,0.0);
+    float x = xvec->operator[](i);
+    float y = yvec->operator[](i);
+    float z = zvec->operator[](i);
+    return Point(x,y,z);
+  }
+  virtual unsigned int Color(int i) const
+  {
+    std::map<std::string,std::vector<int>*> *mymap = load.ints["vertex"];
+    if (!mymap) return 0xff000000;
+    std::vector<int> *rvec = mymap->operator[]("red");
+    std::vector<int> *gvec = mymap->operator[]("green");
+    std::vector<int> *bvec = mymap->operator[]("blue");
+    if (!rvec||!gvec||!bvec) return 0xff000000;
+    int r = rvec->operator[](i);
+    int g = gvec->operator[](i);
+    int b = bvec->operator[](i);
+    unsigned int color = 0xff000000 + (r<<16) + (g << 8) + b;
+    return color;
+  }
+
+private:
+  PlyLoader load;
+};
+
+extern std::string gameapi_homepageurl;
+
+GameApi::PTS GameApi::PointsApi::ply_pts(std::string url)
+{
+  return add_points_api_points(e, new PlyPTS(e,url,gameapi_homepageurl));
+}
+
+class PlyFaceCollection : public FaceCollection
+{
+public:
+  PlyFaceCollection(GameApi::Env &e, std::string url, std::string homepage) : load(e,url,homepage) { }
+  virtual void Prepare() { load.Prepare(); }
+  virtual int NumFaces() const
+  {
+    return load.int_lists["face"]->operator[]("vertex_index")->size();
+  }
+  virtual int NumPoints(int face) const
+  {
+    return load.int_lists["face"]->operator[]("vertex_index")->operator[](face)->size();
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int vertex = load.int_lists["face"]->operator[]("vertex_index")->operator[](face)->operator[](point);
+    float x = load.floats["vertex"]->operator[]("x")->operator[](vertex);
+    float y = load.floats["vertex"]->operator[]("y")->operator[](vertex);
+    float z = load.floats["vertex"]->operator[]("z")->operator[](vertex);
+    return Point(x,y,z);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    int vertex = load.int_lists["face"]->operator[]("vertex_index")->operator[](face)->operator[](point);
+    float nx = load.floats["vertex"]->operator[]("nx")->operator[](vertex);
+    float ny = load.floats["vertex"]->operator[]("ny")->operator[](vertex);
+    float nz = load.floats["vertex"]->operator[]("nz")->operator[](vertex);
+    return Vector(nx,ny,nz);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    int vertex = load.int_lists["face"]->operator[]("vertex_index")->operator[](face)->operator[](point);
+    int r = load.ints["vertex"]->operator[]("red")->operator[](vertex);
+    int g = load.ints["vertex"]->operator[]("green")->operator[](vertex);
+    int b = load.ints["vertex"]->operator[]("blue")->operator[](vertex);
+    return 0xff000000 + (r<<16) + (g<<8) + b;
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    int vertex = load.int_lists["face"]->operator[]("vertex_index")->operator[](face)->operator[](point);
+    float tx = load.float_lists["face"]->operator[]("texcoord")->operator[](face)->operator[](point*2);
+    float ty = load.float_lists["face"]->operator[]("texcoord")->operator[](face)->operator[](point*2+1);
+    
+    Point2d p;
+    p.x = tx;
+    p.y = ty;
+    return p;
+  }
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
+private:
+  PlyLoader load;  
+};

@@ -4685,17 +4685,28 @@ GameApi::BM GameApi::BitmapApi::scale_to_size(BM bm, int sz)
 class GridML : public MainLoopItem
 {
 public:
-  GridML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Bitmap<int> &map, float y, float pos_x, float pos_z, float x_vec_x, float x_vec_z, float z_vec_x, float z_vec_z, int start_x, int start_z, float frame_inc) : env(env), ev(ev), next(next), map(map), y(y), pos_x(pos_x), pos_z(pos_z), x_vec_x(x_vec_x), x_vec_z(x_vec_z), z_vec_x(z_vec_x), z_vec_z(z_vec_z), start_x(start_x), start_z(start_z), frame_inc(frame_inc) {
+  GridML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Bitmap<int> &map, float y, float pos_x, float pos_z, float x_vec_x, float x_vec_z, float z_vec_x, float z_vec_z, int start_x, int start_z, float frame_inc) : env(env), ev(ev), next(next), map(map), y(y), pos_x(pos_x), pos_z(pos_z), x_vec_x(x_vec_x), x_vec_z(x_vec_z), z_vec_x(z_vec_x), z_vec_z(z_vec_z), start_x(start_x), start_z(start_z), frame_inc(frame_inc),pid(2.0,0.0,0.5) {
     curr_x=start_x;
     curr_z=start_z;
     next_x=start_x;
     next_z=start_z;
     loc = 1.0;
+    pid.setPID(2.0,0.0,0.5);
+    speed = 0.0;
+    //pid.setOutputLimits(0.0,1.0);
+    //pid.setDirection(true);
   }
   virtual void Prepare() { map.Prepare(); next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
-    if (loc<1.0) loc+=frame_inc*e.delta_time;
+    if (loc<1.0) {
+      //loc+=frame_inc*e.delta_time;
+      //std::cout << "Prev loc:" << loc << std::endl;
+      double l = pid.getOutput(loc,1.3);
+      //speed += l;
+      loc+=l*e.delta_time;
+      //std::cout << "New loc:" << loc << std::endl;
+     }
     else if (flag==true) {
       flag = false;
       MainLoopEvent ee = ee_store;
@@ -4743,11 +4754,20 @@ public:
 	e.ch=='s'||e.ch==22||e.ch==81||
 	e.ch=='d'||e.ch==7||e.ch==79)
       filter_out = true;
+
+    if (e.type==769 && (e.ch=='w'||e.ch==26||e.ch==82))
+      speed = 0.0;
+    if (e.type==769 && (e.ch=='s'||e.ch==22||e.ch==81))
+      speed = 0.0;
+    if (e.type==769 && (e.ch=='a'||e.ch==4||e.ch==80))
+      speed = 0.0;
+    if (e.type==769 && (e.ch=='d'||e.ch==7||e.ch==79))
+      speed = 0.0;
     
     if (e.type==768 && (e.ch=='w'||e.ch==26||e.ch==82) && loc>0.99) {
       curr_x = next_x;
       curr_z = next_z;
-      loc=0.0;
+      loc-=1.0;
       next_z++;
       if (next_z>=map.SizeY() || !access(next_x,next_z)) next_z--;
       ee_store = e;
@@ -4757,7 +4777,7 @@ public:
     if (e.type==768 && (e.ch=='s'||e.ch==22||e.ch==81) && loc>0.99) {
       curr_x = next_x;
       curr_z = next_z;
-      loc=0.0;
+      loc-=1.0;
       next_z--;
       if (next_z<0 || !access(next_x,next_z)) next_z++;
       ee_store = e;
@@ -4767,7 +4787,7 @@ public:
     if (e.type==768 && (e.ch=='a'||e.ch==4||e.ch==80) && loc>0.99) {
       curr_x = next_x;
       curr_z = next_z;
-      loc=0.0;
+      loc-=1.0;
       next_x++;
       if (next_x>map.SizeX() || !access(next_x,next_z)) next_x--;
       ee_store = e;
@@ -4777,7 +4797,7 @@ public:
     if(e.type==768 && (e.ch=='d'||e.ch==7||e.ch==79) && loc>0.99) {
       curr_x = next_x;
       curr_z = next_z;
-      loc=0.0;
+      loc-=1.0;
       next_x--;
       if (next_z<0 || !access(next_x,next_z)) next_x++;
       ee_store = e;
@@ -4813,8 +4833,10 @@ private:
   int curr_x, curr_z;
   int next_x, next_z;
   float loc;
+  float speed;
   MainLoopEvent ee_store;
   bool flag = false;
+  Pid pid;
 };
 
 GameApi::ML GameApi::BitmapApi::grid_ml(EveryApi &ev, ML next, IBM map, float y, float pos_x, float pos_z, float x_vec_x, float x_vec_z, float z_vec_x, float z_vec_z, int start_x, int start_z, float frame_inc)

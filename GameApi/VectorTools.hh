@@ -1228,4 +1228,41 @@ public:
   static std::vector<float> add(std::vector<float> v1, std::vector<float> v2);
 };
 
+class Pid
+{
+public:
+  Pid(double p, double i, double d);
+  Pid(double p, double i, double d, double f);
+  void init();
+  void setP(double p);
+  void setI(double i);
+  void setD(double d);
+  void setF(double f);
+  void setPID(double p, double i, double d);
+  void setPID(double p, double i, double d, double f);
+  void setMaxIOutput(double maximum);
+  void setOutputLimits(double output);
+  void setOutputLimits(double minimum, double maximum);
+  void setDirection(bool reversed);
+  void setSetpoint(double setpoint);
+  double getOutput(double actual, double setpoint);
+  double getOutput();
+  double getOutput(double actual);
+  void reset();
+  void setOutputRampRate(double rate);
+  void setSetpointRange(double range);
+  void setOutputFilter(double strength);
+  double clamp(double value, double min, double max);
+  bool bounded(double value, double min, double max);
+  void checkSigns();
+private:
+  double P,I,D,F;
+  double maxIOutput, maxError, errorSum, maxOutput,minOutput,setpoint,lastActual;
+  bool firstRun, reversed;
+  double outputRampRate;
+  double lastOutput;
+  double outputFilter;
+  double setpointRange;
+};
+
 #endif
