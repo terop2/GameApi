@@ -1625,3 +1625,212 @@ Line PlanePlaneIntersection(const Plane &p1, const Plane &p2)
   l.dir = Vector(p);
   return l;
 }
+
+Pid::Pid(double p, double i, double d){
+	init();
+	P=p; I=i; D=d;
+}
+Pid::Pid(double p, double i, double d, double f){
+	init();
+	P=p; I=i; D=d; F=f;
+}
+void Pid::init(){
+	P=0;
+	I=0;
+	D=0;
+	F=0;
+
+	maxIOutput=0;
+	maxError=0;
+	errorSum=0;
+	maxOutput=0; 
+	minOutput=0;
+	setpoint=0;
+	lastActual=0;
+	firstRun=true;
+	reversed=false;
+	outputRampRate=0;
+	lastOutput=0;
+	outputFilter=0;
+	setpointRange=0;
+}
+
+void Pid::setP(double p){
+	P=p;
+	checkSigns();
+}
+void Pid::setI(double i){
+	if(I!=0){
+		errorSum=errorSum*I/i;
+		}
+	if(maxIOutput!=0){
+		maxError=maxIOutput/i;
+	}
+	I=i;
+	checkSigns();
+
+} 
+
+void Pid::setD(double d){
+	D=d;
+	checkSigns();
+}
+void Pid::setF(double f){
+	F=f;
+	checkSigns();
+}
+
+void Pid::setPID(double p, double i, double d){
+	P=p;I=i;D=d;
+	checkSigns();
+}
+
+void Pid::setPID(double p, double i, double d,double f){
+	P=p;I=i;D=d;F=f;
+	checkSigns();
+}
+
+void Pid::setMaxIOutput(double maximum){
+	maxIOutput=maximum;
+	if(I!=0){
+		maxError=maxIOutput/I;
+	}
+}
+
+void Pid::setOutputLimits(double output){ setOutputLimits(-output,output);}
+
+void Pid::setOutputLimits(double minimum,double maximum){
+	if(maximum<minimum)return;
+	maxOutput=maximum;
+	minOutput=minimum;
+
+	if(maxIOutput==0 || maxIOutput>(maximum-minimum) ){
+		setMaxIOutput(maximum-minimum);
+	}
+}
+
+void Pid::setDirection(bool reversed){
+	this->reversed=reversed;
+}
+
+void Pid::setSetpoint(double setpoint){
+	this->setpoint=setpoint;
+} 
+
+double Pid::getOutput(double actual, double setpoint){
+	double output;
+	double Poutput;
+	double Ioutput;
+	double Doutput;
+	double Foutput;
+
+	this->setpoint=setpoint;
+
+	if(setpointRange!=0){
+		setpoint=clamp(setpoint,actual-setpointRange,actual+setpointRange);
+	}
+
+	double error=setpoint-actual;
+
+	Foutput=F*setpoint;
+
+	Poutput=P*error;	 
+
+	if(firstRun){
+		lastActual=actual;
+		lastOutput=Poutput+Foutput;
+		firstRun=false;
+	}
+
+
+	Doutput= -D*(actual-lastActual);
+	lastActual=actual;
+
+
+
+
+	Ioutput=I*errorSum;
+	if(maxIOutput!=0){
+		Ioutput=clamp(Ioutput,-maxIOutput,maxIOutput); 
+	}	
+
+	output=Foutput + Poutput + Ioutput + Doutput;
+
+	if(minOutput!=maxOutput && !bounded(output, minOutput,maxOutput) ){
+		errorSum=error; 
+	}
+	else if(outputRampRate!=0 && !bounded(output, lastOutput-outputRampRate,lastOutput+outputRampRate) ){
+		errorSum=error; 
+	}
+	else if(maxIOutput!=0){
+		errorSum=clamp(errorSum+error,-maxError,maxError);
+	}
+	else{
+		errorSum+=error;
+	}
+
+	if(outputRampRate!=0){
+		output=clamp(output, lastOutput-outputRampRate,lastOutput+outputRampRate);
+	}
+	if(minOutput!=maxOutput){ 
+		output=clamp(output, minOutput,maxOutput);
+		}
+	if(outputFilter!=0){
+		output=lastOutput*outputFilter+output*(1-outputFilter);
+	}
+
+	lastOutput=output;
+	return output;
+}
+
+double Pid::getOutput(){
+	return getOutput(lastActual,setpoint);
+}
+
+double Pid::getOutput(double actual){
+	return getOutput(actual,setpoint);
+}
+	
+void Pid::reset(){
+	firstRun=true;
+	errorSum=0;
+}
+
+void Pid::setOutputRampRate(double rate){
+	outputRampRate=rate;
+}
+
+void Pid::setSetpointRange(double range){
+	setpointRange=range;
+}
+
+void Pid::setOutputFilter(double strength){
+	if(strength==0 || bounded(strength,0,1)){
+		outputFilter=strength;
+	}
+}
+
+double Pid::clamp(double value, double min, double max){
+	if(value > max){ return max;}
+	if(value < min){ return min;}
+	return value;
+}
+
+bool Pid::bounded(double value, double min, double max){
+		return (min<value) && (value<max);
+}
+
+void Pid::checkSigns(){
+	if(reversed){	//all values should be below zero
+		if(P>0) P*=-1;
+		if(I>0) I*=-1;
+		if(D>0) D*=-1;
+		if(F>0) F*=-1;
+	}
+	else{	//all values should be above zero
+		if(P<0) P*=-1;
+		if(I<0) I*=-1;
+		if(D<0) D*=-1;
+		if(F<0) F*=-1;
+	}
+}

@@ -303,6 +303,7 @@ public:
   IMPORT ML dyn(D d);
   IMPORT ML print_stats(P p);
   IMPORT ML chai_mainloop(EveryApi &ev, std::string url);
+  IMPORT ML chai_mainloop2(EveryApi &ev, std::string url, GameApi::ML ml);
   IMPORT ML bind_obj_type(std::string name, GameApi::P obj, GameApi::MN move, GameApi::MT mat, float radius);
   IMPORT ML bind_obj_type(GameApi::EveryApi &ev, std::string url);
   IMPORT ML read_obj_pos(std::string url);
@@ -1558,6 +1559,7 @@ class MovementNode
 {
 public:
   MovementNode(Env &e) : e(e) {}
+  IMPORT MN mn_interpolate(MN n1, MN n2, FF fetcher);
   IMPORT MN interpolate(MN n1, MN n2, float start_time, float end_time, float start_value, float end_value);
   IMPORT MN mn_empty();
   IMPORT MN level(MN next);
@@ -3142,6 +3144,7 @@ class PointsApi
 {
 public:
   PointsApi(Env &e) : e(e) { }
+  IMPORT PTS ply_pts(std::string url);
   IMPORT PTS iterate_points(PTS points, VFi field, FA speed);
   IMPORT VFi pressure_gradient(FFi pressure);
   IMPORT VFi matrix_field(MN start, MN end);
