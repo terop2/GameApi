@@ -3144,6 +3144,7 @@ class PointsApi
 {
 public:
   PointsApi(Env &e) : e(e) { }
+  IMPORT P ply_faces(std::string url);
   IMPORT PTS ply_pts(std::string url);
   IMPORT PTS iterate_points(PTS points, VFi field, FA speed);
   IMPORT VFi pressure_gradient(FFi pressure);

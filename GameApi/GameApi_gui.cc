@@ -5067,7 +5067,8 @@ ASyncData async_data[] = {
   { "polygon_api", "mesh_anim", 6},
   { "materials_api", "many_texture_id_material", 1},
   { "bitmap_api", "script_bitmap", 0},
-  { "points_api", "ply_pts", 0 }
+  { "points_api", "ply_pts", 0 },
+  { "points_api", "ply_faces", 0 }
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
@@ -8267,6 +8268,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "P" },
 			 { "" },
 			 "[BM]", "polygon_api", "p_mtl_bump"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::ply_faces,
+			 "p_ply",
+			 { "url" },
+			 { "std::string" },
+			 { "http://tpgames.org/test.ply" },
+			 "P", "points_api", "ply_faces"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_url_mtl,
 			 "p_url_mtl",
 			 { "ev", "url", "count", "material_names" },
