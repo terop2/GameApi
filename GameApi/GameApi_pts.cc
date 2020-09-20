@@ -2213,6 +2213,156 @@ class PlyLoader
 {
 public:
   PlyLoader(GameApi::Env &e, std::string url, std::string homepage) : e(e), url(url), homepage(homepage) { }
+  float get_float(std::stringstream &ss, std::string type)
+  {
+    if (type=="float") {
+      char ch[4];
+      if (!is_big_endian) {
+	ss.get(ch[0]);
+	ss.get(ch[1]);
+	ss.get(ch[2]);
+	ss.get(ch[3]);
+      } else {
+	ss.get(ch[3]);
+	ss.get(ch[2]);
+	ss.get(ch[1]);
+	ss.get(ch[0]);
+      }
+      float *ptr = (float*)&ch[0];
+      return *ptr;
+    }
+    if (type=="double") {
+      char ch[8];
+      if (!is_big_endian) {
+	ss.get(ch[0]);
+	ss.get(ch[1]);
+	ss.get(ch[2]);
+	ss.get(ch[3]);
+	ss.get(ch[4]);
+	ss.get(ch[5]);
+	ss.get(ch[6]);
+	ss.get(ch[7]);
+      } else {
+	ss.get(ch[7]);
+	ss.get(ch[6]);
+	ss.get(ch[5]);
+	ss.get(ch[4]);
+	ss.get(ch[3]);
+	ss.get(ch[2]);
+	ss.get(ch[1]);
+	ss.get(ch[0]);
+      }
+      double *ptr = (double*)&ch[0];
+      return float(*ptr);
+    }
+  }
+  int get_int(std::stringstream &ss, std::string type)
+  {
+    if (type=="char") {
+      char ch;
+      ss.get(ch);
+      return int(ch);
+    }
+    if (type=="uchar") {
+      char ch;
+      ss.get(ch);
+      return int(ch);
+    }
+    if (type=="short") {
+      char ch[2];
+      if (!is_big_endian) {
+	ss.get(ch[0]);
+	ss.get(ch[1]);
+      } else {
+	ss.get(ch[1]);
+	ss.get(ch[0]);
+      }
+      short *sh = (short*)&ch[0];
+      return int(*sh);
+    }
+    if (type=="ushort") {
+      char ch[2];
+      if (!is_big_endian) {
+	ss.get(ch[0]);
+	ss.get(ch[1]);
+      } else {
+	ss.get(ch[1]);
+	ss.get(ch[0]);
+      }
+      unsigned short *sh = (unsigned short *)&ch[0];
+      return int(*sh);
+    }
+    if (type=="int") {
+      char ch[4];
+      if (!is_big_endian) {
+	ss.get(ch[0]);
+	ss.get(ch[1]);
+	ss.get(ch[2]);
+	ss.get(ch[3]);
+      } else {
+	ss.get(ch[3]);
+	ss.get(ch[2]);
+	ss.get(ch[1]);
+	ss.get(ch[0]);
+      }
+      int *sh = (int*)&ch[0];
+      return int(*sh);
+    }
+    if (type=="uint") {
+      char ch[4];
+      if (!is_big_endian) {
+	ss.get(ch[0]);
+	ss.get(ch[1]);
+	ss.get(ch[2]);
+	ss.get(ch[3]);
+      } else {
+	ss.get(ch[3]);
+	ss.get(ch[2]);
+	ss.get(ch[1]);
+	ss.get(ch[0]);
+      }
+      unsigned int *sh = (unsigned int*)&ch[0];
+      return int(*sh);
+    }
+    std::cout << "Unknown type in .ply file" << std::endl;
+    return 0;
+  }
+  std::basic_istream<char> &getline(std::stringstream &ss, std::string &line)
+  {
+    if (!is_binary) return std::getline(ss,line);
+    return ss;     
+  }
+  class stringstream {
+  public:
+    stringstream(PlyLoader &ref, std::stringstream *str2, std::string s, bool is_binary) : ref(ref), is_binary(is_binary) {
+      if (is_binary) {
+	str = str2;
+      } else {
+	str = new std::stringstream(s);
+      }
+    }
+    stringstream &get(float &f, std::string type) {
+      if (is_binary) {
+	f = ref.get_float(*str, type);
+      } else {
+	str->operator>>(f);
+      }
+      return *this;
+    }
+    stringstream &get(int &i, std::string type) {
+      if (is_binary) {
+	i = ref.get_int(*str,type);
+      } else {
+	str->operator>>(i);
+      }
+      return *this;
+    }
+    explicit operator bool() { return !str->fail(); }
+    std::stringstream *str;
+    PlyLoader &ref;
+    bool is_binary;
+  };
+  
   void Prepare()
   {
 #ifndef EMSCRIPTEN
@@ -2232,7 +2382,13 @@ public:
 	if (key=="format") {
 	  std::string format;
 	  ss >> format;
-	  if (format!="ascii") { std::cout << "Only ascii ply files supported!" << std::endl; return; }
+	  if (format=="ascii") { is_binary=false; }
+	  else if (format=="binary_little_endian") {
+	    is_binary = true; is_big_endian=false;
+	  }
+	  else if (format=="binary_big_endian") {
+	    is_binary = true; is_big_endian=true;
+	  } else { std::cout << ".ply unknown format" << std::endl; return; }
 	}
 	if (key=="comment") continue;
 	if (key=="element") {
@@ -2297,8 +2453,8 @@ public:
       int target_line=sections_count[curr_sec];
       if (sections.size()>0)
 	current_section = sections[0];
-      while(std::getline(ss2,line)) {
-	std::stringstream ss(line);
+      while(getline(ss2,line)) {
+	stringstream ss(*this, &ss2,line,is_binary);
 	std::vector<std::string>* prop_vec = properties[current_section];
 	std::vector<std::string>* type1_vec = properties_type1[current_section];
 	std::vector<std::string>* type2_vec = properties_type2[current_section];
@@ -2313,7 +2469,7 @@ public:
 	    /* is_list=false */
 	    if (type2=="float") {
 	      float value = 0.0;
-	      if (ss >> value) {
+	      if (ss.get(value,type1)) {
 		(*floats[current_section])[prop_name]->push_back(value);
 	      } else {
 		std::cout << ".ply file broken, not enough data in " << prop_name << std::endl;
@@ -2321,7 +2477,7 @@ public:
 	    }
 	    if (type2=="int") {
 	      int value = 0;
-	      if (ss >> value) {
+	      if (ss.get(value,type1)) {
 		(*ints[current_section])[prop_name]->push_back(value);
 	      } else {
 		std::cout << ".ply file broken, not enough data in " << prop_name << std::endl;
@@ -2331,18 +2487,19 @@ public:
 	    {
 	      /* is_list=true */
 	      int count = 0;
-	      ss >> count;
+	      ss.get(count,type1);
+	      //std::cout << "Got count=" << count << std::endl;
 	      if (type2=="float"||type2=="double") {
 		std::vector<float> *vec = new std::vector<float>;
 		(*float_lists[current_section])[prop_name]->push_back(vec);
 	      for(int i=0;i<count;i++) {
 		if (type2=="float"||type2=="double") {
 		  float value=0;
-		  if (ss >> value)
+		  if (ss.get(value,type2))
 		    vec->push_back(value);
 		  else
 		    {
-		      std::cout << ".ply file broken/not enough data in a list" << std::endl;
+		      std::cout << ".ply file broken/not enough data in a list" << type1 << " " << type2 << std::endl;
 		    }
 		} else
 		  {
@@ -2357,11 +2514,11 @@ public:
 		for(int i=0;i<count;i++) {
 		  if (type2=="char"||type2=="uchar"||type2=="short"||type2=="ushort"||type2=="int"||type2=="uint") {
 		    int value=0;
-		    if (ss >> value)
+		    if (ss.get(value,type2))
 		      vec->push_back(value);
 		    else
 		      {
-			std::cout << ".ply file broken/not enough data in a list" << std::endl;
+			std::cout << ".ply file broken/not enough data in a list" << type1 << " " << type2<< std::endl;
 		      }
 		  } else
 		    {
@@ -2391,6 +2548,8 @@ public:
   std::string url, homepage;
   std::vector<std::string> sections;
   std::vector<int> sections_count;
+  bool is_binary;
+  bool is_big_endian;
   mutable std::map<std::string, std::vector<std::string>*> properties;
   mutable std::map<std::string, std::vector<std::string>*> properties_type1;
   mutable std::map<std::string, std::vector<std::string>*> properties_type2;
@@ -2433,11 +2592,11 @@ public:
   virtual unsigned int Color(int i) const
   {
     std::map<std::string,std::vector<int>*> *mymap = load.ints["vertex"];
-    if (!mymap) return 0xff000000;
+    if (!mymap) { /*std::cout << "mymap not found!" << std::endl;*/ return 0xff000000; }
     std::vector<int> *rvec = mymap->operator[]("red");
     std::vector<int> *gvec = mymap->operator[]("green");
     std::vector<int> *bvec = mymap->operator[]("blue");
-    if (!rvec||!gvec||!bvec) return 0xff000000;
+    if (!rvec||!gvec||!bvec) { /*std::cout << "Colours not found!" << std::endl;*/ return 0xff000000; }
     int r = rvec->operator[](i);
     int g = gvec->operator[](i);
     int b = bvec->operator[](i);
@@ -2463,50 +2622,154 @@ public:
   virtual void Prepare() { load.Prepare(); }
   virtual int NumFaces() const
   {
-    return load.int_lists["face"]->operator[]("vertex_index")->size();
+    std::map<std::string,std::vector<std::vector<int>*>*>* mymap = load.int_lists["face"];
+    if (!mymap) { std::cout << "numfaces:mymap" << std::endl; return 0; }
+    std::vector<std::vector<int>*> *vec = mymap->operator[]("vertex_index");
+    std::vector<std::vector<int>*> *vec2 = mymap->operator[]("vertex_indices");
+    if (!vec&&!vec2) { std::cout << "numfaces:vec" << std::endl; return 0; }
+    if (vec)
+      return vec->size();
+    else
+      return vec2->size();
   }
   virtual int NumPoints(int face) const
   {
-    return load.int_lists["face"]->operator[]("vertex_index")->operator[](face)->size();
+    std::map<std::string,std::vector<std::vector<int>*>*>* mymap = load.int_lists["face"];
+    if (!mymap) { std::cout << "numpoints:mymap" << std::endl; return 0; }
+    std::vector<std::vector<int>*> *vec = mymap->operator[]("vertex_index");
+    std::vector<std::vector<int>*> *vec2 = mymap->operator[]("vertex_indices");
+    if (!vec&&!vec2) { std::cout << "numpoints:vec" << std::endl; return 0;}
+    if (vec)
+      return vec->operator[](face)->size();
+    else return vec2->operator[](face)->size();
   }
   virtual Point FacePoint(int face, int point) const
   {
-    int vertex = load.int_lists["face"]->operator[]("vertex_index")->operator[](face)->operator[](point);
-    float x = load.floats["vertex"]->operator[]("x")->operator[](vertex);
-    float y = load.floats["vertex"]->operator[]("y")->operator[](vertex);
-    float z = load.floats["vertex"]->operator[]("z")->operator[](vertex);
+    std::map<std::string,std::vector<std::vector<int>*>*>* mymap = load.int_lists["face"];
+    if (!mymap) { std::cout << "No mymap" << std::endl; return Point(0.0,0.0,0.0); }
+    std::vector<std::vector<int>*> *vec = mymap->operator[]("vertex_index");
+    std::vector<std::vector<int>*> *veca = mymap->operator[]("vertex_indices");
+    if (!vec&&!veca) { std::cout << "no vec" << std::endl; return Point(0.0,0.0,0.0); }
+    if (!(face>=0 && face<std::max(vec?vec->size():0,veca?veca->size():0))) { std::cout << "face index" << std::endl; return Point(0.0,0.0,0.0); }
+    int vertex = 0;
+    if (vec) vertex = vec->operator[](face)->operator[](point);
+    if (veca) vertex = veca->operator[](face)->operator[](point);
+    
+    std::map<std::string,std::vector<float>* > *vmap = load.floats["vertex"];
+    std::vector<float> *xvec = vmap->operator[]("x");
+    std::vector<float> *yvec = vmap->operator[]("y");
+    std::vector<float> *zvec = vmap->operator[]("z");
+    if (!xvec||!yvec||!zvec) { std::cout << "xyzvec problem" << std::endl; return Point(0.0,0.0,0.0); }
+    float x = xvec->operator[](vertex);
+    float y = yvec->operator[](vertex);
+    float z = zvec->operator[](vertex);
+    std::cout << "Point:" << x << " " << y << " " << z << std::endl;
     return Point(x,y,z);
   }
   virtual Vector PointNormal(int face, int point) const
   {
-    int vertex = load.int_lists["face"]->operator[]("vertex_index")->operator[](face)->operator[](point);
-    float nx = load.floats["vertex"]->operator[]("nx")->operator[](vertex);
-    float ny = load.floats["vertex"]->operator[]("ny")->operator[](vertex);
-    float nz = load.floats["vertex"]->operator[]("nz")->operator[](vertex);
+    std::map<std::string,std::vector<std::vector<int>*>*>* mymap = load.int_lists["face"];
+    if (!mymap) return Point(0.0,0.0,0.0);
+    std::vector<std::vector<int>*> *vec = mymap->operator[]("vertex_index");
+    std::vector<std::vector<int>*> *veca = mymap->operator[]("vertex_indices");
+    if (!vec&&!veca) return Point(0.0,0.0,0.0);
+    
+    if (!(face>=0 && face<std::max(vec?vec->size():0,veca?veca->size():0))) return Point(0.0,0.0,0.0); 
+    int vertex = 0;
+    if (vec) vertex = vec->operator[](face)->operator[](point);
+    if (veca) vertex = veca->operator[](face)->operator[](point);
+    std::map<std::string,std::vector<float>* > *vmap = load.floats["vertex"];
+    std::vector<float> *nxvec = vmap->operator[]("nx");
+    std::vector<float> *nyvec = vmap->operator[]("ny");
+    std::vector<float> *nzvec = vmap->operator[]("nz");
+    if (!nxvec||!nyvec||!nzvec) return Vector(0.0,0.0,0.0);
+    float nx = nxvec->operator[](vertex);
+    float ny = nyvec->operator[](vertex);
+    float nz = nzvec->operator[](vertex);
     return Vector(nx,ny,nz);
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
   virtual unsigned int Color(int face, int point) const
   {
-    int vertex = load.int_lists["face"]->operator[]("vertex_index")->operator[](face)->operator[](point);
-    int r = load.ints["vertex"]->operator[]("red")->operator[](vertex);
-    int g = load.ints["vertex"]->operator[]("green")->operator[](vertex);
-    int b = load.ints["vertex"]->operator[]("blue")->operator[](vertex);
+        std::map<std::string,std::vector<std::vector<int>*>*>* mymap = load.int_lists["face"];
+    if (!mymap) return 0xffffffff;
+    std::vector<std::vector<int>*> *vec = mymap->operator[]("vertex_index");
+    std::vector<std::vector<int>*> *veca = mymap->operator[]("vertex_indices");
+    if (!vec&&!veca) return 0xffffffff;
+    if (!(face>=0 && face<std::max(vec?vec->size():0,veca?veca->size():0))) return 0xffffffff;
+    int vertex = 0;
+    if (vec) vertex=vec->operator[](face)->operator[](point);
+    if (veca) vertex=veca->operator[](face)->operator[](point);
+    std::map<std::string,std::vector<int>* > *vmap = load.ints["vertex"];
+    std::vector<int> *redvec = vmap->operator[]("red");
+    std::vector<int> *greenvec = vmap->operator[]("green");
+    std::vector<int> *bluevec = vmap->operator[]("blue");
+    if (!redvec||!greenvec||!bluevec) return 0xffffffff;
+    int r = redvec->operator[](vertex);
+    int g = greenvec->operator[](vertex);
+    int b = bluevec->operator[](vertex);
     return 0xff000000 + (r<<16) + (g<<8) + b;
   }
   virtual Point2d TexCoord(int face, int point) const
   {
-    int vertex = load.int_lists["face"]->operator[]("vertex_index")->operator[](face)->operator[](point);
-    float tx = load.float_lists["face"]->operator[]("texcoord")->operator[](face)->operator[](point*2);
-    float ty = load.float_lists["face"]->operator[]("texcoord")->operator[](face)->operator[](point*2+1);
+
+    std::map<std::string,std::vector<std::vector<int>*>*>* mymap = load.int_lists["face"];
+    if (!mymap) { Point2d p; p.x=0.0; p.y=0.0; return p; }
+    std::vector<std::vector<int>*> *vec = mymap->operator[]("vertex_index");
+    std::vector<std::vector<int>*> *veca = mymap->operator[]("vertex_indices");
+    if (!vec&&!veca) { Point2d p; p.x=0.0; p.y=0.0; return p; }
+    
+    if (!(face>=0 && face<std::max(vec?vec->size():0,veca?veca->size():0))) { Point2d p; p.x=0.0; p.y=0.0; return p; }
+    int vertex = 0;
+    if (vec) vertex = vec->operator[](face)->operator[](point);
+    if (veca) vertex = veca->operator[](face)->operator[](point);
+    std::map<std::string,std::vector<float>* > *vmap = load.floats["vertex"];
+    std::vector<float> *txvec = vmap->operator[]("s");
+    std::vector<float> *tyvec = vmap->operator[]("t");
+    if (!txvec||!tyvec) { Point2d p; p.x=0.0; p.y=0.0; return p; }
+    float tx = txvec->operator[](vertex);
+    float ty = tyvec->operator[](vertex);
+    Point2d p;
+    p.x = tx;
+    p.y = ty;
+    return p;
+
+#if 0
+    
+        std::map<std::string,std::vector<std::vector<int>*>*>* mymap = load.int_lists["face"];
+	if (!mymap) { Point2d p; p.x=0.0; p.y=0.0; return p; }
+    std::vector<std::vector<int>*> *vec = mymap->operator[]("vertex_index");
+    std::vector<std::vector<int>*> *veca = mymap->operator[]("vertex_indices");
+    if (!vec&&!veca) { Point2d p; p.x=0.0; p.y=0.0; return p; }
+    if (!(face>=0 && face<std::max(vec?vec->size():0,veca?veca->size():0))) { Point2d p; p.x=0.0; p.y=0.0; return p; } 
+    
+    int vertex = 0;
+    if (vec) vertex=vec->operator[](face)->operator[](point);
+    if (veca) vertex=veca->operator[](face)->operator[](point);
+    
+    std::map<std::string,std::vector<std::vector<float>*>*>* mymap2 = load.float_lists["face"];
+    if (!mymap2) { Point2d p; p.x=0.0; p.y=0.0; return p; }
+
+    std::vector<std::vector<float>*>* vec2 = mymap2->operator[]("texcoord");
+    if (!vec2) { Point2d p; p.x=0.0; p.y=0.0; return p; }
+    if (!(face>=0 && face<vec2->size())) { Point2d p; p.x=0.0; p.y=0.0; return p; } 
+    
+    float tx = vec2->operator[](face)->operator[](point*2);
+    float ty = vec2->operator[](face)->operator[](point*2+1);
     
     Point2d p;
     p.x = tx;
     p.y = ty;
     return p;
+#endif
   }
   virtual float TexCoord3(int face, int point) const { return 0.0; }
 private:
   PlyLoader load;  
 };
+
+GameApi::P GameApi::PointsApi::ply_faces(std::string url)
+{
+  return add_polygon2(e, new PlyFaceCollection(e,url,gameapi_homepageurl),1);
+}
