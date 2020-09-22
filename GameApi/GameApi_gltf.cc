@@ -156,6 +156,8 @@ bool WriteWholeFile(std::string *err, const std::string &filepath, const std::ve
 
 GameApi::Env *g_e = 0;
 
+
+
 class LoadGltf
 {
 public:
@@ -173,7 +175,8 @@ public:
     //tiny.SetImageWriter(&WriteImageData, this);
   }
   void Prepare() {
-
+    if (prepare_done) return;
+    prepare_done = true;
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
@@ -199,7 +202,34 @@ public:
   bool is_binary;
   tinygltf::TinyGLTF tiny;
   tinygltf::Model model;
+  bool prepare_done = false;
 };
+
+struct KeyStruct
+{
+  std::string key;
+  LoadGltf *obj;
+};
+
+std::vector<KeyStruct> g_gltf_instances;
+
+LoadGltf *find_gltf_instance(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary)
+{
+  std::string key = base_url + ":" + url;
+
+  int s = g_gltf_instances.size();
+  for(int i=0;i<s;i++) {
+    if (g_gltf_instances[i].key == key) return g_gltf_instances[i].obj;
+  }
+  LoadGltf *obj = new LoadGltf(e,base_url,url,homepage,is_binary);
+  //obj->Prepare();
+  KeyStruct s2;
+  s2.key = key;
+  s2.obj = obj;
+  g_gltf_instances.push_back(s2);
+  return obj;
+}
+
 
 void call_prepare(void *ptr) {
   LoadGltf *load = (LoadGltf*)ptr;
@@ -770,7 +800,8 @@ GameApi::BM GameApi::PolygonApi::gltf_load_bitmap( GameApi::EveryApi &ev, std::s
     if (sub=="glb") is_binary=true;
   }
 
-  LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  //   new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   GLTFImage *img = new GLTFImage( load, image_index );
 
   Bitmap<Color> *img2 = new MemoizeBitmap(*img);
@@ -843,7 +874,8 @@ GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, std::string ba
     if (sub=="glb") is_binary=true;
   }
 
-  LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  // new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   int c = get_current_block();
   set_current_block(-1);
   FaceCollection *faces = new GLTFFaceCollection( load, mesh_index, prim_index );
@@ -1310,7 +1342,8 @@ GameApi::MT GameApi::MaterialsApi::gltf_material( EveryApi &ev, std::string base
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
-  LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  // new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   Material *mat = new GLTF_Material(e,ev, load, material_id,mix);
   return add_material(e, mat);
 } 
@@ -1322,7 +1355,8 @@ GameApi::MT GameApi::MaterialsApi::gltf_material_env( EveryApi &ev, std::string 
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
-  LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   Material *mat = new GLTF_Material_env(e,ev, load, material_id,mix, diffuse_env, specular_env, bfrd);
   return add_material(e, mat);
 
@@ -1463,7 +1497,8 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh( GameApi::EveryApi &ev, std::string 
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
-  LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  // new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   load->Prepare();
   GameApi::P mesh = gltf_load2(e,ev, load, 0,0);
 
@@ -1477,7 +1512,8 @@ GameApi::ML GameApi::MainLoopApi::gltf_node( GameApi::EveryApi &ev, std::string 
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
-  LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  // new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   load->Prepare();
   GameApi::P mesh = gltf_load2(e,ev, load, 0,0);
   GameApi::ML ml = gltf_node2(e,ev,load,node_id);
@@ -1492,7 +1528,8 @@ GameApi::ML GameApi::MainLoopApi::gltf_scene( GameApi::EveryApi &ev, std::string
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
-  LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   load->Prepare();
   GameApi::P mesh = gltf_load2(e,ev, load, 0,0);
   GameApi::ML ml = gltf_scene2(e,ev,load,scene_id);
@@ -1518,7 +1555,8 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, std::str
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
-  LoadGltf *load = new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   load->Prepare();
   GameApi::P mesh = gltf_load2(e,ev, load, 0,0);
 

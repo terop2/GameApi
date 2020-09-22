@@ -5072,6 +5072,15 @@ ASyncData async_data[] = {
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
+std::vector<std::string> g_async_loaded_urls;
+bool is_async_loaded_urls_in_vec(std::string url)
+{
+  int s= g_async_loaded_urls.size();
+  for(int i=0;i<s;i++) {
+    if (g_async_loaded_urls[i]==url) return true;
+  }
+  return false;
+}
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
 {
   int s = sizeof(async_data)/sizeof(ASyncData);
@@ -5082,7 +5091,10 @@ void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepa
 	{
 	  int param_num = dt.param_num;
 	  std::string url = line.params[param_num];
-	  e.async_load_url(url,homepage);
+	  if (!is_async_loaded_urls_in_vec(url)) {
+	    e.async_load_url(url,homepage);
+	    g_async_loaded_urls.push_back(url);
+	  }
 	}
     }
 }			 
