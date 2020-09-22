@@ -4,6 +4,10 @@
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
+#include <emscripten/fetch.h>
+#endif
+#ifdef LINUX
+#include <unistd.h>
 #endif
 
 #define idb_disabled 1
@@ -371,8 +375,11 @@ void dummy_cb(void*) { }
 std::string striphomepage(std::string);
 std::string stripprefix(std::string s)
 {
+  //std::cout << "stripprefix:" << s << std::endl;
   int len = strlen("load_url.php?url=");
-  return s.substr(len,s.size()-len);
+  if (s.size()>0 && s[0]=='l') {
+    return s.substr(len,s.size()-len);
+  } else return s;
 }
 void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datasize)
 {
@@ -622,7 +629,9 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
 	    ProgressBar(444,g_current_size*15/total_size,15,"loading assets");
 	  last_size=g_current_size;
 	  }
-
+#ifdef LINUX
+	  //usleep(100000);
+#endif
 	}
       // pthread_join(vec[j]->thread_id,&res);
       ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
@@ -668,6 +677,25 @@ void idb_onerror_async_cb(void *ptr)
 
     onerror_async_cb(0,ptr,0,"");
 }
+
+#ifdef EMSCRIPTEN
+void fetch_download_succeed(emscripten_fetch_t *fetch) {
+  //std::cout << "Fetch success: " << fetch->numBytes << std::endl;
+  //std::cout << "Fetch data:" << (unsigned char*)fetch->data << std::endl;
+  LoadData *data =(LoadData*)fetch->userData;
+  const char *url = data->buf3;
+  onload_async_cb(333, (void*)url, (void*)fetch->data, fetch->numBytes+1);
+  emscripten_fetch_close(fetch);
+}
+void fetch_download_failed(emscripten_fetch_t *fetch) {
+  LoadData *data =(LoadData*)fetch->userData;
+  const char *url = data->buf3;
+  onerror_async_cb(333, (void*)url, 0, "fetch failed!");
+  emscripten_fetch_close(fetch);
+}
+void fetch_download_progress(emscripten_fetch_t *fetch) {
+}
+#endif
 
 void idb_exists(void *arg, int exists)
 {
@@ -728,12 +756,23 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     }
 
 #ifdef EMSCRIPTEN
+    std::string olderurl = url;
   std::string url2 = "load_url.php";
   std::string urlend = "url=" + url;
   std::string url3 = urlend + "&homepage=" + homepage;
   std::string url_only = "load_url.php?url=" + url;
   url = "load_url.php?url=" + url + "&homepage=" + homepage;
 
+
+  std::string body = olderurl + "|" + homepage;
+  std::cout << "Request body: " << body << std::endl;
+    char *body_buf = new char[body.size()+1];
+    std::copy(body.begin(), body.end(), body_buf);
+    body_buf[body.size()]=0;
+
+
+    const char * headers[] = { "Content-type", "application/json; charset=UTF-8", 0};
+    
     //std::cout << "url loading started! " << url << std::endl;
 
   //std::cout << "URL:" << url << std::endl;
@@ -788,7 +827,18 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     ld->url = oldurl;
     ld->url3 = url3;
     //emscripten_idb_async_exists("gameapi", oldurl.c_str(), (void*)ld, &idb_exists, &idb_error);
-    emscripten_async_wget2_data(buf2, "POST", url3.c_str(), (void*)buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
+    emscripten_fetch_attr_t attr;
+    emscripten_fetch_attr_init(&attr);
+    strcpy(attr.requestMethod, "POST");
+    attr.userData = (void*)ld;
+    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+    attr.onsuccess = fetch_download_succeed;
+    attr.onerror = fetch_download_failed;
+    attr.requestData = (char*)body_buf;
+    attr.requestDataSize = body.size()+1;
+    attr.requestHeaders = headers;
+    emscripten_fetch(&attr, "load_url.php"); 
+    //emscripten_async_wget2_data(buf2, "POST", url3.c_str(), (void*)buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
     
 #if 0
     emscripten_fetch_attr_t attr;
