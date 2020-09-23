@@ -22719,6 +22719,14 @@ KP extern "C" void set_string(int num, const char *value)
   if (num>=0 && num<25) { g_strings[num]=s; }
 }
 
+int g_resize_event_sx = -1;
+int g_resize_event_sy = -1;
+
+KP extern "C" void set_resize_event(int sx, int sy)
+{
+  g_resize_event_sx = sx;
+  g_resize_event_sy = sy;
+}
 
 #endif // THIRD_PART
 

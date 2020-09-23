@@ -993,6 +993,9 @@ EXPORT bool GameApi::MainLoopApi::ch_doubletap_detect(Event &e, int expire_timer
 }
 int g_event_screen_x = -1;
 int g_event_screen_y = -1;
+extern int g_resize_event_sx;
+extern int g_resize_event_sy;
+
 extern Low_SDL_Window *sdl_window;
 EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 {
@@ -1036,9 +1039,11 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 #endif
 #endif
 
+
 #ifndef EMSCRIPTEN
   if (event.type==Low_SDL_WINDOWEVENT) {
-    if (event.window.event == 5) { 
+    if (event.window.event == 5) {
+      //std::cout << "WINDOWEVENT 5: RESIZE" << std::endl;
       g_event_screen_x = event.window.data1;
       g_event_screen_y = event.window.data2;
       if (g_event_screen_x<320) g_event_screen_x = 320;
@@ -1049,12 +1054,27 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
            ogl->glViewport(0,0,g_event_screen_x, g_event_screen_y);
     }
   }
+#endif
+
+  // This will be activated from gameapi.cc
+  if (g_resize_event_sx != -1 && g_resize_event_sy != -1) {
+      std::cout << "WINDOWEVENT 5: RESIZE" << std::endl;
+      g_event_screen_x = g_resize_event_sx;
+      g_event_screen_y = g_resize_event_sy;
+      if (g_event_screen_x<320) g_event_screen_x = 320;
+      if (g_event_screen_y<200) g_event_screen_y = 200;
+#ifndef LINUX
+           g_low->sdl->SDL_SetWindowSize(sdl_window,g_event_screen_x, g_event_screen_y);
+#endif
+           ogl->glViewport(0,0,g_event_screen_x, g_event_screen_y);
+	   g_resize_event_sx = -1;
+	   g_resize_event_sy = -1;
+  }
   //if (event.type == Low_SDL_WINDOWEVENT
   //    && event.window.event == Low_SDL_WINDOWEVENT_EXPOSED)
   //{
   //  swapbuffers();
   //}
-#endif
   
   if (event.type==Low_SDL_MOUSEWHEEL)
     {
