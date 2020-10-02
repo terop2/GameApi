@@ -297,6 +297,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT BM flip_bitmap_if_mobile(EveryApi &ev, BM bm);
   IMPORT ML isometric(ML ml, float y_angle, float x_angle, float translate);
   IMPORT ML joystick_to_wasd(ML ml);
   IMPORT ML joystick_printer(ML ml);

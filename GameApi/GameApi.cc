@@ -22348,6 +22348,16 @@ private:
   GameApi::EveryApi &ev;
   MainLoopItem *item;
 };
+GameApi::BM GameApi::MainLoopApi::flip_bitmap_if_mobile(GameApi::EveryApi &ev, GameApi::BM bm)
+{
+    if (is_mobile(ev)) {
+      return ev.bitmap_api.flip_y(bm);
+    } else
+      {
+	return bm;
+      }
+
+}
 GameApi::ML GameApi::MainLoopApi::flip_scene_if_mobile(GameApi::EveryApi &ev, ML ml)
 {
   MainLoopItem *item = find_main_loop(e,ml);

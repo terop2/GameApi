@@ -12962,7 +12962,6 @@ public:
     for(int i=0;i<s;i++) {
       int s2 = coll->NumPoints(i);
       for(int j=0;j<s2;j++) {
-	Point p = coll->FacePoint(i,j);
 	Point p1 = coll->FacePoint(i,(j+1)%s2);
 	Point p2 = coll->FacePoint(i,(j+2)%s2);
 	Point p3 = coll->FacePoint(i,(j+3)%s2);
@@ -12971,9 +12970,10 @@ public:
 	float a1 = Vector::Angle(p2-p1,p3-p1);
 	//float a2 = Vector::Angle(p3-p2,p1-p2);
 	//float a3 = Vector::Angle(p1-p3,p2-p3);
-	Data &v = mymap[key(p)];
-	Vector n = coll->PointNormal(i,j);
 	if (std::isnormal(a1)) {
+	  Point p = coll->FacePoint(i,j);
+	  Data &v = mymap[key(p)];
+	  Vector n = coll->PointNormal(i,j);
 	  v.v+=n*a1;
 	//v.v+=a2*n;
 	//v.v+=a3*n;

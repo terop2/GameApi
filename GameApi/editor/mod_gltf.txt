@@ -524,15 +524,15 @@ test
 (887,9071)fps_display uid26553 0 ev:6576:false:-1 ml:7569643131303938:false:-1 font:687474703A2F2F747067616D65732E6F72672F4368756E6B666976652E6F7466:false:-1
 (935,6597)fps_display uid26554 0 ev:6576:false:-1 ml:75696433313632:false:-1 font:687474703A2F2F747067616D65732E6F72672F4368756E6B666976652E6F7466:false:-1
 (366,15120)torus uid18898 0 ev:6576:false:-1 numfaces1:3430:false:-1 numfaces2:3430:false:-1 center:7569643138383939:false:-1 radius1:333030:false:-1 radius2:313530:false:-1
-(244,15115)point uid18899 0 x:302E30:false:-1 y:302E30:false:-1 z:302E30:false:-1
-(494,15163)m_bind uid18900 0 p:7569643138393032:false:-1 mat:7569643138393036:false:-1
+(244,15115)point uid18899 0 x:30:false:-1 y:333030:false:-1 z:30:false:-1
+(494,15163)m_bind uid18900 0 p:7569643138393032:false:-1 mat:7569643138393033:false:-1
 (363,15232)m_material uid18901 0 ev:6576:false:-1 roughness:302E34:false:-1 metallic:302E39:false:-1 base_r:31:false:-1 base_g:31:false:-1 base_b:30:false:-1 base_a:31:false:-1 mix:31:false:-1
-(500,15049)smooth_normals uid18902 0 orig:7569643138383938:false:-1
-(512,15392)m_phong uid18903 0 ev:6576:false:-1 nxt:7569643138393034:false:-1 light_dir_x:2D302E33:false:-1 light_dir_y:302E33:false:-1 light_dir_z:2D31:false:-1 ambient:6666666638383030:false:-1 highlight:6666666666666666:false:-1 pow:35:false:-1
+(500,15049)smooth_normals uid18902 0 orig:75696432303939393633373539:false:-1
+(232,15230)m_phong uid18903 0 ev:6576:false:-1 nxt:75696432303939393633373536:false:-1 light_dir_x:2D302E33:false:-1 light_dir_y:302E33:false:-1 light_dir_z:2D31:false:-1 ambient:6666666638383030:false:-1 highlight:6666666666666666:false:-1 pow:35:false:-1
 (372,15342)m_texture uid18904 0 ev:6576:false:-1 bm:7569643138393037:false:-1 mix:31:false:-1
-(231,15339)mandelbrot uid18905 0 is_julia:66616C7365:false:-1 start_x:2D322E30:false:-1 end_x:312E30:false:-1 start_y:2D312E30:false:-1 end_y:312E30:false:-1 xx:302E30:false:-1 yy:302E30:false:-1 sx:323536:false:-1 sy:323536:false:-1 count:3634:false:-1
-(498,15288)m_or_elem uid18906 0 ev:6576:false:-1 mat1:7569643138393031:false:-1 mat2:7569643138393034:false:-1
-(223,15229)chessboard uid18907 0 tile_sx:3130:false:-1 tile_sy:3130:false:-1 count_x:38:false:-1 count_y:38:false:-1 color_1:6666333333333333:false:-1 color_2:6666383838383838:false:-1
+(217,15426)mandelbrot uid18905 0 is_julia:66616C7365:false:-1 start_x:2D322E30:false:-1 end_x:312E30:false:-1 start_y:2D312E30:false:-1 end_y:312E30:false:-1 xx:302E30:false:-1 yy:302E30:false:-1 sx:323536:false:-1 sy:323536:false:-1 count:3634:false:-1
+(498,15288)m_or_elem uid18906 0 ev:6576:false:-1 mat1:7569643138393033:false:-1 mat2:7569643138393034:false:-1
+(226,15337)chessboard uid18907 0 tile_sx:3130:false:-1 tile_sy:3130:false:-1 count_x:38:false:-1 count_y:38:false:-1 color_1:6666333333333333:false:-1 color_2:6666383838383838:false:-1
 (623,15171)touch_rotate uid18908 0 ev:6576:false:-1 ml:7569643138393030:false:-1 leftright:74727565:false:-1 topdown:74727565:false:-1 x_speed:302E3031:false:-1 y_speed:302E3031:false:-1
 (779,15179)run_window uid18909 0 ev:6576:false:-1 ml:7569643138393038:false:-1 logo:66616C7365:false:-1 fpscounter:66616C7365:false:-1 start_time:302E30:false:-1 duration:3130303030302E30:false:-1
 (718,1194)ml_gltf uid1111 0 ev:6576:false:-1 base_url:687474703A2F2F747067616D65732E6F72672F:false:-1 url:687474703A2F2F747067616D65732E6F72672F746573742E676C62:false:-1 mesh_id:30:false:-1
@@ -587,3 +587,7 @@ test
 (827,12920)array_ml uid15414 0 ev:6576:false:-1 arr:5B75696431353431322C75696432313537345D:false:-1
 (656,12816)translate uid15415 0 orig:7569643135343130:false:-1 dx:30:false:-1 dy:30:false:-1 dz:2D343030:false:-1
 (769,12814)scale uid15416 0 orig:7569643135343135:false:-1 sx:32:false:-1 sy:32:false:-1 sz:31:false:-1
+(98,15240)m_def uid2099963756 0 ev:6576:false:-1
+(365,14975)cone uid2099963757 0 numfaces:3330:false:-1 p1:75696432303939393633373538:false:-1 p2:7569643138383939:false:-1 radius1:323030:false:-1 radius2:323030:false:-1
+(204,14948)point uid2099963758 0 x:30:false:-1 y:2D333030:false:-1 z:30:false:-1
+(479,14939)recalc_normals uid2099963759 0 orig:75696432303939393633373537:false:-1
