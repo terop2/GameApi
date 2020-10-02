@@ -765,7 +765,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
 
   std::string body = olderurl + "|" + homepage;
-  std::cout << "Request body: " << body << std::endl;
+  //std::cout << "Request body: " << body << std::endl;
     char *body_buf = new char[body.size()+1];
     std::copy(body.begin(), body.end(), body_buf);
     body_buf[body.size()]=0;
