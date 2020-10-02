@@ -1423,7 +1423,7 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
 	//static int ii = 0;
 	//std::stringstream ss;
 	//ss << ii; ii++;
-	std::cout << "mtl_parse: " << url_prefix << "/" << s << std::endl;
+	//std::cout << "mtl_parse: " << url_prefix << "/" << s << std::endl;
 	std::string url = convert_slashes(url_prefix+"/"+s);
 	std::string url2 = convert_slashes(url_prefix+"/"+s2);
 	std::string url3 = convert_slashes(url_prefix+"/"+s3);
@@ -10583,7 +10583,7 @@ private:
   }
   void print_bounding_box()
   {
-    std::cout << "Bounding box:" << start_x << " " << end_x << " " << start_y << " " << end_y << " " << start_z << " " << end_z << std::endl;
+    //std::cout << "Bounding box:" << start_x << " " << end_x << " " << start_y << " " << end_y << " " << start_z << " " << end_z << std::endl;
   }
   void calc_center()
   {

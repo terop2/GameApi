@@ -1016,7 +1016,7 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   std::string filename = "";
   if (event.type==Low_SDL_DROPFILE)
     {
-      std::cout << "get_event -- dragdrop event" << std::endl;
+      //std::cout << "get_event -- dragdrop event" << std::endl;
 
       Low_SDL_DropEvent *ptr = &event.drop;
       if (ptr && ptr->file)
@@ -1058,7 +1058,7 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 
   // This will be activated from gameapi.cc
   if (g_resize_event_sx != -1 && g_resize_event_sy != -1) {
-      std::cout << "WINDOWEVENT 5: RESIZE" << std::endl;
+    //std::cout << "WINDOWEVENT 5: RESIZE" << std::endl;
       g_event_screen_x = g_resize_event_sx;
       g_event_screen_y = g_resize_event_sy;
       if (g_event_screen_x<320) g_event_screen_x = 320;

@@ -19784,7 +19784,7 @@ public:
   NetworkHeavy(GameApi::Env &e, std::string url, std::string homepageurl, HeavyOperation *timing) : e(e), url(url), homepage(homepageurl), timing(timing) { publish_ptr=0;
     ptr = 0;
     current_slot_num = 0;
-    std::cout << "NetworkHeavy:" << url << std::endl;
+    //std::cout << "NetworkHeavy:" << url << std::endl;
   }
   ~NetworkHeavy() { e.async_rem_callback(url+str); }
   virtual bool RequestPrepares() const { return timing->RequestPrepares(); }
@@ -19844,7 +19844,7 @@ public:
   }
 
   void Callback() {
-    std::cout << "Callback:" << url+str << std::endl;
+    //std::cout << "Callback:" << url+str << std::endl;
 #ifndef EMSCRIPTEN
     e.async_load_url(url+str, homepage);
 #endif
@@ -20643,12 +20643,12 @@ class ManyTextureIDMaterial : public MaterialForward
 {
 public:
   ManyTextureIDMaterial(GameApi::EveryApi &ev, std::string mtl_url, std::string url_prefix,float mix, int start_range, int end_range) : ev(ev), mtl_url(mtl_url), url_prefix(url_prefix), mix(mix), start_range(start_range), end_range(end_range) {
-    std::cout << "ManyTextureIDMaterial ctor" << std::endl;
+    //std::cout << "ManyTextureIDMaterial ctor" << std::endl;
     g_use_texid_material = 1;
   }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-    std::cout << "ManyTextureIDMaterial" << std::endl;
+    //std::cout << "ManyTextureIDMaterial" << std::endl;
     GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
     GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
     GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net, url_prefix,start_range);
@@ -20664,7 +20664,7 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
-    std::cout << "ManyTextureIDMaterial" << std::endl;
+    //std::cout << "ManyTextureIDMaterial" << std::endl;
     GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
     GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
     GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net,url_prefix, start_range);
@@ -20679,7 +20679,7 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
-    std::cout << "ManyTextureIDMaterial" << std::endl;
+    //std::cout << "ManyTextureIDMaterial" << std::endl;
     GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
     GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
     GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net,url_prefix,start_range);
@@ -22691,7 +22691,7 @@ void run_callback(void *ptr)
 
 KP extern "C" void set_new_script(const char *script2)
 {
-  std::cout << "set_new_script" << std::endl;
+  //std::cout << "set_new_script" << std::endl;
   g_mainloop_ptr = (void*)script2;
     g_mainloop_callback = &run_callback;
     g_execute_callback = true;
@@ -22720,7 +22720,7 @@ KP extern "C" void set_float(int num, float value)
 }
 KP extern "C" void set_string(int num, const char *value)
 {
-  std::cout << "STRING " << num << " " << value << std::endl;
+  //std::cout << "STRING " << num << " " << value << std::endl;
   if (num==0) {
     set_new_script(value);      
   }
