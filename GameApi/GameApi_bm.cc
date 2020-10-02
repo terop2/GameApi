@@ -5346,3 +5346,78 @@ GameApi::BM GameApi::BitmapApi::script_bitmap(std::string url, int sx, int sy)
   BM bm = add_bitmap(e, handle2);
   return bm;
 }
+
+// This is only for the logo bitmap
+class SaveRawBitmap : public MainLoopItem
+{
+public:
+  SaveRawBitmap(Bitmap<Color> &bm, std::string filename) : bm(bm), filename(filename) { }
+  virtual void Prepare()
+  {
+    bm.Prepare();
+    std::ofstream file(filename.c_str(), std::ios_base::out|std::ios_base::binary);
+    int sx = bm.SizeX();
+    int sy = bm.SizeY();
+    file << sx << " " << sy << std::endl;
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++) {
+	Color c = bm.Map(x,y);
+	unsigned int cc = c.Pixel();
+	unsigned char *cc2 = (unsigned char*)&cc;
+	file << cc2[0] << cc2[1] << cc2[2] << cc2[3];
+      }
+    file.close();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+  }
+private:
+  Bitmap<Color> &bm;
+  std::string filename;
+};
+void save_raw_bitmap(GameApi::Env &e, GameApi::BM bm, std::string filename)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<Color> *c = find_color_bitmap(handle);
+  SaveRawBitmap *save = new SaveRawBitmap(*c, filename);
+  save->Prepare();
+}
+
+
+class LoadRawBitmap : public Bitmap<Color>
+{
+public:
+  LoadRawBitmap(std::string filename) : filename(filename) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    return Color(bmdata[x+sx*y]);
+  }
+  virtual void Prepare()
+  {
+    std::ifstream ss(filename.c_str(), std::ios_base::in|std::ios_base::binary);
+    ss >> sx >> sy;
+    char ch;
+    while(ss.peek()=='\n'||ss.peek()=='\r') ss >> ch;
+    bmdata = new unsigned int[sx*sy];
+    ss.read((char*)bmdata,sx*sy*sizeof(unsigned int));
+  }
+private:
+  int sx = 0;
+  int sy = 0;
+  unsigned int *bmdata;
+  std::string filename;
+};
+
+GameApi::BM load_raw_bitmap(GameApi::Env &e, std::string filename)
+{
+  LoadRawBitmap *b = new LoadRawBitmap(filename);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  GameApi::BM bm = add_bitmap(e, handle2);
+  return bm;
+}

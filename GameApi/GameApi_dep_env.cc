@@ -391,9 +391,9 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
       std::cout << url << std::endl;
   }
-  std::vector<unsigned char> buffer;
+  std::vector<unsigned char> *buffer = new std::vector<unsigned char>(dataptr,dataptr+datasize);
   //unsigned char *dataptr = (unsigned char*)data;
-  for(unsigned int i=0;i<datasize;i++) { buffer.push_back(dataptr[i]); }
+  //for(unsigned int i=0;i<datasize;i++) { buffer->push_back(dataptr[i]); }
   
   //char *url = (char*)arg;
   std::string url_str(url);
@@ -410,7 +410,7 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
   
   //std::cout << "url loading complete! " << url_str << std::endl;
   // THIS WAS url_only, but seems to have not worked.
-  load_url_buffers_async[url_only] = new std::vector<unsigned char>(buffer);
+  load_url_buffers_async[url_only] = buffer;
   async_pending_count--;
   //std::cout << "ASync pending dec (onload_async_cb) -->" << async_pending_count<< std::endl;
   

@@ -1926,6 +1926,8 @@ EXPORT GameApi::FML GameApi::MainLoopApi::array_fml(std::vector<FML> vec)
     }
   return add_framemainloop(e, new FrameBufferArrayMainLoop(vec2));
 }
+void save_raw_bitmap(GameApi::Env &e, GameApi::BM bm, std::string filename);
+
 void GameApi::MainLoopApi::save_logo(EveryApi &ev)
 {
   BM I1=ev.bitmap_api.newbitmap(500,300,0x00000000);
@@ -1936,6 +1938,7 @@ void GameApi::MainLoopApi::save_logo(EveryApi &ev)
   BM I6=ev.font_api.font_string(I5,"Loading",5);
   BM I7=ev.bitmap_api.blitbitmap(I4,I6,80,88);
   ev.bitmap_api.savebitmap(I7, "logo.ppm", true);
+  save_raw_bitmap(e,I7,"logo.raw");
 }
 int frame_count=0;
 struct LogoEnv
@@ -2019,11 +2022,17 @@ GameApi::ML GameApi::MainLoopApi::display_background(EveryApi &ev, ML ml)
     return I5;
   }
 }
+bool is_mobile(GameApi::EveryApi &ev);
+
+GameApi::BM load_raw_bitmap(GameApi::Env &e, std::string filename);
+
 void GameApi::MainLoopApi::display_logo(EveryApi &ev)
 {
 #ifdef EMSCRIPTEN
-  BM I7 = ev.bitmap_api.loadbitmap("web_page/logo.ppm");
+  //BM I7 = ev.bitmap_api.loadbitmap("web_page/logo.ppm");
+  BM I7 = load_raw_bitmap(e, "web_page/logo.raw");
   BM I7a = ev.bitmap_api.flip_y(I7);
+  BM I7b = ev.mainloop_api.flip_bitmap_if_mobile(ev,I7a);
   //P I8=ev.polygon_api.color_map(I7,500,300,0);
   //P I9=ev.polygon_api.rotatex(I8,3.14159);
   //P I10=ev.polygon_api.scale(I9,2,2,2);
@@ -2034,15 +2043,16 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
   ML I17;
   {
     //ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, I7a);
-P I1=ev.polygon_api.quad_z(0,500,0,300,0);
-MT I3=ev.materials_api.texture(ev,I7a,1.0);
-MT I4=ev.materials_api.fade(ev,I3,0,5,3000,4000);
-ML I5=ev.materials_api.bind(I1,I4);
+    P I1=ev.polygon_api.quad_z(0,500,is_mobile(ev)?225:0,is_mobile(ev)?525:300,0);
+MT I3=ev.materials_api.texture(ev,I7b,1.0);
+//MT I4=ev.materials_api.fade(ev,I3,0,5,3000,4000);
+ML I5=ev.materials_api.bind(I1,I3);
 MN I6=ev.move_api.mn_empty();
 MN I7=ev.move_api.scale2(I6,4,4,4);
 MN I8=ev.move_api.trans2(I7,-800,400,0);
 MN I9=ev.move_api.rotatey(I8,-1.59);
-MN I10=ev.move_api.rotate(I9,0,0.001,0,0,0,0,1,0,1.59);
+MN I10=ev.move_api.rotate(I9,0,0.00000,0,0,0,0,1,0,1.59);
+// MN I10 = ev.move_api.rotatey(I9,-1.59);
 MN I11=ev.move_api.trans2(I10,-800,-1400,0);
 I17=ev.move_api.move_ml(ev,I5,I11,1,10.0);
   }
