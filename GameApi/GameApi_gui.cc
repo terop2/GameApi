@@ -7036,6 +7036,30 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "MN", "MN", "float", "float" },
 			 { "", "", "10.0", "100.0" },
 			 "MN", "move_api", "event_activate"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::whack_a_mole_all,
+			 "whack",
+			 { "ev", "cycle_count", "exit_num" },
+			 { "EveryApi&","int", "int" },
+			 { "ev", "0", "0" },
+			 "MN", "move_api", "whack_a_mole_all"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::whack_a_mole_collision,
+			 "whack_collide",
+			 { "ml" },
+			 { "ML" },
+			 { "" },
+			 "ML", "mainloop_api", "whack_a_mole_collision"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::whack_a_mole_flag_bmchooser,
+			 "whack_bmchoose",
+			 { "ml" },
+			 { "ML" },
+			 { "" },
+			 "ML", "mainloop_api", "whack_a_mole_flag_bmchooser"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::whack_a_mole_explosion,
+			 "whack_explosion",
+			 { "ev" },
+			 { "EveryApi&" },
+			 { "ev" },
+			 "PTS", "mainloop_api", "whack_a_mole_explosion"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::color_start,
 			 "color_start",
 			 { "color" },
@@ -7359,6 +7383,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "[ML]" },
 			 { "ev", "" },
 			 "ML", "mainloop_api", "array_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::random_instantiate,
+			 "rand_inst",
+			 { "ev", "ml", "vec", "start_time", "time_step", "random_chance" },
+			 { "EveryApi&", "ML", "[MN]", "float", "float", "float" },
+			 { "ev", "", "", "0.0", "2.0", "0.5" },
+			 "ML", "mainloop_api", "random_instantiate"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::activate_array,
 			 "activate_array_ml",
 			 { "arr" },
@@ -7894,6 +7924,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ML", "int", "int" },
 			 { "", "2", "3" },
 			 "ML", "mainloop_api", "blendfunc"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::disable_z_buffer,
+			 "ogl_zbuf_disable",
+			 { "ml" },
+			 { "ML" },
+			 { "" },
+			 "ML", "mainloop_api", "disable_z_buffer"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_song,
 			 "song_ml",
 			 { "ev", "next", "url" },

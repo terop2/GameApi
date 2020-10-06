@@ -218,11 +218,12 @@ void GameApi::TrackerApi::play_ogg(std::string filename)
   Low_Mix_Music *mus = g_low->sdl_mixer->Mix_LoadMUS(ptr);
   g_low->sdl_mixer->Mix_PlayMusic(mus, 1);
 #else
-  std::ifstream ss(filename.c_str(), std::ios::binary|std::ios::in);
-  char ch;
-  std::vector<unsigned char> s;
-  while(ss.get(ch)) { s.push_back((unsigned char)ch); }
-  Low_SDL_RWops *ops = g_low->sdl->SDL_RWFromMem((void*)&s[0], s.size());
+  //std::ifstream ss(filename.c_str(), std::ios::binary|std::ios::in);
+  //char ch;
+  //std::vector<unsigned char> s;
+  //while(ss.get(ch)) { s.push_back((unsigned char)ch); }
+  //Low_SDL_RWops *ops = g_low->sdl->SDL_RWFromMem((void*)&s[0], s.size());
+  Low_SDL_RWops *ops = g_low->sdl->SDL_RWFromFile(filename.c_str(),"rb");
   Low_Mix_Chunk *chunk = g_low->sdl_mixer->Mix_LoadWAV_RW(ops, 0);
   g_low->sdl_mixer->Mix_PlayChannel(-1, chunk, 0); 
 #endif
@@ -233,30 +234,54 @@ int music_initialized = 0;
 class PlayWavViaKeypress : public MainLoopItem
 {
 public:
-  PlayWavViaKeypress(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, std::string url, std::string homepage, int key) : env(env), ev(ev), next(next), url(url), homepage(homepage), key(key) { firsttime=true; initialized=false; chunk = 0;
+  void init_music()
+  {
     if (!music_initialized) {
-      g_low->sdl_mixer->Mix_Init(0);
-      g_low->sdl_mixer->Mix_OpenAudio(44100, Low_MIX_DEFAULT_FORMAT, 2, 4096);
+      std::cout << g_low->sdl->SDL_GetError() << std::endl;
+      int val = g_low->sdl_mixer->Mix_OpenAudio(44100, Low_MIX_DEFAULT_FORMAT, 2, 4096);
+      std::cout << "init_music: openaudio returned: " << val << std::endl;
+      std::cout << g_low->sdl->SDL_GetError() << std::endl;
 #ifndef EMSCRIPTEN
       int c = g_low->sdl_mixer->Mix_GetNumMusicDecoders();
+      std::cout << g_low->sdl->SDL_GetError() << std::endl;
       for(int i=0;i<c;i++)
 	{
 	  g_low->sdl_mixer->Mix_GetMusicDecoder(i);
+	  std::cout << g_low->sdl->SDL_GetError() << std::endl;
 	}
 #endif
       g_low->sdl_mixer->Mix_AllocateChannels(16);
+      std::cout << g_low->sdl->SDL_GetError() << std::endl;
+
+
+      
       music_initialized=1;
     }
+  }
+  PlayWavViaKeypress(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, std::string url, std::string homepage, int key) : env(env), ev(ev), next(next), url(url), homepage(homepage), key(key) { firsttime=true; initialized=false; chunk = 0; initialized2 = false;
+    if (!music_initialized)
+      g_low->sdl_mixer->Mix_Init(0);
   }
   void Prepare() {
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
     std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
-    chunk = g_low->sdl_mixer->Mix_LoadWAV_RW(g_low->sdl->SDL_RWFromMem(&vec->operator[](0), vec->size()),0);
-    if (!chunk) {
-      std::cout << "Invalid wav file/Mix_QuickLoad_WAV failed" << std::endl;
+    
+    filename = "audioA.wav";
+    static int index = 0;
+    index++;
+    filename[5]+=index;
+    std::ofstream ss(filename.c_str(),std::ios_base::out|std::ios_base::binary);
+    //ss.write((const char*)&vec->operator[](0), vec->size());
+    int s = vec->size();
+    for(int i=0;i<s;i++) {
+      ss.put(vec->operator[](i));
     }
+    ss.close();
+
+
+    
     initialized = true;
 
   }
@@ -282,10 +307,22 @@ public:
     if (ch==81) ch='s';
     if (ch==80) ch='a';
     if (ch==79) ch='d';
+    if (ch==44) ch=32;
 #endif
 
       if (ch == key && e.type==0x300) {
+	if (!music_initialized) init_music();
+	if (!initialized2) {
+	  chunk = g_low->sdl_mixer->Mix_LoadWAV_RW(g_low->sdl->SDL_RWFromFile(filename.c_str(), "rb") /*g_low->sdl->SDL_RWFromMem(&vec->operator[](0), vec->size())*/,0);
+	  // std::cout << g_low->sdl_mixer->Mix_GetError() << std::endl;
+	  if (!chunk || !chunk->ptr) {
+	    std::cout << "Invalid wav file/Mix_QuickLoad_WAV failed" << std::endl;
+	  }
+	  initialized2 = true;
+	}
+	  
 	g_low->sdl_mixer->Mix_PlayChannel(-1,chunk, 0);
+	//std::cout << g_low->sdl_mixer->Mix_GetError() << std::endl;
       }
     }
     return next->handle_event(e);
@@ -300,7 +337,9 @@ private:
   int key;
   bool firsttime;
   bool initialized;
+  bool initialized2;
   Low_Mix_Chunk *chunk;
+  std::string filename;
 };
 
 extern std::string gameapi_homepageurl;

@@ -1103,7 +1103,7 @@ class SDLApi : public SDLLowApi
 
   virtual Low_SDL_Surface *SDL_GetWindowSurface(Low_SDL_Window *win)
   {
-    SDL_Window *w = (SDL_Window*)win->ptr;
+    SDL_Window *w = (SDL_Window*)(win->ptr);
     SDL_Surface *s = ::SDL_GetWindowSurface(w);
     if (!s) { std::cout << "Error at sdl_getwindowsurface:" << SDL_GetError() << std::endl; return 0; }
     Low_SDL_Surface *ss = new Low_SDL_Surface;
@@ -1115,14 +1115,14 @@ class SDLApi : public SDLLowApi
     return ss;
   }
   //virtual void SDL_GL_SwapBuffers() { ::SDL_GL_SwapBuffers(); }
-  virtual void SDL_GL_SwapWindow(Low_SDL_Window *window) { ::SDL_GL_SwapWindow((SDL_Window*)window->ptr); }
-  virtual void SDL_SetWindowTitle(Low_SDL_Window *window, const char *title) { ::SDL_SetWindowTitle((SDL_Window*)window->ptr, title); }
+  virtual void SDL_GL_SwapWindow(Low_SDL_Window *window) { ::SDL_GL_SwapWindow((SDL_Window*)(window->ptr)); }
+  virtual void SDL_SetWindowTitle(Low_SDL_Window *window, const char *title) { ::SDL_SetWindowTitle((SDL_Window*)(window->ptr), title); }
   virtual unsigned int SDL_GetMouseState(int *x, int *y) { return ::SDL_GetMouseState(x,y); }
   virtual unsigned int SDL_GetModState() { return (unsigned int)::SDL_GetModState(); }
   virtual int SDL_GL_MakeCurrent(Low_SDL_Window *window, Low_SDL_GLContext context)
   {
     SDL_GLContext ctx = (SDL_GLContext)context;
-    return ::SDL_GL_MakeCurrent((SDL_Window*)window->ptr, ctx);
+    return ::SDL_GL_MakeCurrent((SDL_Window*)(window->ptr), ctx);
   }
   virtual Low_SDL_Joystick* SDL_JoystickOpen(int i) { 
     Low_SDL_Joystick *data = new Low_SDL_Joystick;
@@ -1134,7 +1134,16 @@ class SDLApi : public SDLLowApi
     map_enums_sdl(i);
     ::SDL_JoystickEventState(i);
   }
-  virtual unsigned int SDL_JoystickGetButton(Low_SDL_Joystick *joy, int i) { return ::SDL_JoystickGetButton((SDL_Joystick*)joy->data,i); }
+  virtual unsigned int SDL_JoystickGetButton(Low_SDL_Joystick *joy, int i) { return ::SDL_JoystickGetButton((SDL_Joystick*)(joy->data),i); }
+
+
+  virtual Low_SDL_RWops* SDL_RWFromFile(const char *file, const char *mode)
+  {
+     Low_SDL_RWops *ops = new Low_SDL_RWops;
+    ops->ptr = ::SDL_RWFromFile(file,mode);
+    return ops;
+   }
+
   virtual Low_SDL_RWops* SDL_RWFromMem(void *buffer, int size) { 
     Low_SDL_RWops *ops = new Low_SDL_RWops;
     ops->ptr = ::SDL_RWFromMem(buffer,size);
@@ -1159,10 +1168,11 @@ class SDLMixerApi : public SDLMixerLowApi
 public:
   virtual void init() { }
   virtual void cleanup() { }
+
   virtual Low_Mix_Chunk* Mix_LoadWAV_RW(Low_SDL_RWops *buf, int s)
   {
 #ifdef USE_MIX
-    Mix_Chunk *m = ::Mix_LoadWAV_RW((SDL_RWops*)buf->ptr,s);
+    Mix_Chunk *m = ::Mix_LoadWAV_RW((SDL_RWops*)(buf->ptr),s);
     Low_Mix_Chunk *c = new Low_Mix_Chunk;
     c->ptr = m;
     return c;
@@ -1179,7 +1189,7 @@ public:
   virtual int Mix_PlayChannel(int channel, Low_Mix_Chunk *mix_chunk, int val)
   {
 #ifdef USE_MIX
-    return ::Mix_PlayChannelTimed(channel, (Mix_Chunk*)mix_chunk->ptr, val,-1);
+    return ::Mix_PlayChannelTimed(channel, (Mix_Chunk*)(mix_chunk->ptr), val,-1);
 #endif
   }
   virtual Low_Mix_Chunk *Mix_QuickLoad_RAW(unsigned char *mem, int len)
@@ -1208,7 +1218,7 @@ public:
   virtual void Mix_PlayMusic(Low_Mix_Music *mus, int val)
   {
 #ifdef USE_MIX
-    ::Mix_PlayMusic((Mix_Music*)mus->ptr, val);
+    ::Mix_PlayMusic((Mix_Music*)(mus->ptr), val);
 #endif
   }
   virtual int Mix_GetNumMusicDecoders()
@@ -1234,6 +1244,7 @@ public:
     ::Mix_AllocateChannels(i);
 #endif
   }
+
 };
 #endif // ndef ARM
 

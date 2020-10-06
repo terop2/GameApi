@@ -375,6 +375,12 @@ private:
   bool firsttime;
   Movement *move;
 };
+
+int dynchar_selection = -1;
+Matrix dynchar_position;
+
+extern bool g_chooser_flag;
+
 class DynChar : public MainLoopItem
 {
 public:
@@ -408,11 +414,16 @@ public:
     int idx = fetch->get();
     int s = vas.size();
     if (idx>=0 && idx<s) {
+      if (g_chooser_flag)
+	dynchar_selection = idx;
       ev.shader_api.use(sh);
       GameApi::M m = add_matrix2(ev.get_env(),e.in_MV);
       GameApi::M m2 = ev.matrix_api.trans(x,y,0);
       GameApi::M mm = ev.matrix_api.mult(m,m2);
       ev.shader_api.set_var(sh, "in_MV", mm);
+      Matrix mk = find_matrix(ev.get_env(),mm);
+      if (g_chooser_flag)
+	dynchar_position = mk;
       ev.sprite_api.render_sprite_vertex_array(vas[idx]);
     }
   }
