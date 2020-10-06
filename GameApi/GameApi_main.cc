@@ -2728,3 +2728,29 @@ GameApi::ML GameApi::MainLoopApi::joystick_to_wasd(ML ml)
   MainLoopItem *item = find_main_loop(e,ml);
   return add_main_loop(e, new JoystickToWasd(item));
 }
+
+class DisableZBuffer : public MainLoopItem
+{
+public:
+  DisableZBuffer(MainLoopItem *item) : item(item) { }
+  virtual void Prepare() { item->Prepare(); }
+  virtual void execute(MainLoopEnv &e) {
+    OpenglLowApi *ogl = g_low->ogl;
+    ogl->glDisable(Low_GL_DEPTH_TEST);
+    item->execute(e);
+    ogl->glEnable(Low_GL_DEPTH_TEST);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
+private:
+  MainLoopItem *item;
+};
+
+GameApi::ML GameApi::MainLoopApi::disable_z_buffer(ML ml)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new DisableZBuffer(item));
+}

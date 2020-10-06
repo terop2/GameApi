@@ -297,6 +297,11 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT PTS whack_a_mole_explosion(EveryApi &ev);
+  IMPORT ML whack_a_mole_flag_bmchooser(ML ml);
+  IMPORT ML whack_a_mole_collision(ML ml);
+  IMPORT ML disable_z_buffer(ML ml);
+  IMPORT ML random_instantiate(EveryApi &ev, ML ml, std::vector<MN> vec, float start_time, float time_step, float random_chance);
   IMPORT BM flip_bitmap_if_mobile(EveryApi &ev, BM bm);
   IMPORT ML isometric(ML ml, float y_angle, float x_angle, float translate);
   IMPORT ML joystick_to_wasd(ML ml);
@@ -1560,6 +1565,10 @@ class MovementNode
 {
 public:
   MovementNode(Env &e) : e(e) {}
+  IMPORT MN whack_a_mole_start(EveryApi &ev, MN prev, float &time);
+  IMPORT MN whack_a_mole_rotate_around(EveryApi &ev, MN prev, int num, float &time);
+  IMPORT MN whack_a_mole_exit(EveryApi &ev, MN prev, int exit_num, float &time);
+  IMPORT MN whack_a_mole_all(EveryApi &ev, int cycle_count, int exit_num);
   IMPORT MN mn_interpolate(MN n1, MN n2, FF fetcher);
   IMPORT MN interpolate(MN n1, MN n2, float start_time, float end_time, float start_value, float end_value);
   IMPORT MN mn_empty();

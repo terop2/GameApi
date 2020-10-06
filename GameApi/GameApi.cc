@@ -2130,6 +2130,10 @@ private:
   float start,end;
 };
 
+std::vector<Matrix> g_moved_positions;
+
+extern bool g_collide_flag;
+
 class MoveML : public MainLoopItem
 {
 public:
@@ -2224,6 +2228,11 @@ public:
     MainLoopEnv ee = env;
     ee.in_MV = find_matrix(e, mat2);
 
+    if (g_moved_positions.size()<1000) {
+      if (g_collide_flag)
+	g_moved_positions.push_back(ee.in_MV);
+    }
+    
     //Matrix old_env = env.env;
     //float old_time = env.time;
     ee.env = find_matrix(e,mat2); /* * env.env*/;
@@ -16322,8 +16331,8 @@ float debug_pos_x=0.0, debug_pos_y=0.0, debug_pos_z=0.0;
 
 GameApi::ML GameApi::MainLoopApi::debug_obj(EveryApi &ev)
 {  
-#if 0
-  P p = ev.polygon_api.cube(-30.0,30.0, -30.0, 30.0, -30.0,30.0);
+#if 1
+  P p = ev.polygon_api.cube(-3.0,3.0, -3.0, 3.0, -3.0,3.0);
   MT mat0 = ev.materials_api.m_def(ev);
   MT mat = ev.materials_api.snow(ev,mat0,0xffaaaaaa, 0xffeeeeee, 0xffffffff, 0.95);
   ML ml1 = ev.materials_api.bind(p,mat);
@@ -16331,10 +16340,12 @@ GameApi::ML GameApi::MainLoopApi::debug_obj(EveryApi &ev)
   MN mn = ev.move_api.debug_translate(mn2);
   ML ml2 = ev.move_api.move_ml(ev,ml1,mn,1,10.0);
 #endif
+#if 0
   P p = ev.polygon_api.p_empty();
   MT mat0 = ev.materials_api.m_def(ev);
   
   ML ml2 = ev.materials_api.bind(p,mat0);
+#endif
   return ml2;
 }
 
@@ -22684,6 +22695,7 @@ void run_callback(void *ptr)
     //g_everyapi->blocker_api.run(b);
     //std::cout << "ERROR: BLOCKERAPI::run does not set g_everyapi" << std::endl;
   } else {
+    //std::cout << "blk.second==" << blk.second << std::endl;
     std::cout << "ERROR: internal error" << std::endl;
   }
 #endif
@@ -23625,4 +23637,368 @@ GameApi::BB GameApi::VolumeApi::volumeprojection(O o, float start_x, float end_x
 {
   VolumeObject *obj = find_volume(e,o);
   return add_bool_bitmap(e, new VolProjection(obj,start_x, end_x, start_y, end_y, start_z, end_z, sx,sy,numsamples));
+}
+
+GameApi::MN GameApi::MovementNode::whack_a_mole_start(GameApi::EveryApi &ev, GameApi::MN prev, float &time)
+{
+  MN I4=ev.move_api.trans2(prev,0,-600,0);
+  MN I5=ev.move_api.translate(I4,0,5,0,40,0);
+  time += 5.0;
+  return I5;
+}
+
+GameApi::MN GameApi::MovementNode::whack_a_mole_rotate_around(GameApi::EveryApi &ev, GameApi::MN prev, int num, float &time)
+{
+  GameApi::MN I5 = prev;
+  for(int i=0;i<num;i++)
+    {
+      I5=ev.move_api.rotate(I5,time,time+500,0,560,0,0,0,1,-6.28318);
+      time+=500.0;
+    }
+
+  return I5;
+}
+
+GameApi::MN GameApi::MovementNode::whack_a_mole_exit(GameApi::EveryApi &ev, GameApi::MN prev, int exit_num, float &time)
+{
+  GameApi::MN mn = prev;
+
+
+  float xx = 0.0;
+  if (exit_num==0) xx = 395.0;
+  if (exit_num==1) xx = 485.0;
+  if (exit_num==2) xx = 540.0;
+
+  float wheel_sx = 560.0;
+
+  float target_x = 0.0;
+  if (exit_num==0) target_x = -200;
+  if (exit_num==1) target_x = -100;
+  if (exit_num==2) target_x = 0;
+
+  target_x +=350;
+
+  float delta_x = wheel_sx-xx+target_x;
+  delta_x = -delta_x;
+
+  float newtime = time;
+  if (exit_num==0) newtime+=62.5;
+  if (exit_num==1) newtime+=83.3;
+  if (exit_num==2) newtime+=104.2;
+  
+  mn = ev.move_api.translate(mn, newtime, newtime+100*-delta_x/350, delta_x, 0.0,0.0);
+  newtime+=100*-delta_x/350;
+  
+
+  mn = ev.move_api.translate(mn, newtime, newtime+30, 0.0, 600.0, 0.0);
+  
+  
+  // first rotate the wheel to right position
+  if (exit_num == 0) { // 45
+    mn = ev.move_api.rotate(mn, time,time+62.5, 0.0, 560.0, 0.0,0.0,0.0,1.0,-0.785);
+    time+=62.5;
+  } else if (exit_num==1) {  // 60
+    mn = ev.move_api.rotate(mn, time, time+83.3, 0.0, 560.0, 0.0, 0.0, 0.0, 1.0, -1.047);
+    time+=83.3;
+  } else if (exit_num==2) { // 75
+    mn = ev.move_api.rotate(mn, time, time+104.2, 0.0, 560.0, 0.0, 0.0,0.0, 1.0, -1.308);
+    time+=104.2;
+  }
+  time+=100*-delta_x/350;
+
+
+  return mn; 
+}
+
+
+GameApi::MN GameApi::MovementNode::whack_a_mole_all(GameApi::EveryApi &ev, int cycle_count, int exit_num)
+{
+  float time = 0.0;
+  MN mn0 = ev.move_api.mn_empty();
+  MN mn1 = whack_a_mole_start(ev,mn0,time);
+  MN mn2 = whack_a_mole_rotate_around(ev,mn1, cycle_count, time);
+  MN mn3 = whack_a_mole_exit(ev,mn2, exit_num, time);
+  return mn3;
+}
+
+extern int g_collide_index;
+class RandomInstantiate : public MainLoopItem
+{
+public:
+  RandomInstantiate(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::ML ml, std::vector<GameApi::MN> mns, float start_time, float time_step, float random_chance) : env(e), ev(ev), ml(ml), mns(mns), start_time(start_time), time_step(time_step), random_chance(random_chance) {
+    step = 0;
+  }
+  virtual void Prepare()
+  {
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare(); // this is odd usage of prepare.
+	  
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    float time = (ev.mainloop_api.get_time()-start_time)/100.0;
+    float delta_time = ev.mainloop_api.get_delta_time();
+    //std::cout << time << " " << start_time << " " << step << " " << time_step << " " << delta_time << std::endl;
+    if (time>start_time+step*time_step)
+      {
+	//std::cout << "STEP" << std::endl;
+      step++;
+      Random r;
+      float val = double(r.next())/r.maximum();
+      if (val<random_chance) {
+	Random r;
+	float val = double(r.next())/r.maximum();
+	val*=mns.size();
+	int val2 = int(val);
+	if (val2>=0 && val2<mns.size()) {
+	  GameApi::MN mn = mns[val2];
+	  GameApi::MN mn2 = ev.move_api.change_time(mn, time);
+	  GameApi::ML ml2 = ev.move_api.move_ml(ev,ml, mn2, 1, 10.0);
+	  active_list.push_back(ml2);
+	}
+	
+      }
+      
+      }
+    int s = active_list.size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::ML ml = active_list[i];
+	MainLoopItem *item = find_main_loop(env, ml);
+	item->execute(e);
+	if (g_collide_index == i) { active_list.erase(active_list.begin()+g_collide_index); g_collide_index = -1; i--;  s--; }
+      }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    int s = active_list.size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::ML ml = active_list[i];
+	MainLoopItem *item = find_main_loop(env, ml);
+	item->handle_event(e);
+      }
+  }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::ML ml;
+  std::vector<GameApi::MN> mns;
+  int step;
+  float start_time, time_step, random_chance;
+  std::vector<GameApi::ML> active_list;
+};
+
+GameApi::ML GameApi::MainLoopApi::random_instantiate(GameApi::EveryApi &ev, GameApi::ML ml, std::vector<GameApi::MN> vec, float start_time, float time_step, float random_chance)
+{
+  return add_main_loop(e, new RandomInstantiate(e,ev, ml, vec, start_time, time_step, random_chance));
+}
+
+extern int dynchar_selection;
+extern Matrix dynchar_position;
+
+int g_collide_index = -1;
+bool g_collide_flag = false;
+extern Point g_explosion_pos;
+extern bool g_explosion_flag;
+extern int g_explosion_strength;
+
+
+class WhackCollision : public MainLoopItem
+{
+public:
+  WhackCollision(MainLoopItem *item) : item(item) { }
+  virtual void Prepare() { item->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    g_moved_positions.clear();
+    Point p(0.0,0.0,0.0);
+    Point p2 = p * dynchar_position;
+    if (dynchar_selection==5) // right axe
+      {
+	p2.x+=116-81;
+	p2.y-=12;
+        p2.x+=8.0+5.0;
+      }
+    if (dynchar_selection==4) // left axe
+      {
+	p2.x+=40-(116-81);
+	p2.y-=12;
+	p2.x-=8.0+5.0;
+      }
+    p2.x -=30.0;
+    p2.z = 0.0;
+    g_collide_flag=true;
+    item->execute(e);
+    g_collide_flag=false;
+    if (counter>0) { counter--; } else
+    if (dynchar_selection==4 ||dynchar_selection==5) {
+      
+      g_collide_index = -1;
+      int s = g_moved_positions.size();
+       for(int i=0;i<s;i++) {
+	Point p(20.0,20.0,0.0);
+	Matrix pos = g_moved_positions[i];
+	Point p3 = p * pos;
+	p3.z = 0.0;
+	p3.x += 20.0+20.0;
+	Vector v(p3-p2);
+	//std::cout << "Check collision " << i << " " << p3.x << " " << p3.y << " " << p2.x << " " << p2.y << std::endl;
+	if (v.Dist()<30.0)
+	  { // collision
+	    //std::cout << "Collide" << std::endl;
+	    //debug_pos_x = p3.x;
+	    //debug_pos_y = p3.y;
+	    //debug_pos_z = 0.0;
+	    g_collide_index = i;
+	    counter=5;
+	    score+=10+int(30.0-v.Dist());
+	    g_explosion_pos = p3;
+	    g_explosion_flag = true;
+	    g_explosion_strength = int(40.0-v.Dist());
+	  }
+      }
+    }
+    
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
+private:
+  MainLoopItem *item;
+  int counter = 0;
+};
+
+GameApi::ML GameApi::MainLoopApi::whack_a_mole_collision(GameApi::ML ml)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new WhackCollision(item));
+}
+
+bool g_chooser_flag = false;
+
+
+class FlagBMChooser : public MainLoopItem
+{
+public:
+  FlagBMChooser(MainLoopItem *item) : item(item) { }
+  void Prepare() { item->Prepare(); }
+  void execute(MainLoopEnv &e) {
+    g_chooser_flag = true;
+    item->execute(e);
+    g_chooser_flag = false;
+  }
+  virtual void handle_event(MainLoopEvent &e) { item->handle_event(e); }
+  virtual std::vector<int> shader_id() { return item->shader_id();}
+
+private:
+  MainLoopItem *item;
+};
+
+
+GameApi::ML GameApi::MainLoopApi::whack_a_mole_flag_bmchooser(GameApi::ML ml)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new FlagBMChooser(item));
+}
+
+struct WhackNode
+{
+  Point pos;
+  Vector speed;
+  float remaining_time;
+};
+
+Point g_explosion_pos;
+bool g_explosion_flag;
+int g_explosion_strength;
+
+class WhackExplosion : public PointsApiPoints
+{
+public:
+  WhackExplosion(GameApi::EveryApi &ev) :ev(ev) { }
+  void start_explosion(Point p, float radius, int numpoints)
+  {
+    prev_zero = false;
+    for(int i=0;i<numpoints;i++) {
+      Random r;
+      float sx = double(r.next())/r.maximum();
+      sx*=radius*2.0;
+      sx-=radius;
+      float sy = double(r.next())/r.maximum();
+      sy*=radius*2.0;
+      sy-=radius;
+      float vx = double(r.next())/r.maximum();
+      float vy = double(r.next())/r.maximum();
+      vx*=10.0;
+      vy*=10.0;
+      vx-=5.0;
+      vy-=5.0;
+      float t = double(r.next())/r.maximum();
+      t*=30.0;
+      Vector v(sx,sy,0.0);
+      if (v.Dist()<radius) {
+	WhackNode n;
+	n.pos = Point(p.x+sx,p.y+sy,0.0);
+	n.speed = Vector(vx,vy,0.0);
+	n.remaining_time = t;
+	points.push_back(n);
+      }
+    }
+  }
+
+  virtual void Prepare() { }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) {
+    if (g_explosion_flag)
+      {
+	Point p = g_explosion_pos;
+	float radius = 20.0;
+	int numpoints = 20*g_explosion_strength;
+	start_explosion(p,radius,numpoints);
+	g_explosion_flag=false;
+      }
+    
+    
+    int s = points.size();
+    for(int i=0;i<s;i++) {
+      WhackNode &n = points[i];
+      n.pos+=n.speed;
+      n.remaining_time-=ev.mainloop_api.get_delta_time();
+      if (n.remaining_time<0.0)
+	{
+	  points.erase(points.begin()+i);
+	  i--;
+	  s--;
+	}
+    }
+    if (points.size()==0 && prev_zero)
+      return false;
+    else if (points.size()==0) prev_zero=true;
+    return true;
+  }
+  virtual int NumPoints() const
+  {
+    return points.size();
+  }
+  virtual Point Pos(int i) const
+  {
+    return points[i].pos;
+  }
+  virtual unsigned int Color(int i) const
+  {
+    return 0xffffffff;
+  }
+private:
+  GameApi::EveryApi &ev;
+  std::vector<WhackNode> points;
+  bool prev_zero = false;
+};
+
+GameApi::PTS GameApi::MainLoopApi::whack_a_mole_explosion(GameApi::EveryApi &ev)
+{
+  return add_points_api_points(e,new WhackExplosion(ev));
 }
