@@ -135,6 +135,48 @@ public:
   //virtual void render(MainLoopEnv &e) { }
   virtual ~Bitmap() { }
 };
+
+class MemoryBlock
+{
+public:
+  virtual void prepare()=0;
+  virtual unsigned char *buffer() const=0;
+  virtual int size_in_bytes() const=0;
+};
+
+class UrlMemoryMap
+{
+public:
+  virtual void prepare()=0;
+  virtual int size() const=0;
+  virtual std::string get_url(int i) const=0;
+  virtual MemoryBlock *get_block(std::string url) const=0;
+};
+
+class VertexArray
+{
+public:
+  virtual void prepare()=0;
+  virtual MemoryBlock *triangle_polys()=0;
+  virtual MemoryBlock *quad_polys() =0;
+  virtual MemoryBlock *poly_polys() =0;
+  virtual MemoryBlock *tri_polys2() =0;
+  virtual MemoryBlock *quad_polys2() =0;
+  virtual MemoryBlock *poly_polys2() =0;
+
+  virtual MemoryBlock *tri_normals()=0;
+  virtual MemoryBlock *quad_normals()=0;
+  virtual MemoryBlock *poly_normals()=0;
+
+  virtual MemoryBlock *tri_color()=0;
+  virtual MemoryBlock *quad_color()=0;
+  virtual MemoryBlock *poly_color()=0;
+
+  virtual MemoryBlock *tri_texcoord()=0;
+  virtual MemoryBlock *quad_texcoord()=0;
+  virtual MemoryBlock *poly_texcoord()=0;
+};
+
 template<class C>
 class BitmapArray2
 {
@@ -581,6 +623,7 @@ class MainLoopItem
 {
 public:
   virtual ~MainLoopItem() { }
+  virtual void logoexecute() { }
   virtual void Prepare()=0;
   virtual void execute(MainLoopEnv &e)=0;
   virtual void handle_event(MainLoopEvent &e)=0;
@@ -853,6 +896,7 @@ public:
 class Material
 {
 public:
+  virtual void logoexecute() { }
   virtual int mat(int p) const=0; 
   virtual int mat_inst(int p, int pts) const=0;
   virtual int mat_inst_matrix(int p, int ms) const=0;
@@ -1285,11 +1329,11 @@ public:
 class DiskStore
 {
 public:
-  // types: 0=P, 1=BM, 2=VX
+  // types: 0=P, 1=BM, 2=VX, 3=urlmemorymap
   virtual void Prepare()=0;
   virtual int Type() const=0;
   virtual int NumBlocks() const=0;
-  // blocktypes: 0=vertex, 1=color, 2=texcoord, 3=normal, 4=bitmap, 5=voxel, 6=vertexheader, 7=vertexpointcounts, 8=vertexindex, 9=texcoord3
+  // blocktypes: 0=vertex, 1=color, 2=texcoord, 3=normal, 4=bitmap, 5=voxel, 6=vertexheader, 7=vertexpointcounts, 8=vertexindex, 9=texcoord3, 10=memoryblock
   virtual int BlockType(int block) const=0;
   virtual int BlockSizeInBytes(int block) const=0;
   virtual unsigned char* Block(int block) const=0;

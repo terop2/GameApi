@@ -1781,6 +1781,13 @@ public:
     int s = vec.size();
     for(int i=0;i<s;i++) vec[i]->Prepare();
   }
+  void logoexecute() {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->logoexecute();
+      }
+  }
   void execute(MainLoopEnv &e)
   {
     int s = vec.size();
@@ -2032,7 +2039,7 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
   //BM I7 = ev.bitmap_api.loadbitmap("web_page/logo.ppm");
   BM I7 = load_raw_bitmap(e, "web_page/logo.raw");
   BM I7a = ev.bitmap_api.flip_y(I7);
-  BM I7b = ev.mainloop_api.flip_bitmap_if_mobile(ev,I7a);
+  //BM I7b = ev.mainloop_api.flip_bitmap_if_mobile(ev,I7a);
   //P I8=ev.polygon_api.color_map(I7,500,300,0);
   //P I9=ev.polygon_api.rotatex(I8,3.14159);
   //P I10=ev.polygon_api.scale(I9,2,2,2);
@@ -2043,8 +2050,8 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
   ML I17;
   {
     //ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, I7a);
-    P I1=ev.polygon_api.quad_z(0,500,is_mobile(ev)?225:0,is_mobile(ev)?525:300,0);
-MT I3=ev.materials_api.texture(ev,I7b,1.0);
+    P I1=ev.polygon_api.quad_z(0,500,/*is_mobile(ev)?225:*/0,/*is_mobile(ev)?525:*/300,0);
+MT I3=ev.materials_api.texture(ev,I7a,1.0);
 //MT I4=ev.materials_api.fade(ev,I3,0,5,3000,4000);
 ML I5=ev.materials_api.bind(I1,I3);
 MN I6=ev.move_api.mn_empty();
@@ -2122,7 +2129,7 @@ ML I34=ev.move_api.move_ml(ev,I30,I33);
  I34 = ev.mainloop_api.display_background(ev,I34);
  ML res = I34;
 #endif
- ML res2 = ev.mainloop_api.flip_scene_x_if_mobile(ev,res);
+ //ML res2 = ev.mainloop_api.flip_scene_x_if_mobile(ev,res);
  SH color = ev.shader_api.colour_shader();  
  SH texture = ev.shader_api.texture_shader();
  SH texture_2d = texture;
@@ -2137,7 +2144,7 @@ ML I34=ev.move_api.move_ml(ev,I30,I33);
  ev.mainloop_api.init_3d(arr);
  LogoEnv *env = new LogoEnv;
  env->ev = &ev;
- env->res = res2;
+ env->res = res;
  env->color = color;
  env->texture = texture;
  env->texture_2d = texture_2d;
