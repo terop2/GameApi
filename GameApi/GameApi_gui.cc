@@ -4621,6 +4621,7 @@ MACRO(GameApi::UV)
 MACRO(GameApi::FFi)
 MACRO(GameApi::VFi)
 MACRO(GameApi::FA)
+MACRO(GameApi::PKG)
 #undef MACRO
 
 
@@ -5068,10 +5069,26 @@ ASyncData async_data[] = {
   { "materials_api", "many_texture_id_material", 1},
   { "bitmap_api", "script_bitmap", 0},
   { "points_api", "ply_pts", 0 },
-  { "points_api", "ply_faces", 0 }
+  { "points_api", "ply_faces", 0 },
+  { "mainloop_api", "memmap_window2", 1 },
+  { "mainloop_api", "memmap_window3", 1 },
+  { "mainloop_api", "memmap_window3", 2 },
+  { "mainloop_api", "memmap_window3", 3 },
+  { "mainloop_api", "memmap_window3", 4 },
+  { "mainloop_api", "memmap_window3", 5 },
+  { "mainloop_api", "memmap_window3", 6 }
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
+ASyncData async_data2[] = { 
+  { "polygon_api", "p_mtl", 1 },
+  { "polygon_api", "p_url", 1 }
+};
+ASyncData *g_async_ptr2 = &async_data2[0];
+int g_async_count2 = sizeof(async_data2)/sizeof(ASyncData);
+
+
+
 std::vector<std::string> g_async_loaded_urls;
 bool is_async_loaded_urls_in_vec(std::string url)
 {
@@ -5145,6 +5162,15 @@ void LoadUrls(const CodeGenLine &line, std::string homepage)
 #endif
 #endif
 }
+void LoadUrls_codegen(GameApi::Env &env, std::vector<CodeGenLine> vec, std::string homepage)
+{
+  int s = vec.size();
+  for(int i=0;i<s;i++) {
+    CodeGenLine l = vec[i];
+      LoadUrls(l, homepage);
+      LoadUrls_async(env,l, homepage);
+  }
+}
 std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev, std::string text, int &error_line_num)
 {
   int idx = 0;
@@ -5169,8 +5195,8 @@ std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev,
       if (l.return_type=="@") {
 	std::cout << "ERROR:" << line << std::endl;
 	error_line_num = line_num; return std::vector<CodeGenLine>(); }
-      LoadUrls(l, homepage);
-      LoadUrls_async(env,l, homepage);
+      //LoadUrls(l, homepage);
+      //LoadUrls_async(env,l, homepage);
       vec.push_back(l);
       line_num++;
 #if 1
@@ -5410,6 +5436,8 @@ std::pair<int,std::string> GameApi::execute_codegen(GameApi::Env &env, GameApi::
   static std::vector<GameApiItem*> functions = all_functions();
   link_api_items(vec, functions);
   int val = execute_api(env, ev, vec, vecvec, vec.size()-1, e);
+  std::string homepage = ev.mainloop_api.get_homepage_url();
+  LoadUrls_codegen(env,vec,homepage);
   CodeGenLine last = vec[vec.size()-1];
   if (last.return_type=="BLK") return std::make_pair(val,"OK");
   return std::make_pair(val,last.return_type);
@@ -8066,6 +8094,20 @@ std::vector<GameApiItem*> blocker_functions()
 			 "BLK", "blocker_api", "game_seq"));
 
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::memmap_window2,
+			 "pkg_window",
+			 { "ev", "url" },
+			 { "EveryApi&", "std::string" },
+			 { "ev", "http://tpgames.org/game1.pkg" },
+			 "ML", "mainloop_api", "memmap_window2"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::memmap_window3,
+			 "pkg_window2",
+			 { "ev", "url_1", "url_2", "url_3", "url_4", "url_5", "url_6" },
+			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
+			 { "ev", "http://tpgames.org/game1_1.pkg", "http://tpgames.org/game1_2.pkg", "http://tpgames.org/game1_3.pkg", "http://tpgames.org/game1_4.pkg", "http://tpgames.org/game1_5.pkg", "http://tpgames.org/game1_6.pkg" },
+			 "ML", "mainloop_api", "memmap_window3"));
+  
   return vec;
 }
 #endif // SECTION_2
@@ -8302,7 +8344,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "p_mtl",
 			 { "ev", "obj_url", "mtl_url", "url_prefix", "count" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "int" },
-			 { "ev", "http://tpgames.org/sponza/sponza.obj", "http://tpgames.org/sponza/sponza.mtl", "http://tpgames.org/sponza", "1" },
+			 { "ev", "http://tpgames.org/sponza/sponza.ds", "http://tpgames.org/sponza/sponza.mtl", "http://tpgames.org/sponza", "600" },
 			 "P", "polygon_api", "p_mtl"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl_d,
 			 "p_mtl_d",
@@ -8516,6 +8558,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "[P]" },
 			 { "" },
 			 "P", "polygon_api", "or_array2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::optimize_mesh,
+			 "p_optimize",
+			 { "p", "max" },
+			 { "P", "float" },
+			 { "", "2.0" },
+			 "P", "polygon_api", "optimize_mesh"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::mix_mesh,
 			 "p_mix",
 			 { "p", "pts", "val" },
@@ -9487,6 +9535,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "[MT]", "float", "float", "float", "unsigned int", "unsigned int", "float" },
 			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.9" },
 			 "[MT]", "materials_api", "m_apply_phong"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::toon_border,
+			 "m_toon_border",
+			 { "ev", "next", "border_width", "border_color" },
+			 { "EveryApi&", "MT", "float", "unsigned int" },
+			 { "ev", "", "2.00", "ffffffff" },
+			 "MT", "materials_api", "toon_border"));
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::edge,
 			 "m_edge",

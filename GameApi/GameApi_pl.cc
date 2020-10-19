@@ -1218,6 +1218,16 @@ public:
   void Prepare()
   {
     if (current == empty) {
+
+      if (url.size()>2 && url[url.size()-3]=='.' && url[url.size()-2]=='d' &&url[url.size()-1]=='s') {
+
+	GameApi::P p = ev.polygon_api.p_ds_url(ev,url);
+	FaceCollection *coll = find_facecoll(e,p);
+	filled = coll;
+	current = filled;
+	current->Prepare();
+      } else {
+      
 #ifdef HAS_POPEN
       LoadStream *stream = load_from_url_stream(url);
 #else
@@ -1246,6 +1256,7 @@ public:
     filled = coll;
     current = filled;
     current->Prepare();
+      }
     }
   }
 
@@ -1402,8 +1413,9 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
     std::string a_filename = start+a_ss2.str();
     //std::cout << "Saving: " << a_filename << std::endl;
     std::fstream a_ss(a_filename.c_str(), std::ios_base::binary |std::ios_base::out);
-    int a_s = ptr2->size();
-    for(int a_i=0;a_i<a_s;a_i++) a_ss.put(ptr2->operator[](a_i));
+    //int a_s = ptr2->size();
+    //for(int a_i=0;a_i<a_s;a_i++) a_ss.put(ptr2->operator[](a_i));
+    a_ss.write((const char *)&ptr2->operator[](0),ptr2->size());
     a_ss.close();
 
     std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(a_filename);
@@ -1441,7 +1453,7 @@ int g_use_texid_material=0;
 void MTL_d_CB(void *data);
 void MTL_bump_CB(void *data);
 
-
+std::vector<std::string> mtl_urls;
 class NetworkedFaceCollectionMTL2 : public FaceCollection
 {
 public:
@@ -1465,13 +1477,18 @@ public:
   }
   NetworkedFaceCollectionMTL2(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string obj_url, std::string homepage, int count, std::string mtl_url, std::string url_prefix, bool cached, bool load_d, bool load_bump) : e(e), ev(ev), url(obj_url), homepage(homepage), mtl_url(mtl_url), url_prefix(url_prefix), count(count), empty(empty),load_d(load_d), load_bump(load_bump)
   {
+    int s = mtl_urls.size();
+    for(int i=0;i<s;i++) {
+      if (mtl_urls[i]==mtl_url) cached=true;
+    }
+    mtl_urls.push_back(mtl_url);
     current = empty;
     filled = 0;
     if (!cached) {
       e.async_load_callback(mtl_url, &MTL2_CB, (void*)this);
 #ifdef EMSCRIPTEN
     async_pending_count++;
-    //std::cout << "NetworkedFaceCollectionMTL2 asyncpending++" << std::endl;
+    //std::cout << "NetworkedFaceCollectionMTL2 asyncpending++" << async_pending_count << std::endl;
 #endif
     }
     done_mtl=false;
@@ -1506,8 +1523,9 @@ public:
   std::string a_filename = start+a_ss2.str();
   //std::cout << "Saving: " << a_filename << std::endl;
     std::fstream a_ss(a_filename.c_str(), std::ios_base::binary |std::ios_base::out);
-    int a_s = ptr2->size();
-    for(int a_i=0;a_i<a_s;a_i++) a_ss.put(ptr2->operator[](a_i));
+    //int a_s = ptr2->size();
+    //for(int a_i=0;a_i<a_s;a_i++) a_ss.put(ptr2->operator[](a_i));
+    a_ss.write((const char*)&ptr2->operator[](0),ptr2->size());
     a_ss.close();
 
     std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(a_filename);
@@ -1548,30 +1566,30 @@ public:
     if (!g_use_texid_material)
       {
 	if (s!="") {
+	flags.push_back(1);
 	e.async_load_callback(dt->url, &MTL_CB, (void*)dt);
 #ifdef EMSCRIPTEN
 	e.async_load_url(dt->url, homepage);
 #else
 	urls.push_back(dt->url);
 #endif
-	flags.push_back(1);
 
 	}
 	
 	if (load_d && s2!="") {
+	d_flags.push_back(1);
 	  e.async_load_callback(url2, &MTL_d_CB, (void*)dt);
 #ifdef EMSCRIPTEN
 	e.async_load_url(url2, homepage);
 #endif
-	d_flags.push_back(1);
 	}
 	
 	if (load_bump && s3!="") {
+	bump_flags.push_back(1);
 	  e.async_load_callback(url3, &MTL_bump_CB, (void*)dt);
 #ifdef EMSCRIPTEN
 	e.async_load_url(url3, homepage);
 #endif
-	bump_flags.push_back(1);
 	}
       }
 #ifndef EMSCRIPTEN
@@ -1580,21 +1598,21 @@ public:
 #ifdef EMSCRIPTEN
     if (!g_use_texid_material)
     	async_pending_count++;
-    //std::cout << "NetworkedFaceCollectionMTL2 asyncpending++" << std::endl;
+    //std::cout << "NetworkedFaceCollectionMTL2(1) asyncpending++"<< async_pending_count << std::endl;
 #endif
 
     if (!g_use_texid_material)
 	if (load_d && s2!="") {
 #ifdef EMSCRIPTEN
     async_pending_count++;
-    //std::cout << "NetworkedFaceCollectionMTL2 asyncpending++" << std::endl;
+    //std::cout << "NetworkedFaceCollectionMTL2(2) asyncpending++" << async_pending_count << std::endl;
 #endif
 	}
     if (!g_use_texid_material)
 	if (load_bump && s3!="") {
 #ifdef EMSCRIPTEN
     async_pending_count++;
-    //std::cout << "NetworkedFaceCollectionMTL2 asyncpending++" << std::endl;
+    //std::cout << "NetworkedFaceCollectionMTL2(3) asyncpending++" << async_pending_count << std::endl;
 #endif
 	}
       }
@@ -1610,13 +1628,13 @@ public:
 #endif
 #ifdef EMSCRIPTEN
     async_pending_count--;
-    //std::cout << "NetworkedFaceCollectionMTL2 asyncpending--" << std::endl;
+    //std::cout << "NetworkedFaceCollectionMTL2 asyncpending--" << async_pending_count << std::endl;
 #endif
     done_mtl=true;
   }
   void Prepare2_color(int i, GameApi::MaterialDef &def)
   {
-    //std::cout << "i=" << i << std::endl;
+    //std::cout << "Prepare2_color i=" << i << std::endl;
     BufferRef img = BufferRef::NewBuffer(2,2);
       int sx = img.width;
       int sy = img.height;
@@ -1652,14 +1670,14 @@ public:
 
 #ifdef EMSCRIPTEN
       if (flags[i]==1) { async_pending_count--; flags[i]=0; }
-      //std::cout << "NetworkedFaceCollectionMTL2(flags) asyncpending--" << std::endl;
+      //std::cout << "NetworkedFaceCollectionMTL2(flags) asyncpending--" << async_pending_count << std::endl;
 #endif
 
   }
 
   void PrepareD(std::string url, int i)
   {
-    //std::cout << "MTL:Prepare2: " << url << " " << i << std::endl;
+    //std::cout << "MTL:PrepareD: " << url << " " << i << std::endl;
       std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
       bool b = false;
       BufferRef img = LoadImageFromString(*vec,b);
@@ -1679,14 +1697,14 @@ public:
 
 #ifdef EMSCRIPTEN
       if (d_flags[i]==1) { async_pending_count--; d_flags[i]=0; }
-      //std::cout << "NetworkedFaceCollectionMTL2(d_flags) asyncpending--" << std::endl;
+      //std::cout << "NetworkedFaceCollectionMTL2(d_flags) asyncpending--" << async_pending_count << std::endl;
 #endif
 
   }
 
   void PrepareBump(std::string url, int i)
   {
-    //std::cout << "MTL:Prepare2: " << url << " " << i << std::endl;
+    //std::cout << "MTL:PrepareBump: " << url << " " << i << std::endl;
       std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
       bool b = false;
       BufferRef img = LoadImageFromString(*vec,b);
@@ -1706,7 +1724,7 @@ public:
 
 #ifdef EMSCRIPTEN
       if (bump_flags[i]==1) { async_pending_count--; bump_flags[i]=0; }
-      //std::cout << "NetworkedFaceCollectionMTL2(bump_flags) asyncpending--" << std::endl;
+      //std::cout << "NetworkedFaceCollectionMTL2(bump_flags) asyncpending--" << async_pending_count << std::endl;
 
 #endif
 
@@ -1775,10 +1793,11 @@ public:
 
   std::string filename = start+ss2.str();
     //std::cout << "Saving: " << filename << std::endl;
-    std::fstream ss(filename.c_str(), std::ios_base::binary |std::ios_base::out);
-    int s = ptr->size();
-    for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
-    ss.close();
+    //std::fstream ss(filename.c_str(), std::ios_base::binary |std::ios_base::out);
+    //int s = ptr->size();
+    //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
+    //ss.write(&ptr->operator[](0),ptr->size());
+    //ss.close();
     LoadStream *stream = load_from_vector(*ptr);
 #endif
     
@@ -2042,11 +2061,11 @@ EXPORT GameApi::P GameApi::PolygonApi::p_mtl(EveryApi &ev, std::string obj_url, 
   std::string key = obj_url + mtl_url + prefix;
   bool cached = find_data(key)!=-1;
   FaceCollection *emp = find_facecoll(e, p);
-  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL2(e,ev, emp, obj_url, gameapi_homepageurl, count,mtl_url,prefix,cached,true,true),1); 
+  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL2(e,ev, emp, obj_url, gameapi_homepageurl, count,mtl_url,prefix,cached,false,false),1); 
   FaceCollection *coll = find_facecoll(e,p1);
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,key,coll),1);
   set_current_block(c);
-  return p2;
+  return p2; // PREPARECACHE DISABLED.
 }
 
 EXPORT GameApi::P GameApi::PolygonApi::p_ds_url(EveryApi &ev, std::string url)
@@ -7774,6 +7793,7 @@ public:
     next->handle_event(e);
   }
   void Prepare() { next->Prepare(); }
+  void logoexecute() { next->logoexecute(); }
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
@@ -10550,12 +10570,12 @@ public:
 private:
   void find_bounding_box()
   {
-    start_x = std::numeric_limits<float>::max();
-    start_y = std::numeric_limits<float>::max();
-    start_z = std::numeric_limits<float>::max();
-    end_x =  std::numeric_limits<float>::min();
-    end_y =  std::numeric_limits<float>::min();
-    end_z =  std::numeric_limits<float>::min();
+    start_x = 300.0;
+      start_y = 300.0;
+      start_z = 300.0;
+      end_x =  -300.0;
+      end_y =  -300.0;
+      end_z =  -300.0; 
 
     int s = std::min(coll->NumFaces(),1000);
     if (s<1) s=1;
@@ -16521,6 +16541,115 @@ GameApi::P GameApi::PolygonApi::substitute(P p1, P p2, float start_x, float end_
 }
 
 
+class OptimizeMesh : public FaceCollection
+{
+public:
+  OptimizeMesh(FaceCollection *coll, float max) : coll(coll),max(max) {}
+
+  virtual void Prepare() { coll->Prepare();
+
+    int s = coll->NumFaces();
+    vec.reserve(s);
+    for(int i=0;i<s;i++) {
+      if (!skip(i)) vec.push_back(i);
+    }
+    
+  }
+
+  virtual int NumObjects() const {
+    return coll->NumObjects();
+    }
+  virtual std::pair<int,int> GetObject(int o) const {
+    std::pair<int,int> p = coll->GetObject(o);
+    int s = vec.size();
+    int count1 = -1;
+    int count2 = -1;
+    for(int i=0;i<s;i++) {
+      if (count1==-1 && vec[i]>=p.first) count1 = i;
+      if (count2==-1 && vec[i]>=p.second) count2 = i;
+    }
+    return std::make_pair(count1,count2);
+  }
+
+  virtual int NumFaces() const
+  {
+    return vec.size();
+  }
+  virtual int NumPoints(int face) const
+  {
+    return coll->NumPoints(vec[face]);
+
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return coll->FacePoint(vec[face],point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return coll->PointNormal(vec[face],point);
+
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return coll->Attrib(vec[face],point,id);
+
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return coll->AttribI(vec[face],point,id);
+
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return coll->Color(vec[face],point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return coll->TexCoord(vec[face],point);
+  }
+  virtual float TexCoord3(int face, int point) const {
+    
+    return coll->TexCoord3(vec[face],point);    
+  }
+
+
+  bool skip(int face) const
+  {
+    Point p1 = coll->FacePoint(face,0);
+    Point p2 = coll->FacePoint(face,1);
+    Point p3 = coll->FacePoint(face,2);
+    int num = coll->NumPoints(face);
+    Point p4;
+    if (num!=0)
+      p4 = coll->FacePoint(face,3%num);
+    else p4 = p1;
+    
+    bool x=false,y=false,z=false;
+    
+    float min_x = std::min(std::min(p1.x,p2.x),std::min(p3.x,p4.x));
+    float max_x = std::max(std::max(p1.x,p2.x),std::max(p3.x,p4.x));
+    if (max_x-min_x<max) x=true;
+
+    float min_y = std::min(std::min(p1.y,p2.y),std::min(p3.y,p4.y));
+    float max_y = std::max(std::max(p1.y,p2.y),std::max(p3.y,p4.y));
+    if (max_y-min_y<max) y=true;
+
+    float min_z = std::min(std::min(p1.z,p2.z),std::min(p3.z,p4.z));
+    float max_z = std::max(std::max(p1.z,p2.z),std::max(p3.z,p4.z));
+    if (max_z-min_z<max) z=true;
+    return x&&y&&z;
+  }
+  
+private:
+  FaceCollection *coll;
+  float max;
+  std::vector<int> vec;
+};
+GameApi::P GameApi::PolygonApi::optimize_mesh(P p, float max)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e,new OptimizeMesh(coll,max),1);
+}
 
 #if 0
 

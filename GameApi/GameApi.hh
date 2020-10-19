@@ -195,6 +195,8 @@ using std::placeholders::_9;
   MAC(IM)
   MAC(FFi)
   MAC(VFi)
+  MAC(MB)
+  MAC(PKG)
 #undef MAC
   
   //template<class T>
@@ -297,6 +299,14 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT ML memmap_window2(EveryApi &ev, std::string url);
+  IMPORT ML memmap_window3(EveryApi &ev, std::string url_1, std::string url_2, std::string url_3, std::string url_4, std::string url_5, std::string url_6);
+  IMPORT ML ml_load_um(EveryApi &ev, std::string url);
+  IMPORT ML memmap_window(EveryApi &ev, PKG p);
+  IMPORT PKG load_um(DS st);
+  IMPORT MB network(std::string url, std::string homapge);
+  IMPORT BM img_decode(MB memblock);
+  
   IMPORT PTS whack_a_mole_explosion(EveryApi &ev);
   IMPORT ML whack_a_mole_flag_bmchooser(ML ml);
   IMPORT ML whack_a_mole_collision(ML ml);
@@ -754,7 +764,7 @@ public:
   IMPORT H timing_heavy(int num_frames);
   IMPORT TXID dyn_fetch_bitmap(EveryApi& ev, std::string url, int time, int texture_unit);
   IMPORT std::vector<TXID> dyn_fetch_mtl(EveryApi &ev, std::string mtl_url, ML ml2);
-  IMPORT ML txidarray_from_heavy(EveryApi &ev, H heavy, std::vector<TXID> *vec, ML ml, int start_range, int end_range);
+  IMPORT ML txidarray_from_heavy(EveryApi &ev, H heavy, std::vector<TXID> *vec, ML ml, int start_range, int end_range, int heavycount);
 
   IBM create_ibm(std::vector<BB> vec);
   BB choose_bool(IBM bm, int val);
@@ -1355,6 +1365,7 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
+  IMPORT MT toon_border(EveryApi &ev, MT next, float border_width, unsigned int color);
   IMPORT ARR material_pack_1(EveryApi &ev);
   IMPORT MT m_def(EveryApi &ev);
   IMPORT MT skeletal(EveryApi &ev);
@@ -2232,6 +2243,9 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  P optimize_mesh(P p, float max);
+  P toon_outline(P p, float border_width);
+  ML cullface(ML ml, bool b);
   P substitute(P p1, P p2, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float normal);
   ARR block_divide(P p, float pos_x, float pos_z, int sx, int sz, float delta_x, float delta_z);
   ARR block_render(GameApi::EveryApi &ev, std::vector<P> vec, MT mat);

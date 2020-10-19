@@ -109,6 +109,17 @@ void add_b(std::shared_ptr<void> ptr)
     g_rest.g_rest.push_back(ptr); // these will never be released
 }
 
+GameApi::MB add_memblock(GameApi::Env &e, MemoryBlock *b)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->memblock.push_back(b);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(b));
+  GameApi::MB im;
+  im.id = env->memblock.size()-1;
+  return im;
+}
+
 GameApi::UV add_uv(GameApi::Env &e, Fetcher<FaceID> *f)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1294,6 +1305,18 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   return ee;
 }
 
+UrlMemoryMap *find_urlmemmap(GameApi::Env &e, GameApi::PKG urlmemmap)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->urlmemmap[urlmemmap.id];
+}
+
+MemoryBlock *find_memblock(GameApi::Env &e, GameApi::MB b)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->memblock[b.id];
+}
+
 FloatField *find_float_field(GameApi::Env &e, GameApi::FFi field)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1786,6 +1809,15 @@ GameApi::FA add_float_array2(GameApi::Env &e, FloatArray2 *arr)
   return c;
 }
 
+
+GameApi::PKG add_urlmemmap(GameApi::Env &e, UrlMemoryMap *map)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->urlmemmap.push_back(map);
+  GameApi::PKG c;
+  c.id = env->urlmemmap.size()-1;
+  return c;
+}
 
 GameApi::D add_dyn(GameApi::Env &e, DynMainLoop *d2)
 {

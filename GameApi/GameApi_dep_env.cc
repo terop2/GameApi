@@ -366,7 +366,7 @@ void onerror_async_cb(unsigned int tmp, void *arg, int, const char*str)
     
     ASyncCallback *cb = rem_async_cb(url_only); //load_url_callbacks[url_only];
   if (cb) {
-    std::cout << "Load cb!" << url_only << std::endl;
+    //std::cout << "Load cb!" << url_only << std::endl;
     (*cb->fptr)(cb->data);
   }
 
@@ -723,6 +723,12 @@ void idb_error(void *arg)
 #endif
 }
 std::vector<std::string> g_currently_loading;
+std::string remove_load(std::string s);
+
+extern std::vector<const unsigned char*> g_content;
+extern std::vector<const unsigned char*> g_content_end;
+extern std::vector<const char*> g_urls;
+
 
 void ASyncLoader::load_urls(std::string url, std::string homepage)
   {
@@ -730,6 +736,51 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     if (url=="") return;
     //std::cout << "ASyncLoader::load_urls:" << url << std::endl; 
 
+  int u = g_urls.size();
+  for(int i=0;i<u;i++)
+    {
+      //std::cout << remove_load(url) << " " << g_urls[i] << std::endl;
+      if (remove_load(url)==g_urls[i]) { 
+	//std::vector<unsigned char> *vec = new std::vector<unsigned char>(g_content[i], g_content_end[i]);
+	//std::cout << "load_from_url using memory: " << url << " " << vec.size() << std::endl;
+	std::string url_only = "load_url.php?url=" + url;
+
+	load_url_buffers_async[url_only] = new std::vector<unsigned char>(g_content[i],g_content_end[i]);
+	//async_pending_count--;
+
+	
+	std::string oldurl = url;
+	url = "load_url.php?url=" + url + "&homepage=" + homepage;
+
+	ASyncCallback *cb = rem_async_cb(oldurl); //load_url_callbacks[url];
+	if (cb) {
+	  //std::cout << "Load cb!" << url << std::endl;
+	(*cb->fptr)(cb->data);
+	}
+      ASyncCallback *cb2 = rem_async_cb(url); //load_url_callbacks[url];
+      if (cb2) {
+	//std::cout << "Load cb!2" << url << std::endl;
+	(*cb2->fptr)(cb2->data);
+      }
+      ASyncCallback *cb3 = rem_async_cb(url_only); //load_url_callbacks[url];
+      if (cb3) {
+	//std::cout << "Load cb!3" << url << std::endl;
+	(*cb3->fptr)(cb3->data);
+      }
+
+      { // progressbar
+	std::string url_plain = stripprefix(url);
+	int s = url_plain.size();
+	int sum=0;
+	for(int i=0;i<s;i++) sum+=int(url_plain[i]);
+	sum = sum % 1000;
+	ProgressBar(sum,15,15,url_plain);
+      }
+	
+	return;
+      }
+    }
+    
     std::string oldurl = url;
 
     //int s = g_currently_loading.size();
@@ -912,6 +963,19 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
 std::vector<unsigned char> *ASyncLoader::get_loaded_data(std::string url) const
   {
+  int u = g_urls.size();
+  for(int i=0;i<u;i++)
+    {
+      //std::cout << remove_load(url) << " " << g_urls[i] << std::endl;
+      if (remove_load(url)==g_urls[i]) { 
+	std::vector<unsigned char> *vec = new std::vector<unsigned char>(g_content[i], g_content_end[i]);
+	//std::cout << "load_from_url using memory: " << url << " " << vec.size() << std::endl;
+	return vec;
+      }
+    }
+
+
+    
     url = "load_url.php?url=" + url;
     //std::cout << "url fetch " << url << std::endl;
     return load_url_buffers_async[url];
@@ -1375,6 +1439,7 @@ std::vector<unsigned char> *load_from_url(std::string url)
   int u = g_urls.size();
   for(int i=0;i<u;i++)
     {
+      //std::cout << remove_load(url) << " " << g_urls[i] << std::endl;
       if (remove_load(url)==g_urls[i]) { 
 	std::vector<unsigned char> *vec = new std::vector<unsigned char>(g_content[i], g_content_end[i]);
 	//std::cout << "load_from_url using memory: " << url << " " << vec.size() << std::endl;
