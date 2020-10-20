@@ -5651,6 +5651,53 @@ EXPORT GameApi::ARR GameApi::MaterialsApi::m_apply_phong(EveryApi &ev, std::vect
   return add_array(e,array);
 }
 
+class GlowEdgeMaterial : public MaterialForward
+{
+public:
+  GlowEdgeMaterial(GameApi::Env &e, GameApi::EveryApi &ev, Material *next, float white_level, float gray_level, float edge_pos) : e(e), ev(ev), next(next), white_level(white_level), gray_level(gray_level), edge_pos(edge_pos) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::ML ml3;
+    ml3.id = next->mat(p.id);
+    GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
+    return ml4;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const{
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst(p.id,pts.id);
+    GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
+    return ml4;
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst_matrix(p.id,ms.id);
+    GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
+    return ml4;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst2(p.id,pta.id);
+    GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
+    return ml4;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
+    GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
+    return ml4;
+  }
+  private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  Material *next;
+  float white_level;
+  float gray_level;
+  float edge_pos;
+};
+
 class ToonBorderMaterial : public MaterialForward
 {
 public:
@@ -5740,6 +5787,11 @@ private:
   float border_width;
   unsigned int color;
 };
+EXPORT GameApi::MT GameApi::MaterialsApi::glow_edge(EveryApi &ev, MT next, float light_level, float gray_level, float edge_pos)
+{
+  Material *mat = find_material(e,next);
+  return add_material(e, new GlowEdgeMaterial(e,ev,mat,light_level, gray_level, edge_pos));
+}
 
 EXPORT GameApi::MT GameApi::MaterialsApi::toon_border(EveryApi &ev, MT next, float border_width, unsigned int color)
 {
@@ -8900,6 +8952,11 @@ GameApi::US GameApi::UberShaderApi::v_phong(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("phong", next,"EX_NORMAL2 EX_LIGHTPOS2 LIGHTDIR IN_NORMAL"));
 }
+GameApi::US GameApi::UberShaderApi::v_glowedge(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("glowedge", next, "EX_TEXCOORD IN_TEXCOORD"));
+}
 GameApi::US GameApi::UberShaderApi::v_gi(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -9201,6 +9258,11 @@ GameApi::US GameApi::UberShaderApi::f_diffuse(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("diffuse", next,"EX_NORMAL2 EX_LIGHTPOS2 LEVELS"));
+}
+GameApi::US GameApi::UberShaderApi::f_glowedge(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("glowedge", next,"EX_TEXCOORD"));
 }
 GameApi::US GameApi::UberShaderApi::f_phong(US us)
 {
