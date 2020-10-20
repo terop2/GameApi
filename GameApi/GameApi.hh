@@ -1380,6 +1380,7 @@ public:
   IMPORT MT gltf_material( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix );
   IMPORT MT gltf_material_env( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix, BM diffuse_env, BM specular_env, BM bfrd);
   IMPORT MT gltf_material3( EveryApi &ev, float roughness, float metallic, float base_r, float base_g, float base_b, float base_a, float mix);
+  IMPORT MT glow_edge(EveryApi &ev, MT next, float light_level, float gray_level, float edge_pos);
   IMPORT MT phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ARR m_apply_phong(EveryApi &ev, std::vector<MT> vec, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT MT edge(EveryApi &ev, MT nxt, float edge_width, unsigned int edge_color);
@@ -2243,6 +2244,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  
   P optimize_mesh(P p, float max);
   P toon_outline(P p, float border_width);
   ML cullface(ML ml, bool b);
@@ -2581,6 +2583,7 @@ public:
   IMPORT ML dist_field_mesh_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML sfo_sandbox_shader(EveryApi &ev, ML mainloop, SFO sfo);
+  IMPORT ML glowedge_shader(EveryApi &ev, ML mainloop, float white_level, float gray_level, float edge_pos);
   IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML edge_shader(EveryApi &ev, ML mainloop, float edge_width, unsigned int edge_color);
   IMPORT ML globe_shader(EveryApi &ev, ML mainloop, float globe_r);
@@ -3502,6 +3505,7 @@ public:
   US v_skeletal(US us);
   US v_custom(US us, std::string v_funcname);
   US v_phong(US us);
+  US v_glowedge(US us);
   US v_bump_phong(US us);
   US v_fog(US us);
   US v_shadow(US us);
@@ -3518,6 +3522,7 @@ public:
   US f_ambient(US us);
   US f_specular(US us);
   US f_phong(US us);
+  US f_glowedge(US us);
   US f_bump_phong(US us);
   US f_fog(US us);
   US f_shadow(US us);
