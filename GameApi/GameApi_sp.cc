@@ -229,6 +229,7 @@ public:
     ogl->glViewport(corner_x*scale_x,(screen_y-corner_y-rect_sy)*scale_y,rect_sx*scale_x, rect_sy*scale_y);
     inside_it = false;
   }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
 
 private:
   GameApi::EveryApi &ev;

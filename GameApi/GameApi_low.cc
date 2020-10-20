@@ -305,6 +305,8 @@ void map_enums(int &i)
   case Low_GL_REPLACE:  i=GL_REPLACE; break;
   case Low_GL_NOTEQUAL:  i=GL_NOTEQUAL; break;
   case Low_GL_FRONT_AND_BACK: i=GL_FRONT_AND_BACK; break;
+  case Low_GL_FRONT: i=GL_FRONT; break;
+  case Low_GL_BACK: i=GL_BACK; break;
   case Low_GL_LINE:  i=GL_LINE; break;
   case Low_GL_FILL:  i=GL_FILL; break;
   case Low_GL_STENCIL_TEST: i=GL_STENCIL_TEST; break;
@@ -966,6 +968,11 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
   void glAlphaFunc(int i, float val) {
     map_enums(i);
     ::glAlphaFunc(i,val);
+  }
+  void glCullFace(int i)
+  {
+    map_enums(i);
+    ::glCullFace(i);
   }
   void glFramebufferTexture2D(int a, int b, int c, int d, int ptr) { 
 #ifdef GLEW_HACK
