@@ -136,6 +136,8 @@ enum
     Low_GL_DEPTH_COMPONENT,
     Low_GL_UNSIGNED_INT,
     Low_GL_ALPHA_TEST,
+    Low_GL_FRONT,
+    Low_GL_BACK,
     //
     //  OLD STUFF
     // 
@@ -355,6 +357,8 @@ public:
   virtual const unsigned char *glGetString( int name )=0;
   virtual void glGenerateMipmap(int p)=0;
 
+  virtual void glCullFace(int mode)=0;
+  
   // Old
   virtual void glEnableClientState(int a)=0;
   virtual void glLineWidth(float i)=0;

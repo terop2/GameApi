@@ -721,6 +721,8 @@ struct EnvImpl
   std::vector<VelocityField*> vfi;
   std::vector<FloatField*> ffi;
   std::vector<FloatArray2*> farray;
+  std::vector<MemoryBlock*> memblock;
+  std::vector<UrlMemoryMap*> urlmemmap;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1032,6 +1034,8 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::PKG add_urlmemmap(GameApi::Env &e, UrlMemoryMap *map);
+GameApi::MB add_memblock(GameApi::Env &e, MemoryBlock *block);
 GameApi::VFi add_velocity_field(GameApi::Env &e, VelocityField *field);
 GameApi::FFi add_float_field(GameApi::Env &e, FloatField *field);
 GameApi::FA add_float_array2(GameApi::Env &e, FloatArray2 *arr);
@@ -1177,6 +1181,8 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+UrlMemoryMap *find_urlmemmap(GameApi::Env &e, GameApi::PKG p);
+MemoryBlock *find_memblock(GameApi::Env &e, GameApi::MB b);
 VelocityField *find_velocity_field(GameApi::Env &e, GameApi::VFi field);
 FloatField *find_float_field(GameApi::Env &e, GameApi::FFi field);
 FloatArray2 *find_float_array2(GameApi::Env &e, GameApi::FA arr);

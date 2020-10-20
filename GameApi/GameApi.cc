@@ -2155,6 +2155,7 @@ public:
     move->event(env);
   }
   void Prepare() { next->Prepare(); }
+  void logoexecute() { next->logoexecute(); }
   void execute(MainLoopEnv &env)
   {
     Movement *move = find_move(e,mn);
@@ -4014,8 +4015,8 @@ public:
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml(ev,I16);
     GameApi::ML I17a = ev.texture_api.forward_to_txid(I16,I17,I15);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a, mix);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
@@ -4031,8 +4032,8 @@ public:
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
     GameApi::ML I17a = ev.texture_api.forward_to_txid(I16,I17,I15);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a,mix);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
@@ -4048,8 +4049,8 @@ public:
     GameApi::ML I17=ev.materials_api.render_instanced2_ml_matrix(ev,I16,pta);
     GameApi::ML I17a = ev.texture_api.forward_to_txid(I16,I17,I15);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a,mix);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
 
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
@@ -4066,8 +4067,8 @@ public:
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
     GameApi::ML I17a = ev.texture_api.forward_to_txid(I16,I17,I15);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a,mix);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
@@ -4083,8 +4084,8 @@ public:
     GameApi::ML I17=ev.materials_api.render_instanced2_ml_fade(ev,I16,pta, flip, start_time, end_time);
     GameApi::ML I17a = ev.texture_api.forward_to_txid(I16,I17,I15);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17a,mix);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
 private:
   GameApi::EveryApi &ev;
@@ -4155,8 +4156,8 @@ public:
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml(ev,I16);
     GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17, mix);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
@@ -4170,8 +4171,8 @@ public:
     GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
     GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17,mix);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
@@ -4185,8 +4186,8 @@ public:
     GameApi::MSA pta = ev.matrices_api.prepare(ms);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml_matrix(ev,I16,pta);
     GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17,mix);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
 
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
@@ -4201,8 +4202,8 @@ public:
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
     GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17,mix);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
@@ -4216,8 +4217,8 @@ public:
     GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml_fade(ev,I16,pta, flip, start_time, end_time);
     GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17,mix);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
 
 private:
@@ -4236,23 +4237,23 @@ public:
     GameApi::P I10=p; 
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17, mix);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     //GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,p,pts,bm);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_matrix(ev,p,ms,bm);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
@@ -4266,8 +4267,8 @@ public:
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
     // END OF NOT WORKING
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
@@ -4280,8 +4281,8 @@ public:
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_fade_texture(ev,I10,pts, flip, start_time, end_time,bm);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
 
 private:
@@ -4299,23 +4300,23 @@ public:
     GameApi::P I10=p; 
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_cubemap(ev,I10,bm);
     GameApi::ML I18=ev.polygon_api.texture_cubemap_shader(ev, I17, mix,mix2);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     //GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_cubemap(ev,p,pts,bm);
     GameApi::ML I18=ev.polygon_api.texture_cubemap_shader(ev, I17,mix,mix2);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
     GameApi::ML I17=ev.materials_api.render_instanced_ml_cubemap_matrix(ev,p,ms,bm);
     GameApi::ML I18=ev.polygon_api.texture_cubemap_shader(ev, I17,mix,mix2);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
 
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
@@ -4330,8 +4331,8 @@ public:
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
     // END OF NOT WORKING
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
@@ -4344,8 +4345,8 @@ public:
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_fade_texture(ev,I10,pts, flip, start_time, end_time,bm);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
 
 private:
@@ -4365,23 +4366,23 @@ public:
     GameApi::P I10=p; 
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture2(ev,I10);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17, mix);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     //GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture2(ev,p,pts);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
-     GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-   return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+   return I18;
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture2_matrix(ev,p,ms);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
-     GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
-   return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+   return I18;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
@@ -4847,6 +4848,7 @@ class PhongMaterial : public MaterialForward
 {
 public:
   PhongMaterial(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow) : env(env), ev(ev), next(next), light_dir_x(light_dir_x), light_dir_y(light_dir_y), light_dir_z(light_dir_z), ambient(ambient), highlight(highlight), pow(pow) { }
+  void logoexecute() { next->logoexecute(); }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
     //std::cout << "PhongMaterial mat2" << std::endl;
@@ -5089,8 +5091,8 @@ public:
     GameApi::ML ml=ev.polygon_api.render_vertex_array_ml2_texture(ev,p1,bm);
     //ml.id = next->mat(p1.id);
     GameApi::ML sh = ev.polygon_api.bump_phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,sh);
-    return I19;
+    // GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,sh);
+    return sh;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
@@ -5107,8 +5109,8 @@ public:
     GameApi::ML ml=ev.materials_api.render_instanced_ml_texture(ev,p1,pts,bm);
     //ml.id = next->mat_inst(p1.id, pts.id);
     GameApi::ML sh = ev.polygon_api.bump_phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,sh);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,sh);
+    return sh;
 
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
@@ -5128,8 +5130,8 @@ public:
     GameApi::ML ml=ev.materials_api.render_instanced_ml_texture_matrix(ev,p1,ms,bm);
     //ml.id = next->mat_inst(p1.id, pts.id);
     GameApi::ML sh = ev.polygon_api.bump_phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
-    GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,sh);
-    return I19;
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,sh);
+    return sh;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
@@ -5649,6 +5651,154 @@ EXPORT GameApi::ARR GameApi::MaterialsApi::m_apply_phong(EveryApi &ev, std::vect
   return add_array(e,array);
 }
 
+class GlowEdgeMaterial : public MaterialForward
+{
+public:
+  GlowEdgeMaterial(GameApi::Env &e, GameApi::EveryApi &ev, Material *next, float white_level, float gray_level, float edge_pos) : e(e), ev(ev), next(next), white_level(white_level), gray_level(gray_level), edge_pos(edge_pos) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::ML ml3;
+    ml3.id = next->mat(p.id);
+    GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
+    return ml4;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const{
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst(p.id,pts.id);
+    GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
+    return ml4;
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst_matrix(p.id,ms.id);
+    GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
+    return ml4;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst2(p.id,pta.id);
+    GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
+    return ml4;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
+    GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
+    return ml4;
+  }
+  private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  Material *next;
+  float white_level;
+  float gray_level;
+  float edge_pos;
+};
+
+class ToonBorderMaterial : public MaterialForward
+{
+public:
+  ToonBorderMaterial(GameApi::Env &e, GameApi::EveryApi &ev, Material *next, float border_width, unsigned int color) : e(e), ev(ev), next(next), border_width(border_width), color(color) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+
+    GameApi::ML ml3;
+    ml3.id = next->mat(p.id);
+    
+    GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
+    //GameApi::ML ml;
+    GameApi::P p3 = ev.polygon_api.color(p2,color);
+    GameApi::PTS pts = ev.points_api.single_pts();
+    GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p3,pts);
+
+    //ml.id = next->mat(p2.id);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, false);
+    return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
+
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const{
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst(p.id,pts.id);
+    
+    GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
+    //GameApi::ML ml;
+    //ml.id = next->mat_inst(p2.id, pts.id);
+    GameApi::P p3 = ev.polygon_api.color(p2,color);
+    GameApi::ML ml = ev.materials_api.render_instanced_ml(ev, p3, pts);
+
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, false);
+    return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
+
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst_matrix(p.id,ms.id);
+    
+    GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
+    GameApi::P p3 = ev.polygon_api.color(p2,color);
+    //GameApi::ML ml;
+    //ml.id = next->mat_inst_matrix(p2.id, ms.id);
+    GameApi::ML ml = ev.materials_api.render_instanced_ml_matrix(ev, p3, ms);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, false);
+    return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
+
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst2(p.id,pta.id);
+    
+    GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
+    //GameApi::ML ml;
+    //ml.id = next->mat_inst2(p2.id, pta.id);
+    GameApi::P p3 = ev.polygon_api.color(p2,color);
+    GameApi::VA va = ev.polygon_api.create_vertex_array(p3,false);
+    GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, false);
+    return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
+
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
+    
+    GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
+    //GameApi::ML ml;
+    //ml.id = next->mat_inst_fade(p2.id, pts.id, flip, start_time, end_time);
+    GameApi::P p3 = ev.polygon_api.color(p2,color);
+    GameApi::ML ml = ev.materials_api.render_instanced_ml_fade(ev, p3, pts, flip, start_time, end_time);
+
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, false);
+    return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml3,ml2});
+
+  }
+
+  
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  Material *next;
+  float border_width;
+  unsigned int color;
+};
+EXPORT GameApi::MT GameApi::MaterialsApi::glow_edge(EveryApi &ev, MT next, float light_level, float gray_level, float edge_pos)
+{
+  Material *mat = find_material(e,next);
+  return add_material(e, new GlowEdgeMaterial(e,ev,mat,light_level, gray_level, edge_pos));
+}
+
+EXPORT GameApi::MT GameApi::MaterialsApi::toon_border(EveryApi &ev, MT next, float border_width, unsigned int color)
+{
+  Material *mat = find_material(e, next);
+  return add_material(e, new ToonBorderMaterial(e,ev,mat,border_width,color));
+}
+
 EXPORT GameApi::MT GameApi::MaterialsApi::skeletal(EveryApi &ev)
 {
   return add_material(e, new SkeletalMaterial(ev));
@@ -5983,7 +6133,10 @@ ML I10=ev.polygon_api.render_vertex_array_ml(ev,I9);
 class Bind : public MainLoopItem
 {
 public:
-  Bind(GameApi::Env &env, Material *mat, GameApi::P p) : env(env), mat(mat),p(p) { ml.id = -1; firsttime = true; }
+  Bind(GameApi::Env &env, Material *mat, GameApi::P p) : env(env), mat(mat),p(p) { ml.id = -1; firsttime = true;
+
+
+  }
   void find_ml() {
     if (ml.id==-1) {
       ml.id = mat->mat(p.id);
@@ -5991,6 +6144,10 @@ public:
   }
   virtual void Prepare()
   {
+  }
+  void logoexecute() {
+    // TODO, can we do this here?
+    mat->logoexecute();
   }
   virtual void execute(MainLoopEnv &e)
   {
@@ -8795,6 +8952,11 @@ GameApi::US GameApi::UberShaderApi::v_phong(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("phong", next,"EX_NORMAL2 EX_LIGHTPOS2 LIGHTDIR IN_NORMAL"));
 }
+GameApi::US GameApi::UberShaderApi::v_glowedge(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("glowedge", next, "EX_TEXCOORD IN_TEXCOORD"));
+}
 GameApi::US GameApi::UberShaderApi::v_gi(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -9096,6 +9258,11 @@ GameApi::US GameApi::UberShaderApi::f_diffuse(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("diffuse", next,"EX_NORMAL2 EX_LIGHTPOS2 LEVELS"));
+}
+GameApi::US GameApi::UberShaderApi::f_glowedge(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("glowedge", next,"EX_TEXCOORD"));
 }
 GameApi::US GameApi::UberShaderApi::f_phong(US us)
 {
@@ -11188,6 +11355,11 @@ int g_logo_shown = 0;
 extern int g_event_screen_x;
 extern int g_event_screen_y;
 
+extern void (*g_prepare_heavy_callback)(GameApi::Env &e, GameApi::H h);
+extern GameApi::Env *g_prepare_heavy_env;
+extern GameApi::H g_prepare_heavy_h;
+extern bool g_prepare_heavy_enabled;
+
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
 public:
@@ -11271,7 +11443,11 @@ public:
 	g_mainloop_callback(g_mainloop_ptr);
 	return -1;
       }
-
+    if (g_prepare_heavy_enabled)
+      {
+	g_prepare_heavy_callback(*g_prepare_heavy_env, g_prepare_heavy_h);
+      }
+    
     
     FinishProgress();
     Envi_2 *env = (Envi_2*)&envi;
@@ -11298,6 +11474,10 @@ public:
 	} else {
 	  b = env->ev->mainloop_api.seamless_iter();
 	}
+
+	MainLoopItem *item = find_main_loop(env->ev->get_env(),code);
+	item->logoexecute();
+	
 	// b &&
 	if (b && async_pending_count==0 && no_draw_count==0) { env->logo_shown = false;
 	}
@@ -13672,6 +13852,7 @@ public:
     point.id=-1;
   }
   void Prepare() { next->Prepare(); }
+  virtual void logoexecute() { next->logoexecute(); }
   virtual void execute(MainLoopEnv &e)
   {
     g_is_quake=true;
@@ -16331,7 +16512,7 @@ float debug_pos_x=0.0, debug_pos_y=0.0, debug_pos_z=0.0;
 
 GameApi::ML GameApi::MainLoopApi::debug_obj(EveryApi &ev)
 {  
-#if 1
+#if 0
   P p = ev.polygon_api.cube(-3.0,3.0, -3.0, 3.0, -3.0,3.0);
   MT mat0 = ev.materials_api.m_def(ev);
   MT mat = ev.materials_api.snow(ev,mat0,0xffaaaaaa, 0xffeeeeee, 0xffffffff, 0.95);
@@ -16340,7 +16521,7 @@ GameApi::ML GameApi::MainLoopApi::debug_obj(EveryApi &ev)
   MN mn = ev.move_api.debug_translate(mn2);
   ML ml2 = ev.move_api.move_ml(ev,ml1,mn,1,10.0);
 #endif
-#if 0
+#if 1
   P p = ev.polygon_api.p_empty();
   MT mat0 = ev.materials_api.m_def(ev);
   
@@ -19789,6 +19970,21 @@ void nh_cb(void *obj);
 
 HeavyOperation::~HeavyOperation() { }
 
+std::vector<std::string> network_heavy_cache_url;
+std::vector<std::vector<unsigned char>*> network_heavy_cache_vec;
+
+std::vector<unsigned char> *find_networkheavy_cache(std::string url)
+{
+  int s = network_heavy_cache_url.size();
+  for(int i=0;i<s;i++) {
+    if (network_heavy_cache_url[i] == url) {
+      return network_heavy_cache_vec[i];
+    }
+  }
+  return 0;
+}
+
+
 class NetworkHeavy : public HeavyOperation
 {
 public:
@@ -19796,6 +19992,7 @@ public:
     ptr = 0;
     current_slot_num = 0;
     //std::cout << "NetworkHeavy:" << url << std::endl;
+    operation_ongoing = false;
   }
   ~NetworkHeavy() { e.async_rem_callback(url+str); }
   virtual bool RequestPrepares() const { return timing->RequestPrepares(); }
@@ -19821,28 +20018,41 @@ public:
     int s = timing->NumSlots();
     if (slot<s) { timing->Slot(slot); return; }
     slot-=s;
+    
+    
     //std::cout << "NetworkHeavy: #" << slot << std::endl;
     if (slot==0) {
-      // TODO, how to prevent async_pending_count to show logo
-      // start async network access
       static int i = 0;
       std::stringstream ss;
+      str = ss.str();
+      i++;
+     
+      if (operation_ongoing) { }
+      else {
+    std::vector<unsigned char>* vec = find_networkheavy_cache(url);
+    if (vec) {
+      ptr = vec;
+      publish_ptr = vec;
+    } else {
+      // TODO, how to prevent async_pending_count to show logo
+      // start async network access
 #ifdef EMSCRIPTEN
       // TODO, WHY IS THIS NEEDED? IT KILLS CACHING QUITE BADLY.
       // BUT DOESNT SEEM TO WORK WITHOUT IT
       //ss<<"?id=" << i;
 #endif
-      str = ss.str();
-      i++;
 #ifdef EMSCRIPTEN
       e.async_load_callback(url + str, &nh_cb, this);
 
       e.async_load_url(url + str, homepage);
+      //async_pending_count--; // this removes the count that exists in async_load_url
+      operation_ongoing = true;
 #endif
 #ifndef EMSCRIPTEN
       Callback();
 #endif
-      
+    }
+      }
     }
 #ifdef EMSCRIPTEN
     if (!ptr)
@@ -19861,7 +20071,12 @@ public:
 #endif
     ptr = e.get_loaded_async_url(url+str);
     publish_ptr = ptr;
+
+    network_heavy_cache_url.push_back(url);
+    network_heavy_cache_vec.push_back(publish_ptr);
+    operation_ongoing = false;
     if (!ptr) {std::cout << "Network heavy callback received 0" << std::endl; }
+    //async_pending_count++;
   }
 
   virtual void* get_data(std::string type)
@@ -19881,6 +20096,7 @@ private:
   int current_slot_num;
   std::vector<unsigned char> *ptr;
   std::vector<unsigned char> *publish_ptr;
+  bool operation_ongoing;
 };
 
 void nh_cb(void *obj)
@@ -20168,22 +20384,39 @@ private:
   int current_i;
 };
 
+std::vector<std::string> pngheavy_cache_urls;
+std::vector<BufferRef> pngheavy_cache;
+
+BufferRef *find_pngheavy_cache(std::string url)
+{
+  int s = pngheavy_cache_urls.size();
+  for(int i=0;i<s;i++) {
+    if (pngheavy_cache_urls[i]==url) return &pngheavy_cache[i];
+  }
+  return 0;
+}
+
 class PngHeavy : public HeavyOperation
 {
 public:
-  PngHeavy(GameApi::EveryApi &ev, HeavyOperation *data, std::string url, int ssx, int ssy, int texture_unit) : ev(ev), data(data),url(url),ssx(ssx), ssy(ssy),texture_unit(texture_unit) { res_ref=BufferRef::NewBuffer(ssx,ssy);
+  PngHeavy(GameApi::EveryApi &ev, HeavyOperation *data, std::string url, int ssx, int ssy, int texture_unit) : ev(ev), data(data),url(url),ssx(ssx), ssy(ssy),texture_unit(texture_unit) { 
     ref=BufferRef::NewBuffer(1,1);
 
+    res_ref=BufferRef::NewBuffer(ssx,ssy);
+ 
     // show white while loading
-    for(int y=0;y<ssy;y++)
-      for(int x=0;x<ssx;x++)
-	res_ref.buffer[x+y*res_ref.ydelta] = 0xffffffff;
+    BufferRef *ref = find_pngheavy_cache(url);
+    if (!ref) 
+      std::memset(res_ref.buffer, 0xff, ssx*ssy*sizeof(unsigned int));
+    //for(int y=0;y<ssy;y++)
+    //  for(int x=0;x<ssx;x++)
+    //res_ref.buffer[x+y*res_ref.ydelta] = 0xffffffff;
 	
     id.id=-1;
     changed=true;
   }
   ~PngHeavy() {
-    BufferRef::FreeBuffer(res_ref);
+    //BufferRef::FreeBuffer(res_ref); // it goes to cache.
     BufferRef::FreeBuffer(ref);
   }
   virtual bool RequestPrepares() const { return data->RequestPrepares(); }
@@ -20196,6 +20429,17 @@ public:
     int s = data->NumSlots();
     if (slot<s) { data->Slot(slot); return; }
     slot-=s;
+
+    BufferRef *ref2 = find_pngheavy_cache(url);
+    if (ref2 && slot==0) {
+      BufferRef::FreeBuffer(res_ref);
+      res_ref = *ref2;
+      id = ev.texture_api.bufferref_to_txid(id,res_ref);
+      changed=true;
+      return;
+    }
+    if (ref2 && slot!=0) return;
+    
     //std::cout << "PngHeavy: #" << slot << std::endl;
     if (slot==0) {
       // TODO, this slot might be too slow for frame loop
@@ -20266,6 +20510,8 @@ public:
 	    }
 
       id = ev.texture_api.bufferref_to_txid(id,res_ref);
+      pngheavy_cache_urls.push_back(url);
+      pngheavy_cache.push_back(res_ref);
       changed=true;
       }
   }
@@ -20379,6 +20625,7 @@ private:
   mutable int current_frame;
   int numframes;
 };
+extern bool g_prepare_heavy_done;
 class MTLParseHeavy : public HeavyOperation
 {
 public:
@@ -20407,6 +20654,7 @@ public:
       std::vector<unsigned char> *ptr = (std::vector<unsigned char>*)mtl_data->get_data("std::vector<unsigned char>");
       if (!ptr) { std::cout << "MTLParseHeavy: got null pointer!" << std::endl; return; }
       vec = ev.polygon_api.mtl_parse(ev, *ptr, url_prefix, delta);
+      g_prepare_heavy_done = true;
     }
   }
   virtual void FinishSlots()
@@ -20482,7 +20730,18 @@ GameApi::H GameApi::BitmapApi::bitmap_prepare_heavy(EveryApi &ev, H bitmap_gen, 
 class HeavyTextureID : public TextureID
 {
 public:
-  HeavyTextureID(HeavyOperation *heavy) : heavy(heavy) { heavycount=0; id.id=-1; }
+  HeavyTextureID(HeavyOperation *heavy) : heavy(heavy) { heavycount=0; id.id=-1;
+
+    int s = 10;
+    for(int i=0;i<s;i++) {
+    if (heavy->RequestPrepares()) { heavycount=0; heavy->TriggerPrepares(); }
+    int n = heavy->NumSlots();
+    if (heavycount>=n) continue;
+    //std::cout << "heavy: " << heavycount << " " << n << std::endl;
+    heavy->Slot(heavycount);
+    heavycount++;
+    }
+  }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -20562,13 +20821,69 @@ GameApi::TXID GameApi::BitmapApi::txid_from_heavy(H heavy)
 }
 // note, modifies the txid vector afterwards
 
+bool g_prepare_heavy_done = false;
+
+bool g_prepare_heavy_enabled = false;
+void (*g_prepare_heavy_callback)(GameApi::Env &e, GameApi::H h);
+GameApi::Env *g_prepare_heavy_env;
+GameApi::H g_prepare_heavy_h;
+int *g_prepare_heavy_heavycount;
+void prepare_heavy_cb(GameApi::Env &e, GameApi::H h);
+
+int prepare_heavy(GameApi::Env &e, GameApi::H h, int *heavycount)
+{
+  //std::cout << "prepare_heavy:" << (int)heavycount << std::endl;
+  HeavyOperation *op = find_heavy(e, h);
+  if (op->RequestPrepares()) { *heavycount=0; op->TriggerPrepares(); }
+    int n = op->NumSlots();
+    if (*heavycount<n) {
+      //std::cout << "NumSlots: " << heavycount << "/" << n << std::endl;
+      op->Slot(*heavycount);
+      (*heavycount)++;
+      if (*heavycount>=n) { op->FinishSlots(); }
+    }
+  
+  return *heavycount;
+}
+
+void prepare_heavy_cb(GameApi::Env &e, GameApi::H h)
+{
+  *g_prepare_heavy_heavycount = prepare_heavy(e,h,g_prepare_heavy_heavycount);
+}
+
+
 class TXIDArrayMainLoop : public MainLoopItem
 {
 public:
-  TXIDArrayMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, HeavyOperation *op, std::vector<GameApi::TXID> *vec, MainLoopItem *next, int start_range, int end_range) : env(env), ev(ev), op(op), vec(vec),next(next), start_range(start_range), end_range(end_range) {
-    heavycount=0; 
+  TXIDArrayMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, HeavyOperation *op, std::vector<GameApi::TXID> *vec, MainLoopItem *next, int start_range, int end_range, int heavycount) : env(env), ev(ev), op(op), vec(vec),next(next), start_range(start_range), end_range(end_range), heavycount(heavycount) {
+    //heavycount=0; 
+
+    // start network operations already here.
+    //int s = 200;
+    //for(int i=0;i<s;i++) {
+    //if (op->RequestPrepares()) { heavycount=0; op->TriggerPrepares(); }
+    //int n = op->NumSlots();
+    //if (heavycount<n) {
+      //std::cout << "NumSlots: " << heavycount << "/" << n << std::endl;
+    //  op->Slot(heavycount);
+    //  heavycount++;
+    //  if (heavycount>=n) { op->FinishSlots(); }
+    //}
+    //}
+    
   }
   void Prepare() { next->Prepare(); }
+  //void logoexecute()
+  //{
+  //  if (op->RequestPrepares()) { heavycount=0; op->TriggerPrepares(); }
+  //  int n = op->NumSlots();
+  //  if (heavycount<n) {
+  //    //std::cout << "NumSlots: " << heavycount << "/" << n << std::endl;
+  //   op->Slot(heavycount);
+  //   heavycount++;
+  //    if (heavycount>=n) { op->FinishSlots(); }
+  // }
+  //}
   virtual void execute(MainLoopEnv &e)
   {
     if (op->RequestPrepares()) { heavycount=0; op->TriggerPrepares(); }
@@ -20628,11 +20943,11 @@ private:
   int start_range, end_range;
 };
 // modifies std::vector on the fly, so need to have longer lifetime
-GameApi::ML GameApi::BitmapApi::txidarray_from_heavy(GameApi::EveryApi &ev, H heavy, std::vector<TXID> *vec, ML ml, int start_range, int end_range)
+GameApi::ML GameApi::BitmapApi::txidarray_from_heavy(GameApi::EveryApi &ev, H heavy, std::vector<TXID> *vec, ML ml, int start_range, int end_range, int heavycount)
 {
   HeavyOperation *op = find_heavy(e, heavy);
   MainLoopItem *item = find_main_loop(e,ml);
-  return add_main_loop(e, new TXIDArrayMainLoop(e,ev,op, vec,item, start_range,end_range));
+  return add_main_loop(e, new TXIDArrayMainLoop(e,ev,op, vec,item, start_range,end_range,heavycount));
 }
 
 GameApi::TXID GameApi::BitmapApi::dyn_fetch_bitmap(EveryApi &ev, std::string url, int time, int texture_unit)
@@ -20654,53 +20969,63 @@ class ManyTextureIDMaterial : public MaterialForward
 {
 public:
   ManyTextureIDMaterial(GameApi::EveryApi &ev, std::string mtl_url, std::string url_prefix,float mix, int start_range, int end_range) : ev(ev), mtl_url(mtl_url), url_prefix(url_prefix), mix(mix), start_range(start_range), end_range(end_range) {
+
+    GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
+    GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
+    mtl = ev.bitmap_api.mtl_heavy(ev,net, url_prefix,start_range);
+    heavycount = 0;
+    //g_prepare_heavy_heavycount = &heavycount;
+    //heavycount = prepare_heavy(ev.get_env(),mtl, g_prepare_heavy_heavycount);
+    
     //std::cout << "ManyTextureIDMaterial ctor" << std::endl;
     g_use_texid_material = 1;
   }
+  void logoexecute() {
+    // TODO, WHY DOES THIS SLOW DOWN THE OPERATION BY 10 SECONDS IN SPONZA?
+    //heavycount = prepare_heavy(ev.get_env(),mtl, &heavycount);
+  }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+
     //std::cout << "ManyTextureIDMaterial" << std::endl;
-    GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
-    GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
-    GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net, url_prefix,start_range);
     // this array gets modified all the time during gameplay
     std::vector<GameApi::TXID> *txids = new std::vector<GameApi::TXID>;
 
     GameApi::P I10=p;
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture_id(ev,I10,txids);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17, mix);
-    GameApi::ML I19 = ev.bitmap_api.txidarray_from_heavy(ev,mtl, txids, I18, start_range, end_range);
+    GameApi::ML I19 = ev.bitmap_api.txidarray_from_heavy(ev,mtl, txids, I18, start_range, end_range, heavycount);
 
     return I19;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     //std::cout << "ManyTextureIDMaterial" << std::endl;
-    GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
-    GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
-    GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net,url_prefix, start_range);
+    //GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
+    //GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
+    //GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net,url_prefix, start_range);
     // this array gets modified all the time during gameplay
     std::vector<GameApi::TXID> *txids = new std::vector<GameApi::TXID>;
 
     //GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_id(ev,p,pts,bm);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
-    GameApi::ML I19 = ev.bitmap_api.txidarray_from_heavy(ev,mtl, txids, I18, start_range, end_range);
+    GameApi::ML I19 = ev.bitmap_api.txidarray_from_heavy(ev,mtl, txids, I18, start_range, end_range, heavycount);
     return I19;
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
     //std::cout << "ManyTextureIDMaterial" << std::endl;
-    GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
-    GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
-    GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net,url_prefix,start_range);
+    //GameApi::H timing = ev.bitmap_api.timing_heavy(1000000000);
+    //GameApi::H net = ev.bitmap_api.network_heavy(mtl_url, gameapi_homepageurl, timing);
+    //GameApi::H mtl = ev.bitmap_api.mtl_heavy(ev,net,url_prefix,start_range);
     // this array gets modified all the time during gameplay
     std::vector<GameApi::TXID> *txids = new std::vector<GameApi::TXID>;
 
     //GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_id_matrix(ev,p,ms,bm);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
-    GameApi::ML I19 = ev.bitmap_api.txidarray_from_heavy(ev,mtl, txids, I18, start_range, end_range);
+    GameApi::ML I19 = ev.bitmap_api.txidarray_from_heavy(ev,mtl, txids, I18, start_range, end_range, heavycount);
     return I19;
 
   }
@@ -20742,11 +21067,13 @@ public:
 
 private:
   GameApi::EveryApi &ev;
+  GameApi::H mtl;
   std::vector<GameApi::TXID> *bm;
   std::string mtl_url;
   std::string url_prefix;
   float mix;
   int start_range, end_range;
+  int heavycount;
 };
 GameApi::MT GameApi::MaterialsApi::many_texture_id_material(GameApi::EveryApi &ev, std::string mtl_url, std::string url_prefix, float mix, int start_range, int end_range)
 {
@@ -22362,7 +22689,7 @@ private:
 GameApi::BM GameApi::MainLoopApi::flip_bitmap_if_mobile(GameApi::EveryApi &ev, GameApi::BM bm)
 {
     if (is_mobile(ev)) {
-      return ev.bitmap_api.flip_y(bm);
+      return ev.bitmap_api.flip_x(bm);
     } else
       {
 	return bm;
@@ -24001,4 +24328,847 @@ private:
 GameApi::PTS GameApi::MainLoopApi::whack_a_mole_explosion(GameApi::EveryApi &ev)
 {
   return add_points_api_points(e,new WhackExplosion(ev));
+}
+
+class ToonOutlineFaceCollection : public ForwardFaceCollection
+{
+public:
+  ToonOutlineFaceCollection(FaceCollection *coll, float border_width) : ForwardFaceCollection(*coll), coll(coll),border_width(border_width) { }
+  virtual Point FacePoint(int face, int point) const
+  {
+    Point p = coll->FacePoint(face,point);
+    Vector v = coll->PointNormal(face,point);
+    v/=v.Dist();
+    p += v*border_width;
+    return p;
+  }
+private:
+  FaceCollection *coll;
+  float border_width;
+};
+GameApi::P GameApi::PolygonApi::toon_outline(P p, float border_width)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new ToonOutlineFaceCollection(coll,border_width),1);
+}
+
+class CullFace : public MainLoopItem
+{
+public:
+  CullFace(MainLoopItem *item, bool b) : item(item), b(b) { }
+  virtual void Prepare() { item->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    OpenglLowApi *ogl = g_low->ogl;
+    if (b)
+      ogl->glCullFace(Low_GL_BACK);
+    else
+      ogl->glCullFace(Low_GL_FRONT);
+    ogl->glEnable(Low_GL_CULL_FACE);
+    item->execute(e);
+    ogl->glDisable(Low_GL_CULL_FACE);
+    ogl->glCullFace(Low_GL_BACK);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
+private:
+  MainLoopItem *item;
+  bool b;
+};
+GameApi::ML GameApi::PolygonApi::cullface(ML ml, bool is_back)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new CullFace(item, is_back));
+}
+
+template<class T>
+class VecMemoryBlock : public MemoryBlock
+{
+public:
+  VecMemoryBlock(const std::vector<T> &vec) : vec(vec) { }
+  void prepare() { }
+  unsigned char *buffer() const { return (unsigned char*)&vec[0]; }
+  int size_in_bytes() const { return vec.size()*sizeof(T); }
+private:
+  const std::vector<T> &vec;
+};
+
+template<class T>
+MemoryBlock *create_mem_block(const std::vector<T> &vec)
+{
+  return new VecMemoryBlock<T>(vec);
+}
+
+class NetworkMemoryBlock : public MemoryBlock
+{
+public:
+  NetworkMemoryBlock(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url), homepage(homepage) { vec=0; }
+  virtual void prepare()
+  {
+    // std::cout << "NetworkMemoryBlock::prepare()" << std::endl;
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+    vec = env.get_loaded_async_url(url);
+    //std::cout << "vec=" << vec << std::endl;
+  }
+  virtual unsigned char *buffer() const { if (vec) return &vec->operator[](0); else { std::cout << "ERROR: vec=0 in NetworkMemoryBlock::buffer" << std::endl; return 0; } }
+  virtual int size_in_bytes() const { if (vec) return vec->size(); else { std::cout << "error vec=0 in NetworkMemoryBlock::size_in_bytes" << std::endl;  return 0; } }
+private:
+  GameApi::Env &env;
+  std::string url;
+  std::string homepage;
+  std::vector<unsigned char> *vec;
+};
+
+GameApi::MB GameApi::MainLoopApi::network(std::string url, std::string homepage)
+{
+  return add_memblock(e, new NetworkMemoryBlock(e,url,homepage));
+}
+
+class ImgDecodeBitmap : public Bitmap<Color>
+{
+public:
+  ImgDecodeBitmap(MemoryBlock *mb) : mb(mb) {
+  }
+  virtual int SizeX() const { return ref.width; }
+  virtual int SizeY() const { return ref.height; }
+  virtual Color Map(int x, int y) const { return Color(ref.buffer[x+y*ref.ydelta]); }
+  virtual void Prepare()
+  {
+    mb->prepare();
+    unsigned char *buf = mb->buffer();
+    int sz = mb->size_in_bytes();
+    std::vector<unsigned char> vec(buf,buf+sz);
+    bool success = false;
+    ref = LoadImageFromString(vec,success);
+    if (!success) ref=BufferRef::NewBuffer(2,2);
+  }
+
+private:
+  MemoryBlock *mb;
+  BufferRef ref;
+};
+
+GameApi::BM GameApi::MainLoopApi::img_decode(MB memblock)
+{
+  MemoryBlock *mem = find_memblock(e, memblock);
+  Bitmap<Color> *b = new ImgDecodeBitmap(mem);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm = add_bitmap(e, handle2);
+  return bm;
+}
+
+std::vector<std::string> get_lines(std::string s)
+{
+  int sk = s.size();
+  int pos = 0;
+  std::vector<std::string> vec;
+  for(int i=0;i<sk;i++) {
+    if (s[i]=='\n') { vec.push_back(s.substr(pos,i-pos)); pos=i+1; }
+  }
+  return vec;
+}
+
+class UrlMemoryMapLoad : public UrlMemoryMap
+{
+public:
+  UrlMemoryMapLoad(DiskStore *store) : store(store) { }
+  virtual void prepare()
+  {
+    store->Prepare();
+    if (store->Type()!=3) std::cout << "ERROR: Wrong kind of UrlMemoryMap file" << std::endl;
+    
+  }
+  virtual int size() const
+  {
+    return store->NumBlocks()-1;
+  }
+  virtual std::string get_url(int i) const
+    {
+      unsigned char *blk = store->Block(0); // urls
+      std::string s((const char*)blk);
+      std::vector<std::string> vec = get_lines(s);
+      return vec[i];
+      //std::stringstream ss(s);
+      //std::string line;
+      //int num = 0;
+      //while(std::getline(ss,line)) {
+      //if (i==num) return line;
+      //	num++;
+      //}
+      std::cout << "Error in UrlMemoryMapLoad::get_url i="<< i << std::endl;
+      return "";
+    }
+   
+  virtual MemoryBlock *get_block(std::string url) const
+  {
+    int s = size();
+    for(int i=0;i<s;i++) {
+      std::string url2 = get_url(i);
+      if (url2 == url) {
+	int sz = store->BlockSizeInBytes(i+1);
+	unsigned char *blk = store->Block(i+1);
+	// TODO, better way to store this memory(?)
+	std::vector<unsigned char> *vec = new std::vector<unsigned char>(blk,blk+sz);
+	storevec.push_back(vec);
+	return create_mem_block(*vec);
+      }
+    }
+    std::cout << "Error in UrlMemoryMapLoad::get_block url=" << url << std::endl;
+    return 0;
+  }
+  ~UrlMemoryMapLoad() {
+    int s = storevec.size();
+    for(int i=0;i<s;i++) {
+      delete storevec[i];
+    }
+  }
+private:
+  DiskStore *store;
+  mutable std::vector<const std::vector<unsigned char>*> storevec;
+};
+
+GameApi::PKG GameApi::MainLoopApi::load_um(DS st)
+{
+  DiskStore *store = find_disk_store(e,st);
+  return add_urlmemmap(e, new UrlMemoryMapLoad(store)); 
+}
+class MLLoadUM : public MainLoopItem
+{
+public:
+  MLLoadUM(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepageurl) : env(env), ev(ev), url(url), homepageurl(homepageurl) { }
+  virtual void logoexecute() { }
+  virtual void Prepare()
+  {
+    GameApi::MB mem = ev.mainloop_api.network(url,homepageurl);
+    MemoryBlock *blk = find_memblock(env,mem);
+    blk->prepare();
+    std::vector<unsigned char> vec(blk->buffer(), blk->buffer()+blk->size_in_bytes());
+    GameApi::DS ds = ev.mainloop_api.load_ds_from_mem(vec);
+    GameApi::PKG urlmemmap = ev.mainloop_api.load_um(ds);
+    ml = ev.mainloop_api.memmap_window(ev,urlmemmap);
+    MainLoopItem *m = find_main_loop(env,ml);
+    m->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    MainLoopItem *m = find_main_loop(env,ml);
+    m->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    MainLoopItem *m = find_main_loop(env,ml);
+    m->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() {
+    MainLoopItem *m = find_main_loop(env,ml);
+    return m->shader_id();
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string url;
+  std::string homepageurl;
+  GameApi::ML ml;
+};
+GameApi::ML GameApi::MainLoopApi::ml_load_um(GameApi::EveryApi &ev, std::string url)
+{
+  return add_main_loop(e, new MLLoadUM(e,ev,url,gameapi_homepageurl));
+}
+
+class UrlMemoryMapSave : public DiskStore
+{
+public:
+  UrlMemoryMapSave(UrlMemoryMap *map) : map(map) { }
+  void Prepare() {
+    map->prepare();
+    int s = map->size();
+    for(int i=0;i<s;i++) {
+      MemoryBlock *blk = map->get_block(map->get_url(i));
+      blk->prepare();
+    }
+  }
+  int Type() const { return 3;}
+  int NumBlocks() const { return 1+map->size(); }
+  int BlockType(int block) const { return 10; }
+  int BlockSizeInBytes(int block) const {
+    if (block==0) {
+      int s = map->size();
+      int count = 0;
+      for(int i=0;i<s;i++) {
+	count += map->get_url(i).size();
+	count += 1;
+      }
+      return count;
+    }
+    block--;
+    MemoryBlock *blk = map->get_block(map->get_url(block));
+    if (!blk) std::cout << "ERROR: blk not found in BlockSizeInBytes()" << std::endl;
+    return blk->size_in_bytes();
+  }
+  unsigned char *Block(int block) const
+  {
+    if (block==0 && !url_string) create_urls();
+    if (block==0) return url_string;
+    block--;
+    MemoryBlock *blk = map->get_block(map->get_url(block));
+    if (!blk) std::cout << "ERROR: blk not found in Block()" << std::endl;
+    return blk->buffer();
+  }
+  void create_urls() const {
+    int s = map->size();
+    std::string res;
+    for(int i=0;i<s;i++) {
+      std::string url = map->get_url(i);
+      res+=url;
+      res+="\n";
+    }
+    url_string = new unsigned char[res.size()+1];
+    std::copy(res.begin(),res.end(),url_string); 
+  }
+private:
+  UrlMemoryMap *map;
+  mutable unsigned char *url_string=0;
+};
+
+class GraphUrlMemoryMap : public UrlMemoryMap
+{
+public:
+  GraphUrlMemoryMap(GameApi::Env &env, GameApi::EveryApi &ev, std::string script, std::vector<std::string> urls) : env(env), ev(ev), script(script), urls(urls) { }
+  virtual void prepare() {
+    int s = urls.size();
+    for(int i=0;i<s;i++) {
+      std::string url = urls[i];
+      GameApi::MB mb = ev.mainloop_api.network(url,gameapi_homepageurl);
+      MemoryBlock *blk = find_memblock(env,mb);
+      memblocks.push_back(blk);
+    }
+
+      std::vector<unsigned char> *vec = new std::vector<unsigned char>(script.begin(),script.end());
+      script_mem =  create_mem_block(*vec);
+
+  }
+  virtual int size() const { return urls.size()+1; }
+  virtual std::string get_url(int i) const
+  {
+    if (i==0) return "SCRIPT";
+    return urls[i-1];
+  }
+  virtual MemoryBlock *get_block(std::string url) const
+  {
+    if (url=="SCRIPT") {
+      return script_mem;
+    }
+    int s = urls.size();
+    for(int i=0;i<s;i++) {
+      if (urls[i]==url) return memblocks[i];
+    }
+    return 0;
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string script;
+  std::vector<std::string> urls;
+  std::vector<MemoryBlock*> memblocks;
+  MemoryBlock *script_mem;
+};
+
+
+
+void save_dd(GameApi::Env &e, GameApi::EveryApi &ev, std::string filename, std::string script, std::vector<std::string> urls)
+{
+  UrlMemoryMap *map = new GraphUrlMemoryMap(e,ev,script,urls);
+  DiskStore *store  = new UrlMemoryMapSave(map);
+  GameApi::DS ds = add_disk_store(e,store);
+  ev.mainloop_api.save_ds(filename,ds);
+
+  std::ifstream ss(filename.c_str(), std::ifstream::binary);
+  ss.seekg(0,ss.end);
+  int length = ss.tellg();
+  ss.seekg(0,ss.beg);
+
+  char *buffer = new char[length];
+  ss.read(buffer, length);
+  
+  int newlength = length/6;
+  int len_fix = length - newlength*6;
+  
+  if ((newlength&1)==1) { newlength++; len_fix-=6; } 
+  
+  
+  std::string filename_1 = filename;
+  std::string fix_1 = "_1";
+  filename_1.insert(filename_1.begin()+(filename_1.size()-4),fix_1.begin(),fix_1.end());
+
+    std::string filename_2 = filename;
+  std::string fix_2 = "_2";
+  filename_2.insert(filename_2.begin()+(filename_2.size()-4),fix_2.begin(),fix_2.end());
+
+    std::string filename_3 = filename;
+  std::string fix_3 = "_3";
+  filename_3.insert(filename_3.begin()+(filename_3.size()-4),fix_3.begin(),fix_3.end());
+
+    std::string filename_4 = filename;
+  std::string fix_4 = "_4";
+  filename_4.insert(filename_4.begin()+(filename_4.size()-4),fix_4.begin(),fix_4.end());
+
+    std::string filename_5 = filename;
+  std::string fix_5 = "_5";
+  filename_5.insert(filename_5.begin()+(filename_5.size()-4),fix_5.begin(),fix_5.end());
+
+      std::string filename_6 = filename;
+  std::string fix_6 = "_6";
+  filename_6.insert(filename_6.begin()+(filename_6.size()-4),fix_6.begin(),fix_6.end());
+
+  
+  std::ofstream of1(filename_1.c_str(), std::ofstream::binary);
+  of1.write(buffer,newlength+len_fix);
+  of1.close();
+
+  std::ofstream of2(filename_2.c_str(), std::ofstream::binary);
+  of2.write(buffer+newlength+len_fix,newlength);
+  of2.close();
+
+  std::ofstream of3(filename_3.c_str(), std::ofstream::binary);
+  of3.write(buffer+newlength*2+len_fix,newlength);
+  of3.close();
+
+  std::ofstream of4(filename_4.c_str(), std::ofstream::binary);
+  of4.write(buffer+newlength*3+len_fix,newlength);
+  of4.close();
+
+  std::ofstream of5(filename_5.c_str(), std::ofstream::binary);
+  of5.write(buffer+newlength*4+len_fix,newlength);
+  of5.close();
+
+  std::ofstream of6(filename_6.c_str(), std::ofstream::binary);
+  of6.write(buffer+newlength*5+len_fix,newlength);
+  of6.close();
+}
+
+extern std::vector<const unsigned char*> g_content;
+extern std::vector<const unsigned char*> g_content_end;
+extern std::vector<const char*> g_urls;
+
+class ExecuteDD : public MainLoopItem
+{
+public:
+  ExecuteDD(GameApi::Env &env, GameApi::EveryApi &ev, UrlMemoryMap *map) : env(env), ev(ev), map(map) {
+  }
+  virtual void logoexecute() { }
+  virtual void Prepare2() {
+    map->prepare();
+    int s = map->size();
+    for (int i=1;i<s;i++) {
+      std::string url = map->get_url(i);
+      MemoryBlock *blk = map->get_block(url);
+      blk->prepare();
+      char *urlptr = new char[url.size()+1];
+      std::copy(url.begin(),url.end(),urlptr);
+      urlptr[url.size()]=0;
+      g_urls.push_back(urlptr);
+      unsigned char *ptr = blk->buffer();
+      int sz = blk->size_in_bytes();
+      g_content.push_back(ptr);
+      g_content_end.push_back(ptr+sz);
+    }
+
+    
+    MemoryBlock *blk = map->get_block("SCRIPT");
+    blk->prepare();
+    unsigned char *script = blk->buffer();
+    int sz = blk->size_in_bytes();
+    std::string code(script,script+sz);
+    GameApi::ExecuteEnv e;
+    res = GameApi::execute_codegen(env,ev,code,e);
+  }
+  virtual void Prepare()
+  {
+
+    if (res.second=="ML")
+      {
+	GameApi::ML ml;
+	ml.id = res.first;
+	MainLoopItem *item = find_main_loop(env, ml);
+	item->Prepare();
+      }
+    
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (res.second=="ML")
+      {
+	GameApi::ML ml;
+	ml.id = res.first;
+	MainLoopItem *item = find_main_loop(env, ml);
+	item->execute(e);
+      }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (res.second=="ML")
+      {
+	GameApi::ML ml;
+	ml.id = res.first;
+	MainLoopItem *item = find_main_loop(env, ml);
+	item->handle_event(e);
+      }
+
+  }
+  virtual std::vector<int> shader_id() {
+  if (res.second=="ML")
+      {
+	GameApi::ML ml;
+	ml.id = res.first;
+	MainLoopItem *item = find_main_loop(env, ml);
+	return item->shader_id();
+      }
+
+  return std::vector<int>();
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  UrlMemoryMap *map;
+  std::pair<int,std::string> res;
+};
+
+GameApi::ML GameApi::MainLoopApi::memmap_window(GameApi::EveryApi &ev, GameApi::PKG urlmemmap)
+{
+  UrlMemoryMap *map = find_urlmemmap(e,urlmemmap);
+  return add_main_loop(e, new ExecuteDD(e,ev,map));
+}
+
+void M_cb(void *data);
+class MemMapWindow : public MainLoopItem
+{
+public:
+  MemMapWindow(GameApi::Env &env,GameApi::EveryApi &ev, std::string url, std::string homepage) : env(env), ev(ev), url(url), homepage(homepage) { ml.id=-1;
+    env.async_load_callback(url, &M_cb, this);
+#ifdef EMSCRIPTEN
+      async_pending_count++; async_taken=true;
+      //std::cout << "Async pending count++::MemMapWindow:"<< async_pending_count << std::endl;
+#endif
+    
+  }
+  ~MemMapWindow() { env.async_rem_callback(url); }
+  virtual void logoexecute() { }
+  virtual void Prepare2()
+  {
+    //std::cout << "MemMapWindow::Prepare2()" << std::endl;
+    if (ml.id==-1) {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    if (!vec) { std::cout << "MemMapWindow: async not ready!" << std::endl; return; }
+    GameApi::DS ds = ev.mainloop_api.load_ds_from_mem(*vec);
+    GameApi::PKG urlmap = ev.mainloop_api.load_um(ds);
+    ml = ev.mainloop_api.memmap_window(ev,urlmap);
+    MainLoopItem *item = find_main_loop(env,ml);
+    ExecuteDD *item2 = (ExecuteDD*)item;
+    item2->Prepare2();
+#ifdef EMSCRIPTEN
+    if (async_taken)
+      async_pending_count--;
+    //std::cout << "Async pending count--::MemMapWindow" << async_pending_count << std::endl;
+#endif
+    async_taken = false;
+    }
+  }
+  void Prepare() {
+    if (ml.id==-1) { Prepare2(); }
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    //std::cout << "MemMapWindow::execute()" << std::endl;
+    //if (ml.id==-1) { Prepare2(); }
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->execute(e);
+    }
+    
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    //std::cout << "MemMapWindow::handle_event()" << std::endl;
+    if (ml.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (ml.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,ml);
+    return item->shader_id();
+    } else return std::vector<int>();
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string url, homepage;
+  GameApi::ML ml;
+  bool async_taken = false;
+};
+void M_cb(void *data)
+{
+  MemMapWindow *script = (MemMapWindow*)data;
+  script->Prepare2();
+}
+
+
+void M_cb2_1(void *data);
+void M_cb2_2(void *data);
+void M_cb2_3(void *data);
+void M_cb2_4(void *data);
+void M_cb2_5(void *data);
+void M_cb2_6(void *data);
+
+class MemMapWindow2 : public MainLoopItem
+{
+public:
+  MemMapWindow2(GameApi::Env &env,GameApi::EveryApi &ev, std::string url_1, std::string url_2, std::string url_3, std::string url_4, std::string url_5, std::string url_6, std::string homepage) : env(env), ev(ev), url_1(url_1), url_2(url_2), url_3(url_3), url_4(url_4), url_5(url_5), url_6(url_6), homepage(homepage) { ml.id=-1;
+    env.async_load_callback(url_1, &M_cb2_1, this);
+    env.async_load_callback(url_2, &M_cb2_2, this);
+    env.async_load_callback(url_3, &M_cb2_3, this);
+    env.async_load_callback(url_4, &M_cb2_4, this);
+    env.async_load_callback(url_5, &M_cb2_5, this);
+    env.async_load_callback(url_6, &M_cb2_6, this);
+#ifdef EMSCRIPTEN
+      async_pending_count++; async_taken=true;
+      //std::cout << "Async pending count++::MemMapWindow:"<< async_pending_count << std::endl;
+#endif
+      int s = 6;
+      for(int i=0;i<s;i++) access[i]=false;
+      //std::cout << "MemMapWindow::ctor()" << std::endl;
+  }
+  ~MemMapWindow2() {
+    env.async_rem_callback(url_1);
+    env.async_rem_callback(url_2);
+    env.async_rem_callback(url_3);
+    env.async_rem_callback(url_4);
+    env.async_rem_callback(url_5);
+    env.async_rem_callback(url_6);
+    delete vec;
+  }
+  virtual void logoexecute() { }
+  virtual void Prepare2(int val)
+  {
+    //std::cout << "MemMapWindow::Prepare2()" << val << std::endl;
+    access[val-1]=true;
+    int s = 6;
+    for(int i=0;i<s;i++) {
+      if (access[i]==false) return;
+    }
+    
+    
+    //std::cout << "MemMapWindow::Prepare2()" << std::endl;
+    if (ml.id==-1) {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url_1, homepage);
+    env.async_load_url(url_2, homepage);
+    env.async_load_url(url_3, homepage);
+    env.async_load_url(url_4, homepage);
+    env.async_load_url(url_5, homepage);
+    env.async_load_url(url_6, homepage);
+#endif
+    std::vector<unsigned char> *vec_1 = env.get_loaded_async_url(url_1);
+    std::vector<unsigned char> *vec_2 = env.get_loaded_async_url(url_2);
+    std::vector<unsigned char> *vec_3 = env.get_loaded_async_url(url_3);
+    std::vector<unsigned char> *vec_4 = env.get_loaded_async_url(url_4);
+    std::vector<unsigned char> *vec_5 = env.get_loaded_async_url(url_5);
+    std::vector<unsigned char> *vec_6 = env.get_loaded_async_url(url_6);
+    if (!vec_1) { std::cout << "MemMapWindow: async not ready!" << std::endl; return; }
+    if (!vec_2) { std::cout << "MemMapWindow: async not ready!" << std::endl; return; }
+    if (!vec_3) { std::cout << "MemMapWindow: async not ready!" << std::endl; return; }
+    if (!vec_4) { std::cout << "MemMapWindow: async not ready!" << std::endl; return; }
+    if (!vec_5) { std::cout << "MemMapWindow: async not ready!" << std::endl; return; }
+    if (!vec_6) { std::cout << "MemMapWindow: async not ready!" << std::endl; return; }
+
+    //std::cout << "Size#1:" << vec_1->size() << std::endl;
+    //std::cout << "Size#2:" << vec_2->size() << std::endl;
+    //std::cout << "Size#3:" << vec_3->size() << std::endl;
+    //std::cout << "Size#4:" << vec_4->size() << std::endl;
+    //std::cout << "Size#5:" << vec_5->size() << std::endl;
+    //std::cout << "Size#6:" << vec_6->size() << std::endl;
+
+    //std::cout << "Char:" << int(vec_1->operator[](vec_1->size()-1)) << std::endl;
+    //std::cout << "Char:" << int(vec_2->operator[](vec_2->size())) << std::endl;
+    //std::cout << "Char:" << int(vec_3->operator[](vec_3->size()-1)) << std::endl;
+    //std::cout << "Char:" << int(vec_4->operator[](vec_4->size()-1)) << std::endl;
+    //std::cout << "Char:" << int(vec_5->operator[](vec_5->size()-1)) << std::endl;
+    //std::cout << "Char:" << int(vec_6->operator[](vec_6->size()-1)) << std::endl;
+    
+    delete vec;
+    vec = new std::vector<unsigned char>;
+#ifdef EMSCRIPTEN
+    vec->insert(vec->end(), vec_1->begin(), vec_1->end()-1);
+    vec->insert(vec->end(), vec_2->begin(), vec_2->end()-1);
+    vec->insert(vec->end(), vec_3->begin(), vec_3->end()-1);
+    vec->insert(vec->end(), vec_4->begin(), vec_4->end()-1);
+    vec->insert(vec->end(), vec_5->begin(), vec_5->end()-1);
+    vec->insert(vec->end(), vec_6->begin(), vec_6->end()-1);
+#else
+    vec->insert(vec->end(), vec_1->begin(), vec_1->end());
+    vec->insert(vec->end(), vec_2->begin(), vec_2->end());
+    vec->insert(vec->end(), vec_3->begin(), vec_3->end());
+    vec->insert(vec->end(), vec_4->begin(), vec_4->end());
+    vec->insert(vec->end(), vec_5->begin(), vec_5->end());
+    vec->insert(vec->end(), vec_6->begin(), vec_6->end());
+    
+#endif    
+    GameApi::DS ds = ev.mainloop_api.load_ds_from_mem(*vec);
+    GameApi::PKG urlmap = ev.mainloop_api.load_um(ds);
+    ml = ev.mainloop_api.memmap_window(ev,urlmap);
+    MainLoopItem *item = find_main_loop(env,ml);
+    ExecuteDD *item2 = (ExecuteDD*)item;
+    item2->Prepare2();
+#ifdef EMSCRIPTEN
+    if (async_taken)
+      async_pending_count--;
+    //std::cout << "Async pending count--::MemMapWindow" << async_pending_count << std::endl;
+#endif
+    async_taken = false;
+    }
+  }
+  void Prepare() {
+    //std::cout << "MemMapWindow::Prepare()" << std::endl;
+    if (ml.id==-1) {
+      Prepare2(1);
+      Prepare2(2);
+      Prepare2(3);
+      Prepare2(4);
+      Prepare2(5);
+      Prepare2(6);
+    }
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    //std::cout << "MemMapWindow::execute()" << std::endl;
+    //if (ml.id==-1) { Prepare2(); }
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->execute(e);
+    }
+    
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    //std::cout << "MemMapWindow::handle_event()" << std::endl;
+    if (ml.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (ml.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,ml);
+    return item->shader_id();
+    } else return std::vector<int>();
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string url_1, url_2, url_3, url_4, url_5, url_6, homepage;
+  GameApi::ML ml;
+  bool async_taken = false;
+  bool access[6];
+  std::vector<unsigned char> *vec=0;
+};
+void M_cb2_1(void *data)
+{
+  MemMapWindow2 *script = (MemMapWindow2*)data;
+  script->Prepare2(1);
+}
+void M_cb2_2(void *data)
+{
+  MemMapWindow2 *script = (MemMapWindow2*)data;
+  script->Prepare2(2);
+}
+void M_cb2_3(void *data)
+{
+  MemMapWindow2 *script = (MemMapWindow2*)data;
+  script->Prepare2(3);
+}
+void M_cb2_4(void *data)
+{
+  MemMapWindow2 *script = (MemMapWindow2*)data;
+  script->Prepare2(4);
+}
+void M_cb2_5(void *data)
+{
+  MemMapWindow2 *script = (MemMapWindow2*)data;
+  script->Prepare2(5);
+}
+void M_cb2_6(void *data)
+{
+  MemMapWindow2 *script = (MemMapWindow2*)data;
+  script->Prepare2(6);
+}
+
+GameApi::ML GameApi::MainLoopApi::memmap_window2(GameApi::EveryApi &ev, std::string url)
+{
+  return add_main_loop(e, new MemMapWindow(e,ev,url,gameapi_homepageurl));
+}
+
+GameApi::ML GameApi::MainLoopApi::memmap_window3(GameApi::EveryApi &ev, std::string url_1, std::string url_2, std::string url_3, std::string url_4, std::string url_5, std::string url_6)
+{
+  return add_main_loop(e, new MemMapWindow2(e,ev,url_1,url_2, url_3, url_4, url_5, url_6,gameapi_homepageurl));
+}
+
+
+std::string get_path(std::string str)
+{
+  int s = str.size();
+  int ii = -1;
+  for(int i=0;i<s;i++) {
+    if (str[i]=='/') ii=i;
+  }
+  if (ii!=-1) return str.substr(0,ii);
+  return str;
+}
+
+std::string replace_string(std::string str, char ch, char ch2)
+{
+  int s = str.size();
+  for(int i=0;i<s;i++) if (str[i]==ch) str[i]=ch2;
+  return str;
+}
+
+std::string str_tolower(std::string s);
+std::vector<std::string> find_additional_urls(GameApi::Env &e, GameApi::EveryApi &ev, std::string url)
+{
+  std::vector<std::string> res;
+  if (url.size()>4 && url[url.size()-3] == 'm' && url[url.size()-2] == 't' && url[url.size()-1]=='l') {
+    GameApi::MB mb = ev.mainloop_api.network(url,"");
+    MemoryBlock *blk = find_memblock(e, mb);
+    blk->prepare();
+    unsigned char *buf = blk->buffer();
+    int sz = blk->size_in_bytes();
+    std::string s(buf,buf+sz);
+    std::stringstream ss(s);
+    std::string word;
+    while(ss>>word) {
+      if (str_tolower(word)=="map_ka" || str_tolower(word)=="map_kd" || str_tolower(word) == "map_d" || str_tolower(word)=="map_bump" || str_tolower(word)=="bump")
+	{
+	  std::string name;
+	  ss >> name;
+	  name = replace_string(name,'\\','/');
+	  std::string prefix = get_path(url);
+	  std::cout << "Found: " << prefix << "/" << name << std::endl;
+	  res.push_back(prefix + "/" + name);
+	}
+    }
+  }
+  return res;
 }

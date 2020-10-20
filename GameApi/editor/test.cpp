@@ -208,6 +208,9 @@ std::vector<DllData> load_dlls(std::string filename)
   return vec;
 }
 
+
+std::vector<std::string> find_additional_urls(GameApi::Env &e, GameApi::EveryApi &ev, std::string url);
+
 struct Envi {
   Env *env;
   EveryApi *ev;
@@ -464,6 +467,11 @@ struct ASyncData
 
 extern ASyncData *g_async_ptr;
 extern int g_async_count;
+extern ASyncData *g_async_ptr2;
+extern int g_async_count2;
+
+
+void save_dd(GameApi::Env &e, GameApi::EveryApi &ev, std::string filename, std::string script, std::vector<std::string> urls);
 
 void FinishProgress();
 void iter(void *arg)
@@ -536,6 +544,7 @@ void iter(void *arg)
     FinishProgress();
 	bool properties_button = false;
 	bool codegen_button = false;
+	bool pkggen_button = false;
 	bool display_button = false;
 	std::string popup_uid;
 
@@ -786,7 +795,8 @@ void iter(void *arg)
 		  default:
 		  case 0: properties_button = true; break;
 		  case 1: codegen_button = true; break;
-		  case 2: display_button = true; break;
+		  case 2: pkggen_button = true; break;
+		  case 3: display_button = true; break;
 		  };
 		  env->popup_selections = std::vector<W>();
 		  break;
@@ -812,6 +822,7 @@ void iter(void *arg)
 		  std::vector<std::string> labels;
 		  labels.push_back("Properties");
 		  labels.push_back("CodeGen");
+		  labels.push_back("Generate Pkg");
 		  labels.push_back("Display");
 		  
 		  W w = env->gui->popup_menu(int(x), int(y), labels, env->atlas, env->atlas_bm, env->popup_selections);
@@ -847,7 +858,65 @@ void iter(void *arg)
 		}
 	      //}
 	}
+	if (!env->display_visible && pkggen_button)
+	  {
+	    pkggen_button = false;
+	      std::string uid = popup_uid;
 
+	    std::string type2 = env->ev->mod_api.return_type(env->mod, 0, uid);
+	    //ProgressBar(933, 7,15, "Execute");
+	    GameApi::ExecuteEnv exeenv;
+	    if (type2 == "ML") {
+	      std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count);
+	      std::pair<int,std::vector<std::string> > ids2 = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr2, g_async_count2);
+	      
+	      
+
+	      //ProgressBar(933, 15,15, "Execute");
+
+	      //std::cout << "URLS:" << ids.second << std::endl;
+	      std::vector<std::string> urls = ids.second;
+	      urls.insert(urls.begin(),ids2.second.begin(),ids2.second.end());
+	      std::sort(urls.begin(),urls.end());
+	      auto last = std::unique(urls.begin(),urls.end());
+	      urls.erase(last,urls.end());
+	      int s4 = urls.size();
+	      for(int i=0;i<s4;i++) {
+		std::vector<std::string> vec = find_additional_urls(*env->env,*env->ev, urls[i]);
+		int s2 = vec.size();
+		for(int j=0;j<s2;j++) urls.push_back(vec[j]);
+	      }
+	      std::sort(urls.begin(),urls.end());
+	      auto last2 = std::unique(urls.begin(),urls.end());
+	      urls.erase(last2,urls.end());
+	      //env->env->async_load_all_urls(urls, gameapi_homepageurl);
+
+	      int s3 = urls.size();
+	      for(int i=0;i<s3;i++) {
+		std::cout << "Loading: " << urls[i] << std::endl;
+	      }
+	      
+	      std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid,1000);
+
+		  
+		  
+	      
+	    std::string script = p.second;
+	    std::cout << "Saving game.pkg" << std::endl;
+	    save_dd(*env->env, *env->ev, "game.pkg", script, urls);
+	    std::cout << "Saving game.pkg complete" << std::endl;
+	    std::cout << "Saving game_1.pkg complete" << std::endl;
+	    std::cout << "Saving game_2.pkg complete" << std::endl;
+	    std::cout << "Saving game_3.pkg complete" << std::endl;
+	    std::cout << "Saving game_4.pkg complete" << std::endl;
+	    std::cout << "Saving game_5.pkg complete" << std::endl;
+	    std::cout << "Saving game_6.pkg complete" << std::endl;
+	    } else {
+	      std::cout << "ERROR: Box return type needs to be ML" << std::endl;
+	    }
+
+	  }
+	
 	if (!env->display_visible && display_button)
 	  {
 	    display_button = false;
@@ -879,7 +948,8 @@ void iter(void *arg)
 		    //std::cout << "URLS:" << ids.second << std::endl;
 		    std::vector<std::string> urls = ids.second;
 		    std::sort(urls.begin(),urls.end());
-		    std::unique(urls.begin(),urls.end());
+		    auto last3 = std::unique(urls.begin(),urls.end());
+		    urls.erase(last3,urls.end());
 		    env->env->async_load_all_urls(urls, gameapi_homepageurl);
 		    }
 		    //int s = urls.size();
@@ -1701,7 +1771,7 @@ W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector<GameApiI
 
 void print_stack_trace()
 {
-#if 0
+#ifdef WINDOWS
   HANDLE process = GetCurrentProcess();
   HANDLE thread = GetCurrentThread();
   
