@@ -5098,6 +5098,10 @@ bool is_async_loaded_urls_in_vec(std::string url)
   }
   return false;
 }
+struct ASyncCallback { void (*fptr)(void*); void *data; };
+ASyncCallback *rem_async_cb(std::string url);
+
+
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
 {
   int s = sizeof(async_data)/sizeof(ASyncData);
@@ -5111,6 +5115,11 @@ void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepa
 	  if (!is_async_loaded_urls_in_vec(url)) {
 	    e.async_load_url(url,homepage);
 	    g_async_loaded_urls.push_back(url);
+	  } else {
+	    ASyncCallback *cb = rem_async_cb(std::string("load_url.php?url=")+url);
+	    if (cb) {
+	      (*cb->fptr)(cb->data);
+	    }
 	  }
 	}
     }
