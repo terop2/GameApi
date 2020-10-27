@@ -1108,7 +1108,12 @@ public:
   PrepareCache(GameApi::Env &e, std::string id, FaceCollection *coll) : e(e), id(id), coll(coll) {}
   FaceCollection *get_coll2() const {
     if (coll_cache) return coll_cache;
-    return 0;
+    int num = find_data(id);
+    if (num==-1) { std::cout << "get_coll2: textures probably not shown" << std::endl; return 0; }
+    GameApi::P p;
+    p.id = num;
+    FaceCollection *coll = find_facecoll(e, p);
+    return coll;
   }
   void Prepare()
   {
@@ -1453,7 +1458,14 @@ int g_use_texid_material=0;
 void MTL_d_CB(void *data);
 void MTL_bump_CB(void *data);
 
+struct ASyncCallback { void (*fptr)(void*); void *data; };
+ASyncCallback *rem_async_cb(std::string url);
+
+extern std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
+
+
 std::vector<std::string> mtl_urls;
+int g_previous_texid_material = 0;
 class NetworkedFaceCollectionMTL2 : public FaceCollection
 {
 public:
@@ -1477,15 +1489,18 @@ public:
   }
   NetworkedFaceCollectionMTL2(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string obj_url, std::string homepage, int count, std::string mtl_url, std::string url_prefix, bool cached, bool load_d, bool load_bump) : e(e), ev(ev), url(obj_url), homepage(homepage), mtl_url(mtl_url), url_prefix(url_prefix), count(count), empty(empty),load_d(load_d), load_bump(load_bump)
   {
+    bool cached2 = false;
     int s = mtl_urls.size();
     for(int i=0;i<s;i++) {
-      if (mtl_urls[i]==mtl_url) cached=true;
+      if (mtl_urls[i]==mtl_url) cached2=true;
     }
     mtl_urls.push_back(mtl_url);
     current = empty;
     filled = 0;
-    if (!cached) {
-      e.async_load_callback(mtl_url, &MTL2_CB, (void*)this);
+    bool cached3 = (cached || cached2) && g_previous_texid_material == g_use_texid_material;
+    g_previous_texid_material = g_use_texid_material;
+    if (!cached3) {
+    e.async_load_callback(mtl_url, &MTL2_CB, (void*)this);
 #ifdef EMSCRIPTEN
     async_pending_count++;
     //std::cout << "NetworkedFaceCollectionMTL2 asyncpending++" << async_pending_count << std::endl;
@@ -1496,6 +1511,7 @@ public:
   void PrepareMTL()
   {
     if (done_mtl) return;
+    std::cout << "PrepareMTL" << std::endl;
     std::vector<unsigned char> *ptr2 = e.get_loaded_async_url(mtl_url);
     if (!ptr2) {
       std::cout << "p_mtl .mtl async not ready yet, failing..." << std::endl;
@@ -1569,7 +1585,15 @@ public:
 	flags.push_back(1);
 	e.async_load_callback(dt->url, &MTL_CB, (void*)dt);
 #ifdef EMSCRIPTEN
+	//if (load_url_buffers_async[std::string("load_url.php?url=")+dt->url]==0) {
+	std::cout << "Loading url:" << dt->url << std::endl;
 	e.async_load_url(dt->url, homepage);
+	  //} else {
+	  //  ASyncCallback *cb = rem_async_cb(std::string("load_url.php?url=")+dt->url);
+	  // if (cb) {
+	  //   (*cb->fptr)(cb->data);
+	  //  }
+	  //}
 #else
 	urls.push_back(dt->url);
 #endif
@@ -1580,7 +1604,15 @@ public:
 	d_flags.push_back(1);
 	  e.async_load_callback(url2, &MTL_d_CB, (void*)dt);
 #ifdef EMSCRIPTEN
-	e.async_load_url(url2, homepage);
+	  //if (load_url_buffers_async[std::string("load_url.php?url=")+url2]==0) {
+
+	  e.async_load_url(url2, homepage);
+	  //} else {
+	  //  ASyncCallback *cb = rem_async_cb(std::string("load_url.php?url=")+url2);
+	  //    if (cb) {
+	  //    (*cb->fptr)(cb->data);
+	  //  }
+	  //}
 #endif
 	}
 	
@@ -1588,7 +1620,16 @@ public:
 	bump_flags.push_back(1);
 	  e.async_load_callback(url3, &MTL_bump_CB, (void*)dt);
 #ifdef EMSCRIPTEN
-	e.async_load_url(url3, homepage);
+	  //if (load_url_buffers_async[std::string("load_url.php?url=")+url3]==0) {
+
+	  e.async_load_url(url3, homepage);
+	  //} else {
+	  //	  ASyncCallback *cb = rem_async_cb(std::string("load_url.php?url=")+url3);
+	  // if (cb) {
+	  //   (*cb->fptr)(cb->data);
+	  //  }
+	  //
+	//e.async_load_url(url3, homepage);
 #endif
 	}
       }
@@ -1652,6 +1693,9 @@ public:
   {
     //std::cout << "MTL:Prepare2: " << url << " " << i << std::endl;
       std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+      if (!vec) {
+	std::cout <<  "Async failing at: mtl prepare2: " << url << std::endl;
+      }
       bool b = false;
       BufferRef img = LoadImageFromString(*vec,b);
       
@@ -1679,6 +1723,9 @@ public:
   {
     //std::cout << "MTL:PrepareD: " << url << " " << i << std::endl;
       std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+      if (!vec) {
+	std::cout <<  "Async failing at: mtl prepareD: " << url << std::endl;
+      }
       bool b = false;
       BufferRef img = LoadImageFromString(*vec,b);
       
@@ -1706,6 +1753,10 @@ public:
   {
     //std::cout << "MTL:PrepareBump: " << url << " " << i << std::endl;
       std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+      if (!vec) {
+	std::cout <<  "Async failing at: mtl prepareBump: " << url << std::endl;
+      }
+
       bool b = false;
       BufferRef img = LoadImageFromString(*vec,b);
       
@@ -2053,12 +2104,15 @@ EXPORT GameApi::P GameApi::PolygonApi::p_url_mtl(EveryApi &ev, std::string url, 
   set_current_block(c);
   return p2;
 }
+extern int g_script_hash;
 EXPORT GameApi::P GameApi::PolygonApi::p_mtl(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count)
 {
   int c = get_current_block();
   set_current_block(-1);
   P p = p_empty();
-  std::string key = obj_url + mtl_url + prefix;
+  std::stringstream hash;
+  hash << g_script_hash;
+  std::string key = obj_url + mtl_url + prefix + hash.str();
   bool cached = find_data(key)!=-1;
   FaceCollection *emp = find_facecoll(e, p);
   GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL2(e,ev, emp, obj_url, gameapi_homepageurl, count,mtl_url,prefix,cached,false,false),1); 
