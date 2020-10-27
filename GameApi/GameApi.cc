@@ -11359,6 +11359,7 @@ extern void (*g_prepare_heavy_callback)(GameApi::Env &e, GameApi::H h);
 extern GameApi::Env *g_prepare_heavy_env;
 extern GameApi::H g_prepare_heavy_h;
 extern bool g_prepare_heavy_enabled;
+void LoadUrls_async_cbs();
 
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
@@ -11447,6 +11448,7 @@ public:
       {
 	g_prepare_heavy_callback(*g_prepare_heavy_env, g_prepare_heavy_h);
       }
+    LoadUrls_async_cbs();
     
     
     FinishProgress();
@@ -23028,13 +23030,27 @@ void run_callback(void *ptr)
 #endif
 }
 
+extern  std::vector<std::string> mtl_urls;
+
+int g_script_hash = 0;
+
 KP extern "C" void set_new_script(const char *script2)
 {
   //std::cout << "set_new_script" << std::endl;
   g_mainloop_ptr = (void*)script2;
     g_mainloop_callback = &run_callback;
     g_execute_callback = true;
-  
+
+    mtl_urls.clear();
+    g_use_texid_material = 0;
+
+    int s = strlen(script2);
+    int hash = 0;
+    for(int i=0;i<s;i++) {
+      hash += int(script2[i]);
+    }
+    g_script_hash = hash;
+    
 }
 
 KP  extern "C" void activate_trigger(int num)
