@@ -5119,7 +5119,7 @@ void LoadUrls_async_cbs()
     std::string url = g_async_vec2[i];
     
     if (cb && load_url_buffers_async[std::string("load_url.php?url=") + url]!=0) {
-      std::cout << "Callback: " << url << std::endl;
+      //std::cout << "Callback: " << url << std::endl;
       (*cb->fptr)(cb->data);
       g_async_vec[i] =0 ;
     }
@@ -5144,16 +5144,16 @@ void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepa
 	  // g_async_vec2.push_back(url);
 	  //} else
 	  if (!is_async_loaded_urls_in_vec(url)) {
-	    std::cout << "Start loading: " << url << std::endl;
+	    //std::cout << "Start loading: " << url << std::endl;
 
 	    e.async_load_url(url,homepage);
 	    g_async_loaded_urls.push_back(url);
 	  } else {
 	    //if (load_url_buffers_async[std::string("load_url.php?url=") + url]==0) {
-	    std::cout << "Callback2: " << url << std::endl;
+	    //std::cout << "Callback2: " << url << std::endl;
 
 	    ASyncCallback *cb = rem_async_cb(std::string("load_url.php?url=")+url);
-	    if (!cb) std::cout << "BUT cb=0" << std::endl;
+	    //if (!cb) std::cout << "BUT cb=0" << std::endl;
 	    g_async_vec.push_back(cb);
 	    g_async_vec2.push_back(url);
 	      

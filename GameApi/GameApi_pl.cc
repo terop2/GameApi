@@ -1109,7 +1109,7 @@ public:
   FaceCollection *get_coll2() const {
     if (coll_cache) return coll_cache;
     int num = find_data(id);
-    if (num==-1) { std::cout << "get_coll2: textures probably not shown" << std::endl; return 0; }
+    if (num==-1) { /*std::cout << "get_coll2: textures probably not shown" << std::endl;*/ return 0; }
     GameApi::P p;
     p.id = num;
     FaceCollection *coll = find_facecoll(e, p);
@@ -1498,6 +1498,7 @@ public:
     current = empty;
     filled = 0;
     bool cached3 = (cached || cached2) && g_previous_texid_material == g_use_texid_material;
+    //cached3 = false;
     g_previous_texid_material = g_use_texid_material;
     if (!cached3) {
     e.async_load_callback(mtl_url, &MTL2_CB, (void*)this);
@@ -1511,7 +1512,7 @@ public:
   void PrepareMTL()
   {
     if (done_mtl) return;
-    std::cout << "PrepareMTL" << std::endl;
+    //std::cout << "PrepareMTL" << std::endl;
     std::vector<unsigned char> *ptr2 = e.get_loaded_async_url(mtl_url);
     if (!ptr2) {
       std::cout << "p_mtl .mtl async not ready yet, failing..." << std::endl;
@@ -1586,7 +1587,7 @@ public:
 	e.async_load_callback(dt->url, &MTL_CB, (void*)dt);
 #ifdef EMSCRIPTEN
 	//if (load_url_buffers_async[std::string("load_url.php?url=")+dt->url]==0) {
-	std::cout << "Loading url:" << dt->url << std::endl;
+	//std::cout << "Loading url:" << dt->url << std::endl;
 	e.async_load_url(dt->url, homepage);
 	  //} else {
 	  //  ASyncCallback *cb = rem_async_cb(std::string("load_url.php?url=")+dt->url);
@@ -4781,7 +4782,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       //std::cout << "wait 3" << std::endl;
       while(g_lock3==true) {
 #ifdef EMSCRIPTEN
-	//emscripten_sleep(100);
+	///	emscripten_sleep(100);
 #endif
       }
       g_lock3 = true;

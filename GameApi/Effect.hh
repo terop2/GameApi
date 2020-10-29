@@ -6405,11 +6405,16 @@ public:
     return std::make_pair(count,count+vec[o]->NumFaces());
   }
   virtual int NumFaces() const 
-  { 
-    int count = 0;
-    for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
-      count += (*i)->NumFaces();
-    return count; 
+  {
+    if (faces_num.size()==0) {
+      int count = 0;
+      for(typename std::vector<T /*BoxableFaceCollection*/ *>::const_iterator i=vec.begin();i!=vec.end();i++)
+	count += (*i)->NumFaces();
+      return count;
+    } else
+      {
+	return faces_num.size();
+      }
   }
   virtual int NumPoints(int face) const 
   {
