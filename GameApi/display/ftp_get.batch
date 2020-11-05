@@ -1,0 +1,6 @@
+cd meshpage.org
+get web_page.data
+get web_page.js
+get web_page.wasm
+get web_page.worker.js
+get pthread-main.js
