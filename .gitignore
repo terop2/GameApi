@@ -29,7 +29,6 @@ GameApi/*.vcxproj
 GameApi/*.vcxproj.filters
 GameApi/CMakeCache.txt
 GameApi/**/gmon.out
-GameApi/**/*.html
 GameApi/**/*.html.mem
 GameApi/**/foo.err
 GameApi/**/*.js
