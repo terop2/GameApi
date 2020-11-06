@@ -1079,11 +1079,14 @@ void ProgressBar(int num, int val, int max, std::string label)
   int val_index = -1;
   int max_index = -1;
   //std::cout << "P1" << std::endl;
+  int val_value = 0;
+  int max_value = 0;
   {
   int s = progress_val.size();
   for(int i=0;i<s;i++)
     {
       int num2 = progress_val[i].num;
+      val_value+=num2;
       if (num2==num) {
 	progress_val[i].value = val;
 	val_index=i;
@@ -1097,6 +1100,7 @@ void ProgressBar(int num, int val, int max, std::string label)
   for(int i=0;i<s;i++)
     {
       int num2 = progress_max[i].num;
+      max_value += num2;
       if (num2==num) {
 	progress_max[i].value = max;
 	max_index=i;
@@ -1149,13 +1153,12 @@ void ProgressBar(int num, int val, int max, std::string label)
 	    << " " << label ;
   std::string l = stream.str();
 #ifndef EMSCRIPTEN
-	{
-	  std::cout << l.c_str() << std::flush;
-	  //g_low->sdl->SDL_SetWindowTitle(sdl_window, l.c_str());
-	}
+	std::cout << l.c_str() << std::flush;
 #endif
   g_has_title = true;
   }
+
+
   //std::cout << "P4" << std::endl;
 }
 

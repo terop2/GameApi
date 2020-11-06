@@ -1184,6 +1184,8 @@ public:
       color2 = new std::vector<unsigned int>;
     points->clear();
     color2->clear();
+
+    int numfaces = coll->NumFaces();
     
     for(int i=0;i<count;i++)
       {
@@ -1195,10 +1197,10 @@ public:
 	yp*=2.0;
 	xp-=1.0;
 	yp-=1.0;
-	zp*=float(coll->NumFaces());
+	zp*=float(numfaces);
 	int zpi = int(zp);
 	if (zpi<0) zpi = 0;
-	if (zpi>=coll->NumFaces()) zpi = coll->NumFaces()-1;
+	if (zpi>=numfaces) zpi = numfaces-1;
 	int num = coll->NumPoints(zpi);
 	if (num != 4 && num != 3) { /*std::cout << "Error quad: " << num << std::endl;*/ }
 	if (num==4) {

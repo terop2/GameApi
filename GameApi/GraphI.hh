@@ -615,6 +615,8 @@ struct MainLoopEvent
   
   //float time = 0.0;
   std::string drag_drop_filename = "";
+
+  Point event_location;
 };
 
 class MainLoopItem
@@ -1964,6 +1966,26 @@ class VelocityField
 {
 public:
   virtual Vector Map(Point p) const=0;
+};
+
+
+struct InEventData
+{
+  Point pos;
+  float radius;
+};
+
+class EventSource
+{ // this is only for child graphs to generate events
+  // i.e. generating events
+  // use MainLoopItem for sending events.
+public:
+  virtual void Prepare()=0;
+  virtual void handle_event(MainLoopEvent &event)=0;
+  virtual void execute(MainLoopEnv &e)=0;
+  
+  // returns number of events still that can be fetched
+  virtual int get_game_event(InEventData &out_data)=0;
 };
 
 #endif
