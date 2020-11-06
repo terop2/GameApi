@@ -22916,11 +22916,9 @@ private:
 };
 std::string find_html2(GameApi::HML ml, GameApi::Env &env)
 {
-#if 0
   Html *hml = find_html(env,ml);
   hml->Prepare();
   return hml->html_file();
-#endif
 }
 
 GameApi::HML GameApi::MainLoopApi::emscripten_frame(EveryApi &ev, RUN r, std::string homepage)
@@ -22939,6 +22937,66 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame(EveryApi &ev, RUN r, std::st
     if (s=="RUN") output=false;
   }
   return add_html(e, new EmscriptenFrame(output_str,homepage));
+}
+
+std::string g_emscripten_frame_2(std::string code, std::string homepage) {
+  return
+"    <!-- you need to copy the following files to transfer 3d models\n"
+"         to new web server:\n"
+"         https://meshpage.org/gameapi_display.zip\n"
+"\n"
+"	 unzip the package to some new directory in your web host\n"
+"\n"
+"	 Then change the homepage url from inside pre tag below\n"
+"\n"
+"	 Then copy-paste a builder codegen script to the gameapi_script \n"
+"	 pre tag below, last line needs to have type RUN.\n"
+"      -->\n"
+
+    
+    "<pre id=\"homepage\" style=\"display:none\">\n"
+    + homepage +
+    "\n</pre>\n"
+    "<pre id=\"gameapi_script\" style=\"display:none\">\n"
+    + code +
+    "\n</pre>\n"
+    "<canvas id=\"canvas\" style=\"border-width:0px;border: 5px solid black; border-radius: 10px; background-color: #000000; margin:0; padding:0; width: 820px; height: 620px;\"></canvas>\n"
+    "<script src=\"https://meshpage.org/gameapi.js\"></script>\n"
+    "<script src=\"https://meshpage.org/web_page.js\"></script>\n";
+}
+
+
+class EmscriptenFrame2 : public Html
+{
+public:
+  EmscriptenFrame2(std::string codegen, std::string homepage) : codegen(codegen), homepage(homepage) { }
+  virtual void Prepare() { }
+  virtual std::string html_file() const
+  {
+    return "<html>" + g_emscripten_frame_2(codegen,homepage) + "</html>";
+  }
+private:
+  std::string codegen;
+  std::string homepage;
+};
+
+
+GameApi::HML GameApi::MainLoopApi::emscripten_frame2(EveryApi &ev, RUN r, std::string homepage)
+{
+  std::string gen = do_codegen(ev);
+  std::stringstream ss(gen);
+  std::string line;
+  bool output = true;
+  std::string output_str;
+  while(std::getline(ss,line)) {
+    std::stringstream ss2(line);
+    std::string s;
+    ss2 >> s;
+    if (s=="RUN" || output)
+      output_str+=line+"@";
+    if (s=="RUN") output=false;
+  }
+  return add_html(e, new EmscriptenFrame2(output_str,homepage));
 }
 
 std::vector<int> g_active_triggers(25);

@@ -490,6 +490,8 @@ On my laptop I get the following benchmarks(this test: <a href="https://meshpage
 <?php
 require_once("user.php");
 ?>
+<a href="http://tpgames.org/builder_greeen_example.mp4">Tutorial video</a>
+<p>
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; background-color: white;">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>

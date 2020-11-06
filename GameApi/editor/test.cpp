@@ -962,9 +962,7 @@ void iter(void *arg)
 		if (g_id!=-1) clear_block(g_id);
 		g_id = add_block();
 		set_current_block(g_id);
-#if 0
 		    set_codegen_values(env->mod,0,uid,1000);
-#endif 
 		    
 		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000);
 		    set_current_block(-2);
@@ -1201,10 +1199,12 @@ void iter(void *arg)
 		      }
 		    else if (type=="HML")
 		      {
-#if 0
+			
 			display = false;
+			
 			HML ml;
 			ml.id = id;
+			
 			env->ev->mod_api.codegen_reset_counter();
 
 			std::string htmlfile = find_html2(ml,*env->env);
@@ -1216,8 +1216,9 @@ void iter(void *arg)
 			std::ofstream f((prefix + "tst.html").c_str());
 			f << htmlfile;
 			f.close();
-
+			
 			pthread_system((std::string("start ") + prefix + "tst.html").c_str());
+			
 #else
 			std::string home = getenv("HOME");
 			std::string prefix = home + "/_gameapi_builder";
@@ -1227,9 +1228,10 @@ void iter(void *arg)
 			std::ofstream f((prefix + "tst.html").c_str());
 			f << htmlfile;
 			f.close();
-
-			pthread_system((std::string("chromium ") + prefix + "tst.html").c_str());
-#endif
+			std::string cmd = std::string("chromium --user-data-dir=\"") + prefix + "\" " + prefix + "tst.html";
+			std::cout << cmd << std::endl;
+			pthread_system(cmd.c_str());
+			
 #endif
 		      }
 		    else if (type=="WV")
