@@ -5098,6 +5098,36 @@ bool is_async_loaded_urls_in_vec(std::string url)
   }
   return false;
 }
+struct ASyncCallback { void (*fptr)(void*); void *data; };
+ASyncCallback *rem_async_cb(std::string url);
+
+extern std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
+
+void async_cb(void *data)
+{
+  ASyncCallback *cb = (ASyncCallback*)data;
+  
+}
+std::vector<ASyncCallback*> g_async_vec;
+std::vector<std::string> g_async_vec2;
+
+void LoadUrls_async_cbs()
+{
+  int s = g_async_vec.size();
+  for(int i=0;i<s;i++) {
+    ASyncCallback *cb = g_async_vec[i];
+    std::string url = g_async_vec2[i];
+    
+    if (cb && load_url_buffers_async[std::string("load_url.php?url=") + url]!=0) {
+      //std::cout << "Callback: " << url << std::endl;
+      (*cb->fptr)(cb->data);
+      g_async_vec[i] =0 ;
+    }
+  }
+  //g_async_vec.clear();
+}
+
+
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
 {
   int s = sizeof(async_data)/sizeof(ASyncData);
@@ -5108,9 +5138,34 @@ void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepa
 	{
 	  int param_num = dt.param_num;
 	  std::string url = line.params[param_num];
+	  //if (is_async_loaded_urls_in_vec(url) && load_url_buffers_async[std::string("load_url.php?url=") + url]==0) {
+	  // ASyncCallback *cb = rem_async_cb(std::string("load_url.php?url=")+url);
+	  // g_async_vec.push_back(cb);
+	  // g_async_vec2.push_back(url);
+	  //} else
 	  if (!is_async_loaded_urls_in_vec(url)) {
+	    //std::cout << "Start loading: " << url << std::endl;
+
 	    e.async_load_url(url,homepage);
 	    g_async_loaded_urls.push_back(url);
+	  } else {
+	    //if (load_url_buffers_async[std::string("load_url.php?url=") + url]==0) {
+	    //std::cout << "Callback2: " << url << std::endl;
+
+	    ASyncCallback *cb = rem_async_cb(std::string("load_url.php?url=")+url);
+	    //if (!cb) std::cout << "BUT cb=0" << std::endl;
+	    g_async_vec.push_back(cb);
+	    g_async_vec2.push_back(url);
+	      
+	      //} else {
+	      
+	    
+	    //  ASyncCallback *cb = rem_async_cb(std::string("load_url.php?url=")+url);
+	    // if (!cb) std::cout << "BUT cb=0" << std::endl;
+	    // if (cb) {
+	    //  	(*cb->fptr)(cb->data);
+	    //  }
+	      //}
 	  }
 	}
     }
@@ -7988,6 +8043,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "RUN", "std::string" },
 			 { "ev", "", "http://tpgames.org/" },
 			 "HML", "mainloop_api", "emscripten_frame"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2,
+			 "html_window2",
+			 { "ev", "r", "homepage" },
+			 { "EveryApi&", "RUN", "std::string" },
+			 { "ev", "", "https://tpgames.org/" },
+			 "HML", "mainloop_api", "emscripten_frame2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::small_window,
 			 "sml_window",
 			 { "ev", "ml", "x", "y", "sx", "sy" },
@@ -8686,6 +8747,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "LI", "float", "int" },
 			 { "ev", "", "10.0", "15" },
 			 "P", "polygon_api", "line_to_cone"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::line_to_cone2,
+			 "li_to_cone2",
+			 { "ev", "li", "size", "numfaces", "mt" },
+			 { "EveryApi&", "LI", "float", "int", "MT" },
+			 { "ev", "", "10.0", "15", "" },
+			 "ML", "polygon_api", "line_to_cone2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::curve_to_poly,
 			 "curve_to_poly",
 			 { "curve", "start_x", "end_x", "start_y", "end_y", "start_angle", "end_angle", "numinstances" },

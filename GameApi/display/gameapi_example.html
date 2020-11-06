@@ -1,0 +1,27 @@
+<html>
+  <head>
+  </head>
+  <body>
+    <!-- you need to copy the following files to transfer 3d models
+         to new web server:
+         https://meshpage.org/gameapi_display.zip
+
+	 unzip the package to some new directory in your web host
+
+	 Then change the homepage url from inside pre tag below
+
+	 Then copy-paste a builder codegen script to the gameapi_script 
+	 pre tag below, last line needs to have type RUN.
+      -->
+    <pre id="homepage" style="display:none">
+      https://tpgames.org/
+    </pre>
+    <pre id="gameapi_script" style="display:none">
+    ML I1=ev.mainloop_api.memmap_window3(ev,http://tpgames.org/game1_1.pkg,http://tpgames.org/game1_2.pkg,http://tpgames.org/game1_3.pkg,http://tpgames.org/game1_4.pkg,http://tpgames.org/game1_5.pkg,http://tpgames.org/game1_6.pkg);
+    RUN I2=ev.blocker_api.game_window2(ev,I1,false,false,0.0,100000.0);
+    </pre>
+    <canvas id="canvas" style="border-width:0px;border: 5px solid black; border-radius: 10px; background-color: #000000; margin:0; padding:0; width: 820px; height: 620px;"></canvas>
+    <script src="gameapi.js"></script>
+    <script src="web_page.js"></script>
+  </body>
+</html>

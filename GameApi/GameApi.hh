@@ -327,6 +327,7 @@ public:
   IMPORT ML create_landscape(EveryApi &ev, std::string url);
   IMPORT ML create_objs(EveryApi &ev, int area_id);
   IMPORT HML emscripten_frame(EveryApi &ev, RUN r, std::string homepage);
+  IMPORT HML emscripten_frame2(EveryApi &ev, RUN r, std::string homepage);
   IMPORT void init_window(int screen_width = 800, int screen_height=600, std::string window_title="GameApi", bool vr_init=false);
   IMPORT void init(SH sh, int screen_width = 800, int screen_height = 600);
   IMPORT void init_3d(SH sh, int screen_width = 800, int screen_heigth = 600);
@@ -2416,6 +2417,7 @@ public:
   IMPORT P texture(P orig, BM bm, int bm_choose = -1); // all quads
 
   IMPORT P line_to_cone(EveryApi &ev, LI li, float size, int numfaces);
+  IMPORT ML line_to_cone2(EveryApi &ev, LI li, float size, int numfaces, MT mt);
   IMPORT P static_instancing(EveryApi &ev, P obj, PTS pos);
   IMPORT P static_instancing_vertex_color(EveryApi &ev, P obj, PTS pos);
   IMPORT P static_instancing_matrix(EveryApi &ev, P obj, MS matrix_array);
