@@ -17,8 +17,17 @@
       https://tpgames.org/
     </pre>
     <pre id="gameapi_script" style="display:none">
-    ML I1=ev.mainloop_api.memmap_window3(ev,http://tpgames.org/game1_1.pkg,http://tpgames.org/game1_2.pkg,http://tpgames.org/game1_3.pkg,http://tpgames.org/game1_4.pkg,http://tpgames.org/game1_5.pkg,http://tpgames.org/game1_6.pkg);
-    RUN I2=ev.blocker_api.game_window2(ev,I1,false,false,0.0,100000.0);
+P I1=ev.polygon_api.cube(-200,200,-200,200,-200,200);
+LI I2=ev.lines_api.from_polygon(I1);
+MT I3=ev.materials_api.m_def(ev);
+MT I4=ev.materials_api.phong(ev,I3,-0.3,0.3,-1,ff008800,ff006600,50);
+PT I5=ev.point_api.point(0.0,0.0,0.0);
+MT I6=ev.materials_api.fur(ev,I4,I5,60.0,1.59,1500,2.0,4);
+ML I7=ev.polygon_api.line_to_cone2(ev,I2,40,15,I6);
+MN I8=ev.move_api.mn_empty();
+MN I9=ev.move_api.rotate(I8,0,10000,0,0,0,0,1,0,628);
+ML I10=ev.move_api.move_ml(ev,I7,I9,1,10.0);
+RUN I11=ev.blocker_api.game_window2(ev,I10,false,false,0.0,100000.0);
     </pre>
     <canvas id="canvas" style="border-width:0px;border: 5px solid black; border-radius: 10px; background-color: #000000; margin:0; padding:0; width: 820px; height: 620px;"></canvas>
     <script src="gameapi.js"></script>
