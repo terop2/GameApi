@@ -8043,6 +8043,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "RUN", "std::string" },
 			 { "ev", "", "http://tpgames.org/" },
 			 "HML", "mainloop_api", "emscripten_frame"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2,
+			 "html_window2",
+			 { "ev", "r", "homepage" },
+			 { "EveryApi&", "RUN", "std::string" },
+			 { "ev", "", "https://tpgames.org/" },
+			 "HML", "mainloop_api", "emscripten_frame2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::small_window,
 			 "sml_window",
 			 { "ev", "ml", "x", "y", "sx", "sy" },
@@ -8741,6 +8747,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "LI", "float", "int" },
 			 { "ev", "", "10.0", "15" },
 			 "P", "polygon_api", "line_to_cone"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::line_to_cone2,
+			 "li_to_cone2",
+			 { "ev", "li", "size", "numfaces", "mt" },
+			 { "EveryApi&", "LI", "float", "int", "MT" },
+			 { "ev", "", "10.0", "15", "" },
+			 "ML", "polygon_api", "line_to_cone2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::curve_to_poly,
 			 "curve_to_poly",
 			 { "curve", "start_x", "end_x", "start_y", "end_y", "start_angle", "end_angle", "numinstances" },
