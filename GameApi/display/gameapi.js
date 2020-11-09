@@ -15,6 +15,7 @@ var Module = {
     arguments : [ "--size", "800", "600", "--code", data4, "--homepage", hom2],
     print : (function() { return function(text) { console.log(text); } })(),
 };
+load_emscripten();
 window.onresize = resize_event;
 window.setTimeout(function() { resize_event(null); },10);
 check_if_emscripten_running();
@@ -76,4 +77,21 @@ Module.ccall('set_resize_event', null, ['number', 'number'], [wd,hd], {async:tru
 
   }
 
+}
+
+function load_emscripten()
+{
+    var agent = navigator.userAgent;
+    var mobile = false;
+    var firefox = false;
+    if (agent.indexOf("Mobile") != -1) mobile = true;
+    if (agent.indexOf("Firefox") != -1) firefox = true;
+
+    var src = "web_page.js";
+    if (firefox) src="web_page_nothreads.js";
+    if (mobile) src="web_page_lowmem_nothreads.js";
+    
+    var script = document.createElement("script");
+    script.setAttribute("src", src);
+    document.getElementsByTagName("head")[0].appendChild(script);
 }
