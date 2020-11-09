@@ -281,8 +281,8 @@ list_end();
 <h2>How does the site work?</h2>
 <ul>
 <li><a style="font-size:large;" href="https://meshpage.org/meshpage.php?page=4">DOWNLOAD</a>: You download the builder tool</a>
-<li><a style="font-size:large;" href="http://tpgames.org/builder_greeen_example.mp4">CREATE</a>: Create your powerful message predicting the future with the tool
-<li><a style="font-size:large;">CODEGEN</a>: You get piece of c++-like code representing animation
+<li><a style="font-size:large;" href="http://tpgames.org/builder_green_example.webm">CREATE</a>: Create your powerful message predicting the future with the tool
+<li><a style="font-size:large;" href="http://tpgames.org/Releasing_codegen.txt">CODEGEN</a>: You get piece of c++-like code representing animation
 <li><a style="font-size:large;" href="http://tpgames.org/Releasing_animations.txt">PUBLISH</a>: place 3d engine to your web server
 <li><a style="font-size:large;" href="http://meshpage.org/gameapi_example.html">ENJOY</a>: Then open the animation in your browser
 </ul>
@@ -491,7 +491,7 @@ On my laptop I get the following benchmarks(this test: <a href="https://meshpage
 <?php
 require_once("user.php");
 ?>
-<a href="http://tpgames.org/builder_greeen_example.mp4">Tutorial video</a>
+<a href="http://tpgames.org/builder_green_example.webm">Tutorial video</a>
 <p>
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; background-color: white;">
 <ul>

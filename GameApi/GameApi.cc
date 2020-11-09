@@ -15752,7 +15752,6 @@ public:
     blocks = (FileBlock*)&vec[sizeof(FileHeader)];
     wholefile = (unsigned char*)&vec[0];
     valid = header->d=='d' && header->s=='s';
-    //std::cout << "LoadDS: valid=" << valid << " " << header->d << " " << header->s << std::endl;
   }
   int Type() const { return header->type; }
   int NumBlocks() const { return valid ? header->numblocks : 0; }
