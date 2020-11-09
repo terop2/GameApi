@@ -19,7 +19,7 @@
 #
 
 
-CFiles=	GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
+CFiles=	GameApi3.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
 	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc \
 	Widgets.cc Category.cc Plane.cc Coordinates.cc Triangle.cc Game.cc \
