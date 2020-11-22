@@ -66,6 +66,8 @@
 #define USE_GLEW 1
 //#endif
 
+#define USE_CHAISCRIPT 0
+
 #ifdef ARM
 #define pthread_mutex_unlock __gthread_mutex_unlock
 #define pthread_mutex_lock __gthread_mutex_lock
