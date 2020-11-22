@@ -420,7 +420,7 @@ public:
   virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)=0;
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) { }
   virtual void EndEnv(GameApi::ExecuteEnv &e) { }
-  virtual void RegisterToChai(GameApi::EveryApi *ev, chaiscript::ChaiScript *chai)=0;
+  virtual void RegisterToChai(GameApi::EveryApi *ev, chaiscript::ChaiScript *chai) { }
 };
 
 struct GameApiLine
