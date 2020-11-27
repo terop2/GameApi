@@ -15752,7 +15752,6 @@ public:
     blocks = (FileBlock*)&vec[sizeof(FileHeader)];
     wholefile = (unsigned char*)&vec[0];
     valid = header->d=='d' && header->s=='s';
-    //std::cout << "LoadDS: valid=" << valid << " " << header->d << " " << header->s << std::endl;
   }
   int Type() const { return header->type; }
   int NumBlocks() const { return valid ? header->numblocks : 0; }
@@ -17587,10 +17586,12 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
 }
 
 //bool operator<(ptw32_handle_t t1,ptw32_handle_t t2) { return t1.x<t2.x; }
+#if USE_CHAISCRIPT
 #define CHAISCRIPT_NO_THREADS
 #include <chaiscript/chaiscript.hpp>
 #include <chaiscript/language/chaiscript_common.hpp>
 #include <chaiscript/dispatchkit/bootstrap.hpp>
+#endif
 std::vector<GameApiItem*> all_functions();
 
 std::vector<GameApi::BM> conv_bm(GameApi::EveryApi *ev, GameApi::ARR arr)
@@ -17653,6 +17654,7 @@ std::vector<GameApi::ML> conv_ml(GameApi::EveryApi *ev, GameApi::ARR arr)
 
 
 
+#if USE_CHAISCRIPT
 void register_chai_types(GameApi::EveryApi *ev, chaiscript::ChaiScript *chai)
 {
   chaiscript::ModulePtr m = chaiscript::ModulePtr(new chaiscript::Module());
@@ -18081,6 +18083,9 @@ GameApi::ML GameApi::MainLoopApi::chai_mainloop(GameApi::EveryApi &ev, std::stri
 {
   return add_main_loop(e, new ChaiMainLoop(e,ev,url,gameapi_homepageurl));
 }
+#endif // USE_CHAISCRIPT
+
+
 #if 0
 class ChaiBitmap : public Bitmap<Color>
 {

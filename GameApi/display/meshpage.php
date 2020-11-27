@@ -262,6 +262,7 @@ list_item("http://tpgames.org/Opengl_chain.txt", "Mesh structure");
 list_item("http://tpgames.org/Math_concepts.txt", "Math concepts");
 list_item("http://tpgames.org/Printer.txt", "3d printer instructions");
 list_item("http://tpgames.org/Skills_to_learn.txt", "Skills to learn");
+list_item("http://tpgames.org/Releasing_animations.txt", "Releasing animations to your web page");
 list_end();
 ?>
 
@@ -279,11 +280,11 @@ list_end();
 
 <h2>How does the site work?</h2>
 <ul>
-<li>You download the builder tool
-<li>Create your powerful message predicting the future with the tool
-<li>You get piece of c++-like code representing animation
-<li>Then you can "playback your animation"
-<li>Then it can be grabbed with any screengrabbing software to a video file
+<li><a style="font-size:large;" href="https://meshpage.org/meshpage.php?page=4">DOWNLOAD</a>: You download the builder tool</a>
+<li><a style="font-size:large;" href="https://tpgames.org/builder_green4_example.webm">CREATE</a>: Create your powerful message predicting the future with the tool
+<li><a style="font-size:large;" href="http://tpgames.org/Releasing_codegen.txt">CODEGEN</a>: You get piece of c++-like code representing animation
+<li><a style="font-size:large;" href="http://tpgames.org/Releasing_animations.txt">PUBLISH</a>: place 3d engine to your web server
+<li><a style="font-size:large;" href="http://meshpage.org/gameapi_example.html">ENJOY</a>: Then open the animation in your browser
 </ul>
 <h2>What are the advantages in your approach?</h2>
 <ul>
@@ -490,8 +491,6 @@ On my laptop I get the following benchmarks(this test: <a href="https://meshpage
 <?php
 require_once("user.php");
 ?>
-<a href="http://tpgames.org/builder_greeen_example.mp4">Tutorial video</a>
-<p>
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; background-color: white;">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
@@ -1148,8 +1147,17 @@ function resize_event(event) {
   hd2*=600.0;
   wd=wd2;
   hd=hd2;
-  wd-=130;
-  hd-=130;
+<?php
+require_once("user.php");
+$mobile = js_mobile();
+if ($mobile=="yes") {
+  echo "wd-=60;";
+  echo "hd-=60;";
+} else {
+  echo "wd-=130;";
+  echo "hd-=130;";
+  }
+?>
   var elem = document.getElementById("display");
   if (typeof(elem)!='undefined' && elem != null) { } else { return; }
   elem.style.width = (wd).toString() + "px";

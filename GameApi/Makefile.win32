@@ -21,7 +21,7 @@
 
 CFiles_dep= VectorTools.cc Buffer.cc  GameApi_low.cc GameApi_low_stub.cc GameApi_dep_add_find.cc GameApi_dep_env.cc Shader.cc VertexArray.cc  GameApi_dep_arr_render.cc
 
-CFiles=	GameApi_webcam.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc Effect.cc \
+CFiles=	GameApi2.cc GameApi_webcam.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc Effect.cc \
 	Intersect.cc Bitmap.cc Effect2.cc  VolumeObjects.cc \
 	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc \
 	Widgets.cc Category.cc Plane.cc Coordinates.cc Triangle.cc Game.cc \
