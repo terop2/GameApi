@@ -5565,10 +5565,11 @@ std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<
 #endif
 #endif
 
+#if USE_CHAISCRIPT
 #define CHAISCRIPT_NO_THREADS
 #include <chaiscript/chaiscript.hpp>
 #include <chaiscript/language/chaiscript_common.hpp>
-
+#endif
 
 template<class T, class RT, class... P>
 class ApiItem : public GameApiItem
@@ -5595,6 +5596,7 @@ public:
   std::string FuncName(int i) const { return func_name; }
   std::string Symbols() const { return symbols; }
   std::string Comment() const { return comment; }
+#if USE_CHAISCRIPT
   static RT chai_cb(GameApiItem *item, GameApi::EveryApi *ev, T (GameApi::EveryApi::*api), P... p) {
     ApiItem<T,RT,P...> *ptr = (ApiItem<T,RT,P...>*)item;
     T *ptr2 = &(ev->*api);
@@ -5606,6 +5608,7 @@ public:
     std::function<RT (P... p)> f = [ev,this](P...p) -> RT { return chai_cb(this, ev, this->api, p...); };
     chai->add(chaiscript::fun(f), func_name.c_str());
   }
+#endif
   
   int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)
   {
@@ -7395,12 +7398,14 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
 			 { "ev", "http://tpgames.org/marble_cube_ml.mp", "a&a", "b&b", "c&c", "d&d", "e&e" },
 			 "[ML]", "mainloop_api", "load_ML_script_array"));
+#if USE_CHAISCRIPT
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::chai_mainloop,
 			 "ml_chai",
 			 { "ev", "url" },
 			 { "EveryApi&", "std::string" },
 			 { "ev", "http://tpgames.org/chai_example.txt" },
 			 "ML", "mainloop_api", "chai_mainloop"));
+#endif
 
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::chai_bm,

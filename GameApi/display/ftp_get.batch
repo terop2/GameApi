@@ -4,3 +4,15 @@ get web_page.js
 get web_page.wasm
 get web_page.worker.js
 get pthread-main.js
+get web_page_lowmem.data
+get web_page_lowmem.js
+get web_page_lowmem.wasm
+get web_page_lowmem.worker.js
+get web_page_nothreads.data
+get web_page_nothreads.js
+get web_page_nothreads.wasm
+get web_page_nothreads.worker.js
+get web_page_lowmem_nothreads.data
+get web_page_lowmem_nothreads.js
+get web_page_lowmem_nothreads.wasm
+get web_page_lowmem_nothreads.worker.js
