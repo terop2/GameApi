@@ -3728,6 +3728,7 @@ GameApi::ARR GameApi::PolygonApi::gltf_split_faces2(EveryApi &ev, std::string ba
 }
 
 
+
 class GLTF_Animation_Material : public MaterialForward
 {
 public:
