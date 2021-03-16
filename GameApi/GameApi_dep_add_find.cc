@@ -109,6 +109,17 @@ void add_b(std::shared_ptr<void> ptr)
     g_rest.g_rest.push_back(ptr); // these will never be released
 }
 
+GameApi::ATT add_attach(GameApi::Env &e, Attach *att)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->attach.push_back(att);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(att));
+  GameApi::ATT im;
+  im.id = env->attach.size()-1;
+  return im;
+}
+
 GameApi::MB add_memblock(GameApi::Env &e, MemoryBlock *b)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1303,6 +1314,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   GameApi::LL ee;
   ee.id = spos->CurrentPosNum();
   return ee;
+}
+
+Attach *find_attach(GameApi::Env &e, GameApi::ATT att)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->attach[att.id];
 }
 
 UrlMemoryMap *find_urlmemmap(GameApi::Env &e, GameApi::PKG urlmemmap)

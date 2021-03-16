@@ -378,11 +378,14 @@ EXPORT GameApi::ML GameApi::SpriteApi::render_sprite_vertex_array_ml(EveryApi &e
   return add_main_loop(e, new RenderVertexArray4(e, ev, *this, bm));
 }
 
+void confirm_texture_usage(VertexArraySet *set);
+
 EXPORT void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
 {
     OpenglLowApi *ogl = g_low->ogl;
 
   VertexArraySet *s = find_vertex_array(e, va);
+  confirm_texture_usage(s);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
   //if (!s || ((int)s)<0x100) { std::cout << "render_sprite_vertex_array ignored!" << std::endl; return; }
   //if (!rend || ((int)rend)<0x100){ std::cout << "render_sprite_vertex_array ignored!" << std::endl;  return; }
@@ -504,6 +507,7 @@ EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm, bool progress)
   ::Sprite *sprite = sprite_from_handle2(e,spriv, handle, -1);
   if (!sprite) { std::cout << "preparesprite's sprite==NULL?" << std::endl; GameApi::VA va; va.id = 0; return va; }
   VertexArraySet *s = new VertexArraySet;
+  confirm_texture_usage(s);
   s->set_bm_id(bm.id);
   PrepareSpriteToVA(*sprite, *s);
   TexturePrepare(*sprite, *env->renders2[bm.id],progress);

@@ -197,6 +197,7 @@ using std::placeholders::_9;
   MAC(VFi)
   MAC(MB)
   MAC(PKG)
+  MAC(ATT)
 #undef MAC
   
   //template<class T>
@@ -299,6 +300,9 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  //ML gltf_joint_matrices(EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, ML next);
+  ML async_url(std::string url, ML ml);
+  ARR gltf_anim_skeleton(EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int channelk, int num_keyframes);
   IMPORT ML memmap_window2(EveryApi &ev, std::string url);
   IMPORT ML memmap_window3(EveryApi &ev, std::string url_1, std::string url_2, std::string url_3, std::string url_4, std::string url_5, std::string url_6);
   IMPORT ML ml_load_um(EveryApi &ev, std::string url);
@@ -339,10 +343,15 @@ public:
   IMPORT void switch_to_3d(bool b, SH sh, int screen_width=800., int screen_height = 600);
   IMPORT ML restart_game(EveryApi &ev, ML ml, int key);
   IMPORT ML matrix_range_check(EveryApi &ev, ML ml, ML ml2, std::string url); // this uses restart_game.
+  IMPORT LI gltf_skeleton(EveryApi &ev, std::string base_url, std::string url, int start_node);
   IMPORT ML gltf_mesh( EveryApi &ev, std::string base_url, std::string url, int mesh_id );
   IMPORT ML gltf_mesh_all( EveryApi &ev, std::string base_url, std::string url );
   IMPORT ML gltf_node( EveryApi &ev, std::string base_url, std::string url, int node_id );
   IMPORT ML gltf_scene( EveryApi &ev, std::string base_url, std::string url, int scene_id );
+  //IMPORT ML gltf_anim( EveryApi &ev, std::string base_url, std::string url, int animation, int channel, int mesh_index, int prim_index, MT mat );
+  IMPORT ML gltf_anim2( EveryApi &ev, std::string base_url, std::string url, int animation, int channel);
+  IMPORT ML gltf_anim4( EveryApi &ev, std::string base_url, std::string url, int animation, int channel);
+  IMPORT ML gltf_scene_anim(EveryApi &ev, std::string base_url, std::string url, int scene_id, int animation);
   IMPORT ML flip_scene_if_mobile(EveryApi &ev, ML ml);
   IMPORT ML flip_scene_x_if_mobile(EveryApi &ev, ML ml);
   IMPORT ML activate_item(ML ml, ML def);
@@ -1366,6 +1375,7 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
+  IMPORT MT gltf_anim_material(EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int num_timeindexes, MT next, int key);
   IMPORT MT toon_border(EveryApi &ev, MT next, float border_width, unsigned int color);
   IMPORT ARR material_pack_1(EveryApi &ev);
   IMPORT MT m_def(EveryApi &ev);
@@ -1583,6 +1593,7 @@ public:
   IMPORT MN whack_a_mole_exit(EveryApi &ev, MN prev, int exit_num, float &time);
   IMPORT MN whack_a_mole_all(EveryApi &ev, int cycle_count, int exit_num);
   IMPORT MN mn_interpolate(MN n1, MN n2, FF fetcher);
+  IMPORT MN mn_interpolate2(MN n1, MN n2, float start_time, float end_time);
   IMPORT MN interpolate(MN n1, MN n2, float start_time, float end_time, float start_value, float end_value);
   IMPORT MN mn_empty();
   IMPORT MN level(MN next);
@@ -1591,6 +1602,7 @@ public:
   IMPORT MN rotatex(MN next, float angle);
   IMPORT MN rotatey(MN next, float angle);
   IMPORT MN rotatez(MN next, float angle);
+  IMPORT MN matrix(MN next, M mat);
   IMPORT MN pose(MN next, bool pose_in_screen);
   IMPORT MN debug_translate(MN next);
   IMPORT MN translate(MN next, float start_time, float end_time,float dx, float dy, float dz);
@@ -1695,6 +1707,7 @@ class GuiApi
 public:
   GuiApi(Env &e, EveryApi &ev, SH sh) : e(e), ev(ev), sh(sh) { }
   IMPORT void delete_widget(W w);
+  IMPORT W window_decoration(int sx, int sy, std::string label, FtA atlas, BM atlas_bm);
   IMPORT W empty();
   IMPORT W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=3);
   IMPORT W icon(BM bitmap);
@@ -1709,6 +1722,7 @@ public:
   IMPORT W gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int colot_1, unsigned int color_2);
   IMPORT W button(int sx, int sy, unsigned int color_1, unsigned int color_2);
   IMPORT W mouse_move(W widget, int area_x, int area_y, int area_width, int area_height);
+  IMPORT W window_move(W widget, int area_x, int area_y, int area_width, int area_height);
   IMPORT W click_area(W widget, int area_x, int area_y, int area_width, int area_height, int button_id);
   IMPORT W key_area(W widget, int area_x, int area_y, int area_width, int area_height, int key);
   IMPORT W click_visibility(W area_widget, W hidden_widget);
@@ -2246,6 +2260,19 @@ public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
   
+  MS identity_pose(int li_size);
+  ARR gltf_split_faces2(EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index, int max_attach);
+  
+  ARR split_faces(P p, ATT att, int max_attach);
+  std::vector<P> orig_pose(EveryApi &ev, P p, LI li, int li_size);
+  std::vector<P> orig_pose2(EveryApi &ev, std::vector<P> vec, LI li, int li_size);
+  MS new_pose(EveryApi &ev, LI li_orig, LI li);
+  ML ske_anim(EveryApi &ev, P mesh, LI orig_pose, int li_size, std::string url, std::vector<LI> new_poses, MT mat);
+  ML ske_anim2(EveryApi &ev, std::vector<P> mesh, LI orig_pose, int li_size, std::string url, std::vector<LI> new_poses, MT mat);
+  ATT find_attach2(P p, LI li);
+  ATT attach_cache(ATT a, P p);
+  
+  P convex_hull(PTS pts);
   P optimize_mesh(P p, float max);
   P toon_outline(P p, float border_width);
   ML cullface(ML ml, bool b);
@@ -2489,7 +2516,8 @@ public:
   IMPORT P rotate(P orig, PT pt, V axis, float angle);
   IMPORT P scale(P orig, float sx, float sy, float sz);
   IMPORT P matrix(P orig, M mat);
-
+  IMPORT P matrix44(P orig, M mat); // otherwise the same as matrix, but doesnt do normals.
+  
   IMPORT P log_coords(P p);
   IMPORT P log_coords2(P p, int x_count, int y_count, float sx, float sy, float sz);
   IMPORT P spherical_wave(P p, float r1, float fr_1, float r2, float fr_2);
@@ -2588,6 +2616,7 @@ public:
   IMPORT ML glowedge_shader(EveryApi &ev, ML mainloop, float white_level, float gray_level, float edge_pos);
   IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML edge_shader(EveryApi &ev, ML mainloop, float edge_width, unsigned int edge_color);
+  IMPORT ML gltf_anim_shader(GameApi::EveryApi &ev, ML ml_orig, std::vector<GameApi::ML> mls, int key);
   IMPORT ML globe_shader(EveryApi &ev, ML mainloop, float globe_r);
   //IMPORT ML ao_shader(EveryApi &ev, ML mainloop, float radius, int kernelsize, int noisesize);
   IMPORT ML colour_shader(EveryApi &ev, ML mainloop, float mix);
@@ -3152,6 +3181,8 @@ class MatricesApi
 {
 public:
   MatricesApi(Env &e) :e(e) { }
+  IMPORT MS interpolate(MS start, MS end, float val);
+  IMPORT MS inverse_ms(MS ms);
   IMPORT MS from_points(PTS pts);
   IMPORT MS mult(MS m, M mat);
   IMPORT MS mult(M mat, MS m);
@@ -3270,7 +3301,10 @@ class LinesApi
 {
 public:
 	IMPORT LinesApi(Env &e) : e(e) { }
-	IMPORT LI function(std::function<PT(int linenum, bool id)> f,
+  IMPORT LI alt(std::vector<LI> v, int index);
+  IMPORT LI li_empty();
+  IMPORT LI li_url(std::string url);
+  IMPORT LI function(std::function<PT(int linenum, bool id)> f,
 	      int numlines);
   IMPORT LI line_pos_mult(float val, LI li);
   IMPORT LI point_array(std::vector<PT> vec);
@@ -3481,6 +3515,7 @@ public:
   UberShaderApi(Env &e) : e(e) {}
   US v_empty();
   US v_edge(US us);
+  US v_gltf_anim(US us);
   US v_globe(US us);
   US v_color_from_normals(US us);
   US v_recalc_normal(US us);
@@ -3517,6 +3552,7 @@ public:
   US v_colour_with_mix(US us);
   US v_fade(US us);
   US f_edge(US us);
+  US f_gltf_anim(US us);
   US f_mesh_color(US us, SFO sfo); // this requires v_pass_position() in vertex shader
   US f_sandbox(US us, SFO sfo); // this requires texture coordinates
   US f_empty(bool transparent);

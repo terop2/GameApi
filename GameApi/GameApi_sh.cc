@@ -144,7 +144,9 @@ GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format, std::s
   bind_attrib_1(sh, 4, "in_Position2");
   bind_attrib_1(sh, 5, "in_InstPos");
   bind_attrib_1(sh, 6, "bone_id");
-  bind_attrib_1(sh, 7, "in_InstMat");
+  bind_attrib_1(sh, 7, "in_InstMat"); // also uses 7,8,9,10
+  bind_attrib_1(sh, 11, "JOINTS_0");
+  bind_attrib_1(sh, 12, "WEIGHTS_0");
   link_1(sh);
   use_1(sh);
   set_default_projection_1(sh, "in_P");
@@ -334,9 +336,10 @@ EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, c
   for(int i=0;i<s;i++)
     {
       Matrix mm = find_matrix(e,m[i]);
+      Matrix mm2 = Matrix::Transpose(mm);
       //std::cout << mm << std::endl;
       for(int ii=0;ii<16;ii++)
-	v.push_back(mm.matrix[ii]);
+	v.push_back(mm2.matrix[ii]);
     }
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;

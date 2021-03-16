@@ -413,6 +413,7 @@ public:
     Point p(0.0,0.0,0.0);
     return p;
   }
+  bool has_normal() const { return parser.normal_index.size()>2; }
   Vector PointNormal(int face, int point) const
   {
     int c = Count(face,point);
@@ -427,11 +428,13 @@ public:
     Vector v(0.0,0.0,0.0);
     return v;
   }
+  bool has_attrib() const { return false; }
   float Attrib(int face, int point, int id) const {
     return 0.0; 
   }
   int AttribI(int face, int point, int id) const {
     return 0; }
+  bool has_color() const { return parser.color_data.size()>2; }
   unsigned int Color(int face, int point) const { 
     int c = Count(face,point);
     if (c>=0 && c<(int)parser.vertex_index.size())
@@ -444,6 +447,7 @@ public:
     //Point p(0.0,0.0,0.0);
     return p;
   }
+  bool has_texcoord() const { return parser.texcoord3_data.size()>0; }
   float TexCoord3(int face, int point) const
   {
     int c = Count(face,point);
@@ -789,6 +793,7 @@ class ColorDistance3 : public ForwardFaceCollection
 {
 public:
   ColorDistance3(FaceCollection *faces, Point center, unsigned int color_center, unsigned int color_dist, float dist_center, float dist_dist) : ForwardFaceCollection(*faces), center(center), color_center(color_center), color_dist(color_dist), dist_center(dist_center), dist_dist(dist_dist) { }
+  bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
     Point p = ForwardFaceCollection::FacePoint(face,point);
@@ -844,6 +849,7 @@ public:
     if (point==3) return pp1b;
     return pp1a;
   }
+  bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     Point p1 = FacePoint(face, 0);
@@ -1159,6 +1165,11 @@ public:
     coll_cache = coll;
     return coll;
   }
+  virtual bool has_normal() const { return get_coll()->has_normal(); }
+  virtual bool has_attrib() const { return get_coll()->has_attrib(); }
+  virtual bool has_color() const { return get_coll()->has_color(); }
+  virtual bool has_texcoord() const { return get_coll()->has_texcoord(); }
+  virtual bool has_skeleton() const { return get_coll()->has_skeleton(); }
 
   virtual int NumFaces() const 
   {
@@ -1265,6 +1276,12 @@ public:
     }
   }
 
+  virtual bool has_normal() const { return current->has_normal(); }
+  virtual bool has_attrib() const { return current->has_attrib(); }
+  virtual bool has_color() const { return current->has_color(); }
+  virtual bool has_texcoord() const { return current->has_texcoord(); }
+  virtual bool has_skeleton() const { return current->has_skeleton(); }
+
   virtual int NumFaces() const { return current->NumFaces(); }
   virtual int NumPoints(int face) const { return current->NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return current->FacePoint(face,point); }
@@ -1350,6 +1367,13 @@ public:
     }
   }
 
+  virtual bool has_normal() const { return current->has_normal(); }
+  virtual bool has_attrib() const { return current->has_attrib(); }
+  virtual bool has_color() const { return current->has_color(); }
+  virtual bool has_texcoord() const { return current->has_texcoord(); }
+  virtual bool has_skeleton() const { return current->has_skeleton(); }
+
+  
   virtual int NumFaces() const { return current->NumFaces(); }
   virtual int NumPoints(int face) const { return current->NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return current->FacePoint(face,point); }
@@ -1862,6 +1886,13 @@ public:
     }
   }
 
+  virtual bool has_normal() const { return current->has_normal(); }
+  virtual bool has_attrib() const { return current->has_attrib(); }
+  virtual bool has_color() const { return current->has_color(); }
+  virtual bool has_texcoord() const { return current->has_texcoord(); }
+  virtual bool has_skeleton() const { return current->has_skeleton(); }
+
+  
   virtual int NumFaces() const { return current->NumFaces(); }
   virtual int NumPoints(int face) const { return current->NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return current->FacePoint(face,point); }
@@ -2050,6 +2081,13 @@ public:
       current = filled;
     }
   }
+
+  virtual bool has_normal() const { return current->has_normal(); }
+  virtual bool has_attrib() const { return current->has_attrib(); }
+  virtual bool has_color() const { return current->has_color(); }
+  virtual bool has_texcoord() const { return current->has_texcoord(); }
+  virtual bool has_skeleton() const { return current->has_skeleton(); }
+
   virtual int NumFaces() const { return current->NumFaces(); }
   virtual int NumPoints(int face) const { return current->NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return current->FacePoint(face,point); }
@@ -2222,6 +2260,7 @@ public:
     q.p2.y /= float(sy);
     //std::cout << "P1: " << q.p1 << " P2: " << q.p2 << std::endl;
   }
+  bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const 
   { 
     //std::cout << "TexCoord" << face << " " << point << std::endl;
@@ -2258,7 +2297,9 @@ class TexCoordSpherical : public ForwardFaceCollection
 {
 public:
   TexCoordSpherical(Point center, FaceCollection *coll) : ForwardFaceCollection(*coll), center(center), coll(coll) { }
-    virtual Point2d TexCoord(int face, int point) const { 
+  bool has_texcoord() const { return true; }
+  
+  virtual Point2d TexCoord(int face, int point) const { 
       Point p = ForwardFaceCollection::FacePoint(face,point);
       p-=Vector(center);
       float r = sqrt(p.x*p.x+p.y*p.y+p.z*p.z);
@@ -2281,7 +2322,9 @@ class TexCoordCylindar : public ForwardFaceCollection
 {
 public:
   TexCoordCylindar(FaceCollection *coll, float start_y, float end_y) : ForwardFaceCollection(*coll), coll(coll), start_y(start_y), end_y(end_y) { }
-    virtual Point2d TexCoord(int face, int point) const { 
+  bool has_texcoord() const { return true; }
+
+  virtual Point2d TexCoord(int face, int point) const { 
       Point p = ForwardFaceCollection::FacePoint(face,point);
       //float r = sqrt(p.x*p.x+p.z*p.z);
       float alfa = atan2(p.z, p.x);
@@ -2310,6 +2353,7 @@ public:
 					   p3_x(p3_x), p3_y(p3_y),
 					   p4_x(p4_x), p4_y(p4_y) { }
 
+  bool has_texcoord() const { return true; }
   Point2d TexCoord(int face, int point) const
   {
     switch(point) {
@@ -2348,6 +2392,7 @@ class TexCoordPlane : public ForwardFaceCollection
 {
 public:
   TexCoordPlane(FaceCollection *coll, float start_x, float end_x, float start_y, float end_y) : ForwardFaceCollection(*coll), coll(coll), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y) { }
+  bool has_texcoord() const { return true; }
   Point2d TexCoord(int face, int point) const
   {
     Point p = coll->FacePoint(face,point);
@@ -2463,6 +2508,35 @@ public:
     sy/=2;
     p = pl->quad_z(-sx,sx,-sy,sy,0.0);
   }
+
+  virtual bool has_normal() const {
+    FaceCollection *coll = find_facecoll(e,p);
+    return coll->has_normal();
+
+  }
+  virtual bool has_attrib() const {
+
+    FaceCollection *coll = find_facecoll(e,p);
+    return coll->has_attrib();
+
+  }
+  virtual bool has_color() const {
+
+    FaceCollection *coll = find_facecoll(e,p);
+    return coll->has_color();
+
+  }
+  virtual bool has_texcoord() const {
+    FaceCollection *coll = find_facecoll(e,p);
+    return coll->has_texcoord();
+
+
+  }
+  virtual bool has_skeleton() const {
+    FaceCollection *coll = find_facecoll(e,p);
+    return coll->has_skeleton();
+  }
+
   virtual int NumFaces() const
   {
     FaceCollection *coll = find_facecoll(e,p);
@@ -2844,6 +2918,7 @@ public:
   {
     light_dir /= light_dir.Dist();
   }
+  bool has_color() const { return true; }
   unsigned int Color(int face, int point) const
   {
     Vector n = ForwardFaceCollection::PointNormal(face,point);
@@ -2881,6 +2956,7 @@ class ColorElem2 : public ForwardFaceCollection
 {
 public:
   ColorElem2(FaceCollection *coll, unsigned int col) : ForwardFaceCollection(*coll), col(col) { }
+  bool has_color() const { return true; }
   unsigned int Color(int face, int point) const {return col; }
 private:
   unsigned int col;
@@ -2896,6 +2972,7 @@ class ColorGrayScale : public ForwardFaceCollection
 {
 public:
   ColorGrayScale(FaceCollection *coll) : ForwardFaceCollection(*coll) { }
+  bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
     unsigned int col = ForwardFaceCollection::Color(face,point);
@@ -2914,6 +2991,7 @@ class ColorAlpha : public ForwardFaceCollection
 {
 public:
   ColorAlpha(FaceCollection *coll, unsigned int alpha) : ForwardFaceCollection(*coll), alpha(alpha) { }
+  bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
     unsigned int c = ForwardFaceCollection::Color(face,point);
@@ -2928,6 +3006,7 @@ class ColorFromNormals : public ForwardFaceCollection
 {
 public:
   ColorFromNormals(FaceCollection *coll) : ForwardFaceCollection(*coll) { }
+  bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
     Vector v = ForwardFaceCollection::PointNormal(face,point);
@@ -2948,6 +3027,7 @@ class ColorRangeFaceCollection : public ForwardFaceCollection
 {
 public: 
   ColorRangeFaceCollection(FaceCollection *coll, unsigned int source_upper, unsigned int source_lower, unsigned int upper_range, unsigned int lower_range) : ForwardFaceCollection(*coll), coll(coll), source_upper(source_upper), source_lower(source_lower), upper_range(upper_range), lower_range(lower_range) { }
+  bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
     unsigned int col = ForwardFaceCollection::Color(face,point);
@@ -3109,6 +3189,13 @@ public:
        return texcoord[counts2[face]+point]; 
   }
 
+  virtual bool has_normal() const { return coll->has_normal(); }
+  virtual bool has_attrib() const { return coll->has_attrib(); }
+  virtual bool has_color() const { return coll->has_color(); }
+  virtual bool has_texcoord() const { return coll->has_texcoord(); }
+  virtual bool has_skeleton() const { return coll->has_skeleton(); }
+
+  
 private:
   FaceCollection *coll;
   std::vector<int> counts;
@@ -3220,6 +3307,7 @@ class ColorCubeElem : public ForwardFaceCollection
 public:
   ColorCubeElem(FaceCollection *next, Point p_0, Point p_x, Point p_y, Point p_z,
 		unsigned int c_0, unsigned int c_x, unsigned int c_y, unsigned int c_z) : ForwardFaceCollection(*next), p_0(p_0), p_x(p_x), p_y(p_y), p_z(p_z), c_0(c_0), c_x(c_x), c_y(c_y), c_z(c_z) { }
+  bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const 
   {
     Point pos = ForwardFaceCollection::FacePoint(face,point);
@@ -3536,6 +3624,7 @@ class ChangeNormal2 : public ForwardFaceCollection
 public:
   ChangeNormal2(FaceCollection &coll, std::function<Vector (Vector, int,int)> f)
     : ForwardFaceCollection(coll), f(f) { }
+  bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const 
   {
     return f(ForwardFaceCollection::PointNormal(face,point),
@@ -3591,6 +3680,7 @@ class ChangeColor2 : public ForwardFaceCollection
 public:
   ChangeColor2(FaceCollection &coll, std::function<unsigned int (unsigned int, int,int)> f)
     : ForwardFaceCollection(coll), f(f) { }
+  bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const 
   {
     return f(ForwardFaceCollection::Color(face,point),
@@ -3757,6 +3847,7 @@ public:
       }
     return p;
   }
+  bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     Point p1 = FacePoint(face, 0);
@@ -3767,6 +3858,7 @@ public:
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
+  bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
     int line = face / num_steps;
@@ -3783,6 +3875,7 @@ public:
     return p;
 
   }
+  bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const
   {
     Point2d p00 = { 0.0, 0.0 };
@@ -4084,6 +4177,7 @@ class NormalFaceCollection : public ForwardFaceCollection
 {
 public:
   NormalFaceCollection(GameApi::Env &e, FaceCollection *next, std::function<GameApi::V (int face, int point)> f) : ForwardFaceCollection(*next), e(e), f(f) { }
+  bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     GameApi::V pp = f(face, point);
@@ -4103,6 +4197,7 @@ class ColorFaceCollection : public ForwardFaceCollection
 {
 public:
   ColorFaceCollection(GameApi::Env &e, FaceCollection *next, std::function<unsigned int (int face, int point)> f) : ForwardFaceCollection(*next), /*e(e),*/  f(f) { }
+  bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
     unsigned int pp = f(face, point);
@@ -4121,6 +4216,7 @@ class TexFaceCollection : public ForwardFaceCollection
 {
 public:
   TexFaceCollection(GameApi::Env &e, FaceCollection *next, std::function<GameApi::PT (int face, int point)> f) : ForwardFaceCollection(*next), e(e), f(f) { }
+  bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const
   {
     GameApi::PT pp = f(face, point);
@@ -4140,6 +4236,7 @@ class AttribFaceCollection : public ForwardFaceCollection
 {
 public:
   AttribFaceCollection(GameApi::Env &e, FaceCollection *next, std::function<float (int face, int point, int id)> f, int idx) : ForwardFaceCollection(*next), /*e(e),*/ f(f), idx(idx) { }
+  bool has_attrib() const { return true; }
   virtual float Attrib(int face, int point, int id) const
   {
     if (idx == id) {
@@ -4158,6 +4255,7 @@ class AttribIFaceCollection : public ForwardFaceCollection
 {
 public:
   AttribIFaceCollection(GameApi::Env &e, FaceCollection *next, std::function<int (int face, int point, int id)> f, int idx) : ForwardFaceCollection(*next), /*e(e),*/  f(f), idx(idx) { }
+
   virtual int AttribI(int face, int point, int id) const
   {
     if (idx == id) {
@@ -4355,6 +4453,7 @@ public:
   {
     return vec[face+point];
   }
+  bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     Point p1 = FacePoint(face, 0);
@@ -4453,6 +4552,7 @@ class ColorVoxelFaceCollection : public ForwardFaceCollection
 {
 public:
   ColorVoxelFaceCollection(FaceCollection &coll, Voxel<unsigned int> &c, Point p, Vector v_x, Vector v_y, Vector v_z) : ForwardFaceCollection(coll), c(c), pp(p) { cc.center = v_x; cc.u_x = v_x; cc.u_y = v_y; cc.u_z = v_z; }
+  bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const { 
     Point p = ForwardFaceCollection::FacePoint(face,point);
     Point p2 = cc.FindInternalCoords(p);
@@ -5063,7 +5163,8 @@ EXPORT float *GameApi::PolygonApi::access_texcoord(VA va, bool triangle, int fac
 class ChooseTex : public ForwardFaceCollection
 {
 public:
-  ChooseTex(FaceCollection *coll, int val) : ForwardFaceCollection(*coll),val(val) { }  
+  ChooseTex(FaceCollection *coll, int val) : ForwardFaceCollection(*coll),val(val) { }
+  bool has_texcoord() const { return true; }
   virtual float TexCoord3(int face, int point) const { 
     return float(val)+0.5f;
   }
@@ -5074,6 +5175,7 @@ class DefaultTex : public ForwardFaceCollection
 {
 public:
   DefaultTex(FaceCollection *coll) : ForwardFaceCollection(*coll) { }
+  bool has_texcoor() const { return true; }
   Point2d TexCoord(int face, int point) const
   {
     if (point==0) {
@@ -5230,7 +5332,11 @@ public:
 	GameApi::M m3 = add_matrix2(env, e.in_P);
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
-	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);	  
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
+	  ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_P", m3);
@@ -5378,7 +5484,11 @@ public:
 	GameApi::M m3 = add_matrix2(env, e.in_P);
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
-	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);	  
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
+	  ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_P", m3);
 	ev.shader_api.set_var(shader, "in_N", m2);
@@ -5537,7 +5647,11 @@ public:
 	GameApi::M m3 = add_matrix2(env, e.in_P);
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
-	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);	  
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
+	  ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_P", m3);
@@ -5706,7 +5820,11 @@ public:
 	GameApi::M m3 = add_matrix2(env, e.in_P);
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
-	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);	  
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
+	  ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_P", m3);
@@ -5886,7 +6004,11 @@ public:
 	GameApi::M m3 = add_matrix2(env, e.in_P);
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
-	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);	  
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
+	  ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_P", m3);
@@ -6071,7 +6193,11 @@ public:
 	GameApi::M m3 = add_matrix2(env, e.in_P);
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
-	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);	  
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
+	  ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_P", m3);
@@ -6221,7 +6347,11 @@ public:
 	GameApi::M m3 = add_matrix2(env, e.in_P);
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
-	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);	  
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
+	  ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_P", m3);
@@ -7833,6 +7963,7 @@ private:
   GameApi::SH sh;
 };
 
+
 class GlowEdgeShaderML : public MainLoopItem
 {
 public:
@@ -8886,6 +9017,7 @@ EXPORT GameApi::ML GameApi::PolygonApi::glowedge_shader(EveryApi &ev, ML mainloo
   return add_main_loop(e, new GlowEdgeShaderML(e, ev, item, white_level, gray_level, edge_pos));
 }
 
+
 EXPORT GameApi::ML GameApi::PolygonApi::phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
@@ -8962,20 +9094,27 @@ EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2(EveryApi &ev, P 
      return add_main_loop(e, new RenderP(e, ev, *this, p));
 #endif
 }
+void confirm_texture_usage(GameApi::Env &e, GameApi::P p);
+
+
  EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2_texture(EveryApi &ev, P p, std::vector<BM> bm, std::vector<int> types)
  {
+   confirm_texture_usage(e,p);
    return add_main_loop(e, new RenderPTex(e, ev, *this, p, bm,types));
  }
 EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2_texture_id(EveryApi &ev, P p, std::vector<TXID> *bm)
  {
+   confirm_texture_usage(e,p);
    return add_main_loop(e, new RenderPTex_id(e, ev, *this, p, bm));
  }
  EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2_cubemap(EveryApi &ev, P p, std::vector<BM> bm)
  {
+   confirm_texture_usage(e,p);
    return add_main_loop(e, new RenderPTexCubemap(e, ev, *this, p, bm));
  }
  EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2_texture2(EveryApi &ev, P p)
  {
+   confirm_texture_usage(e,p);
    return add_main_loop(e, new RenderPTex2(e, ev, *this, p));
  }
 EXPORT GameApi::ML GameApi::PolygonApi::render_dynamic_ml(EveryApi &ev, P p, DC dyn)
@@ -10080,6 +10219,7 @@ public:
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
+  bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
     int xx = face/bm->SizeY();
@@ -10377,6 +10517,15 @@ EXPORT GameApi::P GameApi::PolygonApi::cube_map(EveryApi &ev, float start_x, flo
 
 }
 #endif
+
+EXPORT GameApi::LI GameApi::LinesApi::alt(std::vector<LI> v, int index)
+{
+  if (v.size()==0) return li_empty();
+  int s = v.size();
+  if (index<0 ||index>=s) return li_empty();
+  return v[index];
+}
+
 EXPORT GameApi::P GameApi::PolygonApi::alt(std::vector<P> v, int index)
 {
   if (v.size()==0) return p_empty();
@@ -10427,6 +10576,13 @@ public:
     return b;
   }
 
+  virtual bool has_normal() const { return coll1->has_normal()||coll2->has_normal(); }
+  virtual bool has_attrib() const { return coll1->has_attrib()||coll2->has_attrib(); }
+  virtual bool has_color() const { return coll1->has_color()||coll2->has_color(); }
+  virtual bool has_texcoord() const { return coll1->has_texcoord()||coll2->has_texcoord(); }
+  virtual bool has_skeleton() const { return coll1->has_skeleton()||coll2->has_skeleton(); }
+
+  
   virtual int NumFaces() const { return choose.size(); }
   virtual int NumPoints(int face) const {
     int val = choose[face];
@@ -10493,6 +10649,7 @@ public:
     GameApi::PT center2 = ev.point_api.point(center.x, center.y, center.z);
     fd = ev.dist_api.fd_sphere(center2, r);
   }
+  bool has_texcoord() const { return true; }
   Point2d TexCoord(int face, int point) const
   {
     Point p = coll->FacePoint(face, point);
@@ -10536,6 +10693,7 @@ public:
       color_bl(color_bl), color_br(color_br) 
   {
   }
+  bool has_color() const { return true; }
   unsigned int Color(int face, int point) const
   {
     Point2d pos = ForwardFaceCollection::TexCoord(face,point);
@@ -10696,6 +10854,8 @@ GameApi::P GameApi::PolygonApi::file_cache(P model, std::string filename, int ob
   cache_map[cache_id(filename,obj_count)]=item2;
   return model;
 }
+Matrix g_last_resize;
+
 class ResizeFaceCollection : public ForwardFaceCollection
 {
 public:
@@ -10781,6 +10941,7 @@ private:
     Matrix m2 = Matrix::Scale(val2, val2, val2);
     Matrix mm = m * m2;
     m_m= mm;
+    g_last_resize = mm;
   }
 
 public:
@@ -10842,6 +11003,14 @@ public:
       res->Prepare();
     }
   }
+
+  virtual bool has_normal() const { if (!res) return false; return res->has_normal(); }
+  virtual bool has_attrib() const { if (!res) return false; return res->has_attrib(); }
+  virtual bool has_color() const { if (!res) return false; return res->has_color(); }
+  virtual bool has_texcoord() const { if (!res) return false; return res->has_texcoord(); }
+  virtual bool has_skeleton() const { if (!res) return false; return res->has_skeleton(); }
+
+  
   virtual int NumFaces() const 
   {
     if (!res) { std::cout << "PersistentCachePoly:FaceCollection Prepare not called!" << std::endl; }
@@ -10959,6 +11128,13 @@ public:
   {
     return coll.NumPoints(face+start);
   }
+
+  virtual bool has_normal() const { return coll.has_normal(); }
+  virtual bool has_attrib() const { return coll.has_attrib(); }
+  virtual bool has_color() const { return coll.has_color(); }
+  virtual bool has_texcoord() const { return coll.has_texcoord(); }
+  virtual bool has_skeleton() const { return coll.has_skeleton(); }
+  
   virtual Point FacePoint(int face, int point) const { return coll.FacePoint(face+start,point); }
   virtual Vector PointNormal(int face, int point) const { return coll.PointNormal(face+start, point); }
   virtual float Attrib(int face, int point, int id) const { return coll.Attrib(face+start, point, id); }
@@ -10976,6 +11152,7 @@ class TexCoordFromNormal : public ForwardFaceCollection
 {
 public:
   TexCoordFromNormal(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  bool has_texcoord() const { return true; }
   Point2d TexCoord(int face, int point) const
   { 
     // NOTE: this requires power-of-2 textures, or else it will fail because of
@@ -11029,6 +11206,7 @@ class TexCoordFromNormal2 : public ForwardFaceCollection
 {
 public:
   TexCoordFromNormal2(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  bool has_texcoord() const { return true; }
   Point2d TexCoord(int face, int point) const
   { 
     Vector n = coll->PointNormal(face,point);
@@ -11055,6 +11233,7 @@ class FixTexCoord : public ForwardFaceCollection
 public:
   FixTexCoord(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) {}
 
+  bool has_texcoord() const { return true; }
   Point2d TexCoord(int face, int point) const
   {
     int prev = point - 1;
@@ -11137,6 +11316,13 @@ public:
     if (!coll) return Point(0.0,0.0,0.0);
     return coll->FacePoint(face,point);
   }
+
+  virtual bool has_normal() const { if (!coll) return false; return coll->has_normal(); }
+  virtual bool has_attrib() const { if (!coll) return false;return coll->has_attrib(); }
+  virtual bool has_color() const { if (!coll) return false; return coll->has_color(); }
+  virtual bool has_texcoord() const { if (!coll) return false; return coll->has_texcoord(); }
+  virtual bool has_skeleton() const { if (!coll) return false; return coll->has_skeleton(); }
+
   virtual Vector PointNormal(int face, int point) const
   {
     if (!coll) return Vector(0.0,0.0,0.0);
@@ -11353,6 +11539,7 @@ class SphNormals : public ForwardFaceCollection
 {
 public:
   SphNormals(FaceCollection *coll, Point pt) : ForwardFaceCollection(*coll), coll(coll), pt(pt) { }
+  bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     Point p = ForwardFaceCollection::FacePoint(face,point);
@@ -12194,6 +12381,7 @@ public:
     int pos = vertex_index(face,point);
     return array[pos];
   }
+  bool has_normal() const { return true; }
   Vector PointNormal(int face, int point) const
   {
     if (!ready) return Vector(0.0,0.0,0.0);
@@ -12205,6 +12393,7 @@ public:
   }
   float Attrib(int face, int point, int id) const { return 0.0; }
   int AttribI(int face, int point, int id) const { return 0; }
+  bool has_color() const { return true; }
   unsigned int Color(int face, int point) const
   {
     if (!ready) return 0xff000000;
@@ -12214,6 +12403,7 @@ public:
     int pos = vertex_index(face,point);
     return array[pos];
   }
+  bool has_texcoord() const { return true; }
   Point2d TexCoord(int face, int point) const
   {
     if (!ready) { Point2d p; p.x=0.0; p.y =0.0; return p; }
@@ -12572,6 +12762,15 @@ GameApi::BM GameApi::PolygonApi::p_texture(P p, int i)
        return coll->NumPoints(facenums[face]);
      else return 1;
    }
+
+  virtual bool has_normal() const { if (!coll) return false; return coll->has_normal(); }
+  virtual bool has_attrib() const { if (!coll) return false;return coll->has_attrib(); }
+  virtual bool has_color() const { if (!coll) return false; return coll->has_color(); }
+  virtual bool has_texcoord() const { if (!coll) return false; return coll->has_texcoord(); }
+  virtual bool has_skeleton() const { if (!coll) return false; return coll->has_skeleton(); }
+
+   
+   
    virtual Point FacePoint(int face, int point) const
    {
      if (face>=0 && face<facenums.size())
@@ -12711,6 +12910,13 @@ public:
     }
     return 0;
   }
+
+  virtual bool has_normal() const { if (!coll) return false; return coll->has_normal(); }
+  virtual bool has_attrib() const { if (!coll) return false;return coll->has_attrib(); }
+  virtual bool has_color() const { if (!coll) return false; return coll->has_color(); }
+  virtual bool has_texcoord() const { if (!coll) return false; return coll->has_texcoord(); }
+  virtual bool has_skeleton() const { if (!coll) return false; return coll->has_skeleton(); }
+
   
   virtual int NumPoints(int face) const
   {
@@ -12899,6 +13105,7 @@ public:
   virtual float TexCoord3(int face, int point) const { 
     return 0.0;
   }
+  bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const
   {
     std::pair<int,int> p = split_face(face);
@@ -13172,6 +13379,7 @@ public:
   {
     return std::make_tuple(int(p.x*100.0),int(p.y*100.0),int(p.z*100.0));
   }
+  bool has_normal() const { return coll->has_normal(); }
   virtual Vector PointNormal(int face, int point) const
   {
     Point p = coll->FacePoint(face,point);
@@ -14061,6 +14269,7 @@ class NormalToTexCoord : public ForwardFaceCollection
 {
 public:
   NormalToTexCoord(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  bool has_texcoord() const { return true; }
   Point2d TexCoord(int face, int point) const {
     Vector n = ForwardFaceCollection::PointNormal(face,point);
     Point2d p;
@@ -14552,6 +14761,13 @@ class ShadowMap3 : public FaceCollection
 {
 public:
   ShadowMap3(FaceCollection *objs, Point pos, int sx, int sy, FaceCollection *quad) : objs(objs), pos(pos), sx(sx), sy(sy), quad(quad) { }
+
+  virtual bool has_normal() const { if (!objs) return false; return objs->has_normal(); }
+  virtual bool has_attrib() const { if (!objs) return false;return objs->has_attrib(); }
+  virtual bool has_color() const { if (!objs) return false; return objs->has_color(); }
+  virtual bool has_texcoord() const { if (!objs) return false; return objs->has_texcoord(); }
+  virtual bool has_skeleton() const { if (!objs) return false; return objs->has_skeleton(); }
+
   virtual void Prepare() {objs->Prepare(); quad->Prepare(); }
   virtual int NumFaces() const { return objs->NumFaces(); }
   virtual int NumPoints(int face) const { return objs->NumPoints(face); }
@@ -14815,7 +15031,7 @@ public:
     e.async_load_url(url, homepage);
 #endif
     std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
-    if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
+    if (!ptr) { std::cout << "stlfacecollection async not ready!" << std::endl; return; }
     if (ptr->size()<5) { std::cout << "STLFaceCollection: async not found!" << std::endl; return; }
     if (ptr->operator[](0)=='s' && ptr->operator[](1)=='o' && ptr->operator[](2)=='l' && ptr->operator[](3)=='i' && ptr->operator[](4)=='d')
       {
@@ -14842,6 +15058,7 @@ public:
     float v1_z = get_float(pos+pos1+num+8);
     return Point(v1_x, v1_y, v1_z);
   }
+  bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     int pos = 80+4+((3*4*4)+2)*face;
@@ -14854,6 +15071,7 @@ public:
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
   virtual unsigned int Color(int face, int point) const { return 0xffffffff; }
+  bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const { 
     Point2d p;
     Point pp = FacePoint(face,point);
@@ -15413,7 +15631,7 @@ public:
     env.async_load_url(url, homepage);
 #endif
     std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
-    if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    if (!vec) { std::cout << "scenedesc async not ready!" << std::endl; return; }
     std::string code(vec->begin(), vec->end());
     std::stringstream ss(code);
     std::string url2;
@@ -15731,6 +15949,7 @@ public:
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
+  bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
     if (point==0||point==1) return li->LineColor(face,0);
@@ -15901,7 +16120,7 @@ public:
     env.async_load_url(url, homepage);
 #endif
     std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
-    if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    if (!vec) { std::cout << "meshanimfromurl async not ready!" << std::endl; return; }
     std::string s3(vec->begin(), vec->end());
     std::stringstream ss(s3);
     int line_num = 0;
@@ -16410,6 +16629,9 @@ public:
     float zz = (p1.z+p2.z+p3.z+p4.z)/4.0;
     return Point(xx,yy,zz);
   }
+
+
+  
   virtual int NumFaces() const { return face_index.size(); }
   virtual int NumPoints(int face) const {
     int s = face_index.size();
@@ -16425,6 +16647,7 @@ public:
     else return Point(0.0,0.0,0.0);
   }
    
+  bool has_normal() const { return coll->has_normal(); }
   virtual Vector PointNormal(int face, int point) const
   {
     int s = face_index.size();
@@ -16432,6 +16655,7 @@ public:
       return coll->PointNormal(face_index[face],point);
     else return Vector(0.0,0.0,1.0);
   }
+  bool has_attrib() const { return coll->has_attrib(); }
   virtual float Attrib(int face, int point, int id) const
   {
     int s = face_index.size();
@@ -16446,6 +16670,7 @@ public:
       return coll->AttribI(face_index[face],point,id);
     else return 0;
   }
+  bool has_color() const { return coll->has_color(); }
   virtual unsigned int Color(int face, int point) const
   {
     int s = face_index.size();
@@ -16623,6 +16848,8 @@ public:
   {
     return coll1->NumFaces() * coll2->NumFaces();
   }
+
+  
   virtual int NumPoints(int face) const
   {
     int f = face % coll2->NumFaces();
@@ -16672,12 +16899,14 @@ public:
   virtual Vector PointNormal(int face, int point) const { Vector v{0.0,0.0,0.0}; return v; }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
+  bool has_color() const { return coll2->has_color(); }
   virtual unsigned int Color(int face, int point) const
   {
     int f = face % coll2->NumFaces();
     unsigned int p = coll2->Color(f,point);
     return p;
   }
+  bool has_texcoord() const { return coll2->has_texcoord(); }
   virtual Point2d TexCoord(int face, int point) const
   {
     int f = face % coll2->NumFaces();
@@ -16750,11 +16979,14 @@ public:
   {
     return coll->FacePoint(vec[face],point);
   }
+  bool has_normal() const { return coll->has_normal(); }
   virtual Vector PointNormal(int face, int point) const
   {
     return coll->PointNormal(vec[face],point);
 
-  }
+  } 
+  bool has_attrib() const { return coll->has_attrib(); }
+
   virtual float Attrib(int face, int point, int id) const
   {
     return coll->Attrib(vec[face],point,id);
@@ -16764,11 +16996,14 @@ public:
   {
     return coll->AttribI(vec[face],point,id);
 
-  }
-  virtual unsigned int Color(int face, int point) const
+  } 
+  bool has_color() const { return coll->has_color(); }
+ virtual unsigned int Color(int face, int point) const
   {
     return coll->Color(vec[face],point);
   }
+  bool has_texcoord() const { return coll->has_texcoord(); }
+
   virtual Point2d TexCoord(int face, int point) const
   {
     return coll->TexCoord(vec[face],point);
@@ -16940,3 +17175,857 @@ private:
 
 };
 #endif
+
+class ConvexHull : public FaceCollection
+{
+public:
+  ConvexHull(PointsApiPoints *points) : points(points) { }
+
+  float signedVolume(Point a, Point b, Point c, Point d) const
+  {
+    Matrix m = { { a.x,a.y,a.z, 1.0,
+		 b.x,b.y,b.z, 1.0,
+		 c.x,c.y,c.z, 1.0,
+		   d.x,d.y,d.z, 1.0}  };
+    return Matrix::Determinant(m);
+  }
+  bool is_visible(Point a, Point b, Point c, Point p)  const
+  {
+    return signedVolume(a,b,c,p) > 0;
+  }
+  void calc_convex_hull()
+  {
+    H = std::vector<int>();
+    faces = std::vector<std::vector<int> >();
+    H.push_back(0);
+    H.push_back(1);
+    H.push_back(2);
+    faces.push_back(std::vector<int>());
+    faces[0].push_back(0);
+    faces[0].push_back(1);
+    faces[0].push_back(2);
+    int n = points->NumPoints();
+    std::cout << "ConvexHull::NumPoints n=" << n << std::endl;
+    for(int i=3;i<n;i++) {
+      Point pi = points->Pos(i);
+      visible = std::vector<int>();
+      int s = faces.size();
+      std::cout << "ConvexHull s=" << s << std::endl;
+      for(int j=0;j<s;j++) {
+	int num = faces[j].size();
+	std::cout << "NUM:" << num << std::endl;
+	if (num==0) continue;
+	float volume = 0.0;
+	if (num==3) {
+	  int i1 = faces[j][0];
+	  int i2 = faces[j][1];
+	  int i3 = faces[j][2];
+	  Point p1 = points->Pos(H[i1]);
+	  Point p2 = points->Pos(H[i2]);
+	  Point p3 = points->Pos(H[i3]);
+	  volume = signedVolume(p3,
+				p2,
+				p1,
+				pi);
+	  std::cout << "Volume: " << volume << "(" << i1 << ":" << p1 << "," << i2 << ":" << p2 << "," << i3 << ":" << p3 << "," << pi << std::endl;
+	} else if (num==4) {
+	  int i1 = faces[j][0];
+	  int i2 = faces[j][1];
+	  int i3 = faces[j][2];
+	  int i4 = faces[j][3];
+	  Point p1 = points->Pos(H[i1]);
+	  Point p2 = points->Pos(H[i2]);
+	  Point p3 = points->Pos(H[i3]);
+	  volume = signedVolume(p3,
+				p2,
+				p1,
+				pi);
+	  std::cout << "Volume: " << volume << "(" << i1 << ":" << p1 << "," << i2 << ":" << p2 << "," << i3 << ":" << p3 << "," << pi << std::endl;
+
+	  /*+
+	    signedVolume(points->Pos(H[i4]),
+			 points->Pos(H[i3]),
+			 points->Pos(H[i2]),
+			 pi);*/
+	}
+	if (volume <= 0.0) // TODO, IS THIS CORRECT?
+	  {
+	    visible.push_back(j);
+	  }
+      }
+      std::cout << "Visible size: " << visible.size() << std::endl;
+      if (visible.size()==0)
+	{
+	  continue;
+	}
+      else
+	{
+	  int s = visible.size();
+	  for(int k=0;k<s;k++) {
+	    int s2 = faces[visible[k]].size();
+	    for(int k2=0;k2<s2;k2++) {
+	      int p1 = faces[visible[k]][k2];
+	      int p2 = faces[visible[k]][(k2+1)%faces[visible[k]].size()];
+	      H.push_back(H[p1]);
+	      int ii1 = H.size()-1;
+	      H.push_back(H[p2]);
+	      int ii2 = H.size()-1;
+	      H.push_back(i);
+	      int ii3 = H.size()-1;
+	      faces.push_back(std::vector<int>());
+	      faces[faces.size()-1].push_back(ii1);
+	      faces[faces.size()-1].push_back(ii2);
+	      faces[faces.size()-1].push_back(ii3);
+	    }
+	  }
+	  int s3 = visible.size();
+	  for(int k3 = 0; k3<s3; k3++) {
+	    faces[visible[k3]].clear();
+	  }
+	}
+      
+      
+    }
+  }
+  void filter_empty() {
+    faces_optimized = std::vector<std::vector<int> >();
+    int s = faces.size();
+    for(int i=0;i<s;i++) {
+      if (faces[i].size()!=0) faces_optimized.push_back(faces[i]);
+    }
+  }
+
+  virtual void Prepare()
+  {
+    if (faces_optimized.size()==0) {
+    points->Prepare();
+    calc_convex_hull();
+    std::cout << "Convex_hull size: " << faces.size() << std::endl;
+    filter_empty();
+    std::cout << "Convex_hull size(optimized): " << faces_optimized.size() << std::endl;
+    }
+  }
+  virtual int NumFaces() const { return faces_optimized.size(); }
+  virtual int NumPoints(int face) const
+  {
+    std::cout << "NumPoints:" << faces_optimized[face].size() << std::endl;
+    return faces_optimized[face].size();
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    std::cout << face << " " << point << "::" << faces_optimized[face][point] << "::" << H[faces_optimized[face][point]] << "::" << points->Pos(H[faces_optimized[face][point]]) << std::endl;
+    return points->Pos(H[faces_optimized[face][point]]);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Point p1 = FacePoint(face, 0);
+    Point p2 = FacePoint(face, 1);
+    Point p3 = FacePoint(face, 2);
+    Vector v = Vector::CrossProduct(p2-p1,p3-p1);
+    return v / v.Dist();
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return 0xffffffff;
+    return points->Color(H[faces_optimized[face][point]]);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    Point2d p;
+    p.x = 0.0;
+    p.y = 0.0;
+    return p;
+  }
+  virtual float TexCoord3(int face, int point) const { return 0.0; }  
+private:
+  std::vector<int> H;
+  std::vector<std::vector<int> > faces;
+  std::vector<std::vector<int> > faces_optimized;
+  std::vector<int> visible;
+  std::vector<int> border_edge;
+  Point pi;
+  PointsApiPoints *points;
+};
+
+GameApi::P GameApi::PolygonApi::convex_hull(PTS pts)
+{
+  PointsApiPoints *pts2 = find_pointsapi_points(e, pts);
+  return add_polygon2(e, new ConvexHull(pts2),1);
+}
+
+
+
+class Att : public Attach
+{
+public:
+  Att(FaceCollection *coll, LineCollection *lines) : coll(coll), lines(lines) { }
+  void Prepare() {
+    coll->Prepare();
+    lines->Prepare();
+  }
+  int Attached(int face, int point) const
+  {
+    int s = lines->NumLines();
+    Point p1a = coll->FacePoint(face,0);
+    Point p2a = coll->FacePoint(face,1);
+    Point p3a = coll->FacePoint(face,2);
+    Point p4a;
+    if (coll->NumPoints(face)==3) { Vector p3a_ = Vector(p1a+p2a+p3a); p3a_/=3; p4a = Point(p3a_); } else
+    p4a = coll->FacePoint(face,3);
+    Vector p2 = Vector(p1a+p2a+p3a+p4a);
+    p2/=4.0;
+    Point p = p2;
+    
+    float min_dist = 99999999.0;
+    int min_item = 0;
+    for(int i=0;i<s;i++) {
+      //std::cout << "I=" << i << std::endl;
+      Point p1 = lines->LinePoint(i, 0);
+      Point p2 = lines->LinePoint(i, 1);
+      LineProperties lp(p1,p2);
+
+      Point mp = lp.MiddlePoint(0.5);
+      float dd = (p2-p1).Dist()/2;
+      if ((p-mp).Dist()>dd+lp.Dist(p)) continue;
+      
+#if 0      
+      Vector v = p1 - p;
+      float d2 = v.Dist();
+      //std::cout << "D2: " << d2 << " " << min_dist << std::endl;
+      if (d2<min_dist) { min_dist = d2; min_item=i; }
+      Vector v_ = p2 - p;
+      float d2_ = v_.Dist();
+      //std::cout << "D2_: " << d2_ << " " << min_dist << std::endl;
+      if (d2_<min_dist) { min_dist = d2_; min_item=i; }
+#endif
+      
+      float d = lp.Dist(p);
+      //std::cout << "D: " << d << " " << min_dist << std::endl;
+      if (d<min_dist) { min_dist = d; min_item = i; }
+    }
+    return min_item;
+  }
+private:
+  FaceCollection *coll;
+  LineCollection *lines;
+};
+
+class AttCache : public Attach
+{
+public:
+  AttCache(Attach *next, FaceCollection *coll) : next(next), coll(coll) { }
+  virtual void Prepare() {
+    next->Prepare();
+    coll->Prepare();
+
+    int s = coll->NumFaces();
+    for(int i=0;i<s;i++) {
+      std::vector<int> vec2;
+      int sp = coll->NumPoints(i);
+      for(int j=0;j<sp;j++) {
+	vec2.push_back(next->Attached(i,j));
+      }
+      vec.push_back(vec2);
+    }
+  }
+  virtual int Attached(int face, int point) const
+  {
+    return vec[face][point];
+  }
+private:
+  Attach *next;
+  FaceCollection *coll;
+  std::vector<std::vector<int> > vec;
+};
+
+GameApi::ATT GameApi::PolygonApi::find_attach2(P p, LI li)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  LineCollection *lines = find_line_array(e,li);
+
+  return add_attach(e, new Att(coll,lines));
+}
+// NOTE, find_attach and attach_cache need to have the same P instance.
+GameApi::ATT GameApi::PolygonApi::attach_cache(ATT a, P p)
+{
+  Attach *att = find_attach(e, a);
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_attach(e, new AttCache(att, coll));
+}
+
+
+class SplitAttachFaces : public FaceCollection
+{
+public:
+  SplitAttachFaces(FaceCollection *coll, Attach *att, int max_attach, int num, bool &prepared) : coll(coll), att(att), max_attach(max_attach), num(num), prepared(prepared) { }
+
+  virtual void Prepare() {
+    if (!prepared) { coll->Prepare(); att->Prepare(); }
+    prepared=true;
+    
+    int s = coll->NumFaces();
+    for(int i=0;i<s;i++) {
+      int a = att->Attached(i,0);
+      if (a==num) { facemap.push_back(i); }
+    }
+
+
+  }
+  virtual int NumFaces() const {
+    int s = coll->NumFaces();
+    int count=0;
+    for(int i=0;i<s;i++) {
+      int a = att->Attached(i,0);
+      if (a==num) count++;
+    }
+    return count;
+  }
+  virtual int NumPoints(int face) const {
+    if (facemap.size())
+      return coll->NumPoints(facemap[face]);
+    else return 0;
+  }
+
+  virtual bool has_normal() const { if (!coll||!facemap.size()) return false; return coll->has_normal(); }
+  virtual bool has_attrib() const { if (!coll||!facemap.size()) return false;return coll->has_attrib(); }
+  virtual bool has_color() const { if (!coll||!facemap.size()) return false; return coll->has_color(); }
+  virtual bool has_texcoord() const { if (!coll||!facemap.size()) return false; return coll->has_texcoord(); }
+  virtual bool has_skeleton() const { if (!coll||!facemap.size()) return false; return coll->has_skeleton(); }
+
+  virtual Point FacePoint(int face, int point) const
+  {
+    if (facemap.size())
+    return coll->FacePoint(facemap[face],point);
+    return Point(0.0,0.0,0.0);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    if (facemap.size())
+    return coll->PointNormal(facemap[face], point);
+    return Vector(0.0,0.0,0.0);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    if (facemap.size())    
+    return coll->Attrib(facemap[face],point,id);
+    return 0.0;
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    if (facemap.size())
+    return coll->AttribI(facemap[face],point,id);
+    return 0;
+  }
+  virtual unsigned int Color(int face, int point) const
+  { 
+    if (facemap.size())
+      return coll->Color(facemap[face],point);
+    return 0x000000;
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    if (facemap.size())
+    return coll->TexCoord(facemap[face],point);
+    Point2d p;
+    p.x = 0.0;
+    p.y = 0.0;
+    return p;
+  }
+  virtual float TexCoord3(int face, int point) const {
+ 
+    if (facemap.size())
+      return coll->TexCoord3(facemap[face],point);
+    return 0.0;
+  }
+  
+private:
+  FaceCollection *coll;
+  Attach *att;
+  int num;
+  int max_attach;
+  std::vector<int> facemap;
+  bool &prepared;
+};
+GameApi::P split_attach_faces(GameApi::Env &e, GameApi::P p, GameApi::ATT att, int max_attach, int num, bool &prepared)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  Attach *att2 = find_attach(e, att);
+  return add_polygon2(e, new SplitAttachFaces(coll, att2, max_attach, num, prepared),1);
+}
+
+GameApi::ARR GameApi::PolygonApi::split_faces(P p, ATT att, int max_attach) // max_attach is number of lines in LI
+{
+  std::vector<GameApi::P> vec;
+  int s = max_attach;
+  ArrayType *array = new ArrayType;
+  array->type =0;
+  bool *g_prepared = new bool;
+  *g_prepared = false;
+  for(int i=0;i<s;i++)
+    {
+      GameApi::P pp = split_attach_faces(e,p, att, max_attach, i, *g_prepared);
+      array->vec.push_back(pp.id);
+    }
+  GameApi::P pp2 = split_attach_faces(e,p,att,max_attach,-1,*g_prepared);
+  array->vec.push_back(pp2.id);
+  return add_array(e, array);
+}
+
+class Pose2 : public FaceCollection
+{
+public:
+  Pose2(GameApi::Env &env, GameApi::EveryApi &ev, MatrixArray *mat, std::vector<GameApi::P> vec, int i) : env(env), ev(ev), mat(mat), vec(vec),i(i) { }
+  void Prepare() {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	FaceCollection *coll = find_facecoll(env,vec[i]);
+	coll->Prepare();
+      }
+    mat->Prepare();
+    
+    GameApi::P p = vec[i];
+    Matrix mm = mat->Index(i);
+    GameApi::M m = add_matrix2(env,mm);
+    GameApi::P p2 = ev.polygon_api.matrix44(p, m);
+    res = p2;
+  }
+
+  virtual bool has_normal() const {
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return false; return coll->has_normal();
+  }
+  virtual bool has_attrib() const {
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return false; return coll->has_attrib();
+  }
+  virtual bool has_color() const {
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return false; return coll->has_color();
+  }
+  virtual bool has_texcoord() const {
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return false; return coll->has_texcoord();
+  }
+  virtual bool has_skeleton() const {
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return false; return coll->has_skeleton();
+  }
+
+  
+  virtual int NumFaces() const {
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->NumFaces();
+  }
+  virtual int NumPoints(int face) const
+  {
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->NumPoints(face);
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->FacePoint(face,point);
+  }
+  
+  virtual Vector PointNormal(int face, int point) const
+  {
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->PointNormal(face,point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+   FaceCollection *coll = find_facecoll(env,res);
+   return coll->Attrib(face,point,id);
+   }
+  virtual int AttribI(int face, int point, int id) const
+  {
+   FaceCollection *coll = find_facecoll(env,res);
+   return coll->AttribI(face,point,id);
+   }
+  virtual unsigned int Color(int face, int point) const
+  {
+   FaceCollection *coll = find_facecoll(env,res);
+    return coll->Color(face,point);
+ 
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+   FaceCollection *coll = find_facecoll(env,res);
+    return coll->TexCoord(face,point);
+   }
+  virtual float TexCoord3(int face, int point) const {
+   FaceCollection *coll = find_facecoll(env,res);
+    return coll->TexCoord3(face,point);
+  }
+
+  
+private:
+  int i;
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MatrixArray *mat;
+  std::vector<GameApi::P> vec;
+
+  GameApi::P res;
+};
+
+std::vector<GameApi::P> GameApi::PolygonApi::orig_pose2(EveryApi &ev, std::vector<P> vec, LI li, int li_size)
+{
+  GameApi::MS ms_0 = ev.matrices_api.from_lines_3d(li);
+  GameApi::MS ms_inv = ev.matrices_api.inverse_ms(ms_0);
+  MatrixArray *mat = find_matrix_array(e, ms_inv);
+    int s = vec.size();
+    std::vector<P> res;
+    for(int i=0;i<s;i++) {
+      GameApi::P p = add_polygon2(e, new Pose2(e,ev,mat,vec,i),1);
+      res.push_back(p);
+    }
+  return res;
+}
+
+std::vector<GameApi::P> GameApi::PolygonApi::orig_pose(EveryApi &ev, P p, LI li, int li_size)
+{
+  GameApi::MS ms_0 = ev.matrices_api.from_lines_3d(li);
+  GameApi::MS ms_inv = ev.matrices_api.inverse_ms(ms_0);
+  MatrixArray *mat = find_matrix_array(e, ms_inv);
+  mat->Prepare();
+  
+  
+  GameApi::ATT att = find_attach2(p, li);
+  GameApi::ATT att2 = attach_cache(att,p);
+  GameApi::ARR arr = split_faces(p, att2, li_size);
+  ArrayType *arr2 = find_array(e, arr);
+  int s3 = arr2->vec.size();
+  std::vector<GameApi::P> split; 
+  for(int i3=0;i3<s3;i3++) {
+    GameApi::P p;
+    p.id = arr2->vec[i3];
+    split.push_back(p);
+  }
+  int s = split.size();
+  std::vector<GameApi::P> res;
+  for(int i=0;i<s;i++) {
+    GameApi::P p = split[i];
+    Matrix mm = i!=s-1?mat->Index(i):Matrix::Identity();
+    GameApi::M m = add_matrix2(e,mm);
+    GameApi::P p2 = matrix44(p, m);
+    res.push_back(p2);
+  }
+  return res;
+}
+GameApi::MS ms_array(GameApi::Env &e, std::vector<Matrix> vec);
+
+
+class NewPose : public MatrixArray
+{
+public:
+  NewPose(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LI li_orig, GameApi::LI li) : env(env), ev(ev), li_orig(li_orig), li(li) { }
+  virtual void Prepare() {
+    GameApi::MS ms = ev.matrices_api.from_lines_3d(li);
+    MatrixArray *arr = find_matrix_array(env,ms);
+    arr->Prepare();
+    std::vector<Matrix> vec;
+    for(int i=0;i<arr->Size();i++) { vec.push_back(arr->Index(i)); }
+    vec.push_back(Matrix::Identity());
+    res = ms_array(env,vec); //ev.matrices_api.mult_array(ms_inv, ms);
+
+    MatrixArray *mat = find_matrix_array(env,res);
+    mat->Prepare();
+    
+  }
+  virtual void HandleEvent(MainLoopEvent &event) {
+    MatrixArray *arr = find_matrix_array(env,res);
+    arr->HandleEvent(event);
+  }
+  virtual bool Update(MainLoopEnv &e) {
+    MatrixArray *arr = find_matrix_array(env,res);
+    return arr->Update(e);
+
+
+  }
+  virtual int Size() const
+  {
+    MatrixArray *arr = find_matrix_array(env,res);
+    return arr->Size();
+  }
+  virtual Matrix Index(int i) const
+  {
+    MatrixArray *arr = find_matrix_array(env,res);
+    return arr->Index(i);
+
+  }
+  virtual unsigned int Color(int i) const {
+    MatrixArray *arr = find_matrix_array(env,res);
+    return arr->Color(i);
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::LI li_orig;
+  GameApi::LI li;
+
+  GameApi::MS res;
+};
+
+GameApi::MS GameApi::PolygonApi::new_pose(EveryApi &ev, LI li_orig, LI li)
+{
+  //GameApi::MS ms_0 = ev.matrices_api.from_lines_3d(li_orig);
+  //GameApi::MS ms_inv = ev.matrices_api.inverse_ms(ms_0);
+  return add_matrix_array(e, new NewPose(e,ev,li_orig,li));
+}
+
+
+GameApi::MS GameApi::PolygonApi::identity_pose(int li_size)
+{
+  std::vector<Matrix> vec;
+  for(int i=0;i<li_size;i++) vec.push_back(Matrix::Identity());
+  return ms_array(e,vec);
+}
+
+struct Rec
+{
+  int key;
+  float duration;
+  int start_index;
+  int end_index;
+};
+
+class SkeletalAnim22 : public MainLoopItem
+{
+public:
+  SkeletalAnim22(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<GameApi::P> orig, std::vector<GameApi::MS> new_matrices, std::string url, std::string homepage, GameApi::P mesh, Material *mat) : env(env), ev(ev), orig(orig), new_matrices(new_matrices), url(url), homepage(homepage), mesh(mesh), mat(mat) { firsttime = true; }
+  void Prepare() {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    if (!vec) { std::cout << "async not ready!(SkeletalAnim22)" << std::endl; return; }
+    std::string code(vec->begin(), vec->end());
+    std::stringstream ss(code);
+    std::string line;
+    while(std::getline(ss,line)) {
+      std::string word;
+      std::stringstream ss2(line);
+      ss2>>word;
+      if (word=="key") {
+	ss2 >> current_key;
+      }
+      if (word=="item") {
+	Rec r;
+	r.key = current_key;
+	current_key = -1;
+	ss2 >> r.duration;
+	ss2 >> r.start_index;
+	ss2 >> r.end_index;
+	items.push_back(r);
+      }
+
+    }
+
+
+      int s4 = orig.size();
+      for(int i=0;i<s4;i++) {
+	FaceCollection *coll = find_facecoll(env, orig[i]);
+	coll->Prepare();
+      }
+      FaceCollection *coll2 = find_facecoll(env, mesh);
+      coll2->Prepare();
+
+
+      int s = orig.size();
+      for(int i=0;i<s;i++) {
+	GameApi::ML ml = mat->mat(orig[i].id);
+	orig2.push_back( ml );
+	MainLoopItem *item = find_main_loop(env,ml);
+	item->Prepare();
+      }
+      mesh2 = mat->mat(mesh.id);
+
+    
+
+  }
+
+  void logoexecute() {
+    mat->logoexecute();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    //std::cout << "SkeletalAnim44::execute() start" << std::endl;
+
+    if (firsttime) {
+    firsttime = false;
+    }
+    if (current_item!=-1) {
+      int s = items.size();
+      float t = ev.mainloop_api.get_time()-current_item_starttime;
+      for(int i=current_item;i<s;i++) {
+	if (items[i].key!=-1 && i!=current_item) { current_item = -1; break; }
+	if (t>=0 && t<items[i].duration) {
+	  float d = t/items[i].duration; // 0..1
+	  int start = items[i].start_index;
+	  int end = items[i].end_index;
+	  if (start<0 || start>=new_matrices.size())
+	    {
+	      std::cout << "START BROKEN!" << std::endl;
+	      start =0;
+	    }
+	  if (end<0 || end>=new_matrices.size())
+	    {
+	      std::cout << "END BROKEN!" << std::endl;
+	      end=0;
+	    }
+	  if (new_matrices.size()==0) {
+	    std::cout << "Matrices_size==0" << std::endl;
+	    return;
+	  }
+	  GameApi::MS start_ms = new_matrices[start];
+	  GameApi::MS end_ms = new_matrices[end];
+	  //std::cout << "POs:" << d << std::endl;
+	  GameApi::MS middle_ms = ev.matrices_api.interpolate(start_ms, end_ms, d);
+	  MatrixArray *arr = find_matrix_array(env, middle_ms);
+	  arr->Prepare();
+	  arr->Update(e);
+	  int s3 = arr->Size();
+	  int s4 = orig.size();
+	  int s2 = std::min(s4,s3);
+	  Matrix m2 = e.in_MV;
+	  for(int i2=0;i2<s2;i2++) {
+	    Matrix m = arr->Index(i2) * m2;
+	    GameApi::ML ml = orig2[i2];
+	    MainLoopItem *item = find_main_loop(env,ml);
+	    MainLoopEnv ee = e;
+	    ee.in_MV = m;
+	    ee.env = m;
+	    ee.has_inverse = true;
+	    ee.in_iMV = Matrix::Transpose(Matrix::Inverse(m2)); // note, this is m2, not m.
+	    item->execute(ee);
+	  }
+	  return;
+	}
+	t-=items[i].duration;
+      }
+    }
+    MainLoopItem *item = find_main_loop(env,mesh2);
+    item->execute(e);
+    //std::cout << "SkeletalAnim44::execute() end" << std::endl;
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    int s = items.size();
+    for(int i=0;i<s;i++) {
+      if (items[i].key==e.ch && e.type == 0x300 && e.ch!=-1 && e.ch!=key_pressed) {
+	current_item = i;
+	current_item_starttime = ev.mainloop_api.get_time();
+	key_pressed = e.ch;
+      }
+      if (e.type==0x301 && e.ch==key_pressed) key_pressed = -1;
+      
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    int s = orig2.size();
+    std::vector<int> res;
+    for(int i=0;i<s;i++)
+      {
+	MainLoopItem *item = find_main_loop(env, orig2[i]);
+	std::vector<int> sh = item->shader_id();
+	int s2 = sh.size();
+	for(int j=0;j<s2;j++) res.push_back(sh[j]);
+      }
+    MainLoopItem *item = find_main_loop(env,mesh2);
+    std::vector<int> sh2 = item->shader_id();
+	int s2 = sh2.size();
+	for(int j=0;j<s2;j++) res.push_back(sh2[j]);
+    return res;
+  }
+  
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::vector<GameApi::P> orig;
+  std::vector<GameApi::ML> orig2;
+  GameApi::P mesh;
+  GameApi::ML mesh2;
+  std::vector<GameApi::MS> new_matrices;
+  std::string url;
+  std::string homepage;
+  int current_key;
+  std::vector<Rec> items;
+  int current_item = -1;
+  float current_item_starttime = 0.0;
+  bool firsttime;
+  Material *mat;
+  int key_pressed = -1;
+  GameApi::MS inverse_mat;
+};
+
+class MatrixElem44 : public ForwardFaceCollection
+{
+public:
+  MatrixElem44(FaceCollection &next, Matrix m) : ForwardFaceCollection(next), next(&next), m(m) {  }
+  virtual void Prepare() { next->Prepare(); }
+  virtual int NumFaces() const { return next->NumFaces(); }
+  virtual int NumPoints(int face) const { return next->NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const
+  {
+    Point p = next->FacePoint(face,point);
+    return p*m; 
+  }
+  virtual Point EndFacePoint(int face, int point) const
+  {
+    Point p = next->EndFacePoint(face,point);
+    return p*m;  
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Vector v = next->PointNormal(face,point);
+    return v;
+  }
+private:
+  FaceCollection *next;
+  Matrix m;
+};
+GameApi::P GameApi::PolygonApi::matrix44(P orig, M mat)
+{
+    Matrix mat2 = find_matrix(e, mat);
+  //::EnvImpl *env = ::EnvImpl::Environment(&e); 
+  FaceCollection *c = find_facecoll(e, orig);
+  //BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
+  //env->deletes.push_back(std::shared_ptr<void>(convert));  
+  if (!c) { std::cout << "dynamic cast failed" << std::endl; }
+  FaceCollection *coll = new MatrixElem44(*c, mat2);
+  return add_polygon2(e, coll,1);
+
+}
+
+
+GameApi::ML GameApi::PolygonApi::ske_anim2(EveryApi &ev, std::vector<P> mesh, LI orig_pose2_, int li_size, std::string url, std::vector<LI> new_poses, MT mat)
+{
+  Material *mat2 = find_material(e,mat);
+  std::vector<GameApi::P> orig = orig_pose2(ev, mesh, orig_pose2_, li_size);
+  std::vector<MS> new_matrices;
+  int s = new_poses.size();
+  if (s!=mesh.size()) { std::cout << "ske_anim2::[LI] size: " << new_poses.size() << " but meshes: " << mesh.size() << std::endl; }
+  for(int i=0;i<s;i++) {
+    new_matrices.push_back(new_pose(ev, orig_pose2_, new_poses[i]));
+  }
+  P mesh2 = ev.polygon_api.or_array2(mesh);
+  return add_main_loop(e, new SkeletalAnim22(e, ev, orig, new_matrices, url, gameapi_homepageurl, mesh2,mat2));
+
+}
+
+GameApi::ML GameApi::PolygonApi::ske_anim(EveryApi &ev, P mesh, LI orig_pose2, int li_size, std::string url, std::vector<LI> new_poses, MT mat)
+{
+  Material *mat2 = find_material(e,mat);
+  std::vector<GameApi::P> orig = orig_pose(ev, mesh, orig_pose2, li_size);
+  std::vector<MS> new_matrices;
+  int s = new_poses.size();
+  for(int i=0;i<s;i++) {
+    new_matrices.push_back(new_pose(ev, orig_pose2, new_poses[i]));
+  }
+  return add_main_loop(e, new SkeletalAnim22(e, ev, orig, new_matrices, url, gameapi_homepageurl, mesh,mat2));
+}

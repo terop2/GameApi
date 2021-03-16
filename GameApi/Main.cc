@@ -64,6 +64,12 @@
 //#define OPENGL_ES 1
 #endif
 
+//#define WAYLAND 1
+
+#ifdef WAYLAND
+#define OPENGL_ES 1
+#endif
+
 
 //#include <SDL.h>
 //#include <SDL_opengl.h>
@@ -102,11 +108,23 @@
 
 #include "GameApi_low.hh"
 
+#ifdef WAYLAND
+#include <wayland-client.h>
+#endif
+
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image.h"
 #include "stb_image_write.h"
 
+
+struct wl_display;
+struct wl_surface;
+struct wl_shell_surface;
+
+wl_display *g_wl_display = 0; 
+wl_surface *g_wl_surface = 0;
+wl_shell_surface *g_wl_shell_surface = 0;
 
 extern bool g_vr_enable;
 //#pragma comment (lib, "glew32s.lib") 
@@ -405,7 +423,7 @@ c  for(int i=0;i<size1&&!exit2;i+=100)
   delete [] audio_buffer;
   }
 
-
+  pthread_exit(0);
   return 0;
 
 }
@@ -415,6 +433,10 @@ c  for(int i=0;i<size1&&!exit2;i+=100)
 Low_SDL_GLContext g_context;
 
 extern std::string g_gpu_vendor;
+
+int g_display_width = 1200;
+int g_display_height = 1024;
+
 
 void initialize_low(int flags);
 
@@ -447,8 +469,19 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   g_low->sdl->SDL_SetHint("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS","1");
   g_low->sdl->SDL_Init(Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK);
 
+  Low_SDL_DisplayMode current;
+  g_low->sdl->SDL_GetCurrentDisplayMode(0, &current);
+  g_display_width = current.w;
+  g_display_height = current.h;
+  std::cout << "DISPLAY SIZE:" << g_display_width << " " << g_display_height << std::endl;
+  
+  if (screenx ==-1) { scr_x = g_display_width; screenx = g_display_width; }
+  if (screeny ==-1) { scr_y = g_display_height; screeny = g_display_height; }
+  
     std::cout << g_low->sdl->SDL_GetError() << std::endl;
     std::cout << "NumJoysticks:"  << g_low->sdl->SDL_NumJoysticks() << std::endl;
+
+    std::cout << "TEST:" << std::endl;
     
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_RED_SIZE, 8);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_GREEN_SIZE, 8);
@@ -511,6 +544,16 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     std::cout << g_low->sdl->SDL_GetError() << std::endl;
   }
 
+#ifdef WAYLAND
+  Low_SDL_SysWMinfo info;
+  if (g_low->sdl->SDL_GetWindowWMInfo(sdl_window, &info))
+    {
+      g_wl_display = info.display;
+      g_wl_surface = info.surface;
+      g_wl_shell_surface = info.shell_surface;
+    }
+#endif
+  
 #ifdef USE_GLEW
   glewExperimental=true;
   GLenum err = glewInit();

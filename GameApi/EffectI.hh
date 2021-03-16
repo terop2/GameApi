@@ -54,6 +54,13 @@ public:
   virtual void Prepare()=0;
   virtual int NumFaces() const = 0;
   virtual int NumPoints(int face) const=0;
+
+  virtual bool has_normal() const { return false; }
+  virtual bool has_attrib() const { return false; }
+  virtual bool has_color() const { return false; }
+  virtual bool has_texcoord() const { return false; }
+  virtual bool has_skeleton() const { return false; }
+  
   virtual Point FacePoint(int face, int point) const=0;
   virtual Vector PointNormal(int face, int point) const=0;
   virtual float Attrib(int face, int point, int id) const=0;
@@ -61,6 +68,8 @@ public:
   virtual unsigned int Color(int face, int point) const=0;
   virtual Point2d TexCoord(int face, int point) const=0;
   virtual float TexCoord3(int face, int point) const { return 0.0; }
+  virtual VEC4 Joints(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+  virtual VEC4 Weights(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
   
   virtual int NumObjects() const {
     //std::cout << "Warning: FaceCollection::NumObjects() called" << std::endl;
@@ -101,6 +110,15 @@ public:
   virtual Coords Coordinates() const=0;
 #endif
 };
+
+
+class Attach
+{
+public:
+  virtual void Prepare()=0;
+  virtual int Attached(int face, int point) const=0;
+};
+
 
 // Face interpolation
 Point FaceCollection_FacePoint(FaceCollection *coll, int face, float u, float v);
