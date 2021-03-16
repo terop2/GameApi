@@ -1,2 +1,2 @@
-export PATH=/home/terop/emscripten/emsdk:/home/terop/emscripten/emsdk/node/8.9.1_64bit/bin:/home/terop/emscripten/emsdk/upstream/emscripten:$PATH
+export PATH=/home/terop/cvs/emscripten/emsdk:/home/terop/cvs/emscripten/emsdk/node/14.15.5_64bit/bin:/home/terop/cvs/emscripten/emsdk/upstream/emscripten:$PATH
 

@@ -15,6 +15,7 @@ put web_page_nothreads.html
 put web_page_nothreads.data
 put web_page_nothreads.js
 put web_page_nothreads.wasm
+put web_page_nothread.html.mem
 put web_page_lowmem_nothreads.data
 put web_page_lowmem_nothreads.js
 put web_page_lowmem_nothreads.wasm

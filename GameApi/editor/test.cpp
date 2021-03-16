@@ -16,7 +16,15 @@
 #include <iostream>
 #include <algorithm>
 #include <pthread.h>
+#include <stdio.h>
+#include <string.h>
 using namespace GameApi;
+
+#define WAYLAND 1
+
+#ifdef WAYLAND
+#include <wayland-client.h>
+#endif
 
 #ifdef LINUX
 extern "C" void _udev_device_get_action() { }
@@ -24,7 +32,21 @@ extern "C" void _udev_device_get_action() { }
 
 extern int g_event_screen_x;
 extern int g_event_screen_y;
+extern int g_display_width;
+extern int g_display_height;
+extern int g_window_pos_x;
+extern int g_window_pos_y;
 extern std::string gameapi_homepageurl;
+extern int g_has_wayland;
+
+struct wl_display;
+struct wl_surface;
+struct wl_shell_surface;
+
+extern wl_display *g_wl_display; 
+extern wl_surface *g_wl_surface;
+extern wl_shell_surface *g_wl_shell_surface;
+
 
 void InstallProgress(int num, std::string label, int max=15);
 void ProgressBar(int num, int val, int max, std::string label);
@@ -278,6 +300,7 @@ struct Envi {
   //W test1;
   WM mod;
   W canvas, canvas_area, scrollbar_x, scrollbar_y;
+  W window_decoration;
   std::vector<W> menus;
   int opened_menu_num;
   bool state;
@@ -293,6 +316,10 @@ struct Envi {
   std::string filename;
   std::vector<DllData> dlls;
   bool logo_shown = false;
+  bool has_wayland = false;
+  int extra_left, extra_top;
+  int old_window_pos_x=0, old_window_pos_y=0;
+  int screen_x, screen_y;
 };
 void add_to_canvas(GuiApi &gui, W canvas, W item)
 {
@@ -490,8 +517,33 @@ void iter(void *arg)
 
   env->ev->shader_api.use(env->sh);
 
+  if (env->has_wayland) {
+    env->ev->mainloop_api.clear(0x00000000);
+  } else {
     env->ev->mainloop_api.clear(0xff000000);
+  }
+
+  if (env->old_window_pos_x != g_window_pos_x || env->old_window_pos_y != g_window_pos_y) {
+    int x = g_window_pos_x;
+    int y = g_window_pos_y;
+    
+    env->gui->set_pos(env->window_decoration, x,y);
+    env->gui->set_pos(env->line, x+140-5+env->extra_left,y+env->extra_top);
+    env->gui->set_pos(env->canvas_area, x+140+env->extra_left, y+env->extra_top);
+    env->gui->set_pos(env->scrollbar_x, x+140+env->extra_left, y+env->extra_top+env->screen_y-20);
+    env->gui->set_pos(env->scroll_area, x+env->extra_left, y+env->extra_top);
+    
+#ifdef WAYLAND
+    //wl_surface_damage_buffer(g_wl_surface, 0,0,g_display_width, g_display_height);
+    //wl_shell_surface_set_transient(g_wl_shell_surface, g_wl_surface, x,y, 0);
+    //wl_surface_commit(g_wl_surface);
+#endif
+  }
+  
     //env->ev->mainloop_api.clear_3d();
+    if (env->has_wayland) {
+      env->gui->render(env->window_decoration);
+    }
     
     //env->gui->render(env->txt2);
     env->gui->render(env->line);
@@ -537,6 +589,8 @@ void iter(void *arg)
     if (env->editor_visible)
       env->gui->render(env->editor);
 
+
+    
     
     //env->ev->mainloop_api.fpscounter();
     // swapbuffers
@@ -1427,19 +1481,21 @@ void iter(void *arg)
 		  }
 	      }
 	  }
+
+	PT cursor_pos = e.cursor_pos;
 	
-	env->gui->update(env->line, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	env->gui->update(env->line, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	//env->gui->update(env->txt, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	if (env->display_visible)
 	  {
-	    env->gui->update(env->display, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	    env->gui->update(env->display, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	  }
 	if (env->editor_visible)
-	  env->gui->update(env->editor, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	  env->gui->update(env->editor, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	if (env->popup_visible)
-	  env->gui->update(env->popup_dialog, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	  env->gui->update(env->popup_dialog, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	if (e.button == 0 && env->popup_visible) { 
-	  PT pos = e.cursor_pos;
+	  PT pos = cursor_pos;
 	  int x = env->ev->point_api.pt_x(pos);
 	  int y = env->ev->point_api.pt_y(pos);
 	  int px = env->gui->pos_x(env->popup_dialog);
@@ -1459,14 +1515,14 @@ void iter(void *arg)
 	}
 
 	//env->gui->update(env->txt2, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	env->gui->update(env->scroll_area, e.cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
+	env->gui->update(env->scroll_area, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
 	//env->gui->update(env->wave, e.cursor_pos, e.button);
 	//env->gui->update(env->gameapi, e.cursor_pos, e.button);
 	//env->gui->update(env->test1, e.cursor_pos, e.button);
-	env->gui->update(env->canvas_area, e.cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
-	env->gui->update(env->scrollbar_x, e.cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
+	env->gui->update(env->canvas_area, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
+	env->gui->update(env->scrollbar_x, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
 	//env->gui->update(env->scrollbar_y, e.cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
-	env->gui->update(env->list_tooltips, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	env->gui->update(env->list_tooltips, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	
 	//int s4 = env->connect_links.size();
 	//for(int i4 = 0;i4<s4;i4++)
@@ -1478,12 +1534,16 @@ void iter(void *arg)
 	
 	if (env->insert_ongoing)
 	  {
-	    env->gui->update(env->insert_widget, e.cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
+	    env->gui->update(env->insert_widget, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
 	  }
 	if (env->connect_ongoing)
 	  {
-	    env->gui->update(env->connect_widget, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	    env->gui->update(env->connect_line, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	    env->gui->update(env->connect_widget, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	    env->gui->update(env->connect_line, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	  }
+	if (env->has_wayland)
+	  {
+	    env->gui->update(env->window_decoration, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	  }
 	
 	if (e.button==0)
@@ -1957,10 +2017,50 @@ int main(int argc, char *argv[]) {
 
   WM mod = ev.mod_api.load(filename);
 
+  bool has_wayland = false;
+  
+  const char *ee = getenv("XDG_SESSION_TYPE");
+  std::cout << "SESSION TYPE:" << ee << std::endl;
+  const char *ee2 = getenv("SDL_VIDEODRIVER");
+  bool has_wayland1 = false;
+  bool has_wayland2 = false;
+  if (ee2 && !strcmp(ee2,"wayland")) {
+    has_wayland1 = true;
+  }
+  if (ee && !strcmp(ee,"wayland")) {
+    has_wayland2 = true;
+  }
+  has_wayland = has_wayland1 && has_wayland2;
+  g_has_wayland = has_wayland;
+  int extra_width = 0;
+  int extra_height = 0;
+  int extra_top = 0;
+  int extra_left = 0;
+  
+  if (has_wayland) {
+    extra_width = 0;
+    extra_height = 10+30;
+    extra_top = 30+5;
+    extra_left = 5;
+  }
+
+  int display_width = screen_x+extra_width;
+  int display_height = screen_y+extra_height;
+  if (has_wayland)
+    {
+      display_width = -1;
+      display_height = -1;
+    }
+  
   // initialize window
   g_original_title = "GameApi Builder -- meshpage.org";
-  ev.mainloop_api.init_window(screen_x,screen_y,"GameApi Builder -- meshpage.org");
-
+  ev.mainloop_api.init_window(display_width,display_height,"GameApi Builder -- meshpage.org");
+  if (has_wayland)
+    {
+      display_width = g_display_width;
+      display_height = g_display_height;
+    }
+  
   int font_scale = 2;
 
   ProgressBar(888,0,5,"init");
@@ -2075,12 +2175,13 @@ int main(int argc, char *argv[]) {
 
 
   // rest of the initializations
-  ev.mainloop_api.init_3d(sh3, screen_x, screen_y);
-  ev.mainloop_api.init_3d(sh_arr, screen_x,screen_y);
-  ev.mainloop_api.init(sh, screen_x,screen_y);
-  ev.mainloop_api.init(sh2, screen_x,screen_y);
-  ev.mainloop_api.init(sh_2d, screen_x, screen_y);
+  ev.mainloop_api.init_3d(sh3, display_width, display_height);
+  ev.mainloop_api.init_3d(sh_arr, display_width, display_height);
+  ev.mainloop_api.init(sh, display_width, display_height);
+  ev.mainloop_api.init(sh2, display_width, display_height);
+  ev.mainloop_api.init(sh_2d, display_width, display_height);
 
+  
   
   GuiApi gui(e, ev, sh);
   
@@ -2176,7 +2277,7 @@ int main(int argc, char *argv[]) {
   //W txt2 = gui.scrollbar_y(20, screen_y-30, gui.size_y(array));
   //gui.set_pos(txt2, gui.size_x(scroll_area), 30);
 
-  gui.set_pos(scroll_area, 0.0, 0.0);
+  gui.set_pos(scroll_area, extra_left, extra_top);
   gui.set_size(scroll_area, 140.0, screen_y);
   //W wave = gui.waveform(f, 0.0, 3.14159*2.0, -1.5, 1.5, 200, 100, 0xffffffff, 0x00000000);
 
@@ -2210,10 +2311,14 @@ int main(int argc, char *argv[]) {
   W scrollbar_x = gui.scrollbar_x(screen2_x-20, 20, sx); 
 
   W line = gui.rectangle(0.0, 4.0, 0.0, screen_y, 0xffffffff);
-  gui.set_pos(line, 140-5, 0);
-  gui.set_pos(canvas_area, 140, 0);
-  gui.set_pos(scrollbar_x, 140, screen_y-20);
+  W decoration = gui.window_decoration(screen_x,screen_y, "GameApi Builder -- meshpage.org", atlas, atlas_bm);
+  gui.set_pos(line, 140-5+extra_left, extra_top);
+  gui.set_pos(canvas_area, 140+extra_left, extra_top);
+  gui.set_pos(scrollbar_x, 140+extra_left, extra_top+screen_y-20);
   //gui.set_pos(scrollbar_y, screen_x-20, 30);
+  gui.set_pos(decoration,0,0);
+
+  
   
   env.x = 0.0;
   env.y = 0.0;
@@ -2250,6 +2355,7 @@ int main(int argc, char *argv[]) {
   env.scrollbar_x = scrollbar_x;
   //env.gameapi = gameapi_2;
   env.scroll_area = scroll_area;
+  env.window_decoration = decoration;
   //env.menus = menus;
   env.opened_menu_num = -1;
   env.connect_ongoing = false;
@@ -2259,15 +2365,20 @@ int main(int argc, char *argv[]) {
   env.sh3 = sh3;
   env.sh_arr = sh_arr;
   env.sh_2d = sh_2d;
-  env.screen_size_x = screen_x;
-  env.screen_size_y = screen_y;
+  env.screen_size_x = screen_x+extra_width;
+  env.screen_size_y = screen_y+extra_height;
   env.filename = filename;
-
+  env.has_wayland = has_wayland;
+  env.extra_left = extra_left;
+  env.extra_top = extra_top;
+  env.screen_y = screen_y;
+  env.screen_x = screen_x;
+  
   //ev.mainloop_api.reset_time();
   //ev.mainloop_api.display_logo(ev);
 
 
-  ev.mainloop_api.switch_to_3d(false, sh3, screen_x, screen_y);
+  ev.mainloop_api.switch_to_3d(false, sh3, screen_x+extra_width, screen_y+extra_height);
   //ev.mainloop_api.switch_to_3d(false, sh_arr, screen_x, screen_y);
   ev.shader_api.use(sh);
   ev.mainloop_api.alpha(true);
