@@ -1,11 +1,13 @@
 <?php
-
+header("Cross-Origin-Opener-Policy: same-origin");
+header("Cross-Origin-Embedder-Policy: require-corp");
 ?>
-<html>
+<html id="html">
 <head>
-<title>meshpage.org -- design your future</title>
+<title>meshpage.org -- teleport animations to the world</title>
 <?php
-$page = $_GET["page"];
+$page = $_GET["p"];
+if ($page=="") $page = $_GET["page"];
 if ($page!="2") {
  echo '<meta name="description" content="Meshpage allows converting your ideas to 3d for your web page"/>';
  }
@@ -15,9 +17,29 @@ if ($page!="2") {
 <meta http-equiv="origin-trial" content="AvkuION9OjDj+c5KxD0L/wgqyzkqE1vqOyceYiQe5LanN5395ZBJ/xfUuZcw7Mu7JkWiEskFjKGghchsKVVBKw4AAABYeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlUaHJlYWRzIiwiZXhwaXJ5IjoxNTYzOTI2Mzk5fQ==">
 <?php
 require_once("user.php");
+function create_id2( $name, $index )
+{
+  $str = $name . "@" . $index;
+  $begin = "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ@";
+  $end = "ZYXWVUTSRQPONMLKJIHGFEDCBA0987654321zyxwvutsrqponmlkjihgfedcba@";
+  $begin_chars = str_split( $begin );
+  $i = 0;
+  $chars = str_split($str);
+  foreach( $chars as $ch ) {
+    $j = 0;
+    foreach( $begin_chars as $ch2 ) {
+       if ($ch2 == $ch) { $str[$i] = $end[$j]; }
+       $j = $j + 1;
+    }
+    $i = $i + 1;
+    }
+    return $str;
+}
+
 $id = $_GET["id"];
-$label = $_GET["label"];
-$page = $_GET["page"];
+$label = create_id2("terop", $id); //$_GET["label"];
+$page = $_GET["p"];
+if ($page=="") $page = $_GET["page"];
 
 $arr = decode_id( $label );
 $arr["id"] = $id;
@@ -52,10 +74,11 @@ if ($nothreads == "yes") {
 
   echo "<link rel=\"preload\" href=\"web_page_nothreads.worker.js?" . filemtime("web_page_nothreads_worker.js") . "\" as=\"script\" crossorigin/>";
 } else {
-   echo "<link rel=\"preload\" href=\"web_page.js?" . filemtime("web_page.js") . "\" as=\"script\"/>";
-  echo "<link rel=\"preload\" href=\"web_page.worker.js?" . filemtime("web_page.worker.js") . "\" as=\"script\" crossorigin/>";
+   echo "<link rel=\"preload\" href=\"web_page.js?" . filemtime("web_page.js") . "\" as=\"script\" crossorigin/>";
+  //echo "<link rel=\"preload\" href=\"web_page.worker.js?" . filemtime("web_page.worker.js") . "\" as=\"script\" crossorigin/>";
+  //echo "<link rel=\"preload\" href=\"web_page.worker.js\" as=\"script\" crossorigin/>";
 }
-echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . "\" as=\"style\"/>";
+echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . "\" as=\"style\"  onload=\"this.rel = 'stylesheet'\"/>";
 
 ?>
 <link rel="preload" href="vue.js" as="script"/>
@@ -69,7 +92,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
      "@type": "ListItem",
      "position": 1,
      "item": {
-        "@id": "https://meshpage.org/meshpage.php?page=3",
+        "@id": "https://meshpage.org/meshpage?p=3",
 	"name": "meshpage.org"
 	}
   },
@@ -77,7 +100,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
      "@type": "ListItem",
      "position": 2,
      "item": {
-        "@id": "https://meshpage.org/meshpage.php?page=4",
+        "@id": "https://meshpage.org/meshpage?p=4",
 	"name": "tool download"
      }
   },
@@ -85,7 +108,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
      "@type": "ListItem",
      "position": 3,
      "item": {
-        "@id": "https://meshpage.org/meshpage.php?page=5",
+        "@id": "https://meshpage.org/meshpage?p=5",
 	"name": "faq"
      }
   },
@@ -93,7 +116,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
      "@type": "ListItem",
      "position": 4,
      "item": {
-        "@id": "https://meshpage.org/meshpage.php?page=6",
+        "@id": "https://meshpage.org/meshpage?p=6",
 	"name": "documents"
      }
   },
@@ -101,7 +124,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
      "@type": "ListItem",
      "position": 5,
      "item": {
-        "@id": "https://meshpage.org/meshpage.php?page=7",
+        "@id": "https://meshpage.org/meshpage?p=7",
 	"name": "about"
      }
   }
@@ -113,7 +136,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 <div id="app">
 <div id="navbar" class="navi">
 <div class="ncenter noselect">
-
+<!--
 <template v-if="indicator[0]">
 <svg width="10" height="10">
 <rect width="10" height="10" style="fill: #ff0000; stroke-width:0; stroke: rgb(0,0,0);">
@@ -124,7 +147,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 <rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
 </svg>
 </template>
-
+-->
 
 <template v-for="bread in main_breadcrumb">
 <div style="font-family: 'calibri', sans-serif" class="link level1">
@@ -166,7 +189,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 require_once("user.php");
 $user="terop";
 $num = read_num( $user );
-page_title("meshpage.org", "design your future with groundbreaking 3d animation technology");
+page_title("meshpage.org", "teleporting your 3d animations to all over the world");
 echo "<div class=\"flex-container\">";
 for($i=$num;$i>1;$i--)
 {
@@ -185,13 +208,13 @@ $label = get_label( $arr );
    $filename2 = "user_data/user_" . $user . "/screenshot" . $i . ".webp";
    if (file_exists($filename2)) $filename = $filename2;
 
-   $url = "meshpage.php?page=2&id=" . $i . "&label=" . $id;
+   $url = "/" . $i; //"meshpage.php?p=2&id=" . $i; // . "&label=" . $id;
    echo "<div class=\"flex-item\" itemscope itemtype=\"http://schema.org/CreativeWork\">";
    echo "<div class=\"highlight\">";
    echo "<a class=\"label\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $i . ",'" . $id . "')\" itemprop=\"url\">";
    echo "<div class=\"border\">";
    echo "<div class=\"image\">";
-   echo "<img width=\"200\" height=\"150\" draggable=\"false\" src=\"" . $filename . "\" itemprop=\"thumbnailUrl\"/>";
+   echo "<img width=\"200\" height=\"150\" draggable=\"false\" src=\"" . $filename . "\" itemprop=\"thumbnailUrl\" crossorigin/>";
    echo "</div>";
    echo "</div>";
    echo "<div style=\"font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\">$label</div>";
@@ -212,9 +235,9 @@ require_once("user.php");
 $mobile = js_mobile();
 $connect = "no";
 if ($mobile=="yes") {
-echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:330px; height:247px\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\"></canvas>";
+echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:330px; height:247px\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\" tabindex=-1></canvas>";
 } else {
-echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:800px; height:600px\" width=\"800\" height=\"600\" oncontextmenu=\"event.preventDefault()\"></canvas>";
+echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:800px; height:600px\" width=\"800\" height=\"600\" oncontextmenu=\"event.preventDefault()\" tabindex=-1></canvas>";
 }
 
 if ($connect=="yes") {
@@ -280,8 +303,8 @@ list_end();
 
 <h2>How does the site work?</h2>
 <ul>
-<li><a style="font-size:large;" href="https://meshpage.org/meshpage.php?page=4">DOWNLOAD</a>: You download the builder tool</a>
-<li><a style="font-size:large;" href="https://tpgames.org/builder_green4_example.webm">CREATE</a>: Create your powerful message predicting the future with the tool
+<li><a style="font-size:large;" href="https://meshpage.org/meshpage?p=4">DOWNLOAD</a>: You download the builder tool</a>
+<li><a style="font-size:large;" href="https://tpgames.org/builder_green4_example.webm">CREATE</a>: Create your powerful message for your teleporter with the tool
 <li><a style="font-size:large;" href="http://tpgames.org/Releasing_codegen.txt">CODEGEN</a>: You get piece of c++-like code representing animation
 <li><a style="font-size:large;" href="http://tpgames.org/Releasing_animations.txt">PUBLISH</a>: place 3d engine to your web server
 <li><a style="font-size:large;" href="http://meshpage.org/gameapi_example.html">ENJOY</a>: Then open the animation in your browser
@@ -292,6 +315,7 @@ list_end();
 <li>File size is very small. The file size is like 30 lines of c++ code,
 instead of megabytes of video files
 <li>It's based on "designing the future", instead of "recording the past"
+<li>Teleportation works via URL's: normal web technologies are used to transfer animations to other computers on the planet 
 </ul>
 <h2>What are the disadvantages?</h2>
 <ul>
@@ -559,12 +583,12 @@ visit_counter_inc( "tool" );
 <p>
 <link itemprop="applicationCategory" href="http://schema.org/ModellingTool">
 <a itemprop="downloadUrl" href="https://tpgames.org/GameApi-Builder-v25.msi">
-<img src="https://tpgames.org/gameapi-builder-screenshot2.png" width="901" height="199"></a>
+<img src="https://tpgames.org/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
 
 <div>
-<a href="https://tpgames.org/builder_screenshot.webp" target=_blank><img src="https://tpgames.org/builder_screenshot.webp" width="300" height="200"></img></a>
-<a href="https://tpgames.org/builder_screenshot2.webp" target=_blank><img src="https://tpgames.org/builder_screenshot2.webp" width="300" height="200"></img></a>
-<a href="https://tpgames.org/builder_screenshot3.webp" target=_blank><img src="https://tpgames.org/builder_screenshot3.webp" width="300" height="200"></img></a>
+<a href="https://tpgames.org/builder_screenshot.webp" target=_blank><img src="https://tpgames.org/builder_screenshot.webp" width="300" height="200" crossorigin></img></a>
+<a href="https://tpgames.org/builder_screenshot2.webp" target=_blank><img src="https://tpgames.org/builder_screenshot2.webp" width="300" height="200" crossorigin></img></a>
+<a href="https://tpgames.org/builder_screenshot3.webp" target=_blank><img src="https://tpgames.org/builder_screenshot3.webp" width="300" height="200" crossorigin></img></a>
 </div>
 </div>
 
@@ -653,6 +677,23 @@ var store = {
       if (a=='html_embed') this.state.html_embed = true;
       },
 };
+
+function create_id2( name, index )
+{
+  var str = name.concat("@".concat(index));
+  var begin = "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ@";
+  var end = "ZYXWVUTSRQPONMLKJIHGFEDCBA0987654321zyxwvutsrqponmlkjihgfedcba@";
+  var i = 0;
+  for(i=0;i<str.length;i++) {
+    var j = 0;
+    for(j=0;j<begin.length;j++) {
+	if (str[i] == begin[j]) { str[i] = end[j]; }
+	}
+    }
+    return str;
+}
+
+
 var app = new Vue({
    el: '#app',
    mounted: function() {
@@ -662,20 +703,25 @@ var app = new Vue({
      window.onpopstate = function(e) {
        var st = e.state;
        //console.log(st);
+       //console.log(e);
        if (st==null) {
        	  choose_breadlist(0,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 
        	  store.choose('main');
+	  if (typeof fix_keyboard === "function") fix_keyboard(true);
 	  return;
 	  }
        var pgnum = e.state.page;
 
        var url = window.location.href;
-       var n = url.search("page=");
+       var n = url.search("p=");
+       var n2 = url.search("page=");
+       var cut = 2;
+       if (n2>n) { n=n2; cut=5; }	 
        var i;
        var res = "";
-       for(i=0;i<url.length-n-5;i++) {
-         var ch = url[i+n+5];
+       for(i=0;i<url.length-n-cut;i++) {
+         var ch = url[i+n+cut];
 	 if (ch>='0' && ch<='9') res+=ch;
 	 else break;
        }
@@ -687,25 +733,33 @@ var app = new Vue({
 	 if (ch>='0' && ch<='9') res2+=ch;
 	 else break;
        }
-       n=url.search("label=");
-       var res3 = url.substr(n+6);
+       //n=url.search("label=");
+       //var res3 = url.substr(n+6);
 
        pgnum = parseInt(res);
        var id = parseInt(res2);
-       var label = res3;
-       console.log(res);
-       console.log(pgnum);
+       var label = create_id2( "terop", res2); //res3;
+       //console.log(res);
+       //console.log(pgnum);
        if (pgnum==3||pgnum==1) {
-          console.log("MAIN");
+          //console.log("MAIN");
 	  choose_breadlist(0,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 
 	  store.choose('main');
+	  start_emscripten(vm);
+	  //if (pgnum==1)
+	  //   window.history.go(-2);
+	  //else
+	  //   window.history.go(-1);
+	  if (typeof fix_keyboard === "function") fix_keyboard(true);
 	  }
        if (pgnum==2) {
-          console.log("MESH");
-       	  window.mesh_display(vm,id,label); }
+          //console.log("MESH");
+       	  window.mesh_display(vm,id,label); 
+	  if (typeof fix_keyboard === "function") fix_keyboard(false);
+	  }
        }
-     //window.history.replaceState({page:1},"title 1", "?page=1");
+     //window.history.replaceState({page:1},"title 1", "?p=1");
      window.mesh_display = function(vue,id,label) {
                if (!g_emscripten_alive) return;
           var vm = vue;
@@ -716,8 +770,10 @@ var app = new Vue({
 <?php
 //var_dump($_GET);
 $id = $_GET["id"];
-$label = $_GET["label"];
-$page = $_GET["page"];
+//$label = $_GET["label"];
+$label = create_id2( "terop", $id);
+$page = $_GET["p"];
+if ($page=="") $page = $_GET["page"];
 //var_dump($id);
 //var_dump($label);
 if ($page!="") {
@@ -728,10 +784,12 @@ if ($page!="") {
    if ($page==1) {
       echo "store.choose(\"main\");";
       echo "choose_bread(\"main\",vm.main_breadcrumb);";
+      echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==2) {
       echo "setTimeout(delayed_choose_display(vm,g_last_id,g_last_label),100);";
       echo "store.choose(\"mesh\");";
+      echo "if (typeof fix_keyboard === \"function\") fix_keyboard(false);";
       } else
       {
       echo "choose_breadlist(0,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);";
@@ -739,27 +797,33 @@ if ($page!="") {
    if ($page==3) {
       echo "store.choose(\"main\");";
       echo "choose_bread(\"main\",vm.main_breadcrumb);";
+      echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==4) {
       echo "store.choose(\"tool_download\");";
       echo "choose_bread(\"tool_download\",vm.main_breadcrumb);";
+      echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==5) {
       echo "store.choose(\"faq\");";
       echo "choose_bread(\"faq\",vm.main_breadcrumb);";
+      echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==6) {
       echo "store.choose(\"docs\");";
       echo "choose_bread(\"docs\",vm.main_breadcrumb);";
+      echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==7) {
       echo "store.choose(\"about\");";
       echo "choose_bread(\"about\",vm.main_breadcrumb);";
+      echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
 
 } else {
   echo "store.choose(\"main\");";
   echo "choose_bread(\"main\",vm.main_breadcrumb);";
+      echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
 }
 
 ?>
@@ -772,10 +836,11 @@ if ($page!="") {
    methods: {
 
        mesh_display(id,label) {
-          if (!g_emscripten_alive) return;
           var vm = this;
+          if (!g_emscripten_alive) { start_timer(id,label,vm); return; }
 	  choose_breadlist(1,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 	  choose_display(id,label,vm,false);
+
 	  //console.log(id);
        },
        bread_click(e) {
@@ -810,6 +875,38 @@ if ($page!="") {
    }
    });
 
+
+
+var g_tm_cb;
+
+function timer_timeout(id,label,vm)
+{
+return function() {
+    //console.log("TIMER TICK");
+       if (!g_emscripten_alive) {
+    //console.log("NOT ALIVE");
+       if (g_tm_cb) window.clearTimeout(g_tm_cb);
+       g_tm_cb = window.setTimeout(timer_timeout(id,label,vm), 100);
+       return;
+       } else {
+    //console.log("ALIVE");
+	  choose_display(id,label,vm,false);
+
+      }
+}
+
+}
+
+function start_timer(id, label, vm)
+{
+	  choose_breadlist(1,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
+  store.choose("mesh");
+
+//console.log("START TIMER");
+    if (g_tm_cb) window.clearTimeout(g_tm_cb);
+      g_tm_cb = window.setTimeout(timer_timeout(id,label,vm), 10);
+}
+
 function choose_bread(txt,breadcrumb)
 {
    var sz = breadcrumb.length;
@@ -838,10 +935,11 @@ function choose_breadcrumb(txt,breadcrumb,store,first,second)
 	 //console.log(choose);
 	 store.choose(choose);
 	 if (breadcrumb.length == first.length) {
-	     window.history.replaceState({page: 2},"title 2", "?page=" + (i+3).toString());
+	     window.history.replaceState({page: 2},"title 2", "?p=" + (i+3).toString());
 	     } else {
 	     if (i==0) {
-	     window.history.replaceState({page: 2},"title 2", "?page=" + (i+1).toString());
+	     window.history.back();
+//window.history.replaceState({page: 2},"title 2", "meshpage?p=" + (i+1).toString());
 	     }
 	     }
 
@@ -852,12 +950,15 @@ function choose_breadcrumb(txt,breadcrumb,store,first,second)
 
       if (txt=='meshpage.org') {
           choose_breadlist(0,breadcrumb,first,second);
+	  if (typeof fix_keyboard === "function") fix_keyboard(true);
 	  }
       if (txt!='mesh') {
            var elem = document.getElementById("display");
 	   elem.style.display = "none";
+	  if (typeof fix_keyboard === "function") fix_keyboard(true);
 
-      }
+      } else { 	  if (typeof fix_keyboard === "function") fix_keyboard(false); }
+
 
 }
 function choose_breadlist(id,breadcrumb,first,second)
@@ -890,16 +991,17 @@ function delayed_choose_display(vm, id, label)
 var g_last_id = "";
 var g_last_label = "";
 
-var g_txt = "";
+var g_txt = {};
+var g_txt_id = 0;
 var g_txt_cb = null;
 function choose_display_timeout(vm)
 {
    var vm2 = vm;
    return function() {
-	if (g_txt != "") {
-	show_emscripten(g_txt,false,vm2.indicator,true);
+	if (g_txt[g_txt_id]!==undefined) {
+	show_emscripten(g_txt[g_txt_id],false,vm2.indicator,true);
 	g_txt_cb = null;
-	g_txt = "";
+	g_txt_id = 0;
 	}
    else
       {
@@ -913,12 +1015,15 @@ function choose_display(id,label, vm,is_popstate)
   if (!is_popstate) {
   g_last_id = id;
   g_last_label = label;
-  window.history.pushState({page: 2},"title 2", "?page=2&id=" + id.toString() + "&label=" + label.toString());
+  	       // ?p=2&id="
+  window.history.pushState({page: 2},"title 2", "/" + id.toString() ); // + "&label=" + label.toString()
   }
   store.choose("mesh");
   choose_breadcrumb("mesh display",vm.main_breadcrumb,store,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 
   var url = "https://meshpage.org/mesh_pre.php?id=" + label;
+  //console.log(g_txt[id]);
+  if (g_txt[id]===undefined) {
 
 const myHeaders = new Headers();
 const myFRequest = new Request(url, {
@@ -928,16 +1033,22 @@ const myFRequest = new Request(url, {
   cache: 'default'
   });
   if (g_txt_cb) window.clearTimeout(g_txt_cb);
-  g_txt_cb = window.setTimeout(choose_display_timeout(vm), 100);
+  g_txt_cb = window.setTimeout(choose_display_timeout(vm), 30);
 
   fetch(myFRequest).then((r) => {
     return r.text();
   }).then((t) => {
     //console.log("INDICATOR:");
     //console.log(vm.indicator);
-    g_txt = t;
+    g_txt_id = id;
+    g_txt[id] = t;
     //
   });
+  } else {
+    g_txt_id = id;
+    if (g_txt_cb) window.clearTimeout(g_txt_cb);
+    g_txt_cb = window.setTimeout(choose_display_timeout(vm), 1);
+  }
 
 }
 var g_emscripten_running = false;
@@ -948,9 +1059,15 @@ var g_keyboard_focus_timeout = null;
 
 function set_keyboard_focus()
 {
-  //var iframe = document.getElementById('ems');
+  //var iframe = document.getElementById('canvas');
   //iframe.contentWindow.focus();
   g_keyboard_focus_timeout = null;
+}
+
+function remove_keyboard_focus_from_iframe()
+{
+   //var h = document.getElementById("html");
+   //h.contentWindow.focus();
 }
 
 function set_keyboard_focus_to_iframe()
@@ -989,9 +1106,9 @@ function check_emscripten_running(indicator)
   var canv = document.getElementById("canvas");
   if (Module) {
 	 Module['onRuntimeInitialized'] = check_em(indicator);
-   	 console.log("RUNNING");
+   	 //console.log("RUNNING");
 	 } else {
-   	 console.log("TIMEOUT");
+   	 //console.log("TIMEOUT");
 	 setTimeout(function() { check_emscripten_running(indicator) },100);
 	 }
    //console.log("RUNNING");
@@ -1045,6 +1162,8 @@ function submit_cb()
 
 function show_emscripten(str,hide,indicator,is_async)
 {
+	if (typeof fix_keyboard === "function") fix_keyboard(hide);
+
 	g_emscripten_start_count++;
 	if (g_emscripten_running) {
 	   str+="\n";
@@ -1062,6 +1181,8 @@ function show_emscripten(str,hide,indicator,is_async)
 	        window.clearTimeout(g_display_timeout);
 	      g_display_timeout = window.setTimeout(display_cb,280); // 750
 	      set_keyboard_focus_to_iframe();
+	      } else {
+	      remove_keyboard_focus_from_iframe();
 	      }
 	   return;
 	} else {
@@ -1085,7 +1206,9 @@ function show_emscripten(str,hide,indicator,is_async)
 	g_emscripten_running = true;
 	if (!hide) {
 	   set_keyboard_focus_to_iframe();
-        }
+        } else {
+	  remove_keyboard_focus_from_iframe();
+	}
 	return;
 	}
 }
@@ -1126,7 +1249,7 @@ if ($mobile == "yes") {
 if ($nothreads == "yes") {
   echo "<script src='web_page_nothreads.js?" . filemtime("web_page_nothreads.js") . "'></script>";
 } else {
-  echo "<script src='web_page.js?" . filemtime("web_page.js") . "'></script>";
+  echo "<script src='web_page.js?" . filemtime("web_page.js") . "' crossorigin='anonymous'></script>";
 }
 ?>
 <script>
@@ -1190,7 +1313,7 @@ function connect() {
        iceServers: [
          { 'url': 'stun:stun.1.46.32.252.120:424242' }]});
    const signalingChannel = new SignalingChannel(connection);
-   console.log("signaling done");
+   //console.log("signaling done");
 
    //const config {'iceServers':[{'urls': 'stun:stun.1.46.32.252.120:42424'}]}
    //const peerConnection = new RTCPeerConnection(configuration);
@@ -1212,5 +1335,24 @@ function new_game_click()
    var sp = document.getElementById("displayconnectid");
    console.log(sp);
    sp.innerHTML = id.toString();
+}
+</script>
+<script>
+function e1(event)
+{
+  event.stopImmediatePropagation();
+}
+
+function fix_keyboard(hide)
+{
+  if (hide) {
+  //console.log("FIX KEYBOARD TRUE");
+  window.addEventListener('keydown', e1, true);
+  window.addEventListener('keyup', e1, true);
+  } else {
+  //console.log("FIX KEYBOARD FALSE");
+  window.removeEventListener('keydown', e1, true);
+  window.removeEventListener('keyup', e1, true);
+  }
 }
 </script>

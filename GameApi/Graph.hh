@@ -2239,7 +2239,8 @@ public:
     if (x >= 0 && x <int(buf.width))
       if (y >= 0 && y < int(buf.height))
 	return buf.buffer[x+y*buf.ydelta];
-    throw "error";
+    return buf.buffer[0];
+    // throw "error";
   }
 
 

@@ -558,6 +558,7 @@ public:
       }
     if (active && ctrl && type==768 && ch==99) {
       g_low->sdl->SDL_SetClipboardText(label.c_str());
+      changed=true;
     }
     if (shift) { 
 #ifdef EMSCRIPTEN
@@ -2359,6 +2360,56 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, F
   return array_2;
 }
 
+extern Low_SDL_Window *sdl_window;
+
+int g_window_pos_x = 0;
+int g_window_pos_y = 0;
+
+class WindowMoveWidget : public GuiWidgetForward
+{
+public:
+  WindowMoveWidget(GameApi::EveryApi &ev, GuiWidget *wid, int area_x, int area_y, int area_width, int area_height) : GuiWidgetForward(ev, { wid } ), area_x(area_x), area_y(area_y), area_width(area_width), area_height(area_height) { move_ongoing = false;
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1, -1, -1, 0);
+  }
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
+  {
+    GuiWidgetForward::update(mouse,button,ch, type, mouse_wheel_y);
+    if (!move_ongoing && button==0 && type==1025 && mouse.x >= pos.x+area_x && mouse.x < pos.x+area_x+area_width &&
+	mouse.y >= pos.y+area_y && mouse.y < pos.y+area_y+area_height)
+      {
+	move_ongoing = true;
+	old_mouse = mouse;
+	int px = g_window_pos_x;
+	int py = g_window_pos_y;
+	//g_low->sdl->SDL_GetWindowPosition(sdl_window, &px, &py);
+	//	std::cout << "GOT WINDOW POS:" << px << " " << py << std::endl;
+	Point2d p = { float(px), float(py) };
+	old_pos = p;
+      }
+    if (move_ongoing) {
+      Vector2d delta = mouse - old_mouse;
+      Point2d p = old_pos + delta;
+      //g_low->sdl->SDL_SetWindowPosition(sdl_window, p.x, p.y);
+      g_window_pos_x = p.x;
+      g_window_pos_y = p.y;
+      //std::cout << "Set WINDOW POS:" << p.x << " " << p.y << std::endl;
+    }
+    if (move_ongoing && button==-1)
+      {
+	move_ongoing = false;
+      }
+    size = vec[0]->get_size();
+  }
+  int chosen_item() const { return vec[0]->chosen_item(); }
+private:
+  int area_x, area_y;
+  int area_width, area_height;
+  bool move_ongoing;
+  Point2d old_pos;
+  Point2d old_mouse;
+};
+
 class MouseMoveWidget : public GuiWidgetForward
 {
 public:
@@ -2539,6 +2590,12 @@ EXPORT GameApi::W GameApi::GuiApi::mouse_move(W widget, int area_x, int area_y, 
 {
   GuiWidget *wid = find_widget(e, widget);
   return add_widget(e, new MouseMoveWidget(ev, wid, area_x, area_y, area_width, area_height));
+}
+
+EXPORT GameApi::W GameApi::GuiApi::window_move(W widget, int area_x, int area_y, int area_width, int area_height)
+{
+  GuiWidget *wid = find_widget(e, widget);
+  return add_widget(e, new WindowMoveWidget(ev, wid, area_x, area_y, area_width, area_height));
 }
 
 EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltip, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params, std::string symbol, std::string comment)
@@ -2950,6 +3007,39 @@ EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atl
   return arr_3;
 }
 
+
+EXPORT GameApi::W GameApi::GuiApi::window_decoration(int sx, int sy, std::string label, FtA atlas, BM atlas_bm)
+{ // wayland only
+  int w = sx;
+  int h = sy;
+  W contents = rectangle(0,w,0,h,0xff000000);
+  
+  W txt = text(label, atlas, atlas_bm,3);
+  W txt_1 = margin(txt, 5,7,5,5);
+  W but_1 = button(w+10,35, 0xff888888, 0xff222222);
+  W but_2 = margin(but_1,0,0,0,0);
+  W but_3 = window_move(but_2,0,0,w+10,30); 
+  W lay_2 = layer(but_3,txt_1);
+		   
+  W mrg = margin(contents, 5,5+30,5,5);
+  W lay_1 = layer(mrg,lay_2);
+
+
+  W left = button(5,h+5,0xff888888,0xff222222);
+  W right = button(5,h+5,0xff888888,0xff222222);
+  W l_margin = margin(left,0,30,0,0);
+  W r_margin = margin(right,w-4,30,0,0);
+
+  W bottom = button(w+10, 5, 0xff888888,0xff222222);
+  W b_margin = margin(bottom, 0, h+5+30, 0,0);
+
+  W lay_3 = layer(l_margin, r_margin);
+  W lay_4 = layer(lay_3,b_margin);
+  W lay_6 = layer(lay_4,lay_1);
+  
+  return lay_6;
+  
+}
 
 EXPORT GameApi::W GameApi::GuiApi::lines_dialog(LI p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W& collect_button)
 {
@@ -3430,7 +3520,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, 
     }
   if (type=="std::string" || type=="bool")
     {
-      if (target.s.size()>4 && target.s.substr(0,4)=="http")
+      if (target.s.size()>4 && (target.s.substr(0,4)=="http" ||target.s.substr(0,4)=="file"))
 	{
 	  W edit = url_editor(target.s, atlas_tiny, atlas_tiny_bm, x_gap);
 	  W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
@@ -3438,7 +3528,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, 
 	}
       else 
 	{
-      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"¤%&?\n,";
+      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"¤%&?\n,:";
       W edit = string_editor(allowed, target.s, atlas_tiny, atlas_tiny_bm, x_gap);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
       return edit_2;
@@ -3878,7 +3968,8 @@ public:
     if (g_event_screen_y!=-1) {
       float scale_x = float(g_event_screen_x)/float(ev.mainloop_api.get_screen_width());
       float scale_y = float(g_event_screen_y)/float(ev.mainloop_api.get_screen_height());
-      ogl->glScissor(pos.x*scale_x, g_event_screen_y-pos.y*scale_y-size.dy*scale_y, size.dx*scale_x, size.dy*scale_y);
+      //std::cout << "SCISSOR SIZE: " << size.dx << " " << size.dy << " " << scale_x << " " << scale_y << std::endl;
+      ogl->glScissor(pos.x*scale_x, g_event_screen_y-pos.y*scale_y-size.dy*scale_y, (size.dx)*scale_x, size.dy*scale_y);
     } else {
       ogl->glScissor(pos.x, screen_y-pos.y-size.dy, size.dx, size.dy);
     }
@@ -5058,6 +5149,9 @@ ASyncData async_data[] = {
   { "mainloop_api", "gltf_mesh_all", 2 },
   { "mainloop_api", "gltf_node", 2 },
   { "mainloop_api", "gltf_scene", 2 },
+  { "mainloop_api", "gltf_anim", 2 },
+  { "mainloop_api", "gltf_anim2", 2 },
+  { "mainloop_api", "gltf_skeleton", 2 },
   { "mainloop_api", "matrix_range_check", 3 },
   { "font_api", "draw_text_large", 2 },
   { "bitmap_api", "loadbitmapfromurl", 0},
@@ -5076,7 +5170,15 @@ ASyncData async_data[] = {
   { "mainloop_api", "memmap_window3", 3 },
   { "mainloop_api", "memmap_window3", 4 },
   { "mainloop_api", "memmap_window3", 5 },
-  { "mainloop_api", "memmap_window3", 6 }
+  { "mainloop_api", "memmap_window3", 6 },
+  { "polygon_api", "ske_anim", 4 },
+  { "polygon_api", "ske_anim2", 4 },
+  { "lines_api", "li_url", 0 },
+  { "mainloop_api", "gltf_anim_skeleton", 2},
+  { "polygon_api", "gltf_split_faces2", 2},
+  { "mainloop_api", "gltf_anim4", 2},
+  { "mainloop_api", "gltf_scene_anim", 2},
+  { "mainloop_api", "async_url", 0}
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
@@ -5127,6 +5229,33 @@ void LoadUrls_async_cbs()
   //g_async_vec.clear();
 }
 
+
+
+std::vector<std::string> g_extra_async_urls;
+
+bool is_in_vec(std::string url)
+{
+  int s = g_extra_async_urls.size();
+  for(int i=0;i<s;i++) { if (g_extra_async_urls[i]==url) return true; }
+  return false;
+}
+class RegisterUrl : public MainLoopItem
+{
+public:
+  RegisterUrl(std::string url, MainLoopItem *next) : next(next) { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void execute(MainLoopEnv &e) { next->execute(e); }
+  virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+
+private:
+  MainLoopItem *next;
+};
+GameApi::ML GameApi::MainLoopApi::async_url(std::string url, ML ml)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new RegisterUrl(url, item));
+}
 
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
 {
@@ -7030,6 +7159,36 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "[P]", "[MN]", "[MT]", "[MS]", "[IF]", "std::string" },
 			 { "ev", "", "", "", "", "","https://tpgames.org/gameapi_anim.mp" },
 			 "ML", "polygon_api", "mesh_anim"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::ske_anim,
+			 "ske_anim",
+			 { "ev", "mesh", "orig_pose", "li_size", "url", "new_poses", "material" },
+			 { "EveryApi&", "P", "LI", "int", "std::string", "[LI]", "MT" },
+			 { "ev", "", "", "30", "https://tpgames.org/ske_example.txt", "", "" },
+			 "ML", "polygon_api", "ske_anim"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::ske_anim2,
+			 "ske_anim2",
+			 { "ev", "mesh", "orig_pose", "li_size", "url", "new_poses", "material" },
+			 { "EveryApi&", "[P]", "LI", "int", "std::string", "[LI]", "MT" },
+			 { "ev", "", "", "30", "https://tpgames.org/ske_example.txt", "", "" },
+			 "ML", "polygon_api", "ske_anim2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_skeleton,
+			 "li_gltf_ske",
+			 { "ev", "base_url", "url", "start_node" },
+			 { "EveryApi&", "std::string", "std::string", "int" },
+			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0" },
+			 "LI", "mainloop_api", "gltf_skeleton"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_anim_skeleton,
+			 "li_gltf_aske",
+			 { "ev", "base_url", "url", "skin_num", "animation", "channel", "num_keyframes" },
+			 { "EveryApi&", "std::string", "std::string", "int", "int", "int", "int" },
+			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "0", "0", "64" },
+			 "[LI]", "mainloop_api", "gltf_anim_skeleton"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::gltf_split_faces2,
+			 "p_gltf_split",
+			 { "ev", "base_url", "url", "mesh_index", "prim_index", "max_attach" },
+			 { "EveryApi&", "std::string", "std::string", "int", "int", "int" },
+			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "0", "64" },
+			 "[P]", "polygon_api", "gltf_split_faces2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::translate,
 			 "anim_translate",
 			 { "next", "start_time", "end_time", "dx", "dy", "dz" },
@@ -7439,12 +7598,36 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "std::string", "std::string" },
 			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb" },
 			 "ML", "mainloop_api", "gltf_mesh_all"));
+  /*  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_anim,
+			 "ml_gltf_anim",
+			 { "ev", "base_url", "url", "animation", "channel", "mesh_index", "prim_index", "mat" },
+			 { "EveryApi&", "std::string", "std::string", "int", "int", "int", "int", "MT" },
+			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "0", "0", "0", "" },
+			 "ML", "mainloop_api", "gltf_anim"));*/
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_anim4,
+			 "ml_gltf_anim",
+			 { "ev", "base_url", "url", "animation", "channel" },
+			 { "EveryApi&", "std::string", "std::string", "int", "int" },
+			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "0" },
+			 "ML", "mainloop_api", "gltf_anim4"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene_anim,
+			 "ml_gltf_sc_anim",
+			 { "ev", "base_url", "url", "scene_id", "animation" },
+			 { "EveryApi&", "std::string", "std::string", "int", "int" },
+			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "0" },
+			 "ML", "mainloop_api", "gltf_scene_anim"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::load_scene,
 			 "scene_ml",
 			 { "ev", "url", "sx", "sy" },
 			 { "EveryApi&", "std::string", "int", "int" },
 			 { "ev", "http://tpgames.org/landscape.scn", "600", "600" },
 			 "ML", "polygon_api", "load_scene"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::async_url,
+			 "async_url",
+			 { "url", "ml" },
+			 { "std::string", "ML" },
+			 { "https://tpgames.org/", "" },
+			 "ML", "mainloop_api", "async_url"));
 		     
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::piechart_full,
 			 "piechart_ml",
@@ -9639,7 +9822,13 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "std::string", "std::string", "int", "float", "BM", "BM", "BM" }, 
 			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "1.0", "", "", "" },
 			 "MT", "materials_api", "gltf_material_env"));
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_anim_material,
+			 "m_gltf_anim",
+			 { "ev", "base_url", "url", "skin_num", "animation", "num_timeindexes", "next", "key" },
+			 { "EveryApi&", "std::string", "std::string", "int", "int", "int", "MT", "int" },
+			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "0", "10", "", "32" },
+			 "MT", "materials_api", "gltf_anim_material"));
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material3,
 			 "m_material",
 			 { "ev", "roughness", "metallic", "base_r", "base_g", "base_b", "base_a", "mix" },
@@ -9851,12 +10040,24 @@ std::vector<GameApiItem*> polygonapi_functions2()
 std::vector<GameApiItem*> linesapi_functions()
 {
   std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::li_url,
+			 "li_url",
+			 { "url" },
+			 { "std::string" },
+			 { "https://tpgames.org/li_example.txt" },
+			 "LI", "lines_api", "li_url"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::point_array,
 			 "li_points",
 			 { "arr" },
 			 { "[PT]" },
 			 { "" },
 			 "LI", "lines_api", "point_array"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::alt,
+			 "li_alt",
+			 { "arr", "index" },
+			 { "[LI]", "int" },
+			 { "", "0" },
+			 "LI", "lines_api", "alt"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::li_from_pts,
 			 "li_from_pts",
 			 { "pts1", "dx", "dy", "dz" },
@@ -10178,6 +10379,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "PTS", "PTS" },
 			 { "", "" },
 			 "PTS", "points_api", "or_points"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::convex_hull,
+			 "pts_convexhull",
+			 { "pts" },
+			 { "PTS" },
+			 { "" },
+			 "P", "polygon_api", "convex_hull"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::move,
 			 "move_pts",
 			 { "obj", "dx", "dy", "dz" },

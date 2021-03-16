@@ -91,7 +91,13 @@ void VertexArraySet::free_reserve(int id)
   p->poly_color.clear();
   p->tri_texcoord.clear();
   p->quad_texcoord.clear();
-  p->poly_texcoord.clear();  
+  p->poly_texcoord.clear();
+  p->tri_joint.clear();
+  p->quad_joint.clear();
+  p->poly_joint.clear();
+  p->tri_weight.clear();
+  p->quad_weight.clear();
+  p->poly_weight.clear();
 }
 void VertexArraySet::set_reserve(int id, int tri_count, int quad_count, int poly_count)
 {
@@ -132,6 +138,20 @@ void VertexArraySet::set_reserve(int id, int tri_count, int quad_count, int poly
     p->quad_texcoord.reserve(quad_count*6/4);
   if (poly_count)
     p->poly_texcoord.reserve(poly_count*3/3);
+  if (tri_count)
+    p->tri_joint.reserve(tri_count*3/3);
+  if (quad_count)
+    p->quad_joint.reserve(quad_count*6/4);
+  if (poly_count)
+    p->poly_joint.reserve(poly_count*3/3);
+
+  if (tri_count)
+    p->tri_weight.reserve(tri_count*3/3);
+  if (quad_count)
+    p->quad_weight.reserve(quad_count*6/4);
+  if (poly_count)
+    p->poly_weight.reserve(poly_count*3/3);
+
 }
 void VertexArraySet::push_poly(int id, int num, Point *points)
 {
@@ -420,6 +440,102 @@ void VertexArraySet::push_color(int id, int num, unsigned int *points)
 }
 
 
+
+void VertexArraySet::push_joint(int id, int num, VEC4 *points)
+{
+
+  Polys *p = m_set[id];
+  if (!p)
+    {
+      m_set[id] = new Polys;
+      p = m_set[id];
+    }
+  if (num<3) return;
+  else
+  if (num == 3)
+    {
+      p->tri_joint.push_back(points[0]);
+      p->tri_joint.push_back(points[1]);
+      p->tri_joint.push_back(points[2]);
+    }
+  else if (num==4)
+    {
+      //std::cout << "Vertex: " << points[0] << " " << points[1] << " " << points[2] << " " << points[3] << std::endl;
+      p->quad_joint.push_back(points[0]);
+      p->quad_joint.push_back(points[1]);
+      p->quad_joint.push_back(points[2]);
+      p->quad_joint.push_back(points[0]);
+      p->quad_joint.push_back(points[2]);
+      p->quad_joint.push_back(points[3]);
+    }
+  else
+    {
+      if (p->poly_joint.size()!=0)
+	{
+	  p->poly_joint.push_back(points[0]);
+	}
+
+      int s = num;
+      int j = s-1;
+      for(int i=0;i<num/2;i++,j--)
+	{
+	  p->poly_joint.push_back(points[i]);
+	  p->poly_joint.push_back(points[j]);
+	}
+      p->poly_joint.push_back(p->poly_joint[p->poly_joint.size()-1]);
+
+    }
+
+}
+
+void VertexArraySet::push_weight(int id, int num, VEC4 *points)
+{
+
+  Polys *p = m_set[id];
+  if (!p)
+    {
+      m_set[id] = new Polys;
+      p = m_set[id];
+    }
+  if (num<3) return;
+  else
+  if (num == 3)
+    {
+      p->tri_weight.push_back(points[0]);
+      p->tri_weight.push_back(points[1]);
+      p->tri_weight.push_back(points[2]);
+    }
+  else if (num==4)
+    {
+      //std::cout << "Vertex: " << points[0] << " " << points[1] << " " << points[2] << " " << points[3] << std::endl;
+      p->quad_weight.push_back(points[0]);
+      p->quad_weight.push_back(points[1]);
+      p->quad_weight.push_back(points[2]);
+      p->quad_weight.push_back(points[0]);
+      p->quad_weight.push_back(points[2]);
+      p->quad_weight.push_back(points[3]);
+    }
+  else
+    {
+      if (p->poly_weight.size()!=0)
+	{
+	  p->poly_weight.push_back(points[0]);
+	}
+
+      int s = num;
+      int j = s-1;
+      for(int i=0;i<num/2;i++,j--)
+	{
+	  p->poly_weight.push_back(points[i]);
+	  p->poly_weight.push_back(points[j]);
+	}
+      p->poly_weight.push_back(p->poly_weight[p->poly_weight.size()-1]);
+
+    }
+
+}
+
+
 void VertexArraySet::push_texcoord(int id, int num, Point *points)
 {
   Polys *p = m_set[id];
@@ -502,7 +618,11 @@ void VertexArraySet::clone(int id_source, int id_target)
   clone_vector(source->tri_texcoord, target->tri_texcoord);
   clone_vector(source->quad_texcoord, target->quad_texcoord);
   clone_vector(source->poly_texcoord, target->poly_texcoord);
+  clone_vector(source->tri_joint, target->tri_joint);
+  clone_vector(source->quad_joint, target->quad_joint);
+  clone_vector(source->poly_joint, target->poly_joint);
 
+  
   clone_map(source->tri_attribs, target->tri_attribs);
   clone_map(source->quad_attribs, target->quad_attribs);
   clone_map(source->poly_attribs, target->poly_attribs);
@@ -556,6 +676,13 @@ void VertexArraySet::free_memory()
       poly->quad_texcoord.resize(0);
       poly->poly_texcoord.resize(0);
 
+      poly->tri_joint.resize(0);
+      poly->quad_joint.resize(0);
+      poly->poly_joint.resize(0);
+      poly->tri_weight.resize(0);
+      poly->quad_weight.resize(0);
+      poly->poly_weight.resize(0);
+      
       poly->tri_polys.shrink_to_fit();
       poly->quad_polys.shrink_to_fit();
       poly->poly_polys.shrink_to_fit();
@@ -571,6 +698,15 @@ void VertexArraySet::free_memory()
       poly->tri_texcoord.shrink_to_fit();
       poly->quad_texcoord.shrink_to_fit();
       poly->poly_texcoord.shrink_to_fit();
+
+      poly->tri_joint.shrink_to_fit();
+      poly->quad_joint.shrink_to_fit();
+      poly->poly_joint.shrink_to_fit();
+      poly->tri_weight.shrink_to_fit();
+      poly->quad_weight.shrink_to_fit();
+      poly->poly_weight.shrink_to_fit();
+      
+
     }
 #endif
 }
@@ -680,6 +816,57 @@ void VertexArraySet::append_to_polys(Polys &target, const Polys &source)
     }
   //std::cout << "poly_color: " << target.poly_color.size() << std::endl;
 
+
+
+  int js7 = source.tri_joint.size();
+  target.tri_joint.reserve(target.tri_joint.size()+js7);
+  for(int i=0;i<js7;i++)
+    {
+      target.tri_joint.push_back(source.tri_joint[i]);
+    }
+  //std::cout << "tri_color: " << target.tri_color.size() << std::endl;
+  int js8 = source.quad_joint.size();
+  target.quad_joint.reserve(target.quad_joint.size()+js8);
+  for(int i=0;i<js8;i++)
+    {
+      target.quad_joint.push_back(source.quad_joint[i]);
+    }
+  //std::cout << "quad_color: " << target.quad_color.size() << std::endl;
+  int js2d = source.poly_joint.size();
+  target.poly_joint.reserve(target.poly_joint.size()+js2d);
+  for(int i=0;i<js2d;i++)
+    {
+      target.poly_joint.push_back(source.poly_joint[i]);
+    }
+  //std::cout << "poly_color: " << target.poly_color.size() << std::endl;
+
+
+  int ws7 = source.tri_weight.size();
+  target.tri_weight.reserve(target.tri_weight.size()+ws7);
+  for(int i=0;i<ws7;i++)
+    {
+      target.tri_weight.push_back(source.tri_weight[i]);
+    }
+  //std::cout << "tri_color: " << target.tri_color.size() << std::endl;
+  int ws8 = source.quad_weight.size();
+  target.quad_weight.reserve(target.quad_weight.size()+ws8);
+  for(int i=0;i<ws8;i++)
+    {
+      target.quad_weight.push_back(source.quad_weight[i]);
+    }
+  //std::cout << "quad_color: " << target.quad_color.size() << std::endl;
+  int ws2d = source.poly_weight.size();
+  target.poly_weight.reserve(target.poly_weight.size()+ws2d);
+  for(int i=0;i<ws2d;i++)
+    {
+      target.poly_weight.push_back(source.poly_weight[i]);
+    }
+  //std::cout << "poly_color: " << target.poly_color.size() << std::endl;
+
+  
+
+
+  
   int s9 = source.tri_texcoord.size();
   target.tri_texcoord.reserve(target.tri_texcoord.size()+s9);
   for(int i=0;i<s9;i++)
@@ -742,6 +929,17 @@ void RenderVertexArray::update_tri(int id, int buffer_id, int start, int end)
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[4]);
     if (s.tri_polys2(id))
       ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.tri_polys2(id));
+
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[5]);
+    if (s.tri_joint_polys(id))
+      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, start*sizeof(float)*4, (end-start)*sizeof(float)*4, s.tri_joint_polys(id));
+
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[6]);
+    if (s.tri_weight_polys(id))
+      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, start*sizeof(float)*4, (end-start)*sizeof(float)*4, s.tri_weight_polys(id));
+
+    
+
   } break;
   case 1: {
 #ifdef VAO
@@ -765,6 +963,16 @@ void RenderVertexArray::update_tri(int id, int buffer_id, int start, int end)
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[4]);
     if (s.quad_polys2(id))
       ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.quad_polys2(id));
+
+
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[5]);
+    if (s.quad_joint_polys(id))
+      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, start*sizeof(float)*4, (end-start)*sizeof(float)*4, s.quad_joint_polys(id));
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[6]);
+    if (s.quad_weight_polys(id))
+      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, start*sizeof(float)*4, (end-start)*sizeof(float)*4, s.quad_weight_polys(id));
+
+    
   } break;
   case 2: {
 #ifdef VAO
@@ -788,6 +996,17 @@ void RenderVertexArray::update_tri(int id, int buffer_id, int start, int end)
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[4]);
     if (s.poly_polys2(id))
       ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, start*sizeof(float)*3, (end-start)*sizeof(float)*3, s.poly_polys2(id));
+
+
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[5]);
+    if (s.poly_joint_polys(id))
+      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, start*sizeof(float)*4, (end-start)*sizeof(float)*4, s.poly_joint_polys(id));
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[6]);
+    if (s.poly_weight_polys(id))
+      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, start*sizeof(float)*4, (end-start)*sizeof(float)*4, s.poly_weight_polys(id));
+
+
+    
     
 
   } break;
@@ -819,6 +1038,10 @@ void RenderVertexArray::update(int id)
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[4]);
   ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, start*sizeof(float)*3, end*sizeof(float)*3, s.tri_polys2(id));
 
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[5]);
+  ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, start*sizeof(float)*4, end*sizeof(float)*4, s.tri_joint_polys(id));
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[6]);
+  ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, start*sizeof(float)*4, end*sizeof(float)*4, s.tri_weight_polys(id));
 
 
 #ifdef VAO
@@ -839,6 +1062,12 @@ void RenderVertexArray::update(int id)
   ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, s.quad_count(id)*sizeof(float)*3, s.quad_polys2(id));
 
 
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[5]);
+  ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, s.quad_count(id)*sizeof(float)*4, s.quad_joint_polys(id));
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[6]);
+  ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, s.quad_count(id)*sizeof(float)*4, s.quad_weight_polys(id));
+
+  
 #ifdef VAO
   ogl->glBindVertexArray(vao[2]);
 #endif
@@ -856,6 +1085,14 @@ void RenderVertexArray::update(int id)
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[4]);
   ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, s.poly_count_f(id)*sizeof(float)*3, s.poly_polys2(id));
 
+
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[5]);
+  ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, s.poly_count_f(id)*sizeof(float)*4, s.poly_joint_polys(id));
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[6]);
+  ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, s.poly_count_f(id)*sizeof(float)*4, s.poly_weight_polys(id));
+
+  
+  
 #ifdef VAO
   ogl->glBindVertexArray(0);
 #endif
@@ -863,7 +1100,7 @@ void RenderVertexArray::update(int id)
 }
 void RenderVertexArray::update_buffers(RenderVertexArray_bufferids ids)
 {
-  int s = 5;
+  int s = 7;
   for(int i=0;i<s;i++) { buffers[i]=ids.buffers[i]; buffers2[i]=ids.buffers2[i], buffers3[i]=ids.buffers3[i]; }
   int ss = 3;
   for(int i=0;i<ss;i++) { vao[i]=ids.vao[i]; }
@@ -921,7 +1158,7 @@ void RenderVertexArray::update_buffers(RenderVertexArray_bufferids ids)
 }
 void RenderVertexArray::fetch_buffers(RenderVertexArray_bufferids &ids)
 {
-  int s = 5;
+  int s = 7;
   for(int i=0;i<s;i++) { ids.buffers[i]=buffers[i]; ids.buffers2[i]=buffers2[i], ids.buffers3[i]=buffers3[i]; }
   int ss = 3;
   for(int i=0;i<ss;i++) { ids.vao[i]=vao[i]; }
@@ -998,6 +1235,8 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
   ogl->glGenBuffers(1,&buffers[2]);
   ogl->glGenBuffers(1,&buffers[3]);
   ogl->glGenBuffers(1,&buffers[4]);
+  ogl->glGenBuffers(1,&buffers[5]);
+  ogl->glGenBuffers(1,&buffers[6]);
   ogl->glGenBuffers(1, &pos_buffer);
   ogl->glGenBuffers(1, &pos_buffer_matrix);
   VertexArraySet::Polys *p = s.m_set[id];
@@ -1060,6 +1299,12 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[4]);
   ogl->glBufferData(Low_GL_ARRAY_BUFFER, tri_count*sizeof(float)*3, isnull?0:s.tri_polys2(id), Low_GL_STATIC_DRAW);
 
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[5]);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, tri_count*sizeof(float)*4, isnull?0:s.tri_joint_polys(id), Low_GL_STATIC_DRAW);
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[6]);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, tri_count*sizeof(float)*4, isnull?0:s.tri_weight_polys(id), Low_GL_STATIC_DRAW);
+
+  
   {
   // ATTRIB STARTS HERE
   int ss = p->tri_attribs.size();
@@ -1098,6 +1343,8 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
   ogl->glGenBuffers(1,&buffers2[2]);
   ogl->glGenBuffers(1,&buffers2[3]);
   ogl->glGenBuffers(1,&buffers2[4]);
+  ogl->glGenBuffers(1,&buffers2[5]);
+  ogl->glGenBuffers(1,&buffers2[6]);
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[0]);
   ogl->glBufferData(Low_GL_ARRAY_BUFFER, quad_count*sizeof(float)*3, isnull?0:s.quad_polys(id), Low_GL_STATIC_DRAW);
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[1]);
@@ -1111,6 +1358,13 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[4]);
   ogl->glBufferData(Low_GL_ARRAY_BUFFER, quad_count*sizeof(float)*3, isnull?0:s.quad_polys2(id), Low_GL_STATIC_DRAW);
 
+
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[5]);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, quad_count*sizeof(float)*4, isnull?0:s.quad_joint_polys(id), Low_GL_STATIC_DRAW);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[6]);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, quad_count*sizeof(float)*4, isnull?0:s.quad_weight_polys(id), Low_GL_STATIC_DRAW);
+
+  
   {
   int ss = p->quad_attribs.size();
   std::map<int,std::vector<float> >::iterator ii = p->quad_attribs.begin();
@@ -1147,6 +1401,8 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
   ogl->glGenBuffers(1,&buffers3[2]);
   ogl->glGenBuffers(1,&buffers3[3]);
   ogl->glGenBuffers(1,&buffers3[4]);
+  ogl->glGenBuffers(1,&buffers3[5]);
+  ogl->glGenBuffers(1,&buffers3[6]);
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[0]);
   ogl->glBufferData(Low_GL_ARRAY_BUFFER, poly_count*sizeof(float)*3, isnull?0:s.poly_polys(id), Low_GL_STATIC_DRAW);
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[1]);
@@ -1160,6 +1416,13 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[4]);
   ogl->glBufferData(Low_GL_ARRAY_BUFFER, poly_count*sizeof(float)*3, isnull?0:s.poly_polys2(id), Low_GL_STATIC_DRAW);
 
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[5]);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, poly_count*sizeof(float)*4, isnull?0:s.poly_joint_polys(id), Low_GL_STATIC_DRAW);
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[6]);
+  ogl->glBufferData(Low_GL_ARRAY_BUFFER, poly_count*sizeof(float)*4, isnull?0:s.poly_weight_polys(id), Low_GL_STATIC_DRAW);
+
+  
+  
   {
 #if 1
   int ss = p->poly_attribs.size();
@@ -1209,7 +1472,13 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[4]);
     ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
 
-    int counter=6;
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[5]);
+    ogl->glVertexAttribPointer(11, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[6]);
+    ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+
+    
+    int counter=8;
 
     {
   int ss = p->tri_attribs.size();
@@ -1254,7 +1523,13 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
     ogl->glVertexAttribPointer(3, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[4]);
     ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
-    counter=6;
+
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[5]);
+    ogl->glVertexAttribPointer(11, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[6]);
+    ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+
+    counter=8;
     {
   int ss = p->quad_attribs.size();
   for(int i=0;i<ss;i++)
@@ -1301,6 +1576,12 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
     ogl->glVertexAttribPointer(3, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[4]);
     ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[5]);
+    ogl->glVertexAttribPointer(11, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[6]);
+    ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+
     counter=6;
 
     {
@@ -1348,6 +1629,8 @@ void RenderVertexArray::del()
   ogl->glDeleteBuffers(1,&buffers[2]);
   ogl->glDeleteBuffers(1,&buffers[3]);
   ogl->glDeleteBuffers(1,&buffers[4]);
+  ogl->glDeleteBuffers(1,&buffers[5]);
+  ogl->glDeleteBuffers(1,&buffers[6]);
   ogl->glDeleteBuffers(1,&pos_buffer);
   ogl->glDeleteBuffers(1,&pos_buffer_matrix);
 
@@ -1356,12 +1639,16 @@ void RenderVertexArray::del()
   ogl->glDeleteBuffers(1,&buffers2[2]);
   ogl->glDeleteBuffers(1,&buffers2[3]);
   ogl->glDeleteBuffers(1,&buffers2[4]);
+  ogl->glDeleteBuffers(1,&buffers2[5]);
+  ogl->glDeleteBuffers(1,&buffers2[6]);
 
   ogl->glDeleteBuffers(1,&buffers3[0]);
   ogl->glDeleteBuffers(1,&buffers3[1]);
   ogl->glDeleteBuffers(1,&buffers3[2]);
   ogl->glDeleteBuffers(1,&buffers3[3]);
   ogl->glDeleteBuffers(1,&buffers3[4]);
+  ogl->glDeleteBuffers(1,&buffers3[5]);
+  ogl->glDeleteBuffers(1,&buffers3[6]);
 }
 void RenderVertexArray::prepare_instanced_matrix(int id, Matrix *positions, int size)
 {
@@ -1479,14 +1766,28 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[4]);
     ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
+
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[5]);
+    ogl->glVertexAttribPointer(11, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[6]);
+    ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+
 #endif
 
 #if 1
     ogl->glEnableVertexAttribArray(0);
+    if (s.has_normal)
     ogl->glEnableVertexAttribArray(1);
+    if (s.has_color)
     ogl->glEnableVertexAttribArray(2);
-    ogl->glEnableVertexAttribArray(3);
+    if (s.has_texcoord)
+      ogl->glEnableVertexAttribArray(3);
     ogl->glEnableVertexAttribArray(4);
+
+    if (s.has_skeleton) {
+    ogl->glEnableVertexAttribArray(11);
+    ogl->glEnableVertexAttribArray(12);
+    }
 #endif
 
       ogl->glDrawArraysInstanced(Low_GL_TRIANGLES, 0, tri_count, size);
@@ -1535,6 +1836,10 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
   ogl->glVertexAttribDivisor(3, 0);
   ogl->glVertexAttribDivisor(4, 0);
 
+  ogl->glVertexAttribDivisor(11, 0);
+  ogl->glVertexAttribDivisor(12, 0);
+
+  
 
 #ifndef VAO
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[0]);
@@ -1547,15 +1852,28 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
     ogl->glVertexAttribPointer(3, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[4]);
     ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[5]);
+    ogl->glVertexAttribPointer(11, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[6]);
+    ogl->glVertexAttribPointer(12, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
 #endif
 
 #if 1
     ogl->glEnableVertexAttribArray(0);
-    ogl->glEnableVertexAttribArray(1);
-    ogl->glEnableVertexAttribArray(2);
-    ogl->glEnableVertexAttribArray(3);
+    if (s.has_normal)
+      ogl->glEnableVertexAttribArray(1);
+    if (s.has_color)
+      ogl->glEnableVertexAttribArray(2);
+    if (s.has_texcoord)
+      ogl->glEnableVertexAttribArray(3);
     ogl->glEnableVertexAttribArray(4);
+    if (s.has_skeleton) {
+      ogl->glEnableVertexAttribArray(11);
+      ogl->glEnableVertexAttribArray(12);
+    }
 #endif
       ogl->glDrawArraysInstanced(Low_GL_TRIANGLES, 0, quad_count, size);
       //std::cout << "InstancingQUAD: " << quad_count << " " << size << std::endl;
@@ -1569,6 +1887,8 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
     ogl->glDisableVertexAttribArray(8);
     ogl->glDisableVertexAttribArray(9);
     ogl->glDisableVertexAttribArray(10);
+    ogl->glDisableVertexAttribArray(11);
+    ogl->glDisableVertexAttribArray(12);
 #endif
     }
 
@@ -1601,6 +1921,8 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
   ogl->glVertexAttribDivisor(2, 0);
   ogl->glVertexAttribDivisor(3, 0);
   ogl->glVertexAttribDivisor(4, 0);
+  ogl->glVertexAttribDivisor(11, 0);
+  ogl->glVertexAttribDivisor(12, 0);
 
 
 #ifndef VAO
@@ -1615,14 +1937,28 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[4]);
     ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
+
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[5]);
+    ogl->glVertexAttribPointer(11, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[6]);
+    ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+
 #endif
 
 #if 1
     ogl->glEnableVertexAttribArray(0);
-    ogl->glEnableVertexAttribArray(1);
-    ogl->glEnableVertexAttribArray(2);
-    ogl->glEnableVertexAttribArray(3);
+    if (s.has_normal)
+      ogl->glEnableVertexAttribArray(1);
+    if (s.has_color)
+      ogl->glEnableVertexAttribArray(2);
+    if (s.has_texcoord)
+      ogl->glEnableVertexAttribArray(3);
     ogl->glEnableVertexAttribArray(4);
+
+    if (s.has_skeleton) {
+      ogl->glEnableVertexAttribArray(11);
+      ogl->glEnableVertexAttribArray(12);
+    }
 #endif
       ogl->glDrawArraysInstanced(Low_GL_TRIANGLE_STRIP, 0, poly_count, size);
       //std::cout << "InstancingQUAD: " << quad_count << " " << size << std::endl;
@@ -1637,6 +1973,8 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
     ogl->glDisableVertexAttribArray(8);
     ogl->glDisableVertexAttribArray(9);
     ogl->glDisableVertexAttribArray(10);
+    ogl->glDisableVertexAttribArray(11);
+    ogl->glDisableVertexAttribArray(12);
 #endif
     }
 
@@ -1675,6 +2013,10 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
   ogl->glVertexAttribDivisor(3, 0);
   ogl->glVertexAttribDivisor(4, 0);
 
+  ogl->glVertexAttribDivisor(11, 0);
+  ogl->glVertexAttribDivisor(12, 0);
+
+  
 
 #ifndef VAO
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[0]);
@@ -1688,14 +2030,29 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[4]);
     ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
+
+
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[5]);
+    ogl->glVertexAttribPointer(11, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[6]);
+    ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+
 #endif
 
 #if 1
     ogl->glEnableVertexAttribArray(0);
-    ogl->glEnableVertexAttribArray(1);
+    if (s.has_normal)
+      ogl->glEnableVertexAttribArray(1);
+    if (s.has_color)
     ogl->glEnableVertexAttribArray(2);
-    ogl->glEnableVertexAttribArray(3);
+    if (s.has_texcoord)
+      ogl->glEnableVertexAttribArray(3);
     ogl->glEnableVertexAttribArray(4);
+
+    if (s.has_skeleton) {
+      ogl->glEnableVertexAttribArray(11);
+      ogl->glEnableVertexAttribArray(12);
+    }
 #endif
 
       ogl->glDrawArraysInstanced(Low_GL_TRIANGLES, 0, tri_count, size);
@@ -1708,6 +2065,10 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
     ogl->glDisableVertexAttribArray(3);
     ogl->glDisableVertexAttribArray(4);
     ogl->glDisableVertexAttribArray(5);
+
+    ogl->glDisableVertexAttribArray(11);
+    ogl->glDisableVertexAttribArray(12);
+
 #endif  
     }
 
@@ -1732,7 +2093,10 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
   ogl->glVertexAttribDivisor(3, 0);
   ogl->glVertexAttribDivisor(4, 0);
 
+  ogl->glVertexAttribDivisor(11, 0);
+  ogl->glVertexAttribDivisor(12, 0);
 
+  
 #ifndef VAO
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[0]);
     ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
@@ -1745,14 +2109,29 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[4]);
     ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
+
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[5]);
+    ogl->glVertexAttribPointer(11, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[6]);
+    ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+
 #endif
 
 #if 1
     ogl->glEnableVertexAttribArray(0);
-    ogl->glEnableVertexAttribArray(1);
-    ogl->glEnableVertexAttribArray(2);
-    ogl->glEnableVertexAttribArray(3);
+    if (s.has_normal)
+      ogl->glEnableVertexAttribArray(1);
+    if (s.has_color)
+      ogl->glEnableVertexAttribArray(2);
+    if (s.has_texcoord)
+      ogl->glEnableVertexAttribArray(3);
     ogl->glEnableVertexAttribArray(4);
+
+    if (s.has_skeleton) {
+      ogl->glEnableVertexAttribArray(11);
+      ogl->glEnableVertexAttribArray(12);
+    }
+      
 #endif
       ogl->glDrawArraysInstanced(Low_GL_TRIANGLES, 0, quad_count, size);
       //std::cout << "InstancingQUAD: " << quad_count << " " << size << std::endl;
@@ -1763,6 +2142,10 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
     ogl->glDisableVertexAttribArray(3);
     ogl->glDisableVertexAttribArray(4);
     ogl->glDisableVertexAttribArray(5);
+
+    ogl->glDisableVertexAttribArray(11);
+    ogl->glDisableVertexAttribArray(12);
+
 #endif
     }
 
@@ -1787,6 +2170,10 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
   ogl->glVertexAttribDivisor(3, 0);
   ogl->glVertexAttribDivisor(4, 0);
 
+  ogl->glVertexAttribDivisor(11, 0);
+  ogl->glVertexAttribDivisor(12, 0);
+
+  
 
 #ifndef VAO
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[0]);
@@ -1800,14 +2187,27 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[4]);
     ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
+
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[5]);
+    ogl->glVertexAttribPointer(11, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[6]);
+    ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+
 #endif
 
 #if 1
     ogl->glEnableVertexAttribArray(0);
-    ogl->glEnableVertexAttribArray(1);
-    ogl->glEnableVertexAttribArray(2);
-    ogl->glEnableVertexAttribArray(3);
+    if (s.has_normal)
+      ogl->glEnableVertexAttribArray(1);
+    if (s.has_color)
+      ogl->glEnableVertexAttribArray(2);
+    if (s.has_texcoord)
+      ogl->glEnableVertexAttribArray(3);
     ogl->glEnableVertexAttribArray(4);
+    if (s.has_skeleton) {
+      ogl->glEnableVertexAttribArray(11);
+      ogl->glEnableVertexAttribArray(12);
+    }
 #endif
       ogl->glDrawArraysInstanced(Low_GL_TRIANGLE_STRIP, 0, poly_count, size);
       //std::cout << "InstancingQUAD: " << quad_count << " " << size << std::endl;
@@ -1819,6 +2219,8 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
     ogl->glDisableVertexAttribArray(3);
     ogl->glDisableVertexAttribArray(4);
     ogl->glDisableVertexAttribArray(5);
+    ogl->glDisableVertexAttribArray(11);
+    ogl->glDisableVertexAttribArray(12);
 #endif
     }
 
@@ -1854,6 +2256,12 @@ void RenderVertexArray::render(int id)
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[4]);
     ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
+
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[5]);
+    ogl->glVertexAttribPointer(11, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[6]);
+    ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+
     {
   int ss = p->tri_attribs.size();
   for(int i=0;i<ss;i++)
@@ -1881,11 +2289,17 @@ void RenderVertexArray::render(int id)
 
 #if 1
     ogl->glEnableVertexAttribArray(0);
-    ogl->glEnableVertexAttribArray(1);
-    ogl->glEnableVertexAttribArray(2);
-    ogl->glEnableVertexAttribArray(3);
+    if (s.has_normal) 
+      ogl->glEnableVertexAttribArray(1);
+    if (s.has_color)
+      ogl->glEnableVertexAttribArray(2);
+    if (s.has_texcoord)
+      ogl->glEnableVertexAttribArray(3);
     ogl->glEnableVertexAttribArray(4);
-
+    if (s.has_skeleton) {
+      ogl->glEnableVertexAttribArray(11);
+      ogl->glEnableVertexAttribArray(12);
+    }
     counter = 6;
     {
   int ss = p->tri_attribs.size();
@@ -1912,6 +2326,8 @@ void RenderVertexArray::render(int id)
     ogl->glDisableVertexAttribArray(2);
     ogl->glDisableVertexAttribArray(3);
     ogl->glDisableVertexAttribArray(4);
+    ogl->glDisableVertexAttribArray(11);
+    ogl->glDisableVertexAttribArray(12);
 
 
     counter = 6;
@@ -1952,15 +2368,28 @@ void RenderVertexArray::render(int id)
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[4]);
     ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
+
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[5]);
+    ogl->glVertexAttribPointer(11, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[6]);
+    ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+
 #endif
 
 #if 1
     ogl->glEnableVertexAttribArray(0);
-    ogl->glEnableVertexAttribArray(1);
-    ogl->glEnableVertexAttribArray(2);
-    ogl->glEnableVertexAttribArray(3);
+    if (s.has_normal)
+      ogl->glEnableVertexAttribArray(1);
+    if (s.has_color)
+      ogl->glEnableVertexAttribArray(2);
+    if (s.has_texcoord)
+      ogl->glEnableVertexAttribArray(3);
     ogl->glEnableVertexAttribArray(4);
 
+    if (s.has_skeleton) {
+      ogl->glEnableVertexAttribArray(11);
+      ogl->glEnableVertexAttribArray(12);
+    }
 
     counter = 6;
     {
@@ -1988,6 +2417,8 @@ void RenderVertexArray::render(int id)
     ogl->glDisableVertexAttribArray(2);
     ogl->glDisableVertexAttribArray(3);
     ogl->glDisableVertexAttribArray(4);
+    ogl->glDisableVertexAttribArray(11);
+    ogl->glDisableVertexAttribArray(12);
 
 
     counter = 6;
@@ -2027,14 +2458,28 @@ void RenderVertexArray::render(int id)
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[4]);
     ogl->glVertexAttribPointer(4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
+
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[5]);
+    ogl->glVertexAttribPointer(11, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[6]);
+    ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+
 #endif
 
 #if 1
     ogl->glEnableVertexAttribArray(0);
+    if (s.has_normal)
     ogl->glEnableVertexAttribArray(1);
-    ogl->glEnableVertexAttribArray(2);
-    ogl->glEnableVertexAttribArray(3);
+    if (s.has_color)
+      ogl->glEnableVertexAttribArray(2);
+    if (s.has_texcoord)
+      ogl->glEnableVertexAttribArray(3);
     ogl->glEnableVertexAttribArray(4);
+    
+    if (s.has_skeleton) {
+      ogl->glEnableVertexAttribArray(11);
+      ogl->glEnableVertexAttribArray(12);
+    }
 #endif
       ogl->glDrawArrays(Low_GL_TRIANGLE_STRIP, 0, poly_count);
 #if 1
@@ -2043,6 +2488,8 @@ void RenderVertexArray::render(int id)
     ogl->glDisableVertexAttribArray(2);
     ogl->glDisableVertexAttribArray(3);
     ogl->glDisableVertexAttribArray(4);
+    ogl->glDisableVertexAttribArray(11);
+    ogl->glDisableVertexAttribArray(12);
 #endif
   }
 
@@ -2162,6 +2609,7 @@ void *thread_func(void *data)
   ThreadInfo *ti = (ThreadInfo*)data;
   //ti->va->reserve(0);
   ti->va->copy(ti->start_range, ti->end_range,ti->attrib, ti->attribi);
+  pthread_exit(NULL);
   return 0;
 #else
   ThreadInfo *ti = (ThreadInfo*)data;
@@ -2209,6 +2657,7 @@ void *thread_func(void *data)
       ti->set->free_reserve(0);
     }
  #endif
+  pthread_exit(NULL);
   return 0;
 }
 #endif
@@ -2252,12 +2701,30 @@ Counts CalcOffsets(FaceCollection *coll, int start)
     }
   return c;
 }
+std::string g_msg_string;
+bool is_texture_usage_confirmed(const FaceCollection *p);
+bool is_texture_usage_confirmed(VertexArraySet *set);
 
 void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vector<int> attribs, std::vector<int> attribsi)
-  {
+{
+  if (!&coll) return;
     //std::cout << "Copy: " << start_range << " " << end_range << std::endl;
     //int ss = coll.NumFaces();
     //std::cout << "NumFaces: " << ss << std::endl;
+    bool has_normal2 = coll.has_normal();
+    bool has_attrib2 = coll.has_attrib();
+    bool has_color2 = coll.has_color();
+    bool has_texcoord2 = coll.has_texcoord() && (is_texture_usage_confirmed(&s)||is_texture_usage_confirmed(&coll));
+    bool has_skeleton2 = coll.has_skeleton();
+
+    g_msg_string += std::string(has_normal2?"normal":"!n") + "+" + std::string(has_attrib2?"attrib":"!a") + "+" + std::string(has_color2?"color":"!c") + "+" + std::string(has_texcoord2?"texcoord":"!t") + "+" + std::string(has_skeleton2?"skeleton":"!s") + "\n";
+    
+    s.has_normal = has_normal2;
+    s.has_attrib = has_attrib2;
+    s.has_color = has_color2;
+    s.has_texcoord = has_texcoord2;
+    s.has_skeleton = has_skeleton2;
+    
     for(int i=start_range;i<end_range;i++)
       {
 	//std::cout << "F" << i << std::endl;
@@ -2271,7 +2738,8 @@ void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vecto
 	    //std::cout << "EFP!" << i << std::endl;
 	    p2[j] = coll.EndFacePoint(i,j);
 	    //std::cout << "PN!" << i << std::endl;
-	    v[j] = coll.PointNormal(i,j);
+	    if (has_normal2)
+	      v[j] = coll.PointNormal(i,j);
 
 #if 0
 	    for (int k=0;k<(int)attribs.size();k++)
@@ -2285,11 +2753,24 @@ void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vecto
 	      }
 #endif
 	    //std::cout << "COL!" << i << std::endl;
-	    c[j] = coll.Color(i,j);
+	    if (has_color2)
+	      c[j] = coll.Color(i,j);
 	    //std::cout << "Tex!" << i << std::endl;
-	    Point2d p = coll.TexCoord(i,j);
-	    float p2 = coll.TexCoord3(i,j);
-	    tex[j] = Point(p.x,p.y,p2);
+	    if (has_texcoord2) {
+	      Point2d p = coll.TexCoord(i,j);
+	      float p2 = coll.TexCoord3(i,j);
+	      tex[j] = Point(p.x,p.y,p2);
+	    }
+
+	    if (has_skeleton2) {
+	      VEC4 jj = coll.Joints(i,j);
+	      VEC4 ww = coll.Weights(i,j);
+	      //if (jj.x>63.0)
+	      //std::cout << "i=" << i << " j=" << j << "::" << jj.x << std::endl;
+	      joints[j] = jj;
+	      weights[j] = ww;
+	    }
+	    
 	    //std::cout << "VA: " << tex[j] << std::endl;
 	  }
 	//std::cout << "push_p!" << i << std::endl;
@@ -2297,7 +2778,8 @@ void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vecto
 	//  std::cout << "push_p2!" << i << std::endl;
 	s.push_poly2(0, w, &p2[0]);
 	//  std::cout << "push_n!" << i << std::endl
-	s.push_normal(0, w, &v[0]);
+	if (has_normal2)
+	  s.push_normal(0, w, &v[0]);
 
 #if 0
 	for (int k=0;k<(int)attribs.size();k++)
@@ -2306,10 +2788,17 @@ void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vecto
 	  s.push_attribi(0, attribsi[k], w, &ai[k][0]);
 #endif
 	//  std::cout << "push_c!" << std::endl;
-	s.push_color(0, w, &c[0]);
+	if (has_color2)
+	  s.push_color(0, w, &c[0]);
 	//  std::cout << "push_texcoord!" << std::endl;
-	s.push_texcoord(0, w, &tex[0]);
-
+	if (has_texcoord2)
+	  s.push_texcoord(0, w, &tex[0]);
+	if (has_skeleton2)
+	  {
+	    s.push_joint(0,w,&joints[0]);
+	    s.push_weight(0,w,&weights[0]);
+	  }
+	
       }
     //std::cout << "Copy returns" << std::endl;
   }

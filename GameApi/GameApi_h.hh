@@ -89,6 +89,12 @@
 //#define OPENGL_ES 1
 #endif
 
+//#define WAYLAND 1
+
+#ifdef WAYLAND
+#define OPENGL_ES 1
+#endif
+
 
 #include "GameApi.hh"
 #include <vector>
@@ -462,7 +468,7 @@ struct IDImpl
   //int type; 
 };
 
-struct Font
+struct Font22
 {
   Bitmap<int> *bm;
 };
@@ -725,6 +731,7 @@ struct EnvImpl
   std::vector<FloatArray2*> farray;
   std::vector<MemoryBlock*> memblock;
   std::vector<UrlMemoryMap*> urlmemmap;
+  std::vector<Attach*> attach;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -733,7 +740,7 @@ struct EnvImpl
 #ifdef HAS_FREETYPE
   FT_Library lib;
 #endif
-  std::vector<Font> fonts;
+  std::vector<Font22> fonts;
   static ::EnvImpl *Environment(GameApi::Env *e) { return (EnvImpl*)e->envimpl; }
   EXPORT void free_temp_memory()
   {
@@ -942,7 +949,7 @@ struct EnvImpl
   int s0 = fonts.size();
   for(int i0=0;i0<s0;i0++)
     {
-      Font f = fonts[i0];
+      Font22 f = fonts[i0];
       delete f.bm;
       fonts[i0].bm=0;
     }
@@ -1036,6 +1043,7 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::ATT add_attach(GameApi::Env &e, Attach *att);
 GameApi::PKG add_urlmemmap(GameApi::Env &e, UrlMemoryMap *map);
 GameApi::MB add_memblock(GameApi::Env &e, MemoryBlock *block);
 GameApi::VFi add_velocity_field(GameApi::Env &e, VelocityField *field);
@@ -1183,6 +1191,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+Attach *find_attach(GameApi::Env &e, GameApi::ATT att);
 UrlMemoryMap *find_urlmemmap(GameApi::Env &e, GameApi::PKG p);
 MemoryBlock *find_memblock(GameApi::Env &e, GameApi::MB b);
 VelocityField *find_velocity_field(GameApi::Env &e, GameApi::VFi field);

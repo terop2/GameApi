@@ -782,6 +782,21 @@ private:
 };
 
 
+class LI_empty : public LineCollection
+{
+public:
+  LI_empty() { }
+  virtual void Prepare() { }
+  virtual int NumLines() const { return 0; }
+  virtual Point LinePoint(int line, int point) const { return Point(0.0,0.0,0.0); }
+  virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; }
+
+};
+GameApi::LI GameApi::LinesApi::li_empty()
+{
+  return add_line_array(e, new LI_empty);
+}
+
 class LI_Render_Inst3_matrix : public MainLoopItem
 {
 public:
@@ -2213,4 +2228,183 @@ GameApi::P GameApi::LinesApi::p_towards_normal(P p, float amount)
 {
   FaceCollection *coll = find_facecoll(e,p);
   return add_polygon2(e, new TowardsNormal(coll,amount),1);
+}
+
+
+struct LIStore
+{
+  Point p1,p2;
+  unsigned int c1,c2;
+};
+
+extern std::string gameapi_homepageurl;
+
+
+class LoadLI : public LineCollection
+{
+public:
+  LoadLI(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url), homepage(homepage) { pos.x=0.0; pos.y=0.0; pos.z=0.0; }
+  virtual void Prepare() {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    std::string code(vec->begin(), vec->end());
+    std::stringstream ss(code);
+    std::string line;
+    vec2 = std::vector<LIStore>();
+    while(std::getline(ss,line)) {
+      std::string word;
+      std::stringstream ss2(line);
+      ss2 >> word;
+      if (word=="end_alias") {
+	alias_map[current_alias] = alias_store;
+	alias_store=std::vector<std::string>();
+	current_alias='\0';
+      }
+      if (current_alias!='\0') { alias_store.push_back(line); continue; } 
+      if (word=="color") {
+	ss2 >> std::hex >> c1 >> std::hex >> c2 >> std::dec;
+      }
+      if (word=="line") {
+	LIStore store;
+	ss2 >> store.p1.x >> store.p1.y >> store.p1.z;
+	ss2 >> store.p2.x >> store.p2.y >> store.p2.z;
+	store.c1 = c1;
+	store.c2 = c2;
+	vec2.push_back(store);
+      }
+      if (word=="point_at") {
+	ss2>> pos.x >> pos.y >> pos.z;
+      }
+      if (word=="line_to") {
+	LIStore store;
+	store.p1 = pos;
+	ss2 >> store.p2.x >> store.p2.y >> store.p2.z;
+	pos = store.p2;
+	store.c1 = c1;
+	store.c2 = c2;
+	vec2.push_back(store);
+      }
+      if (word=="line_delta") {
+	LIStore store;
+	store.p1 = pos;
+	store.p2 = pos;
+	Vector delta;
+	ss2 >> delta.dx >> delta.dy >> delta.dz;
+	store.p2+=delta;
+	pos = store.p2;
+	store.c1 = c1;
+	store.c2 = c2;
+	vec2.push_back(store);	
+      }
+      if (word=="start_alias") {
+	ss2 >> current_alias;
+      }
+      if (word=="execute_alias") {
+	std::string chars;
+	ss2 >> chars;
+	int s = chars.size();
+	for(int i=0;i<s;i++) {
+	  std::vector<std::string> alias = alias_map[chars[i]];
+	  int s2 = alias.size();
+	  for(int i=0;i<s2;i++) {
+	    std::string line = alias[i];
+	    handle_line(line);
+	  }
+	}
+      }
+    }
+  }
+  void handle_line(std::string line) {
+
+    std::string word;
+    std::stringstream ss2(line);
+    ss2 >> word;
+    
+    if (word=="color") {
+      ss2 >> std::hex >> c1 >> std::hex >> c2 >> std::dec;
+    }
+    if (word=="line") {
+      LIStore store;
+      ss2 >> store.p1.x >> store.p1.y >> store.p1.z;
+      ss2 >> store.p2.x >> store.p2.y >> store.p2.z;
+      store.c1 = c1;
+      store.c2 = c2;
+      vec2.push_back(store);
+    }
+    if (word=="point_at") {
+      ss2>> pos.x >> pos.y >> pos.z;
+    }
+    if (word=="line_to") {
+      LIStore store;
+      store.p1 = pos;
+      ss2 >> store.p2.x >> store.p2.y >> store.p2.z;
+      pos = store.p2;
+      store.c1 = c1;
+      store.c2 = c2;
+      vec2.push_back(store);
+    }
+    if (word=="line_delta") {
+      LIStore store;
+      store.p1 = pos;
+      store.p2 = pos;
+      Vector delta;
+      ss2 >> delta.dx >> delta.dy >> delta.dz;
+      store.p2+=delta;
+      pos = store.p2;
+      store.c1 = c1;
+      store.c2 = c2;
+      vec2.push_back(store);	
+    }
+    if (word=="execute_alias") {
+	std::string chars;
+	ss2 >> chars;
+	int s = chars.size();
+	for(int i=0;i<s;i++) {
+	  std::vector<std::string> alias = alias_map[chars[i]];
+	  int s2 = alias.size();
+	  for(int i=0;i<s2;i++) {
+	    std::string line = alias[i];
+	    handle_line(line);
+	  }
+	}
+    }
+
+  }
+  virtual int NumLines() const { return vec2.size(); }
+  virtual Point LinePoint(int line, int point) const
+  {
+    if (line>=0 && line<vec2.size()) {
+      LIStore s = vec2[line];
+      if (point==0) return s.p1;
+      if (point==1) return s.p2;
+    }
+    Point p(0.0,0.0,0.0);
+    return p;
+  }
+  virtual unsigned int LineColor(int line, int point) const {
+    if (line>=0 && line<vec2.size()) {
+      LIStore s = vec2[line];
+      if (point==0) return s.c1;
+      if (point==1) return s.c2;
+    }
+    return 0xffffffff;
+  }
+private:
+  GameApi::Env &env;
+  std::string url;
+  std::string homepage;
+  unsigned int c1=0xffffffff, c2 = 0xffffffff;
+  std::vector<LIStore> vec2;
+  Point pos;
+  char current_alias = '\0';
+  std::vector<std::string> alias_store;
+  std::map<char, std::vector<std::string> > alias_map;
+};
+
+GameApi::LI GameApi::LinesApi::li_url(std::string url)
+{
+  return add_line_array(e, new LoadLI(e,url, gameapi_homepageurl));
 }

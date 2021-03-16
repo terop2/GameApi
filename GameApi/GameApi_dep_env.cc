@@ -680,7 +680,7 @@ void idb_onerror_async_cb(void *ptr)
 
 #ifdef EMSCRIPTEN
 void fetch_download_succeed(emscripten_fetch_t *fetch) {
-  //std::cout << "Fetch success: " << fetch->numBytes << std::endl;
+  std::cout << "Fetch success: " << fetch->numBytes << std::endl;
   //std::cout << "Fetch data:" << (unsigned char*)fetch->data << std::endl;
   LoadData *data =(LoadData*)fetch->userData;
   const char *url = data->buf3;
@@ -688,6 +688,7 @@ void fetch_download_succeed(emscripten_fetch_t *fetch) {
   emscripten_fetch_close(fetch);
 }
 void fetch_download_failed(emscripten_fetch_t *fetch) {
+  std::cout << "Fetch failed: " << fetch->numBytes << std::endl;
   LoadData *data =(LoadData*)fetch->userData;
   const char *url = data->buf3;
   onerror_async_cb(333, (void*)url, 0, "fetch failed!");
@@ -871,6 +872,9 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     //std::cout << "ASync pending inc (load_urls) -->" << async_pending_count << std::endl;
 
     //emscripten_async_wget_data(buf2, (void*)buf2 , &onload_async_cb, &onerror_async_cb);
+
+  std::cout << "Fetch start" << std::endl;
+
     
     LoadData *ld = new LoadData;
     ld->buf2 = buf2;
@@ -890,6 +894,9 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     attr.requestHeaders = headers;
     emscripten_fetch(&attr, "load_url.php"); 
     //emscripten_async_wget2_data(buf2, "POST", url3.c_str(), (void*)buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
+
+  std::cout << "Fetch end" << std::endl;
+
     
 #if 0
     emscripten_fetch_attr_t attr;

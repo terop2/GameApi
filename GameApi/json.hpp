@@ -45,6 +45,7 @@ SOFTWARE.
 #include <numeric> // accumulate
 #include <string> // string, stoi, to_string
 #include <utility> // declval, forward, move, pair, swap
+#include <iostream>
 
 // #include <nlohmann/json_fwd.hpp>
 #ifndef NLOHMANN_JSON_FWD_HPP
@@ -974,7 +975,10 @@ class parse_error : public exception
 
   private:
     parse_error(int id_, std::size_t byte_, const char* what_arg)
-        : exception(id_, what_arg), byte(byte_) {}
+        : exception(id_, what_arg), byte(byte_) {
+
+      std::cout << "PARSE ERROR:" << id_ << std::endl;
+    }
 
     static std::string position_string(const position_t& pos)
     {
