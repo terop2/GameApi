@@ -101,6 +101,10 @@ void VertexArraySet::free_reserve(int id)
 }
 void VertexArraySet::set_reserve(int id, int tri_count, int quad_count, int poly_count)
 {
+  if (tri_count<0 || tri_count>10000000) return;
+  if (quad_count<0 || quad_count>10000000) return;
+  if (poly_count<0 || poly_count>10000000) return;
+  
   Polys *p = m_set[id];
   if (!p)
     {
