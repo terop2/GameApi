@@ -5178,7 +5178,9 @@ ASyncData async_data[] = {
   { "polygon_api", "gltf_split_faces2", 2},
   { "mainloop_api", "gltf_anim4", 2},
   { "mainloop_api", "gltf_scene_anim", 2},
-  { "mainloop_api", "async_url", 0}
+  { "mainloop_api", "async_url", 0},
+  { "materials_api", "gltf_anim_material", 2},
+  { "materials_api", "gltf_anim_material2", 2}
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
@@ -6897,6 +6899,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "[ML]", "IF" },
 			 { "", "" },
 			 "ML", "font_api", "ml_chooser"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::key_ml,
+			 "key_ml",
+			 { "vec", "keys" },
+			 { "[ML]", "std::string" },
+			 { "", "zxcvbnmfghjklertyuiop" },
+			 "ML", "mainloop_api", "key_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::quake_area_fetcher,
 			 "if_qarea",
 			 { "start_x", "end_x", "start_z", "end_z" },
@@ -9826,8 +9834,14 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 "m_gltf_anim",
 			 { "ev", "base_url", "url", "skin_num", "animation", "num_timeindexes", "next", "key" },
 			 { "EveryApi&", "std::string", "std::string", "int", "int", "int", "MT", "int" },
-			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "0", "10", "", "32" },
+			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "0", "30", "", "32" },
 			 "MT", "materials_api", "gltf_anim_material"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_anim_material2,
+			 "m_gltf_anim2",
+			 { "ev", "base_url", "url", "skin_num", "num_timeindexes", "next", "keys" },
+			 { "EveryApi&", "std::string", "std::string", "int", "int", "MT", "std::string" },
+			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "30", "", "zxcvbnmfghjklertyuiop" },
+			 "MT", "materials_api", "gltf_anim_material2"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material3,
 			 "m_material",

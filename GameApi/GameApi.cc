@@ -25538,3 +25538,70 @@ bool is_texture_usage_confirmed(VertexArraySet *set)
   return false;
   
 }
+
+char key_mapping(char ch, int type)
+{
+  if (type!=0x300 && type!=0x301) return '@';
+  char res = ch;
+#ifdef LINUX
+  
+#endif
+#ifdef EMSCRIPTEN
+  if (ch>=4 && ch<=4+26) { res=ch-4; res+='a'; }
+  if (ch>=30 && ch<=38) { res=ch-30; res+='1'; }
+  if (ch==39) res='0';
+  if (ch==44) res=32;
+#endif
+#ifdef WIN32
+  switch(ch) {
+  };
+#endif
+  return res;
+}
+
+class KeyML : public MainLoopItem
+{
+public:
+  KeyML(std::vector<MainLoopItem*> items, std::string keys) : items(items), keys(keys) {}
+  virtual void logoexecute() { }
+  virtual void Prepare()
+  {
+    int s = items.size();
+    for(int i=0;i<s;i++) {
+      items[i]->Prepare();
+    }
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    items[current_item]->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    int ch = key_mapping(e.ch,e.type);
+    int s = keys.size();
+    for(int i=0;i<s;i++)
+      if (ch==keys[i]) {
+	if (i>=0 && i<items.size())
+	  current_item = i;
+	break;
+      }
+    items[current_item]->handle_event(e);
+  }
+     
+  virtual std::vector<int> shader_id() {
+    return items[current_item]->shader_id();
+  }
+private:
+  std::vector<MainLoopItem*> items;
+  std::string keys;
+  int current_item=0;
+};
+GameApi::ML GameApi::MainLoopApi::key_ml(std::vector<ML> vec, std::string keys)
+{
+  int s = vec.size();
+  std::vector<MainLoopItem*> items;
+  for(int i=0;i<s;i++) {
+    items.push_back(find_main_loop(e,vec[i]));
+  }
+  return add_main_loop(e, new KeyML(items, keys));
+}

@@ -301,6 +301,7 @@ public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
   //ML gltf_joint_matrices(EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, ML next);
+  ML key_ml(std::vector<ML> vec, std::string keys);
   ML async_url(std::string url, ML ml);
   ARR gltf_anim_skeleton(EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int channelk, int num_keyframes);
   IMPORT ML memmap_window2(EveryApi &ev, std::string url);
@@ -1375,7 +1376,9 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
+  IMPORT MT m_keys(EveryApi &ev, std::vector<MT> vec, std::string keys);
   IMPORT MT gltf_anim_material(EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int num_timeindexes, MT next, int key);
+  IMPORT MT gltf_anim_material2(EveryApi &e, std::string base_url, std::string url, int skin_num, int num_timeindexes, MT next, std::string keys);
   IMPORT MT toon_border(EveryApi &ev, MT next, float border_width, unsigned int color);
   IMPORT ARR material_pack_1(EveryApi &ev);
   IMPORT MT m_def(EveryApi &ev);
