@@ -99,11 +99,19 @@ void VertexArraySet::free_reserve(int id)
   p->quad_weight.clear();
   p->poly_weight.clear();
 }
+void stackTrace();
 void VertexArraySet::set_reserve(int id, int tri_count, int quad_count, int poly_count)
 {
-  if (tri_count<0 || tri_count>10000000) return;
-  if (quad_count<0 || quad_count>10000000) return;
-  if (poly_count<0 || poly_count>10000000) return;
+  if (tri_count<1 || tri_count>10000000) return;
+  if (quad_count<1 || quad_count>10000000) return;
+  if (poly_count<1 || poly_count>10000000) return;
+
+  // if (tri_count==58630) {
+  //  stackTrace();
+  //  std::cout << "BLOB" << std::endl;
+  //}
+  
+  //std::cout << "set_reserve: " << tri_count << " " << quad_count << " " << poly_count << std::endl;
   
   Polys *p = m_set[id];
   if (!p)

@@ -5365,6 +5365,7 @@ public:
   {
     shader.id = -1;
     firsttime = true;
+    va.id=0;
   }
   std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   //  int shader_id() { return shader.id; }
@@ -5372,7 +5373,9 @@ public:
   {
   }
   void Prepare() {
+    if (va.id==0) {
 	va = ev.polygon_api.create_vertex_array(p,false);
+    }
   }
   void execute(MainLoopEnv &e)
   { 
@@ -5529,7 +5532,9 @@ public:
   {
   }
   void Prepare() {
+    if (va.id==0) {
 	va = ev.polygon_api.create_vertex_array(p, true);
+    }
   }
   void execute(MainLoopEnv &e)
   { 
@@ -5691,7 +5696,9 @@ public:
   {
   }
   void Prepare() {
+    if (va.id==0) {
 	va = ev.polygon_api.create_vertex_array(p, true);
+    }
   }
   void execute(MainLoopEnv &e)
   { 
@@ -5864,8 +5871,9 @@ public:
   {
   }
   void Prepare() {
+    if (va.id==0){
 	va = ev.polygon_api.create_vertex_array(p, true);
-
+    }
   }
   void execute(MainLoopEnv &e)
   { 
@@ -6048,7 +6056,9 @@ public:
   {
   }
   void Prepare() {
+    if (va.id==0) {
 	va = ev.polygon_api.create_vertex_array(p, true);
+    }
   }
   void execute(MainLoopEnv &e)
   { 
