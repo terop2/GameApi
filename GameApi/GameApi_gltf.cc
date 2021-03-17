@@ -1886,6 +1886,14 @@ struct TransformObject
   double trans_x, trans_y, trans_z;
   Matrix m;
 };
+void print_transform(TransformObject o)
+{
+  std::cout << "Scale:" << o.scale_x << " " << o.scale_y << " " << o.scale_z << std::endl;
+  std::cout << "Rot:" << o.rot_x << " " << o.rot_y << " " << o.rot_z << " " << o.rot_w << std::endl;
+  std::cout << "Trans:" << o.trans_x << " " << o.trans_y << " " << o.trans_z << std::endl;
+  std::cout << "Matrix: " << o.m << std::endl;
+}
+
 TransformObject gltf_node_default()
 {
   TransformObject o;
@@ -1934,6 +1942,8 @@ TransformObject slerp_transform(TransformObject o, TransformObject o2, float val
   res.rot_z = res2[2];
   res.rot_w = res2[3];
 
+  for(int i=0;i<16;i++) res.m.matrix[i] = val*o2.m.matrix[i] + (1.0-val)*o.m.matrix[i];
+  
   // FIXME (TO BE REMOVED)
   //res.rot_x = val*o2.rot_x + (1.0-val)*o.rot_x;
   //res.rot_y = val*o2.rot_y + (1.0-val)*o.rot_y;
@@ -2752,7 +2762,7 @@ GameApi::ML gltf_anim3(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, i
 
 void slerp(float *prev, float *next, float val, float *res)
 {
-  float dot = prev[0]*next[0] + prev[1]*next[1] + prev[2]*next[2] + prev[3]+next[3];
+  float dot = prev[0]*next[0] + prev[1]*next[1] + prev[2]*next[2];
   if (dot<0.0) {
     next[0] = -next[0];
     next[1] = -next[1];
@@ -4118,7 +4128,7 @@ public:
 	    
 	    //tor[](i), end->operator[](i), time01);
 
-	    TransformObject obj = end_obj; //slerp_transform(start_obj,end_obj,time01);
+	    TransformObject obj = slerp_transform(start_obj,end_obj,time01);
 	    //Matrix m;
 	    //for(int j=0;j<16;j++) m.matrix[j]=(time01)*mend.matrix[j] + (1.0-time01)*mstart.matrix[j];
 
