@@ -6613,8 +6613,10 @@ public:
     obj2->HandleEvent(e);
   }
   void Prepare() {
-    if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
-    va = ev.polygon_api.create_vertex_array(p,false);
+    //if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
+    if (va.id==-1) {
+      va = ev.polygon_api.create_vertex_array(p,false);
+    }
     initialized=true;
   }
   void execute(MainLoopEnv &e)

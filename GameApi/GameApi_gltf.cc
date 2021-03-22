@@ -452,7 +452,9 @@ public:
     if (indices_index!=-1)
       indices_acc = &model->accessors[indices_index];
 
-    assert(indices_acc->type==TINYGLTF_TYPE_SCALAR);
+    if (indices_acc) {
+      assert(indices_acc->type==TINYGLTF_TYPE_SCALAR);
+    }
     //std::cout << "gltf component type: " << indices_acc->componentType << std::endl;
     //assert(indices_acc->componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT);
 
@@ -602,6 +604,12 @@ public:
     }
     if (mode==TINYGLTF_MODE_TRIANGLE_FAN) {
       return 1;
+    }
+    if (mode==TINYGLTF_MODE_TRIANGLES && position_acc) {
+      return position_acc->count/3;
+    }
+    if (mode==TINYGLTF_MODE_TRIANGLE_STRIP && position_acc) {
+      return position_acc->count-2;
     }
     std::cout << "TINYGLTF mode wrong in NumFaces() " << mode << std::endl;
     return 0;
@@ -841,10 +849,10 @@ public:
 	//return res;
 	//std::cout << "Attached end" << std::endl;
 	VEC4 res;
-	res.x = 0.5+int(((unsigned int)(pos_ptr2[0]))&0xff);
-	res.y = 0.5+int(((unsigned int)(pos_ptr2[1]))&0xff);
-	res.z = 0.5+int(((unsigned int)(pos_ptr2[2]))&0xff);
-	res.w = 0.5+int(((unsigned int)(pos_ptr2[3]))&0xff);
+	res.x = 0.5+int(((unsigned int)(pos_ptr4[0]))&0xff);
+	res.y = 0.5+int(((unsigned int)(pos_ptr4[1]))&0xff);
+	res.z = 0.5+int(((unsigned int)(pos_ptr4[2]))&0xff);
+	res.w = 0.5+int(((unsigned int)(pos_ptr4[3]))&0xff);
 	//std::cout << "Joints2: " << face << " " << point << "::" << res.x << ","<< res.y << "," << res.z << "," << res.w << std::endl;
 	return res;
 	//return int(((unsigned int)(pos_ptr2[num]))&0xff);
@@ -2509,10 +2517,11 @@ public:
     int count = input_acc->count;
     assert(input_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
     assert(input_acc->type==TINYGLTF_TYPE_SCALAR);
-    assert(stride==0);
+    if (stride==0) { stride=sizeof(float); }
+    //assert(stride==0);
     if (time_index>=0 && time_index<count) {
-      float *arr = (float*) dt3;
-      return arr[time_index];
+      float *arr = (float*) dt3 + stride*time_index;
+      return *arr;
     } else { return 0.0; }
 
     } else return 0.0;
@@ -2532,10 +2541,11 @@ public:
     int count = input_acc->count;
     assert(input_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
     assert(input_acc->type==TINYGLTF_TYPE_SCALAR);
-    assert(stride==0);
+    if (stride==0) { stride=sizeof(float); }
+    //assert(stride==0);
     if (time_index+1>=0 && time_index+1<count) {
-      float *arr = (float*) dt3;
-      return arr[time_index+1];
+      float *arr = (float*) dt3 + stride*(time_index+1);
+      return *arr;
     } else { return 0.0; }
     } else return 0.0;
   }
@@ -2828,10 +2838,11 @@ public:
       // std::cout << "GLTFSkeletonAnim::Prepare() start" << std::endl;
 
     load->Prepare();
-    
-    tinygltf::Skin *skin = &load->model.skins[skin_num];
-    int start_node = skin->skeleton;
-    recurse_node(start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+    if (skin_num>=0 && skin_num<load->model.skins.size()) {
+      tinygltf::Skin *skin = &load->model.skins[skin_num];
+      int start_node = skin->skeleton;
+      recurse_node(start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+     }
     }
   }
 
@@ -3745,6 +3756,7 @@ public:
   GLTF_Animation_Material(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int num_timeindexes, Material *next, int key) : e(e), ev(ev), load(load), skin_num(skin_num), animation(animation), num_timeindexes(num_timeindexes), next(next), key(key) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+    load->Prepare();
     GameApi::ML ml;
     ml.id = next->mat(p.id);
     std::vector<GameApi::ML> mls;
@@ -3758,6 +3770,7 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
+    load->Prepare();
     GameApi::ML ml;
     ml.id = next->mat_inst(p.id, pts.id);
     std::vector<GameApi::ML> mls;
@@ -3771,6 +3784,7 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
+    load->Prepare();
     GameApi::ML ml;
     ml.id = next->mat_inst_matrix(p.id, ms.id);
     std::vector<GameApi::ML> mls;
@@ -3784,6 +3798,7 @@ public:
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
+    load->Prepare();
     GameApi::ML ml;
     ml.id = next->mat_inst2(p.id, pta.id);
     std::vector<GameApi::ML> mls;
@@ -3797,6 +3812,7 @@ public:
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
+    load->Prepare();
     GameApi::ML ml;
     ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
     GameApi::ML ml_orig = gltf_joint_matrices2(e,ev,load,skin_num,animation,0,ml,false);
