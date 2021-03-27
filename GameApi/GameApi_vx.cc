@@ -109,10 +109,12 @@ public:
     p+=vec[v];
     return p;
   }
+  bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     return cube.PointNormal(face_to_face(face), point);
   }
+  bool has_attrib() const { return true; }
   virtual float Attrib(int face, int point, int id) const
   {
     return cube.Attrib(face_to_face(face), point, id);
@@ -121,10 +123,12 @@ public:
   {
     return cube.AttribI(face_to_face(face), point, id);
   }
+  bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
     return cube.Color(face_to_face(face), point);
   }
+  bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const
   {
     return cube.TexCoord(face_to_face(face), point);

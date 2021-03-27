@@ -35,6 +35,11 @@ public:
       }
     bm_id = 0;
     texture_id = s.texture_id;
+    has_normal = s.has_normal;
+    has_attrib = s.has_attrib;
+    has_color = s.has_color;
+    has_texcoord = s.has_texcoord;
+    has_skeleton = s.has_skeleton;
   }
   void clear_arrays()
   {
@@ -59,7 +64,9 @@ public:
   void push_attribi(int id, int attrib_id, int num, int *attribi);
   void push_color(int id, int num, unsigned int *colors);
   void push_texcoord(int id, int num, Point *points);
-
+  void push_joint(int id, int num, VEC4 *points);
+  void push_weight(int id, int num, VEC4 *points); 
+  
   void split_color(std::vector<float> &vec, unsigned int color);
 
   // way to get data out
@@ -117,6 +124,26 @@ public:
   int poly_color_count(int id) const { return m_set[id]->poly_color.size(); }
   const float *poly_color_polys(int id) const { return poly_color_count(id) ? &m_set[id]->poly_color[0] : NULL; }
 
+
+
+  int tri_joint_count(int id) const { return m_set[id]->tri_joint.size(); }
+  const VEC4 *tri_joint_polys(int id) const { return tri_joint_count(id) ? &m_set[id]->tri_joint[0] : NULL; }
+  int quad_joint_count(int id) const { return m_set[id]->quad_joint.size(); }
+  const VEC4 *quad_joint_polys(int id) const { return quad_joint_count(id) ? &m_set[id]->quad_joint[0] : NULL; }
+  int poly_joint_count(int id) const { return m_set[id]->poly_joint.size(); }
+  const VEC4 *poly_joint_polys(int id) const { return poly_joint_count(id) ? &m_set[id]->poly_joint[0] : NULL; }
+
+
+  int tri_weight_count(int id) const { return m_set[id]->tri_weight.size(); }
+  const VEC4 *tri_weight_polys(int id) const { return tri_weight_count(id) ? &m_set[id]->tri_weight[0] : NULL; }
+  int quad_weight_count(int id) const { return m_set[id]->quad_weight.size(); }
+  const VEC4 *quad_weight_polys(int id) const { return quad_weight_count(id) ? &m_set[id]->quad_weight[0] : NULL; }
+  int poly_weight_count(int id) const { return m_set[id]->poly_weight.size(); }
+  const VEC4 *poly_weight_polys(int id) const { return poly_weight_count(id) ? &m_set[id]->poly_weight[0] : NULL; }
+
+  
+  
+  
 #if 0
   int poly2_color_count(int id, int i) const { return m_set[id]->poly_color[i].size(); }
 #endif
@@ -160,6 +187,16 @@ public:
     std::vector<Point> quad_texcoord;
     std::vector<Point> poly_texcoord;
 
+    std::vector<VEC4> tri_joint;
+    std::vector<VEC4> quad_joint;
+    std::vector<VEC4> poly_joint;
+
+    std::vector<VEC4> tri_weight;
+    std::vector<VEC4> quad_weight;
+    std::vector<VEC4> poly_weight;
+    
+
+    
     std::map<int,std::vector<float> > tri_attribs;
     std::map<int,std::vector<float> > quad_attribs;
     std::map<int,std::vector<float> > poly_attribs;
@@ -173,6 +210,11 @@ public:
   static void append_to_polys(VertexArraySet::Polys &target, const VertexArraySet::Polys &source);
 
   mutable std::map<int, Polys*> m_set;
+  bool has_normal=true;
+  bool has_attrib=false;
+  bool has_color=true;
+  bool has_texcoord=true;
+  bool has_skeleton=false;
 };
 
 struct RenderVertexArray_bufferids
@@ -220,10 +262,10 @@ public:
 public:
   //LowApi *g_low; // doesnt work because ctor is run before global variable is initialized
   VertexArraySet &s;
-  unsigned int buffers[5];
+  unsigned int buffers[7];
   unsigned int vao[3];
-  unsigned int buffers2[5];
-  unsigned int buffers3[5];
+  unsigned int buffers2[7];
+  unsigned int buffers3[7];
   int tri_count;
   int quad_count;
   int poly_count;
@@ -296,7 +338,9 @@ private:
 #endif
   unsigned int c[200];
   Point tex[200];
-
+  VEC4 joints[200];
+  VEC4 weights[200];
+  
   const FaceCollection &coll;
   VertexArraySet &s;
 };

@@ -103,6 +103,12 @@ public:
   float beta;
 };
 
+class VEC4
+{
+public:
+  float x,y,z,w;
+};
+
 class Vector // a function Point->Point
 {
 public:
@@ -290,6 +296,7 @@ public:
   static Matrix SphericalToCartesian(SphericalPoint p);
   static Matrix CartesianToSpherical(Point p);
   static Matrix Identity();
+  static float Determinant(const Matrix &m);
   static Matrix MultiplyMatrix(const Matrix &m, int count);
   static Matrix RotateAroundAxis(const Vector &v, float angle);
   static Matrix RotateAroundAxisPoint(const Point &p,

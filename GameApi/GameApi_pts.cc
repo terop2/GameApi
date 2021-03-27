@@ -874,6 +874,8 @@ void *thread_func_pts(void *data)
       jj++;
     }
   //  std::cout << "Thread finished" << jj << " " << ti->arr->numpoints << std::endl;
+  pthread_exit(NULL);
+
   return 0;
 }
 #endif
@@ -2668,6 +2670,7 @@ public:
     std::cout << "Point:" << x << " " << y << " " << z << std::endl;
     return Point(x,y,z);
   }
+  bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     std::map<std::string,std::vector<std::vector<int>*>*>* mymap = load.int_lists["face"];
@@ -2692,6 +2695,7 @@ public:
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
+  bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
         std::map<std::string,std::vector<std::vector<int>*>*>* mymap = load.int_lists["face"];
@@ -2713,6 +2717,7 @@ public:
     int b = bluevec->operator[](vertex);
     return 0xff000000 + (r<<16) + (g<<8) + b;
   }
+  bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const
   {
 

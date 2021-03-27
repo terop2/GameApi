@@ -7,6 +7,12 @@
 
 extern std::string gameapi_homepageurl;
 
+void confirm_texture_usage(GameApi::Env &e, GameApi::P p);
+
+class LoadGltf;
+
+GameApi::LI gltf_anim_skeleton2(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index);
+
 
 class MatrixMovement : public Movement
 {
@@ -176,23 +182,36 @@ public:
   }
   void Prepare() {
     if (prepare_done) return;
-    prepare_done = true;
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
     std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
-    if (!vec) { std::cout << "ASync not ready!" << std::endl; return; }
+    if (!vec) { std::cout << "LoadGLTF ASync not ready!" << std::endl; return; }
+    std::vector<char> vec2(vec->begin(), vec->end());
     std::string str(vec->begin(),vec->end());
+
+    //std::cout << str << std::endl;
     //bool b = false;
     std::string err;
     std::string warn;
     if (!is_binary) {
-      tiny.LoadASCIIFromString(&model, &err, &warn, str.c_str(), str.size(), base_url, tinygltf::REQUIRE_ALL);
+      std::cout << "File size: " << url  << "::" << str.size() << std::endl;
+      int sz = str.size();
+#ifdef EMSCRIPTEN
+      sz--;
+#endif
+      tiny.LoadASCIIFromString(&model, &err, &warn, &vec2.operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
     } else {
-      tiny.LoadBinaryFromMemory(&model, &err, &warn, &vec->operator[](0), vec->size(), base_url, tinygltf::REQUIRE_ALL); 
+      int sz = vec->size();
+      std::cout << "File size: " << url  << "::" << sz << std::endl;
+#ifdef EMSCRIPTEN
+      sz--;
+#endif
+      tiny.LoadBinaryFromMemory(&model, &err, &warn, &vec->operator[](0), sz, base_url, tinygltf::REQUIRE_ALL); 
     }
     if (!warn.empty()) { std::cout << "WARN: " << warn << std::endl; }
     if (!err.empty()) { std::cout << "ERROR: " << err << std::endl; }
+    prepare_done = true;
   }
 public:
   GameApi::Env &e;
@@ -266,8 +285,12 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
     g_e->async_load_url(url, gameapi_homepageurl);
 #endif
     std::vector<unsigned char> *vec = g_e->get_loaded_async_url(url);
-    if (!vec) return false;
-    *out = *vec;
+    if (!vec) { std::cout << "ReadWholeFile::async not ready:" << url << std::endl; std::cout << "Please use async_url() to register it to system" << std::endl; return false; } else { std::cout << "Warning: Please note that you might need to add async_url() for " << url << std::endl; }
+    int sz = vec->size();
+#ifdef EMSCRIPTEN
+    sz--;
+#endif
+    *out = std::vector<unsigned char>(vec->begin(),vec->begin()+sz);
   return true;
 }
 bool WriteWholeFile(std::string *err, const std::string &filepath, const std::vector<unsigned char> &contents, void *ptr)
@@ -361,19 +384,27 @@ private:
   int image_index;
 };
 
+
+
+
+
+
 class GLTFFaceCollection : public FaceCollection
 {
 public:
   GLTFFaceCollection( LoadGltf *load, int mesh_index, int prim_index) : load(load), mesh_index(mesh_index), prim_index(prim_index) {
   }
   virtual void Prepare() { 
+    //std::cout << "GLTFFaceCollection::Prepare()" << std::endl;
     load->Prepare();
-
+    
     
     if (mesh_index>=0 && mesh_index<int(load->model.meshes.size()) && prim_index>=0 && prim_index<int(load->model.meshes[mesh_index].primitives.size()))
       prim = &load->model.meshes[mesh_index].primitives[prim_index];
-    else
-      return;
+    else { std::cout << "Prim failed!" << std::endl;  return; }
+
+    //std::cout << "MESH: " << load->model.meshes[mesh_index].name << std::endl;
+    
     model = &load->model;
     
     mode = prim->mode;
@@ -390,6 +421,8 @@ public:
     normal_index = -1;
     texcoord_index = -1;
     color_index = -1;
+    joints_index = -1;
+    weights_index = -1;
     if (prim->attributes.find("POSITION") != prim->attributes.end())
       position_index = prim->attributes["POSITION"];
     if (prim->attributes.find("NORMAL") != prim->attributes.end())
@@ -398,6 +431,10 @@ public:
       texcoord_index = prim->attributes["TEXCOORD_0"];
     if (prim->attributes.find("COLOR_0") != prim->attributes.end())
       color_index = prim->attributes["COLOR_0"];
+    if (prim->attributes.find("JOINTS_0") != prim->attributes.end())
+      joints_index = prim->attributes["JOINTS_0"];
+    if (prim->attributes.find("WEIGHTS_0") != prim->attributes.end())
+      weights_index = prim->attributes["WEIGHTS_0"];
 
     //if (mat) {
     //  int index = mat->pbrMetallicRoughness.metallicRoughnessTexture.texCoord;
@@ -415,7 +452,9 @@ public:
     if (indices_index!=-1)
       indices_acc = &model->accessors[indices_index];
 
-    assert(indices_acc->type==TINYGLTF_TYPE_SCALAR);
+    if (indices_acc) {
+      assert(indices_acc->type==TINYGLTF_TYPE_SCALAR);
+    }
     //std::cout << "gltf component type: " << indices_acc->componentType << std::endl;
     //assert(indices_acc->componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT);
 
@@ -436,7 +475,17 @@ public:
     if (color_index!=-1)
       color_acc = &model->accessors[color_index];
 
+    joints_acc = 0;
+    if (joints_index!=-1)
+      joints_acc = &model->accessors[joints_index];
 
+
+    weights_acc = 0;
+    if (weights_index!=-1)
+      weights_acc = &model->accessors[weights_index];
+
+    
+    
     // find BufferViews
     indices_bv = 0;
     if (indices_acc) {
@@ -473,6 +522,20 @@ public:
 	color_bv = &model->bufferViews[view];
     }
 
+    joints_bv = 0;
+    if (joints_acc) {
+      int view = joints_acc->bufferView;
+      if (view!=-1)
+	joints_bv = &model->bufferViews[view];
+    }
+
+    weights_bv = 0;
+    if (weights_acc) {
+      int view = weights_acc->bufferView;
+      if (view!=-1)
+	weights_bv = &model->bufferViews[view];
+    }
+    
     // find buffers
     indices_buf = 0;
     if (indices_bv) {
@@ -513,6 +576,22 @@ public:
 	color_buf = &model->buffers[buf];
       }
     }
+
+    joints_buf = 0;
+    if (joints_bv) {
+      int buf = joints_bv->buffer;
+      if (buf!=-1) {
+	joints_buf = &model->buffers[buf];
+      }
+    }
+
+    weights_buf = 0;
+    if (weights_bv) {
+      int buf = weights_bv->buffer;
+      if (buf!=-1) {
+	weights_buf = &model->buffers[buf];
+      }
+    }
     
   }
   virtual int NumFaces() const 
@@ -525,6 +604,12 @@ public:
     }
     if (mode==TINYGLTF_MODE_TRIANGLE_FAN) {
       return 1;
+    }
+    if (mode==TINYGLTF_MODE_TRIANGLES && position_acc) {
+      return position_acc->count/3;
+    }
+    if (mode==TINYGLTF_MODE_TRIANGLE_STRIP && position_acc) {
+      return position_acc->count-2;
     }
     std::cout << "TINYGLTF mode wrong in NumFaces() " << mode << std::endl;
     return 0;
@@ -646,6 +731,7 @@ public:
     std::cout << "gltf FacePoint unknown mode" << std::endl;
     return Point(0.0,0.0,0.0);
   }
+  bool has_normal() const { return normal_bv && normal_acc&&normal_buf; }
   virtual Vector PointNormal(int face, int point) const {
     if (normal_bv && normal_acc && normal_buf) {
 
@@ -680,6 +766,7 @@ public:
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
+  bool has_color() const { return true; /*color_bv && color_acc && color_buf*/; }
   virtual unsigned int Color(int face, int point) const {
     if (color_bv && color_acc && color_buf) {
     if (mode==TINYGLTF_MODE_TRIANGLES) {
@@ -713,6 +800,160 @@ public:
     return 0xffffffff;
 
   }
+  virtual bool has_skeleton() const
+  {
+    return joints_bv && joints_acc && joints_buf && weights_bv && weights_acc && weights_buf;
+  }
+  virtual VEC4 Joints(int face, int point) const
+  {
+
+    if (joints_bv && joints_acc && joints_buf) {
+      if (mode==TINYGLTF_MODE_TRIANGLES) {
+      if (indices_buf && indices_bv && indices_acc) {
+      
+	int index = get_index(face,point);
+
+	unsigned char *pos_ptr = &joints_buf->data[0];
+	int stride2 = joints_bv->byteStride;
+	if (stride2==0) stride2 = 4*sizeof(unsigned char); // 3 = num of components in (x,y,z)
+	unsigned char *pos_ptr2 = (unsigned char*)(pos_ptr + joints_bv->byteOffset + index*stride2 + joints_acc->byteOffset); 
+	//std::cout << face << " " << point << "::" << index << "::" << std::hex << int(pos_ptr2[0]) << "," << int(pos_ptr2[1]) << "," << int(pos_ptr2[2]) << "," << int(pos_ptr2[3]) << std::endl;
+	//vec4 res;
+	//res[0] = pos_ptr2[0];
+	//res[1] = pos_ptr2[1];
+	//res[2] = pos_ptr2[2];
+	//res[3] = pos_ptr2[3];
+	//std::cout << "Attached end" << std::endl;
+	VEC4 res;
+	res.x = 0.5+int(((unsigned int)(pos_ptr2[0]))&0xff);
+	res.y = 0.5+int(((unsigned int)(pos_ptr2[1]))&0xff);
+	res.z = 0.5+int(((unsigned int)(pos_ptr2[2]))&0xff);
+	res.w = 0.5+int(((unsigned int)(pos_ptr2[3]))&0xff);
+	//std::cout << "Joints: " << face << " " << point << "::" << res.x << ","<< res.y << "," << res.z << "," << res.w << std::endl;
+
+	return res;
+      } else {
+	// todo, check that this branch works
+	unsigned char *pos_ptr = &joints_buf->data[0];
+	unsigned char *pos_ptr2 = pos_ptr + joints_bv->byteOffset;
+	int stride = joints_bv->byteStride;
+	if (stride==0) stride=4*sizeof(char);
+	int comp = face*3+point;
+	unsigned char *pos_ptr3 = pos_ptr2 + joints_acc->byteOffset + comp*stride;
+	unsigned char *pos_ptr4 = (unsigned char*)pos_ptr3; // 3 = num of components in (x,y,z)
+	//std::cout << face << " " << point << "::" << int(pos_ptr4[0]) << std::endl;
+	//res[0] = pos_ptr4[0];
+	//res[1] = pos_ptr4[1];
+	//res[2] = pos_ptr4[2];
+	//res[3] = pos_ptr4[3];
+	//return res;
+	//std::cout << "Attached end" << std::endl;
+	VEC4 res;
+	res.x = 0.5+int(((unsigned int)(pos_ptr4[0]))&0xff);
+	res.y = 0.5+int(((unsigned int)(pos_ptr4[1]))&0xff);
+	res.z = 0.5+int(((unsigned int)(pos_ptr4[2]))&0xff);
+	res.w = 0.5+int(((unsigned int)(pos_ptr4[3]))&0xff);
+	//std::cout << "Joints2: " << face << " " << point << "::" << res.x << ","<< res.y << "," << res.z << "," << res.w << std::endl;
+	return res;
+	//return int(((unsigned int)(pos_ptr2[num]))&0xff);
+      }
+      }
+    } else {
+      //std::cout << "Attached end" << std::endl;
+      VEC4 res;
+      res.x = 0.0;
+      res.y = 0.0;
+      res.z = 0.0;
+      res.w = 0.0;
+      return res;
+      //      return 0;
+    }
+    std::cout << "gltf attach unknown mode: "<< mode << std::endl;
+      VEC4 res;
+      res.x = 0.0;
+      res.y = 0.0;
+      res.z = 0.0;
+      res.w = 0.0;
+      return res;
+      //    return 0;
+
+    
+  }
+  virtual VEC4 Weights(int face, int point) const
+  {
+
+    if (weights_bv && weights_acc && weights_buf) {
+      if (mode==TINYGLTF_MODE_TRIANGLES) {
+      if (indices_buf && indices_bv && indices_acc) {
+      
+	int index = get_index(face,point);
+
+	unsigned char *pos_ptr = &weights_buf->data[0];
+	int stride2 = weights_bv->byteStride;
+	if (stride2==0) stride2 = 4*sizeof(unsigned char); // 3 = num of components in (x,y,z)
+	float *pos_ptr2 = (float*)(pos_ptr + weights_bv->byteOffset + index*stride2 + weights_acc->byteOffset); 
+	//std::cout << face << " " << point << "::" << index << "::" << std::hex << int(pos_ptr2[0]) << "," << int(pos_ptr2[1]) << "," << int(pos_ptr2[2]) << "," << int(pos_ptr2[3]) << std::endl;
+	//vec4 res;
+	//res[0] = pos_ptr2[0];
+	//res[1] = pos_ptr2[1];
+	//res[2] = pos_ptr2[2];
+	//res[3] = pos_ptr2[3];
+	//std::cout << "Attached end" << std::endl;
+	VEC4 res;
+	res.x = pos_ptr2[0];
+	res.y = pos_ptr2[1];
+	res.z = pos_ptr2[2];
+	res.w = pos_ptr2[3];
+	//std::cout << "Weights: " << face << " " << point << "::" << res.x << ","<< res.y << "," << res.z << "," << res.w << std::endl;
+	return res;
+	//return pos_ptr2[num];
+      } else {
+	// todo, check that this branch works
+	unsigned char *pos_ptr = &weights_buf->data[0];
+	unsigned char *pos_ptr2 = pos_ptr + weights_bv->byteOffset;
+	int stride = weights_bv->byteStride;
+	if (stride==0) stride=4*sizeof(char);
+	int comp = face*3+point;
+	unsigned char *pos_ptr3 = pos_ptr2 + weights_acc->byteOffset + comp*stride;
+	float *pos_ptr4 = (float*)pos_ptr3; // 3 = num of components in (x,y,z)
+	//std::cout << face << " " << point << "::" << int(pos_ptr4[0]) << std::endl;
+	//res[0] = pos_ptr4[0];
+	//res[1] = pos_ptr4[1];
+	//res[2] = pos_ptr4[2];
+	//res[3] = pos_ptr4[3];
+	//return res;
+	//std::cout << "Attached end" << std::endl;
+	VEC4 res;
+	res.x = pos_ptr2[0];
+	res.y = pos_ptr2[1];
+	res.z = pos_ptr2[2];
+	res.w = pos_ptr2[3];
+	//std::cout << "Weights2: " << face << " " << point << "::" << res.x << ","<< res.y << "," << res.z << "," << res.w << std::endl;
+	return res;
+	//return pos_ptr4[num];
+      }
+      }
+    } else {
+      //std::cout << "Attached end" << std::endl;
+      VEC4 res;
+      res.x = 0.0;
+      res.y = 0.0;
+      res.z = 0.0;
+      res.w = 0.0;
+      return res;
+    }
+    std::cout << "gltf weights unknown mode: "<< mode << std::endl;
+    VEC4 res;
+    res.x = 0.0;
+    res.y = 0.0;
+    res.z = 0.0;
+    res.w = 0.0;
+    return res;
+    
+    
+  }
+  
+  bool has_texcoord() const { return texcoord_bv&&texcoord_acc&&texcoord_buf; }
   virtual Point2d TexCoord(int face, int point) const { 
     Point p = tex(face,point);
     //std::cout << "TexCoord: " << p.x << " " << p.y << std::endl;
@@ -765,29 +1006,40 @@ private:
   int normal_index;
   int texcoord_index;
   int color_index;
+  int joints_index;
+  int weights_index;
 
   tinygltf::Accessor *indices_acc;
   tinygltf::Accessor *position_acc;
   tinygltf::Accessor *normal_acc;
   tinygltf::Accessor *texcoord_acc;
   tinygltf::Accessor *color_acc;
-
+  tinygltf::Accessor *joints_acc;
+  tinygltf::Accessor *weights_acc;
+  
   tinygltf::BufferView *indices_bv;
   tinygltf::BufferView *position_bv;
   tinygltf::BufferView *normal_bv;
   tinygltf::BufferView *texcoord_bv;
   tinygltf::BufferView *color_bv;
-
+  tinygltf::BufferView *joints_bv;
+  tinygltf::BufferView *weights_bv;
+  
   tinygltf::Buffer *indices_buf;
   tinygltf::Buffer *position_buf;
   tinygltf::Buffer *normal_buf;
   tinygltf::Buffer *texcoord_buf;
   tinygltf::Buffer *color_buf;
+  tinygltf::Buffer *joints_buf;
+  tinygltf::Buffer *weights_buf;
 
   LoadGltf *load;
   int mesh_index;
   int prim_index;
 };
+
+
+
 
 GameApi::BM GameApi::PolygonApi::gltf_load_bitmap( GameApi::EveryApi &ev, std::string base_url, std::string url, int image_index )
 {
@@ -804,12 +1056,12 @@ GameApi::BM GameApi::PolygonApi::gltf_load_bitmap( GameApi::EveryApi &ev, std::s
   //   new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   GLTFImage *img = new GLTFImage( load, image_index );
 
-  Bitmap<Color> *img2 = new MemoizeBitmap(*img);
+  //Bitmap<Color> *img2 = new MemoizeBitmap(*img);
 
   std::stringstream ss;
   ss << image_index;
 
-  Bitmap<Color> *bbm = new BitmapPrepareCache(e, url + ss.str(), img2);
+  Bitmap<Color> *bbm = new BitmapPrepareCache(e, url + ss.str(), img);
 
   ::Bitmap<Color> *b = bbm;
   BitmapColorHandle *handle2 = new BitmapColorHandle;
@@ -820,20 +1072,40 @@ GameApi::BM GameApi::PolygonApi::gltf_load_bitmap( GameApi::EveryApi &ev, std::s
   return bm;
 
 }
+
+struct CacheItem
+{
+  std::string url;
+  GameApi::BM bitmap;
+};
+std::vector<CacheItem> g_bitmap_cache;
+
+
+
+
 GameApi::BM gltf_load_bitmap2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int image_index)
 {
   if (image_index==-1) {
     return ev.bitmap_api.newbitmap(1,1,0xffffffff);
   }
 
-  GLTFImage *img = new GLTFImage( load, image_index );
-
-  Bitmap<Color> *img2 = new MemoizeBitmap(*img);
 
   std::stringstream ss;
   ss << image_index;
+  
+  //int s = g_bitmap_cache.size();
+  //for(int i=0;i<s;i++) {
+  //  const CacheItem *item = &g_bitmap_cache[i];
+  //  if (item->url == load->url + ss.str()) { return g_bitmap_cache[i].bitmap; }
+  //}
+  
 
-  Bitmap<Color> *bbm = new BitmapPrepareCache(e, load->url + ss.str(), img2);
+  GLTFImage *img = new GLTFImage( load, image_index );
+
+  //Bitmap<Color> *img2 = new MemoizeBitmap(*img);
+
+
+  Bitmap<Color> *bbm = new BitmapPrepareCache(e, load->url + ss.str(), img);
 
   ::Bitmap<Color> *b = bbm;
   BitmapColorHandle *handle2 = new BitmapColorHandle;
@@ -841,6 +1113,11 @@ GameApi::BM gltf_load_bitmap2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf 
   GameApi::BM bm = add_bitmap(e, handle2);
   //GameApi::BM bm2 = ev.bitmap_api.flip_y(bm);
   //GameApi::BM bm3 = ev.bitmap_api.flip_x(bm);
+
+  //CacheItem item;
+  //item.url = load->url + ss.str();
+  //item.bitmap = bm;
+  //g_bitmap_cache.push_back(item);
   return bm;
 }
 std::map<std::string, bool> g_gltf_cache;
@@ -850,6 +1127,7 @@ GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, i
   set_current_block(-1);
   FaceCollection *faces = new GLTFFaceCollection( load, mesh_index, prim_index );
   GameApi::P p = add_polygon2(e, faces,1);
+  confirm_texture_usage(e,p);
   GameApi::P p2 = ev.polygon_api.file_cache(p, load->url, prim_index+mesh_index*50);
   set_current_block(c);
   std::stringstream ss;
@@ -880,6 +1158,7 @@ GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, std::string ba
   set_current_block(-1);
   FaceCollection *faces = new GLTFFaceCollection( load, mesh_index, prim_index );
   P p = add_polygon2(e, faces,1);
+  confirm_texture_usage(e,p);
   GameApi::P p2 = ev.polygon_api.file_cache(p, load->url, prim_index+mesh_index*50);
   set_current_block(c);
   std::stringstream ss;
@@ -1364,17 +1643,425 @@ GameApi::MT GameApi::MaterialsApi::gltf_material_env( EveryApi &ev, std::string 
 std::pair<float,Point> find_mesh_scale(FaceCollection *coll);
 
 
-GameApi::ML scale_to_gltf_size(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::ML ml)
+class MatrixLineCollection : public LineCollection
 {
-      FaceCollection *coll = find_facecoll(e,p);
-      std::pair<float,Point> dim = find_mesh_scale(coll);
+public:
+  MatrixLineCollection(Matrix m, LineCollection &coll) : m(m),coll(coll) { }
+  virtual void Prepare() { coll.Prepare(); }
 
+  virtual int NumLines() const { return coll.NumLines(); }
+  virtual Point LinePoint(int line, int point) const 
+  {
+    return coll.LinePoint(line,point)*m;
+  }
+  virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; }  
+
+private:
+  Matrix m;
+  LineCollection &coll;
+};
+
+class ScaleToGltf_li : public LineCollection
+{
+public:
+  ScaleToGltf_li(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::LI li) : env(e), ev(ev), p(p), li(li) { }
+  void Prepare()
+  {
+      FaceCollection *coll = find_facecoll(env,p);
+      coll->Prepare();
+      LineCollection *coll2 = find_line_array(env,li);
+      coll2->Prepare();
+      std::pair<float,Point> dim = find_mesh_scale(coll);
+      GameApi::MN I4=ev.move_api.mn_empty();
+      GameApi::MN I5=ev.move_api.trans2(I4,dim.second.x,dim.second.y,dim.second.z);
+      GameApi::MN I6=ev.move_api.scale2(I5,dim.first,dim.first,dim.first);
+      Movement *move = find_move(env,I6);
+      Matrix m = move->get_whole_matrix(0.0, 1.0);
+      GameApi::M m2 = add_matrix2(env,m);
+      res= ev.lines_api.li_matrix(li,m2);
+  }
+  virtual int NumLines() const
+  {
+    LineCollection *coll = find_line_array(env, res);
+    return coll->NumLines();
+  }
+  virtual Point LinePoint(int line, int point) const
+  {
+    LineCollection *coll = find_line_array(env, res);
+    return coll->LinePoint(line,point);
+  }
+  virtual unsigned int LineColor(int line, int point) const {
+
+    LineCollection *coll = find_line_array(env, res);
+    return coll->LineColor(line,point);
+  }
+
+  
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::P p;
+  GameApi::LI li;
+  GameApi::LI res;
+};
+
+
+
+GameApi::LI scale_to_gltf_size_li(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::LI li)
+{
+  return add_line_array(e, new ScaleToGltf_li(e,ev,p,li));
+}
+
+class ScaleToGLTF_p : public FaceCollection
+{
+public:
+  ScaleToGLTF_p(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::P p2) : env(e), ev(ev), p(p), p2(p2) { res.id=-1; }
+  void Prepare()
+  {
+  FaceCollection *coll = find_facecoll(env,p);
+  coll->Prepare();
+  FaceCollection *coll2 = find_facecoll(env,p2);
+  coll2->Prepare();
+  std::pair<float,Point> dim = find_mesh_scale(coll);
+  GameApi::MN I4=ev.move_api.mn_empty();
+  GameApi::MN I5=ev.move_api.trans2(I4,dim.second.x,dim.second.y,dim.second.z);
+  GameApi::MN I6=ev.move_api.scale2(I5,dim.first,dim.first,dim.first);
+  Movement *move = find_move(env,I6);
+  Matrix m = move->get_whole_matrix(0.0, 1.0);
+  GameApi::M m2 = add_matrix2(env,m);
+  res = ev.polygon_api.matrix(p2,m2);
+  }
+
+  virtual int NumFaces() const {
+    if (res.id!=-1) {
+      FaceCollection *coll = find_facecoll(env,res);
+      return coll->NumFaces();
+    } else return 0;
+  }
+  virtual int NumPoints(int face) const
+  {
+    if (res.id!=-1) {
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->NumPoints(face);
+    }
+    return 0;
+  }
+  virtual bool has_normal() const {
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return false; return coll->has_normal();
+  }
+  virtual bool has_attrib() const {
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return false;return coll->has_attrib();
+  }
+  virtual bool has_color() const {
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return false; return coll->has_color();
+  }
+  virtual bool has_texcoord() const {
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return false; return coll->has_texcoord();
+  }
+  virtual bool has_skeleton() const {
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return false; return coll->has_skeleton();
+  }
+  
+  
+  virtual Point FacePoint(int face, int point) const
+  {
+    if (res.id!=-1) {
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->FacePoint(face,point);
+    } else return Point(0.0,0.0,0.0);
+  }
+  
+  virtual Vector PointNormal(int face, int point) const
+  {
+    if (res.id!=-1) {
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->PointNormal(face,point);
+    } else return Vector(0.0,0.0,0.0);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    if (res.id!=-1) {
+   FaceCollection *coll = find_facecoll(env,res);
+   return coll->Attrib(face,point,id);
+    } else return 0.0;
+   }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    if (res.id!=-1) {
+   FaceCollection *coll = find_facecoll(env,res);
+   return coll->AttribI(face,point,id);
+    } else return 0;
+   }
+  virtual unsigned int Color(int face, int point) const
+  {
+    if (res.id!=-1) {
+   FaceCollection *coll = find_facecoll(env,res);
+    return coll->Color(face,point);
+    } else return 0xfffffff;
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    if (res.id!=-1) {
+   FaceCollection *coll = find_facecoll(env,res);
+    return coll->TexCoord(face,point);
+    } else { Point2d p; p.x =0.0; p.y=0.0; return p; }
+   }
+  virtual float TexCoord3(int face, int point) const {
+    if (res.id!=-1) {
+      FaceCollection *coll = find_facecoll(env,res);
+      return coll->TexCoord3(face,point);
+    } else return 0.0;
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::P p;
+  GameApi::P p2;
+  GameApi::P res;
+};
+
+GameApi::P scale_to_gltf_size_p(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::P p2)
+{
+  return add_polygon2(e, new ScaleToGLTF_p(e,ev,p,p2),1);
+}
+
+
+class ScaleToGltf : public MainLoopItem
+{
+public:
+  ScaleToGltf(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::ML ml) : env(e), ev(ev), p(p), ml(ml) {res.id=-1; }
+  virtual void logoexecute() { }
+  virtual void Prepare() {
+
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare();
+    std::pair<float,Point> dim = find_mesh_scale(coll);
+    
     GameApi::MN I4=ev.move_api.mn_empty();
     GameApi::MN I5=ev.move_api.trans2(I4,dim.second.x,dim.second.y,dim.second.z);
     GameApi::MN I6=ev.move_api.scale2(I5,dim.first,dim.first,dim.first);
     GameApi::ML I7=ev.move_api.move_ml(ev,ml,I6,1,10.0);
+    res = I7;
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env, res);
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env, res);
+      item->handle_event(e);
+    }
+  }
+  
+  virtual std::vector<int> shader_id() {
+    if (res.id!=-1) {
 
-    return I7;
+    MainLoopItem *item = find_main_loop(env, res);
+    return item->shader_id();
+    } else { return std::vector<int>(); }
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::P p;
+  GameApi::ML ml;
+
+  GameApi::ML res;
+};
+
+GameApi::ML scale_to_gltf_size(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::ML ml)
+{
+  return add_main_loop(e, new ScaleToGltf(e,ev,p,ml));
+}
+
+struct TransformObject
+{
+  double scale_x, scale_y, scale_z;
+  double rot_x, rot_y, rot_z, rot_w;
+  double trans_x, trans_y, trans_z;
+  Matrix m;
+};
+void print_transform(TransformObject o)
+{
+  std::cout << "Scale:" << o.scale_x << " " << o.scale_y << " " << o.scale_z << std::endl;
+  std::cout << "Rot:" << o.rot_x << " " << o.rot_y << " " << o.rot_z << " " << o.rot_w << std::endl;
+  std::cout << "Trans:" << o.trans_x << " " << o.trans_y << " " << o.trans_z << std::endl;
+  std::cout << "Matrix: " << o.m << std::endl;
+}
+
+TransformObject gltf_node_default()
+{
+  TransformObject o;
+  o.scale_x = 1.0;
+  o.scale_y = 1.0;
+  o.scale_z = 1.0;
+  o.rot_x = 0.0;
+  o.rot_y = 0.0;
+  o.rot_z = 0.0;
+  o.rot_w = 1.0;
+  o.trans_x = 0.0;
+  o.trans_y = 0.0;
+  o.trans_z = 0.0;
+  o.m = Matrix::Identity();
+  return o;
+}
+
+void slerp(float *prev, float *next, float val, float *res);
+
+
+TransformObject slerp_transform(TransformObject o, TransformObject o2, float val)
+{
+  TransformObject res;
+  res.trans_x = val*o2.trans_x + (1.0-val)*o.trans_x;
+  res.trans_y = val*o2.trans_y + (1.0-val)*o.trans_y;
+  res.trans_z = val*o2.trans_z + (1.0-val)*o.trans_z;
+  res.scale_x = val*o2.scale_x + (1.0-val)*o.scale_x;
+  res.scale_y = val*o2.scale_y + (1.0-val)*o.scale_y;
+  res.scale_z = val*o2.scale_z + (1.0-val)*o.scale_z;
+
+  float prev[4];
+  float next[4];
+  float res2[4];
+  prev[0]=o.rot_x;
+  prev[1]=o.rot_y;
+  prev[2]=o.rot_z;
+  prev[3]=o.rot_w;
+
+  next[0]=o2.rot_x;
+  next[1]=o2.rot_y;
+  next[2]=o2.rot_z;
+  next[3]=o2.rot_w;
+  slerp(prev,next,val,res2);
+  res.rot_x = res2[0];
+  res.rot_y = res2[1];
+  res.rot_z = res2[2];
+  res.rot_w = res2[3];
+
+  for(int i=0;i<16;i++) res.m.matrix[i] = val*o2.m.matrix[i] + (1.0-val)*o.m.matrix[i];
+  
+  // FIXME (TO BE REMOVED)
+  //res.rot_x = val*o2.rot_x + (1.0-val)*o.rot_x;
+  //res.rot_y = val*o2.rot_y + (1.0-val)*o.rot_y;
+  //res.rot_z = val*o2.rot_z + (1.0-val)*o.rot_z;
+  //res.rot_w = val*o2.rot_w + (1.0-val)*o.rot_w;
+  return res;
+}
+
+TransformObject gltf_node_transform_obj(tinygltf::Node *node)
+{
+  TransformObject o = gltf_node_default();
+  if (int(node->scale.size())==3) {
+    double s_x = node->scale[0];
+    double s_y = node->scale[1];
+    double s_z = node->scale[2];
+    o.scale_x = s_x;
+    o.scale_y = s_y;
+    o.scale_z = s_z;
+  }
+  if (int(node->rotation.size())==4) {
+    double r_x = node->rotation[0];
+    double r_y = node->rotation[1];
+    double r_z = node->rotation[2];
+    double r_w = node->rotation[3];
+    o.rot_x = r_x;
+    o.rot_y = r_y;
+    o.rot_z = r_z;
+    o.rot_w = r_w;
+  }
+
+  if (int(node->translation.size())==3) {
+    double m_x = node->translation[0];
+    double m_y = node->translation[1];
+    double m_z = node->translation[2];
+    o.trans_x = m_x;
+    o.trans_y = m_y;
+    o.trans_z = m_z;
+  }
+
+  if (int(node->matrix.size())==16) {
+    double *arr = &node->matrix[0];
+    Matrix m;
+      for(int i=0;i<4;i++)
+      for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i];
+      o.m = m;
+  }
+  return o;
+}
+
+Matrix gltf_node_transform_obj_apply(GameApi::Env &e, GameApi::EveryApi &ev, Matrix root, const TransformObject &o)
+{
+  //GameApi::MN mv = ev.move_api.mn_empty();
+  Matrix mv = Matrix::Identity();
+  Quarternion q = { float(o.rot_x), float(o.rot_y), float(o.rot_z), float(o.rot_w) };
+  Matrix m = Quarternion::QuarToMatrix(q);
+  // Scale
+  mv = mv * Matrix::Scale(o.scale_x, o.scale_y, o.scale_z);
+  mv = mv * m;
+  mv = mv * Matrix::Translate(o.trans_x, o.trans_y, o.trans_z);
+  mv = mv * o.m;
+  mv = mv * root;
+
+
+  //std::cout << mv << std::endl;
+  
+  return mv;
+}
+
+GameApi::MN gltf_node_transform(GameApi::Env &e, GameApi::EveryApi &ev, tinygltf::Node *node, GameApi::MN root)
+{
+  GameApi::MN mv = root; //ev.move_api.mn_empty();
+
+
+  /* TODO, WHY REMOVING THESE TRANSLATIONS BREAK THE MODEL */
+  if (int(node->scale.size())==3) {
+    double s_x = node->scale[0];
+    double s_y = node->scale[1];
+    double s_z = node->scale[2];
+    mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
+    }
+    if (int(node->rotation.size())==4) {
+    double r_x = node->rotation[0];
+    double r_y = node->rotation[1];
+    double r_z = node->rotation[2];
+    double r_w = node->rotation[3];
+    Quarternion q = { float(r_x), float(r_y), float(r_z), float(r_w) };
+    Matrix m = Quarternion::QuarToMatrix(q);
+    Movement *orig = find_move(e, mv);
+    Movement *mv2 = new MatrixMovement(orig, m);
+    mv = add_move(e, mv2);
+    }
+  if (int(node->translation.size())==3) {
+    double m_x = node->translation[0];
+    double m_y = node->translation[1];
+    double m_z = node->translation[2];
+    mv = ev.move_api.trans2(mv, m_x, m_y, m_z);
+  }
+  
+  if (int(node->matrix.size())==16) {
+    double *arr = &node->matrix[0];
+    Matrix m;
+      for(int i=0;i<4;i++)
+      for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i];
+
+      // for(int i=0;i<16;i++) m.matrix[i] = (float)arr[i];
+    Movement *orig = find_move(e, mv);
+    Movement *mv2 = new MatrixMovement(orig, m);
+    mv = add_move(e, mv2);    
+    }
+  return mv;
 }
 
 GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id);
@@ -1421,6 +2108,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
     double m_z = node->translation[2];
     mv = ev.move_api.trans2(mv, m_x, m_y, m_z);
   }
+  
   if (int(node->rotation.size())==4) {
     double r_x = node->rotation[0];
     double r_y = node->rotation[1];
@@ -1431,21 +2119,26 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
     Movement *orig = find_move(e, mv);
     Movement *mv2 = new MatrixMovement(orig, m);
     mv = add_move(e, mv2);
-  }
+    }
+  
   if (int(node->scale.size())==3) {
     double s_x = node->scale[0];
     double s_y = node->scale[1];
     double s_z = node->scale[2];
     mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
-  }
+    }
   if (int(node->matrix.size())==16) {
     double *arr = &node->matrix[0];
     Matrix m;
-    for(int i=0;i<16;i++) m.matrix[i] = (float)arr[i];
+      for(int i=0;i<4;i++)
+      for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i];
+
+      // for(int i=0;i<16;i++) m.matrix[i] = (float)arr[i];
     Movement *orig = find_move(e, mv);
     Movement *mv2 = new MatrixMovement(orig, m);
     mv = add_move(e, mv2);    
   }
+  
   GameApi::ML ret = ev.move_api.move_ml(ev, array, mv, 1, 10.0 );
   return ret;
 }
@@ -1468,6 +2161,7 @@ GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load,
   }
   return ev.mainloop_api.array_ml(ev, vec);
 }
+
 
 
 GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id)
@@ -1538,6 +2232,7 @@ GameApi::ML GameApi::MainLoopApi::gltf_scene( GameApi::EveryApi &ev, std::string
 }
 
 
+
 GameApi::ML gltf_mesh_all2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load )
 {
   int s = load->model.meshes.size();
@@ -1562,5 +2257,2007 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, std::str
 
   GameApi::ML ml = gltf_mesh_all2( e, ev, load );
   return scale_to_gltf_size(e,ev,mesh,ml);
+}
+
+class GLTFSkeleton : public LineCollection
+{
+public:
+  GLTFSkeleton(GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num) : env(env), ev(ev), load(load), skin_num(skin_num) { }
+  void Prepare() {
+    load->Prepare();
+    tinygltf::Skin *skin = &load->model.skins[skin_num];
+    int start_node = skin->skeleton;
+    
+    tinygltf::Node *node = &load->model.nodes[start_node];
+    recurse_node(node, Matrix::Identity(), Point(-300.0,-300.0,-300.0), Point(300.0,300.0,300.0));
+  }
+  Point recurse_node(tinygltf::Node *node, Matrix mat, Point pos, Point pos_next)
+  {
+    //std::cout << "Node:" << node->name << std::endl;
+    GameApi::MN mv0 = ev.move_api.mn_empty();
+    GameApi::MN mv = mv0; //ev.move_api.matrix(mv0,add_matrix2(env,mat)); // TODO, why does this cause odd shape for the skeleton LI?
+
+    if (int(node->matrix.size())==16) {
+      double *arr = &node->matrix[0];
+      Matrix m;
+      for(int i=0;i<4;i++)
+      for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i];
+      Movement *orig = find_move(env, mv);
+      Movement *mv2 = new MatrixMovement(orig, m);
+      mv = add_move(env, mv2);    
+    }
+
+    if (int(node->scale.size())==3) {
+      double s_x = node->scale[0];
+      double s_y = node->scale[1];
+      double s_z = node->scale[2];
+      mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
+      }
+
+    if (int(node->rotation.size())==4) {
+      double r_x = node->rotation[0];
+      double r_y = node->rotation[1];
+      double r_z = node->rotation[2];
+      double r_w = node->rotation[3];
+      Quarternion q = { float(r_x), float(r_y), float(r_z), float(r_w) };
+      Matrix m = Quarternion::QuarToMatrix(q);
+      Movement *orig = find_move(env, mv);
+      Movement *mv2 = new MatrixMovement(orig, m);
+      mv = add_move(env, mv2);
+      }
+    
+    if (int(node->translation.size())==3) {
+      double m_x = node->translation[0];
+      double m_y = node->translation[1];
+      double m_z = node->translation[2];
+      mv = ev.move_api.trans2(mv, m_x, m_y, m_z);
+    }
+   
+
+    
+    Movement *move = find_move(env,mv);
+    Matrix m = move->get_whole_matrix(0.0, 1.0);
+    Point pos2 = pos*m;
+    Point pos2_next = pos_next*m;
+    //if (node->mesh != -1) {
+      start_pos.push_back(pos2);
+      end_pos.push_back(pos2_next);
+	  std::cout << "LINETO: " << pos2 << "->" << pos2_next << std::endl;
+	  //}
+
+    // recurse children
+    int s = node->children.size();
+    std::vector<GameApi::ML> vec;
+    for(int i=0;i<s;i++) {
+      int child_id = node->children[i];
+      if (child_id!=-1) {
+	tinygltf::Node *child_node = &load->model.nodes[child_id];
+
+	
+	
+	/*
+	tinygltf::Skin *skin = &load->model.skins[skin_num];
+	int s2 = skin->joints.size();
+	bool doit = false;
+	for(int j=0;j<s2;j++) {
+	  if (skin->joints[j]==child_id) { doit=true; break; }
+	  }*/
+	bool doit = true;
+	if (doit) {
+	  Point p = recurse_node( child_node, m, pos2, pos2_next );
+	}
+      }
+    }
+    return pos;
+  }
+
+  virtual int NumLines() const { return start_pos.size(); }
+  virtual Point LinePoint(int line, int point) const
+  {
+    if (line>=0 && line<start_pos.size() && line<end_pos.size()) {
+      if (point==0) return start_pos[line];
+      if (point==1) return end_pos[line];
+    } else return Point(0.0,0.0,0.0);
+    return Point(0.0,0.0,0.0);
+  }
+  virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; } 
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  LoadGltf *load;
+  int skin_num;
+  int start_node;
+  std::vector<Point> start_pos, end_pos;
+};
+
+
+
+GameApi::LI GameApi::MainLoopApi::gltf_skeleton(GameApi::EveryApi &ev, std::string base_url, std::string url, int skin_num)
+{
+  bool is_binary=false;
+  if (int(url.size())>3) {
+    std::string sub = url.substr(url.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+
+  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  LineCollection *coll = new GLTFSkeleton(e,ev, load, skin_num);
+  GameApi::P p = gltf_load2(e,ev, load, 0,0);
+  GameApi::LI li = add_line_array(e, coll); 
+  return scale_to_gltf_size_li(e,ev,p,li);
+}
+
+				
+GameApi::ARR GameApi::MainLoopApi::gltf_anim_skeleton(GameApi::EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int /*channel*/, int num_keyframes)
+{
+  bool is_binary=false;
+  if (int(url.size())>3) {
+    std::string sub = url.substr(url.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+
+  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  GameApi::P p = gltf_load2(e,ev, load, 0,0);
+
+  std::vector<GameApi::LI> vec;
+  int s = num_keyframes;
+  ArrayType *array = new ArrayType;
+  array->type=0;
+  for(int i=0;i<s-1;i++)
+    {
+      GameApi::LI li = gltf_anim_skeleton2(e,ev,load, skin_num, animation, i);
+      GameApi::LI li2 = scale_to_gltf_size_li(e,ev,p,li);
+      array->vec.push_back(li2.id);
+    }
+  return add_array(e, array);
+}
+
+class GLTFAnimation 
+{
+public:
+  GLTFAnimation(LoadGltf *load, int animation, int channel, int time_index) : load(load), animation(animation), channel(channel), time_index(time_index) { }
+  void Prepare() {
+    load->Prepare();
+    model = &load->model;
+
+    if (animation<0||animation>=model->animations.size()) return;
+    anim = &model->animations[animation];
+    //std::cout << "Animation:" << anim->name << std::endl;
+    chan = &anim->channels[channel];
+    int target_node = chan->target_node;
+    //std::cout << "Target node:" << target_node << std::endl;
+    //std::cout << "Target node name:" << &model->nodes[chan->target_node] << std::endl;
+    tinygltf::Node *n = &model->nodes[target_node];
+
+    int skin = n->skin;
+    tinygltf::Skin *s = &model->skins[skin];
+    int inverseBindMatrices = s->inverseBindMatrices;
+
+    if (inverseBindMatrices!=-1 && inverseBindMatrices>=0 && inverseBindMatrices<model->accessors.size()) 
+      bind_acc = &model->accessors[inverseBindMatrices];
+    if (bind_acc && bind_acc->bufferView>=0 && bind_acc->bufferView<model->bufferViews.size())
+      bind_buf = &model->bufferViews[bind_acc->bufferView];
+    if (bind_buf && bind_buf->buffer>=0 && bind_buf->buffer<model->buffers.size())
+      bind = &model->buffers[bind_buf->buffer];
+    
+    //std::cout << "Name:" << n->name << std::endl;
+    sampler = chan->sampler;
+    if (sampler>=0 && sampler<anim->samplers.size())
+      samp = &anim->samplers[sampler];
+    if (samp) {
+      //std::cout << "AnimSampler:" << samp->interpolation << std::endl;
+      int input_idx = samp->input;
+      //std::cout << "input=" << input_idx << std::endl;
+      if (input_idx>=0 && input_idx<model->accessors.size())
+	input_acc = &model->accessors[input_idx]; // keyframe times
+      if (input_acc) {
+	//std::cout << "input:" << input_acc->componentType << " " << input_acc->count << " " << input_acc->type << std::endl;
+      }
+
+      int output_idx = samp->output;
+      //std::cout << "output=" << output_idx << std::endl;
+      if (output_idx>=0 && output_idx<model->accessors.size())
+	output_acc = &model->accessors[output_idx]; // property value changes
+      if (output_acc) {
+	//std::cout << "output:" << output_acc->componentType << " " << output_acc->count << " " << output_acc->type << " " << std::endl;
+      }
+
+    }
+    if (input_acc) {
+      input_buf = &model->bufferViews[input_acc->bufferView];
+    }
+    if (output_acc) {
+      output_buf = &model->bufferViews[output_acc->bufferView];
+    }
+    if (input_buf)
+      input = &model->buffers[input_buf->buffer];
+    if (output_buf)
+      output = &model->buffers[output_buf->buffer];
+  }
+
+  Matrix InverseBindMatrix(int joint) const
+  {
+    if (bind && bind_acc && bind_buf) { 
+    unsigned char *dt = &bind->data[0];
+    int offset = bind_buf->byteOffset;
+    int length = bind_buf->byteLength;
+    unsigned char *dt2 = dt + offset;
+    
+    int offset2 = bind_acc->byteOffset;
+    int stride = bind_acc->ByteStride(*bind_buf);
+    unsigned char *dt3 = dt2 + offset2 + stride*joint;
+    float *dt4 = (float*)dt3;
+    Matrix res;
+    for(int i=0;i<4;i++)
+      for(int j=0;j<4;j++)
+	res.matrix[i+j*4] = dt4[j+i*4];
+    return res;
+    } else return Matrix::Identity();
+  }
+  
+  int target_node() const
+  {
+    if (!chan) return 0;
+    int t = chan->target_node;
+    return t;
+  }
+  
+  float start_time() const
+  {
+    if (input && input_buf && input_acc) {
+    
+    unsigned char *dt = &input->data[0];
+    int offset = input_buf->byteOffset;
+    int length = input_buf->byteLength;
+    unsigned char *dt2 = dt + offset;
+    int stride = input_buf->byteStride;
+
+    int offset2 = input_acc->byteOffset;
+    unsigned char *dt3 = dt2 + offset2;
+    int count = input_acc->count;
+    assert(input_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
+    assert(input_acc->type==TINYGLTF_TYPE_SCALAR);
+    if (stride==0) { stride=sizeof(float); }
+    //assert(stride==0);
+    if (time_index>=0 && time_index<count) {
+      float *arr = (float*) dt3 + stride*time_index;
+      return *arr;
+    } else { return 0.0; }
+
+    } else return 0.0;
+    
+  }
+  float end_time() const
+  {
+    if (input && input_buf && input_acc) {
+    unsigned char *dt = &input->data[0];
+    int offset = input_buf->byteOffset;
+    int length = input_buf->byteLength;
+    unsigned char *dt2 = dt + offset;
+    int stride = input_buf->byteStride;
+
+    int offset2 = input_acc->byteOffset;
+    unsigned char *dt3 = dt2 + offset2;
+    int count = input_acc->count;
+    assert(input_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
+    assert(input_acc->type==TINYGLTF_TYPE_SCALAR);
+    if (stride==0) { stride=sizeof(float); }
+    //assert(stride==0);
+    if (time_index+1>=0 && time_index+1<count) {
+      float *arr = (float*) dt3 + stride*(time_index+1);
+      return *arr;
+    } else { return 0.0; }
+    } else return 0.0;
+  }
+
+  virtual int Count() const
+  {
+    if (output_acc) {
+      int count = output_acc->count;
+      return count;
+    } else return 0;
+  }
+  virtual float *Amount(int i) const {
+    static float arr2[4];
+    if (output && output_buf && output_acc) {
+    unsigned char *dt = &output->data[0];
+    int offset = output_buf->byteOffset;
+    int length = output_buf->byteLength;
+    unsigned char *dt2 = dt + offset;
+    
+    int offset2 = output_acc->byteOffset;
+    unsigned char *dt3 = dt2 + offset2;
+    int stride = output_acc->ByteStride(*output_buf);
+    //std::cout << "stride: " << stride << " " << output_acc->type << std::endl;
+    if (stride==0 && output_acc->type==TINYGLTF_TYPE_SCALAR) stride = 1*sizeof(float);
+    if (stride==0 && output_acc->type==TINYGLTF_TYPE_VEC2) stride = 2*sizeof(float);
+    if (stride==0 && output_acc->type==TINYGLTF_TYPE_VEC3) stride = 3*sizeof(float);
+    if (stride==0 && output_acc->type==TINYGLTF_TYPE_VEC4) stride = 4*sizeof(float);
+    assert(output_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
+    // TODO: if componentType != float, then it can be converted to float using
+    // equations from the gltf 2.0 specification chapter Animations.
+    
+    //assert(output_acc->type==TINYGLTF_TYPE_VEC3);
+    float *arr = (float*) (dt3 + i*stride);
+    return arr;
+    } else return arr2;
+  }
+  virtual int Type(int i) const
+  {
+    if (chan && output_acc) {
+      std::string t = chan->target_path;
+      if (t=="translation" && output_acc->type==TINYGLTF_TYPE_VEC3) return 0;
+      if (t=="rotation" && output_acc->type==TINYGLTF_TYPE_VEC4) return 1;
+      if (t=="scale" && output_acc->type==TINYGLTF_TYPE_VEC3) return 2;
+      if (t=="weights") return 3;
+      std::cout << "target_path: " << t << " ERROR :" << output_acc->type << std::endl;
+      return -1;
+    } else return -1;
+  }
+  
+private:
+  LoadGltf *load;
+  tinygltf::Model *model=0;
+  int animation;
+  tinygltf::Animation *anim=0;
+  int channel;
+  tinygltf::AnimationChannel *chan=0;
+  int sampler;
+  tinygltf::AnimationSampler *samp=0;
+  int time_index;
+  tinygltf::Accessor *input_acc=0;
+  tinygltf::Accessor *output_acc=0;
+  tinygltf::Accessor *bind_acc=0;
+  tinygltf::BufferView *input_buf=0;
+  tinygltf::BufferView *output_buf=0;
+  tinygltf::BufferView *bind_buf=0;
+  tinygltf::Buffer *input=0;
+  tinygltf::Buffer *output=0;
+  tinygltf::Buffer *bind=0;
+};
+
+GameApi::ML gltf_anim3(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int animation, int target_node)
+{
+  int channel = -1;
+  tinygltf::Animation *anim = &load->model.animations[animation];
+  int s = anim->channels.size();
+  GameApi::ML array; array.id = -1;
+  
+      tinygltf::Node *node = &load->model.nodes[target_node];
+      //std::cout << "\nNode:" << node->name << std::endl;
+      int mesh_id = node->mesh;
+      GameApi::ML ml = gltf_mesh2(e,ev, load, mesh_id);
+      if (channel==-1)
+	{
+	  std::vector<GameApi::ML> vec;
+	  int s2 = node->children.size();
+	  //std::vector<GameApi::ML> vec;
+	  for(int i=0;i<s2;i++) {
+	    int child_id = node->children[i];
+	    if (child_id!=-1) {
+	      GameApi::ML ml = gltf_anim3( e, ev, load, animation, child_id );
+	      vec.push_back(ml);
+	    }
+	  }
+	  
+	  vec.push_back(ml);
+	  GameApi::ML array = ev.mainloop_api.array_ml(ev, vec);
+	  return array;
+	}
+
+  for(int j=0;j<s;j++) {
+    tinygltf::AnimationChannel *chan = &anim->channels[j];
+    if (chan->target_node == target_node) {
+      channel = j;
+
+      
+      GLTFAnimation *anim3 = new GLTFAnimation(load,animation, channel, 0);
+      anim3->Prepare();
+      int count = anim3->Count();
+
+  std::vector<GameApi::ML> vec;
+      if (j==0) {
+  int s2 = node->children.size();
+  //std::vector<GameApi::ML> vec;
+  for(int i=0;i<s2;i++) {
+    int child_id = node->children[i];
+    if (child_id!=-1) {
+      GameApi::ML ml = gltf_anim3( e, ev, load, animation, child_id );
+      vec.push_back(ml);
+    }
+  }
+      
+  vec.push_back(ml);
+      }
+  if (array.id!=-1)
+    vec.push_back(array);
+  array = ev.mainloop_api.array_ml(ev, vec);
+  
+  for(int i=0;i<count-1;i++)
+    {
+      GameApi::MN current = ev.move_api.mn_empty();
+      GameApi::MN current2 = ev.move_api.mn_empty();
+      //int target_node = anim->target_node();
+      //if (target_node!=node_idx) continue;
+
+      GLTFAnimation *anim2 = new GLTFAnimation(load,animation, channel, i);
+      anim2->Prepare();
+      float start_time = anim2->start_time();
+      float end_time = anim2->end_time();
+
+      //std::cout << "start_time: " << start_time << std::endl;
+      //std::cout << "end_time: " << end_time << std::endl;
+      
+      float *a = anim2->Amount(i);
+      int type = anim2->Type(i);
+
+      float *b = anim2->Amount(i+1);
+      int b_type = anim2->Type(i+1);
+      if (type==0) // translate
+	{
+	  //std::cout << "Trans: " << a[0] << " " << a[1] << " " << a[2] << std::endl;
+	  current = ev.move_api.trans2(current, a[0], a[1],a[2]);
+	}
+      if (type==1) // rotate
+	{
+	  //std::cout << "Rot: " << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << std::endl;
+	  Quarternion q;
+	  q.x = a[0];
+	  q.y = a[1];
+	  q.z = a[2];
+	  q.w = a[3];
+	  Matrix m = Quarternion::QuarToMatrix(q);
+	  GameApi::M m2 = add_matrix2(e, m);
+	  current = ev.move_api.matrix(current, m2);
+	  //current = ev.move_api.anim_
+	}
+      if (type==2) // scale
+	{
+	  //std::cout << "Scale: " << a[0] << " " << a[1] << " " << a[2] << std::endl;
+	  current = ev.move_api.scale2(current, a[0],a[1],a[2]);
+	}
+      if (type==3) // weights
+	{
+	}
+
+
+
+      if (b_type==0) // translate
+	{
+	  //std::cout << "b_Trans: " << b[0] << " " << b[1] << " " << b[2] << std::endl;
+	  current2 = ev.move_api.trans2(current2, b[0], b[1],b[2]);
+	}
+      if (b_type==1) // rotate
+	{
+	  //std::cout << "b_Rot: " << b[0] << " " << b[1] << " " << b[2] << " " << b[3] << std::endl;
+	  Quarternion q;
+	  q.x = b[0];
+	  q.y = b[1];
+	  q.z = b[2];
+	  q.w = b[3];
+	  Matrix m = Quarternion::QuarToMatrix(q);
+	  GameApi::M m2 = add_matrix2(e, m);
+	  current2 = ev.move_api.matrix(current2, m2);
+
+
+	  //Quarternion q;
+	  //q.x = a[0];
+	  //q.y = a[1];
+	  //q.z = a[2];
+	  //q.w = a[3];
+	  //Matrix m = Quarternion::QuarToMatrix(q);
+	  //current = ev.move_api.anim_
+	}
+      if (b_type==2) // scale
+	{
+	  //std::cout << "b_Scale: " << b[0] << " " << b[1] << " " << b[2] << std::endl;
+	  current2 = ev.move_api.scale2(current2, b[0],b[1],b[2]);
+	}
+      if (b_type==3) // weights
+	{
+	}
+      GameApi::MN res = ev.move_api.mn_interpolate2(current, current2, start_time, end_time);
+      array = ev.move_api.move_ml(ev, array, res, 1, 10.0);
+    }
+
+
+  
+    }
+  }
+
+  
+
+  return array;
+}
+
+void slerp(float *prev, float *next, float val, float *res)
+{
+  float dot = prev[0]*next[0] + prev[1]*next[1] + prev[2]*next[2];
+  if (dot<0.0) {
+    next[0] = -next[0];
+    next[1] = -next[1];
+    next[2] = -next[2];
+    next[3] = next[3]; // TODO, does this need to be -?
+    dot = -dot;
+  }
+  if (dot>0.9995) {
+    res[0] = prev[0] + val*(next[0]-prev[0]);
+    res[1] = prev[1] + val*(next[1]-prev[1]);
+    res[2] = prev[2] + val*(next[2]-prev[2]);
+    res[3] = prev[3] + val*(next[3]-prev[3]);
+    float val = sqrt(res[0]*res[0]+res[1]*res[1]+res[2]*res[2]+res[3]*res[3]);
+    res[0]/=val;
+    res[1]/=val;
+    res[2]/=val;
+    res[3]/=val;
+    return;
+  }
+  float theta_0 = acos(dot);
+  float theta = val*theta_0;
+  float sin_theta = sin(theta);
+  float sin_theta_0 = sin(theta_0);
+
+  float scaleprev = cos(theta) - dot*sin_theta/sin_theta_0;
+  float scalenext = sin_theta/sin_theta_0;
+  res[0] = prev[0]*scaleprev + next[0]*scalenext;
+  res[1] = prev[1]*scaleprev + next[1]*scalenext;
+  res[2] = prev[2]*scaleprev + next[2]*scalenext;
+  res[3] = prev[3]*scaleprev + next[3]*scalenext;
+  return;
+}
+
+extern Matrix g_last_resize;
+
+class GLTFJointMatrices : public MainLoopItem
+{
+public:
+  GLTFJointMatrices(GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, MainLoopItem *next, bool has_anim) : env(env), ev(ev), load(load), skin_num(skin_num), animation(animation), time_index(time_index),next(next), has_anim(has_anim) { firsttime=true; max_joints = 63;}
+  void Prepare()
+  {
+    if (firsttime) {
+    next->Prepare();
+      jointmatrices_start.resize(max_joints);
+      jointmatrices_end.resize(max_joints);
+      bindmatrix.resize(max_joints);
+      start_t.resize(max_joints);
+      end_t.resize(max_joints);
+      root_env.resize(max_joints);
+      root_env_2.resize(max_joints);
+      int s = max_joints;
+      for(int i=0;i<s;i++) {
+	//GameApi::MN mn = ev.move_api.mn_empty();
+	root_env[i]= Matrix::Identity();
+	root_env_2[i]=Matrix::Identity();
+	jointmatrices_start[i]=gltf_node_default();
+	jointmatrices_end[i]=gltf_node_default();
+	bindmatrix[i]=Matrix::Identity();
+	start_t[i] = 0.0;
+	end_t[i] = 0.0;
+      }
+      firsttime = false; 
+      // std::cout << "GLTFSkeletonAnim::Prepare() start" << std::endl;
+
+    load->Prepare();
+    if (skin_num>=0 && skin_num<load->model.skins.size()) {
+      tinygltf::Skin *skin = &load->model.skins[skin_num];
+      int start_node = skin->skeleton;
+      recurse_node(start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+     }
+    }
+  }
+
+  virtual void execute(MainLoopEnv &e)
+  {
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() {
+    return next->shader_id();
+  }
+
+  
+  Matrix recurse_node(int node_id, tinygltf::Node * /*node*/, Matrix pos, Matrix pos2, GLTFAnimation * /*anim*/, int time_index, int /*channel*/)
+  {
+    if (animation<0||animation>=load->model.animations.size()) return Matrix::Identity();
+    
+    tinygltf::Node *node = &load->model.nodes[node_id];
+    
+    //std::cout << "Node: " << node->name << std::endl;
+
+    TransformObject start_obj = gltf_node_transform_obj(node);
+    TransformObject end_obj = start_obj;
+    TransformObject parent = start_obj;
+    
+    int channel = -1;
+    tinygltf::Animation *anim3 = &load->model.animations[animation];
+    int s5 = anim3->channels.size();
+      int jj = -1;
+
+	tinygltf::Skin *skin = &load->model.skins[skin_num];
+	int s2 = skin->joints.size();
+	bool doit = false;
+	for(int j=0;j<s2;j++) {
+	  if (skin->joints[j]==node_id) { doit=true; jj=j; break; }
+	  }
+
+
+	
+    for(int i=s5-1;i>=0;i--) {
+      tinygltf::AnimationChannel *chan = &anim3->channels[i];
+      if (chan->target_node == node_id) {
+	channel = i;
+
+
+
+	
+#if 1
+    float *a = 0;
+    float *a2 = 0;
+    int type = -1;
+    if (channel!=-1)
+      {
+      int ik = time_index;
+      GLTFAnimation *anim = new GLTFAnimation(load, animation, channel, ik);
+      anim->Prepare();
+      if (jj!=-1) {
+	start_t[jj] = 10.0*anim->start_time();
+	end_t[jj] = 10.0*anim->end_time();
+      }
+      a = anim->Amount(ik);
+      a2 = anim->Amount(ik+1);
+      type = anim->Type(time_index);
+
+      if (jj!=-1) {
+	Matrix m2 = Matrix::Identity();
+	if (anim) m2 = anim->InverseBindMatrix(jj);
+	bindmatrix[jj] = m2;
+      }
+
+      
+      }
+
+
+    if (has_anim) {
+    
+      if (type==0 && a && a2) { // translation
+	//std::cout << "trans:" << a[0] << "->" << a2[0] << " " << a[1] << "->" << a2[1] << " " << a[2] << "->" << a2[2] << std::endl;
+	//mv2 = ev.move_api.trans2(mv2,a[0]*1,a[1]*1,a[2]*1);
+	//mv = ev.move_api.trans2(mv, a2[0]*1, a2[1]*1, a2[2]*1);
+
+	start_obj.trans_x =a[0];
+	start_obj.trans_y =a[1];
+	start_obj.trans_z =a[2];
+	end_obj.trans_x =a2[0];
+	end_obj.trans_y =a2[1];
+	end_obj.trans_z =a2[2];
+	
+	//pos3+=Vector(a2[0]-a[0],a2[1]-a[1],a2[2]-a[2]);
+      } else {
+
+      }
+
+#if 1
+      if (type==1 && a && a2) { // rotation
+	start_obj.rot_x=a[0];
+	start_obj.rot_y=a[1];
+	start_obj.rot_z=a[2];
+	start_obj.rot_w=a[3];
+	end_obj.rot_x=a2[0];
+	end_obj.rot_y=a2[1];
+	end_obj.rot_z=a2[2];
+	end_obj.rot_w=a2[3];
+	
+#if 0
+	Quarternion q,q2;
+	q.x = float(a[0]);
+	q.y = float(a[1]);
+	q.z = float(a[2]);
+	q.w = float(a[3]);
+	q2.x = float(a2[0]);
+	q2.y = float(a2[1]);
+	q2.z = float(a2[2]);
+	q2.w = float(a2[3]);
+	Matrix m = Quarternion::QuarToMatrix(q);
+	Matrix m2 = Quarternion::QuarToMatrix(q2);
+	GameApi::M m_ = add_matrix2(env,m);
+	mv2 = ev.move_api.matrix(mv2,m_);
+	GameApi::M m2_ = add_matrix2(env, m2);
+	mv = ev.move_api.matrix(mv, m2_);
+
+#endif
+	
+	//std::cout << "Rot:" << a[0] << "->" << a2[0] << " " << a[1] << "->" << a2[1] << " " << a[2] << "->" << a2[2] << " " << a[3] << "->" << a2[3] << std::endl;
+	//std::cout << "IRot:" << res2[0] << " " << res2[1] << " " << res2[2] << " " << res2[3] << std::endl;
+      }
+
+#endif
+#if 1
+      if (type==2 && a && a2) { // scale
+	start_obj.scale_x=a[0];
+	start_obj.scale_y=a[1];
+	start_obj.scale_z=a[2];
+	end_obj.scale_x=a2[0];
+	end_obj.scale_y=a2[1];
+	end_obj.scale_z=a2[2];
+	//mv2 = ev.move_api.scale2(mv2,a[0],a[1],a[2]);
+	//mv = ev.move_api.scale2(mv, a2[0],a2[1],a2[2]);
+	//std::cout << "Sc:" << a[0] << "->" << a2[0] << " " << a[1] << "->" <<a2[1] << " " << a[2] << "->" << a2[2] << " " << std::endl;
+
+      } 
+  
+      if (type==3) { // weights
+      }
+#endif
+
+    
+#endif
+       } // if has_anim 
+      } // if chan_target_node
+    } // for i=s5
+    
+
+#if 0
+    
+#endif
+
+
+    //GameApi::MN mv00 = ev.move_api.mn_empty();
+    //GameApi::MN mv0 = ev.move_api.matrix(mv00, add_matrix2(env,pos));
+    //GameApi::MN mv0_2 = ev.move_api.matrix(mv00, add_matrix2(env,pos2));
+    Matrix m = gltf_node_transform_obj_apply(env,ev,pos,start_obj /*parent*/);//gltf
+    Matrix m2 = gltf_node_transform_obj_apply(env,ev,pos2,end_obj /*parent*/);//gltf
+    // Movement *move = find_move(env,mv);
+    //Matrix m = move->get_whole_matrix(0.0, 1.0);
+    //Movement *move_2 = find_move(env,mv_2);
+    //Matrix m2 = move_2->get_whole_matrix(0.0, 1.0);
+
+    //Point pos2 = pos*m;
+    //if (node->mesh != -1) {
+
+
+    //Point p0;
+    //p0.x = -300.0; p0.y = -300.0; p0.z = -300.0;
+    //Point p1;
+    //p1.x = 300.0; p1.y = 300.0; p1.z = 300.0;
+    //start_pos.push_back(p0*m3);
+    //end_pos.push_back(p1*m);
+
+
+    if (jj!=-1) { 
+      //std::cout << "Set matrix " << jj << std::endl;
+      root_env[jj] = pos;
+      root_env_2[jj] = pos2;
+      jointmatrices_start[jj] = start_obj;
+      jointmatrices_end[jj] = end_obj;
+    }
+    //}
+
+    // recurse children
+    int s = node->children.size();
+    std::vector<GameApi::ML> vec;
+    for(int i=0;i<s;i++) {
+      int child_id = node->children[i];
+      if (child_id!=-1) {
+	//tinygltf::Node *child_node = &load->model.nodes[child_id];
+
+	
+	
+	bool doit = true;
+	//int jj = 0;
+	if (doit) {
+
+	  Matrix p = recurse_node( child_id, 0 /*child_node*/, m,m2, 0 /*anim*/, time_index, channel );
+	}
+      }
+    }
+    //std::cout << "recurse end" << std::endl;
+    //Movement *move2 = find_move(env,mv2);
+    return Matrix::Identity(); //move2->get_whole_matrix(0.0,1.0);
+    //return mv;
+  }
+public:
+  std::vector<TransformObject> *start() { return &jointmatrices_start; }
+  std::vector<TransformObject> *end() { return &jointmatrices_end; }
+  std::vector<Matrix> *root() { return &root_env; }
+  std::vector<Matrix> *root2() { return &root_env_2; }
+  std::vector<Matrix> *bind() { return &bindmatrix; }
+  const std::vector<float> *start_time() const { return &start_t; }
+  const std::vector<float> *end_time() const { return &end_t; }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  LoadGltf *load;
+  int skin_num;
+  int animation;
+  int time_index;
+  MainLoopItem *next;
+  int max_joints;
+  std::vector<Matrix> root_env;
+  std::vector<Matrix> root_env_2;
+  std::vector<TransformObject> jointmatrices_start;
+  std::vector<TransformObject> jointmatrices_end;
+  std::vector<Matrix> bindmatrix;
+  std::vector<float> start_t;
+  std::vector<float> end_t;
+  bool firsttime;
+  bool has_anim;
+};
+
+GameApi::ML gltf_joint_matrices2(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, GameApi::ML next, bool has_anim)
+{
+  MainLoopItem *item = find_main_loop(e,next);
+  return add_main_loop(e, new GLTFJointMatrices(e,ev,load, skin_num, animation, time_index, item,has_anim));
+}
+
+GLTFJointMatrices *find_joint_matrices(GameApi::Env &e, GameApi::ML ml)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  GLTFJointMatrices *item2 = (GLTFJointMatrices*)item;
+  return item2;
+}
+
+class GLTFSkeletonAnim : public LineCollection
+{
+public:
+  GLTFSkeletonAnim(GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index) : env(env), ev(ev), load(load), skin_num(skin_num), animation(animation), time_index(time_index) { firsttime = true; }
+  void Prepare() {
+    if (firsttime) {
+      firsttime = false; 
+      // std::cout << "GLTFSkeletonAnim::Prepare() start" << std::endl;
+
+    load->Prepare();
+    
+    tinygltf::Skin *skin = &load->model.skins[skin_num];
+    int start_node = skin->skeleton;
+
+    //int channel = -1;
+    //tinygltf::Animation *anim3 = &load->model.animations[animation];
+    //int s = anim3->channels.size();
+    //for(int i=0;i<s;i++) {
+    //tinygltf::AnimationChannel *chan = &anim3->channels[i];
+    //if (chan->target_node == start_node) {
+    //  channel = i;
+    //}
+    // }
+  
+    //GLTFAnimation *anim=0;
+  //if (channel!=-1) {
+  //  anim = new GLTFAnimation(load, animation, channel, 0);
+  //  anim->Prepare();
+  //}
+    
+
+
+
+    recurse_node(start_node, 0, Matrix::Identity(), 0 /*anim*/, time_index, -1);
+  //std::cout << "GLTFSkeletonAnim::Prepare() end" << std::endl;
+    }
+  }
+  Matrix recurse_node(int node_id, tinygltf::Node * /*node*/, Matrix pos, GLTFAnimation * /*anim*/, int time_index, int /*channel*/)
+  {
+    tinygltf::Node *node = &load->model.nodes[node_id];
+    
+    //std::cout << "Node: " << node->name << std::endl;
+    GameApi::MN mv00 = ev.move_api.mn_empty();
+    GameApi::MN mv0 = ev.move_api.matrix(mv00, add_matrix2(env,pos));
+    GameApi::MN mv = gltf_node_transform(env,ev,node,mv0); //ev.move_api.mn_empty();
+
+    GameApi::MN mv2 = mv;
+
+
+
+    int channel = -1;
+    tinygltf::Animation *anim3 = &load->model.animations[animation];
+    int s5 = anim3->channels.size();
+    for(int i=s5-1;i>=0;i--) {
+      tinygltf::AnimationChannel *chan = &anim3->channels[i];
+      if (chan->target_node == node_id) {
+	channel = i;
+
+	tinygltf::Skin *skin = &load->model.skins[skin_num];
+	int s2 = skin->joints.size();
+	bool doit = false;
+	int jj = -1;
+	for(int j=0;j<s2;j++) {
+	  if (skin->joints[j]==node_id) { doit=true; jj=j; break; }
+	  }
+
+
+	
+#if 1
+    float *a = 0;
+    float *a2 = 0;
+    int type = -1;
+    if (channel!=-1)
+      {
+      int i = time_index;
+      GLTFAnimation *anim = new GLTFAnimation(load, animation, channel, i);
+      anim->Prepare();
+
+      a = anim->Amount(i);
+      a2 = anim->Amount(i+1);
+      type = anim->Type(time_index);
+
+#if 0
+      Matrix m2 = Matrix::Identity();
+      if (anim) m2 = anim->InverseBindMatrix(jj);
+      mv = ev.move_api.matrix(mv, add_matrix2(env,m2));
+      
+      Matrix m3 = Matrix::Identity();
+      if (anim) m3 = anim->InverseBindMatrix(jj);
+      mv2 = ev.move_api.matrix(mv2, add_matrix2(env,m3));
+#endif
+      
+      }
+
+
+
+    
+      if (type==0 && a && a2) { // translation
+	//std::cout << "trans:" << a[0] << "->" << a2[0] << " " << a[1] << "->" << a2[1] << " " << a[2] << "->" << a2[2] << std::endl;
+	mv2 = ev.move_api.trans2(mv2,a[0]*1,a[1]*1,a[2]*1);
+	mv = ev.move_api.trans2(mv, a2[0]*1, a2[1]*1, a2[2]*1);
+	//pos3+=Vector(a2[0]-a[0],a2[1]-a[1],a2[2]-a[2]);
+      } else {
+
+      }
+
+#if 0
+      if (type==1 && a && a2) { // rotation
+	Quarternion q,q2;
+	q.x = float(a[0]);
+	q.y = float(a[1]);
+	q.z = float(a[2]);
+	q.w = float(a[3]);
+	q2.x = float(a2[0]);
+	q2.y = float(a2[1]);
+	q2.z = float(a2[2]);
+	q2.w = float(a2[3]);
+	Matrix m = Quarternion::QuarToMatrix(q);
+	Matrix m2 = Quarternion::QuarToMatrix(q2);
+	GameApi::M m_ = add_matrix2(env,m);
+	mv2 = ev.move_api.matrix(mv2,m_);
+	GameApi::M m2_ = add_matrix2(env, m2);
+	mv = ev.move_api.matrix(mv, m2_);
+	std::cout << "Rot:" << a[0] << "->" << a2[0] << " " << a[1] << "->" << a2[1] << " " << a[2] << "->" << a2[2] << " " << a[3] << "->" << a2[3] << std::endl;
+	//std::cout << "IRot:" << res2[0] << " " << res2[1] << " " << res2[2] << " " << res2[3] << std::endl;
+      }
+
+#endif
+#if 1
+      if (type==2 && a && a2) { // scale
+	mv2 = ev.move_api.scale2(mv2,a[0],a[1],a[2]);
+	mv = ev.move_api.scale2(mv, a2[0],a2[1],a2[2]);
+	std::cout << "Sc:" << a[0] << "->" << a2[0] << " " << a[1] << "->" <<a2[1] << " " << a[2] << "->" << a2[2] << " " << std::endl;
+
+      } 
+  
+      if (type==3) { // weights
+      }
+#endif
+
+    
+#endif
+
+      }
+    }
+
+
+      Movement *move = find_move(env,mv);
+    Matrix m = move->get_whole_matrix(0.0, 1.0);
+
+    Movement *move3 = find_move(env,mv2);
+    Matrix m3 = move3->get_whole_matrix(0.0, 1.0);
+
+    //Point pos2 = pos*m;
+    //if (node->mesh != -1) {
+
+
+    Point p0;
+    p0.x = -300.0; p0.y = -300.0; p0.z = -300.0;
+    Point p1;
+    p1.x = 300.0; p1.y = 300.0; p1.z = 300.0;
+    start_pos.push_back(p0*m3);
+    end_pos.push_back(p1*m);
+    //}
+
+    // recurse children
+    int s = node->children.size();
+    std::vector<GameApi::ML> vec;
+    for(int i=0;i<s;i++) {
+      int child_id = node->children[i];
+      if (child_id!=-1) {
+	//tinygltf::Node *child_node = &load->model.nodes[child_id];
+
+	
+	
+	bool doit = true;
+	//int jj = 0;
+	if (doit) {
+
+	  Matrix p = recurse_node( child_id, 0 /*child_node*/, m, 0 /*anim*/, time_index, channel );
+	}
+      }
+    }
+    //std::cout << "recurse end" << std::endl;
+    Movement *move2 = find_move(env,mv2);
+    return move2->get_whole_matrix(0.0,1.0);
+    //return mv;
+  }
+
+  virtual int NumLines() const { return start_pos.size(); }
+  virtual Point LinePoint(int line, int point) const
+  {
+    //       std::cout << "LinePoint start" << std::endl;
+
+    if (line>=0 && line<start_pos.size() && line<end_pos.size()) {
+      if (point==0) return start_pos[line];
+      if (point==1) return end_pos[line];
+    } else return Point(0.0,0.0,0.0);
+    return Point(0.0,0.0,0.0);
+  }
+  virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; } 
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  LoadGltf *load;
+  int skin_num;
+  int animation;
+  //int channel;
+  int time_index;
+  int start_node;
+  std::vector<Point> start_pos, end_pos;
+  bool firsttime;
+};
+
+GameApi::LI gltf_anim_skeleton2(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index)
+{
+  GLTFSkeletonAnim *anim =  new GLTFSkeletonAnim(e, ev, load, skin_num, animation, time_index);
+  return add_line_array(e, anim);
+}
+
+
+GameApi::ML gltf_scene3( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int scene_id, int animation )
+{
+  int s2 = load->model.scenes.size();
+  if (!(scene_id>=0 && scene_id<s2))
+    {
+    GameApi::P empty = ev.polygon_api.p_empty();
+    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
+    return ml;
+    }
+  tinygltf::Scene *scene = &load->model.scenes[scene_id];
+  int s = scene->nodes.size();
+  std::vector<GameApi::ML> vec;
+  for(int i=0;i<s;i++) {
+    //GameApi::ML ml = gltf_node2( e, ev, load, scene->nodes[i] );
+    GameApi::ML ml = gltf_anim3(e,ev,load,animation, scene->nodes[i]);
+    vec.push_back(ml);
+  }
+  return ev.mainloop_api.array_ml(ev, vec);
+}
+
+
+
+GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id, int animation )
+{
+
+  bool is_binary=false;
+  if (int(url.size())>3) {
+    std::string sub = url.substr(url.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  load->Prepare();
+  GameApi::P mesh = gltf_load2(e,ev, load, 0,0);
+  GameApi::ML ml = gltf_scene3(e,ev,load,scene_id,animation);
+  return scale_to_gltf_size(e,ev,mesh,ml);
+
+}
+
+GameApi::ML GameApi::MainLoopApi::gltf_anim4( GameApi::EveryApi &ev, std::string base_url, std::string url, int animation, int channel )
+{
+
+  bool is_binary=false;
+  if (int(url.size())>3) {
+    std::string sub = url.substr(url.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  load->Prepare();
+  GameApi::P mesh = gltf_load2(e,ev, load, 0,0);
+  std::vector<GameApi::ML> mls;
+    tinygltf::Model *model = &load->model;
+    tinygltf::Animation *anim2 = &model->animations[animation];
+
+    
+    GLTFAnimation *anim = new GLTFAnimation(load,animation, channel, 0);
+      anim->Prepare();
+      
+      int target_node = anim->target_node();
+      GameApi::ML ml = gltf_anim3(e,ev,load,animation, target_node);
+    return scale_to_gltf_size(e,ev,mesh,ml);
+}
+
+
+
+
+class GLTF_Att : public Attach
+{
+public:
+  GLTF_Att( LoadGltf *load, int mesh_index, int prim_index, int num ) : load(load), mesh_index(mesh_index), prim_index(prim_index), num(num) { }
+  void Prepare()
+  {
+    
+    load->Prepare();
+    
+    
+    if (mesh_index>=0 && mesh_index<int(load->model.meshes.size()) && prim_index>=0 && prim_index<int(load->model.meshes[mesh_index].primitives.size()))
+      prim = &load->model.meshes[mesh_index].primitives[prim_index];
+    else
+      return;
+    
+    //std::cout << "MESH: " << load->model.meshes[mesh_index].name << std::endl;
+    
+    model = &load->model;
+    
+    mode = prim->mode;
+
+    indices_index = prim->indices;
+    indices_acc = 0;
+    if (indices_index!=-1)
+      indices_acc = &model->accessors[indices_index];
+
+    assert(indices_acc->type==TINYGLTF_TYPE_SCALAR);
+
+
+        indices_bv = 0;
+    if (indices_acc) {
+      int view = indices_acc->bufferView;
+      if (view!=-1)
+	indices_bv = &model->bufferViews[view];
+    }
+
+    indices_buf = 0;
+    if (indices_bv) {
+      int buf = indices_bv->buffer;
+      if (buf!=-1) {
+	indices_buf = &model->buffers[buf];
+      }
+    }
+
+    
+    
+    joints_index = -1;
+    if (prim->attributes.find("JOINTS_0") != prim->attributes.end())
+      joints_index = prim->attributes["JOINTS_0"];
+
+    //std::cout << "joints_index: " << joints_index << std::endl;
+    
+    joints_acc = 0;
+    if (joints_index!=-1)
+      joints_acc = &model->accessors[joints_index];
+    
+    //std::cout << "joints_acc: " << joints_acc << std::endl;
+    
+    joints_bv = 0;
+    if (joints_acc) {
+      int view = joints_acc->bufferView;
+      if (view!=-1)
+	joints_bv = &model->bufferViews[view];
+    }
+    
+    //std::cout << "joints_bv: " << joints_bv << std::endl;
+
+
+    joints_buf = 0;
+    if (joints_bv) {
+      int buf = joints_bv->buffer;
+      if (buf!=-1) {
+	joints_buf = &model->buffers[buf];
+      }
+    }
+
+
+
+
+
+    weights_index = -1;
+    if (prim->attributes.find("WEIGHTS_0") != prim->attributes.end())
+      weights_index = prim->attributes["WEIGHTS_0"];
+
+    //std::cout << "joints_index: " << joints_index << std::endl;
+    
+    weights_acc = 0;
+    if (weights_index!=-1)
+      weights_acc = &model->accessors[weights_index];
+    
+    //std::cout << "joints_acc: " << joints_acc << std::endl;
+    
+    weights_bv = 0;
+    if (weights_acc) {
+      int view = weights_acc->bufferView;
+      if (view!=-1)
+	weights_bv = &model->bufferViews[view];
+    }
+    
+    //std::cout << "joints_bv: " << joints_bv << std::endl;
+
+
+    weights_buf = 0;
+    if (weights_bv) {
+      int buf = weights_bv->buffer;
+      if (buf!=-1) {
+	weights_buf = &model->buffers[buf];
+      }
+    }
+
+
+    
+    //std::cout << "joints_buf: " << joints_buf << std::endl;
+	
+  }
+
+
+  int get_index(int face, int point) const
+  {
+	unsigned char *ptr = &indices_buf->data[0];
+	//int size1 = indices_buf->data.size();
+	unsigned char *ptr2 = ptr + indices_bv->byteOffset;
+	//int size2 =indices_bv->byteLength;
+	int stride = indices_bv->byteStride;
+
+	switch(indices_acc->componentType) {
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+	  if (stride==0) stride=sizeof(unsigned char);
+	  break;
+	case TINYGLTF_COMPONENT_TYPE_BYTE:
+	  if (stride==0) stride=sizeof(char);
+	  break;
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+	    if (stride==0) stride=sizeof(unsigned short); // 3 = num of indices in a ttiangle
+	    break;
+	case TINYGLTF_COMPONENT_TYPE_SHORT:
+	    if (stride==0) stride=sizeof(short); // 3 = num of indices in a ttiangle
+	    break;
+	case TINYGLTF_COMPONENT_TYPE_INT:
+	    if (stride==0) stride=sizeof(int); // 3 = num of indices in a ttiangle
+	    break;
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
+	    if (stride==0) stride=sizeof(unsigned int); // 3 = num of indices in a ttiangle
+	    break;
+	default:
+	  std::cout << "componentType wrong: " << indices_acc->componentType << std::endl;
+	  if (stride==0) stride=sizeof(short);
+	  break;
+	};
+
+
+	int comp = face*3+point;
+	unsigned char *ptr3 = ptr2 + indices_acc->byteOffset + comp*stride;
+	//int size3 = indices_acc->count;
+	int index = 0;
+	switch(indices_acc->componentType)
+	  {
+	  case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+	    {
+	      unsigned char *ptr4 = (unsigned char*)ptr3;
+	      index = *ptr4;
+	      break;
+	    }
+	  case TINYGLTF_COMPONENT_TYPE_BYTE:
+	    {
+	      char *ptr4 = (char*)ptr3;
+	      index = *ptr4;
+	      break;
+	    }
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+	  {
+	  unsigned short *ptr4 = (unsigned short*)ptr3;
+	  index = *ptr4; // this is the index to the buffer
+	  break;
+	  }
+	case TINYGLTF_COMPONENT_TYPE_SHORT:
+	  {
+	  short *ptr4 = (short*)ptr3;
+	  index = *ptr4; // this is the index to the buffer
+	  break;
+	  }
+	case TINYGLTF_COMPONENT_TYPE_INT:
+	  {
+	  int *ptr4 = (int*)ptr3;
+	  index = *ptr4; // this is the index to the buffer
+	  break;
+	  }
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
+	  {
+	  unsigned int *ptr4 = (unsigned int*)ptr3;
+	  index = *ptr4; // this is the index to the buffer
+	  break;
+	  }
+	  };
+	return index;
+  }
+
+  virtual int Weights(int face, int point, int num) const
+  {
+    if (weights_bv && weights_acc && weights_buf) {
+      if (mode==TINYGLTF_MODE_TRIANGLES) {
+      if (indices_buf && indices_bv && indices_acc) {
+      
+	int index = get_index(face,point);
+
+	unsigned char *pos_ptr = &weights_buf->data[0];
+	int stride2 = weights_bv->byteStride;
+	if (stride2==0) stride2 = 4*sizeof(unsigned char); // 3 = num of components in (x,y,z)
+	float *pos_ptr2 = (float*)(pos_ptr + weights_bv->byteOffset + index*stride2 + weights_acc->byteOffset); 
+	//std::cout << face << " " << point << "::" << index << "::" << std::hex << int(pos_ptr2[0]) << "," << int(pos_ptr2[1]) << "," << int(pos_ptr2[2]) << "," << int(pos_ptr2[3]) << std::endl;
+	//vec4 res;
+	//res[0] = pos_ptr2[0];
+	//res[1] = pos_ptr2[1];
+	//res[2] = pos_ptr2[2];
+	//res[3] = pos_ptr2[3];
+	//std::cout << "Attached end" << std::endl;
+	return pos_ptr2[num];
+      } else {
+	// todo, check that this branch works
+	unsigned char *pos_ptr = &weights_buf->data[0];
+	unsigned char *pos_ptr2 = pos_ptr + weights_bv->byteOffset;
+	int stride = weights_bv->byteStride;
+	if (stride==0) stride=4*sizeof(char);
+	int comp = face*3+point;
+	unsigned char *pos_ptr3 = pos_ptr2 + weights_acc->byteOffset + comp*stride;
+	float *pos_ptr4 = (float*)pos_ptr3; // 3 = num of components in (x,y,z)
+	//std::cout << face << " " << point << "::" << int(pos_ptr4[0]) << std::endl;
+	//res[0] = pos_ptr4[0];
+	//res[1] = pos_ptr4[1];
+	//res[2] = pos_ptr4[2];
+	//res[3] = pos_ptr4[3];
+	//return res;
+	//std::cout << "Attached end" << std::endl;
+	return pos_ptr4[num];
+      }
+      }
+    } else {
+      //std::cout << "Attached end" << std::endl;
+      return 0;
+    }
+    std::cout << "gltf weights unknown mode: "<< mode << std::endl;
+    return 0;
+
+
+  }
+  
+  virtual int Attached(int face, int point) const
+  {
+    int s = 4;
+    int chosen = -1;
+    for(int i=0;i<s;i++) {
+      //std::cout << "Weights:" << face << " " << point << ": "<< i << " " << Weights(face,point,i) << std::endl;
+      if (Weights(face,point,i)>0.5) chosen=i;
+    }
+
+    //if (fabs(Weights(face,point,chosen)-1.0)>0.01) std::cout << "Weights:" << Weights(face,point,chosen) << std::endl;
+    
+    int num = chosen;
+
+    if (num==-1) return -1;
+    
+    //std::cout << "Attached start" << std::endl;
+    if (joints_bv && joints_acc && joints_buf) {
+      if (mode==TINYGLTF_MODE_TRIANGLES) {
+      if (indices_buf && indices_bv && indices_acc) {
+      
+	int index = get_index(face,point);
+
+	unsigned char *pos_ptr = &joints_buf->data[0];
+	int stride2 = joints_bv->byteStride;
+	if (stride2==0) stride2 = 4*sizeof(unsigned char); // 3 = num of components in (x,y,z)
+	unsigned char *pos_ptr2 = (unsigned char*)(pos_ptr + joints_bv->byteOffset + index*stride2 + joints_acc->byteOffset); 
+	//std::cout << face << " " << point << "::" << index << "::" << std::hex << int(pos_ptr2[0]) << "," << int(pos_ptr2[1]) << "," << int(pos_ptr2[2]) << "," << int(pos_ptr2[3]) << std::endl;
+	//vec4 res;
+	//res[0] = pos_ptr2[0];
+	//res[1] = pos_ptr2[1];
+	//res[2] = pos_ptr2[2];
+	//res[3] = pos_ptr2[3];
+	//std::cout << "Attached end" << std::endl;
+	return int(((unsigned int)(pos_ptr2[num]))&0xff);
+      } else {
+	// todo, check that this branch works
+	unsigned char *pos_ptr = &joints_buf->data[0];
+	unsigned char *pos_ptr2 = pos_ptr + joints_bv->byteOffset;
+	int stride = joints_bv->byteStride;
+	if (stride==0) stride=4*sizeof(char);
+	int comp = face*3+point;
+	unsigned char *pos_ptr3 = pos_ptr2 + joints_acc->byteOffset + comp*stride;
+	unsigned char *pos_ptr4 = (unsigned char*)pos_ptr3; // 3 = num of components in (x,y,z)
+	//std::cout << face << " " << point << "::" << int(pos_ptr4[0]) << std::endl;
+	//res[0] = pos_ptr4[0];
+	//res[1] = pos_ptr4[1];
+	//res[2] = pos_ptr4[2];
+	//res[3] = pos_ptr4[3];
+	//return res;
+	//std::cout << "Attached end" << std::endl;
+	return int(((unsigned int)(pos_ptr2[num]))&0xff);
+      }
+      }
+    } else {
+      //std::cout << "Attached end" << std::endl;
+      return 0;
+    }
+    std::cout << "gltf attach unknown mode: "<< mode << std::endl;
+    return 0;
+  }
+
+private:
+  tinygltf::Primitive *prim = 0;
+  tinygltf::Model *model =0 ;
+
+  int mode;
+
+  int num = 0;
+  
+  int indices_index;
+  int joints_index;
+  int weights_index;
+  tinygltf::Accessor *indices_acc=0;
+  tinygltf::Accessor *joints_acc=0;
+  tinygltf::Accessor *weights_acc=0;
+  
+  tinygltf::BufferView *indices_bv=0;
+  tinygltf::BufferView *joints_bv=0;
+  tinygltf::BufferView *weights_bv=0;
+  
+  tinygltf::Buffer *indices_buf=0;
+  tinygltf::Buffer *joints_buf=0;
+  tinygltf::Buffer *weights_buf=0;
+  
+  LoadGltf *load=0;
+  int mesh_index;
+  int prim_index;
+  
+};
+
+GameApi::ATT gltf_attach(GameApi::Env &e, LoadGltf *load, int mesh_index, int prim_index, int num)
+{
+  return add_attach(e, new GLTF_Att(load,mesh_index, prim_index, num));
+}
+
+GameApi::ARR gltf_split_faces(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_index, int prim_index, int max_attach, int num)
+{
+  GameApi::P p = gltf_load2(e,ev, load, mesh_index, prim_index);
+  GameApi::P p2 = scale_to_gltf_size_p(e,ev, p, p);
+  GameApi::ATT att = gltf_attach(e,load, mesh_index, prim_index, num);
+  return ev.polygon_api.split_faces(p2, att, max_attach);
+}
+
+GameApi::ARR GameApi::PolygonApi::gltf_split_faces2(EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index, int max_attach)
+{
+  bool is_binary=false;
+  if (int(url.size())>3) {
+    std::string sub = url.substr(url.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+
+  LoadGltf *load = find_gltf_instance(e,base_url, url, gameapi_homepageurl, is_binary);
+  return gltf_split_faces(e, ev,load,mesh_index, prim_index, max_attach, 0); // 0=index of joint to choose from 4 alternatives 0|1|2|3.
+}
+
+
+
+class GLTF_Animation_Material : public MaterialForward
+{
+public:
+  GLTF_Animation_Material(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int num_timeindexes, Material *next, int key) : e(e), ev(ev), load(load), skin_num(skin_num), animation(animation), num_timeindexes(num_timeindexes), next(next), key(key) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    load->Prepare();
+    GameApi::ML ml;
+    ml.id = next->mat(p.id);
+    std::vector<GameApi::ML> mls;
+    GameApi::ML ml_orig = gltf_joint_matrices2(e,ev,load,skin_num,animation,0,ml,false);
+    for(int i=0;i<num_timeindexes;i++) {
+      GameApi::ML ml1 = gltf_joint_matrices2(e,ev, load, skin_num, animation, i, ml, true);
+      mls.push_back(ml1);
+    }
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key);
+    return ml2;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    load->Prepare();
+    GameApi::ML ml;
+    ml.id = next->mat_inst(p.id, pts.id);
+    std::vector<GameApi::ML> mls;
+    GameApi::ML ml_orig = gltf_joint_matrices2(e,ev,load,skin_num,animation,0,ml,false);
+    for(int i=0;i<num_timeindexes;i++) {
+      GameApi::ML ml1 = gltf_joint_matrices2(e,ev, load, skin_num, animation, i, ml, true);
+      mls.push_back(ml1);
+    }
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig, mls,key);
+    return ml2;
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    load->Prepare();
+    GameApi::ML ml;
+    ml.id = next->mat_inst_matrix(p.id, ms.id);
+    std::vector<GameApi::ML> mls;
+    GameApi::ML ml_orig = gltf_joint_matrices2(e,ev,load,skin_num,animation,0,ml,false);
+    for(int i=0;i<num_timeindexes;i++) {
+      GameApi::ML ml1 = gltf_joint_matrices2(e,ev, load, skin_num, animation, i, ml,true);
+      mls.push_back(ml1);
+    }
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key);
+    return ml2;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    load->Prepare();
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(p.id, pta.id);
+    std::vector<GameApi::ML> mls;
+    GameApi::ML ml_orig = gltf_joint_matrices2(e,ev,load,skin_num,animation,0,ml,false);
+    for(int i=0;i<num_timeindexes;i++) {
+      GameApi::ML ml1 = gltf_joint_matrices2(e,ev, load, skin_num, animation, i, ml,true);
+      mls.push_back(ml1);
+    }
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key);
+    return ml2;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    load->Prepare();
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+    GameApi::ML ml_orig = gltf_joint_matrices2(e,ev,load,skin_num,animation,0,ml,false);
+    std::vector<GameApi::ML> mls;
+    for(int i=0;i<num_timeindexes;i++) {
+      GameApi::ML ml1 = gltf_joint_matrices2(e,ev, load, skin_num, animation, i, ml,true);
+      mls.push_back(ml1);
+    }
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key);
+    return ml2;
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  Material *next;
+  LoadGltf *load;
+  int skin_num;
+  int animation;
+  int num_timeindexes;
+  int key;
+};
+
+
+class KeysMaterial : public MaterialForward
+{
+public:
+  KeysMaterial(GameApi::EveryApi &ev, std::vector<Material*> vec, std::string keys) : ev(ev), vec(vec), keys(keys) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    int s = vec.size();
+    std::vector<GameApi::ML> vec2;
+    for(int i=0;i<s;i++) {
+      GameApi::ML ml;
+      ml.id = vec[i]->mat(p.id);
+      vec2.push_back(ml);
+    }
+    return ev.mainloop_api.key_ml(vec2, keys);
+  }
+  
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    int s = vec.size();
+    std::vector<GameApi::ML> vec2;
+    for(int i=0;i<s;i++) {
+      GameApi::ML ml;
+      ml.id = vec[i]->mat_inst(p.id, pts.id);
+      vec2.push_back(ml);
+    }
+    return ev.mainloop_api.key_ml(vec2, keys);
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    int s = vec.size();
+    std::vector<GameApi::ML> vec2;
+    for(int i=0;i<s;i++) {
+      GameApi::ML ml;
+      ml.id = vec[i]->mat_inst_matrix(p.id, ms.id);
+      vec2.push_back(ml);
+    }
+    return ev.mainloop_api.key_ml(vec2, keys);
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    int s = vec.size();
+    std::vector<GameApi::ML> vec2;
+    for(int i=0;i<s;i++) {
+      GameApi::ML ml;
+      ml.id = vec[i]->mat_inst2(p.id, pta.id);
+      vec2.push_back(ml);
+    }
+    return ev.mainloop_api.key_ml(vec2, keys);
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    int s = vec.size();
+    std::vector<GameApi::ML> vec2;
+    for(int i=0;i<s;i++) {
+      GameApi::ML ml;
+      ml.id = vec[i]->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+      vec2.push_back(ml);
+    }
+    return ev.mainloop_api.key_ml(vec2, keys);
+  }
+  
+private:
+  GameApi::EveryApi &ev;
+  std::vector<Material*> vec;
+  std::string keys;
+};
+
+GameApi::MT GameApi::MaterialsApi::m_keys(EveryApi &ev, std::vector<MT> vec, std::string keys)
+{
+  int s = vec.size();
+  std::vector<Material*> vec2;
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_material(e,vec[i]));
+    }
+  return add_material(e,new KeysMaterial(ev, vec2, keys));
+}
+
+GameApi::MT GameApi::MaterialsApi::gltf_anim_material2(GameApi::EveryApi &ev, std::string base_url, std::string url, int skin_num, int num_timeindexes, MT next, std::string keys)
+{
+  int s = keys.size();
+  std::vector<GameApi::MT> vec;
+  for(int i=0;i<s;i++) {
+    GameApi::MT mt = gltf_anim_material(ev,base_url, url, skin_num, i, num_timeindexes, next, keys[i]);
+    vec.push_back(mt);
+  }
+  return m_keys(ev,vec,keys);
+}
+
+GameApi::MT GameApi::MaterialsApi::gltf_anim_material(GameApi::EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int num_timeindexes, MT next, int key)
+{
+  bool is_binary=false;
+  if (int(url.size())>3) {
+    std::string sub = url.substr(url.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  Material *next_mat = find_material(e,next);
+  Material *mat = new GLTF_Animation_Material(e,ev,load, skin_num, animation, num_timeindexes, next_mat, key);
+  return add_material(e, mat);
+}
+extern Matrix g_last_resize;
+
+char key_mapping(char ch, int type);
+
+class GltfAnimShaderML : public MainLoopItem
+{
+public:
+  GltfAnimShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *ml_orig, std::vector<MainLoopItem*> items, int key) : env(env), ev(ev), ml_orig(ml_orig),items(items), key(key) { firsttime=true; }
+  std::vector<int> shader_id() {
+    return ml_orig->shader_id();
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    int ch = key_mapping(e.ch,e.type);
+    //if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    //if (ch==39) ch='0';
+    //if (ch>=30 && ch<=38 && ch) { ch = ch-30; ch=ch+'1'; }
+    //if (ch==26||ch==82) ch='w';
+    //if (ch==22||ch==82) ch='s';
+    //if (ch==4||ch==80) ch='a';
+    //if (ch==7||ch==79) ch='d';
+    //if (ch==44) ch=32;
+
+    
+    //std::cout << ch << " " << key << "::" << std::hex << e.type << std::endl;
+    if (ch==key &&e.type==0x300) {
+      //std::cout << "KEYTIME: " << current_time << std::endl;
+      key_time = ev.mainloop_api.get_time()/1000.0; /*current_time;*/
+    }
+    
+    items[0]->handle_event(e);
+  }
+  void Prepare() {
+    int s = items.size();
+    for(int i=0;i<s;i++) {
+      items[i]->Prepare();
+    }
+    ml_orig->Prepare();
+    resize = g_last_resize; // this communicates with resize_to_correct_size()
+  }
+  void logoexecute() {
+    items[0]->logoexecute();
+  }
+  void execute(MainLoopEnv &e) {
+    current_time = e.time;
+    float time = e.time-key_time;
+
+    MainLoopEnv ee = e;
+    if (firsttime)
+      {
+
+#if 1
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      //GameApi::US a1 = ev.uber_api.v_gltf_anim(a0);
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    vertex = ev.uber_api.v_gltf_anim(vertex);
+    //GameApi::US a2 = ev.uber_api.v_passall(a4v);
+    ee.us_vertex_shader = vertex.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      //GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    fragment = ev.uber_api.f_gltf_anim(fragment);
+    ee.us_fragment_shader = fragment.id;
+#endif	
+      }
+    // if (current!=-1)
+    if (1)
+      {
+     std::vector<int> sh_ids = ml_orig->shader_id();
+     int s=sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+     sh.id = sh_id;
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	GLTFJointMatrices *joints_0 = (GLTFJointMatrices*)ml_orig;
+	std::vector<TransformObject> *start_0 = joints_0->start();
+	std::vector<Matrix> *r_0 = joints_0->root();
+	std::vector<Matrix> *bind = joints_0->bind();
+
+
+	
+	//std::cout << "Execute sh_id" << std::endl;
+	
+
+	//GameApi::SH sh;
+	ev.shader_api.use(sh);
+	//std::cout << "sz" << sz << std::endl;
+	std::vector<GameApi::M> vec;
+	int sz = 1;
+	for(int ii=0;ii<64;ii++)
+	  {
+
+
+	    current = -1;
+	    const std::vector<float> *current_start_time=0, *current_end_time=0;
+	    int sz = items.size();
+	    for(int t=0;t<sz;t++)
+	      {
+		GLTFJointMatrices *joints = (GLTFJointMatrices*)items[t];
+		const std::vector<float> *start_time = joints->start_time();
+		const std::vector<float> *end_time = joints->end_time();
+		//std::cout << "time=" << time << "::" << start_time << ".." << end_time
+		
+		int ssz = std::min(start_time->size(),end_time->size());
+		if (ii<ssz)
+		  if (time>=start_time->operator[](ii) && time<end_time->operator[](ii))
+		    {
+		      current=t;
+		      current_start_time = start_time;
+		      current_end_time = end_time;
+		      break;
+		    }
+		//if (current!=-1) break;
+	      }
+
+	    if (current==-1) { vec.push_back(add_matrix2(env,Matrix::Identity())); continue; }
+	    
+	    MainLoopItem *next = items[current];
+	    GLTFJointMatrices *joints = (GLTFJointMatrices*)next;
+	    std::vector<TransformObject> *start = joints->start();
+	    std::vector<TransformObject> *end = joints->end();
+	    std::vector<Matrix> *r = joints->root();
+	    std::vector<Matrix> *r_2 = joints->root2();
+	    sz = std::min(start_0->size(),std::min(start->size(),end->size()));
+
+
+
+	    
+
+	    float time01 = (time-current_start_time->operator[](ii))/(current_end_time->operator[](ii)-current_start_time->operator[](ii));
+
+	    if (std::isinf(time01)) time01 = 0.0;
+
+	    TransformObject start_obj;
+	    if (ii<sz)
+	      start_obj= start->operator[](ii);
+	    else start_obj = gltf_node_default();
+	    TransformObject end_obj;
+	    if (ii<sz)
+	      end_obj = end->operator[](ii);
+	    else end_obj = gltf_node_default();
+	    
+	    Matrix rr0;
+	    if (ii<sz)
+	      rr0 = r_0->operator[](ii);
+	    else rr0=Matrix::Identity();
+
+
+	    Matrix rr;
+	    if (ii<sz)
+	      rr = r->operator[](ii);
+	    else rr=Matrix::Identity();
+
+	    Matrix rr2;
+	    if (ii<sz)
+	      rr2 = r_2->operator[](ii);
+	    else rr2=Matrix::Identity();
+
+	    
+	    
+	    TransformObject m0t;
+	    if (ii<sz)
+	      m0t = start_0->operator[](ii);
+	    else m0t = gltf_node_default();
+
+	    //Movement *move2 = find_move(env,rr0);
+	    //Matrix rr0m = rr0; //move2->get_whole_matrix(0.0, 1.0);
+
+	    
+	    Matrix m0 = gltf_node_transform_obj_apply(env,ev,rr0,m0t);//gltf	    
+	    
+	    Matrix m0i = Matrix::Inverse(m0);
+	    
+#if 0	    
+	    Matrix mstart;
+	    if (ii<sz)
+	      mstart = start->operator[](ii);
+	    else mstart=Matrix::Identity();
+	    Matrix mend;
+	    if (ii<sz)
+	      mend = end->operator[](ii); //Matrix::Interpolate(start->opera
+	    else
+	      mend =Matrix::Identity();
+
+#endif
+	    
+	    Matrix bindm;
+	    if (i<sz)
+	      bindm=bind->operator[](ii);
+	    else bindm = Matrix::Identity();
+	    
+	    //tor[](i), end->operator[](i), time01);
+
+	    TransformObject obj = slerp_transform(start_obj,end_obj,time01);
+	    //Matrix m;
+	    //for(int j=0;j<16;j++) m.matrix[j]=(time01)*mend.matrix[j] + (1.0-time01)*mstart.matrix[j];
+
+	    // INTERPOLATE HERE USING start_obj/end_obj
+	    
+	    //Movement *move_1 = find_move(env,rr);
+	    //Matrix m_1 = move_1->get_whole_matrix(0.0, 1.0);
+	    //Movement *move_2 = find_move(env,rr2);
+	    //Matrix m_2 = move_2->get_whole_matrix(0.0, 1.0);
+
+	    Matrix mr;
+	    for(int j=0;j<16;j++) mr.matrix[j]=(time01)*rr2.matrix[j] + (1.0-time01)*rr.matrix[j];
+	    //GameApi::MN m_rr0 = ev.move_api.mn_empty();
+	    //GameApi::MN m_rr = ev.move_api.matrix(m_rr0, add_matrix2(env,mr));
+	    
+	    
+	    Matrix mv = gltf_node_transform_obj_apply(env,ev,mr,obj);//gltf_node_transform(env,ev,node,mv0); //ev.move_api.mn_empty();
+	    
+	    //GameApi::MN mv2 = gltf_node_transform_obj_apply(env,ev,mv0,start_obj);
+	    
+	    
+	    //Movement *move = find_move(env,mv);
+	    Matrix m = mv; //move->get_whole_matrix(0.0, 1.0);
+    
+	    //Movement *move3 = find_move(env,mv2);
+	    //Matrix m3 = move3->get_whole_matrix(0.0, 1.0);
+
+	    
+
+	    Matrix ri = Matrix::Inverse(resize);
+
+
+	    // std::cout << "time01: " << ii << "::" << time01 << "::" << current_start_time->operator[](i) << " " << current_end_time->operator[](i) << ":::" << m << std::endl;
+
+	    //Matrix m = mend;
+	    //std::stringstream ss;
+	    //ss << i;
+	    //std::string jj = std::string("jointMatrix[") + ss.str() + "]";
+	    //m=Matrix::Identity(); // TODO remove this.
+	    //std::cout << "Matrixi: " << i << "::" << m0i << std::endl;
+	    //std::cout << "Matrix: " << i << "::" << m << std::endl;
+	    vec.push_back(add_matrix2(env,ri* m0i*m*bindm *resize));
+	  }
+	//std::vector<GameApi::M> mat;
+	//for(int i=0;i<64;i++)
+	//mat.push_back(add_matrix2(env,Matrix::Identity()));
+	//ev.shader_api.set_var(sh, "jointMatrix", mat,64);
+
+	ev.shader_api.set_var(sh, "jointMatrix", vec, 64);
+
+      }
+#ifndef NO_MV
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m3 = add_matrix2(env, e.in_P); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "in_P", m3);
+	ev.shader_api.set_var(sh, "time", e.time);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+#endif
+     }
+    ml_orig->execute(ee);
+
+      } else {
+      // THIS IS ONLY FOR SITUATION WHEN MODEL DOESNT EXIST.
+      MainLoopItem *next = items[0];
+      std::vector<GameApi::M> mat;
+      for(int i=0;i<64;i++)
+	mat.push_back(add_matrix2(env,Matrix::Identity()));
+
+      std::vector<int> sh_ids = next->shader_id();
+      int s=sh_ids.size();
+      for(int i=0;i<s;i++) {
+	int sh_id = sh_ids[i];
+	sh.id = sh_id;
+	ev.shader_api.use(sh);
+	
+	ev.shader_api.set_var(sh, "jointMatrix", mat,64);
+      }
+    ml_orig->execute(ee);
+    }
+    if (firsttime) 	firsttime = false;
+	
+    ev.shader_api.unuse(sh);
+    
+    
+  }
+  
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::vector<MainLoopItem*> items;
+  MainLoopItem *ml_orig;
+  int key;
+  int current = -1;
+  float key_time = -999990.0;
+  float current_time=0.0;
+  bool firsttime;
+  GameApi::SH sh;
+  Matrix resize;
+};
+EXPORT GameApi::ML GameApi::PolygonApi::gltf_anim_shader(GameApi::EveryApi &ev, ML ml_orig, std::vector<GameApi::ML> mls, int key)
+{
+  int s = mls.size();
+  std::vector<MainLoopItem*> items;
+  for(int i=0;i<s;i++) {
+    MainLoopItem *item = find_main_loop(e,mls[i]);
+    items.push_back(item);
+  }
+  MainLoopItem *orig = find_main_loop(e,ml_orig);
+  return add_main_loop(e, new GltfAnimShaderML(e,ev,orig,items, key));
 }
 

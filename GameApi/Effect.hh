@@ -2993,7 +2993,16 @@ public:
   virtual unsigned int Color(int face, int point) const { return coll.Color(face,point); }
   virtual Point2d TexCoord(int face, int point) const { return coll.TexCoord(face,point); }
   virtual float TexCoord3(int face, int point) const { return coll.TexCoord3(face,point); }
+  virtual VEC4 Joints(int face, int point) const { return coll.Joints(face,point); }
+  virtual VEC4 Weights(int face, int point) const { return coll.Weights(face,point); }
 
+  virtual bool has_normal() const { return coll.has_normal(); }
+  virtual bool has_attrib() const { return coll.has_attrib(); }
+  virtual bool has_color() const { return coll.has_color(); }
+  virtual bool has_texcoord() const { return coll.has_texcoord(); }
+  virtual bool has_skeleton() const { return coll.has_skeleton(); }
+
+  
   virtual int NumObjects() const { return coll.NumObjects(); }
   virtual std::pair<int,int> GetObject(int o) const { return coll.GetObject(o); }
   
@@ -3021,6 +3030,18 @@ public:
   virtual unsigned int Color(int face, int point) const { return coll.Color(face,point); }
   virtual Point2d TexCoord(int face, int point) const { return coll.TexCoord(face,point); }
   virtual float TexCoord3(int face, int point) const { return coll.TexCoord3(face,point); }
+
+  virtual VEC4 Joints(int face, int point) const { return coll.Joints(face,point); }
+  virtual VEC4 Weights(int face, int point) const { return coll.Weights(face,point); }
+
+  virtual bool has_normal() const { return coll.has_normal(); }
+  virtual bool has_attrib() const { return coll.has_attrib(); }
+  virtual bool has_color() const { return coll.has_color(); }
+  virtual bool has_texcoord() const { return coll.has_texcoord(); }
+  virtual bool has_skeleton() const { return coll.has_skeleton(); }
+
+  
+  
   virtual int NumTextures() const { return coll.NumTextures(); }
   virtual void GenTexture(int num) { coll.GenTexture(num); }
   virtual BufferRef TextureBuf(int num) const { return coll.TextureBuf(num); }
@@ -3086,6 +3107,7 @@ class RecalculateNormals : public ForwardFaceCollection
 {
 public:
   RecalculateNormals(FaceCollection &coll) : ForwardFaceCollection(coll) { }
+  virtual bool has_normal() const { return true; }
   Vector PointNormal(int face, int point) const 
   { 
     Point p1 = FacePoint(face, 0);
@@ -5924,13 +5946,17 @@ private:
   int y;
 };
 typedef FunctionImpl2<SurfaceIn3d*, GridIn3d*, int, int, SampleSurfaceForGrid> SampleSurfaceForGridFunction;
+void confirm_texture_usage(FaceCollection *coll);
 
 class SampleSurfaceIn3d : public SingleForwardFaceCollection, public TextureCoords
 {
 public:
   SampleSurfaceIn3d(const SurfaceIn3d &surf, int texture, int x, int y) : surf(surf), texture(texture), x(x), y(y) { }
-  void Prepare() { const_cast<SurfaceIn3d&>(surf).Prepare(); }
+  void Prepare() {
+    confirm_texture_usage(this);
+    const_cast<SurfaceIn3d&>(surf).Prepare(); }
   virtual int Texture(int face) const { return texture; }
+  bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const
   {
     Point2d p = Sample(face, point);
@@ -5951,12 +5977,15 @@ public:
   {
     return FacePoint(face,point);
   }
+  bool has_color() const { return true; }
+
   virtual unsigned int Color(int face, int point) const
   {
     Point2d p = Sample(face, point);
     unsigned int pp = surf.Color(p.x, p.y);
     return pp;
   }
+  bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     Point2d p = Sample(face, point);
@@ -6260,9 +6289,17 @@ public:
   {
     return get_elem(face)->FacePoint(get_index(face), point);
   }
+  virtual bool has_normal() const
+  {
+    return coll1->has_normal()||coll2->has_normal();
+  }
   virtual Vector PointNormal(int face, int point) const
   {
     return get_elem(face)->PointNormal(get_index(face), point);
+  }
+  virtual bool has_attrib() const
+  {
+    return coll1->has_attrib()||coll2->has_attrib();
   }
   virtual float Attrib(int face, int point, int id) const
   {
@@ -6272,9 +6309,17 @@ public:
   {
     return get_elem(face)->AttribI(get_index(face), point,id);
   }
+  virtual bool has_color() const
+  {
+    return coll1->has_color()||coll2->has_color();
+  }
   virtual unsigned int Color(int face, int point) const
   {
     return get_elem(face)->Color(get_index(face), point);
+  }
+  virtual bool has_texcoord() const
+  {
+    return coll1->has_texcoord()||coll2->has_texcoord();
   }
   virtual Point2d TexCoord(int face, int point) const
   {
@@ -6284,6 +6329,18 @@ public:
     return get_elem(face)->TexCoord3(get_index(face), point);
 
   }
+  virtual bool has_skeleton() const
+  {
+    return coll1->has_skeleton()||coll2->has_skeleton();
+  }
+  virtual VEC4 Joints(int face, int point) const {
+    return get_elem(face)->Joints(get_index(face), point);
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    return get_elem(face)->Weights(get_index(face), point);
+  }
+
+  
   virtual Point EndFacePoint(int face, int point) const {
     return get_elem(face)->EndFacePoint(get_index(face), point);
   }
@@ -6352,8 +6409,10 @@ public:
     int f = 0;
     int k = 0;
     int s = NumFaces();
+    if (s<=0||s>500000) return;
     faces_cache.clear();
       faces_num.clear();
+
     faces_cache.reserve(s);
     faces_num.reserve(s);
     //int faces = NumFaces();
@@ -6394,6 +6453,55 @@ public:
     update_faces_cache();
   }
   virtual int NumObjects() const { return vec.size(); }
+  virtual bool has_skeleton() const {
+    int s = vec.size();
+    bool sk = false;
+    for(int i=0;i<s;i++) {
+      sk |= vec[i]->has_skeleton();
+    }
+    return sk;
+    
+  }
+
+  virtual bool has_texcoord() const {
+    int s = vec.size();
+    bool sk = false;
+    for(int i=0;i<s;i++) {
+      sk |= vec[i]->has_texcoord();
+    }
+    return sk;
+    
+  }
+  virtual bool has_color() const {
+    int s = vec.size();
+    bool sk = false;
+    for(int i=0;i<s;i++) {
+      sk |= vec[i]->has_color();
+    }
+    return sk;
+  }
+
+  virtual bool has_attrib() const {
+    int s = vec.size();
+    bool sk = false;
+    for(int i=0;i<s;i++) {
+      sk |= vec[i]->has_attrib();
+    }
+    return sk;
+  }
+
+  virtual bool has_normal() const {
+    int s = vec.size();
+    bool sk = false;
+    for(int i=0;i<s;i++) {
+      sk |= vec[i]->has_normal();
+    }
+    return sk;
+    
+  }
+
+  
+  
   virtual std::pair<int,int> GetObject(int o) const
   {
     int s = vec.size();
@@ -6453,6 +6561,16 @@ public:
     int s = faces_num.size();
     if (face<0 || face>s-1) { return 0.0; }
     return vec[faces_num[face]]->TexCoord3(faces_cache[face],point);
+  }
+  virtual VEC4 Joints(int face, int point) const {
+    int s = faces_num.size();
+    if (face<0||face>s-1) { VEC4 v; v.x = 0.0; v.y=0.0; v.z = 0.0; v.w=0.0; return v; }
+    return vec[faces_num[face]]->Joints(faces_cache[face],point);
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    int s = faces_num.size();
+    if (face<0||face>s-1) { VEC4 v; v.x = 0.0; v.y=0.0; v.z = 0.0; v.w=0.0; return v; }
+    return vec[faces_num[face]]->Weights(faces_cache[face],point);
   }
 
 
@@ -6549,6 +6667,7 @@ public:
     if (point==2) return p3;
     return p4;
   }
+  virtual bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     Vector u_x = p2-p1;
@@ -6559,6 +6678,7 @@ public:
   {
     return Color::White().Pixel();
   }
+  virtual bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const
   {
     Point2d p;
@@ -6615,6 +6735,7 @@ public:
     if (point==1) return p2;
     return p3;
   }
+  virtual bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     Vector u_x = p2-p1;
@@ -6735,6 +6856,7 @@ public:
   //virtual int Texture(int face) const { return face; }
   //virtual Point2d TexCoord(int face, int point) const;
   virtual Point FacePoint(int face, int point) const;
+  virtual bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     Point pp1 = FacePoint(face,0);
@@ -6749,6 +6871,7 @@ public:
   {
     return Color::White().Pixel();
   }
+  bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const;
   virtual int AttribI(int face, int point, int id) const
   {
@@ -6798,6 +6921,7 @@ public:
   virtual int NumPoints(int face) const { return 4; }
   virtual Point FacePoint(int face, int point) const;
 
+  virtual bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     Vector v = FacePoint(face, point);
@@ -6858,6 +6982,7 @@ public:
     return p;
   }
 
+  virtual bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     Vector v = FacePoint(face, point);
@@ -7042,6 +7167,7 @@ public:
   {
     return next.FacePoint(face,point);
   }
+  virtual bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
     return color;
@@ -7088,6 +7214,8 @@ public:
   {
     return next.FacePoint(face,point);
   }
+  virtual bool has_color() const { return true; }
+
   virtual unsigned int Color(int face, int point) const
   {
     switch(point)
@@ -7147,6 +7275,7 @@ public:
   {
     return next.Color(face,point);
   }
+  virtual bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const
   {
     return coords.TexCoord(face,point);
@@ -7188,6 +7317,8 @@ public:
   {
     return next.Color(face,point);
   }
+  virtual bool has_texcoord() const { return true; }
+
   virtual Point2d TexCoord(int face, int point) const
   {
     return coords.TexCoord(face,point);
@@ -8215,6 +8346,7 @@ public:
   {
     return Color::White().Pixel();
   }
+  virtual bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const;
   virtual int AttribI(int face, int point, int id) const
   {
@@ -8235,6 +8367,7 @@ public:
     return pp.x*pp.x+pp.y*pp.y+pp.z*pp.z<radius*radius; 
   }
 
+  virtual bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     Vector v = FacePoint(face, point);
@@ -8278,6 +8411,7 @@ public:
   {
     return Color::White().Pixel();
   }
+  virtual bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const
   {
     Point2d p;
@@ -8299,6 +8433,7 @@ public:
     return false;
   }
 
+  virtual bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     Point pp1 = FacePoint(face,0);
@@ -8375,6 +8510,7 @@ public:
     return p;
   }
 
+  virtual bool has_normal() const { return true; }
   virtual Vector Normal(int x, int y) const
   {
     Vector v = points.Index(x).second;
@@ -8847,7 +8983,7 @@ public:
     Point pos = Pos(f1,f2);
     return pos;
   }
-
+  bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const 
   { 
     Point p1 = FacePoint(face, 0);
@@ -8856,6 +8992,7 @@ public:
     return Vector::CrossProduct(p2-p1,p3-p1);
   }
   virtual unsigned int Color(int face, int point) const { return 0xffffffff; }
+  bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const
   {
     int face1 = face / numfaces1;
@@ -10490,6 +10627,12 @@ public:
   {
     return mesh.FacePoint(framenum, 0, face, point);
   }
+  virtual bool has_normal() const { return true; }
+  virtual bool has_attrib() const { return false; }
+  virtual bool has_color() const { return false; }
+  virtual bool has_texcoord() const { return true; }
+  virtual bool has_skeleton() const { return false; }
+
   virtual Vector PointNormal(int face, int point) const
   {
     Point p1 = mesh.FacePoint(framenum, 0, face, 0);

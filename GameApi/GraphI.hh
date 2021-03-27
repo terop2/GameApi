@@ -556,6 +556,8 @@ struct MainLoopEnv
   int us_fragment_shader = -1;
 
   Matrix in_MV;
+  bool has_inverse=false;
+  Matrix in_iMV;
   Matrix in_T;
   Matrix in_N;
   Matrix in_P;
@@ -1292,7 +1294,7 @@ public:
   virtual int PosY(int i) const=0;
   virtual int Item(int i) const=0;
 };
-
+/*
 class Cursor
 {
 public:
@@ -1300,7 +1302,7 @@ public:
   virtual int PosX() const=0;
   virtual int PosY() const=0;
 };
-
+*/
 class ShaderI
 {
 public:
@@ -1987,5 +1989,24 @@ public:
   // returns number of events still that can be fetched
   virtual int get_game_event(InEventData &out_data)=0;
 };
+
+#if 0
+class SubDivide
+{
+public:
+  virtual int num_ids() const=0;
+  virtual int id(std::string s) const=0;
+  virtual void set_pos(int id, Point p)=0;
+  virtual void set_delta(int out_id, int in_id, Vector v)=0;
+  virtual void set_span(int out_id, int in_id1, int in_id2)=0;
+  virtual void set_span_value(int out_id, int id, float val)=0;
+  virtual void set_curve(int out_id, int in_id, CurveIn3d &curve)=0;
+  virtual void set_curve_value(int out_id, int id, float val)=0;
+  
+  virtual void Prepare()=0;
+  virtual void handle_event(MainLoopEvent &event)=0;
+  virtual void execute(MainLoopEnv &e)=0;
+};
+#endif
 
 #endif
